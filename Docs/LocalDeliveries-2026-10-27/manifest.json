@@ -1,0 +1,1483 @@
+{
+  "date": "2026-10-27",
+  "purpose": "Collect completed local delivery assets and historical receipts without altering game runtime.",
+  "workspace_root": "/home/tom/Documents/ChatGPT/Signal 47",
+  "deduplication": "SHA256 against all tracked repository files and Docs/DesignBible-2026-10-27, then within this collection.",
+  "exclusions": [
+    "Raw chatarkiv conversations",
+    "Licensed third-party originals",
+    "Windows build ZIP/private build folders",
+    "Personal Saved data and caches",
+    "Three superseded workspace Documents README/tool adaptations",
+    "21 raw historical runtime capture logs, retained unchanged in original workspace"
+  ],
+  "files": [
+    {
+      "source": "konseptbilder-2026-10-27/01-sierra-motor-court-eksterior.png",
+      "source_sha256": "fae77786b2639bbca7f76e031ac8f7106c6c93dcc641fa747b9495f70ae123b5",
+      "bytes": 2606389,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder-2026-10-27/01-sierra-motor-court-eksterior.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder-2026-10-27/02-mesa-diner-interior.png",
+      "source_sha256": "bbd4a3dc721525a43cc9f3e5b147101a47800535cd06149109206261f2fed6ba",
+      "bytes": 2437499,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder-2026-10-27/02-mesa-diner-interior.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder-2026-10-27/prompts-and-manifest.json",
+      "source_sha256": "24cde2a22504cef7ac3a08364955a424590a9911133b7b567aea9ee57ac4fc56",
+      "bytes": 9732,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder-2026-10-27/prompts-and-manifest.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-23/prompts.json",
+      "source_sha256": "e551ccb69730befa13ff54a1d7e2a9a21c09f80841f9a78a9b5cc6203922d6ae",
+      "bytes": 135,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-23/prompts.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-23/Caliche-byen.png",
+      "source_sha256": "018ef5239fcd639f24520418be917011464f69f5ea2910d65f0d223b64f3e92c",
+      "bytes": 2640736,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-23/Caliche-byen.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-23/Mesa-Diner.png",
+      "source_sha256": "47fff1fecf2ee4b37c488a8a975e2ae5c4626057567e18a93a9ec1e36e0f3e3f",
+      "bytes": 2664098,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-23/Mesa-Diner.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/capture-manifest.json",
+      "source_sha256": "cd6e4435e0d1d1235e53f099dce44c8e879b2810e17c520273ea22113bb967f7",
+      "bytes": 10351,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/capture-manifest.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/prompts.json",
+      "source_sha256": "006b3e08497d3ea698de022359c78324079b43ff91b3c277888f614bac6b29fc",
+      "bytes": 18130,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/prompts.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/build_gallery.py",
+      "source_sha256": "56f258ed5fb790ac6c37e6cf3e6dedd516df16f9288d07ac4ec728e6d29e032e",
+      "bytes": 7968,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/build_gallery.py",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/GALLERI.html",
+      "source_sha256": "712635b51f236d39b02c296156574548cfcb923328242c76e3cd54e6ea91e860",
+      "bytes": 15829,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/GALLERI.html",
+      "classification": "provenance, historical gallery/source or original graphic asset",
+      "adaptation": "Only local HTML file links relocated to canonical deduplicated repository files.",
+      "stored_sha256": "a4a16cda06839dd4e276e3264801b2e49f6ee125ffc31080df505022da2fffb4"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/NYE-KONSEPTER.jpg",
+      "source_sha256": "042150de72e62fa82d65e054988ca330ae52bc59bac337add27d222eccc3da92",
+      "bytes": 345395,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/NYE-KONSEPTER.jpg",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/LES_MEG.txt",
+      "source_sha256": "9fe455c0e2550372fc6efd8f81408e612244c3a06e0abb025e45452fd7bd2f3c",
+      "bytes": 3661,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/LES_MEG.txt",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/GALLERI-forhandsvisning.png",
+      "source_sha256": "4f36783f33d08281f5782e7d20b7c6562eef4078de9e57e22a1cdd8b6c24aad1",
+      "bytes": 678241,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/GALLERI-forhandsvisning.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/npc-dialog-prompt.txt",
+      "source_sha256": "243c68bba0fcd253d5ccdcfecc90e5d9119194375e3e6c677c18868381c33f9f",
+      "bytes": 4002,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/npc-dialog-prompt.txt",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-25-ku/ku-levende.png",
+      "source_sha256": "b673177cdbb4a1c4af2d92aa0e2a394b23f516ec6ae5ee1bc4d7870821626da8",
+      "bytes": 2131137,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Cows/Concepts/ku-levende.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-25-ku/ku-dod-etter-bortforing.png",
+      "source_sha256": "fa7f3027fd330029b020416ff1ccee13759b4bd047eeab28c6fdda4f162605a4",
+      "bytes": 2340025,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Cows/Concepts/ku-dod-etter-bortforing.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-25-ku/ku-dod-endelig.png",
+      "source_sha256": "92123904f5f8fe80cf146974424af9e59970bce36507f4fc6f2e7d0997535fca",
+      "bytes": 2640002,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Cows/Concepts/ku-dod-endelig.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-25-ku/prompts.json",
+      "source_sha256": "03f19ca3e99b3d32d0399ac0078df150868604c1a3e404ea4cebe8c4444246c5",
+      "bytes": 5052,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Cows/Concepts/prompts.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/title.png",
+      "source_sha256": "e9067e2c3a6a51f101f7761a8ce34bbd343e71b0ea140171039fe21931f928c4",
+      "bytes": 1026829,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/title.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/settings-game.png",
+      "source_sha256": "2d382adad2c4afcd0a056555d8cdaaf7f7f1e8302b5b41fc6350e288f60f0734",
+      "bytes": 153828,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-game.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/settings-picture.png",
+      "source_sha256": "c166b495b95e02168666936218d9b7c684f8ac2cad0d72be16f002a11a7388a0",
+      "bytes": 185619,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-picture.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/settings-sound.png",
+      "source_sha256": "92671d7870463f4f288bba28bf3381800404c9164af8eefe833507399bda5ad7",
+      "bytes": 145031,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-sound.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/settings-voices.png",
+      "source_sha256": "658765abc4d0fd9d9c91b17a92f3049b1e7bf82187e734164811e8febd806047",
+      "bytes": 163759,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-voices.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/settings-controls.png",
+      "source_sha256": "14257170ee281666ba7b46f7aafbf035ca7997dffa7d9a7771289cc049dfde19",
+      "bytes": 170409,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-controls.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/settings-accessibility.png",
+      "source_sha256": "7563d5cc3d987156870afea6a8cbc66e24cde39ce9ed7670c5fdc57c216031ac",
+      "bytes": 161294,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/settings-accessibility.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/room.png",
+      "source_sha256": "1a8f9595fbf023c26e15893b17b46ea6605185e8d88d7ec68211d4c2bacc5028",
+      "bytes": 1955103,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/room.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/pause.png",
+      "source_sha256": "712ed4fe521bf5b8eb6874c0cc9327b9e43a10ca453f9e84cf4453596639a5fb",
+      "bytes": 557502,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/pause.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/load.png",
+      "source_sha256": "dcd972042a750935147a58dbba1bdf655f69c9818b97d35ada4670f137bcfcda",
+      "bytes": 288951,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/load.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/save.png",
+      "source_sha256": "02e375c362ffb041adf95b973cc5b62dc305efb041df06478d3d876e6a5c686f",
+      "bytes": 309749,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/save.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/notebook-tasks.png",
+      "source_sha256": "9c99ac5a09675bffbcf57b0c50f9be6d9aba7587748bdd48013c0312d4454bdd",
+      "bytes": 311629,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-tasks.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/notebook-notes.png",
+      "source_sha256": "479400dfd3b7a8136b4ce62e4d0c9122c0fe648982f6d31d22ea0220f897112d",
+      "bytes": 291566,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-notes.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/notebook-findings.png",
+      "source_sha256": "cc98f50265dc7374afc85fb88e2f094eee6724a82055e6ea5a3703b9ce645cdc",
+      "bytes": 348194,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-findings.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/notebook-photos.png",
+      "source_sha256": "296a7ac19d0eb2c65566aa41e12284bfe3b11a880c6a5dc8ce828c3e4e6a2cf0",
+      "bytes": 228628,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-photos.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/notebook-map.png",
+      "source_sha256": "5a71b1b4d3a529f83ad0d06e3386fac8a18543f25d44911b12478a809c0494fc",
+      "bytes": 300555,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-map.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/notebook-kit.png",
+      "source_sha256": "0712ff0a1be34bc5406bae80d4cb472c00bcf316134d3c15a3e275d04ad98690",
+      "bytes": 374845,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/notebook-kit.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/console.png",
+      "source_sha256": "0862b5be8fde74c26791ed4b62c5fbcf4bd819e5fe1b838f38ab07e198dc7df2",
+      "bytes": 1518419,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/console.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/ops.png",
+      "source_sha256": "44aae6ef9fb6ee7931ae984e21c4ee5d760a3d52db00229989309f7a29f455c1",
+      "bytes": 954479,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/ops.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/board.png",
+      "source_sha256": "c5578890cb29276d88dccc85a27d1dcc6890c4449844f2dab60f255b5ea1495d",
+      "bytes": 1889611,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/board.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/skjermbilder/paper-typed.png",
+      "source_sha256": "3320c77126912934e50d393d87838c70d7deb4f7fcc219601f841f897ef7610c",
+      "bytes": 408078,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/skjermbilder/paper-typed.png",
+      "classification": "historical Unreal runtime capture or associated log"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/title.png",
+      "source_sha256": "9867cecfaa22d6f44cd28ef9ab9a63ac80a01352848174cafb7edbcb1c20336a",
+      "bytes": 243679,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/title.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/settings.png",
+      "source_sha256": "2e436d433df3dff19993c9aea791f0f8e5d1202838d5f5427afdea707bc56267",
+      "bytes": 378318,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/settings.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/pause.png",
+      "source_sha256": "fc76849d83d06005517afa6cfe1d2437e43499457200e6382500c6e7a44cd058",
+      "bytes": 178956,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/pause.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/load.png",
+      "source_sha256": "c2bae2c746170e3ece866bc6934f16bafffb83221ef341b831d1411d68bf94d0",
+      "bytes": 470238,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/load.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/notebook.png",
+      "source_sha256": "15bf997a958ccbaf873d28561f39c063a5225003941f476f77272996460525e4",
+      "bytes": 378998,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/notebook.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/hud.png",
+      "source_sha256": "06448d3d75d6ef88af5cc2132e84748bd236a22bd78da314585b328038a58fd0",
+      "bytes": 276787,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/hud.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/document.png",
+      "source_sha256": "cadd5ed43de881eea098cfb8d73ff92d8c0abe4effcc7537dc049c2bcc3b61f8",
+      "bytes": 367641,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/document.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/recovery.json",
+      "source_sha256": "c5970178d7f8755871dab47a9c68c8db0d0bd023d8ec66976a29340da418f4f1",
+      "bytes": 2056,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/tidligere/recovery.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/08-evidence-ui.png",
+      "source_sha256": "372dccbfa2cc04d3e8aefcefac41c6c69d4445d4d24a380cfd4649d4fd4917c9",
+      "bytes": 2262526,
+      "action": "existing_identical",
+      "repository_path": "Docs/VisualTargets/Concept11/08-evidence-ui.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/nye/01-startmeny.png",
+      "source_sha256": "4ca6acf7440692f55a5c852e02e341ed25e23a0087aa5805721944f652eeb5ed",
+      "bytes": 1951935,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/01-startmeny.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/nye/02-options.png",
+      "source_sha256": "d7de0821fc042e0a32523b5578e7f4f7417bd295fb18d9efe8f963ac60dd0c5b",
+      "bytes": 1761827,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/02-options.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/nye/03-gameplay-hud.png",
+      "source_sha256": "da3a3fc65e48949eacf95dd62b50dca5b775eb730a121a7b6f555fb3fa9967de",
+      "bytes": 1809045,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/03-gameplay-hud.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/nye/04-notatbok.png",
+      "source_sha256": "61c59bc477d7f6a6e3d80434fe637b5f77ab6fb35274f58619b70d0f7823c821",
+      "bytes": 2400520,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/04-notatbok.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/nye/05-pause.png",
+      "source_sha256": "67991011180c3b892af203bb50407c1fe00521eacf40155edb6a1d41cb54eb55",
+      "bytes": 1672562,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/05-pause.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/nye/06-npc-dialog.png",
+      "source_sha256": "1521fbe4379600e5acafaa14aff39133223bd7557e5b5dc3efeaf54fb84439b9",
+      "bytes": 1936270,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/konseptbilder/2026-10-24-ui/nye/06-npc-dialog.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/title.html",
+      "source_sha256": "a99df2b9a806a5e267d804c2d14f9fcc0cf0abd6a7e5fda58e3bdcc4793a501c",
+      "bytes": 2680,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/title.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/settings.html",
+      "source_sha256": "1927c95f742b405588ae24498e8dedc5b6c11b64bfda7bbc4108b9f4423b40d4",
+      "bytes": 5635,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/settings.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/pause.html",
+      "source_sha256": "4a1790c55e5764a615e39cb7e84d6b5c42410fc3a2c176b8e08dc3fa54d68537",
+      "bytes": 2592,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/pause.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/load.html",
+      "source_sha256": "5f9b2161744035a705befe134414cd5379246c0041f9bb6ddb7b7975d02f4b59",
+      "bytes": 3194,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/load.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/hud.html",
+      "source_sha256": "8856b53fc8c87189adee5fb74414729ade05fde7eb87463ae6014c390c344f5c",
+      "bytes": 3374,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/hud.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "source_sha256": "c7faddf45dc441cc2bc915eab45a36f53cce3de2f4b683130f9c224ec0a34f33",
+      "bytes": 5771,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/notebook.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/document.html",
+      "source_sha256": "ea11b73a85bb1afc119c98509b5eb613f8976ab219571ef0e931bb9eb2ae89d0",
+      "bytes": 2626,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/document.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/title-bg.png",
+      "source_sha256": "93f20eedca22119e038662639d702097f3cef4f1a7952aa107098beecfab5af8",
+      "bytes": 291367,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/title-bg.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/desk-bg.png",
+      "source_sha256": "48df5b0ed2c842bff9f57c04c71dc5c20f72f5c22c3c79ae9c3ec6a8e383a0fe",
+      "bytes": 259515,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/konseptbilder/2026-10-24-ui/tidligere/kildeutdrag/desk-bg.png",
+      "classification": "generated or recovered concept; not runtime"
+    },
+    {
+      "source": "resultater/ankomst-og-kontor/dales-kontor.png",
+      "source_sha256": "14ea88a7e69e980b302eb588cfaf9cc3c0fb5ee0d65df2a21d018b43ccb6ca92",
+      "bytes": 1838199,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/resultater/ankomst-og-kontor/dales-kontor.png",
+      "classification": "Blender render or render provenance; not runtime"
+    },
+    {
+      "source": "resultater/ankomst-og-kontor/inngang.png",
+      "source_sha256": "0431834ea0ccdf14b28e43979782f2178ffa2d6c9d51ee3fc4104b1e97475cef",
+      "bytes": 1619586,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/resultater/ankomst-og-kontor/inngang.png",
+      "classification": "Blender render or render provenance; not runtime"
+    },
+    {
+      "source": "resultater/ankomst-og-kontor/besoksparkering.png",
+      "source_sha256": "79cdc4bb7de435105a4516203789b43e2c793fac65b218ba48cabbf07d198e46",
+      "bytes": 1558198,
+      "action": "existing_identical",
+      "repository_path": "Docs/DesignBible-2026-10-27/assets/resultater/ankomst-og-kontor/besoksparkering.png",
+      "classification": "Blender render or render provenance; not runtime"
+    },
+    {
+      "source": "resultater/ankomst-og-kontor/bilder.json",
+      "source_sha256": "b6e5ab0b630e6a2dce6fa77181829bcbeec1ed072bb6201ad998edf144628d54",
+      "bytes": 1085,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/resultater/ankomst-og-kontor/bilder.json",
+      "classification": "Blender render or render provenance; not runtime"
+    },
+    {
+      "source": "modeller/ku/Signal47_Cows.blend",
+      "source_sha256": "fbfaa3349f041e3a43e53710087c0650e2c46ce1fad4afc162234ab89566ab7a",
+      "bytes": 12967418,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Cows/Signal47_Cows.blend",
+      "classification": "editable Blender source already in ArtSource"
+    },
+    {
+      "source": "modeller/ankomst-og-kontor/SARO_ArrivalEntrance.blend",
+      "source_sha256": "073d6d0a6ade5720557a6d419e9bcfa53be4dfb5c44cd0191e0d0c372065b697",
+      "bytes": 2570276,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/ArrivalEntrance/SARO_ArrivalEntrance.blend",
+      "classification": "editable Blender source already in ArtSource"
+    },
+    {
+      "source": "modeller/ankomst-og-kontor/Signal47_Operations.blend",
+      "source_sha256": "af9d4dfd27a81578bfe4c68d8efea6831475502ee77de7732e25ee08cd08b167",
+      "bytes": 10181144,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Office/Signal47_Operations.blend",
+      "classification": "editable Blender source already in ArtSource"
+    },
+    {
+      "source": "modeller/ankomst-og-kontor/kilder.json",
+      "source_sha256": "ab6f4d3ab9b22bce85d75123b6b57c5e71a7fad44f3b6dd25b35700db81d9948",
+      "bytes": 580,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/modeller/ankomst-og-kontor/kilder.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/catalog.json",
+      "source_sha256": "34a0c11caa58dd85fa9c727968a8f1ec234d1f43b14213186fd526267459a39c",
+      "bytes": 186775,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/catalog.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/generation.json",
+      "source_sha256": "a7813cf73411174f83951557aab6a8a11ad56782a3192629ea74b4d90f180658",
+      "bytes": 146046,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/generation.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/GALLERI.html",
+      "source_sha256": "9734fc2cbdee48a20820deec76242d287599154ecea3757d1e90a10676dc89e1",
+      "bytes": 33846,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/GALLERI.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/OVERSIKT.jpg",
+      "source_sha256": "ce57cd7a589956d69adab622bc3c6aaa3c5cd20c5f1179dcaf91b61c8a6f3cba",
+      "bytes": 787056,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/OVERSIKT.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/manual-review.json",
+      "source_sha256": "2bb2166595620649f3f80c3bcc6ae134f3eb7da8d30d3d94b57b9dee36af12e3",
+      "bytes": 47186,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/manual-review.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/verification.json",
+      "source_sha256": "4a20c7359903240eab3c2ccb67cb8c00ec9b72b3f9e33094826f6b4eca5b81ba",
+      "bytes": 47157,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/verification.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/LESMEG.txt",
+      "source_sha256": "b5f9f4c5a95830f2f6394eeb92ff3ae4196b74cbc3d0341fe29887179ea32df5",
+      "bytes": 610,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/miljografikk/2026-10-26/LESMEG.txt",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/KINOPLAKATER-forhandsvisning.jpg",
+      "source_sha256": "b72dce63f835da5a9a2a69a39084a56551802e7ad286427f2666558cbfdcdfd2",
+      "bytes": 131184,
+      "action": "copied",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/workspace/miljografikk/2026-10-26/KINOPLAKATER-forhandsvisning.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/01-cinema-desert-sky.jpg",
+      "source_sha256": "6b1db45bf4b4f8d5efc466f26f0d7b892da370e3ce3a4538111dffa73187fed7",
+      "bytes": 553870,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/01-cinema-desert-sky.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/02-cinema-friday-matinee.jpg",
+      "source_sha256": "bf6dcbe8a86c1b4558c60cc1a218944d1107a5cae0849b21ef147603dfb70ed6",
+      "bytes": 613947,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/02-cinema-friday-matinee.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/03-cinema-dust-county.jpg",
+      "source_sha256": "6d3b7437e6540b6ee10f2c698ef5526551706136b3c54999a00bfd07fc8daf6b",
+      "bytes": 593469,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/03-cinema-dust-county.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/04-cinema-night-coach.jpg",
+      "source_sha256": "fb725be2dd6dfc05fc6dd931423e6d35fc3190f5c11f66aa00a5111a3f2650ad",
+      "bytes": 538070,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/04-cinema-night-coach.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/05-cinema-blue-lake.jpg",
+      "source_sha256": "f67297135afe6798fa4195714945ea5e83c941dcfe2281737f5a936968931b0f",
+      "bytes": 564849,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/05-cinema-blue-lake.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/06-cinema-visitors.jpg",
+      "source_sha256": "cfbbf0352468c5a59d48f96b58bbe626d4506db7becf1ff909c2bd4bb731e47e",
+      "bytes": 644647,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/06-cinema-visitors.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/07-cinema-closed.jpg",
+      "source_sha256": "f527e9db8dfe33bd884da0cec4a20007c268a37ea6385f8b20d6eacad17979d2",
+      "bytes": 423996,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/07-cinema-closed.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/08-cinema-ticket.jpg",
+      "source_sha256": "c6377ddb6c8707b359f94083d0f043b18681d4b4b8f88a16a5685c615a7d37e3",
+      "bytes": 508085,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/08-cinema-ticket.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/09-diner-menu.jpg",
+      "source_sha256": "ac22360214f710689a132079181617e5f960153d8e33701001226a5a61d3c4f1",
+      "bytes": 457872,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/09-diner-menu.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/10-diner-coffee.jpg",
+      "source_sha256": "731eaa5264e84ef971d41dd14b4b8f434428b7fb57fee0d076ac7514b0c59a42",
+      "bytes": 495478,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/10-diner-coffee.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/11-diner-pie.jpg",
+      "source_sha256": "91eeb713567a3ef572f6cdd7ae7b2f55e556590706ddf8e442ed8ad7b50a5556",
+      "bytes": 567602,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/11-diner-pie.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/12-gas-ad.jpg",
+      "source_sha256": "1df6ac21d6d77bb721f68f775a5e3a585dd94ae8c0cbe0b144d3e153b61c6a15",
+      "bytes": 587693,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/12-gas-ad.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/13-oil-ad.jpg",
+      "source_sha256": "7224ecf0f48eb2b6583d049a5e2541a732b2a2e354cf53eb39399846071652b1",
+      "bytes": 560093,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/13-oil-ad.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/14-feed-ad.jpg",
+      "source_sha256": "b3a29569da00bea3fc836a56c7a93030360409a2fc06bbf60d03dd6ee1081493",
+      "bytes": 633893,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/14-feed-ad.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/15-laundry-rates.jpg",
+      "source_sha256": "e6013c88b3d5efa216da5395f0dd71228924767b912fb9e908955c2dba7385c5",
+      "bytes": 408775,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/15-laundry-rates.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/16-laundry-etiquette.jpg",
+      "source_sha256": "29be297a30d3599b850a668d9861357e81e607bb68dfe0d5fd154015a2c3987d",
+      "bytes": 498347,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/16-laundry-etiquette.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/17-motel-ad.jpg",
+      "source_sha256": "a7057c39b3ca09228ee821e56ef91e832e5a056e38134f69d2cff4094a5d6301",
+      "bytes": 539359,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/17-motel-ad.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/18-souvenir-tours.jpg",
+      "source_sha256": "6f38bdff84a6e92672fe18eec1af4eb602a75c50f43dca36368a4f382aee8176",
+      "bytes": 631137,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/18-souvenir-tours.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/19-radio-ad.jpg",
+      "source_sha256": "23929d7efcc73b5849df38b6d1955cc7a65a8f5ffba81d0f0c15c2383eb36ceb",
+      "bytes": 508003,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/19-radio-ad.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/20-church-notice.jpg",
+      "source_sha256": "8ea4e2a5e147353e1a2b83136ef8452034ca00df1204bfa3c00daec0ea9a781b",
+      "bytes": 513206,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/20-church-notice.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/21-feed-sack.jpg",
+      "source_sha256": "af9136ea85880d77386c32833c313bceaac4d3b3ffa5ff7dd5d251d4e82fe0ee",
+      "bytes": 649518,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/21-feed-sack.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/22-coffee-tin.jpg",
+      "source_sha256": "ab126c6dafe107d0611cb08279e576f9502b3c57a442a9ae4a0b70f47ca623f3",
+      "bytes": 439064,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/22-coffee-tin.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/23-cola-label.jpg",
+      "source_sha256": "c9426e4bc380e1e9e403f714b09fc7bc225ae1458884de19c94cd65a43b631dc",
+      "bytes": 417960,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/23-cola-label.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/24-detergent-box.jpg",
+      "source_sha256": "836310cae82550e400522a0b48a6b5e0aba6f567da1c0a45202a1cfd5cd6a6a3",
+      "bytes": 495651,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/24-detergent-box.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/25-cracker-box.jpg",
+      "source_sha256": "48596741b99a0b23b870fd1350b4baf515ef163814ffc42c43bc12fb49a328f1",
+      "bytes": 488787,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/25-cracker-box.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/26-battery-card.jpg",
+      "source_sha256": "930282cf6e63d4b552e495a72d93b9fde0bf4f8816e7fcc29e13deb0ea8019da",
+      "bytes": 530207,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/26-battery-card.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/27-matchbook.jpg",
+      "source_sha256": "2ad7f665932ebd5e490fd5653b143d9e588c768350c818b56b7714734882b87e",
+      "bytes": 559127,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/27-matchbook.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/28-takeaway-bag.jpg",
+      "source_sha256": "eceeb9aff742fa49fe1cfb2573cd25bdc5374926b09a85dd7751ae08f57d9938",
+      "bytes": 463944,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/28-takeaway-bag.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/29-food-wrapper.jpg",
+      "source_sha256": "dce921784dd723c39ca53229d8401a2686c0b8155190c435de28c570d6a65655",
+      "bytes": 515346,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/29-food-wrapper.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/30-cassette-card.jpg",
+      "source_sha256": "f7fa661f8cbcc37581f3a499c0fcbef344f9ea7a291c967d1dcf0448b929cc31",
+      "bytes": 340388,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/30-cassette-card.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/31-motel-key.jpg",
+      "source_sha256": "72f3ccdb4552f79039e4a878408027165d01a65a8ad3a3a3c52edec43e58d0dd",
+      "bytes": 450962,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/31-motel-key.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/32-motel-registration.jpg",
+      "source_sha256": "90933cb106058c8815c0d505726da47bd2d2267c28c1e1f049122a26fba6fe6b",
+      "bytes": 337837,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/32-motel-registration.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/33-diner-receipt.jpg",
+      "source_sha256": "cc88dd508b0ea89617d9160964c2f142a8719124ee2f9fa1d92fe6f66e3ee184",
+      "bytes": 412074,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/33-diner-receipt.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/34-gas-receipt.jpg",
+      "source_sha256": "7edb326f5336eb4e7746b833b7640c963e8a1efaefa7f1795f80cd4e7694fa74",
+      "bytes": 346236,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/34-gas-receipt.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/35-postcard.jpg",
+      "source_sha256": "66f062cbc2424f3815970be98e788bfc359debfd37a73d34632dabcce9a19164",
+      "bytes": 658959,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/35-postcard.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/36-map-cover.jpg",
+      "source_sha256": "5f42dcba8330dce67c66be99b985725b1aab95a955819a562d2ba7283222c336",
+      "bytes": 580708,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/36-map-cover.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/37-saro-radio-quiet.jpg",
+      "source_sha256": "54a8cb4f73d9b626bbcbf653af9cd25c1fbe7c8aefb3370279d72ae03c351fd7",
+      "bytes": 431316,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/37-saro-radio-quiet.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/38-saro-authorized.jpg",
+      "source_sha256": "ce6f74977c4e27464bd7a3e0b8ceff88630ddb9d65435323b44f2ea0e3c33626",
+      "bytes": 321029,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/38-saro-authorized.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/39-darkroom-sign.jpg",
+      "source_sha256": "23ff9c60a342f3e9e4abec2ea15e9564e6d46aafc0019c8fa2e361811f14f88c",
+      "bytes": 429726,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/39-darkroom-sign.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/40-maintenance-tag.jpg",
+      "source_sha256": "9a3b1a52208f1e026355d3f55237d1c5ad790cbf40affe6ad10ed9dc14f66f1b",
+      "bytes": 407391,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/40-maintenance-tag.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/41-parts-label.jpg",
+      "source_sha256": "d44337888bac9c1e78f5cff4efd99fb0e9462f1ae10aec61ff38f53273691780",
+      "bytes": 491983,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/41-parts-label.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/42-service-form.jpg",
+      "source_sha256": "ab7c9fe3087b55af9800614ba0d8fc013b125347396aea647aefcfbdf8e3af4f",
+      "bytes": 267399,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/42-service-form.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/43-visitor-badge.jpg",
+      "source_sha256": "d700c8d8460e4d523bb312f6f49cfa3cedb04d307c6099abca845f67abb550b6",
+      "bytes": 450083,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/43-visitor-badge.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/44-substation-sign.jpg",
+      "source_sha256": "f116697ee1d85506919cdf6fa50b74264eb4cf87a2c531b8461b4d304ab42b68",
+      "bytes": 457357,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/44-substation-sign.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/45-payphone-card.jpg",
+      "source_sha256": "8b2edc66d90bbff286b096cb6b7760476f96979435402d10f5fd51e262b3cc24",
+      "bytes": 428437,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/45-payphone-card.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/46-lost-dog.jpg",
+      "source_sha256": "252cedb4a790b01e5f340958fd7d05de0d1267ebdc15c9311033839a188ff165",
+      "bytes": 443226,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/46-lost-dog.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/47-yard-sale.jpg",
+      "source_sha256": "ba4132882fc9e784ebe50794ccf754e1632e90267033202c0b5fc004e1b81fea",
+      "bytes": 430532,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/47-yard-sale.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "miljografikk/2026-10-26/jpg/48-shopping-list.jpg",
+      "source_sha256": "0d974e9ee1884f80bbda5e664db1b713b6544a25f8386b39cbc83d04060a5d18",
+      "bytes": 338010,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/EnvironmentGraphics/jpg/48-shopping-list.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/supplemental.json",
+      "source_sha256": "4e189016d23d083760806e0015922915200fb7ced68d1b5a939a28cdd3db4038",
+      "bytes": 7901,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/supplemental.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/catalog.json",
+      "source_sha256": "cba1d7e878450574caa740f4b10ba0fd8b47605d0d56c49f6cd837155595206c",
+      "bytes": 159559,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/catalog.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/generation.json",
+      "source_sha256": "b84409a90b6d9a6e7a36315bc2690b008ab54dd4f409467f7acc7c92b7710982",
+      "bytes": 117972,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/generation.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/GALLERI.html",
+      "source_sha256": "1708780535776b56cf566a3c0c8bad6697e6ac2d50e8def4c94befb2c5e58c5c",
+      "bytes": 40143,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/GALLERI.html",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/OVERSIKT.jpg",
+      "source_sha256": "3b190e4188ef8beea8898e0a9346901161ad6f98d47d829c359890bc788fdf92",
+      "bytes": 570054,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/OVERSIKT.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/generation_history.json",
+      "source_sha256": "68648147c02fe5f2d91f0802d0561c70274a8ffc7765f19c3fbd39bdab5b0f91",
+      "bytes": 4912,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/generation_history.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/README.md",
+      "source_sha256": "97839f57061bdbe003f9e79d7b892230440a51847a35b0647cdd840dac184d68",
+      "bytes": 5033,
+      "action": "superseded_export_adaptation",
+      "note": "Current ArtSource/Documents sources retained; older workspace README/tool adaptations not imported.",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/manual-review.json",
+      "source_sha256": "cbf6d1e5bdbaf515954b648e3fedede6306a8e6f9a5572111e066627e7e8b471",
+      "bytes": 47281,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/manual-review.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/.gitignore",
+      "source_sha256": "6feaded4e28ea86e001a6751b4e3d960e8b7c31b9616ff9936b79297086e809b",
+      "bytes": 23,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/.gitignore",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/verification.json",
+      "source_sha256": "76187564304aae19acb53b97f6fec611468cb5824113e1879bf657c79978beb8",
+      "bytes": 48773,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/verification.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/Tools/build_catalog.py",
+      "source_sha256": "93971b3c587e58ee2890def7486857d945b33b6d25fed54d3dd565582be1a893",
+      "bytes": 23323,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/Tools/build_catalog.py",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/Tools/build_gallery.py",
+      "source_sha256": "df55ccbebb3268f7fb28cd144fe0548fc5abc07b8087838489bcab74827efb5b",
+      "bytes": 9447,
+      "action": "superseded_export_adaptation",
+      "note": "Current ArtSource/Documents sources retained; older workspace README/tool adaptations not imported.",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/Tools/prepare_assets.py",
+      "source_sha256": "72ba91d18d7e84e44d278c037d6a790da1f704a6529c8db1872244d5676a0f34",
+      "bytes": 10227,
+      "action": "superseded_export_adaptation",
+      "note": "Current ArtSource/Documents sources retained; older workspace README/tool adaptations not imported.",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/Tools/verify_assets.py",
+      "source_sha256": "866fb73ea01c67dc3f498f699e5a6cb45e7c570b4ca57503654163ae8482c633",
+      "bytes": 10796,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/Tools/verify_assets.py",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/01-dale-folder.jpg",
+      "source_sha256": "42a98fd95bbca403dea86ffc0acd76b54121bd661d95d3dd9990235c900360d3",
+      "bytes": 381170,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/01-dale-folder.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/02-ev-handover.jpg",
+      "source_sha256": "c83bbf65d2dc06f62ba9a306af856b1230c5088194430d74687685fec26af28c",
+      "bytes": 379729,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/02-ev-handover.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/03-ev-service-log.jpg",
+      "source_sha256": "8756f25d87656cd0b04b82f19d0d3ac76a80750bc6a322ee57d559e0c131a26d",
+      "bytes": 404702,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/03-ev-service-log.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/04-ev-radio-schedule.jpg",
+      "source_sha256": "897e5d6cd19a38fe2623a6ad581f095e41d1d6e4a05d98edb3927fd396cdd702",
+      "bytes": 402278,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/04-ev-radio-schedule.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/05-ev-dale-index.jpg",
+      "source_sha256": "2e0e861b193900848065e0f34f6b99b87d27a9aef49c1a49c6ee2fc2af3ca758",
+      "bytes": 390257,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/05-ev-dale-index.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/06-ev-dale-clippings.jpg",
+      "source_sha256": "98d31418a547b572e594c12d3558983f18612c64d4c798f92b9923c1ce92a4cf",
+      "bytes": 411380,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/06-ev-dale-clippings.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/07-ev-dale-contact.jpg",
+      "source_sha256": "bb68473ae88378d3b0a064f69c95cc1604cb5615bc074dc1479d2fcaf1758f1a",
+      "bytes": 391940,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/07-ev-dale-contact.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/08-ev-dale-note.jpg",
+      "source_sha256": "31e2c8a9de21295c175c4d552a6091b0e67d936639019c8ccd0a5bfacaacad80",
+      "bytes": 410808,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/08-ev-dale-note.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/09-ev-dale-skylog.jpg",
+      "source_sha256": "e108fb998ae4406e2371344cc8bfa6b59f258c087e4c6fd32f023f6b0184f254",
+      "bytes": 433341,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/09-ev-dale-skylog.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/10-ev-dale-witness.jpg",
+      "source_sha256": "5b7d40da90173d7ecf33444fb202f0f089e114546df800b909b8477d0e25b2e0",
+      "bytes": 441805,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/10-ev-dale-witness.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/11-ev-dale-explanations.jpg",
+      "source_sha256": "ef01d02c6c979f9a2ff8fa29217ba38782e728b6e24e3714aff4a2f36119a0d4",
+      "bytes": 334210,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/11-ev-dale-explanations.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/12-ev-dale-frame18.jpg",
+      "source_sha256": "1eb49b5ceef9c68a0704adeb6d1820fcb0662e663e350829b4d89d3afc28bbbc",
+      "bytes": 383456,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/12-ev-dale-frame18.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/13-ev-dale-tapeloan.jpg",
+      "source_sha256": "9e14fee62e576086c8e12cb3483a81697c3b4e97885eeaee0ce09a3013e8a605",
+      "bytes": 434278,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/13-ev-dale-tapeloan.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/14-ev-dale-unsent.jpg",
+      "source_sha256": "12cca95449f8507f16f8c62224f240102189b354ca5f81661877e068edf2bd8d",
+      "bytes": 349757,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/14-ev-dale-unsent.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/15-e15-sentinel-1947.jpg",
+      "source_sha256": "d19cc51f503dee59090bd10fd7eeb9b9ef4832309ae5dd2f909e64e72fc499ef",
+      "bytes": 593960,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/15-e15-sentinel-1947.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/16-e07-original-survey-1947.jpg",
+      "source_sha256": "ccfb37a9eee71c4a584c292b9f4c590c84962099408c3e5271809e08078cb434",
+      "bytes": 373773,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/16-e07-original-survey-1947.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/17-e06-amended-survey-1947.jpg",
+      "source_sha256": "1fc3126b176bbee5b782a6b92991d02750603379790fe0a9fec9bc673b3106e7",
+      "bytes": 288255,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/17-e06-amended-survey-1947.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/18-e08-archive-sleeve.jpg",
+      "source_sha256": "6641763d857c3287a1e1257e15701c00ad225966fac4dabfc974bc0ac3da17c9",
+      "bytes": 429940,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/18-e08-archive-sleeve.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/19-b12-reference-lineage.jpg",
+      "source_sha256": "75418eefa8337221efe46bf36fe326c98ba8fb2c4064506b6fafc8d4cff3802b",
+      "bytes": 384801,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/19-b12-reference-lineage.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/20-e09a-field-transit.jpg",
+      "source_sha256": "5b8a930a78ff9820f4e9028f96d292819b17735bdc9dd79f2c1306f75d07ae24",
+      "bytes": 325653,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/20-e09a-field-transit.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/21-e10-timing-record-1947.jpg",
+      "source_sha256": "b98d5c100ec4ef2b8866c0fc8f1f31eb1c9ec5186f8bdcef5bfbc5e9d34fbbcb",
+      "bytes": 308911,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/21-e10-timing-record-1947.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/22-binder-systems-note.jpg",
+      "source_sha256": "18439514f65b0ae20d10e909358eb0d7e34bde220657293037f837c6d76773db",
+      "bytes": 347257,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/22-binder-systems-note.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/23-binder-1981.jpg",
+      "source_sha256": "2b4ee3e366efe9c5e8139b0ab79325dfa7aef1e0a9969ffcb09934c497aa88de",
+      "bytes": 374170,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/23-binder-1981.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/24-binder-1983.jpg",
+      "source_sha256": "a5aaf15da02b921764c36f7ce8e80806a60b8abe988332646dd56f5bed3a7eb0",
+      "bytes": 336582,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/24-binder-1983.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/25-binder-1985.jpg",
+      "source_sha256": "1b5d969bfca6b934c149e07846394fda3db5a0a39eaa9a770345e2629fed10e9",
+      "bytes": 285467,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/25-binder-1985.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/26-binder-1947.jpg",
+      "source_sha256": "d2cd6aa25b3f8eb7a5e2e2aa0f3ce958bbf61c8981054fcb6f088e8b7eb0c0fb",
+      "bytes": 387601,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/26-binder-1947.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/27-k3-service-record.jpg",
+      "source_sha256": "9f7f05093d0fc5380faa43269c8bf2b3f420eec2df0c8dce09e4078299f7f4ae",
+      "bytes": 397016,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/27-k3-service-record.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/28-county-lights-1978.jpg",
+      "source_sha256": "1940037e1c984a2c4459bde116aad1be05cbcb873309e736ab47e2d88894da36",
+      "bytes": 378912,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/28-county-lights-1978.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/29-sentinel-missing-hours-1974.jpg",
+      "source_sha256": "d8b415e807ecae486fb566932a90734df2490c56e9cb921bb357b91544858bd9",
+      "bytes": 535600,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/29-sentinel-missing-hours-1974.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/30-cattle-exam-1982.jpg",
+      "source_sha256": "f317478548b6ab7f2c1061b41bfe44f1957b0ee328cfee7b2e495dc63a9ec99d",
+      "bytes": 391124,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/30-cattle-exam-1982.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/jpg/31-sky-watch-flyer-1984.jpg",
+      "source_sha256": "faa08feda94390f41be2959abe6b7e8529ed24327bb66ad9781b6691a89b2612",
+      "bytes": 455036,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/jpg/31-sky-watch-flyer-1984.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/referanser/dale-autopsi/references.json",
+      "source_sha256": "070859ad45f0f165ebc48f62d937bf00dbc5872fbd6b1730ecc49e906b6a7ab2",
+      "bytes": 3899,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/References/DaleAutopsy/references.json",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/referanser/dale-autopsi/README.md",
+      "source_sha256": "2808ed872146de5fa257c265d45eb3660ca08b7e583a357c93d170dee3048664",
+      "bytes": 1876,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/References/DaleAutopsy/README.md",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/referanser/dale-autopsi/jpg/01-dale-autopsy-reference.jpg",
+      "source_sha256": "9630c4ab6e4596820857e3bc1ef5a129b3e908136db383afa2fbff5e9de1a2fd",
+      "bytes": 119082,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/References/DaleAutopsy/jpg/01-dale-autopsy-reference.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    },
+    {
+      "source": "dokumenter/2026-10-26/referanser/dale-autopsi/jpg/02-dale-autopsy-reference.jpg",
+      "source_sha256": "56c9004fd1d55984e088d2b07c1625013177cc589274207b76eea068eee5675d",
+      "bytes": 148723,
+      "action": "existing_identical",
+      "repository_path": "unreal/ArtSource/Documents/References/DaleAutopsy/jpg/02-dale-autopsy-reference.jpg",
+      "classification": "provenance, historical gallery/source or original graphic asset"
+    }
+  ],
+  "receipts": [
+    {
+      "source_ref": "codex/night-production-receipt",
+      "source_commit": "1c929b763bce03c660acf1503876b32040a5c741",
+      "source_path": "unreal/NIGHT_PRODUCTION_RUNTIME.md",
+      "action": "archived_historical_receipt",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/receipts/NIGHT_PRODUCTION_RUNTIME.md",
+      "sha256": "08b0afb808e78a95f748330ed212a0bf5249fd29fe4729a74cca5f8cf834bdfc"
+    },
+    {
+      "source_ref": "codex/t02-delivery-receipt",
+      "source_commit": "3760ac8c25c7521fef3541b48436b827e91fe711",
+      "source_path": "unreal/T02_RUNTIME.md",
+      "action": "archived_historical_receipt",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/receipts/T02_RUNTIME.md",
+      "sha256": "a498554d7b33092c50c01de529fa5366e872a86f34536ad530694d01e14c7ca8"
+    },
+    {
+      "source_ref": "codex/story-sc01-receipt",
+      "source_commit": "a383c4bafd55b8dbc1e4029ed6d0c963944750dd",
+      "source_path": "unreal/SC01_RUNTIME.md",
+      "action": "archived_historical_receipt",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/receipts/SC01_RUNTIME.md",
+      "sha256": "d35d5bd88903fbea4aad11bdb782d2ae24dcd01049c05f5f518556dbe934ab4f"
+    },
+    {
+      "source_ref": "codex/story-sc01-receipt",
+      "source_commit": "a383c4bafd55b8dbc1e4029ed6d0c963944750dd",
+      "source_path": "unreal/HISTORIE_IMPLEMENTERINGSPLAN.md",
+      "action": "archived_historical_receipt",
+      "repository_path": "Docs/LocalDeliveries-2026-10-27/receipts/HISTORIE_IMPLEMENTERINGSPLAN.md",
+      "sha256": "58b45fa500e15988414a651856ea1da2769945c380ce608dd55c09b627be1817"
+    }
+  ],
+  "raw_log_files_excluded": [
+    "konseptbilder/2026-10-24-ui/skjermbilder/title.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/settings-game.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/settings-picture.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/settings-sound.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/settings-voices.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/settings-controls.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/settings-accessibility.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/room.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/pause.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/load.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/save.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/notebook-tasks.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/notebook-notes.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/notebook-findings.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/notebook-photos.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/notebook-map.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/notebook-kit.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/console.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/ops.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/board.log",
+    "konseptbilder/2026-10-24-ui/skjermbilder/paper-typed.log"
+  ]
+}

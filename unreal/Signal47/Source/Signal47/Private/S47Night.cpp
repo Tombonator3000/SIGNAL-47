@@ -2,6 +2,7 @@
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
 #include "S47Horror.h"
+#include "S47MotelV2.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
 #include "S47StationTaken.h"
@@ -296,6 +297,9 @@ double US47Night::Dawn() const
 
 double US47Night::SaroFloorAt(const AS47Web* Web, double X, double Z)
 {
+	// The rear motel deck and paths are outside the legacy court rectangle. Water has no floor override.
+	const double MotelFloor = FS47MotelV2::FloorAt(X, Z);
+	if (FMath::IsFinite(MotelFloor)) return MotelFloor;
 	// world/Grounds.ts floorAt: the height of the ground under the player anywhere in SARO's scene
 	const S47Geo::FRect& Motel = S47Geo::MOTEL_RECT();
 	if (Z > WEST.Z1)

@@ -1,0 +1,256 @@
+{
+  "created_at": "2026-10-27T10:42:46.343820+01:00",
+  "collection_status": "complete_for_now_per_user",
+  "provided_by": "Tom",
+  "purpose": "Visuell inspirasjon til originale modeller i SIGNAL / 47, New Mexico 1986",
+  "historical_verification": "Fotograferingsår og sted er ikke uavhengig bekreftet. Synlige bildetekster gjengis som oppgitt. NM02 viser flatskjerm, NM09 er datert 1994, og NM11 har ©2015-kreditering og moderne bakgrunn. Bilårgang, politidistrikt og perioderiktig utstyr er ikke bekreftet.",
+  "originals_git_policy": "local_ignored_reference_only",
+  "images": [
+    {
+      "id": "NM01",
+      "batch": 1,
+      "upload_name": "1000053742.jpg",
+      "local_path": "originals/01-motell-trepanel-crt.jpg",
+      "size_bytes": 128001,
+      "dimensions": [
+        1280,
+        898
+      ],
+      "sha256": "ca264333aa05d4ba39bbc6e05091f7c8de236f6e06cf9a8f7f4da3b1193b64c2",
+      "visual_review": "reviewed",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM02",
+      "batch": 1,
+      "upload_name": "1000053743.jpg",
+      "local_path": "originals/02-motell-gulgronn-innredning.jpg",
+      "size_bytes": 132822,
+      "dimensions": [
+        1280,
+        850
+      ],
+      "sha256": "ea2bea57ef3c21d66958f895584055aaf55f4361a38d63cdde355590bf4bc33b",
+      "visual_review": "reviewed",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM03",
+      "batch": 1,
+      "upload_name": "1000053744.jpg",
+      "local_path": "originals/03-apotek-disk-varehyller.jpg",
+      "size_bytes": 137973,
+      "dimensions": [
+        1280,
+        961
+      ],
+      "sha256": "81729d426e7910dda8d2634ac75ab45b38f47d21374e1a4843da2b64e9e4499b",
+      "visual_review": "reviewed",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM04",
+      "batch": 1,
+      "upload_name": "1000053745.webp",
+      "local_path": "originals/04-general-store-fasade.webp",
+      "size_bytes": 141670,
+      "dimensions": [
+        1280,
+        960
+      ],
+      "sha256": "d62ffc746ba1ca84b7b22507a42dd20139bed2d59b8252170e9e6ae77519d84e",
+      "visual_review": "reviewed",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM05a/NM05b",
+      "batch": 1,
+      "upload_name": "1000053748.jpg",
+      "local_path": "originals/05-durand-motor-aztec-motel-1980.jpg",
+      "size_bytes": 137619,
+      "dimensions": [
+        825,
+        1280
+      ],
+      "sha256": "09815b5b461515fefa12de5a8ff761146daaf3b757f728de4b8927c56fd2e952",
+      "visual_review": "reviewed",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM06",
+      "batch": 2,
+      "upload_name": "1000053751.jpg",
+      "local_path": "originals/06-adobe-diner-tres-piedras-1981.jpg",
+      "size_bytes": 137750,
+      "dimensions": [
+        1280,
+        1027
+      ],
+      "sha256": "984a788374670fbd95a73f0b425fb16e83e67b09b33cb515c1baff3b7434442e",
+      "visual_review": "reviewed",
+      "visible_caption": "Adobe Diner, Route 64 & 285, Tres Piedras, New Mexico, 1981",
+      "caption_verification": "transcribed from user-supplied image; not independently verified",
+      "period_note": "Caption date is within or before game year 1986; precise construction history not established",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM07",
+      "batch": 2,
+      "upload_name": "1000053754.jpg",
+      "local_path": "originals/07-traveling-traders-albuquerque-1985.jpg",
+      "size_bytes": 168130,
+      "dimensions": [
+        1018,
+        1280
+      ],
+      "sha256": "83b05b13cf854c4741f92f1f62ea05fdf92b6ed78a51f29f2671e75bdc95f970",
+      "visual_review": "reviewed",
+      "visible_caption": "Traveling Traders (Black Hawk Jewelry), Central Avenue, Albuquerque, New Mexico, 1985",
+      "caption_verification": "transcribed from user-supplied image; not independently verified",
+      "period_note": "Caption date is within or before game year 1986; precise construction history not established",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM08",
+      "batch": 2,
+      "upload_name": "1000053757.jpg",
+      "local_path": "originals/08-park-plaza-motel-raton-1984.jpg",
+      "size_bytes": 170938,
+      "dimensions": [
+        1280,
+        974
+      ],
+      "sha256": "b1b1eedef68b6a8f5c922455cb0d2cf78158ab016d6191f59793674dc0c91625",
+      "visual_review": "reviewed",
+      "visible_caption": "Park Plaza Motel, Raton, New Mexico, 1984",
+      "caption_verification": "transcribed from user-supplied image; not independently verified",
+      "period_note": "Caption date is within or before game year 1986; precise construction history not established",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM09",
+      "batch": 2,
+      "upload_name": "1000053760.jpg",
+      "local_path": "originals/09-sparks-office-supply-carlsbad-1994.jpg",
+      "size_bytes": 95906,
+      "dimensions": [
+        1280,
+        956
+      ],
+      "sha256": "405641aed2fe9c178fddd10605672cba5a66d5fae2fff88a8ce9bf4b58bebb9c",
+      "visual_review": "reviewed",
+      "visible_caption": "Sparks Office Supply Co., Carlsbad, New Mexico, 1994",
+      "caption_verification": "transcribed from user-supplied image; not independently verified",
+      "period_note": "Photograph caption dates this to 1994, after game year 1986",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM10",
+      "batch": 2,
+      "upload_name": "1000053763.jpg",
+      "local_path": "originals/10-kimo-theater-albuquerque-1980.jpg",
+      "size_bytes": 158593,
+      "dimensions": [
+        1280,
+        1096
+      ],
+      "sha256": "682bc94f156c56469612ee087c1ce77d310a7b6665aa33458be6da00570ee401",
+      "visual_review": "reviewed",
+      "visible_caption": "Kimo Theater, Albuquerque, New Mexico, 1980",
+      "caption_verification": "transcribed from user-supplied image; not independently verified",
+      "period_note": "Caption date is within or before game year 1986; precise construction history not established",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM11",
+      "batch": 3,
+      "upload_name": "1000053767.jpg",
+      "local_path": "originals/11-politisedan-detaljreferanse-nyere-foto.jpg",
+      "size_bytes": 152612,
+      "dimensions": [
+        1280,
+        828
+      ],
+      "sha256": "39ad1552721a4c6cc9290ffc51dfe9347730616d976970a56fbbe875161b4f8a",
+      "visual_review": "reviewed",
+      "period_note": "Eldre politibil i nyere fotografi. Synlig kreditering rwcar4 ©2015; moderne bakgrunn. New Mexico, bilårgang og 1986-oppsett er ikke bekreftet.",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM12",
+      "batch": 3,
+      "upload_name": "1000053766.jpg",
+      "local_path": "originals/12-gate-overdekket-arkade-biler.jpg",
+      "size_bytes": 161794,
+      "dimensions": [
+        1280,
+        817
+      ],
+      "sha256": "015718bc5fd94b878bc43409e072c20a3f798bdc636ca82739191b0f79b998e0",
+      "visual_review": "reviewed",
+      "period_note": "Sted og dato ikke verifisert. Brukes for arkade, skala, skygger og gatefunksjon.",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM13",
+      "batch": 3,
+      "upload_name": "1000053765.jpg",
+      "local_path": "originals/13-kirke-pusset-fasade-steinlagt-adkomst.jpg",
+      "size_bytes": 129544,
+      "dimensions": [
+        1034,
+        1280
+      ],
+      "sha256": "a00076ea50cd18cc684474e9c59f4fd163310a5efd00e28354ae415835fd9264",
+      "visual_review": "reviewed",
+      "period_note": "Synlig kirkebetegnelse er referansetekst, ikke selvstendig identifisering av bygning/sted eller datering.",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    },
+    {
+      "id": "NM14",
+      "batch": 3,
+      "upload_name": "1000053764.jpg",
+      "local_path": "originals/14-gatemiljo-arkader-skraparkering.jpg",
+      "size_bytes": 140648,
+      "dimensions": [
+        1280,
+        850
+      ],
+      "sha256": "b6d95927e25dbfdf1cdbc532e18870c2137bd29312ace396e31bf4a310f08f55",
+      "visual_review": "reviewed",
+      "period_note": "Sted, dato og kjøretøyenes eksakte årsmodeller er ikke verifisert.",
+      "transformations": "none",
+      "rights": "not established; do not publish raw image or ship as an asset"
+    }
+  ],
+  "updated_at": "2026-10-27T10:47:21.152439+01:00",
+  "duplicate_uploads": [
+    {
+      "batch": 3,
+      "upload_name": "1000053763.jpg",
+      "duplicate_of": "NM10",
+      "sha256": "682bc94f156c56469612ee087c1ce77d310a7b6665aa33458be6da00570ee401",
+      "action": "reused existing byte-identical original; no duplicate copy"
+    }
+  ],
+  "counts": {
+    "batches": 3,
+    "uploads": 15,
+    "unique_original_files": 14,
+    "photographic_motifs": 15,
+    "byte_identical_duplicate_uploads": 1
+  }
+}

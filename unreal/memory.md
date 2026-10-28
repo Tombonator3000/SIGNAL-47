@@ -1,10 +1,42 @@
+## Fotolab levert, 28. oktober 2026 kl.01:15 CET
+
+Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pull/181), merge `8c70ecb69f24bae15197e31bab95c924e1fd18e5`, og identisk testet pakke er installert i `/home/tom/Games/Signal47/Linux`. Ti originale detaljdeler, PBR, tre LOD og redigerbar Blender-kilde følger med. Hele matrisen består 110/110 etter én kjøring. Installert Low-fremkalling og ny prosess med Continue fra faktisk disk består; begge bilder er vurdert. Alle 50 personlige Saved-filer er uendret. Motel R4, SC01, MetaHuman og godkjent atmosfære er bevart. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Claudes fem TB2-bygninger i PR179 er fortsatt separate kilder uten native integrasjon i denne leveransen.
+
 # Minne for unreal/
+
+## Gjeldende levering, 27. oktober 2026 kl. 23:19 CET
+
+Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.
+
+Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 kontroller, inklusive tre faktiske taleklipp, pause og diskrestore. Bildet etter restore er åpnet og vurdert. Alle 50 personlige Saved-filer er uendret fra oppdragets start. Dette er automatiserte kontroller og bildevurdering, ikke menneskelig gjennomspilling eller en helspill-/FPS-garanti. Se [motelrapporten](MOTEL_V2.md). Tidligere utsagn nedenfor om at SC01 ikke er standard eller at PR172 venter, er historikk. Ingen ny spillutgave er publisert.
 
 ## Grenene, 27. oktober 2026
 
 - PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110) da; 27.10 kl. 19:15 består den 110 av 110 på main pluss SC01.
 - `unreal-port-core` var avtalt integrasjonsgren for historiearbeidet (`HISTORIE_IMPLEMENTERINGSPLAN.md`), så PR #147 til #166 og #168 gikk dit med vilje. Main fikk det meste fordi grenen til PR #167 var laget fra `unreal-port-core` (til `41430ade`). #163, #164, #165, #166 og #168 kom etter det, og ingen flettet grenen videre, så SC01, planen og rapportene for SC01, T02 og NP1 ble igjen der. Loggpunktet kl. 14:53 og første utgave av regelen kalte det feil gren. Det var feil, og er rettet kl. 17:25.
 - Toms beslutning: alle PR-er går mot main, og grunnlagsgrenen sjekkes før fletting (`AGENTS.md`). Flettingen er gjort på `ccr-30e38858-767d90` med PR mot main (konflikter løst, generatoren kjørt). 27.10 er editor og pakke bygget på Kubuntu, og SC01-kontrollene, HorrorStory-testene, hele `screenshots.sh` og gamle lagringer består (loggen kl. 19:20). SC01-R4 hadde ingen kode- eller assetrettelser i git utover `dbae3177`; bilens RT-LOD i gitignorert `Content/Free` må finnes lokalt ved pakking (lages av `Tools/freemodels/rt_lods.py`). SC01 er ikke installert som standard.
+
+## Atmosfærepass ferdig, 2026-10-27 kl. 13:12 CET
+
+- Gjeldende lokale standard er atmosfære-R1 med MetaHuman bevart. 1 435 sub-12cm steiner har ikke direkte skygge; større steiner/planter/bygg og modellavstander er beholdt. Grass_A/B bruker egen svak WPO, uten endring av den delte tre-/buskmatten eller eksisterende runtimeflora.
+- Kveldens lydmodell hadde feil kulde før kl. 21 og et temperaturhopp. Kontinuerlig kveld og myk nattfase er rettet; eksisterende nattkurve, innendørsdemping og historieporter beholdes. Sju nye regresjoner består i samlet 1 593-selvtest.
+- Fem målrettede Vulkan-prøver og sju kandidatbilder består. FSSS forblir av etter faktisk bilde-/GPU-sammenligning: omtrent 0,34 ms ekstra uten tydelig bildeutbytte. Småsteinssammenligningen ga bare 0,065 ms forskjell, ingen robust helrute-/FPS-gevinst hevdes. Se [rapport](ATMOSPHERE_2026-10-27.md).
+- R1 er installert byteidentisk. Standardstarter på Low består ni kontroller med tre faktiske replikkklipp, pause, ansiktsrigg og diskrestore. Alle 70 personlige Saved-noder/50 filer er uendret. Canonical prune har pensjonert to eldre mellompakker; R1, to gamle fungerende R3-kopier og beskyttet SC01-R4 beholdes. Kilder/assets/Saved/bevis bevares.
+- MetaHuman og punkt 5 er ferdig levert lokalt. Oppfølgingen er slettet i appen; samtalen er beholdt. Ikke gjenstart Claude, gjør dobbel implementering eller publiser ny spillutgave automatisk. Finere figur-/diner-/motelpolering og separat SC01 er egne senere arbeider.
+
+## MetaHuman levert lokalt, 27.10.2026 kl. 12:32 CET
+
+- Codex overtok etter Toms direkte bestilling. Gamle Claude-økter og ventere er avsluttet med kildene sikret. Gjeldende status er `metahuman_delivered` i `~/scratch-bm/Signal47-metahuman-20261026/takeover-codex/ownership.json`. Ingen annen motorjobb ble stoppet.
+- R3 har fungerende MetaHuman med egen uniform, synlig rigid hårkortfrisyre, pust/blikk/blunk og tale på riktig aktive lydklipp. Kurver kopieres fra Body til Face/RigLogic. Alle 43 takes er assetvalidert; tre faktiske velkomstreplikker, pause og diskrestore med én figur er målt i pakket spill. Se [rapporten](METAHUMAN_WAITRESS.md).
+- Samme R3 er installert i standardstarteren. 68 payloadnoder og alle 70 personlige Saved-noder/50 filer er kontrollert; installert Low-oppstart består åtte kontroller. Fem High-bilder er faktisk åpnet. Ingen menneskelig input-/lytte-/FPS-påstand, full merge-matrise, ny release eller GitHub-merge.
+- Fem eldre genererte payloadsett er canonical-prunet. R3 og to eldre MetaHuman-pakker beholdes; SC01-R4 er særskilt beskyttet. Originaler, råassets, Saved, logger og bilder er bevart.
+- Gammel `integrate.py --apply` er sperret for å hindre overskriving fra gammel staging. Videre klær-/portrett-/gestepolering er åpent. Avtalt automatisk neste arbeid er punkt 5 atmosfære og ytelsesrom, med SC01, historie, dag/natt og Saved bevart.
+
+## Linux-nedlasting publisert, 26. oktober 2026 kl. 22:54 CET
+
+- [Testutgave 26. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-26) er publisert etter Toms bestilling for andre Linux-PC-er. To vanlige ZIP-er pakkes ut til samme Signal47-Linux-mappe; Play.sh starter spillet, Play-Low.sh gir Low/Clean/720p. Begge arkivene og tre metadatafiler er faktisk tilgjengelige uten innlogging.
+- Kandidat og installert runtime er hashidentiske med terreng-R2. 43 leverte filer er dekomprimert og SHA256-kontrollert, og GitHubs fem assetdigester/størrelser stemmer. Arkiver: 1 468 082 463 og 2 003 099 541 byte. Ingen Saved, cache, debug eller råassets følger med. Ingen ny motorjobb eller mottakermaskinprøve. Bevis/leveringsverktøy: /home/tom/scratch-bm/Signal47-download-2026-10-26.
+- PR170 er faktisk flettet 26. oktober kl. 22:15 CET, merge 0ee7c248033773907d4113c454432a7534819b4b. Den tidligere ventestatusen nedenfor er historikk. Fullmatrisen ble ikke kjørt på nytt; MetaHuman-prioriteringen er bevart. Nedlastingstaggen peker til denne mergen.
 
 ## GitHub-levering klargjort, 26. oktober 2026
 
@@ -514,3 +546,23 @@ Installert i ~/Games/Signal47/Linux med 40 kontrollerte payloadhash og 51 Saved-
 - Eksisterende flora-krymping beholdes; usynlige instanser utelates.57 hovedstolper mot 82; 65 m spenn med faste avgreninger. Ingen FPS-garanti.
 - P1 elleve forløp og P2 målrettet sluttkontroll/1405 selvtester/36 vurderte bilder PASS. P2 avviker bare i rendertrim/audit; øvrige testinnganger er hashkontrollert. Samme P2 installert, 40 payloadhash og 40 uendrede Saved-filer; installert smoke PASS. Se VISITOR_PARKING.md og scratch-bm/Signal47-visitor-fix.
 - AGENTS.md og prune-test-builds.py gir gjeldende+to eldre testpakker. To gamle payloadkopier pensjonert, kilder/Saved/bevis bevart. Fysisk Xbox, full 110 og menneskelig fullnatt/lytting er uprøvd.
+
+
+## Privat Windows-byggpakke, 27. oktober 2026
+
+Tom aksepterte bygging på jobb-PC med Windows. Privat kilde-/innholds-ZIP fra terreng-R2 er levert på egen Drive: https://drive.google.com/file/d/15j_9gE8UQdCMEnGH_thU4_An7YkHRcrY/view?usp=drivesdk . 6 526 897 000 byte, faktisk nedlastbar og eierprivat. Dette er IKKE en ferdig Windows-spillutgave. Windows-kompilering/cook/oppstart/spilling er ikke prøvd. Brukeren må installere Unreal Engine 5.8.4 og MSVC/Windows SDK og kjøre Build-Windows.cmd i utpakket mappe. Kilde og 463 frosne assets er kontrollert; bare leveringskopien har Win64/DX12 SM6-tilpasning. Uferdig MetaHuman er ikke med. Gjeldende Linux-spill og personlige lagringer er uendret. Detaljer i log.md og /home/tom/Documents/ChatGPT/Signal 47/windows-byggpakke/delivery.json.
+
+
+## Fotoreferanser fra Tom, mottatt 27. oktober 2026
+
+Samlingen ArtSource/References/NewMexico-1980s-2026-10-27 er ferdig mottatt foreløpig: 14 unike originaler fra 15 opplastinger, med README og manifest. Brukes til Sierra, Mesa Diner, Caliche-fasader, gatefunksjon og kjøretøydetaljer. Originaler er lokalt Git-ignorert og skal ikke publiseres eller brukes direkte som spillteksturer. Skill flatskjerm/1994-/©2015-detaljer fra 1986. Bevar tydelige innganger, overdekkede gangveier, praktisk parkering og faktiske materialoverganger.
+
+
+## Reposamling, 2026-10-27 kl. 14:46 CET
+
+Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2cc91a` er samlet på `codex/local-deliveries-design-bible-20261027`. Se [samlet indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md). PDF er byteidentisk; kilder/bildeavhengigheter er med og identiske assets deduplisert. Ny MetaHuman-/atmosfærekode, egne verktøy og runtimebilder inkluderes. NP1/T02/SC01-kvitteringer arkiveres; SC01s dbae3177 er allerede på GitHub, men er ikke integrert i dagens main-baserte bygg. Ingen eldre runtime overskriver nyere levering. Lisensierte råassets, rålogger/private chatter og Saved utelates. Filhash/lenker kontrolleres; ingen ny tung jobb eller spillrelease. Full 110-matrise gjenstår før main-merge av samlet runtime.
+
+
+## Reposamling publisert, 2026-10-27 kl. 14:48 CET
+
+[PR 172](https://github.com/Tombonator3000/SIGNAL-47/pull/172) er opprettet som utkast og knyttet til samtalen. Kildegren er pushet. Indeks og 42-siders PDF er anonymt nedlastet fra GitHub med HTTP 200; PDF-hash er identisk etter overføring. Python/JSON, 68 designmanifest-hash, 173 tilleggspekere/kopier og inngangslenker består. Full 110-matrise/main-merge og ny spillutgave er ikke utført. Kun rå testlogger og axis_probe-diagnostikk står igjen lokalt ustaget.

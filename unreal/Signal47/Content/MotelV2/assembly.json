@@ -1,0 +1,1147 @@
+{
+  "version": 1,
+  "retire_native": [
+    "SM_Town_Motel_Shell",
+    "SM_Town_Motel_Glass",
+    "SM_Town_Motel_Office",
+    "SM_Town_Motel_Fixtures"
+  ],
+  "retire_nodes": [
+    {
+      "node": 26,
+      "geo": 19,
+      "parent": 25
+    },
+    {
+      "node": 27,
+      "geo": 20,
+      "parent": 25
+    },
+    {
+      "node": 28,
+      "geo": 21,
+      "parent": 25
+    }
+  ],
+  "retire_props": [
+    "motelBlade",
+    "motelNeon"
+  ],
+  "disable_colliders": [
+    [
+      -41.43,
+      -41.17,
+      671.87,
+      672.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      677.87,
+      678.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      682.87,
+      683.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      687.87,
+      688.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      692.87,
+      693.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      697.87,
+      698.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      702.87,
+      703.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      707.87,
+      708.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      712.87,
+      713.13
+    ],
+    [
+      -41.43,
+      -41.17,
+      718.87,
+      719.13
+    ],
+    [
+      -38.89,
+      -36.709999999999994,
+      682.21,
+      686.99
+    ],
+    [
+      -37.07,
+      -31.13,
+      699.33,
+      711.67
+    ],
+    [
+      -34.239999999999995,
+      -33.760000000000005,
+      679.76,
+      680.24
+    ],
+    [
+      -32.04,
+      -31.560000000000002,
+      679.76,
+      680.24
+    ],
+    [
+      -39.35,
+      -33.45,
+      692.475,
+      694.525
+    ],
+    [
+      -39.878758093012216,
+      -34.321241906987794,
+      712.5179623406941,
+      714.6820376593058
+    ]
+  ],
+  "add_colliders": [
+    [
+      -41.27,
+      -41.03,
+      671.88,
+      672.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      679.88,
+      680.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      684.88,
+      685.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      689.88,
+      690.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      694.88,
+      695.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      699.88,
+      700.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      704.88,
+      705.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      709.88,
+      710.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      714.88,
+      715.12
+    ],
+    [
+      -41.27,
+      -41.03,
+      719.88,
+      720.12
+    ],
+    [
+      -41.77,
+      -41.29,
+      669.815,
+      670.245
+    ],
+    [
+      -41.77,
+      -41.29,
+      668.155,
+      668.585
+    ],
+    [
+      -64.96,
+      -64.84,
+      665.84,
+      682.96
+    ],
+    [
+      -64.96,
+      -53.84,
+      665.84,
+      665.96
+    ],
+    [
+      -64.96,
+      -53.84,
+      682.84,
+      682.96
+    ],
+    [
+      -53.96,
+      -53.84,
+      681.3,
+      682.96
+    ],
+    [
+      -53.96,
+      -53.84,
+      665.84,
+      679.9
+    ],
+    [
+      -54.34,
+      -53.84,
+      681.36,
+      682.66
+    ],
+    [
+      -61.0,
+      -56.8,
+      669.8,
+      678.0
+    ],
+    [
+      -63.7,
+      -62.9,
+      673.9,
+      675.9
+    ],
+    [
+      -63.7,
+      -62.9,
+      670.9,
+      672.9
+    ],
+    [
+      -60.8,
+      -59.8,
+      680.85,
+      681.85
+    ]
+  ],
+  "add_zones": [
+    [
+      -64.9,
+      -53.9,
+      665.9,
+      682.9
+    ],
+    [
+      -54.5,
+      -52.6,
+      669.9,
+      681.4
+    ],
+    [
+      -53.9,
+      -40.9,
+      669.9,
+      671.5
+    ]
+  ],
+  "floors": [
+    {
+      "rect": [
+        -64.9,
+        -61.0,
+        665.9,
+        682.9
+      ],
+      "y": -2.0385683853163195
+    },
+    {
+      "rect": [
+        -56.8,
+        -53.9,
+        665.9,
+        682.9
+      ],
+      "y": -2.0385683853163195
+    },
+    {
+      "rect": [
+        -61.0,
+        -56.8,
+        678.0,
+        682.9
+      ],
+      "y": -2.0385683853163195
+    },
+    {
+      "rect": [
+        -61.0,
+        -56.8,
+        665.9,
+        669.8
+      ],
+      "y": -2.0385683853163195
+    },
+    {
+      "rect": [
+        -53.8,
+        -52.6,
+        669.9,
+        681.4
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "rect": [
+        -53.9,
+        -40.9,
+        669.9,
+        671.5
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "rect": [
+        -54.0,
+        -53.6,
+        679.8,
+        681.4
+      ],
+      "y": -2.0985683853163195
+    }
+  ],
+  "car_positions": {
+    "motelCar1": [
+      -37.45,
+      -2.0985683853163195,
+      683.7
+    ],
+    "motelCar2": [
+      -37.45,
+      -2.0985683853163195,
+      703.9
+    ],
+    "motelCar3": [
+      -37.45,
+      -2.0985683853163195,
+      712.9
+    ]
+  },
+  "parts": {
+    "SM_Sierra_CourtDetail": {
+      "asset": "/Game/MotelV2/SM_Sierra_CourtDetail.SM_Sierra_CourtDetail",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        11756,
+        5878,
+        2586,
+        236
+      ],
+      "bounds_local_m": [
+        [
+          -8.0,
+          -44.8587532043457,
+          -0.11999999731779099
+        ],
+        [
+          15.293654441833496,
+          5.0,
+          0.11749999970197678
+        ]
+      ]
+    },
+    "SM_Sierra_CourtSurface": {
+      "asset": "/Game/MotelV2/SM_Sierra_CourtSurface.SM_Sierra_CourtSurface",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        188,
+        94,
+        40,
+        40
+      ],
+      "bounds_local_m": [
+        [
+          5.099999904632568,
+          -47.0,
+          -0.30000001192092896
+        ],
+        [
+          15.69999885559082,
+          7.0,
+          -0.07999999821186066
+        ]
+      ]
+    },
+    "SM_Sierra_Glass": {
+      "asset": "/Game/MotelV2/SM_Sierra_Glass.SM_Sierra_Glass",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        440,
+        220,
+        96,
+        96
+      ],
+      "bounds_local_m": [
+        [
+          0.7950000166893005,
+          -42.82500076293945,
+          0.17500001192092896
+        ],
+        [
+          2.305999994277954,
+          3.7244999408721924,
+          2.0850000381469727
+        ]
+      ]
+    },
+    "SM_Sierra_GlowExterior": {
+      "asset": "/Game/MotelV2/SM_Sierra_GlowExterior.SM_Sierra_GlowExterior",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        1316,
+        658,
+        288,
+        64
+      ],
+      "bounds_local_m": [
+        [
+          2.575000047683716,
+          -40.18499755859375,
+          2.240000009536743
+        ],
+        [
+          2.705000162124634,
+          -5.014999866485596,
+          2.43999981880188
+        ]
+      ]
+    },
+    "SM_Sierra_GlowOffice": {
+      "asset": "/Game/MotelV2/SM_Sierra_GlowOffice.SM_Sierra_GlowOffice",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        376,
+        188,
+        82,
+        82
+      ],
+      "bounds_local_m": [
+        [
+          0.0949999988079071,
+          -0.8849999904632568,
+          2.4149999618530273
+        ],
+        [
+          2.7014999389648438,
+          1.2850000858306885,
+          2.6649999618530273
+        ]
+      ]
+    },
+    "SM_Sierra_GlowRoom06": {
+      "asset": "/Game/MotelV2/SM_Sierra_GlowRoom06.SM_Sierra_GlowRoom06",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        188,
+        94,
+        40,
+        40
+      ],
+      "bounds_local_m": [
+        [
+          2.575000047683716,
+          -30.184999465942383,
+          2.240000009536743
+        ],
+        [
+          2.705000162124634,
+          -30.01500129699707,
+          2.43999981880188
+        ]
+      ]
+    },
+    "SM_Sierra_GlowSign": {
+      "asset": "/Game/MotelV2/SM_Sierra_GlowSign.SM_Sierra_GlowSign",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        20368,
+        10184,
+        4480,
+        408
+      ],
+      "bounds_local_m": [
+        [
+          4.644999980926514,
+          4.215219974517822,
+          3.581662654876709
+        ],
+        [
+          4.690999984741211,
+          7.2052202224731445,
+          4.875522613525391
+        ]
+      ]
+    },
+    "SM_Sierra_Office": {
+      "asset": "/Game/MotelV2/SM_Sierra_Office.SM_Sierra_Office",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        276425,
+        138211,
+        60813,
+        5529
+      ],
+      "bounds_local_m": [
+        [
+          -6.75,
+          -4.065000057220459,
+          -0.17000000178813934
+        ],
+        [
+          5.405448913574219,
+          3.7327001094818115,
+          4.25499963760376
+        ]
+      ]
+    },
+    "SM_Sierra_Planting": {
+      "asset": "/Game/MotelV2/SM_Sierra_Planting.SM_Sierra_Planting",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        2408,
+        1204,
+        529,
+        64
+      ],
+      "bounds_local_m": [
+        [
+          -1.7951596975326538,
+          -16.487377166748047,
+          -0.1599999964237213
+        ],
+        [
+          6.9412431716918945,
+          7.3893890380859375,
+          1.0047216415405273
+        ]
+      ]
+    },
+    "SM_Sierra_PoolDeck": {
+      "asset": "/Game/MotelV2/SM_Sierra_PoolDeck.SM_Sierra_PoolDeck",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        58274,
+        29136,
+        12820,
+        1166
+      ],
+      "bounds_local_m": [
+        [
+          -18.999998092651367,
+          -7.999999046325684,
+          -1.7200000286102295
+        ],
+        [
+          -7.999996662139893,
+          9.00000286102295,
+          0.9735332131385803
+        ]
+      ]
+    },
+    "SM_Sierra_PoolFence": {
+      "asset": "/Game/MotelV2/SM_Sierra_PoolFence.SM_Sierra_PoolFence",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        21024,
+        10511,
+        4625,
+        420
+      ],
+      "bounds_local_m": [
+        [
+          -19.053998947143555,
+          -8.053998947143555,
+          0.06000000238418579
+        ],
+        [
+          -7.9459967613220215,
+          9.05400276184082,
+          1.3399999141693115
+        ]
+      ]
+    },
+    "SM_Sierra_PoolFurniture": {
+      "asset": "/Game/MotelV2/SM_Sierra_PoolFurniture.SM_Sierra_PoolFurniture",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        39520,
+        19760,
+        8694,
+        791
+      ],
+      "bounds_local_m": [
+        [
+          -18.741254806518555,
+          -8.02299690246582,
+          -0.1499999761581421
+        ],
+        [
+          -9.144998550415039,
+          10.596502304077148,
+          1.3399999141693115
+        ]
+      ]
+    },
+    "SM_Sierra_PoolWater": {
+      "asset": "/Game/MotelV2/SM_Sierra_PoolWater.SM_Sierra_PoolWater",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        12,
+        6,
+        2,
+        2
+      ],
+      "bounds_local_m": [
+        [
+          -14.994997024536133,
+          -2.994997978210449,
+          -0.1459999978542328
+        ],
+        [
+          -11.004997253417969,
+          4.995002269744873,
+          -0.1340000033378601
+        ]
+      ]
+    },
+    "SM_Sierra_RoofShell": {
+      "asset": "/Game/MotelV2/SM_Sierra_RoofShell.SM_Sierra_RoofShell",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        1504,
+        752,
+        330,
+        64
+      ],
+      "bounds_local_m": [
+        [
+          -6.75,
+          -45.599998474121094,
+          0.0
+        ],
+        [
+          5.207499980926514,
+          3.3999996185302734,
+          3.490000009536743
+        ]
+      ]
+    },
+    "SM_Sierra_Room01": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room01.SM_Sierra_Room01",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        57964,
+        28982,
+        12752,
+        1160
+      ],
+      "bounds_local_m": [
+        [
+          -3.754999876022339,
+          -8.079999923706055,
+          -0.17000000178813934
+        ],
+        [
+          5.183000087738037,
+          -3.5719997882843018,
+          3.8350000381469727
+        ]
+      ]
+    },
+    "SM_Sierra_Room02": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room02.SM_Sierra_Room02",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        54176,
+        27088,
+        11917,
+        1083
+      ],
+      "bounds_local_m": [
+        [
+          -3.8400001525878906,
+          -13.079999923706055,
+          -0.17000000178813934
+        ],
+        [
+          5.183000087738037,
+          -6.534999847412109,
+          3.5500001907348633
+        ]
+      ]
+    },
+    "SM_Sierra_Room03": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room03.SM_Sierra_Room03",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        66512,
+        33256,
+        14632,
+        1330
+      ],
+      "bounds_local_m": [
+        [
+          1.6349999904632568,
+          -18.764999389648438,
+          -0.17000000178813934
+        ],
+        [
+          5.405448913574219,
+          -11.434999465942383,
+          3.5500001907348633
+        ]
+      ]
+    },
+    "SM_Sierra_Room04": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room04.SM_Sierra_Room04",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        52364,
+        26182,
+        11520,
+        1048
+      ],
+      "bounds_local_m": [
+        [
+          -3.8400001525878906,
+          -23.665000915527344,
+          -0.17000000178813934
+        ],
+        [
+          5.183000087738037,
+          -17.57200050354004,
+          3.5500001907348633
+        ]
+      ]
+    },
+    "SM_Sierra_Room05": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room05.SM_Sierra_Room05",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        67488,
+        33744,
+        14846,
+        1350
+      ],
+      "bounds_local_m": [
+        [
+          -3.754999876022339,
+          -28.565000534057617,
+          -0.17000000178813934
+        ],
+        [
+          5.183000087738037,
+          -22.456998825073242,
+          3.8350000381469727
+        ]
+      ]
+    },
+    "SM_Sierra_Room06": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room06.SM_Sierra_Room06",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        50068,
+        25034,
+        11014,
+        1002
+      ],
+      "bounds_local_m": [
+        [
+          -3.8400001525878906,
+          -33.46500015258789,
+          -0.17000000178813934
+        ],
+        [
+          5.183000087738037,
+          -27.57200050354004,
+          3.5500001907348633
+        ]
+      ]
+    },
+    "SM_Sierra_Room07": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room07.SM_Sierra_Room07",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        65168,
+        32584,
+        14336,
+        1304
+      ],
+      "bounds_local_m": [
+        [
+          1.6349999904632568,
+          -38.3650016784668,
+          -0.17000000178813934
+        ],
+        [
+          5.405448913574219,
+          -32.457000732421875,
+          3.5500001907348633
+        ]
+      ]
+    },
+    "SM_Sierra_Room08": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room08.SM_Sierra_Room08",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        74362,
+        37180,
+        16358,
+        1488
+      ],
+      "bounds_local_m": [
+        [
+          -6.75,
+          -45.71500015258789,
+          -0.17000000178813934
+        ],
+        [
+          5.183000087738037,
+          -37.57200241088867,
+          3.5500001907348633
+        ]
+      ]
+    },
+    "SM_Sierra_Room6Lining": {
+      "asset": "/Game/MotelV2/SM_Sierra_Room6Lining.SM_Sierra_Room6Lining",
+      "parent_handle": "world.room6.group",
+      "site_world_three_m": [
+        0,
+        0,
+        -8000
+      ],
+      "lod_triangles": [
+        24640,
+        12320,
+        5420,
+        492
+      ],
+      "bounds_local_m": [
+        [
+          -2.249500036239624,
+          -2.99399995803833,
+          0.0
+        ],
+        [
+          2.249500036239624,
+          2.99399995803833,
+          2.5950000286102295
+        ]
+      ]
+    },
+    "SM_Sierra_Sign": {
+      "asset": "/Game/MotelV2/SM_Sierra_Sign.SM_Sierra_Sign",
+      "parent_handle": "world.motel.group",
+      "site_world_three_m": [
+        -45.9,
+        -2.0985683853163195,
+        674.9
+      ],
+      "lod_triangles": [
+        32272,
+        16136,
+        7098,
+        646
+      ],
+      "bounds_local_m": [
+        [
+          4.130000114440918,
+          3.8662919998168945,
+          0.0
+        ],
+        [
+          4.678999900817871,
+          7.533707618713379,
+          5.872488498687744
+        ]
+      ]
+    }
+  },
+  "patches": [
+    {
+      "node": 7,
+      "geo": 4,
+      "parent": 6,
+      "accepted_previous_tris": [
+        23040
+      ],
+      "result_tris": 23048,
+      "asset": "/Game/MotelV2/Trim/g4.g4",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 672,
+      "geo": 457,
+      "parent": 663,
+      "accepted_previous_tris": [
+        112
+      ],
+      "result_tris": 76,
+      "asset": "/Game/MotelV2/Trim/g457.g457",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 676,
+      "geo": 461,
+      "parent": 663,
+      "accepted_previous_tris": [
+        304
+      ],
+      "result_tris": 120,
+      "asset": "/Game/MotelV2/Trim/g461.g461",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 678,
+      "geo": 463,
+      "parent": 663,
+      "accepted_previous_tris": [
+        1908
+      ],
+      "result_tris": 92,
+      "asset": "/Game/MotelV2/Trim/g463.g463",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 679,
+      "geo": 464,
+      "parent": 663,
+      "accepted_previous_tris": [
+        4
+      ],
+      "result_tris": 2,
+      "asset": "/Game/MotelV2/Trim/g464.g464",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 682,
+      "geo": 467,
+      "parent": 663,
+      "accepted_previous_tris": [
+        24
+      ],
+      "result_tris": 0,
+      "asset": "",
+      "original_material_indices": [],
+      "hidden": true
+    },
+    {
+      "node": 768,
+      "geo": 528,
+      "parent": 767,
+      "accepted_previous_tris": [
+        6350
+      ],
+      "result_tris": 5318,
+      "asset": "/Game/MotelV2/Trim/g528.g528",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 769,
+      "geo": 529,
+      "parent": 767,
+      "accepted_previous_tris": [
+        658
+      ],
+      "result_tris": 654,
+      "asset": "/Game/MotelV2/Trim/g529.g529",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    },
+    {
+      "node": 953,
+      "geo": 663,
+      "parent": 952,
+      "accepted_previous_tris": [
+        12694
+      ],
+      "result_tris": 12704,
+      "asset": "/Game/MotelV2/Trim/g663.g663",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
+    }
+  ],
+  "provenance": {
+    "manifest_sha256": "f4e17d83b3f0978ad2849112f87b2d0015811f2ba6c422faeb4beecf9f16f003",
+    "trim_manifest_sha256": "1923a4d085bd1d534f90794d89b6f156d26958e7b62c5ed69625f1ff6d6dc03c",
+    "runtime_layout_sha256": "dd5e62af23da40b88a1dcfe4238ab18f1cf24dc8c4a0cbfe79b0deac9bda16e9",
+    "native_import_report_sha256": "804e934dc17742531828acd931e08e43a6b0f194a6cad7f8507b3350b4f8dbce",
+    "saved_native_report_sha256": "4ccd813e9cd9684a6c79e496e2bc8b62a1e7c6444873c4457f590f0d21a4426d"
+  }
+}

@@ -1,0 +1,15 @@
+# Bildeprompter og begrensninger
+
+Generert med innebygd imagegen 27. oktober 2026. Filene er originale konsepter, ikke runtimebilder eller oppmålte kart. Bygninger, skilt og biler kan inneholde genererte avvik; ekte/genererte merkenavn i bildene er ikke en instruks om bruk i spillet.
+
+## caliche-luftperspektiv.png
+
+> Use case: historical-scene. Production concept art for SIGNAL / 47 game design bible. Aerial oblique bird's-eye visualization of Caliche, a believable very small inhabited New Mexico desert town in April 1986, centered on a single two-way highway. In source layout Mesa Diner at one end, then gas station, sheriff, laundromat, cinema and feed store on one side; 1420 AM radio, souvenir shop and church on opposite side. Show recognizable individual low buildings, useful parking and believable narrow side/service roads, yards, dry washes, gravel, utility poles and natural desert shrubs. More organic street setbacks and plot depths; practical access and human scale. Low cream stucco, dusty faded teal and restrained muted red details. Photorealistic aerial architectural miniature quality, late afternoon with long shadows, subtle 1980s mood. Not a measured map; no labels, no text, no numbered markers, no UI, no UFOs, no cars blocking entrances. Wide landscape image.
+
+## saro-luftperspektiv.png
+
+> Use case: historical-scene. Production environment concept art for SIGNAL / 47 game design bible. Aerial oblique architectural visualization of SARO, a modest New Mexico radio observatory in 1986, situated amid dry desert and distant mesas, its familiar modest cream stucco operations buildings near a clearly readable visitor parking lot and real walkable entry, distinct functional service access and yard, with an array of radio dishes beyond. Differentiate public entry from working areas with gates and practical paths; ensure credible vehicle circulation and accessible doors, natural terrain blending, sparse shrubs. Overall palette weathered ivory stucco, dull institutional green, dusty ochre, graphite equipment. Restrained warm late afternoon light, realistic scale and materials; isolated working place, no futuristic architecture. Concept suggestion not a surveyed existing game layout. No labels, no text, no overlays, no visible aliens. Wide landscape.
+
+## caliche-kveld.png
+
+> Use case: historical-scene. Production environment concept art for SIGNAL / 47 design bible: street level architectural view of an inhabited little 1986 New Mexico town at blue-hour dusk, natural compact Caliche main street with low real stucco storefronts, a modest roadside diner, humble gas station, sheriff office and radio station, uneven setbacks and realistic usable parking and pedestrian sidewalk, telephone poles and native desert vegetation. Warm tungsten window glow, dusty cream, faded seafoam/teal, worn brick red, dark slate blue, restrained soft practical lighting. Photorealistic 35mm film mood, readable detail and believable building proportions, used and cared-for not abandoned, no modern vehicles/electronics, no text overlay, no monsters, no UFO. Wide landscape.

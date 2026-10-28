@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.bg{filter:blur(6px) brightness(.4);transform:scale(1.04)}
+.tint{position:absolute;inset:0;background:rgba(4,6,11,.6)}
+h2{position:absolute;left:110px;top:74px;font-family:Oswald;font-weight:500;font-size:56px;letter-spacing:2px;color:#f1ecdf}
+.id{position:absolute;right:110px;top:96px;font-family:VT;font-size:22px;color:#6f8f78;letter-spacing:2px}
+.cases{position:absolute;left:110px;right:110px;top:170px;display:flex;gap:28px}
+.case{flex:1;border:1px solid rgba(235,227,207,.14);background:rgba(8,11,19,.88);padding:18px 18px 16px}
+.case.sel{border-color:var(--amber);box-shadow:0 0 0 1px rgba(255,176,82,.4),0 0 40px rgba(255,176,82,.08)}
+.case .n{font-family:VT;font-size:30px;letter-spacing:3px;color:var(--amber)}
+.case .n span{float:right;color:#6c665b;font-size:22px;padding-top:6px}
+.shot{position:relative;margin:12px 0 12px;aspect-ratio:16/9;background:#020306;border:1px solid rgba(235,227,207,.12);overflow:hidden}
+.shot img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.15) contrast(1.05)}
+.shot .ts{position:absolute;right:8px;bottom:6px;font-family:VT;font-size:20px;color:#f4f1e8;text-shadow:1px 0 0 rgba(255,60,60,.6),-1px 0 0 rgba(60,200,255,.5)}
+.ch{font-family:Oswald;font-weight:500;font-size:24px;letter-spacing:1px;color:#f1ecdf}
+.sub{font-size:15px;color:#a39e92;margin-top:4px;line-height:1.5}
+.auto{margin-top:14px;border-top:1px solid rgba(235,227,207,.1);padding-top:10px;font-family:VT;font-size:21px;color:#8f8a7e;letter-spacing:1px;line-height:1.45}
+.auto b{font-weight:normal;color:#cfc8b7}
+.empty .shot{display:flex;align-items:center;justify-content:center;font-family:VT;font-size:26px;color:#4d483f;letter-spacing:3px}
+</style></head><body>
+<div class="bg" style="background-image:url(title-bg.png)"></div><div class="tint"></div>
+<h2>LOAD CASE</h2><div class="id">CASE FILES // SARO ARCHIVE</div>
+<div class="cases">
+ <div class="case sel"><div class="n">CASE 1 <span>1 H 12 MIN</span></div>
+  <div class="shot"><img src="thumb-room.jpg"><div class="ts">03:12</div></div>
+  <div class="ch">CHAPTER TWO · THE AMENDED RECORD</div><div class="sub">Control room, SARO · saved today 11:02</div>
+  <div class="auto"><b>AUTO</b> 03:05 · ARCHIVE ROOM<br><b>AUTO</b> 02:51 · SERVICE YARD<br><b>AUTO</b> 02:40 · CONTROL ROOM</div></div>
+ <div class="case"><div class="n">CASE 2 <span>3 H 40 MIN</span></div>
+  <div class="shot"><img src="thumb-outside.jpg"><div class="ts">04:47</div></div>
+  <div class="ch">CHAPTER FOUR · ROOM 6</div><div class="sub">Motel court · saved yesterday 23:18</div>
+  <div class="auto"><b>AUTO</b> 04:44 · MOTEL COURT<br><b>AUTO</b> 04:35 · ROAD B</div></div>
+ <div class="case empty"><div class="n">CASE 3 <span></span></div>
+  <div class="shot">NO TAPE</div>
+  <div class="ch" style="color:#6c665b">EMPTY</div><div class="sub">A new night starts here.</div></div>
+</div>
+<div class="keys" style="left:110px"><span><b>← →</b>CASE</span><span><b>↑ ↓</b>SAVE</span><span><b>ENTER</b>LOAD</span><span><b>DEL</b>ERASE</span><span><b>ESC</b>BACK</span></div>
+<div class="scan"></div>
+</body></html>

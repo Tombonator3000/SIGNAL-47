@@ -2,6 +2,7 @@
 #include "S47Web.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47Person.h"
 #include "S47Startup.h"
 #include "S47Three.h"
 #include "S47Walker.h"
@@ -104,6 +105,7 @@ void AS47Web::BuildMesaDiner()
  SignProxy.SetPosition(FVector(SignBox.Max.X-Origin.X+.025,SignBox.GetCenter().Y-Origin.Y,SignBox.GetCenter().Z-Origin.Z));
  SignProxy.SetScale(FVector(.08/.17,SignBox.GetSize().Y/1.3,SignBox.GetSize().Z/5.9));
  bMesaDinerReady=true;
+ S47Waitress::Attach(this); // MetaHuman waitress when the local assets exist
  UE_LOG(LogS47MesaDiner,Display,TEXT("S47: Mesa Diner ready: 11 native parts, 13 original proxies and 9 dynamic objects retained; %d obsolete walk boxes disabled; open door footprint %.3f %.3f %.3f %.3f"),Removed,Leaf.MinX,Leaf.MaxX,Leaf.MinZ,Leaf.MaxZ);
  if (!FParse::Param(FCommandLine::Get(),TEXT("S47MesaDinerAudit"))) return;
  struct FProbe { int32 Stage=0; double T=0,At=0; bool Done=false; };

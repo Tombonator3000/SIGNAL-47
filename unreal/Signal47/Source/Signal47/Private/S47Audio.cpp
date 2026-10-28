@@ -1,6 +1,7 @@
 // US47Audio: the context, the recordings, the prologue's names and the self test. The graphs of
 // core/Audio.ts are in S47AudioWeb.cpp.
 #include "S47Audio.h"
+#include "S47Ambience.h"
 
 #include "Camera/PlayerCameraManager.h"
 #include "Components/AudioComponent.h"
@@ -309,6 +310,7 @@ FString US47Audio::NormalizeReadingText(const FString& Text)
 bool US47Audio::SelfTest(TArray<FString>& Out)
 {
 	bool bAll = S47Wa::SelfTest(Out);
+	bAll &= FS47Ambience::SelfTest(Out);
 	auto Check = [&](bool bOk, const FString& What)
 	{
 		bAll &= bOk;

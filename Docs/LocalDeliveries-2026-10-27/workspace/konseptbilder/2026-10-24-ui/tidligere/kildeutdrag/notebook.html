@@ -1,0 +1,62 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.bg{filter:blur(5px) brightness(.38);transform:scale(1.04)}
+.book{position:absolute;left:150px;top:70px;width:1300px;height:770px;background:#3a2417;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.75),inset 0 0 0 3px #2a190f}
+.page{position:absolute;top:18px;bottom:18px;width:620px;background:#ece4cf;background-image:repeating-linear-gradient(180deg,transparent 0 33px,rgba(35,58,122,.17) 33px 34px);box-shadow:inset 0 0 40px rgba(120,95,50,.18)}
+.page.l{left:22px;border-radius:6px 0 0 6px;box-shadow:inset -18px 0 28px -16px rgba(60,40,20,.45),inset 0 0 40px rgba(120,95,50,.18)}
+.page.r{right:22px;border-radius:0 6px 6px 0;box-shadow:inset 18px 0 28px -16px rgba(60,40,20,.45),inset 0 0 40px rgba(120,95,50,.18)}
+.page.l:after{content:'';position:absolute;left:58px;top:0;bottom:0;width:1px;background:rgba(170,40,40,.35)}
+.rings{position:absolute;left:638px;top:40px;bottom:40px;width:24px;background:repeating-linear-gradient(180deg,transparent 0 22px,#9aa0a6 22px 30px,#5f656b 30px 32px,transparent 32px 46px)}
+.tabs{position:absolute;right:-46px;top:40px;display:flex;flex-direction:column;gap:6px}
+.tb{width:64px;height:58px;border-radius:0 8px 8px 0;font-family:VT;font-size:19px;letter-spacing:1px;color:#2c2418;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg);box-shadow:2px 2px 6px rgba(0,0,0,.35)}
+.tb.on{width:76px;margin-left:-12px;color:#120c05;font-weight:bold}
+.c1{background:#d7c7a0}.c2{background:#c9b48a}.c3{background:#bfc7a6}.c4{background:#d3b3a0}.c5{background:#c3c9cf}.c6{background:#e0c27a}.c7{background:#cfbfa9}.c8{background:#b9c2b0}
+.ph{position:absolute;left:84px;top:40px;font-family:Hand;font-size:52px;color:#233a7a;line-height:1}
+.ph2{position:absolute;left:86px;top:96px;font-family:VT;font-size:20px;letter-spacing:2px;color:#8a3b2c}
+.grid{position:absolute;left:84px;top:146px;right:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 16px}
+.it{position:relative;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:6px}
+.it img{max-width:120px;max-height:108px;filter:drop-shadow(0 5px 6px rgba(60,40,20,.35))}
+.it .n{font-family:Hand;font-size:27px;color:#233a7a;line-height:1;margin-top:4px}
+.it.sel{background:rgba(255,176,82,.16);outline:2px dashed rgba(138,59,44,.55);outline-offset:-4px}
+.it .tape{position:absolute;top:2px;width:54px;height:16px;background:rgba(235,225,190,.75);transform:rotate(-6deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.it.dim{opacity:.35}
+.big{position:absolute;left:60px;top:40px;width:250px;height:250px;display:flex;align-items:center;justify-content:center}
+.big img{max-width:240px;max-height:240px;filter:drop-shadow(0 10px 12px rgba(60,40,20,.4))}
+.rt{position:absolute;left:330px;top:58px;right:40px}
+.rt h3{font-family:Type;font-size:30px;color:var(--ink)}
+.rt .state{font-family:VT;font-size:22px;letter-spacing:2px;color:#a0332a;margin-top:6px}
+.rt .sub{font-family:Hand;font-size:30px;color:#233a7a;margin-top:10px;line-height:1.05}
+.desc{position:absolute;left:60px;right:44px;top:330px;font-family:Type;font-size:19px;line-height:34px;color:#25211a}
+.use{position:absolute;left:60px;bottom:40px;display:flex;gap:16px;font-family:VT;font-size:22px;color:#5d4f3a;letter-spacing:1px}
+.use b{font-weight:normal;color:#ece4cf;background:#5d4f3a;padding:0 7px;margin-right:6px}
+.close{position:absolute;right:36px;top:28px;font-family:VT;font-size:22px;color:#a39e92;letter-spacing:2px}
+.close b{font-weight:normal;border:1px solid #5d584e;color:var(--paper);padding:0 6px;margin-left:6px}
+.osd{font-size:28px}
+</style></head><body>
+<div class="bg" style="background-image:url(desk-bg.png)"></div>
+<div class="close">CLOSE<b>TAB</b></div>
+<div class="book">
+ <div class="page l">
+  <div class="ph">What I have on me</div><div class="ph2">KIT · 6 THINGS</div>
+  <div class="grid">
+   <div class="it"><span class="tape"></span><img src="kit_notebook.png"><span class="n">notebook</span></div>
+   <div class="it"><span class="tape"></span><img src="kit_jacket.png"><span class="n">SARO jacket</span></div>
+   <div class="it sel"><span class="tape"></span><img src="kit_camera.png"><span class="n">field camera</span></div>
+   <div class="it"><span class="tape"></span><img src="kit_keys.png"><span class="n">truck keys</span></div>
+   <div class="it"><span class="tape"></span><img src="kit_papers.png"><span class="n">papers (6)</span></div>
+   <div class="it dim"><span class="tape"></span><img src="kit_flashlight.png"><span class="n">flashlight?</span></div>
+  </div>
+ </div>
+ <div class="rings"></div>
+ <div class="page r">
+  <div class="big"><img src="kit_camera.png"></div>
+  <div class="rt"><h3>Field camera</h3><div class="state">0 CASE FRAMES · 36 OF 36 FREE</div><div class="sub">C raises it. Space takes the picture.</div></div>
+  <div class="desc">The SARO field camera. Sheet film for the case frames, anything else out of the instant back, into the album. The frame counter is set at 36.</div>
+  <div class="use"><span><b>C</b>RAISE</span><span><b>V</b>READ ALOUD</span></div>
+  <div class="tabs">
+   <div class="tb c1">TASKS</div><div class="tb c2">NOTES</div><div class="tb c3">FINDINGS</div><div class="tb c4">PAPERS</div><div class="tb c5">ALBUM</div><div class="tb c6">MAP</div><div class="tb c7 on">KIT</div><div class="tb c8">PEOPLE</div>
+  </div>
+ </div>
+</div>
+<div class="keys" style="left:150px"><span><b>Q E</b>TAB</span><span><b>← → ↑ ↓</b>CHOOSE</span><span><b>B</b>CASE BOARD</span><span><b>TAB</b>CLOSE</span></div>
+<div class="osd" style="right:56px;bottom:26px;font-size:26px">APR.13 1986&nbsp;&nbsp;23:58</div>
+</body></html>
