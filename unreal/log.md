@@ -975,3 +975,11 @@ SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister et
 ## 2026-10-28 kl.16:28 CET: SC02-lysbue klar for fletting
 
 Endelig R4 består samlet canonical110. Første del stoppet trygt før roof fordi SC03-editorbygg startet mellom spillprosessene; de 54 godkjente loggene/bildene er bevart, og bare 56 resterende ble kjørt. Begge originale kjørerapporter beholdes. T02, målrettet SC02/VFX og bildebevis er samlet i lysbuerapporten. Ingen ny spillkode etter den testede R4.
+
+## 2026-10-28 kl.16:42 CET: SC02-lysbue levert
+
+SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/pull/195), merge `66ae5948e262586e4c26c621dc6d109e6d950552`, og den identiske, aksepterte R4-pakken er installert i `/home/tom/Games/Signal47/Linux`. Hele matrisen består 110/110; den installerte Low-kontrollen består 14 kontroller og to disk-/Flow-restores. Bildet fra installert spill er vurdert. Alle 60 personlige Saved-filer (79 noder) er uendret. Ingen ny offentlig release.
+
+Canonical prune er kjørt med `--apply`: ingen filer skulle slettes. Gjeldende VFX-kandidat og to eldre payloads beholdes. SC01-R4, PR174 og Claudes aktive SC02-R2/R5 under SC03-arbeidet er uttrykkelig beskyttet. Kilder, assets, Saved og testbevis er bevart.
+
+Fullmatrisen ble fullført som 54+56 etter guard-pause, uten gjentakelse av beståtte prøver. Lokal installasjon ventet trygt på brukerens spillvinduer og SC03-editor. Installasjonskontrollen var isolert fra personlige lagringer. Denne oppfølgingen endrer bare dokumentasjon; ingen ny bygging eller fullmatrise er kjørt.
