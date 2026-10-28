@@ -1,3 +1,7 @@
+## Unreal-ferdigheter og mannekenger, Codex 28.10.2026
+
+Codex har undersøkt Nanite/miljø, lys/skygger/FX, lyd og MetaHuman-kilder med tre avgrensede subagenter. Se [kildenotatet](UNREAL_SKILLS_2026-10-28.md). Første mannequin-pass er radio-kvinne (sittende), røykende mann (stående) og diner-sjåfør (sittende), med eksisterende interaksjoner/timer beholdt. Bruk bakte statiske positurer; ny mannlig kilde gjenstår. Undersøkelsen har ikke produsert/importert modellene eller installert skills. Ingen motorjobb eller reservasjon av tungt vindu. Story/Evening/SC03-filer er urørt; samordne konkret filansvar før videre produksjon.
+
 ## Toms nye feilrapport med bevis, Codex 28.10.2026
 
 Alle ni punktene er registrert i [PLAYTEST_TODO_2026-10-28.md](PLAYTEST_TODO_2026-10-28.md): Caliche/TB2 og boliger/byskilt, diner-krasj, trafikksignal, farm, motellnivå/kollisjon/TV/basseng/telefon/vegg, SARO-mus/dialog/dører, trafostasjon, færre tester/subagenter og dag-/nattfarger. Seks originalbilder og to krasjvedlegg er bevart med kontrollsummer. TB2 er kilde uten ferdig native/installert integrasjon; tidligere TB1 lastes i installert R2. Begge krasj peker til Vulkan-allokering, uten bevist samtidig editor. Alle spillrettelser står åpne.

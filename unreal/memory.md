@@ -1,3 +1,7 @@
+## Unreal-ferdigheter og første MetaHuman-mannekenger, 28. oktober 2026
+
+Tom vil undersøke ferdigheter for FX, grafikk, lys, lyd og skygger, særlig Nanite i omgivelsene. Første personpass skal bruke stående/sittende MetaHuman-mannekenger i stedet for eksisterende lavpolyfigurer. [Kildegjennomgang og produksjonsretning](UNREAL_SKILLS_2026-10-28.md) og [mannequin-kontrakt](Signal47/Tools/metahuman/mannequins-plan.json) er lagret. Nanite brukes allerede på fire tette rutenaturmodeller; videre bruk skal velges per asset. Én ferdig kvinnelig MetaHuman finnes lokalt, ingen ferdig mannlig variant. Ingen ny modell, ferdighet eller rendererendring er installert i undersøkelsen.
+
 ## Nye åpne spillerfunn, 28. oktober 2026
 
 Tom har meldt ni nye punkter om Caliche-modeller, diner-krasj, trafikksignal, farmadkomst, motellets terreng/kollisjon/TV/basseng, SARO-dialog/dørhint, trafodetaljer, testomfang og dag-/nattfarger. Se [arbeidslisten](PLAYTEST_TODO_2026-10-28.md) og [bilde-/krasjbevis](Evidence/Playtest-2026-10-28/README.md). Tidligere leveringsstatus betyr ikke at disse nye feilene er løst. Ingen spillkode eller installasjon er endret i registreringen. Test etter risiko og bruk subagenter med tydelig ansvar; ikke fullmatrise per liten endring.

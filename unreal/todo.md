@@ -1,3 +1,15 @@
+## Første mannequin-pass og målrettet Unreal-forbedring, 28. oktober 2026
+
+[Kildegjennomgang, ferdigheter og Nanite-kandidater](UNREAL_SKILLS_2026-10-28.md) er undersøkt. Første personpass er stille MetaHuman-mannekenger på eksisterende steder.
+
+- [ ] Lag egen sittende radio-kvinne fra kvinnelig prototype med passende klær, behold radio/proxy og tilstedeværelse.
+- [ ] Lag en mannlig MetaHuman-grunnvariant og bak stående røykende mann samt sittende diner-sjåfør. Ferdig mannlig kilde finnes ikke lokalt ennå.
+- [ ] Bruk poserte statiske meshes, delte spillmaterialer og LOD. Behold servitrisen i eksisterende animerte løype og Dale/Kinski som dagens stemmer.
+- [ ] Prøv Nanite selektivt på importerte tette solide miljømodeller etter TB2-/plasseringsrettelser. Bevar RT-fallback og gameplay-kollisjon; ikke global konvertering av gress, glass og effekter.
+- [ ] Bruk gjennomgåtte lys-, VFX-, ytelses- og lydferdigheter til avgrenset miljøkontakt. Tilpass lyd til dagens egen graf og grading til M_WebTone.
+
+Ingen nye mannekenger er bakt, importert eller installert. [Planfilen](Signal47/Tools/metahuman/mannequins-plan.json) er eksplisitt `planned_not_produced`. Arbeidet utføres med målrettet kontroll og én tung jobb om gangen.
+
 ## Toms feilrapport med bildebevis, 28. oktober 2026
 
 Alle punktene er åpne med mindre en avklaring er eksplisitt besvart i [detaljert arbeidsliste](PLAYTEST_TODO_2026-10-28.md). [Seks originalbilder og krasjbevis](Evidence/Playtest-2026-10-28/README.md) er bevart med kontrollsummer.
