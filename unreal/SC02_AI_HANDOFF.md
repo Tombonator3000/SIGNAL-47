@@ -2,6 +2,8 @@
 
 28. oktober 2026. Tom ba Codex hjelpe der Claude stoppet på bruksgrensen, særlig med alien-AI som skal gå rundt hindringer. Claude var fortsatt i SC02; SC03-runtime var ikke påbegynt. SC02 har nå pakket teknisk PASS. Dette er et arbeidscheckpoint for videre akt 1, ikke en ferdig aktleveranse.
 
+Arbeidet er pushet som [utkast-PR #190 mot main](https://github.com/Tombonator3000/SIGNAL-47/pull/190). Den forblir utkast til videre produksjon og aktens aksept er ferdig. Ingen main-fletting eller installasjon er gjort her.
+
 ## Bevarte kilder og eierskap
 
 Codex fortsetter på `codex/act1-alien-navigation` i `~/scratch-bm/wt/act1-alien`, laget fra oppdatert main `8affc549`. Claudes rene SC02-head `911ce258` er integrert uten å erstatte nyere launcher-/Niagara-/historiedokumenter. Bare de to dokumentkonfliktene er sammenføyd med begge sider bevart.
@@ -60,7 +62,7 @@ Kanonisk opprydding er utført etter avsluttede motorjobber: to eldre payloadset
 
 ## Neste konkrete produksjon: SC03
 
-SC02-forutsetningen nedenfor er nå teknisk oppfylt i R5. Den lokale `sc03-production-checklist.txt` i bevisroten beskriver filansvar, verdenshandlinger, negative observasjonsprøver og savekompatibilitet mer detaljert.
+SC02-forutsetningen er nå teknisk oppfylt i R5. Den lokale `sc03-production-checklist.txt` i bevisroten beskriver filansvar, verdenshandlinger, negative observasjonsprøver og savekompatibilitet mer detaljert.
 
 1. Utvid `FS47Horror` og Caliches faktiske `town:payphone` til separat første melding/readback, Ward og savnetsak. Bruk en lagret SC03-fase, og publiser samtalefakta først etter kvittert siste linje.
 2. Bygg faktisk Ortiz, hvit servicevogn 23, termose og etterspor, med synlig ankomst, identifikasjon, løft/forsvinning og dekning. Ikke kall den gamle spillerbortføringen som Ortiz-controller. Ingen jakt i SC03.
