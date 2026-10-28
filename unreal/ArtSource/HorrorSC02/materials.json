@@ -2,9 +2,9 @@
   {
     "name": "M_SC02_PaleSkin",
     "base_color_linear": [
-      0.68,
-      0.7,
-      0.65,
+      0.59,
+      0.62,
+      0.54,
       1
     ],
     "roughness": 0.56,

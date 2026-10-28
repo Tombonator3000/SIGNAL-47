@@ -166,11 +166,11 @@ bool FS47HorrorThreat::Build()
  int32 TorsoNode = -1, ArmLNode = -1, ArmRNode = -1, ThighLNode = -1, ThighRNode = -1, Leaf = -1;
  UStaticMeshComponent* Torso = Part(TEXT("SC02PaleTorso"), TorsoMesh, RootComp, RootNode, FVector(0, 0, 102), One, TorsoNode);
  Parts->Torso = Torso;
- Parts->Head = Part(TEXT("SC02PaleHead"), HeadMesh, Torso, TorsoNode, FVector(0, 0, 68), One, Leaf);
- UStaticMeshComponent* ArmL = Part(TEXT("SC02PaleUpperArmL"), UpperArmMesh, Torso, TorsoNode, FVector(0, -21, 58), One, ArmLNode);
+ Parts->Head = Part(TEXT("SC02PaleHead"), HeadMesh, Torso, TorsoNode, FVector(7.2, 0, 68), One, Leaf); // neck sits forward of the hunched spine (model_contract.json)
+ UStaticMeshComponent* ArmL = Part(TEXT("SC02PaleUpperArmL"), UpperArmMesh, Torso, TorsoNode, FVector(4.6, -21, 58), One, ArmLNode);
  Parts->ArmL = ArmL;
  Parts->ForeL = Part(TEXT("SC02PaleLowerArmL"), LowerArmMesh, ArmL, ArmLNode, FVector(0, 0, -36), One, Leaf);
- UStaticMeshComponent* ArmR = Part(TEXT("SC02PaleUpperArmR"), UpperArmMesh, Torso, TorsoNode, FVector(0, 21, 58), Mirror, ArmRNode);
+ UStaticMeshComponent* ArmR = Part(TEXT("SC02PaleUpperArmR"), UpperArmMesh, Torso, TorsoNode, FVector(4.6, 21, 58), Mirror, ArmRNode);
  Parts->ArmR = ArmR;
  Parts->ForeR = Part(TEXT("SC02PaleLowerArmR"), LowerArmMesh, ArmR, ArmRNode, FVector(0, 0, -36), One, Leaf);
  UStaticMeshComponent* ThighL = Part(TEXT("SC02PaleThighL"), ThighMesh, RootComp, RootNode, FVector(0, -10, 100), One, ThighLNode);
@@ -654,7 +654,7 @@ void FS47HorrorThreat::Apply(bool bShow)
   if (Tick != HeldTick[I] || S == EState::Capture) { HeldTick[I] = Tick; Held[I] = Target[I]; }
  }
  Set(Parts->Torso, Held[0], 0);
- Set(Parts->Head, -4, Held[1]);
+ Set(Parts->Head, -4 - .6 * Held[0], Held[1]); // the head lifts against the lean to keep looking ahead
  Set(Parts->ArmL, Held[2], 0); Set(Parts->ForeL, Held[3], 0);
  Set(Parts->ArmR, Held[4], 0); Set(Parts->ForeR, Held[5], 0);
  Set(Parts->ThighL, Held[6], 0); Set(Parts->ShinL, Held[7], 0);

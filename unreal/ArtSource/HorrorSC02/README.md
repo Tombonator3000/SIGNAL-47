@@ -76,9 +76,21 @@ Ikke verifisert her, gjenstår på Kubuntu:
 
 Denne kilderevisjonen alene hevder ingen native import, pakket aksept eller pikselkontroll.
 
+## Retting 28. oktober 2026 (Claude på Kubuntu)
+
+Etter [revisjonen av historien](../../HISTORIE_SC02_SC13_REVISJON.md) så modellen ut som en utstillingsdukke med et klassisk «grey»-hode. Rettet i `build_scene.py`, bygget i Blender 5.2.2 på Kubuntu:
+
+- Foroverbøyd rygg: overkroppen skyves fram etter høyden (`hunch`), 12 cm ved nakken og 7,7 cm ved skuldrene. Koden fester hodet og armene tilsvarende lenger fram, og hodet løfter seg mot lenet for å se framover.
+- Knoklete bekken i stedet for glatt dukkehofte: hoftekam på sidene, lårbeinshoder, lyskelinjer, kjønnsbeinskant, smalere bekken og innsunket mage.
+- Nytt hode: smalere og lavere skalle, ekte kjeve og hake, tung pannekant, nese, munnlinje og små, dype øyehuler i stedet for store mørke øyne.
+- Lengre fingre, kortere føtter med mellomfotsben og tær med knoker.
+- Hud: samme grunnfarge som SC01-hånden (`M_SC01_Skin`), med flekker og svake blå årer i vertexfargen.
+- Bevegelsen er bevisst rykkvis, ledd for ledd (koden fra skyøkten), i stedet for skjelett og vekting.
+
+Trekanttallene er uendret: 13 660 i LOD0 og 4 098 i LOD1. Forhåndsvisningene i `Previews` er rendret fra den nye kilden.
+
 ## Kjente svakheter
 
-- Hodet sett fra siden har en lang, bakoverstrakt hodeskalle og kan minne om en klassisk romvesenfigur.
+- Nakken er lang og tynn. Det er bevisst, men den ser stiv ut sett rett forfra.
 - Albue og kne viser en svak ring der delene møtes. Det er ingen åpning, men det synes på nært hold i flatt lys.
 - LOD1 gjør ribbeina til ujevne flekker. Det er akseptert fordi LOD1 bare brukes under skjermgrense 0,04.
-- Føttene er lange og flate.

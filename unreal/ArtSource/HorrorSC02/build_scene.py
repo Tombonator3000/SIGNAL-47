@@ -12,16 +12,17 @@ import json
 import math
 import bpy  # first: the bpy module provides bmesh and mathutils
 import bmesh
-from mathutils import Euler, Matrix, Vector
+from mathutils import Euler, Matrix, Vector, noise
 
 ROOT = Path(__file__).resolve().parent
 EXPORT = ROOT / "Export"
 EXPORT.mkdir(exist_ok=True)
 
-# Derived from M_SC01_Skin (.59, .62, .54; roughness .74; specular .26): lifted
-# towards bloodless white with less green, lower roughness for a damp sheen.
+# Same base colour as M_SC01_Skin, so the body matches the SC01 hand the player
+# has already seen; lower roughness for a damp sheen. Mottling and veins are in
+# the vertex colour.
 MATERIAL_ROWS = [
-    {"name": "M_SC02_PaleSkin", "base_color_linear": [.68, .70, .65, 1], "roughness": .56,
+    {"name": "M_SC02_PaleSkin", "base_color_linear": [.59, .62, .54, 1], "roughness": .56,
      "specular": .34, "metallic": 0, "derived_from": "M_SC01_Skin",
      "vertex_color_multiply": True},
 ]
@@ -117,6 +118,15 @@ class Shells:
         self.bm.faces.new(loops[-1])
 
 
+def hunch(z):
+    """Forward (+X) offset of the spine at height z: a starved, rounded upper back."""
+    return .12 * max(0.0, (z - 1.20) / .50) ** 2
+
+
+NECK_FORWARD = hunch(1.70)
+SHOULDER_FORWARD = hunch(1.60)
+
+
 def ring_at(rings, z):
     """Interpolated loft ring at height z."""
     rings = sorted(rings)
@@ -138,13 +148,13 @@ def on_surface(rings, z, t, inset=0.0):
 
 # Long, starved trunk: deep ribcage over a caved-in waist, narrow hips.
 TORSO = [  # z, cx, cy, rx front, rx back, ry
-    (.915, -.012, 0, .040, .050, .060),
-    (.95, -.012, 0, .064, .080, .130),
-    (.985, -.012, 0, .070, .088, .150),
-    (1.02, -.012, 0, .068, .088, .146),
-    (1.06, -.014, 0, .062, .084, .128),
-    (1.10, -.018, 0, .046, .080, .106),
-    (1.16, -.018, 0, .044, .080, .100),
+    (.915, -.012, 0, .034, .046, .044),
+    (.95, -.012, 0, .050, .080, .092),
+    (.985, -.012, 0, .056, .088, .124),
+    (1.02, -.012, 0, .056, .088, .136),
+    (1.06, -.014, 0, .052, .084, .130),
+    (1.10, -.018, 0, .044, .080, .116),
+    (1.16, -.018, 0, .042, .080, .104),
     (1.22, -.012, 0, .066, .088, .118),
     (1.28, -.004, 0, .094, .098, .138),
     (1.36, 0, 0, .096, .098, .142),
@@ -161,6 +171,16 @@ TORSO = [  # z, cx, cy, rx front, rx back, ry
 def torso_shells():
     s = Shells()
     s.loft(TORSO)
+    for sy in (1, -1):
+        # Bony pelvis instead of a smooth mannequin hip: iliac crests curving round
+        # the front, the top of each thigh bone at the side and a pubic ridge.
+        s.chain([on_surface(TORSO, 1.085, sy * math.radians(a), .001) for a in (60, 80, 100, 120)],
+                [.011, .013, .012, .010])
+        s.ell(on_surface(TORSO, 1.05, sy * math.radians(30), .004), (.013, .016, .018))   # front hip spine
+        s.ell((-.004, .145 * sy, .975), (.022, .020, .026))                               # greater trochanter
+        s.seg(on_surface(TORSO, 1.06, sy * math.radians(32), .006),
+              on_surface(TORSO, .945, sy * math.radians(8), .004), .008, .007)         # inguinal ridge
+    s.ell(on_surface(TORSO, .935, 0, .006), (.014, .036, .012))                         # pubic ridge
     # Ribs stand proud of the cage on each side of a bare sternum.
     for i in range(8):
         zf = 1.24 + i * .033
@@ -190,21 +210,23 @@ def torso_shells():
         s.ell(on_surface(TORSO, z, math.pi, .0065), (.010, .009, .010))
         z += .032
     s.seg((0, 0, 1.58), (0, 0, 1.69), .026, .025)                      # neck core, hidden in the head's neck
+    for v in s.bm.verts:
+        v.co.x += hunch(v.co.z)
     return s
 
 
-HEAD = [  # long narrow skull over a small receding jaw
-    (1.752, .028, 0, .010, .014, .014),
-    (1.765, .022, 0, .024, .030, .026),
-    (1.787, .012, 0, .040, .048, .040),
-    (1.815, .004, 0, .056, .066, .047),
-    (1.845, .002, 0, .078, .080, .051),
-    (1.875, -.006, 0, .088, .090, .060),
-    (1.905, -.012, 0, .092, .094, .067),
-    (1.935, -.016, 0, .089, .092, .068),
-    (1.962, -.020, 0, .077, .082, .062),
-    (1.984, -.024, 0, .053, .058, .045),
-    (1.997, -.026, 0, .022, .024, .018),
+HEAD = [  # narrow, too-long human skull with a real jaw and chin, not a bulb over a small jaw
+    (1.748, .046, 0, .016, .014, .020),
+    (1.760, .040, 0, .030, .030, .034),
+    (1.780, .028, 0, .046, .050, .046),
+    (1.808, .016, 0, .058, .064, .052),
+    (1.840, .008, 0, .070, .076, .054),
+    (1.872, -.002, 0, .078, .084, .058),
+    (1.902, -.008, 0, .080, .086, .062),
+    (1.932, -.012, 0, .076, .082, .060),
+    (1.956, -.016, 0, .064, .070, .052),
+    (1.974, -.020, 0, .040, .046, .034),
+    (1.984, -.022, 0, .014, .016, .012),
 ]
 
 
@@ -212,21 +234,28 @@ def head_shells():
     s = Shells()
     # The neck sleeve is centred on the turn axis and reaches down into the
     # torso's shoulder slope, so any yaw keeps the junction closed.
-    s.chain([Vector((0, 0, 1.625)), Vector((0, 0, 1.76)), Vector((-.006, 0, 1.80))], [.032, .030, .030])
+    s.chain([Vector((-.012, 0, 1.625)), Vector((0, 0, 1.76)), Vector((-.006, 0, 1.80))], [.040, .036, .032])
     s.loft(HEAD)
     for sy in (1, -1):
         s.seg((.022, .024 * sy, 1.645), (-.004, .036 * sy, 1.79), .009, .008)  # tendons
         s.seg(on_surface(HEAD, 1.83, sy * math.radians(105), .006),
               on_surface(HEAD, 1.768, sy * math.radians(25), .004), .009, .007)  # jaw line
         s.ell(on_surface(HEAD, 1.86, sy * math.radians(48), .008), (.016, .013, .009))  # cheekbones
-    s.chain([on_surface(HEAD, 1.912, math.radians(-38), .006), on_surface(HEAD, 1.916, 0, .006),
-             on_surface(HEAD, 1.912, math.radians(38), .006)], [.007, .008, .007])  # faint brow
+    s.chain([on_surface(HEAD, 1.906, math.radians(-40), .004), on_surface(HEAD, 1.910, 0, .004),
+             on_surface(HEAD, 1.906, math.radians(40), .004)], [.010, .011, .010])  # heavy brow ridge
+    for sy in (1, -1):
+        s.ell(on_surface(HEAD, 1.79, sy * math.radians(80), .006), (.016, .012, .018))  # jaw angle
+    s.ell(on_surface(HEAD, 1.756, 0, .004), (.016, .020, .012))                     # chin
+    s.seg(on_surface(HEAD, 1.900, 0, .003), on_surface(HEAD, 1.852, 0, -.010), .007, .009)  # nose bridge
     return s
 
 
 HEAD_CARVES = [  # (centre, radius, depth, pull-towards) pushes skin into the skull
-    ((.086, .027, 1.885), .023, .023, (-.03, .02, 1.885)),            # eye sockets
-    ((.086, -.027, 1.885), .023, .023, (-.03, -.02, 1.885)),
+    ((.082, .028, 1.884), .017, .026, (-.03, .02, 1.884)),            # small, deep eye sockets
+    ((.082, -.028, 1.884), .017, .026, (-.03, -.02, 1.884)),
+    ((.078, .010, 1.802), .012, .006, (0, 0, 1.802)),                 # lipless mouth line
+    ((.078, -.010, 1.802), .012, .006, (0, 0, 1.802)),
+    ((.080, 0, 1.802), .011, .006, (0, 0, 1.802)),
     ((.05, .046, 1.83), .024, .011, (0, 0, 1.83)),                    # hollow cheeks
     ((.05, -.046, 1.83), .024, .011, (0, 0, 1.83)),
     ((.04, .074, 1.905), .026, .007, (-.02, 0, 1.905)),               # sunken temples
@@ -255,8 +284,8 @@ def upper_arm_shells():
     return s
 
 
-FINGERS = [  # base x, length, fan dx over length
-    (.033, .112, .014), (.011, .124, .004), (-.011, .116, -.005), (-.031, .096, -.014)]
+FINGERS = [  # base x, length, fan dx over length: long enough to hang well down the thigh
+    (.033, .140, .016), (.011, .156, .005), (-.011, .146, -.006), (-.031, .120, -.016)]
 LOWER_ARM = [
     (.925, .004, .207, .040, .040, .0092),
     (.95, .006, .207, .043, .043, .0110),
@@ -334,14 +363,18 @@ def shin_shells():
         s.ell((-.004, .10 + dy, .07), (.011, .011, .011))             # malleoli
     s.seg((-.026, .10, .20), (-.033, .10, .055), .010, .010)          # Achilles tendon
     s.ell((-.038, .10, .032), (.032, .026, .032))                     # heel
-    s.ell((.045, .10, .026), (.085, .032, .022))                      # long narrow foot
-    s.seg((0, .10, .062), (.13, .10, .026), .021, .014)               # instep
-    # Long toes; the big toe is medial (towards -Y for the left foot).
-    for dy, length, r in ((-.022, .074, .0100), (-.007, .066, .0074), (.006, .060, .0068),
-                          (.018, .052, .0064), (.029, .044, .0060)):
+    s.ell((.030, .10, .026), (.064, .034, .022))                      # bony, shorter foot
+    s.seg((0, .10, .062), (.095, .10, .024), .021, .015)              # instep
+    for dy in (-.018, -.004, .010, .022):
+        s.seg((.01, .10 + dy * .5, .05), (.09, .10 + dy, .026), .0045, .004)  # metatarsal ridges
+    # Toes with knuckles; the big toe is medial (towards -Y for the left foot).
+    for dy, length, r in ((-.022, .046, .0102), (-.007, .040, .0076), (.006, .037, .0070),
+                          (.018, .032, .0066), (.029, .027, .0062)):
         y = .10 + dy
-        s.chain([Vector((.12, y, .02)), Vector((.12 + length * .55, y + dy * .1, .014)),
-                 Vector((.12 + length, y + dy * .16, r + .0004))], [r * 1.1, r, r * .85])
+        pts = [Vector((.088, y, .02)), Vector((.088 + length * .5, y + dy * .1, .017)),
+               Vector((.088 + length, y + dy * .16, r + .0004))]
+        s.chain(pts, [r * 1.1, r, r * .85])
+        s.ell(pts[1], (r * 1.25, r * 1.2, r * 1.3))
     return s
 
 
@@ -350,7 +383,12 @@ BUILDERS = {
     "SM_SC02_PaleUpperArm": upper_arm_shells, "SM_SC02_PaleLowerArm": lower_arm_shells,
     "SM_SC02_PaleThigh": thigh_shells, "SM_SC02_PaleShin": shin_shells,
 }
-CARVES = {"SM_SC02_PaleHead": HEAD_CARVES}
+TORSO_CARVES = [  # starved belly and groin hollows between the hip bones
+    ((.07, .075, .955), .040, .016, (0, .02, .98)),
+    ((.07, -.075, .955), .040, .016, (0, -.02, .98)),
+    ((.07, 0, 1.03), .060, .012, (-.05, 0, 1.03)),
+]
+CARVES = {"SM_SC02_PaleHead": HEAD_CARVES, "SM_SC02_PaleTorso": TORSO_CARVES}
 
 
 # ---------------------------------------------------------------- mesh steps
@@ -382,21 +420,31 @@ def carve(mesh, carves):
         v.co = p
 
 
+def skin(p):
+    """Mottled, bloodless skin with faint blue veins. Deterministic noise in body space."""
+    m = .90 + .10 * noise.noise(p * 9.0) + .05 * noise.noise(p * 31.0)
+    vein = max(0.0, 1 - abs(noise.noise(p * 14.0 + Vector((3.1, 7.7, 1.3)))) / .06)
+    return (m * (1 - .16 * vein), m * (1 - .10 * vein), m * (1 - .02 * vein))
+
+
 def tint(name, p):
-    """Linear vertex colour multiplier: dark sockets and bruised fingertips."""
+    """Linear vertex colour multiplier: mottled skin, dark sockets and bruised extremities."""
+    r, g, b = skin(p)
     if name == "SM_SC02_PaleHead":
         value = 1.0
         for sy in (1, -1):
-            d = (p - Vector((.070, .026 * sy, 1.885))).length
-            value = min(value, .04 + .96 * min(1, max(0, (d - .013) / .020)) ** 1.5)
-        return (value, value * .98, value * 1.0)
+            d = (p - Vector((.066, .028 * sy, 1.884))).length
+            value = min(value, .02 + .98 * min(1, max(0, (d - .010) / .016)) ** 1.5)
+        mouth = (p - Vector((.074, 0, 1.802))).length
+        value *= .55 + .45 * min(1, max(0, (mouth - .004) / .016))
+        return (r * value, g * value * .98, b * value)
     if name == "SM_SC02_PaleLowerArm" and p.z < .90:
-        f = min(1, (.90 - p.z) / .09)
-        return (1 - .26 * f, 1 - .30 * f, 1 - .18 * f)
-    if name == "SM_SC02_PaleShin" and p.x > .15:
-        f = min(1, (p.x - .15) / .06)
-        return (1 - .18 * f, 1 - .22 * f, 1 - .14 * f)
-    return (1.0, 1.0, 1.0)
+        f = min(1, (.90 - p.z) / .12)
+        return (r * (1 - .26 * f), g * (1 - .30 * f), b * (1 - .18 * f))
+    if name == "SM_SC02_PaleShin" and p.x > .08:
+        f = min(1, (p.x - .08) / .05)
+        return (r * (1 - .18 * f), g * (1 - .22 * f), b * (1 - .14 * f))
+    return (r, g, b)
 
 
 def finish_surface(obj, name, world_origin):
@@ -498,7 +546,8 @@ def main():
         "axes": "Blender metric Z-up, facing +X; native UE import x,-y,z in centimetres.",
         "blender_version": bpy.app.version_string,
         "origin": "Each mesh has its proximal joint at local (0,0,0). Limbs are the left side (+Y); the right side is the same mesh with scale Y = -1.",
-        "joint_offsets_cm_ue": {"hip_centre": [0, 0, 102], "neck": [0, 0, 170], "shoulder": [0, -21, 160],
+        "joint_offsets_cm_ue": {"hip_centre": [0, 0, 102], "neck": [round(NECK_FORWARD * 100, 1), 0, 170],
+                                "shoulder": [round(SHOULDER_FORWARD * 100, 1), -21, 160],
                                 "elbow": "shoulder + (0,0,-36)", "hip": [0, -10, 100], "knee": "hip + (0,0,-49)",
                                 "note": "UE y is negated Blender y; the left (+Y Blender) limb sits at UE y -21/-10."},
         "native_lod_profile": {"lod_count": 2, "lod1_source": "authored *_LOD1.fbx, Blender collapse decimate",
@@ -531,7 +580,12 @@ def main():
     lod1_col = bpy.data.collections.new("LOD1")
     bpy.context.scene.collection.children.link(lod1_col)
     for obj in objects:
-        obj.location = PARTS[obj.name.replace("_LOD1", "")]["origin"]
+        base = obj.name.replace("_LOD1", "")
+        x, y, z = PARTS[base]["origin"]
+        x += {"SM_SC02_PaleHead": NECK_FORWARD, "SM_SC02_PaleUpperArm": SHOULDER_FORWARD}.get(base, 0)
+        # The elbow hangs below the forward shoulder.
+        x += SHOULDER_FORWARD if base == "SM_SC02_PaleLowerArm" else 0
+        obj.location = (x, y, z)
         if obj.name.endswith("_LOD1"):
             bpy.context.scene.collection.objects.unlink(obj)
             lod1_col.objects.link(obj)

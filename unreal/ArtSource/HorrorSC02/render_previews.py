@@ -3,9 +3,10 @@ import sys, math
 import bpy
 from mathutils import Vector, Euler, Matrix
 
-BLEND, OUT = sys.argv[1], sys.argv[2]
-ENGINE = sys.argv[3] if len(sys.argv) > 3 else "EEVEE"
-VIEWS = sys.argv[4].split(",") if len(sys.argv) > 4 else ["front", "side", "three_quarter", "head60_armup", "back"]
+ARGS = sys.argv[sys.argv.index("--"):] if "--" in sys.argv else sys.argv  # blender -b -P ... -- or bpy module
+BLEND, OUT = ARGS[1], ARGS[2]
+ENGINE = ARGS[3] if len(ARGS) > 3 else "EEVEE"
+VIEWS = ARGS[4].split(",") if len(ARGS) > 4 else ["front", "side", "three_quarter", "head60_armup", "back"]
 bpy.ops.wm.open_mainfile(filepath=BLEND)
 scene = bpy.context.scene
 LOD1 = {}
@@ -15,7 +16,8 @@ for obj in list(scene.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
 USE_LOD1 = [False]
 P = {o.name: o for o in scene.objects}
-J = {"torso": Vector((0, 0, 1.02)), "neck": Vector((0, 0, 1.70)), "sh": Vector((0, .21, 1.60)),
+# Neck and shoulders sit forward of the hunched spine, as in the game (model_contract.json).
+J = {"torso": Vector((0, 0, 1.02)), "neck": Vector((.12, 0, 1.70)), "sh": Vector((.077, .21, 1.60)),
      "hip": Vector((0, .10, 1.00))}
 
 def place(name, side, matrix):
