@@ -10,6 +10,7 @@
 #include "S47TownBuildings.h"
 #include "S47MotelV2.h"
 #include "S47PhotoLabDetail.h"
+#include "S47SubstationDetail.h"
 #include "S47RouteNature.h"
 
 #include "Components/BillboardComponent.h"
@@ -689,6 +690,7 @@ void AS47Web::BeginPlay()
 	MotelV2 = FS47MotelV2::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
+	S47SubstationDetail::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
 	BuildHighwayLandscape();

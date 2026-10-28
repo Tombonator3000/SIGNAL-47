@@ -1,3 +1,7 @@
+## Trafostasjonens detaljer, 28. oktober 2026 kl.07:39 CET
+
+Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo: fysisk lampehette, kabelinnføring, fundamentdetaljer og målt grusskråning. Native import/editor/pakke består; faktisk før/etterbilde og kort T01-service/diskreload består. T02 består 65 kontroller og 15 diskrestores; full110 består 110/110 etter én kjøring; PR184 er klar for vanlig fletting til main. Ikke installert ennå. Claude beholder TB2 PR179. Se [rapport](SUBSTATION_DETAIL.md).
+
 ## Fotolab levert, 28. oktober 2026 kl.01:15 CET
 
 Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pull/181), merge `8c70ecb69f24bae15197e31bab95c924e1fd18e5`, og identisk testet pakke er installert i `/home/tom/Games/Signal47/Linux`. Ti originale detaljdeler, PBR, tre LOD og redigerbar Blender-kilde følger med. Hele matrisen består 110/110 etter én kjøring. Installert Low-fremkalling og ny prosess med Continue fra faktisk disk består; begge bilder er vurdert. Alle 50 personlige Saved-filer er uendret. Motel R4, SC01, MetaHuman og godkjent atmosfære er bevart. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Claudes fem TB2-bygninger i PR179 er fortsatt separate kilder uten native integrasjon i denne leveransen.

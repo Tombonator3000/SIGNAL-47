@@ -11,6 +11,7 @@
 #include "S47Gamepad.h"
 #include "S47Web.h"
 #include "S47Props.h"
+#include "S47SubstationDetail.h"
 #include "S47Startup.h"
 
 using namespace S47Three;
@@ -158,6 +159,8 @@ bool AS47Walker::InTruck(double X, double Z) const
 
 double AS47Walker::FloorAt(double X, double Z) const
 {
+	// The narrow gravel shoulder uses the same measured triangles as its rendered surface.
+	{ double Y; if (S47SubstationDetail::FloorAt(X, Z, Y)) return Y; }
 	// a prop's own floor first (Unreal only: the gas station one walks into, S47Props), then the open
 	// land's ground (US47World), then Player.floor, supplied by World.enter for SARO and Caliche
 	{ const double Y = AS47Props::FloorAt(X, Z); if (!FMath::IsNaN(Y)) return Y; }

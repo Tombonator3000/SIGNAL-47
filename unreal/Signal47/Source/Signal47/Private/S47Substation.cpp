@@ -11,6 +11,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -94,9 +95,15 @@ bool FS47Substation::Install()
  if (!LC || LC->GetNumMaterials() == 0) return false;
  for (int32 I = 0; I < LC->GetNumMaterials(); ++I)
   if (UMaterialInstanceDynamic* D = LC->CreateDynamicMaterialInstance(I)) LampMids.Add(D);
- UPointLightComponent* L = NewObject<UPointLightComponent>(M->Web, TEXT("SubstationInspectionLight"));
- L->SetMobility(EComponentMobility::Movable); L->SetupAttachment(LC); L->SetRelativeLocation(FVector::ZeroVector);
- L->SetIntensityUnits(ELightUnits::Lumens); L->SetLightColor(Warm); L->SetAttenuationRadius(400); L->SetCastShadows(false); L->RegisterComponent(); Light = L;
+ // The lens extends 3.9 cm toward native local +Y. Emit just beyond that glass,
+ // through the weather hood, instead of illuminating through the cabinet back.
+ // Keep the same lumen/state driver: T01 and T02 compare this actual lamp.
+ USpotLightComponent* L = NewObject<USpotLightComponent>(M->Web, TEXT("SubstationInspectionLight"));
+ L->SetMobility(EComponentMobility::Movable); L->SetupAttachment(LC);
+ L->SetRelativeLocation(FVector(0, 4.9, 0));
+ L->SetRelativeRotation(FVector(0, 1, -.25).Rotation());
+ L->SetInnerConeAngle(45.f); L->SetOuterConeAngle(75.f); L->SetSourceRadius(2.f);
+ L->SetIntensityUnits(ELightUnits::Lumens); L->SetLightColor(Warm); L->SetAttenuationRadius(400); L->SetCastShadows(true); L->RegisterComponent(); Light = L;
  const FS47Obj Card = Target(TEXT("substationJournalTarget"), Site(FVector(4.83, -8.99, .77)), FVector(.50, .30, .08));
  const FS47Obj Switch = Target(TEXT("substationServiceTarget"), Site(FVector(5.52, -9.04, 1.30)), FVector(.24, .60, .24));
  const FS47Obj Lens = Target(TEXT("substationLampTarget"), Site(FVector(4.62, -9.01, 1.70)), FVector(.28, .24, .10));

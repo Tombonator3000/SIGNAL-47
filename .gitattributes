@@ -15,3 +15,9 @@ unreal/ArtSource/MotelV2/textures/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/PhotoLab/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/PhotoLab/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/PhotoLab/textures/*.png filter=lfs diff=lfs merge=lfs -text
+
+# Editable Caliche substation contact detail.
+unreal/Signal47/Tools/substationdetail/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/Signal47/Tools/substationdetail/*.glb filter=lfs diff=lfs merge=lfs -text
+unreal/Signal47/Tools/substationdetail/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/Signal47/Tools/substationdetail/exports/*.glb filter=lfs diff=lfs merge=lfs -text
