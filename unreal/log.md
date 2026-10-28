@@ -847,3 +847,8 @@ Kilden har 23 616 trekanter, native LOD 23 616/11 808/4 725. Første importkontr
 ## 2026-10-28 kl.01:15 CET: fotolab flettet og installert
 
 Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pull/181), merge `8c70ecb69f24bae15197e31bab95c924e1fd18e5`, og identisk testet pakke er installert i `/home/tom/Games/Signal47/Linux`. Ti originale detaljdeler, PBR, tre LOD og redigerbar Blender-kilde følger med. Hele matrisen består 110/110 etter én kjøring. Installert Low-fremkalling og ny prosess med Continue fra faktisk disk består; begge bilder er vurdert. Alle 50 personlige Saved-filer er uendret. Motel R4, SC01, MetaHuman og godkjent atmosfære er bevart. To korte installeringskontroller består; diskstage og faktiske bilder vurdert. Canonical prune pensjonerte to gamle motelpakker (R3/R2), bevarte kilder/Saved/bevis og særskilte SC01/PR174-kandidater. Ingen ny release. TB2 er fortsatt uten native integrasjon. Råbevis i `~/scratch-bm/Signal47-photolab-night-20261027`, særlig `acceptance-r1.json`, `installation-r1.json`, `installed-preservation-r1.json` og `installed-visual-review-r1.json`.
+
+## 2026-10-27 kl. 20:00 CET: SC01 som standard venter på samlet bygg (Claude)
+
+- Tom sa ja til SC01 som standard. Før installasjon ble det installerte spillet sjekket: det er atmosfære-R1 med MetaHuman-servitrisen (binær-SHA256 `cbd04755…`), fra PR #172, som ikke er flettet. Kandidaten fra PR #174 (`754b33a0…`) er bygget fra main og mangler begge.
+- Tom valgte å beholde dagens installasjon og vente på et samlet bygg av main med PR #172. Ingenting er installert, og ingen filer i `~/Games/Signal47` eller lagringer er endret. Oppgaven står øverst i `OPPGAVER.md`.
