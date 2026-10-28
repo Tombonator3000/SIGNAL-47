@@ -6,6 +6,8 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47T02Test.h"
+#include "S47Graphics.h"
+#include "S47GraphicsTest.h"
 #include "S47SkyVisitors.h"
 #include "S47DaleDocumentsTest.h"
 #include "S47Anomaly.h"
@@ -151,6 +153,7 @@ void AS47HUD::Start()
 		bOk &= US47WorldLife::SelfTest(Lines); // (the glows' blink, the wind, the sky's clock, the flora's cells as the web version draws them)
 		bOk &= US47Chapter6::SelfTest(Lines); // (with Ending's real-time sequence)
 		bOk &= FS47DecoderDesk::SelfTest(Lines) & FS47ReadAloud::SelfTest(Lines); // (the signal processor's desk and panel; read-aloud's text matching)
+		bOk &= FS47GraphicsSettings::SelfTest(Lines);
 		bOk &= S47Keys::SelfTest(Lines) & S47Theme::SelfTest(Lines) & S47Gamepad::SelfTest(Lines); // (the keys' binding map; the menus' words: the chapter line, the tape's date)
 		bOk &= S47Game::SelfTest(Lines) & SS47Notebook::SelfTest(Lines); // (the HUD's day line, the captions' speakers; the notebook's keys)
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
@@ -539,6 +542,7 @@ void AS47HUD::Start()
 		M->Substation = MakeShared<FS47Substation>(M);
 		M->Substation->Begin();
 		M->T02Test = MakeShared<FS47T02Test>(M);
+		M->GraphicsTest = MakeShared<FS47GraphicsTest>(M);
 		M->DaleDocumentsTest = MakeShared<FS47DaleDocumentsTest>(M);
 		M->Horror = MakeShared<FS47Horror>(M);
 		M->HorrorTest = MakeShared<FS47HorrorTest>(M);

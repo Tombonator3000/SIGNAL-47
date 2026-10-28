@@ -46,7 +46,7 @@ shot radio "S47: radio caliche live, AM 1420" "-S47Radio=caliche -S47Jump=chapte
 # Controls (the settings at that tab, -S47Press feeds the menu its keys), saving and loading
 shot menucase "chapter ch2 begins" "-S47Case=1 -S47Jump=chapter2 -S47Face=room" 12
 shot title "title shown" "-S47Title"
-for tab in game picture sound voices controls accessibility; do
+for tab in game picture sound voices controls accessibility graphics; do
   shot settings-$tab "S47: settings opened at $tab" "-S47Title -S47Open=settings:$tab"
 done
 shot pause "pause opened" "-S47Face=room -S47Jump=residual -S47Open=pause"

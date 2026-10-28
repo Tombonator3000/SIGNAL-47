@@ -199,9 +199,12 @@ void US47Flow::Init(US47Main* InM)
 	LoadStore();
 	Saves.Init();
 	// the settings shared by the pause menu and the title screen; all kept on this device
-	// High targets desktop 60 fps; Ultra spends more on shadows and mist.
+	// Old profiles retain their existing lighting; advanced preferences are device-wide.
 	Quality = S47J::Str(Store, TEXT("quality"), TEXT("high"));
-	FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), Quality);
+	Graphics = FS47GraphicsSettings::FromJson(S47J::Obj(Store, TEXT("graphics")), Quality);
+	FString QualityOverride;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47Quality="), QualityOverride)) Graphics = FS47GraphicsSettings::ForPreset(QualityOverride);
+	Quality = Graphics.LegacyQuality();
 	bKinski = S47J::Bool(Store, TEXT("kinskiReadAloud"), false);
 	bArtBell = S47J::Bool(Store, TEXT("artBellRadioHost"), true);
 	bSerling = S47J::Bool(Store, TEXT("serlingNarrator"), true);
@@ -263,7 +266,7 @@ void US47Flow::Init(US47Main* InM)
 	PictureStrength = S47Picture::Strength(PictureStrength);
 	FString Cmd;
 	ApplyPicture(FParse::Value(FCommandLine::Get(), TEXT("S47Picture="), Cmd) ? Cmd : !Chosen.IsEmpty() ? Chosen : S47Picture::DefaultForQuality(Quality), false);
-	ApplyQuality(Quality);
+	ApplyGraphics(Graphics, false);
 	ApplyVolume();
 	if (M->Audio) { M->Audio->SetMusic(MusicLevel); M->Audio->SetRadio(RadioLevel); }
 	if (M->Radio) { M->Radio->SetHostVoice(bArtBell); M->Radio->SetCallerVoice(bRadioCast); }
@@ -1026,6 +1029,9 @@ FS47PauseOpts US47Flow::Settings()
 	O.Radio = RadioLevel;
 	O.OnRadio = [this](float V) { RadioLevel = V; if (M->Audio) M->Audio->SetRadio(V); StoreSet(TEXT("radioVol"), double(V)); };
 	O.OnSens = [this](float V) { Sens = V; ApplyLook(); StoreSet(TEXT("sens"), double(V)); };
+	O.Graphics = Graphics;
+	O.OnGraphics = [this](const FS47GraphicsSettings& G) { ApplyGraphics(G); };
+	O.OnReapplyGraphics = [this] { ApplyGraphics(Graphics, false); };
 	O.Quality = Quality;
 	O.OnQuality = [this](const FString& Q) { ApplyQuality(Q); };
 	O.bUltraOk = true; // a computer
@@ -1058,10 +1064,21 @@ FS47PauseOpts US47Flow::Settings()
 
 void US47Flow::ApplyQuality(const FString& Q)
 {
-	Quality = Q;
-	if (!SmokeTest()) StoreSet(TEXT("quality"), Q);
-	// Film and tape looks are independent of the lighting budget.
-	if (M->Web) M->Web->SetLightingQuality(Q);
+	ApplyGraphics(FS47GraphicsSettings::ForPreset(Q));
+}
+
+void US47Flow::ApplyGraphics(const FS47GraphicsSettings& Settings, bool bSave)
+{
+	Graphics = Settings;
+	Graphics.Normalize();
+	Quality = Graphics.LegacyQuality();
+	if (M && M->Web) M->Web->ApplyGraphicsSettings(Graphics);
+	if (bSave && !SmokeTest())
+	{
+		// One settings write keeps all choices together. Film, input and case saves stay separate.
+		Store->SetStringField(TEXT("quality"), Quality);
+		StoreSet(TEXT("graphics"), MakeShared<FJsonValueObject>(Graphics.ToJson()));
+	}
 }
 
 void US47Flow::ApplyPicture(const FString& P, bool bChosen)

@@ -9,7 +9,7 @@ class SVerticalBox;
 
 // The settings, one screen for the title's Settings and the pause menu's (the approved mockup,
 // settings.png): the terminal's frame, the tabs GAME / PICTURE / SOUND / VOICES / CONTROLS /
-// ACCESSIBILITY, the rows on the left and what the selected one does on the right, the keys at
+// ACCESSIBILITY / GRAPHICS, the rows on the left and what the selected one does on the right, the keys at
 // the foot, APPLY and REVERT for the display. Every setting of FS47PauseOpts is here, each
 // change goes to its callback at once (and so into the store), as UI.pause had it; the display
 // (window mode, resolution, frame limit, v-sync) is UGameUserSettings', applied with APPLY and
@@ -19,7 +19,7 @@ class SS47Settings : public SCompoundWidget
 public:
 	SLATE_BEGIN_ARGS(SS47Settings) {}
 		SLATE_ARGUMENT(TSharedPtr<FS47PauseOpts>, Opts)
-		SLATE_ARGUMENT(FString, Tab)                // game, picture, sound, voices, controls, accessibility
+		SLATE_ARGUMENT(FString, Tab)                // game, picture, sound, voices, controls, accessibility, graphics
 		SLATE_ARGUMENT(TFunction<void()>, OnBack)   // Escape: the UI's close
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
@@ -31,6 +31,8 @@ public:
 
 	static const TArray<FString>& TabIds();
 	static int32 TabIndex(const FString& Id);   // -1 when it is none of them
+	FString ActiveTabId() const;
+	FString SelectedRowLabel() const;
 
 private:
 	struct FRow

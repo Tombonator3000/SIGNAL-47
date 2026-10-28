@@ -1,5 +1,7 @@
 # SIGNAL / 47 i Unreal
 
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+
 [Finaleønske: gigantisk UFO bak cloud tank-skyer](FINALE_CLOUD_TANK_UFO.md): ønsket senere innhold, anbefalt i SC13. Regi, material-/Niagara-oppskrift, lys, ytelsesbudsjett og produksjonsplan er lagret. Ingen effekt er implementert. [Tre konseptbilder](Concepts/CloudTankUFO-2026-10-28/README.md) viser SARO og Caliche; SARO v2 følger Toms presiserte skyretning.
 
 [SC02/AI-arbeidskandidat og overlevering](SC02_AI_HANDOFF.md): Codex hjelper etter Claudes bruksgrense. Alienens hindringsnavigasjon er rettet, og pakket SC02 består 159 kontroller og 19 disk-/Continue-gjenopptakelser. Samme R5 består hele 110-matrisen og sju gamle Continue-lagringer før Toms separat godkjente main-fletting i PR #190. Videre scenekilder er oppdatert; SC03–SC05-runtime og samlet akt 1 er fortsatt under produksjon.

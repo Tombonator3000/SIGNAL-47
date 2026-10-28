@@ -1,3 +1,7 @@
+## Grafikkinnstillinger, kandidat 28. oktober 2026
+
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+
 ## Elektrisk lysbue ved trafo, levert 28. oktober 2026
 
 SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/pull/195), merge `66ae5948e262586e4c26c621dc6d109e6d950552`, og den identiske, aksepterte R4-pakken er installert i `/home/tom/Games/Signal47/Linux`. Hele matrisen består 110/110; den installerte Low-kontrollen består 14 kontroller og to disk-/Flow-restores. Bildet fra installert spill er vurdert. Alle 60 personlige Saved-filer (79 noder) er uendret. Ingen ny offentlig release. Se [lysbuerapporten](FX_ARC_2026-10-28.md).

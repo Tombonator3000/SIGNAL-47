@@ -30,7 +30,7 @@ namespace
 
 bool AS47Web::CloudsActive() const
 {
-	if (!Clouds || !CloudMid || LightingQuality == 0 || CloudsOff()) return false;
+	if (!Clouds || !CloudMid || Graphics.Clouds == 0 || CloudsOff()) return false;
 #if !WITH_EDITOR
 	return true; // cooked shader maps are complete
 #else
@@ -148,7 +148,7 @@ void AS47Web::BuildClouds()
 void AS47Web::ApplyCloudQuality()
 {
 	if (!Clouds) return;
-	const bool bUltra = LightingQuality == 2;
+	const bool bUltra = Graphics.Clouds == 2;
 	// High keeps the 60 fps profile: half the view/shadow samples, short shadow rays, cheap reflections.
 	static const float Samples = Tune(TEXT("S47CloudSamples="), 0.f);
 	Clouds->SetViewSampleCountScale(Samples > 0.f ? Samples : bUltra ? 1.f : 0.5f);
@@ -160,9 +160,9 @@ void AS47Web::ApplyCloudQuality()
 	static const float ShadowKm = Tune(TEXT("S47CloudShadowKm="), 0.f);
 	Clouds->SetShadowTracingDistance(ShadowKm > 0.f ? ShadowKm : bUltra ? 2.f : 1.2f);
 	Clouds->SetVisibility(CloudsActive());
-	if (DawnSun && DawnSun->bCastCloudShadows != (LightingQuality > 0))
+	if (DawnSun && DawnSun->bCastCloudShadows != (Graphics.Clouds > 0 && Graphics.Shadows > 0))
 	{
-		DawnSun->bCastCloudShadows = LightingQuality > 0;
+		DawnSun->bCastCloudShadows = Graphics.Clouds > 0 && Graphics.Shadows > 0;
 		DawnSun->MarkRenderStateDirty();
 	}
 	// The ambient follows the clouds: real-time capture of the sky dome and the cloud layer.
