@@ -636,7 +636,8 @@ void AS47Story::StagePassed()
 	else if (S == 2)
 	{
 		SetPhase(ES47Phase::Locked);
-		Note(TimelineText(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.")));
+  const FString Pattern = TEXT("Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.");
+  Note(NightSequence() ? ClockText(false) + TEXT(". ") + Pattern : TimelineText(TEXT("02:14. ") + Pattern));
 		Toast(TEXT("Four pulses. A gap. Seven pulses. Again."), 4.f);
 		After(4.5, [this] { if (CurrentPhase == ES47Phase::Locked) Toast(TEXT("The tracking terminal can run a direction solve.")); });
 	}
