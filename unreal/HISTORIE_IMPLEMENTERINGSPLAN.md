@@ -298,6 +298,7 @@ Nye modeller produseres som redigerbare originalressurser med fungerende import.
 - Kontroller originaler, varselkvittering og kartløsning før avreise.
 - Bruk eksisterende vei og finale ved C8.15.
 - Behold ufrivillig motorstopp, THE EVENT, uttrekk og hele 1947-bildet.
+- Ta med Toms [cloud tank-UFO-ønske](FINALE_CLOUD_TANK_UFO.md): langsom hovedavsløring i SC13 anbefales, med mulig svakt forvarsel i SC12. Integrer uten å flytte THE EVENT på 47 sekunder eller det etterfølgende kamerauttrekket på 34 sekunder, bevar siste 1947-bilde, og mål High/Low. Dette er planlagt innhold uten levert runtime.
 - Overleveringspunktet forblir et planlagt mål som finalen avbryter.
 
 **Aksept:** Vanlig kjøring, stopp og rygging, sikkert Continue og hele finalen til sluttmeny prøves på High og Low. Fortellertiden går ikke bakover. Ingen alternativ slutt innføres.

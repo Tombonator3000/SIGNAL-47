@@ -1,3 +1,7 @@
+## Cloud tank-UFO til finalen, 28. oktober 2026
+
+Tom ønsker et episk, langsomt øyeblikk der en gigantisk UFO kommer frem bak voksende cloud tank-skyer i siste eller nest siste scenario. [Designnotatet](FINALE_CLOUD_TANK_UFO.md) lagrer oppskrift, ideer og mulig gjennomføring. Anbefaling: hovedavsløring i SC13 ved motorstopp C 8.15; SC12 får høyst et svakt varsel etter varsling/ruteplanlegging. THE EVENT 05:29:00 til 05:29:47 og 1947-bildet bevares. Dette er ønsket innhold for senere produksjon; effekt, spilltest og 60+ FPS er UNVERIFIED.
+
 ## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
 
 Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
