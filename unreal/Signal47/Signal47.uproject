@@ -13,7 +13,11 @@
 	"Plugins": [
 		{ "Name": "ModelContextProtocol", "Enabled": true },
 		{ "Name": "AllToolsets", "Enabled": true },
-		{ "Name": "PythonScriptPlugin", "Enabled": true }
+		{ "Name": "PythonScriptPlugin", "Enabled": true },
+		{ "Name": "RigLogic", "Enabled": true },
+		{ "Name": "HairStrands", "Enabled": true },
+		{ "Name": "ControlRig", "Enabled": true },
+		{ "Name": "MetaHumanSDK", "Enabled": true }
 	],
 	"TargetPlatforms": [ "Linux" ]
 }

@@ -52,6 +52,9 @@ public:
 	bool Loading() const { return CurrentState == TEXT("loading"); }
 	double StartedAt() const { return SourceStartedAt; }
 	FS47DialogueStatus Status() const;
+	// Exact source now audible, rather than the first entry in the complete plan.
+	// False during loading, inter-clip scheduling gaps, and after stop/end/error.
+	bool ActiveClip(FString& ClipId, double& Seconds) const;
 	bool Available(const FS47DialogueInput& Input) const;
 	void Stop();
 	void Play(const FS47DialogueInput& Input, FNotify OnState = {});
@@ -61,6 +64,7 @@ public:
 private:
 	bool bOn = false;
 	double SourceStartedAt = 0;
+	int32 ActiveClipIndex = INDEX_NONE;
 	FString CurrentState = TEXT("idle");
 	int32 Generation = 0;
 	bool bPending = false;

@@ -1,4 +1,5 @@
 #include "S47GroundCover.h"
+#include "S47MotelV2.h"
 #include "S47SaroSite.h"
 
 #include "S47Geo.h"
@@ -330,6 +331,8 @@ FS47FloraSpec RoadFlora(const TArray<FS47FloraRect>& Posts)
 	S.Seam = [](double X, double Z) { return RoadSeam(X, Z); };
 	S.Spill = [](double X, double Z) { return RoadSpill(X, Z); };
 	S.Blocks = Posts;
+	// Native motel pool/deck and approach extend west of the legacy court. Only an installed replacement supplies these.
+	for (const FVector4& B : FS47MotelV2::LandscapeFootprints()) S.Blocks.Add(ToRoadRect(R(B.X,B.Y,B.Z,B.W)));
 	S.Walks = { SHOULDER_ROAD() };
 	S.Ways = [](double X, double Z) { return RoadWays(X, Z); };
 	return S;
@@ -365,6 +368,9 @@ FS47FloraSpec SaroFlora(const TArray<FS47FloraRect>& Colliders, const TArray<FS4
 	using namespace S47SaroForecourt;
 	S.Blocks.Add(ToRoadRect(R(X0,X1,Z0,Z1)));
 	S.Blocks.Add(ToRoadRect(R(AccessX0,AccessX1,AccessZ0,AccessZ1)));
+	// These authored slabs are beyond the old motel rectangle and the MinZ<80 site filter above.
+	// Exclude at generation so newly streamed cells never regrow through the deck, water or paths.
+	for (const FVector4& B : FS47MotelV2::LandscapeFootprints()) S.Blocks.Add(ToRoadRect(R(B.X,B.Y,B.Z,B.W)));
 	S.Walks.Add(SHOULDER_ROAD());
 	S.Ways = [](double X, double Z) { const double Sx = X - SIR().X, Sz = Z - SIR().Z; return Sz < 80 ? SiteWays(Sx, Sz) : RoadWays(X, Z); };
 	return S;
