@@ -1,8 +1,9 @@
 ## Kveldsarbeid 18 til 24, 28. oktober 2026
 
 - [x] Arbeid ved arrayet 19:00 til 22:50: fire ekte kjøringer, papirer, hint, venstre PC i bruk (S47Observing). SC01-kontrakt PASS.
-- [ ] Ekte radioteleskoplyder (pulsar, antennedrev, støy, skriver) med PD/CC0/CC BY.
-- [ ] SC01: klask mot ruta, avtrykket, enklere lampetest.
+- [x] Ekte radioteleskoplyder (pulsar, antennedrev, støy, skriver) med PD/CC0/CC BY. Fem i bruk; flere kandidater i ~/scratch-bm/Signal47-array-sounds-20261028/SOURCES.md.
+- [x] SC01: klask mot ruta, avtrykket, enklere lampetest.
+- [ ] Nye dispatchopptak for SC01_FIRST_REPORT_001/002 (ny tekst) når VoiceStudio kjører. Klasket bruker fortsatt syntetisk dunk; lisensklarert ekte klask på glass er ikke funnet.
 - [ ] Aggregattest 19:10, runde ute med lykt, stemmen ved feil dør, tekster for trafoturen, SC03 til natt.
 - [ ] Codex: strømbrudd 00:13, K3 ute, trafo ca. 01:35, SC02 ca. 02:00, faste feillys, SKY01.
 
