@@ -1,0 +1,65 @@
+{
+  "status": "Under arbeid",
+  "gjelder": "FIX-01, bevarte krasj 28.10.2026 og målrettet triage 29.10.2026",
+  "sist_kontrollert": "2026-10-29",
+  "renderer": "Vulkan",
+  "gpu": "NVIDIA GeForce RTX 3080, 10240 MiB",
+  "engine": "5.8.4 CL58902052",
+  "crashes": [
+    {
+      "pid": 1692368,
+      "allocation_mib": 128,
+      "binary_sha256": "88508561fbf585009f5d5501aea7797d5b4cfe06657bad1651c99f7f421b4c70",
+      "binary_build_id": "45018ddc2bd83e66419211947400beccb7783a33",
+      "engine_version": "5.8.4-58902052+++UE5+Release-5.8",
+      "quality": "High",
+      "tsr_history_percent": 100,
+      "resolution_metadata": "2560x1440; faktisk viewport/renderstørrelse ikke bevart",
+      "stage": "oppstart frame0 rett etter LoadMap; ingen bevist dinerhandling",
+      "vulkan_ext_heap0_usage_mib": 1097.62,
+      "vulkan_ext_heap0_budget_mib": 3734.44,
+      "failed_memory_type_indices": [
+        1,
+        5
+      ],
+      "heap_index": 0
+    },
+    {
+      "pid": 1710609,
+      "allocation_mib": 256,
+      "binary_sha256": "15037a528be5e6a073440790bab8eba8ef6d349b4b5acc3def9d3a57e1a47a04",
+      "binary_build_id": "979838f826aad2cfcdab584cb17369b260733f1b",
+      "engine_version": "5.8.4-58902052+++UE5+Release-5.8",
+      "quality": "High ved init, Ultra fra frame2",
+      "tsr_history_percent": 200,
+      "resolution_metadata": "2560x1440; faktisk viewport/renderstørrelse ikke bevart",
+      "stage": "diner: waitress/counter/closer-look; breadcrumb Frame1919",
+      "vulkan_ext_heap0_usage_mib": 8002.56,
+      "vulkan_ext_heap0_budget_mib": 8119.81,
+      "failed_memory_type_indices": [
+        1,
+        5
+      ],
+      "heap_index": 0
+    }
+  ],
+  "historical_concurrency": "UNVERIFIED: ingen prosessmåling akkurat ved krasjene; nærliggende guardkvitteringer dokumenterer ikke overlapp",
+  "first_full_payload": "UNVERIFIED/mangler: første exe/debug/sym/core er sikret, men ingen komplett første pakke er funnet",
+  "second_full_payload": "PASS: eneste komplette pakke bevart og eksplisitt beskyttet i graphics/previous-installed",
+  "baseline_old_ultra_r1": {
+    "status": "AVBRUTT AV EGEN OVERVÅKER",
+    "quality": "Ultra, sent bekreftet",
+    "requested_output": "2560x1440",
+    "route": "water, fysisk road stage2 før diner",
+    "contention": [],
+    "global_gpu_peak_mib": 9676,
+    "global_gpu_min_free_mib": 180,
+    "vulkan_device_local_peak_mib": 7951.05,
+    "startup_dump_block_ms": 36868.58,
+    "new_fatal": false,
+    "diner_acceptance": "UNVERIFIED",
+    "settings_changed": false
+  },
+  "local_receipts": "~/scratch-bm/Signal47-diner-crash-20261029",
+  "source_note": "Tall fra komplette UE-krasjlogger og hashbundet gammel binær. RHI Reserved summeres ikke som faktisk VRAM. Ingen motor-/driverbytte eller installasjon."
+}

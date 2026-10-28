@@ -1059,3 +1059,11 @@ PASS: editor R11, pakking uten materialfeil, 1709 pakkede selvtester, 74 nattkon
 R1 ble avvist etter konkret funn i SaroPower::Settle: settled-flagget hindret glødens tilbakeføring og kunne akkumulere dimming gjennom Continue. R2 retter rekkefølgen og måler faktiske farger. T01s strømtransaksjon skjer nå før resultatmodalen slipper, mens SC02 fortsatt venter på presentasjon. Tidligere SKY-testståsted var skjult av opak portstang; produksjonssikten ble beholdt og både blokkering og vanlig sikt ble prøvd.
 
 UNVERIFIED: fullmatrise, fersk menneskelig SC01/SC02/SC03, manuell helkjøring, fysisk gamepad, subjektiv lytting og helspilltid. Native trafobilder viser RT-geometribudsjettvarsel (83.495/400 MiB, over 20 prosent), uten krasj; FIX-01s diner-krasj er ikke avklart. Ingen installasjon i Games eller offentlig release. [Rapport og presise grenser](../Docs/Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md).
+
+## 2026-10-29 00:39 Europe/Oslo: PR209 bekreftet og FIX-01 tatt
+
+PR209 er faktisk flettet til main i a9db4175 med forventet head f6c03835, og main er kontrollert mot testet Unreal-kjøretidskilde og narrative data fra b68d3a08. Codex 1 til 3 er ferdigmeldt i felles HANDOFF. Neste åpne punkt FIX-01 tas på egen gren fra oppdatert main. Pakkeoppryddingens tørrplan er lest; previous-installed fra grafikkpasset beskyttes midlertidig som mulig binærgrunnlag for de to faktiske diner-krasjene. Ingen fremmed prosess stoppes, og ingen installasjon/release er gjort.
+
+## 2026-10-29T00:47:45+01:00 Codex: pakkeopprydding etter natt-R2
+
+Guard PASS og godkjent konkret tørrplan. Fem eldre pakke-payloads/35 filer pensjonert, 21 135 105 769 logiske byte. Beholdt natt-R2, natt-R1, graphics-R2, samt eksplisitt beskyttet `Signal47-graphics-settings-20261028/previous-installed/Linux` som aktiv FIX-01-komparator. Dette er ett midlertidig nødvendig sammenligningsbygg utover normalgrensen. Saved, bilder, logger, kilder, installert spill og egne krasjkopier er bevart. Kvitteringer i `~/scratch-bm/Signal47-diner-crash-20261029/prune-protected-{plan,applied}.json`; logiske byte er ikke lovet ledig disk på reflinks. Ingen installasjon/release.
