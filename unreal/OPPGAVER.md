@@ -28,6 +28,10 @@ Tom vil ha en Found Footage-modus som viser spillet gjennom en uhyggelig bodycam
 - Niagara: modulen er lastet, men ubrukt. Første effekt er lysbue og gnister ved trafoen når den bleke kroppen viser seg i SC02. Alle Niagara-komponenter skal ha ray tracing av, `sg.EffectsQuality` skal ikke settes, og nye partikkelmaterialer må inn i PSO-opptaket.
 - Rekkefølge: etter at SC02 er flettet og installert, én tung Unreal-jobb om gangen. Trafoområdet deles med Codex sitt trafopass.
 
+## SC02 tatt over av Claude på Kubuntu, 28.10.2026 (under arbeid)
+
+Tom ba Claude ta over SC02 fra skyøkten (`ccr-20021313-mfplx9`, siste `52abd05f`) når Codex er ferdig med trafostasjonen. Gren `claude/sc02` i `~/scratch-bm/wt/sc02`, bevis i `~/scratch-bm/Signal47-sc02-20261028`. Rekkefølge: modellretting etter [revisjonen](HISTORIE_SC02_SC13_REVISJON.md) i Blender 4.5, native import til `/Game/Signal47/HorrorSC02`, bygg, pakket test, PR mot main, fletting og installasjon. Unreal-jobber bare når `unreal_guard.py require-idle` består.
+
 ## Historien SC02 til SC13 gjennomgått og revidert, Claude, 28.10.2026 (Toms valg tatt, venter på fletting)
 
 Tom ba om en gjennomgang av SC02 til SC13, omskriving og kutt av det unødvendige. Resultatet er [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md): logiske hull løst, fire jaktsekvenser i stedet for fem, én fienderegel, ni H-kort og levering i fire akter. SC-ID-ene er uendret, så SC02-kandidaten på `ccr-20021313-mfplx9` kan brukes videre. Toms valg 28.10: tilfeldig bortføring beholdes uten tidstap i nye saker, og stemmer for Ward, Ortiz, Earl og Nora lages til slutt, når alt annet er ferdig. De engelske scenetekstene i `Narrative/HorrorStory` oppdateres etter at SC02-grenen er flettet, for å unngå konflikt med `world_producers.json`.

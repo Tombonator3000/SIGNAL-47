@@ -6,6 +6,7 @@
 #include "S47FieldCamera.h"
 #include "S47Flow.h"
 #include "S47Horror.h"
+#include "S47HorrorThreat.h"
 #include "S47HorrorVisual.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
@@ -15,6 +16,7 @@
 #include "S47Kit.h"
 #include "S47Saves.h"
 #include "S47Story.h"
+#include "S47Substation.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -35,8 +37,10 @@ struct FS47HorrorTest::FState
 	bool bEnabled = false, bDone = false, bPendingNormalTest = false, bMissHand = false;
 	int32 Stage = 0, Checks = 0, Stores = 0, WalkIndex = 0, AfterWalk = 0;
 	double Elapsed = 0, Since = 0, Hold = 3, WalkMetres = 0, LastProgress = 0, PausedHandTime = 0;
-	double LineAt = 0;
-	FString Mode, Root, LastLine, NormalPhoto;
+	double LineAt = 0, SC02Clock = 0, SC02Seen = 0;
+	bool bCaptured = false;
+	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed;
+	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector;
 	TArray<FVector> Points;
 	FVector LastFoot = FVector::ZeroVector, FirstHand = FVector::ZeroVector;
 	S47J::FObj BeforeNormal, AfterNormal, AfterWindow, AfterReport, PendingNormal, FilmReserveBase;
@@ -140,6 +144,12 @@ bool FS47HorrorTest::Walk()
 	if (Distance < .09) { ++State->WalkIndex; M->Player->TestMove.Reset(); State->LastProgress = State->Elapsed; return false; }
 	if (State->Elapsed - State->LastProgress > 4)
 	{
+		for (const FS47Rect& C : M->Web->Colliders())
+			if (C.bEnabled && C.MinX < At.X + 4 && C.MaxX > At.X - 4 && C.MinZ < At.Z + 4 && C.MaxZ > At.Z - 4)
+				UE_LOG(LogS47HorrorTest, Display, TEXT("S47: blocked walk near collider %s x %.2f..%.2f z %.2f..%.2f"), *C.Id, C.MinX, C.MaxX, C.MinZ, C.MaxZ);
+		for (const FS47Rect& Z : M->Web->Zones())
+			if (Z.bEnabled && Z.MinX < At.X + 4 && Z.MaxX > At.X - 4 && Z.MinZ < At.Z + 4 && Z.MaxZ > At.Z - 4)
+				UE_LOG(LogS47HorrorTest, Display, TEXT("S47: blocked walk near zone %s x %.2f..%.2f z %.2f..%.2f"), *Z.Id, Z.MinX, Z.MaxX, Z.MinZ, Z.MaxZ);
 		Fail(FString::Printf(TEXT("native Walker path blocked at %.3f %.3f toward %.3f %.3f"), At.X, At.Z, State->Points[State->WalkIndex].X, State->Points[State->WalkIndex].Z));
 		return false;
 	}
@@ -176,7 +186,7 @@ void FS47HorrorTest::Step(double Dt)
 	if (!M || !M->Player || !M->Story || !M->World || !M->Web || !M->Flow || !M->UI || !M->Inter || !M->Evening || !M->Horror || !M->Horror->Visual || !M->Night || !M->Night->Album)
 	{ Fail(TEXT("live SC01 runtime dependency missing")); return; }
 	T.Elapsed += FMath::Clamp(Dt, 0., .2);
-	if (T.Elapsed > 420) { Fail(TEXT("420 s SC01 control timeout")); return; }
+	if (T.Elapsed > (T.Mode == TEXT("SC02") ? 900 : 420)) { Fail(TEXT("live horror contract control timeout")); return; }
 	if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("developer case zero required; never write a player case")); return; }
 	if (M->Flow->bStarting || M->World->bBusy) return;
 	if (T.Hold > 0) { T.Hold -= Dt; return; }
@@ -206,6 +216,10 @@ void FS47HorrorTest::Step(double Dt)
 
 	if (T.Stage == 900)
 	{
+		// SC02's H02 walkie opens on the way to the service front and holds the player;
+		// acknowledge it like a player would, then carry on along the same path.
+		if (T.Mode == TEXT("SC02") && T.AfterWalk >= 100 && H.Pack.CurrentScene())
+		{ M->Player->TestMove.Reset(); T.LastProgress = T.Elapsed; T.LastFoot = M->Player->Pos; Drain(900); return; }
 		if (!Walk()) return;
 		Stage(T.AfterWalk, .3); return;
 	}
@@ -213,12 +227,12 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		FString UserDir; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
 		UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
-		if (T.Mode != TEXT("SC01") || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
+		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SC02")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
 			!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
-		{ Fail(TEXT("S47HorrorContract=SC01 and explicit isolated /tmp UserDir required")); return; }
+		{ Fail(TEXT("S47HorrorContract=SC01 or SC02 and explicit isolated /tmp UserDir required")); return; }
 		for (const TCHAR* Flag : {TEXT("S47T01Contract"), TEXT("S47T02Contract"), TEXT("S47T02DriveContract"), TEXT("S47DaleDocumentsContract"), TEXT("S47EveningEntrance"), TEXT("S47SmokeTest")})
 			if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live test drivers")); return; }
-		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / TEXT("SC01");
+		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / T.Mode;
 		IFileManager::Get().MakeDirectory(*T.Root, true);
 		const double BeforeClock = M->Story->Clock();
 		H.Begin(nullptr, false);
@@ -657,6 +671,7 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==57)
 	{
 		if(!Check(H.Complete() && H.ReportAcknowledged()!=T.bMissHand && M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("completed SC01 survives Continue with a subsequently reopened exit")))return;
+		if(T.Mode==TEXT("SC02")){Stage(100,.5);return;}
 		T.bDone=true;M->Player->TestMove.Reset();
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC01"));
 		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);
@@ -668,4 +683,183 @@ void FS47HorrorTest::Step(double Dt)
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror SC01 PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"),T.Checks,T.Stores,T.WalkMetres);
 		FPlatformMisc::RequestExit(false);return;
 	}
+	// ---------------------------------------------------------------- SC02, meeting 1
+	// Continues the same live case after the real SC01 contract. The field trip uses the
+	// existing native autopilot like the T01 drive contract; foot movement uses the Walker,
+	// every use an aimed camera ray, every acknowledgement focused Slate Enter. Driving
+	// clear uses the same labelled autopilot API; manual steering and human play are UNVERIFIED.
+	auto& Th=*H.Threat;
+	auto Sc02=[&H](){const auto S=S47J::Obj(H.Save(),TEXT("sc02"));return S?S47J::Str(S,TEXT("phase")):FString();};
+	auto Retry=[&H](){const auto S=S47J::Obj(H.Save(),TEXT("sc02"));return S && S47J::Bool(S,TEXT("retry"));};
+	// Aim on one frame and use the ray on the next, as the SC01 stages do: the camera
+	// forward vector follows the new yaw only after a tick.
+	auto AimPick=[this,&T](const FString& Id,const FVector& At,bool bUse)
+	{
+		if(T.Aimed!=Id){Aim(At);T.Aimed=Id;return false;}
+		T.Aimed.Empty();return Pick(Id,FString(),bUse);
+	};
+	auto Node=[](const TCHAR* Id){for(const auto& N:FS47HorrorThreat::Nodes())if(FCString::Strcmp(N.Id,Id)==0)return FVector(N.At.X,0,N.At.Y);return FVector::ZeroVector;};
+	if(T.Stage==100)
+	{
+		if(!Check(H.ContentRevision()>=2 && Th.Ready() && Sc02()==TEXT("t01"),TEXT("revision 2 continues from completed SC01 into the SC02 T01 phase with the native pale body built")))return;
+		M->UI->Close(true);M->World->Enter(TEXT("saro"));M->Player->Place(10.8,8,0);M->Player->Pitch=-.08;
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC02 START: one labelled placement beside the parked SARO truck; native autopilot to Caliche thereafter"));
+		Stage(101,.5);return;
+	}
+	if(T.Stage==101)
+	{
+		if(!AimPick(TEXT("truck"),Target(TEXT("truck")),false))return;
+		M->World->Autopilot=10;M->World->DriveOut(false);Stage(102,.6);return;
+	}
+	if(T.Stage==102)
+	{
+		if(!M->World->bDriving){Fail(TEXT("outbound native trip ended before Caliche stop"));return;}
+		const auto* Truck=M->World->CabTruck();
+		if(M->World->Leg==TEXT("road") && Truck->Position.X<7950)M->World->Autopilot=4;
+		if(M->World->Leg!=TEXT("road") || Truck->Position.X>7900)return;
+		M->World->Autopilot=0;Stage(103,.1);return;
+	}
+	if(T.Stage==103)
+	{
+		if(!M->World->bDriving || T.Elapsed-T.Since>15){Fail(TEXT("native approach braking failed"));return;}
+		if(FMath::Abs(M->World->DrivingSpeed())>.1 || !M->World->CanGetOut())return;
+		T.FieldTruck=M->World->CabTruck()->Position;
+		if(!Check(M->World->GetOutHere(),TEXT("stopped SARO truck at Caliche permits normal GetOutHere")))return;
+		Stage(104,.65);return;
+	}
+	if(T.Stage==104)
+	{
+		T.FieldEgress=M->Player->Pos;
+		if(!Check(!Th.Active() && Sc02()==TEXT("t01"),TEXT("no pale body before the T01 result is secured")))return;
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC02 parked truck %.2f %.2f, egress %.2f %.2f"),T.FieldTruck.X,T.FieldTruck.Z,T.FieldEgress.X,T.FieldEgress.Z);
+		// The gravel shoulder east of the track is too steep to walk across; stay on the low
+		// side, then go up the service track itself as the T01 drive contract does.
+		Go({FVector(T.FieldEgress.X,0,FMath::Min(T.FieldEgress.Z,516.5)),FVector(7885,0,516.0),Node(TEXT("track")),Node(TEXT("front"))},105);return;
+	}
+	if(T.Stage==105)
+	{
+		if(H.Pack.CurrentScene()){Drain(105);return;}
+		if(!M->Substation->HasJournal()){if(!AimPick(TEXT("substation:journal"),FS47Substation::Site(FVector(4.83,-8.99,.77)),true))return;M->UI->Close(true);return;}
+		if(!AimPick(TEXT("substation:service"),FS47Substation::Site(FVector(5.52,-9.10,1.42)),true))return;
+		Stage(106,.1);return;
+	}
+	if(T.Stage==106)
+	{
+		if(M->Inter->LabelOf(TEXT("substation:service"))!=TEXT("Service check complete / compare the lamp"))
+		{if(T.Elapsed-T.Since>10)Fail(TEXT("real local service check did not complete"));return;}
+		if(!AimPick(TEXT("substation:lamp"),FS47Substation::Site(FVector(4.62,-9.01,1.70)),true))return;
+		M->UI->Close(true);
+		if(!Check(M->Substation->HasNormalResult(),TEXT("actual panel and lamp comparison give the T01 normal result")))return;
+		T.T01Stamp=M->Substation->NormalCompletionStamp();Stage(107,.4);return;
+	}
+	if(T.Stage==107)
+	{
+		// H02 presentation from the physical result; the meeting waits for every panel to close.
+		if(H.Pack.CurrentScene()){if(Th.Active()){Fail(TEXT("pale body started during an open H02 scene"));return;}Drain(107);return;}
+		if(!H.Pack.Flag(TEXT("hr_h02_recorded"))){if(T.Elapsed-T.Since>20)Fail(TEXT("H02 record was not presented after the real T01 result"));return;}
+		if(Sc02()!=TEXT("encounter")){if(T.Elapsed-T.Since>25)Fail(TEXT("meeting 1 did not start after the presented T01 record"));return;}
+		if(!Check(Th.Active() && M->Substation->HasNormalResult(),TEXT("meeting 1 starts only after the secured, presented T01 result")))return;
+		T.SC02Clock=M->Story->Clock();Stage(108,.2);return;
+	}
+	if(T.Stage==108)
+	{
+		// The body appears only at the unseen post; look away towards the yard, then back at the crossing.
+		Aim(Node(TEXT("shed"))+FVector(0,1.4,0));
+		if(!Th.Appeared()){if(T.Elapsed-T.Since>20)Fail(TEXT("pale body never appeared at its post"));return;}
+		Stage(109,.2);return;
+	}
+	if(T.Stage==109)
+	{
+		// It reacts to real sound only: shuffle sideways (actual footsteps) while watching it.
+		const FVector2D P=Th.Position();Aim(FVector(P.X,M->Player->FloorY+1.5,P.Y));
+		if(!H.Pack.CurrentScene() && Th.Seen()){M->Player->TestMove.Reset();Shot(TEXT("sc02-body-seen"));Stage(110,.6);return;}
+		if(H.Pack.CurrentScene()){M->Player->TestMove.Reset();Drain(109);return;}
+		M->Player->TestMove=FVector2D(FMath::Sin(T.Elapsed*1.2)>0?.35:-.35,0);
+		if(FMath::Fmod(T.Elapsed,2.0)<.05)UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC02 watching body: state %s at %.1f %.1f"),FS47HorrorThreat::StateName(Th.State()),P.X,P.Y);
+		if(T.Elapsed-T.Since>20){M->Player->TestMove.Reset();Fail(TEXT("rendered pale body never registered as seen through the real view test"));}
+		return;
+	}
+	if(T.Stage==110)
+	{
+		if(!Check(Th.Seen() && Sc02()==TEXT("encounter"),TEXT("the player has actually seen the pale body; no escape credit yet")))return;
+		Shot(TEXT("sc02-forewarning"));
+		if(!StoreRestore(TEXT("sc02-mid-meeting"),M->Flow->GameState()))return;
+		Stage(111,1.0);return;
+	}
+	if(T.Stage==111)
+	{
+		const FVector2D At(M->Player->Pos.X,M->Player->Pos.Z);
+		if(!Check(Sc02()==TEXT("encounter") && FVector2D::Distance(At,Th.Checkpoint())<1.0 && M->Substation->HasNormalResult() && M->Substation->NormalCompletionStamp()==T.T01Stamp,
+			TEXT("Continue in the middle of the meeting resumes at the shed checkpoint with T01 kept, never in a half chase")))return;
+		Go({Node(TEXT("westMid")),Node(TEXT("westCorner"))},112);return;
+	}
+	if(T.Stage==112)
+	{
+		// Exposure test: walk into the open crossing towards the body and stand there.
+		// The retry response is the capture's visible result; read it before acknowledging it.
+		if(Retry() || (H.Pack.CurrentScene() && H.Pack.CurrentScene()->Id==TEXT("SC02_RETRY"))){M->Player->TestMove.Reset();T.bCaptured=true;Stage(113,.3);return;}
+		if(H.Pack.CurrentScene()){Drain(112);return;}
+		const FVector2D P=Th.Position();const FVector D=FVector(P.X,0,P.Y)-M->Player->Pos;
+		M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=-.04;
+		M->Player->TestMove=FVector2D(0,FVector2D(D.X,D.Z).Size()>1.5?-.6:0);
+		if(T.Elapsed-T.Since>60){M->Player->TestMove.Reset();Fail(TEXT("exposed player in the open was never captured within 60 s"));}
+		return;
+	}
+	if(T.Stage==113)
+	{
+		M->Player->TestMove.Reset();
+		const FVector2D At(M->Player->Pos.X,M->Player->Pos.Z);
+		if(!Check(T.bCaptured && Sc02()==TEXT("encounter") && FVector2D::Distance(At,Th.Checkpoint())<1.0,TEXT("capture gives a local retry at the shed checkpoint")))return;
+		if(!Check(M->Substation->HasNormalResult() && M->Substation->NormalCompletionStamp()==T.T01Stamp,TEXT("capture keeps the completed T01 result")))return;
+		if(!Check(M->Story->Clock()-T.SC02Clock<600,TEXT("capture costs no lost time beyond the played seconds")))return;
+		Shot(TEXT("sc02-retry"));Stage(114,.4);return;
+	}
+	if(T.Stage==114)
+	{
+		if(H.Pack.CurrentScene()){Drain(114);return;}
+		// Route A: west along the fence outside the closed yard, down to the west track, then to the truck.
+		Go({Node(TEXT("westMid")),Node(TEXT("westCorner")),Node(TEXT("westTrack")),FVector(7885,0,516.0),FVector(T.FieldEgress.X,0,FMath::Min(T.FieldEgress.Z,516.5)),T.FieldEgress},115);return;
+	}
+	if(T.Stage==115)
+	{
+		if(Retry() && H.Pack.CurrentScene()){Drain(115);return;}
+		const FVector2D At(M->Player->Pos.X,M->Player->Pos.Z);
+		if(!Check(FVector2D::Distance(At,FVector2D(T.FieldEgress.X,T.FieldEgress.Z))<1.5,TEXT("route A on foot reaches the parked truck outside the closed yard")))return;
+		if(!AimPick(TEXT("dinerTruck"),Target(TEXT("dinerTruck")),false))return;
+		M->World->Autopilot=10;M->World->DriveBack();Stage(116,.6);return;
+	}
+	if(T.Stage==116)
+	{
+		if(Sc02()==TEXT("escaped")){Stage(117,.2);return;}
+		if(!M->World->bDriving && T.Elapsed-T.Since>3){Fail(TEXT("drive back never started"));return;}
+		if(T.Elapsed-T.Since>90)Fail(TEXT("driving clear did not end meeting 1"));
+		return;
+	}
+	if(T.Stage==117)
+	{
+		const auto S=S47J::Obj(H.Save(),TEXT("sc02"));
+		if(!Check(H.SC02Escaped() && S && !S47J::Str(S,TEXT("escapeStamp")).IsEmpty() && S47J::Bool(S,TEXT("threatSeen")),TEXT("driving clear after a real sighting is an escape with its stamp")))return;
+		if(M->World->bDriving)return; // let the native Park finish at SARO
+		Stage(118,.8);return;
+	}
+	if(T.Stage==118)
+	{
+		if(H.Pack.CurrentScene()){Drain(118);return;}
+		if(!Check(H.Pack.Flag(TEXT("hr_sc02_escape_presented")),TEXT("SC02_ESCAPE is presented after the escape, not before")))return;
+		if(!StoreRestore(TEXT("sc02-escaped"),M->Flow->GameState()))return;
+		Stage(119,.6);return;
+	}
+	if(T.Stage==119)
+	{
+		if(!Check(H.SC02Escaped() && M->Substation->HasNormalResult() && !Th.Active(),TEXT("escaped meeting and T01 survive Continue without restarting the body")))return;
+		T.bDone=true;M->Player->TestMove.Reset();
+		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC02"));
+		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);
+		S47J::Set(Result,TEXT("captured"),T.bCaptured);Result->SetArrayField(TEXT("evidence"),T.Evidence);
+		S47J::Set(Result,TEXT("limits"),TEXT("Scripted live contract on top of the SC01 contract. Field trip and drive back use the existing native autopilot API like the T01 drive contract; route B, manual steering, human play, listening and fear are UNVERIFIED."));
+		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror SC02 PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking, captured %s"),T.Checks,T.Stores,T.WalkMetres,T.bCaptured?TEXT("yes"):TEXT("no"));
+		FPlatformMisc::RequestExit(false);return;
+	}
+
 }

@@ -20,6 +20,14 @@ Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIG
 
 Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 kontroller, inklusive tre faktiske taleklipp, pause og diskrestore. Bildet etter restore er åpnet og vurdert. Alle 50 personlige Saved-filer er uendret fra oppdragets start. Dette er automatiserte kontroller og bildevurdering, ikke menneskelig gjennomspilling eller en helspill-/FPS-garanti. Se [motelrapporten](MOTEL_V2.md). Tidligere utsagn nedenfor om at SC01 ikke er standard eller at PR172 venter, er historikk. Ingen ny spillutgave er publisert.
 
+## Forberedelse av SC02 til SC13, 27. oktober 2026
+
+- `Narrative/HorrorStory/world_producers.json` navngir produsenten i koden for alle 96 `ctx_hr_*`-flagg (12 finnes, 48 delvis, 36 nye), én matriserad per scene, 117 prøver og en arbeidspakke per SC. `build_pack.py` kontrollerer symbolene ordrett mot kilden. Lesbar versjon i `generated/SCENE_MATRIX.md`. Ingen runtimeeksport er endret.
+- SC02 er skrevet som ukompilert kandidat på `ccr-20021313-mfplx9`: innholdsrevisjon 2 i `FS47Horror`, nytt lagringsfelt `horror.sc02`, ny `FS47HorrorThreat`, og modellen i `ArtSource/HorrorSC02`. Revisjon 1 skal være uendret. Ingenting er bygget eller prøvd.
+- Blender finnes ikke i skyøkter, men bpy 5.1.2 fra pip virker (Cycles på CPU; Eevee og Workbench mangler EGL). Prosjektets Blender er 4.5 LTS, så endelig eksport skjer der.
+- Det finnes ingen inntrenger, ingen huking og ingen passiv residualvei i koden fra før. Gamle fangstsystemer (Abduction, TruckTaken, StationTaken) gir tidstap og brukes ikke i de nye møtene.
+- 16 åpne avklaringer for Tom står i `SC02_TIL_SC13_FORBEREDELSE.md`.
+
 ## Grenene, 27. oktober 2026
 
 - PR #170 ble flettet av Tom 26.10 kl. 22:15, etter avsnittet under som sier at den ikke er flettet. Hele `screenshots.sh` var ikke kjørt (0 av 110) da; 27.10 kl. 19:15 består den 110 av 110 på main pluss SC01.

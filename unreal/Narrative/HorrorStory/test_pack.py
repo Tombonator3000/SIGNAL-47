@@ -202,5 +202,65 @@ class UnifiedContracts(unittest.TestCase):
         self.assertEqual(self.pack["production"]["runtime_status"], "not_integrated")
 
 
+class WorldProducers(unittest.TestCase):
+    """Every SC fact needs a named producer in real code and a test."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pack, cls.modules = author.EV.validate()
+        scenarios = author.validate_scenarios(deepcopy(cls.pack), deepcopy(cls.modules))
+        cls.registry = author.runtime_registry(cls.pack, cls.modules, scenarios)
+        cls.data = author.EV.read_json(author.ROOT / "world_producers.json")
+
+    def check(self, data):
+        return author.validate_producers(self.pack, self.modules, self.registry, data)
+
+    def test_all_flags_scenes_and_scenarios_are_covered(self):
+        data = self.check(deepcopy(self.data))
+        self.assertEqual(len(data["flags"]), len(self.pack["external_flags"]))
+        self.assertEqual(len(data["scenes"]), 79)
+        self.assertEqual([p["scenario"] for p in data["work_packages"]], [f"SC{i:02}" for i in range(1, 14)])
+
+    def test_unowned_flag_is_rejected(self):
+        data = deepcopy(self.data)
+        data["flags"] = [f for f in data["flags"] if f["flag"] != "ctx_hr_sc02_escape_complete"]
+        with self.assertRaises(author.EV.PackError):
+            self.check(data)
+
+    def test_invented_code_symbol_is_rejected(self):
+        data = deepcopy(self.data)
+        row = next(f for f in data["flags"] if f["status"] == "existing")
+        row["symbols"] = ["S47NoSuchFunctionAnywhere"]
+        with self.assertRaises(author.EV.PackError):
+            self.check(data)
+
+    def test_existing_producer_cannot_point_at_a_planned_file(self):
+        data = deepcopy(self.data)
+        row = next(f for f in data["flags"] if f["status"] == "existing")
+        row["sources"] = ["unreal/Signal47/Source/Signal47/Private/S47NotYetWritten.cpp (ny)"]
+        with self.assertRaises(author.EV.PackError):
+            self.check(data)
+
+    def test_flag_must_belong_to_its_first_scenario(self):
+        data = deepcopy(self.data)
+        next(f for f in data["flags"] if f["flag"] == "ctx_hr_sc02_threat_visible")["scenario"] = "SC03"
+        with self.assertRaises(author.EV.PackError):
+            self.check(data)
+
+    def test_each_scenario_needs_all_eight_test_categories(self):
+        data = deepcopy(self.data)
+        for test in data["tests"]:
+            if test["scenario"] == "SC02":
+                test["covers"] = [c for c in test["covers"] if c != "continue"] or ["normal"]
+        with self.assertRaises(author.EV.PackError):
+            self.check(data)
+
+    def test_scene_matrix_row_needs_a_known_test(self):
+        data = deepcopy(self.data)
+        data["scenes"][0]["tests"] = ["SC01-T99"]
+        with self.assertRaises(author.EV.PackError):
+            self.check(data)
+
+
 if __name__ == "__main__":
     unittest.main()
