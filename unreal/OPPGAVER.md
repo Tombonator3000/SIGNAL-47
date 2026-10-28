@@ -13,3 +13,13 @@
 Når en oppgave endrer eier eller filer, oppdater den relevante raden. Når den leveres, oppdater STATUS/TODO og lenk kvitteringen. Ny historieplan og kveldsfordeling står i [DECISIONS](../Docs/Active/DECISIONS.md).
 
 [Tidligere arbeidsdelings-/leveringshistorikk er bevart](../Docs/Archive/Superseded/Unreal/OPPGAVER-before-docs-organization.md). Lokale ucommittede koordineringer i andre arbeidskopier må samordnes før de slettes eller overskrives.
+## Produksjonskoordinator med Claude, 29. oktober 2026
+
+Tom ba om systemet skissert i Signal 47-samtalen. Codex eier
+`Automation/production`, inngangen `Scripts/production.py`, den avgrensede
+guard-hooken og produksjonsdokumentasjonen på `codex/production-coordinator-20261028`
+i `~/scratch-bm/wt/production-coordinator`. En egen Claude Code-økt eier
+Claude-adapteren og dens tester; to avgrensede hjelpere har kildeindeks og
+reservasjon/prosesskontroll. Eksisterende kvelds-/SC03-arbeid har egne eiere.
+Dette passet kjører raske Python-/prosesstester og en avgrenset Claude-probe.
+Ingen tung motorjobb eller reservasjon av Toms spillmaskin er planlagt.

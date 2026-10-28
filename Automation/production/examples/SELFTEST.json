@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "PROD-SELFTEST",
+  "title": "Kontroller produksjonskoordinatoren uten motor",
+  "description": "Kjør den raske standardbibliotek-testsuiten og kontroller patchformat. Dette er teknisk aksept for produksjonsverktøyet; det godkjenner ingen spillsekvens.",
+  "kind": "command",
+  "role": "qa",
+  "checks": [
+    {"tool": "unittest", "params": {"start": "Automation/production/tests", "pattern": "test*.py"}, "timeout_seconds": 120},
+    {"tool": "git_diff", "params": {}, "timeout_seconds": 20}
+  ],
+  "requires_review": false,
+  "max_attempts": 1
+}

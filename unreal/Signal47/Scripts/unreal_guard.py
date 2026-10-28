@@ -3,6 +3,7 @@
 import argparse
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -11,7 +12,7 @@ import subprocess
 import time
 
 
-PATTERN = 'UnrealEditor|AutomationTool|UnrealBuildTool|Signal47'
+PATTERN = 'UnrealEditor|AutomationTool|UnrealBuildTool|Signal47|blender'
 INSTALLED_EXE = str(Path.home() / 'Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47')
 GRACE_ENV = 'S47_INSTALLED_GAME_GRACE'
 WAIT_SECONDS = 7200
@@ -51,7 +52,7 @@ def split_jobs(jobs, policy):
 def heavy_command(executable, argv):
     """Classify the executable or interpreter's actual tool, never later wrapper args."""
     name = Path(executable).name
-    if name.startswith('UnrealEditor') or name in (
+    if name.lower() in ('blender', 'blender.exe') or name.startswith('UnrealEditor') or name in (
             'Signal47', 'Signal47-Linux-Shipping', 'Signal47-Linux-Development',
             'UnrealBuildTool', 'AutomationTool', 'UnrealBuildTool.exe', 'AutomationTool.exe'):
         return True
@@ -128,7 +129,23 @@ def owned_process(pid, root_pid):
     return False
 
 
+def reservation_access():
+    """Observe whole-series reservations when the new sibling module exists.
+
+    Historical standalone guard copies retain their existing process checks.
+    They cannot observe the new cooperative reservation until updated.
+    """
+    path = Path(__file__).with_name('production_lease.py')
+    if not path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location('s47_production_lease_guard', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.assert_reservation_access()
+
+
 def require_idle():
+    reservation = reservation_access()
     memory = subprocess.run(['free', '-g'], text=True, capture_output=True, check=True)
     print(memory.stdout.rstrip(), flush=True)
     check = subprocess.run(['pgrep', '-fa', PATTERN], text=True, capture_output=True, check=False)
@@ -147,6 +164,7 @@ def require_idle():
     state = 'CONTENDED: installed game allowed after two-hour grace; FPS UNVERIFIED' if exempted else 'PASS: no heavy Unreal job'
     print(f'Guard {state}; {available:.3f} GiB available.', flush=True)
     return {'available_gib': available, 'heavy_jobs': jobs, 'pgrep': check.stdout,
+            'production_reservation': reservation,
             'exempted_installed_game': exempted, 'grace_policy': policy,
             'performance_status': 'UNVERIFIED' if exempted else 'UNCONTENDED'}
 

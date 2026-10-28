@@ -13,6 +13,7 @@
 | Hvor ligger tidligere Unity-/web-arbeid og erstattede notater? | [Archive](Archive/README.md) |
 | Hvor finner jeg et bestemt gammelt dokument? | [Dokumentkatalog med status og ny plassering](CATALOGUE.md) |
 | Hvordan bygges Unreal, og hvem eier arbeidet? | [Unreal-inngang](../unreal/README.md) og [arbeidsdeling](../unreal/OPPGAVER.md) |
+| Hvordan kjøres produksjonsoppgaver med Claude og testbevis? | [Produksjonskoordinator](../Automation/production/README.md) |
 
 ## Hva betyr statusen?
 

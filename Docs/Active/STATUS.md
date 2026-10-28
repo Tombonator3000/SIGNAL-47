@@ -41,6 +41,12 @@ Nattsekvensen og SC03 arbeides med i separate arbeidskopier. Den lokale arbeidsd
 
 ## Kontrollgrunnlag og begrensninger
 
+Produksjonsverktøy, 29. oktober: [produksjonskoordinator med Claude](Guides/PRODUCTION_SYSTEM.md)
+samler varig oppgavekø, kildeoppslag, verktøykjøring og kontrollkvitteringer.
+Leveransen gjelder utviklingsverktøy. Faktisk Claude-kjøring er avgrenset av
+kontoens kvote; syntetiske tester og lokal kontroll er ført i veiledningen.
+Dette endrer ingen av spillpakkenes leveringsnivåer ovenfor.
+
 R2-installasjonen er dokumentert i den lokale bevismappen `/home/tom/scratch-bm/Signal47-graphics-settings-20261028`: `acceptance-r1.json`, `installation-r1.json`, `installed-verification-r1.json` og `post-prune-verification.json`. Installert skrive-/lesekontroll består 47 + 15; alle 79 personlige Saved-filer (105 noder) er uendret også etter opprydding. [Rapporten i repoet](Guides/GRAPHICS_SETTINGS.md) beskriver omfang og begrensninger.
 
 Denne dokumentryddingen leser kvitteringer og kilder. Den starter ingen ny motorjobb, spilltest, installasjon eller offentlig release. Menneskelig full gjennomspilling, fysisk gamepad, subjektiv lytting og ytelse på andre PC-er skal ikke regnes som bestått uten egne faktiske bevis.
