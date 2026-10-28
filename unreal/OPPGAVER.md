@@ -1,6 +1,6 @@
 ## Grafikkinnstillinger installert, Codex 28.10.2026
 
-Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Kort installert oppstartskontroll og kanonisk prune venter på Claudes SC03-kjøring. Se [grafikkrapport](GRAPHICS_SETTINGS.md). Claudes SC03-kilder er urørt; bruk oppdatert main som grunnlag ved videre fletting.
+Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Installert skrive-/lesekontroll består (47 + 15), og payload samt Saved er kontrollert etter oppstart. Kanonisk prune er fullført; gjeldende bygg og to eldre beholdes, med eksplisitt vern av andre aktive SC-kandidater. Se [grafikkrapport](GRAPHICS_SETTINGS.md). Claudes SC03-kilder er urørt; bruk oppdatert main som grunnlag ved videre fletting.
 
 ## SC02-lysbue levert, 2026-10-28 kl.16:42 CET
 
