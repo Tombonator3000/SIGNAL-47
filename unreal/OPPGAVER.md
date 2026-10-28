@@ -1,6 +1,6 @@
-## Fotolab nattpass, 28. oktober 2026 kl.00:10 CET
+## Fotolab levert, 28. oktober 2026 kl.01:15 CET
 
-Ti originale detaljdeler er laget i Blender og importert i Unreal med tre LOD. Kilde48/native56, editor/pakke og målrettet fremkalling/lys/strøm består. Fem faktiske spillbilder er vurdert. Kandidat R1 gjennomgår nå den ene fullmatrisen før PR; ingen fletting eller installasjon ennå. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Motel R4, SC01, MetaHuman og atmosfære er bevart. Claudes TB2-kilder er separate og ikke endret.
+Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pull/181), merge `8c70ecb69f24bae15197e31bab95c924e1fd18e5`, og identisk testet pakke er installert i `/home/tom/Games/Signal47/Linux`. Ti originale detaljdeler, PBR, tre LOD og redigerbar Blender-kilde følger med. Hele matrisen består 110/110 etter én kjøring. Installert Low-fremkalling og ny prosess med Continue fra faktisk disk består; begge bilder er vurdert. Alle 50 personlige Saved-filer er uendret. Motel R4, SC01, MetaHuman og godkjent atmosfære er bevart. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Claudes fem TB2-bygninger i PR179 er fortsatt separate kilder uten native integrasjon i denne leveransen.
 
 ## Motel V2, levert 27. oktober 2026
 
