@@ -173,7 +173,26 @@ void FS47Evening::AnswerFeederCall()
 }
 void FS47Evening::NightStep()
 {
- if (!NightSequence() || !M || !M->Story || !M->World || M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic()) return;
+ if (!NightSequence() || !M || !M->Story || !M->World || M->bPausedByMenu) return;
+ // The measured lamp result commits the supply change even while its record is open.
+ // H02 presentation still owns the separate SC02 gate in Horror::StepSC02.
+ if (FeederOutage() && bFeederCallAnswered && M->Substation && M->Substation->HasNormalResult())
+ {
+  // A physical journey on foot must not leave the later encounter unreachable.
+  if (!bServiceDriveSkipped)
+  {
+   bServiceDriveSkipped = true;
+   M->Story->AdvanceClockTo(S47Timeline::FeederDrive, TEXT("Caliche Junction reached on foot"));
+  }
+  bFeederRestored = true; StopRing();
+  M->Story->ApplyFeederPower(false);
+  M->Story->ConsoleLog(TEXT("CALICHE FEEDER STABLE / SARO SUPPLY RESTORED / K3 CLOSED"));
+  M->Story->Note(M->Story->ClockText(true) + TEXT(". The checked circuit held. SARO power and the array drive are back. The unlogged residual is still waiting at the receiver."));
+  M->UI->Toast(TEXT("Feeder stable. SARO power restored. K3 holds and the array can move again."), 6);
+  M->UI->Objective(TEXT("CALICHE JUNCTION // KEEP THE COMPLETED FEEDER RECORD. RETURN TO SARO 07"));
+  M->RequestAutosave();
+ }
+ if (M->ModalOpen() || M->Story->IsCinematic()) return;
  if (!bFeederFailed)
  {
   if (M->Horror && M->Horror->BaselineChecked()) M->Story->AdvanceClockTo(S47Timeline::Calibration, TEXT("receiver reference complete"));
@@ -190,23 +209,6 @@ void FS47Evening::NightStep()
   bServiceDriveSkipped = true;
   M->Story->AdvanceClockTo(S47Timeline::FeederDrive, TEXT("drive to Caliche Junction"));
   M->Story->Toast(TEXT("14 APRIL 1986 / 01:35. Caliche Junction feeder call."), 5);
-  M->RequestAutosave();
- }
- if (FeederOutage() && bFeederCallAnswered && M->Substation && M->Substation->HasNormalResult())
- {
-  // Reaching and physically checking the junction on foot is also a valid journey.
-  // It must not leave a restored feeder with an unreachable missing drive milestone.
-  if (!bServiceDriveSkipped)
-  {
-   bServiceDriveSkipped = true;
-   M->Story->AdvanceClockTo(S47Timeline::FeederDrive, TEXT("Caliche Junction reached on foot"));
-  }
-  bFeederRestored = true; StopRing();
-  M->Story->ApplyFeederPower(false);
-  M->Story->ConsoleLog(TEXT("CALICHE FEEDER STABLE / SARO SUPPLY RESTORED / K3 CLOSED"));
-  M->Story->Note(M->Story->ClockText(true) + TEXT(". The checked circuit held. SARO power and the array drive are back. The unlogged residual is still waiting at the receiver."));
-  M->UI->Toast(TEXT("Feeder stable. SARO power restored. K3 holds and the array can move again."), 6);
-  M->UI->Objective(TEXT("CALICHE JUNCTION // KEEP THE COMPLETED FEEDER RECORD. RETURN TO SARO 07"));
   M->RequestAutosave();
  }
 }
