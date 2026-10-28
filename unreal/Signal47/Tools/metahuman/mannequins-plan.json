@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "status": "planned_not_produced",
+  "requested_on": "2026-10-28",
+  "purpose": "Static posed MetaHuman stand-ins for existing low-poly people; not AI or animated NPCs",
+  "engine": "5.8.4",
+  "coordinates": "Existing three/game-space metres, Y up. Convert through S47Three; read runtime anchors, not hardcoded UE locations.",
+  "rendering": "Bake copied authoring characters into posed static body/face/hair/clothing with shared game-quality materials and suitable LODs. No continuous RigLogic/AnimBP/skinning for static stand-ins.",
+  "private_asset_policy": "MetaHuman and derivative meshes/textures/DNA remain outside public Git; own pipeline/manifest and rendered images may be tracked.",
+  "available_female_prototype": "/Game/MetaHumans/MHC_Waitress",
+  "available_male_prototype": null,
+  "placements": [
+    {
+      "id": "radio_woman",
+      "anchor": "world.town.woman",
+      "proxy": "world.town.proxies.woman",
+      "pose": "seated_bench",
+      "authoring_pivot": "pelvis/seat; old root is not standing feet",
+      "source_state": "female prototype available, character-specific clothing/hair and posed bake required",
+      "preserve": [
+        "radio in lap",
+        "FS47Town::SetPeople schedule and visibility",
+        "radio_woman interaction"
+      ]
+    },
+    {
+      "id": "souvenir_man",
+      "anchor": "world.town.smoker",
+      "proxy": "world.town.proxies.smoker",
+      "pose": "standing_stoop",
+      "authoring_pivot": "feet matched to existing porch surface",
+      "source_state": "male MetaHuman preset/clothing not yet available locally",
+      "preserve": [
+        "cigarette/porch glow",
+        "FS47Town::SetPeople schedule and visibility",
+        "souvenir_man interaction"
+      ]
+    },
+    {
+      "id": "diner_driver",
+      "anchor": "world.diner.objs.driver",
+      "proxy": "world.diner.proxies.driver",
+      "pose": "seated_counter",
+      "authoring_pivot": "seat/hips and feet matched to existing chair",
+      "source_state": "male MetaHuman preset/clothing not yet available locally",
+      "replace_also": [
+        "world.diner.objs.driverHead"
+      ],
+      "preserve": [
+        "existing interaction",
+        "chair and counter"
+      ]
+    }
+  ],
+  "retain_unchanged": [
+    "existing animated FS47Waitress",
+    "Dale/Kinski voice-only representation",
+    "story clocks",
+    "dialogue audio clock",
+    "save facts"
+  ],
+  "acceptance": [
+    "source character copied and preserved",
+    "static pose and feet/seat contact reviewed in actual location",
+    "no duplicate old body/head",
+    "props and interaction IDs retained",
+    "story visibility/schedule followed",
+    "game-quality materials/texture and geometry budget measured"
+  ],
+  "baked_assets": [],
+  "runtime_integrated": false,
+  "installed": false
+}
