@@ -1191,10 +1191,11 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==219){M->UI->Close(true);Go({Front(Target(TEXT("horror:thermos")),1.3)},2191);return;}
 	if(T.Stage==2191){if(!Pick3(TEXT("horror:thermos"),Target(TEXT("horror:thermos")),true))return;Stage(220,.3);return;}
 	if(T.Stage==220){M->UI->Close(true);Go({Front(Target(TEXT("horror:gravelMarks")),1.3)},2201);return;}
-	if(T.Stage==2201){if(!Pick3(TEXT("horror:gravelMarks"),Target(TEXT("horror:gravelMarks")),true))return;Stage(221,.6);return;}
+	if(T.Stage==2201){if(!Pick3(TEXT("horror:gravelMarks"),Target(TEXT("horror:gravelMarks")),true))return;Stage(2202,.6);return;}
+	// Close the examine text once; the traces note that follows is drained, never closed.
+	if(T.Stage==2202){M->UI->Close(true);Stage(221,.4);return;}
 	if(T.Stage==221)
 	{
-		M->UI->Close(true);
 		if(H.Pack.CurrentScene()){Drain(221);return;}
 		if(!Check(S3.TracesChecked() && H.Pack.Flag(TEXT("hr_sc03_helper_traces_presented")),TEXT("the wagon, the thermos and the marks examined; the traces note presented")))return;
 		Go({Front(Payphone(),1.1)},222);return;
