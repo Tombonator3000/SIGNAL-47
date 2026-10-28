@@ -970,5 +970,8 @@ Tom ba om å legge bildene i repoet som konseptbilder. Tre originale PNG-filer p
 
 ## 2026-10-28: SC02-lysbue, pakket kandidat R4
 
-SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02/fullmatrise/fletting/installasjon gjenstår ved denne kildeinnsjekkingen.
+SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02 på endelig R4 består 65 kontroller og 15 disk-/Flow-restores uten lysbue. Hele matrisen består 110/110 i to deler (54 + 56) etter en guard-pause for Claudes jobb. Ingen bestått prøve gjentas. Fletting og installasjon gjenstår ved denne kildeinnsjekkingen.
 
+## 2026-10-28 kl.16:28 CET: SC02-lysbue klar for fletting
+
+Endelig R4 består samlet canonical110. Første del stoppet trygt før roof fordi SC03-editorbygg startet mellom spillprosessene; de 54 godkjente loggene/bildene er bevart, og bare 56 resterende ble kjørt. Begge originale kjørerapporter beholdes. T02, målrettet SC02/VFX og bildebevis er samlet i lysbuerapporten. Ingen ny spillkode etter den testede R4.
