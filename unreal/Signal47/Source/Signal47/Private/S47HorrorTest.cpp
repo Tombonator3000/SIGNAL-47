@@ -392,7 +392,7 @@ void FS47HorrorTest::Step(double Dt)
 		M->World->StopDriving(); M->World->bCommuteVehicle = false; M->World->PlaceTruck(TEXT("saro")); M->World->Enter(TEXT("saro"));
 		M->Evening->Begin(nullptr, true); M->Story->BeginEveningShift(); M->Story->SetClock(-21600);
 		M->Web->SetDoorOpen(TEXT("doorEast"), false); M->Web->SetDoorOpen(TEXT("doorSouth"), false); M->Web->SetDoorOpen(TEXT("exitDoor"), false);
-		M->Player->Place(4.2, 1.6, 0); H.Begin(nullptr, true);
+		M->Player->Place(4.2, 1.6, 0); if (M->Observing) M->Observing->Begin(nullptr, true); H.Begin(nullptr, true);
 		UE_LOG(LogS47HorrorTest, Display, TEXT("S47: SC01 START: post-handover evening fixture and one initial room placement; later film-budget checks use explicitly synthetic album entries. All SC01 door/lamp/camera/window/report facts use real production controls, camera rays and Walker/Resolve thereafter. No human input/listening claim."));
 		if (!Check(H.Enabled() && !H.NormalComplete() && !H.Complete(), TEXT("new cohort begins with no SC01 physical completion"))) return;
 		Stage(1, .5); return;
@@ -441,7 +441,8 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		FS47Observing& O = *M->Observing;
 		const int32 R = O.RunIndex();
-		const bool bTerminal = R < FS47Observing::Runs().Num() && FS47Observing::Runs()[R].Data == FString(TEXT("opsTerminal"));
+		const FString DataId = R < FS47Observing::Runs().Num() ? FString(FS47Observing::Runs()[R].Data) : FString();
+		const bool bTerminal = DataId == TEXT("opsTerminal"), bStatus = DataId == TEXT("crtLeft");
 		if (T.Stage == 600)
 		{
 			if (!Check(M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("obs_schedule"); }), TEXT("the observing schedule is filed with the papers"))) return;
@@ -476,15 +477,16 @@ void FS47HorrorTest::Step(double Dt)
 					TEXT("fresh disk restore resumes the same integration and keeps the heard hint"))) return;
 			}
 			if (O.Phase() != FS47Observing::EStep::Data) return;
-			if (bTerminal) Go({FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-4.4,0,1.0), FVector(-4.6,0,2.45)}, 603);
+			if (bTerminal) Go({FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-4.2,0,1.0), FVector(-4.2,0,2.0)}, 603);
+			else if (bStatus) Go({FVector(0,0,-1.2), FVector(-2.15,0,-1.2), FVector(-2.15,0,-2.0)}, 603);
 			else Go({FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.5,0,-.4)}, 603);
 			return;
 		}
-		if (T.Stage == 603) { Aim(Target(bTerminal ? TEXT("opsTerminal") : TEXT("printer"))); Stage(604); return; }
+		if (T.Stage == 603) { Aim(Target(DataId)); Stage(604); return; }
 		if (T.Stage == 604)
 		{
 			const auto& Run = FS47Observing::Runs()[R];
-			if (!Pick(bTerminal ? TEXT("opsTerminal") : TEXT("printer"))) return;
+			if (!Pick(DataId)) return;
 			const FString DocId = FS47Observing::Chart(R).Id;
 			static const int32 Expect[] = { 0, 1, 3, 15 };
 			if (!Check(O.RunIndex() == R + 1 && M->Story->Clock() >= Run.Slot + Run.Minutes * 60 &&
@@ -493,7 +495,7 @@ void FS47HorrorTest::Step(double Dt)
 			M->UI->Close(true);
 			if (O.Pending())
 			{
-				if (bTerminal) Go({FVector(-4.4,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600);
+				if (bTerminal) Go({FVector(-4.2,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600);
 				else Go({FVector(3.8,0,-1.2), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600);
 				return;
 			}
@@ -505,7 +507,7 @@ void FS47HorrorTest::Step(double Dt)
 			if (!Check(O.Done() && !O.Active() && M->Story->Rx.Stage == 1 && DoneRows == 4 && M->Story->Clock() < -3600 && M->Story->Clock() >= -4200 &&
 				!(M->Audio && M->Audio->Night && M->Audio->Night->IsStill()),
 				TEXT("schedule complete by 22:50 with four filed runs; the desert sound is back"))) return;
-			Go({FVector(3.8,0,-1.2), FVector(4.2,0,1.6)}, 10); return;
+			Go({FVector(-2.15,0,-1.2), FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.2,0,1.6)}, 10); return;
 		}
 	}
 	if (T.Stage == 10) { Aim(Target(TEXT("doorEast"))); Stage(11); return; }

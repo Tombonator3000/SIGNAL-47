@@ -37,7 +37,7 @@ const TArray<FS47Observing::FRun>& FS47Observing::Runs()
   { TEXT("hidrift"), TEXT("HI strip 12"), TEXT("20:45 hydrogen-line drift scan, strip 12"), TEXT("opsTerminal"), -3 * 3600. - 15 * 60, 45, 20, 48,
    Card(TEXT("OBS 3/4"), TEXT("SCHEDULE 3/4  20:45  HI DRIFT SCAN, STRIP 12  /  HYDROGEN LINE 1420.380 MHz  /  AZ 090  /  GAIN 50-65  /  BW 10-24"),
     1420.38, .015, 50, 65, 10, 24, 86, 94, TEXT("20:45. Hydrogen drift scan, strip 12. Local arm at -3 km/s. 38 seconds of broadband noise at 21:12, flagged. Nothing in the aircraft log."))},
-  { TEXT("vira"), TEXT("Virgo A"), TEXT("22:05 flux check on Virgo A"), TEXT("printer"), -1 * 3600. - 55 * 60, 45, 14, 64,
+  { TEXT("vira"), TEXT("Virgo A"), TEXT("22:05 flux check on Virgo A"), TEXT("crtLeft"), -1 * 3600. - 55 * 60, 45, 14, 64,
    Card(TEXT("OBS 4/4"), TEXT("SCHEDULE 4/4  22:05  FLUX CHECK VIRGO A  /  CONTINUUM 1419.900 MHz  /  AZ 146  /  GAIN 45-60  /  BW 40-60"),
     1419.9, .02, 45, 60, 40, 60, 142, 150, TEXT("22:05. Virgo A, 198 Jy, phase stable. Drive 14 ran for three seconds with no command. The crickets stopped while it ran."))},
  };
@@ -56,7 +56,8 @@ FS47Doc FS47Observing::Schedule()
   TEXT("23:00  NORTH WINDOW LAMP ROUND\n")
   TEXT("23:40  OVERNIGHT SURVEY\n\n")
   TEXT("TEAR OFF EVERY CHART. REDUCE THE DRIFT\n")
-  TEXT("SCAN ON THE OPS TERMINAL.\n")
+  TEXT("SCAN ON THE OPS TERMINAL. CHECK THE DRIVE\n")
+  TEXT("LOG ON THE STATUS TERMINAL AFTER VIR A.\n")
   TEXT("~ the 1420.1 relay comes and goes. Notch it before the survey, not before. D.");
  D.Transcript = TEXT("Tonight's schedule, typed in the afternoon and clipped under the console card. Four ordinary runs: a pointing check, a pulsar, a hydrogen drift scan and a flux check, each set for when its source stands east of the meridian. Then the north-window lamp round at 23:00 and the unattended survey.\n\nIn Dale's pencil at the bottom: \"The 1420.1 relay comes and goes. Notch it before the survey, not before.\"");
  return D;
@@ -112,7 +113,7 @@ FS47Doc FS47Observing::Chart(int32 I)
  }
  else
  {
-  D.Id = TEXT("obs_chart_vira"); D.Title = TEXT("Strip chart: Virgo A flux check");
+  D.Id = TEXT("obs_chart_vira"); D.Title = TEXT("Status terminal: Virgo A and drive log"); D.Stamp = TEXT("STATUS 22:47");
   D.Page = TEXT("SARO / RX CONTROL 03   CONTINUUM 1419.900 MHz\n")
    TEXT("VIR A (3C 274)   AZ 146.0  EL 64.8   22:07-22:46\n\n")
    TEXT("FLUX       198 JY   (CATALOGUE 210 +-10)\n")
@@ -166,7 +167,7 @@ bool FS47Observing::ConsoleAction()
  if (!Active()) return false;
  FS47Rx& Rx = M->Story->Rx;
  if (StepNow == EStep::Integrating) { Rx.Status = FString::Printf(TEXT("INTEGRATING %s  /  HOLD"), Runs()[Run].Source).ToUpper(); return true; }
- if (StepNow == EStep::Data) { Rx.Status = Runs()[Run].Data == FString(TEXT("printer")) ? TEXT("RUN COMPLETE  /  CHART AT THE PRINTER") : TEXT("RUN COMPLETE  /  REDUCE ON THE OPS TERMINAL"); return true; }
+ if (StepNow == EStep::Data) { Rx.Status = TEXT("RUN COMPLETE  /  SEE THE OBJECTIVE"); return true; }
  if (!Rx.Pass(Runs()[Run].P)) { Rx.Status = TEXT("OFF SOURCE  /  CHECK THE SCHEDULE CARD"); return true; }
  Start();
  return true;
@@ -247,10 +248,10 @@ void FS47Observing::Finish()
  const FRun& R = Runs()[Run];
  StepNow = EStep::Data; Elapsed = R.Seconds;
  if (Run == 3 && M->Audio && M->Audio->Night && M->Audio->Night->IsStill()) M->Audio->Night->Back(3);
- const bool Printer = R.Data == FString(TEXT("printer"));
- M->Story->Rx.Status = Printer ? TEXT("RUN COMPLETE  /  CHART AT THE PRINTER") : TEXT("RUN COMPLETE  /  REDUCE ON THE OPS TERMINAL");
+ const bool Printer = R.Data == FString(TEXT("printer")), Status = R.Data == FString(TEXT("crtLeft"));
+ M->Story->Rx.Status = Printer ? TEXT("RUN COMPLETE  /  CHART AT THE PRINTER") : Status ? TEXT("RUN COMPLETE  /  DRIVE LOG ON THE STATUS TERMINAL") : TEXT("RUN COMPLETE  /  REDUCE ON THE OPS TERMINAL");
  if (M->Audio && Printer) M->Audio->Play(TEXT("printer"), .35f, M->Web ? M->Web->PropLocation(TEXT("printer")) : FVector::ZeroVector, 1.2f);
- M->UI->Toast(Printer ? FString::Printf(TEXT("%s done. The printer chatters out the strip chart."), R.Source) : FString(TEXT("Drift scan done. Reduce it on the operations terminal.")), 4);
+ M->UI->Toast(Printer ? FString::Printf(TEXT("%s done. The printer chatters out the strip chart."), R.Source) : Status ? FString(TEXT("Virgo A done. The status terminal on the left has logged a drive event.")) : FString(TEXT("Drift scan done. Reduce it on the operations terminal.")), 4);
  UE_LOG(LogTemp, Display, TEXT("S47: observing run %d %s integrated"), Run + 1, R.Id);
  Changed();
 }
@@ -258,7 +259,8 @@ void FS47Observing::Finish()
 FString FS47Observing::Label(const FString& Id) const
 {
  if (!Active() || StepNow != EStep::Data || Id != Runs()[Run].Data) return FString();
- return Id == TEXT("printer") ? FString::Printf(TEXT("Tear off the %s strip chart"), Runs()[Run].Source) : FString(TEXT("Reduce the hydrogen drift scan"));
+ if (Id == TEXT("printer")) return FString::Printf(TEXT("Tear off the %s strip chart"), Runs()[Run].Source);
+ return Id == TEXT("crtLeft") ? FString(TEXT("Read the array drive log")) : FString(TEXT("Reduce the hydrogen drift scan"));
 }
 
 bool FS47Observing::Use(const FString& Id)
@@ -275,7 +277,7 @@ void FS47Observing::File()
  const FS47Doc Doc = Chart(Run);
  S.AddDoc(Doc);
  S.Note(R.P.Note);
- if (M->Audio) M->Audio->Play(Run == 2 ? TEXT("click") : TEXT("paper0"), .5f);
+ if (M->Audio) M->Audio->Play(R.Data == FString(TEXT("printer")) ? TEXT("paper0") : TEXT("click"), .5f);
  // The run's own length passes on the clock; the next source waits for its slot.
  S.SetClock(FMath::Max(S.Clock(), R.Slot + R.Minutes * 60));
  ++Run; StepNow = EStep::Tune; Elapsed = 0;
@@ -292,7 +294,8 @@ FString FS47Observing::Objective() const
  if (!Active()) return FString();
  const FRun& R = Runs()[Run];
  if (StepNow == EStep::Integrating) return FString::Printf(TEXT("CONTROL ROOM // %s INTEGRATING. LISTEN TO THE MONITOR AND WATCH THE CHART"), R.Source).ToUpper();
- if (StepNow == EStep::Data) return R.Data == FString(TEXT("printer")) ? FString::Printf(TEXT("PRINTER // TEAR OFF THE %s STRIP CHART"), R.Source).ToUpper() : FString(TEXT("OPERATIONS TERMINAL // REDUCE THE HYDROGEN DRIFT SCAN"));
+ if (StepNow == EStep::Data) return R.Data == FString(TEXT("printer")) ? FString::Printf(TEXT("PRINTER // TEAR OFF THE %s STRIP CHART"), R.Source).ToUpper()
+  : R.Data == FString(TEXT("crtLeft")) ? FString(TEXT("STATUS TERMINAL // READ THE ARRAY DRIVE LOG")) : FString(TEXT("OPERATIONS TERMINAL // REDUCE THE HYDROGEN DRIFT SCAN"));
  return FString::Printf(TEXT("CONTROL ROOM // %s"), *R.P.Card);
 }
 

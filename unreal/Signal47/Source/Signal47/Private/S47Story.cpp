@@ -302,7 +302,7 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("crtCenter")) return bCinematic ? FString() : !bPowered ? TEXT("Receiver console") : bAlarmOn ? TEXT("Check the spectrum") : TEXT("Use receiver console");
 	if (Id == TEXT("crtLeft")) return TEXT("Status terminal");
 	if (Id == TEXT("crtRight")) return CurrentPhase == ES47Phase::Locked ? TEXT("Run direction solve") : CurrentPhase == ES47Phase::Solving ? FString() : TEXT("Tracking terminal");
-	if (const auto* M = US47Main::Get(this); M && M->Observing && (Id == TEXT("printer") || Id == TEXT("opsTerminal")))
+	if (const auto* M = US47Main::Get(this); M && M->Observing && (Id == TEXT("printer") || Id == TEXT("opsTerminal") || Id == TEXT("crtLeft")))
 		if (const FString L = M->Observing->Label(Id); !L.IsEmpty()) return L;
 	if (Id == TEXT("printer"))
 	{
