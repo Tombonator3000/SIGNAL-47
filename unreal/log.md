@@ -860,6 +860,13 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 - Før og etter: `Tools/townbuildings/tb2/TB1_mot_TB2.jpg`. Alle bilder: `~/scratch-bm/Signal47-townbuildings-tb2-20261027/`.
 - Ikke gjort: nativeimport, native materialer for de nye radene, ny `assembly.json`, pakket spill og bilder fra spillet. Det installerte spillet og spillets innhold er uendret.
 
+## 2026-10-28 kl. 07:40 CET: PR #176, #177 og #179 flettet, ny Linux-testutgave (Claude)
+
+- Tom sa «flett alt som må flettes». #177 (startskriptet) er flettet som `8bbeaef6`, #176 som `4ae4d10c` og #179 (TB2) som `c0e35da3`. #176 og #179 hadde konflikter i `log.md` og `OPPGAVER.md`; begge sider er beholdt. SC01-punktet i `OPPGAVER.md` er merket gjort, fordi Codex allerede hadde flettet PR #172 via #178 og installert R4 med SC01, MetaHuman, atmosfære og Motel V2.
+- Sjekk: Source, Config, Content og uproject på main `c0e35da3` er uendret siden `520b1a40`, som fotolab R1 er bygget fra. Main og det installerte spillet har altså samme spillkode. Av den nye historien er bare SC01 laget.
+- Ny offentlig utgave `playtest-linux-2026-10-28` er laget av fotolab R1 uten ny Unreal-kjøring: tre ZIP-er på til sammen 3,9 GB, den delte `.ucas` settes sammen og kontrolleres av `Play.sh`. Kandidat og installert spill har samme hasher, og alle 44 arkivoppføringer er kontrollert. Arbeidsmappe: `~/scratch-bm/Signal47-download-2026-10-28`.
+- `Spill-SIGNAL47.sh`, `README.md`, `unreal/README.md`, `SC01_RUNTIME.md` og statustabellen i `HISTORIE_IMPLEMENTERINGSPLAN.md` peker nå på den nye utgaven og riktig SC01-status.
+- Ikke gjort: start på en annen maskin. Codex' trafostasjon (pakke under arbeid kl. 07:34) er ikke med; den kommer i en senere utgave.
 ## 2026-10-28 kl. 08:30 CET: SC02 til SC13 gjennomgått og revidert (Claude)
 
 - Lest MISSION_FLOW, implementeringsplanen, forberedelsen fra skyøkten med 16 motstrider og forhåndsvisningene av SC02-aktøren.
