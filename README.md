@@ -20,6 +20,40 @@ Enklest: klon eller last ned repoet og kjør
 
 Første gang laster skriptet ned de tre ZIP-filene fra utgivelsen (om lag 3,9 GB), kontrollerer dem med SHA256, pakker dem ut i `Spill/` og starter spillet. Senere starter det rett. Det krever `curl`, `unzip` og `sha256sum`. Vil du gjøre det for hånd, last ned alle tre ZIP-filene fra utgivelsen, pakk dem ut i samme mappe og kjør `Signal47-Linux/Play.sh`, eller `Play-Low.sh` på svakere maskiner.
 
+### Krav på Linux
+
+Spillet er en ferdig pakket Linux-versjon som ikke er bundet til én distribusjon. Den har med seg sin egen Vulkan-laster og SDL3 for vindu, lyd og kontroller, og trenger ikke Qt, GTK eller andre biblioteker fra systemet utover dette:
+
+- x86-64-prosessor og glibc 2.17 eller nyere, det vil si alle vanlige distribusjoner fra de siste ti årene.
+- En Vulkan-driver for skjermkortet. Den viktigste pakken:
+
+| Distribusjon | AMD | Intel | Nvidia |
+|---|---|---|---|
+| Arch, Manjaro, EndeavourOS | `vulkan-radeon` | `vulkan-intel` | `nvidia-utils` (driver 550 eller nyere) |
+| Fedora | `mesa-vulkan-drivers` | `mesa-vulkan-drivers` | `akmod-nvidia` fra RPM Fusion |
+| Debian, Ubuntu, Mint | `mesa-vulkan-drivers` | `mesa-vulkan-drivers` | `nvidia-driver-550` eller nyere |
+| openSUSE | `libvulkan_radeon` | `libvulkan_intel` | `nvidia-gl-G06` |
+
+- 16 GB minne anbefales, og om lag 10 GB ledig plass første gang.
+- X11 og Wayland virker begge. Nvidia på Wayland krever kjerneparameteren `nvidia_drm.modeset=1`. `curl`, `unzip` og `sha256sum` trengs bare til nedlastingen.
+
+`./Spill-SIGNAL47.sh --sjekk` sjekker maskinen uten å starte spillet. Startskriptet gjør den samme sjekken hver gang og sier fra om noe mangler.
+
+### Svart skjerm, blinking eller andre problemer
+
+Prøv i denne rekkefølgen:
+
+```sh
+./Spill-SIGNAL47.sh --x11              # X11/XWayland i stedet for Wayland
+./Spill-SIGNAL47.sh --x11 --uten-rt    # og uten strålesporing
+./Spill-SIGNAL47.sh --fullskjerm --uten-rt
+./Spill-SIGNAL47.sh --lav              # Low-grafikk i et vindu på 1280 x 720
+```
+
+På niri og andre flisleggende vindusbehandlere kan spillet få et smalt eller høyt vindu. Bruk `--fullskjerm` eller en vindusregel, for eksempel i niri: `window-rule { match title="(?i)signal ?/? ?47"; open-fullscreen true; }`. `--x11` på niri krever XWayland, for eksempel pakken `xwayland-satellite`.
+
+Virker ingenting, kjør `./Spill-SIGNAL47.sh --rapport` og send filen den lager. Den inneholder systeminformasjon, Vulkan-driverne og siste del av spilloggen, som ligger i `Spill/<utgave>/Signal47-Linux/Linux/Signal47/Saved/Logs/Signal47.log`. `./Spill-SIGNAL47.sh --hjelp` viser alle valgene.
+
 ## Nettversjonen i `web/`
 
 Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md), med three.js, TypeScript og Vite. Prologen «Night Shift», kapittel 1 «The Second Exposure» (servicegården, S-03, feltkameraet, fotolaben og B-12) og kapittel 2 «The Amended Record» (arkivet bak kontrollrommet) kan spilles fra start til sluttkort i nettleseren, med mus og tastatur eller berøringskontroller. Forslag til veien videre står i [`web/FORSLAG.md`](web/FORSLAG.md). Spill den på https://tombonator3000.github.io/SIGNAL-47/. Den publiseres automatisk fra main med `.github/workflows/pages.yml`. Ytelse og berøring på ekte telefon er ikke testet ennå. Arbeid i mappen følger [`web/AGENTS.md`](web/AGENTS.md), og status står i `web/memory.md`, `web/todo.md` og `web/log.md`. Unity-prosjektet som beskrives under, er arkiv og referanse.
@@ -28,7 +62,7 @@ Fra 3. oktober 2026 bygges spillet videre som nettspill i [`web/`](web/README.md
 
 Ny [NightSky12-testkandidat](Docs/NIGHT_SKY_12.md) er bygget med en katalogbasert 8K-himmel og publisert som [utkast til PR8](https://github.com/Tombonator3000/SIGNAL-47/pull/8). Full spillerreise og ny ytelsesmåling venter på opplåst Kubuntu-skjerm. Standardstarteren nedenfor åpner fortsatt den verifiserte Visual10-utgaven.
 
-## Spill Unity-arkivet på Kubuntu
+## Spill Unity-arkivet på Linux
 
 Unity-utgaven Visual10 er en lokal pakke i `Artifacts/Releases/Visual10-eb0748660027/` og følger ikke med et Git-klon. Pakk ut `Artifacts/Releases/SIGNAL47-Visual10-eb0748660027-Linux.tar.gz` og kjør `./Start-SIGNAL47.sh` i den utpakkede mappen.
 
