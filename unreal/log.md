@@ -1,5 +1,7 @@
 # Logg for unreal/
 
+**Status: Referanse, kronologisk historikk.** [Gjeldende leveringsstatus](../Docs/Active/STATUS.md) og [aktiv arbeidsliste](../Docs/Active/TODO.md) føres separat.
+
 Nyeste nederst. Tid i Europe/Oslo.
 
 ## 2026-10-21
@@ -1023,3 +1025,7 @@ Toms siste bestilling er ført som egne åpne punkter for lys/skygger, FX, lyd, 
 ## 2026-10-28 kl. 23:17 CET: dokumentasjon samlet og historikk klassifisert
 
 Docs/README er én inngang, med Active/STATUS, TODO og DECISIONS som eneste samlede hovedfiler. Design, Research, Evidence og Archive skiller plan, undersøkelse, bevis og erstattede innganger. 323 opprinnelige stier er flyttet og 1585 tidligere dokument-/payloadfiler er redegjort for i dokumentkartet; alle binære/tekstlige bevispayloads og de frosne kildepakkene er uendret. Tidligere lange README/memory/todo og arbeidsdelingshistorikk er bevart. Fire historiske Automation-skript har bare fått riktige arkivstier; Unity- og Unreal-spillkode er urørt. Lenkekontroll etter flytting har null nye feil; 34 opprinnelige historiske mangler er registrert separat. Ingen motorjobb, spilltest, installasjon eller release inngår. Aktive nattsekvens-/SC03-arbeidskopier er ikke endret.
+
+## 2026-10-28 kl. 23:01 CET: Arbeid ved arrayet 19:00 til 22:50 (S47Observing)
+
+Tom godkjente kvelden 18 til 24 og ba om mer array- og dataarbeid som ved et ekte radioobservatorium, med hint om lyder og lys. Ny modul S47Observing gir fire ekte kjøringer på konsollen etter mottakerreferansen: pekekontroll 3C 286 (19:00), pulsar B1133+16 (19:50), hydrogenlinjen stripe 12 (20:45) og Virgo A (22:05). Posisjonene er regnet ut for stedet 13.04.1986. Papirene hentes ved skriveren, driftsterminalen og venstre PC (statusterminalen, drivloggen). Hint: ekstra pulsartikk fire, pause, sju; 38 s bredbåndsstøy; cricketene stopper og drivmotor 14 går uten kommando. SC01-vinduet blir ikke klart før timeplanen er ferdig. Gamle lagringer får ingen timeplan. Self-test OK (1696). SC01-kontrakt PASS COMPLETE, 154 kontroller, 18 disk/Flow-gjenopprettinger, inkludert gjenoppretting midt i pulsarintegrasjonen. SC02/SC03-kontrakter, pakket bygg og ekte lydkilder er ikke kjørt (UNVERIFIED). Bevis: ~/scratch-bm/Signal47-evening-array-20261028.

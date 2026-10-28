@@ -10745,7 +10745,7 @@
     {
       "old_path": "unreal/FOUND_FOOTAGE_FORSLAG.md",
       "new_path": "Docs/Design/Proposals/FOUND_FOOTAGE_FORSLAG.md",
-      "status": "Under arbeid",
+      "status": "Referanse",
       "original_sha256": "b7127751c33947180949d26baca57b1b66391c17a1d2572332138d97aeb8b800",
       "reason": "Accepted future content or proposal, not delivered effect"
     },
@@ -10824,7 +10824,9 @@
       "new_path": "Docs/Design/Story/KVELD_PLAN_2026-10-28.md",
       "status": "Gjeldende",
       "original_sha256": "07fff3e795efeec43045a6ccccfddca753726333b9edbe6e732ff7feb9a9c1b4",
-      "reason": "Current October production plan; latest KVELD and SC02-13 revision override earlier details"
+      "reason": "Current October production plan; latest KVELD and SC02-13 revision override earlier details",
+      "integrated_source_revision": "38717ff502a83cdde5a7066f53339ff87179b465",
+      "integrated_source_sha256": "18235e1407e5df90e45eaba1597e579e5e3d14d90f5d8d00c5ff88eb7d6b829c"
     },
     {
       "old_path": "unreal/LIGHTING.md",
@@ -10908,7 +10910,9 @@
       "new_path": "Docs/Archive/Superseded/Unreal/OPPGAVER-before-docs-organization.md",
       "status": "Erstattet",
       "original_sha256": "0fb3f1bf8c7f96eebb008e8658318a7e79056646a3ac8cafc963a4239b590bc5",
-      "reason": "Tidligere samling av koordinering, status og leveringshistorikk."
+      "reason": "Tidligere samling av koordinering, status og leveringshistorikk.",
+      "integrated_source_revision": "38717ff502a83cdde5a7066f53339ff87179b465",
+      "integrated_source_sha256": "51ebff5d32c11a97d1129bc045838304bb7a3b1d5e1626daf01bfd2dad46cb6c"
     },
     {
       "old_path": "unreal/PHOTOLAB_DETAIL.md",
@@ -11097,14 +11101,18 @@
       "new_path": "Docs/Archive/Superseded/Unreal/memory.md",
       "status": "Erstattet",
       "original_sha256": "4dc9dbdf22fb1c8375f59942de24f55ce3d8078ae96af8aaf19f903cc0bbe96d",
-      "reason": "Tidligere samlet status/arbeidsliste; erstattet av Docs/Active."
+      "reason": "Tidligere samlet status/arbeidsliste; erstattet av Docs/Active.",
+      "integrated_source_revision": "38717ff502a83cdde5a7066f53339ff87179b465",
+      "integrated_source_sha256": "3db4ef76f93c49bcc64ce692c579b5fc074bda20dc2948733cb800de2e85b5ff"
     },
     {
       "old_path": "unreal/todo.md",
       "new_path": "Docs/Archive/Superseded/Unreal/todo.md",
-      "status": "Erstattet",
+      "status": "Uavklart",
       "original_sha256": "ffe6960097c20160b3fd6c7d0835412193c3e528a0f61d89e8794d6efab1a3e5",
-      "reason": "Tidligere samlet status/arbeidsliste; erstattet av Docs/Active."
+      "reason": "Tidligere samlet status/arbeidsliste; erstattet av Docs/Active.",
+      "integrated_source_revision": "38717ff502a83cdde5a7066f53339ff87179b465",
+      "integrated_source_sha256": "a5bc50291bc36b5c718394252d43f52a426ad48a01a6b313d4c52340fe4b379f"
     }
   ],
   "compatibility_redirects": [
@@ -11113,5 +11121,6 @@
       "target": "Docs/Archive/Unity/Menu14/PAPER_CASE.md",
       "reason": "Immutable WorldCase22 source link"
     }
-  ]
+  ],
+  "integrated_main_before_delivery": "38717ff502a83cdde5a7066f53339ff87179b465"
 }

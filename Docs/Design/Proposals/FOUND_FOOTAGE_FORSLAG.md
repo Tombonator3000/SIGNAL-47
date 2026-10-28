@@ -1,4 +1,4 @@
-> **Status: Under arbeid** · Klassifisert 28.10.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../Active/STATUS.md).
+> **Status: Referanse (forslag)** · Klassifisert 28.10.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../Active/STATUS.md).
 
 # Found Footage-modus for SIGNAL / 47: forslag og implementeringsplan
 

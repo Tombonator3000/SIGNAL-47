@@ -1,4 +1,8 @@
-> **Status: Erstattet** · Klassifisert 28.10.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../../Active/STATUS.md).
+> **Status: Erstattet** · Historikken er bevart frem til main `38717ff5` før dokumentryddingen. [Gjeldende status](../../../Active/STATUS.md).
+
+## Kveldens arrayarbeid, Claude 28.10.2026 (under arbeid)
+
+Tom godkjente kvelden 18 til 24 og ba om mer array- og dataarbeid. Claude eier ny `S47Observing` på `claude/evening-array-work` i `~/scratch-bm/wt/sc03`: fire ekte observasjoner 19:00 til 22:50 med papirer og små hint, før SC01-vinduet. Små koblinger i Codex sine filer: `AS47Story::ConsoleProfile`, `ConsoleQuality`, `AimArray`, ett kall først i `ConsoleAction` og i `Label` for skriver/terminal. Ingen endring i rekkefølgen etter 23:00, K3, strømbruddet eller SKY01. Se [planen](../../../Design/Story/KVELD_PLAN_2026-10-28.md). Én tung jobb om gangen gjennom guard.
 
 ## Unreal-ferdigheter og mannekenger, Codex 28.10.2026
 

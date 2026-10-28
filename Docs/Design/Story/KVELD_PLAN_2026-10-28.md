@@ -68,3 +68,22 @@ Klokka går videre når en oppgave er ferdig, med korte hopp. Tidene er vinduer,
 9. 23:40 Arkiver kvelden og slipp nattsurveyen (NATT-06). Tidshopp til 00:13.
 
 Forslag til fordeling: Claude tar aggregattesten, arkivoppgavene og runden ute. Codex tar himmelbanen SKY01 og klokkekoordinatoren (R2.2) som styrer hoppene. Dineren finnes, men har en kjent Vulkan krasj som må rettes først.
+
+## Arbeid ved arrayet 19:00 til 22:50, Tom 28.10.2026
+
+Tom godkjente planen for 18 til 24, med ett tillegg: mer array- og dataarbeid, slik man faktisk undersøker himmelen ved et radioobservatorium. Kvelden skal føles som en vanlig vakt før det blir skrekk, men gi hint om unormale ting som lyder og lys på himmelen.
+
+Kildene er ekte og står der de sto over stedet 13. april 1986 (MST), øst for meridianen fordi konsollen bare dreier arrayet fra 0 til 180 grader.
+
+| Tid | Kjøring | Konsoll | Data | Hint |
+|---|---|---|---|---|
+| 19:00 | Pekekontroll 3C 286, fempunktskors | 1419.900, AZ 070, gain 50 til 60, BW 50 til 70 | Strimmel fra skriveren | Ingen. Helt vanlig |
+| 19:50 | Pulsar PSR B1133+16, 1.18791 s | 1419.600, AZ 112, gain 65 til 80, BW 90 til 100 | Strimmel fra skriveren | Pulsaren tikker i høyttaleren. Ekstra, svakere tikk utenfor takt: fire, pause, sju |
+| 20:45 | Hydrogenlinjen, drift scan stripe 12 | 1420.380, AZ 090, gain 50 til 65, BW 10 til 24 | Reduseres på driftsterminalen | 38 sekunder bredbåndsstøy i alle kanaler, som om noe lyst krysset strålen. Ikke i flyloggen, ingen motorlyd |
+| 22:05 | Fluksmåling Virgo A | 1419.900, AZ 146, gain 45 til 60, BW 40 til 60 | Strimmel fra skriveren | Cricketene stopper på en gang. Drivmotor 14 går i tre sekunder uten kommando |
+
+Hver kjøring: still inn konsollen etter kortet, trykk START RUN, hør og se integrasjonen, og hent papiret ved skriveren eller terminalen. Klokka hopper til kildens tid når kjøringen starter, og til kjøringens slutt når papiret er arkivert. Siste papir er arkivert kl. 22:50. Lysene på himmelen kommer fra de eksisterende himmelbanene (S47SkyVisitors), som allerede trappes opp kl. 20 og 22.
+
+SC01-vinduet (hånd i dag, klask etter neste pass) blir ikke klart før timeplanen er ferdig. Lampekontrollen kan gjøres når som helst. Gamle lagringer får ingen timeplan i ettertid.
+
+Status: kode i S47Observing (ny), med små koblinger i Story (konsollkortet), HUD, Flow, Main, widgets og Horror. Aggregattest, arkivrunde, runde ute, stemmen ved døra og SC01-klasket gjenstår.

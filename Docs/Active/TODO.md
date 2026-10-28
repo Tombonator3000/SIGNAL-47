@@ -44,7 +44,8 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 - [ ] **STORY-01:** Fullfør den nye kveldsrekkefølgen: forenklet SC01, signal/strømsvikt kl. 00:13, mørk trafotur, senere SC02 og sammenhengende retur. Claude/Codex-fordeling står i [kveldsplanen](../Design/Story/KVELD_PLAN_2026-10-28.md).
 - [ ] **STORY-02:** Fullfør faktisk SC03 med telefonmelding, Ortiz, servicevogn 23, termose, bortføring og etterspor. Deretter SC04/SC05 som samlet aktleveranse etter [revidert regi](../Design/Story/HISTORIE_SC02_SC13_REVISJON.md).
 - [ ] **STORY-03:** Produser SC06 til SC13 med nødvendige verdenshandlinger, modeller, stemmer, lagring og progresjon. Bruk [implementeringsplanen](../Design/Story/HISTORIE_IMPLEMENTERINGSPLAN.md) under de senere revisjonene, ikke gamle antakelser om ferdig spilletid.
-- [ ] **STORY-04:** Fyll den rolige kvelden med avtalte arbeidsoppgaver, arkivspor og SKY01-himmelbanen. Ikke legg inn tidlige alienmøter som bryter den nye regien.
+- [x] **STORY-04A, kilde:** Fire ekte arrayobservasjoner 19:00 til 22:50 med papirer og hint er flettet i PR206. Pakket/installert levering føres separat i STATUS.
+- [ ] **STORY-04:** Viderefør kveldsarbeidet med avtalte ekte radioteleskop-/antennedrev-/skriverlyder med avklart lisens, aggregattest 19:10, runde ute med lykt og SKY01-himmelbanen. Ikke legg inn tidlige alienmøter som bryter den nye regien.
 - [ ] **FX-01:** Produser den korte meteorpassasjen ved stjernehullet med riktig hendelsestid og engangsavspilling. [Design og kilder](../Design/Proposals/NIAGARA_VFX_2026-10-28.md).
 - [ ] **FX-02:** Produser den store UFO-avsløringen med cloud tank-skyer som del av finalen, med bevart THE EVENT og 1947-bilde. [Finaleretning](../Design/Proposals/FINALE_CLOUD_TANK_UFO.md).
 - [ ] **ART-01:** Integrer ferdige plakater, bilder og dokumentrekvisitter på riktige flater med lesbare UV-/materialbindinger. Bevar fungerende dokument-ID-er og bevisgrunnlag.

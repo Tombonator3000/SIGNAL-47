@@ -1,4 +1,8 @@
-> **Status: Erstattet** · Klassifisert 28.10.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../../Active/STATUS.md).
+> **Status: Erstattet** · Historikken er bevart frem til main `38717ff5` før dokumentryddingen. [Gjeldende status](../../../Active/STATUS.md).
+
+## Arbeid ved arrayet om kvelden, 28. oktober 2026
+
+S47Observing gir fire ekte kjøringer etter mottakerreferansen og før SC01-vinduet (19:00 til 22:50), med papirer og hint uten skapning. Plan og tabell i KVELD_PLAN_2026-10-28.md. Nattarbeid og overtakelse Claude/Codex: ~/scratch-bm/NATT-2026-10-28/HANDOFF.md.
 
 ## Unreal-ferdigheter og første MetaHuman-mannekenger, 28. oktober 2026
 

@@ -4,7 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
-| SC01 og SC03 | Claude, egen SC03-arbeidskopi | SC01 klask/avtrykk/lampetest og SC03-regi/timing; koordiner konkrete kildefiler før fletting. |
+| SC01 og SC03 | Claude, egen SC03-arbeidskopi | Arrayarbeidet er kildeflettet via PR206. Videre SC01 klask/avtrykk/lampetest og SC03-regi/timing; koordiner konkrete kildefiler før fletting. |
 | Ny nattsekvens | Codex, `codex/night-sequence-20261028` i `motel-v2-unreal` | Story/Evening, signal/strøm/trafo, SkyVisitors og SC02-rekkefølge. Pågående arbeidskilder er ikke endret av dokumentryddingen. |
 | Dokumentrydding | Codex, `codex/docs-organization-20261028` i `docs-organization` | Docs, dokumentinnganger, lenker og arkivmetadata. Ingen motorjobb eller installasjon. |
 

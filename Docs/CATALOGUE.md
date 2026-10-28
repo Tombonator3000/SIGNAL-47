@@ -26,13 +26,13 @@ Katalogen skiller gjeldende styring fra planer, referanser, bevis og erstattet h
 | --- | --- |
 | [PLAYTEST_TODO_2026-10-28.md](Active/Reports/PLAYTEST_TODO_2026-10-28.md) | `unreal/PLAYTEST_TODO_2026-10-28.md` |
 | [FINALE_CLOUD_TANK_UFO.md](Design/Proposals/FINALE_CLOUD_TANK_UFO.md) | `unreal/FINALE_CLOUD_TANK_UFO.md` |
-| [FOUND_FOOTAGE_FORSLAG.md](Design/Proposals/FOUND_FOOTAGE_FORSLAG.md) | `unreal/FOUND_FOOTAGE_FORSLAG.md` |
 | [NIAGARA_VFX_2026-10-28.md](Design/Proposals/NIAGARA_VFX_2026-10-28.md) | `unreal/NIAGARA_VFX_2026-10-28.md` |
 
 ## Referanse
 
 | Dokument | Tidligere plassering når flyttet |
 | --- | --- |
+| [FOUND_FOOTAGE_FORSLAG.md](Design/Proposals/FOUND_FOOTAGE_FORSLAG.md) | `unreal/FOUND_FOOTAGE_FORSLAG.md` |
 | [FILM_LOOKS.md](Active/Guides/FILM_LOOKS.md) | `unreal/FILM_LOOKS.md` |
 | [GAMEPAD.md](Active/Guides/GAMEPAD.md) | `unreal/GAMEPAD.md` |
 | [GRAPHICS_SETTINGS.md](Active/Guides/GRAPHICS_SETTINGS.md) | `unreal/GRAPHICS_SETTINGS.md` |

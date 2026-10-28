@@ -119,6 +119,10 @@ public:
 	void Toast(const FString& S, float Secs = 3.2f);
 	double Gt() const { return GameTime; }
 	void SetClock(double Sec) { ClockSec = Sec; }
+	void AimArray(double Az, double El, double Slew) { PointDishes(Az, El, Slew); }
+	// The console's card: the evening observing run while one is scheduled (S47Observing), else the stage's.
+	const FS47Profile& ConsoleProfile() const;
+	double ConsoleQuality() const { return Rx.Quality(ConsoleProfile()); }
 	void SetCinematic(bool bOn) { bCinematic = bOn; }
 	// the chapters, stepped after the prologue's own beat (Prologue.update: ch1.update runs in
 	// every chapter, the others in their own). ChapterKey is 'prologue' until the first begins.

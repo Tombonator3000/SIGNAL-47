@@ -10,5 +10,7 @@
   "missing": [],
   "scope": "Documentation relocation/navigation only; game code, engine assets, saves and packages untouched",
   "link_baseline_issues": 34,
-  "new_link_issues": 0
+  "new_link_issues": 0,
+  "integrated_main": "38717ff502a83cdde5a7066f53339ff87179b465",
+  "game_sources_identical_to_integrated_main": true
 }
