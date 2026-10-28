@@ -1020,7 +1020,7 @@ FS47PauseOpts US47Flow::Settings()
 {
 	FS47PauseOpts O;
 	O.bCharacters = bCharacters;
-	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->TownLayer && M->TownLayer->Caliche->NpcDialogue) M->TownLayer->Caliche->NpcDialogue->SetEnabled(V); if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
+	O.OnCharacters = [this](bool V) { bCharacters = V; if (M->TownLayer && M->TownLayer->Caliche->NpcDialogue) M->TownLayer->Caliche->NpcDialogue->SetEnabled(V); if (M->Observing) M->Observing->SetCharacterVoicesEnabled(V); if (M->Audio) { M->Audio->bCharacterVoices = V; if (!V) M->Audio->StopPhoneCalls(); } StoreSet(TEXT("characterVoices"), V); };
 	O.bSerling = bSerling;
 	O.OnSerling = [this](bool V) { bSerling = V; if (M->UI->Narrator.IsValid()) M->UI->Narrator->SetEnabled(V); StoreSet(TEXT("serlingNarrator"), V); };
 	O.bKinski = bKinski;

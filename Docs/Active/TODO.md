@@ -46,7 +46,7 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 - [ ] **STORY-03:** Produser SC06 til SC13 med nødvendige verdenshandlinger, modeller, stemmer, lagring og progresjon. Bruk [implementeringsplanen](../Design/Story/HISTORIE_IMPLEMENTERINGSPLAN.md) under de senere revisjonene, ikke gamle antakelser om ferdig spilletid.
 - [x] **STORY-04A, kilde:** Fire ekte arrayobservasjoner 19:00 til 22:50 med papirer og hint er flettet i PR206. Pakket/installert levering føres separat i STATUS.
 - [x] **STORY-04B, kilde:** SC01 med klask mot ruta i stedet for hånd, avtrykk når skjermen heves, og lampetest bare innenfra. Fem ekte observatorielyder med kreditering i arrayarbeidet (PR208). SC01-kontrakt PASS, 157 kontroller.
-- [x] **STORY-04C, kilde:** Aggregattest 19:35 på fjernpanel og runde til arraygjerdet 21:40 der porten står åpen igjen (PR209). SC01-kontrakt PASS, 176 kontroller.
+- [x] **STORY-04C, kilde:** Aggregattest 19:35 på fjernpanel og runde til arraygjerdet 21:40 der porten står åpen igjen (PR210). SC01-kontrakt PASS, 176 kontroller.
 - [ ] **STORY-04:** Viderefør kveldsarbeidet: stemmen ved feil dør og SKY01-himmelbanen. Nye dispatchopptak for SC01_FIRST_REPORT_001/002 (ny tekst). Ikke legg inn tidlige alienmøter som bryter den nye regien.
 - [ ] **FX-01:** Produser den korte meteorpassasjen ved stjernehullet med riktig hendelsestid og engangsavspilling. [Design og kilder](../Design/Proposals/NIAGARA_VFX_2026-10-28.md).
 - [ ] **FX-02:** Produser den store UFO-avsløringen med cloud tank-skyer som del av finalen, med bevart THE EVENT og 1947-bilde. [Finaleretning](../Design/Proposals/FINALE_CLOUD_TANK_UFO.md).

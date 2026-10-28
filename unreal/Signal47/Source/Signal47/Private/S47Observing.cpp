@@ -8,6 +8,9 @@
 #include "S47Ambience.h"
 #include "S47Web.h"
 #include "S47Inter.h"
+#include "S47Evening.h"
+#include "S47RecordedDialogue.h"
+#include "S47RadioVoice.h"
 #include "S47Three.h"
 #include "S47World.h"
 #include "S47Walker.h"
@@ -26,6 +29,8 @@ namespace
  // Hint bits, in the order the evening reaches them.
  constexpr int32 HintTicks = 1, HintBroadband = 2, HintStill = 4, HintDrive = 8, HintTube = 16, HintGate = 32;
  const FVector GeneratorAt(4.3, .6, 8.4); // three.js, the standby generator in the pocket behind the control room
+ constexpr int32 HintVoice = 64;
+ const TCHAR* const DoorLine = TEXT("D01_HANDOVER_001"); // "Reyes? Dale. The logbook should be in front of you."
  constexpr double GenStart = -4 * 3600. - 25 * 60, GenDone = -4 * 3600. - 15 * 60, YardStart = -2 * 3600. - 20 * 60;
  // PSR B1133+16 folds at 1.18791 s. The stray ticks fall four, a gap, then seven.
  constexpr double PulsarPeriod = 1.18791;
@@ -149,7 +154,8 @@ FS47Doc FS47Observing::Chart(int32 I)
 
 void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
- bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Yard = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
+ Stop();
+ bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -162,6 +168,7 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
   // A save on generator power comes back running on line power: the room lights are not saved here.
   GenStep = FMath::Clamp(S47J::Int(Saved, TEXT("generator")), 0, 3); if (GenStep == 2) GenStep = 1;
   Yard = FMath::Clamp(S47J::Int(Saved, TEXT("yard")), 0, 2);
+  DoorVoice = FMath::Clamp(S47J::Int(Saved, TEXT("doorVoice")), 0, 2);
   if (GenStep == 1 && M && M->Audio) { FS47Sound S; S.Gain = .3f; S.At = GeneratorAt; S.bLoop = true; M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), S); }
   // The stillness belongs to an unfinished Virgo A run only.
   if (StepNow == EStep::Integrating && Run == 3 && (HintMask & HintStill) && M && M->Audio && M->Audio->Night) M->Audio->Night->Still();
@@ -175,7 +182,7 @@ S47J::FObj FS47Observing::Save() const
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version); S47J::Set(O, TEXT("run"), Run); S47J::Set(O, TEXT("step"), int32(StepNow));
  S47J::Set(O, TEXT("elapsed"), Elapsed); S47J::Set(O, TEXT("hints"), HintMask); S47J::Set(O, TEXT("schedule"), bScheduleFiled); S47J::Set(O, TEXT("status"), HeldStatus);
- S47J::Set(O, TEXT("generator"), GenStep); S47J::Set(O, TEXT("yard"), Yard);
+ S47J::Set(O, TEXT("generator"), GenStep); S47J::Set(O, TEXT("yard"), Yard); S47J::Set(O, TEXT("doorVoice"), DoorVoice);
  return O;
 }
 
@@ -218,6 +225,7 @@ void FS47Observing::Start()
 void FS47Observing::Step(double Dt)
 {
  if (!bEnabled || !M || !M->Story || M->Mode != US47Main::EMode::Play || M->bPausedByMenu || !FMath::IsFinite(Dt) || Dt <= 0) return;
+ if (Done()) { StepDoorVoice(); return; }
  if (!Active()) return;
  if (!bScheduleFiled)
  {
@@ -461,6 +469,60 @@ void FS47Observing::StepChores(double Dt)
   if (M->Audio) { FS47Sound O; O.Gain = .7f; O.At = GatePoint() + FVector(0, 1, 0); M->Audio->Sfx(TEXT("doorMetal"), O); }
   Yard = 2; Hint(HintGate);
   M->Story->Note(TEXT("21:45. Round to the array gate. Chained it. Walking back I heard chain-link behind me: the gate stood open again. No one on the field."));
+  Changed();
+ }
+}
+
+FS47Observing::FS47Observing(US47Main* InM) : M(InM)
+{
+ if (!M || !M->Audio) return;
+ Voice = MakeShared<FS47RecordedDialogue>(M->Audio, TEXT("evening"), [](const FS47DialogueInput& I, FS47RadioVoice& Bank) -> TOptional<TArray<FS47RadioClip>>
+ { return I.Lines.Num() == 1 ? Bank.Resolve(I.Lines[0].Text, 0, I.Voice) : TOptional<TArray<FS47RadioClip>>(); },
+ [](const FS47RadioClip&) { return false; },
+ [this](const FS47RadioClip&)
+ {
+  // Not the phone: the voice is on the far side of the visitor entrance.
+  FS47RecordedDialogue::FOutput Out;
+  if (const auto* It = M && M->Inter ? M->Inter->Get(TEXT("exitDoor")) : nullptr) Out.At = It->Object.WorldPosition() + FVector(-1.6, .2, 0);
+  Out.Channel = TEXT("physical"); return Out;
+ });
+}
+FS47Observing::~FS47Observing() { if (Voice) Voice->Stop(); }
+
+void FS47Observing::Stop()
+{
+ bEnabled = false;
+ if (Voice) Voice->Stop();
+}
+
+void FS47Observing::SetCharacterVoicesEnabled(bool bValue)
+{
+ if (Voice) Voice->SetEnabled(bValue);
+}
+
+bool FS47Observing::DoorVoicePlaying() const { return Voice && Voice->Playing(); }
+
+void FS47Observing::StepDoorVoice()
+{
+ if (DoorVoice >= 2 || !M->Player || !M->World || M->World->Area != TEXT("saro") || !M->Web || !M->Horror || !M->Horror->Enabled() || M->Horror->Complete()) return;
+ const FVector P = M->Player->Pos;
+ const bool bCorridor = P.Z > 5.0 && P.Z < 6.4 && P.X < -1.5 && P.X > -5.8;
+ if (DoorVoice == 0 && bCorridor && !M->Web->IsDoorOpen(TEXT("exitDoor")))
+ {
+  DoorVoice = 1;
+  const FS47EveningLine* L = nullptr;
+  if (const auto* Scene = M->Evening ? M->Evening->Pack.FindScene(TEXT("D01_HANDOVER")) : nullptr)
+   L = Scene->Lines.FindByPredicate([](const FS47EveningLine& Line) { return Line.Id == DoorLine; });
+  if (L && Voice && M->Audio->bCharacterVoices) { FS47DialogueInput In; In.Voice = L->VoiceProfile; In.Lines.Add({ L->Speaker, L->Text }); Voice->SetEnabled(true); Voice->Play(In); UE_LOG(LogTemp, Display, TEXT("S47: observing door voice %s: %s"), DoorLine, *Voice->State()); }
+  M->UI->Toast(TEXT("From outside the visitor entrance, Dale's voice: \"Reyes? Dale. The logbook should be in front of you.\""), 6);
+  Hint(HintVoice);
+ }
+ else if (DoorVoice == 1 && M->Web->IsDoorOpen(TEXT("exitDoor")))
+ {
+  DoorVoice = 2;
+  if (Voice) Voice->Stop();
+  M->UI->Toast(TEXT("The steps outside are empty. The ramp light, the road, nobody. Dale went home at six."), 5);
+  M->Story->Note(FString::Printf(TEXT("%s. Heard Dale's voice outside the visitor entrance, the first thing he said on the phone at six. Opened it: nobody on the steps."), *M->Story->ClockText(false)));
   Changed();
  }
 }
