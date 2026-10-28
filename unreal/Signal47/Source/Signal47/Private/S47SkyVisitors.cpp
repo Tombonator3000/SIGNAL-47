@@ -40,6 +40,42 @@ namespace
   const auto V = O.IsValid() ? O->TryGetField(K) : nullptr;
   return V.IsValid() && V->Type == EJson::Number && V->TryGetNumber(Out) && FMath::IsFinite(Out);
  }
+ bool TraceSkySight(US47Main* M, const FVector& Eye, const FVector& At, FString* Detail = nullptr)
+ {
+  if (!M || !M->Web || !M->Web->GetWorld()) { if (Detail) *Detail = TEXT("no live world"); return false; }
+  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SkyVisitorSight), true);
+  const FVector From = S47Three::ToUE(Eye), End = S47Three::ToUE(At);
+  for (int32 I = 0; I < 32; ++I)
+  {
+   FHitResult H;
+   if (!M->Web->GetWorld()->LineTraceSingleByChannel(H, From, End, ECC_Visibility, Q))
+   { if (Detail) *Detail = FString::Printf(TEXT("clear after %d ignored components"), I); return true; }
+   const auto* C = H.GetComponent();
+   if (!C) { if (Detail) *Detail = TEXT("blocking hit has no component"); return false; }
+   const int32 NodeIndex = M->Web->NodeOf(C);
+   const auto* Node = M->Web->Node(NodeIndex);
+   bool Solid = C->IsVisible();
+   if (Solid && M->Web->ItemOf(C) && Node && Node->Name.StartsWith(TEXT("proxy"))) Solid = false;
+   const auto* Mat = C->GetMaterial(FMath::Max<int32>(0, H.ElementIndex));
+   float Opacity = 1;
+   if (Mat)
+   {
+    const auto Blend = Mat->GetBlendMode();
+    Mat->GetScalarParameterValue(TEXT("Opacity"), Opacity);
+    if (Blend == BLEND_Additive || (Blend == BLEND_Translucent && Opacity < .5f)) Solid = false;
+   }
+   if (Solid)
+   {
+    if (Detail) *Detail = FString::Printf(TEXT("actor=%s component=%s hiddenInGame=%d node=%d:%s material=%s blend=%d opacity=%.3f hit=%s distance=%.3fm ignored=%d"),
+     *GetNameSafe(H.GetActor()), *C->GetPathName(), C->bHiddenInGame, NodeIndex, Node ? *Node->Name : TEXT("none"), *GetNameSafe(Mat),
+     Mat ? int32(Mat->GetBlendMode()) : -1, Opacity, *S47Three::ToThree(H.ImpactPoint).ToString(), H.Distance / 100., I);
+    return false;
+   }
+   Q.AddIgnoredComponent(C);
+  }
+  if (Detail) *Detail = TEXT("32 ignored components exhausted the sight trace");
+  return false;
+ }
 }
 
 double FS47SkyVisitorState::Duration(int32 S)
@@ -209,31 +245,7 @@ FVector FS47SkyVisitors::WorldPosition(const FVector& P, const FString& Area)
 }
 bool FS47SkyVisitors::ClearLine(const FVector& Eye, const FVector& At) const
 {
- if (!M || !M->Web || !M->Web->GetWorld()) return false;
- FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SkyVisitorSight), true);
- const FVector From = S47Three::ToUE(Eye), End = S47Three::ToUE(At);
- for (int32 I = 0; I < 32; ++I)
- {
-  FHitResult H;
-  if (!M->Web->GetWorld()->LineTraceSingleByChannel(H, From, End, ECC_Visibility, Q)) return true;
-  const auto* C = H.GetComponent();
-  if (!C) return false;
-  bool Solid = C->IsVisible();
-  if (Solid && M->Web->ItemOf(C))
-  {
-   const auto* Node = M->Web->Node(M->Web->NodeOf(C));
-   if (Node && Node->Name.StartsWith(TEXT("proxy"))) Solid = false;
-  }
-  if (const auto* Mat = C->GetMaterial(FMath::Max<int32>(0, H.ElementIndex)))
-  {
-   const auto Blend = Mat->GetBlendMode(); float Opacity = 1;
-   Mat->GetScalarParameterValue(TEXT("Opacity"), Opacity);
-   if (Blend == BLEND_Additive || (Blend == BLEND_Translucent && Opacity < .5f)) Solid = false;
-  }
-  if (Solid) return false;
-  Q.AddIgnoredComponent(C);
- }
- return false;
+ return TraceSkySight(M, Eye, At);
 }
 int32 FS47SkyVisitors::RequestedStage() const
 {
@@ -370,6 +382,39 @@ void FS47SkyVisitors::ControlTest(double Dt)
  Center /= FMath::Max(1,AimN);
  const FVector D = Center - S47Three::ToThree(M->Player->EyeUE());
  M->Player->Yaw = FMath::Atan2(-D.X,-D.Z); M->Player->Pitch = FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+ if (ContractPhase == 3 && Since >= 2)
+ {
+  // One diagnostic sample after the ordinary Walker has applied the test aim.
+  // Phase 4 continues the same sight test; it only marks this evidence as written.
+  ContractPhase = 4;
+  const FS47Cam Cam = FS47Cam::Of(M->Player,12000);
+  const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(TestStage,0,State.Elapsed),M->World->Area);
+  const FVector Projected = Cam.Project(At);
+  FString Sight; const bool Clear = TraceSkySight(M,Cam.Pos,At,&Sight);
+  const bool Modal = M->ModalOpen(), Cinematic = M->Story->IsCinematic();
+  const auto* Point = Points.IsValidIndex(0) ? Points[0].Get() : nullptr;
+  const bool PointVisible = Point && Point->IsVisible(), Registered = Point && Point->IsRegistered();
+  const bool Material = Point && !Point->Elements.IsEmpty() && Point->Elements[0].Material;
+  const FString ActualPoint = Point ? S47Three::ToThree(Point->GetComponentLocation()).ToString() : TEXT("none");
+  UE_LOG(LogS47SkyVisitors,Display,TEXT("S47: sky phase3 diagnostic stage=%d requested=%d elapsed=%.6f looking=%.6f observed=%d completed=%d held=%d modal=%d menu=%d storyPaused=%d cinematic=%d driving=%d area=%s eye=%s forward=%s target=%s projection=%s actorRotation=%s yaw=%.6f pitch=%.6f built=%d pointVisible=%d registered=%d material=%d actualPoint=%s clear=%d trace=%s"),
+   State.Stage,RequestedStage(),State.Elapsed,State.Looking,State.Stage > 0 && State.Observed[State.Stage-1],State.Stage > 0 && State.Completed[State.Stage-1],
+   M->bPausedByMenu || Modal || Cinematic,Modal,M->bPausedByMenu,M->Story->IsPaused(),Cinematic,M->World->bDriving,*M->World->Area,
+   *Cam.Pos.ToString(),*Cam.Forward.ToString(),*At.ToString(),*Projected.ToString(),*M->Player->GetActorRotation().ToString(),
+   M->Player->Yaw,M->Player->Pitch,bBuilt,PointVisible,Registered,Material,*ActualPoint,Clear,*Sight);
+  auto Diagnostic = S47J::New();
+  S47J::Set(Diagnostic,TEXT("stage"),State.Stage); S47J::Set(Diagnostic,TEXT("elapsed"),State.Elapsed);
+  S47J::Set(Diagnostic,TEXT("held"),M->bPausedByMenu || Modal || Cinematic); S47J::Set(Diagnostic,TEXT("modal"),Modal);
+  S47J::Set(Diagnostic,TEXT("menuPaused"),M->bPausedByMenu); S47J::Set(Diagnostic,TEXT("storyPaused"),M->Story->IsPaused());
+  S47J::Set(Diagnostic,TEXT("cinematic"),Cinematic); S47J::Set(Diagnostic,TEXT("area"),M->World->Area);
+  S47J::Set(Diagnostic,TEXT("eye"),Cam.Pos.ToString()); S47J::Set(Diagnostic,TEXT("forward"),Cam.Forward.ToString());
+  S47J::Set(Diagnostic,TEXT("target"),At.ToString()); S47J::Set(Diagnostic,TEXT("projection"),Projected.ToString());
+  S47J::Set(Diagnostic,TEXT("pointVisible"),PointVisible); S47J::Set(Diagnostic,TEXT("registered"),Registered);
+  S47J::Set(Diagnostic,TEXT("material"),Material); S47J::Set(Diagnostic,TEXT("actualPoint"),ActualPoint);
+  S47J::Set(Diagnostic,TEXT("clearLine"),Clear); S47J::Set(Diagnostic,TEXT("trace"),Sight);
+  S47J::Set(Diagnostic,TEXT("skyVisitors"),State.Save());
+  FFileHelper::SaveStringToFile(S47J::Write(Diagnostic,true),*(ContractRoot/TEXT("phase3-diagnostic.json")));
+  FScreenshotRequest::RequestScreenshot(ContractRoot/TEXT("phase3-diagnostic.png"),false,false);
+ }
  if (State.Stage == TestStage && State.Observed[TestStage - 1] && Since > 4)
  {
   if (!Check(true,FString::Printf(TEXT("SKY%02d seen through actual projected and unoccluded sight"),TestStage))) return;
