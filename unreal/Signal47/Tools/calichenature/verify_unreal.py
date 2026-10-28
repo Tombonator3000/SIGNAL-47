@@ -26,50 +26,98 @@ def nature_material_warnings(log):
 
 
 def nature_runtime_evidence(log, placement=None, required=True):
-    """Pure read-only log audit; ready line alone cannot prove component setup."""
-    ready_rows = re.findall(r'S47: Caliche nature ready: (\d+) authored instances in (\d+) HISM families, (\d+) LODs, no collision; road/story/photo exclusions preserved', log)
-    components = [{'id': name, 'instances': int(count), 'cull_cm': [int(start), int(end)], 'world_transform_checks': state}
-                  for name, count, start, end, state in re.findall(r'S47: nature component (\S+): instances=(\d+) cull_cm=(\d+),(\d+) world_transform_checks=(PASS|FAIL)', log)]
+    """Read-only audit of old family logs and new split contact-gravel telemetry."""
+    ready_prefix = 'S47: Caliche nature ready: '
+    old_ready = re.findall(r'S47: Caliche nature ready: (\d+) authored instances in (\d+) HISM families, (\d+) LODs, no collision; road/story/photo exclusions preserved[ \t]*\r?$', log, re.M)
+    new_ready = re.findall(r'S47: Caliche nature ready: (\d+) authored instances in (\d+) prototypes, (\d+) HISM components, (\d+) LODs, no collision; road/story/photo exclusions preserved[ \t]*\r?$', log, re.M)
+    # Keep the original three-value ready rows for callers that archive the old schema.
+    ready_rows = old_ready + [(count, families, lods) for count, families, _, lods in new_ready]
+    component_prefix = 'S47: nature component '
+    components = [{'id': name, 'instances': int(count), 'cull_cm': [int(start), int(end)],
+                   'world_transform_checks': state, 'shadow': None if shadow == '' else bool(int(shadow))}
+                  for name, count, start, end, state, shadow in re.findall(
+                      r'S47: nature component (\S+): instances=(\d+) cull_cm=(\d+),(\d+) world_transform_checks=(PASS|FAIL)(?: shadow=([01]))?[ \t]*\r?$', log, re.M)]
     cooked_prefix = 'S47: nature cooked LOD screens '
     cooked_records = re.findall(r'S47: nature cooked LOD screens (\S+): ([+-]?\d+\.\d{5}),([+-]?\d+\.\d{5}),([+-]?\d+\.\d{5})[ \t]*\r?$', log, re.M)
     cooked_screens = [{'id': name, 'screens': [float(a), float(b), float(c)], 'printed_values': [a, b, c]}
                       for name, a, b, c in cooked_records]
-    has_native_evidence = bool(ready_rows or components or log.count(cooked_prefix))
+    family_prefix = 'S47: nature family '
+    families = [{'id': name, 'authored': int(authored), 'normal': int(normal), 'tiny': int(tiny), 'state': state}
+                for name, authored, normal, tiny, state in re.findall(
+                    r'S47: nature family (\S+): authored=(\d+) normal=(\d+) tiny=(\d+) summed_count_checks=(PASS|FAIL)[ \t]*\r?$', log, re.M)]
+    policies = [{'mode': mode, 'threshold_cm': float(height), 'tiny_shadowless': int(count)}
+                for mode, height, count in re.findall(
+                    r'S47: small-object shadow policy: mode=(legacy|contact-gravel) threshold_cm=(\d+\.\d+) tiny_shadowless=(\d+)[ \t]*\r?$', log, re.M)]
+    new_format = bool(new_ready or families or policies)
+    has_native_evidence = bool(log.count(ready_prefix) or log.count(component_prefix) or log.count(cooked_prefix) or new_format)
     checks = []
     def check(name, value):
         checks.append({'name': name, 'pass': bool(value)})
-    check('no runtime nature rejection or component mismatch', not any(marker in log for marker in ('nature rejected:', 'nature runtime component mismatch:')))
+    check('no runtime nature rejection or component mismatch', not any(marker in log for marker in ('nature rejected:', 'nature runtime component mismatch:', 'nature family lost instances:')))
     material_warnings = nature_material_warnings(log)
     check('no Nature material usage or fallback diagnostics', not material_warnings)
     if required or has_native_evidence:
-        check('one complete native ready record', len(ready_rows) == 1)
-        check('twelve distinct actual HISM components', len(components) == 12 and len({row['id'] for row in components}) == 12)
-        check('actual transforms counts culls and NoCollision passed native checks', bool(components) and all(row['world_transform_checks'] == 'PASS' for row in components))
+        check('one complete native ready record', len(ready_rows) == log.count(ready_prefix) == 1)
+        check('all component records parsed and unique', len(components) == log.count(component_prefix) == len({row['id'] for row in components}))
+        check('actual transforms counts culls NoCollision and shadow passed native checks', bool(components) and all(row['world_transform_checks'] == 'PASS' for row in components))
         check('actual positive component counts', bool(components) and all(row['instances'] > 0 for row in components))
-        check('twelve distinct exact-format cooked LOD screen records', log.count(cooked_prefix) == 12 and len(cooked_screens) == 12 and len({row['id'] for row in cooked_screens}) == 12)
-        check('cooked LOD screen families match actual components', bool(cooked_screens) and {row['id'] for row in cooked_screens} == {row['id'] for row in components})
+        check('twelve distinct exact-format cooked LOD screen records', log.count(cooked_prefix) == len(cooked_screens) == len({row['id'] for row in cooked_screens}) == 12)
+        normal_ids = {row['id'] for row in components if not row['id'].endswith(':tiny')}
+        tiny = [row for row in components if row['id'].endswith(':tiny')]
+        check('twelve normal prototype components', len(normal_ids) == 12)
+        check('cooked LOD screen families match normal components', bool(cooked_screens) and {row['id'] for row in cooked_screens} == normal_ids)
         for row in cooked_screens:
             check(row['id'] + ' actual cooked LOD screens are 1/.12/.025', row['printed_values'] == ['1.00000', '0.12000', '0.02500'])
         if len(ready_rows) == 1:
-            count, families, lods = map(int, ready_rows[0])
-            check('ready totals match actual component counts and three LODs', families == 12 and lods == 3 and count == sum(row['instances'] for row in components))
+            count, prototypes, lods = map(int, ready_rows[0])
+            check('ready totals match all component counts and three LODs', prototypes == 12 and lods == 3 and count == sum(row['instances'] for row in components))
+        observed = {row['id']: row for row in components}
+        if new_format:
+            check('new schema has one ready record and explicit component count', len(new_ready) == 1 and not old_ready and int(new_ready[0][2]) == len(components))
+            check('one complete shadow policy', len(policies) == log.count('S47: small-object shadow policy: ') == 1)
+            check('all new components report explicit shadow state', bool(components) and all(row['shadow'] is not None for row in components))
+            check('tiny components are limited to the two gravel prototypes', all(row['id'] in {'Caliche_B:tiny', 'Sandstone_A:tiny'} for row in tiny))
+            check('every tiny batch is shadowless', all(row['shadow'] is False for row in tiny))
+            check('twelve distinct complete native family sum records', len(families) == log.count(family_prefix) == len({row['id'] for row in families}) == 12)
+            check('native family sums match normal prototype IDs', {row['id'] for row in families} == normal_ids)
+            for row in families:
+                normal, small = observed.get(row['id']), observed.get(row['id'] + ':tiny')
+                check(row['id'] + ' native family sum matches actual batches', row['state'] == 'PASS' and normal is not None and
+                      row['normal'] == normal['instances'] and row['tiny'] == (small['instances'] if small else 0) and row['authored'] == row['normal'] + row['tiny'])
+            if len(policies) == 1:
+                policy = policies[0]
+                check('shadow policy threshold and total match actual tiny batches', policy['threshold_cm'] == 12.0 and policy['tiny_shadowless'] == sum(row['instances'] for row in tiny))
+                if policy['mode'] == 'legacy':
+                    check('legacy shadow mode keeps twelve unsplit components', len(components) == 12 and not tiny and policy['tiny_shadowless'] == 0)
+                else:
+                    check('contact gravel mode has exactly two extra nonempty batches', len(components) == 14 and {row['id'] for row in tiny} == {'Caliche_B:tiny', 'Sandstone_A:tiny'})
+        else:
+            check('legacy schema has twelve unsplit HISM components', len(components) == 12 and not tiny)
+            check('legacy schema contains no partial new shadow telemetry', not log.count(family_prefix) and not log.count('S47: small-object shadow policy: '))
         if placement is not None:
             expected = placement['families']
             check('placement has twelve distinct families', len(expected) == 12 and len({row['id'] for row in expected}) == 12)
-            observed = {row['id']: row for row in components}
-            check('actual family IDs match authored placement', set(observed) == {row['id'] for row in expected})
+            check('actual normal family IDs match authored placement', normal_ids == {row['id'] for row in expected})
             check('cooked LOD screen families match authored placement', {row['id'] for row in cooked_screens} == {row['id'] for row in expected})
             expected_total = sum(len(row['instances']) for row in expected)
             check('placement total is internally consistent', expected_total == placement['total_instances'])
             for row in expected:
-                actual = observed.get(row['id'])
+                batches = [actual for actual in components if actual['id'] in (row['id'], row['id'] + ':tiny')]
                 end = math.floor(float(row['cull_metres']) * 100 + .5)
                 start = math.floor(end * .82 + .5)
-                check(row['id'] + ' actual count and native cull distances match placement', actual is not None and actual['instances'] == len(row['instances']) and actual['cull_cm'] == [start, end])
+                check(row['id'] + ' summed actual count and every native cull match placement', bool(batches) and
+                      sum(actual['instances'] for actual in batches) == len(row['instances']) and all(actual['cull_cm'] == [start, end] for actual in batches))
+                actual = observed.get(row['id'])
+                if new_format or actual is not None and actual['shadow'] is not None:
+                    check(row['id'] + ' normal shadow state matches authored placement', actual is not None and actual['shadow'] == row.get('shadow', True))
+                family = [actual for actual in families if actual['id'] == row['id']]
+                if new_format:
+                    check(row['id'] + ' native authored count matches placement', len(family) == 1 and family[0]['authored'] == len(row['instances']))
     status = 'FAIL' if not all(row['pass'] for row in checks) else 'PASS' if required or has_native_evidence else 'NOT_REQUESTED'
     return {'status': status,
-            'required': required, 'checks': checks, 'ready': ready_rows, 'components': components, 'cooked_lod_screens': cooked_screens, 'nature_material_warnings': material_warnings,
-            'limits': 'Native telemetry checks actual cooked RenderData.ScreenSize, count, cull distances, NoCollision and first/last world transforms after tree build. This verifies runtime thresholds separately from the protected editor flag. It does not prove visibility of every instance or frame rate.'}
+            'required': required, 'checks': checks, 'ready': ready_rows, 'components': components,
+            'family_sums': families, 'shadow_policy': policies, 'cooked_lod_screens': cooked_screens, 'nature_material_warnings': material_warnings,
+            'limits': 'Native telemetry checks cooked LOD thresholds, per-batch counts, culls, NoCollision, shadow state when reported, and first/last world transforms after tree build. New split logs require exact family sums and gravel-only shadowless batches. Old pre-split logs do not report shadow state. This does not prove visibility of every instance or frame rate.'}
 
 
 def runtime_audit_cli():

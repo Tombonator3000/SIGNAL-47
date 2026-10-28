@@ -1,0 +1,544 @@
+{
+  "status": "PASS",
+  "scope": "Fresh saved Blender geometry, material files and physical light apertures",
+  "checks": [
+    {
+      "name": "Ten additive meshes, no removal contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Correct blend reopened",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_WetCabinetDetail geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 3960,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_WetCabinetDetail exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_RinseSink geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 2632,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_RinseSink exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_EnlargerDetail geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 3260,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_EnlargerDetail exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_ProcessDetails geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 1380,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_ProcessDetails exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_StorageDetail geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 3840,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_StorageDetail exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_ArchiveDetail geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 1896,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_ArchiveDetail exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_RecordsDetail geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 1620,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_RecordsDetail exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_SafelightHousing geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 1276,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_SafelightHousing exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_Ventilation geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 1748,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_Ventilation exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_PhotoLab_UtilityDetail geometry/UVs/bounds/pivot/export",
+      "pass": true,
+      "detail": {
+        "triangles": 2004,
+        "bounds_error_m": 0.0
+      }
+    },
+    {
+      "name": "SM_PhotoLab_UtilityDetail exact material slots",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Actual total detail budget",
+      "pass": true,
+      "detail": 23616
+    },
+    {
+      "name": "M_PhotoLab_AgedGreyGreen nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_AgedGreyGreen packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_CreamEnamel nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_CreamEnamel packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_BrushedStainless nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_BrushedStainless packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_Bakelite nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_Bakelite packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_Rubber nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_Rubber packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_Manila nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_Manila packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_DialIvory nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_DialIvory packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_AmberPlastic nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_AmberPlastic packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_BlueCap nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_BlueCap packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_OxideHandle nonemissive PBR",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_PhotoLab_OxideHandle packed and portable PBR images",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "enlarger emission free aperture",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "wall diffuser free aperture",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "ceiling diffuser free aperture",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "sink open bowl free aperture",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "No export lights",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "meshes": [
+    {
+      "name": "SM_PhotoLab_WetCabinetDetail",
+      "triangles": 3960,
+      "bounds_blender_m": [
+        [
+          13.09000015258789,
+          5.060999870300293,
+          0.004999998956918716
+        ],
+        [
+          17.309999465942383,
+          5.133999824523926,
+          0.9375
+        ]
+      ],
+      "fbx_sha256": "dc3a3a5ae291790d9d8c7ca1eac4c08d564c101a970a4b5122d29b0765e28f58"
+    },
+    {
+      "name": "SM_PhotoLab_RinseSink",
+      "triangles": 2632,
+      "bounds_blender_m": [
+        [
+          17.435998916625977,
+          5.194999694824219,
+          0.00299999862909317
+        ],
+        [
+          18.500141143798828,
+          5.768999099731445,
+          1.2193915843963623
+        ]
+      ],
+      "fbx_sha256": "d905dd0d59dd907252cde55822fb3ea2f9f4731017c563b7b074e48821375d5f"
+    },
+    {
+      "name": "SM_PhotoLab_EnlargerDetail",
+      "triangles": 3260,
+      "bounds_blender_m": [
+        [
+          16.762998580932617,
+          5.170000076293945,
+          0.9819999933242798
+        ],
+        [
+          17.237001419067383,
+          5.642499923706055,
+          1.9014999866485596
+        ]
+      ],
+      "fbx_sha256": "d04c7817255f73df3f6f7d602dcc099e1ffea644d0153e404d54cf16719dadfc"
+    },
+    {
+      "name": "SM_PhotoLab_ProcessDetails",
+      "triangles": 1380,
+      "bounds_blender_m": [
+        [
+          13.746000289916992,
+          5.197500228881836,
+          0.9350000023841858
+        ],
+        [
+          16.936500549316406,
+          5.744999885559082,
+          1.1299999952316284
+        ]
+      ],
+      "fbx_sha256": "06136d8a60f02e35172d8495f85ade749292bc36d90c3d02c7a4b79999af806d"
+    },
+    {
+      "name": "SM_PhotoLab_StorageDetail",
+      "triangles": 3840,
+      "bounds_blender_m": [
+        [
+          12.83750057220459,
+          3.1000001430511475,
+          0.30000001192092896
+        ],
+        [
+          13.191999435424805,
+          5.5,
+          1.8499999046325684
+        ]
+      ],
+      "fbx_sha256": "25024543de5fe54d8a8f2f149422a079331909ab23278fb54a0d3ae72fac1e5a"
+    },
+    {
+      "name": "SM_PhotoLab_ArchiveDetail",
+      "triangles": 1896,
+      "bounds_blender_m": [
+        [
+          18.177000045776367,
+          1.649999976158142,
+          0.029999971389770508
+        ],
+        [
+          18.950000762939453,
+          4.539999961853027,
+          1.125
+        ]
+      ],
+      "fbx_sha256": "7f6f2a74b4367861817d5ddcb59799f205136d623010fbffe56a6b15835b10c8"
+    },
+    {
+      "name": "SM_PhotoLab_RecordsDetail",
+      "triangles": 1620,
+      "bounds_blender_m": [
+        [
+          15.679999351501465,
+          -0.7749999761581421,
+          0.0010000010952353477
+        ],
+        [
+          18.31999969482422,
+          -0.053999997675418854,
+          1.0149999856948853
+        ]
+      ],
+      "fbx_sha256": "c125c2b68bf1886735f4fccac8bfb4d5d7779ed79ff3c42190d67e56762e3563"
+    },
+    {
+      "name": "SM_PhotoLab_SafelightHousing",
+      "triangles": 1276,
+      "bounds_blender_m": [
+        [
+          14.817000389099121,
+          2.255000114440918,
+          2.3529999256134033
+        ],
+        [
+          16.289379119873047,
+          5.89888334274292,
+          2.8064491748809814
+        ]
+      ],
+      "fbx_sha256": "df0b271b320d85f89b88cafcd25e4c31a5ac801466bcfb8427f6c65c858cc000"
+    },
+    {
+      "name": "SM_PhotoLab_Ventilation",
+      "triangles": 1748,
+      "bounds_blender_m": [
+        [
+          18.30499839782715,
+          5.679807662963867,
+          1.2599999904632568
+        ],
+        [
+          18.892499923706055,
+          5.787499904632568,
+          2.4800000190734863
+        ]
+      ],
+      "fbx_sha256": "d03537b78186682f5d139b9198a3856723f8e744103693e72029cfdc0521ccdc"
+    },
+    {
+      "name": "SM_PhotoLab_UtilityDetail",
+      "triangles": 2004,
+      "bounds_blender_m": [
+        [
+          12.699999809265137,
+          3.077500104904175,
+          0.009999997913837433
+        ],
+        [
+          19.30000114440918,
+          5.791999816894531,
+          2.755000114440918
+        ]
+      ],
+      "fbx_sha256": "d66a1b34a67ed9e4bd21e57c982256e8c1514de9584784d9f076c652db97cd6b"
+    }
+  ],
+  "apertures": [
+    {
+      "name": "enlarger emission",
+      "start_three_m": [
+        17,
+        1.49,
+        -5.45
+      ],
+      "end_three_m": [
+        17,
+        1.04,
+        -5.45
+      ],
+      "offset_axis": "Y",
+      "offset_m": 0.02,
+      "rays": 5,
+      "clear": true
+    },
+    {
+      "name": "wall diffuser",
+      "start_three_m": [
+        15,
+        2.43,
+        -5.55
+      ],
+      "end_three_m": [
+        15,
+        2.43,
+        -5.4
+      ],
+      "offset_axis": "Z",
+      "offset_m": 0.035,
+      "rays": 5,
+      "clear": true
+    },
+    {
+      "name": "ceiling diffuser",
+      "start_three_m": [
+        15.9,
+        2.638,
+        -2.4
+      ],
+      "end_three_m": [
+        15.9,
+        2.43,
+        -2.4
+      ],
+      "offset_axis": "Y",
+      "offset_m": 0.06,
+      "rays": 5,
+      "clear": true
+    },
+    {
+      "name": "sink open bowl",
+      "start_three_m": [
+        17.78,
+        1.0,
+        -5.44
+      ],
+      "end_three_m": [
+        17.78,
+        0.79,
+        -5.44
+      ],
+      "offset_axis": "Y",
+      "offset_m": 0.07,
+      "rays": 5,
+      "clear": true
+    }
+  ],
+  "native_tested": false,
+  "source_sha256": "173fe6435eaef703ceded4767a062cda88601ea3a3a86c68a56f8bcf0f9d0835",
+  "contract_sha256": "ebd3f835887d6b75c38a3fd0a5be8d9ac2706b0c871bc72a02aea0965d4d3a6e",
+  "texture_sha256": {
+    "textures/M_PhotoLab_AgedGreyGreen_base.png": "5d74d4f847d520336c3a089c7800a6a32af3cf9148dcb62c92846b3245fdf495",
+    "textures/M_PhotoLab_AgedGreyGreen_rough.png": "08fef89edee1dc9afe983f7b9156ae663309dfa192400e7ff6d4aca8e7754bb3",
+    "textures/M_PhotoLab_CreamEnamel_base.png": "4e8f1ebeb854ac641ca4386c4d967889e69230b6cd1055d0b5bacab74acbc005",
+    "textures/M_PhotoLab_CreamEnamel_rough.png": "4f006de69285c7ffe4979ba25123f7e35a3a9de9cf90f9d8a9b22dc6a47376a3",
+    "textures/M_PhotoLab_BrushedStainless_base.png": "98856ef09a6e0396fd5321604fe912d678b808c58dbc54ae8e18f6223b68ec20",
+    "textures/M_PhotoLab_BrushedStainless_rough.png": "c09111b289188a133b4c317d11d46530ce6dd62b87e2c8dd70960f2577facda6",
+    "textures/M_PhotoLab_Bakelite_base.png": "17edd2c10f55a416637c4cd9fa5795debb8b5013c34b96bf24e314b038430e4f",
+    "textures/M_PhotoLab_Bakelite_rough.png": "6be6da133f3314f8bf65b2efb10944c34bd4bc695f63689eb2472f0fa1ae352e",
+    "textures/M_PhotoLab_Rubber_rough.png": "b22173669c2466385e3d31aeaa1eac5158acd4da98f0d7f15c5fa461ca2bad37",
+    "textures/M_PhotoLab_Rubber_base.png": "b8d2f127c110b40bd62ba8e9af6b74c8db47b7884143ede43c99a40f9fd1f96c",
+    "textures/M_PhotoLab_Manila_base.png": "a0f2e88bba672ef0332357d94f7b17c633de7f2c41d02ae27ab868f2e5d27f6d",
+    "textures/M_PhotoLab_Manila_rough.png": "83597d3f306cedab5e6e2b22d3eb61f92b5a65aee584eaffbdd3a6cf6b567fba",
+    "textures/M_PhotoLab_DialIvory_base.png": "1519bb2d6c99c482bf9fc8c5f9423063cfac74a90ecbbbe7d8f0197b5fd0750e",
+    "textures/M_PhotoLab_DialIvory_rough.png": "4ded0144c48ad79b563323d21642e04c5422e846e0f13678ab7215696afc4cbe",
+    "textures/M_PhotoLab_AmberPlastic_rough.png": "d9ea97bfd5a21e34d3dd7e1572f78750127b34695b8d2ef49416372ebba6fe4d",
+    "textures/M_PhotoLab_AmberPlastic_base.png": "d982b5fb70598f88fdd2f55a25c77441344d5a2092c937d98a807b963809e939",
+    "textures/M_PhotoLab_BlueCap_rough.png": "bfcd4f06eccb8c76faa64bffdd9f2e7df518106b9086d9d764a8a26b2bc35e80",
+    "textures/M_PhotoLab_BlueCap_base.png": "7b443ae719694acf4888fc0729ac4d02a88d69587763c91d573b6bb02d8b2a69",
+    "textures/M_PhotoLab_OxideHandle_base.png": "5f57e443e7be97b15ff3c857a1fa6dcd069ae41eaa2dfece9a05db157c697479",
+    "textures/M_PhotoLab_OxideHandle_rough.png": "2f0d25912bdc95d6893c51da33235f23f06a85bcd84d62e84b0163ffa9c53638"
+  },
+  "limitations": "Source checks only. Native LOD apertures, lighting modes, collision placement and final game images need actual engine review."
+}

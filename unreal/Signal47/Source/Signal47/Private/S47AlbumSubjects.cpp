@@ -9,6 +9,7 @@
 #include "S47ConsoleKit.h"
 #include "S47DecoderDesk.h"
 #include "S47Geo.h"
+#include "S47MotelV2.h"
 #include "S47Story.h"
 #include "S47Main.h"
 #include "S47Truck.h"
@@ -122,7 +123,9 @@ namespace S47AlbumSubjects
 			Things(TEXT("annex.objs."), ANNEX, UE_ARRAY_COUNT(ANNEX));
 			// Sierra Motor Court down the highway: its sign from all over the site, the rooms nearer
 			const S47Geo::FAt& At = S47Geo::MOTEL_AT();
-			Add(TEXT("the Sierra Motor Court sign"), { FVector(MOTEL_SIGN[0] + At.X, MOTEL_SIGN[1] + At.Y, MOTEL_SIGN[2] + At.Z) }, [](FS47Subject& S) { S.R = 3.5; S.Max = 1600; S.W = 3; S.Group = TEXT("motel"); });
+			const TOptional<FVector> NativeSign = FS47MotelV2::SignPhotoTarget();
+			const FVector SignAt = NativeSign.IsSet() ? NativeSign.GetValue() : FVector(MOTEL_SIGN[0] + At.X, MOTEL_SIGN[1] + At.Y, MOTEL_SIGN[2] + At.Z);
+			Add(TEXT("the Sierra Motor Court sign"), { SignAt }, [](FS47Subject& S) { S.R = 3.5; S.Max = 1600; S.W = 3; S.Group = TEXT("motel"); });
 			Add(TEXT("Sierra Motor Court"), { FVector(-40.8 + At.X, 2.2 + At.Y, 47 + At.Z) }, [](FS47Subject& S) { S.R = 14; S.Max = 500; S.W = 1.5; S.Group = TEXT("motel"); });
 		}
 		else if (Area == TEXT("station01"))

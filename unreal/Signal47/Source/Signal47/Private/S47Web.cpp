@@ -8,6 +8,9 @@
 #include "S47SaroSite.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
+#include "S47MotelV2.h"
+#include "S47PhotoLabDetail.h"
+#include "S47SubstationDetail.h"
 #include "S47RouteNature.h"
 
 #include "Components/BillboardComponent.h"
@@ -684,6 +687,10 @@ void AS47Web::BeginPlay()
 	SaroSite = FS47SaroSite::Build(this);
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
+	MotelV2 = FS47MotelV2::Build(this);
+	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
+	S47PhotoLabDetail::Build(this);
+	S47SubstationDetail::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
 	BuildHighwayLandscape();
@@ -759,6 +766,7 @@ void AS47Web::BeginPlay()
 	BeginHighwayAudit();
 	BeginSaroArrivalViews();
 	BeginProductionViews();
+	BeginMotelV2Route();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 
@@ -833,6 +841,7 @@ void AS47Web::Enter(const FString& Area)
 	if (SaroArrival) SaroArrival->Update();
 	if (SaroSite) SaroSite->Update();
 	if (TownBuildings) TownBuildings->Update();
+	if (MotelV2) MotelV2->Update();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
 	if (T && SkyMid)
@@ -1318,6 +1327,7 @@ void AS47Web::Tick(float Dt)
 	if (SaroArrival) SaroArrival->Update();
 	if (SaroSite) SaroSite->Update();
 	if (TownBuildings) TownBuildings->Update();
+	if (MotelV2) MotelV2->Update();
 	if (S47Startup::Blocking())
 	{
 		// The complete world must exist before warmup. Keep its rendering and sky capture alive,

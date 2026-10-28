@@ -111,6 +111,8 @@ check('actual asymmetric export probe', max(abs(a-b) for a, b in zip(got, [2, 4,
 
 
 rows = json.loads((R / 'materials.json').read_text())
+for extra in sorted((R / 'tb2').glob('materials_*.json')):
+    rows += json.loads(extra.read_text())
 byname = {r['name']:r for r in rows}
 check('six authored families and28 separate chunks', len(contract['families']) == 6 and len(contract['parts']) == 28)
 for family, spec in contract['families'].items():

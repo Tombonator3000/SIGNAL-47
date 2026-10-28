@@ -1,0 +1,464 @@
+[
+ {
+  "name": "M_Town_SheriffStucco",
+  "base_color_linear": [
+   0.6,
+   0.435,
+   0.245,
+   1
+  ],
+  "roughness": 0.93,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.42,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.6,
+   0.435,
+   0.245,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffStuccoBase",
+  "base_color_linear": [
+   0.37,
+   0.25,
+   0.135,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.48,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.37,
+   0.25,
+   0.135,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffStuccoPatch",
+  "base_color_linear": [
+   0.58,
+   0.42,
+   0.24,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.46,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.58,
+   0.42,
+   0.24,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffStreak",
+  "base_color_linear": [
+   0.4,
+   0.285,
+   0.165,
+   1
+  ],
+  "roughness": 0.95,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.3,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.4,
+   0.285,
+   0.165,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffCrack",
+  "base_color_linear": [
+   0.1,
+   0.075,
+   0.05,
+   1
+  ],
+  "roughness": 0.97,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.1,
+   0.075,
+   0.05,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffCoping",
+  "base_color_linear": [
+   0.62,
+   0.47,
+   0.29,
+   1
+  ],
+  "roughness": 0.9,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.36,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Stucco_base_color.png",
+   "roughness": "textures/Stucco_roughness.png",
+   "normal": "textures/Stucco_normal.png"
+  },
+  "texture_tint_linear": [
+   0.62,
+   0.47,
+   0.29,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffRoofing",
+  "base_color_linear": [
+   0.12,
+   0.105,
+   0.09,
+   1
+  ],
+  "roughness": 0.93,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.5,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/RoofShingle_base_color.png",
+   "roughness": "textures/RoofShingle_roughness.png",
+   "normal": "textures/RoofShingle_normal.png"
+  },
+  "texture_tint_linear": [
+   0.12,
+   0.105,
+   0.09,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffLetters",
+  "base_color_linear": [
+   0.045,
+   0.032,
+   0.02,
+   1
+  ],
+  "roughness": 0.48,
+  "metallic": 0.55,
+  "specular": 0.28,
+  "normal_strength": 0.15,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/MetalPaint_base_color.png",
+   "roughness": "textures/MetalPaint_roughness.png",
+   "normal": "textures/MetalPaint_normal.png"
+  },
+  "texture_tint_linear": [
+   0.045,
+   0.032,
+   0.02,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffBrass",
+  "base_color_linear": [
+   0.42,
+   0.28,
+   0.085,
+   1
+  ],
+  "roughness": 0.36,
+  "metallic": 0.9,
+  "specular": 0.28,
+  "normal_strength": 0.12,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/MetalPaint_base_color.png",
+   "roughness": "textures/MetalPaint_roughness.png",
+   "normal": "textures/MetalPaint_normal.png"
+  },
+  "texture_tint_linear": [
+   0.42,
+   0.28,
+   0.085,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffCork",
+  "base_color_linear": [
+   0.28,
+   0.17,
+   0.075,
+   1
+  ],
+  "roughness": 0.96,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.3,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Cloth_base_color.png",
+   "roughness": "textures/Cloth_roughness.png",
+   "normal": "textures/Cloth_normal.png"
+  },
+  "texture_tint_linear": [
+   0.28,
+   0.17,
+   0.075,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffWainscot",
+  "base_color_linear": [
+   0.1,
+   0.125,
+   0.088,
+   1
+  ],
+  "roughness": 0.6,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.12,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/MetalPaint_base_color.png",
+   "roughness": "textures/MetalPaint_roughness.png",
+   "normal": "textures/MetalPaint_normal.png"
+  },
+  "texture_tint_linear": [
+   0.1,
+   0.125,
+   0.088,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffWeatheredWood",
+  "base_color_linear": [
+   0.15,
+   0.115,
+   0.085,
+   1
+  ],
+  "roughness": 0.86,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.3,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "textures/Wood_base_color.png",
+   "roughness": "textures/Wood_roughness.png",
+   "normal": "textures/Wood_normal.png"
+  },
+  "texture_tint_linear": [
+   0.15,
+   0.115,
+   0.085,
+   1
+  ]
+ },
+ {
+  "name": "M_Town_SheriffLampGlow",
+  "base_color_linear": [
+   1.0,
+   0.75,
+   0.42,
+   1
+  ],
+  "roughness": 0.38,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.72,
+   0.38,
+   1
+  ],
+  "emission_strength": 12.0
+ },
+ {
+  "name": "M_Town_SheriffTubeGlow",
+  "base_color_linear": [
+   1.0,
+   0.86,
+   0.64,
+   1
+  ],
+  "roughness": 0.38,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.84,
+   0.6,
+   1
+  ],
+  "emission_strength": 14.0
+ },
+ {
+  "name": "M_Town_SheriffShadeGlow",
+  "base_color_linear": [
+   0.72,
+   0.52,
+   0.28,
+   1
+  ],
+  "roughness": 0.85,
+  "metallic": 0,
+  "specular": 0.28,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   1.0,
+   0.64,
+   0.3,
+   1
+  ],
+  "emission_strength": 4.0
+ }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "name": "M_PhotoLab_AgedGreyGreen",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.58,
+    "metallic": 0.25,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_AgedGreyGreen_base.png",
+      "roughness": "textures/M_PhotoLab_AgedGreyGreen_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_CreamEnamel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.59,
+    "metallic": 0.12,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_CreamEnamel_base.png",
+      "roughness": "textures/M_PhotoLab_CreamEnamel_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_BrushedStainless",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.32,
+    "metallic": 0.86,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_BrushedStainless_base.png",
+      "roughness": "textures/M_PhotoLab_BrushedStainless_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_Bakelite",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.48,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_Bakelite_base.png",
+      "roughness": "textures/M_PhotoLab_Bakelite_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_Rubber",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.86,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_Rubber_base.png",
+      "roughness": "textures/M_PhotoLab_Rubber_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_Manila",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.94,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_Manila_base.png",
+      "roughness": "textures/M_PhotoLab_Manila_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_DialIvory",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.83,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_DialIvory_base.png",
+      "roughness": "textures/M_PhotoLab_DialIvory_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_AmberPlastic",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.34,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_AmberPlastic_base.png",
+      "roughness": "textures/M_PhotoLab_AmberPlastic_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_BlueCap",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.49,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_BlueCap_base.png",
+      "roughness": "textures/M_PhotoLab_BlueCap_rough.png"
+    }
+  },
+  {
+    "name": "M_PhotoLab_OxideHandle",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.53,
+    "metallic": 0,
+    "specular": 0.33,
+    "textures": {
+      "base_color": "textures/M_PhotoLab_OxideHandle_base.png",
+      "roughness": "textures/M_PhotoLab_OxideHandle_rough.png"
+    }
+  }
+]

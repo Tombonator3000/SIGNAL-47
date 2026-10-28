@@ -1,0 +1,387 @@
+{
+  "schema": 1,
+  "status": "GENERATED_REQUIRES_BLENDER_AND_NATIVE_REVIEW",
+  "units": "metres",
+  "mapping": "game(x,height,z) -> Blender(x,-z,height) -> UE(100x,100z,100height)",
+  "authorship": "Original photo-lab detail geometry and procedural PBR; existing Office export recipe",
+  "parts": {
+    "SM_PhotoLab_WetCabinetDetail": {
+      "triangles": 3960,
+      "bounds_local_m": [
+        [
+          13.09000015258789,
+          5.060999870300293,
+          0.004999998956918716
+        ],
+        [
+          17.309999465942383,
+          5.133999824523926,
+          0.9375
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_AgedGreyGreen",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Rubber"
+      ],
+      "original_components": 50,
+      "purpose": "Six recessed cabinet doors, folded edge, pulls and hinges.",
+      "collision": "existing",
+      "protected_originals": [
+        "wetPrint",
+        "wetBench",
+        "existing towel"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_RinseSink": {
+      "triangles": 2632,
+      "bounds_local_m": [
+        [
+          17.435998916625977,
+          5.194999694824219,
+          0.00299999862909317
+        ],
+        [
+          18.500141143798828,
+          5.768999099731445,
+          1.2193915843963623
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Rubber",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_OxideHandle",
+        "M_PhotoLab_BlueCap"
+      ],
+      "original_components": 29,
+      "purpose": "Open stainless sink with drain, trap, gooseneck, valves and grounded legs.",
+      "collision": "Existing dressLab corner: x17.35..19,z-5.85..-5.15; confirm bounds after import",
+      "protected_originals": [
+        "existing chemistry jugs"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_EnlargerDetail": {
+      "triangles": 3260,
+      "bounds_local_m": [
+        [
+          16.762998580932617,
+          5.170000076293945,
+          0.9819999933242798
+        ],
+        [
+          17.237001419067383,
+          5.642499923706055,
+          1.9014999866485596
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_AgedGreyGreen",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_DialIvory",
+        "M_PhotoLab_CreamEnamel"
+      ],
+      "original_components": 55,
+      "purpose": "Vented cover, carrier, focus control, scale and open optical ring.",
+      "collision": "existing",
+      "protected_originals": [
+        "native light gate mesh",
+        "lens at (17,1.5,-5.45)"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_ProcessDetails": {
+      "triangles": 1380,
+      "bounds_local_m": [
+        [
+          13.746000289916992,
+          5.197500228881836,
+          0.9350000023841858
+        ],
+        [
+          16.936500549316406,
+          5.744999885559082,
+          1.1299999952316284
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_CreamEnamel",
+        "M_PhotoLab_DialIvory",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_OxideHandle"
+      ],
+      "original_components": 31,
+      "purpose": "Analogue timer face, tray grips and graduated measuring cylinder.",
+      "collision": "existing",
+      "protected_originals": [
+        "DEV/STOP/FIX labels",
+        "wetPrint"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_StorageDetail": {
+      "triangles": 3840,
+      "bounds_local_m": [
+        [
+          12.83750057220459,
+          3.1000001430511475,
+          0.30000001192092896
+        ],
+        [
+          13.191999435424805,
+          5.5,
+          1.8499999046325684
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_AgedGreyGreen",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Manila",
+        "M_PhotoLab_DialIvory",
+        "M_PhotoLab_AmberPlastic",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_CreamEnamel"
+      ],
+      "original_components": 40,
+      "purpose": "Shelf brackets, folded edges, film cartons and sealed chemistry.",
+      "collision": "existing",
+      "protected_originals": [
+        "existing bottles/film boxes"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_ArchiveDetail": {
+      "triangles": 1896,
+      "bounds_local_m": [
+        [
+          18.177000045776367,
+          1.649999976158142,
+          0.029999971389770508
+        ],
+        [
+          18.950000762939453,
+          4.539999961853027,
+          1.125
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_AgedGreyGreen",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_Manila"
+      ],
+      "original_components": 22,
+      "purpose": "Steel supports, drawers and negative-sleeve rack.",
+      "collision": "existing",
+      "protected_originals": [
+        "referenceSheet",
+        "loupe",
+        "archive proxy",
+        "task lamp"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_RecordsDetail": {
+      "triangles": 1620,
+      "bounds_local_m": [
+        [
+          15.679999351501465,
+          -0.7749999761581421,
+          0.0010000010952353477
+        ],
+        [
+          18.31999969482422,
+          -0.053999997675418854,
+          1.0149999856948853
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_AgedGreyGreen",
+        "M_PhotoLab_Rubber",
+        "M_PhotoLab_Manila"
+      ],
+      "original_components": 15,
+      "purpose": "Folded desk apron, grounded feet and small film-envelope sorter.",
+      "collision": "existing",
+      "protected_originals": [
+        "records clipboard at (17.2,.79,.35)",
+        "mug",
+        "stool",
+        "pencil"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_SafelightHousing": {
+      "triangles": 1276,
+      "bounds_local_m": [
+        [
+          14.817000389099121,
+          2.255000114440918,
+          2.3529999256134033
+        ],
+        [
+          16.289379119873047,
+          5.89888334274292,
+          2.8064491748809814
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_AgedGreyGreen",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_CreamEnamel"
+      ],
+      "original_components": 15,
+      "purpose": "Wall standoffs and removable lamp cases around original diffusers.",
+      "collision": "existing",
+      "protected_originals": [
+        "yard.redGlass[0]",
+        "yard.redGlass[1]",
+        "normal/safe/enlarger light controls"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_Ventilation": {
+      "triangles": 1748,
+      "bounds_local_m": [
+        [
+          18.30499839782715,
+          5.679807662963867,
+          1.2599999904632568
+        ],
+        [
+          18.892499923706055,
+          5.787499904632568,
+          2.4800000190734863
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_CreamEnamel",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_AgedGreyGreen"
+      ],
+      "original_components": 22,
+      "purpose": "Screwed extractor grille and surface-mounted switch/conduit.",
+      "collision": "existing",
+      "protected_originals": [
+        "existing room tone and power-driven hum"
+      ],
+      "integration": "additive; never hide original parent nodes"
+    },
+    "SM_PhotoLab_UtilityDetail": {
+      "triangles": 2004,
+      "bounds_local_m": [
+        [
+          12.699999809265137,
+          3.077500104904175,
+          0.009999997913837433
+        ],
+        [
+          19.30000114440918,
+          5.791999816894531,
+          2.755000114440918
+        ]
+      ],
+      "runtime_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_PhotoLab_CreamEnamel",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_Rubber",
+        "M_PhotoLab_AgedGreyGreen"
+      ],
+      "original_components": 23,
+      "purpose": "Pipe clips, junctions, cabinet zone seals and shelf end folds.",
+      "collision": "existing",
+      "protected_originals": [],
+      "integration": "additive; never hide original parent nodes"
+    }
+  },
+  "triangles_lod0": 23616,
+  "legacy_removal_bounds": [],
+  "lod_plan": "native import 1.0/0.50/0.20; verify geometric openings and measured ray-tracing footprint",
+  "collision_plan": "reuse existing lab bench, shelf, archive, records and chemistry-corner colliders; all new components query/physics off",
+  "light_plan": "No exported lights or new emissive surfaces. Existing S47LabLighting gates and glass retained.",
+  "protected_positions_three_m": {
+    "wetPrint": [
+      15.4,
+      1.003,
+      -5.4
+    ],
+    "referenceSheet": [
+      18.55,
+      0.895,
+      -3.2
+    ],
+    "records": [
+      17.2,
+      0.79,
+      0.35
+    ],
+    "labDoorPivot": [
+      12.8,
+      0,
+      -0.73
+    ],
+    "enlarger_lens": [
+      17,
+      1.5,
+      -5.45
+    ]
+  },
+  "validation": "Generator budget assertion only. Source reopen, visual fit, native import and gameplay not yet checked."
+}
