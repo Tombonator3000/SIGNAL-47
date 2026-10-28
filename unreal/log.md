@@ -947,3 +947,11 @@ Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksi
 Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
 
 [PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
+
+## 2026-10-28 kl. 14:10 CET: Greyhill-dørstudie med kode
+
+Tom ba om detaljert analyse med kode. [Detaljstudien](GREYHILL_DOOR_CODE_ANALYSIS.md) følger spillerinteraksjon, vanlig/brudd-basert alien-passering, flow-stack og latente grener, kollisjon, lyd og SaveGame/LoadGame. 77 instruksjonsreferanser er kontrollert; lesende hjelper verifiserte lagring og kontrollflyt. Konkrete funn omfatter globale fartsskrivinger fra dør, indekskobling mellom aktøroppslag, faktisk spillerposisjon som mål og checkpointmelding uten kontroll av SaveGameToSlot-returen. Mulige runtime-følger er uprøvde.
+
+[DoorStudy](Research/Greyhill/DoorStudy/README.md) har ny, selvstendig C++17-referansekode med eierskap, faser, epoch/generasjon i tickets og stabil checkpoint-policy. MSVC 14.44 /W4 /WX kompilering/linking PASS, exit0. 16 scenarioer skrevet, 0 kjørt. Windows nektet native start med «Ingen tilgang»; ingen omgåelse forsøkt. Unreal, geometri, navigasjon og disk-I/O er UNVERIFIED. Ingen endring i spillets Source, Config, Content eller installasjon; ingen ny Unreal-bygging eller spillmatrise.
+
+Rekonstruert lesekode og bytekodebevis beholdes privat lokalt utenfor repoet; bare egen analyse, referansekode og kontrollstatus publiseres. Den lokale instruksjonsvisningen har fått funksjonsavgrensede entry-etiketter; originale data/adresser er uendret. Reviewrettelser omfatter stopp av flere overlappende aktører, hostens restore-sperre og persistent-frame-semantikk for delte latente callbacks.

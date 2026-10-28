@@ -27,6 +27,13 @@ Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat o
 
 # Todo for unreal/
 
+## Greyhill dørstudie med kode, 28. oktober 2026
+
+- [x] Følg dørpassering, lyd, kollisjon og lagring med 77 kontrollerte adressehenvisninger. Se [kodeanalysen](GREYHILL_DOOR_CODE_ANALYSIS.md).
+- [x] Lever selvstendig C++17-referansemodell og 16 scenarioer utenfor spillets Source. Kompilering/linking PASS.
+
+Scenarioene er ikke kjørt: Windows nektet native start med «Ingen tilgang». Ingen Unreal-integrasjon, spillmatrise eller gameplay-funksjon er levert.
+
 ## Greyhill-referanse, 28. oktober 2026
 
 - [x] Bevar egen jakt-/gameplayanalyse og offentlig kontrollsammendrag. 111 pakker dekodet og bytekontrollert; fullt uttrekk beholdes privat utenfor repoet.

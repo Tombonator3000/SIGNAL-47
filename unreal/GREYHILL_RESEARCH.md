@@ -1,5 +1,7 @@
 # Greyhill Incident som grunnlag for jaktmekanikk i Signal / 47
 
+[Detaljert oppfølging med kode](GREYHILL_DOOR_CODE_ANALYSIS.md) viser dørpassering, lyd, kollisjon og lagring, med egen C++-referansemodell og presis teststatus.
+
 Statisk analyse, 28. oktober 2026. Se også [videre analyser](GREYHILL_NEXT_ANALYSES.md) og [offentlig kontrollsammendrag](Research/Greyhill/analysis-summary.json).
 
 ## Resultat

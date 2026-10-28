@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-28",
+  "scope": "Static door / audio / save code study; standalone C++ policy example outside game runtime",
+  "checkedInstructionReferences": 77,
+  "addressValidation": "PASS",
+  "sourceBytecodeSizeChecks": "PASS",
+  "referenceModel": {
+    "compiler": "MSVC 14.44.35207, C++17, /W4 /WX",
+    "compileAndLink": "PASS",
+    "testCasesAuthored": 16,
+    "testCasesExecuted": 0,
+    "scenarioRuntime": "UNVERIFIED",
+    "executionBlocker": "Windows returned Ingen tilgang when launching the native test executable. No workaround attempted."
+  },
+  "unrealIntegration": "NOT_PERFORMED",
+  "gameplayRuntime": "UNVERIFIED"
+}

@@ -30,6 +30,12 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 
 # Minne for unreal/
 
+## Greyhill-dørstudie med kode, 28. oktober 2026
+
+[Detaljstudien](GREYHILL_DOOR_CODE_ANALYSIS.md) følger vanlig/brudd-basert passering, globale alien-effekter, parallelle latent-grener, kollisjon, lyd og lagring. 77 instruksjonsreferanser er kontrollert. En [selvstendig C++17-referansemodell](Research/Greyhill/DoorStudy/DoorPolicy.hpp) ligger utenfor spillets Source. MSVC-kompilering/linking består; Windows nektet native kjøring. 16 scenarioer er skrevet, 0 kjørt. Ingen Unreal-integrasjon eller gameplay er levert. Full rekonstruksjon og bytekodebevis beholdes privat.
+
+Bekreftet kodeflyt: dører kan skrive fart til alle aliens, én bruddbane sampler faktisk spillerposisjon, og checkpointmeldingen følger SaveGameToSlot uten bool-kontroll. Mulige runtime-følger er uprøvde.
+
 ## Greyhill som referanse, 28. oktober 2026
 
 Tom ba om å lagre den lokale Greyhill-analysen til Signal 47-repoet. Se [GREYHILL_RESEARCH.md](GREYHILL_RESEARCH.md) og [videre analyser](GREYHILL_NEXT_ANALYSES.md). Statisk dekoding og bytekontroll består for 111 pakker med 963 funksjonsoppføringer, inkludert små hendelsesfunksjoner. Det er ikke full native C++-dekompilering eller ny jaktkode. Egen analyse og kontrollsammendrag er offentlige; fullstendig uttrekk og bytekode oppbevares privat utenfor repoet.
