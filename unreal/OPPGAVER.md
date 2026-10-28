@@ -16,6 +16,14 @@ Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 ko
 
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Found footage-modus og Niagara-effekter, Tom 28.10.2026 (planlagt etter SC02)
+
+Tom vil ha en Found Footage-modus som viser spillet gjennom en uhyggelig bodycam-linse, og Niagara-effekter, for eksempel gnister og lysbuer ved trafoen. Forslagene er skrevet etter lesing av koden, uten Unreal-kjøring: [FOUND_FOOTAGE_FORSLAG.md](FOUND_FOOTAGE_FORSLAG.md) og [NIAGARA_FORSLAG.md](NIAGARA_FORSLAG.md).
+
+- Found footage: først en bildemodus `CAMCORDER 1986` under Settings > Picture, bygget på dagens `S47Picture`, `M_WebTone` og VHS-grenen, med brystsele-kamera fra 1986, dato og REC, forsterkningsstøy, hendelsesstyrte forstyrrelser og camcorderlyd. Fotografiene forblir rene. En valgfri saksramme kommer senere.
+- Niagara: modulen er lastet, men ubrukt. Første effekt er lysbue og gnister ved trafoen når den bleke kroppen viser seg i SC02. Alle Niagara-komponenter skal ha ray tracing av, `sg.EffectsQuality` skal ikke settes, og nye partikkelmaterialer må inn i PSO-opptaket.
+- Rekkefølge: etter at SC02 er flettet og installert, én tung Unreal-jobb om gangen. Trafoområdet deles med Codex sitt trafopass.
+
 ## Historien SC02 til SC13 gjennomgått og revidert, Claude, 28.10.2026 (Toms valg tatt, venter på fletting)
 
 Tom ba om en gjennomgang av SC02 til SC13, omskriving og kutt av det unødvendige. Resultatet er [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md): logiske hull løst, fire jaktsekvenser i stedet for fem, én fienderegel, ni H-kort og levering i fire akter. SC-ID-ene er uendret, så SC02-kandidaten på `ccr-20021313-mfplx9` kan brukes videre. Toms valg 28.10: tilfeldig bortføring beholdes uten tidstap i nye saker, og stemmer for Ward, Ortiz, Earl og Nora lages til slutt, når alt annet er ferdig. De engelske scenetekstene i `Narrative/HorrorStory` oppdateres etter at SC02-grenen er flettet, for å unngå konflikt med `world_producers.json`.

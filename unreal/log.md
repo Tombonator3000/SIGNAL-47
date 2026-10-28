@@ -894,3 +894,8 @@ Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat o
 - `Spill-SIGNAL47.sh` sjekker nå prosessor, minne, skjermkort, Vulkan-drivere, Nvidia-driverversjon, `nvidia_drm.modeset`, Wayland/XWayland og niri ved hver start, og har valgene `--x11`, `--wayland`, `--uten-rt`, `--fullskjerm`, `--vindu BxH`, `--lav`, `--sjekk` og `--rapport`.
 - Kontrollert her: `--sjekk` og `--rapport` på Kubuntu og med simulert niri uten XWayland. `--uten-rt` gir `r.RayTracing:0` og `r.Lumen.HardwareRayTracing:0` i spilloggen ved oppstart av den nedlastede utgaven.
 - README har en distribusjonsnøytral kravliste og feilsøking. Årsaken på kameratens maskin er ikke bekreftet; det krever rapporten fra `--rapport`.
+
+## 2026-10-28 kl. 10:30 CET: forslag til found footage-modus og Niagara-effekter (Claude)
+
+- Tom ba om en Found Footage-modus med bodycam-linse og om Niagara-effekter, for eksempel gnister ved trafoen. To hjelpere leste koden og motoren og skrev [FOUND_FOOTAGE_FORSLAG.md](FOUND_FOOTAGE_FORSLAG.md) og [NIAGARA_FORSLAG.md](NIAGARA_FORSLAG.md). Ingen Unreal-, bygg- eller pakkejobb ble kjørt, og ingen kode er endret.
+- Tom spurte også om https://github.com/arjun988/blender-skills. Repoet er 94 korte tekstskills laget for Blender MCP. Det nyttige (rekvisittskala, historiegrupper, skrekklys, rombygging, LOD og kontroll) er lagret som en Claude-skill `blender-skills` lokalt hos Tom, med MIT-kreditering og commit `8f778d24`. Den endrer ikke repoet.
