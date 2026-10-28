@@ -1,0 +1,40 @@
+name: Production coordinator
+
+on:
+  pull_request:
+    paths:
+      - 'Automation/production/**'
+      - 'unreal/Signal47/Scripts/production*.py'
+      - 'unreal/Signal47/Scripts/unreal_guard.py'
+      - '.github/workflows/production-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'Automation/production/**'
+      - 'unreal/Signal47/Scripts/production*.py'
+      - 'unreal/Signal47/Scripts/unreal_guard.py'
+      - '.github/workflows/production-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fast-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.14']
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+          lfs: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Queue, retrieval, Claude protocol and process supervision
+        run: python -m unittest discover -s Automation/production/tests -p 'test*.py'
+      - name: Check patch formatting
+        run: git diff --check

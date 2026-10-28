@@ -2,7 +2,7 @@
 
 **Status: Gjeldende** · **Gjelder:** kilde `b68d3a08` og målrettet kandidat R2, ikke installert standard. **Sist kontrollert:** 29. oktober 2026 kl. 00:33.
 
-Leveransen går gjennom [PR209](https://github.com/Tombonator3000/SIGNAL-47/pull/209) fra `codex/night-sequence-20261028`. Main med Claudes PR206, PR208 og PR210 er integrert, med alle Story-kroker beholdt. Kilde og pakket kandidat er kontrollert hver for seg. Ingen installasjon eller offentlig release inngår.
+Leveransen går gjennom [PR209](https://github.com/Tombonator3000/SIGNAL-47/pull/209) fra `codex/night-sequence-20261028`. Main med Claudes PR206, PR208 og PR210 samt produksjonsverktøyene fra PR211 er integrert, med alle Story-kroker beholdt. Kilde og pakket kandidat er kontrollert hver for seg. Ingen installasjon eller offentlig release inngår.
 
 ## Spillerreisen
 

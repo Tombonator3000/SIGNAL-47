@@ -1046,6 +1046,10 @@ Etter Toms spilltest: hånden på ruta er fjernet. Når vinduet er klart og spil
 
 Timeplanen har fått to oppgaver mellom kjøringene. 19:35: ukentlig aggregattest på et nytt fjernpanel ved østdøra (STANDBY GEN REMOTE / ATS). Dieselen startes og høres ute ved aggregatet, lasten kobles om slik at bare nødrøret lyser, og så tilbake. Etterpå faller nødrøret ut et øyeblikk av seg selv. 21:40: runde ut østdøra til porten mot arrayet. Lenka sjekkes, insektene langs gjerdet tier, og på vei tilbake rasler det i nettinggjerdet: porten står åpen igjen. Konsollen venter med neste kjøring til oppgaven er gjort. SC01-kontrakt PASS COMPLETE, 176 kontroller, 19 gjenopprettinger, 273 m gange. Bildevurdering av panel og port gjenstår.
 
+## 2026-10-29 kl. 00:25 CET: produksjonskoordinator med Claude
+
+Tom bestilte systemet for automatisert produksjon. Automation/production samler varig SQLite-kø, avhengigheter, filansvar, Claude Code-forslag, kildeindeks, budsjett/forsøk, global tungjobb-reservasjon og kontrollkvitteringer. Claude implementerte adapteren og rettelser; Codex og avgrensede hjelpere integrerte kø, oppslag og prosesskontroll. Egen køkjøring bestod 166 raske tester og git diff-kontroll. Faktisk Claude-probe ble korrekt avvist som kvoteutilgjengelig, med backoff og null brukt forsøksbudsjett. Normal live-worker og tung motorserie er UNVERIFIED; ingen gameplay-aksept. Se Docs/Active/Guides/PRODUCTION_SYSTEM.md og Docs/Evidence/ProductionCoordinator/verification.json. Ingen ny spillinstallasjon eller offentlig spillrelease.
+
 ## 2026-10-29 00:33 Europe/Oslo: ny nattrekkefølge, vedvarende trafofeil og SKY01
 
 PR209 fra `codex/night-sequence-20261028`, med main/PR206, PR208 og PR210 integrert og alle Story-kroker beholdt. Kilde `b68d3a08`; pakket kandidat R2 i lokal `Signal47-night-20261028/candidate-r2/Linux`. Ny route2 gir signal/strømbrudd 00:13, telefon, veihopp 01:35, faktisk T01-strømrestore, SC02 ca. 02:00 og SC03-grense ca. 02:15. Gamle lagringer beholder ruten sin. `nightService` bevarer klokke, pose, mottaker, dokumenter og antenner. Rolig trafoeffekt fortsetter etter T01; kort kraftig utbrudd beholder kroppsgaten.

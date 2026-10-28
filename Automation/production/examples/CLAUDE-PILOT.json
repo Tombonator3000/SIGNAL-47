@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "PROD-CLAUDE-PILOT",
+  "title": "Planlegg neste sammenhengende produksjonsleveranse",
+  "description": "Les Docs/Active/STATUS.md, TODO.md og DECISIONS.md og de mest relevante produksjonsskriptene. Rapporter på norsk tre prioriterte åpne oppgaver, hvilke faktiske kildefiler/verktøy de berører, avhengigheter, én konkret målrettet kontroll per oppgave og hva som må spilltestes av et menneske. Bevar siste kveldsregi. Oppgi kilde/linjer. Ikke påstå at grafikk, logikk eller tester er utført. Returner changes: []. Rapporten er en produksjonsplan, ingen oppgaver i spillet skal ferdigmeldes.",
+  "kind": "report",
+  "role": "producer",
+  "context_query": "gjeldende status åpne oppgaver FIX-01 ENV-01 STORY-02 produksjon",
+  "checks": [
+    {"tool": "files", "params": {"paths": ["Docs/Active/STATUS.md", "Docs/Active/TODO.md", "Docs/Active/DECISIONS.md"]}},
+    {"tool": "git_diff", "params": {}}
+  ],
+  "acceptance": ["Rapporten viser konkrete gjeldende kilder og skiller forslag fra faktisk spillstatus."],
+  "requires_review": true,
+  "max_attempts": 1,
+  "budget_usd": 1.0,
+  "timeout_seconds": 240
+}
