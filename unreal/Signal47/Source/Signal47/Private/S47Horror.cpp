@@ -385,14 +385,14 @@ FString FS47Horror::Objective() const
   return TEXT("CALICHE JUNCTION // KEEP SOLID COVER BETWEEN YOU AND THE BODY. REACH SARO 07 OUTSIDE THE FENCE AND DRIVE");
  }
  if(!M->FieldCamera || !M->FieldCamera->bHave)return TEXT("EVENING ROUND // COLLECT THE CAMERA BESIDE THE EAST DOOR");
- if(!bEast || !bCorridor)return TEXT("EVENING ROUND // TRY THE EAST DOOR AND THE ANNEX EXIT FROM INSIDE");
+ if(!bEast || !bCorridor)return TEXT("EVENING ROUND // FROM INSIDE, OPEN THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE AT THE WEST END OF THE CORRIDOR");
  if(!bBaseline)return TEXT("CONTROL ROOM // CHECK 1419.900 MHz / AZ 042 / GAIN 55 / BW 48");
  if(!Visual->LampChangeChecked())return TEXT("NORTH WINDOW // COMPARE THE MARKED LAMP ON AND OFF, THROUGH GLASS AND DIRECTLY OUTSIDE");
  if(ReferencePhoto.IsEmpty())return TEXT("NORTH WINDOW // TAKE AN INSTANT-BACK REFERENCE OF THE MARKED LAMP WHILE IT IS ON");
  if(!Visual->ScreenChecked())return TEXT("NORTH WINDOW // CLOSE THE OPAQUE SHUTTER AND CHECK THAT IT BLOCKS THE LAMP");
  if(Visual->ScreenClosed())return TEXT("NORTH WINDOW // OPEN THE SHUTTER AND CHECK THE GLASS");
  if(!Visual->MarksChecked())return Visual->MarksPresent()?TEXT("NORTH WINDOW // CHECK THE OUTSIDE MARKS WITH THE ROOM LAMP ON AND OFF"):TEXT("EVENING ROUND // CHECK THE NORTH WINDOW BEFORE LEAVING");
- if(!DoorsSecured())return TEXT("CONTROL ROOM // CLOSE THE EAST DOOR AND THE ANNEX EXIT");
+ if(!DoorsSecured())return TEXT("CONTROL ROOM // CLOSE THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE");
  return TEXT("SHIFT FOLDER // RECORD THE EVENING CHECKS. THE TELEPHONE IS AVAILABLE TO REPORT WHAT YOU SAW");
 }
 TArray<FS47Task> FS47Horror::Tasks() const
@@ -407,7 +407,7 @@ TArray<FS47Task> FS47Horror::Tasks() const
   {TEXT("Drive clear of Caliche Junction"),false}};
  }
  return {{TEXT("Collect the field camera"),M->FieldCamera && M->FieldCamera->bHave},
- {TEXT("Try the east door and annex exit from inside"),bEast && bCorridor},
+ {TEXT("Open the service door and the visitor entrance from inside"),bEast && bCorridor},
  {TEXT("Check the normal receiver reference"),bBaseline},
  {TEXT("Take an instant-back reference of the marked lamp"),!ReferencePhoto.IsEmpty()},
  {TEXT("Compare the lamp directly, through glass and behind the shutter"),Visual->LampChangeChecked() && Visual->ScreenChecked()},
