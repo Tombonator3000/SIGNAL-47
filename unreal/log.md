@@ -906,3 +906,11 @@ Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse felte
 Kontrollert offentlig main `3456d029` i separat arbeidskopi. Eksisterende HoleFrom følger EventClock og STAR_HOLE.After; flere samtidige meteorer krever ny effekt, siden MeteorNow avviser en aktiv meteor. En lesende kildehjelper identifiserte alle fire repoene og kontrollerte relevant tekst/tree/lisens. Dokumentendringene krever ingen ny motorkjøring; dette er ikke en attest for den planlagte effekten.
 
 Dokumentkontroll: alle nye lokale lenker i notatet og endrede innganger finnes. git diff --check består. Uavhengig kildehjelper godkjente revisjoner, lisensavgrensning og skillet mellom foreslått regi og levert effekt. Ingen kode-/assetendring; bygge- og spillmatrise er derfor ikke kjørt for denne dokumentleveransen.
+
+## 2026-10-28 kl. 13:45 CET: Greyhill-analyse bevart som referanse
+
+Tom ba om å lagre Greyhill-analysen til Signal 47-repoet og få oversikt over andre funksjoner som kan undersøkes. [GREYHILL_RESEARCH.md](GREYHILL_RESEARCH.md) bevarer egen analyse av syn, lyd, forfølgelse, siste kjente sted, skjulesteder og gameplay-looper. [GREYHILL_NEXT_ANALYSES.md](GREYHILL_NEXT_ANALYSES.md) prioriterer dørpassering, sonelyd, gjenstandsinspeksjon, UFO-/bortføringsregi, lagring, found footage, lommelykt og animasjon. De tre nye konkrete observasjonene gjelder lydovergang, modusbryter og inspeksjonsinput i allerede dekodet bytekode.
+
+Kontrollgrunnlag: lokal Steam-build 12751524, UE 4.27, 110 Blueprint-filer og ett hovedkart, 963 funksjonsoppføringer inkludert hendelser/wrappere. Parsing, alle bytekodestørrelser og byteidentisk rekonstruksjon i minnet består for 111/111. Funksjonsadresser i det nye tillegget er kontrollert mot posisjonsindeksene. Runtime er UNVERIFIED; native Shipping.exe er ikke dekompilert. Offentlig [kontrollsammendrag](Research/Greyhill/analysis-summary.json) har dekning og kontrollsummer. Komplett uttrekk er bevart lokalt utenfor repoet; ingen originalkode, komplette exports eller spillassets publiseres.
+
+Dokumentendring uten spillkode, config eller assets. Bygg og spillmatrise er derfor ikke kjørt. Dokumentkontrollen omfatter nye lenker, metadata, kildeavgrensning og ingen private maskinstier i nye dokumenter. Historierevisjonens fire jaktsekvenser og kuttet huking bevares. Ingen implementering eller installasjon er gjort.

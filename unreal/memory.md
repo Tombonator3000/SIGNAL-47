@@ -14,6 +14,12 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 
 # Minne for unreal/
 
+## Greyhill som referanse, 28. oktober 2026
+
+Tom ba om å lagre den lokale Greyhill-analysen til Signal 47-repoet. Se [GREYHILL_RESEARCH.md](GREYHILL_RESEARCH.md) og [videre analyser](GREYHILL_NEXT_ANALYSES.md). Statisk dekoding og bytekontroll består for 111 pakker med 963 funksjonsoppføringer, inkludert små hendelsesfunksjoner. Det er ikke full native C++-dekompilering eller ny jaktkode. Egen analyse og kontrollsammendrag er offentlige; fullstendig uttrekk og bytekode oppbevares privat utenfor repoet.
+
+Overførbar regel: lyd gir et undersøkelsessted, syn gir bekreftet kontakt, og fienden mister løpende spillerposisjon når kontakten brytes. Forslagene følger dagens fire jaktsekvenser og gjeninnfører ikke huking eller biljakten. Dører, sonelyd, inspeksjon, UFO-regi, lagring og found footage er kartlagt som mulige videre analyser.
+
 ## Gjeldende levering, 27. oktober 2026 kl. 23:19 CET
 
 Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.

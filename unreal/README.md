@@ -1,5 +1,7 @@
 # SIGNAL / 47 i Unreal
 
+[Greyhill Incident som mekanikkreferanse](GREYHILL_RESEARCH.md) beskriver statiske funn om jakt, lyd og søkeminne, med [prioriterte videre analyser](GREYHILL_NEXT_ANALYSES.md). 111 pakker er dekodet og bytekontrollert; dette er analyse, ikke ny spillkode. Fullt spilluttrekk oppbevares privat utenfor repoet.
+
 [Niagara: meteorregn ved stjernehullet](NIAGARA_VFX_2026-10-28.md) registrerer Toms regi og de fire nye ressursene, med versjon, lisens og teststatus. Kun dokumentasjon for senere produksjon.
 
 Status 28. oktober 2026: main og den installerte fotolab R1 har samme spillkode. [Linux-testutgaven 28. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28) er samme bygg og lastes ned med `./Spill-SIGNAL47.sh` i roten av repoet. Den har SC01, Sierra Motor Court V2, [fotolabens detaljpass](PHOTOLAB_DETAIL.md), atmosfære-R1 og MetaHuman-servitrisen. Av den nye historien er bare SC01 levert; SC02 til SC13 er planlagt i [implementeringsplanen](HISTORIE_IMPLEMENTERINGSPLAN.md). De fem mer detaljerte bygningene i Caliche (TB2, `Signal47/Tools/townbuildings/tb2/`) er flettet som Blender-kilder, men ikke importert til Unreal. Trafostasjonens lamper og naturkontakt er under arbeid hos Codex.

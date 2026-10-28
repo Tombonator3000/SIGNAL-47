@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-28",
+  "game": "Greyhill Incident",
+  "steamAppId": 1905020,
+  "steamBuildId": "12751524",
+  "engineAssociation": "4.27",
+  "scope": "Statisk dekoding av cooked Unreal Blueprint-bytecode og egenskaper. Ikke full native C++-dekompilering.",
+  "validation": {
+    "assets": 111,
+    "functionEntries": 963,
+    "roundtripPass": 111,
+    "roundtripFail": 0,
+    "bytecodeSizeMismatches": 0,
+    "runtime": "UNVERIFIED",
+    "nativeExecutableDecompilation": "NOT_PERFORMED",
+    "signal47GameplayImplementation": "NOT_PERFORMED"
+  },
+  "pak": {
+    "bytes": 9287233532,
+    "sha256": "f81a4513adfc88c4b50c7a28e91b2f0da951877fcd074390848c2970c6cf7801",
+    "listedFileCount": 20163
+  },
+  "extractionArchiveSha256": "83edef59dfe4a20983633c5648be2b65dcc241dc0a8d0801da2528ccf166ba57",
+  "artifactPolicy": "Bare eget analyse- og kontrollsammendrag i offentlig repo. Uttrekk, bytekode, komplette exports og assets oppbevares privat utenfor repoet.",
+  "assetGroups": [
+    {
+      "group": "Blueprint files",
+      "files": 110,
+      "functionEntries": 648
+    },
+    {
+      "group": "Main map",
+      "files": 1,
+      "functionEntries": 315
+    }
+  ],
+  "functionCountingNote": "Inkluderer hendelser, delegatsignaturer og små wrapper-funksjoner. Ikke 963 selvstendige gameplay-systemer.",
+  "localAlienInstancesInMap": 18
+}

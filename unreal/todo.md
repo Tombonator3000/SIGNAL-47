@@ -18,6 +18,13 @@ Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat o
 
 # Todo for unreal/
 
+## Greyhill-referanse, 28. oktober 2026
+
+- [x] Bevar egen jakt-/gameplayanalyse og offentlig kontrollsammendrag. 111 pakker dekodet og bytekontrollert; fullt uttrekk beholdes privat utenfor repoet.
+- [x] Kartlegg videre analyseområder med konkrete funksjonsankre og klar grense mot implementert gameplay. Se [oversikt](GREYHILL_NEXT_ANALYSES.md).
+
+Dørpassering under jakt med lyd og lasting er anbefalt neste analyse. Ingen nye spilloppgaver er godkjent eller ferdigmeldt gjennom dette referansenotatet.
+
 ## Motel V2 levert, 27. oktober 2026
 
 - [x] Redigerbar Blender-modell, keramisk retrofasade, mørkt treinteriør og logisk mottak/basseng. Eksisterende TV og tre biler bevart.
