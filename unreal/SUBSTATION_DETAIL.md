@@ -1,5 +1,12 @@
 # Caliche: lampehus og kontakt med terrenget
 
+## Trafostasjonens detaljer levert, 28. oktober 2026 kl.08:45 CET
+
+Caliche-trafoens lampehus, kabel-/fundamentdetaljer og målte grusskråning er flettet via [PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184), merge `168a4ff8a48b928e4d729882ea678535107169fd`, og samme testede R1 er installert i `/home/tom/Games/Signal47/Linux`. Fem originale Blender/native deler, tre LOD. Hele matrisen består 110/110 etter én kjøring; T01 og T02 består. Den installerte Low-kontrollen består fysisk service/gangadgang og diskreload; bildet er faktisk vurdert. Alle 50 personlige Saved-filer er uendret. Fotolab, motel R4, SC01, MetaHuman og godkjent terreng/himmel er bevart.
+
+Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat og to tidligere komplette fotolabpakker, samt særskilt beskyttede SC01/PR174-kandidater. Kilder, assets, Saved og bevis bevares. Claudes TB2-kilder er på main, men native integrasjon gjenstår der. Nattautomasjonen er PAUSED. Denne leveransen publiserer ingen ny release; trafodetaljene finnes i main og den lokale installasjonen. Se [rapport](SUBSTATION_DETAIL.md).
+
+
 ## Endringen, 28. oktober 2026
 
 Den eksisterende trafostasjonen beholder form, plassering, gjerde, skilt og funksjoner. Fem originale Blender-deler tilfører åpen lampehette/bezel, kabelinnføring og sidekoblingsboks, små fundamentfester, steinklynger og en uregelmessig grusskråning. Sistnevnte følger målte trekanter fra eksisterende terreng i stedet for å la grusbedets høye, rette kant stå eksponert.
@@ -22,6 +29,6 @@ Originale former og materialer fra prosjektet. Ingen nye kjøpte eller lisensier
 
 Blender-kildekontroll, fem native importer og editor/Linux-pakke består. Første kildekontroll fullførte geometrien, men rapportskriving feilet fordi en UV-variabel overskrev bounds; rettet i kontrollskriptet, deretter PASS uten geometriendring. Dagsoversikten er faktisk sammenlignet med samme kamera/tid i installert baseline. Skulderens overgang og ryddet grusplass er synlig. Nærbilder ved svak og sterk nattlampe er vurdert. T01-kontrollen består journal, service, faktisk lampe, sammenligning, rampe/gjerde, faktiske brukestråler og normal diskreload.
 
-T02 består 65 API-kontroller, 15 faktiske diskrestores og 38,90 meter gangrute. Hele den kanoniske 110-matrisen består etter én kjøring på 53 minutter og 54 sekunder. Alle 110 logger og PNG-er er komplette, uten motorfeil; native detaljsettet er bekreftet i hver kjøring. [PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184) går mot main. Samme testede pakke installeres etter fletting med backup og Saved-unntak. Avgrensning: automatiserte Vulkan-kjøringer og vurderte bilder, ikke menneskelig gjennomspilling, lytting eller helspill-FPS.
+T02 består 65 API-kontroller, 15 faktiske diskrestores og 38,90 meter gangrute. Hele den kanoniske 110-matrisen består etter én kjøring på 53 minutter og 54 sekunder. Alle 110 logger og PNG-er er komplette, uten motorfeil; native detaljsettet er bekreftet i hver kjøring. [PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184) går mot main. Samme testede pakke er installert med verifisert backup og Saved-unntak. Avgrensning: automatiserte Vulkan-kjøringer og vurderte bilder, ikke menneskelig gjennomspilling, lytting eller helspill-FPS.
 
 Bevis og uendrede råforsøk: `/home/tom/scratch-bm/Signal47-substation-environment-20261028`. Claudes TB2-kilder er nå flettet via PR179, men har fortsatt ikke native integrasjon i denne pakken. De er ikke endret her. Fotolab R1, motel R4, SC01, MetaHuman og personlige lagringer bevares.

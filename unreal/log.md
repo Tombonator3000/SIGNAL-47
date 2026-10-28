@@ -881,3 +881,9 @@ Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo
 ## 2026-10-28 kl.08:35 CET: trafostasjonens detaljpass godkjent for fletting
 
 Fem originale Blender/native deler, 6 406/3 344/1 754 trekanter. Kilde76 og native import, editor/pakke, faktisk før/etteroversikt og to lampestyrker består. T01 fysisk bruk/gangadgang/diskreload og T02 65 kontroller/15 faktiske restores består. Hele screenshots.sh består 110/110 etter én kjøring, uten motorfeil eller prosesskonflikt. Runtime er byteidentisk med frysingen også etter main-merge med Claudes TB2-kilder og launcher/dokumentasjon. PR184 går mot main; installasjon følger fletting. Ingen ny release. Se [rapport](SUBSTATION_DETAIL.md).
+
+## Trafostasjonens detaljer levert, 28. oktober 2026 kl.08:45 CET
+
+Caliche-trafoens lampehus, kabel-/fundamentdetaljer og målte grusskråning er flettet via [PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184), merge `168a4ff8a48b928e4d729882ea678535107169fd`, og samme testede R1 er installert i `/home/tom/Games/Signal47/Linux`. Fem originale Blender/native deler, tre LOD. Hele matrisen består 110/110 etter én kjøring; T01 og T02 består. Den installerte Low-kontrollen består fysisk service/gangadgang og diskreload; bildet er faktisk vurdert. Alle 50 personlige Saved-filer er uendret. Fotolab, motel R4, SC01, MetaHuman og godkjent terreng/himmel er bevart.
+
+Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat og to tidligere komplette fotolabpakker, samt særskilt beskyttede SC01/PR174-kandidater. Kilder, assets, Saved og bevis bevares. Claudes TB2-kilder er på main, men native integrasjon gjenstår der. Nattautomasjonen er PAUSED. Denne leveransen publiserer ingen ny release; trafodetaljene finnes i main og den lokale installasjonen. Se [rapport](SUBSTATION_DETAIL.md).
