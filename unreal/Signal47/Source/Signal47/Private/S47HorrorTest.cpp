@@ -30,6 +30,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 #include "UnrealClient.h"
 #include "S47Observing.h"
 #include "S47Audio.h"
@@ -697,6 +698,7 @@ void FS47HorrorTest::Step(double Dt)
 		S47J::Set(Replay, TEXT("doorVoice"), 0); S47J::Set(Replay, TEXT("hints"), O.Hints() & ~64);
 		const bool bVoices = M->Audio->bCharacterVoices;
 		auto Settings = M->Flow->Settings();
+		ON_SCOPE_EXIT { M->Audio->Suspend(false); Settings.OnCharacters(bVoices); O.Begin(Saved, false); };
 		Settings.OnCharacters(true); O.Begin(Replay, false); O.Step(.01);
 		if (!Check(O.DoorVoicePlaying(), TEXT("isolated door-voice fixture starts the real recorded source"))) return;
 		M->Audio->Suspend(true);

@@ -483,8 +483,12 @@ FS47Observing::FS47Observing(US47Main* InM) : M(InM)
  {
   // Not the phone: the voice is on the far side of the visitor entrance.
   FS47RecordedDialogue::FOutput Out;
-  if (const auto* It = M && M->Inter ? M->Inter->Get(TEXT("exitDoor")) : nullptr) Out.At = It->Object.WorldPosition() + FVector(-1.6, .2, 0);
-  Out.Channel = TEXT("physical"); return Out;
+  FS47Obj Door;
+  if (const auto* It = M && M->Inter ? M->Inter->Get(TEXT("exitDoor")) : nullptr) Door = It->Object;
+  // Exported prologue doors use Web's fallback registry rather than Inter's added objects.
+  if (!Door && M && M->Web) if (const auto* It = M->Web->Item(TEXT("exitDoor"))) Door = M->Web->ObjAt(It->Node);
+  if (Door) Out.At = Door.WorldPosition() + FVector(-1.6, .2, 0);
+  Out.Channel = Out.At.IsSet() ? TEXT("physical") : TEXT("unpositioned"); return Out;
  });
 }
 FS47Observing::~FS47Observing() { if (Voice) Voice->Stop(); }
@@ -504,6 +508,7 @@ bool FS47Observing::DoorVoicePlaying() const { return Voice && Voice->Playing();
 
 void FS47Observing::StepDoorVoice()
 {
+ if (!M->World || M->World->Area != TEXT("saro") || (M->Horror && M->Horror->Complete())) { if (Voice && Voice->Playing()) Voice->Stop(); return; }
  if (DoorVoice >= 2 || !M->Player || !M->World || M->World->Area != TEXT("saro") || !M->Web || !M->Horror || !M->Horror->Enabled() || M->Horror->Complete()) return;
  const FVector P = M->Player->Pos;
  const bool bCorridor = P.Z > 5.0 && P.Z < 6.4 && P.X < -1.5 && P.X > -5.8;
