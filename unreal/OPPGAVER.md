@@ -1,3 +1,11 @@
+## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
+
+Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
+
+Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
+
+[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
+
 ## Codex hjelper SC02/alien-AI, pakket PASS 28.10.2026 kl. 12:14 CET
 
 Tom ba Codex hjelpe der Claude stoppet på bruksgrensen. Codex eier nå AI, SC02-kontrakten og sekvensielle motorjobber på `codex/act1-alien-navigation` i `~/scratch-bm/wt/act1-alien`. Overtakelsen bygger på Claudes rene `911ce258` integrert med oppdatert main. Found footage og Niagara-gnister beholdes uendret i egne Claude-arbeidskopier. De stoppede scenetekstene samordnes i vår kildepakke, men SC03 og videre er fortsatt `authored_not_integrated`.

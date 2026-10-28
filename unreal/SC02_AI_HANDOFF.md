@@ -2,7 +2,7 @@
 
 28. oktober 2026. Tom ba Codex hjelpe der Claude stoppet på bruksgrensen, særlig med alien-AI som skal gå rundt hindringer. Claude var fortsatt i SC02; SC03-runtime var ikke påbegynt. SC02 har nå pakket teknisk PASS. Dette er et arbeidscheckpoint for videre akt 1, ikke en ferdig aktleveranse.
 
-Arbeidet er pushet som [utkast-PR #190 mot main](https://github.com/Tombonator3000/SIGNAL-47/pull/190). Den forblir utkast til videre produksjon og aktens aksept er ferdig. Ingen main-fletting eller installasjon er gjort her.
+Tom ba deretter uttrykkelig om separat fletting av [PR #190 til main](https://github.com/Tombonator3000/SIGNAL-47/pull/190) dersom eksisterende spill fortsatt fungerer. Det erstatter den tidligere ventingen på ferdig akt 1 for dette checkpointet. Hele 110-matrisen og sju gamle Continue-lagringer består nå i samme R5. Standardinstallasjon og spillutgave er fortsatt uendret.
 
 ## Bevarte kilder og eierskap
 
@@ -56,9 +56,19 @@ Lokal bevisrot er `~/scratch-bm/Signal47-sc02-20261028/codex-takeover`:
 - `packed-sc02-r5/run.log` og `evidence/`: full SC02, resultat, originale bilder og isolerte diskfixtures.
 - `editor-sc02-1`, `packed-sc02-r2`, `editor-resume-r3` og `editor-resume-r4`: bevarte feil og diagnose.
 
-Kjøringene brukte Low, Picture off, 1280×720 og egne `/tmp`-profiler med `-S47HorrorContract=Navigation -S47SelfTest` henholdsvis `-S47HorrorContract=SC02`. Testen bruker faktisk Walker/løpeinput og produksjonens eksisterende autopilot-API for bilturene. Rute B, manuell styring, High-jakt, menneskelig spilling/lytting/frykt og senere områders AI er **UNVERIFIED**. Hele 110-matrisen, main-fletting og installasjon gjenstår for samlet akt 1. Standardspillet og personlige lagringer er uendret.
+Kjøringene brukte Low, Picture off, 1280×720 og egne `/tmp`-profiler med `-S47HorrorContract=Navigation -S47SelfTest` henholdsvis `-S47HorrorContract=SC02`. Testen bruker faktisk Walker/løpeinput og produksjonens eksisterende autopilot-API for bilturene. Rute B, manuell styring, High-jakt, menneskelig spilling/lytting/frykt og senere områders AI er **UNVERIFIED**. Etter Toms nye beskjed er hele 110-matrisen prøvd for separat SC02-fletting; alle scenarioer består. Standardspillet og personlige lagringer er uendret.
 
 Kanonisk opprydding er utført etter avsluttede motorjobber: to eldre payloadsett / 14 genererte filer er pensjonert, 8 877 558 180 logiske bytes. R5, feilet R2 for sammenligning og trafostasjon R1 beholdes, samt særskilt beskyttet SC01-R4 og PR174 for andre oppgaver. Kilder, assets, Saved, logger og bilder er bevart. Se `prune-r5-plan.json` og `prune-r5-applied.json`.
+
+## Kontroll før separat main-fletting
+
+Samme R5 består **110/110 scenarioer** fra `screenshots.sh`, inkludert menyer, lagring, fotografering, kjøring, verdenshendelser og hele finalen. Etter 75 PASS blokkerte jobbvernet neste prøve mens en annen isolert assetimport brukte Unreal. Originalkjøringen er bevart med exit 2. Fortsettelsen kjørte de 35 resterende originale kallene med samme OUT/profil/pakke og exit 0. Uavhengig kontroll bekrefter uendrede navn, flags, forventninger, tidsgrenser og full dekning uten hull eller overlapp. Dette er ingen utelatt eller omdefinert test. Alle 110 logger og originalbilder har hash i `merge190-matrix/result.json`; originalen, fortsettelsen og beviset er bevart.
+
+**Sju ordinære Continue-prøver består**: fem ekte SC01 R4-lagringer før normalrunde, under/etter vindushendelse, før readback og etter fullføring/gjenåpnet dør; to tidligere bevarte personlige legacy-kopier uten Horror. Valgt sak/checkpoint, kveldsfase, klokke, riktig cohort og bevarte foto-IDer/fotofiler er kontrollert. Alle originalseeds er uendret. Ingen nye saves oppstod i disse korte prøvene, så ingen ny intern minneeksport eller tvungen serialisering hevdes. `merge190-continue/postrun-validation.json` fører resultat og avgrensning.
+
+Fire matrisebilder (kontrollrom, kjøring, diner og sluttittel) og to Continue-bilder er åpnet og vurdert. Alle 110 bilder er ikke manuelt vurdert. Ingen fatal/assert/device-loss eller scenariokontraktfeil ble funnet. De 462 frosne kilde-/konfig-/forfatterfilene og alle seks payloadhash er uendret også etter sluttprøvene. Uavhengig navigasjons- og save/cohort-gjennomgang fant ingen flettingshindre; gamle revisjon 1-saker får ikke SC02, og SC03+ er fortsatt runtime-sperret.
+
+Prosjektbiblioteket ble søkt på nytt før flettingskontrollen. Den generelle UE5.8-samlingen var en UNVERIFIED referanse; ingen ny bibliotekskode eller skill ble tatt inn. Prosjektets eksisterende pakke-, scenario- og Continue-prøver brukes.
 
 ## Neste konkrete produksjon: SC03
 
@@ -69,4 +79,4 @@ SC02-forutsetningen er nå teknisk oppfylt i R5. Den lokale `sc03-production-che
 3. Gi SC03 avgrenset eierskap til betjent/patruljebil så vanlig døgnplan ikke flytter dem midt i sekvensen. Betjenten skal ankomme før loggspørsmålet.
 4. Prøv hele SC02 til Caliche-reisen, avbrutt samtale, pause/diskrestore i sekvensene, to gyldige dekninger, faktiske etterspor og bortvendt/okkludert kamera uten falsk observasjon. Deretter SC04-annex og SC05-residual etter revidert regi.
 
-Den avtalte leveransen er **akt 1, SC02 til SC05**. Scenarioer prøves mens de bygges; hele 110-matrisen, fletting og installasjon skjer én gang per akt. Ingen separat fullmatrise eller nye stemmer per scenario er startet her.
+Den videre produksjonen er fortsatt **akt 1, SC02 til SC05**. Tom har nå bedt om separat SC02-fletting etter fullmatrise; det er unntaket for PR #190. SC03–SC05, samlet aktaksept og senere installasjon gjenstår. Nye stemmer produseres fortsatt til slutt.

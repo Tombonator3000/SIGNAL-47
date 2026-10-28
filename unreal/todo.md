@@ -4,7 +4,8 @@
 - [x] Implementer omplanlegging ved nye hindringer, faktisk kapselklaring, lavt trinn, bil-/nærveggmål og fysisk fangstkontakt. 1649 selvtester og 28 native kontroller består.
 - [x] Samordne framtidige scenetekster/produsentkart og bevar gamle ekte SC01-lagringer.
 - [x] Pakket SC02-rute med fangst, løpeflukt og diskrestore: R5 PASS med 159 kontroller, 19 disk-/Flow-restores og 42,48 m løping. Bevis og avgrensninger i [overleveringen](SC02_AI_HANDOFF.md).
-- [ ] Produser SC03 som faktisk verdenshandling med Ortiz/vogn23/termose, deretter SC04/SC05; samlet akt 1 får fullmatrise, merge og installasjon.
+- [x] Toms nye bestilling: kontroller separat PR190-fletting. R5 består full 110-matrise og sju gamle Continue-lagringer; ingen scenariofeil. PR190 håndterer denne SC02-flettingen.
+- [ ] Produser SC03 som faktisk verdenshandling med Ortiz/vogn23/termose, deretter SC04/SC05. Resten av akt 1 og senere installasjon gjenstår.
 
 ## Niagara ved stjernehullet, 28. oktober 2026
 

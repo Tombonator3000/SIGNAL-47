@@ -931,3 +931,11 @@ Claudes opprinnelige `~/scratch-bm/wt/sc02` var fortsatt ren og er fast-forwarde
 Canonical prune er utført etter inspisert plan og avsluttede motorjobber: to eldre payloadsett / 14 genererte filer er pensjonert, 8 877 558 180 logiske bytes uten påstand om fysisk diskgevinst. R5, feilet R2 for sammenligning og trafo R1 beholdes, samt særskilt beskyttet SC01-R4/PR174 for andre oppgaver. Kilder/assets/Saved/bevis bevares. Bevisrot `~/scratch-bm/Signal47-sc02-20261028/codex-takeover` har resultater, kildesnapshot, payloadhash, feilforløp, oppryddingskvittering og konkret SC03-produksjonsliste.
 
 [Utkast-PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) er opprettet og tilknyttet oppgaven. Grunnlagsgren er kontrollert som main. Utkastet bevarer det ferdig prøvde SC02-checkpointet mens SC03–SC05 og aktens aksept fortsatt gjenstår.
+
+## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
+
+Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
+
+Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
+
+[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
