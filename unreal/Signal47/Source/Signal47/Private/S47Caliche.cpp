@@ -1,5 +1,7 @@
 // story/caliche.ts: Caliche's street, its people and the copies in Reyes's notebook.
 #include "S47Caliche.h"
+#include "S47Horror.h"
+#include "S47HorrorSC03.h"
 #include "S47Props.h"
 
 #include "S47ReadAloud.h"
@@ -256,7 +258,9 @@ void FS47Caliche::BindTown()
 	Add(TEXT("gasDoor"), [] { return AS47Props::IsDoorOpen(TEXT("gasDoor")) ? TEXT("Close the door") : TEXT("Gas station door"); }, [this, Flyer] { if (AS47Props::UseDoor(TEXT("gasDoor"))) { Flyer(); return; } M->UI->Toast(TEXT("Locked, with a night window and a bell. The attendant looks up, sees you are not a car, and goes back to his magazine. Taped inside the glass: SEEN LIGHTS? CALL THE NIGHT LINE."), 5.4); Flyer(); }, [Flyer] { Flyer(); return TEXT("SEEN LIGHTS? CALL THE NIGHT LINE. 1420 AM, MIDNIGHT TO FOUR. Typed, copied, and copied again."); });
 	Add(TEXT("gasWindow"), [] { return TEXT("Night window"); }, [this] { Talk(TEXT("attendant")); }, [] { return TEXT("Oil cans in rows, a calendar still on April, the register. Behind the counter a man in a pressed shirt turns a page. He has not looked at the clock once."); });
 	Add(TEXT("pumps"), [] { return TEXT("Pumps"); }, Say(TEXT("Regular, 89.9. It has come down all spring. The nozzles are padlocked for the night."), 3.8), [] { return TEXT("Two pumps on a concrete island. The counters stand at zero."); });
-	Add(TEXT("payphone"), [this] { return Town->bRinging ? TEXT("Answer the payphone") : TEXT("Payphone"); }, [this] { if (Town->bRinging) { if (Town->OnAnswer) Town->OnAnswer(); return; } M->UI->Toast(M->TownSeen.Contains(TEXT("nickel")) ? TEXT("A dial tone. The coin return is empty now.") : TEXT("A dial tone, and under it something like wind. Nobody to call at this hour."), 3.6); }, [] { return TEXT("A payphone on a post, a phone book on a chain with half its pages gone."); });
+	// SC03 (revision 3): the report and the missing-person call go through FS47Horror's world call;
+	// a ringing night call keeps its own answer first.
+	Add(TEXT("payphone"), [this] { return Town->bRinging ? TEXT("Answer the payphone") : (M->Horror && M->Horror->SC03Live() && !M->Horror->SC03->CallScenes().IsEmpty()) ? TEXT("Call the county dispatcher") : TEXT("Payphone"); }, [this] { if (Town->bRinging) { if (Town->OnAnswer) Town->OnAnswer(); return; } if (M->Horror && M->Horror->Use(TEXT("town:payphone"))) return; M->UI->Toast(M->TownSeen.Contains(TEXT("nickel")) ? TEXT("A dial tone. The coin return is empty now.") : TEXT("A dial tone, and under it something like wind. Nobody to call at this hour."), 3.6); }, [] { return TEXT("A payphone on a post, a phone book on a chain with half its pages gone."); });
 	Add(TEXT("gasSign"), [] { return TEXT("Sign"); }, Say(TEXT("GAS. DIESEL. No brand, just the words."), 2.8), {}, 3);
 	Add(TEXT("paper"), [this] { return Town->bPaperIn ? FString(TEXT("Newspapers")) : FString(); }, [this] { if (!Town->bPaperIn) return; M->UI->Toast(TEXT("The Pecos Valley Sentinel, Monday, April 14, 1986, still in its twine. NICKLAUS, 46, WINS MASTERS. Dropped from a car that did not stop."), 5); Once(TEXT("paper"), TEXT("Caliche: the Pecos Valley Sentinel dropped at the gas station before five. Monday, April 14, 1986.")); }, [this] { return Town->bPaperIn ? FString(TEXT("NICKLAUS, 46, WINS MASTERS. Under the fold, smaller: County to grade the old Roswell road this summer.")) : FString(); });
 	auto Map = [this] { Once(TEXT("pins"), TEXT("Caliche, the sheriff's substation: a county map on the wall, stuck with pins. Most are scattered. Two rows run straight, one east along the old road, one west into the empty part of the map.")); };
