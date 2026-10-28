@@ -209,6 +209,18 @@ void US47WorldLife::BuildFlora(bool bBind)
 			F = MakeShared<FS47Flora>(S47GroundCover::RoadFlora(S47GroundCover::PostsOf(Obstacles(W, TEXT("road")), ROAD_ORIGIN.X, ROAD_ORIGIN.Z)));
 			TArray<FS47FloraRect> B, Wk;
 			CoverOf(ROAD_ORIGIN, B, Wk);
+			const FS47Obj Road = W->Obj(TEXT("world.legs.road.area.group"));
+			if (Road.Find(TEXT("prop:substationGravel")) && Road.Find(TEXT("prop:substationPad")))
+			{
+				// Native Caliche kit: unlike the web cover, keep its maintained surfaces clear.
+				// Road-local bounds from world (7890-bx, 536.2+by). The gravel's 0.6m
+				// side/rear shoulder blends into nature; the T02 front is only cleared at its apron.
+				const int32 Before = B.Num();
+				B.Add(FS47FloraRect{-120.6, -99.4, 528.2, 544.8}); // Bed plus side/rear shoulder.
+				B.Add(FS47FloraRect{-115.9, -114.1, 526.95, 528.45}); // Control plinth.
+				B.Add(FS47FloraRect{-116.8, -113.2, 522.2, 526.95}); // Control access apron.
+				UE_LOG(LogS47Life, Display, TEXT("S47: substation maintained ground: %d native flora exclusion blocks"), B.Num() - Before);
+			}
 			F->Add(B, Wk);
 		}
 		else if (Name == TEXT("station01"))

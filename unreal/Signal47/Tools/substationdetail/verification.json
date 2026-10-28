@@ -1,0 +1,644 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "SM_SubstationDetail_GroundShoulder one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder exact geometry contract",
+      "pass": true,
+      "triangles": 212,
+      "bounds": [
+        [
+          -10.87487506866455,
+          -8.866262435913086,
+          -0.5442522168159485
+        ],
+        [
+          10.875020980834961,
+          8.869440078735352,
+          -0.07500000298023224
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 0.16265378661631047
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder measured outer-edge terrain contact",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder excludes front gameplay areas",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings exact geometry contract",
+      "pass": true,
+      "triangles": 388,
+      "bounds": [
+        [
+          4.475000858306885,
+          -9.03499984741211,
+          1.6150000095367432
+        ],
+        [
+          4.765000820159912,
+          -8.885000228881836,
+          1.8049999475479126
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_OlivePaint",
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 4.950315444229858e-05
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings real emitted front/down aperture",
+      "pass": true,
+      "five_ray_results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit exact geometry contract",
+      "pass": true,
+      "triangles": 532,
+      "bounds": [
+        [
+          4.2760009765625,
+          -8.457500457763672,
+          0.07900809496641159
+        ],
+        [
+          5.521000385284424,
+          -7.399416446685791,
+          1.6675000190734863
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_OlivePaint",
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 6.698499507962197e-06
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact exact geometry contract",
+      "pass": true,
+      "triangles": 1284,
+      "bounds": [
+        [
+          3.2219488620758057,
+          -13.522491455078125,
+          -0.23339566588401794
+        ],
+        [
+          6.782926559448242,
+          -7.752499580383301,
+          0.0430000014603138
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 1.3564212753003346e-06
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact exact geometry contract",
+      "pass": true,
+      "triangles": 3990,
+      "bounds": [
+        [
+          -9.864163398742676,
+          -7.88230037689209,
+          -0.10099831968545914
+        ],
+        [
+          9.89582347869873,
+          7.926055431365967,
+          0.002319654216989875
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 1.2226588093966484e-05
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact known bed contact only",
+      "pass": true,
+      "bounds": [
+        [
+          -9.864163398742676,
+          -7.88230037689209,
+          -0.10099831968545914
+        ],
+        [
+          9.89582347869873,
+          7.926055431365967,
+          0.002319654216989875
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD1 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD1 exact geometry contract",
+      "pass": true,
+      "triangles": 108,
+      "bounds": [
+        [
+          -10.81363582611084,
+          -8.866262435913086,
+          -0.5442522168159485
+        ],
+        [
+          10.875020980834961,
+          8.869440078735352,
+          -0.07500000298023224
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD1 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD1 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 0.32158808010954854
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD1 measured outer-edge terrain contact",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD1 excludes front gameplay areas",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD1 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD1 exact geometry contract",
+      "pass": true,
+      "triangles": 196,
+      "bounds": [
+        [
+          4.475000858306885,
+          -9.03499984741211,
+          1.6150000095367432
+        ],
+        [
+          4.765000820159912,
+          -8.885000228881836,
+          1.8049999475479126
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD1 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_OlivePaint",
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD1 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 8.249967873119601e-05
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD1 real emitted front/down aperture",
+      "pass": true,
+      "five_ray_results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD1 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD1 exact geometry contract",
+      "pass": true,
+      "triangles": 388,
+      "bounds": [
+        [
+          4.2760009765625,
+          -8.457500457763672,
+          0.07900809496641159
+        ],
+        [
+          5.521000385284424,
+          -7.399416446685791,
+          1.6675000190734863
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD1 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_OlivePaint",
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD1 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 2.0710644374144493e-05
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD1 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD1 exact geometry contract",
+      "pass": true,
+      "triangles": 732,
+      "bounds": [
+        [
+          3.2204208374023438,
+          -13.391985893249512,
+          -0.22841213643550873
+        ],
+        [
+          6.783809661865234,
+          -7.752499580383301,
+          0.0430000014603138
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD1 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD1 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 7.5145281002164666e-06
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD1 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD1 exact geometry contract",
+      "pass": true,
+      "triangles": 1920,
+      "bounds": [
+        [
+          -9.833919525146484,
+          -7.83612060546875,
+          -0.10099831968545914
+        ],
+        [
+          9.846807479858398,
+          7.852170944213867,
+          0.0012919565197080374
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD1 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD1 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 6.509671689558516e-05
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD1 known bed contact only",
+      "pass": true,
+      "bounds": [
+        [
+          -9.833919525146484,
+          -7.83612060546875,
+          -0.10099831968545914
+        ],
+        [
+          9.846807479858398,
+          7.852170944213867,
+          0.0012919565197080374
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD2 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD2 exact geometry contract",
+      "pass": true,
+      "triangles": 66,
+      "bounds": [
+        [
+          -10.86670970916748,
+          -8.866262435913086,
+          -0.5442522168159485
+        ],
+        [
+          10.82280445098877,
+          8.858806610107422,
+          -0.07500000298023224
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD2 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD2 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 0.4972889900853872
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD2 measured outer-edge terrain contact",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GroundShoulder_LOD2 excludes front gameplay areas",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD2 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD2 exact geometry contract",
+      "pass": true,
+      "triangles": 164,
+      "bounds": [
+        [
+          4.475000858306885,
+          -9.03499984741211,
+          1.6150000095367432
+        ],
+        [
+          4.765000820159912,
+          -8.885000228881836,
+          1.8049999475479126
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD2 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_OlivePaint",
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD2 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 8.249967873119601e-05
+    },
+    {
+      "name": "SM_SubstationDetail_InspectionFittings_LOD2 real emitted front/down aperture",
+      "pass": true,
+      "five_ray_results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD2 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD2 exact geometry contract",
+      "pass": true,
+      "triangles": 316,
+      "bounds": [
+        [
+          4.2760009765625,
+          -8.457500457763672,
+          0.08182048052549362
+        ],
+        [
+          5.521000385284424,
+          -7.399494647979736,
+          1.6675000190734863
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD2 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_OlivePaint",
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_DarkSteel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_ServiceConduit_LOD2 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 5.629163467357756e-05
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD2 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD2 exact geometry contract",
+      "pass": true,
+      "triangles": 428,
+      "bounds": [
+        [
+          3.2270171642303467,
+          -13.286680221557617,
+          -0.21934877336025238
+        ],
+        [
+          6.781092166900635,
+          -7.752499580383301,
+          0.0430000014603138
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD2 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_GalvanizedSteel",
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_FoundationContact_LOD2 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 5.771482396355054e-05
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD2 one actual mesh",
+      "pass": true
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD2 exact geometry contract",
+      "pass": true,
+      "triangles": 780,
+      "bounds": [
+        [
+          -9.72252368927002,
+          -7.907240390777588,
+          -0.10098803788423538
+        ],
+        [
+          9.89572525024414,
+          7.871203899383545,
+          -6.297222716966644e-05
+        ]
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD2 material order",
+      "pass": true,
+      "materials": [
+        "M_SubstationDetail_Gravel"
+      ]
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD2 stable triangles and UV",
+      "pass": true,
+      "minimum_uv_area": 2.4934449212921095e-05
+    },
+    {
+      "name": "SM_SubstationDetail_GravelContact_LOD2 known bed contact only",
+      "pass": true,
+      "bounds": [
+        [
+          -9.72252368927002,
+          -7.907240390777588,
+          -0.10098803788423538
+        ],
+        [
+          9.89572525024414,
+          7.871203899383545,
+          -6.297222716966644e-05
+        ]
+      ]
+    },
+    {
+      "name": "saved editable five parts",
+      "pass": true
+    },
+    {
+      "name": "source PBR images packed",
+      "pass": true,
+      "images": 9
+    },
+    {
+      "name": "native axis/root declared",
+      "pass": true
+    },
+    {
+      "name": "bounded authored budget",
+      "pass": true
+    }
+  ],
+  "check_count": 76,
+  "lod_totals": {
+    "0": 6406,
+    "1": 3344,
+    "2": 1754
+  },
+  "limits": "Actual imported FBX for all three LOD, UVs and five light-aperture rays per LOD, fresh packed editable Blend. Native/game/raycast/terrain-contact outside known bed not claimed."
+}
