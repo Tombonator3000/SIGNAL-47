@@ -222,6 +222,8 @@ Ingen påtvunget bortvending eller «se opp nå». Første overflygning kan vær
 
 Eksisterende `FS47LineLights` beholdes: tre lave lys vest for trucken som følger langs B før avgang, et valgfritt nærmøte forskjellig fra høye overflygninger. `FS47StarHole` beholdes ved az 026/elevasjon 32 med egne observasjons-/fotoflagg. Ikke lag identisk nytt stjernehull som større fartøy. Komet etter 20:00 og før 03:05 samt gamle meteorer gir normal himmelkontrast.
 
+**Tillegg fra Tom, 28. oktober 2026:** Et kort, tettere meteorregn legges i regien rundt den eksisterende stjernehull-hendelsen, etterfulgt av ro. Den vanlige natten beholder sjeldne stjerneskudd. Meteorpassasjen får egen visuell fase knyttet til hendelsestiden; stjernehullets geometri, gradvise fremkomst og faktiske observasjons-/fotoflagg beholdes. Se [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) for forslag og kildevurdering. Dette er planlagt, ikke implementert.
+
 ## Bevar eksisterende tilfeldige hendelser
 
 **Hele hendelsesfloraen beholdes.** Hovedreisen gir dramatisk sammenheng; utvalget gjør natten forskjellig hver gang. Noe forblir dyr, mennesker, media eller uavklarte avtrykk. Ikke gi samme alienforklaring til hver lyd og feil.

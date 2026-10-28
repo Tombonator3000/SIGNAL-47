@@ -899,3 +899,10 @@ Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat o
 
 - Tom ba om en Found Footage-modus med bodycam-linse og om Niagara-effekter, for eksempel gnister ved trafoen. To hjelpere leste koden og motoren og skrev [FOUND_FOOTAGE_FORSLAG.md](FOUND_FOOTAGE_FORSLAG.md) og [NIAGARA_FORSLAG.md](NIAGARA_FORSLAG.md). Ingen Unreal-, bygg- eller pakkejobb ble kjørt, og ingen kode er endret.
 - Tom spurte også om https://github.com/arjun988/blender-skills. Repoet er 94 korte tekstskills laget for Blender MCP. Det nyttige (rekvisittskala, historiegrupper, skrekklys, rombygging, LOD og kontroll) er lagret som en Claude-skill `blender-skills` lokalt hos Tom, med MIT-kreditering og commit `8f778d24`. Den endrer ikke repoet.
+## 28.10.2026 kl. 10:20 CET, Niagara-kilder og meteorregn
+
+Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
+
+Kontrollert offentlig main `3456d029` i separat arbeidskopi. Eksisterende HoleFrom følger EventClock og STAR_HOLE.After; flere samtidige meteorer krever ny effekt, siden MeteorNow avviser en aktiv meteor. En lesende kildehjelper identifiserte alle fire repoene og kontrollerte relevant tekst/tree/lisens. Dokumentendringene krever ingen ny motorkjøring; dette er ikke en attest for den planlagte effekten.
+
+Dokumentkontroll: alle nye lokale lenker i notatet og endrede innganger finnes. git diff --check består. Uavhengig kildehjelper godkjente revisjoner, lisensavgrensning og skillet mellom foreslått regi og levert effekt. Ingen kode-/assetendring; bygge- og spillmatrise er derfor ikke kjørt for denne dokumentleveransen.
