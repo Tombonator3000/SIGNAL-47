@@ -1,5 +1,7 @@
 # Implementeringsplan: hele historien fra SC01 til SC13
 
+**Revidert 28. oktober 2026:** [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md) gjelder for SC02 til SC13 der den avviker fra denne planen og fra MISSION_FLOW. Den kutter den svarte figuren, bilmøtet i SC04, huking, sjåføren og dikteringen i SC12, slår sammen H08 og H09 og leverer i fire akter i stedet for per scenario.
+
 Godkjent av Tom 26. oktober 2026. Denne planen er arbeidsgrunnlaget for gjennomføringen. Første dokumentasjonsleveranse lagrer planen, kobler den fra README og todo og registrerer arbeidet. Kode, pakket kandidat, fletting og installasjon føres med egne faktiske kvitteringer.
 
 ## 1. Mandat, kilder og leveranserekkefølge

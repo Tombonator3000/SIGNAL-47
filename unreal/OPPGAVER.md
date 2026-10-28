@@ -10,6 +10,10 @@ Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 ko
 
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Historien SC02 til SC13 gjennomgått og revidert, Claude, 28.10.2026 (Toms valg tatt, venter på fletting)
+
+Tom ba om en gjennomgang av SC02 til SC13, omskriving og kutt av det unødvendige. Resultatet er [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md): logiske hull løst, fire jaktsekvenser i stedet for fem, én fienderegel, ni H-kort og levering i fire akter. SC-ID-ene er uendret, så SC02-kandidaten på `ccr-20021313-mfplx9` kan brukes videre. Toms valg 28.10: tilfeldig bortføring beholdes uten tidstap i nye saker, og stemmer for Ward, Ortiz, Earl og Nora lages til slutt, når alt annet er ferdig. De engelske scenetekstene i `Narrative/HorrorStory` oppdateres etter at SC02-grenen er flettet, for å unngå konflikt med `world_producers.json`.
+
 ## Byens bygninger mer detaljert i Blender (TB2), Claude, 27.10.2026 (Blender ferdig, Unreal gjenstår)
 
 Sheriffkontoret, vaskeriet, fôrbutikken, kinoen og kirken er bygget på nytt i `Tools/townbuildings/tb2/` på grenen `claude/townbuildings-tb2`. Kildekontrollen består (966 av 966). Se `Tools/townbuildings/README.md` og `log.md` kl. 22:35. Motellet og rom 6 er Codex sitt arbeid og er uendret.

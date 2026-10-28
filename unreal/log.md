@@ -867,3 +867,9 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 - Ny offentlig utgave `playtest-linux-2026-10-28` er laget av fotolab R1 uten ny Unreal-kjøring: tre ZIP-er på til sammen 3,9 GB, den delte `.ucas` settes sammen og kontrolleres av `Play.sh`. Kandidat og installert spill har samme hasher, og alle 44 arkivoppføringer er kontrollert. Arbeidsmappe: `~/scratch-bm/Signal47-download-2026-10-28`.
 - `Spill-SIGNAL47.sh`, `README.md`, `unreal/README.md`, `SC01_RUNTIME.md` og statustabellen i `HISTORIE_IMPLEMENTERINGSPLAN.md` peker nå på den nye utgaven og riktig SC01-status.
 - Ikke gjort: start på en annen maskin. Codex' trafostasjon (pakke under arbeid kl. 07:34) er ikke med; den kommer i en senere utgave.
+## 2026-10-28 kl. 08:30 CET: SC02 til SC13 gjennomgått og revidert (Claude)
+
+- Lest MISSION_FLOW, implementeringsplanen, forberedelsen fra skyøkten med 16 motstrider og forhåndsvisningene av SC02-aktøren.
+- Skrevet [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md). Kuttet: den svarte figuren, trusselmøte 3 ved bilen, huking, sjåføren, diktering av måletabeller, opptakerlån hos Earl og H09 som eget kort. VHS er valgfri for SC07. Ny begrunnelse for returen til SARO etter SC03: sheriffen trenger mottakerloggen til savnetsaken. 12 av de 16 motstridene er løst i dokumentet; nummer 6 forsvinner med kuttet, nummer 7 blir mindre, nummer 5 og 16 er avgjort av Tom samme morgen: tilfeldig bortføring beholdes uten tidstap i nye saker, og de fire nye stemmene lages til slutt.
+- Modellvurdering: SC02-aktøren ser ut som en utstillingsdukke og hodet som en klassisk «grey». Konkrete rettinger står i dokumentet.
+- Ingen kode, scenetekst eller Unreal-kjøring er endret.
