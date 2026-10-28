@@ -6,6 +6,11 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Stabilitet og feil fra spillprøven
 
+Produksjonsverktøy: første versjon av [koordinatoren med Claude](Guides/PRODUCTION_SYSTEM.md)
+er implementert. Den ordinære live-workerprøven og en faktisk tung verktøyserie
+står som avgrensede kontroller når henholdsvis Claude-kvote og et konkret
+produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
+
 | ID | Åpen oppgave | Underlag |
 | --- | --- | --- |
 | FIX-01 | [ ] Undersøk diner-krasjene og rett dokumentert årsak. Bevar riktig binær-/logggrunnlag og avklar eventuell ressurskonkurranse. | [Begge krasjvedlegg](Reports/PLAYTEST_TODO_2026-10-28.md). Vulkan-allokering er et spor, ikke bevist rotårsak. |
