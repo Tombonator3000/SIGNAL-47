@@ -5,6 +5,7 @@ Unity/[Ll]ogs/
 Unity/[Uu]ser[Ss]ettings/
 Unity/[Bb]uilds/
 Artifacts/
+/Spill/
 *.zip
 __pycache__/
 
