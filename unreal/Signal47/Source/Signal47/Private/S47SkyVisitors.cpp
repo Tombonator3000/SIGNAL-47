@@ -385,7 +385,8 @@ void FS47SkyVisitors::ControlTest(double Dt)
  if (ContractPhase == 3 && Since >= 2)
  {
   // One diagnostic sample after the ordinary Walker has applied the test aim.
-  // Phase 4 continues the same sight test; it only marks this evidence as written.
+  // The close gate fixture deliberately catches the opaque crossrail. Give its
+  // screenshot a frame before moving the positive camera fixture farther back.
   ContractPhase = 4;
   const FS47Cam Cam = FS47Cam::Of(M->Player,12000);
   const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(TestStage,0,State.Elapsed),M->World->Area);
@@ -414,6 +415,19 @@ void FS47SkyVisitors::ControlTest(double Dt)
   S47J::Set(Diagnostic,TEXT("skyVisitors"),State.Save());
   FFileHelper::SaveStringToFile(S47J::Write(Diagnostic,true),*(ContractRoot/TEXT("phase3-diagnostic.json")));
   FScreenshotRequest::RequestScreenshot(ContractRoot/TEXT("phase3-diagnostic.png"),false,false);
+  if (!Check(FVector2D(Cam.Pos.X+1,Cam.Pos.Z+18.5).Size() < .03,
+   TEXT("near-gate negative fixture uses the actual Walker eye after the restore has settled"))) return;
+  if (!Check(!Clear && !State.Observed[0],TEXT("actual opaque gate rail occludes the near-gate sky fixture without observation credit"))) return;
+  return;
+ }
+ if (ContractPhase == 4)
+ {
+  if (Since < 2.15) return;
+  if (!Check(M->Player->Walkable(-1,-15),TEXT("positive sky camera-position fixture is a walkable five-metre setback from the gate"))) return;
+  M->Player->Place(-1,-15,0);
+  UE_LOG(LogS47SkyVisitors,Display,TEXT("S47: sky positive sight camera-position fixture at x=-1 z=-15; authored light path and physical occlusion unchanged"));
+  ContractPhase = 5; ContractSince = ContractTime;
+  return; // The ordinary Walker tick applies this eye position and the subsequent aim.
  }
  if (State.Stage == TestStage && State.Observed[TestStage - 1] && Since > 4)
  {
