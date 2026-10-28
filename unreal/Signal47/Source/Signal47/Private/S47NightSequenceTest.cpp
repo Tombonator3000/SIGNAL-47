@@ -2,6 +2,7 @@
 
 #include "S47Album.h"
 #include "S47Anomaly.h"
+#include "S47DishArray.h"
 #include "S47FieldCamera.h"
 #include "S47Flow.h"
 #include "S47Horror.h"
@@ -12,6 +13,8 @@
 #include "S47Night.h"
 #include "S47Observing.h"
 #include "S47RecordedDialogue.h"
+#include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "S47SkyVisitors.h"
 #include "S47Story.h"
 #include "S47Substation.h"
@@ -43,6 +46,10 @@ struct FS47Evening::FNightSequenceTest
  S47J::FObj Fixture;
  TArray<double> DishAz, DishEl;
  TArray<bool> GeneratorTubes;
+ TArray<FLinearColor> BeaconBaseline;
+ FString GlowPath;
+ int32 GlowIndex = -1;
+ FLinearColor GlowBaseline = FLinearColor::Black;
  FS47Substation::FFaultSnapshot PausedFault;
 };
 
@@ -68,7 +75,8 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   FPlatformMisc::RequestExit(false);
  };
  if (!M || !M->Flow || !M->Story || !M->World || !M->Player || !M->Web || !M->UI || !M->Inter ||
-     !M->Substation || !M->Horror || !M->Night || !M->Night->Album || !M->FieldCamera || !M->Anomaly || !M->Observing || !M->SkyVisitors)
+     !M->Substation || !M->Horror || !M->Night || !M->Night->Album || !M->FieldCamera || !M->Anomaly || !M->Observing || !M->SkyVisitors ||
+     !M->SaroNight || !M->SaroNight->Dishes)
  { Fail(TEXT("mangler runtimeavhengighet")); return; }
  if (!M->Flow->bDevRun || M->Flow->CaseId != 0)
  { Fail(TEXT("krever utviklerkjøring uten S47Case; personlige saker skal aldri brukes")); return; }
@@ -98,7 +106,32 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   { Fail(FString::Printf(TEXT("fysisk ray til %s valgte '%s', eller mangler OnUse"), Id, *Actual)); return false; }
   M->Player->OnUse(Actual); return true;
  };
- const auto Load = [this, &T, &Fail, &Check](const FString& Name)
+ const auto ReadPowerColors = [this, &T](bool Out)
+ {
+  const double Factor = Out ? .12 : 1.; auto O = S47J::New(); TArray<TSharedPtr<FJsonValue>> Rows;
+  S47J::Set(O, TEXT("expectedFactor"), Factor); S47J::Set(O, TEXT("beaconCount"), M->SaroNight->Dishes->BeaconCount());
+  bool Good = T.BeaconBaseline.Num() == 27 && M->SaroNight->Dishes->BeaconCount() == 27;
+  const auto Color = [](const FLinearColor& C) { return TArray<double>{C.R, C.G, C.B, C.A}; };
+  const auto Scaled = [Factor](const FLinearColor& C) { return FLinearColor(float(C.R * Factor), float(C.G * Factor), float(C.B * Factor), 1.f); };
+  for (int32 I = 0; I < T.BeaconBaseline.Num(); ++I)
+  {
+   const auto Actual = M->SaroNight->Dishes->BeaconBase(I), Expected = Scaled(T.BeaconBaseline[I]);
+   const bool Match = Actual.Equals(Expected, .00001f); Good &= Match;
+   auto Row = S47J::New(); S47J::Set(Row, TEXT("index"), I); S47J::Set(Row, TEXT("baseline"), Color(T.BeaconBaseline[I]));
+   S47J::Set(Row, TEXT("expected"), Color(Expected)); S47J::Set(Row, TEXT("actual"), Color(Actual)); S47J::Set(Row, TEXT("match"), Match);
+   Rows.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  O->SetArrayField(TEXT("beacons"), Rows); S47J::Set(O, TEXT("nonSodiumGlowPath"), T.GlowPath); S47J::Set(O, TEXT("nonSodiumGlowIndex"), T.GlowIndex);
+  if (T.GlowIndex >= 0)
+  {
+   const FS47GlowView G(M->Web, T.GlowPath); const auto Actual = G.Col(T.GlowIndex), Expected = Scaled(T.GlowBaseline);
+   const bool Match = G.Num() > T.GlowIndex && Actual.Equals(Expected, .00001f); Good &= Match;
+   S47J::Set(O, TEXT("glowBaseline"), Color(T.GlowBaseline)); S47J::Set(O, TEXT("glowExpected"), Color(Expected));
+   S47J::Set(O, TEXT("glowActual"), Color(Actual)); S47J::Set(O, TEXT("glowMatch"), Match);
+  }
+  S47J::Set(O, TEXT("matches"), Good); return O;
+ };
+ const auto Load = [this, &T, &Fail, &Check, &ReadPowerColors](const FString& Name)
  {
   const auto State = M->Flow->GameState(), Routine = S47J::Obj(State, TEXT("routine")), Pose = S47J::Obj(State, TEXT("pose"));
   if (!State || !Routine || !Pose || S47J::Str(State, TEXT("checkpoint")) != TEXT("nightService"))
@@ -168,6 +201,10 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   Field(TEXT("observingRecord"), S47J::Write(M->Observing->Save()) == ObservingRecord);
   Field(TEXT("notes"), M->Story->Notes() == Notes);
   Field(TEXT("logCount"), Night.Log.Num() == LogCount);
+  const auto PowerColors = ReadPowerColors(Out);
+  Field(TEXT("originalSaroPowerColors"), S47J::Bool(PowerColors, TEXT("matches")));
+  if (!FFileHelper::SaveStringToFile(S47J::Write(PowerColors, true), *(T.Root / (Name + TEXT(".power-readback.json")))))
+  { Fail(TEXT("kunne ikke skrive faktisk fargereadback etter diskrestore")); return false; }
   if (!Good)
   {
    auto Details = S47J::New(), Runtime = S47J::New();
@@ -409,6 +446,27 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   UE_LOG(LogTemp, Display, TEXT("S47: night sequence SC01 FIXTURE: copied completed facts and one retained original from %s; SC01 actions are not rerun"), *T.FixtureSource);
   if (!Check(M->Horror->Enabled() && M->Horror->Complete() && !M->Substation->HasNormalResult(),
       TEXT("uttrykkelig SC01-diskfixture gir kun SC01-credit, ingen T01-fullføring"))) return;
+  T.BeaconBaseline.Reset(); bool OriginalColors = M->SaroNight->Dishes->BeaconCount() == 27;
+  for (int32 I = 0; I < M->SaroNight->Dishes->BeaconCount(); ++I)
+  {
+   const FLinearColor C = M->SaroNight->Dishes->BeaconBase(I); T.BeaconBaseline.Add(C);
+   OriginalColors &= C.R + C.G + C.B > .0001f;
+  }
+  for (const TCHAR* Path : {TEXT("yard.glow.points"), TEXT("annex.glow.points"), TEXT("world.field.glow.points")})
+  {
+   const FS47GlowView G(M->Web, Path);
+   for (int32 I = 0; I < G.Num() && T.GlowIndex < 0; ++I)
+   {
+    const FLinearColor C = G.Col(I);
+    if (C.R + C.G + C.B > .0001f && !FS47SaroPower::IsSodium(C.R, C.G, C.B))
+    { T.GlowPath = Path; T.GlowIndex = I; T.GlowBaseline = C; }
+   }
+  }
+  const auto PowerBaseline = ReadPowerColors(false);
+  if (!Check(OriginalColors && S47J::Bool(PowerBaseline, TEXT("matches")),
+      TEXT("før strømbruddet avleses originalfargene på alle 27 antennebeacons og tilgjengelig ikke-sodium-glow"))) return;
+  if (!FFileHelper::SaveStringToFile(S47J::Write(PowerBaseline, true), *(T.Root / TEXT("before-outage.power-readback.json"))))
+  { Fail(TEXT("kunne ikke skrive originalfargene før strømbruddet")); return; }
   Dials(S47Signal::Profiles()[1]); M->Story->ConsoleAction();
   if (!Check(M->Story->Rx.Stage == 2 && M->Story->Phase() == ES47Phase::Survey && !ServicePending(),
       TEXT("SC01 alene tillater relékobling uten T01 på ny route2"))) return;
@@ -420,6 +478,11 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   if (!Check(FeederOutage() && ServicePending() && M->Story->Night().bK3Open && M->Story->bDark && !M->Story->Rx.bPowered &&
       M->Story->Clock() >= S47Timeline::Residual(true) - .1 && M->Story->Clock() < 15 * 60 && !ThreatActive(),
       TEXT("vanlig ConsoleClosed/surveytimer gir 00:13-strømbrudd, åpen K3 og ingen tidlig kropp"))) return;
+  const auto EmergencyColors = ReadPowerColors(true);
+  if (!Check(S47J::Bool(EmergencyColors, TEXT("matches")),
+      TEXT("faktisk strømbrudd demper alle 27 beacons og valgt ikke-sodium-glow til 0.12 av opprinnelig farge"))) return;
+  if (!FFileHelper::SaveStringToFile(S47J::Write(EmergencyColors, true), *(T.Root / TEXT("outage.power-readback.json"))))
+  { Fail(TEXT("kunne ikke skrive faktisk fargereadback under strømbruddet")); return; }
   M->UI->Close(true); M->Story->Use(TEXT("rack")); M->Story->Use(TEXT("crtCenter"));
   Dials(S47Signal::Profiles()[2]); M->Story->ConsoleAction();
   if (!Check(FeederOutage() && M->Story->Night().bK3Open && !M->Story->Rx.bPowered && M->Story->Rx.Stage == 2 && !M->ModalOpen(),
@@ -531,6 +594,11 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   if (!Check(!ServicePending() && !M->Story->bDark && !M->Story->Night().bK3Open && M->Story->Rx.bPowered &&
       M->Substation->HasNormalResult() && M->Substation->NormalCompletionStamp() == T.NormalStamp && !ThreatActive(),
       TEXT("T01 gjenoppretter faktisk SARO-strøm og K3 før SC02, uten returarkivering som strømport"))) return;
+  const auto RestoredColors = ReadPowerColors(false);
+  if (!Check(S47J::Bool(RestoredColors, TEXT("matches")),
+      TEXT("T01 gjenoppretter de opprinnelige fargene på alle 27 beacons og valgt ikke-sodium-glow etter gjentatte Continue"))) return;
+  if (!FFileHelper::SaveStringToFile(S47J::Write(RestoredColors, true), *(T.Root / TEXT("after-t01.power-readback.json"))))
+  { Fail(TEXT("kunne ikke skrive faktisk fargereadback etter T01")); return; }
   RecordFault(TEXT("power-restored-local-fault-remains"));
   if (T.bDone || !FaultOn(TEXT("SARO-mating gjenopprettet; stedlig effekt beholdes"))) return;
   if (!Load(TEXT("after-t01-power-restored"))) return;
@@ -635,6 +703,8 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   S47J::Set(R, TEXT("actualGeneratorStep"), M->Observing->GeneratorStep()); S47J::Set(R, TEXT("actualYardStep"), M->Observing->YardStep());
   S47J::Set(R, TEXT("naturalSky01ElapsedAfterHI"), T.SkyAfterHI); S47J::Set(R, TEXT("naturalSky01ElapsedAfterGate"), T.SkyAfterGate);
   S47J::Set(R, TEXT("naturalSky01ElapsedAfterVirgoStart"), T.SkyAfterVirgoStart);
+  S47J::Set(R, TEXT("powerBeaconCount"), T.BeaconBaseline.Num()); S47J::Set(R, TEXT("powerGlowPath"), T.GlowPath);
+  S47J::Set(R, TEXT("powerGlowIndex"), T.GlowIndex); S47J::Set(R, TEXT("powerColorsVerifiedAcrossEveryLoad"), true);
   S47J::Set(R, TEXT("sc02Clock"), T.SC02Clock); S47J::Set(R, TEXT("sc03RevisionProbe"), T.bSC03Probe);
   if (T.bSC03Probe)
   {
