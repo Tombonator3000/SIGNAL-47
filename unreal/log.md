@@ -1,5 +1,7 @@
 # Logg for unreal/
 
+**Status: Referanse, kronologisk historikk.** [Gjeldende leveringsstatus](../Docs/Active/STATUS.md) og [aktiv arbeidsliste](../Docs/Active/TODO.md) føres separat.
+
 Nyeste nederst. Tid i Europe/Oslo.
 
 ## 2026-10-21
@@ -809,7 +811,7 @@ Oppfølgingskvittering: appen bekrefter deleteStatus=deleted for fortsett-signal
 
 ## Reposamling, 2026-10-27 kl. 14:46 CET
 
-Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2cc91a` er samlet på `codex/local-deliveries-design-bible-20261027`. Se [samlet indeks](../Docs/LOCAL_DELIVERIES_2026-10-27.md). PDF er byteidentisk; kilder/bildeavhengigheter er med og identiske assets deduplisert. Ny MetaHuman-/atmosfærekode, egne verktøy og runtimebilder inkluderes. NP1/T02/SC01-kvitteringer arkiveres; SC01s dbae3177 er allerede på GitHub, men er ikke integrert i dagens main-baserte bygg. Ingen eldre runtime overskriver nyere levering. Lisensierte råassets, rålogger/private chatter og Saved utelates. Filhash/lenker kontrolleres; ingen ny tung jobb eller spillrelease. Full 110-matrise gjenstår før main-merge av samlet runtime.
+Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2cc91a` er samlet på `codex/local-deliveries-design-bible-20261027`. Se [samlet indeks](../Docs/Evidence/Deliveries/LOCAL_DELIVERIES_2026-10-27.md). PDF er byteidentisk; kilder/bildeavhengigheter er med og identiske assets deduplisert. Ny MetaHuman-/atmosfærekode, egne verktøy og runtimebilder inkluderes. NP1/T02/SC01-kvitteringer arkiveres; SC01s dbae3177 er allerede på GitHub, men er ikke integrert i dagens main-baserte bygg. Ingen eldre runtime overskriver nyere levering. Lisensierte råassets, rålogger/private chatter og Saved utelates. Filhash/lenker kontrolleres; ingen ny tung jobb eller spillrelease. Full 110-matrise gjenstår før main-merge av samlet runtime.
 
 
 ## Reposamling publisert, 2026-10-27 kl. 14:48 CET
@@ -819,7 +821,7 @@ Lokale leveranser og 42-siders designbibel fra `01a17d06-3c66-78f3-b21b-b784af2c
 
 ## 2026-10-27 kl. 20:46 CET: motel V2 importert, runtimeprøve gjenstår
 
-Ny Blender-modell med keramikk, mørkt mottak og rompanel, korrigert bassengplassering og gjenbruk av eksisterende biler/TV. Feil i bake-materialindekser og relative Blender-teksturstier ble funnet og rettet før levering. Rene kilder består 689 kontroller; Unreal-import 1 996 og uavhengig lagret verifikasjon 1 102. Terrengåpningen er presist klippet i begge lag. Editor bygger. Main med SC01 er kombinert med den installerte MetaHuman-/atmosfærekilden; 492 beskyttede assets er byteidentiske. Ingen installasjon, spillaksept eller merge er utført ennå. Se [rapport](MOTEL_V2.md).
+Ny Blender-modell med keramikk, mørkt mottak og rompanel, korrigert bassengplassering og gjenbruk av eksisterende biler/TV. Feil i bake-materialindekser og relative Blender-teksturstier ble funnet og rettet før levering. Rene kilder består 689 kontroller; Unreal-import 1 996 og uavhengig lagret verifikasjon 1 102. Terrengåpningen er presist klippet i begge lag. Editor bygger. Main med SC01 er kombinert med den installerte MetaHuman-/atmosfærekilden; 492 beskyttede assets er byteidentiske. Ingen installasjon, spillaksept eller merge er utført ennå. Se [rapport](../Docs/Evidence/UnrealDeliveries/MOTEL_V2.md).
 
 ## 2026-10-27 kl. 23:08 CET: motel R4 består komplett pakket kontroll
 
@@ -839,7 +841,7 @@ Bevis: `~/scratch-bm/Signal47-motel-v2-20261027`, spesielt `installed-verificati
 
 ## 2026-10-28 kl.00:10 CET: fotolab R1 i fullmatrise
 
-Ti originale detaljdeler er laget i Blender og importert i Unreal med tre LOD. Kilde48/native56, editor/pakke og målrettet fremkalling/lys/strøm består. Fem faktiske spillbilder er vurdert. Kandidat R1 gjennomgår nå den ene fullmatrisen før PR; ingen fletting eller installasjon ennå. Se [fotolabrapport](PHOTOLAB_DETAIL.md). Motel R4, SC01, MetaHuman og atmosfære er bevart. Claudes TB2-kilder er separate og ikke endret.
+Ti originale detaljdeler er laget i Blender og importert i Unreal med tre LOD. Kilde48/native56, editor/pakke og målrettet fremkalling/lys/strøm består. Fem faktiske spillbilder er vurdert. Kandidat R1 gjennomgår nå den ene fullmatrisen før PR; ingen fletting eller installasjon ennå. Se [fotolabrapport](../Docs/Evidence/UnrealDeliveries/PHOTOLAB_DETAIL.md). Motel R4, SC01, MetaHuman og atmosfære er bevart. Claudes TB2-kilder er separate og ikke endret.
 
 Kilden har 23 616 trekanter, native LOD 23 616/11 808/4 725. Første importkontroll avdekket UE5.8-wrapperens ekstra triangle-vertex-elementer; kontrollen bruker indekserte vertex-instances, ingen motorendring. Rapportprøvens forventede logglinje finnes ikke; faktisk rapportbilde består, feil parserkvittering er bevart uten omkjøring. Lydankre og strømgater er uendret. Ingen ny release. Lokale bevis: `/home/tom/scratch-bm/Signal47-photolab-night-20261027`.
 
@@ -870,23 +872,23 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 ## 2026-10-28 kl. 08:30 CET: SC02 til SC13 gjennomgått og revidert (Claude)
 
 - Lest MISSION_FLOW, implementeringsplanen, forberedelsen fra skyøkten med 16 motstrider og forhåndsvisningene av SC02-aktøren.
-- Skrevet [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md). Kuttet: den svarte figuren, trusselmøte 3 ved bilen, huking, sjåføren, diktering av måletabeller, opptakerlån hos Earl og H09 som eget kort. VHS er valgfri for SC07. Ny begrunnelse for returen til SARO etter SC03: sheriffen trenger mottakerloggen til savnetsaken. 12 av de 16 motstridene er løst i dokumentet; nummer 6 forsvinner med kuttet, nummer 7 blir mindre, nummer 5 og 16 er avgjort av Tom samme morgen: tilfeldig bortføring beholdes uten tidstap i nye saker, og de fire nye stemmene lages til slutt.
+- Skrevet [HISTORIE_SC02_SC13_REVISJON.md](../Docs/Design/Story/HISTORIE_SC02_SC13_REVISJON.md). Kuttet: den svarte figuren, trusselmøte 3 ved bilen, huking, sjåføren, diktering av måletabeller, opptakerlån hos Earl og H09 som eget kort. VHS er valgfri for SC07. Ny begrunnelse for returen til SARO etter SC03: sheriffen trenger mottakerloggen til savnetsaken. 12 av de 16 motstridene er løst i dokumentet; nummer 6 forsvinner med kuttet, nummer 7 blir mindre, nummer 5 og 16 er avgjort av Tom samme morgen: tilfeldig bortføring beholdes uten tidstap i nye saker, og de fire nye stemmene lages til slutt.
 - Modellvurdering: SC02-aktøren ser ut som en utstillingsdukke og hodet som en klassisk «grey». Konkrete rettinger står i dokumentet.
 - Ingen kode, scenetekst eller Unreal-kjøring er endret.
 
 ## Trafostasjonens detaljer, 28. oktober 2026 kl.07:39 CET
 
-Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo: fysisk lampehette, kabelinnføring, fundamentdetaljer og målt grusskråning. Native import/editor/pakke består; faktisk før/etterbilde og kort T01-service/diskreload består. T02 består 65 kontroller og 15 diskrestores; full110 pågår én gang før vanlig PR mot main. Ikke installert ennå. Claude beholder TB2 PR179. Se [rapport](SUBSTATION_DETAIL.md).
+Codex har laget fem originale Blender-detaljdeler for eksisterende Caliche-trafo: fysisk lampehette, kabelinnføring, fundamentdetaljer og målt grusskråning. Native import/editor/pakke består; faktisk før/etterbilde og kort T01-service/diskreload består. T02 består 65 kontroller og 15 diskrestores; full110 pågår én gang før vanlig PR mot main. Ikke installert ennå. Claude beholder TB2 PR179. Se [rapport](../Docs/Evidence/UnrealDeliveries/SUBSTATION_DETAIL.md).
 
 ## 2026-10-28 kl.08:35 CET: trafostasjonens detaljpass godkjent for fletting
 
-Fem originale Blender/native deler, 6 406/3 344/1 754 trekanter. Kilde76 og native import, editor/pakke, faktisk før/etteroversikt og to lampestyrker består. T01 fysisk bruk/gangadgang/diskreload og T02 65 kontroller/15 faktiske restores består. Hele screenshots.sh består 110/110 etter én kjøring, uten motorfeil eller prosesskonflikt. Runtime er byteidentisk med frysingen også etter main-merge med Claudes TB2-kilder og launcher/dokumentasjon. PR184 går mot main; installasjon følger fletting. Ingen ny release. Se [rapport](SUBSTATION_DETAIL.md).
+Fem originale Blender/native deler, 6 406/3 344/1 754 trekanter. Kilde76 og native import, editor/pakke, faktisk før/etteroversikt og to lampestyrker består. T01 fysisk bruk/gangadgang/diskreload og T02 65 kontroller/15 faktiske restores består. Hele screenshots.sh består 110/110 etter én kjøring, uten motorfeil eller prosesskonflikt. Runtime er byteidentisk med frysingen også etter main-merge med Claudes TB2-kilder og launcher/dokumentasjon. PR184 går mot main; installasjon følger fletting. Ingen ny release. Se [rapport](../Docs/Evidence/UnrealDeliveries/SUBSTATION_DETAIL.md).
 
 ## Trafostasjonens detaljer levert, 28. oktober 2026 kl.08:45 CET
 
 Caliche-trafoens lampehus, kabel-/fundamentdetaljer og målte grusskråning er flettet via [PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184), merge `168a4ff8a48b928e4d729882ea678535107169fd`, og samme testede R1 er installert i `/home/tom/Games/Signal47/Linux`. Fem originale Blender/native deler, tre LOD. Hele matrisen består 110/110 etter én kjøring; T01 og T02 består. Den installerte Low-kontrollen består fysisk service/gangadgang og diskreload; bildet er faktisk vurdert. Alle 50 personlige Saved-filer er uendret. Fotolab, motel R4, SC01, MetaHuman og godkjent terreng/himmel er bevart.
 
-Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat og to tidligere komplette fotolabpakker, samt særskilt beskyttede SC01/PR174-kandidater. Kilder, assets, Saved og bevis bevares. Claudes TB2-kilder er på main, men native integrasjon gjenstår der. Nattautomasjonen er PAUSED. Denne leveransen publiserer ingen ny release; trafodetaljene finnes i main og den lokale installasjonen. Se [rapport](SUBSTATION_DETAIL.md).
+Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat og to tidligere komplette fotolabpakker, samt særskilt beskyttede SC01/PR174-kandidater. Kilder, assets, Saved og bevis bevares. Claudes TB2-kilder er på main, men native integrasjon gjenstår der. Nattautomasjonen er PAUSED. Denne leveransen publiserer ingen ny release; trafodetaljene finnes i main og den lokale installasjonen. Se [rapport](../Docs/Evidence/UnrealDeliveries/SUBSTATION_DETAIL.md).
 
 ## 2026-10-28 kl. 10:00 CET: startskriptet sjekker systemet og har valg mot svart skjerm (Claude)
 
@@ -897,11 +899,11 @@ Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat o
 
 ## 2026-10-28 kl. 10:30 CET: forslag til found footage-modus og Niagara-effekter (Claude)
 
-- Tom ba om en Found Footage-modus med bodycam-linse og om Niagara-effekter, for eksempel gnister ved trafoen. To hjelpere leste koden og motoren og skrev [FOUND_FOOTAGE_FORSLAG.md](FOUND_FOOTAGE_FORSLAG.md) og [NIAGARA_FORSLAG.md](NIAGARA_FORSLAG.md). Ingen Unreal-, bygg- eller pakkejobb ble kjørt, og ingen kode er endret.
+- Tom ba om en Found Footage-modus med bodycam-linse og om Niagara-effekter, for eksempel gnister ved trafoen. To hjelpere leste koden og motoren og skrev [FOUND_FOOTAGE_FORSLAG.md](../Docs/Design/Proposals/FOUND_FOOTAGE_FORSLAG.md) og [NIAGARA_FORSLAG.md](../Docs/Research/Unreal/NIAGARA_FORSLAG.md). Ingen Unreal-, bygg- eller pakkejobb ble kjørt, og ingen kode er endret.
 - Tom spurte også om https://github.com/arjun988/blender-skills. Repoet er 94 korte tekstskills laget for Blender MCP. Det nyttige (rekvisittskala, historiegrupper, skrekklys, rombygging, LOD og kontroll) er lagret som en Claude-skill `blender-skills` lokalt hos Tom, med MIT-kreditering og commit `8f778d24`. Den endrer ikke repoet.
 ## 28.10.2026 kl. 10:20 CET, Niagara-kilder og meteorregn
 
-Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
+Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](../Docs/Design/Proposals/NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
 
 Kontrollert offentlig main `3456d029` i separat arbeidskopi. Eksisterende HoleFrom følger EventClock og STAR_HOLE.After; flere samtidige meteorer krever ny effekt, siden MeteorNow avviser en aktiv meteor. En lesende kildehjelper identifiserte alle fire repoene og kontrollerte relevant tekst/tree/lisens. Dokumentendringene krever ingen ny motorkjøring; dette er ikke en attest for den planlagte effekten.
 
@@ -920,7 +922,7 @@ Dokumentkontroll: alle nye lokale lenker i notatet og endrede innganger finnes. 
 
 ## 28.10.2026 kl. 12:07 CET: Codex hjelper Claude med SC02/AI og videre tekster
 
-Codex har overtatt etter Claudes bruksgrense. Claudes SC02 er integrert på oppdatert main, med live hindringsplanlegging, fysisk steg-/kontaktkontroll og rettet flukttest. Den lave betongrampen var en faktisk stoppårsak; bounded step-up prøves med full kapselsweep, og høye barrierer blokkerer fortsatt. De stoppede SC03 til SC13-tekstene er samordnet, med bevarte SC01/SC02-kontrakter og avgrenset migrering av tre utgåtte false-flagg. SC03 og videre er fortsatt authored_not_integrated. Se [overlevering](SC02_AI_HANDOFF.md).
+Codex har overtatt etter Claudes bruksgrense. Claudes SC02 er integrert på oppdatert main, med live hindringsplanlegging, fysisk steg-/kontaktkontroll og rettet flukttest. Den lave betongrampen var en faktisk stoppårsak; bounded step-up prøves med full kapselsweep, og høye barrierer blokkerer fortsatt. De stoppede SC03 til SC13-tekstene er samordnet, med bevarte SC01/SC02-kontrakter og avgrenset migrering av tre utgåtte false-flagg. SC03 og videre er fortsatt authored_not_integrated. Se [overlevering](../Docs/Evidence/UnrealDeliveries/SC02_AI_HANDOFF.md).
 
 En lesende overtakelsesgjennomgang fant SC02-head `911ce258` og fire workflow-agenter stoppet av bruksgrensen. Hjelpere har levert ruteplanlegger, rettet testinput og samordnet scenetekstene. Alle tunge jobber kjøres sekvensielt av Codex. R1/R2 feilet faktisk fangst ved rampen, og R3-fokus viste at normalens retning/initialt overlapp ikke var et sikkert trinnkriterium. R4-fokus bekreftet fangst og løpeflukt; testens siste parkventing måtte kvittere faktisk dialog før kjøringen kunne fortsette.
 
@@ -934,7 +936,7 @@ Canonical prune er utført etter inspisert plan og avsluttede motorjobber: to el
 
 ## 2026-10-28 kl. 13:45 CET: Greyhill-analyse bevart som referanse
 
-Tom ba om å lagre Greyhill-analysen til Signal 47-repoet og få oversikt over andre funksjoner som kan undersøkes. [GREYHILL_RESEARCH.md](GREYHILL_RESEARCH.md) bevarer egen analyse av syn, lyd, forfølgelse, siste kjente sted, skjulesteder og gameplay-looper. [GREYHILL_NEXT_ANALYSES.md](GREYHILL_NEXT_ANALYSES.md) prioriterer dørpassering, sonelyd, gjenstandsinspeksjon, UFO-/bortføringsregi, lagring, found footage, lommelykt og animasjon. De tre nye konkrete observasjonene gjelder lydovergang, modusbryter og inspeksjonsinput i allerede dekodet bytekode.
+Tom ba om å lagre Greyhill-analysen til Signal 47-repoet og få oversikt over andre funksjoner som kan undersøkes. [GREYHILL_RESEARCH.md](../Docs/Research/Unreal/GREYHILL_RESEARCH.md) bevarer egen analyse av syn, lyd, forfølgelse, siste kjente sted, skjulesteder og gameplay-looper. [GREYHILL_NEXT_ANALYSES.md](../Docs/Research/Unreal/GREYHILL_NEXT_ANALYSES.md) prioriterer dørpassering, sonelyd, gjenstandsinspeksjon, UFO-/bortføringsregi, lagring, found footage, lommelykt og animasjon. De tre nye konkrete observasjonene gjelder lydovergang, modusbryter og inspeksjonsinput i allerede dekodet bytekode.
 
 Kontrollgrunnlag: lokal Steam-build 12751524, UE 4.27, 110 Blueprint-filer og ett hovedkart, 963 funksjonsoppføringer inkludert hendelser/wrappere. Parsing, alle bytekodestørrelser og byteidentisk rekonstruksjon i minnet består for 111/111. Funksjonsadresser i det nye tillegget er kontrollert mot posisjonsindeksene. Runtime er UNVERIFIED; native Shipping.exe er ikke dekompilert. Offentlig [kontrollsammendrag](Research/Greyhill/analysis-summary.json) har dekning og kontrollsummer. Komplett uttrekk er bevart lokalt utenfor repoet; ingen originalkode, komplette exports eller spillassets publiseres.
 
@@ -946,11 +948,11 @@ Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksi
 
 Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
 
-[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
+[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](../Docs/Evidence/UnrealDeliveries/SC02_AI_HANDOFF.md).
 
 ## 2026-10-28 kl. 14:10 CET: Greyhill-dørstudie med kode
 
-Tom ba om detaljert analyse med kode. [Detaljstudien](GREYHILL_DOOR_CODE_ANALYSIS.md) følger spillerinteraksjon, vanlig/brudd-basert alien-passering, flow-stack og latente grener, kollisjon, lyd og SaveGame/LoadGame. 77 instruksjonsreferanser er kontrollert; lesende hjelper verifiserte lagring og kontrollflyt. Konkrete funn omfatter globale fartsskrivinger fra dør, indekskobling mellom aktøroppslag, faktisk spillerposisjon som mål og checkpointmelding uten kontroll av SaveGameToSlot-returen. Mulige runtime-følger er uprøvde.
+Tom ba om detaljert analyse med kode. [Detaljstudien](../Docs/Research/Unreal/GREYHILL_DOOR_CODE_ANALYSIS.md) følger spillerinteraksjon, vanlig/brudd-basert alien-passering, flow-stack og latente grener, kollisjon, lyd og SaveGame/LoadGame. 77 instruksjonsreferanser er kontrollert; lesende hjelper verifiserte lagring og kontrollflyt. Konkrete funn omfatter globale fartsskrivinger fra dør, indekskobling mellom aktøroppslag, faktisk spillerposisjon som mål og checkpointmelding uten kontroll av SaveGameToSlot-returen. Mulige runtime-følger er uprøvde.
 
 [DoorStudy](Research/Greyhill/DoorStudy/README.md) har ny, selvstendig C++17-referansekode med eierskap, faser, epoch/generasjon i tickets og stabil checkpoint-policy. MSVC 14.44 /W4 /WX kompilering/linking PASS, exit0. 16 scenarioer skrevet, 0 kjørt. Windows nektet native start med «Ingen tilgang»; ingen omgåelse forsøkt. Unreal, geometri, navigasjon og disk-I/O er UNVERIFIED. Ingen endring i spillets Source, Config, Content eller installasjon; ingen ny Unreal-bygging eller spillmatrise.
 
@@ -958,7 +960,7 @@ Rekonstruert lesekode og bytekodebevis beholdes privat lokalt utenfor repoet; ba
 
 ## 2026-10-28 kl. 14:30 CET: cloud tank-UFO lagret som finaleønske
 
-Tom ønsker et episk, langsomt øyeblikk der en gigantisk UFO kommer frem bak voksende cloud tank-skyer i siste eller nest siste scenario. [Designnotatet](FINALE_CLOUD_TANK_UFO.md) lagrer oppskrift, ideer og mulig gjennomføring. Anbefaling: hovedavsløring i SC13 ved motorstopp C 8.15; SC12 får høyst et svakt varsel etter varsling/ruteplanlegging. THE EVENT 05:29:00 til 05:29:47 og 1947-bildet bevares. Dette er ønsket innhold for senere produksjon; effekt, spilltest og 60+ FPS er UNVERIFIED.
+Tom ønsker et episk, langsomt øyeblikk der en gigantisk UFO kommer frem bak voksende cloud tank-skyer i siste eller nest siste scenario. [Designnotatet](../Docs/Design/Proposals/FINALE_CLOUD_TANK_UFO.md) lagrer oppskrift, ideer og mulig gjennomføring. Anbefaling: hovedavsløring i SC13 ved motorstopp C 8.15; SC12 får høyst et svakt varsel etter varsling/ruteplanlegging. THE EVENT 05:29:00 til 05:29:47 og 1947-bildet bevares. Dette er ønsket innhold for senere produksjon; effekt, spilltest og 60+ FPS er UNVERIFIED.
 
 Oppdraget omfatter dokumentasjon. Ingen Source, Config, Content, genererte manusfiler, installasjon eller spillutgave er endret. Dokumentkontroll dekker lenker, bevart eksisterende tekst, scenario-/tidskontrakter og tydelig skille mellom ønsket innhold og levert runtime. Unreal-bygg og screenshots.sh kjøres ikke for denne dokumentendringen.
 
@@ -970,7 +972,7 @@ Tom ba om å legge bildene i repoet som konseptbilder. Tre originale PNG-filer p
 
 ## 2026-10-28: SC02-lysbue, pakket kandidat R4
 
-SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02 på endelig R4 består 65 kontroller og 15 disk-/Flow-restores uten lysbue. Hele matrisen består 110/110 i to deler (54 + 56) etter en guard-pause for Claudes jobb. Ingen bestått prøve gjentas. Fletting og installasjon gjenstår ved denne kildeinnsjekkingen.
+SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](../Docs/Evidence/UnrealDeliveries/FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02 på endelig R4 består 65 kontroller og 15 disk-/Flow-restores uten lysbue. Hele matrisen består 110/110 i to deler (54 + 56) etter en guard-pause for Claudes jobb. Ingen bestått prøve gjentas. Fletting og installasjon gjenstår ved denne kildeinnsjekkingen.
 
 ## 2026-10-28 kl.16:28 CET: SC02-lysbue klar for fletting
 
@@ -986,7 +988,7 @@ Fullmatrisen ble fullført som 54+56 etter guard-pause, uten gjentakelse av best
 
 ## 2026-10-28 kl.17:09 CET: individuell grafikkmeny
 
-Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](../Docs/Active/Guides/GRAPHICS_SETTINGS.md).
 
 ## 2026-10-28 kl. 17:29 CET: grafikkmeny PR197 kontrollert i pakket spill
 
@@ -1023,6 +1025,10 @@ Toms siste bestilling er ført som egne åpne punkter for lys/skygger, FX, lyd, 
 ## 2026-10-28 kl. 22:58 CET: Codex starter nattsekvensen
 
 HANDOFF og gjeldende origin/main er lest. Egen gren fra 469335b1 i ledig bygget Codex-worktree med generert Content. Tidligere genererte OpenOrder-logger er bevart i bevismappen før grenskiftet. Story/Evening og klokkekoordinator eies av root; SubstationArc, SkyVisitors og lesende testkartlegging er fordelt med adskilt filansvar. Bibliotekssøk ga generelle Unreal-referanser merket UNVERIFIED; prosjektets eksisterende implementasjon brukes. Målrettet native/pakket test planlegges, ingen ny fullmatrise per delsteg. Ingen installasjon eller offentlig release.
+
+## 2026-10-28 kl. 23:17 CET: dokumentasjon samlet og historikk klassifisert
+
+Docs/README er én inngang, med Active/STATUS, TODO og DECISIONS som eneste samlede hovedfiler. Design, Research, Evidence og Archive skiller plan, undersøkelse, bevis og erstattede innganger. 323 opprinnelige stier er flyttet og 1585 tidligere dokument-/payloadfiler er redegjort for i dokumentkartet; alle binære/tekstlige bevispayloads og de frosne kildepakkene er uendret. Tidligere lange README/memory/todo og arbeidsdelingshistorikk er bevart. Fire historiske Automation-skript har bare fått riktige arkivstier; Unity- og Unreal-spillkode er urørt. Lenkekontroll etter flytting har null nye feil; 34 opprinnelige historiske mangler er registrert separat. Ingen motorjobb, spilltest, installasjon eller release inngår. Aktive nattsekvens-/SC03-arbeidskopier er ikke endret.
 
 ## 2026-10-28 kl. 23:01 CET: Arbeid ved arrayet 19:00 til 22:50 (S47Observing)
 

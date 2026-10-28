@@ -1,6 +1,6 @@
 # Manuspakke for innkjøring, Dale og det hemmelige kontoret
 
-Runtime for trinn 1 og 2 ligger nå i `S47Evening`/`S47EveningPack`. Se [runtime-rapport og tester](../../EVENING_RUNTIME.md). Kontoret og T01/T02 er siden levert; se [T02-rapporten](../../T02_RUNTIME.md). De 109 eksisterende opptakene er produsert. Original bevegelig felt-VHS står fortsatt åpen.
+Runtime for trinn 1 og 2 ligger nå i `S47Evening`/`S47EveningPack`. Se [runtime-rapport og tester](../../../Docs/Evidence/UnrealDeliveries/EVENING_RUNTIME.md). Kontoret og T01/T02 er siden levert; se [T02-rapporten](../../../Docs/Evidence/UnrealDeliveries/T02_RUNTIME.md). De 109 eksisterende opptakene er produsert. Original bevegelig felt-VHS står fortsatt åpen.
 
 Ferdig skrevet engelsk spilltekst for den nye Unreal-fortellingen: vanlig innkjøring gjennom Caliche, valgfritt matstopp, telefonoverlevering 18:00, Dales senere samtaler, kontornøkkel, private dokumenter og et bevegelig VHS-feltopptak. Trafostasjonens to besøk og aktive sammenligninger er også skrevet.
 
@@ -14,7 +14,7 @@ Ferdig skrevet engelsk spilltekst for den nye Unreal-fortellingen: vanlig innkj�
 - [Undertekstgrunnlag](generated/subtitles.json): dialog og stille tekster. Dialogtiming er målt fra opptakene; VHS-timing er planlagt.
 - [Integrasjon](INTEGRATION.md): triggerpunkter, kapittelgrenser, tilstand, lyd/film og konkret produksjonsliste.
 - [Kontrollscenarier](SCENARIOS.md): ruter som må fungere og hva som kan kontrolleres før runtime.
-- [Overordnet plan](../../ANOMALY_PLAN.md): historien, byen, trafostasjonen og gjennomføringsrekkefølgen.
+- [Overordnet plan](../../../Docs/Archive/Superseded/Unreal/ANOMALY_PLAN.md): historien, byen, trafostasjonen og gjennomføringsrekkefølgen.
 
 JSON-filene i `modules/` og `pack.json` er sannhetskilden. Lesemanus/CSV/undertekster er avledede filer og redigeres ikke for hånd.
 

@@ -1,6 +1,6 @@
 # Cloud tank-skyer over SARO og Caliche
 
-Tre AI-genererte konseptbilder, laget 28. oktober 2026 med innebygd image_gen etter Toms bestilling. Bildene er visuell regi for [finaleideen og gjennomføringsoppskriften](../../FINALE_CLOUD_TANK_UFO.md). De er ikke bilder fra spillet, en bekreftelse på implementert effekt eller ytelsesbevis.
+Tre AI-genererte konseptbilder, laget 28. oktober 2026 med innebygd image_gen etter Toms bestilling. Bildene er visuell regi for [finaleideen og gjennomføringsoppskriften](../../../Docs/Design/Proposals/FINALE_CLOUD_TANK_UFO.md). De er ikke bilder fra spillet, en bekreftelse på implementert effekt eller ytelsesbevis.
 
 ## Gjeldende retning: skyene velter fra hver sin side
 

@@ -78,7 +78,7 @@ Denne kilderevisjonen alene hevder ingen native import, pakket aksept eller piks
 
 ## Retting 28. oktober 2026 (Claude på Kubuntu)
 
-Etter [revisjonen av historien](../../HISTORIE_SC02_SC13_REVISJON.md) så modellen ut som en utstillingsdukke med et klassisk «grey»-hode. Rettet i `build_scene.py`, bygget i Blender 5.2.2 på Kubuntu:
+Etter [revisjonen av historien](../../../Docs/Design/Story/HISTORIE_SC02_SC13_REVISJON.md) så modellen ut som en utstillingsdukke med et klassisk «grey»-hode. Rettet i `build_scene.py`, bygget i Blender 5.2.2 på Kubuntu:
 
 - Foroverbøyd rygg: overkroppen skyves fram etter høyden (`hunch`), 12 cm ved nakken og 7,7 cm ved skuldrene. Koden fester hodet og armene tilsvarende lenger fram, og hodet løfter seg mot lenet for å se framover.
 - Knoklete bekken i stedet for glatt dukkehofte: hoftekam på sidene, lårbeinshoder, lyskelinjer, kjønnsbeinskant, smalere bekken og innsunket mage.
