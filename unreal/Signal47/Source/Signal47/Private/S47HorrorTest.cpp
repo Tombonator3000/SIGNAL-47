@@ -40,6 +40,8 @@ struct FS47HorrorTest::FState
 	double LineAt = 0, SC02Clock = 0, SC02Seen = 0, SC02RunMetres = 0;
 	bool bCaptured = false, bRunPath = false, bSC02Escape = false, bSC02EscapeRouteDone = false;
 	int32 ArcBursts = 0;
+	bool bArcCloseup = false;
+	float ArcOriginalFov = 0;
 	FS47Substation::FArcSnapshot PausedArc;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
 	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector;
@@ -54,6 +56,7 @@ FS47HorrorTest::FS47HorrorTest(US47Main* InM) : State(MakeUnique<FState>()), M(I
 {
 	State->bEnabled = FParse::Value(FCommandLine::Get(), TEXT("S47HorrorContract="), State->Mode);
 	State->bMissHand = FParse::Param(FCommandLine::Get(), TEXT("S47HorrorMissHand"));
+	State->bArcCloseup = State->Mode == TEXT("Arc") && FParse::Param(FCommandLine::Get(), TEXT("S47ArcCloseup"));
 }
 FS47HorrorTest::~FS47HorrorTest() = default;
 
@@ -61,7 +64,11 @@ void FS47HorrorTest::Fail(const FString& Why)
 {
 	if (State->bDone) return;
 	State->bDone = true;
-	if (M && M->Player) { M->Player->TestMove.Reset(); M->Player->bTestRun = false; }
+	if (M && M->Player)
+	{
+		M->Player->TestMove.Reset(); M->Player->bTestRun = false;
+		if (State->ArcOriginalFov > 0) { M->Player->Fov = State->ArcOriginalFov; State->ArcOriginalFov = 0; }
+	}
 	UE_LOG(LogS47HorrorTest, Error, TEXT("S47: Horror contract FAIL stage %d at %.2f s: %s"), State->Stage, State->Elapsed, *Why);
 	if (!State->Root.IsEmpty())
 	{
@@ -897,10 +904,16 @@ void FS47HorrorTest::Step(double Dt)
 			S47J::Set(R,TEXT("niagaraActive"),A.bNiagaraActive);S47J::Set(R,TEXT("niagaraPaused"),A.bNiagaraPaused);
 			S47J::Set(R,TEXT("meshVisible"),A.bMeshVisible);S47J::Set(R,TEXT("flashLumens"),A.FlashLumens);
 			S47J::Set(R,TEXT("materialIntensity"),A.MaterialIntensity);S47J::Set(R,TEXT("lampLumens"),A.LampLumens);
+			S47J::Set(R,TEXT("diagnosticCameraZoom"),T.bArcCloseup);S47J::Set(R,TEXT("cameraFov"),double(M->Player->Fov));
 			T.Evidence.Add(MakeShared<FJsonValueObject>(R));
 		};
 		if(T.Stage==1080)
 		{
+			if(T.bArcCloseup)
+			{
+				T.ArcOriginalFov=M->Player->Fov;M->Player->Fov=30.f;
+				UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Arc diagnostic zoom: vertical FOV 30, unchanged player position, UI omitted from live screenshot; not the normal player view"));
+			}
 			Record(TEXT("appearance"));
 			if(Off)
 			{
@@ -916,7 +929,12 @@ void FS47HorrorTest::Step(double Dt)
 				TEXT("actual marked lamp follows the arc dip without changing T01 state")))return;
 			T.ArcBursts=A.Bursts;Aim(S47Three::ToThree(A.Origin)-FVector(0,.35,0));Stage(1081,.15);return;
 		}
-		if(T.Stage==1081){Shot(TEXT("sc02-arc-live"));Stage(1082,0);return;}
+		if(T.Stage==1081)
+		{
+			if(T.bArcCloseup)FScreenshotRequest::RequestScreenshot(T.Root/TEXT("sc02-arc-diagnostic-zoom.png"),false,false);
+			else Shot(TEXT("sc02-arc-live"));
+			Stage(1082,0);return;
+		}
 		if(T.Stage==1082)
 		{
 			M->UI->Open(S47Kit::Shell(M->UI,TEXT("ISOLATED ARC PAUSE CONTROL"),S47Kit::Text(TEXT("The arc and particles must remain still while this panel is open."))));
@@ -945,6 +963,7 @@ void FS47HorrorTest::Step(double Dt)
 		}
 		if(T.Stage==1085)
 		{
+			if(T.ArcOriginalFov>0){M->Player->Fov=T.ArcOriginalFov;T.ArcOriginalFov=0;}
 			Record(TEXT("finished"));
 			if(Off)Shot(TEXT("sc02-arc-disabled"));
 			if(!Check(A.Bursts==T.ArcBursts && !A.bNiagaraActive && !A.bMeshVisible && A.FlashLumens==0 && A.MaterialIntensity==0 && FMath::IsNearlyEqual(A.LampLumens,95.f,.02f),
@@ -962,6 +981,8 @@ void FS47HorrorTest::Step(double Dt)
 			auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("Arc"));
 			S47J::Set(Result,TEXT("sourceSnapshot"),T.RestoreSource);S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);
 			S47J::Set(Result,TEXT("quality"),M->Flow->Quality);S47J::Set(Result,TEXT("calmFlash"),M->Flow->bCalmFlash);S47J::Set(Result,TEXT("disabledFixture"),Off);
+			S47J::Set(Result,TEXT("diagnosticCameraZoom"),T.bArcCloseup);
+			if(T.bArcCloseup)S47J::Set(Result,TEXT("imageNote"),TEXT("Diagnostic 30-degree vertical FOV at the unchanged player position with UI omitted; not the normal player view. Original FOV restored before Continue."));
 			Result->SetArrayField(TEXT("evidence"),T.Evidence);
 			S47J::Set(Result,TEXT("limits"),TEXT("Focused runtime VFX contract from the named real T01 snapshot. Actual SC02 appearance, component readbacks, document pause and isolated disk/Flow Continue run here. Prior SC01/T01/travel, human input, listening, particle-by-particle visual quality and whole-game performance are not asserted."));
 			FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));

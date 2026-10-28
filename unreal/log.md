@@ -967,3 +967,8 @@ Oppdraget omfatter dokumentasjon. Ingen Source, Config, Content, genererte manus
 Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.
 
 Tom ba om å legge bildene i repoet som konseptbilder. Tre originale PNG-filer på 1672 x 941 er lastet opp byteidentisk; lokale Git-blob-ID-er samsvarer med opplastede objekter. Galleri, prompter og manifest følger med, og finaleønsket/README/arbeidsminne/oppgavelister peker til dem. Filmreferansene er ikke lagt ved. Kontroll: filstørrelse, PNG-dimensjoner, Git-blob-ID, dokumentlenker og tydelig konseptstatus. Ingen Source, Config, Content, genererte manusfiler eller spillinstallasjon er endret; bygg og spillmatrise er ikke kjørt for denne konseptleveransen.
+
+## 2026-10-28: SC02-lysbue, pakket kandidat R4
+
+SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02/fullmatrise/fletting/installasjon gjenstår ved denne kildeinnsjekkingen.
+

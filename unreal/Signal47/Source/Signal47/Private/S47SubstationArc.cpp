@@ -26,9 +26,9 @@ namespace
  const TCHAR* ArcSystem = TEXT("/Game/Signal47/FX/NS_S47_ArcSparks.NS_S47_ArcSparks");
  const double InsulatorX[3] = {-1.04, 0, 1.04}; // Tools/substation/geometry.py: bus supports at (x, 3.25, 7.69)
  constexpr double InsulatorY = 3.25, InsulatorZ = 7.69, GravelTop = -.08;
- constexpr float ArcPeakLumens = 3000.f, CalmPeak = .45f;
+ constexpr float ArcPeakLumens = 1800.f, CalmPeak = .45f;
  constexpr int32 MaxSparks = 40; // Tools/fx/fx_contract.json maxSparks
- const FLinearColor ArcColor(.72f, .84f, 1.f), SparkColor(1.f, .74f, .42f, 1.f);
+ const FLinearColor ArcColor(.36f, .64f, 1.f), SparkColor(1.f, .74f, .42f, 1.f);
  FVector Insulator(int32 I) { return FS47Substation::Site(FVector(InsulatorX[FMath::Clamp(I, 0, 2)], InsulatorY, InsulatorZ)); }
  // Gravel top under the portal beam, relative to the insulator: the sparks' analytic bounce plane (cm, UE Z).
  double GroundZ() { return (FS47Substation::Site(FVector(0, InsulatorY, GravelTop)).Y - Insulator(1).Y) * 100.0; }
@@ -126,6 +126,7 @@ void FS47Substation::InstallArc()
  Mesh->SetCastShadow(false); Mesh->SetVisibleInRayTracing(false); Mesh->bAffectDistanceFieldLighting = false; Mesh->bAffectDynamicIndirectLighting = false;
  Mesh->SetReceivesDecals(false); Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); Mesh->SetCanEverAffectNavigation(false);
  Mesh->SetVisibility(false); Mesh->RegisterComponent(); Mesh->SetWorldTransform(FTransform(FQuat::Identity, At)); ArcMesh = Mesh;
+ S47Fx::Precache(Mesh);
  UPointLightComponent* L = NewObject<UPointLightComponent>(M->Web.Get(), TEXT("SubstationArcLight"));
  L->SetMobility(EComponentMobility::Movable); L->SetupAttachment(Parent);
  L->SetIntensityUnits(ELightUnits::Lumens); L->SetIntensity(0); L->SetLightColor(ArcColor); L->SetAttenuationRadius(1800); L->SetSourceRadius(8);
@@ -171,14 +172,16 @@ void FS47Substation::ShapeArc(int32 Shape)
  for (int32 I = 0; I <= Count; ++I)
  {
   const double T = double(I) / Count, S = FMath::Sin(PI * T);
-  Points.Add(FVector(I == 0 || I == Count ? 0 : R.FRandRange(-2.2f, 2.2f) * S,
-   -20 * S + (I == 0 || I == Count ? 0 : R.FRandRange(-1.8f, 1.8f) * S), -75 * T));
-  if (I) Segment(Points[I - 1], Points[I], .35);
+  // A lateral bow stays readable beside the porcelain from the service track;
+  // a purely forward bow projected onto the brightly lit insulator in the live view.
+  Points.Add(FVector(-32 * S + (I == 0 || I == Count ? 0 : R.FRandRange(-2.2f, 2.2f) * S),
+   -25 * S + (I == 0 || I == Count ? 0 : R.FRandRange(-1.8f, 1.8f) * S), -75 * T));
+  if (I) Segment(Points[I - 1], Points[I], .6);
  }
  for (int32 I : {4, 8})
  {
   const FVector A = Points[I], B = A + FVector(I == 4 ? 9 : -10, -6, -7), End = B + FVector(I == 4 ? 3 : -4, 2, -9);
-  Segment(A, B, .18); Segment(B, End, .10);
+  Segment(A, B, .22); Segment(B, End, .15);
  }
 }
 
@@ -190,7 +193,7 @@ void FS47Substation::FireArc(int32 At, const TCHAR* Why)
  const bool bLow = M && M->Flow && M->Flow->Quality == TEXT("low");
  const FVector P = S47Three::ToUE(Insulator(At));
  ArcSparkCount = ArcSparks(bLow, bArcCalm);
- ArcLight->SetWorldLocation(P + FVector(0, -20, -35));
+ ArcLight->SetWorldLocation(P + FVector(-32, -40, -35));
  ArcMesh->SetWorldTransform(FTransform(FQuat::Identity, P)); ArcShape = -1; ShapeArc(0);
  UNiagaraComponent* C = Sparks.Get();
  C->SetWorldLocation(P); C->SetWorldRotation(FRotator::ZeroRotator); C->SetWorldScale3D(FVector::OneVector);
