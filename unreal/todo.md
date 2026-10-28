@@ -1,3 +1,17 @@
+## Toms feilrapport med bildebevis, 28. oktober 2026
+
+Alle punktene er åpne med mindre en avklaring er eksplisitt besvart i [detaljert arbeidsliste](PLAYTEST_TODO_2026-10-28.md). [Seks originalbilder og krasjbevis](Evidence/Playtest-2026-10-28/README.md) er bevart med kontrollsummer.
+
+1. [ ] Caliche: integrer oppdatert sheriff, kino og feed helt frem til installert bygg; oppgrader vanlige hus og rett synlighet/plassering på byskilt ved innkjøringen. TB2-kilder på main betyr foreløpig ikke TB2 i spillet.
+2. [ ] Diner-krasj: undersøk begge Vulkan-allokeringssporene og mulig ressurskonkurranse uten å anta rotårsak.
+3. [ ] Trafikksignal: mer detaljert oppheng og lampehus, svak vindbevegelse, bevar nattlyset.
+4. [ ] Farmen i bilde E01: identifiser stedet og avklar vei, adgang, interaksjon og eventuell historiebruk.
+5. [ ] Motor Court: rett terreng/gangnivå, svevende potter/stoler, usynlige vegger, doble mottakslamper, TV-film, blafrende bassengsti, nedgravd bassengkant, uønsket klump, telefonretning og overlappende veggdeler.
+6. [ ] SARO: behold museposisjon ved ny tekst, flytt panelet ned og rett forklaring/fremdrift ved øst-/utgangsdør.
+7. [ ] Trafo: erstatt svevende lavdetaljdeler og integrer vei, rampe og fundamenter naturlig i bakken.
+8. [ ] Følg redusert testregime og bruk avgrensede subagenter aktivt sammen med Claude. Ingen motorprøve for denne dokumentoppdateringen.
+9. [ ] Vurder YouTube-/ShaderShift-referansene mot eksisterende filmprofiler for 1986 New Mexico gjennom dag/natt, med kompatibilitet avklart før bruk.
+
 ## Grafikkinnstillinger, installert 28. oktober 2026
 
 Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Installert skrive-/lesekontroll består (47 + 15), og payload samt Saved er kontrollert etter oppstart. Kanonisk prune er fullført; gjeldende bygg og to eldre beholdes, med eksplisitt vern av andre aktive SC-kandidater. Se [grafikkrapport](GRAPHICS_SETTINGS.md).

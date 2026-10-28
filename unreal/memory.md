@@ -1,3 +1,7 @@
+## Nye åpne spillerfunn, 28. oktober 2026
+
+Tom har meldt ni nye punkter om Caliche-modeller, diner-krasj, trafikksignal, farmadkomst, motellets terreng/kollisjon/TV/basseng, SARO-dialog/dørhint, trafodetaljer, testomfang og dag-/nattfarger. Se [arbeidslisten](PLAYTEST_TODO_2026-10-28.md) og [bilde-/krasjbevis](Evidence/Playtest-2026-10-28/README.md). Tidligere leveringsstatus betyr ikke at disse nye feilene er løst. Ingen spillkode eller installasjon er endret i registreringen. Test etter risiko og bruk subagenter med tydelig ansvar; ikke fullmatrise per liten endring.
+
 ## Grafikkinnstillinger, installert 28. oktober 2026
 
 Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Installert skrive-/lesekontroll består (47 + 15), og payload samt Saved er kontrollert etter oppstart. Kanonisk prune er fullført; gjeldende bygg og to eldre beholdes, med eksplisitt vern av andre aktive SC-kandidater. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
