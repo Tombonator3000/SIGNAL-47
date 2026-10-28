@@ -5,6 +5,7 @@
 class US47Main;
 class FS47HorrorVisual;
 class FS47HorrorThreat;
+class FS47HorrorSC03;
 class FS47RecordedDialogue;
 struct FS47Task;
 struct FS47AlbumShot;
@@ -13,8 +14,9 @@ struct FS47AlbumShot;
 class FS47Horror
 {
 public:
- // Revision 1 cases end in legacyContinuation after SC01. Revision 2 continues into SC02.
- static constexpr int32 InstalledRevision = 2;
+ // Revision 1 cases end in legacyContinuation after SC01. Revision 2 continues into SC02,
+ // revision 3 also into SC03 after SC02's escape.
+ static constexpr int32 InstalledRevision = 3;
  explicit FS47Horror(US47Main* InM);
  ~FS47Horror();
  void Begin(const S47J::FObj& Saved, bool bNewCase);
@@ -48,6 +50,8 @@ public:
  FS47HorrorPack Pack;
  TUniquePtr<FS47HorrorVisual> Visual;
  TUniquePtr<FS47HorrorThreat> Threat;
+ TUniquePtr<FS47HorrorSC03> SC03;
+ bool SC03Live() const;
 private:
  enum class ESC02 : uint8 { Off, T01, Encounter, Escaped, Unwitnessed, Legacy };
  struct FSC02Save { ESC02 Phase = ESC02::Off; bool bAttempt = false, bRetry = false, bSeen = false; FString EscapeStamp, Checkpoint; };
@@ -55,6 +59,12 @@ private:
  bool bH02Attempt = false, bAttemptPending = false, bAttemptShowing = false, bRetry = false, bRetryShowing = false;
  bool bThreatSeen = false, bCheckpointPending = false;
  FString EscapeStamp;
+ // The phone transaction in progress: its scene and any scenes the same call still owes.
+ FString CallScene = TEXT("SC01_FIRST_REPORT");
+ TArray<FString> CallQueue;
+ int32 SC03Seen = -1;
+ void StartCall(const TArray<FString>& Scenes);
+ void StepSC03(double Dt);
  US47Main* M = nullptr;
  TSharedPtr<FS47RecordedDialogue> Voice;
  bool bEnabled = false, bEast = false, bCorridor = false, bBaseline = false;

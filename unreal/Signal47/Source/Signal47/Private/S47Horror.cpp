@@ -1,6 +1,7 @@
 #include "S47Horror.h"
 #include "S47HorrorVisual.h"
 #include "S47HorrorThreat.h"
+#include "S47HorrorSC03.h"
 #include "S47Main.h"
 #include "S47Evening.h"
 #include "S47Story.h"
@@ -54,6 +55,7 @@ FS47Horror::FS47Horror(US47Main* InM) : M(InM)
  if (!Pack.Initialize(Error)) UE_LOG(LogTemp,Error,TEXT("S47: Horror pack initialization failed: %s"),*Error);
  Visual=MakeUnique<FS47HorrorVisual>(M);
  Threat=MakeUnique<FS47HorrorThreat>(M);
+ SC03=MakeUnique<FS47HorrorSC03>(M,this);
  Voice=MakeShared<FS47RecordedDialogue>(M->Audio,TEXT("horror"),
   [](const FS47DialogueInput& I,FS47RadioVoice& Bank)->TOptional<TArray<FS47RadioClip>>
   { return I.Lines.Num()==1 ? Bank.Resolve(I.Lines[0].Text,0,I.Voice) : TOptional<TArray<FS47RadioClip>>(); },
@@ -67,6 +69,8 @@ void FS47Horror::Stop()
  if(Voice) Voice->Stop();
  if(Visual) Visual->Stop();
  if(Threat) Threat->Stop();
+ if(SC03) SC03->Begin(nullptr,false);
+ CallScene=TEXT("SC01_FIRST_REPORT");CallQueue.Reset();
 }
 void FS47Horror::Begin(const S47J::FObj& Saved,bool bNewCase)
 {
@@ -92,8 +96,11 @@ void FS47Horror::Begin(const S47J::FObj& Saved,bool bNewCase)
   {bEnabled=false;Pack.Reset();Visual->Stop();UE_LOG(LogTemp,Warning,TEXT("S47: exhausted earlier SC01 roll without reference; existing case progression retained without new gates"));return;}
   bReferenceHeard=S47J::Bool(Saved,TEXT("daleReferenceHeard"));ReportStamp=S47J::Str(Saved,TEXT("reportStamp"));
   bReport=S47J::Bool(Saved,TEXT("reportAcknowledged")) && Visual->HandSeen() && !ReportStamp.IsEmpty();
-  bWorldCall=S47J::Bool(Saved,TEXT("callActive")) && !bReport && Visual->HandSeen();
-  CallCursor=FMath::Clamp(S47J::Int(Saved,TEXT("callCursor")),0,1);
+  bWorldCall=S47J::Bool(Saved,TEXT("callActive")) && (S47J::Str(Saved,TEXT("callScene")).StartsWith(TEXT("SC03_")) || (!bReport && Visual->HandSeen()));
+  CallScene=S47J::Str(Saved,TEXT("callScene"));if(CallScene.IsEmpty() || !Pack.FindScene(CallScene))CallScene=TEXT("SC01_FIRST_REPORT");
+  CallQueue.Reset();if(const auto* Q=Saved->Values.Find(TEXT("callQueue"));Q && Q->IsValid() && (*Q)->Type==EJson::Array)for(const auto& V:(*Q)->AsArray())if(V.IsValid() && V->Type==EJson::String && Pack.FindScene(V->AsString()))CallQueue.Add(V->AsString());
+  const auto* CallLines=Pack.FindScene(CallScene);
+  CallCursor=FMath::Clamp(S47J::Int(Saved,TEXT("callCursor")),0,CallLines?FMath::Max(0,CallLines->Lines.Num()-1):1);
   // Physical facts must be restored before the pack validates a pending result.
   Context();FString Error;
   if(!Pack.Load(S47J::Obj(Saved,TEXT("pack")),Error))
@@ -102,6 +109,8 @@ void FS47Horror::Begin(const S47J::FObj& Saved,bool bNewCase)
  // Completion reads restored facts only; Context/Refile below do not depend on it.
  bComplete=S47J::Bool(Saved,TEXT("sc01Complete")) && NormalComplete() && Visual->MarksChecked() && (!Visual->HandSeen() || Pack.Flag(TEXT("hr_sc01_window_check_presented")));
  BeginSC02(Saved);
+ SC03->Begin(S47J::Obj(Saved,TEXT("sc03")),Revision>=3 && SC02==ESC02::Escaped);SC03Seen=SC03->Changes();
+ if(bWorldCall && CallScene.StartsWith(TEXT("SC03_")) && !SC03->Live()){bWorldCall=false;CallQueue.Reset();CallScene=TEXT("SC01_FIRST_REPORT");}
  Context();Refile();
  bResumeRequested=bWorldCall || Pack.CurrentScene()!=nullptr;
  if(bComplete)Visual->ReleaseLighting();
@@ -113,7 +122,7 @@ bool FS47Horror::NormalComplete() const
   Visual && Visual->LampChangeChecked() && Visual->ScreenChecked();
 }
 // The SC02 meeting holds the night's older events (abduction, truck taking) while the player is at the site.
-bool FS47Horror::Busy() const {return bEnabled && Visual && (Visual->WindowPhase()==1 || bWorldCall || Pack.CurrentScene() || (SC02==ESC02::Encounter && AtSite()));}
+bool FS47Horror::Busy() const {return bEnabled && Visual && (Visual->WindowPhase()==1 || bWorldCall || Pack.CurrentScene() || (SC02==ESC02::Encounter && AtSite()) || (SC03 && SC03->Busy()));}
 bool FS47Horror::DoorsSecured() const
 {
  if(!M || !M->Web)return false;
@@ -143,6 +152,16 @@ void FS47Horror::Context()
   Pack.SetExternal(TEXT("ctx_hr_sc02_escape_complete"),SC02==ESC02::Escaped);
   Pack.SetExternal(TEXT("ctx_hr_sc02_local_retry"),bRetry && SC02==ESC02::Encounter);
  }
+ if(Revision>=3 && SC03 && (SC03->Live() || SC03->Complete()))
+ {
+  // World facts from FS47HorrorSC03 and completed calls only.
+  const auto& F=SC03->Facts();
+  Pack.SetExternal(TEXT("ctx_hr_sc03_dispatch_readback"),F.bDispatch);Pack.SetExternal(TEXT("ctx_hr_sc03_ortiz_assigned"),F.bAssigned);
+  Pack.SetExternal(TEXT("ctx_hr_sc03_ortiz_identified"),F.bIdentified);Pack.SetExternal(TEXT("ctx_hr_sc03_lift_observed"),F.bObserved);
+  Pack.SetExternal(TEXT("ctx_hr_sc03_safe_retreat"),F.bRetreat);Pack.SetExternal(TEXT("ctx_hr_sc03_traces_checked"),SC03->TracesChecked());
+  Pack.SetExternal(TEXT("ctx_hr_sc03_missing_readback"),F.bMissing);Pack.SetExternal(TEXT("ctx_hr_sc03_local_order_suspended"),F.bLocalOrder);
+  Pack.SetExternal(TEXT("ctx_hr_sc03_deputy_at_stop"),F.bDeputyHere);
+ }
  if(const auto* S=Pack.CurrentScene())
  {
   const auto* R=Pack.FindRegistration(S->Id);
@@ -151,7 +170,7 @@ void FS47Horror::Context()
   for(const auto& K:S->Requires.None)Valid=Valid && !Pack.Flag(K);
   // Flow restores the pose after Horror::Begin. A pending SC02 scene is judged once the
   // case has started; SC01 scenes keep today's immediate check.
-  const bool Restoring=Revision>=2 && R && R->ScenarioIds.Contains(TEXT("SC02")) && M->Flow && M->Flow->bStarting;
+  const bool Restoring=Revision>=2 && R && (R->ScenarioIds.Contains(TEXT("SC02")) || R->ScenarioIds.Contains(TEXT("SC03"))) && M->Flow && M->Flow->bStarting;
   if(!Valid && !Restoring){Pack.Cancel();bDialogueOpen=false;Spoken.Empty();if(Voice)Voice->Stop();}
  }
 }
@@ -160,12 +179,15 @@ void FS47Horror::Refile()
  if(!bEnabled || !M || !M->Story) return;
  for(const FString& Id:Pack.Documents())
  {
-  if(Id!=TEXT("HR_INITIAL_REPORT") && Id!=TEXT("HR_TRAFO_ENCOUNTER"))continue; // Later SC owners release their own papers.
+  const bool SC03Doc=Id==TEXT("HR_DISPATCH_RECEIPT") || Id==TEXT("HR_HELPER_TRACE_NOTE") || Id==TEXT("HR_MISSING_RECEIPT") || Id==TEXT("HR_LOCAL_HOLD_RECEIPT");
+  if(Id!=TEXT("HR_INITIAL_REPORT") && Id!=TEXT("HR_TRAFO_ENCOUNTER") && !SC03Doc)continue; // Later SC owners release their own papers.
+  if(SC03Doc && (!SC03 || Revision<3))continue;
   if(Id==TEXT("HR_INITIAL_REPORT") && !bReport) continue;
   if(Id==TEXT("HR_TRAFO_ENCOUNTER") && (SC02!=ESC02::Escaped || EscapeStamp.IsEmpty())) continue; // only an actual escape
   if(M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D){return D.Id==Id;})) continue;
   const auto* D=Pack.FindDocument(Id);if(!D)continue;
   FS47Doc Doc;Doc.Id=Id;Doc.Title=D->Title;Doc.Kind=D->Kind;Doc.Stamp=Id==TEXT("HR_INITIAL_REPORT")?ReportStamp:Id==TEXT("HR_TRAFO_ENCOUNTER")?EscapeStamp:D->Stamp;
+  if(SC03Doc){const auto& F=SC03->Facts();Doc.Stamp=Id==TEXT("HR_DISPATCH_RECEIPT")?F.DispatchStamp:Id==TEXT("HR_HELPER_TRACE_NOTE")?F.TakenStamp:Id==TEXT("HR_MISSING_RECEIPT")?F.MissingStamp:F.OrderStamp;}
   Doc.Page=FString::Join(D->Body,TEXT("\n\n"));Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);
  }
 }
@@ -233,6 +255,17 @@ bool FS47Horror::Use(const FString& Id)
  // H02: a real use of the marked lamp before a completed result is judged after Substation answers it.
  if(Id==TEXT("substation:lamp") && SC02==ESC02::T01 && AtServiceFront() && M->Substation && M->Substation->HasJournal() && !M->Substation->HasNormalResult()) bAttemptPending=true;
  if(Visual->Use(Id)) return true;
+ if(Revision>=3 && SC03 && SC03->Live())
+ {
+  if(Id==TEXT("town:payphone")){if(bWorldCall || Pack.CurrentScene()){ShowDialogue();return true;}const auto Calls=SC03->CallScenes();if(Calls.IsEmpty())return false;StartCall(Calls);return true;}
+  if(Id.StartsWith(TEXT("horror:")) && SC03->Use(Id))
+  {
+   Changed();
+   if(Id==TEXT("horror:ortiz"))Trigger(TEXT("SC03_ORTIZ_IDENTIFY"));
+   else if(Id==TEXT("horror:deputy"))Trigger(TEXT("SC03_RECEIVER_QUESTION"));
+   return true;
+  }
+ }
  if(Id==TEXT("phone") && M->Story->Phase()==ES47Phase::Shift && (!bComplete || !bReport)) {Telephone();return true;}
  if(Id==TEXT("logbook") && M->Story->Phase()==ES47Phase::Shift && !bComplete)
  {
@@ -260,7 +293,7 @@ void FS47Horror::ObserveVoice()
 void FS47Horror::ShowDialogue()
 {
  if(bDialogueOpen && M->ModalOpen()) return;
- const FS47EveningScene* S=bWorldCall?Pack.FindScene(TEXT("SC01_FIRST_REPORT")):Pack.CurrentScene();
+ const FS47EveningScene* S=bWorldCall?Pack.FindScene(CallScene):Pack.CurrentScene();
  const FS47EveningLine* L=bWorldCall?(S && S->Lines.IsValidIndex(CallCursor)?&S->Lines[CallCursor]:nullptr):Pack.CurrentLine();
  if(!S) return;
  if(!L && S->Choices.IsEmpty()){if(bWorldCall)FinishCall();else Pack.Advance();Changed();return;}
@@ -292,7 +325,7 @@ void FS47Horror::AdvanceDialogue()
 {
  ObserveVoice();if(Voice)Voice->Stop();M->UI->Close(true);bDialogueOpen=false;Spoken.Empty();
  if(bWorldCall)
- {++CallCursor;const auto* S=Pack.FindScene(TEXT("SC01_FIRST_REPORT"));if(!S || CallCursor>=S->Lines.Num())FinishCall();}
+ {++CallCursor;const auto* S=Pack.FindScene(CallScene);if(!S || CallCursor>=S->Lines.Num())FinishCall();}
  else Pack.Advance();
  Changed();if(bWorldCall || Pack.CurrentScene())ShowDialogue();
 }
@@ -300,6 +333,16 @@ void FS47Horror::FinishCall()
 {
  // The actual phone transaction presented these exact response lines first.
  // Only a completed contact may publish its readback and retained result document.
+ if(CallScene!=TEXT("SC01_FIRST_REPORT"))
+ {
+  // SC03: the completed call is the fact; then the presented scene is registered once.
+  bWorldCall=false;SC03->CallFinished(CallScene);Context();
+  if(const auto* S=Pack.FindScene(CallScene); S && Pack.SetPhase(S->Phase) && Pack.Start(S->Id))
+   for(int32 I=0;I<S->Lines.Num();++I) Pack.Advance();
+  if(!CallQueue.IsEmpty()){CallScene=CallQueue[0];CallQueue.RemoveAt(0);CallCursor=0;bWorldCall=true;}
+  else CallScene=TEXT("SC01_FIRST_REPORT");
+  Changed();return;
+ }
  bWorldCall=false;bReport=Visual->HandSeen();ReportStamp=M->Story->ClockText(true);Context();
  const auto* S=Pack.FindScene(TEXT("SC01_FIRST_REPORT"));
  if(bReport && S && Pack.SetPhase(S->Phase) && Pack.Start(S->Id))
@@ -316,22 +359,25 @@ void FS47Horror::Step(double Dt)
  if(!bComplete && NormalComplete() && DoorsSecured() && (!Visual->HandSeen() || Pack.Flag(TEXT("hr_sc01_window_check_presented"))) && Visual->MarksChecked())
  {bComplete=true;Visual->ReleaseLighting();M->Story->Note(Visual->HandSeen()?TEXT("The evening reference and the available exits have been checked. The marks are on the outside of the glass."):TEXT("The evening reference and the exits have been checked. Marks remain on the outside of the glass; their cause was not seen."));Changed();}
  StepSC02(Dt);
+ StepSC03(Dt);
  if(!M->ModalOpen() && !M->World->bBusy && !bDialogueOpen)
  {
   if(bWorldCall || Pack.CurrentScene()){if(bResumeRequested)ShowDialogue();}
   else if(!bComplete && !Pack.Flag(TEXT("hr_h01_brief_presented")) && M->World->Area==TEXT("saro")) Trigger(TEXT("H01_BRIEF"));
   else if(!bComplete && NormalComplete() && !Pack.Flag(TEXT("hr_h01_recorded"))) Trigger(TEXT("H01_CHECK"));
   else if(!bComplete && Visual->HandSeen() && Visual->MarksChecked() && !Pack.Flag(TEXT("hr_sc01_window_check_presented"))) Trigger(TEXT("SC01_WINDOW_CHECK"));
+  else if(SC03Live() && SC03->Phase()!=FS47HorrorSC03::EPhase::Report){if(SC03->Facts().bRetreat && !Pack.Flag(TEXT("hr_sc03_helper_taken_presented")))Trigger(TEXT("SC03_HELPER_TAKEN"));else if(SC03->TracesChecked() && !Pack.Flag(TEXT("hr_sc03_helper_traces_presented")))Trigger(TEXT("SC03_HELPER_TRACES"));}
   else if(bComplete && SC02Live()) TriggerSC02();
  }
  if(!bComplete && !M->World->bDriving && !M->Evening->Opening())M->UI->Objective(Objective());
- else if(SC02Meeting())M->UI->Objective(Objective());
+ else if(SC02Meeting() || SC03Live())M->UI->Objective(Objective());
 }
 FString FS47Horror::Objective() const
 {
  if(!bEnabled) return FString();
  if(bComplete)
  {
+  if(SC03Live()) return SC03->Objective();
   if(!SC02Meeting()) return FString();
   if(M->World && M->World->bDriving) return TEXT("CALICHE JUNCTION // DRIVE CLEAR OF THE SERVICE FRONT");
   if(!bThreatSeen) return TEXT("CALICHE JUNCTION // RETURN TO SARO 07 ON THE GROUND OUTSIDE THE FENCE");
@@ -354,6 +400,7 @@ TArray<FS47Task> FS47Horror::Tasks() const
  if(!bEnabled)return {};
  if(bComplete)
  {
+  if(SC03Live()){TArray<FS47Task> Out;for(const auto& Row:SC03->Tasks())Out.Add({Row.Key,Row.Value});return Out;}
   if(!SC02Meeting())return {};
   return {{TEXT("Compare the marked lamp with the completed service check"),M->Substation && M->Substation->HasNormalResult()},
   {TEXT("Reach SARO 07 by a route outside the fence"),M->World && M->World->bDriving},
@@ -376,6 +423,7 @@ S47J::FObj FS47Horror::Save() const
  S47J::Set(O,TEXT("referencePhoto"),ReferencePhoto);
  S47J::Set(O,TEXT("reportAcknowledged"),bReport);S47J::Set(O,TEXT("reportStamp"),ReportStamp);
  S47J::Set(O,TEXT("daleReferenceHeard"),bReferenceHeard);S47J::Set(O,TEXT("callActive"),bWorldCall);S47J::Set(O,TEXT("callCursor"),CallCursor);
+ if(CallScene!=TEXT("SC01_FIRST_REPORT")){S47J::Set(O,TEXT("callScene"),CallScene);TArray<TSharedPtr<FJsonValue>> Q;for(const auto& Q0:CallQueue)Q.Add(MakeShared<FJsonValueString>(Q0));O->SetArrayField(TEXT("callQueue"),Q);}
  S47J::Set(O,TEXT("visual"),Visual->Save());S47J::Set(O,TEXT("pack"),Pack.Save());
  if(Revision>=2)
  {
@@ -383,6 +431,8 @@ S47J::FObj FS47Horror::Save() const
   FSC02Save S;S.Phase=SC02==ESC02::Legacy && Threat && Threat->Unavailable()?ESC02::T01:SC02;S.bAttempt=bH02Attempt;S.bRetry=bRetry;S.bSeen=bThreatSeen;S.EscapeStamp=EscapeStamp;
   S.Checkpoint=Threat?Threat->CheckpointId():FString();S47J::Set(O,TEXT("sc02"),WriteSC02(S));
  }
+ if(Revision>=3 && SC03 && SC03->Phase()!=FS47HorrorSC03::EPhase::Off)S47J::Set(O,TEXT("sc03"),SC03->Save());
+ if(Revision>=3 && SC03Live())S47J::Set(O,TEXT("scenario"),TEXT("SC03"));
  return O;
 }
 bool FS47Horror::SelfTest(TArray<FString>& Lines)
@@ -392,15 +442,21 @@ bool FS47Horror::SelfTest(TArray<FString>& Lines)
  const bool VisualGood=FS47HorrorVisual::SelfTest(Lines);
  const bool RouteGood=SC02SelfTest(Lines);
  const bool ThreatGood=FS47HorrorThreat::SelfTest(Lines);
- return VisualGood && Good && RouteGood && ThreatGood;
+ const bool SC03Good=FS47HorrorSC03::SelfTest(Lines);
+ return VisualGood && Good && RouteGood && ThreatGood && SC03Good;
 }
 
 // ---------- SC02: return to the truck, meeting 1 (revision 2 only) ----------
 
-bool FS47Horror::HasTasks() const {return bEnabled && (!bComplete || SC02Meeting());}
+bool FS47Horror::HasTasks() const {return bEnabled && (!bComplete || SC02Meeting() || SC03Live());}
+bool FS47Horror::SC03Live() const {return bEnabled && Revision>=3 && SC03 && SC03->Live();}
 bool FS47Horror::SC02Meeting() const {return bEnabled && bComplete && SC02==ESC02::Encounter && Threat && AtSite();}
 bool FS47Horror::SC02Escaped() const {return bEnabled && SC02==ESC02::Escaped;}
-bool FS47Horror::SceneAllowed(const FS47HorrorSceneRegistration* R) const {return R && AllowsScenario(Revision,SC02,R->ScenarioIds);}
+bool FS47Horror::SceneAllowed(const FS47HorrorSceneRegistration* R) const
+{
+ if(R && Revision>=3 && SC03 && (SC03->Live() || SC03->Complete()) && R->ScenarioIds.Contains(TEXT("SC03")))return true;
+ return R && AllowsScenario(Revision,SC02,R->ScenarioIds);
+}
 bool FS47Horror::AllowsScenario(int32 InRevision,ESC02 Phase,const TArray<FString>& ScenarioIds)
 {
  // SC01 scenes keep today's rule. SC02 scenes exist only for a revision 2 case in a live SC02 phase.
@@ -612,4 +668,24 @@ bool FS47Horror::SC02SelfTest(TArray<FString>& Lines)
  }
  else Check(false,TEXT("horror pack initializes for the SC02 checks"));
  return Good;
+}
+
+// ---------- SC03: the help that came (revision 3 only) ----------
+
+void FS47Horror::StartCall(const TArray<FString>& Scenes)
+{
+ if(Scenes.IsEmpty() || bWorldCall || Pack.CurrentScene())return;
+ M->UI->Close(true);CallScene=Scenes[0];CallQueue=Scenes;CallQueue.RemoveAt(0);CallCursor=0;bWorldCall=true;
+ Changed();ShowDialogue();
+}
+void FS47Horror::StepSC03(double Dt)
+{
+ if(Revision<3 || !SC03)return;
+ // SC02's escape presented in full: the report from Caliche is owed.
+ if(SC02==ESC02::Escaped && SC03->Phase()==FS47HorrorSC03::EPhase::Off && Pack.Flag(TEXT("hr_sc02_escape_presented")) && !Pack.CurrentScene())
+ {SC03->Start();UE_LOG(LogTemp,Display,TEXT("S47: SC02 escape presented; revision %d continues with SC03"),Revision);}
+ if(!SC03->Live())return;
+ SC03->Step(Dt);
+ if(Pack.Flag(TEXT("hr_sc03_receiver_question_presented")) && !Pack.CurrentScene())SC03->ScenePresented(TEXT("SC03_RECEIVER_QUESTION"));
+ if(SC03->Changes()!=SC03Seen){SC03Seen=SC03->Changes();Changed();}
 }
