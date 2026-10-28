@@ -43,7 +43,7 @@ Revisjonen kutter omtrent en tredjedel av produksjonen uten å ta bort noen av d
 
 Fire jaktsekvenser blir igjen: trafoen (SC02), annexet (SC04), arrayet (SC08) og SARO (SC11). De er ulike steder med ulike løsninger, og de kommer sjeldnere, så hver av dem betyr mer.
 
-**Én sak trenger Toms ja:** gammel tilfeldig bortføring med 17 til 47 minutters tidstap. Den krever et eget tidsbudsjett i `S47Away.cpp` mot alle nye faste tidspunkter, og den kan komme midt i en fortelling som ellers er stramt timet. Anbefaling: behold den i gamle saker, men slå den av i nye saker med historierevisjon 2 og senere. De andre tilfeldige hendelsene (lyder, telefoner, glimt, dyrene, motell-TV-en, lysene langs B) beholdes uendret. Inntil Tom har svart, gjelder dagens regel om at alle tilfeldige familier beholdes.
+**Tilfeldig bortføring, Toms valg 28. oktober 2026:** den gamle tilfeldige bortføringen beholdes som tilfeldig hendelse, men uten tidstap i nye saker. Varsel, mulig unnslippelse, selve bortføringen og etterspor er som før; klokken hopper ikke 17 til 47 minutter. Dermed trengs ikke det versjonerte tidsbudsjettet i `S47Away.cpp` for nye saker, og en bortføring kan aldri hoppe over et fast tidspunkt i historien. Den holdes fortsatt unna jaktsekvensene, Rom 6, kildekontroll og finalen. Gamle saker beholder tidstapet. De andre tilfeldige hendelsene beholdes uendret.
 
 ## Revidert forløp
 
@@ -220,7 +220,6 @@ Anbefalt retting, før import:
 
 Modellen skal også stemme med den bleke hånden og underarmen fra SC01, som spilleren allerede har sett. Bruk samme hudmateriale og samme fingerform.
 
-## Hva som gjenstår for Tom
+## Stemmer
 
-- Ja eller nei til å slå av gammel tilfeldig bortføring med tidstap i nye saker.
-- Stemmer for Ward, Ortiz, Earl og Nora (motstrid 16). Med sjåføren kuttet trengs fire, ikke fem. Ward er kvinne.
+Toms valg 28. oktober 2026: stemmer for Ward, Ortiz, Earl og Nora lages til slutt, når resten av historien er ferdig. Til da vises replikkene deres som tekst, og ingen opptak registreres som avspilt. Dales replikker kan tas opp med hans eksisterende profil. Med sjåføren kuttet trengs fire nye stemmer. Ward er kvinne.

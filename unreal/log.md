@@ -863,6 +863,6 @@ Fotolab R1 er flettet via [PR181](https://github.com/Tombonator3000/SIGNAL-47/pu
 ## 2026-10-28 kl. 08:30 CET: SC02 til SC13 gjennomgått og revidert (Claude)
 
 - Lest MISSION_FLOW, implementeringsplanen, forberedelsen fra skyøkten med 16 motstrider og forhåndsvisningene av SC02-aktøren.
-- Skrevet [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md). Kuttet: den svarte figuren, trusselmøte 3 ved bilen, huking, sjåføren, diktering av måletabeller, opptakerlån hos Earl og H09 som eget kort. VHS er valgfri for SC07. Ny begrunnelse for returen til SARO etter SC03: sheriffen trenger mottakerloggen til savnetsaken. 12 av de 16 motstridene er løst i dokumentet; nummer 6 forsvinner med kuttet, nummer 7 blir mindre, nummer 5 og 16 venter på Tom.
+- Skrevet [HISTORIE_SC02_SC13_REVISJON.md](HISTORIE_SC02_SC13_REVISJON.md). Kuttet: den svarte figuren, trusselmøte 3 ved bilen, huking, sjåføren, diktering av måletabeller, opptakerlån hos Earl og H09 som eget kort. VHS er valgfri for SC07. Ny begrunnelse for returen til SARO etter SC03: sheriffen trenger mottakerloggen til savnetsaken. 12 av de 16 motstridene er løst i dokumentet; nummer 6 forsvinner med kuttet, nummer 7 blir mindre, nummer 5 og 16 er avgjort av Tom samme morgen: tilfeldig bortføring beholdes uten tidstap i nye saker, og de fire nye stemmene lages til slutt.
 - Modellvurdering: SC02-aktøren ser ut som en utstillingsdukke og hodet som en klassisk «grey». Konkrete rettinger står i dokumentet.
 - Ingen kode, scenetekst eller Unreal-kjøring er endret.
