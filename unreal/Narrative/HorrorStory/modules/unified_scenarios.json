@@ -168,7 +168,7 @@
         {
           "id": "SC01_WINDOW_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "The moving hand was outside the glass. The marks are on that side too. Switching the room lamp does not remove them.",
+          "text": "Something struck the outside of the glass. The marks are on that side. Switching the room lamp does not remove them.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
@@ -192,7 +192,7 @@
       "channel": "phone",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Første melding etter faktisk observert hånd og ekte kontakt/readback. Merker kan undersøkes separat senere; denne meldingen krever ingen etterforskningsrunde.",
+      "trigger_nb": "Første melding etter faktisk hørt klask mot ruta og ekte kontakt/readback. Merker kan undersøkes separat senere; denne meldingen krever ingen etterforskningsrunde.",
       "requires": {
         "all": [
           "ctx_hr_sc01_window_seen",
@@ -207,13 +207,13 @@
         {
           "id": "SC01_FIRST_REPORT_001",
           "speaker": "DISPATCH",
-          "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
+          "text": "SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location.",
           "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
         },
         {
           "id": "SC01_FIRST_REPORT_002",
           "speaker": "DISPATCH",
-          "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
+          "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.",
           "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
         }
       ],

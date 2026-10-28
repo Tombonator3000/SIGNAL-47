@@ -786,7 +786,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 **Krav:** {"all": ["ctx_hr_sc01_window_seen", "ctx_hr_sc01_marks_checked"], "none": ["hr_sc01_window_check_presented"]}
 
-**DESCRIPTION [SC01_WINDOW_CHECK_001]**: The moving hand was outside the glass. The marks are on that side too. Switching the room lamp does not remove them.
+**DESCRIPTION [SC01_WINDOW_CHECK_001]**: Something struck the outside of the glass. The marks are on that side. Switching the room lamp does not remove them.
 
 *Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
 
@@ -799,17 +799,17 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 ### SC01_FIRST_REPORT (early_shift / phone / live)
 
-**Utløser:** Første melding etter faktisk observert hånd og ekte kontakt/readback. Merker kan undersøkes separat senere; denne meldingen krever ingen etterforskningsrunde.
+**Utløser:** Første melding etter faktisk hørt klask mot ruta og ekte kontakt/readback. Merker kan undersøkes separat senere; denne meldingen krever ingen etterforskningsrunde.
 
 **Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
 
 **Krav:** {"all": ["ctx_hr_sc01_window_seen", "ctx_hr_sc01_report_readback"], "none": ["hr_sc01_first_report_presented"]}
 
-**DISPATCH [SC01_FIRST_REPORT_001]**: SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.
+**DISPATCH [SC01_FIRST_REPORT_001]**: SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location.
 
 *Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
 
-**DISPATCH [SC01_FIRST_REPORT_002]**: Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.
+**DISPATCH [SC01_FIRST_REPORT_002]**: Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.
 
 *Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit.*
 

@@ -387,11 +387,11 @@ FString FS47Horror::Objective() const
  if(!M->FieldCamera || !M->FieldCamera->bHave)return TEXT("EVENING ROUND // COLLECT THE CAMERA BESIDE THE EAST DOOR");
  if(!bEast || !bCorridor)return TEXT("EVENING ROUND // FROM INSIDE, OPEN THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE AT THE WEST END OF THE CORRIDOR");
  if(!bBaseline)return TEXT("CONTROL ROOM // CHECK 1419.900 MHz / AZ 042 / GAIN 55 / BW 48");
- if(!Visual->LampChangeChecked())return TEXT("NORTH WINDOW // COMPARE THE MARKED LAMP ON AND OFF, THROUGH GLASS AND DIRECTLY OUTSIDE");
+ if(!Visual->LampChangeChecked())return TEXT("NORTH WINDOW // FROM INSIDE, SWITCH THE MARKED LAMP OFF AND ON WHILE WATCHING IT THROUGH THE GLASS");
  if(ReferencePhoto.IsEmpty())return TEXT("NORTH WINDOW // TAKE AN INSTANT-BACK REFERENCE OF THE MARKED LAMP WHILE IT IS ON");
  if(!Visual->ScreenChecked())return TEXT("NORTH WINDOW // CLOSE THE OPAQUE SHUTTER AND CHECK THAT IT BLOCKS THE LAMP");
  if(Visual->ScreenClosed())return TEXT("NORTH WINDOW // OPEN THE SHUTTER AND CHECK THE GLASS");
- if(!Visual->MarksChecked())return Visual->MarksPresent()?TEXT("NORTH WINDOW // CHECK THE OUTSIDE MARKS WITH THE ROOM LAMP ON AND OFF"):TEXT("EVENING ROUND // CHECK THE NORTH WINDOW BEFORE LEAVING");
+ if(!Visual->MarksChecked())return Visual->MarksPresent()?TEXT("NORTH WINDOW // CHECK THE OUTSIDE MARKS WITH THE ROOM LAMP ON AND OFF"):TEXT("NORTH WINDOW // THE GLASS IS CLEAR. LOWER THE SHADE FOR THE NIGHT");
  if(!DoorsSecured())return TEXT("CONTROL ROOM // CLOSE THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE");
  return TEXT("SHIFT FOLDER // RECORD THE EVENING CHECKS. THE TELEPHONE IS AVAILABLE TO REPORT WHAT YOU SAW");
 }
@@ -410,7 +410,7 @@ TArray<FS47Task> FS47Horror::Tasks() const
  {TEXT("Open the service door and the visitor entrance from inside"),bEast && bCorridor},
  {TEXT("Check the normal receiver reference"),bBaseline},
  {TEXT("Take an instant-back reference of the marked lamp"),!ReferencePhoto.IsEmpty()},
- {TEXT("Compare the lamp directly, through glass and behind the shutter"),Visual->LampChangeChecked() && Visual->ScreenChecked()},
+ {TEXT("Switch the lamp off and on through the glass, then check it behind the shade"),Visual->LampChangeChecked() && Visual->ScreenChecked()},
  {TEXT("Check the window and its outside marks"),Visual->MarksChecked()}};
 }
 S47J::FObj FS47Horror::Save() const
