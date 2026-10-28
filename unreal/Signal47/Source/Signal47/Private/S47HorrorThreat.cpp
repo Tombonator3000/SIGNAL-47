@@ -642,12 +642,23 @@ void FS47HorrorThreat::Apply(bool bShow)
  if (S == EState::Capture) { ArmL = ArmR = 78; Elbow = 8; Lean = -12; }
  auto Set = [](const TWeakObjectPtr<UStaticMeshComponent>& W, double Pitch, double Yaw)
  { if (UStaticMeshComponent* C = W.Get()) C->SetRelativeRotation(FRotator(Pitch, Yaw, 0)); };
- Set(Parts->Torso, Lean, 0);
- Set(Parts->Head, -4, FMath::RadiansToDegrees(ThreatWrap(HeadYaw - BodyYaw)));
- Set(Parts->ArmL, ArmL, 0); Set(Parts->ForeL, Elbow, 0);
- Set(Parts->ArmR, ArmR, 0); Set(Parts->ForeR, Elbow, 0);
- Set(Parts->ThighL, 26 * A * Sw, 0); Set(Parts->ShinL, -(6 + 34 * A * FMath::Max(0.0, Cw)), 0);
- Set(Parts->ThighR, -26 * A * Sw, 0); Set(Parts->ShinR, -(6 + 34 * A * FMath::Max(0.0, -Cw)), 0);
+ // Deliberate stop-motion: every joint holds its pose and jumps to the gait target on its
+ // own staggered tick, so the body never moves as one smooth mannequin. Clock only advances
+ // in Think, so a held (paused) body also holds every joint. A grab snaps at once.
+ const double Target[JointCount] = {Lean, FMath::RadiansToDegrees(ThreatWrap(HeadYaw - BodyYaw)), ArmL, Elbow, ArmR, Elbow,
+  26 * A * Sw, -(6 + 34 * A * FMath::Max(0.0, Cw)), -26 * A * Sw, -(6 + 34 * A * FMath::Max(0.0, -Cw))};
+ const double Rate = S == EState::Chase ? 11.0 : 5.0 + 4.0 * A;
+ for (int32 I = 0; I < JointCount; ++I)
+ {
+  const int32 Tick = FMath::FloorToInt(Clock * Rate + I * .37);
+  if (Tick != HeldTick[I] || S == EState::Capture) { HeldTick[I] = Tick; Held[I] = Target[I]; }
+ }
+ Set(Parts->Torso, Held[0], 0);
+ Set(Parts->Head, -4, Held[1]);
+ Set(Parts->ArmL, Held[2], 0); Set(Parts->ForeL, Held[3], 0);
+ Set(Parts->ArmR, Held[4], 0); Set(Parts->ForeR, Held[5], 0);
+ Set(Parts->ThighL, Held[6], 0); Set(Parts->ShinL, Held[7], 0);
+ Set(Parts->ThighR, Held[8], 0); Set(Parts->ShinR, Held[9], 0);
 }
 
 bool FS47HorrorThreat::SelfTest(TArray<FString>& Lines)
