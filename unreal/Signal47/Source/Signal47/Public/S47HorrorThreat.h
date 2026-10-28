@@ -77,8 +77,8 @@ private:
  int32 PostNode = 2, CheckNode = 6, RetreatNode = 8, SearchStep = 0;
  bool bHavePlayer = false;
  static constexpr int32 JointCount = 10; // torso, head, arms and forearms, thighs and shins
- double Held[JointCount] = {};
- int32 HeldTick[JointCount] = {};
+ double JointPose[JointCount] = {};
+ int32 JointTick[JointCount] = {};
  TArray<FVector2D> Path;
  TArray<bool> NodeOk, EdgeOk;
  TArray<FS47Rect> Near;

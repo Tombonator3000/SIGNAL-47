@@ -76,10 +76,10 @@ def two_lods(name, mesh, lod1_path, expected_lod1):
         settings.append(lod)
     options.set_editor_property("reduction_settings", settings)
     R.check(name + " two LOD slots with requested screen sizes", S.set_lods(mesh, options) == 2)
-    low = R.import_mesh(lod1_path, LOD_SOURCE)
-    R.check(name + " authored LOD1 source triangles", low.get_num_triangles(0) == expected_lod1, low.get_num_triangles(0))
-    R.check(name + " authored LOD1 copied", S.set_lod_from_static_mesh(mesh, 1, low, 0, True) == 1)
-    R.check(name + " temporary LOD1 asset removed", E.delete_asset(low.get_path_name().split(".")[0]))
+    # set_lod_from_static_mesh crashes UE 5.8.4 here (signal 11); import_lod is the
+    # project's proven path for authored LODs (cows, arrival entrance, field kit).
+    R.check(name + " authored LOD1 imported", S.import_lod(mesh, 1, str(lod1_path)) == 1)
+    R.check(name + " authored LOD1 triangles", mesh.get_num_triangles(1) == expected_lod1, mesh.get_num_triangles(1))
 
 
 try:
@@ -117,6 +117,9 @@ try:
             build = S.get_lod_build_settings(mesh, lod)
             build.set_editor_property("use_full_precision_u_vs", True)
             S.set_lod_build_settings(mesh, lod, build)
+        # Rebuilding after the build settings recomputes the sizes when the asset was
+        # reimported over an existing one; pin them last.
+        R.check(name + " explicit LOD screen sizes", S.set_lod_screen_sizes(mesh, list(LOD_SCREEN_SIZES)))
         R.check(name + " saved original", E.save_loaded_asset(mesh))
         nanite = S.get_nanite_settings(mesh)
         proxy = mesh.get_editor_property("ray_tracing_proxy_settings")

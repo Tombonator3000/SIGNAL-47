@@ -651,14 +651,14 @@ void FS47HorrorThreat::Apply(bool bShow)
  for (int32 I = 0; I < JointCount; ++I)
  {
   const int32 Tick = FMath::FloorToInt(Clock * Rate + I * .37);
-  if (Tick != HeldTick[I] || S == EState::Capture) { HeldTick[I] = Tick; Held[I] = Target[I]; }
+  if (Tick != JointTick[I] || S == EState::Capture) { JointTick[I] = Tick; JointPose[I] = Target[I]; }
  }
- Set(Parts->Torso, Held[0], 0);
- Set(Parts->Head, -4 - .6 * Held[0], Held[1]); // the head lifts against the lean to keep looking ahead
- Set(Parts->ArmL, Held[2], 0); Set(Parts->ForeL, Held[3], 0);
- Set(Parts->ArmR, Held[4], 0); Set(Parts->ForeR, Held[5], 0);
- Set(Parts->ThighL, Held[6], 0); Set(Parts->ShinL, Held[7], 0);
- Set(Parts->ThighR, Held[8], 0); Set(Parts->ShinR, Held[9], 0);
+ Set(Parts->Torso, JointPose[0], 0);
+ Set(Parts->Head, -4 - .6 * JointPose[0], JointPose[1]); // the head lifts against the lean to keep looking ahead
+ Set(Parts->ArmL, JointPose[2], 0); Set(Parts->ForeL, JointPose[3], 0);
+ Set(Parts->ArmR, JointPose[4], 0); Set(Parts->ForeR, JointPose[5], 0);
+ Set(Parts->ThighL, JointPose[6], 0); Set(Parts->ShinL, JointPose[7], 0);
+ Set(Parts->ThighR, JointPose[8], 0); Set(Parts->ShinR, JointPose[9], 0);
 }
 
 bool FS47HorrorThreat::SelfTest(TArray<FString>& Lines)
