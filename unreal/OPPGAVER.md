@@ -20,6 +20,12 @@ Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 ko
 
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Greyhill-referanse lagret, Codex, 28. oktober 2026
+
+[Jaktanalysen](GREYHILL_RESEARCH.md) og [videre analyseområder](GREYHILL_NEXT_ANALYSES.md) er bevart i repoet sammen med et [offentlig kontrollsammendrag](Research/Greyhill/analysis-summary.json). 110 Blueprint-filer og hovedkartet gir 963 funksjonsoppføringer; alle 111 pakker består byteidentisk rekonstruksjon i minnet. Hendelser og små wrapper-funksjoner inngår i tallet. Bytekode og full dekodet JSON ligger privat utenfor repoet.
+
+Neste anbefalte analyse er dørpassering under jakt, med lyd og lagring i samme forløp, som grunnlag for SC04. Dette er et forslag, ikke en ny implementeringsbestilling. Bevar historierevisjonens fire jaktsekvenser, én fienderegel og kuttet huking. Ingen spillkode, bygget kandidat eller installasjon er endret.
+
 ## Found footage-modus og Niagara-effekter, Tom 28.10.2026 (planlagt etter SC02)
 
 Tom vil ha en Found Footage-modus som viser spillet gjennom en uhyggelig bodycam-linse, og Niagara-effekter, for eksempel gnister og lysbuer ved trafoen. Forslagene er skrevet etter lesing av koden, uten Unreal-kjøring: [FOUND_FOOTAGE_FORSLAG.md](FOUND_FOOTAGE_FORSLAG.md) og [NIAGARA_FORSLAG.md](NIAGARA_FORSLAG.md).
