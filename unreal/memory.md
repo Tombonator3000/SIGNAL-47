@@ -1,3 +1,7 @@
+## Konseptbilder til cloud tank-UFO, 28. oktober 2026
+
+Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.
+
 ## Cloud tank-UFO til finalen, 28. oktober 2026
 
 Tom ønsker et episk, langsomt øyeblikk der en gigantisk UFO kommer frem bak voksende cloud tank-skyer i siste eller nest siste scenario. [Designnotatet](FINALE_CLOUD_TANK_UFO.md) lagrer oppskrift, ideer og mulig gjennomføring. Anbefaling: hovedavsløring i SC13 ved motorstopp C 8.15; SC12 får høyst et svakt varsel etter varsling/ruteplanlegging. THE EVENT 05:29:00 til 05:29:47 og 1947-bildet bevares. Dette er ønsket innhold for senere produksjon; effekt, spilltest og 60+ FPS er UNVERIFIED.

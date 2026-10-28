@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "kind": "ai_generated_concept_art",
+  "tool": "built-in image_gen",
+  "status": "concept_only_not_runtime",
+  "preferred_cloud_direction": "Two distinct banks rolling forward from opposite sides, with an open central sky passage.",
+  "runtime_performance": "UNVERIFIED",
+  "assets": [
+    {
+      "name": "SARO-cloud-tank-konsept-v1.png",
+      "size": 2262304,
+      "sha256": "dd808c66d6f550cef57c164f69253b0e139f90a2ce95bf1d8826729d3f24aa81",
+      "git_blob_sha": "355ecf67783bed3eb3540f95c692d78e92730694",
+      "width": 1672,
+      "height": 941,
+      "prompt": "SARO-cloud-tank-konsept-v1-prompt.txt"
+    },
+    {
+      "name": "SARO-cloud-tank-konsept-v2.png",
+      "size": 2120122,
+      "sha256": "61fcb6835bb1f41a8008b214b73a8c0e6a9e740bbae8ed8ca80af224611b5311",
+      "git_blob_sha": "c5b4de3b6aab25cb24d30cf8180aae7eddbc8466",
+      "width": 1672,
+      "height": 941,
+      "prompt": "SARO-cloud-tank-konsept-v2-prompt.txt"
+    },
+    {
+      "name": "Caliche-cloud-tank-konsept-v1.png",
+      "size": 2122992,
+      "sha256": "4a45542b148b439e8f7313d855fda356ad542f6f206729ab40a84b5cacd2ed42",
+      "git_blob_sha": "5b5ab48c98bd059a279e7209d7d4c920bbc0b10e",
+      "width": 1672,
+      "height": 941,
+      "prompt": "Caliche-cloud-tank-konsept-v1-prompt.txt"
+    }
+  ]
+}
