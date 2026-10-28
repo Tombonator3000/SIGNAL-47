@@ -1019,7 +1019,7 @@ void FS47HorrorTest::Step(double Dt)
 	// lines through focused Slate Enter, waiting in view, the identification, looking away (no
 	// observation), Continue mid-lift, the actual sight, cover, traces, the missing report and
 	// the deputy's question. Facts are read back only from the host; nothing is assigned here.
-	if(T.Stage<200 || (T.Stage>=300 && T.Stage!=2161 && T.Stage!=2071))return;
+	if(T.Stage<200 || (T.Stage>=300 && (T.Stage<2000 || T.Stage>=3000)))return;
 	if(!H.SC03){Fail(TEXT("SC03 module missing"));return;}
 	auto& S3=*H.SC03;
 	using EP=FS47HorrorSC03::EPhase;
@@ -1187,8 +1187,11 @@ void FS47HorrorTest::Step(double Dt)
 		Go({FVector(DX-Out*.6,0,DZ),FVector(DX+Out*1.3,0,DZ),FVector(DX+Out*2.2,0,Zone.MinZ-1.0),Front(Wg,2.6)},218);return;
 	}
 	if(T.Stage==218){if(!Pick3(TEXT("horror:wagon23"),Target(TEXT("horror:wagon23")),true))return;Stage(219,.3);return;}
-	if(T.Stage==219){M->UI->Close(true);if(!Pick3(TEXT("horror:thermos"),Target(TEXT("horror:thermos")),true))return;Stage(220,.3);return;}
-	if(T.Stage==220){M->UI->Close(true);if(!Pick3(TEXT("horror:gravelMarks"),Target(TEXT("horror:gravelMarks")),true))return;Stage(221,.6);return;}
+	// The thermos and the marks lie where she stood, several metres from the wagon: walk up to each.
+	if(T.Stage==219){M->UI->Close(true);Go({Front(Target(TEXT("horror:thermos")),1.3)},2191);return;}
+	if(T.Stage==2191){if(!Pick3(TEXT("horror:thermos"),Target(TEXT("horror:thermos")),true))return;Stage(220,.3);return;}
+	if(T.Stage==220){M->UI->Close(true);Go({Front(Target(TEXT("horror:gravelMarks")),1.3)},2201);return;}
+	if(T.Stage==2201){if(!Pick3(TEXT("horror:gravelMarks"),Target(TEXT("horror:gravelMarks")),true))return;Stage(221,.6);return;}
 	if(T.Stage==221)
 	{
 		M->UI->Close(true);
