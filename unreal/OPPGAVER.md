@@ -1,3 +1,9 @@
+## Toms nye feilrapport med bevis, Codex 28.10.2026
+
+Alle ni punktene er registrert i [PLAYTEST_TODO_2026-10-28.md](PLAYTEST_TODO_2026-10-28.md): Caliche/TB2 og boliger/byskilt, diner-krasj, trafikksignal, farm, motellnivå/kollisjon/TV/basseng/telefon/vegg, SARO-mus/dialog/dører, trafostasjon, færre tester/subagenter og dag-/nattfarger. Seks originalbilder og to krasjvedlegg er bevart med kontrollsummer. TB2 er kilde uten ferdig native/installert integrasjon; tidligere TB1 lastes i installert R2. Begge krasj peker til Vulkan-allokering, uten bevist samtidig editor. Alle spillrettelser står åpne.
+
+Arbeidsdeling: bruk avgrensede subagenter aktivt; Codex har brukt tre kun til lesing i denne registreringen. Claude og Codex avtaler filansvar før implementering, og bruker én felles tung jobb om gangen. Ingen nye motor-/spilltester er kjørt. Toms reduserte testregel står nå i `unreal/AGENTS.md`: målrettet etter risiko, ingen fullmatrise per liten PR, én samlet nødvendig kontroll før installasjon/release. Denne oppgaven endrer dokumentasjon og bevarer bevis, ikke spillkode eller installasjon.
+
 ## Grafikkinnstillinger installert, Codex 28.10.2026
 
 Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Installert skrive-/lesekontroll består (47 + 15), og payload samt Saved er kontrollert etter oppstart. Kanonisk prune er fullført; gjeldende bygg og to eldre beholdes, med eksplisitt vern av andre aktive SC-kandidater. Se [grafikkrapport](GRAPHICS_SETTINGS.md). Claudes SC03-kilder er urørt; bruk oppdatert main som grunnlag ved videre fletting.

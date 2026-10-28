@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "reported_on": "2026-10-28",
+  "capture_version": "Not embedded in supplied images; do not infer screenshot build from current install",
+  "evidence": [
+    {
+      "id": "E01",
+      "file": "01-farm-road.png",
+      "source": "/tmp/codex-clipboard-80f2d14d-1464-4ba2-be39-764a67a846b5.png",
+      "sha256": "1c0c698f67c0fc623ed254acf6b730e017a82f8064f0ae4a39514944032160c4",
+      "bytes": 3344519,
+      "dimensions": [
+        1909,
+        1045
+      ],
+      "kind": "Original player screenshot supplied by Tom; no edits"
+    },
+    {
+      "id": "E02",
+      "file": "02-motel-walkway.png",
+      "source": "/tmp/codex-clipboard-392282a2-f2a2-4fe7-a715-ca2d6b6aa410.png",
+      "sha256": "f6f6fe8309ed03e756289b4fe3ec12d6b891fcf37679293ee505da999dc4115c",
+      "bytes": 2877695,
+      "dimensions": [
+        1909,
+        1045
+      ],
+      "kind": "Original player screenshot supplied by Tom; no edits"
+    },
+    {
+      "id": "E03",
+      "file": "03-reception-tv-lamps.png",
+      "source": "/tmp/codex-clipboard-481ec8d7-ec7b-4994-9958-85d555cf5bad.png",
+      "sha256": "867ff6f204dee01b9813f6184e9690719bc3f0558ad71e61da58b3a18fa47b65",
+      "bytes": 2606639,
+      "dimensions": [
+        1909,
+        1045
+      ],
+      "kind": "Original player screenshot supplied by Tom; no edits"
+    },
+    {
+      "id": "E04",
+      "file": "04-pool-approach.png",
+      "source": "/tmp/codex-clipboard-a66dee54-b7aa-4c30-8c48-63fab58a4be9.png",
+      "sha256": "e5afc7a7c1ee333d375338cc75ea60e8d495bcd4668d013a76b52acaf99e3407",
+      "bytes": 2729046,
+      "dimensions": [
+        1354,
+        1278
+      ],
+      "kind": "Original player screenshot supplied by Tom; no edits"
+    },
+    {
+      "id": "E05",
+      "file": "05-payphone-wall.png",
+      "source": "/tmp/codex-clipboard-3a74f825-dfea-45f3-bb32-11c402dff142.png",
+      "sha256": "20e1f2a9f04e4fd9ef43c1abbffc7f8f8d9baac64dad692c5da6e28c6ff47ca4",
+      "bytes": 4764859,
+      "dimensions": [
+        2314,
+        1278
+      ],
+      "kind": "Original player screenshot supplied by Tom; no edits"
+    },
+    {
+      "id": "E06",
+      "file": "06-substation.png",
+      "source": "/tmp/codex-clipboard-3d305079-9da6-44b3-a791-ce9d6cdf090c.png",
+      "sha256": "b5f05b3c0768e54c3c60c443b9947678b113a8200e63e8371321f7b9960a9a4f",
+      "bytes": 4096983,
+      "dimensions": [
+        2145,
+        1219
+      ],
+      "kind": "Original player screenshot supplied by Tom; no edits"
+    },
+    {
+      "id": "C1710609",
+      "file": "crash-1710609-excerpt.txt",
+      "source": "/home/tom/.codex/attachments/1cd31ce7-f986-4606-82fb-c45e03cb2c86/Pasted text.txt",
+      "sha256": "3cf0bb29a7dda76a3464164c2a3b51e2f128704ce1c47561b9874ae9808d94e2",
+      "original_sha256": "cf23356eb4d3be165e01fd22c2b0fef01a5d828a80a33317840a2b0c8d8e9dfa",
+      "original_bytes": 84373,
+      "preserved_original": "/home/tom/scratch-bm/Signal47-playtest-report-20261028/originals/crash-1710609-original.txt",
+      "kind": "Diagnostic metadata and first reported thread; full unmodified attachment retained locally"
+    },
+    {
+      "id": "C1692368",
+      "file": "crash-1692368-excerpt.txt",
+      "source": "/home/tom/.codex/attachments/8ce0070e-0bd1-4724-886a-e290500d1238/Pasted text.txt",
+      "sha256": "52dc585924193abaf9ccdc508a03c27ead24d7383ee5618c36fd701be2f320c5",
+      "original_sha256": "924364b6db7cd4203c53d614fb6afdd7a72b7fc7adc8a6ab994d4af3b214f11e",
+      "original_bytes": 77607,
+      "preserved_original": "/home/tom/scratch-bm/Signal47-playtest-report-20261028/originals/crash-1692368-original.txt",
+      "kind": "Diagnostic metadata and first reported thread; full unmodified attachment retained locally"
+    }
+  ]
+}
