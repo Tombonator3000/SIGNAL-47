@@ -932,6 +932,14 @@ Canonical prune er utført etter inspisert plan og avsluttede motorjobber: to el
 
 [Utkast-PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) er opprettet og tilknyttet oppgaven. Grunnlagsgren er kontrollert som main. Utkastet bevarer det ferdig prøvde SC02-checkpointet mens SC03–SC05 og aktens aksept fortsatt gjenstår.
 
+## 2026-10-28 kl. 13:45 CET: Greyhill-analyse bevart som referanse
+
+Tom ba om å lagre Greyhill-analysen til Signal 47-repoet og få oversikt over andre funksjoner som kan undersøkes. [GREYHILL_RESEARCH.md](GREYHILL_RESEARCH.md) bevarer egen analyse av syn, lyd, forfølgelse, siste kjente sted, skjulesteder og gameplay-looper. [GREYHILL_NEXT_ANALYSES.md](GREYHILL_NEXT_ANALYSES.md) prioriterer dørpassering, sonelyd, gjenstandsinspeksjon, UFO-/bortføringsregi, lagring, found footage, lommelykt og animasjon. De tre nye konkrete observasjonene gjelder lydovergang, modusbryter og inspeksjonsinput i allerede dekodet bytekode.
+
+Kontrollgrunnlag: lokal Steam-build 12751524, UE 4.27, 110 Blueprint-filer og ett hovedkart, 963 funksjonsoppføringer inkludert hendelser/wrappere. Parsing, alle bytekodestørrelser og byteidentisk rekonstruksjon i minnet består for 111/111. Funksjonsadresser i det nye tillegget er kontrollert mot posisjonsindeksene. Runtime er UNVERIFIED; native Shipping.exe er ikke dekompilert. Offentlig [kontrollsammendrag](Research/Greyhill/analysis-summary.json) har dekning og kontrollsummer. Komplett uttrekk er bevart lokalt utenfor repoet; ingen originalkode, komplette exports eller spillassets publiseres.
+
+Dokumentendring uten spillkode, config eller assets. Bygg og spillmatrise er derfor ikke kjørt. Dokumentkontrollen omfatter nye lenker, metadata, kildeavgrensning og ingen private maskinstier i nye dokumenter. Historierevisjonens fire jaktsekvenser og kuttet huking bevares. Ingen implementering eller installasjon er gjort.
+
 ## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
 
 Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
