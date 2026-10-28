@@ -995,3 +995,15 @@ Editor og Linux-pakke består. Faktisk Slate-navigasjon, native renderer-verdier
 ## 2026-10-28 kl. 19:04 CET: grafikkmeny R2 klar for levering
 
 Final R2-pakke består 47 produksjons-/Slate-sjekker, 15 sjekker ved ny prosess og full 111/111-matrise uten konkurrerende jobb. 720p/900p-meny, natt og daggry er visuelt vurdert. R1 Very Low-lysbuebevis beholdes fordi R2 kun endrer scenery-menyvalget. PR197 går mot main; installasjon gjenstår. Bevis: `~/scratch-bm/Signal47-graphics-settings-20261028`.
+
+## 2026-10-28 kl. 19:12 CET: grafikkmeny flettet og installert
+
+PR197 er flettet til main, merge `2b26a05459a18213d830dfd2e85ca571d423b485`. Den aksepterte R2-pakken er installert i standardmappen med eksakt payloadkontroll og full tilbakekopi av tidligere spillfiler. Alle 79 personlige Saved-filer (105 noder) er bevart. Claudes SC03Resume6 startet etter installasjonen; den korte installerte kontrollen og kanonisk prune venter på ledig motorvindu. Ingen andre prosesser stoppes.
+
+## 2026-10-28 kl. 19:24 CET: installert grafikkmeny verifisert
+
+Standardstarteren med isolert profil består 47 skrivekontroller og 15 kontroller i en ny prosess som leser Custom-valgene. Det installerte 720p-menybildet er visuelt vurdert. Hele payloaden samsvarer med akseptert R2, og alle 79 personlige Saved-filer (105 noder) er fortsatt byteidentiske. Ingen ny spilltest gjenstår. Kanonisk prune avviste sletting fordi Claude startet SC03Resume8; gjennomgått opprydding er køet til motoren er ledig.
+
+## 2026-10-28 kl. 19:31 CET: grafikkleveranse avsluttet og gamle testpayloads ryddet
+
+Installert meny og lagring består 47 + 15 kontroller. Kanonisk prune er utført etter at SC03Resume8 sluttet, uten å stoppe noen prosess. Tre gamle payloadkopier er pensjonert (13 341 321 001 logiske bytes, ikke et løfte om fysisk frigjort plass). Gjeldende R2, grafikk-R1 og tilbakekopien av forrige installasjon beholdes; aktive SC01-, PR174-, SC02- og SC03-kandidater er eksplisitt vernet til eiernes undersøkelser er avsluttet. Kilder, assets, Engine, Saved og bevis er bevart. Full installert payload og alle personlige Saved er bytekontrollert igjen etter oppryddingen. Dokumentleveransen PR199 endrer ingen spillkode og kjører ikke matrisen på nytt.
