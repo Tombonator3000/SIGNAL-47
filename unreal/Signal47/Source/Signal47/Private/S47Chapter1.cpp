@@ -513,7 +513,7 @@ FString US47Chapter1::Objective() const
 	if (St == TEXT("observe-control")) return bSettled ? TEXT("B-12 // NOTE THE DIRECT OBSERVATION AFTER THE VANE SETTLES") : TEXT("B-12 // WAIT FOR THE REFERENCE VANE TO SETTLE");
 	if (St == TEXT("second-exposure")) return Touch() ? TEXT("B-12 // FROM THE SIGHT LINE MARK: CAMERA, SHUTTER") : FString::Printf(TEXT("B-12 // %s: CAMERA / %s: RECORD THE CONTROLLED REFERENCE"), *S47Keys::Said(TEXT("camera")).ToUpper(), *S47Keys::Said(TEXT("shutter")).ToUpper());
 	if (St == TEXT("compare-exposures")) return S.Mark2 ? TEXT("CASE BOARD // COMPARE THE PRINTS WITH THE CONTROL OBSERVATION AND RECORD THE FINDING") : TEXT("TWO PRINTS // MARK THE SAME REFERENCE IN FRAME 02 AT THE ARCHIVE BENCH");
-	if (St == TEXT("file-report")) return LabName + TEXT(" // FILE THE TWO-EXPOSURE REPORT AT THE RECORDS DESK");
+	if (St == TEXT("file-report")) return LabName + TEXT(" // FILE THE TWO-EXPOSURE REPORT AT THE RECORDS DESK, RIGHT-HAND WALL BEFORE THE ARCHIVE");
 	if (St == TEXT("complete")) return TEXT("LOCAL CASE FILED // THE SECOND EXPOSURE");
 	return FString();
 }
@@ -662,7 +662,7 @@ void US47Chapter1::Interactables()
 	{
 		FS47Interactable It;
 		It.Id = TEXT("records"); It.Object = Yard->Obj(TEXT("records")); It.Range = 2.4;
-		It.Label = [this] { return !Active ? FString() : S.Stage == TEXT("file-report") ? FString(TEXT("File local investigation")) : S.bFiled ? FString(TEXT("Read filed chapter report")) : FString(TEXT("Night report")); };
+		It.Label = [this] { return !Active ? FString() : S.Stage == TEXT("file-report") ? FString(TEXT("File the report at the records desk")) : S.bFiled ? FString(TEXT("Read filed chapter report")) : FString(TEXT("Night report")); };
 		It.Use = [this]
 		{
 			if (InDark(TEXT("Too dark to read the report. Wait for the light."))) return;
