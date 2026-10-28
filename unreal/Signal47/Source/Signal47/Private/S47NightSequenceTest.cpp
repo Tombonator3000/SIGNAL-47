@@ -110,6 +110,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   auto Docs = S47J::New(); Docs->SetArrayField(TEXT("docs"), S47J::Arr(Routine, TEXT("docs"))); const FString Papers = S47J::Write(Docs);
   const FString LocalRecord = S47J::Write(M->Substation->Save());
   const FString Area = S47J::Str(State, TEXT("area"));
+  const bool SavedPoseWalkableBefore = M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z")));
   FS47SaveStore Writer(T.Root / Name); Writer.Init();
   FS47SaveCard Card; Card.Chapter = TEXT("Nattrekkefølge / isolert kontrakt"); Card.Place = Area;
   Card.Clock = M->Story->ClockText(true); Card.Playtime = M->Playtime;
@@ -127,14 +128,60 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
    FMath::Abs(M->Player->Pitch - S47J::Num(Pose, TEXT("pitch"))) < .001;
   auto AfterDocs = S47J::New(); AfterDocs->SetArrayField(TEXT("docs"), S47J::Arr(M->Story->SaveRoutine(), TEXT("docs")));
   const auto& Night = M->Story->Night();
-  return Check(M->Flow->bDevRun && M->Flow->CaseId == 0 && NightSequence() && M->Story->NightSequence() &&
-   M->World->Area == Area && PoseOk && M->Story->Clock() == Clock && M->Story->Phase() == Phase &&
-   M->Story->Rx.Stage == RxStage && M->Story->bResidualVisible == Residual && M->Story->Night().bK3Open == K3 &&
-   M->Story->Rx.bSolved == Solved && Night.SolveAt.IsSet() == HasSolve && (!HasSolve || *Night.SolveAt == SolveAt) &&
-   Night.PrintoutAt.IsSet() == HasPrint && (!HasPrint || *Night.PrintoutAt == PrintAt) && S47J::Write(AfterDocs) == Papers &&
-   FeederOutage() == Out && FeederCallAnswered() == Called && DriveTimeSkipped() == Drove &&
-   M->Story->bDark == Out && M->Substation->HasNormalResult() == Normal &&
-   S47J::Write(M->Substation->Save()) == LocalRecord && M->Story->Notes() == Notes && M->Story->Night().Log.Num() == LogCount,
+  bool Good = true; auto Fields = S47J::New();
+  const auto Field = [&Fields, &Good, &Name](const TCHAR* Key, bool Match)
+  {
+   S47J::Set(Fields, Key, Match); Good &= Match;
+   if (!Match) UE_LOG(LogTemp, Error, TEXT("S47: night sequence restore mismatch %s: %s"), *Name, Key);
+  };
+  Field(TEXT("developerRun"), M->Flow->bDevRun);
+  Field(TEXT("caseId"), M->Flow->CaseId == 0);
+  Field(TEXT("eveningNightSequence"), NightSequence());
+  Field(TEXT("storyNightSequence"), M->Story->NightSequence());
+  Field(TEXT("area"), M->World->Area == Area);
+  Field(TEXT("pose"), PoseOk);
+  Field(TEXT("poseX"), FMath::Abs(M->Player->Pos.X - S47J::Num(Pose, TEXT("x"))) < .02);
+  Field(TEXT("poseZ"), FMath::Abs(M->Player->Pos.Z - S47J::Num(Pose, TEXT("z"))) < .02);
+  Field(TEXT("poseYaw"), FMath::Abs(M->Player->Yaw - S47J::Num(Pose, TEXT("yaw"))) < .001);
+  Field(TEXT("posePitch"), FMath::Abs(M->Player->Pitch - S47J::Num(Pose, TEXT("pitch"))) < .001);
+  Field(TEXT("clock"), M->Story->Clock() == Clock);
+  Field(TEXT("phase"), M->Story->Phase() == Phase);
+  Field(TEXT("rxStage"), M->Story->Rx.Stage == RxStage);
+  Field(TEXT("residualVisible"), M->Story->bResidualVisible == Residual);
+  Field(TEXT("k3Open"), Night.bK3Open == K3);
+  Field(TEXT("rxSolved"), M->Story->Rx.bSolved == Solved);
+  Field(TEXT("hasSolveAt"), Night.SolveAt.IsSet() == HasSolve);
+  Field(TEXT("solveAt"), !HasSolve || (Night.SolveAt.IsSet() && *Night.SolveAt == SolveAt));
+  Field(TEXT("hasPrintoutAt"), Night.PrintoutAt.IsSet() == HasPrint);
+  Field(TEXT("printoutAt"), !HasPrint || (Night.PrintoutAt.IsSet() && *Night.PrintoutAt == PrintAt));
+  Field(TEXT("documents"), S47J::Write(AfterDocs) == Papers);
+  Field(TEXT("feederOutage"), FeederOutage() == Out);
+  Field(TEXT("feederCallAnswered"), FeederCallAnswered() == Called);
+  Field(TEXT("driveTimeSkipped"), DriveTimeSkipped() == Drove);
+  Field(TEXT("dark"), M->Story->bDark == Out);
+  Field(TEXT("hasNormalResult"), M->Substation->HasNormalResult() == Normal);
+  Field(TEXT("substationRecord"), S47J::Write(M->Substation->Save()) == LocalRecord);
+  Field(TEXT("notes"), M->Story->Notes() == Notes);
+  Field(TEXT("logCount"), Night.Log.Num() == LogCount);
+  if (!Good)
+  {
+   auto Details = S47J::New(), Runtime = S47J::New();
+   S47J::Set(Details, TEXT("name"), Name); S47J::Set(Details, TEXT("checks"), Fields);
+   S47J::Set(Details, TEXT("savedPoseWalkableBefore"), SavedPoseWalkableBefore);
+   S47J::Set(Details, TEXT("savedPoseWalkableAfter"), M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z"))));
+   S47J::Set(Runtime, TEXT("developerRun"), M->Flow->bDevRun); S47J::Set(Runtime, TEXT("caseId"), M->Flow->CaseId);
+   S47J::Set(Runtime, TEXT("phase"), int32(M->Story->Phase())); S47J::Set(Runtime, TEXT("expectedPhase"), int32(Phase));
+   S47J::Set(Runtime, TEXT("dark"), M->Story->bDark); S47J::Set(Runtime, TEXT("expectedDark"), Out);
+   S47J::Set(Runtime, TEXT("x"), M->Player->Pos.X); S47J::Set(Runtime, TEXT("z"), M->Player->Pos.Z);
+   S47J::Set(Runtime, TEXT("yaw"), M->Player->Yaw); S47J::Set(Runtime, TEXT("pitch"), M->Player->Pitch);
+   S47J::Set(Details, TEXT("actualRuntime"), Runtime);
+   const auto Actual = M->Flow->GameState();
+   const bool WroteExpected = FFileHelper::SaveStringToFile(S47J::Write(State, true), *(T.Root / (Name + TEXT(".expected.json"))));
+   const bool WroteActual = FFileHelper::SaveStringToFile(S47J::Write(Actual, true), *(T.Root / (Name + TEXT(".actual.json"))));
+   const bool WroteChecks = FFileHelper::SaveStringToFile(S47J::Write(Details, true), *(T.Root / (Name + TEXT(".checks.json"))));
+   if (!(WroteExpected && WroteActual && WroteChecks)) { Fail(TEXT("kunne ikke skrive komplett expected/actual/checks-bevis ved restorefeil")); return false; }
+  }
+  return Check(Good,
    TEXT("ny diskleser/full Flow bevarer klokke, fase, RX-trinn/solve, papirer, K3, strøm, telefon, kjørehopp, pose og T01: ") + Name);
  };
  const auto RecordFault = [this, &T, &Fail](const FString& Name)
@@ -279,8 +326,9 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   if (T.bDone || !Check(Fault.bRequested && Fault.bReady && !Fault.bActive && !Fault.bArcVisible &&
       !Fault.bLampsVisible && M->Substation->ArcCount() == 0,
       TEXT("trafostasjonens feil er aktiv i historien, men grafikken er skjult med road-området mens spilleren er ved SARO"))) return;
-  M->Player->Place(3.8, 1.4, UE_DOUBLE_PI); M->Player->Pitch = -.08;
-  UE_LOG(LogTemp, Display, TEXT("S47: night sequence phone position FIXTURE: actual phone ray and close callback follow"));
+  M->Player->Place(4.2, 1.6, UE_DOUBLE_PI); M->Player->Pitch = -.08;
+  if (!Check(M->Player->Walkable(4.2, 1.6), TEXT("telefonens eksplisitte SC01-startposisjon er faktisk walkable før diskprøven"))) return;
+  UE_LOG(LogTemp, Display, TEXT("S47: night sequence phone position FIXTURE: validated walkable SC01 start at 4.2/1.6; actual phone ray and close callback follow"));
   if (!Load(TEXT("before-feeder-call"))) return;
   Stage(7, .2); return;
  }
