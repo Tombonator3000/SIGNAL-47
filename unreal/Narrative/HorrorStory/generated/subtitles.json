@@ -893,7 +893,7 @@
         {
           "line_id": "SC01_WINDOW_CHECK_001",
           "speaker": "DESCRIPTION",
-          "text": "The moving hand was outside the glass. The marks are on that side too. Switching the room lamp does not remove them.",
+          "text": "Something struck the outside of the glass. The marks are on that side. Switching the room lamp does not remove them.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -917,7 +917,7 @@
         {
           "line_id": "SC01_FIRST_REPORT_001",
           "speaker": "DISPATCH",
-          "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
+          "text": "SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location.",
           "voiced": true,
           "start_seconds": 0.08,
           "end_seconds": 9.89,
@@ -926,7 +926,7 @@
         {
           "line_id": "SC01_FIRST_REPORT_002",
           "speaker": "DISPATCH",
-          "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
+          "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.",
           "voiced": true,
           "start_seconds": 0.08,
           "end_seconds": 10.6,
