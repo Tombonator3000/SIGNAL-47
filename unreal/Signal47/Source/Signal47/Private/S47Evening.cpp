@@ -3,6 +3,7 @@
 #include "S47Takeaway.h"
 #include "S47Substation.h"
 #include "S47Horror.h"
+#include "S47Observing.h"
 #include "S47Office.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -175,6 +176,7 @@ void FS47Evening::NightStep()
  if (!bFeederFailed)
  {
   if (M->Horror && M->Horror->BaselineChecked()) M->Story->AdvanceClockTo(S47Timeline::Calibration, TEXT("receiver reference complete"));
+  if (M->Observing && M->Observing->Done()) M->Story->AdvanceClockTo(-3600, TEXT("evening schedule filed / north-window round"));
   return;
  }
  if (FeederOutage() && !bFeederCallAnswered && M->World->Area == TEXT("saro") && !bRing && M->T >= RingAt)
