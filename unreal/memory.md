@@ -1,6 +1,6 @@
-## Grafikkinnstillinger, kontrollert 28. oktober 2026
+## Grafikkinnstillinger, installert 28. oktober 2026
 
-Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er ferdig i [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197). Den endelige R2-pakken består 47 meny-/renderersjekker, 15 sjekker ved ny oppstart og hele 111-matrisen. Menyen er visuelt kontrollert ved 720p og 900p. Fletting og lokal installasjon gjenstår. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Kort installert oppstartskontroll og kanonisk prune venter på Claudes SC03-kjøring. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
 
 ## Elektrisk lysbue ved trafo, levert 28. oktober 2026
 

@@ -995,3 +995,7 @@ Editor og Linux-pakke består. Faktisk Slate-navigasjon, native renderer-verdier
 ## 2026-10-28 kl. 19:04 CET: grafikkmeny R2 klar for levering
 
 Final R2-pakke består 47 produksjons-/Slate-sjekker, 15 sjekker ved ny prosess og full 111/111-matrise uten konkurrerende jobb. 720p/900p-meny, natt og daggry er visuelt vurdert. R1 Very Low-lysbuebevis beholdes fordi R2 kun endrer scenery-menyvalget. PR197 går mot main; installasjon gjenstår. Bevis: `~/scratch-bm/Signal47-graphics-settings-20261028`.
+
+## 2026-10-28 kl. 19:12 CET: grafikkmeny flettet og installert
+
+PR197 er flettet til main, merge `2b26a05459a18213d830dfd2e85ca571d423b485`. Den aksepterte R2-pakken er installert i standardmappen med eksakt payloadkontroll og full tilbakekopi av tidligere spillfiler. Alle79 personlige Saved-filer (105 noder) er bevart. Claudes SC03Resume6 startet etter installasjonen; den korte installerte kontrollen og kanonisk prune venter på ledig motorvindu. Ingen andre prosesser stoppes.

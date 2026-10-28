@@ -1,6 +1,6 @@
 # Grafikkvalg for svakere maskiner
 
-Tom ba 28. oktober 2026 om flere innstillinger for Unreal-effekter og belastning. Kandidaten legger til **Settings > Graphics**. Picture beholder skjermmodus, oppløsning, bildefrekvensgrense, V-sync, filmfilter, lysstyrke og synsvinkel. Menytekst er engelsk.
+Tom ba 28. oktober 2026 om flere innstillinger for Unreal-effekter og belastning. Spillet har nå **Settings > Graphics**. Picture beholder skjermmodus, oppløsning, bildefrekvensgrense, V-sync, filmfilter, lysstyrke og synsvinkel. Menytekst er engelsk.
 
 ## Valgene
 
@@ -20,7 +20,7 @@ Fem startpunkter: Very Low, Low, Medium, High og Ultra. Individuelle endringer v
 | Effect detail | Redusert eller full mengde for støttede gnister og valgfrie lufteffekter. Historietriggere beholdes. |
 | Scenery detail | Redusert eller Standard for eksisterende vegetasjons-/dekorbudsjett. Interaksjoner og historieobjekter fjernes ikke. |
 
-Lumen-refleksjoner uten indirekte Lumen-lys er ikke en bærbar kombinasjon med software tracing. Kandidaten bruker derfor Screen Space når indirekte lys er av, viser **SSR (GI OFF)** og beholder brukerens Lumen-valg til indirekte lys slås på igjen.
+Lumen-refleksjoner uten indirekte Lumen-lys er ikke en bærbar kombinasjon med software tracing. Spillet bruker derfor Screen Space når indirekte lys er av, viser **SSR (GI OFF)** og beholder brukerens Lumen-valg til indirekte lys slås på igjen.
 
 Ingen uvirksom bloom-bryter er lagt til: prosjektet har allerede native bloom-intensitet null. Ingen endring av `sg.EffectsQuality`, materialkvalitet eller den globale PSO-policyen. Teksturvalgene bruker mip-tillatelse 2/1/0/0 og anisotrop filtrering 2/4/4/8 uten å endre streamingpoolen. Med motorens eksisterende per-teksturpolicy skjer detaljreduksjon under minnepress.
 
@@ -38,7 +38,7 @@ Editorbygg og endelig R2 Linux-pakke består. Den pakkede kontrollen består med
 
 Hele den kanoniske matrisen består **111/111** på R2 i én sammenhengende kjøring uten ressurskonkurranse. Meny, nattbelysning og daggry er visuelt vurdert. Very Low beholder trafoens lysbue og lagring: 14 kontroller og to faktiske disk-/Flow-gjenopprettinger. Sistnevnte bevis er fra R1; kontrollsummene viser at R2 bare endrer menyens scenery-valg til de to faktiske budsjettene. Renderer, serialisering og lysbuekode er identiske.
 
-Aksept: `acceptance-r1.json`, med frosne kilde-/payload-hasher og bundne testbevis. Fletting og installasjon gjenstår. Ingen FPS-forbedring, fysisk gamepad-test eller støtte for alle svake GPU-er hevdes. Dette er justeringer innenfor prosjektets eksisterende renderer og plattformkrav.
+Aksept: `acceptance-r1.json`, med frosne kilde-/payload-hasher og bundne testbevis. PR197 er flettet til main, merge `2b26a05459a18213d830dfd2e85ca571d423b485`. Den identiske R2-pakken er installert i `/home/tom/Games/Signal47/Linux` med full tilbakekopi av tidligere spillfiler og Saved-ekskludering. Alle 79 personlige Saved-filer (105 noder) er uendret. Installert oppstartskontroll og kanonisk prune venter på den pågående SC03-kjøringen. Ingen FPS-forbedring, fysisk gamepad-test eller støtte for alle svake GPU-er hevdes. Dette er justeringer innenfor prosjektets eksisterende renderer og plattformkrav.
 
 ## Kildegrunnlag
 
