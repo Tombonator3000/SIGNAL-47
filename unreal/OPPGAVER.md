@@ -34,6 +34,10 @@ Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 ko
 
 # Oppgaver og arbeidsdeling (Unreal)
 
+## Greyhill-dørstudie med kode, 28. oktober 2026
+
+[Detaljstudien](GREYHILL_DOOR_CODE_ANALYSIS.md) følger vanlig/brudd-basert passering, globale alien-effekter, parallelle latent-grener, kollisjon, lyd og lagring. 77 instruksjonsreferanser er kontrollert. En [selvstendig C++17-referansemodell](Research/Greyhill/DoorStudy/DoorPolicy.hpp) ligger utenfor spillets Source. MSVC-kompilering/linking består; Windows nektet native kjøring. 16 scenarioer er skrevet, 0 kjørt. Ingen Unreal-integrasjon eller gameplay er levert. Full rekonstruksjon og bytekodebevis beholdes privat.
+
 ## Greyhill-referanse lagret, Codex, 28. oktober 2026
 
 [Jaktanalysen](GREYHILL_RESEARCH.md) og [videre analyseområder](GREYHILL_NEXT_ANALYSES.md) er bevart i repoet sammen med et [offentlig kontrollsammendrag](Research/Greyhill/analysis-summary.json). 110 Blueprint-filer og hovedkartet gir 963 funksjonsoppføringer; alle 111 pakker består byteidentisk rekonstruksjon i minnet. Hendelser og små wrapper-funksjoner inngår i tallet. Bytekode og full dekodet JSON ligger privat utenfor repoet.

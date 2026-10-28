@@ -31,4 +31,4 @@ Adressene er desimale Kismet-bytekodeposisjoner i den navngitte funksjonen, ikke
 
 Vi kan hente funksjonsoversikter, tilstander, tidsrekkefølge, samspill med input og lagring, parameterverdier og konkrete feilsituasjoner som egne beskrivelser og testkrav. Full JSON, bytekode og originale assets beholdes i det private lokale uttrekket. Det offentlige repoet får egne analyser og egne implementeringer av mekanikkene.
 
-Neste sammenhengende analyse bør være dørpassering under jakt, med lyd og lasting i samme forløp. Det undersøker en hel spillerhandling og gir et direkte grunnlag for SC04, samtidig som hovedregelen om én fiendetype beholdes.
+Dørpassering under jakt er nå fulgt i en [detaljert kodeanalyse](GREYHILL_DOOR_CODE_ANALYSIS.md), med lyd, kollisjon og lagring. Den separate C++-referansemodellen er kompilert; 16 scenarioer er skrevet og 0 kjørt fordi Windows nekter native start. Modellen er ikke integrert i Signal 47. En framtidig praktisk prøve må dekke hele SC04-handlingen.
