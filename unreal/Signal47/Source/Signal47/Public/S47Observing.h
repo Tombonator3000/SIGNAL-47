@@ -38,6 +38,13 @@ public:
  EStep Phase() const { return StepNow; }
  double Integrated() const { return Elapsed; }
  int32 Hints() const { return HintMask; }
+ // The chores between runs: the weekly generator test before the pulsar (0 none, 1 running,
+ // 2 on generator power, 3 logged) and the round to the array gate before Virgo A (0, 1 chained, 2 found open).
+ int32 GeneratorStep() const { return GenStep; }
+ int32 YardStep() const { return Yard; }
+ bool ChorePending() const;
+ static FVector PanelPoint() { return FVector(5.93, 1.35, .65); }
+ static FVector GatePoint() { return FVector(-1.0, 0, -20.0); }
  // The console's card, action and window while a run waits to be tuned.
  const FS47Profile* ConsoleProfile() const;
  bool ConsoleAction();
@@ -51,7 +58,13 @@ public:
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bScheduleFiled = false;
- int32 Run = 0, HintMask = 0, Ticks = 0;
+ int32 Run = 0, HintMask = 0, Ticks = 0, GenStep = 0, Yard = 0;
+ double GenT = 0, FlickerT = -1;
+ TArray<bool> HeldTubes;
+ bool bPanelBuilt = false;
+ void BuildPanel();
+ void UseGenerator();
+ void StepChores(double Dt);
  EStep StepNow = EStep::Tune;
  double Elapsed = 0, Tick = 0;
  FString HeldStatus;
