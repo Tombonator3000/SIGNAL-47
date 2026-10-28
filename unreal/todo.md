@@ -1,3 +1,7 @@
+## Elektrisk lysbue ved trafo, kandidat 28. oktober 2026
+
+SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02 på endelig R4 består 65 kontroller og 15 disk-/Flow-restores uten lysbue. Hele matrisen består 110/110 i to deler (54 + 56) etter en guard-pause for Claudes jobb. Ingen bestått prøve gjentas. Fletting og installasjon gjenstår ved denne kildeinnsjekkingen.
+
 ## Cloud tank-konseptbilder, 28. oktober 2026
 
 - [x] Bevar SARO v1/v2 og Caliche v1 med galleri, prompter og kontrollsummer. [Gjeldende skyretning](Concepts/CloudTankUFO-2026-10-28/README.md): to skybanker velter fremover fra hver sin side. Implementering og spilltest gjenstår i eksisterende finaleoppgave.

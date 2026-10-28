@@ -1,3 +1,11 @@
+## SC02-lysbue: 110/110 består, klar for fletting
+
+PR195 har ferdig native lysbue og gnister, R4-pakke og godkjent fullmatrise. Bevis: ~/scratch-bm/Signal47-electric-arc-20261028. Én kort installert kontroll gjenstår etter fletting. Claudes SC03-kilder er urørt.
+
+## Elektrisk lysbue ved trafo, Codex 28.10.2026
+
+Tom bestiller lysbuen planlagt i NIAGARA_FORSLAG.md. Codex eier codex/substation-electric-arc i motel-v2-unreal-worktree fra main6c63a350. Bygger videre på kopi av Claudes uferdige niagara-sparks-kilder uten å endre originalarbeidskopien. Omfang: fysisk forankret blåhvit lysbue, gnister/lyspuls ved SC02s første fremkomst, rolig blinking, T01/T02/lagring/pause bevart. Én tung jobb gjennom guard. Bevis: ~/scratch-bm/Signal47-electric-arc-20261028.
+
 ## Cloud tank-konseptbilder lagret, 28. oktober 2026
 
 Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.

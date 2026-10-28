@@ -16,6 +16,7 @@
 		{ "Name": "PythonScriptPlugin", "Enabled": true },
 		{ "Name": "RigLogic", "Enabled": true },
 		{ "Name": "HairStrands", "Enabled": true },
+		{ "Name": "Niagara", "Enabled": true },
 		{ "Name": "ControlRig", "Enabled": true },
 		{ "Name": "MetaHumanSDK", "Enabled": true }
 	],
