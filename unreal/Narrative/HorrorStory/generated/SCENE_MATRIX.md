@@ -2,7 +2,7 @@
 
 Generert fra world_producers.json. Dette er planleggingsdata: ingen rad betyr at scenen er integrert, bygget eller prøvd i spillet.
 
-Flagg: 96 (12 finnes i koden, 48 delvis, 36 må bygges). Scener: 79. Tester: 117.
+Flagg: 90 (17 finnes i koden, 45 delvis, 28 må bygges). Scener: 77. Tester: 117.
 
 ## SC01
 
@@ -114,22 +114,14 @@ SC01 er levert med pakket teknisk aksept og flettet i main (PR #174). Alle seks 
 
 ## SC02
 
-Utvid FS47Horror fra én SC01-fase til en SC02-fase etter bComplete med ny innholdsrevisjon 2, og koble H02-scenene til den eksisterende fysiske T01-kontrollen i FS47Substation. Bygg møte 1: en ny blek reaktiv aktør med sikt, lyd, siste sansede sted, søk og tilbaketrekning ved Caliche Junction, to farbare ganglinjer utenfor gjerdet, kjøreflukt og lokal gjenopptakelse som bevarer T01. Gammel bortføring og TruckTaken reserveres bort under møtet.
+SC02-kandidaten har eksisterende vert, blek original aktør, native import og live-kontrakt for T01, målt syn, fangst, lokal retry og flukt. Hindringsnavigasjon og hele flukt-/restorekontrollen ferdigstilles før senere scenarioer tar mønsteret i bruk. Dette er kildebeskrivelse, ikke godkjent pakket integrasjon.
 
 **Kode:**
 
-- S47Horror.cpp/S47Horror.h: InstalledRevision 2; FS47Horror::Begin og FS47Horror::Save får feltene sc02Phase, threat-snapshot og safeCheckpoint; Save skriver scenario SC02 i stedet for legacyContinuation når SC01 er ferdig og revisjon er 2. Revisjon 1-saker beholder dagens overgang.
-- S47Horror.cpp: FS47Horror::Context og FS47Horror::Trigger sjekker i dag R->ScenarioIds.Contains(TEXT("SC01")); gjør dette til aktivt scenario (SC01 eller SC02). Context setter ctx_hr_h02_ready (bComplete og spiller ved FS47Substation::Here), ctx_hr_h02_checked og ctx_hr_sc02_t01_complete fra FS47Substation::HasNormalResult, ctx_hr_h02_insufficient fra nytt attempted-faktum, samt threat/escape/retry fra ny aktør.
-- T01-eierskap (uendret, bare lest): journal = FS47Substation::ReadJournal (EV_TRAFO_CARD, substation:journal); servicekontroll og separat indikator = FS47Substation::StartCheck, Running i FS47Substation::Step (3 s), spak og panel i FS47Substation::Apply og panelteksten i Install (substation:service, 'PANEL: CHECK COMPLETE'); lampeprøve = FS47Substation::Observe med FS47Substation::RenderedResult (substation:lamp); normalresultat = HasNormalResult, FS47Substation::SyncFacts (ctx_trafo_service_ok, T01_NORMAL_RESULT, T02_BASELINE_RESULT) og FS47Substation::Refile (EV_TRAFO_CHECK); lagring = FS47Substation::Save/Begin. Den senere separate T02-indikatoren er FS47Substation::CompareIndicator i S47SubstationFollowup.cpp og skal ikke blandes inn.
-- Returarkivering (én gang): FS47Evening::Use på logbook i kontrollrommet (AtShiftFolder, bServiceFiled, Note og FiledRoutineObjective), FS47Evening::ValidateServiceRestore, ServicePending, ServiceObjective og ServiceTasks i S47Evening.cpp; survey-porten i AS47Story::StagePassed (S47Story.cpp). Lokal retry må aldri kalle Use eller nullstille bServiceFiled.
-- Gjerde og porter: prop:substationFence, prop:substationGate_L og prop:substationGate_R kreves i FS47Substation::Install og står i FS47Substation::FollowupOccluders sammen med SiteShed, SitePole_* og SiteEquipment. Gange blokkeres av AS47Web::Colliders brukt i AS47Walker::Resolve og AS47Walker::Walkable; AS47Web::BuildHighwayPower (S47HighwayPower.cpp) bevarer gjerdet. Høyspenningsgården forblir lukket; ruter A og B må måles mot disse kolliderne.
-- Servicebil: SARO 07 er FS47Truck (S47Truck.cpp, FS47Truck::SetDriving). Kjøring og inn/ut: US47World::StartEngine, US47World::StopDriving, US47World::FreeDrive, US47World::DrivingSpeed, US47World::CanGetOut, US47World::GetOutHere, US47World::GetOut, US47World::DoorSpot, TruckChoice-lambdaen satt i US47World::Init, US47World::TruckSave og US47World::PlaceTruck for sjekkpunkt; FS47DriveController::Update og FS47DriveController::Hit (S47Drive.cpp) for kollisjon under kjøreflukt.
-- Siktlinjer: gjenbruk FS47HorrorVisual::ClearLine og FS47HorrorVisual::VisiblePoint (LineTraceSingleByChannel med opasitet og proxy-unntak), US47FieldCamera::ClearLine med FS47Substation::FollowupOccluders, FS47Substation::FollowupVisible, FS47Cam::Of og FS47Cam::Project (S47Seen.cpp), AS47Walker::EyeUE/ForwardUE. Dørtilstand fra AS47Web::DoorStates og AS47Web::SetDoor (S47Web.cpp). Aktørens sikt mot spilleren må bruke samme opake-regel.
-- Ny fil S47HorrorThreat.cpp/.h: FS47HorrorThreat med tilstandene Idle, Warn, Investigate, Search, Chase, Capture, Withdrawn; rutegraf for trafostedet; lydhendelser fra faktiske kilder (US47Audio::Spatial); Step kalles fra FS47Horror::Step og fryses når M->ModalOpen() eller bPausedByMenu.
-- Fangst og bortføring: FS47Abduction (S47Abduction.cpp: MayBegin, Calm, Begin, Warning, LightStep, Taken), FS47TruckTaken (S47TruckTaken.cpp: WarningStep, UseKey, Wake) og US47StationTaken (S47StationTaken.cpp: Update, TryTruck) er alle tidstapsfangster og skal ikke brukes. Sørg for at FS47Horror::Busy returnerer true under møtet slik at US47Main::OneAtATime og US47Away::AbductIn holder dem borte. Forvarselets lydseng kan låne mønsteret D.Hush og D.Audio->Pressure() fra FS47Abduction::Begin.
-- Figurer: FS47JacketWalker (S47Figures.cpp, Pose med Swing/Wide/Lean/Roll/Lift) er en leddet mannekeng som kan bære en blek kropp for prototyping; FS47CardSilhouette og FS47Glimpses (glimpse-silhuetten) er svarte figurer og reserveres for SC03-skyggen. Den bleke hudmaterialen og LOD-oppsettet fra FS47HorrorVisual::Build (SM_SC01_Hand) gjenbrukes til den nye kroppen.
-- S47HorrorPack.cpp: FS47HorrorPack::SelfTest utvides med at SC02-scenene bare får ctx-flagg fra host.
-- Ny S47HorrorTest-driver (eller egen S47HorrorSC02Test) med native gange og kjøring etter mønsteret i S47EveningServiceDriveTest.cpp, uten Place/MoveDriven etter START.
+- S47Horror.cpp/.h: innholdsrevisjon 2, fase, AtServiceFront, Context, TriggerSC02 og LocalRetry finnes i kandidaten.
+- S47HorrorThreat.cpp/.h: målt syn/lyd, Warn/Investigate/Search/Chase/Capture/Withdrawn, fysisk aktør og rutebevegelse finnes; hindringsnavigasjon skal ha faktisk trinnklarering.
+- S47HorrorTest.cpp: faktisk T01 og en tilsiktet fangst, fersk disk-Continue og legitim flukt til SARO 07. Ny utilsiktet fangst skal gi tydelig testfeil, ikke en lang retryløkke.
+- Bevar FS47Horror::Busy/US47Main::OneAtATime under møtet så gamle bortføringer holdes unna. SC02s lokale retry bruker ingen gammel fangst-/tidstapsløype.
 
 **Ressurser:**
 
@@ -139,9 +131,9 @@ Utvid FS47Horror fra én SC01-fase til en SC02-fase etter bComplete med ny innho
 
 **Avhenger av:**
 
-- SC01 flettet (PR #174) og T01 R2 i main.
-- Innholdsrevisjon 2 og lagringsformat avtalt.
-- Rutemåling av to farbare linjer utenfor gjerdet.
+- Eksisterende SC01 og T01 R2 i main.
+- Kandidatens innholdsrevisjon 2 og lagringskontrakter beholdes.
+- To faktisk farbare linjer utenfor gjerdet med oppdatert kroppsklaring.
 
 **Bare på Kubuntu:**
 
@@ -152,11 +144,10 @@ Utvid FS47Horror fra én SC01-fase til en SC02-fase etter bComplete med ny innho
 
 **Risiko og avklaringer:**
 
-- H02_INCOMPLETE sier at T01 og fysisk SARO-arkivering kreves før overgang til ubetjent survey, mens SC04 og SC05 krever at automatisk plan forblir sperret. Avklar med Tom hvordan T01-arkiveringen kobles til passiv residual.
-- SC02 legger aktøren 'mellom servicefronten og SARO 07'; dagens parkering for T01 er fri. Bilens parkeringsplass må kunne fastsettes eller aktøren plasseres dynamisk.
-- FS47Horror er i dag hardkodet til SC01 (Trigger, Context, Telephone, FinishCall); generalisering berører levert kode og må regresjonstestes.
-- AS47Walker mangler huking; trengs ikke i SC02, men SC04 krever det.
-- H02_BRIEF er walkie fra Dale, mens T01 i dag har ingen walkie-samtale; walkiekanal må rutes via FS47RecordedDialogue.
+- T01-arkiveringen knyttes én gang til originalene i SC04. Automatisk plan forblir sperret ved passiv residual i SC05, etter Toms beslutning.
+- Fri truckparkering og nye hindringer må inngå i navigasjon og reell fluktprøve.
+- Ingen teleport eller gjennomgang av tynn vegg som fastståings-/fangstløsning.
+- Den eksisterende H02-walkiesamtalen og alle SC02-scener/lagringsflagg bevares ved den reviderte kildepakken.
 
 **Stemmer:** H02_BRIEF_001, H02_BRIEF_002 og H02_BRIEF_003 (DALE, walkie) har status pending i recording_manifest.json og finnes ikke i voice/takes.json. Ingen andre SC02-scener har stemmer.
 
@@ -164,13 +155,13 @@ Utvid FS47Horror fra én SC01-fase til en SC02-fase etter bComplete med ny innho
 
 | Flagg | Status | Produsent | Handling i spillet | Tester |
 |---|---|---|---|---|
-| `ctx_hr_h02_ready` | partial | FS47Horror::Context (ny SC02-fase) via FS47Substation::Here og bComplete | SC01 er fullført og spilleren står faktisk til fots ved Caliche Junctions merkede kontrollfront utenfor gjerdet. | SC02-T01, SC02-T02, SC02-T07 |
+| `ctx_hr_h02_ready` | existing | FS47Horror::Context og AtServiceFront i den eksisterende SC02-kandidaten | SC01 er fullført og spilleren står faktisk til fots ved Caliche Junctions merkede kontrollfront utenfor gjerdet. | SC02-T01, SC02-T02, SC02-T07 |
 | `ctx_hr_h02_checked` | existing | FS47Substation::HasNormalResult via FS47Horror::Context | Journal lest, tresekunders servicekontroll kjørt ferdig og den faktisk gjengitte lampen sammenlignet med panelresultatet. | SC02-T02, SC02-T07 |
-| `ctx_hr_h02_insufficient` | partial | FS47Horror::Context via FS47Substation (journal uten normalresultat, avbrutt kontroll) | Spilleren har lest journalen eller startet kontrollen, men forsøker å avslutte eller sammenligne uten fullført, gjengitt resultat. | SC02-T05, SC02-T07 |
+| `ctx_hr_h02_insufficient` | existing | FS47Horror::Use/Context med bH02Attempt fra faktisk uavklart lampeforsøk | Spilleren har lest journalen eller startet kontrollen, men forsøker å avslutte eller sammenligne uten fullført, gjengitt resultat. | SC02-T05, SC02-T07 |
 | `ctx_hr_sc02_t01_complete` | existing | FS47Substation::HasNormalResult (lagret med RequestAutosave i FS47Substation::Observe) | Fysisk T01: journal, kontroll og observert lampe er fullført og autolagret før møtet starter. | SC02-T02, SC02-T04, SC02-T07 |
-| `ctx_hr_sc02_threat_visible` | new | Ny FS47HorrorThreat (blek reaktiv aktør) eid av FS47Horror | Etter sikret T01 ser spilleren den bleke kroppen gjengitt i ubrutt sikt, bevege seg og vende seg mot en ny lyd, før noen fangst er mulig. | SC02-T02, SC02-T07, SC02-T08 |
-| `ctx_hr_sc02_escape_complete` | new | FS47HorrorThreat sin tilstandsmaskin (Withdrawn) pluss US47World kjøring | Spilleren når SARO 07 via en av to ganglinjer utenfor gjerdet med brutt sikt og lyd, eller kjører bort på klar rute; aktøren mister kontakt og trekker seg tilbake. | SC02-T02, SC02-T03, SC02-T07 |
-| `ctx_hr_sc02_local_retry` | new | FS47Horror lokalt sjekkpunkt (ny) med FS47HorrorThreat fangst | Spilleren blir faktisk fanget i møte 1; spillet gjenoppretter lokalt dekningspunkt ved skuret med T01 bevart, uten gammel bortføring eller tidstap. | SC02-T04, SC02-T06, SC02-T07 |
+| `ctx_hr_sc02_threat_visible` | existing | FS47HorrorThreat::BodyInView/Think og FS47Horror::StepSC02 | Etter sikret T01 ser spilleren den bleke kroppen gjengitt i ubrutt sikt, bevege seg og vende seg mot en ny lyd, før noen fangst er mulig. | SC02-T02, SC02-T07, SC02-T08 |
+| `ctx_hr_sc02_escape_complete` | existing | FS47Horror::StepSC02 leser trusselens tilbaketrekning etter faktisk kjøring | Spilleren når SARO 07 via en av to ganglinjer utenfor gjerdet med brutt sikt og lyd, eller kjører bort på klar rute; aktøren mister kontakt og trekker seg tilbake. | SC02-T02, SC02-T03, SC02-T07 |
+| `ctx_hr_sc02_local_retry` | existing | FS47Horror::LocalRetry fra FS47HorrorThreat fangst i SC02-kandidaten | Spilleren blir faktisk fanget i møte 1; spillet gjenoppretter lokalt dekningspunkt ved skuret med T01 bevart, uten gammel bortføring eller tidstap. | SC02-T04, SC02-T06, SC02-T07 |
 
 ### Scener
 
@@ -258,38 +249,39 @@ Utvid FS47Horror fra én SC01-fase til en SC02-fase etter bComplete med ny innho
 
 ## SC03
 
-Bygg BY01 i Caliche: betalingstelefonen blir en faktisk samtaleport til dispatch og Ward, Ortiz og vogn 23 produseres som ny person og kjøretøy, og løftet skjer bare i spillerens sikt. Skyggeregelen bygges som valgfritt spor, og savnetsak og lokal ordre lagres som egne fakta.
+Bygg SC03 i Caliche: egne readback-samtaler, vanlig identifisert Ortiz med vogn 23, synlig løft med stillestående bleke skikkelser, to dekningsmuligheter, fysiske etterspor og savnetsak. Betjentens spørsmål om 21:00-loggen gir returen til SARO.
 
 **Kode:**
 
-- S47Horror.cpp: generaliser FS47Horror::FinishCall og bWorldCall til en liste navngitte samtaler (dispatch, ward, missing, ward_hold) med egen stempel.
-- S47Caliche.cpp: town:payphone i FS47Caliche::BindTown ruter til FS47Horror når SC03 er aktiv; Town->bRinging/OnAnswer beholdes.
-- Ny S47HorrorWorld.cpp: Ortiz (FS47JacketWalker-basert eller ny mesh), vogn 23 (FS47FleetParked::Build-mønster), løftesekvens, nærvær, dekningssoner, etterspor-interaksjoner, skyggefigur med regel fra FS47Glimpses::Sight og FS47AnomalyWorld::MayMove.
+- S47Horror.cpp: navngitte verdenssamtaler og egen lagret SC03-fase; readback-fakta først ved fullført samtale.
+- S47Caliche.cpp: town:payphone ruter til aktiv SC03 uten å ta over Town->bRinging/OnAnswer fra andre hendelser.
+- Ny S47HorrorWorld.cpp: Ortiz/vogn-ankomst, interaksjon, målt synlig løft, bleke figurer i lyskanten, dekning, termose/grusmerker og betjentens faktiske ankomst.
+- Begrenset sceneeierskap for eksisterende betjent/patruljebil og dens collidere; ordinær tidsplan gjenopptas etter sekvensen.
 
 **Ressurser:**
 
-- Ortiz: original modell og klær, egen Blender-kilde.
-- Vogn 23: hvit servicevogn, egen modell eller ServiceFleet-variant med kontrollert lisens.
-- Håndsett med navnelapp.
-- Lyssøyle og løftelyd (egen eller CC0).
+- Ortiz: original figur og klær med redigerbar kilde.
+- Hvit servicevogn 23 med avklart opphav, fysisk dør og målte collidere.
+- Termose med Ortiz-navnelapp og merker i grusen.
+- Fremmed lys og stillestående bleke figurer; ingen svartfigur.
 
 **Avhenger av:**
 
-- SC02 levert.
-- Samtaleport generalisert.
-- Ortiz-produksjon og casting.
+- SC02-kilde og målrettet flukt-/restorekontroll i akt 1.
+- Ferdig navngitt samtaleport og fysiske Ortiz-/vognassets.
 
 **Bare på Kubuntu:**
 
-- Blender, stemmeopptak, pakkede reiser og bilder i Caliche.
+- Blender-/nativeimport, pakket SC02 til SC03-reise og High/Low-bilder.
+- Lyttprøve av endelige opptak til slutt.
 
 **Risiko og avklaringer:**
 
-- Tidslinjen (19:30 til 21:15) må passe med eksisterende Caliche-hendelser og Earls vakt.
-- Eksisterende sheriffbil-hendelse (bCarOut) ligner det etterlatte kjøretøyet; må ikke forveksles.
-- Glimpses har motsatt regel (gjemmer seg når sett) og må holdes atskilt.
+- Egen vogn 23 må skilles fra SARO 07 og eksisterende etterlatt patruljebil.
+- Melding og readback må fungere uten valgfri SC01-vindusmelding.
+- Den bleke lyskanten gir ingen ny fienderegel eller jakt; safe retreat er oppnåelig både i stasjonen og egen bil.
 
-**Stemmer:** Mangler opptak: SC03_DISPATCH_RECEIPT_001/002, SC03_RELIEF_CONTACT_001/002, SC03_ORTIZ_IDENTIFY_001/002/003, SC03_MISSING_RECEIPT_001/002, SC03_LOCAL_ORDER_HOLD_001/002 (alle pending). ORTIZ er ny stemme.
+**Stemmer:** Ward og Ortiz får opptak til slutt etter at historie/runtime er låst. Eksisterende betjent beholdes som tekstfigur; manglende takes er pending, ikke spilt.
 
 ### Verdensflagg
 
@@ -298,12 +290,12 @@ Bygg BY01 i Caliche: betalingstelefonen blir en faktisk samtaleport til dispatch
 | `ctx_hr_sc03_dispatch_readback` | partial | FS47Horror verdenssamtale (bWorldCall-mønsteret) startet fra Caliche-betalingstelefonen | Etter SC02-flukt bruker spilleren betalingstelefonen i Caliche og fullfører meldingen med sted, tid og readback. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_ortiz_assigned` | partial | FS47Horror Ward-samtale (samme samtaleport) i Caliche | Ward-samtalen fullføres faktisk i telefonen og Ortiz med vogn 23 avtales ved bensinstasjonen. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_ortiz_identified` | new | Ny FS47HorrorWorld Ortiz-aktør og vogn 23 | Ortiz ankommer synlig med hvit vogn 23 ved bensinstasjonen og spilleren bruker henne fysisk (Talk) innen rekkevidde. | SC03-T02, SC03-T06, SC03-T07 |
-| `ctx_hr_sc03_shadow_observed` | partial | Ny skyggeregel i FS47HorrorWorld med siktlogikk fra FS47Glimpses og FS47AnomalyWorld | Spilleren holder den svarte formen i blikk (stille) og ser bort; den har flyttet seg to ganger bare i usette intervaller. | SC03-T03, SC03-T05, SC03-T06 |
-| `ctx_hr_sc03_lift_observed` | new | FS47HorrorWorld løftesekvens (lys, Ortiz uten støtte) med siktprøve | Spilleren ser Ortiz i ubrutt sikt løftes i fremmed lys og forsvinne ved vogn 23. | SC03-T02, SC03-T06, SC03-T07 |
-| `ctx_hr_sc03_safe_retreat` | new | FS47HorrorWorld nærværstilstand (kontakt tapt) pluss dekningssone ved telefon/bil | Etter tapet når spilleren opak dekning eller kjent telefon eller egen bil, og nærværet i utkanten mister kontakt og trekker seg tilbake. | SC03-T02, SC03-T06 |
-| `ctx_hr_sc03_traces_checked` | new | FS47HorrorWorld rekvisitter (vogn 23 og Ortiz' håndsett) via FS47Interactable | Etter trygg retrett undersøker spilleren den tomme vognen og håndsettet med navnelapp. | SC03-T02, SC03-T06 |
+| `ctx_hr_sc03_lift_observed` | new | FS47HorrorWorld løftesekvens (lys, Ortiz uten støtte) med siktprøve | Spilleren ser Ortiz løftes i fremmed lys og forsvinne ved vogn 23, med stillestående bleke skikkelser i lyskanten. | SC03-T02, SC03-T06, SC03-T07 |
+| `ctx_hr_sc03_safe_retreat` | new | FS47HorrorWorld nærværstilstand (kontakt tapt) pluss dekningssone ved telefon/bil | Etter tapet når spilleren opak dekning inne på stasjonen eller sin egen bil; nærværet i utkanten trekker seg tilbake uten jakt. | SC03-T02, SC03-T06 |
+| `ctx_hr_sc03_traces_checked` | new | FS47HorrorWorld rekvisitter (vogn 23, termose og grusmerker) via FS47Interactable | Etter trygg retrett undersøker spilleren den tomme vognen, termosen med Ortiz-navnelapp og merkene i grusen. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_missing_readback` | partial | FS47Horror samtaleport (ny savnetsak) fra telefon | Spilleren melder Ortiz savnet fra fungerende telefon og hører hele readback, adskilt fra første utkalling. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_local_order_suspended` | partial | FS47Horror Ward-samtale; ny horror-tilstand localOrderSuspended | Spilleren fullfører Ward-samtalen etter savnetsaken; Ward suspenderer den lokale 06:00-serien. | SC03-T02, SC03-T09 |
+| `ctx_hr_sc03_deputy_at_stop` | partial | Ny SC03-ankomst for eksisterende Caliche-betjent eid av FS47HorrorWorld | Etter savnetmelding kommer den kjente sheriffbetjenten fysisk til bensinstasjonen; spilleren bruker ham på stedet. | SC03-T02, SC03-T05, SC03-T06 |
 
 ### Scener
 
@@ -329,17 +321,6 @@ Bygg BY01 i Caliche: betalingstelefonen blir en faktisk samtaleport til dispatch
 - Dokumenter: ingen
 - Tester: SC03-T02, SC03-T08
 
-**`SC03_SHADOW_RULE`**: Spilleren ser den svarte formen ved sidevindu eller verkstedåpning mens hun venter.
-
-- Normalt: Formen står stille i blikk og flytter seg to ganger usett.
-- Avbrudd: Panel eller pause gir ingen flytting.
-- Alternativ: Overses helt: scenen vises ikke og progresjon blokkeres ikke.
-- Stemmecues: 0, innspilt 0
-- Modeller: Svart figur (eksisterende glimpse-silhuett kan gjenbrukes visuelt)
-- Lyd: Svak skrapelyd ved flytting
-- Dokumenter: ingen
-- Tester: SC03-T03, SC03-T05
-
 **`SC03_ORTIZ_IDENTIFY`**: Ortiz ankommer med vogn 23; spilleren bruker 'Talk'.
 
 - Normalt: Ortiz identifiserer seg og ber om å bli vist stedet.
@@ -353,22 +334,22 @@ Bygg BY01 i Caliche: betalingstelefonen blir en faktisk samtaleport til dispatch
 
 **`SC03_HELPER_TAKEN`**: Etter observert løft og trygg retrett.
 
-- Normalt: Beskrivelse av løftet og oppfordring til savnetmelding.
+- Normalt: Ortiz løftes synlig, henger uten støtte og forsvinner. En termose ruller ut. Flere bleke skikkelser står i lyskanten; én vender hodet.
 - Avbrudd: Vises ikke under aktiv kontakt; utsatt til ro.
 - Alternativ: Spiller som ikke ser: løftet venter på sikt.
 - Stemmecues: 0, innspilt 0
-- Modeller: Lyssøyle; Ortiz
+- Modeller: Ortiz og vogn 23; termose med navnelapp; bleke figurer i lyskanten
 - Lyd: Fremmed lys, lav tone
 - Dokumenter: ingen
 - Tester: SC03-T02, SC03-T06
 
-**`SC03_HELPER_TRACES`**: Undersøk vogn 23 og håndsettet.
+**`SC03_HELPER_TRACES`**: Undersøk den tomme vognen, termosen og grusmerkene etter ro.
 
 - Normalt: Beskrivelse av tom vogn og navnelapp; HR_HELPER_TRACE_NOTE.
 - Avbrudd: Ingen tidsfrist.
 - Alternativ: Kan gjøres etter savnetmeldingen.
 - Stemmecues: 0, innspilt 0
-- Modeller: vogn 23 med åpen dør; håndsett med navnelapp
+- Modeller: vogn 23 med åpen dør; termose med Ortiz-navnelapp; smale merker i grusen
 - Lyd: ingen nye
 - Dokumenter: HR_HELPER_TRACE_NOTE
 - Tester: SC03-T02, SC03-T06
@@ -395,33 +376,43 @@ Bygg BY01 i Caliche: betalingstelefonen blir en faktisk samtaleport til dispatch
 - Dokumenter: HR_LOCAL_HOLD_RECEIPT
 - Tester: SC03-T02, SC03-T09
 
+**`SC03_RECEIVER_QUESTION`**: Betjenten er faktisk ankommet bensinstasjonen etter savnetmeldingen; spilleren snakker med ham.
+
+- Normalt: Han spør om SARO-mottakeren stod på 21:00 og ber om logg/stripskriver til savnetsaken. Dette begrunner SC04.
+- Avbrudd: Avbrutt samtale kan fortsettes; ingen logghenteordre før siste replikk.
+- Alternativ: Tidligere SC01-vindusmelding er ikke en forutsetning for den nye savnetsaken.
+- Stemmecues: 0, innspilt 0
+- Modeller: Eksisterende sheriffbetjent og patruljebil, fysisk ankomst ved stasjonen
+- Lyd: Fysisk dialog, eksisterende betjent som tekst; nye Ward/Ortiz-opptak tas til slutt
+- Dokumenter: ingen
+- Tester: SC03-T02, SC03-T05, SC03-T06
+
 ### Testsett
 
 | Test | Type | Dekker | Prøve |
 |---|---|---|---|
-| SC03-T01 | data | regression, negative | Register: alle åtte SC03-scener er SC03; ORTIZ er ny aktør; ingen eksisterende Earl, sheriff eller servitrise fjernes i kildene. |
-| SC03-T02 | input | normal | Pakket reise fra SC02-flukt: kjør til Caliche, ring dispatch og Ward fra betalingstelefonen, vent ved lys stopp, møt Ortiz, se løftet, nå dekning, undersøk vogn og håndsett, meld savnet, motta lokal ordre. Alle ni flagg i riktig rekkefølge og fire dokumenter én gang. |
-| SC03-T03 | input | alternative | To kjøringer: skyggeregelen fulgt (to usette flyttinger observert) og helt oversett. Begge fullfører SC03. FAIL hvis skyggeregelen blokkerer. |
-| SC03-T04 | api | interrupt | Pause og panel under telefon, ventetid, skyggefigur og løft. Ingen flytting av svart figur i panel; løftet starter ikke under modal. |
+| SC03-T01 | data | regression, negative | Register: åtte reviderte SC03-scener, inkludert betjentens spørsmål om loggen. ORTIZ og DEPUTY beholder egne identiteter; ingen svartfigur eller fjernet eksisterende NPC. |
+| SC03-T02 | input | normal | Pakket reise fra SC02-flukt: kjør til Caliche, fullfør dispatch/Ward-samtaler, møt Ortiz ved vogn 23, se løftet, nå dekning, undersøk vogn/termose/grus, meld savnet, motta lokal ordrestans og møt betjenten som ber om SARO-loggen. Egne fakta og dokumenter oppstår én gang. |
+| SC03-T03 | input | alternative | Separate kjøringer med dekning inne på stasjonen og i egen bil. Ny SC03-melding skal fungere også om SC01-hånden aldri ble sett og vindusmelding derfor mangler. |
+| SC03-T04 | api | interrupt | Pause og panel under telefon, ventetid, Ortiz-ankomst og løft. Ingen oppspart bevegelse; løftet starter ikke under modal og ingen uopplevd observasjon registreres. |
 | SC03-T05 | input | continue | Vanlig Continue etter dispatch, etter identifikasjon, etter løft før retrett og etter savnetsak. FAIL ved dobbelt dokument eller tapt fakta. |
-| SC03-T06 | api | negative | Lyd uten sikt gir ikke lift_observed; samtale uten fullført readback gir ingen kvittering; traces krever safe_retreat; dialogvalg setter ikke assigned eller identified. |
+| SC03-T06 | api | negative | Lyd eller lys alene gir ikke lift_observed; avbrutt readback gir ingen kvittering; traces krever ro og faktisk undersøkelse; dispatch-ord alene gir ikke deputy_at_stop. Ingen rednings-/jaktport i SC03. |
 | SC03-T07 | image | image | High/Low av Ortiz, vogn 23, løftet og etterspor i Caliche om natten. |
 | SC03-T08 | api | audio | Dispatch, Ward og Ortiz takes: telefonkanal og fysisk kanal; manglende takes registreres ikke som avspilt. |
 | SC03-T09 | input | regression | Regresjon: Caliche-personer (Earl, sheriff, betjent), Glimpses, AnomalyWorld, tilfeldig bortføring reservert under løft, og at senere morgenserie-tekst ikke motsier lokal ordre. |
-| SC03-T10 | human | image, audio | Menneskelig vurdering av Ortiz som person, løftets virkning og skyggeregelens forståelighet. UNVERIFIED til prøvd. |
+| SC03-T10 | human | image, audio | Menneskelig vurdering av Ortiz som vanlig person, løftets virkning, de bleke skikkelsene og den konkrete motivasjonen for returen. UNVERIFIED til prøvd. |
 
 ## SC04
 
-Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollrommet, deretter møte 2 i annexet med to løsninger og møte 3 ved bilen med huking og kjøreflukt. Etterpå trygt kontrollrom og Ward på linjen.
+Sikre mottakerloggen til savnetsaken og originalene, arkiver T01 én gang og sperr automatisk kjøreplan. Ett annexmøte med lang eller lydavledet flukt ender i låsbart kontrollrom og ro; ingen jakt ved bilen.
 
 **Kode:**
 
-- S47Story.cpp: AS47Story::StagePassed får passiv modus når plansperren er på; Survey settes ikke.
-- S47HorrorVisual.cpp: ny plansperrebryter med synlig resultat.
-- S47Evening.cpp: FS47Evening::Use utvides med sikring av originaler uten ny T01-arkivering.
-- S47HorrorThreat.cpp: annex- og bilinstans; lydavledning fra vanlig radio.
-- S47Walker.cpp: huking (øyehøyde, kropp) og ny tast/gamepad-binding.
-- S47Horror.cpp: avtrykksavspilling av H01_BRIEF_002 romlig fra feil dør; ro-timer; DoorsSecured utvidet.
+- S47HorrorWorld: patruljebil følger til porten og forlater, uten å tvinge spilleren inn.
+- S47Evening: behold én fysisk T01-arkivering sammen med sikringen av skiftoriginaler.
+- S47HorrorVisual: faktisk plansperrebryter; passiv mottaking og senere kontrollarbeid forblir mulig.
+- FS47HorrorThreat: annex-søk, opake dører/vegger og faktisk lokal lydavledning, to gangbare ruter og lokalt sjekkpunkt.
+- S47Horror.cpp: samme allerede hørte Dale-fragment fra feil dør, sikkert kontrollrom og Ward på vanlig telefon; overgang til 00:13:47.
 
 **Ressurser:**
 
@@ -431,18 +422,19 @@ Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollromme
 
 **Avhenger av:**
 
-- SC03 levert.
-- FS47HorrorThreat fra SC02.
-- Huking.
+- SC03s savnetsak og faktisk betjent-/loggavtale i akt 1.
+- FS47HorrorThreat med dokumentert hindringsnavigasjon og lokale sjekkpunkter.
 
 **Bare på Kubuntu:**
 
-- Pakkede reiser, bilder fra kupe, lyttprøve av avtrykk.
+- Pakkede annexreiser for lang rute og lydavledning, faktiske bilder og disk-Continue.
+- Lyttprøve av samme Dale-fil fra ny posisjon.
 
 **Risiko og avklaringer:**
 
-- Bilmøtet må ikke kopiere finalens motorstopp eller TruckTaken.
-- Plansperre mot eksisterende survey-kjede: SC05 avhenger av ny passiv vei.
+- T01-filingen skal skje én gang i SC04; kopier/originaler må ikke dupliseres ved retry.
+- Plansperren må bevare passiv residual i SC05 uten Survey.
+- Å flykte til kontrollrommet skal gi ro; ingen ekstra bilsekvens eller huking.
 
 **Stemmer:** Mangler: SC04_LIMITED_RETURN_001/002 og SC04_SAFE_ROOM_AGREEMENT_001/002/003 (WARD, pending). SC04_ANNEX_IMPRINT_001 gjenbruker H01_BRIEF_002 og trenger ikke nytt opptak.
 
@@ -458,11 +450,6 @@ Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollromme
 | `ctx_hr_sc04_annex_long_escape` | new | FS47HorrorThreat annexinstans | Spilleren lukker kjent dør, bryter sikt bak opak vegg og fullfører den lange passasjen; søket avsluttes. | SC04-T02, SC04-T06 |
 | `ctx_hr_sc04_annex_sound_escape` | new | FS47HorrorThreat lydavledning fra vanlig lydkilde | Fra dekning slår spilleren på en vanlig radio; enheten undersøker lyden og spilleren krysser kort rute. | SC04-T03, SC04-T06 |
 | `ctx_hr_sc04_annex_local_retry` | new | FS47Horror lokalt sjekkpunkt (annex) | Spilleren fanges i annexet og gjenopptar ved siste dekningspunkt med sperre og papirer bevart. | SC04-T04, SC04-T05 |
-| `ctx_hr_sc04_after_annex_calm` | new | FS47Horror fasetilstand etter annexflukt | Etter annexflukt har spilleren hatt en faktisk rolig periode og fullført kontaktsamtale før bilfaren kan starte. | SC04-T02, SC04-T06 |
-| `ctx_hr_sc04_car_route_known` | partial | FS47Horror::DoorChanged-mønster pluss ny skjermet parkeringssone | Spilleren går fysisk ruten fra skjermet parkering til kontrollrommets låsbare dør og åpner den. | SC04-T02, SC04-T06 |
-| `ctx_hr_sc04_car_threat_visible` | new | FS47HorrorThreat bilinstans | Mens spilleren sitter i bilen passerer enheten tett utenfor kupeen, synlig og hørbar. | SC04-T02, SC04-T08 |
-| `ctx_hr_sc04_car_escape` | new | FS47HorrorThreat bilinstans pluss ny huking i AS47Walker | Spilleren kommer under vinduslinjen (huking) eller kjører bort på klar rute; enheten mister kontakt og bilen virker etterpå. | SC04-T02, SC04-T03, SC04-T06 |
-| `ctx_hr_sc04_car_local_retry` | new | FS47Horror lokalt sjekkpunkt (bil) | Spilleren fanges ved bilen og gjenopptar ved skjermet tilkjøring med brukbar bil og bevart arbeid. | SC04-T04, SC04-T05 |
 | `ctx_hr_sc04_control_room_safe` | partial | FS47Horror::DoorsSecured pluss trusseltilstand | Spilleren er inne i kontrollrommet med østdør og annexutgang lukket, uten aktiv kontakt eller søk. | SC04-T02, SC04-T06 |
 | `ctx_hr_sc04_ward_on_line` | partial | FS47Horror::Telephone (kontrollromstelefon) | Spilleren ringer Ward fra kontrollromstelefonen og samtalen er faktisk koblet opp. | SC04-T02, SC04-T06 |
 
@@ -473,7 +460,7 @@ Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollromme
 - Normalt: Avtale om avgrenset retur, sikring av plan og skiftlogg.
 - Avbrudd: Avbrutt samtale gjenopptas.
 - Alternativ: Spilleren kan bli i Caliche; ingen global reisesperre.
-- Stemmecues: 2, innspilt 0
+- Stemmecues: 0, innspilt 0
 - Modeller: payphone
 - Lyd: Telefonkanal
 - Dokumenter: ingen
@@ -534,39 +521,6 @@ Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollromme
 - Dokumenter: ingen
 - Tester: SC04-T04, SC04-T05
 
-**`SC04_CAR_READ`**: Etter ro og prøvd rute, når bilenheten passerer.
-
-- Normalt: Instruks om skjerm eller kjøring.
-- Avbrudd: Utsettes ved modal.
-- Alternativ: Ingen.
-- Stemmecues: 0, innspilt 0
-- Modeller: SARO 07; skjermet parkering
-- Lyd: Passering utenfor kupe
-- Dokumenter: ingen
-- Tester: SC04-T02, SC04-T08
-
-**`SC04_CAR_ESCAPE`**: Etter huking eller kjøreflukt.
-
-- Normalt: Enheten har mistet kontakt; bilen virker.
-- Avbrudd: Som over.
-- Alternativ: Huking eller kjøring.
-- Stemmecues: 0, innspilt 0
-- Modeller: SARO 07
-- Lyd: Motor
-- Dokumenter: ingen
-- Tester: SC04-T02, SC04-T03
-
-**`SC04_CAR_RETRY`**: Etter fangst ved bilen.
-
-- Normalt: Tilbake til skjermet tilkjøring.
-- Avbrudd: Continue starter på sjekkpunktet.
-- Alternativ: Ingen.
-- Stemmecues: 0, innspilt 0
-- Modeller: SARO 07
-- Lyd: ingen nye
-- Dokumenter: ingen
-- Tester: SC04-T04, SC04-T05
-
 **`SC04_SAFE_ROOM_AGREEMENT`**: Kontrollromstelefon når rommet er trygt.
 
 - Normalt: Ward på linjen; avtale om loggsikring.
@@ -582,13 +536,13 @@ Bygg avgrenset retur, fysisk plansperre og sikring av originaler i kontrollromme
 
 | Test | Type | Dekker | Prøve |
 |---|---|---|---|
-| SC04-T01 | data | regression, negative | Register: ti SC04-scener; SC04_ANNEX_IMPRINT gjenbruker H01_BRIEF_002 uten nytt opptak; ingen scene ber spilleren oppheve plansperren. |
-| SC04-T02 | input | normal | Pakket reise: Ward-avtale i Caliche, kjøring til SARO, plansperre, originaler, annexavtrykk, lang flukt, ro og samtale, prøvd rute fra skjermet parkering, bilmøte med kjøreflukt, trygt kontrollrom, Ward på linje. |
-| SC04-T03 | input | alternative | Separate kjøringer: annex via lydavledning og kort rute; bilmøte via huking under vinduslinjen og skjerming. |
-| SC04-T04 | input | alternative, negative | Fangst i annex og fangst ved bil gir hver sitt lokale sjekkpunkt med sperre og originaler bevart; ingen gammel teller eller tidstap. |
-| SC04-T05 | input | continue, interrupt | Vanlig Continue og pause/panel midt i annexmøtet, etter annexflukt, midt i bilmøtet og i trygt rom. Mid-møte gir sikkert punkt. |
-| SC04-T06 | api | negative | Imprint ikke uten dale_reference_heard; flukt ikke mens søk er aktivt; glass skjuler ikke kropp uten huking; control_room_safe ikke med åpen dør; dialog setter ingenting. |
-| SC04-T07 | image | image | High/Low av plansperre, annexruter, hånd i dørkarm, bilmøte fra kupe med og uten huking. |
+| SC04-T01 | data | regression, negative | Register: sju SC04-scener. ANNEX_IMPRINT gjenbruker H01_BRIEF_002 uten nytt opptak. Ingen bilsekvens, huking eller scene som opphever plansperren. |
+| SC04-T02 | input | normal | Pakket reise etter betjentens loggspørsmål: kjør til SARO med patruljebil til porten, sikre mottakeroriginaler og T01-journal én gang, fysisk plansperre, annexavtrykk og lang flukt, trygt kontrollrom og Ward på vanlig telefon. |
+| SC04-T03 | input | alternative | Alternativ annexflukt: slå på en faktisk vanlig lydkilde fra trygg plass, observer at skapningen undersøker den, og ta den korte ruten. Ingen biljakt. |
+| SC04-T04 | input | alternative, negative | Fangst i annex gir lokalt sjekkpunkt før annexet med plansperre, originaler og T01 bevart. Ingen gammel bortføringsteller eller tidstap. |
+| SC04-T05 | input | continue, interrupt | Vanlig Continue og pause/panel midt i annexmøtet, etter flukt og i kontrollrommet. Mid-møte gjenopptas trygt, uten halv jakt eller doble originaler. |
+| SC04-T06 | api | negative | Imprint krever tidligere faktisk hørt Dale-linje; lydavledning krever faktisk lydkilde; glass alene er ikke opak dekning; control_room_safe krever lukket dør. Dialog alene gir ingen fysisk flukt. |
+| SC04-T07 | image | image | High/Low av plansperre, annexets to ruter, hånd i dørkarm og trygt kontrollrom. Fysisk skjerming og ruter er lesbare. |
 | SC04-T08 | api | audio | Imprint spiller samme fil fra feil retning med positive samples; Ward-takes på telefonkanal; radio som lydkilde har posisjon. |
 | SC04-T09 | input | regression | Regresjon: T01-arkivering én gang, kontrollrom, SaroDark og TruckTaken reservert, eksisterende annexdører. |
 | SC04-T10 | human | image, audio | Menneskelig vurdering av jumpscare, ro, tro på valget om å bli i rommet og Xbox. UNVERIFIED til prøvd. |
@@ -619,7 +573,7 @@ Lag en passiv residualovergang fra trygt kontrollrom som ikke starter Survey, og
 - Eksisterende residual er bundet til Survey og TimeSkip; omlegging berører finalekjeden.
 - Tekstene 'Babysit the survey until 06:00' i AS47Story::Tasks motsier lokal ordre.
 
-**Stemmer:** SC05_PASSIVE_RESIDUAL har ingen stemmecues.
+**Stemmer:** SC05_PASSIVE_RESIDUAL har ingen stemmecues. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
 
 ### Verdensflagg
 
@@ -775,7 +729,7 @@ Kontoret, skuffen, reservenøkkelen og feltmappen finnes i FS47Office, og arkive
 - Kontrakten sier at EveningShift alene eier kontor, dokumenter og VHS, mens FS47Office ligger i Main: koordiner eierskap
 - MISSION_FLOW sier arrayvedlegget ligger i feltmappen, mens koden har det som eget ark i kontorskapet
 
-**Stemmer:** H04_BRIEF_001 til 003 (Dale, telefon, kinski) står som pending i recording_manifest.json og finnes ikke i voice/takes.json.
+**Stemmer:** H04_BRIEF_001 til 003 (Dale, telefon, kinski) står som pending i recording_manifest.json og finnes ikke i voice/takes.json. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
 
 ### Verdensflagg
 
@@ -835,12 +789,12 @@ Kontoret, skuffen, reservenøkkelen og feltmappen finnes i FS47Office, og arkive
 
 ## SC08
 
-BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47ReelTape, FS47LostNights), Earls vakttid (S47Timeline), lobbydøren, arrayservicearket og A/B/REF-tavlene i FS47Office, kommandoregisteret i FS47ArrayBack og følge/hold-logikken i FS47DishesFollow. Trusselmøte 4 og lokal retry må bygges.
+BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47ReelTape, FS47LostNights), Earls vakttid (S47Timeline), lobbydøren, arrayservicearket og A/B/REF-tavlene i FS47Office, kommandoregisteret i FS47ArrayBack og følge/hold-logikken i FS47DishesFollow. Arrayets ene trusselmøte og lokal retry må bygges.
 
 **Kode:**
 
 - Ny S47By02.cpp: lobbyutlevering, spoleeske, TAPE/LIVE-velger med frakobling, varige prøver, spørsmål/gjentak, konvolutt etter 04:00
-- Ny S47ArrayService.cpp: baseline på terminal, feltlykt, A/B-soner, retur, sammenligning, sluttkontroll, trusselmøte 4, hold og lokal retry
+- Ny S47ArrayService.cpp: baseline på terminal, feltlykt, A/B-soner, retur, sammenligning, sluttkontroll, arrayets trusselmøte, hold og lokal retry
 - Egen ARRAY-01-modus i FS47DishesFollow uten Warning/Force
 - Reservasjon i nattkurven (S47Night/S47Away) og ArchiveDishes/ArrayBack under prøven
 - Utvid FS47Horror::Context med alle 22 SC08-flagg
@@ -851,7 +805,7 @@ BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47Reel
 
 **Avhenger av:**
 
-- SC07 levert
+- SC07-kilde og målrettet prøve i akt 2
 - Felles inntrengeraktør fra SC02/SC04
 - Felles lokalt sjekkpunkt
 
@@ -863,12 +817,12 @@ BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47Reel
 
 **Risiko og avklaringer:**
 
-- Eksisterende reel spilles fra dialogtema i FS47Caliche; det kan ikke telle som tape_isolated
-- Kanon sier antennene står på 026 fra 02:15, mens SC08 ligger 01:15 til 02:15 og forutsetter retur til 026
-- Tavlene står på z -75.3 i koden, mens servicearket oppgir z -74 for ståstedene
-- Dynamisk tilgang i feltet er uverifisert
+- Lobbyspolens verdensfakta kommer fra faktisk avspilling og sammenligning, ikke et dialogtema.
+- SC08 avsluttes før 02:15; antennenes retur til 026 er scenens slutt, ikke en konkurrerende tilstand.
+- Arrayservicearket er eget ark i kontorskapet, z -75.3. A/B-ståsteder er egne feltkoordinater, ikke plasseringen av skapet.
+- Dynamisk tilgang og hindringsklarering i feltet må prøves.
 
-**Stemmer:** BY02_REQUEST_001 og 002 og BY02_REEL_IDENTIFY_001 og 002 (Earl) er pending.
+**Stemmer:** BY02_REQUEST_001 og 002 og BY02_REEL_IDENTIFY_001 og 002 (Earl) er pending. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
 
 ### Verdensflagg
 
@@ -892,7 +846,7 @@ BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47Reel
 | `ctx_hr_array_return_observed` | partial | Ny returlogikk i S47ArrayService | Spilleren går tilbake til ståstedet som ble valgt først og ser antennene vende tilbake mot det. | SC08-T07, SC08-T08 |
 | `ctx_hr_array_geometry_compared` | new | Ny sammenligning i S47ArrayService | Etter A, B og retur sammenligner spilleren de observerte vinklene mot fast lykt og landemerker på servicearket. | SC08-T07, SC08-T08 |
 | `ctx_hr_array_command_history_compared` | partial | Ny sluttkontroll i S47ArrayService mot FS47ArrayBack::History | Etter ruten kontrollerer spilleren kommandohistorikken igjen og ser at ingen vanlig kommando i prøveintervallet forklarer vinkelendringene. | SC08-T07, SC08-T08 |
-| `ctx_hr_array_escape_complete` | new | Ny trusselmøte 4-kontroller i S47ArrayService med felles inntrengeraktør | Etter sammenligningen kommer en søkende figur inn i passasjen. Spilleren bryter kontakt bak opake fundament/skapflater eller krysser etter lest avsøkning, og figuren trekker seg tilbake. | SC08-T08, SC08-T10 |
+| `ctx_hr_array_escape_complete` | new | Ny trusselmøte 3-kontroller i S47ArrayService med felles inntrengeraktør | Etter sammenligningen kommer en søkende figur inn i passasjen. Spilleren bryter kontakt bak opake fundament/skapflater eller krysser etter lest avsøkning, og figuren trekker seg tilbake. | SC08-T08, SC08-T10 |
 | `ctx_hr_array_empty_hold_observed` | partial | FS47DishesFollow HoldPlace/GoHome i ny ARRAY-01-modus | Fra trygg dekning ser spilleren antennene holde kort på det sist forlatte tomme ståstedet og deretter vende tilbake til 026. | SC08-T08, SC08-T10 |
 | `ctx_hr_array_local_retry` | new | Nytt lokalt sjekkpunkt i S47ArrayService | Figuren fanger spilleren i passasjen; spillet gjenoppretter dekket punkt før passasjen med kommando, kilde og geometri bevart. | SC08-T10, SC08-T04 |
 | `ctx_hr_array_insufficient` | new | Ny utfallsvurdering i S47ArrayService | Spilleren forlater feltet eller flytter lykten før A, B, retur og kommandokontroll er gjort. | SC08-T09, SC08-T08 |
@@ -1108,7 +1062,7 @@ BY02 og ARRAY-01 er nesten helt nytt spill. Råvare finnes: Earls reel (FS47Reel
 | SC08-T05 | input | alternative | Ankomst etter 04:00: konvolutt og isolert kopi gir BY02_LATE_COPY; Earl sier ingenting. |
 | SC08-T06 | api | normal | Servicekort, baseline og lykt gir service_card_acquired, command_checked og reference_fixed. |
 | SC08-T07 | input | normal, alternative | A→B→A og B→A→B ved samme klokke gir ulike riktige stillinger og ARRAY_RESULT. FAIL hvis tid alene består. |
-| SC08-T08 | input | normal, interrupt | Trusselmøte 4 med begge retrettveier, deretter tomt hold og 026. |
+| SC08-T08 | input | normal, interrupt | Trusselmøte 3 med begge retrettveier, deretter tomt hold og 026. |
 | SC08-T09 | data | negative | Uten identifisert kilde, uten retur eller med flyttet lykt gir ingen positiv scene, bare INCOMPLETE. |
 | SC08-T10 | input | continue, interrupt | Fangst i passasjen gir lokal retry med bevart arbeid; Continue fra retry-sjekkpunkt. |
 | SC08-T11 | image | image | High og Low av lobbyen, velgeren, A/B/REF-tavlene, antennene og passasjen. |
@@ -1242,7 +1196,7 @@ SC10 bygger på eksisterende kapittel fire. FS47Horror får en SC10-gren som avl
 - Chapter4 Ending sier 'drive the road' mot H06_CHECK 'Do not finish his observation'
 - Hoppede saker (JumpChapter4) må ikke gi ready
 
-**Stemmer:** Alle seks NORA-cues i H06 mangler opptak (pending i recording_manifest.json, ikke i voice/takes.json). Samme stemme som eksisterende Nora.
+**Stemmer:** Alle seks NORA-cues i H06 mangler opptak (pending i recording_manifest.json, ikke i voice/takes.json). Samme stemme som eksisterende Nora. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
 
 ### Verdensflagg
 
@@ -1301,7 +1255,7 @@ SC10 bygger på eksisterende kapittel fire. FS47Horror får en SC10-gren som avl
 
 ## SC11
 
-Hovedarbeidet er nytt: bunt etter 04:04, ytre avsøkning, møte 5 med to ruter og fluktfaktum. SC01-lyskontrollen og telexrullen gjenbrukes.
+Hovedarbeidet er nytt: bunt etter 04:04, ytre avsøkning, møte 4 med to ruter og fluktfaktum. SC01-lyskontrollen og telexrullen gjenbrukes.
 
 **Kode:**
 
@@ -1330,7 +1284,7 @@ Hovedarbeidet er nytt: bunt etter 04:04, ytre avsøkning, møte 5 med to ruter o
 - Story sier at veilederlinjen er stille i ch4/ch5, mens H07_BRIEF er telefon med Ward
 - Ingen inntrenger finnes i koden i dag
 
-**Stemmer:** H07_BRIEF_001 og 002 (WARD) mangler opptak.
+**Stemmer:** H07_BRIEF_001 og 002 (WARD) mangler opptak. Nye stemmer for Ward, Ortiz, Earl og Nora produseres til slutt, etter øvrig innhold.
 
 ### Verdensflagg
 
@@ -1428,17 +1382,18 @@ Hovedarbeidet er nytt: bunt etter 04:04, ytre avsøkning, møte 5 med to ruter o
 
 ## SC12
 
-Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sjåførens daterte kjørelogg, patruljenote og budavtale må bygges.
+Dineren og P13 finnes. Ny verifisering av kildeark, kort kilde-ID/readback hos Ward, betjentens daterte patruljeark og bekreftet budavtale skal bygges. H09-kartarbeidet inngår i H08.
 
 **Kode:**
 
-- Ny FS47HorrorSources (S47HorrorSources.cpp) bygget på FS47RuleBook
-- Utvid US47Chapter5 Ward-samtale med diktering og readback
-- Ny kjørelogg i DriverMore-kroken
+- Ny FS47HorrorSources med faktisk kilde-/provenienssammenligning.
+- Utvid eksisterende Ward-telefon med tre kilde-ID-er og første grensetid; tabeller blir i dokumentene.
+- Legg betjentens daterte patruljeark fysisk på dinerdisken ved ankomst 04:30, med egen leseinteraksjon.
+- Bevar P13 og H09-scene-IDer som del av H08; bud 10.4 og C 8.15 skilles i kart/readback.
 
 **Ressurser:**
 
-- Tre kildeark, kjørebok og patruljenote som egne props
+- Tre kildeark og betjentens daterte patruljeark som egne lesbare props.
 
 **Avhenger av:**
 
@@ -1452,10 +1407,11 @@ Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sj
 
 **Risiko og avklaringer:**
 
-- Ward sier i dag 'Six o'clock, Reyes' mot allerede suspendert 06:00-serie
-- H09_BRIEF lar sjåføren si turen før flagget finnes
+- Gamle Ward-replikker om normal 06:00-serie må ikke overstyre registrert lokal ordrestans.
+- Patruljearket viser én tur 03:30, ikke en garanti for trygg vei.
+- E15 og P13 skal kunne brukes ved sen ankomst, uten ny sjåfør- eller 04:45-port.
 
-**Stemmer:** Alle WARD-, DRIVER- og SC12_ROUTE_READBACK-cues mangler opptak.
+**Stemmer:** Ward-opptak tas til slutt. Betjenten beholder eksisterende tekstpresentasjon; ingen ny sjåførstemme eller figur.
 
 ### Verdensflagg
 
@@ -1465,12 +1421,12 @@ Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sj
 | `ctx_hr_h08_checked` | new | FS47HorrorSources (ny) på bordet i båsen, bygget på FS47RuleBook | Spilleren legger SARO-original, Hondo- og Site11-ark ved siden av hverandre, sammenligner opphav, klokker, faseorden (03:56:55 mot 03:56:56 bevart), råverdier og sendeplan, og fører en avgrenset konklusjon. | SC12-T02, SC12-T03 |
 | `ctx_hr_h08_insufficient` | new | FS47HorrorSources (ny) | En fjernkilde mangler eller er uverifisert når spilleren prøver å føre nettverkskonklusjon. | SC12-T03 |
 | `ctx_hr_remote_sources_verified` | new | FS47HorrorSources (ny), med kildeark fra SC11-bunten | Spilleren kontrollerer på hvert fjernark lokal logger, eget klokkegrunnlag, råverdier og at Site11-mottakeren var frakoblet lydmatingen. | SC12-T02, SC12-T03 |
-| `ctx_hr_warning_acknowledged` | partial | US47Chapter5 betalingstelefon med ny dikteringsfase (FS47HorrorSources) | Spilleren ringer Ward fra betalingstelefonen, dikterer valgte kilde-ID-er og måletabeller, Ward leser kritiske verdier tilbake og bekrefter suspendert 06:00-serie. | SC12-T02, SC12-T05 |
+| `ctx_hr_warning_acknowledged` | partial | US47Chapter5 betalingstelefon med ny kilde-ID/readback-fase i FS47HorrorSources | Spilleren ringer Ward fra betalingstelefonen og leser tre kilde-ID-er og første grensetid. Ward leser dem tilbake, fører dem i datert logg og bekrefter at 06:00-serien fortsatt er stanset. | SC12-T02, SC12-T05 |
 | `ctx_hr_h09_ready` | partial | FS47Horror::Context via US47Chapter5 (i dineren) og warning_acknowledged | Spilleren er inne i Mesa Diner etter kvittert varsel. | SC12-T01, SC12-T04 |
 | `ctx_hr_h09_checked` | existing | US47Chapter5::Answer (P13 på kartet) | Spilleren legger E09A-tracingen med transit på STATION 01, nord mot nord, og velger bolten ved 8.15. | SC12-T04 |
 | `ctx_hr_h09_insufficient` | partial | US47Chapter5::Answer (feil bolt eller ikke justert) | Spilleren prøver å svare uten justert tracing eller velger feil bolt. | SC12-T04 |
-| `ctx_hr_sc12_driver_recent_passage` | new | Sjåførens daterte kjørelogg (ny) i US47Chapter5 sin DriverMore-krok | Spilleren leser sjåførens daterte kjørebok eller bensinkvittering på disken som viser østgående passering på gamle Roswell Road denne morgenen. | SC12-T04, SC12-T08 |
 | `ctx_hr_sc12_courier_104_confirmed` | new | Ward-samtale med kartvalg (FS47HorrorSources, ny) etter P13 | Etter kartlagt C ved 8.15 markerer spilleren 10.4 på kartet og avtaler bud og retning med Ward på betalingstelefonen; Ward bekrefter i datert logg. | SC12-T04, SC12-T05 |
+| `ctx_hr_sc12_patrol_sheet_read` | new | Sheriffbetjentens daterte patruljeark ved dinerdisken, eid av ny FS47HorrorSources | Etter betjentens ankomst 04:30 leser spilleren hans daterte patruljeark fra 03:30: nordveien og gamle Roswell Road uten hindring under den ene turen. | SC12-T04, SC12-T05, SC12-T08 |
 
 ### Scener
 
@@ -1518,7 +1474,7 @@ Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sj
 - Dokumenter: HR_SARO_ORIGINAL, HR_HONDO_LOCAL, HR_SITE11_LOCAL, HR_NETWORK_CHECK
 - Tester: SC12-T02, SC12-T05
 
-**`H08_WARNING_ACK`**: Etter fullført diktering og readback på betalingstelefonen.
+**`H08_WARNING_ACK`**: Etter opplesning av tre kilde-ID-er og første grensetid, med fullført readback på betalingstelefonen.
 
 - Normalt: Ward bekrefter varsel, suspendert 06:00-serie, loggførte kilde-ID-er og budet øst for referansen.
 - Avbrudd: Avbrutt samtale før readback gir ingen kvittering.
@@ -1529,13 +1485,13 @@ Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sj
 - Dokumenter: HR_WARNING_RECEIPT
 - Tester: SC12-T02, SC12-T05, SC12-T07
 
-**`H09_BRIEF`**: Spilleren snakker med sjåføren ved disken etter kvittert varsel og lest kjørelogg.
+**`H09_BRIEF`**: Spilleren undersøker E15 ved dinerdøren og den løse tracingen etter kvittert varsel.
 
-- Normalt: Sjåføren skiller oktoberstoppet fra morgenens tur; beskrivelse om løs tracing.
+- Normalt: E15 fastslår fotografiets historiske sted, mens P13-kartet må justeres fysisk. H09 er del av H08 og ingen egen leveranse.
 - Avbrudd: Pause og panel stanser linjene; ingen ny fare i dineren (Night holdt i ch5-diner).
-- Alternativ: Uten ny kjørelogg vises ikke briefen.
-- Stemmecues: 2, innspilt 0
-- Modeller: sjåfør (eksisterende); kjørebok på disken (ny prop)
+- Alternativ: E15 er tilgjengelig uten 04:45-port. Et ujustert kart får eksisterende tips.
+- Stemmecues: 0, innspilt 0
+- Modeller: E15 ved dinerdøren (eksisterende); P13-kart med E09A-tracing (eksisterende)
 - Lyd: dinerrom, kaffe, kjøler
 - Dokumenter: E15
 - Tester: SC12-T04, SC12-T07
@@ -1562,9 +1518,20 @@ Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sj
 - Dokumenter: ingen
 - Tester: SC12-T04
 
-**`SC12_ROUTE_READBACK`**: Ny samtale med Ward etter H09_CHECK med patruljenote, kjørelogg og budavtale på plass.
+**`SC12_PATROL_SHEET`**: Betjenten kommer til dineren 04:30 og legger sitt daterte ark på disken; spilleren leser det.
 
-- Normalt: Ward leser tilbake patruljenote, sjåførens tur og budet ved 10.4; dineren er fortsatt tilflukt.
+- Normalt: 03:30: én tur over nordveien og gamle Roswell Road uten hindring da. Ingen påstand om dagens sikkerhet.
+- Avbrudd: Lesing og pause flytter ikke tidsstempelet eller gir ufortjent kvittering.
+- Alternativ: Arket blir liggende tilgjengelig ved sen ankomst og er ikke avhengig av sjåførdialog.
+- Stemmecues: 0, innspilt 0
+- Modeller: Datert patruljeark på dinerdisken; Eksisterende sheriffbetjent
+- Lyd: Fysisk betjentreplikk som tekst, dinerrom
+- Dokumenter: ingen
+- Tester: SC12-T04, SC12-T05, SC12-T08
+
+**`SC12_ROUTE_READBACK`**: Ny samtale med Ward etter P13-kontroll, lest patruljeark og bekreftet budavtale.
+
+- Normalt: Ward leser tilbake betjentens ene daterte tur og budet ved 10.4; dineren er fortsatt tilflukt og ingen rute er lovet trygg.
 - Avbrudd: Lagt på før slutt: ingen dokument; Continue tilbyr samtalen igjen.
 - Alternativ: Spilleren kan bli i dineren; reisen er et valg.
 - Stemmecues: 3, innspilt 0
@@ -1577,13 +1544,13 @@ Dineren og P13 finnes. Ny kildesammenligning, diktering og readback hos Ward, sj
 
 | Test | Type | Dekker | Prøve |
 |---|---|---|---|
-| SC12-T01 | data | negative, regression | Registry: H08_CHECK krever remote_sources_verified, H09_BRIEF krever driver_recent_passage, ingen H08/H09-scene setter ctx_hr-flagg. E15 har ingen tidsport. |
-| SC12-T02 | input | normal | -S47HorrorContract=SC12: ankom diner, sammenlign tre kilder, verifiser fjernark, ring Ward, dikter kilde-ID-er, bekreft readback. Krev checked, verified og warning_acknowledged i rekkefølge, og HR_WARNING_RECEIPT én gang. |
+| SC12-T01 | data | negative, regression | Register: H08_CHECK krever remote_sources_verified, rute/readback krever lest datert patruljeark og faktisk budavtale. H09 er del av H08, uten sjåførfigur. E15 har ingen tidsport. |
+| SC12-T02 | input | normal | Pakket SC12-reise: ankom diner, sammenlign tre kilder, verifiser fjernark og ring Ward. Les tre kilde-ID-er og første grensetid og fullfør readback. checked, verified og warning_acknowledged kommer i rekkefølge og HR_WARNING_RECEIPT bare én gang. |
 | SC12-T03 | input | alternative, negative | Bare ett fjernark eller sen ankomst: verified forblir usann, H08_INCOMPLETE vises, lokal varsling kan sendes, ingen nettverkskonklusjon. |
-| SC12-T04 | input | normal, alternative, negative | Les kjøreloggen, legg tracing feil og svar (h09_insufficient), juster og velg 8.15 (h09_checked), avtal 10.4, hent patruljenote etter 04:30, gjennomfør SC12_ROUTE_READBACK. Sjåførens replikk alene gir ingen driver_recent_passage. |
-| SC12-T05 | input | interrupt, continue | Legg på midt i dikteringen: ingen kvittering. Pause og kartpanel under arbeid. Lagre i dineren og Continue i ny prosess: flagg og dokumenter bevart uten duplisering. |
-| SC12-T06 | image | image | High/Low: båsbord med tre ark, kartoverlegg med 8.15 og 10.4, betalingstelefon, disk med kjørebok. |
-| SC12-T07 | api | audio | Ward på telefonkanal fra rør, sjåfør physical ved disken, kjøler og MorningHolds dukker ikke over dialog. Manglende takes registreres ikke som avspilt. |
+| SC12-T04 | input | normal, alternative, negative | Les betjentens daterte patruljeark etter 04:30, løs P13 etter et ujustert forsøk, skill C 8.15 fra bud 10.4, og fullfør SC12_ROUTE_READBACK. Replikk alene gir ikke lest ark, og gammel sjåførhistorie er ingen port. |
+| SC12-T05 | input | interrupt, continue | Legg på midt i kilde-ID/readback-samtalen: ingen kvittering. Pause og kartpanel under arbeid. Lagre ved dineren og Continue i ny prosess: faktiske flagg og dokumenter består uten duplisering. |
+| SC12-T06 | image | image | High/Low: båsbord med tre ark, P13-kart med 8.15 og 10.4, betalingstelefon og betjentens patruljeark på disken. |
+| SC12-T07 | api | audio | Ward på telefonkanal; eksisterende betjent som tekst ved disken. Dinerambience overstyrer ikke dialog. Ward/Ortiz/Earl/Nora-opptak produseres til slutt; manglende take regnes aldri som avspilt. |
 | SC12-T08 | api | regression | US47Chapter5::SelfTest, -S47Ch5Drive=map/p13/truck, LostNights (1985-kvittering forblir historisk), Town-timer (deputy 04:30). |
 | SC12-T09 | human | normal | Menneskelig vurdering: spilleren forstår hvorfor reisen velges fremfor å bli, og at ruteopplysningene ikke er trygghetsgaranti. |
 
@@ -1593,9 +1560,9 @@ Finalen finnes og skal ikke endres. Det nye er avreisekontroll, oppdatert turval
 
 **Kode:**
 
-- Ny avreisekontroll i FS47Horror SC13-gren
-- Koble US47Chapter6::StartEvent til h10_stalled
-- Endre TruckTrip-etikett til overlevering 10.4
+- Avreisekontroll og sikkert lagringspunkt i Caliche med fullført varsel, kart og originaler.
+- Koble faktisk US47Chapter6::StartEvent til h10_stalled uten å endre finalen.
+- Formålet med turen er budet ved 10.4, mens C ved 8.15 er en passering uten stopp; 10.4 er bare kart/skiltmål og nås ikke.
 
 **Ressurser:**
 
@@ -1603,7 +1570,7 @@ Finalen finnes og skal ikke endres. Det nye er avreisekontroll, oppdatert turval
 
 **Avhenger av:**
 
-- SC12 levert
+- SC12-kilde og målrettet prøve i akt 4
 
 **Bare på Kubuntu:**
 
@@ -1611,8 +1578,8 @@ Finalen finnes og skal ikke endres. Det nye er avreisekontroll, oppdatert turval
 
 **Risiko og avklaringer:**
 
-- Kapittel seks lagrer ingenting, så h10_stalled finnes bare under hendelsen
-- 10.4 ligger utenfor veien som finnes
+- Sikker disk-Continue må bygges ved avreise; kapittel 6 har ellers ingen ny lagring.
+- Ingen ekstra kjørbar strekning eller overleveringsscene ved 10.4 skal bygges.
 
 **Stemmer:** Ingen stemmecues i H10.
 
@@ -1624,7 +1591,6 @@ Finalen finnes og skal ikke endres. Det nye er avreisekontroll, oppdatert turval
 | `ctx_hr_h10_checked` | new | Avreisekontroll i servicebilen (FS47Horror SC13-gren, ny) | Ved bilen kontrollerer spilleren at overføringsmappen med originalene ligger i førerhuset, at Ward-kvitteringen finnes, og at kartet viser C 8.15 og overlevering 10.4 som adskilte punkter. | SC13-T02, SC13-T03 |
 | `ctx_hr_h10_insufficient` | partial | US47Chapter5::TruckTrip og ny avreisekontroll | Spilleren prøver å kjøre før kart, kvittering eller originaler er i orden. | SC13-T03 |
 | `ctx_hr_h10_stalled` | existing | US47Chapter6::StartEvent og Event (motorstopp ved C) | Spilleren kjører gamle Roswell Road og når C ved 8.15; motoren stopper ufrivillig og THE EVENT starter. | SC13-T02, SC13-T06 |
-| `ctx_hr_sc12_exit_sighting_readback` | new | Ward/dispatch-samtale i SC12 (FS47HorrorSources, ny) med Caliche-patruljenotat fra byen | Etter 04:30 (deputy tilbake) finnes en datert patruljenote om lave lys nord for Caliche Junction-avstikkeren; spilleren får den lest tilbake av Ward med faktisk sted og tid. | SC12-T04, SC13-T01 |
 
 ### Scener
 
@@ -1668,7 +1634,7 @@ Finalen finnes og skal ikke endres. Det nye er avreisekontroll, oppdatert turval
 | SC13-T01 | data | negative, regression | Registry: H10_BRIEF krever readback-flaggene, H10_CHECK krever stalled; ingen H10-scene setter ctx_hr-flagg. |
 | SC13-T02 | input | normal | -S47HorrorContract=SC13 på High og Low: avreisekontroll ved bilen, kjør gamle vei, CB forbi sju mil, ufrivillig stopp ved C 8.15, THE EVENT, uttrekk, 1947-bildet og sluttmeny. Klokken går ikke bakover. |
 | SC13-T03 | input | alternative, negative | Kjøreforsøk uten kvittering eller original gir H10_INCOMPLETE; stopp og rygg før C; ingen alternativ slutt eller redningsgren. |
-| SC13-T04 | input | interrupt, continue | Pause under kjøring og i THE EVENT; lagring blokkert på veien. Continue i ny prosess starter ved dineren med h10_checked bevart og h10_stalled usann. |
+| SC13-T04 | input | interrupt, continue | Lagre sikkert ved avreise fra Caliche. Pause under kjøring og THE EVENT følger hendelsesklokken; lagring på selve finalestrekningen er sperret. Continue gjenopptar avreisen, uten å fullføre 47-sekundershendelsen i menyen. |
 | SC13-T05 | image | image | High/Low bilder av førerhus med mappe, kart med adskilte punkter og finalens nøkkelbilder. |
 | SC13-T06 | human | audio | Lytt: motorstopp, solenoid, pust og CB er uendret og hørbare; ingen ny stemme over finalen. |
 | SC13-T07 | api | regression | US47Chapter6::SelfTest, SS47Ending og Flow Finale kjøres uendret. |

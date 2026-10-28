@@ -25,10 +25,6 @@
       "default": false,
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
     },
-    "hr_sc03_shadow_rule_presented": {
-      "default": false,
-      "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
-    },
     "hr_sc03_ortiz_identify_presented": {
       "default": false,
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
@@ -49,6 +45,10 @@
       "default": false,
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
     },
+    "hr_sc03_receiver_question_presented": {
+      "default": false,
+      "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
+    },
     "hr_sc04_limited_return_presented": {
       "default": false,
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
@@ -66,14 +66,6 @@
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
     },
     "hr_sc04_annex_sound_escape_presented": {
-      "default": false,
-      "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
-    },
-    "hr_sc04_car_read_presented": {
-      "default": false,
-      "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
-    },
-    "hr_sc04_car_escape_presented": {
       "default": false,
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
     },
@@ -142,6 +134,10 @@
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
     },
     "hr_array_empty_hold_presented": {
+      "default": false,
+      "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
+    },
+    "hr_sc12_patrol_sheet_presented": {
       "default": false,
       "purpose_nb": "Presentert forfattertekst etter faktiske verdensporter. Ingen fysisk måling, flukt eller global progresjonsport."
     },
@@ -350,7 +346,6 @@
         "all": [
           "ctx_hr_sc02_escape_complete",
           "ctx_hr_sc03_dispatch_readback",
-          "ctx_hr_sc01_report_readback",
           "ctx_hr_sc03_ortiz_assigned"
         ],
         "none": [
@@ -368,7 +363,7 @@
         {
           "id": "SC03_DISPATCH_RECEIPT_002",
           "speaker": "DISPATCH",
-          "text": "The district is sending a relief technician to meet you at the Caliche fuel station. Stay at the lit public stop until the contact is identified.",
+          "text": "Dr. Ward has a relief technician coming to the Caliche fuel stop. Wait in view of the counter until the contact is identified.",
           "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
         }
       ],
@@ -422,50 +417,12 @@
       }
     },
     {
-      "id": "SC03_SHADOW_RULE",
-      "phase": "early_shift",
-      "channel": "ui",
-      "mode": "live",
-      "entry": "trigger",
-      "trigger_nb": "To kontrollerte usette flyttinger, ingen flytting i panel/perifert/zoom/lykt/fotosøker. Valgfritt observasjonsspor.",
-      "requires": {
-        "all": [
-          "ctx_hr_sc03_shadow_observed"
-        ],
-        "none": [
-          "hr_sc03_shadow_rule_presented"
-        ]
-      },
-      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
-      "lines": [
-        {
-          "id": "SC03_SHADOW_RULE_001",
-          "speaker": "DESCRIPTION",
-          "text": "The black outline stays still while you keep it in view. When it moves, it does so between your observations.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        },
-        {
-          "id": "SC03_SHADOW_RULE_002",
-          "speaker": "DESCRIPTION",
-          "text": "Keep the opening in view and step behind the solid wall. It is not moving like the pale figure at the service front.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        }
-      ],
-      "choices": [],
-      "on_complete": {
-        "set_flags": {
-          "hr_sc03_shadow_rule_presented": true
-        },
-        "give_documents": []
-      }
-    },
-    {
       "id": "SC03_ORTIZ_IDENTIFY",
       "phase": "early_shift",
       "channel": "physical",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Vanlig synlig ankomst før fare. Ny hjelper, ikke Earl/sheriff/servitrise som fjernes.",
+      "trigger_nb": "Vanlig synlig ankomst før fare. Ortiz er vanlig og litt irritert over kjøreturen, viser ID og spør hva Reyes faktisk så. Ny hjelper, ikke Earl/sheriff/servitrise som fjernes.",
       "requires": {
         "all": [
           "ctx_hr_sc03_ortiz_assigned",
@@ -480,19 +437,19 @@
         {
           "id": "SC03_ORTIZ_IDENTIFY_001",
           "speaker": "ORTIZ",
-          "text": "Mara Ortiz. District maintenance, wagon twenty-three. Dr. Ward said you would be here.",
+          "text": "Mara Ortiz, district maintenance. Wagon twenty-three. That's my card. Dr. Ward said you'd be by the pumps.",
           "delivery_nb": "Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes."
         },
         {
           "id": "SC03_ORTIZ_IDENTIFY_002",
           "speaker": "ORTIZ",
-          "text": "I brought a second handset. Before we go anywhere, show me where you were standing and where the person moved.",
+          "text": "Forty minutes of washboard road to get out here. Fine. Tell me what you actually saw, not what you think it was.",
           "delivery_nb": "Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes."
         },
         {
           "id": "SC03_ORTIZ_IDENTIFY_003",
           "speaker": "ORTIZ",
-          "text": "We can make that report from here. Nobody needs you to get closer for a photograph.",
+          "text": "All right. We write that down from here. Nobody needs you any closer to that yard tonight.",
           "delivery_nb": "Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes."
         }
       ],
@@ -510,7 +467,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Observasjonstekst først etter virkelig synlig løft/forsvinning og trygg retrett. Lydtekst alene er ingen levert bortføring.",
+      "trigger_nb": "Observasjonstekst først etter virkelig synlig løft/forsvinning, de stille bleke skikkelsene i lyskanten og trygg retrett i stasjonen eller bilen. Lydtekst alene er ingen levert bortføring. Ingen redningsoppgave som later som.",
       "requires": {
         "all": [
           "ctx_hr_sc03_ortiz_identified",
@@ -526,13 +483,19 @@
         {
           "id": "SC03_HELPER_TAKEN_001",
           "speaker": "DESCRIPTION",
-          "text": "Ortiz rose clear of the ground in the light. There was no ladder or support. Then she was gone. Her wagon is still at the stop.",
+          "text": "Light struck wagon twenty-three. Ortiz rose clear of the ground with nothing under her, hung there a moment, and was gone. Her thermos rolled out across the asphalt.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
           "id": "SC03_HELPER_TAKEN_002",
           "speaker": "DESCRIPTION",
-          "text": "You are behind cover. The encounter is over. Report her missing from the working phone.",
+          "text": "At the edge of the light, several pale figures stood completely still. One of them turned its head towards you.",
+          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
+        },
+        {
+          "id": "SC03_HELPER_TAKEN_003",
+          "speaker": "DESCRIPTION",
+          "text": "You are behind cover now. There was nothing you could have reached. Call it in from the working phone.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         }
       ],
@@ -550,7 +513,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Undersøk faktiske rekvisitter etter ro; ikke automatisk ved startet lys.",
+      "trigger_nb": "Undersøk vogna, termosen og merkene i grusen etter ro; valgfritt og ikke automatisk ved startet lys.",
       "requires": {
         "all": [
           "ctx_hr_sc03_safe_retreat",
@@ -565,13 +528,13 @@
         {
           "id": "SC03_HELPER_TRACES_001",
           "speaker": "DESCRIPTION",
-          "text": "Wagon twenty-three is empty. Ortiz's district handset lies beside the open door; her name is on its service tag.",
+          "text": "Wagon twenty-three is empty, the driver's door open. Ortiz's thermos lies against the kerb with her name on a strip of tape.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
           "id": "SC03_HELPER_TRACES_002",
           "speaker": "DESCRIPTION",
-          "text": "The dispatch record establishes why she came. The empty wagon and handset establish what remained. Neither explains where she went.",
+          "text": "Narrow marks are pressed into the gravel by the wagon and lead nowhere. The wagon, the thermos and the marks show what remained. None of them explains where she went.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         }
       ],
@@ -615,7 +578,7 @@
         {
           "id": "SC03_MISSING_RECEIPT_002",
           "speaker": "DISPATCH",
-          "text": "That is now a missing-person report, linked to the earlier call. We are handling the search. Keep the handset where it is and stay at a working contact point.",
+          "text": "That is now a missing-person report, linked to your earlier call. The deputy is on his way to you. Stay where you are and leave her things where they lie.",
           "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
         }
       ],
@@ -656,7 +619,7 @@
         {
           "id": "SC03_LOCAL_ORDER_HOLD_002",
           "speaker": "WARD",
-          "text": "You are not being asked to carry on a normal shift. Stay with the people at Caliche while we agree what can be secured without exposing you again.",
+          "text": "Nobody is asking you to carry on a normal shift. Stay with the deputy and give him what the case needs.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         }
       ],
@@ -671,12 +634,57 @@
       }
     },
     {
-      "id": "SC04_LIMITED_RETURN",
+      "id": "SC03_RECEIVER_QUESTION",
       "phase": "early_shift",
-      "channel": "phone",
+      "channel": "physical",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Valg fra faktisk tilflukt, kjent prøvd utvei og avgrenset hensikt. Ingen global avreisesperre.",
+      "trigger_nb": "Sheriffbetjenten er faktisk kommet til bensinstasjonen etter savnetmeldingen. Han spør om SARO-mottakeren stod på klokka 21:00; den gjorde det. Dette er grunnen til returen i SC04, ikke en ordre om normal drift.",
+      "requires": {
+        "all": [
+          "ctx_hr_sc03_missing_readback",
+          "ctx_hr_sc03_deputy_at_stop"
+        ],
+        "none": [
+          "hr_sc03_receiver_question_presented"
+        ]
+      },
+      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
+      "lines": [
+        {
+          "id": "SC03_RECEIVER_QUESTION_001",
+          "speaker": "DEPUTY",
+          "text": "Your outfit up the road runs a receiver all night. Was it on at nine o'clock?",
+          "delivery_nb": "Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler."
+        },
+        {
+          "id": "SC03_RECEIVER_QUESTION_002",
+          "speaker": "DESCRIPTION",
+          "text": "It was. The SARO receiver has been on passive monitoring since the shift began.",
+          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
+        },
+        {
+          "id": "SC03_RECEIVER_QUESTION_003",
+          "speaker": "DEPUTY",
+          "text": "Then I want its log and the strip chart from nine for this report. You have the keys. I'll follow you up to the gate.",
+          "delivery_nb": "Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_sc03_receiver_question_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "SC04_LIMITED_RETURN",
+      "phase": "early_shift",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Ved SARO-porten etter at sheriffbetjenten har fulgt Reyes fra Caliche. Radioen kaller ham bort til Ortiz' vogn, og Reyes går inn alene for å hente bevis i en savnetsak. Ingen global avreisesperre.",
       "requires": {
         "all": [
           "ctx_hr_sc03_local_order_suspended",
@@ -690,15 +698,21 @@
       "lines": [
         {
           "id": "SC04_LIMITED_RETURN_001",
-          "speaker": "WARD",
-          "text": "The automatic schedule is still set locally. We can secure that and the dated shift record, then talk again from the control room.",
-          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+          "speaker": "DEPUTY",
+          "text": "That's my radio. They want me back at the wagon.",
+          "delivery_nb": "Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler."
         },
         {
           "id": "SC04_LIMITED_RETURN_002",
-          "speaker": "WARD",
-          "text": "Only if the known way back is clear. The truck and the public road are available. Call me from the secured room; do not restart the survey.",
-          "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
+          "speaker": "DEPUTY",
+          "text": "The receiver log and the strip chart from nine o'clock. Bring whatever else that case will need, and lock the door behind you. I'll be back up this road.",
+          "delivery_nb": "Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler."
+        },
+        {
+          "id": "SC04_LIMITED_RETURN_003",
+          "speaker": "DESCRIPTION",
+          "text": "Inside: the receiver log and strip chart, the shift journal and the T01 card. Lock the automatic schedule so nothing runs while nobody is here.",
+          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         }
       ],
       "choices": [],
@@ -715,7 +729,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Bare etter faktisk fysisk betjening/kontroll og sikrede originale papirer; eget local hold-resultat.",
+      "trigger_nb": "Bare etter faktisk fysisk betjening/kontroll og sikrede originaler (mottakerlogg og stripskriver fra 21:00, skiftjournal og T01-journal). T01 arkiveres her én gang. Eget local hold-resultat.",
       "requires": {
         "all": [
           "ctx_hr_sc04_schedule_isolated",
@@ -736,7 +750,7 @@
         {
           "id": "SC04_LOCAL_HOLD_002",
           "speaker": "DESCRIPTION",
-          "text": "The dated shift record and service original are secured for the missing-person report. Turning off a local schedule has not turned off the sky.",
+          "text": "The receiver log and strip chart from 21:00, the shift journal and the T01 card are secured for the missing-person report. T01 is filed here, once. Turning off a local schedule has not turned off the sky.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         }
       ],
@@ -889,122 +903,14 @@
       }
     },
     {
-      "id": "SC04_CAR_READ",
-      "phase": "early_shift",
-      "channel": "ui",
-      "mode": "live",
-      "entry": "trigger",
-      "trigger_nb": "Etter faktisk ro; krever prøvd kropp-/rutegeometri. Ingen QTE/passiv venting.",
-      "requires": {
-        "all": [
-          "ctx_hr_sc04_after_annex_calm",
-          "ctx_hr_sc04_car_route_known",
-          "ctx_hr_sc04_car_threat_visible"
-        ],
-        "none": [
-          "hr_sc04_car_read_presented"
-        ]
-      },
-      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
-      "lines": [
-        {
-          "id": "SC04_CAR_READ_001",
-          "speaker": "DESCRIPTION",
-          "text": "The control-room door is reachable from the screened parking place. You have tried that route. The engine works.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        },
-        {
-          "id": "SC04_CAR_READ_002",
-          "speaker": "DESCRIPTION",
-          "text": "A shape passes close to the cab. Glass does not hide you. Use the solid screen or drive when the crossing is clear.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        }
-      ],
-      "choices": [],
-      "on_complete": {
-        "set_flags": {
-          "hr_sc04_car_read_presented": true
-        },
-        "give_documents": []
-      }
-    },
-    {
-      "id": "SC04_CAR_ESCAPE",
-      "phase": "early_shift",
-      "channel": "ui",
-      "mode": "live",
-      "entry": "trigger",
-      "trigger_nb": "Faktisk kroppsskjul eller gyldig kjøreflukt; samme bil virker etterpå.",
-      "requires": {
-        "all": [
-          "ctx_hr_sc04_car_escape",
-          "ctx_hr_sc04_car_route_known"
-        ],
-        "none": [
-          "hr_sc04_car_escape_presented"
-        ]
-      },
-      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
-      "lines": [
-        {
-          "id": "SC04_CAR_ESCAPE_001",
-          "speaker": "DESCRIPTION",
-          "text": "You left the exposed place while the route was open. The figure has lost contact; it is no longer searching your path.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        },
-        {
-          "id": "SC04_CAR_ESCAPE_002",
-          "speaker": "DESCRIPTION",
-          "text": "The truck still runs. Use the control-room route you checked, watching the crossing before you move. Ward is expecting you at that secured contact point.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        }
-      ],
-      "choices": [],
-      "on_complete": {
-        "set_flags": {
-          "hr_sc04_car_escape_presented": true
-        },
-        "give_documents": []
-      }
-    },
-    {
-      "id": "SC04_CAR_RETRY",
-      "phase": "early_shift",
-      "channel": "ui",
-      "mode": "live",
-      "entry": "trigger",
-      "trigger_nb": "Særskilt lokal retry, ikke tidlig finale eller gammel tilfeldig bortføring.",
-      "requires": {
-        "all": [
-          "ctx_hr_sc04_car_local_retry"
-        ],
-        "none": []
-      },
-      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
-      "lines": [
-        {
-          "id": "SC04_CAR_RETRY_001",
-          "speaker": "DESCRIPTION",
-          "text": "Return to the covered approach. The truck is usable and the secured work is preserved. Choose the passage after the sweep moves away.",
-          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
-        }
-      ],
-      "choices": [],
-      "on_complete": {
-        "set_flags": {},
-        "give_documents": []
-      }
-    },
-    {
       "id": "SC04_SAFE_ROOM_AGREEMENT",
       "phase": "early_shift",
       "channel": "phone",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Avgrenset loggsikring i faktisk trygg situasjon og ekte kontakt før fremoverovergang; ingen tvangsordre om normal drift.",
+      "trigger_nb": "Avgrenset loggsikring i faktisk trygg situasjon etter annexflukt og ekte kontakt før kort fremoverovergang til 00:13:47; ingen tvangsordre om normal drift.",
       "requires": {
         "all": [
-          "ctx_hr_sc04_car_escape",
           "ctx_hr_sc04_control_room_safe",
           "ctx_hr_sc04_ward_on_line",
           "ctx_hr_sc04_schedule_isolated",
@@ -1019,19 +925,19 @@
         {
           "id": "SC04_SAFE_ROOM_AGREEMENT_001",
           "speaker": "WARD",
-          "text": "I have you on the control-room line. Keep the door secured. Dispatch is following up Ortiz; I am staying on this call.",
+          "text": "I have you on the control-room line. Keep the door locked. The deputy is still at Ortiz's wagon; I am staying on this call.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         },
         {
           "id": "SC04_SAFE_ROOM_AGREEMENT_002",
           "speaker": "WARD",
-          "text": "Read me the receiver log's original heading and time. We are preserving the record from cover. Leave the automatic plan isolated.",
+          "text": "Read me the receiver log's heading and the nine o'clock entry. That is what the missing-person report needs. Leave the automatic schedule locked.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         },
         {
           "id": "SC04_SAFE_ROOM_AGREEMENT_003",
           "speaker": "WARD",
-          "text": "If this room stops being safe, use the route you tested. You do not owe us another normal round.",
+          "text": "Stay in cover until he can come back for you. Leave the receiver on passive. Nothing runs on its own tonight.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         }
       ],
@@ -1070,7 +976,7 @@
         {
           "id": "SC05_PASSIVE_RESIDUAL_002",
           "speaker": "DESCRIPTION",
-          "text": "Use the existing receiver controls and preserve the print. The moving bodies you saw are separate observations; this test asks what the signal retains.",
+          "text": "Use the existing receiver controls and preserve the print. The body at the junction and what took Ortiz are separate observations; this test asks what the signal retains.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         }
       ],
@@ -1303,7 +1209,7 @@
         {
           "id": "BY02_LATE_COPY_001",
           "speaker": "DESCRIPTION",
-          "text": "Earl has left. The labelled collection envelope contains his dated source copy, the off-air log copy and the marked playback-disconnection sheet.",
+          "text": "Earl has left. In the lobby, a labelled envelope holds his dated source copy, the off-air log copy and the marked playback-disconnection sheet.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
@@ -1613,7 +1519,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Trusselmøte4 fysisk vellykket retrett. Ingen gammel Warning/Force eller ny stor STATION01-jakt.",
+      "trigger_nb": "Arrayets trusselmøte fysisk vellykket retrett. Ingen gammel Warning/Force eller ny stor STATION01-jakt.",
       "requires": {
         "all": [
           "ctx_hr_array_geometry_compared",
@@ -1730,18 +1636,55 @@
       }
     },
     {
+      "id": "SC12_PATROL_SHEET",
+      "phase": "all_night",
+      "channel": "physical",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Etter 04:30 er sheriffbetjenten faktisk i dineren og har lagt sitt daterte patruljeark på disken; spilleren har lest det. Én kjøretur er begrenset veiopplysning, ingen trygghetsgaranti. Erstatter sjåførrollen.",
+      "requires": {
+        "all": [
+          "ctx_hr_sc12_patrol_sheet_read"
+        ],
+        "none": [
+          "hr_sc12_patrol_sheet_presented"
+        ]
+      },
+      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
+      "lines": [
+        {
+          "id": "SC12_PATROL_SHEET_001",
+          "speaker": "DEPUTY",
+          "text": "Drove the loop at half past three. Nothing on the road. It's on the sheet.",
+          "delivery_nb": "Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler."
+        },
+        {
+          "id": "SC12_PATROL_SHEET_002",
+          "speaker": "DESCRIPTION",
+          "text": "The patrol sheet is dated and timed in his hand: 03:30, north road and old Roswell road, no obstruction. One drive, an hour ago. It promises nothing about the road now.",
+          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_sc12_patrol_sheet_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
       "id": "SC12_ROUTE_READBACK",
       "phase": "all_night",
       "channel": "phone",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Ny fersk sted-/tidsfestet utfartsrapport og reell budkvittering trengs. Ingen1985kvittering som fersk veiinfo.",
+      "trigger_nb": "Sheriffbetjentens daterte patruljeark og reell budkvittering trengs. Ingen 1985-kvittering eller gammel sjåførtur som fersk veiopplysning.",
       "requires": {
         "all": [
           "ctx_hr_warning_acknowledged",
           "ctx_hr_h09_checked",
-          "ctx_hr_sc12_driver_recent_passage",
-          "ctx_hr_sc12_exit_sighting_readback",
+          "ctx_hr_sc12_patrol_sheet_read",
           "ctx_hr_sc12_courier_104_confirmed"
         ],
         "none": [
@@ -1753,7 +1696,7 @@
         {
           "id": "SC12_ROUTE_READBACK_001",
           "speaker": "WARD",
-          "text": "The patrol note places low lights across the northbound highway beyond the Caliche Junction turnoff. I have its actual time and the driver's recent eastbound passage in the log. They are limited reports, not a map of everywhere it is safe.",
+          "text": "The deputy's sheet puts one clear drive on that road at half past three. I have its time in the log. It is one report, not a map of everywhere it is safe.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         },
         {
@@ -1765,7 +1708,7 @@
         {
           "id": "SC12_ROUTE_READBACK_003",
           "speaker": "WARD",
-          "text": "The warning and dictated measurements are already outside SARO. You can remain at the diner; the handover is a choice to preserve the original source chain, not a new experiment.",
+          "text": "The warning and the three source IDs are already outside SARO. You can stay at the diner; the handover keeps the originals together. It is not a new experiment.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         }
       ],
@@ -1821,10 +1764,10 @@
       "kind": "typed",
       "stamp": "SARO / NIGHT SHIFT / 13-14 APR 1986",
       "body": [
-        "After reaching cover, Reyes checked the empty district wagon and the handset beside its door. The handset service tag names Mara Ortiz.",
-        "The trace note records remaining objects. The separately witnessed lift and the subsequent missing-person report have their own records."
+        "After reaching cover, Reyes checked the empty district wagon, the thermos on the asphalt and the marks in the gravel beside it. Tape on the thermos names Mara Ortiz.",
+        "The trace note records what remained. The separately witnessed lift and the subsequent missing-person report have their own records."
       ],
-      "production_nb": "Faktiske navngitte rekvisitter må finnes; ikke løft-credit fra bare objekter."
+      "production_nb": "Faktiske navngitte rekvisitter (vogn, termos, merker i grusen) må finnes; ikke løft-credit fra bare objekter."
     },
     {
       "id": "HR_MISSING_RECEIPT",
@@ -1834,7 +1777,7 @@
       "body": [
         "CALICHE DISPATCH / MISSING PERSON. Mara Ortiz, district maintenance, last seen at the public Caliche fuel stop beside wagon 23.",
         "Reyes reports seeing Ortiz rise clear of support in an external light and then disappear. Dispatch has read back identity, place and actual report time, and linked the relief assignment.",
-        "Search assigned to the authorities. This report does not explain the disappearance."
+        "Search assigned to the sheriff's office; the deputy is sent to the fuel stop. This report does not explain the disappearance."
       ],
       "production_nb": "Dynamisk hendelses-ID/dato/tid fra faktisk savnetmelding, adskilt fra utkallingskvittering."
     },
@@ -1857,9 +1800,9 @@
       "stamp": "SARO / NIGHT SHIFT / 13-14 APR 1986",
       "body": [
         "The physical auto/survey schedule has been placed in its marked isolated state and checked locally. Passive reception remains available.",
-        "Dated shift and service originals are secured for the incident record. A separately authorised bounded array check remains possible; unattended operation stays suspended."
+        "Secured for the missing-person report: the receiver log and strip chart covering 21:00, the dated shift journal and the T01 service card. T01 is filed with them, once. A separately authorised bounded array check remains possible; unattended operation stays suspended."
       ],
-      "production_nb": "Ekte betjening/kontroll og papirhenting. Ingen avbryting av all strøm eller K3 som global bryter."
+      "production_nb": "Ekte betjening/kontroll og papirhenting. T01-arkiveringen skjer her én gang (EveningShifts eksisterende filing). Ingen avbryting av all strøm eller K3 som global bryter."
     },
     {
       "id": "HR_EARL_SOURCE_CHECK",
@@ -1903,11 +1846,11 @@
       "kind": "typed",
       "stamp": "SARO / NIGHT SHIFT / 13-14 APR 1986",
       "body": [
-        "Caliche dispatch patrol note: low lights crossing the northbound highway beyond the Caliche Junction service turnoff, recorded at the actual observation time. Ward authenticated that note and the driver's separately timed recent eastbound passage on the old Roswell road. Neither is proof of future safe passage.",
+        "Caliche deputy's dated patrol sheet: north road and old Roswell road driven at 03:30, no obstruction recorded. Ward entered its time in her log. One drive is not proof of future safe passage.",
         "After mapping C at bolt 8.15, Reyes agreed a courier handover at bolt 10.4 beyond it. Plan: carry the originals, pass C without stopping or taking another reading.",
-        "The warning and dictated measurement tables are already secured outside SARO. The diner remains a refuge; the handover preserves the source chain and is not another observer experiment."
+        "The warning, three source IDs and the first boundary time are already read back outside SARO. The diner remains a refuge; the handover keeps the source chain and is not another observer experiment."
       ],
-      "production_nb": "Adapter må binde faktiske dato/tider/retninger/kilde-ID-er/bud til avskrift; ingen gammel bergingskvittering som fersk opplysning."
+      "production_nb": "Adapter må binde faktisk dato/tid fra patruljearket, kilde-ID-er og bud til avskrift; ingen gammel bergingskvittering eller sjåførtur som fersk opplysning."
     }
   ],
   "media": [],

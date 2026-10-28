@@ -25,7 +25,8 @@ class UnifiedContracts(unittest.TestCase):
     def test_complete_authored_route(self):
         result = author.validate_scenarios(*self.fresh())
         self.assertEqual(len(result["scenarios"]), 13)
-        self.assertEqual(len(author.validate_missions(self.modules)), 10)
+        self.assertEqual([m["id"] for m in author.validate_missions(self.modules)],
+                         [f"H{i:02}" for i in range(1, 9)] + ["H10"])
 
     def test_reports_need_their_distinct_actual_readback(self):
         cases = [("SC01_FIRST_REPORT", "ctx_hr_sc01_report_readback"),
@@ -112,15 +113,15 @@ class UnifiedContracts(unittest.TestCase):
                     author.validate_scenarios(pack, modules)
 
     def test_capture_retry_awards_no_evidence(self):
-        for sid in ("SC02_RETRY", "SC04_ANNEX_RETRY", "SC04_CAR_RETRY", "ARRAY_RETRY"):
+        for sid in ("SC02_RETRY", "SC04_ANNEX_RETRY", "ARRAY_RETRY"):
             with self.subTest(sid=sid):
                 pack, modules = self.fresh()
                 self.scene(modules, sid)["on_complete"]["give_documents"] = ["HR_ARRAY_CONTROL_NOTE"]
                 with self.assertRaises(author.EV.PackError):
                     author.validate_scenarios(pack, modules)
 
-    def test_route_needs_fresh_exit_report_and_actual_courier(self):
-        for gate in ("ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"):
+    def test_route_needs_actual_patrol_sheet_and_courier(self):
+        for gate in ("ctx_hr_sc12_patrol_sheet_read", "ctx_hr_sc12_courier_104_confirmed"):
             with self.subTest(gate=gate):
                 pack, modules = self.fresh()
                 self.scene(modules, "SC12_ROUTE_READBACK")["requires"]["all"].remove(gate)
@@ -164,9 +165,9 @@ class UnifiedContracts(unittest.TestCase):
         registry = author.runtime_registry(self.pack, self.modules, scenarios)
         authored = [s["id"] for m in self.modules for s in m["scenes"]]
         self.assertEqual([s["id"] for s in registry["scenes"]], authored)
-        self.assertEqual(len(set(authored)), 79)
+        self.assertEqual(len(set(authored)), 77)
         self.assertEqual({g["id"] for g in registry["external_flags"]}, set(self.pack["external_flags"]))
-        self.assertEqual(len(registry["external_flags"]), 96)
+        self.assertEqual(len(registry["external_flags"]), 90)
         self.assertTrue(all(g["owner"] == "runtime_host" for g in registry["external_flags"]))
         self.assertTrue(all(s["scenario_ids"] and s["mission_ids"] for s in registry["scenes"]))
         self.assertEqual({sc for s in registry["scenes"] for sc in s["scenario_ids"]},
@@ -201,6 +202,36 @@ class UnifiedContracts(unittest.TestCase):
         self.assertTrue(all(s["runtime_status"] == "authored_not_integrated" for s in scenarios["scenarios"]))
         self.assertEqual(self.pack["production"]["runtime_status"], "not_integrated")
 
+    def test_new_report_does_not_depend_on_optional_sc01_window_sighting(self):
+        pack, modules = self.fresh()
+        self.scene(modules, "SC03_DISPATCH_RECEIPT")["requires"]["all"].append("ctx_hr_sc01_report_readback")
+        with self.assertRaises(author.EV.PackError):
+            author.validate_scenarios(pack, modules)
+
+    def test_receiver_log_request_needs_the_deputy_actually_at_the_stop(self):
+        pack, modules = self.fresh()
+        self.scene(modules, "SC03_RECEIVER_QUESTION")["requires"]["all"].remove("ctx_hr_sc03_deputy_at_stop")
+        with self.assertRaises(author.EV.PackError):
+            author.validate_scenarios(pack, modules)
+
+    def test_revised_route_has_one_creature_rule_and_no_extra_car_meeting(self):
+        scenarios = author.validate_scenarios(*self.fresh())
+        scenes = {s["id"] for m in self.modules for s in m["scenes"]}
+        self.assertFalse({"SC03_SHADOW_RULE", "SC04_CAR_READ", "SC04_CAR_ESCAPE", "SC04_CAR_RETRY"} & scenes)
+        self.assertNotIn("DRIVER", self.pack["actors"])
+        self.assertFalse(any(l["speaker"] == "DRIVER" for m in self.modules for s in m["scenes"] for l in s["lines"]))
+        sc12 = next(s for s in scenarios["scenarios"] if s["id"] == "SC12")
+        self.assertEqual(sc12["mission_ids"], ["H08"])
+        self.assertTrue({"H09_BRIEF", "H09_CHECK", "H09_INCOMPLETE", "SC12_PATROL_SHEET"}.issubset(sc12["scene_ids"]))
+
+    def test_four_act_delivery_preserves_scenario_level_checks(self):
+        output = author.render_scenarios(author.validate_scenarios(*self.fresh())).decode("utf-8")
+        self.assertIn("SC02 til SC05", output)
+        self.assertIn("SC06 til SC08", output)
+        self.assertIn("SC09 og SC10", output)
+        self.assertIn("SC11 til SC13", output)
+        self.assertIn("én gang per akt", output)
+
 
 class WorldProducers(unittest.TestCase):
     """Every SC fact needs a named producer in real code and a test."""
@@ -218,7 +249,7 @@ class WorldProducers(unittest.TestCase):
     def test_all_flags_scenes_and_scenarios_are_covered(self):
         data = self.check(deepcopy(self.data))
         self.assertEqual(len(data["flags"]), len(self.pack["external_flags"]))
-        self.assertEqual(len(data["scenes"]), 79)
+        self.assertEqual(len(data["scenes"]), 77)
         self.assertEqual([p["scenario"] for p in data["work_packages"]], [f"SC{i:02}" for i in range(1, 14)])
 
     def test_unowned_flag_is_rejected(self):
@@ -260,6 +291,11 @@ class WorldProducers(unittest.TestCase):
         data["scenes"][0]["tests"] = ["SC01-T99"]
         with self.assertRaises(author.EV.PackError):
             self.check(data)
+
+    def test_first_world_owner_follows_scenario_order_not_module_order(self):
+        registry = deepcopy(self.registry)
+        registry["scenes"].reverse()
+        author.validate_producers(self.pack, self.modules, registry, deepcopy(self.data))
 
 
 if __name__ == "__main__":

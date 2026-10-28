@@ -1,6 +1,6 @@
-# H01 til H10: produksjonskort
+# Ni produksjonskort: H01 til H08 og H10
 
-Generert fra missions.json. Ingen menneskelig varighet er målt.
+Generert fra missions.json. H09s eksisterende scenenavn er beholdt under H08; H09 er ikke et eget kort. Ingen menneskelig varighet er målt.
 
 ## H01: The evening round
 
@@ -28,13 +28,13 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Kontroll:** Sammenlign lampen og den separate indikatoren før/etter normal kontroll. Hold STATION 01, SAROs K3 og byens hovedforsyning atskilt. Spilleren åpner ikke høyspenningsområdet.
 
-**Følge:** Vanlig lampetest gir faktisk normalreferanse. Deretter skjer trusselmøte1 med mulig fysisk flukt/lokal retry som bevarer testen. T01 arkiveres én gang ved SARO; videre handlinger søker hjelp og sikkerhet, ikke en automatisk normalrunde.
+**Følge:** Vanlig lampetest gir faktisk normalreferanse. Deretter skjer trusselmøte1 med mulig fysisk flukt/lokal retry som bevarer testen. T01 arkiveres én gang ved SARO i SC04, når originalene sikres; videre handlinger søker hjelp og sikkerhet, ikke en automatisk normalrunde.
 
-**Utilstrekkelig bevis:** Uavklart lampetest kan gjentas; bevar kalibrering og faktisk delarbeid. I nye saker kreves T01-filingen og fullført sikkerhetsakt før passiv residualovergang, uten å oppheve fysisk auto/surveyplansperre. Gamle saker får ingen ny gate.
+**Utilstrekkelig bevis:** Uavklart lampetest kan gjentas; bevar kalibrering og faktisk delarbeid. I nye saker skjer T01-filingen sammen med originalene i SC04, og den kreves og fullført sikkerhetsakt før passiv residualovergang, uten å oppheve fysisk auto/surveyplansperre. Gamle saker får ingen ny gate.
 
 **Eksisterende ID-er beholdes:** `T01`, `EV_TRAFO_CHECK`, `EV_SERVICE_LOG`
 
-**Valgfri fordypning:** Fjern skyggemann som kan overses uten progresjonstap
+**Valgfri fordypning:** Ingen valgfri kilde bærer hovedslutningen.
 
 **Menneskelig tid:** UNVERIFIED. **Runtime:** ikke integrert.
 
@@ -62,15 +62,15 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Fysisk handling:** Følg begrunnet serviceskuffspor til reservenøkkel og eksisterende kontordør. Hent feltmappen; den korte hovedruten krever ikke hele VHS-filmen.
 
-**Kontroll:** Behold EV_DALE_INDEX/NOTE som T02s kulvert-/kamerareferanse. Nytt separat ordinært arrayservicevedlegg gir egne A/B-ståsteder. Kontroller arkivets daterte spor hos Earl eller autentisert sen kopi før arrayet; lyd gir tid, ikke peiling.
+**Kontroll:** Behold EV_DALE_INDEX/NOTE som T02s kulvert-/kamerareferanse. Nytt separat ordinært arrayservicevedlegg i kontorskapet gir egne A/B-ståsteder. Kontroller arkivets daterte spor hos Earl eller autentisert sen kopi før arrayet; lyd gir tid, ikke peiling.
 
 **Følge:** Dales frivillige samling gir kontekst uten lesekvote. Arkivets kildekontroll leder BY02 og ARRAY-01, med faktisk valgfri A→B/B→A/retur, deretter STATION01. Ingen forteller kjenner Nora eller finalen på forskudd.
 
-**Utilstrekkelig bevis:** Feltmappe gir hovedsporet selv uten strøm til VHS. Manglende sett film føres som usett; opptaket gjenopptas fra lagret sted. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn.
+**Utilstrekkelig bevis:** Feltmappe gir hovedsporet. VHS-filmen er valgfritt tillegg når den er produsert og holder aldri igjen SC07; usett film føres som usett. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn.
 
 **Eksisterende ID-er beholdes:** `EV_DALE_INDEX`, `EV_DALE_NOTE`, `VHS_DALE_FIELD_01`, `E06`, `E07`, `E08`, `P04`, `P05`
 
-**Valgfri fordypning:** Dales utklipp; Kontaktkort; Hele 72 s VHS
+**Valgfri fordypning:** Dales utklipp; Kontaktkort; VHS-filmen «Service Road / Field 01» når den er produsert
 
 **Menneskelig tid:** UNVERIFIED. **Runtime:** ikke integrert.
 
@@ -78,17 +78,17 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Spørsmål:** Are the places being selected, and is the old voice answering anyone now?
 
-**Fysisk handling:** Etter BY02 og egen ARRAY-01-geometrikontroll/trusselmøte4: kjør til STATION01. Utfør E09A/fastmerkeA, normal lokal nullprøve, kabelundersøkelse og receiver/E10. T02 er egen levert kontroll via Caliche, uten ny hovedgate.
+**Fysisk handling:** Etter BY02 og egen ARRAY-01-geometrikontroll/arrayets trusselmøte: kjør til STATION01. Utfør E09A/fastmerkeA, normal lokal nullprøve, kabelundersøkelse og receiver/E10. T02 er egen levert kontroll via Caliche, uten ny hovedgate.
 
 **Kontroll:** STATION01s tomme fot og flyttedeA mot transit/B er én kontroll. ARRAY-01s egne A/B-operatørplasser og faste lykt er en annen. T02s kulvertståsted gir et tredje opplegg. Ingen sammenblanding av deres geometri eller ID-er.
 
 **Følge:** Flyttet referanse og bevisst kabelkutt undersøkes uten ny lang jakt. Kort lysavskjæring er adskilt fra eventuell gammel betinget bortføring; ingen vellykket ny retrett etterfølges av tvungen Force. Feltfilm fremkalles før Nora.
 
-**Utilstrekkelig bevis:** Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, ikke en valgfri skyggemann som eneste bevis.
+**Utilstrekkelig bevis:** Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, uten noen valgfri figur som eneste bevis.
 
 **Eksisterende ID-er beholdes:** `E09A`, `E10`, `FRAME 03`, `FRAME 04`, `P06`, `P07`, `P08`, `P09`, `T02`, `EV_DALE_NOTE`
 
-**Valgfri fordypning:** Tomás-feltbok under benken; Kort passivt skyggemannmøte
+**Valgfri fordypning:** Tomás-feltbok under benken
 
 **Menneskelig tid:** UNVERIFIED. **Runtime:** ikke integrert.
 
@@ -100,7 +100,7 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Kontroll:** Sammenlign hennes opprinnelige plate med B-12-kontrollen. Still Noras konkrete nye spørsmål til returlinjen og hør at samme gamle korreksjon kommer igjen.
 
-**Følge:** Nora identifiserer egen bevisste handling og tapet av broren Tomás. Hun gir C-retningen og advarselen. Nye ord sender Reyes for å sikre originalen og varsle; hun ber ikke om å gjenoppta et forsøk på C.
+**Følge:** Nora identifiserer egen bevisste handling og tapet av broren Tomás. Hun gir C-retningen og advarselen. Nye ord sender Reyes for å sikre originalen og varsle; hun ber ikke om å gjenoppta et forsøk på C. Hennes siste replikk: «Don't finish his observation. Get the originals to the courier, and don't stop at C.»
 
 **Utilstrekkelig bevis:** P10/P11/P12 og papirene blir stående tilgjengelig. Manglende plate/tema fører tilbake til bordet eller originalkilden, ikke til et nytt angrep. Brevet er aldri en tidsprøve.
 
@@ -128,37 +128,19 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Menneskelig tid:** UNVERIFIED. **Runtime:** ikke integrert.
 
-## H08: Other stations
+## H08: Other stations / All Night
 
-**Spørsmål:** Is this a local recording, or coordinated activity preparing something larger?
+**Spørsmål:** Is this a local recording or coordinated activity preparing something larger, and how do the originals leave without a new observation?
 
-**Fysisk handling:** På trygg plass: legg SARO-original og eget romnotat ved Hondo- og Site11-utskrifter. Hent bevart kopi ved sen ankomst. Sammenlign proveniens, uavhengige kanaler, klokker, faseorden og kommende spor.
+**Fysisk handling:** På trygg plass: legg SARO-original og eget romnotat ved Hondo- og Site11-utskrifter. Hent bevart kopi ved sen ankomst. Sammenlign proveniens, uavhengige kanaler, klokker, faseorden og kommende spor. Les deretter E15, det innrammede utklippet fra juli 1947 ved døren, og løs P13: E09A-tracingen på E14, transit på STATION 01 og nord mot nord.
 
-**Kontroll:** Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward, velg kildeark og dikter deres markerte måletabeller og begrensningene. Hun fører kilde-ID-er/tabellverdier i en datert samtalelogg og leser dem tilbake; foto/negative kopieres ikke over telefon.
+**Kontroll:** Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og les tre kilde-ID-er og første grensetid; hun leser dem tilbake og fører dem i en datert samtalelogg. Måletabellene blir i dokumentene, og foto/negative kopieres ikke over telefon. Løs P13 og skill C ved 8.15 fra bud ved 10.4. Sheriffbetjentens daterte patruljeark gir veiopplysningen; det er én kjøretur, ikke en trygghetsgaranti.
 
-**Følge:** Støttet nettverksvarsel om samordnet forberedelse og kommende ankomst. Ward bekrefter at den lokale 06:00-serien fortsatt er suspendert etter kveldens melding, varsler andre stasjoner om de nye funnene og kvitterer for dikterte måleavskrifter. Foto, negative og originalark blir i mappen.
+**Følge:** Støttet nettverksvarsel om samordnet forberedelse og kommende ankomst. Ward bekrefter at den lokale 06:00-serien fortsatt er stanset etter kveldens melding og varsler andre stasjoner. Formålet videre er fysisk overlevering av originalene til budet, med varselet allerede sikret eksternt. Planen er å kjøre gjennom uten stopp eller avlesning ved C. Ingen skjult feilvalg, ny global frist eller påstand om at kryssingen er trygg.
 
-**Utilstrekkelig bevis:** Manglende sanntidsmottak erstattes av bevart lokalt stempel/originalkopi på telex. Uverifisert kilde føres som foreløpig og ringer Ward for kildekontroll; varsel om lokal fare kan sendes straks. Sterk nettverksslutning venter på de to uavhengige fjernkildene.
+**Utilstrekkelig bevis:** Manglende sanntidsmottak erstattes av bevart lokalt stempel/originalkopi på telex. Uverifisert kilde føres som foreløpig og ringer Ward for kildekontroll; varsel om lokal fare kan sendes straks. Sterk nettverksslutning venter på de to uavhengige fjernkildene. E15 er et gammelt, tilgjengelig dinerutklipp uten 04:45-port; feil kartplassering får eksisterende karttips. Hvis varsling mangler, gis konkret telefonhandling før avreise.
 
-**Eksisterende ID-er beholdes:** `EV_RADIO_SCHEDULE`, `E11`, `P12`
-
-**Valgfri fordypning:** Ingen valgfri kilde bærer hovedslutningen.
-
-**Menneskelig tid:** UNVERIFIED. **Runtime:** ikke integrert.
-
-## H09: All Night
-
-**Spørsmål:** Where is C, and can the originals be moved without repeating the observation?
-
-**Fysisk handling:** Rolig diner: les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde.
-
-**Kontroll:** Løs P13 med E15/E09A/E14 og skill C8.15 fra bud10.4. Autentiser fersk sted-/tidsfestet utfartsobservasjon, sjåførens nylige gjennomkjøring og faktisk budavtale før avreise. Oktoberstopp/1985kvittering er ikke ferske rutedata.
-
-**Følge:** Formålet er fysisk overlevering av originaler med kopier allerede sikret eksternt. Planen er å kjøre gjennom uten stopp/avlesning ved C. Ingen skjult feilvalg, ny global frist eller påstand om at kryssing er bevist trygg.
-
-**Utilstrekkelig bevis:** E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise.
-
-**Eksisterende ID-er beholdes:** `E09A`, `E14`, `E15`, `P13`, `E11`
+**Eksisterende ID-er beholdes:** `EV_RADIO_SCHEDULE`, `E11`, `P12`, `E09A`, `E14`, `E15`, `P13`
 
 **Valgfri fordypning:** Kaffe og vanlig dinerprat; P01 som ikke avbryter kartarbeidet
 
@@ -168,7 +150,7 @@ Generert fra missions.json. Ingen menneskelig varighet er målt.
 
 **Spørsmål:** Can the originals reach the agreed handover without making a new observation?
 
-**Fysisk handling:** Gå til servicebilen og velg tydelig overleveringsoppdrag. Kjør den eksisterende veien fra dinerens mile0 mot det avtalte10.4-punktet, forbi C ved8.15 uten planlagt stopp. Varsling er allerede levert.
+**Fysisk handling:** Gå til servicebilen og velg tydelig overleveringsoppdrag; spillet lagrer ved avreise. Kjør den eksisterende veien fra dinerens mile0 mot det avtalte10.4-punktet, forbi C ved8.15 uten planlagt stopp. Varsling er allerede levert.
 
 **Kontroll:** Før avreise bekreft at originalene er med, at Ward har kvittert og at C og overleveringspunkt er forskjellige. Ikke lag en ny parkerings-/avlesningsoppgave ved C.
 

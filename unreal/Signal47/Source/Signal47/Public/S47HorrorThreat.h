@@ -5,6 +5,7 @@
 #include "S47Web.h"
 
 class US47Main;
+struct FHitResult;
 
 // SC02 meeting 1: the pale reactive body at Caliche Junction. It owns its rendered parts,
 // its senses and a small hand-made route graph outside the closed yard. The story host alone
@@ -62,6 +63,7 @@ public:
  static const TArray<TPair<int32, int32>>& Edges();
  static const TCHAR* StateName(EState In);
  static bool SelfTest(TArray<FString>& Lines);
+ bool NativeSelfTest(TArray<FString>& Lines); // opt-in isolated native collision/bounds probe
 
 private:
  struct FParts;
@@ -74,6 +76,7 @@ private:
  FVector2D Look = FVector2D::ZeroVector, PathGoal = FVector2D::ZeroVector, LastPlayer = FVector2D::ZeroVector, SearchAt = FVector2D::ZeroVector;
  double Y = -1.1, BodyYaw = 0, HeadYaw = 0, StateT = 0, SeeAcc = 0, SeenAcc = 0, LostT = 0, DriveLostT = 0;
  double SinceSeen = 1e9, SinceWarn = 1e9, Replan = 0, Phase = 0, Gait = 0, Clock = 0, NoiseCool = 0, ChaseBreath = 0;
+ double BlockedFor = 0;
  int32 PostNode = 2, CheckNode = 6, RetreatNode = 8, SearchStep = 0;
  bool bHavePlayer = false;
  static constexpr int32 JointCount = 10; // torso, head, arms and forearms, thighs and shins
@@ -82,9 +85,12 @@ private:
  TArray<FVector2D> Path;
  TArray<bool> NodeOk, EdgeOk;
  TArray<FS47Rect> Near;
+ TArray<FS47Rect> NativeHints; // broad-phase hints only; the actual capsule decides native clearance
+ struct FNativeObstacle { TWeakObjectPtr<class UPrimitiveComponent> Part; int32 Instance = INDEX_NONE; };
+ TArray<FNativeObstacle> NativeObstacles;
  void Enter(EState Next);
  void Warn(const FVector2D& At, bool bChase);
- bool Move(const FVector2D& Target, double Speed, double Dt, double StopDist);
+ bool Move(const FVector2D& Target, double Speed, double Dt, double StopDist, bool bVehicle = false);
  void TurnBody(double Yaw, double Rate, double Dt);
  bool Clear(const FVector2D& A, const FVector2D& B) const;
  bool Sampled(const FVector2D& A, const FVector2D& B) const;
@@ -92,6 +98,10 @@ private:
  TArray<FVector2D> Plan(const FVector2D& From, const FVector2D& To) const;
  static TArray<int32> Route(int32 From, int32 To, const TArray<bool>& Allowed, const TArray<bool>* EdgeMask = nullptr);
  void Validate();
+ void RefreshNavigation();
+ bool PhysicalSegment(const FVector2D& From, const FVector2D& To, FHitResult* OutHit = nullptr) const;
+ bool PhysicalStep(const FVector2D& To);
+ bool ContactClear(const FVector2D& To) const;
  bool Held() const;
  bool InSite() const;
  bool SeesPlayer() const;

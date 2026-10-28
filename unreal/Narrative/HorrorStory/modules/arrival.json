@@ -53,7 +53,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H08: Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet. Varslingsgrunnlaget blir eksternt sikret som dikterte måletabeller/kilde-ID-er og datert readback, ikke automatisk kopi av fotoarkivet.",
+      "trigger_nb": "H08: Hondo/Site11 beholder sine ulike lokale måleverdier. Sammenlign med vanlig sendeplan og kontroller at lydmating var frakoblet ved Site11s kontroll. Like ord alene godkjennes ikke. Ring Ward og send presise begrensninger. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet. Varslingsgrunnlaget blir eksternt sikret som tre kilde-ID-er og første grensetid, lest tilbake av Ward i datert logg. Måletabellene blir i dokumentene; ingen automatisk kopi av fotoarkivet.",
       "requires": {
         "all": [
           "ctx_hr_h08_ready",
@@ -171,7 +171,7 @@
       "channel": "phone",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Kvittering først når Ward faktisk er nådd, advarselen lest tilbake og 06:00-jobben suspendert. Ikke et tilfeldig tidsutløp. Kvitteringen krever faktisk diktering av valgte kildeark og Wards daterte logg/readback; foto og negative blir hos spilleren.",
+      "trigger_nb": "Kvittering først når Ward faktisk er nådd, Reyes har lest tre kilde-ID-er og første grensetid, og Ward har lest dem tilbake og ført dem i datert logg. 06:00-serien er allerede stanset. Ikke et tilfeldig tidsutløp; foto og negative blir hos spilleren.",
       "requires": {
         "all": [
           "ctx_hr_warning_acknowledged",
@@ -192,7 +192,7 @@
         {
           "id": "H08_WARNING_ACK_003",
           "speaker": "WARD",
-          "text": "I have written the source IDs and the measurements into the call log. The warning is outside SARO. Keep the photographs and the originals with their source sheets.",
+          "text": "Reading back: SARO zero-seven original run, Hondo local sheet, Site Eleven local sheet. First boundary, oh-three-fifty-six and eight seconds. That is in my dated log. The warning is outside SARO; keep the photographs and originals with their sheets.",
           "delivery_nb": "Eksisterende vakthavende. Må ikke slås sammen med Dale."
         },
         {
@@ -218,12 +218,11 @@
       "channel": "physical",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H09: Rolig diner: les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "trigger_nb": "H08 kartdel (tidligere H09): rolig diner etter kvittert varsel. Les E15, det innrammede utklippet fra juli 1947 som allerede henger ved døren. Legg E09A-tracingen på E14, transit på STATION 01 og nord mot nord. Behold P13 som reell kartoppgave. Dagens avis i byen er en annen, valgfri kilde. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
       "requires": {
         "all": [
           "ctx_hr_h09_ready",
-          "ctx_hr_warning_acknowledged",
-          "ctx_hr_sc12_driver_recent_passage"
+          "ctx_hr_warning_acknowledged"
         ],
         "none": [
           "hr_h09_recorded",
@@ -234,15 +233,15 @@
       "lines": [
         {
           "id": "H09_BRIEF_001",
-          "speaker": "DRIVER",
-          "text": "Last October it all quit past the eight-mile post. Engine, lights, radio. Then it came back.",
-          "delivery_nb": "Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser."
+          "speaker": "DESCRIPTION",
+          "text": "The framed clipping by the door is the old one, July 1947. It is a photograph of a place, not a measurement.",
+          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
           "id": "H09_BRIEF_002",
-          "speaker": "DRIVER",
-          "text": "I came through again before I stopped here this morning. Nothing quit. That is one trip. I cannot tell you what made the other one different.",
-          "delivery_nb": "Eksisterende lastebilsjåfør. Praktisk, lavmælt, bare egne veiopplevelser."
+          "speaker": "DESCRIPTION",
+          "text": "Ward has the warning. What is left is the map: where C meets the old road, and where the courier can wait beyond it.",
+          "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
           "id": "H09_BRIEF_003",
@@ -265,7 +264,7 @@
       "channel": "phone",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H09: Finn C ved 8.15-bolten og avtal separat 10.4-bolt med Ward. Sjåførens oktoberstopp ved8.15 må tas med i risikovurderingen. Spør om hans nylige gjennomkjøring: det er et nåtidig vitnemål, ikke et generelt trygghetsbevis. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
+      "trigger_nb": "H08 kartdel (tidligere H09): finn C ved 8.15-bolten og avtal separat 10.4-bolt med Ward. Sheriffbetjentens patruljeark er én kjøretur, ikke et generelt trygghetsbevis. Kravflagget må komme fra faktisk kontroll, aldri fra å åpne panelet.",
       "requires": {
         "all": [
           "ctx_hr_h09_ready",
@@ -312,7 +311,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H09: E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "trigger_nb": "H08 kartdel (tidligere H09): E15 er et gammelt, tilgjengelig dinerutklipp og skal ikke ha 04:45-port. Leveringsregelen gjelder dagens avis i byen. Feil kartplassering får eksisterende karttips; bildet løser ikke C alene. Hvis varsling mangler, gi konkret telefonhandling før avreise. Vis bare ved et faktisk utilstrekkelig resultat.",
       "requires": {
         "all": [
           "ctx_hr_h09_ready",
@@ -341,13 +340,12 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H10: Gå til servicebilen og velg tydelig overleveringsoppdrag. Kjør den eksisterende veien fra dinerens mile0 mot det avtalte10.4-punktet, forbi C ved8.15 uten planlagt stopp. Varsling er allerede levert. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
+      "trigger_nb": "H10: Gå til servicebilen og velg tydelig overleveringsoppdrag. Spillet lagrer et sikkert punkt ved avreise. Kjør den eksisterende veien fra dinerens mile 0 mot det avtalte 10.4-punktet, forbi C ved 8.15 uten planlagt stopp. 10.4 vises bare på kart og skilt; finalen ved C avbryter reisen. Varsling er allerede levert. Startteksten vises ved navngitt handling på stedet, én gang per relevant inngang.",
       "requires": {
         "all": [
           "ctx_hr_h10_ready",
           "ctx_hr_warning_acknowledged",
-          "ctx_hr_sc12_driver_recent_passage",
-          "ctx_hr_sc12_exit_sighting_readback",
+          "ctx_hr_sc12_patrol_sheet_read",
           "ctx_hr_sc12_courier_104_confirmed"
         ],
         "none": [
@@ -360,7 +358,7 @@
         {
           "id": "H10_BRIEF_001",
           "speaker": "DESCRIPTION",
-          "text": "The originals are in the cab. Ward has the warning and the dictated measurement tables.",
+          "text": "The originals are in the cab. Ward has the warning, the three source IDs and the first boundary time.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         },
         {
@@ -517,7 +515,7 @@
       "body": [
         "RECEIVED / E. WARD. SARO original identified; local observations separated from receiver copy. Hondo and Site 11 originals requested and their source checks retained.",
         "The 06:00 morning series remains suspended after the earlier local safety report. No fresh observer is to close a reference or complete the old run. Other sites have now acknowledged the same instruction. This does not claim that the external activity has stopped.",
-        "The warning, source IDs and dictated measurement tables are retained in Ward's dated call log outside SARO. Photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. A handover point is to be agreed after the diner map and current route checks; this receipt does not confirm one.",
+        "The warning, three source IDs and the first boundary time (03:56:08) are read back and retained in Ward's dated call log outside SARO. The measurement tables, photographs, negatives and complete source sheets remain in the transfer folder. The courier has the field map. A handover point is to be agreed after the diner map and current route checks; this receipt does not confirm one.",
         "Time of acknowledgement is entered when this call is actually completed. Do not preprint a successful acknowledgement before the line has been answered."
       ],
       "production_nb": "Ny forfatterkilde, ikke eksisterende runtimebevis. Dato/tid og måleverdier må bindes til faktisk hendelse i senere adapter. Dokumentet tildeles bare etter den fysiske handlingen; manglende fil godkjennes ikke som foto."

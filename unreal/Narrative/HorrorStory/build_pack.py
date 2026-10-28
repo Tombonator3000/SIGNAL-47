@@ -19,6 +19,12 @@ EV = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(EV)
 EV.ROOT = ROOT
 
+# H09's map scenes retain their IDs under H08 for saved-data/source references.
+# The revised production route has nine cards and ships in four acts.
+MISSION_IDS = tuple(f"H{i:02}" for i in range(1, 9)) + ("H10",)
+ACTS = (("Kvelden", "SC02 til SC05"), ("Arkivet og arrayet", "SC06 til SC08"),
+        ("Feltet og Nora", "SC09 og SC10"), ("Avsøkning og veien", "SC11 til SC13"))
+
 
 def validate_missions(modules):
     data = EV.read_json(ROOT / "missions.json")
@@ -27,9 +33,8 @@ def validate_missions(modules):
         EV.fail("missions", "expected authored schema 1")
     scenes = {s["id"]: s for m in modules for s in m["scenes"]}
     rows = EV.sequence(data["missions"], "missions.missions")
-    expected = [f"H{i:02}" for i in range(1, 11)]
-    if [r["id"] for r in rows] != expected:
-        EV.fail("missions", "H01 through H10 must appear once in order")
+    if [r["id"] for r in rows] != list(MISSION_IDS):
+        EV.fail("missions", "nine revised cards must appear once in order; H09 is part of H08")
     for row in rows:
         EV.obj(row, row["id"], ["id", "title", "phase", "question", "physical_action", "control",
                "consequence", "insufficient_evidence", "scene_ids", "existing_evidence_ids",
@@ -77,7 +82,7 @@ def validate_missions(modules):
 
 
 def render_missions(rows):
-    out = ["# H01 til H10: produksjonskort", "", "Generert fra missions.json. Ingen menneskelig varighet er målt.", ""]
+    out = ["# Ni produksjonskort: H01 til H08 og H10", "", "Generert fra missions.json. H09s eksisterende scenenavn er beholdt under H08; H09 er ikke et eget kort. Ingen menneskelig varighet er målt.", ""]
     for row in rows:
         out += [f"## {row['id']}: {row['title']}", "", f"**Spørsmål:** {row['question']}", ""]
         for label, key in [("Fysisk handling", "physical_action"), ("Kontroll", "control"),
@@ -115,8 +120,8 @@ def validate_scenarios(pack, modules):
                 EV.string(item, row["id"])
         if not row["scene_ids"] or not row["result_scene_ids"] or not row["shared_owner_contracts"]:
             EV.fail(row["id"], "scenario needs scenes, factual results and existing-owner contracts")
-        if not set(row["mission_ids"]).issubset({f"H{i:02}" for i in range(1, 11)}):
-            EV.fail(row["id"], "existing H01 through H10 mission identity must be retained")
+        if not set(row["mission_ids"]).issubset(MISSION_IDS):
+            EV.fail(row["id"], "scenario must use a revised mission card; H09 belongs to H08")
         if not set(row["result_scene_ids"]).issubset(row["scene_ids"]):
             EV.fail(row["id"], "result scenes must belong to this scenario")
         for sid in row["scene_ids"]:
@@ -128,18 +133,17 @@ def validate_scenarios(pack, modules):
     gates = {
         "SC01_FIRST_REPORT": {"ctx_hr_sc01_report_readback"},
         "SC02_ESCAPE": {"ctx_hr_sc02_t01_complete", "ctx_hr_sc02_escape_complete"},
-        "SC03_DISPATCH_RECEIPT": {"ctx_hr_sc01_report_readback", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_ortiz_assigned"},
+        "SC03_DISPATCH_RECEIPT": {"ctx_hr_sc02_escape_complete", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_ortiz_assigned"},
         "SC03_ORTIZ_IDENTIFY": {"ctx_hr_sc03_ortiz_assigned", "ctx_hr_sc03_ortiz_identified"},
         "SC03_HELPER_TAKEN": {"ctx_hr_sc03_lift_observed", "ctx_hr_sc03_safe_retreat"},
         "SC03_HELPER_TRACES": {"ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_traces_checked"},
         "SC03_MISSING_RECEIPT": {"ctx_hr_sc03_ortiz_identified", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_lift_observed", "ctx_hr_sc03_missing_readback"},
         "SC03_LOCAL_ORDER_HOLD": {"ctx_hr_sc03_local_order_suspended"},
+        "SC03_RECEIVER_QUESTION": {"ctx_hr_sc03_missing_readback", "ctx_hr_sc03_deputy_at_stop"},
         "SC04_LOCAL_HOLD": {"ctx_hr_sc04_schedule_isolated", "ctx_hr_sc04_shift_originals_secured"},
         "SC04_ANNEX_LONG_ESCAPE": {"ctx_hr_sc04_annex_long_escape"},
         "SC04_ANNEX_SOUND_ESCAPE": {"ctx_hr_sc04_annex_sound_escape"},
         "SC04_ANNEX_IMPRINT": {"ctx_hr_sc01_dale_reference_heard", "ctx_hr_sc04_annex_imprint_playing"},
-        "SC04_CAR_READ": {"ctx_hr_sc04_car_threat_visible", "ctx_hr_sc04_after_annex_calm", "ctx_hr_sc04_car_route_known"},
-        "SC04_CAR_ESCAPE": {"ctx_hr_sc04_car_escape", "ctx_hr_sc04_car_route_known"},
         "SC04_SAFE_ROOM_AGREEMENT": {"ctx_hr_sc04_control_room_safe", "ctx_hr_sc04_ward_on_line", "ctx_hr_sc04_schedule_isolated"},
         "SC05_PASSIVE_RESIDUAL": {"ctx_hr_sc04_schedule_isolated", "ctx_hr_sc05_residual_passive"},
         "BY02_SOURCE_COMPARE": {"ctx_hr_by02_reel_identity", "ctx_hr_by02_tape_sample_verified", "ctx_hr_by02_live_sample_verified", "ctx_hr_by02_question_compared"},
@@ -147,10 +151,10 @@ def validate_scenarios(pack, modules):
         "ARRAY_RESULT": {"ctx_hr_array_command_checked", "ctx_hr_array_command_history_compared", "ctx_hr_array_reference_fixed", "ctx_hr_array_a_observed", "ctx_hr_array_b_observed", "ctx_hr_array_return_observed", "ctx_hr_array_geometry_compared"},
         "ARRAY_RETREAT": {"ctx_hr_array_geometry_compared", "ctx_hr_array_escape_complete"},
         "ARRAY_EMPTY_HOLD": {"ctx_hr_array_escape_complete", "ctx_hr_array_empty_hold_observed"},
-        "SC12_ROUTE_READBACK": {"ctx_hr_warning_acknowledged", "ctx_hr_h09_checked", "ctx_hr_sc12_driver_recent_passage", "ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"},
-        "H09_BRIEF": {"ctx_hr_sc12_driver_recent_passage"},
+        "SC12_PATROL_SHEET": {"ctx_hr_sc12_patrol_sheet_read"},
+        "SC12_ROUTE_READBACK": {"ctx_hr_warning_acknowledged", "ctx_hr_h09_checked", "ctx_hr_sc12_patrol_sheet_read", "ctx_hr_sc12_courier_104_confirmed"},
         "H09_CHECK": {"ctx_hr_sc12_courier_104_confirmed"},
-        "H10_BRIEF": {"ctx_hr_sc12_driver_recent_passage", "ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"},
+        "H10_BRIEF": {"ctx_hr_sc12_patrol_sheet_read", "ctx_hr_sc12_courier_104_confirmed"},
         "H07_FIRST_WARNING": {"ctx_hr_h07_bundle_secured"},
         "H07_CHECK": {"ctx_hr_h07_bundle_secured"},
         "H07_ESCAPE_COMPLETE": {"ctx_hr_h07_bundle_secured"},
@@ -159,6 +163,11 @@ def validate_scenarios(pack, modules):
     for sid, required in gates.items():
         if sid not in scenes or not required.issubset(scenes[sid]["requires"]["all"]):
             EV.fail(sid, "unified scenario world-result gate missing")
+    removed = {"SC03_SHADOW_RULE", "SC04_CAR_READ", "SC04_CAR_ESCAPE", "SC04_CAR_RETRY"}
+    if removed.intersection(scenes):
+        EV.fail("scenarios", "the revised route has one creature rule and no SC04 car encounter")
+    if "ctx_hr_sc01_report_readback" in scenes["SC03_DISPATCH_RECEIPT"]["requires"]["all"]:
+        EV.fail("SC03_DISPATCH_RECEIPT", "the new hazard report cannot depend on the optional SC01 window sighting")
     document_sources = {
         "SC01_FIRST_REPORT": ["HR_INITIAL_REPORT"],
         "SC03_DISPATCH_RECEIPT": ["HR_DISPATCH_RECEIPT"],
@@ -220,6 +229,10 @@ def validate_scenarios(pack, modules):
 
 def render_scenarios(data):
     out = ["# SC01 til SC13: produksjonskontrakt", "", "Generert fra scenarios.json. Forfatterkilder; ingen ny runtime eller målte spillertider.", ""]
+    out += ["## Levering i fire akter", "", "SC01 er innledningen. Hvert senere scenario får egne målrettede prøver; full spillmatrise, fletting og installasjon skjer én gang per akt.", "",
+            "| Akt | Scenarioer |", "|---|---|"]
+    out += [f"| {i}: {name} | {scenes} |" for i, (name, scenes) in enumerate(ACTS, 1)]
+    out += ["", "Ward, Ortiz, Earl og Nora får nye stemmer til slutt. Forfattertekst og genererte data er ikke faktisk verdensintegrasjon.", ""]
     for row in data["scenarios"]:
         out += [f"## {row['id']}: {row['title']}", "", row["world_contract"], "",
                 "**Bevarte hovedkort:** " + ", ".join(row["mission_ids"]), "",
@@ -257,7 +270,10 @@ def validate_producers(pack, modules, registry, data=None):
     first = {}
     for row in registry["scenes"]:
         for gate in row["external_requirements"]:
-            first.setdefault(gate, row["scenario_ids"][0])
+            # Modules are grouped by subject, not SC order. A later card can be
+            # listed before the earlier world scene that first owns its fact.
+            owner = min(row["scenario_ids"])
+            first[gate] = min(first.get(gate, owner), owner)
     tests = {}
     for row in EV.sequence(data["tests"], "tests"):
         EV.obj(row, "test", ["id", "scenario", "kind", "covers", "description_nb"])

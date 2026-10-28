@@ -388,7 +388,7 @@ S47J::FObj FS47Horror::Save() const
 bool FS47Horror::SelfTest(TArray<FString>& Lines)
 {
  FString Error;const bool Good=FS47HorrorPack::SelfTest(Error);
- Lines.Add(Good?TEXT("horror pack: all 79 scene contracts and restore gates OK"):TEXT("horror pack FAILED: ")+Error);
+ Lines.Add(Good?TEXT("horror pack: all 77 scene contracts and restore gates OK"):TEXT("horror pack FAILED: ")+Error);
  const bool VisualGood=FS47HorrorVisual::SelfTest(Lines);
  const bool RouteGood=SC02SelfTest(Lines);
  const bool ThreatGood=FS47HorrorThreat::SelfTest(Lines);

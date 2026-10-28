@@ -421,6 +421,13 @@ bool FS47HorrorPack::Load(const TSharedPtr<FJsonObject>& Json, FString& Error)
 	{
 		bool bValue = false;
 		const FString Id(*Pair.Key);
+		// SC01 saves included dormant future-scene defaults. These three scenes were
+		// never integrated and are now retired; only their false booleans may migrate.
+		if (Id == TEXT("hr_sc03_shadow_rule_presented") || Id == TEXT("hr_sc04_car_read_presented") || Id == TEXT("hr_sc04_car_escape_presented"))
+		{
+			if (Pair.Value->Type != EJson::Boolean || !Pair.Value->TryGetBool(bValue) || bValue) return false;
+			continue;
+		}
 		if (!Defaults.Contains(Id) || External.Contains(Id) || Pair.Value->Type != EJson::Boolean || !Pair.Value->TryGetBool(bValue)) return false;
 		NewFlags.Add(Id, bValue);
 	}
@@ -451,7 +458,7 @@ bool FS47HorrorPack::SelfTest(FString& Error)
 	FS47HorrorPack P;
 	if (!P.Initialize(Error)) return false;
 #define HORROR_CHECK(Condition, Message) do { if (!(Condition)) { Error = TEXT(Message); return false; } } while (false)
-	HORROR_CHECK(P.Scenes.Num() == 79 && P.Registry.Num() == 79 && P.DocumentData.Num() == 16 && P.External.Num() == 96,
+	HORROR_CHECK(P.Scenes.Num() == 77 && P.Registry.Num() == 77 && P.DocumentData.Num() == 16 && P.External.Num() == 90,
 		"Horror source contains every baseline scene, document and external gate");
 	HORROR_CHECK(P.FindRegistration(TEXT("H01_BRIEF"))->ScenarioIds.Contains(TEXT("SC01")) &&
 		P.FindRegistration(TEXT("H02_CHECK"))->ScenarioIds.Contains(TEXT("SC02")), "Original H01/H02 cards retain their scenario mapping");
@@ -482,6 +489,18 @@ bool FS47HorrorPack::SelfTest(FString& Error)
 	HORROR_CHECK(P.Flag(TEXT("hr_h01_recorded")), "Checked H01 presentation is preserved");
 	const auto Good = P.Save();
 	const FString Before = S47J::Write(Good);
+	const auto LegacyDormant = S47J::Clone(Good);
+	for (const TCHAR* Retired : {TEXT("hr_sc03_shadow_rule_presented"), TEXT("hr_sc04_car_read_presented"), TEXT("hr_sc04_car_escape_presented")})
+		LegacyDormant->GetObjectField(TEXT("flags"))->SetBoolField(Retired, false);
+	HORROR_CHECK(P.Load(LegacyDormant, Error) && S47J::Write(P.Save()) == Before,
+		"Published SC01 saves migrate retired false future defaults without losing their actual progress");
+	const auto BadRetired = S47J::Clone(LegacyDormant);
+	BadRetired->GetObjectField(TEXT("flags"))->SetBoolField(TEXT("hr_sc03_shadow_rule_presented"), true);
+	HORROR_CHECK(!P.Load(BadRetired, Error) && S47J::Write(P.Save()) == Before,
+		"Retired unimplemented scenes cannot claim true progress in a migrated save");
+	BadRetired->GetObjectField(TEXT("flags"))->SetStringField(TEXT("hr_sc03_shadow_rule_presented"), TEXT("false"));
+	HORROR_CHECK(!P.Load(BadRetired, Error) && S47J::Write(P.Save()) == Before,
+		"Retired future defaults remain strict JSON booleans and rejection is atomic");
 	const auto BadFlag = S47J::Clone(Good);
 	BadFlag->GetObjectField(TEXT("flags"))->SetBoolField(TEXT("ctx_hr_h02_checked"), true);
 	HORROR_CHECK(!P.Load(BadFlag, Error) && P.Flag(TEXT("hr_h01_recorded")), "Saved script flags cannot smuggle world context");

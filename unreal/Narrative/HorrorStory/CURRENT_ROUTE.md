@@ -1,5 +1,7 @@
 # Gjeldende spillerreise og åpne målinger
 
+Historisk kildenotat fra 25. oktober 2026. Senere regi er endret i [godkjent revisjon 28. oktober](../../HISTORIE_SC02_SC13_REVISJON.md) og [gjeldende generert kontrakt](generated/SCENARIO_CONTRACTS.md). Omtale nedenfor av svartfigur, bil-/hukemøte, sjåfør, ti H-kort, måletabelldiktering eller gamle tidstapsregler overstyrer ikke den reviderte planen. Dette dokumentet attesterer ingen ny implementering.
+
 Kildekart kontrollert 25. oktober 2026. Dette dokumentet kartlegger den eksisterende implementasjonen og skiller den fra nye H01 til H10-scener. Det er ikke en ny gjennomspilling. Ingen menneskelig varighet er fylt ut, og komprimerte fortellerminutter summeres ikke til spilletid.
 
 ## Hovedruten som finnes nå

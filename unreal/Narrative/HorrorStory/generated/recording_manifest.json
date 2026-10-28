@@ -8,8 +8,8 @@
     "sample_format": "PCM16",
     "channels": 1
   },
-  "cue_count": 54,
-  "required_recording_count": 53,
+  "cue_count": 50,
+  "required_recording_count": 49,
   "recorded_count": 5,
   "recordings": [
     {
@@ -289,30 +289,6 @@
       "duration_seconds": null
     },
     {
-      "line_id": "H09_BRIEF_001",
-      "scene_id": "H09_BRIEF",
-      "actor": "DRIVER",
-      "channel": "physical",
-      "voice_profile": "driver",
-      "status": "pending",
-      "reuse_of": null,
-      "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
-    },
-    {
-      "line_id": "H09_BRIEF_002",
-      "scene_id": "H09_BRIEF",
-      "actor": "DRIVER",
-      "channel": "physical",
-      "voice_profile": "driver",
-      "status": "pending",
-      "reuse_of": null,
-      "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
-    },
-    {
       "line_id": "H09_CHECK_001",
       "scene_id": "H09_CHECK",
       "actor": "WARD",
@@ -495,30 +471,6 @@
     {
       "line_id": "SC03_LOCAL_ORDER_HOLD_002",
       "scene_id": "SC03_LOCAL_ORDER_HOLD",
-      "actor": "WARD",
-      "channel": "phone",
-      "voice_profile": "ward",
-      "status": "pending",
-      "reuse_of": null,
-      "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
-    },
-    {
-      "line_id": "SC04_LIMITED_RETURN_001",
-      "scene_id": "SC04_LIMITED_RETURN",
-      "actor": "WARD",
-      "channel": "phone",
-      "voice_profile": "ward",
-      "status": "pending",
-      "reuse_of": null,
-      "recording_required": true,
-      "audio_file": null,
-      "duration_seconds": null
-    },
-    {
-      "line_id": "SC04_LIMITED_RETURN_002",
-      "scene_id": "SC04_LIMITED_RETURN",
       "actor": "WARD",
       "channel": "phone",
       "voice_profile": "ward",

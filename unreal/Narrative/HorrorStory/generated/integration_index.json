@@ -156,30 +156,16 @@
       "existing_evidence_ids": [
         "EV_RADIO_SCHEDULE",
         "E11",
-        "P12"
+        "P12",
+        "E09A",
+        "E14",
+        "E15",
+        "P13"
       ],
       "source_files": [
         "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp",
         "unreal/Signal47/Source/Signal47/Private/S47SaroDark.cpp",
-        "unreal/Signal47/Source/Signal47/Private/S47Ops.cpp"
-      ]
-    },
-    {
-      "id": "H09",
-      "scene_ids": [
-        "H09_BRIEF",
-        "H09_CHECK",
-        "H09_INCOMPLETE"
-      ],
-      "existing_evidence_ids": [
-        "E09A",
-        "E14",
-        "E15",
-        "P13",
-        "E11"
-      ],
-      "source_files": [
-        "unreal/Signal47/Source/Signal47/Private/S47Chapter5.cpp",
+        "unreal/Signal47/Source/Signal47/Private/S47Ops.cpp",
         "unreal/Signal47/Source/Signal47/Private/S47Drawings.cpp",
         "unreal/Signal47/Source/Signal47/Public/S47OldRoadLayout.h"
       ]
@@ -265,12 +251,12 @@
       "scene_ids": [
         "SC03_DISPATCH_RECEIPT",
         "SC03_RELIEF_CONTACT",
-        "SC03_SHADOW_RULE",
         "SC03_ORTIZ_IDENTIFY",
         "SC03_HELPER_TAKEN",
         "SC03_HELPER_TRACES",
         "SC03_MISSING_RECEIPT",
-        "SC03_LOCAL_ORDER_HOLD"
+        "SC03_LOCAL_ORDER_HOLD",
+        "SC03_RECEIVER_QUESTION"
       ],
       "result_scene_ids": [
         "SC03_DISPATCH_RECEIPT",
@@ -280,9 +266,9 @@
       ],
       "existing_evidence_ids": [],
       "shared_owner_contracts": [
-        "BY01; no replacement of existing Earl, sheriff, waitress or required witnesses."
+        "BY01; no replacement of existing Earl, deputy, waitress or required witnesses. The deputy is the existing Caliche substation character."
       ],
-      "world_contract": "Assignment, visible loss, traces and missing-person readback are different facts. Shadow rule is optional and distinct from the pale reactive actor.",
+      "world_contract": "Assignment, visible loss, traces and missing-person readback are different facts. During the lift several pale figures stand still at the edge of the light; there is no separate black-figure rule. Cover in the station or the truck is valid. The deputy's question about the 21:00 receiver log motivates the return.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -299,21 +285,19 @@
         "SC04_ANNEX_LONG_ESCAPE",
         "SC04_ANNEX_SOUND_ESCAPE",
         "SC04_ANNEX_RETRY",
-        "SC04_CAR_READ",
-        "SC04_CAR_ESCAPE",
-        "SC04_CAR_RETRY",
         "SC04_SAFE_ROOM_AGREEMENT"
       ],
       "result_scene_ids": [
         "SC04_LOCAL_HOLD",
-        "SC04_CAR_ESCAPE",
+        "SC04_ANNEX_LONG_ESCAPE",
+        "SC04_ANNEX_SOUND_ESCAPE",
         "SC04_SAFE_ROOM_AGREEMENT"
       ],
       "existing_evidence_ids": [],
       "shared_owner_contracts": [
-        "EveningShift owns existing shift/service originals. New coordinator owns physical isolation, two escape routes and safe-room transition."
+        "EveningShift owns existing shift/service originals and the single T01 filing, now done when the originals are secured. New coordinator owns physical isolation, the annex escapes and the safe-room transition."
       ],
-      "world_contract": "One bounded return from actual refuge; automatic plan isolated, passive RX remains. Annex/cab encounters have separate success, calm and local retry. No normal-work order.",
+      "world_contract": "The deputy needs the receiver log from 21:00 for the missing-person case and follows Reyes to the gate; Reyes enters alone. Automatic plan isolated, passive RX remains. One annex encounter with a long or a sound route and local retry. Calm after the annex; the truck stays safe until the finale. No crouching and no normal-work order.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -335,7 +319,7 @@
       "shared_owner_contracts": [
         "Existing receiver, phone and real 47-second room comparison remain their own world actions."
       ],
-      "world_contract": "00:13:47 is first major instrumental residual, not first body. No phone panel chase or future document.",
+      "world_contract": "00:13:47 is first major instrumental residual, not first body. Passive reception with the schedule still locked; T01 was filed in SC04. No phone panel chase or future document.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -363,7 +347,7 @@
       "shared_owner_contracts": [
         "Existing B-12 camera/darkroom controls and evidence IDs."
       ],
-      "world_contract": "Either real passive lamp/motor isolation or active042 control is valid. Keep negative for a new print; no free photo from dialogue.",
+      "world_contract": "Either real passive lamp/motor isolation or active042 control is valid. Keep negative for a new print; no free photo from dialogue. No black-figure recognition at the fence; outside quiet is held with sound and sight lines.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -391,9 +375,9 @@
         "P05"
       ],
       "shared_owner_contracts": [
-        "EveningShift alone owns office key/door, documents, T02 and VHS."
+        "FS47Office in Main owns the office key and door; EveningShift owns the documents, T02 and the VHS when it exists."
       ],
-      "world_contract": "A short field-folder route suffices. Optional lore and incomplete VHS never gate main progress; separate ordinary service card for array places.",
+      "world_contract": "A short field-folder route suffices. Optional lore and the optional VHS never gate main progress; the separate ordinary array service card is its own sheet in the office cabinet (z -75.3).",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -432,9 +416,9 @@
         "EV_DALE_ARRAY_SERVICE"
       ],
       "shared_owner_contracts": [
-        "BY02 verifies original before04:00 or a produced legitimate late copy. EveningShift owns the separate ordinary array service card."
+        "BY02 verifies the original before 04:00, or a dated copy left in the lobby after Earl leaves. No recorder loan. EveningShift owns the separate ordinary array service card."
       ],
-      "world_contract": "Fixed lamp, independent command check, free A/B order and return establish position response before threat4. Audio gives no bearing. Preserve work on local retreat retry. Ordinary board names: A / ROW 1 WEST, B / ROW 1 EAST, REF / R1. Static route clearance exists; native dynamic access remains unverified. Completed TAPE/LIVE samples are durable, separate from the mutually exclusive current source switch. Array command baseline precedes movement; command-history comparison follows the route.",
+      "world_contract": "Fixed lamp, independent command check, free A/B order and return establish position response before threat4. Audio gives no bearing. Preserve work on local retreat retry. Ordinary board names: A / ROW 1 WEST, B / ROW 1 EAST, REF / R1. Static route clearance exists; native dynamic access remains unverified. Completed TAPE/LIVE samples are durable, separate from the mutually exclusive current source switch. Array command baseline precedes movement; command-history comparison follows the route. The reel's world fact comes from playing it in the lobby, not from a dialogue topic. The dishes return to 026 at the end of SC08 (02:15).",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -467,7 +451,7 @@
       "shared_owner_contracts": [
         "Existing STATION01 and optional T02 contracts remain separate."
       ],
-      "world_contract": "Short light interception, no sixth full chase. Cable/date/control conclusions and both actual field prints precede Nora.",
+      "world_contract": "Short light interception, a shadow and not a chase. Cable/date/control conclusions and both actual field prints precede Nora's call.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -496,7 +480,7 @@
       "shared_owner_contracts": [
         "Existing Nora dialogue, letter and P10/P11/P12."
       ],
-      "world_contract": "Emotional safety. Nora knows her cut and loss, not fresh remote measurements. Historical key in cup is not a new access gate.",
+      "world_contract": "Emotional safety. Nora knows her cut and loss, not fresh remote measurements. Historical key in cup is not a new access gate. Nora ends with: Don't finish his observation. Get the originals to the courier, and don't stop at C.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -524,7 +508,7 @@
       "shared_owner_contracts": [
         "New H3/H4 geometry, reactive senses and siege remain runtime work."
       ],
-      "world_contract": "Secure actual originals and full remote sheets after04:04 before threat5. Physical escape produces the escape fact independently of report dialogue. Actual bundle acquisition after04:04 precedes scan start; later composite evidence requires secured original, real check and completed escape.",
+      "world_contract": "Secure actual originals and full remote sheets after04:04 before threat5. Physical escape produces the escape fact independently of report dialogue. Actual bundle acquisition after04:04 precedes scan start; later composite evidence requires secured original, real check and completed escape. Ward calls on the ordinary phone; only Dale's line is silent.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -532,8 +516,7 @@
       "title": "What you can send",
       "phase": "all_night",
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "scene_ids": [
         "H08_BRIEF",
@@ -544,6 +527,7 @@
         "H09_BRIEF",
         "H09_CHECK",
         "H09_INCOMPLETE",
+        "SC12_PATROL_SHEET",
         "SC12_ROUTE_READBACK"
       ],
       "result_scene_ids": [
@@ -558,9 +542,9 @@
         "P13"
       ],
       "shared_owner_contracts": [
-        "BY03 is refuge, source comparison, warning, map and chosen handover; no new shop quota."
+        "BY03 is refuge, source comparison, warning, map and chosen handover; no new shop quota. H09 is merged into H08. The deputy's dated patrol sheet replaces the driver."
       ],
-      "world_contract": "Independent source sheets and explicit readback establish network warning; local hold continues. Fresh named exit report/driver trip and courier support a choice without promising safety.",
+      "world_contract": "Independent source sheets support the network warning; Reyes reads three source IDs and the first boundary time and Ward reads them back. The tables stay in the documents. Local hold continues. The deputy's dated patrol sheet and the confirmed courier support a choice without promising safety.",
       "runtime_status": "authored_not_integrated"
     },
     {
@@ -586,7 +570,7 @@
       "shared_owner_contracts": [
         "Existing Chapter6 and fixed ending05:29:00–05:29:47."
       ],
-      "world_contract": "Plan is pass C8.15 without a reading, carry originals to10.4. Involuntary stall and single final image remain unchanged; handover is not reached.",
+      "world_contract": "Save at departure. Plan is pass C 8.15 without a reading and carry originals to 10.4, shown only on map and sign. Involuntary stall and single final image remain unchanged; handover is not reached.",
       "runtime_status": "authored_not_integrated"
     }
   ],
@@ -635,8 +619,8 @@
     {
       "actor": "WARD",
       "knows": [
-        "Initial hazard as reported, local06:00 suspension, later actual independent source tables and readback.",
-        "Authenticated current patrol note: low lights crossing the northbound highway beyond the Caliche Junction turnoff; separate actual-time eastbound driver passage."
+        "Initial hazard as reported, local 06:00 suspension, later actual independent source IDs and first boundary time that she read back.",
+        "The deputy's dated patrol sheet time as entered in her log."
       ],
       "does_not_know": [
         "Global fleet size/ETA or universal safe road.",
@@ -665,25 +649,28 @@
     {
       "actor": "NORA",
       "knows": [
-        "Her cable cut, Tomás, retained words and historical warning."
+        "Her cable cut, Tomás, retained words and historical warning.",
+        "That the originals must leave by courier rather than finish the observation."
       ],
       "does_not_know": [
-        "Fresh remote sheets or new courier/road reports."
+        "Fresh remote sheets, the agreed handover point or new road reports."
       ],
       "gates": [
         "ctx_hr_h06_ready"
       ]
     },
     {
-      "actor": "DRIVER",
+      "actor": "DEPUTY",
       "knows": [
-        "His own October stop and actual recent timed directional passage."
+        "His own patrols and patrol sheet, the missing-person case, and that the SARO receiver was running at 21:00 as Reyes told him."
       ],
       "does_not_know": [
-        "Every route safe or current battery fault cause."
+        "What took Ortiz or where she went.",
+        "C, the array or the remote source sheets."
       ],
       "gates": [
-        "ctx_hr_sc12_driver_recent_passage"
+        "ctx_hr_sc03_deputy_at_stop",
+        "ctx_hr_sc12_patrol_sheet_read"
       ]
     }
   ]
