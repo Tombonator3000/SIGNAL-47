@@ -1,8 +1,8 @@
 # Ny nattrekkefølge, 28. oktober 2026
 
-**Status: Under arbeid** · **Gjelder:** nattsekvensen på Codex sin arbeidsgren, ikke installert standard. **Sist kontrollert:** 28. oktober 2026.
+**Status: Gjeldende** · **Gjelder:** kilde `b68d3a08` og målrettet kandidat R2, ikke installert standard. **Sist kontrollert:** 29. oktober 2026 kl. 00:33.
 
-Codex arbeider på `codex/night-sequence-20261028` fra main. Claudes observasjonsarbeid fra PR206 er flettet inn, med alle Story-kroker beholdt. Ingen installasjon eller offentlig release inngår.
+Leveransen går gjennom [PR209](https://github.com/Tombonator3000/SIGNAL-47/pull/209) fra `codex/night-sequence-20261028`. Main med Claudes PR206, PR208 og PR210 er integrert, med alle Story-kroker beholdt. Kilde og pakket kandidat er kontrollert hver for seg. Ingen installasjon eller offentlig release inngår.
 
 ## Spillerreisen
 
@@ -30,8 +30,30 @@ Nye netter bruker `evening.serviceRouteVersion=2`. Versjon 1 og eldre lagringer 
 
 ## Kontrollstatus
 
-Under arbeid. Python-pakkens 36 tester, editorbygg R2 og 1 708 native selvtester består. Første nattkontrakt bekrefter observasjonene og strømbruddet, men feiler samlet restore-kontroll. Den undersøkes med feltvis diagnostikk. Første SKY01-start brukte feil bevismål og ble avvist; gyldig mål og nytt bilde gjenstår. Pakket kandidat er foreløpig UNVERIFIED.
+| Kontroll | Resultat | Nøyaktig grunnlag |
+| --- | --- | --- |
+| Editor og selvtester | PASS | Editor R11 og pakket R2 på `b68d3a08`. Pakken består 1 709 selvtester. |
+| Narrative datakontrakter | PASS | 36 Python-tester etter integrasjon av main/PR210. |
+| Integrert nattforløp | PASS | Pakket R2: 74 kontroller, åtte nye disklesere med full Flow-restore. Aggregat, port, naturlig SKY01, strømbrudd, telefon, T01, SC02-port, SC03-grense, Locked og Printed inngår. |
+| Naturlig himmelstart | PASS | HI-papiret gir 21:30 uten override. Samme SKY01 og forløpt tid beholdes over 21:40 og 22:05. |
+| Grafisk himmel og lagring | PASS | Native SKY R7: 24 kontroller av alle fem formasjoner, faktisk okklusjon og gjenoppretting. Feltkameraets sammenligning med/uten lyset gir faktiske piksler i `sky01-field-photo.png`; bildet er åpnet og kontrollert. |
+| Fersk ordinær Continue | PASS | To nye native prosesser fra R5s faktiske journallagring, High og Low-calm. Kun kameraretning og isolert calm-innstilling er endret i uttrykkelige kopier. Begge viser buen og to monterte feillys. |
+| Pakking R2 | PASS | Frosset kilde `b68d3a08`, `candidate-r2/Linux`. Ingen materialfeil ved cook; kandidatens åtte manifestfiler er hashkontrollert også etter prøvekjøring. |
+| Strøm og faktisk glød | PASS | Alle 27 antennebeacons og `yard.glow.points[6]` avleses før feil, ved faktor 0.12 under feil, etter T01 og ved hver diskrestore. Originalfargene kommer tilbake uten kumulativ dimming. |
+| Eldre SC02-lysbue | PASS | Pakket R2: 14 Arc/calm-kontroller fra navngitt tidligere faktisk T01-lagring. Kroppens fremkomst, kort utbrudd, modalpause og to diskrestores inngår. |
 
-Testdriveren bruker ordinære produksjons-API-er, faktiske journal-/panel-/lamperays og ferske disklesere med full Flow-restore. SC01-fakta og ett originalfoto hentes fra en uttrykkelig navngitt tidligere prøve. En separat SC03-grenseprobe bruker tidligere faktisk SC02-flukt med eksplisitt testrevisjon. Det er ingen påstand om ny menneskelig gjennomspilling, fersk SC02-flukt, full SC03-gjennomføring eller målt helspilltid. Nøyaktige resultater og bevis legges til etter kjøring.
+T01-resultatet anvendes før resultatmodalen slipper: SARO-strømmen kommer tilbake etter fysisk lampeavlesning, mens SC02 fremdeles venter på full H02-presentasjon. SaroPower gjenoppretter nå normalglød og antennebeacons før settled-flagget hindrer videre endringer; det stopper tap av fargebaseline gjennom Continue. Første pakke R1 bestod den eldre 71-kontrollen, men ble avvist etter dette konkrete kildefunnet. R2 har den utvidede faktiske fargeavlesningen. Tidligere restore-mismatch er rettet ved å arkivere den allerede eksisterende referansen ved overlevering. Feil i testens telefonmål og gamle krediteringsantall er rettet og prøvd på nytt.
 
-Bevismappe: `~/scratch-bm/Signal47-night-20261028`. Generelle Unreal-referanser fra prosjektbiblioteket er lest og merket UNVERIFIED; prosjektets eksisterende historie-, strøm-, lagrings- og effektløype er videreført.
+SKY R5/R6 sto helt inntil porten og ble korrekt skjult av en opak metallstang. Diagnostikken viste vanlig, upauset kamera og synlig billboard, med faktisk treff i stangen. R7 beviser først denne blokkeringen og bruker deretter et gangbart ståsted fem meter bak porten. Produksjonens lysbane og siktkrav ble beholdt.
+
+Begge native trafobilder viser et renderingsvarsel: ray tracing-geometri bruker 83.495 MiB av et budsjett på 400 MiB, over varslets 20 prosent. Prøvene krasjet ikke. Varselet er ikke et ytelsesbevis eller en avklaring av de separate diner-krasjene i FIX-01.
+
+## Bevis og grenser
+
+Bevismappe: `~/scratch-bm/Signal47-night-20261028`. Kildebindingene ligger i `source-final-r2.json`, `source-native-r5.json` og `source-sky-r7.json`; kjøreplaner, guard-logger og `*.result.json` fører faktisk exitkode, forventet PASS-tekst og ressurskonkurranse. `candidate-r2-manifest.json` og `candidate-r2-acceptance.json` binder pakke, kilde og avgrenset aksept. `native-proof-preservation.json` og `packed-r2-preservation.json` bevarer originale bevisfiler byteidentisk utenfor `/tmp`. Kamerafiksturene er ført i `trafo-continue-camera-fixtures.json`.
+
+Testdriveren bruker produksjons-API-er, faktiske panel-/journal-/lamperays og ferske disklesere. Aggregatets virkelige oppvarming og lastoverføring samt portens nærhet og retur kjøres uten syntetisk oppgavecredit. SC01-fakta og ett originalfoto hentes fra en uttrykkelig navngitt tidligere prøve. Telefon-, felt- og returposisjoner samt road-start er merkede testfiksturer. En separat SC03-grenseprobe bruker tidligere faktisk SC02-flukt med eksplisitt testrevisjon, uten å gi ny dispatch- eller tildelingscredit.
+
+Dette beviser ikke ny menneskelig gjennomspilling, fersk SC02-flukt, full SC03-gjennomføring, manuell helkjøring, fysisk gamepad, subjektiv lytting, fullmatrise, ytelse på andre maskiner eller målt helspilltid. Disse grensene består også etter merge. Ingen installasjon eller offentlig release inngår.
+
+Generelle Unreal-referanser fra prosjektbiblioteket er lest og merket UNVERIFIED; prosjektets eksisterende historie-, strøm-, lagrings- og effektløype er videreført. Ingen ekstern kildekode er kopiert.
