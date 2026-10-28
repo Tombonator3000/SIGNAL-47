@@ -1181,8 +1181,10 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==217)
 	{
-		const FVector Wg=S3.WagonPoint();
-		Go({Front(Wg,2.6)},218);return;
+		// Out the same east door and round the low side, then to the wagon.
+		const FVector Wg=S3.WagonPoint();const double DX=T.Door3.X,DZ=T.Door3.Z,Out=T.DoorOut;
+		FS47Rect Zone;for(const auto& Z:M->Web->Zones())if(Z.Id==TEXT("prop:gasStation"))Zone=Z;
+		Go({FVector(DX-Out*.6,0,DZ),FVector(DX+Out*1.3,0,DZ),FVector(DX+Out*2.2,0,Zone.MinZ-1.0),Front(Wg,2.6)},218);return;
 	}
 	if(T.Stage==218){if(!Pick3(TEXT("horror:wagon23"),Target(TEXT("horror:wagon23")),true))return;Stage(219,.3);return;}
 	if(T.Stage==219){M->UI->Close(true);if(!Pick3(TEXT("horror:thermos"),Target(TEXT("horror:thermos")),true))return;Stage(220,.3);return;}
