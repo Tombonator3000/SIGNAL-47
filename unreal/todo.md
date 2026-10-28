@@ -2,8 +2,8 @@
 
 - [x] Original Blender-kilde, PBR og ti native deler med tre LOD.
 - [x] Målrettet lys/strøm/fremkalling og faktisk bildevurdering.
-- [ ] Én fullmatrise på kandidat R1, deretter PR mot main og installasjon med Saved bevart.
-- [ ] Kort installert kontroll og kanonisk opprydding.
+- [x] Én fullmatrise, 110/110. PR181 flettet og identisk R1 installert; 50 Saved-filer bevart.
+- [x] Installert Low-fremkalling og faktisk diskrestore via Continue; to bilder vurdert. To gamle pakkepayloads pensjonert med kanonisk verktøy.
 
 # Todo for unreal/
 
