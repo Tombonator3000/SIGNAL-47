@@ -1,18 +1,5 @@
-# Gratis modeller for 1986 (kandidater, 22. oktober 2026)
+# Dokumentet er flyttet
 
-Funnet og lisenssjekket mot Sketchfab- og Poly Haven-API-ene. Sketchfab: CC-BY 4.0 (krever kreditering i en CREDITS-fil), ingen NC/ND. Poly Haven: CC0. Fab kunne ikke sjekkes automatisk (Cloudflare); Tom søker der med Free-filteret og claimer selv. Fjern varemerker og logoer (Chevrolet, IBM, Cobra, Sony) og gi ting fiktive navn. Ikke bruk gameassetsfree.com eller rippede filer.
+> **Status: Erstattet** · Dette er en kompatibilitetslenke, ikke en egen statuskilde.
 
-## Beste valg
-
-| Behov | Modell | Lisens |
-|---|---|---|
-| Pickup (SARO 07) | [Chevrolet C10 Stepside 1966, Raphael.Baget](https://sketchfab.com/3d-models/0a2ae2eea2cf4073a843ee7a381c74af) (345k, desimeres/Nanite), alternativt [El Alamo '78, DanielZhabotinsky](https://sketchfab.com/3d-models/41b3a5c0bc534817b3311c3736c403e6) (16k, fiktivt merke) | CC-BY |
-| Biler | DanielZhabotinsky: [Fairheaven SW '84](https://sketchfab.com/3d-models/aa0becb6e854422596cac6b21bf79787), [LT '80 Cop Cruiser](https://sketchfab.com/3d-models/61766c1e6e1e4b2b803c174f33433a74), [LT '80](https://sketchfab.com/3d-models/e2678da920cc4be68dbc193727919ffb), [Negotiator '80](https://sketchfab.com/3d-models/892b2684fb37442299bfad9222cf331c), [Riverside '88](https://sketchfab.com/3d-models/8509a7f82665442592627940b7a1cfab) (nytt navn); vrak: [Destroyed Car 03](https://sketchfab.com/3d-models/efc4dfe2c7284a64bc9281eb4f61d402) | CC-BY |
-| Kontor og radio | [Office – Assets, EvanPetrov](https://sketchfab.com/3d-models/16c1a779bb0a4055a26367741d39e059), [Retro Office Props, YJ_](https://sketchfab.com/3d-models/65e47619f5114df89fd26db1fa7f9d7f), [TEAC Tascam 32-2B](https://sketchfab.com/3d-models/160ba370260b4f2b87effeaa0765f705), [Cobra 139XLR CB](https://sketchfab.com/3d-models/9e4881935f3146159cec5199d3335bf8), [Office Phone, maxdragon](https://sketchfab.com/3d-models/4176a01b6d0b4d13ad165c0df278a6b5), [IBM Selectric II](https://sketchfab.com/3d-models/bef0f699a5374ca1a8fe8e27fb77788a), [Pay Phone, victorhugohc](https://sketchfab.com/3d-models/a0339aa975e54bb7ac65982ca3cc5802), [walkie-talkie](https://sketchfab.com/3d-models/d85f899a00114042abd0562c25a08438) (nytt navn) | CC-BY |
-| Kassettspiller | [Poly Haven cassette_player](https://polyhaven.com/a/cassette_player), [portable_cassette_player](https://polyhaven.com/a/portable_cassette_player) | CC0 |
-| Diner og motell | [Mojave Motel Sign](https://sketchfab.com/3d-models/c64f69ab7a6e4674826de6600f1a61d6), [Neon «Motel»](https://sketchfab.com/3d-models/794708f56b4e454caec677701781bca0), [Diner Booth](https://sketchfab.com/3d-models/59ee2b398dbd49a98b2a136e730a4182), [Jukebox](https://sketchfab.com/3d-models/f93f606c43f8454fa428b6c365ac789b), [Retro Television](https://sketchfab.com/3d-models/e938241a182a4229ad48a1fc589e676e) (CC-BY); [metal_stool_02](https://polyhaven.com/a/metal_stool_02), [CoffeeCart_01](https://polyhaven.com/a/CoffeeCart_01), [Television_01](https://polyhaven.com/a/Television_01), [old_bed_frame](https://polyhaven.com/a/old_bed_frame) (CC0) | |
-| Ørken | Poly Haven Namaqualand ([cliff_02](https://polyhaven.com/a/namaqualand_cliff_02), boulders, [rock_face_01](https://polyhaven.com/a/rock_face_01), [modular_electricity_poles](https://polyhaven.com/a/modular_electricity_poles)) (CC0); [Desert Cliff 6](https://sketchfab.com/3d-models/ed2e9c7e976e4768868481e4a5c63f6f), [Beaked yucca](https://sketchfab.com/3d-models/1a0da8faf2c54e65a1d8eb39151b914e), [Dried Sagebrush](https://sketchfab.com/3d-models/ae45c39f0550467394f4629ce39c45f7), [Tumbleweed 5](https://sketchfab.com/3d-models/310ed28a89844d2893255346184357a6), [Barbed Wire Fence](https://sketchfab.com/3d-models/f1c1c8e8052a41b7aa10e4a60fa0bcb9), [Telephone Poles](https://sketchfab.com/3d-models/a76b68b838424a89b7db8a38f4c3d546) (CC-BY) | |
-
-Hull: ingen god matriseskriver og ingen motellseng fra 80-tallet (lages selv eller hentes fra Fab). Joshua tree vokser ikke i New Mexico: bruk yucca.
-
-Unngå: Sketchfab-brukerne «niev» og «David_Holiday» (trolig rippet eller betalt innhold), «Pickup Truck 1970» fra CMBC (trolig AI-generert), og den gratis C10-en på TurboSquid (bare redaksjonell bruk).
+[Åpne dokumentet](../Docs/Research/Unreal/MODELLER.md). [Start her](../Docs/README.md).

@@ -2,7 +2,7 @@
 
 ## Gjeldende forfatterkilder, 28. oktober 2026
 
-De stoppede scenetekstene er samordnet med [Toms godkjente revisjon](../../HISTORIE_SC02_SC13_REVISJON.md). Pakken har **ni hovedkort, 13 scenarioer, 77 scener og 90 eksterne verdensflagg**. H09s scene-IDer er beholdt som kartarbeid under H08, uten et eget H09-kort. Fire aktive møter ligger ved trafoen, annexet, arrayet og SARO; den separate svarte figuren og SC04-bilmøtet er kuttet. Ortiz etterlater en termose, og den kjente sheriffbetjenten gir savnetsakens loggspørsmål og senere et datert patruljeark.
+De stoppede scenetekstene er samordnet med [Toms godkjente revisjon](../../../Docs/Design/Story/HISTORIE_SC02_SC13_REVISJON.md). Pakken har **ni hovedkort, 13 scenarioer, 77 scener og 90 eksterne verdensflagg**. H09s scene-IDer er beholdt som kartarbeid under H08, uten et eget H09-kort. Fire aktive møter ligger ved trafoen, annexet, arrayet og SARO; den separate svarte figuren og SC04-bilmøtet er kuttet. Ortiz etterlater en termose, og den kjente sheriffbetjenten gir savnetsakens loggspørsmål og senere et datert patruljeark.
 
 Levering skjer i fire akter: SC02 til SC05, SC06 til SC08, SC09 til SC10 og SC11 til SC13. Målrettede kontroller kjøres per scenario; full 110-matrise, fletting og installasjon skjer én gang per akt. Nye stemmer for Ward, Ortiz, Earl og Nora lages til slutt.
 
@@ -15,7 +15,7 @@ Les [generert scenariokontrakt](generated/SCENARIO_CONTRACTS.md), [ni produksjon
 ## Historisk forfattergjennomgang fra 25. til 27. oktober
 
 
-Gjeldende produksjonskilde følger [sammenflettet hovedscenario SC01 til13](../../MISSION_FLOW_1800_ROSWELL.md). `scenarios.json` knytter13 scenarioer og personkunnskap til de eksisterende ti H-kortene.79 engelske scener omfatter de tidligere36 og43 nye delscener for aktiv kveld, inntrengermeldinger, hjelpekontakt, BY02, ARRAY-01 og siste rutekontroll.16 forfatterdokumenter omfatter fem eksisterende og elleve nye, med egne kvitteringer for første melding, utkalling, savnetsak og lokal plansperre. Dette er forfatterkilder med verdensporter, ikke nye spillhendelser eller opptak.
+Gjeldende produksjonskilde følger [sammenflettet hovedscenario SC01 til13](../../../Docs/Design/Story/MISSION_FLOW_1800_ROSWELL.md). `scenarios.json` knytter13 scenarioer og personkunnskap til de eksisterende ti H-kortene.79 engelske scener omfatter de tidligere36 og43 nye delscener for aktiv kveld, inntrengermeldinger, hjelpekontakt, BY02, ARRAY-01 og siste rutekontroll.16 forfatterdokumenter omfatter fem eksisterende og elleve nye, med egne kvitteringer for første melding, utkalling, savnetsak og lokal plansperre. Dette er forfatterkilder med verdensporter, ikke nye spillhendelser eller opptak.
 
 Kveldshjelperen er ny Mara Ortiz, district maintenance, hvit servicevogn23. Hun identifiseres ordinært før synlig tap. Ingen nødvendig eksisterende person fjernes. Første melding, faktisk utkalling, observert løft, etterspor og savnetmelding har hver sin eksterne faktaport. Ward suspenderer lokal06:00-serie tidlig; fysisk auto-/surveyplansperre er en annen kontroll. H08 viderefører denne ordren og gir senere nettverksvarsel etter uavhengige fjernkilder.
 
@@ -23,7 +23,7 @@ BY02 har egne ruter for identifisert originalspole før Earl går04:00 og legiti
 
 Dato: 26. oktober 2026. Engelske produksjonsscener for H01 til H10, skrevet etter HORROR_STORY_PLAN. Dette er nytt manus og adaptergrunnlag. Ingen av de nye oppdragene, fjernmålingene, fiendereaksjonene eller avtalene er koblet inn i spillet. Ingen ny lyd eller film er produsert.
 
-- [Hovedscenario](../../MISSION_FLOW_1800_ROSWELL.md) og [sekundært løsningsoppslag](../../MISSION_DETAILS_REFERENCE.md): 13 sammenhengende scenarioer med alle tidligere32 arbeidskort bevart. Nye delscener blir ikke automatisk skrevet eller integrert av generatoren.
+- [Hovedscenario](../../../Docs/Design/Story/MISSION_FLOW_1800_ROSWELL.md) og [sekundært løsningsoppslag](../../../Docs/Archive/Superseded/Unreal/MISSION_DETAILS_REFERENCE.md): 13 sammenhengende scenarioer med alle tidligere32 arbeidskort bevart. Nye delscener blir ikke automatisk skrevet eller integrert av generatoren.
 - [Lesemanus](generated/SCRIPT.md): 79 scener med konkrete replikker, observasjonstekst og uavklarte utfall.
 - [Scenariokontrakt](generated/SCENARIO_CONTRACTS.md): SC01 tilSC13, eksterne resultater, personkunnskap og tydelig kildeeierskap.
 - [Produksjonskort](generated/MISSION_CARDS.md): spørsmål, fysisk handling, kontroll, følge og vei videre for alle ti oppdrag.
@@ -62,6 +62,6 @@ Siste kildekorreksjon: sen BY02-kopi krever faktisk isolert avspilling av den id
 
 ## Verdensprodusenter og scenematrise, 27. oktober 2026
 
-`world_producers.json` er en ny planleggingskilde. Den navngir produsenten i spillkoden for alle 96 eksterne flagg, med fil og symbol som `build_pack.py` kontrollerer ordrett mot kilden. Den har også én matriserad per scene (79), 117 navngitte prøver og en arbeidspakke per SC. `generated/SCENE_MATRIX.md` er lesbar versjon; stemmecues og opptaksstatus hentes fra opptaksmanifestet. Dette er planleggingsdata og endrer ingen runtimeeksport. `test_pack.py` har nå 31 prøver, sju av dem for produsentkartet. Se [forberedelsen av SC02 til SC13](../../SC02_TIL_SC13_FORBEREDELSE.md) for status og avklaringer.
+`world_producers.json` er en ny planleggingskilde. Den navngir produsenten i spillkoden for alle 96 eksterne flagg, med fil og symbol som `build_pack.py` kontrollerer ordrett mot kilden. Den har også én matriserad per scene (79), 117 navngitte prøver og en arbeidspakke per SC. `generated/SCENE_MATRIX.md` er lesbar versjon; stemmecues og opptaksstatus hentes fra opptaksmanifestet. Dette er planleggingsdata og endrer ingen runtimeeksport. `test_pack.py` har nå 31 prøver, sju av dem for produsentkartet. Se [forberedelsen av SC02 til SC13](../../../Docs/Archive/Superseded/Unreal/SC02_TIL_SC13_FORBEREDELSE.md) for status og avklaringer.
 
 `voice/generate.py --scenario SCnn` velger cuene for ett scenario. Uten valget lages de fem SC01-opptakene som før. Roller uten profil i `casting.json` stopper kjøringen.

@@ -1,6 +1,6 @@
 # SIGNAL / 47 unreal: arbeidsinstruks
 
-Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-reglene i rotens `AGENTS.md`. Les `README.md`, `PORTERING.md`, `memory.md`, `todo.md` og de siste oppføringene i `log.md` før du starter, og kontroller faktisk Git-status.
+Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-reglene i rotens `AGENTS.md`. Les `README.md`, `../Docs/Active/STATUS.md`, `../Docs/Active/TODO.md`, `../Docs/Active/DECISIONS.md`, `../Docs/Active/Guides/PORTERING.md` og de siste oppføringene i `log.md` før du starter, og kontroller faktisk Git-status.
 
 - Unreal-utgaven er spillet (Toms beslutning 22. oktober 2026). `web/` er historisk referanse og endres ikke.
 - `Unity/` er arkiv og referanse. Modellene der leses av importskriptet, men ingenting i `Unity/` redigeres.
@@ -10,7 +10,7 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 - Test etter risiko, bestemt av Tom 28. oktober 2026: raske relevante kontroller og én målrettet kontroll av den endrede delen. Dokumentasjon/todo trenger lenke-/vedlegg-/diffkontroll, ikke motorbygg. Ikke kjør full `Scripts/screenshots.sh` for hver modell, rekvisitt, menyfane eller liten PR. Samle endringer og kjør en nødvendig fullmatrise én gang før samlet lokal installasjon eller offentlig release; gjenta bare ved nye relevante endringer, feil eller konkret uavklart risiko. Bruk subagenter aktivt med tydelig filansvar, og samordne med Claude i `OPPGAVER.md`. Én tung jobb om gangen og ingen tester samtidig med Toms spilløkt.
 - Kanon fra `web/memory.md` gjelder: 1420.405 MHz, 47 sekunder, 27 antenner, az 026. Spilltekst på engelsk (New Mexico, 1986). Dokumenter og logg på norsk, uten emoji og uten tankestrek.
 - Felles oppgaveliste og arbeidsdeling med Codex: `OPPGAVER.md`.
-- Logg alt i `log.md` med dato og klokkeslett (Europe/Oslo). Hold `memory.md` og `todo.md` oppdatert.
+- Logg vesentlige resultater i `log.md` med dato og klokkeslett (Europe/Oslo). Oppdater berørt hovedfil i `../Docs/Active/`; `memory.md` og `todo.md` er korte pekere og skal ikke fylles med nye kopier. `OPPGAVER.md` er bare koordinering/eierskap. Følg `../Docs/AGENTS.md` for kategorier, statusmerking og lenkekontroll.
 
 ## PR-er går mot main, bestemt 27. oktober 2026
 

@@ -7,4 +7,4 @@ mkdir -p Artifacts
 python3 Automation/stamp-gauntlet-build.py
 tar -czf Artifacts/SIGNAL-47-Gauntlet-Linux.tar.gz -C Artifacts/GauntletLinux .
 # Real-input verification needs a visible, focused player in the desktop session.
-# See Docs/GAUNTLET_04.md before running Automation/gauntlet-user-journey.py.
+# See Docs/Archive/Unity/GAUNTLET_04.md before running Automation/gauntlet-user-journey.py.
