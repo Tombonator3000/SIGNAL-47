@@ -1,3 +1,9 @@
+## Codex hjelper SC02/alien-AI, pakket PASS 28.10.2026 kl. 12:14 CET
+
+Tom ba Codex hjelpe der Claude stoppet på bruksgrensen. Codex eier nå AI, SC02-kontrakten og sekvensielle motorjobber på `codex/act1-alien-navigation` i `~/scratch-bm/wt/act1-alien`. Overtakelsen bygger på Claudes rene `911ce258` integrert med oppdatert main. Found footage og Niagara-gnister beholdes uendret i egne Claude-arbeidskopier. De stoppede scenetekstene samordnes i vår kildepakke, men SC03 og videre er fortsatt `authored_not_integrated`.
+
+Bevis/eierskap: `~/scratch-bm/Signal47-sc02-20261028/codex-takeover`. Editorbygg, pakking, 1649 selvtester og 28 native kontroller består. Full pakket SC02 består 159 kontroller, 19 disk-/Flow-restores og 42,48 m faktisk løpeflukt etter lokal retry. Hele matrisen, fletting og installasjon følger den avtalte aktleveransen SC02 til SC05, ikke et nytt krav om separat fullmatrise per scenario. Standardspillet og personlige lagringer er ikke berørt. Se [overlevering](SC02_AI_HANDOFF.md).
+
 ## Meteorregn ved stjernehullet, dokumentert 28.10.2026 kl. 10:20 CET
 
 Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.

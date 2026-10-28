@@ -1,3 +1,11 @@
+## SC02 og alien-AI, Codex 28.10.2026 kl. 12:14 CET
+
+Codex har overtatt etter Claudes bruksgrense. Claudes SC02 er integrert på oppdatert main, med live hindringsplanlegging, fysisk steg-/kontaktkontroll og rettet flukttest. Den lave betongrampen var en faktisk stoppårsak; bounded step-up prøves med full kapselsweep, og høye barrierer blokkerer fortsatt. De stoppede SC03 til SC13-tekstene er samordnet, med bevarte SC01/SC02-kontrakter og avgrenset migrering av tre utgåtte false-flagg. SC03 og videre er fortsatt authored_not_integrated. Se [overlevering](SC02_AI_HANDOFF.md).
+
+R5 fra kodecommit `651dc558` er pakket. 1649 selvtester og 28 native fysikk-/bounds-/trinnprøver består. Full pakket SC02 består 159 kontroller, 19 disk-/Flow-restores, 219,06 m native gange og 42,48 m løpeflukt: T01, faktisk fangst/lokal retry, rute A til bilen, retur og disk-Continue. 462 frosne inndatafiler er uendret; tre sluttbilder er vurdert. Rute B/manuell styring/High-jakt/menneskelig prøve er UNVERIFIED. Standardinstallasjon og personlige lagringer er ikke endret. Videre levering følger fire akter, med fullmatrise/merge/installasjon én gang per akt.
+
+Canonical prune er utført: to eldre payloadsett / 14 genererte filer er pensjonert. Gjeldende R5, feilet R2 for sammenligning og trafo R1 beholdes, samt særskilt beskyttet SC01-R4/PR174 for andre oppgaver. Kilder/assets/Saved/bevis bevares.
+
 ## Meteorregn ved stjernehullet, dokumentert 28.10.2026 kl. 10:20 CET
 
 Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.

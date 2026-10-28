@@ -365,16 +365,16 @@ Subagenter får avgrensede filansvar for eksempelvis manusadapter, modeller, lyd
 
 Etter hver levert installasjon brukes prosjektets eksisterende prune-rutine. Gjeldende verifiserte bygg og maksimalt to eldre komplette testbygg beholdes. Kilder, Blender-filer, personlige lagringer og testbevis bevares.
 
-**Neste scenario starter først når forrige scenario er flettet, installert og kvittert.**
+**Leveringsregelen er revidert 28. oktober:** scenarioene produseres og prøves fortløpende innen hver akt. Hele matrisen, fletting og installasjon skjer én gang per akt, som beskrevet i [gjeldende revisjon](HISTORIE_SC02_SC13_REVISJON.md).
 
 ## 6. Løpende gjennomføringsstatus
 
-Opprettet 26. oktober 2026. SC01s lokale pakkede tekniske aksept består. SC01 er flettet via PR #174 og installert som standard 27. oktober 2026, og er med i Linux-testutgaven 28. oktober 2026. SC02 er skrevet som ukompilert kandidat i skyen og tatt over av Claude på Kubuntu 28. oktober (gren `claude/sc02`). Verdensprodusenter, scenematrise og testsett for SC01 til SC13 ligger i `Narrative/HorrorStory/world_producers.json`. Senere scenarioer er planlagt. `Ikke utført` er en faktisk status, ikke en planlagt kvittering.
+Opprettet 26. oktober 2026, oppdatert 28. oktober. SC01 er flettet via PR #174 og installert som standard 27. oktober 2026, og er med i Linux-testutgaven 28. oktober 2026. Codex har hjulpet Claudes SC02 videre på Kubuntu med hindringsnavigasjon og pakket teknisk aksept; se [overlevering](SC02_AI_HANDOFF.md). Verdensprodusenter, scenematrise og testsett for SC01 til SC13 ligger i `Narrative/HorrorStory/world_producers.json`. Senere scenetekster er samordnet med revisjonen, men runtime er fortsatt planlagt. `Ikke utført` er en faktisk status, ikke en planlagt kvittering.
 
 | SC-ID | Scenario | H-kort | Status | Kodecommit | Pakket test | PR | Mergecommit | Installasjon | Åpne begrensninger |
 |---|---|---|---|---|---|---|---|---|---|
 | SC01 | Den første overflygningen | H01 | Flettet og installert | dbae3177 | 21 kjøringer PASS, 32 vurderte bilder; full matrise 110/110 mot main | PR #174 | `a032ed0e` | Installert standard | Menneskelig lytting/tempo/Xbox/helnatt UNVERIFIED |
-| SC02 | Returen til bilen | H01/H02 | Under arbeid | 52abd05f (ukompilert kandidat) | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Modellretting, import, bygg, pakkede prøver på Kubuntu; se SC02_TIL_SC13_FORBEREDELSE.md |
+| SC02 | Returen til bilen | H01/H02 | Pakket teknisk PASS, akt 1 under arbeid | 651dc558, inkluderer Claudes 911ce258 | R5: 159 kontroller, 19 disk-/Flow-restores, 1649 selvtester, 28 native kontroller | Arbeidscheckpoint | Ikke flettet | Ikke utført | Rute B/manuell styring/High-jakt/menneskelig prøve UNVERIFIED; SC03–05 og full aktmatrise gjenstår |
 | SC03 | Hjelpen som kom | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC02, BY01 og Ortiz-produksjon |
 | SC04 | Sikre og kom i dekning | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC03, plansperre og møte 2/3 |
 | SC05 | Samtalen som ligger foran | H02 | Planlagt | Ikke ført | Ikke utført | Ikke opprettet | Ikke flettet | Ikke utført | Avventer levert SC04 og passiv residualovergang |

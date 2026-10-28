@@ -1,5 +1,7 @@
 # SC02 til SC13: forberedelse fra skyøkt 27. oktober 2026
 
+**Oppdatert status 28. oktober:** Dette dokumentet bevarer skyøktens opprinnelige omfang og prøvestatus. [SC02/AI-overleveringen](SC02_AI_HANDOFF.md) har gjeldende kandidatstatus: SC02 er bygget, importert og pakket prøvd, og de videre kildene følger den godkjente revisjonen med 77 scener/90 eksterne flagg. Eldre skyggeregel, SC04-bilmøte og tellinger nedenfor er historikk. SC03 og videre er fortsatt uintegrert.
+
 Tom ba om at SC02 og resten fram til SC13 forberedes mens Kubuntu-maskinen ikke er tilgjengelig. Arbeidet er gjort i en skysesjon på grenen `ccr-20021313-mfplx9`, laget fra `origin/main` (`1c309d11`). Skyen har verken Unreal eller GPU. Ingenting her er bygget, pakket eller prøvd i spillet. Alt runtimearbeid er UNVERIFIED til det er kjørt på Kubuntu.
 
 ## Hva som er levert

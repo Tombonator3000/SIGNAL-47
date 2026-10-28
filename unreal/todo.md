@@ -1,3 +1,11 @@
+## SC02/AI-overtakelse, 28. oktober 2026
+
+- [x] Ta vare på Claudes SC02-kandidat, stoppede scenetekster og separate found-footage-/Niagara-grener.
+- [x] Implementer omplanlegging ved nye hindringer, faktisk kapselklaring, lavt trinn, bil-/nærveggmål og fysisk fangstkontakt. 1649 selvtester og 28 native kontroller består.
+- [x] Samordne framtidige scenetekster/produsentkart og bevar gamle ekte SC01-lagringer.
+- [x] Pakket SC02-rute med fangst, løpeflukt og diskrestore: R5 PASS med 159 kontroller, 19 disk-/Flow-restores og 42,48 m løping. Bevis og avgrensninger i [overleveringen](SC02_AI_HANDOFF.md).
+- [ ] Produser SC03 som faktisk verdenshandling med Ortiz/vogn23/termose, deretter SC04/SC05; samlet akt 1 får fullmatrise, merge og installasjon.
+
 ## Niagara ved stjernehullet, 28. oktober 2026
 
 - [x] Registrer Toms plassering av tettere meteorregn ved stjernehull-hendelsen og vurder de fire kildene fra bildene. Se [design og kildevurdering](NIAGARA_VFX_2026-10-28.md).
