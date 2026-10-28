@@ -48,3 +48,21 @@ Tidsstemplene 00:13 i historien kan stå. SC03 sine tekster om kveldstid må jus
 1. TB2 sheriffkontor, kino og fôrbygg finnes bare som Blender kilder. Import, materialer, montering og pakking mangler.
 2. Vanlige hus i Caliche, sammenligning av installerte fasader med godkjente Blender modeller.
 3. Diner Vulkan krasj, svevende deler ved trafoen, Motor Court, SARO panel og dør brukervennlighet.
+
+## Mer å gjøre ved SARO fra 18:00 til 24:00
+
+Tom: «nesten ingenting frem til 24». Når trafoen og alien flyttes etter midnatt, blir kvelden enda tommere. Kvelden skal fylles med arbeid, sted og uro, ikke alien. Mye er allerede skrevet i MISSION_DETAILS_REFERENCE.md (NATT kortene), DALE_OFFICE_DOCUMENTS.md og S.3 himmelbanene, men er ikke laget i spillet.
+
+Klokka går videre når en oppgave er ferdig, med korte hopp. Tidene er vinduer, ikke ventetid.
+
+1. 18:00 Overlevering, lær stedet og veien ut (NATT-01, NATT-02, finnes).
+2. 18:30 Mottakerreferanse (NATT-03, finnes som baseline).
+3. 19:00 Ny: ukentlig test av dieselaggregatet i annekset. Start, les av, slå over til nødlys og tilbake. Lærer spilleren nødstrømmen som trengs kl. 00:13.
+4. 19:30 Valgfritt kveldsmat i Caliche: diner, Nora og en vanlig by (NATT-05). Byen skal huskes som normal før den blir feil.
+5. 20:30 Arkivet i annekset: den bortredigerte linjen, sju toner på et eldre bånd, det Dale beholdt (NATT-13 til NATT-15), og Dales seks valgfrie dokumenter. Gir historien bak det gamle forsøket.
+6. 21:30 Et lys krysser himmelen (SKY01). Kan sees og fotograferes fra porten. Bare et lys, ingen skikkelse.
+7. 22:00 Runde ute med lykt: kabelkanaler, porten, gjerdet. Små tegn uten alien: lydene fra nattdyrene stopper, porten står åpen selv om den ble lukket.
+8. 23:00 SC01: lampekontroll, så klask mot ruta og avtrykket. Kveldens første ordentlige skrekk.
+9. 23:40 Arkiver kvelden og slipp nattsurveyen (NATT-06). Tidshopp til 00:13.
+
+Forslag til fordeling: Claude tar aggregattesten, arkivoppgavene og runden ute. Codex tar himmelbanen SKY01 og klokkekoordinatoren (R2.2) som styrer hoppene. Dineren finnes, men har en kjent Vulkan krasj som må rettes først.
