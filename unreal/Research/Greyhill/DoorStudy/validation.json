@@ -9,9 +9,17 @@
     "compileAndLink": "PASS",
     "testCasesAuthored": 16,
     "testCasesExecuted": 0,
-    "scenarioRuntime": "UNVERIFIED",
+    "scenarioRuntime": "PASS on Linux 16/16 (see referenceModelLinux); Windows run still blocked",
     "executionBlocker": "Windows returned Ingen tilgang when launching the native test executable. No workaround attempted."
   },
   "unrealIntegration": "NOT_PERFORMED",
-  "gameplayRuntime": "UNVERIFIED"
+  "gameplayRuntime": "UNVERIFIED",
+  "referenceModelLinux": {
+    "date": "2026-10-28",
+    "compiler": "clang 20.1.8 from the UE 5.8.4 Linux toolchain, bundled libc++, -std=c++17 -Wall -Wextra -Werror, static",
+    "compileAndLink": "PASS",
+    "testCasesExecuted": 16,
+    "testCasesPassed": 16,
+    "by": "Claude on Kubuntu"
+  }
 }
