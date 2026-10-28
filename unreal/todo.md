@@ -6,7 +6,11 @@
 - [ ] Lag en mannlig MetaHuman-grunnvariant og bak stående røykende mann samt sittende diner-sjåfør. Ferdig mannlig kilde finnes ikke lokalt ennå.
 - [ ] Bruk poserte statiske meshes, delte spillmaterialer og LOD. Behold servitrisen i eksisterende animerte løype og Dale/Kinski som dagens stemmer.
 - [ ] Prøv Nanite selektivt på importerte tette solide miljømodeller etter TB2-/plasseringsrettelser. Bevar RT-fallback og gameplay-kollisjon; ikke global konvertering av gress, glass og effekter.
-- [ ] Bruk gjennomgåtte lys-, VFX-, ytelses- og lydferdigheter til avgrenset miljøkontakt. Tilpass lyd til dagens egen graf og grading til M_WebTone.
+- [ ] Lys og skygger: bruk gjennomgåtte ferdigheter til korrekt monterte armaturer, lyskilder, rekkevidde og skyggebudsjett ved motellet, Caliche og trafo.
+- [ ] FX: forbedre stedlig støv, gnister og vær med riktig feste, bounds, kvalitetsstyring og spillklokke; bevar eksisterende trafo-lysbue.
+- [ ] Lyd: forbedre kildeplassering, avstandsdemping, vegg-/dørdemping og romklang, tilpasset dagens egen lydgraf.
+- [ ] Materialer og farger: prøv en sammenhengende 1986 New Mexico-palett gjennom dag/skumring/natt, tilpasset M_WebTone og eksisterende filmprofiler.
+- [ ] Ytelse: kontroller den konkrete endringens CPU/GPU/minne og Low/High-behov målrettet; unngå fullmatrise per liten oppgave.
 
 Ingen nye mannekenger er bakt, importert eller installert. [Planfilen](Signal47/Tools/metahuman/mannequins-plan.json) er eksplisitt `planned_not_produced`. Arbeidet utføres med målrettet kontroll og én tung jobb om gangen.
 
