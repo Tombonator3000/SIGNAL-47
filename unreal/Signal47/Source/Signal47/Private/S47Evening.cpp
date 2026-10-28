@@ -203,6 +203,7 @@ void FS47Evening::NightStep()
   M->Story->ConsoleLog(TEXT("CALICHE FEEDER STABLE / SARO SUPPLY RESTORED / K3 CLOSED"));
   M->Story->Note(M->Story->ClockText(true) + TEXT(". The checked circuit held. SARO power and the array drive are back. The unlogged residual is still waiting at the receiver."));
   M->UI->Toast(TEXT("Feeder stable. SARO power restored. K3 holds and the array can move again."), 6);
+  M->UI->Objective(TEXT("CALICHE JUNCTION // KEEP THE COMPLETED FEEDER RECORD. RETURN TO SARO 07"));
   M->RequestAutosave();
  }
 }
@@ -654,6 +655,9 @@ void FS47Evening::Step(double Dt)
  // SC02's active meeting at Caliche owns the objective line until contact is broken.
  if (M->Horror && M->Horror->SC02Meeting()) {}
  else if (ServicePending() && !M->World->bDriving) M->UI->Objective(ServiceObjective());
+ else if (NightSequence() && bFeederRestored && M->World->Area == TEXT("saro") && !M->World->bDriving &&
+          (!M->Horror || !M->Horror->HasTasks()) && M->Story->Phase() == ES47Phase::Residual)
+  M->UI->Objective(TEXT("CONTROL ROOM // TRACK THE UNLOGGED RESIDUAL NEAR 1420.4 MHz"));
  else if (bEnabled && bServiceRoute && bServiceFiled && M->Story->bEveningTimeline && !M->World->bDriving)
  {
   // Continue must restore the next receiver action as well as the filed evidence.
