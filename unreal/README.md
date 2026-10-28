@@ -1,5 +1,7 @@
 # SIGNAL / 47 i Unreal
 
+[Finaleønske: gigantisk UFO bak cloud tank-skyer](FINALE_CLOUD_TANK_UFO.md): ønsket senere innhold, anbefalt i SC13. Regi, material-/Niagara-oppskrift, lys, ytelsesbudsjett og produksjonsplan er lagret. Ingen effekt er implementert.
+
 [SC02/AI-arbeidskandidat og overlevering](SC02_AI_HANDOFF.md): Codex hjelper etter Claudes bruksgrense. Alienens hindringsnavigasjon er rettet, og pakket SC02 består 159 kontroller og 19 disk-/Continue-gjenopptakelser. Samme R5 består hele 110-matrisen og sju gamle Continue-lagringer før Toms separat godkjente main-fletting i PR #190. Videre scenekilder er oppdatert; SC03–SC05-runtime og samlet akt 1 er fortsatt under produksjon.
 
 [Greyhill Incident som mekanikkreferanse](GREYHILL_RESEARCH.md) beskriver statiske funn om jakt, lyd og søkeminne, med [prioriterte videre analyser](GREYHILL_NEXT_ANALYSES.md). 111 pakker er dekodet og bytekontrollert; dette er analyse, ikke ny spillkode. Fullt spilluttrekk oppbevares privat utenfor repoet.

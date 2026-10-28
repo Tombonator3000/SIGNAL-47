@@ -1,3 +1,8 @@
+## Cloud tank-UFO i siste scenario, 28. oktober 2026
+
+- [x] Lagre Toms finaleønske med ideer, oppskrift og mulig gjennomføring i [FINALE_CLOUD_TANK_UFO.md](FINALE_CLOUD_TANK_UFO.md). Hovedavsløring anbefales i SC13, med kun mulig forvarsel i SC12.
+- [ ] Lag original modell og bakte skyklipp, bygg SC13-prototype, prøv timing med hele slutten og mål ytelse. Bevar THE EVENT og 1947-bildet. Ikke implementert.
+
 ## SC02/AI-overtakelse, 28. oktober 2026
 
 - [x] Ta vare på Claudes SC02-kandidat, stoppede scenetekster og separate found-footage-/Niagara-grener.
