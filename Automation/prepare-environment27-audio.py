@@ -8,7 +8,7 @@ import wave
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-source = root / 'Docs/Resources19/Audio/engine_noise.ogg'
+source = root / 'Docs/Archive/Unity/Resources19/Audio/engine_noise.ogg'
 output = root / 'Unity/Assets/Signal47/Art/Environment27/Audio/GeneratorLoop.wav'
 assert hashlib.sha256(source.read_bytes()).hexdigest() == '6dad15c22608b68e61a141e4fe0fe92c96c9a8aca78c75ca1ff27f2c13048447'
 raw = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', str(source), '-f', 'f32le', '-ac', '1', '-ar', '22050', 'pipe:1'])

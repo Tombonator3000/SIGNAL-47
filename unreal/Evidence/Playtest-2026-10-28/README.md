@@ -1,6 +1,6 @@
 # Bilde- og krasjbevis fra Tom, 28. oktober 2026
 
-[Arbeidsliste med alle ni punktene](../../PLAYTEST_TODO_2026-10-28.md). Bildene nedenfor er originale spillerbilder levert av Tom, uten beskjæring, retusjering eller generering. Opptaksversjon og opptakstid er ikke innebygget i de mottatte bildene. Nummereringen følger vedleggene i chatten, inkludert Toms henvisning til bilde 5.
+[Arbeidsliste med alle ni punktene](../../../Docs/Active/Reports/PLAYTEST_TODO_2026-10-28.md). Bildene nedenfor er originale spillerbilder levert av Tom, uten beskjæring, retusjering eller generering. Opptaksversjon og opptakstid er ikke innebygget i de mottatte bildene. Nummereringen følger vedleggene i chatten, inkludert Toms henvisning til bilde 5.
 
 | Bevis | Knytning | Det bildet faktisk viser |
 | --- | --- | --- |

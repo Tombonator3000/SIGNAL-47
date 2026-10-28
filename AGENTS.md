@@ -31,3 +31,7 @@ Brukeren ba 13. september om større inkrementer og subagenter. Ved videreførin
 Utilgjengelig skrivebord eller testutstyr blokkerer den berørte testen, ikke alt utviklingsarbeid. Bruk eksisterende Unity-/Blender-automatisering og isolerte testprofiler der dette gir nyttig bevis. Ikke omgå skjermlås eller gjenta forespørsler om en allerede kjent utilgjengelig handling. Bevar kjent fungerende standard når kandidaten mangler nødvendige tester for å bli standard.
 
 Skill konseptbilder, Blender-render, runtime-bilder, API-scenario, ekte input og ytelsesmåling. Merk PASS/FAIL/UNVERIFIED med faktisk grunnlag. Merge lukker ikke uutførte tester. En designbibel for 5–6 timer er ikke implementert eller målt spilletid. Oppdater gjeldende overlevering med resultat, bevis og nøyaktige gjenstående avhengigheter; ikke kall hele spillet ferdig fordi ett steg er ferdig.
+
+## Gjeldende dokumentasjon
+
+Start i [Docs/README.md](Docs/README.md). `Docs/Active/STATUS.md`, `TODO.md` og `DECISIONS.md` er de eneste samlede kildene til leveringsstatus, aktiv arbeidsliste og beslutninger. `unreal/OPPGAVER.md` fører koordinering, `unreal/log.md` historikk. Følg [dokumentreglene](Docs/AGENTS.md); ikke opprett parallelle «current»-filer eller kopier gamle statuspåstander inn i nye oversikter.

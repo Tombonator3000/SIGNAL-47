@@ -3,7 +3,7 @@
 import json,subprocess,hashlib,math,struct,html
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-IN=ROOT/'Artifacts/Resources19/Incoming';OUT=ROOT/'Docs/Resources19/Audio';OUT.mkdir(parents=True,exist_ok=True)
+IN=ROOT/'Artifacts/Resources19/Incoming';OUT=ROOT/'Docs/Archive/Unity/Resources19/Audio';OUT.mkdir(parents=True,exist_ok=True)
 tracks=[]
 sources=[(IN/'echoes_of_the_past.wav','Echoes of the Past','isaiah658','CC0','https://opengameart.org/content/echoes-of-the-past','Arkiv / etterforskning'),(IN/'outpost_loop.flac','Outpost (loop)','Tsorthan Grove','CC0','https://opengameart.org/content/the-world-fell-silent','Avsides stasjon / natt'),(IN/'dirty_rain_loop.flac','Dirty Rain (loop)','Tsorthan Grove','CC0','https://opengameart.org/content/the-world-fell-silent','Uro / overgang')]
 for p in sorted((IN/'machinery').rglob('*.wav')):sources.append((p,p.stem,'Michael Brigida and students','CC-BY-3.0','https://opengameart.org/content/12-ambient-machine-sounds','Maskinlyd; vurder som romlyd eller mekanikk'))

@@ -20,7 +20,7 @@ import uuid
 CHUNK = 1024 * 1024
 DEMO_ROOT = Path("Signal47") / "Environment27Demo"
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE_SEED = REPO_ROOT / "Docs/Environment27/DemoSource/case.json"
+DEFAULT_SOURCE_SEED = REPO_ROOT / "Docs/Archive/Unity/Environment27/DemoSource/case.json"
 DEMO_METADATA = (json.dumps({
     "schema": "signal47-environment27-demo-seed-v1",
     "source": "Station26 completed WorldCase seed; historical first two frames retained",

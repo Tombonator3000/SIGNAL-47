@@ -13,9 +13,9 @@ The account emphasizes separate behavior/art iteration, scripted Blender assets,
 Public records for the examples, not dependencies required to use this skill:
 
 - [DesignBible13](https://github.com/Tombonator3000/SIGNAL-47/tree/main/Docs/DesignBible13): complete proposed story, explicit content ceiling, maps, UI states and estimated pacing. A design package is not implemented gameplay or measured duration.
-- [Menu14](https://github.com/Tombonator3000/SIGNAL-47/tree/main/Docs/Menu14): new-shift confirmation and preservation of previous checkpoint files. The paper puzzle review also exposed an accidental early disclosure in a clue.
-- [Recovery15](https://github.com/Tombonator3000/SIGNAL-47/tree/main/Docs/Recovery15): reviewed previous-case selection, backup handling, controlled write failures, scene restoration and unchanged original media. Fifty API-driven checks passed in the player and extracted package at the recorded revision; real input/performance gates remained open.
-- [NightSky12](https://github.com/Tombonator3000/SIGNAL-47/blob/main/Docs/NIGHT_SKY_12.md): an inspected visual candidate with source provenance, without transferring older performance measurements to a changed sky.
+- [Menu14](https://github.com/Tombonator3000/SIGNAL-47/tree/main/Docs/Archive/Unity/Menu14): new-shift confirmation and preservation of previous checkpoint files. The paper puzzle review also exposed an accidental early disclosure in a clue.
+- [Recovery15](https://github.com/Tombonator3000/SIGNAL-47/tree/main/Docs/Archive/Unity/Recovery15): reviewed previous-case selection, backup handling, controlled write failures, scene restoration and unchanged original media. Fifty API-driven checks passed in the player and extracted package at the recorded revision; real input/performance gates remained open.
+- [NightSky12](https://github.com/Tombonator3000/SIGNAL-47/blob/main/Docs/Archive/Unity/NIGHT_SKY_12.md): an inspected visual candidate with source provenance, without transferring older performance measurements to a changed sky.
 
 The Recovery15 packaging session initially used an overly strict mode-equality check. A failed prerequisite was followed by an unintended direct-player fallback. The corrected delivery run explicitly resolved the extracted launcher and checked content identity and runtime permissions separately. This motivates fail-closed delivery scripts; the intermediate run was not package evidence.
 
