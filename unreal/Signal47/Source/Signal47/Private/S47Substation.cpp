@@ -43,7 +43,7 @@ FS47Substation::FS47Substation(US47Main* InM) : M(InM)
 
 void FS47Substation::Begin(const S47J::FObj& Saved)
 {
- bJournal = bComplete = bObserved = false; Running = CompletedAt = ObservedAt = 0; CompletedStamp.Empty();
+ bJournal = bComplete = bObserved = false; Running = CompletedAt = ObservedAt = 0; CompletedStamp.Empty(); ResetArc();
  if (S47J::Int(Saved, TEXT("v")) == 1)
  {
   bJournal = S47J::Bool(Saved, TEXT("journal"));
@@ -123,6 +123,7 @@ bool FS47Substation::Install()
   return FString(bComplete ? TEXT("The marked inspection lamp burns steadily. The panel's completed check can be compared with this actual response.") : TEXT("The marked inspection lamp is weak. Its local service control is on the cabinet below."));
  }; M->Inter->Add(O);
  UE_LOG(LogS47Substation, Display, TEXT("S47: substation ready root=(7890,-1.10,536.20) fenceFrontZ=529.00; inspection outside closed yard"));
+ InstallArc();
  InstallFollowup();
  return true;
 }
@@ -130,7 +131,7 @@ bool FS47Substation::Install()
 void FS47Substation::Apply()
 {
  if (!bReady) return;
- const float K = !AttemptId.IsEmpty() && FollowupRecordValid() ? FollowupLampStrength() : bComplete ? Strong : Running > 0 ? 0.f : Weak;
+ const float K = (!AttemptId.IsEmpty() && FollowupRecordValid() ? FollowupLampStrength() : bComplete ? Strong : Running > 0 ? 0.f : Weak) * LampDip();
  for (const auto& W : LampMids) if (UMaterialInstanceDynamic* D = W.Get()) D->SetVectorParameterValue(TEXT("EmissiveFactor"), Warm * K);
  if (UPointLightComponent* L = Light.Get()) { L->SetIntensity(Lumens * K / Strong); L->SetVisibility(Root.Shown()); }
  if (UStaticMeshComponent* C = LeverComp.Get()) { FTransform T = LeverRest; T.SetRotation(LeverRest.GetRotation() * FQuat(FVector::ForwardVector, Running > 0 || bComplete ? -.65 : 0)); C->SetRelativeTransform(T); }
@@ -244,7 +245,7 @@ void FS47Substation::Step(double Dt)
   Running += Dt;
   if (Running >= Duration) { Running = 0; bComplete = true; CompletedAt = M->Story->Clock(); CompletedStamp = Stamp(CompletedAt); M->RequestAutosave(); UE_LOG(LogS47Substation, Display, TEXT("S47: substation service complete at %s; compare actual lamp"), *CompletedStamp); }
  }
- StepFollowup(Dt); Apply(); SyncFacts(); TestStep(Dt);
+ StepFollowup(Dt); StepArc(Dt); Apply(); SyncFacts(); TestStep(Dt);
 }
 
 void FS47Substation::TestStep(double Dt)
@@ -350,5 +351,6 @@ bool FS47Substation::SelfTest(TArray<FString>& Lines)
  auto Bad = S.Save(); S47J::Set(Bad, TEXT("complete"), false); R.Begin(Bad); Check(!R.bObserved, TEXT("an observation cannot restore without a completed service check"));
  Check(Stamp(-19800).Contains(TEXT("13 APR 1986")) && Stamp(3600).Contains(TEXT("14 APR 1986")), TEXT("completion stamps follow the existing midnight axis"));
  Ok &= FollowupSelfTest(Lines);
+ Ok &= ArcSelfTest(Lines);
  return Ok;
 }

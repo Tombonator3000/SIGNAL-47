@@ -7,6 +7,8 @@
 
 class US47Main;
 class UMaterialInstanceDynamic;
+class UInstancedStaticMeshComponent;
+class UNiagaraComponent;
 class UPointLightComponent;
 class UStaticMeshComponent;
 struct FS47Doc;
@@ -49,6 +51,29 @@ public:
  FS47Doc FiledFollowupDocument(bool bIncludePhoto = false) const;
  TArray<FS47Task> FollowupTasks() const;
  FString FollowupObjective() const;
+ // SC02 arc at the bus-support insulators (S47SubstationArc.cpp, unreal/NIAGARA_FORSLAG.md). Runtime only, never saved.
+ struct FArcGate { bool bMeeting = false, bThreatActive = false, bAppeared = false, bWasAppeared = false, bSeen = false, bNormalResult = false, bChecking = false, bFollowup = false, bSpent = false; };
+ static constexpr double ArcDuration = 1.2;
+ static constexpr double ArcTailDuration = 1.3;
+ static bool ArcAllowed(const FArcGate& G);
+ static float ArcLevel(double T, bool bCalm); // 0..1 flash envelope, deterministic
+ static float ArcDip(double T, bool bCalm);   // marked-lamp factor, exactly 1 outside the arc
+ static int32 ArcSparks(bool bLow, bool bCalm);
+ bool ArcActive() const { return ArcT >= 0 && ArcT < ArcDuration; }
+ int32 ArcCount() const { return ArcFired; }
+ float ArcLumens() const;
+ bool ArcSafe() const;
+ struct FArcSnapshot
+ {
+  bool bReady = false, bNiagaraActive = false, bNiagaraPaused = false, bMeshVisible = false, bSafe = false;
+  bool bFlashVisible = false, bMaterialAssigned = false;
+  int32 Instances = 0, Bursts = 0, SparkCount = 0;
+  double Age = -1, NiagaraAge = -1;
+  float FlashLumens = 0, MaterialIntensity = 0, LampLumens = 0;
+  FLinearColor MaterialColor = FLinearColor::Black, LampEmissive = FLinearColor::Black;
+  FVector Origin = FVector::ZeroVector;
+ };
+ FArcSnapshot ArcSnapshot() const; // measured live component state, not expected envelope values
 private:
  US47Main* M = nullptr;
  bool bBuilt = false, bReady = false, bJournal = false, bComplete = false, bObserved = false;
@@ -113,4 +138,20 @@ private:
  void Commit(const FString& Scene);
  void Refile();
  void TestStep(double Dt);
+ TWeakObjectPtr<UNiagaraComponent> Sparks;
+ TWeakObjectPtr<UPointLightComponent> ArcLight;
+ TWeakObjectPtr<UInstancedStaticMeshComponent> ArcMesh;
+ TWeakObjectPtr<UMaterialInstanceDynamic> ArcMid;
+ double ArcT = -1;
+ bool bArcSpent = false, bArcCalm = false, bArcWasAppeared = false;
+ int32 ArcFired = 0, ArcSite = 1, ArcSparkCount = 0, ArcShape = -1;
+ float LampDip() const { return ArcReady() && AttemptId.IsEmpty() ? ArcDip(ArcT, bArcCalm) : 1.f; }
+ bool ArcReady() const;
+ void CancelArc();
+ void ShapeArc(int32 Shape);
+ void InstallArc();
+ void ResetArc();
+ void FireArc(int32 At, const TCHAR* Why);
+ void StepArc(double Dt);
+ static bool ArcSelfTest(TArray<FString>& Lines);
 };

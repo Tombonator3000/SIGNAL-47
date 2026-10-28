@@ -1,3 +1,27 @@
+## Toms nye feilrapport med bevis, Codex 28.10.2026
+
+Alle ni punktene er registrert i [PLAYTEST_TODO_2026-10-28.md](PLAYTEST_TODO_2026-10-28.md): Caliche/TB2 og boliger/byskilt, diner-krasj, trafikksignal, farm, motellnivå/kollisjon/TV/basseng/telefon/vegg, SARO-mus/dialog/dører, trafostasjon, færre tester/subagenter og dag-/nattfarger. Seks originalbilder og to krasjvedlegg er bevart med kontrollsummer. TB2 er kilde uten ferdig native/installert integrasjon; tidligere TB1 lastes i installert R2. Begge krasj peker til Vulkan-allokering, uten bevist samtidig editor. Alle spillrettelser står åpne.
+
+Arbeidsdeling: bruk avgrensede subagenter aktivt; Codex har brukt tre kun til lesing i denne registreringen. Claude og Codex avtaler filansvar før implementering, og bruker én felles tung jobb om gangen. Ingen nye motor-/spilltester er kjørt. Toms reduserte testregel står nå i `unreal/AGENTS.md`: målrettet etter risiko, ingen fullmatrise per liten PR, én samlet nødvendig kontroll før installasjon/release. Denne oppgaven endrer dokumentasjon og bevarer bevis, ikke spillkode eller installasjon.
+
+## Grafikkinnstillinger installert, Codex 28.10.2026
+
+Grafikkmenyen er flettet via [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), merge `2b26a05459a18213d830dfd2e85ca571d423b485`, og den identiske, aksepterte R2-pakken er installert i `/home/tom/Games/Signal47/Linux`. Settings > Graphics har fem presets, Custom og elleve individuelle kontroller. Pakket meny-/lagringskontroll (47+15) og fullmatrisen (111/111) består. Alle 79 personlige Saved-filer (105 noder) er bevart. Installert skrive-/lesekontroll består (47 + 15), og payload samt Saved er kontrollert etter oppstart. Kanonisk prune er fullført; gjeldende bygg og to eldre beholdes, med eksplisitt vern av andre aktive SC-kandidater. Se [grafikkrapport](GRAPHICS_SETTINGS.md). Claudes SC03-kilder er urørt; bruk oppdatert main som grunnlag ved videre fletting.
+
+## SC02-lysbue levert, 2026-10-28 kl.16:42 CET
+
+SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/pull/195), merge `66ae5948e262586e4c26c621dc6d109e6d950552`, og den identiske, aksepterte R4-pakken er installert i `/home/tom/Games/Signal47/Linux`. Hele matrisen består 110/110; den installerte Low-kontrollen består 14 kontroller og to disk-/Flow-restores. Bildet fra installert spill er vurdert. Alle 60 personlige Saved-filer (79 noder) er uendret. Ingen ny offentlig release. Tungt kjørevindu er frigitt; ingen ytterligere VFX-testjobb er planlagt. Claudes SC03-kilder er urørt.
+
+Canonical prune er kjørt med `--apply`: ingen filer skulle slettes. Gjeldende VFX-kandidat og to eldre payloads beholdes. SC01-R4, PR174 og Claudes aktive SC02-R2/R5 under SC03-arbeidet er uttrykkelig beskyttet. Kilder, assets, Saved og testbevis er bevart.
+
+## SC02-lysbue: 110/110 består, klar for fletting
+
+PR195 har ferdig native lysbue og gnister, R4-pakke og godkjent fullmatrise. Bevis: ~/scratch-bm/Signal47-electric-arc-20261028. Én kort installert kontroll gjenstår etter fletting. Claudes SC03-kilder er urørt.
+
+## Elektrisk lysbue ved trafo, Codex 28.10.2026
+
+Tom bestiller lysbuen planlagt i NIAGARA_FORSLAG.md. Codex eier codex/substation-electric-arc i motel-v2-unreal-worktree fra main6c63a350. Bygger videre på kopi av Claudes uferdige niagara-sparks-kilder uten å endre originalarbeidskopien. Omfang: fysisk forankret blåhvit lysbue, gnister/lyspuls ved SC02s første fremkomst, rolig blinking, T01/T02/lagring/pause bevart. Én tung jobb gjennom guard. Bevis: ~/scratch-bm/Signal47-electric-arc-20261028.
+
 ## Cloud tank-konseptbilder lagret, 28. oktober 2026
 
 Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.

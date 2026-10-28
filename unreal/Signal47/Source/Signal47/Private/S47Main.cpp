@@ -5,6 +5,7 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47T02Test.h"
+#include "S47GraphicsTest.h"
 #include "S47SkyVisitors.h"
 #include "S47DaleDocumentsTest.h"
 #include "S47Anomaly.h"
@@ -152,6 +153,7 @@ void US47Main::Step(double Dt)
 	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);
 	if (AnomalyTest) AnomalyTest->Step(Dt);
 	if (T02Test) T02Test->Step(Dt);
+	if (GraphicsTest) GraphicsTest->Step(Dt);
 }
 
 void US47Main::InitRadio()

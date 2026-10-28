@@ -1,0 +1,38 @@
+           PID: 1710609 (Signal47)
+        Signal: 11 (SEGV)
+     Timestamp: Wed 2026-10-28 16:53:16 CET (34s ago)
+  Command Line: /home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47 Signal47
+    Executable: /home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47
+  Size on Disk: 653.9M
+       Message: Process 1710609 (Signal47) of user 1000 dumped core.
+
+FIRST REPORTED THREAD ONLY (excerpt, not the complete coredump):
+Stack trace of thread 1710730:
+                #0  0x00000000054f8d30 _ZN20FGenericPlatformMisc14RaiseExceptionEj (Signal47 + 0x52f8d30)
+                #1  0x00000000058aa05e _ZN22FUnixErrorOutputDevice9SerializeEPKDsN13ELogVerbosity4TypeERK5FName (Signal47 + 0x56aa05e)
+                #2  0x00000000057683c0 _ZN13FOutputDevice8LogfImplEPKDsz (Signal47 + 0x55683c0)
+                #3  0x0000000005654c7a _ZN2UE7Logging7Private13BasicFatalLogITkNS_9CCharTypeEcEEvRKNS1_21TStaticBasicLogRecordIT_EEPK16FLogCategoryBasez (Signal47 + 0x5454c7a)
+                #4  0x000000000cb95463 _ZN9VulkanRHI14FMemoryManager20AllocateBufferMemoryERNS_17FVulkanAllocationEP16FVulkanEvictableRK20VkMemoryRequirementsjNS_25EVulkanAllocationMetaTypeEbbPKcj (Signal47 + 0xc995463)
+                #5  0x000000000cb958f5 _ZN9VulkanRHI14FMemoryManager20AllocateBufferMemoryERNS_17FVulkanAllocationEP10VkBuffer_TNS_22EVulkanAllocationFlagsEPKDsj (Signal47 + 0xc9958f5)
+                #6  0x000000000cc1e99a _ZN25FVulkanTransientHeapCache10CreateHeapERKN17FRHITransientHeap12FInitializerE (Signal47 + 0xca1e99a)
+                #7  0x000000000bec883b _ZN22FRHITransientHeapCache7AcquireEy22ERHITransientHeapFlags (Signal47 + 0xbcc883b)
+                #8  0x000000000bec96e1 _ZN34FRHITransientResourceHeapAllocator20CreateBufferInternalERK14FRHIBufferDescPKDsRK29FRHITransientAllocationFencesjj9TFunctionIFP19FRHITransientBufferRKN17FRHITransientHeap20FResourceInitializerEEE (Signal47 + 0xbcc96e1)
+                #9  0x000000000cc1ebda _ZN33FVulkanTransientResourceAllocator12CreateBufferERK14FRHIBufferDescPKDsRK29FRHITransientAllocationFences (Signal47 + 0xca1ebda)
+                #10 0x000000000a71bcbf _ZN11FRDGBuilder26AllocateTransientResourcesE10TArrayViewIKNS_18FCollectResourceOpEiE (Signal47 + 0xa51bcbf)
+                #11 0x000000000a718758 _ZN11FRDGBuilder7ExecuteEv (Signal47 + 0xa518758)
+                #12 0x000000000b94befa _ZN2UE4Core7Private8Function18TFunctionRefCallerIZN21FSceneRenderProcessor7ExecuteEvE3$_3vJR24FRHICommandListImmediateEE4CallEPvS7_ (Signal47 + 0xb74befa)
+                #13 0x000000000a77bba4 _ZL14ExecuteCommandP15FRHICommandListRK8TVariantI15TUniqueFunctionIFvvEEJS2_IFvRS_EES2_IFvR24FRHICommandListImmediateEEEERK17FRenderCommandTag (Signal47 + 0xa57bba4)
+                #14 0x000000000a77a18c _ZN2UE17RenderCommandPipe12FCommandList15ConsumeCommandsIZN24FRenderThreadCommandPipe15ExecuteCommandsERS1_E3$_0EEvRKT_ (Signal47 + 0xa57a18c)
+                #15 0x000000000a7b2249 _ZN2UE4Core7Private8Function18TFunctionRefCallerIZN24FRenderThreadCommandPipe16EnqueueAndLaunchEO15TUniqueFunctionIFvR24FRHICommandListImmediateEERK17FRenderCommandTagE3$_0vJEE4CallEPv (Signal47 + 0xa5b2249)
+                #16 0x000000000a7b20f7 _ZN10TGraphTaskI22TFunctionGraphTaskImplIFvvELN16ESubsequentsMode4TypeE1EEE11ExecuteTaskEv (Signal47 + 0xa5b20f7)
+                #17 0x000000000534c61c _ZN2UE5Tasks7Private9FTaskBase14TryExecuteTaskEv (Signal47 + 0x514c61c)
+                #18 0x000000000534baad _ZN16FNamedTaskThread23ProcessTasksNamedThreadEib (Signal47 + 0x514baad)
+                #19 0x000000000534af5f _ZN16FNamedTaskThread21ProcessTasksUntilQuitEi (Signal47 + 0x514af5f)
+                #20 0x000000000a772b9f _Z19RenderingThreadMainP6FEvent (Signal47 + 0xa572b9f)
+                #21 0x000000000a79bf72 _ZN16FRenderingThread3RunEv (Signal47 + 0xa59bf72)
+                #22 0x00000000055b63f3 _ZN22FRunnableThreadPThread3RunEv (Signal47 + 0x53b63f3)
+                #23 0x000000000551d27e _ZN22FRunnableThreadPThread11_ThreadProcEPv (Signal47 + 0x531d27e)
+                #24 0x00007f4739ea3dfa start_thread (libc.so.6 + 0xa3dfa)
+                #25 0x00007f4739f375cc __clone3 (libc.so.6 + 0x1375cc)
+
+Original attachment SHA256: cf23356eb4d3be165e01fd22c2b0fef01a5d828a80a33317840a2b0c8d8e9dfa

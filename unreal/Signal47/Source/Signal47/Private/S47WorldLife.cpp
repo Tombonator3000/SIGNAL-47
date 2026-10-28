@@ -349,10 +349,10 @@ void US47WorldLife::Step(double Dt)
 
 void US47WorldLife::AirStep(double Dt, double T)
 {
-	// High and Ultra only, at night, and the haze only out in the open of SARO, the road, the diner's
+	// Optional full-detail effects only, at night, and haze only out in the open of SARO, the road, the diner's
 	// lot and the town, and STATION 01
-	const FString Quality = M->Flow ? M->Flow->Quality : FString(TEXT("high"));
-	const bool bOn = !bAirOff && Quality != TEXT("low");
+	const bool bFullEffects = !M->Flow || M->Flow->Graphics.Effects > 0;
+	const bool bOn = !bAirOff && bFullEffects;
 	// Visual night activity follows evening too; Dawn() remains morning-only for story gates.
 	const double Light = Sky.IsValid() ? Sky->Daylight() : Dawn();
 	const double Night = 1 - Smoothstep(Light, 0.12, 0.5);

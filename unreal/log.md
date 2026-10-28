@@ -967,3 +967,47 @@ Oppdraget omfatter dokumentasjon. Ingen Source, Config, Content, genererte manus
 Tre [konseptbilder av cloud tank-skyer](Concepts/CloudTankUFO-2026-10-28/README.md) er bevart med prompter og kontrollsummer: SARO v1, korrigert SARO v2 og Caliche v1. Toms presisering er at to skybanker skal velte fremover fra hver sin side, med åpen himmel mellom. V2 er gjeldende referanse for skyretningen. Bildene er AI-generert visuell regi, ikke runtime eller målfast by-/arraylayout.
 
 Tom ba om å legge bildene i repoet som konseptbilder. Tre originale PNG-filer på 1672 x 941 er lastet opp byteidentisk; lokale Git-blob-ID-er samsvarer med opplastede objekter. Galleri, prompter og manifest følger med, og finaleønsket/README/arbeidsminne/oppgavelister peker til dem. Filmreferansene er ikke lagt ved. Kontroll: filstørrelse, PNG-dimensjoner, Git-blob-ID, dokumentlenker og tydelig konseptstatus. Ingen Source, Config, Content, genererte manusfiler eller spillinstallasjon er endret; bygg og spillmatrise er ikke kjørt for denne konseptleveransen.
+
+## 2026-10-28: SC02-lysbue, pakket kandidat R4
+
+SC02 har nå en fysisk forankret blåhvit lysbue og originale Niagara-gnister etter planen i [lysbuerapporten](FX_ARC_2026-10-28.md). Full Low SC02 består 169 kontroller og 19 disk-/Flow-restores; korte High/Low/CalmFlash/avslått/manglende-asset-prøver består. Endelig R4 har fått lesbar sidebue, målrettet PSO-oppvarming og visuell kontroll. T01-resultater, lagringsformat og modeller/terreng/himmel er bevart. T02 på endelig R4 består 65 kontroller og 15 disk-/Flow-restores uten lysbue. Hele matrisen består 110/110 i to deler (54 + 56) etter en guard-pause for Claudes jobb. Ingen bestått prøve gjentas. Fletting og installasjon gjenstår ved denne kildeinnsjekkingen.
+
+## 2026-10-28 kl.16:28 CET: SC02-lysbue klar for fletting
+
+Endelig R4 består samlet canonical110. Første del stoppet trygt før roof fordi SC03-editorbygg startet mellom spillprosessene; de 54 godkjente loggene/bildene er bevart, og bare 56 resterende ble kjørt. Begge originale kjørerapporter beholdes. T02, målrettet SC02/VFX og bildebevis er samlet i lysbuerapporten. Ingen ny spillkode etter den testede R4.
+
+## 2026-10-28 kl.16:42 CET: SC02-lysbue levert
+
+SC02-lysbuen er flettet via [PR195](https://github.com/Tombonator3000/SIGNAL-47/pull/195), merge `66ae5948e262586e4c26c621dc6d109e6d950552`, og den identiske, aksepterte R4-pakken er installert i `/home/tom/Games/Signal47/Linux`. Hele matrisen består 110/110; den installerte Low-kontrollen består 14 kontroller og to disk-/Flow-restores. Bildet fra installert spill er vurdert. Alle 60 personlige Saved-filer (79 noder) er uendret. Ingen ny offentlig release.
+
+Canonical prune er kjørt med `--apply`: ingen filer skulle slettes. Gjeldende VFX-kandidat og to eldre payloads beholdes. SC01-R4, PR174 og Claudes aktive SC02-R2/R5 under SC03-arbeidet er uttrykkelig beskyttet. Kilder, assets, Saved og testbevis er bevart.
+
+Fullmatrisen ble fullført som 54+56 etter guard-pause, uten gjentakelse av beståtte prøver. Lokal installasjon ventet trygt på brukerens spillvinduer og SC03-editor. Installasjonskontrollen var isolert fra personlige lagringer. Denne oppfølgingen endrer bare dokumentasjon; ingen ny bygging eller fullmatrise er kjørt.
+
+## 2026-10-28 kl.17:09 CET: individuell grafikkmeny
+
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+
+## 2026-10-28 kl. 17:29 CET: grafikkmeny PR197 kontrollert i pakket spill
+
+Editor og Linux-pakke består. Faktisk Slate-navigasjon, native renderer-verdier, skjerm-Apply og ny prosess med innstillingsreload består (47+15). Visuelt kontrollert ved 900p og 720p. Very Low beholder lysbuen og lagring (14 sjekker, to disk-/Flow-gjenopprettinger). Én kanonisk 111-matrise kjører før fletting; installasjonen er foreløpig PR195. Bevis i `~/scratch-bm/Signal47-graphics-settings-20261028`.
+
+## 2026-10-28 kl. 19:04 CET: grafikkmeny R2 klar for levering
+
+Final R2-pakke består 47 produksjons-/Slate-sjekker, 15 sjekker ved ny prosess og full 111/111-matrise uten konkurrerende jobb. 720p/900p-meny, natt og daggry er visuelt vurdert. R1 Very Low-lysbuebevis beholdes fordi R2 kun endrer scenery-menyvalget. PR197 går mot main; installasjon gjenstår. Bevis: `~/scratch-bm/Signal47-graphics-settings-20261028`.
+
+## 2026-10-28 kl. 19:12 CET: grafikkmeny flettet og installert
+
+PR197 er flettet til main, merge `2b26a05459a18213d830dfd2e85ca571d423b485`. Den aksepterte R2-pakken er installert i standardmappen med eksakt payloadkontroll og full tilbakekopi av tidligere spillfiler. Alle 79 personlige Saved-filer (105 noder) er bevart. Claudes SC03Resume6 startet etter installasjonen; den korte installerte kontrollen og kanonisk prune venter på ledig motorvindu. Ingen andre prosesser stoppes.
+
+## 2026-10-28 kl. 19:24 CET: installert grafikkmeny verifisert
+
+Standardstarteren med isolert profil består 47 skrivekontroller og 15 kontroller i en ny prosess som leser Custom-valgene. Det installerte 720p-menybildet er visuelt vurdert. Hele payloaden samsvarer med akseptert R2, og alle 79 personlige Saved-filer (105 noder) er fortsatt byteidentiske. Ingen ny spilltest gjenstår. Kanonisk prune avviste sletting fordi Claude startet SC03Resume8; gjennomgått opprydding er køet til motoren er ledig.
+
+## 2026-10-28 kl. 19:31 CET: grafikkleveranse avsluttet og gamle testpayloads ryddet
+
+Installert meny og lagring består 47 + 15 kontroller. Kanonisk prune er utført etter at SC03Resume8 sluttet, uten å stoppe noen prosess. Tre gamle payloadkopier er pensjonert (13 341 321 001 logiske bytes, ikke et løfte om fysisk frigjort plass). Gjeldende R2, grafikk-R1 og tilbakekopien av forrige installasjon beholdes; aktive SC01-, PR174-, SC02- og SC03-kandidater er eksplisitt vernet til eiernes undersøkelser er avsluttet. Kilder, assets, Engine, Saved og bevis er bevart. Full installert payload og alle personlige Saved er bytekontrollert igjen etter oppryddingen. Dokumentleveransen PR199 endrer ingen spillkode og kjører ikke matrisen på nytt.
+
+## 2026-10-28 kl. 19:46 CET: Toms ni spillerfunn registrert med bilde- og krasjbevis
+
+Alle ni punktene er lagt i todo og PLAYTEST_TODO_2026-10-28.md. Seks originale bilder er kopiert byteidentisk med galleri/manifest; to fulle krasjvedlegg er bevart lokalt med diagnostiske utdrag i repoet. Tre avgrensede subagenter har undersøkt TB2/farm, krasj/SARO og fargereferanser. TB2 mangler fortsatt native/pakket integrasjon; tidligere TB1 er aktiv i installert R2. Krasjbanen gjelder Vulkan-bufferallokering, uten dokumentert samtidig editor eller endelig rotårsak. ShaderShift/AgX vurderes mot egen M_WebTone før eventuell bruk. Toms reduserte testregel og aktiv arbeidsdeling er ført i AGENTS/OPPGAVER. Ingen spillkode, Saved, installasjon eller andre prosesser er endret. Kun lenker, manifest, vedlegg og diff kontrolleres for denne dokumentleveransen. Alle feilrettelser står åpne.

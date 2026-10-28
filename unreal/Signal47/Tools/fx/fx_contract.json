@@ -1,0 +1,83 @@
+{
+  "version": 2,
+  "folder": "/Game/Signal47/FX",
+  "material": "M_S47_FxSpark",
+  "system": "NS_S47_ArcSparks",
+  "emitter": "Sparks",
+  "simTarget": "CPUSim",
+  "maxSparks": 40,
+  "randomSeed": 4747,
+  "lifetime": [
+    1.3,
+    1.3
+  ],
+  "spriteSizeMin": [
+    0.9,
+    4.0
+  ],
+  "spriteSizeMax": [
+    1.8,
+    11.0
+  ],
+  "spawnRadius": 6.0,
+  "coneAngle": 18.0,
+  "speed": [
+    1100.0,
+    1500.0
+  ],
+  "gravity": [
+    0.0,
+    0.0,
+    -980.0
+  ],
+  "bounds": {
+    "min": [
+      -650.0,
+      -650.0,
+      -950.0
+    ],
+    "max": [
+      650.0,
+      650.0,
+      150.0
+    ]
+  },
+  "materialIntensity": 14.0,
+  "user": {
+    "SparkCount": {
+      "type": "int",
+      "default": 40
+    },
+    "SparkColor": {
+      "type": "color",
+      "default": [
+        1.0,
+        0.74,
+        0.42,
+        1.0
+      ]
+    },
+    "Direction": {
+      "type": "vec3",
+      "default": [
+        0.0,
+        -0.45,
+        -1.0
+      ]
+    },
+    "GroundZ": {
+      "type": "float",
+      "default": -777.0
+    }
+  },
+  "arcMaterial": "M_S47_FxArc",
+  "restitution": 0.14,
+  "tangentialRetention": 0.35,
+  "arcColor": [
+    0.32,
+    0.66,
+    1.0,
+    1.0
+  ],
+  "arcIntensity": 10.0
+}
