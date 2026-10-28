@@ -1,5 +1,6 @@
 #include "S47HUD.h"
 #include "S47Horror.h"
+#include "S47Observing.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -159,6 +160,7 @@ void AS47HUD::Start()
 		bOk &= FS47ArrayShot::SelfTest(Lines) & FS47NightLife::SelfTest(Lines); // (Unreal only: the camera at the window while the array turns, the quicker turn; the moths' lamps)
 		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= FS47Horror::SelfTest(Lines);
+		bOk &= FS47Observing::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
@@ -544,6 +546,7 @@ void AS47HUD::Start()
 		M->T02Test = MakeShared<FS47T02Test>(M);
 		M->GraphicsTest = MakeShared<FS47GraphicsTest>(M);
 		M->DaleDocumentsTest = MakeShared<FS47DaleDocumentsTest>(M);
+		M->Observing = MakeShared<FS47Observing>(M);
 		M->Horror = MakeShared<FS47Horror>(M);
 		M->HorrorTest = MakeShared<FS47HorrorTest>(M);
 		M->Flow->Boot();
@@ -628,7 +631,7 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
 	else if (Story.IsValid()) Story->Use(Id);
 }
 

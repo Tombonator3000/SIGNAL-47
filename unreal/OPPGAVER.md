@@ -4,6 +4,10 @@ Pågår på `codex/night-sequence-20261028` fra main `469335b1`, worktree `~/scr
 
 Omfang: SC01 før relé, signalutløst strømbrudd 00:13, K3 ute og antenne død til T01, kjøretur ca.01:35, SC02 ca.02:00, SC03 ca.02:15, vedvarende trafofeil og SKY01 ca.21:30. Målrettede tester etter risiko, én tung jobb gjennom guard. Ingen installasjon eller offentlig release. Bevis: `~/scratch-bm/Signal47-night-20261028`.
 
+## Kveldens arrayarbeid, Claude 28.10.2026 (under arbeid)
+
+Tom godkjente kvelden 18 til 24 og ba om mer array- og dataarbeid. Claude eier ny `S47Observing` på `claude/evening-array-work` i `~/scratch-bm/wt/sc03`: fire ekte observasjoner 19:00 til 22:50 med papirer og små hint, før SC01-vinduet. Små koblinger i Codex sine filer: `AS47Story::ConsoleProfile`, `ConsoleQuality`, `AimArray`, ett kall først i `ConsoleAction` og i `Label` for skriver/terminal. Ingen endring i rekkefølgen etter 23:00, K3, strømbruddet eller SKY01. Se [planen](KVELD_PLAN_2026-10-28.md). Én tung jobb om gangen gjennom guard.
+
 ## Unreal-ferdigheter og mannekenger, Codex 28.10.2026
 
 Codex har undersøkt Nanite/miljø, lys/skygger/FX, lyd og MetaHuman-kilder med tre avgrensede subagenter. Se [kildenotatet](UNREAL_SKILLS_2026-10-28.md). Første mannequin-pass er radio-kvinne (sittende), røykende mann (stående) og diner-sjåfør (sittende), med eksisterende interaksjoner/timer beholdt. Bruk bakte statiske positurer; ny mannlig kilde gjenstår. Undersøkelsen har ikke produsert/importert modellene eller installert skills. Ingen motorjobb eller reservasjon av tungt vindu. Story/Evening/SC03-filer er urørt; samordne konkret filansvar før videre produksjon.

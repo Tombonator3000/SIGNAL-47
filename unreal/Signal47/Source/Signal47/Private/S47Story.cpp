@@ -1,4 +1,5 @@
 #include "S47Story.h"
+#include "S47Observing.h"
 #include "S47Horror.h"
 #include "S47Evening.h"
 #include "S47Anomaly.h"
@@ -349,6 +350,8 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("crtCenter")) return bCinematic ? FString() : !bPowered ? TEXT("Receiver console") : bAlarmOn ? TEXT("Check the spectrum") : TEXT("Use receiver console");
 	if (Id == TEXT("crtLeft")) return TEXT("Status terminal");
 	if (Id == TEXT("crtRight")) return CurrentPhase == ES47Phase::Locked ? TEXT("Run direction solve") : CurrentPhase == ES47Phase::Solving ? FString() : TEXT("Tracking terminal");
+	if (const auto* M = US47Main::Get(this); M && M->Observing && (Id == TEXT("printer") || Id == TEXT("opsTerminal") || Id == TEXT("crtLeft")))
+		if (const FString L = M->Observing->Label(Id); !L.IsEmpty()) return L;
 	if (Id == TEXT("printer"))
 	{
 		if (CurrentPhase == ES47Phase::Printed) return TEXT("Tear off the printout");
@@ -586,9 +589,17 @@ void AS47Story::ConsoleAzimuth()
 	PointDishes(Rx.Azimuth, SurveyEl, 9);
 }
 
+const FS47Profile& AS47Story::ConsoleProfile() const
+{
+	if (const auto* M = US47Main::Get(this); M && M->Observing) if (const FS47Profile* P = M->Observing->ConsoleProfile()) return *P;
+	return Rx.Profile();
+}
+
 void AS47Story::ConsoleAction()
 {
  if (FeederOutage()) { Rx.Status = TEXT("FEEDER OUT / K3 OPEN / ARRAY DRIVE DEAD"); return; }
+
+	if (const auto* M = US47Main::Get(this); M && M->Observing && M->Observing->ConsoleAction()) return;
 	if (!Rx.Pass()) { Rx.Status = TEXT("NO LOCK  /  ADJUST PARAMETERS"); return; }
 	StagePassed();
 }
@@ -1374,4 +1385,6 @@ void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
  NS.bK3Open=Bool(Saved,TEXT("k3")); if(bPowered) ApplyK3(NS.bK3Open);
  Rx.Stage=FMath::Clamp(Int(Saved,TEXT("rxStage")),0,bNightResidual?2:1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
  PointDishes(Rx.Azimuth,SurveyEl,99);
+ // An interrupted external snapshot before the transient must still deliver the scheduled fault.
+ if (bNightResidual && !bResidualVisible) EnterResidual();
 }

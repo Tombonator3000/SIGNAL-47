@@ -1,5 +1,6 @@
 #include "S47Flow.h"
 #include "S47Horror.h"
+#include "S47Observing.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
@@ -428,6 +429,7 @@ void US47Flow::Boot()
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
+	if (M->Observing) M->Observing->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -614,6 +616,7 @@ void US47Flow::StartGame(const FStart& O)
 {
 	if (bStarting) return;
 	bStarting = true;
+	if (M->Observing) M->Observing->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
@@ -712,6 +715,8 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
 	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
+ // Before SC01: its normal round counts the evening schedule as part of the work.
+ if (M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
  if (M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
 
 	// put the player back where they stood, if the restored world lets them stand there
@@ -787,6 +792,7 @@ void US47Flow::LeavePlay()
 	if (M->Away) M->Away->Leave(false);
 	// motelTv, roadside, townEvents (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(false);
+	if (M->Observing) M->Observing->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -816,6 +822,7 @@ void US47Flow::ToTitle()
 	if (M->Away) M->Away->Leave(true);
 	// motelTv, roadside (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(true);
+	if (M->Observing) M->Observing->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -1223,6 +1230,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
+	if (M->Observing && M->Observing->Enabled()) S47J::Set(State,TEXT("observing"),M->Observing->Save()); else State->RemoveField(TEXT("observing"));
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
@@ -1386,6 +1394,8 @@ FString US47Flow::GameSaveBlock() const
 	if (M->Evening && M->Evening->Opening()) return M->World && M->World->bBusy ? TEXT("Let the car finish parking first.") : FString();
 	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift && !S->IsCinematic() && (S->BootT < 0 || S->Gt()-S->BootT > 2)) return FString();
 	if (!S->At(ES47Phase::Residual)) return S->bEveningTimeline ? TEXT("The survey saves when the routine interval finishes at 00:13. The opening can be saved before the handover.") : TEXT("The night can be saved from 02:13, once the survey has been running for a while.");
+ if (S->NightSequence() && S->Phase() == ES47Phase::Residual && !S->bResidualVisible)
+  return TEXT("Let the signal transient and emergency switchover finish before saving.");
 	if (S->IsCinematic()) return TEXT("Not right now. Let the moment finish first.");
 	if (S->At(ES47Phase::Ringing) && ChapterNo(S) == 0) return TEXT("Not during the call and what follows it. The game saves again when the night moves on.");
 	for (const TCHAR* K : { TEXT("ch3"), TEXT("ch4"), TEXT("ch5"), TEXT("ch6") })
