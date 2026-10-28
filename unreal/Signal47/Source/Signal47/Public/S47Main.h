@@ -57,6 +57,7 @@ public:
 	TSharedPtr<class FS47DaleDocumentsTest> DaleDocumentsTest;
 	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Horror> Horror;
+	TSharedPtr<class FS47Observing> Observing; // evening array work before SC01's window round
 	TSharedPtr<class FS47HorrorTest> HorrorTest;
 	TSharedPtr<class FS47Evening> Evening; // authored evening opening and persistent pack gates
 	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)
