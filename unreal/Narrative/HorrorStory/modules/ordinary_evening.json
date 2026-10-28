@@ -518,7 +518,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H04: Feltmappe gir hovedsporet selv uten strøm til VHS. Manglende sett film føres som usett; opptaket gjenopptas fra lagret sted. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "trigger_nb": "H04: Feltmappen gir hovedsporet. Vindus/stolpekontrollen er ufullstendig til notatet er holdt mot faktisk utsyn. VHS-filmen er valgfritt tillegg når den finnes og holder aldri igjen SC07. Nøkkelen har konkret spor i serviceskuff, ikke tilfeldig spawn. Vis bare ved et faktisk utilstrekkelig resultat.",
       "requires": {
         "all": [
           "ctx_hr_h04_ready",
@@ -531,7 +531,7 @@
         {
           "id": "H04_INCOMPLETE_001",
           "speaker": "DESCRIPTION",
-          "text": "The field folder gives you the post and the standing place. The tape is still unviewed; there is enough to make the field check.",
+          "text": "The field folder gives you the post and the standing place. Hold them against the actual view before you record a result. The tape is optional.",
           "delivery_nb": "Stille undersøkelsestekst, ingen fortellerstemme."
         }
       ],

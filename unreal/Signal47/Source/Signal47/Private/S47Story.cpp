@@ -268,7 +268,7 @@ TArray<FS47Task> AS47Story::Tasks() const
    {TEXT("Answer Dale on the control-room phone"),P.Flag(TEXT("handover_done"))}};
  }
 
- if (const auto* M=US47Main::Get(this); M && M->Horror && M->Horror->Enabled() && !M->Horror->Complete()) return M->Horror->Tasks();
+ if (const auto* M=US47Main::Get(this); M && M->Horror && M->Horror->HasTasks()) return M->Horror->Tasks(); // SC01, then SC02's meeting
  if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->ServicePending()) return M->Evening->ServiceTasks();
 	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;

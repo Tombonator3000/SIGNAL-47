@@ -19,6 +19,12 @@ EV = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(EV)
 EV.ROOT = ROOT
 
+# H09's map scenes retain their IDs under H08 for saved-data/source references.
+# The revised production route has nine cards and ships in four acts.
+MISSION_IDS = tuple(f"H{i:02}" for i in range(1, 9)) + ("H10",)
+ACTS = (("Kvelden", "SC02 til SC05"), ("Arkivet og arrayet", "SC06 til SC08"),
+        ("Feltet og Nora", "SC09 og SC10"), ("Avsøkning og veien", "SC11 til SC13"))
+
 
 def validate_missions(modules):
     data = EV.read_json(ROOT / "missions.json")
@@ -27,9 +33,8 @@ def validate_missions(modules):
         EV.fail("missions", "expected authored schema 1")
     scenes = {s["id"]: s for m in modules for s in m["scenes"]}
     rows = EV.sequence(data["missions"], "missions.missions")
-    expected = [f"H{i:02}" for i in range(1, 11)]
-    if [r["id"] for r in rows] != expected:
-        EV.fail("missions", "H01 through H10 must appear once in order")
+    if [r["id"] for r in rows] != list(MISSION_IDS):
+        EV.fail("missions", "nine revised cards must appear once in order; H09 is part of H08")
     for row in rows:
         EV.obj(row, row["id"], ["id", "title", "phase", "question", "physical_action", "control",
                "consequence", "insufficient_evidence", "scene_ids", "existing_evidence_ids",
@@ -77,7 +82,7 @@ def validate_missions(modules):
 
 
 def render_missions(rows):
-    out = ["# H01 til H10: produksjonskort", "", "Generert fra missions.json. Ingen menneskelig varighet er målt.", ""]
+    out = ["# Ni produksjonskort: H01 til H08 og H10", "", "Generert fra missions.json. H09s eksisterende scenenavn er beholdt under H08; H09 er ikke et eget kort. Ingen menneskelig varighet er målt.", ""]
     for row in rows:
         out += [f"## {row['id']}: {row['title']}", "", f"**Spørsmål:** {row['question']}", ""]
         for label, key in [("Fysisk handling", "physical_action"), ("Kontroll", "control"),
@@ -115,8 +120,8 @@ def validate_scenarios(pack, modules):
                 EV.string(item, row["id"])
         if not row["scene_ids"] or not row["result_scene_ids"] or not row["shared_owner_contracts"]:
             EV.fail(row["id"], "scenario needs scenes, factual results and existing-owner contracts")
-        if not set(row["mission_ids"]).issubset({f"H{i:02}" for i in range(1, 11)}):
-            EV.fail(row["id"], "existing H01 through H10 mission identity must be retained")
+        if not set(row["mission_ids"]).issubset(MISSION_IDS):
+            EV.fail(row["id"], "scenario must use a revised mission card; H09 belongs to H08")
         if not set(row["result_scene_ids"]).issubset(row["scene_ids"]):
             EV.fail(row["id"], "result scenes must belong to this scenario")
         for sid in row["scene_ids"]:
@@ -128,18 +133,17 @@ def validate_scenarios(pack, modules):
     gates = {
         "SC01_FIRST_REPORT": {"ctx_hr_sc01_report_readback"},
         "SC02_ESCAPE": {"ctx_hr_sc02_t01_complete", "ctx_hr_sc02_escape_complete"},
-        "SC03_DISPATCH_RECEIPT": {"ctx_hr_sc01_report_readback", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_ortiz_assigned"},
+        "SC03_DISPATCH_RECEIPT": {"ctx_hr_sc02_escape_complete", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_ortiz_assigned"},
         "SC03_ORTIZ_IDENTIFY": {"ctx_hr_sc03_ortiz_assigned", "ctx_hr_sc03_ortiz_identified"},
         "SC03_HELPER_TAKEN": {"ctx_hr_sc03_lift_observed", "ctx_hr_sc03_safe_retreat"},
         "SC03_HELPER_TRACES": {"ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_traces_checked"},
         "SC03_MISSING_RECEIPT": {"ctx_hr_sc03_ortiz_identified", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_lift_observed", "ctx_hr_sc03_missing_readback"},
         "SC03_LOCAL_ORDER_HOLD": {"ctx_hr_sc03_local_order_suspended"},
+        "SC03_RECEIVER_QUESTION": {"ctx_hr_sc03_missing_readback", "ctx_hr_sc03_deputy_at_stop"},
         "SC04_LOCAL_HOLD": {"ctx_hr_sc04_schedule_isolated", "ctx_hr_sc04_shift_originals_secured"},
         "SC04_ANNEX_LONG_ESCAPE": {"ctx_hr_sc04_annex_long_escape"},
         "SC04_ANNEX_SOUND_ESCAPE": {"ctx_hr_sc04_annex_sound_escape"},
         "SC04_ANNEX_IMPRINT": {"ctx_hr_sc01_dale_reference_heard", "ctx_hr_sc04_annex_imprint_playing"},
-        "SC04_CAR_READ": {"ctx_hr_sc04_car_threat_visible", "ctx_hr_sc04_after_annex_calm", "ctx_hr_sc04_car_route_known"},
-        "SC04_CAR_ESCAPE": {"ctx_hr_sc04_car_escape", "ctx_hr_sc04_car_route_known"},
         "SC04_SAFE_ROOM_AGREEMENT": {"ctx_hr_sc04_control_room_safe", "ctx_hr_sc04_ward_on_line", "ctx_hr_sc04_schedule_isolated"},
         "SC05_PASSIVE_RESIDUAL": {"ctx_hr_sc04_schedule_isolated", "ctx_hr_sc05_residual_passive"},
         "BY02_SOURCE_COMPARE": {"ctx_hr_by02_reel_identity", "ctx_hr_by02_tape_sample_verified", "ctx_hr_by02_live_sample_verified", "ctx_hr_by02_question_compared"},
@@ -147,10 +151,10 @@ def validate_scenarios(pack, modules):
         "ARRAY_RESULT": {"ctx_hr_array_command_checked", "ctx_hr_array_command_history_compared", "ctx_hr_array_reference_fixed", "ctx_hr_array_a_observed", "ctx_hr_array_b_observed", "ctx_hr_array_return_observed", "ctx_hr_array_geometry_compared"},
         "ARRAY_RETREAT": {"ctx_hr_array_geometry_compared", "ctx_hr_array_escape_complete"},
         "ARRAY_EMPTY_HOLD": {"ctx_hr_array_escape_complete", "ctx_hr_array_empty_hold_observed"},
-        "SC12_ROUTE_READBACK": {"ctx_hr_warning_acknowledged", "ctx_hr_h09_checked", "ctx_hr_sc12_driver_recent_passage", "ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"},
-        "H09_BRIEF": {"ctx_hr_sc12_driver_recent_passage"},
+        "SC12_PATROL_SHEET": {"ctx_hr_sc12_patrol_sheet_read"},
+        "SC12_ROUTE_READBACK": {"ctx_hr_warning_acknowledged", "ctx_hr_h09_checked", "ctx_hr_sc12_patrol_sheet_read", "ctx_hr_sc12_courier_104_confirmed"},
         "H09_CHECK": {"ctx_hr_sc12_courier_104_confirmed"},
-        "H10_BRIEF": {"ctx_hr_sc12_driver_recent_passage", "ctx_hr_sc12_exit_sighting_readback", "ctx_hr_sc12_courier_104_confirmed"},
+        "H10_BRIEF": {"ctx_hr_sc12_patrol_sheet_read", "ctx_hr_sc12_courier_104_confirmed"},
         "H07_FIRST_WARNING": {"ctx_hr_h07_bundle_secured"},
         "H07_CHECK": {"ctx_hr_h07_bundle_secured"},
         "H07_ESCAPE_COMPLETE": {"ctx_hr_h07_bundle_secured"},
@@ -159,6 +163,11 @@ def validate_scenarios(pack, modules):
     for sid, required in gates.items():
         if sid not in scenes or not required.issubset(scenes[sid]["requires"]["all"]):
             EV.fail(sid, "unified scenario world-result gate missing")
+    removed = {"SC03_SHADOW_RULE", "SC04_CAR_READ", "SC04_CAR_ESCAPE", "SC04_CAR_RETRY"}
+    if removed.intersection(scenes):
+        EV.fail("scenarios", "the revised route has one creature rule and no SC04 car encounter")
+    if "ctx_hr_sc01_report_readback" in scenes["SC03_DISPATCH_RECEIPT"]["requires"]["all"]:
+        EV.fail("SC03_DISPATCH_RECEIPT", "the new hazard report cannot depend on the optional SC01 window sighting")
     document_sources = {
         "SC01_FIRST_REPORT": ["HR_INITIAL_REPORT"],
         "SC03_DISPATCH_RECEIPT": ["HR_DISPATCH_RECEIPT"],
@@ -220,6 +229,10 @@ def validate_scenarios(pack, modules):
 
 def render_scenarios(data):
     out = ["# SC01 til SC13: produksjonskontrakt", "", "Generert fra scenarios.json. Forfatterkilder; ingen ny runtime eller målte spillertider.", ""]
+    out += ["## Levering i fire akter", "", "SC01 er innledningen. Hvert senere scenario får egne målrettede prøver; full spillmatrise, fletting og installasjon skjer én gang per akt.", "",
+            "| Akt | Scenarioer |", "|---|---|"]
+    out += [f"| {i}: {name} | {scenes} |" for i, (name, scenes) in enumerate(ACTS, 1)]
+    out += ["", "Ward, Ortiz, Earl og Nora får nye stemmer til slutt. Forfattertekst og genererte data er ikke faktisk verdensintegrasjon.", ""]
     for row in data["scenarios"]:
         out += [f"## {row['id']}: {row['title']}", "", row["world_contract"], "",
                 "**Bevarte hovedkort:** " + ", ".join(row["mission_ids"]), "",
@@ -231,6 +244,191 @@ def render_scenarios(data):
         out += [f"### {row['actor']}", "", "**Kan vite:** " + " ".join(row["knows"]), "",
                 "**Kan ikke vite:** " + " ".join(row["does_not_know"]), "",
                 "**Kildeporter:** " + ", ".join(f"`{x}`" for x in row["gates"]), ""]
+    return ("\n".join(out).rstrip() + "\n").encode("utf-8")
+
+
+PRODUCER_STATUS = ("existing", "partial", "new")
+TEST_KINDS = ("data", "api", "input", "image", "human")
+TEST_COVERS = ("normal", "alternative", "interrupt", "continue", "negative", "image", "audio", "regression")
+
+
+def validate_producers(pack, modules, registry, data=None):
+    """Name a world producer, scene matrix row and test for every SC fact.
+
+    This is planning data for the runtime host. It cannot mark a scene
+    integrated; it only rejects unowned flags, invented code references and
+    scenarios whose test set misses one of the plan's eight test categories.
+    """
+    if data is None:
+        data = EV.read_json(ROOT / "world_producers.json")
+    EV.obj(data, "world_producers", ["schema_version", "status", "note_nb", "flags", "scenes", "tests", "work_packages"])
+    if type(data["schema_version"]) is not int or data["schema_version"] != 1 or data["status"] != "planned_not_integrated":
+        EV.fail("world_producers", "expected planning schema 1")
+    repo = ROOT.parents[2]
+    owners = {row["id"]: row["scenario_ids"] for row in registry["scenes"]}
+    scenario_ids = [f"SC{i:02}" for i in range(1, 14)]
+    first = {}
+    for row in registry["scenes"]:
+        for gate in row["external_requirements"]:
+            # Modules are grouped by subject, not SC order. A later card can be
+            # listed before the earlier world scene that first owns its fact.
+            owner = min(row["scenario_ids"])
+            first[gate] = min(first.get(gate, owner), owner)
+    tests = {}
+    for row in EV.sequence(data["tests"], "tests"):
+        EV.obj(row, "test", ["id", "scenario", "kind", "covers", "description_nb"])
+        tid = row["id"]
+        if tid in tests or not tid.startswith(row["scenario"] + "-T"):
+            EV.fail(tid, "test id must be unique and prefixed by its scenario")
+        EV.enum(row["scenario"], scenario_ids, tid)
+        EV.enum(row["kind"], TEST_KINDS, tid)
+        EV.string(row["description_nb"], tid)
+        if not EV.sequence(row["covers"], tid):
+            EV.fail(tid, "test must cover at least one category")
+        for item in row["covers"]:
+            EV.enum(item, TEST_COVERS, tid)
+        tests[tid] = row
+
+    def refs(row, where, scenario):
+        items = EV.sequence(row["tests"], where)
+        if not items:
+            EV.fail(where, "needs at least one named test")
+        for tid in items:
+            if tid not in tests:
+                EV.fail(where, f"unknown test {tid}")
+        # Later scenarios may also exercise a fact; its own scenario must test it first.
+        if not any(tests[tid]["scenario"] == scenario for tid in items):
+            EV.fail(where, f"needs a test in {scenario}")
+
+    seen = set()
+    for row in EV.sequence(data["flags"], "flags"):
+        EV.obj(row, "flag", ["flag", "scenario", "status", "producer", "sources", "symbols",
+                             "world_action_nb", "new_work_nb", "tests"])
+        flag = row["flag"]
+        if flag not in pack["external_flags"] or flag in seen:
+            EV.fail(flag, "producer must name one declared external flag exactly once")
+        seen.add(flag)
+        if row["scenario"] != first.get(flag):
+            EV.fail(flag, f"scenario must be the first scenario that requires it ({first.get(flag)})")
+        EV.enum(row["status"], PRODUCER_STATUS, flag)
+        for key in ("producer", "world_action_nb"):
+            EV.string(row[key], f"{flag}.{key}")
+        EV.string(row["new_work_nb"], f"{flag}.new_work_nb", empty=row["status"] == "existing")
+        sources = EV.sequence(row["sources"], flag)
+        symbols = EV.sequence(row["symbols"], flag)
+        if not sources:
+            EV.fail(flag, "producer needs an owning source file")
+        texts = []
+        for source in sources:
+            EV.string(source, flag)
+            planned = source.endswith(" (ny)")
+            path = (repo / source.removesuffix(" (ny)")).resolve()
+            if not path.is_relative_to(repo):
+                EV.fail(flag, f"source outside repository: {source}")
+            if planned:
+                if row["status"] == "existing" or path.exists():
+                    EV.fail(flag, f"planned file must be absent and belong to unfinished work: {source}")
+                continue
+            if not path.is_file():
+                EV.fail(flag, f"source file does not exist: {source}")
+            texts.append(path.read_text(encoding="utf-8", errors="replace"))
+        if row["status"] != "new" and (not symbols or not texts):
+            EV.fail(flag, "existing or partial producer needs a verifiable code symbol")
+        for symbol in symbols:
+            EV.string(symbol, flag)
+            if not any(symbol in text for text in texts):
+                EV.fail(flag, f"symbol not found in named sources: {symbol}")
+        refs(row, flag, row["scenario"])
+    missing = sorted(set(pack["external_flags"]) - seen)
+    if missing:
+        EV.fail("world_producers", "flags without a named world producer: " + ", ".join(missing))
+
+    seen = set()
+    for row in EV.sequence(data["scenes"], "scenes"):
+        EV.obj(row, "scene row", ["scene", "scenario", "start_nb", "normal_nb", "interrupt_nb",
+                                  "alternative_nb", "models", "audio", "documents", "tests"])
+        sid = row["scene"]
+        if sid not in owners or sid in seen:
+            EV.fail(sid, "matrix needs each authored scene exactly once")
+        seen.add(sid)
+        if row["scenario"] != owners[sid][0]:
+            EV.fail(sid, f"scenario must match the runtime registry ({owners[sid][0]})")
+        for key in ("start_nb", "normal_nb", "interrupt_nb", "alternative_nb"):
+            EV.string(row[key], f"{sid}.{key}")
+        for key in ("models", "audio", "documents"):
+            for item in EV.sequence(row[key], f"{sid}.{key}"):
+                EV.string(item, sid)
+        refs(row, sid, row["scenario"])
+    missing = sorted(set(owners) - seen)
+    if missing:
+        EV.fail("world_producers", "scenes without a matrix row: " + ", ".join(missing))
+
+    for scenario in scenario_ids:
+        covered = {c for t in tests.values() if t["scenario"] == scenario for c in t["covers"]}
+        gap = [c for c in TEST_COVERS if c not in covered]
+        if gap:
+            EV.fail(scenario, "test set misses plan categories: " + ", ".join(gap))
+    packages = EV.sequence(data["work_packages"], "work_packages")
+    if [row.get("scenario") for row in packages] != scenario_ids:
+        EV.fail("work_packages", "need one package per scenario in SC order")
+    for row in packages:
+        EV.obj(row, row["scenario"], ["scenario", "summary_nb", "code_nb", "assets_nb", "voice_nb",
+                                      "dependencies_nb", "kubuntu_only_nb", "risks_nb"])
+        EV.string(row["summary_nb"], row["scenario"])
+        EV.string(row["voice_nb"], row["scenario"])
+        for key in ("code_nb", "assets_nb", "dependencies_nb", "kubuntu_only_nb", "risks_nb"):
+            for item in EV.sequence(row[key], f"{row['scenario']}.{key}"):
+                EV.string(item, row["scenario"])
+    return data
+
+
+def cell(text):
+    return text.replace("|", "\\|").replace("\n", " ")
+
+
+def render_matrix(data, recordings):
+    """Readable per-SC matrix; voice cues come from the measured manifest."""
+    cues = {}
+    for rec in recordings["recordings"]:
+        cues.setdefault(rec["scene_id"], []).append(rec)
+    status = {s: sum(1 for f in data["flags"] if f["status"] == s) for s in PRODUCER_STATUS}
+    out = ["# SC01 til SC13: verdensprodusenter, scenematrise og testsett", "",
+           "Generert fra world_producers.json. Dette er planleggingsdata: ingen rad betyr at scenen er "
+           "integrert, bygget eller prøvd i spillet.", "",
+           f"Flagg: {len(data['flags'])} ({status['existing']} finnes i koden, {status['partial']} delvis, "
+           f"{status['new']} må bygges). Scener: {len(data['scenes'])}. Tester: {len(data['tests'])}.", ""]
+    for package in data["work_packages"]:
+        sc = package["scenario"]
+        out += [f"## {sc}", "", package["summary_nb"], ""]
+        for label, key in (("Kode", "code_nb"), ("Ressurser", "assets_nb"), ("Avhenger av", "dependencies_nb"),
+                           ("Bare på Kubuntu", "kubuntu_only_nb"), ("Risiko og avklaringer", "risks_nb")):
+            if package[key]:
+                out += [f"**{label}:**", ""] + [f"- {item}" for item in package[key]] + [""]
+        out += [f"**Stemmer:** {package['voice_nb']}", "", "### Verdensflagg", "",
+                "| Flagg | Status | Produsent | Handling i spillet | Tester |", "|---|---|---|---|---|"]
+        for row in data["flags"]:
+            if row["scenario"] == sc:
+                out.append(f"| `{row['flag']}` | {row['status']} | {cell(row['producer'])} | "
+                           f"{cell(row['world_action_nb'])} | " + ", ".join(row["tests"]) + " |")
+        out += ["", "### Scener", ""]
+        for row in data["scenes"]:
+            if row["scenario"] != sc:
+                continue
+            recs = cues.get(row["scene"], [])
+            recorded = sum(1 for r in recs if r["status"] == "recorded")
+            out += [f"**`{row['scene']}`**: {row['start_nb']}", "",
+                    f"- Normalt: {row['normal_nb']}", f"- Avbrudd: {row['interrupt_nb']}",
+                    f"- Alternativ: {row['alternative_nb']}",
+                    f"- Stemmecues: {len(recs)}, innspilt {recorded}",
+                    "- Modeller: " + ("; ".join(row["models"]) or "ingen nye"),
+                    "- Lyd: " + ("; ".join(row["audio"]) or "ingen nye"),
+                    "- Dokumenter: " + (", ".join(row["documents"]) or "ingen"),
+                    "- Tester: " + ", ".join(row["tests"]), ""]
+        out += ["### Testsett", "", "| Test | Type | Dekker | Prøve |", "|---|---|---|---|"]
+        for row in data["tests"]:
+            if row["scenario"] == sc:
+                out.append(f"| {row['id']} | {row['kind']} | {', '.join(row['covers'])} | {cell(row['description_nb'])} |")
+        out.append("")
     return ("\n".join(out).rstrip() + "\n").encode("utf-8")
 
 
@@ -312,6 +510,8 @@ def main():
         registry["source_sha256"] = hashlib.sha256(source).hexdigest()
         outputs["HorrorPackData.inl"] = render_runtime(pack, modules, registry)
         outputs["runtime_registry.json"] = EV.json_bytes(registry)
+        producers = validate_producers(pack, modules, registry)
+        outputs["SCENE_MATRIX.md"] = render_matrix(producers, recordings)
         outputs["SCRIPT.md"] = outputs["SCRIPT.md"].replace(
             b"# SIGNAL / 47: Evening Shift", b"# SIGNAL / 47: Horror Story H1", 1)
         outputs["MISSION_CARDS.md"] = render_missions(missions)

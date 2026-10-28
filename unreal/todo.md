@@ -1,3 +1,12 @@
+## SC02/AI-overtakelse, 28. oktober 2026
+
+- [x] Ta vare på Claudes SC02-kandidat, stoppede scenetekster og separate found-footage-/Niagara-grener.
+- [x] Implementer omplanlegging ved nye hindringer, faktisk kapselklaring, lavt trinn, bil-/nærveggmål og fysisk fangstkontakt. 1649 selvtester og 28 native kontroller består.
+- [x] Samordne framtidige scenetekster/produsentkart og bevar gamle ekte SC01-lagringer.
+- [x] Pakket SC02-rute med fangst, løpeflukt og diskrestore: R5 PASS med 159 kontroller, 19 disk-/Flow-restores og 42,48 m løping. Bevis og avgrensninger i [overleveringen](SC02_AI_HANDOFF.md).
+- [x] Toms nye bestilling: kontroller separat PR190-fletting. R5 består full 110-matrise og sju gamle Continue-lagringer; ingen scenariofeil. PR190 håndterer denne SC02-flettingen.
+- [ ] Produser SC03 som faktisk verdenshandling med Ortiz/vogn23/termose, deretter SC04/SC05. Resten av akt 1 og senere installasjon gjenstår.
+
 ## Niagara ved stjernehullet, 28. oktober 2026
 
 - [x] Registrer Toms plassering av tettere meteorregn ved stjernehull-hendelsen og vurder de fire kildene fra bildene. Se [design og kildevurdering](NIAGARA_VFX_2026-10-28.md).
@@ -137,6 +146,9 @@ Følg [HISTORIE_IMPLEMENTERINGSPLAN.md](HISTORIE_IMPLEMENTERINGSPLAN.md), med sc
 
 - [ ] Lever SC01. Kilde `dbae3177` har normalrunde, H01-dialog, vindushendelse, rapport og lagring; 21 pakkekjøringer og 32 vurderte originalbilder består. Koden er flettet mot main på `ccr-30e38858-767d90` og bygget, pakket og prøvd der 27.10: alle SC01-kontroller, HorrorStory-testene og hele `screenshots.sh` består. Installasjon som standard gjenstår og avgjøres av Tom. Se [SC01_RUNTIME.md](SC01_RUNTIME.md).
 - [ ] Lever deretter SC02 til SC13 i rekkefølge, med egen testet PR/fletting og installasjon per SC.
+- [ ] SC02-kandidat på `ccr-20021313-mfplx9` (skysesjon 27.10, ukompilert): kjør `ArtSource/HorrorSC02/build_scene.py` i Blender 4.5 og `import_assets.py`, bygg editor og pakke, rett kompileringsfeil, kjør selvtest og prøvene SC02-T01 til SC02-T10 i `Narrative/HorrorStory/world_producers.json`, ta opp H02-stemmene med `voice/generate.py --scenario SC02`, og kjør hele `screenshots.sh` før PR mot main. Se [SC02_TIL_SC13_FORBEREDELSE.md](SC02_TIL_SC13_FORBEREDELSE.md).
+- [ ] Ta stilling til de 16 avklaringene i SC02_TIL_SC13_FORBEREDELSE.md (Tom), særlig T01-arkivering mot passiv residual, 06:00-serien, Earls spole og stemmeprofiler for Ward, Ortiz, Earl, Nora og sjåføren.
+- [ ] Bruk arbeidspakken og testsettet for hvert SC i `world_producers.json` når SC03 til SC13 startes. Oppdater produsentstatus (existing/partial/new) når koden faktisk er koblet inn.
 - [ ] Før separate H-kvitteringer ved SC02, SC05, SC06, SC08, SC09, SC10, SC11, SC12 og SC13 som angitt i planen.
 - [ ] Fullfør samlet helnatt-/kompatibilitetsaksept og før menneskelige UNVERIFIED-punkter ærlig.
 

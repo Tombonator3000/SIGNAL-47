@@ -32,7 +32,7 @@
     {
       "id": "ctx_hr_array_escape_complete",
       "owner": "runtime_host",
-      "provenance_nb": "Trusselmøte4 ved arrayets passasje er fysisk unnsluppet; søker tilbaketrukket uten gammel Force Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Arrayets trusselmøte ved arrayets passasje er fysisk unnsluppet; søker tilbaketrukket uten gammel Force Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_array_geometry_compared",
@@ -97,7 +97,7 @@
     {
       "id": "ctx_hr_by02_source_copy_verified",
       "owner": "runtime_host",
-      "provenance_nb": "Etter Earls avgang er den daterte utlånskonvoluttens identifiserte1981-kildekopi, off-air-logg og frakoblingsark kontrollert. Den samme identifiserte kopien er deretter faktisk avspilt på lobbydekket med live-mating fysisk frakoblet. Metadatakontroll alene er ikke nok. Nytt spørsmål/uendret fragment har egen faktisk question_compared-port. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Etter Earls avgang er den daterte kopien i lobbyen (identifisert 1981-kildekopi), off-air-logg og frakoblingsark kontrollert. Den samme identifiserte kopien er deretter faktisk avspilt på lobbydekket med live-mating fysisk frakoblet. Metadatakontroll alene er ikke nok. Nytt spørsmål/uendret fragment har egen faktisk question_compared-port. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_by02_source_insufficient",
@@ -267,17 +267,17 @@
     {
       "id": "ctx_hr_h09_checked",
       "owner": "runtime_host",
-      "provenance_nb": "H09: den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
+      "provenance_nb": "H08 kartdel (tidligere H09): den beskrevne fysiske prøven og dokumenterte sammenligningen er faktisk gjennomført."
     },
     {
       "id": "ctx_hr_h09_insufficient",
       "owner": "runtime_host",
-      "provenance_nb": "H09: adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
+      "provenance_nb": "H08 kartdel (tidligere H09): adapteren har et reelt uavklart resultat, manglende bevis eller avbrutt kontroll. Ikke synonym for fullført."
     },
     {
       "id": "ctx_hr_h09_ready",
       "owner": "runtime_host",
-      "provenance_nb": "H09: den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
+      "provenance_nb": "H08 kartdel (tidligere H09): den vanlige inngangen og forutgående hovedoppgaven er virkelig fullført; dialogvalg setter ikke dette."
     },
     {
       "id": "ctx_hr_h10_checked",
@@ -345,6 +345,11 @@
       "provenance_nb": "Spilleren har faktisk sett trusselmøte1s kropp bevege seg og vende seg mot ny lyd, med lesbart forvarsel og reaksjonsmargin Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
     },
     {
+      "id": "ctx_hr_sc03_deputy_at_stop",
+      "owner": "runtime_host",
+      "provenance_nb": "Etter savnetmeldingen er sheriffbetjenten faktisk kommet til bensinstasjonen og står ved Ortiz' vogn. Han kan bare snakke mens han er der. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
       "id": "ctx_hr_sc03_dispatch_readback",
       "owner": "runtime_host",
       "provenance_nb": "Dispatch har kvittert konkret Caliche Junction-hendelse og faktisk sendt en regional hjelpekontakt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
@@ -352,7 +357,7 @@
     {
       "id": "ctx_hr_sc03_lift_observed",
       "owner": "runtime_host",
-      "provenance_nb": "Spilleren har faktisk sett Ortiz bevege seg uten støtte i fremmed lys og forsvinne Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Spilleren har faktisk sett Ortiz bevege seg uten støtte i fremmed lys og forsvinne. I samme siktsekvens står flere bleke skikkelser helt stille i lyskanten, og én vender hodet mot Reyes. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_sc03_local_order_suspended",
@@ -380,19 +385,9 @@
       "provenance_nb": "Spilleren har nådd virkelig dekning/kontaktpunkt etter tapet, brutt kontakt og søker er faktisk trukket tilbake. Ingen fortsatt jakt gjenstår Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
     },
     {
-      "id": "ctx_hr_sc03_shadow_observed",
-      "owner": "runtime_host",
-      "provenance_nb": "Svart figur faktisk observert stille under blikk og bare flyttet i uobserverte intervaller; panelvern består Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
-    },
-    {
       "id": "ctx_hr_sc03_traces_checked",
       "owner": "runtime_host",
       "provenance_nb": "Etter trygg retrett er forlatt vogn og ordinær personlig navngitt gjenstand faktisk undersøkt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
-    },
-    {
-      "id": "ctx_hr_sc04_after_annex_calm",
-      "owner": "runtime_host",
-      "provenance_nb": "Faktisk ro og kontaktsamtale etter annexflukt før ny bilfare Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_sc04_annex_imprint_playing",
@@ -415,34 +410,14 @@
       "provenance_nb": "Vanlig lydkilde fra dekning har faktisk avledet enheten; kort faktisk ganglinje fullført og søk avsluttet Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
-      "id": "ctx_hr_sc04_car_escape",
-      "owner": "runtime_host",
-      "provenance_nb": "Bilmøtet er unnsluppet med riktig kropp-/øyesikt eller klar kjøreflukt; bilen virker og søker er trukket tilbake Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
-    },
-    {
-      "id": "ctx_hr_sc04_car_local_retry",
-      "owner": "runtime_host",
-      "provenance_nb": "Faktisk fangst i bilmøte har gitt særskilt lokal retry uten gammel teller/tidstap Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
-    },
-    {
-      "id": "ctx_hr_sc04_car_route_known",
-      "owner": "runtime_host",
-      "provenance_nb": "Fysisk rute fra skjermet parkering til SAROs låsbare kontrollrom er faktisk prøvd Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
-    },
-    {
-      "id": "ctx_hr_sc04_car_threat_visible",
-      "owner": "runtime_host",
-      "provenance_nb": "Bilmøtet har faktisk startet med lesbar nær passering/lyd fra reaktiv enhet utenfor kupeen. Ingen scene skaper dette ved bare å åpne tekst Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
-    },
-    {
       "id": "ctx_hr_sc04_control_room_safe",
       "owner": "runtime_host",
-      "provenance_nb": "Reyes er fysisk i låsbart kontrollrom etter bilflukt, dør trygg, ingen fortsatt kontakt/søk Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Reyes er fysisk i låsbart kontrollrom etter annexflukt, dør trygg, ingen fortsatt kontakt/søk. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_sc04_return_agreed",
       "owner": "runtime_host",
-      "provenance_nb": "Trygt fra Caliche har Reyes og Ward avtalt avgrenset loggsikring og lokal plansperre med fungerende utvei Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Sheriffbetjenten har bedt om mottakerens logg og stripskriver fra 21:00 til savnetsaken, Reyes har faktisk kjørt til SARO-porten med ham bak seg, og han står ved porten når radioen kaller ham bort. Fungerende utvei finnes. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_sc04_schedule_isolated",
@@ -452,7 +427,7 @@
     {
       "id": "ctx_hr_sc04_shift_originals_secured",
       "owner": "runtime_host",
-      "provenance_nb": "Daterte skift-/serviceoriginaler er faktisk sikret for savnetsaken Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Mottakerens logg og stripskriver fra 21:00, den daterte skiftjournalen og T01-journalen er faktisk sikret for savnetsaken. T01 arkiveres her, én gang. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_sc04_ward_on_line",
@@ -470,19 +445,14 @@
       "provenance_nb": "Ward har faktisk avtalt bud/retning/møtepunkt10.4 etter kartlagt C8.15 uten ny observasjonsordre Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
-      "id": "ctx_hr_sc12_driver_recent_passage",
+      "id": "ctx_hr_sc12_patrol_sheet_read",
       "owner": "runtime_host",
-      "provenance_nb": "Sjåførens faktiske ferske østgående gjennomkjøring på gamle Roswell Road har egen dato/tid. Oktoberstoppet er en separat historisk hendelse, ingen fersk måling Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
-    },
-    {
-      "id": "ctx_hr_sc12_exit_sighting_readback",
-      "owner": "runtime_host",
-      "provenance_nb": "Autentisert fersk datert Caliche-dispatchpatruljenote: lave lys krysser nordgående highway etter Caliche Junction-serviceavstikkeren. Faktisk sted/tid og begrenset observasjon er lest tilbake, ikke generell trygghetsgaranti Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+      "provenance_nb": "Etter 04:30 er sheriffbetjenten faktisk i dineren, hans daterte patruljeark ligger på disken, og spilleren har lest det: én kjøretur 03:30 uten hindring. Dette er begrenset veiopplysning, ingen trygghetsgaranti, og erstatter sjåførens kjøretur. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
       "id": "ctx_hr_warning_acknowledged",
       "owner": "runtime_host",
-      "provenance_nb": "Faktisk telefonkvittering og endret morgenjobb er gjennomført."
+      "provenance_nb": "Reyes har faktisk lest tre kilde-ID-er og første grensetid til Ward i telefonen, og Ward har lest dem tilbake og ført dem i datert logg. 06:00-serien er fortsatt stanset. Ingen diktering av måletabeller."
     }
   ],
   "scenes": [
@@ -840,8 +810,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_h08_ready"
@@ -854,8 +823,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_h08_ready",
@@ -870,8 +838,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_h08_ready",
@@ -885,8 +852,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_remote_sources_verified",
@@ -903,8 +869,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_warning_acknowledged",
@@ -918,13 +883,11 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_h09_ready",
-        "ctx_hr_warning_acknowledged",
-        "ctx_hr_sc12_driver_recent_passage"
+        "ctx_hr_warning_acknowledged"
       ]
     },
     {
@@ -934,8 +897,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_h09_ready",
@@ -951,8 +913,7 @@
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_h09_ready",
@@ -971,8 +932,7 @@
       "external_requirements": [
         "ctx_hr_h10_ready",
         "ctx_hr_warning_acknowledged",
-        "ctx_hr_sc12_driver_recent_passage",
-        "ctx_hr_sc12_exit_sighting_readback",
+        "ctx_hr_sc12_patrol_sheet_read",
         "ctx_hr_sc12_courier_104_confirmed"
       ]
     },
@@ -1089,7 +1049,6 @@
       "external_requirements": [
         "ctx_hr_sc02_escape_complete",
         "ctx_hr_sc03_dispatch_readback",
-        "ctx_hr_sc01_report_readback",
         "ctx_hr_sc03_ortiz_assigned"
       ]
     },
@@ -1105,19 +1064,6 @@
       "external_requirements": [
         "ctx_hr_sc03_dispatch_readback",
         "ctx_hr_sc03_ortiz_assigned"
-      ]
-    },
-    {
-      "id": "SC03_SHADOW_RULE",
-      "phase": "early_shift",
-      "scenario_ids": [
-        "SC03"
-      ],
-      "mission_ids": [
-        "H02"
-      ],
-      "external_requirements": [
-        "ctx_hr_sc03_shadow_observed"
       ]
     },
     {
@@ -1192,6 +1138,20 @@
       "external_requirements": [
         "ctx_hr_sc03_missing_readback",
         "ctx_hr_sc03_local_order_suspended"
+      ]
+    },
+    {
+      "id": "SC03_RECEIVER_QUESTION",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_missing_readback",
+        "ctx_hr_sc03_deputy_at_stop"
       ]
     },
     {
@@ -1277,48 +1237,6 @@
       ]
     },
     {
-      "id": "SC04_CAR_READ",
-      "phase": "early_shift",
-      "scenario_ids": [
-        "SC04"
-      ],
-      "mission_ids": [
-        "H02"
-      ],
-      "external_requirements": [
-        "ctx_hr_sc04_after_annex_calm",
-        "ctx_hr_sc04_car_route_known",
-        "ctx_hr_sc04_car_threat_visible"
-      ]
-    },
-    {
-      "id": "SC04_CAR_ESCAPE",
-      "phase": "early_shift",
-      "scenario_ids": [
-        "SC04"
-      ],
-      "mission_ids": [
-        "H02"
-      ],
-      "external_requirements": [
-        "ctx_hr_sc04_car_escape",
-        "ctx_hr_sc04_car_route_known"
-      ]
-    },
-    {
-      "id": "SC04_CAR_RETRY",
-      "phase": "early_shift",
-      "scenario_ids": [
-        "SC04"
-      ],
-      "mission_ids": [
-        "H02"
-      ],
-      "external_requirements": [
-        "ctx_hr_sc04_car_local_retry"
-      ]
-    },
-    {
       "id": "SC04_SAFE_ROOM_AGREEMENT",
       "phase": "early_shift",
       "scenario_ids": [
@@ -1328,7 +1246,6 @@
         "H02"
       ],
       "external_requirements": [
-        "ctx_hr_sc04_car_escape",
         "ctx_hr_sc04_control_room_safe",
         "ctx_hr_sc04_ward_on_line",
         "ctx_hr_sc04_schedule_isolated",
@@ -1625,23 +1542,34 @@
       ]
     },
     {
+      "id": "SC12_PATROL_SHEET",
+      "phase": "all_night",
+      "scenario_ids": [
+        "SC12"
+      ],
+      "mission_ids": [
+        "H08"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc12_patrol_sheet_read"
+      ]
+    },
+    {
       "id": "SC12_ROUTE_READBACK",
       "phase": "all_night",
       "scenario_ids": [
         "SC12"
       ],
       "mission_ids": [
-        "H08",
-        "H09"
+        "H08"
       ],
       "external_requirements": [
         "ctx_hr_warning_acknowledged",
         "ctx_hr_h09_checked",
-        "ctx_hr_sc12_driver_recent_passage",
-        "ctx_hr_sc12_exit_sighting_readback",
+        "ctx_hr_sc12_patrol_sheet_read",
         "ctx_hr_sc12_courier_104_confirmed"
       ]
     }
   ],
-  "source_sha256": "e730371e26aa06c43a89ea81dfd6a06f7534daf744e004c647cc8c3f1ba63016"
+  "source_sha256": "c21d08bf5abdc0cf7a9cb0d9dc8ef0c3750a3ca12324fff497953f85fbb866d7"
 }

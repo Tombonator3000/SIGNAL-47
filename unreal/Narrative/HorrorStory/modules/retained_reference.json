@@ -98,7 +98,7 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "H05: Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, ikke en valgfri skyggemann som eneste bevis. Vis bare ved et faktisk utilstrekkelig resultat.",
+      "trigger_nb": "H05: Feil bilde kan fremkalles på nytt fra negativet. T02 kan være uavklart uten å sperre hovedhistorien; kartleggingssporet får da obligatorisk normal-/ekstern-lyskontroll ved SARO i H07, uten noen valgfri figur som eneste bevis. Vis bare ved et faktisk utilstrekkelig resultat.",
       "requires": {
         "all": [
           "ctx_hr_h05_ready",
@@ -227,7 +227,7 @@
         {
           "id": "H06_CHECK_003",
           "speaker": "NORA",
-          "text": "Do not finish his observation. And do not stop on the line.",
+          "text": "Don't finish his observation. Get the originals to the courier, and don't stop at C.",
           "delivery_nb": "Eksisterende Nora-identitet. Rolig, konkret; kjenner 1947, ikke invasjonens forfatterfasit."
         }
       ],

@@ -4,6 +4,7 @@
 #include "S47HorrorPack.h"
 class US47Main;
 class FS47HorrorVisual;
+class FS47HorrorThreat;
 class FS47RecordedDialogue;
 struct FS47Task;
 struct FS47AlbumShot;
@@ -12,6 +13,8 @@ struct FS47AlbumShot;
 class FS47Horror
 {
 public:
+ // Revision 1 cases end in legacyContinuation after SC01. Revision 2 continues into SC02.
+ static constexpr int32 InstalledRevision = 2;
  explicit FS47Horror(US47Main* InM);
  ~FS47Horror();
  void Begin(const S47J::FObj& Saved, bool bNewCase);
@@ -35,12 +38,23 @@ public:
  bool ReportAcknowledged() const { return bReport; }
  bool DoorsSecured() const;
  bool Busy() const;
+ int32 ContentRevision() const { return Revision; }
+ bool HasTasks() const; // SC01 until complete, then only SC02's active meeting
+ bool SC02Meeting() const;
+ bool SC02Escaped() const;
  FString Objective() const;
  TArray<FS47Task> Tasks() const;
  static bool SelfTest(TArray<FString>& Lines);
  FS47HorrorPack Pack;
  TUniquePtr<FS47HorrorVisual> Visual;
+ TUniquePtr<FS47HorrorThreat> Threat;
 private:
+ enum class ESC02 : uint8 { Off, T01, Encounter, Escaped, Unwitnessed, Legacy };
+ struct FSC02Save { ESC02 Phase = ESC02::Off; bool bAttempt = false, bRetry = false, bSeen = false; FString EscapeStamp, Checkpoint; };
+ ESC02 SC02 = ESC02::Off;
+ bool bH02Attempt = false, bAttemptPending = false, bAttemptShowing = false, bRetry = false, bRetryShowing = false;
+ bool bThreatSeen = false, bCheckpointPending = false;
+ FString EscapeStamp;
  US47Main* M = nullptr;
  TSharedPtr<FS47RecordedDialogue> Voice;
  bool bEnabled = false, bEast = false, bCorridor = false, bBaseline = false;
@@ -60,4 +74,20 @@ private:
  void AdvanceDialogue();
  void ObserveVoice();
  void FinishCall();
+ bool SceneAllowed(const FS47HorrorSceneRegistration* R) const;
+ bool SC02Live() const { return SC02 == ESC02::T01 || SC02 == ESC02::Encounter || SC02 == ESC02::Escaped; }
+ bool AtServiceFront() const;
+ bool AtSite() const;
+ void BeginSC02(const S47J::FObj& Saved);
+ void StepSC02(double Dt);
+ void TriggerSC02();
+ void LocalRetry(const TCHAR* Why);
+ static const TCHAR* PhaseName(ESC02 Phase);
+ static bool ParsePhase(const FString& Text, ESC02& Out);
+ static FString ScenarioName(int32 InRevision, bool bSC01Complete, ESC02 Phase);
+ static bool AllowsScenario(int32 InRevision, ESC02 Phase, const TArray<FString>& ScenarioIds);
+ static ESC02 AfterSC01(int32 InRevision, bool bThreatAvailable);
+ static S47J::FObj WriteSC02(const FSC02Save& In);
+ static bool ReadSC02(const S47J::FObj& O, FSC02Save& Out);
+ static bool SC02SelfTest(TArray<FString>& Lines);
 };

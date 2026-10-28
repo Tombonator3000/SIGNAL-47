@@ -1,3 +1,19 @@
+## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
+
+Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
+
+Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
+
+[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
+
+## SC02 og alien-AI, Codex 28.10.2026 kl. 12:14 CET
+
+Codex har overtatt etter Claudes bruksgrense. Claudes SC02 er integrert på oppdatert main, med live hindringsplanlegging, fysisk steg-/kontaktkontroll og rettet flukttest. Den lave betongrampen var en faktisk stoppårsak; bounded step-up prøves med full kapselsweep, og høye barrierer blokkerer fortsatt. De stoppede SC03 til SC13-tekstene er samordnet, med bevarte SC01/SC02-kontrakter og avgrenset migrering av tre utgåtte false-flagg. SC03 og videre er fortsatt authored_not_integrated. Se [overlevering](SC02_AI_HANDOFF.md).
+
+R5 fra kodecommit `651dc558` er pakket. 1649 selvtester og 28 native fysikk-/bounds-/trinnprøver består. Full pakket SC02 består 159 kontroller, 19 disk-/Flow-restores, 219,06 m native gange og 42,48 m løpeflukt: T01, faktisk fangst/lokal retry, rute A til bilen, retur og disk-Continue. 462 frosne inndatafiler er uendret; tre sluttbilder er vurdert. Rute B/manuell styring/High-jakt/menneskelig prøve er UNVERIFIED. Standardinstallasjon og personlige lagringer er ikke endret. Videre levering følger fire akter, med fullmatrise/merge/installasjon én gang per akt.
+
+Canonical prune er utført: to eldre payloadsett / 14 genererte filer er pensjonert. Gjeldende R5, feilet R2 for sammenligning og trafo R1 beholdes, samt særskilt beskyttet SC01-R4/PR174 for andre oppgaver. Kilder/assets/Saved/bevis bevares.
+
 ## Meteorregn ved stjernehullet, dokumentert 28.10.2026 kl. 10:20 CET
 
 Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
@@ -25,6 +41,14 @@ Overførbar regel: lyd gir et undersøkelsessted, syn gir bekreftet kontakt, og 
 Motel V2 er flettet til main via [PR #178](https://github.com/Tombonator3000/SIGNAL-47/pull/178), merge `64e2a1ae4a692212f72c36c7449c0027cb81a48d`, og samme testede R4 er installert i `/home/tom/Games/Signal47/Linux`. PR #172 er også flettet gjennom denne historikken. Standardversjonen kombinerer SC01, MetaHuman, atmosfære og det nye motellet.
 
 Hele `screenshots.sh` består 110/110. Den installerte Low-prøven består 17 kontroller, inklusive tre faktiske taleklipp, pause og diskrestore. Bildet etter restore er åpnet og vurdert. Alle 50 personlige Saved-filer er uendret fra oppdragets start. Dette er automatiserte kontroller og bildevurdering, ikke menneskelig gjennomspilling eller en helspill-/FPS-garanti. Se [motelrapporten](MOTEL_V2.md). Tidligere utsagn nedenfor om at SC01 ikke er standard eller at PR172 venter, er historikk. Ingen ny spillutgave er publisert.
+
+## Forberedelse av SC02 til SC13, 27. oktober 2026
+
+- `Narrative/HorrorStory/world_producers.json` navngir produsenten i koden for alle 96 `ctx_hr_*`-flagg (12 finnes, 48 delvis, 36 nye), én matriserad per scene, 117 prøver og en arbeidspakke per SC. `build_pack.py` kontrollerer symbolene ordrett mot kilden. Lesbar versjon i `generated/SCENE_MATRIX.md`. Ingen runtimeeksport er endret.
+- SC02 er skrevet som ukompilert kandidat på `ccr-20021313-mfplx9`: innholdsrevisjon 2 i `FS47Horror`, nytt lagringsfelt `horror.sc02`, ny `FS47HorrorThreat`, og modellen i `ArtSource/HorrorSC02`. Revisjon 1 skal være uendret. Ingenting er bygget eller prøvd.
+- Blender finnes ikke i skyøkter, men bpy 5.1.2 fra pip virker (Cycles på CPU; Eevee og Workbench mangler EGL). Prosjektets Blender er 4.5 LTS, så endelig eksport skjer der.
+- Det finnes ingen inntrenger, ingen huking og ingen passiv residualvei i koden fra før. Gamle fangstsystemer (Abduction, TruckTaken, StationTaken) gir tidstap og brukes ikke i de nye møtene.
+- 16 åpne avklaringer for Tom står i `SC02_TIL_SC13_FORBEREDELSE.md`.
 
 ## Grenene, 27. oktober 2026
 

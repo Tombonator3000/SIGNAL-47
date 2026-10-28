@@ -1,3 +1,17 @@
+## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
+
+Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
+
+Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
+
+[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
+
+## Codex hjelper SC02/alien-AI, pakket PASS 28.10.2026 kl. 12:14 CET
+
+Tom ba Codex hjelpe der Claude stoppet på bruksgrensen. Codex eier nå AI, SC02-kontrakten og sekvensielle motorjobber på `codex/act1-alien-navigation` i `~/scratch-bm/wt/act1-alien`. Overtakelsen bygger på Claudes rene `911ce258` integrert med oppdatert main. Found footage og Niagara-gnister beholdes uendret i egne Claude-arbeidskopier. De stoppede scenetekstene samordnes i vår kildepakke, men SC03 og videre er fortsatt `authored_not_integrated`.
+
+Bevis/eierskap: `~/scratch-bm/Signal47-sc02-20261028/codex-takeover`. Editorbygg, pakking, 1649 selvtester og 28 native kontroller består. Full pakket SC02 består 159 kontroller, 19 disk-/Flow-restores og 42,48 m faktisk løpeflukt etter lokal retry. Hele matrisen, fletting og installasjon følger den avtalte aktleveransen SC02 til SC05, ikke et nytt krav om separat fullmatrise per scenario. Standardspillet og personlige lagringer er ikke berørt. Se [overlevering](SC02_AI_HANDOFF.md).
+
 ## Meteorregn ved stjernehullet, dokumentert 28.10.2026 kl. 10:20 CET
 
 Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
@@ -33,6 +47,10 @@ Tom vil ha en Found Footage-modus som viser spillet gjennom en uhyggelig bodycam
 - Found footage: først en bildemodus `CAMCORDER 1986` under Settings > Picture, bygget på dagens `S47Picture`, `M_WebTone` og VHS-grenen, med brystsele-kamera fra 1986, dato og REC, forsterkningsstøy, hendelsesstyrte forstyrrelser og camcorderlyd. Fotografiene forblir rene. En valgfri saksramme kommer senere.
 - Niagara: modulen er lastet, men ubrukt. Første effekt er lysbue og gnister ved trafoen når den bleke kroppen viser seg i SC02. Alle Niagara-komponenter skal ha ray tracing av, `sg.EffectsQuality` skal ikke settes, og nye partikkelmaterialer må inn i PSO-opptaket.
 - Rekkefølge: etter at SC02 er flettet og installert, én tung Unreal-jobb om gangen. Trafoområdet deles med Codex sitt trafopass.
+
+## SC02 tatt over av Claude på Kubuntu, 28.10.2026 (under arbeid)
+
+Tom ba Claude ta over SC02 fra skyøkten (`ccr-20021313-mfplx9`, siste `52abd05f`) når Codex er ferdig med trafostasjonen. Gren `claude/sc02` i `~/scratch-bm/wt/sc02`, bevis i `~/scratch-bm/Signal47-sc02-20261028`. Rekkefølge: modellretting etter [revisjonen](HISTORIE_SC02_SC13_REVISJON.md) i Blender 4.5, native import til `/Game/Signal47/HorrorSC02`, bygg, pakket test, PR mot main, fletting og installasjon. Unreal-jobber bare når `unreal_guard.py require-idle` består.
 
 ## Historien SC02 til SC13 gjennomgått og revidert, Claude, 28.10.2026 (Toms valg tatt, venter på fletting)
 

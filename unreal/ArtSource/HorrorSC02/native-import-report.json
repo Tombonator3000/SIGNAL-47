@@ -1,0 +1,891 @@
+{
+  "status": "PASS",
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "source": "/home/tom/scratch-bm/wt/sc02/unreal/ArtSource/HorrorSC02",
+  "destination": "/Game/Signal47/HorrorSC02",
+  "checks": [
+    {
+      "name": "M_SC02_PaleSkin previous graph fully removed",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_SC02_PaleSkin material compiles",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "M_SC02_PaleSkin one authored Color parameter",
+      "pass": true,
+      "detail": 1
+    },
+    {
+      "name": "M_SC02_PaleSkin colour into tint",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_SC02_PaleSkin vertex colour into tint",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_SC02_PaleSkin tinted base colour",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_SC02_PaleSkin tinted material compiles",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "M_SC02_PaleSkin tinted material saved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "M_SC02_PaleSkin original material",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso_LOD1 exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso native original mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso authored slot M_SC02_PaleSkin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso exact original material slots",
+      "pass": true,
+      "detail": [
+        "M_SC02_PaleSkin"
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleTorso two LOD slots with requested screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso authored LOD1 imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso authored LOD1 triangles",
+      "pass": true,
+      "detail": 1080
+    },
+    {
+      "name": "SM_SC02_PaleTorso no mesh collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso explicit LOD screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso saved original",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso no Nanite and no separate RT proxy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso hardware RT retained",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleTorso exact authored LOD triangle counts",
+      "pass": true,
+      "detail": [
+        3600,
+        1080
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleTorso LOD screen sizes 1.0 and 0.04",
+      "pass": true,
+      "detail": [
+        1.0,
+        0.03999999910593033
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleTorso metric FBX center, joint origin and axes",
+      "pass": true,
+      "detail": [
+        1.972062587738037,
+        -2.86102294921875e-06,
+        29.418885231018066
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleTorso metric FBX dimensions",
+      "pass": true,
+      "detail": [
+        24.200255393981934,
+        44.575510025024414,
+        79.83016777038574
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleHead exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead_LOD1 exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead native original mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead authored slot M_SC02_PaleSkin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead exact original material slots",
+      "pass": true,
+      "detail": [
+        "M_SC02_PaleSkin"
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleHead two LOD slots with requested screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead authored LOD1 imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead authored LOD1 triangles",
+      "pass": true,
+      "detail": 690
+    },
+    {
+      "name": "SM_SC02_PaleHead no mesh collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead explicit LOD screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead saved original",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead no Nanite and no separate RT proxy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead hardware RT retained",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleHead exact authored LOD triangle counts",
+      "pass": true,
+      "detail": [
+        2300,
+        690
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleHead LOD screen sizes 1.0 and 0.04",
+      "pass": true,
+      "detail": [
+        1.0,
+        0.03999999910593033
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleHead metric FBX center, joint origin and axes",
+      "pass": true,
+      "detail": [
+        0.07240009307861328,
+        -0.005129814147949219,
+        8.46770429611206
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleHead metric FBX dimensions",
+      "pass": true,
+      "detail": [
+        18.879011154174805,
+        12.338363647460938,
+        39.86808109283447
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm_LOD1 exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm native original mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm authored slot M_SC02_PaleSkin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm exact original material slots",
+      "pass": true,
+      "detail": [
+        "M_SC02_PaleSkin"
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm two LOD slots with requested screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm authored LOD1 imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm authored LOD1 triangles",
+      "pass": true,
+      "detail": 156
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm no mesh collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm explicit LOD screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm saved original",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm no Nanite and no separate RT proxy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm hardware RT retained",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm exact authored LOD triangle counts",
+      "pass": true,
+      "detail": [
+        520,
+        156
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm LOD screen sizes 1.0 and 0.04",
+      "pass": true,
+      "detail": [
+        1.0,
+        0.03999999910593033
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm metric FBX center, joint origin and axes",
+      "pass": true,
+      "detail": [
+        2.5033950805664062e-06,
+        0.25474119186401367,
+        -16.97425150871277
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm metric FBX dimensions",
+      "pass": true,
+      "detail": [
+        7.490623235702515,
+        7.805514335632324,
+        42.26237344741821
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm_LOD1 exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm native original mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm authored slot M_SC02_PaleSkin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm exact original material slots",
+      "pass": true,
+      "detail": [
+        "M_SC02_PaleSkin"
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm two LOD slots with requested screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm authored LOD1 imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm authored LOD1 triangles",
+      "pass": true,
+      "detail": 516
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm no mesh collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm explicit LOD screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm saved original",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm no Nanite and no separate RT proxy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm hardware RT retained",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm exact authored LOD triangle counts",
+      "pass": true,
+      "detail": [
+        1720,
+        516
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm LOD screen sizes 1.0 and 0.04",
+      "pass": true,
+      "detail": [
+        1.0,
+        0.03999999910593033
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm metric FBX center, joint origin and axes",
+      "pass": true,
+      "detail": [
+        1.2824773788452148,
+        -9.655952453613281e-06,
+        -22.189024925231934
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm metric FBX dimensions",
+      "pass": true,
+      "detail": [
+        12.763690948486328,
+        6.113995790481567,
+        49.97239875793457
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleThigh exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh_LOD1 exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh native original mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh authored slot M_SC02_PaleSkin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh exact original material slots",
+      "pass": true,
+      "detail": [
+        "M_SC02_PaleSkin"
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleThigh two LOD slots with requested screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh authored LOD1 imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh authored LOD1 triangles",
+      "pass": true,
+      "detail": 168
+    },
+    {
+      "name": "SM_SC02_PaleThigh no mesh collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh explicit LOD screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh saved original",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh no Nanite and no separate RT proxy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh hardware RT retained",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleThigh exact authored LOD triangle counts",
+      "pass": true,
+      "detail": [
+        560,
+        168
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleThigh LOD screen sizes 1.0 and 0.04",
+      "pass": true,
+      "detail": [
+        1.0,
+        0.03999999910593033
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleThigh metric FBX center, joint origin and axes",
+      "pass": true,
+      "detail": [
+        0.36701250076293945,
+        -0.26220011711120605,
+        -23.238271951675415
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleThigh metric FBX dimensions",
+      "pass": true,
+      "detail": [
+        11.188579559326172,
+        10.276472568511963,
+        56.37623167037964
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleShin exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin_LOD1 exact original FBX",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin native original mesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin authored slot M_SC02_PaleSkin",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin exact original material slots",
+      "pass": true,
+      "detail": [
+        "M_SC02_PaleSkin"
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleShin two LOD slots with requested screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin authored LOD1 imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin authored LOD1 triangles",
+      "pass": true,
+      "detail": 324
+    },
+    {
+      "name": "SM_SC02_PaleShin no mesh collision",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin explicit LOD screen sizes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin saved original",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin no Nanite and no separate RT proxy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin hardware RT retained",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SC02_PaleShin exact authored LOD triangle counts",
+      "pass": true,
+      "detail": [
+        1080,
+        324
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleShin LOD screen sizes 1.0 and 0.04",
+      "pass": true,
+      "detail": [
+        1.0,
+        0.03999999910593033
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleShin metric FBX center, joint origin and axes",
+      "pass": true,
+      "detail": [
+        3.6316494941711426,
+        0.01627039909362793,
+        -23.69404399394989
+      ]
+    },
+    {
+      "name": "SM_SC02_PaleShin metric FBX dimensions",
+      "pass": true,
+      "detail": [
+        21.081358909606934,
+        8.730665683746338,
+        54.56459450721741
+      ]
+    },
+    {
+      "name": "no temporary LOD source assets left",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "whole body LOD0 within 14000 triangles",
+      "pass": true,
+      "detail": 13660
+    },
+    {
+      "name": "source geometry unchanged",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "meshes": [
+    {
+      "name": "SM_SC02_PaleTorso",
+      "asset": "/Game/Signal47/HorrorSC02/SM_SC02_PaleTorso.SM_SC02_PaleTorso",
+      "triangles": 3600,
+      "rendering_lod_triangles": [
+        3600,
+        1080
+      ],
+      "lod_screen_sizes": [
+        1.0,
+        0.03999999910593033
+      ],
+      "material_slots": [
+        "M_SC02_PaleSkin"
+      ],
+      "center_cm": [
+        1.972062587738037,
+        -2.86102294921875e-06,
+        29.418885231018066
+      ],
+      "size_cm": [
+        24.200255393981934,
+        44.575510025024414,
+        79.83016777038574
+      ],
+      "nanite_enabled": false,
+      "separate_rt_proxy_enabled": false
+    },
+    {
+      "name": "SM_SC02_PaleHead",
+      "asset": "/Game/Signal47/HorrorSC02/SM_SC02_PaleHead.SM_SC02_PaleHead",
+      "triangles": 2300,
+      "rendering_lod_triangles": [
+        2300,
+        690
+      ],
+      "lod_screen_sizes": [
+        1.0,
+        0.03999999910593033
+      ],
+      "material_slots": [
+        "M_SC02_PaleSkin"
+      ],
+      "center_cm": [
+        0.07240009307861328,
+        -0.005129814147949219,
+        8.46770429611206
+      ],
+      "size_cm": [
+        18.879011154174805,
+        12.338363647460938,
+        39.86808109283447
+      ],
+      "nanite_enabled": false,
+      "separate_rt_proxy_enabled": false
+    },
+    {
+      "name": "SM_SC02_PaleUpperArm",
+      "asset": "/Game/Signal47/HorrorSC02/SM_SC02_PaleUpperArm.SM_SC02_PaleUpperArm",
+      "triangles": 520,
+      "rendering_lod_triangles": [
+        520,
+        156
+      ],
+      "lod_screen_sizes": [
+        1.0,
+        0.03999999910593033
+      ],
+      "material_slots": [
+        "M_SC02_PaleSkin"
+      ],
+      "center_cm": [
+        2.5033950805664062e-06,
+        0.25474119186401367,
+        -16.97425150871277
+      ],
+      "size_cm": [
+        7.490623235702515,
+        7.805514335632324,
+        42.26237344741821
+      ],
+      "nanite_enabled": false,
+      "separate_rt_proxy_enabled": false
+    },
+    {
+      "name": "SM_SC02_PaleLowerArm",
+      "asset": "/Game/Signal47/HorrorSC02/SM_SC02_PaleLowerArm.SM_SC02_PaleLowerArm",
+      "triangles": 1720,
+      "rendering_lod_triangles": [
+        1720,
+        516
+      ],
+      "lod_screen_sizes": [
+        1.0,
+        0.03999999910593033
+      ],
+      "material_slots": [
+        "M_SC02_PaleSkin"
+      ],
+      "center_cm": [
+        1.2824773788452148,
+        -9.655952453613281e-06,
+        -22.189024925231934
+      ],
+      "size_cm": [
+        12.763690948486328,
+        6.113995790481567,
+        49.97239875793457
+      ],
+      "nanite_enabled": false,
+      "separate_rt_proxy_enabled": false
+    },
+    {
+      "name": "SM_SC02_PaleThigh",
+      "asset": "/Game/Signal47/HorrorSC02/SM_SC02_PaleThigh.SM_SC02_PaleThigh",
+      "triangles": 560,
+      "rendering_lod_triangles": [
+        560,
+        168
+      ],
+      "lod_screen_sizes": [
+        1.0,
+        0.03999999910593033
+      ],
+      "material_slots": [
+        "M_SC02_PaleSkin"
+      ],
+      "center_cm": [
+        0.36701250076293945,
+        -0.26220011711120605,
+        -23.238271951675415
+      ],
+      "size_cm": [
+        11.188579559326172,
+        10.276472568511963,
+        56.37623167037964
+      ],
+      "nanite_enabled": false,
+      "separate_rt_proxy_enabled": false
+    },
+    {
+      "name": "SM_SC02_PaleShin",
+      "asset": "/Game/Signal47/HorrorSC02/SM_SC02_PaleShin.SM_SC02_PaleShin",
+      "triangles": 1080,
+      "rendering_lod_triangles": [
+        1080,
+        324
+      ],
+      "lod_screen_sizes": [
+        1.0,
+        0.03999999910593033
+      ],
+      "material_slots": [
+        "M_SC02_PaleSkin"
+      ],
+      "center_cm": [
+        3.6316494941711426,
+        0.01627039909362793,
+        -23.69404399394989
+      ],
+      "size_cm": [
+        21.081358909606934,
+        8.730665683746338,
+        54.56459450721741
+      ],
+      "nanite_enabled": false,
+      "separate_rt_proxy_enabled": false
+    }
+  ],
+  "source_sha256": {
+    "Export/SM_SC02_PaleHead.fbx": "4ca61ec2a7c85f1fb464014ae6243a36f823f8465ab1b02b871d31b285e60cf9",
+    "Export/SM_SC02_PaleHead_LOD1.fbx": "1f0d7da32d77aeb5a9276996bad489121ffbd21a258e9e769ec608fe7dc32e65",
+    "Export/SM_SC02_PaleLowerArm.fbx": "3d8121b4350c865fbe2b71ec80401f8832871818d034b53417412770fb36ba51",
+    "Export/SM_SC02_PaleLowerArm_LOD1.fbx": "e1db86c305c5deda7999d8f773228a985cc47d3cef2f75b0df13f69687f5105f",
+    "Export/SM_SC02_PaleShin.fbx": "81bdee25718c9ff9d0cfd4ec821cf7f3dbad088a5cc6fc7acf39f7239c542225",
+    "Export/SM_SC02_PaleShin_LOD1.fbx": "f53b818ca5dc39e4460b26e3b5b33bc1fa113af01311d75b2fb688b6b5765926",
+    "Export/SM_SC02_PaleThigh.fbx": "8006beead98a8382b817ec41d0538215e32eba87947af830d1e788e71d7b9d13",
+    "Export/SM_SC02_PaleThigh_LOD1.fbx": "0cb3364abfcf7477a9f12147451bca434af20ce4de7e710df053c77b38f1cfac",
+    "Export/SM_SC02_PaleTorso.fbx": "b7644b2e7b8772836fbb32482ef564f7acd74d4079dc200e7c774fe77142bd44",
+    "Export/SM_SC02_PaleTorso_LOD1.fbx": "e127bd88c95578a7bfbf50b4687b7fc5e1ae45071f6516250101534320497d3b",
+    "Export/SM_SC02_PaleUpperArm.fbx": "21365119d3ec5cf5efac9b951d59aba5b0365a63f226f883f42010927f3573a1",
+    "Export/SM_SC02_PaleUpperArm_LOD1.fbx": "4b9009f5774adb10a53f50da71695e8cc00c78d71d7300668b6e9eb33cf08367",
+    "SC02_PaleActor.blend": "31f298557a045dae022982ba78439fad17fd01f2f4d5ed0703c48b685776887e",
+    "materials.json": "4033612a0965e95f9eefaaff4c384fa8e91d61a83c190faba3d2387b853cb033",
+    "model_contract.json": "3987e59a3991f8df932f224b06bb2a0a56d371695eff16113b61be89e47bac19"
+  }
+}

@@ -907,6 +907,31 @@ Kontrollert offentlig main `3456d029` i separat arbeidskopi. Eksisterende HoleFr
 
 Dokumentkontroll: alle nye lokale lenker i notatet og endrede innganger finnes. git diff --check består. Uavhengig kildehjelper godkjente revisjoner, lisensavgrensning og skillet mellom foreslått regi og levert effekt. Ingen kode-/assetendring; bygge- og spillmatrise er derfor ikke kjørt for denne dokumentleveransen.
 
+## 2026-10-27 kl. 21:30 til 00:22 CET: forberedelse av SC02 til SC13 (Claude, skysesjon)
+
+- Tom hadde ikke tilgang til Kubuntu og ba om å forberede SC02 og resten til SC13. Grenen `ccr-20021313-mfplx9` er laget fra `origin/main` (`1c309d11`). Skyen har verken Unreal eller GPU; alt runtimearbeid her er UNVERIFIED.
+- Prosjektbiblioteket ble søkt først (stealth, persepsjon, Unreal-AI, dialoglagring). Eneste relevante treff var The Dark Mod (GPL), brukt bare som designreferanse for syn, lyd og søk. Ingen kode er gjenbrukt derfra.
+- Tre hjelpere kartla koden for SC01 til SC05, SC06 til SC09 og SC10 til SC13. Resultatet er `Narrative/HorrorStory/world_producers.json`: produsent for alle 96 flagg (12 finnes, 48 delvis, 36 nye), 79 matriserader, 117 prøver og 13 arbeidspakker. `build_pack.py` validerer det og lager `generated/SCENE_MATRIX.md`. Sju nye negative prøver; `test_pack.py` 31 OK, `build_pack.py --check` PASS med 10 eksporter, EveningShift `--check` PASS. `HorrorPackData.inl` og de andre runtimeeksportene er byteidentiske.
+- `voice/generate.py --scenario SCnn` velger cuene for ett scenario. Prøvd uten syntese: SC01 gir de fem som før, SC02 tre Dale-cues, SC03, SC08 og SC12 stopper på manglende profiler for Ward, Ortiz, Earl og sjåføren.
+- SC02: én hjelper skrev runtimekoden (revisjon 2, `horror.sc02`, `FS47HorrorThreat`, rutegraf ved trafoen, lokal retry), én bygget modellen med bpy 5.1.2 i skyen (13 660 trekanter LOD0, 4 098 LOD1, renderbilder sett). En tredje hjelper gjennomgikk koden uavhengig: ingen sikre kompileringsfeil, ingen endring for revisjon 1, én alvorlig logisk feil (møtet kunne bli stående fast) og fem mindre. Alle seks er rettet i `6966b644`. To kjente begrensninger er ført i forberedelsesdokumentet.
+- Motstrider mellom manus, plan og kode er samlet som 16 avklaringer for Tom i `SC02_TIL_SC13_FORBEREDELSE.md`. Ingen av dem er løst på egen hånd.
+- Planens statustabell: SC02 «Under arbeid» med ukompilert kandidat. Todo og memory er oppdatert. Løsningskort om bpy i skyøkter er lagt i prosjektbiblioteket (`blender-bpy-i-skyokt-uten-gpu`, PASS).
+- Ikke gjort: kompilering, Unreal-import, pakkede prøver, bilder i spillet, RT-minne, stemmeopptak, `screenshots.sh` og PR. Ingen PR er opprettet.
+
+## 28.10.2026 kl. 12:07 CET: Codex hjelper Claude med SC02/AI og videre tekster
+
+Codex har overtatt etter Claudes bruksgrense. Claudes SC02 er integrert på oppdatert main, med live hindringsplanlegging, fysisk steg-/kontaktkontroll og rettet flukttest. Den lave betongrampen var en faktisk stoppårsak; bounded step-up prøves med full kapselsweep, og høye barrierer blokkerer fortsatt. De stoppede SC03 til SC13-tekstene er samordnet, med bevarte SC01/SC02-kontrakter og avgrenset migrering av tre utgåtte false-flagg. SC03 og videre er fortsatt authored_not_integrated. Se [overlevering](SC02_AI_HANDOFF.md).
+
+En lesende overtakelsesgjennomgang fant SC02-head `911ce258` og fire workflow-agenter stoppet av bruksgrensen. Hjelpere har levert ruteplanlegger, rettet testinput og samordnet scenetekstene. Alle tunge jobber kjøres sekvensielt av Codex. R1/R2 feilet faktisk fangst ved rampen, og R3-fokus viste at normalens retning/initialt overlapp ikke var et sikkert trinnkriterium. R4-fokus bekreftet fangst og løpeflukt; testens siste parkventing måtte kvittere faktisk dialog før kjøringen kunne fortsette.
+
+R5 fra kodecommit `651dc558` er pakket og består 1649 selvtester, 28 native kontroller og hele SC02-kontrakten: 159 kontroller på 483,42 sekunder, 19 disk-/Flow-restores, 219,06 m native gange og 42,48 m faktisk løping. Planlagt fangst og lokal retry, rute A til bilen, retur og disk-Continue består. 462 frosne kilde-/konfig-/forfatterfiler er uendret etter bygg og test. Tre sluttbilder er åpnet og vurdert. Ingen fatal/assert/device-loss eller kontraktfeil i sluttloggene. Rute B, manuell styring, High-jakt og menneskelig spilling/lytting/frykt er UNVERIFIED. Hele akt 1 og fullmatrisen gjenstår; ingen main-merge, standardinstallasjon eller ny spillutgave.
+
+Claudes opprinnelige `~/scratch-bm/wt/sc02` var fortsatt ren og er fast-forwardet til rettelsene. Gammel head er bevart på `claude/sc02-before-codex-20261028`. De andre tre arbeidskopiene er urørt, og Claude er ikke startet på nytt eller nullstilt. Prosjektbiblioteket ble søkt først etter Unreal/hindringsnavigasjon og én bredere søking; bare et uegnet Godot-treff, ingen bibliotekskode gjenbrukt.
+
+Canonical prune er utført etter inspisert plan og avsluttede motorjobber: to eldre payloadsett / 14 genererte filer er pensjonert, 8 877 558 180 logiske bytes uten påstand om fysisk diskgevinst. R5, feilet R2 for sammenligning og trafo R1 beholdes, samt særskilt beskyttet SC01-R4/PR174 for andre oppgaver. Kilder/assets/Saved/bevis bevares. Bevisrot `~/scratch-bm/Signal47-sc02-20261028/codex-takeover` har resultater, kildesnapshot, payloadhash, feilforløp, oppryddingskvittering og konkret SC03-produksjonsliste.
+
+[Utkast-PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) er opprettet og tilknyttet oppgaven. Grunnlagsgren er kontrollert som main. Utkastet bevarer det ferdig prøvde SC02-checkpointet mens SC03–SC05 og aktens aksept fortsatt gjenstår.
+
 ## 2026-10-28 kl. 13:45 CET: Greyhill-analyse bevart som referanse
 
 Tom ba om å lagre Greyhill-analysen til Signal 47-repoet og få oversikt over andre funksjoner som kan undersøkes. [GREYHILL_RESEARCH.md](GREYHILL_RESEARCH.md) bevarer egen analyse av syn, lyd, forfølgelse, siste kjente sted, skjulesteder og gameplay-looper. [GREYHILL_NEXT_ANALYSES.md](GREYHILL_NEXT_ANALYSES.md) prioriterer dørpassering, sonelyd, gjenstandsinspeksjon, UFO-/bortføringsregi, lagring, found footage, lommelykt og animasjon. De tre nye konkrete observasjonene gjelder lydovergang, modusbryter og inspeksjonsinput i allerede dekodet bytekode.
@@ -914,3 +939,11 @@ Tom ba om å lagre Greyhill-analysen til Signal 47-repoet og få oversikt over a
 Kontrollgrunnlag: lokal Steam-build 12751524, UE 4.27, 110 Blueprint-filer og ett hovedkart, 963 funksjonsoppføringer inkludert hendelser/wrappere. Parsing, alle bytekodestørrelser og byteidentisk rekonstruksjon i minnet består for 111/111. Funksjonsadresser i det nye tillegget er kontrollert mot posisjonsindeksene. Runtime er UNVERIFIED; native Shipping.exe er ikke dekompilert. Offentlig [kontrollsammendrag](Research/Greyhill/analysis-summary.json) har dekning og kontrollsummer. Komplett uttrekk er bevart lokalt utenfor repoet; ingen originalkode, komplette exports eller spillassets publiseres.
 
 Dokumentendring uten spillkode, config eller assets. Bygg og spillmatrise er derfor ikke kjørt. Dokumentkontrollen omfatter nye lenker, metadata, kildeavgrensning og ingen private maskinstier i nye dokumenter. Historierevisjonens fire jaktsekvenser og kuttet huking bevares. Ingen implementering eller installasjon er gjort.
+
+## PR #190: separat SC02-fletting godkjent, 28.10.2026 kl. 13:53 CET
+
+Tom ba uttrykkelig om å flette PR #190 til main dersom den ikke ødelegger eksisterende spill. Dette erstatter ventingen på ferdig akt 1 for akkurat dette checkpointet. Samme R5 består nå hele `screenshots.sh` med **110/110**, og **sju gamle lagringer** består ordinær tittel/Continue: fem ekte SC01 R4 med bevart revisjon 1 og to tidligere bevarte personlige kopier uten oppfunnet Horror/SC02. Valgt sak, checkpoint, fase, klokke og fotografier er kontrollert; kildelagringene er uendret. Fire matrisebilder og to Continue-bilder er faktisk vurdert.
+
+Jobbvernet stanset matrisen etter 75 beståtte prøver da en annen kort assetimport brukte Unreal. De resterende 35 ble deretter kjørt med uendrede originale kall, samme profil og R5. En uavhengig kontroll bekrefter full dekning uten hopp eller overlapp. Ingen scenariofeil eller fatal/assert/device-loss ble funnet. Bevis: `codex-takeover/merge190-matrix/result.json` og `merge190-continue/postrun-validation.json`. Alle 462 frosne inndatafiler og seks payloadhash er fortsatt uendret.
+
+[PR #190](https://github.com/Tombonator3000/SIGNAL-47/pull/190) samler SC02 og de reviderte forfatterkildene. SC03–SC05-runtime og resten av akt 1 gjenstår. Standardinstallasjon, personlige lagringer og spillutgaven endres ikke av denne Git-flettingen. Se [overlevering](SC02_AI_HANDOFF.md).
