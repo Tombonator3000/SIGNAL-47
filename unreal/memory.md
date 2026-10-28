@@ -1,6 +1,6 @@
-## Grafikkinnstillinger, kandidat 28. oktober 2026
+## Grafikkinnstillinger, kontrollert 28. oktober 2026
 
-Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er ferdig i [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197). Den endelige R2-pakken består 47 meny-/renderersjekker, 15 sjekker ved ny oppstart og hele 111-matrisen. Menyen er visuelt kontrollert ved 720p og 900p. Fletting og lokal installasjon gjenstår. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
 
 ## Elektrisk lysbue ved trafo, levert 28. oktober 2026
 

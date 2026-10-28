@@ -1,6 +1,6 @@
 # SIGNAL / 47 i Unreal
 
-Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er implementert på codex/graphics-settings. Enhetslagring og ny bruk av egne valg etter skjermendringer er med. Native bygg og runtimekontroll gjenstår; den installerte VFX-utgaven er foreløpig uendret. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er ferdig i [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197). Den endelige R2-pakken består 47 meny-/renderersjekker, 15 sjekker ved ny oppstart og hele 111-matrisen. Menyen er visuelt kontrollert ved 720p og 900p. Fletting og lokal installasjon gjenstår. Se [grafikkrapport](GRAPHICS_SETTINGS.md).
 
 [Finaleønske: gigantisk UFO bak cloud tank-skyer](FINALE_CLOUD_TANK_UFO.md): ønsket senere innhold, anbefalt i SC13. Regi, material-/Niagara-oppskrift, lys, ytelsesbudsjett og produksjonsplan er lagret. Ingen effekt er implementert. [Tre konseptbilder](Concepts/CloudTankUFO-2026-10-28/README.md) viser SARO og Caliche; SARO v2 følger Toms presiserte skyretning.
 

@@ -991,3 +991,7 @@ Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontrol
 ## 2026-10-28 kl. 17:29 CET: grafikkmeny PR197 kontrollert i pakket spill
 
 Editor og Linux-pakke består. Faktisk Slate-navigasjon, native renderer-verdier, skjerm-Apply og ny prosess med innstillingsreload består (47+15). Visuelt kontrollert ved 900p og 720p. Very Low beholder lysbuen og lagring (14 sjekker, to disk-/Flow-gjenopprettinger). Én kanonisk 111-matrise kjører før fletting; installasjonen er foreløpig PR195. Bevis i `~/scratch-bm/Signal47-graphics-settings-20261028`.
+
+## 2026-10-28 kl. 19:04 CET: grafikkmeny R2 klar for levering
+
+Final R2-pakke består 47 produksjons-/Slate-sjekker, 15 sjekker ved ny prosess og full 111/111-matrise uten konkurrerende jobb. 720p/900p-meny, natt og daggry er visuelt vurdert. R1 Very Low-lysbuebevis beholdes fordi R2 kun endrer scenery-menyvalget. PR197 går mot main; installasjon gjenstår. Bevis: `~/scratch-bm/Signal47-graphics-settings-20261028`.

@@ -1,6 +1,6 @@
-## Grafikkinnstillinger, Codex 28.10.2026
+## Grafikkinnstillinger klare for levering, Codex 28.10.2026
 
-Tom ønsker flere Unreal-innstillinger slik at svakere maskiner kan justere belastningen. Codex eier codex/graphics-settings fra main d5206af5 i motel-v2-unreal: ny grafikkmodell, egen menyfane, separate render-/lys-/skygge-/sky-/tåke-/tekstur-/effektvalg og faktisk lagring. Underagenter eier renderer/modell, meny og avgrenset runtimekontroll; root eier Flow og integrasjon. Ingen tung jobb startet. Claudes SC03-filer og den installerte VFX-pakken er urørt. Bevis/status: ~/scratch-bm/Signal47-graphics-settings-20261028. Én tung jobb om gangen; målrettede kontroller først og én samlet fullmatrise før fletting.
+Egen Graphics-fane med fem presets, Custom og elleve individuelle Unreal-kontroller er ferdig i [PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197). Den endelige R2-pakken består 47 meny-/renderersjekker, 15 sjekker ved ny oppstart og hele 111-matrisen. Menyen er visuelt kontrollert ved 720p og 900p. Fletting og lokal installasjon gjenstår. Se [grafikkrapport](GRAPHICS_SETTINGS.md). Den endelige R2-pakken er fryst og akseptert. Codex fullfører PR/main-fletting, lokal installasjon med Saved bevart og kanonisk opprydding. Claudes SC03-filer er urørt. Tungt vindu holdes til den korte installerte kontrollen er ferdig.
 
 ## SC02-lysbue levert, 2026-10-28 kl.16:42 CET
 

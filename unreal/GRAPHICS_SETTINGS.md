@@ -32,9 +32,13 @@ Grafikkvalg brukes og lagres med en gang. Skjermoppløsning/-modus beholder Appl
 
 ## Kontroll og status
 
-Arbeidsgren `codex/graphics-settings`, fra main `d5206af5`. Bevismappe: `/home/tom/scratch-bm/Signal47-graphics-settings-20261028`.
+[PR197](https://github.com/Tombonator3000/SIGNAL-47/pull/197), arbeidsgren `codex/graphics-settings` fra main `d5206af5`. Bevismappe: `/home/tom/scratch-bm/Signal47-graphics-settings-20261028`.
 
-Editorbygg og Linux-pakking består. Pakket kontroll består med 47 produksjons-/menysjekker og 15 sjekker i en ny prosess som leser de lagrede Custom-valgene. Menybilder ved 1600 × 900 og 1280 × 720 er visuelt kontrollert, inkludert siste rullelinje og lengste valgtekst. Very Low beholder trafoens lysbue og lagring: 14 kontroller og to faktiske disk-/Flow-gjenopprettinger. R1-matrisen ble stoppet etter at statisk gjennomgang fant at et eget Dense-valg ikke hadde forskjellig virkning fra Standard. R2 viser bare de to faktiske dekorbudsjettene; ny meny-/lagringskontroll og én fullført 111-matrise kreves før fletting/installasjon. Ingen FPS-forbedring eller støtte for alle svake GPU-er hevdes. Dette er justeringer innenfor prosjektets eksisterende renderer og plattformkrav.
+Editorbygg og endelig R2 Linux-pakke består. Den pakkede kontrollen består med 47 produksjons-/Slate-sjekker og 15 sjekker i en ny prosess som leser de lagrede Custom-valgene. Native renderer-verdier, skjerm-Apply og navigasjon er kontrollert. Menybilder ved 1600 × 900 og 1280 × 720 er visuelt vurdert, inkludert siste rullelinje og lengste valgtekst.
+
+Hele den kanoniske matrisen består **111/111** på R2 i én sammenhengende kjøring uten ressurskonkurranse. Meny, nattbelysning og daggry er visuelt vurdert. Very Low beholder trafoens lysbue og lagring: 14 kontroller og to faktiske disk-/Flow-gjenopprettinger. Sistnevnte bevis er fra R1; kontrollsummene viser at R2 bare endrer menyens scenery-valg til de to faktiske budsjettene. Renderer, serialisering og lysbuekode er identiske.
+
+Aksept: `acceptance-r1.json`, med frosne kilde-/payload-hasher og bundne testbevis. Fletting og installasjon gjenstår. Ingen FPS-forbedring, fysisk gamepad-test eller støtte for alle svake GPU-er hevdes. Dette er justeringer innenfor prosjektets eksisterende renderer og plattformkrav.
 
 ## Kildegrunnlag
 
