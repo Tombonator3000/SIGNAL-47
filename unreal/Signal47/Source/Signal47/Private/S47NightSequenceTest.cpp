@@ -40,6 +40,7 @@ struct FS47Evening::FNightSequenceTest
  FString Root, FixtureSource, EscapeSource, NormalStamp;
  S47J::FObj Fixture;
  TArray<double> DishAz, DishEl;
+ TArray<bool> GeneratorTubes;
  FS47Substation::FFaultSnapshot PausedFault;
 };
 
@@ -109,6 +110,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   const double SolveAt = HasSolve ? *M->Story->Night().SolveAt : 0, PrintAt = HasPrint ? *M->Story->Night().PrintoutAt : 0;
   auto Docs = S47J::New(); Docs->SetArrayField(TEXT("docs"), S47J::Arr(Routine, TEXT("docs"))); const FString Papers = S47J::Write(Docs);
   const FString LocalRecord = S47J::Write(M->Substation->Save());
+  const FString ObservingRecord = S47J::Write(M->Observing->Save());
   const FString Area = S47J::Str(State, TEXT("area"));
   const bool SavedPoseWalkableBefore = M->Player->Walkable(S47J::Num(Pose, TEXT("x")), S47J::Num(Pose, TEXT("z")));
   FS47SaveStore Writer(T.Root / Name); Writer.Init();
@@ -161,6 +163,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   Field(TEXT("dark"), M->Story->bDark == Out);
   Field(TEXT("hasNormalResult"), M->Substation->HasNormalResult() == Normal);
   Field(TEXT("substationRecord"), S47J::Write(M->Substation->Save()) == LocalRecord);
+  Field(TEXT("observingRecord"), S47J::Write(M->Observing->Save()) == ObservingRecord);
   Field(TEXT("notes"), M->Story->Notes() == Notes);
   Field(TEXT("logCount"), Night.Log.Num() == LogCount);
   if (!Good)
@@ -268,6 +271,30 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   const auto& R = FS47Observing::Runs()[O.RunIndex()];
   if (O.Phase() == FS47Observing::EStep::Tune)
   {
+   if (O.ChorePending())
+   {
+    Dials(R.P); M->Story->ConsoleAction();
+    if (!Check(O.Phase() == FS47Observing::EStep::Tune && O.ChorePending() && M->Story->Rx.Stage == 1,
+        TEXT("neste observasjon venter på faktisk aggregattest eller porterunde"))) return;
+    M->UI->Close(true);
+    if (O.RunIndex() == 1)
+    {
+     M->Player->Place(4.6, .65, UE_DOUBLE_PI / 2); M->Player->Pitch = -.08;
+     if (!Check(M->Player->Walkable(4.6, .65), TEXT("aggregatpanelets navngitte posisjonsfixture er walkable"))) return;
+     UE_LOG(LogTemp, Display, TEXT("S47: night sequence GENERATOR POSITION FIXTURE: 4.6/.65 from the SC01 contract; actual panel rays, warm-up, transfer and line restoration follow"));
+     Stage(30, .15); return;
+    }
+    if (O.RunIndex() == 3)
+    {
+     if (!Check(!M->Web->IsDoorOpen(TEXT("fieldGate")) && O.YardStep() == 0,
+         TEXT("porterunden starter med faktisk lukket port og uten tilskrevet rundecredit"))) return;
+     M->Player->Place(-1.0, -17.6, 0); M->Player->Pitch = -.08;
+     if (!Check(M->Player->Walkable(-1.0, -17.6), TEXT("porterundens navngitte nærposisjon er walkable"))) return;
+     UE_LOG(LogTemp, Display, TEXT("S47: night sequence GATE POSITION FIXTURES: near -1/-17.6, then return-side 9.3/-12 from the SC01 route; actual proximity/closed-gate triggers follow, not a continuous walk claim"));
+     Stage(40, .2); return;
+    }
+    Fail(TEXT("ukjent ny oppgaveport mellom observasjonene")); return;
+   }
    Dials(R.P); M->Story->ConsoleAction();
    if (!Check(O.Phase() == FS47Observing::EStep::Integrating && M->Story->Rx.Stage == 1,
        FString::Printf(TEXT("observasjon %d startet via beholdt ConsoleAction-krok"), O.RunIndex() + 1))) return;
@@ -278,10 +305,65 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
       FString::Printf(TEXT("observasjon %d arkivert via faktisk %s-API"), T.ObserveRun + 1, R.Data))) return;
   M->UI->Close(true); T.Hold = .2; return;
  }
+ if (T.Stage == 30)
+ {
+  T.GeneratorTubes.Reset();
+  for (int32 I = 0; I < M->Web->TubeCount(); ++I) T.GeneratorTubes.Add(M->Web->TubeLit(I));
+  if (!Check(T.GeneratorTubes.Num() > 1 && M->Observing->GeneratorStep() == 0,
+      TEXT("faktisk aggregattest begynner med kjent rombelysning og uten resultatcredit"))) return;
+  if (!Pick(TEXT("obs:generator"), FS47Observing::PanelPoint())) return;
+  if (!Check(M->Observing->GeneratorStep() == 1 && M->Story->Clock() >= -4 * 3600. - 25 * 60,
+      TEXT("fysisk panel starter aggregatet på kveldens tidsskjema"))) return;
+  Stage(31, 4.4); return;
+ }
+ if (T.Stage == 31)
+ {
+  if (M->Observing->Label(TEXT("obs:generator")) != TEXT("Transfer the load to the generator"))
+  { if (T.Elapsed - T.Since > 10) Fail(TEXT("aggregatet ble ikke klart til faktisk lastoverføring")); return; }
+  if (!Pick(TEXT("obs:generator"), FS47Observing::PanelPoint())) return;
+  bool Emergency = M->Web->TubeCount() == T.GeneratorTubes.Num() && M->Web->TubeLit(0);
+  for (int32 I = 1; I < M->Web->TubeCount(); ++I) Emergency &= !M->Web->TubeLit(I);
+  if (!Check(M->Observing->GeneratorStep() == 2 && Emergency && M->Observing->ChorePending(),
+      TEXT("etter faktisk oppvarming flytter panelet lasten til ett nødrør; observasjonen er fortsatt låst"))) return;
+  Stage(32, 3.3); return;
+ }
+ if (T.Stage == 32)
+ {
+  if (M->Observing->Label(TEXT("obs:generator")) != TEXT("Transfer back to line power"))
+  { if (T.Elapsed - T.Since > 10) Fail(TEXT("aggregattesten ble ikke klar til faktisk tilbakeføring")); return; }
+  if (!Pick(TEXT("obs:generator"), FS47Observing::PanelPoint())) return;
+  bool Restored = M->Web->TubeCount() == T.GeneratorTubes.Num();
+  for (int32 I = 0; I < T.GeneratorTubes.Num(); ++I) Restored &= M->Web->TubeLit(I) == T.GeneratorTubes[I];
+  if (!Check(M->Observing->GeneratorStep() == 3 && Restored && !M->Observing->ChorePending() &&
+      M->Story->Clock() >= -4 * 3600. - 15 * 60,
+      TEXT("fysisk tilbakeføring gjenoppretter alle tidligere rør og arkiverer aggregattesten"))) return;
+  M->Player->Place(4.2, 1.6, 0); M->Player->Pitch = -.08;
+  Stage(3, .2); return;
+ }
+ if (T.Stage == 40)
+ {
+  if (M->Observing->YardStep() != 1)
+  { if (T.Elapsed - T.Since > 3) Fail(TEXT("faktisk nærhet til lukket port ga ikke kontrollfaktum")); return; }
+  if (!Check(!M->Web->IsDoorOpen(TEXT("fieldGate")) && M->Story->Clock() >= -2 * 3600. - 20 * 60 && M->Observing->ChorePending(),
+      TEXT("ekte nærhetstrigger registrerer kontrollen av den lukkede porten før returen"))) return;
+  M->Player->Place(9.3, -12, UE_DOUBLE_PI); M->Player->Pitch = -.08;
+  if (!Check(M->Player->Walkable(9.3, -12), TEXT("porterundens navngitte returposisjon er walkable"))) return;
+  Stage(41, .2); return;
+ }
+ if (T.Stage == 41)
+ {
+  if (M->Observing->YardStep() != 2)
+  { if (T.Elapsed - T.Since > 3) Fail(TEXT("faktisk returavstand fullførte ikke porterunden")); return; }
+  if (!Check(M->Web->IsDoorOpen(TEXT("fieldGate")) && (M->Observing->Hints() & 32) && !M->Observing->ChorePending(),
+      TEXT("faktisk returtrigger åpner porten igjen og fullfører runden før Virgo A"))) return;
+  M->Player->Place(4.2, 1.6, 0); M->Player->Pitch = -.08;
+  Stage(3, .2); return;
+ }
  if (T.Stage == 4)
  {
-  if (!Check(M->Observing->Done() && M->Story->Clock() >= -70 * 60 && !M->Substation->HasNormalResult(),
-      TEXT("alle fire observasjoner er faktisk kjørt og arkivert innen kveldens siste datapunkt"))) return;
+  if (!Check(M->Observing->Done() && M->Observing->GeneratorStep() == 3 && M->Observing->YardStep() == 2 &&
+      M->Story->Clock() >= -70 * 60 && !M->Substation->HasNormalResult(),
+      TEXT("alle fire observasjoner, aggregattesten og porterunden er faktisk gjennomført før nattens feil"))) return;
   Dials(S47Signal::Profiles()[1]); M->Story->ConsoleAction();
   if (!Check(M->Story->Rx.Stage == 1 && M->Story->Phase() == ES47Phase::Shift && !M->Horror->Complete(),
       TEXT("relékoblingen avvises fremdeles når SC01 ikke er fullført"))) return;
@@ -520,13 +602,14 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   auto R = S47J::New(); S47J::Set(R, TEXT("status"), TEXT("PASS")); S47J::Set(R, TEXT("checks"), T.Checks);
   S47J::Set(R, TEXT("diskFlowRestores"), T.Loads); S47J::Set(R, TEXT("sc01FixtureSource"), T.FixtureSource);
   S47J::Set(R, TEXT("actualObservationRuns"), FS47Observing::Runs().Num()); S47J::Set(R, TEXT("t01Stamp"), T.NormalStamp);
+  S47J::Set(R, TEXT("actualGeneratorStep"), M->Observing->GeneratorStep()); S47J::Set(R, TEXT("actualYardStep"), M->Observing->YardStep());
   S47J::Set(R, TEXT("sc02Clock"), T.SC02Clock); S47J::Set(R, TEXT("sc03RevisionProbe"), T.bSC03Probe);
   if (T.bSC03Probe)
   {
    S47J::Set(R, TEXT("sc02EscapeFixtureSource"), T.EscapeSource); S47J::Set(R, TEXT("sc03BoundaryClock"), T.SC03Clock);
    S47J::Set(R, TEXT("residualLockedClock"), T.LockedClock); S47J::Set(R, TEXT("directionPrintedClock"), T.PrintedClock);
   }
-  S47J::Set(R, TEXT("limits"), TEXT("D01 og observasjoner bruker produksjons-API, ikke menneskelig input. SC01-fakta og ett originalfoto er uttrykkelig diskfixture. Telefon-/felt-/returposisjoner og DriveOut(true) road-start er fixtures. Faktiske fysiske T01-rays, vanlige ConsoleClosed-timere, telefonens lukketransaksjon, aktiv road-kjørekontroller, gjenopprettet SARO-strøm med vedvarende stedlig feileffekt, modalpause og isolerte disk/full-Flow-restores kjøres. Når sc03RevisionProbe er true, prøves faktisk StepSC03-grense rundt 02:15 og dens diskrestore med navngitt tidligere kvittert flukt som uttrykkelig revisjon3-fixture; deretter kjøres faktisk residualtuning, direction solve/print og Locked-/Printed-diskrestore med bevart klokke og printerark. Helkjøring, fersk ordinær Continue-prosess, ny SC02-flukt, SC03-innhold, lydlytting, fysisk Xbox og fullnatt er ikke prøvd av denne kontrakten."));
+  S47J::Set(R, TEXT("limits"), TEXT("D01 og observasjoner bruker produksjons-API, ikke menneskelig input. Aggregatpanelets faktiske rays, oppvarming og lastoverføring samt portens lukkede nærhet og returtriggere kjøres uten syntetisk oppgavecredit. Deres posisjoner er uttrykkelige fixtures fra SC01-ruten, uten sammenhengende gangbevis. SC01-fakta og ett originalfoto er uttrykkelig diskfixture. Telefon-/felt-/returposisjoner og DriveOut(true) road-start er fixtures. Faktiske fysiske T01-rays, vanlige ConsoleClosed-timere, telefonens lukketransaksjon, aktiv road-kjørekontroller, gjenopprettet SARO-strøm med vedvarende stedlig feileffekt, modalpause og isolerte disk/full-Flow-restores kjøres. Når sc03RevisionProbe er true, prøves faktisk StepSC03-grense rundt 02:15 og dens diskrestore med navngitt tidligere kvittert flukt som uttrykkelig revisjon3-fixture; deretter kjøres faktisk residualtuning, direction solve/print og Locked-/Printed-diskrestore med bevart klokke og printerark. Helkjøring, fersk ordinær Continue-prosess, ny SC02-flukt, SC03-innhold, lydlytting, fysisk Xbox og fullnatt er ikke prøvd av denne kontrakten."));
   if (!FFileHelper::SaveStringToFile(S47J::Write(R, true), *(T.Root / TEXT("result.json")))) { Fail(TEXT("kunne ikke skrive sluttbevis")); return; }
   T.bDone = true;
   UE_LOG(LogTemp, Display, TEXT("S47: night sequence contract PASS COMPLETE: %d checks, %d fresh disk/full-Flow restores; SC01 and travel fixtures explicitly labelled; artifacts %s"), T.Checks, T.Loads, *T.Root);
