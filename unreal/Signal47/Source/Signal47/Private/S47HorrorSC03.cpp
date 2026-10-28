@@ -183,8 +183,10 @@ double FS47HorrorSC03::Ground(double X, double Z) const
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC03Ground), true);
  for (const auto& C : W->All) if (C.IsValid()) Q.AddIgnoredComponent(C.Get());
  FHitResult H;
- if (M->Web->GetWorld()->LineTraceSingleByChannel(H, S47Three::ToUE(X, 40, Z), S47Three::ToUE(X, -40, Z), ECC_Visibility, Q)) return H.ImpactPoint.Z / 100.0;
- return M->Player ? M->Player->FloorY : 0;
+ // Start below the pump canopy: at the night window's height, never from the sky.
+ const double From = GroundRef + 1.0;
+ if (M->Web->GetWorld()->LineTraceSingleByChannel(H, S47Three::ToUE(X, From, Z), S47Three::ToUE(X, From - 12, Z), ECC_Visibility, Q)) return H.ImpactPoint.Z / 100.0;
+ return TNumericLimits<double>::Lowest(); // nothing loaded under it yet
 }
 
 bool FS47HorrorSC03::Build()
@@ -215,7 +217,7 @@ bool FS47HorrorSC03::Build()
   UE_LOG(LogS47HorrorSC03, Error, TEXT("S47: SC03 fuel stop, wagon or pale figures unavailable; SC03 world not built"));
   return false;
  }
- Counter = GasWindow->Object.WorldPosition();
+ Counter = GasWindow->Object.WorldPosition(); GroundRef = Counter.Y;
  const FVector PumpAt = Pumps->Object.WorldPosition();
  // Wagon 23 stops beyond the pumps, nose towards the road, in plain view of the night window.
  const FVector Away = FVector(PumpAt.X - Counter.X, 0, PumpAt.Z - Counter.Z).GetSafeNormal();
@@ -224,10 +226,9 @@ bool FS47HorrorSC03::Build()
  DeputyFrom = Sheriff ? Sheriff->Object.WorldPosition() : Counter + FVector(0, 0, 25);
  if (true)
  {
-  Park.Y = Ground(Park.X, Park.Z); Approach.Y = Ground(Approach.X, Approach.Z);
-  DeputyFrom.Y = Ground(DeputyFrom.X, DeputyFrom.Z); Counter.Y = Ground(Counter.X, Counter.Z);
+  Park.Y = Approach.Y = DeputyFrom.Y = GroundRef - 1.4; // settled by Apply once the apron is loaded
  }
- DeputyAt = Counter + Away * 3.2 + FVector(-Away.Z, 0, Away.X) * 2.5; DeputyAt.Y = Counter.Y;
+ DeputyAt = Counter + Away * 3.2 + FVector(-Away.Z, 0, Away.X) * 2.5; DeputyAt.Y = GroundRef - 1.4;
 
  UBoxComponent* Root = NewObject<UBoxComponent>(Web, TEXT("SC03Root"));
  Root->SetMobility(EComponentMobility::Movable); Root->SetupAttachment(GroupComp);
@@ -312,7 +313,7 @@ bool FS47HorrorSC03::Build()
  for (int32 I = 0; I < 3; ++I)
  {
   FWorld::FFigure Fig; Fig.At = Spots[I];
-  Fig.At.Y = Ground(Fig.At.X, Fig.At.Z);
+  Fig.At.Y = GroundRef - 1.4;
   auto* FR = NewObject<UBoxComponent>(Web, *FString::Printf(TEXT("SC03Figure%d"), I));
   FR->SetMobility(EComponentMobility::Movable); FR->SetupAttachment(Root); FR->SetCollisionEnabled(ECollisionEnabled::NoCollision); FR->SetBoxExtent(FVector(1)); FR->RegisterComponent();
   auto Part = [&](const TCHAR* N, UStaticMesh* Asset, USceneComponent* Parent, const FVector& At, bool bMirror)
@@ -365,6 +366,9 @@ bool FS47HorrorSC03::Build()
   };
   M->Inter->Add(It);
  }
+ for (const FS47Rect& Z : Web->Zones())
+  if (Z.bEnabled && FVector2D(FMath::Clamp(Counter.X, Z.MinX, Z.MaxX) - Counter.X, FMath::Clamp(Counter.Z, Z.MinZ, Z.MaxZ) - Counter.Z).Size() < 12)
+   UE_LOG(LogS47HorrorSC03, Display, TEXT("S47: SC03 zone near the counter: %s x %.1f..%.1f z %.1f..%.1f"), *Z.Id, Z.MinX, Z.MaxX, Z.MinZ, Z.MaxZ);
  bBuilt = true;
  UE_LOG(LogS47HorrorSC03, Display, TEXT("S47: SC03 fuel stop built: counter %.1f %.1f, wagon park %.1f %.1f, three still figures"), Counter.X, Counter.Z, Park.X, Park.Z);
  return true;
@@ -382,6 +386,19 @@ void FS47HorrorSC03::Apply()
  const bool bShow = Live() || P == EPhase::Complete;
  W->Root->SetVisibility(bShow, true);
  if (!bShow) return;
+ if (!bGrounded)
+ {
+  // Caliche may still be unloaded when SC03 is built at SARO: settle everything once the apron is there.
+  const double Y = Ground(Park.X, Park.Z);
+  if (Y > -1e6)
+  {
+   Park.Y = Y; const double A = Ground(Approach.X, Approach.Z); Approach.Y = A > -1e6 ? A : Y;
+   const double D0 = Ground(DeputyFrom.X, DeputyFrom.Z); DeputyFrom.Y = D0 > -1e6 ? D0 : Y; DeputyAt.Y = Y;
+   for (auto& Fig : W->Figures) { const double G = Ground(Fig.At.X, Fig.At.Z); Fig.At.Y = G > -1e6 ? G : Y; }
+   bGrounded = true;
+   UE_LOG(LogS47HorrorSC03, Display, TEXT("S47: SC03 apron grounded at %.2f"), Y);
+  }
+ }
  const FVector Away = (Approach - Park).GetSafeNormal();
  const double Heading = FMath::Atan2(-Away.X, -Away.Z); // nose towards the road
  // Wagon: approaching, then parked; hidden before Ortiz is on her way.
@@ -401,6 +418,17 @@ void FS47HorrorSC03::Apply()
   PoseCar(W->Door.Get(), WagonAt + Car.RotateVector(Hinge - Leaf.RotateVector(Hinge)), Car * Leaf);
  }
  if (W->Wagon.IsValid()) W->Wagon->SetVisibility(bWagon); if (W->Door.IsValid()) W->Door->SetVisibility(bWagon);
+ // The parked wagon is solid to walk into (its turned body's bounding box on the apron).
+ if (M->Web)
+ {
+  auto& Cs = M->Web->CollidersMutable(TEXT("diner"));
+  int32 Index = Cs.IndexOfByPredicate([](const FS47Rect& R) { return R.Id == TEXT("sc03:wagon23"); });
+  if (Index == INDEX_NONE) { FS47Rect R; R.Id = TEXT("sc03:wagon23"); Index = Cs.Add(R); }
+  const double C = FMath::Abs(FMath::Cos(Heading)), S = FMath::Abs(FMath::Sin(Heading)), HalfW = .95, HalfL = 2.55;
+  const double Ex = C * HalfW + S * HalfL, Ez = S * HalfW + C * HalfL;
+  Cs[Index].MinX = WagonAt.X - Ex; Cs[Index].MaxX = WagonAt.X + Ex; Cs[Index].MinZ = WagonAt.Z - Ez; Cs[Index].MaxZ = WagonAt.Z + Ez;
+  Cs[Index].bEnabled = bWagon && P != EPhase::Arrival;
+ }
  const FVector Up(0, 1, 0), Right = Car.RotateVector(FVector(1, 0, 0)), Fwd = Car.RotateVector(FVector(0, 0, -1));
  for (int32 I = 0; I < W->Bar.Num(); ++I) if (auto* B = W->Bar[I].Get())
  {
@@ -419,7 +447,7 @@ void FS47HorrorSC03::Apply()
   const bool On = bWagon && !bOrtizGone && P != EPhase::Lift; W->Amber->SetIntensity(On ? 1800.f * (FMath::Fmod(Clock, 1.0) < .5 ? 1.f : .25f) : 0.f);
  }
  // Ortiz beside the driver's door.
- W->OrtizAt = WagonAt + Right * -1.6 + Fwd * .4; W->OrtizAt.Y = Ground(W->OrtizAt.X, W->OrtizAt.Z);
+ W->OrtizAt = WagonAt + Right * -1.6 + Fwd * .4; { const double G = Ground(W->OrtizAt.X, W->OrtizAt.Z); W->OrtizAt.Y = G > -1e6 ? G : Park.Y; }
  const bool bOrtiz = (P == EPhase::Meet || P == EPhase::Lift) && !bOrtizGone;
  const FVector O0 = W->OrtizAt + FVector(0, W->Lift, 0);
  const double Face = M->Player ? Yaw(W->OrtizAt, M->Player->Pos) : 0;
@@ -458,7 +486,7 @@ void FS47HorrorSC03::Apply()
  if (bDeputy)
  {
   const double K = F.bDeputyHere ? 1 : FMath::Clamp(DeputyT / DeputyWalk, 0., 1.);
-  W->DeputyPos = FMath::Lerp(DeputyFrom, DeputyAt, K); W->DeputyPos.Y = Ground(W->DeputyPos.X, W->DeputyPos.Z);
+  W->DeputyPos = FMath::Lerp(DeputyFrom, DeputyAt, K); { const double G = Ground(W->DeputyPos.X, W->DeputyPos.Z); W->DeputyPos.Y = G > -1e6 ? G : Park.Y; }
   const double DFace = K >= 1 && M->Player ? Yaw(W->DeputyPos, M->Player->Pos) : Yaw(DeputyFrom, DeputyAt);
   const double Bob = K < 1 ? FMath::Abs(FMath::Sin(DeputyT * 6)) * .03 : 0;
   Place(W->DeputyBody.Get(), W->DeputyPos + FVector(0, .9 + Bob, 0), FVector(.40, .30, .90), DFace, true);
@@ -508,6 +536,10 @@ bool FS47HorrorSC03::PlayerCovered() const
  // Inside SARO 07's cab, or with solid cover between Reyes and every still figure and the light.
  if (!M || !M->World || !M->Player) return false;
  if (M->World->bDriving) return true;
+ // Inside the fuel station's walk zone the building itself is the cover.
+ for (const FS47Rect& Z : M->Web->Zones())
+  if (Z.bEnabled && (Z.Id.Contains(TEXT("gas")) || Z.Id.Contains(TEXT("station"))) && Z.MinX <= M->Player->Pos.X && M->Player->Pos.X <= Z.MaxX && Z.MinZ <= M->Player->Pos.Z && M->Player->Pos.Z <= Z.MaxZ)
+   return true;
  const FVector E = Eye();
  for (const FVector& H : FigureHeads()) if (ClearLine(H, E)) return false;
  return !ClearLine(W->OrtizAt + FVector(0, 3, 0), E);

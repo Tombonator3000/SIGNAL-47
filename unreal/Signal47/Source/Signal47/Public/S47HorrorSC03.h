@@ -72,6 +72,8 @@ private:
  double WaitT = 0, ArriveT = 0, LiftDelay = 0, LiftT = 0, LookT = 0, HeldT = 0, Gone = 0, LightK = 0, FigureK = 0, TurnK = 0, DeputyT = 0, Clock = 0;
  bool bOrtizGone = false;
  int32 Version = 0;
+ double GroundRef = 0;
+ bool bGrounded = false;
  double Ground(double X, double Z) const;
  bool Build();
  void Apply();

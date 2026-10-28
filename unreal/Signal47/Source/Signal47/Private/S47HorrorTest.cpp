@@ -7,6 +7,7 @@
 #include "S47Flow.h"
 #include "S47Horror.h"
 #include "S47HorrorThreat.h"
+#include "S47HorrorSC03.h"
 #include "S47HorrorVisual.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
@@ -16,6 +17,7 @@
 #include "S47Kit.h"
 #include "S47Saves.h"
 #include "S47Story.h"
+#include "S47Props.h"
 #include "S47Substation.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -40,7 +42,8 @@ struct FS47HorrorTest::FState
 	double LineAt = 0, SC02Clock = 0, SC02Seen = 0, SC02RunMetres = 0;
 	bool bCaptured = false, bRunPath = false, bSC02Escape = false, bSC02EscapeRouteDone = false;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
-	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector;
+	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector;
+	double DoorOut = 1;
 	TArray<FVector> Points;
 	FVector LastFoot = FVector::ZeroVector, FirstHand = FVector::ZeroVector;
 	S47J::FObj BeforeNormal, AfterNormal, AfterWindow, AfterReport, PendingNormal, FilmReserveBase;
@@ -214,7 +217,7 @@ void FS47HorrorTest::Step(double Dt)
 	// Story pause also covers the modal panels that this controller must acknowledge.
 	if (M->Story->IsPaused()) M->Player->TestMove.Reset();
 	T.Elapsed += FMath::Clamp(Dt, 0., .2);
-	if (T.Elapsed > ((T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 420)) { Fail(TEXT("live horror contract control timeout")); return; }
+	if (T.Elapsed > (T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 420)) { Fail(TEXT("live horror contract control timeout")); return; }
 	if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("developer case zero required; never write a player case")); return; }
 	if (M->Flow->bStarting || M->World->bBusy)
 	{
@@ -258,7 +261,7 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		// SC02's H02 walkie opens on the way to the service front and holds the player;
 		// acknowledge it like a player would, then carry on along the same path.
-		if ((T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) && T.AfterWalk >= 100 && H.Pack.CurrentScene())
+		if ((T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume") || T.Mode == TEXT("SC03") || T.Mode == TEXT("SC03Resume")) && T.AfterWalk >= 100 && H.Pack.CurrentScene())
 		{
 			if (H.Pack.CurrentScene()->Id == TEXT("SC02_RETRY"))
 			{ Fail(TEXT("SC02 capture interrupted a waypoint route before its intended exposure check")); return; }
@@ -272,9 +275,9 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		FString UserDir; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
 		UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
-		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
+		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("SC03") && T.Mode != TEXT("SC03Resume") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
 			!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
-		{ Fail(TEXT("S47HorrorContract=SC01, SC02, SC02Resume or Navigation and explicit isolated /tmp UserDir required")); return; }
+		{ Fail(TEXT("S47HorrorContract=SC01, SC02, SC02Resume, SC03, SC03Resume or Navigation and explicit isolated /tmp UserDir required")); return; }
 		for (const TCHAR* Flag : {TEXT("S47T01Contract"), TEXT("S47T02Contract"), TEXT("S47T02DriveContract"), TEXT("S47DaleDocumentsContract"), TEXT("S47EveningEntrance"), TEXT("S47SmokeTest")})
 			if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live test drivers")); return; }
 		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / T.Mode;
@@ -295,6 +298,25 @@ void FS47HorrorTest::Step(double Dt)
 			FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(T.Root / TEXT("result.json")));
 			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror native navigation PASS COMPLETE: %d checks"), T.Checks);
 			FPlatformMisc::RequestExit(false); return;
+		}
+		if (T.Mode == TEXT("SC03Resume"))
+		{
+			if (!FParse::Value(FCommandLine::Get(), TEXT("S47HorrorRestore="), T.RestoreSource) || T.RestoreSource.IsEmpty())
+			{ Fail(TEXT("SC03Resume requires an actual saved snapshot through -S47HorrorRestore=/absolute/file.json")); return; }
+			T.RestoreSource = FPaths::ConvertRelativePathToFull(T.RestoreSource);
+			FString Text;
+			if (!FFileHelper::LoadFileToString(Text, *T.RestoreSource)) { Fail(TEXT("could not read SC03Resume source snapshot: ") + T.RestoreSource); return; }
+			const auto Saved = S47J::Read(Text);
+			const auto Horror = S47J::Obj(Saved, TEXT("horror")), Meeting = S47J::Obj(Horror, TEXT("sc02"));
+			if (!Check(Saved && Horror && S47J::Int(Horror, TEXT("contentRevision")) >= 2 && S47J::Str(Meeting, TEXT("phase")) == TEXT("escaped") &&
+				!S47J::Str(Meeting, TEXT("escapeStamp")).IsEmpty() && !S47J::Obj(Horror, TEXT("sc03")),
+				TEXT("source snapshot is an actual escaped SC02 case before SC03"))) return;
+			// Labelled fixture: the revision 2 escape snapshot is relabelled revision 3 so SC03 can be iterated
+			// without replaying SC01 and SC02. Full SC03 acceptance runs -S47HorrorContract=SC03 from a new case.
+			S47J::Set(Horror, TEXT("contentRevision"), 3);
+			if (!StoreRestore(TEXT("sc03-resume-source"), Saved)) return;
+			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: SC03Resume loaded %s relabelled as revision 3; SC01/SC02 are not rerun"), *T.RestoreSource);
+			Stage(200, 1.0); return;
 		}
 		if (T.Mode == TEXT("SC02Resume"))
 		{
@@ -978,6 +1000,7 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==119)
 	{
 		if(!Check(H.SC02Escaped() && M->Substation->HasNormalResult() && !Th.Active(),TEXT("escaped meeting and T01 survive Continue without restarting the body")))return;
+		if(T.Mode==TEXT("SC03")){Stage(200,.5);return;}
 		T.bDone=true;M->Player->TestMove.Reset();M->Player->bTestRun=false;
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode==TEXT("SC02Resume")?TEXT("SC02Resume"):TEXT("SC02"));
 		if(T.Mode==TEXT("SC02Resume"))S47J::Set(Result,TEXT("sourceSnapshot"),T.RestoreSource);
@@ -988,6 +1011,222 @@ void FS47HorrorTest::Step(double Dt)
 			TEXT("Scripted live contract on top of the SC01 contract. Field trip and drive back use the existing native autopilot API like the T01 drive contract; route B, manual steering, human play, listening and fear are UNVERIFIED."));
 		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror %s PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking, captured %s"),T.Mode==TEXT("SC02Resume")?TEXT("SC02Resume"):TEXT("SC02"),T.Checks,T.Stores,T.WalkMetres,T.bCaptured?TEXT("yes"):TEXT("no"));
+		FPlatformMisc::RequestExit(false);return;
+	}
+
+	// ---------------------------------------------------------------- SC03, the help that came
+	// From the escaped SC02 case: native autopilot to Caliche, the real payphone and its call
+	// lines through focused Slate Enter, waiting in view, the identification, looking away (no
+	// observation), Continue mid-lift, the actual sight, cover, traces, the missing report and
+	// the deputy's question. Facts are read back only from the host; nothing is assigned here.
+	if(T.Stage<200 || (T.Stage>=300 && T.Stage!=2161 && T.Stage!=2071))return;
+	if(!H.SC03){Fail(TEXT("SC03 module missing"));return;}
+	auto& S3=*H.SC03;
+	using EP=FS47HorrorSC03::EPhase;
+	auto Phase3=[&S3](){return FString(FS47HorrorSC03::PhaseName(S3.Phase()));};
+	auto Pick3=[this,&T](const FString& Id,const FVector& At,bool bUse)
+	{
+		if(T.Aimed!=Id){Aim(At);T.Aimed=Id;return false;}
+		T.Aimed.Empty();return Pick(Id,FString(),bUse);
+	};
+	auto CallDrain=[this,&T,&H,&Enter]()
+	{
+		// A world call is not a pack scene: read its exact line and wait its duration, then Enter.
+		const auto Saved=H.Save();
+		if(!S47J::Bool(Saved,TEXT("callActive")))return false;
+		const FString Scene=S47J::Str(Saved,TEXT("callScene")).IsEmpty()?FString(TEXT("SC01_FIRST_REPORT")):S47J::Str(Saved,TEXT("callScene"));
+		const int32 Cursor=S47J::Int(Saved,TEXT("callCursor"));const auto* S=H.Pack.FindScene(Scene);
+		if(!S || !S->Lines.IsValidIndex(Cursor)){Fail(TEXT("world call has no line: ")+Scene);return true;}
+		const FString Key=Scene+FString::FromInt(Cursor);
+		if(T.LastLine!=Key){T.LastLine=Key;T.LineAt=T.Elapsed;Shot(TEXT("sc03-call-")+Key);return true;}
+		if(T.Elapsed-T.LineAt<FMath::Max(.5,S->Lines[Cursor].Duration+1))return true;
+		if(!M->ModalOpen()){H.Use(TEXT("town:payphone"));return true;}
+		if(!Enter())return true;T.LastLine.Empty();T.Hold=.25;return true;
+	};
+	auto Payphone=[this](){return Target(TEXT("town:payphone"));};
+	auto Front=[this](const FVector& At,double D){FVector V=At-M->Player->Pos;V.Y=0;V=V.GetSafeNormal();return FVector(At.X-V.X*D,0,At.Z-V.Z*D);};
+	if(T.Stage==200)
+	{
+		if(H.Pack.CurrentScene()){Drain(200);return;}
+		if(S3.Phase()!=EP::Report){if(T.Elapsed-T.Since>10)Fail(TEXT("SC03 report was not owed after the presented SC02 escape: ")+Phase3());return;}
+		if(!Check(H.ContentRevision()>=3 && !S3.Facts().bDispatch && !M->Story->Docs().ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("HR_DISPATCH_RECEIPT");}),
+			TEXT("revision 3: the escape presented makes the Caliche report owed, with no receipt yet")))return;
+		M->UI->Close(true);
+		if(M->World->bDriving){Fail(TEXT("expected to start SC03 on foot at SARO"));return;}
+		Stage(201,.4);return;
+	}
+	if(T.Stage==201)
+	{
+		if(!Pick3(TEXT("truck"),Target(TEXT("truck")),false))return;
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 drive to Caliche with the existing native autopilot (labelled API target, like the T01 drive contract)"));
+		M->World->Autopilot=10;M->World->DriveToDiner(nullptr);Stage(202,1.0);return;
+	}
+	if(T.Stage==202)
+	{
+		if(H.Pack.CurrentScene()){Drain(202);return;}
+		if(M->World->bDriving){if(T.Elapsed-T.Since>420)Fail(TEXT("native drive to Caliche did not park within 420 s"));return;}
+		if(!Check(M->World->Area==TEXT("diner"),TEXT("native drive parked at Caliche")))return;
+		const FVector P=Payphone();
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 at Caliche: player %.2f %.2f, payphone %.2f %.2f, counter wagon park %.2f %.2f"),M->Player->Pos.X,M->Player->Pos.Z,P.X,P.Z,S3.WagonPoint().X,S3.WagonPoint().Z);
+		Go({Front(P,1.1)},203);return;
+	}
+	if(T.Stage==203)
+	{
+		if(!Pick3(TEXT("town:payphone"),Payphone(),true))return;
+		Stage(204,.3);return;
+	}
+	if(T.Stage==204)
+	{
+		if(CallDrain())return;
+		if(H.Pack.CurrentScene()){Drain(204);return;}
+		if(!Check(S3.Facts().bDispatch && S3.Facts().bAssigned && S3.Phase()==EP::Wait && H.Pack.Flag(TEXT("hr_sc03_relief_contact_presented")),
+			TEXT("the completed dispatch and Ward calls give the readback, the assignment and the wait")))return;
+		int32 N=0;for(const auto& D:M->Story->Docs())if(D.Id==TEXT("HR_DISPATCH_RECEIPT"))++N;
+		if(!Check(N==1,TEXT("one dispatch receipt filed with the completed call")))return;
+		Stage(205,.3);return;
+	}
+	if(T.Stage==205)
+	{
+		// Wait in view of the counter; the wagon may only come while Reyes is at the fuel stop.
+		if(S3.Phase()==EP::Arrival){Shot(TEXT("sc03-wagon-arriving"));if(!StoreRestore(TEXT("sc03-mid-arrival"),M->Flow->GameState()))return;Stage(206,1.0);return;}
+		if(S3.Phase()==EP::Meet){Stage(207,.5);return;}
+		if(T.Elapsed-T.Since>60)Fail(TEXT("wagon twenty-three did not come while waiting at the fuel stop: ")+Phase3());
+		return;
+	}
+	if(T.Stage==206)
+	{
+		if(!Check(S3.Phase()==EP::Meet,TEXT("Continue during the arrival restores a parked wagon and Ortiz, no replayed drive")))return;
+		Stage(207,.3);return;
+	}
+	if(T.Stage==207)
+	{
+		// Ortiz stands at the driver's side; reach her from her own side, around the wagon's solid body.
+		const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out=Out.GetSafeNormal();
+		const FVector Wide(O.X+Out.X*3.2,0,O.Z+Out.Z*3.2),Near(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5);
+		const FVector Mid=(M->Player->Pos+Wide)*.5;FVector Side=Mid-Wg;Side.Y=0;
+		const FVector Around=Wg+Side.GetSafeNormal()*4.5;
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 approach Ortiz %.2f %.2f from her side via %.2f %.2f"),O.X,O.Z,Wide.X,Wide.Z);
+		Go({FVector(Around.X,0,Around.Z),Wide,Near},2071);return;
+	}
+	if(T.Stage==2071)
+	{
+		Aim(S3.OrtizPoint());Stage(208,.4);return;
+	}
+	if(T.Stage==208)
+	{
+		if(T.Aimed.IsEmpty())Shot(TEXT("sc03-ortiz"));
+		if(!Pick3(TEXT("horror:ortiz"),S3.OrtizPoint(),true))return;
+		Stage(209,.3);return;
+	}
+	if(T.Stage==209)
+	{
+		if(H.Pack.CurrentScene()){Drain(209);return;}
+		if(!Check(S3.Facts().bIdentified && !S3.Facts().bObserved && H.Pack.Flag(TEXT("hr_sc03_ortiz_identify_presented")),TEXT("physical identification and Ortiz's lines, no lift yet")))return;
+		// Look away before the light: the lift must not count while it is not seen.
+		const FVector O=S3.OrtizPoint();Aim(M->Player->Pos*2-FVector(O.X,M->Player->Pos.Y*2-O.Y,O.Z)+FVector(0,0,0));
+		Stage(210,.1);return;
+	}
+	if(T.Stage==210)
+	{
+		const FVector O=S3.OrtizPoint();const FVector Back(2*M->Player->Pos.X-O.X,O.Y,2*M->Player->Pos.Z-O.Z);Aim(Back);
+		if(T.Elapsed-T.Since<12)return;
+		if(!Check(S3.Phase()==EP::Lift && S3.LightOn() && !S3.Facts().bObserved,TEXT("looking away during the light gives no observed lift; she hangs in the light")))return;
+		Shot(TEXT("sc03-looking-away"));
+		if(!StoreRestore(TEXT("sc03-mid-lift-unseen"),M->Flow->GameState()))return;
+		Stage(211,1.0);return;
+	}
+	if(T.Stage==211)
+	{
+		if(!Check(S3.Phase()==EP::Lift && S3.Facts().bIdentified && !S3.Facts().bObserved,TEXT("Continue during an unseen lift resumes the lift, never a fabricated sighting")))return;
+		Stage(212,.2);return;
+	}
+	if(T.Stage==212)
+	{
+		Aim(S3.OrtizPoint());
+		if(S3.Phase()==EP::Retreat){Shot(TEXT("sc03-taken"));Stage(213,.8);return;}
+		if(T.Elapsed-T.Since>25)Fail(TEXT("the lift was never observed while looking at it"));
+		return;
+	}
+	if(T.Stage==213)
+	{
+		if(!Check(S3.Facts().bObserved && !S3.Facts().bRetreat && !S3.Facts().TakenStamp.IsEmpty(),TEXT("the actual sight gives the observed lift and its stamp")))return;
+		const auto Heads=S3.FigureHeads();if(Heads.Num())Aim(Heads[0]);
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 figures at %.2f %.2f / %.2f %.2f / %.2f %.2f"),Heads.Num()>0?Heads[0].X:0.,Heads.Num()>0?Heads[0].Z:0.,Heads.Num()>1?Heads[1].X:0.,Heads.Num()>1?Heads[1].Z:0.,Heads.Num()>2?Heads[2].X:0.,Heads.Num()>2?Heads[2].Z:0.);
+		Stage(214,.6);return;
+	}
+	if(T.Stage==214)
+	{
+		Shot(TEXT("sc03-figures"));
+		// Cover inside the fuel station: its real door faces east; go round to it on the low side.
+		FS47Rect Door,Zone;bool bDoor=false,bZone=false;
+		for(const auto& C:M->Web->Colliders())if(C.Id==TEXT("door:gasDoor")){Door=C;bDoor=true;}
+		for(const auto& Z:M->Web->Zones())if(Z.Id==TEXT("prop:gasStation")){Zone=Z;bZone=true;}
+		if(!bDoor || !bZone){Fail(TEXT("fuel station door or interior zone not found"));return;}
+		const double DX=(Door.MinX+Door.MaxX)/2,DZ=(Door.MinZ+Door.MaxZ)/2,Out=DX>(Zone.MinX+Zone.MaxX)/2?1:-1;
+		T.Door3=FVector(DX,0,DZ);T.DoorOut=Out;
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 retreat to the station door %.2f %.2f, outside to %s"),DX,DZ,Out>0?TEXT("east"):TEXT("west"));
+		Go({FVector(DX+Out*2.2,0,Zone.MinZ-1.0),FVector(DX+Out*1.3,0,DZ)},215,true);return;
+	}
+	if(T.Stage==215){if(!AS47Props::IsDoorOpen(TEXT("gasDoor"))){if(!Pick3(TEXT("town:gasDoor"),Target(TEXT("town:gasDoor")),true))return;}Stage(216,.8);return;}
+	if(T.Stage==216)
+	{
+		Go({FVector(T.Door3.X-T.DoorOut*2.6,0,T.Door3.Z)},2161);return;
+	}
+	if(T.Stage==2161)
+	{
+		if(!S3.Facts().bRetreat){if(T.Elapsed-T.Since>8)Fail(TEXT("no safe retreat registered inside the station"));return;}
+		if(H.Pack.CurrentScene()){Drain(2161);return;}
+		if(!Check(H.Pack.Flag(TEXT("hr_sc03_helper_taken_presented")) && S3.Phase()==EP::Calm,TEXT("cover inside the station, then the observation text")))return;
+		Stage(217,.4);return;
+	}
+	if(T.Stage==217)
+	{
+		const FVector Wg=S3.WagonPoint();
+		Go({Front(Wg,2.6)},218);return;
+	}
+	if(T.Stage==218){if(!Pick3(TEXT("horror:wagon23"),Target(TEXT("horror:wagon23")),true))return;Stage(219,.3);return;}
+	if(T.Stage==219){M->UI->Close(true);if(!Pick3(TEXT("horror:thermos"),Target(TEXT("horror:thermos")),true))return;Stage(220,.3);return;}
+	if(T.Stage==220){M->UI->Close(true);if(!Pick3(TEXT("horror:gravelMarks"),Target(TEXT("horror:gravelMarks")),true))return;Stage(221,.6);return;}
+	if(T.Stage==221)
+	{
+		M->UI->Close(true);
+		if(H.Pack.CurrentScene()){Drain(221);return;}
+		if(!Check(S3.TracesChecked() && H.Pack.Flag(TEXT("hr_sc03_helper_traces_presented")),TEXT("the wagon, the thermos and the marks examined; the traces note presented")))return;
+		Go({Front(Payphone(),1.1)},222);return;
+	}
+	if(T.Stage==222){if(!Pick3(TEXT("town:payphone"),Payphone(),true))return;Stage(223,.3);return;}
+	if(T.Stage==223)
+	{
+		if(CallDrain())return;
+		if(H.Pack.CurrentScene()){Drain(223);return;}
+		if(!Check(S3.Facts().bMissing && S3.Facts().bLocalOrder && S3.Phase()==EP::Deputy,TEXT("the missing-person report and Ward's local hold, then the deputy is coming")))return;
+		if(!StoreRestore(TEXT("sc03-after-missing"),M->Flow->GameState()))return;
+		Stage(224,1.0);return;
+	}
+	if(T.Stage==224)
+	{
+		if(!S3.Facts().bDeputyHere){if(T.Elapsed-T.Since>30)Fail(TEXT("the deputy never reached the fuel stop"));return;}
+		Shot(TEXT("sc03-deputy"));
+		Go({Front(Target(TEXT("horror:deputy")),1.5)},225);return;
+	}
+	if(T.Stage==225){if(!Pick3(TEXT("horror:deputy"),Target(TEXT("horror:deputy")),true))return;Stage(226,.3);return;}
+	if(T.Stage==226)
+	{
+		if(H.Pack.CurrentScene()){Drain(226);return;}
+		if(S3.Phase()!=EP::Complete){if(T.Elapsed-T.Since>5)Fail(TEXT("the deputy's question did not complete SC03"));return;}
+		if(!StoreRestore(TEXT("sc03-complete"),M->Flow->GameState()))return;
+		Stage(227,1.0);return;
+	}
+	if(T.Stage==227)
+	{
+		int32 Docs=0;for(const auto& D:M->Story->Docs())if(D.Id.StartsWith(TEXT("HR_DISPATCH")) || D.Id.StartsWith(TEXT("HR_MISSING")) || D.Id.StartsWith(TEXT("HR_LOCAL_HOLD")) || D.Id.StartsWith(TEXT("HR_HELPER_TRACE")))++Docs;
+		if(!Check(S3.Complete() && Docs==4,TEXT("completed SC03 and its four papers survive Continue, each once")))return;
+		T.bDone=true;M->Player->TestMove.Reset();
+		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode);
+		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);Result->SetArrayField(TEXT("evidence"),T.Evidence);
+		S47J::Set(Result,TEXT("limits"),TEXT("Scripted live contract. The drive to Caliche uses the native autopilot API; the cab retreat uses FreeDrive without moving. Retreat inside the station, manual steering, human play, listening and the final Ortiz/deputy assets are UNVERIFIED."));
+		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror %s PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"),*T.Mode,T.Checks,T.Stores,T.WalkMetres);
 		FPlatformMisc::RequestExit(false);return;
 	}
 
