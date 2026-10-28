@@ -1019,3 +1019,7 @@ Prosjektbiblioteket og festede primærkilder er gjennomgått for Nanite, lys, sk
 ## 2026-10-28 kl. 22:40 CET: todo presisert etter Unreal-undersøkelsen
 
 Toms siste bestilling er ført som egne åpne punkter for lys/skygger, FX, lyd, materialer/farger og målrettet ytelse, sammen med MetaHuman-mannekenger og Nanite. Eksisterende oppgaver er beholdt. Samlet hovedoversikt gis i chatten; gamle portnotater er historikk som må statusavklares før de behandles som nye feil. Ingen motorjobb eller spilltest.
+
+## 2026-10-28 kl. 22:58 CET: Codex starter nattsekvensen
+
+HANDOFF og gjeldende origin/main er lest. Egen gren fra 469335b1 i ledig bygget Codex-worktree med generert Content. Tidligere genererte OpenOrder-logger er bevart i bevismappen før grenskiftet. Story/Evening og klokkekoordinator eies av root; SubstationArc, SkyVisitors og lesende testkartlegging er fordelt med adskilt filansvar. Bibliotekssøk ga generelle Unreal-referanser merket UNVERIFIED; prosjektets eksisterende implementasjon brukes. Målrettet native/pakket test planlegges, ingen ny fullmatrise per delsteg. Ingen installasjon eller offentlig release.

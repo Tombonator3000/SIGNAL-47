@@ -1,8 +1,10 @@
 #include "S47SkyVisitors.h"
 
 #include "S47Evening.h"
+#include "S47FieldCamera.h"
 #include "S47Flow.h"
 #include "S47Geo.h"
+#include "S47Image.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Story.h"
@@ -17,6 +19,7 @@
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
+#include "Misc/Base64.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
@@ -46,6 +49,20 @@ double FS47SkyVisitorState::Duration(int32 S)
 }
 int32 FS47SkyVisitorState::Count(int32 S) { const int32 N[5] = {1, 2, 4, 6, 9}; return S >= 1 && S <= 5 ? N[S - 1] : 0; }
 int32 FS47SkyVisitorState::RequiredVisible(int32 S) { const int32 N[5] = {1, 2, 2, 3, 4}; return S >= 1 && S <= 5 ? N[S - 1] : MAX_int32; }
+int32 FS47SkyVisitorState::ScheduledStage(double Clock, int32 Chapter, bool bHandoverDone)
+{
+ if (!FMath::IsFinite(Clock)) return 0;
+ const double Night = S47Timeline::Night(Clock);
+ // The evening has one light only, first due at 21:30. Observing's short clock
+ // jumps past that time may start the opportunity, but cannot replace it with
+ // the old 20:00/22:00 multi-light tracks. Later groups follow actual chapters.
+ if (Night < 0) return bHandoverDone && Night >= S47Timeline::Sky01 ? 1 : 0;
+ if (Chapter >= 5) return 5;
+ if (Chapter >= 3) return 4;
+ if (Chapter >= 2) return 3;
+ if (Chapter >= 1) return 2;
+ return bHandoverDone ? 1 : 0;
+}
 
 void FS47SkyVisitorState::Begin(const S47J::FObj& Saved, bool bNewNight)
 {
@@ -124,7 +141,9 @@ S47J::FObj FS47SkyVisitorState::Save() const
 FVector FS47SkyVisitorState::MapPosition(int32 S, int32 I, double Seconds)
 {
  const double P = FMath::Clamp(Seconds / FMath::Max(1., Duration(S)), 0., 1.);
- if (S == 1) return FVector(-1050 + 2100 * P, 510 + 35 * FMath::Sin(P * PI), -1050 + 160 * P);
+ // Road-map coordinates: the middle of this slow crossing is due north of
+ // SARO's walk gate (site x=-1, z=-20). It is a distant light, never a figure.
+ if (S == 1) return FVector(23 - 520 + 1040 * P, 330 + 22 * FMath::Sin(P * PI), -1180 + 80 * P);
  if (S == 2) return I == 0 ? FVector(-510 - 650 * P, 650 + 70 * P, 1410 + 360 * P)
   : FVector(-430 + 1100 * P, 760 + 70 * P, 1320 - 520 * P);
  if (S == 3)
@@ -220,20 +239,10 @@ int32 FS47SkyVisitors::RequestedStage() const
 {
  if (TestStage) return TestStage;
  if (!M || !M->Story || !M->Story->bEveningTimeline) return 0;
- // The current chapter route supplies real milestones until S.2 owns the new
- // evening encounters. A phase transition is never an observation or a gate.
  const FString& C = M->Story->ChapterKey;
  const int32 Chapter = C.StartsWith(TEXT("ch")) ? FCString::Atoi(*C.Mid(2)) : 0;
- if (Chapter >= 5) return 5;
- if (Chapter >= 3) return 4;
- if (Chapter >= 2) return 3;
- if (Chapter >= 1) return 2;
- if (M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")))
- {
-  const double Clock = S47Timeline::Night(M->Story->Clock());
-  return Clock >= -2 * 3600 ? 3 : Clock >= -4 * 3600 ? 2 : 1;
- }
- return 0;
+ return FS47SkyVisitorState::ScheduledStage(M->Story->Clock(), Chapter,
+  M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")));
 }
 void FS47SkyVisitors::RecordObservation(int32 Visible)
 {
@@ -323,7 +332,7 @@ void FS47SkyVisitors::ControlTest(double Dt)
   if (ContractRoot.IsEmpty() || !ContractRoot.StartsWith(TEXT("/tmp/")) || !User.StartsWith(TEXT("/tmp/")) || M->Flow->CaseId != 0)
   { bContractDone = true; UE_LOG(LogS47SkyVisitors,Error,TEXT("S47: sky contract requires developer case zero and /tmp proof/UserDir")); FPlatformMisc::RequestExitWithStatus(false,1); return; }
   IFileManager::Get().MakeDirectory(*ContractRoot,true);
-  M->World->Enter(TEXT("saro")); M->Player->Place(9.5,-18.5,0); M->Player->Pitch = -.5;
+  M->World->Enter(TEXT("saro")); M->Player->Place(-1,-18.5,0); M->Player->Pitch = -.5;
   State.Begin(nullptr,true); TestStage = 1; ContractPhase = 1; ContractSince = ContractTime;
   return;
  }
@@ -349,7 +358,7 @@ void FS47SkyVisitors::ControlTest(double Dt)
   US47Flow::FStart Start; Start.State = Saved; Start.bDev = true; Start.CaseId = 0;
   M->Flow->StartGame(Start);
   if (!Check(State.Elapsed == HeldTime && State.Occurred[0] && !State.Observed[0],TEXT("full Flow restore retains midpass time and unseen status"))) return;
-  M->World->Enter(TEXT("saro")); M->Player->Place(9.5,-18.5,0);
+  M->World->Enter(TEXT("saro")); M->Player->Place(-1,-18.5,0);
   ContractPhase = 3; ContractSince = ContractTime;
  }
  // This test follows the physical targets using the ordinary Walker view. Production
@@ -364,6 +373,37 @@ void FS47SkyVisitors::ControlTest(double Dt)
  if (State.Stage == TestStage && State.Observed[TestStage - 1] && Since > 4)
  {
   if (!Check(true,FString::Printf(TEXT("SKY%02d seen through actual projected and unoccluded sight"),TestStage))) return;
+  if (TestStage == 1)
+  {
+   // Compare two real film captures at the same pose/seed. Only the world light
+   // is hidden for the reference. Journal state is never used as pixel proof.
+   if (!Check(M->FieldCamera != nullptr,TEXT("field camera exists for the optional gate photograph"))) return;
+   M->FieldCamera->Sync();
+   const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(1,0,State.Elapsed),TEXT("saro"));
+   const FS47Projection P = M->FieldCamera->Project(At);
+   if (!Check(P.bFront && P.U > .03 && P.U < .97 && P.V > .03 && P.V < .97,TEXT("SKY01 projects inside the actual field camera from the gate"))) return;
+   FS47SnapOptions O; O.W = 960; O.Seed = 47;
+   const FS47Snap With = M->FieldCamera->Snap(O);
+   TArray<bool> Visible;
+   for (auto& B : Points) { Visible.Add(B.IsValid() && B->IsVisible()); if (B.IsValid()) B->SetVisibility(false); }
+   const FS47Snap Without = M->FieldCamera->Snap(O);
+   for (int32 I = 0; I < Points.Num(); ++I) if (Points[I].IsValid()) Points[I]->SetVisibility(Visible[I]);
+   if (!Check(With.bRendered && Without.bRendered && With.Px.Num() == Without.Px.Num(),TEXT("two native scene captures render for the photograph comparison"))) return;
+   const int32 X = FMath::RoundToInt(P.U * With.W), Y = FMath::RoundToInt(P.V * With.H);
+   int32 Pixels = 0, Peak = 0;
+   for (int32 V = FMath::Max(0,Y-12); V <= FMath::Min(With.H-1,Y+12); ++V)
+    for (int32 U = FMath::Max(0,X-12); U <= FMath::Min(With.W-1,X+12); ++U)
+    {
+     const FColor A = With.Px[V*With.W+U], B = Without.Px[V*With.W+U];
+     const int32 Delta = int32(A.R)+A.G+A.B-int32(B.R)-B.G-B.B;
+     Peak = FMath::Max(Peak,Delta); if (Delta >= 20) ++Pixels;
+    }
+   if (!Check(Pixels >= 2,FString::Printf(TEXT("SKY01 contributes actual photograph pixels near its projection (%d pixels, peak delta %d)"),Pixels,Peak))) return;
+   const FString Url = S47Image::ToDataUrl(With.Px,With.W,With.H,false);
+   int32 Comma = INDEX_NONE; TArray<uint8> Png;
+   if (!Check(Url.FindChar(TEXT(','),Comma) && FBase64::Decode(Url.Mid(Comma+1),Png) &&
+    FFileHelper::SaveArrayToFile(Png,*(ContractRoot/TEXT("sky01-field-photo.png"))),TEXT("preserve the native field-camera photograph as PNG"))) return;
+  }
   FScreenshotRequest::RequestScreenshot(ContractRoot/FString::Printf(TEXT("sky%02d.png"),TestStage),false,false);
   const auto Snapshot = S47J::Clone(State.Save()); FS47SkyVisitorState Restored; Restored.Begin(Snapshot,false);
   if (!Check(Restored.Observed[TestStage-1] && Restored.Stage == TestStage && Restored.Elapsed == State.Elapsed,TEXT("phase position and actual observation survive serialization"))) return;
@@ -384,8 +424,29 @@ bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
 {
  bool Good = true;
  auto Check = [&](bool B, const TCHAR* Text) { Lines.Add(FString::Printf(TEXT("%s sky visitors: %s"), B ? TEXT("ok") : TEXT("FAIL"), Text)); Good &= B; };
+ Check(FS47SkyVisitorState::ScheduledStage(21*3600+29*60,0,true) == 0 &&
+  FS47SkyVisitorState::ScheduledStage(21*3600+30*60,0,true) == 1 &&
+  FS47SkyVisitorState::ScheduledStage(-2*3600-30*60,0,true) == 1,
+  TEXT("first evening light starts at 21:30 on either clock representation"));
+ Check(FS47SkyVisitorState::ScheduledStage(18*3600,0,true) == 0 &&
+  FS47SkyVisitorState::ScheduledStage(21*3600+30*60,0,false) == 0,
+  TEXT("handover alone cannot start a light and unfinished handover has none"));
+ Check(FS47SkyVisitorState::ScheduledStage(22*3600+5*60,0,true) == 1 &&
+  FS47SkyVisitorState::ScheduledStage(22*3600+50*60,2,true) == 1,
+  TEXT("Observing clock jumps retain the first single-light opportunity without early groups"));
+ Check(FS47SkyVisitorState::ScheduledStage(2*3600,1,true) == 2 &&
+  FS47SkyVisitorState::ScheduledStage(2*3600+15*60,2,true) == 3 &&
+  FS47SkyVisitorState::ScheduledStage(3*3600,3,true) == 4 &&
+  FS47SkyVisitorState::ScheduledStage(4*3600,5,true) == 5,
+  TEXT("later world formations follow actual night chapters"));
  FS47SkyVisitorState S; S.Begin(nullptr, false);
  Check(!S.bEnabled && !S.Advance(5, 2, false), TEXT("legacy cases gain no retroactive sky sequence"));
+ S.Begin(nullptr,true);
+ S.Advance(FS47SkyVisitorState::ScheduledStage(20*3600+45*60,0,true),1,false);
+ Check(S.Stage == 0 && !S.Occurred[0],TEXT("the 20:45 observing run is too early for SKY01"));
+ S.Advance(FS47SkyVisitorState::ScheduledStage(22*3600+5*60,0,true),1,false);
+ Check(S.Stage == 1 && S.Occurred[0] && !S.Observed[0] && !S.Occurred[1],
+  TEXT("a short clock jump across 21:30 starts one optional unseen light, not a later formation"));
  S.Begin(nullptr, true); S.Advance(1, 5, false);
  Check(S.Stage == 1 && S.Occurred[0] && !S.Observed[0] && !S.Completed[0], TEXT("occurrence does not imply observation or completion"));
  const double Before = S.Elapsed; S.Advance(5, 20, true);
@@ -415,5 +476,8 @@ bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
  }
  const FVector P(55, 700, 1200), Road = WorldPosition(P, TEXT("road")), Site = WorldPosition(P, TEXT("saro"));
  Check(Road.Equals(P + FVector(8000,0,0), 1e-9) && (Site + FVector(24,0,-300)).Equals(P,1e-9), TEXT("SARO and road draw the same geographic path in their distinct world frames"));
+ const FVector GateLight = WorldPosition(FS47SkyVisitorState::MapPosition(1,0,FS47SkyVisitorState::Duration(1)/2),TEXT("saro"));
+ Check(FMath::Abs(GateLight.X+1) < 1e-9 && GateLight.Y > 300 && GateLight.Z < -600,
+  TEXT("single world light crosses the northern sky above the SARO gate sector"));
  return Good;
 }

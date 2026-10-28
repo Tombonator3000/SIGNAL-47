@@ -705,7 +705,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
-	if (Checkpoint == TEXT("routine")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
+	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
  // Both restored systems now belong to this case; validate T01 filing against its actual record.
  if (M->Evening) M->Evening->ValidateServiceRestore();
  if (M->Evening) M->Evening->ValidateInvestigationRestore();
@@ -751,7 +751,7 @@ void US47Flow::StartStory(const FString& Checkpoint)
 	// Prologue.start(checkpoint): back to the start of the night, the player at the spawn, then the
 	// checkpoint's beat, or the night from 23:41
 	if (!M->Story) return;
-	if (Checkpoint.IsEmpty() || Checkpoint == TEXT("routine")) { M->Story->Start(); return; }
+	if (Checkpoint.IsEmpty() || Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) { M->Story->Start(); return; }
 	if (M->Web && M->Player) { const FVector Sp = M->Web->SpawnThree(); M->Player->Place(Sp.X, Sp.Z, Sp.Y); }
 	M->Story->Jump(Checkpoint);
 }
@@ -1224,7 +1224,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
-	if (Checkpoint == TEXT("routine")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
+	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
@@ -1367,6 +1367,7 @@ FString US47Flow::CheckpointName() const
 	if (M->Evening && M->Evening->Opening()) return TEXT("evening");
 	if (!S) return TEXT("start");
 	if (S->bEveningTimeline && S->Phase() == ES47Phase::Shift) return TEXT("routine");
+ if (S->NightSequence() && S->Phase() == ES47Phase::Residual) return TEXT("nightService");
 	const FString& K = S->ChapterKey;
 	if (K == TEXT("ch5") || K == TEXT("ch6")) return TEXT("chapter5");
 	if (K == TEXT("ch4")) return TEXT("chapter4");

@@ -20,6 +20,7 @@
 #include "S47DishArray.h"
 #include "S47Reel047.h"
 #include "S47SaroNight.h"
+#include "S47SaroPower.h"
 #include "S47Inter.h"
 #include "S47Json.h"
 #include "S47UI.h"
@@ -198,8 +199,53 @@ void AS47Story::HondoTelex(double Filed, TOptional<double> At)
 	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll(), bEveningTimeline);
 }
 
+bool AS47Story::NightSequence() const
+{
+ const auto* M = US47Main::Get(this);
+ return M && M->Evening && M->Evening->NightSequence();
+}
+bool AS47Story::FeederOutage() const
+{
+ const auto* M = US47Main::Get(this);
+ return M && M->Evening && M->Evening->FeederOutage();
+}
+void AS47Story::AdvanceClockTo(double Target, const FString& Reason)
+{
+ const double Before = ClockSec;
+ ClockSec = S47Timeline::AdvanceMilestone(ClockSec, Target, int32(CurrentPhase) < int32(ES47Phase::Residual));
+ if (ClockSec > Before + .01)
+  UE_LOG(LogS47Story, Display, TEXT("S47: clock milestone %s: %.3f -> %.3f"), *Reason, Before, ClockSec);
+}
+void AS47Story::ApplyFeederPower(bool bOut)
+{
+ auto* M = US47Main::Get(this);
+ if (bOut)
+ {
+  TripK3(); NS.bK3Open = true; ApplyK3(true);
+  // Halt the actual motors at their current pointing, including an in-flight slew.
+  if (Saro.IsValid()) for (int32 I = 0; I < Saro->DishCount(); ++I)
+   Saro->SnapDish(I, Saro->DishAz(I), Saro->DishEl(I));
+  if (M && M->SaroNight && M->SaroNight->Power && !bFeederPowerHeld)
+  {
+   M->SaroNight->Power->Cut();
+   // Battery-backed emergency illumination; the receiver screens and array stay dead.
+   M->SaroNight->Power->Set(.12, 0);
+   bFeederPowerHeld = true;
+  }
+  bAlarmOn = false; Cancel(TEXT("alarm"));
+ }
+ else if (bFeederPowerHeld)
+ {
+  if (M && M->SaroNight && M->SaroNight->Power) M->SaroNight->Power->Restore();
+  bFeederPowerHeld = false;
+  NS.bK3Open = false; ApplyK3(false);
+ }
+ PowerOut(bOut);
+}
+
 void AS47Story::PowerOut(bool bOut)
 {
+ bOut = bOut || FeederOutage();
 	bDark = bOut;
 	if (bRadioOn && Audio.IsValid()) Audio->AmRadio(!bOut, Saro.IsValid() ? Saro->PropLocation(TEXT("radio")) : FVector::ZeroVector);
 }
@@ -228,7 +274,7 @@ void AS47Story::OpenDoc(const FS47Doc& Doc, TFunction<void()> OnClose)
 
 void AS47Story::PointDishes(double Az, double El, double Slew)
 {
-	if (Saro.IsValid()) Saro->PointDishes(Az, El, Slew);
+	if (!FeederOutage() && Saro.IsValid()) Saro->PointDishes(Az, El, Slew);
 }
 
 void AS47Story::SetLeds(bool bOn)
@@ -297,6 +343,8 @@ FString AS47Story::Label(const FString& Id) const
 	if (Id == TEXT("workOrder")) return TEXT("Read the work order");
 	if (Id == TEXT("coffeePot")) return At(ES47Phase::Event) ? TEXT("Coffee machine") : Coffee == ECoffee::None ? TEXT("Fill your mug") : TEXT("Coffee machine");
 	if (Id == TEXT("mug")) return (Saro.IsValid() && !Saro->IsMugVisible()) ? FString() : Coffee == ECoffee::Poured ? TEXT("Drink coffee") : TEXT("SARO mug");
+ if (Id == TEXT("rack") && FeederOutage()) return TEXT("K3 open / feeder fault at Caliche Junction");
+ if (Id == TEXT("phone") && FeederOutage()) return TEXT("Answer the county feeder call");
 	if (Id == TEXT("rack")) return NS.bK3Open ? TEXT("Reset RX bank 3") : bPowered ? TEXT("RX bank 3") : TEXT("Power up RX bank 3");
 	if (Id == TEXT("crtCenter")) return bCinematic ? FString() : !bPowered ? TEXT("Receiver console") : bAlarmOn ? TEXT("Check the spectrum") : TEXT("Use receiver console");
 	if (Id == TEXT("crtLeft")) return TEXT("Status terminal");
@@ -379,6 +427,7 @@ void AS47Story::Use(const FString& Id)
 	}
 	if (Id == TEXT("crtLeft"))
 	{
+  if (FeederOutage()) { Toast(TEXT("Array drive dead. Restore the Caliche Junction feeder."), 4); return; }
 		if (!bPowered) { Toast(TEXT("No power.")); return; }
 		const FString ArrayAt = ArrayText ? ArrayText() : FString();
 		if (!ArrayAt.IsEmpty()) Toast(ArrayAt);
@@ -389,6 +438,7 @@ void AS47Story::Use(const FString& Id)
 	}
 	if (Id == TEXT("crtRight"))
 	{
+  if (FeederOutage()) { Toast(TEXT("Tracking terminal is on emergency power only. No array drive."), 4); return; }
 		if (!bPowered) { Toast(TEXT("No power.")); return; }
 		if (CurrentPhase == ES47Phase::Locked) { StartSolve(); return; }
 		if (Rx.Stage < 3) Toast(TEXT("Direction solve needs a locked source. Nothing worth solving."));
@@ -489,6 +539,7 @@ void AS47Story::TripK3(bool bSound)
 
 void AS47Story::ResetK3()
 {
+ if (FeederOutage()) { Toast(TEXT("K3 will not hold. Caliche Junction feeder is out; answer the county call and restore the supply."), 5); return; }
 	if (bCinematic) return;
 	NS.bK3Open = false;
 	Log(TEXT("RX BANK 3  K3 CLOSED"));
@@ -537,19 +588,21 @@ void AS47Story::ConsoleAzimuth()
 
 void AS47Story::ConsoleAction()
 {
+ if (FeederOutage()) { Rx.Status = TEXT("FEEDER OUT / K3 OPEN / ARRAY DRIVE DEAD"); return; }
 	if (!Rx.Pass()) { Rx.Status = TEXT("NO LOCK  /  ADJUST PARAMETERS"); return; }
 	StagePassed();
 }
 
 void AS47Story::StagePassed()
 {
+ if (FeederOutage()) return;
 	const int32 S = Rx.Stage;
  if (S == 1 && bEveningTimeline)
  {
   const US47Main* Main = US47Main::Get(this);
   if (Main && Main->Horror && Main->Horror->Enabled() && !Main->Horror->Complete())
   {Rx.Status=TEXT("FINISH THE EVENING ROUND BEFORE THE UNATTENDED SURVEY");Toast(Main->Horror->Objective(),5);return;}
-  if (Main && Main->Evening && Main->Evening->ServicePending())
+  if (Main && Main->Evening && !Main->Evening->NightSequence() && Main->Evening->ServicePending())
   {
    // Local calibration remains usable. Only the unattended overnight survey waits for T01.
    Rx.Status = TEXT("LOCAL INSPECTION CARD REQUIRED BEFORE OVERNIGHT SURVEY");
@@ -579,6 +632,7 @@ void AS47Story::ConsoleClosed()
 	if (Rx.Stage == 2 && CurrentPhase == ES47Phase::Survey && !bSkipQueued)
 	{
 		bSkipQueued = true;
+  if (NightSequence()) AdvanceClockTo(S47Timeline::EveningFiled, TEXT("evening filed / unattended survey"));
 		After(2.5, [this] { Toast(TEXT("Nothing to do now but watch a sweep that takes all night."), 3.5f); });
 		After(RelayFirstSec, [this] { RelayFirst(); }, TEXT("skip"));
 	}
@@ -605,6 +659,7 @@ void AS47Story::LogClosed()
 void AS47Story::RelayFirst()
 {
 	if (CurrentPhase != ES47Phase::Survey) return;
+ if (NightSequence()) { TimeSkip(); return; }
 	TripK3();
 	After(0.5, [this] { Toast(TEXT("A clack from the rack. Bank 3 has dropped out again."), 3.4f); });
 	After(DipAfter, [this] { LightsDip(); }, TEXT("skip"));
@@ -630,7 +685,7 @@ void AS47Story::LightsDip()
 void AS47Story::TimeSkip()
 {
 	// (the bank back on, if the player left it out: somebody threw the lever in the hours between)
-	if (NS.bK3Open)
+	if (NS.bK3Open && !NightSequence())
 	{
 		NS.bK3Open = false;
 		NS.Log.Add({ FMath::RoundToDouble(ClockSec) + 95, TEXT("RX BANK 3  K3 CLOSED") });
@@ -654,16 +709,26 @@ void AS47Story::TimeSkip()
 void AS47Story::EnterResidual()
 {
 	SetPhase(ES47Phase::Residual);
-	if (Hud.IsValid()) Hud->Checkpoint(TEXT("residual"));
-	if (OnCheckpoint) OnCheckpoint(TEXT("residual"));
+ if (!NightSequence())
+ {
+	 if (Hud.IsValid()) Hud->Checkpoint(TEXT("residual"));
+	 if (OnCheckpoint) OnCheckpoint(TEXT("residual"));
+ }
 	After(6, [this]
 	{
 		bResidualVisible = true;
 		Rx.Status = TEXT("UNLOGGED RESIDUAL  /  1420.4 MHz");
-		bAlarmOn = true;
+  bAlarmOn = !FeederOutage();
+  if (auto* M = US47Main::Get(this); M && M->Evening && M->Evening->NightSequence()) M->Evening->SignalOutage();
 		Note(TimelineText(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")));
 		Toast(TimelineText(TEXT("02:13:47. The console is beeping.")), 3.5f);
-		Alarm();
+  if (NightSequence())
+  {
+   Toast(TEXT("00:13. The signal spikes. K3 drops out. Array drives dead. Emergency lights only. The county line is ringing."), 7);
+   if (Hud.IsValid()) Hud->Checkpoint(TEXT("nightService"));
+   if (OnCheckpoint) OnCheckpoint(TEXT("nightService"));
+  }
+  else Alarm();
 	});
 }
 
@@ -967,6 +1032,7 @@ void AS47Story::ChapterBreak(const FBreak& B)
 
 void AS47Story::ResetAll()
 {
+ ApplyFeederPower(false);
 	Timers.Empty();
 	GameTime = 0; ClockSec = bEveningTimeline ? S47Timeline::ShiftStart : StartClock;
 	EventClock = bEveningTimeline ? 15 * 60 + 12 : 2 * 3600 + 15 * 60 + 12;
@@ -1037,6 +1103,12 @@ bool AS47Story::TimelineSelfTest(TArray<FString>& Out)
   const FS47Doc Original = S47Docs::Printout(Acquired), Restored = RestorePrintout(Roundtrip, Acquired - 600, true);
   Check(Original.Page == Restored.Page && Original.Transcript == Restored.Transcript && Original.Stamp == Restored.Stamp, TEXT("exact acquisition stamp survives JSON roundtrip independently of solve and event"));
  }
+ Check(S47Timeline::AdvanceMilestone(-21600, S47Timeline::Calibration, true) == -19800 &&
+  S47Timeline::AdvanceMilestone(-6900, -14100, true) == -6900,
+  TEXT("completed work advances short milestones without rewinding later observation work"));
+ Check(S47Timeline::AdvanceMilestone(-6900, 2 * 3600, true) == S47Timeline::Residual(true) - 6 &&
+  S47Timeline::AdvanceMilestone(9000, S47Timeline::FirstEncounter, false) == 9000,
+  TEXT("milestones reserve the signal timestamp and retain a later restored field clock"));
  Check(S47Timeline::AdvanceStoryClock(-21600, 8 * 3600, true) == S47Timeline::Residual(true) - 6, TEXT("long calibration holds before the fixed residual instead of missing its timestamp"));
  Check(S47Timeline::AdvanceStoryClock(S47Timeline::Departure - 1, 600, false) == S47Timeline::Departure && S47Timeline::AdvanceStoryClock(S47Timeline::Departure + 1, 1, false) == S47Timeline::Departure + 1, TEXT("departure deadline holds activity and never rewinds an already later loaded clock"));
  const auto Old = S47J::New(); S47J::Set(Old, TEXT("solveAt"), 2 * 3600 + 14 * 60);
@@ -1262,6 +1334,8 @@ TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
 {
  using namespace S47J;
  auto O=New(); Set(O,TEXT("clock"),ClockSec); Set(O,TEXT("notes"),NotesList);
+ Set(O,TEXT("routineVersion"),2); Set(O,TEXT("phase"),CurrentPhase == ES47Phase::Residual ? TEXT("residual") : TEXT("shift"));
+ Set(O,TEXT("residualVisible"),bResidualVisible);
  Set(O,TEXT("coffee"),int32(Coffee)); Set(O,TEXT("radioOn"),bRadioOn); Set(O,TEXT("radioHeard"),bRadioHeard); Set(O,TEXT("opsLines"),OpsLines);
  Set(O,TEXT("powered"),bPowered); Set(O,TEXT("k3"),NS.bK3Open); Set(O,TEXT("papers"),NS.Papers); Set(O,TEXT("jacket"),NS.bJacket);
  Set(O,TEXT("rxStage"),Rx.Stage); Set(O,TEXT("f"),Rx.Frequency); Set(O,TEXT("g"),Rx.Gain); Set(O,TEXT("bw"),Rx.Bandwidth); Set(O,TEXT("az"),Rx.Azimuth); Set(O,TEXT("status"),Rx.Status);
@@ -1280,6 +1354,10 @@ void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
  if (!Saved) return;
  using namespace S47J;
  ClearTimers(); CurrentPhase=ES47Phase::Shift; bOpeningHeld=false; bCinematic=false; bLogRead=true;
+ const bool bNightResidual = NightSequence() && Int(Saved,TEXT("routineVersion")) == 2 && Str(Saved,TEXT("phase")) == TEXT("residual");
+ if (bNightResidual) CurrentPhase = ES47Phase::Residual;
+ bResidualVisible = bNightResidual && Bool(Saved,TEXT("residualVisible"));
+ bAlarmOn = false; bSkipQueued = bNightResidual;
  ClockSec=Num(Saved,TEXT("clock"),S47Timeline::ShiftStart); NotesList=Strs(Saved,TEXT("notes"));
  NS.Papers=Strs(Saved,TEXT("papers")); NS.bJacket=Bool(Saved,TEXT("jacket")); NS.Log.Reset();
  Coffee=ECoffee(FMath::Clamp(Int(Saved,TEXT("coffee")),0,2)); bRadioOn=Bool(Saved,TEXT("radioOn")); bRadioHeard=Bool(Saved,TEXT("radioHeard")); OpsLines=Strs(Saved,TEXT("opsLines"));
@@ -1294,6 +1372,6 @@ void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
  }
  if (Bool(Saved,TEXT("powered"))) PowerUp(true);
  NS.bK3Open=Bool(Saved,TEXT("k3")); if(bPowered) ApplyK3(NS.bK3Open);
- Rx.Stage=FMath::Clamp(Int(Saved,TEXT("rxStage")),0,1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
+ Rx.Stage=FMath::Clamp(Int(Saved,TEXT("rxStage")),0,bNightResidual?2:1); Rx.Frequency=Num(Saved,TEXT("f"),Rx.Frequency); Rx.Gain=Num(Saved,TEXT("g"),Rx.Gain); Rx.Bandwidth=Num(Saved,TEXT("bw"),Rx.Bandwidth); Rx.Azimuth=Num(Saved,TEXT("az"),Rx.Azimuth); Rx.Status=Str(Saved,TEXT("status"),Rx.Status);
  PointDishes(Rx.Azimuth,SurveyEl,99);
 }

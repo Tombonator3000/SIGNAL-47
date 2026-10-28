@@ -1,3 +1,9 @@
+## Nattarbeid Codex, 2026-10-28 kl. 22:58 CET
+
+Pågår på `codex/night-sequence-20261028` fra main `469335b1`, worktree `~/scratch-bm/wt/motel-v2-unreal`. Codex eier ny Story/Evening-rekkefølge og klokkekoordinator; avgrensede hjelpere eier SubstationArc og SkyVisitors, samt lesende kartlegging av lagrings-/testrisiko. Claude eier fortsatt S47Observing, SC01 og sine kveldshandlinger i `wt/sc03`. Hans Story-kroker beholdes når main flettes. Felles hjerteslag/arbeidsfordeling i `~/scratch-bm/NATT-2026-10-28/HANDOFF.md`.
+
+Omfang: SC01 før relé, signalutløst strømbrudd 00:13, K3 ute og antenne død til T01, kjøretur ca.01:35, SC02 ca.02:00, SC03 ca.02:15, vedvarende trafofeil og SKY01 ca.21:30. Målrettede tester etter risiko, én tung jobb gjennom guard. Ingen installasjon eller offentlig release. Bevis: `~/scratch-bm/Signal47-night-20261028`.
+
 ## Unreal-ferdigheter og mannekenger, Codex 28.10.2026
 
 Codex har undersøkt Nanite/miljø, lys/skygger/FX, lyd og MetaHuman-kilder med tre avgrensede subagenter. Se [kildenotatet](UNREAL_SKILLS_2026-10-28.md). Første mannequin-pass er radio-kvinne (sittende), røykende mann (stående) og diner-sjåfør (sittende), med eksisterende interaksjoner/timer beholdt. Bruk bakte statiske positurer; ny mannlig kilde gjenstår. Undersøkelsen har ikke produsert/importert modellene eller installert skills. Ingen motorjobb eller reservasjon av tungt vindu. Story/Evening/SC03-filer er urørt; samordne konkret filansvar før videre produksjon.
