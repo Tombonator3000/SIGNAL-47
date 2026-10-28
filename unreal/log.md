@@ -894,3 +894,11 @@ Canonical prune pensjonerte to gamle motelpayloads, beholdt gjeldende kandidat o
 - `Spill-SIGNAL47.sh` sjekker nå prosessor, minne, skjermkort, Vulkan-drivere, Nvidia-driverversjon, `nvidia_drm.modeset`, Wayland/XWayland og niri ved hver start, og har valgene `--x11`, `--wayland`, `--uten-rt`, `--fullskjerm`, `--vindu BxH`, `--lav`, `--sjekk` og `--rapport`.
 - Kontrollert her: `--sjekk` og `--rapport` på Kubuntu og med simulert niri uten XWayland. `--uten-rt` gir `r.RayTracing:0` og `r.Lumen.HardwareRayTracing:0` i spilloggen ved oppstart av den nedlastede utgaven.
 - README har en distribusjonsnøytral kravliste og feilsøking. Årsaken på kameratens maskin er ikke bekreftet; det krever rapporten fra `--rapport`.
+
+## 28.10.2026 kl. 10:20 CET, Niagara-kilder og meteorregn
+
+Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
+
+Kontrollert offentlig main `3456d029` i separat arbeidskopi. Eksisterende HoleFrom følger EventClock og STAR_HOLE.After; flere samtidige meteorer krever ny effekt, siden MeteorNow avviser en aktiv meteor. En lesende kildehjelper identifiserte alle fire repoene og kontrollerte relevant tekst/tree/lisens. Dokumentendringene krever ingen ny motorkjøring; dette er ikke en attest for den planlagte effekten.
+
+Dokumentkontroll: alle nye lokale lenker i notatet og endrede innganger finnes. git diff --check består. Uavhengig kildehjelper godkjente revisjoner, lisensavgrensning og skillet mellom foreslått regi og levert effekt. Ingen kode-/assetendring; bygge- og spillmatrise er derfor ikke kjørt for denne dokumentleveransen.

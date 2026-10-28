@@ -1,3 +1,7 @@
+## Meteorregn ved stjernehullet, dokumentert 28.10.2026 kl. 10:20 CET
+
+Tom knytter et kort, tettere meteorregn til hendelsen med det stjerneløse feltet ved 026/32. [Niagara-notatet](NIAGARA_VFX_2026-10-28.md) dokumenterer regien, kobling til faktisk hendelsestid og de fire ressursene fra bildene med revisjon, motorversjon, lisens og testforbehold. Kilder og CodeLikeMe-videoen registreres også i prosjektbiblioteket. Bare design-/kildedokumentasjon; ny effekt, import, ytelse og visuell prøve er UNVERIFIED. Spillkode, installasjon og lagringer er uendret.
+
 ## Trafostasjonens detaljer levert, 28. oktober 2026 kl.08:45 CET
 
 Caliche-trafoens lampehus, kabel-/fundamentdetaljer og målte grusskråning er flettet via [PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184), merge `168a4ff8a48b928e4d729882ea678535107169fd`, og samme testede R1 er installert i `/home/tom/Games/Signal47/Linux`. Fem originale Blender/native deler, tre LOD. Hele matrisen består 110/110 etter én kjøring; T01 og T02 består. Den installerte Low-kontrollen består fysisk service/gangadgang og diskreload; bildet er faktisk vurdert. Alle 50 personlige Saved-filer er uendret. Fotolab, motel R4, SC01, MetaHuman og godkjent terreng/himmel er bevart.
