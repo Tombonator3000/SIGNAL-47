@@ -451,6 +451,7 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 612)
 		{
 			if (!Pick(TEXT("obs:generator")) || !Check(O.GeneratorStep() == 2 && M->Web->TubeCount() > 1 && M->Web->TubeLit(0) && !M->Web->TubeLit(1), TEXT("transfer leaves only the emergency tube lit"))) return;
+			Shot(TEXT("observing-generator-emergency-light"));
 			Aim(Target(TEXT("obs:generator"))); Stage(613, 3.3); return;
 		}
 		if (T.Stage == 613)
@@ -467,6 +468,7 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 622)
 		{
 			if (!Check(O.YardStep() == 1 && !M->Web->IsDoorOpen(TEXT("fieldGate")) && M->Story->Clock() >= -2 * 3600. - 20 * 60, TEXT("reaching the chained array gate completes the check at its time"))) return;
+			Aim(FS47Observing::GatePoint() + FVector(0,1.2,0)); Shot(TEXT("observing-array-gate"));
 			Go({FVector(2.0,0,-15.5),FVector(6.1,0,-12),FVector(9.3,0,-12)}, 623); return;
 		}
 		if (T.Stage == 623)
