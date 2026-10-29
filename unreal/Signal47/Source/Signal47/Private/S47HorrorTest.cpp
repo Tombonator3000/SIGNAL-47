@@ -30,6 +30,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 #include "UnrealClient.h"
 #include "S47Observing.h"
 #include "S47Audio.h"
@@ -688,13 +689,45 @@ void FS47HorrorTest::Step(double Dt)
 		if (!Pick(TEXT("doorSouth"))) return;
 		Go({FVector(-2.4,0,4.0),FVector(-2.4,0,4.8),FVector(-2.4,0,5.7),FVector(-4.6,0,5.7)},25); return;
 	}
-	if (T.Stage == 25) { Aim(Target(TEXT("exitDoor"))); Stage(26); return; }
+	if (T.Stage == 25)
+	{
+		Aim(Target(TEXT("exitDoor"))); Shot(TEXT("door-voice-corridor"));
+		FS47Observing& O = *M->Observing;
+		// Isolated lifecycle fixtures only: the ordinary door interaction follows below.
+		const auto Saved = S47J::Clone(O.Save()), Replay = S47J::Clone(Saved);
+		S47J::Set(Replay, TEXT("doorVoice"), 0); S47J::Set(Replay, TEXT("hints"), O.Hints() & ~64);
+		const bool bVoices = M->Audio->bCharacterVoices;
+		auto Settings = M->Flow->Settings();
+		ON_SCOPE_EXIT { M->Audio->Suspend(false); Settings.OnCharacters(bVoices); O.Begin(Saved, false); };
+		Settings.OnCharacters(true); O.Begin(Replay, false); O.Step(.01);
+		if (!Check(O.DoorVoicePlaying(), TEXT("isolated door-voice fixture starts the real recorded source"))) return;
+		M->Audio->Suspend(true);
+		Settings.OnCharacters(false);
+		if (!Check(!O.DoorVoicePlaying() && !M->Audio->bCharacterVoices, TEXT("production Character voices setting stops the door recording while audio is suspended"))) return;
+		M->Audio->Suspend(false); Settings.OnCharacters(true); O.Step(.01);
+		if (!Check(!O.DoorVoicePlaying() && O.DoorVoiceStep() == 1, TEXT("resuming and re-enabling speech does not replay the heard door event"))) return;
+		O.Begin(Replay, false); O.Step(.01);
+		if (!Check(O.DoorVoicePlaying(), TEXT("isolated stop fixture begins with an active recorded source"))) return;
+		O.Stop();
+		if (!Check(!O.Enabled() && !O.DoorVoicePlaying(), TEXT("stopping observing clears its live door recording"))) return;
+		O.Begin(Replay, false); O.Step(.01);
+		if (!Check(O.DoorVoicePlaying(), TEXT("isolated restore fixture begins with an active recorded source"))) return;
+		O.Begin(Saved, false); O.Step(.01);
+		if (!Check(!O.DoorVoicePlaying() && O.DoorVoiceStep() == 1, TEXT("beginning a saved case stops the previous recording and retains the heard event"))) return;
+		Settings.OnCharacters(bVoices);
+		Aim(Target(TEXT("exitDoor"))); Stage(26); return;
+	}
 	if (T.Stage == 26)
 	{
 		if (!Pick(TEXT("exitDoor")) || !Check(H.DoorCorridorTried() && M->Web->IsDoorOpen(TEXT("exitDoor")), TEXT("actual corridor-side fire-exit action is witnessed"))) return;
+		if (!Check(M->Observing->DoorVoiceStep() >= 1 && (M->Observing->Hints() & 64), TEXT("the corridor triggers and retains Dale's door-voice event"))) return;
 		Go({FVector(-5.3,0,5.7),FVector(-6.4,0,5.7),FVector(-7.5,0,5.7),FVector(-6.4,0,5.7),FVector(-5.3,0,5.7),FVector(-4.6,0,5.7),FVector(-2.4,0,5.7),FVector(-2.4,0,3.4),FVector(-2.4,0,1.0),FVector(0,0,-1.2),FVector(4.2,0,-1.2),FVector(4.45,0,-3.1)},27); return;
 	}
-	if (T.Stage == 27) { Aim(Target(TEXT("horror:screen"))); Stage(28); return; }
+	if (T.Stage == 27)
+	{
+		if (!Check(M->Observing->DoorVoiceStep() == 2, TEXT("the opened visitor entrance shows nobody and is logged"))) return;
+		Aim(Target(TEXT("horror:screen"))); Stage(28); return;
+	}
 	if (T.Stage == 28)
 	{
 		if (!Pick(TEXT("horror:screen"))) return;
