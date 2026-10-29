@@ -14,7 +14,7 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47World.h"
-#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -152,8 +152,17 @@ namespace
   FJ Camera()
   {
    auto O=S47J::New();auto* P=Main()->Player.Get();Vec(O,TEXT("eye_three_m"),S47Three::ToThree(P->EyeUE()));Vec(O,TEXT("forward_three"),S47Three::ToThree(P->ForwardUE()*100.));
-   if(P->Camera){S47J::Set(O,TEXT("actual_world_transform"),Transform(P->Camera->GetComponentTransform()));S47J::Set(O,TEXT("actual_horizontal_fov_degrees"),P->Camera->FieldOfView);S47J::Set(O,TEXT("constrain_aspect"),P->Camera->bConstrainAspectRatio);}
-   FVector2D Size;if(GEngine&&GEngine->GameViewport)GEngine->GameViewport->GetViewportSize(Size);S47J::Set(O,TEXT("viewport"),TArray<double>{Size.X,Size.Y});return O;
+   auto* PC=Cast<APlayerController>(P->GetController());const auto* CameraManager=PC?PC->PlayerCameraManager.Get():nullptr;
+   S47J::Set(O,TEXT("camera_manager_available"),CameraManager!=nullptr);
+   if(CameraManager)
+   {
+    // Public final POV, after camera modifiers; Walker keeps its camera component private.
+    const FMinimalViewInfo& View=CameraManager->GetCameraCacheView();
+    S47J::Set(O,TEXT("camera_manager"),CameraManager->GetPathName());S47J::Set(O,TEXT("actual_world_transform"),Transform(FTransform(View.Rotation,View.Location)));
+    S47J::Set(O,TEXT("actual_horizontal_fov_degrees"),double(CameraManager->GetFOVAngle()));S47J::Set(O,TEXT("constrain_aspect"),bool(View.bConstrainAspectRatio));
+    S47J::Set(O,TEXT("walker_eye_to_final_pov_delta_m"),FVector::Dist(P->EyeUE(),View.Location)/100.);
+   }
+   FVector2D Size=FVector2D::ZeroVector;if(GEngine&&GEngine->GameViewport)GEngine->GameViewport->GetViewportSize(Size);S47J::Set(O,TEXT("viewport"),TArray<double>{Size.X,Size.Y});return O;
   }
   FJ Components()
   {
@@ -229,7 +238,7 @@ namespace
    const FString File=Root/(PhotoName+TEXT(".png"));if(!PhotoRequested)
    {
     if(Now-PhotoAt<.5)return false;PhotoMeta=Camera();S47J::Set(PhotoMeta,TEXT("name"),PhotoName);S47J::Set(PhotoMeta,TEXT("pose"),Pose());Vec(PhotoMeta,TEXT("expected_landmark_three_m"),Target);
-    FVector2D Pixel;auto* PC=Cast<APlayerController>(M->Player->GetController());const bool Projects=PC&&PC->ProjectWorldLocationToScreen(S47Three::ToUE(Target),Pixel,true);
+    FVector2D Pixel=FVector2D::ZeroVector;auto* PC=Cast<APlayerController>(M->Player->GetController());const bool Projects=PC&&PC->ProjectWorldLocationToScreen(S47Three::ToUE(Target),Pixel,true);
     S47J::Set(PhotoMeta,TEXT("landmark_projects"),Projects);S47J::Set(PhotoMeta,TEXT("landmark_pixel"),TArray<double>{Pixel.X,Pixel.Y});S47J::Set(PhotoMeta,TEXT("target_visibility_is_not_assumed"),true);
     FScreenshotRequest::RequestScreenshot(File,true,false);PhotoRequested=true;return false;
    }
