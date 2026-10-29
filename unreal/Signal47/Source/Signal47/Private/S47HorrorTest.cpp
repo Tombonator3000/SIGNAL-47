@@ -539,7 +539,7 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	// Evening observing schedule (S47Observing): four real runs on the console, each reduced on paper.
 	// The chores between runs: the generator panel, then the round to the array gate.
-	if (T.Stage >= 610 && T.Stage <= 629)
+	if (T.Stage >= 610 && T.Stage <= 639)
 	{
 		FS47Observing& O = *M->Observing;
 		if (T.Stage == 610) { Aim(Target(TEXT("obs:generator"))); Stage(611); return; }
@@ -558,6 +558,32 @@ void FS47HorrorTest::Step(double Dt)
 		{
 			if (!Pick(TEXT("obs:generator")) || !Check(O.GeneratorStep() == 3 && M->Web->TubeLit(1) && !O.ChorePending(), TEXT("transfer back restores the room lights and logs the test"))) return;
 			Go({FVector(4.2,0,-1.2), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
+		}
+		// 20:30 records-room filing: south door, corridor, records door, the run binder, and the reel on the way out.
+		if (T.Stage == 630) { if (M->Web->IsDoorOpen(TEXT("doorSouth"))) { Stage(632); return; } Aim(Target(TEXT("doorSouth"))); Stage(631); return; }
+		if (T.Stage == 631) { if (!Pick(TEXT("doorSouth")) || !Check(M->Web->IsDoorOpen(TEXT("doorSouth")), TEXT("the filing round leaves by the south door"))) return; Stage(632); return; }
+		if (T.Stage == 632) { Go({FVector(-2.4,0,4.6), FVector(-2.4,0,5.7), FVector(-3.9,0,5.7), FVector(-3.9,0,6.0)}, 633); return; }
+		if (T.Stage == 633) { if (M->Web->IsDoorOpen(TEXT("recordsDoor"))) { Stage(635); return; } Aim(Target(TEXT("recordsDoor"))); Stage(634); return; }
+		if (T.Stage == 634) { if (!Pick(TEXT("recordsDoor")) || !Check(M->Web->IsDoorOpen(TEXT("recordsDoor")), TEXT("the records door opens from the corridor"))) return; Stage(635); return; }
+		if (T.Stage == 635) { Go({FVector(-3.9,0,7.4), FVector(-2.5,0,7.7), FVector(-2.4,0,9.4)}, 636); return; }
+		if (T.Stage == 636) { Aim(Target(TEXT("binder"))); Stage(637); return; }
+		if (T.Stage == 637)
+		{
+			if (!Pick(TEXT("binder")) || !Check(O.ArchiveStep() == 1 && M->Story->Clock() >= -3 * 3600. - 20 * 60 &&
+				M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("obs_runbinder"); }), TEXT("the run binder files the evening's charts at 20:30"))) return;
+			Shot(TEXT("observing-run-binder")); M->UI->Close(true);
+			Go({FVector(-2.5,0,7.7), FVector(-3.9,0,7.4), FVector(-3.9,0,5.7)}, 638); return;
+		}
+		if (T.Stage == 638)
+		{
+			if (!Check(O.ArchiveStep() == 2 && (O.Hints() & 128) && !O.ChorePending(), TEXT("leaving the records room, the switched-off reel turns once"))) return;
+			if (!StoreRestore(TEXT("observing-archive-filed"), M->Flow->GameState())) return;
+			Stage(639, .6); return;
+		}
+		if (T.Stage == 639)
+		{
+			if (!Check(M->Observing->ArchiveStep() == 2 && !M->Observing->ChorePending() && M->Observing->RunIndex() == 2, TEXT("fresh disk restore keeps the filed binder"))) return;
+			Go({FVector(-2.4,0,5.7), FVector(-2.4,0,4.4), FVector(-2.4,0,3.0), FVector(-2.4,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
 		}
 		if (T.Stage == 620) { Aim(Target(TEXT("doorEast"))); Stage(621); return; }
 		if (T.Stage == 621)
@@ -605,6 +631,7 @@ void FS47HorrorTest::Step(double Dt)
 				M->Story->ConsoleAction();
 				if (!Check(O.Phase() == FS47Observing::EStep::Tune && O.ChorePending(), TEXT("the next run waits for the scheduled chore"))) return;
 				if (R == 1) Go({FVector(0,0,-1.2), FVector(4.2,0,-1.2), FVector(4.6,0,.65)}, 610);
+				else if (R == 2) Go({FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-2.4,0,1.0), FVector(-2.4,0,3.4)}, 630);
 				else Go({FVector(0,0,-1.2), FVector(4.2,0,-1.2), FVector(4.2,0,1.6)}, 620);
 				return;
 			}
@@ -650,7 +677,7 @@ void FS47HorrorTest::Step(double Dt)
 			const auto& Run = FS47Observing::Runs()[R];
 			if (!Pick(DataId)) return;
 			const FString DocId = FS47Observing::Chart(R).Id;
-			static const int32 Expect[] = { 0, 17, 19, 63 };
+			static const int32 Expect[] = { 0, 17, 147, 191 };
 			if (!Check(O.RunIndex() == R + 1 && M->Story->Clock() >= Run.Slot + Run.Minutes * 60 &&
 				M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D) { return D.Id == DocId; }) && O.Hints() == Expect[R],
 				TEXT("data step files the run's paper, advances the clock and keeps exactly the expected hints"))) return;
@@ -666,7 +693,7 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 605)
 		{
 			int32 DoneRows = 0; for (const auto& Row : H.Tasks()) DoneRows += Row.bDone && Row.Text.Contains(TEXT(":")) ? 1 : 0;
-			if (!Check(O.Done() && !O.Active() && M->Story->Rx.Stage == 1 && DoneRows == 6 && M->Story->Clock() < -3600 && M->Story->Clock() >= -4200 &&
+			if (!Check(O.Done() && !O.Active() && M->Story->Rx.Stage == 1 && DoneRows == 7 && M->Story->Clock() < -3600 && M->Story->Clock() >= -4200 &&
 				!(M->Audio && M->Audio->Night && M->Audio->Night->IsStill()),
 				TEXT("schedule complete by 22:50 with four filed runs; the desert sound is back"))) return;
 			Go({FVector(-2.15,0,-1.2), FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.2,0,1.6)}, 10); return;
