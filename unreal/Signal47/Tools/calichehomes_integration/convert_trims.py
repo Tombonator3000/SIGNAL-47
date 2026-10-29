@@ -71,10 +71,10 @@ def make_mesh(document, binary, source, row):
     assert len(mesh.polygons) == len(mesh.loop_triangles) == row['result_tris']
     obj = bpy.data.objects.new(source['name'], mesh)
     bpy.context.collection.objects.link(obj)
-    return obj, uv, normals, slots
+    return obj, uv, normals, colors, slots
 
 
-def verify_fbx(path, row, expected_uv, expected_normals, expected_slots):
+def verify_fbx(path, row, expected_uv, expected_normals, expected_colors, expected_slots):
     objects = next(n for n in FBX['fbx_nodes'](path) if n['name'] == 'Objects')
     geometries = [n for n in objects['children'] if n['name'] == 'Geometry' and n['properties'][-1] == 'Mesh']
     assert len(geometries) == 1
@@ -88,12 +88,26 @@ def verify_fbx(path, row, expected_uv, expected_normals, expected_slots):
     actual_uv, _ = FBX['corner_uvs'](path)
     assert len(actual_uv) == len(expected_uv)
     assert max(abs(a - b) for got, want in zip(actual_uv, expected_uv) for a, b in zip(got, want)) < 2e-6, 'exported atlas UV changed'
-    normal_layer = child(geometry, 'LayerElementNormal')
-    assert prop(normal_layer, 'MappingInformationType') == 'ByPolygonVertex'
-    assert prop(normal_layer, 'ReferenceInformationType') == 'Direct'
-    exported = prop(normal_layer, 'Normals')
-    assert len(exported) == len(expected_normals) * 3
-    assert max(abs(a - b) for a, b in zip(exported, (v for n in expected_normals for v in n))) < 2e-6, 'exported source normals changed'
+    def corners(layer_name, values_name, index_name, width, expected):
+        layer = child(geometry, layer_name)
+        assert prop(layer, 'MappingInformationType') == 'ByPolygonVertex'
+        direct = prop(layer, values_name)
+        assert len(direct) % width == 0
+        direct = [tuple(direct[i:i + width]) for i in range(0, len(direct), width)]
+        reference = prop(layer, 'ReferenceInformationType')
+        if reference == 'IndexToDirect':
+            indices = prop(layer, index_name)
+            assert len(indices) == len(expected) and all(0 <= i < len(direct) for i in indices)
+            actual = [direct[i] for i in indices]
+        else:
+            assert reference == 'Direct', ('unsupported FBX reference', reference)
+            actual = direct
+        assert len(actual) == len(expected)
+        assert max(abs(a - b) for got, want in zip(actual, expected) for a, b in zip(got, want)) < 2e-6, ('exported corner values changed', layer_name)
+    # Blender may deduplicate attributes as IndexToDirect. Decode the actual
+    # per-corner values; storage representation does not relax the value check.
+    corners('LayerElementNormal', 'Normals', 'NormalsIndex', 3, expected_normals)
+    corners('LayerElementColor', 'Colors', 'ColorIndex', 4, expected_colors)
     material_layer = child(geometry, 'LayerElementMaterial')
     mapping = prop(material_layer, 'MappingInformationType')
     actual_slots = prop(material_layer, 'Materials')
@@ -129,7 +143,7 @@ def main(root):
             name = source['name']
             assert name in rows and name not in found
             row = rows[name]
-            obj, uv, normals, slots = make_mesh(document, binary, source, row)
+            obj, uv, normals, colors, slots = make_mesh(document, binary, source, row)
             actual_bounds = S.bounds([v.co for v in obj.data.vertices])
             assert max(abs(a - b) for got, want in zip(actual_bounds, row['bounds_local_m']) for a, b in zip(got, want)) < .00002, 'Three to Blender axes/scale'
             bpy.ops.object.select_all(action='DESELECT')
@@ -140,7 +154,7 @@ def main(root):
                                      axis_forward='-Y', axis_up='Z', apply_unit_scale=True,
                                      apply_scale_options='FBX_SCALE_UNITS', use_mesh_modifiers=False,
                                      mesh_smooth_type='OFF', use_triangles=False, bake_anim=False, path_mode='AUTO')
-            verify_fbx(path, row, uv, normals, slots)
+            verify_fbx(path, row, uv, normals, colors, slots)
             receipt.append({'name': name, 'triangles': row['result_tris'], 'bounds_local_m': actual_bounds,
                             'bounds_blender_m': actual_bounds, 'materials': list(row['materials']),
                             'fbx_material_names': [m.name for m in obj.data.materials],
@@ -151,7 +165,7 @@ def main(root):
     result = {'status': 'PASS', 'kind': 'source-trim-fbx-conversion', 'meshes': receipt,
               'trim_manifest_sha256': S.sha(manifest_path),
               'coordinates': 'bounds_local_m/bounds_blender_m are Blender metres. Native UE=(100x,-100y,100z).',
-              'checks': ['exact triangle topology, material ordinal/name, metric bounds, actual FBX UV and source normals']}
+              'checks': ['exact triangle topology, material ordinal/name, metric bounds, actual FBX UV, source normals and corner colors']}
     (root / 'trim-fbx.json').write_text(json.dumps(result, indent=2) + '\n')
     print('CALICHE_HOMES_TRIM_FBX_PASS', len(receipt))
 
