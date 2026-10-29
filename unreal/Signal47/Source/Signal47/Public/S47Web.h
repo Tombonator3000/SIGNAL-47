@@ -321,6 +321,7 @@ private:
 	TSharedPtr<FS47RouteNature> RouteNature;
 	void BeginProductionViews();
 	void BeginMotelV2Route();
+	void BeginCalicheHomesContract();
 	void UpdateHighwayLandscape();
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
 	TMap<int32, FTransform> HighwayVisuals;
