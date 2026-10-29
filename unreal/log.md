@@ -1131,3 +1131,23 @@ R5 består kildeapply, uavhengig audit, eksport av fem deler med tre LOD-er og f
 ### 2026-10-29T05:11:31+01:00: Motell R6b og ENV02 native
 
 R6b er promotert med separat bevart original og R5. Native R4 2038/fersk leser1542 og staging PASS; fysisk rute R4 består1709 selvtester,4 blokkeringer,TV-bilde/lydklokke og10 punkter, men stopper korrekt ved original g456-asfalt som overlapper ganggulvet. Deltrim må bevare innkjøringen. ENV02 i separat worktree består kilde424,7 trim-FBX,native2642/fersk leser1371 og staging med291 uendrede Town-filer. Første editorbygg ble startet før testdriveren var fryst og avvises; ny fryst kilde skal bygges. Ingen hel runtime-/pakkeaksept, installasjon eller offentlig release.
+
+## 2026-10-29 kl. 06:04 CET: ENV-02, Caliche-hus og skilt som målrettet pakket kandidat
+
+Kandidat R2 fra `1665723fda9484b168755709089678fcfb8e6749` er akseptert med fire hus/tolv native deler, to flyttede originalskilt og bevarte gameplayankre. Kilde/FBX 424, native import 2642 og fersk native-leser 1371 består; 34 uassets og 291 Town-avhengigheter er hashbundet. R2-frysen omfatter 13 459 runtime-inputfiler/8 384 371 451 logiske byte og åtte pakkepayloads. Binærens SHA256 er `1576b56fe68ca0bf34b4227f0da1d074f576c98212cb0df073f1d867e5d2fc2e`.
+
+Pakket rute R2 består 1709 selvtester og 634 rutekontroller på 126,6301 s, med 469,75269 m nordgående normal commute uten teleport, separat merket sørstart og 334,90908 m sørgående kjøring, samt 10,141795 m faktisk Walker-gange i eksisterende gatesone. Isolert case1-fixture går gjennom fersk diskleser, vanlig title/Continue/full Flow og etterfølgende ordinær lagring. Separat pakket Off-fallback R2 består 481 kontroller på 7,9813 s: alle åtte gamle TB2-meshforgjengere, 28 TB2-deler, beskyttede poser/bindinger og fire gamle stolpebokser i aktive gang-/kjørekopier beholdes. Begge prosesser avsluttet normalt med exit 0 uten registrert tungjobbkonkurranse.
+
+Seks faktiske 1600×872-PNG-er består komplett CRC/IEND/hash og er gjennomsett i kontaktflate; begge skilt er også åpnet i fullstørrelse. To originale pakkede PNG-er og alle payloadhasher følger [pakket kvittering](Evidence/ENV02-2026-10-29/packed-r2-receipt.json). Subjektiv førerhustekstlesbarhet er fortsatt UNVERIFIED. API Autopilot/TestInput/TestMove er ikke menneskelig input, og ingen fasadeadgang eller husinngang hevdes.
+
+Avviste forsøk beholdes: tidlige editorprøver hadde feil forventninger til ordinær A02-/Props-geometri og C++-typefeil i testdriveren. Pakket R1 manglet TownSignal Head/Span i cook og avviste derfor hele TB2/Homes-settet med originalbyen bevart. R2 retter cook-avhengigheten. Pakkeloggen har et VSM-varsel om Non-Nanite Marking Job Queue; ingen FPS-/helspillaksept hevdes. [Leveringsrapport](../Docs/Evidence/UnrealDeliveries/CALICHE_HOMES_2026-10-29.md). PR/fletting venter root. Ingen fullmatrise, installasjon i Games eller offentlig release.
+
+
+## 2026-10-29 kl. 06:08 CET: ENV-02 PR opprettet
+
+[PR219](https://github.com/Tombonator3000/SIGNAL-47/pull/219) er opprettet mot main. Eksakt head, remote og påkrevde kontroller verifiseres før fletting. Kandidatbevisene i forrige oppføring er uendret. Ingen installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 06:11 CET: ENV-02 bekreftet flettet og motellrute bestått
+
+PR219 er bekreftet flettet i main `232a87380441c438d77dde694472f2e41ea49800` med foreldrene `31abf280` og eksakt PR-head `c2e359bb`. Motell editor R11 på `d707abd4` består hele 58-punktsreisen: 14 interaksjoner, sju gjestedørnisjer, fire faktiske blokkerprøver, 1611 fysiske gulvstråler, 178,63 m normal Walker og ordinær isolert disk/title/Continue. Rettingen av additiv lysdekor bevarer bilde/materiale/transform; bare node770/g530 mister fysisk kollisjon. Main/ENV02 samordnes før pakket motellprøve. Ingen fullmatrise, installasjon eller offentlig release.

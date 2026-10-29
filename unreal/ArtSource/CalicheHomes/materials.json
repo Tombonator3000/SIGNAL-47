@@ -1,0 +1,492 @@
+[
+  {
+    "name": "M_Homes_TanStucco",
+    "base_color_linear": [
+      0.4851499400560704,
+      0.27467731206038465,
+      0.13843161503245183,
+      1
+    ],
+    "roughness": 1.0,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.34,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.4851499400560704,
+      0.27467731206038465,
+      0.13843161503245183,
+      1
+    ],
+    "source_material": "M_Town_Stucco"
+  },
+  {
+    "name": "M_Homes_CreamStucco",
+    "base_color_linear": [
+      0.7156935005064807,
+      0.5840784178911641,
+      0.38132601143253014,
+      1
+    ],
+    "roughness": 0.95,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.34,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.7156935005064807,
+      0.5840784178911641,
+      0.38132601143253014,
+      1
+    ],
+    "source_material": "M_Town_Stucco"
+  },
+  {
+    "name": "M_Homes_TanWear",
+    "base_color_linear": [
+      0.39675523072562685,
+      0.23074004852434915,
+      0.12743768043564743,
+      1
+    ],
+    "roughness": 1.0,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.34,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.39675523072562685,
+      0.23074004852434915,
+      0.12743768043564743,
+      1
+    ],
+    "source_material": "M_Town_Stucco"
+  },
+  {
+    "name": "M_Homes_CreamWear",
+    "base_color_linear": [
+      0.5647115057049292,
+      0.467783796112159,
+      0.30946892281750854,
+      1
+    ],
+    "roughness": 1.0,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.34,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.5647115057049292,
+      0.467783796112159,
+      0.30946892281750854,
+      1
+    ],
+    "source_material": "M_Town_Stucco"
+  },
+  {
+    "name": "M_Homes_DoorMasonry",
+    "base_color_linear": [
+      0.5972017883637634,
+      0.5028864580325687,
+      0.3419144249086609,
+      1
+    ],
+    "roughness": 0.95,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.34,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.5972017883637634,
+      0.5028864580325687,
+      0.3419144249086609,
+      1
+    ],
+    "source_material": "M_Town_Stucco"
+  },
+  {
+    "name": "M_Homes_Concrete",
+    "base_color_linear": [
+      0.31854677812509186,
+      0.2788942634768104,
+      0.20863687014525575,
+      1
+    ],
+    "roughness": 0.96,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.21,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.31854677812509186,
+      0.2788942634768104,
+      0.20863687014525575,
+      1
+    ],
+    "source_material": "M_Town_Concrete"
+  },
+  {
+    "name": "M_Homes_WarmTimber",
+    "base_color_linear": [
+      0.24228112246555486,
+      0.12477181756095049,
+      0.04817182422688942,
+      1
+    ],
+    "roughness": 0.71,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.26,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Wood_normal.png"
+    },
+    "texture_tint_linear": [
+      0.24228112246555486,
+      0.12477181756095049,
+      0.04817182422688942,
+      1
+    ],
+    "source_material": "M_Town_Timber"
+  },
+  {
+    "name": "M_Homes_DarkTimber",
+    "base_color_linear": [
+      0.07818742180518633,
+      0.0382043715953465,
+      0.016807375752887384,
+      1
+    ],
+    "roughness": 0.77,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Wood_normal.png"
+    },
+    "texture_tint_linear": [
+      0.07818742180518633,
+      0.0382043715953465,
+      0.016807375752887384,
+      1
+    ],
+    "source_material": "M_Town_DarkWood"
+  },
+  {
+    "name": "M_Homes_SagePaint",
+    "base_color_linear": [
+      0.19806931955994886,
+      0.2831487404299921,
+      0.20155625379439707,
+      1
+    ],
+    "roughness": 0.82,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.15,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/MetalPaint_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/MetalPaint_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/MetalPaint_normal.png"
+    },
+    "texture_tint_linear": [
+      0.19806931955994886,
+      0.2831487404299921,
+      0.20155625379439707,
+      1
+    ],
+    "source_material": "M_Town_TealPaint"
+  },
+  {
+    "name": "M_Homes_BluePaint",
+    "base_color_linear": [
+      0.17464740365558504,
+      0.25415209433082675,
+      0.3005437944157765,
+      1
+    ],
+    "roughness": 0.83,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.15,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/MetalPaint_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/MetalPaint_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/MetalPaint_normal.png"
+    },
+    "texture_tint_linear": [
+      0.17464740365558504,
+      0.25415209433082675,
+      0.3005437944157765,
+      1
+    ],
+    "source_material": "M_Town_BluePaint"
+  },
+  {
+    "name": "M_Homes_RoofTar",
+    "base_color_linear": [
+      0.03688945040110004,
+      0.033104766570885055,
+      0.026241221894849898,
+      1
+    ],
+    "roughness": 0.98,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.21,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+    },
+    "texture_tint_linear": [
+      0.03688945040110004,
+      0.033104766570885055,
+      0.026241221894849898,
+      1
+    ],
+    "source_material": "M_Town_Concrete"
+  },
+  {
+    "name": "M_Homes_Galvanized",
+    "base_color_linear": [
+      0.386429433787049,
+      0.4232676699860717,
+      0.39157247774972326,
+      1
+    ],
+    "roughness": 0.32,
+    "metallic": 0.87,
+    "specular": 0.28,
+    "normal_strength": 0.22,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "source_material": "M_Town_Metal",
+    "textures": {}
+  },
+  {
+    "name": "M_Homes_DarkMetal",
+    "base_color_linear": [
+      0.019382360956935723,
+      0.02518685962736163,
+      0.0202885630566524,
+      1
+    ],
+    "roughness": 0.72,
+    "metallic": 0.65,
+    "specular": 0.28,
+    "normal_strength": 0.22,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "source_material": "M_Town_DarkMetal",
+    "textures": {}
+  },
+  {
+    "name": "M_Homes_RustTin",
+    "base_color_linear": [
+      0.39675523072562685,
+      0.33245153634617935,
+      0.238397573812271,
+      1
+    ],
+    "roughness": 0.84,
+    "metallic": 0.66,
+    "specular": 0.28,
+    "normal_strength": 0.24,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/RustTin_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/RustTin_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/RustTin_normal.png"
+    },
+    "texture_tint_linear": [
+      0.39675523072562685,
+      0.33245153634617935,
+      0.238397573812271,
+      1
+    ],
+    "source_material": "M_Town_RustTin"
+  },
+  {
+    "name": "M_Homes_RecessShadow",
+    "base_color_linear": [
+      0.017641954488384078,
+      0.01520851442291271,
+      0.011612245179743885,
+      1
+    ],
+    "roughness": 1.0,
+    "metallic": 0,
+    "specular": 0.28,
+    "normal_strength": 0.2,
+    "normal_convention": "DirectX",
+    "uv_scale": 1,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "textures": {
+      "base_color": "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png",
+      "roughness": "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png",
+      "normal": "../../Signal47/Tools/townbuildings/textures/Wood_normal.png"
+    },
+    "texture_tint_linear": [
+      0.017641954488384078,
+      0.01520851442291271,
+      0.011612245179743885,
+      1
+    ],
+    "source_material": "M_Town_DarkWood"
+  }
+]
