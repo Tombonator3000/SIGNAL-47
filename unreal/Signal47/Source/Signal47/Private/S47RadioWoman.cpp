@@ -215,6 +215,28 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
   D->SetNumberField(TEXT("minimum_ue_cm"),Sorted[0]);D->SetNumberField(TEXT("maximum_ue_cm"),Sorted.Last());D->SetNumberField(TEXT("median_ue_cm"),Median);
   D->SetNumberField(TEXT("spread_cm"),Spread);D->SetNumberField(TEXT("median_minus_anchor_cm"),Median-Anchor.Z);D->SetBoolField(TEXT("anchor_within_2cm"),FMath::Abs(Median-Anchor.Z)<=2.);D->SetBoolField(TEXT("spread_within_1_5cm"),Spread<=1.5);
  }
+ // Diagnostic world rays only: their results never choose or validate placement.
+ auto Ground=MakeShared<FJsonObject>();D->SetObjectField(TEXT("ground_diagnostics"),Ground);
+ auto* World=W->GetWorld();Ground->SetBoolField(TEXT("world_available"),World!=nullptr);Ground->SetStringField(TEXT("scope"),TEXT("Diagnostic only; group-basis front70/85cm and side+-16cm, original six person components and bench ignored; no placement or acceptance effect."));
+ Ground->SetStringField(TEXT("channel"),TEXT("ECC_Visibility"));TArray<TSharedPtr<FJsonValue>> GroundSamples,Ignored;
+ FCollisionQueryParams GroundQuery(SCENE_QUERY_STAT(S47RadioWomanSeatGround),true);GroundQuery.AddIgnoredComponent(Bench);Ignored.Add(MakeShared<FJsonValueString>(GetPathNameSafe(Bench)));
+ for(const auto& P:S.Original)if(P.Component.IsValid()){GroundQuery.AddIgnoredComponent(P.Component.Get());Ignored.Add(MakeShared<FJsonValueString>(GetPathNameSafe(P.Component.Get())));}
+ Ground->SetArrayField(TEXT("ignored_components"),Ignored);
+ const FTransform GroupWorld=Group->Comp->GetComponentTransform();
+ const FVector GroundForward=GroupWorld.TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal();
+ const FVector GroundRight=GroupWorld.TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
+ Ground->SetArrayField(TEXT("forward_ue"),Vec(GroundForward));Ground->SetArrayField(TEXT("right_ue"),Vec(GroundRight));
+ if(World)for(double Front:{70.,85.})for(double Side:{-16.,16.})
+ {
+  const FVector At=Anchor+GroundForward*Front+GroundRight*Side,Start=At+FVector(0,0,50),End=At-FVector(0,0,150);FHitResult Hit;
+  const bool Found=World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,GroundQuery);
+  auto Sample=MakeShared<FJsonObject>();Sample->SetNumberField(TEXT("front_cm"),Front);Sample->SetNumberField(TEXT("side_cm"),Side);
+  Sample->SetArrayField(TEXT("trace_start_ue_cm"),Vec(Start));Sample->SetArrayField(TEXT("trace_end_ue_cm"),Vec(End));Sample->SetBoolField(TEXT("hit"),Found);Sample->SetBoolField(TEXT("blocking_hit"),Hit.bBlockingHit);
+  Sample->SetArrayField(TEXT("impact_ue_cm"),Vec(Hit.ImpactPoint));Sample->SetArrayField(TEXT("impact_normal_ue"),Vec(Hit.ImpactNormal));Sample->SetStringField(TEXT("hit_component"),GetPathNameSafe(Hit.GetComponent()));Sample->SetNumberField(TEXT("hit_node"),W->NodeOf(Hit.GetComponent()));Sample->SetNumberField(TEXT("face_index"),Hit.FaceIndex);
+  if(Found)Sample->SetNumberField(TEXT("anchor_above_impact_cm"),Anchor.Z-Hit.ImpactPoint.Z);
+  GroundSamples.Add(MakeShared<FJsonValueObject>(Sample));
+ }
+ Ground->SetArrayField(TEXT("samples"),GroundSamples);
  S.SeatHits=Heights.Num();if(Heights.Num()<5)return Reject(TEXT("actual bench seat requires five of nine physical surface samples"));
  Heights.Sort();S.Seat=FVector(Anchor.X,Anchor.Y,Heights[Heights.Num()/2]);
  if(FMath::Abs(S.Seat.Z-Anchor.Z)>2.||Heights.Last()-Heights[0]>1.5)return Reject(TEXT("measured bench seat differs from canonical seat anchor"));
