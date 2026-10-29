@@ -14,6 +14,12 @@ HERE=Path(__file__).resolve().parent
 PROJECT=HERE.parents[1]
 SOURCE=PROJECT.parent/'ArtSource/PhotoLab'
 DEST='/Game/Signal47/Art/PhotoLab'
+OWNED_MESHES=frozenset({
+    'SM_PhotoLab_WetCabinetDetail','SM_PhotoLab_RinseSink','SM_PhotoLab_EnlargerDetail',
+    'SM_PhotoLab_ProcessDetails','SM_PhotoLab_StorageDetail','SM_PhotoLab_ArchiveDetail',
+    'SM_PhotoLab_RecordsDetail','SM_PhotoLab_SafelightHousing','SM_PhotoLab_Ventilation',
+    'SM_PhotoLab_UtilityDetail',
+})
 sys.path.insert(0,str(HERE.parent/'fieldintegration'))
 import import_recipe as R
 R.REPORT=Path(unreal.Paths.project_saved_dir())/'photolab-native-import.json'
@@ -87,7 +93,7 @@ def check_material(name,mat):
 try:
     contract=json.loads((SOURCE/'model_contract.json').read_text())
     rows=json.loads((SOURCE/'materials.json').read_text())
-    checked('Exact ten-part additive source',len(contract['parts'])==10 and contract['legacy_removal_bounds']==[])
+    checked('Exact ten-part additive source',set(contract['parts'])==OWNED_MESHES and contract['legacy_removal_bounds']==[])
     R.report['contract_sha256']=sha(SOURCE/'model_contract.json')
     source_proof=SOURCE/'source-verification.json'
     require('Fresh source verification exists',source_proof.is_file())
@@ -105,7 +111,23 @@ try:
     meshes={}
     for name,row in contract['parts'].items():
         path=DEST+'/'+name
-        mesh=R.E.load_asset(path) if VERIFY_ONLY else R.import_mesh(SOURCE/'Export'/(name+'.fbx'),DEST)
+        if VERIFY_ONLY:
+            mesh=R.E.load_asset(path)
+        else:
+            fbx=SOURCE/'Export'/(name+'.fbx')
+            require(name+' authored FBX available before refresh',fbx.is_file(),str(fbx))
+            # The validated field/Office recipe replaces only the owned mesh:
+            # atomic FBX reimport can retain a previous derived source description.
+            # Keep native materials, textures and every gameplay identity intact.
+            if R.E.does_asset_exist(path):
+                existing=R.E.load_asset(path)
+                require(name+' exact owned StaticMesh before refresh',
+                        name in OWNED_MESHES and isinstance(existing,unreal.StaticMesh) and
+                        existing.get_path_name()==path+'.'+name,
+                        existing.get_path_name() if existing else path)
+                existing=None
+                checked(name+' replace only authored PhotoLab mesh',R.E.delete_asset(path))
+            mesh=R.import_mesh(fbx,DEST)
         require(name+' native StaticMesh',isinstance(mesh,unreal.StaticMesh))
         if not VERIFY_ONLY:
             for i,slot in enumerate(mesh.get_editor_property('static_materials')):
