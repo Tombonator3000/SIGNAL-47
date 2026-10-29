@@ -154,8 +154,17 @@ def build(args, cfg):
         body = max((o for o in bpy.context.scene.objects if o.type == 'MESH'), key=lambda o: len(o.data.vertices))
         reference = skeleton(arm)
         reference_sha = signature(reference)
-        if reference_sha != cfg['shoulder_caps']['source_skeleton_sha256'] or len(reference['bones']) != 342:
-            raise RuntimeError('R12 krever eksakt uendret målt 342-beins restskjelett')
+        # Log the actual full Blender reference before any possible rejection.
+        # The armature object root has 341 bones. Native FBX/Body has 342;
+        # that separate canonical gate remains in the unchanged native baker.
+        report['source_reference_actual_before_gate'] = {
+            'rest_skeleton': reference, 'rest_skeleton_sha256': reference_sha,
+            'bone_count': len(reference['bones']), 'armature_object_name': arm.name,
+            'expected_blender_bones': 341, 'separate_native_bones': 342,
+            'scope': 'Actual Blender source reference, not the native import/Body reference'}
+        if (reference_sha != cfg['shoulder_caps']['source_skeleton_sha256']
+                or len(reference['bones']) != 341 or reference['object_name'] != 'root'):
+            raise RuntimeError('R12 krever eksakt målt Blender-restskjelett: 341 bein, object root, hash9b1eb; native342 er separat')
         arm.data.pose_position = 'REST'
         bpy.context.scene.unit_settings.system = 'METRIC'
         bpy.context.scene.unit_settings.scale_length = 1.

@@ -91,7 +91,7 @@ def build(body, coat, sleeve_profiles, existing_parts, joint, mesh, cfg, report)
     need(policy['ring_vertices'] == 40 and policy['upper_arc_intervals'] == 24 and policy['rows'] == 5,
          'Kun lokal øvre 216-graders skulderkappe, ikke hel overkropp')
     need(policy['source_skeleton_sha256'] == '9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113',
-         'Eksakt original 342-beins Blender-restskjelett kreves')
+         'Eksakt original 341-beins Blender-restskjelett kreves; native342 er separat')
     body_tree, coat_tree = bvh(body), bvh(coat)
     evidence = {'policy': policy['policy'], 'status': 'MEASURING_NOT_ACCEPTED', 'sides': [],
                 'source_body_faces_copied': False, 'source_body_mutated': False,
