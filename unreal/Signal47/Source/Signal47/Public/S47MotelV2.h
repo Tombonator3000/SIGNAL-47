@@ -2,6 +2,8 @@
 #include "CoreMinimal.h"
 class AS47Web;
 class UStaticMeshComponent;
+class UStaticMesh;
+class UMaterialInterface;
 class UMaterialInstanceDynamic;
 class USceneComponent;
 
@@ -23,6 +25,11 @@ private:
  struct FMovedInteraction { int32 Node; FVector Position,Scale; };
  TArray<FMovedInteraction> MovedInteractions;
  int32 PayphoneNode=INDEX_NONE;
+ // Originale additive lyskvad er dekor, ikke en gangflate eller synshindring.
+ TWeakObjectPtr<UStaticMeshComponent> CourtLightPools;
+ TWeakObjectPtr<UStaticMesh> CourtLightPoolMesh;
+ TWeakObjectPtr<UMaterialInterface> CourtLightPoolMaterial;
+ FTransform CourtLightPoolRelativeTransform=FTransform::Identity;
  // Door leaves can remove earlier rows from the shared walk array. Identity must survive reindexing.
  TArray<FString> DisabledColliderIds;
  TArray<FIntPoint> RetiredSignGlows,RetiredSignPools;

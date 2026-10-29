@@ -65,6 +65,16 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  // The room6 window owns a live lit/dark material. Its old native replacement had hidden this leaf.
  auto* RoomWindow=MeshAt(W,686);const auto* WindowNode=W->Node(686);
  if(!RoomWindow||!WindowNode||WindowNode->Geo!=471||WindowNode->Parent!=663||RoomWindow->GetNumMaterials()!=1){Reject(TEXT("room6 live window predecessor"));return {};}
+ // weathering.ts pool(...,'up') legger additive lyskvad 2cm over mottakerflaten
+ // for å unngå z-fighting. Tegning og materialbinding beholdes; dette er
+ // lysdekor, ikke solide gulvflater som skal besvare fysikkspørringer.
+ const auto* PoolNode=W->Node(770);const auto* PoolParent=W->Node(767);auto* LightPools=MeshAt(W,770);
+ UStaticMesh* PoolMesh=LightPools?LightPools->GetStaticMesh():nullptr;
+ UMaterialInterface* PoolMaterial=LightPools?LightPools->GetMaterial(0):nullptr;
+ if(!PoolNode||PoolNode->Geo!=530||PoolNode->Parent!=767||PoolNode->bInstanced||PoolNode->Mats.Num()!=1||PoolNode->Mats[0]!=351
+  ||!PoolParent||PoolParent->Name!=TEXT("dress/court")||!PoolParent->Comp.IsValid()||!LightPools||LightPools->GetAttachParent()!=PoolParent->Comp.Get()
+  ||!PoolMesh||PoolMesh!=W->GeoMesh(530)||LightPools->GetNumMaterials()!=1||!PoolMaterial||PoolMaterial!=W->MatAsset(351)||PoolMaterial->GetBlendMode()!=BLEND_Additive)
+ {Reject(TEXT("original court light pools node770/g530/parent767/material351 additive binding"));return {};}
  // Four existing native exterior parts must exist. Room 6 is deliberately a separate untouched set.
  for(const TCHAR* Name:{TEXT("SM_Town_Motel_Shell"),TEXT("SM_Town_Motel_Glass"),TEXT("SM_Town_Motel_Office"),TEXT("SM_Town_Motel_Fixtures")})
  {
@@ -190,8 +200,12 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(!MeshAt(W,I)||W->Node(I)->Parent!=Motel||!(*CarJson)->TryGetArrayField(Id,A)||!VectorValid(*A,3)){Reject(FString(TEXT("original car "))+Id);return {};}
   Cars.Add({I,Vec(*A),Id});
  }
+ if(Retired.Contains(LightPools)||Patches.ContainsByPredicate([LightPools](const FPatch& P){return P.Comp==LightPools;}))
+ {Reject(TEXT("original court light pools must remain untrimmed and unretired"));return {};}
  // All validation ends before the first mutation. A missing cooked asset leaves the full predecessor visible.
  auto F=MakeShared<FS47MotelV2>();F->Web=W;F->ProtectedPositions=Protected;F->ExpectedPartCount=NewParts.Num()+1;
+ F->CourtLightPools=LightPools;F->CourtLightPoolMesh=PoolMesh;F->CourtLightPoolMaterial=PoolMaterial;
+ F->CourtLightPoolRelativeTransform=LightPools->GetRelativeTransform();LightPools->SetCollisionEnabled(ECollisionEnabled::NoCollision);
  F->RetiredNamedRoots=RetiredRoots;F->MovedInteractions=Moves;F->PayphoneNode=FindChild(W,Motel,TEXT("prop:motelPhone"));
  for(const auto& Pair:Protected)F->ProtectedComponents.Add(Pair.Key,W->Node(Pair.Key)->Comp);
  for(const auto& G:SignGlows)F->RetiredSignGlows.Add(FIntPoint(G.Node,G.Point));
@@ -294,6 +308,13 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
  }
  if(W)
  {
+  const auto* N=W->Node(770);const auto* Parent=W->Node(767);auto* C=CourtLightPools.Get();auto* Material=CourtLightPoolMaterial.Get();
+  Check(N&&C&&N->Comp.Get()==C&&N->Geo==530&&N->Parent==767&&!N->bInstanced&&N->Mats.Num()==1&&N->Mats[0]==351
+   &&Parent&&Parent->Name==TEXT("dress/court")&&Parent->Comp.IsValid()&&C->GetAttachParent()==Parent->Comp.Get(),TEXT("original court light-pool component identity"));
+  Check(C&&CourtLightPoolMesh.IsValid()&&C->GetStaticMesh()==CourtLightPoolMesh.Get()&&C->GetNumMaterials()==1
+   &&Material&&C->GetMaterial(0)==Material&&Material->GetBlendMode()==BLEND_Additive
+   &&C->GetRelativeTransform().Equals(CourtLightPoolRelativeTransform,.0001),TEXT("original court light-pool mesh, material and transform preserved"));
+  Check(C&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("additive court light pools must remain NoCollision"));
   for(const int32 I:RetiredNamedRoots)Check(!W->IsVisible(I),FString::Printf(TEXT("superseded reception lamp root%d remains visible"),I));
   for(const auto& Move:MovedInteractions)
   {
