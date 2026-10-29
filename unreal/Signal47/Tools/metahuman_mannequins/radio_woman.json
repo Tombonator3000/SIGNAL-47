@@ -45,6 +45,12 @@
     {"overall_source_lod": 3, "cards": "far", "screen_size": 0.25, "max_triangles": 70000},
     {"overall_source_lod": 5, "cards": "far", "screen_size": 0.07, "max_triangles": 40000}
   ],
+  "cloth_surface": {
+    "master_name": "M_RW_ClothSurface",
+    "color_parameter": "RWColor",
+    "roughness_parameter": "RWRoughness",
+    "instances": "MaterialInstanceConstant; original five slot names retained"
+  },
   "materials": {
     "M_RW_Coat": {"color": [0.07, 0.095, 0.115], "roughness": 0.88},
     "M_RW_Trousers": {"color": [0.045, 0.039, 0.032], "roughness": 0.86},

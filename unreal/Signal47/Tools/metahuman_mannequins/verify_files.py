@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--out', required=True, type=Path)
     args = parser.parse_args()
     job = load(args.job)
+    cfg = load(job['contract'])
     if args.out.exists():
         raise RuntimeError('Use a new receipt path')
     root = Path(job['python_report']).parent
@@ -41,12 +42,24 @@ def main():
     if file_row(asset) != {key: baked['output_asset'][key] for key in ('bytes', 'sha256')}:
         raise RuntimeError('Actual baked native payload changed')
     saved = load(root / 'import-python.json')['saved_assets']
+    expected_assets = {job['private_skeleton'], job['clothes_asset'], job['brow_material'], job['cloth_master']}
+    expected_assets.update(job['asset_root'] + '/' + name for name in cfg['materials'])
+    if len(saved) != 9 or len(expected_assets) != 9 or {row['asset'] for row in saved} != expected_assets:
+        raise RuntimeError('All nine actual private import assets must be bound')
+    material_state = load(root / 'import-python.json')['cloth_materials']
+    if baked['cloth_materials'] != material_state or verified['cloth_materials'] != material_state:
+        raise RuntimeError('Actual native MI parents, overrides, values and cloth bindings changed')
+    if (baked['render_context']['null_rhi'] or verified['render_context']['null_rhi']
+            or set(baked['private_master_compile_errors']) != {job['cloth_master'], job['brow_material']}
+            or any(baked['private_master_compile_errors'].values())):
+        raise RuntimeError('Real-RHI bake/verify and both private masters without returned compile errors are required')
     for item in saved:
         path = Path(job['project']) / 'Content' / (item['asset'].removeprefix('/Game/') + '.uasset')
         if file_row(path) != item['file']:
             raise RuntimeError('Private import/material changed since authoring')
     write(args.out, {'status': 'PASS', 'kind': 'private_mannequin_authoring_files_only', 'job_sha256': sha(args.job),
                      'preservation': original, 'operation_receipts': receipts, 'output': baked['output_asset'],
+                     'cloth_materials': material_state, 'private_import_assets': len(saved),
                      'native_geometry': load(root / 'verify-native.json')['output'],
                      'limits': ['No runtime integration', 'No appearance/seat/contact acceptance', 'No human input or FPS',
                                 'No full matrix, installation or release', 'MetaHuman derivatives remain private']})

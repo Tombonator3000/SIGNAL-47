@@ -172,6 +172,7 @@ def main():
            'clothing_report_sha256': sha(args.clothing_report), 'clothing_fbx': str(fbx), 'clothing_fbx_sha256': sha(fbx),
            'asset_root': asset_root, 'clothes_asset': asset_root + '/SKM_RadioWoman_Clothes',
            'private_skeleton': asset_root + '/SK_RadioWoman_Source', 'brow_material': asset_root + '/M_RadioWoman_BrowCards',
+           'cloth_master': asset_root + '/' + load(contract)['cloth_surface']['master_name'],
            'output_asset': asset_root + '/SM_RadioWoman_Seated', 'native_report': str(output / 'bake-native.json'),
            'bake_report': str(output / 'bake-native.json'), 'python_report': str(output / 'bake-python.json')}
     preservation(job)

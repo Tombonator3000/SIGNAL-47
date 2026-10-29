@@ -16,7 +16,11 @@ Klær forfattes av [RadioWoman-kilden](../../../ArtSource/RadioWoman/README.md),
 
 `prepare.py` nekter endrede kildestifter og manglende faktiske innganger. Før første native mutasjon kopierer den alle eksisterende MetaHumans-filer til en separat, byteidentisk reflink-backup og binder dem med SHA256. Hardlink godtas ikke. Hver operasjon krever uendrede originaler, inkludert Creator/body-FBX. Nye filer tillates bare i en ny privat run-mappe under ignorert `/Game/MetaHumans/Mannequins/RadioWoman/`. En avvist prøve bevares; neste forsøk bruker et nytt run-navn.
 
-FBX importeres mot en privat kopi av eksisterende female body skeleton. Originalt skjelett, body, face, materialer, hår og servitrisens uniform lagres aldri av denne løypen. Referanseposeoppdatering og T0 som ny referansepose er eksplisitt av. Klærnes normaler/tangenter importeres. Fem egne overflatematerialer bindes etter eksakte slotnavn. Hår bruker gjeldende korrigerte kortmateriale. Bryn får et privat vanlig maskert overflatemateriale med faktisk groom-deskriptor, atlas, layout og coverage-kanal. Dette erstatter groom-shaderens vertex factory; ingen ny tekstur eller atlas bakes. Ingen separat authored øyevippekortmesh er påvist, og ingen strands antas konvertert.
+FBX importeres mot en privat kopi av eksisterende female body skeleton. Originalt skjelett, body, face, materialer, hår og servitrisens uniform lagres aldri av denne løypen. Referanseposeoppdatering og T0 som ny referansepose er eksplisitt av. Klærnes normaler/tangenter importeres. Én privat opaque game-master, `M_RW_ClothSurface`, har vektorparameter `RWColor` og skalarparameter `RWRoughness`. Fem `MaterialInstanceConstant` beholder navnene `M_RW_Coat`, `M_RW_Trousers`, `M_RW_Shoe`, `M_RW_Trim` og `M_RW_Button` og bindes til de samme klesslottene. Faktisk parent, begge parameterverdier, overrides, grafkoblinger og meshbinding leses tilbake ved import, bake og fersk saved-verifikasjon. Importkvitteringen binder alle ni nye assets: privat skjelett, klær, felles master, fem MI-er og brynmaterialet.
+
+Hår bruker gjeldende korrigerte kortmateriale. Bryn beholder en egen privat maskert master med faktisk groom-deskriptor, atlas, layout og coverage-kanal. Dette erstatter groom-shaderens vertex factory; ingen ny tekstur eller atlas bakes. Ingen separat authored øyevippekortmesh er påvist, og ingen strands antas konvertert.
+
+Den tidligere BakeR3-proben ble avbrutt ved guardens 360 sekunders grense mens det første separate klesmaterialet kompilerte. Dette var ingen poseaksept. R2/R3, delvise assets og råkvitteringer bevares. Den delte masteren erstatter fem separate klesgrafer i et nytt, friskt `BakeR4`; gamle jobber eller assets overskrives ikke.
 
 ## Root kjører tunge steg sekvensielt
 
@@ -29,30 +33,30 @@ Disse kommandoene er oppskrift, ikke kjørte jobber. Alle Blender-/UE-/byggetrin
 python3 unreal/Signal47/Tools/metahuman_mannequins/prepare.py \
   --inventory /home/tom/scratch-bm/Signal47-mannequins-20261029/source-inventory.json \
   --clothing-report /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r1/clothing-report.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR1
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4
 ```
 
 3. Bygg editor fra fryst kilde. `S47MannequinBakeEditor.cpp` og modulavhengighetene finnes bare når `Target.bBuildEditor` / `WITH_EDITOR` gjelder. Ingen runtime-krok registreres.
-4. Kjør `run_editor.py` med `S47_MANNEQUIN_JOB` satt til `BakeR1/job-probe.json`. Dette importerer private klær/materialer og måler faktisk skeleton-/posekompatibilitet uten statisk konvertering. Krev `S47 MANNEQUIN PROBE PASS`.
-5. Kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med `BakeR1/job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Eksempel på payload som root legger inn i guard-planen:
+4. Kjør `run_editor.py` med `S47_MANNEQUIN_JOB` satt til `BakeR4/job-probe.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer private klær/materialer og måler faktisk skeleton-/posekompatibilitet uten statisk konvertering. Krev `S47 MANNEQUIN PROBE PASS`. Tom feilliste fra grafoppdateringen under NullRHI er ikke shader-, render- eller utseendeaksept.
+5. Kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med `BakeR4/job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter. Eksempel på payload som root legger inn i guard-planen:
 
 ```sh
-S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR1/job-bake.json \
+S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4/job-bake.json \
   /home/tom/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd \
   /home/tom/scratch-bm/wt/evening/unreal/Signal47/Signal47.uproject \
   -unattended -nosplash -nosound -AllowCommandletRendering -RenderOffScreen \
-  -UserDir=/tmp/S47-radio-woman-bake-r1 \
+  -UserDir=/tmp/S47-radio-woman-bake-r4 \
   -run=pythonscript \
   -script=/home/tom/scratch-bm/wt/evening/unreal/Signal47/Tools/metahuman_mannequins/run_editor.py
 ```
 
-6. Etter normal avslutning, kjør en ny editorprosess med `job-verify.json`, eget `/tmp`-profilnavn og samme Python-entry. Den må ha annen PID og leser det faktisk lagrede statiske assetet uten reimport/lagring. Krev `S47 MANNEQUIN VERIFY PASS`.
+6. Etter normal avslutning, kjør en ny editorprosess med `job-verify.json`, eget `/tmp`-profilnavn og samme Python-entry. Bruk igjen `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Den må ha annen PID og leser det faktisk lagrede statiske assetet og MI-parentene/-verdiene uten reimport/lagring. Krev `S47 MANNEQUIN VERIFY PASS` og native shaderkontroll. Bake og verify avviser eksplisitt `-NullRHI`.
 7. Bind filene med den lette etterkontrollen:
 
 ```sh
 python3 unreal/Signal47/Tools/metahuman_mannequins/verify_files.py \
-  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR1/job-bake.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR1/authoring-files-receipt.json
+  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4/job-bake.json \
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4/authoring-files-receipt.json
 ```
 
 Ikke fortsett til runtime dersom en kontroll avvises. Kildene gjenopprettes ikke automatisk. Originaler, avviste prøver og deres kvitteringer beholdes for diagnose.
@@ -69,4 +73,4 @@ Output må ha fallende trekanttall innen 150k/70k/40k, screens 1/.25/.07, samme 
 
 Private jobber/rapporter binder kildefil-SHA256, skjelett-/pose-SHA1, faktisk material-/groomdekning, kilde-/render-LOD-tall, seksjoner, raw UV-/normal-/farge-/indekshasher og lagret asset-SHA256. Dette er interne forfatterkontroller. Bilder i faktisk plassering, LOD-skifter, radio-/sete-/skokontakt, ingen dobbel gammel kropp, proxy/tidsplan og disk/title/full Flow Continue gjenstår hos root. Det samme gjelder faktisk pakket kjøring, menneskelig input, FPS/fullmatrise, installasjon og release.
 
-Prosjektbiblioteket ble søkt for MetaHuman/pose/bake. Det generiske `scenario-unreal-animation`-treffet gir ingen prøvd statisk bakeløype i dette prosjektet; ingen kode derfra gjenbrukes. API-grunnlaget er installert UE 5.8.4 `Developer/MeshUtilities/{Public/MeshUtilities.h,Private/MeshUtilities.cpp}`, `Runtime/Engine/Private/Components/PoseableMeshComponent.cpp` / `SkinnedMeshComponent.cpp`, `Runtime/AnimationCore/Private/TwoBoneIK.cpp` og `Shaders/Private/HairStrands/HairCardsAttributeCommon.ush`. Privat MetaHuman-lisens/proveniens fra inventaret beholdes, uten ny rettighetsklarering eller referanseredistribusjon.
+Prosjektbiblioteket ble søkt for MetaHuman/pose/bake og delte materialer. De generiske animation-/materials-treffene gir ingen prøvd statisk bakeløype i dette prosjektet; ingen kode derfra gjenbrukes. MI-løypen følger prosjektets prøvde `Tools/calichehomes_native/native.py`. Den lokale UE5.8-versjonens scalar-/vector-settere returnerer false selv etter utført setting; derfor kreves faktisk parameteravlesning. API-grunnlaget er installert UE 5.8.4 `Developer/MeshUtilities/{Public/MeshUtilities.h,Private/MeshUtilities.cpp}`, `Runtime/Engine/Private/Components/PoseableMeshComponent.cpp` / `SkinnedMeshComponent.cpp`, `Runtime/AnimationCore/Private/TwoBoneIK.cpp`, `Editor/MaterialEditor/{Public/MaterialEditingLibrary.h,Private/MaterialEditingLibrary.cpp}` og `Shaders/Private/HairStrands/HairCardsAttributeCommon.ush`. Privat MetaHuman-lisens/proveniens fra inventaret beholdes, uten ny rettighetsklarering eller referanseredistribusjon.
