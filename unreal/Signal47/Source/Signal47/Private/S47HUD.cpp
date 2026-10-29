@@ -163,6 +163,7 @@ void AS47HUD::Start()
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
+		bOk &= FS47SC04::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
@@ -635,7 +636,7 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Spine && M->Spine->Use(Id)) && !(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
 	else if (Story.IsValid()) Story->Use(Id);
 }
 

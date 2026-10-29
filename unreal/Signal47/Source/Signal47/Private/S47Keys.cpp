@@ -47,6 +47,7 @@ namespace S47KeysLocal
 			A(TEXT("kit"), TEXT("Notebook kit"), Panels, TEXT("The notebook, open at the kit you carry."), EKeys::I),
 			A(TEXT("controls"), TEXT("Notebook controls"), Panels, TEXT("The notebook, open at its page of controls."), EKeys::H),
 			A(TEXT("board"), TEXT("Case board"), Panels, TEXT("The case board, once there is one."), EKeys::B),
+			A(TEXT("devstart"), TEXT("Developer start point"), Panels, TEXT("Keep a start point here for the title's Developer screen. Your cases are not touched."), EKeys::F9),
 			A(TEXT("pause"), TEXT("Pause"), Panels, TEXT("Pause: settings, save and load. Escape always pauses, and lowers the camera first when it is raised."), EKeys::Escape, EKeys::P, true),
 		};
 	}

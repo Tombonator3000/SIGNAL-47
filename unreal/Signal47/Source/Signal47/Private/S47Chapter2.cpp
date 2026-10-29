@@ -1,4 +1,5 @@
 #include "S47Chapter2.h"
+#include "S47Spine.h"
 #include "S47Observing.h"
 #include "S47Office.h"
 #include "S47Evening.h"
@@ -528,6 +529,7 @@ void US47Chapter2::Interactables()
 	// The evening's 20:30 filing (S47Observing) uses the same binder before chapter two opens the room.
 	Add(TEXT("binder"), [this, On]
 	{
+		if (M && M->Spine) { const FString L = M->Spine->Label(TEXT("binder")); if (!L.IsEmpty()) return L; }
 		if (M && M->Observing) { const FString L = M->Observing->Label(TEXT("binder")); if (!L.IsEmpty()) return L; }
 		return On() ? FString(TEXT("Service copies, reference records")) : FString();
 	}, [this] { if (!(M && M->Observing && M->Observing->Use(TEXT("binder")))) TakeBinder(); });
@@ -535,6 +537,7 @@ void US47Chapter2::Interactables()
 	Add(TEXT("workTable"), [this, On] { return On() ? FString(AnyRead() ? TEXT("Lay out the records") : TEXT("Work table")) : FString(); }, [this] { OpenTable(); });
 	Add(TEXT("recPhone"), [this, On]
 	{
+		if (M && M->Spine) { const FString L = M->Spine->Label(TEXT("recPhone")); if (!L.IsEmpty()) return L; }
 		if (!On()) return FString();
 		if (PhoneHook.Label) { const FString L = PhoneHook.Label(); if (!L.IsEmpty()) return L; }
 		return FString(S.Stage == TEXT("call-nora") ? TEXT("Call the key holder") : TEXT("Wall phone"));

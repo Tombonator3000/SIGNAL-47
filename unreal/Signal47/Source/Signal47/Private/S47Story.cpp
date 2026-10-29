@@ -346,6 +346,8 @@ TArray<FS47Task> AS47Story::Tasks() const
 
 FString AS47Story::Label(const FString& Id) const
 {
+	// SC04 (S47SC04.h) borrows the control room's ordinary things while the spine holds it.
+	if (const auto* M = US47Main::Get(this); M && M->Spine) if (const FString L = M->Spine->Label(Id); !L.IsEmpty()) return L;
 	if (Id == TEXT("logbook")) if (const auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) return TEXT("Shift folder / compare local records");
 	if (Id == TEXT("logbook")) return bLogRead ? TEXT("Read the shift log") : TEXT("Read Dale's shift log");
 	if (Id == TEXT("workOrder")) return TEXT("Read the work order");
