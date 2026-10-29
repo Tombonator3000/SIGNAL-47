@@ -91,6 +91,40 @@ namespace S47RadioWomanContract
   void Next(int32 S,const FString& Why){Stage=S;At=FPlatformTime::Seconds();auto E=S47J::New();S47J::Set(E,TEXT("stage"),S);S47J::Set(E,TEXT("reason"),Why);Events.Add(MakeShared<FJsonValueObject>(E));UE_LOG(LogS47RadioWomanContract,Display,TEXT("S47 RadioWoman stage %d %s"),S,*Why);}
   FVector Target()const{return Web->Obj(TEXT("world.town.proxies.woman")).WorldPosition();}
   void Look(double Raise=0){auto* M=Main();const auto D=Target()+FVector(0,Raise,0)-S47Three::ToThree(M->Player->EyeUE());M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());}
+  bool ShoeContact(const FJ& Snapshot)
+  {
+   auto* C=Body();const auto* Mesh=C?C->GetStaticMesh().Get():nullptr;
+   if(!Check(Mesh&&Mesh->bAllowCPUAccess&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==3,TEXT("actual static shoe geometry available for independent ground contact rays")))return false;
+   const auto& L=Mesh->GetRenderData()->LODResources[0];TArray<uint32> Indices;L.IndexBuffer.GetCopy(Indices);TSet<uint32> Candidates[2];double Low[2]={1e20,1e20};
+   for(const auto& S:L.Sections)
+   {
+    if(!Mesh->GetStaticMaterials().IsValidIndex(S.MaterialIndex))continue;const auto* Mat=Mesh->GetMaterial(S.MaterialIndex);if(!Mat||(Mat->GetName()!=TEXT("M_RW_Shoe")&&Mat->GetName()!=TEXT("M_RW_Trim")))continue;
+    for(uint32 I=S.FirstIndex;I<S.FirstIndex+S.NumTriangles*3;++I)
+    {
+     if(!Check(I<uint32(Indices.Num())&&Indices[I]<L.VertexBuffers.PositionVertexBuffer.GetNumVertices(),TEXT("shoe render section indexes actual CPU vertices")))return false;
+     const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I]));if(P.Z>=-15)continue;
+     const int32 Side=P.Y<0?0:1;Candidates[Side].Add(Indices[I]);Low[Side]=FMath::Min(Low[Side],P.Z);
+    }
+   }
+   TArray<TSharedPtr<FJsonValue>> Feet;
+   for(int32 Side=0;Side<2;++Side)
+   {
+    int32 Rays=0;double Min=1e20,Max=-1e20;TArray<TSharedPtr<FJsonValue>> Samples;
+    for(uint32 Index:Candidates[Side])
+    {
+     const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Index));if(P.Z>Low[Side]+.15||Rays>=16)continue;
+     const FVector World=C->GetComponentTransform().TransformPosition(P);FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSole),true,Main()->Player.Get());
+     const bool Hit=Web->GetWorld()->LineTraceSingleByChannel(H,World+FVector(0,0,50),World-FVector(0,0,100),ECC_Visibility,Q);
+     if(!Check(Hit&&H.ImpactNormal.Z>.7,TEXT("actual ground under each sampled lowest sole vertex")))return false;
+     const double Gap=World.Z-H.ImpactPoint.Z;Min=FMath::Min(Min,Gap);Max=FMath::Max(Max,Gap);++Rays;
+     auto R=S47J::New();Vec(R,TEXT("sole_world_ue_cm"),World);Vec(R,TEXT("ground_world_ue_cm"),H.ImpactPoint);S47J::Set(R,TEXT("gap_cm"),Gap);S47J::Set(R,TEXT("ground_component"),GetPathNameSafe(H.GetComponent()));Samples.Add(MakeShared<FJsonValueObject>(R));
+    }
+    auto F=S47J::New();S47J::Set(F,TEXT("side"),Side);S47J::Set(F,TEXT("ground_rays"),Rays);S47J::Set(F,TEXT("minimum_gap_cm"),Min);S47J::Set(F,TEXT("maximum_gap_cm"),Max);S47J::Set(F,TEXT("samples"),Samples);Feet.Add(MakeShared<FJsonValueObject>(F));
+    if(!Check(Rays>=3&&Min>=-1.5&&Max<=1.5,TEXT("actual seated shoe contact within1.5cm of rendered ground, without body scale or collision changes")))
+    {S47J::Set(Snapshot,TEXT("shoe_ground_contact"),Feet);Write(Root/TEXT("first-shoe-contact-failure.json"),Snapshot);return false;}
+   }
+   S47J::Set(Snapshot,TEXT("shoe_ground_contact"),Feet);return true;
+  }
   bool Snapshot(const FString& Name,bool Expected)
   {
    auto* M=Main();const auto Woman=Web->Obj(TEXT("world.town.woman")),Proxy=Web->Obj(TEXT("world.town.proxies.woman"));
@@ -102,6 +136,7 @@ namespace S47RadioWomanContract
    if(Fallback)
    {
     if(!Check(!Audit&&NativeNode==INDEX_NONE,TEXT("explicit Off leaves no mannequin or partial body replacement")))return false;
+    if(!Check(S47J::Bool(Web->RadioWomanReadback(),TEXT("fallback_original_bindings_intact")),TEXT("explicit Off leaves all actual original mesh/material/transform/collision bindings intact")))return false;
     for(int32 I=1481;I<=1486;++I)if(!Check(Web->Node(I)&&Web->ObjAt(I).Visible(),TEXT("explicit Off retains each complete original body/radio leaf")))return false;
    }
    else
@@ -110,6 +145,7 @@ namespace S47RadioWomanContract
     for(int32 I:{1481,1482,1483,1486})if(!Check(!Web->ObjAt(I).Visible(),TEXT("old body-only leaf remains retired without double body")))return false;
     if(!Check(Web->ObjAt(1484).Visible()&&Web->ObjAt(1485).Visible(),TEXT("original split radio housing and metal panel remain enabled")))return false;
     if(!Check(!Body()->IsComponentTickEnabled()&&Body()->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("posed figure has no animation/tick or extra gameplay blocker")))return false;
+    if((Name==TEXT("arrival-present")||Name==TEXT("after-continue-present"))&&!ShoeContact(O))return false;
    }
    if(!Check(Expected?!M->Inter->LabelOf(TEXT("town:woman")).IsEmpty():M->Inter->LabelOf(TEXT("town:woman")).IsEmpty(),TEXT("original woman interaction label agrees with actual presence")))return false;
    const auto Pick=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());S47J::Set(O,TEXT("actual_view_ray_pick"),Pick);
