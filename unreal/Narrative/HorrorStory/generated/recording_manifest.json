@@ -334,7 +334,7 @@
       "reuse_of": null,
       "recording_required": true,
       "audio_file": "HorrorStory/SC01_FIRST_REPORT_001.wav",
-      "duration_seconds": 10.09
+      "duration_seconds": 10.02
     },
     {
       "line_id": "SC01_FIRST_REPORT_002",
@@ -346,7 +346,7 @@
       "reuse_of": null,
       "recording_required": true,
       "audio_file": "HorrorStory/SC01_FIRST_REPORT_002.wav",
-      "duration_seconds": 10.78
+      "duration_seconds": 10.86
     },
     {
       "line_id": "SC03_DISPATCH_RECEIPT_001",

@@ -929,7 +929,7 @@
           "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.",
           "voiced": true,
           "start_seconds": 0.08,
-          "end_seconds": 10.6,
+          "end_seconds": 10.72,
           "timing_status": "from_audio_clip_relative"
         }
       ]

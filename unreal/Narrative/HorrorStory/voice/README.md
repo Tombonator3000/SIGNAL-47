@@ -29,9 +29,11 @@ Syntese og ASR deler GPU med Unreal og kjøres sekvensielt. Tjenesten som ble st
 
 ## Faktisk kontrollstatus
 
-Fem av fem opptak består teknisk PCM-, fullstendighets-, SHA256-, nivå-, kant- og taletidskontroll. Samlet lengde er35,07s. To tidlige innholdsavvik ble rettet med nye seeds: manglende And i H01_BRIEF_003 og secure i stedet for secured i SC01_FIRST_REPORT_002.
+Fem av fem opptak består teknisk PCM-, fullstendighets-, SHA256-, nivå-, kant- og taletidskontroll. Samlet lengde er 35.08 s. Den 29. oktober ble bare SC01_FIRST_REPORT_001/002 produsert på nytt for det gjeldende manuskriptet om slag mot glasset. De tre Dale-masterne og deres genereringsmetadata er byteidentiske med den tidligere leveransen. Andre RAW-banker og alle tidligere råopptak er bevart.
 
-Fire av fem cues har eksakt ASR-ordtekst. SC01_FIRST_REPORT_001 transkriberes med Sorrow i stedet for stedsnavnet SARO; resten stemmer. Dette er samme navnevariant som er dokumentert i kveldspakkens ASR, men opptaket er ikke subjektivt lyttet på her. Avviket står eksplisitt uløst i verification.json; den samlede strenge ordkontrollen er derfor FAIL mens technical_status er PASS. Retakes med seeds42 til46 er dokumentert. Ingen ASR-tekst har erstattet spillteksten.
+Alle fem har nå ASR-ordtekst uten avvik, og både samlet `status` og `technical_status` er PASS i verification.json. Første nye dispatch-take krevde seeds46 til49: de første tre ga «Sorrow», mens49 ga «Saro», med korrekt normalisert ordtekst og uendret spilltekst. Andre take består med seed44. De eldre masterne, avviste forsøkene og metadataene er sikret i den lokale nattkvitteringen. Ingen ASR-tekst erstatter manuskriptet.
+
+Den isolerte VoiceStudio-tjenesten brukte eksisterende festede modeller og en privat kopi av databasen og bare de to nødvendige profilreferansene. Original database og referansefiler ble ikke skrevet. Etter RAW-import var øvrige banker, de tre Dale-masterne, referansene og alle gamle råfiler hashkontrollert uendret. Tjenesten og egne etterkommere er avsluttet, uten lytter på port3900. Målrettet faktisk runtimekontroll av begge nye takes følger separat.
 
 Menneskelig lytting, stemmelikhet og rolleprestasjon er UNVERIFIED. Manglende tale, mutet avspilling eller skippet linje må aldri gi verdensflagget som sier at en tidligere Dale-replikk faktisk er hørt. Denne lydleveransen alene verifiserer ikke runtime-avspilling eller slike hørthetsflagg.
 

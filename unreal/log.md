@@ -1181,3 +1181,19 @@ Faktisk native TV-materialbinding og GPU-tekstur består: 48262/49152 piksler en
 ## 2026-10-29 kl. 06:38 CET: motell-PR opprettet
 
 [PR220](https://github.com/Tombonator3000/SIGNAL-47/pull/220) er opprettet mot main med den målrettet beståtte kandidatens uendrede runtime-inputs. E04s lille klump forblir åpen. Kamera-/kvalitetsavhengig flora gjør gamle instansindekser utilstrekkelige; tre meters nærhet er heller ingen sikker grense langs bildets siktstråle. Eksakt head og kontroller verifiseres før fletting. Ingen installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 06:57 CET: STORY-04 dispatch, målrettet pakket SC01 R1 består
+
+[Dispatchrapporten](../Docs/Evidence/UnrealDeliveries/DISPATCH_RECORDINGS_2026-10-29.md) fører de to nye SC01_FIRST_REPORT_001/002-takene som levert kandidat R1 fra `c5d05fa2e998b7152737e228fb3503972c059178`, med main/motell `d771cf9e` samordnet. STORY-04 gjelder akkurat disse to opptakene og føringen mot tidlige alienmøter; andre HorrorStory-scener/talecues ligger utenfor punktet. Tidligere rapportordlyd om at resten av STORY-04 manglet cues er rettet. PR/fletting venter root.
+
+[Pakket kvittering](Evidence/DISPATCH-2026-10-29/packed-r1-receipt.json) binder 13 463 uendrede runtime-inputfiler, åtte payloads og binærSHA256 `e557f4e1503a5cad993f8565dc68043ee0f5c65b57e0281a7bd2e9d8cbec6aaa`. Hele ordinære SC01 med opt-in S47DispatchRecordings består 1709 selvtester, 220 kontroller, 21 disk/Flow-restores og 273,156790 m API-styrt normal Walker/Resolve. Påkrevd sluttmarkør Horror SC01 PASS COMPLETE finnes; normal exit0 og ingen registrert tungjobbkonkurranse. Én innledende romplassering og 35 syntetiske filmkvoteposter er uttrykkelige fixtures, ikke menneskelig input.
+
+Postvalideringen binder begge runtime-SHA1 til de faktiske nye WAV-SHA256 og 480960/521280 dekodede frames. Begge opptak fullføres naturlig gjennom telefonfilter med positive kilde-/rutede samples, peak/RMS og gain. Faktisk skip etter 0,426667 s og mutet neste svar er prøvd, med disk/full Flow-gjenoppretting av den ventende samtalen før full avspilling. Samlet rapportstatus, ett HR_INITIAL_REPORT og fullført SC01 kontrolleres etter ordinær disk/full Flow. DispatchComplete er bare testminne og er ikke en lagret lydkvittering. Dale-heard var allerede true før dispatch og bevares gjennom full/skip/mute/disk; egen uhørt false→true-case er ikke kjørt.
+
+Lokal produksjon/ASR og bevaring av Dale-mastere/genereringsmetadata, øvrige banker, gamle råopptak og pinned profil-/referansedata har egne kvitteringer. Originaldatabasen ble åpnet mode=ro, og tjenesten skrev til en isolert kopi; ingen fersk full DB-før/etterhash hevdes. Tjenesten er stoppet. Ingen ny casting, modellnedlasting, betalt tjeneste eller referanseredistribusjon inngår, og eksisterende lisensgrunnlag inkludert CC-BY-NC er ikke ny kommersiell klarering. Menneskelig lytting, stemmelikhet, rolleprestasjon, FPS og fullmatrise er UNVERIFIED. Ingen installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 07:07 CET: dispatch PR221 klar for kontrollert fletting
+
+[PR221](https://github.com/Tombonator3000/SIGNAL-47/pull/221) samler de to nye SC01-dispatchopptakene, verktøyrettingen og målrettet pakket SC01 fra c5d05fa2. Dokumentene peker nå til den konkrete PR-en. Testet runtimekilde, konfigurasjon, Content og Narrative er uendret siden pakkefrys; kun leveringsdokumentasjon og originale bevis er lagt til. Main er kontrollert til d771cf9e, repoet er offentlig og PR-en går mot main. Eksakt endelig head og GitHub-kontroller bekreftes før merge. Ingen ny motorjobb, installasjon eller release.
