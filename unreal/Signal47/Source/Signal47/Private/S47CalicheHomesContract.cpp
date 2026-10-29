@@ -3,6 +3,7 @@
 // Sørgående start og case1-disk er tydelig avgrensede utviklerfixtures.
 #include "S47Web.h"
 #include "S47Main.h"
+#include "S47Anomaly.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
@@ -97,13 +98,14 @@ namespace
  struct FProtected
  {
   int32 Node=-1,Parent=-1,Geo=-1;TArray<int32> Mats;
+  FString PosePolicy=TEXT("original exported local pose");
   TWeakObjectPtr<USceneComponent> Comp;TWeakObjectPtr<UStaticMesh> Mesh;
   TArray<TWeakObjectPtr<UMaterialInterface>> Materials;
   FTransform Relative=FTransform::Identity;
   FVector P=FVector::ZeroVector,S=FVector::OneVector;FQuat Q=FQuat::Identity;
  };
  struct FBinding {FString Path,Id;int32 Node=-1;double Range=0,ExamineRange=0;bool Look=false,Use=false,Examine=false;};
- struct FControl
+ struct FControl : TSharedFromThis<FControl>
  {
   TWeakObjectPtr<AS47Web> Web;TWeakObjectPtr<US47World> WorldIdentity;FTimerHandle Timer;
   FString Root;int32 Stage=0,Checks=0,HouseShot=0,Waypoint=0;bool Done=false,Started=false,Passed[4]={};
@@ -119,6 +121,8 @@ namespace
   US47Main* Main() const {return Web.IsValid()?US47Main::Get(Web.Get()):nullptr;}
   void Result(bool Pass,const FString& Why)
   {
+   // ClearTimer may release the delegate's last owner while this callback runs.
+   const TSharedRef<FControl> KeepAlive=AsShared();
    if(Done)return;Done=true;auto* M=Main();if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
    if(M&&M->World){M->World->Autopilot.Reset();M->World->TestInput=nullptr;}
    auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);
@@ -185,20 +189,58 @@ namespace
      if(!Check(H.Value>=0,TEXT("original handle exists: ")+H.Key))return false;
      W->ObjAt(H.Value).Traverse([&](FS47Obj O){Ids.Add(O.I);});
     }
-    TArray<int32> Ordered=Ids.Array();Ordered.Sort();
+    TArray<int32> Ordered=Ids.Array();Ordered.Sort();int32 AnomalyDetails=0;
     for(int32 I:Ordered)
     {
      const auto* N=W->Node(I);auto* C=N?N->Comp.Get():nullptr;
-     if(!Check(N&&C&&Nodes.IsValidIndex(I),FString::Printf(TEXT("protected source/component node %d"),I)))return false;
-     const auto Src=Nodes[I]->AsObject();const auto Matrix=S47J::Nums(Src,TEXT("m"));
-     if(!Check(Matrix.Num()==16&&S47J::Int(Src,TEXT("i"),-1)==I,TEXT("source matrix identity")))return false;
-     FVector P,S;FQuat Q;S47Three::Decompose(Matrix.GetData(),P,Q,S);
-     if(!Check(N->P.Equals(P,1e-7)&&N->S.Equals(S,1e-7)&&N->Q.Equals(Q,1e-7)&&Same(C->GetRelativeTransform(),S47Three::MatToUE(Matrix)),FString::Printf(TEXT("original metadata and actual rendered local pose %d retained"),I)))return false;
+     if(!Check(N&&C,FString::Printf(TEXT("protected live component node %d"),I)))return false;
+     FVector P=FVector::ZeroVector,S=FVector::OneVector;FQuat Q=FQuat::Identity;FString Policy=TEXT("original exported local pose");FJ Src;
+     if(Nodes.IsValidIndex(I))
+     {
+      Src=Nodes[I]->AsObject();const auto Matrix=S47J::Nums(Src,TEXT("m"));
+      if(!Check(Matrix.Num()==16&&S47J::Int(Src,TEXT("i"),-1)==I,TEXT("source matrix identity")))return false;
+      S47Three::Decompose(Matrix.GetData(),P,Q,S);
+      // AnomalyWorld.Begin/PlaceFigure uses the ordinary A02 reference position.
+      // Only this known movable root differs from the old export at z1450.
+      if(I==1493)
+      {
+       if(!Check(W->Handle(TEXT("world.town.cutout"))==I&&W->Handle(TEXT("world.town.proxies.souvenir"))==1524&&Nodes.IsValidIndex(1524)&&M->Anomaly&&!M->Anomaly->Data.bLegacyCutout&&!M->Anomaly->Data.A02Moved&&!M->Anomaly->Data.A02FacingSet&&M->TownLayer->Town->bAnomalyCutoutOwned,TEXT("cutout uses the normal fresh A02 reference, no later movement or legacy fixture")))return false;
+       const auto Anchor=Nodes[1524]->AsObject();const auto AM=S47J::Nums(Anchor,TEXT("m"));
+       if(!Check(AM.Num()==16&&S47J::Int(Anchor,TEXT("p"),-1)==1431&&N->Parent==1431,TEXT("A02 reference height comes from original souvenir proxy under town")))return false;
+       P=FVector(20.31,AM[13]-.62,2062.3);Q=S47Three::Euler(0,UE_DOUBLE_PI/2,0);
+       Policy=TEXT("ordinary AnomalyWorld.PlaceFigure fresh A02 reference: x20.31, original souvenir proxy Y-.62, z2062.3, yaw PI/2");
+      }
+     }
+     else
+     {
+      // These exact authored children are adopted by AnomalyWorld.InstallGeometry.
+      // They have no old manifest row. Do not exempt unknown native descendants.
+      if(N->Name==TEXT("AnomalyPriceTag")){P=FVector(-.16,.37,-.028);S=FVector(.22,.13,.018);}
+      else if(N->Name==TEXT("AnomalySplitEdge")){P=FVector(.115,.17,-.029);S=FVector(.012,.15,.012);}
+      else if(N->Name==TEXT("AnomalySplitEdgeNick")){P=FVector(.12,.235,-.03);S=FVector(.04,.018,.014);}
+      else{Result(false,FString::Printf(TEXT("unknown non-exported protected descendant %d %s"),I,*N->Name));return false;}
+      const auto* Static=Cast<UStaticMeshComponent>(C);
+      if(!Check(N->Parent==1493&&N->Geo==-1&&N->Mats.IsEmpty()&&Static&&GetPathNameSafe(Static->GetStaticMesh())==TEXT("/Engine/BasicShapes/Cube.Cube"),TEXT("exact ordinary AnomalyWorld cutout detail identity: ")+N->Name))return false;
+      Policy=TEXT("ordinary AnomalyWorld.InstallGeometry authored cutout detail; explicit name/parent/mesh/P/Q/S");++AnomalyDetails;
+     }
+     double ExpectedMatrix[16];S47Three::Compose(P,Q,S,ExpectedMatrix);const FTransform Expected=S47Three::MatToUE(ExpectedMatrix);
+     const bool PoseOkay=N->P.Equals(P,1e-7)&&N->S.Equals(S,1e-7)&&N->Q.Equals(Q,1e-7)&&Same(C->GetRelativeTransform(),Expected);
+     if(!PoseOkay||I==1493||!Src)
+     {
+      auto O=S47J::New();S47J::Set(O,TEXT("node"),I);S47J::Set(O,TEXT("name"),N->Name);S47J::Set(O,TEXT("pose_policy"),Policy);if(Src)S47J::Set(O,TEXT("original_export"),Src);
+      Vector(O,TEXT("expected_metadata_p"),P);Vector(O,TEXT("actual_metadata_p"),N->P);Vector(O,TEXT("expected_metadata_s"),S);Vector(O,TEXT("actual_metadata_s"),N->S);
+      S47J::Set(O,TEXT("expected_metadata_q"),TArray<double>{Q.X,Q.Y,Q.Z,Q.W});S47J::Set(O,TEXT("actual_metadata_q"),TArray<double>{N->Q.X,N->Q.Y,N->Q.Z,N->Q.W});
+      S47J::Set(O,TEXT("expected_relative"),Transform(Expected));S47J::Set(O,TEXT("actual_relative"),Transform(C->GetRelativeTransform()));S47J::Set(O,TEXT("pass"),PoseOkay);
+      if(!SaveJson(Root/FString::Printf(TEXT("protected-pose-%d.json"),I),O)){Result(false,TEXT("could not write protected pose readback"));return false;}
+     }
+     if(!Check(PoseOkay,FString::Printf(TEXT("metadata and actual rendered local pose %d obey %s"),I,*Policy)))return false;
      FProtected R;R.Node=I;R.Parent=N->Parent;R.Geo=N->Geo;R.Mats=N->Mats;R.Comp=C;R.Relative=C->GetRelativeTransform();R.P=N->P;R.Q=N->Q;R.S=N->S;
+     R.PosePolicy=Policy;
      if(auto* Static=Cast<UStaticMeshComponent>(C))R.Mesh=Static->GetStaticMesh();
      if(auto* Primitive=Cast<UPrimitiveComponent>(C))for(int32 Slot=0;Slot<Primitive->GetNumMaterials();++Slot)R.Materials.Add(TWeakObjectPtr<UMaterialInterface>(Primitive->GetMaterial(Slot)));
      Protected.Add(MoveTemp(R));
     }
+    if(!Check(AnomalyDetails==3,TEXT("all three ordinary AnomalyWorld cutout detail descendants retained")))return false;
     for(int32 I=0;I<4;++I)
     {
      const auto* It=M->Inter->Get(ProxyIds[I]);if(!Check(It&&It->Object.I==W->Handle(ProxyPaths[I])&&FMath::Abs(It->Range-ProxyRanges[I])<1e-8,TEXT("original proxy binding/range: ")+FString(ProxyIds[I])))return false;
@@ -214,6 +256,7 @@ namespace
     if(Okay&&Primitive)for(int32 I=0;I<R.Materials.Num();++I)Okay&=Primitive->GetMaterial(I)==R.Materials[I].Get();
     if(!Check(Okay,FString::Printf(TEXT("preserved pose/parent/mesh/material binding node %d at %s"),R.Node,*Name)))return false;
     auto O=S47J::New();S47J::Set(O,TEXT("node"),R.Node);S47J::Set(O,TEXT("name"),N->Name);S47J::Set(O,TEXT("parent"),N->Parent);S47J::Set(O,TEXT("geo"),N->Geo);
+    S47J::Set(O,TEXT("pose_policy"),R.PosePolicy);
     S47J::Set(O,TEXT("mesh"),GetPathNameSafe(Static?Static->GetStaticMesh():nullptr));S47J::Set(O,TEXT("actual_relative"),Transform(C->GetRelativeTransform()));S47J::Set(O,TEXT("actual_world"),Transform(C->GetComponentTransform()));
     TArray<FString> Materials;for(const auto& V:R.Materials)Materials.Add(GetPathNameSafe(V.Get()));S47J::Set(O,TEXT("materials"),Materials);S47J::Set(O,TEXT("own_visible"),C->IsVisible());Rows.Add(MakeShared<FJsonValueObject>(O));
    }
@@ -300,6 +343,7 @@ namespace
   }
   void Tick()
   {
+   const TSharedRef<FControl> KeepAlive=AsShared();
    if(Done)return;const double Now=FPlatformTime::Seconds();auto* M=Main();
    if(Now-Began>240){Result(false,TEXT("240 s contract timeout"));return;}
    if(!M||!M->Flow||!M->World||!M->Player||!M->Story||!M->UI||!M->Inter||!M->Evening||!M->TownLayer||!M->TownLayer->Town||S47Startup::Blocking()){ReadyAt=0;return;}
