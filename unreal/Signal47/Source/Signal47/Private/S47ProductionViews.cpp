@@ -95,7 +95,10 @@ void AS47Web::BeginProductionViews()
   {TEXT("office-desk"),TEXT("saro"),{.30,0,8.70},{.25,.80,9.50}},
   {TEXT("office-desk-left"),TEXT("saro"),{-.12,0,9.0},{-.12,.81,9.55}},
   {TEXT("office-desk-right"),TEXT("saro"),{.75,0,9.0},{.75,.81,9.60}},
-  {TEXT("office-contact-close"),TEXT("saro"),{.76,0,8.98},{.76,.81,9.42}}
+  {TEXT("office-contact-close"),TEXT("saro"),{.76,0,8.98},{.76,.81,9.42}},
+  // ART01: legal exterior cameras keep the complete 2:3 print inside the glass.
+  {TEXT("cinema-poster-left"),TEXT("diner"),{7988.7,0,2169},{7985.163,10.497393,2169}},
+  {TEXT("cinema-poster-right"),TEXT("diner"),{7988.7,0,2155},{7985.163,10.497393,2155}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -129,9 +132,9 @@ void AS47Web::BeginProductionViews()
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
-   const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-"));
+   const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-")),Cinema=Name==TEXT("cinema")||Name.StartsWith(TEXT("cinema-poster-"));
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
-    ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("room6")&&(I<11||I>12))
+    ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
@@ -158,6 +161,7 @@ void AS47Web::BeginProductionViews()
    if(LightChanged){M->Story->SetClock(Clock[Light]);State->LastLight=Light;}
    const FString ViewName(V.Name);
    if(ViewName.StartsWith(TEXT("signal-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("signal-span")?55.f:22.f;}
+   else if(ViewName.StartsWith(TEXT("cinema-poster-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=50.f;}
    else if(ViewName.StartsWith(TEXT("office-desk-"))||ViewName==TEXT("office-contact-close")){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-contact-close")?28.f:50.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
@@ -170,6 +174,7 @@ void AS47Web::BeginProductionViews()
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
   if(FString(V.Name).StartsWith(TEXT("office-")))Ok=M->Office&&M->Office->AuditDocumentArt(Lines);
+  else if(State->Suite==TEXT("cinema-posters")){Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines)&&W->AuditCinemaPosters(Lines);}
   else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }
   else if(I<13||I>=19) Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines);

@@ -9,6 +9,7 @@
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
 #include "S47CalicheHomes.h"
+#include "S47CinemaPosters.h"
 #include "S47MotelV2.h"
 #include "S47PhotoLabDetail.h"
 #include "S47SubstationDetail.h"
@@ -696,6 +697,7 @@ void AS47Web::BeginPlay()
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
+	CinemaPosters = FS47CinemaPosters::Build(this,TownBuildings.IsValid());
 	MotelV2 = FS47MotelV2::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
@@ -778,6 +780,7 @@ void AS47Web::BeginPlay()
 	BeginProductionViews();
 	BeginMotelV2Route();
 	BeginCalicheHomesContract();
+	StartCinemaPostersContract();
 	StartFarmAccessContract();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
@@ -829,6 +832,16 @@ FVector AS47Web::WorldUE(int32 I) const
 
 // ---------- areas ----------
 
+bool AS47Web::AuditCinemaPosters(TArray<FString>& Lines) const
+{
+ return CinemaPosters && CinemaPosters->Audit(Lines);
+}
+
+TSharedPtr<FJsonObject> AS47Web::CinemaPostersReadback() const
+{
+ return CinemaPosters ? CinemaPosters->Readback() : nullptr;
+}
+
 void AS47Web::Enter(const FString& Area)
 {
 	if (CurrentArea != Area) bSkyCaptured = false;
@@ -854,6 +867,7 @@ void AS47Web::Enter(const FString& Area)
 	if (SaroSite) SaroSite->Update();
 	if (TownBuildings) TownBuildings->Update();
 	if (CalicheHomes) CalicheHomes->Update();
+	if (CinemaPosters) CinemaPosters->Update();
 	if (MotelV2) MotelV2->Update();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
@@ -1341,6 +1355,7 @@ void AS47Web::Tick(float Dt)
 	if (SaroSite) SaroSite->Update();
 	if (TownBuildings) TownBuildings->Update();
 	if (CalicheHomes) CalicheHomes->Update();
+	if (CinemaPosters) CinemaPosters->Update();
 	if (MotelV2) MotelV2->Update();
 	if (S47Startup::Blocking())
 	{

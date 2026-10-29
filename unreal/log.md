@@ -1259,3 +1259,26 @@ Kandidat R1 fra `343e594d` består bygg/cook/archive og uendret fingerprint for 
 ## 2026-10-29 kl. 11:13 CET: komplett Linux-nedlasting uten Git
 
 Tom ba om oppdatert komplett spill til en kamerat som bare har pakker, og avklaring av --x11. [Ny testutgave](../Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md) distribuerer Farm R1/c301ead9 gjennom PR223, samme runtime som installasjonen. Tre ZIP-er /44oppføringer er CRC/dekomprimerings-/SHA-kontrollert, inkludert strømmet UCAS-join mot originalhash. Alle sju GitHub-vedlegg har riktig størrelse/digest og anonyme lenker er kontrollert. Én nedlastbar Spill-SIGNAL47.sh henter alt uten Git/Artifacts, støtter faktisk UE/SDL X11/Wayland-valg og gjenopptar avbrutt utpakking/korrupte cachefiler. Play.sh oppdager også gammel UCAS, med lås og verifisert atomisk bytte. Tolv små launcherfixtures og åtte ekte curl/unzip/SHA-fixturekontroller PASS; ingen ny motorjobb. Kandidatens111/111/1720 og målrettede meteor/installertkontroller gjenbrukes for byteidentisk runtime, med uendrede grenser. Saved og installasjonen berøres ikke. Første delvise arkivforsøk ble stoppet kun av egen eier før UCAS-retting, bevart og aldri lastet opp. Andre maskiner/XWayland/FPS er fortsatt UNVERIFIED.
+
+
+## 2026-10-29T12:23:57+01:00: ART01 kino, avvist import og korrekt lagret materialkartlegging
+
+To utvendige Plaza-motiver er avgrenset til eksisterende TB2-skall/glass og 2:3-flater. Kilde5886ae8b og kapittel2-fot/OnUse/Closed/disk-Fortsett/Off-kontrakt d596bc49 er fryst. Første nativeimport avslutter kontrollert FAIL255 før første nye asset, fordi LOD2 kompakterer PolygonGroupID ulikt globalt materialslot. To trekanter og alle tre LOD-er var målt; gruppeidentitet var feil antakelse. Ingen runtime- eller pakkeaksept hevdes.
+
+Fryst14ee753e legger til en kun lesende editorkommando som måler faktiske imported materialnavn, globale slotnavn, renderseksjonenes MaterialIndex og SectionInfoMap per LOD. Python binder etter navn og materialsti med uendrede geometrikrav og bevarer rådiagnostikk før avslag. Root har koblet Build/Enter/Tick, eksplisitt kontraktstart, egen cinema-posters-suite med eksisterende oversikt/to lovlige nærbilder i tre lys, og cooksti under PackagingSettings. Native-leseren har bare editoravhengigheter. Neste målrettede prøve krever nytt editorbygg og fersk import R2/fersk verify-PID før de ni bildene og fysisk kontrakt. Ingen motor under HUM01s reservasjon, ingen egen installasjon/release.
+
+
+## 2026-10-29T12:41:38+01:00: ART01 kino, native import og ferskleser R3 består
+
+Editorbygg fraa79db0ac består på117,29s med hele runtime-/kontrakt-/editorleserkilden. NativeimportR2 fullfører178kontroller og lagrer de fem eide assets, men commandlet gir exit1 fordi førstegangsoppslag på ikke-eksisterende egne assets logget Error før korrekt opprettelse. R2-rapportPASS er ikke prosessaksept; bindingen forblir RUNNING. Alle293originaler og fem nye filer er kontrollert byteidentiske etter avslutningen, rawlogs beholdes.
+
+Kilde33ae8dc9 sjekker faktisk asseteksistens før slike egne loads, uten å gjenopprette korrupte eksisterende filer eller lempe verify. ResumeimportR3 består168kontroller på12,18s og separat savedverifyR3 består169på9,13s, beggeexit0 uten konkurranse. Fem nye filhasher er identiske medR2, alle293originaler er uendret, de faktiske navne-/slot-/render-/SectionInfo-kartene og alle tre LOD-er består. Først ferskleseren aktiverer bindingPASS/fresh_saved_reader og riktig R3rapportSHA256. Privat native-r3-acceptance.json binder inputs og råbevis. De fem egne nativeassetene går gjennom eksisterende GitLFS; generert WebData-binding committes ikke. Native C++ er uendret siden bygget, Python-oppskriften er oppdatert. Ingen runtime-/utseende-/pakkeaksept ennå; neste vindu er ni lysbilder og vanlig fysisk Closed/Continue/Off. Ingen egen installasjon/release.
+
+
+## 2026-10-29T13:33:31+01:00: ART01, to utvendige kinoplakater består målrettet editorreise
+
+Fryst `05a49e8a` består editorbygg R3 og ni komplette dag/skumring/natt-PNG-er med ni par-/18 individuelle materialauditer. Begge egne teksturer måles32×32/kompilerende før og2048×2048/ferdige etter målrettet editor-FinishCompilation; ingen global tømming/save, samme Ready-krav. Alle ni bilder er åpnet. Dagsnærbildene viser titler/UV/2:3, natten er mørk og eksisterende RT-residentvarsel står i originalene.
+
+Vanlig Walker/ray/fokus/Player.OnUse gir original Closed-respons. Normalruten består1720selvtester/87kontroller/441prøver/37,384956m, samletOff1720/69/442/37,403985m. Begge har fersk diskleser/full title-Continue og normal exit0 uten konkurranse. Ett eksplisitt kapittel2-fotutgangspunkt og en egen area-synlighetsfixture er merket; ingen naturlig ankomst, menneskelig input eller FPS-aksept hevdes. Alle293beskyttede originaler og fem egne nativeassets forblir byteidentiske.
+
+[Leveringsrapport](../Docs/Evidence/UnrealDeliveries/CINEMA_POSTERS_2026-10-29.md), portabel JSON og fem byteoriginale bilder følger. NativeR3/ferskleser168/169 er eget bevis fra `33ae8dc9`; avvisteR1/R2 er bevart. Pakket runtime er UNVERIFIED og planlegges i felles kandidat med HUM01. Ingen installasjon eller offentlig release. Standardspillet startet under HUM01s neste test; guard stoppet bare egen prosess, og alle nye tungejobber avventes mens spilløkten kjører.

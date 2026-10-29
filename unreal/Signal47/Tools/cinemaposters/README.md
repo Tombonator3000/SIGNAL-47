@@ -1,0 +1,100 @@
+# Plaza: to utvendige plakatmotiver
+
+**Status:** Gjeldende, målrettet native- og editorprøve PASS. Pakket kontroll UNVERIFIED. **Gjelder:** ART-01, to utvendige TB2-plakatskap, UE 5.8.4/Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026.
+
+Dette er importoppskriften og runtime-modulen for to utvendige motiver. Resume-import R3 og separat ferskleser består 168/169 kontroller med exit 0. Editorruntime fra `05a49e8a` består ni gjennomsette dag/skumring/nattbilder, fysisk Closed-interaksjon, full isolert disk/title/Continue og samlet Off. [Leveringsrapport og portabel kvittering](../../../../Docs/Evidence/UnrealDeliveries/CINEMA_POSTERS_2026-10-29.md) binder kilde, native assets og faktisk kjøring. Pakket kontroll er **UNVERIFIED** og planlegges i en felles kandidat med HUM01. Standardinstallasjonen og offentlig nedlasting berøres ikke.
+
+## Flater og konverteringsbasis
+
+[surfaces.json](surfaces.json) binder bare følgende originale JPG-er fra [EnvironmentGraphics](../../../ArtSource/EnvironmentGraphics/README.md):
+
+| Motiv | Originalt TB2-senter i Blender, meter | Originalt senter i Three-verdenen, meter | JPG |
+| --- | --- | --- | --- |
+| The Desert Sky, venstre | `(0.162, -7, 1.51)` | `(7985.162, 10.497393474578857, 2169)` | `01-cinema-desert-sky.jpg`, SHA256 `6b1db45bf4b4f8d5efc466f26f0d7b892da370e3ce3a4538111dffa73187fed7` |
+| Friday Matinee, høyre | `(0.162, 7, 1.51)` | `(7985.162, 10.497393474578857, 2155)` | `02-cinema-friday-matinee.jpg`, SHA256 `bf6dcbe8a86c1b4558c60cc1a218944d1107a5cae0849b21ef147603dfb70ed6` |
+
+Begge JPG-ene er 1024×1536, sideforhold 2:3. De to faktiske trykkflatene i [TB2-kilden](../townbuildings/tb2/cinema.py) er **1,13×1,61 m**, med normal +X. GLB-ene har samme mål og fire målte hjørner per plakat. Katalogens historiske 1,13×1,77 m brukes ikke til å endre bygningen. Motivet skrives inn som **1,073333333×1,61 m**, sentrert uten beskjæring eller strekk. Den gamle grafikkens smale sidekanter ligger fortsatt under glasset.
+
+Hvert nytt motiv ligger **1 mm foran** originaltrykket, lokal X0,163. Det eksisterende glasset på X0,25, størrelse 1,16×1,64 m, står 87 mm foran motivet. Gamle rammer, lamper, glass, tekstetiketter, atlas, kildegeometri og materialbindinger endres ikke. De fire ferdige interiørplakatene er utenfor dette omfanget; lovlig utendørs sikt til dem er ikke bevist.
+
+TB2 bruker `Three=(7985+Bx, 8.987393474578857+Bz, 2162-By)`. Den prøvde native-basen er `UE_cm=(100*Bx, -100*By, 100*Bz)`. De to originale plakatplanene er dermed funnet i GLB-skallets navngitte `M_Town_PrintAtlas`-primitiv, atlascellene 11/12. Den nåværende sloten er 12, men integrasjonen slår opp **navn, faktisk materialbinding og metadata**, og bruker ikke 12 som eneste identitet.
+
+Den egne flaten er en geometri-/UV-kopi av `/Engine/BasicShapes/Plane`, ikke en omskriving av Engine-assetet. Bare kopien får CPU-tilgang. Native Plane er 100×100 cm, normal +Z, med målt `u=(x+50)/100`, `v=(y+50)/100`. Runtime-basen legger lokal +X langs UE −Y, lokal +Y langs UE −Z og normalen langs UE +X. Bildets høyre kant er Three −Z og nederste kant Three −Y, med `MapU=(1,0,0,0)` og `MapV=(0,1,0,0)`. Import og levende audit avviser avvik fra denne faktisk målte UV-basen.
+
+## Eierskap, import og fersk leser
+
+`import_assets.py` eier bare fem nye assets under `/Game/Signal47/Art/CinemaPosters`:
+
+- `T_Cinema_DesertSky` og `T_Cinema_FridayMatinee`.
+- `MI_Cinema_DesertSky` og `MI_Cinema_FridayMatinee`.
+- `SM_CinemaPosterPlane`.
+
+Begge materialinstansene deler eksisterende `/Game/Web/Base/M_Web_Lit_Opaque`. De har egne `Map`-bindinger, hvit Color, ruhet 0,88, vanlig lys, null metall/emisjon og fullflate-UV. JPG-fargene importeres som sRGB/BC7 med mip-kjede og samme kvadratiske POT-policy som den leverte documentprops-løypen. Flatenes 2:3-mål gjenoppretter kildebildets proporsjoner selv om den bygde teksturens plattformformat er kvadratisk. Ingen global PrintAtlas eller ny materialmaster forfattes.
+
+Root kjører begge kommandoene i **hver sin ferske prosess**, gjennom eksisterende `Scripts/unreal_guard.py require-idle` og egen reservasjon. Eksemplene forutsetter prosjektmappen `unreal/Signal47`, korrekt `UE_ROOT` og nye rapportstier utenfor Content:
+
+```sh
+S47_CINEMA_MODE=import S47_CINEMA_REPORT=/absolutt/ny/import-r3.json \
+  "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/Signal47.uproject" \
+  -run=pythonscript -script="$PWD/Tools/cinemaposters/import_assets.py" \
+  -unattended -nullrhi -nosplash -NoSound -NoLiveCoding
+
+S47_CINEMA_MODE=verify S47_CINEMA_REPORT=/absolutt/ny/saved-verify-r3.json \
+  S47_CINEMA_IMPORT_REPORT=/absolutt/ny/import-r3.json \
+  "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/Signal47.uproject" \
+  -run=pythonscript -script="$PWD/Tools/cinemaposters/import_assets.py" \
+  -unattended -nullrhi -nosplash -NoSound -NoLiveCoding
+```
+
+Før import må editorbinæren være bygget med den avgrensede `S47.Cinema.ReadSavedMaterials`-kommandoen i `S47CinemaPosters.cpp`. Root fører `MeshDescription` og `StaticMeshDescription` som editor-only avhengigheter i Build.cs. Ingen ny UCLASS, plugin eller runtime-UI kreves. Kommandoen har to eksplisitte argumenter, eksakt Shell/Glass-meshsti og en fersk absolutt rapportsti utenfor Content. Python kaller den gjennom `SystemLibrary.execute_console_command(None, ...)`; den lokale UE5.8.4-implementasjonen ruter konsollkommandoer direkte også uten World. Manglende/gammel leser avvises før oppretting av assets.
+
+Leseren bruker bare konstante `GetMeshDescription`/`FStaticMeshConstAttributes`-oppslag og leser `PolygonGroup.ImportedMaterialSlotName`, globalt display-/importnavn, faktisk `renderSection.MaterialIndex` og `SectionInfoMap` for hver LOD. Den kaller ingen setter/save og aktiverer ingen runtimeflate. Rårapportene heter eksempelvis `import-r2-materials-shell.json` og `import-r2-materials-glass.json`; de fullføres før Python vurderer bindingene.
+
+Standardmodus er `verify`. Den importerer eller lagrer ingen assets. Første import skriver bare fem eide assets og en bindingskandidat i den private rapporten; aktiv metadata forblir `RUNNING`. Første ferske leser krever den komplette PASS-importrapporten fra en annen prosess, identiske native filhasher og identisk måling. Først da publiseres PASS-binding med `fresh_saved_reader=true` og importrapportens SHA256. Senere verifisering av et allerede akseptert, identisk sett trenger ikke importvariabelen og skriver heller ikke bindingen på nytt.
+
+Eksisterende korrekte assets brukes uten settere/save ved gjentatt `import`. `EditorAssetLibrary.does_asset_exist` kontrollerer hvert eget plane-, Texture2D- og MI-asset før `load_asset`. Bare fraværende assets kan opprettes i importmodus. En eksisterende fil som ikke kan lastes eller har feil type/data, avvises gjennom samme strenge readback; verify-modus avviser også fraværende egne assets. En feil, ukjent eller endret eksisterende fil avvises; skriptet sletter den ikke for å få en grønn prøve. Dersom en tidligere akseptert payload har endret hash, avviser `import` aktiveringen før annet arbeid. Råfiler og rapporter beholdes for roots vurdering.
+
+Aktivering krever `Content/WebData/cinema-posters-binding.json`, versjon 1/PASS, fersklesermarkering og riktig SHA256 av surfaces-kontrakten. Root inkluderer denne i den eksisterende WebData-løypen og cooker eiermappen med fem assets. Ingen konfigurasjon eller cook-hook endres av disse forfatterfilene.
+
+Importen leser **de faktisk lagrede StaticMeshDescription-ene** for kinoens Shell og Glass på alle tre LOD-er. Hvert plakatplan og glass må ha nøyaktig to trekanter med mål/senter fra kilden og korrekt navngitt materialsone. Gruppens faktiske importnavn løses gjennom motorens importnavn-tabell til global slot, og bindes til faktiske renderseksjoner og samme materialasset. Summert antall trekanter for dette materialet må stemme mellom kildegrupper og renderseksjoner. Python leser SectionInfoMap uavhengig ved **faktisk seksjonsindeks**, og rapporterer dette ved siden av renderkartet. Ingen likhet mellom gruppe-ID, kompaktert seksjonsindeks og global slot antas.
+
+UV-hjørner, trekantpayload-hasher, totale LOD-tall, bounds, slotnavn, materialstier, faktisk gruppenavn-/seksjonsbinding og originale uasset-hasher skrives i bindingen. Hele den native materialrapporten bindes med en kanonisk SHA256. Den ferske leseren krever identisk måling og alle fem native filhasher. Det beskyttede førinventaret, forrige binding-hash og de målte gruppe-/navne-/seksjonsdataene skrives i privatrapporten **før** krav evalueres; et avslag beholder dermed faktisk diagnostikk.
+
+Første native import R1 ble kontrollert avvist ved shell/desert-sky/LOD2 etter 35 kontroller, før noen av de fem assets ble opprettet. To riktige trekanter og riktige mål var funnet, men første oppskrift antok feilaktig at gruppe-ID/slot/seksjon var samme indeks. Originalkilder, TB2 og Engine var uendret, og bare en inaktiv RUNNING-binding fantes. Den nye navnebaserte leseren erstatter denne indeksantakelsen; kravet om to trekanter, kildeplassering, mål og alle tre LOD-er beholdes.
+
+R2 ble kjørt med det nye editorbygget. `import-r2.json` har PASS etter 178 kontroller, alle fem egne assets ble lagret, og de faktiske materialkartene for Shell/Glass på alle tre LOD-er bestod. UE-commandleten avsluttet likevel med **exit 1**: første `load_asset` på hver fraværende egen fil logget ERROR før opprettingen lyktes. R2 er derfor **ikke akseptert**, og bindingen forblir inaktiv `RUNNING`. R2-rapport, rårapporter og assets bevares.
+
+Resume-import R3 bruker samme editorbinær og ferske rapportstier. Eksistenssjekken over fjerner de forventede fraværsfeilene; alle R2-assets må passere uendret eksisterendeasset-readback. Root krever både PASS-rapport og exit 0, samt byteidentiske egne og beskyttede assets før/etter. Deretter kjører `saved-verify-r3` i en ny prosess med R3-importrapporten. Først full kandidatlikhet og fem riktige native filhasher kan publisere en PASS-binding. Python-rettingen krever ikke nytt C++-bygg.
+
+Alle eksisterende filer i `Content/TownBuildings`, den delte materialmasteren og EnginePlane hashes før/etter. Bindingen beholder et portabelt inventarfingeravtrykk; rapporten beholder hele førinventaret. JPG-ene kontrolleres mot katalogens kildehash og uendret etter import. Ingen beskyttet original lagres. Kildehash, importfilnavn og native materialreadback er ikke en GPU-pikselavlesning av plakatbildet.
+
+Faktisk resumeimport R3 og separat ferskleser R3 fra `33ae8dc9` består med normal exit0 på 12,18 s og 9,13 s. De har 168/169 kontroller og ulike PID-er. Alle fem assets har nøyaktig samme filhasher som etter R2, alle 293 beskyttede originaler er byteidentiske, og aktiv binding er først nå PASS med `fresh_saved_reader=true` og riktig R3-importrapporthash. Native-leseren var bygget fra `a79db0ac`; Python-oppskriften er den korrigerte kilden. Dette er native import-/ferskleseraksept, adskilt fra editorreisen nedenfor og uprøvd pakket runtime.
+
+## Runtime-API og bevisgrenser
+
+[FS47CinemaPosters](../../Source/Signal47/Public/S47CinemaPosters.h) har følgende integrasjonspunkter for root:
+
+```cpp
+Posters = FS47CinemaPosters::Build(Web, TownBuildings.IsValid());
+// Eksisterende vertsoppdatering, etter TB2s egen oppdatering:
+if (Posters) Posters->Update();
+// Målrettet driver kan serialisere hele avlesningen før/etter Continue:
+const auto Actual = Posters->Readback();
+Posters->Audit(Lines);
+```
+
+Ingen egen tick, timer, interaksjon eller lagring opprettes. `Build` krever komplett TB2, begge originale komponenter med riktige mesh/LOD/slot/bounds/transform og begge nye tekstur-/materialbindinger. Hele paret og de faktiske registrerte flatenes mål/basis/forelder valideres før nye noder eksponeres. Ved avslag forblir begge originaltrykk, glass og proxy urørt. `-S47CinemaPostersOff` og eksisterende `-S47PropsOff` beholder originalene. `Update` følger de eksisterende kino-/town-forfedrenes faktiske synlighet og komplett TB2-eierskap.
+
+`Readback()` leser det faktiske komponentmaterialet i slot 0, `Map`, tekstursti/størrelse/sRGB, materialforelder, scalar-/vektorverdier, alle hjørne-UV-er og normaler fra **egen levende CPU-plane**, orienterte trekanter mot den målte lagrede kopien, faktisk transform/basis/mål/offset, forelder, kollisjon/skygge og synlighet. Den fører også originale komponent-/mesh-/material-/LOD-/bounds-/transformdata og proxyidentitet.
+
+De originale TB2-meshene trenger ikke ny CPU-tilgang. Deres to lokale plakatmål og UV-hjørner kommer fra den ferske lagrede native-målingen i bindingen, og omregnes med faktisk runtime-transform. Disse feltene heter derfor `saved_original_*`. Levende originale trekantbuffere hevdes ikke avlest der de ikke er tilgjengelige. Runtime kontrollerer de aktuelle mesh-/slot-/bounds-/transformbindingene; native filhasher er import-/ferskleserbevis, ikke en uasset-hash av den omkodede cook-payloaden.
+
+## Utført målrettet editorprøve
+
+Produksjonssuiten `cinema-posters` tar ett oversiktsbilde av den stengte kinoen og ett utenfra hvert skap i dag, skumring og natt. R3 fra `05a49e8a` består ni komplette, gjennomsette PNG-er med riktige titler og 2:3-proporsjoner, ni par-auditer og 18 individuelle plakatauditer. Nattbildene er mørke. Produksjonsloggen fører fot/gulv/øye, mål og kildebestemt FOV; faktisk CameraManager-FOV føres i de separate fysiske capture-kvitteringene. Kamerafixtures og maskinell validering gir ingen menneskelig lesbarhetsaksept.
+
+Den fysiske kontrakten `-S47CinemaPostersContract -S47Jump=chapter2` starter med ett uttrykkelig fotutgangspunkt og bruker deretter vanlig Walker, kameraray/fokus og Player.OnUse mot original `town:cinema`-proxy 1514 med range 2,6. Normal R1 består 87 kontroller, 441 Walker-prøver og 37,384956 m. Samlet Off består 69 kontroller, 442 prøver og 37,403985 m med null nye plakater. Begge har 1720 selvtester og full isolert disk/title/Continue, uendrede quest-/dør-/adgangsflagg og ny ordinær Closed-interaksjon. Area-runden til SARO/tilbake er en uttrykkelig synlighetsfixture; menneskelig input eller naturlig ankomst hevdes ikke. Ingen interiørfixture brukes.
+
+Første RHI-forsøk avviste 32×32-editorplassholdere før bildene. Diagnostikk viste korrekte materialparametre og IsCompiling=true. Under WITH_EDITOR fullfører runtime nå bare de to egne teksturene med `FTextureCompilingManager::FinishCompilation`, uten save eller global tømming. Før-/etteravlesning i akseptert R3 viser begge fra 32×32/kompilerende til 2048×2048/ferdige. De opprinnelige Ready-kravene er uendret; pakket runtime bruker den ordinære valideringen.
+
+Bibliotekrutinen gav ingen spesifikk prøvd plakatintegrasjon. [scenario-unreal-materials ved festet commit](https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/game-engines/unreal/scenario-unreal-materials/SKILL.md) er MIT og omtaler UE5.8, delte mastere/instanser, sRGB og mip-kjeder. Kildens egen status er kun offline/fake-unreal-test; den brukes som referanse og gir ingen aksept i dette prosjektet. Den konkrete master-/UV-/importløypen bygger på prosjektets leverte [documentprops](../documentprops/README.md), med egne materialinstanser, CPU-plane og strengere original-/ferskleserbinding for disse to flatene.
