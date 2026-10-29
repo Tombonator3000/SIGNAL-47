@@ -2,6 +2,10 @@
 #include "S47RadioWoman.h"
 #include "S47Web.h"
 #include "S47Three.h"
+#include "S47Main.h"
+#include "S47Flow.h"
+#include "S47World.h"
+#include "S47Startup.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
 #include "Engine/StaticMesh.h"
@@ -31,6 +35,8 @@ namespace
  {
   FExpected Id{};TWeakObjectPtr<UStaticMeshComponent> Component;TStrongObjectPtr<UStaticMesh> Mesh;
   TArray<UMaterialInterface*> Materials;FTransform Relative;
+  FVector PositionThree=FVector::ZeroVector,ScaleThree=FVector::OneVector;
+  FQuat QuaternionThree=FQuat::Identity;
   ECollisionEnabled::Type Collision=ECollisionEnabled::NoCollision;
   bool Hidden=false,Shadow=false,AuthoredVisible=false;
  };
@@ -268,6 +274,8 @@ struct FS47RadioWomanState
  TSharedPtr<FJsonObject> BenchDiagnostics=MakeShared<FJsonObject>();
  bool BenchDiagnosticRequested=false,BenchDiagnosticPostRepair=false,BenchDiagnosticConflict=false;int32 DiagnosticBenchNode=INDEX_NONE,DiagnosticReadbacks=0;TSet<int32> DiagnosticHitNodes;
  TArray<uint32> FullIndices,RadioIndices;TArray<int32> LODs;
+ bool Prepared=false,Pending=false;uint64 AreaEpoch=1,MeasuredEpoch=0,TownStepSerial=0,MeasuredTownStepSerial=0;
+ int64 AttemptedEpoch=-1;FVector RadioDeltaUE=FVector::ZeroVector,RadioDeltaLocalThree=FVector::ZeroVector;
 };
 
 namespace
@@ -555,6 +563,108 @@ namespace
   }
  }
 
+
+ // These helpers operate only on the six owned originals and our one adopted node.
+ // No setters on owner1480/proxy1544, Shell, ground or original native assets.
+ void OriginalFallback(FS47RadioWomanState& S,const FString& Why)
+ {
+  auto* W=S.Web.Get();if(!W)return;
+  if(auto* C=S.Native.Get())
+  {
+   if(S.NativeNode!=INDEX_NONE)W->SetVisible(S.NativeNode,false);
+   C->SetHiddenInGame(true,false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  }
+  for(const auto& P:S.Original)if(auto* C=P.Component.Get())
+  {
+   if(C->GetStaticMesh()!=P.Mesh.Get())C->SetStaticMesh(P.Mesh.Get());
+   for(int32 I=0;I<P.Materials.Num();++I)if(C->GetMaterial(I)!=P.Materials[I])C->SetMaterial(I,P.Materials[I]);
+   const auto* N=W->Node(P.Id.Node);
+   if(!N||!N->P.Equals(P.PositionThree,.00001)||!N->Q.Equals(P.QuaternionThree,.00001)||!N->S.Equals(P.ScaleThree,.00001)
+    ||!C->GetRelativeTransform().Equals(P.Relative,.001))W->SetLocal(P.Id.Node,P.PositionThree,P.QuaternionThree,P.ScaleThree);
+   if(C->GetCollisionEnabled()!=P.Collision)C->SetCollisionEnabled(P.Collision);
+   if(C->bHiddenInGame!=P.Hidden)C->SetHiddenInGame(P.Hidden,false);if(C->CastShadow!=P.Shadow)C->SetCastShadow(P.Shadow);
+   if(!N||N->bVis!=P.AuthoredVisible)W->SetVisible(P.Id.Node,P.AuthoredVisible);
+  }
+  S.Active=false;S.RadioDeltaUE=FVector::ZeroVector;S.RadioDeltaLocalThree=FVector::ZeroVector;
+  S.Cut.Reset();S.Why=Why;
+ }
+ bool OriginalsMatchCaptured(const FS47RadioWomanState& S)
+ {
+  auto* W=S.Web.Get();if(!W||S.Original.Num()!=6)return false;
+  for(const auto& P:S.Original)
+  {
+   const auto* N=W->Node(P.Id.Node);const auto* C=P.Component.Get();
+   if(!N||N->Parent!=1480||N->Geo!=P.Id.Geo||N->Mats!=TArray<int32>{P.Id.Material}
+    ||!N->P.Equals(P.PositionThree,.00001)||!N->Q.Equals(P.QuaternionThree,.00001)||!N->S.Equals(P.ScaleThree,.00001)
+    ||N->bVis!=P.AuthoredVisible||!C||C->GetStaticMesh()!=P.Mesh.Get()||C->GetMaterials()!=P.Materials
+    ||!C->GetRelativeTransform().Equals(P.Relative,.001)||C->GetCollisionEnabled()!=P.Collision
+    ||C->bHiddenInGame!=P.Hidden||C->CastShadow!=P.Shadow)return false;
+  }
+  return true;
+ }
+ bool ActiveComponent(AS47Web* W,int32 Index,UStaticMeshComponent* C)
+ {
+  const auto* N=W?W->Node(Index):nullptr;
+  return N&&C&&N->Comp.Get()==C&&W->NodeOf(C)==Index&&C->IsRegistered()
+   &&W->ObjAt(Index).Shown()&&C->IsVisible()&&!C->bHiddenInGame;
+ }
+ bool CurrentShellStillEligible(const FS47RadioWomanState& S)
+ {
+  auto* W=S.Web.Get();const auto* N=W?W->Node(S.DiagnosticBenchNode):nullptr;
+  auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+  const FTransform AssemblyExpected(FQuat::Identity,S47Three::ToUE(FVector(7985,8.013043546669646,2133)),FVector::OneVector);
+  return N&&N->Name==TEXT("town-production:SM_Town_Laundry_Shell")&&N->Parent==1431&&C&&C->GetStaticMesh()
+   &&C->GetStaticMesh()->GetPathName()==TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")
+   &&C->GetComponentTransform().Equals(AssemblyExpected,.001)&&ActiveComponent(W,S.DiagnosticBenchNode,C);
+ }
+ struct FAcceptedPostrepairSite
+ {
+  FTransform Placement;FVector SeatUE=FVector::ZeroVector,Forward=FVector::ZeroVector,Right=FVector::ZeroVector;
+  int32 SeatHits=0;TSharedPtr<FJsonObject> Diagnostics;
+ };
+ bool MeasureAcceptedPostrepairSite(FS47RadioWomanState& S,FAcceptedPostrepairSite& Out,FString& Why)
+ {
+  // CLOSED BINDING STUB, intentionally not an implementation of postrepair acceptance.
+  // Root must first supply the measured native geometry/seat/visible-support/bake bindings
+  // listed in pending-contact-bindings.json and replace this body with actual traces.
+  // Source predictions, old g1074 medians and R10 oldroad soles may never fill those fields.
+  (void)Out;auto* W=S.Web.Get();auto D=MakeShared<FJsonObject>();S.BenchDiagnostics=D;
+  D->SetStringField(TEXT("status"),TEXT("UNBOUND_POSTREPAIR_NATIVE_CONTACT"));
+  D->SetBoolField(TEXT("trace_attempted"),false);D->SetBoolField(TEXT("measured_seat_binding_valid"),false);
+  D->SetBoolField(TEXT("all_lowest_soles_within_contact_limit"),false);
+  D->SetStringField(TEXT("area_at_query"),W?W->Area():FString());D->SetNumberField(TEXT("area_epoch"),double(S.AreaEpoch));
+  D->SetNumberField(TEXT("town_step_serial"),double(S.TownStepSerial));
+  int32 ShellIndex=INDEX_NONE,Count=0;
+  if(W)for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Name==TEXT("town-production:SM_Town_Laundry_Shell")){ShellIndex=I;++Count;}
+  S.DiagnosticBenchNode=ShellIndex;const auto* N=W?W->Node(ShellIndex):nullptr;auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+  D->SetObjectField(TEXT("actual_shell_identity"),ComponentIdentity(W,ShellIndex));
+  const FTransform AssemblyExpected(FQuat::Identity,S47Three::ToUE(FVector(7985,8.013043546669646,2133)),FVector::OneVector);
+  if(Count!=1||!N||N->Parent!=1431||!C||!C->GetStaticMesh()
+   ||C->GetStaticMesh()->GetPathName()!=TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")
+   ||!C->GetComponentTransform().Equals(AssemblyExpected,.001)||!ActiveComponent(W,ShellIndex,C))
+  {Why=TEXT("actual registered/shown native Laundry Shell identity or canonical assembly transform missing");return false;}
+  Why=TEXT("missing measured postrepair native seat/active support/bake bindings; original fallback retained");
+  return false;
+ }
+ bool ApplyRadioTranslation(FS47RadioWomanState& S,const FVector& DeltaUE)
+ {
+  auto* W=S.Web.Get();const auto* Owner=W?W->Node(1480):nullptr;if(!Owner||!Owner->Comp.IsValid()||S.Original.Num()!=6)return false;
+  const FTransform Frame=Owner->Comp->GetComponentTransform();
+  const FVector LocalThree=S47Three::ToThree(Frame.InverseTransformVector(DeltaUE));
+  // Absolute baseline + one common delta. Never AddOffset and never capture a shifted baseline.
+  for(int32 I:{3,4})W->SetPosition(S.Original[I].Id.Node,S.Original[I].PositionThree+LocalThree);
+  for(int32 I:{3,4})
+  {
+   const auto& P=S.Original[I];const auto* N=W->Node(P.Id.Node);const auto* C=P.Component.Get();
+   const FVector BaselineWorld=Frame.TransformPosition(P.Relative.GetTranslation());
+   if(!N||!C||!N->P.Equals(P.PositionThree+LocalThree,.00001)||!N->Q.Equals(P.QuaternionThree,.00001)||!N->S.Equals(P.ScaleThree,.00001)
+    ||!C->GetRelativeTransform().GetRotation().Equals(P.Relative.GetRotation(),.00001)
+    ||!C->GetRelativeScale3D().Equals(P.Relative.GetScale3D(),.00001)
+    ||!C->GetComponentLocation().Equals(BaselineWorld+DeltaUE,.02)||C->GetMaterials()!=P.Materials)return false;
+  }
+  S.RadioDeltaUE=DeltaUE;S.RadioDeltaLocalThree=LocalThree;return true;
+ }
+
  bool DiagnoseTB2Bench(FS47RadioWomanState& S)
  {
   if(S.BenchDiagnosticPostRepair)return S47RadioBenchPost::Run(S);
@@ -674,7 +784,8 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
   if(!N||N->Parent!=1480||N->Geo!=E.Geo||N->Mats!=TArray<int32>{E.Material}||N->bInstanced||!N->bVis||!C||!M||M!=W->GeoMesh(E.Geo)||M->GetPathName()!=Path
    ||!M->GetRenderData()||M->GetRenderData()->LODResources.Num()!=1||M->GetNumTriangles(0)!=E.Triangles||!C->GetRelativeTransform().Equals(FTransform::Identity,.001)
    ||M->GetStaticMaterials().Num()!=1||C->GetNumMaterials()!=1||!C->GetMaterial(0)||!W->MatAsset(E.Material)||C->GetMaterial(0)->GetBaseMaterial()!=W->MatAsset(E.Material)->GetBaseMaterial())return Reject(TEXT("six exact original mesh/material/transform bindings"));
-  FOriginal P;P.Id=E;P.Component=C;P.Mesh.Reset(M);P.Materials=C->GetMaterials();P.Relative=C->GetRelativeTransform();P.Collision=C->GetCollisionEnabled();P.Hidden=C->bHiddenInGame;P.Shadow=C->CastShadow;P.AuthoredVisible=N->bVis;S.Original.Add(MoveTemp(P));
+  FOriginal P;P.Id=E;P.Component=C;P.Mesh.Reset(M);P.Materials=C->GetMaterials();P.Relative=C->GetRelativeTransform();P.Collision=C->GetCollisionEnabled();P.Hidden=C->bHiddenInGame;P.Shadow=C->CastShadow;P.AuthoredVisible=N->bVis;
+  P.PositionThree=N->P;P.QuaternionThree=N->Q;P.ScaleThree=N->S;S.Original.Add(MoveTemp(P));
  }
  if(S.BenchDiagnosticRequested){S.Why=TEXT("explicit read-only TB2 bench diagnosis; measurements run fresh on Readback, original figure/radio retained");return Result;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff")))return Reject(TEXT("disabled by startup flag"));
@@ -683,94 +794,81 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
  if(!S.Asset.Contains(TEXT("."))){FString Name;S.Asset.Split(TEXT("/"),nullptr,&Name,ESearchCase::CaseSensitive,ESearchDir::FromEnd);S.Asset+=TEXT(".")+Name;}
  S.NativeAsset.Reset(LoadObject<UStaticMesh>(nullptr,*S.Asset,nullptr,LOAD_NoWarn|LOAD_Quiet));
  if(!NativeReady(S.NativeAsset.Get(),S.LODs))return Reject(TEXT("complete private static three-LOD seated candidate unavailable or invalid"));
- UStaticMesh* Cut=RadioCut(W,S.Original[3].Mesh.Get(),S.FullIndices,S.RadioIndices,S.Packed);
- if(!Cut)return Reject(TEXT("g1031 CPU-ready exact12-radio/24-shoe triangle partition required"));
- S.Cut=Cut;
- // Measure the seat against the actual existing purchased bench, not the old origin alone.
- const auto* BenchNode=W->Node(1562);auto* Bench=BenchNode?Cast<UStaticMeshComponent>(BenchNode->Comp.Get()):nullptr;
- if(BenchNode){D->SetNumberField(TEXT("bench_geo"),BenchNode->Geo);D->SetNumberField(TEXT("bench_parent"),BenchNode->Parent);D->SetStringField(TEXT("bench_name"),BenchNode->Name);}
- if(Bench)
- {
-  D->SetStringField(TEXT("bench_component"),GetPathNameSafe(Bench));D->SetStringField(TEXT("bench_mesh"),GetPathNameSafe(Bench->GetStaticMesh().Get()));
-  D->SetObjectField(TEXT("bench_transform"),Transform(Bench->GetComponentTransform()));D->SetObjectField(TEXT("bench_relative_transform"),Transform(Bench->GetRelativeTransform()));
-  D->SetArrayField(TEXT("bench_bounds_min_ue_cm"),Vec(Bench->Bounds.GetBox().Min));D->SetArrayField(TEXT("bench_bounds_max_ue_cm"),Vec(Bench->Bounds.GetBox().Max));
-  D->SetNumberField(TEXT("bench_collision_enabled"),int32(Bench->GetCollisionEnabled()));D->SetBoolField(TEXT("bench_visible"),Bench->IsVisible());
- }
- if(!BenchNode||BenchNode->Geo!=1074||BenchNode->Name!=TEXT("lic:garden_bench")||!Bench||!Bench->GetStaticMesh()
-  ||Bench->GetStaticMesh()!=W->GeoMesh(1074)||Bench->GetStaticMesh()->GetPathName()!=TEXT("/Game/Web/Geo/geo_008/StaticMeshes/g1074.g1074"))return Reject(TEXT("actual laundromat bench unavailable"));
- const FVector Anchor=Group->Comp->GetComponentLocation();TArray<double> Heights;
- const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSeat),true);
- D->SetBoolField(TEXT("trace_attempted"),true);TArray<TSharedPtr<FJsonValue>> Samples;
- for(double X:{-2.,0.,2.})for(double Y:{-2.,0.,2.})
- {
-  const FVector At=Anchor+FVector(X,Y,0);FHitResult Hit;
-  const FVector Start=At+FVector(0,0,20),End=At-FVector(0,0,15);
-  const bool Found=Bench->LineTraceComponent(Hit,Start,End,Q),Accepted=Found&&Hit.ImpactNormal.Z>.7;
-  if(Accepted)Heights.Add(Hit.ImpactPoint.Z);
-  auto Sample=MakeShared<FJsonObject>();Sample->SetNumberField(TEXT("sample_index"),Samples.Num());Sample->SetArrayField(TEXT("sample_ue_cm"),Vec(At));
-  Sample->SetArrayField(TEXT("trace_start_ue_cm"),Vec(Start));Sample->SetArrayField(TEXT("trace_end_ue_cm"),Vec(End));Sample->SetBoolField(TEXT("hit"),Found);
-  Sample->SetBoolField(TEXT("blocking_hit"),Hit.bBlockingHit);Sample->SetBoolField(TEXT("start_penetrating"),Hit.bStartPenetrating);Sample->SetBoolField(TEXT("accepted_surface"),Accepted);
-  Sample->SetArrayField(TEXT("impact_ue_cm"),Vec(Hit.ImpactPoint));Sample->SetArrayField(TEXT("impact_normal_ue"),Vec(Hit.ImpactNormal));Sample->SetNumberField(TEXT("face_index"),Hit.FaceIndex);
-  Sample->SetStringField(TEXT("requested_bench_component"),GetPathNameSafe(Bench));Sample->SetStringField(TEXT("hit_component"),GetPathNameSafe(Hit.GetComponent()));Sample->SetNumberField(TEXT("hit_node"),W->NodeOf(Hit.GetComponent()));
-  Samples.Add(MakeShared<FJsonValueObject>(Sample));
- }
- D->SetArrayField(TEXT("samples"),Samples);D->SetNumberField(TEXT("surface_hits"),Heights.Num());
- if(!Heights.IsEmpty())
- {
-  auto Sorted=Heights;Sorted.Sort();const double Median=Sorted[Sorted.Num()/2],Spread=Sorted.Last()-Sorted[0];
-  D->SetNumberField(TEXT("minimum_ue_cm"),Sorted[0]);D->SetNumberField(TEXT("maximum_ue_cm"),Sorted.Last());D->SetNumberField(TEXT("median_ue_cm"),Median);
-  D->SetNumberField(TEXT("spread_cm"),Spread);D->SetNumberField(TEXT("median_minus_anchor_cm"),Median-Anchor.Z);D->SetBoolField(TEXT("anchor_within_2cm"),FMath::Abs(Median-Anchor.Z)<=2.);D->SetBoolField(TEXT("spread_within_1_5cm"),Spread<=1.5);
- }
- // Diagnostic world rays only: their results never choose or validate placement.
- auto Ground=MakeShared<FJsonObject>();D->SetObjectField(TEXT("ground_diagnostics"),Ground);
- auto* World=W->GetWorld();Ground->SetBoolField(TEXT("world_available"),World!=nullptr);Ground->SetStringField(TEXT("scope"),TEXT("Diagnostic only; group-basis front70/85cm and side+-16cm, original six person components and bench ignored; no placement or acceptance effect."));
- Ground->SetStringField(TEXT("channel"),TEXT("ECC_Visibility"));TArray<TSharedPtr<FJsonValue>> GroundSamples,Ignored;
- FCollisionQueryParams GroundQuery(SCENE_QUERY_STAT(S47RadioWomanSeatGround),true);GroundQuery.AddIgnoredComponent(Bench);Ignored.Add(MakeShared<FJsonValueString>(GetPathNameSafe(Bench)));
- for(const auto& P:S.Original)if(P.Component.IsValid()){GroundQuery.AddIgnoredComponent(P.Component.Get());Ignored.Add(MakeShared<FJsonValueString>(GetPathNameSafe(P.Component.Get())));}
- Ground->SetArrayField(TEXT("ignored_components"),Ignored);
- const FTransform GroupWorld=Group->Comp->GetComponentTransform();
- const FVector GroundForward=GroupWorld.TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal();
- const FVector GroundRight=GroupWorld.TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
- Ground->SetArrayField(TEXT("forward_ue"),Vec(GroundForward));Ground->SetArrayField(TEXT("right_ue"),Vec(GroundRight));
- if(World)for(double Front:{70.,85.})for(double Side:{-16.,16.})
- {
-  const FVector At=Anchor+GroundForward*Front+GroundRight*Side,Start=At+FVector(0,0,50),End=At-FVector(0,0,150);FHitResult Hit;
-  const bool Found=World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,GroundQuery);
-  auto Sample=MakeShared<FJsonObject>();Sample->SetNumberField(TEXT("front_cm"),Front);Sample->SetNumberField(TEXT("side_cm"),Side);
-  Sample->SetArrayField(TEXT("trace_start_ue_cm"),Vec(Start));Sample->SetArrayField(TEXT("trace_end_ue_cm"),Vec(End));Sample->SetBoolField(TEXT("hit"),Found);Sample->SetBoolField(TEXT("blocking_hit"),Hit.bBlockingHit);
-  Sample->SetArrayField(TEXT("impact_ue_cm"),Vec(Hit.ImpactPoint));Sample->SetArrayField(TEXT("impact_normal_ue"),Vec(Hit.ImpactNormal));Sample->SetStringField(TEXT("hit_component"),GetPathNameSafe(Hit.GetComponent()));Sample->SetNumberField(TEXT("hit_node"),W->NodeOf(Hit.GetComponent()));Sample->SetNumberField(TEXT("face_index"),Hit.FaceIndex);
-  if(Found)Sample->SetNumberField(TEXT("anchor_above_impact_cm"),Anchor.Z-Hit.ImpactPoint.Z);
-  GroundSamples.Add(MakeShared<FJsonValueObject>(Sample));
- }
- Ground->SetArrayField(TEXT("samples"),GroundSamples);
- S.SeatHits=Heights.Num();if(Heights.Num()<5)return Reject(TEXT("actual bench seat requires five of nine physical surface samples"));
- Heights.Sort();S.Seat=FVector(Anchor.X,Anchor.Y,Heights[Heights.Num()/2]);
- D->SetObjectField(TEXT("native_sole_ground_diagnostics"),SoleGroundDiagnostics(W,S.NativeAsset.Get(),FTransform(FRotationMatrix::MakeFromXY(GroundForward,GroundRight).ToQuat(),S.Seat),GroundQuery));
- const double SeatFrameError=FMath::Abs((S.Seat.Z-Anchor.Z)-MeasuredSeatFromLegacyCm);
- D->SetNumberField(TEXT("actual_measured_seat_frame_error_cm"),SeatFrameError);
- D->SetBoolField(TEXT("measured_seat_binding_valid"),SeatFrameError<=MaxSeatFrameErrorCm);
- if(SeatFrameError>MaxSeatFrameErrorCm||Heights.Last()-Heights[0]>1.5)return Reject(TEXT("actual bench seat differs from the measured g1074 seat binding"));
- const auto SoleData=D->GetObjectField(TEXT("native_sole_ground_diagnostics"));const bool SolesReady=SoleGroundReady(SoleData);
- D->SetBoolField(TEXT("all_lowest_soles_within_contact_limit"),SolesReady);D->SetNumberField(TEXT("maximum_sole_ground_gap_cm"),MaxSoleGapCm);
- if(!SolesReady)return Reject(TEXT("every actual lowest sole vertex must reach physical ground within1.5cm before adoption"));
- S.Forward=Group->Comp->GetComponentTransform().TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal();
- S.Right=Group->Comp->GetComponentTransform().TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
- if(!S.Forward.Equals(FVector::ForwardVector,.00001)||!S.Right.Equals(FVector::RightVector,.00001))return Reject(TEXT("canonical road-facing orientation"));
- S.Placement=FTransform(FRotationMatrix::MakeFromXY(S.Forward,S.Right).ToQuat(),S.Seat);
- Cut->InitResources();if(!Cut->GetRenderData()->IsInitialized())return Reject(TEXT("radio render resources before component binding"));
- auto* C=NewObject<UStaticMeshComponent>(W,TEXT("RadioWomanStatic"));C->SetMobility(EComponentMobility::Movable);
- C->SetStaticMesh(S.NativeAsset.Get());C->SetupAttachment(Group->Comp.Get());C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);
- C->SetCastShadow(true);C->SetHiddenInGame(true,false);C->SetComponentTickEnabled(false);W->AddInstanceComponent(C);C->RegisterComponent();C->SetWorldTransform(S.Placement);
- S.NativeNode=W->AdoptNode(C,1480,TEXT("mannequin:radio-woman"));S.Native=C;
- if(S.NativeNode==INDEX_NONE){C->DestroyComponent();return Reject(TEXT("native visibility adoption"));}
- // All source/CPU/native/seat checks and resource initialization completed before this commit.
- auto* Housing=S.Original[3].Component.Get();Housing->SetStaticMesh(Cut);
- for(int32 I=0;I<S.Original[3].Materials.Num();++I)Housing->SetMaterial(I,S.Original[3].Materials[I]);
- Housing->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Original BodySetup also contains the removed shoes.
- for(int32 I:{0,1,2,5}){auto* Old=S.Original[I].Component.Get();W->SetVisible(S.Original[I].Id.Node,false);Old->SetHiddenInGame(true,false);Old->SetCastShadow(false);Old->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
- C->SetHiddenInGame(false,false);S.Active=true;S.Why=TEXT("installed: exact radio preserved, one static adopted mannequin");
- UE_LOG(LogS47RadioWoman,Display,TEXT("S47: radio woman ready: asset=%s node=%d radio12+metal12 retained body436 retired nativeLODs=%d/%d/%d seatHits=%d packedSHA1=%s; seated visual/contact acceptance remains required"),*S.Asset,S.NativeNode,S.LODs[0],S.LODs[1],S.LODs[2],S.SeatHits,*S.Packed);
+ S.Prepared=true;S.Pending=true;
+ S.Why=TEXT("prepared original bindings and private candidate; wait ordinary Enter/TownStep and accepted postrepair contact binding");
  return Result;
+}
+
+
+void FS47RadioWoman::InvalidateAreaEpoch()
+{
+ if(!State.IsValid()||State->BenchDiagnosticRequested)return;auto& S=*State;++S.AreaEpoch;
+ if(S.Active)OriginalFallback(S,TEXT("area epoch invalidated; originals restored pending real TownStep"));
+ S.Pending=S.Prepared;S.AttemptedEpoch=-1;
+}
+void FS47RadioWoman::AfterTownStep()
+{
+ if(!State.IsValid())return;auto& S=*State;if(S.BenchDiagnosticRequested||!S.Prepared)return;
+ ++S.TownStepSerial;auto* W=S.Web.Get();auto* M=W?US47Main::Get(W):nullptr;
+ const bool Ready=W&&M&&M->Flow&&M->World&&S47Startup::Ready()&&!S47Startup::Blocking()
+  &&M->Mode==US47Main::EMode::Play&&!M->Flow->bStarting&&!M->Flow->bRestoringNow&&!M->World->bBusy
+  &&W->Area()==M->World->Area&&(W->Area()==TEXT("road")||W->Area()==TEXT("diner"));
+ if(!Ready)
+ {
+  if(S.Active){OriginalFallback(S,TEXT("live context no longer eligible; complete originals restored"));S.Pending=true;S.AttemptedEpoch=-1;}
+  return;
+ }
+ if(S.Active&&S.MeasuredEpoch==S.AreaEpoch)
+ {
+  if(!CurrentShellStillEligible(S)){OriginalFallback(S,TEXT("measured native support identity no longer active/shown"));S.Pending=true;S.AttemptedEpoch=-1;}
+  return;
+ }
+ if(!S.Pending||S.AttemptedEpoch==int64(S.AreaEpoch))return;
+ // Schedule has already run. Hidden owner/bench means wait; hidden collision is not support.
+ if(!W->ObjAt(1480).Shown()||!W->ObjAt(1544).Shown())return;
+ if(!OriginalsMatchCaptured(S)){OriginalFallback(S,TEXT("captured originals differ before live preflight"));S.Pending=false;return;}
+ FAcceptedPostrepairSite Site;FString Why;S.AttemptedEpoch=int64(S.AreaEpoch);
+ if(!MeasureAcceptedPostrepairSite(S,Site,Why)){OriginalFallback(S,Why);return;}
+ // The binding implementation must supply actual traces and exact native/bake identities.
+ bool SiteBound=false,SolesBound=false;
+ if(!Site.Diagnostics.IsValid()||Site.SeatHits<5||!Site.Diagnostics->TryGetBoolField(TEXT("measured_seat_binding_valid"),SiteBound)||!SiteBound
+  ||!Site.Diagnostics->TryGetBoolField(TEXT("all_lowest_soles_within_contact_limit"),SolesBound)||!SolesBound
+  ||Site.SeatUE.ContainsNaN()||!Site.Placement.IsValid()||!Site.Placement.GetLocation().Equals(Site.SeatUE,.00001)
+  ||!Site.Placement.GetScale3D().Equals(FVector::OneVector,.00001)
+  ||!Site.Placement.GetRotation().Equals(FQuat::Identity,.00001)
+  ||!Site.Forward.Equals(FVector::ForwardVector,.00001)||!Site.Right.Equals(FVector::RightVector,.00001))
+ {OriginalFallback(S,TEXT("complete measured live site contract missing"));return;}
+ S.Seat=Site.SeatUE;S.SeatHits=Site.SeatHits;S.Forward=Site.Forward;S.Right=Site.Right;S.Placement=Site.Placement;S.BenchDiagnostics=Site.Diagnostics;
+ const auto* Group=W->Node(1480);if(!Group||!Group->Comp.IsValid())return;
+ // Historical R10 frame is a reference for preserved torso/radio relation, never new support.
+ const FVector ReferenceR10=Group->Comp->GetComponentLocation()+FVector(0,0,MeasuredSeatFromLegacyCm);
+ const FVector RadioDelta=S.Seat-ReferenceR10;
+ // The transient partition is created only now and bound this frame: no weak ref across waiting frames.
+ UStaticMesh* Cut=RadioCut(W,S.Original[3].Mesh.Get(),S.FullIndices,S.RadioIndices,S.Packed);
+ if(!Cut){OriginalFallback(S,TEXT("exact CPU radio partition failed after live preflight"));return;}
+ Cut->InitResources();if(!Cut->GetRenderData()->IsInitialized()){OriginalFallback(S,TEXT("radio resources not initialized before binding"));return;}
+ auto* C=S.Native.Get();
+ if(!C)
+ {
+  C=NewObject<UStaticMeshComponent>(W,TEXT("RadioWomanStatic"));C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(S.NativeAsset.Get());
+  C->SetupAttachment(Group->Comp.Get());C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);
+  C->SetCastShadow(true);C->SetHiddenInGame(true,false);C->SetComponentTickEnabled(false);W->AddInstanceComponent(C);C->RegisterComponent();
+  S.NativeNode=W->AdoptNode(C,1480,TEXT("mannequin:radio-woman"));S.Native=C;
+  if(S.NativeNode==INDEX_NONE){C->DestroyComponent();OriginalFallback(S,TEXT("single native visibility adoption failed"));return;}
+ }
+ const auto* NN=W->Node(S.NativeNode);
+ if(!NN||NN->Comp.Get()!=C||NN->Parent!=1480||NN->Name!=TEXT("mannequin:radio-woman")||C->GetStaticMesh()!=S.NativeAsset.Get())
+ {OriginalFallback(S,TEXT("owned native node identity changed"));return;}
+ // Flat world presentation basis is already required above. Keep native metadata and component together.
+ const auto Owner=W->ObjAt(1480);
+ W->SetLocal(S.NativeNode,Owner.WorldToLocal(S47Three::ToThree(S.Seat)),Owner.WorldQuaternion().Inverse(),FVector::OneVector);
+ if(!C->GetComponentTransform().Equals(S.Placement,.02)||!ApplyRadioTranslation(S,RadioDelta))
+ {OriginalFallback(S,TEXT("absolute native/radio transform transaction failed"));return;}
+ auto* Housing=S.Original[3].Component.Get();Housing->SetStaticMesh(Cut);S.Cut=Cut;
+ for(int32 I=0;I<S.Original[3].Materials.Num();++I)Housing->SetMaterial(I,S.Original[3].Materials[I]);Housing->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ for(int32 I:{0,1,2,5}){auto* Old=S.Original[I].Component.Get();W->SetVisible(S.Original[I].Id.Node,false);Old->SetHiddenInGame(true,false);Old->SetCastShadow(false);Old->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+ W->SetVisible(S.NativeNode,true);C->SetHiddenInGame(false,false);S.Active=true;S.Pending=false;S.MeasuredEpoch=S.AreaEpoch;S.MeasuredTownStepSerial=S.TownStepSerial;
+ S.Why=TEXT("live TownStep committed one native body and common absolute radio translation from captured baseline");
 }
 
 bool FS47RadioWoman::IsActive() const{return State.IsValid()&&State->Active;}
@@ -781,12 +879,15 @@ bool FS47RadioWoman::Audit(TArray<FString>& Lines) const
  const auto& S=*State;auto* W=S.Web.Get();auto* C=S.Native.Get();Check(W&&C&&C->IsRegistered()&&C->GetStaticMesh()==S.NativeAsset.Get(),TEXT("one actual static mesh registered"));if(!W||!C)return false;
  const auto* Adopted=W->Node(S.NativeNode);Check(Adopted&&Adopted->Parent==1480&&Adopted->Name==TEXT("mannequin:radio-woman")&&W->NodeOf(C)==S.NativeNode,TEXT("native belongs to original person visibility owner"));
  Check(C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&!C->IsComponentTickEnabled()&&C->GetComponentTransform().Equals(S.Placement,.02),TEXT("static-only NoCollision and measured placement retained"));
- Check(S.BenchDiagnostics->GetBoolField(TEXT("measured_seat_binding_valid"))&&S.BenchDiagnostics->GetBoolField(TEXT("all_lowest_soles_within_contact_limit")),TEXT("measured bench binding and every lowest sole passed physical pre-adoption contact"));
+ Check(S.MeasuredEpoch==S.AreaEpoch&&S.MeasuredTownStepSerial>0,TEXT("measurement belongs to current Enter epoch after real TownUpdate"));
+  Check(S.BenchDiagnostics->GetBoolField(TEXT("measured_seat_binding_valid"))&&S.BenchDiagnostics->GetBoolField(TEXT("all_lowest_soles_within_contact_limit")),TEXT("measured bench binding and every lowest sole passed physical pre-adoption contact"));
  Check(W->Handle(TEXT("world.town.woman"))==1480&&W->Handle(TEXT("world.town.proxies.woman"))==1544&&W->IsVisible(1480)==W->IsVisible(1544),TEXT("original person/proxy ownership and schedule agree"));
  for(int32 I=0;I<S.Original.Num();++I)
  {
   const auto& P=S.Original[I];const auto* N=W->Node(P.Id.Node);auto* Old=P.Component.Get();const bool Mixed=I==3,Panel=I==4;
-  Check(N&&N->Parent==1480&&N->Geo==P.Id.Geo&&N->Mats==TArray<int32>{P.Id.Material}&&Old&&Old->GetRelativeTransform().Equals(P.Relative,.001),TEXT("original legacy metadata/transform retained"));
+  FTransform ExpectedRelative=P.Relative;if(Mixed||Panel)ExpectedRelative.AddToTranslation(S47Three::ToUE(S.RadioDeltaLocalThree));
+   const FVector ExpectedPosition=P.PositionThree+((Mixed||Panel)?S.RadioDeltaLocalThree:FVector::ZeroVector);
+   Check(N&&N->Parent==1480&&N->Geo==P.Id.Geo&&N->Mats==TArray<int32>{P.Id.Material}&&N->P.Equals(ExpectedPosition,.00001)&&N->Q.Equals(P.QuaternionThree,.00001)&&N->S.Equals(P.ScaleThree,.00001)&&Old&&Old->GetRelativeTransform().Equals(ExpectedRelative,.001),TEXT("all original bindings retained; only both radio translations share one captured-baseline delta"));
   Check(Old&&Old->GetMaterials()==P.Materials,TEXT("actual original material pointers retained"));
   if(Panel)Check(Old&&Old->GetStaticMesh()==P.Mesh.Get()&&Old->GetCollisionEnabled()==P.Collision&&Old->bHiddenInGame==P.Hidden&&Old->CastShadow==P.Shadow&&N&&N->bVis==P.AuthoredVisible,TEXT("complete original metal radio panel retained"));
   else if(Mixed)Check(Old&&Old->GetStaticMesh()==S.Cut.Get()&&Old->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&N&&N->bVis&&Old->IsVisible()==C->IsVisible(),TEXT("radio housing retained without invisible shoe collision"));
@@ -806,6 +907,10 @@ TSharedPtr<FJsonObject> FS47RadioWoman::Readback() const
  if(State.IsValid()&&State->BenchDiagnosticRequested)DiagnoseTB2Bench(*State);
  auto J=MakeShared<FJsonObject>();J->SetBoolField(TEXT("active"),IsActive());if(!State.IsValid())return J;const auto& S=*State;
  J->SetBoolField(TEXT("bench_diagnostic_requested"),S.BenchDiagnosticRequested);J->SetBoolField(TEXT("bench_postrepair_diagnostic_requested"),S.BenchDiagnosticPostRepair);
+ J->SetBoolField(TEXT("preparation_complete"),S.Prepared);J->SetBoolField(TEXT("originals_captured"),S.Original.Num()==6);J->SetBoolField(TEXT("pending_live_measurement"),S.Pending);
+ J->SetNumberField(TEXT("area_epoch"),double(S.AreaEpoch));J->SetNumberField(TEXT("measured_epoch"),double(S.MeasuredEpoch));J->SetNumberField(TEXT("town_step_serial"),double(S.TownStepSerial));
+ J->SetBoolField(TEXT("scene_measurement_after_town_step"),S.Active&&S.MeasuredEpoch==S.AreaEpoch&&S.MeasuredTownStepSerial>0);
+ J->SetArrayField(TEXT("radio_world_delta_ue_cm"),Vec(S.RadioDeltaUE));J->SetArrayField(TEXT("radio_local_delta_three_m"),Vec(S.RadioDeltaLocalThree));
  J->SetStringField(TEXT("reason"),S.Why);J->SetStringField(TEXT("asset"),S.Asset);J->SetNumberField(TEXT("native_node"),S.NativeNode);
  J->SetNumberField(TEXT("person_node"),1480);J->SetNumberField(TEXT("proxy_node"),1544);J->SetStringField(TEXT("interaction"),TEXT("radio_woman"));
  J->SetStringField(TEXT("schedule_owner"),TEXT("FS47Town::SetPeople / NightPerson 18:00..04:50"));J->SetStringField(TEXT("packed_vertex_sha1"),S.Packed);
@@ -815,6 +920,24 @@ TSharedPtr<FJsonObject> FS47RadioWoman::Readback() const
  {
   auto* W=S.Web.Get();J->SetObjectField(TEXT("legacy_g1074_identity_live"),ComponentIdentity(W,1562));J->SetObjectField(TEXT("tb2_bench_identity_live"),ComponentIdentity(W,S.DiagnosticBenchNode));
   TArray<TSharedPtr<FJsonValue>> Supports;for(int32 Index:S.DiagnosticHitNodes)if(Index!=INDEX_NONE)Supports.Add(MakeShared<FJsonValueObject>(ComponentIdentity(W,Index)));J->SetArrayField(TEXT("support_components_live"),Supports);
+ }
+ if(auto* W=S.Web.Get())
+ {
+  J->SetObjectField(TEXT("tb2_bench_identity_live"),ComponentIdentity(W,S.DiagnosticBenchNode));
+  TArray<TSharedPtr<FJsonValue>> RadioRows;const auto* Owner=W->Node(1480);
+  if(Owner&&Owner->Comp.IsValid())for(int32 I:{3,4})if(S.Original.IsValidIndex(I))
+  {
+   const auto& P=S.Original[I];auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("node"),P.Id.Node);
+   Row->SetArrayField(TEXT("captured_position_three_m"),Vec(P.PositionThree));
+   if(const auto* N=W->Node(P.Id.Node))Row->SetArrayField(TEXT("actual_metadata_position_three_m"),Vec(N->P));
+   if(auto* C=P.Component.Get())
+   {
+    Row->SetObjectField(TEXT("actual_relative_transform"),Transform(C->GetRelativeTransform()));
+    Row->SetArrayField(TEXT("actual_world_delta_from_captured_ue_cm"),Vec(C->GetComponentLocation()-Owner->Comp->GetComponentTransform().TransformPosition(P.Relative.GetTranslation())));
+   }
+   RadioRows.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  J->SetArrayField(TEXT("radio_parts_live"),RadioRows);
  }
  J->SetArrayField(TEXT("native_forward_ue"),Vec(S.Forward));J->SetArrayField(TEXT("native_right_ue"),Vec(S.Right));
  J->SetStringField(TEXT("limits"),TEXT("Runtime installation audit; root must verify actual seated coat/hand/radio/foot contact, all LOD views, interaction and disk/title/Continue. No human/FPS acceptance."));

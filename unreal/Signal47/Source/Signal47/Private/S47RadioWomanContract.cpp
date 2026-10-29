@@ -241,7 +241,10 @@ namespace S47RadioWomanContract
     if(M->Flow->bStarting||M->World->bBusy){Ready=0;return;}if(Ready==0){Ready=Now;return;}if(Now-Ready<.6)return;
     if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->Evening->Commute()&&M->World->bDriving,TEXT("ordinary fresh commute before explicit parked-car/clock fixture")))return;
     for(int32 I=0;I<Web->PartCount();++I)if(Web->Node(I)->Name==TEXT("mannequin:radio-woman")){if(!Check(NativeNode==INDEX_NONE,TEXT("exactly one adopted mannequin node")))return;NativeNode=I;}
-    if(!Fallback&&!Check(Body()&&Body()->GetStaticMesh()&&Body()->GetStaticMesh()->GetRenderData()&&Body()->GetStaticMesh()->GetRenderData()->LODResources.Num()==3,TEXT("actual native three-LOD mannequin exists before test fixtures")))return;
+    const auto Preparation=Web->RadioWomanReadback();Write(Root/TEXT("before-fixtures-preparation.json"),Preparation);
+    if(!Fallback&&!Check(S47J::Bool(Preparation,TEXT("preparation_complete"))&&S47J::Bool(Preparation,TEXT("originals_captured"))
+     &&(S47J::Bool(Preparation,TEXT("active"))?S47J::Bool(Preparation,TEXT("scene_measurement_after_town_step")):S47J::Bool(Preparation,TEXT("fallback_original_bindings_intact"))),
+     TEXT("prepared before test fixtures; earlier road adoption is valid only from actual TownUpdate/current Enter epoch")))return;
     PackBefore=S47J::Obj(S47J::Obj(M->Flow->GameState(),TEXT("evening")),TEXT("pack"));
     auto Car=S47J::New();S47J::Set(Car,TEXT("leg"),TEXT("road"));S47J::Set(Car,TEXT("x"),7994.);S47J::Set(Car,TEXT("y"),0.);S47J::Set(Car,TEXT("z"),2138.);S47J::Set(Car,TEXT("h"),0.);
     S47J::Set(Car,TEXT("scope"),TEXT("only explicit position fixture; no later car or player pose writes"));Write(Root/TEXT("explicit-start-fixture.json"),Car);
@@ -255,6 +258,13 @@ namespace S47RadioWomanContract
    if(Stage==2)
    {
     if(Now-At<.8)return;if(!Check(!M->World->bDriving&&M->World->Area==TEXT("diner"),TEXT("actual Caliche walking area after parking")))return;
+    if(!Fallback)
+    {
+     NativeNode=INDEX_NONE;for(int32 I=0;I<Web->PartCount();++I)if(Web->Node(I)->Name==TEXT("mannequin:radio-woman")){if(!Check(NativeNode==INDEX_NONE,TEXT("one adopted native node after actual arrival")))return;NativeNode=I;}
+     const auto Live=Web->RadioWomanReadback();
+     if(!Check(Body()&&Body()->GetStaticMesh()&&Body()->GetStaticMesh()->GetRenderData()&&Body()->GetStaticMesh()->GetRenderData()->LODResources.Num()==3
+      &&S47J::Bool(Live,TEXT("active"))&&S47J::Bool(Live,TEXT("scene_measurement_after_town_step")),TEXT("native active after real GetOutHere/Enter diner and ordinary TownUpdate, never forced by test")))return;
+    }
     if(!Snapshot(TEXT("arrival-present"),true)||!Floor())return;
     if(Fallback){Next(11,TEXT("explicit Off: original scene/presence only, no native journey acceptance"));return;}
     const auto T=Target();const auto P=M->Player->Pos;Path={FVector(T.X+2.05,P.Y,P.Z),FVector(T.X+2.05,P.Y,T.Z)};

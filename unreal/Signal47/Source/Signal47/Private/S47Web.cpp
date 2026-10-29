@@ -789,6 +789,11 @@ void AS47Web::BeginPlay()
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 
+void AS47Web::RadioWomanAfterTownStep()
+{
+ if (RadioWoman) RadioWoman->AfterTownStep();
+}
+
 bool AS47Web::AuditRadioWoman(TArray<FString>& Lines) const
 {
 	return RadioWoman.IsValid() && RadioWoman->Audit(Lines);
@@ -882,6 +887,8 @@ void AS47Web::Enter(const FString& Area)
 	if (CalicheHomes) CalicheHomes->Update();
 	if (CinemaPosters) CinemaPosters->Update();
 	if (MotelV2) MotelV2->Update();
+	// Enter may be synchronous during Continue; a sampled bRestoring edge is insufficient.
+	if (RadioWoman) RadioWoman->InvalidateAreaEpoch();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
 	if (T && SkyMid)

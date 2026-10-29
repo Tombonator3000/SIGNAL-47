@@ -9,6 +9,7 @@
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
+#include "S47Json.h"
 #include "DynamicRHI.h"
 #include "Editor.h"
 #include "Engine/SkeletalMesh.h"
@@ -628,6 +629,199 @@ namespace S47MannequinBake
    Data->SetStringField(TEXT("reference_after_sha1"), FPose(Clothes->GetRefSkeleton()).Hash()); Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes));
    Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1"))); Data->SetBoolField(TEXT("preserved_payload"), true); return true;
   }
+  // Explicit private R11 input. Root/Python SHA256 pins the same file bytes which
+  // this existing native SHA1 implementation reads again. No new crypto module.
+  FJson PostrepairBinding, PostrepairReferenceBake, PostrepairFloorTargets;
+  bool PostrepairPinnedFile(const FJson& Pin, TArray<uint8>& Bytes, const FString& ExpectedPath = FString())
+  {
+   const FString Path = S47J::Str(Pin, TEXT("path")), SHA1 = S47J::Str(Pin, TEXT("sha1")), SHA256 = S47J::Str(Pin, TEXT("sha256"));
+   FString Canonical = FPaths::ConvertRelativePathToFull(Path); FPaths::NormalizeFilename(Canonical);
+   auto Hex = [](const FString& Hash, int32 Length) { if (Hash.Len() != Length) return false; for (TCHAR C : Hash) if (!FChar::IsHexDigit(C)) return false; return true; };
+   if (!Need(Pin.IsValid() && !FPaths::IsRelative(Path) && !Path.Contains(TEXT("..")) && Canonical == Path &&
+    (ExpectedPath.IsEmpty() || Path == ExpectedPath) && Hex(SHA1, 40) && Hex(SHA256, 64) &&
+    FFileHelper::LoadFileToArray(Bytes, *Path) && Bytes.Num() > 0 && double(Bytes.Num()) == S47J::Num(Pin, TEXT("bytes")) &&
+    Digest(Bytes).Equals(SHA1, ESearchCase::IgnoreCase), TEXT("R11 actual pinned file bytes/SHA1 and explicit root/Python SHA256 binding: ") + Path)) return false;
+   return true;
+  }
+  bool PostrepairPinnedJson(const FJson& Pin, FJson& Data)
+  {
+   TArray<uint8> Bytes; if (!PostrepairPinnedFile(Pin, Bytes)) return false;
+   const FUTF8ToTCHAR Converted(reinterpret_cast<const ANSICHAR*>(Bytes.GetData()), Bytes.Num());
+   const FString Text(Converted.Length(), Converted.Get());
+   return Need(FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Data) && Data.IsValid(), TEXT("R11 JSON parsed from the exact natively SHA1-checked UTF8 bytes"));
+  }
+  bool PostrepairEqual(const FJson& A, const FJson& B)
+  {
+   return A.IsValid() && B.IsValid() && FJsonValue::CompareEqual(*Value(A), *Value(B));
+  }
+  bool PostrepairVector(const FJson& Data, const TCHAR* Key, FVector& Out)
+  {
+   const auto Values = S47J::Nums(Data, Key); if (Values.Num() != 3) return false;
+   for (double V : Values) if (!FMath::IsFinite(V)) return false;
+   Out = FVector(Values[0], Values[1], Values[2]); return true;
+  }
+  bool PostrepairFrame(const FJson& Data, FTransform& Out)
+  {
+   FVector Position, Scale; const auto Q = S47J::Nums(Data, TEXT("rotation_xyzw"));
+   if (!PostrepairVector(Data, TEXT("location_ue_cm"), Position) || !PostrepairVector(Data, TEXT("scale"), Scale) || Q.Num() != 4) return false;
+   for (double V : Q) if (!FMath::IsFinite(V)) return false;
+   const FQuat Rotation(Q[0], Q[1], Q[2], Q[3]);
+   if (!Rotation.IsNormalized() || !Scale.Equals(FVector::OneVector, .000001)) return false;
+   Out = FTransform(Rotation, Position, Scale); return Out.IsValid();
+  }
+  FString PostrepairPacked(UStaticMesh* Mesh)
+  {
+   if (!Mesh || !Mesh->bAllowCPUAccess || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.Num() != 3) return {};
+   const auto& B = Mesh->GetRenderData()->LODResources[0].VertexBuffers; const auto& T = B.StaticMeshVertexBuffer;
+   if (!B.PositionVertexBuffer.GetNumVertices() || B.PositionVertexBuffer.GetNumVertices() != T.GetNumVertices() || !T.GetNumTexCoords() ||
+    !B.PositionVertexBuffer.GetVertexData() || !T.GetTangentData() || !T.GetTexCoordData() ||
+    (B.ColorVertexBuffer.GetNumVertices() && !B.ColorVertexBuffer.GetVertexData())) return {};
+   FSHA1 Hash; Hash.Update(static_cast<const uint8*>(B.PositionVertexBuffer.GetVertexData()), B.PositionVertexBuffer.GetNumVertices() * B.PositionVertexBuffer.GetStride());
+   Hash.Update(static_cast<const uint8*>(T.GetTangentData()), T.GetTangentSize()); Hash.Update(static_cast<const uint8*>(T.GetTexCoordData()), T.GetTexCoordSize());
+   if (B.ColorVertexBuffer.GetNumVertices()) Hash.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()), B.ColorVertexBuffer.GetNumVertices() * B.ColorVertexBuffer.GetStride());
+   Hash.Final(); FSHAHash Out; Hash.GetHash(Out.Hash); return Out.ToString().ToLower();
+  }
+  bool PreparePostrepairBinding()
+  {
+   if (!Job->HasField(TEXT("postrepair_binding"))) return true; // Original R10 route remains explicit history.
+   const FString EvidenceRoot = TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/");
+   const FJson InputPin = S47J::Obj(Job, TEXT("postrepair_binding"));
+   if (!Need(S47J::Str(InputPin, TEXT("path")).StartsWith(EvidenceRoot), TEXT("R11 explicit private evidence-root binding path"))) return false;
+   FJson Input; if (!PostrepairPinnedJson(InputPin, Input)) return false;
+   Report->SetObjectField(TEXT("postrepair_binding_file"), InputPin);
+   Report->SetObjectField(TEXT("postrepair_binding_input"), Input);
+   if (!Need(S47J::Int(Input, TEXT("schema_version")) == 1 && S47J::Str(Input, TEXT("status")) == TEXT("READY_FOR_AUTHORING_ONLY") &&
+    S47J::Str(Input, TEXT("policy")) == TEXT("actual-tb2-visible-support-r10-reference") && !S47J::Bool(Input, TEXT("runtime_accepted")) &&
+    !S47J::Bool(Input, TEXT("contact_accepted")), TEXT("R11 explicit schema/policy; authoring only, never runtime/contact acceptance"))) return false;
+   for (const TCHAR* Key : {TEXT("acceptance_file"), TEXT("reference_bake_file"), TEXT("reference_contract_file"), TEXT("reference_job_file")})
+    if (!Need(S47J::Str(S47J::Obj(Input, Key), TEXT("path")).StartsWith(EvidenceRoot), TEXT("R11 private authoring evidence path: ") + FString(Key))) return false;
+   const FString RawInputPath = S47J::Str(S47J::Obj(Input, TEXT("raw_file")), TEXT("path"));
+   if (!Need(RawInputPath.StartsWith(TEXT("/tmp/S47-")) && RawInputPath.Contains(TEXT("/Saved/RadioBenchPostRepairDiagnostic/")) && RawInputPath.EndsWith(TEXT("/result.json")), TEXT("R11 isolated actual postrepair raw-result path"))) return false;
+   FJson Acceptance, Raw, ReferenceContract, ReferenceJob;
+   if (!PostrepairPinnedJson(S47J::Obj(Input, TEXT("acceptance_file")), Acceptance) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("raw_file")), Raw) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_bake_file")), PostrepairReferenceBake) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_contract_file")), ReferenceContract) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_job_file")), ReferenceJob)) return false;
+   for (const TCHAR* Key : {TEXT("clothes_asset"), TEXT("private_skeleton"), TEXT("brow_material"), TEXT("cloth_master"), TEXT("asset_root"), TEXT("clothes_bind_report")})
+    if (!Need(!S47J::Str(ReferenceJob, Key).IsEmpty() && S47J::Str(ReferenceJob, Key) == S47J::Str(Job, Key), TEXT("R11 explicitly reuses pinned R10 private source field: ") + FString(Key))) return false;
+   const FJson RawPin = S47J::Obj(Input, TEXT("raw_file")); const FString RawPath = S47J::Str(RawPin, TEXT("path"));
+   const FJson AcceptedRaw = S47J::Obj(S47J::Obj(Acceptance, TEXT("raw")), *RawPath);
+   if (!Need(S47J::Str(Acceptance, TEXT("status")) == TEXT("PASS_READONLY_POSTREPAIR_NATIVE_MEASUREMENT") &&
+    PostrepairEqual(AcceptedRaw, RawPin) &&
+    S47J::Str(Raw, TEXT("status")) == TEXT("MEASURED") && !S47J::Bool(Raw, TEXT("timeout")) && S47J::Bool(Raw, TEXT("phase_matches_request")) &&
+    S47J::Str(PostrepairReferenceBake, TEXT("status")) == TEXT("PASS") && S47J::Str(PostrepairReferenceBake, TEXT("mode")) == TEXT("bake") &&
+    S47J::Str(Job, TEXT("contract")) == S47J::Str(S47J::Obj(Input, TEXT("reference_contract_file")), TEXT("path")) && PostrepairEqual(ReferenceContract, Contract),
+    TEXT("R11 frozen root acceptance/raw/reference-bake link and exact unchanged reference contract file/content"))) return false;
+   const FJson Native = S47J::Obj(Raw, TEXT("native_readback")), D = S47J::Obj(Native, TEXT("bench_diagnostics"));
+   if (!Need(S47J::Bool(D, TEXT("measurement_valid")) && S47J::Str(D, TEXT("source_geometry_phase")) == TEXT("POST_REPAIR_RIGID_SOURCE_FRAME_NATIVE_QUERY") &&
+    !S47J::Bool(Native, TEXT("active")) && S47J::Bool(Native, TEXT("fallback_original_bindings_intact")) &&
+    S47J::Str(D, TEXT("area_at_query")) == TEXT("diner") && S47J::Arr(D, TEXT("mismatches")).IsEmpty() &&
+    !S47J::Bool(D, TEXT("entire_laundry_shell_ignored")), TEXT("R11 actual read-only postrepair measurement, original fallback and correct live area"))) return false;
+   const FString ReferenceAsset = S47J::Str(D, TEXT("sole_projection_asset"));
+   if (!Need(ReferenceAsset.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR10/")) && ReferenceAsset != Job->GetStringField(TEXT("output_asset")) &&
+    S47J::Str(S47J::Obj(PostrepairReferenceBake, TEXT("output")), TEXT("asset")) == ReferenceAsset,
+    TEXT("R11 measured historical R10 reference is a different asset from the fresh output"))) return false;
+   const FJson Assets = S47J::Obj(Acceptance, TEXT("native_assets")); if (!Need(Assets.IsValid() && Assets->Values.Num() == 4 &&
+    Assets->HasTypedField<EJson::Object>(ReferenceAsset) && Assets->HasTypedField<EJson::Object>(TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")), TEXT("R11 four frozen actual native packages including reference and Shell"))) return false;
+   const FJson ReferenceFile = S47J::Obj(S47J::Obj(Assets, *ReferenceAsset), TEXT("file"));
+   if (!Need(S47J::Str(Acceptance, TEXT("reference_bake_native_path")) == S47J::Str(ReferenceFile, TEXT("path")) &&
+    S47J::Str(Acceptance, TEXT("reference_bake_native_sha1")).Equals(S47J::Str(ReferenceFile, TEXT("sha1")), ESearchCase::IgnoreCase) &&
+    S47J::Str(Acceptance, TEXT("reference_bake_native_sha256")) == S47J::Str(ReferenceFile, TEXT("sha256")), TEXT("R11 native reference fields name the measured uasset, separate from the pinned JSON pose report"))) return false;
+   UStaticMesh* ReferenceMesh = nullptr; TArray<TSharedPtr<FJsonValue>> NativeAssets;
+   for (const auto& Entry : Assets->Values)
+   {
+    const FJson Pin = Entry.Value->AsObject(), File = S47J::Obj(Pin, TEXT("file")); const FString Package = FPackageName::ObjectPathToPackageName(Entry.Key);
+    if (!Need(Entry.Key.StartsWith(TEXT("/Game/")) && !Entry.Key.Contains(TEXT("..")) && FPackageName::IsValidLongPackageName(Package), TEXT("R11 valid native long package/object path"))) return false;
+    const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Package, FPackageName::GetAssetPackageExtension()));
+    TArray<uint8> Bytes; if (!PostrepairPinnedFile(File, Bytes, Filename)) return false;
+    UStaticMesh* Actual = Load<UStaticMesh>(Entry.Key); if (Actual) FAssetCompilingManager::Get().FinishAllCompilation();
+    FJson Row = Object(); Row->SetStringField(TEXT("asset"), Entry.Key); Row->SetObjectField(TEXT("file"), File);
+    if (!Need(Actual && Actual->GetPathName() == Entry.Key && Actual->GetNumLODs() > 0, TEXT("R11 actual saved native mesh reloads: ") + Entry.Key)) return false;
+    const auto Expected = S47J::Nums(Pin, TEXT("lod_triangles")); TArray<TSharedPtr<FJsonValue>> Counts;
+    const bool ThreeLODs = Entry.Key == ReferenceAsset || Entry.Key == TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell");
+    if (!Need(!ThreeLODs || (Actual->GetNumLODs() == 3 && Expected.Num() == 3), TEXT("R11 character and Shell actual three-LOD identity"))) return false;
+    for (int32 I = 0; I < Actual->GetNumLODs(); ++I)
+    {
+     const int32 Triangles = Actual->GetNumTriangles(I); Counts.Add(MakeShared<FJsonValueNumber>(Triangles));
+     if (!Need(Triangles > 0 && (Expected.IsEmpty() || (Expected.IsValidIndex(I) && Expected[I] == Triangles)), TEXT("R11 actual positive native geometry; compare only actually premeasured LOD counts"))) return false;
+    }
+    Row->SetArrayField(TEXT("actual_lod_triangles"), Counts); Row->SetStringField(TEXT("lod_scope"), ThreeLODs ? TEXT("compared with actual R2 three-LOD observation") : TEXT("first authoring reader observation; R2 did not capture these LODs")); NativeAssets.Add(Value(Row));
+    if (Entry.Key == ReferenceAsset) ReferenceMesh = Actual;
+   }
+   Report->SetArrayField(TEXT("postrepair_native_packages_actual"), NativeAssets);
+   if (!Need(ReferenceMesh && PostrepairPacked(ReferenceMesh) == S47J::Str(D, TEXT("actual_selected_sole_packed_vertex_sha1")).ToLower() &&
+    S47J::Nums(S47J::Obj(Assets, *ReferenceAsset), TEXT("lod_triangles")) == S47J::Nums(D, TEXT("actual_projection_lod_triangles")), TEXT("R11 actual CPU R10 reference payload/all three LOD counts are the measured projection geometry"))) return false;
+   FTransform Frame; FVector Anchor, MeasuredSeat, AcceptedSeat;
+   if (!Need(PostrepairFrame(S47J::Obj(D, TEXT("measured_seat_projection_frame")), Frame) && PostrepairVector(D, TEXT("unchanged_original_anchor_ue_cm"), Anchor) &&
+    PostrepairVector(D, TEXT("measured_candidate_seat_ue_cm"), MeasuredSeat) && PostrepairVector(Acceptance, TEXT("measured_seat_ue_cm"), AcceptedSeat) &&
+    Frame.GetLocation().Equals(MeasuredSeat, .00001) && FMath::Abs(MeasuredSeat.X - Anchor.X) <= .00001 && FMath::Abs(MeasuredSeat.Y - Anchor.Y) <= .00001 &&
+    MeasuredSeat.Equals(AcceptedSeat, .00001) && S47J::Int(Native, TEXT("person_node"), -1) == 1480 &&
+    Frame.TransformVectorNoScale(FVector::UpVector).Equals(FVector::UpVector, .000001) && S47J::Int(D, TEXT("candidate_seat_actual_hits")) >= 5 &&
+    S47J::Num(D, TEXT("candidate_seat_spread_cm"), 1e6) <= 1.5, TEXT("R11 actually measured TB2 seat, unchanged anchor XY and correct centimetre/+X/+Y/+Z frame"))) return false;
+   // Read-only diagnostics do not populate the ordinary adoption-state Forward/Right
+   // members. The explicit measured frame and all 96 vertex/world pairs are authoritative.
+   const FJson TB2 = S47J::Obj(D, TEXT("tb2_identity"));
+   FTransform ShellFrame;
+   if (!Need(PostrepairFrame(S47J::Obj(TB2, TEXT("transform")), ShellFrame) && ShellFrame.Equals(FTransform(FQuat::Identity, FVector(798500, 213300, 801.3043546669646)), .001) &&
+    S47J::Str(TB2, TEXT("name")) == TEXT("town-production:SM_Town_Laundry_Shell") && S47J::Int(TB2, TEXT("parent"), -1) == 1431 &&
+    S47J::Str(TB2, TEXT("mesh")) == TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell") &&
+    S47J::Bool(TB2, TEXT("registered")) && S47J::Bool(TB2, TEXT("shown")) && S47J::Bool(TB2, TEXT("bVisible")) && !S47J::Bool(TB2, TEXT("hidden_in_game")), TEXT("R11 measured shown TB2 identity, never hidden g1074"))) return false;
+   const auto Slats = S47J::Arr(D, TEXT("native_slat_traces")); if (!Need(Slats.Num() == 6, TEXT("R11 actual six repaired slats"))) return false;
+   for (const auto& Entry : Slats)
+   {
+    const FJson Row = Entry->AsObject(); const auto Traces = S47J::Arr(Row, TEXT("traces"));
+    if (!Need(S47J::Int(Row, TEXT("actual_top_hits")) == 3 && Traces.Num() == 3, TEXT("R11 three measured tops on every slat"))) return false;
+    for (const auto& Trace : Traces) if (!Need(S47J::Bool(Trace->AsObject(), TEXT("actual_repaired_slat_top_match")), TEXT("R11 actual repaired slat classification"))) return false;
+   }
+   PostrepairBinding = Input; PostrepairFloorTargets = Object(); int32 RequiredBottoms = 0;
+   auto VisibleCandidate = [&](const FJson& Hit, FVector& Impact, FVector& Normal)
+   {
+    const FJson Surface = S47J::Obj(Hit, TEXT("surface_identity"));
+    return S47J::Bool(Hit, TEXT("hit")) && !S47J::Bool(Hit, TEXT("start_penetrating")) && PostrepairVector(Hit, TEXT("impact_ue_cm"), Impact) && PostrepairVector(Hit, TEXT("impact_normal_ue"), Normal) && Normal.Z > .7 &&
+     S47J::Bool(Surface, TEXT("actually_shown_registered")) && S47J::Bool(Surface, TEXT("active_area_root")) && S47J::Bool(Surface, TEXT("material_available")) &&
+     !S47J::Bool(Surface, TEXT("same_laundry_shell")) && Assets->HasTypedField<EJson::Object>(S47J::Str(Surface, TEXT("mesh")));
+   };
+   for (const auto& Entry : S47J::Arr(D, TEXT("bench_underside_and_visible_surface_traces")))
+   {
+    const FJson Row = Entry->AsObject(); if (!S47J::Bool(Row, TEXT("required_interior_foot_sample"))) continue; ++RequiredBottoms; FVector Impact, Normal;
+    const FJson Near = S47J::Obj(S47J::Obj(Row, TEXT("measured_visible_surface_probes")), TEXT("direct_near_contact_component_probes_no_skipped_gap"));
+    if (!Need(S47J::Bool(Row, TEXT("actual_repaired_bottom_match")) && VisibleCandidate(S47J::Obj(Near, TEXT("highest_measured_visible_candidate")), Impact, Normal), TEXT("R11 four actual repaired undersides with directly measured shown near support; no world self-bench used as floor"))) return false;
+   }
+   if (!Need(RequiredBottoms == 4 && S47J::Int(D, TEXT("seat_slat_count")) == 4 && S47J::Int(D, TEXT("back_slat_count")) == 2, TEXT("R11 exact repaired bench query cohort"))) return false;
+   const auto Feet = S47J::Arr(D, TEXT("selected_sole_projection")); if (!Need(Feet.Num() == 2, TEXT("R11 both measured projection feet"))) return false;
+   for (int32 Side = 0; Side < 2; ++Side)
+   {
+    const FJson Foot = Feet[Side]->AsObject(); const auto Samples = S47J::Arr(Foot, TEXT("samples")); const TCHAR* BoneName = Side == 0 ? TEXT("foot_l") : TEXT("foot_r");
+    if (!Need(S47J::Int(Foot, TEXT("side"), -1) == Side && S47J::Int(Foot, TEXT("unique_lowest_sole_vertices")) == 48 && Samples.Num() == 48, TEXT("R11 exact 48 actual sole samples per side"))) return false;
+    double Minimum = 1e20, Maximum = -1e20; TArray<FVector> Unique; const auto& ReferencePositions = ReferenceMesh->GetRenderData()->LODResources[0].VertexBuffers.PositionVertexBuffer;
+    for (const auto& Entry : Samples)
+    {
+     const FJson Sample = Entry->AsObject(), Direct = S47J::Obj(Sample, TEXT("direct_visible_component_probes")); FVector Local, Projected, Impact, Normal;
+     const int32 Vertex = S47J::Int(Sample, TEXT("native_vertex_index"), -1);
+     if (!Need(S47J::Bool(Sample, TEXT("world_direct_visible_provider_agree")) && PostrepairVector(Sample, TEXT("native_local_cm"), Local) &&
+      Vertex >= 0 && uint32(Vertex) < ReferencePositions.GetNumVertices() && Local.Equals(FVector(ReferencePositions.VertexPosition(Vertex)), .00001) &&
+      !Unique.ContainsByPredicate([&](const FVector& Previous) { return Previous.Equals(Local, .00001); }) &&
+      (Side == 0 ? Local.Y < 0 : Local.Y > 0) && PostrepairVector(Sample, TEXT("projected_world_ue_cm"), Projected) &&
+      Projected.Equals(Frame.TransformPosition(Local), .00001) && VisibleCandidate(S47J::Obj(Direct, TEXT("highest_measured_visible_candidate")), Impact, Normal),
+      TEXT("R11 same actual reference vertices/frame with shown, world/direct-agreed support; direct API bBlockingHit is not invented"))) return false;
+     Unique.Add(Local);
+     const double Gap = Projected.Z - Impact.Z;
+     if (!Need(S47J::Has(Sample, TEXT("gap_to_direct_visible_candidate_cm")) && FMath::IsNearlyEqual(Gap, S47J::Num(Sample, TEXT("gap_to_direct_visible_candidate_cm")), .00001), TEXT("R11 actual measured gap reconstructed from points"))) return false;
+     Minimum = FMath::Min(Minimum, Gap); Maximum = FMath::Max(Maximum, Gap);
+    }
+    FJson OldFoot; for (const auto& Entry : S47J::Arr(PostrepairReferenceBake, TEXT("foot_ik"))) if (S47J::Str(Entry->AsObject(), TEXT("bone")) == BoneName) OldFoot = Entry->AsObject();
+    FVector Prior, Seed; if (!Need(PostrepairVector(OldFoot, TEXT("actual_foot_output_cm"), Prior) && PostrepairVector(OldFoot, TEXT("seed_foot_output_cm"), Seed), TEXT("R11 actual reference ankle/seed output landmarks"))) return false;
+    const double Delta = -.5 * (Minimum + Maximum); const FVector Target = Prior + FVector::UpVector * Delta;
+    FJson TargetData = Object(); TargetData->SetStringField(TEXT("output_side"), Side == 0 ? TEXT("negative_Y") : TEXT("positive_Y")); TargetData->SetNumberField(TEXT("actual_rays"), 48);
+    TargetData->SetNumberField(TEXT("minimum_gap_cm"), Minimum); TargetData->SetNumberField(TEXT("maximum_gap_cm"), Maximum); TargetData->SetNumberField(TEXT("reference_vertical_delta_cm"), Delta);
+    TargetData->SetArrayField(TEXT("reference_actual_foot_output_cm"), Vector(Prior)); TargetData->SetArrayField(TEXT("reference_seed_foot_output_cm"), Vector(Seed)); TargetData->SetArrayField(TEXT("target_output_cm"), Vector(Target));
+    TargetData->SetNumberField(TEXT("vertical_lift_cm"), Target.Z - Seed.Z); PostrepairFloorTargets->SetObjectField(BoneName, TargetData);
+   }
+   Report->SetObjectField(TEXT("postrepair_binding"), Input); Report->SetObjectField(TEXT("postrepair_derived_foot_targets"), PostrepairFloorTargets);
+   Report->SetNumberField(TEXT("postrepair_binding_version"), 1);
+   Report->SetStringField(TEXT("postrepair_hand_policy"), TEXT("Unchanged reference seat-local hand targets; no old g1074/world-height compensation. Derived radio relocation and authored grip require separate runtime/bake evidence."));
+   return true;
+  }
+
   bool PoseBody(FPose& Posed, FTransform& Seat)
   {
    const auto Bone = [&](const TCHAR* Name) { return Posed.Ref.FindBoneIndex(Name); };
@@ -641,14 +835,18 @@ namespace S47MannequinBake
    const FVector Pelvis = Posed.Component[Bone(TEXT("pelvis"))].GetLocation();
    Seat = FTransform(FRotationMatrix::MakeFromXZ(Forward, FVector::UpVector).ToQuat(), Pelvis - FVector::UpVector * PoseNumber(TEXT("pelvis_above_seat_cm")));
    const double Drop = FMath::DegreesToRadians(PoseNumber(TEXT("thigh_drop_degrees")));
-   const FJson Binding = Contract->GetObjectField(TEXT("measured_seat_binding"));
+   const bool UsePostrepair = Job->HasField(TEXT("postrepair_binding"));
+   const FJson Binding = UsePostrepair ? PostrepairBinding : Contract->GetObjectField(TEXT("measured_seat_binding"));
+   if (!Need(!UsePostrepair || (Binding.IsValid() && PostrepairFloorTargets.IsValid() && Contract->GetObjectField(TEXT("pose"))->GetBoolField(TEXT("no_stretching"))), TEXT("R11 private measured binding prepared with unchanged no-stretch pose policy"))) return false;
    Report->SetObjectField(TEXT("measured_seat_binding"), Binding);
-   if (!Need(Binding->GetStringField(TEXT("policy")) == TEXT("measured-bench-seat-and-original-ground") &&
+   if (!UsePostrepair && !Need(Binding->GetStringField(TEXT("policy")) == TEXT("measured-bench-seat-and-original-ground") &&
     Binding->GetStringField(TEXT("raw_result_sha256")) == TEXT("846064eeb055566ad7170583bd2dc7b737f0717b21c8a1aa37aa3f7f38579d7c") &&
     Contract->GetObjectField(TEXT("pose"))->GetBoolField(TEXT("no_stretching")) &&
     FMath::IsNearlyEqual(PoseNumber(TEXT("hand_above_pelvis_cm")) + Binding->GetNumberField(TEXT("legacy_seat_delta_cm")),
      Binding->GetNumberField(TEXT("previous_hand_above_pelvis_cm")), 0.000000001),
     TEXT("explicit measured bench/96-sole-sample binding and hand-height compensation, without stretching"))) return false;
+   // The legacy branch above is R10 history. R11 keeps reference seat-local hands;
+   // no original g1074/radio WORLD-height compensation is applied to the new site.
    TArray<TSharedPtr<FJsonValue>> IK, FootIK;
    for (const bool IsLeft : {true, false})
    {
@@ -664,11 +862,19 @@ namespace S47MannequinBake
     // Preserve the proven R9 seed, then lift only its ankle target by the measured
     // ground residual. The solver keeps both native segment lengths, with no stretch.
     const TCHAR* FootName = IsLeft ? TEXT("foot_l") : TEXT("foot_r");
-    const FJson FloorTarget = Binding->GetObjectField(TEXT("foot_floor_targets"))->GetObjectField(FootName);
+    const FJson FloorTarget = UsePostrepair ? PostrepairFloorTargets->GetObjectField(FootName) : Binding->GetObjectField(TEXT("foot_floor_targets"))->GetObjectField(FootName);
     const double Lift = FloorTarget->GetNumberField(TEXT("vertical_lift_cm"));
     FTransform ThighPose = Posed.Component[Thigh], CalfPose = Posed.Component[Calf], FootPose = Posed.Component[Foot];
     const FTransform SeedThigh = ThighPose, SeedCalf = CalfPose, SeedFoot = FootPose;
-    const FVector FootTarget = SeedFoot.GetLocation() + FVector::UpVector * Lift, KneePole = SeedCalf.GetLocation();
+    FVector FootTarget = SeedFoot.GetLocation() + FVector::UpVector * Lift; const FVector KneePole = SeedCalf.GetLocation();
+    if (UsePostrepair)
+    {
+     FVector ReferenceSeed, TargetOutput;
+     if (!Need(PostrepairVector(FloorTarget, TEXT("reference_seed_foot_output_cm"), ReferenceSeed) && PostrepairVector(FloorTarget, TEXT("target_output_cm"), TargetOutput) &&
+      ReferenceSeed.Equals(Seat.InverseTransformPosition(SeedFoot.GetLocation()), PoseNumber(TEXT("max_foot_target_error_cm"))), TEXT("R11 actual current canonical leg-seed is the pinned reference seed"))) return false;
+     FootTarget = Seat.TransformPosition(TargetOutput);
+     if (!Need(FootTarget.Equals(SeedFoot.GetLocation() + FVector::UpVector * Lift, PoseNumber(TEXT("max_foot_target_error_cm"))), TEXT("R11 separately measured target changes only the reference ankle vertical coordinate"))) return false;
+    }
     const FVector ReachDelta = FootTarget - SeedThigh.GetLocation(); const double Reach = ReachDelta.Size();
     const FVector PoleDelta = KneePole - SeedThigh.GetLocation();
     const FVector PoleProjection = PoleDelta - ReachDelta.GetSafeNormal() * FVector::DotProduct(PoleDelta, ReachDelta.GetSafeNormal());
@@ -681,9 +887,10 @@ namespace S47MannequinBake
     FootItem->SetNumberField(TEXT("vertical_lift_cm"), Lift); FootItem->SetNumberField(TEXT("upper_length_cm"), ThighLength); FootItem->SetNumberField(TEXT("lower_length_cm"), CalfLength);
     FootItem->SetNumberField(TEXT("target_reach_cm"), Reach); FootItem->SetNumberField(TEXT("minimum_reach_cm"), FMath::Abs(ThighLength-CalfLength)); FootItem->SetNumberField(TEXT("maximum_reach_cm"), ThighLength+CalfLength);
     FootItem->SetBoolField(TEXT("reachable_without_stretch"), Reachable); FootItem->SetBoolField(TEXT("allow_stretching"), false);
+    if (UsePostrepair) FootItem->SetStringField(TEXT("target_policy"), TEXT("Pinned R10 actual ankle output + new per-foot vertical correction; vertical_lift_cm is total from current canonical seed, not the R10 residual alone"));
     if (!Need(Reachable && FloorTarget->GetIntegerField(TEXT("actual_rays")) == 48 &&
      FloorTarget->GetStringField(TEXT("output_side")) == (IsLeft ? TEXT("negative_Y") : TEXT("positive_Y")) &&
-     FMath::IsNearlyEqual(Lift, -0.5 * (FloorTarget->GetNumberField(TEXT("minimum_gap_cm")) + FloorTarget->GetNumberField(TEXT("maximum_gap_cm"))), 0.000000001),
+     (UsePostrepair || FMath::IsNearlyEqual(Lift, -0.5 * (FloorTarget->GetNumberField(TEXT("minimum_gap_cm")) + FloorTarget->GetNumberField(TEXT("maximum_gap_cm"))), 0.000000001)),
      FString(TEXT("measured native ankle target reachable before no-stretch IK: ")) + FootName)) return false;
     AnimationCore::SolveTwoBoneIK(ThighPose, CalfPose, FootPose, KneePole, FootTarget, ThighLength, CalfLength, false, 1.0, 1.0);
     Posed.Set(Thigh, ThighPose); Posed.Set(Calf, CalfPose); Posed.Set(Foot, FootPose);
@@ -1259,9 +1466,14 @@ namespace S47MannequinBake
    if (!Preflight()) return false;
    if (Mode == TEXT("bind-clothes") || Mode == TEXT("verify-clothes-bind")) return ClothesBinding(Mode == TEXT("verify-clothes-bind"));
    if (Mode == TEXT("materials")) return DiagnoseMaterials();
+   if (!PreparePostrepairBinding()) return false;
    if (Mode == TEXT("verify"))
    {
     FJson Previous; if (!Need(Read(Job->GetStringField(TEXT("bake_report")), Previous) && Previous->GetStringField(TEXT("status")) == TEXT("PASS"), TEXT("actual successful private bake receipt"))) return false;
+    if (Previous->HasField(TEXT("postrepair_binding")) || Job->HasField(TEXT("postrepair_binding")))
+     if (!Need(PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_binding_file")), S47J::Obj(Job, TEXT("postrepair_binding"))) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_binding")), PostrepairBinding) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_derived_foot_targets")), PostrepairFloorTargets), TEXT("R11 fresh verify uses the exact same frozen files, reference and recomputed measured targets"))) return false;
     UStaticMesh* Saved = Load<UStaticMesh>(Job->GetStringField(TEXT("output_asset")));
     if (!Need(Saved != nullptr, TEXT("saved output really reloads as StaticMesh"))) return false;
     FAssetCompilingManager::Get().FinishAllCompilation();

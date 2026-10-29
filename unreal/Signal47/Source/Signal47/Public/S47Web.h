@@ -106,6 +106,7 @@ public:
 	bool AuditHighwayRanch(TArray<FString>& Lines) const;
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
+	void RadioWomanAfterTownStep();
 	bool AuditRadioWoman(TArray<FString>& Lines) const;
 	TSharedPtr<FJsonObject> RadioWomanReadback() const;
 	bool AuditCinemaPosters(TArray<FString>& Lines) const;

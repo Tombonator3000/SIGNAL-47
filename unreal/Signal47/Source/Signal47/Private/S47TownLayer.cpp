@@ -236,6 +236,8 @@ void US47TownLayer::WorldStep(double Dt)
 		Diner->Update(Dt, M->T); const auto P = M->Player->Pos; bool bHold = false;
 		if (A == TEXT("diner") && !Town->InTown(P.X, P.Z) && !M->World->Indoors(P)) for (const auto& Stop : S47RoadTerrain::ROAD_STOPS()) if (FString(Stop.Name) == TEXT("The highway north of Caliche") && P.X - 8000 >= Stop.MinX && P.X - 8000 <= Stop.MaxX && P.Z >= Stop.MinZ && P.Z <= Stop.MaxZ) bHold = true;
 		Town->Update(M->T, Clock(), bHold);
+		// Area roots and the real person/proxy schedule now describe the current frame.
+		if (M->Web) M->Web->RadioWomanAfterTownStep();
 	}
 	const FString HArea = A == TEXT("saro") ? TEXT("saro") : A == TEXT("road") || A == TEXT("diner") ? TEXT("road") : TEXT("");
 	TOptional<FS47HerdHeadlights> Lamps;
