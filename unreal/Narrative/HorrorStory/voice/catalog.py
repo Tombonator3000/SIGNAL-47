@@ -11,21 +11,26 @@ import importlib.util
 import json
 import os
 import shutil
+import sys
 import tempfile
 import wave
 
 HERE=Path(__file__).resolve().parent
+if str(HERE) not in sys.path:sys.path.insert(0,str(HERE))
+import text_contract
 spec=importlib.util.spec_from_file_location('signal47_sc01_catalog_generation',HERE/'generate.py')
 generate=importlib.util.module_from_spec(spec);spec.loader.exec_module(generate)
 
 
 def catalog(data):
     takes=json.loads((HERE/'takes.json').read_text());report=json.loads((HERE/'verification.json').read_text())
+    generation=json.loads((HERE/'generation.json').read_text());overrides=text_contract.spoken_overrides(HERE)
     if report.get('technical_status')!='PASS':raise ValueError('Technical recording validation has not passed')
-    required=set(generate.CUE_IDS)
-    if set(takes['takes'])!=required:raise ValueError('Partial or unexpected SC01 timing set')
+    cues=generate.cues();required={cue['line_id'] for cue in cues}
+    if not cues or len(required)!=len(cues):raise ValueError('Missing or duplicate current cue identities')
+    if set(takes['takes'])!=required:raise ValueError(f'Partial or unexpected {generate.SCENARIO} timing set')
     clips=[];lookup={}
-    for cue in generate.cues():
+    for cue in cues:
         cue_id=cue['line_id'];meta=takes['takes'][cue_id];path=data/'takes'/f'{cue_id}.wav'
         with wave.open(str(path),'rb') as wav:
             if (wav.getnchannels(),wav.getsampwidth(),wav.getframerate(),wav.getcomptype())!=(1,2,48000,'NONE'):
@@ -33,6 +38,9 @@ def catalog(data):
             frames=wav.getnframes()
             if len(wav.readframes(frames))!=frames*2:raise ValueError(f'Truncated recording: {cue_id}')
         digest=hashlib.sha256(path.read_bytes()).hexdigest();duration=frames/48000
+        problems=text_contract.generation_problems(cue,generation.get('takes',{}).get(cue_id,{}),digest,overrides)
+        problems+=text_contract.verification_problems(cue,report.get('takes',{}).get(cue_id,{}),digest)
+        if problems:raise ValueError(f'Stale recording evidence for {cue_id}: {"; ".join(problems)}')
         if digest!=meta['sha256'] or abs(meta['duration_seconds']-duration)>1/48000:
             raise ValueError(f'Stale measured recording: {cue_id}')
         start,end=meta['speech_start_seconds'],meta['speech_end_seconds']
@@ -45,10 +53,10 @@ def catalog(data):
                       'raw':f'voice/horror/{cue_id}.wav','duration':duration,'frames':frames,'sha256':digest,
                       'speech_start_seconds':start,'speech_end_seconds':end,'reuse_of':None})
     return {'horror':{'folder':'/Game/Audio/Voice/Horror','catalog':{'clips':clips},
-          'validation':{'pack_id':'signal47_horror_story_h1','scenario':'SC01','cue_count':5,
+          'validation':{'pack_id':'signal47_horror_story_h1','scenario':generate.SCENARIO,'cue_count':len(cues),
                         'sample_rate_hz':48000,'sample_format':'PCM16','channels':1,
                         'technical_status':report['technical_status'],'word_status':report['word_status'],
-                        'human_listened':False,'scope':'Five measured SC01 takes only; later story cues remain pending.'}}}
+                        'human_listened':False,'scope':f'{len(cues)} measured {generate.SCENARIO} takes only; later story cues remain pending.'}}}
 
 
 def import_raw(entry,data,target):
@@ -77,4 +85,4 @@ if __name__=='__main__':
         if a.output.read_text()!=text:raise ValueError('Catalog differs from measured inputs')
     else:a.output.write_text(text)
     if a.import_raw:print('Imported recordings:',import_raw(entry,a.data,a.import_raw))
-    print('PASS: five exact SC01 cue identities, PCM frames, hashes and speech timings')
+    print(f'PASS: {entry["horror"]["validation"]["cue_count"]} exact {generate.SCENARIO} cue identities, PCM frames, hashes and speech timings')
