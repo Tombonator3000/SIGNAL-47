@@ -21,7 +21,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47SC11, Log, All);
 namespace
 {
  enum { Office, ControlDoor, Corridor, RecordsDoor, Exit, Stoop, Ramp, West, NorthWest,
-  North, NorthSteps, EastSteps, EastWalk, Landing, EastDoor, Control, ControlEast, Truck, Records };
+  North, NorthSteps, EastSteps, EastWalk, Landing, EastDoor, Control, ControlEast, Truck, Records, LandingGap, TruckGap };
  const FVector BeamSources[] = {FVector(-10, 7, -17), FVector(6, 8, -18), FVector(18, 6, 2)};
  const FVector BeamTargets[] = {FVector(-3.6, 1.7, -2), FVector(.2, 1.7, -1), FVector(3, 1.6, 1.6)};
  const FVector2D RestartAt(1.2, .3);
@@ -80,7 +80,8 @@ const TArray<FS47SC11::FNode>& FS47SC11::Nodes()
   {TEXT("ramp"), {-11.1,5.7}}, {TEXT("west"), {-11.1,0}}, {TEXT("north-west"), {-9,-7.5}},
   {TEXT("north"), {0,-12}}, {TEXT("north-steps"), {6,-12}}, {TEXT("east-steps"), {8.7,-12}},
   {TEXT("east-walk"), {8.7,-7.5}}, {TEXT("landing"), {8.7,1.6}}, {TEXT("east-door"), {6.9,1.6}},
-  {TEXT("control"), {1.2,.3}}, {TEXT("control-east"), {4.7,1.6}}, {TEXT("truck"), {7.2,4.0}}, {TEXT("records"), {-3.9,8.2}}};
+  {TEXT("control"), {1.2,.3}}, {TEXT("control-east"), {4.7,1.6}}, {TEXT("truck"), {7.2,4.0}}, {TEXT("records"), {-3.9,8.2}},
+  {TEXT("landing-gap"), {9.95,1.6}}, {TEXT("truck-gap"), {9.95,4.0}}};
  return N;
 }
 
@@ -89,7 +90,7 @@ const TArray<TPair<int32,int32>>& FS47SC11::Edges()
  static const TArray<TPair<int32,int32>> E = {{Office,Corridor},{ControlDoor,Corridor},{Corridor,RecordsDoor},
   {RecordsDoor,Records},{RecordsDoor,Exit},{Exit,Stoop},{Stoop,Ramp},{Ramp,West},{West,NorthWest},
   {NorthWest,North},{North,NorthSteps},{NorthSteps,EastSteps},{EastSteps,EastWalk},{EastWalk,Landing},
-  {Landing,EastDoor},{Landing,Truck},{EastDoor,ControlEast},{ControlEast,Control},{Control,ControlDoor}};
+  {Landing,EastDoor},{Landing,LandingGap},{LandingGap,TruckGap},{TruckGap,Truck},{EastDoor,ControlEast},{ControlEast,Control},{Control,ControlDoor}};
  return E;
 }
 
