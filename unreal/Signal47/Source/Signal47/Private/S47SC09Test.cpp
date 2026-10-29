@@ -39,6 +39,8 @@ struct FS47SC09Test
  int32 Stage = 0, Checks = 0, Loads = 0, Candidate = 0;
  double T = 0, Since = 3, OdoStart = 0, OutMetres = 0, BackMetres = 0;
  FString Root, PendingItem;
+ FString SaveWaitCohort;
+ double SaveWaitAt = -1;
  TArray<TSharedPtr<FJsonValue>> Events;
 
  US47Main* Main() const { return C->M; }
@@ -152,7 +154,18 @@ struct FS47SC09Test
  bool Restore(const FString& Name)
  {
   auto* M=Main();
-  if (!Check(M->Flow->GameSaveBlock().IsEmpty()&&!M->UI->Modal()&&!M->Story->IsCinematic()&&!M->World->bBusy,TEXT("ordinary stable save boundary: ")+Name)) return false;
+  const FString Block=M->Flow->GameSaveBlock();
+  const bool Stable=Block.IsEmpty()&&!M->UI->Modal()&&!M->Story->IsCinematic()&&!M->World->bBusy;
+  if(!Stable)
+  {
+   // Arrival's actual 0.4 s parking hold outlives the chapter's arrival flag.
+   // Respect the production save gate rather than taking a snapshot through it.
+   if(SaveWaitCohort!=Name){SaveWaitCohort=Name;SaveWaitAt=T;}
+   if(T-SaveWaitAt>8)Result(false,FString::Printf(TEXT("save boundary did not settle: %s; block=%s modal=%d cinematic=%d busy=%d"),*Name,*Block,M->UI->Modal(),M->Story->IsCinematic(),M->World->bBusy));
+   return false;
+  }
+  SaveWaitCohort.Reset();SaveWaitAt=-1;
+  if (!Check(Stable,TEXT("ordinary stable save boundary: ")+Name)) return false;
   const auto Snapshot=M->Flow->GameState(), Expected=C->SaveState();
   const auto Pose=S47J::Obj(Snapshot,TEXT("pose")); const double Clock=M->Story->Clock(); const FString Area=C->Area();
   FS47SaveStore Writer(Root/Name); Writer.Init(); FS47SaveCard Card; Card.Chapter=TEXT("SC09 isolated contract");Card.Clock=M->Story->ClockText(true);Card.Place=Area;
