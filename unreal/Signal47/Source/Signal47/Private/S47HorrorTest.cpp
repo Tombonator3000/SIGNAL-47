@@ -585,18 +585,13 @@ void FS47HorrorTest::Step(double Dt)
 			if (!Check(M->Observing->ArchiveStep() == 2 && !M->Observing->ChorePending() && M->Observing->RunIndex() == 2, TEXT("fresh disk restore keeps the filed binder"))) return;
 			Go({FVector(-2.9,0,5.7)}, 640); return;
 		}
-		// The round closes the doors behind it, from the corridor and from the control room.
+		// The round closes the records door behind it from the corridor.
 		if (T.Stage == 640) { Aim(Target(TEXT("recordsDoor"))); Stage(641); return; }
 		if (T.Stage == 641)
 		{
 			if (!Pick(TEXT("recordsDoor")) || !Check(!M->Web->IsDoorOpen(TEXT("recordsDoor")), TEXT("the records door closes from the corridor"))) return;
-			Go({FVector(-2.4,0,5.7), FVector(-2.4,0,4.4), FVector(-2.4,0,3.0)}, 642); return;
-		}
-		if (T.Stage == 642) { Aim(Target(TEXT("doorSouth"))); Stage(643); return; }
-		if (T.Stage == 643)
-		{
-			if (!Pick(TEXT("doorSouth")) || !Check(!M->Web->IsDoorOpen(TEXT("doorSouth")), TEXT("the south door closes from the control room"))) return;
-			Go({FVector(-2.4,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
+			// The south door stays open behind the round; the later corridor route walks through it.
+			Go({FVector(-2.4,0,5.7), FVector(-2.4,0,4.4), FVector(-2.4,0,3.0), FVector(-2.4,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
 		}
 		if (T.Stage == 620) { Aim(Target(TEXT("doorEast"))); Stage(621); return; }
 		if (T.Stage == 621)
@@ -825,7 +820,8 @@ void FS47HorrorTest::Step(double Dt)
 	if (T.Stage == 23) { Aim(Target(TEXT("doorSouth"))); Stage(24); return; }
 	if (T.Stage == 24)
 	{
-		if (!Pick(TEXT("doorSouth"))) return;
+		// The 20:30 filing round may have left the south door open: walk straight through.
+		if (!M->Web->IsDoorOpen(TEXT("doorSouth")) && !Pick(TEXT("doorSouth"))) return;
 		Go({FVector(-2.4,0,4.0),FVector(-2.4,0,4.8),FVector(-2.4,0,5.7),FVector(-4.6,0,5.7)},25); return;
 	}
 	if (T.Stage == 25)
