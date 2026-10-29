@@ -1126,3 +1126,8 @@ R5 består kildeapply, uavhengig audit, eksport av fem deler med tre LOD-er og f
 - Fire feltmodeller erstatter enklere synlig utstyr; opprinnelige T01/T02-proxies, kollidere, foto-occludere, strøm, lyd og lagring beholdes. Eksplisitt cook-inkludering lagt til for /Game/SubstationField.
 - Fersk leser PASS 84 kontroller av alle LOD-vertices mot faktisk FBX. T01 R2 PASS med 1709 selvtester, faktisk lampe, serialisering, gangadkomst, blokkert yard, brukstråler og diskrestore; normal exit0. R1 hadde fullført markører, men wrapper ble avbrutt av SIGTERM; avbrutt råøkt er bevart.
 - Claudes faktiske T02 (65/15/38,90 m) og SC02 (249/21/352,19 m/opptak) beholdes med sine uttrykkelige fixturegrenser. Rapport SUBSTATION_FIELD_2026-10-29 og maskinlesbar SHA-kvittering følger. Pakket spill, fullmatrise, installasjon og offentlig release er ikke utført.
+
+
+### 2026-10-29T05:11:31+01:00: Motell R6b og ENV02 native
+
+R6b er promotert med separat bevart original og R5. Native R4 2038/fersk leser1542 og staging PASS; fysisk rute R4 består1709 selvtester,4 blokkeringer,TV-bilde/lydklokke og10 punkter, men stopper korrekt ved original g456-asfalt som overlapper ganggulvet. Deltrim må bevare innkjøringen. ENV02 i separat worktree består kilde424,7 trim-FBX,native2642/fersk leser1371 og staging med291 uendrede Town-filer. Første editorbygg ble startet før testdriveren var fryst og avvises; ny fryst kilde skal bygges. Ingen hel runtime-/pakkeaksept, installasjon eller offentlig release.
