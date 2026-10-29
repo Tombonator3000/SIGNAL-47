@@ -1,37 +1,69 @@
 {
-  "source_revision": "TB1-original-six-building-production",
+  "source_revision": "TB2-detailed-five-landmarks-tb1-motel",
   "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
   "parts": {
     "SM_Town_Sheriff_Shell": {
-      "triangles": 1034,
+      "triangles": 9691,
       "bounds_local_m": [
         [
-          -10.125,
-          -6.125,
+          -10.6899995803833,
+          -6.690000057220459,
           -0.699999988079071
         ],
         [
-          0.8349999785423279,
-          6.125,
-          4.369999885559082
+          1.309999942779541,
+          6.690000057220459,
+          15.0
         ]
       ],
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Burlap",
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffCrack",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffWeatheredWood"
       ],
       "used_materials": [
+        "M_Town_Burlap",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_Metal",
+        "M_Town_Paper",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
+        "M_Town_RoofShingle",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffCrack",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffWeatheredWood",
         "M_Town_Timber"
       ],
       "site_local_offset_m": [
@@ -50,29 +82,29 @@
         0,
         0
       ],
-      "vertices_before_weld": 1928,
-      "vertices_after_weld": 596,
-      "minimum_uv_area": 2.52577854749636e-05,
+      "vertices_before_weld": 18843,
+      "vertices_after_weld": 6282,
+      "minimum_uv_area": 1.0102889262952885e-06,
       "building": "Sheriff",
       "chunk": "Shell",
       "lod_triangles": [
-        1034,
-        778,
-        506
+        9691,
+        5892,
+        2916
       ]
     },
     "SM_Town_Sheriff_Glass": {
-      "triangles": 4,
+      "triangles": 100,
       "bounds_local_m": [
         [
-          0.03500000014901161,
-          -3.0999999046325684,
-          0.800000011920929
+          -4.980000019073486,
+          -5.989999771118164,
+          0.8899999856948853
         ],
         [
-          0.03999999910593033,
-          4.809999942779541,
-          2.4000000953674316
+          0.19499999284744263,
+          6.349999904632568,
+          2.3299999237060547
         ]
       ],
       "materials": [
@@ -97,34 +129,35 @@
         0,
         0
       ],
-      "vertices_before_weld": 8,
-      "vertices_after_weld": 8,
-      "minimum_uv_area": 0.5,
+      "vertices_before_weld": 200,
+      "vertices_after_weld": 104,
+      "minimum_uv_area": 2.7749009028354976e-05,
       "building": "Sheriff",
       "chunk": "Glass",
       "lod_triangles": [
-        4,
-        4,
-        4
+        100,
+        64,
+        28
       ]
     },
     "SM_Town_Sheriff_Interior": {
-      "triangles": 5188,
+      "triangles": 7560,
       "bounds_local_m": [
         [
           -9.899999618530273,
-          -5.900000095367432,
+          -5.90500020980835,
           -0.10999999940395355
         ],
         [
           -0.10000000149011612,
-          6.199999809265137,
+          5.90500020980835,
           3.4600000381469727
         ]
       ],
       "materials": [
         "M_Town_Stucco",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Metal",
@@ -134,27 +167,38 @@
         "M_Town_FloorTile",
         "M_Town_Upholstery",
         "M_Town_BookCloth",
+        "M_Town_LampFabric",
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_CinemaRedGlow"
+        "M_Town_WasherGlass",
+        "M_Town_WarmGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffWainscot",
+        "M_Town_SheriffShadeGlow"
       ],
       "used_materials": [
         "M_Town_BookCloth",
         "M_Town_Ceiling",
         "M_Town_Ceramic",
         "M_Town_CinemaRedGlow",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_FloorTile",
+        "M_Town_LampFabric",
         "M_Town_Metal",
         "M_Town_OliveEnamel",
         "M_Town_Paper",
         "M_Town_PrintAtlas",
         "M_Town_Rubber",
+        "M_Town_SheriffShadeGlow",
+        "M_Town_SheriffWainscot",
         "M_Town_Stucco",
         "M_Town_Timber",
-        "M_Town_Upholstery"
+        "M_Town_Upholstery",
+        "M_Town_WarmGlow",
+        "M_Town_WasherGlass"
       ],
       "site_local_offset_m": [
         0,
@@ -172,42 +216,50 @@
         0,
         0
       ],
-      "vertices_before_weld": 9464,
-      "vertices_after_weld": 3064,
+      "vertices_before_weld": 13990,
+      "vertices_after_weld": 4468,
       "minimum_uv_area": 9.45239602323511e-06,
       "building": "Sheriff",
       "chunk": "Interior",
       "lod_triangles": [
-        5188,
-        4256,
-        2420
+        7560,
+        4940,
+        2020
       ]
     },
     "SM_Town_Sheriff_Fixtures": {
-      "triangles": 428,
+      "triangles": 1734,
       "bounds_local_m": [
         [
-          -8.260000228881836,
-          -1.899999976158142,
-          0.8999999761581421
+          -9.210000038146973,
+          -5.110000133514404,
+          0.11999999731779099
         ],
         [
-          0.550000011920929,
-          4.75,
-          3.125
+          0.75,
+          6.199999809265137,
+          11.760000228881836
         ]
       ],
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_TubeGlow",
+        "M_Town_CinemaRedGlow",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_SheriffShadeGlow"
       ],
       "used_materials": [
+        "M_Town_CinemaRedGlow",
         "M_Town_DarkMetal",
         "M_Town_Metal",
-        "M_Town_TubeGlow",
-        "M_Town_WarmGlow"
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffShadeGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_TubeGlow"
       ],
       "site_local_offset_m": [
         0,
@@ -225,50 +277,78 @@
         0,
         0
       ],
-      "vertices_before_weld": 776,
-      "vertices_after_weld": 252,
-      "minimum_uv_area": 3.6371211007385496e-05,
+      "vertices_before_weld": 3268,
+      "vertices_after_weld": 1150,
+      "minimum_uv_area": 1.322479210630334e-05,
       "building": "Sheriff",
       "chunk": "Fixtures",
       "lod_triangles": [
-        428,
-        316,
-        260
+        1734,
+        982,
+        562
       ]
     },
     "SM_Town_Laundry_Shell": {
-      "triangles": 830,
+      "triangles": 9935,
       "bounds_local_m": [
         [
-          -10.125,
-          -7.125,
+          -10.3100004196167,
+          -7.619999885559082,
           -0.699999988079071
         ],
         [
-          0.8349999785423279,
-          7.125,
-          4.269999980926514
+          0.8069999814033508,
+          7.619999885559082,
+          4.849999904632568
         ]
       ],
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_BluePaint",
-        "M_Town_Timber",
-        "M_Town_DarkWood",
+        "M_Town_TealPaint",
+        "M_Town_CreamEnamel",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Burlap",
+        "M_Town_RoofShingle",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryDirt",
+        "M_Town_LaundryStreak"
       ],
       "used_materials": [
-        "M_Town_BluePaint",
+        "M_Town_Burlap",
         "M_Town_Concrete",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
-        "M_Town_DarkWood",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryDirt",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryStreak",
         "M_Town_Metal",
+        "M_Town_Paper",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
-        "M_Town_Timber"
+        "M_Town_RoofShingle",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_TealPaint"
       ],
       "site_local_offset_m": [
         0,
@@ -286,29 +366,29 @@
         0,
         0
       ],
-      "vertices_before_weld": 1628,
-      "vertices_after_weld": 480,
-      "minimum_uv_area": 0.00016199958372098422,
+      "vertices_before_weld": 21069,
+      "vertices_after_weld": 12806,
+      "minimum_uv_area": 2.5455681996078283e-05,
       "building": "Laundry",
       "chunk": "Shell",
       "lod_triangles": [
-        830,
-        718,
-        470
+        9935,
+        5463,
+        2584
       ]
     },
     "SM_Town_Laundry_Glass": {
-      "triangles": 6,
+      "triangles": 10,
       "bounds_local_m": [
         [
-          0.03500000014901161,
-          -4.860000133514404,
-          0.6000000238418579
+          0.029999999329447746,
+          -4.795000076293945,
+          0.2800000011920929
         ],
         [
-          0.03999999910593033,
-          5.650000095367432,
-          2.299999952316284
+          0.032499998807907104,
+          5.599999904632568,
+          2.25
         ]
       ],
       "materials": [
@@ -333,32 +413,34 @@
         0,
         0
       ],
-      "vertices_before_weld": 12,
-      "vertices_after_weld": 12,
+      "vertices_before_weld": 20,
+      "vertices_after_weld": 20,
       "minimum_uv_area": 0.5,
       "building": "Laundry",
       "chunk": "Glass",
       "lod_triangles": [
-        6,
-        6,
-        6
+        10,
+        10,
+        10
       ]
     },
     "SM_Town_Laundry_Interior": {
-      "triangles": 14782,
+      "triangles": 21552,
       "bounds_local_m": [
         [
-          -9.899999618530273,
-          -6.900000095367432,
+          -9.9399995803833,
+          -6.889999866485596,
           -0.10999999940395355
         ],
         [
-          -0.10000000149011612,
-          6.900000095367432,
-          3.359999895095825
+          0.017999999225139618,
+          6.889999866485596,
+          3.049999952316284
         ]
       ],
       "materials": [
+        "M_Town_BluePaint",
+        "M_Town_TealPaint",
         "M_Town_OliveEnamel",
         "M_Town_CreamEnamel",
         "M_Town_Timber",
@@ -366,24 +448,46 @@
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Rubber",
-        "M_Town_FloorTile",
         "M_Town_Upholstery",
+        "M_Town_BookCloth",
+        "M_Town_Bedding",
+        "M_Town_LampFabric",
+        "M_Town_Burlap",
         "M_Town_Paper",
         "M_Town_Ceiling",
         "M_Town_PrintAtlas",
-        "M_Town_WasherGlass"
+        "M_Town_WasherGlass",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryTileGreen",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryWallCream",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryRedEnamel"
       ],
       "used_materials": [
+        "M_Town_Bedding",
+        "M_Town_BluePaint",
+        "M_Town_BookCloth",
+        "M_Town_Burlap",
         "M_Town_Ceiling",
         "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
-        "M_Town_FloorTile",
+        "M_Town_LampFabric",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryTileGreen",
+        "M_Town_LaundryWallCream",
         "M_Town_Metal",
         "M_Town_OliveEnamel",
         "M_Town_Paper",
         "M_Town_PrintAtlas",
         "M_Town_Rubber",
+        "M_Town_TealPaint",
         "M_Town_Timber",
         "M_Town_Upholstery",
         "M_Town_WasherGlass"
@@ -404,42 +508,58 @@
         0,
         0
       ],
-      "vertices_before_weld": 27480,
-      "vertices_after_weld": 8144,
-      "minimum_uv_area": 2.999988317498037e-05,
+      "vertices_before_weld": 40058,
+      "vertices_after_weld": 12989,
+      "minimum_uv_area": 2.4000037670113272e-05,
       "building": "Laundry",
       "chunk": "Interior",
       "lod_triangles": [
-        14782,
-        10262,
-        6462
+        21552,
+        13908,
+        7342
       ]
     },
     "SM_Town_Laundry_Fixtures": {
-      "triangles": 496,
+      "triangles": 2572,
       "bounds_local_m": [
         [
-          -3.109999895095825,
-          -4.769118785858154,
-          0.8999999761581421
+          -10.319999694824219,
+          -7.411982536315918,
+          -0.05000000074505806
         ],
         [
-          0.550000011920929,
-          4.75,
-          3.115000009536743
+          0.7652546167373657,
+          6.0,
+          4.650000095367432
         ]
       ],
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_Paper",
+        "M_Town_WasherGlass",
         "M_Town_WarmGlow",
-        "M_Town_TubeGlow"
+        "M_Town_CinemaRedGlow",
+        "M_Town_LaundryTubeLens",
+        "M_Town_LaundryRedEnamel"
       ],
       "used_materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaRedGlow",
         "M_Town_DarkMetal",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryTubeLens",
         "M_Town_Metal",
-        "M_Town_TubeGlow",
-        "M_Town_WarmGlow"
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_WarmGlow",
+        "M_Town_WasherGlass"
       ],
       "site_local_offset_m": [
         0,
@@ -457,52 +577,78 @@
         0,
         0
       ],
-      "vertices_before_weld": 896,
-      "vertices_after_weld": 292,
-      "minimum_uv_area": 3.6371205199614565e-05,
+      "vertices_before_weld": 4852,
+      "vertices_after_weld": 1530,
+      "minimum_uv_area": 1.6000031846108605e-05,
       "building": "Laundry",
       "chunk": "Fixtures",
       "lod_triangles": [
-        496,
-        384,
-        328
+        2572,
+        1644,
+        892
       ]
     },
     "SM_Town_Feed_Shell": {
-      "triangles": 2658,
+      "triangles": 24026,
       "bounds_local_m": [
         [
-          -16.125,
-          -12.125,
-          -0.699999988079071
+          -16.4950008392334,
+          -12.680000305175781,
+          -0.3499999940395355
         ],
         [
           2.5999999046325684,
-          12.125,
-          6.070000171661377
+          12.680000305175781,
+          8.423333168029785
         ]
       ],
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_WhitePaint",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Concrete",
         "M_Town_Burlap",
-        "M_Town_PrintAtlas"
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedSalt",
+        "M_Town_FeedMineral",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoPatch",
+        "M_Town_FeedGrime",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedRustTin"
       ],
       "used_materials": [
         "M_Town_Burlap",
         "M_Town_Concrete",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedGrain",
+        "M_Town_FeedGrime",
+        "M_Town_FeedHay",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedMineral",
+        "M_Town_FeedRustTin",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedSalt",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedStuccoPatch",
         "M_Town_Metal",
-        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
         "M_Town_RustTin",
-        "M_Town_Stucco",
-        "M_Town_Timber"
+        "M_Town_Timber",
+        "M_Town_WhitePaint"
       ],
       "site_local_offset_m": [
         0,
@@ -520,29 +666,29 @@
         0,
         0
       ],
-      "vertices_before_weld": 5152,
-      "vertices_after_weld": 1602,
-      "minimum_uv_area": 4.899978137018479e-05,
+      "vertices_before_weld": 47430,
+      "vertices_after_weld": 19754,
+      "minimum_uv_area": 6.049608357372449e-06,
       "building": "Feed",
       "chunk": "Shell",
       "lod_triangles": [
-        2658,
-        1866,
-        982
+        24026,
+        15190,
+        7289
       ]
     },
     "SM_Town_Feed_Glass": {
-      "triangles": 8,
+      "triangles": 14,
       "bounds_local_m": [
         [
-          0.03500000014901161,
-          -7.099999904632568,
-          1.2000000476837158
+          -0.054999999701976776,
+          -7.0,
+          1.2799999713897705
         ],
         [
-          0.17000000178813934,
-          7.699999809265137,
-          3.200000047683716
+          -0.05000000074505806,
+          7.599999904632568,
+          3.5
         ]
       ],
       "materials": [
@@ -567,47 +713,67 @@
         0,
         0
       ],
-      "vertices_before_weld": 16,
-      "vertices_after_weld": 16,
+      "vertices_before_weld": 28,
+      "vertices_after_weld": 28,
       "minimum_uv_area": 0.5,
       "building": "Feed",
       "chunk": "Glass",
       "lod_triangles": [
-        8,
-        8,
-        8
+        14,
+        14,
+        14
       ]
     },
     "SM_Town_Feed_Interior": {
-      "triangles": 16216,
+      "triangles": 22464,
       "bounds_local_m": [
         [
-          -15.899999618530273,
-          -11.899999618530273,
-          0.0
+          -15.890000343322754,
+          -11.890893936157227,
+          0.8500000238418579
         ],
         [
-          -0.10000000149011612,
-          11.899999618530273,
-          5.159999847412109
+          -0.10999999940395355,
+          11.890000343322754,
+          5.099999904632568
         ]
       ],
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_Clapboard",
         "M_Town_Metal",
         "M_Town_DarkMetal",
         "M_Town_Ceramic",
         "M_Town_Burlap",
-        "M_Town_Ceiling"
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_FeedGalv",
+        "M_Town_FeedHay",
+        "M_Town_FeedGrain",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow"
       ],
       "used_materials": [
         "M_Town_Burlap",
-        "M_Town_Ceiling",
         "M_Town_Ceramic",
+        "M_Town_Clapboard",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
+        "M_Town_FeedGalv",
+        "M_Town_FeedGrain",
+        "M_Town_FeedHay",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow",
         "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
         "M_Town_Timber"
       ],
       "site_local_offset_m": [
@@ -626,39 +792,57 @@
         0,
         0
       ],
-      "vertices_before_weld": 31380,
-      "vertices_after_weld": 8640,
-      "minimum_uv_area": 4.899978137018479e-05,
+      "vertices_before_weld": 41856,
+      "vertices_after_weld": 13230,
+      "minimum_uv_area": 4.3254792014835175e-06,
       "building": "Feed",
       "chunk": "Interior",
       "lod_triangles": [
-        16216,
-        10312,
-        1672
+        22464,
+        14304,
+        5896
       ]
     },
     "SM_Town_Feed_Fixtures": {
-      "triangles": 1316,
+      "triangles": 5954,
       "bounds_local_m": [
         [
-          -14.260000228881836,
-          -4.260000228881836,
-          0.8999999761581421
+          -14.800000190734863,
+          -12.917440414428711,
+          0.0
         ],
         [
-          0.550000011920929,
-          4.260000228881836,
-          4.900000095367432
+          2.3073041439056396,
+          12.917440414428711,
+          6.679999828338623
         ]
       ],
       "materials": [
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
+        "M_Town_PrintAtlas",
+        "M_Town_WarmGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedShadeGlow"
       ],
       "used_materials": [
+        "M_Town_Ceramic",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedShadeGlow",
         "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
         "M_Town_WarmGlow"
       ],
       "site_local_offset_m": [
@@ -677,49 +861,81 @@
         0,
         0
       ],
-      "vertices_before_weld": 2440,
-      "vertices_after_weld": 780,
-      "minimum_uv_area": 3.637120309263331e-05,
+      "vertices_before_weld": 11424,
+      "vertices_after_weld": 3934,
+      "minimum_uv_area": 2.0711121617722483e-07,
       "building": "Feed",
       "chunk": "Fixtures",
       "lod_triangles": [
-        1316,
-        820,
-        572
+        5954,
+        3462,
+        2006
       ]
     },
     "SM_Town_Cinema_Shell": {
-      "triangles": 1848,
+      "triangles": 9920,
       "bounds_local_m": [
         [
-          -14.125,
-          -10.125,
+          -14.600000381469727,
+          -10.609999656677246,
           -0.699999988079071
         ],
         [
-          2.569000005722046,
-          10.125,
-          7.800000190734863
+          2.569999933242798,
+          10.609999656677246,
+          9.65999984741211
         ]
       ],
       "materials": [
-        "M_Town_Stucco",
-        "M_Town_PinkPlaster",
+        "M_Town_TealPaint",
+        "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
         "M_Town_Timber",
         "M_Town_DarkWood",
+        "M_Town_RustTin",
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Rubber",
+        "M_Town_Ceramic",
         "M_Town_Concrete",
-        "M_Town_PrintAtlas"
+        "M_Town_Terrazzo",
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaStain",
+        "M_Town_CinemaBronze"
       ],
       "used_materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaStain",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaTerrazzoRed",
         "M_Town_Concrete",
+        "M_Town_CreamEnamel",
         "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_Metal",
-        "M_Town_PinkPlaster",
+        "M_Town_OliveEnamel",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_TealPaint",
+        "M_Town_Terrazzo",
         "M_Town_Timber"
       ],
       "site_local_offset_m": [
@@ -738,29 +954,29 @@
         0,
         0
       ],
-      "vertices_before_weld": 3640,
-      "vertices_after_weld": 1120,
-      "minimum_uv_area": 9.099965357783901e-05,
+      "vertices_before_weld": 19114,
+      "vertices_after_weld": 6411,
+      "minimum_uv_area": 3.5073821015529916e-05,
       "building": "Cinema",
       "chunk": "Shell",
       "lod_triangles": [
-        1848,
-        1548,
-        1080
+        9920,
+        6350,
+        3770
       ]
     },
     "SM_Town_Cinema_Glass": {
-      "triangles": 12,
+      "triangles": 50,
       "bounds_local_m": [
         [
-          -3.109999895095825,
-          -7.574999809265137,
-          0.10000000149011612
+          -4.670000076293945,
+          -7.579999923706055,
+          0.25999999046325684
         ],
         [
-          0.2849999964237213,
-          8.114999771118164,
-          2.3949999809265137
+          0.5600000023841858,
+          8.25,
+          2.3299999237060547
         ]
       ],
       "materials": [
@@ -785,52 +1001,78 @@
         0,
         0
       ],
-      "vertices_before_weld": 24,
-      "vertices_after_weld": 24,
-      "minimum_uv_area": 0.5,
+      "vertices_before_weld": 100,
+      "vertices_after_weld": 70,
+      "minimum_uv_area": 0.07381286093549716,
       "building": "Cinema",
       "chunk": "Glass",
       "lod_triangles": [
-        12,
-        12,
-        12
+        50,
+        42,
+        38
       ]
     },
     "SM_Town_Cinema_Interior": {
-      "triangles": 1036,
+      "triangles": 3426,
       "bounds_local_m": [
         [
-          -13.899999618530273,
-          -9.899999618530273,
+          -6.199999809265137,
+          -9.890000343322754,
           -0.10999999940395355
         ],
         [
-          -0.10000000149011612,
-          9.899999618530273,
-          6.159999847412109
+          -0.1899999976158142,
+          9.890000343322754,
+          3.680000066757202
         ]
       ],
       "materials": [
-        "M_Town_Stucco",
+        "M_Town_TealPaint",
         "M_Town_OliveEnamel",
+        "M_Town_CreamEnamel",
+        "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Rubber",
         "M_Town_Ceramic",
+        "M_Town_Concrete",
         "M_Town_Terrazzo",
-        "M_Town_Upholstery",
+        "M_Town_LampFabric",
+        "M_Town_Paper",
         "M_Town_Ceiling",
-        "M_Town_PrintAtlas"
+        "M_Town_PrintAtlas",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaVelvet",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaStucco"
       ],
       "used_materials": [
         "M_Town_Ceiling",
         "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaVelvet",
+        "M_Town_Concrete",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
         "M_Town_DarkWood",
-        "M_Town_Metal",
+        "M_Town_LampFabric",
         "M_Town_OliveEnamel",
+        "M_Town_Paper",
         "M_Town_PrintAtlas",
-        "M_Town_Stucco",
+        "M_Town_Rubber",
+        "M_Town_TealPaint",
         "M_Town_Terrazzo",
-        "M_Town_Upholstery"
+        "M_Town_Timber"
       ],
       "site_local_offset_m": [
         0,
@@ -848,39 +1090,53 @@
         0,
         0
       ],
-      "vertices_before_weld": 1924,
-      "vertices_after_weld": 652,
-      "minimum_uv_area": 8.486993863243697e-05,
+      "vertices_before_weld": 6582,
+      "vertices_after_weld": 2182,
+      "minimum_uv_area": 4.419385632736805e-05,
       "building": "Cinema",
       "chunk": "Interior",
       "lod_triangles": [
-        1036,
-        876,
-        276
+        3426,
+        1866,
+        934
       ]
     },
     "SM_Town_Cinema_Fixtures": {
-      "triangles": 1852,
+      "triangles": 7534,
       "bounds_local_m": [
         [
-          -2.759999990463257,
-          -5.260000228881836,
-          0.8999999761581421
+          -12.050000190734863,
+          -10.34000015258789,
+          0.9750000238418579
         ],
         [
-          2.2850000858306885,
-          4.684999942779541,
-          7.650000095367432
+          2.6029999256134033,
+          10.34000015258789,
+          9.602020263671875
         ]
       ],
       "materials": [
         "M_Town_Metal",
         "M_Town_DarkMetal",
+        "M_Town_Ceramic",
         "M_Town_WarmGlow",
-        "M_Town_CinemaRedGlow"
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaReaderGlow",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaDeadBulb"
       ],
       "used_materials": [
-        "M_Town_CinemaRedGlow",
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaDeadBulb",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaReaderGlow",
         "M_Town_DarkMetal",
         "M_Town_Metal",
         "M_Town_WarmGlow"
@@ -901,46 +1157,54 @@
         0,
         0
       ],
-      "vertices_before_weld": 3392,
-      "vertices_after_weld": 1052,
-      "minimum_uv_area": 3.637124453498286e-05,
+      "vertices_before_weld": 14380,
+      "vertices_after_weld": 5298,
+      "minimum_uv_area": 2.1000055312470067e-05,
       "building": "Cinema",
       "chunk": "Fixtures",
       "lod_triangles": [
-        1852,
-        1196,
-        736
+        7534,
+        4338,
+        2326
       ]
     },
     "SM_Town_Church_Shell": {
-      "triangles": 3614,
+      "triangles": 20182,
       "bounds_local_m": [
         [
-          -1.2000000476837158,
-          -4.849999904632568,
-          -0.5600000023841858
+          -1.0800000429153442,
+          -5.0,
+          -0.5
         ],
         [
-          14.300000190734863,
-          4.849999904632568,
-          9.770000457763672
+          14.385000228881836,
+          5.0,
+          11.9399995803833
         ]
       ],
       "materials": [
         "M_Town_Timber",
         "M_Town_DarkWood",
-        "M_Town_Clapboard",
-        "M_Town_Metal",
-        "M_Town_DarkMetal",
         "M_Town_Concrete",
-        "M_Town_RoofShingle"
+        "M_Town_RoofShingle",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchWornBoard",
+        "M_Town_ChurchShingleFaded",
+        "M_Town_ChurchOldPaper"
       ],
       "used_materials": [
-        "M_Town_Clapboard",
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchOldPaper",
+        "M_Town_ChurchShingleFaded",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchWornBoard",
         "M_Town_Concrete",
-        "M_Town_DarkMetal",
         "M_Town_DarkWood",
-        "M_Town_Metal",
         "M_Town_RoofShingle",
         "M_Town_Timber"
       ],
@@ -960,36 +1224,36 @@
         0,
         0
       ],
-      "vertices_before_weld": 7034,
-      "vertices_after_weld": 2253,
-      "minimum_uv_area": 0.00021292086789204134,
+      "vertices_before_weld": 42526,
+      "vertices_after_weld": 16552,
+      "minimum_uv_area": 6.23993706900805e-05,
       "building": "Church",
       "chunk": "Shell",
       "lod_triangles": [
-        3614,
-        3550,
-        1886
+        20182,
+        12574,
+        4954
       ]
     },
     "SM_Town_Church_Glass": {
-      "triangles": 24,
+      "triangles": 136,
       "bounds_local_m": [
         [
-          -0.014999999664723873,
-          -4.514999866485596,
+          -0.019999999552965164,
+          -4.519999980926514,
           1.25
         ],
         [
           11.649999618530273,
-          4.514999866485596,
+          4.519999980926514,
           3.950000047683716
         ]
       ],
       "materials": [
-        "M_Town_Glass"
+        "M_Town_ChurchGlass"
       ],
       "used_materials": [
-        "M_Town_Glass"
+        "M_Town_ChurchGlass"
       ],
       "site_local_offset_m": [
         0,
@@ -1007,48 +1271,56 @@
         0,
         0
       ],
-      "vertices_before_weld": 40,
-      "vertices_after_weld": 40,
-      "minimum_uv_area": 0.15000000596046448,
+      "vertices_before_weld": 152,
+      "vertices_after_weld": 152,
+      "minimum_uv_area": 0.0035157594214076937,
       "building": "Church",
       "chunk": "Glass",
       "lod_triangles": [
-        24,
-        24,
-        24
+        136,
+        88,
+        40
       ]
     },
     "SM_Town_Church_Interior": {
-      "triangles": 2800,
+      "triangles": 8552,
       "bounds_local_m": [
         [
           0.10000000149011612,
-          -4.400000095367432,
-          -0.10000000149011612
+          -4.435380458831787,
+          -0.05999999865889549
         ],
         [
-          13.90999984741211,
-          4.400000095367432,
-          6.327480316162109
+          13.899999618530273,
+          4.435380458831787,
+          5.915999889373779
         ]
       ],
       "materials": [
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_DarkWood",
         "M_Town_Clapboard",
         "M_Town_Metal",
+        "M_Town_DarkMetal",
+        "M_Town_Ceramic",
+        "M_Town_Carpet",
         "M_Town_Upholstery",
+        "M_Town_BookCloth",
         "M_Town_LampFabric",
+        "M_Town_Burlap",
         "M_Town_Paper"
       ],
       "used_materials": [
+        "M_Town_BookCloth",
+        "M_Town_Burlap",
+        "M_Town_Carpet",
+        "M_Town_Ceramic",
         "M_Town_Clapboard",
+        "M_Town_DarkMetal",
         "M_Town_DarkWood",
         "M_Town_LampFabric",
         "M_Town_Metal",
         "M_Town_Paper",
-        "M_Town_Stucco",
         "M_Town_Timber",
         "M_Town_Upholstery"
       ],
@@ -1068,40 +1340,60 @@
         0,
         0
       ],
-      "vertices_before_weld": 4956,
-      "vertices_after_weld": 1638,
-      "minimum_uv_area": 5.4332121247835374e-05,
+      "vertices_before_weld": 17428,
+      "vertices_after_weld": 5342,
+      "minimum_uv_area": 3.3425054015268074e-05,
       "building": "Church",
       "chunk": "Interior",
       "lod_triangles": [
-        2800,
-        2736,
-        2468
+        8552,
+        5428,
+        2428
       ]
     },
     "SM_Town_Church_Fixtures": {
-      "triangles": 1320,
+      "triangles": 5584,
       "bounds_local_m": [
         [
-          -0.11800000071525574,
-          -2.359999895095825,
-          1.0499999523162842
+          -0.44200000166893005,
+          -5.179999828338623,
+          -0.03999999910593033
         ],
         [
-          11.260000228881836,
-          2.359999895095825,
-          4.800000190734863
+          14.350000381469727,
+          5.179999828338623,
+          12.75
         ]
       ],
       "materials": [
+        "M_Town_DarkWood",
         "M_Town_Metal",
         "M_Town_DarkMetal",
-        "M_Town_WarmGlow"
+        "M_Town_Concrete",
+        "M_Town_LampFabric",
+        "M_Town_Burlap",
+        "M_Town_Paper",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchPorchGlow"
       ],
       "used_materials": [
+        "M_Town_Burlap",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchPorchGlow",
+        "M_Town_Concrete",
         "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
         "M_Town_Metal",
-        "M_Town_WarmGlow"
+        "M_Town_Paper"
       ],
       "site_local_offset_m": [
         0,
@@ -1119,15 +1411,15 @@
         0,
         0
       ],
-      "vertices_before_weld": 2452,
-      "vertices_after_weld": 784,
-      "minimum_uv_area": 3.781012540926554e-05,
+      "vertices_before_weld": 10414,
+      "vertices_after_weld": 2950,
+      "minimum_uv_area": 1.7320548826305071e-06,
       "building": "Church",
       "chunk": "Fixtures",
       "lod_triangles": [
-        1320,
-        840,
-        600
+        5584,
+        3544,
+        1722
       ]
     },
     "SM_Town_Motel_Shell": {

@@ -24,7 +24,9 @@ blender -b -t 3 --python-exit-code 1 --python tb2/preview.py -- Cinema tb2 /tmp/
 
 Faktisk kontroll: `check_source_plan.py` består (170 678 / 108 201 / 54 449 trekanter i LOD0/1/2 for alle 28 deler), `build_townbuildings.py` består, og `verify_source.py` består med 966 av 966 kontroller mot de lagrede FBX-, GLB- og Blender-filene. Motellfilene er de samme som før.
 
-Ikke gjort: nativeimport, nye native materialer for radene i `tb2/`, ny `assembly.json`, pakket spill og bilder fra spillet. Lys i Unreal må settes som ekte lyskilder ved lampene; glødestyrkene er justert for Cycles og må justeres i spillet.
+Native integrasjon (ENV-01, 29. oktober 2026): `S47_TOWN_TB2=1` i `../townintegration/import_assets.py` importerer bare de 20 delene for de fem bygningene og de 78 nye materialene fra `tb2/materials_*.json`. TB1-materialene og motellets/rom 6s åtte meshes lastes og skrives ikke om. TB2-materialene deler 21 teksturer `T_Town_<kilde>` i stedet for én kopi per materiale. Native emisjon er begrenset til 4,0 (Cycles-verdiene opptil 110 brukes ikke direkte), og runtime styrer alle selvlysende flater per familie som før: sheriff og vaskeri følger kveldslyset, kino, fôrbutikk og kirke er mørke. `Content/TownBuildings/assembly.json` har fått nye `parts` og `source_revision`; `retire`, `retained` og rom 6-radene er uendret. Faktiske native trekanttall er like kontrakten (kinoskallet er 9 920, ikke 9 922 som i tabellen over).
+
+Ikke gjort: pakket spill. Ekte lyskilder ved de nye lampene er ikke lagt til; eksisterende innvendige punktlys i sheriff og vaskeri brukes.
 
 
 TB1 er generert som redigerbare Blender-originaler med tre egne geometriske LOD-er, fysisk meterskala og ni delte originale 2048-PBR-sett. Siste faktiske kildekontroll består 793 sjekker. Native import, belysning, kontakt med bakken og visuell konseptlikhet må godkjennes fra den pakkede kandidaten hos integrator. En vellykket kildetest er ikke visuell godkjenning.

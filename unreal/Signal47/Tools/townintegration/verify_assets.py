@@ -23,7 +23,11 @@ try:
  probe=unreal.EditorAssetLibrary.load_asset('/Game/TownBuildings/Verification/axis_probe');b=probe.get_bounds();got=[b.origin.x,b.origin.y,b.origin.z,2*b.box_extent.x,2*b.box_extent.y,2*b.box_extent.z];expected=[200,-400,600,20,40,60]
  check('asymmetric probe saved center and size',max(abs(x-y)for x,y in zip(got,expected))<.15,got)
  rows=json.loads((R/'materials.json').read_text())
- for row in rows:
+ tb2=[v for extra in sorted((R/'tb2').glob('materials_*.json'))for v in json.loads(extra.read_text())]
+ for row in tb2:
+  mat=unreal.EditorAssetLibrary.load_asset('/Game/TownBuildings/Materials/'+row['name']);check(row['name']+' saved TB2 material',isinstance(mat,unreal.Material))
+  check(row['name']+' saved TB2 blend',mat.get_editor_property('blend_mode')==(unreal.BlendMode.BLEND_TRANSLUCENT if float(row.get('alpha',1))<1 else unreal.BlendMode.BLEND_OPAQUE))
+ for row in rows+tb2:
   if row.get('opacity_from_base_color'):
    mat=unreal.EditorAssetLibrary.load_asset('/Game/TownBuildings/Materials/'+row['name'])
    check(row['name']+' saved native mask',mat.get_editor_property('blend_mode')==unreal.BlendMode.BLEND_MASKED)

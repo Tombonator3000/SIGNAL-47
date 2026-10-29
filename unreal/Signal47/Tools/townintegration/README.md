@@ -65,3 +65,15 @@ Den faktiske, skrivebeskyttede M1-F2-kontrollen (`/home/tom/scratch-bm/Signal47-
 Kjør `verify_lod_geometry.py` i den allerede guardede editorjobben med `S47_TOWN_LOD_REPORT` satt til en ny JSON-bane etter reimport. Skriptet leser faktiske lagrede vertexposisjoner, bounds, trekanttall og åtte asymmetriske prøver per LOD mot de originale FBX-kontrollpunktene. Toleransen er 0.025 cm. Hele punktmengden kontrolleres begge veier; ingen asset lagres eller importeres av kontrollen. `StaticMeshEditorSubsystem` bruker `new_object`-fallback i commandlet. Først en ny PASS-rapport og faktiske nativebilder kan bekrefte rettingen; rapporten kontrollerer lagret kildegeometri, ikke direkte GPU-renderbuffere eller materialets utseende.
 
 Samme perLOD-probe brukes for SARO: sett `S47_GEOMETRY_SOURCE_DIR` til `Tools/sarosite`, `S47_GEOMETRY_ASSET_ROOT=/Game/SaroSite` og egen `S47_TOWN_LOD_REPORT`. M2 fant samme feil på alle seks Site-LOD1/2; M3 etter korrekt import består alle63 sjekker. Skiltatlaset bruker nå fysisk målte canvasproporsjoner og faktiske glyph-bounds før kvadratisk atlaslagring; kinoens ulike skiltformater har egne celler.
+
+## TB2, de fem detaljerte bygningene
+
+Kjør i guardet headless editor (samme FBX-flagg som over), deretter `verify_assets.py` og `verify_lod_geometry.py` i ferske prosesser:
+
+```
+S47_TOWN_TB2=1 S47_TOWN_REPORT=/ny/import.json UnrealEditor-Cmd Signal47.uproject -run=pythonscript \
+  -script=Tools/townintegration/import_assets.py -unattended -nullrhi -nosplash \
+  -ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0
+```
+
+Med `S47_TOWN_TB2=1` skrives bare de fem bygningenes 20 meshes, de nye TB2-materialene og delte `T_Town_*`-teksturer. Motell og rom 6 lastes som kontroll. `assembly.json` oppdateres ved å kopiere `parts` og `source_revision` fra `model_contract.json` inn i eksisterende fil; ikke regenerer `retire`, fordi rom 6-radene der har målte native trekanttall som `prepare_assembly.py` ikke gjenskaper. Faktisk kjøring 29. oktober 2026: import 1280/1280, lagrede assets 269/269 og LOD-geometri 588/588 PASS.
