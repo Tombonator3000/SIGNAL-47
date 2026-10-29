@@ -398,7 +398,7 @@ void FS47DaleDocumentsTest::Step(double Dt)
   auto R=S47J::New();S47J::Set(R,TEXT("status"),TEXT("PASS"));S47J::Set(R,TEXT("checks"),Checks);S47J::Set(R,TEXT("freshDiskFlowRestores"),Stores);S47J::Set(R,TEXT("nativeOfficeWalkMetres"),WalkMetres);S47J::Set(R,TEXT("actualSlateScrollKeys"),TotalScrollKeys);
   R->SetArrayField(TEXT("physicalDeskPapers"),PhysicalPapers);S47J::Set(R,TEXT("documentArtAudits"),ArtAudits);
   S47J::Set(R,TEXT("scope"),TEXT("API-driven native Walker entry and six distinct desk approaches; actual camera ray/Focus and ordinary Player OnUse for all six art papers; registered document and actual Slate title/body; focused PageDown/PageUp/Escape through private-library content end and existing typed document at large scale; original five isolated Writer/fresh-reader/full-Flow cohorts with source/disk/restored office facts and actual art audits. Initial chapter prerequisites and corridor start are explicit fixtures; no human-input, listening, FPS, VHS, photos, ARRAY-01 encounter, full-matrix, installation or release claim."));
-  FFileHelper::SaveStringToFile(S47J::Write(R,true),*(Root/TEXT("result.json")));bDone=true;
+  if(!FFileHelper::SaveStringToFile(S47J::Write(R,true),*(Root/TEXT("result.json")))){Fail(TEXT("final document result could not be written"));return;}bDone=true;
   UE_LOG(LogS47DaleDocs,Display,TEXT("S47: Dale documents contract PASS checks=%d diskRestores=%d root=%s"),Checks,Stores,*Root);FPlatformMisc::RequestExit(false);
  }
 }
