@@ -34,7 +34,9 @@ def main(root, trims, report):
             source = root / 'exports' / (name + '_LOD' + str(lod) + '.fbx')
             report.check(name + ' authored LOD source ' + str(lod), source.is_file())
             report.check(name + ' imported LOD ' + str(lod), N.S.import_lod(mesh, lod, str(source)) == lod)
-        N.finish_mesh(mesh, report)
+        # Reimport replaces old source models. Reuse the measured accepted motel
+        # screen policy explicitly, before any PostEditChange invalidates data.
+        N.finish_mesh(mesh, report, N.AUTHORED_SCREEN_SIZES)
     if trims:
         data = json.loads((trims / 'trim-manifest.json').read_text())
         converted = json.loads((trims / 'trim-fbx.json').read_text())

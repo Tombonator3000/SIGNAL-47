@@ -5,6 +5,8 @@ No directory deletion and no writes outside /Game/MotelV2.
 """
 import hashlib
 import json
+import math
+import struct
 from pathlib import Path
 import unreal
 
@@ -13,6 +15,15 @@ E = unreal.EditorAssetLibrary
 T = unreal.AssetToolsHelpers.get_asset_tools()
 M = unreal.MaterialEditingLibrary
 S = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem)
+# Measured unchanged on all 24 parts in the independently saved/reopened native
+# acceptance of 2026-10-27 (UE5.8.4-58902052), not fresh FBX/autocompute defaults.
+AUTHORED_SCREEN_SIZES = (2., .75, .5625)
+SCREEN_POLICY_BASIS = {
+    'report': 'Signal47-motel-v2-20261027/native-verify-r4.json',
+    'sha256': '4ccd813e9cd9684a6c79e496e2bc8b62a1e7c6444873c4457f590f0d21a4426d',
+    'accepted_checks': '24/24 final LOD3 distant screen threshold PASS',
+    'engine': '5.8.4-58902052+++UE5+Release-5.8',
+}
 
 
 def sha(path):
@@ -266,7 +277,17 @@ def import_mesh(source, destination, name, report):
     return mesh
 
 
-def finish_mesh(mesh, report):
+def finish_mesh(mesh, report, authored_screens=None):
+    authored = is_authored_motel_part(mesh)
+    # SetLodBuildSettings and even proxy/Nanite property edits call PostEditChange.
+    # GetLodScreenSizes reads RenderData, which can already contain zero defaults
+    # after those edits. Freeze/set the approved source-model policy first.
+    screens = None
+    if authored:
+        screens = authored_screen_policy(mesh, report, authored_screens)
+        current = screens + ([.005] if S.get_lod_count(mesh) == 4 else [])
+        report.check(mesh.get_name() + ' preserve accepted screens before property edits',
+                     S.set_lod_screen_sizes(mesh, current))
     nanite = mesh.get_editor_property('nanite_settings')
     nanite.enabled = False
     mesh.set_editor_property('nanite_settings', nanite)
@@ -278,9 +299,11 @@ def finish_mesh(mesh, report):
         settings.set_editor_property('use_full_precision_u_vs', True)
         settings.set_editor_property('remove_degenerates', False)
         S.set_lod_build_settings(mesh, lod, settings)
-    if is_authored_motel_part(mesh):
-        set_resident_lod(mesh, report)
+    if authored:
+        set_resident_lod(mesh, report, screens)
     report.check(mesh.get_name() + ' saved mesh', E.save_loaded_asset(mesh))
+    if authored:
+        verify_authored_screens(mesh, report)
 
 
 def is_authored_motel_part(mesh):
@@ -300,12 +323,41 @@ def rt_proxy_settings(mesh):
 def resident_lod_policy(mesh):
     # Tiny single-plane water/glow pieces already have negligible residency.
     # Preserve their authored LOD2 exactly instead of risking zero-face reduction.
-    small = mesh.get_num_triangles(0) < 1000
+    # Source descriptions survive RenderData invalidation and are the newly
+    # imported authored data. Zero transient render counts must not select LOD2.
+    source = mesh.get_static_mesh_description(0)
+    assert source is not None and source.get_triangle_count() > 0, ('authored LOD0 source missing', mesh.get_name())
+    small = source.get_triangle_count() < 1000
     return {'source_lod': 2 if small else 0, 'percent_triangles': 1. if small else .02,
             'screen_size': .005, 'lod': 3}
 
 
-def set_resident_lod(mesh, report):
+def authored_screen_policy(mesh, report, approved=None):
+    """Freeze actual screens, or explicitly reuse the accepted reimport policy.
+
+    import_assets supplies the measured policy: deleting/reimporting an owned
+    mesh cannot preserve its old source models. Other callers must still prove
+    that the currently saved screens match the accepted values; zeros fail.
+    """
+    observed = list(S.get_lod_screen_sizes(mesh))[:3]
+    screens = list(approved) if approved is not None else observed
+    report.check(mesh.get_name() + ' accepted authored screen policy', len(screens) == 3 and
+                 all(math.isfinite(a) and abs(a-b) < 1e-6 for a, b in zip(screens, AUTHORED_SCREEN_SIZES)),
+                 {'observed_render_screens': observed, 'preserved_screens': screens,
+                  'origin': 'explicit accepted reimport policy' if approved is not None else 'current saved policy',
+                  'basis': SCREEN_POLICY_BASIS})
+    return screens
+
+
+def verify_authored_screens(mesh, report):
+    actual = list(S.get_lod_screen_sizes(mesh))
+    expected = list(AUTHORED_SCREEN_SIZES) + [.005]
+    report.check(mesh.get_name() + ' saved authored screen policy retained', len(actual) == 4 and
+                 all(math.isfinite(a) and abs(a-b) < 1e-6 for a, b in zip(actual, expected)),
+                 {'actual': actual, 'expected': expected, 'basis': SCREEN_POLICY_BASIS})
+
+
+def set_resident_lod(mesh, report, authored_screens=None):
     """Append a distant ordinary LOD; retain all three authored LODs exactly.
 
     UE5.8 only builds dedicated RT proxies inside the Nanite build gate. These
@@ -320,17 +372,20 @@ def set_resident_lod(mesh, report):
     # PostEditChange from even a proxy-only property can invalidate render data.
     # Freeze both screen sizes AND the source-triangle-based policy beforehand.
     policy = resident_lod_policy(mesh)
-    old_screens = list(S.get_lod_screen_sizes(mesh))[:3]
+    old_screens = authored_screen_policy(mesh, report, authored_screens)
     report.check(name + ' existing far transition permits appended LOD', len(old_screens) == 3 and old_screens[2] > .0051, old_screens)
     report.data.setdefault('resident_lod_inputs', {})[name] = {
-        'original_screens': old_screens, 'original_lod0_render_triangles': mesh.get_num_triangles(0), 'policy': policy}
+        'preserved_screens': old_screens, 'screen_policy_basis': SCREEN_POLICY_BASIS,
+        'authored_lod0_source_triangles': mesh.get_static_mesh_description(0).get_triangle_count(), 'policy': policy}
     report.flush()
     proxy = mesh.get_editor_property('ray_tracing_proxy_settings')
     proxy.set_editor_property('enabled', False)
     mesh.set_editor_property('ray_tracing_proxy_settings', proxy)
-    if S.get_lod_count(mesh) == 3:
-        report.check(name + ' append only LOD3 source model',
-                     S.set_lod_from_static_mesh(mesh, 3, mesh, policy['source_lod'], True) == 3)
+    # UE5.8 StaticMeshEditorSubsystem.cpp:779..840 appends only when absent,
+    # then overwrites destination MeshDescription/settings even for an existing
+    # LOD. A 4-LOD retry must copy the NEW LOD0/2, never reduce stale old LOD3.
+    report.check(name + ' refresh LOD3 from current authored source',
+                 S.set_lod_from_static_mesh(mesh, 3, mesh, policy['source_lod'], True) == 3)
     reduction = S.get_lod_reduction_settings(mesh, 3)
     reduction.set_editor_property('base_lod_model', 3)
     reduction.set_editor_property('percent_triangles', policy['percent_triangles'])
@@ -357,7 +412,7 @@ def verify_rt_proxy(mesh, report):
     return state
 
 
-def verify_resident_lod(mesh, report):
+def verify_resident_lod(mesh, report, authored_position_hashes):
     name = mesh.get_name()
     policy = resident_lod_policy(mesh)
     actual = mesh.get_num_triangles(3)
@@ -377,10 +432,16 @@ def verify_resident_lod(mesh, report):
                  abs(float(reduction.get_editor_property('percent_triangles')) - policy['percent_triangles']) < 1e-6)
     screens = list(S.get_lod_screen_sizes(mesh))
     report.check(name + ' final LOD3 distant screen threshold', len(screens) == 4 and abs(screens[3] - .005) < 1e-6, screens)
+    verify_authored_screens(mesh, report)
     desc = mesh.get_static_mesh_description(3)
     report.check(name + ' final LOD3 copied source MeshDescription', desc is not None and desc.get_triangle_count() == source_count)
+    copied_positions = position_hash(vertices(desc))
+    expected_positions = authored_position_hashes[policy['source_lod']]
+    report.check(name + ' final LOD3 copied current authored vertex positions', copied_positions == expected_positions,
+                 {'actual_sha256': copied_positions, 'source_sha256': expected_positions, 'source_lod': policy['source_lod']})
     return {'triangles': actual, 'generated_resident_lod': True, 'source_lod': policy['source_lod'],
-            'source_triangles': source_count, 'reduction_fraction': policy['percent_triangles'], 'screen_size': screens[3]}
+            'source_triangles': source_count, 'reduction_fraction': policy['percent_triangles'], 'screen_size': screens[3],
+            'copied_source_positions_sha256': copied_positions}
 
 
 def vertices(desc):
@@ -396,6 +457,13 @@ def vertices(desc):
         index += 1
     assert len(points) == count and points, ('saved vertices', len(points), count)
     return points
+
+
+def position_hash(points):
+    digest = hashlib.sha256()
+    for point in points:
+        digest.update(struct.pack('<ddd', *point))
+    return digest.hexdigest()
 
 
 def expected_bounds(row):
@@ -414,6 +482,7 @@ def verify_mesh(name, mesh, lods, expected_materials, report):
           {'actual': actual_materials, 'expected': expected_materials})
     row = {'name': name, 'asset': mesh.get_path_name(), 'materials': actual_materials, 'lods': [],
            'ray_tracing_proxy_settings': verify_rt_proxy(mesh, report)}
+    authored_position_hashes = {}
     for i, contract in enumerate(lods):
         label = name + ' LOD' + str(i)
         check(label + ' render triangles', mesh.get_num_triangles(i) == contract['triangles'],
@@ -422,6 +491,8 @@ def verify_mesh(name, mesh, lods, expected_materials, report):
         check(label + ' saved source MeshDescription', desc is not None)
         check(label + ' source triangles', desc.get_triangle_count() == contract['triangles'])
         points = vertices(desc)
+        if is_authored_motel_part(mesh):
+            authored_position_hashes[i] = position_hash(points)
         actual = [[fn(p[a] for p in points) for a in range(3)] for fn in (min, max)]
         expected = expected_bounds(contract)
         error = max(abs(a - b) for x, y in zip(actual, expected) for a, b in zip(x, y))
@@ -434,7 +505,7 @@ def verify_mesh(name, mesh, lods, expected_materials, report):
         check(label + ' preserve thin triangles', not build.get_editor_property('remove_degenerates'))
         row['lods'].append({'triangles': mesh.get_num_triangles(i), 'bounds_cm': actual})
     if is_authored_motel_part(mesh):
-        row['lods'].append(verify_resident_lod(mesh, report))
+        row['lods'].append(verify_resident_lod(mesh, report, authored_position_hashes))
     report.data['meshes'].append(row)
     report.flush()
 
