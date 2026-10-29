@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "documentation": {
+    "status": "Referanse",
+    "gjelder": "Avgrenset arkivkompatibilitet etter PR230, testet i editorbygg fra sammensatt kilde 31836606.",
+    "sist_kontrollert": "2026-10-29T18:10:51+01:00"
+  },
+  "status": "PASS_TARGETED_EDITOR",
+  "candidate": {
+    "branch": "codex/observing-archive-compat-20261029",
+    "code_commit": "4a53a37f591ecff20c539ab14c81879b1fc3a12f",
+    "base_main_commit": "12c95b17923885b6b3f5f0efb4e81e6368303f9e",
+    "source_files": [
+      {
+        "file": "unreal/Signal47/Source/Signal47/Private/S47Observing.cpp",
+        "bytes": 38007,
+        "sha256": "0d79aebde710c806826fd7035a3318cc65a60d6ddc114105747b422fcf6d123e"
+      },
+      {
+        "file": "unreal/Signal47/Source/Signal47/Public/S47Observing.h",
+        "bytes": 3570,
+        "sha256": "b8d31122ba69486ccbb1ab5a0ed1d170fea6136898e9d328d1ebc465be97dd46"
+      }
+    ]
+  },
+  "tested_build": {
+    "composite_source_commit": "31836606f020d968a1c2f5a7933389aff396aa67",
+    "source_relation": "Dette er et sammensatt Dale-bygg med de to byteidentiske Observing-filene fra kandidaten og en opt-in HUM02-støttesensor. Det er ikke PR-grenens HEAD. Sensoren kjøres i egen support-prøve og er ikke aktiv i Night-prøven.",
+    "observing_files_byte_identical_to_candidate": true,
+    "editor_module": {
+      "file": "unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+      "bytes": 17623896,
+      "sha256": "96c7c65065cdeb1f1926650e86bf33d9dfd23c3f540519e567a3ccacbb2134c0"
+    },
+    "plan": {
+      "file": "combined-plan-r1.json",
+      "bytes": 3816,
+      "sha256": "9534a3ec7e046eca8401fab0b37a68e041b01f4bf5babf580f2db97e9c45d0a9"
+    },
+    "source_preflight": {
+      "file": "preflight.py",
+      "bytes": 839,
+      "sha256": "04f907aa55affbfa3635b317dcc278b58966c6495fbe687ce90180878aed5677"
+    },
+    "preflight_result": {
+      "file": "support-source-preflight-r2.result.json",
+      "bytes": 3576,
+      "sha256": "fbe9f95bcdd9048dd93235c3ea6d7596189b4fe86563ee10f6b5dc849761bbdb"
+    },
+    "guard_implementation": {
+      "file": "unreal/Signal47/Scripts/unreal_guard.py",
+      "bytes": 14049,
+      "sha256": "b23454fcc53b8cde7b1a0a8c7cccb948d88aeb89e854651920acbfbe6c1d57c7"
+    }
+  },
+  "jobs": [
+    {
+      "name": "support-editor-r2",
+      "exit_code": 0,
+      "wall_seconds": 23.376994256977923,
+      "semantic_success": true,
+      "contention": [],
+      "guard_performance_status": "UNCONTENDED",
+      "note": "UNCONTENDED er guardens konkurranseavlesning, ingen FPS-måling.",
+      "files": {
+        "guard_result": {
+          "file": "support-editor-r2.result.json",
+          "bytes": 3576,
+          "sha256": "33e631de0df88d379f2b86a435131d4395d7b302d95224f7e12946d6628587cc"
+        },
+        "guard_log": {
+          "file": "support-editor-r2.guard.log",
+          "bytes": 2988,
+          "sha256": "96cdfc7e9eef43bb76322c8a115e60a68307c3695f3b91c48ea2023655a47fa0"
+        },
+        "engine_or_build_log": {
+          "file": "support-editor-r2.log",
+          "bytes": 10241,
+          "sha256": "77aaac294ead2c6ed5052e0e205a89aa3e6274ee07650faf74623f66265b8f20"
+        }
+      }
+    },
+    {
+      "name": "support-native-r1",
+      "exit_code": 0,
+      "wall_seconds": 54.172010552021675,
+      "semantic_success": true,
+      "contention": [],
+      "guard_performance_status": "UNCONTENDED",
+      "note": "UNCONTENDED er guardens konkurranseavlesning, ingen FPS-måling.",
+      "files": {
+        "guard_result": {
+          "file": "support-native-r1.result.json",
+          "bytes": 8616,
+          "sha256": "84a08994a2809c03789eaf914f87e469f8ceef07cf5a4d77e88e724e6631c344"
+        },
+        "guard_log": {
+          "file": "support-native-r1.guard.log",
+          "bytes": 8029,
+          "sha256": "3f7bd18bd48b529944edb8eef6d1cf9cd8b609c8eaecfbda2fc893160f03858b"
+        },
+        "engine_or_build_log": {
+          "file": "support-native-r1.log",
+          "bytes": 766319,
+          "sha256": "2b8529abb0639003940c38b184598ca560fd0163e5f8bbe46bc726cd771d69d3"
+        }
+      }
+    },
+    {
+      "name": "observing-compat-night-r1",
+      "exit_code": 0,
+      "wall_seconds": 151.15366836695466,
+      "semantic_success": true,
+      "contention": [],
+      "guard_performance_status": "UNCONTENDED",
+      "note": "UNCONTENDED er guardens konkurranseavlesning, ingen FPS-måling.",
+      "files": {
+        "guard_result": {
+          "file": "observing-compat-night-r1.result.json",
+          "bytes": 8616,
+          "sha256": "166022d6df5c6f19a524c43fe0f41646844925ba1802fd0356dfd63567312db5"
+        },
+        "guard_log": {
+          "file": "observing-compat-night-r1.guard.log",
+          "bytes": 8818,
+          "sha256": "4657c389b600e6823ecc2eceec886050e82817b24a87ab08131b7f4fd6929c46"
+        },
+        "engine_or_build_log": {
+          "file": "observing-compat-night-r1.log",
+          "bytes": 529478,
+          "sha256": "3b03a997b8bf49a11d20a01cf51bf84ce1801cdbf6fe6159ee7f1a94fe34039b"
+        }
+      }
+    }
+  ],
+  "selftests": {
+    "actual_total": 1722,
+    "new_legacy_cohorts": 2,
+    "source_function": "FS47Observing::SelfTest",
+    "legacy_cases": [
+      "v1 uten archive: Run2/Tune → Begin/Save/JSON/Begin, Archive=-1, ingen arkivsperre eller reel-hint",
+      "v1 uten archive: Run3/Virgo og Run4/Done → Begin/Save/JSON/Begin, bevart ferdigstatus uten ny arkivoppgave"
+    ],
+    "aggregate_log_marker": {
+      "line": 3306,
+      "text": "[2026.10.29-16.56.52:041][  1]LogS47HUD: Display: S47: self test OK (1722 checks)"
+    },
+    "reporting_limit": "Loggen fører samlet selvtestresultat; de to kohortene bindes til den eksakte prøvde kildefila, ikke til egne per-kohort-logglinjer."
+  },
+  "night": {
+    "status": "PASS",
+    "checks": 80,
+    "disk_full_flow_restores": 8,
+    "actual_observation_runs": 4,
+    "sc03_revision_probe": true,
+    "sc02_clock_seconds": 7200.109691185877,
+    "sc03_boundary_clock_seconds": 8100.159633691423,
+    "residual_locked_clock_seconds": 8100.321425477974,
+    "direction_printed_clock_seconds": 8110.1047507682815,
+    "original_result": {
+      "file": "result.json",
+      "bytes": 4126,
+      "sha256": "ef6b05b8f238808b7415520cfbcccd7aad0042b7b4873314694d18de09e3408f",
+      "recorded_original_path": "/tmp/S47-observing-compat-night-r1/Saved/NightSequenceContract/01A18897E9E87747B316482CC92DD05F/result.json",
+      "encoding": "UTF-16 LE with BOM"
+    },
+    "completion_log_marker": {
+      "line": 3878,
+      "text": "[2026.10.29-16.58.52:399][467]LogTemp: Display: S47: night sequence contract PASS COMPLETE: 80 checks, 8 fresh disk/full-Flow restores; SC01 and travel fixtures explicitly labelled; artifacts /tmp/S47-observing-compat-night-r1/Saved/NightSequenceContract/01A18897E9E87747B316482CC92DD05F"
+    },
+    "normal_exit_log_marker": {
+      "line": 4653,
+      "text": "[2026.10.29-16.58.54:325][468]LogExit: Exiting."
+    },
+    "male_support_diagnostic_active": false,
+    "fixtures": [
+      {
+        "purpose": "Tidligere fullført SC01-fakta og ett originalt referansefoto som uttrykkelig diskfixture.",
+        "input_argument": "-S47NightSequenceSC01",
+        "recorded_source_path": "/home/tom/scratch-bm/Signal47-sc02-20261028/codex-takeover/packed-sc02-r5/evidence/completed-door-reopened.loaded.json",
+        "file": {
+          "file": "completed-door-reopened.loaded.json",
+          "bytes": 208481,
+          "sha256": "8e4edf31d425f4b2fa80806e644e68c69e0e9a37c3e11446fc648e331c3aaae1"
+        }
+      },
+      {
+        "purpose": "Tidligere kvittert SC02-flukt som uttrykkelig revisjon3-fixture for faktisk SC03-grense.",
+        "input_argument": "-S47NightSequenceEscape",
+        "recorded_source_path": "/home/tom/scratch-bm/Signal47-sc02-20261028/codex-takeover/packed-sc02-r5/evidence/sc02-escaped.loaded.json",
+        "file": {
+          "file": "sc02-escaped.loaded.json",
+          "bytes": 212170,
+          "sha256": "f5341595e5656631fafd49316b5cdf4954dc86191f4fa5835246db5bcb5fbc37"
+        }
+      }
+    ],
+    "original_limits": "D01 og observasjoner bruker produksjons-API, ikke menneskelig input. Aggregatpanelets faktiske rays, oppvarming og lastoverføring samt portens lukkede nærhet og returtriggere kjøres uten syntetisk oppgavecredit. Deres posisjoner er uttrykkelige fixtures fra SC01-ruten, uten sammenhengende gangbevis. SC01-fakta og ett originalfoto er uttrykkelig diskfixture. Telefon-/felt-/returposisjoner og DriveOut(true) road-start er fixtures. Faktiske fysiske T01-rays, vanlige ConsoleClosed-timere, telefonens lukketransaksjon, aktiv road-kjørekontroller, gjenopprettet SARO-strøm med vedvarende stedlig feileffekt, modalpause og isolerte disk/full-Flow-restores kjøres. Når sc03RevisionProbe er true, prøves faktisk StepSC03-grense rundt 02:15 og dens diskrestore med navngitt tidligere kvittert flukt som uttrykkelig revisjon3-fixture; deretter kjøres faktisk residualtuning, direction solve/print og Locked-/Printed-diskrestore med bevart klokke og printerark. Helkjøring, fersk ordinær Continue-prosess, ny SC02-flukt, SC03-innhold, lydlytting, fysisk Xbox og fullnatt er ikke prøvd av denne kontrakten."
+  },
+  "evidence_location": {
+    "private_original_root_hint": "Signal47-male-mannequins-20261029/support-native-r1",
+    "preservation": "Originale logger, guardkvitteringer, fixtures og UTF-16-resultat er uendrede. Denne portable kvitteringen binder bytes og SHA256 uten å publisere rå guard-/persondata."
+  },
+  "unverified": [
+    "Ny full SC01-gjennomspilling i denne Night-prøven",
+    "Ny SC02-flukt",
+    "SC03-innhold og full flukt",
+    "Sammenhengende helkjøring/helgange og full natt",
+    "Fersk ordinær Continue i egen spillprosess",
+    "Menneskelig input eller lytting",
+    "FPS og ytelse",
+    "Samlet fullmatrise",
+    "Pakket kandidat, installasjon og offentlig release fra denne kompatleveransen"
+  ],
+  "delivery": {
+    "PR_and_merge": "Root kontrollerer og leverer separat. Denne kvitteringen gjelder den målrettede editorprøven, ikke installert standard eller offentlig spillpakke."
+  }
+}

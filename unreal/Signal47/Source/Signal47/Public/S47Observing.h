@@ -44,7 +44,7 @@ public:
  int32 Hints() const { return HintMask; }
  // The chores between runs: the weekly generator test before the pulsar (0 none, 1 running,
  // 2 on generator power, 3 logged), the 20:30 filing in the records room before the hydrogen strip
- // (0, 1 filed, 2 the reel turned) and the round to the array gate before Virgo A (0, 1 chained, 2 found open).
+ // (-1 legacy exemption, 0 not filed, 1 filed, 2 the reel turned) and the round to the array gate before Virgo A (0, 1 chained, 2 found open).
  int32 GeneratorStep() const { return GenStep; }
  int32 ArchiveStep() const { return Archive; }
  int32 YardStep() const { return Yard; }

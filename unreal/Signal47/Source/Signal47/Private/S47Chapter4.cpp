@@ -1351,7 +1351,7 @@ void US47Chapter4::JumpChapter4()
 		S47J::Set(Done, TEXT("ch2"), J2);
 		S47J::Set(Done, TEXT("ch3"), J3);
 		S47J::Set(Done, TEXT("notes"), Host->Notes());
-		S47J::Set(Done, TEXT("clock"), Host->bEveningTimeline ? 3 * 3600.0 + 17 * 60 : 4 * 3600.0 + 32 * 60);
+		S47J::Set(Done, TEXT("clock"), Host->bEveningTimeline ? 4 * 3600.0 + 47 * 60 : 4 * 3600.0 + 32 * 60);
 	}
 	BeganCase = Done;
 	// Prologue.beginChapter1(done): chapter one's Begin takes the whole case (notes, clock, its state)
