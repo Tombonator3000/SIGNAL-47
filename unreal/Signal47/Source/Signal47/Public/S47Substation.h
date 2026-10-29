@@ -125,6 +125,11 @@ private:
  TWeakObjectPtr<UStaticMeshComponent> IsolationHandle, AuxiliaryHandle;
  FTransform IsolationRest, AuxiliaryRest;
  void InstallFollowup();
+ // FIX-07 native field kit (S47SubstationField.cpp); decorative, proxies keep authority.
+ void InstallField();
+ bool FieldInstalled() const;
+ void ProbeGround();
+ int32 FieldParts = 0;
  FS47Obj FollowupProp(const FString& Name, const FVector& At, const FVector& Size, const FLinearColor& Color, TWeakObjectPtr<UMaterialInstanceDynamic>* Mid = nullptr);
  void BeginFollowup(const S47J::FObj& Saved);
  void StepFollowup(double Dt);
