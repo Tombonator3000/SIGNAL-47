@@ -109,8 +109,8 @@ void AS47Web::BeginProductionViews()
   {
    RestoreFixtureFloor();if(State->bHadCinematic)M->Story->SetCinematic(State->bPreviousCinematic);
    State->Done=true;W->GetWorldTimerManager().ClearTimer(State->Timer);
-   if(Pass)UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));
-   else UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);
+   if(Pass){UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));}
+   else {UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);}
    if(State->bExit){if(Pass)FPlatformMisc::RequestExit(false);else FPlatformMisc::RequestExitWithStatus(false,1);}
   };
   auto Fail=[Finish](const TCHAR* Why){Finish(false,Why);};
