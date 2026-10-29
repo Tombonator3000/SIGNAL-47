@@ -20,6 +20,19 @@ REPAIR_ID = 'motel-grounded-20261029-v1'
 EPS = .0002
 NORMAL_COMPONENT_EPS = .0002
 NORMAL_DOT_EPS = .0000001
+SELECTION_ATTRIBUTES = {
+    '.select_vert': 'POINT', '.select_edge': 'EDGE', '.select_poly': 'FACE',
+    '.uv_select_vert': 'CORNER', '.uv_select_edge': 'CORNER', '.uv_select_face': 'FACE',
+}
+KNOWN_ATTRIBUTES = {
+    'position': ('POINT', 'FLOAT_VECTOR'), '.edge_verts': ('EDGE', 'INT32_2D'),
+    '.corner_vert': ('CORNER', 'INT'), '.corner_edge': ('CORNER', 'INT'),
+    'UVMap': ('CORNER', 'FLOAT2'), 'custom_normal': ('CORNER', 'INT16_2D'),
+    'material_index': ('FACE', 'INT'), 'sharp_face': ('FACE', 'BOOLEAN'),
+    # normals_split_custom_set may create edge splits when encoding normals.
+    'sharp_edge': ('EDGE', 'BOOLEAN'),
+    **{name: (domain, 'BOOLEAN') for name, domain in SELECTION_ATTRIBUTES.items()},
+}
 
 
 def sha(path):
@@ -145,22 +158,52 @@ def normal_check(actual, expected, label):
 
 
 def mesh_snapshot(mesh, include_normals=True):
+    schema = {attribute.name: (attribute.domain, attribute.data_type) for attribute in mesh.attributes}
+    assert all(KNOWN_ATTRIBUTES.get(name) == kind for name, kind in schema.items()), ('unknown mesh attribute', schema)
+    assert not mesh.color_attributes and mesh.shape_keys is None, 'unsupported color attributes or shape keys'
+    assert [layer.name for layer in mesh.uv_layers] == ['UVMap'], 'unsupported additional UV layers'
     positions = [tuple(v.co) for v in mesh.vertices]
     faces = [tuple(p.vertices) for p in mesh.polygons]
     uvs = {layer.name: [tuple(v.uv) for v in layer.data] for layer in mesh.uv_layers}
     assert all(len(face) == 3 for face in faces), 'production geometry must remain triangulated'
     snapshot = {'positions': positions, 'faces': faces, 'uvs': uvs,
                 'loop_vertices': [loop.vertex_index for loop in mesh.loops],
+                'edges': [tuple(edge.vertices) for edge in mesh.edges],
+                'loop_edge_keys': [tuple(sorted(mesh.edges[loop.edge_index].vertices)) for loop in mesh.loops],
                 'loop_starts': [p.loop_start for p in mesh.polygons],
                 'loop_totals': [p.loop_total for p in mesh.polygons],
                 'smooth': [p.use_smooth for p in mesh.polygons],
                 'material_indices': [p.material_index for p in mesh.polygons],
                 'materials': [m.name if m else None for m in mesh.materials],
-                'has_custom_normals': mesh.has_custom_normals}
+                'has_custom_normals': mesh.has_custom_normals,
+                'attribute_schema': schema,
+                'selection_attributes': {name: [bool(value.value) for value in mesh.attributes[name].data]
+                                         for name in SELECTION_ATTRIBUTES if name in schema},
+                'sharp_edges': [bool(value.value) for value in mesh.attributes['sharp_edge'].data]
+                               if 'sharp_edge' in schema else None}
     if include_normals:
         snapshot['corner_normals'] = [tuple(normal.vector) for normal in mesh.corner_normals]
         assert len(snapshot['corner_normals']) == len(snapshot['loop_vertices'])
     return snapshot
+
+
+def check_source_prefix(before, after, label):
+    assert after['materials'] == before['materials'], (label, 'material slots changed')
+    for key in ('faces', 'loop_vertices', 'loop_starts', 'loop_totals', 'smooth', 'material_indices', 'loop_edge_keys'):
+        assert after[key][:len(before[key])] == before[key], (label, 'original prefix changed', key)
+    assert all(after['uvs'][key][:len(values)] == values for key, values in before['uvs'].items()), (label, 'original atlas UV changed')
+    assert all(after['attribute_schema'].get(name) == kind for name, kind in before['attribute_schema'].items()), (label, 'attribute schema lost')
+    edge_by_key = {tuple(sorted(edge)): i for i, edge in enumerate(after['edges'])}
+    assert len(edge_by_key) == len(after['edges']), (label, 'duplicate replacement edges')
+    for name, values in before['selection_attributes'].items():
+        actual = after['selection_attributes'][name]
+        if SELECTION_ATTRIBUTES[name] == 'EDGE':
+            assert all(actual[edge_by_key[tuple(sorted(edge))]] == value for edge, value in zip(before['edges'], values)), (label, 'edge selection changed', name)
+        else:
+            assert actual[:len(values)] == values, (label, 'selection prefix changed', name)
+    if before['sharp_edges'] is not None:
+        assert all(after['sharp_edges'][edge_by_key[tuple(sorted(edge))]] == value
+                   for edge, value in zip(before['edges'], before['sharp_edges'])), (label, 'original sharp edges changed')
 
 
 def append_service_pads(mesh, snapshot, source_island, contract):
@@ -169,20 +212,29 @@ def append_service_pads(mesh, snapshot, source_island, contract):
     The new fields meet the porch and north path edge to edge. No new atlas,
     material, procedural source dependency or coplanar covering plane is added.
     """
-    # Direct RNA append follows convert_trims.py. No BMesh roundtrip: every
-    # original face/loop remains at its old index, binding custom corner normals
-    # and atlas UVs to an explicit, checked topology prefix.
+    import bpy
+
+    # Never resize the populated source mesh. Blender5.2.2 crashed in update()
+    # after that operation with old edge/custom-normal buffers still attached.
+    # Build an empty mesh via the shipped Mesh.from_pydata implementation and
+    # the project's mesh_cleanup.py path, then bind UV/material/normal data.
     source_ids = set(source_island['vertices'])
     source_faces = [i for i, face in enumerate(snapshot['faces']) if set(face) <= source_ids]
     assert source_faces and all(set(face).isdisjoint(source_ids) or set(face) <= source_ids for face in snapshot['faces'])
     assert [loop.vertex_index for loop in mesh.loops] == snapshot['loop_vertices']
     assert [tuple(p.vertices) for p in mesh.polygons] == snapshot['faces']
     positions = [tuple(v.co) for v in mesh.vertices]  # Includes the planned cabinet translations.
+    faces = list(snapshot['faces'])
+    edges = list(snapshot['edges'])
+    source_edge_ids = [i for i, edge in enumerate(edges) if set(edge) <= source_ids]
+    assert all(set(edge).isdisjoint(source_ids) or set(edge) <= source_ids for edge in edges), 'donor has external loose edge'
     loop_vertices = list(snapshot['loop_vertices'])
     loop_starts, loop_totals = list(snapshot['loop_starts']), list(snapshot['loop_totals'])
     smooth, material_indices = list(snapshot['smooth']), list(snapshot['material_indices'])
     expected_normals = list(snapshot['corner_normals'])
     uvs = {name: list(values) for name, values in snapshot['uvs'].items()}
+    selections = {name: list(values) for name, values in snapshot['selection_attributes'].items()}
+    sharp_edges = list(snapshot['sharp_edges']) if snapshot['sharp_edges'] is not None else None
     source_box = source_island['bounds']
     added = []
     for label, surface in contract['surface_rectangles_blender_xy_m'].items():
@@ -196,12 +248,26 @@ def append_service_pads(mesh, snapshot, source_island, contract):
             old = snapshot['positions'][i]
             vertices[i] = len(positions)
             positions.append(tuple(target[0][a] + (old[a] - source_box[0][a]) * scale[a] for a in range(3)))
+            for name, values in selections.items():
+                if SELECTION_ATTRIBUTES[name] == 'POINT':
+                    values.append(snapshot['selection_attributes'][name][i])
+        for edge_index in source_edge_ids:
+            edges.append(tuple(vertices[i] for i in snapshot['edges'][edge_index]))
+            for name, values in selections.items():
+                if SELECTION_ATTRIBUTES[name] == 'EDGE':
+                    values.append(snapshot['selection_attributes'][name][edge_index])
+            if sharp_edges is not None:
+                sharp_edges.append(snapshot['sharp_edges'][edge_index])
         for face_index in source_faces:
             old_face = snapshot['faces'][face_index]
+            faces.append(tuple(vertices[i] for i in old_face))
             loop_starts.append(len(loop_vertices))
             loop_totals.append(len(old_face))
             material_indices.append(snapshot['material_indices'][face_index])
             smooth.append(snapshot['smooth'][face_index])
+            for name, values in selections.items():
+                if SELECTION_ATTRIBUTES[name] == 'FACE':
+                    values.append(snapshot['selection_attributes'][name][face_index])
             for corner, vertex in enumerate(old_face):
                 old_loop = snapshot['loop_starts'][face_index] + corner
                 assert snapshot['loop_vertices'][old_loop] == vertex
@@ -209,26 +275,60 @@ def append_service_pads(mesh, snapshot, source_island, contract):
                 expected_normals.append(scaled_normal(snapshot['corner_normals'][old_loop], scale))
                 for name, values in uvs.items():
                     values.append(snapshot['uvs'][name][old_loop])
+                for name, values in selections.items():
+                    if SELECTION_ATTRIBUTES[name] == 'CORNER':
+                        values.append(snapshot['selection_attributes'][name][old_loop])
         added.append({'name': label, 'bounds_blender_m': target,
                       'vertices': len(vertices), 'triangles': len(source_faces),
                       'normal_transform': 'normalized inverse transpose of positive diagonal scale',
                       'scale_blender_m': scale})
-    mesh.vertices.add(len(positions) - len(mesh.vertices))
-    mesh.vertices.foreach_set('co', [c for v in positions for c in v])
-    mesh.loops.add(len(loop_vertices) - len(mesh.loops))
-    mesh.loops.foreach_set('vertex_index', loop_vertices)
-    mesh.polygons.add(len(loop_starts) - len(mesh.polygons))
-    mesh.polygons.foreach_set('loop_start', loop_starts)
-    mesh.polygons.foreach_set('loop_total', loop_totals)
-    mesh.polygons.foreach_set('material_index', material_indices)
-    mesh.polygons.foreach_set('use_smooth', smooth)
-    mesh.update(calc_edges=True)
-    assert {layer.name for layer in mesh.uv_layers} == set(uvs)
-    for layer in mesh.uv_layers:
-        layer.data.foreach_set('uv', [c for v in uvs[layer.name] for c in v])
-    mesh.normals_split_custom_set(expected_normals)
-    mesh.update()
-    return added, expected_normals
+    edge_keys = [tuple(sorted(edge)) for edge in edges]
+    assert len(set(edge_keys)) == len(edge_keys), 'duplicate source/donor edge'
+    new = bpy.data.meshes.new(mesh.name + '_Grounded')
+    try:
+        new.from_pydata(positions, edges, faces, shade_flat=False)
+        assert [loop.vertex_index for loop in new.loops] == loop_vertices
+        assert [p.loop_start for p in new.polygons] == loop_starts
+        assert [p.loop_total for p in new.polygons] == loop_totals
+        for material in mesh.materials:
+            new.materials.append(material)
+        new.polygons.foreach_set('material_index', material_indices)
+        new.polygons.foreach_set('use_smooth', smooth)
+        # Preserve explicit schema even if a whole attribute is default-valued.
+        for name in ('material_index', 'sharp_face'):
+            if name not in new.attributes:
+                domain, kind = KNOWN_ATTRIBUTES[name]
+                new.attributes.new(name=name, type=kind, domain=domain)
+        new.attributes['material_index'].data.foreach_set('value', material_indices)
+        new.attributes['sharp_face'].data.foreach_set('value', [not value for value in smooth])
+        for name, values in uvs.items():
+            layer = new.uv_layers.new(name=name)
+            layer.data.foreach_set('uv', [c for v in values for c in v])
+        edge_index = {key: i for i, key in enumerate(edge_keys)}
+        actual_edge_keys = [tuple(sorted(edge.vertices)) for edge in new.edges]
+        assert len(actual_edge_keys) == len(edge_keys) and set(actual_edge_keys) == set(edge_keys), 'edge connectivity changed'
+        if sharp_edges is not None:
+            if 'sharp_edge' not in new.attributes:
+                new.attributes.new(name='sharp_edge', type='BOOLEAN', domain='EDGE')
+            new.attributes['sharp_edge'].data.foreach_set('value', [sharp_edges[edge_index[key]] for key in actual_edge_keys])
+        new.normals_split_custom_set(expected_normals)
+        for name, values in selections.items():
+            domain = SELECTION_ATTRIBUTES[name]
+            attribute = new.attributes.get(name) or new.attributes.new(name=name, type='BOOLEAN', domain=domain)
+            assert attribute.domain == domain and attribute.data_type == 'BOOLEAN'
+            if domain == 'EDGE':
+                values = [values[edge_index[key]] for key in actual_edge_keys]
+            attribute.data.foreach_set('value', values)
+        new.update()
+        after = mesh_snapshot(new, include_normals=False)
+        check_source_prefix(snapshot, after, 'Office replacement before binding')
+        assert len(after['positions']) == len(positions)
+        assert all(abs(a - b) < 1e-5 for got, expected in zip(after['positions'], positions) for a, b in zip(got, expected))
+        normal_check([tuple(normal.vector) for normal in new.corner_normals], expected_normals, 'Office replacement before binding')
+    except Exception:
+        bpy.data.meshes.remove(new)
+        raise
+    return new, added, expected_normals
 
 
 def export_fbx(bpy, ob, path):
@@ -272,6 +372,7 @@ def repair(args, report):
                for ob in objects.values() for i in range(4) for j in range(4))
     snapshots, plans = {}, {}
     for name in ['SM_Sierra_Office', 'SM_Sierra_Glass', 'SM_Sierra_Room02', 'SM_Sierra_Room04', 'SM_Sierra_Room07']:
+        assert not objects[name].vertex_groups, (name, 'unsupported vertex groups')
         snap = mesh_snapshot(objects[name].data)
         assert len(snap['faces']) == manifest['parts'][name]['triangles']
         snapshots[name] = snap
@@ -302,6 +403,10 @@ def repair(args, report):
     report['new_service_fields'] = {name: row for name, row in contract['surface_rectangles_blender_xy_m'].items()
                                     if row.get('new_geometry')}
     report['preserved'] = contract['preserve']
+    report['source_attribute_inventory'] = {
+        name: {'attributes': before['attribute_schema'], 'color_attributes': [], 'shape_keys': False,
+               'vertex_groups': [], 'selection_attributes_preserved': sorted(before['selection_attributes'])}
+        for name, before in snapshots.items()}
     if not args.apply:
         report['status'] = 'INVENTORY_PASS_SOURCE_AND_NATIVE_UNVERIFIED'
         return
@@ -329,8 +434,21 @@ def repair(args, report):
                     mesh.vertices[i].co[axis] += delta[axis]
         mesh.update()
     expected_normals = {name: before['corner_normals'] for name, before in snapshots.items()}
-    pads, expected_normals['SM_Sierra_Office'] = append_service_pads(
-        objects['SM_Sierra_Office'].data, snapshots['SM_Sierra_Office'], donor, contract)
+    office = objects['SM_Sierra_Office']
+    old_mesh = office.data
+    old_name, old_fake_user = old_mesh.name, old_mesh.use_fake_user
+    assert len(bpy.data.meshes) == 24 and old_mesh.users == 1 + int(old_fake_user), 'Office mesh must have one real owner'
+    replacement, pads, expected_normals['SM_Sierra_Office'] = append_service_pads(
+        old_mesh, snapshots['SM_Sierra_Office'], donor, contract)
+    # The complete replacement has already passed geometry/UV/material/normal
+    # checks. Only now bind it, then retire the unreferenced in-memory old data.
+    office.data = replacement
+    replacement.use_fake_user = old_fake_user
+    old_mesh.use_fake_user = False
+    assert old_mesh.users == 0
+    bpy.data.meshes.remove(old_mesh)
+    replacement.name = old_name
+    assert len(bpy.data.meshes) == 24, 'replacement must not leave a 25th mesh datablock'
     # The other four parts only translate whole islands. Restore their original
     # normals explicitly too; translation must not change authored shading.
     for name in snapshots:
@@ -339,17 +457,14 @@ def repair(args, report):
             objects[name].data.update()
     after_snapshots = {}
     report['corner_normal_preservation'] = {
-        'method': 'Explicit RNA topology prefix; original loop normals plus inverse-transpose donor normals',
+        'method': 'Fresh empty Mesh.from_pydata; original topology/attributes plus inverse-transpose donor normals',
         'max_component_tolerance': NORMAL_COMPONENT_EPS, 'min_normalized_dot': 1 - NORMAL_DOT_EPS,
         'in_memory': {}, 'reopened_saved_blend': {}}
     for name, before in snapshots.items():
         after = mesh_snapshot(objects[name].data, include_normals=False)
         after_snapshots[name] = after
         count = len(before['positions'])
-        assert after['materials'] == before['materials']
-        for key in ('faces', 'loop_vertices', 'loop_starts', 'loop_totals', 'smooth', 'material_indices'):
-            assert after[key][:len(before[key])] == before[key], (name, 'original prefix changed', key)
-        assert all(after['uvs'][key][:len(values)] == values for key, values in before['uvs'].items()), (name, 'original atlas UV changed')
+        check_source_prefix(before, after, name)
         expected = list(before['positions'])
         for row in plans[name]:
             for i in row['vertices']:

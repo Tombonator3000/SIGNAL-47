@@ -16,6 +16,7 @@
 #include "S47Startup.h"
 #include "S47Three.h"
 #include "CollisionQueryParams.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/StaticMesh.h"
@@ -26,6 +27,7 @@
 #include "RenderingThread.h"
 #include "Internationalization/Regex.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformMisc.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/Base64.h"
 #include "Misc/CommandLine.h"
@@ -79,11 +81,11 @@ namespace
  bool PoolExteriorSample(US47Main* M,const FString& Root,FString& Error)
  {
   auto* W=M->Web.Get();auto* P=M->Player.Get();auto O=S47J::New();
-  S47J::Set(O,TEXT("method"),TEXT("Visible native/legacy mesh bounds within3m of each exterior fence corner, plus actual complex visibility rays from the uninterrupted Walker route."));
+  S47J::Set(O,TEXT("method"),TEXT("Visible native/legacy mesh bounds and actual ISM instance world bounds within3m of each exterior fence corner, plus actual complex visibility rays from the uninterrupted Walker route. Proximity uses the nearest XZ point of each AABB; instance bounds transform the mesh-local box, excluding shader sway."));
   S47J::Set(O,TEXT("limits"),TEXT("Large joined-mesh bounds can include distant islands. A fence hit can occlude the small dark E04/E05 candidate. These data identify candidates; they do not identify or authorize removing the brown pump housing or an unknown triangle."));
   S47J::Set(O,TEXT("eye_three_m"),TArray<double>{P->Pos.X,P->FloorY+P->Eye,P->Pos.Z});
   static const FVector2D Corners[]={{-64.9,665.9},{-53.9,665.9},{-64.9,682.9},{-53.9,682.9}};
-  TArray<TSharedPtr<FJsonValue>> Meshes,Rays;
+  TArray<TSharedPtr<FJsonValue>> Meshes,Rays,Instances;
   for(int32 I=0;I<W->PartCount();++I)
   {
    const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
@@ -102,6 +104,35 @@ namespace
    S47J::Set(R,TEXT("min_three_m"),TArray<double>{Min.X,Min.Y,Min.Z});S47J::Set(R,TEXT("max_three_m"),TArray<double>{Max.X,Max.Y,Max.Z});S47J::Set(R,TEXT("near_corner_indices"),Near);
    S47J::Set(R,TEXT("joined_bounds_not_local_island"),Max.X-Min.X>8||Max.Z-Min.Z>8);Meshes.Add(MakeShared<FJsonValueObject>(R));
   }
+  // Enumerate actual owned components, including flora's second paired draw which has no web node.
+  // NoCollision instances cannot answer the visibility rays; inspect their real transforms instead.
+  TInlineComponentArray<UInstancedStaticMeshComponent*> Isms;W->GetComponents(Isms);
+  for(auto* C:Isms)
+  {
+   if(!C||!C->IsRegistered()||!C->GetStaticMesh()||!C->IsVisible()||C->bHiddenInGame)continue;
+   const int32 I=W->NodeOf(C);const auto* N=W->Node(I);bool Shown=I<0||FS47Obj(W,I).Shown();
+   for(auto* Parent=C->GetAttachParent();Parent&&Shown;Parent=Parent->GetAttachParent())Shown=Parent->IsVisible()&&!Parent->bHiddenInGame;
+   if(!Shown)continue;
+   const FBox Local=C->GetStaticMesh()->GetBoundingBox();if(!Local.IsValid)continue;
+   for(int32 Index=0;Index<C->GetInstanceCount();++Index)
+   {
+    FTransform World;if(!C->GetInstanceTransform(Index,World,true))continue;
+    const FBox Box=Local.TransformBy(World);if(!Box.IsValid||Box.GetSize().IsNearlyZero())continue;
+    const FVector Min=S47Three::ToThree(Box.Min),Max=S47Three::ToThree(Box.Max);TArray<double> Near,Distances;
+    for(int32 K=0;K<UE_ARRAY_COUNT(Corners);++K)
+    {
+     const double Dx=FMath::Max(FMath::Max(Min.X-Corners[K].X,0.),Corners[K].X-Max.X),Dz=FMath::Max(FMath::Max(Min.Z-Corners[K].Y,0.),Corners[K].Y-Max.Z);
+     Distances.Add(FMath::Sqrt(Dx*Dx+Dz*Dz));if(Dx*Dx+Dz*Dz<=9)Near.Add(K);
+    }
+    if(Near.IsEmpty())continue;
+    const FVector Translation=World.GetTranslation(),Scale=World.GetScale3D(),Origin=S47Three::ToThree(Translation),Center=S47Three::ToThree(Box.GetCenter());const FQuat Rotation=World.GetRotation();
+    auto Transform=S47J::New();S47J::Set(Transform,TEXT("translation_cm"),TArray<double>{Translation.X,Translation.Y,Translation.Z});S47J::Set(Transform,TEXT("rotation_xyzw"),TArray<double>{Rotation.X,Rotation.Y,Rotation.Z,Rotation.W});S47J::Set(Transform,TEXT("scale_xyz"),TArray<double>{Scale.X,Scale.Y,Scale.Z});
+    auto R=S47J::New();S47J::Set(R,TEXT("node"),I);S47J::Set(R,TEXT("name"),N?N->Name:TEXT("unregistered"));S47J::Set(R,TEXT("component"),C->GetPathName());S47J::Set(R,TEXT("mesh"),C->GetStaticMesh()->GetPathName());S47J::Set(R,TEXT("index"),Index);
+    S47J::Set(R,TEXT("collision_enabled"),int32(C->GetCollisionEnabled()));S47J::Set(R,TEXT("no_collision"),C->GetCollisionEnabled()==ECollisionEnabled::NoCollision);S47J::Set(R,TEXT("world_transform_ue"),Transform);
+    S47J::Set(R,TEXT("origin_three_m"),TArray<double>{Origin.X,Origin.Y,Origin.Z});S47J::Set(R,TEXT("center_three_m"),TArray<double>{Center.X,Center.Y,Center.Z});S47J::Set(R,TEXT("min_three_m"),TArray<double>{Min.X,Min.Y,Min.Z});S47J::Set(R,TEXT("max_three_m"),TArray<double>{Max.X,Max.Y,Max.Z});
+    S47J::Set(R,TEXT("near_corner_indices"),Near);S47J::Set(R,TEXT("distance_to_corner_xz_m"),Distances);Instances.Add(MakeShared<FJsonValueObject>(R));
+   }
+  }
   for(int32 K=0;K<UE_ARRAY_COUNT(Corners);++K)for(const double Height:{.15,.55})
   {
    // Aim just outside all four corners: the screenshot's right-hand post depends on its view.
@@ -118,9 +149,9 @@ namespace
    }
    Rays.Add(MakeShared<FJsonValueObject>(R));
   }
-  O->SetArrayField(TEXT("meshes"),Meshes);O->SetArrayField(TEXT("rays"),Rays);
+  O->SetArrayField(TEXT("meshes"),Meshes);O->SetArrayField(TEXT("rays"),Rays);O->SetArrayField(TEXT("instances"),Instances);
   if(Meshes.IsEmpty()||!FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("pool-exterior.json")))){Error=TEXT("pool exterior candidate/bounds evidence unavailable");return false;}
-  UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 pool exterior diagnosis meshes=%d rays=%d evidence=%s; unknown candidate retained"),Meshes.Num(),Rays.Num(),*(Root/TEXT("pool-exterior.json")));return true;
+  UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 pool exterior diagnosis meshes=%d instances=%d rays=%d evidence=%s; unknown candidate retained"),Meshes.Num(),Instances.Num(),Rays.Num(),*(Root/TEXT("pool-exterior.json")));return true;
  }
 }
 void AS47Web::BeginMotelV2Route()
@@ -177,7 +208,7 @@ void AS47Web::BeginMotelV2Route()
    S47J::Set(O,TEXT("limits"),TEXT("Legacy chapter4 entry is an explicit developer fixture. Earlier chapters, human input, subjective listening and full chapter4 content were not played."));
    FFileHelper::SaveStringToFile(S47J::Write(O,true),*(S->Root/TEXT("result.json")));
   };
-  auto Fail=[&](const FString& Why){P->TestMove.Reset();P->bTestRun=false;S->Done=true;Result(TEXT("FAIL"),Why);UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 route FAIL stage=%d point=%d probe=%d at %.3f %.3f: %s"),S->Stage,S->Index,S->Probe,P->Pos.X,P->Pos.Z,*Why);};
+  auto Fail=[&](const FString& Why){P->TestMove.Reset();P->bTestRun=false;S->Done=true;Result(TEXT("FAIL"),Why);UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 route FAIL stage=%d point=%d probe=%d at %.3f %.3f: %s"),S->Stage,S->Index,S->Probe,P->Pos.X,P->Pos.Z,*Why);FPlatformMisc::RequestExitWithStatus(false,1);};
   if(!S->Started)
   {
    if(M->Flow->bStarting||S47Startup::Blocking()||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
@@ -205,7 +236,7 @@ void AS47Web::BeginMotelV2Route()
    const auto Pose=S47J::Obj(S->Saved,TEXT("pose"));auto* Chapter=Cast<US47Chapter4>(M->Story->Chapter(TEXT("ch4")));
    const bool Restored=M->Mode==US47Main::EMode::Play&&M->World->Area==TEXT("room6")&&M->Flow->CaseId==1&&!M->Flow->bDevRun&&Chapter&&Chapter->S.bArrived&&Chapter->S.Stage==TEXT("room")&&FMath::Abs(M->Story->Clock()-S->SavedClock)<3&&FMath::Abs(P->Pos.X-S47J::Num(Pose,TEXT("x")))<.03&&FMath::Abs(P->Pos.Z-S47J::Num(Pose,TEXT("z")))<.03;
    TArray<FString> Lines;if(!Restored||!W->MotelV2->Audit(Lines)||S->Recesses!=7||S->Picks!=14){Fail(TEXT("full disk/title Continue changed room6 state, clock, pose or motel installation; all route interactions must have passed"));return;}
-   S->Done=true;Result(TEXT("PASS"),TEXT("continuous motel route, physical room6 use and ordinary disk Continue"));UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route PASS waypoints=%d interactions=%d doorRecesses=%d/7 floorRays=%d blockers=4/4 walked=%.2fm elapsed=%.1fs diskContinue=PASS; API-driven Walker, human input unverified"),S->Index,S->Picks,S->Recesses,S->FloorRays,S->Distance,Now-S->Began);return;
+   S->Done=true;Result(TEXT("PASS"),TEXT("continuous motel route, physical room6 use and ordinary disk Continue"));UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route PASS waypoints=%d interactions=%d doorRecesses=%d/7 floorRays=%d blockers=4/4 walked=%.2fm elapsed=%.1fs diskContinue=PASS; API-driven Walker, human input unverified"),S->Index,S->Picks,S->Recesses,S->FloorRays,S->Distance,Now-S->Began);FPlatformMisc::RequestExit(false);return;
   }
   if(M->Mode!=US47Main::EMode::Play)return;
   if(S->Stage==0)
