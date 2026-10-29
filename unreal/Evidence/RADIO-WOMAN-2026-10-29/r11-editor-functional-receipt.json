@@ -1,0 +1,470 @@
+{
+  "schema_version": 1,
+  "documentation": {
+    "status": "Referanse",
+    "gjelder": "HUM01 R11 faktisk editorkontakt og funksjon, med synlig klesavslag",
+    "sist_kontrollert": "2026-10-29T18:38:44+01:00"
+  },
+  "status": "PASS_FUNCTIONAL_APPEARANCE_FAIL",
+  "source_commit": "9a6766147bd9b93d6cd0f5ca182a6b5a7c09f3ca",
+  "source_freeze": {
+    "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/source-freeze.json",
+    "bytes": 108811,
+    "sha256": "22a4d2fa28221920adcc49b5d3bca27d96b8b483c307d0ed1318f37b79e411c2"
+  },
+  "frozen_source_files": 485,
+  "plan": {
+    "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/plan.json",
+    "bytes": 4702,
+    "sha256": "2c1f7205f54139b6a1a8f5f42941d0ecd6150ef66d18a91521ede57a3e8aa50c"
+  },
+  "build_receipt": {
+    "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/build-receipt.json",
+    "bytes": 1098,
+    "sha256": "15e0d21d99015441a8fbb59199e9091973688516bf1c3fdba1227b3ace5538f3"
+  },
+  "editor_module": {
+    "path": "/home/tom/scratch-bm/wt/evening/unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+    "bytes": 18353200,
+    "sha256": "32fe3e0e64731a5394cb4c2293d0d62d828bdab980474f4a85953323302800aa"
+  },
+  "preserved_module": {
+    "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/preserved-module-r1/libUnrealEditor-Signal47.so",
+    "bytes": 18353200,
+    "sha256": "32fe3e0e64731a5394cb4c2293d0d62d828bdab980474f4a85953323302800aa"
+  },
+  "r11_asset": {
+    "path": "/home/tom/scratch-bm/wt/evening/unreal/Signal47/Content/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.uasset",
+    "bytes": 6379064,
+    "sha256": "b9f91fd923f725ae7fed0d80a9bfd5250d5c1437032f679a2f767d02c0aa06da"
+  },
+  "r11_native_pins": {
+    "path": "/home/tom/scratch-bm/wt/evening/unreal/Signal47/Source/Signal47/Private/S47RadioWomanNativePins.inl",
+    "bytes": 8526,
+    "sha256": "fcf1f568979f0cdfb75cc0638d100e759a46826d0a25a440fb463453e3e106b7"
+  },
+  "native_acceptance": {
+    "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-authoring-r1/r11-verify-independent-acceptance-r1.json",
+    "bytes": 2308,
+    "sha256": "4fe07bfec3e24e510d8bd27b82b69d627fb93d5a3acc63e7466ebfc4f7e10509"
+  },
+  "runs": [
+    {
+      "name": "r11-integrated-conversation-r1",
+      "scope": "HUD_CONVERSATION_CONTINUE",
+      "checks": 69,
+      "selftests": 1723,
+      "walk_metres": 8.382349352316432,
+      "contract_seconds": 28.74752619600622,
+      "engine_wall_seconds": 50.59049240802415,
+      "actual_exit_code": 0,
+      "contention": [],
+      "raw": {
+        "path": "/tmp/S47-radio-r11-conversation-r1/Saved/RadioWomanConversation/01A188B275C87596A318D7DDDF131C71/result.json",
+        "bytes": 27155396,
+        "sha256": "8ea75d8ef490e4b8456ed27dd8377c3066724951e0c5cff1e84e8314b1c84bc6"
+      },
+      "acceptance": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-conversation-r1.acceptance.json",
+        "bytes": 170534,
+        "sha256": "b1e01524889b70f272c25b4b3db1be5ef543526552f068be24a7ebb47d10cb91"
+      },
+      "guard": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-conversation-r1.result.json",
+        "bytes": 3541,
+        "sha256": "5c225c1825b4cacf54cc8fed2879af9be9bd6cd4c03b8de7abc0115be87ab08b"
+      },
+      "stdout": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-conversation-r1.log",
+        "bytes": 997641,
+        "sha256": "62130dbcf207d6751c7611db79bef594f936ef6d09afa9bb9143815abdce6ef2"
+      },
+      "snapshots": [
+        {
+          "name": "arrival-before-conversation",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 3,
+          "measured_epoch": 3,
+          "town_step_serial": 9,
+          "measurement_serial": 1,
+          "measurement_town_step_serial": 1,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "first-dialogue",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 3,
+          "measured_epoch": 3,
+          "town_step_serial": 414,
+          "measurement_serial": 1,
+          "measurement_town_step_serial": 1,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "radio-topic-dialogue",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 3,
+          "measured_epoch": 3,
+          "town_step_serial": 526,
+          "measurement_serial": 1,
+          "measurement_town_step_serial": 1,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "after-continue",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 6,
+          "measured_epoch": 6,
+          "town_step_serial": 777,
+          "measurement_serial": 2,
+          "measurement_town_step_serial": 688,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "after-continue-again-dialogue",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 6,
+          "measured_epoch": 6,
+          "town_step_serial": 850,
+          "measurement_serial": 2,
+          "measurement_town_step_serial": 688,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "final-closed-save",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 6,
+          "measured_epoch": 6,
+          "town_step_serial": 1020,
+          "measurement_serial": 2,
+          "measurement_town_step_serial": 688,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        }
+      ],
+      "photo_count": 4,
+      "limits": "No car, commute, human controller, listening, FPS or appearance acceptance. Existing separate commute/LOD/sole/schedule contract retains its own scope. No native pose modification, new quest, full matrix, installation or release. A closed dialogue is saved; an open modal is not claimed persistent."
+    },
+    {
+      "name": "r11-integrated-journey-r1",
+      "scope": "COMMUTE_API_LOD_SOLES_SCHEDULE_CONTINUE",
+      "checks": 685,
+      "selftests": 1723,
+      "walk_metres": 9.324696418014934,
+      "contract_seconds": 29.93303921498591,
+      "engine_wall_seconds": 53.15568290598458,
+      "actual_exit_code": 0,
+      "contention": [],
+      "raw": {
+        "path": "/tmp/S47-radio-r11-journey-r1/Saved/RadioWomanContract/01A188B33D2E79439D2815A3867865FA/result.json",
+        "bytes": 34715630,
+        "sha256": "adccf074b54d9475ee6e146f71ae059ed2ace579c5eaa1011e4a7aee76e71246"
+      },
+      "acceptance": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-journey-r1.acceptance.json",
+        "bytes": 93872304,
+        "sha256": "dc2ce3c9a221236be70b5d0198f3fbcb35066c044977a7c329aece27c1826ede"
+      },
+      "guard": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-journey-r1.result.json",
+        "bytes": 3541,
+        "sha256": "6aaf4f378ced7e981f63ca3acbda6a5a485aaadfd76e3a064fdf3e8f8ad4cd92"
+      },
+      "stdout": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-journey-r1.log",
+        "bytes": 480911,
+        "sha256": "487bdee590b5145c592f443dc4d8a7138d1ce34117fdc366ff3c51ac2de09b1c"
+      },
+      "snapshots": [
+        {
+          "name": "arrival-present",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 5,
+          "measured_epoch": 5,
+          "town_step_serial": 27,
+          "measurement_serial": 2,
+          "measurement_town_step_serial": 20,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": true,
+          "independent_sole_sides": [
+            {
+              "side": 0,
+              "rays": 48,
+              "minimum_gap_cm": -0.3179842389344003,
+              "maximum_gap_cm": 0.31798787167929277
+            },
+            {
+              "side": 1,
+              "rays": 48,
+              "minimum_gap_cm": -0.23012387178721383,
+              "maximum_gap_cm": 0.23012619284247648
+            }
+          ]
+        },
+        {
+          "name": "after-continue-present",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 9,
+          "measured_epoch": 9,
+          "town_step_serial": 955,
+          "measurement_serial": 3,
+          "measurement_town_step_serial": 927,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": true,
+          "independent_sole_sides": [
+            {
+              "side": 0,
+              "rays": 48,
+              "minimum_gap_cm": -0.3179842389344003,
+              "maximum_gap_cm": 0.31798787167929277
+            },
+            {
+              "side": 1,
+              "rays": 48,
+              "minimum_gap_cm": -0.23012387178721383,
+              "maximum_gap_cm": 0.23012619284247648
+            }
+          ]
+        },
+        {
+          "name": "clock-fixture-0",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 9,
+          "measured_epoch": 9,
+          "town_step_serial": 1110,
+          "measurement_serial": 3,
+          "measurement_town_step_serial": 927,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-1",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 9,
+          "measured_epoch": 9,
+          "town_step_serial": 1197,
+          "measurement_serial": 3,
+          "measurement_town_step_serial": 927,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-2",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 9,
+          "measured_epoch": 9,
+          "town_step_serial": 1280,
+          "measurement_serial": 3,
+          "measurement_town_step_serial": 927,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-3",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 9,
+          "measured_epoch": 9,
+          "town_step_serial": 1358,
+          "measurement_serial": 3,
+          "measurement_town_step_serial": 927,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-4",
+          "asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+          "active": true,
+          "area_epoch": 9,
+          "measured_epoch": 9,
+          "town_step_serial": 1438,
+          "measurement_serial": 3,
+          "measurement_town_step_serial": 927,
+          "measured_seat_binding_valid": true,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        }
+      ],
+      "photo_count": 5,
+      "limits": null
+    },
+    {
+      "name": "r11-integrated-off-r1",
+      "scope": "EXPLICIT_OFF_FALLBACK",
+      "checks": 64,
+      "selftests": 1723,
+      "walk_metres": 0,
+      "contract_seconds": 14.596453166974243,
+      "engine_wall_seconds": 36.86056693899445,
+      "actual_exit_code": 0,
+      "contention": [],
+      "raw": {
+        "path": "/tmp/S47-radio-r11-off-r1/Saved/RadioWomanContract/01A188B40F097EECA6FD3FE0158DAC30/result.json",
+        "bytes": 27183,
+        "sha256": "d1974dc19fcaf667dc65622051bc7c00ec08c444d243d3eaf1905079274e5496"
+      },
+      "acceptance": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-off-r1.acceptance.json",
+        "bytes": 72407,
+        "sha256": "a8de1baf754b36c9e878b134a90efd6f3281c780b1d17aa302a0dcf4ed8da86d"
+      },
+      "guard": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-off-r1.result.json",
+        "bytes": 3541,
+        "sha256": "c1f45857a0f7725b0a8b94d287c67f45a830a4bef81c1ac10052fbc1531d6db6"
+      },
+      "stdout": {
+        "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/r11-integrated-r1/r11-integrated-off-r1.log",
+        "bytes": 474902,
+        "sha256": "706ae6ff782633ea2bcca25df65628ffdeb4da32b65f2682ca77d3648207aa71"
+      },
+      "snapshots": [
+        {
+          "name": "arrival-present",
+          "asset": "",
+          "active": false,
+          "area_epoch": 5,
+          "measured_epoch": 0,
+          "town_step_serial": 0,
+          "measurement_serial": null,
+          "measurement_town_step_serial": null,
+          "measured_seat_binding_valid": null,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-0",
+          "asset": "",
+          "active": false,
+          "area_epoch": 5,
+          "measured_epoch": 0,
+          "town_step_serial": 0,
+          "measurement_serial": null,
+          "measurement_town_step_serial": null,
+          "measured_seat_binding_valid": null,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-1",
+          "asset": "",
+          "active": false,
+          "area_epoch": 5,
+          "measured_epoch": 0,
+          "town_step_serial": 0,
+          "measurement_serial": null,
+          "measurement_town_step_serial": null,
+          "measured_seat_binding_valid": null,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-2",
+          "asset": "",
+          "active": false,
+          "area_epoch": 5,
+          "measured_epoch": 0,
+          "town_step_serial": 0,
+          "measurement_serial": null,
+          "measurement_town_step_serial": null,
+          "measured_seat_binding_valid": null,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-3",
+          "asset": "",
+          "active": false,
+          "area_epoch": 5,
+          "measured_epoch": 0,
+          "town_step_serial": 0,
+          "measurement_serial": null,
+          "measurement_town_step_serial": null,
+          "measured_seat_binding_valid": null,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        },
+        {
+          "name": "clock-fixture-4",
+          "asset": "",
+          "active": false,
+          "area_epoch": 5,
+          "measured_epoch": 0,
+          "town_step_serial": 0,
+          "measurement_serial": null,
+          "measurement_town_step_serial": null,
+          "measured_seat_binding_valid": null,
+          "independent_shoe_contact_complete": null,
+          "independent_sole_sides": []
+        }
+      ],
+      "photo_count": 0,
+      "limits": null
+    }
+  ],
+  "images": [
+    {
+      "file": "r11-physical-bench-approach.png",
+      "original": {
+        "path": "/tmp/S47-radio-r11-conversation-r1/Saved/RadioWomanConversation/01A188B275C87596A318D7DDDF131C71/physical-bench-approach.png",
+        "bytes": 1388222,
+        "sha256": "f60f30c1f40dea0dfa210a72f790079ed45386f141deeaa526c2250e6d93136a"
+      },
+      "copy_sha256": "f60f30c1f40dea0dfa210a72f790079ed45386f141deeaa526c2250e6d93136a",
+      "opened": true
+    },
+    {
+      "file": "r11-after-continue.png",
+      "original": {
+        "path": "/tmp/S47-radio-r11-journey-r1/Saved/RadioWomanContract/01A188B33D2E79439D2815A3867865FA/after-continue.png",
+        "bytes": 1436179,
+        "sha256": "254371a0e197892256db4486d51bee7074d378263c57496b9bb4b96b24d4cc20"
+      },
+      "copy_sha256": "254371a0e197892256db4486d51bee7074d378263c57496b9bb4b96b24d4cc20",
+      "opened": true
+    }
+  ],
+  "visual_review": {
+    "opened_conversation_pngs": 4,
+    "opened_journey_pngs": 5,
+    "status": "FAIL",
+    "reason": "To synlige hudgliper mellom krage og øvre erme i faktisk R11nativefigur. Ny målt skulderkappe kreves før samlet utseendeaksept.",
+    "contact_and_radio": "Faktiske føtter, plassering, radio og ny Enter/Fortsett har uavhengig fysisk/funksjonelt bevis; kontakt-PASS innebærer ikke klesaksept.",
+    "known_runtime_warning": "RT AlwaysResidentGeometry rundt85MiB/400MiB, ingen FPS-aksept."
+  },
+  "unverified": [
+    "R12 klesretting og nativebake",
+    "Full utseende-/side-/håndfitaksept",
+    "Pakket kandidat og planlagt samlet CinemaART01-prøve",
+    "Menneskelig input og lytting",
+    "FPS og fullmatrise",
+    "Installert standard og offentlig release fra denne leveransen"
+  ],
+  "delivery": "PR224 er fortsatt utkast, dette er et internt faktisk checkpoint, ikke ferdig HUM01."
+}
