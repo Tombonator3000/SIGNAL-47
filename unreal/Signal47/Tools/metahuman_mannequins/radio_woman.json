@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "radio_woman",
+  "status": "authoring_contract_unverified",
+  "engine": "5.8.4",
+  "source_inventory": "Signal47-mannequins-20261029/source-inventory.json",
+  "source_body_fbx_sha256": "292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92",
+  "private_root": "/Game/MetaHumans/Mannequins/RadioWoman",
+  "output_name": "SM_RadioWoman_Seated",
+  "sources": {
+    "body": "/Game/MetaHumans/MHC_Waitress/Body/SKM_MHC_Waitress_BodyMesh",
+    "face": "/Game/MetaHumans/MHC_Waitress/Face/SKM_MHC_Waitress_FaceMesh",
+    "skeleton": "/Game/MetaHumans/Common/Female/Medium/NormalWeight/Body/metahuman_base_skel",
+    "hair_near": "/Game/MetaHumans/MHC_Waitress/Grooms/Hair_M_Layered_CardsMesh_Group0_LOD1",
+    "hair_far": "/Game/MetaHumans/MHC_Waitress/Grooms/Hair_M_Layered_CardsMesh_Group0_LOD3",
+    "brows_near": "/Game/MetaHumans/MHC_Waitress/Grooms/Eyebrows_M_SlightArch_CardsMesh_Group0_LOD1",
+    "brows_far": "/Game/MetaHumans/MHC_Waitress/Grooms/Eyebrows_M_SlightArch_CardsMesh_Group0_LOD3",
+    "brows_groom": "/Game/MetaHumans/MHC_Waitress/Grooms/Eyebrows_M_SlightArch",
+    "hair_material": "/Game/MetaHumans/Waitress/Uniform/M_Waitress_HairCards"
+  },
+  "pose": {
+    "method": "native_ref_skeleton_component_space_limb_aim_and_two_bone_ik",
+    "units": "UE centimetres",
+    "output_axes": "+X forward, +Y right, +Z up; origin is seat, not feet",
+    "pelvis_above_seat_cm": 8.0,
+    "thigh_drop_degrees": 3.0,
+    "knee_splay_cm": 1.5,
+    "hand_forward_cm": 27.0,
+    "hand_side_cm": 16.0,
+    "hand_above_pelvis_cm": 8.0,
+    "elbow_forward_cm": 5.0,
+    "elbow_side_cm": 34.0,
+    "elbow_above_pelvis_cm": 24.0,
+    "max_hand_target_error_cm": 0.05,
+    "max_shared_reference_error_cm": 0.025,
+    "max_shared_reference_angle_degrees": 0.02,
+    "no_stretching": true,
+    "facial_expression": "actual face reference pose, no RigLogic or animation evaluation",
+    "correctives": "reference local transforms follow their posed parent; no dynamic RBF evaluation"
+  },
+  "lods": [
+    {"overall_source_lod": 1, "cards": "near", "screen_size": 1.0, "max_triangles": 150000},
+    {"overall_source_lod": 3, "cards": "far", "screen_size": 0.25, "max_triangles": 70000},
+    {"overall_source_lod": 5, "cards": "far", "screen_size": 0.07, "max_triangles": 40000}
+  ],
+  "materials": {
+    "M_RW_Coat": {"color": [0.07, 0.095, 0.115], "roughness": 0.88},
+    "M_RW_Trousers": {"color": [0.045, 0.039, 0.032], "roughness": 0.86},
+    "M_RW_Shoe": {"color": [0.016, 0.012, 0.010], "roughness": 0.57},
+    "M_RW_Trim": {"color": [0.052, 0.064, 0.072], "roughness": 0.9},
+    "M_RW_Button": {"color": [0.034, 0.028, 0.023], "roughness": 0.55}
+  },
+  "integration_limits": {
+    "anchor": "world.town.woman",
+    "proxy": "world.town.proxies.woman",
+    "preserve_radio_nodes": [1484, 1485],
+    "mixed_radio_and_shoes_node": 1484,
+    "do_not_hide_entire_mixed_node": true,
+    "schedule_owner": "FS47Town::SetPeople",
+    "runtime_integrated": false,
+    "waitress_unchanged": true,
+    "eyelashes": "No separate authored card mesh found; no strands are silently converted",
+    "requires_visual_review": ["coat and thigh intersections", "hands beside original lap radio", "neutral eyes and face", "seat and shoe contact", "hair and brow coverage", "all three LOD silhouettes"]
+  }
+}

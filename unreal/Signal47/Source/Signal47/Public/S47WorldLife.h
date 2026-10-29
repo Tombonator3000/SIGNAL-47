@@ -32,6 +32,9 @@ public:
 	/** main.ts step(): the world's own life this frame (after the story, the radio and the night's things). */
 	void Step(double Dt);
 	static bool SelfTest(TArray<FString>& Lines);
+	/** FX-01: the meteor passage's saved state (Flow: meteorPassage), without the sky's header. */
+	bool PassageDone() const;
+	void PassageReset(bool bDone);
 
 	TSharedPtr<FS47Sky> Sky;
 	TSharedPtr<FS47Backdrop> Backdrop;
@@ -84,4 +87,7 @@ private:
 	FVector CamPos() const;
 	FVector CamDir() const;
 	void TestFlags(double Dt);
+	/** -S47MeteorPassageContract: stepped after the sky's clock each frame (S47MeteorPassageTest.cpp). */
+	TFunction<void(double)> PassageTest;
+	TFunction<void(double)> MakePassageContract();
 };

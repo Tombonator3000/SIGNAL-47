@@ -7,6 +7,11 @@ public class Signal47 : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Json", "Slate", "SlateCore" });
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "RHI", "ApplicationCore", "JsonUtilities", "UMG", "RenderCore", "ImageWrapper", "AudioMixer", "MoviePlayer", "HairStrandsCore", "AnimGraphRuntime", "Niagara" });
+		if (Target.bBuildEditor)
+		{
+			// HUM-01 private pose conversion is authoring code, absent from the game binary.
+			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "MeshUtilities", "RawMesh", "AnimationCore", "AssetRegistry" });
+		}
 		// (Unreal only) where the free models stand, read at run time (S47Props.h)
 		RuntimeDependencies.Add("$(ProjectDir)/Config/Props/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/Free/*.json", StagedFileType.UFS);
