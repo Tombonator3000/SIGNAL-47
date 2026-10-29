@@ -404,7 +404,7 @@ void US47Flow::Boot()
 		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); }
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine)) M->Spine->Begin(nullptr,true); }
 		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
 		{
 		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
@@ -730,7 +730,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
  // Before SC01: its normal round counts the evening schedule as part of the work.
  if (M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
- if (M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty() || FParse::Param(FCommandLine::Get(),TEXT("S47SpineContract"))));
+ if (M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()));
  if (M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
 
 	// put the player back where they stood, if the restored world lets them stand there
