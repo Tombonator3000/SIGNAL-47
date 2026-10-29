@@ -29,7 +29,8 @@ KNOWN_ATTRIBUTES = {
     '.corner_vert': ('CORNER', 'INT'), '.corner_edge': ('CORNER', 'INT'),
     'UVMap': ('CORNER', 'FLOAT2'), 'custom_normal': ('CORNER', 'INT16_2D'),
     'material_index': ('FACE', 'INT'), 'sharp_face': ('FACE', 'BOOLEAN'),
-    # normals_split_custom_set may create edge splits when encoding normals.
+    # The normal setter may create sharp flags; original edge semantics are
+    # restored after it encodes only the new, disconnected donor islands.
     'sharp_edge': ('EDGE', 'BOOLEAN'),
     **{name: (domain, 'BOOLEAN') for name, domain in SELECTION_ATTRIBUTES.items()},
 }
@@ -166,6 +167,10 @@ def mesh_snapshot(mesh, include_normals=True):
     faces = [tuple(p.vertices) for p in mesh.polygons]
     uvs = {layer.name: [tuple(v.uv) for v in layer.data] for layer in mesh.uv_layers}
     assert all(len(face) == 3 for face in faces), 'production geometry must remain triangulated'
+    custom_normals_raw = None
+    if 'custom_normal' in schema:
+        custom_normals_raw = [0] * (len(mesh.loops) * 2)
+        mesh.attributes['custom_normal'].data.foreach_get('value', custom_normals_raw)
     snapshot = {'positions': positions, 'faces': faces, 'uvs': uvs,
                 'loop_vertices': [loop.vertex_index for loop in mesh.loops],
                 'edges': [tuple(edge.vertices) for edge in mesh.edges],
@@ -176,6 +181,7 @@ def mesh_snapshot(mesh, include_normals=True):
                 'material_indices': [p.material_index for p in mesh.polygons],
                 'materials': [m.name if m else None for m in mesh.materials],
                 'has_custom_normals': mesh.has_custom_normals,
+                'custom_normals_raw': custom_normals_raw,
                 'attribute_schema': schema,
                 'selection_attributes': {name: [bool(value.value) for value in mesh.attributes[name].data]
                                          for name in SELECTION_ATTRIBUTES if name in schema},
@@ -189,10 +195,13 @@ def mesh_snapshot(mesh, include_normals=True):
 
 def check_source_prefix(before, after, label):
     assert after['materials'] == before['materials'], (label, 'material slots changed')
-    for key in ('faces', 'loop_vertices', 'loop_starts', 'loop_totals', 'smooth', 'material_indices', 'loop_edge_keys'):
+    for key in ('faces', 'edges', 'loop_vertices', 'loop_starts', 'loop_totals', 'smooth', 'material_indices', 'loop_edge_keys'):
         assert after[key][:len(before[key])] == before[key], (label, 'original prefix changed', key)
     assert all(after['uvs'][key][:len(values)] == values for key, values in before['uvs'].items()), (label, 'original atlas UV changed')
     assert all(after['attribute_schema'].get(name) == kind for name, kind in before['attribute_schema'].items()), (label, 'attribute schema lost')
+    if before['custom_normals_raw'] is not None:
+        assert after['custom_normals_raw'] is not None, (label, 'custom normals lost')
+        assert after['custom_normals_raw'][:len(before['custom_normals_raw'])] == before['custom_normals_raw'], (label, 'original raw custom-normal prefix changed')
     edge_by_key = {tuple(sorted(edge)): i for i, edge in enumerate(after['edges'])}
     assert len(edge_by_key) == len(after['edges']), (label, 'duplicate replacement edges')
     for name, values in before['selection_attributes'].items():
@@ -204,6 +213,9 @@ def check_source_prefix(before, after, label):
     if before['sharp_edges'] is not None:
         assert all(after['sharp_edges'][edge_by_key[tuple(sorted(edge))]] == value
                    for edge, value in zip(before['edges'], before['sharp_edges'])), (label, 'original sharp edges changed')
+    elif after['sharp_edges'] is not None:
+        assert not any(after['sharp_edges'][edge_by_key[tuple(sorted(edge))]]
+                       for edge in before['edges']), (label, 'previously smooth source edge became sharp')
 
 
 def append_service_pads(mesh, snapshot, source_island, contract):
@@ -307,11 +319,33 @@ def append_service_pads(mesh, snapshot, source_island, contract):
         edge_index = {key: i for i, key in enumerate(edge_keys)}
         actual_edge_keys = [tuple(sorted(edge.vertices)) for edge in new.edges]
         assert len(actual_edge_keys) == len(edge_keys) and set(actual_edge_keys) == set(edge_keys), 'edge connectivity changed'
+        assert [tuple(edge.vertices) for edge in new.edges][:len(snapshot['edges'])] == snapshot['edges'], 'original edge order changed'
         if sharp_edges is not None:
             if 'sharp_edge' not in new.attributes:
                 new.attributes.new(name='sharp_edge', type='BOOLEAN', domain='EDGE')
             new.attributes['sharp_edge'].data.foreach_set('value', [sharp_edges[edge_index[key]] for key in actual_edge_keys])
-        new.normals_split_custom_set(expected_normals)
+        # Blender5.2.2's setter averages/re-encodes smooth fans even on an exact
+        # unchanged copy (measured A/B probe). The fresh-mesh raw-copy probe C
+        # preserves every old corner exactly. Encode only new islands here;
+        # old corners are placeholders until their original short2 data and
+        # original sharp-edge semantics have both been restored.
+        old_corners = len(snapshot['loop_vertices'])
+        original_raw = snapshot['custom_normals_raw']
+        assert original_raw is not None, 'source custom-normal buffer required'
+        new.normals_split_custom_set([(0., 0., 0.)] * old_corners + expected_normals[old_corners:])
+        normal_attribute = new.attributes['custom_normal']
+        assert (normal_attribute.domain, normal_attribute.data_type) == ('CORNER', 'INT16_2D')
+        encoded = [0] * (len(new.loops) * 2)
+        normal_attribute.data.foreach_get('value', encoded)
+        encoded[:len(original_raw)] = original_raw
+        normal_attribute.data.foreach_set('value', encoded)
+        assert [tuple(edge.vertices) for edge in new.edges][:len(snapshot['edges'])] == snapshot['edges'], 'normal encoding changed original edge order'
+        if 'sharp_edge' in new.attributes:
+            attribute = new.attributes['sharp_edge']
+            flags = [bool(value.value) for value in attribute.data]
+            for i in range(len(snapshot['edges'])):
+                flags[i] = snapshot['sharp_edges'][i] if snapshot['sharp_edges'] is not None else False
+            attribute.data.foreach_set('value', flags)
         for name, values in selections.items():
             domain = SELECTION_ATTRIBUTES[name]
             attribute = new.attributes.get(name) or new.attributes.new(name=name, type='BOOLEAN', domain=domain)
@@ -374,6 +408,7 @@ def repair(args, report):
     for name in ['SM_Sierra_Office', 'SM_Sierra_Glass', 'SM_Sierra_Room02', 'SM_Sierra_Room04', 'SM_Sierra_Room07']:
         assert not objects[name].vertex_groups, (name, 'unsupported vertex groups')
         snap = mesh_snapshot(objects[name].data)
+        assert snap['custom_normals_raw'] is not None, (name, 'original INT16_2D corner normals required')
         assert len(snap['faces']) == manifest['parts'][name]['triangles']
         snapshots[name] = snap
         moves, islands = plan_moves(name, snap['positions'], snap['faces'], contract, repaired)
@@ -449,15 +484,12 @@ def repair(args, report):
     bpy.data.meshes.remove(old_mesh)
     replacement.name = old_name
     assert len(bpy.data.meshes) == 24, 'replacement must not leave a 25th mesh datablock'
-    # The other four parts only translate whole islands. Restore their original
-    # normals explicitly too; translation must not change authored shading.
-    for name in snapshots:
-        if name != 'SM_Sierra_Office':
-            objects[name].data.normals_split_custom_set(expected_normals[name])
-            objects[name].data.update()
+    # The other four parts only translate whole islands. Their original short2
+    # buffers and sharp flags remain untouched; passing them through the normal
+    # setter would change authored directions even without topology changes.
     after_snapshots = {}
     report['corner_normal_preservation'] = {
-        'method': 'Fresh empty Mesh.from_pydata; original topology/attributes plus inverse-transpose donor normals',
+        'method': 'Fresh empty Mesh.from_pydata; exact original INT16_2D normal prefix and edge semantics; setter only for new inverse-transpose donor normals',
         'max_component_tolerance': NORMAL_COMPONENT_EPS, 'min_normalized_dot': 1 - NORMAL_DOT_EPS,
         'in_memory': {}, 'reopened_saved_blend': {}}
     for name, before in snapshots.items():
@@ -477,6 +509,8 @@ def repair(args, report):
         report['corner_normal_preservation']['in_memory'][name] = {
             'source_had_custom_normals': before['has_custom_normals'],
             'output_has_custom_normals': after['has_custom_normals'],
+            'original_raw_int16_prefix_identical': after['custom_normals_raw'][:len(before['custom_normals_raw'])] == before['custom_normals_raw'],
+            'original_edge_order_identical': after['edges'][:len(before['edges'])] == before['edges'],
             'original': normal_check(normals[:old_corners], expected_normals[name][:old_corners], name + ':original'),
             'added': normal_check(normals[old_corners:], expected_normals[name][old_corners:], name + ':added')}
     scene = bpy.data.scenes['Sierra production exports']
@@ -543,6 +577,7 @@ def repair(args, report):
         report['corner_normal_preservation']['reopened_saved_blend'][name] = {
             'original': normal_check(normals[:old_corners], expected_normals[name][:old_corners], name + ':saved-original'),
             'added': normal_check(normals[old_corners:], expected_normals[name][old_corners:], name + ':saved-added'),
+            'raw_int16_and_sharp_flags_identical_to_verified_in_memory': True,
             'topology_uv_material_smoothing_identical': True}
     assert sha(saved_blend) == saved_hash, 'saved source verification changed output file'
     assert sha(package / 'Sierra_Production.blend') == report['source_blend_sha256'], 'immutable input changed'
