@@ -26,9 +26,10 @@ namespace S47Timeline
   const double Limit = bBeforeResidual ? Residual(true) - 6 : Departure;
   return FMath::Max(Current, FMath::Min(Requested, Limit));
  }
- inline double Chapter3(bool E) { return E ? 2 * 3600 + 20 * 60 : 3 * 3600 + 40 * 60; }
- inline double Chapter4(bool E) { return E ? 3 * 3600 + 20 * 60 : 4 * 3600 + 35 * 60; }
- inline double Chapter5(bool E) { return E ? 4 * 3600 + 10 * 60 : 5 * 3600; }
+ // Evening cases follow the approved SC01 to SC13 timeline (29 October 2026): SC09, SC10, SC12.
+ inline double Chapter3(bool E) { return E ? 4 * 3600 + 25 * 60 : 3 * 3600 + 40 * 60; }
+ inline double Chapter4(bool E) { return E ? 4 * 3600 + 50 * 60 : 4 * 3600 + 35 * 60; }
+ inline double Chapter5(bool E) { return E ? 5 * 3600 + 12 * 60 : 5 * 3600; }
  // Reserve the exact final 47 seconds for the CB approach even on a slow drive.
  inline double ApproachClock(double Current, double Pace, bool bCbSkipped)
  {
