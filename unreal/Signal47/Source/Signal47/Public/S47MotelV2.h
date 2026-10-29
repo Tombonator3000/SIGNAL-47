@@ -19,6 +19,10 @@ public:
 private:
  TWeakObjectPtr<AS47Web> Web;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts,Retired;
+ TArray<int32> RetiredNamedRoots;
+ struct FMovedInteraction { int32 Node; FVector Position,Scale; };
+ TArray<FMovedInteraction> MovedInteractions;
+ int32 PayphoneNode=INDEX_NONE;
  // Door leaves can remove earlier rows from the shared walk array. Identity must survive reindexing.
  TArray<FString> DisabledColliderIds;
  TArray<FIntPoint> RetiredSignGlows,RetiredSignPools;

@@ -297,7 +297,8 @@ double US47Night::Dawn() const
 
 double US47Night::SaroFloorAt(const AS47Web* Web, double X, double Z)
 {
-	// The rear motel deck and paths are outside the legacy court rectangle. Water has no floor override.
+	// Native motel slabs, asphalt and pool approaches supply their measured visible top heights.
+	// This comes before the legacy flat court fallback; water has no walking floor override.
 	const double MotelFloor = FS47MotelV2::FloorAt(X, Z);
 	if (FMath::IsFinite(MotelFloor)) return MotelFloor;
 	// world/Grounds.ts floorAt: the height of the ground under the player anywhere in SARO's scene
