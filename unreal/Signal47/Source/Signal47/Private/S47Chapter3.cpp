@@ -1168,12 +1168,12 @@ bool US47Chapter3::UseBench()
 	}
 	if (Busy == TEXT("tank")) { Toast(TEXT("The tank is sealed. Give it a moment.")); return true; }
 	if (!Busy.IsEmpty()) return true;
-	if (S.SurveyVersion == 1 && S.Dev <= 1 && M && M->Web && M->Web->IsDoorOpen(TEXT("lab")))
+	if (S.SurveyVersion == 1 && S.Dev <= 1 && M && M->Web && M->Web->IsDoorOpen(TEXT("labDoor")))
 	{ Toast(TEXT("Darkroom. Shut the door before making the field prints."), 3.5f); return true; }
 	const int32 Step = S.Dev == 0 ? 0 : S.Dev == 1 ? 2 : 3;
 	S47Panels::WetBench(U, TEXT("FRAMES 03 + 04 / STATION 01 FIELD ROLL"), Step, FString(), [this]
 	{
-		if (S.SurveyVersion == 1 && S.Dev <= 1 && M && M->Web && M->Web->IsDoorOpen(TEXT("lab")))
+		if (S.SurveyVersion == 1 && S.Dev <= 1 && M && M->Web && M->Web->IsDoorOpen(TEXT("labDoor")))
 		{ Toast(TEXT("Darkroom. Shut the door before making the field prints."), 3.5f); return; }
 		const int32 Generation = DevGeneration;
 		US47Audio* A = Au();
@@ -1383,7 +1383,7 @@ void US47Chapter3::Update(double Dt, double T)
 	if (!bActive) return;
 	US47Station* St = Site();
 	if (S.SurveyVersion == 1 && S.Stage == TEXT("develop") && (S.Dev == 1 || !Busy.IsEmpty())
-		&& M && M->Web && M->Web->IsDoorOpen(TEXT("lab"))) FogFieldPrints();
+		&& M && M->Web && M->Web->IsDoorOpen(TEXT("labDoor"))) FogFieldPrints();
 	if (FS47Obj Handset = St ? St->Obj(TEXT("fieldPhoneHandset")) : FS47Obj())
 	{
 		Handset.SetRotZ(bRinging && S.SurveyVersion == 0 ? FMath::Sin(T * 70) * 0.05 * (FMath::Sin(T * 2.2) > -0.2 ? 1 : 0) : 0);

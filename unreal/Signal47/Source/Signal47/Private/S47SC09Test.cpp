@@ -323,11 +323,13 @@ struct FS47SC09Test
   if(Stage==45)
   {
    if(!Check(!C->SaveBlock().IsEmpty(),TEXT("transient development cannot be saved")))return;
-   M->Web->SetDoorOpen(TEXT("lab"),true,true);Next(46,.4);return;
+   M->Web->SetDoorOpen(TEXT("lab"),true,true);
+   if(!Check(M->Web->DoorStates().FindRef(TEXT("lab"))&&M->Web->IsDoorOpen(TEXT("labDoor")),TEXT("actual darkroom door is open by saved id and production interaction id")))return;
+   Next(46,.4);return;
   }
   if(Stage==46)
   {
-   if(!Check(C->S.Dev==0&&C->S.Fogged==1&&C->Busy.IsEmpty()&&!C->bRinging&&C->S.F3&&C->S.F4,TEXT("opening actual lab door fogs only paper, retaining both negatives")))return;
+   if(!Check(C->S.Dev==0&&C->S.Fogged==1&&C->Busy.IsEmpty()&&!C->bRinging&&C->S.F3&&C->S.F4,FString::Printf(TEXT("opening actual lab door fogs only paper, retaining both negatives: dev=%d fogged=%d busy=%s"),C->S.Dev,C->S.Fogged,*C->Busy)))return;
    M->Web->SetDoorOpen(TEXT("lab"),false,true);if(!Restore(TEXT("fogged-paper-negatives-retained")))return;Next(48);return;
   }
   if(UsePair(48,TEXT("wetBench"),50,false))return;
