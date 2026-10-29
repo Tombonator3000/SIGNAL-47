@@ -58,8 +58,34 @@
     "startup_dump_block_ms": 36868.58,
     "new_fatal": false,
     "diner_acceptance": "UNVERIFIED",
-    "settings_changed": false
+    "settings_changed": false,
+    "actual_png_output": [
+      2560,
+      1440
+    ]
   },
   "local_receipts": "~/scratch-bm/Signal47-diner-crash-20261029",
-  "source_note": "Tall fra komplette UE-krasjlogger og hashbundet gammel binær. RHI Reserved summeres ikke som faktisk VRAM. Ingen motor-/driverbytte eller installasjon."
+  "source_note": "Tall fra komplette UE-krasjlogger og hashbundet gammel binær. RHI Reserved summeres ikke som faktisk VRAM. Ingen motor-/driverbytte eller installasjon.",
+  "baseline_old_ultra_tsr100_r2": {
+    "status": "AVBRUTT AV EGEN OVERVÅKER",
+    "quality": "Samme gamle Ultra-preset; bare TSR History100 overstyrt og sent bekreftet med SetByConsole",
+    "actual_png_output": [
+      2560,
+      1440
+    ],
+    "global_gpu_peak_mib": 9533,
+    "global_gpu_min_free_mib": 322,
+    "contention": [],
+    "new_fatal": false,
+    "allocation_warnings": 0,
+    "nanite_feedback_messages": 146,
+    "nanite_observed_peaks": {
+      "nodes": 990,
+      "candidate_clusters": 8599,
+      "visible_clusters": 1421
+    },
+    "route": "road før diner; ingen dineraksept",
+    "conclusion": "TSR100 er ikke tilstrekkelig tiltak. Produksjons-TSR er ikke endret.",
+    "payload_unchanged_files": 7
+  }
 }

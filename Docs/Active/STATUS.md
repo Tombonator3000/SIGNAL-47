@@ -38,7 +38,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Nedlastingssiden har
 
 Codex sin nattsekvens er målrettet levert gjennom PR209. Claudes videre kvelds-/SC03-arbeid har egen arbeidskopi. Den lokale arbeidsdelingen føres i [OPPGAVER](../../unreal/OPPGAVER.md). En arbeidsgren, en kjørende test eller en manusendring er ikke en ferdig leveranse. Neste statusoppdatering må vise nøyaktig testet kandidat, merge og eventuell installasjon hver for seg.
 
-[Toms feilrapport med seks originalbilder og to krasjvedlegg](Reports/PLAYTEST_TODO_2026-10-28.md) står åpen: diner-krasj, motellnivå/kollisjon/TV/basseng, SARO-dialog/dørhint, trafodeler, Caliche og trafikksignal. Begge krasjutdrag peker mot Vulkan-bufferallokering. Vedleggene alene beviser ikke samtidig editor eller endelig rotårsak. Tidligere beståtte matriser lukker ikke disse nye funnene.
+[Toms feilrapport med seks originalbilder og to krasjvedlegg](Reports/PLAYTEST_TODO_2026-10-28.md) står åpen: diner-krasj, motellnivå/kollisjon/TV/basseng, SARO-dialog/dørhint, trafodeler, Caliche og trafikksignal. Gjenfunne komplette krasjlogger bekrefter Vulkan-OOM ved henholdsvis 128 og 256 MiB. Riktige binærer/debugfiler og den komplette andre pakken er sikret. En ny isolert Ultra-prøve nådde kritisk GPU-minnebruk allerede på veien uten andre UE-jobber og ble avsluttet kontrollert av egen overvåker. Begrunnet retting og dineraksept gjenstår; historisk samtidig editor er fortsatt uavklart. Tidligere beståtte matriser lukker ikke disse nye funnene.
 
 ## Kontrollgrunnlag og begrensninger
 
@@ -50,4 +50,4 @@ Dette endrer ingen av spillpakkenes leveringsnivåer ovenfor.
 
 R2-installasjonen er dokumentert i den lokale bevismappen `/home/tom/scratch-bm/Signal47-graphics-settings-20261028`: `acceptance-r1.json`, `installation-r1.json`, `installed-verification-r1.json` og `post-prune-verification.json`. Installert skrive-/lesekontroll består 47 + 15; alle 79 personlige Saved-filer (105 noder) er uendret også etter opprydding. [Rapporten i repoet](Guides/GRAPHICS_SETTINGS.md) beskriver omfang og begrensninger.
 
-Denne dokumentryddingen leser kvitteringer og kilder. Den starter ingen ny motorjobb, spilltest, installasjon eller offentlig release. Menneskelig full gjennomspilling, fysisk gamepad, subjektiv lytting og ytelse på andre PC-er skal ikke regnes som bestått uten egne faktiske bevis.
+Dokumentryddingens kontroll omfattet kvitteringer og kilder. De senere målrettede natt- og krasjprøvene har egne avgrensninger ovenfor; ingen senere installasjon eller offentlig release er gjort. Menneskelig full gjennomspilling, fysisk gamepad, subjektiv lytting og ytelse på andre PC-er skal ikke regnes som bestått uten egne faktiske bevis.
