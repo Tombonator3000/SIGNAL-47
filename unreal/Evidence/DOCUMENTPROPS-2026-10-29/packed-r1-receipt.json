@@ -1,0 +1,1353 @@
+{
+  "status": "PASS_TARGETED_SIX_DESK_PAPERS_PACKED_R1",
+  "runtime_source_commit": "343e594d277ceb04b09e585994967e8297c6b99d",
+  "editor_source_commit": "8577fce385af7dd59af6dec2d745cc600314d145",
+  "candidate": {
+    "source_head": "343e594d277ceb04b09e585994967e8297c6b99d",
+    "source_inputs_unchanged": true,
+    "source_input_count": 13468,
+    "candidate": "/home/tom/scratch-bm/Signal47-art01-takeover-20261029/candidate-r1/Linux",
+    "files": {
+      "Signal47.sh": {
+        "bytes": 243,
+        "sha256": "d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a"
+      },
+      "CREDITS.txt": {
+        "bytes": 9189,
+        "sha256": "474e58d961da8b67089d17bc6b4be9fc0d1a1a7b88e83043ed67eb3222b50773"
+      },
+      "Signal47/Binaries/Linux/Signal47": {
+        "bytes": 314438016,
+        "sha256": "4cc8ecfd63c6754a50783d3678f0dd1ee3a7bccc71e8ebcd5b33dbce670304ff"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.pak": {
+        "bytes": 1269450169,
+        "sha256": "568515ff7b2d4ab373f726ba5fcca7fc9104cbb70ede593d5f588c626eb4a8b1"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.ucas": {
+        "bytes": 2684336032,
+        "sha256": "c004517adee60fa74bb8a2f5694727646ed72e32043e50ef60eeb97c1073d743"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.utoc": {
+        "bytes": 2662636,
+        "sha256": "97b47261ee4048757688000f3ad2818054bda2eccab952a51941d6a0b4aa8fb6"
+      },
+      "Signal47/Content/Paks/global.ucas": {
+        "bytes": 3328960,
+        "sha256": "50dea5d47d8287547a1f54ffdcc586a51f5abc2200379bcd6cde9de2d89df7bf"
+      },
+      "Signal47/Content/Paks/global.utoc": {
+        "bytes": 806,
+        "sha256": "71f67d30b5739166280def3250438e3a5a2a41066a44f612825c66bbdcb008a4"
+      }
+    },
+    "installed": false,
+    "public_release": false
+  },
+  "runtime_input_count": 13468,
+  "runtime_input_bytes": 8380827507,
+  "guards": {
+    "docs-package-r1": {
+      "returncode": 0,
+      "wall_seconds": 404.4181059029652,
+      "contention": [],
+      "stop_reason": null,
+      "performance_status": "UNCONTENDED"
+    },
+    "docs-packed-route-r1": {
+      "returncode": 0,
+      "wall_seconds": 63.113053417007904,
+      "contention": [],
+      "stop_reason": null,
+      "performance_status": "UNCONTENDED"
+    },
+    "docs-packed-production-r1": {
+      "returncode": 0,
+      "wall_seconds": 57.46895538602257,
+      "contention": [],
+      "stop_reason": null,
+      "performance_status": "UNCONTENDED"
+    }
+  },
+  "physical": {
+    "runtime_source_commit": "343e594d277ceb04b09e585994967e8297c6b99d",
+    "selftests": 1720,
+    "guard": {
+      "returncode": 0,
+      "wall_seconds": 63.113053417007904,
+      "contention": [],
+      "stop_reason": null,
+      "performance_status": "UNCONTENDED"
+    },
+    "preserved_sources_and_textures": [
+      {
+        "source": "ArtSource/Documents/jpg/01-dale-folder.jpg",
+        "source_sha256": "42a98fd95bbca403dea86ffc0acd76b54121bd661d95d3dd9990235c900360d3",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleFolder.uasset",
+        "native_asset_sha256": "2276b3b018cc843a54a5e84ab99f73b102702b66ed2e3ca182494ba9f7001f0d"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/05-ev-dale-index.jpg",
+        "source_sha256": "2e0e861b193900848065e0f34f6b99b87d27a9aef49c1a49c6ee2fc2af3ca758",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleIndex.uasset",
+        "native_asset_sha256": "8663f15aea063b72c30b76fda5dfce62116c1d733fa150da995de9e39e538c3e"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/06-ev-dale-clippings.jpg",
+        "source_sha256": "98d31418a547b572e594c12d3558983f18612c64d4c798f92b9923c1ce92a4cf",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleClippings.uasset",
+        "native_asset_sha256": "91603b9802aba4c3b0a1e21816b9deabbbcace51cf7623a11932222b1110cd7e"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/08-ev-dale-note.jpg",
+        "source_sha256": "31e2c8a9de21295c175c4d552a6091b0e67d936639019c8ccd0a5bfacaacad80",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleNote.uasset",
+        "native_asset_sha256": "f5fb70a6e58c5063d813d0cdb2b463dcffae621b246b9761c92fc2b02bc859d4"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/07-ev-dale-contact.jpg",
+        "source_sha256": "bb68473ae88378d3b0a064f69c95cc1604cb5615bc074dc1479d2fcaf1758f1a",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleContact.uasset",
+        "native_asset_sha256": "2ec6975bc57a777b8dc538cc90a535f5641761465279c3a80b7b97a7821c0f12"
+      },
+      {
+        "source": "ArtSource/EnvironmentGraphics/jpg/42-service-form.jpg",
+        "source_sha256": "ab7c9fe3087b55af9800614ba0d8fc013b125347396aea647aefcfbdf8e3af4f",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_ServiceForm.uasset",
+        "native_asset_sha256": "2bd245fcd8f67a54414f6d1a12197974950cb166c1298e98c586e85386ab9822"
+      }
+    ],
+    "installed": false,
+    "public_release": false,
+    "status": "PASS_TARGETED_SIX_PHYSICAL_DOCUMENTS",
+    "original_runtime_result_sha256": "c61d747be509c3d2e21933e5f05688d90137ea1667d19fee5ba53dd1214016a4",
+    "original_runtime_result": "/tmp/S47-art01-takeover-packed-route-r1/Saved/DaleDocumentsContract/01A187164B36744CBA1AD60A6B8C29B4/result.json",
+    "result": {
+      "status": "PASS",
+      "checks": 580,
+      "freshDiskFlowRestores": 5,
+      "nativeOfficeWalkMetres": 4.545208664525732,
+      "actualSlateScrollKeys": 47,
+      "physicalDeskPapers": [
+        {
+          "interaction": "office:desk",
+          "expectedDocument": "EV_DALE_INDEX",
+          "picked": "office:desk",
+          "playerFocused": "office:desk",
+          "positionThree": [
+            0.3195060735621108,
+            0,
+            8.778792789210266
+          ],
+          "eyeUE": [
+            31.95060735621108,
+            877.8792789210266,
+            163.07789653384032
+          ],
+          "forwardUE": [
+            0.06408470817776979,
+            0.6556359671621569,
+            -0.7523527289384373
+          ],
+          "approachWalkMetres": 0.25474638059862853,
+          "modalTitle": "Field checks / working index",
+          "actualSlateBodyLines": 8,
+          "officeAfterUse": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": false,
+            "clippingsRead": false,
+            "noteRead": false,
+            "contactRead": false,
+            "fieldSheet": false,
+            "readDocuments": [],
+            "hasFieldSheet": false,
+            "departed": false
+          },
+          "status": "PASS"
+        },
+        {
+          "interaction": "office:index",
+          "expectedDocument": "EV_DALE_INDEX",
+          "picked": "office:index",
+          "playerFocused": "office:index",
+          "positionThree": [
+            0.0868061050475268,
+            0,
+            8.91958096002725
+          ],
+          "eyeUE": [
+            8.68061050475268,
+            891.958096002725,
+            162.15240299907933
+          ],
+          "forwardUE": [
+            -0.33820524594391066,
+            0.5536027516692483,
+            -0.7610132751537615
+          ],
+          "approachWalkMetres": 0.2719753378317247,
+          "modalTitle": "Field checks / working index",
+          "actualSlateBodyLines": 8,
+          "officeAfterUse": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": false,
+            "noteRead": false,
+            "contactRead": false,
+            "fieldSheet": false,
+            "readDocuments": [],
+            "hasFieldSheet": false,
+            "departed": false
+          },
+          "status": "PASS"
+        },
+        {
+          "interaction": "office:clippings",
+          "expectedDocument": "EV_DALE_CLIPPINGS",
+          "picked": "office:clippings",
+          "playerFocused": "office:clippings",
+          "positionThree": [
+            0.5217285182323931,
+            0,
+            8.996209437976017
+          ],
+          "eyeUE": [
+            52.172851823239306,
+            899.6209437976016,
+            162.218239551314
+          ],
+          "forwardUE": [
+            0.23880591968717246,
+            0.653194774440104,
+            -0.718545975819575
+          ],
+          "approachWalkMetres": 0.441621363979702,
+          "modalTitle": "Local cuttings / dates to check",
+          "actualSlateBodyLines": 11,
+          "officeAfterUse": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": false,
+            "contactRead": false,
+            "fieldSheet": false,
+            "readDocuments": [],
+            "hasFieldSheet": false,
+            "departed": false
+          },
+          "status": "PASS"
+        },
+        {
+          "interaction": "office:note",
+          "expectedDocument": "EV_DALE_NOTE",
+          "picked": "office:note",
+          "playerFocused": "office:note",
+          "positionThree": [
+            0.35235968651401633,
+            0,
+            8.92879960057068
+          ],
+          "eyeUE": [
+            35.235968651401635,
+            892.8799600570679,
+            162.1006951841458
+          ],
+          "forwardUE": [
+            0.5602732703450903,
+            0.4541668793442348,
+            -0.6926949604577303
+          ],
+          "approachWalkMetres": 0.1822906671682949,
+          "modalTitle": "A note beneath the inspection sheets",
+          "actualSlateBodyLines": 6,
+          "officeAfterUse": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": false,
+            "fieldSheet": false,
+            "readDocuments": [],
+            "hasFieldSheet": false,
+            "departed": false
+          },
+          "status": "PASS"
+        },
+        {
+          "interaction": "office:contact",
+          "expectedDocument": "EV_DALE_CONTACT",
+          "picked": "office:contact",
+          "playerFocused": "office:contact",
+          "positionThree": [
+            0.5426114978406191,
+            0,
+            8.922544414549872
+          ],
+          "eyeUE": [
+            54.261149784061914,
+            892.2544414549872,
+            162.10479545839664
+          ],
+          "forwardUE": [
+            0.22018356604950007,
+            0.5038516005568069,
+            -0.8352561055497103
+          ],
+          "approachWalkMetres": 0.1903546139845549,
+          "modalTitle": "Field contact / keep with the radio",
+          "actualSlateBodyLines": 5,
+          "officeAfterUse": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": false,
+            "readDocuments": [],
+            "hasFieldSheet": false,
+            "departed": false
+          },
+          "status": "PASS"
+        },
+        {
+          "interaction": "office:folder",
+          "expectedDocument": "EV_DALE_INDEX",
+          "picked": "office:folder",
+          "playerFocused": "office:folder",
+          "positionThree": [
+            0.157033453715797,
+            0,
+            8.970432572032593
+          ],
+          "eyeUE": [
+            15.7033453715797,
+            897.0432572032593,
+            162.21324522004042
+          ],
+          "forwardUE": [
+            -0.1094993943500504,
+            0.5519985062831385,
+            -0.8266241780266024
+          ],
+          "approachWalkMetres": 0.38854047889275733,
+          "modalTitle": "Field checks / working index",
+          "actualSlateBodyLines": 8,
+          "officeAfterUse": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "status": "PASS"
+        }
+      ],
+      "documentArtAudits": 11,
+      "scope": "API-driven native Walker entry and six distinct desk approaches; actual camera ray/Focus and ordinary Player OnUse for all six art papers; registered document and actual Slate title/body; focused PageDown/PageUp/Escape through private-library content end and existing typed document at large scale; original five isolated Writer/fresh-reader/full-Flow cohorts with source/disk/restored office facts and actual art audits. Initial chapter prerequisites and corridor start are explicit fixtures; no human-input, listening, FPS, VHS, photos, ARRAY-01 encounter, full-matrix, installation or release claim."
+    },
+    "disk_receipts": {
+      "unread-menu": {
+        "source_disk_restored_office": {
+          "cohort": "unread-menu",
+          "sourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "liveSourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "diskOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "restoredOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          }
+        },
+        "office_receipt_sha256": "6d4c090895ec2bfe6915a08d1164c249e65c10c469a55a6dea2ac6f58f993b7d",
+        "loaded_game_state_sha256": "0b6710832ab2807675f0e9eb0eafd36775dc87fe5f3cbea4c8f15bac61a91118"
+      },
+      "partial-one-read": {
+        "source_disk_restored_office": {
+          "cohort": "partial-one-read",
+          "sourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "liveSourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "diskOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "restoredOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          }
+        },
+        "office_receipt_sha256": "c39649b0cde7edee68d9cfedb41842c054480b4419e8c1e2a1409a153d0fbd56",
+        "loaded_game_state_sha256": "5bb2017fa44ca28be5c60c7812bc4656b7fa90ffffda236f98aa2e69d87f23e1"
+      },
+      "legacy-no-read-list": {
+        "source_disk_restored_office": {
+          "cohort": "legacy-no-read-list",
+          "sourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "liveSourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "diskOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "restoredOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          }
+        },
+        "office_receipt_sha256": "4580b3d6833c5bf70766c85693650a373afdc4e8314e14aaed712823a1ae8687",
+        "loaded_game_state_sha256": "d570786601bc012c661d0dac8251d39520984a1e414d1eedccb3e6d0f6783cdf"
+      },
+      "genuine-partial-restored": {
+        "source_disk_restored_office": {
+          "cohort": "genuine-partial-restored",
+          "sourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "liveSourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "diskOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "restoredOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          }
+        },
+        "office_receipt_sha256": "02c707c5bf97378e66afc96b177b77aa1d54d6a97a7d6abf75fbf2db9bbee841",
+        "loaded_game_state_sha256": "5bb2017fa44ca28be5c60c7812bc4656b7fa90ffffda236f98aa2e69d87f23e1"
+      },
+      "all-documents-read": {
+        "source_disk_restored_office": {
+          "cohort": "all-documents-read",
+          "sourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG",
+              "EV_DALE_WITNESS",
+              "EV_DALE_EXPLANATIONS",
+              "EV_DALE_FRAME18",
+              "EV_DALE_TAPELOAN",
+              "EV_DALE_UNSENT",
+              "EV_DALE_ARRAY_SERVICE"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "liveSourceOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG",
+              "EV_DALE_WITNESS",
+              "EV_DALE_EXPLANATIONS",
+              "EV_DALE_FRAME18",
+              "EV_DALE_TAPELOAN",
+              "EV_DALE_UNSENT",
+              "EV_DALE_ARRAY_SERVICE"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "diskOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG",
+              "EV_DALE_WITNESS",
+              "EV_DALE_EXPLANATIONS",
+              "EV_DALE_FRAME18",
+              "EV_DALE_TAPELOAN",
+              "EV_DALE_UNSENT",
+              "EV_DALE_ARRAY_SERVICE"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          },
+          "restoredOffice": {
+            "v": 1,
+            "routeVersion": 1,
+            "routeRequired": false,
+            "key": true,
+            "unlocked": true,
+            "everOpened": true,
+            "entered": true,
+            "doorInspected": false,
+            "doorOpen": true,
+            "drawerOpen": true,
+            "deskSeen": true,
+            "indexRead": true,
+            "clippingsRead": true,
+            "noteRead": true,
+            "contactRead": true,
+            "fieldSheet": true,
+            "fieldSheetAt": 10524.21229456691,
+            "readDocuments": [
+              "EV_DALE_SKYLOG",
+              "EV_DALE_WITNESS",
+              "EV_DALE_EXPLANATIONS",
+              "EV_DALE_FRAME18",
+              "EV_DALE_TAPELOAN",
+              "EV_DALE_UNSENT",
+              "EV_DALE_ARRAY_SERVICE"
+            ],
+            "hasFieldSheet": true,
+            "departed": false
+          }
+        },
+        "office_receipt_sha256": "bd99133f7b934ce6a398883d9e976b7f4e36e65e6b7507189b249200ca069758",
+        "loaded_game_state_sha256": "8ef9fca2eb23dd82eb422918f42adc9630e1646b82a0d2ea767aa3a63114aad2"
+      }
+    },
+    "art_audits": {
+      "after-all-documents-read.art.json": "0cead79154b1a81dfeafb0fd899a72967529036c11cb6b9e69a0ecd16a3abaae",
+      "after-genuine-partial-restored.art.json": "441ee65ba215dd3a5e02e209c9ef0b4e77c36c0434736cf1f9e830ea0453123a",
+      "after-legacy-no-read-list.art.json": "94fa6e06ff275037e53b2933bb997a4db462302673d90c6ed3c415d699371c5d",
+      "after-partial-one-read.art.json": "76c1c028820e878ff4b95cbc2d0cb06ae07df5f3ab38e5c2c2baf8c9435bb3c3",
+      "after-unread-menu.art.json": "477c4b829da0347ba545e0c857d110f9ce6ad6f071c5697ca917b5c63b5085fb",
+      "before-all-documents-read.art.json": "13a43e268d2ac7ff5a4bd7fb1f156f5fed61b010d229d5242e45fa9870229c70",
+      "before-genuine-partial-restored.art.json": "5470d1cee1aab5f3aa2f20428d34079bbd1a7d682dced3737f24e8ce1de2b47a",
+      "before-legacy-no-read-list.art.json": "a41cef5ca165f60136d5233abe1b4810a214311f5798097d0aece4b48c93bdf4",
+      "before-partial-one-read.art.json": "391ca8d025860b943310328eb9219af13c9a620014230d7ccabcb217b2e06fe9",
+      "before-unread-menu.art.json": "1e7d68feb283d3c21783efec93f11b2499dd969be3d214a8539ded71a95ffce1",
+      "entered-before-desk-papers.art.json": "b4ba75e93348966420044432a6c5d0bab2f5015cc9a6bf1d9de421e8e1f3caeb"
+    },
+    "photos": {
+      "document-07-large-bottom.png": {
+        "sha256": "fcd4676735cefea159496a1cf29679bc4f304214e46ce58beb5e0bb8ac27eb15",
+        "bytes": 519873,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "service-log-large-top.png": {
+        "sha256": "42969a7723c0a16fa3a40a636c34264da4c4cb24b004cf8c803b5011163d7fad",
+        "bytes": 518614,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-06-large-bottom.png": {
+        "sha256": "3aed94fdd988977b5519ccc0416d7e83015c92e27a8a7b9465c8f9975c4e17af",
+        "bytes": 528775,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-06-large.png": {
+        "sha256": "e90fce562c6e368279ba400ef0a316468444d4c0ec5d5726d147ee42707dffb8",
+        "bytes": 530918,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-05-large-bottom.png": {
+        "sha256": "10c8dadb039022243e0ee366711feebff663dff9cb1717358ad1df73f0c4a0d3",
+        "bytes": 502193,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-05-large.png": {
+        "sha256": "bc000c678e1c71fac2c493780c74affa6cab7299f3e7fb0ad2b61347df6a6d66",
+        "bytes": 503772,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-04-large-bottom.png": {
+        "sha256": "a78b0d65d98a4e8cab88c82d2193ddf96e262628abb0c7b8479f171a61e5b98b",
+        "bytes": 498229,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-04-large.png": {
+        "sha256": "05d6158fdcca1476fbf33d03e7847a3b1d269ed84f4564ad444bac8f1885c14a",
+        "bytes": 500461,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-03-large-bottom.png": {
+        "sha256": "61ce6b3df0cde3fa4768bcfe3f0eb9061188beddac5186d8a7050b6fe814cc49",
+        "bytes": 497349,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-03-large.png": {
+        "sha256": "7451f266b7e7b4863313b622c3960b314d464699cc7b4ed1bb985b42f59167f6",
+        "bytes": 488678,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-02-large-bottom.png": {
+        "sha256": "0c9171663372faf61d476da51f071582b18d242fd365bf38b67e8f0bbceb2a80",
+        "bytes": 499948,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-02-large.png": {
+        "sha256": "684c555aaf59b9e021d72efcb99276ea8a7e32f35b9c5c2f48f8c00e4602a0b9",
+        "bytes": 499557,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-01-large-bottom.png": {
+        "sha256": "ee7e0a6204ab2f92ef8866553ba53dae2ffff9064304bcd76cf54dc293cd92e5",
+        "bytes": 500418,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-01-large.png": {
+        "sha256": "d4f8a8fa5deba0a09446f8f8fefb843152f7a3560ff368014948e2bc35134272",
+        "bytes": 500557,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-00-large-bottom.png": {
+        "sha256": "9c91e207df5542e88b7f23790dd5802d2ca7777af40f925829cddb2224511caf",
+        "bytes": 505779,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "document-00-large.png": {
+        "sha256": "1cc14b562ef0362971382b1fa5b40ef5b96b294642673e39d6d638c8bf7d6096",
+        "bytes": 508788,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "skylog-normal.png": {
+        "sha256": "97a2d6460fb391e2fb4b230b1c983e301d1836bfbf1c59c1134c77a531f1e970",
+        "bytes": 463642,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "private-folder-unread.png": {
+        "sha256": "371f5bd67c4608f8bbdc405ae027fda2548b562dc226016706403cb93becc0cd",
+        "bytes": 579706,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "desk-paper-05.png": {
+        "sha256": "6cd0d55ab1d76a17f451960e3c0347209eb42022ef031f36ae9516f2e5a022bb",
+        "bytes": 502170,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "desk-paper-04.png": {
+        "sha256": "df78a9d1da7325b77603151b5b10f327b70f7949bae4aab80d38d088285f232c",
+        "bytes": 460050,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "desk-paper-03.png": {
+        "sha256": "e808922d5ce88b3e0c0f9b1c62ef93fa1d319436dba98e17bb8bd8964a00be29",
+        "bytes": 439547,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "desk-paper-02.png": {
+        "sha256": "d91408c45d80b16f9fe69a58fc746af191fcb9a1cb63b1d007880aa7595cc0ad",
+        "bytes": 406241,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "desk-paper-01.png": {
+        "sha256": "8a62db15ede325cff53c7d2bcf39139b395d5c40687452debf3a344e88f0a7bf",
+        "bytes": 518173,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "desk-paper-00.png": {
+        "sha256": "1f6464dae0b4a5ca73b43f5e2810255e9c1df936404c77fe28253fdb82981f80",
+        "bytes": 431037,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      }
+    },
+    "limits": "API-driven native Walker entry and six distinct desk approaches; actual camera ray/Focus and ordinary Player OnUse for all six art papers; registered document and actual Slate title/body; focused PageDown/PageUp/Escape through private-library content end and existing typed document at large scale; original five isolated Writer/fresh-reader/full-Flow cohorts with source/disk/restored office facts and actual art audits. Initial chapter prerequisites and corridor start are explicit fixtures; no human-input, listening, FPS, VHS, photos, ARRAY-01 encounter, full-matrix, installation or release claim."
+  },
+  "views": {
+    "runtime_source_commit": "343e594d277ceb04b09e585994967e8297c6b99d",
+    "selftests": 1720,
+    "guard": {
+      "returncode": 0,
+      "wall_seconds": 57.46895538602257,
+      "contention": [],
+      "stop_reason": null,
+      "performance_status": "UNCONTENDED"
+    },
+    "preserved_sources_and_textures": [
+      {
+        "source": "ArtSource/Documents/jpg/01-dale-folder.jpg",
+        "source_sha256": "42a98fd95bbca403dea86ffc0acd76b54121bd661d95d3dd9990235c900360d3",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleFolder.uasset",
+        "native_asset_sha256": "2276b3b018cc843a54a5e84ab99f73b102702b66ed2e3ca182494ba9f7001f0d"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/05-ev-dale-index.jpg",
+        "source_sha256": "2e0e861b193900848065e0f34f6b99b87d27a9aef49c1a49c6ee2fc2af3ca758",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleIndex.uasset",
+        "native_asset_sha256": "8663f15aea063b72c30b76fda5dfce62116c1d733fa150da995de9e39e538c3e"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/06-ev-dale-clippings.jpg",
+        "source_sha256": "98d31418a547b572e594c12d3558983f18612c64d4c798f92b9923c1ce92a4cf",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleClippings.uasset",
+        "native_asset_sha256": "91603b9802aba4c3b0a1e21816b9deabbbcace51cf7623a11932222b1110cd7e"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/08-ev-dale-note.jpg",
+        "source_sha256": "31e2c8a9de21295c175c4d552a6091b0e67d936639019c8ccd0a5bfacaacad80",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleNote.uasset",
+        "native_asset_sha256": "f5fb70a6e58c5063d813d0cdb2b463dcffae621b246b9761c92fc2b02bc859d4"
+      },
+      {
+        "source": "ArtSource/Documents/jpg/07-ev-dale-contact.jpg",
+        "source_sha256": "bb68473ae88378d3b0a064f69c95cc1604cb5615bc074dc1479d2fcaf1758f1a",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_DaleContact.uasset",
+        "native_asset_sha256": "2ec6975bc57a777b8dc538cc90a535f5641761465279c3a80b7b97a7821c0f12"
+      },
+      {
+        "source": "ArtSource/EnvironmentGraphics/jpg/42-service-form.jpg",
+        "source_sha256": "ab7c9fe3087b55af9800614ba0d8fc013b125347396aea647aefcfbdf8e3af4f",
+        "native_asset": "unreal/Signal47/Content/Signal47/Art/Documents/T_Doc_ServiceForm.uasset",
+        "native_asset_sha256": "2bd245fcd8f67a54414f6d1a12197974950cb166c1298e98c586e85386ab9822"
+      }
+    ],
+    "installed": false,
+    "public_release": false,
+    "status": "PASS_TARGETED_DOCUMENT_VIEWS",
+    "photos": {
+      "day-office-contact-close.png": {
+        "sha256": "fdcb5cb17eb5c6cde403d0478bb828250002c30305623ab5aa901c21f547d624",
+        "bytes": 1219736,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "day-office-desk-left.png": {
+        "sha256": "2be1d80d5e7fdb3230638547041da9ea96dcfd46e36589cd2bbb0cf606c11027",
+        "bytes": 1312058,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "day-office-desk-right.png": {
+        "sha256": "db9bc6ae9074601149ab9bf49ecb982cae46e3572d43bc9b8fa3a7add53cfec7",
+        "bytes": 1253038,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "day-office-desk.png": {
+        "sha256": "76f4d01088616efe46ca9621c52aa2625b225fa98c5cd335868300590bab4366",
+        "bytes": 1292693,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "dusk-office-contact-close.png": {
+        "sha256": "85fc3b7a3185af8c5e589e75ab59af3c8fa311800ad26e8b3dce22e942b50119",
+        "bytes": 1213343,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "dusk-office-desk-left.png": {
+        "sha256": "d2451cf69896e425d0de00a166140be427547800ed51818f1e485ed51d482a01",
+        "bytes": 1303739,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "dusk-office-desk-right.png": {
+        "sha256": "9b47291e1b597ef4a31ebe9520319b614cd82d0c0d8eaa7883771292cb661063",
+        "bytes": 1242465,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "dusk-office-desk.png": {
+        "sha256": "66ea32fab6814b7cbe4bcbff89ee9f8ca39d5097d68ec6476a9433be765dd8e7",
+        "bytes": 1212973,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "night-office-contact-close.png": {
+        "sha256": "536f857f31d3b39970d5f1849bc7c529a9b967ccfe55c12735134f03e9855ad4",
+        "bytes": 1211407,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "night-office-desk-left.png": {
+        "sha256": "aeee42ca723a551babf9d7049a2be680518ad489670883a5e9ba0056fc576f0b",
+        "bytes": 1299976,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "night-office-desk-right.png": {
+        "sha256": "6daa1e77b56acce274306e05fe44857f84273846f9e3982723b67dff62f434a0",
+        "bytes": 1243227,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "night-office-desk.png": {
+        "sha256": "d92a224f930b7569a4860e3ac8583da653128ef4bdf2cecc76fbcda3d8fb48a3",
+        "bytes": 1211677,
+        "width": 1280,
+        "height": 720,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      }
+    },
+    "actual_material_audits": 72,
+    "normal_driver_exit_after_complete_last_png": true,
+    "limits": "Twelve static camera fixtures in day/dusk/night; no physical use or human-input claim from this run. UV rows are actual material readback; Engine Plane UV corners were measured by the original import."
+  },
+  "visual_review": {
+    "status": "PASS_PLACEMENT_AND_DOCUMENT_MODAL_WITH_LIMITS",
+    "reviewed_at": "2026-10-29T11:06:25.194185+01:00",
+    "method": "Alle tolv originale pakkede 1280x720-bilder er åpnet med view_image. Tre faktiske UI-bilder er også åpnet. Ingen bilder er beskåret eller retusjert.",
+    "images": {
+      "day-office-contact-close.png": "fdcb5cb17eb5c6cde403d0478bb828250002c30305623ab5aa901c21f547d624",
+      "day-office-desk-left.png": "2be1d80d5e7fdb3230638547041da9ea96dcfd46e36589cd2bbb0cf606c11027",
+      "day-office-desk-right.png": "db9bc6ae9074601149ab9bf49ecb982cae46e3572d43bc9b8fa3a7add53cfec7",
+      "day-office-desk.png": "76f4d01088616efe46ca9621c52aa2625b225fa98c5cd335868300590bab4366",
+      "dusk-office-contact-close.png": "85fc3b7a3185af8c5e589e75ab59af3c8fa311800ad26e8b3dce22e942b50119",
+      "dusk-office-desk-left.png": "d2451cf69896e425d0de00a166140be427547800ed51818f1e485ed51d482a01",
+      "dusk-office-desk-right.png": "9b47291e1b597ef4a31ebe9520319b614cd82d0c0d8eaa7883771292cb661063",
+      "dusk-office-desk.png": "66ea32fab6814b7cbe4bcbff89ee9f8ca39d5097d68ec6476a9433be765dd8e7",
+      "night-office-contact-close.png": "536f857f31d3b39970d5f1849bc7c529a9b967ccfe55c12735134f03e9855ad4",
+      "night-office-desk-left.png": "aeee42ca723a551babf9d7049a2be680518ad489670883a5e9ba0056fc576f0b",
+      "night-office-desk-right.png": "6daa1e77b56acce274306e05fe44857f84273846f9e3982723b67dff62f434a0",
+      "night-office-desk.png": "d92a224f930b7569a4860e3ac8583da653128ef4bdf2cecc76fbcda3d8fb48a3"
+    },
+    "findings": "Seks ulike ark ligger på riktig papir med riktig orientering og sideforhold, uten synlig z-kamp eller sveving. Overskrifter og skjemafelt er lesbare i nærbildene. Liten brødtekst er ikke jevnt lesbar på bordavstand i 1280x720. Eksisterende lampe dekker indeksarkets øvre del. Dokumentmodalen og servicearkets faktiske topp/bunn er gjennomsett.",
+    "existing_warning": "Ikke-kritisk RT-always-resident-advarsel i tidligere editorbilder; ingen OOM- eller FPS-aksept utledes.",
+    "human_input": false,
+    "fps_acceptance": false
+  },
+  "raw_receipts_sha256": {
+    "docs-packed-route-r1.acceptance.json": "e18504de5bd1936f77ac662fb027faf3614a846ddb9688e08883c9071c7921a6",
+    "docs-packed-production-r1.acceptance.json": "3f056bcba26b56c1861bd87eb08f72656866cd75e3f2db1130a4257df0bdd04e",
+    "candidate-r1-manifest.json": "fe1478a6d0df7a6eb7dffc3d9a7acc7c8c4f82564debb0c8f5da61d664b0a702",
+    "runtime-inputs-r1.json": "1550fab22045ad53ea2887e0e3fd5b9aba11ba17932daac409a8f6ef16a70f00",
+    "source-backup-receipt.json": "505e267e6e4232e9290b7fae0db6b079a5b4d2f3f8d9f28f50d9858a0785f340"
+  },
+  "cleanup": {
+    "at": "2026-10-29T11:04:47.624248+01:00",
+    "status": "PASS_ONLY_PLANNED_PAYLOAD_REMOVED",
+    "removed_files": [
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Binaries/Linux/Signal47",
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Binaries/Linux/Signal47.debug",
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Content/Paks/Signal47-Linux.pak",
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Content/Paks/Signal47-Linux.ucas",
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Content/Paks/Signal47-Linux.utoc",
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Content/Paks/global.ucas",
+      "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux/Signal47/Content/Paks/global.utoc"
+    ],
+    "removed_logical_bytes": 4475466770,
+    "all_other_recorded_payloads_sha256_unchanged": true,
+    "fresh_full_installed_saved_file_count": 91,
+    "fresh_full_installed_saved_sha256_unchanged": true,
+    "current": "/home/tom/scratch-bm/Signal47-art01-takeover-20261029/candidate-r1/Linux",
+    "protected_comparator": "/home/tom/scratch-bm/Signal47-graphics-settings-20261028/previous-installed/Linux",
+    "protected_fix01_candidate": "/home/tom/scratch-bm/Signal47-diner-crash-20261029/candidate-r1/Linux",
+    "installed": false,
+    "public_release": false
+  },
+  "installed": false,
+  "public_release": false,
+  "scope": "Kun seks skrivebordsark. Øvrige plakater/bilder, VHS, fotografier, ARRAY01-møtet, fullmatrise, menneskelig input, subjektiv lytting og FPS er ikke akseptert av denne leveransen."
+}
