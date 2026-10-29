@@ -29,9 +29,10 @@ namespace
  // Hint bits, in the order the evening reaches them.
  constexpr int32 HintTicks = 1, HintBroadband = 2, HintStill = 4, HintDrive = 8, HintTube = 16, HintGate = 32;
  const FVector GeneratorAt(4.3, .6, 8.4); // three.js, the standby generator in the pocket behind the control room
- constexpr int32 HintVoice = 64;
+ constexpr int32 HintVoice = 64, HintReel = 128;
+ const FVector RecorderAt(-1.14, 1.0, 10.22); // three.js, the old reel-to-reel on the records-room shelf
  const TCHAR* const DoorLine = TEXT("D01_HANDOVER_001"); // "Reyes? Dale. The logbook should be in front of you."
- constexpr double GenStart = -4 * 3600. - 25 * 60, GenDone = -4 * 3600. - 15 * 60, YardStart = -2 * 3600. - 20 * 60;
+ constexpr double GenStart = -4 * 3600. - 25 * 60, GenDone = -4 * 3600. - 15 * 60, ArchiveStart = -3 * 3600. - 30 * 60, ArchiveDone = -3 * 3600. - 20 * 60, YardStart = -2 * 3600. - 20 * 60;
  // PSR B1133+16 folds at 1.18791 s. The stray ticks fall four, a gap, then seven.
  constexpr double PulsarPeriod = 1.18791;
  const double StrayTicks[] = { 9.30, 9.55, 9.80, 10.05, 11.10, 11.35, 11.60, 11.85, 12.10, 12.35, 12.60 };
@@ -155,7 +156,7 @@ FS47Doc FS47Observing::Chart(int32 I)
 void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
- bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
+ bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Archive = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -167,6 +168,7 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
   HintMask = S47J::Int(Saved, TEXT("hints")); HeldStatus = S47J::Str(Saved, TEXT("status"));
   // A save on generator power comes back running on line power: the room lights are not saved here.
   GenStep = FMath::Clamp(S47J::Int(Saved, TEXT("generator")), 0, 3); if (GenStep == 2) GenStep = 1;
+  Archive = FMath::Clamp(S47J::Int(Saved, TEXT("archive")), 0, 2);
   Yard = FMath::Clamp(S47J::Int(Saved, TEXT("yard")), 0, 2);
   DoorVoice = FMath::Clamp(S47J::Int(Saved, TEXT("doorVoice")), 0, 2);
   if (GenStep == 1 && M && M->Audio) { FS47Sound S; S.Gain = .3f; S.At = GeneratorAt; S.bLoop = true; M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), S); }
@@ -182,7 +184,7 @@ S47J::FObj FS47Observing::Save() const
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version); S47J::Set(O, TEXT("run"), Run); S47J::Set(O, TEXT("step"), int32(StepNow));
  S47J::Set(O, TEXT("elapsed"), Elapsed); S47J::Set(O, TEXT("hints"), HintMask); S47J::Set(O, TEXT("schedule"), bScheduleFiled); S47J::Set(O, TEXT("status"), HeldStatus);
- S47J::Set(O, TEXT("generator"), GenStep); S47J::Set(O, TEXT("yard"), Yard); S47J::Set(O, TEXT("doorVoice"), DoorVoice);
+ S47J::Set(O, TEXT("generator"), GenStep); S47J::Set(O, TEXT("archive"), Archive); S47J::Set(O, TEXT("yard"), Yard); S47J::Set(O, TEXT("doorVoice"), DoorVoice);
  return O;
 }
 
@@ -271,6 +273,12 @@ void FS47Observing::Hint(int32 Bit)
   if (M->Audio && M->Audio->Night) M->Audio->Night->Still();
   M->UI->Toast(TEXT("Outside, the crickets stop. All of them at once."), 4);
  }
+ if (Bit == HintReel)
+ {
+  FS47Sound O; O.Gain = .45f; O.At = RecorderAt;
+  if (M->Audio && !M->Audio->Sfx(TEXT("reel"), O)) M->Audio->Play(TEXT("click"), .5f);
+  M->UI->Toast(TEXT("Behind you the old reel-to-reel on the shelf clicks once. Its take-up spool has moved a quarter turn. The transport is switched off."), 5);
+ }
  if (Bit == HintGate) M->UI->Toast(TEXT("Behind you, chain-link rattles. The array gate you chained stands open. Nobody on the field."), 5);
  if (Bit == HintDrive)
  {
@@ -304,6 +312,7 @@ FString FS47Observing::Label(const FString& Id) const
   if (GenStep == 1) return GenT >= 4 ? TEXT("Transfer the load to the generator") : FString(TEXT("Generator warming up"));
   return GenT >= 3 ? TEXT("Transfer back to line power") : FString(TEXT("On generator power"));
  }
+ if (Id == TEXT("binder")) return Active() && Run == 2 && StepNow == EStep::Tune && Archive == 0 ? FString(TEXT("File the evening's charts in the run binder")) : FString();
  if (!Active() || StepNow != EStep::Data || Id != Runs()[Run].Data) return FString();
  if (Id == TEXT("printer")) return FString::Printf(TEXT("Tear off the %s strip chart"), Runs()[Run].Source);
  return Id == TEXT("crtLeft") ? FString(TEXT("Read the array drive log")) : FString(TEXT("Reduce the hydrogen drift scan"));
@@ -313,6 +322,7 @@ bool FS47Observing::Use(const FString& Id)
 {
  if (Id == TEXT("obs:generator")) { UseGenerator(); return true; }
  if (Label(Id).IsEmpty()) return false;
+ if (Id == TEXT("binder")) { UseBinder(); return true; }
  File();
  return true;
 }
@@ -343,6 +353,9 @@ FString FS47Observing::Objective() const
  if (Run == 1 && StepNow == EStep::Tune && GenStep < 3)
   return GenStep == 0 ? TEXT("CONTROL ROOM // 19:35 WEEKLY GENERATOR TEST ON THE REMOTE PANEL BY THE EAST DOOR")
    : GenStep == 1 ? TEXT("CONTROL ROOM // WHEN THE DIESEL SETTLES, TRANSFER THE LOAD TO THE GENERATOR") : TEXT("CONTROL ROOM // CHECK THE EMERGENCY LIGHTING, THEN TRANSFER BACK TO LINE POWER");
+ if (Run == 2 && StepNow == EStep::Tune && Archive < 2)
+  return Archive == 0 ? TEXT("RECORDS ROOM // 20:30 FILE THE EVENING'S STRIP CHARTS IN THE RUN BINDER, DOWN THE CORRIDOR")
+   : TEXT("RECORDS ROOM // BACK TO THE CONTROL ROOM FOR THE HYDROGEN STRIP");
  if (Run == 3 && StepNow == EStep::Tune && Yard < 2)
   return Yard == 0 ? (M->Web && M->Web->IsDoorOpen(TEXT("fieldGate")) ? TEXT("ARRAY GATE // 21:40 ROUND: THE ARRAY GATE IS OPEN. CLOSE IT") : TEXT("ARRAY GATE // 21:40 ROUND: WALK OUT TO THE ARRAY GATE AND CHECK THE CHAIN"))
    : TEXT("ARRAY GATE // RETURN TO THE CONTROL ROOM");
@@ -359,6 +372,7 @@ TArray<FS47Task> FS47Observing::Tasks() const
  for (int32 I = 0; I < Runs().Num(); ++I)
  {
   if (I == 1) Out.Add({ TEXT("19:35 weekly generator test and transfer"), GenStep >= 3 });
+  if (I == 2) Out.Add({ TEXT("20:30 file the evening's charts in the records room"), Archive >= 2 });
   if (I == 3) Out.Add({ TEXT("21:40 round to the array gate"), Yard >= 2 });
   Out.Add({ Runs()[I].Task, Run > I });
  }
@@ -367,7 +381,7 @@ TArray<FS47Task> FS47Observing::Tasks() const
 
 bool FS47Observing::ChorePending() const
 {
- return StepNow == EStep::Tune && ((Run == 1 && GenStep < 3) || (Run == 3 && Yard < 2));
+ return StepNow == EStep::Tune && ((Run == 1 && GenStep < 3) || (Run == 2 && Archive < 2) || (Run == 3 && Yard < 2));
 }
 
 void FS47Observing::BuildPanel()
@@ -439,6 +453,31 @@ void FS47Observing::UseGenerator()
  Changed();
 }
 
+FS47Doc FS47Observing::RunBinder()
+{
+ FS47Doc D;
+ D.Id = TEXT("obs_runbinder"); D.Title = TEXT("Run binder, April 1986"); D.Kind = TEXT("typed"); D.Stamp = TEXT("RUN BINDER");
+ D.Page = TEXT("SARO RUN BINDER  /  APRIL 1986\n\n13 APR  19:00  3C 286 POINTING CHECK      FILED\n13 APR  19:50  PSR B1133+16 TIMING        FILED\n13 APR  20:45  HI STRIP 12               PENDING\n13 APR  22:05  VIRGO A PHASE CHECK       PENDING\n\n"
+  "Older section, behind the divider:\n\n14 APR 1979  02:10  STATION 01 LAMP CHECK, A AND B NORMAL\n14 APR 1979  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\nStamped in the margin: AMENDED / SERVICE COPY.");
+ D.Transcript = TEXT("The run binder. Tonight's two charts go in behind the April tab. Further back, a page from April 1979 has one line typed over with X's. The stamp beside it says amended, service copy.");
+ return D;
+}
+
+void FS47Observing::UseBinder()
+{
+ AS47Story& S = *M->Story;
+ S.SetClock(FMath::Max(S.Clock(), ArchiveStart));
+ const FS47Doc Doc = RunBinder();
+ S.AddDoc(Doc);
+ if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
+ Archive = 1;
+ S.SetClock(FMath::Max(S.Clock(), ArchiveDone));
+ M->UI->Document(Doc);
+ M->UI->Toast(FString::Printf(TEXT("%s. Charts filed. Next on the schedule: HI strip 12 at 20:45."), *S.ClockText(false)), 4);
+ UE_LOG(LogTemp, Display, TEXT("S47: observing archive filed at clock %.0f"), S.Clock());
+ Changed();
+}
+
 void FS47Observing::StepChores(double Dt)
 {
  BuildPanel();
@@ -452,6 +491,13 @@ void FS47Observing::StepChores(double Dt)
    if (Was > .9 && FlickerT <= .9) { M->Web->SetTube(0, false); Hint(HintTube); }
    if (FlickerT < 0) M->Web->SetTube(0, HeldTubes[0]);
   }
+ }
+ if (Run == 2 && StepNow == EStep::Tune && Archive == 1 && M->Player && M->World && M->World->Area == TEXT("saro") &&
+     FVector2D(M->Player->Pos.X - BinderPoint().X, M->Player->Pos.Z - BinderPoint().Z).Size() > 2.6)
+ {
+  Archive = 2; Hint(HintReel);
+  M->Story->Note(TEXT("20:40. Filed the evening's charts in the run binder. On the way out the old reel-to-reel clicked and its spool moved. Switched off. Cold spool, probably settling."));
+  M->UI->Objective(Objective());
  }
  if (Run != 3 || StepNow != EStep::Tune || Yard >= 2 || !M->Player || !M->World || M->World->Area != TEXT("saro") || !M->Web) return;
  const FVector P = M->Player->Pos;

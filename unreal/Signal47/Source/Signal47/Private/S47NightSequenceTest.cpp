@@ -329,7 +329,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
    {
     Dials(R.P); M->Story->ConsoleAction();
     if (!Check(O.Phase() == FS47Observing::EStep::Tune && O.ChorePending() && M->Story->Rx.Stage == 1,
-        TEXT("neste observasjon venter på faktisk aggregattest eller porterunde"))) return;
+        TEXT("neste observasjon venter på faktisk aggregattest, arkivrunde eller porterunde"))) return;
     M->UI->Close(true);
     if (O.RunIndex() == 1)
     {
@@ -337,6 +337,15 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
      if (!Check(M->Player->Walkable(4.6, .65), TEXT("aggregatpanelets navngitte posisjonsfixture er walkable"))) return;
      UE_LOG(LogTemp, Display, TEXT("S47: night sequence GENERATOR POSITION FIXTURE: 4.6/.65 from the SC01 contract; actual panel rays, warm-up, transfer and line restoration follow"));
      Stage(30, .15); return;
+    }
+    if (O.RunIndex() == 2)
+    {
+     if (!Check(O.ArchiveStep() == 0, TEXT("arkivrunden starter uten tilskrevet credit"))) return;
+     M->Web->SetDoorById(TEXT("south"), true, true); M->Web->SetDoorById(TEXT("records"), true, true);
+     M->Player->Place(-2.4, 9.4, 0); M->Player->Pitch = -.08;
+     if (!Check(M->Player->Walkable(-2.4, 9.4), TEXT("arkivpermens navngitte posisjon er walkable"))) return;
+     UE_LOG(LogTemp, Display, TEXT("S47: night sequence RECORDS POSITION FIXTURE: -2.4/9.4 from the SC01 route with south/records doors opened; actual binder ray and leaving trigger follow"));
+     Stage(50, .2); return;
     }
     if (O.RunIndex() == 3)
     {
@@ -396,6 +405,23 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   M->Player->Place(4.2, 1.6, 0); M->Player->Pitch = -.08;
   Stage(3, .2); return;
  }
+ if (T.Stage == 50)
+ {
+  if (!Pick(TEXT("binder"), FS47Observing::BinderPoint())) return;
+  if (!Check(M->Observing->ArchiveStep() == 1 && M->Story->Clock() >= -3 * 3600. - 20 * 60 && M->Observing->ChorePending(),
+      TEXT("fysisk arkivperm arkiverer kveldens kart kl. 20:30"))) return;
+  M->UI->Close(true);
+  M->Player->Place(-3.9, 5.7, UE_DOUBLE_PI); M->Player->Pitch = -.08;
+  Stage(51, .2); return;
+ }
+ if (T.Stage == 51)
+ {
+  if (M->Observing->ArchiveStep() != 2)
+  { if (T.Elapsed - T.Since > 3) Fail(TEXT("å forlate arkivrommet fullførte ikke arkivrunden")); return; }
+  if (!Check((M->Observing->Hints() & 128) && !M->Observing->ChorePending(), TEXT("spolebåndet klikker én gang og arkivrunden er ferdig før HI-stripen"))) return;
+  M->Player->Place(4.2, 1.6, 0); M->Player->Pitch = -.08;
+  Stage(3, .2); return;
+ }
  if (T.Stage == 40)
  {
   if (M->Observing->YardStep() != 1)
@@ -428,7 +454,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
  }
  if (T.Stage == 4)
  {
-  if (!Check(M->Observing->Done() && M->Observing->GeneratorStep() == 3 && M->Observing->YardStep() == 2 &&
+  if (!Check(M->Observing->Done() && M->Observing->GeneratorStep() == 3 && M->Observing->ArchiveStep() == 2 && M->Observing->YardStep() == 2 &&
       M->Story->Clock() >= -70 * 60 && !M->Substation->HasNormalResult(),
       TEXT("alle fire observasjoner, aggregattesten og porterunden er faktisk gjennomført før nattens feil"))) return;
   Dials(S47Signal::Profiles()[1]); M->Story->ConsoleAction();
