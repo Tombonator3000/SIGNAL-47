@@ -26,6 +26,7 @@ class FS47SaroArrival;
 class FS47SaroSite;
 class FS47FleetParked;
 class FS47TownBuildings;
+class FS47CalicheHomes;
 class FS47MotelV2;
 class FS47RouteNature;
 
@@ -99,6 +100,7 @@ public:
 	FVector HighwayMapEye(const FVector& ThreeEye) const;
 	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
+	bool AuditCalicheHomes(TArray<FString>& Lines) const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
 	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
@@ -314,6 +316,7 @@ private:
 	TSharedPtr<FS47SaroSite> SaroSite;
 	TSharedPtr<FS47FleetParked> FleetParked;
 	TSharedPtr<FS47TownBuildings> TownBuildings;
+	TSharedPtr<FS47CalicheHomes> CalicheHomes;
 	TSharedPtr<FS47MotelV2> MotelV2;
 	TSharedPtr<FS47RouteNature> RouteNature;
 	void BeginProductionViews();

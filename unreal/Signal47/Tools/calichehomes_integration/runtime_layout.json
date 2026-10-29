@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "source_revision": "caliche-homes-20261029-v1",
+  "required_town_native_parts": 28,
+  "houses": ["H01", "H02", "H03", "H04"],
+  "part_roles": ["Shell", "Roof", "Fixtures"],
+  "removed_house_triangles": 528,
+  "removed_sign_triangles": 76,
+  "preserve_stoops": true,
+  "preserve_h02_glass_geo": 1007,
+  "sign_z": {"North": 1895, "South": 2315},
+  "admission": "unchanged"
+}
