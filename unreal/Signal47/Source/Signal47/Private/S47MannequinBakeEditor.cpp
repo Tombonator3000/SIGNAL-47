@@ -15,6 +15,7 @@
 #include "Engine/StaticMeshSourceData.h"
 #include "Engine/World.h"
 #include "HAL/IConsoleManager.h"
+#include "HAL/PlatformProcess.h"
 #include "GameFramework/Actor.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/Material.h"
@@ -30,9 +31,11 @@
 #include "RawMesh.h"
 #include "RHI.h"
 #include "Rendering/SkeletalMeshRenderData.h"
+#include "Rendering/SkeletalMeshModel.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/MemoryWriter.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "StaticMeshCompiler.h"
 #include "StaticMeshAttributes.h"
 #include "StaticMeshResources.h"
@@ -338,6 +341,191 @@ namespace S47MannequinBake
    FJson Cards = Object(); Cards->SetObjectField(TEXT("hair_near"), CardSource(HairNear)); Cards->SetObjectField(TEXT("hair_far"), CardSource(HairFar));
    Cards->SetObjectField(TEXT("brows_near"), CardSource(BrowsNear)); Cards->SetObjectField(TEXT("brows_far"), CardSource(BrowsFar)); Report->SetObjectField(TEXT("card_sources"), Cards);
    return true;
+  }
+  FString InverseReferenceHash(const USkeletalMesh* Mesh) const
+  {
+   TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); int32 Count = Mesh->GetRefBasesInvMatrix().Num(); Writer << Count;
+   for (const FMatrix44f& Matrix : Mesh->GetRefBasesInvMatrix()) { FMatrix44f Copy = Matrix; Writer << Copy; }
+   return Digest(Bytes);
+  }
+  bool FileState(const FString& Path, FJson& Data)
+  {
+   TArray<uint8> Bytes;
+   if (!Need(FFileHelper::LoadFileToArray(Bytes, *Path) && Bytes.Num() > 0, TEXT("actual saved private file readable for SHA1: ") + Path)) return false;
+   Data = Object(); Data->SetStringField(TEXT("path"), FPaths::ConvertRelativePathToFull(Path));
+   Data->SetNumberField(TEXT("bytes"), Bytes.Num()); Data->SetStringField(TEXT("sha1"), Digest(Bytes)); return true;
+  }
+  bool GeometryState(FJson& Data)
+  {
+   FSkeletalMeshModel* Model = Clothes->GetImportedModel(); FSkeletalMeshRenderData* Render = Clothes->GetResourceForRendering();
+   if (!Need(Model && Model->LODModels.Num() == 1 && Render && Render->LODRenderData.Num() == 1 &&
+    Clothes->GetMorphTargets().IsEmpty() && Clothes->GetSkinWeightProfiles().IsEmpty() && Model->LODModels[0].SkinWeightProfiles.IsEmpty(),
+    TEXT("bounded single-LOD clothes has complete import/render data without morphs or alternate skin-weight profiles"))) return false;
+   Data = Object();
+   // Use the engine's complete editor importer serialization, including soft
+   // vertices, all influences, source sections/BoneMaps, maps and attributes.
+   // Name/object paths, rather than process-local name indices, make the hash
+   // comparable in the separate saved reader. No loading archive is used here.
+   TArray<uint8> ImportedBytes; FMemoryWriter ImportedWriter(ImportedBytes, true);
+   FObjectAndNameAsStringProxyArchive ImportedArchive(ImportedWriter, false); Model->Serialize(ImportedArchive, Clothes);
+   // Model::Serialize does not contain the derived LOD vertex-attribute table.
+   // Preserve it explicitly as well, in stable name order.
+   TArray<FString> AttributeNames;
+   for (const auto& Attribute : Model->LODModels[0].VertexAttributes) AttributeNames.Add(Attribute.Key.ToString());
+   AttributeNames.Sort(); ImportedArchive << AttributeNames;
+   for (const FString& Name : AttributeNames)
+   {
+    auto& Attribute = Model->LODModels[0].VertexAttributes.FindChecked(FName(*Name));
+    uint8 Type = uint8(Attribute.DataType); ImportedArchive << Type << Attribute.ComponentCount << Attribute.Values;
+   }
+   if (!Need(!ImportedArchive.IsError(), TEXT("complete imported LOD model serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("imported_model_sha1"), Digest(ImportedBytes));
+   FMeshDescription* Description = Clothes->GetMeshDescription(0);
+   if (!Need(Description != nullptr, TEXT("actual imported clothes MeshDescription available"))) return false;
+   TArray<uint8> DescriptionBytes; FMemoryWriter DescriptionWriter(DescriptionBytes, true);
+   FObjectAndNameAsStringProxyArchive DescriptionArchive(DescriptionWriter, false); Description->Serialize(DescriptionArchive);
+   if (!Need(!DescriptionArchive.IsError(), TEXT("complete source MeshDescription serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("mesh_description_sha1"), Digest(DescriptionBytes));
+   TArray<uint8> RenderBytes; FMemoryWriter RenderWriter(RenderBytes, true);
+   FObjectAndNameAsStringProxyArchive RenderArchive(RenderWriter, false);
+   const auto Buffer = [&](const void* Pointer, int64 Size)
+   {
+    RenderArchive << Size;
+    if (!Need(Size >= 0 && (Size == 0 || Pointer), TEXT("native CPU payload present for complete buffer preservation"))) return false;
+    if (Size) RenderArchive.Serialize(const_cast<void*>(Pointer), Size);
+    return true;
+   };
+   FSkeletalMeshLODRenderData& LOD = Render->LODRenderData[0];
+   const FPositionVertexBuffer& Positions = LOD.StaticVertexBuffers.PositionVertexBuffer;
+   const FStaticMeshVertexBuffer& Vertices = LOD.StaticVertexBuffers.StaticMeshVertexBuffer;
+   const FColorVertexBuffer& Colors = LOD.StaticVertexBuffers.ColorVertexBuffer;
+   const FSkinWeightVertexBuffer& Weights = LOD.SkinWeightVertexBuffer;
+   uint32 VertexCount = LOD.GetNumVertices(), UVCount = Vertices.GetNumTexCoords(), ColorCount = Colors.GetNumVertices();
+   uint32 PositionStride = Positions.GetStride(), ColorStride = Colors.GetStride();
+   bool FullUV = Vertices.GetUseFullPrecisionUVs(), HighTangents = Vertices.GetUseHighPrecisionTangentBasis();
+   bool VariableWeights = Weights.GetVariableBonesPerVertex(); uint32 BoneBytes = Weights.GetBoneIndexByteSize(), WeightBytes = Weights.GetBoneWeightByteSize();
+   uint32 WeightVertices = Weights.GetNumVertices(), MaxInfluences = Weights.GetMaxBoneInfluences();
+   RenderArchive << VertexCount << UVCount << ColorCount << PositionStride << ColorStride << FullUV << HighTangents;
+   RenderArchive << VariableWeights << BoneBytes << WeightBytes << WeightVertices << MaxInfluences;
+   if (!Need(VertexCount > 0 && Positions.GetNumVertices() == VertexCount && Vertices.GetNumVertices() == VertexCount && WeightVertices == VertexCount,
+    TEXT("all original render and weight vertices present"))) return false;
+   if (!Buffer(Positions.GetVertexData(), int64(Positions.GetNumVertices()) * PositionStride) ||
+    !Buffer(Vertices.GetTangentData(), Vertices.GetTangentSize()) || !Buffer(Vertices.GetTexCoordData(), Vertices.GetTexCoordSize()) ||
+    !Buffer(Colors.GetVertexData(), int64(ColorCount) * ColorStride) ||
+    !Buffer(Weights.GetDataVertexBuffer()->GetWeightData(), Weights.GetDataVertexBuffer()->GetVertexDataSize()) ||
+    !Buffer(Weights.GetLookupVertexBuffer()->GetLookupData(), Weights.GetLookupVertexBuffer()->GetVertexDataSize())) return false;
+   const FRawStaticIndexBuffer16or32Interface* Indices = LOD.MultiSizeIndexContainer.GetIndexBuffer();
+   if (!Need(Indices && Indices->Num() > 0, TEXT("complete native index buffer available"))) return false;
+   uint8 IndexBytes = LOD.MultiSizeIndexContainer.GetDataTypeSize(); int32 IndexCount = Indices->Num(); RenderArchive << IndexBytes << IndexCount;
+   for (int32 Index = 0; Index < IndexCount; ++Index) { uint32 Vertex = Indices->Get(Index); RenderArchive << Vertex; }
+   RenderArchive << LOD.RenderSections << LOD.ActiveBoneIndices << LOD.RequiredBones;
+   int32 UnifiedCount = LOD.UnifiedBoneMap.Num(); RenderArchive << UnifiedCount;
+   for (FBoneIndexType Bone : LOD.UnifiedBoneMap) RenderArchive << Bone;
+   LOD.VertexAttributeBuffers.Serialize(RenderArchive);
+   if (!Need(!RenderArchive.IsError(), TEXT("native render/weight/section payload serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("render_buffers_sha1"), Digest(RenderBytes)); Data->SetNumberField(TEXT("vertices"), VertexCount);
+   Data->SetNumberField(TEXT("triangles"), IndexCount / 3); Data->SetNumberField(TEXT("sections"), LOD.RenderSections.Num());
+   TArray<uint8> MaterialBytes; FMemoryWriter MaterialWriter(MaterialBytes, true);
+   FObjectAndNameAsStringProxyArchive MaterialArchive(MaterialWriter, false);
+   int32 MaterialCount = Clothes->GetMaterials().Num(); MaterialArchive << MaterialCount;
+   for (FSkeletalMaterial& Material : Clothes->GetMaterials()) FSkeletalMaterial::StaticStruct()->SerializeItem(MaterialArchive, &Material, nullptr);
+   FSkeletalMeshLODInfo* Info = Clothes->GetLODInfo(0);
+   if (!Need(Info != nullptr, TEXT("original source LOD material map and settings available"))) return false;
+   FSkeletalMeshLODInfo::StaticStruct()->SerializeItem(MaterialArchive, Info, nullptr);
+   if (!Need(!MaterialArchive.IsError(), TEXT("original material slots and LOD map serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("materials_lod_info_sha1"), Digest(MaterialBytes));
+   FString Skeleton = Clothes->GetSkeleton()->GetPathName(); Data->SetStringField(TEXT("skeleton"), Skeleton);
+   TArray<uint8> PayloadBytes; FMemoryWriter PayloadWriter(PayloadBytes);
+   for (const TCHAR* Key : {TEXT("imported_model_sha1"), TEXT("mesh_description_sha1"), TEXT("render_buffers_sha1"), TEXT("materials_lod_info_sha1")})
+   { FString Hash = Data->GetStringField(Key); PayloadWriter << Hash; }
+   PayloadWriter << Skeleton; Data->SetStringField(TEXT("payload_sha1"), Digest(PayloadBytes)); return true;
+  }
+  bool ClothesBinding(bool Verify)
+  {
+   const FString ImportedPin = TEXT("2144e1ffc0504791556fd705e21b37add599da6f"), BodyPin = TEXT("93838fa5259ddca476c5e523526483746f038133");
+   const FJson* BindingContract = nullptr;
+   if (!Need(Contract->TryGetObjectField(TEXT("clothes_bind"), BindingContract) &&
+    (*BindingContract)->GetStringField(TEXT("policy")) == TEXT("canonical-native-body") &&
+    (*BindingContract)->GetStringField(TEXT("imported_reference_pose_sha1")) == ImportedPin &&
+    (*BindingContract)->GetStringField(TEXT("canonical_reference_pose_sha1")) == BodyPin,
+    TEXT("explicit measured clothes-import and canonical native body reference pins"))) return false;
+   const FString Asset = Job->GetStringField(TEXT("clothes_asset")), Skeleton = Job->GetStringField(TEXT("private_skeleton"));
+   const FString Root = FPackageName::GetLongPackagePath(Job->GetStringField(TEXT("output_asset")));
+   if (!Need(Root.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")) && !Root.Contains(TEXT("..")) &&
+    FPackageName::GetLongPackagePath(Asset) == Root && FPackageName::GetLongPackagePath(Skeleton) == Root &&
+    Clothes->GetOutermost()->GetName() == Asset && Clothes->GetSkeleton()->GetOutermost()->GetName() == Skeleton &&
+    Clothes->GetOutermost() != Body->GetOutermost() && Clothes->GetOutermost() != Clothes->GetSkeleton()->GetOutermost(),
+    TEXT("only this run's newly imported clothes package is a permitted bind/save target; private skeleton stays separate"))) return false;
+   const FReferenceSkeleton& BodyRef = Body->GetRefSkeleton(); const FReferenceSkeleton& ClothRef = Clothes->GetRefSkeleton();
+   if (!Need(BodyRef.GetNum() == 342 && BodyRef.GetRawBoneNum() == 342 && ClothRef.GetNum() == 342 && ClothRef.GetRawBoneNum() == 342,
+    TEXT("exact measured native 342-bone body and cloth hierarchies"))) return false;
+   for (int32 Index = 0; Index < 342; ++Index)
+    if (!Need(ClothRef.GetBoneName(Index) == BodyRef.GetBoneName(Index) && ClothRef.GetParentIndex(Index) == BodyRef.GetParentIndex(Index),
+     FString::Printf(TEXT("exact cloth/body bone name, index and parent %d"), Index))) return false;
+   const FString BodyReference = FPose(BodyRef).Hash(), BodyInverse = InverseReferenceHash(Body);
+   if (!Need(BodyReference == BodyPin && Body->GetRefBasesInvMatrix().Num() == 342, TEXT("unchanged measured canonical Body reference and complete inverse bind matrices"))) return false;
+   FJson Before; if (!GeometryState(Before)) return false;
+   const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Asset, FPackageName::GetAssetPackageExtension()));
+   FJson FileBefore; if (!FileState(Filename, FileBefore)) return false;
+   FJson Data = Object(); Report->SetObjectField(TEXT("clothes_bind"), Data);
+   if (Verify)
+   {
+    const FString ReceiptPath = Job->GetStringField(TEXT("clothes_bind_report")); FJson Previous;
+    if (!Need(FPaths::ConvertRelativePathToFull(ReceiptPath) != FPaths::ConvertRelativePathToFull(ReportPath) && Read(ReceiptPath, Previous) &&
+     Previous->GetIntegerField(TEXT("schema_version")) == 1 && Previous->GetStringField(TEXT("status")) == TEXT("PASS") &&
+     Previous->GetStringField(TEXT("mode")) == TEXT("bind-clothes") && Previous->GetNumberField(TEXT("pid")) > 0 &&
+     Previous->GetNumberField(TEXT("pid")) != FPlatformProcess::GetCurrentProcessId(), TEXT("successful original bind receipt from a different native process"))) return false;
+    const FJson Saved = Previous->GetObjectField(TEXT("clothes_bind")); Data->Values = Saved->Values;
+    if (!Need(Saved->GetStringField(TEXT("asset")) == Asset && Saved->GetStringField(TEXT("object")) == Clothes->GetPathName() &&
+     Saved->GetStringField(TEXT("private_skeleton")) == Skeleton && Saved->GetStringField(TEXT("policy")) == TEXT("canonical-native-body") &&
+     Saved->GetStringField(TEXT("imported_reference_pose_sha1")) == ImportedPin && Saved->GetStringField(TEXT("canonical_reference_pose_sha1")) == BodyPin &&
+     Saved->GetStringField(TEXT("reference_before_sha1")) == ImportedPin && Saved->GetBoolField(TEXT("preserved_payload")) &&
+     Saved->GetStringField(TEXT("payload_before_sha1")) == Before->GetStringField(TEXT("payload_sha1")) &&
+     FJsonValue::CompareEqual(*Value(Saved->GetObjectField(TEXT("geometry_before"))), *Value(Before)),
+     TEXT("original bind receipt pins this exact private mesh and its complete unchanged imported/render payload"))) return false;
+    Data->SetStringField(TEXT("reference_after_sha1"), FPose(ClothRef).Hash()); Data->SetStringField(TEXT("body_reference_sha1"), BodyReference);
+    Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes)); Data->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse);
+    Data->SetStringField(TEXT("payload_after_sha1"), Before->GetStringField(TEXT("payload_sha1"))); Data->SetObjectField(TEXT("geometry_after"), Before);
+    Data->SetObjectField(TEXT("file_after"), FileBefore);
+    if (!Need(FPose(ClothRef).Hash() == BodyPin && InverseReferenceHash(Clothes) == BodyInverse &&
+     Clothes->GetRefBasesInvMatrix().Num() == 342 && FJsonValue::CompareEqual(*Value(Data), *Value(Saved)) && !Clothes->GetOutermost()->IsDirty(),
+     TEXT("fresh saved cloth reference, inverse matrices, all payload fields and actual file SHA1 match original bind receipt without mutation"))) return false;
+    FJson ReceiptFile; if (!FileState(ReceiptPath, ReceiptFile)) return false; Report->SetObjectField(TEXT("bind_receipt"), ReceiptFile);
+    FJson FileAfter; return FileState(Filename, FileAfter) && Need(FJsonValue::CompareEqual(*Value(FileBefore), *Value(FileAfter)), TEXT("read-only bind verification leaves actual cloth package byte-identical"));
+   }
+   if (!Need(FPose(ClothRef).Hash() == ImportedPin && Clothes->GetRefBasesInvMatrix().Num() == 342,
+    TEXT("only the exact measured FBX-import reference pose may be canonicalized once"))) return false;
+   Data->SetStringField(TEXT("asset"), Asset); Data->SetStringField(TEXT("object"), Clothes->GetPathName()); Data->SetStringField(TEXT("private_skeleton"), Skeleton);
+   Data->SetStringField(TEXT("policy"), TEXT("canonical-native-body")); Data->SetStringField(TEXT("imported_reference_pose_sha1"), ImportedPin);
+   Data->SetStringField(TEXT("canonical_reference_pose_sha1"), BodyPin); Data->SetStringField(TEXT("reference_before_sha1"), FPose(ClothRef).Hash());
+   Data->SetStringField(TEXT("inverse_reference_before_sha1"), InverseReferenceHash(Clothes)); Data->SetStringField(TEXT("body_reference_sha1"), BodyReference);
+   Data->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse); Data->SetStringField(TEXT("payload_before_sha1"), Before->GetStringField(TEXT("payload_sha1")));
+   Data->SetObjectField(TEXT("geometry_before"), Before); Data->SetObjectField(TEXT("file_before"), FileBefore);
+   // SetRefSkeleton alone neither clears nor recomputes the inverse matrices.
+   // CalculateInvRefMatrices deliberately does nothing while the count matches.
+   Clothes->SetRefSkeleton(BodyRef); Clothes->GetRefBasesInvMatrix().Reset(); Clothes->CalculateInvRefMatrices();
+   Data->SetStringField(TEXT("reference_after_sha1"), FPose(Clothes->GetRefSkeleton()).Hash());
+   Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes));
+   if (!Need(FPose(Clothes->GetRefSkeleton()).Hash() == BodyPin && InverseReferenceHash(Clothes) == BodyInverse &&
+    Clothes->GetRefBasesInvMatrix().Num() == 342, TEXT("native canonical reference and recomputed inverse bind matrices match Body exactly"))) return false;
+   for (int32 Index = 0; Index < 342; ++Index)
+    if (!Need(SameReference(Clothes->GetRefSkeleton().GetRefBonePose()[Index], BodyRef.GetRefBonePose()[Index]),
+     FString::Printf(TEXT("strict unchanged cloth/body reference tolerance after canonical bind %d"), Index))) return false;
+   FJson After; if (!GeometryState(After)) return false;
+   Data->SetObjectField(TEXT("geometry_after"), After); Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1")));
+   if (!Need(FJsonValue::CompareEqual(*Value(Before), *Value(After)), TEXT("canonical bind changes no imported geometry, UVs, normals, tangents, weights, indices, BoneMaps, sections or materials"))) return false;
+   Clothes->MarkPackageDirty(); FSavePackageArgs Args; Args.TopLevelFlags = RF_Public | RF_Standalone;
+   if (!Need(UPackage::SavePackage(Clothes->GetOutermost(), Clothes, *Filename, Args), TEXT("only new private Clothes package saved after canonical bind"))) return false;
+   FAssetCompilingManager::Get().FinishAllCompilation();
+   if (!GeometryState(After)) return false;
+   Data->SetObjectField(TEXT("geometry_after"), After); Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1")));
+   if (!Need(FJsonValue::CompareEqual(*Value(Before), *Value(After)) && FPose(Clothes->GetRefSkeleton()).Hash() == BodyPin &&
+    InverseReferenceHash(Clothes) == BodyInverse && FPose(BodyRef).Hash() == BodyReference && InverseReferenceHash(Body) == BodyInverse,
+    TEXT("post-save cloth retains full payload and canonical reference; actual Body remains unchanged"))) return false;
+   FJson FileAfter; if (!FileState(Filename, FileAfter)) return false;
+   Data->SetObjectField(TEXT("file_after"), FileAfter); Data->SetObjectField(TEXT("geometry_after"), After);
+   Data->SetStringField(TEXT("reference_after_sha1"), FPose(Clothes->GetRefSkeleton()).Hash()); Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes));
+   Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1"))); Data->SetBoolField(TEXT("preserved_payload"), true); return true;
   }
   bool PoseBody(FPose& Posed, FTransform& Seat)
   {
@@ -784,6 +972,7 @@ namespace S47MannequinBake
   bool Run()
   {
    if (!Preflight()) return false;
+   if (Mode == TEXT("bind-clothes") || Mode == TEXT("verify-clothes-bind")) return ClothesBinding(Mode == TEXT("verify-clothes-bind"));
    if (Mode == TEXT("verify"))
    {
     FJson Previous; if (!Need(Read(Job->GetStringField(TEXT("bake_report")), Previous) && Previous->GetStringField(TEXT("status")) == TEXT("PASS"), TEXT("actual successful private bake receipt"))) return false;
@@ -896,6 +1085,7 @@ namespace S47MannequinBake
   Bake.ReportPath = Bake.Job->GetStringField(TEXT("native_report")); Bake.Mode = Bake.Job->GetStringField(TEXT("mode"));
   const bool ReadContract = Read(Bake.Job->GetStringField(TEXT("contract")), Bake.Contract);
   const bool Passed = ReadContract && Bake.Run();
+  Bake.Report->SetNumberField(TEXT("schema_version"), 1); Bake.Report->SetNumberField(TEXT("pid"), FPlatformProcess::GetCurrentProcessId());
   Bake.Report->SetStringField(TEXT("status"), Passed ? TEXT("PASS") : TEXT("FAIL")); Bake.Report->SetStringField(TEXT("mode"), Bake.Mode);
   Bake.Report->SetStringField(TEXT("error"), Bake.Error); Bake.Report->SetNumberField(TEXT("checks"), Bake.Checks);
   Bake.Report->SetStringField(TEXT("evidence_limit"), TEXT("native authoring only; appearance, runtime adoption/schedule, input and performance require separate proof; no installation/release"));
