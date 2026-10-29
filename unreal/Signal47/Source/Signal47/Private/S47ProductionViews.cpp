@@ -5,6 +5,7 @@
 #include "S47TownBuildings.h"
 #include "S47MotelV2.h"
 #include "S47Office.h"
+#include "S47SaroInterior.h"
 #include "S47HighwayPower.h"
 #include "S47Main.h"
 #include "S47World.h"
@@ -173,7 +174,7 @@ void AS47Web::BeginProductionViews()
   if(Now-State->Since<State->Hold)return;
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
-  if(FString(V.Name).StartsWith(TEXT("office-")))Ok=M->Office&&M->Office->AuditDocumentArt(Lines);
+  if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);}
   else if(State->Suite==TEXT("cinema-posters")){Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines)&&W->AuditCinemaPosters(Lines);}
   else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }

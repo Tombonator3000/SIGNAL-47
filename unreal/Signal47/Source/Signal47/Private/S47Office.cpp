@@ -144,6 +144,7 @@ struct FS47Office::FVisual
  TArray<FS47Obj> KeyParts;
  TWeakObjectPtr<URectLightComponent> Light;
  bool bRecoverLegacyPose = false;
+ bool bMigrationFailed = false;
  // ART-01 sheets: paper object name, its art plane and the bound texture.
  struct FSheet { FString Paper; FS47Obj PaperObj, Art; TWeakObjectPtr<UTexture2D> Texture; };
  TArray<FSheet> Sheets;
@@ -352,7 +353,7 @@ void FS47Office::Init()
  // two opal diffusers, faces down and retains the existing power/area driver.
  URectLightComponent* Light = NewObject<URectLightComponent>(W, TEXT("OperationsCeilingLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
  Light->SetWorldLocation(S47Three::ToUE(FVector(.47, 2.594, 8.8))); Light->SetWorldRotation(FRotator(-90, 0, 0));
- Light->SetSourceWidth(32); Light->SetSourceHeight(115); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(500); Light->SetLightColor(FLinearColor(1, .88f, .72f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
+ Light->SetSourceWidth(115); Light->SetSourceHeight(32); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(125); Light->SetLightColor(FLinearColor(1, .88f, .72f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
  FS47Obj Depart = Box(TEXT("office:departureCard"), FVector(1.39, 1.45, 6.815 + FrontOffset), FVector(.55, .30, .015), Paper);
  Label(TEXT("office:departureText"), TEXT("SURVEY FILE\nSTATION 01"), FVector(1.39, 1.45, 6.829 + FrontOffset), 90, 3.8f);
  Visual->Objects.Add(TEXT("office:door"), DoorPanel); Visual->Objects.Add(TEXT("officeDoor"), DoorPanel);
@@ -416,6 +417,7 @@ void FS47Office::Init()
 void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
 {
  Visual->bRecoverLegacyPose = Saved.IsValid() && S47J::Num(Saved, TEXT("interiorLayout"), 1) < 2;
+ Visual->bMigrationFailed = false;
  bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
  bDoorInspected = bDoorTarget = bDrawerTarget = false;
  bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
@@ -736,49 +738,48 @@ void FS47Office::Apply()
  { Rect.MinX = FMath::Min(HingeX, EndX) - .035; Rect.MaxX = FMath::Max(HingeX, EndX) + .035; Rect.MinZ = FMath::Min(HingeZ, EndZ) - .035; Rect.MaxZ = FMath::Max(HingeZ, EndZ) + .035; }
 }
 
+bool FS47Office::MigrateRestoredPose(FVector& P, double Radius)
+{
+ if (!Visual->bRecoverLegacyPose || !bReady || !M || !M->Player || !M->World || !M->Web) return false;
+ Visual->bRecoverLegacyPose = false;
+ const FVector Before = P;
+ if (M->World->Area != TEXT("saro") || !InBox(Before, -1.1, 2.05, -2, 4, 6.0, 8.35)) return false;
+ auto Clear = [&](double X, double Z)
+ {
+  if (!M->Player->Walkable(X, Z)) return false;
+  for (const FS47Rect& C : M->Web->Colliders()) if (C.bEnabled && X + Radius > C.MinX && X - Radius < C.MaxX && Z + Radius > C.MinZ && Z - Radius < C.MaxZ) return false;
+  return true;
+ };
+ if (Clear(P.X, P.Z)) return false;
+ const bool bKeepInside = bEntered && WasUnlocked() && Before.Z >= 6.8;
+ double Best = TNumericLimits<double>::Max(); FVector At = Before;
+ for (int32 X = -10; X <= 30; ++X) for (int32 Z = 106; Z <= 174; ++Z)
+ {
+  const double PX = X * .05, PZ = Z * .05;
+  if (bKeepInside && PZ < 6.8 + FrontOffset + Radius + .02) continue;
+  if (!Clear(PX, PZ)) continue;
+  const double Distance = FMath::Square(PX - Before.X) + FMath::Square(PZ - Before.Z);
+  if (Distance < Best) { Best = Distance; At = FVector(PX, 0, PZ); }
+ }
+ if (Best == TNumericLimits<double>::Max())
+ {
+  // Do not mark a failed migration complete in a future save.
+  Visual->bRecoverLegacyPose = true;
+  Visual->bMigrationFailed = true;
+  UE_LOG(LogS47Office, Error, TEXT("S47: legacy interior pose has no clear local recovery at %.3f %.3f"), Before.X, Before.Z);
+  return false;
+ }
+ P = At;
+ UE_LOG(LogS47Office, Display, TEXT("S47: legacy interior pose migrated %.3f %.3f -> %.3f %.3f before Flow placement; story/key/documents/view preserved"), Before.X, Before.Z, At.X, At.Z);
+ return true;
+}
+
 void FS47Office::Step(double Dt)
 {
  if (!bBuilt) Init(); if (!bReady) return;
- // One-time migration after Flow has applied the incoming pose. Old valid room
- // poses can now intersect the recessed partition or moved vending machine.
- // Preserve every story fact and the view; only obstructed legacy poses move.
- if (Visual->bRecoverLegacyPose && M && M->Flow && !M->Flow->bStarting && M->Player && M->World)
- {
-  Visual->bRecoverLegacyPose = false;
-  const FVector Before = M->Player->Pos; const double R = M->Player->Radius;
-  if (M->World->Area == TEXT("saro") && InBox(Before, -1.1, 2.05, -2, 4, 6.0, 8.35))
-  {
-   auto Clear = [&](double X, double Z)
-   {
-    if (!M->Player->Walkable(X, Z)) return false;
-    for (const FS47Rect& C : M->Web->Colliders()) if (C.bEnabled && X + R > C.MinX && X - R < C.MaxX && Z + R > C.MinZ && Z - R < C.MaxZ) return false;
-    return true;
-   };
-   if (!Clear(Before.X, Before.Z))
-   {
-    const bool bKeepInside = bEntered && WasUnlocked() && Before.Z >= 6.8;
-    double Best = TNumericLimits<double>::Max(); FVector At = Before;
-    // Search only this changed bay/room, keeping the inside room anchor clear.
-    // A failed search leaves the pose visible as a test failure rather than
-    // teleporting to an unrelated start or unlocking a door.
-    for (int32 X = -10; X <= 30; ++X) for (int32 Z = 106; Z <= 174; ++Z)
-    {
-     const double PX = X * .05, PZ = Z * .05;
-     if (bKeepInside && PZ < 6.8 + FrontOffset + R + .02) continue;
-     if (!Clear(PX, PZ)) continue;
-     const double Distance = FMath::Square(PX - Before.X) + FMath::Square(PZ - Before.Z);
-     if (Distance < Best) { Best = Distance; At = FVector(PX, 0, PZ); }
-    }
-    if (Best < TNumericLimits<double>::Max())
-    {
-     const double Pitch = M->Player->Pitch; M->Player->Place(At.X, At.Z, M->Player->Yaw); M->Player->Pitch = Pitch;
-     M->RequestAutosave();
-     UE_LOG(LogS47Office, Display, TEXT("S47: legacy interior pose migrated %.3f %.3f -> %.3f %.3f; story/key/documents/view preserved"), Before.X, Before.Z, At.X, At.Z);
-    }
-    else UE_LOG(LogS47Office, Error, TEXT("S47: legacy interior pose has no clear local recovery at %.3f %.3f"), Before.X, Before.Z);
-   }
-  }
- }
+ // A case without an incoming pose has nothing to migrate. Flow handles saved
+ // poses before its walkability gate, while their original coordinates exist.
+ if (Visual->bRecoverLegacyPose && !Visual->bMigrationFailed && M && M->Flow && !M->Flow->bStarting) Visual->bRecoverLegacyPose = false;
  if (!bDoorTarget && DoorK > 0 && M && M->Player && M->World && M->World->Area == TEXT("saro") && InThreshold(M->Player->Pos, M->Player->Radius))
  { bDoorTarget = true; if (M) M->RequestAutosave(); }
  const bool WasOpen = DoorOpen();

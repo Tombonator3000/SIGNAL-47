@@ -6,6 +6,7 @@
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
+#include "S47SaroInterior.h"
 #include "S47T02Test.h"
 #include "S47GraphicsTest.h"
 #include "S47SkyVisitors.h"
@@ -132,6 +133,7 @@ void US47Main::Step(double Dt)
 		bool bIn = Web->Rect(TEXT("world.motel.zones[2]")).Contains(P);
 		for (const TCHAR* B : Indoors) bIn |= Web->Rect(B).Contains(P);
 		bIn |= Office && Office->Contains(P);
+		bIn |= S47SaroInterior::ContainsPassingBay(Web, P);
 		Sp = bIn ? TEXT("room") : Web->Rect(TEXT("yard.zone.lab")).Contains(P) ? TEXT("lab") : TEXT("yard");
 	}
 	if (Sp != Space) { Space = Sp; Audio->SetSpace(Sp); }
@@ -143,6 +145,7 @@ void US47Main::Step(double Dt)
 		bool bIn = false;
 		for (const TCHAR* B : { TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") }) bIn |= Web->Rect(B).Contains(P);
 		bIn |= Office && Office->Contains(P);
+		bIn |= S47SaroInterior::ContainsPassingBay(Web, P);
 		bIn |= Web->Rect(TEXT("room.bounds")).Contains(P) && Web->Obj(TEXT("room.southDoorHinge")).Rotation().Y > 0.01;
 		bIn |= Web->DoorStates().FindRef(TEXT("exit")) && Web->Rect(TEXT("world.crossing.zone.stoop")).Contains(P);
 		bIn |= Web->Rect(TEXT("annex.zone.exitDoor")).Contains(P);

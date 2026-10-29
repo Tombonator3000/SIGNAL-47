@@ -45,7 +45,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Den navngitte 29. ok
 
 ## Pågående arbeid og kjente feil
 
-SARO-interiørpasset er startet i isolert arbeidskopi etter Claudes ferdige installasjon. Første Office Blender-kilde er bygget og gjenåpnet med åtte deler kontrollert. Korridorens gangsoner, Operations-nisje, automatflytting og eldre posisjoner har kandidatkilde. Native import, synlig runtime-resultat og ny lokal installasjon er fortsatt UNVERIFIED. Dette endrer ingen av leveringsnivåene ovenfor.
+SARO-interiørpasset er startet i isolert arbeidskopi etter Claudes ferdige installasjon. Første Office Blender-kilde er bygget og gjenåpnet med åtte deler kontrollert. Korridorens gangsoner, Operations-nisje, automatflytting og eldre posisjoner har kandidatkilde. Første editorbygg og nativeimport består (365 kontroller, åtte modeller); tolv faste etterkameraer består material-/korridor-/automatkontroll, men det nye taklyset er visuelt avvist som for sterkt. R2 retter lys, bay-områder og eldre posegjenoppretting før videre fysisk kontroll. Ny lokal installasjon er fortsatt UNVERIFIED. Dette endrer ingen av leveringsnivåene ovenfor.
 
 Codex sin nattsekvens er målrettet levert gjennom PR209. Claudes videre kvelds-/SC03-arbeid har egen arbeidskopi. Den lokale arbeidsdelingen føres i [OPPGAVER](../../unreal/OPPGAVER.md). En arbeidsgren, en kjørende test eller en manusendring er ikke en ferdig leveranse. Neste statusoppdatering må vise nøyaktig testet kandidat, merge og eventuell installasjon hver for seg.
 

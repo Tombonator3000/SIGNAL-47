@@ -52,6 +52,35 @@ bool Build(AS47Web* W)
  return true;
 }
 
+bool ContainsPassingBay(AS47Web* W, const FVector& P)
+{
+ if (!W || !W->IsLoaded() || W->Area() != TEXT("saro") || P.Y < -2 || P.Y > 4) return false;
+ // Validate the actual native zone, never expand the full old corridor rectangle
+ // across the unchanged west records wall. Only the new eastern bay is added.
+ int32 Bays = 0; bool bBay = false, bThreshold = false;
+ for (const FS47Rect& R : W->ZonesMutable(TEXT("saro")))
+ {
+  if (R.Id == TEXT("office:passingBayZone"))
+  {
+   ++Bays;
+   bBay = R.bEnabled && FMath::IsNearlyEqual(R.MinX, -.82, 1e-6) && FMath::IsNearlyEqual(R.MaxX, 1.77, 1e-6) &&
+    FMath::IsNearlyEqual(R.MinZ, 5.70, 1e-6) && FMath::IsNearlyEqual(R.MaxZ, 7.10, 1e-6);
+  }
+  if (R.Id == TEXT("office:thresholdZone"))
+   bThreshold = R.bEnabled && FMath::IsNearlyEqual(R.MinX, -.08, 1e-6) && FMath::IsNearlyEqual(R.MaxX, 1, 1e-6) &&
+    FMath::IsNearlyEqual(R.MinZ, 5.70, 1e-6) && FMath::IsNearlyEqual(R.MaxZ, 8.0, 1e-6);
+ }
+ if (Bays != 1 || !bBay) return false;
+ const bool bInBay = P.X >= -.82 && P.X <= 1.77 && P.Z >= CorridorMaxZ && P.Z <= 7.10;
+ // The open aperture also bridges the 20cm wall depth before Office::Contains.
+ // Keep that genuine room-entry boundary unchanged for bEntered/story facts.
+ const bool bInAperture = bThreshold && P.X >= -.08 && P.X <= 1 && P.Z >= 7.10 && P.Z <= 7.30;
+ if (!bInBay && !bInAperture) return false;
+ for (const FS47Rect& C : W->CollidersMutable(TEXT("saro")))
+  if (C.bEnabled && P.X > C.MinX && P.X < C.MaxX && P.Z > C.MinZ && P.Z < C.MaxZ) return false;
+ return true;
+}
+
 bool Audit(AS47Web* W, TArray<FString>& Lines)
 {
  if (!W) return false;
@@ -73,7 +102,10 @@ bool Audit(AS47Web* W, TArray<FString>& Lines)
  const bool bMoved = Machine && Machine.WorldPosition().Equals(FVector(1.35, 0, 6.55), .0001) && W->RecessSaroVending(false);
  Lines.Add(FString::Printf(TEXT("SARO vending coupled relocation %s: original group/item/photo, collider+alias, physical screen light and annex pool slot2; north clearance=1.310m, centre travel=.770m"),
   bMoved ? TEXT("PASS") : TEXT("FAIL")));
+ const bool bBay = ContainsPassingBay(W, FVector(.47, 0, 6.8)) && !ContainsPassingBay(W, FVector(-1.2, 0, 6.9)) &&
+  !ContainsPassingBay(W, FVector(1.35, 0, 6.8));
+ Lines.Add(FString::Printf(TEXT("SARO passing bay semantics %s: new clear eastern bay indoors, unchanged records wall and vending volume excluded"), bBay ? TEXT("PASS") : TEXT("FAIL")));
  Lines.Add(TEXT("SARO interior candidate: physical route, existing-save restore and rendered geometry require runtime verification"));
- return bBounds && bMoved;
+ return bBounds && bMoved && bBay;
 }
 }

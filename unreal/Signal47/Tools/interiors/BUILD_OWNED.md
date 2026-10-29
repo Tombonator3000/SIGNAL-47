@@ -2,7 +2,7 @@
 
 **Status:** Under arbeid. **Gjelder:** Fire valgte Vintage-originaler. **Sist kontrollert:** 29. oktober 2026.
 
-`owned_sources.py` validerer originalfiler, historisk inventar og lisensnotis uten motorjobb. `build_owned.py` er en konkret eksport-/PBR-oppskrift som ennå ikke er kjørt. Blender-, bake-, FBX-, native- og visuell aksept er derfor UNVERIFIED.
+`owned_sources.py` validerer originalfiler, historisk inventar og lisensnotis uten motorjobb. Første Blender-kjøring R1 stoppet før første ferdige objekt fordi en støvgruppe tok imot shaderen gjennom `NodeGroupInput`. R1-rapport og logg er bevart privat. Oppskriften følger nå denne inngangen til riktig ytre gruppesocket gjennom eksplisitte gruppegrenser og interface-ID-er. Rettet Blender-/bake-/FBX-resultat, native og visuell aksept er fortsatt UNVERIFIED inntil ny kjøring.
 
 Kjør først vanlig Python:
 

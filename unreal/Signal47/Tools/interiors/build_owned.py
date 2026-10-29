@@ -102,7 +102,12 @@ def channel_material(original, channel):
         O.require(socket.is_linked, 'Unmapped shader socket: ' + socket.name)
         return socket.links[0].from_socket
 
-    def route(tree, socket, stack):
+    def interface_socket(sockets, identifier, label):
+        matches = [item for item in sockets if item.identifier == identifier]
+        O.require(len(matches) == 1, 'Unmapped or ambiguous group interface ' + label + ': ' + identifier)
+        return matches[0]
+
+    def route(tree, socket, stack, groups=()):
         key = (tree.as_pointer(), socket.as_pointer())
         O.require(key not in stack, 'Cyclic shader mapping in ' + original.name)
         if key in memo:
@@ -110,7 +115,7 @@ def channel_material(original, channel):
         node = socket.node
         next_stack = stack | {key}
         if node.type == 'REROUTE':
-            result = route(tree, linked(node.inputs[0]), next_stack)
+            result = route(tree, linked(node.inputs[0]), next_stack, groups)
         elif node.type == 'BSDF_PRINCIPLED':
             alpha = node.inputs.get('Alpha')
             transmission = node.inputs.get('Transmission Weight')
@@ -130,19 +135,31 @@ def channel_material(original, channel):
         elif node.type in ('MIX_SHADER', 'ADD_SHADER'):
             for branch in node.inputs:
                 if branch.type == 'SHADER':
-                    tree.links.new(route(tree, linked(branch), next_stack), branch)
+                    tree.links.new(route(tree, linked(branch), next_stack, groups), branch)
+            result = socket
+        elif node.type == 'GROUP_INPUT':
+            # Shader groups can wrap a caller-supplied BSDF (the pack's dust
+            # group does this). Convert that caller branch in its own tree;
+            # never connect sockets across trees or replace the group's mix.
+            O.require(bool(groups), 'Shader group input has no caller: ' + original.name)
+            outer, instance, inner = groups[-1]
+            O.require(inner == tree, 'Shader group caller context differs: ' + original.name)
+            caller_input = interface_socket(instance.inputs, socket.identifier, instance.name)
+            O.require(caller_input.type == 'SHADER' and socket.type == 'SHADER',
+                      'Expected a shader group input: ' + original.name)
+            outer.links.new(route(outer, linked(caller_input), next_stack, groups[:-1]), caller_input)
             result = socket
         elif node.type == 'GROUP' and node.node_tree:
-            index = list(node.outputs).index(socket)
+            identifier = socket.identifier
             if node.as_pointer() not in copied_groups:
                 node.node_tree = node.node_tree.copy()
                 copied_groups.add(node.as_pointer())
             inner = node.node_tree
             group_out = output_node(inner, 'GROUP_OUTPUT')
-            O.require(index < len(group_out.inputs), 'Unmapped shader-group output: ' + node.name)
-            destination = group_out.inputs[index]
-            inner.links.new(route(inner, linked(destination), next_stack), destination)
-            result = node.outputs[index]
+            destination = interface_socket(group_out.inputs, identifier, node.name)
+            inner.links.new(route(inner, linked(destination), next_stack,
+                                  groups + ((tree, node, inner),)), destination)
+            result = interface_socket(node.outputs, identifier, node.name)
         else:
             raise ValueError('Unsupported surface mapping ' + node.bl_idname + ' in ' + original.name)
         memo[key] = result

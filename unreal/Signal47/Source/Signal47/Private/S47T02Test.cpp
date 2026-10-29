@@ -12,6 +12,9 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Office.h"
+#include "S47Phones.h"
+#include "S47SaroInterior.h"
+#include "S47SaroNight.h"
 #include "S47Saves.h"
 #include "S47Story.h"
 #include "S47Substation.h"
@@ -28,6 +31,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47T02Test, Log, All);
@@ -36,6 +40,7 @@ struct FS47T02Test::FState
 {
  bool bEnabled = false, bDone = false, bNative = false, bNativeStarted = false, bReturn = false, bUnresolved = false, bEarlyOffice = false, bArrivalOffice = false;
  bool bOutSaro = false, bOutRoad = false, bBackRoad = false, bBackSaro = false;
+ bool bSaroInterior = false;
  int32 Stage = 0, Checks = 0, Loads = 0, StoreReads = 0, WalkIndex = 0;
  double Elapsed = 0, Since = 0, Hold = 3, WalkDistance = 0, LastProgress = 0;
  double LastClock = 0, OdoStart = 0, OutMetres = 0, BackMetres = 0, NativeWalkMetres = 0;
@@ -47,16 +52,18 @@ struct FS47T02Test::FState
  FString Root, Baseline, FirstPhoto, LatestPhoto, FieldFilmBefore, PendingFailure, OfficePhase;
  int32 AlbumCount = 0, AlbumLeft = 0, FilingNotes = 0, FilingHistory = 0;
  S47J::FObj GoodOffice, GoodPhoto, PendingVerified, GoodFiled, FiledCard;
+ S47J::FObj InteriorLocked, InteriorLockedDocs, InteriorEarnedDocs;
  FString FiledHistoryBytes, OfficeIndexTitle, OfficeIndexPage;
 };
 
 FS47T02Test::FS47T02Test(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 {
  State->bArrivalOffice = FParse::Param(FCommandLine::Get(), TEXT("S47OfficeArrival"));
+ State->bSaroInterior = FParse::Param(FCommandLine::Get(), TEXT("S47SaroInteriorContract"));
  State->bEarlyOffice = State->bArrivalOffice || FParse::Param(FCommandLine::Get(), TEXT("S47OfficeEarly"));
  State->bNative = FParse::Param(FCommandLine::Get(), TEXT("S47T02DriveContract"));
  State->bUnresolved = FParse::Param(FCommandLine::Get(), TEXT("S47T02UnresolvedContract"));
- State->bEnabled = State->bEarlyOffice || State->bNative || State->bUnresolved || FParse::Param(FCommandLine::Get(), TEXT("S47T02Contract"));
+ State->bEnabled = State->bSaroInterior || State->bEarlyOffice || State->bNative || State->bUnresolved || FParse::Param(FCommandLine::Get(), TEXT("S47T02Contract"));
 }
 FS47T02Test::~FS47T02Test() = default;
 
@@ -319,10 +326,21 @@ void FS47T02Test::Step(double Dt)
  auto Lower = [this, C1] { if (M->FieldCamera->bRaised) C1->ToggleCamera(); };
  auto RefAim = [this]
  { M->Player->Yaw = FMath::DegreesToRadians(205.0); M->Player->Pitch = FMath::DegreesToRadians(2.0); };
+ auto InteriorDocs = [this]
+ {
+  auto O = S47J::New();
+  for (const FS47Doc& Doc : M->Story->Docs()) if (Doc.Id.StartsWith(TEXT("EV_DALE_")))
+  {
+   auto D = S47J::New(); S47J::Set(D, TEXT("title"), Doc.Title); S47J::Set(D, TEXT("page"), Doc.Page);
+   S47J::Set(D, TEXT("transcript"), Doc.Transcript); S47J::Set(D, TEXT("image"), Doc.Image); S47J::Set(O, *Doc.Id, D);
+  }
+  return O;
+ };
  if (T.Stage == 917) { Fail(T.PendingFailure); return; }
 
  if (T.Stage == 0)
  {
+  if (T.bSaroInterior && !T.bEarlyOffice) { Fail(TEXT("S47SaroInteriorContract is an opt-in addition to OfficeEarly or OfficeArrival only")); return; }
   const int32 DriverCount=int32(T.bEarlyOffice)+int32(T.bNative)+int32(T.bUnresolved)+int32(FParse::Param(FCommandLine::Get(),TEXT("S47T02Contract")));
   if (DriverCount!=1) { Fail(TEXT("choose exactly one API/disk, unresolved or native T02 driver")); return; }
   FString UserDir, Jump, EveningMode; FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), EveningMode); FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir); FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump);
@@ -396,6 +414,11 @@ void FS47T02Test::Step(double Dt)
  }
  if (T.Stage == 1)
  {
+  if (T.bSaroInterior)
+  {
+   T.InteriorLocked = S47J::Clone(M->Flow->GameState()); T.InteriorLockedDocs = InteriorDocs();
+   if (!Check(!M->Office->HasKey() && !M->Office->WasUnlocked() && !S47J::Bool(M->Office->Save(),TEXT("entered")), TEXT("interior locked cohort captured before actual spare acquisition, without fact setters"))) return;
+  }
   if (T.bEarlyOffice) Shot(T.bArrivalOffice ? TEXT("arrival-office-locked") : TEXT("early-office-locked"));
   Stage(1001,.35); return;
  }
@@ -464,7 +487,109 @@ void FS47T02Test::Step(double Dt)
   const FS47Doc* Index = M->Story->Docs().FindByPredicate([](const FS47Doc& D) { return D.Id == TEXT("EV_DALE_INDEX"); });
   const bool UnreadGranted = M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("EV_DALE_CLIPPINGS") || D.Id == TEXT("EV_DALE_NOTE") || D.Id == TEXT("EV_DALE_CONTACT"); });
   if (!Check(Index && Index->Title == T.OfficeIndexTitle && Index->Page == T.OfficeIndexPage && !UnreadGranted && !M->ModalOpen(), TEXT("fresh early restore refiles the exact acquired field index nonmodally without granting unread office papers"))) return;
+  if (T.bSaroInterior)
+  {
+   T.InteriorEarnedDocs = InteriorDocs();
+   Path({FVector(.40,0,8.1),FVector(.45,0,7.4),FVector(.47,0,6.8)}); Stage(800,0); return;
+  }
   Aim(FVector(.45, 1.2, 9.65)); Stage(95,.35); return;
+ }
+ if (T.Stage == 800)
+ {
+  if (!Walk()) return;
+  Stage(801,.25); return;
+ }
+ if (T.Stage == 801)
+ {
+  const bool bBay = M->Phones && M->SaroNight && S47SaroInterior::ContainsPassingBay(M->Web,M->Player->Pos) &&
+   M->Web->Obj(TEXT("annex.interior")).Shown() && M->Space == TEXT("room") && M->Phones->ArcWhere() == TEXT("annex") &&
+   M->SaroNight->DarkWhere() == TEXT("away") && !M->Office->Contains(M->Player->Pos);
+  if (!Check(bBay && S47J::Bool(M->Office->Save(),TEXT("entered")) == S47J::Bool(S47J::Obj(T.GoodOffice,TEXT("office")),TEXT("entered")),
+   TEXT("physical return walk reaches clear passing bay with annex visible, room audio, annex phone/away night and unchanged actual entry fact"))) return;
+  Shot(TEXT("interior-passing-bay-physical")); Stage(802,.35); return;
+ }
+ if (T.Stage == 802)
+ {
+  // Only pose and the missing layout annotation are fixtures. Office, reads and
+  // story come from the two snapshots physically earned/captured above.
+  auto RunCohorts = [&]() -> bool
+  {
+   FS47SaveStore PreviousStore = M->Flow->Saves;
+   ON_SCOPE_EXIT { M->Flow->Saves = MoveTemp(PreviousStore); };
+   auto Equal = [](const S47J::FObj& A, const S47J::FObj& B)
+   {
+    if (!A || !B) return A.IsValid() == B.IsValid();
+    const FJsonValueObject Left(A), Right(B); return FJsonValue::CompareEqual(Left,Right);
+   };
+   auto Clear = [&](const FVector& P)
+   {
+    const double R = M->Player->Radius;
+    if (!M->Player->Walkable(P.X,P.Z)) return false;
+    for (const FS47Rect& C : M->Web->Colliders()) if (C.bEnabled && P.X+R>C.MinX && P.X-R<C.MaxX && P.Z+R>C.MinZ && P.Z-R<C.MaxZ) return false;
+    return true;
+   };
+   struct FCohort { const TCHAR* Name; double X,Z; bool bMoved,bLocked; };
+   const FCohort Cohorts[] = {
+    {TEXT("legacy-valid-front"),1.2,7.2,true,false},
+    {TEXT("legacy-valid-rear"),.35,8.8,false,false},
+    {TEXT("legacy-invalid-clipped"),1.2,6.9,true,false},
+    {TEXT("legacy-locked-corridor"),.45,5.8,false,true}
+   };
+   for (const FCohort& C : Cohorts)
+   {
+    auto Input = S47J::Clone(C.bLocked ? T.InteriorLocked : T.GoodOffice);
+    auto Office = S47J::Obj(Input,TEXT("office")), Pose = S47J::Obj(Input,TEXT("pose"));
+    if (!Check(Office && Pose,TEXT("interior cohort retains actual snapshot objects: ")+FString(C.Name))) return false;
+    Office->RemoveField(TEXT("interiorLayout"));
+    S47J::Set(Pose,TEXT("x"),C.X); S47J::Set(Pose,TEXT("z"),C.Z); S47J::Set(Pose,TEXT("yaw"),.37); S47J::Set(Pose,TEXT("pitch"),-.18);
+    UE_LOG(LogS47T02Test,Display,TEXT("S47: interior restore snapshot fixture %s at %.3f %.3f; pose/layout only, not player-input evidence; clipped cohort was not historically walkable"),C.Name,C.X,C.Z);
+    FVector FirstPosition = FVector::ZeroVector;
+    for (int32 Round=0;Round<2;++Round)
+    {
+     const FString Name = FString::Printf(TEXT("interior-%s-round%d"),C.Name,Round+1), Dir = T.Root/Name;
+     const auto SourceOffice = S47J::Clone(S47J::Obj(Input,TEXT("office"))), SourcePose = S47J::Obj(Input,TEXT("pose"));
+     const auto SourceCase = S47J::Clone(S47J::Obj(Input,TEXT("case")));
+     FS47SaveStore Writer(Dir); Writer.Init(); FS47SaveCard Card; Card.Chapter=TEXT("SARO interior isolated restore"); Card.Place=TEXT("Operations/corridor"); Card.Clock=M->Story->ClockText(true);
+     FString Error; const auto Meta=Writer.Save(1,TEXT("manual"),0,Input,Card,Error);
+     if (!Check(Meta.IsSet(),TEXT("actual isolated interior Writer: ")+Name+TEXT(" ")+Error)) return false;
+     FS47SaveStore Reader(Dir); Reader.Init(); const auto Disk=Reader.Load(Meta->Id); ++T.StoreReads;
+     if (!Check(Disk && Equal(S47J::Obj(Disk,TEXT("office")),SourceOffice),TEXT("fresh interior Reader preserves source facts: ")+Name)) return false;
+     FFileHelper::SaveStringToFile(S47J::Write(Disk,true),*(T.Root/(Name+TEXT(".loaded.json"))));
+     // Use the real title/Continue path with its own case1, only in this isolated
+     // store. No engine tick or frame returns before developer case0 is restored.
+     M->Flow->Saves=MoveTemp(Reader); M->Flow->ToTitle();
+     const auto Continue=M->Flow->Saves.ContinueSave();
+     if (!Check(M->Mode==US47Main::EMode::Title && Continue && Continue->Id==Meta->Id && M->Flow->Saves.Dir==Dir,
+      TEXT("actual title Continue selects only isolated cohort: ")+Name)) return false;
+     if (!Check(M->Flow->OpenTestView(TEXT("continue")) && M->Mode==US47Main::EMode::Play && M->Flow->CaseId==1 && !M->Flow->bStarting,
+      TEXT("actual title/Continue production OpenSave completed: ")+Name)) return false;
+     ++T.Loads;
+     const FVector Actual=M->Player->Pos;
+     const auto After=M->Flow->GameState(), AfterOffice=S47J::Clone(S47J::Obj(After,TEXT("office")));
+     auto ExpectedOffice=S47J::Clone(SourceOffice); ExpectedOffice->RemoveField(TEXT("interiorLayout")); AfterOffice->RemoveField(TEXT("interiorLayout"));
+     const bool bSameView=FMath::IsNearlyEqual(M->Player->Yaw,S47J::Num(SourcePose,TEXT("yaw")),1e-6) && FMath::IsNearlyEqual(M->Player->Pitch,S47J::Num(SourcePose,TEXT("pitch")),1e-6);
+     const bool bSamePosition=FMath::Abs(Actual.X-S47J::Num(SourcePose,TEXT("x")))<1e-6 && FMath::Abs(Actual.Z-S47J::Num(SourcePose,TEXT("z")))<1e-6;
+     const bool bExpectedPose=Round==0 ? (C.bMoved ? !bSamePosition && M->Office->Contains(Actual) : bSamePosition) : Actual.Equals(FirstPosition,1e-6);
+     if (!Check(Clear(Actual) && bSameView && bExpectedPose && Equal(AfterOffice,ExpectedOffice) &&
+      Equal(S47J::Obj(After,TEXT("case")),SourceCase) && Equal(InteriorDocs(),C.bLocked?T.InteriorLockedDocs:T.InteriorEarnedDocs) &&
+      S47J::Num(S47J::Obj(After,TEXT("office")),TEXT("interiorLayout"))==2,
+      TEXT("clear local restore retains exact key/read/story/docs/view and layout2, second Continue idempotent: ")+Name)) return false;
+     auto Receipt=S47J::New(); S47J::Set(Receipt,TEXT("cohort"),Name); S47J::Set(Receipt,TEXT("fixturePose"),SourcePose);
+     S47J::Set(Receipt,TEXT("actualPose"),S47J::Obj(After,TEXT("pose"))); S47J::Set(Receipt,TEXT("sourceOffice"),SourceOffice); S47J::Set(Receipt,TEXT("restoredOffice"),S47J::Obj(After,TEXT("office")));
+     S47J::Set(Receipt,TEXT("status"),TEXT("PASS_DISK_TITLE_CONTINUE_FIXTURE"));
+     FFileHelper::SaveStringToFile(S47J::Write(Receipt,true),*(T.Root/(Name+TEXT(".restore.json"))));
+     if (Round==0) FirstPosition=Actual;
+     Input=S47J::Clone(After);
+    }
+   }
+   return true;
+  };
+  if (!RunCohorts()) return;
+  US47Flow::FStart Original; Original.State=S47J::Clone(T.GoodOffice); Original.CaseId=0; Original.bDev=true; Original.Playtime=M->Playtime;
+  M->Flow->StartGame(Original);
+  if (!Check(M->Flow->bDevRun && M->Flow->CaseId==0 && M->Office->HasFieldSheet(),TEXT("interior cohort series restores original developer route and store"))) return;
+  UE_LOG(LogS47T02Test,Display,TEXT("S47: SARO interior contract PASS COMPLETE: physical bay return, four pose/layout fixtures, eight actual isolated Writer/freshReader/title/Continue restores; developer route resumed; human input UNVERIFIED"));
+  Aim(FVector(.45,1.2,9.65)); Stage(95,.35); return;
  }
  if (T.Stage == 95)
  {
@@ -485,6 +610,7 @@ void FS47T02Test::Step(double Dt)
  if (T.Stage == 98)
  {
   auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), T.bArrivalOffice ? TEXT("PASS_ARRIVAL_OFFICE_PHYSICAL_AND_DISK") : TEXT("PASS_EARLY_OFFICE_PHYSICAL_AND_DISK")); S47J::Set(Result, TEXT("checks"), T.Checks); S47J::Set(Result, TEXT("walkedMetres"), T.WalkDistance); S47J::Set(Result, TEXT("freshStoreFullFlowRestores"), T.Loads);
+  S47J::Set(Result,TEXT("saroInteriorContract"),T.bSaroInterior); S47J::Set(Result,TEXT("interiorTitleContinueCohorts"),T.bSaroInterior?8:0);
   FFileHelper::SaveStringToFile(S47J::Write(Result,true), *(T.Root/TEXT("result.json")));
   T.bDone = true; M->Player->TestMove.Reset();
   UE_LOG(LogS47T02Test, Display, TEXT("S47: early office PASS COMPLETE: %d checks, real key/drawer/door/paper interaction, %.2f m Walker, fresh disk/full Flow restore, no premature departure or VHS credit; artifacts %s"), T.Checks, T.WalkDistance, *T.Root);

@@ -28,6 +28,7 @@ public:
  bool Contains(const FVector& P) const;
  bool InThreshold(const FVector& P, double Radius = 0) const;
  bool RestoreDoorwayAt(const FVector& P, double Radius);
+ bool MigrateRestoredPose(FVector& P, double Radius);
  bool Use(const FString& Id);
  FS47Obj Object(const FString& Id) const;
  // Read means the actual text was opened; browsing the private folder is not a read.
