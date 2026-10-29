@@ -25,16 +25,28 @@ Ingen av de seks nye bildene viser disse byfasadene eller trafikksignalet. Rappo
 
 **Åpen, kritisk for stabilitet.** Tom rapporterer krasj i diner og foreslår samtidig Unreal/spill som mulig forklaring.
 
-- [ ] Undersøk de to faktiske krasjene, med motorlogg, krasjøyeblikk og ressursbudsjett fra riktig kjørbar fil.
+- [x] Undersøk de to faktiske krasjene, med motorlogg, krasjøyeblikk og ressursbudsjett fra riktig kjørbar fil. Komplette UE-krasjmapper, kjernefiler og tilhørende binærer/debugsymboler er sikret og hashbundet 29. oktober.
 - [ ] Avklar om Unreal/editor eller en annen tung jobb faktisk kjørte samtidig. Samtidighet er en hypotese, ikke fastslått rotårsak.
-- [ ] Kontroller én målrettet diner-rute uten andre tunge jobber etter en begrunnet rettelse. Registrer kvalitet, skjermoppløsning, renderer og minnebudsjett. Ikke start en full scenariomatrise for triage.
+- [x] Kontroller én målrettet diner-rute uten andre tunge jobber etter en begrunnet rettelse. Registrer kvalitet, skjermoppløsning, renderer og minnebudsjett. Ikke start en full scenariomatrise for triage.
 
 | Vedlegg | Tid, Europe/Oslo | Bekreftet spor |
 | --- | --- | --- |
-| [PID1692368](../../../unreal/Evidence/Playtest-2026-10-28/crash-1692368-excerpt.txt) | 28.10 kl. 16:30:37 CET | SIGSEGV etter fatal logging i Vulkan-bufferallokering og opprettelse av transient heap. |
-| [PID1710609](../../../unreal/Evidence/Playtest-2026-10-28/crash-1710609-excerpt.txt) | 28.10 kl. 16:53:16 CET | Samme funksjonskjede: AllocateBufferMemory, CreateHeap, transient CreateBuffer og FRDGBuilder. |
+| [PID1692368](../../../unreal/Evidence/Playtest-2026-10-28/crash-1692368-excerpt.txt) | 28.10 kl. 16:30:37 CET | Fatal Vulkan-OOM ved 128 MiB transient heap, frame 0 etter LoadMap. High/TSR-historikk 100; ingen dinerhandling bevist i denne loggen. |
+| [PID1710609](../../../unreal/Evidence/Playtest-2026-10-28/crash-1710609-excerpt.txt) | 28.10 kl. 16:53:16 CET | Fatal Vulkan-OOM ved 256 MiB transient heap etter faktiske dinerhandlinger. Ultra/TSR-historikk 200 fra frame 2. |
 
-Dette peker mot rendererens buffer-/minneallokering. Vedleggene alene inneholder ikke feilkoden eller budsjettet som trengs for å bevise VRAM-mangel, driverfeil eller prosesskonkurranse. At Tom var i diner, beviser heller ikke at MetaHuman eller dinerlogikken er årsaken. Fullstendige originale tekstvedlegg er bevart lokalt; repoet har diagnostiske utdrag og kontrollsummer til originalene.
+**Kontrollert 29. oktober:** De nå gjenfunne komplette motorloggene bekrefter `Out Of Memory` i `VulkanMemory.cpp:3114`. SIGSEGV følger motorens bevisste fatalavslutning; det er ikke bevis på en tilfeldig nullpeker i diner. Begge prøver minnetype 1 og deretter 5 på fysisk device-local heap 0. Vulkan EXT viser henholdsvis usage/budget 1097,62/3734,44 MiB og 8002,56/8119,81 MiB. Første avslag er fortsatt ikke forklart av dette budsjettparet alene. Det andre har bare 117,25 MiB differanse før forespørselen på 256 MiB. Begge logger systemoppløsning 2560×1440; separat faktisk viewport-/renderoppløsning er ikke bevart. Se [maskinlesbar triage](../../../unreal/Evidence/Playtest-2026-10-28/diner-triage-20261029.json).
+
+EXT-budsjettet er en veiledning og bruken et prosessestimat, ikke en garanti for at neste allokering lykkes. Verdiene kan endres med systemlast. Derfor blandes de ikke med motorens egne committed/reserved-tellere eller global `nvidia-smi`-bruk. [Khronos, VkPhysicalDeviceMemoryBudgetPropertiesEXT](https://docs.vulkan.org/refpages/latest/refpages/source/VkPhysicalDeviceMemoryBudgetPropertiesEXT.html).
+
+Riktig første binær er SHA256 `88508561fbf585009f5d5501aea7797d5b4cfe06657bad1651c99f7f421b4c70`, Build ID `45018ddc2bd83e66419211947400beccb7783a33`. Riktig andre binær er SHA256 `15037a528be5e6a073440790bab8eba8ef6d349b4b5acc3def9d3a57e1a47a04`, Build ID `979838f826aad2cfcdab584cb17369b260733f1b`. Dumpede ELF-sider matcher hver binær, og tilhørende debugfiler løser de faktiske stakkadressene. Første komplette pakkepayload er ikke funnet; første binær/debug/sym og core er sikret separat. Den komplette andre pakken er bevart i `~/scratch-bm/Signal47-graphics-settings-20261028/previous-installed/Linux` og beskyttet mot pakkeopprydding mens undersøkelsen pågår.
+
+Historiske guardkvitteringer viser ingen overlapp med de undersøkte nærliggende electric-arc-/graphics-jobbene, men mangler en prosessmåling akkurat ved krasjene. En bestemt konkurrerende prosess er derfor **UNVERIFIED**. Kerneljournalen viser NVIDIA-minneallokeringsfeil i samme tidsrom; den identifiserer heller ikke en bestemt konkurrent. Andre krasjdump viser dessuten 14 feilede store device-local-allokeringer igjen som 1875,25 MiB faktiske heap 1-allokeringer. Dette er et fallback-/reservasjonsspor i samme prosess, ikke bevis på lekkasje eller hvilket rendererpass som eier bufferne.
+
+**Nye avgrensede prøver:** Den byteidentiske andre pakken ble prøvd på Ultra/Vulkan ved faktisk 2560×1440, isolert `/tmp`-profil og fysisk `water`-rute uten andre tunge jobber. Originalinnstillingene, TSR100 og to Nanite-kapasitetsprøver nådde kritisk minnemangel; egen overvåker stoppet bare egen prosess. Ingen av disse er akseptert som tiltak, og produksjons-TSR/Nanite er uendret.
+
+R5 endret bare den konservative VSM-reserven til 0,25. Hele diner-/returruten, 2628 meter, telefon og fullworld/diskrestore bestod. Global GPU-topp var 8089 MiB, minst ledig 1767 MiB og Vulkan device-local peak 6385,99 MiB. 300 separate GPU-statusmeldinger gav null synlig-instansoverløp, med seks marking-køflagg. CSV-overløpsfeltet har en kjent payload-forskyvning i denne motoren og brukes ikke som aksept. Ny Linux-kilde `b70bf042` endrer bare denne reserven. Pakket R1 uten diagnoseoverstyring består 1709selvtester og full diner/retur, global GPU 8115/minst ledig 1740 MiB. KaldHigh/natt-R2 ved 01:35 har 3159rå statusmeldinger etter Continue uten synlig-instansoverløp. Dette er en målt minnemitigasjon, ikke bevis på full historisk rotårsak eller FPS. [Full prøveoversikt, mekanisme og akseptgrenser](../../Evidence/UnrealDeliveries/DINER_VULKAN_2026-10-29.md).
+
+Detaljer, kopikontrollsummer, rålogger, kernelutdrag og prøvekvitteringer ligger i `~/scratch-bm/Signal47-diner-crash-20261029`. Originale vedlegg og eldre bevis er bevart uendret. Prosjektbiblioteket ga ingen relevant Vulkan-minneløsning etter det påkrevde bredere søket; ingen plugin, motor eller driver er byttet.
 
 ## 3. Caliche: trafikksignal over veien
 
