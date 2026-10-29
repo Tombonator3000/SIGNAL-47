@@ -1,6 +1,6 @@
 # Delt, opprinnelig gårdsgeometri
 
-**Status:** Under arbeid. **Gjelder:** ENV-04, bare det eksisterende gårdsmotivet over road/SARO-overgangen. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Referanse, målrettet kandidat R1. **Gjelder:** ENV-04, bare det eksisterende gårdsmotivet over road/SARO-overgangen. **Sist kontrollert:** 29. oktober 2026.
 
 `S47HighwayRanch.cpp` partisjonerer indeksene i de tre opprinnelige, materialblandede modellene. Originale native assets beholdes; alle posisjoner, pakkede tangenter/normaler, UV-er, farger og materialslots kopieres uten normalisering. Lokale vertexkoordinater og trekantvinding er uendret.
 
@@ -24,3 +24,5 @@ De tre `highway:ranch:`-komponentene får `NoCollision` og går gjennom eksister
 CPU-R1 ble avvist før første mutasjon fordi `ImportedMaterialSlotName` krever `get_editor_property` i denne UE-versjonen. R2 består med uendrede struktursignaturer og CPU-retensjon på alle tre. Råbevis ligger i `~/scratch-bm/Signal47-farm-access-20261029` og `/tmp/S47-farm-cpu-prepare-r2/Saved/highway-ranch-cpu.json`.
 
 Statisk GLB-kontroll gir 300/3972 og null kryssende trekanter. C++-bygg, grafisk sammenheng, fysisk portprøve og disk/Continue må kvitteres av koordinatoren etter fryst kode. Ingen ny gårdsoppgave, modell, innendørsadgang eller endring av portens spillstatus inngår i denne geometridelen.
+
+CPU-/ressursrekkefølgen er faktisk kontrollert etter to avviste forsøk. Editor R3 fra575ffd15 og pakket R1 fra c301ead9 består hele farmreisen med ti buffer-/material-/RT-/synlighetsavlesninger og disk/title/Continue. [Leveringsrapport og bevisgrenser](../../../../Docs/Evidence/UnrealDeliveries/FARM_ACCESS_2026-10-29.md). Ingen installasjon eller fullmatrise.

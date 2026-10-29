@@ -1,6 +1,6 @@
 # Gården øst for landeveien: synlighet og stengt port
 
-**Status:** Under arbeid. **Gjelder:** ENV-04, den eksisterende ranchen og adkomsten fra landeveien. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Referanse, levert målrettet kandidat R1 gjennom [PR223](https://github.com/Tombonator3000/SIGNAL-47/pull/223). **Gjelder:** ENV-04, den eksisterende ranchen og adkomsten fra landeveien. **Sist kontrollert:** 29. oktober 2026.
 
 Den eksisterende ranchen er bakgrunnsdekor med hus, låve, tank og vindmølle. Innkjørselen går til en stengt rørport og ALDERETE-postkassen. Ingen implementert besøksinteraksjon, innendørsdestinasjon eller egen gårdsoppgave er funnet. Arbeidet bevarer dette omfanget.
 
@@ -65,10 +65,20 @@ R2 fra `3b419ff5` stoppet før kjøreruten med motorassert `StaticMesh->GetRende
 
 [Editor-R3-kvitteringen](../../../unreal/Evidence/FARM-ACCESS-2026-10-29/editor-r3-receipt.json) validerer sluttmarkør, normal exit0, alle ti bevaringsavlesninger, 300 faktisk synlige gårdstrekanter i riktig aktivt område før/etter områdeskiftet og etter Continue, samt original-/klonebuffere, indekser, materialer, RT, kollisjon og renderflagg. De CPU-forberedte nativefilene er uendret etter kjøring. Alle sju PNG-er har kontrollerte CRC/IEND/SHA og er åpnet. Den faktisk parkerte bilen har fremste kollisjonshjørne road-X 20.971988355 ved positiv gass 0.883110.
 
-Main med [PR222](https://github.com/Tombonator3000/SIGNAL-47/pull/222) er deretter samordnet i `c301ead9`, uten å endre gårdskoden. Oppdatert editorbygg R6 består. Pakket R1 er under produksjon fra denne rene kilden: 13 465 fryste runtime-inputfiler / 8 378 607 341 logiske byte. Den pakkede prøven skal også bekrefte main sine 1720 selvtester.
+Main med [PR222](https://github.com/Tombonator3000/SIGNAL-47/pull/222) er deretter samordnet i `c301ead9`, uten å endre gårdskoden. Oppdatert editorbygg R6 består. Pakket R1 er produsert fra denne rene kilden: 13 465 fryste runtime-inputfiler / 8 378 607 341 logiske byte. Den pakkede prøven bekrefter også main sine 1720 selvtester.
 
-## Videre kontroll og leveringsgrense
+## Pakket R1 består
 
-Editorens postfiks-bygg og sammenhengende kjøre-/gangreise består med avgrensningen ovenfor. Pakket kontroll gjenstår. Den målrettede reisen skal bruke normal innkjøring, målt bilstopp ved positiv gass, GetOutHere, postkasse/port til fots, samme bilinteraksjon, fysisk revers til landeveien og ordinær disk/title/Continue. Den første isolerte case1-disken er en uttrykkelig kopi av det faktiske case0-snapshotet; denne fixturen må skilles fra senere normal Flow.WriteSave.
+Kandidat R1 fra `c301ead9313510125d037a4cc020d667cd9c5661` består bygg/cook, uendret kildefingerprint og hele farmreisen. [Pakket kvittering](../../../unreal/Evidence/FARM-ACCESS-2026-10-29/packed-r1-receipt.json) binder de 13 465 runtime-inputfilene / 8 378 607 341 logiske byte og åtte payloadfiler. Spillbinæren er 314 401 152 byte, SHA-256 `2b6b60bf13d9d821d6f3520ed1105a25ff85b3c009cce2dbb9e0a7727de8acea`. Guard rapporterer normal exit0 uten konkurranse, og sluttmarkøren `FarmAccess contract PASS` finnes.
 
-Pakket spill, menneskelig input, subjektiv lesbarhet/lytting, FPS og fullmatrise er foreløpig **UNVERIFIED**. Ingen installasjon eller offentlig release er utført. Baseline og R1/R2 er avviste forsøk; editor R3 er målrettet bestått. Pakket levering og PR-merge er ennå ikke ferdig.
+Prøven består **1720 selvtester, 27 kontroller, 380,332192 m kjøring og 30,965562 m gange / 185,235679 s**. Alle ti native geometriavlesninger består gjennom road/SARO, porten og full Continue: 300 synlige ranchtriangler på riktig sted, uendrede originale buffer-/indeks-/materialfingeravtrykk og bevarte RT-/kollisjons-/renderflagg. De tre CPU-forberedte nativefilene er byteidentiske etter runtime. Selve portstoppet registrerer positiv gass, faktisk orientert bilfotavtrykk på nær side og senere Walker-stopp. Original bilproxy, normal retur/revers og hele diskgjenopprettingen består.
+
+Alle sju originale pakkede PNG-er er kontrollert for CRC, IEND og SHA og åpnet. Fire følger [bevisoversikten](../../../unreal/Evidence/FARM-ACCESS-2026-10-29/README.md); resten og det originale resultatet er bevart privat. Bildene har eksisterende RT-budsjettvarsel ved 80,481/400 MiB. Dette er ingen måling av FPS eller samlet GPU-minneaksept. Gårdsbygningene er små på rundt 400 meters avstand; kvitteringen skiller komponent-/bufferbevis fra subjektiv fjernlesbarhet. De to egne OpenOrder-loggene er sikkerhetskopiert og gjenopprettet til eksakte førhashes; ingen andre filer ble tilbakestilt.
+
+## Leveringsgrense
+
+Spilleren kan kjøre den korte innkjørselen til den stengte porten, gå ut til postkassen og porten, gå tilbake til bilen og rygge ut. Gårdsbygningene bortenfor er bakgrunnsdekor. Ingen ny gårdsoppgave, person, innendørsdestinasjon eller adgang bak porten er produsert.
+
+Én innledende road-Z535 BeginCommute-plassering er en uttrykkelig startfixture. Den første isolerte case1-disken er en uttrykkelig, uendret kopi av det faktiske case0-snapshotet; etterpå brukes ordinær title/Continue og normal Flow.WriteSave med fersk diskleser. Ruten bruker API-kontroll, normal Drive/Walker og faktiske interaksjonsstråler, ikke menneskelig input eller fysisk gamepad. Tiden er målt testkjøring, ikke dokumentert menneskelig spilletid.
+
+Historisk E01-kamera/bygg, menneskelig input, subjektiv fjernlesbarhet/lytting, FPS og fullmatrise er **UNVERIFIED**. Denne farmreisen gir ikke målrettet avspillingsaksept for meteorpassasjen som kom inn med main. Ingen installasjon eller offentlig release er utført. Den konkrete leveransen ligger i [PR223](https://github.com/Tombonator3000/SIGNAL-47/pull/223); baseline og R1/R2 beholdes som avviste forsøk.
