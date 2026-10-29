@@ -702,6 +702,7 @@ void AS47Web::BeginPlay()
 	S47SubstationDetail::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
+	BuildHighwayRanch();
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's
 	// group ten times as far as three has it: the dome at 30 km; the tone pass's fog stops at 25 km)
