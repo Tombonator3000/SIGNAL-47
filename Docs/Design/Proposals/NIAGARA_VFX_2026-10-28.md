@@ -29,6 +29,15 @@ Ved senere implementering skal engangsfasen beregnes fra lagret hendelsestid og 
 
 Dette tillegget gjelder meteorregnets plassering i regien. Det flytter ikke SC08, antennenes retur til 026 eller den nyere [SC02 til SC13-revisjonen](../Story/HISTORIE_SC02_SC13_REVISJON.md).
 
+## Implementert som FX-01, 29. oktober 2026
+
+[PR222](https://github.com/Tombonator3000/SIGNAL-47/pull/222) produserer passasjen som en utvidelse av det eksisterende materialtegnede stjerneskuddet (`M_WebMeteor`, samme strimmel og shader), ikke som Niagara-system. Himmelen tegnes i egne himmelkoordinater rundt øyet, og shaderen maskerer allerede stjernehullet og dagslyset. Noen få smale streker trengte derfor ingen ny asset, import eller CPU-/GPU-simulering. Effekten følger `S47Fx::Off()` og forhåndslastes med `S47Fx::Precache` som lysbuen.
+
+- Tid: fra `HoleFrom - 6` (den faktiske hendelsen + 4 s, ett sekund etter at antennene begynner å dreie) i 11 s pluss 0,2 s hale. Siste strek dør ut idet hullet begynner å tre frem; vanlige stjerneskudd holdes borte fra 3 s før til 60 s etter.
+- Tetthet: 14 streker på High (høyst 3 samtidig), 9 på Low (høyst 2), styrt av grafikkmenyens Effects som lysbuen. Hver strek starter 9 til 17 grader fra 026 / 32, kommer aldri nærmere enn 9,6 grader (hullets kant er 4,6) og holder seg over 20 grader.
+- Engangsavspilling: fasen beregnes fra historieklokka mot hendelsestiden, så pause og åpne paneler fryser den og lasting gjenoppretter den uten opphopning. `meteorPassage.done` lagres med saken. En lagring uten feltet regnes som avspilt når klokka er forbi passasjen. I vanlig spill kan det ikke lagres under hendelsen (`GameSaveBlock`), så neste gjenopptakspunkt er kapittel 1.
+- Bevis: `-S47MeteorPassageContract` med `-S47Jump=event` PASS på Low og High; bilder i `~/scratch-bm/Signal47-fx01-20261029/`. Kontrakten stopper vinduskameraet og stiller blikket mot hullet bare i testen. Pakket spill, ekte input og ytelsesmåling er UNVERIFIED.
+
 ## Ressursene fra bildene
 
 Alle fire GitHub-kilder var offentlige og ikke arkivert ved kontroll. **UNVERIFIED** betyr her at ingen av dem er importert, kompilert eller kjørt i SIGNAL / 47. Katalogisering er ikke en fungerende integrasjon.

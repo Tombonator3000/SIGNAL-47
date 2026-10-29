@@ -166,6 +166,8 @@ void US47WorldLife::Init(US47Main* InM)
 	FParse::Value(FCommandLine::Get(), TEXT("S47Clock="), ClockTest);
 	// -S47Meteor[=seconds]: a shooting star then (three seconds in); with -S47MeteorAim where the camera looks
 	if (!FParse::Value(FCommandLine::Get(), TEXT("S47Meteor="), MeteorAt) && FParse::Param(FCommandLine::Get(), TEXT("S47Meteor"))) MeteorAt = 3;
+	// -S47MeteorPassageContract (with -S47Jump=event): FX-01's targeted runtime check (S47MeteorPassageTest.cpp)
+	if (FParse::Param(FCommandLine::Get(), TEXT("S47MeteorPassageContract"))) PassageTest = MakePassageContract();
 	UE_LOG(LogS47Life, Display, TEXT("S47: the world's own life: live sky %s, %d flora patches, %d cones, haze %s, %d window lights, %d glow sets"),
 		Sky->IsLive() ? TEXT("on") : TEXT("off"), Flora.Num(), Cones.Num(), Haze.IsValid() ? TEXT("yes") : TEXT("no"), Windows.Num(), int32(L.IsValid()));
 }
@@ -303,7 +305,10 @@ void US47WorldLife::Step(double Dt)
 	}
 	else Sky->HoleFrom = TNumericLimits<double>::Max(); // (Infinity: not tonight yet)
 	const TOptional<double> SunElev = !bTitle && Hooks.SunElev ? Hooks.SunElev() : TOptional<double>();
+	// FX-01: the meteor passage follows the graphics menu's Effects (Low: fewer streaks), as the arc does
+	Sky->bPassageLow = M->Flow && M->Flow->Graphics.Effects == 0;
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
+	if (PassageTest) PassageTest(Dt);
 	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
@@ -582,6 +587,9 @@ void US47WorldLife::TestFlags(double Dt)
 
 // ---------- the self test ----------
 
+bool US47WorldLife::PassageDone() const { return Sky.IsValid() && Sky->bPassageDone; }
+void US47WorldLife::PassageReset(bool bDone) { if (Sky.IsValid()) Sky->PassageReset(bDone); }
+
 bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -664,6 +672,7 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 			*FString::Printf(TEXT("clouds: broken 40-70 %% layer by day and dusk (%.3f-%.3f), at most %.2f at night, per-minute step %.4f, evening clock wraps (%.3f)"), MinDay, MaxDay, MaxNight, MaxStep, FS47Sky::CloudCoverAt(-5.5 * 3600)));
 		Check(FS47Sky::CloudCoverAt(5 * 3600 + 30 * 60) > FS47Sky::CloudCoverAt(4 * 3600) && FS47Sky::CloudCoverAt(6 * 3600 + 30 * 60) >= 0.4 && FS47Sky::CirrusAt(18.5 * 3600) > FS47Sky::CirrusAt(2 * 3600 + 15 * 60),
 			TEXT("clouds: dawn builds the layer back; cirrus thins at night"));
+		bOk &= FS47Sky::PassageSelfTest(Lines);
 		FS47Sky Holes; Holes.SetClock(2 * 3600 + 15 * 60 + 12 + STAR_HOLE.After + 200);
 		Check(Holes.HoleK == 1 && Holes.CloudCover < 0.2, TEXT("clouds: the star hole after 02:15 opens in a sparse night sky (Draw clears its direction)"));
 	}
