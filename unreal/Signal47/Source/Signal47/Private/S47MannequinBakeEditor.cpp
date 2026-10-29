@@ -641,7 +641,15 @@ namespace S47MannequinBake
    const FVector Pelvis = Posed.Component[Bone(TEXT("pelvis"))].GetLocation();
    Seat = FTransform(FRotationMatrix::MakeFromXZ(Forward, FVector::UpVector).ToQuat(), Pelvis - FVector::UpVector * PoseNumber(TEXT("pelvis_above_seat_cm")));
    const double Drop = FMath::DegreesToRadians(PoseNumber(TEXT("thigh_drop_degrees")));
-   TArray<TSharedPtr<FJsonValue>> IK;
+   const FJson Binding = Contract->GetObjectField(TEXT("measured_seat_binding"));
+   Report->SetObjectField(TEXT("measured_seat_binding"), Binding);
+   if (!Need(Binding->GetStringField(TEXT("policy")) == TEXT("measured-bench-seat-and-original-ground") &&
+    Binding->GetStringField(TEXT("raw_result_sha256")) == TEXT("846064eeb055566ad7170583bd2dc7b737f0717b21c8a1aa37aa3f7f38579d7c") &&
+    Contract->GetObjectField(TEXT("pose"))->GetBoolField(TEXT("no_stretching")) &&
+    FMath::IsNearlyEqual(PoseNumber(TEXT("hand_above_pelvis_cm")) + Binding->GetNumberField(TEXT("legacy_seat_delta_cm")),
+     Binding->GetNumberField(TEXT("previous_hand_above_pelvis_cm")), 0.000000001),
+    TEXT("explicit measured bench/96-sole-sample binding and hand-height compensation, without stretching"))) return false;
+   TArray<TSharedPtr<FJsonValue>> IK, FootIK;
    for (const bool IsLeft : {true, false})
    {
     const int32 Thigh = Bone(IsLeft ? TEXT("thigh_l") : TEXT("thigh_r"));
@@ -649,9 +657,52 @@ namespace S47MannequinBake
     const int32 Foot = Bone(IsLeft ? TEXT("foot_l") : TEXT("foot_r"));
     if (!Need(Posed.Ref.GetParentIndex(Calf) == Thigh && Posed.Ref.GetParentIndex(Foot) == Calf, TEXT("native direct thigh/calf/foot chain"))) return false;
     const double ThighLength = FVector::Distance(Posed.Component[Thigh].GetLocation(), Posed.Component[Calf].GetLocation());
+    const double CalfLength = FVector::Distance(Posed.Component[Calf].GetLocation(), Posed.Component[Foot].GetLocation());
     Posed.Aim(Thigh, Calf, Forward * FMath::Cos(Drop) - FVector::UpVector * FMath::Sin(Drop) + Left * ((IsLeft ? 1 : -1) * PoseNumber(TEXT("knee_splay_cm")) / ThighLength));
     Posed.Aim(Calf, Foot, -FVector::UpVector);
     FTransform FlatFoot = Posed.Component[Foot]; FlatFoot.SetRotation(Reference.Component[Foot].GetRotation()); Posed.Set(Foot, FlatFoot);
+    // Preserve the proven R9 seed, then lift only its ankle target by the measured
+    // ground residual. The solver keeps both native segment lengths, with no stretch.
+    const TCHAR* FootName = IsLeft ? TEXT("foot_l") : TEXT("foot_r");
+    const FJson FloorTarget = Binding->GetObjectField(TEXT("foot_floor_targets"))->GetObjectField(FootName);
+    const double Lift = FloorTarget->GetNumberField(TEXT("vertical_lift_cm"));
+    FTransform ThighPose = Posed.Component[Thigh], CalfPose = Posed.Component[Calf], FootPose = Posed.Component[Foot];
+    const FTransform SeedThigh = ThighPose, SeedCalf = CalfPose, SeedFoot = FootPose;
+    const FVector FootTarget = SeedFoot.GetLocation() + FVector::UpVector * Lift, KneePole = SeedCalf.GetLocation();
+    const FVector ReachDelta = FootTarget - SeedThigh.GetLocation(); const double Reach = ReachDelta.Size();
+    const FVector PoleDelta = KneePole - SeedThigh.GetLocation();
+    const FVector PoleProjection = PoleDelta - ReachDelta.GetSafeNormal() * FVector::DotProduct(PoleDelta, ReachDelta.GetSafeNormal());
+    const bool Reachable = ThighLength > 0 && CalfLength > 0 && Reach > FMath::Abs(ThighLength - CalfLength) && Reach < ThighLength + CalfLength && !PoleProjection.IsNearlyZero();
+    FJson FootItem = Object(); FootIK.Add(Value(FootItem)); Report->SetArrayField(TEXT("foot_ik"), FootIK);
+    FootItem->SetStringField(TEXT("bone"), FootName); FootItem->SetObjectField(TEXT("measured_floor_target"), FloorTarget);
+    FootItem->SetObjectField(TEXT("seed_thigh_component"), TransformData(SeedThigh)); FootItem->SetObjectField(TEXT("seed_calf_component"), TransformData(SeedCalf)); FootItem->SetObjectField(TEXT("seed_foot_component"), TransformData(SeedFoot));
+    FootItem->SetArrayField(TEXT("target_native_cm"), Vector(FootTarget)); FootItem->SetArrayField(TEXT("knee_pole_native_cm"), Vector(KneePole));
+    FootItem->SetArrayField(TEXT("seed_foot_output_cm"), Vector(Seat.InverseTransformPosition(SeedFoot.GetLocation())));
+    FootItem->SetNumberField(TEXT("vertical_lift_cm"), Lift); FootItem->SetNumberField(TEXT("upper_length_cm"), ThighLength); FootItem->SetNumberField(TEXT("lower_length_cm"), CalfLength);
+    FootItem->SetNumberField(TEXT("target_reach_cm"), Reach); FootItem->SetNumberField(TEXT("minimum_reach_cm"), FMath::Abs(ThighLength-CalfLength)); FootItem->SetNumberField(TEXT("maximum_reach_cm"), ThighLength+CalfLength);
+    FootItem->SetBoolField(TEXT("reachable_without_stretch"), Reachable); FootItem->SetBoolField(TEXT("allow_stretching"), false);
+    if (!Need(Reachable && FloorTarget->GetIntegerField(TEXT("actual_rays")) == 48 &&
+     FloorTarget->GetStringField(TEXT("output_side")) == (IsLeft ? TEXT("negative_Y") : TEXT("positive_Y")) &&
+     FMath::IsNearlyEqual(Lift, -0.5 * (FloorTarget->GetNumberField(TEXT("minimum_gap_cm")) + FloorTarget->GetNumberField(TEXT("maximum_gap_cm"))), 0.000000001),
+     FString(TEXT("measured native ankle target reachable before no-stretch IK: ")) + FootName)) return false;
+    AnimationCore::SolveTwoBoneIK(ThighPose, CalfPose, FootPose, KneePole, FootTarget, ThighLength, CalfLength, false, 1.0, 1.0);
+    Posed.Set(Thigh, ThighPose); Posed.Set(Calf, CalfPose); Posed.Set(Foot, FootPose);
+    const FTransform ActualThigh = Posed.Component[Thigh], ActualCalf = Posed.Component[Calf], ActualFoot = Posed.Component[Foot];
+    const auto RotationError = [](const FTransform& A, const FTransform& B) { return FMath::RadiansToDegrees(A.GetRotation().GetNormalized().AngularDistance(B.GetRotation().GetNormalized())); };
+    const double AnkleError = FVector::Distance(ActualFoot.GetLocation(), FootTarget), RootError = FVector::Distance(ActualThigh.GetLocation(), SeedThigh.GetLocation());
+    const double UpperError = FMath::Abs(FVector::Distance(ActualThigh.GetLocation(), ActualCalf.GetLocation()) - ThighLength);
+    const double LowerError = FMath::Abs(FVector::Distance(ActualCalf.GetLocation(), ActualFoot.GetLocation()) - CalfLength);
+    const double FootRotationError = RotationError(ActualFoot, Reference.Component[Foot]);
+    const double SolverRotationError = FMath::Max3(RotationError(ActualThigh, ThighPose), RotationError(ActualCalf, CalfPose), RotationError(ActualFoot, FootPose));
+    const bool ScaleRetained = ActualThigh.GetScale3D().Equals(SeedThigh.GetScale3D(), 0.000001) && ActualCalf.GetScale3D().Equals(SeedCalf.GetScale3D(), 0.000001) && ActualFoot.GetScale3D().Equals(SeedFoot.GetScale3D(), 0.000001);
+    FootItem->SetObjectField(TEXT("actual_thigh_component"), TransformData(ActualThigh)); FootItem->SetObjectField(TEXT("actual_calf_component"), TransformData(ActualCalf)); FootItem->SetObjectField(TEXT("actual_foot_component"), TransformData(ActualFoot));
+    FootItem->SetObjectField(TEXT("reference_flat_foot_component"), TransformData(Reference.Component[Foot])); FootItem->SetArrayField(TEXT("actual_foot_output_cm"), Vector(Seat.InverseTransformPosition(ActualFoot.GetLocation())));
+    FootItem->SetNumberField(TEXT("ankle_target_error_cm"), AnkleError); FootItem->SetNumberField(TEXT("thigh_root_error_cm"), RootError); FootItem->SetNumberField(TEXT("upper_length_error_cm"), UpperError); FootItem->SetNumberField(TEXT("lower_length_error_cm"), LowerError);
+    FootItem->SetNumberField(TEXT("flat_reference_rotation_error_degrees"), FootRotationError); FootItem->SetNumberField(TEXT("solver_rotation_error_degrees"), SolverRotationError); FootItem->SetBoolField(TEXT("all_three_component_scales_retained"), ScaleRetained);
+    if (!Need(AnkleError <= PoseNumber(TEXT("max_foot_target_error_cm")) && RootError <= PoseNumber(TEXT("max_foot_target_error_cm")) &&
+     UpperError <= PoseNumber(TEXT("max_foot_segment_error_cm")) && LowerError <= PoseNumber(TEXT("max_foot_segment_error_cm")) &&
+     FootRotationError <= PoseNumber(TEXT("max_foot_rotation_error_degrees")) && SolverRotationError <= PoseNumber(TEXT("max_foot_rotation_error_degrees")) && ScaleRetained,
+     FString(TEXT("actual ankle/segment lengths/flat reference rotation and all three scales preserved after IK: ")) + FootName)) return false;
     const int32 Upper = Bone(IsLeft ? TEXT("upperarm_l") : TEXT("upperarm_r"));
     const int32 Lower = Bone(IsLeft ? TEXT("lowerarm_l") : TEXT("lowerarm_r"));
     const int32 Hand = Bone(IsLeft ? TEXT("hand_l") : TEXT("hand_r"));

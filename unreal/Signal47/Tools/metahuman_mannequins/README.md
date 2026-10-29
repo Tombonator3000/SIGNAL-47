@@ -1,10 +1,10 @@
 # Statiske MetaHuman-figurer, HUM-01
 
-**Status:** Under arbeid, faktisk produksjon UNVERIFIED. **Gjelder:** privat forfatting av én sittende radio-kvinne i UE 5.8.4. **Sist kontrollert:** 29. oktober 2026.
+**Status:** R9 privat native authoring PASS; R10 målt sittepose og runtimeaksept UNVERIFIED. **Gjelder:** privat forfatting av én sittende radio-kvinne i UE 5.8.4. **Sist kontrollert:** 29. oktober 2026.
 
 Dette er bakeløypen, ikke ferdig HUM-01 eller runtime-integrasjon. Radiokvinnens eksisterende håndtak, radio, proxy, dialog, tidsplan og lagring eies av den senere integrasjonen. Servitrisens animasjon og assets beholdes. Ingen mannlig prototype, ny casting, nedlasting eller Creator-assembly inngår.
 
-`radio_woman.json` beskriver én autoritativ native sittepose. Referanseskjelettet bestemmer beinbasis og faktisk kroppsmål. Lår peker frem med 3 graders fall, legger peker ned og føtter beholder sin referanseorientering. Ikke-strekkende TwoBoneIK plasserer hendene ved hver side av radioen. Håndleddet beholder faktisk referanselokal transform relativt til den nye underarmen; det beholder ikke en løs verdensrotasjon fra A-posen. Dette er ikke et ferdig radiogrep. Kroppens pose overføres til klær med samme navngitte bein, foreldre og målte referansematriser. Ansiktets felles bein følger kroppen; egne ansiktsgrener beholder faktiske lokale referansetransformer. Rigid hår og bryn bruker samme målte head-delta.
+`radio_woman.json` beskriver én autoritativ native sittepose. Referanseskjelettet bestemmer beinbasis og faktisk kroppsmål. Beinets startpose beholder R9s lår med 3 graders fall, kneutslag, nedoverrettede legger og flat referanseorientering på føttene. R10 bruker deretter ikke-strekkende TwoBoneIK til de faktisk målte ankelmålene beskrevet nedenfor. Hendene bruker samme eksisterende IK- og håndleddspolicy, med målt høydekompensasjon for setet. Håndleddet beholder faktisk referanselokal transform relativt til den nye underarmen; det beholder ikke en løs verdensrotasjon fra A-posen. Dette er ikke et ferdig radiogrep. Kroppens pose overføres til klær med samme navngitte bein, foreldre og målte referansematriser. Ansiktets felles bein følger kroppen; egne ansiktsgrener beholder faktiske lokale referansetransformer. Rigid hår og bryn bruker samme målte head-delta.
 
 Native output har +X frem, +Y høyre, +Z opp og sete som origo. Pelvis er 8 cm over setet. Dette er ikke gamlefigurens stående fotanker. Ansiktet er den faktiske nøytrale referanseposen, uten RigLogic-evaluering. Korreksjonsbein følger sine poserte foreldre; dynamiske RBF-korreksjoner kjøres ikke. Særlig frakkens sete/lår, øyne, hender og skokontakt må derfor åpnes og vurderes i den faktiske plasseringen før aksept.
 
@@ -54,6 +54,16 @@ Før ny R9 kan root bruke en ny, separat nativejobb med `mode=materials` mot bev
 
 R4 målte fire native LOD-er i både Body og Face. Body har 60 816 / 15 196 / 6 632 / 1 952 trekanter, Face 34 514 / 6 872 / 1 524 / 356. Det eksplisitte neste kildevalget er derfor overall 0/1/3, med uendrede outputtak 150k/70k/40k og screens 1/.25/.07. R5 målte kortene i `card_sources`: nært Hair 15 441 + Brow 2 744, fjernt 5 494 + 1 322. Sammen med kropp/ansikt/klær gir dette planlagt 134 803 / 50 172 / 30 412 trekanter. Dette er summer av faktiske kildetall, ikke en allerede produsert og akseptert outputmesh.
 
+## R10: målt sete og gulv
+
+Den faktiske `bench-diagnostic-r2` fra `2e71ef81` målte ni av ni benkestråler, median UE-Z 786,1326167035835 cm og spredning 0,07708936695610191 cm. Dette er 6,559057316375288 cm under det opprinnelige personankeret. Prøven ble kontrollert avvist ved eksisterende 2 cm-kontroll; den var ingen runtimeaksept. Alle 96 faktiske gulvstråler under R9s laveste Shoe/Trim-vertexer traff eksisterende komponenter 1242/1823 med normal-Z over 0,9995. Råresultatets SHA256 er `846064eeb055566ad7170583bd2dc7b737f0717b21c8a1aa37aa3f7f38579d7c`; original, sammendrag og avvist prøve beholdes privat.
+
+`measured_seat_binding` binder disse målene i kontrakten. `foot_l` er negativ output-Y: de 48 målte gapene var -5,611588503672351 til -4,976066851036194 cm, som gir midtrangeløft 5,2938276773542725 cm. `foot_r` er positiv output-Y: 48 gap fra -6,31156230400552 til -5,851316054073209 cm gir løft 6,081439179039364 cm. Forventet restavvik for en flat, translatert såle er henholdsvis ±0,31776082631807867 og ±0,2301231249661555 cm. Dette er en prediksjon fra R9-geometrien; faktisk ny skogeometri må fremdeles stråleprøves.
+
+Bakeren beholder hele tidligere beinstilling som seed, setter ankelmålet til seed-fotens CS-posisjon pluss målt løft langs oppaksen og bruker seed-kneet som bøyeplanmål. Den installerte `AnimationCore::SolveTwoBoneIK`-overloaden får eksplisitte opprinnelige lår-/legglengder og `bAllowStretching=false`. Før solve kreves fysisk rekkevidde mellom differansen og summen av segmentlengdene og et ikke-degenerert bøyeplan. Alle tre løste CS-transformene settes gjennom `FPose.Set`. Etterpå kontrolleres faktisk ankelmål og uflyttet hofterot innen 0,00001 cm, begge segmentlengder innen 0,00001 cm, flat FootRef-CS-rotasjon og solverrotasjoner innen 0,00001 grader samt alle tre beholdte skalaer innen 0,000001. `foot_ik` rapporterer seed, mål, reach, hele faktiske transformdata og feil også ved avslag. Dette endrer ingen Body-/Face-/Cloth-bind-, payload- eller tidligere referansegrenser.
+
+Håndmålet over pelvis økes fra 8 til 14,559057316375288 cm for å kompensere akkurat for det lavere målte setet og beholde vertikal håndhøyde mot den uflyttede originalradioen. Håndleddspolicyen er uendret. Originale modell-/skjelettkilder, benk, bakken, radio og proxy flyttes ikke av bakeren. R10 skal produseres i en frisk privat mappe gjennom alle fire prosessene nedenfor; native probe/bake/fersk verifikasjon, faktisk skokontakt, hånd/radio og hele silhuetten er fortsatt UNVERIFIED.
+
 ## Root kjører tunge steg sekvensielt
 
 Disse kommandoene er oppskrift, ikke kjørte jobber. Alle Blender-/UE-/byggetrinn går gjennom prosjektets guard og isolerte profiler. Ikke start dem ved en annen tung jobb eller Toms spilløkt.
@@ -65,19 +75,19 @@ Disse kommandoene er oppskrift, ikke kjørte jobber. Alle Blender-/UE-/byggetrin
 python3 unreal/Signal47/Tools/metahuman_mannequins/prepare.py \
   --inventory /home/tom/scratch-bm/Signal47-mannequins-20261029/source-inventory.json \
   --clothing-report /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r1/clothing-report.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR9
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR10
 ```
 
 3. Bygg editor fra fryst kilde. `S47MannequinBakeEditor.cpp` og modulavhengighetene finnes bare når `Target.bBuildEditor` / `WITH_EDITOR` gjelder. Ingen runtime-krok registreres.
-4. Kjør `run_editor.py` først med `S47_MANNEQUIN_JOB` satt til `BakeR9/job-import.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer og lagrer de ni private assetene før en avledet nativejobb med `mode=bind-clothes`. `native_report=clothes_bind_report` velger aktiv utfil. Importkvitteringen skal først skrives etter akseptert bind og må binde de faktisk ferdiglagrede filene. Avslutt denne prosessen normalt. Kjør så `job-probe.json` i en ny PID og eget `/tmp`-profilnavn, fortsatt NullRHI. Før vanlig poseprobe skal en avledet jobb med `mode=verify-clothes-bind` skrive til `clothes_bind_verify_report`, etterfulgt av kontroll av opprinnelig bindkvittering og importens ni filhasher. Krev `S47 MANNEQUIN PROBE PASS`. Alle native bindmoduser avsluttes etter Preflight, før PoseBody; den vanlige proben må fortsatt bestå de uendrede kravene. Behold alle avvisninger; bruk et nytt run-navn ved neste forsøk. NullRHI er ikke shader-, render- eller utseendeaksept.
-5. Først etter akseptert pose/basis: kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med det aksepterte run-navnets `job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter, og faktisk native Face-bindgeometri må bestå. Følgende BakeR9-eksempel viser flaggene, og er ikke tillatelse til å fortsette fra en avvist probe:
+4. Kjør `run_editor.py` først med `S47_MANNEQUIN_JOB` satt til `BakeR10/job-import.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer og lagrer de ni private assetene før en avledet nativejobb med `mode=bind-clothes`. `native_report=clothes_bind_report` velger aktiv utfil. Importkvitteringen skal først skrives etter akseptert bind og må binde de faktisk ferdiglagrede filene. Avslutt denne prosessen normalt. Kjør så `job-probe.json` i en ny PID og eget `/tmp`-profilnavn, fortsatt NullRHI. Før vanlig poseprobe skal en avledet jobb med `mode=verify-clothes-bind` skrive til `clothes_bind_verify_report`, etterfulgt av kontroll av opprinnelig bindkvittering og importens ni filhasher. Krev `S47 MANNEQUIN PROBE PASS`. Alle native bindmoduser avsluttes etter Preflight, før PoseBody; den vanlige proben må fortsatt bestå de uendrede kravene. Behold alle avvisninger; bruk et nytt run-navn ved neste forsøk. NullRHI er ikke shader-, render- eller utseendeaksept.
+5. Først etter akseptert pose/basis: kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med det aksepterte run-navnets `job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter, og faktisk native Face-bindgeometri må bestå. Følgende BakeR10-eksempel viser flaggene, og er ikke tillatelse til å fortsette fra en avvist probe:
 
 ```sh
-S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR9/job-bake.json \
+S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR10/job-bake.json \
   /home/tom/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd \
   /home/tom/scratch-bm/wt/evening/unreal/Signal47/Signal47.uproject \
   -unattended -nosplash -nosound -AllowCommandletRendering -RenderOffScreen \
-  -UserDir=/tmp/S47-radio-woman-bake-r9 \
+  -UserDir=/tmp/S47-radio-woman-bake-r10 \
   -run=pythonscript \
   -script=/home/tom/scratch-bm/wt/evening/unreal/Signal47/Tools/metahuman_mannequins/run_editor.py
 ```
@@ -87,8 +97,8 @@ S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/Bake
 
 ```sh
 python3 unreal/Signal47/Tools/metahuman_mannequins/verify_files.py \
-  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR9/job-bake.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR9/authoring-files-receipt.json
+  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR10/job-bake.json \
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR10/authoring-files-receipt.json
 ```
 
 Ikke fortsett til runtime dersom en kontroll avvises. Kildene gjenopprettes ikke automatisk. Originaler, avviste prøver og deres kvitteringer beholdes for diagnose.
