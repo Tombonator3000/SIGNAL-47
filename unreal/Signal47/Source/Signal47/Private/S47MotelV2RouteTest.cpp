@@ -333,8 +333,10 @@ void AS47Web::BeginMotelV2Route()
   const double Floor=FS47MotelV2::FloorAt(P->Pos.X,P->Pos.Z);
   if(!FMath::IsFinite(Floor)||FMath::Abs(P->FloorY-Floor)>.012){Fail(TEXT("Walker floor does not match authored surface height"));return;}
   int32 GroundHits=0;TArray<FString> FloorSamples;
-  // Five foot samples allow a genuine2cm concrete joint, but reject an invisible raised plane.
-  for(const FVector2D& Offset:{FVector2D(0,0),FVector2D(.035,0),FVector2D(-.035,0),FVector2D(0,.035),FVector2D(0,-.035)})
+  // A 2cm authored slab joint can miss the three collinear centre samples.
+  // Add four footprint corners and require six actual first hits out of nine.
+  // Heights, native ownership and the physical route remain strict.
+  for(const FVector2D& Offset:{FVector2D(0,0),FVector2D(.035,0),FVector2D(-.035,0),FVector2D(0,.035),FVector2D(0,-.035),FVector2D(.035,.035),FVector2D(.035,-.035),FVector2D(-.035,.035),FVector2D(-.035,-.035)})
   {
    FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47MotelRouteFloor),true,P);
    const bool Hit=W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(P->Pos.X+Offset.X,Floor+.025,P->Pos.Z+Offset.Y),S47Three::ToUE(P->Pos.X+Offset.X,Floor-.2,P->Pos.Z+Offset.Y),ECC_Visibility,Q);
@@ -345,7 +347,7 @@ void AS47Web::BeginMotelV2Route()
    }
    else FloorSamples.Add(FString::Printf(TEXT("offset=%.3f,%.3f no collision hit, expected height=%.6f"),Offset.X,Offset.Y,Floor));
   }
-  if(GroundHits<3){for(const auto& Line:FloorSamples)UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 floor diagnosis %s"),*Line);Fail(FString::Printf(TEXT("native visible walking surface absent under feet: %d/5 rays"),GroundHits));return;}S->FloorRays+=5;
+  if(GroundHits<6){for(const auto& Line:FloorSamples)UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 floor diagnosis %s"),*Line);Fail(FString::Printf(TEXT("native visible walking surface absent under feet: %d/9 rays"),GroundHits));return;}S->FloorRays+=9;
   if(Goal.Action==6){FString Error;if(!PoolExteriorSample(M,S->Root,Error)){Fail(Error);return;}}
   if(Goal.Action==2||Goal.Action==3)
   {
