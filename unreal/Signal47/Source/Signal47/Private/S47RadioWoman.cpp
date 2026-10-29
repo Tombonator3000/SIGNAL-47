@@ -18,7 +18,7 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47RadioWoman,Log,All);
 namespace
 {
- FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR5/SM_RadioWoman_Seated");
+ FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR6/SM_RadioWoman_Seated");
  FAutoConsoleVariableRef AssetCVar(TEXT("s47.RadioWoman.Asset"),AssetPath,TEXT("Private accepted bake candidate; evaluated when the world is built."),ECVF_Default);
  struct FExpected {int32 Node,Geo,Material,Triangles;};
  const FExpected Expected[]={{1481,1028,656,108},{1482,1029,657,156},{1483,1030,658,48},{1484,1031,641,36},{1485,1032,638,12},{1486,1033,659,100}};
