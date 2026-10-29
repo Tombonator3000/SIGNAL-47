@@ -19,7 +19,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 | FIX-04 | [ ] Rett bassengsti som blafrer, bassengkant/dekke under terreng og uønsket klump utenfor gjerdet. | E04/E05. Identifiser det konkrete uønskede meshet før fjerning. |
 | FIX-05 | [ ] Rett telefonretning og overlappende ICE-/avis-/skilt-/veggdeler ved motellet. | E05. Bevar ønsket retro keramikkmønster. |
 | FIX-06 | [x] (PR214, kilde, SC01-kontrakt PASS 190) Behold museposisjonen ved ny SARO-dialog, flytt tekstpanelet ned og rett veiledning/fremdrift ved service-/besøksdør. | [Detaljert feilrapport](Reports/PLAYTEST_TODO_2026-10-28.md). Ny dørtekst på main er ikke alene bevis på installert eller fungerende løsning. |
-| FIX-07 | [x] Kilde/native og målrettet kontroll: feltutstyr, kulvert, serviceflate og naturlig gradering erstatter enkle/svevende deler. | [Leveringskvittering](../Evidence/UnrealDeliveries/SUBSTATION_FIELD_2026-10-29.md): 84 lagrede LOD-kontroller, 1709 selvtester, T01 og tidligere T02/SC02. Pakket spill følger neste kandidat; ingen installasjon. |
+| FIX-07 | [x] [PR218](https://github.com/Tombonator3000/SIGNAL-47/pull/218), kilde/native og målrettet kontroll: feltutstyr, kulvert, serviceflate og naturlig gradering erstatter enkle/svevende deler. | [Leveringskvittering](../Evidence/UnrealDeliveries/SUBSTATION_FIELD_2026-10-29.md): 84 lagrede LOD-kontroller, 1709 selvtester, T01 og tidligere T02/SC02. Pakket spill følger neste kandidat; ingen installasjon. |
 
 ## Omgivelser og mennesker
 

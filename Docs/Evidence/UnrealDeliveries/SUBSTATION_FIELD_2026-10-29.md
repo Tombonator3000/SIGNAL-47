@@ -1,6 +1,6 @@
 # Trafoutstyr og bakke ved Caliche junction
 
-**Status:** Kilde og native kontrollert; levering pågår. **Gjelder:** FIX-07. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Kilde og native kontrollert i [PR218](https://github.com/Tombonator3000/SIGNAL-47/pull/218). **Gjelder:** FIX-07. **Sist kontrollert:** 29. oktober 2026.
 
 Claude har erstattet de enkle feltmodellene med et detaljert testskap, en referansestolpe, en kulvert og gradering ved servicefeltet. Modellene møter den målte bakken og fundamentene. Codex overtok den uleverte grenen kl. 04:28 etter HANDOFF-regelen om mer enn 75 minutter uten hjerteslag. De 44 eksisterende deltafilene ble sikret med kontrollsummer før overtakelsen.
 
