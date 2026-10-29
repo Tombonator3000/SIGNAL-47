@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47PaleBody.h"
+#include "S47Json.h"
 
 class US47Main;
 
@@ -21,6 +22,7 @@ public:
  void Step(double Dt);
  void Stop();
  void ControlTest(double Dt);
+ bool Allowed() const;
  const TArray<FEvent>& Events() const { return List; }
 private:
  US47Main* M = nullptr;
@@ -30,7 +32,13 @@ private:
  double PaleLeft = 0, PaleClock = 0;
  FVector PaleAt = FVector::ZeroVector;
  double PaleYaw = 0;
- FString TestDir, ShotName; double TestT = 0, ShotAt = 0; int32 TestStep = 0; bool bTestInit = false, bTestDone = false;
+ FString TestDir; double TestT = 0, TestWallBegan = 0, TestNext = 4; int32 TestStep = 0;
+ bool bTestInit = false, bTestDone = false, bTestAwaiting = false, LastActionOK = false;
+ S47J::FObj LastActionReport;
+ TArray<TSharedPtr<FJsonValue>> TestEvidence;
+ TArray<FString> TestPictures;
  void AddBuiltIn();
- void SpawnPale();
+ bool SpawnPale();
+ S47J::FObj Readback() const;
+ void FinishTest(bool Good, const FString& Reason);
 };

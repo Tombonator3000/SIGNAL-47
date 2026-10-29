@@ -23,6 +23,7 @@ namespace
 {
  constexpr double Arrive = 2 * 3600. + 55 * 60; // the gate, on the signed night axis
  constexpr double WalkSpeed = 1.15, ChaseSpeed = 2.1, SeeTime = .35, LoseTime = 2.6, Reach = .9, GrabHold = .7;
+ constexpr double BodyRadius = .27; // The same measured clearance as the annex graph and ordinary Walker.
  constexpr double SightRange = 14, SightCos = .342, ListenCos = .7, LureCos = .87, WalkHear = 9, RunHear = 14;
  constexpr double ListenTime = 5, LureTime = 12, FadeTime = 1.2;
  enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl };
@@ -33,9 +34,10 @@ namespace
  double Wrap(double A) { while (A > PI) A -= 2 * PI; while (A < -PI) A += 2 * PI; return A; }
  double YawTo(const FVector2D& D) { return FMath::Atan2(D.Y, D.X); } // UE yaw from three x/z
  // The door zones of walks.saro (exitDoor, recordsDoor, southDoor): the openings between the rooms.
- struct FGap { const TCHAR* Door; double X0, X1, Z0, Z1; };
+ struct FGap { const TCHAR* Door; double X0, X1, Z0, Z1, Plane; bool bX; };
  struct FDoorNoise { const TCHAR* Door; double Reach; };
- const FGap Gaps[] = {{TEXT("exitDoor"), -6.9, -5.0, 5.25, 6.15}, {TEXT("recordsDoor"), -4.38, -3.42, 5.6, 7.7}, {TEXT("doorSouth"), -2.88, -1.92, 3.6, 5.8}, {TEXT("doorEast"), 5.0, 7.1, 1.12, 2.08}};
+ const FGap Gaps[] = {{TEXT("exitDoor"), -6.9, -5.0, 5.25, 6.15, -6.27, true}, {TEXT("recordsDoor"), -4.38, -3.42, 5.6, 7.7, 6.85, false},
+  {TEXT("doorSouth"), -2.88, -1.92, 3.6, 5.8, 4.72, false}, {TEXT("doorEast"), 5.0, 7.1, 1.12, 2.08, 6.06, true}};
  // A door the player moves is a sound at its opening: the heavy outer doors carry, the light inner ones less.
  const double GapReach[] = {14, 7, 7, 14};
  // FS47HorrorThreat's Liang-Barsky test: does segment A-B touch the rectangle?
@@ -52,12 +54,43 @@ namespace
   };
   return Clip(-D.X, A.X - R.X0) && Clip(D.X, R.X1 - A.X) && Clip(-D.Y, A.Y - R.Z0) && Clip(D.Y, R.Z1 - A.Y);
  }
+ bool CrossesDoor(const FVector2D& A, const FVector2D& Z, const FGap& G)
+ {
+  const double From = (G.bX ? A.X : A.Y) - G.Plane, To = (G.bX ? Z.X : Z.Y) - G.Plane;
+  if ((From > 0 && To > 0) || (From < 0 && To < 0) || FMath::Abs(To - From) < 1e-8) return false;
+  const double K = -From / (To - From), Across = G.bX ? FMath::Lerp(A.Y, Z.Y, K) : FMath::Lerp(A.X, Z.X, K);
+  return K >= 0 && K <= 1 && Across >= (G.bX ? G.Z0 : G.X0) && Across <= (G.bX ? G.Z1 : G.X1);
+ }
+ S47J::FObj SourceSave(const FS47Doc& D)
+ {
+  auto O = S47J::New(); S47J::Set(O,TEXT("id"),D.Id); S47J::Set(O,TEXT("title"),D.Title); S47J::Set(O,TEXT("kind"),D.Kind);
+  S47J::Set(O,TEXT("stamp"),D.Stamp); S47J::Set(O,TEXT("page"),D.Page); S47J::Set(O,TEXT("transcript"),D.Transcript);
+  S47J::Set(O,TEXT("image"),D.Image); S47J::Set(O,TEXT("paper"),D.Paper); S47J::Set(O,TEXT("paperRatio"),D.PaperRatio);
+  TArray<TSharedPtr<FJsonValue>> Sheets;
+  for (const auto& S : D.Sheets)
+  {
+   auto Row = S47J::New(); S47J::Set(Row,TEXT("page"),S.Page); S47J::Set(Row,TEXT("paper"),S.Paper);
+   S47J::Set(Row,TEXT("strip"),S.Strip); S47J::Set(Row,TEXT("term"),S.Term); Sheets.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  O->SetArrayField(TEXT("sheets"),Sheets); return O;
+ }
+ FS47Doc SourceLoad(const S47J::FObj& O)
+ {
+  FS47Doc D; D.Id=S47J::Str(O,TEXT("id")); D.Title=S47J::Str(O,TEXT("title")); D.Kind=S47J::Str(O,TEXT("kind"));
+  D.Stamp=S47J::Str(O,TEXT("stamp")); D.Page=S47J::Str(O,TEXT("page")); D.Transcript=S47J::Str(O,TEXT("transcript"));
+  D.Image=S47J::Str(O,TEXT("image")); D.Paper=S47J::Str(O,TEXT("paper")); D.PaperRatio=S47J::Num(O,TEXT("paperRatio"));
+  for (const auto& V:S47J::Arr(O,TEXT("sheets"))) if (V && V->Type==EJson::Object)
+  {
+   const auto S=V->AsObject(); D.Sheets.Add({S47J::Str(S,TEXT("page")),S47J::Str(S,TEXT("paper")),S47J::Str(S,TEXT("strip")),S47J::Str(S,TEXT("term"))});
+  }
+  return D;
+ }
 }
 
 const TArray<FS47SC04::FNode>& FS47SC04::Nodes()
 {
  static const TArray<FNode> N = {
-  {TEXT("office"), FVector2D(.4, 5.75)}, {TEXT("corridorSouth"), FVector2D(-2.4, 5.7)}, {TEXT("corridorRecords"), FVector2D(-3.9, 5.7)},
+  {TEXT("office"), FVector2D(.4, 5.75)}, {TEXT("corridorSouth"), FVector2D(-2.4, 6.05)}, {TEXT("corridorRecords"), FVector2D(-3.9, 6.05)},
   {TEXT("exit"), FVector2D(-5.3, 5.7)}, {TEXT("stoop"), FVector2D(-7.0, 5.7)}, {TEXT("rampEnd"), FVector2D(-11.1, 5.7)},
   {TEXT("westMid"), FVector2D(-11.1, 0.0)}, {TEXT("westNorth"), FVector2D(-9.0, -7.5)},
   {TEXT("recordsIn"), FVector2D(-3.9, 7.5)}, {TEXT("recordsEast"), FVector2D(-2.3, 7.6)}, {TEXT("recordsBinder"), FVector2D(-2.2, 9.6)},
@@ -86,8 +119,8 @@ const TCHAR* FS47SC04::BodyName(EBody In)
 int32 FS47SC04::Room(const FVector2D& At)
 {
  if (At.Y < 4.6 && At.Y > -4.4 && At.X > -5.9 && At.X < 5.9) return 0;
- if (At.Y < 6.6 && At.X > -6.0 && At.X < 2.0) return 1;
- if (At.Y < 10.5 && At.X > -5.9 && At.X < -1.2) return 2;
+ if (At.Y >= 4.6 && At.Y < 6.6 && At.X > -6.0 && At.X < 2.0) return 1;
+ if (At.Y >= 6.6 && At.Y < 10.5 && At.X > -5.9 && At.X < -1.2) return 2;
  return 3;
 }
 
@@ -96,13 +129,20 @@ int32 FS47SC04::Room(const FVector2D& At)
 void FS47SC04::Begin(const S47J::FObj& Saved)
 {
  Stop();
- P = EStep::Drive; F = FFacts();
+ P = EStep::Drive; F = FFacts(); SourcesVersion = 1; SourcePapers.Reset();
  if (!Saved) return;
  P = EStep(FMath::Clamp(S47J::Int(Saved, TEXT("step")), 0, int32(EStep::Done)));
  F.bSchedule = S47J::Bool(Saved, TEXT("schedule")); F.bStrip = S47J::Bool(Saved, TEXT("strip"));
  F.bJournal = S47J::Bool(Saved, TEXT("journal")); F.bBinder = S47J::Bool(Saved, TEXT("binder"));
  F.bEscaped = S47J::Bool(Saved, TEXT("escaped")); F.bLure = S47J::Bool(Saved, TEXT("lure"));
  F.Captures = FMath::Max(0, S47J::Int(Saved, TEXT("captures")));
+ SourcesVersion = S47J::Int(Saved,TEXT("sourcesVersion"),0);
+ if (SourcesVersion == 0 || SourcesVersion == 1) for (const auto& V:S47J::Arr(Saved,TEXT("sources"))) if (V && V->Type==EJson::Object)
+ {
+  FS47Doc D=SourceLoad(V->AsObject());
+  if (!D.Id.IsEmpty() && !SourcePapers.ContainsByPredicate([&](const FS47Doc& Pp){return Pp.Id==D.Id;})) SourcePapers.Add(MoveTemp(D));
+ }
+ Refile();
  // A meeting is never saved half run: a load during it starts the annex again at the binder.
  if (P == EStep::Hunt) bRestartHunt = true;
 }
@@ -114,13 +154,40 @@ S47J::FObj FS47SC04::Save() const
  S47J::Set(O, TEXT("schedule"), F.bSchedule); S47J::Set(O, TEXT("strip"), F.bStrip); S47J::Set(O, TEXT("journal"), F.bJournal);
  S47J::Set(O, TEXT("binder"), F.bBinder); S47J::Set(O, TEXT("escaped"), F.bEscaped); S47J::Set(O, TEXT("lure"), F.bLure);
  S47J::Set(O, TEXT("captures"), F.Captures);
+ S47J::Set(O,TEXT("sourcesVersion"),SourcesVersion);
+ TArray<TSharedPtr<FJsonValue>> Sources;
+ for (const auto& D:SourcePapers) Sources.Add(MakeShared<FJsonValueObject>(SourceSave(D)));
+ O->SetArrayField(TEXT("sources"),Sources);
  return O;
 }
 
 void FS47SC04::Stop()
 {
- B = EBody::Away; bShown = false; Path.Reset(); bLureRinging = false; FadeT = -1;
+ B = EBody::Away; bShown = false; Path.Reset(); bLureRinging = false; FadeT = -1; bRestartHunt = false;
+ bHavePlayer = false; bBodyUnavailable = false; BlockedDoor.Reset();
  Pale.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);
+}
+
+void FS47SC04::KeepSources()
+{
+ if (!M || !M->Story) return;
+ // Own exact copies of the actual transfer folder, not freshly reconstructed templates.
+ // This includes earlier acquired logs/charts with their real stamps and image/sheet payloads.
+ for (const FS47Doc& D:M->Story->Docs())
+  if (!D.Id.IsEmpty() && !SourcePapers.ContainsByPredicate([&](const FS47Doc& Pp){return Pp.Id==D.Id;})) SourcePapers.Add(D);
+}
+
+void FS47SC04::Refile()
+{
+ if (M && M->Story) for (const FS47Doc& D:SourcePapers) M->Story->AddDoc(D);
+}
+
+bool FS47SC04::SourcesReady() const
+{
+ if (SourcesVersion == 0) return true; // Explicit compatibility: old flags never fabricate missing papers.
+ return SourcesVersion == 1
+  && SourcePapers.ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("sc04_schedule") && !D.Page.IsEmpty();})
+  && SourcePapers.ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("sc04_strip") && !D.Page.IsEmpty();});
 }
 
 void FS47SC04::SetStep(EStep Next)
@@ -209,7 +276,7 @@ bool FS47SC04::Use(const FString& Id)
   M->UI->Toast(TEXT("You dial the operations office. Down the corridor, behind its door, the phone starts ringing."), 4);
   UE_LOG(LogS47SC04, Display, TEXT("S47: SC04 lure: the operations office rings"));
  }
- M->RequestAutosave(false);
+ KeepSources(); M->RequestAutosave(false);
  return true;
 }
 
@@ -264,17 +331,18 @@ bool FS47SC04::Step(double Dt)
    S.SetClock(FMath::Max(S.Clock(), Arrive));
    M->UI->Toast(TEXT("At the gate the deputy's radio cuts in: something at Ortiz's wagon. He swings round. \"Get me that log, Reyes. Lock the door behind you.\""), 7);
    S.Note(FString::Printf(TEXT("%s. Back at SARO. The deputy followed me to the gate and was called back to Ortiz's wagon. Going in alone for the originals."), *S.ClockText(false)));
+   KeepSources();
    SetStep(EStep::Collect);
   }
   break;
  case EStep::Hunt: StepHunt(Dt); break;
  case EStep::Calm:
-  if (bPlay && F.bSchedule && F.bStrip && F.bJournal && F.bBinder && PlayerSafe()) { Finish(); return true; }
+  if (bPlay && F.bSchedule && F.bStrip && F.bJournal && F.bBinder && SourcesReady() && PlayerSafe()) { Finish(); return true; }
   break;
- case EStep::Done: return true;
+ case EStep::Done: return SourcesReady();
  default: break;
  }
- return P == EStep::Done;
+ return P == EStep::Done && SourcesReady();
 }
 
 void FS47SC04::Finish()
@@ -359,12 +427,52 @@ bool FS47SC04::Walk(double Speed, double Dt)
 {
  if (Path.IsEmpty()) { Gait = FMath::Max(0.0, Gait - Dt * 3); return true; }
  const FVector2D To = Nodes()[Path[0]].At, D = To - Pos;
+ BlockedDoor = ClosedDoorTo(To);
+ if (!BlockedDoor.IsEmpty())
+ {
+  // The player can close an edge after RouteTo. Do not consume even one step through that leaf.
+  BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Max(0.0,Gait-Dt*3);
+  UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 route stopped at newly closed %s"),*BlockedDoor);
+  Enter(EBody::Listen); return false;
+ }
  const double Dist = D.Size(), StepLen = Speed * Dt;
+ const FVector2D Candidate = Dist > StepLen ? Pos + D / Dist * StepLen : To;
+ if (!ClearWalk(Pos,Candidate))
+ {
+  Gait=FMath::Max(0.0,Gait-Dt*3); Enter(EBody::Listen);
+  UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 route stopped by active scene collider or walk-zone boundary")); return false;
+ }
  BodyYaw = YawTo(D); HeadYaw = BodyYaw;
  Gait = FMath::Min(1.0, Gait + Dt * 3); Stride += StepLen * 2.1;
  if (Dist <= StepLen) { Pos = To; Path.RemoveAt(0); return Path.IsEmpty(); }
  Pos += D / Dist * StepLen;
  return false;
+}
+
+FString FS47SC04::ClosedDoorTo(const FVector2D& Target) const
+{
+ if (!M || !M->Web) return FString();
+ for (const auto& G:Gaps) if (!M->Web->IsDoorOpen(G.Door) && CrossesDoor(Pos,Target,G)) return G.Door;
+ return FString();
+}
+
+bool FS47SC04::ClearWalk(const FVector2D& From, const FVector2D& To) const
+{
+ if (!M || !M->Web || !M->Player) return false;
+ // Walkable checks zones, not furniture. Clip the complete swept footprint against the
+ // CURRENT colliders (including opened leaves), so even a long frame cannot cross a thin prop.
+ for (const auto& C:M->Web->Colliders()) if (C.bEnabled)
+ {
+  const FGap Expanded={nullptr,C.MinX-BodyRadius,C.MaxX+BodyRadius,C.MinZ-BodyRadius,C.MaxZ+BodyRadius,0,false};
+  if (Through(From,To,Expanded)) return false;
+ }
+ const int32 Samples=FMath::Clamp(FMath::CeilToInt(FVector2D::Distance(From,To)/.05),1,64);
+ for (int32 I=0;I<=Samples;++I)
+ {
+  const FVector2D At=FMath::Lerp(From,To,double(I)/Samples);
+  if (!M->Player->Walkable(At.X,At.Y)) return false;
+ }
+ return true;
 }
 
 void FS47SC04::LogSight() const
@@ -493,9 +601,10 @@ void FS47SC04::StepHunt(double Dt)
   M->World->Area != TEXT("saro") || (M->Flow && M->Flow->bStarting);
  if (!Pale.bBuilt && !Pale.Build(M->Web.Get(), TEXT("room.group"), TEXT("SC04Pale")))
  {
-  // Without the body the meeting cannot be played honestly: the annex is quiet and the step goes on.
-  F.bEscaped = true; SetStep(EStep::Calm); return;
+  if (!bBodyUnavailable) UE_LOG(LogS47SC04,Error,TEXT("S47: SC04 body unavailable; encounter remains incomplete, no escape credited"));
+  bBodyUnavailable = true; bShown = false; return;
  }
+ bBodyUnavailable = false;
  if (!bHeld)
  {
   T += Dt; Clock += Dt;
@@ -645,12 +754,12 @@ void FS47SC04::Think(double Dt)
   }
   // Straight at the player inside one room; along the graph between rooms.
   const FVector2D Goal = LastKnown;
-  if (Room(Goal) == Room(Pos) && M->Player->Walkable(Pos.X, Pos.Y))
+  const FVector2D D = Goal - Pos; const double Dist = D.Size(), StepLen = FMath::Min(ChaseSpeed*Dt,Dist);
+  const FVector2D Candidate = Dist > 1e-8 ? Pos + D / Dist * StepLen : Pos;
+  if (Room(Goal) == Room(Pos) && ClosedDoorTo(Goal).IsEmpty() && ClearWalk(Pos,Candidate))
   {
-   const FVector2D D = Goal - Pos; const double Dist = D.Size(), StepLen = ChaseSpeed * Dt;
    BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Min(1.4, Gait + Dt * 4); Stride += StepLen * 2.1;
-   const FVector2D Next = Dist > StepLen ? Pos + D / Dist * StepLen : Goal;
-   if (M->Player->Walkable(Next.X, Next.Y)) Pos = Next;
+   Pos = Candidate;
    Path.Reset();
   }
   else
@@ -658,10 +767,12 @@ void FS47SC04::Think(double Dt)
    if (Path.IsEmpty() || StateT > .5) { RouteTo(Nearest(Goal)); StateT = 0; }
    Walk(ChaseSpeed, Dt);
   }
-  if (FVector2D::Distance(Pos, Pl) < Reach && bSees) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
+  if (!M->World->bDriving && FVector2D::Distance(Pos, Pl) < Reach && bSees) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
   break;
  }
  case EBody::Grab:
+  if (M->World->bDriving || FVector2D::Distance(Pos,Pl) >= Reach || !bSees || !ClosedDoorTo(Pl).IsEmpty() || (bSafe && Room(Pos)!=0))
+  { Enter(EBody::Chase); break; }
   if (StateT >= GrabHold) { bShown = false; Capture(); }
   break;
  default: break;
@@ -684,6 +795,13 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
  bool Short = true; for (const auto& E : Edges()) Short &= FVector2D::Distance(Nodes()[E.Key].At, Nodes()[E.Value].At) < 8;
  Check(Edges().Num() == 13 && Short, TEXT("thirteen edges: corridor, records room, the west wall outside, three doors one edge each"));
  Check(Room(FVector2D(7.5, 1.6)) == 3 && Room(FVector2D(4.3, 1.6)) == 0, TEXT("the east landing is outside and the service door leads into the control room"));
+ Check(Room(FVector2D(-2.4,-12)) == 3 && Room(FVector2D(-4,680)) == 3 && Room(FVector2D(-3.9,11)) == 3,
+  TEXT("north perimeter, motel and land beyond records are outside the bounded annex"));
+ Check(CrossesDoor(FVector2D(-5.3,5.7),FVector2D(-7,5.7),Gaps[0])
+  && CrossesDoor(FVector2D(-3.9,6.05),FVector2D(-3.9,7.5),Gaps[1])
+  && CrossesDoor(FVector2D(-2.4,3.6),FVector2D(-2.4,6.05),Gaps[2])
+  && !CrossesDoor(FVector2D(-4,6.05),FVector2D(-2,6.05),Gaps[2]),
+  TEXT("actual door planes distinguish a crossing from walking beside a broad doorway zone"));
  FS47SC04 A(nullptr); A.P = EStep::Hunt; A.F.bSchedule = A.F.bBinder = true; A.F.Captures = 2; A.F.bLure = true;
  FS47SC04 Bk(nullptr); Bk.Begin(S47J::Read(S47J::Write(A.Save())));
  Check(Bk.P == EStep::Hunt && Bk.bRestartHunt && Bk.F.bSchedule && Bk.F.bBinder && !Bk.F.bStrip && !Bk.F.bJournal && Bk.F.Captures == 2 && Bk.F.bLure && !Bk.F.bEscaped,
@@ -691,5 +809,21 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
  FS47SC04 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Drive && Fresh.Label(TEXT("binder")).IsEmpty() && Fresh.Tasks().Num() == 1, TEXT("a new SC04 starts with the drive and offers nothing in the annex yet"));
  Check(StripDoc(TEXT("02:31")).Page.Contains(TEXT("02:31")) && !ScheduleDoc().Page.IsEmpty(), TEXT("the strip names the minute Ortiz was taken"));
+ FS47SC04 Papers(nullptr); Papers.P=EStep::Calm; Papers.F.bSchedule=Papers.F.bStrip=Papers.F.bJournal=Papers.F.bBinder=true;
+ FS47Doc Prior; Prior.Id=TEXT("prior-original"); Prior.Title=TEXT("Original title"); Prior.Kind=TEXT("hand"); Prior.Stamp=TEXT("ACTUAL 21:37");
+ Prior.Page=TEXT("actual raw page"); Prior.Transcript=TEXT("separate transcript"); Prior.Image=TEXT("image-reference"); Prior.Paper=TEXT("paper-art"); Prior.PaperRatio=.71;
+ Prior.Sheets.Add({TEXT("page two"),TEXT("paper two"),TEXT("strip two"),TEXT("term two")});
+ Papers.SourcePapers={ScheduleDoc(),StripDoc(TEXT("02:37")),Prior};
+ FS47SC04 Restored(nullptr); Restored.Begin(S47J::Read(S47J::Write(Papers.Save())));
+ Check(Restored.SourcesReady() && Restored.SourcePapers.Num()==3
+  && S47J::Write(SourceSave(Restored.SourcePapers[2]))==S47J::Write(SourceSave(Prior))
+  && Restored.SourcePapers[1].Page==Papers.SourcePapers[1].Page,
+  TEXT("owned source payload preserves actual strip minute, stamps, transcript, art and every sheet through JSON/Begin"));
+ const auto Legacy=S47J::Read(TEXT("{\"step\":4,\"schedule\":true,\"strip\":true,\"journal\":true,\"binder\":true,\"escaped\":true}"));
+ Restored.Begin(Legacy);
+ Check(Restored.P==EStep::Done && Restored.F.bEscaped && Restored.SourcesVersion==0 && Restored.SourcePapers.IsEmpty(),
+  TEXT("legacy completion is retained without manufacturing missing originals or timestamps"));
+ Restored.Begin(S47J::Read(TEXT("{\"step\":4,\"sourcesVersion\":1,\"schedule\":true,\"strip\":true,\"journal\":true,\"binder\":true,\"escaped\":true,\"sources\":[]}")));
+ Check(!Restored.SourcesReady() && Restored.SourcePapers.IsEmpty(),TEXT("new source-version flags cannot replace absent acquired source payload"));
  return Ok;
 }

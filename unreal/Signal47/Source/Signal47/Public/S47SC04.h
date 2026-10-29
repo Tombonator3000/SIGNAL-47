@@ -2,10 +2,10 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47PaleBody.h"
+#include "S47Docs.h"
 
 class US47Main;
 struct FS47Task;
-struct FS47Doc;
 
 // SC04 "Secure the originals", 02:55 to 03:15 (Docs/Design/Story/TIDSLINJE_SC01_SC13_2026-10-29.md,
 // HISTORIE_SC02_SC13_REVISJON.md). After SC03 the deputy follows Reyes to SARO and is called back to
@@ -25,6 +25,7 @@ struct FS47Doc;
 // binder with everything collected kept; the clock does not move.
 class FS47SC04
 {
+ friend class FS47SC04Contract;
 public:
  enum class EStep : uint8 { Drive, Collect, Hunt, Calm, Done };
  struct FFacts { bool bSchedule = false, bStrip = false, bJournal = false, bBinder = false, bEscaped = false, bLure = false; int32 Captures = 0; };
@@ -46,6 +47,8 @@ public:
  FVector2D BodyAt() const { return Pos; }
  bool BodyShown() const { return bShown; }
  bool HuntLive() const { return P == EStep::Hunt; }
+ bool SourcesReady() const;
+ const TArray<FS47Doc>& SecuredSources() const { return SourcePapers; }
  // Contract fixture for later scenarios' tests: SC04 counted as done without playing it.
  void TestComplete();
  static FS47Doc StripDoc(const FString& Taken);
@@ -72,6 +75,15 @@ private:
  double LureT = 0, FadeT = -1;
  TOptional<FVector2D> PendingNoise; // a door moved before the body was in: it starts there
  TMap<FString, bool> LastDoors;
+ // Version zero is an old save with no owned source payload. Never invent its missing pages.
+ int32 SourcesVersion = 1;
+ TArray<FS47Doc> SourcePapers;
+ bool bBodyUnavailable = false;
+ FString BlockedDoor;
+ void KeepSources();
+ void Refile();
+ FString ClosedDoorTo(const FVector2D& Target) const;
+ bool ClearWalk(const FVector2D& From, const FVector2D& To) const;
  double Ground() const;
  void SetStep(EStep Next);
  void Enter(EBody Next);

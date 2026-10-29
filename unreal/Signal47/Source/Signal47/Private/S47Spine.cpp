@@ -1,4 +1,5 @@
 #include "S47Spine.h"
+#include "S47SC04Contract.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -312,6 +313,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if (Test.Mode == TEXT("sc04") || Test.Mode == TEXT("sc04hide") || Test.Mode == TEXT("sc04long")) { FS47SC04Contract::Step(M, Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
@@ -362,7 +364,6 @@ void FS47Spine::ControlTest(double Dt)
   FS47Spine Fresh(nullptr); Fresh.Begin(S47J::Read(S47J::Write(Save())), false);
   return Fresh.Enabled() && Fresh.Gate(G) == Want;
  };
- if (Test.Mode.StartsWith(TEXT("sc04"))) { SC04Test(Dt, Fail, Check); return; }
  if (Test.T > 240) { Fail(TEXT("timeout")); return; }
  const bool bSC08 = Test.Mode == TEXT("sc08");
  if (Test.Stage == 0)
@@ -447,181 +448,5 @@ void FS47Spine::ControlTest(double Dt)
   Test.bDone = true;
   UE_LOG(LogTemp, Display, TEXT("S47: spine contract %s PASS COMPLETE: %d checks"), *Test.Mode, Test.Checks);
   FPlatformMisc::RequestExit(false);
- }
-}
-
-// The SC04 contract from the residual jump, with SC03's end by fixture. Every original, the wall
-// phone and the doors are used by an actual ray from a walkable stand point and the production use
-// path; the player crosses the annex in small walker steps at walking speed, so the body hears and
-// sees what a player would give it. Door opening into the annex before the binder is a fixture.
-void FS47Spine::SC04Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check)
-{
- const FS47SC04& A = Act04;
- const bool bHide = Test.Mode == TEXT("sc04hide"), bLong = Test.Mode == TEXT("sc04long"), bShort = !bHide && !bLong;
- const auto Next = [this](int32 S, double Wait = .3) { Test.Stage = S; Test.Since = Test.T + Wait; Test.Mark = Test.T; Test.Cand = 0; };
- if (Test.T < Test.Since) return;
- if (Test.T > 300) { Fail(FString::Printf(TEXT("timeout; SC04 step %d body %s at %s"), int32(A.Phase()), FS47SC04::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
- // FS47HorrorTest::Target: the item's current world box, so an open door is aimed at where its leaf is now.
- const auto ItemAt = [this](const TCHAR* Id)
- {
-  if (const auto* Item = M->Web->Item(Id)) { const FBox Box = M->Web->ObjAt(Item->Node).WorldBox(); if (Box.IsValid) return Box.GetCenter(); }
-  return S47Three::ToThree(M->Web->PropLocation(Id));
- };
- // Stand candidates on rings round the item; the next one is tried when the ray picks something else.
- const auto Stand = [this, &ItemAt](const TCHAR* Id, TOptional<FVector2D> Fixed)
- {
-  const FVector I = ItemAt(Id);
-  FVector2D S = Fixed ? *Fixed : FVector2D::ZeroVector;
-  if (!Fixed)
-  {
-   int32 Seen = 0; bool bFound = false;
-   for (const double R : {1.1, 1.5, 1.9}) for (int32 K = 0; K < 16 && !bFound; ++K)
-   {
-    const FVector2D C(I.X + R * FMath::Cos(K * PI / 8), I.Z + R * FMath::Sin(K * PI / 8));
-    if (!M->Player->Walkable(C.X, C.Y)) continue;
-    {
-     // A stand point must see the item: the use ray answers through walls, a player does not.
-     FHitResult Hit; const FVector From = S47Three::ToUE(FVector(C.X, 1.62, C.Y)), To = S47Three::ToUE(I);
-     if (M->Web->GetWorld()->LineTraceSingleByChannel(Hit, From, To, ECC_Visibility) && Hit.Distance < FVector::Dist(From, To) - 35) continue;
-    }
-    if (FString(Id) == TEXT("recordsDoor") && (C.Y < 7.75 || C.X < -5.4)) continue; // from inside the records room, clear of the door zone
-    if (FString(Id) == TEXT("doorSouth") && C.Y > 3.5) continue;                     // from the control room, clear of the door zone
-    if (Seen++ == Test.Cand) { S = C; bFound = true; }
-   }
-   if (!bFound) return false;
-  }
-  M->Player->Place(S.X, S.Y, FMath::Atan2(-(I.X - S.X), -(I.Z - S.Y))); M->Player->Pitch = 0;
-  return true;
- };
- const auto Use = [this, &ItemAt](const TCHAR* Id)
- {
-  const FVector Eye = M->Player->EyeUE(), At = S47Three::ToUE(ItemAt(Id));
-  const FString Picked = M->Inter->Pick(Eye, (At - Eye).GetSafeNormal());
-  if (Picked != Id) return Picked.IsEmpty() ? FString(TEXT("nothing")) : Picked;
-  M->Player->OnUse(Picked);
-  UE_LOG(LogTemp, Display, TEXT("S47: spine contract actual ray and production use: %s"), Id);
-  if (M->UI) M->UI->Close(true);
-  return FString();
- };
- // Stage pairs: stand (even), then ray and use (odd), retrying stand points.
- const auto StandUse = [&](int32 Stage, const TCHAR* Id, TOptional<FVector2D> Fixed, TFunctionRef<void()> Done)
- {
-  if (Test.Stage == Stage) { if (!Stand(Id, Fixed)) { Fail(FString::Printf(TEXT("no walkable stand point for %s after %d; last ray: %s"), Id, Test.Cand, *Test.Miss)); return; } Test.Stage = Stage + 1; Test.Since = Test.T + .4; return; }
-  const FString Miss = Use(Id);
-  if (Miss.IsEmpty()) { Done(); return; }
-  Test.Miss = FString::Printf(TEXT("%s from %s to %s (door open %d)"), *Miss, *FVector2D(M->Player->Pos.X, M->Player->Pos.Z).ToString(), *ItemAt(Id).ToString(), M->Web->IsDoorOpen(Id));
-  UE_LOG(LogTemp, Display, TEXT("S47: spine contract ray miss for %s: %s"), Id, *Test.Miss);
-  if (Fixed || ++Test.Cand > 40) { Fail(FString::Printf(TEXT("ray to %s picked %s from %s"), Id, *Miss, *FVector2D(M->Player->Pos.X, M->Player->Pos.Z).ToString())); return; }
-  Test.Stage = Stage;
- };
- // Walker steps along a route (1.9 m/s walking, 3.0 running); true when the last point is reached.
- const auto Glide = [this, Dt](double Speed = 1.9)
- {
-  if (Test.Route.IsEmpty()) return true;
-  const FVector2D P(M->Player->Pos.X, M->Player->Pos.Z), D = Test.Route[0] - P;
-  if (Test.T - Test.Mark > 40) UE_LOG(LogTemp, Warning, TEXT("S47: spine contract glide slow at %s to %s"), *P.ToString(), *Test.Route[0].ToString());
-  const double Step = Speed * Dt;
-  const FVector2D N = D.Size() <= Step ? Test.Route[0] : P + D.GetSafeNormal() * Step;
-  M->Player->Place(N.X, N.Y, FMath::Atan2(-D.X, -D.Y));
-  if (D.Size() <= Step) Test.Route.RemoveAt(0);
-  return Test.Route.IsEmpty();
- };
- const auto Outside = [](const FVector2D& P) { return FS47SC04::Room(P) == 3; };
- switch (Test.Stage)
- {
- case 0:
-  if (Test.T < 3) return;
-  if (!Check(bEnabled && M->Story->bEveningTimeline && M->World->Area == TEXT("saro"), TEXT("residual jump starts the spine at SARO"))) return;
-  Test.ClockMark = M->Story->Clock(); TestOpenSC04(); Next(1, .5); return;
- case 1:
- {
-  if (!Check(Gate(SC04) == 1 && HoldsResidual() && A.Phase() == FS47SC04::EStep::Collect && M->Story->Clock() >= 2 * 3600 + 55 * 60 && Tasks().Num() == 5 && Objective().Contains(TEXT("OPS TERMINAL")),
-   TEXT("SC03's end opens SC04; at SARO the drive is over, 02:55, five tasks"))) return;
-  const int32 Stage = M->Story->Rx.Stage; M->Story->ConsoleAction();
-  if (!Check(M->Story->Rx.Stage == Stage, TEXT("the residual console waits while SC04 runs"))) return;
-  if (!Check(A.Label(TEXT("binder")) == TEXT("Take the run binder for the report") && A.Label(TEXT("recPhone")).IsEmpty(), TEXT("the binder is offered, the wall phone not before the meeting"))) return;
-  Next(10); return;
- }
- case 10: case 11: StandUse(10, TEXT("opsTerminal"), {}, [&] { if (Check(A.Facts().bSchedule && M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("sc04_schedule"); }), TEXT("the ops terminal holds the automatic schedule"))) Next(12); }); return;
- case 12: case 13: StandUse(12, TEXT("printer"), {}, [&] { if (Check(A.Facts().bStrip && M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("sc04_strip"); }), TEXT("the strip chart comes off the printer"))) Next(14); }); return;
- case 14: case 15: StandUse(14, TEXT("logbook"), {}, [&] { if (Check(A.Facts().bJournal && A.Phase() == FS47SC04::EStep::Collect, TEXT("the shift journal is taken; nothing has happened yet"))) Next(16); }); return;
- case 16:
-  UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: corridor and records doors opened by API before the walk in"));
-  M->Web->SetDoorOpen(TEXT("doorSouth"), true, true); M->Web->SetDoorOpen(TEXT("recordsDoor"), true, true);
-  Next(17); return;
- case 17: case 18: StandUse(17, TEXT("binder"), FVector2D(-2.3, 9.45), [&] { if (Check(A.Facts().bBinder && A.HuntLive() && A.Body() == FS47SC04::EBody::Away, TEXT("taking the binder starts the annex meeting"))) { Test.ClockMark = M->Story->Clock(); Test.Hop = 0; Next(bHide ? 40 : bLong ? 60 : 20); } }); return;
- // ---- sc04: walk east into the corridor and be taken, then the lure ----
- case 20: Test.Route = {FVector2D(-2.3, 7.7), FVector2D(-3.9, 7.5), FVector2D(-3.9, 5.75), FVector2D(-1.2, 5.75)}; Next(21, 0); return;
- case 21:
-  if (A.Facts().Captures == 0) { Glide(); if (Test.T - Test.Mark > 40) Fail(TEXT("no capture in the corridor")); return; }
-  if (Test.Hop == 0) { Test.Hop = 1; Test.Since = Test.T + .3; return; } // the walker takes the new place next tick
-  Test.Hop = 0;
-  {
-   const double Away = FVector2D::Distance(FVector2D(M->Player->Pos.X, M->Player->Pos.Z), FVector2D(-2.3, 9.45));
-   if (!Check(A.Facts().Captures == 1 && A.HuntLive() && A.Body() == FS47SC04::EBody::Away && Away < .6 && M->Story->Clock() - Test.ClockMark < 60,
-    FString::Printf(TEXT("met in the corridor out of the office and taken: the annex starts again at the binder, originals kept, clock unmoved (captures %d body %s, %.2f m from the binder, clock +%.0f s)"),
-     A.Facts().Captures, FS47SC04::BodyName(A.Body()), Away, M->Story->Clock() - Test.ClockMark))) return;
-  }
-  if (!Check(A.Facts().bSchedule && A.Facts().bStrip && A.Facts().bJournal && A.Facts().bBinder, TEXT("all four originals survive the capture"))) return;
-  Next(22, .2); return;
- case 22: case 23: StandUse(22, TEXT("recordsDoor"), {}, [&] { if (Check(!M->Web->IsDoorOpen(TEXT("recordsDoor")), TEXT("the records door is shut from inside before it comes"))) Next(24, 0); }); return;
- case 24:
-  if (A.Body() == FS47SC04::EBody::Chase || A.Facts().Captures > 1) { Fail(TEXT("found behind the shut records door")); return; }
-  if (A.Body() != FS47SC04::EBody::Listen) { if (Test.T - Test.Mark > 40) Fail(FString::Printf(TEXT("the body never listened at the records door: %s at %s"), FS47SC04::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
-  Check(true, TEXT("the shut door was heard: the body stops at it and listens"));
-  Next(25, 0); return;
- case 25: case 26: StandUse(25, TEXT("recPhone"), FVector2D(-1.75, 9.3), [&] { if (Check(A.Facts().bLure, TEXT("the wall phone rings the operations office while it listens"))) Next(27); }); return;
- case 27:
-  if (A.Body() == FS47SC04::EBody::Chase || A.Facts().Captures > 1) { Fail(TEXT("the body found the player instead of going to the ringing")); return; }
-  if (A.Body() != FS47SC04::EBody::Lured || FVector2D::Distance(A.BodyAt(), FVector2D(.4, 5.75)) > .3) { if (Test.T - Test.Mark > 30) Fail(FString::Printf(TEXT("the body did not reach the office door: %s at %s"), FS47SC04::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
-  Check(true, TEXT("the body walks back to the ringing office door and listens there"));
-  Next(28, 0); return;
- case 28: case 29: StandUse(28, TEXT("recordsDoor"), {}, [&] { Test.Route = {FVector2D(-3.9, 7.6), FVector2D(-3.9, 5.75), FVector2D(-2.4, 5.75), FVector2D(-2.4, 2.9)}; Next(30, 0); }); return;
- case 30:
-  if (A.Body() == FS47SC04::EBody::Chase || A.Facts().Captures > 1) { Fail(TEXT("seen on the short way past the listening body")); return; }
-  if (Glide()) Next(31, .3);
-  return;
- case 31: case 32: StandUse(31, TEXT("doorSouth"), {}, [&] { if (Check(!M->Web->IsDoorOpen(TEXT("doorSouth")), TEXT("the corridor door is shut from the control room"))) Next(50); }); return;
- // ---- sc04hide: shut the records door and keep still while it walks the annex ----
- case 40: case 41: StandUse(40, TEXT("recordsDoor"), {}, [&] { if (Check(!M->Web->IsDoorOpen(TEXT("recordsDoor")), TEXT("the records door is shut from inside"))) Next(42, 0); }); return;
- case 42:
-  if (A.Body() != FS47SC04::EBody::Away && FS47SC04::Room(A.BodyAt()) == 2) { Fail(TEXT("the body went into the records room behind a shut door")); return; }
-  if (A.Body() == FS47SC04::EBody::Chase || A.Facts().Captures > 0) { Fail(TEXT("found behind the shut records door")); return; }
-  if (A.Body() == FS47SC04::EBody::Listen) Test.Hop = 1;
-  if (A.Phase() != FS47SC04::EStep::Calm) { if (Test.T - Test.Mark > 150) Fail(FString::Printf(TEXT("the body did not leave: %s at %s"), FS47SC04::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
-  if (!Check(A.Facts().bEscaped && A.Facts().Captures == 0 && Test.Hop == 1, TEXT("still behind the shut door: it listened there, walked the annex and went back into the office"))) return;
-  Test.Hop = 0; Next(43); return;
- case 43: case 44: StandUse(43, TEXT("recordsDoor"), {}, [&] { Test.Route = {FVector2D(-3.9, 7.5), FVector2D(-3.9, 5.75), FVector2D(-2.4, 5.75), FVector2D(-2.4, 2.9)}; Next(45, 0); }); return;
- case 45: if (Glide()) Next(31, .3); return;
- // ---- sc04long: out by the fire exit, round the north side, in by the service door ----
- case 60: Test.Route = {FVector2D(-2.3, 7.7), FVector2D(-3.9, 7.5), FVector2D(-3.9, 5.75), FVector2D(-4.75, 5.7)}; Next(61, 0); return;
- case 61: if (Glide(3.0)) Next(62, 0); return;
- case 62: case 63: StandUse(62, TEXT("exitDoor"), FVector2D(-4.75, 5.7), [&] { if (Check(M->Web->IsDoorOpen(TEXT("exitDoor")), TEXT("the long way: the fire exit opens from the corridor"))) {
-   Test.Route = {FVector2D(-7.0, 5.7), FVector2D(-11.1, 5.7), FVector2D(-11.1, 0.0), FVector2D(-9.0, -8.0), FVector2D(5.0, -8.0), FVector2D(5.0, -12.0), FVector2D(9.5, -12.0), FVector2D(9.5, 0.0), FVector2D(9.0, 1.6), FVector2D(7.6, 1.6)};
-   Next(64, 0); } }); return;
- case 64:
-  if (A.Body() == FS47SC04::EBody::Chase || A.Facts().Captures > 0) { Fail(FString::Printf(TEXT("caught on the long way at %s"), *FVector2D(M->Player->Pos.X, M->Player->Pos.Z).ToString())); return; }
-  if (A.Body() != FS47SC04::EBody::Away && Outside(A.BodyAt())) Test.Hop = 1; // it followed the sound of the fire exit out
-  if (Glide(3.0)) Next(65, 0);
-  return;
- case 65: case 66: StandUse(65, TEXT("doorEast"), FVector2D(7.6, 1.6), [&] { if (Check(M->Web->IsDoorOpen(TEXT("doorEast")), TEXT("round the north side: the service door opens from the landing"))) { Test.Route = {FVector2D(6.5, 1.6), FVector2D(4.3, 1.6)}; Next(67, 0); } }); return;
- case 67: if (Glide(3.0)) Next(68, .3); return;
- case 68: case 69: StandUse(68, TEXT("doorEast"), FVector2D(4.3, 1.6), [&] { if (Check(!M->Web->IsDoorOpen(TEXT("doorEast")), TEXT("the service door is shut behind you"))) Next(31, .3); }); return;
- // ---- both: locked in, Ward, 03:15 ----
- case 50:
-  if (bLong && A.Body() != FS47SC04::EBody::Away && Outside(A.BodyAt())) Test.Hop = 1;
-  if (Gate(SC04) != 2) { if (Test.T - Test.Mark > 150) Fail(FString::Printf(TEXT("SC04 did not finish: step %d body %s"), int32(A.Phase()), FS47SC04::BodyName(A.Body()))); return; }
-  if (bLong && !Check(Test.Hop == 1, TEXT("the fire exit's sound drew it outside along the west wall while the player went round"))) return;
-  if (!Check(!HoldsResidual() && M->Story->Clock() >= GateDone(SC04) && A.Facts().bEscaped && A.Facts().Captures == (bShort ? 1 : 0) && A.Facts().bLure == bShort,
-   TEXT("locked in the control room behind both doors: Ward on the line, 03:15, the residual console released"))) return;
-  {
-   FS47Spine Fresh(nullptr); Fresh.Begin(S47J::Read(S47J::Write(Save())), false);
-   if (!Check(Fresh.Gate(SC04) == 2 && Fresh.Secure().Phase() == FS47SC04::EStep::Done && Fresh.Secure().Facts().Captures == A.Facts().Captures, TEXT("saved spine reloads with SC04 done and its facts"))) return;
-  }
-  Test.bDone = true;
-  UE_LOG(LogTemp, Display, TEXT("S47: spine contract %s PASS COMPLETE: %d checks"), *Test.Mode, Test.Checks);
-  FPlatformMisc::RequestExit(false);
-  return;
- default: return;
  }
 }

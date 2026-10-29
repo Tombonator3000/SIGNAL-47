@@ -65,6 +65,7 @@ UCLASS()
 class SIGNAL47_API AS47Web : public AActor
 {
 	GENERATED_BODY()
+ friend class FS47DevEvents;
 
 public:
 	void RefreshFog() { UpdateNativeFog(); } // the fog again now (a developer event changed it)

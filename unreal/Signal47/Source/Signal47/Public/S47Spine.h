@@ -66,9 +66,6 @@ private:
  bool bBuilt = false;
  FS47SC04 Act04;
  struct FTest { FString Mode; int32 Stage = 0, Checks = 0, Item = 0, Cand = 0, Hop = 0; double T = 0, Since = 0, Mark = 0, ClockMark = 0; bool bDone = false, bInit = false; TArray<FVector2D> Route; FString Miss; };
- // -S47SpineContract=sc04 (capture, then the lure: the short way), sc04hide (the shut records door) or sc04long
- // (out by the fire exit, round the north side, in by the service door), with -S47Jump=residual.
- void SC04Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check);
  FTest Test;
  void Build();
  void ShowPosts();
