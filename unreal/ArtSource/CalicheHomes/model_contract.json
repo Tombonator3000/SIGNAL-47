@@ -1,0 +1,6223 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "source_revision": "caliche-homes-20261029-v1",
+  "source_contract_sha256": "c71b76ffe0a6938db8b423190d9c54ab18d84c4ac26f4168e963660ed85e9362",
+  "materials_manifest_sha256": "dccbbbdb38dacc4b590690fb3d0bb4d35132b67a62d178699a4a626eefd213b8",
+  "native_import_policy": {
+    "force_front_x_axis": true,
+    "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+    "import_rotation_yaw": 90,
+    "fbx_axis_forward": "-Y",
+    "fbx_axis_up": "Z",
+    "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+    "lods": 3,
+    "nanite": false,
+    "ray_tracing": true,
+    "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+    "material_prefix": "M_Homes_"
+  },
+  "units": "metres",
+  "mapping": "Three=(rootX+Bx,rootY+Bz,rootZ-By), runtime yaw0",
+  "parts": {
+    "SM_Homes_H01_Shell": {
+      "house": "H01",
+      "chunk": "Shell",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        24.0,
+        33.0,
+        2128.0,
+        2138.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.53000020980835,
+          -5.03000020980835,
+          -1.0779480934143066
+        ],
+        [
+          4.53000020980835,
+          5.03000020980835,
+          3.0
+        ]
+      ],
+      "vertices": 338,
+      "triangles": 732,
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "minimum_uv_area": 2.915775103140561e-05,
+      "closed_solids": 37,
+      "minimum_signed_volume_m3": 0.013099602035177231,
+      "fbx": "exports/SM_Homes_H01_Shell.fbx",
+      "source_mesh_sha256": "f307c4b47d93322b11ca86d0adc963ec3f357710bb7f5184296698b8efdd4a19",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "lods": [
+        {
+          "triangles": 732,
+          "vertices": 338,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.0779480934143066
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H01_Shell.fbx"
+        },
+        {
+          "triangles": 588,
+          "vertices": 278,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.0779480934143066
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H01_Shell_LOD1.fbx"
+        },
+        {
+          "triangles": 492,
+          "vertices": 238,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.0779480934143066
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H01_Shell_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H01_Shell.glb"
+    },
+    "SM_Homes_H01_Roof": {
+      "house": "H01",
+      "chunk": "Roof",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        24.0,
+        33.0,
+        2128.0,
+        2138.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.730000019073486,
+          -5.0279998779296875,
+          2.825000047683716
+        ],
+        [
+          4.5279998779296875,
+          5.0279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "vertices": 472,
+      "triangles": 892,
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_WarmTimber",
+        "M_Homes_RoofTar"
+      ],
+      "minimum_uv_area": 1.199989962596959e-05,
+      "closed_solids": 37,
+      "minimum_signed_volume_m3": 7.583999992034408e-06,
+      "fbx": "exports/SM_Homes_H01_Roof.fbx",
+      "source_mesh_sha256": "a72ca1e4bc75a67aebd8710d0de48e0a8358f8ae4c681b2578efc3d915b6f64d",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        892,
+        572,
+        364
+      ],
+      "lods": [
+        {
+          "triangles": 892,
+          "vertices": 472,
+          "bounds_local_m": [
+            [
+              -4.730000019073486,
+              -5.0279998779296875,
+              2.825000047683716
+            ],
+            [
+              4.5279998779296875,
+              5.0279998779296875,
+              3.303999900817871
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_WarmTimber",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H01_Roof.fbx"
+        },
+        {
+          "triangles": 572,
+          "vertices": 296,
+          "bounds_local_m": [
+            [
+              -4.730000019073486,
+              -5.0279998779296875,
+              2.825000047683716
+            ],
+            [
+              4.5279998779296875,
+              5.0279998779296875,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_WarmTimber",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H01_Roof_LOD1.fbx"
+        },
+        {
+          "triangles": 364,
+          "vertices": 184,
+          "bounds_local_m": [
+            [
+              -4.730000019073486,
+              -5.025000095367432,
+              2.829160213470459
+            ],
+            [
+              4.525000095367432,
+              5.025000095367432,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_WarmTimber",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H01_Roof_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H01_Roof.glb"
+    },
+    "SM_Homes_H01_Fixtures": {
+      "house": "H01",
+      "chunk": "Fixtures",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        24.0,
+        33.0,
+        2128.0,
+        2138.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -5.135000228881836,
+          -4.269999980926514,
+          -0.05999999865889549
+        ],
+        [
+          4.574999809265137,
+          3.7816686630249023,
+          2.819999933242798
+        ]
+      ],
+      "vertices": 466,
+      "triangles": 736,
+      "materials": [
+        "M_Homes_TanWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_WarmTimber",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "minimum_uv_area": 2.121312383351892e-05,
+      "closed_solids": 52,
+      "minimum_signed_volume_m3": 2.0364675292552247e-06,
+      "fbx": "exports/SM_Homes_H01_Fixtures.fbx",
+      "source_mesh_sha256": "64cc43506a4d076e2fca8560d2fb9107aabbc5c9b0e7abd84810fcf194a150db",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        736,
+        452,
+        192
+      ],
+      "lods": [
+        {
+          "triangles": 736,
+          "vertices": 466,
+          "bounds_local_m": [
+            [
+              -5.135000228881836,
+              -4.269999980926514,
+              -0.05999999865889549
+            ],
+            [
+              4.574999809265137,
+              3.7816686630249023,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_WarmTimber",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H01_Fixtures.fbx"
+        },
+        {
+          "triangles": 452,
+          "vertices": 290,
+          "bounds_local_m": [
+            [
+              -5.135000228881836,
+              -4.269999980926514,
+              -0.05999999865889549
+            ],
+            [
+              4.574999809265137,
+              3.7816686630249023,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_WarmTimber",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H01_Fixtures_LOD1.fbx"
+        },
+        {
+          "triangles": 192,
+          "vertices": 122,
+          "bounds_local_m": [
+            [
+              -5.135000228881836,
+              -4.269999980926514,
+              -0.05999999865889549
+            ],
+            [
+              4.574999809265137,
+              2.680000066757202,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_WarmTimber",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H01_Fixtures_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H01_Fixtures.glb"
+    },
+    "SM_Homes_H02_Shell": {
+      "house": "H02",
+      "chunk": "Shell",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        24.5,
+        32.0,
+        2152.0,
+        2161.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -3.7799999713897705,
+          -4.53000020980835,
+          -0.9913134574890137
+        ],
+        [
+          3.7799999713897705,
+          4.53000020980835,
+          3.0
+        ]
+      ],
+      "vertices": 340,
+      "triangles": 732,
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "minimum_uv_area": 2.915775103140561e-05,
+      "closed_solids": 37,
+      "minimum_signed_volume_m3": 0.013099602035177089,
+      "fbx": "exports/SM_Homes_H02_Shell.fbx",
+      "source_mesh_sha256": "8d0ac483ef32bc750bb144ec174b0ff09a7b9d6197ac9e4f37ba30d34633d9e5",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "lods": [
+        {
+          "triangles": 732,
+          "vertices": 340,
+          "bounds_local_m": [
+            [
+              -3.7799999713897705,
+              -4.53000020980835,
+              -0.9913134574890137
+            ],
+            [
+              3.7799999713897705,
+              4.53000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H02_Shell.fbx"
+        },
+        {
+          "triangles": 588,
+          "vertices": 280,
+          "bounds_local_m": [
+            [
+              -3.7799999713897705,
+              -4.53000020980835,
+              -0.9913134574890137
+            ],
+            [
+              3.7799999713897705,
+              4.53000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H02_Shell_LOD1.fbx"
+        },
+        {
+          "triangles": 492,
+          "vertices": 240,
+          "bounds_local_m": [
+            [
+              -3.7799999713897705,
+              -4.53000020980835,
+              -0.9913134574890137
+            ],
+            [
+              3.7799999713897705,
+              4.53000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H02_Shell_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H02_Shell.glb"
+    },
+    "SM_Homes_H02_Roof": {
+      "house": "H02",
+      "chunk": "Roof",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        24.5,
+        32.0,
+        2152.0,
+        2161.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -3.7780001163482666,
+          -4.5279998779296875,
+          2.9600000381469727
+        ],
+        [
+          3.7780001163482666,
+          4.5279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "vertices": 264,
+      "triangles": 528,
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "minimum_uv_area": 1.199989962596959e-05,
+      "closed_solids": 28,
+      "minimum_signed_volume_m3": 7.583999998172835e-06,
+      "fbx": "exports/SM_Homes_H02_Roof.fbx",
+      "source_mesh_sha256": "dbba1122efe0a41a30f69283b83a0157459e54ded28f8c5f082cfc9dd4f7d679",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        528,
+        348,
+        236
+      ],
+      "lods": [
+        {
+          "triangles": 528,
+          "vertices": 264,
+          "bounds_local_m": [
+            [
+              -3.7780001163482666,
+              -4.5279998779296875,
+              2.9600000381469727
+            ],
+            [
+              3.7780001163482666,
+              4.5279998779296875,
+              3.303999900817871
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H02_Roof.fbx"
+        },
+        {
+          "triangles": 348,
+          "vertices": 160,
+          "bounds_local_m": [
+            [
+              -3.7780001163482666,
+              -4.5279998779296875,
+              2.9600000381469727
+            ],
+            [
+              3.7780001163482666,
+              4.5279998779296875,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H02_Roof_LOD1.fbx"
+        },
+        {
+          "triangles": 236,
+          "vertices": 96,
+          "bounds_local_m": [
+            [
+              -3.7750000953674316,
+              -4.525000095367432,
+              2.9600000381469727
+            ],
+            [
+              3.7750000953674316,
+              4.525000095367432,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H02_Roof_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H02_Roof.glb"
+    },
+    "SM_Homes_H02_Fixtures": {
+      "house": "H02",
+      "chunk": "Fixtures",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        24.5,
+        32.0,
+        2152.0,
+        2161.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.545000076293945,
+          -4.1362385749816895,
+          -0.05999999865889549
+        ],
+        [
+          3.825000047683716,
+          4.095616340637207,
+          2.819999933242798
+        ]
+      ],
+      "vertices": 618,
+      "triangles": 964,
+      "materials": [
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_SagePaint",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "minimum_uv_area": 2.1213187053614746e-05,
+      "closed_solids": 71,
+      "minimum_signed_volume_m3": 2.036467529987041e-06,
+      "fbx": "exports/SM_Homes_H02_Fixtures.fbx",
+      "source_mesh_sha256": "763b331d464138cfbad7c412a4bd1b3d159a9ea61b8779d218762fe7d877f57f",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        964,
+        608,
+        264
+      ],
+      "lods": [
+        {
+          "triangles": 964,
+          "vertices": 618,
+          "bounds_local_m": [
+            [
+              -4.545000076293945,
+              -4.1362385749816895,
+              -0.05999999865889549
+            ],
+            [
+              3.825000047683716,
+              4.095616340637207,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_SagePaint",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H02_Fixtures.fbx"
+        },
+        {
+          "triangles": 608,
+          "vertices": 394,
+          "bounds_local_m": [
+            [
+              -4.545000076293945,
+              -3.7699999809265137,
+              -0.05999999865889549
+            ],
+            [
+              3.825000047683716,
+              4.095616340637207,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_SagePaint",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H02_Fixtures_LOD1.fbx"
+        },
+        {
+          "triangles": 264,
+          "vertices": 170,
+          "bounds_local_m": [
+            [
+              -4.545000076293945,
+              -3.7699999809265137,
+              -0.05999999865889549
+            ],
+            [
+              3.825000047683716,
+              2.4649999141693115,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_SagePaint",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H02_Fixtures_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H02_Fixtures.glb"
+    },
+    "SM_Homes_H03_Shell": {
+      "house": "H03",
+      "chunk": "Shell",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        25.0,
+        34.0,
+        2180.0,
+        2190.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.53000020980835,
+          -5.03000020980835,
+          -1.1315112113952637
+        ],
+        [
+          4.53000020980835,
+          5.03000020980835,
+          3.0
+        ]
+      ],
+      "vertices": 338,
+      "triangles": 732,
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "minimum_uv_area": 2.915775103140561e-05,
+      "closed_solids": 37,
+      "minimum_signed_volume_m3": 0.013099602035177231,
+      "fbx": "exports/SM_Homes_H03_Shell.fbx",
+      "source_mesh_sha256": "61cfe2dab343e83f0b68721f74c84f7da08576444bfcc3638d25e86ede988af2",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "lods": [
+        {
+          "triangles": 732,
+          "vertices": 338,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.1315112113952637
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H03_Shell.fbx"
+        },
+        {
+          "triangles": 588,
+          "vertices": 278,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.1315112113952637
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H03_Shell_LOD1.fbx"
+        },
+        {
+          "triangles": 492,
+          "vertices": 238,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.1315112113952637
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H03_Shell_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H03_Shell.glb"
+    },
+    "SM_Homes_H03_Roof": {
+      "house": "H03",
+      "chunk": "Roof",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        25.0,
+        34.0,
+        2180.0,
+        2190.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.5279998779296875,
+          -5.0279998779296875,
+          2.9600000381469727
+        ],
+        [
+          4.5279998779296875,
+          5.0279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "vertices": 280,
+      "triangles": 540,
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "minimum_uv_area": 1.199989962596959e-05,
+      "closed_solids": 29,
+      "minimum_signed_volume_m3": 7.583999992034408e-06,
+      "fbx": "exports/SM_Homes_H03_Roof.fbx",
+      "source_mesh_sha256": "ed37bbbb5b3bbdf02c40040923bcec92177a1f1a98a460cccb0211732ce50438",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        540,
+        348,
+        236
+      ],
+      "lods": [
+        {
+          "triangles": 540,
+          "vertices": 280,
+          "bounds_local_m": [
+            [
+              -4.5279998779296875,
+              -5.0279998779296875,
+              2.9600000381469727
+            ],
+            [
+              4.5279998779296875,
+              5.0279998779296875,
+              3.303999900817871
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H03_Roof.fbx"
+        },
+        {
+          "triangles": 348,
+          "vertices": 168,
+          "bounds_local_m": [
+            [
+              -4.5279998779296875,
+              -5.0279998779296875,
+              2.9600000381469727
+            ],
+            [
+              4.5279998779296875,
+              5.0279998779296875,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H03_Roof_LOD1.fbx"
+        },
+        {
+          "triangles": 236,
+          "vertices": 104,
+          "bounds_local_m": [
+            [
+              -4.525000095367432,
+              -5.025000095367432,
+              2.9600000381469727
+            ],
+            [
+              4.525000095367432,
+              5.025000095367432,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H03_Roof_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H03_Roof.glb"
+    },
+    "SM_Homes_H03_Fixtures": {
+      "house": "H03",
+      "chunk": "Fixtures",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": -1,
+      "original_road_rect_m": [
+        25.0,
+        34.0,
+        2180.0,
+        2190.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -5.175000190734863,
+          -4.610396385192871,
+          -0.05999999865889549
+        ],
+        [
+          4.574999809265137,
+          4.643773078918457,
+          2.819999933242798
+        ]
+      ],
+      "vertices": 488,
+      "triangles": 772,
+      "materials": [
+        "M_Homes_TanWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_DarkTimber",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal",
+        "M_Homes_RustTin"
+      ],
+      "minimum_uv_area": 2.121312383351892e-05,
+      "closed_solids": 55,
+      "minimum_signed_volume_m3": 2.03646752917353e-06,
+      "fbx": "exports/SM_Homes_H03_Fixtures.fbx",
+      "source_mesh_sha256": "47a24a93eccb30d6b0703882111c0231296dc3ee3bdf9892e44ebeacf4692d50",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        772,
+        464,
+        192
+      ],
+      "lods": [
+        {
+          "triangles": 772,
+          "vertices": 488,
+          "bounds_local_m": [
+            [
+              -5.175000190734863,
+              -4.610396385192871,
+              -0.05999999865889549
+            ],
+            [
+              4.574999809265137,
+              4.643773078918457,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_DarkTimber",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal",
+            "M_Homes_RustTin"
+          ],
+          "fbx": "exports/SM_Homes_H03_Fixtures.fbx"
+        },
+        {
+          "triangles": 464,
+          "vertices": 296,
+          "bounds_local_m": [
+            [
+              -5.175000190734863,
+              -4.591381072998047,
+              -0.05999999865889549
+            ],
+            [
+              4.574999809265137,
+              4.410894393920898,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_TanWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_DarkTimber",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal",
+            "M_Homes_RustTin"
+          ],
+          "fbx": "exports/SM_Homes_H03_Fixtures_LOD1.fbx"
+        },
+        {
+          "triangles": 192,
+          "vertices": 120,
+          "bounds_local_m": [
+            [
+              -5.175000190734863,
+              -2.4800000190734863,
+              -0.05999999865889549
+            ],
+            [
+              4.574999809265137,
+              4.269999980926514,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_DarkTimber",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal",
+            "M_Homes_RustTin"
+          ],
+          "fbx": "exports/SM_Homes_H03_Fixtures_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H03_Fixtures.glb"
+    },
+    "SM_Homes_H04_Shell": {
+      "house": "H04",
+      "chunk": "Shell",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": 1,
+      "original_road_rect_m": [
+        -28.0,
+        -19.0,
+        2236.0,
+        2246.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.53000020980835,
+          -5.03000020980835,
+          -1.1071252822875977
+        ],
+        [
+          4.53000020980835,
+          5.03000020980835,
+          3.0
+        ]
+      ],
+      "vertices": 338,
+      "triangles": 732,
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "minimum_uv_area": 2.915775103140561e-05,
+      "closed_solids": 37,
+      "minimum_signed_volume_m3": 0.013099602035177231,
+      "fbx": "exports/SM_Homes_H04_Shell.fbx",
+      "source_mesh_sha256": "5b50535f494d834b57852b70b1e7cbffc243a0d330ca6832889e01d54df32911",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "lods": [
+        {
+          "triangles": 732,
+          "vertices": 338,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.1071252822875977
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H04_Shell.fbx"
+        },
+        {
+          "triangles": 588,
+          "vertices": 278,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.1071252822875977
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H04_Shell_LOD1.fbx"
+        },
+        {
+          "triangles": 492,
+          "vertices": 238,
+          "bounds_local_m": [
+            [
+              -4.53000020980835,
+              -5.03000020980835,
+              -1.1071252822875977
+            ],
+            [
+              4.53000020980835,
+              5.03000020980835,
+              3.0
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_Concrete",
+            "M_Homes_RecessShadow"
+          ],
+          "fbx": "exports/SM_Homes_H04_Shell_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H04_Shell.glb"
+    },
+    "SM_Homes_H04_Roof": {
+      "house": "H04",
+      "chunk": "Roof",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": 1,
+      "original_road_rect_m": [
+        -28.0,
+        -19.0,
+        2236.0,
+        2246.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.5279998779296875,
+          -5.0279998779296875,
+          2.9600000381469727
+        ],
+        [
+          4.5279998779296875,
+          5.0279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "vertices": 280,
+      "triangles": 540,
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "minimum_uv_area": 1.199989962596959e-05,
+      "closed_solids": 29,
+      "minimum_signed_volume_m3": 7.5839999971601905e-06,
+      "fbx": "exports/SM_Homes_H04_Roof.fbx",
+      "source_mesh_sha256": "50041a70263d933d7dcaf7b6f2d7439e0763a687e1364051ba273c0589cb3804",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        540,
+        348,
+        236
+      ],
+      "lods": [
+        {
+          "triangles": 540,
+          "vertices": 280,
+          "bounds_local_m": [
+            [
+              -4.5279998779296875,
+              -5.0279998779296875,
+              2.9600000381469727
+            ],
+            [
+              4.5279998779296875,
+              5.0279998779296875,
+              3.303999900817871
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H04_Roof.fbx"
+        },
+        {
+          "triangles": 348,
+          "vertices": 168,
+          "bounds_local_m": [
+            [
+              -4.5279998779296875,
+              -5.0279998779296875,
+              2.9600000381469727
+            ],
+            [
+              4.5279998779296875,
+              5.0279998779296875,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H04_Roof_LOD1.fbx"
+        },
+        {
+          "triangles": 236,
+          "vertices": 104,
+          "bounds_local_m": [
+            [
+              -4.525000095367432,
+              -5.025000095367432,
+              2.9600000381469727
+            ],
+            [
+              4.525000095367432,
+              5.025000095367432,
+              3.299999952316284
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamStucco",
+            "M_Homes_DoorMasonry",
+            "M_Homes_RoofTar"
+          ],
+          "fbx": "exports/SM_Homes_H04_Roof_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H04_Roof.glb"
+    },
+    "SM_Homes_H04_Fixtures": {
+      "house": "H04",
+      "chunk": "Fixtures",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "parent_handle": "world.town.group",
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "front": 1,
+      "original_road_rect_m": [
+        -28.0,
+        -19.0,
+        2236.0,
+        2246.0
+      ],
+      "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+      "cast_shadow": true,
+      "ray_tracing": true,
+      "nanite": false,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "site_local_offset_m": [
+        0,
+        0,
+        0
+      ],
+      "bounds_local_m": [
+        [
+          -4.574999809265137,
+          -4.60654354095459,
+          -0.05999999865889549
+        ],
+        [
+          5.235000133514404,
+          4.537761688232422,
+          2.819999933242798
+        ]
+      ],
+      "vertices": 466,
+      "triangles": 736,
+      "materials": [
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_BluePaint",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "minimum_uv_area": 2.121312383351892e-05,
+      "closed_solids": 52,
+      "minimum_signed_volume_m3": 2.0364675279646447e-06,
+      "fbx": "exports/SM_Homes_H04_Fixtures.fbx",
+      "source_mesh_sha256": "91c549fef4b897e72ff90f338e90274a5f5b0bd206b1e0ceec5ff4b99efb8a64",
+      "native_policy": {
+        "force_front_x_axis": true,
+        "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+        "import_rotation_yaw": 90,
+        "fbx_axis_forward": "-Y",
+        "fbx_axis_up": "Z",
+        "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+        "lods": 3,
+        "nanite": false,
+        "ray_tracing": true,
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "material_prefix": "M_Homes_"
+      },
+      "lod_triangles": [
+        736,
+        440,
+        192
+      ],
+      "lods": [
+        {
+          "triangles": 736,
+          "vertices": 466,
+          "bounds_local_m": [
+            [
+              -4.574999809265137,
+              -4.60654354095459,
+              -0.05999999865889549
+            ],
+            [
+              5.235000133514404,
+              4.537761688232422,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_BluePaint",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H04_Fixtures.fbx"
+        },
+        {
+          "triangles": 440,
+          "vertices": 282,
+          "bounds_local_m": [
+            [
+              -4.574999809265137,
+              -4.269999980926514,
+              -0.05999999865889549
+            ],
+            [
+              5.235000133514404,
+              4.267498016357422,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_CreamWear",
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_BluePaint",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H04_Fixtures_LOD1.fbx"
+        },
+        {
+          "triangles": 192,
+          "vertices": 122,
+          "bounds_local_m": [
+            [
+              -4.574999809265137,
+              -4.269999980926514,
+              -0.05999999865889549
+            ],
+            [
+              5.235000133514404,
+              2.680000066757202,
+              2.819999933242798
+            ]
+          ],
+          "materials": [
+            "M_Homes_DoorMasonry",
+            "M_Homes_Concrete",
+            "M_Homes_BluePaint",
+            "M_Homes_Galvanized",
+            "M_Homes_DarkMetal"
+          ],
+          "fbx": "exports/SM_Homes_H04_Fixtures_LOD2.fbx"
+        }
+      ],
+      "glb": "exports/SM_Homes_H04_Fixtures.glb"
+    }
+  },
+  "lods": {
+    "0": {
+      "SM_Homes_H01_Shell": {
+        "house": "H01",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.0779480934143066
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 338,
+        "triangles": 732,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 2.915775103140561e-05,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013099602035177231,
+        "fbx": "exports/SM_Homes_H01_Shell.fbx",
+        "source_mesh_sha256": "f307c4b47d93322b11ca86d0adc963ec3f357710bb7f5184296698b8efdd4a19",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          732,
+          588,
+          492
+        ],
+        "lods": [
+          {
+            "triangles": 732,
+            "vertices": 338,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.0779480934143066
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H01_Shell.fbx"
+          },
+          {
+            "triangles": 588,
+            "vertices": 278,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.0779480934143066
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H01_Shell_LOD1.fbx"
+          },
+          {
+            "triangles": 492,
+            "vertices": 238,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.0779480934143066
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H01_Shell_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H01_Shell.glb"
+      },
+      "SM_Homes_H01_Roof": {
+        "house": "H01",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.730000019073486,
+            -5.0279998779296875,
+            2.825000047683716
+          ],
+          [
+            4.5279998779296875,
+            5.0279998779296875,
+            3.303999900817871
+          ]
+        ],
+        "vertices": 472,
+        "triangles": 892,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_WarmTimber",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 1.199989962596959e-05,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 7.583999992034408e-06,
+        "fbx": "exports/SM_Homes_H01_Roof.fbx",
+        "source_mesh_sha256": "a72ca1e4bc75a67aebd8710d0de48e0a8358f8ae4c681b2578efc3d915b6f64d",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          892,
+          572,
+          364
+        ],
+        "lods": [
+          {
+            "triangles": 892,
+            "vertices": 472,
+            "bounds_local_m": [
+              [
+                -4.730000019073486,
+                -5.0279998779296875,
+                2.825000047683716
+              ],
+              [
+                4.5279998779296875,
+                5.0279998779296875,
+                3.303999900817871
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_WarmTimber",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H01_Roof.fbx"
+          },
+          {
+            "triangles": 572,
+            "vertices": 296,
+            "bounds_local_m": [
+              [
+                -4.730000019073486,
+                -5.0279998779296875,
+                2.825000047683716
+              ],
+              [
+                4.5279998779296875,
+                5.0279998779296875,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_WarmTimber",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H01_Roof_LOD1.fbx"
+          },
+          {
+            "triangles": 364,
+            "vertices": 184,
+            "bounds_local_m": [
+              [
+                -4.730000019073486,
+                -5.025000095367432,
+                2.829160213470459
+              ],
+              [
+                4.525000095367432,
+                5.025000095367432,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_WarmTimber",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H01_Roof_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H01_Roof.glb"
+      },
+      "SM_Homes_H01_Fixtures": {
+        "house": "H01",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -5.135000228881836,
+            -4.269999980926514,
+            -0.05999999865889549
+          ],
+          [
+            4.574999809265137,
+            3.7816686630249023,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 466,
+        "triangles": 736,
+        "materials": [
+          "M_Homes_TanWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_WarmTimber",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 2.121312383351892e-05,
+        "closed_solids": 52,
+        "minimum_signed_volume_m3": 2.0364675292552247e-06,
+        "fbx": "exports/SM_Homes_H01_Fixtures.fbx",
+        "source_mesh_sha256": "64cc43506a4d076e2fca8560d2fb9107aabbc5c9b0e7abd84810fcf194a150db",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          736,
+          452,
+          192
+        ],
+        "lods": [
+          {
+            "triangles": 736,
+            "vertices": 466,
+            "bounds_local_m": [
+              [
+                -5.135000228881836,
+                -4.269999980926514,
+                -0.05999999865889549
+              ],
+              [
+                4.574999809265137,
+                3.7816686630249023,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_WarmTimber",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H01_Fixtures.fbx"
+          },
+          {
+            "triangles": 452,
+            "vertices": 290,
+            "bounds_local_m": [
+              [
+                -5.135000228881836,
+                -4.269999980926514,
+                -0.05999999865889549
+              ],
+              [
+                4.574999809265137,
+                3.7816686630249023,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_WarmTimber",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H01_Fixtures_LOD1.fbx"
+          },
+          {
+            "triangles": 192,
+            "vertices": 122,
+            "bounds_local_m": [
+              [
+                -5.135000228881836,
+                -4.269999980926514,
+                -0.05999999865889549
+              ],
+              [
+                4.574999809265137,
+                2.680000066757202,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_WarmTimber",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H01_Fixtures_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H01_Fixtures.glb"
+      },
+      "SM_Homes_H02_Shell": {
+        "house": "H02",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -3.7799999713897705,
+            -4.53000020980835,
+            -0.9913134574890137
+          ],
+          [
+            3.7799999713897705,
+            4.53000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 340,
+        "triangles": 732,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 2.915775103140561e-05,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013099602035177089,
+        "fbx": "exports/SM_Homes_H02_Shell.fbx",
+        "source_mesh_sha256": "8d0ac483ef32bc750bb144ec174b0ff09a7b9d6197ac9e4f37ba30d34633d9e5",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          732,
+          588,
+          492
+        ],
+        "lods": [
+          {
+            "triangles": 732,
+            "vertices": 340,
+            "bounds_local_m": [
+              [
+                -3.7799999713897705,
+                -4.53000020980835,
+                -0.9913134574890137
+              ],
+              [
+                3.7799999713897705,
+                4.53000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H02_Shell.fbx"
+          },
+          {
+            "triangles": 588,
+            "vertices": 280,
+            "bounds_local_m": [
+              [
+                -3.7799999713897705,
+                -4.53000020980835,
+                -0.9913134574890137
+              ],
+              [
+                3.7799999713897705,
+                4.53000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H02_Shell_LOD1.fbx"
+          },
+          {
+            "triangles": 492,
+            "vertices": 240,
+            "bounds_local_m": [
+              [
+                -3.7799999713897705,
+                -4.53000020980835,
+                -0.9913134574890137
+              ],
+              [
+                3.7799999713897705,
+                4.53000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H02_Shell_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H02_Shell.glb"
+      },
+      "SM_Homes_H02_Roof": {
+        "house": "H02",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -3.7780001163482666,
+            -4.5279998779296875,
+            2.9600000381469727
+          ],
+          [
+            3.7780001163482666,
+            4.5279998779296875,
+            3.303999900817871
+          ]
+        ],
+        "vertices": 264,
+        "triangles": 528,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 1.199989962596959e-05,
+        "closed_solids": 28,
+        "minimum_signed_volume_m3": 7.583999998172835e-06,
+        "fbx": "exports/SM_Homes_H02_Roof.fbx",
+        "source_mesh_sha256": "dbba1122efe0a41a30f69283b83a0157459e54ded28f8c5f082cfc9dd4f7d679",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          528,
+          348,
+          236
+        ],
+        "lods": [
+          {
+            "triangles": 528,
+            "vertices": 264,
+            "bounds_local_m": [
+              [
+                -3.7780001163482666,
+                -4.5279998779296875,
+                2.9600000381469727
+              ],
+              [
+                3.7780001163482666,
+                4.5279998779296875,
+                3.303999900817871
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H02_Roof.fbx"
+          },
+          {
+            "triangles": 348,
+            "vertices": 160,
+            "bounds_local_m": [
+              [
+                -3.7780001163482666,
+                -4.5279998779296875,
+                2.9600000381469727
+              ],
+              [
+                3.7780001163482666,
+                4.5279998779296875,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H02_Roof_LOD1.fbx"
+          },
+          {
+            "triangles": 236,
+            "vertices": 96,
+            "bounds_local_m": [
+              [
+                -3.7750000953674316,
+                -4.525000095367432,
+                2.9600000381469727
+              ],
+              [
+                3.7750000953674316,
+                4.525000095367432,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H02_Roof_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H02_Roof.glb"
+      },
+      "SM_Homes_H02_Fixtures": {
+        "house": "H02",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.545000076293945,
+            -4.1362385749816895,
+            -0.05999999865889549
+          ],
+          [
+            3.825000047683716,
+            4.095616340637207,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 618,
+        "triangles": 964,
+        "materials": [
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_SagePaint",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 2.1213187053614746e-05,
+        "closed_solids": 71,
+        "minimum_signed_volume_m3": 2.036467529987041e-06,
+        "fbx": "exports/SM_Homes_H02_Fixtures.fbx",
+        "source_mesh_sha256": "763b331d464138cfbad7c412a4bd1b3d159a9ea61b8779d218762fe7d877f57f",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          964,
+          608,
+          264
+        ],
+        "lods": [
+          {
+            "triangles": 964,
+            "vertices": 618,
+            "bounds_local_m": [
+              [
+                -4.545000076293945,
+                -4.1362385749816895,
+                -0.05999999865889549
+              ],
+              [
+                3.825000047683716,
+                4.095616340637207,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_SagePaint",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H02_Fixtures.fbx"
+          },
+          {
+            "triangles": 608,
+            "vertices": 394,
+            "bounds_local_m": [
+              [
+                -4.545000076293945,
+                -3.7699999809265137,
+                -0.05999999865889549
+              ],
+              [
+                3.825000047683716,
+                4.095616340637207,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_SagePaint",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H02_Fixtures_LOD1.fbx"
+          },
+          {
+            "triangles": 264,
+            "vertices": 170,
+            "bounds_local_m": [
+              [
+                -4.545000076293945,
+                -3.7699999809265137,
+                -0.05999999865889549
+              ],
+              [
+                3.825000047683716,
+                2.4649999141693115,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_SagePaint",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H02_Fixtures_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H02_Fixtures.glb"
+      },
+      "SM_Homes_H03_Shell": {
+        "house": "H03",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.1315112113952637
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 338,
+        "triangles": 732,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 2.915775103140561e-05,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013099602035177231,
+        "fbx": "exports/SM_Homes_H03_Shell.fbx",
+        "source_mesh_sha256": "61cfe2dab343e83f0b68721f74c84f7da08576444bfcc3638d25e86ede988af2",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          732,
+          588,
+          492
+        ],
+        "lods": [
+          {
+            "triangles": 732,
+            "vertices": 338,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.1315112113952637
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H03_Shell.fbx"
+          },
+          {
+            "triangles": 588,
+            "vertices": 278,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.1315112113952637
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H03_Shell_LOD1.fbx"
+          },
+          {
+            "triangles": 492,
+            "vertices": 238,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.1315112113952637
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H03_Shell_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H03_Shell.glb"
+      },
+      "SM_Homes_H03_Roof": {
+        "house": "H03",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.5279998779296875,
+            -5.0279998779296875,
+            2.9600000381469727
+          ],
+          [
+            4.5279998779296875,
+            5.0279998779296875,
+            3.303999900817871
+          ]
+        ],
+        "vertices": 280,
+        "triangles": 540,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 1.199989962596959e-05,
+        "closed_solids": 29,
+        "minimum_signed_volume_m3": 7.583999992034408e-06,
+        "fbx": "exports/SM_Homes_H03_Roof.fbx",
+        "source_mesh_sha256": "ed37bbbb5b3bbdf02c40040923bcec92177a1f1a98a460cccb0211732ce50438",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          540,
+          348,
+          236
+        ],
+        "lods": [
+          {
+            "triangles": 540,
+            "vertices": 280,
+            "bounds_local_m": [
+              [
+                -4.5279998779296875,
+                -5.0279998779296875,
+                2.9600000381469727
+              ],
+              [
+                4.5279998779296875,
+                5.0279998779296875,
+                3.303999900817871
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H03_Roof.fbx"
+          },
+          {
+            "triangles": 348,
+            "vertices": 168,
+            "bounds_local_m": [
+              [
+                -4.5279998779296875,
+                -5.0279998779296875,
+                2.9600000381469727
+              ],
+              [
+                4.5279998779296875,
+                5.0279998779296875,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H03_Roof_LOD1.fbx"
+          },
+          {
+            "triangles": 236,
+            "vertices": 104,
+            "bounds_local_m": [
+              [
+                -4.525000095367432,
+                -5.025000095367432,
+                2.9600000381469727
+              ],
+              [
+                4.525000095367432,
+                5.025000095367432,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H03_Roof_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H03_Roof.glb"
+      },
+      "SM_Homes_H03_Fixtures": {
+        "house": "H03",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -5.175000190734863,
+            -4.610396385192871,
+            -0.05999999865889549
+          ],
+          [
+            4.574999809265137,
+            4.643773078918457,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 488,
+        "triangles": 772,
+        "materials": [
+          "M_Homes_TanWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_DarkTimber",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal",
+          "M_Homes_RustTin"
+        ],
+        "minimum_uv_area": 2.121312383351892e-05,
+        "closed_solids": 55,
+        "minimum_signed_volume_m3": 2.03646752917353e-06,
+        "fbx": "exports/SM_Homes_H03_Fixtures.fbx",
+        "source_mesh_sha256": "47a24a93eccb30d6b0703882111c0231296dc3ee3bdf9892e44ebeacf4692d50",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          772,
+          464,
+          192
+        ],
+        "lods": [
+          {
+            "triangles": 772,
+            "vertices": 488,
+            "bounds_local_m": [
+              [
+                -5.175000190734863,
+                -4.610396385192871,
+                -0.05999999865889549
+              ],
+              [
+                4.574999809265137,
+                4.643773078918457,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_DarkTimber",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal",
+              "M_Homes_RustTin"
+            ],
+            "fbx": "exports/SM_Homes_H03_Fixtures.fbx"
+          },
+          {
+            "triangles": 464,
+            "vertices": 296,
+            "bounds_local_m": [
+              [
+                -5.175000190734863,
+                -4.591381072998047,
+                -0.05999999865889549
+              ],
+              [
+                4.574999809265137,
+                4.410894393920898,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_TanWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_DarkTimber",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal",
+              "M_Homes_RustTin"
+            ],
+            "fbx": "exports/SM_Homes_H03_Fixtures_LOD1.fbx"
+          },
+          {
+            "triangles": 192,
+            "vertices": 120,
+            "bounds_local_m": [
+              [
+                -5.175000190734863,
+                -2.4800000190734863,
+                -0.05999999865889549
+              ],
+              [
+                4.574999809265137,
+                4.269999980926514,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_DarkTimber",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal",
+              "M_Homes_RustTin"
+            ],
+            "fbx": "exports/SM_Homes_H03_Fixtures_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H03_Fixtures.glb"
+      },
+      "SM_Homes_H04_Shell": {
+        "house": "H04",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.1071252822875977
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 338,
+        "triangles": 732,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 2.915775103140561e-05,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013099602035177231,
+        "fbx": "exports/SM_Homes_H04_Shell.fbx",
+        "source_mesh_sha256": "5b50535f494d834b57852b70b1e7cbffc243a0d330ca6832889e01d54df32911",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          732,
+          588,
+          492
+        ],
+        "lods": [
+          {
+            "triangles": 732,
+            "vertices": 338,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.1071252822875977
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H04_Shell.fbx"
+          },
+          {
+            "triangles": 588,
+            "vertices": 278,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.1071252822875977
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H04_Shell_LOD1.fbx"
+          },
+          {
+            "triangles": 492,
+            "vertices": 238,
+            "bounds_local_m": [
+              [
+                -4.53000020980835,
+                -5.03000020980835,
+                -1.1071252822875977
+              ],
+              [
+                4.53000020980835,
+                5.03000020980835,
+                3.0
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_Concrete",
+              "M_Homes_RecessShadow"
+            ],
+            "fbx": "exports/SM_Homes_H04_Shell_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H04_Shell.glb"
+      },
+      "SM_Homes_H04_Roof": {
+        "house": "H04",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.5279998779296875,
+            -5.0279998779296875,
+            2.9600000381469727
+          ],
+          [
+            4.5279998779296875,
+            5.0279998779296875,
+            3.303999900817871
+          ]
+        ],
+        "vertices": 280,
+        "triangles": 540,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 1.199989962596959e-05,
+        "closed_solids": 29,
+        "minimum_signed_volume_m3": 7.5839999971601905e-06,
+        "fbx": "exports/SM_Homes_H04_Roof.fbx",
+        "source_mesh_sha256": "50041a70263d933d7dcaf7b6f2d7439e0763a687e1364051ba273c0589cb3804",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          540,
+          348,
+          236
+        ],
+        "lods": [
+          {
+            "triangles": 540,
+            "vertices": 280,
+            "bounds_local_m": [
+              [
+                -4.5279998779296875,
+                -5.0279998779296875,
+                2.9600000381469727
+              ],
+              [
+                4.5279998779296875,
+                5.0279998779296875,
+                3.303999900817871
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H04_Roof.fbx"
+          },
+          {
+            "triangles": 348,
+            "vertices": 168,
+            "bounds_local_m": [
+              [
+                -4.5279998779296875,
+                -5.0279998779296875,
+                2.9600000381469727
+              ],
+              [
+                4.5279998779296875,
+                5.0279998779296875,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H04_Roof_LOD1.fbx"
+          },
+          {
+            "triangles": 236,
+            "vertices": 104,
+            "bounds_local_m": [
+              [
+                -4.525000095367432,
+                -5.025000095367432,
+                2.9600000381469727
+              ],
+              [
+                4.525000095367432,
+                5.025000095367432,
+                3.299999952316284
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamStucco",
+              "M_Homes_DoorMasonry",
+              "M_Homes_RoofTar"
+            ],
+            "fbx": "exports/SM_Homes_H04_Roof_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H04_Roof.glb"
+      },
+      "SM_Homes_H04_Fixtures": {
+        "house": "H04",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.574999809265137,
+            -4.60654354095459,
+            -0.05999999865889549
+          ],
+          [
+            5.235000133514404,
+            4.537761688232422,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 466,
+        "triangles": 736,
+        "materials": [
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_BluePaint",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 2.121312383351892e-05,
+        "closed_solids": 52,
+        "minimum_signed_volume_m3": 2.0364675279646447e-06,
+        "fbx": "exports/SM_Homes_H04_Fixtures.fbx",
+        "source_mesh_sha256": "91c549fef4b897e72ff90f338e90274a5f5b0bd206b1e0ceec5ff4b99efb8a64",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        },
+        "lod_triangles": [
+          736,
+          440,
+          192
+        ],
+        "lods": [
+          {
+            "triangles": 736,
+            "vertices": 466,
+            "bounds_local_m": [
+              [
+                -4.574999809265137,
+                -4.60654354095459,
+                -0.05999999865889549
+              ],
+              [
+                5.235000133514404,
+                4.537761688232422,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_BluePaint",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H04_Fixtures.fbx"
+          },
+          {
+            "triangles": 440,
+            "vertices": 282,
+            "bounds_local_m": [
+              [
+                -4.574999809265137,
+                -4.269999980926514,
+                -0.05999999865889549
+              ],
+              [
+                5.235000133514404,
+                4.267498016357422,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_CreamWear",
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_BluePaint",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H04_Fixtures_LOD1.fbx"
+          },
+          {
+            "triangles": 192,
+            "vertices": 122,
+            "bounds_local_m": [
+              [
+                -4.574999809265137,
+                -4.269999980926514,
+                -0.05999999865889549
+              ],
+              [
+                5.235000133514404,
+                2.680000066757202,
+                2.819999933242798
+              ]
+            ],
+            "materials": [
+              "M_Homes_DoorMasonry",
+              "M_Homes_Concrete",
+              "M_Homes_BluePaint",
+              "M_Homes_Galvanized",
+              "M_Homes_DarkMetal"
+            ],
+            "fbx": "exports/SM_Homes_H04_Fixtures_LOD2.fbx"
+          }
+        ],
+        "glb": "exports/SM_Homes_H04_Fixtures.glb"
+      }
+    },
+    "1": {
+      "SM_Homes_H01_Shell": {
+        "house": "H01",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.0779480934143066
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 278,
+        "triangles": 588,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.00022147624661794652,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013022624999999718,
+        "fbx": "exports/SM_Homes_H01_Shell_LOD1.fbx",
+        "source_mesh_sha256": "e52e3cda937f367a0b57b8ff8968b5f9728bd4c21c2c4fe6faaae04ce6b5f714",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H01_Roof": {
+        "house": "H01",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.730000019073486,
+            -5.0279998779296875,
+            2.825000047683716
+          ],
+          [
+            4.5279998779296875,
+            5.0279998779296875,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 296,
+        "triangles": 572,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_WarmTimber",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 5.999991536143057e-05,
+        "closed_solids": 29,
+        "minimum_signed_volume_m3": 0.0032317500000015606,
+        "fbx": "exports/SM_Homes_H01_Roof_LOD1.fbx",
+        "source_mesh_sha256": "a598f7f44e0a4f20182f6d09afc6bfe772b34a82c05565b931af04506487fb62",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H01_Fixtures": {
+        "house": "H01",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -5.135000228881836,
+            -4.269999980926514,
+            -0.05999999865889549
+          ],
+          [
+            4.574999809265137,
+            3.7816686630249023,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 290,
+        "triangles": 452,
+        "materials": [
+          "M_Homes_TanWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_WarmTimber",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 2.853166384952921e-05,
+        "closed_solids": 35,
+        "minimum_signed_volume_m3": 1.7119017289799756e-06,
+        "fbx": "exports/SM_Homes_H01_Fixtures_LOD1.fbx",
+        "source_mesh_sha256": "73b823e0f61dfd63b2eded81b619addd911999dbfb6cd3b9fb90f864eb4158b1",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H02_Shell": {
+        "house": "H02",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -3.7799999713897705,
+            -4.53000020980835,
+            -0.9913134574890137
+          ],
+          [
+            3.7799999713897705,
+            4.53000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 280,
+        "triangles": 588,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.00022147667502636637,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013022625000000088,
+        "fbx": "exports/SM_Homes_H02_Shell_LOD1.fbx",
+        "source_mesh_sha256": "1b0567effac6df58a0392a96c3e732676e0df2ec2643364f666c475558e5b6eb",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H02_Roof": {
+        "house": "H02",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -3.7780001163482666,
+            -4.5279998779296875,
+            2.9600000381469727
+          ],
+          [
+            3.7780001163482666,
+            4.5279998779296875,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 160,
+        "triangles": 348,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 5.999991536143057e-05,
+        "closed_solids": 21,
+        "minimum_signed_volume_m3": 0.0032317500000013247,
+        "fbx": "exports/SM_Homes_H02_Roof_LOD1.fbx",
+        "source_mesh_sha256": "217ac76dd7683de0adecafe2e3c7eed082fe234fe56fca721477a5e6f021849b",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H02_Fixtures": {
+        "house": "H02",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.545000076293945,
+            -3.7699999809265137,
+            -0.05999999865889549
+          ],
+          [
+            3.825000047683716,
+            4.095616340637207,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 394,
+        "triangles": 608,
+        "materials": [
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_SagePaint",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 2.853174888059473e-05,
+        "closed_solids": 48,
+        "minimum_signed_volume_m3": 1.7119017292090946e-06,
+        "fbx": "exports/SM_Homes_H02_Fixtures_LOD1.fbx",
+        "source_mesh_sha256": "90bb29f8f70f3877d8adae5f4c61fd6090ae2f62817d0f7861c0955ac01dbe7f",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H03_Shell": {
+        "house": "H03",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.1315112113952637
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 278,
+        "triangles": 588,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.00022147624661794652,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013022624999999718,
+        "fbx": "exports/SM_Homes_H03_Shell_LOD1.fbx",
+        "source_mesh_sha256": "567edc9ccd431c9c7c438d187044dce229e7dda9e689b608697aa412b790a0fa",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H03_Roof": {
+        "house": "H03",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.5279998779296875,
+            -5.0279998779296875,
+            2.9600000381469727
+          ],
+          [
+            4.5279998779296875,
+            5.0279998779296875,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 168,
+        "triangles": 348,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 5.999991536143057e-05,
+        "closed_solids": 21,
+        "minimum_signed_volume_m3": 0.0032317500000015606,
+        "fbx": "exports/SM_Homes_H03_Roof_LOD1.fbx",
+        "source_mesh_sha256": "282a08f6e69878369a734ba900813a6f0bbc4d749f4d4d5379bb521573d56b79",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H03_Fixtures": {
+        "house": "H03",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -5.175000190734863,
+            -4.591381072998047,
+            -0.05999999865889549
+          ],
+          [
+            4.574999809265137,
+            4.410894393920898,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 296,
+        "triangles": 464,
+        "materials": [
+          "M_Homes_TanWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_DarkTimber",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal",
+          "M_Homes_RustTin"
+        ],
+        "minimum_uv_area": 2.853166384952921e-05,
+        "closed_solids": 36,
+        "minimum_signed_volume_m3": 1.711901729161986e-06,
+        "fbx": "exports/SM_Homes_H03_Fixtures_LOD1.fbx",
+        "source_mesh_sha256": "1bdeaeef31f6ee6c0c2de76da21ec4ddb835c4e90822523ed5824a8ba4b0259c",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H04_Shell": {
+        "house": "H04",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.1071252822875977
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 278,
+        "triangles": 588,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.00022147624661794652,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.013022624999999718,
+        "fbx": "exports/SM_Homes_H04_Shell_LOD1.fbx",
+        "source_mesh_sha256": "c6b72f350270ff609a55d0c5bbc1b571a1ccb5fa024dbbd7a32a33dce5ebe591",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H04_Roof": {
+        "house": "H04",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.5279998779296875,
+            -5.0279998779296875,
+            2.9600000381469727
+          ],
+          [
+            4.5279998779296875,
+            5.0279998779296875,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 168,
+        "triangles": 348,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 5.999991536143057e-05,
+        "closed_solids": 21,
+        "minimum_signed_volume_m3": 0.0032317500000015606,
+        "fbx": "exports/SM_Homes_H04_Roof_LOD1.fbx",
+        "source_mesh_sha256": "9b842dbea0f18faff6fc43aeee61ba4553917e75a54bb78253447e0fccecab4a",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H04_Fixtures": {
+        "house": "H04",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.574999809265137,
+            -4.269999980926514,
+            -0.05999999865889549
+          ],
+          [
+            5.235000133514404,
+            4.267498016357422,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 282,
+        "triangles": 440,
+        "materials": [
+          "M_Homes_CreamWear",
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_BluePaint",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 2.853166384952921e-05,
+        "closed_solids": 34,
+        "minimum_signed_volume_m3": 1.7119017281611048e-06,
+        "fbx": "exports/SM_Homes_H04_Fixtures_LOD1.fbx",
+        "source_mesh_sha256": "ce40d83de39cb48ccc6be5570eace42b58773f1d65c6e86b8ae2528dddf5c9be",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      }
+    },
+    "2": {
+      "SM_Homes_H01_Shell": {
+        "house": "H01",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.0779480934143066
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 238,
+        "triangles": 492,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.001940624018013537,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.012295249999999855,
+        "fbx": "exports/SM_Homes_H01_Shell_LOD2.fbx",
+        "source_mesh_sha256": "e022ef57cfe7b14aea747ba2629c05c5b666ee6fae6b3664971b7cd49a108491",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H01_Roof": {
+        "house": "H01",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.730000019073486,
+            -5.025000095367432,
+            2.829160213470459
+          ],
+          [
+            4.525000095367432,
+            5.025000095367432,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 184,
+        "triangles": 364,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_WarmTimber",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 0.0023000002324575775,
+        "closed_solids": 25,
+        "minimum_signed_volume_m3": 0.003099500000001562,
+        "fbx": "exports/SM_Homes_H01_Roof_LOD2.fbx",
+        "source_mesh_sha256": "8c1858a71a9ba88320e4317c0a51b81f3a0725762a38b882b64a430730518d4b",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H01_Fixtures": {
+        "house": "H01",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8028.5,
+          7.314197063446045,
+          2133.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.0,
+          33.0,
+          2128.0,
+          2138.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -5.135000228881836,
+            -4.269999980926514,
+            -0.05999999865889549
+          ],
+          [
+            4.574999809265137,
+            2.680000066757202,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 122,
+        "triangles": 192,
+        "materials": [
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_WarmTimber",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 0.00035999979019152306,
+        "closed_solids": 16,
+        "minimum_signed_volume_m3": 0.00038879999999957837,
+        "fbx": "exports/SM_Homes_H01_Fixtures_LOD2.fbx",
+        "source_mesh_sha256": "544fe9dcbac0eb0b15ebca5d5535910835cc93c92a2cbe18ac1f9d4cf17e46c6",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H02_Shell": {
+        "house": "H02",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -3.7799999713897705,
+            -4.53000020980835,
+            -0.9913134574890137
+          ],
+          [
+            3.7799999713897705,
+            4.53000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 240,
+        "triangles": 492,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.0019406245209276918,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.012295249999999897,
+        "fbx": "exports/SM_Homes_H02_Shell_LOD2.fbx",
+        "source_mesh_sha256": "cfc9c14eff0d8c497a7b1ee1afa2f30c80e5b8f2fbf58b4bd7812bdccf627445",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H02_Roof": {
+        "house": "H02",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -3.7750000953674316,
+            -4.525000095367432,
+            2.9600000381469727
+          ],
+          [
+            3.7750000953674316,
+            4.525000095367432,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 236,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 0.002300000828504345,
+        "closed_solids": 17,
+        "minimum_signed_volume_m3": 0.0030995000000021986,
+        "fbx": "exports/SM_Homes_H02_Roof_LOD2.fbx",
+        "source_mesh_sha256": "735b168abe83743884cef80dda1abb811d5fcc92c926b59d021579a7f1077990",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H02_Fixtures": {
+        "house": "H02",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8028.25,
+          8.003066062927246,
+          2156.5
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          24.5,
+          32.0,
+          2152.0,
+          2161.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.545000076293945,
+            -3.7699999809265137,
+            -0.05999999865889549
+          ],
+          [
+            3.825000047683716,
+            2.4649999141693115,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 170,
+        "triangles": 264,
+        "materials": [
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_SagePaint",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 0.00035999979019152306,
+        "closed_solids": 22,
+        "minimum_signed_volume_m3": 0.00018749999999990476,
+        "fbx": "exports/SM_Homes_H02_Fixtures_LOD2.fbx",
+        "source_mesh_sha256": "f64d029ec990c27bf66634a8e20552cc5f2db0ed295cbb7a3e76c53b8ba4fadf",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H03_Shell": {
+        "house": "H03",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.1315112113952637
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 238,
+        "triangles": 492,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.001940624018013537,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.012295249999999855,
+        "fbx": "exports/SM_Homes_H03_Shell_LOD2.fbx",
+        "source_mesh_sha256": "89c68f0fa065e783acd53cff40c9b7f0f0a1be23e1e9116e1e2f7bac3a67d030",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H03_Roof": {
+        "house": "H03",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.525000095367432,
+            -5.025000095367432,
+            2.9600000381469727
+          ],
+          [
+            4.525000095367432,
+            5.025000095367432,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 104,
+        "triangles": 236,
+        "materials": [
+          "M_Homes_TanStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 0.0023000002324575775,
+        "closed_solids": 17,
+        "minimum_signed_volume_m3": 0.003099500000001562,
+        "fbx": "exports/SM_Homes_H03_Roof_LOD2.fbx",
+        "source_mesh_sha256": "f8104012d83aa42455af82db5ee0569dfab4394cc90dc1733161ba3e1f7e4d52",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H03_Fixtures": {
+        "house": "H03",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          8029.5,
+          8.81874942779541,
+          2185.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": -1,
+        "original_road_rect_m": [
+          25.0,
+          34.0,
+          2180.0,
+          2190.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -5.175000190734863,
+            -2.4800000190734863,
+            -0.05999999865889549
+          ],
+          [
+            4.574999809265137,
+            4.269999980926514,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 120,
+        "triangles": 192,
+        "materials": [
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_DarkTimber",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal",
+          "M_Homes_RustTin"
+        ],
+        "minimum_uv_area": 0.00035999979019152306,
+        "closed_solids": 16,
+        "minimum_signed_volume_m3": 0.00038879999999957837,
+        "fbx": "exports/SM_Homes_H03_Fixtures_LOD2.fbx",
+        "source_mesh_sha256": "abe3a9b134d2e9d984a7085dc4af90ed19dd069c9fdd26b130329b9b720df6ae",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H04_Shell": {
+        "house": "H04",
+        "chunk": "Shell",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.53000020980835,
+            -5.03000020980835,
+            -1.1071252822875977
+          ],
+          [
+            4.53000020980835,
+            5.03000020980835,
+            3.0
+          ]
+        ],
+        "vertices": 238,
+        "triangles": 492,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_Concrete",
+          "M_Homes_RecessShadow"
+        ],
+        "minimum_uv_area": 0.001940624018013537,
+        "closed_solids": 37,
+        "minimum_signed_volume_m3": 0.012295249999999855,
+        "fbx": "exports/SM_Homes_H04_Shell_LOD2.fbx",
+        "source_mesh_sha256": "6411108238456b4349c6ce879131ef319600711e11a5b84517520e6e29b404ab",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H04_Roof": {
+        "house": "H04",
+        "chunk": "Roof",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.525000095367432,
+            -5.025000095367432,
+            2.9600000381469727
+          ],
+          [
+            4.525000095367432,
+            5.025000095367432,
+            3.299999952316284
+          ]
+        ],
+        "vertices": 104,
+        "triangles": 236,
+        "materials": [
+          "M_Homes_CreamStucco",
+          "M_Homes_DoorMasonry",
+          "M_Homes_RoofTar"
+        ],
+        "minimum_uv_area": 0.0023000002324575775,
+        "closed_solids": 17,
+        "minimum_signed_volume_m3": 0.003099500000001562,
+        "fbx": "exports/SM_Homes_H04_Roof_LOD2.fbx",
+        "source_mesh_sha256": "769354a7d534873a4234ba14b1558710763f1df435f86dd607f7057efffb104b",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      },
+      "SM_Homes_H04_Fixtures": {
+        "house": "H04",
+        "chunk": "Fixtures",
+        "site_world_three_m": [
+          7976.5,
+          11.268553733825684,
+          2241.0
+        ],
+        "parent_handle": "world.town.group",
+        "offset": [
+          0,
+          0,
+          0
+        ],
+        "front": 1,
+        "original_road_rect_m": [
+          -28.0,
+          -19.0,
+          2236.0,
+          2246.0
+        ],
+        "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+        "cast_shadow": true,
+        "ray_tracing": true,
+        "nanite": false,
+        "origin": [
+          0,
+          0,
+          0
+        ],
+        "site_local_offset_m": [
+          0,
+          0,
+          0
+        ],
+        "bounds_local_m": [
+          [
+            -4.574999809265137,
+            -4.269999980926514,
+            -0.05999999865889549
+          ],
+          [
+            5.235000133514404,
+            2.680000066757202,
+            2.819999933242798
+          ]
+        ],
+        "vertices": 122,
+        "triangles": 192,
+        "materials": [
+          "M_Homes_DoorMasonry",
+          "M_Homes_Concrete",
+          "M_Homes_BluePaint",
+          "M_Homes_Galvanized",
+          "M_Homes_DarkMetal"
+        ],
+        "minimum_uv_area": 0.000360000058412524,
+        "closed_solids": 16,
+        "minimum_signed_volume_m3": 0.00038879999999972496,
+        "fbx": "exports/SM_Homes_H04_Fixtures_LOD2.fbx",
+        "source_mesh_sha256": "e3a96cac1de17c4c7c3f9c06bb7f99c647d837e4e0cc2d6c93e515f6e27100e2",
+        "native_policy": {
+          "force_front_x_axis": true,
+          "coordinate_system_policy": "MATCH_UP_FORWARD_AXES",
+          "import_rotation_yaw": 90,
+          "fbx_axis_forward": "-Y",
+          "fbx_axis_up": "Z",
+          "fbx_apply_scale_options": "FBX_SCALE_UNITS",
+          "lods": 3,
+          "nanite": false,
+          "ray_tracing": true,
+          "collision": "Complex visibility queries only; original analytical player/truck colliders remain authoritative",
+          "material_prefix": "M_Homes_"
+        }
+      }
+    }
+  },
+  "houses": {
+    "H01": {
+      "blend": "H01.blend",
+      "parts": [
+        "SM_Homes_H01_Shell",
+        "SM_Homes_H01_Roof",
+        "SM_Homes_H01_Fixtures"
+      ],
+      "scene": "H01",
+      "editable_collection": "EDITABLE_ORIGINAL_H01",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "style": "tan mineral plaster, exposed timber viga ends, deep cream masonry door surround, timber window casing"
+    },
+    "H02": {
+      "blend": "H02.blend",
+      "parts": [
+        "SM_Homes_H02_Shell",
+        "SM_Homes_H02_Roof",
+        "SM_Homes_H02_Fixtures"
+      ],
+      "scene": "H02",
+      "editable_collection": "EDITABLE_ORIGINAL_H02",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "style": "cream mineral plaster, faded sage shutters and timber porch hood, galvanized drip edge"
+    },
+    "H03": {
+      "blend": "H03.blend",
+      "parts": [
+        "SM_Homes_H03_Shell",
+        "SM_Homes_H03_Roof",
+        "SM_Homes_H03_Fixtures"
+      ],
+      "scene": "H03",
+      "editable_collection": "EDITABLE_ORIGINAL_H03",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "style": "tan plaster with dark timber casing, weathered corrugated porch hood and repaired coping"
+    },
+    "H04": {
+      "blend": "H04.blend",
+      "parts": [
+        "SM_Homes_H04_Shell",
+        "SM_Homes_H04_Roof",
+        "SM_Homes_H04_Fixtures"
+      ],
+      "scene": "H04",
+      "editable_collection": "EDITABLE_ORIGINAL_H04",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "style": "cream plaster with faded blue window trim, timber porch canopy and warm kitchen opening"
+    }
+  },
+  "materials": [
+    {
+      "name": "M_Homes_TanStucco",
+      "base_color_linear": [
+        0.4851499400560704,
+        0.27467731206038465,
+        0.13843161503245183,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.34,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.4851499400560704,
+        0.27467731206038465,
+        0.13843161503245183,
+        1
+      ],
+      "source_material": "M_Town_Stucco"
+    },
+    {
+      "name": "M_Homes_CreamStucco",
+      "base_color_linear": [
+        0.7156935005064807,
+        0.5840784178911641,
+        0.38132601143253014,
+        1
+      ],
+      "roughness": 0.95,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.34,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.7156935005064807,
+        0.5840784178911641,
+        0.38132601143253014,
+        1
+      ],
+      "source_material": "M_Town_Stucco"
+    },
+    {
+      "name": "M_Homes_TanWear",
+      "base_color_linear": [
+        0.39675523072562685,
+        0.23074004852434915,
+        0.12743768043564743,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.34,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.39675523072562685,
+        0.23074004852434915,
+        0.12743768043564743,
+        1
+      ],
+      "source_material": "M_Town_Stucco"
+    },
+    {
+      "name": "M_Homes_CreamWear",
+      "base_color_linear": [
+        0.5647115057049292,
+        0.467783796112159,
+        0.30946892281750854,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.34,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.5647115057049292,
+        0.467783796112159,
+        0.30946892281750854,
+        1
+      ],
+      "source_material": "M_Town_Stucco"
+    },
+    {
+      "name": "M_Homes_DoorMasonry",
+      "base_color_linear": [
+        0.5972017883637634,
+        0.5028864580325687,
+        0.3419144249086609,
+        1
+      ],
+      "roughness": 0.95,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.34,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.5972017883637634,
+        0.5028864580325687,
+        0.3419144249086609,
+        1
+      ],
+      "source_material": "M_Town_Stucco"
+    },
+    {
+      "name": "M_Homes_Concrete",
+      "base_color_linear": [
+        0.31854677812509186,
+        0.2788942634768104,
+        0.20863687014525575,
+        1
+      ],
+      "roughness": 0.96,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.21,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.31854677812509186,
+        0.2788942634768104,
+        0.20863687014525575,
+        1
+      ],
+      "source_material": "M_Town_Concrete"
+    },
+    {
+      "name": "M_Homes_WarmTimber",
+      "base_color_linear": [
+        0.24228112246555486,
+        0.12477181756095049,
+        0.04817182422688942,
+        1
+      ],
+      "roughness": 0.71,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.26,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Wood_normal.png"
+      },
+      "texture_tint_linear": [
+        0.24228112246555486,
+        0.12477181756095049,
+        0.04817182422688942,
+        1
+      ],
+      "source_material": "M_Town_Timber"
+    },
+    {
+      "name": "M_Homes_DarkTimber",
+      "base_color_linear": [
+        0.07818742180518633,
+        0.0382043715953465,
+        0.016807375752887384,
+        1
+      ],
+      "roughness": 0.77,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.2,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Wood_normal.png"
+      },
+      "texture_tint_linear": [
+        0.07818742180518633,
+        0.0382043715953465,
+        0.016807375752887384,
+        1
+      ],
+      "source_material": "M_Town_DarkWood"
+    },
+    {
+      "name": "M_Homes_SagePaint",
+      "base_color_linear": [
+        0.19806931955994886,
+        0.2831487404299921,
+        0.20155625379439707,
+        1
+      ],
+      "roughness": 0.82,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.15,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/MetalPaint_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/MetalPaint_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/MetalPaint_normal.png"
+      },
+      "texture_tint_linear": [
+        0.19806931955994886,
+        0.2831487404299921,
+        0.20155625379439707,
+        1
+      ],
+      "source_material": "M_Town_TealPaint"
+    },
+    {
+      "name": "M_Homes_BluePaint",
+      "base_color_linear": [
+        0.17464740365558504,
+        0.25415209433082675,
+        0.3005437944157765,
+        1
+      ],
+      "roughness": 0.83,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.15,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/MetalPaint_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/MetalPaint_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/MetalPaint_normal.png"
+      },
+      "texture_tint_linear": [
+        0.17464740365558504,
+        0.25415209433082675,
+        0.3005437944157765,
+        1
+      ],
+      "source_material": "M_Town_BluePaint"
+    },
+    {
+      "name": "M_Homes_RoofTar",
+      "base_color_linear": [
+        0.03688945040110004,
+        0.033104766570885055,
+        0.026241221894849898,
+        1
+      ],
+      "roughness": 0.98,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.21,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png"
+      },
+      "texture_tint_linear": [
+        0.03688945040110004,
+        0.033104766570885055,
+        0.026241221894849898,
+        1
+      ],
+      "source_material": "M_Town_Concrete"
+    },
+    {
+      "name": "M_Homes_Galvanized",
+      "base_color_linear": [
+        0.386429433787049,
+        0.4232676699860717,
+        0.39157247774972326,
+        1
+      ],
+      "roughness": 0.32,
+      "metallic": 0.87,
+      "specular": 0.28,
+      "normal_strength": 0.22,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "source_material": "M_Town_Metal",
+      "textures": {}
+    },
+    {
+      "name": "M_Homes_DarkMetal",
+      "base_color_linear": [
+        0.019382360956935723,
+        0.02518685962736163,
+        0.0202885630566524,
+        1
+      ],
+      "roughness": 0.72,
+      "metallic": 0.65,
+      "specular": 0.28,
+      "normal_strength": 0.22,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "source_material": "M_Town_DarkMetal",
+      "textures": {}
+    },
+    {
+      "name": "M_Homes_RustTin",
+      "base_color_linear": [
+        0.39675523072562685,
+        0.33245153634617935,
+        0.238397573812271,
+        1
+      ],
+      "roughness": 0.84,
+      "metallic": 0.66,
+      "specular": 0.28,
+      "normal_strength": 0.24,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/RustTin_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/RustTin_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/RustTin_normal.png"
+      },
+      "texture_tint_linear": [
+        0.39675523072562685,
+        0.33245153634617935,
+        0.238397573812271,
+        1
+      ],
+      "source_material": "M_Town_RustTin"
+    },
+    {
+      "name": "M_Homes_RecessShadow",
+      "base_color_linear": [
+        0.017641954488384078,
+        0.01520851442291271,
+        0.011612245179743885,
+        1
+      ],
+      "roughness": 1.0,
+      "metallic": 0,
+      "specular": 0.28,
+      "normal_strength": 0.2,
+      "normal_convention": "DirectX",
+      "uv_scale": 1,
+      "emission": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "emission_strength": 0,
+      "textures": {
+        "base_color": "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png",
+        "roughness": "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png",
+        "normal": "../../Signal47/Tools/townbuildings/textures/Wood_normal.png"
+      },
+      "texture_tint_linear": [
+        0.017641954488384078,
+        0.01520851442291271,
+        0.011612245179743885,
+        1
+      ],
+      "source_material": "M_Town_DarkWood"
+    }
+  ],
+  "texture_sources": {
+    "../../Signal47/Tools/townbuildings/textures/MetalPaint_base_color.png": {
+      "sha256": "56ef4c6ef0b77dc5d33b63e3694d229797d2521b79d248736b9c1ae68dd69329",
+      "bytes": 160169
+    },
+    "../../Signal47/Tools/townbuildings/textures/MetalPaint_normal.png": {
+      "sha256": "2e03ad51308685f5053f55263d262c25a7b705949b2aed343ba02f28d5aee98b",
+      "bytes": 263977
+    },
+    "../../Signal47/Tools/townbuildings/textures/MetalPaint_roughness.png": {
+      "sha256": "90ba1bc952e3f0334d80b9f50b2e49109b4d0bb264741b5a2f0b7326a898bd47",
+      "bytes": 75135
+    },
+    "../../Signal47/Tools/townbuildings/textures/RustTin_base_color.png": {
+      "sha256": "2feb0eeefcf5f94e5ef9bdef4538bcac3b100dd2a95c1c66c5f6150b011b9f16",
+      "bytes": 1910219
+    },
+    "../../Signal47/Tools/townbuildings/textures/RustTin_normal.png": {
+      "sha256": "f99fe484e3305bd48d7e33a8e29cae8c8f0ad902456787f49977d0e99357fc6a",
+      "bytes": 325677
+    },
+    "../../Signal47/Tools/townbuildings/textures/RustTin_roughness.png": {
+      "sha256": "0278ed450fc0f52f51cddfebd1ea4d6da3ec61be70da43361b583a74679fa2d9",
+      "bytes": 96478
+    },
+    "../../Signal47/Tools/townbuildings/textures/Stucco_base_color.png": {
+      "sha256": "6d962f2de17923a6fc12e7e381a0f606b38fd3503bd91f9fd13e6019345058da",
+      "bytes": 628350
+    },
+    "../../Signal47/Tools/townbuildings/textures/Stucco_normal.png": {
+      "sha256": "cf3f3de573782e95c41fbc9532f0e1e53cd62ed9ac60e5468a50d0b1f4452f1f",
+      "bytes": 1088779
+    },
+    "../../Signal47/Tools/townbuildings/textures/Stucco_roughness.png": {
+      "sha256": "77634f625fc9634eb21bc795623be4e783489c1724c6ba1d7dabeb4d1e14c9f8",
+      "bytes": 41831
+    },
+    "../../Signal47/Tools/townbuildings/textures/Wood_base_color.png": {
+      "sha256": "2dde1f2ad3ff7ba39eaf9766344a7fdf9e00d149bb072ecb9167b6b970008e5d",
+      "bytes": 666660
+    },
+    "../../Signal47/Tools/townbuildings/textures/Wood_normal.png": {
+      "sha256": "0d85c15823513826c18cec237a86ac8a2c7222fba671f49993813a435d6bf245",
+      "bytes": 416977
+    },
+    "../../Signal47/Tools/townbuildings/textures/Wood_roughness.png": {
+      "sha256": "be045f01fb190a021a1e16b20235d1f999d9e407e4907af974a345e59dfc742b",
+      "bytes": 65395
+    }
+  },
+  "source_inputs_sha256": {
+    "ArtSource/CalicheHomes/source-contract.json": "c71b76ffe0a6938db8b423190d9c54ab18d84c4ac26f4168e963660ed85e9362",
+    "Signal47/Tools/calichehomes/build_source.py": "2120398c44c7d6eb01706ccb10cb7df7bf5db9524efa65b4691540aeb8f2dc2f",
+    "Signal47/Tools/calichehomes/check_source.py": "0f9a2bf44330181f4c6dfb067a6ddf89cd40ebbfd59a92afe3017e6b13ade172",
+    "Signal47/Tools/calichehomes/design.py": "ca0bcdb90992f27c6e111b72a63c64427c57197eef0f54d3408c7d19e86c2e99",
+    "Signal47/Tools/calichehomes/home_geometry.py": "041717e7b13d8d3989b17a9fe9c6bf496255d514284ff535b13ae6563646e462",
+    "Signal47/Tools/calichehomes/materials.py": "147a74dfc72d4a663eb9616054d8c3d216bb6fb173f95995e82ca81ee76e3992",
+    "Signal47/Tools/calichehomes/source_data.py": "79fe2e69ca43bbeeb10ffc3c3a0c3e675e7bc89c2323eea3c0e960b20c703323",
+    "Signal47/Tools/calichehomes/verify_source.py": "b4e22eabdbd742b7050e3df622fbf901167a19feb9060dc23215e573606650a5",
+    "Signal47/Tools/townbuildings/geometry.py": "85205ca16f709687ab8b271badb0285f02b54ba650555a5095c1b36e6d04e6de",
+    "Signal47/Tools/townbuildings/materials.py": "312e9c039b39c2a2ee8f0e8b0e0d575d70240f5ce365c4c7e92f512d7e973e60",
+    "Signal47/Tools/substation/meshkit.py": "859484726950e39e0390f798c2dd6f0f8c0e2f7680edc778e55c23dec912d98a",
+    "Signal47/Tools/townbuildings/textures/MetalPaint_base_color.png": "56ef4c6ef0b77dc5d33b63e3694d229797d2521b79d248736b9c1ae68dd69329",
+    "Signal47/Tools/townbuildings/textures/MetalPaint_normal.png": "2e03ad51308685f5053f55263d262c25a7b705949b2aed343ba02f28d5aee98b",
+    "Signal47/Tools/townbuildings/textures/MetalPaint_roughness.png": "90ba1bc952e3f0334d80b9f50b2e49109b4d0bb264741b5a2f0b7326a898bd47",
+    "Signal47/Tools/townbuildings/textures/RustTin_base_color.png": "2feb0eeefcf5f94e5ef9bdef4538bcac3b100dd2a95c1c66c5f6150b011b9f16",
+    "Signal47/Tools/townbuildings/textures/RustTin_normal.png": "f99fe484e3305bd48d7e33a8e29cae8c8f0ad902456787f49977d0e99357fc6a",
+    "Signal47/Tools/townbuildings/textures/RustTin_roughness.png": "0278ed450fc0f52f51cddfebd1ea4d6da3ec61be70da43361b583a74679fa2d9",
+    "Signal47/Tools/townbuildings/textures/Stucco_base_color.png": "6d962f2de17923a6fc12e7e381a0f606b38fd3503bd91f9fd13e6019345058da",
+    "Signal47/Tools/townbuildings/textures/Stucco_normal.png": "cf3f3de573782e95c41fbc9532f0e1e53cd62ed9ac60e5468a50d0b1f4452f1f",
+    "Signal47/Tools/townbuildings/textures/Stucco_roughness.png": "77634f625fc9634eb21bc795623be4e783489c1724c6ba1d7dabeb4d1e14c9f8",
+    "Signal47/Tools/townbuildings/textures/Wood_base_color.png": "2dde1f2ad3ff7ba39eaf9766344a7fdf9e00d149bb072ecb9167b6b970008e5d",
+    "Signal47/Tools/townbuildings/textures/Wood_normal.png": "0d85c15823513826c18cec237a86ac8a2c7222fba671f49993813a435d6bf245",
+    "Signal47/Tools/townbuildings/textures/Wood_roughness.png": "be045f01fb190a021a1e16b20235d1f999d9e407e4907af974a345e59dfc742b"
+  },
+  "lod_triangle_totals": {
+    "0": 8636,
+    "1": 5932,
+    "2": 3880
+  },
+  "axis_probe_source_center_m": [
+    2,
+    4,
+    6
+  ],
+  "axis_probe_source_dimensions_m": [
+    0.2,
+    0.4,
+    0.6
+  ],
+  "axis_probe_expected_UE_center_cm": [
+    200,
+    -400,
+    600
+  ],
+  "axis_probe_expected_UE_dimensions_cm": [
+    20,
+    40,
+    60
+  ],
+  "retained_runtime": [
+    "world.town.group",
+    "world.town.st",
+    "world.town.dressing.group",
+    "world.town.car",
+    "world.town.carDoor",
+    "world.town.woman",
+    "world.town.smoker",
+    "world.town.paper",
+    "world.town.cutout",
+    "world.town.proxies.tv1",
+    "world.town.proxies.tv2",
+    "world.town.proxies.kitchen",
+    "world.town.proxies.smoker"
+  ],
+  "retained_geometry": [
+    "All four original door holders including their own leaf, casing and licensed replacement",
+    "All live television/kitchen panels and H02's original dark window pane",
+    "Original stoops, mailboxes, cars, roof antennas/coolers/vents, meters, downspouts and porch lamps",
+    "Original analytical player/truck collider rectangles and public walk zones"
+  ],
+  "no_new_admission": true,
+  "generated_sha256": {
+    "H01.blend": "65c175f89305ed653d392a66476d51b15320f73ab159a292b62de59bd7f7b338",
+    "H01.glb": "c5b24c42478ed083cdc25f40a750433551777ec07754e90ba8ff185b7ae92cb9",
+    "H02.blend": "e2659010f835cfc001a06932fc634e131575bd4e112e6a3ae73536e3ee5e74e8",
+    "H02.glb": "b43887d528fba4f12298fc57a15703f3c8ed3470e0bec9d9192a4ce3c681ac31",
+    "H03.blend": "23bc3a00bcc13030d8622bd567ebacf561d8f6b17a8271d99c40a53d4126e14d",
+    "H03.glb": "4218fe337bf5f3c53aaabee76c62fb1eb1170f5fd75337afb69826e482e3b905",
+    "H04.blend": "d8227615a5ae49f212c9af760d0bfc576987473d5dc09624f8bc6f28a5f49468",
+    "H04.glb": "e58ecab209d1f1b1af45bd1c411e7f5fab766421b6634638d96cb029e89c7086",
+    "exports/SM_Homes_H01_Fixtures.fbx": "6645887c3b9c25b1de857bad9a057d494c39c1799ab04c24bdfd641527f87f55",
+    "exports/SM_Homes_H01_Fixtures.glb": "212633082e51c339be9350086b459eb2b43fa910614c8714c535bc8476ec7708",
+    "exports/SM_Homes_H01_Fixtures_LOD1.fbx": "0154d0fb37380691f41a5e77a6dfc3015627ca8d1bd5609c1e728289251154f8",
+    "exports/SM_Homes_H01_Fixtures_LOD2.fbx": "8c848663cc5e945cb0b4bab0c26764430f380525f1698572f1afa07c8962a49c",
+    "exports/SM_Homes_H01_Roof.fbx": "ce731618cf4e1e34e5cdde2a794378e465910dd0d03ed5d30042d6602612aca8",
+    "exports/SM_Homes_H01_Roof.glb": "08a03134d9a22eed2e4ccc3fbd8fb145b21e7abf74605cb1ed7cf2565a34fefd",
+    "exports/SM_Homes_H01_Roof_LOD1.fbx": "546498cf35b97de2459b3c0a92a2c196d9f130ffcd4ebac147e435606e249f26",
+    "exports/SM_Homes_H01_Roof_LOD2.fbx": "b2b4d3a29758f9e4beddb4287726e2193685f967bffae241623b156d07ade736",
+    "exports/SM_Homes_H01_Shell.fbx": "0fd8c27c074165e74899677a5f4d775dd9027cae6ca4713556d06784731d7890",
+    "exports/SM_Homes_H01_Shell.glb": "09566f1286125d3f8e87e994293f4659b416d23324eb5389c5faf7c756a9c924",
+    "exports/SM_Homes_H01_Shell_LOD1.fbx": "0f955f6198875e4672fd4c7f04b738841b97c6fb33e128bee1d0b869afea8352",
+    "exports/SM_Homes_H01_Shell_LOD2.fbx": "51692f3fd0766adacba91368595090f6fc8f45e183b63c3160aeec87ae736bda",
+    "exports/SM_Homes_H02_Fixtures.fbx": "be2e02249e5cde98b9da85a2f726515a741a0192e4e8b32a9f863bdf9a412382",
+    "exports/SM_Homes_H02_Fixtures.glb": "b83b9949f0b091adb032bb6bfd75b610d92d759b2d34a2c85f78453201dbe39d",
+    "exports/SM_Homes_H02_Fixtures_LOD1.fbx": "17eafb5e79a0c45768dce9299048f7c7b5e4e0d3f62e9ef383d9bfeb29514205",
+    "exports/SM_Homes_H02_Fixtures_LOD2.fbx": "abf8e4229afa67ebe90df44245a2315b395db9fc00fc84dc3113327a2edbad3a",
+    "exports/SM_Homes_H02_Roof.fbx": "b2c92711ee999a63548f055bc8a0b0278d1606c0955cd0363b63214949e6924e",
+    "exports/SM_Homes_H02_Roof.glb": "d355e2373b88590465324e7dd91e6371657bf59408e6afc4b4f618a7b33124c7",
+    "exports/SM_Homes_H02_Roof_LOD1.fbx": "08aa44b05af635cb3e7cdc813c158746b4440d74e6924103b2c25b5d2f96dd7b",
+    "exports/SM_Homes_H02_Roof_LOD2.fbx": "fad76b916eca96c6c4737f69bbaed4b292c20e5bee57e0b4bf139e0aae5449b6",
+    "exports/SM_Homes_H02_Shell.fbx": "e0b7ec3eb18e424884d9e0f768f3de0cbfbb00b260f3a39c9b1d2af4a99149f6",
+    "exports/SM_Homes_H02_Shell.glb": "c289660ae4618ba90ff118cd5bc10b195ea02cdfe5337fc07b79d54ab2dd4a7a",
+    "exports/SM_Homes_H02_Shell_LOD1.fbx": "5b6900851245784b78a7a9e05ea9b65966fdf29c74b2b8c403402dbfb6a75fd4",
+    "exports/SM_Homes_H02_Shell_LOD2.fbx": "1b426458270856832e13153bb268521a71ba5545d2f6099b43f4a141cfc4676b",
+    "exports/SM_Homes_H03_Fixtures.fbx": "48026122c76cd7168bad338d9e6c38bc2735182bdcbe6c15636d70078f880e16",
+    "exports/SM_Homes_H03_Fixtures.glb": "92794f68e2e5c26fc79b040382da3f9f60ad863893b8da04f68fe693b2806658",
+    "exports/SM_Homes_H03_Fixtures_LOD1.fbx": "54e554e84797b0e0e79eea5ec0adae558731e699eb2aefe134e180de02e1e29b",
+    "exports/SM_Homes_H03_Fixtures_LOD2.fbx": "ec35c42adfa0f5fc4017feebb571520edefd9aa7c799d9744133b1bc2f4522a6",
+    "exports/SM_Homes_H03_Roof.fbx": "5553429b1a89aac6bd29ebee8893db5310b740da652be575dd5fb58a05078f3a",
+    "exports/SM_Homes_H03_Roof.glb": "def71837e91a6cc4663792eb861ed100ad46c5219cd9e73b655400c645126d5b",
+    "exports/SM_Homes_H03_Roof_LOD1.fbx": "942c7a8026a8941708b4c25fcd86386c5a90fceff1e4c1add35a35b153a6f272",
+    "exports/SM_Homes_H03_Roof_LOD2.fbx": "2bcffdcc806546ab6011bb295d49fa1163e0d547a815c71f5a620ba2d1e9a2e5",
+    "exports/SM_Homes_H03_Shell.fbx": "bba51d34b681ac795a775d08d425ad53a10de8cc14fb255e4570bf4fed981846",
+    "exports/SM_Homes_H03_Shell.glb": "23f4b824b5e3083419b827bcf7dbc6011720917d4ef878a91f50ec6eca9141c3",
+    "exports/SM_Homes_H03_Shell_LOD1.fbx": "255fb6e61fc3132cb4f907192cbe72a0f822a58a73dbe48adfed885641144e5b",
+    "exports/SM_Homes_H03_Shell_LOD2.fbx": "4e0ab46271649f021e04011c0cfa9c76f8d7419de145bfe94cd4eab1aac37980",
+    "exports/SM_Homes_H04_Fixtures.fbx": "5bda35e569a53e1812b211ed1aa04ef8f197c6cab3db05b056a65cb9db2572a3",
+    "exports/SM_Homes_H04_Fixtures.glb": "bfde8e5120078dc55197eb85ebeae06cd9f683a27940269c53a192baeb0ab0c3",
+    "exports/SM_Homes_H04_Fixtures_LOD1.fbx": "5f8882ce045fbaf93710697601b1a4d25ac9a48a4207b1c0c233dc08fd649ed4",
+    "exports/SM_Homes_H04_Fixtures_LOD2.fbx": "2f2b789d86a332424aaa043dc9545a107045ae72eb61ae0df464685836ab5570",
+    "exports/SM_Homes_H04_Roof.fbx": "eab27754fa9327c10ced85b733a5502a5945f60e8b188d24c19d211e340bdd2d",
+    "exports/SM_Homes_H04_Roof.glb": "eac62404856a6b5636b7adeb6e0d36b0806dc169d71412cbcaacb38061bc2a1e",
+    "exports/SM_Homes_H04_Roof_LOD1.fbx": "e822fc63d8fe97ab61d0a8d99fd5810a756f093ee6f702ee447d2cc17e193d02",
+    "exports/SM_Homes_H04_Roof_LOD2.fbx": "7227bb2a03ee3033b08fef6218815d97702d8e8cba3cb660f4c7a98c17040db3",
+    "exports/SM_Homes_H04_Shell.fbx": "9404dd6c5e39030643360ace613cd32c36a777cf3741827471a2e8e715df4d64",
+    "exports/SM_Homes_H04_Shell.glb": "105bb3e89053f037359f21e5d19dc53640fb1f4488f2038ad18a2c98ecb43ea3",
+    "exports/SM_Homes_H04_Shell_LOD1.fbx": "0ff083cd083fdbb584df749b7f09f819d288400f843e6cece194b7c64266e9af",
+    "exports/SM_Homes_H04_Shell_LOD2.fbx": "f9abec4cd9a556655509071b183f32dc4ec892fa74a1c80678f7726aa312e518",
+    "exports/axis_probe.fbx": "96499ffcf8be0b289cab7c89aa8ae2654555b143ba4ce3f37ff6e7514c972da2",
+    "materials.json": "dccbbbdb38dacc4b590690fb3d0bb4d35132b67a62d178699a4a626eefd213b8"
+  }
+}

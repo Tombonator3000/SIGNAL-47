@@ -1,0 +1,1323 @@
+{
+  "version": 1,
+  "source_revision": "caliche-homes-20261029-v1",
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "manifest_sha1": "3fc40a28aa6fd38ed016626cb754a294601d003f",
+  "town_patches_sha256": "54b6bd231585f3d8131137b61949871f4ba51d7e979950a24ad6a6afc4a619f8",
+  "town_patches_sha1": "8f26a9f70b414324f24a385c830f6fa8234ee1d2",
+  "meshes": {
+    "g999": {
+      "node": 1448,
+      "geo": 999,
+      "parent": 1432,
+      "source_tris": 1916,
+      "accepted_previous_tris": [
+        1404
+      ],
+      "result_tris": 1356,
+      "lod_triangles": [
+        1356
+      ],
+      "removed_houses": 0,
+      "removed_signs": 48,
+      "hidden": false,
+      "asset": "/Game/CalicheHomes/Trim/g999.g999",
+      "original_material_indices": [
+        0
+      ],
+      "source_material_ids": [
+        638
+      ],
+      "materials": [
+        "M_Homes_Trim_g999_slot0"
+      ],
+      "previous_retained_index_sha256": "5488e4a52df344225c7436d95e980f447ddb0151b33f6e843f9f5159a534bbba",
+      "retained_index_sha256": "bdff4a8d1b381f303456785ec6c04155a47a5d826844200f4fc8e01b30544ea7",
+      "bounds_three_m": [
+        [
+          -17.524999618530273,
+          4.209006309509277,
+          2029.7900390625
+        ],
+        [
+          38.33007049560547,
+          38.74472427368164,
+          2262.2099609375
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -17.524999618530273,
+          -2262.2099609375,
+          4.209006309509277
+        ],
+        [
+          38.33007049560547,
+          -2029.7900390625,
+          38.74472427368164
+        ]
+      ],
+      "fbx": "exports/g999.fbx"
+    },
+    "g1000": {
+      "node": 1449,
+      "geo": 1000,
+      "parent": 1432,
+      "source_tris": 512,
+      "accepted_previous_tris": [
+        132
+      ],
+      "result_tris": 108,
+      "lod_triangles": [
+        108
+      ],
+      "removed_houses": 0,
+      "removed_signs": 24,
+      "hidden": false,
+      "asset": "/Game/CalicheHomes/Trim/g1000.g1000",
+      "original_material_indices": [
+        0
+      ],
+      "source_material_ids": [
+        641
+      ],
+      "materials": [
+        "M_Homes_Trim_g1000_slot0"
+      ],
+      "previous_retained_index_sha256": "593b8288cec2f4bcf2afbdfadb550c3d7f97e724f752debb1cdad62305618b43",
+      "retained_index_sha256": "94a5d92bcd5a01e9d7f3ab30429d0af2be8b9d4dd3d920970e0e27c665acd00d",
+      "bounds_three_m": [
+        [
+          -15.385000228881836,
+          4.508641719818115,
+          2015.999267578125
+        ],
+        [
+          55.557586669921875,
+          34.84498977661133,
+          2087.35009765625
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -15.385000228881836,
+          -2087.35009765625,
+          4.508641719818115
+        ],
+        [
+          55.557586669921875,
+          -2015.999267578125,
+          34.84498977661133
+        ]
+      ],
+      "fbx": "exports/g1000.fbx"
+    },
+    "g1001": {
+      "node": 1450,
+      "geo": 1001,
+      "parent": 1432,
+      "source_tris": 30,
+      "accepted_previous_tris": [
+        8
+      ],
+      "result_tris": 4,
+      "lod_triangles": [
+        4
+      ],
+      "removed_houses": 0,
+      "removed_signs": 4,
+      "hidden": false,
+      "asset": "/Game/CalicheHomes/Trim/g1001.g1001",
+      "original_material_indices": [
+        0
+      ],
+      "source_material_ids": [
+        642
+      ],
+      "materials": [
+        "M_Homes_Trim_g1001_slot0"
+      ],
+      "previous_retained_index_sha256": "1221c737736be21f692b4212b4e00bc8b6d05fc3529d17d1b0e4105438036690",
+      "retained_index_sha256": "b3629ac382941703e12b5cae8bf357ad94abfde22fea377dee15f370a442e1e6",
+      "bounds_three_m": [
+        [
+          -15.329999923706055,
+          6.466942310333252,
+          2064.25
+        ],
+        [
+          18.825000762939453,
+          7.249119281768799,
+          2088.610107421875
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -15.329999923706055,
+          -2088.610107421875,
+          6.466942310333252
+        ],
+        [
+          18.825000762939453,
+          -2064.25,
+          7.249119281768799
+        ]
+      ],
+      "fbx": "exports/g1001.fbx"
+    },
+    "g1002": {
+      "node": 1451,
+      "geo": 1002,
+      "parent": 1432,
+      "source_tris": 754,
+      "accepted_previous_tris": [
+        332
+      ],
+      "result_tris": 140,
+      "lod_triangles": [
+        140
+      ],
+      "removed_houses": 192,
+      "removed_signs": 0,
+      "hidden": false,
+      "asset": "/Game/CalicheHomes/Trim/g1002.g1002",
+      "original_material_indices": [
+        0
+      ],
+      "source_material_ids": [
+        639
+      ],
+      "materials": [
+        "M_Homes_Trim_g1002_slot0"
+      ],
+      "previous_retained_index_sha256": "ae57c54441c04af25ed4b7a0483c8765bc7dec7fbad23d115bf0f5a01afe8412",
+      "retained_index_sha256": "a1735b15a88c43eb19682da536b81538b8f0439dbf0126b170abe4e5b53fc85c",
+      "bounds_three_m": [
+        [
+          -17.34000015258789,
+          4.209006309509277,
+          1980.8468017578125
+        ],
+        [
+          18.969999313354492,
+          12.209006309509277,
+          2239.239990234375
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -17.34000015258789,
+          -2239.239990234375,
+          4.209006309509277
+        ],
+        [
+          18.969999313354492,
+          -1980.8468017578125,
+          12.209006309509277
+        ]
+      ],
+      "fbx": "exports/g1002.fbx"
+    },
+    "g1003": {
+      "node": 1452,
+      "geo": 1003,
+      "parent": 1432,
+      "source_tris": 180,
+      "accepted_previous_tris": [
+        48
+      ],
+      "result_tris": 0,
+      "lod_triangles": [
+        0
+      ],
+      "removed_houses": 48,
+      "removed_signs": 0,
+      "hidden": true,
+      "asset": "",
+      "original_material_indices": [],
+      "source_material_ids": [
+        643
+      ],
+      "materials": [],
+      "previous_retained_index_sha256": "e1c0fdb4bb9722b29caf3ca511cd9e6ac6c739e9f6a4e0341ca91065b35ab2d4",
+      "retained_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "g1005": {
+      "node": 1454,
+      "geo": 1005,
+      "parent": 1432,
+      "source_tris": 240,
+      "accepted_previous_tris": [
+        120
+      ],
+      "result_tris": 0,
+      "lod_triangles": [
+        0
+      ],
+      "removed_houses": 120,
+      "removed_signs": 0,
+      "hidden": true,
+      "asset": "",
+      "original_material_indices": [],
+      "source_material_ids": [
+        645
+      ],
+      "materials": [],
+      "previous_retained_index_sha256": "73e694711319969c0ae748987358542a70ab8ce66291cc1f5495d20b663a5836",
+      "retained_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "g1006": {
+      "node": 1455,
+      "geo": 1006,
+      "parent": 1432,
+      "source_tris": 360,
+      "accepted_previous_tris": [
+        154
+      ],
+      "result_tris": 106,
+      "lod_triangles": [
+        106
+      ],
+      "removed_houses": 48,
+      "removed_signs": 0,
+      "hidden": false,
+      "asset": "/Game/CalicheHomes/Trim/g1006.g1006",
+      "original_material_indices": [
+        0
+      ],
+      "source_material_ids": [
+        646
+      ],
+      "materials": [
+        "M_Homes_Trim_g1006_slot0"
+      ],
+      "previous_retained_index_sha256": "9b0e21eea17b41ed91294af3aadcf5282fc89ece8e2735853ca36d6e4dbadca2",
+      "retained_index_sha256": "1c6c1324bb002665a1a1e467ab302d267395fda5bba93429e0315a364eb489a7",
+      "bounds_three_m": [
+        [
+          -19.0,
+          4.111901760101318,
+          2015.7559814453125
+        ],
+        [
+          55.80165100097656,
+          11.268553733825684,
+          2245.050048828125
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -19.0,
+          -2245.050048828125,
+          4.111901760101318
+        ],
+        [
+          55.80165100097656,
+          -2015.7559814453125,
+          11.268553733825684
+        ]
+      ],
+      "fbx": "exports/g1006.fbx"
+    },
+    "g1013": {
+      "node": 1462,
+      "geo": 1013,
+      "parent": 1432,
+      "source_tris": 300,
+      "accepted_previous_tris": [
+        120
+      ],
+      "result_tris": 0,
+      "lod_triangles": [
+        0
+      ],
+      "removed_houses": 120,
+      "removed_signs": 0,
+      "hidden": true,
+      "asset": "",
+      "original_material_indices": [],
+      "source_material_ids": [
+        652
+      ],
+      "materials": [],
+      "previous_retained_index_sha256": "ff01e392b97dd57ee2c6510fd5b3054764862ac11c64fb5372ed277fa0de763f",
+      "retained_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "signs": {
+    "SM_Homes_SignNorth": {
+      "asset": "/Game/CalicheHomes/SM_Homes_SignNorth.SM_Homes_SignNorth",
+      "triangles": 38,
+      "result_tris": 38,
+      "lod_triangles": [
+        38
+      ],
+      "materials": [
+        "M_Homes_SignNorth_slot0",
+        "M_Homes_SignNorth_slot1",
+        "M_Homes_SignNorth_slot2"
+      ],
+      "original_material_indices": [
+        0,
+        0,
+        0
+      ],
+      "source_nodes": [
+        1448,
+        1449,
+        1450
+      ],
+      "source_material_ids": [
+        638,
+        641,
+        642
+      ],
+      "site_world_three_m": [
+        7991.4,
+        2.362194839152013,
+        1895.0
+      ],
+      "parent_handle": "world.town.group",
+      "bounds_three_m": [
+        [
+          -1.849999809265137,
+          -0.008315341101778895,
+          -0.050048828125
+        ],
+        [
+          1.8499999999999996,
+          3.208138061587874,
+          0.050048828125
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -1.849999809265137,
+          -0.050048828125,
+          -0.008315341101778895
+        ],
+        [
+          1.8499999999999996,
+          0.050048828125,
+          3.208138061587874
+        ]
+      ],
+      "ground_samples": [
+        {
+          "x": -8.6,
+          "z": 1895.0,
+          "y": 2.362194839152013
+        },
+        {
+          "x": -10.0,
+          "z": 1895.0,
+          "y": 2.3703326760280197
+        },
+        {
+          "x": -7.199999999999999,
+          "z": 1895.0,
+          "y": 2.353879559440662
+        }
+      ],
+      "original_center_ground_y": 2.091687263844041,
+      "old_z": 1880.0,
+      "front_z": -1,
+      "fbx": "exports/SM_Homes_SignNorth.fbx",
+      "normal_uv_color_policy": "unchanged source attributes; position-only translation per post/back/face"
+    },
+    "SM_Homes_SignSouth": {
+      "asset": "/Game/CalicheHomes/SM_Homes_SignSouth.SM_Homes_SignSouth",
+      "triangles": 38,
+      "result_tris": 38,
+      "lod_triangles": [
+        38
+      ],
+      "materials": [
+        "M_Homes_SignSouth_slot0",
+        "M_Homes_SignSouth_slot1",
+        "M_Homes_SignSouth_slot2"
+      ],
+      "original_material_indices": [
+        0,
+        0,
+        0
+      ],
+      "source_nodes": [
+        1448,
+        1449,
+        1450
+      ],
+      "source_material_ids": [
+        638,
+        641,
+        642
+      ],
+      "site_world_three_m": [
+        8008.6,
+        12.747208479169467,
+        2315.0
+      ],
+      "parent_handle": "world.town.group",
+      "bounds_three_m": [
+        [
+          -1.8499999999999996,
+          -0.018283695453440885,
+          -0.050048828125
+        ],
+        [
+          1.849999809265137,
+          3.218241463691152,
+          0.050048828125
+        ]
+      ],
+      "bounds_local_m": [
+        [
+          -1.8499999999999996,
+          -0.050048828125,
+          -0.018283695453440885
+        ],
+        [
+          1.849999809265137,
+          0.050048828125,
+          3.218241463691152
+        ]
+      ],
+      "ground_samples": [
+        {
+          "x": 8.6,
+          "z": 2315.0,
+          "y": 12.747208479169467
+        },
+        {
+          "x": 7.199999999999999,
+          "z": 2315.0,
+          "y": 12.765450148199283
+        },
+        {
+          "x": 10.0,
+          "z": 2315.0,
+          "y": 12.728924798319827
+        }
+      ],
+      "original_center_ground_y": 13.310500159562297,
+      "old_z": 2335.0,
+      "front_z": 1,
+      "fbx": "exports/SM_Homes_SignSouth.fbx",
+      "normal_uv_color_policy": "unchanged source attributes; position-only translation per post/back/face"
+    }
+  },
+  "collider_moves": [
+    {
+      "sign": "North",
+      "old": [
+        7989.85,
+        7990.15,
+        1879.85,
+        1880.15
+      ],
+      "new": [
+        7989.85,
+        7990.15,
+        1894.85,
+        1895.15
+      ]
+    },
+    {
+      "sign": "North",
+      "old": [
+        7992.65,
+        7992.949999999999,
+        1879.85,
+        1880.15
+      ],
+      "new": [
+        7992.65,
+        7992.949999999999,
+        1894.85,
+        1895.15
+      ]
+    },
+    {
+      "sign": "South",
+      "old": [
+        8007.050000000001,
+        8007.35,
+        2334.85,
+        2335.15
+      ],
+      "new": [
+        8007.050000000001,
+        8007.35,
+        2314.85,
+        2315.15
+      ]
+    },
+    {
+      "sign": "South",
+      "old": [
+        8009.85,
+        8010.15,
+        2334.85,
+        2335.15
+      ],
+      "new": [
+        8009.85,
+        8010.15,
+        2314.85,
+        2315.15
+      ]
+    }
+  ],
+  "protected_nodes": [
+    {
+      "i": 1436,
+      "p": 1432,
+      "name": "lic:town:door_six_panel"
+    },
+    {
+      "i": 1437,
+      "p": 1436,
+      "geo": 991,
+      "mats": [
+        640
+      ],
+      "name": ""
+    },
+    {
+      "i": 1438,
+      "p": 1436,
+      "geo": 992,
+      "mats": [
+        639
+      ],
+      "name": ""
+    },
+    {
+      "i": 1439,
+      "p": 1432,
+      "name": "lic:town:door_six_panel"
+    },
+    {
+      "i": 1440,
+      "p": 1439,
+      "geo": 993,
+      "mats": [
+        640
+      ],
+      "name": ""
+    },
+    {
+      "i": 1441,
+      "p": 1439,
+      "geo": 994,
+      "mats": [
+        639
+      ],
+      "name": ""
+    },
+    {
+      "i": 1442,
+      "p": 1432,
+      "name": "lic:town:door_six_panel"
+    },
+    {
+      "i": 1443,
+      "p": 1442,
+      "geo": 995,
+      "mats": [
+        640
+      ],
+      "name": ""
+    },
+    {
+      "i": 1444,
+      "p": 1442,
+      "geo": 996,
+      "mats": [
+        639
+      ],
+      "name": ""
+    },
+    {
+      "i": 1445,
+      "p": 1432,
+      "name": "lic:town:door_six_panel"
+    },
+    {
+      "i": 1446,
+      "p": 1445,
+      "geo": 997,
+      "mats": [
+        640
+      ],
+      "name": ""
+    },
+    {
+      "i": 1447,
+      "p": 1445,
+      "geo": 998,
+      "mats": [
+        639
+      ],
+      "name": ""
+    },
+    {
+      "i": 1466,
+      "p": 1431,
+      "name": ""
+    },
+    {
+      "i": 1467,
+      "p": 1466,
+      "name": ""
+    },
+    {
+      "i": 1476,
+      "p": 1431,
+      "name": ""
+    },
+    {
+      "i": 1480,
+      "p": 1431,
+      "name": ""
+    },
+    {
+      "i": 1487,
+      "p": 1431,
+      "name": ""
+    },
+    {
+      "i": 1493,
+      "p": 1431,
+      "name": ""
+    },
+    {
+      "i": 1534,
+      "p": 1431,
+      "name": "town:tv1"
+    },
+    {
+      "i": 1535,
+      "p": 1534,
+      "geo": 1060,
+      "mats": [
+        661
+      ],
+      "name": "town-hit:tv1"
+    },
+    {
+      "i": 1536,
+      "p": 1431,
+      "name": "town:tv2"
+    },
+    {
+      "i": 1537,
+      "p": 1536,
+      "geo": 1061,
+      "mats": [
+        661
+      ],
+      "name": "town-hit:tv2"
+    },
+    {
+      "i": 1538,
+      "p": 1431,
+      "name": "town:kitchen"
+    },
+    {
+      "i": 1539,
+      "p": 1538,
+      "geo": 1062,
+      "mats": [
+        661
+      ],
+      "name": "town-hit:kitchen"
+    },
+    {
+      "i": 1546,
+      "p": 1431,
+      "name": "town:smoker"
+    },
+    {
+      "i": 1547,
+      "p": 1546,
+      "geo": 1066,
+      "mats": [
+        661
+      ],
+      "name": "town-hit:smoker"
+    },
+    {
+      "i": 1551,
+      "p": 1550,
+      "name": "dress/town"
+    },
+    {
+      "i": 1552,
+      "p": 1551,
+      "geo": 1068,
+      "mats": [
+        663
+      ],
+      "name": "dress/town/props"
+    },
+    {
+      "i": 1553,
+      "p": 1551,
+      "geo": 1069,
+      "mats": [
+        664
+      ],
+      "name": ""
+    },
+    {
+      "i": 1554,
+      "p": 1551,
+      "geo": 1070,
+      "mats": [
+        665
+      ],
+      "name": ""
+    },
+    {
+      "i": 1563,
+      "p": 1431,
+      "geo": 1075,
+      "mats": [
+        672
+      ],
+      "name": "lic:door_six_panel"
+    },
+    {
+      "i": 1594,
+      "p": 1564,
+      "geo": 1105,
+      "mats": [
+        702
+      ],
+      "name": "town:panel:tv1:116"
+    },
+    {
+      "i": 1595,
+      "p": 1564,
+      "geo": 1106,
+      "mats": [
+        703
+      ],
+      "name": "town:panel:tv2:120"
+    },
+    {
+      "i": 1596,
+      "p": 1564,
+      "geo": 1107,
+      "mats": [
+        704
+      ],
+      "name": "town:panel:warm:124"
+    }
+  ],
+  "protected_handles": [
+    "world.town.car",
+    "world.town.carDoor",
+    "world.town.woman",
+    "world.town.smoker",
+    "world.town.paper",
+    "world.town.cutout",
+    "world.town.proxies.tv1",
+    "world.town.proxies.tv2",
+    "world.town.proxies.kitchen",
+    "world.town.proxies.smoker"
+  ],
+  "status": "STAGED_NATIVE_VERIFIED_RUNTIME_UNVERIFIED",
+  "parts": {
+    "SM_Homes_H01_Shell": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H01_Shell.SM_Homes_H01_Shell",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "bounds_local_m": [
+        [
+          -4.53000020980835,
+          -5.03000020980835,
+          -1.0779480934143066
+        ],
+        [
+          4.53000020980835,
+          5.03000020980835,
+          3.0
+        ]
+      ],
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_TanStucco.MI_Homes_TanStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RecessShadow.MI_Homes_RecessShadow"
+      ]
+    },
+    "SM_Homes_H01_Roof": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H01_Roof.SM_Homes_H01_Roof",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "lod_triangles": [
+        892,
+        572,
+        364
+      ],
+      "bounds_local_m": [
+        [
+          -4.730000019073486,
+          -5.0279998779296875,
+          2.825000047683716
+        ],
+        [
+          4.5279998779296875,
+          5.0279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_WarmTimber",
+        "M_Homes_RoofTar"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_TanStucco.MI_Homes_TanStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_WarmTimber.MI_Homes_WarmTimber",
+        "/Game/CalicheHomes/Materials/MI_Homes_RoofTar.MI_Homes_RoofTar"
+      ]
+    },
+    "SM_Homes_H01_Fixtures": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H01_Fixtures.SM_Homes_H01_Fixtures",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "lod_triangles": [
+        736,
+        452,
+        192
+      ],
+      "bounds_local_m": [
+        [
+          -5.135000228881836,
+          -4.269999980926514,
+          -0.05999999865889549
+        ],
+        [
+          4.574999809265137,
+          3.7816686630249023,
+          2.819999933242798
+        ]
+      ],
+      "materials": [
+        "M_Homes_TanWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_WarmTimber",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_TanWear.MI_Homes_TanWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_WarmTimber.MI_Homes_WarmTimber",
+        "/Game/CalicheHomes/Materials/MI_Homes_Galvanized.MI_Homes_Galvanized",
+        "/Game/CalicheHomes/Materials/MI_Homes_DarkMetal.MI_Homes_DarkMetal"
+      ]
+    },
+    "SM_Homes_H02_Shell": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H02_Shell.SM_Homes_H02_Shell",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "bounds_local_m": [
+        [
+          -3.7799999713897705,
+          -4.53000020980835,
+          -0.9913134574890137
+        ],
+        [
+          3.7799999713897705,
+          4.53000020980835,
+          3.0
+        ]
+      ],
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamStucco.MI_Homes_CreamStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RecessShadow.MI_Homes_RecessShadow"
+      ]
+    },
+    "SM_Homes_H02_Roof": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H02_Roof.SM_Homes_H02_Roof",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "lod_triangles": [
+        528,
+        348,
+        236
+      ],
+      "bounds_local_m": [
+        [
+          -3.7780001163482666,
+          -4.5279998779296875,
+          2.9600000381469727
+        ],
+        [
+          3.7780001163482666,
+          4.5279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamStucco.MI_Homes_CreamStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RoofTar.MI_Homes_RoofTar"
+      ]
+    },
+    "SM_Homes_H02_Fixtures": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H02_Fixtures.SM_Homes_H02_Fixtures",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "lod_triangles": [
+        964,
+        608,
+        264
+      ],
+      "bounds_local_m": [
+        [
+          -4.545000076293945,
+          -4.1362385749816895,
+          -0.05999999865889549
+        ],
+        [
+          3.825000047683716,
+          4.095616340637207,
+          2.819999933242798
+        ]
+      ],
+      "materials": [
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_SagePaint",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_SagePaint.MI_Homes_SagePaint",
+        "/Game/CalicheHomes/Materials/MI_Homes_Galvanized.MI_Homes_Galvanized",
+        "/Game/CalicheHomes/Materials/MI_Homes_DarkMetal.MI_Homes_DarkMetal"
+      ]
+    },
+    "SM_Homes_H03_Shell": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H03_Shell.SM_Homes_H03_Shell",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "bounds_local_m": [
+        [
+          -4.53000020980835,
+          -5.03000020980835,
+          -1.1315112113952637
+        ],
+        [
+          4.53000020980835,
+          5.03000020980835,
+          3.0
+        ]
+      ],
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_TanStucco.MI_Homes_TanStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RecessShadow.MI_Homes_RecessShadow"
+      ]
+    },
+    "SM_Homes_H03_Roof": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H03_Roof.SM_Homes_H03_Roof",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "lod_triangles": [
+        540,
+        348,
+        236
+      ],
+      "bounds_local_m": [
+        [
+          -4.5279998779296875,
+          -5.0279998779296875,
+          2.9600000381469727
+        ],
+        [
+          4.5279998779296875,
+          5.0279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "materials": [
+        "M_Homes_TanStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_TanStucco.MI_Homes_TanStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RoofTar.MI_Homes_RoofTar"
+      ]
+    },
+    "SM_Homes_H03_Fixtures": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H03_Fixtures.SM_Homes_H03_Fixtures",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "lod_triangles": [
+        772,
+        464,
+        192
+      ],
+      "bounds_local_m": [
+        [
+          -5.175000190734863,
+          -4.610396385192871,
+          -0.05999999865889549
+        ],
+        [
+          4.574999809265137,
+          4.643773078918457,
+          2.819999933242798
+        ]
+      ],
+      "materials": [
+        "M_Homes_TanWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_DarkTimber",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal",
+        "M_Homes_RustTin"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_TanWear.MI_Homes_TanWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_DarkTimber.MI_Homes_DarkTimber",
+        "/Game/CalicheHomes/Materials/MI_Homes_Galvanized.MI_Homes_Galvanized",
+        "/Game/CalicheHomes/Materials/MI_Homes_DarkMetal.MI_Homes_DarkMetal",
+        "/Game/CalicheHomes/Materials/MI_Homes_RustTin.MI_Homes_RustTin"
+      ]
+    },
+    "SM_Homes_H04_Shell": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H04_Shell.SM_Homes_H04_Shell",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "lod_triangles": [
+        732,
+        588,
+        492
+      ],
+      "bounds_local_m": [
+        [
+          -4.53000020980835,
+          -5.03000020980835,
+          -1.1071252822875977
+        ],
+        [
+          4.53000020980835,
+          5.03000020980835,
+          3.0
+        ]
+      ],
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_Concrete",
+        "M_Homes_RecessShadow"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamStucco.MI_Homes_CreamStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RecessShadow.MI_Homes_RecessShadow"
+      ]
+    },
+    "SM_Homes_H04_Roof": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H04_Roof.SM_Homes_H04_Roof",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "lod_triangles": [
+        540,
+        348,
+        236
+      ],
+      "bounds_local_m": [
+        [
+          -4.5279998779296875,
+          -5.0279998779296875,
+          2.9600000381469727
+        ],
+        [
+          4.5279998779296875,
+          5.0279998779296875,
+          3.303999900817871
+        ]
+      ],
+      "materials": [
+        "M_Homes_CreamStucco",
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_RoofTar"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamStucco.MI_Homes_CreamStucco",
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_RoofTar.MI_Homes_RoofTar"
+      ]
+    },
+    "SM_Homes_H04_Fixtures": {
+      "asset": "/Game/CalicheHomes/SM_Homes_H04_Fixtures.SM_Homes_H04_Fixtures",
+      "parent_handle": "world.town.group",
+      "site_world_three_m": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "lod_triangles": [
+        736,
+        440,
+        192
+      ],
+      "bounds_local_m": [
+        [
+          -4.574999809265137,
+          -4.60654354095459,
+          -0.05999999865889549
+        ],
+        [
+          5.235000133514404,
+          4.537761688232422,
+          2.819999933242798
+        ]
+      ],
+      "materials": [
+        "M_Homes_CreamWear",
+        "M_Homes_DoorMasonry",
+        "M_Homes_Concrete",
+        "M_Homes_BluePaint",
+        "M_Homes_Galvanized",
+        "M_Homes_DarkMetal"
+      ],
+      "material_assets": [
+        "/Game/CalicheHomes/Materials/MI_Homes_CreamWear.MI_Homes_CreamWear",
+        "/Game/CalicheHomes/Materials/MI_Homes_DoorMasonry.MI_Homes_DoorMasonry",
+        "/Game/CalicheHomes/Materials/MI_Homes_Concrete.MI_Homes_Concrete",
+        "/Game/CalicheHomes/Materials/MI_Homes_BluePaint.MI_Homes_BluePaint",
+        "/Game/CalicheHomes/Materials/MI_Homes_Galvanized.MI_Homes_Galvanized",
+        "/Game/CalicheHomes/Materials/MI_Homes_DarkMetal.MI_Homes_DarkMetal"
+      ]
+    }
+  },
+  "required_town_native_parts": 28,
+  "removed_house_total": 528,
+  "removed_sign_total": 76,
+  "provenance": {
+    "manifest": "2a4e1600293e165c8e5d477918e99ee422b8b25c28e3c889aafcacba5abcef8b",
+    "materials": "dccbbbdb38dacc4b590690fb3d0bb4d35132b67a62d178699a4a626eefd213b8",
+    "source_contract": "c71b76ffe0a6938db8b423190d9c54ab18d84c4ac26f4168e963660ed85e9362",
+    "trim_manifest": "99548dfdeafbec1a7a279eed1c6757e6740d39cc694281918cdf0288b0ae511f",
+    "layout": "1150e0e8891e65669be51509e7891cb2e01fb3659a970d78e66fdf1e35d96bbd",
+    "native_import_report": "85987d7e963b6276d713be1efc0d5cedfc087462bcea5a6fe62c6c4b31ee75ea",
+    "saved_native_report": "72ac8f8a61603e0a9f0676740894f9b763e7ddc8b4b375ed4315396c6fe6967e",
+    "town_dependencies": "d7d378060c210edab9721e47ed9b8cb0c8d34838e3f1bf35ffb01f5346d1049e"
+  }
+}
