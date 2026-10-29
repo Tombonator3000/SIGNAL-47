@@ -1,4 +1,6 @@
 #include "S47Web.h"
+#include "S47RadioWoman.h"
+#include "S47RadioWomanContract.h"
 #include "S47GraphicsReview.h"
 #include "S47RenderAudit.h"
 #include "S47Picture.h"
@@ -697,6 +699,7 @@ void AS47Web::BeginPlay()
 	TownBuildings = FS47TownBuildings::Build(this);
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
 	MotelV2 = FS47MotelV2::Build(this);
+	RadioWoman = FS47RadioWoman::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
 	S47SubstationDetail::Build(this);
@@ -779,7 +782,17 @@ void AS47Web::BeginPlay()
 	BeginMotelV2Route();
 	BeginCalicheHomesContract();
 	StartFarmAccessContract();
+	S47BeginRadioWomanContract(this);
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
+}
+
+bool AS47Web::AuditRadioWoman(TArray<FString>& Lines) const
+{
+	return RadioWoman.IsValid() && RadioWoman->Audit(Lines);
+}
+TSharedPtr<FJsonObject> AS47Web::RadioWomanReadback() const
+{
+	return RadioWoman.IsValid() ? RadioWoman->Readback() : MakeShared<FJsonObject>();
 }
 
 // ---------- visibility and transforms ----------
