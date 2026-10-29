@@ -11,6 +11,7 @@
 #include "S47Chapter4.h"
 #include "S47Chapter5.h"
 #include "S47Flow.h"
+#include "S47FinaleSky.h"
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Main.h"
@@ -88,6 +89,13 @@ namespace
 		const double V = E - DASH.From;
 		return V < 2 ? FMath::Fmod(V, 0.5) < 0.25 : V >= 3.2 && V < 6.7 ? FMath::Fmod(V - 3.2, 0.5) < 0.25 : false;
 	}
+	bool RevisedDeparture(const S47J::FObj& Ch5)
+	{
+		const auto R = S47J::Obj(Ch5, TEXT("sc12"));
+		return S47J::Int(R,TEXT("v")) == 1 && S47J::Bool(Ch5,TEXT("p13")) && S47J::Bool(R,TEXT("compared"))
+			&& S47J::Int(R,TEXT("read")) == 7 && S47J::Int(R,TEXT("checks")) == 7 && S47J::Bool(R,TEXT("warningSent"))
+			&& S47J::Bool(R,TEXT("patrolRead")) && S47J::Bool(R,TEXT("courier104")) && S47J::Bool(R,TEXT("routeReadback"));
+	}
 }
 
 US47Chapter6* US47Chapter6::Register()
@@ -110,6 +118,18 @@ void US47Chapter6::Note(const FString& Text) const { if (Host) Host->Note(Text);
 void US47Chapter6::Begin(const S47J::FObj& Saved)
 {
 	Reset(); bActive = true; bStarted = true; Stage = TEXT("drive");
+	const auto* C5 = Host ? Host->Chapter(TEXT("ch5")) : nullptr;
+	bRevisedSC13 = Host && Host->bEveningTimeline && C5 && RevisedDeparture(C5->SaveState());
+	// This is the existing accepted diner-truck choice, before the ordinary trip starts.
+	// Selecting SARO 07 changes neither a vehicle pose nor Evening's parked personal car.
+	if (bRevisedSC13 && (!M || !M->World || !M->World->SelectServiceForOldRoad()))
+	{
+		bActive = bStarted = false; Stage = TEXT("blocked-service");
+		UE_LOG(LogS47Ch6, Error, TEXT("S47: SC13 departure rejected: SARO 07 must be selected at the diner before the old-road trip"));
+		Toast(TEXT("Departure blocked: select SARO 07 at the diner. The safe departure checkpoint is unchanged."), 7);
+		return;
+	}
+	if (bRevisedSC13) FinaleSky = MakeShared<FS47FinaleSky>(M.Get());
 	// Art is local in Unreal. Decode the photograph now and draw FLASH before the moment needs it.
 	S47Image::Art(TEXT("photo1947"));
 	if (M && M->Audio) M->Audio->AmRadioThree({});
@@ -119,7 +139,10 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 		if (!W.IsValid() || !W->bActive) return;
 		W->SetClock(W->Host && W->Host->bEveningTimeline ? FMath::Max(W->Clock(), LEAVE) : LEAVE);
 		if (W->M->Audio) W->M->Audio->CabRadio(TEXT("talk"));
-		W->Note(W->Time() + TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post."));
+		W->Note(W->Time() + (W->bRevisedSC13
+			? TEXT(". The warning is in Ward's log. The originals are going to the confirmed courier at 10.4. Across the highway, take the old road east-north-east. Pass C at 8.15 without stopping or taking a reading. The patrol was one drive at 04:15, not a promise about the road now.")
+			: TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post.")));
+		if (W->FinaleSky) W->FinaleSky->Prepare();
 		W->PlaceJump();
 	});
 	if (Host) Host->After(3, [W] { if (W.IsValid() && W->bActive && !W->Frames) W->DrawFrames(); });
@@ -134,6 +157,7 @@ void US47Chapter6::DrawFrames()
 void US47Chapter6::Reset()
 {
 	bActive = false; bStarted = false; Stage = TEXT("drive");
+	FinaleSky.Reset(); bRevisedSC13 = false;
 	Et = 0; Pt = 0; Done.Empty(); Idle = 0; BackT = 0; StopS.Reset();
 	if (LastMile.Cb && !LastMile.ClosedAt && M && M->CB) M->CB->Stop();
 	LastMile = FLastMile(); Tries = FTries(); Cues.Empty(); KeyLamps.Reset();
@@ -149,7 +173,7 @@ void US47Chapter6::Reset()
 void US47Chapter6::BeginDestroy()
 {
 	// Native resources may outlive Main's scene tables during editor shutdown.
-	if (Ending) Ending->Dispose(); Ending.Reset(); Bed.Stop(); Bed = FS47Pressure(); Third.Reset();
+	if (Ending) Ending->Dispose(); Ending.Reset(); Bed.Stop(); Bed = FS47Pressure(); Third.Reset(); FinaleSky.Reset();
 	Super::BeginDestroy();
 }
 
@@ -175,8 +199,8 @@ void US47Chapter6::ThirdGlints(const TArray<FVector>* Pts, const FLinearColor& C
 }
 
 TOptional<FVector> US47Chapter6::ThirdAt() const { return Third && bThirdShown ? TOptional<FVector>(Third->Head()) : TOptional<FVector>(); }
-FString US47Chapter6::Objective() const { return Stage == TEXT("drive") ? TEXT("THE OLD ROSWELL ROAD // C CROSSES JUST PAST MILE 8") : FString(); }
-TArray<FS47Task> US47Chapter6::Tasks() const { return { { TEXT("Drive out to where C crosses the old road, just past mile 8"), Stage != TEXT("drive") } }; }
+FString US47Chapter6::Objective() const { return Stage == TEXT("drive") ? bRevisedSC13 ? TEXT("OLD ROSWELL ROAD // ORIGINALS TO THE COURIER AT 10.4. PASS C AT 8.15 WITHOUT TAKING A READING") : TEXT("THE OLD ROSWELL ROAD // C CROSSES JUST PAST MILE 8") : FString(); }
+TArray<FS47Task> US47Chapter6::Tasks() const { return {{ bRevisedSC13 ? TEXT("Carry the originals to the courier at 10.4; pass C without a reading") : TEXT("Drive out to where C crosses the old road, just past mile 8"), !bRevisedSC13 && Stage != TEXT("drive") }}; }
 
 // ---------- the drive ----------
 void US47Chapter6::Drive(double Dt)
@@ -195,11 +219,11 @@ void US47Chapter6::Drive(double Dt)
 	SetClock(FMath::Min(Clock(), T - 0.05));
 	const double H = Drv->Heading, Fx = Drv->Pos.X - FMath::Sin(H) * 2.3, Fz = Drv->Pos.Z - FMath::Cos(H) * 2.3;
 	if (Road->PastC(Fx, Fz) >= 0) { StartEvent(); return; }
-	if (Road->bHitBack) { Road->bHitBack = false; if (BackT <= 0) { Toast(TEXT("Ward can wait. The bolt is ahead."), 3.4f); BackT = 6; } }
+	if (Road->bHitBack) { Road->bHitBack = false; if (BackT <= 0) { Toast(bRevisedSC13 ? TEXT("The handover is at 10.4, beyond C. The originals stay together.") : TEXT("Ward can wait. The bolt is ahead."), 3.4f); BackT = 6; } }
 	BackT -= Dt;
 	Idle = FMath::Abs(Drv->Speed) < 0.5 ? Idle + Dt : 0;
 	for (const auto& R : RADIO) if (At.Mi >= R.Key && !Done.Contains(R.Value)) { Done.Add(R.Value); if (At.Mi < R.Key + 0.4) Toast(R.Value, 5); }
-	if (Idle > 40 && At.Mi > 7.6 && !Done.Contains(TEXT("nudge"))) { Done.Add(TEXT("nudge")); Toast(TEXT("The line is just ahead, past the eight-mile post."), 4); }
+	if (Idle > 40 && At.Mi > 7.6 && !Done.Contains(TEXT("nudge"))) { Done.Add(TEXT("nudge")); Toast(bRevisedSC13 ? TEXT("C is ahead at 8.15. Keep going. The courier is beyond it at 10.4.") : TEXT("The line is just ahead, past the eight-mile post."), 4); }
 	if (Idle > 40 && At.Mi < 0.2 && !Done.Contains(TEXT("across"))) { Done.Add(TEXT("across")); Toast(TEXT("The old road is across the highway, going off to the east."), 4); }
 }
 
@@ -562,9 +586,34 @@ void US47Chapter6::Update(double Dt, double InT)
 	if (Stage == TEXT("drive")) Drive(Dt);
 	else if (Stage == TEXT("event")) Event(Dt);
 	else if (Stage == TEXT("pullout")) Pullout(Dt);
+	if (FinaleSky)
+	{
+		const auto* D = M && M->World ? M->World->OldDrive() : nullptr;
+		const auto* R = M && M->World ? M->World->OldRoad() : nullptr;
+		FinaleSky->Step(D && R ? R->Where(D->Pos.X,D->Pos.Z).Mi : 0,Stage,Et,Pt);
+	}
 	if (M && M->UI) M->UI->Objective(Objective());
 	// main.ts sky.setDawnLift / setClock: the world-life renderer consumes AS47Web's overrides.
 	if (M && M->Web) { M->Web->SetDawnLift(SkyLift.Get(M->World && M->World->Area == TEXT("roswell") ? 1.0 : 0.7)); M->Web->SetSunElevation(SunElev); }
+}
+
+S47J::FObj US47Chapter6::FinaleReadback() const
+{
+	auto O = S47J::New(); S47J::Set(O,TEXT("revised"),bRevisedSC13);S47J::Set(O,TEXT("active"),bActive);S47J::Set(O,TEXT("stage"),Stage);
+	S47J::Set(O,TEXT("clock"),Clock());S47J::Set(O,TEXT("eventSeconds"),Et);S47J::Set(O,TEXT("pullSeconds"),Pt);S47J::Set(O,TEXT("keyTries"),Tries.Key);S47J::Set(O,TEXT("doorTries"),Tries.Door);
+	S47J::Set(O,TEXT("finaleSky"),FinaleSky?FinaleSky->Readback():S47J::FObj());
+	if(M&&M->Flow){S47J::Set(O,TEXT("calmFlash"),M->Flow->bCalmFlash);S47J::Set(O,TEXT("stillShots"),M->Flow->bStillShots);}
+	if(M&&M->Web)S47J::Set(O,TEXT("graphics"),M->Web->GetGraphicsSettings().ToJson());
+	if(M&&M->World)
+	{
+		S47J::Set(O,TEXT("area"),M->World->Area);S47J::Set(O,TEXT("driving"),M->World->bDriving);
+		const auto* Cab=M->World->CabTruck();
+		S47J::Set(O,TEXT("commuteVehicle"),M->World->bCommuteVehicle);S47J::Set(O,TEXT("cabPresent"),Cab!=nullptr);S47J::Set(O,TEXT("personalCab"),Cab&&Cab->IsPersonalVehicle());
+		const auto* D=M->World->OldDrive();const auto* R=M->World->OldRoad();
+		if(D){S47J::Set(O,TEXT("carThree"),TArray<double>{D->Pos.X,D->Pos.Y,D->Pos.Z});S47J::Set(O,TEXT("heading"),D->Heading);S47J::Set(O,TEXT("speed"),D->Speed);S47J::Set(O,TEXT("engine"),D->bEngine);if(R)S47J::Set(O,TEXT("mile"),R->Where(D->Pos.X,D->Pos.Z).Mi);}
+	}
+	if(M&&M->Player){const auto C=FS47Cam::Of(M->Player);S47J::Set(O,TEXT("cameraThree"),TArray<double>{C.Pos.X,C.Pos.Y,C.Pos.Z});S47J::Set(O,TEXT("fov"),C.Fov);}
+	return O;
 }
 
 // ---------- the host (Prologue.ts) and the developer menu (main.ts) ----------
@@ -615,6 +664,11 @@ bool US47Chapter6::SelfTest(TArray<FString>& Lines)
 	bool bOk = SS47Ending::SelfTest(Lines);
 	bOk &= FS47EngineSound::SelfTest(Lines);
 	auto Check = [&](bool Pass, const TCHAR* What) { Lines.Add(FString(Pass ? TEXT("PASS ch6: ") : TEXT("FAIL ch6: ")) + What); bOk &= Pass; };
+	Check(!RevisedDeparture(S47J::Read(TEXT("{\"v\":1,\"p13\":true,\"stage\":\"road\",\"ward\":true}"))),TEXT("legacy P13/Ward departure never acquires revised finale or new source requirements"));
+	auto Revised=S47J::Read(TEXT("{\"p13\":true,\"sc12\":{\"v\":1,\"compared\":true,\"read\":7,\"checks\":7,\"warningSent\":true,\"patrolRead\":true,\"courier104\":true,\"routeReadback\":true}}"));
+	Check(RevisedDeparture(Revised),TEXT("only complete saved SC12 source/warning/patrol/map/courier facts select revised finale"));
+	S47J::Set(S47J::Obj(Revised,TEXT("sc12")),TEXT("warningSent"),false);
+	Check(!RevisedDeparture(Revised),TEXT("a map and unacknowledged warning cannot select revised courier ending"));
 	US47Chapter6* C = NewObject<US47Chapter6>();
 	auto At = [](double Rem, double Mi) { return FS47OldRoad::FWhere{ -Rem - LAST_MILE.Front, 1.6, 0, Mi }; };
 	Check(C->SaveBlock() == TEXT("Not on the road.") && !C->SaveState(), TEXT("road and ending are never saved"));

@@ -15,6 +15,7 @@
 #include "S47World.h"
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
+#include "S47SC13Contract.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -298,6 +299,8 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ // The opt-in final-road contract also observes Flow's real-time ending and its return to title.
+ if (Test.Mode == TEXT("sc13") && M && M->Story) { S47SC13Contract::Step(M,Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)

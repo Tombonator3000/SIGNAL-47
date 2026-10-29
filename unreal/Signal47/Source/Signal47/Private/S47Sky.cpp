@@ -10,6 +10,9 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "S47Fx.h"
+#include "S47Chapter6.h"
+#include "S47Main.h"
+#include "S47Story.h"
 #include "S47Three.h"
 #include "S47Web.h"
 
@@ -429,6 +432,14 @@ void FS47Sky::SetCometClock(double Clock)
 void FS47Sky::Update(double Dt, double T)
 {
 	Time = T;
+	const auto* Main = Web.IsValid() ? US47Main::Get(Web.Get()) : nullptr;
+	const auto* Finale = Main && Main->Story ? Cast<US47Chapter6>(Main->Story->Chapter(TEXT("ch6"))) : nullptr;
+	if (Finale && Finale->RevisedFinale())
+	{
+		// Only the new ending suppresses unrelated random meteors/lightning. The sky clock,
+		// approved background clouds, sun, star hole and Chapter6's own cues continue normally.
+		bMetVisible = false; MetI = Flash = FlashT = 0; return;
+	}
 	MeteorStep(Dt);
 	// Sunlit daytime and the friendly arrival have no forced night storm or thunder.
 	if (Evening > 0 || Midday > 0)

@@ -1,6 +1,7 @@
 #include "S47SkyVisitors.h"
 
 #include "S47Evening.h"
+#include "S47Chapter6.h"
 #include "S47FieldCamera.h"
 #include "S47Flow.h"
 #include "S47Geo.h"
@@ -275,7 +276,10 @@ void FS47SkyVisitors::Step(double Dt)
  ControlTest(Dt);
  if (!M || !M->Story || !M->Player || !M->World || !State.bEnabled || M->Mode != US47Main::EMode::Play)
  { Hide(); return; }
- const bool Held = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic();
+ const auto* Finale = Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6")));
+ // The revised last road owns the horizon. Retain the lights' actual positions and phase;
+ // neither a new optional crossing nor observation credit competes with THE EVENT.
+ const bool Held = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || (Finale && Finale->RevisedFinale());
  if (State.Advance(RequestedStage(), Dt, Held)) M->RequestAutosave();
  // An early miss gets one further natural opportunity on the first field trip.
  // Loading, opening a door and simply walking outside never restart a track.

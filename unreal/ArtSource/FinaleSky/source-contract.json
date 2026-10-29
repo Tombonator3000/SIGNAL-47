@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "revision": "S47-FINALE-SKY-1",
+  "authorship": "Original SIGNAL / 47 geometry and analytic cloud field. No third-party images, models or simulations.",
+  "mesh": "SM_S47_FinalCraft",
+  "destination": "/Game/FinaleSky",
+  "material_slots": ["M_S47_FinalHull", "M_S47_FinalRibs", "M_S47_FinalRecess", "M_S47_FinalLight"],
+  "materials": {
+    "Hull": {"color": [0.075, 0.09, 0.105, 1], "roughness": 0.53, "metallic": 0.78, "glow": 0},
+    "Ribs": {"color": [0.17, 0.19, 0.21, 1], "roughness": 0.37, "metallic": 0.85, "glow": 0},
+    "Recess": {"color": [0.008, 0.014, 0.024, 1], "roughness": 0.66, "metallic": 0.36, "glow": 0.025},
+    "Light": {"color": [0.36, 0.52, 0.63, 1], "roughness": 0.32, "metallic": 0.08, "glow": 1.8}
+  },
+  "source_axis": "Blender metres Z-up. Existing FBX -Y/Z, native forceFrontX + yaw90: (Bx,-By,Bz)*100cm; FBX importer retains corner order into UE clockwise front faces; native UV=(u,1-v).",
+  "runtime_radius_m": 680,
+  "lod_radial_segments": [192, 112, 64],
+  "cloud_policy": {"banks": 2, "local_finite_volumes": true, "opaque_scene_depth_clip": true, "samples_low": 28, "samples_high": 56, "global_sky_unchanged": true, "ufo_opacity": 1},
+  "fixed_timing": {"departure": "05:20:00", "event": "05:29:00", "event_seconds": 47, "pull_seconds": 34, "final_photo": "original photo1947"},
+  "acceptance": "UNVERIFIED until guarded Blender, saved native import/fresh PID, actual RHI occlusion/views and whole drive contract. No NPC/installed/release claim."
+}

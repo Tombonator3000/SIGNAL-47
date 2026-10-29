@@ -492,6 +492,8 @@ void AS47HUD::Start()
 			H.LifeQuiet = [M]
 			{
 				if (M->Mode != US47Main::EMode::Play || (M->Story && M->Story->IsCinematic())) return true;
+				const auto* Finale = M->Story ? Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))) : nullptr;
+				if (Finale && Finale->RevisedFinale()) return true;
 				if (M->TownLayer && M->TownLayer->Roadside.IsValid() && M->TownLayer->Roadside->bSilent) return true;
 				if (M->Night && M->Night->Glimpses.IsValid() && !M->Night->Glimpses->Up.IsEmpty()) return true;
 				if (M->TownLayer && M->TownLayer->TownEvents.IsValid() && M->TownLayer->TownEvents->Now != TEXT("none")) return true;
