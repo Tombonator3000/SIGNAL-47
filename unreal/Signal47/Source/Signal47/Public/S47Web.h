@@ -213,6 +213,7 @@ public:
 	bool SetWalkZoneBounds(const FString& Area, const FString& Id, const FS47Area& Bounds, const TArray<FString>& RectAliases);
 	// Validated 0.35m relocation into the native Operations passing bay. False is read-only verification.
 	bool RecessSaroVending(bool bApply);
+	bool RehouseSaroCorridorLights(bool bApply);
 
 	// ---------- interactable things ----------
 	const TArray<FS47WebItem>& Items() const { return ItemList; }
@@ -425,6 +426,7 @@ private:
 		FLinearColor Color = FLinearColor::White;
 		TWeakObjectPtr<URectLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
+		TWeakObjectPtr<UMaterialInstanceDynamic> NativeDiffuser;
 	};
 	TArray<FFixtureLight> FixtureLights;
 	struct FScreenLight { int32 Node = -1, Screen = -1; float Base = 0, Reference = 1; TWeakObjectPtr<URectLightComponent> Light; };

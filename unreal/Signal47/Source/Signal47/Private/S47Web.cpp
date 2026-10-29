@@ -976,7 +976,7 @@ bool AS47Web::RecessSaroVending(bool bApply)
 	const FS47Obj Partition = Annex.Find(TEXT("office:partitionRight"));
 	const FS47Obj Hinge = Annex.Find(TEXT("office:doorHinge"));
 	if (!Partition || !Hinge || !Partition.WorldPosition().Equals(FVector(1.5, 1.4, 7.2), .0001) ||
-		!Hinge.WorldPosition().Equals(FVector(-.03, 0, 7.07), .0001)) return false;
+		!Hinge.WorldPosition().Equals(FVector(-.03, 0, 7.20), .0001)) return false;
 	auto* Walk = Walks.Find(TEXT("saro"));
 	FS47Area* Alias = HandleRects.Find(TEXT("annex.colliders[0]"));
 	if (!Walk || !Alias || !Alias->bValid) return false;
@@ -1035,6 +1035,52 @@ bool AS47Web::RecessSaroVending(bool bApply)
 	// The existing pool suppression, intensity, colour, power/flicker and screen
 	// material remain unchanged; the physical pane continues to drive them.
 	UploadFlood(Set);
+	return true;
+}
+
+bool AS47Web::RehouseSaroCorridorLights(bool bApply)
+{
+	const int32 Set = FloodSet(TEXT("annex"));
+	const FS47Obj Room = ObjAt(Handle(TEXT("annex.group"))).Find(TEXT("office:authoredRoom"));
+	const FS47WebNode* RN = Node(Room.I);
+	UStaticMeshComponent* Mesh = RN ? Cast<UStaticMeshComponent>(RN->Comp.Get()) : nullptr;
+	if (!Mesh || !Mesh->GetStaticMesh() || Set < 0) return false;
+	struct FBinding { int32 Node, Geo, Pool; double X; const TCHAR* Material; };
+	const FBinding Bindings[] = {{484,316,0,-3.7,TEXT("M_Office_CorridorTubeWest")}, {485,317,1,.2,TEXT("M_Office_CorridorTubeEast")}};
+	TArray<FFixtureLight*> Found; TArray<int32> Slots;
+	for (const FBinding& B : Bindings)
+	{
+		if (!Nodes.IsValidIndex(B.Node) || Nodes[B.Node].Geo != B.Geo || !SuppressedPools.Contains(PoolId(Set,B.Pool))) return false;
+		FFixtureLight* Fixture = nullptr;
+		for (FFixtureLight& F : FixtureLights) if (F.Node == B.Node && F.Set == Set && F.Slot == B.Pool)
+		{ if (Fixture) return false; Fixture = &F; }
+		const int32 Slot = Mesh->GetMaterialIndex(B.Material);
+		if (!Fixture || !Fixture->Light.IsValid() || !Fixture->Diffuser.IsValid() || Slot < 0) return false;
+		if (!bApply && (!Fixture->NativeDiffuser.IsValid() || Mesh->GetMaterial(Slot) != Fixture->NativeDiffuser.Get() ||
+			!Fixture->Light->GetComponentLocation().Equals(ToUE(FVector(B.X,2.696,5.7)), .02) ||
+			!FMath::IsNearlyEqual(Fixture->Light->SourceWidth,124.f,.01f) || !FMath::IsNearlyEqual(Fixture->Light->SourceHeight,30.f,.01f))) return false;
+		Found.Add(Fixture); Slots.Add(Slot);
+	}
+	if (!bApply) return true;
+	for (int32 I=0; I<UE_ARRAY_COUNT(Bindings); ++I)
+	{
+		const FBinding& B = Bindings[I]; FFixtureLight& F = *Found[I];
+		URectLightComponent* Light = F.Light.Get();
+		Light->SetWorldLocation(ToUE(FVector(B.X,2.696,5.7)));
+		Light->SetWorldRotation(FRotationMatrix::MakeFromXY(FVector(0,0,-1),FVector(1,0,0)).Rotator());
+		Light->SetSourceWidth(124); Light->SetSourceHeight(30);
+		// Keep the existing 32lm tube, power/dimming/flicker and pool suppression.
+		if (!F.NativeDiffuser.IsValid())
+		{
+			UMaterialInstanceDynamic* D = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(Slots[I]),this);
+			D->SetVectorParameterValue(TEXT("TextureTint"),FLinearColor(.55f,.55f,.53f));
+			Mesh->SetMaterial(Slots[I],D); F.NativeDiffuser=D; KeepMids.Add(D);
+		}
+		F.LastK=-1;
+		if (UPrimitiveComponent* Old=Cast<UPrimitiveComponent>(Nodes[B.Node].Comp.Get()))
+		{ Old->SetHiddenInGame(true); Old->SetCastShadow(false); Old->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
+	}
+	UpdateFixtureLighting();
 	return true;
 }
 

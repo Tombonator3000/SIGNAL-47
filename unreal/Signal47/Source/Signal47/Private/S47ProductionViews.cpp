@@ -6,6 +6,7 @@
 #include "S47MotelV2.h"
 #include "S47Office.h"
 #include "S47SaroInterior.h"
+#include "S47SaroDoorDetail.h"
 #include "S47HighwayPower.h"
 #include "S47Main.h"
 #include "S47World.h"
@@ -99,7 +100,13 @@ void AS47Web::BeginProductionViews()
   {TEXT("office-contact-close"),TEXT("saro"),{.76,0,8.98},{.76,.81,9.42}},
   // ART01: legal exterior cameras keep the complete 2:3 print inside the glass.
   {TEXT("cinema-poster-left"),TEXT("diner"),{7988.7,0,2169},{7985.163,10.497393,2169}},
-  {TEXT("cinema-poster-right"),TEXT("diner"),{7988.7,0,2155},{7985.163,10.497393,2155}}
+  {TEXT("cinema-poster-right"),TEXT("diner"),{7988.7,0,2155},{7985.163,10.497393,2155}},
+  // SARO interiors: explicit fixed cameras, separate from the unchanged desk views.
+  // Research board faces -X at x1.65, z8.13..10.19; camera clears the west cabinet.
+  {TEXT("office-room-overview"),TEXT("saro"),{.40,0,7.75},{.50,1.35,9.25}},
+  {TEXT("office-research-wall"),TEXT("saro"),{-.18,0,8.65},{1.65,1.76,9.16}},
+  {TEXT("office-corridor-west-east"),TEXT("saro"),{-5.35,0,5.70},{.90,1.10,5.80}},
+  {TEXT("office-passing-bay"),TEXT("saro"),{.35,0,5.45},{.40,1.35,7.15}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -164,6 +171,8 @@ void AS47Web::BeginProductionViews()
    if(ViewName.StartsWith(TEXT("signal-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("signal-span")?55.f:22.f;}
    else if(ViewName.StartsWith(TEXT("cinema-poster-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=50.f;}
    else if(ViewName.StartsWith(TEXT("office-desk-"))||ViewName==TEXT("office-contact-close")){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-contact-close")?28.f:50.f;}
+   else if(ViewName==TEXT("office-room-overview")||ViewName==TEXT("office-research-wall")||ViewName==TEXT("office-corridor-west-east")||ViewName==TEXT("office-passing-bay"))
+   {State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-research-wall")?74.f:ViewName==TEXT("office-passing-bay")?80.f:78.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
    if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
@@ -174,7 +183,7 @@ void AS47Web::BeginProductionViews()
   if(Now-State->Since<State->Hold)return;
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
-  if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);}
+  if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);Ok&=S47SaroDoorDetail::Audit(W,Lines);}
   else if(State->Suite==TEXT("cinema-posters")){Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines)&&W->AuditCinemaPosters(Lines);}
   else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }

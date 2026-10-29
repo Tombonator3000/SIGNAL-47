@@ -6,6 +6,9 @@ The source object's transforms, UV layers and shader graphs remain unchanged;
 only evaluated and independently materialled copies are used for baking/export.
 """
 import argparse
+from array import array
+from collections import Counter
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -31,6 +34,44 @@ def active(obj):
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
+
+
+def indices_hash(indices):
+    return hashlib.sha256(json.dumps(indices, separators=(',', ':')).encode()).hexdigest()
+
+
+def check_source_indices(high, frozen):
+    current = tuple(poly.material_index for poly in high.data.polygons)
+    O.require(current == frozen, 'Source polygon material indices changed: ' + high.name)
+    O.require(all(0 <= index < len(high.data.materials) for index in frozen),
+              'Source polygon has an unmapped material slot: ' + high.name)
+
+
+def replace_source_materials(high, materials, frozen):
+    """IDMaterials.clear() resets polygon indices; restore the frozen mapping.
+
+    Never recapture indices after clear(), or the all-zero reset would become the
+    new baseline. Only the separate target atlas is deliberately single-material.
+    """
+    O.require(len(high.data.polygons) == len(frozen), 'Source polygon population changed')
+    O.require(bool(materials) and all(materials) and
+              all(0 <= index < len(materials) for index in frozen), 'Replacement material map is incomplete')
+    high.data.materials.clear()
+    for material in materials:
+        high.data.materials.append(material)
+    high.data.polygons.foreach_set('material_index', frozen)
+    high.data.update()
+    check_source_indices(high, frozen)
+
+
+def source_histogram(high, materials, frozen):
+    check_source_indices(high, frozen)
+    counts = Counter(frozen)
+    triangles = Counter()
+    for poly, index in zip(high.data.polygons, frozen):
+        triangles[index] += len(poly.vertices) - 2
+    return [{'slot': index, 'material': material.name, 'polygons': counts[index],
+             'triangles': triangles[index]} for index, material in enumerate(materials)]
 
 
 def image_inputs(tree, seen=None):
@@ -189,8 +230,11 @@ def append_source(blend, name):
     bpy.context.scene.collection.objects.link(high)
     high.matrix_world = obj.matrix_world.copy()
     O.require(len(high.data.materials) == len(obj.material_slots), 'Evaluated material map changed: ' + name)
+    frozen = tuple(poly.material_index for poly in high.data.polygons)
+    O.require(bool(frozen), 'Source object has no evaluated polygons: ' + name)
+    check_source_indices(high, frozen)
     obj.hide_render = True
-    return obj, high
+    return obj, high, frozen
 
 
 def atlas_target(high, suffix, size):
@@ -222,58 +266,82 @@ def atlas_target(high, suffix, size):
     return low, material, target
 
 
-def bake(high, low, target_node, original_materials, channel, path, size, samples):
+def bake(high, low, target_node, original_materials, frozen, channel, path, size, samples):
     scene = bpy.context.scene
     scene.cycles.samples = samples
     temporary = []
-    high.data.materials.clear()
-    for original in original_materials:
-        material = original if channel == 'normal' else channel_material(original, channel)
-        if material != original:
-            temporary.append(material)
-        high.data.materials.append(material)
-    image = bpy.data.images.new('_S47_' + channel, width=size, height=size,
-                                alpha=False, float_buffer=True)
-    image.colorspace_settings.name = 'sRGB' if channel == 'base_color' else 'Non-Color'
-    target_node.image = image
-    active(low)
-    high.select_set(True)
-    settings = scene.render.bake
-    settings.target = 'IMAGE_TEXTURES'
-    settings.use_selected_to_active = True
-    settings.use_cage = False
-    settings.cage_extrusion = .003
-    settings.max_ray_distance = .009
-    settings.margin = 16
-    settings.margin_type = 'EXTEND'
-    settings.use_clear = True
-    settings.normal_space = 'TANGENT'
-    settings.normal_r = 'POS_X'
-    settings.normal_g = 'NEG_Y'
-    settings.normal_b = 'POS_Z'
-    bpy.ops.object.bake(type='NORMAL' if channel == 'normal' else 'EMIT')
-    image.filepath_raw = str(path)
-    image.file_format = 'PNG'
-    image.save()
-    O.require(path.is_file() and path.stat().st_size > 0, 'Bake did not save ' + str(path))
-    target_node.image = None
-    bpy.data.images.remove(image)
-    high.data.materials.clear()
-    for original in original_materials:
-        high.data.materials.append(original)
-    for material in temporary:
-        bpy.data.materials.remove(material)
+    image = None
+    result = {'source_material_indices_preserved': False,
+              'source_material_indices_sha256': indices_hash(frozen)}
+    check_source_indices(high, frozen)
+    try:
+        mapped = []
+        for original in original_materials:
+            material = original if channel == 'normal' else channel_material(original, channel)
+            if material != original:
+                temporary.append(material)
+            mapped.append(material)
+        replace_source_materials(high, mapped, frozen)
+        image = bpy.data.images.new('_S47_' + channel, width=size, height=size,
+                                    alpha=False, float_buffer=True)
+        image.colorspace_settings.name = 'sRGB' if channel == 'base_color' else 'Non-Color'
+        target_node.image = image
+        active(low)
+        high.select_set(True)
+        settings = scene.render.bake
+        settings.target = 'IMAGE_TEXTURES'
+        settings.use_selected_to_active = True
+        settings.use_cage = False
+        settings.cage_extrusion = .003
+        settings.max_ray_distance = .009
+        settings.margin = 16
+        settings.margin_type = 'EXTEND'
+        settings.use_clear = True
+        settings.normal_space = 'TANGENT'
+        settings.normal_r = 'POS_X'
+        settings.normal_g = 'NEG_Y'
+        settings.normal_b = 'POS_Z'
+        bpy.ops.object.bake(type='NORMAL' if channel == 'normal' else 'EMIT')
+        check_source_indices(high, frozen)
+        image.filepath_raw = str(path)
+        image.file_format = 'PNG'
+        image.save()
+        O.require(path.is_file() and path.stat().st_size > 0, 'Bake did not save ' + str(path))
+        if channel == 'metallic':
+            pixels = array('f', [0.]) * len(image.pixels)
+            image.pixels.foreach_get(pixels)
+            red = pixels[0::4]
+            stats = {'minimum': float(min(red)), 'maximum': float(max(red)),
+                     'nonzero_texels_over_002': sum(value > .02 for value in red)}
+            used = set(frozen)
+            chrome = [mat.name for index, mat in enumerate(original_materials)
+                      if index in used and 'chrome' in mat.name.lower()]
+            result['metallic_pixels'] = stats
+            result['used_chrome_source_materials'] = chrome
+            O.require(not chrome or stats['nonzero_texels_over_002'] > 0,
+                      'Used chrome source slots produced an all-zero metallic atlas; '
+                      'do not accept this bake without investigating its source graph: ' + str(stats))
+    finally:
+        target_node.image = None
+        if image is not None:
+            bpy.data.images.remove(image)
+        replace_source_materials(high, original_materials, frozen)
+        for material in temporary:
+            bpy.data.materials.remove(material)
+    result['source_material_indices_preserved'] = True
+    return result
 
 
-def export(low, output):
+def export(low, output, recenter=True):
     active(low)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     vertices = low.data.vertices
     lo = Vector([min(vertex.co[i] for vertex in vertices) for i in range(3)])
     hi = Vector([max(vertex.co[i] for vertex in vertices) for i in range(3)])
-    pivot = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
-    low.data.transform(Matrix.Translation(-pivot))
-    low.data.update()
+    if recenter:
+        pivot = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
+        low.data.transform(Matrix.Translation(-pivot))
+        low.data.update()
     path = output / 'Export' / (low.name + '.fbx')
     bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, object_types={'MESH'},
                             apply_unit_scale=True, apply_scale_options='FBX_SCALE_UNITS',
@@ -284,8 +352,161 @@ def export(low, output):
     return {'triangles': sum(len(face.vertices) - 2 for face in low.data.polygons),
             'bounds_local_m': bounds, 'materials': [mat.name for mat in low.data.materials],
             'original_components': 1, 'fbx_sha256': O.digest(path),
-            'pivot': 'bottom centre, Blender Z up; source front retained',
+            'pivot': ('bottom centre, Blender Z up; source front retained' if recenter else
+                      'unchanged closed ArchiveBox bottom-centre origin; subset NOT recentered'),
             'physical_scale_review': 'UNVERIFIED; original metric geometry retained'}
+
+
+def box_face_partition(mesh):
+    """The historical five disconnected islands, using the same min-Z > .2 rule."""
+    O.require(len(mesh.polygons) == 660 and all(len(face.vertices) == 3 for face in mesh.polygons),
+              'ArchiveBox must remain the exact triangulated 660-face source')
+    parents = list(range(len(mesh.vertices)))
+
+    def root(index):
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    for face in mesh.polygons:
+        first = root(face.vertices[0])
+        for vertex in face.vertices[1:]:
+            parents[root(vertex)] = first
+    components = {}
+    for face in mesh.polygons:
+        components.setdefault(root(face.vertices[0]), []).append(face.index)
+    lid, info = set(), []
+    for faces in components.values():
+        vertices = {vertex for index in faces for vertex in mesh.polygons[index].vertices}
+        minimum = min(mesh.vertices[index].co.z for index in vertices)
+        is_lid = minimum > .2
+        if is_lid:
+            lid.update(faces)
+        info.append({'minimum_z_m': float(minimum), 'triangles': len(faces),
+                     'subset': 'lid' if is_lid else 'body'})
+    body = set(range(660)) - lid
+    O.require(len(info) == 5 and len(body) == 515 and len(lid) == 145,
+              'Historical ArchiveBox 515/145 component split no longer matches: ' + str(info))
+    return body, lid, info
+
+
+def mesh_snapshot(mesh):
+    uv_name = mesh.uv_layers.active.name
+    mesh.calc_tangents(uvmap=uv_name)
+    snapshot = {'vertices': [tuple(vertex.co) for vertex in mesh.vertices],
+                'faces': [list(face.loop_indices) for face in mesh.polygons],
+                'corner_vertices': [loop.vertex_index for loop in mesh.loops],
+                'normals': [tuple(item.vector) for item in mesh.corner_normals],
+                'tangents': [tuple(loop.tangent) for loop in mesh.loops],
+                'bitangent_signs': [float(loop.bitangent_sign) for loop in mesh.loops],
+                'uv_layers': {layer.name: [tuple(item.uv) for item in layer.data] for layer in mesh.uv_layers},
+                'active_uv': uv_name}
+    snapshot['sha256'] = hashlib.sha256(json.dumps(snapshot, sort_keys=True, separators=(',', ':'),
+                                                  allow_nan=False).encode()).hexdigest()
+    return snapshot
+
+
+def verify_box_subset(obj, snapshot, expected_faces):
+    """Stop if native Separate lost corner data; do not synthesize new normals."""
+    mesh = obj.data
+    ids = {}
+    for suffix, domain in (('Vertex', 'POINT'), ('Face', 'FACE'), ('Corner', 'CORNER')):
+        attribute = mesh.attributes.get('S47_Source' + suffix)
+        O.require(attribute is not None and attribute.domain == domain and attribute.data_type == 'INT',
+                  'Separate lost exact provenance ' + suffix)
+        ids[suffix] = [item.value for item in attribute.data]
+    O.require(len(ids['Face']) == len(expected_faces) and set(ids['Face']) == expected_faces,
+              'Separate changed the exact ArchiveBox face subset')
+    O.require(mesh.uv_layers.active.name == snapshot['active_uv'] and
+              {layer.name for layer in mesh.uv_layers} == set(snapshot['uv_layers']), 'Separate changed atlas UV layers')
+    for vertex, index in zip(mesh.vertices, ids['Vertex']):
+        O.require(tuple(vertex.co) == snapshot['vertices'][index], 'Subset vertex position changed')
+    for face, original_index in zip(mesh.polygons, ids['Face']):
+        corners = [ids['Corner'][index] for index in face.loop_indices]
+        expected = snapshot['faces'][original_index]
+        O.require(len(corners) == 3 and any(corners == expected[n:] + expected[:n] for n in range(3)),
+                  'Separate changed source triangle winding or corners')
+    for loop, corner in zip(mesh.loops, ids['Corner']):
+        O.require(ids['Vertex'][loop.vertex_index] == snapshot['corner_vertices'][corner],
+                  'Separate changed a source corner/vertex binding')
+        for layer in mesh.uv_layers:
+            O.require(tuple(layer.data[loop.index].uv) == snapshot['uv_layers'][layer.name][corner],
+                      'Separate changed an atlas UV value')
+    mesh.calc_tangents(uvmap=snapshot['active_uv'])
+    normals = [tuple(item.vector) for item in mesh.corner_normals]
+    normal_error = max(abs(value - snapshot['normals'][corner][axis]) for index, corner in enumerate(ids['Corner'])
+                       for axis, value in enumerate(normals[index]))
+    tangent_error = max(abs(value - snapshot['tangents'][corner][axis]) for loop, corner in zip(mesh.loops, ids['Corner'])
+                        for axis, value in enumerate(loop.tangent))
+    O.require(normal_error <= 1e-6 and tangent_error <= 1e-6,
+              'Separate did not preserve source normal/tangent vectors: ' + str((normal_error, tangent_error)))
+    O.require(all(loop.bitangent_sign == snapshot['bitangent_signs'][corner]
+                  for loop, corner in zip(mesh.loops, ids['Corner'])), 'Separate changed tangent handedness')
+    return {'exact_source_faces': True, 'vertex_coordinates_equal': True, 'uv_values_equal': True,
+            'triangle_winding_equal': True, 'normal_max_error': normal_error,
+            'tangent_max_error': tangent_error, 'vector_tolerance': 1e-6, 'bitangent_signs_equal': True}
+
+
+def archive_box_derivatives(closed, base_part, output):
+    """Separate existing body/lid only; no cap planes, retopology or new bake."""
+    body_faces, lid_faces, components = box_face_partition(closed.data)
+    snapshot = mesh_snapshot(closed.data)
+    work = closed.copy()
+    work.data = closed.data.copy()
+    bpy.context.scene.collection.objects.link(work)
+    work.name = 'SM_InteriorOwned_ArchiveBoxBody'
+    for suffix, domain, count in (('Vertex', 'POINT', len(work.data.vertices)),
+                                   ('Face', 'FACE', len(work.data.polygons)),
+                                   ('Corner', 'CORNER', len(work.data.loops))):
+        attribute = work.data.attributes.new('S47_Source' + suffix, 'INT', domain)
+        attribute.data.foreach_set('value', list(range(count)))
+    active(work)
+    bpy.context.tool_settings.mesh_select_mode = (False, False, True)
+    for vertex in work.data.vertices:
+        vertex.select = False
+    for edge in work.data.edges:
+        edge.select = False
+    for face in work.data.polygons:
+        face.select = face.index in lid_faces
+    before = {obj.as_pointer() for obj in bpy.data.objects}
+    bpy.ops.object.mode_set(mode='EDIT')
+    try:
+        bpy.ops.mesh.separate(type='SELECTED')
+    finally:
+        bpy.ops.object.mode_set(mode='OBJECT')
+    new = [obj for obj in bpy.data.objects if obj.as_pointer() not in before]
+    O.require(len(new) == 1 and new[0].type == 'MESH', 'Separate did not produce exactly one lid mesh')
+    lid = new[0]
+    lid.name = 'SM_InteriorOwned_ArchiveBoxLid'
+    parts = {}
+    for obj, faces in ((work, body_faces), (lid, lid_faces)):
+        O.require(obj.matrix_world == closed.matrix_world, 'Subset no longer shares closed-box origin')
+        verify_box_subset(obj, snapshot, faces)
+        part = export(obj, output, recenter=False)
+        # FBX tangent calculation must also leave every source attribute intact.
+        proof = verify_box_subset(obj, snapshot, faces)
+        part.update({'derived_from': closed.name, 'geometry_only_derivative': True,
+                     'source_material_proof_base': closed.name, 'shared_atlas_source': closed.name,
+                     'texture_sha256': base_part['texture_sha256'],
+                     'source_base_fbx_sha256': base_part['fbx_sha256'],
+                     'source_geometry_snapshot_sha256': snapshot['sha256'],
+                     'source_triangle_indices': sorted(faces), 'geometry_subset_proof': proof,
+                     'shared_origin': closed.name + ' bottom centre',
+                     'hollow_interior_appearance': 'UNVERIFIED; no opening/cap geometry added'})
+        O.require(part['triangles'] == len(faces) and part['materials'] == base_part['materials'],
+                  'Subset FBX no longer uses exact source triangles and shared material')
+        parts[obj.name] = part
+    O.require(mesh_snapshot(closed.data)['sha256'] == snapshot['sha256'], 'Closed ArchiveBox source geometry changed')
+    O.require(not body_faces.intersection(lid_faces) and body_faces.union(lid_faces) == set(range(660)),
+              'Body/lid do not reconstruct the exact original triangle population')
+    union = {'base': closed.name, 'base_fbx_sha256': base_part['fbx_sha256'],
+             'source_geometry_snapshot_sha256': snapshot['sha256'], 'split_rule': 'disconnected island minimum Z > 0.2m is lid',
+             'source_components': components, 'body_triangles': 515, 'lid_triangles': 145,
+             'union_triangles': 660, 'source_faces_disjoint': True, 'source_faces_complete': True,
+             'closed_geometry_unchanged': True, 'shared_origin': True, 'shared_baked_atlas': True,
+             'hollow_interior_appearance': 'UNVERIFIED'}
+    return parts, union
 
 
 def main():
@@ -328,6 +549,7 @@ def main():
               'source_plan_sha256': O.digest(args.plan), 'recipe_sha256': O.digest(Path(__file__)),
               'parts': {}, 'native_import': 'UNVERIFIED', 'runtime_appearance': 'UNVERIFIED',
               'required_native_features': ['textures.metallic'],
+              'source_material_indices_preserved': False,
               'material_limitation': 'Stops on unsupported shader, alpha or transmission; no silent flattening.'}
     if args.asset:
         inputs = [row for row in inputs if row[1] in args.asset]
@@ -348,30 +570,48 @@ def main():
             scene.render.image_settings.file_format = 'PNG'
             scene.render.image_settings.color_mode = 'RGB'
             scene.render.image_settings.color_depth = '16'
-            original, high = append_source(blend, name)
+            original, high, frozen = append_source(blend, name)
             original_materials = list(high.data.materials)
             O.require(original_materials and all(original_materials), 'Missing evaluated material slots')
+            histogram = source_histogram(high, original_materials, frozen)
             source_uvs = [layer.name for layer in original.data.uv_layers]
             low, material, target = atlas_target(high, NAMES[name], args.size)
             textures = {}
+            passes = {}
             for channel in CHANNELS:
                 relative = Path('textures') / (material.name + '_' + channel + '.png')
-                bake(high, low, target, original_materials, channel, output / relative, args.size, args.samples)
+                passes[channel] = bake(high, low, target, original_materials, frozen, channel,
+                                       output / relative, args.size, args.samples)
                 textures[channel] = str(relative)
+            check_source_indices(high, frozen)
             O.require(source_uvs == [layer.name for layer in original.data.uv_layers], 'Original UV layers changed')
             part = export(low, output)
             part.update({'source': name, 'source_blend': blend.name, 'source_sha256': expected_hash,
                          'source_uv_layers': source_uvs, 'material_source_names': [mat.name for mat in original_materials],
+                         'source_material_indices_preserved': all(value['source_material_indices_preserved'] for value in passes.values()),
+                         'source_material_indices_sha256': indices_hash(frozen),
+                         'source_material_index_histogram': histogram,
+                         'bake_passes': passes,
                          'texture_sha256': {role: O.digest(output / path) for role, path in textures.items()}})
             O.require(O.digest(blend) == expected_hash, 'Original blend changed during build')
             report['parts'][low.name] = part
+            if name == '24_Cardboard Archive Box':
+                derivatives, partition = archive_box_derivatives(low, part, output)
+                report['parts'].update(derivatives)
+                report.setdefault('derived_partitions', {})[low.name] = partition
             materials.append({'name': material.name, 'base_color_linear': [1, 1, 1, 1],
                               'roughness': 1, 'metallic': 0, 'specular': .5,
                               'normal_strength': 1, 'textures': textures,
                               'required_native_features': ['textures.metallic']})
             report_path.write_text(json.dumps(report, indent=2) + '\n')
+        bases = [part for part in report['parts'].values() if not part.get('derived_from')]
+        report['source_material_indices_preserved'] = (len(bases) == len(inputs) and
+                all(part['source_material_indices_preserved'] for part in bases))
+        report['source_material_index_scope'] = 'Baked originals; named geometry-only subsets inherit their base proof'
+        O.require(report['source_material_indices_preserved'], 'Incomplete source material preservation proof')
         report['status'] = 'PASS_PRIVATE_BAKE_AND_FBX_EXPORT'
         contract = {'schema': 1, 'parts': report['parts'],
+                    'derived_partitions': report.get('derived_partitions', {}),
                     'required_native_features': report['required_native_features'],
                     'fbx_recipe': 'FBX -Y forward/Z up, metric; fieldintegration native import_rotation yaw90',
                     'native_import': 'UNVERIFIED', 'runtime_appearance': 'UNVERIFIED'}

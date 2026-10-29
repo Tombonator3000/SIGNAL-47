@@ -5,7 +5,7 @@ Native measured FBX recipe therefore yields exact game-world positions.
 """
 from pathlib import Path
 import bpy, math, json, sys
-from mathutils import Vector
+from mathutils import Vector, Matrix
 import numpy as np
 ROOT=Path(__file__).resolve().parent
 FRONT_OFFSET=.50  # Operations passing bay; keep rear furniture/story anchors fixed.
@@ -87,7 +87,12 @@ TILE=mat('FloorLinoleum',(.25,.29,.25),.68,kind='tile')
 CEILING=mat('CeilingTile',(.46,.47,.40),.98,kind='tile')
 RED=mat('BinderBurgundy',(.16,.038,.025),.73)
 BLUE=mat('BinderBlue',(.032,.069,.10),.76)
+OLIVE=mat('BinderOlive',(.084,.090,.049),.83)
+GRAY=mat('BinderFadedGray',(.145,.155,.145),.85)
+TAN=mat('BinderTan',(.28,.22,.12),.80)
 LIGHT=mat('Diffuser',(.65,.62,.48),.56)
+mat('CorridorTubeWest',(.65,.62,.48),.56)
+mat('CorridorTubeEast',(.65,.62,.48),.56)
 
 def xyz(p):return Vector((p[0],-p[2],p[1]))
 def active(o):
@@ -219,15 +224,22 @@ for ix in range(5):
     for iz in range(6):box('Acoustic_ceiling_panel',(-.88+(ix+.5)*.54,2.735,6.61+(iz+.5)*.626),(.530,.035,.616),CEILING,.002)
 for ix in range(6):box('Ceiling_T_bar',(-.88+ix*.54,2.712,8.49),(.012,.018,3.76),TRIM,.002)
 for iz in range(7):box('Ceiling_cross_T',(.47,2.712,6.61+iz*.626),(2.7,.018,.012),TRIM,.002)
-for x in (-.062,1.032):
-    box('Door_steel_jamb',(x,1.08,6.70+FRONT_OFFSET),(.055,2.16,.23),TRIM,.005)
-    box('Door_stop',(x+(.027 if x<0 else -.027),1.075,6.685+FRONT_OFFSET),(.015,2.15,.025),WOOD,.002)
-box('Door_frame_head',(.485,2.145,6.70+FRONT_OFFSET),(1.15,.065,.23),TRIM,.005)
-box('Threshold_brass',(.47,.014,6.69+FRONT_OFFSET),(1.06,.018,.24),BRASS,.003)
-for x in (.1,.84):cyl('Threshold_screw',(x,.024,6.69+FRONT_OFFSET),(x,.025,6.69+FRONT_OFFSET),.005,CHROME,12)
+# Same rebated profile as records/lab, with the leaf inside the wall depth.
+sys.path.insert(0,str(ROOT.parent/'DoorSet'))
+import build_frames
+frame_z=6.70+FRONT_OFFSET
+def frame_point(p):return (p[0],p[1],2*frame_z-p[2])
+def frame_box(name,at,size,material,bevel=.008):return box(name,frame_point(at),size,material,bevel)
+def frame_cyl(name,a,b,r,material,segments=20):return cyl(name,frame_point(a),frame_point(b),r,material,segments)
+# Operations swings into +Z, so its stop is on the corridor (-Z) side.
+build_frames.append_frame(frame_box,frame_cyl,MATS,origin=(-.03,0,frame_z),
+                          width=1.,height=2.07,style='service',prefix='Operations_frame')
 # Fluorescent fixture housing and split diffusers, attached to actual ceiling.
 box('Fluorescent_backplate',(.47,2.68,8.8),(.38,.07,1.22),STEEL,.012)
 for x in (.37,.57):box('Fluorescent_opal_diffuser',(x,2.625,8.8),(.16,.045,1.15),LIGHT,.013)
+sys.path.insert(0,str(ROOT))
+import corridor_dressing
+corridor_dressing.build(box,cyl,curve,MATS)
 finish('SM_Office_Room')
 
 # Tanker desk, rounded rolled lip, honest kneehole, drawers and slide hardware.
@@ -271,20 +283,25 @@ for y in (1.10,1.63,2.16):
     box('West_wall_book_shelf',(-.64,y,9.0),(.35,.035,1.42),WOOD,.007)
     for z in (8.44,9.56):box('Shelf_bracket',(-.75,y-.10,z),(.18,.20,.021),STEEL,.003)
 for i in range(15):
-    z=8.37+i*.086;h=.27+(.04 if i%3 else 0)
-    box('Service_binder',(-.60,1.12+h/2,z),(.28,h,.066),BLUE if i%3 else RED,.004)
+    z=8.37+i*.086+(-.004,.003,0,.006,-.003)[i%5]
+    h=(.27,.31,.285,.335,.26,.30)[i%6]
+    thickness=(.052,.066,.071,.059,.076)[i%5]
+    first=len(CURRENT)
+    box('Service_binder',(-.60,1.12+h/2,z),(.28,h,thickness),(BLUE,OLIVE,RED,GRAY,BLUE,TAN)[i%6],.004)
     box('Binder_spine_label',(-.449,1.22+h*.2,z),(.004,.095,.039),PAPER,.001)
     cyl('Binder_finger_ring',(-.447,1.175,z),(-.444,1.175,z),.009,BRASS,16)
+    # Lean small groups about the actual shelf contact, including their labels.
+    pivot=xyz((-.60,1.12,z));angle=(-.035,.025,0,-.018,.035)[i%5]
+    lean=Matrix.Translation(pivot)@Matrix.Rotation(angle,4,'X')@Matrix.Translation(-pivot)
+    for component in CURRENT[first:]:component.matrix_world=lean@component.matrix_world
 box('Archive_storage_box',(-.63,1.78,8.56),(.29,.26,.46),PAPER,.006)
 box('Archive_box_lid',(-.63,1.925,8.56),(.315,.035,.48),CORK,.004)
 box('Private_folder_stack',(-.63,2.205,8.73),(.27,.055,.48),CORK,.004)
-# Notice board east wall: layered sheets with separate pinheads, tasteful irregularity.
-box('Noticeboard_frame',(1.72,1.65,9.45),(.07,.72,.84),WOOD,.009)
-box('Noticeboard_cork',(1.676,1.65,9.45),(.025,.66,.78),CORK,.004)
-for i,(y,z) in enumerate(((1.78,9.23),(1.75,9.60),(1.46,9.38))):
-    box('Pinned_shift_sheet',(1.66,y,z),(.004,.25,.20),PAPER,.001)
-    cyl('Brass_drawing_pin',(1.651,y+.10,z),(1.644,y+.10,z),.007,BRASS,16)
-    for j in range(5):box('Printed_invoice_line',(1.655,y+.055-j*.025,z),(.002,.002,.14-(j%2)*.035),DARK,0)
+# Physical research wall and incoming folders. Finished art is bound natively,
+# just like the six independent live desk papers; blank bodies are not art acceptance.
+sys.path.insert(0,str(ROOT))
+import research_dressing
+research_dressing.build(box,cyl,curve,MATS)
 # Rear blind over existing opaque lining: a credible interior glazed panel, no fake exterior view.
 box('Glazed_panel_frame',(.47,1.83,10.298),(1.37,.94,.07),TRIM,.009)
 box('Glazed_panel_dark_back',(.47,1.83,10.254),(1.25,.83,.020),DARK,.004)
@@ -320,13 +337,16 @@ finish('SM_Office_Dressing')
 # Save source with editable assemblies composed at runtime placements, export objects hidden.
 placements={
 'SM_Office_ServiceCabinet':(-.59,.525,6.32+FRONT_OFFSET),'SM_Office_ServiceDrawer':(-.59,.85,6.22+FRONT_OFFSET),
-'SM_Office_Door':(.47,1.035,6.57+FRONT_OFFSET),'SM_Office_SpareKey':(-.59,.805,6.17+FRONT_OFFSET),
+'SM_Office_Door':(.47,1.047,6.70+FRONT_OFFSET),'SM_Office_SpareKey':(-.59,.805,6.17+FRONT_OFFSET),
 'SM_Office_Desk':(.37,0,9.73),'SM_Office_Chair':(1.19,0,8.73),
 'SM_Office_Room':(0,0,0),'SM_Office_Dressing':(0,0,0)}
 # All original components are grouped sequentially according to part component counts.
 for name,row in PARTS.items():
-    for o in ORIGINALS[name]:o.location+=xyz(placements[name])
+    for o in ORIGINALS[name]:
+        if name=='SM_Office_Door':o.scale.y*=.045/.055
+        o.location+=xyz(placements[name])
     row['runtime_origin_three_m']=list(placements[name])
+    if name=='SM_Office_Door':row['runtime_scale_three']=[1,1,.045/.055]
 (ROOT/'materials.json').write_text(json.dumps(ROWS,indent=2)+'\n')
 (ROOT/'model_contract.json').write_text(json.dumps({'units':'metres','mapping':'Blender (x,-z,y) to UE (100x,100z,100y)','authorship':'Original beveled furniture, joinery, hardware and procedural PBR, no downloaded geometry','parts':PARTS},indent=2)+'\n')
 # Real light fixture render; no scene-only set dressing is mistaken for delivered meshes.

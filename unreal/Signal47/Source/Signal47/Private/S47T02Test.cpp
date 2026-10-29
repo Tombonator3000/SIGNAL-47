@@ -514,7 +514,32 @@ void FS47T02Test::Step(double Dt)
    M->SaroNight->DarkWhere() == TEXT("away") && !M->Office->Contains(M->Player->Pos);
   if (!Check(bBay && S47J::Bool(M->Office->Save(),TEXT("entered")) == S47J::Bool(S47J::Obj(T.GoodOffice,TEXT("office")),TEXT("entered")),
    TEXT("physical return walk reaches clear passing bay with annex visible, room audio, annex phone/away night and unchanged actual entry fact"))) return;
-  Shot(TEXT("interior-passing-bay-physical")); Stage(802,.35); return;
+  Shot(TEXT("interior-passing-bay-physical"));
+  Path({FVector(.47,0,6.2),FVector(-1.2,0,6.2),FVector(-5.4,0,6.2)}); Stage(810,0); return;
+ }
+ if (T.Stage == 810)
+ {
+  if (!Walk()) return;
+  if (!Check(M->Web->Obj(TEXT("annex.interior")).Shown() && M->Space==TEXT("room") &&
+   M->Phones->ArcWhere()==TEXT("annex") && !M->Office->Contains(M->Player->Pos),
+   TEXT("actual Walker reaches west corridor beyond control-room door without losing annex/audio"))) return;
+  Path({FVector(-1.2,0,6.2),FVector(-.8,0,5.4),FVector(1.4,0,5.4)}); Stage(811,0); return;
+ }
+ if (T.Stage == 811)
+ {
+  if (!Walk()) return;
+  if (!Check(M->Web->Obj(TEXT("annex.interior")).Shown() && M->Space==TEXT("room") &&
+   M->Phones->ArcWhere()==TEXT("annex") && !M->Office->Contains(M->Player->Pos),
+   TEXT("actual Walker reaches east corridor clear of retained vending collision and control door"))) return;
+  Shot(TEXT("interior-corridor-east-physical"));
+  Path({FVector(.47,0,5.4),FVector(.47,0,6.8),FVector(.47,0,7.8)}); Stage(812,0); return;
+ }
+ if (T.Stage == 812)
+ {
+  if (!Walk()) return;
+  if (!Check(M->Office->DoorOpen() && M->Office->Use(TEXT("office:door")) && S47J::Bool(M->Office->Save(),TEXT("doorOpen")),
+   TEXT("nearby real office close action is refused while player occupies inward door sweep"))) return;
+  Stage(802,.35); return;
  }
  if (T.Stage == 802)
  {
@@ -540,6 +565,7 @@ void FS47T02Test::Step(double Dt)
    const FCohort Cohorts[] = {
     {TEXT("legacy-valid-front"),1.2,7.2,true,false},
     {TEXT("legacy-valid-rear"),.35,8.8,false,false},
+    {TEXT("legacy-valid-door-sweep"),.1,8.4,true,false},
     {TEXT("legacy-invalid-clipped"),1.2,6.9,true,false},
     {TEXT("legacy-locked-corridor"),.45,5.8,false,true}
    };
@@ -605,7 +631,7 @@ void FS47T02Test::Step(double Dt)
   US47Flow::FStart Original; Original.State=S47J::Clone(T.GoodOffice); Original.CaseId=0; Original.bDev=true; Original.Playtime=M->Playtime;
   M->Flow->StartGame(Original);
   if (!Check(M->Flow->bDevRun && M->Flow->CaseId==0 && M->Office->HasFieldSheet(),TEXT("interior cohort series restores original developer route and store"))) return;
-  UE_LOG(LogS47T02Test,Display,TEXT("S47: SARO interior contract PASS COMPLETE: physical bay return, four pose/layout fixtures, eight actual isolated Writer/freshReader/title/Continue restores; developer route resumed; human input UNVERIFIED"));
+  UE_LOG(LogS47T02Test,Display,TEXT("S47: SARO interior contract PASS COMPLETE: physical bay return, five pose/layout fixtures, ten actual isolated Writer/freshReader/title/Continue restores; developer route resumed; human input UNVERIFIED"));
   Aim(FVector(.45,1.2,9.65)); Stage(95,.35); return;
  }
  if (T.Stage == 95)
@@ -627,7 +653,7 @@ void FS47T02Test::Step(double Dt)
  if (T.Stage == 98)
  {
   auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), T.bArrivalOffice ? TEXT("PASS_ARRIVAL_OFFICE_PHYSICAL_AND_DISK") : TEXT("PASS_EARLY_OFFICE_PHYSICAL_AND_DISK")); S47J::Set(Result, TEXT("checks"), T.Checks); S47J::Set(Result, TEXT("walkedMetres"), T.WalkDistance); S47J::Set(Result, TEXT("freshStoreFullFlowRestores"), T.Loads);
-  S47J::Set(Result,TEXT("saroInteriorContract"),T.bSaroInterior); S47J::Set(Result,TEXT("interiorTitleContinueCohorts"),T.bSaroInterior?8:0);
+  S47J::Set(Result,TEXT("saroInteriorContract"),T.bSaroInterior); S47J::Set(Result,TEXT("interiorTitleContinueCohorts"),T.bSaroInterior?10:0);
   FFileHelper::SaveStringToFile(S47J::Write(Result,true), *(T.Root/TEXT("result.json")));
   T.bDone = true; M->Player->TestMove.Reset();
   UE_LOG(LogS47T02Test, Display, TEXT("S47: early office PASS COMPLETE: %d checks, real key/drawer/door/paper interaction, %.2f m Walker, fresh disk/full Flow restore, no premature departure or VHS credit; artifacts %s"), T.Checks, T.WalkDistance, *T.Root);

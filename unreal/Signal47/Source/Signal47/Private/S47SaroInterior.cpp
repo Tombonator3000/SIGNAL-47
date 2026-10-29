@@ -45,6 +45,8 @@ bool Build(AS47Web* W)
   return false;
  }
  const bool bVending = W->RecessSaroVending(true);
+ const bool bLighting = W->RehouseSaroCorridorLights(true);
+ if (!bLighting) UE_LOG(LogTemp, Warning, TEXT("S47: native corridor fixture rehouse pending: geometry/slots/drivers differ"));
  if (!bVending)
   UE_LOG(LogTemp, Warning, TEXT("S47: SARO vending relocation skipped: bay/object/item/collider/light contract differs; original retained"));
  UE_LOG(LogTemp, Display, TEXT("S47: SARO corridor candidate walk width=%.3fm centre travel=%.3fm; vending relocation=%s; original use/photo/power identities retained"),
@@ -106,6 +108,8 @@ bool Audit(AS47Web* W, TArray<FString>& Lines)
   !ContainsPassingBay(W, FVector(1.35, 0, 6.8));
  Lines.Add(FString::Printf(TEXT("SARO passing bay semantics %s: new clear eastern bay indoors, unchanged records wall and vending volume excluded"), bBay ? TEXT("PASS") : TEXT("FAIL")));
  Lines.Add(TEXT("SARO interior candidate: physical route, existing-save restore and rendered geometry require runtime verification"));
- return bBounds && bMoved && bBay;
+ const bool bLighting = W->RehouseSaroCorridorLights(false);
+ Lines.Add(FString::Printf(TEXT("SARO corridor physical lighting %s: two existing tube drivers, original pool suppression/power/flicker retained"),bLighting?TEXT("PASS"):TEXT("FAIL")));
+ return bBounds && bMoved && bBay && bLighting;
 }
 }

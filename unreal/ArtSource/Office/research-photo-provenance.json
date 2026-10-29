@@ -1,0 +1,13 @@
+{
+  "status": "Reference artwork, native/runtime acceptance separate",
+  "generator": "built-in imagegen",
+  "generated_at": "2026-10-29",
+  "source": "exec-ed311eec-a68b-464e-857a-2693d3f516a8.png",
+  "destination": "textures/research_photo_atlas.png",
+  "sha256": "ba9dc99293c08d8c7c3afe08013cfc5133d3e6c8c26f2d3dc483aad1e56d913f",
+  "image_edited_after_generation": false,
+  "transparent_background": false,
+  "prompt": "Create ONE square photographic texture atlas for an in-game conspiracy research wall in SIGNAL / 47, New Mexico, 1986. It is a straight-on flat scan of a single four-frame contact print, exactly 2 columns by 2 rows, four equally sized frames with clean narrow pale ivory margins and a straight central cross gutter. Each frame must remain entirely in its own quadrant so a game shader can select the quadrants. High-resolution realistic analog black-and-white 35mm film prints, faint warm silver-gelatin tint, restrained authentic film grain, slight handling wear only at paper edges, excellent natural photographic detail. Top left: one large parabolic radio telescope at a remote desert astronomical observatory, shot from ground level at late afternoon, mountains in background. Top right: close detail of a 1980s radio observatory receiver cabinet and authentic coaxial cabling, no readable labels. Bottom left: an empty rural New Mexico dirt service road with an old wire fence and low scrub, a distant mesa, ordinary daylight. Bottom right: a second documentary photograph of a single radio telescope dish seen obliquely from behind with its lattice support and desert ground, different framing and exposure from top left. These are mundane site reference photographs, not new story evidence. No people, no faces, no aliens, no UFOs, no supernatural objects, no monsters, no letters, no captions, no stamps, no dates, no handwriting, no digital screens, no modern cars or objects. No room, no desk, no pins, no strings, no surrounding background, no 3D mockup, no cast shadows outside the prints, no perspective distortion. Frame edges aligned with the image axes. The deliverable is the flat 2x2 printed-photo texture atlas itself, filling the canvas.",
+  "story_scope": "Decorative site reference photographs; no new evidence/documents/read flags",
+  "separate_paid_api_used": false
+}
