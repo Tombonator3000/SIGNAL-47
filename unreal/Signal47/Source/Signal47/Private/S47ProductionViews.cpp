@@ -81,6 +81,8 @@ void AS47Web::BeginProductionViews()
   {TEXT("signal-close"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}},
   {TEXT("signal-span"),TEXT("diner"),{8012,0,1995},{8000.5,10.6,2002}},
   {TEXT("signal-close-later"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}},
+  {TEXT("motel-phone-wall"),TEXT("saro"),{-44.6,0,668.7},{-44.6,-1.2,671.25}},
+  {TEXT("motel-pool-exterior"),TEXT("saro"),{-49,0,668.8},{-53.55,-1.95,665.55}},
   {TEXT("homes-h01"),TEXT("diner"),{8011,0,2133},{8024,8.8142,2133}},
   {TEXT("homes-h02"),TEXT("diner"),{8011,0,2156.5},{8024.5,9.5031,2156.5}},
   {TEXT("homes-h03"),TEXT("diner"),{8012,0,2185},{8025,10.31875,2185}},
@@ -119,6 +121,7 @@ void AS47Web::BeginProductionViews()
   }
   if(State->Index>=UE_ARRAY_COUNT(Views)*3){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
   const int32 I=State->Index%UE_ARRAY_COUNT(Views),Light=State->Index/UE_ARRAY_COUNT(Views);const auto& V=Views[I];const double Now=FPlatformTime::Seconds();
+  const bool bMotelView=FString(V.Name).StartsWith(TEXT("motel-")),bSignalView=FString(V.Name).StartsWith(TEXT("signal-"));
   if(!State->Placed)
   {
    if(M->World->bDriving){Fail(TEXT("fixture starts outside vehicle"));return;}

@@ -1106,12 +1106,31 @@ Hodet svinger rundt klemmepunktet på wiren (stiv dempet pendel, ca. 2,7 s, styr
 
 Test etter risiko: Blender-kilde og ny kontroll av lagret fil PASS (43 sjekker); native import PASS (to mesher, fem materialer, LOD og målte bounds); bykutt-import PASS (`trims-r1.json`); editorbygg PASS; ny produksjonssuite `-S47ProductionSuite=signal` (nærbilde, spenn og senere nærbilde, dag/skumring/natt) PASS i r1 og r2 med 9 bilder hver, bildene er sett. Revisjonen i hver visning logget svingvinkler mellom 0,30 og 1,10 grader på tvers, flomlysavvik under 0,25 mm og glød-/linseavvik 0. Bevegelse: `motion-r2-day-close.png` viser to dagbilder 2,8 s fra hverandre der hodet har flyttet seg mens wiren står stille. Pakket spill og ekte input: UNVERIFIED til neste samlede fullmatrise. Bevis: `~/scratch-bm/Signal47-env03-20261029`.
 
+## 29.10.2026 kl. 02:47 | Codex, motellreise FIX-02 til FIX-05 under arbeid
+
+Kildegren `codex/motel-grounded-20261029` i `wt/evening`, med main gjennom PR217 samordnet. Fersk terrengklipping og statisk 58-punktrute består; editorbygg består etter samordningen. Første Blender-apply stoppet eksplisitt på egendefinerte normaler. Neste forsøk med RNA-utvidelse krasjet ved mesh-update før lagring og er avvist. Lesende attributtinventar bekrefter fortsatt originalhash `53b48aa9` og ingen fargeattributter, shape keys eller vertex groups i de fem endrede delene. Normal-/attributtbevaring flyttes til en ny separat meshdatablokk før ny faktisk kildeprøve. Avviste utdata og crashspor beholdes. Ingen native-aktivering, installasjon eller release er gjort. [Arbeidsrapport](../Docs/Evidence/UnrealDeliveries/MOTEL_GROUNDING_2026-10-29.md).
+
+## 29.10.2026 kl. 03:50 | Motellkilde og native R2 kontrollert, runtime gjenstår
+
+R5 består kildeapply, uavhengig audit, eksport av fem deler med tre LOD-er og faktisk save/reopen. Gamle normalvektorer er identiske; nye har maks 2,98 × 10⁻⁸ avvik. Alle 58 øvrige FBX-er og 67 teksturer er bevart. Normalsetterens fansnitt og komprimert buffers geometriavhengighet er isolert i private prober; de fem delene bruker nå direkte FLOAT_VECTOR. Originalpakken er sikret byteidentisk før den godkjente kilden promoteres. Native R1 ble avvist på null avstandsgrenser ved reimport. Native R2 består 2 696 importkontroller og ny lesende editor 1 408 kontroller, 31 meshes og faktisk fjern-LOD 19 915/24 000 trekanter. Manglende stdout-markør er avklart med bevart motorlogg og hashbundet PASS-rapport, uten ny import. Kilde/trim/runtimekontrakt er staged. Neste steg er fysisk Walker-rute, TV/readback, rom 6/Continue og separat dag/skumring/natt. Ingen installasjon eller release.
+
+### 29. oktober 2026 kl. 04:12, Codex, motellrute R1 til R3 og gulvdiagnose
+
+- R1 avvist før gange: AdoptNode lagrer posisjon uten faktisk rekvisittrotasjon. Audit og rute måler nå telefonens renderkomponent, ikke identitetskvaternionen i metadata. Selvtestens gamle flate motellforventning er oppdatert til målt asfalt 8 cm under svalgangen; R2/R3 består alle 1709 selvtester og fire blocker-prøver.
+- R2/R3 stopper ved første synlige gulvkontroll. R3 sikrer fem faktiske treff: gammel clutter:office:dirt på Y=-2,093368, mens forfattet flisnivå er -2,086568. Ingen gang-/TV-/diskaksept.
+- Importkildens betingelse for seksjonskollisjon var en relevant hypotese, men faktisk native-probe avviser den: samtlige31modeller har alleLOD-seksjoner på før migrering. Ingen rettet seksjonsfeil hevdes. Eksplisitt import-/saved-verifikasjon av flaggene er lagt til.
+- Separat Blender-BVH på faktisk R5-kilde bekrefter fem flistreff påZ=0,012, geometrisk forside nedover. Faktiske editorbilder viser flisene, én resepsjonslampe og korrekt synlig telefonfront/ICE/avis. Native kropp-/LOD- og sidekontroll undersøkes videre. Ingen tosidig query- eller kildeendring er foreløpig akseptert som løsning. Råforsøk er bevart.
 ### 29. oktober 2026 kl. 04:37, Codex, overtakelse og levering av FIX-07
 
 - Overtok uferdig Claude-gren etter dokumentert 75-minuttersregel. Alle 44 opprinnelige deltafiler er SHA-sikret og uendret; Blender-/FBX-kilder, native modeller og fire åpnete runtimebilder følger leveringen. Ny kildecommit ed2f8548.
 - Fire feltmodeller erstatter enklere synlig utstyr; opprinnelige T01/T02-proxies, kollidere, foto-occludere, strøm, lyd og lagring beholdes. Eksplisitt cook-inkludering lagt til for /Game/SubstationField.
 - Fersk leser PASS 84 kontroller av alle LOD-vertices mot faktisk FBX. T01 R2 PASS med 1709 selvtester, faktisk lampe, serialisering, gangadkomst, blokkert yard, brukstråler og diskrestore; normal exit0. R1 hadde fullført markører, men wrapper ble avbrutt av SIGTERM; avbrutt råøkt er bevart.
 - Claudes faktiske T02 (65/15/38,90 m) og SC02 (249/21/352,19 m/opptak) beholdes med sine uttrykkelige fixturegrenser. Rapport SUBSTATION_FIELD_2026-10-29 og maskinlesbar SHA-kvittering følger. Pakket spill, fullmatrise, installasjon og offentlig release er ikke utført.
+
+
+### 2026-10-29T05:11:31+01:00: Motell R6b og ENV02 native
+
+R6b er promotert med separat bevart original og R5. Native R4 2038/fersk leser1542 og staging PASS; fysisk rute R4 består1709 selvtester,4 blokkeringer,TV-bilde/lydklokke og10 punkter, men stopper korrekt ved original g456-asfalt som overlapper ganggulvet. Deltrim må bevare innkjøringen. ENV02 i separat worktree består kilde424,7 trim-FBX,native2642/fersk leser1371 og staging med291 uendrede Town-filer. Første editorbygg ble startet før testdriveren var fryst og avvises; ny fryst kilde skal bygges. Ingen hel runtime-/pakkeaksept, installasjon eller offentlig release.
 
 ## 2026-10-29 kl. 06:04 CET: ENV-02, Caliche-hus og skilt som målrettet pakket kandidat
 
@@ -1127,3 +1146,38 @@ Avviste forsøk beholdes: tidlige editorprøver hadde feil forventninger til ord
 ## 2026-10-29 kl. 06:08 CET: ENV-02 PR opprettet
 
 [PR219](https://github.com/Tombonator3000/SIGNAL-47/pull/219) er opprettet mot main. Eksakt head, remote og påkrevde kontroller verifiseres før fletting. Kandidatbevisene i forrige oppføring er uendret. Ingen installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 06:11 CET: ENV-02 bekreftet flettet og motellrute bestått
+
+PR219 er bekreftet flettet i main `232a87380441c438d77dde694472f2e41ea49800` med foreldrene `31abf280` og eksakt PR-head `c2e359bb`. Motell editor R11 på `d707abd4` består hele 58-punktsreisen: 14 interaksjoner, sju gjestedørnisjer, fire faktiske blokkerprøver, 1611 fysiske gulvstråler, 178,63 m normal Walker og ordinær isolert disk/title/Continue. Rettingen av additiv lysdekor bevarer bilde/materiale/transform; bare node770/g530 mister fysisk kollisjon. Main/ENV02 samordnes før pakket motellprøve. Ingen fullmatrise, installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 06:17 CET: Motell editor R11, kilde/native og bevisgrenser dokumentert
+
+[Motellrapporten](../Docs/Evidence/UnrealDeliveries/MOTEL_GROUNDING_2026-10-29.md) binder testet kilde `d707abd4` til editor R11: 1709 selvtester, 58 rutepunkter, 14 interaksjoner, 7/7 gjestedørnisjer, 4/4 faktiske blokkeringer og 1611 fysiske gulvstråler. Normal Walker/Resolve går 178,6332 m på 142,9989 s; faktisk rom 6-dørbruk og ordinær isolert disk/title/full Flow Continue består. Kapitel 4-inngang, fire blockerplasseringer og én rutestartplassering er uttrykkelige fixtures; API-ruten er ikke menneskelig input.
+
+R6b har rettet 172 målte lukkede gulvøyer / 32336 trekanter i 11 deler, med original og R5 bevart. Presist g456-trim beholder innkjøringen. Native R5 består 1787 importkontroller og fersk saved-leser 1555 på 32 meshes; staging R5 binder samme hasher. Node 770/g530 beholder dekorens bilde/materiale/transform og mister bare fysisk kollisjon. Ni gulvprøver krever minst 6/9 første native gulvtreff ved en faktisk 2 cm kildefuge; høydekrav og eierkrav er uendret.
+
+TV-ens faktiske native skjermmateriale/tekstur består GPU-readback: 48034/49152 piksler endres, frame 185 til 258 og lydklokkedelta 6,0373 s. Avisens NoCollision-glass prøves med faktiske GPU-rendertriangler; dette beviser ikke fysisk glasskollisjon eller sceneokklusjon. Fire åpnete R2-kamerafixtures fra før siste g456-trim og to åpnete R11-TV-readbacks følger [repoets kvittering](Evidence/MOTEL-GROUNDING-2026-10-29/editor-r11-receipt.json).
+
+R1–R9 er bevart som avviste ruter med sine faktiske kontrollårsaker. R10-planen ble stoppet av `-Wshadow` i build-editor-r11; ingen editor-route-r10 ble kjørt. Bygg R12 og rute R11 består etter lokal auditscoperetting. E04-klumpen har fortsatt ingen fastslått identitet; bassengdiagnosen gir 18 meshkomponenter, 57 instanser og åtte stråler uten ekstra sletting. Main/ENV02 er samordnet i `8ea05a94` etter R11. Pakket motellprøve venter root; menneskelig input, subjektiv lytting, FPS og fullmatrise er UNVERIFIED. Ingen installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 06:19 CET: lokal pakkeopprydding etter ENV-02
+
+Etter kontrollert plan og ledig guard er bare sju genererte payloadfiler fra avvist nattkandidat R1 pensjonert, 4 451 979 050 logiske byte. Mappeskall, logger, bilder, kilder og øvrige bevis beholdes. Gjeldende ENV02-R2 og de to nyeste eldre pakkene beholdes. Det eneste komplette historiske Ultra-sammenligningsbygget og den fryste FIX01-minnekandidaten er uttrykkelig beskyttet mens den historiske startup-undersøkelsen står åpen. Alle øvrige registrerte pakke-/installasjonshasher er uendret. En helt fersk før/etter-kontroll bekrefter alle 91 faktiske filer i installasjonens Saved byteidentiske; ingen eldre personlagringsbaseline er gjenbrukt. Private kvitteringer: Signal47-caliche-homes-20261029/pre-prune-after-r2.json, prune-applied-after-r2.json og post-prune-after-r2.json. Ingen installasjon eller offentlig release.
+
+
+## 2026-10-29 kl. 06:33 CET: Motell kandidat R1 består målrettet pakket reise
+
+[Motellrapporten](../Docs/Evidence/UnrealDeliveries/MOTEL_GROUNDING_2026-10-29.md) og [pakket R1-kvittering](Evidence/MOTEL-GROUNDING-2026-10-29/packed-r1-receipt.json) binder kilde `2d13e2314619fd78e042f32a346587768b24dcf8`, 13 458 uendrede runtime-inputfiler / 8 378 388 383 logiske byte og åtte payloads. Binæren er 314 233 088 byte med SHA256 `c9beb91710d2bd73d49821301eac4607cbb0a99ca6c2ceecd82513d166cfd930`. Kilden inkluderer main/ENV02; PR/fletting av motellpasset venter root.
+
+Pakket R1 består motorens 1709 selvtester og samme API-styrte Walker/Resolve-reise som editor R11: 58 rutepunkter, 14 interaksjoner, 7/7 gjestedørnisjer, 4/4 blokkeringer og 1611 faktiske gulvstråler. Ruten går 178,695588 m på 143,029735 s, med faktisk rom 6-dørbruk og ordinær isolert disk/title/full Flow Continue. Normal exit 0, ingen registrert tungjobbkonkurranse eller forbudte markører. Kapittel 4-inngang, fire blockerplasseringer og én rutestartplassering er fortsatt uttrykkelige fixtures; ingen menneskelig input hevdes.
+
+Faktisk native TV-materialbinding og GPU-tekstur består: 48262/49152 piksler endres, frame 183 til 256 og lydklokkedelta 6,037333 s. To originale pakkede tekstur-PNG-er er åpnet og hashbundet. Avisens NoCollision-pane prøves fortsatt mot faktisk GPU-rendergeometri, ikke fysisk glasskollisjon eller sceneokklusjon. E04-klumpens identitet er fortsatt UNVERIFIED; ingen ekstra sletting, og hele FIX-04 er ikke lukket. Alle tidligere avviste forsøk beholdes. Menneskelig input, subjektiv lytting, FPS og fullmatrise er UNVERIFIED. Ingen installasjon i Games eller offentlig release.
+
+
+## 2026-10-29 kl. 06:38 CET: motell-PR opprettet
+
+[PR220](https://github.com/Tombonator3000/SIGNAL-47/pull/220) er opprettet mot main med den målrettet beståtte kandidatens uendrede runtime-inputs. E04s lille klump forblir åpen. Kamera-/kvalitetsavhengig flora gjør gamle instansindekser utilstrekkelige; tre meters nærhet er heller ingen sikker grense langs bildets siktstråle. Eksakt head og kontroller verifiseres før fletting. Ingen installasjon eller offentlig release.

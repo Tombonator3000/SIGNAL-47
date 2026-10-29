@@ -227,12 +227,12 @@
             [
               5.101912975311279,
               -46.997013092041016,
-              -0.29747819900512695
+              -0.29747822880744934
             ],
             [
               15.69808578491211,
               6.9974775314331055,
-              -0.0829838365316391
+              -0.08298385143280029
             ]
           ],
           "materials": [
@@ -262,7 +262,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "ff71e2263acffddb20a45e760ec3b28851cf206453120188138bb0bfedda2fe7"
+      "source_geometry_sha256": "f5ede7727bf3bcb6cd3d6681e7f5f7a069854569f36ee47c33640139862232c9"
     },
     "SM_Sierra_Glass": {
       "name": "SM_Sierra_Glass",
@@ -281,13 +281,13 @@
           "triangles": 440,
           "bounds_local_m": [
             [
-              0.7950000166893005,
+              -0.304999977350235,
               -42.82500076293945,
               0.17500001192092896
             ],
             [
               2.305999994277954,
-              3.7244999408721924,
+              3.874500036239624,
               2.0850000381469727
             ]
           ],
@@ -299,13 +299,13 @@
           "triangles": 220,
           "bounds_local_m": [
             [
-              0.7952268123626709,
+              -0.304789662361145,
               -42.82500076293945,
               0.17528049647808075
             ],
             [
               2.305999994277954,
-              3.724273204803467,
+              3.8742730617523193,
               2.0847458839416504
             ]
           ],
@@ -317,13 +317,13 @@
           "triangles": 96,
           "bounds_local_m": [
             [
-              0.7962929010391235,
+              -0.3037070631980896,
               -42.82500457763672,
               0.1763153374195099
             ],
             [
               2.305999994277954,
-              3.7232072353363037,
+              3.8732073307037354,
               2.0841078758239746
             ]
           ],
@@ -334,13 +334,13 @@
       ],
       "bounds_local_m": [
         [
-          0.7950000166893005,
+          -0.304999977350235,
           -42.82500076293945,
           0.17500001192092896
         ],
         [
           2.305999994277954,
-          3.7244999408721924,
+          3.874500036239624,
           2.0850000381469727
         ]
       ],
@@ -363,7 +363,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "visual_only",
-      "source_geometry_sha256": "54470bb441705469ddbdcb79ee7bff4857fe5bdea1201d3a515fec156e8d4bc4"
+      "source_geometry_sha256": "59dc9f18969f9e47571d39646209f15930cc04e7a3dcf50279cb8f479ea9f200"
     },
     "SM_Sierra_GlowExterior": {
       "name": "SM_Sierra_GlowExterior",
@@ -746,16 +746,16 @@
       "materials": [
         "M_MotelV2_Office"
       ],
-      "triangles": 276425,
-      "vertices": 141053,
+      "triangles": 276989,
+      "vertices": 141341,
       "lod_triangles": [
-        276425,
-        138211,
-        60813
+        276989,
+        138493,
+        60937
       ],
       "lods": [
         {
-          "triangles": 276425,
+          "triangles": 276989,
           "bounds_local_m": [
             [
               -6.75,
@@ -764,7 +764,7 @@
             ],
             [
               5.405448913574219,
-              3.7327001094818115,
+              3.94569993019104,
               4.25499963760376
             ]
           ],
@@ -773,7 +773,7 @@
           ]
         },
         {
-          "triangles": 138211,
+          "triangles": 138493,
           "bounds_local_m": [
             [
               -6.75,
@@ -782,7 +782,7 @@
             ],
             [
               5.405448913574219,
-              3.732696056365967,
+              3.945690631866455,
               4.25499963760376
             ]
           ],
@@ -791,7 +791,7 @@
           ]
         },
         {
-          "triangles": 60813,
+          "triangles": 60937,
           "bounds_local_m": [
             [
               -6.75,
@@ -800,7 +800,7 @@
             ],
             [
               5.405448913574219,
-              3.732686758041382,
+              3.945662498474121,
               4.25499963760376
             ]
           ],
@@ -817,7 +817,7 @@
         ],
         [
           5.405448913574219,
-          3.7327001094818115,
+          3.94569993019104,
           4.25499963760376
         ]
       ],
@@ -2279,7 +2279,10 @@
         "Native wall telephone base",
         "Native telephone shelf",
         "Native rotary dial",
-        "Native telephone mouthpiece stem"
+        "Native telephone mouthpiece stem",
+        "Native grounded office_threshold",
+        "Native grounded service_west",
+        "Native grounded service_bridge"
       ],
       "site_world_three_m": [
         -45.9,
@@ -2288,7 +2291,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "bf0f68f8149afd0653988b5014c565d498f7bf21977a0475e76552dcb7e7c66f"
+      "source_geometry_sha256": "c82d69d3e4b2c9ea9546702575feda6af4a62d0b1753f14802f3862f2f4fc45a"
     },
     "SM_Sierra_Planting": {
       "name": "SM_Sierra_Planting",
@@ -2873,7 +2876,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "37de00df538e3b1f56d1b0d86d697f3f77b05cf65d8d2da01850bbc7e4557e19"
+      "source_geometry_sha256": "0da0b519d397e6a60ded499b413b81cfc08a81d5e289ecefd8999bdd799307c7"
     },
     "SM_Sierra_PoolFence": {
       "name": "SM_Sierra_PoolFence",
@@ -3907,7 +3910,7 @@
             [
               -3.754999876022339,
               -8.079489707946777,
-              -0.1693194955587387
+              -0.1693195104598999
             ],
             [
               5.182736873626709,
@@ -4259,7 +4262,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "50a6e8b7077305768819beda722865cb5b4261bbacc577e7fb61c4903dc2b825"
+      "source_geometry_sha256": "bbf21fb5aac879799339240053afb1d136c13adb770f87d9098cee302e969645"
     },
     "SM_Sierra_Room02": {
       "name": "SM_Sierra_Room02",
@@ -4638,7 +4641,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "8bdaf8a69b9c65a1d553469c5f7acb2819f59acd6ea884c516a4a0e7d3ad7c32"
+      "source_geometry_sha256": "22a3c52ab4b5db92d161272dd24b16627e07bc0a063dac47184922d74928a79f"
     },
     "SM_Sierra_Room03": {
       "name": "SM_Sierra_Room03",
@@ -4695,11 +4698,11 @@
             [
               1.6355663537979126,
               -18.764368057250977,
-              -0.16943371295928955
+              -0.16943353414535522
             ],
             [
               5.405448913574219,
-              -11.435630798339844,
+              -11.435628890991211,
               3.549433708190918
             ]
           ],
@@ -5074,7 +5077,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "9014da779a48bd464c85a5f656cd82e9ab3fd1ba37ab0bd9230808c646df2bd7"
+      "source_geometry_sha256": "5ba968e8f3739f7b3fc596f068e04dd4ce6013cb4625a349fabf66a47f5732bb"
     },
     "SM_Sierra_Room04": {
       "name": "SM_Sierra_Room04",
@@ -5452,7 +5455,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "c1ded8fd1df98857bcb18936d11e9d08ce8b71ac4501d56fb264c855d7179d54"
+      "source_geometry_sha256": "4d34ba83cfc1b9bd49abc962ae624a8277164324aa3315c882778a13e38dd8f8"
     },
     "SM_Sierra_Room05": {
       "name": "SM_Sierra_Room05",
@@ -5509,7 +5512,7 @@
             [
               -3.754999876022339,
               -28.564434051513672,
-              -0.16936907172203064
+              -0.16936904191970825
             ],
             [
               5.182723522186279,
@@ -5903,7 +5906,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "0843c4e9e7da26b33461f30cac6e669c84fa8f2e9372fc1718655db5aa07989c"
+      "source_geometry_sha256": "f00c4508f7de4b38aa27b84c2803e5d91c05c36d28917f4d26e04a1b5ff3b8b7"
     },
     "SM_Sierra_Room06": {
       "name": "SM_Sierra_Room06",
@@ -5960,7 +5963,7 @@
             [
               -3.839212417602539,
               -33.464324951171875,
-              -0.16943359375
+              -0.16943331062793732
             ],
             [
               5.182777404785156,
@@ -6253,7 +6256,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "00d421e2cf98cbca3c52de50a5036dbe465a613cd97d8d33f93821803835e0bc"
+      "source_geometry_sha256": "6c5ec0841a5d02543aebca1ca3f00ed977850664ee7c1316753ad2d8e4c06f70"
     },
     "SM_Sierra_Room07": {
       "name": "SM_Sierra_Room07",
@@ -6310,7 +6313,7 @@
             [
               1.6356310844421387,
               -38.364322662353516,
-              -0.16931962966918945
+              -0.1693194955587387
             ],
             [
               5.405448913574219,
@@ -6703,7 +6706,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "dd0c6b9aca6bd64338b6a93a911f8a34a7dbe0772de0f8d9b74085d7942fa1b6"
+      "source_geometry_sha256": "d34c543fc9217f26f1987e19c01d7547115e5ab6f091bcd6df41e2ff7a9bb3de"
     },
     "SM_Sierra_Room08": {
       "name": "SM_Sierra_Room08",
@@ -6760,7 +6763,7 @@
             [
               -6.75,
               -45.71437454223633,
-              -0.16931971907615662
+              -0.1693197339773178
             ],
             [
               5.182643890380859,
@@ -7175,7 +7178,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "91e90b6665285ffe6270a88e42009f8ac9bad13bf5d883690584c02c8e1317b7"
+      "source_geometry_sha256": "ef09a10f5021b5161a06520f0c1b0dbae6950c5a7600417145a08eaa5302b9df"
     },
     "SM_Sierra_Room6Lining": {
       "name": "SM_Sierra_Room6Lining",
@@ -7562,7 +7565,7 @@
       "source_geometry_sha256": "d04966d9d4a555bba2929aea75af0bdc7358b846791d95b4874825faee45f58f"
     }
   },
-  "status": "SOURCE_BAKED_NATIVE_UNVERIFIED",
+  "status": "SOURCE_ORIENTATION_REPAIRED_NATIVE_UNVERIFIED",
   "source": "/home/tom/Documents/ChatGPT/Signal 47/modeller/sierra-motor-court/test-v2/Sierra_Motor_Court_Test_V2_Kelvora.blend",
   "source_sha256": "43f4cb62a8b15117b4b765ec07bb298ea9a19fd214e17d8610e666ee361a3bd4",
   "units": "metres",
@@ -7573,5 +7576,3783 @@
     "import_rotation_yaw": 90
   },
   "normal_convention": "DIRECTX",
-  "runtime_modified": false
+  "runtime_modified": false,
+  "grounding_repair": {
+    "id": "motel-grounded-20261029-v1",
+    "input_blend_sha256": "53b48aa90d4cf4cda385bdda1c345f58f1381529ce00a193b39054406e361bff",
+    "input_manifest_sha256": "f4e17d83b3f0978ad2849112f87b2d0015811f2ba6c422faeb4beecf9f16f003",
+    "contract_sha256": "98c2b3d764c654e209996f0f7e388b16518666acd32ced91d87ba4750ae37463",
+    "added_pads": [
+      {
+        "name": "office_threshold",
+        "bounds_blender_m": [
+          [
+            2.22,
+            0.1,
+            -0.12
+          ],
+          [
+            2.295,
+            1.5,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.026315790354269848,
+          0.5761316996787285,
+          0.7058823455163765
+        ]
+      },
+      {
+        "name": "service_west",
+        "bounds_blender_m": [
+          [
+            -0.42,
+            3.23,
+            -0.12
+          ],
+          [
+            2.295,
+            3.4,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.9526316108245719,
+          0.06995884924670272,
+          0.7058823455163765
+        ]
+      },
+      {
+        "name": "service_bridge",
+        "bounds_blender_m": [
+          [
+            2.295,
+            3.265,
+            -0.12
+          ],
+          [
+            5,
+            3.4,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.9491228387773359,
+          0.05555555675473445,
+          0.7058823455163765
+        ]
+      }
+    ],
+    "changed_parts": [
+      "SM_Sierra_Glass",
+      "SM_Sierra_Office",
+      "SM_Sierra_Room02",
+      "SM_Sierra_Room04",
+      "SM_Sierra_Room07"
+    ],
+    "material_bake": "unchanged atlas/UV; no rebake",
+    "normal_storage_conversion": {
+      "attribute": "custom_normal",
+      "domain": "CORNER",
+      "output_type": "FLOAT_VECTOR",
+      "reason": "Preserve authored directions after translations and positive nonuniform donor scaling without smooth-fan averaging or INT16 basis changes",
+      "input_payload_sha256": {
+        "SM_Sierra_Office": "4c11543f413022c05defd198a1bc2f077fb403eee7334cd67ffb611c5ac96396",
+        "SM_Sierra_Glass": "1d943f4165e45b27b41133bf004e998cc33710ab09edb75f281596d9c6a7ea30",
+        "SM_Sierra_Room02": "732900f9480d371c3c080ac5b377b777c4ec9105419b8a879eba675f60d2d7ea",
+        "SM_Sierra_Room04": "c99f89aa0e9016bad28a1e0c5e459898635d61c3ba35d7181d828660507e67b6",
+        "SM_Sierra_Room07": "6eb52880322cb7c4eda1e1e6db028438ccbabc9645f440ab4eaee80df6757230"
+      },
+      "input_types": {
+        "SM_Sierra_Office": "INT16_2D",
+        "SM_Sierra_Glass": "INT16_2D",
+        "SM_Sierra_Room02": "INT16_2D",
+        "SM_Sierra_Room04": "INT16_2D",
+        "SM_Sierra_Room07": "INT16_2D"
+      },
+      "output_float_payload_sha256": {
+        "SM_Sierra_Office": "a6fc976cb91fb248a7df9c293181a4f483fd739802a8f9589878cdfec61fee74",
+        "SM_Sierra_Glass": "a753992bc90aa1ba2c688badbc61d4c6c976c1bad3ce907848ccc5e6a961262e",
+        "SM_Sierra_Room02": "c6f59414fb9546b502a7850e136f9a6f707d32f72d52ce16717ec36454e509d6",
+        "SM_Sierra_Room04": "38070673247280188ae639d386798bee03d7348c7253a0f39ac03cd6d68633ab",
+        "SM_Sierra_Room07": "bff0a3d1826c73bc1e713cd59122a79cce348bea1896de72752a36d284671eba"
+      }
+    }
+  },
+  "face_orientation_repair": {
+    "input_manifest_sha256": "71818fd0f3362febcfb7a605f5aa4e067bf8ffb3ae060bc39bbbd105fe72e175",
+    "input_blend_sha256": "a82f9575462f5b29fb9721ec003f3d2ec534cfbe935c70813e78ddc401c7eeb7",
+    "input_file_list_sha256": "43bbb6bb97299091a34406d2cab764b918171d6458d7579d9645309f5d02700c",
+    "contract_sha256": "98c2b3d764c654e209996f0f7e388b16518666acd32ced91d87ba4750ae37463",
+    "runtime_layout_sha256": "222bca3fbb147e35aee9c06eb598be27edfdc5c7fd46b84bf3f3bcccf5bf8aae",
+    "physical_route_sha256": "89fcdd7693c5ced7b46a5f11dfb6d08f7e900da7363b9c692cb12043edeeba3b",
+    "target_islands": 172,
+    "reversed_triangles": 32336,
+    "tool_sha256": "aa0d25e85c8ea9f84c35c4449808f71ba166ee4808279561af618fc31c2a1cb4",
+    "grounding_helper_sha256": "5b518e2f98536f986b05ca6eeda8684bdc1acfbdea94e82e705468655633c270",
+    "blender_version": "5.2.2 LTS",
+    "id": "motel-floor-face-orientation-20261029-r6",
+    "changed_parts": [
+      "SM_Sierra_CourtSurface",
+      "SM_Sierra_Office",
+      "SM_Sierra_PoolDeck",
+      "SM_Sierra_Room01",
+      "SM_Sierra_Room02",
+      "SM_Sierra_Room03",
+      "SM_Sierra_Room04",
+      "SM_Sierra_Room05",
+      "SM_Sierra_Room06",
+      "SM_Sierra_Room07",
+      "SM_Sierra_Room08"
+    ],
+    "measured_targets": {
+      "SM_Sierra_CourtSurface": [
+        {
+          "bounds": [
+            [
+              5.099999904632568,
+              -47.0,
+              -0.30000001192092896
+            ],
+            [
+              15.69999885559082,
+              7.0,
+              -0.07999999821186066
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -125.89354644575344,
+          "edges": 282,
+          "name": "asphalt",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Office": [
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.00183685111607002,
+          "edges": 282,
+          "name": "office_tile_00_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507091188664,
+          "edges": 282,
+          "name": "office_tile_00_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502202177322,
+          "edges": 282,
+          "name": "office_tile_00_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502216907104,
+          "edges": 282,
+          "name": "office_tile_00_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503345182238,
+          "edges": 282,
+          "name": "office_tile_00_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503815469777,
+          "edges": 282,
+          "name": "office_tile_00_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503468244308,
+          "edges": 282,
+          "name": "office_tile_00_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503750336488,
+          "edges": 282,
+          "name": "office_tile_00_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503345037503,
+          "edges": 282,
+          "name": "office_tile_00_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502217000003,
+          "edges": 282,
+          "name": "office_tile_00_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502202140262,
+          "edges": 282,
+          "name": "office_tile_00_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368506277892218,
+          "edges": 282,
+          "name": "office_tile_00_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2060000896453857,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              -1.8140000104904175,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368511158004047,
+          "edges": 282,
+          "name": "office_tile_00_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.00183685064980906,
+          "edges": 282,
+          "name": "office_tile_01_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502202183654,
+          "edges": 282,
+          "name": "office_tile_01_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497311877705,
+          "edges": 282,
+          "name": "office_tile_01_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497326685825,
+          "edges": 282,
+          "name": "office_tile_01_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498512109648,
+          "edges": 282,
+          "name": "office_tile_01_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498952677339,
+          "edges": 282,
+          "name": "office_tile_01_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498606301745,
+          "edges": 282,
+          "name": "office_tile_01_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849891771756,
+          "edges": 282,
+          "name": "office_tile_01_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498512352236,
+          "edges": 282,
+          "name": "office_tile_01_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497326336625,
+          "edges": 282,
+          "name": "office_tile_01_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497311952471,
+          "edges": 282,
+          "name": "office_tile_01_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501621571103,
+          "edges": 282,
+          "name": "office_tile_01_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.805999994277954,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              -1.4140000343322754,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368506494478942,
+          "edges": 282,
+          "name": "office_tile_01_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850651328415,
+          "edges": 282,
+          "name": "office_tile_02_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.00183685022159616,
+          "edges": 282,
+          "name": "office_tile_02_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497326409368,
+          "edges": 282,
+          "name": "office_tile_02_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849734035771,
+          "edges": 282,
+          "name": "office_tile_02_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498526882748,
+          "edges": 282,
+          "name": "office_tile_02_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498938858787,
+          "edges": 282,
+          "name": "office_tile_02_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498593129877,
+          "edges": 282,
+          "name": "office_tile_02_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498932665334,
+          "edges": 282,
+          "name": "office_tile_02_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498526830622,
+          "edges": 282,
+          "name": "office_tile_02_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497341421511,
+          "edges": 282,
+          "name": "office_tile_02_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849732692318,
+          "edges": 282,
+          "name": "office_tile_02_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501637446983,
+          "edges": 282,
+          "name": "office_tile_02_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.406000018119812,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              -1.0140000581741333,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368506513761795,
+          "edges": 282,
+          "name": "office_tile_02_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368509074393688,
+          "edges": 282,
+          "name": "office_tile_03_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368504726464416,
+          "edges": 282,
+          "name": "office_tile_03_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499892706125,
+          "edges": 282,
+          "name": "office_tile_03_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499908577246,
+          "edges": 282,
+          "name": "office_tile_03_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501094138381,
+          "edges": 282,
+          "name": "office_tile_03_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501535894618,
+          "edges": 282,
+          "name": "office_tile_03_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501188362645,
+          "edges": 282,
+          "name": "office_tile_03_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501499492727,
+          "edges": 282,
+          "name": "office_tile_03_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501094778863,
+          "edges": 282,
+          "name": "office_tile_03_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499909260161,
+          "edges": 282,
+          "name": "office_tile_03_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499892761037,
+          "edges": 282,
+          "name": "office_tile_03_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850421850877,
+          "edges": 282,
+          "name": "office_tile_03_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -1.00600004196167,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              -0.6140000224113464,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368509078372796,
+          "edges": 282,
+          "name": "office_tile_03_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368508145578863,
+          "edges": 282,
+          "name": "office_tile_04_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503815150527,
+          "edges": 282,
+          "name": "office_tile_04_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498952855419,
+          "edges": 282,
+          "name": "office_tile_04_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498967959294,
+          "edges": 282,
+          "name": "office_tile_04_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500153818444,
+          "edges": 282,
+          "name": "office_tile_04_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500608888657,
+          "edges": 282,
+          "name": "office_tile_04_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500261682643,
+          "edges": 282,
+          "name": "office_tile_04_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500559476145,
+          "edges": 282,
+          "name": "office_tile_04_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500154704551,
+          "edges": 282,
+          "name": "office_tile_04_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849896777793,
+          "edges": 282,
+          "name": "office_tile_04_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849895261206,
+          "edges": 282,
+          "name": "office_tile_04_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503270290194,
+          "edges": 282,
+          "name": "office_tile_04_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.6060000061988831,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              -0.21400000154972076,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368508145525481,
+          "edges": 282,
+          "name": "office_tile_04_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507798679342,
+          "edges": 282,
+          "name": "office_tile_05_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850346827931,
+          "edges": 282,
+          "name": "office_tile_05_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498606901329,
+          "edges": 282,
+          "name": "office_tile_05_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498591812465,
+          "edges": 282,
+          "name": "office_tile_05_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499807857473,
+          "edges": 282,
+          "name": "office_tile_05_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500254907069,
+          "edges": 282,
+          "name": "office_tile_05_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849990772688,
+          "edges": 282,
+          "name": "office_tile_05_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500184123954,
+          "edges": 282,
+          "name": "office_tile_05_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499807516856,
+          "edges": 282,
+          "name": "office_tile_05_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498591121794,
+          "edges": 282,
+          "name": "office_tile_05_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498606420023,
+          "edges": 282,
+          "name": "office_tile_05_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502922966534,
+          "edges": 282,
+          "name": "office_tile_05_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.20600000023841858,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              0.18599998950958252,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507798179326,
+          "edges": 282,
+          "name": "office_tile_05_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507129264302,
+          "edges": 282,
+          "name": "office_tile_06_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502831843207,
+          "edges": 282,
+          "name": "office_tile_06_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849794334873,
+          "edges": 282,
+          "name": "office_tile_06_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849795690541,
+          "edges": 282,
+          "name": "office_tile_06_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499143572928,
+          "edges": 282,
+          "name": "office_tile_06_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499577132368,
+          "edges": 282,
+          "name": "office_tile_06_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499236406906,
+          "edges": 282,
+          "name": "office_tile_06_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499548537497,
+          "edges": 282,
+          "name": "office_tile_06_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499143391899,
+          "edges": 282,
+          "name": "office_tile_06_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497958030493,
+          "edges": 282,
+          "name": "office_tile_06_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497942072848,
+          "edges": 282,
+          "name": "office_tile_06_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502208701923,
+          "edges": 282,
+          "name": "office_tile_06_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.1939999908208847,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              0.5859999656677246,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507129236337,
+          "edges": 282,
+          "name": "office_tile_06_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507697885772,
+          "edges": 282,
+          "name": "office_tile_07_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503344251472,
+          "edges": 282,
+          "name": "office_tile_07_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498512232301,
+          "edges": 282,
+          "name": "office_tile_07_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849852682117,
+          "edges": 282,
+          "name": "office_tile_07_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849971348362,
+          "edges": 282,
+          "name": "office_tile_07_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500154704404,
+          "edges": 282,
+          "name": "office_tile_07_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499806772865,
+          "edges": 282,
+          "name": "office_tile_07_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368500060862636,
+          "edges": 282,
+          "name": "office_tile_07_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368499712728638,
+          "edges": 282,
+          "name": "office_tile_07_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498528031304,
+          "edges": 282,
+          "name": "office_tile_07_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498512196603,
+          "edges": 282,
+          "name": "office_tile_07_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502833846835,
+          "edges": 282,
+          "name": "office_tile_07_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.5940000414848328,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              0.9860000014305115,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507694158105,
+          "edges": 282,
+          "name": "office_tile_07_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850650886483,
+          "edges": 282,
+          "name": "office_tile_08_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502213563938,
+          "edges": 282,
+          "name": "office_tile_08_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497322369406,
+          "edges": 282,
+          "name": "office_tile_08_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849733761337,
+          "edges": 282,
+          "name": "office_tile_08_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498465399332,
+          "edges": 282,
+          "name": "office_tile_08_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849893417216,
+          "edges": 282,
+          "name": "office_tile_08_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849858893075,
+          "edges": 282,
+          "name": "office_tile_08_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498870968883,
+          "edges": 282,
+          "name": "office_tile_08_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498466181421,
+          "edges": 282,
+          "name": "office_tile_08_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497337852357,
+          "edges": 282,
+          "name": "office_tile_08_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497322292982,
+          "edges": 282,
+          "name": "office_tile_08_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501804551171,
+          "edges": 282,
+          "name": "office_tile_08_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              0.9940000772476196,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              1.3860000371932983,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850667457248,
+          "edges": 282,
+          "name": "office_tile_08_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368506497885243,
+          "edges": 282,
+          "name": "office_tile_09_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850220109571,
+          "edges": 282,
+          "name": "office_tile_09_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497311992101,
+          "edges": 282,
+          "name": "office_tile_09_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849732723741,
+          "edges": 282,
+          "name": "office_tile_09_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849851293294,
+          "edges": 282,
+          "name": "office_tile_09_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498952695078,
+          "edges": 282,
+          "name": "office_tile_09_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498606500464,
+          "edges": 282,
+          "name": "office_tile_09_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498917587272,
+          "edges": 282,
+          "name": "office_tile_09_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368498512579625,
+          "edges": 282,
+          "name": "office_tile_09_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368497326609336,
+          "edges": 282,
+          "name": "office_tile_09_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836849731202953,
+          "edges": 282,
+          "name": "office_tile_09_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368501621236176,
+          "edges": 282,
+          "name": "office_tile_09_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.3940000534057617,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              1.7860000133514404,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368506500565645,
+          "edges": 282,
+          "name": "office_tile_09_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -2.5960001945495605,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              -2.2039999961853027,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368511390192584,
+          "edges": 282,
+          "name": "office_tile_10_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -2.196000099182129,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              -1.8040000200271606,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368507094356232,
+          "edges": 282,
+          "name": "office_tile_10_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -1.7960000038146973,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              -1.4040000438690186,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502203911345,
+          "edges": 282,
+          "name": "office_tile_10_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -1.3960000276565552,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              -1.0040000677108765,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502218108695,
+          "edges": 282,
+          "name": "office_tile_10_03",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -0.9959999918937683,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              -0.6040000319480896,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850341958848,
+          "edges": 282,
+          "name": "office_tile_10_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -0.5960000157356262,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              -0.20400001108646393,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503853313772,
+          "edges": 282,
+          "name": "office_tile_10_05",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              -0.19599999487400055,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              0.19599999487400055,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503505626595,
+          "edges": 282,
+          "name": "office_tile_10_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              0.20400001108646393,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              0.5960000157356262,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503810774763,
+          "edges": 282,
+          "name": "office_tile_10_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              0.6040000319480896,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              0.9959999918937683,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368503419296071,
+          "edges": 282,
+          "name": "office_tile_10_08",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              1.0040000677108765,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              1.3960000276565552,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502218606008,
+          "edges": 282,
+          "name": "office_tile_10_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              1.4040000438690186,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              1.7960000038146973,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368502204113436,
+          "edges": 282,
+          "name": "office_tile_10_10",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              1.8040000200271606,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              2.196000099182129,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.001836850651692347,
+          "edges": 282,
+          "name": "office_tile_10_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              1.7940000295639038,
+              2.2039999961853027,
+              0.0
+            ],
+            [
+              2.186000108718872,
+              2.5960001945495605,
+              0.012000000104308128
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0018368511393200592,
+          "edges": 282,
+          "name": "office_tile_10_12",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -2.2200000286102295,
+              -2.674999952316284,
+              -0.09000000357627869
+            ],
+            [
+              2.2200000286102295,
+              2.674999952316284,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -2.1376132409212234,
+          "edges": 282,
+          "name": "office_underlay",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              0.8349999189376831,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              3.2649998664855957,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.176553097111919,
+          "edges": 282,
+          "name": "porch_slab_00",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -1.6150000095367432,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              0.815000057220459,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765531499851367,
+          "edges": 282,
+          "name": "porch_slab_01",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -4.065000057220459,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -1.6349998712539673,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532028789714,
+          "edges": 282,
+          "name": "porch_slab_02",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2200000286102295,
+              0.10000000149011612,
+              -0.11999999731779099
+            ],
+            [
+              2.2950000762939453,
+              1.5,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.012591640321624879,
+          "edges": 282,
+          "name": "office_threshold",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -0.41999998688697815,
+              3.2300000190734863,
+              -0.11999999731779099
+            ],
+            [
+              2.2950000762939453,
+              3.4000000953674316,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.055349242047069154,
+          "edges": 282,
+          "name": "service_west",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              3.265000104904175,
+              -0.11999999731779099
+            ],
+            [
+              5.0,
+              3.4000000953674316,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -0.0437918933379476,
+          "edges": 282,
+          "name": "service_bridge",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_PoolDeck": [
+        {
+          "bounds": [
+            [
+              -10.899998664855957,
+              -7.999998092651367,
+              -0.1599999964237213
+            ],
+            [
+              -7.999997138977051,
+              9.000001907348633,
+              0.05999999865889549
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -10.84310642764091,
+          "edges": 282,
+          "name": "pool_east",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -18.999998092651367,
+              -7.999997615814209,
+              -0.1599999964237213
+            ],
+            [
+              -15.099996566772461,
+              9.00000286102295,
+              0.05999999865889549
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -14.582960325768015,
+          "edges": 282,
+          "name": "pool_west",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -15.099997520446777,
+              5.100000858306885,
+              -0.1599999964237213
+            ],
+            [
+              -10.899996757507324,
+              9.000001907348633,
+              0.05999999865889549
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -3.6024048831839512,
+          "edges": 282,
+          "name": "pool_north",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              -15.099998474121094,
+              -7.999997615814209,
+              -0.1599999964237213
+            ],
+            [
+              -10.89999771118164,
+              -3.099997043609619,
+              0.05999999865889549
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -4.526260684001285,
+          "edges": 282,
+          "name": "pool_south",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room01": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -6.515000343322754,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -4.085000038146973,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532556922744,
+          "edges": 282,
+          "name": "porch_slab_03",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room02": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -8.96500015258789,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -6.534999847412109,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532556959122,
+          "edges": 282,
+          "name": "porch_slab_04",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -11.414999961853027,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -8.984999656677246,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532556909726,
+          "edges": 282,
+          "name": "porch_slab_05",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room03": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -13.864999771118164,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -11.434999465942383,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532556928309,
+          "edges": 282,
+          "name": "porch_slab_06",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -16.315000534057617,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -13.885000228881836,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532306768294,
+          "edges": 282,
+          "name": "porch_slab_07",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -18.764999389648438,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -16.334999084472656,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765531872881472,
+          "edges": 282,
+          "name": "porch_slab_08",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room04": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -21.21500015258789,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -18.78499984741211,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765531873061321,
+          "edges": 282,
+          "name": "porch_slab_09",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -23.665000915527344,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -21.235000610351562,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765531873037658,
+          "edges": 282,
+          "name": "porch_slab_10",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room05": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -26.114999771118164,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -23.684999465942383,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532056830779,
+          "edges": 282,
+          "name": "porch_slab_11",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -28.565000534057617,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -26.135000228881836,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.176553205686919,
+          "edges": 282,
+          "name": "porch_slab_12",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room06": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -31.014999389648438,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -28.584999084472656,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765531873229083,
+          "edges": 282,
+          "name": "porch_slab_13",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -33.46500015258789,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -31.03499984741211,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765532465615696,
+          "edges": 282,
+          "name": "porch_slab_14",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room07": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -35.915000915527344,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -33.48500061035156,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.17655330626099,
+          "edges": 282,
+          "name": "porch_slab_15",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -38.3650016784668,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -35.935001373291016,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.176553305703505,
+          "edges": 282,
+          "name": "porch_slab_16",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ],
+      "SM_Sierra_Room08": [
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -40.814998626708984,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -38.3849983215332,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.176553305775822,
+          "edges": 282,
+          "name": "porch_slab_17",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -43.26499938964844,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -40.834999084472656,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765533062678248,
+          "edges": 282,
+          "name": "porch_slab_18",
+          "vertices": 96,
+          "triangles": 188
+        },
+        {
+          "bounds": [
+            [
+              2.2950000762939453,
+              -45.71500015258789,
+              -0.17000000178813934
+            ],
+            [
+              5.144999980926514,
+              -43.28499984741211,
+              0.0
+            ]
+          ],
+          "closed": true,
+          "consistently_wound": true,
+          "signed_volume_m3": -1.1765533057588855,
+          "edges": 282,
+          "name": "porch_slab_19",
+          "vertices": 96,
+          "triangles": 188
+        }
+      ]
+    },
+    "status": "SOURCE_REOPEN_BVH_PASS_NATIVE_UNVERIFIED",
+    "rule": "Whole closed floor islands reversed; (0,2,1) corner permutation; selected custom normals negated; all other source values preserved",
+    "normal_storage": "CORNER/FLOAT_VECTOR on 11 changed objects only; no texture bake/material/collision change"
+  }
 }

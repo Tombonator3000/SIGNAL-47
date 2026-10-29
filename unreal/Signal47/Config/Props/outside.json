@@ -40,7 +40,7 @@
   { "id": "motelCar1", "model": "fairheaven_lt80", "parent": "world.motel.group", "at": [-39.2, -1.5, 694.5], "yaw": 180, "collide": true },
   { "id": "motelCar2", "model": "negotiator_80", "parent": "world.motel.group", "at": [-39.2, -1.5, 706.5], "yaw": 180, "collide": true },
   { "id": "motelCar3", "model": "fairheaven_sw84", "parent": "world.motel.group", "at": [-39.2, -1.5, 715.5], "yaw": 180, "collide": true },
-  { "id": "motelPhone", "model": "payphone_blue", "parent": "world.motel.group", "at": [-43.3, -1.5, 671.2], "yaw": 0, "collide": true }
+  { "id": "motelPhone", "model": "payphone_blue", "parent": "world.motel.group", "at": [-43.25, -2.0985683853163195, 671.32], "ground": false, "yaw": 180, "collide": true }
  ],
  "views": [
   { "name": "out-lot", "at": [7, 19, 0.08, 0.02] },

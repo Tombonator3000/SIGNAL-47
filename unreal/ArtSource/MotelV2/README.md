@@ -74,3 +74,56 @@ En liten forhåndstest av materialene kan bruke en ny utdatamappe med `--select 
 Den godkjente sluttpakken bør inneholde den koordinerende oppgavens låste filhasher og verifikasjonsrapport for import, akser, materialer og LOD i Unreal. Eksportøren tester ikke selv interaksjon i Unreal, terrengåpninger, strømming, lystilstand, kollisjon eller spillmekanikk i en pakket utgave. En vellykket forhåndstest fastslår bare at materialbaking og lagring av den rensede modellen fungerte for delen som ble testet.
 
 Produksjonsfilen i `.blend`-format inneholder sammenslåtte, triangulerte logiske deler og flyttbare materialer. Geometrien kan redigeres, men filen bevarer ikke hvert opprinnelige modellobjekt, alle modifikatorstabler eller prosedyregrafer fra kilden. Den utelatte lokale V2-scenen forblir modellkilden på et høyere nivå. Det gjøres ingen påstand om eierskap eller CC0-lisens for de utelatte bilmodellene eller referansefotografiene.
+
+## Avgrenset terrengkontakt og rekvisittretting, 29. oktober
+
+`grounding-contract.json` fører den samordnede kontrakten for modell og runtime:
+gangheller, romunderlag og terskler har topp Z 0, asfalt Z -0.08, bassengdekke Z 0.06 og
+bassengstier Z 0. Resepsjonens eksisterende terracottafliser har topp Z 0.012,
+8 mm fuger og et litt mindre fotavtrykk enn underlaget. Dette beholdes. ICE flyttes 0.35 m mot nord; avisens hele kropp, skrift og glass
+flyttes -1.10 m i X og 0.15 m mot nord. To små betongfelt forbinder føttene med den
+eksisterende nordstien, kant mot kant med ganghellene. Keramikkveggen beholdes.
+En egen 75 mm bred fysisk terskel fyller den FBX-bekreftede spalten mellom
+resepsjonens underlag, som slutter ved X 2.22, og ganghellene, som starter ved
+X 2.295. Terskelen ligger i døråpningen Y [0.10,1.50] med topp Z 0.
+De tre native porchstolene settes på laveste faktiske fotpunkt, omtrent 18.25 mm
+lavere. De to native inngangspottene og tre eldre potter står allerede med
+forfattet fot på Z 0 og flyttes ikke uten nytt runtimebevis.
+
+`Signal47/Tools/motelv2/repair_grounding.py` arbeider på den rensede produksjonsfilen
+og skriver en separat pakke. Det åpner ikke presentasjonsscenen, baker ikke og
+starter ikke Unreal. Hele sammenhengende geometriøyer identifiseres med eksakte
+skap-/glassgrenser før noen flytting. Atlas-UV, materialer og teksturfiler beholdes.
+Bare Office, Glass og Room02/04/07 eksporteres på nytt med samme tre LOD-nivåer;
+andre FBX-filer skal beholde hashene sine. Nye små støttefelt gjenbruker en
+eksisterende betonghelles UV og materialplass. Alle kontraktsfelt merket
+`new_geometry` bygges, inkludert terskelen.
+
+Kjør først lesende inventar under koordinatorens eksklusive Blender-vindu:
+
+```bash
+blender --background --threads 4 --python-exit-code 1 \
+  --python Signal47/Tools/motelv2/repair_grounding.py -- \
+  --package ArtSource/MotelV2 \
+  --report /absolute/evidence/grounding-inventory.json
+```
+
+Etter kontroll av rapportens objektgrenser brukes samme kommando med
+`--apply --out /absolute/separate/repaired-package` og en egen rapportsti.
+Inputpakken overskrives aldri. En pakke med samme reparasjons-ID og kontrakthash
+valideres og kopieres uten nye flytt. Den gamle eksportøren kan fortsatt gjenskape
+grunnpakken fra presentasjonsscenen; kjør denne avgrensede rettelsen etter en slik
+ny eksport. `verify_production.py` kjøres deretter lesende mot den nye pakken.
+
+`prepare_trims.py` bruker samme kontrakt til å klippe begge opprinnelige terrenglag
+under de native gangflatene, kontorgulvet, asfalten og bassengområdet. Opprinnelige
+trekanter utenfor åpningene og deres attributter beholdes. Den identifiserte gamle
+ICE-maskinen, avisboksen, to gamle stoler med kontaktskygger og gamle
+slab-/fundamentrester tas ut med eksakte geometri- og trekanttallskontroller.
+Brusautomaten, pottene, lisensierte ressurser og pumpeskjulet beholdes.
+
+Biblioteksøket ga ingen prøvd løsning for denne feilen. Den generelle ressursen
+«Meshy, Blender og Unreal i én spillarbeidsflyt» er merket UNVERIFIED og gjenbrukes
+ikke som implementasjon. Reparasjonen bygger på prosjektets eksisterende
+FBX-/LOD-eksport og polygon-/attributtklipper. Ren Python-kontroll er kildebevis;
+Blender-, native- og fysisk runtimegodkjenning føres i egne rapporter.

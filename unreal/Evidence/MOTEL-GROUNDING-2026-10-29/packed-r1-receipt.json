@@ -1,0 +1,115 @@
+{
+  "status": "PASS_TARGETED_PACKAGED_MOTEL_ROUTE",
+  "checked_at": "2026-10-29T06:32:28+01:00",
+  "candidate_manifest": {
+    "source_head": "2d13e2314619fd78e042f32a346587768b24dcf8",
+    "source_inputs_unchanged": true,
+    "source_input_count": 13458,
+    "candidate": "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/candidate-r1/Linux",
+    "files": {
+      "Signal47.sh": {
+        "bytes": 243,
+        "sha256": "d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a"
+      },
+      "CREDITS.txt": {
+        "bytes": 9189,
+        "sha256": "474e58d961da8b67089d17bc6b4be9fc0d1a1a7b88e83043ed67eb3222b50773"
+      },
+      "Signal47/Binaries/Linux/Signal47": {
+        "bytes": 314233088,
+        "sha256": "c9beb91710d2bd73d49821301eac4607cbb0a99ca6c2ceecd82513d166cfd930"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.pak": {
+        "bytes": 1269475372,
+        "sha256": "57b6dc1788c92be23e0b1d07bb45437c324bde3c4664fabad6b9af9a6be40ecc"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.ucas": {
+        "bytes": 2654713616,
+        "sha256": "a955a7a87f567fd794ff9cc2eb074042b54b2265acb2e1980749a853cf0208af"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.utoc": {
+        "bytes": 2655288,
+        "sha256": "876397ac89ccb25b512aac2594b59490aa0bb7fa76cc3605298e65ba3f934290"
+      },
+      "Signal47/Content/Paks/global.ucas": {
+        "bytes": 3328960,
+        "sha256": "50dea5d47d8287547a1f54ffdcc586a51f5abc2200379bcd6cde9de2d89df7bf"
+      },
+      "Signal47/Content/Paks/global.utoc": {
+        "bytes": 806,
+        "sha256": "71f67d30b5739166280def3250438e3a5a2a41066a44f612825c66bbdcb008a4"
+      }
+    },
+    "installed": false,
+    "public_release": false
+  },
+  "route": {
+    "status": "PASS",
+    "reason": "continuous motel route, physical room6 use and ordinary disk Continue",
+    "waypoints": 58,
+    "interactions": 14,
+    "doorRecesses": 7,
+    "floorRays": 1611,
+    "walkedMetres": 178.69558798379066,
+    "tvBefore": "picture 15.33 s (frame 183), sound 15.33 s, level 0.320, brightness 0.14",
+    "tvAfter": "picture 21.37 s (frame 256), sound 21.37 s, level 0.320, brightness 0.24",
+    "tvTexture": "/Engine/Transient.Texture2D_2147479252",
+    "elapsedSeconds": 143.02973503101384,
+    "tvAudioClockDelta": 6.037333333333333,
+    "poolExteriorDiagnostic": "pool-exterior.json",
+    "method": "API-driven normal Walker/Resolve; four explicit blocker placements then one route-start placement; actual interaction rays and room6Door use; native TV texture GPU readback and production programme/audio clocks; ordinary isolated disk save/title/Continue.",
+    "limits": "Legacy chapter4 entry is an explicit developer fixture. Earlier chapters, human input, subjective listening and full chapter4 content were not played."
+  },
+  "images": {
+    "packed-r1-tv-before.png": {
+      "sha256": "d2d07c2804d1e4f1efe508b2869efe4694d42d205a48087f6df35979021e4f09",
+      "bytes": 40781,
+      "source": "/tmp/S47-motel-grounded-packed-route-r1/Saved/MotelV2Route/01A1861F9899799EB4C11DDEB2AE332F/tv-before.png",
+      "kind": "actual native TV programme texture GPU readback in packaged R1"
+    },
+    "packed-r1-tv-after.png": {
+      "sha256": "7cb4d528b1814299dbbc281f98b335199fc709f28337ad34f2c27d64dd675aa8",
+      "bytes": 55661,
+      "source": "/tmp/S47-motel-grounded-packed-route-r1/Saved/MotelV2Route/01A1861F9899799EB4C11DDEB2AE332F/tv-after.png",
+      "kind": "actual native TV programme texture GPU readback in packaged R1"
+    }
+  },
+  "selftests": 1709,
+  "step_results": {
+    "freeze-runtime-r1": {
+      "returncode": 0,
+      "wall_seconds": 14.671048832999077,
+      "contention": [],
+      "performance_status": "UNCONTENDED",
+      "semantic_success": true
+    },
+    "package-r1": {
+      "returncode": 0,
+      "wall_seconds": 347.56477935501607,
+      "contention": [],
+      "performance_status": "UNCONTENDED",
+      "semantic_success": true
+    },
+    "fingerprint-candidate-r1": {
+      "returncode": 0,
+      "wall_seconds": 25.294377837039065,
+      "contention": [],
+      "performance_status": "UNCONTENDED",
+      "semantic_success": true
+    },
+    "packed-route-r1": {
+      "returncode": 0,
+      "wall_seconds": 159.37869795999723,
+      "contention": [],
+      "performance_status": "UNCONTENDED",
+      "semantic_success": true
+    }
+  },
+  "actual_route_result_sha256": "5c47c46557b742895345fd5463847c221bea4267ba6ced6392289f3e2f6f7fb2",
+  "human_input": "UNVERIFIED",
+  "human_listening": "UNVERIFIED",
+  "e04_pool_clump_identity": "UNVERIFIED",
+  "full_matrix": "UNVERIFIED",
+  "installed": false,
+  "public_release": false
+}
