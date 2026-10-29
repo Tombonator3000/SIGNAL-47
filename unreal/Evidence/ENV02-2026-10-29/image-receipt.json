@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "images": {
+    "day-homes-h01.png": {
+      "sha256": "8de7392d0c56a8d41cef6f1a40258695c40a561df3846d8f55da78348cc62934",
+      "bytes": 2213700,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "day-homes-h02.png": {
+      "sha256": "64aac526f022249f851ccfe533eb334d4687eb379261e3ffa08ef329fe52386f",
+      "bytes": 2218944,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "day-homes-h03.png": {
+      "sha256": "8d294d6062acce35cecc1ac43d606b144344684dfb26e2547a7f3ded55743c91",
+      "bytes": 2231699,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "day-homes-h04.png": {
+      "sha256": "13a9004b434c2ffe8af4e1d508e4bd70019c43ef45466ed8e3960eb453b99cfc",
+      "bytes": 2141942,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "day-homes-sign-north.png": {
+      "sha256": "14a12cc5b9d382804d977bcf11390c8a8823b6b14209adc2d31eed55f69b1cd3",
+      "bytes": 2193300,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "day-homes-sign-south.png": {
+      "sha256": "458afa62b4388d53295fe8e9b6ec9179d34631fbc12de7908f36f08d0c0499ad",
+      "bytes": 2329566,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "night-homes-h02.png": {
+      "sha256": "238e264cd03b65ed7b686edadce0ea236e9ab7d99932511dccb198c6776ad970",
+      "bytes": 1965681,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "night-homes-h04.png": {
+      "sha256": "d7e7721acf2dcce7fcf11176e8d78ec7153c4697a9f9aa5a642f1e2e34d588d5",
+      "bytes": 1949123,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "south-sign-northbound-start.png": {
+      "sha256": "8f2dc5d3f453b54017f2c8ad6537ad9a45eac1ee25dd89d4e7afc437cce32548",
+      "bytes": 1234507,
+      "scope": "actual editor runtime PNG, original bytes"
+    },
+    "north-sign-southbound-fixture-start.png": {
+      "sha256": "305b66001b92db271cdc9bc350319908a8cbe94061cdedd0478c6deb8b6b7c77",
+      "bytes": 1119723,
+      "scope": "actual editor runtime PNG, original bytes"
+    }
+  },
+  "static_compiled_source": "96e56b0d71f1f547c16e9563ceb8a0118fcb52de",
+  "route_source": "5480b73d",
+  "human_input_verified": false
+}
