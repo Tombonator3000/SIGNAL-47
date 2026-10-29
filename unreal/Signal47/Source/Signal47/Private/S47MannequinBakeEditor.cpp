@@ -729,15 +729,16 @@ namespace S47MannequinBake
    UStaticMesh* ReferenceMesh = nullptr; TArray<TSharedPtr<FJsonValue>> NativeAssets;
    for (const auto& Entry : Assets->Values)
    {
-    const FJson Pin = Entry.Value->AsObject(), File = S47J::Obj(Pin, TEXT("file")); const FString Package = FPackageName::ObjectPathToPackageName(Entry.Key);
-    if (!Need(Entry.Key.StartsWith(TEXT("/Game/")) && !Entry.Key.Contains(TEXT("..")) && FPackageName::IsValidLongPackageName(Package), TEXT("R11 valid native long package/object path"))) return false;
+    const FString AssetName(Entry.Key.ToView());
+    const FJson Pin = Entry.Value->AsObject(), File = S47J::Obj(Pin, TEXT("file")); const FString Package(FPackageName::ObjectPathToPackageName(AssetName));
+    if (!Need(AssetName.StartsWith(TEXT("/Game/")) && !AssetName.Contains(TEXT("..")) && FPackageName::IsValidLongPackageName(Package), TEXT("R11 valid native long package/object path"))) return false;
     const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Package, FPackageName::GetAssetPackageExtension()));
     TArray<uint8> Bytes; if (!PostrepairPinnedFile(File, Bytes, Filename)) return false;
-    UStaticMesh* Actual = Load<UStaticMesh>(Entry.Key); if (Actual) FAssetCompilingManager::Get().FinishAllCompilation();
-    FJson Row = Object(); Row->SetStringField(TEXT("asset"), Entry.Key); Row->SetObjectField(TEXT("file"), File);
-    if (!Need(Actual && Actual->GetPathName() == Entry.Key && Actual->GetNumLODs() > 0, TEXT("R11 actual saved native mesh reloads: ") + Entry.Key)) return false;
+    UStaticMesh* Actual = Load<UStaticMesh>(AssetName); if (Actual) FAssetCompilingManager::Get().FinishAllCompilation();
+    FJson Row = Object(); Row->SetStringField(TEXT("asset"), AssetName); Row->SetObjectField(TEXT("file"), File);
+    if (!Need(Actual && Actual->GetPathName() == AssetName && Actual->GetNumLODs() > 0, TEXT("R11 actual saved native mesh reloads: ") + AssetName)) return false;
     const auto Expected = S47J::Nums(Pin, TEXT("lod_triangles")); TArray<TSharedPtr<FJsonValue>> Counts;
-    const bool ThreeLODs = Entry.Key == ReferenceAsset || Entry.Key == TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell");
+    const bool ThreeLODs = AssetName == ReferenceAsset || AssetName == TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell");
     if (!Need(!ThreeLODs || (Actual->GetNumLODs() == 3 && Expected.Num() == 3), TEXT("R11 character and Shell actual three-LOD identity"))) return false;
     for (int32 I = 0; I < Actual->GetNumLODs(); ++I)
     {
@@ -745,7 +746,7 @@ namespace S47MannequinBake
      if (!Need(Triangles > 0 && (Expected.IsEmpty() || (Expected.IsValidIndex(I) && Expected[I] == Triangles)), TEXT("R11 actual positive native geometry; compare only actually premeasured LOD counts"))) return false;
     }
     Row->SetArrayField(TEXT("actual_lod_triangles"), Counts); Row->SetStringField(TEXT("lod_scope"), ThreeLODs ? TEXT("compared with actual R2 three-LOD observation") : TEXT("first authoring reader observation; R2 did not capture these LODs")); NativeAssets.Add(Value(Row));
-    if (Entry.Key == ReferenceAsset) ReferenceMesh = Actual;
+    if (AssetName == ReferenceAsset) ReferenceMesh = Actual;
    }
    Report->SetArrayField(TEXT("postrepair_native_packages_actual"), NativeAssets);
    if (!Need(ReferenceMesh && PostrepairPacked(ReferenceMesh) == S47J::Str(D, TEXT("actual_selected_sole_packed_vertex_sha1")).ToLower() &&
