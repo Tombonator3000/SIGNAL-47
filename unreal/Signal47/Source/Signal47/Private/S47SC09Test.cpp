@@ -40,7 +40,7 @@ struct FS47SC09Test
  double T = 0, Since = 3, OdoStart = 0, OutMetres = 0, BackMetres = 0;
  FString Root, PendingItem;
  FString SaveWaitCohort;
- double SaveWaitAt = -1;
+ double SaveWaitAt = -1, ReturnWaitAt = -1;
  TArray<TSharedPtr<FJsonValue>> Events;
 
  US47Main* Main() const { return C->M; }
@@ -309,8 +309,16 @@ struct FS47SC09Test
   {
    bWasDriving|=M->World->bDriving;
    if(M->World->bDriving||M->World->bBusy||C->Area()!=TEXT("saro"))return;
+   // Park releases the ordinary arrival callback after its real 0.4-second hold.
+   // The truck being stopped is not yet the chapter's arrival transaction.
+   if(ReturnWaitAt<0)ReturnWaitAt=T;
+   if(C->S.Stage!=TEXT("develop"))
+   {
+    if(T-ReturnWaitAt>8)Result(false,TEXT("ordinary SARO parking did not deliver the chapter arrival callback"));
+    return;
+   }
    BackMetres=(M->World->Odometer()-OdoStart)*1609.344;
-   if(!Check(bWasDriving&&BackMetres>10,TEXT("ordinary World return actually reaches SARO with both negatives")))return;Next(40);return;
+   if(!Check(bWasDriving&&BackMetres>10,TEXT("ordinary World return actually reaches SARO with both negatives after its arrival transaction")))return;Next(40);return;
   }
   if(Stage==40)
   {
