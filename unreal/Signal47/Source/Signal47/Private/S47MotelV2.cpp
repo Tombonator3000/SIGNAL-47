@@ -304,10 +304,11 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
   Check(Phone&&Phone->GetStaticMesh()&&Phone->GetStaticMesh()->GetName()==TEXT("payphone_blue"),TEXT("original payphone asset missing"));
   if(Phone)
   {
-   const FS47Obj Prop(W,PayphoneNode);
-   Check(Prop.WorldPosition().Equals(FVector(-43.25,-2.0985683853163195,671.32),.01),TEXT("payphone base differs from measured path height"));
-   // Prepared glTF's keypad plane faces local +ThreeZ; the authored path is to the north.
-   Check(Prop.WorldQuaternion().RotateVector(FVector(0,0,1)).Equals(FVector(0,0,-1),.001),TEXT("payphone keypad does not face north path"));
+   // AdoptNode records a prop's position only. Measure the actual rendered transform,
+   // whose imported glTF axes use the Three-to-Unreal swap, rather than its identity node Q.
+   Check(S47Three::ToThree(Phone->GetComponentLocation()).Equals(FVector(-43.25,-2.0985683853163195,671.32),.01),TEXT("payphone base differs from measured path height"));
+   const FVector KeypadFront=Phone->GetComponentQuat().RotateVector(S47Three::DirToUE(FVector(0,0,1)));
+   Check(KeypadFront.Equals(S47Three::DirToUE(FVector(0,0,-1)),.001),TEXT("payphone keypad does not face north path"));
   }
   for(const auto& Pair:ProtectedComponents)
   {
