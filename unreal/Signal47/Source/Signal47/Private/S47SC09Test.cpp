@@ -68,7 +68,7 @@ struct FS47SC09Test
  }
  void Aim(const FVector& At)
  {
-  auto* P = Main()->Player; const FVector D = At - S47Three::ToThree(P->EyeUE());
+  auto* P = Main()->Player.Get(); const FVector D = At - S47Three::ToThree(P->EyeUE());
   P->Yaw = FMath::Atan2(-D.X,-D.Z); P->Pitch = FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
  }
  FVector Target(const FString& Id) const
