@@ -14,6 +14,13 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "StaticMeshResources.h"
+#if WITH_EDITOR
+#include "HAL/FileManager.h"
+#include "HAL/IConsoleManager.h"
+#include "MeshDescription.h"
+#include "StaticMeshAttributes.h"
+#include "UObject/Package.h"
+#endif
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47CinemaPosters, Log, All);
 namespace
@@ -86,6 +93,25 @@ namespace
     ||!FMath::IsFinite(Width)||!FMath::IsFinite(Height)
     ||FMath::Abs(Width-(bGlass?1.16:1.13))>Tolerance||FMath::Abs(Height-(bGlass?1.64:1.61))>Tolerance
     ||Str(J,TEXT("triangle_payload_sha256")).Len()!=64)return false;
+   const auto MaterialBinding=Obj(J,TEXT("material_binding"));const FA* Groups=Arr(MaterialBinding,TEXT("source_groups"));
+   const FA* Sections=Arr(MaterialBinding,TEXT("matched_render_sections"));double Slot=-1,SourceTriangles=0,RenderTriangles=0;
+   if(!Number(Record,TEXT("material_slot"),Slot)||!Groups||Groups->IsEmpty()||!Sections||Sections->IsEmpty()
+    ||!Number(MaterialBinding,TEXT("source_material_triangles"),SourceTriangles)
+    ||!Number(MaterialBinding,TEXT("render_material_triangles"),RenderTriangles)||SourceTriangles<2||SourceTriangles!=RenderTriangles)return false;
+   for(const auto& Value:*Groups)
+   {
+    const auto Group=Value->AsObject();double Resolved=-1;const FA* Matches=Arr(Group,TEXT("matching_global_imported_slots"));double Match=-1;
+    if(Str(Group,TEXT("imported_material_slot_name"))!=Str(Record,TEXT("material_slot_name"))
+     ||!Number(Group,TEXT("resolved_material_slot"),Resolved)||Resolved!=Slot||!Matches||Matches->Num()!=1
+     ||!(*Matches)[0]->TryGetNumber(Match)||Match!=Slot
+     ||Str(Obj(Group,TEXT("resolved_material")),TEXT("material_asset"))!=Str(Record,TEXT("material_asset")))return false;
+   }
+   for(const auto& Value:*Sections)
+   {
+    const auto Section=Value->AsObject();double ActualSlot=-1;
+    if(!Number(Section,TEXT("render_material_slot"),ActualSlot)||ActualSlot!=Slot
+     ||Str(Obj(Section,TEXT("render_material")),TEXT("material_asset"))!=Str(Record,TEXT("material_asset")))return false;
+   }
    if(L==0){Centre=C;Size=FVector2D(Width,Height);}
   }
   return true;
@@ -188,6 +214,99 @@ namespace
  }
 }
 
+#if WITH_EDITOR
+namespace
+{
+ // Editor-only readback for data not reflected by UStaticMeshDescription. UE5.8's
+ // mesh builder resolves PolygonGroup's ImportedMaterialSlotName into a global
+ // slot; source group IDs and compact render-section indices are independent.
+ void ReadSavedMaterials(const TArray<FString>& Args)
+ {
+  if(Args.Num()!=2)
+  {UE_LOG(LogS47CinemaPosters,Error,TEXT("S47.Cinema.ReadSavedMaterials requires exact mesh object path and fresh absolute report path"));return;}
+  FString Output=FPaths::ConvertRelativePathToFull(Args[1]);FPaths::NormalizeFilename(Output);FPaths::CollapseRelativeDirectories(Output);
+  const FString Temporary=Output+TEXT(".tmp");
+  const bool Owned=Args[0]==TEXT("/Game/TownBuildings/SM_Town_Cinema_Shell.SM_Town_Cinema_Shell")
+   ||Args[0]==TEXT("/Game/TownBuildings/SM_Town_Cinema_Glass.SM_Town_Cinema_Glass");
+  if(!Owned||FPaths::IsRelative(Args[1])||FPaths::IsUnderDirectory(Output,FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()))
+   ||FPaths::IsUnderDirectory(Output,FPaths::ConvertRelativePathToFull(FPaths::EngineContentDir()))
+   ||IFileManager::Get().FileExists(*Output)||IFileManager::Get().FileExists(*Temporary))
+  {UE_LOG(LogS47CinemaPosters,Error,TEXT("S47 cinema saved-material reader rejected asset/report input; no existing file is replaced"));return;}
+  auto Report=MakeShared<FJsonObject>();Report->SetStringField(TEXT("asset"),Args[0]);Report->SetStringField(TEXT("reader_contract_sha256"),SpecSha);
+  Report->SetStringField(TEXT("method"),TEXT("read-only saved FMeshDescription PolygonGroup ImportedMaterialSlotName; global imported/display slot names; actual render sections and SectionInfoMap"));
+  const UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*Args[0]);bool Ok=Mesh&&Mesh->GetRenderData();
+  const bool DirtyBefore=Mesh&&Mesh->GetPackage()->IsDirty();FA Slots,Lods;
+  auto Slot=[&](int32 Index)
+  {
+   auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("index"),Index);
+   const bool Valid=Mesh&&Mesh->GetStaticMaterials().IsValidIndex(Index);Row->SetBoolField(TEXT("valid"),Valid);
+   if(Valid)
+   {
+    const auto& Material=Mesh->GetStaticMaterials()[Index];
+    Row->SetStringField(TEXT("display_name"),Material.MaterialSlotName.ToString());Row->SetStringField(TEXT("imported_name"),Material.ImportedMaterialSlotName.ToString());
+    Row->SetStringField(TEXT("material_asset"),GetPathNameSafe(Material.MaterialInterface.Get()));
+   }
+   return Row;
+  };
+  if(Mesh)for(int32 I=0;I<Mesh->GetStaticMaterials().Num();++I)Slots.Add(MakeShared<FJsonValueObject>(Slot(I)));
+  if(Ok)
+  {
+   const auto* Render=Mesh->GetRenderData();const auto& SectionMap=Mesh->GetSectionInfoMap();
+   Report->SetNumberField(TEXT("source_lod_count"),Mesh->GetNumSourceModels());Report->SetNumberField(TEXT("render_lod_count"),Render->LODResources.Num());
+   Ok&=Mesh->GetNumSourceModels()==Render->LODResources.Num();
+   for(int32 L=0;L<Mesh->GetNumSourceModels();++L)
+   {
+    auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("lod"),L);FA Groups,Sections;
+    const FMeshDescription* Description=Mesh->GetMeshDescription(L);
+    bool Complete=Description&&Render->LODResources.IsValidIndex(L);Row->SetBoolField(TEXT("saved_description_present"),Description!=nullptr);
+    if(Description)
+    {
+     Row->SetNumberField(TEXT("saved_triangle_count"),Description->Triangles().Num());
+     const FStaticMeshConstAttributes Attributes(*Description);const auto Names=Attributes.GetPolygonGroupMaterialSlotNames();
+     Complete&=Names.IsValid();int32 GroupOrder=0;
+     if(Names.IsValid())for(const FPolygonGroupID Id:Description->PolygonGroups().GetElementIDs())
+     {
+      const FName Name=Names[Id];const int32 Resolved=Mesh->GetMaterialIndexFromImportedMaterialSlotName(Name);
+      auto Group=MakeShared<FJsonObject>();Group->SetNumberField(TEXT("polygon_group_id"),Id.GetValue());Group->SetNumberField(TEXT("source_iteration_index"),GroupOrder++);
+      Group->SetStringField(TEXT("imported_material_slot_name"),Name.ToString());Group->SetNumberField(TEXT("triangles"),Description->GetNumPolygonGroupTriangles(Id));
+      Group->SetNumberField(TEXT("resolved_material_slot"),Resolved);Group->SetObjectField(TEXT("resolved_material"),Slot(Resolved));
+      FA MatchingSlots;
+      for(int32 S=0;S<Mesh->GetStaticMaterials().Num();++S)if(Mesh->GetStaticMaterials()[S].ImportedMaterialSlotName==Name)MatchingSlots.Add(MakeShared<FJsonValueNumber>(S));
+      Group->SetArrayField(TEXT("matching_global_imported_slots"),MatchingSlots);Groups.Add(MakeShared<FJsonValueObject>(Group));
+     }
+    }
+    if(Render->LODResources.IsValidIndex(L))
+    {
+     const auto& Resources=Render->LODResources[L];Row->SetNumberField(TEXT("render_triangle_count"),Mesh->GetNumTriangles(L));
+     for(int32 S=0;S<Resources.Sections.Num();++S)
+     {
+      const auto& Source=Resources.Sections[S];const auto Info=SectionMap.Get(L,S);auto Section=MakeShared<FJsonObject>();
+      Section->SetNumberField(TEXT("section_index"),S);Section->SetNumberField(TEXT("render_material_slot"),Source.MaterialIndex);
+      Section->SetObjectField(TEXT("render_material"),Slot(Source.MaterialIndex));Section->SetNumberField(TEXT("triangles"),Source.NumTriangles);
+      Section->SetNumberField(TEXT("first_index"),Source.FirstIndex);Section->SetBoolField(TEXT("section_info_explicit"),SectionMap.IsValidSection(L,S));
+      Section->SetNumberField(TEXT("section_info_material_slot"),Info.MaterialIndex);Section->SetObjectField(TEXT("section_info_material"),Slot(Info.MaterialIndex));
+      Section->SetBoolField(TEXT("section_info_collision"),Info.bEnableCollision);Section->SetBoolField(TEXT("section_info_cast_shadow"),Info.bCastShadow);
+      Sections.Add(MakeShared<FJsonValueObject>(Section));
+     }
+    }
+    Row->SetArrayField(TEXT("polygon_groups"),Groups);Row->SetArrayField(TEXT("render_sections"),Sections);
+    Row->SetBoolField(TEXT("complete"),Complete);Lods.Add(MakeShared<FJsonValueObject>(Row));Ok&=Complete;
+   }
+  }
+  const bool DirtyAfter=Mesh&&Mesh->GetPackage()->IsDirty();Ok&=DirtyBefore==DirtyAfter;
+  Report->SetBoolField(TEXT("package_dirty_before"),DirtyBefore);Report->SetBoolField(TEXT("package_dirty_after"),DirtyAfter);
+  Report->SetArrayField(TEXT("global_material_slots"),Slots);Report->SetArrayField(TEXT("lods"),Lods);Report->SetStringField(TEXT("status"),Ok?TEXT("PASS"):TEXT("FAIL"));
+  FString Text;const bool Serialized=FJsonSerializer::Serialize(Report,TJsonWriterFactory<>::Create(&Text));
+  const bool Written=Serialized&&IFileManager::Get().MakeDirectory(*FPaths::GetPath(Output),true)
+   &&FFileHelper::SaveStringToFile(Text,*Temporary)&&IFileManager::Get().Move(*Output,*Temporary,false,false,false,true);
+  UE_LOG(LogS47CinemaPosters,Display,TEXT("S47 cinema saved-material reader %s asset=%s report=%s; no asset/save/setter"),Ok&&Written?TEXT("PASS"):TEXT("FAIL"),*Args[0],*Output);
+ }
+ FAutoConsoleCommand ReadSavedMaterialsCommand(TEXT("S47.Cinema.ReadSavedMaterials"),
+  TEXT("Read only: exact cinema mesh object path and fresh report path; original assets are never saved."),
+  FConsoleCommandWithArgsDelegate::CreateStatic(&ReadSavedMaterials));
+}
+#endif
+
 TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownReady)
 {
  if(!W||FParse::Param(FCommandLine::Get(),TEXT("S47CinemaPostersOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff")))return {};
@@ -217,7 +336,7 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
  auto Original=[&](FOriginal& Out,const TCHAR* Kind,const TCHAR* MeshName,const TCHAR* MatName)
  {
   Out.Node=UniqueNode(W,*(FString(TEXT("town-production:"))+MeshName));const auto* N=W->Node(Out.Node);
-  auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;auto* Mesh=C?C->GetStaticMesh():nullptr;
+  auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;UStaticMesh* Mesh=C?C->GetStaticMesh().Get():nullptr;
   const auto Record=Obj(Originals,Kind);const FString Path=FString(TEXT("/Game/TownBuildings/"))+MeshName+TEXT(".")+MeshName;
   Out.MaterialSlot=NamedSlot(Mesh,MatName);double RecordedSlot=-1;
   const FString MaterialPath=FString(TEXT("/Game/TownBuildings/Materials/"))+MatName+TEXT(".")+MatName;
@@ -225,6 +344,7 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
   if(!C||!Mesh||!N||N->Parent!=W->Handle(TEXT("world.town.group"))||Mesh->GetPathName()!=Path
    ||Str(Record,TEXT("asset"))!=Path||!Counts(Mesh,Record)||Out.MaterialSlot<0
    ||Str(Record,TEXT("native_sha256")).Len()!=64
+   ||Str(Record,TEXT("native_material_readback_sha256")).Len()!=64
    ||!Number(Record,TEXT("material_slot"),RecordedSlot)||RecordedSlot!=Out.MaterialSlot
    ||Str(Record,TEXT("material_slot_name"))!=MatName||Str(Record,TEXT("material_asset"))!=MaterialPath
    ||!C->GetMaterial(Out.MaterialSlot)||C->GetMaterial(Out.MaterialSlot)->GetPathName()!=MaterialPath
@@ -360,7 +480,7 @@ TSharedPtr<FJsonObject> FS47CinemaPosters::Readback() const
    Row->SetArrayField(TEXT("actual_world_origin_three_m"),VectorJson(S47Three::ToThree(C->GetComponentLocation())));
    Row->SetArrayField(TEXT("actual_component_scale"),VectorJson(C->GetComponentScale()));
    const FQuat Q=C->GetComponentQuat();Row->SetArrayField(TEXT("actual_component_rotation_xyzw"),Values({Q.X,Q.Y,Q.Z,Q.W}));
-   if(const auto* Mesh=C->GetStaticMesh())
+   if(const UStaticMesh* Mesh=C->GetStaticMesh().Get())
    {
     FA LodCounts,Slots,Materials;
     for(int32 L=0;L<Mesh->GetNumLODs();++L)LodCounts.Add(MakeShared<FJsonValueNumber>(Mesh->GetNumTriangles(L)));

@@ -140,9 +140,28 @@ def source_preflight():
         check(kind + ' original GLB identity', source.is_file() and sha(source) == part['source_glb_sha256'])
 
 
+def material_readback(kind, asset):
+    """The native getter is not reflected to Python; invoke the tiny read-only editor command."""
+    output = REPORT.with_name(REPORT.stem + '-materials-' + kind + '.json')
+    check(kind + ' fresh native material readback path', not output.exists(), str(output))
+    check(kind + ' console arguments contain no embedded quote/newline',
+          all(not any(c in str(value) for c in ('"', '\n', '\r')) for value in (asset, output)))
+    unreal.SystemLibrary.execute_console_command(None, 'S47.Cinema.ReadSavedMaterials "' + asset + '" "' + str(output) + '"')
+    check(kind + ' compiled editor reader completed report', output.is_file(), str(output))
+    data = json.loads(output.read_text())
+    report.setdefault('native_material_readbacks', {})[kind] = {'file': str(output), 'sha256': sha(output), 'data': data}
+    atomic_json(REPORT, report)  # preserve actual groups/sections even if the next predicate rejects them
+    check(kind + ' complete matching actual native material readback', data.get('status') == 'PASS'
+          and data.get('asset') == asset and data.get('reader_contract_sha256') == SPEC_SHA
+          and data.get('source_lod_count') == data.get('render_lod_count') == 3
+          and [r['lod'] for r in data.get('lods', [])] == [0, 1, 2])
+    return data
+
+
 def originals():
     """Fresh saved-native measurement; never modifies/CPU-prepares the originals."""
     result = {}
+    report['saved_originals'] = result
     for kind in ('shell', 'glass'):
         spec = SPEC['tb2'][kind]
         mesh = E.load_asset(spec['asset'])
@@ -156,10 +175,26 @@ def originals():
         material = slots[slot].get_editor_property('material_interface')
         check(kind + ' actual original material binding', material is not None
               and material.get_path_name() == '/Game/TownBuildings/Materials/' + spec['material'] + '.' + spec['material'])
+        actual_materials = material_readback(kind, mesh.get_path_name())
+        check(kind + ' native reader and Python see the same complete global material table',
+              len(actual_materials['global_material_slots']) == len(slots)
+              and all(r['index'] == i and r['display_name'] == names[i]
+                      and r['material_asset'] == slots[i].get_editor_property('material_interface').get_path_name()
+                      for i, r in enumerate(actual_materials['global_material_slots'])))
         measured = {'asset': mesh.get_path_name(), 'native_sha256': sha(native_file(spec['asset'])),
                     'material_slot': slot, 'material_slot_name': names[slot], 'material_asset': material.get_path_name(),
-                    'all_material_slot_names': names, 'lod_triangles': [], 'surfaces': {}}
+                    'all_material_slot_names': names, 'lod_triangles': [], 'surfaces': {},
+                    'native_material_readback_sha256': hashlib.sha256(json.dumps(actual_materials, sort_keys=True).encode()).hexdigest()}
+        result[kind] = measured
         for lod in range(3):
+            native_lod = actual_materials['lods'][lod]
+            for section in native_lod['render_sections']:
+                # This reflected API reports SectionInfoMap, not source PolygonGroup ID.
+                section['python_section_info_material_slot'] = S.get_lod_material_slot(mesh, lod, section['section_index'])
+            report['pending_native_lod_material_map'] = {'kind': kind, 'data': native_lod}
+            atomic_json(REPORT, report)
+            check(kind + ' independent actual section-info readback LOD' + str(lod),
+                  all(s['python_section_info_material_slot'] == s['section_info_material_slot'] for s in native_lod['render_sections']))
             tris = saved_triangles(mesh, lod)
             check(kind + ' actual saved/render triangle counts LOD' + str(lod),
                   len(tris) == mesh.get_num_triangles(lod) == spec['lod_triangles'][lod])
@@ -172,10 +207,27 @@ def originals():
                 selected = [t for t in tris if near_plane(t, centre, *size)]
                 check(kind + '/' + row['id'] + ' exactly two saved triangles LOD' + str(lod), len(selected) == 2)
                 groups = {t['polygon_group'] for t in selected}
-                # These authored FBXs retain all named slots. Validate the saved group AND
-                # actual LOD section map back to the same named material, not an ordinal alone.
-                check(kind + '/' + row['id'] + ' named saved section LOD' + str(lod), groups == {slot}
-                      and S.get_lod_material_slot(mesh, lod, slot) == slot)
+                group_rows = [g for g in native_lod['polygon_groups'] if g['polygon_group_id'] in groups]
+                render_rows = [s for s in native_lod['render_sections'] if s['render_material_slot'] == slot]
+                source_count = sum(g['triangles'] for g in native_lod['polygon_groups'] if g['resolved_material_slot'] == slot)
+                render_count = sum(s['triangles'] for s in render_rows)
+                binding = {'source_polygon_group_ids': sorted(groups), 'source_groups': group_rows,
+                           'matched_render_sections': render_rows, 'global_material_slot': slot,
+                           'material_slot_name': names[slot], 'material_asset': material.get_path_name(),
+                           'source_material_triangles': source_count, 'render_material_triangles': render_count}
+                report['pending_surface_material_binding'] = {'kind': kind, 'surface': row['id'], 'lod': lod, 'data': binding}
+                atomic_json(REPORT, report)
+                # The real getter supplies each group's imported slot NAME. Resolve it
+                # through the actual global imported-name table and compare with the
+                # real render MaterialIndex; never substitute group/section ordinals.
+                check(kind + '/' + row['id'] + ' named saved/render material binding LOD' + str(lod),
+                      len(group_rows) == len(groups) and bool(group_rows) and bool(render_rows)
+                      and all(g['imported_material_slot_name'] == spec['material']
+                              and g['matching_global_imported_slots'] == [slot] and g['resolved_material_slot'] == slot
+                              and g['resolved_material']['material_asset'] == material.get_path_name() for g in group_rows)
+                      and all(s['render_material']['display_name'] == names[slot]
+                              and s['render_material']['material_asset'] == material.get_path_name() for s in render_rows)
+                      and source_count == render_count and source_count >= 2, binding)
                 points = [local_three(p) for t in selected for p in t['positions_ue_cm']]
                 lo, hi = bounds(points)
                 actual_centre = [(a+b)/2 for a, b in zip(lo, hi)]
@@ -186,11 +238,11 @@ def originals():
                       {'centre_local_three_m': actual_centre, 'size_m': actual_size})
                 measured['surfaces'].setdefault(row['id'], []).append({
                     'lod': lod, 'triangles': 2, 'centre_local_three_m': actual_centre, 'size_m': actual_size,
+                    'material_binding': binding,
                     'corners_local_three_m': points, 'uv0': [uv for t in selected for uv in t['uv0']],
                     'triangle_payload_sha256': hashlib.sha256(json.dumps(selected, sort_keys=True).encode()).hexdigest()})
             if lod == 0:
                 measured['bounds_local_ue_cm'] = bounds([p for t in tris for p in t['positions_ue_cm']])
-        result[kind] = measured
     return result
 
 
@@ -303,6 +355,10 @@ def main():
     check('explicit supported mode and fresh report', MODE in ('import', 'verify') and not REPORT.is_relative_to(CONTENT))
     source_preflight()
     before = protected_inventory()
+    report['protected_native_before_sha256'] = before
+    report['binding_before_sha256'] = sha(BINDING) if BINDING.is_file() else None
+    report['binding_before_bytes'] = BINDING.stat().st_size if BINDING.is_file() else None
+    atomic_json(REPORT, report)
     check('protected native inventory is present', len(before) >= 30 and all(native_file(SPEC['tb2'][k]['asset']).is_file() for k in ('shell', 'glass')))
     previous = json.loads(BINDING.read_text()) if BINDING.is_file() else None
     if previous is not None and previous.get('status') == 'PASS':
@@ -362,6 +418,11 @@ try:
     main()
 except Exception:
     report['status'], report['error'] = 'FAIL', traceback.format_exc()
+    try:
+        report['protected_native_after_sha256'] = protected_inventory()
+        report['binding_after_sha256'] = sha(BINDING) if BINDING.is_file() else None
+    except Exception as post_error:
+        report['post_failure_inventory_error'] = repr(post_error)
     atomic_json(REPORT, report)
     unreal.log_error('S47 CINEMA POSTERS FAIL; activation requires a complete matching PASS record')
     raise
