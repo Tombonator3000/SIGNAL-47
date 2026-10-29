@@ -207,9 +207,23 @@ FS47SkyVisitors::~FS47SkyVisitors()
 }
 void FS47SkyVisitors::Begin(const S47J::FObj& Saved, bool bNewNight)
 {
+ DevStage(0); // A previous F10 preview never controls the next real case or Continue.
  State.Begin(Saved, bNewNight); ObservationStep = 0; Hide();
  if (TestStage && !Saved.IsValid()) State.Begin(nullptr, true);
  if (State.bEnabled) Build();
+}
+void FS47SkyVisitors::DevStage(int32 Stage)
+{
+ Stage=FMath::Clamp(Stage,0,5);
+ if (!Stage)
+ {
+  if (bDevOverride) { State=BeforeDev; TestStage=BeforeDevTestStage; bDevOverride=false; ObservationStep=0; Hide(); }
+  return;
+ }
+ if (!M || !M->Flow || !M->Flow->bDevRun || M->Flow->CaseId!=0 || M->Mode!=US47Main::EMode::Play) return;
+ if (!bDevOverride) { BeforeDev=State; BeforeDevTestStage=TestStage; bDevOverride=true; }
+ // A preview is independent even when a lower stage is selected after a later one.
+ State.Begin(nullptr,true); TestStage=Stage; ObservationStep=0; Hide();
 }
 void FS47SkyVisitors::Build()
 {
@@ -258,6 +272,7 @@ int32 FS47SkyVisitors::RequestedStage() const
 }
 void FS47SkyVisitors::RecordObservation(int32 Visible)
 {
+ if (bDevOverride) { UE_LOG(LogS47SkyVisitors,Display,TEXT("S47: developer sky preview observed, no story note or saved observation")); return; }
  static const TCHAR* Notes[] = {
   TEXT("One pale light above the mesa."),
   TEXT("Two lights visible together in the sky."),
@@ -276,10 +291,10 @@ void FS47SkyVisitors::Step(double Dt)
  if (!M || !M->Story || !M->Player || !M->World || !State.bEnabled || M->Mode != US47Main::EMode::Play)
  { Hide(); return; }
  const bool Held = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic();
- if (State.Advance(RequestedStage(), Dt, Held)) M->RequestAutosave();
+ if (State.Advance(RequestedStage(), Dt, Held) && !bDevOverride) M->RequestAutosave();
  // An early miss gets one further natural opportunity on the first field trip.
  // Loading, opening a door and simply walking outside never restart a track.
- if (!Held && M->Evening && M->Evening->ServicePending() && M->World->bDriving &&
+ if (!bDevOverride && !Held && M->Evening && M->Evening->ServicePending() && M->World->bDriving &&
   M->World->Area == TEXT("road") && State.OfferEarlyPass()) M->RequestAutosave();
  if (!State.Stage || State.Completed[State.Stage - 1] || M->World->Area == TEXT("room6")) { Hide(); return; }
  Build();

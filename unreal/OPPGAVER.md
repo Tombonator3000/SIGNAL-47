@@ -53,3 +53,20 @@ Codex i denne samtalen eier installasjon til ~/Games/Signal47/Linux, med farmR1 
 ## Komplett testnedlasting, 2026-10-29 kl. 11:13 CET
 
 Codex i production-coordinator eier starter og distribusjonsdocs på codex/download-playtest-20261029. [Farm R1-nedlastingen](../Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md) er publisert og vedlegg/anonym tilgang verifisert. Ingen motorreservasjon, ny pakking/cook, endring av standardinstallasjonen eller arbeid i ART01/HUM01 inngår. Alle lokale kilde-, Saved- og rollbackfiler er bevart.
+
+
+## Overtakelse og scenarioarbeid, 2026-10-30T00:57:26+01:00
+
+Claudes hjerteslag fra23:15 ble over75min gammelt. Codex overtok SC03-polering, SC04, SC05, SC06, SC07, SC08 og helnattskontrakten kl00:33 etter regelen i lokal HANDOFF. Originalsc03/37483d22 og15ucommittede filer er bevart og bytekontrollert. Arbeidet fortsetter i egne grener fra origin/main.
+
+| Område | Eier og arbeidskopi | Faktisk status |
+|---|---|---|
+| SC04 og F9/F10-kroker | Codex, sc04-takeover | Claudes kilder bevart; jakt, dører, kollisjon, kildepersistens og utviklerisolasjon rettet. Ny fysisk disk/fullFlow/Continue-kontrakt skrevet. Kildekontroller PASS_SOURCE_ONLY; bygg og motor UNVERIFIED. |
+| SC05 | Codex, sc05-call | Faktisk telefon,47sekunders romkontroll, S03 og ny lagringsversjon under arbeid. Leser faktisk SC04-sluttlagring. |
+| SC06 og SC07 | Codex/Nat, egne tynne arbeidskopier | Ny tidslinje og sammenheng med20:30-permen undersøkes. |
+| SC08 | Codex/Sky, egen tynn arbeidskopi | Ekte spole, arrayforsøk og jakt erstatter plassholderen. |
+| SC09 og SC10 | Codex, motel-v2-unreal og sc10-room6 | SC09 utkast PR234, intern RHI-feltprøve92/12disk PASS. Ordinære turer prøves; Vulkan DEVICE_LOST er åpent. SC10-kilde skrevet, motor gjenstår. |
+| SC11 og SC12 | Codex, sc11-saro og sc12-diner | Faktiske originaler/lys/flukt og dinerens kildevarsel skrevet. Bygg, kontrakter og samlet fortsettelse gjenstår. |
+| SC13 | Codex/Trafo, sc13-finale | Kilde686b94f5 fryst med original UFO/avgrensede volumskyer. Blender/native/motor/bildeaksept gjenstår. |
+
+Alle målrettede tester går sekvensielt gjennom delt reservasjon og require-idle. Samlet fullmatrise og eventuell installasjon samordnes per akt. Ingen installasjon eller offentlig spillutgave inngår i dette kildepunktet.
