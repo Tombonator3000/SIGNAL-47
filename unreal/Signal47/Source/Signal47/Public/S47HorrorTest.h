@@ -5,6 +5,7 @@
 #include "S47Obj.h"
 
 class US47Main;
+struct FS47EveningLine;
 
 // Explicit, isolated live controller: -S47HorrorContract=SC01 -UserDir=/tmp/...
 // Root invokes Step after the production Horror coordinator's update.
@@ -30,4 +31,6 @@ private:
 	bool Walk();
 	bool StoreRestore(const FString& Name, const S47J::FObj& Snapshot, bool bRestore = true);
 	void Shot(const FString& Name);
+	bool PrepareDispatchRecordings();
+	bool DispatchRecordingFinished(const FS47EveningLine& Line);
 };
