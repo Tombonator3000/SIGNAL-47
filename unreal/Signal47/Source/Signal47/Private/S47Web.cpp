@@ -8,6 +8,7 @@
 #include "S47SaroSite.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
+#include "S47CalicheHomes.h"
 #include "S47MotelV2.h"
 #include "S47PhotoLabDetail.h"
 #include "S47SubstationDetail.h"
@@ -83,6 +84,13 @@ FString AS47Web::Summary() const
 	int32 Meshes = 0;
 	for (const FS47WebNode& N : Nodes) if (N.Geo >= 0) ++Meshes;
 	return FString::Printf(TEXT("%d nodes, %d meshes, %d lights, %d items, %d doors, %d dishes"), Nodes.Num(), Meshes, Lights.Num(), ItemList.Num(), Doors.Num(), Dishes.Num());
+}
+
+bool AS47Web::AuditCalicheHomes(TArray<FString>& Lines) const
+{
+	if (CalicheHomes) return CalicheHomes->Audit(Lines);
+	Lines.Add(TEXT("Caliche homes INACTIVE: complete original homes and signs retained; native assembly unverified or disabled"));
+	return false;
 }
 
 UMaterialInterface* AS47Web::Mat(int32 Id)
@@ -687,6 +695,7 @@ void AS47Web::BeginPlay()
 	SaroSite = FS47SaroSite::Build(this);
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
+	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
 	MotelV2 = FS47MotelV2::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
@@ -767,6 +776,7 @@ void AS47Web::BeginPlay()
 	BeginSaroArrivalViews();
 	BeginProductionViews();
 	BeginMotelV2Route();
+	BeginCalicheHomesContract();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 
@@ -841,6 +851,7 @@ void AS47Web::Enter(const FString& Area)
 	if (SaroArrival) SaroArrival->Update();
 	if (SaroSite) SaroSite->Update();
 	if (TownBuildings) TownBuildings->Update();
+	if (CalicheHomes) CalicheHomes->Update();
 	if (MotelV2) MotelV2->Update();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
@@ -1327,6 +1338,7 @@ void AS47Web::Tick(float Dt)
 	if (SaroArrival) SaroArrival->Update();
 	if (SaroSite) SaroSite->Update();
 	if (TownBuildings) TownBuildings->Update();
+	if (CalicheHomes) CalicheHomes->Update();
 	if (MotelV2) MotelV2->Update();
 	if (S47Startup::Blocking())
 	{

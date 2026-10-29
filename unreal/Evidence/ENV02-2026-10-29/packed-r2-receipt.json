@@ -1,0 +1,407 @@
+{
+  "status": "PASS_TARGETED_PACKED_ROUTE_AND_OFF_FALLBACK",
+  "checked_at": "2026-10-29T06:01:20+01:00",
+  "candidate_manifest": {
+    "source_head": "1665723fda9484b168755709089678fcfb8e6749",
+    "source_inputs_unchanged": true,
+    "source_input_count": 13459,
+    "candidate": "/home/tom/scratch-bm/Signal47-caliche-homes-20261029/candidate-r2/Linux",
+    "files": {
+      "Signal47.sh": {
+        "bytes": 243,
+        "sha256": "d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a"
+      },
+      "CREDITS.txt": {
+        "bytes": 9189,
+        "sha256": "474e58d961da8b67089d17bc6b4be9fc0d1a1a7b88e83043ed67eb3222b50773"
+      },
+      "Signal47/Binaries/Linux/Signal47": {
+        "bytes": 314163392,
+        "sha256": "1576b56fe68ca0bf34b4227f0da1d074f576c98212cb0df073f1d867e5d2fc2e"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.pak": {
+        "bytes": 1269474860,
+        "sha256": "07a5c0168532a232d94cfac883fbdf776a964767eb7139713a42a2aec51d2d35"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.ucas": {
+        "bytes": 2655237872,
+        "sha256": "ba9da79d0789509885eb72393ef0b632a057b15f217239cd07e08f373ab44b19"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.utoc": {
+        "bytes": 2655156,
+        "sha256": "46c15ba2440c63907966e840569460206b6727da9779a056ab02ff9ec75011d2"
+      },
+      "Signal47/Content/Paks/global.ucas": {
+        "bytes": 3328960,
+        "sha256": "50dea5d47d8287547a1f54ffdcc586a51f5abc2200379bcd6cde9de2d89df7bf"
+      },
+      "Signal47/Content/Paks/global.utoc": {
+        "bytes": 806,
+        "sha256": "71f67d30b5739166280def3250438e3a5a2a41066a44f612825c66bbdcb008a4"
+      }
+    },
+    "installed": false,
+    "public_release": false
+  },
+  "route": {
+    "status": "PASS",
+    "reason": "ordinary northbound commute, explicit southbound control, existing-zone Walker, protected poses/bindings and isolated full Flow Continue",
+    "stage": 12,
+    "checks": 634,
+    "seconds": 126.63011930504581,
+    "north_metres": 469.75269067537124,
+    "south_metres": 334.90907731952075,
+    "street_walk_metres": 10.141795169726922,
+    "mode": "physical-native-route",
+    "evidence_scope": "API Autopilot/TestInput through ordinary World/Drive/Walker; full Flow title/Continue; actual viewport PNGs with CRC/IEND",
+    "limits": "Human input, visual approval, night-time house schedules and entry to closed residences unverified; no facade walk/house entry performed. Southbound start and first case1 disk are explicit isolated fixtures.",
+    "photos": [
+      {
+        "eye_three_m": [
+          8001.473701073066,
+          14.591299265406278,
+          2334.9202950237805
+        ],
+        "target_three_m": [
+          8008.5999999237065,
+          15.075405606481889,
+          2315
+        ],
+        "truck_three_m": [
+          8001.8,
+          13.505816841394271,
+          2335
+        ],
+        "target_mesh": "/Game/CalicheHomes/SM_Homes_SignSouth.SM_Homes_SignSouth",
+        "heading": 0,
+        "speed_m_s": 0,
+        "target_pixel": [
+          800,
+          435.9949951171875
+        ],
+        "viewport": [
+          1600,
+          872
+        ],
+        "fixture": "ordinary northbound BeginCommute route; no vehicle relocation",
+        "png": {
+          "file": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/south-sign-northbound-start.png",
+          "sha1": "416EF1DB50266773A7033389E8961655A33E8BAE",
+          "bytes": 1238682,
+          "width": 1600,
+          "height": 872,
+          "chunks": 153,
+          "idat_bytes": 1236825,
+          "iend_at_eof": true,
+          "all_chunk_crc_verified": true
+        }
+      },
+      {
+        "eye_three_m": [
+          8001.4746047227645,
+          12.42329512189354,
+          2260.5305873356315
+        ],
+        "target_three_m": [
+          7976.5,
+          12.21499111175537,
+          2241
+        ],
+        "truck_three_m": [
+          8001.80000000005,
+          11.337602195555462,
+          2260.614156169166
+        ],
+        "target_mesh": "/Game/CalicheHomes/SM_Homes_H04_Shell.SM_Homes_H04_Shell",
+        "heading": 1.1988554743760993e-11,
+        "speed_m_s": 7.8436697298785125,
+        "target_pixel": [
+          796.3026733398438,
+          436.091064453125
+        ],
+        "viewport": [
+          1600,
+          872
+        ],
+        "fixture": "ordinary northbound BeginCommute route; no vehicle relocation",
+        "png": {
+          "file": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/H04-northbound-cab.png",
+          "sha1": "7EBE53CFA63B9B23B382148E12BE6EF6373096D7",
+          "bytes": 1652178,
+          "width": 1600,
+          "height": 872,
+          "chunks": 204,
+          "idat_bytes": 1649709,
+          "iend_at_eof": true,
+          "all_chunk_crc_verified": true
+        }
+      },
+      {
+        "eye_three_m": [
+          8001.474743453494,
+          10.654571761037053,
+          2204.0682440423843
+        ],
+        "target_three_m": [
+          8029.5,
+          9.752993812561035,
+          2185
+        ],
+        "truck_three_m": [
+          8001.800000000015,
+          9.568937409003762,
+          2204.1520075883836
+        ],
+        "target_mesh": "/Game/CalicheHomes/SM_Homes_H03_Shell.SM_Homes_H03_Shell",
+        "heading": 1.0178199784029974e-12,
+        "speed_m_s": 7.843670186490944,
+        "target_pixel": [
+          803.1143188476562,
+          436.0495910644531
+        ],
+        "viewport": [
+          1600,
+          872
+        ],
+        "fixture": "ordinary northbound BeginCommute route; no vehicle relocation",
+        "png": {
+          "file": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/H03-northbound-cab.png",
+          "sha1": "2F80B53272727715A0DA4AA1DD9C297E058CC3C5",
+          "bytes": 1008503,
+          "width": 1600,
+          "height": 872,
+          "chunks": 125,
+          "idat_bytes": 1006982,
+          "iend_at_eof": true,
+          "all_chunk_crc_verified": true
+        }
+      },
+      {
+        "eye_three_m": [
+          8001.474457008898,
+          9.780250767697018,
+          2175.7683920105565
+        ],
+        "target_three_m": [
+          8028.25,
+          9.007409324645996,
+          2156.5
+        ],
+        "truck_three_m": [
+          8001.800000000015,
+          8.69477513884323,
+          2175.851581100728
+        ],
+        "target_mesh": "/Game/CalicheHomes/SM_Homes_H02_Shell.SM_Homes_H02_Shell",
+        "heading": 1.0437712272346878e-12,
+        "speed_m_s": 7.8436701864929645,
+        "target_pixel": [
+          805.101318359375,
+          435.9918212890625
+        ],
+        "viewport": [
+          1600,
+          872
+        ],
+        "fixture": "ordinary northbound BeginCommute route; no vehicle relocation",
+        "png": {
+          "file": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/H02-northbound-cab.png",
+          "sha1": "C9DD8CED62256EB835145E4A2E55C3662749A017",
+          "bytes": 1199430,
+          "width": 1600,
+          "height": 872,
+          "chunks": 149,
+          "idat_bytes": 1197621,
+          "iend_at_eof": true,
+          "all_chunk_crc_verified": true
+        }
+      },
+      {
+        "eye_three_m": [
+          8001.473927229615,
+          9.075953260719993,
+          2152.243052258643
+        ],
+        "target_three_m": [
+          8028.5,
+          8.275223026275635,
+          2133
+        ],
+        "truck_three_m": [
+          8001.800000000015,
+          7.990486908334388,
+          2152.324980335512
+        ],
+        "target_mesh": "/Game/CalicheHomes/SM_Homes_H01_Shell.SM_Homes_H01_Shell",
+        "heading": 1.044379382433108e-12,
+        "speed_m_s": 7.843670186492969,
+        "target_pixel": [
+          804.8424682617188,
+          436.09881591796875
+        ],
+        "viewport": [
+          1600,
+          872
+        ],
+        "fixture": "ordinary northbound BeginCommute route; no vehicle relocation",
+        "png": {
+          "file": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/H01-northbound-cab.png",
+          "sha1": "39CE9C77A6C07EFCBC8B6954B38BAE987D92EC26",
+          "bytes": 1189759,
+          "width": 1600,
+          "height": 872,
+          "chunks": 148,
+          "idat_bytes": 1187962,
+          "iend_at_eof": true,
+          "all_chunk_crc_verified": true
+        }
+      },
+      {
+        "eye_three_m": [
+          7998.545382417635,
+          3.1697387826425465,
+          1875.0331488240693
+        ],
+        "target_three_m": [
+          7991.4000000762935,
+          4.685808259102021,
+          1895
+        ],
+        "truck_three_m": [
+          7998.2,
+          2.0873981806969244,
+          1875
+        ],
+        "target_mesh": "/Game/CalicheHomes/SM_Homes_SignNorth.SM_Homes_SignNorth",
+        "heading": 3.141592653589793,
+        "speed_m_s": 0,
+        "target_pixel": [
+          799.9999389648438,
+          436.009765625
+        ],
+        "viewport": [
+          1600,
+          872
+        ],
+        "fixture": "explicit isolated southbound saved-car start; actual cockpit/World stepping",
+        "png": {
+          "file": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/north-sign-southbound-fixture-start.png",
+          "sha1": "D57190436CBBDF3CBDED3E99B6BBB196BD8A1DF4",
+          "bytes": 1090211,
+          "width": 1600,
+          "height": 872,
+          "chunks": 135,
+          "idat_bytes": 1088570,
+          "iend_at_eof": true,
+          "all_chunk_crc_verified": true
+        }
+      }
+    ],
+    "events": [
+      {
+        "stage": 1,
+        "at_seconds": 8.613781618012581,
+        "reason": "ordinary stationary commute cockpit south-sign capture"
+      },
+      {
+        "stage": 2,
+        "at_seconds": 9.175220435019583,
+        "reason": "continuous normal northbound Autopilot; no pose writes"
+      },
+      {
+        "stage": 3,
+        "at_seconds": 71.82966538402252,
+        "reason": "normal braking after all four houses and both sign locations"
+      },
+      {
+        "stage": 4,
+        "at_seconds": 72.63389831100358,
+        "reason": "EXPLICIT FIXTURE: isolated southbound saved-car start z1875 heading PI"
+      },
+      {
+        "stage": 5,
+        "at_seconds": 73.07078194303904,
+        "reason": "actual southbound cockpit north-sign capture"
+      },
+      {
+        "stage": 6,
+        "at_seconds": 73.6161953000119,
+        "reason": "normal southbound World.TestInput to original main street walkzone"
+      },
+      {
+        "stage": 7,
+        "at_seconds": 117.1211197830271,
+        "reason": "normal braking for street egress"
+      },
+      {
+        "stage": 8,
+        "at_seconds": 118.08605209103553,
+        "reason": "production parking handover; no foot placement fixture"
+      },
+      {
+        "stage": 9,
+        "at_seconds": 118.92563217005227,
+        "reason": "normal Walker.TestMove on original main street only"
+      },
+      {
+        "stage": 10,
+        "at_seconds": 125.0868811760447,
+        "reason": "ordinary title; case1 fixture stays inside isolated /tmp profile"
+      },
+      {
+        "stage": 11,
+        "at_seconds": 125.73424036800861,
+        "reason": "ordinary OpenTestView continue / OpenSave / full Flow.StartGame"
+      },
+      {
+        "stage": 12,
+        "at_seconds": 126.61350761901122,
+        "reason": "full PNG/IEND final receipts before PASS"
+      }
+    ]
+  },
+  "fallback": {
+    "status": "PASS",
+    "reason": "explicit Off retains all eight original TB2 predecessors, four houses/two signs, protected local poses/bindings and original paired road posts across production frames",
+    "stage": 90,
+    "checks": 481,
+    "seconds": 7.981320885999594,
+    "north_metres": 0,
+    "south_metres": 0,
+    "street_walk_metres": 0,
+    "mode": "explicit-Off-fallback",
+    "evidence_scope": "Read-only live runtime identity, actual mesh triangle/material lineage/visibility, all protected local poses and two active road collider copies across ordinary production frames; no driving input",
+    "limits": "Explicit Off fallback identity control only: no physical travel, screenshots, visual approval, rejected/missing-assembly simulation, title/Continue or admission to closed houses verified. Main native-route contract covers travel/Continue separately.",
+    "photos": [],
+    "events": [
+      {
+        "stage": 90,
+        "at_seconds": 6.974864850984886,
+        "reason": "read-only Off fallback: wait for ordinary production updates, no controls or fixtures"
+      }
+    ]
+  },
+  "images": {
+    "packed-r2-south-sign-northbound-start.png": {
+      "sha256": "d79e9f03418cb5e8b8f60b4253ac18152936e274b537cc6a7c352849a9993f32",
+      "bytes": 1238682,
+      "source": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/south-sign-northbound-start.png",
+      "source_head": "1665723fda9484b168755709089678fcfb8e6749",
+      "kind": "actual packed viewport through ordinary route API; southbound start is explicit fixture"
+    },
+    "packed-r2-north-sign-southbound-fixture-start.png": {
+      "sha256": "1589b2b8a6bc18ffe201c2bafd557675c2770a7c4ee1577d4bc2fe59644a924f",
+      "bytes": 1090211,
+      "source": "/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3/north-sign-southbound-fixture-start.png",
+      "source_head": "1665723fda9484b168755709089678fcfb8e6749",
+      "kind": "actual packed viewport through ordinary route API; southbound start is explicit fixture"
+    }
+  },
+  "runtime_controls": "API World/Drive/Walker, isolated disk title and normal Continue",
+  "human_input": "UNVERIFIED",
+  "subjective_cab_sign_legibility": "UNVERIFIED",
+  "full_matrix": "UNVERIFIED",
+  "installed": false,
+  "public_release": false,
+  "scope": "Original JSON and PNG bytes bound by SHA256. This receipt is not human playtest acceptance."
+}
