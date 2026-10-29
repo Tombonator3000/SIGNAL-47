@@ -19,6 +19,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Substation, Log, All);
 
@@ -125,6 +126,10 @@ bool FS47Substation::Install()
  UE_LOG(LogS47Substation, Display, TEXT("S47: substation ready root=(7890,-1.10,536.20) fenceFrontZ=529.00; inspection outside closed yard"));
  InstallArc();
  InstallFollowup();
+ if (FCString::Strifind(FCommandLine::Get(), TEXT("S47SubstationGroundProbe=")))
+ {
+  FTimerHandle H; M->Web->GetWorldTimerManager().SetTimer(H, [this] { ProbeGround(); }, 4.f, false);
+ }
  return true;
 }
 

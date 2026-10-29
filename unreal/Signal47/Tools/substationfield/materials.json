@@ -1,0 +1,184 @@
+[
+ {
+  "name": "M_Substation_OlivePaint",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "metallic": 0.16,
+  "roughness": 0.7,
+  "specular": 0.3,
+  "normal_strength": 0.22,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "../substation/textures/OlivePaint_base_color.png",
+   "normal": "../substation/textures/OlivePaint_normal.png",
+   "roughness": "../substation/textures/OlivePaint_roughness.png"
+  },
+  "native_asset": "/Game/Substation/Materials/M_Substation_OlivePaint"
+ },
+ {
+  "name": "M_Substation_GalvanizedSteel",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "metallic": 0.86,
+  "roughness": 0.54,
+  "specular": 0.3,
+  "normal_strength": 0.25,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "../substation/textures/Galvanized_base_color.png",
+   "normal": "../substation/textures/Galvanized_normal.png",
+   "roughness": "../substation/textures/Galvanized_roughness.png"
+  },
+  "native_asset": "/Game/Substation/Materials/M_Substation_GalvanizedSteel"
+ },
+ {
+  "name": "M_Substation_DarkSteel",
+  "base_color_linear": [
+   0.055,
+   0.061,
+   0.052,
+   1
+  ],
+  "metallic": 0.72,
+  "roughness": 0.68,
+  "specular": 0.3,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {},
+  "native_asset": "/Game/Substation/Materials/M_Substation_DarkSteel"
+ },
+ {
+  "name": "M_Substation_Copper",
+  "base_color_linear": [
+   0.32,
+   0.17,
+   0.069,
+   1
+  ],
+  "metallic": 0.92,
+  "roughness": 0.54,
+  "specular": 0.3,
+  "normal_strength": 0.2,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {},
+  "native_asset": "/Game/Substation/Materials/M_Substation_Copper"
+ },
+ {
+  "name": "M_Substation_Concrete",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "metallic": 0,
+  "roughness": 0.94,
+  "specular": 0.3,
+  "normal_strength": 0.33,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "../substation/textures/Concrete_base_color.png",
+   "normal": "../substation/textures/Concrete_normal.png",
+   "roughness": "../substation/textures/Concrete_roughness.png"
+  },
+  "native_asset": "/Game/Substation/Materials/M_Substation_Concrete"
+ },
+ {
+  "name": "M_Substation_Gravel",
+  "base_color_linear": [
+   1,
+   1,
+   1,
+   1
+  ],
+  "metallic": 0,
+  "roughness": 0.98,
+  "specular": 0.3,
+  "normal_strength": 0.48,
+  "normal_convention": "DirectX",
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "textures": {
+   "base_color": "../substation/textures/Gravel_base_color.png",
+   "normal": "../substation/textures/Gravel_normal.png",
+   "roughness": "../substation/textures/Gravel_roughness.png"
+  },
+  "native_asset": "/Game/Substation/Materials/M_Substation_Gravel"
+ },
+ {
+  "name": "M_SubstationField_WhitePaint",
+  "base_color_linear": [
+   0.74,
+   0.72,
+   0.64,
+   1
+  ],
+  "metallic": 0.0,
+  "roughness": 0.62,
+  "specular": 0.35,
+  "uv_scale": 1,
+  "emission": [
+   0,
+   0,
+   0,
+   1
+  ],
+  "emission_strength": 0,
+  "native_asset": "/Game/SubstationField/Materials/M_SubstationField_WhitePaint",
+  "role": "weathered enamel sleeves, sign face and survey paint; deliberately below studio white"
+ }
+]
