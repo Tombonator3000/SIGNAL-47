@@ -4,6 +4,7 @@ Ren Python. Alle kilder, nitten native mesh og materialbindinger kontrolleres
 før assembly.json byttes atomisk. Ingen importer, motor eller TB2-filer endres.
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -20,6 +21,30 @@ def equal_bounds(actual, blender):
     lo, hi = blender
     expected = [[lo[0]*100, -hi[1]*100, lo[2]*100], [hi[0]*100, -lo[1]*100, hi[2]*100]]
     return len(actual) == 2 and all(len(a) == 3 for a in actual) and max(abs(a-b) for p, q in zip(actual, expected) for a, b in zip(p, q)) <= .03
+
+
+def validate_town_dependencies(project, imported, verified):
+    """Begge økter må binde hele det faktiske, uendrede Town-inventaret."""
+    original = imported.get('town_dependency_files_sha256')
+    saved = verified.get('town_dependency_files_sha256')
+    assert isinstance(original, dict) and original and isinstance(saved, dict) and saved, 'Town dependency inventories required in both native reports'
+    assert original == saved, 'Town dependencies differ between import and saved verification'
+    assert all(isinstance(name, str) and isinstance(digest, str) for name, digest in saved.items())
+    root = project / 'Content/TownBuildings'
+    assert root.is_dir(), 'existing Town dependency directory required'
+    # Samme avgrensning som native.py::town_snapshot. Likhet med faktisk
+    # inventar avviser også to rapporter som er trunkert på nøyaktig samme måte.
+    current = {}
+    for path in sorted(root.rglob('*')):
+        if not path.is_file() or path.suffix not in ('.uasset', '.uexp', '.ubulk', '.json'):
+            continue
+        assert path.resolve().is_relative_to(root.resolve()), ('Town dependency escapes package', str(path))
+        current[str(path.relative_to(project))] = S.sha(path)
+    assert any(name.endswith('.uasset') for name in current), 'saved Town native dependencies required'
+    assert saved == current, ('Town dependencies changed or inventory incomplete',
+        {'missing_from_report': sorted(set(current)-set(saved)), 'missing_from_disk': sorted(set(saved)-set(current)),
+         'changed': sorted(name for name in set(current)&set(saved) if current[name] != saved[name])})
+    return hashlib.sha256(json.dumps(current, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
 def validate_trim(trim):
@@ -95,6 +120,7 @@ def stage(args):
     expected_hashes = {'manifest': S.sha(source / 'manifest.json'), 'materials': S.sha(source / 'materials.json'),
                        'source_contract': S.sha(source / 'source-contract.json'), 'trim_manifest': S.sha(trims / 'trim-manifest.json')}
     assert imported['kind'] == 'native-import' and verified['kind'] == 'saved-native-read-only'
+    town_dependencies_sha256 = validate_town_dependencies(project, imported, verified)
     for proof in (imported, verified):
         assert proof['status'] == 'PASS' and proof['checks'] and all(c['pass'] is True for c in proof['checks'])
         assert proof['source_sha256'] == expected_hashes
@@ -145,7 +171,7 @@ def stage(args):
     result.update(status='STAGED_NATIVE_VERIFIED_RUNTIME_UNVERIFIED', parts=parts, required_town_native_parts=28,
                   removed_house_total=528, removed_sign_total=76,
                   provenance={**expected_hashes, 'layout': S.sha(args.layout), 'native_import_report': S.sha(args.import_report),
-                              'saved_native_report': S.sha(args.verify_report)})
+                              'saved_native_report': S.sha(args.verify_report), 'town_dependencies': town_dependencies_sha256})
     destination = project / 'Content/CalicheHomes/assembly.json'
     assert (project / 'Signal47.uproject').is_file()
     destination.parent.mkdir(parents=True, exist_ok=True)
