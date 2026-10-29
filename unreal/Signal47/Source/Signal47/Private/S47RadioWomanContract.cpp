@@ -15,6 +15,8 @@
 #include "S47Walker.h"
 #include "S47World.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -138,43 +140,170 @@ namespace S47RadioWomanContract
   void Look(double Raise=0){auto* M=Main();const auto D=Target()+FVector(0,Raise,0)-S47Three::ToThree(M->Player->EyeUE());M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());}
   bool ShoeContact(const FJ& Snapshot)
   {
-   auto* C=Body();const auto* Mesh=C?C->GetStaticMesh().Get():nullptr;
-   if(!Check(Mesh&&Mesh->bAllowCPUAccess&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==3,TEXT("actual static shoe geometry available for independent ground contact rays")))return false;
-   const auto& L=Mesh->GetRenderData()->LODResources[0];TArray<uint32> Indices;L.IndexBuffer.GetCopy(Indices);TSet<uint32> Candidates[2];double Low[2]={1e20,1e20};
+   const auto KeepAlive=AsShared();using FRows=TArray<TSharedPtr<FJsonValue>>;
+   auto* W=Web.Get();auto* SceneWorld=W?W->GetWorld():nullptr;auto* C=W?Body():nullptr;const auto* Mesh=C?C->GetStaticMesh().Get():nullptr;
+   const FJ EvidenceSnapshot=Snapshot.IsValid()?Snapshot:S47J::New(),Proof=S47J::New();FRows Feet;
+   S47J::Set(Proof,TEXT("schema_version"),1);S47J::Set(Proof,TEXT("measurement_source"),TEXT("Independent current body LOD0 and fresh world/direct physics; no runtime-gate JSON used"));
+   S47J::Set(Proof,TEXT("maximum_single_world_queries_per_point"),32);S47J::Set(Proof,TEXT("initial_ignored_actors"),0);
+   S47J::Set(Proof,TEXT("entire_laundry_shell_ignored"),false);S47J::Set(Proof,TEXT("complete"),false);
+   S47J::Set(Proof,TEXT("body_component"),GetPathNameSafe(C));S47J::Set(Proof,TEXT("body_mesh"),GetPathNameSafe(Mesh));
+   S47J::Set(Proof,TEXT("web_area"),W?W->Area():FString());
+   EvidenceSnapshot->SetObjectField(TEXT("independent_shoe_contact_query"),Proof);EvidenceSnapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);
+   const auto ContactCheck=[&](bool Good,const FString& Why)
+   {
+    if(!Good)
+    {
+     S47J::Set(Proof,TEXT("failure"),Why);S47J::Set(Proof,TEXT("complete"),false);EvidenceSnapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);
+     const FString FailureFile=Root/TEXT("first-shoe-contact-failure.json");S47J::Set(EvidenceSnapshot,TEXT("shoe_contact_failure_sidecar"),FailureFile);
+     const bool Written=Write(FailureFile,EvidenceSnapshot);S47J::Set(EvidenceSnapshot,TEXT("shoe_contact_failure_sidecar_written"),Written);
+     Snapshots.Add(MakeShared<FJsonValueObject>(EvidenceSnapshot)); // publish before Check calls Result/RequestExit
+    }
+    return Check(Good,Why);
+   };
+   if(!ContactCheck(SceneWorld&&Mesh&&C->GetComponentTransform().IsValid()&&Mesh->bAllowCPUAccess&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==3,
+    TEXT("actual static shoe geometry and current component frame available for independent ground contact rays")))return false;
+   const auto FrameJson=[](const FTransform& Frame)
+   {auto J=S47J::New();Vec(J,TEXT("location_ue_cm"),Frame.GetLocation());Vec(J,TEXT("scale"),Frame.GetScale3D());const FQuat Q=Frame.GetRotation();
+    S47J::Set(J,TEXT("rotation_xyzw"),TArray<double>{Q.X,Q.Y,Q.Z,Q.W});S47J::Set(J,TEXT("valid"),Frame.IsValid());return J;};
+   S47J::Set(Proof,TEXT("actual_body_frame"),FrameJson(C->GetComponentTransform()));
+   struct FSurfaceRead
+   {
+    FJ Json;int32 Index=INDEX_NONE;bool Mapped=false,Registered=false,NodeChain=false,SceneChain=false;
+    bool MetaShown=false,NativeHidden=false,AllSceneRegistered=false,Shown=false,Shell=false,CanExclude=false;
+   };
+   const auto ReadSurface=[&](UPrimitiveComponent* Surface)
+   {
+    FSurfaceRead Out;Out.Json=S47J::New();auto J=Out.Json;Out.Index=Surface?W->NodeOf(Surface):INDEX_NONE;
+    const auto* N=W->Node(Out.Index);auto* Static=Cast<UStaticMeshComponent>(Surface);const auto* SurfaceMesh=Static?Static->GetStaticMesh().Get():nullptr;
+    Out.Mapped=Surface&&N&&N->Comp.Get()==Surface&&W->NodeOf(Surface)==Out.Index;Out.Registered=Surface&&Surface->IsRegistered();
+    Out.Shell=(N&&N->Name==TEXT("town-production:SM_Town_Laundry_Shell"))||(SurfaceMesh&&SurfaceMesh->GetPathName()==TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell"));
+    S47J::Set(J,TEXT("node"),Out.Index);S47J::Set(J,TEXT("component"),GetPathNameSafe(Surface));S47J::Set(J,TEXT("exact_current_node_component_mapping"),Out.Mapped);
+    S47J::Set(J,TEXT("registered"),Out.Registered);S47J::Set(J,TEXT("mesh"),GetPathNameSafe(SurfaceMesh));S47J::Set(J,TEXT("same_laundry_shell"),Out.Shell);
+    if(N){S47J::Set(J,TEXT("name"),N->Name);S47J::Set(J,TEXT("geo"),N->Geo);S47J::Set(J,TEXT("parent"),N->Parent);S47J::Set(J,TEXT("root"),N->Root);}
+    FRows NodeParents;TSet<int32> SeenNodes;Out.NodeChain=Out.Mapped;
+    for(int32 I=Out.Index;Out.NodeChain&&I!=INDEX_NONE;)
+    {
+     const auto* P=W->Node(I);if(!P||SeenNodes.Contains(I)){Out.NodeChain=false;break;}SeenNodes.Add(I);auto R=S47J::New();
+     S47J::Set(R,TEXT("node"),I);S47J::Set(R,TEXT("parent"),P->Parent);S47J::Set(R,TEXT("root"),P->Root);S47J::Set(R,TEXT("name"),P->Name);S47J::Set(R,TEXT("node_bVis"),P->bVis);
+     S47J::Set(R,TEXT("component"),GetPathNameSafe(P->Comp.Get()));NodeParents.Add(MakeShared<FJsonValueObject>(R));I=P->Parent;
+    }
+    Out.MetaShown=Out.NodeChain&&W->ObjAt(Out.Index).Shown();J->SetArrayField(TEXT("metadata_ancestors_including_self"),NodeParents);
+    S47J::Set(J,TEXT("metadata_chain_valid"),Out.NodeChain);S47J::Set(J,TEXT("metadata_Shown"),Out.MetaShown);
+    FRows SceneParents;TSet<const USceneComponent*> SeenScene;Out.SceneChain=Surface!=nullptr;Out.AllSceneRegistered=Surface!=nullptr;
+    for(const USceneComponent* P=Surface;P;P=P->GetAttachParent())
+    {
+     if(SeenScene.Contains(P)){Out.SceneChain=false;break;}SeenScene.Add(P);auto R=S47J::New();const bool OwnerHidden=P->GetOwner()&&P->GetOwner()->IsHidden();
+     const bool Hidden=!P->IsVisible()||P->bHiddenInGame||OwnerHidden;Out.NativeHidden=Out.NativeHidden||Hidden;Out.AllSceneRegistered=Out.AllSceneRegistered&&P->IsRegistered();
+     S47J::Set(R,TEXT("component"),P->GetPathName());S47J::Set(R,TEXT("registered"),P->IsRegistered());S47J::Set(R,TEXT("is_visible"),P->IsVisible());
+     S47J::Set(R,TEXT("hidden_in_game"),bool(P->bHiddenInGame));S47J::Set(R,TEXT("owner_hidden"),OwnerHidden);S47J::Set(R,TEXT("actual_world_transform"),FrameJson(P->GetComponentTransform()));
+     SceneParents.Add(MakeShared<FJsonValueObject>(R));
+    }
+    J->SetArrayField(TEXT("actual_scene_ancestors_including_self"),SceneParents);S47J::Set(J,TEXT("scene_chain_valid"),Out.SceneChain);
+    S47J::Set(J,TEXT("all_scene_registered"),Out.AllSceneRegistered);S47J::Set(J,TEXT("actual_native_hidden_flag"),Out.NativeHidden);
+    Out.Shown=Out.Mapped&&Out.Registered&&Out.NodeChain&&Out.SceneChain&&Out.AllSceneRegistered&&Out.MetaShown&&!Out.NativeHidden;
+    Out.CanExclude=Out.Mapped&&Out.Registered&&Out.NodeChain&&Out.SceneChain&&Out.AllSceneRegistered&&Out.NativeHidden&&!Out.Shell;
+    S47J::Set(J,TEXT("actually_shown_registered"),Out.Shown);S47J::Set(J,TEXT("query_local_hidden_exclusion_eligible"),Out.CanExclude);
+    if(Surface)
+    {S47J::Set(J,TEXT("collision_enabled"),int32(Surface->GetCollisionEnabled()));S47J::Set(J,TEXT("query_collision"),CollisionEnabledHasQuery(Surface->GetCollisionEnabled()));
+     S47J::Set(J,TEXT("visibility_response"),int32(Surface->GetCollisionResponseToChannel(ECC_Visibility)));S47J::Set(J,TEXT("actual_world_transform"),FrameJson(Surface->GetComponentTransform()));}
+    return Out;
+   };
+   const auto RecordHit=[&](const FHitResult& H,bool Found,const FVector& Start,const FVector& End)
+   {
+    auto J=S47J::New();S47J::Set(J,TEXT("hit"),Found);S47J::Set(J,TEXT("raw_blocking_hit"),bool(H.bBlockingHit));S47J::Set(J,TEXT("start_penetrating"),bool(H.bStartPenetrating));
+    Vec(J,TEXT("trace_start_ue_cm"),Start);Vec(J,TEXT("trace_end_ue_cm"),End);S47J::Set(J,TEXT("surface_identity"),ReadSurface(H.GetComponent()).Json);
+    if(Found)
+    {Vec(J,TEXT("actual_impact_ue_cm"),H.ImpactPoint);Vec(J,TEXT("actual_normal_ue"),H.ImpactNormal);S47J::Set(J,TEXT("face_index"),H.FaceIndex);
+     S47J::Set(J,TEXT("item"),H.Item);int32 Section=INDEX_NONE;
+     UMaterialInterface* Material=H.GetComponent()&&H.FaceIndex!=INDEX_NONE?H.GetComponent()->GetMaterialFromCollisionFaceIndex(H.FaceIndex,Section):nullptr;
+     S47J::Set(J,TEXT("collision_material_section"),Section);S47J::Set(J,TEXT("actual_material"),GetPathNameSafe(Material));}
+    return J;
+   };
+   const auto& L=Mesh->GetRenderData()->LODResources[0];
+   S47J::Set(Proof,TEXT("actual_LOD0_vertices"),double(L.VertexBuffers.PositionVertexBuffer.GetNumVertices()));S47J::Set(Proof,TEXT("actual_LOD0_triangles"),double(L.GetNumTriangles()));
+   if(!ContactCheck(L.VertexBuffers.PositionVertexBuffer.GetNumVertices()>0&&L.VertexBuffers.PositionVertexBuffer.GetVertexData()&&L.IndexBuffer.GetIndexDataSize()>0,
+    TEXT("independent sole sampling requires actual resident CPU positions and indices")))return false;
+   TArray<uint32> Indices;L.IndexBuffer.GetCopy(Indices);TSet<uint32> Candidates[2];double Low[2]={1e20,1e20};
    for(const auto& S:L.Sections)
    {
     if(!Mesh->GetStaticMaterials().IsValidIndex(S.MaterialIndex))continue;const auto* Mat=Mesh->GetMaterial(S.MaterialIndex);if(!Mat||(Mat->GetName()!=TEXT("M_RW_Shoe")&&Mat->GetName()!=TEXT("M_RW_Trim")))continue;
     for(uint32 I=S.FirstIndex;I<S.FirstIndex+S.NumTriangles*3;++I)
     {
-     if(I>=uint32(Indices.Num())||Indices[I]>=L.VertexBuffers.PositionVertexBuffer.GetNumVertices()){Result(false,TEXT("shoe section index outside actual CPU vertex payload"));return false;}
+     if(I>=uint32(Indices.Num())||Indices[I]>=L.VertexBuffers.PositionVertexBuffer.GetNumVertices())
+     {S47J::Set(Proof,TEXT("invalid_shoe_section_index"),double(I));if(!ContactCheck(false,TEXT("shoe section index outside actual CPU vertex payload")))return false;}
      const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I]));if(P.Z>=-15)continue;
      const int32 Side=P.Y<0?0:1;Candidates[Side].Add(Indices[I]);Low[Side]=FMath::Min(Low[Side],P.Z);
     }
    }
-   if(!Check(Candidates[0].Num()>=3&&Candidates[1].Num()>=3,TEXT("both shoes have actual lowest-geometry candidates in native Shoe/Trim material sections")))return false;
-   TArray<TSharedPtr<FJsonValue>> Feet;
+   if(!ContactCheck(Candidates[0].Num()>=3&&Candidates[1].Num()>=3,TEXT("both shoes have actual lowest-geometry candidates in native Shoe/Trim material sections")))return false;
    for(int32 Side=0;Side<2;++Side)
    {
-    int32 Rays=0;double Min=1e20,Max=-1e20;TArray<TSharedPtr<FJsonValue>> Samples;
-    TArray<FVector> Unique;
+    int32 Rays=0;double Min=1e20,Max=-1e20;FRows Samples;TArray<FVector> Unique;auto Foot=S47J::New();
+    S47J::Set(Foot,TEXT("side"),Side);S47J::Set(Foot,TEXT("ground_rays"),Rays);Feet.Add(MakeShared<FJsonValueObject>(Foot));EvidenceSnapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);
     for(uint32 Index:Candidates[Side])
     {
      const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Index));if(P.Z<=Low[Side]+.15&&!Unique.ContainsByPredicate([&](const FVector& V){return V.Equals(P,.00001);}))Unique.Add(P);
     }
-    if(!Check(Unique.Num()>=3&&Unique.Num()<=256,TEXT("contact sample includes every unique lowest sole vertex, without duplicate-index or first16 bias")))return false;
+    S47J::Set(Foot,TEXT("unique_lowest_sole_vertices"),Unique.Num());
+    if(!ContactCheck(Unique.Num()>=3&&Unique.Num()<=256,TEXT("contact sample includes every unique lowest sole vertex, without duplicate-index or first16 bias")))return false;
     for(const FVector& P:Unique)
     {
-     const FVector World=C->GetComponentTransform().TransformPosition(P);FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSole),true,Main()->Player.Get());
-     const bool Hit=Web->GetWorld()->LineTraceSingleByChannel(H,World+FVector(0,0,50),World-FVector(0,0,100),ECC_Visibility,Q);
-     if(!Check(Hit&&H.ImpactNormal.Z>.7,TEXT("actual ground under each sampled lowest sole vertex")))return false;
-     const double Gap=World.Z-H.ImpactPoint.Z;Min=FMath::Min(Min,Gap);Max=FMath::Max(Max,Gap);++Rays;
-     auto R=S47J::New();Vec(R,TEXT("sole_world_ue_cm"),World);Vec(R,TEXT("ground_world_ue_cm"),H.ImpactPoint);S47J::Set(R,TEXT("gap_cm"),Gap);S47J::Set(R,TEXT("ground_component"),GetPathNameSafe(H.GetComponent()));Samples.Add(MakeShared<FJsonValueObject>(R));
+     const FVector World=C->GetComponentTransform().TransformPosition(P),Start=World+FVector(0,0,50),End=World-FVector(0,0,100);
+     auto R=S47J::New();Vec(R,TEXT("actual_native_local_cm"),P);Vec(R,TEXT("sole_world_ue_cm"),World);S47J::Set(R,TEXT("actual_body_frame"),FrameJson(C->GetComponentTransform()));
+     S47J::Set(R,TEXT("entire_laundry_shell_ignored"),false);Samples.Add(MakeShared<FJsonValueObject>(R));Foot->SetArrayField(TEXT("samples"),Samples);
+     FRows Queries;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSole),true);Q.bReturnFaceIndex=true;
+     TSet<const UPrimitiveComponent*> Excluded;FHitResult WorldHit;bool FoundVisible=false;FString RejectReason=TEXT("bounded world query exhausted before an eligible visible blocker");
+     for(int32 Attempt=0;Attempt<32;++Attempt)
+     {
+      FHitResult H;const bool Found=SceneWorld->LineTraceSingleByChannel(H,Start,End,ECC_Visibility,Q);auto Query=RecordHit(H,Found,Start,End);
+      S47J::Set(Query,TEXT("attempt"),Attempt);S47J::Set(Query,TEXT("query_local_exclusion"),false);S47J::Set(Query,TEXT("already_ignored_component_count"),Excluded.Num());
+      Queries.Add(MakeShared<FJsonValueObject>(Query));R->SetArrayField(TEXT("ordered_single_world_queries"),Queries);
+      if(!Found||!H.bBlockingHit||H.bStartPenetrating){RejectReason=TEXT("world query lacks a nonpenetrating blocking hit");S47J::Set(Query,TEXT("decision"),RejectReason);break;}
+      const auto Surface=ReadSurface(H.GetComponent());S47J::Set(Query,TEXT("surface_identity"),Surface.Json);
+      if(Surface.Shell){RejectReason=TEXT("Laundry Shell blocker is retained and cannot be ignored");S47J::Set(Query,TEXT("decision"),RejectReason);break;}
+      if(Surface.CanExclude)
+      {
+       if(Excluded.Contains(H.GetComponent())){RejectReason=TEXT("repeated hidden blocker despite prior local query exclusion");S47J::Set(Query,TEXT("decision"),RejectReason);break;}
+       S47J::Set(Query,TEXT("query_local_exclusion"),true);S47J::Set(Query,TEXT("decision"),TEXT("fresh exact mapped registered component has actual native hidden flags; excluded only from this local query"));
+       Excluded.Add(H.GetComponent());Q.AddIgnoredComponent(H.GetComponent());continue;
+      }
+      if(!Surface.Shown){RejectReason=TEXT("unknown, invalid, unregistered or metadata/native-inconsistent blocker cannot be ignored");S47J::Set(Query,TEXT("decision"),RejectReason);break;}
+      WorldHit=H;FoundVisible=true;S47J::Set(Query,TEXT("decision"),TEXT("first actual shown registered world blocker retained for independent provider validation"));break;
+     }
+     S47J::Set(R,TEXT("bounded_world_query_complete"),FoundVisible);S47J::Set(R,TEXT("world_query_count"),Queries.Num());S47J::Set(R,TEXT("conditional_hidden_exclusions"),Excluded.Num());
+     if(!FoundVisible)S47J::Set(R,TEXT("rejection_reason"),RejectReason);
+     if(!ContactCheck(FoundVisible,TEXT("bounded sole world query must end on an actual visible blocker: ")+RejectReason))return false;
+     auto* Ground=Cast<UStaticMeshComponent>(WorldHit.GetComponent());const auto Surface=ReadSurface(Ground);const auto* N=W->Node(1242);const auto* ParentNode=W->Node(1240);
+     const auto* GroundMesh=Ground?Ground->GetStaticMesh().Get():nullptr;auto* M=Main();auto Provider=S47J::New();
+     const bool Exact=Ground&&N&&Surface.Mapped&&Surface.Index==1242&&N->Comp.Get()==Ground&&N->Geo==873&&N->Parent==1240&&N->Root==1240
+      &&GroundMesh&&GroundMesh->GetPathName()==TEXT("/Game/Web/Geo/geo_007/StaticMeshes/g873.g873");
+     const bool ParentVisible=Exact&&Surface.NodeChain&&ParentNode&&ParentNode->Name==TEXT("road")&&ParentNode->Comp.IsValid()&&Ground&&Ground->GetAttachParent()==ParentNode->Comp.Get()
+      &&ParentNode->Comp->IsRegistered()&&ParentNode->Comp->IsVisible()&&!ParentNode->Comp->bHiddenInGame&&W->ObjAt(1240).Shown()
+      &&!(ParentNode->Comp->GetOwner()&&ParentNode->Comp->GetOwner()->IsHidden());
+     const bool ActiveArea=M&&M->World&&W->Area()==M->World->Area&&(W->Area()==TEXT("diner")||W->Area()==TEXT("road"));
+     const bool QueryBlocks=Ground&&CollisionEnabledHasQuery(Ground->GetCollisionEnabled())&&Ground->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block;
+     S47J::Set(Provider,TEXT("actual_surface"),Surface.Json);S47J::Set(Provider,TEXT("exact_1242_g873_parent1240_identity"),Exact);S47J::Set(Provider,TEXT("parent1240_active_and_shown"),ParentVisible);
+     S47J::Set(Provider,TEXT("active_road_or_diner_context"),ActiveArea);S47J::Set(Provider,TEXT("query_collision_and_VisibilityBlock"),QueryBlocks);S47J::Set(R,TEXT("independent_provider_validation"),Provider);
+     if(!ContactCheck(Exact&&ParentVisible&&ActiveArea&&QueryBlocks&&Surface.Shown&&WorldHit.ImpactNormal.Z>.7,
+      TEXT("first visible sole-world hit must be exact shown active road1242/g873 with upward query-blocking surface")))return false;
+     FHitResult DirectHit;FCollisionQueryParams DirectQ(SCENE_QUERY_STAT(S47RadioWomanSoleDirect),true);DirectQ.bReturnFaceIndex=true;
+     const bool DirectFound=Ground->LineTraceComponent(DirectHit,Start,End,DirectQ);auto Direct=RecordHit(DirectHit,DirectFound,Start,End);
+     S47J::Set(Direct,TEXT("requested_exact_component"),Ground->GetPathName());S47J::Set(Direct,TEXT("blocking_flag_is_not_a_direct_API_requirement"),true);S47J::Set(R,TEXT("independent_exact_component_query"),Direct);
+     const auto Fresh=ReadSurface(Ground);S47J::Set(R,TEXT("provider_after_direct_query"),Fresh.Json);
+     const bool SamePoint=DirectFound&&DirectHit.GetComponent()==Ground&&!DirectHit.bStartPenetrating&&DirectHit.ImpactPoint.Equals(WorldHit.ImpactPoint,.02);
+     const bool SameNormal=DirectFound&&!DirectHit.ImpactNormal.ContainsNaN()&&DirectHit.ImpactNormal.Z>.7&&DirectHit.ImpactNormal.Equals(WorldHit.ImpactNormal,.0001);
+     S47J::Set(R,TEXT("world_direct_same_component_and_point"),SamePoint);S47J::Set(R,TEXT("world_direct_same_normal"),SameNormal);
+     S47J::Set(R,TEXT("maximum_world_direct_point_delta_cm"),.02);S47J::Set(R,TEXT("maximum_world_direct_normal_component_delta"),.0001);
+     if(DirectFound){S47J::Set(R,TEXT("actual_world_direct_point_delta_cm"),FVector::Dist(DirectHit.ImpactPoint,WorldHit.ImpactPoint));S47J::Set(R,TEXT("actual_world_direct_normal_delta"),FVector::Dist(DirectHit.ImpactNormal,WorldHit.ImpactNormal));}
+     if(!ContactCheck(DirectFound&&SamePoint&&SameNormal&&Fresh.Shown&&!Fresh.Shell,
+      TEXT("bool-LineTraceComponent on exactly the shown world-hit SMC must independently confirm point and normal")))return false;
+     const double Gap=World.Z-WorldHit.ImpactPoint.Z;Min=FMath::Min(Min,Gap);Max=FMath::Max(Max,Gap);++Rays;
+     Vec(R,TEXT("ground_world_ue_cm"),WorldHit.ImpactPoint);S47J::Set(R,TEXT("gap_cm"),Gap);S47J::Set(R,TEXT("ground_component"),Ground->GetPathName());S47J::Set(R,TEXT("sample_complete"),true);
+     S47J::Set(Foot,TEXT("ground_rays"),Rays);S47J::Set(Foot,TEXT("minimum_gap_cm"),Min);S47J::Set(Foot,TEXT("maximum_gap_cm"),Max);
     }
-    auto F=S47J::New();S47J::Set(F,TEXT("side"),Side);S47J::Set(F,TEXT("ground_rays"),Rays);S47J::Set(F,TEXT("unique_lowest_sole_vertices"),Unique.Num());S47J::Set(F,TEXT("minimum_gap_cm"),Min);S47J::Set(F,TEXT("maximum_gap_cm"),Max);F->SetArrayField(TEXT("samples"),Samples);Feet.Add(MakeShared<FJsonValueObject>(F));
-    if(!Check(Rays>=3&&Min>=-1.5&&Max<=1.5,TEXT("actual seated shoe contact within1.5cm of rendered ground, without body scale or collision changes")))
-    {Snapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);Write(Root/TEXT("first-shoe-contact-failure.json"),Snapshot);return false;}
+    if(!ContactCheck(Rays==Unique.Num()&&Rays>=3&&Min>=-1.5&&Max<=1.5,TEXT("actual seated shoe contact within1.5cm of rendered ground, without body scale or collision changes")))return false;
    }
-   Snapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);return true;
+   S47J::Set(Proof,TEXT("complete"),true);EvidenceSnapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);return true;
   }
   bool Snapshot(const FString& Name,bool Expected)
   {

@@ -67,6 +67,7 @@ namespace
  }
  UStaticMesh* RadioCut(AS47Web* W,UStaticMesh* Original,TArray<uint32>& Full,TArray<uint32>& Radio,FString& Packed)
  {
+  Full.Reset();Radio.Reset();Packed.Empty();
   if(!Original||!Original->bAllowCPUAccess||!Original->GetRenderData()||Original->GetRenderData()->LODResources.Num()!=1)return nullptr;
   const auto& Src=Original->GetRenderData()->LODResources[0];Packed=VertexHash(Src);
   if(Src.GetNumTriangles()!=36||Packed.IsEmpty()||!Src.IndexBuffer.GetIndexDataSize())return nullptr;
