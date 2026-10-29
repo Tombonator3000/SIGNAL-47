@@ -332,6 +332,9 @@ void S47BeginRadioWomanContract(AS47Web* Web)
 {
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchDiagnostic")))
  {
+  FString Profile;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),Profile);
+  if(Profile.Contains(TEXT(".."))||!(Profile.StartsWith(TEXT("/tmp/"))||Profile.StartsWith(TEXT("/var/tmp/"))))
+  {UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioBenchDiagnostic REJECTED requires an isolated /tmp profile"));return;}
   const auto S=MakeShared<S47RadioWomanContract::FBenchDiagnostic>();S->Web=Web;S->Root=FPaths::ProjectSavedDir()/TEXT("RadioBenchDiagnostic")/FGuid::NewGuid().ToString(EGuidFormats::Digits);
   if(!IFileManager::Get().MakeDirectory(*S->Root,true)){UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioBenchDiagnostic REJECTED could not create fresh evidence=%s"),*S->Root);return;}
   if(!Web||!Web->GetWorld()){S->Result(true,TEXT("actual Web/world unavailable"));return;}
