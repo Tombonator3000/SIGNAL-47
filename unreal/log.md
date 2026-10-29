@@ -1471,3 +1471,12 @@ Fryst source-r3/1aca9209 og binding/f47da52d er lest og integrert med eksakte by
 C++-deltaet gjelder bare PrepareGarmentSourceBinding og krever faktisk egen kildeprodusent, separat fersk Blenderleser, komplett hud/frame og to nye ClothesR2-assets før ny BakeR12. Source-r3 author/fresh er i felles guardkø; faktisk kilde-/native-/utseendeaksept og nytt spillmodulbygg er fortsatt UNVERIFIED. RuntimeR11 og alle tidligere raw/source/nativeassets er bevart. Ingen installasjon eller offentlig release.
 
 Faktisk source-r3 author30,963s/PID3010170 og separat fresh15,729s/PID3010729 består exit0 uten contention. Root har rekonstruert faktiske treff og avstander fra begge rårapporter. [Portabel kildekvittering](Evidence/RADIO-WOMAN-2026-10-29/r4-source-r3-receipt.json):23368tri,16bevarte deler,341referanse,10752flateprøver≥6,819mm,9498pålagte hudstråler≥6,854mm,indre minimum4,577mm. Dette er finite restprøver; C++-bindingsbygg, ny nativeimport/sittepose, runtimebilder og pakke gjenstår.
+
+
+### 2026-10-29T22:36:54+01:00 Codex: faktisk R4-kildebygg og separat runtimearbeidsmappe
+
+PR224-kilde1ad50dfd er pushet. Frakkens R4-source-r3 author/fresh er faktisk PASS; ny C++-binding kompilerte17,268s fra494frosne inputs, modulfa623c99 er bevart0444. Renderer PID3021036/52,760s ga tre komplette1280×960PNG; alle er faktisk åpnet. Skulderhuden er dekket i disse restvinklene, men opprinnelige proximalermers kanter står høyt og må vurderes i sittende runtime. Ingen utseendeaksept fra restbildene. Ny ClothesR2-import/ferskleser er queued, ikke ferdig.
+
+Runtimearbeidsmappen radio-woman-runtime-r12 starter fra samme1ad50dfd på egen gren. Evening sin494filers authoringkilde og bygde modul skal forbli uendret, slik at de faktiske nativebindingsbevisene kan kontrolleres. Ingen ny nativehash/LOD-pin eller R12-adopsjon er fylt uten faktisk bake/ferskleser. Source→runtime-kopi skal få egen identitetsbinding; opprinnelig leserkvittering omskrives ikke.
+
+HUM02 exportR3s første postload fikk -11/MeshObjectassert før FBX. Primærkilden viste manglende AllowCommandletRendering. R4 endrer bare wrapper/oppstartsflagget, beholder uendret faktiskbygd R3-modul og Disabled materialpikselbake. Faktisk A PID3029534 avsluttet0 etter296,974s uten contention/forbidden, med to fullstendige nativeuttak og Body-FBX2958320B/Face-FBX4616688B. Ny B pågår. Dette gir ikke kilde-/generator-/runtimeaksept. Alle tre historiske avslag er bevart. Ingen installasjon eller offentlig release.
