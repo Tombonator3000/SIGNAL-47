@@ -299,7 +299,9 @@ void FS47SC11Contract::Tick(double Dt)
  {
  case 1:
   if(!Check(A->Phase()==FS47SC11::EStep::Collect&&M->Story->Clock()>=FS47SC11::Arrive&&M->Story->Clock()<FS47SC11::RemoteReady&&!A->F.Escaped&&!A->HuntLive(),TEXT("05:00 collection begins before remote records or hunt"))||!SightChecks()||!Sources(TEXT("arrival")))return;
-  Path({FVector2D(0,.3),FVector2D(-4.5,2.45)});Next(2,0);return;
+  // Manifest chair 15 ends at x=-4.57. Keep the .27m Walker footprint clear,
+  // while the actual original opsTerminal remains inside its 2.4m use range.
+  Path({FVector2D(0,.3),FVector2D(-4.15,2.45)});Next(2,0);return;
  case 2:if(Walk()){if(Face(TEXT("opsTerminal")))Next(3,.35);}return;
  case 3:
   if(!Use(TEXT("opsTerminal"))||!Document(TEXT("HR_SARO_RX_SECURED"),TEXT("SARO07-860414-RX01"))||!Check(A->F.Receiver&&!A->F.Escaped&&!A->HuntLive(),TEXT("receiver original secured, escape still incomplete")))return;
@@ -311,7 +313,7 @@ void FS47SC11Contract::Tick(double Dt)
  case 6:if(Walk()){if(Face(TEXT("printer")))Next(7,.35);}return;
  case 7:
   if(!Check(M->Story->Clock()<FS47SC11::RemoteReady,TEXT("negative printer use really occurs before05:04"))||!Use(TEXT("printer"))||!Check(!A->F.Hondo&&!A->F.Site11&&!A->HuntLive()&&!M->UI->Modal(),TEXT("early printer use cannot give either remote sheet or start hunt")))return;
-  Path({FVector2D(2.2,.3),FVector2D(-.8,.3),FVector2D(-4.5,2.45)});Next(8,0);return;
+  Path({FVector2D(2.2,.3),FVector2D(-.8,.3),FVector2D(-4.15,2.45)});Next(8,0);return;
  case 8:if(Walk()){if(Face(TEXT("opsTerminal")))Next(9,.35);}return;
  case 9:
   if(!Check(A->LocalLamp&&A->LocalLamp.Intensity()>.0001&&!A->LocalLightOff(),TEXT("actual local task light is lit before the ordinary switch use")))return;
@@ -359,7 +361,9 @@ void FS47SC11Contract::Tick(double Dt)
  case 24:if(Restore(TEXT("hunt-pending-no-escape")))Next(25,.4);return;
  case 25:
   if(!Check(A->HuntLive()&&A->F.Captures==0&&!A->F.Escaped,TEXT("hunt disk restore retains all sources and no free completion")))return;
-  if(Mode==TEXT("sc11retry")){CaptureClock=M->Story->Clock();Path({FVector2D(-2.4,5.7),FVector2D(.4,5.75)});Next(40,0);}else EscapeRoute();return;
+  // The open south leaf reaches z=5.66. Go around its actual end before
+  // crossing the corridor, rather than asking Walker to pass through it.
+  if(Mode==TEXT("sc11retry")){CaptureClock=M->Story->Clock();Path({FVector2D(-2.4,6.05),FVector2D(.4,6.05),FVector2D(.4,5.75)});Next(40,0);}else EscapeRoute();return;
  case 40:
   if(A->F.Captures>0){M->Player->TestMove.Reset();Next(42,1.4);return;}
   if(Walk())Next(41,0);return;
@@ -376,7 +380,9 @@ void FS47SC11Contract::Tick(double Dt)
  case 51:
   if(!M->Web->IsDoorOpen(TEXT("doorEast"))&&!Use(TEXT("doorEast")))return;
   if(!Check(M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("actual east door permits the short exposed exit")))return;
-  Path({FVector2D(6.9,1.6),FVector2D(8.7,1.6),FVector2D(7.2,4.0)});Next(52,0);return;
+  // The landing's south rail spans x=6.3..9.4 at z=3.35..3.45.
+  // Use the existing opening east of it, west of the post at x=10.95.
+  Path({FVector2D(6.9,1.6),FVector2D(8.7,1.6),FVector2D(9.95,1.6),FVector2D(9.95,4.0),FVector2D(7.2,4.0)});Next(52,0);return;
  case 52:
   if(A->Phase()==FS47SC11::EStep::Done){M->Player->TestMove.Reset();Next(80,0);return;}
   if(Walk(true)){Next(53,0);}return;
@@ -396,7 +402,7 @@ void FS47SC11Contract::Tick(double Dt)
  case 65:
   if(!M->Web->IsDoorOpen(TEXT("exitDoor"))&&!Use(TEXT("exitDoor")))return;
   if(!Check(M->Web->IsDoorOpen(TEXT("exitDoor")),TEXT("ordinary west fire exit opens; long route remains physical")))return;
-  Path({FVector2D(-7,5.7),FVector2D(-11.1,5.7),FVector2D(-11.1,0),FVector2D(-9,-7.5),FVector2D(0,-12),FVector2D(6,-12),FVector2D(8.7,-12),FVector2D(8.7,-7.5),FVector2D(8.7,1.6),FVector2D(7.2,4.0)});Next(66,0);return;
+  Path({FVector2D(-7,5.7),FVector2D(-11.1,5.7),FVector2D(-11.1,0),FVector2D(-9,-7.5),FVector2D(0,-12),FVector2D(6,-12),FVector2D(8.7,-12),FVector2D(8.7,-7.5),FVector2D(8.7,1.6),FVector2D(9.95,1.6),FVector2D(9.95,4.0),FVector2D(7.2,4.0)});Next(66,0);return;
  case 66:
   if(A->Phase()==FS47SC11::EStep::Done){M->Player->TestMove.Reset();Next(80,0);return;}
   if(Walk(true))Next(67,0);return;
