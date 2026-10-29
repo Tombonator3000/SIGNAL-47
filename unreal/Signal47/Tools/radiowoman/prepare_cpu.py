@@ -7,7 +7,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import runpy
 import shutil
+import struct
 
 
 MANIFEST_SHA256 = '69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9'
@@ -34,6 +36,44 @@ def validate_manifest(manifest):
     assert n['i'] == 1484 and n['p'] == 1480 and n['geo'] == 1031 and n['mats'] == [641]
     assert n['m'] == [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     assert [n['i'] for n in nodes if n.get('geo') == 1031] == [1484]
+
+
+def source_geometry(glb):
+    """Read the frozen indexed source with the project's existing GLB parser.
+
+    Source accessor rows/corners and native render vertices are distinct counts:
+    exact P/N/UV row sharing needs 72 vertices for these unchanged 108 indices.
+    This only measures the source; it never welds or changes a native asset.
+    """
+    assert sha256(glb) == GLB_SHA256, 'frozen original GLB differs'
+    helper = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'freemodels' / 'trim_web.py'))
+    document, binary = helper['_load'](glb)
+    meshes = [(i, mesh) for i, mesh in enumerate(document['meshes']) if mesh.get('name') == 'g1031']
+    assert len(meshes) == 1 and len(meshes[0][1]['primitives']) == 1, 'exact original g1031 primitive'
+    mesh_index, mesh = meshes[0]
+    primitive = mesh['primitives'][0]
+    assert primitive.get('mode', 4) == 4 and document['materials'][primitive['material']]['name'] == 'slot0'
+    assert set(primitive['attributes']) == {'POSITION', 'NORMAL', 'TEXCOORD_0'}
+    attributes = {}
+    for name, kind in (('POSITION', 'VEC3'), ('NORMAL', 'VEC3'), ('TEXCOORD_0', 'VEC2')):
+        accessor = document['accessors'][primitive['attributes'][name]]
+        assert (accessor['count'], accessor['componentType'], accessor['type']) == (108, 5126, kind)
+        attributes[name] = helper['_values'](document, binary, primitive['attributes'][name])
+        assert len(attributes[name]) == 108
+    index_accessor = document['accessors'][primitive['indices']]
+    assert (index_accessor['count'], index_accessor['componentType'], index_accessor['type']) == (108, 5125, 'SCALAR')
+    indices = [row[0] for row in helper['_values'](document, binary, primitive['indices'])]
+    assert len(indices) == 108 and set(indices) == set(range(108))
+    rows = [struct.pack('<8f', *attributes['POSITION'][i], *attributes['NORMAL'][i], *attributes['TEXCOORD_0'][i]) for i in range(108)]
+    unique = {}
+    remap = [unique.setdefault(row, len(unique)) for row in rows]
+    assert len(unique) == 72, 'exact full-attribute native vertex count differs'
+    compact_indices = [remap[index] for index in indices]
+    assert all(len(set(compact_indices[i:i + 3])) == 3 for i in range(0, 108, 3)), 'source triangle degenerated'
+    return {'mesh': 'g1031', 'mesh_index': mesh_index, 'source_attribute_rows': 108,
+            'source_index_count': 108, 'triangles': 36, 'unique_full_attribute_rows': 72,
+            'duplicate_full_attribute_rows': 36, 'full_attribute_row_format': 'exact little-endian float32 POSITION3/NORMAL3/TEXCOORD_0_2',
+            'material': 'slot0', 'source_glb_sha256': GLB_SHA256}
 
 
 def signature(mesh):
@@ -63,6 +103,7 @@ def main():
     glb = Path(os.environ.get('S47_RADIOWOMAN_SOURCE_GLB', '/home/tom/scratch-bm/Signal47-web/geo/geo_008.glb')).resolve()
     assert sha256(manifest_path) == MANIFEST_SHA256, 'frozen manifest differs'
     assert sha256(glb) == GLB_SHA256, 'frozen original GLB differs'
+    geometry = source_geometry(glb)
     validate_manifest(json.loads(manifest_path.read_text(encoding='utf-8')))
     private = Path(os.environ.get('S47_RADIOWOMAN_PRIVATE_ROOT', '/home/tom/scratch-bm/Signal47-mannequins-20261029/private')).resolve()
     out = Path(os.environ.get('S47_RADIOWOMAN_CPU_DIR', str(private / 'cpu-r1'))).resolve()
@@ -78,7 +119,7 @@ def main():
     mesh = unreal.load_asset(ASSET)
     assert isinstance(mesh, unreal.StaticMesh) and mesh.get_path_name() == ASSET, 'exact original native mesh required'
     before = signature(mesh)
-    assert before['lod_triangles'] == [36] and before['lod_vertices'] == [108], before
+    assert before['lod_triangles'] == [36] and before['lod_vertices'] == [72], before
     assert before['materials'] == [{'slot': 'slot0', 'imported_slot': 'slot0', 'material': MATERIAL}], before
     assert before['support_ray_tracing'] and not before['nanite_enabled'], before
     retained = bool(mesh.get_editor_property('allow_cpu_access'))
@@ -93,6 +134,7 @@ def main():
     assert {p.name: sha256(p) for p in files} == before_hashes, 'source changed during backup'
     initial = {'status': 'BACKED_UP_BEFORE_MUTATION', 'asset': ASSET,
                'manifest_sha256': MANIFEST_SHA256, 'source_glb_sha256': GLB_SHA256,
+               'source_geometry': geometry,
                'native_before_sha256': before_hashes, 'backup_directory': str(backup),
                'before_cpu_access': retained, 'before': before}
     report_path = out / 'cpu-report.json'
