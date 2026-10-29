@@ -38,7 +38,7 @@ Dette peker mot rendererens buffer-/minneallokering. Vedleggene alene inneholder
 
 ## 3. Caliche: trafikksignal over veien
 
-**Levert i kilde og native editor (ENV-03, PRNUM).** Pakket spill og ekte input er UNVERIFIED til neste samlede fullmatrise.
+**Levert i kilde og native editor (ENV-03, [PR217](https://github.com/Tombonator3000/SIGNAL-47/pull/217)).** Pakket spill og ekte input er UNVERIFIED til neste samlede fullmatrise.
 
 - [x] Gi det hengende trafikksignalet mer detaljert hus, visirer, linser, kabler, feste og naturlig værslitasje. [Kilde](../../../unreal/ArtSource/TrafficSignal/README.md).
 - [x] La opphenget vaie svakt i vinden rundt et fysisk troverdig festepunkt. Feste og bevegelig lampe må henge sammen.
