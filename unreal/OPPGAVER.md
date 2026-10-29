@@ -42,3 +42,7 @@ under felles reservasjon. Vinduet frigis før 01:11; videre eierskap går til
 samme Claude-økt. Ingen installasjon eller offentlig utgave i dette passet.
 
 2026-10-29T01:06:26+01:00: Midlertidig dørstemmehjelp er kildeklar og kontrollert. Bygg/test er ferdig, reservasjonen er frigitt og Codex starter ingen nye motorjobber før overleveringen01:11. Claude beholder videre kvelds-/SC03-eierskap. Testet kilde 7a29935e796d6b036692a53d9f2b5712993ccf17; rapporten er lenket fra STATUS/TODO.
+
+## Lokal installasjon etter Toms bestilling, 2026-10-29T09:05:01+01:00
+
+Codex i denne samtalen eier installasjon til ~/Games/Signal47/Linux, med farmR1 som frosset kandidat. Filansvar er installasjonskvittering, STATUS og dette koordineringsfeltet; HUM01/ART01-kilder berøres ikke. Én samlet fullmatrise og pakket meteorLow/High går under felles reservasjon gjennom installasjon/etterkontroll. Ferdig: Farm R1 er installert med 111/111, meteor Low/High og installert grafikk/Fortsett PASS. [Kvittering](../Docs/Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md). Vinduet er faktisk frigitt kl. 10:20:44 Europe/Oslo; HUM01/ART01 kan fortsette under egen guard. Saved og launchere er uendret; ingen offentlig release.

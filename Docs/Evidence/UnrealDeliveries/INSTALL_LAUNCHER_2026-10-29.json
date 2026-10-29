@@ -1,0 +1,76 @@
+{
+  "status": "PASS_INSTALLED_FINAL",
+  "applies_to": "Local Linux farmR1 install, main through PR223; no public release",
+  "verified_at": "2026-10-29T09:18:37.691130+00:00",
+  "source_head": "c301ead9313510125d037a4cc020d667cd9c5661",
+  "main_snapshot": "094a67cb3e1ba68e34521fb19add28726609e89c",
+  "binary_sha256": "2b6b60bf13d9d821d6f3520ed1105a25ff85b3c009cce2dbb9e0a7727de8acea",
+  "payload_sha256": "9560c97ab05bb62d9bd61c96bff58628d765cb4f16e7431ff260fcb0e3a9e90c",
+  "payload_nodes": 68,
+  "saved_nodes": 119,
+  "saved_files": 92,
+  "saved_unchanged": true,
+  "launchers_unchanged": true,
+  "rollback_backup_verified": true,
+  "canonical_cases": 111,
+  "selftest_checks": 1720,
+  "meteor": {
+    "low": {
+      "checks": 18,
+      "maxHeads": 2,
+      "phase": 8,
+      "reason": "complete",
+      "screenshots": 12,
+      "status": "PASS"
+    },
+    "high": {
+      "checks": 18,
+      "maxHeads": 3,
+      "phase": 8,
+      "reason": "complete",
+      "screenshots": 13,
+      "status": "PASS"
+    }
+  },
+  "installed_checks": {
+    "graphics_write": 47,
+    "graphics_fresh_process_read": 15,
+    "personal_clone_continue": true,
+    "continue_visual_review": true
+  },
+  "prune": {
+    "applied": true,
+    "retired_packages": 0,
+    "removed_files": 0,
+    "retained_older": [
+      "dispatchR1",
+      "motelR1"
+    ],
+    "protected_exceptions": [
+      "installation rollback graphicsR2",
+      "FIX01 memory candidate",
+      "historical Ultra comparator"
+    ]
+  },
+  "local_receipt_sha256": {
+    "candidate-baseline.json": "0f739433d35084344920c1d682449e81365fbd671e8dd77e86717ff5e40ae010",
+    "matrix-contract.json": "7aee44a7b36087a2bc1c75706659a80c1bbe2e0c2b478ca05045933d311c63ec",
+    "matrix-verification.json": "16edc780077b7c063f58f4c19592c43b89f301b6a03431f063cde8bc0e4fe446",
+    "meteor-verification.json": "6da94cfa09cab571855937eb2d67f4a948b21ec557617bcfde0c6a8e720020b9",
+    "test-acceptance.json": "0e9d24d684fa51d1ffe108d5c1f0a5220f036e6b471f258f514ae92d86925eff",
+    "visual-review.json": "68f2904f893bc4e307ccd09f3e5dbfab1f12808dd5e4cb2530bc5a9982eec05d",
+    "installation-r1.json": "1dede8b7b82049936cf68fd52eab86eed9653af19cef5678ec7253a87e559a48",
+    "installed-verification-r1.json": "af331a2fcfe4c220c2d61d2659be7584bfc64451fd5fef5c6fd6fbb35c83cd68",
+    "installed-visual-review-r1.json": "471a21ac9d06475472b1cacf0bcd2f59ad58046871e6c7a87172daac64f28da9",
+    "prune-post-install-run.json": "1c8d28ccd5461299922bd035dd0e695b126c64ea0805b1e0712c789b4757c87d",
+    "prune-post-install.log": "5ac16a6786ec650ecff4e39e3b776acbff8ce29d95c2a5c0e3165aecbcc983c5",
+    "final-integrity.json": "45d49bacbaf8fe4bc778e3e62bfb7b0f68e3524e04e220f40bf88d2f74d988a9",
+    "window-released.json": "9d9d56b05a6759378bdd9d2dac47d3c1d659721c22588682ec4c80c8fff0282f"
+  },
+  "limits": [
+    "Existing nonfatal RT always-resident warning remains visible.",
+    "No physical-input, subjective listening, human full playthrough or FPS acceptance.",
+    "Historical startup OOM and unidentified E04 pool object remain open.",
+    "Full private Saved snapshots and personal Continue image remain local."
+  ]
+}
