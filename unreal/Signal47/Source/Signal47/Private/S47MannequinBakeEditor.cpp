@@ -40,6 +40,7 @@
 #include "StaticMeshAttributes.h"
 #include "StaticMeshResources.h"
 #include "SkeletalRenderPublic.h"
+#include "SkeletalMeshAttributes.h"
 #include "TwoBoneIK.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
@@ -355,7 +356,60 @@ namespace S47MannequinBake
    Data = Object(); Data->SetStringField(TEXT("path"), FPaths::ConvertRelativePathToFull(Path));
    Data->SetNumberField(TEXT("bytes"), Bytes.Num()); Data->SetStringField(TEXT("sha1"), Digest(Bytes)); return true;
   }
-  bool GeometryState(FJson& Data)
+  bool DescriptionHash(FMeshDescription& Description, FString& Hash)
+  {
+   TArray<uint8> Bytes; FMemoryWriter Writer(Bytes, true); FObjectAndNameAsStringProxyArchive Archive(Writer, false);
+   Description.Serialize(Archive); Hash = Digest(Bytes);
+   return Need(!Archive.IsError(), TEXT("complete MeshDescription serialized without filtering any geometry or attribute"));
+  }
+  bool DescriptionState(FJson& Data)
+  {
+   Data = Object(); Report->SetObjectField(TEXT("clothes_bind_actual_description"), Data);
+   const FString ImportedPin = TEXT("2144e1ffc0504791556fd705e21b37add599da6f"), BodyPin = TEXT("93838fa5259ddca476c5e523526483746f038133");
+   FMeshDescription* Description = Clothes->GetMeshDescription(0);
+   if (!Need(Description != nullptr, TEXT("actual imported clothes MeshDescription available"))) return false;
+   FString FullHash; if (!DescriptionHash(*Description, FullHash)) return false;
+   Data->SetStringField(TEXT("policy"), TEXT("canonical-body-bone-pose-only")); Data->SetStringField(TEXT("full_sha1"), FullHash);
+   const FSkeletalMeshAttributesShared Attributes(*Description); const FReferenceSkeleton& BodyRef = Body->GetRefSkeleton();
+   if (!Need(Attributes.HasBones() && Attributes.GetNumBones() == 342 && Attributes.HasBoneNameAttribute() &&
+    Attributes.HasBoneParentIndexAttribute() && Attributes.HasBonePoseAttribute() && FPose(BodyRef).Hash() == BodyPin,
+    TEXT("complete 342-bone Description metadata and exact pinned canonical Body reference"))) return false;
+   const auto Names = Attributes.GetBoneNames(); const auto Parents = Attributes.GetBoneParentIndices(); const auto Poses = Attributes.GetBonePoses();
+   if (!Need(Names.IsValid() && Parents.IsValid() && Poses.IsValid(), TEXT("actual typed Description bone-name/parent/pose attributes available"))) return false;
+   TArray<FTransform> OriginalPoses; TArray<uint8> ReferenceBytes; FMemoryWriter ReferenceWriter(ReferenceBytes);
+   for (int32 Index = 0; Index < 342; ++Index)
+   {
+    const FBoneID BoneID(Index);
+    if (!Need(Attributes.IsBoneValid(BoneID) && Names.Get(BoneID) == BodyRef.GetBoneName(Index) && Parents.Get(BoneID) == BodyRef.GetParentIndex(Index),
+     FString::Printf(TEXT("exact Description bone name/index/parent %d"), Index))) return false;
+    FString Name = Names.Get(BoneID).ToString(); int32 Parent = Parents.Get(BoneID); FTransform Pose = Poses.Get(BoneID);
+    OriginalPoses.Add(Pose); ReferenceWriter << Name << Parent << Pose;
+   }
+   const FString ReferenceHash = Digest(ReferenceBytes); Data->SetStringField(TEXT("reference_pose_sha1"), ReferenceHash); Data->SetNumberField(TEXT("bones"), 342);
+   if (!Need(ReferenceHash == ImportedPin || ReferenceHash == BodyPin, TEXT("actual full Description bone metadata matches exact pinned import or canonical Body reference"))) return false;
+   // This is a detached deep copy. Do not Register attributes, commit source
+   // data, or edit the native asset. Only its existing 342 Bone::Pose values
+   // are replaced. Whole-description hashes retain every other attribute.
+   FMeshDescription Canonical(*Description); FString CopyBefore;
+   if (!DescriptionHash(Canonical, CopyBefore) || !Need(CopyBefore == FullHash, TEXT("detached Description copy initially retains every serialized byte"))) return false;
+   FSkeletalMeshAttributes CopyAttributes(Canonical); auto CopyPoses = CopyAttributes.GetBonePoses();
+   for (int32 Index = 0; Index < 342; ++Index) CopyPoses.Set(FBoneID(Index), BodyRef.GetRefBonePose()[Index]);
+   FString CanonicalHash; if (!DescriptionHash(Canonical, CanonicalHash)) return false;
+   Data->SetStringField(TEXT("canonical_full_sha1"), CanonicalHash); Data->SetStringField(TEXT("canonical_reference_pose_sha1"), BodyPin);
+   FString UntouchedDuringCopy;
+   if (!DescriptionHash(*Description, UntouchedDuringCopy) || !Need(UntouchedDuringCopy == FullHash,
+    TEXT("actual Description stays byte-identical while the detached copy holds canonical bone poses"))) return false;
+   // Reverse exactly those replacements to prove the detached operation leaves
+   // all non-pose data intact; rehash the real Description to reject aliasing.
+   for (int32 Index = 0; Index < 342; ++Index) CopyPoses.Set(FBoneID(Index), OriginalPoses[Index]);
+   FString RestoredHash, UntouchedHash;
+   if (!DescriptionHash(Canonical, RestoredHash) || !DescriptionHash(*Description, UntouchedHash) ||
+    !Need(RestoredHash == FullHash && UntouchedHash == FullHash, TEXT("only detached Bone::Pose replacements occurred; real Description and every other attribute remain exact"))) return false;
+   Data->SetBoolField(TEXT("detached_roundtrip_preserved"), true); Data->SetBoolField(TEXT("actual_preserved_during_copy"), true);
+   return Need(Mode != TEXT("verify-clothes-bind") || (ReferenceHash == BodyPin && FullHash == CanonicalHash),
+    TEXT("fresh saved reader has actual canonical Body bone metadata and the entire canonical Description without mutating it"));
+  }
+  bool GeometryState(FJson& Data, FJson& DescriptionData)
   {
    FSkeletalMeshModel* Model = Clothes->GetImportedModel(); FSkeletalMeshRenderData* Render = Clothes->GetResourceForRendering();
    if (!Need(Model && Model->LODModels.Num() == 1 && Render && Render->LODRenderData.Num() == 1 &&
@@ -380,12 +434,8 @@ namespace S47MannequinBake
    }
    if (!Need(!ImportedArchive.IsError(), TEXT("complete imported LOD model serialized for preservation"))) return false;
    Data->SetStringField(TEXT("imported_model_sha1"), Digest(ImportedBytes));
-   FMeshDescription* Description = Clothes->GetMeshDescription(0);
-   if (!Need(Description != nullptr, TEXT("actual imported clothes MeshDescription available"))) return false;
-   TArray<uint8> DescriptionBytes; FMemoryWriter DescriptionWriter(DescriptionBytes, true);
-   FObjectAndNameAsStringProxyArchive DescriptionArchive(DescriptionWriter, false); Description->Serialize(DescriptionArchive);
-   if (!Need(!DescriptionArchive.IsError(), TEXT("complete source MeshDescription serialized for preservation"))) return false;
-   Data->SetStringField(TEXT("mesh_description_sha1"), Digest(DescriptionBytes));
+   if (!DescriptionState(DescriptionData)) return false;
+   Data->SetStringField(TEXT("mesh_description_sha1"), DescriptionData->GetStringField(TEXT("canonical_full_sha1")));
    TArray<uint8> RenderBytes; FMemoryWriter RenderWriter(RenderBytes, true);
    FObjectAndNameAsStringProxyArchive RenderArchive(RenderWriter, false);
    const auto Buffer = [&](const void* Pointer, int64 Size)
@@ -464,7 +514,7 @@ namespace S47MannequinBake
      FString::Printf(TEXT("exact cloth/body bone name, index and parent %d"), Index))) return false;
    const FString BodyReference = FPose(BodyRef).Hash(), BodyInverse = InverseReferenceHash(Body);
    if (!Need(BodyReference == BodyPin && Body->GetRefBasesInvMatrix().Num() == 342, TEXT("unchanged measured canonical Body reference and complete inverse bind matrices"))) return false;
-   FJson Before; if (!GeometryState(Before)) return false;
+   FJson Before, DescriptionBefore; if (!GeometryState(Before, DescriptionBefore)) return false;
    const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Asset, FPackageName::GetAssetPackageExtension()));
    FJson FileBefore; if (!FileState(Filename, FileBefore)) return false;
    if (Verify)
@@ -488,6 +538,18 @@ namespace S47MannequinBake
      Previous->GetStringField(TEXT("mode")) == TEXT("bind-clothes") && Previous->GetNumberField(TEXT("pid")) > 0 &&
      Previous->GetNumberField(TEXT("pid")) != FPlatformProcess::GetCurrentProcessId(), TEXT("successful original bind receipt from a different native process"))) return false;
     const FJson Saved = Previous->GetObjectField(TEXT("clothes_bind")); Data->Values = Saved->Values;
+    const FJson* ExpectedDescription = nullptr; const FJson* HistoricalBefore = nullptr; const FJson* HistoricalAfter = nullptr;
+    if (!Need(Saved->TryGetObjectField(TEXT("description_saved_expected"), ExpectedDescription) &&
+     Saved->TryGetObjectField(TEXT("description_before"), HistoricalBefore) && Saved->TryGetObjectField(TEXT("description_after"), HistoricalAfter) &&
+     (*ExpectedDescription)->GetStringField(TEXT("policy")) == TEXT("canonical-body-bone-pose-only") &&
+     (*ExpectedDescription)->GetIntegerField(TEXT("bones")) == 342 && (*ExpectedDescription)->GetStringField(TEXT("reference_pose_sha1")) == BodyPin &&
+     (*HistoricalBefore)->GetStringField(TEXT("canonical_full_sha1")) == (*ExpectedDescription)->GetStringField(TEXT("full_sha1")) &&
+     (*HistoricalAfter)->GetStringField(TEXT("canonical_full_sha1")) == (*ExpectedDescription)->GetStringField(TEXT("full_sha1")) &&
+     (*HistoricalBefore)->GetBoolField(TEXT("detached_roundtrip_preserved")) && (*HistoricalAfter)->GetBoolField(TEXT("detached_roundtrip_preserved")) &&
+     (*HistoricalBefore)->GetBoolField(TEXT("actual_preserved_during_copy")) && (*HistoricalAfter)->GetBoolField(TEXT("actual_preserved_during_copy")) &&
+     (*ExpectedDescription)->GetStringField(TEXT("full_sha1")) == DescriptionBefore->GetStringField(TEXT("full_sha1")) &&
+     DescriptionBefore->GetStringField(TEXT("reference_pose_sha1")) == BodyPin,
+     TEXT("actual entire saved Description exactly matches the bind's proven canonical-only metadata copy and Body reference"))) return false;
     FJson Matches = Object(); const FJson SavedGeometry = Saved->GetObjectField(TEXT("geometry_before"));
     for (const auto& Entry : Before->Values)
     {
@@ -526,6 +588,11 @@ namespace S47MannequinBake
    Data->SetStringField(TEXT("inverse_reference_before_sha1"), InverseReferenceHash(Clothes)); Data->SetStringField(TEXT("body_reference_sha1"), BodyReference);
    Data->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse); Data->SetStringField(TEXT("payload_before_sha1"), Before->GetStringField(TEXT("payload_sha1")));
    Data->SetObjectField(TEXT("geometry_before"), Before); Data->SetObjectField(TEXT("file_before"), FileBefore);
+   Data->SetObjectField(TEXT("description_before"), DescriptionBefore);
+   FJson ExpectedDescription = Object(); ExpectedDescription->SetStringField(TEXT("policy"), TEXT("canonical-body-bone-pose-only"));
+   ExpectedDescription->SetNumberField(TEXT("bones"), 342); ExpectedDescription->SetStringField(TEXT("reference_pose_sha1"), BodyPin);
+   ExpectedDescription->SetStringField(TEXT("full_sha1"), DescriptionBefore->GetStringField(TEXT("canonical_full_sha1")));
+   Data->SetObjectField(TEXT("description_saved_expected"), ExpectedDescription);
    // SetRefSkeleton alone neither clears nor recomputes the inverse matrices.
    // CalculateInvRefMatrices deliberately does nothing while the count matches.
    Clothes->SetRefSkeleton(BodyRef); Clothes->GetRefBasesInvMatrix().Reset(); Clothes->CalculateInvRefMatrices();
@@ -536,13 +603,15 @@ namespace S47MannequinBake
    for (int32 Index = 0; Index < 342; ++Index)
     if (!Need(SameReference(Clothes->GetRefSkeleton().GetRefBonePose()[Index], BodyRef.GetRefBonePose()[Index]),
      FString::Printf(TEXT("strict unchanged cloth/body reference tolerance after canonical bind %d"), Index))) return false;
-   FJson After; if (!GeometryState(After)) return false;
+   FJson After, DescriptionAfter; if (!GeometryState(After, DescriptionAfter)) return false;
+   Data->SetObjectField(TEXT("description_after"), DescriptionAfter);
    Data->SetObjectField(TEXT("geometry_after"), After); Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1")));
    if (!Need(FJsonValue::CompareEqual(*Value(Before), *Value(After)), TEXT("canonical bind changes no imported geometry, UVs, normals, tangents, weights, indices, BoneMaps, sections or materials"))) return false;
    Clothes->MarkPackageDirty(); FSavePackageArgs Args; Args.TopLevelFlags = RF_Public | RF_Standalone;
    if (!Need(UPackage::SavePackage(Clothes->GetOutermost(), Clothes, *Filename, Args), TEXT("only new private Clothes package saved after canonical bind"))) return false;
    FAssetCompilingManager::Get().FinishAllCompilation();
-   if (!GeometryState(After)) return false;
+   if (!GeometryState(After, DescriptionAfter)) return false;
+   Data->SetObjectField(TEXT("description_after"), DescriptionAfter);
    Data->SetObjectField(TEXT("geometry_after"), After); Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1")));
    if (!Need(FJsonValue::CompareEqual(*Value(Before), *Value(After)) && FPose(Clothes->GetRefSkeleton()).Hash() == BodyPin &&
     InverseReferenceHash(Clothes) == BodyInverse && FPose(BodyRef).Hash() == BodyReference && InverseReferenceHash(Body) == BodyInverse,
