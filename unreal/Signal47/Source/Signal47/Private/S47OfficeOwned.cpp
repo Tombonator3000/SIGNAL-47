@@ -257,11 +257,17 @@ bool Audit(AS47Web* W, TArray<FString>& Lines)
  for (int32 I=0;I<Set->Parts.Num();++I)
  {
   const FInstance& P=Set->Parts[I]; UStaticMeshComponent* C=P.Component.Get(); const FS47WebNode* N=W->Node(P.Node);
-  const bool Bound=C && N && N->Comp.Get()==C && N->Parent==Set->Parent && N->Name==Prefix+Ids[I] &&
-   C->GetAttachParent()==Parent->Comp.Get() && C->GetStaticMesh()==Meshes[I] && C->GetNumOverrideMaterials()==0 &&
-   C->GetMaterial(0)==Meshes[I]->GetStaticMaterials()[0].MaterialInterface && C->GetCollisionEnabled()==ECollisionEnabled::NoCollision &&
-   C->GetCollisionProfileName()==TEXT("NoCollision") && C->GetComponentTransform().Equals(P.Wanted,.001) &&
-   W->NodeWorldThree(P.Node).Equals(FTransform(S47Three::Euler(I==3?FMath::DegreesToRadians(75.):0,0,0),Position(I),FVector::OneVector),.00001) && W->UsableAt(C).IsEmpty();
+  const bool NodeBound=C && N && N->Comp.Get()==C && N->Parent==Set->Parent && N->Name==Prefix+Ids[I];
+  const bool ParentBound=C && C->GetAttachParent()==Parent->Comp.Get();
+  const bool MeshBound=C && C->GetStaticMesh()==Meshes[I];
+  const bool MaterialBound=C && C->GetNumOverrideMaterials()==0 && C->GetMaterial(0)==Meshes[I]->GetStaticMaterials()[0].MaterialInterface;
+  const bool CollisionBound=C && C->GetCollisionEnabled()==ECollisionEnabled::NoCollision && C->GetCollisionProfileName()==TEXT("NoCollision");
+  const bool ComponentTransform=C && C->GetComponentTransform().Equals(P.Wanted,.001);
+  const bool NodeTransform=W->NodeWorldThree(P.Node).Equals(FTransform(S47Three::Euler(I==3?FMath::DegreesToRadians(75.):0,0,0),Position(I),FVector::OneVector),.00001);
+  const bool Unusable=C && W->UsableAt(C).IsEmpty();
+  const bool Bound=NodeBound && ParentBound && MeshBound && MaterialBound && CollisionBound && ComponentTransform && NodeTransform && Unusable;
+  if (!Bound) Lines.Add(FString::Printf(TEXT("Owned Office %s binding diagnostics node=%d parent=%d mesh=%d material=%d collision=%d componentTransform=%d nodeTransform=%d noInteraction=%d overrides=%d usable=%s actual=%s wanted=%s"),
+   Ids[I],NodeBound,ParentBound,MeshBound,MaterialBound,CollisionBound,ComponentTransform,NodeTransform,Unusable,C?C->GetNumOverrideMaterials():-1,C?*W->UsableAt(C):TEXT("<no component>"),C?*C->GetComponentTransform().ToString():TEXT("<no component>"),*P.Wanted.ToString()));
   Good &= Bound;
   Lines.Add(FString::Printf(TEXT("Owned Office %s %s: original mesh/material, four used PBR maps, parent, shared-origin transform, NoCollision and no interaction override"),Ids[I],Bound?TEXT("PASS"):TEXT("FAIL")));
  }
