@@ -1059,3 +1059,8 @@ PASS: editor R11, pakking uten materialfeil, 1709 pakkede selvtester, 74 nattkon
 R1 ble avvist etter konkret funn i SaroPower::Settle: settled-flagget hindret glødens tilbakeføring og kunne akkumulere dimming gjennom Continue. R2 retter rekkefølgen og måler faktiske farger. T01s strømtransaksjon skjer nå før resultatmodalen slipper, mens SC02 fortsatt venter på presentasjon. Tidligere SKY-testståsted var skjult av opak portstang; produksjonssikten ble beholdt og både blokkering og vanlig sikt ble prøvd.
 
 UNVERIFIED: fullmatrise, fersk menneskelig SC01/SC02/SC03, manuell helkjøring, fysisk gamepad, subjektiv lytting og helspilltid. Native trafobilder viser RT-geometribudsjettvarsel (83.495/400 MiB, over 20 prosent), uten krasj; FIX-01s diner-krasj er ikke avklart. Ingen installasjon i Games eller offentlig release. [Rapport og presise grenser](../Docs/Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md).
+
+
+## 2026-10-29T01:06:26+01:00: midlertidig hjelp til Claude og dørstemme
+
+Tom ba Codex videreføre Claudes konkrete Remote Control-økt frem til automatisk fortsettelse01:11. Opprinnelig delta er bevart; main a9db4175 flettet. Stop/Begin, Character voices-bryter og områdestopp rydder dørstemmen. Måling fant at Inter.Get ikke finner eksportert dør, slik at en physical-tag skjulte Master-ruting. Rettet via Web.Item/ObjAt og testet på 7a29935e796d6b036692a53d9f2b5712993ccf17. Editorbygg og 1709 selvtester PASS; SC01 185 kontroller/19 disk/Flow-restores/273.08m PASS. Faktisk fysisk stereorute har positiv PCM/RMS; SDL dummybackend, ingen menneskelig lytting. Rapport: Docs/Evidence/UnrealDeliveries/DOOR_VOICE_2026-10-29.md. Ingen installasjon eller release.

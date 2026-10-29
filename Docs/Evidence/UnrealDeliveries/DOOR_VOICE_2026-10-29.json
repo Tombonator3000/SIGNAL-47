@@ -1,0 +1,76 @@
+{
+  "status": "PASS",
+  "scope": "Linux UE5.8.4 editor/game: one targeted SC01 journey and isolated door-voice lifecycle fixtures",
+  "tested_commit": "7a29935e796d6b036692a53d9f2b5712993ccf17",
+  "source_files_count": 454,
+  "source_manifest_sha256": "f892bacef687e84eab89e7ce9ca8111f53c0662aeed30ca7a2f9b264a2b6b8e3",
+  "source_files": {
+    "unreal/Signal47/Source/Signal47/Private/S47Flow.cpp": "4dd1899398064b6d37a758d5cf8ef75384040bf2457bf945cb9c7987ea8d38bc",
+    "unreal/Signal47/Source/Signal47/Private/S47HorrorTest.cpp": "d97eb959158badbceb8989f41523bbcd8fc7f340d9fcf4e2ba35324347fa8f1b",
+    "unreal/Signal47/Source/Signal47/Private/S47Observing.cpp": "819b1acb08001a1281b25cc6510cf428fe4386161fd639ea9e194a17fcc43dc8",
+    "unreal/Signal47/Source/Signal47/Public/S47Observing.h": "96f3099c686336be9de6c9f1da154ea4ebad2f1680fe6767ef14e8bfca083287"
+  },
+  "sources_unchanged_after_build_and_run": true,
+  "module_sha256": "b067d4f6ad6f46479a28bd3a73cebc2d71971b39c3a5ba1f6b9eee2aec00fdb3",
+  "module_unchanged_after_run": true,
+  "selftest_checks": 1709,
+  "sc01_checks": 185,
+  "disk_flow_restores": 19,
+  "native_walk_metres": 273.0771588320602,
+  "audio": {
+    "requested_line": "D01_HANDOVER_001",
+    "resolved_catalog_alias": "D61_FIXED_FRAGMENT_001",
+    "wave_sha256": "26a5ce068588a5c87a2efc445faab35e338c61ce970a8af223da74ab62fd474d",
+    "sample_rate": 48000,
+    "frames": 125760,
+    "catalog_sha256": "6f7483c65bba4cc27c0c192a6661d5e7bbca7197386d75f09b70fe0efdfefa96",
+    "wave_and_catalog_unchanged_during_control": true,
+    "route": "physical, positional panner to SfxBus",
+    "measurements": [
+      {
+        "source_samples": 108544,
+        "source_rms": 0.088371,
+        "routed_samples": 217088,
+        "routed_rms": 0.025464,
+        "bus_gain": 1.0,
+        "line": "[2026.10.29-00.04.43:767][249]LogS47DialogueAudio: Display: S47: dialogue audio clip=D61_FIXED_FRAGMENT_001 route=physical receiverFilter=0 reason=stopped pcmPeak=0.686432 pcmRms=0.082427 sourceSamples=108544 sourcePeak=0.686432 sourceRms=0.088371 routedSamples=217088 routedPeak=0.193445 routedRms=0.025464 busGain=1.000"
+      }
+    ],
+    "backend": "SDL dummy; not human listening"
+  },
+  "logs": {
+    "build_sha256": "e9253d4b1cd9c6780fd26dd45cd776ee1028e1293266babaa191fffeb9b5d6f7",
+    "run_sha256": "fd583aaf2dcfd0162833aecc3c10051c153a150fe7fdc32f3c2a5e276b845544",
+    "verification_sha256": "cffd5373ae8f41b55d06fca3d92b491bc6ce0085d43a86a001ff63c9b729c97e"
+  },
+  "screenshots": {
+    "first-report-complete.png": "17a8cf2e781ebbe93b01e4e44413e93bad0a6c755a499a1f2113b4944a7ea2d7",
+    "first-report-pending.png": "fdcf5e2faa55589425ee02b0c2ec0548cdd2acc077b3c3255c1608070407d3c4",
+    "dialogue-SC01_WINDOW_CHECK_002.png": "239bda59c79b5fd962df94aeea7387aeafa9f63fe37f8a41b4e811547f44f9d5",
+    "dialogue-SC01_WINDOW_CHECK_001.png": "fd4e011efc760bd80a6eaad8a107b538cd8b7ba04cebf3c41575a11e09cb6356",
+    "window-marks-before-check.png": "005f8fc5045b7b017c28307b711f4821e4ada9554369106c92ea5ce11e8c9ac4",
+    "window-slap-shade-down.png": "4c56882cf148a4e6067aa14133b4aabf3b9e38078174412c3b907e788e7e9b0f",
+    "normal-shutter-closed.png": "566c290fd3ad6f39c43a4c2f2dfad49e4479f50e1040062e857df965b22a9a27",
+    "dialogue-H01_CHECK_002.png": "d41ed369ea60d787eaf2ac508445b577d14328e132c3239c0e5718cbd3055e0b",
+    "dialogue-H01_CHECK_001.png": "3f0659f630eda210e081ea1942050392edb84372880f2f5d9ce06cd0c7fa93f4",
+    "door-voice-corridor.png": "c92a65bdf2d11b72e1915341cf9c8da8683f192f33fb6248f909ebc739ac7126",
+    "observing-array-gate.png": "aba82d8345af774998ae438e4347b65e67906bc0cc35f85304bedd4cb11eb547",
+    "observing-generator-emergency-light.png": "726b214456711701c4bb78e8cdd562e13714103711217f59b652ed66d3a519b5",
+    "dialogue-H01_BRIEF_003.png": "8b6c27a9704b1a6e1dbbd53fb85267b13799cdbb1e18c107b0b00615edd5fb2a",
+    "dialogue-H01_BRIEF_002.png": "fa9a9a73803b1d224ddbb7bfd5a0170a94ec53df69b1259aa0b80c2bd5da5acb",
+    "dialogue-H01_BRIEF_001.png": "8a37e33cd7094767b965c5ef814f125d8fc19733ca867e80251a48553dc9615e"
+  },
+  "finished_at": "2026-10-29T00:06:09.920687+00:00",
+  "local_evidence": "/home/tom/scratch-bm/Signal47-claude-handoff-20261029/targeted-voice-5",
+  "limits": [
+    "No packaged build, full matrix, installation or public release",
+    "No human play/listening, full-night pacing or physical controller acceptance",
+    "Lifecycle controls use explicit isolated replay fixtures, not a separate process restart"
+  ],
+  "prior_runs": {
+    "targeted-voice-1": "Rejected profile outside /tmp; old-base selftest credit failure",
+    "targeted-voice-2": "No heavy job started: other diagnostic occupied machine",
+    "targeted-voice-3": "SC01 state tests185/selftests1709 passed, but physical audio rejected: anchor missing, Master path",
+    "targeted-voice-4": "No heavy job started: other diagnostic occupied machine"
+  }
+}
