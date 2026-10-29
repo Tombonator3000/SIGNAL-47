@@ -383,9 +383,9 @@ FString FS47Horror::Objective() const
   if(SC03Live()) return SC03->Objective();
   if(!SC02Meeting()) return FString();
   if(M->World && M->World->bDriving) return TEXT("CALICHE JUNCTION // DRIVE CLEAR OF THE SERVICE FRONT");
-  if(!bThreatSeen) return TEXT("CALICHE JUNCTION // RETURN TO SARO 07 ON THE GROUND OUTSIDE THE FENCE");
+  if(!bThreatSeen) return TEXT("CALICHE JUNCTION // RETURN ON FOOT TO THE SERVICE TRUCK OUTSIDE THE FENCE");
   if(Threat->State()==FS47HorrorThreat::EState::Chase) return TEXT("CALICHE JUNCTION // BREAK THE LINE OF SIGHT BEHIND SOLID COVER");
-  return TEXT("CALICHE JUNCTION // KEEP SOLID COVER BETWEEN YOU AND THE BODY. REACH SARO 07 OUTSIDE THE FENCE AND DRIVE");
+  return TEXT("CALICHE JUNCTION // KEEP SOLID COVER BETWEEN YOU AND THE BODY. REACH THE SERVICE TRUCK OUTSIDE THE FENCE AND DRIVE");
  }
  if(!M->FieldCamera || !M->FieldCamera->bHave)return TEXT("EVENING ROUND // COLLECT THE CAMERA BESIDE THE EAST DOOR");
  if(!bEast || !bCorridor)
@@ -415,7 +415,7 @@ TArray<FS47Task> FS47Horror::Tasks() const
   if(SC03Live()){TArray<FS47Task> Out;for(const auto& Row:SC03->Tasks())Out.Add({Row.Key,Row.Value});return Out;}
   if(!SC02Meeting())return {};
   return {{TEXT("Compare the marked lamp with the completed service check"),M->Substation && M->Substation->HasNormalResult()},
-  {TEXT("Reach SARO 07 by a route outside the fence"),M->World && M->World->bDriving},
+  {TEXT("Reach the service truck by a route outside the fence"),M->World && M->World->bDriving},
   {TEXT("Drive clear of Caliche Junction"),false}};
  }
  TArray<FS47Task> Out={{TEXT("Collect the field camera"),M->FieldCamera && M->FieldCamera->bHave},
@@ -608,7 +608,7 @@ void FS47Horror::StepSC02(double Dt)
    {
     SC02=ESC02::Escaped;EscapeStamp=M->Story->ClockText(true);bRetry=bRetryShowing=false;
     if(!Threat->Appeared())Threat->Stop(); // nothing to withdraw; it must not appear behind the departed truck
-    M->Story->Note(TEXT("Caliche Junction: a pale body moved at the service front and turned towards sound. Reached SARO 07 outside the closed yard and drove clear. The completed lamp check remains on its card."));
+    M->Story->Note(TEXT("Caliche Junction: a pale body moved at the service front and turned towards sound. Reached the service truck outside the closed yard and drove clear. The completed lamp check remains on its card."));
    }
    else {SC02=ESC02::Unwitnessed;Threat->Stop();} // no sighting, no encounter paper
    UE_LOG(LogTemp,Display,TEXT("S47: SC02 contact broken from SARO 07; %s"),PhaseName(SC02));

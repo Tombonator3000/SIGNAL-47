@@ -1307,7 +1307,15 @@ bool AS47Web::ToggleDoor(const FString& ItemId)
 		const FVector P = S47Three::ToThree(Eye);
 		const auto& W = Walks.FindOrAdd(D->Area);
 		constexpr double Radius = 0.27;
-		for (int32 Z : D->Zones) if (W.Key.IsValidIndex(Z))
+		// Standing in the room in front of the door is not the threshold: another enabled zone
+		// still holds the player, so the door closes (Tom's play test 29 October: ~30 refusals).
+		bool bHeldElsewhere = false;
+		for (int32 Z = 0; Z < W.Key.Num() && !bHeldElsewhere; ++Z)
+		{
+			const FS47Rect& R = W.Key[Z];
+			bHeldElsewhere = R.bEnabled && !D->Zones.Contains(Z) && P.X >= R.MinX && P.X <= R.MaxX && P.Z >= R.MinZ && P.Z <= R.MaxZ;
+		}
+		if (!bHeldElsewhere) for (int32 Z : D->Zones) if (W.Key.IsValidIndex(Z))
 		{
 			const FS47Rect& R = W.Key[Z];
 			if (P.X + Radius > R.MinX && P.X - Radius < R.MaxX && P.Z + Radius > R.MinZ && P.Z - Radius < R.MaxZ)

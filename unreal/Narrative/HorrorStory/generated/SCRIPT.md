@@ -824,7 +824,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 **Krav:** {"all": ["ctx_hr_sc02_t01_complete", "ctx_hr_sc02_threat_visible"], "none": ["hr_sc02_return_warning_presented"]}
 
-**DESCRIPTION [SC02_RETURN_WARNING_001]**: A pale body stands between the service front and SARO 07. It turns towards a new sound. The opaque shed wall breaks the view.
+**DESCRIPTION [SC02_RETURN_WARNING_001]**: A pale body stands between the service front and the service truck. It turns towards a new sound. The opaque shed wall breaks the view.
 
 *Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
 
@@ -1549,7 +1549,7 @@ typed / SARO / NIGHT SHIFT / 13-14 APR 1986
 
 The completed local lamp check remains recorded on its service card. Physical return filing at SARO is a separate action. At the service front a pale body moved under direct observation and turned towards new sound.
 
-Reyes used the available route outside the fence, reached SARO 07 and broke contact. This note does not identify the body or explain the lamp fault.
+Reyes used the available route outside the fence, reached the service truck and broke contact. This note does not identify the body or explain the lamp fault.
 
 **Produksjon:** Bare faktisk vellykket flukt. Lokal retry gir ikke denne før ny vellykket retrett.
 
