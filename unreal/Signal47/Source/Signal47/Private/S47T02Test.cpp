@@ -570,14 +570,23 @@ void FS47T02Test::Step(double Dt)
      const bool bSameView=FMath::IsNearlyEqual(M->Player->Yaw,S47J::Num(SourcePose,TEXT("yaw")),1e-6) && FMath::IsNearlyEqual(M->Player->Pitch,S47J::Num(SourcePose,TEXT("pitch")),1e-6);
      const bool bSamePosition=FMath::Abs(Actual.X-S47J::Num(SourcePose,TEXT("x")))<1e-6 && FMath::Abs(Actual.Z-S47J::Num(SourcePose,TEXT("z")))<1e-6;
      const bool bExpectedPose=Round==0 ? (C.bMoved ? !bSamePosition && M->Office->Contains(Actual) : bSamePosition) : Actual.Equals(FirstPosition,1e-6);
-     if (!Check(Clear(Actual) && bSameView && bExpectedPose && Equal(AfterOffice,ExpectedOffice) &&
-      Equal(S47J::Obj(After,TEXT("case")),SourceCase) && Equal(InteriorDocs(),C.bLocked?T.InteriorLockedDocs:T.InteriorEarnedDocs) &&
-      S47J::Num(S47J::Obj(After,TEXT("office")),TEXT("interiorLayout"))==2,
-      TEXT("clear local restore retains exact key/read/story/docs/view and layout2, second Continue idempotent: ")+Name)) return false;
+     const auto ActualDocs=InteriorDocs(), ExpectedDocs=C.bLocked?T.InteriorLockedDocs:T.InteriorEarnedDocs;
+     const bool bClear=Clear(Actual), bOffice=Equal(AfterOffice,ExpectedOffice), bCase=Equal(S47J::Obj(After,TEXT("case")),SourceCase), bDocs=Equal(ActualDocs,ExpectedDocs);
+     const bool bLayout=S47J::Num(S47J::Obj(After,TEXT("office")),TEXT("interiorLayout"))==2;
      auto Receipt=S47J::New(); S47J::Set(Receipt,TEXT("cohort"),Name); S47J::Set(Receipt,TEXT("fixturePose"),SourcePose);
      S47J::Set(Receipt,TEXT("actualPose"),S47J::Obj(After,TEXT("pose"))); S47J::Set(Receipt,TEXT("sourceOffice"),SourceOffice); S47J::Set(Receipt,TEXT("restoredOffice"),S47J::Obj(After,TEXT("office")));
-     S47J::Set(Receipt,TEXT("status"),TEXT("PASS_DISK_TITLE_CONTINUE_FIXTURE"));
+     S47J::Set(Receipt,TEXT("sourceCase"),SourceCase); S47J::Set(Receipt,TEXT("restoredCase"),S47J::Obj(After,TEXT("case")));
+     S47J::Set(Receipt,TEXT("sourceDocs"),ExpectedDocs); S47J::Set(Receipt,TEXT("restoredDocs"),ActualDocs);
+     auto Checks=S47J::New(); S47J::Set(Checks,TEXT("colliderClear"),bClear); S47J::Set(Checks,TEXT("sameView"),bSameView); S47J::Set(Checks,TEXT("expectedPose"),bExpectedPose);
+     S47J::Set(Checks,TEXT("sameOffice"),bOffice); S47J::Set(Checks,TEXT("sameCase"),bCase); S47J::Set(Checks,TEXT("sameDocs"),bDocs); S47J::Set(Checks,TEXT("layout2"),bLayout); S47J::Set(Receipt,TEXT("checks"),Checks);
+     S47J::Set(Receipt,TEXT("status"),bClear&&bSameView&&bExpectedPose&&bOffice&&bCase&&bDocs&&bLayout?TEXT("PASS_DISK_TITLE_CONTINUE_FIXTURE"):TEXT("FAIL_DISK_TITLE_CONTINUE_FIXTURE"));
      FFileHelper::SaveStringToFile(S47J::Write(Receipt,true),*(T.Root/(Name+TEXT(".restore.json"))));
+     UE_LOG(LogS47T02Test,Display,TEXT("S47: interior restore subchecks %s clear=%d view=%d pose=%d office=%d case=%d docs=%d layout=%d actual=(%.9f,%.9f) yaw=%.9f/%.9f pitch=%.9f/%.9f"),
+      *Name,bClear,bSameView,bExpectedPose,bOffice,bCase,bDocs,bLayout,Actual.X,Actual.Z,M->Player->Yaw,S47J::Num(SourcePose,TEXT("yaw")),M->Player->Pitch,S47J::Num(SourcePose,TEXT("pitch")));
+     if (!Check(bClear,TEXT("interior restored capsule is walkable and clear of every enabled collider: ")+Name) ||
+      !Check(bSameView,TEXT("interior restored yaw/pitch unchanged: ")+Name) || !Check(bExpectedPose,TEXT("interior restore uses expected local migration or unchanged/idempotent pose: ")+Name) ||
+      !Check(bOffice,TEXT("interior preserves all Office facts except layout annotation: ")+Name) || !Check(bCase,TEXT("interior preserves full chapter/night case: ")+Name) ||
+      !Check(bDocs,TEXT("interior preserves actual acquired Dale documents: ")+Name) || !Check(bLayout,TEXT("interior migration annotation is layout2: ")+Name)) return false;
      if (Round==0) FirstPosition=Actual;
      Input=S47J::Clone(After);
     }
