@@ -416,6 +416,10 @@ void FS47T02Test::Step(double Dt)
  {
   if (T.bSaroInterior)
   {
+   // Establish the ordinary production restore baseline first. Legacy Flow adds
+   // its existing explanatory timeline note on Continue; that is independent of
+   // interior migration and must already be present in the comparison source.
+   if (!SaveLoad(TEXT("interior-locked-normal-baseline"),M->Flow->GameState(),false)) return;
    T.InteriorLocked = S47J::Clone(M->Flow->GameState()); T.InteriorLockedDocs = InteriorDocs();
    if (!Check(!M->Office->HasKey() && !M->Office->WasUnlocked() && !S47J::Bool(M->Office->Save(),TEXT("entered")), TEXT("interior locked cohort captured before actual spare acquisition, without fact setters"))) return;
   }
@@ -489,6 +493,10 @@ void FS47T02Test::Step(double Dt)
   if (!Check(Index && Index->Title == T.OfficeIndexTitle && Index->Page == T.OfficeIndexPage && !UnreadGranted && !M->ModalOpen(), TEXT("fresh early restore refiles the exact acquired field index nonmodally without granting unread office papers"))) return;
   if (T.bSaroInterior)
   {
+   // GoodOffice was captured before the normal field-sheet restore. Compare
+   // cohorts against its genuinely restored state, including existing legacy
+   // timeline annotation, rather than manufacturing or ignoring story notes.
+   T.GoodOffice = S47J::Clone(M->Flow->GameState());
    T.InteriorEarnedDocs = InteriorDocs();
    Path({FVector(.40,0,8.1),FVector(.45,0,7.4),FVector(.47,0,6.8)}); Stage(800,0); return;
   }

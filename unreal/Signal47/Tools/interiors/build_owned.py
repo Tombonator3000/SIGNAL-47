@@ -295,6 +295,8 @@ def main():
     parser.add_argument('--size', type=int, choices=(1024, 2048, 4096), default=2048)
     parser.add_argument('--samples', type=int, default=16)
     parser.add_argument('--device', choices=('CPU', 'GPU'), default='CPU')
+    parser.add_argument('--asset', action='append', choices=tuple(NAMES),
+                        help='Bake only these reviewed originals; omitted assets remain unaccepted')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
     O.require('-Y' in sys.argv or '--disable-autoexec' in sys.argv,
               'Start Blender with -Y / --disable-autoexec before loading licensed files')
@@ -327,6 +329,11 @@ def main():
               'parts': {}, 'native_import': 'UNVERIFIED', 'runtime_appearance': 'UNVERIFIED',
               'required_native_features': ['textures.metallic'],
               'material_limitation': 'Stops on unsupported shader, alpha or transmission; no silent flattening.'}
+    if args.asset:
+        inputs = [row for row in inputs if row[1] in args.asset]
+        O.require(bool(inputs), 'No reviewed source matched the requested assets')
+    report['selected_assets'] = [row[1] for row in inputs]
+    report['omitted_assets'] = [name for name in NAMES if name not in report['selected_assets']]
     materials = []
     report_path = output / 'build-report.json'
     try:
