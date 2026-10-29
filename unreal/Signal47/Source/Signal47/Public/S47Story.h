@@ -53,6 +53,9 @@ public:
  bool bOpeningHeld = false;
  void BeginEveningShift();
  bool NightSequence() const;
+ bool RevisedSC05() const;
+ void RoomCeramicShattered();
+ void CompleteRevisedCall();
  bool FeederOutage() const;
  bool FeederFaultVisible() const;
  void ApplyFeederPower(bool bOut);
