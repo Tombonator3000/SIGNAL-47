@@ -305,7 +305,8 @@ namespace S47MannequinBake
    Part->SetSkinnedAssetAndUpdate(Mesh); Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
    Part->SetComponentTickEnabled(false); Actor->AddInstanceComponent(Part); Part->RegisterComponent();
    Part->BoneSpaceTransforms = Posed.Local; Part->RefreshBoneTransforms();
-   Part->SetCPUSkinningEnabled(true, true);
+   // GetCPUSkinnedVertices must own its false->true transition for each LOD;
+   // pre-enabling CPU skinning skips the render-state rebuild and keeps a stale cache.
    return Part;
   }
   bool AppendNative(UMeshComponent* Part, int32 OverallLOD, int32 BaseSlot, const FTransform& Seat, FRawMesh& Raw,
@@ -335,7 +336,9 @@ namespace S47MannequinBake
    {
     const int32 LODIndex = FMath::Min(OverallLOD, Skin->GetNumLODs() - 1);
     if (!Need(LODIndex >= Skin->ComputeMinLOD(), TEXT("every posed source contributes to selected LOD; no min-LOD omission"))) return false;
+    if (!Need(!Skin->GetCPUSkinningEnabled(), TEXT("native CPU helper begins from GPU state for a fresh selected-LOD cache"))) return false;
     TArray<FFinalSkinVertex> Vertices; Skin->GetCPUSkinnedVertices(Vertices, LODIndex);
+    if (!Need(!Skin->GetCPUSkinningEnabled(), TEXT("native CPU helper restores GPU state after selected-LOD readback"))) return false;
     const FSkeletalMeshLODRenderData& LOD = Skin->GetSkinnedAsset()->GetResourceForRendering()->LODRenderData[LODIndex];
     if (!Need(Vertices.Num() > 0 && Vertices.Num() == int32(LOD.GetNumVertices()), TEXT("actual CPU-skinned source vertex count"))) return false;
     for (const FFinalSkinVertex& Vertex : Vertices) Raw.VertexPositions.Add((FVector4f)Transform.TransformPosition((FVector)Vertex.Position));
