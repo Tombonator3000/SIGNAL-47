@@ -37,6 +37,15 @@ BAND_Z = 2.6                             # smooth stucco sign band starts here o
 DOOR_HOLE = (DOOR_Y - DOOR_W / 2, DOOR_Y + DOOR_W / 2, 0.0, DOOR_H)
 WIN_HOLES = [(y - w / 2, y + w / 2, z0, z1) for y, w, z0, z1 in WINS]
 
+# HUM-01: bare utebenken følger det bevarte fortauet, ikke bygningens plane gulv.
+# Minste kvadraters plan fra 30 faktiske prøver over begge fotjernene på g1004,
+# originaltri 131/135, worldY = height + a*(Bx-.43) + b*(By-.70).
+# Maks planavvik 0.000790699 cm. Geo-SHA256 0e87d2acf6bbe9044304423d096ea75f7c
+# 731dd1af15c545b2d79691e5e2bfee; bevart indeks-SHA256 ea188cc55da4fa0bbddafbe
+# 92277a341fdc2a9d1de638a3a6e0ee63761ba6335. Ingen terreng-/bygningsflytting.
+BENCH_PAVEMENT_SLOPES = (-0.012289637654211845, -0.02869447725344365)
+BENCH_PAVEMENT_PIVOT = (0.43, 0.70, 7.525771419069584)
+
 # Wall frames: origin on the outer face, tangent t (u axis), outward normal n; t x Z == n.
 WALLS = {
     'front': ((X1 + HT, 0, 0), (0, 1, 0), (1, 0, 0)),
@@ -816,12 +825,36 @@ def _roof(s, fix, lod):
             hface(s, [(px - r, py - r * .7, rz + .003), (px + r, py - r * .6, rz + .003), (px + r * .8, py + r * .7, rz + .003), (px - r * .9, py + r * .5, rz + .003)], 'Rubber')
 
 
+def _ground_bench(s, first_vertex, first_face):
+    """Roter bare de 14 benkesolidene stivt til det målte fortausplanet."""
+    expected = {'Bench_cast_leg_front': 12, 'Bench_cast_leg_back': 12,
+                'Bench_seat_bearer': 12, 'Bench_foot': 12,
+                'Bench_seat_slat': 24, 'Bench_back_slat': 12}
+    tags = s.tags[first_face:]
+    assert len(tags) == 84 and {tag: tags.count(tag) for tag in set(tags)} == expected
+    assert len(s.v) - first_vertex == 336
+    assert all(len(face) == 4 and all(v >= first_vertex for v in face)
+               for face in s.f[first_face:])
+    a, b = BENCH_PAVEMENT_SLOPES
+    normal = G.unit((-a, -b, 1.0))
+    axis = (-normal[1], normal[0], 0.0)  # Z kryss normal, Rodrigues uten skalering.
+    px, py, world_y = BENCH_PAVEMENT_PIVOT
+    pivot = (px, py, 0.0)
+    target = (px, py, world_y - B['root'][1])
+    for i in range(first_vertex, len(s.v)):
+        q = G.sub(s.v[i], pivot)
+        cross = G.cross(axis, q)
+        rotated = G.add(G.add(q, cross), G.mul(G.cross(axis, cross), 1.0 / (1.0 + normal[2])))
+        s.v[i] = G.add(target, rotated)
+
+
 def _street_props(s, lod):
     sides = [10, 8, 6][lod]
     xw = X1 + HT
     # worn concrete stoop at the door, only 3 cm proud
     bb(s, 'Door_stoop_slab', xw, xw + .58, DOOR_HOLE[0] - .35, DOOR_HOLE[1] + .35, -.06, .03, 'Concrete')
     # bench under the left window, green slats on cast frames
+    bench_vertex, bench_face = len(s.v), len(s.f)
     by0, by1 = WINS[1][0] - .95, WINS[1][0] + .95
     for yy in [by0 + .12, by1 - .12]:
         bb(s, 'Bench_cast_leg_front', xw + .48, xw + .52, yy - .025, yy + .025, 0, .43, 'DarkMetal')
@@ -833,6 +866,7 @@ def _street_props(s, lod):
         bb(s, 'Bench_seat_slat', xx, xx + .075, by0, by1, .44, .47, 'TealPaint')
     for zz in [.56, .7]:
         bb(s, 'Bench_back_slat', xw + .13, xw + .16, by0, by1, zz, zz + .085, 'TealPaint')
+    _ground_bench(s, bench_vertex, bench_face)
     # steel trash can and sand urn by the door
     tx, ty = xw + .32, DOOR_HOLE[1] + .42
     s.lathe('Trash_can_body', (tx, ty, 0), [(0, .2), (.02, .22), (.75, .23)], 'DarkMetal', sides)
