@@ -86,4 +86,4 @@ Hver kjøring: still inn konsollen etter kortet, trykk START RUN, hør og se int
 
 SC01-vinduet (hånd i dag, klask etter neste pass) blir ikke klart før timeplanen er ferdig. Lampekontrollen kan gjøres når som helst. Gamle lagringer får ingen timeplan i ettertid.
 
-Status: kode i S47Observing (ny), med små koblinger i Story (konsollkortet), HUD, Flow, Main, widgets og Horror. Aggregattest, arkivrunde, runde ute, stemmen ved døra og SC01-klasket gjenstår.
+Status: kode i S47Observing (ny), med små koblinger i Story (konsollkortet), HUD, Flow, Main, widgets og Horror. Aggregattest, arkivrunde 20:30 (kjøreperm i arkivrommet, PR fra claude/story01-20261029), runde ute, stemmen ved døra og SC01-klasket er laget. Neste ramme: [tidslinje SC01 til SC13](TIDSLINJE_SC01_SC13_2026-10-29.md).
