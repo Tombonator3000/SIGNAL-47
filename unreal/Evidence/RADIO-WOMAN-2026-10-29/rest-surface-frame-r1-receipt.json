@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "status": "PASS_READONLY_COMPLETE_SKIN_AND_FRAME_NOT_GARMENT_OR_RUNTIME",
+  "recorded_at": "2026-10-29T21:13:13+01:00",
+  "source_commit": "1740c8d074ad56c0ea60222323d314264d27b06e",
+  "editor_cpp": {
+    "file": "S47MannequinBakeEditor.cpp",
+    "bytes": 171692,
+    "sha256": "c5ff56b8e15618ce6489c8766b7de31a0211e141a39dc516aa08c801d39f1cee"
+  },
+  "editor_module": {
+    "bytes": 18433256,
+    "sha1": "d55a8b2819675c0e77d693a867e7a6bd02ea5612",
+    "sha256": "792a9fe886bcea8f7e19c351a03b6fca8a272e5f8a367b88e5e9570ac36a4843"
+  },
+  "actual_processes": {
+    "rest-r1-editor-build": {
+      "returncode": 0,
+      "semantic_success": true,
+      "contention": [],
+      "stop_reason": null,
+      "wall_seconds": 16.24632566299988,
+      "guard_sha256": "be16ba2ebc92dcd2c1550933c7671aad19724a40b24eb52f7ee9db493db2b9d7"
+    },
+    "rest-r1-native-dump": {
+      "returncode": 0,
+      "semantic_success": true,
+      "contention": [],
+      "stop_reason": null,
+      "wall_seconds": 14.727984489989467,
+      "guard_sha256": "c0bbf8df5ba1aa18086f7682efa24dde6f54067a29a68665f6b5edfb7b94e41c"
+    }
+  },
+  "raw_evidence": {
+    "native": {
+      "file": "native-rest-surfaces.json",
+      "bytes": 24124032,
+      "sha256": "1cf5db568213c66a7d5abe05c32d75dbc0bd4bf4beb2fa500fb5d2de3fa2f65b"
+    },
+    "rest_acceptance": {
+      "file": "rest-surface-acceptance.json",
+      "bytes": 2219,
+      "sha256": "6f0567f6259cbf981028bc5149acd94ee4bfb842692502562ab9d57ec4fcafc4"
+    },
+    "frame_acceptance": {
+      "file": "native-skin-confirmation-r1.json",
+      "bytes": 93205,
+      "sha256": "7e9a0ebc6de99cb65c9f71ec1cbc473b8a2bcb0ab11cf39e5939fc4493a7c779"
+    },
+    "source_freeze": {
+      "file": "source-freeze.json",
+      "bytes": 136785,
+      "sha256": "ecf553db0294de4cc993655431fd51558085d1a668a1333aded3bf4eabf5b76a"
+    }
+  },
+  "rest_checks": {
+    "rest-r1-require-idle": true,
+    "rest-r1-source-preflight": true,
+    "rest-r1-editor-build": true,
+    "rest-r1-native-dump": true,
+    "all_486_inputs_unchanged": true,
+    "native_and_runner_pass": true,
+    "originals_preserved": true,
+    "no_RHI_save_adoption": true,
+    "body_surface_digest": true,
+    "body_actual_copy_limit": true,
+    "face_surface_digest": true,
+    "face_actual_copy_limit": true
+  },
+  "frame_checks": {
+    "actual_native_receipt_guard_and_original_files": true,
+    "actual_full_ref_counts_and_copy_limits": true,
+    "unique_measured_unit_frame_all_341_heads_and_parents": true,
+    "entire_actual_body_vertex_and_oriented_triangle_correspondence": true,
+    "actual_body_normal_parity_not_guessed_from_axis": true,
+    "actual_visible_face_skin_and_full_body_open_boundary_covered": true
+  },
+  "frame": {
+    "anchors": [
+      "pelvis",
+      "neck_01",
+      "upperarm_l",
+      "ball_l"
+    ],
+    "measured_affine": [
+      [
+        0.009999999517155755,
+        8.550740531320698e-09,
+        6.924221660467514e-10
+      ],
+      [
+        -2.2144750444182473e-09,
+        -0.00999999342609215,
+        7.623412595636481e-10
+      ],
+      [
+        1.8515524309939413e-08,
+        -6.970416228935239e-08,
+        0.009999996023264816
+      ]
+    ],
+    "measured_exact_unit_axis_frame": [
+      [
+        0.01,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        -0.01,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.01
+      ]
+    ],
+    "translation_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "determinant": -1.0000000000000002e-06,
+    "maximum_head_error_m": 4.4007218113874645e-07,
+    "note": "Exact centimetre/metre axes derived from measured affine; no shear/scale fitting applied."
+  },
+  "body_mesh": {
+    "vertices": 32334,
+    "triangles": 60816,
+    "one_to_one_points_verified": true,
+    "maximum_position_error_m": 1.03276550203801e-07,
+    "full_oriented_triangle_multiset_verified": true,
+    "native_triangle_order_reversed_to_match_fbx": false,
+    "minimum_mapped_native_normal_dot_actual_fbx_corner_normal": 0.9999784966911494
+  },
+  "face_skin": {
+    "selected_actual_sections": [
+      {
+        "section": 0,
+        "base_index": 0,
+        "triangles": 23860,
+        "native_material_index": 0,
+        "resolved_material_slot": 8,
+        "disabled": false,
+        "material": "/Game/MetaHumans/MHC_Waitress/Face/Materials/MI_Face_Skin_Baked_LOD1.MI_Face_Skin_Baked_LOD1"
+      }
+    ],
+    "skin_triangles": 23860,
+    "body_upper_boundary_points": 92,
+    "maximum_body_boundary_to_actual_face_skin_m": 2.3510324399377293e-07
+  },
+  "original_metahuman_files_unchanged": 416,
+  "source_config_inputs_unchanged": 486,
+  "limits": {
+    "asset_save": false,
+    "new_RHI_test": false,
+    "garment_fit_accepted": false,
+    "appearance_accepted": false,
+    "R12_native_accepted": false,
+    "runtime_still_R11": true,
+    "packed_test": false,
+    "installation": false
+  },
+  "rest_native_pid": 2965551
+}
