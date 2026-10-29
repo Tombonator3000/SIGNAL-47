@@ -112,16 +112,21 @@ namespace S47RadioWomanContract
    for(int32 Side=0;Side<2;++Side)
    {
     int32 Rays=0;double Min=1e20,Max=-1e20;TArray<TSharedPtr<FJsonValue>> Samples;
+    TArray<FVector> Unique;
     for(uint32 Index:Candidates[Side])
     {
-     const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Index));if(P.Z>Low[Side]+.15||Rays>=16)continue;
+     const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Index));if(P.Z<=Low[Side]+.15&&!Unique.ContainsByPredicate([&](const FVector& V){return V.Equals(P,.00001);}))Unique.Add(P);
+    }
+    if(!Check(Unique.Num()>=3&&Unique.Num()<=256,TEXT("contact sample includes every unique lowest sole vertex, without duplicate-index or first16 bias")))return false;
+    for(const FVector& P:Unique)
+    {
      const FVector World=C->GetComponentTransform().TransformPosition(P);FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSole),true,Main()->Player.Get());
      const bool Hit=Web->GetWorld()->LineTraceSingleByChannel(H,World+FVector(0,0,50),World-FVector(0,0,100),ECC_Visibility,Q);
      if(!Check(Hit&&H.ImpactNormal.Z>.7,TEXT("actual ground under each sampled lowest sole vertex")))return false;
      const double Gap=World.Z-H.ImpactPoint.Z;Min=FMath::Min(Min,Gap);Max=FMath::Max(Max,Gap);++Rays;
      auto R=S47J::New();Vec(R,TEXT("sole_world_ue_cm"),World);Vec(R,TEXT("ground_world_ue_cm"),H.ImpactPoint);S47J::Set(R,TEXT("gap_cm"),Gap);S47J::Set(R,TEXT("ground_component"),GetPathNameSafe(H.GetComponent()));Samples.Add(MakeShared<FJsonValueObject>(R));
     }
-    auto F=S47J::New();S47J::Set(F,TEXT("side"),Side);S47J::Set(F,TEXT("ground_rays"),Rays);S47J::Set(F,TEXT("minimum_gap_cm"),Min);S47J::Set(F,TEXT("maximum_gap_cm"),Max);F->SetArrayField(TEXT("samples"),Samples);Feet.Add(MakeShared<FJsonValueObject>(F));
+    auto F=S47J::New();S47J::Set(F,TEXT("side"),Side);S47J::Set(F,TEXT("ground_rays"),Rays);S47J::Set(F,TEXT("unique_lowest_sole_vertices"),Unique.Num());S47J::Set(F,TEXT("minimum_gap_cm"),Min);S47J::Set(F,TEXT("maximum_gap_cm"),Max);F->SetArrayField(TEXT("samples"),Samples);Feet.Add(MakeShared<FJsonValueObject>(F));
     if(!Check(Rays>=3&&Min>=-1.5&&Max<=1.5,TEXT("actual seated shoe contact within1.5cm of rendered ground, without body scale or collision changes")))
     {Snapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);Write(Root/TEXT("first-shoe-contact-failure.json"),Snapshot);return false;}
    }

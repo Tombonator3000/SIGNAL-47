@@ -123,7 +123,7 @@ def import_private(job, cfg, sources):
     options.import_materials, options.import_textures, options.import_animations = False, False, False
     options.create_physics_asset = False
     data = options.skeletal_mesh_import_data
-    data.import_content_type = unreal.FBXImportContentType.FBXICT_ALL
+    data.set_editor_property('import_content_type', unreal.FBXImportContentType.FBXICT_ALL)
     data.set_editor_property('update_skeleton_reference_pose', False)
     data.set_editor_property('use_t0_as_ref_pose', False)
     data.set_editor_property('preserve_smoothing_groups', True)
