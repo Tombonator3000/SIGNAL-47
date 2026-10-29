@@ -1604,7 +1604,7 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	{
 		Kit.Add({ TEXT("Flashlight"), TEXT("From the passenger seat of the truck. F switches it."), M->Night->Flashlight->bOn ? TEXT("On") : TEXT("Off"), TEXT("flashlight"), FString() });
 	}
-	if (bCh1) Kit.Add({ TEXT("Truck keys"), TEXT("SARO 07, the service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SARO 07") });
+	if (bCh1) Kit.Add({ TEXT("Truck keys"), TEXT("The service truck. The keys stay in it."), TruckAt, TEXT("keys"), TEXT("SERVICE") });
 	if (Papers) Kit.Add({ TEXT("Papers"), TEXT("Folded into the notebook. Papers and Findings have them."), FString::FromInt(Papers), TEXT("papers"), FString() });
 	if (Town.Contains(TEXT("nickel"))) Kit.Add({ TEXT("A nickel"), TEXT("From the coin return of the payphone in Caliche. Bright as the day it was struck."), TEXT("1947"), TEXT("nickel"), FString() });
 	// (story/archivePhone.ts: from the fire drawer behind the STATION 01 box)

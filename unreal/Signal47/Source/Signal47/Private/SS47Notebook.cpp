@@ -975,7 +975,7 @@ void SS47Notebook::BuildRight()
 		TSharedRef<SOverlay> Large = SNew(SOverlay) + SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)[Drawing(Art, 240, 230, 10.f, 0.38f)];
 		if (!K.Tag.IsEmpty() && Art)
 		{
-			// the keys' leather tag is blank in the drawing; the page writes SARO 07 on it
+			// the keys' leather tag is blank in the drawing; the page writes SERVICE on it
 			Large->AddSlot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(P(0.8f * 240 - 36), P(0.62f * 240 - 14), 0, 0)
 			[
 				Turned(SNew(STextBlock).Text(FText::FromString(K.Tag)).Font(Type(240 * 0.095f)).ColorAndOpacity(FLinearColor::FromSRGBColor(FColor(52, 26, 10)) * FLinearColor(1, 1, 1, 0.78f)), 58.f)
@@ -1315,7 +1315,7 @@ bool SS47Notebook::SelfTest(TArray<FString>& Lines)
 	FS47NbExtras Ex;
 	Ex.Map = FS47MapView();
 	Ex.Kit = TArray<FS47KitItem>{ { TEXT("Notebook"), TEXT("Tab opens it."), FString(), TEXT("notebook"), FString() }, { TEXT("SARO jacket"), TEXT("From the hook."), TEXT("On"), TEXT("jacket"), FString() },
-		{ TEXT("Truck keys"), TEXT("SARO 07."), TEXT("On the pad"), TEXT("keys"), TEXT("SARO 07") }, { TEXT("Papers"), TEXT("Folded."), TEXT("2"), TEXT("papers"), FString() } };
+		{ TEXT("Truck keys"), TEXT("Service truck."), TEXT("On the pad"), TEXT("keys"), TEXT("SERVICE") }, { TEXT("Papers"), TEXT("Folded."), TEXT("2"), TEXT("papers"), FString() } };
 	Ex.People = TArray<FS47PersonCard>{ { TEXT("Dale"), TEXT("SARO"), TEXT("Left."), FString() } };
 	TArray<FS47Task> T; T.Add({ TEXT("Read the log"), true }); T.Add({ TEXT("Answer the line"), false });
 	FString Opened;

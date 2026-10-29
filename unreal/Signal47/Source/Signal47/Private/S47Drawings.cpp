@@ -244,7 +244,7 @@ namespace
 		// drawServiceMap
 		const S47Drawings::FServiceMap& Mp = S47Drawings::SERVICE_MAP();
 		G.SetFill(S47Drawings::INK); G.SetStroke(S47Drawings::INK); // lineCap and lineJoin round (FS47Canvas strokes so)
-		G.SetFont(OSWALD_600, 30); G.FillText(TEXT("SARO 07 / SERVICE MAP"), 40, 54);
+		G.SetFont(OSWALD_600, 30); G.FillText(TEXT("SERVICE TRUCK / ROUTE MAP"), 40, 54);
 		G.SetFont(ELITE, 19); G.FillText(TEXT("Access and old survey roads. Mileposts from the junction at the diner. BM: survey bolt in the shoulder."), 40, 86, 1120);
 		// north arrow
 		G.LineWidth = 3;
@@ -305,7 +305,7 @@ namespace
 		G.SetFont(OSWALD_600, 20); G.FillText(TEXT("STATION 01"), Sx - 52, Sy - 34);
 		G.SetFont(ELITE, 16); G.FillText(TEXT("old survey station, 1947"), Sx - 82, Sy + 50);
 		G.SetFont(ELITE, 16);
-		G.FillText(TEXT("SARO 07 / KEEP IN THE DOOR POCKET"), 40, 780);
+		G.FillText(TEXT("SERVICE TRUCK / KEEP IN THE DOOR POCKET"), 40, 780);
 	}
 }
 

@@ -62,7 +62,7 @@ public:
 	/** The hut door while it is shut. */
 	void TryDoor();
 	/** How the truck at the station is described while the keys are gone ('' null: as always). */
-	FString TruckExamine() const { return bKeysGone ? FString(TEXT("SARO 07, by the gate where you left it. The ignition is empty.")) : FString(); }
+	FString TruckExamine() const { return bKeysGone ? FString(TEXT("The service truck, by the gate where you left it. The ignition is empty.")) : FString(); }
 
 	/** A night put back or left in the middle: the station as it always is. */
 	void Reset();

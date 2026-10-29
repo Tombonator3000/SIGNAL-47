@@ -101,14 +101,14 @@ FString FS47Evening::ServiceObjective() const
  {
   if (!bFeederCallAnswered) return TEXT("SARO // ANSWER THE COUNTY CALL. CALICHE JUNCTION FEEDER IS OUT; K3 WILL NOT HOLD");
   return M->World && M->World->Area == TEXT("saro")
-   ? TEXT("CALICHE JUNCTION // TAKE SARO 07 TO THE SIGNED GRAVEL TURNOFF. RESTORE THE FEEDER TO BRING THE ARRAY BACK")
+   ? TEXT("CALICHE JUNCTION // TAKE THE SERVICE TRUCK TO THE SIGNED GRAVEL TURNOFF. RESTORE THE FEEDER TO BRING THE ARRAY BACK")
    : TEXT("CALICHE JUNCTION // READ THE JOURNAL, RUN THE ENCLOSED CHECK AND VERIFY THE MARKED LAMP TO RESTORE THE FEEDER");
  }
  if (M->Substation && M->Substation->HasNormalResult())
   return AtShiftFolder() ? TEXT("SHIFT FOLDER // FILE THE COMPLETED INSPECTION CARD, THEN START THE ROUTINE SURVEY")
    : TEXT("SARO // RETURN TO THE CONTROL-ROOM SHIFT FOLDER WITH THE COMPLETED INSPECTION CARD");
  if (M->World && M->World->Area == TEXT("saro"))
-  return TEXT("CALICHE JUNCTION // TAKE SARO 07 SOUTH TO THE SIGNED GRAVEL TURNOFF. CHECK THE INSPECTION LAMP OUTSIDE THE FENCE");
+  return TEXT("CALICHE JUNCTION // TAKE THE SERVICE TRUCK SOUTH TO THE SIGNED GRAVEL TURNOFF. CHECK THE INSPECTION LAMP OUTSIDE THE FENCE");
  return TEXT("CALICHE JUNCTION // READ THE JOURNAL, RUN THE ENCLOSED SERVICE CHECK, THEN COMPARE THE MARKED LAMP");
 }
 
@@ -117,7 +117,7 @@ TArray<FS47Task> FS47Evening::ServiceTasks() const
  if (!ServicePending()) return {};
  if (NightSequence()) return {
   {TEXT("Answer the county call about the failed Caliche Junction feeder"), bFeederCallAnswered},
-  {TEXT("Drive SARO 07 to Caliche Junction after midnight"), bServiceDriveSkipped},
+  {TEXT("Drive the service truck to Caliche Junction after midnight"), bServiceDriveSkipped},
   {TEXT("Read the local journal, run the check and verify the marked lamp to restore SARO power"), false}};
  const bool Journal = M->Substation && M->Substation->HasJournal();
  const bool Compared = M->Substation && M->Substation->HasNormalResult();
@@ -161,13 +161,13 @@ void FS47Evening::AnswerFeederCall()
  if (M->Audio) M->Audio->Play(TEXT("handset_up"), .5f, M->Web->PropLocation(TEXT("phone")));
  M->Web->SetHandsetVisible(false);
  FS47Doc D; D.Id = TEXT("EV_FEEDER_CALL"); D.Title = TEXT("County power dispatch / Caliche Junction"); D.Kind = TEXT("Telephone transcript"); D.Stamp = M->Story->ClockText(true);
- D.Page = TEXT("COUNTY POWER DISPATCH\n\nThe Caliche Junction feeder opened at thirteen minutes past midnight. We have lost the SARO branch. Your emergency circuit will hold the room lights, but it cannot drive the array.\n\nTake SARO 07 south to the signed gravel turnoff. Read the station journal, run the enclosed service check and verify the marked lamp. Keep outside the fence. When the circuit is stable, the feeder can be brought back.\n\nDo not keep forcing K3. It will not hold until the supply is restored.");
+ D.Page = TEXT("COUNTY POWER DISPATCH\n\nThe Caliche Junction feeder opened at thirteen minutes past midnight. We have lost the SARO branch. Your emergency circuit will hold the room lights, but it cannot drive the array.\n\nTake the service truck south to the signed gravel turnoff. Read the station journal, run the enclosed service check and verify the marked lamp. Keep outside the fence. When the circuit is stable, the feeder can be brought back.\n\nDo not keep forcing K3. It will not hold until the supply is restored.");
  D.Transcript = D.Page;
  M->UI->Document(D, [this, D]
  {
   bDialogueOpen = false; bFeederCallAnswered = true; M->Web->SetHandsetVisible(true);
   if (M->Audio) M->Audio->Play(TEXT("handset_down"), .5f, M->Web->PropLocation(TEXT("phone")));
-  M->Story->AddDoc(D); M->Story->Note(TEXT("County dispatch confirmed the SARO feeder fault at Caliche Junction. Take SARO 07 and restore the supply before trying to track the signal."));
+  M->Story->AddDoc(D); M->Story->Note(TEXT("County dispatch confirmed the SARO feeder fault at Caliche Junction. Take the service truck and restore the supply before trying to track the signal."));
   M->UI->Objective(ServiceObjective()); M->RequestAutosave();
  });
 }
@@ -189,7 +189,7 @@ void FS47Evening::NightStep()
   M->Story->ConsoleLog(TEXT("CALICHE FEEDER STABLE / SARO SUPPLY RESTORED / K3 CLOSED"));
   M->Story->Note(M->Story->ClockText(true) + TEXT(". The checked circuit held. SARO power and the array drive are back. The unlogged residual is still waiting at the receiver."));
   M->UI->Toast(TEXT("Feeder stable. SARO power restored. K3 holds and the array can move again."), 6);
-  M->UI->Objective(TEXT("CALICHE JUNCTION // KEEP THE COMPLETED FEEDER RECORD. RETURN TO SARO 07"));
+  M->UI->Objective(TEXT("CALICHE JUNCTION // KEEP THE COMPLETED FEEDER RECORD. RETURN TO THE SERVICE TRUCK"));
   M->RequestAutosave();
  }
  if (M->ModalOpen() || M->Story->IsCinematic()) return;
@@ -652,7 +652,7 @@ void FS47Evening::Step(double Dt)
    {
     auto Label=I->Label; auto Examine=I->Examine;
     I->Label=[this,Id,Label]{return Commute()?FString(Id==TEXT("dinerTruck")?TEXT("Drive your car to SARO"):TEXT("Order supper / talk to the waitress")):Label?Label():FString();};
-    I->Examine=[this,Id,Examine]{return Commute()?FString(Id==TEXT("dinerTruck")?TEXT("Your car. SARO 07 is waiting at work."):TEXT("Supper is being served. Coffee is fresh.")):Examine?Examine():FString();};
+    I->Examine=[this,Id,Examine]{return Commute()?FString(Id==TEXT("dinerTruck")?TEXT("Your car. The service truck is waiting at work."):TEXT("Supper is being served. Coffee is fresh.")):Examine?Examine():FString();};
    }
   }
  }
