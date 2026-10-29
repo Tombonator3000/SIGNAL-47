@@ -51,6 +51,12 @@ Utvalget følger road-lokal X390–485 / Z140–235. Ingen trekant krysser utval
 
 [Native CPU-forberedelse R2](../../../unreal/Evidence/FARM-ACCESS-2026-10-29/cpu-prepare-r2-original.json) består for akkurat tre meshes. Bare `allow_cpu_access` endres til true; trekanttall, slots, RT=true, Nanite=false og bodyflag-signaturer er uendret. Originalfilene ble sikkerhetskopiert før endringen, og kvitteringens førhashes stemmer med disse. R1 stoppet før første mutasjon på et Python-feltnavn; alle tre native filhashes var fortsatt uendret. R2 rettet feltlesingen med editorens property-API, normal exit0 og ingen tungjobbkonkurranse. Denne metadataforberedelsen er ikke alene buffer-, runtime- eller pakkeaksept.
 
+## Avvist editorreise R1 etter produktretting
+
+Editorbygg R3 fra `6cbf272e` består, 113,39 s. Reisen når faktisk positiv-gass-bilstopp, GetOutHere, postkassen, Walker-stopp ved porten, original bilproxy, samme parkerte bil, fysisk revers og ordinær disk/title/Continue. Målt rute er 380,331840 m kjøring og 30,971644 m gange. Begge barrierer og disk-/quest-/posekontrollene består.
+
+Hele kandidaten er likevel **avvist** med FAIL/exit1 på siste geometrikontroll. Ranchdelingen valgte samlet originalfallback før noen komponent ble byttet. Ti avlesninger bekrefter manglende aktivering, og SARO skjuler derfor fortsatt gården. Lokal motorkilde viser at den nye indeksbufferens tomtilstand avviser `TrySetAllowCPUAccess(true)` før `SetIndices`; kravet skal utføres etter datainnfylling og før ressursinitialisering. Ingen bevaringskontroll fjernes. Privat råmappe `editor-r1-original` og `editor-r1-acceptance.json` bevarer forsøket. Passerte port-/diskdelsteg gir ikke samlet synlighets- eller pakkeaksept.
+
 ## Videre kontroll og leveringsgrense
 
 Postfiks-bygg og den sammenhengende kjøre-/gangreisen er **UNVERIFIED** til faktisk resultat foreligger. Den målrettede reisen skal bruke normal innkjøring, målt bilstopp ved positiv gass, GetOutHere, postkasse/port til fots, samme bilinteraksjon, fysisk revers til landeveien og ordinær disk/title/Continue. Den første isolerte case1-disken er en uttrykkelig kopi av det faktiske case0-snapshotet; denne fixturen må skilles fra senere normal Flow.WriteSave.
