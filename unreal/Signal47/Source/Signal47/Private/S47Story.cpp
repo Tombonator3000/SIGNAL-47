@@ -1,5 +1,6 @@
 #include "S47Story.h"
 #include "S47Observing.h"
+#include "S47Spine.h"
 #include "S47Horror.h"
 #include "S47Evening.h"
 #include "S47Anomaly.h"
@@ -321,6 +322,7 @@ TArray<FS47Task> AS47Story::Tasks() const
  }
 
  if (const auto* M=US47Main::Get(this); M && M->Horror && M->Horror->HasTasks()) return M->Horror->Tasks(); // SC01, then SC02's meeting
+ if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Pending()!=FS47Spine::GateCount) return M->Spine->Tasks(); // a placeholder holds the night
  if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->ServicePending()) return M->Evening->ServiceTasks();
 	if (const US47Chapter* C = Chapter(ChapterKey); C && C->bActive) return C->Tasks();
 	TArray<FS47Task> T;
@@ -603,6 +605,7 @@ const FS47Profile& AS47Story::ConsoleProfile() const
 void AS47Story::ConsoleAction()
 {
  if (FeederOutage()) { Rx.Status = TEXT("FEEDER OUT / K3 OPEN / ARRAY DRIVE DEAD"); return; }
+ if (const auto* M = US47Main::Get(this); M && M->Spine && M->Spine->HoldsResidual()) { Rx.Status = TEXT("SECURE THE ORIGINALS BEFORE THE RESIDUAL"); Toast(M->Spine->Objective(), 4); return; }
 
 	if (const auto* M = US47Main::Get(this); M && M->Observing && M->Observing->ConsoleAction()) return;
 	if (!Rx.Pass()) { Rx.Status = TEXT("NO LOCK  /  ADJUST PARAMETERS"); return; }

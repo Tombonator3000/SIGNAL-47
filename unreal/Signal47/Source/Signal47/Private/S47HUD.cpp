@@ -1,6 +1,7 @@
 #include "S47HUD.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
+#include "S47Spine.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -161,6 +162,7 @@ void AS47HUD::Start()
 		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
+		bOk &= FS47Spine::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
@@ -191,6 +193,8 @@ void AS47HUD::Start()
 	M->World = NewObject<US47World>(M);
 	M->World->Init(M);
 	M->CaseBoard = NewObject<US47CaseBoard>(M); M->CaseBoard->Init(M);
+	// Before the chapters: chapter two's and four's ends route through the spine's placeholders.
+	if (!M->Spine) M->Spine = MakeShared<FS47Spine>(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{

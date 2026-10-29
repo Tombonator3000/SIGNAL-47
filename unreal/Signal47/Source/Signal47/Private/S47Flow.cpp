@@ -1,6 +1,7 @@
 #include "S47Flow.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
+#include "S47Spine.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
@@ -403,7 +404,7 @@ void US47Flow::Boot()
 		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); }
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine)) M->Spine->Begin(nullptr,true); }
 		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
 		{
 		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
@@ -432,6 +433,7 @@ void US47Flow::Boot()
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
 	if (M->Observing) M->Observing->Stop();
+	if (M->Spine) M->Spine->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -619,6 +621,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (bStarting) return;
 	bStarting = true;
 	if (M->Observing) M->Observing->Stop();
+	if (M->Spine) M->Spine->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
@@ -727,6 +730,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
  // Before SC01: its normal round counts the evening schedule as part of the work.
  if (M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
+ if (M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()));
  if (M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
 
 	// put the player back where they stood, if the restored world lets them stand there
@@ -803,6 +807,7 @@ void US47Flow::LeavePlay()
 	// motelTv, roadside, townEvents (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(false);
 	if (M->Observing) M->Observing->Stop();
+	if (M->Spine) M->Spine->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -833,6 +838,7 @@ void US47Flow::ToTitle()
 	// motelTv, roadside (S47TownLayer)
 	if (M->TownLayer) M->TownLayer->Leave(true);
 	if (M->Observing) M->Observing->Stop();
+	if (M->Spine) M->Spine->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -1246,6 +1252,7 @@ S47J::FObj US47Flow::GameState()
 		S47J::Set(State, TEXT("meteorPassage"), P);
 	}
 	if (M->Observing && M->Observing->Enabled()) S47J::Set(State,TEXT("observing"),M->Observing->Save()); else State->RemoveField(TEXT("observing"));
+	if (M->Spine && M->Spine->Enabled()) S47J::Set(State,TEXT("spine"),M->Spine->Save()); else State->RemoveField(TEXT("spine"));
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());

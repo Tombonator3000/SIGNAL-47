@@ -44,6 +44,8 @@ Fire jakter blir igjen: SC02, SC04, SC08 og SC11, som i revisjonen.
 
 ## Rammen i koden
 
+Status 29.10.2026: laget som `FS47Spine` (Public/S47Spine.h). Plassholderne er gule stolper med kort: SC04 og SC11 på gulvet øst for konsollene, SC08 innenfor arrayporten. Kontrakt: `-S47Case=0 -S47EveningTimeline -S47Jump=chapter2 -S47SpineContract=sc08` og `-S47Jump=chapter4 -S47SpineContract=sc11`.
+
 En ny styringsdel, `FS47Spine`, eier rekkefølgen SC01 til SC13 for nye saker. Den erstatter ikke det som er laget, men kobler det sammen.
 
 1. Hvert scenario er en rad med id, tidsvindu, sted, utløser, avslutning, oppdragstekst og oppgavelinje i notatboka.
