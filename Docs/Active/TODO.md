@@ -64,7 +64,7 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 
 - [ ] **SHIP-01:** Verifiser Win64-kompilering, cook, oppstart, lagring/lasting og normal/Low-spilling før en Windows-utgave ferdigmeldes.
 - [ ] **SHIP-02:** Undersøk faktisk kompatibilitet og ytelse på mottakermaskiner. Linux-/Steam Deck-/gamepad-/lytteaksept hevdes bare med egne faktiske prøver.
-- [x] **SHIP-03, lokal levering 29. oktober:** Farm R1 gjennom PR223 er [installert og kontrollert](../Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md), med kandidat/main/installasjon/offentlig nedlasting separat i [STATUS](STATUS.md). 111/111, pakket meteor og installert grafikk/Fortsett PASS; Saved og testbevis bevart. Ingen offentlig release. Gjenta leveringsrutinen ved neste autoriserte pakke.
+- [x] **SHIP-03, lokal levering 29. oktober:** Farm R1 gjennom PR223 er [installert og kontrollert](../Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md), med kandidat/main/installasjon/offentlig nedlasting separat i [STATUS](STATUS.md). 111/111, pakket meteor og installert grafikk/Fortsett PASS; Saved og testbevis bevart. Den identiske pakken er også [komplett offentlig testnedlasting 29. oktober](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md), med selvstendig starter uten Git. Gjenta leveringsrutinen ved neste autoriserte pakke.
 
 ## Eldre, uavklart restliste
 

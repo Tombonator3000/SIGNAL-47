@@ -46,3 +46,7 @@ samme Claude-økt. Ingen installasjon eller offentlig utgave i dette passet.
 ## Lokal installasjon etter Toms bestilling, 2026-10-29T09:05:01+01:00
 
 Codex i denne samtalen eier installasjon til ~/Games/Signal47/Linux, med farmR1 som frosset kandidat. Filansvar er installasjonskvittering, STATUS og dette koordineringsfeltet; HUM01/ART01-kilder berøres ikke. Én samlet fullmatrise og pakket meteorLow/High går under felles reservasjon gjennom installasjon/etterkontroll. Ferdig: Farm R1 er installert med 111/111, meteor Low/High og installert grafikk/Fortsett PASS. [Kvittering](../Docs/Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md). Vinduet er faktisk frigitt kl. 10:20:44 Europe/Oslo; HUM01/ART01 kan fortsette under egen guard. Saved og launchere er uendret; ingen offentlig release.
+
+## Komplett testnedlasting, 2026-10-29 kl. 11:13 CET
+
+Codex i production-coordinator eier starter og distribusjonsdocs på codex/download-playtest-20261029. [Farm R1-nedlastingen](../Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md) er publisert og vedlegg/anonym tilgang verifisert. Ingen motorreservasjon, ny pakking/cook, endring av standardinstallasjonen eller arbeid i ART01/HUM01 inngår. Alle lokale kilde-, Saved- og rollbackfiler er bevart.
