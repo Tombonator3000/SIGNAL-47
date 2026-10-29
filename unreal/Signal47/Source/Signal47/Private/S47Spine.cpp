@@ -1,4 +1,5 @@
 #include "S47Spine.h"
+#include "S47SC11Contract.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -87,6 +88,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
  bEnabled = bTestSC03 = false; for (int32& S : State) S = 0;
+ bRevisedSC11 = false; Act11.Begin(nullptr);
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -94,13 +96,16 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
   State[SC04] = FMath::Clamp(S47J::Int(Saved, TEXT("sc04")), 0, 2);
   State[SC08] = FMath::Clamp(S47J::Int(Saved, TEXT("sc08")), 0, 2);
   State[SC11] = FMath::Clamp(S47J::Int(Saved, TEXT("sc11")), 0, 2);
+  if (const auto SiegeSaved = S47J::Obj(Saved, TEXT("sc11d"))) { bRevisedSC11 = true; Act11.Begin(SiegeSaved); }
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
+ bRevisedSC11 = bEnabled;
 }
 
 void FS47Spine::Stop()
 {
+ Act11.Stop();
  for (auto& P : Posts) if (P.IsValid()) P->SetVisibility(false);
  for (auto& S : Signs) if (S.IsValid()) S->SetVisibility(false);
 }
@@ -110,6 +115,7 @@ S47J::FObj FS47Spine::Save() const
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version);
  S47J::Set(O, TEXT("sc04"), State[SC04]); S47J::Set(O, TEXT("sc08"), State[SC08]); S47J::Set(O, TEXT("sc11"), State[SC11]);
+ if (bRevisedSC11) S47J::Set(O, TEXT("sc11d"), Act11.Save());
  return O;
 }
 
@@ -125,6 +131,14 @@ bool FS47Spine::HoldsResidual() const { return bEnabled && State[SC04] == 1; }
 bool FS47Spine::HoldChapterEnd(EGate G)
 {
  if (!bEnabled || State[G] == 2) return false;
+ if (G == SC11 && bRevisedSC11)
+ {
+  if (State[G] == 0) Act11.Begin(nullptr);
+  State[G] = 1;
+  if (M && M->UI) M->UI->Toast(TEXT("Return to SARO. Secure the receiver original and both completed remote records, then carry them out."), 6);
+  if (M) M->RequestAutosave(false);
+  return true;
+ }
  State[G] = 1;
  if (M && M->UI) M->UI->Toast(FString::Printf(TEXT("%s. Next: %s. This part of the night is a marked placeholder."), M->Story ? *M->Story->ClockText(false) : TEXT(""), Scenarios()[G == SC08 ? 7 : 10].Title), 5);
  UE_LOG(LogTemp, Display, TEXT("S47: spine holds %s placeholder"), GateItem(G));
@@ -154,6 +168,7 @@ int32 FS47Spine::Current() const
 
 FString FS47Spine::Label(const FString& Id) const
 {
+ if (SiegeBusy()) return Act11.Label(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G))) return State[G] == 1 ? FString::Printf(TEXT("%s placeholder: read the card"), Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10].Id) : FString();
  return FString();
@@ -161,6 +176,7 @@ FString FS47Spine::Label(const FString& Id) const
 
 bool FS47Spine::Use(const FString& Id)
 {
+ if (SiegeBusy()) return Act11.Use(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G)) && State[G] == 1) { Finish(EGate(G)); return true; }
  return false;
@@ -169,6 +185,16 @@ bool FS47Spine::Use(const FString& Id)
 void FS47Spine::Finish(EGate G)
 {
  AS47Story& S = *M->Story;
+ if (G == SC11 && bRevisedSC11)
+ {
+  if (Act11.Phase() != FS47SC11::EStep::Done || !Act11.Facts().Escaped) return;
+  State[G] = 2;
+  S.AdvanceClockTo(GateDone(G), TEXT("SC11 actual escape with the originals"));
+  ShowPosts();
+  if (AfterSC11) AfterSC11();
+  M->RequestAutosave(false);
+  return;
+ }
  State[G] = 2;
  S.SetClock(FMath::Max(S.Clock(), GateDone(G)));
  const FS47Doc Doc = Card(G);
@@ -191,7 +217,7 @@ FString FS47Spine::Objective() const
  {
  case SC04: return TEXT("SARO // SC04 PLACEHOLDER: SECURE THE ORIGINALS. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
  case SC08: return TEXT("ARRAY GATE // SC08 PLACEHOLDER: THEY POINT AT YOU. READ THE YELLOW PLACEHOLDER POST INSIDE THE ARRAY GATE");
- case SC11: return TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
+ case SC11: return bRevisedSC11 ? Act11.Objective() : TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
  default: return FString();
  }
 }
@@ -200,6 +226,7 @@ TArray<FS47Task> FS47Spine::Tasks() const
 {
  TArray<FS47Task> Out;
  const EGate G = Pending();
+ if (G == SC11 && bRevisedSC11) return Act11.Tasks();
  if (G == GateCount) return Out;
  const FScenario& Sc = Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10];
  Out.Add({ FString::Printf(TEXT("%s %s (%s) - placeholder"), Sc.Id, Sc.Title, Sc.Window), false });
@@ -258,7 +285,7 @@ void FS47Spine::ShowPosts()
 {
  for (int32 G = 0; G < Posts.Num() && G < GateCount; ++G)
  {
-  const bool bShow = bEnabled && State[G] == 1;
+  const bool bShow = bEnabled && State[G] == 1 && !(G == SC11 && bRevisedSC11);
   if (Posts[G].IsValid()) Posts[G]->SetVisibility(bShow);
   if (Signs.IsValidIndex(G) && Signs[G].IsValid()) Signs[G]->SetVisibility(bShow);
   if (Posts[G].IsValid()) Posts[G]->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
@@ -269,6 +296,7 @@ void FS47Spine::Step(double Dt)
 {
  if (!bEnabled || !M || !M->Story) return;
  Build();
+ if (SiegeBusy() && Act11.Step(Dt)) Finish(SC11);
  // SC03's end opens SC04: the control room holds until the originals are secured.
  if (State[SC04] == 0 && (bTestSC03 || (M->Horror && M->Horror->SC03 && M->Horror->SC03->Complete())))
  {
@@ -292,12 +320,13 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
  const bool Ok = Thirteen && Ordered && Chapters && Cards;
  Lines.Add(FString::Printf(TEXT("%s spine: 13 scenarios, placeholders ordered SC04 %.0f < SC08 %.0f < ch3 %.0f < ch4 %.0f < SC11 %.0f < ch5 %.0f < departure"),
   Ok ? TEXT("PASS") : TEXT("FAIL"), GateDone(SC04), GateDone(SC08), S47Timeline::Chapter3(true), S47Timeline::Chapter4(true), GateDone(SC11), S47Timeline::Chapter5(true)));
- return Ok;
+ return FS47SC11::SelfTest(Lines) && Ok;
 }
 
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if (Test.Mode.StartsWith(TEXT("sc11"))) { FS47SC11Contract::Step(M, Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)

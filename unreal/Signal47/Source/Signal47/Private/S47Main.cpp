@@ -56,7 +56,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { return (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { return (Spine && Spine->SiegeBusy()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {

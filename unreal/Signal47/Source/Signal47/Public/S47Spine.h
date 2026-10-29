@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47SC11.h"
 class US47Main;
 class UStaticMeshComponent;
 class UTextRenderComponent;
@@ -26,12 +27,15 @@ public:
  static FVector StandPoint(EGate G);
  static const TCHAR* GateItem(EGate G);
 
- explicit FS47Spine(US47Main* InM) : M(InM) {}
+ explicit FS47Spine(US47Main* InM) : M(InM), Act11(InM) {}
  void Begin(const S47J::FObj& Saved, bool bNewCase);
  void Stop();
  void Step(double Dt);
  S47J::FObj Save() const;
  bool Enabled() const { return bEnabled; }
+ FS47SC11* Siege() { return bRevisedSC11 ? &Act11 : nullptr; }
+ const FS47SC11* Siege() const { return bRevisedSC11 ? &Act11 : nullptr; }
+ bool SiegeBusy() const { return bEnabled && bRevisedSC11 && State[SC11] == 1; }
  // 0 not reached, 1 pending (the placeholder waits), 2 done.
  int32 Gate(EGate G) const { return State[G]; }
  // The placeholder that holds the story now, or GateCount.
@@ -57,6 +61,8 @@ public:
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bTestSC03 = false;
+ bool bRevisedSC11 = false;
+ FS47SC11 Act11;
  int32 State[GateCount] = { 0, 0, 0 };
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Posts;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Signs;
