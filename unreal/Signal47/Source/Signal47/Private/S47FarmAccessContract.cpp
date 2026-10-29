@@ -96,7 +96,9 @@ namespace
  {
   TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root,PendingFailure,PhotoName,SaveId;
   bool Started=false,Done=false,Tracking=false,PathDone=false,Reverse=false,PhotoRequested=false,CarBlocked=false,PersonBlocked=false;
-  int32 Stage=0,Checks=0,Transitions=0,Cursor=0,WalkCursor=0,LastSaroRanchTriangles=0;
+  int32 Stage=0,Checks=0,Transitions=0,Cursor=0,WalkCursor=0,LastSaroRanchTriangles=0,RanchAuditSamples=0;
+  bool RanchAuditsPass=true;
+  FS47DriveIn LastFollowInput;
   double Began=FPlatformTime::Seconds(),At=Began,Last=Began,Ready=0,PhotoAt=0,ProgressAt=Began,StalledAt=0,LastTrace=0;
   double DriveMetres=0,WalkMetres=0,MaxSpeed=6,LastSpeed=0,WalkLast=0;
   FVector LastRoad=FVector::ZeroVector,ProgressRoad=FVector::ZeroVector,LastFoot=FVector::ZeroVector,EgressRoad=FVector::ZeroVector,ParkedRoad=FVector::ZeroVector;
@@ -122,6 +124,7 @@ namespace
    S47J::Set(O,TEXT("drive_metres"),DriveMetres);S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("ordinary_leg_transitions"),Transitions);
    S47J::Set(O,TEXT("car_physically_blocked"),CarBlocked);S47J::Set(O,TEXT("person_physically_blocked"),PersonBlocked);
    S47J::Set(O,TEXT("last_saro_visible_ranch_triangles_in_expected_place"),LastSaroRanchTriangles);
+   S47J::Set(O,TEXT("ranch_audit_samples"),RanchAuditSamples);S47J::Set(O,TEXT("all_ranch_audits_pass"),RanchAuditsPass);
    S47J::Set(O,TEXT("scope"),TEXT("One explicit BeginCommute road-Z535 start fixture, then ordinary World.Frame/Drive/TestInput/Walker; physical gate approach before metadata acceptance; actual scene/camera/viewport evidence; full Flow title/Continue only if earlier stages pass."));
    S47J::Set(O,TEXT("limits"),TEXT("API control, not human input or visual approval. No product geometry, collision, visibility, story or quest mutation. Original E01 camera/build identity remains unknown. A FAIL does not accept later unexecuted route stages."));
    O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("snapshots"),Snapshots);O->SetArrayField(TEXT("route_samples"),Trace);O->SetArrayField(TEXT("events"),Events);
@@ -145,6 +148,8 @@ namespace
     Vec(O,TEXT("centre_three_m"),D->Pos);Vec(O,TEXT("centre_road_local_m"),RoadPoint(D->Pos,Leg()));S47J::Set(O,TEXT("heading_rad"),D->Heading);S47J::Set(O,TEXT("speed_m_s"),D->Speed);
     TArray<TSharedPtr<FJsonValue>> Corners;double MaxX=-1e30;for(const auto& P:Footprint(RoadPoint(D->Pos,Leg()),D->Heading)){auto R=S47J::New();Vec(R,TEXT("road_local_m"),P);Corners.Add(MakeShared<FJsonValueObject>(R));MaxX=FMath::Max(MaxX,P.X);}
     O->SetArrayField(TEXT("oriented_collision_corners"),Corners);S47J::Set(O,TEXT("collision_half_extents_m"),TArray<double>{HalfWidth,HalfLength});S47J::Set(O,TEXT("max_footprint_road_x"),MaxX);
+    // Last actual World.TestInput path request; Brake intentionally replaces that request afterwards.
+    S47J::Set(O,TEXT("last_path_follow_throttle"),LastFollowInput.Throttle);S47J::Set(O,TEXT("last_path_follow_steer"),LastFollowInput.Steer);
    }
    if(const auto* T=M->World->TruckHere()){Vec(O,TEXT("actual_parked_car_three_m"),T->Position);S47J::Set(O,TEXT("actual_parked_heading_rad"),T->Rotation.Y);}
    Vec(O,TEXT("walker_three_m"),M->Player->Pos);Vec(O,TEXT("walker_road_local_m"),RoadPoint(M->Player->Pos,Leg()));S47J::Set(O,TEXT("walker_radius_m"),M->Player->Radius);S47J::Set(O,TEXT("clock_seconds"),M->Story->Clock());return O;
@@ -160,6 +165,7 @@ namespace
     const FMinimalViewInfo& View=CameraManager->GetCameraCacheView();
     S47J::Set(O,TEXT("camera_manager"),CameraManager->GetPathName());S47J::Set(O,TEXT("actual_world_transform"),Transform(FTransform(View.Rotation,View.Location)));
     S47J::Set(O,TEXT("actual_horizontal_fov_degrees"),double(CameraManager->GetFOVAngle()));S47J::Set(O,TEXT("constrain_aspect"),bool(View.bConstrainAspectRatio));
+    S47J::Set(O,TEXT("actual_camera_aspect_ratio"),double(View.AspectRatio));
     S47J::Set(O,TEXT("walker_eye_to_final_pov_delta_m"),FVector::Dist(P->EyeUE(),View.Location)/100.);
    }
    FVector2D Size=FVector2D::ZeroVector;if(GEngine&&GEngine->GameViewport)GEngine->GameViewport->GetViewportSize(Size);S47J::Set(O,TEXT("viewport"),TArray<double>{Size.X,Size.Y});return O;
@@ -209,6 +215,8 @@ namespace
   bool Snapshot(const FString& Name)
   {
    auto O=S47J::New();S47J::Set(O,TEXT("name"),Name);S47J::Set(O,TEXT("at_seconds"),FPlatformTime::Seconds()-Began);S47J::Set(O,TEXT("frame"),double(GFrameCounter));S47J::Set(O,TEXT("pose"),Pose());S47J::Set(O,TEXT("camera"),Camera());S47J::Set(O,TEXT("components"),Components());
+   TArray<FString> AuditLines;const bool RanchOkay=Web->AuditHighwayRanch(AuditLines);++RanchAuditSamples;RanchAuditsPass&=RanchOkay;
+   S47J::Set(O,TEXT("actual_ranch_audit_pass"),RanchOkay);S47J::Set(O,TEXT("actual_ranch_audit_lines"),AuditLines);
    TArray<TSharedPtr<FJsonValue>> Obstacles;auto* D=Main()->World->CabDrive();if(D&&D->Area)
    {
     for(int32 I=0;I<D->Area->Obstacles.Num();++I)
@@ -272,12 +280,12 @@ namespace
    FS47DriveIn I;auto* M=Main();auto* D=M&&M->World?M->World->CabDrive():nullptr;if(!D||Path.IsEmpty())return I;const auto P=CarRoad();
    while(Cursor<Path.Num()-1&&FVector2D(Path[Cursor].X-P.X,Path[Cursor].Z-P.Z).Size()<.85)++Cursor;
    const double Final=FVector2D(Path.Last().X-P.X,Path.Last().Z-P.Z).Size();
-   if(Final<.3){I.Throttle=D->Speed>.035?-1:D->Speed<-.035?1:0;PathDone=FMath::Abs(D->Speed)<.07;return I;}
+   if(Final<.3){I.Throttle=D->Speed>.035?-1:D->Speed<-.035?1:0;PathDone=FMath::Abs(D->Speed)<.07;LastFollowInput=I;return I;}
    FVector Aim=Path[Cursor];double Look=2.5;FVector From=P;
    for(int32 K=Cursor;K<Path.Num();++K){const auto Delta=Path[K]-From;const double Len=FVector2D(Delta.X,Delta.Z).Size();if(Len>=Look){Aim=From+Delta*(Look/Len);break;}Look-=Len;Aim=Path[K];From=Path[K];}
    const auto Delta=Aim-P;const double Right=Delta.X*FMath::Cos(D->Heading)-Delta.Z*FMath::Sin(D->Heading),Dist2=FMath::Max(.1,Delta.X*Delta.X+Delta.Z*Delta.Z);
    I.Steer=D->SteerFor(2*Right/Dist2);const double Wanted=FMath::Min(MaxSpeed,FMath::Max(.18,Final*.8))*(Reverse?-1:1);
-   I.Throttle=FMath::Clamp((Wanted-D->Speed)*.8,-1.,1.);return I;
+   I.Throttle=FMath::Clamp((Wanted-D->Speed)*.8,-1.,1.);LastFollowInput=I;return I;
   }
   void Follow(const TArray<FVector>& Points,double Speed,bool Back=false)
   {
@@ -352,6 +360,7 @@ namespace
     if(Front>20.3&&FMath::Abs(D->Speed)<.06){if(StalledAt==0)StalledAt=Now;}else StalledAt=0;
     if(StalledAt>0&&Now-StalledAt>1.2&&Now-At>2)
     {
+     if(!Check(LastFollowInput.Throttle>.05&&!PathDone,TEXT("actual forward path input remains positive at measured closed-port stop")))return;
      CarBlocked=true;ParkedRoad=P;ParkedHeading=D->Heading;Brake();if(!Snapshot(TEXT("car-stopped-by-closed-port")))return;QueuePhoto(TEXT("car-port-blocked"));Next(9,TEXT("measured oriented footprint stopped on near side while throttle requested forward motion"));return;
     }
     if(Now-At>12)PhysicalFailure(TEXT("gate approach stalled away from visible gate or failed to demonstrate a physical stop"));return;
@@ -444,6 +453,7 @@ namespace
     FString Error;const auto Meta=M->Flow->WriteSave(TEXT("manual"),1,Error);if(!Check(Meta.IsSet(),TEXT("ordinary Flow.WriteSave after Continue: ")+Error))return;
     FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();if(!Check(SameJson(Reader.Load(Meta->Id),Actual),TEXT("fresh disk reads complete normal post-Continue save")))return;
     if(!Snapshot(TEXT("after-full-flow-continue")))return;
+    if(!Check(RanchAuditsPass&&RanchAuditSamples>=6,TEXT("source/index/material/RT/canonical sharing audits pass before and after every handoff/save boundary")))return;
     if(!Check(LastSaroRanchTriangles==300,TEXT("same 300 ranch triangles remain visible at expected location in SARO; joined bounds do not count as visibility")))return;
     for(const auto& P:Photos){FJ Fresh;const auto Receipt=S47J::Obj(P->AsObject(),TEXT("png"));if(!Check(PngReceipt(S47J::Str(Receipt,TEXT("file")),Fresh)&&S47J::Str(Fresh,TEXT("sha1"))==S47J::Str(Receipt,TEXT("sha1")),TEXT("final actual viewport PNG CRC/IEND/hash receipt")))return;}
     Result(true,TEXT("continuous handoff/arrival, actual car and Walker barriers, original car re-entry/reverse, visible ranch and unchanged quest pack through full disk/title/Continue"));
