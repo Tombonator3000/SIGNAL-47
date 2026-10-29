@@ -289,7 +289,23 @@ void AS47Web::BuildHighwayRanch()
   }
   Part.RestMesh=Rest;Part.FarmMesh=Farm;Part.RestHash=MeshHash(Rest);Part.FarmHash=MeshHash(Farm);Ready->Parts.Add(MoveTemp(Part));
  }
- // Complete all checks and prepare unregistered visuals before committing any original swap.
+ // All six clones and their exact buffer/index/slot checks are complete. UE5.8
+ // SetStaticMesh requires initialized render data even on an unregistered component.
+ // Initialize the whole set before the first binding; original swaps remain the last phase.
+ for(auto& Part:Ready->Parts)
+ {
+  Part.RestMesh->InitResources();Part.FarmMesh->InitResources();
+ }
+ for(const auto& Part:Ready->Parts)
+ {
+  const auto* RestData=Part.RestMesh->GetRenderData();const auto* FarmData=Part.FarmMesh->GetRenderData();
+  if(!RestData||!FarmData||!RestData->IsInitialized()||!FarmData->IsInitialized())
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch reject g%d branch=render-init-before-component-binding restInitialized=%d farmInitialized=%d"),Part.Source.Geo,RestData&&RestData->IsInitialized(),FarmData&&FarmData->IsInitialized());
+   Reject(*FString::Printf(TEXT("g%d clone render resources not initialized; originals preserved"),Part.Source.Geo));return;
+  }
+ }
+ // Prepare unregistered visuals before committing any original component swap.
  for(auto& Part:Ready->Parts)
  {
   auto* Source=Part.Rest.Get();auto* C=NewObject<UStaticMeshComponent>(this);
@@ -300,7 +316,7 @@ void AS47Web::BuildHighwayRanch()
  }
  for(auto& Part:Ready->Parts)
  {
-  Part.RestMesh->InitResources();Part.FarmMesh->InitResources();auto* Source=Part.Rest.Get();const auto Materials=Source->GetMaterials();
+  auto* Source=Part.Rest.Get();const auto Materials=Source->GetMaterials();
   Source->SetStaticMesh(Part.RestMesh.Get());for(int32 Slot=0;Slot<Materials.Num();++Slot)Source->SetMaterial(Slot,Materials[Slot]);
   auto* C=Part.Farm.Get();C->RegisterComponent();C->SetWorldTransform(Part.OriginalTransform);
   Part.FarmNode=AdoptNode(C,RootIndex,FString::Printf(TEXT("highway:ranch:g%d"),Part.Source.Geo));
