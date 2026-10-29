@@ -1,0 +1,125 @@
+{
+  "status": "PASS",
+  "archives": [
+    {
+      "name": "Signal47-Linux-2026-10-29.zip",
+      "bytes": 1473789904,
+      "sha256": "4a810da0afc5a45d47fe84442d06b2c288462d39e02e1d66a3e65588f03d3c22",
+      "url": "https://github.com/Tombonator3000/SIGNAL-47/releases/download/playtest-linux-2026-10-29/Signal47-Linux-2026-10-29.zip"
+    },
+    {
+      "name": "Signal47-Linux-2026-10-29-Data1.zip",
+      "bytes": 1245134121,
+      "sha256": "fdd7ab1fe58aade3bd897a118cb4033b7ba6814aa56223ff412d65bc0ec19ab7",
+      "url": "https://github.com/Tombonator3000/SIGNAL-47/releases/download/playtest-linux-2026-10-29/Signal47-Linux-2026-10-29-Data1.zip"
+    },
+    {
+      "name": "Signal47-Linux-2026-10-29-Data2.zip",
+      "bytes": 1244173451,
+      "sha256": "08ba7ee59bfa480b18d8fab6a46dad8fc5aeab79d5549b2c81c26a2819ff5a54",
+      "url": "https://github.com/Tombonator3000/SIGNAL-47/releases/download/playtest-linux-2026-10-29/Signal47-Linux-2026-10-29-Data2.zip"
+    }
+  ],
+  "verified_files": 44,
+  "crc_and_decompression": "PASS",
+  "all_file_hashes": "PASS",
+  "launch_permissions": "PASS",
+  "split_ucas": {
+    "parts": {
+      "Linux/Signal47/Content/Paks/Signal47-Linux.ucas.part1": 1327356808,
+      "Linux/Signal47/Content/Paks/Signal47-Linux.ucas.part2": 1327356808
+    },
+    "joined_sha256": "dc832fd6fb9d129e7993445e1c1f3a17467e37319baee88b932a02bd4d8ce2d2",
+    "joined_verified": true
+  },
+  "candidate_and_installed_runtime_match": true,
+  "personal_data_present": false,
+  "excluded": [
+    "Manifest_DebugFiles_Linux.txt",
+    "Signal47/Binaries/Linux/Signal47.debug",
+    "Signal47/Binaries/Linux/Signal47.sym"
+  ],
+  "runtime_launch": "Not repeated; identical to installed and verified farm R1 payload.",
+  "remote_machine_tested": false,
+  "public_download": {
+    "status": "PASS",
+    "url": "https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29",
+    "checks": [
+      {
+        "name": "BUILD.json",
+        "anonymous_http_status": 200
+      },
+      {
+        "name": "README_NO.md",
+        "anonymous_http_status": 200
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "anonymous_http_status": 200
+      },
+      {
+        "name": "Signal47-Linux-2026-10-29-Data1.zip",
+        "anonymous_http_status": 206
+      },
+      {
+        "name": "Signal47-Linux-2026-10-29-Data2.zip",
+        "anonymous_http_status": 206
+      },
+      {
+        "name": "Signal47-Linux-2026-10-29.zip",
+        "anonymous_http_status": 206
+      },
+      {
+        "name": "Spill-SIGNAL47.sh",
+        "anonymous_http_status": 200
+      }
+    ]
+  },
+  "launcher_checks": {
+    "status": "PASS",
+    "checks": [
+      "fresh split join and hash",
+      "title default and quoted argv",
+      "wayland flags and both SDL environment names",
+      "x11 flags and both SDL environment names",
+      "x11 without DISPLAY stops before execution",
+      "old UCAS replaced only by verified new join",
+      "bad join keeps old UCAS and parts, removes temporary and lock",
+      "concurrent join refuses without touching input",
+      "Saved preserved",
+      "standalone works without Git and forwards x11 and quoted argv",
+      "standalone x11 missing DISPLAY fails before download or exec",
+      "standalone system check needs no repo"
+    ],
+    "engine_started": false,
+    "scope": "Small split-file fixtures and fake child commands; actual package bytes verified separately."
+  },
+  "downloader_checks": {
+    "status": "PASS",
+    "engine_started": false,
+    "scope": "Real curl, unzip and sha256sum against tiny file-URL fixture archives; only base URL replaced. No Git or real game invoked.",
+    "checks": [
+      "standalone no Git",
+      "interrupted extraction with executable Play but missing Data2 recovers",
+      "all three archives downloaded and SHA verified",
+      "corrupt cache repaired by a fresh download",
+      "completion marker after full extraction",
+      "old Saved unchanged",
+      "archive cache removed only after success",
+      "completed install starts without server/network"
+    ]
+  },
+  "runtime_source_commit": "c301ead9313510125d037a4cc020d667cd9c5661",
+  "main_runtime_snapshot": "094a67cb3e1ba68e34521fb19add28726609e89c",
+  "proof_sha256": {
+    "distribution-validation.json": "27fa4a596f693c3d81c2968bdd11dc382c64321b9fe2f58ba5d283844e9c060a",
+    "github-assets-verified.json": "0b4d5938cd3b359cef3da8a7ad849caf4de106fbd8d5d1ea6c309967f755f951",
+    "public-download-verified.json": "4edf9e692ada08c811d38cedec0d842de10871890bec6dd3a9d684054fad5394",
+    "launcher-tests.json": "aa7d251ef774be5ec243a98a6973d36e11c3bdf838913b2b0aad1d323e2f6dca",
+    "downloader-tests.json": "82c7e252fc03a25f719bc934e471bfefe438a897545f0bb4503efc6039394ff1",
+    "Spill-SIGNAL47.sh": "a20dc64ec720a0da35bb7089fd696ec7647038099dc4f6a2a973660cdd759724",
+    "BUILD.json": "78082447f55b77be577312fa359bd21c581050322c5d79da2fed5cdc6c85014d",
+    "README_NO.md": "5542c2f8d30734f985e0e028703d09de2198612b06689098c111443ea46c4121",
+    "SHA256SUMS.txt": "9b22dc9c5166a0fc88b2d4eacc45e05bccb6cd0e7d1d4ae6f1bb621ff4d1e90a"
+  }
+}

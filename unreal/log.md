@@ -1256,6 +1256,10 @@ Kandidat R1 fra `343e594d` består bygg/cook/archive og uendret fingerprint for 
 
 [Rapport og kvittering](../Docs/Evidence/UnrealDeliveries/DOCUMENT_PROPS_2026-10-29.md). Motorvinduet er frigitt. Canonical prune pensjonerte kun sju gamle Motel R1-payloadfiler / 4 475 466 770 logiske byte; alle øvrige registrerte payloadhashes og 91 ferske filer i installasjonens egen Saved-mappe er uendret. Begge FIX01-sammenligninger og installasjonsrutinas tilbakekopi er bevart. To egne genererte OpenOrder-logger er sikret og gjenopprettet. Ingen installasjon eller offentlig release; standard Farm R1 beholdes.
 
+## 2026-10-29 kl. 11:13 CET: komplett Linux-nedlasting uten Git
+
+Tom ba om oppdatert komplett spill til en kamerat som bare har pakker, og avklaring av --x11. [Ny testutgave](../Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md) distribuerer Farm R1/c301ead9 gjennom PR223, samme runtime som installasjonen. Tre ZIP-er /44oppføringer er CRC/dekomprimerings-/SHA-kontrollert, inkludert strømmet UCAS-join mot originalhash. Alle sju GitHub-vedlegg har riktig størrelse/digest og anonyme lenker er kontrollert. Én nedlastbar Spill-SIGNAL47.sh henter alt uten Git/Artifacts, støtter faktisk UE/SDL X11/Wayland-valg og gjenopptar avbrutt utpakking/korrupte cachefiler. Play.sh oppdager også gammel UCAS, med lås og verifisert atomisk bytte. Tolv små launcherfixtures og åtte ekte curl/unzip/SHA-fixturekontroller PASS; ingen ny motorjobb. Kandidatens111/111/1720 og målrettede meteor/installertkontroller gjenbrukes for byteidentisk runtime, med uendrede grenser. Saved og installasjonen berøres ikke. Første delvise arkivforsøk ble stoppet kun av egen eier før UCAS-retting, bevart og aldri lastet opp. Andre maskiner/XWayland/FPS er fortsatt UNVERIFIED.
+
 
 ## 2026-10-29T12:23:57+01:00: ART01 kino, avvist import og korrekt lagret materialkartlegging
 
