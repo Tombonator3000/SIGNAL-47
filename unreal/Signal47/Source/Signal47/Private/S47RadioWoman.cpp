@@ -2,6 +2,7 @@
 #include "S47RadioWoman.h"
 #include "S47Web.h"
 #include "S47Three.h"
+#include "S47Json.h"
 #include "S47Main.h"
 #include "S47Flow.h"
 #include "S47World.h"
@@ -23,7 +24,7 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47RadioWoman,Log,All);
 namespace
 {
- FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR10/SM_RadioWoman_Seated");
+ FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated");
  FAutoConsoleVariableRef AssetCVar(TEXT("s47.RadioWoman.Asset"),AssetPath,TEXT("Private accepted bake candidate; evaluated when the world is built."),ECVF_Default);
  struct FExpected {int32 Node,Geo,Material,Triangles;};
  const FExpected Expected[]={{1481,1028,656,108},{1482,1029,657,156},{1483,1030,658,48},{1484,1031,641,36},{1485,1032,638,12},{1486,1033,659,100}};
@@ -51,6 +52,7 @@ namespace
   if(B.ColorVertexBuffer.GetNumVertices())H.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()),B.ColorVertexBuffer.GetNumVertices()*B.ColorVertexBuffer.GetStride());
   H.Final();FSHAHash Out;H.GetHash(Out.Hash);return Out.ToString();
  }
+ #include "S47RadioWomanNativePins.inl"
  bool Inside(const FVector& P,const FBox& Box){return Box.ExpandBy(.00002).IsInsideOrOn(P);}
  bool BoxFace(const FVector& A,const FVector& B,const FVector& C,const FBox& Box,int32& Face)
  {
@@ -461,7 +463,7 @@ namespace
    }
    Complete=Raw.Complete&&Direct.Found;J->SetBoolField(TEXT("contact_accepted"),false);J->SetBoolField(TEXT("runtime_accepted"),false);return J;
   }
-  bool Run(FS47RadioWomanState& S)
+  bool Run(FS47RadioWomanState& S,UStaticMesh* OptionalProjectionMesh=nullptr)
   {
    S.BenchDiagnostics=MakeShared<FJsonObject>();auto& D=S.BenchDiagnostics;auto* W=S.Web.Get();S.DiagnosticHitNodes.Reset();
    D->SetNumberField(TEXT("schema_version"),2);D->SetStringField(TEXT("source_geometry_phase"),TEXT("POST_REPAIR_RIGID_SOURCE_FRAME_NATIVE_QUERY"));
@@ -525,10 +527,13 @@ namespace
    D->SetArrayField(TEXT("bench_underside_and_visible_surface_traces"),Feet);D->SetStringField(TEXT("source_grid_edge_scope"),TEXT("30 source boundary/grid queries are logged, never replaced by expected hits. Four interior underside samples are required; edge misses remain explicit."));
    if(SeatOK)
    {
-    S.Asset=AssetPath;FParse::Value(FCommandLine::Get(),TEXT("S47RadioWomanDiagnosticSoleAsset="),S.Asset);
+    // Optional explicit native query input only. It does not bind or accept contact/adoption.
+    S.Asset=OptionalProjectionMesh?OptionalProjectionMesh->GetPathName():AssetPath;
+    if(!OptionalProjectionMesh)FParse::Value(FCommandLine::Get(),TEXT("S47RadioWomanDiagnosticSoleAsset="),S.Asset);
     if(!Check(S.Asset.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/"))&&!S.Asset.Contains(TEXT(".."))&&!S.Asset.Contains(TEXT(" ")),TEXT("explicit private CPU-readable sole projection asset path required")))return Finish();
     if(!S.Asset.Contains(TEXT("."))){FString Name;S.Asset.Split(TEXT("/"),nullptr,&Name,ESearchCase::CaseSensitive,ESearchDir::FromEnd);S.Asset+=TEXT(".")+Name;}
-    if(!S.NativeAsset.IsValid()||S.NativeAsset.Get()->GetPathName()!=S.Asset)S.NativeAsset.Reset(LoadObject<UStaticMesh>(nullptr,*S.Asset,nullptr,LOAD_NoWarn|LOAD_Quiet));TArray<int32> LODs;
+    if(OptionalProjectionMesh)S.NativeAsset.Reset(OptionalProjectionMesh);
+    else if(!S.NativeAsset.IsValid()||S.NativeAsset.Get()->GetPathName()!=S.Asset)S.NativeAsset.Reset(LoadObject<UStaticMesh>(nullptr,*S.Asset,nullptr,LOAD_NoWarn|LOAD_Quiet));TArray<int32> LODs;
     D->SetStringField(TEXT("sole_projection_asset"),S.Asset);D->SetStringField(TEXT("sole_projection_role"),S.Asset.Contains(TEXT("/BakeR10/"))?TEXT("HISTORICAL_R10_GEOMETRY_PROJECTED_IN_MEASURED_POSTREPAIR_FRAME_ONLY"):TEXT("EXPLICIT_SELECTED_PRIVATE_BAKE_PROJECTED_ONLY_NOT_ADOPTED"));
     if(Check(S.NativeAsset.IsValid()&&S.NativeAsset.Get()->GetPathName()==S.Asset&&NativeReady(S.NativeAsset.Get(),LODs),TEXT("actual requested private three-LOD CPU geometry required, without adopting it")))
     {
@@ -613,9 +618,24 @@ namespace
   auto* W=S.Web.Get();const auto* N=W?W->Node(S.DiagnosticBenchNode):nullptr;
   auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
   const FTransform AssemblyExpected(FQuat::Identity,S47Three::ToUE(FVector(7985,8.013043546669646,2133)),FVector::OneVector);
-  return N&&N->Name==TEXT("town-production:SM_Town_Laundry_Shell")&&N->Parent==1431&&C&&C->GetStaticMesh()
+  if(!(N&&N->Name==TEXT("town-production:SM_Town_Laundry_Shell")&&N->Parent==1431&&C&&C->GetStaticMesh()
    &&C->GetStaticMesh()->GetPathName()==TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")
-   &&C->GetComponentTransform().Equals(AssemblyExpected,.001)&&ActiveComponent(W,S.DiagnosticBenchNode,C);
+   &&C->GetComponentTransform().Equals(AssemblyExpected,.001)&&ActiveComponent(W,S.DiagnosticBenchNode,C)))return false;
+  // These are the exact actual R2 contact providers; pavement is under detail:near1432.
+  // Check their current flags/frame on every ordinary TownStep, without repeating rays.
+  const int32 Nodes[]={1453,1242},Parents[]={1432,1240};
+  const TCHAR* Paths[]={TEXT("/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004"),TEXT("/Game/Web/Geo/geo_007/StaticMeshes/g873.g873")};
+  const FTransform GroundFrame(FQuat::Identity,FVector(800000,0,0));
+  for(int32 I=0;I<2;++I)
+  {
+   const auto* P=W->Node(Nodes[I]);const auto* Parent=W->Node(Parents[I]);auto* Surface=P?Cast<UStaticMeshComponent>(P->Comp.Get()):nullptr;
+   if(!P||P->Parent!=Parents[I]||!Parent||!Parent->Comp.IsValid()||!Surface||!Surface->GetStaticMesh()
+    ||Surface->GetStaticMesh()->GetPathName()!=Paths[I]||!ActiveComponent(W,Nodes[I],Surface)
+    ||Surface->GetAttachParent()!=Parent->Comp.Get()||!Surface->GetRelativeTransform().Equals(FTransform::Identity,.001)
+    ||!Surface->GetComponentTransform().Equals(GroundFrame,.001)||(Surface->GetOwner()&&Surface->GetOwner()->IsHidden())
+    ||!CollisionEnabledHasQuery(Surface->GetCollisionEnabled())||Surface->GetCollisionResponseToChannel(ECC_Visibility)!=ECR_Block)return false;
+  }
+  return true;
  }
  struct FAcceptedPostrepairSite
  {
@@ -624,27 +644,94 @@ namespace
  };
  bool MeasureAcceptedPostrepairSite(FS47RadioWomanState& S,FAcceptedPostrepairSite& Out,FString& Why)
  {
-  // CLOSED BINDING STUB, intentionally not an implementation of postrepair acceptance.
-  // Root must first supply the measured native geometry/seat/visible-support/bake bindings
-  // listed in pending-contact-bindings.json and replace this body with actual traces.
-  // Source predictions, old g1074 medians and R10 oldroad soles may never fill those fields.
-  (void)Out;auto* W=S.Web.Get();auto D=MakeShared<FJsonObject>();S.BenchDiagnostics=D;
-  D->SetStringField(TEXT("status"),TEXT("UNBOUND_POSTREPAIR_NATIVE_CONTACT"));
-  D->SetBoolField(TEXT("trace_attempted"),false);D->SetBoolField(TEXT("measured_seat_binding_valid"),false);
-  D->SetBoolField(TEXT("all_lowest_soles_within_contact_limit"),false);
-  D->SetStringField(TEXT("area_at_query"),W?W->Area():FString());D->SetNumberField(TEXT("area_epoch"),double(S.AreaEpoch));
-  D->SetNumberField(TEXT("town_step_serial"),double(S.TownStepSerial));
-  int32 ShellIndex=INDEX_NONE,Count=0;
-  if(W)for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Name==TEXT("town-production:SM_Town_Laundry_Shell")){ShellIndex=I;++Count;}
-  S.DiagnosticBenchNode=ShellIndex;const auto* N=W?W->Node(ShellIndex):nullptr;auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
-  D->SetObjectField(TEXT("actual_shell_identity"),ComponentIdentity(W,ShellIndex));
-  const FTransform AssemblyExpected(FQuat::Identity,S47Three::ToUE(FVector(7985,8.013043546669646,2133)),FVector::OneVector);
-  if(Count!=1||!N||N->Parent!=1431||!C||!C->GetStaticMesh()
-   ||C->GetStaticMesh()->GetPathName()!=TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")
-   ||!C->GetComponentTransform().Equals(AssemblyExpected,.001)||!ActiveComponent(W,ShellIndex,C))
-  {Why=TEXT("actual registered/shown native Laundry Shell identity or canonical assembly transform missing");return false;}
-  Why=TEXT("missing measured postrepair native seat/active support/bake bindings; original fallback retained");
-  return false;
+  // All native payload/index/section/material pins come from the actual independent R11 reader.
+  const TCHAR* AcceptedR11Object=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated");
+  const FVector BoundMeasuredSeat(798557.,213275.,800.7192316799915); // actual postrepair R2
+  const auto Reject=[&](const TCHAR* Reason){Why=Reason;return false;};
+  UStaticMesh* Mesh=S.NativeAsset.Get();TArray<int32> LODs;
+  if(!Mesh||Mesh->GetPathName()!=AcceptedR11Object||!NativeReady(Mesh,LODs))return Reject(TEXT("verified R11 asset not prepared"));
+  if(!S47R11NativePins::Validate(Mesh,Why))return false;
+  auto* W=S.Web.Get();const auto* Group=W?W->Node(1480):nullptr;
+  if(!W||!Group||!Group->Comp.IsValid())return Reject(TEXT("actual original person frame missing"));
+  // Runs only from the ordinary AfterTownStep hook, after visibility/schedule updates.
+  // The shared sensor retains every raw hit, ignores only freshly hidden mapped blockers,
+  // and leaves the entire Laundry Shell in world queries. No mesh/world setter runs here.
+  if(!S47RadioBenchPost::Run(S,Mesh))return Reject(TEXT("live repaired-site measurement failed"));
+  auto D=S.BenchDiagnostics;
+  if(!D.IsValid()||!S47J::Bool(D,TEXT("measurement_valid"))||!S47J::Arr(D,TEXT("mismatches")).IsEmpty()
+   ||S47J::Bool(D,TEXT("entire_laundry_shell_ignored"))||S47J::Int(D,TEXT("candidate_seat_actual_hits"))<5||!S.Seat.Equals(BoundMeasuredSeat,MaxSeatFrameErrorCm))return Reject(TEXT("live seat differs from measured R11 binding"));
+  const auto Provider=[&](const TSharedPtr<FJsonObject>& Hit,int32 Node,const TCHAR* Path)
+  {
+   auto I=S47J::Obj(Hit,TEXT("surface_identity"));const auto Normal=S47J::Nums(Hit,TEXT("impact_normal_ue"));
+   return Normal.Num()==3&&FMath::IsFinite(Normal[0])&&FMath::IsFinite(Normal[1])&&FMath::IsFinite(Normal[2])&&Normal[2]>.7
+    &&!S47J::Bool(Hit,TEXT("start_penetrating"))&&S47J::Bool(Hit,TEXT("hit"))&&S47J::Int(I,TEXT("node"),INDEX_NONE)==Node&&S47J::Str(I,TEXT("mesh"))==Path
+    &&S47J::Bool(I,TEXT("actually_shown_registered"))&&S47J::Bool(I,TEXT("active_area_root"))&&!S47J::Bool(I,TEXT("same_laundry_shell"));
+  };
+  const auto WorldChainComplete=[&](const TSharedPtr<FJsonObject>& Probe,bool OwnBenchMayBlock)
+  {
+   if(!S47J::Bool(Probe,TEXT("bounded_query_complete"))||S47J::Bool(Probe,TEXT("entire_laundry_shell_ignored")))return false;
+   const auto Rows=S47J::Arr(Probe,TEXT("ordered_single_hit_queries"));if(Rows.IsEmpty()||Rows.Num()>32)return false;
+   for(int32 I=0;I<Rows.Num();++I)
+   {
+    if(!Rows[I].IsValid()||Rows[I]->Type!=EJson::Object)return false;
+    auto R=Rows[I]->AsObject(),Id=S47J::Obj(R,TEXT("surface_identity"));
+    if(S47J::Bool(R,TEXT("query_local_exclusion")))
+    {
+     if(I==Rows.Num()-1||!S47J::Bool(R,TEXT("hit"))||S47J::Int(Id,TEXT("node"),INDEX_NONE)<0||!S47J::Bool(Id,TEXT("registered_at_measurement"))||S47J::Bool(Id,TEXT("same_laundry_shell"))||S47J::Bool(Id,TEXT("actually_shown_registered")))return false;
+    }
+    else if(I!=Rows.Num()-1)return false;
+   }
+   auto Last=Rows.Last()->AsObject(),Id=S47J::Obj(Last,TEXT("surface_identity"));
+   return S47J::Bool(Last,TEXT("hit"))&&S47J::Bool(Last,TEXT("blocking_hit"))&&S47J::Bool(Id,TEXT("actually_shown_registered"))
+    &&(OwnBenchMayBlock
+      ? ((S47J::Bool(Id,TEXT("same_laundry_shell"))&&S47J::Int(Id,TEXT("node"),INDEX_NONE)==S.DiagnosticBenchNode&&S47J::Str(Id,TEXT("role")).StartsWith(TEXT("bench_not_ground:")))
+         ||Provider(Last,1453,TEXT("/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004")))
+      : !S47J::Bool(Id,TEXT("same_laundry_shell")));
+  };
+  // Source rigid classification identifies actual four undersides. Narrow direct queries
+  // prove their intersection with visible retained pavement; a world ray meets the bench
+  // itself first and is never represented as unobstructed ground evidence.
+  const auto Bench=S47J::Arr(D,TEXT("bench_underside_and_visible_surface_traces"));if(Bench.Num()!=34)return Reject(TEXT("complete native bench samples missing"));
+  for(int32 I=0;I<4;++I)
+  {
+   if(!Bench[I].IsValid()||Bench[I]->Type!=EJson::Object)return Reject(TEXT("invalid bench observation row"));
+   auto B=Bench[I]->AsObject(),P=S47J::Obj(B,TEXT("measured_visible_surface_probes"));
+   auto Direct=S47J::Obj(S47J::Obj(P,TEXT("direct_visible_component_probes")),TEXT("highest_measured_visible_candidate"));
+   auto Near=S47J::Obj(S47J::Obj(P,TEXT("direct_near_contact_component_probes_no_skipped_gap")),TEXT("highest_measured_visible_candidate"));
+   double Gap=0,NearGap=0;
+   if(!P.IsValid()||!S47J::Bool(B,TEXT("required_interior_foot_sample"))||!S47J::Bool(B,TEXT("actual_repaired_bottom_match"))
+    ||!Provider(Direct,1453,TEXT("/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004"))||!Provider(Near,1453,TEXT("/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004"))
+    ||!P->TryGetNumberField(TEXT("gap_to_direct_visible_candidate_cm"),Gap)||!FMath::IsFinite(Gap)||FMath::Abs(Gap)>.1
+    ||!P->TryGetNumberField(TEXT("gap_to_direct_near_candidate_cm"),NearGap)||!FMath::IsFinite(NearGap)||FMath::Abs(NearGap-Gap)>.02
+    ||!WorldChainComplete(S47J::Obj(P,TEXT("world_probe_with_conditional_hidden_exclusions")),true))return Reject(TEXT("native bench/pavement near contact is incomplete"));
+  }
+  const auto Feet=S47J::Arr(D,TEXT("selected_sole_projection"));if(Feet.Num()!=2)return Reject(TEXT("two actual R11 soles missing"));
+  for(const auto& F:Feet)
+  {
+   if(!F.IsValid()||F->Type!=EJson::Object)return Reject(TEXT("invalid sole observation row"));
+   auto Foot=F->AsObject();const auto Samples=S47J::Arr(Foot,TEXT("samples"));TSet<int32> Vertices;
+   if(S47J::Int(Foot,TEXT("unique_lowest_sole_vertices"))!=48||S47J::Int(Foot,TEXT("measured_visible_candidate_hits"))!=48||Samples.Num()!=48)return Reject(TEXT("all 96 lowest actual R11 sole vertices are required"));
+   for(const auto& V:Samples)
+   {
+    if(!V.IsValid()||V->Type!=EJson::Object)return Reject(TEXT("invalid sole sample row"));
+    auto P=V->AsObject(),Raw=S47J::Obj(P,TEXT("world_probe_with_conditional_hidden_exclusions"));
+    auto Direct=S47J::Obj(S47J::Obj(P,TEXT("direct_visible_component_probes")),TEXT("highest_measured_visible_candidate"));
+    double Gap=0,WorldGap=0;const int32 Vertex=S47J::Int(P,TEXT("native_vertex_index"),INDEX_NONE);
+    if(Vertex<0||Vertices.Contains(Vertex)||!S47J::Bool(P,TEXT("visible_surface_identified"))||!S47J::Bool(P,TEXT("world_direct_visible_provider_agree"))
+     ||!Provider(Direct,1242,TEXT("/Game/Web/Geo/geo_007/StaticMeshes/g873.g873"))||!WorldChainComplete(Raw,false)
+     ||!P->TryGetNumberField(TEXT("gap_to_direct_visible_candidate_cm"),Gap)||!FMath::IsFinite(Gap)||FMath::Abs(Gap)>MaxSoleGapCm
+     ||!P->TryGetNumberField(TEXT("gap_to_filtered_world_candidate_cm"),WorldGap)||!FMath::IsFinite(WorldGap)||FMath::Abs(WorldGap-Gap)>.02)return Reject(TEXT("actual visible R11 shoe support/contact rejected"));
+    Vertices.Add(Vertex);
+   }
+  }
+  const FTransform Basis=Group->Comp->GetComponentTransform();
+  Out.Forward=Basis.TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal();
+  Out.Right=Basis.TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
+  Out.SeatUE=S.Seat;Out.SeatHits=S47J::Int(D,TEXT("candidate_seat_actual_hits"));Out.Placement=FTransform(FRotationMatrix::MakeFromXY(Out.Forward,Out.Right).ToQuat(),Out.SeatUE);Out.Diagnostics=D;
+  D->SetNumberField(TEXT("area_epoch"),double(S.AreaEpoch));D->SetNumberField(TEXT("town_step_serial"),double(S.TownStepSerial));
+  D->SetBoolField(TEXT("measured_seat_binding_valid"),true);D->SetBoolField(TEXT("all_lowest_soles_within_contact_limit"),true);
+  D->SetStringField(TEXT("status"),TEXT("LIVE_R11_SITE_CONTACT_ACCEPTED_BEFORE_SWAP"));D->SetBoolField(TEXT("contact_accepted"),true);
+  Why=TEXT("verified R11 pose and current visible native contacts");return true;
  }
  bool ApplyRadioTranslation(FS47RadioWomanState& S,const FVector& DeltaUE)
  {
