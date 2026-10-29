@@ -777,6 +777,7 @@ void AS47Web::BeginPlay()
 	BeginProductionViews();
 	BeginMotelV2Route();
 	BeginCalicheHomesContract();
+	StartFarmAccessContract();
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
 }
 

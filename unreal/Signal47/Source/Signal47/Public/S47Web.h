@@ -322,6 +322,7 @@ private:
 	void BeginProductionViews();
 	void BeginMotelV2Route();
 	void BeginCalicheHomesContract();
+	void StartFarmAccessContract();
 	void UpdateHighwayLandscape();
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
 	TMap<int32, FTransform> HighwayVisuals;
