@@ -15,6 +15,13 @@ try:
     contract=json.loads((SOURCE/'model_contract.json').read_text())
     mats={row['name']:R.material(row,DEST+'/Materials',SOURCE) for row in json.loads((SOURCE/'materials.json').read_text())}
     for name,row in contract['parts'].items():
+        # Match the existing field-kit importer: regenerate only our named mesh.
+        # Atomic FBX reimport can retain a previous derived source description;
+        # R6 read back 963 source faces from the unchanged 2944-face cabinet FBX.
+        # Materials, original Web geometry and gameplay IDs keep their identities.
+        asset=DEST+'/'+name
+        if R.E.does_asset_exist(asset):
+            R.check(name+' replace only authored Office mesh',R.E.delete_asset(asset))
         mesh=R.import_mesh(SOURCE/'Export'/(name+'.fbx'),DEST)
         slots=[]
         for i,slot in enumerate(mesh.get_editor_property('static_materials')):
