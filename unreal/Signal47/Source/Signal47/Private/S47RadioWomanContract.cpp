@@ -191,7 +191,7 @@ namespace S47RadioWomanContract
   }
   void Tick()
   {
-   if(Done)return;const double Now=FPlatformTime::Seconds();if(Now-Began>180){Result(false,TEXT("targeted journey timeout"));return;}
+   const auto KeepAlive=AsShared();if(Done)return;const double Now=FPlatformTime::Seconds();if(Now-Began>180){Result(false,TEXT("targeted journey timeout"));return;}
    auto* M=Main();if(!M||!M->Flow||!M->Player||!M->World||!M->Story||!M->UI||!M->Inter||!M->Evening||!M->TownLayer||!M->TownLayer->Town||!M->TownLayer->Caliche||S47Startup::Blocking()){Ready=0;return;}
    if(!Started)
    {
