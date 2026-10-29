@@ -38,11 +38,11 @@ Dette peker mot rendererens buffer-/minneallokering. Vedleggene alene inneholder
 
 ## 3. Caliche: trafikksignal over veien
 
-**Åpen.**
+**Levert i kilde og native editor (ENV-03, PRNUM).** Pakket spill og ekte input er UNVERIFIED til neste samlede fullmatrise.
 
-- [ ] Gi det hengende trafikksignalet mer detaljert hus, visirer, linser, kabler, feste og naturlig værslitasje.
-- [ ] La opphenget vaie svakt i vinden rundt et fysisk troverdig festepunkt. Feste og bevegelig lampe må henge sammen.
-- [ ] Bevar den gode lyseffekten når det er mørkt. Emissive og faktiske lyskilder må følge lampene under bevegelsen.
+- [x] Gi det hengende trafikksignalet mer detaljert hus, visirer, linser, kabler, feste og naturlig værslitasje. [Kilde](../../../unreal/ArtSource/TrafficSignal/README.md).
+- [x] La opphenget vaie svakt i vinden rundt et fysisk troverdig festepunkt. Feste og bevegelig lampe må henge sammen.
+- [x] Bevar den gode lyseffekten når det er mørkt. Emissive og faktiske lyskilder må følge lampene under bevegelsen.
 
 Ingen nytt bilde av signalet fulgte denne rapporten. Senere kontroll begrenses til ett nærbilde og en kort bevegelses-/nattkontroll.
 

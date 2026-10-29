@@ -1,0 +1,180 @@
+{
+  "status": "PASS",
+  "scope": "Fresh Blender source, not native Unreal or runtime",
+  "checks": [
+    {
+      "name": "SM_Caliche_Signal_Head LOD0 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD0 triangle/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD0 origin at the span clamp",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD0 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD0 slots",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD1 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD1 triangle/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD1 origin at the span clamp",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD1 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD1 slots",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD2 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD2 triangle/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD2 origin at the span clamp",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD2 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head LOD2 slots",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Head three meaningful LODs",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD0 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD0 triangle/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD0 origin at the span clamp",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD0 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD0 slots",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD1 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD1 triangle/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD1 origin at the span clamp",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD1 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD1 slots",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD2 triangles",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD2 triangle/UV topology",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD2 origin at the span clamp",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD2 export exists",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span LOD2 slots",
+      "pass": true
+    },
+    {
+      "name": "SM_Caliche_Signal_Span three meaningful LODs",
+      "pass": true
+    },
+    {
+      "name": "head hangs below the pivot",
+      "pass": true
+    },
+    {
+      "name": "head lens slot",
+      "pass": true
+    },
+    {
+      "name": "four lens faces",
+      "pass": true
+    },
+    {
+      "name": "old crossing light and glow kept pivot-relative",
+      "pass": true
+    },
+    {
+      "name": "span reaches both poles",
+      "pass": true
+    },
+    {
+      "name": "bounded topology",
+      "pass": true
+    },
+    {
+      "name": "M_TownSignal_Paint maps on disk",
+      "pass": true
+    },
+    {
+      "name": "M_TownSignal_Dark maps on disk",
+      "pass": true
+    },
+    {
+      "name": "M_TownSignal_Galv maps on disk",
+      "pass": true
+    },
+    {
+      "name": "M_TownSignal_Cable maps on disk",
+      "pass": true
+    },
+    {
+      "name": "M_TownSignal_Lens maps on disk",
+      "pass": true
+    }
+  ],
+  "passed": 43,
+  "total": 43
+}
