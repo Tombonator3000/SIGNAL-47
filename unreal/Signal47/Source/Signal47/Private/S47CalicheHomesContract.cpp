@@ -26,6 +26,8 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstance.h"
+#include "StaticMeshResources.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Crc.h"
 #include "Misc/FileHelper.h"
@@ -45,6 +47,10 @@ namespace
  const TCHAR* ProxyIds[]={TEXT("town:tv1"),TEXT("town:tv2"),TEXT("town:kitchen"),TEXT("town:smoker")};
  constexpr double ProxyRanges[]={6.5,6.5,4.,5.6};
  struct FHouse {const TCHAR* Name;double Z;};
+ struct FFallbackPatch {int32 Node,Geo,Mat,Tris;};
+ // Exact composed TB2 predecessors accepted by FS47CalicheHomes::Build.
+ constexpr FFallbackPatch FallbackPatches[]={{1448,999,638,1404},{1449,1000,641,132},{1450,1001,642,8},{1451,1002,639,332},{1452,1003,643,48},{1454,1005,645,120},{1455,1006,646,154},{1462,1013,652,120}};
+ const TCHAR* OriginalProtectedHandles[]={TEXT("world.town.car"),TEXT("world.town.carDoor"),TEXT("world.town.woman"),TEXT("world.town.smoker"),TEXT("world.town.paper"),TEXT("world.town.cutout"),TEXT("world.town.proxies.tv1"),TEXT("world.town.proxies.tv2"),TEXT("world.town.proxies.kitchen"),TEXT("world.town.proxies.smoker")};
  constexpr FHouse Houses[]={{TEXT("H04"),2241},{TEXT("H03"),2185},{TEXT("H02"),2156.5},{TEXT("H01"),2133}};
  void Vector(const FJ& O,const TCHAR* Key,const FVector& V){S47J::Set(O,Key,TArray<double>{V.X,V.Y,V.Z});}
  FJ Transform(const FTransform& T)
@@ -114,7 +120,7 @@ namespace
  struct FControl : TSharedFromThis<FControl>
  {
   TWeakObjectPtr<AS47Web> Web;TWeakObjectPtr<US47World> WorldIdentity;FTimerHandle Timer;
-  FString Root;int32 Stage=0,Checks=0,HouseShot=0,Waypoint=0;bool Done=false,Started=false,Passed[4]={};
+  FString Root;int32 Stage=0,Checks=0,HouseShot=0,Waypoint=0;bool Done=false,Started=false,Fallback=false,Passed[4]={};uint64 FallbackFrame=0;
   double Began=FPlatformTime::Seconds(),At=Began,Last=Began,ProgressAt=Began,LastProgressZ=2335,ReadyAt=0;
   double NorthMetres=0,SouthMetres=0,WalkMetres=0,LastSpeed=0;int32 Track=0;
   FVector LastTruck=FVector::ZeroVector,LastFoot=FVector::ZeroVector,FootStart=FVector::ZeroVector;
@@ -130,17 +136,19 @@ namespace
   {
    // ClearTimer may release the delegate's last owner while this callback runs.
    const TSharedRef<FControl> KeepAlive=AsShared();
-   if(Done)return;Done=true;auto* M=Main();if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
-   if(M&&M->World){M->World->Autopilot.Reset();M->World->TestInput=nullptr;}
+   if(Done)return;Done=true;auto* M=Main();if(!Fallback&&M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
+   if(!Fallback&&M&&M->World){M->World->Autopilot.Reset();M->World->TestInput=nullptr;}
    auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);
    S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("seconds"),FPlatformTime::Seconds()-Began);
    S47J::Set(O,TEXT("north_metres"),NorthMetres);S47J::Set(O,TEXT("south_metres"),SouthMetres);S47J::Set(O,TEXT("street_walk_metres"),WalkMetres);
-   S47J::Set(O,TEXT("evidence_scope"),TEXT("API Autopilot/TestInput through ordinary World/Drive/Walker; full Flow title/Continue; actual viewport PNGs with CRC/IEND"));
-   S47J::Set(O,TEXT("limits"),TEXT("Human input, visual approval, night-time house schedules and entry to closed residences unverified; no facade walk/house entry performed. Southbound start and first case1 disk are explicit isolated fixtures."));
+   S47J::Set(O,TEXT("mode"),Fallback?TEXT("explicit-Off-fallback"):TEXT("physical-native-route"));
+   S47J::Set(O,TEXT("evidence_scope"),Fallback?TEXT("Read-only live runtime identity, actual mesh triangle/material lineage/visibility, all protected local poses and two active road collider copies across ordinary production frames; no driving input"):TEXT("API Autopilot/TestInput through ordinary World/Drive/Walker; full Flow title/Continue; actual viewport PNGs with CRC/IEND"));
+   S47J::Set(O,TEXT("limits"),Fallback?TEXT("Explicit Off fallback identity control only: no physical travel, screenshots, visual approval, rejected/missing-assembly simulation, title/Continue or admission to closed houses verified. Main native-route contract covers travel/Continue separately."):TEXT("Human input, visual approval, night-time house schedules and entry to closed residences unverified; no facade walk/house entry performed. Southbound start and first case1 disk are explicit isolated fixtures."));
    O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("events"),Events);
    const bool Written=!Root.IsEmpty()&&SaveJson(Root/TEXT("result.json"),O);if(!Written)Pass=false;
    if(auto* W=Web.Get())W->GetWorldTimerManager().ClearTimer(Timer);
-   if(Pass){UE_LOG(LogS47HomesContract,Display,TEXT("S47: Caliche homes contract PASS north=%.2fm south=%.2fm walk=%.2fm PNGs=%d checks=%d evidence=%s; API, human input UNVERIFIED"),NorthMetres,SouthMetres,WalkMetres,Photos.Num(),Checks,*Root);FPlatformMisc::RequestExit(false);}
+   if(Pass&&Fallback){UE_LOG(LogS47HomesContract,Display,TEXT("S47: Caliche homes fallback PASS exact 8 TB2 predecessors / protected poses and bindings / 4 old paired posts; no inputs or asset mutation; checks=%d evidence=%s"),Checks,*Root);FPlatformMisc::RequestExit(false);}
+   else if(Pass){UE_LOG(LogS47HomesContract,Display,TEXT("S47: Caliche homes contract PASS north=%.2fm south=%.2fm walk=%.2fm PNGs=%d checks=%d evidence=%s; API, human input UNVERIFIED"),NorthMetres,SouthMetres,WalkMetres,Photos.Num(),Checks,*Root);FPlatformMisc::RequestExit(false);}
    else{UE_LOG(LogS47HomesContract,Error,TEXT("S47: Caliche homes contract FAIL stage=%d: %s; evidence=%s"),Stage,Written?*Why:TEXT("could not write complete result evidence"),*Root);FPlatformMisc::RequestExitWithStatus(false,1);}
   }
   bool Check(bool Okay,const FString& Why)
@@ -185,9 +193,9 @@ namespace
      if(Parent<0)for(const auto& Path:S47J::Strs(R,TEXT("replaces"))){Parent=W->Handle(Path);if(Parent>=0)break;}
      if(Parent<0)Parent=W->Handle(S47J::Str(Config,TEXT("parent")));
      if(!ProtectedIds.Contains(Parent))continue;
-     const FString Model=S47J::Str(R,TEXT("model")),Name=TEXT("prop:")+S47J::Str(R,TEXT("id"),Model);const auto* Found=Models.Find(Model);const auto At=S47J::Nums(R,TEXT("at"));
-     if(!Check(Found&&At.Num()==3&&FMath::IsFinite(At[0])&&FMath::IsFinite(At[1])&&FMath::IsFinite(At[2])&&S47J::Bool(R,TEXT("local"))&&!S47J::Has(R,TEXT("lit"))&&!S47J::Bool(R,TEXT("paper"))&&!S47J::Has(R,TEXT("when"))&&!Producers.Contains(Name),TEXT("protected prop has a unique finite local source/factory contract: ")+File+TEXT("/")+Name))return false;
-     FProduced E;E.Asset=S47J::Str(*Found,TEXT("asset"));E.Tris=S47J::Int(*Found,TEXT("tris"));E.Materials=S47J::Int(*Found,TEXT("materials"));E.Source=TEXT("Config/Props/")+File+TEXT(" + Free/free_models.json / AS47Props.BuildFile");E.Parent=Parent;E.MetadataP=FVector(At[0],At[1],At[2]);E.Row=R;
+     const FString Model=S47J::Str(R,TEXT("model")),Name=TEXT("prop:")+S47J::Str(R,TEXT("id"),Model);const auto* Found=Models.Find(Model);const auto PropAt=S47J::Nums(R,TEXT("at"));
+     if(!Check(Found&&PropAt.Num()==3&&FMath::IsFinite(PropAt[0])&&FMath::IsFinite(PropAt[1])&&FMath::IsFinite(PropAt[2])&&S47J::Bool(R,TEXT("local"))&&!S47J::Has(R,TEXT("lit"))&&!S47J::Bool(R,TEXT("paper"))&&!S47J::Has(R,TEXT("when"))&&!Producers.Contains(Name),TEXT("protected prop has a unique finite local source/factory contract: ")+File+TEXT("/")+Name))return false;
+     FProduced E;E.Asset=S47J::Str(*Found,TEXT("asset"));E.Tris=S47J::Int(*Found,TEXT("tris"));E.Materials=S47J::Int(*Found,TEXT("materials"));E.Source=TEXT("Config/Props/")+File+TEXT(" + Free/free_models.json / AS47Props.BuildFile");E.Parent=Parent;E.MetadataP=FVector(PropAt[0],PropAt[1],PropAt[2]);E.Row=R;
      const double Scale=S47J::Num(R,TEXT("scale"),1),Yaw=S47J::Num(R,TEXT("yaw"));
      if(!Check(FMath::IsFinite(Scale)&&Scale>0&&FMath::IsFinite(Yaw)&&E.Tris>0&&E.Materials>0,TEXT("protected prop has finite source transform and measured mesh contract")))return false;
      double Matrix[16];S47Three::Compose(E.MetadataP,S47Three::Euler(0,FMath::DegreesToRadians(Yaw),0),FVector(Scale),Matrix);E.Render=S47Three::MatToUE(Matrix);
@@ -246,10 +254,63 @@ namespace
    }
    O->SetArrayField(TEXT("factory_attachments"),Rows);if(!SaveJson(Root/(Name+TEXT("-attachments.json")),O)){Result(false,TEXT("could not write attached-component evidence"));return false;}return true;
   }
+  bool FallbackSet(const FString& Name)
+  {
+   auto* M=Main();auto* W=Web.Get();
+   if(!Check(Fallback&&W&&M&&WorldIdentity.Get()==M->World&&M->World->CabDrive()==RoadDrive&&RoadDrive&&RoadDrive->Area&&M->Mode==US47Main::EMode::Play&&M->World->Area==TEXT("road")&&M->World->Leg==TEXT("road")&&M->World->bDriving&&M->World->bCommuteVehicle&&!M->World->TestInput&&!M->World->Autopilot.IsSet()&&!M->Player->TestMove.IsSet(),TEXT("explicit fallback observes ordinary live commute with no test inputs or pose writes")))return false;
+   if(!Check(M->World->CabTruck()&&FVector2D::Distance(FVector2D(M->World->CabTruck()->Position.X,M->World->CabTruck()->Position.Z),FVector2D(LastTruck.X,LastTruck.Z))<.001&&FMath::Abs(RoadDrive->Speed)<.001&&FMath::Abs(RoadDrive->Heading)<.001,TEXT("fallback car remains at real untouched northbound BeginCommute start")))return false;
+   auto Evidence=S47J::New();S47J::Set(Evidence,TEXT("phase"),Name);TArray<TSharedPtr<FJsonValue>> Rows,Boxes;
+   int32 HomesNodes=0,TownParts=0;
+   for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))
+   {
+    HomesNodes+=N->Name.StartsWith(TEXT("caliche-homes:"));TownParts+=N->Name.StartsWith(TEXT("town-production:"));
+   }
+   if(!Check(HomesNodes==0&&TownParts==28,TEXT("Off retains complete normal TB2 predecessor, no native Homes nodes admitted")))return false;
+   for(const auto& E:FallbackPatches)
+   {
+    const auto* N=W->Node(E.Node);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;UStaticMesh* Mesh=C?C->GetStaticMesh().Get():nullptr;
+    const FString MeshPath=FString::Printf(TEXT("/Game/TownBuildings/Trim/StaticMeshes/g%d.g%d"),E.Geo,E.Geo),MaterialPath=FString::Printf(TEXT("/Game/Web/Mat/MI_W%d.MI_W%d"),E.Mat,E.Mat);
+    TArray<FString> Lineage;bool OriginalMaterial=false;UMaterialInterface* Material=C&&C->GetNumMaterials()==1?C->GetMaterial(0):nullptr;
+    for(int32 Depth=0;Material&&Depth<16;++Depth)
+    {
+     const FString Path=Material->GetPathName();Lineage.Add(Path);if(Path==MaterialPath){OriginalMaterial=true;break;}
+     auto* Instance=Cast<UMaterialInstance>(Material);Material=Instance?Instance->Parent.Get():nullptr;
+    }
+    const bool Okay=N&&N->Geo==E.Geo&&N->Parent==1432&&N->Mats==TArray<int32>{E.Mat}&&C&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&W->ObjAt(E.Node).Shown()&&Mesh&&Mesh->GetPathName()==MeshPath&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==1&&Mesh->GetNumTriangles(0)==E.Tris&&C->GetNumMaterials()==1&&OriginalMaterial;
+    if(!Check(Okay,FString::Printf(TEXT("fallback actual TB2 node%d g%d remains visible with original mesh %d tris/material%d"),E.Node,E.Geo,E.Tris,E.Mat)))return false;
+    auto R=S47J::New();S47J::Set(R,TEXT("node"),E.Node);S47J::Set(R,TEXT("geo"),E.Geo);S47J::Set(R,TEXT("mesh"),MeshPath);S47J::Set(R,TEXT("triangles_lod0"),E.Tris);S47J::Set(R,TEXT("material_lineage"),Lineage);S47J::Set(R,TEXT("actual_relative"),Transform(C->GetRelativeTransform()));S47J::Set(R,TEXT("actual_world"),Transform(C->GetComponentTransform()));S47J::Set(R,TEXT("own_visible"),C->IsVisible());S47J::Set(R,TEXT("hidden_in_game"),C->bHiddenInGame);S47J::Set(R,TEXT("collision_enabled"),int32(C->GetCollisionEnabled()));Rows.Add(MakeShared<FJsonValueObject>(R));
+   }
+   const auto Road=S47J::Obj(S47J::Obj(W->DriveData(),TEXT("legs")),TEXT("road"));const auto DriveRows=S47J::Arr(Road,TEXT("obstacles"));const auto& WalkRows=W->CollidersMutable(TEXT("road"));
+   if(!Check(Road&&!DriveRows.IsEmpty()&&!WalkRows.IsEmpty(),TEXT("fallback reads actual original road drive and walk collider stores")))return false;
+   auto JsonRect=[](const TSharedPtr<FJsonValue>& V,const double* B)
+   {
+    const TArray<TSharedPtr<FJsonValue>>* A=nullptr;if(!V||!V->TryGetArray(A)||A->Num()!=4)return false;
+    for(int32 I=0;I<4;++I){double X;if(!(*A)[I]->TryGetNumber(X)||FMath::Abs(X-B[I])>1e-6)return false;}return true;
+   };
+   for(int32 I=0;I<4;++I)
+   {
+    const double X=I<2?7990.+(I%2)*2.8:8007.2+(I%2)*2.8,OldZ=I<2?1880:2335,NewZ=I<2?1895:2315;
+    const double Old[]={X-.15,X+.15,OldZ-.15,OldZ+.15},New[]={X-.15,X+.15,NewZ-.15,NewZ+.15};int32 OldWalk=0,NewWalk=0,OldDrive=0,NewDrive=0,OldLive=0,NewLive=0;
+    for(const auto& B:WalkRows)
+    {
+     const double A[]={B.MinX,B.MaxX,B.MinZ,B.MaxZ};bool O=B.bEnabled,N=B.bEnabled;for(int32 K=0;K<4;++K){O&=FMath::Abs(A[K]-Old[K])<1e-6;N&=FMath::Abs(A[K]-New[K])<1e-6;}OldWalk+=O;NewWalk+=N;
+    }
+    for(const auto& B:DriveRows){OldDrive+=JsonRect(B,Old);NewDrive+=JsonRect(B,New);}
+    for(const auto& B:RoadDrive->Area->Obstacles){OldLive+=Rect(B,Old);NewLive+=Rect(B,New);}
+    if(!Check(OldWalk==1&&OldDrive==1&&OldLive==1&&NewWalk==0&&NewDrive==0&&NewLive==0,FString::Printf(TEXT("fallback old paired post%d once in walk/drive-data/live-controller; all new positions absent"),I)))return false;
+    auto R=S47J::New();S47J::Set(R,TEXT("old_rect"),TArray<double>{Old[0],Old[1],Old[2],Old[3]});S47J::Set(R,TEXT("new_rect_absent"),TArray<double>{New[0],New[1],New[2],New[3]});S47J::Set(R,TEXT("old_counts_walk_drive_live"),TArray<double>{double(OldWalk),double(OldDrive),double(OldLive)});S47J::Set(R,TEXT("new_counts_walk_drive_live"),TArray<double>{double(NewWalk),double(NewDrive),double(NewLive)});Boxes.Add(MakeShared<FJsonValueObject>(R));
+   }
+   Evidence->SetArrayField(TEXT("original_tb2_predecessors"),Rows);Evidence->SetArrayField(TEXT("original_post_colliders"),Boxes);S47J::Set(Evidence,TEXT("town_parts"),TownParts);S47J::Set(Evidence,TEXT("homes_nodes"),HomesNodes);S47J::Set(Evidence,TEXT("frame"),double(GFrameCounter));
+   if(!SaveJson(Root/(Name+TEXT("-fallback.json")),Evidence)){Result(false,TEXT("could not write fallback identity readback"));return false;}return true;
+  }
   bool Preserve(const FString& Name,bool Capture=false)
   {
    auto* M=Main();auto* W=Web.Get();TArray<FString> Lines;
-   if(!Check(W&&W->AuditCalicheHomes(Lines),TEXT("AuditCalicheHomes at ")+Name))return false;
+   if(Fallback)
+   {
+    if(!Check(W&&!W->AuditCalicheHomes(Lines)&&Lines.Num()==1&&Lines[0].StartsWith(TEXT("Caliche homes INACTIVE:")),TEXT("explicit Off leaves native Homes adapter inactive"))||!FallbackSet(Name))return false;
+   }
+   else if(!Check(W&&W->AuditCalicheHomes(Lines),TEXT("AuditCalicheHomes at ")+Name))return false;
    for(const auto& Line:Lines)UE_LOG(LogS47HomesContract,Display,TEXT("S47: homes audit %s"),*Line);
    if(Capture)
    {
@@ -264,8 +325,12 @@ namespace
     const auto Source=ReadJson(FPaths::ProjectContentDir()/TEXT("WebData/manifest.json"));const auto Nodes=S47J::Arr(Source,TEXT("nodes"));
     const auto Assembly=ReadJson(FPaths::ProjectContentDir()/TEXT("CalicheHomes/assembly.json"));TSet<int32> Ids;
     for(int32 I:ProtectedNodes)Ids.Add(I);
-    for(const auto& V:S47J::Arr(Assembly,TEXT("protected_nodes")))Ids.Add(S47J::Int(V->AsObject(),TEXT("i"),-1));
-    for(const auto& Path:S47J::Strs(Assembly,TEXT("protected_handles")))Handles.Add(Path,W->Handle(Path));
+    if(Fallback){for(const auto& E:FallbackPatches)Ids.Add(E.Node);for(const TCHAR* Path:OriginalProtectedHandles)Handles.Add(Path,W->Handle(Path));}
+    if(!Fallback)
+    {
+     for(const auto& V:S47J::Arr(Assembly,TEXT("protected_nodes")))Ids.Add(S47J::Int(V->AsObject(),TEXT("i"),-1));
+     for(const auto& Path:S47J::Strs(Assembly,TEXT("protected_handles")))Handles.Add(Path,W->Handle(Path));
+    }
     for(const TCHAR* Path:ProxyPaths)Handles.Add(Path,W->Handle(Path));
     Handles.Add(TEXT("world.town.smoker"),W->Handle(TEXT("world.town.smoker")));
     for(const TCHAR* Prefix:{TEXT("world.town.runtime.panels.tv1."),TEXT("world.town.runtime.panels.tv2."),TEXT("world.town.runtime.panels.warm.")})
@@ -300,7 +365,7 @@ namespace
      }
      else if(const auto* E=Producers.Find(N->Name))
      {
-      const auto* Static=Cast<UStaticMeshComponent>(C);const auto* Mesh=Static?Static->GetStaticMesh():nullptr;
+      const auto* Static=Cast<UStaticMeshComponent>(C);const UStaticMesh* Mesh=Static?Static->GetStaticMesh().Get():nullptr;
       bool Bound=N->Parent==E->Parent&&N->Geo==-1&&N->Mats.IsEmpty()&&Mesh&&Mesh->GetPathName()==E->Asset&&Mesh->GetNumLODs()>0&&Mesh->GetNumTriangles(0)==E->Tris&&Static->GetNumMaterials()==E->Materials&&Mesh->GetStaticMaterials().Num()==E->Materials;
       if(Bound)for(int32 Slot=0;Slot<E->Materials;++Slot)Bound&=Static->GetMaterial(Slot)&&Static->GetMaterial(Slot)==Mesh->GetStaticMaterials()[Slot].MaterialInterface.Get();
       if(!Check(Bound,TEXT("complete source-derived Props parent/mesh/triangle/material binding: ")+N->Name))return false;
@@ -444,15 +509,28 @@ namespace
   {
    const TSharedRef<FControl> KeepAlive=AsShared();
    if(Done)return;const double Now=FPlatformTime::Seconds();auto* M=Main();
-   if(Now-Began>240){Result(false,TEXT("240 s contract timeout"));return;}
+   if(Now-Began>(Fallback?60:240)){Result(false,Fallback?TEXT("60 s read-only fallback timeout"):TEXT("240 s contract timeout"));return;}
    if(!M||!M->Flow||!M->World||!M->Player||!M->Story||!M->UI||!M->Inter||!M->Evening||!M->TownLayer||!M->TownLayer->Town||S47Startup::Blocking()){ReadyAt=0;return;}
    if(!Started)
    {
     if(M->Flow->bStarting||M->World->bBusy){ReadyAt=0;return;}
     if(ReadyAt==0)ReadyAt=Now;if(Now-ReadyAt<2)return;
     if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->Evening->Commute()&&M->World->bDriving&&M->World->Leg==TEXT("road")&&M->World->CabTruck()&&M->World->CabTruck()->Position.Z>2334.99&&M->World->CabTruck()->Position.Z<2335.01&&FMath::Abs(M->World->CabDrive()->Heading)<.001,TEXT("actual fresh BeginCommute start z2335 heading north; requires -S47Evening=commute")))return;
-    WorldIdentity=M->World;RoadDrive=M->World->CabDrive();if(!Preserve(TEXT("protected-before"),true)||!RoadPosts())return;
+    WorldIdentity=M->World;RoadDrive=M->World->CabDrive();
+    if(Fallback)
+    {
+     LastTruck=M->World->CabTruck()->Position;
+     if(!Preserve(TEXT("protected-fallback-before"),true))return;
+     Started=true;FallbackFrame=GFrameCounter;Next(90,TEXT("read-only Off fallback: wait for ordinary production updates, no controls or fixtures"));return;
+    }
+    if(!Preserve(TEXT("protected-before"),true)||!RoadPosts())return;
     Started=true;TrackFrom(1);Brake();QueuePhoto(TEXT("south-sign-northbound-start"),Part(TEXT("SM_Homes_SignSouth")));Next(1,TEXT("ordinary stationary commute cockpit south-sign capture"));return;
+   }
+   if(Fallback)
+   {
+    if(Now-At<1||GFrameCounter-FallbackFrame<5)return;
+    if(!Preserve(TEXT("protected-fallback-after-steps")))return;
+    Result(true,TEXT("explicit Off retains all eight original TB2 predecessors, four houses/two signs, protected local poses/bindings and original paired road posts across production frames"));return;
    }
    if(!Monitor(Now))return;
    if(M->Flow->bStarting||M->World->bBusy)return;
@@ -550,7 +628,10 @@ namespace
 
 void AS47Web::BeginCalicheHomesContract()
 {
- if(!FParse::Param(FCommandLine::Get(),TEXT("S47CalicheHomesContract")))return;
+ const bool Fallback=FParse::Param(FCommandLine::Get(),TEXT("S47CalicheHomesContractFallback")),Route=FParse::Param(FCommandLine::Get(),TEXT("S47CalicheHomesContract")),Off=FParse::Param(FCommandLine::Get(),TEXT("S47CalicheHomesOff"));
+ if(!Route&&!Fallback)return;
+ if((Fallback&&(!Off||Route))||(!Fallback&&Off)||FParse::Param(FCommandLine::Get(),TEXT("S47TownBuildingsOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff")))
+ {UE_LOG(LogS47HomesContract,Error,TEXT("S47: Caliche homes contract FAIL select native Route or explicit Fallback+HomesOff; normal TB2/Props required"));FPlatformMisc::RequestExitWithStatus(false,1);return;}
  FString UserDir,Evening;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);UserDir=FPaths::ConvertRelativePathToFull(UserDir);FPaths::CollapseRelativeDirectories(UserDir);
  const bool Safe=(UserDir.StartsWith(TEXT("/tmp/"))||UserDir.StartsWith(TEXT("/var/tmp/")))&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir);
  bool Conflicting=FParse::Param(FCommandLine::Get(),TEXT("S47Title"));FString Value;
@@ -558,8 +639,8 @@ void AS47Web::BeginCalicheHomesContract()
  for(const TCHAR* Flag:{TEXT("S47MotelV2Route"),TEXT("S47GetOut"),TEXT("S47EveningEntrance"),TEXT("S47SaroParking"),TEXT("S47NightSequenceContract"),TEXT("S47T01DriveContract"),TEXT("S47SmokeTest")})Conflicting|=FParse::Param(FCommandLine::Get(),Flag);
  if(!Safe||Conflicting||!FParse::Value(FCommandLine::Get(),TEXT("S47Evening="),Evening)||Evening!=TEXT("commute"))
  {UE_LOG(LogS47HomesContract,Error,TEXT("S47: Caliche homes contract FAIL requires isolated /tmp UserDir, -S47Evening=commute, case0 and no competing route driver"));FPlatformMisc::RequestExitWithStatus(false,1);return;}
- const auto S=MakeShared<FControl>();S->Web=this;S->Root=FPaths::ProjectSavedDir()/TEXT("CalicheHomesContract")/FGuid::NewGuid().ToString(EGuidFormats::Digits);
+ const auto S=MakeShared<FControl>();S->Web=this;S->Fallback=Fallback;S->Root=FPaths::ProjectSavedDir()/(Fallback?TEXT("CalicheHomesContractFallback"):TEXT("CalicheHomesContract"))/FGuid::NewGuid().ToString(EGuidFormats::Digits);
  if(!IFileManager::Get().MakeDirectory(*S->Root,true)){UE_LOG(LogS47HomesContract,Error,TEXT("S47: Caliche homes contract FAIL evidence directory"));FPlatformMisc::RequestExitWithStatus(false,1);return;}
  GetWorldTimerManager().SetTimer(S->Timer,[S]{S->Tick();},.05f,true);
- UE_LOG(LogS47HomesContract,Display,TEXT("S47: Caliche homes contract armed; ordinary commute north, explicitly separate southbound and disk fixtures; API control, human input UNVERIFIED; evidence=%s"),*S->Root);
+ UE_LOG(LogS47HomesContract,Display,TEXT("S47: Caliche homes contract armed; mode=%s; human input UNVERIFIED; evidence=%s"),Fallback?TEXT("explicit Off / read-only old TB2 identity and paired posts"):TEXT("ordinary commute north, explicitly separate southbound and disk fixtures; API control"),*S->Root);
 }
