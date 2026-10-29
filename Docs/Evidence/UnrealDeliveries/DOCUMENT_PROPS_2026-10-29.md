@@ -1,6 +1,6 @@
 # Seks fysiske skrivebordsark, ART-01
 
-**Status:** PASS for denne avgrensede delleveransen. **Kontrollert:** 29. oktober 2026, UE 5.8.4 / Linux Vulkan. **Pakket kilde:** `343e594d277ceb04b09e585994967e8297c6b99d`. Kandidat R1 er separat fra installert Farm R1 og offentlig nedlasting. Samlet ART-01 står fortsatt åpen.
+**Status:** PASS for denne avgrensede delleveransen. **Kontrollert:** 29. oktober 2026, UE 5.8.4 / Linux Vulkan. **Pakket kilde:** `343e594d277ceb04b09e585994967e8297c6b99d`. Kandidat R1 er separat fra installert Farm R1 og offentlig nedlasting. Samlet ART-01 står fortsatt åpen. Leveransen føres i [PR226](https://github.com/Tombonator3000/SIGNAL-47/pull/226).
 
 Seks ferdige dokumentmotiver er nå bundet til Dales eksisterende papirer i Operations: arbeidsmappe, indeks, avisutklipp, notat, kontaktkort og serviceskjema. [Kildeliste og importoppskrift](../../../unreal/Signal47/Tools/documentprops/README.md), [editorbevis](../../../unreal/Evidence/DOCUMENTPROPS-2026-10-29/editor-r1-receipt.json) og [pakket R1-kvittering](../../../unreal/Evidence/DOCUMENTPROPS-2026-10-29/packed-r1-receipt.json) binder motiver, faktiske native assets, kontrollresultater og originale bilder.
 
