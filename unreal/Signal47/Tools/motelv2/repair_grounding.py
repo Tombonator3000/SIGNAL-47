@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 import shutil
+import struct
 import sys
 from pathlib import Path
 
@@ -20,6 +21,7 @@ REPAIR_ID = 'motel-grounded-20261029-v1'
 EPS = .0002
 NORMAL_COMPONENT_EPS = .0002
 NORMAL_DOT_EPS = .0000001
+NORMAL_SCHEMAS = {('CORNER', 'INT16_2D'), ('CORNER', 'FLOAT_VECTOR')}
 SELECTION_ATTRIBUTES = {
     '.select_vert': 'POINT', '.select_edge': 'EDGE', '.select_poly': 'FACE',
     '.uv_select_vert': 'CORNER', '.uv_select_edge': 'CORNER', '.uv_select_face': 'FACE',
@@ -27,10 +29,8 @@ SELECTION_ATTRIBUTES = {
 KNOWN_ATTRIBUTES = {
     'position': ('POINT', 'FLOAT_VECTOR'), '.edge_verts': ('EDGE', 'INT32_2D'),
     '.corner_vert': ('CORNER', 'INT'), '.corner_edge': ('CORNER', 'INT'),
-    'UVMap': ('CORNER', 'FLOAT2'), 'custom_normal': ('CORNER', 'INT16_2D'),
+    'UVMap': ('CORNER', 'FLOAT2'),
     'material_index': ('FACE', 'INT'), 'sharp_face': ('FACE', 'BOOLEAN'),
-    # The normal setter may create sharp flags; original edge semantics are
-    # restored after it encodes only the new, disconnected donor islands.
     'sharp_edge': ('EDGE', 'BOOLEAN'),
     **{name: (domain, 'BOOLEAN') for name, domain in SELECTION_ATTRIBUTES.items()},
 }
@@ -158,19 +158,52 @@ def normal_check(actual, expected, label):
     return {'corners': len(expected), 'max_component_delta': max_component, 'min_normalized_dot': min_dot}
 
 
+def normal_payload_hash(values, data_type):
+    """Hash actual scalar payload in explicit little-endian storage precision."""
+    code, width = {'INT16_2D': ('h', 2), 'FLOAT_VECTOR': ('f', 3)}[data_type]
+    assert len(values) % width == 0, ('invalid custom-normal payload', data_type, len(values))
+    digest = hashlib.sha256()
+    for start in range(0, len(values), 8192):
+        block = values[start:start + 8192]
+        digest.update(struct.pack('<' + code * len(block), *block))
+    return digest.hexdigest()
+
+
+def set_float_corner_normals(mesh, normals):
+    """Preserve authored directions without fan averaging or short2 re-encoding.
+
+    The measured Blender5.2.2 probe preserves these float3 directions through
+    actual save/reopen. Short2 fan bases change on translated/scaled geometry;
+    copying those integers alone does not preserve the decoded directions.
+    """
+    assert len(normals) == len(mesh.loops), 'float corner-normal count differs'
+    previous = mesh.attributes.get('custom_normal')
+    if previous is not None:
+        assert (previous.domain, previous.data_type) in NORMAL_SCHEMAS
+        mesh.attributes.remove(previous)
+    attribute = mesh.attributes.new(name='custom_normal', type='FLOAT_VECTOR', domain='CORNER')
+    attribute.data.foreach_set('vector', [component for normal in normals for component in normal])
+    mesh.update()
+    assert mesh.has_custom_normals and mesh.normals_domain == 'CORNER', 'float custom normals not active'
+
+
 def mesh_snapshot(mesh, include_normals=True):
     schema = {attribute.name: (attribute.domain, attribute.data_type) for attribute in mesh.attributes}
-    assert all(KNOWN_ATTRIBUTES.get(name) == kind for name, kind in schema.items()), ('unknown mesh attribute', schema)
+    assert all(kind in NORMAL_SCHEMAS if name == 'custom_normal' else KNOWN_ATTRIBUTES.get(name) == kind
+               for name, kind in schema.items()), ('unknown mesh attribute', schema)
     assert not mesh.color_attributes and mesh.shape_keys is None, 'unsupported color attributes or shape keys'
     assert [layer.name for layer in mesh.uv_layers] == ['UVMap'], 'unsupported additional UV layers'
     positions = [tuple(v.co) for v in mesh.vertices]
     faces = [tuple(p.vertices) for p in mesh.polygons]
     uvs = {layer.name: [tuple(v.uv) for v in layer.data] for layer in mesh.uv_layers}
     assert all(len(face) == 3 for face in faces), 'production geometry must remain triangulated'
-    custom_normals_raw = None
+    normal_payload, normal_hash = None, None
     if 'custom_normal' in schema:
-        custom_normals_raw = [0] * (len(mesh.loops) * 2)
-        mesh.attributes['custom_normal'].data.foreach_get('value', custom_normals_raw)
+        data_type = schema['custom_normal'][1]
+        width, field = (2, 'value') if data_type == 'INT16_2D' else (3, 'vector')
+        normal_payload = [0] * (len(mesh.loops) * width)
+        mesh.attributes['custom_normal'].data.foreach_get(field, normal_payload)
+        normal_hash = normal_payload_hash(normal_payload, data_type)
     snapshot = {'positions': positions, 'faces': faces, 'uvs': uvs,
                 'loop_vertices': [loop.vertex_index for loop in mesh.loops],
                 'edges': [tuple(edge.vertices) for edge in mesh.edges],
@@ -181,7 +214,9 @@ def mesh_snapshot(mesh, include_normals=True):
                 'material_indices': [p.material_index for p in mesh.polygons],
                 'materials': [m.name if m else None for m in mesh.materials],
                 'has_custom_normals': mesh.has_custom_normals,
-                'custom_normals_raw': custom_normals_raw,
+                'normals_domain': mesh.normals_domain,
+                'custom_normal_payload': normal_payload,
+                'custom_normal_sha256': normal_hash,
                 'attribute_schema': schema,
                 'selection_attributes': {name: [bool(value.value) for value in mesh.attributes[name].data]
                                          for name in SELECTION_ATTRIBUTES if name in schema},
@@ -193,15 +228,26 @@ def mesh_snapshot(mesh, include_normals=True):
     return snapshot
 
 
-def check_source_prefix(before, after, label):
+def check_source_prefix(before, after, label, allow_float_normals=False):
     assert after['materials'] == before['materials'], (label, 'material slots changed')
     for key in ('faces', 'edges', 'loop_vertices', 'loop_starts', 'loop_totals', 'smooth', 'material_indices', 'loop_edge_keys'):
         assert after[key][:len(before[key])] == before[key], (label, 'original prefix changed', key)
     assert all(after['uvs'][key][:len(values)] == values for key, values in before['uvs'].items()), (label, 'original atlas UV changed')
-    assert all(after['attribute_schema'].get(name) == kind for name, kind in before['attribute_schema'].items()), (label, 'attribute schema lost')
-    if before['custom_normals_raw'] is not None:
-        assert after['custom_normals_raw'] is not None, (label, 'custom normals lost')
-        assert after['custom_normals_raw'][:len(before['custom_normals_raw'])] == before['custom_normals_raw'], (label, 'original raw custom-normal prefix changed')
+    assert set(after['attribute_schema']) == set(before['attribute_schema']), (label, 'attribute names changed')
+    for name, kind in before['attribute_schema'].items():
+        expected_kind = ('CORNER', 'FLOAT_VECTOR') if name == 'custom_normal' and allow_float_normals else kind
+        assert after['attribute_schema'][name] == expected_kind, (label, 'attribute schema changed', name)
+    if before['custom_normal_payload'] is not None:
+        assert after['custom_normal_payload'] is not None and after['has_custom_normals'], (label, 'custom normals lost')
+        if allow_float_normals:
+            assert before['attribute_schema']['custom_normal'] in NORMAL_SCHEMAS
+            assert after['normals_domain'] == 'CORNER', (label, 'float normal domain changed')
+            expected_payload = [component for normal in before['corner_normals'] for component in normal]
+            actual_payload = after['custom_normal_payload'][:len(expected_payload)]
+            assert normal_payload_hash(actual_payload, 'FLOAT_VECTOR') == normal_payload_hash(expected_payload, 'FLOAT_VECTOR'), (label, 'original float normal directions changed')
+        else:
+            count = len(before['custom_normal_payload'])
+            assert after['custom_normal_payload'][:count] == before['custom_normal_payload'], (label, 'original custom-normal payload changed')
     edge_by_key = {tuple(sorted(edge)): i for i, edge in enumerate(after['edges'])}
     assert len(edge_by_key) == len(after['edges']), (label, 'duplicate replacement edges')
     for name, values in before['selection_attributes'].items():
@@ -324,28 +370,7 @@ def append_service_pads(mesh, snapshot, source_island, contract):
             if 'sharp_edge' not in new.attributes:
                 new.attributes.new(name='sharp_edge', type='BOOLEAN', domain='EDGE')
             new.attributes['sharp_edge'].data.foreach_set('value', [sharp_edges[edge_index[key]] for key in actual_edge_keys])
-        # Blender5.2.2's setter averages/re-encodes smooth fans even on an exact
-        # unchanged copy (measured A/B probe). The fresh-mesh raw-copy probe C
-        # preserves every old corner exactly. Encode only new islands here;
-        # old corners are placeholders until their original short2 data and
-        # original sharp-edge semantics have both been restored.
-        old_corners = len(snapshot['loop_vertices'])
-        original_raw = snapshot['custom_normals_raw']
-        assert original_raw is not None, 'source custom-normal buffer required'
-        new.normals_split_custom_set([(0., 0., 0.)] * old_corners + expected_normals[old_corners:])
-        normal_attribute = new.attributes['custom_normal']
-        assert (normal_attribute.domain, normal_attribute.data_type) == ('CORNER', 'INT16_2D')
-        encoded = [0] * (len(new.loops) * 2)
-        normal_attribute.data.foreach_get('value', encoded)
-        encoded[:len(original_raw)] = original_raw
-        normal_attribute.data.foreach_set('value', encoded)
-        assert [tuple(edge.vertices) for edge in new.edges][:len(snapshot['edges'])] == snapshot['edges'], 'normal encoding changed original edge order'
-        if 'sharp_edge' in new.attributes:
-            attribute = new.attributes['sharp_edge']
-            flags = [bool(value.value) for value in attribute.data]
-            for i in range(len(snapshot['edges'])):
-                flags[i] = snapshot['sharp_edges'][i] if snapshot['sharp_edges'] is not None else False
-            attribute.data.foreach_set('value', flags)
+        set_float_corner_normals(new, expected_normals)
         for name, values in selections.items():
             domain = SELECTION_ATTRIBUTES[name]
             attribute = new.attributes.get(name) or new.attributes.new(name=name, type='BOOLEAN', domain=domain)
@@ -355,7 +380,9 @@ def append_service_pads(mesh, snapshot, source_island, contract):
             attribute.data.foreach_set('value', values)
         new.update()
         after = mesh_snapshot(new, include_normals=False)
-        check_source_prefix(snapshot, after, 'Office replacement before binding')
+        check_source_prefix(snapshot, after, 'Office replacement before binding', allow_float_normals=True)
+        assert after['custom_normal_sha256'] == normal_payload_hash(
+            [component for normal in expected_normals for component in normal], 'FLOAT_VECTOR'), 'Office float normal payload differs before binding'
         assert len(after['positions']) == len(positions)
         assert all(abs(a - b) < 1e-5 for got, expected in zip(after['positions'], positions) for a, b in zip(got, expected))
         normal_check([tuple(normal.vector) for normal in new.corner_normals], expected_normals, 'Office replacement before binding')
@@ -408,7 +435,7 @@ def repair(args, report):
     for name in ['SM_Sierra_Office', 'SM_Sierra_Glass', 'SM_Sierra_Room02', 'SM_Sierra_Room04', 'SM_Sierra_Room07']:
         assert not objects[name].vertex_groups, (name, 'unsupported vertex groups')
         snap = mesh_snapshot(objects[name].data)
-        assert snap['custom_normals_raw'] is not None, (name, 'original INT16_2D corner normals required')
+        assert snap['custom_normal_payload'] is not None, (name, 'original corner normals required')
         assert len(snap['faces']) == manifest['parts'][name]['triangles']
         snapshots[name] = snap
         moves, islands = plan_moves(name, snap['positions'], snap['faces'], contract, repaired)
@@ -440,6 +467,7 @@ def repair(args, report):
     report['preserved'] = contract['preserve']
     report['source_attribute_inventory'] = {
         name: {'attributes': before['attribute_schema'], 'color_attributes': [], 'shape_keys': False,
+               'custom_normal_payload_sha256': before['custom_normal_sha256'],
                'vertex_groups': [], 'selection_attributes_preserved': sorted(before['selection_attributes'])}
         for name, before in snapshots.items()}
     if not args.apply:
@@ -484,19 +512,26 @@ def repair(args, report):
     bpy.data.meshes.remove(old_mesh)
     replacement.name = old_name
     assert len(bpy.data.meshes) == 24, 'replacement must not leave a 25th mesh datablock'
-    # The other four parts only translate whole islands. Their original short2
-    # buffers and sharp flags remain untouched; passing them through the normal
-    # setter would change authored directions even without topology changes.
+    # Even a whole-island translation can change a short2 fan's decoded basis.
+    # Store the original directions directly on all five changed parts, without
+    # changing the smoothing, edge flags, topology or any other attribute.
+    for name in snapshots:
+        if name != 'SM_Sierra_Office':
+            set_float_corner_normals(objects[name].data, expected_normals[name])
     after_snapshots = {}
     report['corner_normal_preservation'] = {
-        'method': 'Fresh empty Mesh.from_pydata; exact original INT16_2D normal prefix and edge semantics; setter only for new inverse-transpose donor normals',
+        'method': 'Fresh empty Office Mesh.from_pydata; direct custom_normal/CORNER/FLOAT_VECTOR on all five changed parts; original directions plus inverse-transpose donor normals, no fan re-encoding',
+        'intentional_schema_conversion': 'custom_normal CORNER INT16_2D to CORNER FLOAT_VECTOR only; an existing FLOAT_VECTOR source remains FLOAT_VECTOR',
+        'payload_hash_encoding': 'INT16_2D: little-endian signed int16; FLOAT_VECTOR: little-endian IEEE754 float32',
         'max_component_tolerance': NORMAL_COMPONENT_EPS, 'min_normalized_dot': 1 - NORMAL_DOT_EPS,
         'in_memory': {}, 'reopened_saved_blend': {}}
     for name, before in snapshots.items():
         after = mesh_snapshot(objects[name].data, include_normals=False)
         after_snapshots[name] = after
         count = len(before['positions'])
-        check_source_prefix(before, after, name)
+        check_source_prefix(before, after, name, allow_float_normals=True)
+        expected_hash = normal_payload_hash([component for normal in expected_normals[name] for component in normal], 'FLOAT_VECTOR')
+        assert after['custom_normal_sha256'] == expected_hash, (name, 'actual float normal payload differs from expected float32 directions')
         expected = list(before['positions'])
         for row in plans[name]:
             for i in row['vertices']:
@@ -509,7 +544,12 @@ def repair(args, report):
         report['corner_normal_preservation']['in_memory'][name] = {
             'source_had_custom_normals': before['has_custom_normals'],
             'output_has_custom_normals': after['has_custom_normals'],
-            'original_raw_int16_prefix_identical': after['custom_normals_raw'][:len(before['custom_normals_raw'])] == before['custom_normals_raw'],
+            'input_storage': before['attribute_schema']['custom_normal'],
+            'input_payload_sha256': before['custom_normal_sha256'],
+            'output_storage': after['attribute_schema']['custom_normal'],
+            'output_float_payload_sha256': after['custom_normal_sha256'],
+            'expected_float_payload_sha256': expected_hash,
+            'original_float_prefix_from_authored_directions_identical': True,
             'original_edge_order_identical': after['edges'][:len(before['edges'])] == before['edges'],
             'original': normal_check(normals[:old_corners], expected_normals[name][:old_corners], name + ':original'),
             'added': normal_check(normals[old_corners:], expected_normals[name][old_corners:], name + ':added')}
@@ -572,12 +612,15 @@ def repair(args, report):
         actual_snapshot = mesh_snapshot(mesh, include_normals=False)
         for key, expected_value in expected_snapshot.items():
             assert actual_snapshot[key] == expected_value, (name, 'saved source geometry/UV/material changed', key)
+        assert actual_snapshot['attribute_schema']['custom_normal'] == ('CORNER', 'FLOAT_VECTOR')
+        assert actual_snapshot['custom_normal_sha256'] == expected_snapshot['custom_normal_sha256'], (name, 'saved float normal payload hash changed')
         normals = [tuple(normal.vector) for normal in mesh.corner_normals]
         old_corners = len(snapshots[name]['loop_vertices'])
         report['corner_normal_preservation']['reopened_saved_blend'][name] = {
             'original': normal_check(normals[:old_corners], expected_normals[name][:old_corners], name + ':saved-original'),
             'added': normal_check(normals[old_corners:], expected_normals[name][old_corners:], name + ':saved-added'),
-            'raw_int16_and_sharp_flags_identical_to_verified_in_memory': True,
+            'actual_float_payload_sha256': actual_snapshot['custom_normal_sha256'],
+            'float_payload_and_sharp_flags_identical_to_verified_in_memory': True,
             'topology_uv_material_smoothing_identical': True}
     assert sha(saved_blend) == saved_hash, 'saved source verification changed output file'
     assert sha(package / 'Sierra_Production.blend') == report['source_blend_sha256'], 'immutable input changed'
@@ -585,7 +628,13 @@ def repair(args, report):
     manifest['grounding_repair'] = {'id': REPAIR_ID, 'input_blend_sha256': report['source_blend_sha256'],
                                     'input_manifest_sha256': report['source_manifest_sha256'],
                                     'contract_sha256': report['contract_sha256'], 'added_pads': pads,
-                                    'changed_parts': sorted(plans), 'material_bake': 'unchanged atlas/UV; no rebake'}
+                                    'changed_parts': sorted(plans), 'material_bake': 'unchanged atlas/UV; no rebake',
+                                    'normal_storage_conversion': {
+                                        'attribute': 'custom_normal', 'domain': 'CORNER', 'output_type': 'FLOAT_VECTOR',
+                                        'reason': 'Preserve authored directions after translations and positive nonuniform donor scaling without smooth-fan averaging or INT16 basis changes',
+                                        'input_payload_sha256': {name: before['custom_normal_sha256'] for name, before in snapshots.items()},
+                                        'input_types': {name: before['attribute_schema']['custom_normal'][1] for name, before in snapshots.items()},
+                                        'output_float_payload_sha256': {name: after['custom_normal_sha256'] for name, after in after_snapshots.items()}}}
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     provenance = json.loads((out / 'provenance.json').read_text())
     provenance['grounding_repair'] = manifest['grounding_repair']
