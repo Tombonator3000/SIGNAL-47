@@ -24,9 +24,15 @@ Den tidligere BakeR3-proben ble avbrutt ved guardens 360 sekunders grense mens d
 
 Faktisk BakeR4-import besto med alle ni assets og de fem MI-ene. Native NullRHI-probe avviste deretter lik referanse-CS for `pelvis` i FaceMesh, ved kontroll 29. Etterkontrollen beholdt alle 350 eksisterende filer. Dette er ingen akseptert ansiktsbasis eller bake. Den eksisterende servitrisen bruker `ABP_Face_Waitress` med CopyPose for ansiktet og LeaderPose bare for uniformen. Installert UE5.8 CopyPose har som standard lokal kopiering (`bUseMeshPose=false`), med målreferanse for umappede ansiktsbein. Dette kan ikke erstattes av et lempet krav om lik Face/Body-bindpose.
 
-Neste friske `BakeR5` er først en diagnostisk NullRHI-probe. `reference_diagnostics` skriver alle faktiske referansetransformer med translasjon, kvaternion og skala, alle delte Face/Body- og Clothes/Body-avvik ved uendrede toleranser, samt ikke-null skin-weight-innflytelser via hver native seksjons BoneMap. Per bein vises LOD-antall, vektede referansebounds og om det er stamfar til vektede bein. Null direkte pelvisvekt fritar dermed ikke automatisk en påvirket hodegren. Dataene omfatter også deaktiverte seksjoner og beskriver native payload, ikke evaluert CPU-skinning. Faktiske CopyPose-noder leses fra den eksisterende klassens standardobjekt; dette er ikke en påstand om evaluert animasjon eller runtimeinnstillinger på en instans. Hele diagnosen skrives før den opprinnelige Face-avvisningen. Klærnes strenge krav om identiske bein, foreldre og referansetransformer beholdes. Ingen ny Face-basis eller flytting er akseptert av denne endringen.
+Faktisk BakeR5 NullRHI-probe skrev hele `reference_diagnostics` før samme Face-avvisning. Den målte 32 delte Face/Body-bein og nøyaktig fire forskjellige, direkte uvektede bindrammer: pelvis og spine_01/02/03, med 4,30 til 5,03 cm posisjonsforskjell. Face spine_04 sin lengre lokale referansetransform kompenserer dette. Fra spine_04 stemmer de faktisk vektede felles komponentrammene med Body. Den faktiske CopyPose-klassen har én node, `bUseMeshPose=false`, og ingen avgrensende rot. Alle tre native vektskanninger var komplette. Dette var fremdeles et kontrollert probeavslag, uten runtimeposeaksept.
 
-R4 målte fire native LOD-er i både Body og Face. Body har 60 816 / 15 196 / 6 632 / 1 952 trekanter, Face 34 514 / 6 872 / 1 524 / 356. Det eksplisitte neste kildevalget er derfor overall 0/1/3, med uendrede outputtak 150k/70k/40k og screens 1/.25/.07. Kropp, ansikt og klær gir 116 618 / 43 356 / 23 596 trekanter før kort. `card_sources` måler Hair/Brow-assetenes faktiske render-LOD-er og bounds i neste probe. Takene økes ikke dersom kortene overskrider budsjettet.
+Face-overføringen følger nå akkurat denne lokale CopyPose-policyen over hele den samme navngitte foreldrekjeden. De fire målte broene må være direkte uvektede, ha samme rotasjon/skala og beholde Body-referansens nåværende torso-CS. Alle faktisk vektede Face-bein må etter en full Body-referansekopi beholde sine opprinnelige Face-bindrammer innen de uendrede 0,025 cm / 0,02 grader. Umappede ansiktsgrener beholder sin faktiske lokale referansepose. Posed CS for alle delte bein skal stemme med Body, med egne skulder-/hals-/hodekontroller. Dermed blir verken de avvikende forfedrene eller spine_04-kompensasjonen bare hoppet over. Uavhengig beregning på R5-data bevarte alle 635 vektede Face-rammer, med største posisjonsfeil 0,000020401 cm og normalisert vinkelfeil 0,000018861 grader. Dette er en kildeberegning, ikke ny native aksept.
+
+`face_pose_transfer` binder broenes målte relative offsetter, hele navnemappingen og native/refkopiert/posert hode samt rigidkort-delta. Ved faktisk RHI-bake må en egen transient Face-referansekopi dessuten gi alle native CPU-skinnede vertexposisjoner tilbake til opprinnelig native bindgeometri på de valgte LOD-ene, innen samme 0,025 cm-grense. Kortene bruker Face-referansehode til faktisk kopiert hode, som i servitrisens eksisterende rigide hårbinding. Ingen ny absolutt hodeplassering eller separat kortflytting gjettes. Faktisk utseende, hals-/skuldersøm og kortdekning skal fortsatt vurderes i runtime.
+
+Diagnosen beholdes: alle faktiske referansetransformer med translasjon, kvaternion og skala, alle delte avvik, ikke-null skin-weight-innflytelser via native BoneMap, vektede referansebounds og vektede etterkommere. Den omfatter også deaktiverte seksjoner og er payloadmåling, ikke animasjonsevaluering. CopyPose-data fra klassens standardobjekt er ikke bevis for en evaluert runtimeinstans. R5 påviste også åtte reelle rotasjonsavvik i klærnes høyre twist-kjeder, opptil 0,138899 grader, med faktisk vektede bein blant dem. Klærnes strenge krav om identiske bein, foreldre og referanser beholdes. De skal avvises inntil kun den nye private klesreferansen eventuelt er kanonisert og bevist mot uendret Body; denne Face-endringen gjør ingen slik rebind eller importkvitteringsendring.
+
+R4 målte fire native LOD-er i både Body og Face. Body har 60 816 / 15 196 / 6 632 / 1 952 trekanter, Face 34 514 / 6 872 / 1 524 / 356. Det eksplisitte neste kildevalget er derfor overall 0/1/3, med uendrede outputtak 150k/70k/40k og screens 1/.25/.07. R5 målte kortene i `card_sources`: nært Hair 15 441 + Brow 2 744, fjernt 5 494 + 1 322. Sammen med kropp/ansikt/klær gir dette planlagt 134 803 / 50 172 / 30 412 trekanter. Dette er summer av faktiske kildetall, ikke en allerede produsert og akseptert outputmesh.
 
 ## Root kjører tunge steg sekvensielt
 
@@ -39,19 +45,19 @@ Disse kommandoene er oppskrift, ikke kjørte jobber. Alle Blender-/UE-/byggetrin
 python3 unreal/Signal47/Tools/metahuman_mannequins/prepare.py \
   --inventory /home/tom/scratch-bm/Signal47-mannequins-20261029/source-inventory.json \
   --clothing-report /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r1/clothing-report.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR6
 ```
 
 3. Bygg editor fra fryst kilde. `S47MannequinBakeEditor.cpp` og modulavhengighetene finnes bare når `Target.bBuildEditor` / `WITH_EDITOR` gjelder. Ingen runtime-krok registreres.
-4. Kjør `run_editor.py` med `S47_MANNEQUIN_JOB` satt til `BakeR5/job-probe.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer private klær/materialer og måler faktisk skeleton-/posekompatibilitet uten statisk konvertering. Den nåværende diagnostiske Face-proben forventes fortsatt å avvise bind-CS; les hele `reference_diagnostics`, behold avvisningen og stopp før bake. En begrunnet Face-retting må deretter prøves i et nytt run-navn, med krav om `S47 MANNEQUIN PROBE PASS`. Tom feilliste fra grafoppdateringen under NullRHI er ikke shader-, render- eller utseendeaksept.
-5. Først etter akseptert pose/basis: kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med det aksepterte run-navnets `job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter. Følgende BakeR5-eksempel viser flaggene, og er ikke tillatelse til å fortsette fra en avvist R5-probe:
+4. Kjør `run_editor.py` med `S47_MANNEQUIN_JOB` satt til `BakeR6/job-probe.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer private klær/materialer og måler faktisk skeleton-/posekompatibilitet uten statisk konvertering. Krev `S47 MANNEQUIN PROBE PASS`. Hvis klærnes målte referanseavvik fremdeles finnes, skal de avvises ved de uendrede kravene. Behold alle avvisninger; bruk et nytt run-navn ved neste forsøk. Tom feilliste fra grafoppdateringen under NullRHI er ikke shader-, render- eller utseendeaksept.
+5. Først etter akseptert pose/basis: kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med det aksepterte run-navnets `job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter, og faktisk native Face-bindgeometri må bestå. Følgende BakeR6-eksempel viser flaggene, og er ikke tillatelse til å fortsette fra en avvist probe:
 
 ```sh
-S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5/job-bake.json \
+S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR6/job-bake.json \
   /home/tom/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd \
   /home/tom/scratch-bm/wt/evening/unreal/Signal47/Signal47.uproject \
   -unattended -nosplash -nosound -AllowCommandletRendering -RenderOffScreen \
-  -UserDir=/tmp/S47-radio-woman-bake-r5 \
+  -UserDir=/tmp/S47-radio-woman-bake-r6 \
   -run=pythonscript \
   -script=/home/tom/scratch-bm/wt/evening/unreal/Signal47/Tools/metahuman_mannequins/run_editor.py
 ```
@@ -61,8 +67,8 @@ S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/Bake
 
 ```sh
 python3 unreal/Signal47/Tools/metahuman_mannequins/verify_files.py \
-  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5/job-bake.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5/authoring-files-receipt.json
+  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR6/job-bake.json \
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR6/authoring-files-receipt.json
 ```
 
 Ikke fortsett til runtime dersom en kontroll avvises. Kildene gjenopprettes ikke automatisk. Originaler, avviste prøver og deres kvitteringer beholdes for diagnose.

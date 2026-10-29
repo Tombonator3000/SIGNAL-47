@@ -164,6 +164,7 @@ namespace S47MannequinBake
   UMaterialInterface* HairMaterial = nullptr;
   UMaterialInterface* BrowMaterial = nullptr;
   TArray<FVector> LeftSole, RightSole;
+  TArray<FTransform> FaceReferenceCopyLocal;
   ~FBake() { if (Actor) Actor->Destroy(); }
   bool Need(bool Test, const FString& Detail)
   {
@@ -394,6 +395,7 @@ namespace S47MannequinBake
   }
   bool Transfer(const FPose& Authoritative, USkeletalMesh* Mesh, bool IsClothes, FPose& Target)
   {
+   if (!IsClothes) return CopyFace(Authoritative, Target);
    const FPose BodyReference(Authoritative.Ref), TargetReference(Target.Ref);
    int32 Shared = 0; TArray<TSharedPtr<FJsonValue>> Mapping;
    for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
@@ -419,6 +421,84 @@ namespace S47MannequinBake
    FJson Data = Object(); Data->SetNumberField(TEXT("shared_bones"), Shared); Data->SetArrayField(TEXT("names"), Mapping); Data->SetStringField(TEXT("pose_sha1"), Target.Hash());
    Report->SetObjectField(IsClothes ? TEXT("cloth_pose_transfer") : TEXT("face_pose_transfer"), Data); return true;
   }
+  bool CopyFace(const FPose& Authoritative, FPose& Target)
+  {
+   const FJson Diagnostic = Report->GetObjectField(TEXT("reference_diagnostics"));
+   const auto& Nodes = Diagnostic->GetArrayField(TEXT("runtime_class_default_copy_pose_nodes"));
+   if (!Need(Nodes.Num() == 1 && !Nodes[0]->AsObject()->GetBoolField(TEXT("use_mesh_pose")) &&
+    Nodes[0]->AsObject()->GetStringField(TEXT("root_bone_to_copy")) == TEXT("None"), TEXT("existing waitress graph uses one unrestricted local-space CopyPose"))) return false;
+   const FPose BodyReference(Authoritative.Ref), FaceReference(Target.Ref); FPose ReferenceCopy(Target.Ref);
+   const auto& WeightRows = Diagnostic->GetObjectField(TEXT("face"))->GetArrayField(TEXT("bones"));
+   if (!Need(WeightRows.Num() == Target.Local.Num(), TEXT("complete measured face weights correspond to native reference skeleton"))) return false;
+   // R5 measured four different, unweighted lower-spine reference positions. The
+   // longer Face spine_04 LOCAL transform compensates them, so all weighted CS
+   // frames agree with Body. Copy the COMPLETE common parent chain, as the actual
+   // ABP node does; skipping those ancestors would lose the spine_04 compensation.
+   const TArray<FName> Bridge = {TEXT("pelvis"),TEXT("spine_01"),TEXT("spine_02"),TEXT("spine_03")};
+   TArray<TSharedPtr<FJsonValue>> Mapping, Exceptions; int32 Unmapped = 0;
+   for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+   {
+    const FName Name = Target.Ref.GetBoneName(Index); const int32 SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (SourceIndex == INDEX_NONE) { ++Unmapped; continue; }
+    const int32 SourceParent = Authoritative.Ref.GetParentIndex(SourceIndex), TargetParent = Target.Ref.GetParentIndex(Index);
+    const FName SourceName = SourceParent == INDEX_NONE ? NAME_None : Authoritative.Ref.GetBoneName(SourceParent);
+    const FName TargetName = TargetParent == INDEX_NONE ? NAME_None : Target.Ref.GetBoneName(TargetParent);
+    if (!Need(SourceName == TargetName, FString(TEXT("complete same-name CopyPose parent chain: ")) + Name.ToString())) return false;
+    if (!SameReference(BodyReference.Component[SourceIndex], FaceReference.Component[Index]))
+    {
+     const FTransform& SourceRef = BodyReference.Component[SourceIndex]; const FTransform& FaceRef = FaceReference.Component[Index];
+     if (!Need(Bridge.Contains(Name) && WeightRows[Index]->AsObject()->GetIntegerField(TEXT("nonzero_vertex_influences_all_lods")) == 0 &&
+      SourceRef.GetScale3D().Equals(FaceRef.GetScale3D(), 0.00001) &&
+      FMath::RadiansToDegrees(SourceRef.GetRotation().AngularDistance(FaceRef.GetRotation())) <= PoseNumber(TEXT("max_shared_reference_angle_degrees")) &&
+      SameReference(SourceRef, Authoritative.Component[SourceIndex]), FString(TEXT("measured unweighted stationary lower-spine bind bridge only: ")) + Name.ToString())) return false;
+     FJson Row = Object(); Row->SetStringField(TEXT("bone"), Name.ToString());
+     Row->SetObjectField(TEXT("face_ref_relative_to_body_ref"), TransformData(FaceRef.GetRelativeTransform(SourceRef))); Exceptions.Add(Value(Row));
+    }
+    // Match FAnimNode_CopyPoseFromMesh::Evaluate_AnyThread, bUseMeshPose=false.
+    Target.Local[Index] = SourceParent != INDEX_NONE && TargetParent != INDEX_NONE
+     ? Authoritative.Component[SourceIndex].GetRelativeTransform(Authoritative.Component[SourceParent]) : Authoritative.Component[SourceIndex];
+    ReferenceCopy.Local[Index] = SourceParent != INDEX_NONE && TargetParent != INDEX_NONE
+     ? BodyReference.Component[SourceIndex].GetRelativeTransform(BodyReference.Component[SourceParent]) : BodyReference.Component[SourceIndex];
+    Mapping.Add(MakeShared<FJsonValueString>(Name.ToString()));
+   }
+   Target.Rebuild(); ReferenceCopy.Rebuild(); int32 Weighted = 0;
+   for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+   {
+    const FName Name = Target.Ref.GetBoneName(Index); const int32 SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (SourceIndex == INDEX_NONE)
+    {
+     if (!Need(Target.Local[Index].Equals(FaceReference.Local[Index], 0.000001), TEXT("unmapped facial branches retain exact native reference local transforms"))) return false;
+    }
+    else if (!Need(SameReference(Target.Component[Index], Authoritative.Component[SourceIndex]),
+     FString(TEXT("local CopyPose equals complete mapped body component frame: ")) + Name.ToString())) return false;
+    if (WeightRows[Index]->AsObject()->GetIntegerField(TEXT("nonzero_vertex_influences_all_lods")) > 0)
+    {
+     ++Weighted;
+     if (!Need(SameReference(ReferenceCopy.Component[Index], FaceReference.Component[Index]),
+      FString(TEXT("whole-chain reference copy preserves actual weighted face bind frame: ")) + Name.ToString())) return false;
+    }
+   }
+   for (const TCHAR* Name : {TEXT("spine_04"),TEXT("spine_05"),TEXT("clavicle_l"),TEXT("clavicle_r"),TEXT("neck_01"),TEXT("neck_02"),TEXT("head")})
+   {
+    const int32 Index = Target.Ref.FindBoneIndex(Name), SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (!Need(Index != INDEX_NONE && SourceIndex != INDEX_NONE &&
+     SameReference(ReferenceCopy.Component[Index], FaceReference.Component[Index]) &&
+     SameReference(Target.Component[Index], Authoritative.Component[SourceIndex]), FString(TEXT("native shoulder/neck/head seam anchor retained: ")) + Name)) return false;
+   }
+   if (!Need(Exceptions.Num() == Bridge.Num() && Weighted > 0, TEXT("exact four measured bind bridges and actual weighted face frames checked"))) return false;
+   const int32 Head = Target.Ref.FindBoneIndex(TEXT("head")); const FTransform Delta = FaceReference.Component[Head].Inverse() * Target.Component[Head];
+   if (!Need(SameReference(FaceReference.Component[Head] * Delta, Target.Component[Head]), TEXT("rigid card head delta closes against the actual copied face head frame"))) return false;
+   FaceReferenceCopyLocal = ReferenceCopy.Local;
+   FJson Data = Object(); Data->SetStringField(TEXT("method"), TEXT("measured ABP_Face_Waitress local-space CopyPose; complete common parent chain, native local refs for unmapped facial branches"));
+   Data->SetArrayField(TEXT("names"), Mapping); Data->SetArrayField(TEXT("compensated_unweighted_bind_bridges"), Exceptions);
+   Data->SetNumberField(TEXT("shared_bones"), Mapping.Num()); Data->SetNumberField(TEXT("unmapped_reference_branches"), Unmapped); Data->SetNumberField(TEXT("weighted_bind_frames_checked"), Weighted);
+   Data->SetObjectField(TEXT("native_face_reference_head"), TransformData(FaceReference.Component[Head]));
+   Data->SetObjectField(TEXT("reference_copy_head"), TransformData(ReferenceCopy.Component[Head]));
+   Data->SetObjectField(TEXT("posed_head"), TransformData(Target.Component[Head])); Data->SetObjectField(TEXT("rigid_cards_head_delta"), TransformData(Delta));
+   Data->SetStringField(TEXT("pose_sha1"), Target.Hash()); Data->SetStringField(TEXT("reference_copy_pose_sha1"), ReferenceCopy.Hash());
+   Data->SetStringField(TEXT("limit"), TEXT("native frame/CopyPose proof; real-RHI bake additionally requires all-vertex native face bind closure; visual seam/neutral-face review remains separate"));
+   Report->SetObjectField(TEXT("face_pose_transfer"), Data); return true;
+  }
   UPoseableMeshComponent* Component(USkeletalMesh* Mesh, const FPose& Posed, const TCHAR* Name)
   {
    UPoseableMeshComponent* Part = NewObject<UPoseableMeshComponent>(Actor, Name, RF_Transient);
@@ -428,6 +508,34 @@ namespace S47MannequinBake
    // GetCPUSkinnedVertices must own its false->true transition for each LOD;
    // pre-enabling CPU skinning skips the render-state rebuild and keeps a stale cache.
    return Part;
+  }
+  bool FaceBindGeometry()
+  {
+   FPose ReferenceCopy(Face->GetRefSkeleton());
+   if (!Need(FaceReferenceCopyLocal.Num() == ReferenceCopy.Local.Num(), TEXT("accepted complete Face reference-copy pose available"))) return false;
+   ReferenceCopy.Local = FaceReferenceCopyLocal; ReferenceCopy.Rebuild();
+   UPoseableMeshComponent* Bind = Component(Face, ReferenceCopy, TEXT("FaceBindClosure")); TArray<int32> Used;
+   TArray<TSharedPtr<FJsonValue>> Rows;
+   for (const auto& Settings : Contract->GetArrayField(TEXT("lods")))
+   {
+    const int32 LODIndex = Settings->AsObject()->GetIntegerField(TEXT("overall_source_lod")); if (Used.Contains(LODIndex)) continue; Used.Add(LODIndex);
+    if (!Need(LODIndex >= Bind->ComputeMinLOD() && LODIndex < Face->GetLODNum() && !Bind->GetCPUSkinningEnabled(), TEXT("fresh real-RHI Face bind-closure LOD read without min-LOD omission"))) return false;
+    TArray<FFinalSkinVertex> Vertices; Bind->GetCPUSkinnedVertices(Vertices, LODIndex);
+    const auto& Positions = Face->GetResourceForRendering()->LODRenderData[LODIndex].StaticVertexBuffers.PositionVertexBuffer;
+    if (!Need(!Bind->GetCPUSkinningEnabled() && Vertices.Num() == int32(Positions.GetNumVertices()) && Vertices.Num() > 0,
+     TEXT("native CPU helper returned every selected Face bind vertex and restored GPU state"))) return false;
+    double Maximum = 0; int32 Worst = INDEX_NONE; bool Finite = true;
+    for (int32 Index = 0; Index < Vertices.Num(); ++Index)
+    {
+     const FVector Native(Positions.VertexPosition(Index)), Actual(Vertices[Index].Position); Finite &= !Actual.ContainsNaN();
+     const double Distance = FVector::Distance(Native, Actual); if (Distance > Maximum) { Maximum = Distance; Worst = Index; }
+    }
+    FJson Row = Object(); Row->SetNumberField(TEXT("lod"), LODIndex); Row->SetNumberField(TEXT("vertices"), Vertices.Num());
+    Row->SetNumberField(TEXT("max_reference_position_error_cm"), Maximum); Row->SetNumberField(TEXT("worst_vertex"), Worst); Rows.Add(Value(Row));
+    Report->SetArrayField(TEXT("native_face_bind_geometry"), Rows);
+    if (!Need(Finite && Maximum <= PoseNumber(TEXT("max_shared_reference_error_cm")), TEXT("actual native CPU reference copy preserves every Face bind position within unchanged reference limit"))) return false;
+   }
+   Bind->DestroyComponent(); return true;
   }
   bool AppendNative(UMeshComponent* Part, int32 OverallLOD, int32 BaseSlot, const FTransform& Seat, FRawMesh& Raw,
    int32& UsedUVs, const FJson& Provenance, bool CaptureSoles)
@@ -697,6 +805,7 @@ namespace S47MannequinBake
    TArray<UMeshComponent*> Parts;
    Parts.Add(Component(Body, BodyPose, TEXT("Body"))); Parts.Add(Component(Face, FacePose, TEXT("Face"))); Parts.Add(Component(Clothes, ClothPose, TEXT("Clothes")));
    for (int32 Index = 0; Index < 3; ++Index) if (!Need(CastChecked<USkinnedMeshComponent>(Parts[Index])->MeshObject != nullptr, TEXT("actual CPU skin mesh object registered for each posed part"))) return false;
+   if (!FaceBindGeometry()) return false;
    const int32 FaceHead = FacePose.Ref.FindBoneIndex(TEXT("head")); const FPose FaceReference(FacePose.Ref);
    const FTransform HeadDelta = FaceReference.Component[FaceHead].Inverse() * FacePose.Component[FaceHead];
    auto Cards = [&](const TCHAR* Name, UStaticMesh* Mesh, UMaterialInterface* Material)
