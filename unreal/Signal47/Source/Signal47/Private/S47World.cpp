@@ -64,6 +64,16 @@ namespace
 	constexpr float FOG = 0.0021f, FOG_OLDROAD = 0.00055f;
 	const FVector ROAD_ORIGIN(8000, 0, 0);
 	const FVector STATION_ORIGIN(0, 0, 8000);
+	FS47Obstacle ClosedRanchGate(const FVector& RoadToArea)
+	{
+		// roadProps.ts ranchRoad: the closed tube gate spans RANCH_GAP (+/-3.4 m)
+		// between the exported radius-0.2 posts; its widest tube has radius 0.028 m.
+		// Unreal's SARO drive corridor bounds only the centre, so give the existing
+		// oriented-footprint collision the physical gate in both coordinate frames.
+		const double X = S47RoadTerrain::HWY.Fence + RoadToArea.X;
+		const double Z = S47RoadTerrain::RanchZ(S47RoadTerrain::HWY.Fence) + RoadToArea.Z;
+		return FS47Obstacle::Box(X - 0.028, X + 0.028, Z - 3.4, Z + 3.4);
+	}
 	// Mesa Diner stands in the road area, beside the highway 2 km south of the start (roadShape.ts)
 	FVector DINER_ORIGIN() { const S47RoadShape::FDinerAt& D = S47RoadShape::DINER(); return FVector(8000 + D.X, D.Y + 0.1, D.Z); }
 	/** The places the truck can be left on (a lot with a park box): SARO's pad, the motel's lot,
@@ -584,6 +594,7 @@ void US47World::EnsureLegs()
 		A->bVisitorLot = W->AuditSaroArrival(ArrivalChecks);
 		UE_LOG(LogS47World,Display,TEXT("S47: SARO visitor driving corridor ready=%d; original service corridors retained"),A->bVisitorLot);
 		Fill(*A, TEXT("saro"), nullptr);
+		A->Obstacles.Add(ClosedRanchGate(FVector(-S47Geo::SARO_IN_ROAD.X, 0, -S47Geo::SARO_IN_ROAD.Z)));
 		Head(*A, TEXT("saro"), nullptr, {});
 		FLegRec& L = Legs.Add(TEXT("saro"));
 		L.Truck = SaroTruckP.Get();
@@ -604,6 +615,7 @@ void US47World::EnsureLegs()
 				if (R.bValid) A->Obstacles.Add(FS47Obstacle::Box(R.MinX, R.MaxX, R.MinZ, R.MaxZ));
 			}
 		});
+		A->Obstacles.Add(ClosedRanchGate(ROAD_ORIGIN));
 		Head(*A, TEXT("road"), TEXT("road"), { 0, 1, 2 });
 		// the diner's lot is gravel, its top at the diner's height (ensureDiner: road.addPlace)
 		const FVector O = DINER_ORIGIN();
