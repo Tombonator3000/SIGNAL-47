@@ -1,6 +1,6 @@
 # Gjeldende arbeidsliste
 
-**Status:** Gjeldende. **Gjelder:** Videre arbeid på Unreal-utgaven. **Sist kontrollert:** 28. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Videre arbeid på Unreal-utgaven. **Sist kontrollert:** 29. oktober 2026.
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
@@ -13,7 +13,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 
 | ID | Åpen oppgave | Underlag |
 | --- | --- | --- |
-| FIX-01 | [ ] Undersøk diner-krasjene og rett dokumentert årsak. Bevar riktig binær-/logggrunnlag og avklar eventuell ressurskonkurranse. | [Begge krasjvedlegg](Reports/PLAYTEST_TODO_2026-10-28.md). Vulkan-allokering er et spor, ikke bevist rotårsak. |
+| FIX-01 | Delvis levert: [x] Linux-minnetiltak PR215, pakket R1 full diner/retur og natt-R2 uten override PASS. [ ] Avklar første historiske High/frame0-OOM og eventuell samtidig prosess. | [Målt minnetiltak og bevisgrenser](../Evidence/UnrealDeliveries/DINER_VULKAN_2026-10-29.md). Ingen fullmatrise/installasjon. Ny TB2-kilde er ikke i denne R1-pakken. |
 | FIX-02 | [ ] Rett Motor Courts gangnivå, svevende potter/stoler og usynlige kollisjonsvegger foran dørene. | Spillerbilder E02, E04 og E05 i [bevisgalleriet](../../unreal/Evidence/Playtest-2026-10-28/README.md). |
 | FIX-03 | [ ] Rett doble mottakslamper og kontroller faktisk bevegelig film/lyd på resepsjons-TV-en. | Bilde E03 og Toms observasjon. Stillbildet alene beviser ikke filmstans. |
 | FIX-04 | [ ] Rett bassengsti som blafrer, bassengkant/dekke under terreng og uønsket klump utenfor gjerdet. | E04/E05. Identifiser det konkrete uønskede meshet før fjerning. |
