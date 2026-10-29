@@ -153,6 +153,7 @@ bool Build(AS47Web* W)
  const FS47WebNode* Parent=Root?W->Node(Root.I):nullptr;
  if (!Parent || !Parent->Comp.IsValid() || !W->NodeWorldThree(Root.I).Equals(FTransform::Identity,.0001) ||
      !Parent->Comp->GetComponentTransform().Equals(FTransform::Identity,.001)) return false;
+ USceneComponent* ParentComponent=Parent->Comp.Get(); // AdoptNode may reallocate W's node array.
  for (int32 I=0;I<W->PartCount();++I) if (const FS47WebNode* N=W->Node(I);N && N->Name.StartsWith(Prefix))
  { UE_LOG(LogTemp,Warning,TEXT("S47: owned Office props skipped: partial or unregistered existing component set")); return false; }
  FInstalled Candidate; Candidate.Parent=Root.I; TArray<UStaticMesh*> Meshes; FString Why;
@@ -168,7 +169,7 @@ bool Build(AS47Web* W)
  for (int32 I=0;I<Meshes.Num();++I)
  {
   const FString Name=Prefix+Ids[I]; UStaticMeshComponent* C=NewObject<UStaticMeshComponent>(W,*Name);
-  C->SetupAttachment(Parent->Comp.Get()); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Meshes[I]);
+  C->SetupAttachment(ParentComponent); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Meshes[I]);
   C->SetCollisionProfileName(TEXT("NoCollision")); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
   C->SetCastShadow(true); W->AddInstanceComponent(C); C->RegisterComponent(); C->SetWorldTransform(Wanted(I));
   const int32 Node=W->AdoptNode(C,Root.I,Name);
