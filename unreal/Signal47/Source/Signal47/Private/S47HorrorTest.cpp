@@ -1107,7 +1107,7 @@ void FS47HorrorTest::Step(double Dt)
 		 TEXT("fresh disk/full Flow retains completed SC01 and actual reference with no unsupported report"):
 		 TEXT("fresh disk/full Flow retains exactly one actual report, real photo and completed SC01")))return;
 		if(!Check(!H.Pack.Flag(TEXT("hr_h02_recorded")),TEXT("SC01 acceptance does not falsely complete the later H02 physical route")))return;
-		if(T.bDispatchRecordings && !Check(S47J::Bool(H.Save(),TEXT("daleReferenceHeard"))==T.bDispatchDaleBefore&&T.DispatchComplete.Num()==2,TEXT("ordinary report disk/full Flow preserves both audio receipts and original Dale-heard fact")))return;
+		if(T.bDispatchRecordings && !Check(S47J::Bool(H.Save(),TEXT("daleReferenceHeard"))==T.bDispatchDaleBefore&&T.DispatchComplete.Num()==2,TEXT("ordinary report disk/full Flow preserves original Dale-heard fact; test memory retains both completed audio receipts")))return;
 		if(!Check(T.WalkMetres>45 && T.Stores>=6,TEXT("live acceptance includes continuous native walking and independent disk readers")))return;
 		Go({FVector(4.2,0,1.6)},55);return;
 	}
