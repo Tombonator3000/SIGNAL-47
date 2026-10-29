@@ -219,7 +219,7 @@ bool Build(AS47Web* W, bool* bPreparing)
  {
   const FString Name=Prefix+Ids[I]; UStaticMeshComponent* C=NewObject<UStaticMeshComponent>(W,*Name);
   C->SetupAttachment(ParentComponent); C->SetMobility(EComponentMobility::Movable); C->SetStaticMesh(Meshes[I]);
-  C->SetCollisionProfileName(TEXT("NoCollision")); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCollisionResponseToAllChannels(ECR_Ignore);
+  C->SetCollisionProfileName(TEXT("NoCollision")); C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
   C->SetCastShadow(true); W->AddInstanceComponent(C); C->RegisterComponent(); C->SetWorldTransform(Wanted(I));
   const int32 Node=W->AdoptNode(C,Root.I,Name);
   // AdoptNode initially records position only; set the tipped lid's genuine Three
