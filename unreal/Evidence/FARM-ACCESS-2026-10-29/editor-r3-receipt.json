@@ -1,0 +1,2096 @@
+{
+  "status": "PASS_TARGETED_FARM_ROUTE",
+  "runtime_source_commit": "575ffd1581802c59ac63f276991a3ac885078543",
+  "guard": {
+    "returncode": 0,
+    "wall_seconds": 215.12468255200656,
+    "contention": [],
+    "stop_reason": null,
+    "performance_status": "UNCONTENDED"
+  },
+  "result": {
+    "status": "PASS",
+    "reason": "continuous handoff/arrival, actual car and Walker barriers, original car re-entry/reverse, visible ranch and unchanged quest pack through full disk/title/Continue",
+    "stage": 18,
+    "checks": 27,
+    "seconds": 190.92016732000047,
+    "drive_metres": 380.33150808191454,
+    "walk_metres": 30.971448786462755,
+    "ordinary_leg_transitions": 1,
+    "car_physically_blocked": true,
+    "person_physically_blocked": true,
+    "last_saro_visible_ranch_triangles_in_expected_place": 300,
+    "ranch_audit_samples": 10,
+    "all_ranch_audits_pass": true
+  },
+  "selftests": 1709,
+  "original_runtime_result_sha256": "cc85c8abeae11bbe43531feb9b8f2db886107fcc53c64019718ffa1acf758a9e",
+  "original_runtime_result": "/tmp/S47-farm-access-editor-r3/Saved/FarmAccessContract/01A1866F026075C18422609422EE0D53/result.json",
+  "continue_readback_sha256": "9f826d332099e41258d9e107ecfc085b9bf8beaba14b3195fefb0e29a60e0bf1",
+  "normal_disk_continue_pass": true,
+  "car_blocked_pose": {
+    "leg": "saro",
+    "world_area": "saro",
+    "web_area": "saro",
+    "driving": true,
+    "truck_at": "",
+    "personal_commute_vehicle": true,
+    "centre_three_m": [
+      -5.686519964294428,
+      0,
+      496.43406267692325
+    ],
+    "centre_road_local_m": [
+      18.313480035705574,
+      0,
+      196.43406267692325
+    ],
+    "heading_rad": -1.5621897551635815,
+    "speed_m_s": -0.004048417006468534,
+    "oriented_collision_corners": [
+      {
+        "road_local_m": [
+          20.97198835486588,
+          0,
+          197.41121850735942
+        ]
+      },
+      {
+        "road_local_m": [
+          15.67218464730361,
+          0,
+          197.45683277386905
+        ]
+      },
+      {
+        "road_local_m": [
+          15.654971716545269,
+          0,
+          195.45690684648707
+        ]
+      },
+      {
+        "road_local_m": [
+          20.954775424107538,
+          0,
+          195.41129257997744
+        ]
+      }
+    ],
+    "collision_half_extents_m": [
+      1,
+      2.65
+    ],
+    "max_footprint_road_x": 20.97198835486588,
+    "last_path_follow_throttle": 0.8831098590274037,
+    "last_path_follow_steer": 0.025576841432285013,
+    "actual_parked_car_three_m": [
+      -5.686519964294428,
+      -0.6765455801523361,
+      496.43406267692325
+    ],
+    "actual_parked_heading_rad": -1.5621897551635815,
+    "walker_three_m": [
+      0,
+      0,
+      0
+    ],
+    "walker_road_local_m": [
+      24,
+      0,
+      -300
+    ],
+    "walker_radius_m": 0.27,
+    "clock_seconds": -24000
+  },
+  "walker_blocked_pose": {
+    "leg": "",
+    "world_area": "saro",
+    "web_area": "saro",
+    "driving": false,
+    "truck_at": "saro",
+    "personal_commute_vehicle": true,
+    "actual_parked_car_three_m": [
+      -5.686519964294428,
+      -0.6765456113513382,
+      496.43406267692325
+    ],
+    "actual_parked_heading_rad": -1.5621897551635815,
+    "walker_three_m": [
+      -3.674748257389734,
+      0,
+      494.29998224833986
+    ],
+    "walker_road_local_m": [
+      20.325251742610266,
+      0,
+      194.29998224833986
+    ],
+    "walker_radius_m": 0.27,
+    "clock_seconds": -24000
+  },
+  "prepared_native_assets_unchanged_after_runtime": [
+    {
+      "asset": "/Game/Web/Geo/geo_007/StaticMeshes/g910.g910",
+      "sha256": "4b3b048f1f2319b54557f8f096ab074e4aa95cd929931b69d188a16859a65648",
+      "matches_pre_runtime_cpu_prepared_asset": true
+    },
+    {
+      "asset": "/Game/Web/Geo/geo_007/StaticMeshes/g911.g911",
+      "sha256": "2ad7ce2d2963025d18cb432bda2348470d566d19670878dd0a907ddde5f6acb4",
+      "matches_pre_runtime_cpu_prepared_asset": true
+    },
+    {
+      "asset": "/Game/Web/Geo/geo_007/StaticMeshes/g912.g912",
+      "sha256": "7c5f8c017856381da4b0abaecf16760f9aebea88a1cf4897f7823e8a54405cee",
+      "matches_pre_runtime_cpu_prepared_asset": true
+    }
+  ],
+  "snapshots": [
+    {
+      "name": "road-start-535",
+      "pose": {
+        "leg": "road",
+        "world_area": "road",
+        "web_area": "road",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          8001.8,
+          0,
+          535
+        ],
+        "centre_road_local_m": [
+          1.800000000000182,
+          0,
+          535
+        ],
+        "heading_rad": 0,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.800000000000182,
+              0,
+              532.35
+            ]
+          },
+          {
+            "road_local_m": [
+              2.800000000000182,
+              0,
+              537.65
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000001819,
+              0,
+              537.65
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000001819,
+              0,
+              532.35
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.800000000000182,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          8001.8,
+          -2.3832741577241308,
+          535
+        ],
+        "actual_parked_heading_rad": 0,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          -8000,
+          0,
+          0
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "road-before-handoff",
+      "pose": {
+        "leg": "road",
+        "world_area": "road",
+        "web_area": "road",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          8001.8,
+          0,
+          486.2973039955645
+        ],
+        "centre_road_local_m": [
+          1.800000000000182,
+          0,
+          486.2973039955645
+        ],
+        "heading_rad": 4.026997863422286e-13,
+        "speed_m_s": 0.003315663312828401,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.7999999999991148,
+              0,
+              483.64730399556413
+            ]
+          },
+          {
+            "road_local_m": [
+              2.800000000001249,
+              0,
+              488.9473039955641
+            ]
+          },
+          {
+            "road_local_m": [
+              0.800000000001249,
+              0,
+              488.9473039955649
+            ]
+          },
+          {
+            "road_local_m": [
+              0.7999999999991148,
+              0,
+              483.6473039955649
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.800000000001249,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          8001.8,
+          -2.400493324453204,
+          486.2973039955645
+        ],
+        "actual_parked_heading_rad": 4.026997863422286e-13,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          -8000,
+          0,
+          0
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "actual-road-to-saro-transfer",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -22.199999999999825,
+          0,
+          774.3915567166499
+        ],
+        "centre_road_local_m": [
+          1.8000000000001748,
+          0,
+          474.3915567166499
+        ],
+        "heading_rad": 1.3387661159386819e-14,
+        "speed_m_s": 4.913936246509459,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.8000000000001393,
+              0,
+              471.74155671664994
+            ]
+          },
+          {
+            "road_local_m": [
+              2.8000000000002103,
+              0,
+              477.0415567166499
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000002103,
+              0,
+              477.0415567166499
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000001393,
+              0,
+              471.74155671664994
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.8000000000002103,
+        "last_path_follow_throttle": 0.0692835737707476,
+        "last_path_follow_steer": -4.286988001719526e-15,
+        "actual_parked_car_three_m": [
+          -22.199999999999825,
+          -2.3374711618328536,
+          774.3915567166499
+        ],
+        "actual_parked_heading_rad": 1.3387661159386819e-14,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "saro-after-handoff",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -22.199999999999942,
+          0,
+          762.2966111698167
+        ],
+        "centre_road_local_m": [
+          1.8000000000000576,
+          0,
+          462.29661116981674
+        ],
+        "heading_rad": 1.5555803165219822e-13,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.7999999999996454,
+              0,
+              459.6466111698166
+            ]
+          },
+          {
+            "road_local_m": [
+              2.8000000000004697,
+              0,
+              464.94661116981655
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000004699,
+              0,
+              464.9466111698169
+            ]
+          },
+          {
+            "road_local_m": [
+              0.7999999999996452,
+              0,
+              459.64661116981694
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.8000000000004697,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          -22.199999999999942,
+          -2.239421631341728,
+          762.2966111698167
+        ],
+        "actual_parked_heading_rad": 1.5555803165219822e-13,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "saro-apron-before-port",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -7.799826956417324,
+          0,
+          496.43507456376364
+        ],
+        "centre_road_local_m": [
+          16.200173043582677,
+          0,
+          196.43507456376364
+        ],
+        "heading_rad": -1.5389716508181797,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              18.880650487781562,
+              0,
+              197.3502470453981
+            ]
+          },
+          {
+            "road_local_m": [
+              13.583334207764597,
+              0,
+              197.51888935760726
+            ]
+          },
+          {
+            "road_local_m": [
+              13.519695599383791,
+              0,
+              195.51990208212916
+            ]
+          },
+          {
+            "road_local_m": [
+              18.817011879400756,
+              0,
+              195.35125976992
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 18.880650487781562,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          -7.799826956417324,
+          -0.6503395562085678,
+          496.43507456376364
+        ],
+        "actual_parked_heading_rad": -1.5389716508181797,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "car-stopped-by-closed-port",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -5.686519964294428,
+          0,
+          496.43406267692325
+        ],
+        "centre_road_local_m": [
+          18.313480035705574,
+          0,
+          196.43406267692325
+        ],
+        "heading_rad": -1.5621897551635815,
+        "speed_m_s": -0.004048417006468534,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              20.97198835486588,
+              0,
+              197.41121850735942
+            ]
+          },
+          {
+            "road_local_m": [
+              15.67218464730361,
+              0,
+              197.45683277386905
+            ]
+          },
+          {
+            "road_local_m": [
+              15.654971716545269,
+              0,
+              195.45690684648707
+            ]
+          },
+          {
+            "road_local_m": [
+              20.954775424107538,
+              0,
+              195.41129257997744
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 20.97198835486588,
+        "last_path_follow_throttle": 0.8831098590274037,
+        "last_path_follow_steer": 0.025576841432285013,
+        "actual_parked_car_three_m": [
+          -5.686519964294428,
+          -0.6765455801523361,
+          496.43406267692325
+        ],
+        "actual_parked_heading_rad": -1.5621897551635815,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "walker-mailbox",
+      "pose": {
+        "leg": "",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": false,
+        "truck_at": "saro",
+        "personal_commute_vehicle": true,
+        "actual_parked_car_three_m": [
+          -5.686519964294428,
+          -0.6765456113513382,
+          496.43406267692325
+        ],
+        "actual_parked_heading_rad": -1.5621897551635815,
+        "walker_three_m": [
+          -14.333340198046029,
+          0,
+          493.25023094253925
+        ],
+        "walker_road_local_m": [
+          9.666659801953971,
+          0,
+          193.25023094253925
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "walker-blocked-by-port",
+      "pose": {
+        "leg": "",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": false,
+        "truck_at": "saro",
+        "personal_commute_vehicle": true,
+        "actual_parked_car_three_m": [
+          -5.686519964294428,
+          -0.6765456113513382,
+          496.43406267692325
+        ],
+        "actual_parked_heading_rad": -1.5621897551635815,
+        "walker_three_m": [
+          -3.674748257389734,
+          0,
+          494.29998224833986
+        ],
+        "walker_road_local_m": [
+          20.325251742610266,
+          0,
+          194.29998224833986
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "returned-to-highway",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -21.915967955827085,
+          0,
+          509.90638830088284
+        ],
+        "centre_road_local_m": [
+          2.0840320441729148,
+          0,
+          209.90638830088284
+        ],
+        "heading_rad": -0.30129027627512994,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              3.825380847547472,
+              0,
+              207.6725117722927
+            ]
+          },
+          {
+            "road_local_m": [
+              2.2525920233819576,
+              0,
+              212.73377004613923
+            ]
+          },
+          {
+            "road_local_m": [
+              0.34268324079835744,
+              0,
+              212.14026482947298
+            ]
+          },
+          {
+            "road_local_m": [
+              1.915472064963872,
+              0,
+              207.07900655562645
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 3.825380847547472,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          -21.915967955827085,
+          -0.6375312529301922,
+          509.90638830088284
+        ],
+        "actual_parked_heading_rad": -0.30129027627512994,
+        "walker_three_m": [
+          -5.478650003396998,
+          0,
+          494.68024536972325
+        ],
+        "walker_road_local_m": [
+          18.521349996603,
+          0,
+          194.68024536972325
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    },
+    {
+      "name": "after-full-flow-continue",
+      "pose": {
+        "leg": "",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": false,
+        "truck_at": "saro",
+        "personal_commute_vehicle": true,
+        "actual_parked_car_three_m": [
+          -21.915967955827085,
+          -0.6377142691505947,
+          509.90638830088284
+        ],
+        "actual_parked_heading_rad": -0.30129027627512994,
+        "walker_three_m": [
+          -23.498112358087802,
+          0,
+          509.1005849189123
+        ],
+        "walker_road_local_m": [
+          0.501887641912198,
+          0,
+          209.10058491891232
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "ranch_audit_pass": true,
+      "ranch_triangles": 300,
+      "audit_lines": [
+        "OK highway ranch complete three-part native partition and continuous landscape",
+        "OK highway ranch g910 original full index/section/packed-buffer/slot fingerprint unchanged C6B354ECCAE908AD13DB57E723312FEBF24D3605",
+        "OK highway ranch g910 exact partition fingerprints/index order retained",
+        "OK highway ranch g910 original static material slots retained",
+        "OK highway ranch g910 solid native ray tracing policy retained",
+        "OK highway ranch g910 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g910 source metadata/visibility producer retained",
+        "OK highway ranch g910 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g910 actual original material producer bindings agree",
+        "OK highway ranch g910 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g910 canonical offset and active-area visibility retained",
+        "OK highway ranch g910 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g911 original full index/section/packed-buffer/slot fingerprint unchanged 5A138DB2560B99C65C1F5299AB46613061CBB4D1",
+        "OK highway ranch g911 exact partition fingerprints/index order retained",
+        "OK highway ranch g911 original static material slots retained",
+        "OK highway ranch g911 solid native ray tracing policy retained",
+        "OK highway ranch g911 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g911 source metadata/visibility producer retained",
+        "OK highway ranch g911 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g911 actual original material producer bindings agree",
+        "OK highway ranch g911 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g911 canonical offset and active-area visibility retained",
+        "OK highway ranch g911 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch g912 original full index/section/packed-buffer/slot fingerprint unchanged 248056111B32D91DA4040B78372600F33D7913A7",
+        "OK highway ranch g912 exact partition fingerprints/index order retained",
+        "OK highway ranch g912 original static material slots retained",
+        "OK highway ranch g912 solid native ray tracing policy retained",
+        "OK highway ranch g912 original remainder component transform/collision/render flags retained",
+        "OK highway ranch g912 source metadata/visibility producer retained",
+        "OK highway ranch g912 exactly the shared ranch is NoCollision in canonical landscape",
+        "OK highway ranch g912 actual original material producer bindings agree",
+        "OK highway ranch g912 original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained",
+        "OK highway ranch g912 canonical offset and active-area visibility retained",
+        "OK highway ranch g912 selected ranch bounds, local coordinates unchanged",
+        "OK highway ranch exactly 300 ranch +3972 remainder =4272 original triangles"
+      ]
+    }
+  ],
+  "photos": {
+    "road-start-ranch.png": {
+      "png": {
+        "sha256": "ad610f37739167d36c3eac67061441cb7ee15aabef6f96144fe972229892c54a",
+        "sha1": "2664C187FF65A6D86E4477632214FEEF211C5C5B",
+        "bytes": 1212112,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "road",
+        "world_area": "road",
+        "web_area": "road",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          8001.8,
+          0,
+          535
+        ],
+        "centre_road_local_m": [
+          1.800000000000182,
+          0,
+          535
+        ],
+        "heading_rad": 0,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.800000000000182,
+              0,
+              532.35
+            ]
+          },
+          {
+            "road_local_m": [
+              2.800000000000182,
+              0,
+              537.65
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000001819,
+              0,
+              537.65
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000001819,
+              0,
+              532.35
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.800000000000182,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          8001.8,
+          -2.3832741577241308,
+          535
+        ],
+        "actual_parked_heading_rad": 0,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          -8000,
+          0,
+          0
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          8001.469259126967,
+          -1.2970034558712833,
+          534.9485637717378
+        ],
+        "forward_three": [
+          0.791201682417072,
+          0.005047032942303469,
+          -0.6115344840635515
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            800146.9251747044,
+            53494.85643205279,
+            -129.74185380913462
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.00546543028390484,
+            -0.0008005468869650009,
+            -0.32310759495274294,
+            0.9463461154780253
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 0.00041514818298568704,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "road-start-ranch",
+        "expected_landmark_three_m": [
+          8440,
+          1.5,
+          196
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          800,
+          435.99993896484375
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    },
+    "road-before-handoff-ranch.png": {
+      "png": {
+        "sha256": "beb6d4928151f7f11c72d8752d61d68578206ac7366386422906b04f5ef315d8",
+        "sha1": "5C4533ED4981261E3041D6C678CAA1FB9C209C3C",
+        "bytes": 1252928,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "road",
+        "world_area": "road",
+        "web_area": "road",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          8001.8,
+          0,
+          486.2973039955645
+        ],
+        "centre_road_local_m": [
+          1.800000000000182,
+          0,
+          486.2973039955645
+        ],
+        "heading_rad": 4.026997863422286e-13,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.7999999999991148,
+              0,
+              483.64730399556413
+            ]
+          },
+          {
+            "road_local_m": [
+              2.800000000001249,
+              0,
+              488.9473039955641
+            ]
+          },
+          {
+            "road_local_m": [
+              0.800000000001249,
+              0,
+              488.9473039955649
+            ]
+          },
+          {
+            "road_local_m": [
+              0.7999999999991148,
+              0,
+              483.6473039955649
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.800000000001249,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          8001.8,
+          -2.400421171063818,
+          486.2973039955645
+        ],
+        "actual_parked_heading_rad": 4.026997863422286e-13,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          -8000,
+          0,
+          0
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          8001.468851520185,
+          -1.3140755192679248,
+          486.25138232969033
+        ],
+        "forward_three": [
+          0.8338791697359464,
+          0.005344109133524399,
+          -0.5519211635533263
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            800146.8849562112,
+            48625.13851504849,
+            -131.4187826383466
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.006869951636383715,
+            -0.0007236744061181371,
+            -0.2882011301641724,
+            0.9575449799523579
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 0.00011235959742635895,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "road-before-handoff-ranch",
+        "expected_landmark_three_m": [
+          8440,
+          1.5,
+          196
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          800,
+          435.9966735839844
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    },
+    "saro-after-handoff-ranch.png": {
+      "png": {
+        "sha256": "3339301e10170c9aa35944a850f6c1ac3ce76848e2e0b9e1d6c77b9b1607a47e",
+        "sha1": "904BF83DC44BF7C4B8871B9749B00F63ECD348F4",
+        "bytes": 1236110,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -22.199999999999942,
+          0,
+          762.2966111698167
+        ],
+        "centre_road_local_m": [
+          1.8000000000000576,
+          0,
+          462.29661116981674
+        ],
+        "heading_rad": 1.5555803165219822e-13,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.7999999999996454,
+              0,
+              459.6466111698166
+            ]
+          },
+          {
+            "road_local_m": [
+              2.8000000000004697,
+              0,
+              464.94661116981655
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000004699,
+              0,
+              464.9466111698169
+            ]
+          },
+          {
+            "road_local_m": [
+              0.7999999999996452,
+              0,
+              459.64661116981694
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.8000000000004697,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          -22.199999999999942,
+          -2.239313287383078,
+          762.2966111698167
+        ],
+        "actual_parked_heading_rad": 1.5555803165219822e-13,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          -22.534080987200287,
+          -1.1537588409043902,
+          762.2554271253638
+        ],
+        "forward_three": [
+          0.8547738256578087,
+          0.005165327108992704,
+          -0.5189749766281332
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -2253.40795747271,
+            76225.54308669982,
+            -115.36625432378737
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.0077148112015996235,
+            -0.0005238743267118274,
+            -0.26946764690272484,
+            0.9629783977413625
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 9.638068004114484e-05,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "saro-after-handoff-ranch",
+        "expected_landmark_three_m": [
+          416,
+          1.5,
+          496
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          800,
+          435.99658203125
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    },
+    "saro-apron-port.png": {
+      "png": {
+        "sha256": "da61d46199a659712016ca07ddbfbaecf41b5a7b3c3fdf682de797a802fe9dc9",
+        "sha1": "629F0688F168A5F8023A4A37865808651D12AAD5",
+        "bytes": 1290450,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -7.799826956417324,
+          0,
+          496.43507456376364
+        ],
+        "centre_road_local_m": [
+          16.200173043582677,
+          0,
+          196.43507456376364
+        ],
+        "heading_rad": -1.5389716508181797,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              18.880650487781562,
+              0,
+              197.3502470453981
+            ]
+          },
+          {
+            "road_local_m": [
+              13.583334207764597,
+              0,
+              197.51888935760726
+            ]
+          },
+          {
+            "road_local_m": [
+              13.519695599383791,
+              0,
+              195.51990208212916
+            ]
+          },
+          {
+            "road_local_m": [
+              18.817011879400756,
+              0,
+              195.35125976992
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 18.880650487781562,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          -7.799826956417324,
+          -0.6503315235195911,
+          496.43507456376364
+        ],
+        "actual_parked_heading_rad": -1.5389716508181797,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          -7.732005565608886,
+          0.4310059822349884,
+          496.0915296810827
+        ],
+        "forward_three": [
+          0.9934561382081191,
+          -0.04843415973112188,
+          0.10343613308583578
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -773.2004390124109,
+            49609.15300443344,
+            43.10552748501397
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.0034845291777358426,
+            0.024075843220056688,
+            0.05188723030942874,
+            0.9983566132201805
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 4.9307967152844506e-05,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "saro-apron-port",
+        "expected_landmark_three_m": [
+          -3,
+          0.2,
+          496.5842128043305
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          800,
+          436.044921875
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    },
+    "car-port-blocked.png": {
+      "png": {
+        "sha256": "a01851bdd7a9dbd6c9a259761921b85f95f416fa980612c9a2ac2b2abd597330",
+        "sha1": "6CB9EA7F47BF319C9DFC7E6037F894E35535AA1F",
+        "bytes": 1174743,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -5.686519964294428,
+          0,
+          496.43406267692325
+        ],
+        "centre_road_local_m": [
+          18.313480035705574,
+          0,
+          196.43406267692325
+        ],
+        "heading_rad": -1.5621897551635815,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              20.97198835486588,
+              0,
+              197.41121850735942
+            ]
+          },
+          {
+            "road_local_m": [
+              15.67218464730361,
+              0,
+              197.45683277386905
+            ]
+          },
+          {
+            "road_local_m": [
+              15.654971716545269,
+              0,
+              195.45690684648707
+            ]
+          },
+          {
+            "road_local_m": [
+              20.954775424107538,
+              0,
+              195.41129257997744
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 20.97198835486588,
+        "last_path_follow_throttle": 0.8831098590274037,
+        "last_path_follow_steer": 0.025576841432285013,
+        "actual_parked_car_three_m": [
+          -5.686519964294428,
+          -0.6765456372259467,
+          496.43406267692325
+        ],
+        "actual_parked_heading_rad": -1.5621897551635815,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          -5.680562059160056,
+          0.4084177030892958,
+          496.0955263193391
+        ],
+        "forward_three": [
+          0.9809290604008339,
+          -0.07613368076151825,
+          0.1788346753704113
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -568.0559220142545,
+            49609.552722927416,
+            40.850528698774255
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.012234741322244573,
+            0.037145015916734254,
+            0.09031020742270149,
+            0.9951455297254729
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 8.763462369024189e-05,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "car-port-blocked",
+        "expected_landmark_three_m": [
+          -3,
+          0.2,
+          496.5842128043305
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          799.999267578125,
+          436.0972595214844
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    },
+    "walker-mailbox-port.png": {
+      "png": {
+        "sha256": "d72753dcaec8d06fe18d47b8c0a9bf4e38ae5fa171bc1b11c9b339073838b5bb",
+        "sha1": "CA87D26CFA12C2D8B08A251FCA24B750A917C27E",
+        "bytes": 2493136,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": false,
+        "truck_at": "saro",
+        "personal_commute_vehicle": true,
+        "actual_parked_car_three_m": [
+          -5.686519964294428,
+          -0.6765456113513382,
+          496.43406267692325
+        ],
+        "actual_parked_heading_rad": -1.5621897551635815,
+        "walker_three_m": [
+          -14.333340198046029,
+          0,
+          493.25023094253925
+        ],
+        "walker_road_local_m": [
+          9.666659801953971,
+          0,
+          193.25023094253925
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          -14.333340198046027,
+          1.0352701147418215,
+          493.25023094253925
+        ],
+        "forward_three": [
+          -0.04997317688962544,
+          -0.2902495920223743,
+          -0.955645256317638
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -1433.3340198046028,
+            49325.02309425393,
+            103.55768314238875
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            0.1065330399197642,
+            0.10087244853984759,
+            -0.7175035453364591,
+            0.6809288677686104
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 0.00030671668206608163,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "walker-mailbox-port",
+        "expected_landmark_three_m": [
+          -14.4,
+          0.65,
+          491.9754846188247
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          800.0003051757812,
+          435.3113708496094
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    },
+    "returned-highway-ranch.png": {
+      "png": {
+        "sha256": "cedfe8a139f84947bc93613649dddb45d6462b5d58c5bbe1e20270c1204b449f",
+        "sha1": "C05D17032DCD131C80BE3F16F04C82D9BF74CC31",
+        "bytes": 1098647,
+        "width": 1600,
+        "height": 872,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      },
+      "actual_pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -21.915967955827085,
+          0,
+          509.90638830088284
+        ],
+        "centre_road_local_m": [
+          2.0840320441729148,
+          0,
+          209.90638830088284
+        ],
+        "heading_rad": -0.30129027627512994,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              3.825380847547472,
+              0,
+              207.6725117722927
+            ]
+          },
+          {
+            "road_local_m": [
+              2.2525920233819576,
+              0,
+              212.73377004613923
+            ]
+          },
+          {
+            "road_local_m": [
+              0.34268324079835744,
+              0,
+              212.14026482947298
+            ]
+          },
+          {
+            "road_local_m": [
+              1.915472064963872,
+              0,
+              207.07900655562645
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 3.825380847547472,
+        "last_path_follow_throttle": 0,
+        "last_path_follow_steer": 0,
+        "actual_parked_car_three_m": [
+          -21.915967955827085,
+          -0.6377138223339076,
+          509.90638830088284
+        ],
+        "actual_parked_heading_rad": -0.30129027627512994,
+        "walker_three_m": [
+          -5.478650003396998,
+          0,
+          494.68024536972325
+        ],
+        "walker_road_local_m": [
+          18.521349996603,
+          0,
+          194.68024536972325
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "actual_camera": {
+        "eye_three_m": [
+          -22.224426466719333,
+          0.44651085225546105,
+          509.7646255731381
+        ],
+        "forward_three": [
+          0.9995041833348115,
+          0.0024040627173380117,
+          -0.03139439406427076
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -2222.442544311867,
+            50976.46242490758,
+            44.655915079707476
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.004719342956486161,
+            -0.0011275265777999385,
+            -0.015704643724034295,
+            0.9998649011998454
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "actual_camera_aspect_ratio": 1.7777780294418335,
+        "walker_eye_to_final_pov_delta_m": 4.832752860805413e-05,
+        "viewport": [
+          1600,
+          872
+        ],
+        "name": "returned-highway-ranch",
+        "expected_landmark_three_m": [
+          416,
+          1.5,
+          496
+        ],
+        "landmark_projects": true,
+        "landmark_pixel": [
+          800,
+          436.0001525878906
+        ],
+        "target_visibility_is_not_assumed": true
+      }
+    }
+  },
+  "limits": "One explicit road-Z535 BeginCommute start fixture, ordinary physical control afterwards. First isolated case1 disk is an explicit unchanged actual case0 snapshot copy; ordinary title/Continue and subsequent normal Flow.WriteSave follow. API control only, original E01 camera/build unknown, no human/FPS/full-matrix acceptance.",
+  "installed": false,
+  "public_release": false
+}

@@ -29,6 +29,7 @@ class FS47TownBuildings;
 class FS47CalicheHomes;
 class FS47MotelV2;
 class FS47RouteNature;
+struct FS47HighwayRanch;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -99,6 +100,7 @@ public:
 	bool HighwayLandscapeReady() const { return HighwayLandscapeRoot.IsValid(); }
 	FVector HighwayMapEye(const FVector& ThreeEye) const;
 	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
+	bool AuditHighwayRanch(TArray<FString>& Lines) const;
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
@@ -309,6 +311,7 @@ private:
 	bool bMesaDinerReady = false;
 	void BuildCalicheNature();
 	void BuildHighwayPower();
+	void BuildHighwayRanch();
 	void BuildHighwayLandscape();
 	void BeginHighwayAudit();
 	void BeginSaroArrivalViews();
@@ -322,7 +325,9 @@ private:
 	void BeginProductionViews();
 	void BeginMotelV2Route();
 	void BeginCalicheHomesContract();
+	void StartFarmAccessContract();
 	void UpdateHighwayLandscape();
+	TSharedPtr<FS47HighwayRanch> HighwayRanch;
 	TWeakObjectPtr<USceneComponent> HighwayLandscapeRoot;
 	TMap<int32, FTransform> HighwayVisuals;
 	TSet<int32> HighwaySharedNodes;

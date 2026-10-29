@@ -1,0 +1,887 @@
+{
+  "scope": "Compact derived receipt from byte-preserved original negative baseline, not a product PASS. Full original JSON/logs remain private.",
+  "runtime_source_commit": "70a1491dc36217954f0494cfe8940a314f36ecff",
+  "status": "FAIL",
+  "reason": "measured oriented vehicle collision footprint crossed the visible closed pipe-gate plane",
+  "guard": {
+    "returncode": 1,
+    "wall_seconds": 163.59920639899792,
+    "contention": [],
+    "stop_reason": null,
+    "performance_status": "UNCONTENDED"
+  },
+  "drive_metres": 351.87190912730296,
+  "ordinary_leg_transitions": 1,
+  "checks": 3,
+  "actual_snapshots": [
+    {
+      "name": "road-before-handoff.json",
+      "pose": {
+        "leg": "road",
+        "world_area": "road",
+        "web_area": "road",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          8001.8,
+          0,
+          486.2972132593119
+        ],
+        "centre_road_local_m": [
+          1.800000000000182,
+          0,
+          486.2972132593119
+        ],
+        "heading_rad": 4.029956092277287e-13,
+        "speed_m_s": 0,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.799999999999114,
+              0,
+              483.6472132593115
+            ]
+          },
+          {
+            "road_local_m": [
+              2.80000000000125,
+              0,
+              488.94721325931147
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000012499,
+              0,
+              488.94721325931226
+            ]
+          },
+          {
+            "road_local_m": [
+              0.7999999999991139,
+              0,
+              483.6472132593123
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.80000000000125,
+        "actual_parked_car_three_m": [
+          8001.8,
+          -2.4004912599958756,
+          486.2972132593119
+        ],
+        "actual_parked_heading_rad": 4.029956092277287e-13,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          -8000,
+          0,
+          0
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "camera": {
+        "eye_three_m": [
+          8001.46885018193,
+          -1.3144094345468584,
+          486.2479096826623
+        ],
+        "forward_three": [
+          -0.0013905082211851383,
+          -0.07925001890214767,
+          -0.9968538012120414
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            800146.884714947,
+            48624.84226195018,
+            -131.4579109448004
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            0.021729504075343013,
+            0.03402557641516321,
+            -0.7067796824241254,
+            0.7062808006131189
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "walker_eye_to_final_pov_delta_m": 0.0005402804542342967,
+        "viewport": [
+          1600,
+          872
+        ]
+      },
+      "original_ranch_components": [
+        {
+          "node": 1301,
+          "parent": 1289,
+          "geo": 910,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": true,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1301",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": true,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g910.g910",
+          "joined_bounds_min_three_m": [
+            7985.88,
+            -2.8724761962890626,
+            187.31048828125
+          ],
+          "joined_bounds_max_three_m": [
+            8424.435703125,
+            1.1423640441894531,
+            524.7750390625
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W590_0",
+            "parent:/Game/Web/Mat/MI_W590.MI_W590"
+          ],
+          "cpu_lod0_readable": false
+        },
+        {
+          "node": 1302,
+          "parent": 1289,
+          "geo": 911,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": true,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1302",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": true,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g911.g911",
+          "joined_bounds_min_three_m": [
+            7341.5696875,
+            -2.6985684204101563,
+            59.985
+          ],
+          "joined_bounds_max_three_m": [
+            8464.924765625,
+            8.657921752929688,
+            1825.355
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W589_0",
+            "parent:/Game/Web/Mat/MI_W589.MI_W589"
+          ],
+          "cpu_lod0_readable": false
+        },
+        {
+          "node": 1303,
+          "parent": 1289,
+          "geo": 912,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": true,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1303",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": true,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g912.g912",
+          "joined_bounds_min_three_m": [
+            7364.3,
+            -2.5977438354492186,
+            163.581845703125
+          ],
+          "joined_bounds_max_three_m": [
+            8454.6008984375,
+            6.241785278320313,
+            530.05
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W587_0",
+            "parent:/Game/Web/Mat/MI_W587.MI_W587"
+          ],
+          "cpu_lod0_readable": false
+        }
+      ]
+    },
+    {
+      "name": "saro-after-handoff.json",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -22.19999999999994,
+          0,
+          762.2975792403572
+        ],
+        "centre_road_local_m": [
+          1.800000000000061,
+          0,
+          462.2975792403572
+        ],
+        "heading_rad": 1.578157043206194e-13,
+        "speed_m_s": 0.014425006155958302,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              2.7999999999996428,
+              0,
+              459.64757924035706
+            ]
+          },
+          {
+            "road_local_m": [
+              2.8000000000004794,
+              0,
+              464.947579240357
+            ]
+          },
+          {
+            "road_local_m": [
+              0.8000000000004792,
+              0,
+              464.94757924035736
+            ]
+          },
+          {
+            "road_local_m": [
+              0.799999999999643,
+              0,
+              459.6475792403574
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 2.8000000000004794,
+        "actual_parked_car_three_m": [
+          -22.19999999999994,
+          -2.2394950278446997,
+          762.2975792403572
+        ],
+        "actual_parked_heading_rad": 1.578157043206194e-13,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "camera": {
+        "eye_three_m": [
+          -22.534078467013863,
+          -1.154180270203384,
+          762.2536956250176
+        ],
+        "forward_three": [
+          -0.0011603857769950654,
+          -0.07327529588272856,
+          -0.9973110771059087
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -2253.40802011103,
+            76225.45668770712,
+            -115.43468670345402
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            0.020508828161311422,
+            0.030898968748493832,
+            -0.7068418970491496,
+            0.7063987360363048
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "walker_eye_to_final_pov_delta_m": 0.0008870386982429149,
+        "viewport": [
+          1600,
+          872
+        ]
+      },
+      "original_ranch_components": [
+        {
+          "node": 1301,
+          "parent": 1289,
+          "geo": 910,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": false,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1301",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": false,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g910.g910",
+          "joined_bounds_min_three_m": [
+            7985.88,
+            -2.8724761962890626,
+            187.31048828125
+          ],
+          "joined_bounds_max_three_m": [
+            8424.435703125,
+            1.1423640441894531,
+            524.7750390625
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W590_0",
+            "parent:/Game/Web/Mat/MI_W590.MI_W590"
+          ],
+          "cpu_lod0_readable": false
+        },
+        {
+          "node": 1302,
+          "parent": 1289,
+          "geo": 911,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": false,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1302",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": false,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g911.g911",
+          "joined_bounds_min_three_m": [
+            7341.5696875,
+            -2.6985684204101563,
+            59.985
+          ],
+          "joined_bounds_max_three_m": [
+            8464.924765625,
+            8.657921752929688,
+            1825.355
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W589_0",
+            "parent:/Game/Web/Mat/MI_W589.MI_W589"
+          ],
+          "cpu_lod0_readable": false
+        },
+        {
+          "node": 1303,
+          "parent": 1289,
+          "geo": 912,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": false,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1303",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": false,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g912.g912",
+          "joined_bounds_min_three_m": [
+            7364.3,
+            -2.5977438354492186,
+            163.581845703125
+          ],
+          "joined_bounds_max_three_m": [
+            8454.6008984375,
+            6.241785278320313,
+            530.05
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W587_0",
+            "parent:/Game/Web/Mat/MI_W587.MI_W587"
+          ],
+          "cpu_lod0_readable": false
+        }
+      ]
+    },
+    {
+      "name": "first-physical-failure.json",
+      "pose": {
+        "leg": "saro",
+        "world_area": "saro",
+        "web_area": "saro",
+        "driving": true,
+        "truck_at": "",
+        "personal_commute_vehicle": true,
+        "centre_three_m": [
+          -5.637765319610481,
+          0,
+          496.433972787534
+        ],
+        "centre_road_local_m": [
+          18.36223468038952,
+          0,
+          196.433972787534
+        ],
+        "heading_rad": -1.5623849371880125,
+        "speed_m_s": 0.8377515462668704,
+        "oriented_collision_corners": [
+          {
+            "road_local_m": [
+              21.02055222565857,
+              0,
+              197.4116474923897
+            ]
+          },
+          {
+            "road_local_m": [
+              15.720739715962198,
+              0,
+              197.4562273316203
+            ]
+          },
+          {
+            "road_local_m": [
+              15.703917135120468,
+              0,
+              195.4562980826783
+            ]
+          },
+          {
+            "road_local_m": [
+              21.003729644816843,
+              0,
+              195.4117182434477
+            ]
+          }
+        ],
+        "collision_half_extents_m": [
+          1,
+          2.65
+        ],
+        "max_footprint_road_x": 21.02055222565857,
+        "actual_parked_car_three_m": [
+          -5.637765319610481,
+          -0.6648435999964486,
+          496.433972787534
+        ],
+        "actual_parked_heading_rad": -1.5623849371880125,
+        "walker_three_m": [
+          0,
+          0,
+          0
+        ],
+        "walker_road_local_m": [
+          24,
+          0,
+          -300
+        ],
+        "walker_radius_m": 0.27,
+        "clock_seconds": -24000
+      },
+      "camera": {
+        "eye_three_m": [
+          -5.625253325340341,
+          0.41910770546610787,
+          496.09541599152396
+        ],
+        "forward_three": [
+          0.9999294026626712,
+          -0.00794516920492682,
+          -0.008835382107128743
+        ],
+        "camera_manager_available": true,
+        "camera_manager": "/Engine/Maps/Entry.Entry:PersistentLevel.PlayerCameraManager_0",
+        "actual_world_transform": {
+          "translation_ue_cm": [
+            -563.3073108531837,
+            49609.550113595506,
+            42.110047569860875
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "rotation_xyzw": [
+            -0.005310376497931615,
+            0.004535486356776059,
+            -0.004413038284042757,
+            0.9999658765968272
+          ]
+        },
+        "actual_horizontal_fov_degrees": 104.20984649658203,
+        "constrain_aspect": false,
+        "walker_eye_to_final_pov_delta_m": 0.008070154393547356,
+        "viewport": [
+          1600,
+          872
+        ]
+      },
+      "original_ranch_components": [
+        {
+          "node": 1301,
+          "parent": 1289,
+          "geo": 910,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": false,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1301",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": false,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g910.g910",
+          "joined_bounds_min_three_m": [
+            7985.88,
+            -2.8724761962890626,
+            187.31048828125
+          ],
+          "joined_bounds_max_three_m": [
+            8424.435703125,
+            1.1423640441894531,
+            524.7750390625
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W590_0",
+            "parent:/Game/Web/Mat/MI_W590.MI_W590"
+          ],
+          "cpu_lod0_readable": false
+        },
+        {
+          "node": 1302,
+          "parent": 1289,
+          "geo": 911,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": false,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1302",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": false,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g911.g911",
+          "joined_bounds_min_three_m": [
+            7341.5696875,
+            -2.6985684204101563,
+            59.985
+          ],
+          "joined_bounds_max_three_m": [
+            8464.924765625,
+            8.657921752929688,
+            1825.355
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W589_0",
+            "parent:/Game/Web/Mat/MI_W589.MI_W589"
+          ],
+          "cpu_lod0_readable": false
+        },
+        {
+          "node": 1303,
+          "parent": 1289,
+          "geo": 912,
+          "name": "",
+          "authored_visible": true,
+          "metadata_path_shown": false,
+          "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1303",
+          "attach_parent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.N1289",
+          "component_visible": false,
+          "hidden_in_game": 0,
+          "registered": true,
+          "world_transform": {
+            "translation_ue_cm": [
+              800000,
+              0,
+              0
+            ],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "rotation_xyzw": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "mesh": "/Game/Web/Geo/geo_007/StaticMeshes/g912.g912",
+          "joined_bounds_min_three_m": [
+            7364.3,
+            -2.5977438354492186,
+            163.581845703125
+          ],
+          "joined_bounds_max_three_m": [
+            8454.6008984375,
+            6.241785278320313,
+            530.05
+          ],
+          "joined_bounds_are_not_ranch_identity": true,
+          "collision_enabled": 1,
+          "materials_and_parents": [
+            "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.MID_MI_W587_0",
+            "parent:/Game/Web/Mat/MI_W587.MI_W587"
+          ],
+          "cpu_lod0_readable": false
+        }
+      ]
+    }
+  ],
+  "original_file_hashes": {
+    "result.json": {
+      "bytes": 1764332,
+      "sha256": "ded87196048cb1547ddf02fb04e88d64645188ac840bf0fb5214f5ef61773f07"
+    },
+    "failure-at-gate.capture.json": {
+      "bytes": 2551,
+      "sha256": "f3852a18363b84f29989b85bdb9a1d31519214212615b58a42dd98ed865b7531"
+    },
+    "failure-at-gate.png": {
+      "bytes": 1146514,
+      "sha256": "9ccf46397923241a9241e366d1142695160592f9d55da2413dd2b90336db2a18"
+    },
+    "first-physical-failure.json": {
+      "bytes": 52571,
+      "sha256": "229d2c03b526503108698d9351279269cc413206141d651cb94243326caef49a"
+    },
+    "saro-apron-port.capture.json": {
+      "bytes": 2539,
+      "sha256": "e457a8c31175e72341b81140766d95691979ba537676d5cf60324683c0e43080"
+    },
+    "saro-apron-port.png": {
+      "bytes": 1291658,
+      "sha256": "424c02c5ec653ed6ead423c8b48c9a4aa0d2285ad22d2ec5677e213b40e43361"
+    },
+    "saro-apron-before-port.json": {
+      "bytes": 52556,
+      "sha256": "767c49edba3383b30660dc3ca344d924b14456b8be0496ff40d01177581944d8"
+    },
+    "saro-after-handoff-ranch.capture.json": {
+      "bytes": 2539,
+      "sha256": "8433afb9015d22c82c457d3fb37ae7110058eb48cf1591b0c3399699e2545f85"
+    },
+    "saro-after-handoff-ranch.png": {
+      "bytes": 1239151,
+      "sha256": "06a1ef5c615ed8c50aabb2959827dbe05d61343cc38ce2afdef6f996b65cb4df"
+    },
+    "saro-after-handoff.json": {
+      "bytes": 52579,
+      "sha256": "d0c8d44e06714168f690c7fec976bce51b7c3204d6d27196260efcf1474cd2b3"
+    },
+    "actual-road-to-saro-transfer.json": {
+      "bytes": 52583,
+      "sha256": "420ee7c9c8c6d6b93c85bf8732361696e9cfba32949792f4debc79dd2ce4ca82"
+    },
+    "road-before-handoff-ranch.capture.json": {
+      "bytes": 2540,
+      "sha256": "7d56df3baeabd9fe44e965f36aaf840d0015ac8eb77d34c434e4a9c07a713bae"
+    },
+    "road-before-handoff-ranch.png": {
+      "bytes": 1251948,
+      "sha256": "e2f696b2afc33144dff4173efda03e62e78dc7a0403493cd3274ba42c08a8423"
+    },
+    "road-before-handoff.json": {
+      "bytes": 80082,
+      "sha256": "1c08f63a3e868c15262e4e4bbe3cf0363d6c50f0740874b41dd6957df976b84c"
+    },
+    "road-start-ranch.capture.json": {
+      "bytes": 2433,
+      "sha256": "ae801fc27b445c5752393effdd6abf6e1357e0e3c1f080a69562f99e707cbe3b"
+    },
+    "road-start-ranch.png": {
+      "bytes": 1208515,
+      "sha256": "74add6ccc37916973b6cf600b810878f63dde39813132e3c2f793dab1ef9a099"
+    },
+    "road-start-535.json": {
+      "bytes": 79988,
+      "sha256": "db55e0f42f9f5d75923a918793c84828f3b0e84883e388658d6793469c0e9bbf"
+    },
+    "sole-explicit-start-fixture.json": {
+      "bytes": 73,
+      "sha256": "4c0a24898d1ee73434fe1a6a792e4183630c4a75614a69ba62b748832fbfa50a"
+    }
+  },
+  "limits": "Negative baseline. No later park/walk/reverse/save acceptance. No human input, original E01 camera identity, FPS or full matrix.",
+  "installed": false,
+  "public_release": false
+}

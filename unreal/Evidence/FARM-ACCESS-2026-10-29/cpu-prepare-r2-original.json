@@ -1,0 +1,118 @@
+{
+  "status": "PASS_CPU_RETENTION_STRUCTURAL_SIGNATURE",
+  "scope": "Exactly g910/g911/g912 CPU retention; no reimport or geometry/material/RT/Nanite policy change. Buffer-byte preservation and physical route require separate runtime acceptance.",
+  "manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "assets": [
+    {
+      "asset": "/Game/Web/Geo/geo_007/StaticMeshes/g910.g910",
+      "before_cpu_access": false,
+      "allow_cpu_access": true,
+      "before": {
+        "lod_triangles": [
+          204
+        ],
+        "materials": [
+          {
+            "slot": "slot0",
+            "imported_slot": "slot0",
+            "material": "/Game/Web/Geo/geo_007/Materials/slot0.slot0"
+          }
+        ],
+        "support_ray_tracing": true,
+        "nanite_enabled": false,
+        "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE: 3>"
+      },
+      "after": {
+        "lod_triangles": [
+          204
+        ],
+        "materials": [
+          {
+            "slot": "slot0",
+            "imported_slot": "slot0",
+            "material": "/Game/Web/Geo/geo_007/Materials/slot0.slot0"
+          }
+        ],
+        "support_ray_tracing": true,
+        "nanite_enabled": false,
+        "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE: 3>"
+      },
+      "native_before_sha256": "1939627aefddc8303691f8f141ceac63cdae750db88d7e321c9d3165734f432e",
+      "native_after_sha256": "4b3b048f1f2319b54557f8f096ab074e4aa95cd929931b69d188a16859a65648"
+    },
+    {
+      "asset": "/Game/Web/Geo/geo_007/StaticMeshes/g911.g911",
+      "before_cpu_access": false,
+      "allow_cpu_access": true,
+      "before": {
+        "lod_triangles": [
+          3708
+        ],
+        "materials": [
+          {
+            "slot": "slot0",
+            "imported_slot": "slot0",
+            "material": "/Game/Web/Geo/geo_007/Materials/slot0.slot0"
+          }
+        ],
+        "support_ray_tracing": true,
+        "nanite_enabled": false,
+        "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE: 3>"
+      },
+      "after": {
+        "lod_triangles": [
+          3708
+        ],
+        "materials": [
+          {
+            "slot": "slot0",
+            "imported_slot": "slot0",
+            "material": "/Game/Web/Geo/geo_007/Materials/slot0.slot0"
+          }
+        ],
+        "support_ray_tracing": true,
+        "nanite_enabled": false,
+        "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE: 3>"
+      },
+      "native_before_sha256": "0e5684b7c4541c96d43725105f48ec96cf622774213baa46acde63afbfeea0e2",
+      "native_after_sha256": "2ad7ce2d2963025d18cb432bda2348470d566d19670878dd0a907ddde5f6acb4"
+    },
+    {
+      "asset": "/Game/Web/Geo/geo_007/StaticMeshes/g912.g912",
+      "before_cpu_access": false,
+      "allow_cpu_access": true,
+      "before": {
+        "lod_triangles": [
+          360
+        ],
+        "materials": [
+          {
+            "slot": "slot0",
+            "imported_slot": "slot0",
+            "material": "/Game/Web/Geo/geo_007/Materials/slot0.slot0"
+          }
+        ],
+        "support_ray_tracing": true,
+        "nanite_enabled": false,
+        "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE: 3>"
+      },
+      "after": {
+        "lod_triangles": [
+          360
+        ],
+        "materials": [
+          {
+            "slot": "slot0",
+            "imported_slot": "slot0",
+            "material": "/Game/Web/Geo/geo_007/Materials/slot0.slot0"
+          }
+        ],
+        "support_ray_tracing": true,
+        "nanite_enabled": false,
+        "collision_trace_flag": "<CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE: 3>"
+      },
+      "native_before_sha256": "ea59d7b813518b66ef84e49390f44be13b315500ef1f8e93226ada51cdd2a351",
+      "native_after_sha256": "7c5f8c017856381da4b0abaecf16760f9aebea88a1cf4897f7823e8a54405cee"
+    }
+  ]
+}

@@ -62,13 +62,15 @@ Ingen nytt bilde av signalet fulgte denne rapporten. Senere kontroll begrenses t
 
 ## 4. Hus/farm med vei bort til seg
 
-**Åpen avklaring.** [E01](../../../unreal/Evidence/Playtest-2026-10-28/01-farm-road.png) viser et lite gårdsanlegg med bygninger og vindmølle på andre siden av landskapet.
+**Målrettet kandidat R1 levert gjennom [PR223](https://github.com/Tombonator3000/SIGNAL-47/pull/223).** [E01](../../../unreal/Evidence/Playtest-2026-10-28/01-farm-road.png) viser et lite gårdsanlegg med bygninger og vindmølle på andre siden av landskapet.
 
-- [ ] Identifiser nøyaktig stedet i E01 mot kart/koordinater, og avklar om veien er ment å være kjørbar helt frem.
-- [ ] Dokumenter hva spilleren kan gjøre der nå: tilgang, kollisjon, eventuell interaksjon og eventuell historietilknytning.
-- [ ] Hvis det er bakgrunnsdekor, gjør vei og avgrensning forståelig. Hvis det er et besøkbart sted, gi det en troverdig ankomst. Ikke finn på en ny historieoppgave bare for å forklare en dekorbygning.
+- [x] Identifiser nøyaktig stedet i E01 mot kart/koordinater, og avklar om veien er ment å være kjørbar helt frem.
+- [x] Dokumenter hva spilleren kan gjøre der nå: tilgang, kollisjon, eventuell interaksjon og eventuell historietilknytning.
+- [x] Hvis det er bakgrunnsdekor, gjør vei og avgrensning forståelig. Hvis det er et besøkbart sted, gi det en troverdig ankomst. Ikke finn på en ny historieoppgave bare for å forklare en dekorbygning.
 
 **Kildebasert svar:** E01 stemmer svært sannsynlig med den eksisterende ranchen rundt 400 meter øst for veien: hus, låve, vindmølle, tank og nattlys i [roadPlaces.ts](../../../web/src/drive/roadPlaces.ts), linje 76. Den er faktisk 3D-geometri brukt som statisk omgivelse. Ingen implementert innendørs gårdsdestinasjon eller besøksinteraksjon er funnet. Veien er tilsiktet og avsluttes ved stengt rørport/gjerde i [roadProps.ts](../../../web/src/drive/roadProps.ts), linje 303. Native kode bevarer ranchveien i [S47RoadTerrain.cpp](../../../unreal/Signal47/Source/Signal47/Private/S47RoadTerrain.cpp), linje 276, og port/gjerde i [S47World.cpp](../../../unreal/Signal47/Source/Signal47/Private/S47World.cpp), linje 1243. Identiteten i E01 er en sterk slutning fra motivet, ikke en ny fysisk befaring.
+
+**Kontrollert 29. oktober:** [Farmrapporten](../../Evidence/UnrealDeliveries/FARM_ACCESS_2026-10-29.md) binder faktiske koordinater, negativ portkryssing, presis 300/3972-trekantdeling og pakket R1 fra c301ead9. 1720 selvtester og hel API-reise27 / 380,33m bil / 30,97m gange med begge portbarrierer og ordinær disk/title/Continue består. Spilleren når postkassen og stengt port; gården bortenfor er bakgrunn, ingen besøksoppgave. E01-identitet er fortsatt en sterk motiv-/kildeslutning, historisk kamerastilling/bygg er ikke rekonstruert. Ekte input, subjektiv fjernlesbarhet, FPS/fullmatrise og installasjon er UNVERIFIED.
 
 ## 5. Sierra Motor Court: terrengkontakt, kollisjon, mottak og basseng
 
