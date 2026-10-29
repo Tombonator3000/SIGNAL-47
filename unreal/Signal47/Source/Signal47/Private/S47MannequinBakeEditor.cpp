@@ -4,6 +4,8 @@
 #include "AssetCompilingManager.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Animation/Skeleton.h"
+#include "Animation/AnimInstance.h"
+#include "AnimNodes/AnimNode_CopyPoseFromMesh.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Dom/JsonObject.h"
@@ -38,6 +40,7 @@
 #include "TwoBoneIK.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
+#include "UObject/UnrealType.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47MannequinBake, Log, All);
 namespace S47MannequinBake
@@ -48,6 +51,13 @@ namespace S47MannequinBake
  TArray<TSharedPtr<FJsonValue>> Vector(const FVector& Input)
  {
   return {MakeShared<FJsonValueNumber>(Input.X), MakeShared<FJsonValueNumber>(Input.Y), MakeShared<FJsonValueNumber>(Input.Z)};
+ }
+ FJson TransformData(const FTransform& Input)
+ {
+  FJson Data = Object(); const FQuat Rotation = Input.GetRotation();
+  Data->SetArrayField(TEXT("translation_cm"), Vector(Input.GetLocation())); Data->SetArrayField(TEXT("scale"), Vector(Input.GetScale3D()));
+  Data->SetArrayField(TEXT("rotation_quat_xyzw"), {MakeShared<FJsonValueNumber>(Rotation.X), MakeShared<FJsonValueNumber>(Rotation.Y),
+   MakeShared<FJsonValueNumber>(Rotation.Z), MakeShared<FJsonValueNumber>(Rotation.W)}); return Data;
  }
  FString Digest(TArray<uint8>& Bytes)
  {
@@ -192,6 +202,114 @@ namespace S47MannequinBake
    }
    Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("materials"), Materials); return Data;
   }
+  FJson CardSource(UStaticMesh* Mesh)
+  {
+   FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName()); TArray<TSharedPtr<FJsonValue>> LODs;
+   if (Mesh->GetRenderData()) for (const FStaticMeshLODResources& LOD : Mesh->GetRenderData()->LODResources)
+   {
+    FJson Row = Object(); Row->SetNumberField(TEXT("vertices"), LOD.GetNumVertices()); Row->SetNumberField(TEXT("triangles"), LOD.GetNumTriangles()); LODs.Add(Value(Row));
+   }
+   Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("bounds_min_cm"), Vector(Mesh->GetBoundingBox().Min));
+   Data->SetArrayField(TEXT("bounds_max_cm"), Vector(Mesh->GetBoundingBox().Max)); return Data;
+  }
+  // Pure native payload reads: no component, animation evaluation, CPU skinning,
+  // render-context claim, reference-pose edit or source save in a NullRHI probe.
+  bool ReferenceData(USkeletalMesh* Mesh, const FPose& Reference, FJson& Data, TArray<int32>& Direct)
+  {
+   Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName());
+   Direct.Init(0, Reference.Local.Num()); TArray<FBox> Bounds; Bounds.Init(FBox(ForceInit), Direct.Num());
+   TArray<TSharedPtr<FJsonValue>> LODs; TArray<TArray<int32>> PerLOD;
+   bool Valid = true; int32 LODIndex = 0;
+   for (const FSkeletalMeshLODRenderData& LOD : Mesh->GetResourceForRendering()->LODRenderData)
+   {
+    FJson Row = Object(); Row->SetNumberField(TEXT("lod"), LODIndex++); const FSkinWeightVertexBuffer* Weights = LOD.GetSkinWeightVertexBuffer();
+    const auto& Positions = LOD.StaticVertexBuffers.PositionVertexBuffer;
+    const bool Available = Weights && Weights->GetNumVertices() == LOD.GetNumVertices() && Weights->GetDataVertexBuffer()->GetWeightData()
+     && (!Weights->GetVariableBonesPerVertex() || Weights->GetLookupVertexBuffer()->GetLookupData()) && Positions.GetVertexData();
+    Row->SetBoolField(TEXT("cpu_payload_available"), Available); Row->SetNumberField(TEXT("vertices"), LOD.GetNumVertices());
+    TArray<int32>& Hits = PerLOD.AddDefaulted_GetRef(); Hits.Init(0, Direct.Num());
+    TArray<TSharedPtr<FJsonValue>> SectionRows;
+    if (Available) for (const FSkelMeshRenderSection& Section : LOD.RenderSections)
+    {
+     FJson SectionRow = Object(); SectionRow->SetNumberField(TEXT("base_vertex"), Section.BaseVertexIndex);
+     SectionRow->SetNumberField(TEXT("vertices"), Section.NumVertices); SectionRow->SetBoolField(TEXT("disabled"), Section.bDisabled);
+     SectionRows.Add(Value(SectionRow));
+     if (uint64(Section.BaseVertexIndex) + Section.NumVertices > LOD.GetNumVertices()) { Valid = false; continue; }
+     for (uint32 Vertex = Section.BaseVertexIndex; Vertex < Section.BaseVertexIndex + Section.NumVertices; ++Vertex)
+     {
+      uint32 WeightOffset = 0, Count = 0; Weights->GetVertexInfluenceOffsetCount(Vertex, WeightOffset, Count);
+      if (Count > Weights->GetMaxBoneInfluences()) { Valid = false; continue; }
+      for (uint32 Influence = 0; Influence < Count; ++Influence)
+      {
+       if (!Weights->GetBoneWeight(Vertex, Influence)) continue;
+       const uint32 LocalBone = Weights->GetBoneIndex(Vertex, Influence);
+       if (LocalBone >= uint32(Section.BoneMap.Num())) { Valid = false; continue; }
+       const int32 Bone = Section.BoneMap[LocalBone]; if (!Direct.IsValidIndex(Bone)) { Valid = false; continue; }
+       ++Direct[Bone]; ++Hits[Bone]; Bounds[Bone] += FVector(Positions.VertexPosition(Vertex));
+      }
+     }
+    }
+    Valid &= Available; Row->SetArrayField(TEXT("sections"), SectionRows); LODs.Add(Value(Row));
+   }
+   TArray<bool> Affects; Affects.Init(false, Direct.Num()); for (int32 Index = 0; Index < Direct.Num(); ++Index) Affects[Index] = Direct[Index] != 0;
+   for (int32 Index = Direct.Num() - 1; Index >= 0; --Index)
+   { const int32 Parent = Reference.Ref.GetParentIndex(Index); if (Affects[Index] && Parent != INDEX_NONE) Affects[Parent] = true; }
+   TArray<TSharedPtr<FJsonValue>> Bones;
+   for (int32 Index = 0; Index < Direct.Num(); ++Index)
+   {
+    FJson Row = Object(); const int32 Parent = Reference.Ref.GetParentIndex(Index);
+    Row->SetNumberField(TEXT("index"), Index); Row->SetStringField(TEXT("name"), Reference.Ref.GetBoneName(Index).ToString());
+    Row->SetStringField(TEXT("parent"), Parent == INDEX_NONE ? TEXT("None") : Reference.Ref.GetBoneName(Parent).ToString());
+    Row->SetObjectField(TEXT("reference_local"), TransformData(Reference.Local[Index])); Row->SetObjectField(TEXT("reference_component"), TransformData(Reference.Component[Index]));
+    Row->SetNumberField(TEXT("nonzero_vertex_influences_all_lods"), Direct[Index]); Row->SetBoolField(TEXT("affects_weighted_descendants"), Affects[Index]);
+    TArray<TSharedPtr<FJsonValue>> WeightedLODs; for (const TArray<int32>& Hits : PerLOD) WeightedLODs.Add(MakeShared<FJsonValueNumber>(Hits[Index]));
+    Row->SetArrayField(TEXT("nonzero_vertex_influences_per_lod"), WeightedLODs);
+    if (Bounds[Index].IsValid) { Row->SetArrayField(TEXT("weighted_reference_bounds_min_cm"), Vector(Bounds[Index].Min)); Row->SetArrayField(TEXT("weighted_reference_bounds_max_cm"), Vector(Bounds[Index].Max)); }
+    Bones.Add(Value(Row));
+   }
+   Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("bones"), Bones); Data->SetBoolField(TEXT("weight_scan_complete"), Valid); return Valid;
+  }
+  bool ReferenceDiagnostics(const FPose& BodyPose, const FPose& FacePose, const FPose& ClothPose)
+  {
+   const FPose BodyReference(BodyPose.Ref); FJson Evidence = Object(); Report->SetObjectField(TEXT("reference_diagnostics"), Evidence);
+   FJson BodyData, FaceData, ClothData; TArray<int32> BodyWeights, FaceWeights, ClothWeights;
+   const bool BodyValid = ReferenceData(Body, BodyReference, BodyData, BodyWeights);
+   const bool FaceValid = ReferenceData(Face, FacePose, FaceData, FaceWeights);
+   const bool ClothValid = ReferenceData(Clothes, ClothPose, ClothData, ClothWeights);
+   Evidence->SetObjectField(TEXT("body"), BodyData); Evidence->SetObjectField(TEXT("face"), FaceData); Evidence->SetObjectField(TEXT("clothes"), ClothData);
+   auto Shared = [&](const TCHAR* Key, const FPose& Target, const TArray<int32>& Weights)
+   {
+    TArray<TSharedPtr<FJsonValue>> Rows; int32 Mismatches = 0;
+    for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+    {
+     const FName Name = Target.Ref.GetBoneName(Index); const int32 BodyIndex = BodyReference.Ref.FindBoneIndex(Name); if (BodyIndex == INDEX_NONE) continue;
+     const FTransform& SourceRef = BodyReference.Component[BodyIndex]; const FTransform& TargetRef = Target.Component[Index];
+     const bool Same = SameReference(SourceRef, TargetRef); Mismatches += Same ? 0 : 1; FJson Row = Object();
+     Row->SetStringField(TEXT("bone"), Name.ToString()); Row->SetNumberField(TEXT("body_index"), BodyIndex); Row->SetNumberField(TEXT("target_index"), Index);
+     Row->SetBoolField(TEXT("same_reference_with_original_limits"), Same);
+     Row->SetNumberField(TEXT("translation_error_cm"), FVector::Distance(SourceRef.GetLocation(), TargetRef.GetLocation()));
+     Row->SetNumberField(TEXT("rotation_error_degrees"), FMath::RadiansToDegrees(SourceRef.GetRotation().AngularDistance(TargetRef.GetRotation())));
+     Row->SetNumberField(TEXT("scale_max_error"), (SourceRef.GetScale3D() - TargetRef.GetScale3D()).GetAbsMax());
+     Row->SetObjectField(TEXT("target_ref_relative_to_body_ref"), TransformData(TargetRef.GetRelativeTransform(SourceRef)));
+     Row->SetObjectField(TEXT("body_posed_component"), TransformData(BodyPose.Component[BodyIndex]));
+     Row->SetNumberField(TEXT("target_direct_vertex_influences_all_lods"), Weights[Index]); Rows.Add(Value(Row));
+    }
+    FJson Data = Object(); Data->SetArrayField(TEXT("all_shared_bones"), Rows); Data->SetNumberField(TEXT("mismatches"), Mismatches); Evidence->SetObjectField(Key, Data);
+   };
+   Shared(TEXT("face_body"), FacePose, FaceWeights); Shared(TEXT("clothes_body"), ClothPose, ClothWeights);
+   const TCHAR* FaceClassPath = TEXT("/Game/MetaHumans/Waitress/Anims/ABP_Face_Waitress.ABP_Face_Waitress_C");
+   UClass* FaceClass = LoadClass<UAnimInstance>(nullptr, FaceClassPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+   UAnimInstance* Defaults = FaceClass ? FaceClass->GetDefaultObject<UAnimInstance>() : nullptr; TArray<TSharedPtr<FJsonValue>> Nodes;
+   if (Defaults) for (TFieldIterator<FStructProperty> It(Defaults->GetClass()); It; ++It) if (It->Struct == FAnimNode_CopyPoseFromMesh::StaticStruct())
+   {
+    const auto* Node = It->ContainerPtrToValuePtr<FAnimNode_CopyPoseFromMesh>(Defaults); FJson Row = Object();
+    Row->SetStringField(TEXT("property"), It->GetName()); Row->SetBoolField(TEXT("use_mesh_pose"), Node->bUseMeshPose);
+    Row->SetStringField(TEXT("root_bone_to_copy"), Node->RootBoneToCopy.ToString()); Nodes.Add(Value(Row));
+   }
+   Evidence->SetStringField(TEXT("runtime_face_class"), FaceClassPath); Evidence->SetArrayField(TEXT("runtime_class_default_copy_pose_nodes"), Nodes);
+   Evidence->SetStringField(TEXT("scope"), TEXT("read-only native reference transforms and actual nonzero skin weights/BoneMap; all render LODs, including disabled sections; class defaults, not evaluated runtime pose. S47Waitress sets Body source, attached-parent and curves on instances. Compatibility limits remain unchanged; no face-basis policy or geometry correction accepted here."));
+   return Need(BodyValid && FaceValid && ClothValid && Nodes.Num() > 0, TEXT("complete native reference/weight diagnostics and existing waitress CopyPose graph available"));
+  }
   bool Preflight()
   {
    if (!Need(GIsEditor && GEditor && !GEditor->PlayWorld, TEXT("editor authoring world, no PIE or game"))) return false;
@@ -216,6 +334,8 @@ namespace S47MannequinBake
     Clothes->GetSkeleton()->GetPathName().StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")), TEXT("cloth importer used private skeleton copy"))) return false;
    FJson Inputs = Object(); Inputs->SetObjectField(TEXT("body"), SkeletalSource(Body)); Inputs->SetObjectField(TEXT("face"), SkeletalSource(Face));
    Inputs->SetObjectField(TEXT("clothes"), SkeletalSource(Clothes)); Report->SetObjectField(TEXT("skeletal_sources"), Inputs);
+   FJson Cards = Object(); Cards->SetObjectField(TEXT("hair_near"), CardSource(HairNear)); Cards->SetObjectField(TEXT("hair_far"), CardSource(HairFar));
+   Cards->SetObjectField(TEXT("brows_near"), CardSource(BrowsNear)); Cards->SetObjectField(TEXT("brows_far"), CardSource(BrowsFar)); Report->SetObjectField(TEXT("card_sources"), Cards);
    return true;
   }
   bool PoseBody(FPose& Posed, FTransform& Seat)
@@ -565,7 +685,8 @@ namespace S47MannequinBake
     return Audit(Saved, Previous->GetObjectField(TEXT("output")));
    }
    FPose BodyPose(Body->GetRefSkeleton()), FacePose(Face->GetRefSkeleton()), ClothPose(Clothes->GetRefSkeleton()); FTransform Seat;
-   if (!PoseBody(BodyPose, Seat) || !Transfer(BodyPose, Face, false, FacePose) || !Transfer(BodyPose, Clothes, true, ClothPose)) return false;
+   if (!PoseBody(BodyPose, Seat) || !ReferenceDiagnostics(BodyPose, FacePose, ClothPose)
+    || !Transfer(BodyPose, Face, false, FacePose) || !Transfer(BodyPose, Clothes, true, ClothPose)) return false;
    if (Mode == TEXT("probe")) return true;
    if (!Need(Mode == TEXT("bake") && !FPackageName::DoesPackageExist(Job->GetStringField(TEXT("output_asset"))), TEXT("fresh bake destination; no replacement of any previous candidate"))) return false;
    if (!Need(FApp::CanEverRender(), TEXT("bake has a render context; commandlets require AllowCommandletRendering, not NullRHI"))) return false;

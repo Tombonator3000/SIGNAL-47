@@ -22,6 +22,12 @@ Hår bruker gjeldende korrigerte kortmateriale. Bryn beholder en egen privat mas
 
 Den tidligere BakeR3-proben ble avbrutt ved guardens 360 sekunders grense mens det første separate klesmaterialet kompilerte. Dette var ingen poseaksept. R2/R3, delvise assets og råkvitteringer bevares. Den delte masteren erstatter fem separate klesgrafer i et nytt, friskt `BakeR4`; gamle jobber eller assets overskrives ikke.
 
+Faktisk BakeR4-import besto med alle ni assets og de fem MI-ene. Native NullRHI-probe avviste deretter lik referanse-CS for `pelvis` i FaceMesh, ved kontroll 29. Etterkontrollen beholdt alle 350 eksisterende filer. Dette er ingen akseptert ansiktsbasis eller bake. Den eksisterende servitrisen bruker `ABP_Face_Waitress` med CopyPose for ansiktet og LeaderPose bare for uniformen. Installert UE5.8 CopyPose har som standard lokal kopiering (`bUseMeshPose=false`), med målreferanse for umappede ansiktsbein. Dette kan ikke erstattes av et lempet krav om lik Face/Body-bindpose.
+
+Neste friske `BakeR5` er først en diagnostisk NullRHI-probe. `reference_diagnostics` skriver alle faktiske referansetransformer med translasjon, kvaternion og skala, alle delte Face/Body- og Clothes/Body-avvik ved uendrede toleranser, samt ikke-null skin-weight-innflytelser via hver native seksjons BoneMap. Per bein vises LOD-antall, vektede referansebounds og om det er stamfar til vektede bein. Null direkte pelvisvekt fritar dermed ikke automatisk en påvirket hodegren. Dataene omfatter også deaktiverte seksjoner og beskriver native payload, ikke evaluert CPU-skinning. Faktiske CopyPose-noder leses fra den eksisterende klassens standardobjekt; dette er ikke en påstand om evaluert animasjon eller runtimeinnstillinger på en instans. Hele diagnosen skrives før den opprinnelige Face-avvisningen. Klærnes strenge krav om identiske bein, foreldre og referansetransformer beholdes. Ingen ny Face-basis eller flytting er akseptert av denne endringen.
+
+R4 målte fire native LOD-er i både Body og Face. Body har 60 816 / 15 196 / 6 632 / 1 952 trekanter, Face 34 514 / 6 872 / 1 524 / 356. Det eksplisitte neste kildevalget er derfor overall 0/1/3, med uendrede outputtak 150k/70k/40k og screens 1/.25/.07. Kropp, ansikt og klær gir 116 618 / 43 356 / 23 596 trekanter før kort. `card_sources` måler Hair/Brow-assetenes faktiske render-LOD-er og bounds i neste probe. Takene økes ikke dersom kortene overskrider budsjettet.
+
 ## Root kjører tunge steg sekvensielt
 
 Disse kommandoene er oppskrift, ikke kjørte jobber. Alle Blender-/UE-/byggetrinn går gjennom prosjektets guard og isolerte profiler. Ikke start dem ved en annen tung jobb eller Toms spilløkt.
@@ -33,19 +39,19 @@ Disse kommandoene er oppskrift, ikke kjørte jobber. Alle Blender-/UE-/byggetrin
 python3 unreal/Signal47/Tools/metahuman_mannequins/prepare.py \
   --inventory /home/tom/scratch-bm/Signal47-mannequins-20261029/source-inventory.json \
   --clothing-report /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r1/clothing-report.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5
 ```
 
 3. Bygg editor fra fryst kilde. `S47MannequinBakeEditor.cpp` og modulavhengighetene finnes bare når `Target.bBuildEditor` / `WITH_EDITOR` gjelder. Ingen runtime-krok registreres.
-4. Kjør `run_editor.py` med `S47_MANNEQUIN_JOB` satt til `BakeR4/job-probe.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer private klær/materialer og måler faktisk skeleton-/posekompatibilitet uten statisk konvertering. Krev `S47 MANNEQUIN PROBE PASS`. Tom feilliste fra grafoppdateringen under NullRHI er ikke shader-, render- eller utseendeaksept.
-5. Kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med `BakeR4/job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter. Eksempel på payload som root legger inn i guard-planen:
+4. Kjør `run_editor.py` med `S47_MANNEQUIN_JOB` satt til `BakeR5/job-probe.json`, `-NullRHI` og et eget isolert `/tmp`-profilnavn. Dette importerer private klær/materialer og måler faktisk skeleton-/posekompatibilitet uten statisk konvertering. Den nåværende diagnostiske Face-proben forventes fortsatt å avvise bind-CS; les hele `reference_diagnostics`, behold avvisningen og stopp før bake. En begrunnet Face-retting må deretter prøves i et nytt run-navn, med krav om `S47 MANNEQUIN PROBE PASS`. Tom feilliste fra grafoppdateringen under NullRHI er ikke shader-, render- eller utseendeaksept.
+5. Først etter akseptert pose/basis: kjør samme Python-entry i en egen ordinær editor/commandlet-jobb med det aksepterte run-navnets `job-bake.json`. Bake krever renderkontekst: bruk `-AllowCommandletRendering -RenderOffScreen`, uten NullRHI. Begge private mastere oppdateres i denne faktiske RHI-jobben; native audit krever ferdige shader maps uten compilefeil for alle materialslotter. Følgende BakeR5-eksempel viser flaggene, og er ikke tillatelse til å fortsette fra en avvist R5-probe:
 
 ```sh
-S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4/job-bake.json \
+S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5/job-bake.json \
   /home/tom/.local/opt/UnrealEngine-5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd \
   /home/tom/scratch-bm/wt/evening/unreal/Signal47/Signal47.uproject \
   -unattended -nosplash -nosound -AllowCommandletRendering -RenderOffScreen \
-  -UserDir=/tmp/S47-radio-woman-bake-r4 \
+  -UserDir=/tmp/S47-radio-woman-bake-r5 \
   -run=pythonscript \
   -script=/home/tom/scratch-bm/wt/evening/unreal/Signal47/Tools/metahuman_mannequins/run_editor.py
 ```
@@ -55,8 +61,8 @@ S47_MANNEQUIN_JOB=/home/tom/scratch-bm/Signal47-mannequins-20261029/private/Bake
 
 ```sh
 python3 unreal/Signal47/Tools/metahuman_mannequins/verify_files.py \
-  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4/job-bake.json \
-  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR4/authoring-files-receipt.json
+  --job /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5/job-bake.json \
+  --out /home/tom/scratch-bm/Signal47-mannequins-20261029/private/BakeR5/authoring-files-receipt.json
 ```
 
 Ikke fortsett til runtime dersom en kontroll avvises. Kildene gjenopprettes ikke automatisk. Originaler, avviste prøver og deres kvitteringer beholdes for diagnose.
@@ -65,7 +71,7 @@ Ikke fortsett til runtime dersom en kontroll avvises. Kildene gjenopprettes ikke
 
 Editorbaker bruker installert `USkinnedMeshComponent::GetCPUSkinnedVertices` og de faktiske native indeks-/UV-/farge-/seksjonsbufferne, samme underliggende API som `IMeshUtilities::ConvertMeshesToStaticMesh`. Den lokale flerkomponent-helperen kompakterer materialkartet etter hver skinned del og nullstiller da forrige importkart. Hull i en tidligere dels LOD-slotbruk kan dermed miste opprinnelig binding. Bakeren leser i stedet hvert opprinnelig seksjonskart og `LODMaterialMap` direkte, med faste slot-offsetter og entydige nye slotnavn. Originale materialreferanser bevares. Hver native CPU-lesning starter uten forhåndsaktivert CPU-skinning, slik at UE-helperen faktisk bytter renderstate og fyller cache for valgt LOD før kopiering; tilstanden kontrolleres også etterpå. Direkte MeshDescription-forfatting bevarer vertexposisjoner og corner-attributter uten legacy SaveRawMesh sin automatiske posisjonssveising/fjerning av degenererte flater.
 
-Kropp, ansikt og klær er transient `UPoseableMeshComponent`; hår og bryn er faktiske statiske kort. Ingen skjelettkomponent lagres i output. Én statisk mesh får tre faktiske native kilde-LOD-er, overall 1/3/5. Kilder med færre LOD-er bruker sin siste faktiske LOD; klærne har foreløpig kun kilde-LOD0. Ingen skinned del kan utelates på grunn av min-LOD. Hår/bryn bruker authored LOD1 nært og LOD3 lenger unna. Dette er ingen påstand om egen klesreduksjon.
+Kropp, ansikt og klær er transient `UPoseableMeshComponent`; hår og bryn er faktiske statiske kort. Ingen skjelettkomponent lagres i output. Én statisk mesh får tre faktiske native kilde-LOD-er, overall 0/1/3. Kilder med færre LOD-er bruker sin siste faktiske LOD; klærne har foreløpig kun kilde-LOD0. Ingen skinned del kan utelates på grunn av min-LOD. Hår/bryn bruker authored LOD1 nært og LOD3 lenger unna. Dette er ingen påstand om egen klesreduksjon.
 
 Output må ha fallende trekanttall innen 150k/70k/40k, screens 1/.25/.07, samme faktiske materialtabell, gyldige UV-er og nøyaktig videreførte native corners. Corner-hashen sammenligner posisjon, winding, UV, normal, tangent-X, tangentbasisens handedness, farge og materialslot uten numerisk kvantisering. Vertex-/triangel-ID og smoothing-mask er ikke del av denne semantiske hashen. Fersk saved-leser krever i tillegg identisk full råhash. Faktiske renderseksjoners materialindekser og trekanttall per slot må stemme med kilden, og faktisk renderbuffer må ha full UV-/høy tangentpresisjon. Alle materialers shaderressurser må være ferdige uten compilefeil eller default-surface-fallback. Nye materialgrafer må ha vellykkede koblinger og tom faktisk RecompileMaterial-feilliste. UV-presisjon er full, tangentbasis høy presisjon; normaler/tangenter recomputes ikke og lightmap-UV genereres ikke. Nanite er av, RT-fallback på og output NoCollision. Ingen global renderpolicy endres. Faktiske tall skrives først av motoren.
 
@@ -73,4 +79,4 @@ Output må ha fallende trekanttall innen 150k/70k/40k, screens 1/.25/.07, samme 
 
 Private jobber/rapporter binder kildefil-SHA256, skjelett-/pose-SHA1, faktisk material-/groomdekning, kilde-/render-LOD-tall, seksjoner, raw UV-/normal-/farge-/indekshasher og lagret asset-SHA256. Dette er interne forfatterkontroller. Bilder i faktisk plassering, LOD-skifter, radio-/sete-/skokontakt, ingen dobbel gammel kropp, proxy/tidsplan og disk/title/full Flow Continue gjenstår hos root. Det samme gjelder faktisk pakket kjøring, menneskelig input, FPS/fullmatrise, installasjon og release.
 
-Prosjektbiblioteket ble søkt for MetaHuman/pose/bake og delte materialer. De generiske animation-/materials-treffene gir ingen prøvd statisk bakeløype i dette prosjektet; ingen kode derfra gjenbrukes. MI-løypen følger prosjektets prøvde `Tools/calichehomes_native/native.py`. Den lokale UE5.8-versjonens scalar-/vector-settere returnerer false selv etter utført setting; derfor kreves faktisk parameteravlesning. API-grunnlaget er installert UE 5.8.4 `Developer/MeshUtilities/{Public/MeshUtilities.h,Private/MeshUtilities.cpp}`, `Runtime/Engine/Private/Components/PoseableMeshComponent.cpp` / `SkinnedMeshComponent.cpp`, `Runtime/AnimationCore/Private/TwoBoneIK.cpp`, `Editor/MaterialEditor/{Public/MaterialEditingLibrary.h,Private/MaterialEditingLibrary.cpp}` og `Shaders/Private/HairStrands/HairCardsAttributeCommon.ush`. Privat MetaHuman-lisens/proveniens fra inventaret beholdes, uten ny rettighetsklarering eller referanseredistribusjon.
+Prosjektbiblioteket ble søkt for MetaHuman/pose/bake og delte materialer. De generiske animation-/materials-treffene gir ingen prøvd statisk bakeløype i dette prosjektet; ingen kode derfra gjenbrukes. MI-løypen følger prosjektets prøvde `Tools/calichehomes_native/native.py`. Den lokale UE5.8-versjonens scalar-/vector-settere returnerer false selv etter utført setting; derfor kreves faktisk parameteravlesning. API-grunnlaget er installert UE 5.8.4 `Developer/MeshUtilities/{Public/MeshUtilities.h,Private/MeshUtilities.cpp}`, `Runtime/Engine/Private/Components/PoseableMeshComponent.cpp` / `SkinnedMeshComponent.cpp`, `Runtime/Engine/Public/Rendering/SkinWeightVertexBuffer.h`, `Runtime/AnimGraphRuntime/Private/AnimNodes/AnimNode_CopyPoseFromMesh.cpp`, `Runtime/AnimationCore/Private/TwoBoneIK.cpp`, `Editor/MaterialEditor/{Public/MaterialEditingLibrary.h,Private/MaterialEditingLibrary.cpp}` og `Shaders/Private/HairStrands/HairCardsAttributeCommon.ush`. Privat MetaHuman-lisens/proveniens fra inventaret beholdes, uten ny rettighetsklarering eller referanseredistribusjon.
