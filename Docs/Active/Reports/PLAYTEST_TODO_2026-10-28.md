@@ -27,7 +27,7 @@ Ingen av de seks nye bildene viser disse byfasadene eller trafikksignalet. Rappo
 
 - [x] Undersøk de to faktiske krasjene, med motorlogg, krasjøyeblikk og ressursbudsjett fra riktig kjørbar fil. Komplette UE-krasjmapper, kjernefiler og tilhørende binærer/debugsymboler er sikret og hashbundet 29. oktober.
 - [ ] Avklar om Unreal/editor eller en annen tung jobb faktisk kjørte samtidig. Samtidighet er en hypotese, ikke fastslått rotårsak.
-- [ ] Kontroller én målrettet diner-rute uten andre tunge jobber etter en begrunnet rettelse. Registrer kvalitet, skjermoppløsning, renderer og minnebudsjett. Ikke start en full scenariomatrise for triage.
+- [x] Kontroller én målrettet diner-rute uten andre tunge jobber etter en begrunnet rettelse. Registrer kvalitet, skjermoppløsning, renderer og minnebudsjett. Ikke start en full scenariomatrise for triage.
 
 | Vedlegg | Tid, Europe/Oslo | Bekreftet spor |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ Historiske guardkvitteringer viser ingen overlapp med de undersøkte nærliggend
 
 **Nye avgrensede prøver:** Den byteidentiske andre pakken ble prøvd på Ultra/Vulkan ved faktisk 2560×1440, isolert `/tmp`-profil og fysisk `water`-rute uten andre tunge jobber. Originalinnstillingene, TSR100 og to Nanite-kapasitetsprøver nådde kritisk minnemangel; egen overvåker stoppet bare egen prosess. Ingen av disse er akseptert som tiltak, og produksjons-TSR/Nanite er uendret.
 
-R5 endret bare den konservative VSM-reserven til 0,25. Hele diner-/returruten, 2628 meter, telefon og fullworld/diskrestore bestod. Global GPU-topp var 8089 MiB, minst ledig 1767 MiB og Vulkan device-local peak 6385,99 MiB. 300 separate GPU-statusmeldinger gav null synlig-instansoverløp, med seks marking-køflagg. CSV-overløpsfeltet har en kjent payload-forskyvning i denne motoren og brukes ikke som aksept. Ny Linux-kilde `b70bf042` endrer bare denne reserven; pakket prøve uten diagnoseoverstyring gjenstår. Dette er en målt minnemitigasjon, ikke bevis på full historisk rotårsak eller FPS. [Full prøveoversikt, mekanisme og akseptgrenser](../../Evidence/UnrealDeliveries/DINER_VULKAN_2026-10-29.md).
+R5 endret bare den konservative VSM-reserven til 0,25. Hele diner-/returruten, 2628 meter, telefon og fullworld/diskrestore bestod. Global GPU-topp var 8089 MiB, minst ledig 1767 MiB og Vulkan device-local peak 6385,99 MiB. 300 separate GPU-statusmeldinger gav null synlig-instansoverløp, med seks marking-køflagg. CSV-overløpsfeltet har en kjent payload-forskyvning i denne motoren og brukes ikke som aksept. Ny Linux-kilde `b70bf042` endrer bare denne reserven. Pakket R1 uten diagnoseoverstyring består 1709selvtester og full diner/retur, global GPU 8115/minst ledig 1740 MiB. KaldHigh/natt-R2 ved 01:35 har 3159rå statusmeldinger etter Continue uten synlig-instansoverløp. Dette er en målt minnemitigasjon, ikke bevis på full historisk rotårsak eller FPS. [Full prøveoversikt, mekanisme og akseptgrenser](../../Evidence/UnrealDeliveries/DINER_VULKAN_2026-10-29.md).
 
 Detaljer, kopikontrollsummer, rålogger, kernelutdrag og prøvekvitteringer ligger i `~/scratch-bm/Signal47-diner-crash-20261029`. Originale vedlegg og eldre bevis er bevart uendret. Prosjektbiblioteket ga ingen relevant Vulkan-minneløsning etter det påkrevde bredere søket; ingen plugin, motor eller driver er byttet.
 

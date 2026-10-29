@@ -1,5 +1,5 @@
 {
-  "status": "Under arbeid",
+  "status": "Målrettet Linux-minnetiltak PASS; historisk restårsak åpen",
   "gjelder": "FIX-01, bevarte krasj 28.10.2026 og målrettet triage 29.10.2026",
   "sist_kontrollert": "2026-10-29",
   "renderer": "Vulkan",
@@ -144,7 +144,7 @@
     "csv_overflow_field_valid": false,
     "csv_overflow_field_note": "UE5.8 stats-payload har to innskutte clusterfelt uten indekskompensasjon. Separat StatusFeedback type1 [1,flags] brukes.",
     "payload_files_unchanged_after": 7,
-    "candidate_acceptance": "Pakket b70bf042 uten overstyring gjenstår"
+    "candidate_acceptance": "Ny pakket R1 og High/natt R2 består separat nedenfor"
   },
   "mitigation_source": {
     "head": "b70bf042b841640b0121f7e00d20a2565cd3da37",
@@ -155,8 +155,80 @@
     "engine_modified": false,
     "nanite_or_tsr_changed": false,
     "scope": "målt reduksjon i konservativ VSM-bufferreserve; forklarer ikke alene første historiske startup-OOM eller historisk prosesskonkurranse",
-    "candidate_status": "VENTER PÅ PAKKET PRØVE",
+    "candidate_status": "PASS pakket R1 og kald High/natt R2; ingen override",
     "installed": false,
     "public_release": false
-  }
+  },
+  "packed_ultra_vsm_r1": {
+    "source_head": "b70bf042b841640b0121f7e00d20a2565cd3da37",
+    "source_input_count": 665,
+    "source_inputs_unchanged_after_runtime": true,
+    "candidate_files": {
+      "Signal47.sh": {
+        "size": 243,
+        "sha256": "d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a"
+      },
+      "CREDITS.txt": {
+        "size": 9189,
+        "sha256": "474e58d961da8b67089d17bc6b4be9fc0d1a1a7b88e83043ed67eb3222b50773"
+      },
+      "Signal47/Binaries/Linux/Signal47": {
+        "size": 313986880,
+        "sha256": "41c2441a9347bbbc8875e4b6c6cbb28b35c5df8bb398d025f77f295c0a46607d"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.pak": {
+        "size": 1269459972,
+        "sha256": "238df627b9a317a73efaa2d8833b9d7c27c90ad63cb59ed7d063c1e36c191aae"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.ucas": {
+        "size": 2632882064,
+        "sha256": "fc0447bc09a0c09d3fcb868d385de77e7b7371996ec9d87f729540c749b38807"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.utoc": {
+        "size": 2615662,
+        "sha256": "cb11a0a4114eb69b858406bd78433cee107e676e5b650456aa4f6daef850cc6c"
+      },
+      "Signal47/Content/Paks/global.ucas": {
+        "size": 3328960,
+        "sha256": "50dea5d47d8287547a1f54ffdcc586a51f5abc2200379bcd6cde9de2d89df7bf"
+      },
+      "Signal47/Content/Paks/global.utoc": {
+        "size": 806,
+        "sha256": "71f67d30b5739166280def3250438e3a5a2a41066a44f612825c66bbdcb008a4"
+      }
+    },
+    "config_readback": "0.25 LastSetBy SystemSettingsIni at frame0; no ForceDPCVars or setter command",
+    "ultra_actual": "scale100,shadow3,GI3,reflection2,HWRT1,fog1,TSR200,Nanite16Mi/4Mi",
+    "selftest_checks": 1709,
+    "route_seconds": 311.8,
+    "driven_metres": 2627.8,
+    "contention": [],
+    "raw_vsm_status_messages": 360,
+    "visible_instance_overflows": 0,
+    "marking_queue_overflows": 4,
+    "global_gpu_peak_mib": 8115.0,
+    "global_gpu_min_free_mib": 1740.0,
+    "vulkan_device_local_peak_mib": 6451.62
+  },
+  "packed_high_night_r2": {
+    "status": "PASS",
+    "clock": "01:35 før T01",
+    "viewport": [
+      2560,
+      1440
+    ],
+    "high_internal_scale_percent": 60,
+    "raw_status_total": 3513,
+    "raw_status_after_continue": 3159,
+    "flags_after_continue": [
+      0
+    ],
+    "visible_instance_overflows": 0,
+    "global_gpu_peak_mib": 5694,
+    "global_gpu_min_free_mib": 4161,
+    "vulkan_device_local_peak_mib": 4033.38,
+    "wall_seconds": 100.20434,
+    "limits": "Camera-only fixture from actual isolated night journal; no field walk/human-input claim. R1 short-window proof rejected for night GPU status."
+  },
+  "integration_limit": "PR216/TB2 landet etter b70bf042-frysen og er ikke i denne R1-pakken. Kilde er samordnet; ny sammensatt modellpakke har egen kontroll."
 }
