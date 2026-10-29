@@ -1,0 +1,130 @@
+{
+  "status": "PASS_TARGETED_PACKAGED_SC01_AND_DISPATCH",
+  "checked_at": "2026-10-29T06:57:22+01:00",
+  "candidate_manifest": {
+    "source_head": "c5d05fa2e998b7152737e228fb3503972c059178",
+    "source_inputs_unchanged": true,
+    "source_input_count": 13463,
+    "candidate": "/home/tom/scratch-bm/Signal47-dispatch-report-20261029/candidate-r1/Linux",
+    "files": {
+      "Signal47.sh": {
+        "bytes": 243,
+        "sha256": "d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a"
+      },
+      "CREDITS.txt": {
+        "bytes": 9189,
+        "sha256": "474e58d961da8b67089d17bc6b4be9fc0d1a1a7b88e83043ed67eb3222b50773"
+      },
+      "Signal47/Binaries/Linux/Signal47": {
+        "bytes": 314253568,
+        "sha256": "e557f4e1503a5cad993f8565dc68043ee0f5c65b57e0281a7bd2e9d8cbec6aaa"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.pak": {
+        "bytes": 1269445687,
+        "sha256": "cc524b43148eff0d641fa0cffb2820e17290da0e6a66f424e579cd1e864bd73b"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.ucas": {
+        "bytes": 2654713616,
+        "sha256": "a955a7a87f567fd794ff9cc2eb074042b54b2265acb2e1980749a853cf0208af"
+      },
+      "Signal47/Content/Paks/Signal47-Linux.utoc": {
+        "bytes": 2655288,
+        "sha256": "876397ac89ccb25b512aac2594b59490aa0bb7fa76cc3605298e65ba3f934290"
+      },
+      "Signal47/Content/Paks/global.ucas": {
+        "bytes": 3328960,
+        "sha256": "50dea5d47d8287547a1f54ffdcc586a51f5abc2200379bcd6cde9de2d89df7bf"
+      },
+      "Signal47/Content/Paks/global.utoc": {
+        "bytes": 806,
+        "sha256": "71f67d30b5739166280def3250438e3a5a2a41066a44f612825c66bbdcb008a4"
+      }
+    },
+    "installed": false,
+    "public_release": false
+  },
+  "native_acceptance": {
+    "status": "PASS_FULL_SC01_AND_TWO_DISPATCH_RECORDINGS",
+    "required_final_marker_found": true,
+    "guard_normal_exit_without_contention": true,
+    "checks": 220,
+    "disk_flow_restores": 21,
+    "native_walk_metres": 273.15679026676014,
+    "takes": {
+      "SC01_FIRST_REPORT_001": {
+        "sha256": "8197162fafc407613415f43e75bf7146983f1469d5a705e7c2376039be54ed4c",
+        "sha1": "7878728C2BF4BF8AE970837D53F08CED932296C3",
+        "frames": 480960,
+        "natural_full_phone_graph": true
+      },
+      "SC01_FIRST_REPORT_002": {
+        "sha256": "96370b07834e7b656cfc105a0fde36c950d867ee529f96610ae8be94a7e1b535",
+        "sha1": "A80540D438BFCC27CCBB2A8C9B8399EFD6CA63BE",
+        "frames": 521280,
+        "natural_full_phone_graph": true
+      }
+    },
+    "result_sha256": "8b1d3ab6f67f0afdfa038c1159882eaa7b23e563667442005827e4bc581eca7e",
+    "human_listening": "UNVERIFIED",
+    "test_memory_is_not_serialized_audio_receipts": true,
+    "installed": false,
+    "public_release": false
+  },
+  "selftests": 1709,
+  "images": {
+    "first-report-pending.png": {
+      "sha256": "3e679b2781c9a802751a4971f99d7116ce67d2e460f572133f0af0e03d2e8778",
+      "bytes": 1936132,
+      "source": "/tmp/S47-dispatch-packed-sc01-r1/Saved/HorrorContract/SC01/first-report-pending.png",
+      "kind": "original actual packaged SC01 viewport, API/Slate controlled"
+    },
+    "first-report-complete.png": {
+      "sha256": "8b14e73e60092eeef9a9add21c0de81a445e2c9d44dd2d3752a79f9dee162c2e",
+      "bytes": 1963936,
+      "source": "/tmp/S47-dispatch-packed-sc01-r1/Saved/HorrorContract/SC01/first-report-complete.png",
+      "kind": "original actual packaged SC01 viewport, API/Slate controlled"
+    }
+  },
+  "original_result_file": "sc01-result.json",
+  "original_result_sha256": "8b1d3ab6f67f0afdfa038c1159882eaa7b23e563667442005827e4bc581eca7e",
+  "guard_step": {
+    "returncode": 0,
+    "wall_seconds": 349.4872162780375,
+    "contention": [],
+    "stop_reason": null,
+    "performance_status": "UNCONTENDED"
+  },
+  "dale_reference_heard_before_dispatch": true,
+  "dale_scope": "This run proves preservation of an already true Dale-heard fact; it is not a false-to-true negative cohort test. DispatchComplete remains controller memory, not serialized per-take audio receipts.",
+  "human_input": "UNVERIFIED",
+  "human_listening": "UNVERIFIED",
+  "full_matrix": "UNVERIFIED",
+  "installed": false,
+  "public_release": false,
+  "actual_fresh_disk_readbacks": {
+    "before": {
+      "snapshot_sha256": "949bf1970a1b7be6a3c5ca200f369e3bf87bb92dea1575a63dc965dbdb00d40a",
+      "report_acknowledged": false,
+      "dale_reference_heard": true,
+      "call_active": true,
+      "call_cursor": 0,
+      "sc01_complete": true,
+      "reference_photo": "free36@-4173",
+      "documents": [],
+      "report_presented_flag": false
+    },
+    "after": {
+      "snapshot_sha256": "b47935cb152247bc8ce9689d8923f348c7ff8f3ff0c5cded127972f66d2b3905",
+      "report_acknowledged": true,
+      "dale_reference_heard": true,
+      "call_active": false,
+      "call_cursor": 2,
+      "sc01_complete": true,
+      "reference_photo": "free36@-4173",
+      "documents": [
+        "HR_INITIAL_REPORT"
+      ],
+      "report_presented_flag": true
+    }
+  }
+}

@@ -53,6 +53,7 @@ public:
  TUniquePtr<FS47HorrorSC03> SC03;
  bool SC03Live() const;
 private:
+ friend class FS47HorrorTest;
  enum class ESC02 : uint8 { Off, T01, Encounter, Escaped, Unwitnessed, Legacy };
  struct FSC02Save { ESC02 Phase = ESC02::Off; bool bAttempt = false, bRetry = false, bSeen = false; FString EscapeStamp, Checkpoint; };
  ESC02 SC02 = ESC02::Off;

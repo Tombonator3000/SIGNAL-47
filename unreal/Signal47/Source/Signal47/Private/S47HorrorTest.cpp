@@ -31,13 +31,35 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
+#include "Misc/SecureHash.h"
 #include "UnrealClient.h"
 #include "S47Observing.h"
 #include "S47Audio.h"
 #include "S47Ambience.h"
 #include "S47Docs.h"
+#include "S47RecordedDialogue.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47HorrorTest, Log, All);
+
+namespace
+{
+	struct FDispatchTake
+	{
+		FString Id, Text, Voice, WavSha1;
+		int32 Frames = 0, Channels = 0;
+		double SampleRate = 0, Duration = 0, PcmPeak = 0, PcmRms = 0;
+	};
+	const TCHAR* DispatchIds[] = {TEXT("SC01_FIRST_REPORT_001"), TEXT("SC01_FIRST_REPORT_002")};
+	const TCHAR* DispatchTexts[] = {
+		TEXT("SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location."),
+		TEXT("Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.")};
+	S47J::FObj DispatchLevels(const FS47DialogueAudioLevels& L)
+	{
+		auto O=S47J::New();S47J::Set(O,TEXT("clip_id"),L.ClipId);S47J::Set(O,TEXT("channel"),L.Channel);S47J::Set(O,TEXT("receiver_filter"),L.bReceiverFilter);
+		S47J::Set(O,TEXT("pcm_peak"),L.PcmPeak);S47J::Set(O,TEXT("pcm_rms"),L.PcmRms);S47J::Set(O,TEXT("source_samples"),double(L.SourceSamples));S47J::Set(O,TEXT("routed_samples"),double(L.RoutedSamples));
+		S47J::Set(O,TEXT("source_peak"),L.SourcePeak);S47J::Set(O,TEXT("source_rms"),L.SourceRms);S47J::Set(O,TEXT("routed_peak"),L.RoutedPeak);S47J::Set(O,TEXT("routed_rms"),L.RoutedRms);S47J::Set(O,TEXT("bus_gain"),L.BusGain);return O;
+	}
+}
 
 struct FS47HorrorTest::FState
 {
@@ -60,11 +82,20 @@ struct FS47HorrorTest::FState
 	S47J::FObj BeforeNormal, AfterNormal, AfterWindow, AfterReport, PendingNormal, FilmReserveBase;
 	TArray<FS47AlbumShot> BudgetPhotos;
 	TArray<TSharedPtr<FJsonValue>> Evidence;
+	bool bDispatchRecordings = false, bDispatchDaleBefore = false, bDispatchMutedSetting = false, bDispatchOriginalCharacters = true;
+	int32 DispatchProbe = 0;
+	FString DispatchPlaying;
+	TMap<FString,FDispatchTake> DispatchTakes;
+	TSet<FString> DispatchComplete;
+	S47J::FObj DispatchPending;
+	TArray<TSharedPtr<FJsonValue>> DispatchEvidence;
 };
 
 FS47HorrorTest::FS47HorrorTest(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 {
 	State->bEnabled = FParse::Value(FCommandLine::Get(), TEXT("S47HorrorContract="), State->Mode);
+	State->bDispatchRecordings = FParse::Param(FCommandLine::Get(), TEXT("S47DispatchRecordings"));
+	State->bEnabled |= State->bDispatchRecordings;
 	// The window event is now a slap heard behind the shade; it cannot be missed by looking away.
 	State->bMissHand = false;
 	State->bArcCloseup = State->Mode == TEXT("Arc") && FParse::Param(FCommandLine::Get(), TEXT("S47ArcCloseup"));
@@ -74,6 +105,7 @@ FS47HorrorTest::~FS47HorrorTest() = default;
 void FS47HorrorTest::Fail(const FString& Why)
 {
 	if (State->bDone) return;
+	if(State->bDispatchMutedSetting && M && M->Flow){M->Flow->Settings().OnCharacters(State->bDispatchOriginalCharacters);State->bDispatchMutedSetting=false;}
 	State->bDone = true;
 	if (M && M->Player)
 	{
@@ -86,6 +118,7 @@ void FS47HorrorTest::Fail(const FString& Why)
 		auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), TEXT("FAIL"));
 		S47J::Set(Result, TEXT("reason"), Why); S47J::Set(Result, TEXT("stage"), State->Stage);
 		S47J::Set(Result, TEXT("checks"), State->Checks); Result->SetArrayField(TEXT("evidence"), State->Evidence);
+		S47J::Set(Result,TEXT("dispatchRecordingsRequired"),State->bDispatchRecordings);Result->SetArrayField(TEXT("dispatch_audio"),State->DispatchEvidence);
 		FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(State->Root / TEXT("result.json")));
 	}
 	FPlatformMisc::RequestExitWithStatus(false, 1);
@@ -222,6 +255,59 @@ void FS47HorrorTest::Shot(const FString& Name)
 	FScreenshotRequest::RequestScreenshot(State->Root / (Name + TEXT(".png")), true, false);
 }
 
+bool FS47HorrorTest::PrepareDispatchRecordings()
+{
+	auto& T=*State;auto& H=*M->Horror;
+	if(!Check(T.Mode==TEXT("SC01")&&M->Audio&&M->Audio->Ctx&&M->Audio->Ctx->State()==TEXT("running")&&M->Audio->bCharacterVoices&&M->Audio->Master&&M->Audio->Master->Gain.Value()>0&&M->Audio->SfxBus&&M->Audio->SfxBus->Gain.Value()>0&&H.Voice&&H.Voice->Bank,TEXT("DispatchRecordings requires full SC01 with an audible production dialogue graph")))return false;
+	const auto* Scene=H.Pack.FindScene(TEXT("SC01_FIRST_REPORT"));
+	if(!Check(Scene&&Scene->Channel==TEXT("phone")&&Scene->Lines.Num()==2,TEXT("dispatch acceptance binds exactly the original two-line phone scene")))return false;
+	for(int32 I=0;I<2;++I)
+	{
+		const auto& Line=Scene->Lines[I];
+		if(!Check(Line.Id==DispatchIds[I]&&Line.Text==DispatchTexts[I]&&Line.Speaker==TEXT("DISPATCH")&&Line.VoiceProfile==TEXT("caliche_dispatch")&&Line.bRecord&&H.Pack.RecordingId(Line.Id)==Line.Id,TEXT("current exact dispatch role/text/recording identity: ")+Line.Id))return false;
+		const auto Found=H.Voice->Bank->Resolve(Line.Text,0,Line.VoiceProfile);
+		if(!Check(Found.IsSet()&&Found->Num()==1&&(*Found)[0].Id==Line.Id&&(*Found)[0].Text==Line.Text&&(*Found)[0].Voice==Line.VoiceProfile&&(*Found)[0].File==Line.Id+TEXT(".wav"),TEXT("production role/text resolver selects the exact new take: ")+Line.Id))return false;
+		TMap<FString,TSharedPtr<FS47AudioBuffer>> Loaded;
+		if(!Check(H.Voice->Bank->Load(*Found,Loaded),TEXT("production bank decodes the actual dispatch PCM: ")+Line.Id))return false;
+		const auto Buffer=Loaded.FindRef(Line.Id);
+		if(!Check(Buffer&&Buffer->NumberOfChannels()==1&&Buffer->SampleRate()==48000&&Buffer->Length()>0&&FMath::IsFinite(Buffer->Duration())&&Buffer->Duration()>0&&FMath::Abs(Buffer->Duration()-(*Found)[0].Duration)<=1./48000,TEXT("decoded mono48k PCM frames match the selected take duration: ")+Line.Id))return false;
+		FDispatchTake Take;Take.Id=Line.Id;Take.Text=Line.Text;Take.Voice=Line.VoiceProfile;Take.Frames=Buffer->Length();Take.Channels=Buffer->NumberOfChannels();Take.SampleRate=Buffer->SampleRate();Take.Duration=Buffer->Duration();double Sum=0;
+		for(int32 F=0;F<Take.Frames;++F){const double V=Buffer->GetChannelData(0)[F];if(!FMath::IsFinite(V)){Fail(TEXT("non-finite dispatch PCM sample: ")+Line.Id);return false;}Take.PcmPeak=FMath::Max(Take.PcmPeak,FMath::Abs(V));Sum+=V*V;}
+		Take.PcmRms=FMath::Sqrt(Sum/Take.Frames);
+		if(!Check(Take.PcmPeak>0&&Take.PcmRms>0,TEXT("actual dispatch PCM contains non-silent signal: ")+Line.Id))return false;
+		const FString Wav=FPaths::ProjectContentDir()/TEXT("Audio/Raw/voice/horror")/(*Found)[0].File;TArray<uint8> Bytes;
+		if(!Check(FFileHelper::LoadFileToArray(Bytes,*Wav)&&!Bytes.IsEmpty(),TEXT("exact selected dispatch WAV is present on disk: ")+Line.Id))return false;
+		FSHAHash Hash;FSHA1::HashBuffer(Bytes.GetData(),Bytes.Num(),Hash.Hash);Take.WavSha1=Hash.ToString();
+		auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("catalog-and-actual-PCM-preflight"));S47J::Set(Row,TEXT("line_id"),Take.Id);S47J::Set(Row,TEXT("role"),Line.Speaker);S47J::Set(Row,TEXT("voice"),Take.Voice);S47J::Set(Row,TEXT("text"),Take.Text);S47J::Set(Row,TEXT("wav"),Wav);S47J::Set(Row,TEXT("wav_sha1"),Take.WavSha1);S47J::Set(Row,TEXT("frames"),Take.Frames);S47J::Set(Row,TEXT("sample_rate"),Take.SampleRate);S47J::Set(Row,TEXT("channels"),Take.Channels);S47J::Set(Row,TEXT("duration"),Take.Duration);S47J::Set(Row,TEXT("pcm_peak"),Take.PcmPeak);S47J::Set(Row,TEXT("pcm_rms"),Take.PcmRms);T.DispatchEvidence.Add(MakeShared<FJsonValueObject>(Row));T.DispatchTakes.Add(Line.Id,MoveTemp(Take));
+	}
+	auto Evidence=S47J::New();Evidence->SetArrayField(TEXT("takes"),T.DispatchEvidence);
+	if(!FFileHelper::SaveStringToFile(S47J::Write(Evidence,true),*(T.Root/TEXT("dispatch-recording-preflight.json")))){Fail(TEXT("could not write dispatch PCM preflight evidence"));return false;}return true;
+}
+
+bool FS47HorrorTest::DispatchRecordingFinished(const FS47EveningLine& Line)
+{
+	auto& T=*State;auto& H=*M->Horror;const auto* Take=T.DispatchTakes.Find(Line.Id);
+	if(!Take||!H.Voice||!H.bWorldCall||H.CallScene!=TEXT("SC01_FIRST_REPORT")||H.Spoken!=Line.Id||!H.bVoiceAvailable){Fail(TEXT("dispatch acceptance lost the actual world-phone-dialogue: ")+Line.Id);return false;}
+	const auto Status=H.Voice->Status();
+	if(Status.State==TEXT("error")||Status.Clips.Num()!=1||Status.Clips[0].Id!=Take->Id||Status.Clips[0].Text!=Take->Text||Status.Clips[0].Voice!=Take->Voice||FMath::Abs(Status.Clips[0].Duration-Take->Duration)>1./Take->SampleRate)
+	{Fail(TEXT("production dispatch queue identity/PCM duration mismatch: ")+Line.Id);return false;}
+	FString Active;double Seconds=0;
+	if(H.Voice->ActiveClip(Active,Seconds))
+	{
+		if(Active!=Take->Id){Fail(TEXT("different dispatch source became active: ")+Active);return false;}
+		T.DispatchPlaying=Active;
+	}
+	if(H.Voice->Playing()||H.Voice->Loading())
+	{if(T.Elapsed-T.LineAt>Take->Duration+10)Fail(TEXT("dispatch PCM did not finish naturally: ")+Line.Id);return false;}
+	const auto L=H.Voice->AudioLevels();const double Master=M->Audio->Master?M->Audio->Master->Gain.Value():0,Sfx=M->Audio->SfxBus?M->Audio->SfxBus->Gain.Value():0;
+	const bool Good=Status.State==TEXT("idle")&&T.DispatchPlaying==Take->Id&&M->Audio->bCharacterVoices&&Master>0&&Sfx>0&&M->Audio->Ctx->CurrentTime()-H.Voice->StartedAt()+1./Take->SampleRate>=Take->Duration&&L.ClipId==Take->Id&&L.Channel==TEXT("phone")&&L.bReceiverFilter&&L.SourceSamples>0&&L.RoutedSamples>0&&FMath::IsFinite(L.SourcePeak)&&FMath::IsFinite(L.SourceRms)&&FMath::IsFinite(L.RoutedPeak)&&FMath::IsFinite(L.RoutedRms)&&L.SourcePeak>0&&L.SourceRms>0&&L.RoutedPeak>0&&L.RoutedRms>0&&L.BusGain>0&&FMath::Abs(L.BusGain-Sfx)<1e-6&&FMath::Abs(L.PcmPeak-Take->PcmPeak)<1e-6&&FMath::Abs(L.PcmRms-Take->PcmRms)<1e-6;
+	// Preserve failing readbacks too; asset metadata alone never grants an audio PASS.
+	auto Row=DispatchLevels(L);S47J::Set(Row,TEXT("kind"),TEXT("world-phone-dialogue"));S47J::Set(Row,TEXT("line_id"),Line.Id);S47J::Set(Row,TEXT("role"),Line.Speaker);S47J::Set(Row,TEXT("text"),Line.Text);S47J::Set(Row,TEXT("voice"),Line.VoiceProfile);S47J::Set(Row,TEXT("wav_sha1"),Take->WavSha1);S47J::Set(Row,TEXT("decoded_seconds"),Take->Duration);S47J::Set(Row,TEXT("master_gain"),Master);S47J::Set(Row,TEXT("sfx_gain"),Sfx);S47J::Set(Row,TEXT("natural_end"),Status.State==TEXT("idle"));S47J::Set(Row,TEXT("call_cursor"),H.CallCursor);S47J::Set(Row,TEXT("pass"),Good);T.DispatchEvidence.Add(MakeShared<FJsonValueObject>(Row));
+	if(!FFileHelper::SaveStringToFile(S47J::Write(Row,true),*(T.Root/(Line.Id+TEXT(".audio.json"))))){Fail(TEXT("could not write dispatch audio readback"));return false;}
+	if(!Check(Good,TEXT("complete actual dispatch PCM through production phone filter/source/routed meters and audible bus: ")+Line.Id))return false;
+	T.DispatchComplete.Add(Line.Id);return true;
+}
+
 void FS47HorrorTest::Step(double Dt)
 {
 	auto& T = *State;
@@ -310,6 +396,7 @@ void FS47HorrorTest::Step(double Dt)
 			if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live test drivers")); return; }
 		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / T.Mode;
 		IFileManager::Get().MakeDirectory(*T.Root, true);
+		if(T.bDispatchRecordings && T.Mode!=TEXT("SC01")){Fail(TEXT("S47DispatchRecordings requires the complete S47HorrorContract=SC01 route"));return;}
 		if (T.Mode == TEXT("Navigation"))
 		{
 			if (!H.Threat) { Fail(TEXT("native navigation probe requires the production threat host")); return; }
@@ -408,6 +495,7 @@ void FS47HorrorTest::Step(double Dt)
 		M->Player->Place(4.2, 1.6, 0); if (M->Observing) M->Observing->Begin(nullptr, true); H.Begin(nullptr, true);
 		UE_LOG(LogS47HorrorTest, Display, TEXT("S47: SC01 START: post-handover evening fixture and one initial room placement; later film-budget checks use explicitly synthetic album entries. All SC01 door/lamp/camera/window/report facts use real production controls, camera rays and Walker/Resolve thereafter. No human input/listening claim."));
 		if (!Check(H.Enabled() && !H.NormalComplete() && !H.Complete(), TEXT("new cohort begins with no SC01 physical completion"))) return;
+		if(T.bDispatchRecordings && (!Check(!S47J::Bool(H.Save(),TEXT("daleReferenceHeard")),TEXT("fresh dispatch-audio cohort has no invented Dale-heard fact"))||!PrepareDispatchRecordings()))return;
 		Stage(1, .5); return;
 	}
 	if (T.Stage == 1) { Drain(2); return; }
@@ -947,25 +1035,67 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==51)
 	{
+		if(T.bDispatchRecordings){T.bDispatchDaleBefore=S47J::Bool(H.Save(),TEXT("daleReferenceHeard"));T.bDispatchOriginalCharacters=M->Audio->bCharacterVoices;}
 		if(!Enter() || !Check(!H.ReportAcknowledged(),TEXT("starting the real phone exchange gives no premature report receipt")))return;
 		Shot(TEXT("first-report-pending"));
+		if(T.bDispatchRecordings)T.DispatchPending=S47J::Clone(M->Flow->GameState());
 		if(!StoreRestore(TEXT("before-report-readback"),M->Flow->GameState()))return;
 		Stage(52,.6);return;
 	}
 	if(T.Stage==52)
 	{
-		if(H.ReportAcknowledged()){Stage(53,.3);return;}
+		if(T.bDispatchRecordings && T.DispatchProbe<4)
+		{
+			// Two isolated controls use the actual pending call and Slate/settings.
+			// Restore that untouched snapshot after each; the normal full call still follows.
+			if(!H.bWorldCall||H.CallScene!=TEXT("SC01_FIRST_REPORT")||H.ReportAcknowledged()||S47J::Bool(H.Save(),TEXT("daleReferenceHeard"))!=T.bDispatchDaleBefore){Fail(TEXT("isolated dispatch control lost pending call or changed Dale-heard status"));return;}
+			if(T.DispatchProbe==0)
+			{
+				FString Active;double Played=0;const auto* Take=T.DispatchTakes.Find(DispatchIds[0]);
+				if(!H.Voice->ActiveClip(Active,Played)||Played<.08){if(T.Elapsed-T.Since>15)Fail(TEXT("real dispatch source did not become active for skip control"));return;}
+				if(!Check(Take&&H.CallCursor==0&&Active==Take->Id&&Played<Take->Duration-.1,TEXT("skip probe acts on genuinely partial first dispatch PCM")))return;
+				auto Row=DispatchLevels(H.Voice->AudioLevels());S47J::Set(Row,TEXT("kind"),TEXT("explicit-pending-call-skip-control"));S47J::Set(Row,TEXT("played_seconds_before_skip"),Played);S47J::Set(Row,TEXT("dale_reference_heard_before"),T.bDispatchDaleBefore);T.DispatchEvidence.Add(MakeShared<FJsonValueObject>(Row));
+				if(!Enter())return;T.DispatchProbe=1;T.Hold=.15;return;
+			}
+			if(T.DispatchProbe==1)
+			{
+				if(!Check(H.CallCursor==1&&!H.ReportAcknowledged(),TEXT("skipping one actual response advances its text without premature report acknowledgement")))return;
+				if(!StoreRestore(TEXT("dispatch-skip-control-restored"),T.DispatchPending))return;T.DispatchProbe=2;T.Hold=.6;return;
+			}
+			if(T.DispatchProbe==2)
+			{
+				if(!Check(H.CallCursor==0,TEXT("isolated skip control restores the original first response, no route shortcut")))return;
+				M->Flow->Settings().OnCharacters(false);T.bDispatchMutedSetting=true;
+				if(!Enter())return;T.DispatchProbe=3;T.Hold=.15;return;
+			}
+			if(T.DispatchProbe==3)
+			{
+				FString Active;double Seconds=0;const auto Status=H.Voice->Status();
+				if(!Check(H.CallCursor==1&&H.Spoken==DispatchIds[1]&&!M->Audio->bCharacterVoices&&!Status.bEnabled&&Status.State==TEXT("idle")&&Status.Clips.IsEmpty()&&!H.Voice->ActiveClip(Active,Seconds)&&!H.ReportAcknowledged(),TEXT("production Character voices mute opens the next response as text with no active recording or report credit")))return;
+				auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("explicit-pending-call-muted-next-line-control"));S47J::Set(Row,TEXT("line_id"),H.Spoken);S47J::Set(Row,TEXT("active_recording"),false);S47J::Set(Row,TEXT("dale_reference_heard_unchanged"),true);T.DispatchEvidence.Add(MakeShared<FJsonValueObject>(Row));
+				M->Flow->Settings().OnCharacters(T.bDispatchOriginalCharacters);T.bDispatchMutedSetting=false;
+				if(!StoreRestore(TEXT("dispatch-mute-control-restored"),T.DispatchPending))return;
+				T.DispatchProbe=4;T.DispatchPlaying.Empty();T.LastLine.Empty();T.Hold=.6;return;
+			}
+		}
+		if(H.ReportAcknowledged())
+		{
+			if(T.bDispatchRecordings && !Check(T.DispatchProbe==4&&T.DispatchComplete.Num()==2&&T.DispatchComplete.Contains(DispatchIds[0])&&T.DispatchComplete.Contains(DispatchIds[1]),TEXT("both exact recordings completed through the real phone after isolated skip/mute controls")))return;
+			Stage(53,.3);return;
+		}
 		const auto Saved=H.Save();const int32 Cursor=S47J::Int(Saved,TEXT("callCursor"));
 		const auto* Scene=H.Pack.FindScene(TEXT("SC01_FIRST_REPORT"));
 		if(!Scene || !Scene->Lines.IsValidIndex(Cursor)){Fail(TEXT("pending world phone call has no original response line"));return;}
 		const auto& Line=Scene->Lines[Cursor];
-		if(T.LastLine!=Line.Id){T.LastLine=Line.Id;T.LineAt=T.Elapsed;return;}
-		if(T.Elapsed-T.LineAt<FMath::Max(.5,Line.Duration+1))return;
+		if(T.LastLine!=Line.Id){T.LastLine=Line.Id;T.DispatchPlaying.Empty();T.LineAt=T.Elapsed;return;}
+		if(T.bDispatchRecordings){if(!DispatchRecordingFinished(Line))return;}
+		else if(T.Elapsed-T.LineAt<FMath::Max(.5,Line.Duration+1))return;
 		if(!Enter())return;T.LastLine.Empty();T.Hold=.25;return;
 	}
 	if(T.Stage==53)
 	{
 		if(!Check(H.ReportAcknowledged() && H.Pack.Flag(TEXT("hr_sc01_first_report_presented")) && H.Pack.Documents().Contains(TEXT("HR_INITIAL_REPORT")),TEXT("only completed actual dispatch response grants the distinct report receipt")))return;
+		if(T.bDispatchRecordings && !Check(S47J::Bool(H.Save(),TEXT("daleReferenceHeard"))==T.bDispatchDaleBefore,TEXT("complete dispatch audio creates no new Dale-reference-heard fact")))return;
 		Shot(TEXT("first-report-complete"));T.AfterReport=S47J::Clone(M->Flow->GameState());
 		if(!StoreRestore(TEXT("after-report"),T.AfterReport))return;
 		Stage(54,.6);return;
@@ -977,6 +1107,7 @@ void FS47HorrorTest::Step(double Dt)
 		 TEXT("fresh disk/full Flow retains completed SC01 and actual reference with no unsupported report"):
 		 TEXT("fresh disk/full Flow retains exactly one actual report, real photo and completed SC01")))return;
 		if(!Check(!H.Pack.Flag(TEXT("hr_h02_recorded")),TEXT("SC01 acceptance does not falsely complete the later H02 physical route")))return;
+		if(T.bDispatchRecordings && !Check(S47J::Bool(H.Save(),TEXT("daleReferenceHeard"))==T.bDispatchDaleBefore&&T.DispatchComplete.Num()==2,TEXT("ordinary report disk/full Flow preserves original Dale-heard fact; test memory retains both completed audio receipts")))return;
 		if(!Check(T.WalkMetres>45 && T.Stores>=6,TEXT("live acceptance includes continuous native walking and independent disk readers")))return;
 		Go({FVector(4.2,0,1.6)},55);return;
 	}
@@ -996,6 +1127,8 @@ void FS47HorrorTest::Step(double Dt)
 		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);
 		S47J::Set(Result,TEXT("normalPhoto"),T.NormalPhoto);Result->SetArrayField(TEXT("evidence"),T.Evidence);
 		S47J::Set(Result,TEXT("missedHand"),T.bMissHand);
+		S47J::Set(Result,TEXT("dispatchRecordingsRequired"),T.bDispatchRecordings);Result->SetArrayField(TEXT("dispatch_audio"),T.DispatchEvidence);
+		if(T.bDispatchRecordings)S47J::Set(Result,TEXT("dispatch_audio_limits"),TEXT("Exact role/text-ID, real mono48k PCM and natural full source/routed production-phone graph acceptance. Skip/mute controls restore the actual pending call before full playback. No human listening or subjective voice/ASR approval asserted; no Dale-heard flag is fabricated."));
 		S47J::Set(Result,TEXT("fixture"),TEXT("Post-handover evening, one initial room placement and 35 explicitly synthetic film-budget entries. Receiver dials controlled through production console; subsequent movement uses native Walker/Resolve, interactions require aimed camera rays, UI uses focused Slate Enter. The reserved reference is a new actual rendered capture."));
 		S47J::Set(Result,TEXT("limits"),TEXT("Scripted live contract, not human play/listening, full-night pacing, physical Xbox or whole-story acceptance. SC02+ and H01 closure remain separate."));
 		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));

@@ -191,53 +191,53 @@
       "actor": "DISPATCH",
       "channel": "phone",
       "voice_profile": "caliche_dispatch",
-      "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location.",
+      "text": "SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location.",
       "request": {
         "language": "en",
         "engine": "omnivoice",
         "num_step": 32,
-        "seed": 46,
+        "seed": 49,
         "speed": 1,
         "denoise": true,
         "stream": true,
         "effect_preset": "broadcast",
         "profile_id": "1a160d70",
-        "text": "SARO control-room window, outside face of the glass. You saw a moving hand or forearm. I have your time and location."
+        "text": "SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location."
       },
       "pronunciation_override": false,
       "response": {
         "type": "done",
-        "id": "54696bb1",
-        "audio_path": "54696bb1.wav",
-        "duration": 10.21,
-        "gen_time": 2.39,
-        "seed": 46,
+        "id": "0d9b5fd7",
+        "audio_path": "0d9b5fd7.wav",
+        "duration": 10.15,
+        "gen_time": 2.13,
+        "seed": 49,
         "sample_rate": 24000,
         "dropped_chunks": 0
       },
-      "raw_sha256": "eb7e28b89df040a37cba005f5fa7ec7bc86202fa7825b7906ba32a47662ee3ba",
+      "raw_sha256": "25764044eacb8304710a2fa35d45d71e056bc6925d88acfb970de118d5afd915",
       "file": "SC01_FIRST_REPORT_001.wav",
       "audio": {
-        "duration_seconds": 10.09,
-        "peak_dbfs": -4.36911716579019,
-        "rms_dbfs": -21.042082808950227,
-        "nonsilent_rms_dbfs": -19.979489708767893,
-        "nonsilent_seconds": 7.9,
+        "duration_seconds": 10.02,
+        "peak_dbfs": -4.293177339438382,
+        "rms_dbfs": -21.0885924691792,
+        "nonsilent_rms_dbfs": -19.96740188625798,
+        "nonsilent_seconds": 7.74,
         "speech_start_seconds": 0.08,
         "speech_end_seconds": 9.89,
-        "longest_internal_pause_seconds": 0.71,
+        "longest_internal_pause_seconds": 0.89,
         "first_2ms_peak": 3.0517578125e-05,
         "last_2ms_peak": 0.0,
         "samples_at_or_above_full_scale": 0,
         "trim_seconds": [
-          0.12,
-          10.21
+          0.13,
+          10.15
         ],
-        "raw_duration_seconds": 10.21,
-        "constant_gain_db": -2.2766,
-        "integrated_lufs": -19.9,
-        "bytes": 968684,
-        "sha256": "fe13c570a89dbf93b9ad8569394a4fbd5d328c031f25e8f892387433ce1ac61f",
+        "raw_duration_seconds": 10.15,
+        "constant_gain_db": -1.9491,
+        "integrated_lufs": -20.0,
+        "bytes": 961964,
+        "sha256": "8197162fafc407613415f43e75bf7146983f1469d5a705e7c2376039be54ed4c",
         "ffprobe": {
           "codec_name": "pcm_s16le",
           "sample_rate": "48000",
@@ -245,7 +245,7 @@
           "bits_per_sample": 16
         }
       },
-      "take_identity": "78bbe7cadf641894",
+      "take_identity": "562622746a63c02b",
       "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
     },
     "SC01_FIRST_REPORT_002": {
@@ -253,7 +253,7 @@
       "actor": "DISPATCH",
       "channel": "phone",
       "voice_profile": "caliche_dispatch",
-      "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw.",
+      "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.",
       "request": {
         "language": "en",
         "engine": "omnivoice",
@@ -264,42 +264,42 @@
         "stream": true,
         "effect_preset": "broadcast",
         "profile_id": "1a160d70",
-        "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot identify who you saw."
+        "text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there."
       },
       "pronunciation_override": false,
       "response": {
         "type": "done",
-        "id": "ba7dff18",
-        "audio_path": "ba7dff18.wav",
-        "duration": 10.9,
-        "gen_time": 2.35,
+        "id": "306c677f",
+        "audio_path": "306c677f.wav",
+        "duration": 10.98,
+        "gen_time": 2.62,
         "seed": 44,
         "sample_rate": 24000,
         "dropped_chunks": 0
       },
-      "raw_sha256": "aac15b13bc83a615c1a03bd333932029e11607ba846ad18638ed30ef37f58292",
+      "raw_sha256": "1106a8b9e8a7ec68302b0bd1670b577c0a19329c1692c6d7a67521332f02cb02",
       "file": "SC01_FIRST_REPORT_002.wav",
       "audio": {
-        "duration_seconds": 10.78,
-        "peak_dbfs": -3.785559793410866,
-        "rms_dbfs": -21.253232007691484,
-        "nonsilent_rms_dbfs": -19.990450747625232,
-        "nonsilent_seconds": 8.06,
+        "duration_seconds": 10.86,
+        "peak_dbfs": -3.1005388126093862,
+        "rms_dbfs": -21.44986109942102,
+        "nonsilent_rms_dbfs": -19.990264708324517,
+        "nonsilent_seconds": 7.76,
         "speech_start_seconds": 0.08,
-        "speech_end_seconds": 10.6,
-        "longest_internal_pause_seconds": 0.97,
+        "speech_end_seconds": 10.72,
+        "longest_internal_pause_seconds": 0.89,
         "first_2ms_peak": 6.103515625e-05,
-        "last_2ms_peak": 0.0,
+        "last_2ms_peak": 3.0517578125e-05,
         "samples_at_or_above_full_scale": 0,
         "trim_seconds": [
           0.12,
-          10.9
+          10.98
         ],
-        "raw_duration_seconds": 10.9,
-        "constant_gain_db": -1.7623,
-        "integrated_lufs": -19.7,
-        "bytes": 1034924,
-        "sha256": "9098e9943126c2f4f63659b8f00ce87318e65440fbe3987415dab6530a4b176a",
+        "raw_duration_seconds": 10.98,
+        "constant_gain_db": -1.1797,
+        "integrated_lufs": -20.0,
+        "bytes": 1042604,
+        "sha256": "96370b07834e7b656cfc105a0fde36c950d867ee529f96610ae8be94a7e1b535",
         "ffprobe": {
           "codec_name": "pcm_s16le",
           "sample_rate": "48000",
@@ -307,7 +307,7 @@
           "bits_per_sample": 16
         }
       },
-      "take_identity": "cef3ebcec41669f9",
+      "take_identity": "38635275c4cc5632",
       "reference_sha256": "b612cc6035cccbae6f4c4ddb650f5235e68e8b9925e7aa74bccbd905ccccf4ea"
     }
   },
@@ -342,5 +342,5 @@
   "human_listened": false,
   "speaker_similarity": "UNVERIFIED",
   "emotional_delivery": "UNVERIFIED",
-  "updated_utc": "2026-10-26T08:43:50.919115+00:00"
+  "updated_utc": "2026-10-29T05:11:49.975746+00:00"
 }
