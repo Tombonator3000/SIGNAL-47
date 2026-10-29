@@ -186,6 +186,8 @@ struct FS47SC09Test
   US47Flow::FStart Start;Start.State=Disk;Start.CaseId=0;Start.bDev=true;Start.Playtime=M->Playtime;M->Flow->StartGame(Start);++Loads;
   auto E=S47J::New(); S47J::Set(E,TEXT("restore"),Name);S47J::Set(E,TEXT("expected"),Expected);S47J::Set(E,TEXT("actual"),C->SaveState());
   S47J::Set(E,TEXT("expectedClock"),Clock);S47J::Set(E,TEXT("actualClock"),M->Story->Clock());Events.Add(MakeShared<FJsonValueObject>(E));
+  S47J::Set(E,TEXT("expectedArea"),Area);S47J::Set(E,TEXT("actualArea"),C->Area());S47J::Set(E,TEXT("expectedPose"),Pose);
+  S47J::Set(E,TEXT("actualPose"),S47J::Obj(M->Flow->GameState(),TEXT("pose")));
   return Check(S47J::Write(C->SaveState())==S47J::Write(Expected)&&M->Story->Clock()==Clock&&C->Area()==Area
    &&M->Flow->CaseId==0&&M->Flow->bDevRun&&Pose
    &&FMath::Abs(M->Player->Pos.X-S47J::Num(Pose,TEXT("x")))<.02&&FMath::Abs(M->Player->Pos.Z-S47J::Num(Pose,TEXT("z")))<.02,
@@ -293,7 +295,13 @@ struct FS47SC09Test
    C->Book->Connect(TEXT("hut.rx"),TEXT("e10.carrier"),false);const auto R=C->Book->Record(TEXT("P09"));
    if(!Check(R&&R->bOk&&C->S.Stage==TEXT("return")&&!C->S.bCalled&&!C->bRinging,TEXT("actual P09 opens return while Nora and field-call abduction remain untriggered")))return;
    if(!Restore(TEXT("return-with-negatives")))return;
-   if(bTravelFixture){M->World->PlaceTruck(TEXT("saro"));M->World->Enter(TEXT("saro"));C->ArrivedSaro();Next(40,1);return;}
+   if(bTravelFixture)
+   {
+    M->World->PlaceTruck(TEXT("saro"));M->World->Enter(TEXT("saro"));
+    const FVector Start=M->Web->SpawnThree();
+    if(!Check(M->Player->Walkable(Start.X,Start.Z),TEXT("explicit return-endpoint fixture uses a legal SARO stand")))return;
+    M->Player->Place(Start.X,Start.Z,Start.Y);C->ArrivedSaro();Next(40,1);return;
+   }
    OdoStart=M->World->Odometer();bWasDriving=false;M->World->Autopilot=24;const auto Trip=C->TruckTrip(TEXT("station01"));
    if(!Check(Trip.IsSet(),TEXT("ordinary return trip offered before Nora")))return;Trip->Use();Next(38,0);return;
   }
