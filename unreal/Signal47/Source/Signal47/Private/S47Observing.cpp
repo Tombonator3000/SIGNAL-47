@@ -168,7 +168,9 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
   HintMask = S47J::Int(Saved, TEXT("hints")); HeldStatus = S47J::Str(Saved, TEXT("status"));
   // A save on generator power comes back running on line power: the room lights are not saved here.
   GenStep = FMath::Clamp(S47J::Int(Saved, TEXT("generator")), 0, 3); if (GenStep == 2) GenStep = 1;
-  Archive = FMath::Clamp(S47J::Int(Saved, TEXT("archive")), 0, 2);
+  // Version-one schedules written before the archive round keep an explicit exemption.
+  // This is not filing or a heard reel: leave their document and hint facts untouched.
+  Archive = Saved->HasField(TEXT("archive")) ? FMath::Clamp(S47J::Int(Saved, TEXT("archive")), -1, 2) : -1;
   Yard = FMath::Clamp(S47J::Int(Saved, TEXT("yard")), 0, 2);
   DoorVoice = FMath::Clamp(S47J::Int(Saved, TEXT("doorVoice")), 0, 2);
   if (GenStep == 1 && M && M->Audio) { FS47Sound S; S.Gain = .3f; S.At = GeneratorAt; S.bLoop = true; M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), S); }
@@ -202,7 +204,12 @@ bool FS47Observing::ConsoleAction()
  FS47Rx& Rx = M->Story->Rx;
  if (StepNow == EStep::Integrating) { Rx.Status = FString::Printf(TEXT("INTEGRATING %s  /  HOLD"), Runs()[Run].Source).ToUpper(); return true; }
  if (StepNow == EStep::Data) { Rx.Status = TEXT("RUN COMPLETE  /  SEE THE OBJECTIVE"); return true; }
- if (ChorePending()) { Rx.Status = Run == 1 ? TEXT("GENERATOR TEST DUE  /  REMOTE PANEL BY THE EAST DOOR") : TEXT("ROUND DUE  /  ARRAY GATE"); return true; }
+ if (ChorePending())
+ {
+  Rx.Status = Run == 1 ? TEXT("GENERATOR TEST DUE  /  REMOTE PANEL BY THE EAST DOOR")
+   : Run == 2 ? TEXT("ARCHIVE FILING DUE  /  RUN BINDER IN THE RECORDS ROOM") : TEXT("ROUND DUE  /  ARRAY GATE");
+  return true;
+ }
  if (!Rx.Pass(Runs()[Run].P)) { Rx.Status = TEXT("OFF SOURCE  /  CHECK THE SCHEDULE CARD"); return true; }
  Start();
  return true;
@@ -353,7 +360,7 @@ FString FS47Observing::Objective() const
  if (Run == 1 && StepNow == EStep::Tune && GenStep < 3)
   return GenStep == 0 ? TEXT("CONTROL ROOM // 19:35 WEEKLY GENERATOR TEST ON THE REMOTE PANEL BY THE EAST DOOR")
    : GenStep == 1 ? TEXT("CONTROL ROOM // WHEN THE DIESEL SETTLES, TRANSFER THE LOAD TO THE GENERATOR") : TEXT("CONTROL ROOM // CHECK THE EMERGENCY LIGHTING, THEN TRANSFER BACK TO LINE POWER");
- if (Run == 2 && StepNow == EStep::Tune && Archive < 2)
+ if (Run == 2 && StepNow == EStep::Tune && Archive >= 0 && Archive < 2)
   return Archive == 0 ? TEXT("RECORDS ROOM // 20:30 FILE THE EVENING'S STRIP CHARTS IN THE RUN BINDER, DOWN THE CORRIDOR")
    : TEXT("RECORDS ROOM // BACK TO THE CONTROL ROOM FOR THE HYDROGEN STRIP");
  if (Run == 3 && StepNow == EStep::Tune && Yard < 2)
@@ -372,7 +379,7 @@ TArray<FS47Task> FS47Observing::Tasks() const
  for (int32 I = 0; I < Runs().Num(); ++I)
  {
   if (I == 1) Out.Add({ TEXT("19:35 weekly generator test and transfer"), GenStep >= 3 });
-  if (I == 2) Out.Add({ TEXT("20:30 file the evening's charts in the records room"), Archive >= 2 });
+  if (I == 2 && Archive >= 0) Out.Add({ TEXT("20:30 file the evening's charts in the records room"), Archive >= 2 });
   if (I == 3) Out.Add({ TEXT("21:40 round to the array gate"), Yard >= 2 });
   Out.Add({ Runs()[I].Task, Run > I });
  }
@@ -381,7 +388,7 @@ TArray<FS47Task> FS47Observing::Tasks() const
 
 bool FS47Observing::ChorePending() const
 {
- return StepNow == EStep::Tune && ((Run == 1 && GenStep < 3) || (Run == 2 && Archive < 2) || (Run == 3 && Yard < 2));
+ return StepNow == EStep::Tune && ((Run == 1 && GenStep < 3) || (Run == 2 && Archive >= 0 && Archive < 2) || (Run == 3 && Yard < 2));
 }
 
 void FS47Observing::BuildPanel()
@@ -466,12 +473,12 @@ FS47Doc FS47Observing::RunBinder()
 void FS47Observing::UseBinder()
 {
  AS47Story& S = *M->Story;
- S.SetClock(FMath::Max(S.Clock(), ArchiveStart));
+ S.AdvanceClockTo(ArchiveStart, TEXT("evening records filing started"));
  const FS47Doc Doc = RunBinder();
  S.AddDoc(Doc);
  if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
  Archive = 1;
- S.SetClock(FMath::Max(S.Clock(), ArchiveDone));
+ S.AdvanceClockTo(ArchiveDone, TEXT("evening records filing complete"));
  M->UI->Document(Doc);
  M->UI->Toast(FString::Printf(TEXT("%s. Charts filed. Next on the schedule: HI strip 12 at 20:45."), *S.ClockText(false)), 4);
  UE_LOG(LogTemp, Display, TEXT("S47: observing archive filed at clock %.0f"), S.Clock());
@@ -604,5 +611,31 @@ bool FS47Observing::SelfTest(TArray<FString>& Lines)
  Check(R.Last().Slot + R.Last().Minutes * 60 <= -3600 - 10 * 60, TEXT("the last run is filed by 22:50, before the 23:00 window round"));
  Check(Charts && !Schedule().Page.IsEmpty(), TEXT("schedule and four papers exist"));
  Check(R[1].Seconds > StrayTicks[UE_ARRAY_COUNT(StrayTicks) - 1] && UE_ARRAY_COUNT(StrayTicks) == 11, TEXT("the stray ticks (four, a gap, seven) fall inside the pulsar run"));
+ const auto LegacySchedule = [](int32 SavedRun)
+ {
+  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version); S47J::Set(O, TEXT("run"), SavedRun);
+  S47J::Set(O, TEXT("step"), int32(EStep::Tune)); S47J::Set(O, TEXT("generator"), 3); S47J::Set(O, TEXT("yard"), 2);
+  S47J::Set(O, TEXT("hints"), 17); return O; // deliberately no archive field or reel hint
+ };
+ const auto HasArchiveTask = [](const FS47Observing& O)
+ { return O.Tasks().ContainsByPredicate([](const FS47Task& T) { return T.Text.Contains(TEXT("20:30")); }); };
+ {
+  FS47Observing Old(nullptr); Old.Begin(LegacySchedule(2), false);
+  const auto Saved = S47J::Read(S47J::Write(Old.Save())); FS47Observing Again(nullptr); Again.Begin(Saved, false);
+  Check(Old.Enabled() && Old.ArchiveStep() == -1 && Old.RunIndex() == 2 && !Old.ChorePending() && !HasArchiveTask(Old) && Old.Hints() == 17 &&
+   S47J::Int(Saved, TEXT("archive")) == -1 && Again.ArchiveStep() == -1 && Again.RunIndex() == 2 && !Again.ChorePending() && !HasArchiveTask(Again) && Again.Hints() == 17,
+   TEXT("legacy v1 run-two tuning remains unblocked and its explicit archive exemption survives JSON restore without a reel hint"));
+ }
+ {
+  bool Preserved = true;
+  for(int32 SavedRun : {3, 4})
+  {
+   FS47Observing Old(nullptr); Old.Begin(LegacySchedule(SavedRun), false);
+   const auto Saved = S47J::Read(S47J::Write(Old.Save())); FS47Observing Again(nullptr); Again.Begin(Saved, false);
+   Preserved &= Old.Enabled() && Old.ArchiveStep() == -1 && !Old.ChorePending() && !HasArchiveTask(Old) && Old.Hints() == 17 && Old.Done() == (SavedRun == 4) &&
+    S47J::Int(Saved, TEXT("archive")) == -1 && Again.ArchiveStep() == -1 && Again.RunIndex() == SavedRun && !Again.ChorePending() && !HasArchiveTask(Again) && Again.Hints() == 17 && Again.Done() == (SavedRun == 4);
+  }
+  Check(Preserved, TEXT("legacy v1 Virgo and completed schedules gain no unreachable archive task or invented filing/reel facts after JSON restore"));
+ }
  return bOk;
 }
