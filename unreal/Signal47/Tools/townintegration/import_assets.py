@@ -10,6 +10,14 @@ T=unreal.AssetToolsHelpers.get_asset_tools()
 M=unreal.MaterialEditingLibrary
 S=(unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem))
 REPORT=Path(os.environ['S47_TOWN_REPORT'])
+# S47_TOWN_TB2=1 imports only the five TB2 landmarks and their new tb2/materials_*.json rows.
+# The unchanged TB1 motel/Room6 meshes and the shared TB1 materials are loaded, never rewritten.
+TB2_ONLY=os.environ.get('S47_TOWN_TB2')=='1'
+TB2_FAMILIES=('Sheriff','Laundry','Feed','Cinema','Church')
+# TB2 glow strengths are tuned for Cycles area lights. The native emissive is capped near the
+# TB1 range; S47TownBuildings still gates every emissive slot per family and clock.
+TB2_NATIVE_EMISSION_CAP=4.0
+SHARED_TEXTURES={}
 report={'engine':unreal.SystemLibrary.get_engine_version(),'checks':[],'meshes':[]}
 def check(name,condition,detail=None):
  report['checks'].append({'name':name,'pass':bool(condition),'detail':detail})
@@ -39,6 +47,8 @@ def material(row, dest, src):
         n = expression(mat, unreal.MaterialExpressionScalarParameter, parameter_name=key.title(), default_value=float(row.get(key, .5)))
         M.connect_material_property(n, '', prop)
     strength = float(row.get('emission_strength', 0))
+    if row.get('tb2'):
+        strength = min(strength, TB2_NATIVE_EMISSION_CAP)
     em = row.get('emission', [0, 0, 0, 1])
     # Props::AddLit/ApplyLit uses this existing glTF-compatible parameter to gate studio power.
     n = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='EmissiveFactor', default_value=unreal.LinearColor(*[float(v) * strength for v in em[:3]], 1))
@@ -51,29 +61,39 @@ def material(row, dest, src):
         if not path.is_absolute():
             path = src / path
         check(name + ' texture source ' + role, path.is_file(), str(path))
-        task = unreal.AssetImportTask()
-        task.filename = str(path)
-        task.destination_path = dest + '/Textures'
-        task.destination_name = 'T_' + name + '_' + role
-        task.replace_existing = True
-        task.automated = True
-        task.save = True
-        T.import_asset_tasks([task])
-        tex = E.load_asset(task.destination_path + '/' + task.destination_name)
-        check(name + ' texture ' + role, isinstance(tex, unreal.Texture2D))
-        tex.set_editor_property('srgb', role == 'base_color')
-        if role == 'base_color' and row.get('opacity_from_base_color') and row.get('alpha_mode','masked') == 'masked':
-            tex.set_editor_property('do_scale_mips_for_alpha_coverage', True)
-            tex.set_editor_property('alpha_coverage_thresholds', unreal.Vector4(0,0,0,float(row.get('alpha_cutoff',.333))))
-        if role == 'normal':
-            tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
-            # Source normals are DirectX tangent-space, exported explicitly by the generator.
-            tex.set_editor_property('flip_green_channel', False)
-        elif role == 'roughness':
-            # L-mode source PNGs otherwise auto-import as Grayscale while this graph
-            # deliberately samples linear colour and takes R.
-            tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_DEFAULT)
-        E.save_loaded_asset(tex)
+        shared = row.get('tb2')
+        if shared and str(path) in SHARED_TEXTURES:
+            tex = SHARED_TEXTURES[str(path)]
+            check(name + ' shared texture role ' + role, tex[1] == role, [tex[1], role])
+            tex = tex[0]
+        else:
+            tex = None
+        if tex is None:
+          task = unreal.AssetImportTask()
+          task.filename = str(path)
+          task.destination_path = dest + '/Textures'
+          task.destination_name = ('T_Town_' + path.stem) if shared else ('T_' + name + '_' + role)
+          task.replace_existing = True
+          task.automated = True
+          task.save = True
+          T.import_asset_tasks([task])
+          tex = E.load_asset(task.destination_path + '/' + task.destination_name)
+          check(name + ' texture ' + role, isinstance(tex, unreal.Texture2D))
+          tex.set_editor_property('srgb', role == 'base_color')
+          if role == 'base_color' and row.get('opacity_from_base_color') and row.get('alpha_mode','masked') == 'masked':
+              tex.set_editor_property('do_scale_mips_for_alpha_coverage', True)
+              tex.set_editor_property('alpha_coverage_thresholds', unreal.Vector4(0,0,0,float(row.get('alpha_cutoff',.333))))
+          if role == 'normal':
+              tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
+              # Source normals are DirectX tangent-space, exported explicitly by the generator.
+              tex.set_editor_property('flip_green_channel', False)
+          elif role == 'roughness':
+              # L-mode source PNGs otherwise auto-import as Grayscale while this graph
+              # deliberately samples linear colour and takes R.
+              tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_DEFAULT)
+          E.save_loaded_asset(tex)
+          if shared:
+              SHARED_TEXTURES[str(path)] = (tex, role)
         sample = expression(mat, unreal.MaterialExpressionTextureSample, texture=tex,
                             sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL if role == 'normal' else
                             unreal.MaterialSamplerType.SAMPLERTYPE_COLOR if role == 'base_color' else
@@ -184,10 +204,19 @@ def import_mesh(path, dest):
 try:
  rows=json.loads((ROOT/'materials.json').read_text())
  if isinstance(rows,dict):rows=[dict(v,name=k)for k,v in rows.items()]
- mats={v['name']:material(v,'/Game/TownBuildings/Materials',ROOT)for v in rows}
+ tb2rows=[dict(v,tb2=True)for extra in sorted((ROOT/'tb2').glob('materials_*.json'))for v in json.loads(extra.read_text())]
+ check('TB2 material names are new',not({r['name']for r in rows}&{r['name']for r in tb2rows}))
+ if TB2_ONLY:
+  mats={}
+  for v in rows:
+   m=E.load_asset('/Game/TownBuildings/Materials/'+v['name']);check(v['name']+' existing TB1 material',isinstance(m,unreal.MaterialInterface));mats[v['name']]=m
+ else:mats={v['name']:material(v,'/Game/TownBuildings/Materials',ROOT)for v in rows}
+ mats.update({v['name']:material(v,'/Game/TownBuildings/Materials',ROOT)for v in tb2rows})
  contract=json.loads((ROOT/'model_contract.json').read_text());parts=contract['parts']
  for path in sorted((ROOT/'exports').glob('SM_*.fbx')):
   if '_LOD'in path.stem:continue
+  if TB2_ONLY and parts[path.stem]['building'] not in TB2_FAMILIES:
+   kept=E.load_asset('/Game/TownBuildings/'+path.stem);check(path.stem+' unchanged TB1 mesh retained',isinstance(kept,unreal.StaticMesh));report['meshes'].append({'name':path.stem,'retained':True});continue
   asset='/Game/TownBuildings/'+path.stem
   if E.does_asset_exist(asset):check(path.stem+' replaces owned generated mesh',E.delete_asset(asset))
   mesh=import_mesh(path,'/Game/TownBuildings')

@@ -25,7 +25,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 
 | ID | Åpen oppgave | Underlag |
 | --- | --- | --- |
-| ENV-01 | [ ] Integrer TB2s sheriff, vaskeri, feed, kino og kirke helt frem til native og pakket spill. | [Bygningskilder](../../unreal/Signal47/Tools/townbuildings/README.md). Blender-kilde alene er ikke levering i spillet. |
+| ENV-01 | [x] (PR216, native: import 1280/1280, assets 269/269, LOD 588/588, town-visninger PASS med 15 gjennomsette bilder; pakket spill UNVERIFIED til neste fullmatrise) Integrer TB2s sheriff, vaskeri, feed, kino og kirke helt frem til native og pakket spill. | [Bygningskilder](../../unreal/Signal47/Tools/townbuildings/README.md). Blender-kilde alene er ikke levering i spillet. |
 | ENV-02 | [ ] Oppgrader vanlige Caliche-hus og kontroller synlighet, retning og plassering av byskiltene ved innkjøringene. | [Feilrapport](Reports/PLAYTEST_TODO_2026-10-28.md). Bolighusene er ikke med i TB2-pakken. |
 | ENV-03 | [ ] Gi trafikksignalet mer detaljert hus/oppheng og svak vindbevegelse, med bevart nattlys. | Toms feilrapport, punkt 3. |
 | ENV-04 | [ ] Bekreft farmen fra E01 mot koordinater og gjør vei/port/adkomst forståelig. | Kildeundersøkelsen peker mot statisk ranch med stengt port, uten implementert besøksinteraksjon. |
