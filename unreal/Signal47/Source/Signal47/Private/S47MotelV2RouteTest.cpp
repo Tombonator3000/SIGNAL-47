@@ -310,14 +310,26 @@ void AS47Web::BeginMotelV2Route()
    FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47MotelRouteProp),true,P);
    const FVector Eye=S47Three::ToThree(P->EyeUE());
    const bool Hit=W->GetWorld()->LineTraceSingleByChannel(H,P->EyeUE(),S47Three::ToUE(Target+(Target-Eye).GetSafeNormal()*.3),ECC_Visibility,Q);const auto* N=Hit?W->Node(W->NodeOf(H.GetComponent())):nullptr;
-   if(!N||(Phone?N->Name!=TEXT("prop:motelPhone"):!N->Name.StartsWith(TEXT("motel-v2:SM_Sierra_Office")))||FVector::Distance(S47Three::ToThree(H.ImpactPoint),Target)>.25){Fail(TEXT("physical payphone/newspaper front ray missed actual prop"));return;}
+   const FVector Impact=Hit?S47Three::ToThree(H.ImpactPoint):FVector::ZeroVector;
+   // The newspaper's moved pane is authored in SM_Sierra_Glass. Its actual
+   // FBX ray intersects the pane at local By=3.8595 before the cabinet body.
+   // Bind this surface to its measured pane, rather than another Office face.
+   const bool NewspaperPane=N&&N->Name==TEXT("motel-v2:SM_Sierra_Glass")
+    &&Impact.X>=-46.208&&Impact.X<=-45.792
+    &&Impact.Y>=-2.0985683853163195+.482&&Impact.Y<=-2.0985683853163195+.978
+    &&Impact.Z>=671.0225&&Impact.Z<=671.0435;
+   if(!N||(Phone?N->Name!=TEXT("prop:motelPhone"):!NewspaperPane)||FVector::Distance(Impact,Target)>(Phone?.25:.03))
+   {
+    UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 prop diagnosis kind=%s hit=%d component=%s node=%s impact=(%.6f,%.6f,%.6f) target=(%.6f,%.6f,%.6f) delta=%.6fm"),Phone?TEXT("payphone"):TEXT("newspaper-pane"),Hit,*GetNameSafe(H.GetComponent()),N?*N->Name:TEXT("none"),Impact.X,Impact.Y,Impact.Z,Target.X,Target.Y,Target.Z,FVector::Distance(Impact,Target));
+    Fail(TEXT("physical payphone/newspaper front ray missed actual prop"));return;
+   }
    if(Phone)
    {
     const FVector FrontUE=H.GetComponent()->GetComponentQuat().RotateVector(S47Three::DirToUE(FVector(0,0,1)));
     const FVector Front(FrontUE.X,FrontUE.Z,FrontUE.Y),At=S47Three::ToThree(H.GetComponent()->GetComponentLocation());
     if(FVector::DotProduct(P->Pos-At,Front)<.6){Fail(TEXT("payphone approached from back rather than usable front"));return;}
    }
-   UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route physical prop PASS %s front ray distance=%.3fm; no new product interaction"),Phone?TEXT("payphone"):TEXT("newspaper"),H.Distance/100.);
+   UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route physical prop PASS %s front ray distance=%.3fm; no new product interaction"),Phone?TEXT("payphone"):TEXT("newspaper glass"),H.Distance/100.);
   }
   if(Goal.Proxy&&!(Goal.Action==1&&S->TvSince>0))
   {

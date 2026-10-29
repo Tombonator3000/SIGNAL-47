@@ -1311,13 +1311,27 @@
         0
       ],
       "hidden": false
+    },
+    {
+      "node": 671,
+      "geo": 456,
+      "parent": 663,
+      "accepted_previous_tris": [
+        24
+      ],
+      "result_tris": 30,
+      "asset": "/Game/MotelV2/Trim/g456.g456",
+      "original_material_indices": [
+        0
+      ],
+      "hidden": false
     }
   ],
   "provenance": {
     "manifest_sha256": "4c66c66fa2c9ac8762e32844dffcf656313955aeb608daebd40e380bb901c831",
-    "trim_manifest_sha256": "de79e3aa8147271a460bff9be9f2605758a62b179930208911a7348cc7a9cd4c",
+    "trim_manifest_sha256": "40401c4f4f128cda48020b6a0a887cced89f5b9357866b5d3589c8d3a1eb45dc",
     "runtime_layout_sha256": "222bca3fbb147e35aee9c06eb598be27edfdc5c7fd46b84bf3f3bcccf5bf8aae",
-    "native_import_report_sha256": "1bfc5d74e4c71137d68703014e6fac6d971f8fdb95090c87f133ebb04fb333f1",
-    "saved_native_report_sha256": "1f26e4fae9f8e4931c56c7ff9e3da0ae99e44df5f89988f59a8678515d9d79a1"
+    "native_import_report_sha256": "5f9ef02c1f646f0267471f3611a102bd8f555f58d95718212d06c9cf3caf2014",
+    "saved_native_report_sha256": "25a4004a097993d57eb0ced5900384c9f0d1a17f2debada4bc89dbb4a4da3e40"
   }
 }
