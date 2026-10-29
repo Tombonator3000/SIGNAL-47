@@ -22,7 +22,8 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
 {
  if (bBuilt) return true;
  if (bFailed || !W || !W->IsLoaded()) return false;
- const int32 GroupIndex = W->Handle(Group);
+ // "#root": the scene's root group, shown in every area (the developer events' body).
+ const int32 GroupIndex = FCString::Strcmp(Group, TEXT("#root")) == 0 ? 0 : W->Handle(Group);
  const FS47WebNode* GroupNode = W->Node(GroupIndex);
  USceneComponent* GroupComp = GroupNode ? GroupNode->Comp.Get() : nullptr;
  auto Load = [](const TCHAR* Name) { return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Game/Signal47/HorrorSC02/%s.%s"), Name, Name)); };

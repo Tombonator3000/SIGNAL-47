@@ -2,6 +2,7 @@
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
+#include "S47DevEvents.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -196,6 +197,7 @@ void AS47HUD::Start()
 	M->CaseBoard = NewObject<US47CaseBoard>(M); M->CaseBoard->Init(M);
 	// Before the chapters: chapter two's and four's ends route through the spine's placeholders.
 	if (!M->Spine) M->Spine = MakeShared<FS47Spine>(M);
+	if (!M->DevEvents) M->DevEvents = MakeShared<FS47DevEvents>(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{
