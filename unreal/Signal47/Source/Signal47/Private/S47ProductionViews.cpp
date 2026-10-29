@@ -282,14 +282,14 @@ void AS47Web::BeginProductionViews()
    // Roles and five fitted sources are defined by S47LabLighting.cpp. This reads
    // their normal working-light baseline; it never switches exposure or power.
    TSet<int32> Roles;Baseline&=W->LabLights.Num()==5;
-   for(const auto& Light:W->LabLights)
+   for(const auto& Fixture:W->LabLights)
    {
-    const ULocalLightComponent* C=Light.Light.Get();const bool Working=Light.Role==1||Light.Role==2;
-    const bool Typed=C&&(Light.Role==3?C->IsA<USpotLightComponent>():C->IsA<URectLightComponent>());
-    const FS47WebNode* N=W->Node(Light.Node);
-    Baseline&=Typed&&!Roles.Contains(Light.Role)&&Light.Role>=0&&Light.Role<=4&&N&&
-     (Working?(W->ObjAt(Light.Node).Shown()&&C->IsVisible()&&C->Intensity>0):FMath::Abs(C->Intensity)<.001f);
-    Roles.Add(Light.Role);
+    const ULocalLightComponent* C=Fixture.Light.Get();const bool Working=Fixture.Role==1||Fixture.Role==2;
+    const bool Typed=C&&(Fixture.Role==3?C->IsA<USpotLightComponent>():C->IsA<URectLightComponent>());
+    const FS47WebNode* N=W->Node(Fixture.Node);
+    Baseline&=Typed&&!Roles.Contains(Fixture.Role)&&Fixture.Role>=0&&Fixture.Role<=4&&N&&
+     (Working?(W->ObjAt(Fixture.Node).Shown()&&C->IsVisible()&&C->Intensity>0):FMath::Abs(C->Intensity)<.001f);
+    Roles.Add(Fixture.Role);
    }
    Ok&=Baseline;
    Lines.Add(FString::Printf(TEXT("photolab fixture light baseline %s: normal=%.3f safe=%.3f enlarger=%.3f; five original typed sources, no driver/power writes"),Baseline?TEXT("PASS"):TEXT("FAIL"),Normal.Intensity(),Safe.Intensity(),Enlarger.Intensity()));
