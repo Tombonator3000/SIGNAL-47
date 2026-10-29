@@ -82,7 +82,7 @@ namespace S47RadioWomanContract
    auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);
    S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("seconds"),FPlatformTime::Seconds()-Began);
    S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("explicit_off_fallback"),Fallback);
-   S47J::Set(O,TEXT("snapshots"),Snapshots);S47J::Set(O,TEXT("photos"),Photos);S47J::Set(O,TEXT("events"),Events);
+   O->SetArrayField(TEXT("snapshots"),Snapshots);O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("events"),Events);
    S47J::Set(O,TEXT("scope"),TEXT("Explicit saved-car start road x=-6 z=2138, then ordinary GetOutHere/Walker/Inter.Pick and UseId. Caliche.Choice is API-driven. Declared clock fixtures exercise actual TownStep schedule. Actual case0 snapshot copied unchanged to isolated case1 disk for ordinary title/Continue. Human input, listening, FPS, whole night/full matrix and installation unverified."));
    Write(Root/TEXT("result.json"),O);if(Web.IsValid())Web->GetWorldTimerManager().ClearTimer(Timer);
    if(Pass){UE_LOG(LogS47RadioWomanContract,Display,TEXT("S47: RadioWoman contract PASS checks=%d walk=%.3fm evidence=%s"),Checks,WalkMetres,*Root);FPlatformMisc::RequestExit(false);}
@@ -121,11 +121,11 @@ namespace S47RadioWomanContract
      const double Gap=World.Z-H.ImpactPoint.Z;Min=FMath::Min(Min,Gap);Max=FMath::Max(Max,Gap);++Rays;
      auto R=S47J::New();Vec(R,TEXT("sole_world_ue_cm"),World);Vec(R,TEXT("ground_world_ue_cm"),H.ImpactPoint);S47J::Set(R,TEXT("gap_cm"),Gap);S47J::Set(R,TEXT("ground_component"),GetPathNameSafe(H.GetComponent()));Samples.Add(MakeShared<FJsonValueObject>(R));
     }
-    auto F=S47J::New();S47J::Set(F,TEXT("side"),Side);S47J::Set(F,TEXT("ground_rays"),Rays);S47J::Set(F,TEXT("minimum_gap_cm"),Min);S47J::Set(F,TEXT("maximum_gap_cm"),Max);S47J::Set(F,TEXT("samples"),Samples);Feet.Add(MakeShared<FJsonValueObject>(F));
+    auto F=S47J::New();S47J::Set(F,TEXT("side"),Side);S47J::Set(F,TEXT("ground_rays"),Rays);S47J::Set(F,TEXT("minimum_gap_cm"),Min);S47J::Set(F,TEXT("maximum_gap_cm"),Max);F->SetArrayField(TEXT("samples"),Samples);Feet.Add(MakeShared<FJsonValueObject>(F));
     if(!Check(Rays>=3&&Min>=-1.5&&Max<=1.5,TEXT("actual seated shoe contact within1.5cm of rendered ground, without body scale or collision changes")))
-    {S47J::Set(Snapshot,TEXT("shoe_ground_contact"),Feet);Write(Root/TEXT("first-shoe-contact-failure.json"),Snapshot);return false;}
+    {Snapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);Write(Root/TEXT("first-shoe-contact-failure.json"),Snapshot);return false;}
    }
-   S47J::Set(Snapshot,TEXT("shoe_ground_contact"),Feet);return true;
+   Snapshot->SetArrayField(TEXT("shoe_ground_contact"),Feet);return true;
   }
   bool Snapshot(const FString& Name,bool Expected)
   {
