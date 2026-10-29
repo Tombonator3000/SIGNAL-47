@@ -135,6 +135,56 @@ namespace
   const TArray<TSharedPtr<FJsonValue>> Rotation={MakeShared<FJsonValueNumber>(Q.X),MakeShared<FJsonValueNumber>(Q.Y),MakeShared<FJsonValueNumber>(Q.Z),MakeShared<FJsonValueNumber>(Q.W)};
   J->SetArrayField(TEXT("rotation_xyzw"),Rotation);return J;
  }
+ TSharedPtr<FJsonObject> SoleGroundDiagnostics(AS47Web* W,UStaticMesh* Mesh,const FTransform& Placement,const FCollisionQueryParams& Query)
+ {
+  auto J=MakeShared<FJsonObject>();J->SetStringField(TEXT("scope"),TEXT("Diagnostic only: every unique lowest LOD0 Shoe/Trim vertex within0.15cm of its side minimum, at the measured seat and unchanged Group basis; no placement or acceptance effect."));
+  J->SetStringField(TEXT("source_asset"),GetPathNameSafe(Mesh));J->SetObjectField(TEXT("measured_seat_transform"),Transform(Placement));J->SetNumberField(TEXT("lowest_band_cm"),.15);
+  auto* World=W?W->GetWorld():nullptr;J->SetBoolField(TEXT("world_available"),World!=nullptr);
+  const bool Available=Mesh&&Mesh->bAllowCPUAccess&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==3;
+  J->SetBoolField(TEXT("geometry_available"),Available);if(!Available)return J;
+  const auto& L=Mesh->GetRenderData()->LODResources[0];TArray<uint32> Indices;L.IndexBuffer.GetCopy(Indices);TSet<uint32> Candidates[2];double Low[2]={1e20,1e20};bool Valid=true;
+  for(const auto& Section:L.Sections)
+  {
+   if(!Mesh->GetStaticMaterials().IsValidIndex(Section.MaterialIndex))continue;
+   const auto* Material=Mesh->GetMaterial(Section.MaterialIndex);if(!Material||(Material->GetName()!=TEXT("M_RW_Shoe")&&Material->GetName()!=TEXT("M_RW_Trim")))continue;
+   for(uint32 I=Section.FirstIndex;I<Section.FirstIndex+Section.NumTriangles*3;++I)
+   {
+    if(I>=uint32(Indices.Num())||Indices[I]>=L.VertexBuffers.PositionVertexBuffer.GetNumVertices()){Valid=false;break;}
+    const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I]));if(P.Z>=-15)continue;
+    const int32 Side=P.Y<0?0:1;Candidates[Side].Add(Indices[I]);Low[Side]=FMath::Min(Low[Side],P.Z);
+   }
+  }
+  J->SetBoolField(TEXT("selection_indices_valid"),Valid);if(!Valid)return J;
+  TArray<TSharedPtr<FJsonValue>> Feet;
+  for(int32 Side=0;Side<2;++Side)
+  {
+   auto Foot=MakeShared<FJsonObject>();Foot->SetNumberField(TEXT("side"),Side);Foot->SetStringField(TEXT("native_side"),Side==0?TEXT("negative_Y"):TEXT("positive_Y"));Foot->SetNumberField(TEXT("candidate_vertices"),Candidates[Side].Num());
+   TArray<FVector> Unique;TArray<uint32> UniqueIndices;TArray<double> Gaps,GroundHeights;TArray<TSharedPtr<FJsonValue>> Samples;FBox LocalBounds(ForceInit),WorldBounds(ForceInit);int32 UpwardHits=0;
+   for(uint32 Index:Candidates[Side])
+   {
+    const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Index));
+    if(P.Z<=Low[Side]+.15&&!Unique.ContainsByPredicate([&](const FVector& V){return V.Equals(P,.00001);})){Unique.Add(P);UniqueIndices.Add(Index);}
+   }
+   Foot->SetNumberField(TEXT("unique_lowest_sole_vertices"),Unique.Num());if(!Unique.IsEmpty())Foot->SetNumberField(TEXT("lowest_native_z_cm"),Low[Side]);
+   for(int32 I=0;I<Unique.Num();++I)
+   {
+    const FVector Local=Unique[I],NativeWorld=Placement.TransformPosition(Local),Start=NativeWorld+FVector(0,0,50),End=NativeWorld-FVector(0,0,100);FHitResult Hit;
+    const bool Found=World&&World->LineTraceSingleByChannel(Hit,Start,End,ECC_Visibility,Query);LocalBounds+=Local;WorldBounds+=NativeWorld;
+    auto Sample=MakeShared<FJsonObject>();Sample->SetNumberField(TEXT("native_vertex_index"),UniqueIndices[I]);Sample->SetArrayField(TEXT("native_local_cm"),Vec(Local));Sample->SetArrayField(TEXT("native_world_ue_cm"),Vec(NativeWorld));
+    Sample->SetArrayField(TEXT("trace_start_ue_cm"),Vec(Start));Sample->SetArrayField(TEXT("trace_end_ue_cm"),Vec(End));Sample->SetBoolField(TEXT("hit"),Found);Sample->SetBoolField(TEXT("blocking_hit"),Hit.bBlockingHit);
+    Sample->SetArrayField(TEXT("impact_ue_cm"),Vec(Hit.ImpactPoint));Sample->SetArrayField(TEXT("impact_normal_ue"),Vec(Hit.ImpactNormal));Sample->SetStringField(TEXT("hit_component"),GetPathNameSafe(Hit.GetComponent()));Sample->SetNumberField(TEXT("hit_node"),W->NodeOf(Hit.GetComponent()));Sample->SetNumberField(TEXT("face_index"),Hit.FaceIndex);
+    Sample->SetBoolField(TEXT("upward_surface"),Found&&Hit.ImpactNormal.Z>.7);
+    if(Found){const double Gap=NativeWorld.Z-Hit.ImpactPoint.Z;Sample->SetNumberField(TEXT("gap_cm"),Gap);Sample->SetNumberField(TEXT("measured_seat_above_impact_cm"),Placement.GetLocation().Z-Hit.ImpactPoint.Z);Gaps.Add(Gap);GroundHeights.Add(Hit.ImpactPoint.Z);if(Hit.ImpactNormal.Z>.7)++UpwardHits;}
+    else Sample->SetField(TEXT("gap_cm"),MakeShared<FJsonValueNull>());
+    Samples.Add(MakeShared<FJsonValueObject>(Sample));
+   }
+   Foot->SetArrayField(TEXT("samples"),Samples);Foot->SetNumberField(TEXT("ground_hits"),Gaps.Num());Foot->SetNumberField(TEXT("upward_ground_hits"),UpwardHits);
+   if(LocalBounds.IsValid){Foot->SetArrayField(TEXT("sole_bounds_native_min_cm"),Vec(LocalBounds.Min));Foot->SetArrayField(TEXT("sole_bounds_native_max_cm"),Vec(LocalBounds.Max));Foot->SetArrayField(TEXT("sole_bounds_world_min_ue_cm"),Vec(WorldBounds.Min));Foot->SetArrayField(TEXT("sole_bounds_world_max_ue_cm"),Vec(WorldBounds.Max));}
+   if(!Gaps.IsEmpty()){Gaps.Sort();GroundHeights.Sort();Foot->SetNumberField(TEXT("minimum_gap_cm"),Gaps[0]);Foot->SetNumberField(TEXT("maximum_gap_cm"),Gaps.Last());Foot->SetNumberField(TEXT("median_gap_cm"),Gaps[Gaps.Num()/2]);Foot->SetNumberField(TEXT("minimum_ground_ue_cm"),GroundHeights[0]);Foot->SetNumberField(TEXT("maximum_ground_ue_cm"),GroundHeights.Last());Foot->SetNumberField(TEXT("median_ground_ue_cm"),GroundHeights[GroundHeights.Num()/2]);}
+   Feet.Add(MakeShared<FJsonValueObject>(Foot));
+  }
+  J->SetArrayField(TEXT("feet"),Feet);return J;
+ }
 }
 
 struct FS47RadioWomanState
@@ -239,6 +289,7 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
  Ground->SetArrayField(TEXT("samples"),GroundSamples);
  S.SeatHits=Heights.Num();if(Heights.Num()<5)return Reject(TEXT("actual bench seat requires five of nine physical surface samples"));
  Heights.Sort();S.Seat=FVector(Anchor.X,Anchor.Y,Heights[Heights.Num()/2]);
+ D->SetObjectField(TEXT("native_sole_ground_diagnostics"),SoleGroundDiagnostics(W,S.NativeAsset.Get(),FTransform(FRotationMatrix::MakeFromXY(GroundForward,GroundRight).ToQuat(),S.Seat),GroundQuery));
  if(FMath::Abs(S.Seat.Z-Anchor.Z)>2.||Heights.Last()-Heights[0]>1.5)return Reject(TEXT("measured bench seat differs from canonical seat anchor"));
  S.Forward=Group->Comp->GetComponentTransform().TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal();
  S.Right=Group->Comp->GetComponentTransform().TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
