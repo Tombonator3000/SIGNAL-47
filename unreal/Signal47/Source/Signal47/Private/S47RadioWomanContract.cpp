@@ -22,6 +22,7 @@
 #include "GameFramework/PlayerController.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Crc.h"
 #include "Misc/FileHelper.h"
@@ -101,11 +102,12 @@ namespace S47RadioWomanContract
     if(!Mesh->GetStaticMaterials().IsValidIndex(S.MaterialIndex))continue;const auto* Mat=Mesh->GetMaterial(S.MaterialIndex);if(!Mat||(Mat->GetName()!=TEXT("M_RW_Shoe")&&Mat->GetName()!=TEXT("M_RW_Trim")))continue;
     for(uint32 I=S.FirstIndex;I<S.FirstIndex+S.NumTriangles*3;++I)
     {
-     if(!Check(I<uint32(Indices.Num())&&Indices[I]<L.VertexBuffers.PositionVertexBuffer.GetNumVertices(),TEXT("shoe render section indexes actual CPU vertices")))return false;
+     if(I>=uint32(Indices.Num())||Indices[I]>=L.VertexBuffers.PositionVertexBuffer.GetNumVertices()){Result(false,TEXT("shoe section index outside actual CPU vertex payload"));return false;}
      const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I]));if(P.Z>=-15)continue;
      const int32 Side=P.Y<0?0:1;Candidates[Side].Add(Indices[I]);Low[Side]=FMath::Min(Low[Side],P.Z);
     }
    }
+   if(!Check(Candidates[0].Num()>=3&&Candidates[1].Num()>=3,TEXT("both shoes have actual lowest-geometry candidates in native Shoe/Trim material sections")))return false;
    TArray<TSharedPtr<FJsonValue>> Feet;
    for(int32 Side=0;Side<2;++Side)
    {
