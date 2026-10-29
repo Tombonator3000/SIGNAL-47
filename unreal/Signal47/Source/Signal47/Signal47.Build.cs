@@ -9,7 +9,7 @@ public class Signal47 : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "RHI", "ApplicationCore", "JsonUtilities", "UMG", "RenderCore", "ImageWrapper", "AudioMixer", "MoviePlayer", "HairStrandsCore", "AnimGraphRuntime", "Niagara" });
 		if (Target.bBuildEditor)
 		{
-			// HUM-01 private pose conversion is authoring code, absent from the game binary.
+			// HUM01 pose conversion and read-only cinema material mapping are editor-only.
 			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "MeshDescription", "StaticMeshDescription", "SkeletalMeshDescription", "RawMesh", "AnimationCore", "AssetRegistry" });
 		}
 		// (Unreal only) where the free models stand, read at run time (S47Props.h)

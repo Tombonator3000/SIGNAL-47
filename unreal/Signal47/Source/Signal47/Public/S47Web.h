@@ -27,6 +27,8 @@ class FS47SaroSite;
 class FS47FleetParked;
 class FS47TownBuildings;
 class FS47CalicheHomes;
+class FS47CinemaPosters;
+class FJsonObject;
 class FS47MotelV2;
 class FS47RouteNature;
 struct FS47HighwayRanch;
@@ -106,6 +108,8 @@ public:
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
 	bool AuditRadioWoman(TArray<FString>& Lines) const;
 	TSharedPtr<FJsonObject> RadioWomanReadback() const;
+	bool AuditCinemaPosters(TArray<FString>& Lines) const;
+	TSharedPtr<FJsonObject> CinemaPostersReadback() const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
 	// what FS47Obj and FS47Mat use
 	TArray<class UMaterialInstanceDynamic*> NodeMids(int32 Node);
@@ -300,6 +304,7 @@ private:
 	friend struct FS47Obj;
 	friend struct FS47Light;
 	friend struct FS47Mat;
+	friend class FS47CinemaPosters;
 	static FQuat S47ThreeEuler(double X, double Y, double Z);
 	bool bLoaded = false;
 	void BuildRetroProps();
@@ -323,6 +328,8 @@ private:
 	TSharedPtr<FS47FleetParked> FleetParked;
 	TSharedPtr<FS47TownBuildings> TownBuildings;
 	TSharedPtr<FS47CalicheHomes> CalicheHomes;
+	TSharedPtr<FS47CinemaPosters> CinemaPosters;
+	void StartCinemaPostersContract();
 	TSharedPtr<FS47MotelV2> MotelV2;
 	TSharedPtr<FS47RouteNature> RouteNature;
 	TSharedPtr<FS47RadioWoman> RadioWoman;
