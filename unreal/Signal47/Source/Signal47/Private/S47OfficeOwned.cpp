@@ -64,7 +64,7 @@ namespace
  }
  FTransform Wanted(int32 Index) { return Three(Position(Index),Index==3?FMath::DegreesToRadians(75.):0); }
 
- bool MaterialMaps(UMaterialInterface* Material, const FAsset& Spec, FString& Why)
+ bool MaterialMaps(UMaterialInterface* Material, const FAsset& Spec, bool& Preparing, FString& Why)
  {
   const FString MaterialPackage=AssetRoot+TEXT("Materials/")+Spec.Material;
   if (!Material || !Cast<UMaterial>(Material) || Material->GetPathName()!=ObjectPath(MaterialPackage) ||
@@ -79,59 +79,98 @@ namespace
   TArray<UTexture*> Used; Material->GetUsedTextures(Used);
   TSet<UTexture*> Unique; for (UTexture* T:Used) if (T) Unique.Add(T);
   if (Unique.Num()!=4) return Fail(Why,FString(Spec.Name)+FString::Printf(TEXT(" uses %d distinct textures, expected four native PBR maps"),Unique.Num()));
+  TArray<UTexture2D*> Maps;
   for (const TCHAR* Role:{TEXT("base_color"),TEXT("roughness"),TEXT("metallic"),TEXT("normal")})
   {
    const FString Name=FString(TEXT("T_"))+Spec.Material+TEXT("_")+Role;
    const FString Path=ObjectPath(AssetRoot+TEXT("Materials/Textures/")+Name);
    UTexture2D* Found=nullptr;
    for (UTexture* T:Unique) if (T->GetPathName()==Path) Found=Cast<UTexture2D>(T);
-   if (!Found || Found->GetSizeX()<256 || Found->GetSizeY()<256 || Found->SRGB!=(FString(Role)==TEXT("base_color")))
-    return Fail(Why,FString(Spec.Name)+TEXT(" missing, unready or incorrectly colour-spaced used map ")+Role+TEXT(" at ")+Path);
+   if (!Found || Found->SRGB!=(FString(Role)==TEXT("base_color")))
+    return Fail(Why,FString(Spec.Name)+TEXT(" missing or incorrectly colour-spaced used map ")+Role+TEXT(" at ")+Path);
    const bool Normal=FString(Role)==TEXT("normal");
    if (Found->CompressionSettings!=(Normal?TC_Normalmap:TC_Default))
     return Fail(Why,FString(Spec.Name)+TEXT(" unexpected compression on used ")+Role+TEXT(" map"));
 #if WITH_EDITORONLY_DATA
    if (Normal && Found->bFlipGreenChannel) return Fail(Why,FString(Spec.Name)+TEXT(" normal map has unexpected green-channel inversion"));
 #endif
+   Maps.Add(Found);
+  }
+  // Resource readiness is checked only after every map's type/path/colour space
+  // and normal/compression contract passed. A bad later map must beat Preparing.
+  for (UTexture2D* Map:Maps) if (Map->GetSizeX()<256 || Map->GetSizeY()<256)
+  {
+   Preparing=true;
+   if (Why.IsEmpty()) Why=FString(Spec.Name)+TEXT(" awaiting native map dimensions: ")+Map->GetPathName();
   }
   return true;
  }
- bool AssetValid(UStaticMesh* Mesh, const FAsset& Spec, FString& Why)
+ bool AssetValid(UStaticMesh* Mesh, const FAsset& Spec, bool& Preparing, FString& Why)
  {
-  if (!Mesh || Mesh->GetPathName()!=ObjectPath(AssetRoot+Spec.Name) || !Mesh->GetRenderData() ||
-      Mesh->GetRenderData()->LODResources.Num()!=3 || Mesh->GetStaticMaterials().Num()!=1 || !Mesh->bSupportRayTracing)
-   return Fail(Why,FString(Spec.Name)+TEXT(" missing typed private mesh, three native LODs, single slot or RT support"));
-  if (Mesh->GetNumTriangles(0)!=Spec.Triangles || Mesh->GetNumTriangles(1)>=Spec.Triangles ||
-      Mesh->GetNumTriangles(1)<=Mesh->GetNumTriangles(2) || Mesh->GetNumTriangles(2)<=0)
-   return Fail(Why,FString(Spec.Name)+TEXT(" native triangle identity or decreasing LODs differ"));
-  const FBox Bounds=Mesh->GetBoundingBox();
-  if (!Bounds.IsValid || !Bounds.Min.Equals(Spec.MinCm,.2) || !Bounds.Max.Equals(Spec.MaxCm,.2))
-   return Fail(Why,FString(Spec.Name)+TEXT(" native metric bounds or shared source origin differ"));
+  if (!Mesh || Mesh->GetPathName()!=ObjectPath(AssetRoot+Spec.Name) || Mesh->GetStaticMaterials().Num()!=1 || !Mesh->bSupportRayTracing)
+   return Fail(Why,FString(Spec.Name)+TEXT(" missing typed private mesh, single slot or RT support"));
+  const bool MeshPreparing=Mesh->IsCompiling();
   const FStaticMaterial& Slot=Mesh->GetStaticMaterials()[0];
   if (Slot.MaterialSlotName.ToString()!=Spec.Material) return Fail(Why,FString(Spec.Name)+TEXT(" original material slot name differs"));
-  if (!MaterialMaps(Slot.MaterialInterface,Spec,Why)) return false;
   const UBodySetup* Body=Mesh->GetBodySetup();
   if (!Body || Body->DefaultInstance.GetCollisionEnabled()!=ECollisionEnabled::NoCollision || Body->DefaultInstance.GetCollisionProfileName()!=TEXT("NoCollision"))
    return Fail(Why,FString(Spec.Name)+TEXT(" native decorative NoCollision default differs"));
-  for (const FStaticMeshLODResources& LOD:Mesh->GetRenderData()->LODResources)
+  if (!MeshPreparing)
   {
-   if (LOD.Sections.Num()!=1 || LOD.Sections[0].MaterialIndex!=0 || LOD.Sections[0].bEnableCollision ||
-       LOD.VertexBuffers.StaticMeshVertexBuffer.GetNumTexCoords()<1)
-    return Fail(Why,FString(Spec.Name)+TEXT(" actual render slot, collision section or atlas UV differs"));
+   const FStaticMeshRenderData* Render=Mesh->GetRenderData();
+   if (!Render || Render->LODResources.Num()!=3) return Fail(Why,FString(Spec.Name)+TEXT(" three native render LODs absent"));
+   if (Mesh->GetNumTriangles(0)!=Spec.Triangles || Mesh->GetNumTriangles(1)>=Spec.Triangles ||
+       Mesh->GetNumTriangles(1)<=Mesh->GetNumTriangles(2) || Mesh->GetNumTriangles(2)<=0)
+    return Fail(Why,FString(Spec.Name)+TEXT(" native triangle identity or decreasing LODs differ"));
+   const FBox Bounds=Mesh->GetBoundingBox();
+   if (!Bounds.IsValid || !Bounds.Min.Equals(Spec.MinCm,.2) || !Bounds.Max.Equals(Spec.MaxCm,.2))
+    return Fail(Why,FString(Spec.Name)+TEXT(" native metric bounds or shared source origin differ"));
+   for (const FStaticMeshLODResources& LOD:Render->LODResources)
+   {
+    if (LOD.Sections.Num()!=1 || LOD.Sections[0].MaterialIndex!=0 || LOD.Sections[0].bEnableCollision ||
+        LOD.VertexBuffers.StaticMeshVertexBuffer.GetNumTexCoords()<1)
+     return Fail(Why,FString(Spec.Name)+TEXT(" actual render slot, collision section or atlas UV differs"));
+   }
   }
+  // Do not force async mesh completion through GetRenderData/triangle getters.
+  // Their full render/UV/bounds contract is mandatory on the ready retry.
+  if (!MaterialMaps(Slot.MaterialInterface,Spec,Preparing,Why)) return false;
+  if (MeshPreparing)
+  { Preparing=true; if (Why.IsEmpty()) Why=FString(Spec.Name)+TEXT(" awaiting native mesh compilation"); }
   return true;
  }
- bool LoadAssets(TArray<UStaticMesh*>& Meshes, FString& Why)
+ bool LoadAssets(TArray<UStaticMesh*>& Meshes, FString& Why, bool* bPreparing=nullptr)
  {
+  if (bPreparing) *bPreparing=false;
+  Meshes.Reset();
+  bool Invalid=false; FString Failure, Pending;
+  // Load the complete population first. A low-resolution first texture must not
+  // prevent the remaining box/body/lid packages from beginning preparation.
   for (const FAsset& Spec:Assets)
   {
    const FString Package=AssetRoot+Spec.Name;
    // Optional licensed content must not emit failed LoadObject errors on a public clone.
-   if (!FPackageName::DoesPackageExist(Package)) return Fail(Why,TEXT("private native asset absent: ")+Package);
+   if (!FPackageName::DoesPackageExist(Package))
+   { Meshes.Add(nullptr); Invalid=true; if (Failure.IsEmpty()) Failure=TEXT("private native asset absent: ")+Package; continue; }
    UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*ObjectPath(Package));
-   if (!AssetValid(Mesh,Spec,Why)) return false;
    Meshes.Add(Mesh);
   }
+  for (UStaticMesh* Mesh:Meshes) if (Mesh)
+   for (const FStaticMaterial& Slot:Mesh->GetStaticMaterials()) if (Slot.MaterialInterface)
+   { TArray<UTexture*> Used; Slot.MaterialInterface->GetUsedTextures(Used); }
+  bool AnyPreparing=false;
+  for (int32 I=0;I<Meshes.Num();++I)
+  {
+   bool Preparing=false; FString Detail;
+   if (!AssetValid(Meshes[I],Assets[I],Preparing,Detail))
+   { Invalid=true; if (Failure.IsEmpty()) Failure=Detail; }
+   else if (Preparing)
+   { AnyPreparing=true; if (Pending.IsEmpty()) Pending=Detail; }
+  }
+  // A real failure anywhere has precedence over pending resources elsewhere.
+  if (Invalid) return Fail(Why,Failure);
+  if (AnyPreparing)
+  { if (bPreparing) *bPreparing=true; return Fail(Why,Pending); }
   return true;
  }
  bool Papers(const FS47Obj& Root, TArray<FPaper>& Out, FString& Why)
@@ -146,8 +185,9 @@ namespace
  }
 }
 
-bool Build(AS47Web* W)
+bool Build(AS47Web* W, bool* bPreparing)
 {
+ if (bPreparing) *bPreparing=false;
  if (!W || !W->IsLoaded() || FParse::Param(FCommandLine::Get(),TEXT("S47OfficeOwnedOff")) ||
      FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff"))) return false;
  if (Installed.Contains(W)) { TArray<FString> Lines; return Audit(W,Lines); }
@@ -158,9 +198,16 @@ bool Build(AS47Web* W)
  USceneComponent* ParentComponent=Parent->Comp.Get(); // AdoptNode may reallocate W's node array.
  for (int32 I=0;I<W->PartCount();++I) if (const FS47WebNode* N=W->Node(I);N && N->Name.StartsWith(Prefix))
  { UE_LOG(LogTemp,Warning,TEXT("S47: owned Office props skipped: partial or unregistered existing component set")); return false; }
- FInstalled Candidate; Candidate.Parent=Root.I; TArray<UStaticMesh*> Meshes; FString Why;
- if (!LoadAssets(Meshes,Why) || !Papers(Root,Candidate.Papers,Why))
- { UE_LOG(LogTemp,Warning,TEXT("S47: owned Office props skipped: %s; baseline retained"),*Why); return false; }
+ FInstalled Candidate; Candidate.Parent=Root.I; TArray<UStaticMesh*> Meshes; FString Why, PaperWhy; bool Preparing=false;
+ const bool Ready=LoadAssets(Meshes,Why,&Preparing), PaperReady=Papers(Root,Candidate.Papers,PaperWhy);
+ if ((!Ready && !Preparing) || !PaperReady)
+ { UE_LOG(LogTemp,Warning,TEXT("S47: owned Office props skipped: %s; baseline retained"),*(PaperReady?Why:PaperWhy)); return false; }
+ if (Preparing)
+ {
+  if (bPreparing) *bPreparing=true;
+  UE_LOG(LogTemp,Display,TEXT("S47: owned Office props Preparing: %s; all packages loaded, no components placed"),*Why);
+  return false;
+ }
  double LowestPaper=100;
  for (const FPaper& P:Candidate.Papers) LowestPaper=FMath::Min(LowestPaper,P.Bounds.Min.Y);
  for (int32 I=0;I<Meshes.Num();++I)

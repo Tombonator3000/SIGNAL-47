@@ -12,6 +12,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Office.h"
+#include "S47OfficeOwned.h"
 #include "S47Phones.h"
 #include "S47SaroInterior.h"
 #include "S47SaroNight.h"
@@ -509,6 +510,10 @@ void FS47T02Test::Step(double Dt)
  }
  if (T.Stage == 801)
  {
+  TArray<FString> OwnedLines;
+  const bool bOwnedReady = S47OfficeOwned::Audit(M->Web,OwnedLines);
+  for (const FString& Line:OwnedLines) UE_LOG(LogTemp,Display,TEXT("SARO owned placement: %s"),*Line);
+  if (!Check(bOwnedReady,TEXT("all four native owned props are placed and preserve eight live paper bounds before physical corridor/save cohorts"))) return;
   const bool bBay = M->Phones && M->SaroNight && S47SaroInterior::ContainsPassingBay(M->Web,M->Player->Pos) &&
    M->Web->Obj(TEXT("annex.interior")).Shown() && M->Space == TEXT("room") && M->Phones->ArcWhere() == TEXT("annex") &&
    M->SaroNight->DarkWhere() == TEXT("away") && !M->Office->Contains(M->Player->Pos);

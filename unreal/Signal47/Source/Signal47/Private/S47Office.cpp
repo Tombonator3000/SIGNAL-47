@@ -167,6 +167,8 @@ struct FS47Office::FVisual
  TWeakObjectPtr<URectLightComponent> Light;
  bool bRecoverLegacyPose = false;
  bool bMigrationFailed = false;
+ bool bOwnedPreparing = false, bOwnedFootprint = false;
+ double OwnedRetryWait = 0;
  // ART-01 sheets: paper object name, its art plane and the bound texture.
  struct FSheet { FString Paper; FS47Obj PaperObj, Art; TWeakObjectPtr<UTexture2D> Texture; };
  TArray<FSheet> Sheets;
@@ -462,9 +464,14 @@ void FS47Office::Init()
  }
  FS47Obj OldProxy = W->Obj(TEXT("annex.objs.officeDoor")); if (OldProxy) { OldProxy.SetVisible(false); if (const FS47WebNode* N = W->Node(OldProxy.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
  bReady = true; S47SaroInterior::Build(W); S47SaroDoorDetail::Build(W);
- if (S47OfficeOwned::Build(W))
+ const bool bOwnedReady = S47OfficeOwned::Build(W, &Visual->bOwnedPreparing);
+ if (bOwnedReady || Visual->bOwnedPreparing)
+ {
   // Capsule envelope includes the propped lid, which overhangs the body by 34mm.
+  // Reserve it before Flow restores an old pose, including during texture warmup.
   Collider(TEXT("office:ownedOpenBox"), -.817, -.391, 8.537, 8.900);
+  Visual->bOwnedFootprint = true;
+ }
  Apply();
  UE_LOG(LogS47Office, Display, TEXT("S47: Operations ready physical portal=10 skirting=8 leaf/handle/sign=26; own spare/drawer; eight authored Blender/PBR assemblies; early physical access; field sheet independent of unavailable tape"));
 }
@@ -862,6 +869,20 @@ void FS47Office::Step(double Dt)
  { bDoorTarget = true; if (M) M->RequestAutosave(); }
  const bool WasOpen = DoorOpen();
  const double SafeDt = FMath::Clamp(Dt, 0., .1);
+ if (Visual->bOwnedPreparing && M && M->Web)
+ {
+  Visual->OwnedRetryWait -= SafeDt;
+  if (Visual->OwnedRetryWait <= 0)
+  {
+   const bool bOwnedReady = S47OfficeOwned::Build(M->Web, &Visual->bOwnedPreparing);
+   Visual->OwnedRetryWait = .25;
+   if (!bOwnedReady && !Visual->bOwnedPreparing && Visual->bOwnedFootprint)
+   {
+    for (FS47Rect& Rect : M->Web->CollidersMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:ownedOpenBox")) Rect.bEnabled = false;
+    Visual->bOwnedFootprint = false; // A genuinely unavailable optional set retains the baseline.
+   }
+  }
+ }
  DoorK = FMath::Clamp(DoorK + (bDoorTarget ? 1 : -1) * SafeDt * 1.8, 0., 1.);
  DrawerK = FMath::Clamp(DrawerK + (bDrawerTarget ? 1 : -1) * SafeDt * 3.0, 0., 1.);
  Apply();
