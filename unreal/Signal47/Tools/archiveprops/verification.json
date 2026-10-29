@@ -10,7 +10,7 @@
       "name": "SM_ArchiveProps_ShelvingStorage FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 1.4901161193847656e-07,
-      "triangles": 5482,
+      "triangles": 5688,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_Kraft",
@@ -18,7 +18,10 @@
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Metal",
         "M_ArchiveProps_Rubber",
-        "M_ArchiveProps_KraftEdge"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
       ]
     },
     {
@@ -58,9 +61,21 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_ShelvingStorage GLB matches FBX contract",
       "pass": true,
-      "triangles": 5482,
+      "triangles": 5688,
       "max_bounds_error_m": 0.0
     },
     {
@@ -71,7 +86,7 @@
       "name": "SM_ArchiveProps_FilingCabinets FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 5.960464477539063e-08,
-      "triangles": 2970,
+      "triangles": 3114,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_SteelOlive",
@@ -126,7 +141,7 @@
     {
       "name": "SM_ArchiveProps_FilingCabinets GLB matches FBX contract",
       "pass": true,
-      "triangles": 2970,
+      "triangles": 3114,
       "max_bounds_error_m": 0.0
     },
     {
@@ -137,7 +152,7 @@
       "name": "SM_ArchiveProps_CardIndex FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 2.9802322387695312e-08,
-      "triangles": 1710,
+      "triangles": 1758,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_SteelOlive",
@@ -145,7 +160,8 @@
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Metal",
-        "M_ArchiveProps_Paper"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge"
       ]
     },
     {
@@ -185,9 +201,13 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_CardIndex GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_CardIndex GLB matches FBX contract",
       "pass": true,
-      "triangles": 1710,
+      "triangles": 1758,
       "max_bounds_error_m": 0.0
     },
     {
@@ -198,11 +218,12 @@
       "name": "SM_ArchiveProps_Bookcase FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 8.940696716308594e-08,
-      "triangles": 1404,
+      "triangles": 1704,
       "materials": [
         "M_ArchiveProps_Walnut",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_Brass",
+        "M_ArchiveProps_Paper",
         "M_ArchiveProps_BookBlue",
         "M_ArchiveProps_BookBrown"
       ]
@@ -236,9 +257,13 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_Bookcase GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_Bookcase GLB matches FBX contract",
       "pass": true,
-      "triangles": 1404,
+      "triangles": 1704,
       "max_bounds_error_m": 0.0
     },
     {
@@ -571,14 +596,17 @@
       "name": "SM_ArchiveProps_ShelvingStorage_LOD1 FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 1.4901161193847656e-07,
-      "triangles": 3266,
+      "triangles": 3316,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_Kraft",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Rubber",
-        "M_ArchiveProps_KraftEdge"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
       ]
     },
     {
@@ -614,9 +642,21 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_ShelvingStorage_LOD1 GLB matches FBX contract",
       "pass": true,
-      "triangles": 3266,
+      "triangles": 3316,
       "max_bounds_error_m": 0.0
     },
     {
@@ -627,7 +667,7 @@
       "name": "SM_ArchiveProps_FilingCabinets_LOD1 FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 5.960464477539063e-08,
-      "triangles": 1674,
+      "triangles": 1818,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_SteelOlive",
@@ -682,7 +722,7 @@
     {
       "name": "SM_ArchiveProps_FilingCabinets_LOD1 GLB matches FBX contract",
       "pass": true,
-      "triangles": 1674,
+      "triangles": 1818,
       "max_bounds_error_m": 0.0
     },
     {
@@ -693,7 +733,7 @@
       "name": "SM_ArchiveProps_CardIndex_LOD1 FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 2.9802322387695312e-08,
-      "triangles": 1054,
+      "triangles": 1078,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_SteelOlive",
@@ -701,7 +741,8 @@
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Metal",
-        "M_ArchiveProps_Paper"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge"
       ]
     },
     {
@@ -741,9 +782,13 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_CardIndex_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_CardIndex_LOD1 GLB matches FBX contract",
       "pass": true,
-      "triangles": 1054,
+      "triangles": 1078,
       "max_bounds_error_m": 0.0
     },
     {
@@ -754,11 +799,12 @@
       "name": "SM_ArchiveProps_Bookcase_LOD1 FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 8.940696716308594e-08,
-      "triangles": 984,
+      "triangles": 1108,
       "materials": [
         "M_ArchiveProps_Walnut",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_Brass",
+        "M_ArchiveProps_Paper",
         "M_ArchiveProps_BookBlue",
         "M_ArchiveProps_BookBrown"
       ]
@@ -792,9 +838,13 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_Bookcase_LOD1 GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_Bookcase_LOD1 GLB matches FBX contract",
       "pass": true,
-      "triangles": 984,
+      "triangles": 1108,
       "max_bounds_error_m": 0.0
     },
     {
@@ -1127,13 +1177,16 @@
       "name": "SM_ArchiveProps_ShelvingStorage_LOD2 FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 1.4901161193847656e-07,
-      "triangles": 1802,
+      "triangles": 2006,
       "materials": [
         "M_ArchiveProps_SteelGreen",
         "M_ArchiveProps_Kraft",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_DarkSteel",
-        "M_ArchiveProps_KraftEdge"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
       ]
     },
     {
@@ -1165,9 +1218,21 @@
       "pass": true
     },
     {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
+      "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB primitive has UV",
+      "pass": true
+    },
+    {
       "name": "SM_ArchiveProps_ShelvingStorage_LOD2 GLB matches FBX contract",
       "pass": true,
-      "triangles": 1802,
+      "triangles": 2006,
       "max_bounds_error_m": 0.0
     },
     {
@@ -1290,7 +1355,7 @@
       "name": "SM_ArchiveProps_Bookcase_LOD2 FBX pivot/metres/triangles/materials",
       "pass": true,
       "max_bounds_error_m": 8.940696716308594e-08,
-      "triangles": 732,
+      "triangles": 748,
       "materials": [
         "M_ArchiveProps_Walnut",
         "M_ArchiveProps_Brass",
@@ -1325,7 +1390,7 @@
     {
       "name": "SM_ArchiveProps_Bookcase_LOD2 GLB matches FBX contract",
       "pass": true,
-      "triangles": 732,
+      "triangles": 748,
       "max_bounds_error_m": 0.0
     },
     {
@@ -1793,7 +1858,7 @@
       "pass": true
     }
   ],
-  "check_count": 356,
+  "check_count": 369,
   "packed_textures": [
     "BeigeEnamel_base_color.png",
     "BeigeEnamel_normal.png",
@@ -1814,6 +1879,6 @@
     "Walnut_normal.png",
     "Walnut_roughness.png"
   ],
-  "source_revision": "R1-original-SARO-records-room-1986",
+  "source_revision": "R2-used-SARO-records-room-1986",
   "native_visual_status": "UNVERIFIED"
 }

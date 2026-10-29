@@ -206,7 +206,7 @@
       ]
     },
     "SM_Office_Dressing": {
-      "triangles": 30860,
+      "triangles": 32012,
       "bounds_local_m": [
         [
           -0.8400000333786011,
@@ -235,7 +235,7 @@
         "M_Office_CreamEnamel",
         "M_Office_ChairFabric"
       ],
-      "original_components": 195,
+      "original_components": 291,
       "runtime_origin_three_m": [
         0,
         0,

@@ -16,16 +16,16 @@ namespace
  struct FPart { const TCHAR* Name; int32 Triangles, Materials; FVector CenterCm, ExtentCm; };
  // Measured source contract, ArtSource/PhotoLab/model_contract.json. Update together if rebuilt.
  const FPart Parts[] = {
-  { TEXT("SM_PhotoLab_WetCabinetDetail"), 3960, 4, FVector(1519.999981, -509.749985, 47.125000), FVector(210.999966, 3.649998, 46.625000) },
-  { TEXT("SM_PhotoLab_RinseSink"), 2632, 5, FVector(1796.807003, -548.199940, 61.119579), FVector(53.207111, 28.699970, 60.819579) },
-  { TEXT("SM_PhotoLab_EnlargerDetail"), 3260, 5, FVector(1700.000000, -540.625000, 144.174999), FVector(23.700142, 23.624992, 45.975000) },
-  { TEXT("SM_PhotoLab_ProcessDetails"), 1380, 4, FVector(1534.125042, -547.125006, 103.250000), FVector(159.525013, 27.374983, 9.750000) },
-  { TEXT("SM_PhotoLab_StorageDetail"), 3840, 7, FVector(1301.475000, -430.000007, 107.499996), FVector(17.724943, 119.999993, 77.499995) },
-  { TEXT("SM_PhotoLab_ArchiveDetail"), 1896, 4, FVector(1856.350040, -309.499997, 57.749999), FVector(38.650036, 144.499999, 54.750001) },
-  { TEXT("SM_PhotoLab_RecordsDetail"), 1620, 3, FVector(1699.999952, 41.449999, 50.799999), FVector(132.000017, 36.049999, 50.699999) },
-  { TEXT("SM_PhotoLab_SafelightHousing"), 1276, 4, FVector(1555.318975, -407.694173, 257.972455), FVector(73.618937, 182.194161, 22.672462) },
-  { TEXT("SM_PhotoLab_Ventilation"), 1748, 4, FVector(1859.874916, -573.365378, 187.000000), FVector(29.375076, 5.384612, 61.000001) },
-  { TEXT("SM_PhotoLab_UtilityDetail"), 2004, 5, FVector(1600.000048, -443.474996, 138.250006), FVector(330.000067, 135.724986, 137.250006) }
+  { TEXT("SM_PhotoLab_WetCabinetDetail"), 11112, 5, FVector(1519.999981, -509.749985, 47.125000), FVector(210.999966, 3.649998, 46.625000) },
+  { TEXT("SM_PhotoLab_RinseSink"), 4400, 5, FVector(1796.807003, -548.199940, 61.119579), FVector(53.207111, 28.699970, 60.819579) },
+  { TEXT("SM_PhotoLab_EnlargerDetail"), 5192, 5, FVector(1700.000000, -540.625000, 144.174999), FVector(23.700142, 23.624992, 45.975000) },
+  { TEXT("SM_PhotoLab_ProcessDetails"), 3224, 6, FVector(1534.125042, -547.125006, 103.250000), FVector(159.525013, 27.374983, 9.750000) },
+  { TEXT("SM_PhotoLab_StorageDetail"), 6276, 7, FVector(1301.475000, -430.000007, 107.500002), FVector(17.724943, 119.999993, 77.500001) },
+  { TEXT("SM_PhotoLab_ArchiveDetail"), 3640, 5, FVector(1856.350040, -309.499997, 57.749999), FVector(38.650036, 144.499999, 54.750001) },
+  { TEXT("SM_PhotoLab_RecordsDetail"), 2708, 6, FVector(1699.999952, 41.449999, 50.799999), FVector(132.000017, 36.049999, 50.699999) },
+  { TEXT("SM_PhotoLab_SafelightHousing"), 2200, 5, FVector(1555.318975, -407.694173, 257.972455), FVector(73.618937, 182.194161, 22.672462) },
+  { TEXT("SM_PhotoLab_Ventilation"), 2236, 4, FVector(1859.874916, -573.365378, 187.000000), FVector(29.375076, 5.384612, 61.000001) },
+  { TEXT("SM_PhotoLab_UtilityDetail"), 3660, 5, FVector(1600.000048, -443.398738, 138.250006), FVector(330.000067, 135.801244, 137.250006) }
  };
  const FString Prefix(TEXT("photoLabDetail:"));
 
