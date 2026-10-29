@@ -25,14 +25,21 @@ namespace
  const FVector BeamSources[] = {FVector(-10, 7, -17), FVector(6, 8, -18), FVector(18, 6, 2)};
  const FVector BeamTargets[] = {FVector(-3.6, 1.7, -2), FVector(.2, 1.7, -1), FVector(3, 1.6, 1.6)};
  const FVector2D RestartAt(1.2, .3);
- struct FGap { const TCHAR* Door; double X0, X1, Z0, Z1; };
- const FGap Gaps[] = {{TEXT("exitDoor"),-6.9,-5,5.25,6.15}, {TEXT("recordsDoor"),-4.38,-3.42,5.6,7.7},
-  {TEXT("doorSouth"),-2.88,-1.92,3.6,5.8}, {TEXT("doorEast"),5,7.1,1.12,2.08}};
+ struct FGap { const TCHAR* Door; double X0, X1, Z0, Z1, Plane; bool bX; };
+ const FGap Gaps[] = {{TEXT("exitDoor"),-6.9,-5,5.25,6.15,-6.27,true}, {TEXT("recordsDoor"),-4.38,-3.42,5.6,7.7,6.85,false},
+  {TEXT("doorSouth"),-2.88,-1.92,3.6,5.8,4.72,false}, {TEXT("doorEast"),5,7.1,1.12,2.08,6.06,true}};
  bool Through(const FVector2D& A,const FVector2D& Z,const FGap& G)
  {
   double Lo=0,Hi=1;const FVector2D D=Z-A;
   const auto Clip=[&Lo,&Hi](double P,double Q){if(FMath::Abs(P)<1e-8)return Q>=0;const double R=Q/P;if(P<0)Lo=FMath::Max(Lo,R);else Hi=FMath::Min(Hi,R);return Lo<=Hi;};
   return Clip(-D.X,A.X-G.X0)&&Clip(D.X,G.X1-A.X)&&Clip(-D.Y,A.Y-G.Z0)&&Clip(D.Y,G.Z1-A.Y);
+ }
+ bool CrossesDoor(const FVector2D& A,const FVector2D& Z,const FGap& G)
+ {
+  const double From=(G.bX?A.X:A.Y)-G.Plane,To=(G.bX?Z.X:Z.Y)-G.Plane;
+  if((From>0&&To>0)||(From<0&&To<0)||FMath::Abs(To-From)<1e-8)return false;
+  const double K=-From/(To-From);const double Across=G.bX?FMath::Lerp(A.Y,Z.Y,K):FMath::Lerp(A.X,Z.X,K);
+  return K>=0&&K<=1&&Across>=(G.bX?G.Z0:G.X0)&&Across<=(G.bX?G.Z1:G.X1);
  }
  double YawTo(const FVector2D& D) { return FMath::Atan2(D.Y, D.X); }
  FS47Doc Paper(const TCHAR* Id, const TCHAR* Title, const TCHAR* Stamp, const FString& Page)
@@ -68,8 +75,8 @@ const TArray<FS47SC11::FNode>& FS47SC11::Nodes()
  // Reuse the measured SC04 corridor/rooms. The front crossing follows gNorth,
  // gSteps and the east walk in walks.saro, rather than cutting the wall corner.
  static const TArray<FNode> N = {
-  {TEXT("office"), {.4,5.75}}, {TEXT("control-door"), {-2.4,3.6}}, {TEXT("corridor"), {-2.4,5.7}},
-  {TEXT("records-door"), {-3.9,5.7}}, {TEXT("exit"), {-5.3,5.7}}, {TEXT("stoop"), {-7,5.7}},
+  {TEXT("office"), {.4,5.75}}, {TEXT("control-door"), {-2.4,3.6}}, {TEXT("corridor"), {-2.4,6.05}},
+  {TEXT("records-door"), {-3.9,6.05}}, {TEXT("exit"), {-5.3,5.7}}, {TEXT("stoop"), {-7,5.7}},
   {TEXT("ramp"), {-11.1,5.7}}, {TEXT("west"), {-11.1,0}}, {TEXT("north-west"), {-9,-7.5}},
   {TEXT("north"), {0,-12}}, {TEXT("north-steps"), {6,-12}}, {TEXT("east-steps"), {8.7,-12}},
   {TEXT("east-walk"), {8.7,-7.5}}, {TEXT("landing"), {8.7,1.6}}, {TEXT("east-door"), {6.9,1.6}},
@@ -351,7 +358,7 @@ int32 FS47SC11::Nearest(const FVector2D& At) const
 FString FS47SC11::ClosedDoorTo(const FVector2D& Target) const
 {
  if(!M||!M->Web)return FString();
- for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&Through(Pos,Target,G))return G.Door;
+ for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&CrossesDoor(Pos,Target,G))return G.Door;
  return FString();
 }
 
@@ -365,7 +372,7 @@ void FS47SC11::RouteTo(int32 Goal)
  for(int32 Pass=0;Pass<Count;++Pass)for(const auto& E:Edges())for(int32 Dir=0;Dir<2;++Dir)
  {
   const int32 A=Dir?E.Value:E.Key,Z=Dir?E.Key:E.Value;double Extra=0;
-  for(const auto& G:Gaps)if(M&&M->Web&&!M->Web->IsDoorOpen(G.Door)&&Through(Nodes()[A].At,Nodes()[Z].At,G))Extra+=7;
+  for(const auto& G:Gaps)if(M&&M->Web&&!M->Web->IsDoorOpen(G.Door)&&CrossesDoor(Nodes()[A].At,Nodes()[Z].At,G))Extra+=7;
   const double New=Cost[A]+FVector2D::Distance(Nodes()[A].At,Nodes()[Z].At)+Extra;
   if(New<Cost[Z]){Cost[Z]=New;Prev[Z]=A;}
  }
@@ -594,6 +601,7 @@ bool FS47SC11::SelfTest(TArray<FString>& Lines)
  Check(Fresh.Phase()==EStep::Hunt&&Fresh.Facts().Receiver&&!Fresh.Facts().Escaped,TEXT("SC11 hunt JSON restore retains collection without creating escape"));
  Check(Room(Nodes()[Control].At)==0&&Room(Nodes()[Records].At)==2&&Room(Nodes()[Stoop].At)==3,TEXT("SC11 route uses measured control, records and outside rooms"));
  Check(Room(Nodes()[North].At)==3&&Room(FVector2D(-3.,-12.))==3&&Room(FVector2D(-3.,-650.))==3,TEXT("SC11 front perimeter and distant motel never count as annex arrival"));
+ Check(!CrossesDoor(FVector2D(-2.4,6.05),FVector2D(-5.3,5.7),Gaps[1])&&CrossesDoor(FVector2D(-3.9,6.05),FVector2D(-3.9,8.2),Gaps[1]),TEXT("SC11 passing the records doorway is distinct from crossing its actual closed plane"));
  TSet<int32> Reached={Control};for(int32 Pass=0;Pass<Nodes().Num();++Pass)for(const auto& E:Edges())if(Reached.Contains(E.Key)||Reached.Contains(E.Value)){Reached.Add(E.Key);Reached.Add(E.Value);}
  Check(Reached.Num()==Nodes().Num(),TEXT("SC11 both exits and the covered perimeter belong to one connected physical route"));
  return Good;
