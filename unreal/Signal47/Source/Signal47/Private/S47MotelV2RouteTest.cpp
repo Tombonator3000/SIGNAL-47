@@ -20,6 +20,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/StaticMesh.h"
+#include "StaticMeshResources.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "TextureResource.h"
@@ -39,6 +40,28 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47MotelRoute,Log,All);
 namespace
 {
+ // Transparent panes deliberately have NoCollision in production. Inspect the
+ // actual retained LOD0 render triangles for this visual prop check. Walking
+ // floor checks below continue to use the first real physics visibility hit.
+ bool RenderedPaneHit(UStaticMeshComponent* C,const FVector& Start,const FVector& End,FVector& Impact)
+ {
+  UStaticMesh* Mesh=C?C->GetStaticMesh().Get():nullptr;
+  if(!C||!C->IsVisible()||C->bHiddenInGame||C->GetCollisionEnabled()!=ECollisionEnabled::NoCollision
+   ||!Mesh||!Mesh->bAllowCPUAccess||!Mesh->GetRenderData()||Mesh->GetRenderData()->LODResources.IsEmpty())return false;
+  const auto& L=Mesh->GetRenderData()->LODResources[0];const auto Indices=L.IndexBuffer.GetArrayView();
+  const FVector D=End-Start;double Nearest=2.;
+  for(int32 I=0;I+2<Indices.Num();I+=3)
+  {
+   const FVector A=C->GetComponentTransform().TransformPosition(FVector(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I])));
+   const FVector B=C->GetComponentTransform().TransformPosition(FVector(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I+1])));
+   const FVector V=C->GetComponentTransform().TransformPosition(FVector(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I+2])));
+   const FVector E1=B-A,E2=V-A,H=FVector::CrossProduct(D,E2);const double Det=FVector::DotProduct(E1,H);if(FMath::Abs(Det)<1e-9)continue;
+   const FVector S=Start-A;const double U=FVector::DotProduct(S,H)/Det;if(U<0||U>1)continue;
+   const FVector Q=FVector::CrossProduct(S,E1);const double VV=FVector::DotProduct(D,Q)/Det;if(VV<0||U+VV>1)continue;
+   const double T=FVector::DotProduct(E2,Q)/Det;if(T>=0&&T<=1&&T<Nearest)Nearest=T;
+  }
+  if(Nearest>1)return false;Impact=S47Three::ToThree(Start+D*Nearest);return true;
+ }
  int32 ChildNamed(AS47Web* W,int32 Root,const FString& Name)
  {
   TArray<int32> Pending{Root};
@@ -309,8 +332,12 @@ void AS47Web::BeginMotelV2Route()
    const bool Phone=Goal.Action==2;const FVector Target=Phone?FVector(-43.25,-2.0985683853163195+1.11,671.22):FVector(-46,-2.0985683853163195+.6,671.035);
    FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47MotelRouteProp),true,P);
    const FVector Eye=S47Three::ToThree(P->EyeUE());
-   const bool Hit=W->GetWorld()->LineTraceSingleByChannel(H,P->EyeUE(),S47Three::ToUE(Target+(Target-Eye).GetSafeNormal()*.3),ECC_Visibility,Q);const auto* N=Hit?W->Node(W->NodeOf(H.GetComponent())):nullptr;
-   const FVector Impact=Hit?S47Three::ToThree(H.ImpactPoint):FVector::ZeroVector;
+   const FVector End=S47Three::ToUE(Target+(Target-Eye).GetSafeNormal()*.3);UStaticMeshComponent* Pane=nullptr;
+   if(!Phone)for(int32 I=0;I<W->PartCount();++I)if(const auto* Part=W->Node(I);Part&&Part->Name==TEXT("motel-v2:SM_Sierra_Glass"))Pane=Cast<UStaticMeshComponent>(Part->Comp.Get());
+   FVector Impact=FVector::ZeroVector;
+   const bool Hit=Phone?W->GetWorld()->LineTraceSingleByChannel(H,P->EyeUE(),End,ECC_Visibility,Q):RenderedPaneHit(Pane,P->EyeUE(),End,Impact);
+   const auto* N=Hit?W->Node(W->NodeOf(Phone?H.GetComponent():Pane)):nullptr;
+   if(Phone&&Hit)Impact=S47Three::ToThree(H.ImpactPoint);
    // The newspaper's moved pane is authored in SM_Sierra_Glass. Its actual
    // FBX ray intersects the pane at local By=3.8595 before the cabinet body.
    // Bind this surface to its measured pane, rather than another Office face.
@@ -320,7 +347,7 @@ void AS47Web::BeginMotelV2Route()
     &&Impact.Z>=671.0225&&Impact.Z<=671.0435;
    if(!N||(Phone?N->Name!=TEXT("prop:motelPhone"):!NewspaperPane)||FVector::Distance(Impact,Target)>(Phone?.25:.03))
    {
-    UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 prop diagnosis kind=%s hit=%d component=%s node=%s impact=(%.6f,%.6f,%.6f) target=(%.6f,%.6f,%.6f) delta=%.6fm"),Phone?TEXT("payphone"):TEXT("newspaper-pane"),Hit,*GetNameSafe(H.GetComponent()),N?*N->Name:TEXT("none"),Impact.X,Impact.Y,Impact.Z,Target.X,Target.Y,Target.Z,FVector::Distance(Impact,Target));
+    UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 prop diagnosis kind=%s hit=%d component=%s node=%s impact=(%.6f,%.6f,%.6f) target=(%.6f,%.6f,%.6f) delta=%.6fm"),Phone?TEXT("payphone-physics"):TEXT("newspaper-render-geometry"),Hit,*GetNameSafe(Phone?H.GetComponent():Pane),N?*N->Name:TEXT("none"),Impact.X,Impact.Y,Impact.Z,Target.X,Target.Y,Target.Z,FVector::Distance(Impact,Target));
     Fail(TEXT("physical payphone/newspaper front ray missed actual prop"));return;
    }
    if(Phone)
@@ -329,7 +356,7 @@ void AS47Web::BeginMotelV2Route()
     const FVector Front(FrontUE.X,FrontUE.Z,FrontUE.Y),At=S47Three::ToThree(H.GetComponent()->GetComponentLocation());
     if(FVector::DotProduct(P->Pos-At,Front)<.6){Fail(TEXT("payphone approached from back rather than usable front"));return;}
    }
-   UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route physical prop PASS %s front ray distance=%.3fm; no new product interaction"),Phone?TEXT("payphone"):TEXT("newspaper glass"),H.Distance/100.);
+   UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route prop PASS %s distance=%.3fm; no new product interaction"),Phone?TEXT("payphone physics front ray"):TEXT("visible NoCollision newspaper pane LOD0 render triangles"),FVector::Distance(Eye,Impact));
   }
   if(Goal.Proxy&&!(Goal.Action==1&&S->TvSince>0))
   {
