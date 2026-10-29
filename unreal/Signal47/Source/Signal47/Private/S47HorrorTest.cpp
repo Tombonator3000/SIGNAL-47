@@ -539,7 +539,7 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	// Evening observing schedule (S47Observing): four real runs on the console, each reduced on paper.
 	// The chores between runs: the generator panel, then the round to the array gate.
-	if (T.Stage >= 610 && T.Stage <= 639)
+	if (T.Stage >= 610 && T.Stage <= 649)
 	{
 		FS47Observing& O = *M->Observing;
 		if (T.Stage == 610) { Aim(Target(TEXT("obs:generator"))); Stage(611); return; }
@@ -583,7 +583,20 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 639)
 		{
 			if (!Check(M->Observing->ArchiveStep() == 2 && !M->Observing->ChorePending() && M->Observing->RunIndex() == 2, TEXT("fresh disk restore keeps the filed binder"))) return;
-			Go({FVector(-2.4,0,5.7), FVector(-2.4,0,4.4), FVector(-2.4,0,3.0), FVector(-2.4,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
+			Go({FVector(-2.9,0,5.7)}, 640); return;
+		}
+		// The round closes the doors behind it, from the corridor and from the control room.
+		if (T.Stage == 640) { Aim(Target(TEXT("recordsDoor"))); Stage(641); return; }
+		if (T.Stage == 641)
+		{
+			if (!Pick(TEXT("recordsDoor")) || !Check(!M->Web->IsDoorOpen(TEXT("recordsDoor")), TEXT("the records door closes from the corridor"))) return;
+			Go({FVector(-2.4,0,5.7), FVector(-2.4,0,4.4), FVector(-2.4,0,3.0)}, 642); return;
+		}
+		if (T.Stage == 642) { Aim(Target(TEXT("doorSouth"))); Stage(643); return; }
+		if (T.Stage == 643)
+		{
+			if (!Pick(TEXT("doorSouth")) || !Check(!M->Web->IsDoorOpen(TEXT("doorSouth")), TEXT("the south door closes from the control room"))) return;
+			Go({FVector(-2.4,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
 		}
 		if (T.Stage == 620) { Aim(Target(TEXT("doorEast"))); Stage(621); return; }
 		if (T.Stage == 621)
