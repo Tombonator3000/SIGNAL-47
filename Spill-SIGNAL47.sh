@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # Starter SIGNAL / 47 for Linux. Første gang lastes den ferdige testutgaven ned
 # fra GitHub, kontrolleres med SHA256 og pakkes ut ved siden av dette skriptet.
-# Virker på alle vanlige distribusjoner (Arch, Fedora, Debian/Ubuntu, openSUSE ...):
-# spillet har med seg sin egen Vulkan-laster og SDL3 og trenger bare glibc og en
-# Vulkan-driver for skjermkortet. Kjør med --hjelp for valg og feilsøking.
+# Kan også lastes ned alene, uten Git eller repo. Andre maskiner er ikke
+# verifisert; systembiblioteker og en fungerende Vulkan-driver kreves.
+# Kjør med --hjelp for valg og feilsøking.
 set -euo pipefail
 
-tag='playtest-linux-2026-10-28'
+tag='playtest-linux-2026-10-29'
 base="https://github.com/Tombonator3000/SIGNAL-47/releases/download/$tag"
-archives=(Signal47-Linux-2026-10-28.zip Signal47-Linux-2026-10-28-Data1.zip Signal47-Linux-2026-10-28-Data2.zip)
+archives=(Signal47-Linux-2026-10-29.zip Signal47-Linux-2026-10-29-Data1.zip Signal47-Linux-2026-10-29-Data2.zip)
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 game_dir="$repo_dir/Spill/$tag"
 play="$game_dir/Signal47-Linux/Play.sh"
+download_complete="$game_dir/.download-complete"
 log_file="$game_dir/Signal47-Linux/Linux/Signal47/Saved/Logs/Signal47.log"
 
 usage() {
@@ -45,8 +46,8 @@ while (($#)); do
   case "$1" in
     --lav) low=1 ;;
     --uten-rt) game_args+=('-ini:Engine:[/Script/Engine.RendererSettings]:r.RayTracing=False,[/Script/Engine.RendererSettings]:r.Lumen.HardwareRayTracing=False') ;;
-    --x11) export SDL_VIDEODRIVER=x11 ;;
-    --wayland) export SDL_VIDEODRIVER=wayland ;;
+    --x11) export SDL_VIDEO_DRIVER=x11 SDL_VIDEODRIVER=x11; game_args+=(-sdlvideodriver=x11) ;;
+    --wayland) export SDL_VIDEO_DRIVER=wayland SDL_VIDEODRIVER=wayland; game_args+=(-sdlvideodriver=wayland) ;;
     --fullskjerm) game_args+=(-fullscreen) ;;
     --vindu)
       [[ ${2:-} =~ ^([0-9]+)x([0-9]+)$ ]] || { printf 'Bruk --vindu BxH, for eksempel --vindu 1920x1080\n' >&2; exit 2; }
@@ -126,10 +127,10 @@ system_check() {
   fi
 
   local session="${XDG_SESSION_TYPE:-ukjent}" desktop="${XDG_CURRENT_DESKTOP:-ukjent}"
-  note "Økt: $session, skrivebord: $desktop, SDL_VIDEODRIVER=${SDL_VIDEODRIVER:-auto}"
+  note "Økt: $session, skrivebord: $desktop, SDL_VIDEO_DRIVER=${SDL_VIDEO_DRIVER:-${SDL_VIDEODRIVER:-auto}}"
   if [[ $session == wayland || -n ${WAYLAND_DISPLAY:-} ]]; then
     if [[ -z ${DISPLAY:-} ]]; then
-      note "Ingen XWayland (DISPLAY er tom). Spillet bruker Wayland direkte. For --x11 trengs XWayland,"
+      note "DISPLAY er tom. Prøv uten --x11, eventuelt --wayland. For --x11 trengs XWayland,"
       note "på niri for eksempel pakken xwayland-satellite."
     fi
     if [[ ${desktop,,} == *niri* ]]; then
@@ -172,9 +173,13 @@ write_report() {
 if ((report_only)); then write_report; exit 0; fi
 system_check
 ((check_only)) && exit 0
+if [[ ${SDL_VIDEO_DRIVER:-} == x11 && -z ${DISPLAY:-} ]]; then
+  printf 'Kan ikke bruke --x11 uten DISPLAY. Start XWayland via skrivebordet, eller prøv uten --x11 / med --wayland.\n' >&2
+  exit 2
+fi
 
 # ---------------------------------------------------------------- nedlasting
-if [[ ! -x "$play" ]]; then
+if [[ ! -x "$play" || ! -f "$download_complete" ]]; then
   for tool in curl unzip sha256sum; do
     command -v "$tool" >/dev/null || { printf 'Mangler %s. Installer det og prøv igjen.\n' "$tool" >&2; exit 1; }
   done
@@ -188,7 +193,12 @@ if [[ ! -x "$play" ]]; then
   for name in "${archives[@]}"; do
     # Hopp over et arkiv som allerede er lastet ned og stemmer.
     if ! grep " $name\$" SHA256SUMS.txt | sha256sum -c --status >/dev/null 2>&1; then
-      curl -fL --retry 3 -C - -o "$name" "$base/$name"
+      if ! curl -fL --retry 3 -C - -o "$name" "$base/$name" ||
+         ! grep " $name\$" SHA256SUMS.txt | sha256sum -c --status >/dev/null 2>&1; then
+        # Bare denne nedlastingens kjente cachefil slettes, aldri spill/Saved.
+        rm -f -- "$name"
+        curl -fL --retry 3 -o "$name" "$base/$name"
+      fi
     fi
   done
   sha256sum -c SHA256SUMS.txt
@@ -197,6 +207,7 @@ if [[ ! -x "$play" ]]; then
   done
   cd "$game_dir/Signal47-Linux"
   chmod +x Play.sh Play-Low.sh Linux/Signal47.sh Linux/Signal47/Binaries/Linux/Signal47
+  printf '%s\n' "$tag" > "$download_complete"
   rm -rf "$game_dir/nedlasting"
   printf 'Ferdig. Spillet ligger i %s\n' "$game_dir/Signal47-Linux"
 fi
