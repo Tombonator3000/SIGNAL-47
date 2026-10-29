@@ -1120,3 +1120,9 @@ R5 består kildeapply, uavhengig audit, eksport av fem deler med tre LOD-er og f
 - R2/R3 stopper ved første synlige gulvkontroll. R3 sikrer fem faktiske treff: gammel clutter:office:dirt på Y=-2,093368, mens forfattet flisnivå er -2,086568. Ingen gang-/TV-/diskaksept.
 - Importkildens betingelse for seksjonskollisjon var en relevant hypotese, men faktisk native-probe avviser den: samtlige31modeller har alleLOD-seksjoner på før migrering. Ingen rettet seksjonsfeil hevdes. Eksplisitt import-/saved-verifikasjon av flaggene er lagt til.
 - Separat Blender-BVH på faktisk R5-kilde bekrefter fem flistreff påZ=0,012, geometrisk forside nedover. Faktiske editorbilder viser flisene, én resepsjonslampe og korrekt synlig telefonfront/ICE/avis. Native kropp-/LOD- og sidekontroll undersøkes videre. Ingen tosidig query- eller kildeendring er foreløpig akseptert som løsning. Råforsøk er bevart.
+### 29. oktober 2026 kl. 04:37, Codex, overtakelse og levering av FIX-07
+
+- Overtok uferdig Claude-gren etter dokumentert 75-minuttersregel. Alle 44 opprinnelige deltafiler er SHA-sikret og uendret; Blender-/FBX-kilder, native modeller og fire åpnete runtimebilder følger leveringen. Ny kildecommit ed2f8548.
+- Fire feltmodeller erstatter enklere synlig utstyr; opprinnelige T01/T02-proxies, kollidere, foto-occludere, strøm, lyd og lagring beholdes. Eksplisitt cook-inkludering lagt til for /Game/SubstationField.
+- Fersk leser PASS 84 kontroller av alle LOD-vertices mot faktisk FBX. T01 R2 PASS med 1709 selvtester, faktisk lampe, serialisering, gangadkomst, blokkert yard, brukstråler og diskrestore; normal exit0. R1 hadde fullført markører, men wrapper ble avbrutt av SIGTERM; avbrutt råøkt er bevart.
+- Claudes faktiske T02 (65/15/38,90 m) og SC02 (249/21/352,19 m/opptak) beholdes med sine uttrykkelige fixturegrenser. Rapport SUBSTATION_FIELD_2026-10-29 og maskinlesbar SHA-kvittering følger. Pakket spill, fullmatrise, installasjon og offentlig release er ikke utført.
