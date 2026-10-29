@@ -70,7 +70,18 @@ def stage(args):
     contract, trim = read(source / 'manifest.json'), read(trims / 'trim-manifest.json')
     layout = read(args.layout)
     imported, verified = read(args.import_report), read(args.verify_report)
-    assert imported['kind'] == 'native-import' and verified['kind'] == 'saved-native-read-only'
+    assert imported['kind'] in ('native-import', 'oriented-floor-import') and verified['kind'] == 'saved-native-read-only'
+    if imported['kind'] == 'oriented-floor-import':
+        # A source-audited delta imports eleven owners and re-verifies the full
+        # inventory. Its additional hash gate must retain every unrelated asset.
+        audit_sha = imported.get('source_orientation_audit_sha256', '')
+        assert len(audit_sha) == 64 and all(c in '0123456789abcdef' for c in audit_sha)
+        preserved = imported.get('preserved_native_before_sha256', {})
+        assert preserved, 'oriented delta must bind its preserved native inventory'
+        for filename, digest in preserved.items():
+            path = args.project.resolve() / filename
+            assert path.resolve().is_relative_to(args.project.resolve() / 'Content/MotelV2')
+            assert sha(path) == digest, ('unrelated native changed after oriented import', filename)
     for proof in (imported, verified):
         assert proof['status'] == 'PASS' and proof['checks'] and all(c['pass'] for c in proof['checks'])
         assert proof['source_sha256']['manifest'] == sha(source / 'manifest.json')
