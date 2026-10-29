@@ -80,7 +80,9 @@ void AS47Web::BeginProductionViews()
   // ENV-03: the crossing's flasher, a long-lens look up from the shoulder and the whole span.
   {TEXT("signal-close"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}},
   {TEXT("signal-span"),TEXT("diner"),{8012,0,1995},{8000.5,10.6,2002}},
-  {TEXT("signal-close-later"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}}
+  {TEXT("signal-close-later"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}},
+  {TEXT("motel-phone-wall"),TEXT("saro"),{-44.6,0,668.7},{-44.6,-1.2,671.25}},
+  {TEXT("motel-pool-exterior"),TEXT("saro"),{-49,0,668.8},{-53.55,-1.95,665.55}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -104,14 +106,15 @@ void AS47Web::BeginProductionViews()
   FString UserDir;if(!M->Flow->bDevRun||M->Flow->CaseId!=0||!FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir)||!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(UserDir))||State->Dir.IsEmpty()){Fail(TEXT("requires isolated unsaved profile"));return;}
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
-   const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
+   const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4,Motel=FString(Views[I].Name).StartsWith(TEXT("motel-")),Signal=FString(Views[I].Name).StartsWith(TEXT("signal-"));
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
-    ||(State->Suite==TEXT("motel")&&I!=9&&I!=10&&(I<19||I>22))||(State->Suite==TEXT("signal")&&I<23)||(State->Suite==TEXT("room6")&&(I<11||I>12))
+    ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
   if(State->Index>=UE_ARRAY_COUNT(Views)*3){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
   const int32 I=State->Index%UE_ARRAY_COUNT(Views),Light=State->Index/UE_ARRAY_COUNT(Views);const auto& V=Views[I];const double Now=FPlatformTime::Seconds();
+  const bool bMotelView=FString(V.Name).StartsWith(TEXT("motel-")),bSignalView=FString(V.Name).StartsWith(TEXT("signal-"));
   if(!State->Placed)
   {
    if(M->World->bDriving){Fail(TEXT("fixture starts outside vehicle"));return;}
@@ -128,7 +131,7 @@ void AS47Web::BeginProductionViews()
    }
    static const double Clock[]={-12.*3600,-5.5*3600,-2.*3600};
    if(LightChanged){M->Story->SetClock(Clock[Light]);State->LastLight=Light;}
-   if(I>=23){State->PrevFov=M->Player->Fov;M->Player->Fov=I==24?55.f:22.f;}
+   if(bSignalView){State->PrevFov=M->Player->Fov;M->Player->Fov=FString(V.Name)==TEXT("signal-span")?55.f:22.f;}
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
    if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
    const FVector Eye(V.Foot.X,M->Player->FloorY+M->Player->Eye,V.Foot.Z),D=V.Target-Eye;
@@ -145,7 +148,7 @@ void AS47Web::BeginProductionViews()
    for(const auto& C:W->FieldModelComponents)Ok&=C.IsValid();
    for(const auto& C:W->FieldModelRetired)Ok&=C.IsValid()&&C->bHiddenInGame;
    Lines.Add(FString::Printf(TEXT("field kit %s: %d parts, %d live bindings, %d old leaves hidden"),Ok?TEXT("PASS"):TEXT("FAIL"),W->FieldModelComponents.Num(),W->FieldModelBindings.Num(),W->FieldModelRetired.Num())); }
-  if(I==9||I==10||I==11||I==12||(I>=19&&I<23)) Ok&=W->MotelV2&&W->MotelV2->Audit(Lines);
+  if(bMotelView||I==11||I==12) Ok&=W->MotelV2&&W->MotelV2->Audit(Lines);
   for(const auto& Line:Lines)UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production %s"),*Line);
   if(!Ok){Fail(TEXT("native installation audit"));return;}
   static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};const FString Name=FString(Lights[Light])+TEXT("-")+V.Name,File=State->Dir/(Name+TEXT(".png"));
