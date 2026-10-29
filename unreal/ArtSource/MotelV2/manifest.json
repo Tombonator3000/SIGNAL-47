@@ -281,13 +281,13 @@
           "triangles": 440,
           "bounds_local_m": [
             [
-              0.7950000166893005,
+              -0.304999977350235,
               -42.82500076293945,
               0.17500001192092896
             ],
             [
               2.305999994277954,
-              3.7244999408721924,
+              3.874500036239624,
               2.0850000381469727
             ]
           ],
@@ -299,13 +299,13 @@
           "triangles": 220,
           "bounds_local_m": [
             [
-              0.7952268123626709,
+              -0.304789662361145,
               -42.82500076293945,
               0.17528049647808075
             ],
             [
               2.305999994277954,
-              3.724273204803467,
+              3.8742730617523193,
               2.0847458839416504
             ]
           ],
@@ -317,13 +317,13 @@
           "triangles": 96,
           "bounds_local_m": [
             [
-              0.7962929010391235,
+              -0.3037070631980896,
               -42.82500457763672,
               0.1763153374195099
             ],
             [
               2.305999994277954,
-              3.7232072353363037,
+              3.8732073307037354,
               2.0841078758239746
             ]
           ],
@@ -334,13 +334,13 @@
       ],
       "bounds_local_m": [
         [
-          0.7950000166893005,
+          -0.304999977350235,
           -42.82500076293945,
           0.17500001192092896
         ],
         [
           2.305999994277954,
-          3.7244999408721924,
+          3.874500036239624,
           2.0850000381469727
         ]
       ],
@@ -363,7 +363,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "visual_only",
-      "source_geometry_sha256": "54470bb441705469ddbdcb79ee7bff4857fe5bdea1201d3a515fec156e8d4bc4"
+      "source_geometry_sha256": "59dc9f18969f9e47571d39646209f15930cc04e7a3dcf50279cb8f479ea9f200"
     },
     "SM_Sierra_GlowExterior": {
       "name": "SM_Sierra_GlowExterior",
@@ -746,16 +746,16 @@
       "materials": [
         "M_MotelV2_Office"
       ],
-      "triangles": 276425,
-      "vertices": 141053,
+      "triangles": 276989,
+      "vertices": 141341,
       "lod_triangles": [
-        276425,
-        138211,
-        60813
+        276989,
+        138493,
+        60937
       ],
       "lods": [
         {
-          "triangles": 276425,
+          "triangles": 276989,
           "bounds_local_m": [
             [
               -6.75,
@@ -764,7 +764,7 @@
             ],
             [
               5.405448913574219,
-              3.7327001094818115,
+              3.94569993019104,
               4.25499963760376
             ]
           ],
@@ -773,7 +773,7 @@
           ]
         },
         {
-          "triangles": 138211,
+          "triangles": 138493,
           "bounds_local_m": [
             [
               -6.75,
@@ -782,7 +782,7 @@
             ],
             [
               5.405448913574219,
-              3.732696056365967,
+              3.945690631866455,
               4.25499963760376
             ]
           ],
@@ -791,7 +791,7 @@
           ]
         },
         {
-          "triangles": 60813,
+          "triangles": 60937,
           "bounds_local_m": [
             [
               -6.75,
@@ -800,7 +800,7 @@
             ],
             [
               5.405448913574219,
-              3.732686758041382,
+              3.945662498474121,
               4.25499963760376
             ]
           ],
@@ -817,7 +817,7 @@
         ],
         [
           5.405448913574219,
-          3.7327001094818115,
+          3.94569993019104,
           4.25499963760376
         ]
       ],
@@ -2279,7 +2279,10 @@
         "Native wall telephone base",
         "Native telephone shelf",
         "Native rotary dial",
-        "Native telephone mouthpiece stem"
+        "Native telephone mouthpiece stem",
+        "Native grounded office_threshold",
+        "Native grounded service_west",
+        "Native grounded service_bridge"
       ],
       "site_world_three_m": [
         -45.9,
@@ -2288,7 +2291,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "bf0f68f8149afd0653988b5014c565d498f7bf21977a0475e76552dcb7e7c66f"
+      "source_geometry_sha256": "9e2b00f4f8774150062082b8c90e4a91a51d3c2c393637e6078e5fdca0f359b9"
     },
     "SM_Sierra_Planting": {
       "name": "SM_Sierra_Planting",
@@ -4638,7 +4641,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "8bdaf8a69b9c65a1d553469c5f7acb2819f59acd6ea884c516a4a0e7d3ad7c32"
+      "source_geometry_sha256": "da609bd9158b47890264b31c84169c25dedefa32ecb1cc3be9b0cfe71b36b0a4"
     },
     "SM_Sierra_Room03": {
       "name": "SM_Sierra_Room03",
@@ -5452,7 +5455,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "c1ded8fd1df98857bcb18936d11e9d08ce8b71ac4501d56fb264c855d7179d54"
+      "source_geometry_sha256": "8160b88d60a89e101f02e619d264da9f9d2362d6cc8cc7287533b0bda5f3f127"
     },
     "SM_Sierra_Room05": {
       "name": "SM_Sierra_Room05",
@@ -6703,7 +6706,7 @@
       ],
       "parent_handle": "world.motel.group",
       "collision_role": "complex_visibility_and_explicit_gameplay_colliders",
-      "source_geometry_sha256": "dd0c6b9aca6bd64338b6a93a911f8a34a7dbe0772de0f8d9b74085d7942fa1b6"
+      "source_geometry_sha256": "c63cf2c217ef141e64c10bc747135116ebbd8af846bc7980df1cbdffad181f35"
     },
     "SM_Sierra_Room08": {
       "name": "SM_Sierra_Room08",
@@ -7562,7 +7565,7 @@
       "source_geometry_sha256": "d04966d9d4a555bba2929aea75af0bdc7358b846791d95b4874825faee45f58f"
     }
   },
-  "status": "SOURCE_BAKED_NATIVE_UNVERIFIED",
+  "status": "SOURCE_GEOMETRY_REPAIRED_NATIVE_UNVERIFIED",
   "source": "/home/tom/Documents/ChatGPT/Signal 47/modeller/sierra-motor-court/test-v2/Sierra_Motor_Court_Test_V2_Kelvora.blend",
   "source_sha256": "43f4cb62a8b15117b4b765ec07bb298ea9a19fd214e17d8610e666ee361a3bd4",
   "units": "metres",
@@ -7573,5 +7576,117 @@
     "import_rotation_yaw": 90
   },
   "normal_convention": "DIRECTX",
-  "runtime_modified": false
+  "runtime_modified": false,
+  "grounding_repair": {
+    "id": "motel-grounded-20261029-v1",
+    "input_blend_sha256": "53b48aa90d4cf4cda385bdda1c345f58f1381529ce00a193b39054406e361bff",
+    "input_manifest_sha256": "f4e17d83b3f0978ad2849112f87b2d0015811f2ba6c422faeb4beecf9f16f003",
+    "contract_sha256": "98c2b3d764c654e209996f0f7e388b16518666acd32ced91d87ba4750ae37463",
+    "added_pads": [
+      {
+        "name": "office_threshold",
+        "bounds_blender_m": [
+          [
+            2.22,
+            0.1,
+            -0.12
+          ],
+          [
+            2.295,
+            1.5,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.026315790354269848,
+          0.5761316996787285,
+          0.7058823455163765
+        ]
+      },
+      {
+        "name": "service_west",
+        "bounds_blender_m": [
+          [
+            -0.42,
+            3.23,
+            -0.12
+          ],
+          [
+            2.295,
+            3.4,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.9526316108245719,
+          0.06995884924670272,
+          0.7058823455163765
+        ]
+      },
+      {
+        "name": "service_bridge",
+        "bounds_blender_m": [
+          [
+            2.295,
+            3.265,
+            -0.12
+          ],
+          [
+            5,
+            3.4,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.9491228387773359,
+          0.05555555675473445,
+          0.7058823455163765
+        ]
+      }
+    ],
+    "changed_parts": [
+      "SM_Sierra_Glass",
+      "SM_Sierra_Office",
+      "SM_Sierra_Room02",
+      "SM_Sierra_Room04",
+      "SM_Sierra_Room07"
+    ],
+    "material_bake": "unchanged atlas/UV; no rebake",
+    "normal_storage_conversion": {
+      "attribute": "custom_normal",
+      "domain": "CORNER",
+      "output_type": "FLOAT_VECTOR",
+      "reason": "Preserve authored directions after translations and positive nonuniform donor scaling without smooth-fan averaging or INT16 basis changes",
+      "input_payload_sha256": {
+        "SM_Sierra_Office": "4c11543f413022c05defd198a1bc2f077fb403eee7334cd67ffb611c5ac96396",
+        "SM_Sierra_Glass": "1d943f4165e45b27b41133bf004e998cc33710ab09edb75f281596d9c6a7ea30",
+        "SM_Sierra_Room02": "732900f9480d371c3c080ac5b377b777c4ec9105419b8a879eba675f60d2d7ea",
+        "SM_Sierra_Room04": "c99f89aa0e9016bad28a1e0c5e459898635d61c3ba35d7181d828660507e67b6",
+        "SM_Sierra_Room07": "6eb52880322cb7c4eda1e1e6db028438ccbabc9645f440ab4eaee80df6757230"
+      },
+      "input_types": {
+        "SM_Sierra_Office": "INT16_2D",
+        "SM_Sierra_Glass": "INT16_2D",
+        "SM_Sierra_Room02": "INT16_2D",
+        "SM_Sierra_Room04": "INT16_2D",
+        "SM_Sierra_Room07": "INT16_2D"
+      },
+      "output_float_payload_sha256": {
+        "SM_Sierra_Office": "a6fc976cb91fb248a7df9c293181a4f483fd739802a8f9589878cdfec61fee74",
+        "SM_Sierra_Glass": "a753992bc90aa1ba2c688badbc61d4c6c976c1bad3ce907848ccc5e6a961262e",
+        "SM_Sierra_Room02": "c6f59414fb9546b502a7850e136f9a6f707d32f72d52ce16717ec36454e509d6",
+        "SM_Sierra_Room04": "38070673247280188ae639d386798bee03d7348c7253a0f39ac03cd6d68633ab",
+        "SM_Sierra_Room07": "bff0a3d1826c73bc1e713cd59122a79cce348bea1896de72752a36d284671eba"
+      }
+    }
+  }
 }

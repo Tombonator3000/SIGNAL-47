@@ -25,11 +25,17 @@ Bibliotekssøket fant ingen relevant prøvd reparasjonsløype som overstyrer pro
 | Apply R2 | Avvist med SIGSEGV ved utvidelse av eksisterende meshdatablokk, før lagring. | Originalkilden er fortsatt byteidentisk. Crash og avviste utdata er beholdt privat. |
 | Apply R3, nytt mesh | Avvist av normalgrensen før binding/save; første avvik 0,00232. | Ingen geometriendring er akseptert. |
 | Isolert normalprobe | PASS som diagnose: setter på original kopi og nytt mesh gir opptil 0,00365117 avvik; rå INT16_2D-kopi gir komponentavvik 0 og dot 1. | Målt uten ny geometri eller lagring av input. |
-| Apply R4, native-import og rute | UNVERIFIED. | Neste faktiske kontroll. |
+| Apply R4 | Avvist før binding/save: rå buffer er bevart, men flyttet/skalert geometri endrer komprimeringens beregnede normalretninger. | Ingen toleranse ble senket. |
+| Direkte vektorprobe E | PASS, også etter save/reopen: alle 829 275 gamle Office-hjørner har avvik 0; 1 692 nye har maks 2,98 × 10⁻⁸. | Diagnose av faktisk reparert Office, ikke native aksept. |
+| Apply R5 og separat audit/reopen | PASS på alle fem deler: gamle normaler avvik 0, nye maks 2,98 × 10⁻⁸. 15 FBX-er regenerert; 58 FBX-er og 67 teksturer bevart. | Native og runtime kvitteres separat. |
+| Native R1 | Avvist før staging fordi reimport gav [0,0,0] for eksisterende avstandsgrenser. | Delvis import er ikke akseptert. |
+| Native R2 og rute | UNVERIFIED. | Neste faktiske kontroll. |
 
-Normal-API-et snitter normaler innen samme glatte vifte før komprimering. Dette er bekreftet både i den isolerte proben og [Blenders kilde ved installert revisjon](https://github.com/blender/blender/blob/d13f752e3b9c/source/blender/blenkernel/intern/mesh_normals.cc#L1457). Gamle normaldata videreføres derfor direkte fremfor å sende dem gjennom setter-API-et på nytt.
+Normal-API-et snitter normaler innen samme glatte vifte før komprimering. Dette er bekreftet både i den isolerte proben og [Blenders kilde ved installert revisjon](https://github.com/blender/blender/blob/d13f752e3b9c/source/blender/blenkernel/intern/mesh_normals.cc#L1457). De fem endrede delene lagrer derfor de opprinnelige retningene direkte i `custom_normal/CORNER/FLOAT_VECTOR`. Kildeproben og R5 kontrollerer den faktiske float32-payloaden, vektorene og lagret fil. De øvrige attributtene og alle 19 uendrede deler beholder sin representasjon. Originalfilen er kildegrunnlaget; før eksplisitt promotering av den godkjente pakken sikres også en separat byteidentisk baseline.
 
 Det private rågrunnlaget ligger i `~/scratch-bm/Signal47-motel-grounded-20261029`. Akseptert kilde, import, binær og konkrete resultatfiler tilføyes etter faktisk kjøring.
+
+Reimporten viderefører den allerede aksepterte skjermpolicyen `[2,0.75,0.5625,0.005]`, målt på 24 av 24 modeller i tidligere `native-verify-r4.json` med SHA-256 `4ccd813e9cd9684a6c79e496e2bc8b62a1e7c6444873c4457f590f0d21a4426d`. Fersk LOD0/2 kopieres til fjern-LOD3 også ved omkjøring. Verifieren kontrollerer både faktisk lagret avstandspolicy og geometriposisjonenes hash, slik at likt trekanttall ikke skjuler gammel geometri.
 
 ## Målrettet runtimeprøve
 

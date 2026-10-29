@@ -27,6 +27,36 @@
     "motelBlade",
     "motelNeon"
   ],
+  "retire_named_nodes": [
+    {
+      "node": 737,
+      "name": "lic:lamp_marble",
+      "parent": 689
+    }
+  ],
+  "move_interaction_nodes": [
+    {
+      "handle": "world.motel.proxies.iceMachine",
+      "node": 742,
+      "geo": 506,
+      "parent": 662,
+      "expected_world_three_m": [
+        -43.13,
+        -1.398568384594018,
+        678.1
+      ],
+      "world_three_m": [
+        -44.7,
+        -1.4685683853163196,
+        670.985
+      ],
+      "scale": [
+        1.0256410256410258,
+        0.9,
+        0.06818181818181818
+      ]
+    }
+  ],
   "disable_colliders": [
     [
       -41.43,
@@ -123,6 +153,30 @@
       -34.321241906987794,
       712.5179623406941,
       714.6820376593058
+    ],
+    [
+      -43.35,
+      -42.75,
+      690.8,
+      691.4
+    ],
+    [
+      -43.35,
+      -42.75,
+      710.7,
+      711.3
+    ],
+    [
+      -43.52,
+      -42.77,
+      677.67,
+      678.53
+    ],
+    [
+      -41.76,
+      -41.34,
+      676.37,
+      676.83
     ]
   ],
   "add_colliders": [
@@ -257,6 +311,48 @@
       -59.8,
       680.85,
       681.85
+    ],
+    [
+      -43.10200014,
+      -42.59799995,
+      683.58881989,
+      684.15141239
+    ],
+    [
+      -43.10200014,
+      -42.59799995,
+      693.58882179,
+      694.15141335
+    ],
+    [
+      -43.10200014,
+      -42.59799995,
+      708.58881989,
+      709.15141525
+    ],
+    [
+      -45.1,
+      -44.3,
+      670.9543,
+      671.645
+    ],
+    [
+      -46.27,
+      -45.73,
+      671.0173,
+      671.6
+    ],
+    [
+      -43.175000095,
+      -42.624999905,
+      672.725000048,
+      673.275
+    ],
+    [
+      -43.175000095,
+      -42.624999905,
+      690.725000763,
+      691.275
     ]
   ],
   "add_zones": [
@@ -342,22 +438,92 @@
         681.4
       ],
       "y": -2.0985683853163195
+    },
+    {
+      "name": "covered-room-walk",
+      "rect": [
+        -43.605,
+        -40.755,
+        671.635,
+        720.615
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "reception-tiles",
+      "rect": [
+        -48.106,
+        -43.714,
+        672.304,
+        677.496
+      ],
+      "y": -2.0865683853163195
+    },
+    {
+      "name": "reception-underlay",
+      "rect": [
+        -48.12,
+        -43.68,
+        672.225,
+        677.575
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "reception-threshold",
+      "rect": [
+        -43.68,
+        -43.605,
+        673.4,
+        674.8
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "service-west",
+      "rect": [
+        -46.32,
+        -43.605,
+        671.5,
+        671.67
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "service-bridge",
+      "rect": [
+        -43.605,
+        -40.9,
+        671.5,
+        671.635
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "court-asphalt",
+      "rect": [
+        -40.8,
+        -30.2,
+        667.9,
+        721.9
+      ],
+      "y": -2.1785683853163196
     }
   ],
   "car_positions": {
     "motelCar1": [
       -37.45,
-      -2.0985683853163195,
+      -2.1785683853163196,
       683.7
     ],
     "motelCar2": [
       -37.45,
-      -2.0985683853163195,
+      -2.1785683853163196,
       703.9
     ],
     "motelCar3": [
       -37.45,
-      -2.0985683853163195,
+      -2.1785683853163196,
       712.9
     ]
   },
@@ -432,13 +598,13 @@
       ],
       "bounds_local_m": [
         [
-          0.7950000166893005,
+          -0.304999977350235,
           -42.82500076293945,
           0.17500001192092896
         ],
         [
           2.305999994277954,
-          3.7244999408721924,
+          3.874500036239624,
           2.0850000381469727
         ]
       ]
@@ -560,10 +726,10 @@
         674.9
       ],
       "lod_triangles": [
-        276425,
-        138211,
-        60813,
-        5529
+        276989,
+        138493,
+        60937,
+        5539
       ],
       "bounds_local_m": [
         [
@@ -573,7 +739,7 @@
         ],
         [
           5.405448913574219,
-          3.7327001094818115,
+          3.94569993019104,
           4.25499963760376
         ]
       ]
@@ -1019,7 +1185,7 @@
       "accepted_previous_tris": [
         23040
       ],
-      "result_tris": 23048,
+      "result_tris": 23110,
       "asset": "/Game/MotelV2/Trim/g4.g4",
       "original_material_indices": [
         0
@@ -1033,12 +1199,24 @@
       "accepted_previous_tris": [
         112
       ],
-      "result_tris": 76,
+      "result_tris": 12,
       "asset": "/Game/MotelV2/Trim/g457.g457",
       "original_material_indices": [
         0
       ],
       "hidden": false
+    },
+    {
+      "node": 674,
+      "geo": 459,
+      "parent": 663,
+      "accepted_previous_tris": [
+        12
+      ],
+      "result_tris": 0,
+      "asset": "",
+      "original_material_indices": [],
+      "hidden": true
     },
     {
       "node": 676,
@@ -1061,7 +1239,7 @@
       "accepted_previous_tris": [
         1908
       ],
-      "result_tris": 92,
+      "result_tris": 80,
       "asset": "/Game/MotelV2/Trim/g463.g463",
       "original_material_indices": [
         0
@@ -1075,12 +1253,10 @@
       "accepted_previous_tris": [
         4
       ],
-      "result_tris": 2,
-      "asset": "/Game/MotelV2/Trim/g464.g464",
-      "original_material_indices": [
-        0
-      ],
-      "hidden": false
+      "result_tris": 0,
+      "asset": "",
+      "original_material_indices": [],
+      "hidden": true
     },
     {
       "node": 682,
@@ -1101,7 +1277,7 @@
       "accepted_previous_tris": [
         6350
       ],
-      "result_tris": 5318,
+      "result_tris": 4350,
       "asset": "/Game/MotelV2/Trim/g528.g528",
       "original_material_indices": [
         0
@@ -1115,7 +1291,7 @@
       "accepted_previous_tris": [
         658
       ],
-      "result_tris": 654,
+      "result_tris": 648,
       "asset": "/Game/MotelV2/Trim/g529.g529",
       "original_material_indices": [
         0
@@ -1129,7 +1305,7 @@
       "accepted_previous_tris": [
         12694
       ],
-      "result_tris": 12704,
+      "result_tris": 12777,
       "asset": "/Game/MotelV2/Trim/g663.g663",
       "original_material_indices": [
         0
@@ -1138,10 +1314,10 @@
     }
   ],
   "provenance": {
-    "manifest_sha256": "f4e17d83b3f0978ad2849112f87b2d0015811f2ba6c422faeb4beecf9f16f003",
-    "trim_manifest_sha256": "1923a4d085bd1d534f90794d89b6f156d26958e7b62c5ed69625f1ff6d6dc03c",
-    "runtime_layout_sha256": "dd5e62af23da40b88a1dcfe4238ab18f1cf24dc8c4a0cbfe79b0deac9bda16e9",
-    "native_import_report_sha256": "804e934dc17742531828acd931e08e43a6b0f194a6cad7f8507b3350b4f8dbce",
-    "saved_native_report_sha256": "4ccd813e9cd9684a6c79e496e2bc8b62a1e7c6444873c4457f590f0d21a4426d"
+    "manifest_sha256": "71818fd0f3362febcfb7a605f5aa4e067bf8ffb3ae060bc39bbbd105fe72e175",
+    "trim_manifest_sha256": "de79e3aa8147271a460bff9be9f2605758a62b179930208911a7348cc7a9cd4c",
+    "runtime_layout_sha256": "222bca3fbb147e35aee9c06eb598be27edfdc5c7fd46b84bf3f3bcccf5bf8aae",
+    "native_import_report_sha256": "993b963bb066adcd97c4a140097fbc7abc34bc43bfcbc43491500d2397455bda",
+    "saved_native_report_sha256": "d42f6c07b7955704b6d6a8c9fbbc8f0aa103c30f36badfa3e1edbc1bc3bc586b"
   }
 }

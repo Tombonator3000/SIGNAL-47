@@ -90,5 +90,117 @@
     "runtime_bindings": "Existing actors and gameplay anchors retained separately",
     "production_blend": "Joined LOD0 geometry with portable packed textures; higher-level authoring modifiers/procedural graphs remain in excluded local source"
   },
-  "verification_limit": "Input provenance only. Native acceptance and frozen output hashes must come from the coordinating task after the full export and Unreal verification; this file does not assert those results."
+  "verification_limit": "Input provenance only. Native acceptance and frozen output hashes must come from the coordinating task after the full export and Unreal verification; this file does not assert those results.",
+  "grounding_repair": {
+    "id": "motel-grounded-20261029-v1",
+    "input_blend_sha256": "53b48aa90d4cf4cda385bdda1c345f58f1381529ce00a193b39054406e361bff",
+    "input_manifest_sha256": "f4e17d83b3f0978ad2849112f87b2d0015811f2ba6c422faeb4beecf9f16f003",
+    "contract_sha256": "98c2b3d764c654e209996f0f7e388b16518666acd32ced91d87ba4750ae37463",
+    "added_pads": [
+      {
+        "name": "office_threshold",
+        "bounds_blender_m": [
+          [
+            2.22,
+            0.1,
+            -0.12
+          ],
+          [
+            2.295,
+            1.5,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.026315790354269848,
+          0.5761316996787285,
+          0.7058823455163765
+        ]
+      },
+      {
+        "name": "service_west",
+        "bounds_blender_m": [
+          [
+            -0.42,
+            3.23,
+            -0.12
+          ],
+          [
+            2.295,
+            3.4,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.9526316108245719,
+          0.06995884924670272,
+          0.7058823455163765
+        ]
+      },
+      {
+        "name": "service_bridge",
+        "bounds_blender_m": [
+          [
+            2.295,
+            3.265,
+            -0.12
+          ],
+          [
+            5,
+            3.4,
+            0
+          ]
+        ],
+        "vertices": 96,
+        "triangles": 188,
+        "normal_transform": "normalized inverse transpose of positive diagonal scale",
+        "scale_blender_m": [
+          0.9491228387773359,
+          0.05555555675473445,
+          0.7058823455163765
+        ]
+      }
+    ],
+    "changed_parts": [
+      "SM_Sierra_Glass",
+      "SM_Sierra_Office",
+      "SM_Sierra_Room02",
+      "SM_Sierra_Room04",
+      "SM_Sierra_Room07"
+    ],
+    "material_bake": "unchanged atlas/UV; no rebake",
+    "normal_storage_conversion": {
+      "attribute": "custom_normal",
+      "domain": "CORNER",
+      "output_type": "FLOAT_VECTOR",
+      "reason": "Preserve authored directions after translations and positive nonuniform donor scaling without smooth-fan averaging or INT16 basis changes",
+      "input_payload_sha256": {
+        "SM_Sierra_Office": "4c11543f413022c05defd198a1bc2f077fb403eee7334cd67ffb611c5ac96396",
+        "SM_Sierra_Glass": "1d943f4165e45b27b41133bf004e998cc33710ab09edb75f281596d9c6a7ea30",
+        "SM_Sierra_Room02": "732900f9480d371c3c080ac5b377b777c4ec9105419b8a879eba675f60d2d7ea",
+        "SM_Sierra_Room04": "c99f89aa0e9016bad28a1e0c5e459898635d61c3ba35d7181d828660507e67b6",
+        "SM_Sierra_Room07": "6eb52880322cb7c4eda1e1e6db028438ccbabc9645f440ab4eaee80df6757230"
+      },
+      "input_types": {
+        "SM_Sierra_Office": "INT16_2D",
+        "SM_Sierra_Glass": "INT16_2D",
+        "SM_Sierra_Room02": "INT16_2D",
+        "SM_Sierra_Room04": "INT16_2D",
+        "SM_Sierra_Room07": "INT16_2D"
+      },
+      "output_float_payload_sha256": {
+        "SM_Sierra_Office": "a6fc976cb91fb248a7df9c293181a4f483fd739802a8f9589878cdfec61fee74",
+        "SM_Sierra_Glass": "a753992bc90aa1ba2c688badbc61d4c6c976c1bad3ce907848ccc5e6a961262e",
+        "SM_Sierra_Room02": "c6f59414fb9546b502a7850e136f9a6f707d32f72d52ce16717ec36454e509d6",
+        "SM_Sierra_Room04": "38070673247280188ae639d386798bee03d7348c7253a0f39ac03cd6d68633ab",
+        "SM_Sierra_Room07": "bff0a3d1826c73bc1e713cd59122a79cce348bea1896de72752a36d284671eba"
+      }
+    }
+  }
 }
