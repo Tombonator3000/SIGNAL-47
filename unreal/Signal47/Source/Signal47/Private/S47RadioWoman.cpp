@@ -266,14 +266,296 @@ struct FS47RadioWomanState
  FString Why=TEXT("not attempted"),Asset,Packed;bool Active=false;int32 NativeNode=INDEX_NONE,SeatHits=0;
  FTransform Placement;FVector Seat=FVector::ZeroVector,Forward=FVector::ZeroVector,Right=FVector::ZeroVector;
  TSharedPtr<FJsonObject> BenchDiagnostics=MakeShared<FJsonObject>();
- bool BenchDiagnosticRequested=false;int32 DiagnosticBenchNode=INDEX_NONE,DiagnosticReadbacks=0;TSet<int32> DiagnosticHitNodes;
+ bool BenchDiagnosticRequested=false,BenchDiagnosticPostRepair=false,BenchDiagnosticConflict=false;int32 DiagnosticBenchNode=INDEX_NONE,DiagnosticReadbacks=0;TSet<int32> DiagnosticHitNodes;
  TArray<uint32> FullIndices,RadioIndices;TArray<int32> LODs;
 };
 
 namespace
 {
+ // Private generated diagnostic proposal: no adoption, setters, scene hiding or asset saving.
+ namespace S47RadioBenchPost
+ {
+  const FVector SourcePivot(0.42999999999999999,0.69999999999999996,0),TargetPivot(0.42999999999999999,0.69999999999999996,-0.487272127600062);
+  const FVector RX(0.99992453754711386,-0.00017619361113445156,-0.012283654464442479),RY(-0.00017619361113445156,0.99958861410652189,-0.028680507394643031),RZ(0.012283654464442479,0.028680507394643031,0.99951315165363586);
+  struct FSolid {const TCHAR* Name;FBox Box;};
+  const FSolid Solids[]={
+   {TEXT("Bench_cast_leg_front"),FBox(FVector(0.58999999999999997,-0.155,0),FVector(0.63,-0.10500000000000001,0.42999999999999999))},
+   {TEXT("Bench_cast_leg_back"),FBox(FVector(0.21000000000000002,-0.155,0),FVector(0.25,-0.10500000000000001,0.81999999999999995))},
+   {TEXT("Bench_seat_bearer"),FBox(FVector(0.21000000000000005,-0.155,0.40000000000000002),FVector(0.65000000000000002,-0.10500000000000001,0.44000000000000006))},
+   {TEXT("Bench_foot"),FBox(FVector(0.19000000000000003,-0.16,0),FVector(0.67000000000000004,-0.10000000000000001,0.029999999999999999))},
+   {TEXT("Bench_cast_leg_front"),FBox(FVector(0.58999999999999997,1.5049999999999999,0),FVector(0.63,1.5549999999999997,0.42999999999999999))},
+   {TEXT("Bench_cast_leg_back"),FBox(FVector(0.21000000000000002,1.5049999999999999,0),FVector(0.25,1.5549999999999997,0.81999999999999995))},
+   {TEXT("Bench_seat_bearer"),FBox(FVector(0.21000000000000005,1.5049999999999999,0.40000000000000002),FVector(0.65000000000000002,1.5549999999999997,0.44000000000000006))},
+   {TEXT("Bench_foot"),FBox(FVector(0.19000000000000003,1.4999999999999998,0),FVector(0.67000000000000004,1.5599999999999998,0.029999999999999999))},
+   {TEXT("Bench_seat_slat"),FBox(FVector(0.26000000000000001,-0.25,0.43999999999999995),FVector(0.33499999999999996,1.6499999999999999,0.46999999999999997))},
+   {TEXT("Bench_seat_slat"),FBox(FVector(0.35999999999999999,-0.25,0.43999999999999995),FVector(0.43499999999999994,1.6499999999999999,0.46999999999999997))},
+   {TEXT("Bench_seat_slat"),FBox(FVector(0.46000000000000008,-0.25,0.43999999999999995),FVector(0.53500000000000003,1.6499999999999999,0.46999999999999997))},
+   {TEXT("Bench_seat_slat"),FBox(FVector(0.56000000000000005,-0.25,0.43999999999999995),FVector(0.63500000000000001,1.6499999999999999,0.46999999999999997))},
+   {TEXT("Bench_back_slat"),FBox(FVector(0.23999999999999999,-0.25,0.56000000000000005),FVector(0.27000000000000002,1.6499999999999999,0.64500000000000002))},
+   {TEXT("Bench_back_slat"),FBox(FVector(0.23999999999999999,-0.25,0.69999999999999996),FVector(0.27000000000000002,1.6499999999999999,0.78499999999999992))}
+  };
+  const FVector FootGrid[]={
+   FVector(0.19,-0.16,0),
+   FVector(0.19,-0.13,0),
+   FVector(0.19,-0.10000000000000001,0),
+   FVector(0.19,1.5,0),
+   FVector(0.19,1.53,0),
+   FVector(0.19,1.5600000000000001,0),
+   FVector(0.23000000000000001,-0.16,0),
+   FVector(0.23000000000000001,-0.13,0),
+   FVector(0.23000000000000001,-0.10000000000000001,0),
+   FVector(0.23000000000000001,1.5,0),
+   FVector(0.23000000000000001,1.53,0),
+   FVector(0.23000000000000001,1.5600000000000001,0),
+   FVector(0.42999999999999999,-0.16,0),
+   FVector(0.42999999999999999,-0.13,0),
+   FVector(0.42999999999999999,-0.10000000000000001,0),
+   FVector(0.42999999999999999,1.5,0),
+   FVector(0.42999999999999999,1.53,0),
+   FVector(0.42999999999999999,1.5600000000000001,0),
+   FVector(0.60999999999999999,-0.16,0),
+   FVector(0.60999999999999999,-0.13,0),
+   FVector(0.60999999999999999,-0.10000000000000001,0),
+   FVector(0.60999999999999999,1.5,0),
+   FVector(0.60999999999999999,1.53,0),
+   FVector(0.60999999999999999,1.5600000000000001,0),
+   FVector(0.67000000000000004,-0.16,0),
+   FVector(0.67000000000000004,-0.13,0),
+   FVector(0.67000000000000004,-0.10000000000000001,0),
+   FVector(0.67000000000000004,1.5,0),
+   FVector(0.67000000000000004,1.53,0),
+   FVector(0.67000000000000004,1.5600000000000001,0)
+  };
+  FVector Repair(const FVector& P){const auto V=P-SourcePivot;return TargetPivot+RX*V.X+RY*V.Y+RZ*V.Z;}
+  FVector Unrepair(const FVector& P){const auto V=P-TargetPivot;return SourcePivot+FVector(FVector::DotProduct(RX,V),FVector::DotProduct(RY,V),FVector::DotProduct(RZ,V));}
+  FVector BToCm(const FVector& P){return FVector(P.X*100,-P.Y*100,P.Z*100);}
+  FVector CmToB(const FVector& P){return FVector(P.X/100,-P.Y/100,P.Z/100);}
+  FVector WorldFromOld(const FTransform& Frame,const FVector& P){return Frame.TransformPosition(BToCm(Repair(P)));}
+  FVector OldFromWorld(const FTransform& Frame,const FVector& P){return Unrepair(CmToB(Frame.InverseTransformPosition(P)));}
+  int32 RootOf(AS47Web* W,int32 Index)
+  {
+   for(int32 D=0;D<32&&W;++D){const auto* N=W->Node(Index);if(!N)return INDEX_NONE;if(N->Parent==INDEX_NONE)return Index;Index=N->Parent;}return INDEX_NONE;
+  }
+  bool VisibleNow(AS47Web* W,UPrimitiveComponent* C,int32 Index)
+  {
+   const auto* N=W?W->Node(Index):nullptr;
+   return N&&C&&N->Comp.Get()==C&&W->NodeOf(C)==Index&&C->IsRegistered()&&W->ObjAt(Index).Shown()
+    &&C->IsVisible()&&!C->bHiddenInGame&&(!C->GetOwner()||!C->GetOwner()->IsHidden());
+  }
+  bool ActiveRoot(AS47Web* W,int32 Index)
+  {
+   const int32 Root=RootOf(W,Index);return W&&(W->Area()==TEXT("diner")||W->Area()==TEXT("road"))&&(Root==1240||Root==1431);
+  }
+  bool OldSeat(const FVector& P)
+  {
+   for(const auto& B:Solids)if(FString(B.Name)==TEXT("Bench_seat_slat")&&B.Box.ExpandBy(.0002).IsInsideOrOn(P)&&FMath::Abs(P.Z-B.Box.Max.Z)<=.0002)return true;
+   return false;
+  }
+  FString BenchRole(const FVector& P)
+  {
+   for(const auto& B:Solids)if(B.Box.ExpandBy(.0002).IsInsideOrOn(P))return FString(TEXT("bench_not_ground:"))+B.Name;
+   return TEXT("other_shell_surface_without_authored_floor_role");
+  }
+  TSharedPtr<FJsonObject> Identity(AS47Web* W,const FHitResult& H,UStaticMeshComponent* Shell)
+  {
+   auto J=SurfaceIdentity(W,H,Shell);auto* C=H.GetComponent();const int32 Index=W?W->NodeOf(C):INDEX_NONE;
+   const int32 Root=RootOf(W,Index);J->SetNumberField(TEXT("actual_root_node"),Root);
+   J->SetObjectField(TEXT("component_live"),ComponentIdentity(W,Index));J->SetBoolField(TEXT("registered_at_measurement"),C&&C->IsRegistered());
+   const bool Visible=VisibleNow(W,C,Index);J->SetBoolField(TEXT("actually_shown_registered"),Visible);J->SetBoolField(TEXT("active_area_root"),ActiveRoot(W,Index));
+   FString Role=TEXT("unclassified_component_not_support_acceptance");
+   if(C==Shell&&Shell)
+   {
+    const FVector Old=OldFromWorld(Shell->GetComponentTransform(),H.ImpactPoint);
+    J->SetArrayField(TEXT("hit_unrepaired_blender_m"),Vec(Old));Role=BenchRole(Old);
+   }
+   else if(const auto* N=W?W->Node(Index):nullptr)
+   {
+    const auto* M=Cast<UStaticMeshComponent>(C);const FString Path=M?GetPathNameSafe(M->GetStaticMesh().Get()):FString();
+    if(!Visible)Role=TEXT("hidden_or_inactive_component_not_support");
+    else if(N->Geo==873&&Index==1242&&Root==1240&&Path==TEXT("/Game/Web/Geo/geo_007/StaticMeshes/g873.g873"))Role=TEXT("measured_visible_active_road_desert");
+    else if(N->Geo==1004&&Index==1453&&Root==1431&&Path==TEXT("/Game/TownBuildings/Trim/StaticMeshes/g1004.g1004"))Role=TEXT("measured_visible_retained_town_pavement");
+    else Role=TEXT("other_visible_surface_without_verified_authored_support_role");
+   }
+   J->SetStringField(TEXT("role"),Role);J->SetBoolField(TEXT("contact_accepted"),false);return J;
+  }
+  TSharedPtr<FJsonObject> Record(AS47Web* W,UStaticMeshComponent* Shell,const FHitResult& H,bool Found,const FVector& Start,const FVector& End)
+  {
+   auto J=TraceData(W,Shell,H,Found,Start,End);J->SetObjectField(TEXT("surface_identity"),Identity(W,H,Shell));return J;
+  }
+  struct FProbe {TSharedPtr<FJsonObject> Json;FHitResult Top;bool Found=false,Complete=true;};
+  FProbe WorldProbe(AS47Web* W,UStaticMeshComponent* Shell,const FVector& Start,const FVector& End,const FCollisionQueryParams& Base,TSet<int32>& Seen)
+  {
+   FProbe Out;Out.Json=MakeShared<FJsonObject>();FCollisionQueryParams Q=Base;TArray<TSharedPtr<FJsonValue>> Rows;bool Stopped=false;
+   for(int32 Attempt=0;Attempt<32;++Attempt)
+   {
+    FHitResult H;const bool Found=W->GetWorld()->LineTraceSingleByChannel(H,Start,End,ECC_Visibility,Q);
+    auto Row=Record(W,Shell,H,Found,Start,End);Row->SetNumberField(TEXT("attempt"),Attempt);
+    auto* C=H.GetComponent();const int32 Index=W->NodeOf(C);if(Index!=INDEX_NONE)Seen.Add(Index);
+    // A current, mapped hidden component can be excluded per query. Visible unknowns stop the ray.
+    const auto* N=W->Node(Index);const bool Known=N&&C&&N->Comp.Get()==C&&C->IsRegistered();
+    const bool Hidden=Known&&(!W->ObjAt(Index).Shown()||!C->IsVisible()||C->bHiddenInGame||(C->GetOwner()&&C->GetOwner()->IsHidden()));
+    const bool Exclude=Found&&C!=Shell&&Hidden;
+    Row->SetBoolField(TEXT("query_local_exclusion"),Exclude);Row->SetStringField(TEXT("exclusion_reason"),Exclude?TEXT("fresh node/ancestor/component hidden state; no global collision/visibility mutation"):TEXT("none"));
+    Rows.Add(MakeShared<FJsonValueObject>(Row));
+    if(Exclude){Q.AddIgnoredComponent(C);continue;}
+    Out.Top=H;Out.Found=Found&&H.bBlockingHit&&C!=Shell&&VisibleNow(W,C,Index)&&ActiveRoot(W,Index)&&H.ImpactNormal.Z>.7;
+    Stopped=true;break;
+   }
+   Out.Complete=Stopped;Out.Json->SetArrayField(TEXT("ordered_single_hit_queries"),Rows);Out.Json->SetBoolField(TEXT("bounded_query_complete"),Stopped);
+   Out.Json->SetBoolField(TEXT("visible_upward_surface_candidate"),Out.Found);Out.Json->SetBoolField(TEXT("entire_laundry_shell_ignored"),false);
+   Out.Json->SetBoolField(TEXT("contact_accepted"),false);return Out;
+  }
+  struct FProvider {int32 Index;UStaticMeshComponent* C;};
+  TArray<FProvider> Providers(AS47Web* W,UStaticMeshComponent* Shell,const TSet<UPrimitiveComponent*>& Person)
+  {
+   TArray<FProvider> Out;
+   for(int32 I=0;I<W->PartCount();++I)
+   {
+    const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+    if(!C||C==Shell||Person.Contains(C)||!VisibleNow(W,C,I)||!ActiveRoot(W,I)||!CollisionEnabledHasQuery(C->GetCollisionEnabled())||C->GetCollisionResponseToChannel(ECC_Visibility)!=ECR_Block)continue;
+    Out.Add({I,C});
+   }
+   return Out;
+  }
+  FProbe DirectProbe(AS47Web* W,UStaticMeshComponent* Shell,const TArray<FProvider>& Candidates,const FVector& Start,const FVector& End,const FCollisionQueryParams& Q,TSet<int32>& Seen)
+  {
+   FProbe Out;Out.Json=MakeShared<FJsonObject>();TArray<TSharedPtr<FJsonValue>> Rows;double Best=-1e30;
+   for(const auto& P:Candidates)
+   {
+    const FBox B=P.C->Bounds.GetBox().ExpandBy(.02);
+    if(!B.IsValid||Start.X<B.Min.X||Start.X>B.Max.X||Start.Y<B.Min.Y||Start.Y>B.Max.Y||FMath::Max(Start.Z,End.Z)<B.Min.Z||FMath::Min(Start.Z,End.Z)>B.Max.Z)continue;
+    FHitResult H;const bool Found=P.C->LineTraceComponent(H,Start,End,Q);auto Row=Record(W,Shell,H,Found,Start,End);
+    Row->SetNumberField(TEXT("requested_node"),P.Index);Row->SetStringField(TEXT("requested_component"),GetPathNameSafe(P.C));Rows.Add(MakeShared<FJsonValueObject>(Row));
+    if(Found)Seen.Add(P.Index);
+    if(Found&&H.bBlockingHit&&H.GetComponent()==P.C&&VisibleNow(W,P.C,P.Index)&&ActiveRoot(W,P.Index)&&H.ImpactNormal.Z>.7&&H.ImpactPoint.Z>Best){Best=H.ImpactPoint.Z;Out.Top=H;Out.Found=true;}
+   }
+   Out.Json->SetArrayField(TEXT("actual_component_queries"),Rows);Out.Json->SetBoolField(TEXT("visible_upward_surface_candidate"),Out.Found);
+   Out.Json->SetStringField(TEXT("scope"),TEXT("Separate exact registered visible component queries; Shell remains in the world probe. Highest measured upward candidate is not support/contact acceptance."));
+   if(Out.Found)Out.Json->SetObjectField(TEXT("highest_measured_visible_candidate"),Record(W,Shell,Out.Top,true,Start,End));
+   Out.Json->SetBoolField(TEXT("contact_accepted"),false);return Out;
+  }
+  TSharedPtr<FJsonObject> Support(AS47Web* W,UStaticMeshComponent* Shell,const TArray<FProvider>& Candidates,const FVector& At,const FCollisionQueryParams& Q,TSet<int32>& Seen,bool& Complete,bool Near)
+  {
+   auto J=MakeShared<FJsonObject>();const FVector Start=At+FVector(0,0,50),End=At-FVector(0,0,Near?150:100);
+   auto Raw=WorldProbe(W,Shell,Start,End,Q,Seen),Direct=DirectProbe(W,Shell,Candidates,Start,End,Q,Seen);
+   J->SetArrayField(TEXT("measured_or_projected_point_ue_cm"),Vec(At));J->SetObjectField(TEXT("world_probe_with_conditional_hidden_exclusions"),Raw.Json);
+   J->SetObjectField(TEXT("direct_visible_component_probes"),Direct.Json);J->SetBoolField(TEXT("visible_surface_identified"),Direct.Found);
+   J->SetBoolField(TEXT("world_direct_visible_provider_agree"),Raw.Found&&Direct.Found&&Raw.Top.GetComponent()==Direct.Top.GetComponent()&&Raw.Top.ImpactPoint.Equals(Direct.Top.ImpactPoint,.02));
+   if(Raw.Found)J->SetNumberField(TEXT("gap_to_filtered_world_candidate_cm"),At.Z-Raw.Top.ImpactPoint.Z);
+   if(Direct.Found)J->SetNumberField(TEXT("gap_to_direct_visible_candidate_cm"),At.Z-Direct.Top.ImpactPoint.Z);
+   if(Near)
+   {
+    const FVector A=At+FVector(0,0,1),B=At-FVector(0,0,1);auto Tight=DirectProbe(W,Shell,Candidates,A,B,Q,Seen);
+    J->SetObjectField(TEXT("direct_near_contact_component_probes_no_skipped_gap"),Tight.Json);
+    J->SetNumberField(TEXT("near_contact_half_interval_cm"),1.);if(Tight.Found)J->SetNumberField(TEXT("gap_to_direct_near_candidate_cm"),At.Z-Tight.Top.ImpactPoint.Z);
+   }
+   Complete=Raw.Complete&&Direct.Found;J->SetBoolField(TEXT("contact_accepted"),false);J->SetBoolField(TEXT("runtime_accepted"),false);return J;
+  }
+  bool Run(FS47RadioWomanState& S)
+  {
+   S.BenchDiagnostics=MakeShared<FJsonObject>();auto& D=S.BenchDiagnostics;auto* W=S.Web.Get();S.DiagnosticHitNodes.Reset();
+   D->SetNumberField(TEXT("schema_version"),2);D->SetStringField(TEXT("source_geometry_phase"),TEXT("POST_REPAIR_RIGID_SOURCE_FRAME_NATIVE_QUERY"));
+   D->SetStringField(TEXT("geometry_proof_sha256"),TEXT("25dcfa0a41a8a9a5a8dc9db78e932a98c56401307746eef51391dbd56a17fd75"));
+   D->SetBoolField(TEXT("read_only"),true);D->SetBoolField(TEXT("adoption_attempted"),false);D->SetBoolField(TEXT("runtime_accepted"),false);D->SetBoolField(TEXT("contact_accepted"),false);
+   D->SetStringField(TEXT("scope"),TEXT("Source rigid transform only chooses and classifies actual native queries. No source coordinates substitute for hits. Current visible surfaces are measured independently; g1004 is not prescribed for shoe support. No setters/RadioCut/save/bake/adoption."));
+   D->SetNumberField(TEXT("readback_serial"),++S.DiagnosticReadbacks);D->SetNumberField(TEXT("query_monotonic_seconds"),FPlatformTime::Seconds());
+   TArray<TSharedPtr<FJsonValue>> Errors;bool Good=true;auto Check=[&](bool Pass,const TCHAR* Why){if(!Pass){Good=false;Errors.Add(MakeShared<FJsonValueString>(Why));}return Pass;};
+   auto Finish=[&](){D->SetArrayField(TEXT("mismatches"),Errors);D->SetBoolField(TEXT("measurement_valid"),Good);D->SetStringField(TEXT("status"),Good?TEXT("MEASURED_NO_SUPPORT_ACCEPTANCE"):TEXT("REJECTED_MEASUREMENT"));S.Why=Good?TEXT("postrepair native measurements only; contact/adoption false"):TEXT("postrepair query rejected; original figure/radio retained");return Good;};
+   if(!Check(!S.BenchDiagnosticConflict,TEXT("choose exactly one PRE_REPAIR or POST_REPAIR diagnostic flag"))||!Check(W&&W->GetWorld()&&S.Original.Num()==6,TEXT("actual Web/world and six captured originals required")))return Finish();
+   const auto* Group=W->Node(1480);const auto* Parent=W->Node(1431);int32 Count=0;
+   for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Name==TEXT("town-production:SM_Town_Laundry_Shell")){S.DiagnosticBenchNode=I;++Count;}
+   const auto* N=W->Node(S.DiagnosticBenchNode);auto* Shell=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+   D->SetObjectField(TEXT("tb2_identity"),ComponentIdentity(W,S.DiagnosticBenchNode));D->SetObjectField(TEXT("legacy_g1074_identity"),ComponentIdentity(W,1562));D->SetObjectField(TEXT("legacy_g990_identity"),ComponentIdentity(W,1435));
+   D->SetStringField(TEXT("area_at_query"),W->Area());D->SetNumberField(TEXT("named_shell_count"),Count);
+   if(!Check(Count==1&&Shell&&Group&&Group->Comp.IsValid()&&Parent&&Parent->Comp.IsValid(),TEXT("unique native Shell and unchanged actual owner/root required")))return Finish();
+   const FTransform Assembly(FQuat::Identity,FVector(-1500,213300,801.3043546669646));auto* Mesh=Shell->GetStaticMesh().Get();
+   const bool MeshOK=Mesh&&Mesh->GetPathName()==TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==3&&Mesh->GetNumTriangles(0)==9935&&Mesh->GetNumTriangles(1)==5463&&Mesh->GetNumTriangles(2)==2584;
+   if(!Check(MeshOK&&N->Parent==1431&&Shell->GetAttachParent()==Parent->Comp.Get()&&Shell->GetRelativeTransform().Equals(Assembly,.001)&&Shell->GetComponentTransform().Equals(Assembly*Parent->Comp->GetComponentTransform(),.001)&&VisibleNow(W,Shell,S.DiagnosticBenchNode)&&ActiveRoot(W,S.DiagnosticBenchNode),TEXT("correct actual shown native Shell, canonical assembly and three unchanged LOD counts required")))return Finish();
+   const FTransform Frame=Shell->GetComponentTransform();const FVector Up=Frame.TransformVectorNoScale(FVector(RZ.X,-RZ.Y,RZ.Z)).GetSafeNormal();
+   if(!Check(!Up.ContainsNaN()&&Up.Z>.7,TEXT("actual assembly must preserve an upward nondegenerate repaired normal for vertical query extents")))return Finish();
+   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioBenchPostRepair),true);Q.bReturnFaceIndex=true;TSet<UPrimitiveComponent*> Person;TArray<TSharedPtr<FJsonValue>> Ignored;
+   for(const auto& P:S.Original)if(P.Component.IsValid()){Q.AddIgnoredComponent(P.Component.Get());Person.Add(P.Component.Get());Ignored.Add(MakeShared<FJsonValueString>(GetPathNameSafe(P.Component.Get())));}
+   D->SetArrayField(TEXT("only_unconditionally_ignored_person_components"),Ignored);D->SetBoolField(TEXT("entire_laundry_shell_ignored"),false);const auto Candidates=Providers(W,Shell,Person);
+   D->SetNumberField(TEXT("actually_registered_shown_queryable_provider_components"),Candidates.Num());D->SetArrayField(TEXT("expected_rigid_normal_world_query_only"),Vec(Up));
+   TArray<TSharedPtr<FJsonValue>> Slats;int32 Slat=0,SeatSlats=0,BackSlats=0;
+   for(const auto& B:Solids)if(FString(B.Name)==TEXT("Bench_seat_slat")||FString(B.Name)==TEXT("Bench_back_slat"))
+   {
+    auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("slat"),Slat++);Row->SetStringField(TEXT("source_solid_role"),B.Name);if(FString(B.Name)==TEXT("Bench_seat_slat"))++SeatSlats;else ++BackSlats;int32 Hits=0;TArray<TSharedPtr<FJsonValue>> Traces;
+    for(double Y:{-.05,.70,1.45})
+    {
+     const double X=(B.Box.Min.X+B.Box.Max.X)*.5;const FVector A=WorldFromOld(Frame,FVector(X,Y,B.Box.Max.Z+.02)),Z=WorldFromOld(Frame,FVector(X,Y,B.Box.Max.Z-.05));FHitResult H;const bool Found=Shell->LineTraceComponent(H,A,Z,Q);
+     const FVector Old=OldFromWorld(Frame,H.ImpactPoint);const bool Exact=Found&&H.GetComponent()==Shell&&FVector::DotProduct(H.ImpactNormal,Up)>.7&&FMath::Abs(Old.Z-B.Box.Max.Z)<=.0002&&B.Box.ExpandBy(.0002).IsInsideOrOn(Old);
+     auto T=Record(W,Shell,H,Found,A,Z);T->SetBoolField(TEXT("actual_repaired_slat_top_match"),Exact);if(Found)T->SetArrayField(TEXT("hit_in_original_bench_frame_m"),Vec(Old));else T->SetField(TEXT("hit_in_original_bench_frame_m"),MakeShared<FJsonValueNull>());Traces.Add(MakeShared<FJsonValueObject>(T));if(Exact)++Hits;
+    }
+    Row->SetNumberField(TEXT("actual_top_hits"),Hits);Row->SetArrayField(TEXT("traces"),Traces);Slats.Add(MakeShared<FJsonValueObject>(Row));Check(Hits==3,TEXT("each repaired slat requires three actual native component top hits"));
+   }
+   D->SetArrayField(TEXT("native_slat_traces"),Slats);D->SetNumberField(TEXT("seat_slat_count"),SeatSlats);D->SetNumberField(TEXT("back_slat_count"),BackSlats);Check(SeatSlats==4&&BackSlats==2,TEXT("exact four seat slats and two back slats required"));
+   const FVector Anchor=Group->Comp->GetComponentLocation(),Plane=WorldFromOld(Frame,FVector(.43,.70,.47));TArray<double> Heights;TArray<TSharedPtr<FJsonValue>> SeatRows;
+   D->SetArrayField(TEXT("unchanged_original_anchor_ue_cm"),Vec(Anchor));
+   for(double X:{-2.,0.,2.})for(double Y:{-2.,0.,2.})
+   {
+    const FVector At=Anchor+FVector(X,Y,0);const double QueryZ=At.Z+FVector::DotProduct(Up,Plane-At)/Up.Z;const FVector A(At.X,At.Y,QueryZ+20),Z(At.X,At.Y,QueryZ-20);FHitResult H;const bool Found=Shell->LineTraceComponent(H,A,Z,Q);
+    const FVector Old=OldFromWorld(Frame,H.ImpactPoint);const bool Exact=Found&&H.GetComponent()==Shell&&FVector::DotProduct(H.ImpactNormal,Up)>.7&&OldSeat(Old);
+    auto T=Record(W,Shell,H,Found,A,Z);T->SetNumberField(TEXT("source_plane_used_only_for_ray_extent_z_cm"),QueryZ);T->SetBoolField(TEXT("actual_repaired_seat_top_match"),Exact);SeatRows.Add(MakeShared<FJsonValueObject>(T));if(Exact)Heights.Add(H.ImpactPoint.Z);
+   }
+   D->SetArrayField(TEXT("candidate_seat_traces"),SeatRows);D->SetNumberField(TEXT("candidate_seat_actual_hits"),Heights.Num());const bool SeatOK=Check(Heights.Num()>=5,TEXT("unchanged anchorXY requires at least five of nine actual repaired seat hits"));
+   if(SeatOK){Heights.Sort();S.Seat=FVector(Anchor.X,Anchor.Y,Heights[Heights.Num()/2]);D->SetArrayField(TEXT("measured_candidate_seat_ue_cm"),Vec(S.Seat));D->SetNumberField(TEXT("candidate_seat_spread_cm"),Heights.Last()-Heights[0]);Check(Heights.Last()-Heights[0]<=1.5,TEXT("measured seat spread exceeds unchanged1.5cm limit"));}
+   TArray<TSharedPtr<FJsonValue>> Feet;int32 FootIndex=0;
+   auto FootQuery=[&](const FVector& Old,bool Required)
+   {
+    const FVector A=WorldFromOld(Frame,Old-FVector(0,0,.05)),Z=WorldFromOld(Frame,Old+FVector(0,0,.05));FHitResult H;const bool Found=Shell->LineTraceComponent(H,A,Z,Q);const FVector Back=OldFromWorld(Frame,H.ImpactPoint);
+    const bool Exact=Found&&H.GetComponent()==Shell&&FVector::DotProduct(H.ImpactNormal,Up)<-.7&&FMath::Abs(Back.Z)<=.0002&&BenchRole(Back).StartsWith(TEXT("bench_not_ground:"));
+    auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("sample"),FootIndex++);Row->SetBoolField(TEXT("required_interior_foot_sample"),Required);Row->SetArrayField(TEXT("original_bench_frame_sample_m"),Vec(Old));Row->SetObjectField(TEXT("actual_bottom_trace"),Record(W,Shell,H,Found,A,Z));Row->SetBoolField(TEXT("actual_repaired_bottom_match"),Exact);
+    if(Required)Check(Exact,TEXT("each of four actual repaired leg/foot-iron underside samples required"));
+    if(Exact){bool Complete=false;Row->SetObjectField(TEXT("measured_visible_surface_probes"),Support(W,Shell,Candidates,H.ImpactPoint,Q,S.DiagnosticHitNodes,Complete,true));if(Required)Check(Complete,TEXT("identify actual visible component below bench; no g1004 identity is presumed"));}
+    Feet.Add(MakeShared<FJsonValueObject>(Row));
+   };
+   for(double X:{.23,.61})for(double Y:{-.13,1.53})FootQuery(FVector(X,Y,0),true);
+   for(const auto& P:FootGrid)FootQuery(P,false);
+   D->SetArrayField(TEXT("bench_underside_and_visible_surface_traces"),Feet);D->SetStringField(TEXT("source_grid_edge_scope"),TEXT("30 source boundary/grid queries are logged, never replaced by expected hits. Four interior underside samples are required; edge misses remain explicit."));
+   if(SeatOK)
+   {
+    S.Asset=AssetPath;FParse::Value(FCommandLine::Get(),TEXT("S47RadioWomanDiagnosticSoleAsset="),S.Asset);
+    if(!Check(S.Asset.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/"))&&!S.Asset.Contains(TEXT(".."))&&!S.Asset.Contains(TEXT(" ")),TEXT("explicit private CPU-readable sole projection asset path required")))return Finish();
+    if(!S.Asset.Contains(TEXT("."))){FString Name;S.Asset.Split(TEXT("/"),nullptr,&Name,ESearchCase::CaseSensitive,ESearchDir::FromEnd);S.Asset+=TEXT(".")+Name;}
+    if(!S.NativeAsset.IsValid()||S.NativeAsset.Get()->GetPathName()!=S.Asset)S.NativeAsset.Reset(LoadObject<UStaticMesh>(nullptr,*S.Asset,nullptr,LOAD_NoWarn|LOAD_Quiet));TArray<int32> LODs;
+    D->SetStringField(TEXT("sole_projection_asset"),S.Asset);D->SetStringField(TEXT("sole_projection_role"),S.Asset.Contains(TEXT("/BakeR10/"))?TEXT("HISTORICAL_R10_GEOMETRY_PROJECTED_IN_MEASURED_POSTREPAIR_FRAME_ONLY"):TEXT("EXPLICIT_SELECTED_PRIVATE_BAKE_PROJECTED_ONLY_NOT_ADOPTED"));
+    if(Check(S.NativeAsset.IsValid()&&S.NativeAsset.Get()->GetPathName()==S.Asset&&NativeReady(S.NativeAsset.Get(),LODs),TEXT("actual requested private three-LOD CPU geometry required, without adopting it")))
+    {
+     TArray<TSharedPtr<FJsonValue>> ActualLODs;for(int32 T:LODs)ActualLODs.Add(MakeShared<FJsonValueNumber>(T));D->SetArrayField(TEXT("actual_projection_lod_triangles"),ActualLODs);
+     const auto Basis=Group->Comp->GetComponentTransform();const FVector Forward=Basis.TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal(),Right=Basis.TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
+     const FTransform Placement(FRotationMatrix::MakeFromXY(Forward,Right).ToQuat(),S.Seat);const auto& L=S.NativeAsset.Get()->GetRenderData()->LODResources[0];D->SetStringField(TEXT("actual_selected_sole_packed_vertex_sha1"),VertexHash(L));TArray<uint32> Indices;L.IndexBuffer.GetCopy(Indices);TSet<uint32> Picks[2];double Low[2]={1e20,1e20};bool Valid=true;
+     for(const auto& Section:L.Sections)
+     {
+      if(!S.NativeAsset.Get()->GetStaticMaterials().IsValidIndex(Section.MaterialIndex)){Valid=false;continue;}
+      const auto* Material=S.NativeAsset.Get()->GetMaterial(Section.MaterialIndex);if(!Material||(Material->GetName()!=TEXT("M_RW_Shoe")&&Material->GetName()!=TEXT("M_RW_Trim")))continue;
+      for(uint32 I=Section.FirstIndex;I<Section.FirstIndex+Section.NumTriangles*3;++I){if(I>=uint32(Indices.Num())||Indices[I]>=L.VertexBuffers.PositionVertexBuffer.GetNumVertices()){Valid=false;break;}const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I]));if(P.Z>=-15)continue;const int32 Side=P.Y<0?0:1;Picks[Side].Add(Indices[I]);Low[Side]=FMath::Min(Low[Side],P.Z);}
+     }
+     Check(Valid,TEXT("actual sole section/index range must be valid"));TArray<TSharedPtr<FJsonValue>> SoleRows;
+     if(Valid)for(int32 Side=0;Side<2;++Side)
+     {
+      TArray<FVector> Unique;TArray<uint32> VertexIndices;TArray<TSharedPtr<FJsonValue>> Samples;TArray<double> Gaps;
+      for(uint32 I:Picks[Side]){const FVector P(L.VertexBuffers.PositionVertexBuffer.VertexPosition(I));if(P.Z<=Low[Side]+.15&&!Unique.ContainsByPredicate([&](const FVector& V){return V.Equals(P,.00001);})){Unique.Add(P);VertexIndices.Add(I);}}
+      auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("side"),Side);Row->SetNumberField(TEXT("unique_lowest_sole_vertices"),Unique.Num());Check(Unique.Num()==48,TEXT("actual selected native sole geometry must contain48 unique lowest points per side"));
+      for(int32 I=0;I<Unique.Num();++I)
+      {
+       const FVector At=Placement.TransformPosition(Unique[I]);bool Complete=false;auto P=Support(W,Shell,Candidates,At,Q,S.DiagnosticHitNodes,Complete,false);P->SetNumberField(TEXT("native_vertex_index"),VertexIndices[I]);P->SetArrayField(TEXT("native_local_cm"),Vec(Unique[I]));P->SetArrayField(TEXT("projected_world_ue_cm"),Vec(At));Check(Complete,TEXT("every sole query must identify an actual shown visible surface, never require pavement instead of road"));
+       double Gap=0;if(P->TryGetNumberField(TEXT("gap_to_direct_visible_candidate_cm"),Gap))Gaps.Add(Gap);Samples.Add(MakeShared<FJsonValueObject>(P));
+      }
+      Row->SetArrayField(TEXT("samples"),Samples);Row->SetNumberField(TEXT("measured_visible_candidate_hits"),Gaps.Num());
+      if(!Gaps.IsEmpty()){Gaps.Sort();Row->SetNumberField(TEXT("minimum_gap_cm"),Gaps[0]);Row->SetNumberField(TEXT("maximum_gap_cm"),Gaps.Last());Row->SetNumberField(TEXT("median_gap_cm"),Gaps[Gaps.Num()/2]);}
+      Row->SetBoolField(TEXT("contact_accepted"),false);SoleRows.Add(MakeShared<FJsonValueObject>(Row));
+     }
+     D->SetArrayField(TEXT("selected_sole_projection"),SoleRows);D->SetObjectField(TEXT("measured_seat_projection_frame"),Transform(Placement));
+    }
+   }
+   return Finish();
+  }
+ }
+
  bool DiagnoseTB2Bench(FS47RadioWomanState& S)
  {
+  if(S.BenchDiagnosticPostRepair)return S47RadioBenchPost::Run(S);
   S.BenchDiagnostics=MakeShared<FJsonObject>();auto& D=S.BenchDiagnostics;auto* W=S.Web.Get();S.DiagnosticHitNodes.Reset();
   D->SetNumberField(TEXT("schema_version"),1);D->SetBoolField(TEXT("read_only"),true);D->SetBoolField(TEXT("adoption_attempted"),false);D->SetBoolField(TEXT("runtime_accepted"),false);
   D->SetStringField(TEXT("source_geometry_phase"),TEXT("PRE_REPAIR_NATIVE_BASELINE; repaired Bench_* geometry must be independently calibrated and will fail these old exact bounds"));
@@ -367,7 +649,9 @@ namespace
 TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
 {
  auto Result=MakeShared<FS47RadioWoman>();Result->State=MakeShared<FS47RadioWomanState>();auto& S=*Result->State;S.Web=W;
- S.BenchDiagnosticRequested=FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchDiagnostic"));
+ const bool PreRepairRequested=FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchDiagnostic"));
+ S.BenchDiagnosticPostRepair=FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchPostRepairDiagnostic"));
+ S.BenchDiagnosticRequested=PreRepairRequested||S.BenchDiagnosticPostRepair;S.BenchDiagnosticConflict=PreRepairRequested&&S.BenchDiagnosticPostRepair;
  auto& D=S.BenchDiagnostics;D->SetBoolField(TEXT("trace_attempted"),false);D->SetNumberField(TEXT("anchor_node"),1480);D->SetNumberField(TEXT("bench_node"),1562);
  D->SetNumberField(TEXT("required_surface_hits"),5);D->SetNumberField(TEXT("planned_samples"),9);D->SetNumberField(TEXT("expected_seat_from_legacy_anchor_cm"),MeasuredSeatFromLegacyCm);D->SetNumberField(TEXT("maximum_measured_seat_frame_error_cm"),MaxSeatFrameErrorCm);D->SetNumberField(TEXT("maximum_spread_cm"),1.5);
  auto Reject=[&](const TCHAR* Why){S.Why=Why;UE_LOG(LogS47RadioWoman,Warning,TEXT("S47: radio woman original fallback: %s; original group/radio/proxy retained"),Why);return Result;};
@@ -519,7 +803,7 @@ TSharedPtr<FJsonObject> FS47RadioWoman::Readback() const
 {
  if(State.IsValid()&&State->BenchDiagnosticRequested)DiagnoseTB2Bench(*State);
  auto J=MakeShared<FJsonObject>();J->SetBoolField(TEXT("active"),IsActive());if(!State.IsValid())return J;const auto& S=*State;
- J->SetBoolField(TEXT("bench_diagnostic_requested"),S.BenchDiagnosticRequested);
+ J->SetBoolField(TEXT("bench_diagnostic_requested"),S.BenchDiagnosticRequested);J->SetBoolField(TEXT("bench_postrepair_diagnostic_requested"),S.BenchDiagnosticPostRepair);
  J->SetStringField(TEXT("reason"),S.Why);J->SetStringField(TEXT("asset"),S.Asset);J->SetNumberField(TEXT("native_node"),S.NativeNode);
  J->SetNumberField(TEXT("person_node"),1480);J->SetNumberField(TEXT("proxy_node"),1544);J->SetStringField(TEXT("interaction"),TEXT("radio_woman"));
  J->SetStringField(TEXT("schedule_owner"),TEXT("FS47Town::SetPeople / NightPerson 18:00..04:50"));J->SetStringField(TEXT("packed_vertex_sha1"),S.Packed);

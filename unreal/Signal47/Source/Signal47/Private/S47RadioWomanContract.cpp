@@ -64,7 +64,7 @@ namespace S47RadioWomanContract
  }
  struct FBenchDiagnostic:TSharedFromThis<FBenchDiagnostic>
  {
-  TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root;bool Done=false;
+  TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root;bool Done=false,PostRepair=false;
   double Began=FPlatformTime::Seconds(),Ready=0;
   bool Settled()const
   {
@@ -80,10 +80,14 @@ namespace S47RadioWomanContract
     Actual->TryGetBoolField(TEXT("fallback_original_bindings_intact"),Intact)&&Intact&&
     Actual->TryGetBoolField(TEXT("bench_diagnostic_requested"),Requested)&&Requested&&
     Actual->TryGetObjectField(TEXT("bench_diagnostics"),Diagnostic)&&(*Diagnostic)->TryGetBoolField(TEXT("measurement_valid"),Valid)&&Valid;
-   const bool Measured=!TimedOut&&Settled()&&Ready>0&&Now-Ready>=5.&&NativeValid;
+   const bool PhaseValid=!PostRepair||(Diagnostic&&Diagnostic->IsValid()&&S47J::Bool(Actual,TEXT("bench_postrepair_diagnostic_requested"))
+     &&S47J::Str(*Diagnostic,TEXT("source_geometry_phase"))==TEXT("POST_REPAIR_RIGID_SOURCE_FRAME_NATIVE_QUERY"));
+    const bool Measured=!TimedOut&&Settled()&&Ready>0&&Now-Ready>=5.&&NativeValid&&PhaseValid;
    auto O=S47J::New();S47J::Set(O,TEXT("schema_version"),1);S47J::Set(O,TEXT("status"),Measured?TEXT("MEASURED"):TEXT("REJECTED"));
    S47J::Set(O,TEXT("reason"),Measured?TEXT("fresh diner measurements, original figure/radio intact; no support or runtime acceptance"):Why);
-   S47J::Set(O,TEXT("native_readback"),Actual);S47J::Set(O,TEXT("timeout"),TimedOut);S47J::Set(O,TEXT("elapsed_wall_seconds"),Now-Began);S47J::Set(O,TEXT("settled_wall_seconds"),Ready>0?Now-Ready:0.);
+   S47J::Set(O,TEXT("expected_postrepair_phase"),PostRepair);S47J::Set(O,TEXT("phase_matches_request"),PhaseValid);
+    S47J::Set(O,TEXT("contact_accepted"),false);S47J::Set(O,TEXT("runtime_accepted"),false);
+    S47J::Set(O,TEXT("native_readback"),Actual);S47J::Set(O,TEXT("timeout"),TimedOut);S47J::Set(O,TEXT("elapsed_wall_seconds"),Now-Began);S47J::Set(O,TEXT("settled_wall_seconds"),Ready>0?Now-Ready:0.);
    S47J::Set(O,TEXT("minimum_settled_seconds"),5.);S47J::Set(O,TEXT("maximum_wait_seconds"),20.);S47J::Set(O,TEXT("area_at_capture"),W?W->Area():TEXT("missing web"));
    S47J::Set(O,TEXT("startup_ready"),S47Startup::Ready());S47J::Set(O,TEXT("startup_blocking"),S47Startup::Blocking());S47J::Set(O,TEXT("play"),M&&M->Mode==US47Main::EMode::Play);
    S47J::Set(O,TEXT("flow_starting"),!M||!M->Flow||M->Flow->bStarting);S47J::Set(O,TEXT("flow_restoring"),M&&M->Flow&&M->Flow->bRestoringNow);S47J::Set(O,TEXT("world_busy"),M&&M->World&&M->World->bBusy);
@@ -330,12 +334,14 @@ void S47BeginRadioWomanConversationContract(AS47Web* Web);
 
 void S47BeginRadioWomanContract(AS47Web* Web)
 {
- if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchDiagnostic")))
+ const bool PostRepairRequested=FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchPostRepairDiagnostic"));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchDiagnostic"))||PostRepairRequested)
  {
   FString Profile;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),Profile);
   if(Profile.Contains(TEXT(".."))||!(Profile.StartsWith(TEXT("/tmp/"))||Profile.StartsWith(TEXT("/var/tmp/"))))
   {UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioBenchDiagnostic REJECTED requires an isolated /tmp profile"));return;}
-  const auto S=MakeShared<S47RadioWomanContract::FBenchDiagnostic>();S->Web=Web;S->Root=FPaths::ProjectSavedDir()/TEXT("RadioBenchDiagnostic")/FGuid::NewGuid().ToString(EGuidFormats::Digits);
+  const auto S=MakeShared<S47RadioWomanContract::FBenchDiagnostic>();S->Web=Web;S->PostRepair=PostRepairRequested;
+   S->Root=FPaths::ProjectSavedDir()/(PostRepairRequested?TEXT("RadioBenchPostRepairDiagnostic"):TEXT("RadioBenchDiagnostic"))/FGuid::NewGuid().ToString(EGuidFormats::Digits);
   if(!IFileManager::Get().MakeDirectory(*S->Root,true)){UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioBenchDiagnostic REJECTED could not create fresh evidence=%s"),*S->Root);return;}
   if(!Web||!Web->GetWorld()){S->Result(true,TEXT("actual Web/world unavailable"));return;}
   Web->GetWorldTimerManager().SetTimer(S->Timer,[S]{S->Tick();},.1f,true);

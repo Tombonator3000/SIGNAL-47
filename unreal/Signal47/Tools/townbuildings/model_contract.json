@@ -383,7 +383,14 @@
         9935,
         5463,
         2584
-      ]
+      ],
+      "bench_grounding": {
+        "revision": "HUM01-R11-rigid-grounding",
+        "source_geometry_proof_sha256": "25dcfa0a41a8a9a5a8dc9db78e932a98c56401307746eef51391dbd56a17fd75",
+        "changed_solids": 14,
+        "changed_triangles_per_lod": 168,
+        "method": "Rigid rotation and translation onto preserved source g1004 pavement. Independent fresh native saved-geometry verification; live support/contact still unverified."
+      }
     },
     "SM_Town_Laundry_Glass": {
       "triangles": 10,
@@ -2256,7 +2263,14 @@
           9935,
           5463,
           2584
-        ]
+        ],
+        "bench_grounding": {
+          "revision": "HUM01-R11-rigid-grounding",
+          "source_geometry_proof_sha256": "25dcfa0a41a8a9a5a8dc9db78e932a98c56401307746eef51391dbd56a17fd75",
+          "changed_solids": 14,
+          "changed_triangles_per_lod": 168,
+          "method": "Rigid rotation and translation onto preserved source g1004 pavement. Independent fresh native saved-geometry verification; live support/contact still unverified."
+        }
       },
       "SM_Town_Laundry_Glass": {
         "triangles": 10,
@@ -4101,7 +4115,14 @@
         "vertices_after_weld": 5065,
         "minimum_uv_area": 2.5455681996078283e-05,
         "building": "Laundry",
-        "chunk": "Shell"
+        "chunk": "Shell",
+        "bench_grounding": {
+          "revision": "HUM01-R11-rigid-grounding",
+          "source_geometry_proof_sha256": "25dcfa0a41a8a9a5a8dc9db78e932a98c56401307746eef51391dbd56a17fd75",
+          "changed_solids": 14,
+          "changed_triangles_per_lod": 168,
+          "method": "Rigid rotation and translation onto preserved source g1004 pavement. Independent fresh native saved-geometry verification; live support/contact still unverified."
+        }
       },
       "SM_Town_Laundry_Glass": {
         "triangles": 10,
@@ -5803,7 +5824,14 @@
         "vertices_after_weld": 1953,
         "minimum_uv_area": 8.118979340565602e-05,
         "building": "Laundry",
-        "chunk": "Shell"
+        "chunk": "Shell",
+        "bench_grounding": {
+          "revision": "HUM01-R11-rigid-grounding",
+          "source_geometry_proof_sha256": "25dcfa0a41a8a9a5a8dc9db78e932a98c56401307746eef51391dbd56a17fd75",
+          "changed_solids": 14,
+          "changed_triangles_per_lod": 168,
+          "method": "Rigid rotation and translation onto preserved source g1004 pavement. Independent fresh native saved-geometry verification; live support/contact still unverified."
+        }
       },
       "SM_Town_Laundry_Glass": {
         "triangles": 10,
