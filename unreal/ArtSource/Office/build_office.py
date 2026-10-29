@@ -31,6 +31,25 @@ def imwrite(name,arr):
     # second colour transform while writing roughness and tangent normals.
     im=bpy.data.images.new(name,N,N,alpha=True);im.colorspace_settings.name='Non-Color';im.pixels.foreach_set(arr.astype(np.float32).ravel());im.filepath_raw=str(TEX/(name+'.png'));im.file_format='PNG';im.save();bpy.data.images.remove(im)
     return bpy.data.images.load(str(TEX/(name+'.png')),check_existing=True)
+def cork_fields(size):
+    # Independent seed: changing Cork must not advance the room's shared RNG or
+    # alter any other material. At 1024px per metre these correlated random
+    # grains span roughly 2..6mm, without directional/periodic veneer stripes.
+    cork_rng=np.random.default_rng(47026030)
+    grains=cork_rng.normal(0,1,(size,size))
+    for axis in (0,1):
+        grains=sum(weight*np.roll(grains,offset,axis=axis)
+                   for offset,weight in ((-2,1),(-1,4),(0,6),(1,4),(2,1)))/16
+    grains=np.tanh(grains/max(float(grains.std()),1e-9))
+    fine_cork=cork_rng.normal(0,1,(size,size))
+    for axis in (0,1):
+        fine_cork=(np.roll(fine_cork,-1,axis=axis)+2*fine_cork+
+                   np.roll(fine_cork,1,axis=axis))/4
+    pores=np.clip((-fine_cork-.35)*1.4,0,1)
+    field=grains*.13+np.tanh(fine_cork*2)*.025
+    # Physical microroughness, not displacement: <=80 micrometres relief.
+    height=grains*.000045-pores*.000035
+    return field,height
 def mat(name,color,rough=.7,metal=0,kind='paint'):
     name='M_Office_'+name;m=bpy.data.materials.new(name);m.use_nodes=True
     p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*color,1);p.inputs['Roughness'].default_value=rough;p.inputs['Metallic'].default_value=metal
@@ -40,6 +59,8 @@ def mat(name,color,rough=.7,metal=0,kind='paint'):
         grain=np.sin(math.tau*(u*21+np.sin(v*math.tau)*.28))
         field=grain*.18+np.sin(math.tau*u*57)*.06+slow*.025+fine*.012
         height=grain*.00010+np.sin(math.tau*u*57)*.000025
+    elif kind=='cork':
+        field,height=cork_fields(N)
     elif kind=='fabric':
         weave=np.sin(math.tau*u*250)*np.sin(math.tau*v*250)
         field=weave*.055+fine*.018
@@ -82,7 +103,7 @@ BRASS=mat('AgedBrass',(.32,.22,.075),.31,.82)
 CHROME=mat('BrushedMetal',(.34,.37,.36),.29,.84)
 CLOTH=mat('ChairFabric',(.12,.19,.16),.89,kind='fabric')
 PAPER=mat('Paper',(.64,.59,.44),.96)
-CORK=mat('Cork',(.21,.14,.075),.93,kind='wood')
+CORK=mat('Cork',(.21,.14,.075),.93,kind='cork')
 TILE=mat('FloorLinoleum',(.25,.29,.25),.68,kind='tile')
 CEILING=mat('CeilingTile',(.46,.47,.40),.98,kind='tile')
 RED=mat('BinderBurgundy',(.16,.038,.025),.73)
@@ -302,6 +323,8 @@ box('Private_folder_stack',(-.63,2.205,8.73),(.27,.055,.48),CORK,.004)
 sys.path.insert(0,str(ROOT))
 import research_dressing
 research_dressing.build(box,cyl,curve,MATS)
+import shelf_dressing
+(ROOT/'shelf-dressing.json').write_text(json.dumps(shelf_dressing.build(box,MATS),indent=2)+'\n')
 # Rear blind over existing opaque lining: a credible interior glazed panel, no fake exterior view.
 box('Glazed_panel_frame',(.47,1.83,10.298),(1.37,.94,.07),TRIM,.009)
 box('Glazed_panel_dark_back',(.47,1.83,10.254),(1.25,.83,.020),DARK,.004)
