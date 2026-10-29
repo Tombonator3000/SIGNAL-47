@@ -200,6 +200,29 @@ def validate_inputs(assembly):
     return contract, material_rows, {str(path.relative_to(SOURCE)): sha(path) for path in sorted(paths)}
 
 
+def archive_mesh(name, destination):
+    """Refresh only the eleven generated meshes and the exact axis probe.
+
+    Atomic FBX reimport can retain an earlier derived source description in
+    UE5.8. Match the existing field/Office importers by recreating only the
+    named generated mesh; keep materials and every other asset untouched.
+    """
+    R.check(name + ' exact generated archive mesh destination',
+            (name in NAMES and destination == DEST) or
+            (name == 'axis_probe' and destination == DEST + '/Verification'),
+            {'name': name, 'destination': destination})
+    asset = destination + '/' + name
+    if VERIFY_ONLY:
+        return R.E.load_asset(asset)
+    if R.E.does_asset_exist(asset):
+        existing = R.E.load_asset(asset)
+        R.check(name + ' replace only the exact generated StaticMesh',
+                isinstance(existing, unreal.StaticMesh) and
+                existing.get_path_name() == asset + '.' + name, asset)
+        R.check(name + ' exact generated mesh removed before fresh import', R.E.delete_asset(asset))
+    return R.import_mesh(SOURCE / 'exports' / (name + '.fbx'), destination)
+
+
 def mesh_measurements(name, mesh, source, materials):
     R.check(name + ' native mesh exists', isinstance(mesh, unreal.StaticMesh))
     slots = mesh.get_editor_property('static_materials')
@@ -251,7 +274,7 @@ try:
         materials[name] = mat
     measured = {}
     for name, source in contract['parts'].items():
-        mesh = R.E.load_asset(DEST + '/' + name) if VERIFY_ONLY else R.import_mesh(SOURCE / 'exports' / (name + '.fbx'), DEST)
+        mesh = archive_mesh(name, DEST)
         R.check(name + ' native archive mesh available', isinstance(mesh, unreal.StaticMesh))
         if not VERIFY_ONLY:
             for lod in (1, 2):
@@ -277,8 +300,7 @@ try:
                     R.S.enable_section_collision(mesh, True, lod, section)
             R.check(name + ' native mesh saved', R.E.save_loaded_asset(mesh))
         measured[name] = mesh_measurements(name, mesh, source, materials)
-    probe = (R.E.load_asset(DEST + '/Verification/axis_probe') if VERIFY_ONLY else
-             R.import_mesh(SOURCE / 'exports/axis_probe.fbx', DEST + '/Verification'))
+    probe = archive_mesh('axis_probe', DEST + '/Verification')
     R.check('Saved asymmetric archive axis probe exists', isinstance(probe, unreal.StaticMesh))
     bound = probe.get_bounds()
     actual = [bound.origin.x, bound.origin.y, bound.origin.z,
