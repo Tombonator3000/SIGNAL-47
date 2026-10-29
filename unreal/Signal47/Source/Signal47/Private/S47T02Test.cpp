@@ -569,6 +569,7 @@ void FS47T02Test::Step(double Dt)
     {TEXT("legacy-valid-rear"),.35,8.8,false,false},
     {TEXT("legacy-valid-door-sweep"),.1,8.4,true,false},
     {TEXT("legacy-valid-private-shelf"),-.2,8.7,bOwnedBox,false},
+    {TEXT("legacy-valid-desk-side"),1.49,9.8,true,false},
     {TEXT("legacy-invalid-clipped"),1.2,6.9,true,false},
     {TEXT("legacy-locked-corridor"),.45,5.8,false,true}
    };
@@ -634,7 +635,7 @@ void FS47T02Test::Step(double Dt)
   US47Flow::FStart Original; Original.State=S47J::Clone(T.GoodOffice); Original.CaseId=0; Original.bDev=true; Original.Playtime=M->Playtime;
   M->Flow->StartGame(Original);
   if (!Check(M->Flow->bDevRun && M->Flow->CaseId==0 && M->Office->HasFieldSheet(),TEXT("interior cohort series restores original developer route and store"))) return;
-  UE_LOG(LogS47T02Test,Display,TEXT("S47: SARO interior contract PASS COMPLETE: physical bay and west/east corridor return, closing sweep action, six pose/layout fixtures, twelve actual isolated Writer/freshReader/title/Continue restores; developer route resumed; human input UNVERIFIED"));
+  UE_LOG(LogS47T02Test,Display,TEXT("S47: SARO interior contract PASS COMPLETE: physical bay and west/east corridor return, closing sweep action, seven pose/layout fixtures, fourteen actual isolated Writer/freshReader/title/Continue restores; developer route resumed; human input UNVERIFIED"));
   Aim(FVector(.45,1.2,9.65)); Stage(95,.35); return;
  }
  if (T.Stage == 95)

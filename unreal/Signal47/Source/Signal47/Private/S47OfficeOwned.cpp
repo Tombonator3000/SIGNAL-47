@@ -26,7 +26,9 @@ namespace
  // Geometry metadata only, measured from the historical source FBX. Rejected
  // r3 PBR is not accepted here. Root separately binds the r4 import/fresh reader.
  const FAsset Assets[] = {
-  {TEXT("SM_InteriorOwned_SignalCable"),TEXT("M_InteriorOwned_SignalCable"),14386,
+  // The original FBX has 14386 faces including 192 exact zero-area faces.
+  // Native import verifies all 14194 finite faces and oriented UV corners.
+  {TEXT("SM_InteriorOwned_SignalCable"),TEXT("M_InteriorOwned_SignalCable"),14194,
    FVector(-19.619182,-24.127245,0),FVector(19.619183,24.127245,5.556832)},
   {TEXT("SM_InteriorOwned_ArchiveBox"),TEXT("M_InteriorOwned_ArchiveBox"),660,
    FVector(-21.248490,-17.048046,0),FVector(21.248490,17.048049,25.016913)},

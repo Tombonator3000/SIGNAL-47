@@ -266,6 +266,10 @@ void FS47Office::Init()
  Collider(TEXT("office:recordsPartition"), -3.4, -.94, 6.6, 6.8);
  Collider(TEXT("office:leftPartition"), -.94, -.08, 6.6 + FrontOffset, 6.8 + FrontOffset); Collider(TEXT("office:rightPartition"), 1, 2, 6.6 + FrontOffset, 6.8 + FrontOffset);
  Collider(TEXT("office:westWall"), -.94, -.82, 6.6, 10.43); Collider(TEXT("office:eastWall"), 1.77, 1.89, 6.6, 10.43); Collider(TEXT("office:rearWall"), -.94, 1.89, 10.31, 10.43);
+ // The board and its pins project in front of the east wall at head height.
+ // Include that authored envelope in the walking capsule instead of allowing
+ // the old narrow desk-side slit to clip through the new research wall.
+ Collider(TEXT("office:researchWall"), 1.63, 1.78, 8.11, 10.21);
  W->ZonesMutable(TEXT("saro")).Add({-.82, 1.77, 6.8 + FrontOffset, 10.31, TEXT("office:roomZone"), true});
  W->ZonesMutable(TEXT("saro")).Add({-.82, 1.77, 5.70, 6.60 + FrontOffset, TEXT("office:passingBayZone"), true});
  // Walker shrinks each rectangle by the capsule radius independently. Overlap both

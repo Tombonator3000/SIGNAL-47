@@ -182,7 +182,8 @@ void AS47Web::BeginProductionViews()
   // original lab walk rectangle with a clear 0.27m body radius.
   {TEXT("photolab-overview"),TEXT("saro"),{15.7,0,-.85},{15.9,1.25,-3.85}},
   {TEXT("photolab-wetbench-enlarger"),TEXT("saro"),{16.2,0,-4.1},{16.6,1.28,-5.43}},
-  {TEXT("photolab-records-storage"),TEXT("saro"),{14.35,0,-2.5},{17.75,1.02,-1.4}}
+  {TEXT("photolab-records-storage"),TEXT("saro"),{14.35,0,-2.5},{17.75,1.02,-1.4}},
+  {TEXT("office-owned-props"),TEXT("saro"),{.4,0,8.3},{-.60,.23,8.70}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);

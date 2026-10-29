@@ -28,13 +28,15 @@ ROLES = {'base_color', 'roughness', 'metallic', 'normal'}
 VERIFY_ONLY = (os.environ.get('S47_INTERIOR_VERIFY_ONLY') == '1' or
                'S47InteriorOwnedVerifyOnly' in unreal.SystemLibrary.get_command_line())
 sys.path.insert(0, str(HERE.parent / 'fieldintegration'))
+sys.path.insert(0, str(HERE))
 import import_recipe as R
+import fbx_geometry as G
 
 R.REPORT = Path(unreal.Paths.project_saved_dir()) / 'interiors-owned-native.json'
 R.report = {'status': 'RUNNING', 'engine': unreal.SystemLibrary.get_engine_version(),
             'mode': 'verify_saved_only' if VERIFY_ONLY else 'import_and_verify',
             'source': str(SOURCE), 'asset_root': DEST, 'checks': [], 'meshes': [],
-            'materials': [], 'source_visual_acceptance': 'UNVERIFIED',
+            'materials': [], 'geometry_correspondence': [], 'source_visual_acceptance': 'UNVERIFIED',
             'runtime_appearance': 'UNVERIFIED'}
 R.flush()
 
@@ -151,7 +153,21 @@ def source_inputs(source):
                     for side in range(2) for axis in range(3)) < 1e-7 and
                 abs(contract['parts'][BOX + 'Body']['bounds_local_m'][0][2]) < 1e-7 and
                 contract['parts'][BOX + 'Lid']['bounds_local_m'][0][2] > .2)
-    return contract, materials, {path.name: sha(path) for path in (contract_path, material_path, proof_path)}
+    geometry = {}
+    for name, row in contract['parts'].items():
+        actual = G.read_geometry(source / 'Export' / (name + '.fbx'))
+        expected_zeros = 192 if name == 'SM_InteriorOwned_SignalCable' else 0
+        R.check(name + ' exact FBX geometry source identity', actual['fbx_sha256'] == row['fbx_sha256'] and
+                actual['source_triangles'] == row['triangles'])
+        R.check(name + ' only documented exact zero area source triangles',
+                len(actual['exact_zero_area_indices']) == expected_zeros,
+                {'source_triangles': actual['source_triangles'], 'exact_zero_area': len(actual['exact_zero_area_indices']),
+                 'renderable_triangles': actual['renderable_triangles']})
+        if expected_zeros:
+            R.check(name + ' reviewed cable source and renderable populations',
+                    actual['source_triangles'] == 14386 and actual['renderable_triangles'] == 14194)
+        geometry[name] = actual
+    return contract, materials, {path.name: sha(path) for path in (contract_path, material_path, proof_path)}, geometry
 
 
 def connected(mat, expression):
@@ -271,12 +287,47 @@ def configure_mesh(mesh, name, materials):
     R.check(name + ' native mesh saved', R.E.save_loaded_asset(mesh))
 
 
-def mesh_proof(name, mesh, row, materials):
-    triangles = [mesh.get_num_triangles(lod) for lod in range(mesh.get_num_lods())]
-    R.check(name + ' exact authored LOD0 and decreasing native LODs', len(triangles) == 3 and
-            triangles[0] == row['triangles'] and triangles[0] > triangles[1] > triangles[2] > 0, triangles)
+def native_geometry_proof(name, mesh, source):
     description = mesh.get_static_mesh_description(0)
-    R.check(name + ' actual imported source topology', description is not None and description.get_triangle_count() == row['triangles'])
+    expected = source['renderable_triangles']
+    R.check(name + ' imported source contains every finite FBX triangle only', description is not None and
+            description.get_triangle_count() == expected,
+            {'fbx_source_triangles': source['source_triangles'], 'fbx_exact_zero_area': len(source['exact_zero_area_indices']),
+             'expected_mesh_description_triangles': expected})
+    triangles = []
+    # IDs can be sparse. Use indexed corner instances; UE5.8 GetTriangleVertices
+    # has an appended-array wrapper issue, so do not use that convenience call.
+    for index in range(expected * 4 + 64):
+        triangle = unreal.TriangleID()
+        if not triangle.import_text('(IDValue=' + str(index) + ')'):
+            R.check(name + ' reflected triangle ID conversion', False, index)
+        if not description.is_triangle_valid(triangle):
+            continue
+        corners = []
+        for corner in range(3):
+            instance = description.get_triangle_vertex_instance(triangle, corner)
+            vertex = description.get_vertex_instance_vertex(instance)
+            position = description.get_vertex_position(vertex)
+            uv = description.get_vertex_instance_uv(instance, 0)
+            corners.append((position.x, position.y, position.z, uv.x, uv.y))
+        triangles.append({'id': index, 'corners': corners})
+        if len(triangles) == expected:
+            break
+    R.check(name + ' complete actual MeshDescription triangle enumeration', len(triangles) == expected)
+    # Fixed measured axes + DirectX V flip, complete one-to-one oriented corners
+    # and UV0. Count differences alone never authorise a missing source face.
+    proof = G.correspond(source, triangles)
+    R.check(name + ' full finite position orientation and UV0 correspondence',
+            proof['matched_finite_triangles'] == expected, proof)
+    R.report['geometry_correspondence'].append({'name': name, **proof})
+    return description
+
+
+def mesh_proof(name, mesh, row, materials, source_geometry):
+    triangles = [mesh.get_num_triangles(lod) for lod in range(mesh.get_num_lods())]
+    R.check(name + ' exact renderable LOD0 and decreasing native LODs', len(triangles) == 3 and
+            triangles[0] == source_geometry['renderable_triangles'] and triangles[0] > triangles[1] > triangles[2] > 0, triangles)
+    description = native_geometry_proof(name, mesh, source_geometry)
     slots = mesh.get_editor_property('static_materials')
     labels = [str(slot.material_slot_name) for slot in slots]
     R.check(name + ' exact saved material slot population', labels == row['materials'] and all(
@@ -311,7 +362,11 @@ def mesh_proof(name, mesh, row, materials):
         count = mesh.get_num_sections(lod)
         R.check(name + ' no collision sections LOD' + str(lod), count > 0 and
                 all(not R.S.is_section_collision_enabled(mesh, lod, section) for section in range(count)))
-    R.report['meshes'].append({'asset': mesh.get_path_name(), 'triangles': triangles, 'source_triangles': description.get_triangle_count(),
+    R.report['meshes'].append({'asset': mesh.get_path_name(), 'triangles': triangles,
+                              'source_triangles': row['triangles'],
+                              'source_exact_zero_area_triangles': len(source_geometry['exact_zero_area_indices']),
+                              'source_renderable_triangles': source_geometry['renderable_triangles'],
+                              'native_mesh_description_triangles': description.get_triangle_count(),
                               'materials': labels, 'centre_cm': centre, 'dimensions_cm': size, 'uv_channels': uvs,
                               'collision': 'NoCollision', 'support_ray_tracing': True})
 
@@ -324,8 +379,9 @@ try:
                              capture_output=True, text=True, check=False)
     R.check('licensed destination contains no Git-tracked assets', tracked.returncode == 0 and not tracked.stdout.strip())
     R.check('licensed native destination has no symlink redirection', LOCAL_DEST.absolute() == LOCAL_DEST.resolve())
-    contract, rows, hashes = source_inputs(SOURCE)
+    contract, rows, hashes, geometry = source_inputs(SOURCE)
     R.report['source_receipts_sha256'] = hashes
+    R.report['geometry_reader_sha256'] = sha(HERE / 'fbx_geometry.py')
     R.report['source_material_indices_preserved'] = True
     # Validate every source byte before creating any licensed material/mesh.
     materials = {}
@@ -339,7 +395,7 @@ try:
         R.check(name + ' native StaticMesh exists', isinstance(mesh, unreal.StaticMesh))
         if not VERIFY_ONLY:
             configure_mesh(mesh, name, materials)
-        mesh_proof(name, mesh, row, materials)
+        mesh_proof(name, mesh, row, materials, geometry[name])
     R.report['status'] = 'PASS_NATIVE_SAVED_VERIFY' if VERIFY_ONLY else 'PASS_NATIVE_IMPORT_AND_VERIFY'
     R.flush()
     unreal.log('S47 PRIVATE SARO INTERIORS NATIVE PASS: ' + str(len(contract['parts'])) +
