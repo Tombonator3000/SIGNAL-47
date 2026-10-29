@@ -48,18 +48,19 @@ def create_surface(path, color, roughness, texture=None, coverage_channel=None):
     lib = unreal.MaterialEditingLibrary
     color_node = lib.create_material_expression(mat, unreal.MaterialExpressionConstant3Vector)
     color_node.set_editor_property('constant', unreal.LinearColor(*color, 1))
-    lib.connect_material_property(color_node, '', unreal.MaterialProperty.MP_BASE_COLOR)
+    require(lib.connect_material_property(color_node, '', unreal.MaterialProperty.MP_BASE_COLOR), 'Actual base-color graph binding')
     rough = lib.create_material_expression(mat, unreal.MaterialExpressionConstant)
     rough.set_editor_property('r', roughness)
-    lib.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS)
+    require(lib.connect_material_property(rough, '', unreal.MaterialProperty.MP_ROUGHNESS), 'Actual roughness graph binding')
     if texture is not None:
         mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED)
         mat.set_editor_property('two_sided', True)
         mat.set_editor_property('opacity_mask_clip_value', .22)
         node = lib.create_material_expression(mat, unreal.MaterialExpressionTextureSample)
         node.set_editor_property('texture', texture)
-        lib.connect_material_property(node, coverage_channel, unreal.MaterialProperty.MP_OPACITY_MASK)
-    lib.recompile_material(mat)
+        require(lib.connect_material_property(node, coverage_channel, unreal.MaterialProperty.MP_OPACITY_MASK), 'Actual coverage graph binding')
+    errors = list(lib.recompile_material(mat))
+    require(not errors, 'Actual material compile errors: ' + repr(errors))
     require(unreal.EditorAssetLibrary.save_loaded_asset(mat), 'Save only new private material')
     return mat
 
@@ -92,6 +93,8 @@ def brow_coverage(sources):
 
 def import_private(job, cfg, sources):
     receipt_path = Path(job['python_report']).parent / 'import-python.json'
+    fbx, _ = clothing_check(job['clothing_report'])
+    require(str(fbx) == job['clothing_fbx'] and sha(fbx) == job['clothing_fbx_sha256'], 'Pinned actual rest-clothes FBX')
     if receipt_path.exists():
         previous = load(receipt_path)
         require(previous['status'] == 'PASS' and previous['clothing_fbx_sha256'] == job['clothing_fbx_sha256'],
@@ -99,8 +102,6 @@ def import_private(job, cfg, sources):
         for row in previous['saved_assets']:
             require(file_row(native_file(job['project'], row['asset'])) == row['file'], 'Imported private asset changed since probe')
         return previous
-    fbx, _ = clothing_check(job['clothing_report'])
-    require(str(fbx) == job['clothing_fbx'] and sha(fbx) == job['clothing_fbx_sha256'], 'Pinned actual rest-clothes FBX')
     targets = [job['private_skeleton'], job['clothes_asset'], job['brow_material']]
     targets += [job['asset_root'] + '/' + name for name in cfg['materials']]
     require(not any(unreal.EditorAssetLibrary.does_asset_exist(path) or native_file(job['project'], path).exists()

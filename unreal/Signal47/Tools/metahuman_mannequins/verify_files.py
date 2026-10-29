@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from prepare import file_row, load, preservation, sha, write
+from prepare import clothing_check, file_row, load, preservation, sha, write
 
 
 def main():
@@ -17,8 +17,14 @@ def main():
     root = Path(job['python_report']).parent
     baked, verified = load(root / 'bake-python.json'), load(root / 'verify-python.json')
     if (baked['status'] != 'PASS' or verified['status'] != 'PASS' or baked['pid'] == verified['pid']
-            or baked['output_asset'] != verified['output_asset']):
+            or baked['output_asset'] != verified['output_asset'] or baked['mode'] != 'bake' or verified['mode'] != 'verify'
+            or baked['job_sha256'] != sha(args.job) or verified['job_sha256'] != sha(root / 'job-verify.json')):
         raise RuntimeError('Actual separate-process native bake/reader receipts are required')
+    if sha(job['contract']) != job['contract_sha256'] or sha(job['clothing_report']) != job['clothing_report_sha256']:
+        raise RuntimeError('Private authoring source receipt changed')
+    fbx, _ = clothing_check(job['clothing_report'])
+    if str(fbx) != job['clothing_fbx'] or sha(fbx) != job['clothing_fbx_sha256']:
+        raise RuntimeError('Actual private authoring FBX changed')
     receipts = {}
     for name in ('import-python.json', 'bake-python.json', 'bake-native.json', 'verify-python.json', 'verify-native.json'):
         path = root / name

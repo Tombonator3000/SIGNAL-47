@@ -95,6 +95,8 @@ def clothing_check(report):
 
 def preservation(job):
     """All pre-existing MetaHumans files must stay byte-identical, including the waitress."""
+    if sha(job['source_snapshot']) != job['source_snapshot_sha256']:
+        raise RuntimeError('Frozen original-file inventory changed')
     data = load(job['source_snapshot'])
     root = Path(data['source_root'])
     expected = data['files']
@@ -165,7 +167,8 @@ def main():
     asset_root = '/Game/MetaHumans/Mannequins/RadioWoman/' + output.name
     job = {'schema_version': 1, 'run_id': output.name, 'project': str(project), 'mode': 'bake',
            'contract': str(output / 'radio_woman.json'), 'contract_sha256': sha(contract),
-           'source_snapshot': str(output / 'source-files.json'), 'clothing_report': str(output / 'clothing-source-receipt.json'),
+           'source_snapshot': str(output / 'source-files.json'), 'source_snapshot_sha256': sha(output / 'source-files.json'),
+           'clothing_report': str(output / 'clothing-source-receipt.json'),
            'clothing_report_sha256': sha(args.clothing_report), 'clothing_fbx': str(fbx), 'clothing_fbx_sha256': sha(fbx),
            'asset_root': asset_root, 'clothes_asset': asset_root + '/SKM_RadioWoman_Clothes',
            'private_skeleton': asset_root + '/SK_RadioWoman_Source', 'brow_material': asset_root + '/M_RadioWoman_BrowCards',

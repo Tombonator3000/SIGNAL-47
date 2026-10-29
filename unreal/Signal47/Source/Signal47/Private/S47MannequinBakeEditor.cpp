@@ -15,7 +15,9 @@
 #include "HAL/IConsoleManager.h"
 #include "GameFramework/Actor.h"
 #include "Materials/MaterialInterface.h"
-#include "MeshUtilities.h"
+#include "Materials/Material.h"
+#include "MaterialShared.h"
+#include "MeshDescription.h"
 #include "Misc/App.h"
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
@@ -24,12 +26,15 @@
 #include "Modules/ModuleManager.h"
 #include "PhysicsEngine/BodySetup.h"
 #include "RawMesh.h"
+#include "RHI.h"
 #include "Rendering/SkeletalMeshRenderData.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/MemoryWriter.h"
 #include "StaticMeshCompiler.h"
+#include "StaticMeshAttributes.h"
 #include "StaticMeshResources.h"
+#include "SkeletalRenderPublic.h"
 #include "TwoBoneIK.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
@@ -52,6 +57,37 @@ namespace S47MannequinBake
  FString RawDigest(FRawMesh& Raw)
  {
   TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); Writer << Raw; return Digest(Bytes);
+ }
+ // Wedge attributes and winding are semantic source data; vertex/triangle IDs and
+ // smoothing masks may change during MeshDescription serialization. No numeric
+ // quantization is used here. Tangent-Y is represented by its handedness, as UE does.
+ FString CornerDigest(const FRawMesh& Raw)
+ {
+  TArray<FString> Triangles;
+  for (int32 Triangle = 0; Triangle < Raw.FaceMaterialIndices.Num(); ++Triangle)
+  {
+   FString Best;
+   for (int32 Start = 0; Start < 3; ++Start)
+   {
+    TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); int32 Material = Raw.FaceMaterialIndices[Triangle]; Writer << Material;
+    for (int32 Offset = 0; Offset < 3; ++Offset)
+    {
+     const int32 Wedge = Triangle * 3 + (Start + Offset) % 3;
+     FVector3f Position = Raw.GetWedgePosition(Wedge), Tangent = Raw.WedgeTangentX[Wedge], Normal = Raw.WedgeTangentZ[Wedge];
+     float Sign = ((Normal ^ Tangent) | Raw.WedgeTangentY[Wedge]) < 0 ? -1.0f : 1.0f;
+     FColor Color = Raw.WedgeColors.IsValidIndex(Wedge) ? Raw.WedgeColors[Wedge] : FColor::White;
+     Writer << Position << Tangent << Normal << Sign << Color;
+     for (const auto& Channel : Raw.WedgeTexCoords)
+     {
+      bool Present = Channel.Num() != 0; Writer << Present;
+      if (Present) { FVector2f UV = Channel[Wedge]; Writer << UV; }
+     }
+    }
+    const FString Candidate = Digest(Bytes); if (Start == 0 || Candidate < Best) Best = Candidate;
+   }
+   Triangles.Add(Best);
+  }
+  Triangles.Sort(); TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); Writer << Triangles; return Digest(Bytes);
  }
  bool Read(const FString& Path, FJson& Out)
  {
@@ -117,6 +153,7 @@ namespace S47MannequinBake
   UStaticMesh* BrowsFar = nullptr;
   UMaterialInterface* HairMaterial = nullptr;
   UMaterialInterface* BrowMaterial = nullptr;
+  TArray<FVector> LeftSole, RightSole;
   ~FBake() { if (Actor) Actor->Destroy(); }
   bool Need(bool Test, const FString& Detail)
   {
@@ -172,6 +209,7 @@ namespace S47MannequinBake
     TEXT("all existing female, cloth, actual hair/brow card meshes and surface materials available"))) return false;
    FAssetCompilingManager::Get().FinishAllCompilation();
    if (!Need(Body->GetResourceForRendering() && Face->GetResourceForRendering() && Clothes->GetResourceForRendering(), TEXT("native skeletal render data available"))) return false;
+   if (!Need(Clothes->GetLODNum() == 1, TEXT("authored clothes import has exactly its single source LOD0"))) return false;
    const FString Output = Job->GetStringField(TEXT("output_asset"));
    if (!Need(Output.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")) && !Output.Contains(TEXT("..")), TEXT("private bounded output package"))) return false;
    if (!Need(Clothes->GetSkeleton() != Body->GetSkeleton() && Clothes->GetSkeleton() &&
@@ -213,11 +251,18 @@ namespace S47MannequinBake
     const FVector Elbow = Pelvis + Forward * PoseNumber(TEXT("elbow_forward_cm")) + Left * (Side * PoseNumber(TEXT("elbow_side_cm"))) + FVector::UpVector * PoseNumber(TEXT("elbow_above_pelvis_cm"));
     FTransform UpperPose = Posed.Component[Upper], LowerPose = Posed.Component[Lower], HandPose = Posed.Component[Hand];
     AnimationCore::SolveTwoBoneIK(UpperPose, LowerPose, HandPose, Elbow, Target, false, 1.0, 1.0);
-    Posed.Set(Upper, UpperPose); Posed.Set(Lower, LowerPose); Posed.Set(Hand, HandPose);
+    Posed.Set(Upper, UpperPose); Posed.Set(Lower, LowerPose);
+    // SolveTwoBoneIK deliberately retains the end bone's old WORLD rotation.
+    // Keep the native local hand transform instead, so wrist/fingers follow the
+    // newly posed forearm. A radio grip must be authored/reviewed separately.
+    const bool LocalHandRetained = Posed.Local[Hand].Equals(Reference.Local[Hand], 0.000001);
     const double TargetError = FVector::Distance(Posed.Component[Hand].GetLocation(), Target);
     FJson Item = Object(); Item->SetStringField(TEXT("side"), IsLeft ? TEXT("left") : TEXT("right"));
     Item->SetArrayField(TEXT("target_native_cm"), Vector(Target)); Item->SetNumberField(TEXT("error_cm"), TargetError); IK.Add(Value(Item));
-    if (!Need(TargetError <= PoseNumber(TEXT("max_hand_target_error_cm")), TEXT("non-stretched native hand IK reaches authored radio-side target"))) return false;
+    Item->SetBoolField(TEXT("reference_local_hand_retained"), LocalHandRetained);
+    Item->SetStringField(TEXT("reference_local_hand"), Reference.Local[Hand].ToString()); Item->SetStringField(TEXT("actual_local_hand"), Posed.Local[Hand].ToString());
+    Item->SetStringField(TEXT("actual_component_hand"), Posed.Component[Hand].ToString());
+    if (!Need(LocalHandRetained && TargetError <= PoseNumber(TEXT("max_hand_target_error_cm")), TEXT("non-stretched hand target reached with native reference-local wrist orientation"))) return false;
    }
    Report->SetArrayField(TEXT("hand_ik"), IK);
    Report->SetStringField(TEXT("posed_body_sha1"), Posed.Hash());
@@ -263,6 +308,140 @@ namespace S47MannequinBake
    Part->SetCPUSkinningEnabled(true, true);
    return Part;
   }
+  bool AppendNative(UMeshComponent* Part, int32 OverallLOD, int32 BaseSlot, const FTransform& Seat, FRawMesh& Raw,
+   int32& UsedUVs, const FJson& Provenance, bool CaptureSoles)
+  {
+   const FMatrix Transform = Part->GetComponentTransform().ToMatrixWithScale() * Seat.ToMatrixWithScale().Inverse();
+   const int32 BaseVertex = Raw.VertexPositions.Num(), BeforeFaces = Raw.FaceMaterialIndices.Num();
+   TArray<TSharedPtr<FJsonValue>> Sections;
+   auto Wedge = [&](int32 Vertex, const FVector3f& X, const FVector3f& Y, const FVector3f& Z, const FColor& Color, const FStaticMeshVertexBuffer& UVs)
+   {
+    Raw.WedgeIndices.Add(BaseVertex + Vertex);
+    Raw.WedgeTangentX.Add((FVector4f)Transform.TransformVector((FVector)X));
+    Raw.WedgeTangentY.Add((FVector4f)Transform.TransformVector((FVector)Y));
+    Raw.WedgeTangentZ.Add((FVector4f)Transform.TransformVector((FVector)Z)); Raw.WedgeColors.Add(Color);
+    const int32 Count = UVs.GetNumTexCoords(); UsedUVs = FMath::Max(UsedUVs, Count);
+    for (int32 Channel = 0; Channel < MAX_MESH_TEXTURE_COORDS; ++Channel)
+     Raw.WedgeTexCoords[Channel].Add(Channel < Count ? UVs.GetVertexUV(Vertex, Channel) : FVector2f::ZeroVector);
+   };
+   auto Section = [&](int32 NativeSlot, int32 ResolvedSlot, int32 Triangles)
+   {
+    FJson Item = Object(); Item->SetNumberField(TEXT("native_material_index"), NativeSlot); Item->SetNumberField(TEXT("resolved_source_slot"), ResolvedSlot);
+    Item->SetNumberField(TEXT("output_slot"), BaseSlot + ResolvedSlot); Item->SetNumberField(TEXT("triangles"), Triangles);
+    Item->SetStringField(TEXT("material"), GetPathNameSafe(Part->GetMaterial(ResolvedSlot))); Sections.Add(Value(Item));
+    for (int32 Triangle = 0; Triangle < Triangles; ++Triangle) { Raw.FaceMaterialIndices.Add(BaseSlot + ResolvedSlot); Raw.FaceSmoothingMasks.Add(0); }
+   };
+   if (USkinnedMeshComponent* Skin = Cast<USkinnedMeshComponent>(Part))
+   {
+    const int32 LODIndex = FMath::Min(OverallLOD, Skin->GetNumLODs() - 1);
+    if (!Need(LODIndex >= Skin->ComputeMinLOD(), TEXT("every posed source contributes to selected LOD; no min-LOD omission"))) return false;
+    TArray<FFinalSkinVertex> Vertices; Skin->GetCPUSkinnedVertices(Vertices, LODIndex);
+    const FSkeletalMeshLODRenderData& LOD = Skin->GetSkinnedAsset()->GetResourceForRendering()->LODRenderData[LODIndex];
+    if (!Need(Vertices.Num() > 0 && Vertices.Num() == int32(LOD.GetNumVertices()), TEXT("actual CPU-skinned source vertex count"))) return false;
+    for (const FFinalSkinVertex& Vertex : Vertices) Raw.VertexPositions.Add((FVector4f)Transform.TransformPosition((FVector)Vertex.Position));
+    const FRawStaticIndexBuffer16or32Interface& Indices = *LOD.MultiSizeIndexContainer.GetIndexBuffer();
+    const auto& Buffers = LOD.StaticVertexBuffers;
+    if (!Need(Buffers.ColorVertexBuffer.GetNumVertices() == 0 || Buffers.ColorVertexBuffer.GetNumVertices() == uint32(Vertices.Num()), TEXT("source skin colors are absent or complete"))) return false;
+    const FSkeletalMeshLODInfo* Info = Skin->GetSkinnedAsset()->GetLODInfo(LODIndex);
+    for (int32 SectionIndex = 0; SectionIndex < LOD.RenderSections.Num(); ++SectionIndex)
+    {
+     const FSkelMeshRenderSection& Source = LOD.RenderSections[SectionIndex]; int32 Slot = Source.MaterialIndex;
+     if (Info->LODMaterialMap.IsValidIndex(SectionIndex) && Info->LODMaterialMap[SectionIndex] != INDEX_NONE) Slot = Info->LODMaterialMap[SectionIndex];
+     if (!Need(Slot >= 0 && Slot < Part->GetNumMaterials() && Skin->IsMaterialSectionShown(Source.MaterialIndex, LODIndex) &&
+      Source.BaseIndex + Source.NumTriangles * 3 <= uint32(Indices.Num()), TEXT("exact shown native skin section, original LOD material map and index range"))) return false;
+     Section(Source.MaterialIndex, Slot, Source.NumTriangles);
+     const bool IsShoe = CaptureSoles && (Part->GetMaterial(Slot)->GetName() == TEXT("M_RW_Shoe") || Part->GetMaterial(Slot)->GetName() == TEXT("M_RW_Trim"));
+     for (uint32 Offset = 0; Offset < Source.NumTriangles * 3; ++Offset)
+     {
+      const uint32 Vertex = Indices.Get(Source.BaseIndex + Offset);
+      if (Vertex >= uint32(Vertices.Num())) return Need(false, TEXT("skin source index outside vertex buffer"));
+      const FFinalSkinVertex& Skinned = Vertices[Vertex];
+      Wedge(Vertex, FVector3f(Skinned.TangentX.ToFVector()), Skinned.GetTangentY(), FVector3f(Skinned.TangentZ.ToFVector()),
+       Buffers.ColorVertexBuffer.GetNumVertices() ? Buffers.ColorVertexBuffer.VertexColor(Vertex) : FColor::White, Buffers.StaticMeshVertexBuffer);
+      if (IsShoe)
+      {
+       const FVector Point(Raw.VertexPositions[BaseVertex + Vertex]);
+       // Collar/coat trim is excluded by its actual seat-relative height; soles use Trim, uppers Shoe.
+       if (Point.Z < -10) (Point.Y < 0 ? LeftSole : RightSole).Add(Point);
+      }
+     }
+    }
+    Provenance->SetNumberField(TEXT("source_lod"), LODIndex); Provenance->SetStringField(TEXT("source_asset"), Skin->GetSkinnedAsset()->GetPathName());
+   }
+   else
+   {
+    UStaticMeshComponent* Static = CastChecked<UStaticMeshComponent>(Part); const FStaticMeshRenderData* Data = Static->GetStaticMesh()->GetRenderData();
+    const int32 LODIndex = FMath::Min(OverallLOD, Data->LODResources.Num() - 1); const FStaticMeshLODResources& LOD = Data->LODResources[LODIndex];
+    const auto& Buffers = LOD.VertexBuffers; const FIndexArrayView Indices = LOD.IndexBuffer.GetArrayView();
+    if (!Need(LOD.GetNumVertices() > 0 && (Buffers.ColorVertexBuffer.GetNumVertices() == 0 || Buffers.ColorVertexBuffer.GetNumVertices() == uint32(LOD.GetNumVertices())), TEXT("actual complete static card vertex/color buffers"))) return false;
+    for (int32 Vertex = 0; Vertex < LOD.GetNumVertices(); ++Vertex) Raw.VertexPositions.Add((FVector4f)Transform.TransformPosition((FVector)Buffers.PositionVertexBuffer.VertexPosition(Vertex)));
+    for (const FStaticMeshSection& Source : LOD.Sections)
+    {
+     if (!Need(Source.MaterialIndex >= 0 && Source.MaterialIndex < Part->GetNumMaterials() && Source.FirstIndex + Source.NumTriangles * 3 <= uint32(Indices.Num()), TEXT("actual card section/index range and original material slot"))) return false;
+     Section(Source.MaterialIndex, Source.MaterialIndex, Source.NumTriangles);
+     for (uint32 Offset = 0; Offset < Source.NumTriangles * 3; ++Offset)
+     {
+      const uint32 Vertex = Indices[Source.FirstIndex + Offset]; if (Vertex >= uint32(LOD.GetNumVertices())) return Need(false, TEXT("card source index outside vertex buffer"));
+      Wedge(Vertex, FVector3f(Buffers.StaticMeshVertexBuffer.VertexTangentX(Vertex)), Buffers.StaticMeshVertexBuffer.VertexTangentY(Vertex), FVector3f(Buffers.StaticMeshVertexBuffer.VertexTangentZ(Vertex)),
+       Buffers.ColorVertexBuffer.GetNumVertices() ? Buffers.ColorVertexBuffer.VertexColor(Vertex) : FColor::White, Buffers.StaticMeshVertexBuffer);
+     }
+    }
+    Provenance->SetNumberField(TEXT("source_lod"), LODIndex); Provenance->SetStringField(TEXT("source_asset"), Static->GetStaticMesh()->GetPathName());
+   }
+   Provenance->SetStringField(TEXT("part"), Part->GetName()); Provenance->SetArrayField(TEXT("sections"), Sections);
+   Provenance->SetNumberField(TEXT("triangles"), Raw.FaceMaterialIndices.Num() - BeforeFaces);
+   return Need(Raw.FaceMaterialIndices.Num() > BeforeFaces, TEXT("every actual source part contributes triangles"));
+  }
+  void StoreDescription(UStaticMesh* Output, int32 LODIndex, const FRawMesh& Raw)
+  {
+   // Build MeshDescription directly. SaveRawMesh's legacy conversion welds positions
+   // and discards degenerate faces; that is unsuitable as an exact source boundary.
+   FMeshDescription* Description = Output->CreateMeshDescription(LODIndex); FStaticMeshAttributes Attributes(*Description); Attributes.Register();
+   auto Positions = Attributes.GetVertexPositions(); auto Normals = Attributes.GetVertexInstanceNormals(); auto Tangents = Attributes.GetVertexInstanceTangents();
+   auto Signs = Attributes.GetVertexInstanceBinormalSigns(); auto Colors = Attributes.GetVertexInstanceColors(); auto UVs = Attributes.GetVertexInstanceUVs();
+   auto SlotNames = Attributes.GetPolygonGroupMaterialSlotNames(); int32 UVCount = 0;
+   for (const auto& Channel : Raw.WedgeTexCoords) if (Channel.Num()) ++UVCount; UVs.SetNumChannels(UVCount);
+   TArray<FVertexID> Vertices; for (const FVector3f& Position : Raw.VertexPositions) { const FVertexID ID = Description->CreateVertex(); Positions[ID] = Position; Vertices.Add(ID); }
+   TArray<int32> UsedSlots; for (const int32 Slot : Raw.FaceMaterialIndices) UsedSlots.AddUnique(Slot); UsedSlots.Sort();
+   for (int32 SectionIndex = 0; SectionIndex < UsedSlots.Num(); ++SectionIndex)
+   {
+    const int32 Slot = UsedSlots[SectionIndex]; const FPolygonGroupID ID(Slot); Description->CreatePolygonGroupWithID(ID);
+    SlotNames[ID] = Output->GetStaticMaterials()[Slot].ImportedMaterialSlotName; Output->GetSectionInfoMap().Set(LODIndex, SectionIndex, FMeshSectionInfo(Slot));
+   }
+   for (int32 Triangle = 0; Triangle < Raw.FaceMaterialIndices.Num(); ++Triangle)
+   {
+    FVertexInstanceID Corners[3];
+    for (int32 Corner = 0; Corner < 3; ++Corner)
+    {
+     const int32 WedgeIndex = Triangle * 3 + Corner; const FVertexInstanceID ID = Description->CreateVertexInstance(Vertices[Raw.WedgeIndices[WedgeIndex]]); Corners[Corner] = ID;
+     Normals[ID] = Raw.WedgeTangentZ[WedgeIndex]; Tangents[ID] = Raw.WedgeTangentX[WedgeIndex];
+     Signs[ID] = ((Raw.WedgeTangentZ[WedgeIndex] ^ Raw.WedgeTangentX[WedgeIndex]) | Raw.WedgeTangentY[WedgeIndex]) < 0 ? -1.0f : 1.0f;
+     Colors[ID] = FVector4f(FLinearColor::FromSRGBColor(Raw.WedgeColors[WedgeIndex]));
+     for (int32 Channel = 0; Channel < UVCount; ++Channel) UVs.Set(ID, Channel, Raw.WedgeTexCoords[Channel][WedgeIndex]);
+    }
+    Description->CreateTriangle(FPolygonGroupID(Raw.FaceMaterialIndices[Triangle]), Corners);
+   }
+   Description->BuildIndexers(); Output->CommitMeshDescription(LODIndex);
+  }
+  bool SoleContacts()
+  {
+   FJson Contacts = Object();
+   for (const bool IsLeft : {true, false})
+   {
+    const TArray<FVector>& Points = IsLeft ? LeftSole : RightSole;
+    if (!Need(Points.Num() > 0, TEXT("actual low Shoe+Trim vertices for both sole contacts"))) return false;
+    FVector Low = Points[0]; for (const FVector& Point : Points) if (Point.Z < Low.Z) Low = Point;
+    TArray<FVector> Flat; for (const FVector& Point : Points) if (Point.Z <= Low.Z + 0.2) Flat.AddUnique(Point);
+    FVector Heel = Flat[0], Toe = Flat[0], SideMin = Flat[0], SideMax = Flat[0];
+    for (const FVector& Point : Flat) { if (Point.X < Heel.X) Heel = Point; if (Point.X > Toe.X) Toe = Point; if (Point.Y < SideMin.Y) SideMin = Point; if (Point.Y > SideMax.Y) SideMax = Point; }
+    FJson Item = Object(); Item->SetNumberField(TEXT("min_z_cm"), Low.Z); Item->SetNumberField(TEXT("flat_unique_vertices"), Flat.Num());
+    Item->SetArrayField(TEXT("lowest"), Vector(Low)); Item->SetArrayField(TEXT("heel"), Vector(Heel)); Item->SetArrayField(TEXT("toe"), Vector(Toe));
+    Item->SetArrayField(TEXT("side_min"), Vector(SideMin)); Item->SetArrayField(TEXT("side_max"), Vector(SideMax));
+    Contacts->SetObjectField(IsLeft ? TEXT("left") : TEXT("right"), Item);
+   }
+   Contacts->SetStringField(TEXT("source"), TEXT("actual posed source-LOD0 clothing vertices, M_RW_Trim soles plus M_RW_Shoe uppers, below seat-10cm; extrema within 2mm of lowest; no repositioning"));
+   Report->SetObjectField(TEXT("sole_contacts_output_cm"), Contacts); return true;
+  }
   FJson StaticAudit(UStaticMesh* Mesh)
   {
    FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName());
@@ -277,6 +456,7 @@ namespace S47MannequinBake
     FRawMesh Raw; const FStaticMeshSourceModel& Model = Mesh->GetSourceModel(Index); Model.LoadRawMesh(Raw);
     FJson Item = Object(); Item->SetNumberField(TEXT("index"), Index); Item->SetNumberField(TEXT("triangles"), Raw.WedgeIndices.Num() / 3);
     Item->SetNumberField(TEXT("vertices"), Raw.VertexPositions.Num()); Item->SetStringField(TEXT("raw_sha1"), RawDigest(Raw));
+    Item->SetBoolField(TEXT("raw_valid"), Raw.IsValid()); Item->SetStringField(TEXT("corner_sha1"), Raw.IsValid() ? CornerDigest(Raw) : TEXT("INVALID"));
     Item->SetNumberField(TEXT("screen_size"), Model.ScreenSize.Default);
     Item->SetBoolField(TEXT("recompute_normals"), Model.BuildSettings.bRecomputeNormals); Item->SetBoolField(TEXT("recompute_tangents"), Model.BuildSettings.bRecomputeTangents);
     Item->SetBoolField(TEXT("generate_lightmap_uvs"), Model.BuildSettings.bGenerateLightmapUVs); Item->SetBoolField(TEXT("full_precision_uvs"), Model.BuildSettings.bUseFullPrecisionUVs);
@@ -286,6 +466,8 @@ namespace S47MannequinBake
     {
      const FStaticMeshLODResources& Render = Mesh->GetRenderData()->LODResources[Index];
      Item->SetNumberField(TEXT("render_vertices"), Render.GetNumVertices()); Item->SetNumberField(TEXT("render_triangles"), Render.GetNumTriangles());
+     Item->SetBoolField(TEXT("render_full_precision_uvs"), Render.VertexBuffers.StaticMeshVertexBuffer.GetUseFullPrecisionUVs());
+     Item->SetBoolField(TEXT("render_high_precision_tangents"), Render.VertexBuffers.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
      TArray<TSharedPtr<FJsonValue>> Sections;
      for (const FStaticMeshSection& Section : Render.Sections)
      {
@@ -300,6 +482,9 @@ namespace S47MannequinBake
   }
   bool Audit(UStaticMesh* Mesh, const FJson& Expected = nullptr)
   {
+   // The shader compiler registers with FAssetCompilingManager in UE5.8. Finish
+   // it too; static mesh compilation alone does not prove a usable material.
+   FAssetCompilingManager::Get().FinishAllCompilation();
    const FJson Actual = StaticAudit(Mesh); Report->SetObjectField(TEXT("output"), Actual);
    const auto& Settings = Contract->GetArrayField(TEXT("lods")); const auto& LODs = Actual->GetArrayField(TEXT("lods"));
    if (!Need(LODs.Num() == Settings.Num() && Mesh->GetRenderData() && Mesh->GetRenderData()->LODResources.Num() == Settings.Num(), TEXT("three actual authored and render LODs"))) return false;
@@ -308,14 +493,38 @@ namespace S47MannequinBake
    {
     const FJson Item = LODs[Index]->AsObject(), Limit = Settings[Index]->AsObject(); const int32 Triangles = Item->GetIntegerField(TEXT("triangles"));
     if (!Need(Triangles > 0 && Triangles < PreviousTriangles && Triangles <= Limit->GetIntegerField(TEXT("max_triangles")), FString::Printf(TEXT("measured decreasing LOD %d triangle budget"), Index))) return false;
-    if (!Need(Triangles == Item->GetIntegerField(TEXT("render_triangles")) && Item->GetIntegerField(TEXT("uv_channels")) > 0 &&
+    if (!Need(Item->GetBoolField(TEXT("raw_valid")) && Triangles == Item->GetIntegerField(TEXT("render_triangles")) && Item->GetIntegerField(TEXT("uv_channels")) > 0 &&
      !Item->GetBoolField(TEXT("recompute_normals")) && !Item->GetBoolField(TEXT("recompute_tangents")) && !Item->GetBoolField(TEXT("generate_lightmap_uvs")) &&
      Item->GetBoolField(TEXT("full_precision_uvs")) && Item->GetBoolField(TEXT("high_precision_tangents")) &&
+     Item->GetBoolField(TEXT("render_full_precision_uvs")) && Item->GetBoolField(TEXT("render_high_precision_tangents")) &&
      FMath::IsNearlyEqual(Item->GetNumberField(TEXT("screen_size")), Limit->GetNumberField(TEXT("screen_size")), 0.000001), TEXT("render triangles, authored UV/normal/tangent and screen policy retained"))) return false;
+    FRawMesh Raw; Mesh->GetSourceModel(Index).LoadRawMesh(Raw);
+    TArray<int32> SourceCounts, RenderCounts; SourceCounts.Init(0, Mesh->GetStaticMaterials().Num()); RenderCounts = SourceCounts;
+    for (const int32 Slot : Raw.FaceMaterialIndices)
+    {
+     if (Slot < 0 || Slot >= SourceCounts.Num()) return Need(false, TEXT("raw source material index outside original table"));
+     ++SourceCounts[Slot];
+    }
+    const FStaticMeshLODResources& Render = Mesh->GetRenderData()->LODResources[Index];
+    for (const FStaticMeshSection& Section : Render.Sections)
+    {
+     if (!Need(Section.MaterialIndex >= 0 && Section.MaterialIndex < RenderCounts.Num() &&
+      Section.FirstIndex + Section.NumTriangles * 3 <= uint32(Render.IndexBuffer.GetNumIndices()), TEXT("actual render section uses valid original material/index range"))) return false;
+     RenderCounts[Section.MaterialIndex] += Section.NumTriangles;
+    }
+    if (!Need(SourceCounts == RenderCounts, TEXT("actual render material bindings and per-slot triangles exactly match native source corners"))) return false;
+    TArray<TSharedPtr<FJsonValue>> BindingCounts;
+    for (int32 Slot = 0; Slot < SourceCounts.Num(); ++Slot)
+    {
+     FJson Binding = Object(); Binding->SetNumberField(TEXT("slot"), Slot); Binding->SetNumberField(TEXT("source_triangles"), SourceCounts[Slot]);
+     Binding->SetNumberField(TEXT("render_triangles"), RenderCounts[Slot]); Binding->SetStringField(TEXT("material"), GetPathNameSafe(Mesh->GetStaticMaterials()[Slot].MaterialInterface));
+     BindingCounts.Add(Value(Binding));
+    }
+    Item->SetArrayField(TEXT("actual_material_bindings"), BindingCounts);
     if (Expected)
     {
      const FJson Old = Expected->GetArrayField(TEXT("lods"))[Index]->AsObject();
-     if (!Need(Item->GetStringField(TEXT("raw_sha1")) == Old->GetStringField(TEXT("raw_sha1")) && Triangles == Old->GetIntegerField(TEXT("triangles")), TEXT("fresh saved asset exact raw geometry/UV/normal/tangent/color/material digest"))) return false;
+     if (!Need(Item->GetStringField(TEXT("raw_sha1")) == Old->GetStringField(TEXT("raw_sha1")) && Item->GetStringField(TEXT("corner_sha1")) == Old->GetStringField(TEXT("corner_sha1")) && Triangles == Old->GetIntegerField(TEXT("triangles")), TEXT("fresh saved asset exact raw geometry/UV/normal/tangent/color/material digest"))) return false;
     }
     PreviousTriangles = Triangles;
    }
@@ -327,6 +536,18 @@ namespace S47MannequinBake
     if (!Need(Before.Num() == After.Num(), TEXT("fresh saved material slot count"))) return false;
     for (int32 Index = 0; Index < Before.Num(); ++Index) if (!Need(Before[Index]->AsString() == After[Index]->AsString(), TEXT("fresh saved material pointer identity"))) return false;
    }
+   TArray<TSharedPtr<FJsonValue>> Compile;
+   bool ShadersReady = true;
+   for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials())
+   {
+    UMaterialInterface* Material = Slot.MaterialInterface; const FMaterialResource* Resource = Material ? Material->GetMaterialResource(GMaxRHIShaderPlatform) : nullptr;
+    FJson State = Object(); State->SetStringField(TEXT("material"), GetPathNameSafe(Material));
+    TArray<TSharedPtr<FJsonValue>> Errors; if (Resource) for (const FString& Message : Resource->GetCompileErrors()) Errors.Add(MakeShared<FJsonValueString>(Message));
+    const bool Ready = Resource && Resource->GetGameThreadShaderMap() && Resource->IsGameThreadShaderMapComplete() && Errors.IsEmpty() && Material->GetMaterial() != UMaterial::GetDefaultMaterial(MD_Surface);
+    State->SetArrayField(TEXT("errors"), Errors); State->SetBoolField(TEXT("shader_ready"), Ready); Compile.Add(Value(State)); ShadersReady &= Ready;
+   }
+   Report->SetArrayField(TEXT("actual_material_compile"), Compile);
+   if (!Need(ShadersReady, TEXT("all actual material resources have complete shader maps, no compile errors or default-surface fallback"))) return false;
    return true;
   }
   bool Run()
@@ -363,8 +584,19 @@ namespace S47MannequinBake
    };
    UStaticMeshComponent* Hair = Cards(TEXT("HairCards"), HairNear, HairMaterial);
    UStaticMeshComponent* Brows = Cards(TEXT("BrowCards"), BrowsNear, BrowMaterial);
-   IMeshUtilities& Utilities = FModuleManager::LoadModuleChecked<IMeshUtilities>(TEXT("MeshUtilities"));
-   TArray<FRawMesh> RawLODs; TArray<FStaticMaterial> Materials; TArray<TSharedPtr<FJsonValue>> Provenance;
+   // The local multi-component ConvertMeshesToStaticMesh compacts an already
+   // accumulated slot map after each skinned part. Read its underlying native CPU
+   // vertex/section APIs directly, preserving every original slot and LOD remap.
+   TArray<FRawMesh> RawLODs; TArray<FStaticMaterial> Materials; TArray<int32> BaseSlots, SlotCounts; TArray<TSharedPtr<FJsonValue>> Provenance;
+   for (int32 PartIndex = 0; PartIndex < Parts.Num(); ++PartIndex)
+   {
+    UMeshComponent* Part = Parts[PartIndex]; BaseSlots.Add(Materials.Num()); SlotCounts.Add(Part->GetNumMaterials());
+    for (int32 Slot = 0; Slot < Part->GetNumMaterials(); ++Slot)
+    {
+     UMaterialInterface* Material = Part->GetMaterial(Slot); if (!Need(Material != nullptr, TEXT("actual material for every original source slot"))) return false;
+     const FName Name(*FString::Printf(TEXT("Part%d_Slot%d"), PartIndex, Slot)); Materials.Add(FStaticMaterial(Material, Name, Name));
+    }
+   }
    const auto& LODSettings = Contract->GetArrayField(TEXT("lods"));
    for (int32 Index = 0; Index < LODSettings.Num(); ++Index)
    {
@@ -372,21 +604,31 @@ namespace S47MannequinBake
     Hair->SetStaticMesh(Far ? HairFar : HairNear); Brows->SetStaticMesh(Far ? BrowsFar : BrowsNear);
     for (int32 Slot = 0; Slot < Hair->GetNumMaterials(); ++Slot) Hair->SetMaterial(Slot, HairMaterial);
     for (int32 Slot = 0; Slot < Brows->GetNumMaterials(); ++Slot) Brows->SetMaterial(Slot, BrowMaterial);
-    const FString Scratch = FString::Printf(TEXT("/Temp/S47Mannequin_%s_%d"), *FGuid::NewGuid().ToString(EGuidFormats::Digits), Index);
-    UStaticMesh* Converted = Utilities.ConvertMeshesToStaticMesh(Parts, Seat, Scratch);
-    if (!Need(Converted != nullptr, TEXT("production IMeshUtilities CPU pose conversion succeeded"))) return false;
-    FStaticMeshCompilingManager::Get().FinishAllCompilation();
     const int32 SourceLOD = Settings->GetIntegerField(TEXT("overall_source_lod"));
-    if (!Need(SourceLOD >= 0 && SourceLOD < Converted->GetNumSourceModels(), TEXT("requested actual overall LOD exists"))) return false;
-    if (Index == 0) Materials = Converted->GetStaticMaterials();
-    if (!Need(Materials.Num() == Converted->GetStaticMaterials().Num(), TEXT("near/far card material table size stable"))) return false;
-    for (int32 Slot = 0; Slot < Materials.Num(); ++Slot) if (!Need(Materials[Slot].MaterialInterface == Converted->GetStaticMaterials()[Slot].MaterialInterface && Materials[Slot].MaterialInterface, TEXT("all body/face/cloth/card material pointers retained across LODs"))) return false;
-    FRawMesh& Raw = RawLODs.AddDefaulted_GetRef(); Converted->GetSourceModel(SourceLOD).LoadRawMesh(Raw);
-    if (!Need(Raw.IsValid(), TEXT("actual converted corner attributes valid without repair"))) return false;
+    if (!Need(SourceLOD >= 0 && SourceLOD < Face->GetLODNum(), TEXT("requested actual overall face LOD exists"))) return false;
+    FRawMesh& Raw = RawLODs.AddDefaulted_GetRef(); int32 UsedUVs = 0; TArray<TSharedPtr<FJsonValue>> Contributions;
+    for (int32 PartIndex = 0; PartIndex < Parts.Num(); ++PartIndex)
+    {
+     UMeshComponent* Part = Parts[PartIndex]; if (!Need(Part->GetNumMaterials() == SlotCounts[PartIndex], TEXT("actual near/far source slot count stable"))) return false;
+     for (int32 Slot = 0; Slot < SlotCounts[PartIndex]; ++Slot)
+      if (!Need(Part->GetMaterial(Slot) == Materials[BaseSlots[PartIndex] + Slot].MaterialInterface, TEXT("original material identities remain fixed across LODs"))) return false;
+     FJson Contribution = Object();
+     if (!AppendNative(Part, SourceLOD, BaseSlots[PartIndex], Seat, Raw, UsedUVs, Contribution, Index == 0 && PartIndex == 2)) return false;
+     Contributions.Add(Value(Contribution));
+    }
+    for (int32 Channel = UsedUVs; Channel < MAX_MESH_TEXTURE_COORDS; ++Channel) Raw.WedgeTexCoords[Channel].Empty();
+    if (!Need(Raw.IsValid() && UsedUVs > 0 && UsedUVs <= MAX_MESH_TEXTURE_COORDS, TEXT("actual CPU-skinned/native corner attributes valid without material compaction"))) return false;
+    bool Finite = true;
+    for (const FVector3f& Position : Raw.VertexPositions) Finite &= !Position.ContainsNaN();
+    for (const FVector3f& Normal : Raw.WedgeTangentZ) Finite &= !Normal.ContainsNaN() && Normal.SizeSquared() > 0.1f;
+    for (const FVector3f& Tangent : Raw.WedgeTangentX) Finite &= !Tangent.ContainsNaN() && Tangent.SizeSquared() > 0.1f;
+    for (const auto& Channel : Raw.WedgeTexCoords) for (const FVector2f& UV : Channel) Finite &= !UV.ContainsNaN();
+    if (!Need(Finite, TEXT("finite native positions/UVs and nonzero authored tangent basis"))) return false;
     FJson Item = Object(); Item->SetNumberField(TEXT("output_lod"), Index); Item->SetNumberField(TEXT("overall_source_lod"), SourceLOD);
     Item->SetStringField(TEXT("hair_asset"), Hair->GetStaticMesh()->GetPathName()); Item->SetStringField(TEXT("brow_asset"), Brows->GetStaticMesh()->GetPathName());
-    Item->SetStringField(TEXT("converted_raw_sha1"), RawDigest(Raw)); Provenance.Add(Value(Item));
+    Item->SetArrayField(TEXT("parts"), Contributions); Item->SetStringField(TEXT("source_corner_sha1"), CornerDigest(Raw)); Provenance.Add(Value(Item));
    }
+   if (!SoleContacts()) return false;
    const FString OutputPath = Job->GetStringField(TEXT("output_asset")); UPackage* Package = CreatePackage(*OutputPath);
    UStaticMesh* Output = NewObject<UStaticMesh>(Package, *FPackageName::GetLongPackageAssetName(OutputPath), RF_Public | RF_Standalone);
    Output->InitResources(); Output->SetLightingGuid(); Output->GetStaticMaterials() = Materials;
@@ -398,15 +640,7 @@ namespace S47MannequinBake
     Model.BuildSettings.bRemoveDegenerates = false; Model.BuildSettings.bUseHighPrecisionTangentBasis = true;
     Model.BuildSettings.bUseFullPrecisionUVs = true; Model.BuildSettings.bGenerateLightmapUVs = false;
     Model.ReductionSettings.PercentTriangles = 1.0f; Model.ScreenSize.Default = LODSettings[Index]->AsObject()->GetNumberField(TEXT("screen_size"));
-    Model.SaveRawMesh(RawLODs[Index]);
-    TArray<int32> Sections;
-    for (const int32 Material : RawLODs[Index].FaceMaterialIndices) Sections.AddUnique(Material);
-    for (int32 Section = 0; Section < Sections.Num(); ++Section)
-    {
-     const int32 Compact = Sections[Section];
-     const int32 Slot = RawLODs[Index].MaterialIndexToImportIndex.IsValidIndex(Compact) ? RawLODs[Index].MaterialIndexToImportIndex[Compact] : Compact;
-     Output->GetSectionInfoMap().Set(Index, Section, FMeshSectionInfo(Slot));
-    }
+    StoreDescription(Output, Index, RawLODs[Index]);
    }
    Output->GetOriginalSectionInfoMap().CopyFrom(Output->GetSectionInfoMap());
    Output->SetImportVersion(EImportStaticMeshVersion::LastVersion); Output->Build(false); Output->PostEditChange();
@@ -416,7 +650,7 @@ namespace S47MannequinBake
    if (!Audit(Output)) return false;
    const auto& SavedLODs = Report->GetObjectField(TEXT("output"))->GetArrayField(TEXT("lods"));
    for (int32 Index = 0; Index < SavedLODs.Num(); ++Index)
-    if (!Need(SavedLODs[Index]->AsObject()->GetStringField(TEXT("raw_sha1")) == Provenance[Index]->AsObject()->GetStringField(TEXT("converted_raw_sha1")), TEXT("output retains exact converted positions, winding, corner UVs/normals/tangents/colors and material map"))) return false;
+    if (!Need(SavedLODs[Index]->AsObject()->GetStringField(TEXT("corner_sha1")) == Provenance[Index]->AsObject()->GetStringField(TEXT("source_corner_sha1")), TEXT("output retains exact native positions, winding, corner UVs/normals/tangent handedness/colors and original material map"))) return false;
    FAssetRegistryModule::AssetCreated(Output); Output->MarkPackageDirty();
    FSavePackageArgs Args; Args.TopLevelFlags = RF_Public | RF_Standalone;
    return Need(UPackage::SavePackage(Package, Output, *FPackageName::LongPackageNameToFilename(OutputPath, FPackageName::GetAssetPackageExtension()), Args), TEXT("only new private static output saved"));

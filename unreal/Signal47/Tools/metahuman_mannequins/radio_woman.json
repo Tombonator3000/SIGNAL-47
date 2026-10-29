@@ -3,6 +3,7 @@
   "id": "radio_woman",
   "status": "authoring_contract_unverified",
   "engine": "5.8.4",
+  "bake_api": "USkinnedMeshComponent::GetCPUSkinnedVertices plus actual native static/render sections into MeshDescription; no multi-part material compaction",
   "source_inventory": "Signal47-mannequins-20261029/source-inventory.json",
   "source_body_fbx_sha256": "292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92",
   "private_root": "/Game/MetaHumans/Mannequins/RadioWoman",
@@ -35,6 +36,7 @@
     "max_shared_reference_error_cm": 0.025,
     "max_shared_reference_angle_degrees": 0.02,
     "no_stretching": true,
+    "hand_orientation": "native reference-local wrist follows newly posed forearm; no claimed authored radio grip",
     "facial_expression": "actual face reference pose, no RigLogic or animation evaluation",
     "correctives": "reference local transforms follow their posed parent; no dynamic RBF evaluation"
   },
