@@ -467,6 +467,18 @@ namespace S47MannequinBake
    FJson Before; if (!GeometryState(Before)) return false;
    const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Asset, FPackageName::GetAssetPackageExtension()));
    FJson FileBefore; if (!FileState(Filename, FileBefore)) return false;
+   if (Verify)
+   {
+    // Keep actual fresh-process evidence outside the immutable bind child.
+    // It must survive an early receipt mismatch, before the child is updated.
+    Report->SetObjectField(TEXT("clothes_bind_actual_geometry_before"), Before);
+    FJson Actual = Object(); Actual->SetStringField(TEXT("asset"), Asset); Actual->SetStringField(TEXT("object"), Clothes->GetPathName());
+    Actual->SetStringField(TEXT("private_skeleton"), Skeleton); Actual->SetStringField(TEXT("reference_sha1"), FPose(ClothRef).Hash());
+    Actual->SetStringField(TEXT("inverse_reference_sha1"), InverseReferenceHash(Clothes)); Actual->SetStringField(TEXT("body_reference_sha1"), BodyReference);
+    Actual->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse); Actual->SetNumberField(TEXT("bones"), ClothRef.GetNum());
+    Actual->SetNumberField(TEXT("inverse_matrices"), Clothes->GetRefBasesInvMatrix().Num()); Actual->SetBoolField(TEXT("package_dirty"), Clothes->GetOutermost()->IsDirty());
+    Actual->SetObjectField(TEXT("file"), FileBefore); Report->SetObjectField(TEXT("clothes_bind_actual_before"), Actual);
+   }
    FJson Data = Object(); Report->SetObjectField(TEXT("clothes_bind"), Data);
    if (Verify)
    {
@@ -476,6 +488,19 @@ namespace S47MannequinBake
      Previous->GetStringField(TEXT("mode")) == TEXT("bind-clothes") && Previous->GetNumberField(TEXT("pid")) > 0 &&
      Previous->GetNumberField(TEXT("pid")) != FPlatformProcess::GetCurrentProcessId(), TEXT("successful original bind receipt from a different native process"))) return false;
     const FJson Saved = Previous->GetObjectField(TEXT("clothes_bind")); Data->Values = Saved->Values;
+    FJson Matches = Object(); const FJson SavedGeometry = Saved->GetObjectField(TEXT("geometry_before"));
+    for (const auto& Entry : Before->Values)
+    {
+     const TSharedPtr<FJsonValue>* Expected = SavedGeometry->Values.Find(Entry.Key);
+     Matches->SetBoolField(Entry.Key, Expected && FJsonValue::CompareEqual(**Expected, *Entry.Value));
+    }
+    Matches->SetBoolField(TEXT("asset"), Saved->GetStringField(TEXT("asset")) == Asset);
+    Matches->SetBoolField(TEXT("object"), Saved->GetStringField(TEXT("object")) == Clothes->GetPathName());
+    Matches->SetBoolField(TEXT("private_skeleton"), Saved->GetStringField(TEXT("private_skeleton")) == Skeleton);
+    Matches->SetBoolField(TEXT("reference_after_sha1"), Saved->GetStringField(TEXT("reference_after_sha1")) == FPose(ClothRef).Hash());
+    Matches->SetBoolField(TEXT("inverse_reference_after_sha1"), Saved->GetStringField(TEXT("inverse_reference_after_sha1")) == InverseReferenceHash(Clothes));
+    Matches->SetBoolField(TEXT("file_after"), FJsonValue::CompareEqual(*Value(Saved->GetObjectField(TEXT("file_after"))), *Value(FileBefore)));
+    Report->SetObjectField(TEXT("clothes_bind_verify_matches"), Matches);
     if (!Need(Saved->GetStringField(TEXT("asset")) == Asset && Saved->GetStringField(TEXT("object")) == Clothes->GetPathName() &&
      Saved->GetStringField(TEXT("private_skeleton")) == Skeleton && Saved->GetStringField(TEXT("policy")) == TEXT("canonical-native-body") &&
      Saved->GetStringField(TEXT("imported_reference_pose_sha1")) == ImportedPin && Saved->GetStringField(TEXT("canonical_reference_pose_sha1")) == BodyPin &&
