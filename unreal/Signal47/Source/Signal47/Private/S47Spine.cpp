@@ -46,10 +46,10 @@ double FS47Spine::GateDone(EGate G)
  return G == SC04 ? 3 * 3600. + 15 * 60 : G == SC08 ? 4 * 3600. + 20 * 60 : 5 * 3600. + 10 * 60;
 }
 
-// three.js, SARO area: the east wall of the control room between the printer and the service record,
-// and a post inside the array gate where the 21:40 round stood.
-FVector FS47Spine::GatePoint(EGate G) { return G == SC08 ? FVector(-.2, 1.0, -18.4) : FVector(5.93, 1.4, -1.5); }
-FVector FS47Spine::StandPoint(EGate G) { return G == SC08 ? FVector(-1.0, 0, -17.6) : FVector(4.6, 0, -1.5); }
+// three.js, SARO area: a free-standing post on the open floor east of the consoles, and one inside
+// the array gate where the 21:40 round stood.
+FVector FS47Spine::GatePoint(EGate G) { return G == SC08 ? FVector(-.2, 1.0, -18.4) : FVector(4.2, 1.0, .3); }
+FVector FS47Spine::StandPoint(EGate G) { return G == SC08 ? FVector(-1.0, 0, -17.6) : FVector(3.0, 0, .3); }
 const TCHAR* FS47Spine::GateItem(EGate G) { return G == SC04 ? TEXT("spine:sc04") : G == SC08 ? TEXT("spine:sc08") : TEXT("spine:sc11"); }
 
 FS47Doc FS47Spine::Card(EGate G)
@@ -188,9 +188,9 @@ FString FS47Spine::Objective() const
 {
  switch (Pending())
  {
- case SC04: return TEXT("SARO // SC04 PLACEHOLDER: SECURE THE ORIGINALS. READ THE MARKED CARD ON THE EAST WALL OF THE CONTROL ROOM");
- case SC08: return TEXT("ARRAY GATE // SC08 PLACEHOLDER: THEY POINT AT YOU. READ THE MARKED CARD INSIDE THE ARRAY GATE");
- case SC11: return TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE MARKED CARD ON THE EAST WALL OF THE CONTROL ROOM");
+ case SC04: return TEXT("SARO // SC04 PLACEHOLDER: SECURE THE ORIGINALS. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
+ case SC08: return TEXT("ARRAY GATE // SC08 PLACEHOLDER: THEY POINT AT YOU. READ THE YELLOW PLACEHOLDER POST INSIDE THE ARRAY GATE");
+ case SC11: return TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
  default: return FString();
  }
 }
@@ -230,19 +230,18 @@ void FS47Spine::Build()
   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
   C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
   C->RegisterComponent(); C->SetWorldLocation(S47Three::ToUE(GatePoint(E)));
-  const FVector Scale = E == SC08 ? FVector(.3, .5, .3) : FVector(.05, .5, .36);
+  const FVector Scale(.3, .5, .3);
   C->SetWorldScale3D(S47Three::DirToUE(Scale));
   FS47Obj Obj = W->ObjAt(W->AdoptNode(C, Parent, FString::Printf(TEXT("spine:post%d"), G))); Obj.SetScale(Scale);
   auto* T = NewObject<UTextRenderComponent>(W, *(Name + TEXT("Text")));
   T->SetMobility(EComponentMobility::Movable); T->SetupAttachment(ParentComp);
   T->SetText(FText::FromString(FString::Printf(TEXT("%s\nPLACEHOLDER"), Scenarios()[E == SC04 ? 3 : E == SC08 ? 7 : 10].Id)));
-  T->SetWorldSize(E == SC08 ? 3.f : 2.4f); T->SetHorizontalAlignment(EHTA_Center); T->SetVerticalAlignment(EVRTA_TextCenter);
+  T->SetWorldSize(3.f); T->SetHorizontalAlignment(EHTA_Center); T->SetVerticalAlignment(EVRTA_TextCenter);
   T->SetTextRenderColor(FColor(30, 24, 8)); T->SetCollisionEnabled(ECollisionEnabled::NoCollision); T->RegisterComponent();
   // The sign faces the stand point.
   const FVector Face = (StandPoint(E) - GatePoint(E)).GetSafeNormal2D();
-  const FVector Off = E == SC08 ? FVector(-.17, .32, 0) : FVector(-.03, .1, 0);
-  T->SetWorldLocation(S47Three::ToUE(GatePoint(E) + (E == SC08 ? FVector(Face.X * .17, .32, Face.Z * .17) : Off)));
-  T->SetWorldRotation(FRotator(0, E == SC08 ? FMath::RadiansToDegrees(FMath::Atan2(Face.X, Face.Z)) : 90, 0));
+  T->SetWorldLocation(S47Three::ToUE(GatePoint(E) + FVector(Face.X * .17, .32, Face.Z * .17)));
+  T->SetWorldRotation(FRotator(0, FMath::RadiansToDegrees(FMath::Atan2(Face.X, Face.Z)), 0));
   W->AdoptNode(T, Parent, FString::Printf(TEXT("spine:sign%d"), G));
   Posts.Add(C); Signs.Add(T);
   FS47Interactable It; It.Id = GateItem(E); It.Object = Obj; It.Range = 2.4;
