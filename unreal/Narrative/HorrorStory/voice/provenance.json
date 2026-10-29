@@ -2,7 +2,7 @@
   "version": 1,
   "scenario": "SC01",
   "synthetic": true,
-  "scope": "Five original SC01 recordings: H01_BRIEF_001/002/003 (DALE) and SC01_FIRST_REPORT_001/002 (DISPATCH). Later HorrorStory cues are pending.",
+  "scope": "Five SC01 recordings. Only SC01_FIRST_REPORT_001/002 regenerated on2026-10-29 for current glass-strike report; the three original DALE recordings remain byte-identical. Later HorrorStory cues pending.",
   "generator": "VoiceStudio 0.5.6 / OmniVoice",
   "voice_software": {
     "name": "VoiceStudio",
@@ -102,5 +102,24 @@
   "cache": "~/.cache/signal47-horror/sc01; raw sources, API responses and finished WAV outside Git.",
   "human_listened": false,
   "speaker_similarity": "UNVERIFIED",
-  "emotional_delivery": "UNVERIFIED"
+  "emotional_delivery": "UNVERIFIED",
+  "dispatch_refresh_2026_10_29": {
+    "cue_ids": [
+      "SC01_FIRST_REPORT_001",
+      "SC01_FIRST_REPORT_002"
+    ],
+    "manuscript": "current modules/unified_scenarios.json; text identity bound by generation, WAV SHA and fresh ASR",
+    "seeds": {
+      "SC01_FIRST_REPORT_001": 49,
+      "SC01_FIRST_REPORT_002": 44
+    },
+    "asr": "all five normalized word edits0; exact current text/audio SHA verified",
+    "dale_masters_and_generation_unchanged": true,
+    "other_raw_banks_unchanged": true,
+    "old_raw_preserved": true,
+    "original_profile_db_and_references_unchanged": true,
+    "service_isolated_and_stopped": true,
+    "human_listening": "UNVERIFIED",
+    "public_release": false
+  }
 }
