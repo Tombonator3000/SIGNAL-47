@@ -230,7 +230,9 @@ US47Chapter4* US47Chapter4::Register()
 		if (W->TextOnlyNora())
 		{
 			if (!Mn->UI || Mn->Mode != US47Main::EMode::Play) return false;
-			for (const FS47CBLine& Ln : L) Mn->UI->Toast(FString::Printf(TEXT("CB, %s: \"%s\""), *Ln.By, *Ln.Text), 8.f);
+            TArray<FString> Captions;
+            for (const FS47CBLine& Ln : L) Captions.Add(FString::Printf(TEXT("CB, %s: \"%s\""), *Ln.By, *Ln.Text));
+            Mn->UI->Toast(FString::Join(Captions,TEXT("\n")),FMath::Max(8.f,float(Captions.Num())*6.f));
 			if (OnCbEnd) OnCbEnd();
 			return true;
 		}

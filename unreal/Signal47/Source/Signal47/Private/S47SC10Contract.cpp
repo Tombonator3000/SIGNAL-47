@@ -263,12 +263,13 @@ void FS47SC10Contract::Step(double Dt)
  if (!Started)
  {
   if (S47Startup::Blocking() || M->Flow->bStarting || M->World->bBusy || M->Mode != US47Main::EMode::Play) return;
-  Root = FPaths::ProjectSavedDir()/TEXT("SC10Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits); IFileManager::Get().MakeDirectory(*Root,true);
   Started = true; Began = FPlatformTime::Seconds(); FString UserDir, Jump;
   FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir); FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);
   UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
   if (!Check(M->Flow->bDevRun && M->Flow->CaseId == 0 && Jump == TEXT("chapter4") && (UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/")))
-   && FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),UserDir),TEXT("explicit isolated case0 chapter4 fixture; no player save"))) return;
+   && FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),UserDir)
+   && FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir),TEXT("explicit isolated case0 chapter4 fixture; no player save"))) return;
+  Root = FPaths::ProjectSavedDir()/TEXT("SC10Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits); IFileManager::Get().MakeDirectory(*Root,true);
   if (!Check(M->Flow->Saves.List().IsEmpty(),TEXT("initial isolated profile has no saved cases"))) return;
   US47Chapter4* Part = Chapter();
   if (!Check(Part && Part->bActive && M->Spine->Enabled() && M->Story->bEveningTimeline && M->Story->Clock() >= S47Timeline::Chapter4(true)
