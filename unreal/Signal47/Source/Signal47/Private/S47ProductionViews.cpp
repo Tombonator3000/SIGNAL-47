@@ -14,6 +14,7 @@
 #include "S47Startup.h"
 #include "S47UI.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformMisc.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -96,14 +97,23 @@ void AS47Web::BeginProductionViews()
   {TEXT("office-desk-right"),TEXT("saro"),{.75,0,9.0},{.75,.81,9.60}},
   {TEXT("office-contact-close"),TEXT("saro"),{.76,0,8.98},{.76,.81,9.42}}
  };
- struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
+ struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
- const TWeakObjectPtr<AS47Web> Self=this;FTimerHandle Timer;
- GetWorldTimerManager().SetTimer(Timer,[Self,State]{
+ State->bExit=FParse::Param(FCommandLine::Get(),TEXT("S47ProductionExit"));
+ const TWeakObjectPtr<AS47Web> Self=this;
+ GetWorldTimerManager().SetTimer(State->Timer,[Self,State]{
   if(State->Done)return;AS47Web* W=Self.Get();auto* M=W?US47Main::Get(W):nullptr;
   if(!M||!M->Flow||!M->Story||!M->World||!M->Player)return;
   auto RestoreFixtureFloor=[State,M]{if(State->bFloorOverride){M->Player->Floor=MoveTemp(State->PreviousFloor);State->bFloorOverride=false;}if(State->PrevFov>0){M->Player->Fov=State->PrevFov;State->PrevFov=-1;}};
-  auto Fail=[State,RestoreFixtureFloor](const TCHAR* Why){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);};
+  auto Finish=[State,W,M,RestoreFixtureFloor](bool Pass,const TCHAR* Why)
+  {
+   RestoreFixtureFloor();if(State->bHadCinematic)M->Story->SetCinematic(State->bPreviousCinematic);
+   State->Done=true;W->GetWorldTimerManager().ClearTimer(State->Timer);
+   if(Pass)UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));
+   else UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);
+   if(State->bExit){if(Pass)FPlatformMisc::RequestExit(false);else FPlatformMisc::RequestExitWithStatus(false,1);}
+  };
+  auto Fail=[Finish](const TCHAR* Why){Finish(false,Why);};
   if(!State->PendingFile.IsEmpty())
   {
    if(ProductionPngWritten(State->PendingFile))
@@ -125,7 +135,8 @@ void AS47Web::BeginProductionViews()
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
-  if(State->Index>=UE_ARRAY_COUNT(Views)*3){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));return;}
+  // This branch is reached only after the final PendingFile has a complete PNG terminator.
+  if(State->Index>=UE_ARRAY_COUNT(Views)*3){Finish(true,TEXT("complete"));return;}
   const int32 I=State->Index%UE_ARRAY_COUNT(Views),Light=State->Index/UE_ARRAY_COUNT(Views);const auto& V=Views[I];const double Now=FPlatformTime::Seconds();
   const bool bMotelView=FString(V.Name).StartsWith(TEXT("motel-")),bSignalView=FString(V.Name).StartsWith(TEXT("signal-"));
   if(!State->Placed)
@@ -133,6 +144,7 @@ void AS47Web::BeginProductionViews()
    if(M->World->bDriving){Fail(TEXT("fixture starts outside vehicle"));return;}
    RestoreFixtureFloor();
    const bool AreaChanged=M->World->Area!=V.Area,LightChanged=State->LastLight!=Light;
+   if(!State->bHadCinematic){State->bPreviousCinematic=M->Story->IsCinematic();State->bHadCinematic=true;}
    M->Story->SetCinematic(true);if(AreaChanged)M->World->Enter(V.Area);
    if(FString(V.Area)==TEXT("room6"))
    {

@@ -604,17 +604,50 @@ bool FS47Office::AuditDocumentArt(TArray<FString>& Lines) const
  if (!Visual) return false;
  for (const TCHAR* Id : {TEXT("office:desk"), TEXT("office:folder"), TEXT("office:index"), TEXT("office:clippings"), TEXT("office:note"), TEXT("office:contact")})
  { const bool bHave = Visual->Objects.Contains(Id) && Visual->Objects[Id].IsValid(); bOk &= bHave; if (!bHave) Lines.Add(FString(TEXT("document art FAIL: interaction paper missing ")) + Id); }
- for (const FVisual::FSheet& Sheet : Visual->Sheets)
+ for (int32 SheetIndex = 0; SheetIndex < Visual->Sheets.Num(); ++SheetIndex)
  {
+  const FVisual::FSheet& Sheet = Visual->Sheets[SheetIndex];
+  const FDocumentArt* Expected = SheetIndex < UE_ARRAY_COUNT(DocumentArt) ? &DocumentArt[SheetIndex] : nullptr;
   const UTexture2D* Tex = Sheet.Texture.Get();
+  const FS47WebNode* ArtNode = M && M->Web ? M->Web->Node(Sheet.Art.I) : nullptr;
+  const UStaticMeshComponent* ArtComp = ArtNode ? Cast<UStaticMeshComponent>(ArtNode->Comp.Get()) : nullptr;
+  const UMaterialInstanceDynamic* ActualMaterial = ArtComp ? Cast<UMaterialInstanceDynamic>(ArtComp->GetMaterial(0)) : nullptr;
+  UTexture* ActualTexture = nullptr;
+  float UseMap = -1, MapIsLinear = -1, NativeLighting = -1, Roughness = -1, Metalness = -1, EmissivePower = -1;
+  FLinearColor MapU = FLinearColor::Transparent, MapV = FLinearColor::Transparent;
+  bool bParameters = ActualMaterial != nullptr;
+  if (ActualMaterial)
+  {
+   bParameters &= ActualMaterial->GetTextureParameterValue(FMaterialParameterInfo(TEXT("Map")), ActualTexture);
+   bParameters &= ActualMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("UseMap")), UseMap);
+   bParameters &= ActualMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("MapIsLinear")), MapIsLinear);
+   bParameters &= ActualMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("NativeLighting")), NativeLighting);
+   bParameters &= ActualMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("Roughness")), Roughness);
+   bParameters &= ActualMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("Metalness")), Metalness);
+   bParameters &= ActualMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("EmissivePower")), EmissivePower);
+   bParameters &= ActualMaterial->GetVectorParameterValue(FMaterialParameterInfo(TEXT("MapU")), MapU);
+   bParameters &= ActualMaterial->GetVectorParameterValue(FMaterialParameterInfo(TEXT("MapV")), MapV);
+  }
+  const bool bMaterial = Expected && Sheet.Paper == Expected->Object && Tex && ActualTexture == Tex && bParameters
+   && Tex->GetPathName() == FString::Printf(TEXT("/Game/Signal47/Art/Documents/%s.%s"), Expected->Asset, Expected->Asset)
+   && ActualMaterial->Parent && ActualMaterial->Parent->GetPathName() == TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque")
+   && FMath::IsNearlyEqual(UseMap, 1.f) && FMath::IsNearlyZero(MapIsLinear) && FMath::IsNearlyEqual(NativeLighting, 1.f)
+   && FMath::IsNearlyEqual(Roughness, .88f) && FMath::IsNearlyZero(Metalness) && FMath::IsNearlyZero(EmissivePower)
+   && MapU.Equals(DocumentMapU, .00001f) && MapV.Equals(DocumentMapV, .00001f);
+  const bool bPlane = ArtComp && ArtComp->GetStaticMesh() && ArtComp->GetStaticMesh()->GetPathName() == TEXT("/Engine/BasicShapes/Plane.Plane")
+   && ArtComp->GetNumMaterials() == 1 && ArtComp->GetCollisionEnabled() == ECollisionEnabled::NoCollision && !ArtComp->CastShadow;
   const FBox ArtBox = Sheet.Art.IsValid() ? Sheet.Art.WorldBox() : FBox(ForceInit);
   const FBox PaperBox = Sheet.PaperObj.IsValid() ? Sheet.PaperObj.WorldBox() : FBox(ForceInit);
-  const bool bOn = Sheet.Art.IsValid() && Sheet.Art.Shown() && Tex && Tex->GetSizeX() >= 1024 && Tex->GetSizeY() >= 1024
+  const bool bOn = bMaterial && bPlane && Sheet.Art.IsValid() && Sheet.Art.Shown() && Tex && Tex->GetSizeX() >= 1024 && Tex->GetSizeY() >= 1024
    && ArtBox.IsValid && PaperBox.IsValid && ArtBox.Min.Y >= PaperBox.Max.Y - .0001 && ArtBox.Min.Y - PaperBox.Max.Y < .003
-   && FMath::Abs(ArtBox.GetCenter().X - PaperBox.GetCenter().X) < .001 && FMath::Abs(ArtBox.GetCenter().Z - PaperBox.GetCenter().Z) < .001;
+   && FMath::Abs(ArtBox.GetCenter().X - PaperBox.GetCenter().X) < .001 && FMath::Abs(ArtBox.GetCenter().Z - PaperBox.GetCenter().Z) < .001
+   && FMath::Abs(ArtBox.GetSize().X - Expected->Width) < .001 && FMath::Abs(ArtBox.GetSize().Z - Expected->Depth) < .001;
   bOk &= bOn;
   Lines.Add(FString::Printf(TEXT("document art %s %s: %s %dx%d art=%.3fx%.3f m lift=%.4f m"), bOn ? TEXT("PASS") : TEXT("FAIL"), *Sheet.Paper, Tex ? *Tex->GetName() : TEXT("none"),
    Tex ? Tex->GetSizeX() : 0, Tex ? Tex->GetSizeY() : 0, ArtBox.IsValid ? ArtBox.GetSize().X : 0., ArtBox.IsValid ? ArtBox.GetSize().Z : 0., ArtBox.IsValid && PaperBox.IsValid ? ArtBox.Min.Y - PaperBox.Max.Y : -1.));
+  Lines.Add(FString::Printf(TEXT("document actual material %s %s: slot0=%s Map=%s UseMap=%.4f MapIsLinear=%.4f NativeLighting=%.4f Roughness=%.4f Metalness=%.4f EmissivePower=%.4f MapU=%s MapV=%s planeNoCollision=%s; UV rows read from actual material, engine-plane source UVs measured by import"),
+   bMaterial && bPlane ? TEXT("PASS") : TEXT("FAIL"), *Sheet.Paper, *GetPathNameSafe(ActualMaterial), *GetPathNameSafe(ActualTexture),
+   UseMap, MapIsLinear, NativeLighting, Roughness, Metalness, EmissivePower, *MapU.ToString(), *MapV.ToString(), bPlane ? TEXT("yes") : TEXT("no")));
  }
  return bOk;
 }

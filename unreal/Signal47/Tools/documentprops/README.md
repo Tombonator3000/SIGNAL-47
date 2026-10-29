@@ -33,4 +33,6 @@ Rapporten lagrer kildehash per bilde og de målte UV-hjørnene til `/Engine/Basi
 
 ## Kontroll
 
-`-S47ProductionViews -S47ProductionSuite=documents` tar fire faste kameravinkler ved skrivebordet i dag-, skumrings- og nattlys og kjører `FS47Office::AuditDocumentArt`: seks ark bundet, synlige, minst 1024 px tekstur, plassert over riktig papir, og alle seks interaksjonspapirer finnes. Dette er statiske kamerafixtures, ikke bevis for ekte input.
+`-S47ProductionViews -S47ProductionSuite=documents` tar fire faste kameravinkler ved skrivebordet i dag-, skumrings- og nattlys og kjører `FS47Office::AuditDocumentArt`: seks ark bundet, synlige, minst 1024 px tekstur, plassert over riktig papir, og alle seks interaksjonspapirer finnes. Auditen leser materialet fra den faktiske artkomponentens slot0, krever riktig `Map`-tekstur og foreldremateriale, leser tilbake scalarverdier og `MapU`/`MapV`, og krever den eksisterende Engine Plane uten kollisjon eller skygge. UV-radene er faktiske materialparametre; selve Engine Plane-UV-bufferen er målt i importrapporten, ikke avlest fra GPU av denne auditen. Dette er statiske kamerafixtures, ikke bevis for ekte input.
+
+`-S47ProductionExit` avslutter denne bildedriveren med exit0 først etter siste komplette PNG, eller exit1 ved kontrollfeil. Egen timer ryddes, og midlertidig gulv/FOV og tidligere cinematic-tilstand gjenopprettes før avslutning. Uten flagget blir prosessen stående åpen etter resultatet. Kjør bildedriveren separat fra andre aktive testdrivere; legg ikke til SmokeTest bare for å få prosessen avsluttet.
