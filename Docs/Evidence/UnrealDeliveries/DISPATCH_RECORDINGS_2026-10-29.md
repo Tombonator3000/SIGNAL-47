@@ -1,6 +1,6 @@
 # SC01: to fornyede dispatch-opptak
 
-**Status:** Referanse, levert kandidat R1; PR/fletting venter. **Gjelder:** STORY-04, de to nye `SC01_FIRST_REPORT_001/002`-opptakene. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Referanse, levert kandidat R1; [PR221](https://github.com/Tombonator3000/SIGNAL-47/pull/221) mot main. **Gjelder:** STORY-04, de to nye `SC01_FIRST_REPORT_001/002`-opptakene. **Sist kontrollert:** 29. oktober 2026.
 
 To nye syntetiske opptak følger det gjeldende SC01-manuset om slaget mot kontrollromsvinduet. Lokal produksjon, RAW-import, teknisk lydkontroll, fersk ASR og hele den pakkede SC01-ruten består. Kandidat R1 har 220 kontroller, 21 disk/Flow-restores og 273,156790 m normal Walker-gange; menneskelig lytting er fortsatt UNVERIFIED. [Maskinlesbar produksjonskvittering](../../../unreal/Evidence/DISPATCH-2026-10-29/production-receipt.json) binder opptak, bevaringskontroller og privat råkjøring.
 
@@ -44,6 +44,6 @@ I denne kjøringen er `dale_reference_heard_before=true` ved skipkontrollen, ett
 
 [Stemme-README](../../../unreal/Narrative/HorrorStory/voice/README.md), [genereringsmetadata](../../../unreal/Narrative/HorrorStory/voice/generation.json) og [proveniens](../../../unreal/Narrative/HorrorStory/voice/provenance.json) beskriver den eksisterende løypa. Ingen ny casting, modellnedlasting eller betalt tjeneste inngår. Profilreferanser, kildeopptak og modellvekter redistribueres ikke. Eksisterende lisensgrunnlag beholdes, inkludert modellkortets CC-BY-NC-angivelse; dette arbeidet gir ingen ny kommersiell klarering.
 
-STORY-04 gjelder nøyaktig de to nye SC01-dispatch-takene og føringen om å unngå tidlige alienmøter. Disse to er levert som målrettet kandidat; PR/fletting venter root. Andre HorrorStory-scener og deres eventuelle uproduserte cues ligger utenfor dette punktet. Ingen ny casting eller flere cues inngår.
+STORY-04 gjelder nøyaktig de to nye SC01-dispatch-takene og føringen om å unngå tidlige alienmøter. Disse to er levert som målrettet kandidat; Leveransen er samlet i [PR221](https://github.com/Tombonator3000/SIGNAL-47/pull/221) mot main. Andre HorrorStory-scener og deres eventuelle uproduserte cues ligger utenfor dette punktet. Ingen ny casting eller flere cues inngår.
 
 Menneskelig lytting, stemmelikhet, rolleprestasjon, FPS og fullmatrise er **UNVERIFIED**. Ingen installasjon eller offentlig release er utført. Privat postvalidering er `native-acceptance-r1.json` fra `final-native-acceptance-r1.py`; faktisk runtime-resultat ligger i `/tmp/S47-dispatch-packed-sc01-r1/Saved/HorrorContract/SC01/result.json`, SHA-256 `8b1d3ab6f67f0afdfa038c1159882eaa7b23e563667442005827e4bc581eca7e`.
