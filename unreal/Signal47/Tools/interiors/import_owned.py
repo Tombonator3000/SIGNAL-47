@@ -429,8 +429,11 @@ def mesh_proof(name, mesh, row, materials, source_geometry):
         R.check(name + ' saved imported normal/tangent and UV precision LOD' + str(lod),
                 not build.get_editor_property('recompute_normals') and not build.get_editor_property('recompute_tangents') and
                 build.get_editor_property('use_full_precision_u_vs') and not build.get_editor_property('remove_degenerates'))
-        uv_count = R.S.get_num_uv_channels(mesh, lod)
-        R.check(name + ' saved atlas UV channel LOD' + str(lod), uv_count >= 1)
+        # Generated LOD1/2 have render UVs but no source MeshDescription. The
+        # editor subsystem reads source UVs; the reflected mesh API reads the
+        # actual render buffers (StaticMesh.cpp GetNumTexCoords).
+        uv_count = mesh.get_num_tex_coords(lod)
+        R.check(name + ' saved render atlas UV channel LOD' + str(lod), uv_count >= 1, uv_count)
         uvs.append(uv_count)
         count = mesh.get_num_sections(lod)
         R.check(name + ' no collision sections LOD' + str(lod), count > 0 and
