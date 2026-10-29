@@ -62,6 +62,44 @@ namespace S47RadioWomanContract
   S47J::Set(Out,TEXT("width"),double(W));S47J::Set(Out,TEXT("height"),double(H));
   S47J::Set(Out,TEXT("all_chunk_crc_verified"),true);S47J::Set(Out,TEXT("iend_at_eof"),true);return true;
  }
+ struct FBenchDiagnostic:TSharedFromThis<FBenchDiagnostic>
+ {
+  TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root;bool Done=false;
+  double Began=FPlatformTime::Seconds(),Ready=0;
+  bool Settled()const
+  {
+   auto* W=Web.Get();auto* M=W&&W->GetWorld()?US47Main::Get(W):nullptr;
+   return W&&M&&M->Flow&&M->World&&S47Startup::Ready()&&!S47Startup::Blocking()&&
+    M->Mode==US47Main::EMode::Play&&!M->Flow->bStarting&&!M->Flow->bRestoringNow&&!M->World->bBusy&&W->Area()==TEXT("diner");
+  }
+  void Result(bool TimedOut,const FString& Why)
+  {
+   const auto KeepAlive=AsShared();if(Done)return;Done=true;const double Now=FPlatformTime::Seconds();auto* W=Web.Get();auto* M=W&&W->GetWorld()?US47Main::Get(W):nullptr;
+   const FJ Actual=W?W->RadioWomanReadback():S47J::New();const FJ* Diagnostic=nullptr;bool Active=true,Intact=false,Requested=false,Valid=false;
+   const bool NativeValid=Actual->TryGetBoolField(TEXT("active"),Active)&&!Active&&
+    Actual->TryGetBoolField(TEXT("fallback_original_bindings_intact"),Intact)&&Intact&&
+    Actual->TryGetBoolField(TEXT("bench_diagnostic_requested"),Requested)&&Requested&&
+    Actual->TryGetObjectField(TEXT("bench_diagnostics"),Diagnostic)&&(*Diagnostic)->TryGetBoolField(TEXT("measurement_valid"),Valid)&&Valid;
+   const bool Measured=!TimedOut&&Settled()&&Ready>0&&Now-Ready>=5.&&NativeValid;
+   auto O=S47J::New();S47J::Set(O,TEXT("schema_version"),1);S47J::Set(O,TEXT("status"),Measured?TEXT("MEASURED"):TEXT("REJECTED"));
+   S47J::Set(O,TEXT("reason"),Measured?TEXT("fresh diner measurements, original figure/radio intact; no support or runtime acceptance"):Why);
+   S47J::Set(O,TEXT("native_readback"),Actual);S47J::Set(O,TEXT("timeout"),TimedOut);S47J::Set(O,TEXT("elapsed_wall_seconds"),Now-Began);S47J::Set(O,TEXT("settled_wall_seconds"),Ready>0?Now-Ready:0.);
+   S47J::Set(O,TEXT("minimum_settled_seconds"),5.);S47J::Set(O,TEXT("maximum_wait_seconds"),20.);S47J::Set(O,TEXT("area_at_capture"),W?W->Area():TEXT("missing web"));
+   S47J::Set(O,TEXT("startup_ready"),S47Startup::Ready());S47J::Set(O,TEXT("startup_blocking"),S47Startup::Blocking());S47J::Set(O,TEXT("play"),M&&M->Mode==US47Main::EMode::Play);
+   S47J::Set(O,TEXT("flow_starting"),!M||!M->Flow||M->Flow->bStarting);S47J::Set(O,TEXT("flow_restoring"),M&&M->Flow&&M->Flow->bRestoringNow);S47J::Set(O,TEXT("world_busy"),M&&M->World&&M->World->bBusy);
+   S47J::Set(O,TEXT("scope"),TEXT("Single read-only diagnostic after ordinary startup/Flow Play and existing WalkFrom diner. No player/world/clock setter, screenshot, exit or other contract. Existing smoke/shot owns capture and shutdown."));
+   const bool Written=Write(Root/TEXT("result.json"),O);if(W&&W->GetWorld())W->GetWorldTimerManager().ClearTimer(Timer);
+   if(Measured&&Written){UE_LOG(LogS47RadioWomanContract,Display,TEXT("S47: RadioBenchDiagnostic MEASURED evidence=%s"),*Root);}
+   else{UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioBenchDiagnostic REJECTED evidence=%s reason=%s written=%d"),*Root,*Why,Written);}
+  }
+  void Tick()
+  {
+   const auto KeepAlive=AsShared();if(Done)return;const double Now=FPlatformTime::Seconds();
+   if(!Settled())Ready=0;else if(Ready==0)Ready=Now;
+   if(Now-Began>=20.){Result(true,TEXT("diner/startup/Flow Play did not remain ready for5 real seconds within20 seconds"));return;}
+   if(Ready>0&&Now-Ready>=5.)Result(false,TEXT("fresh Readback failed inactive/original-bindings/native-bench-diagnostic checks"));
+  }
+ };
  struct FControl:TSharedFromThis<FControl>
  {
   TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root,PhotoName,SaveId;
@@ -292,6 +330,14 @@ void S47BeginRadioWomanConversationContract(AS47Web* Web);
 
 void S47BeginRadioWomanContract(AS47Web* Web)
 {
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanBenchDiagnostic")))
+ {
+  const auto S=MakeShared<S47RadioWomanContract::FBenchDiagnostic>();S->Web=Web;S->Root=FPaths::ProjectSavedDir()/TEXT("RadioBenchDiagnostic")/FGuid::NewGuid().ToString(EGuidFormats::Digits);
+  if(!IFileManager::Get().MakeDirectory(*S->Root,true)){UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioBenchDiagnostic REJECTED could not create fresh evidence=%s"),*S->Root);return;}
+  if(!Web||!Web->GetWorld()){S->Result(true,TEXT("actual Web/world unavailable"));return;}
+  Web->GetWorldTimerManager().SetTimer(S->Timer,[S]{S->Tick();},.1f,true);
+  UE_LOG(LogS47RadioWomanContract,Display,TEXT("S47: RadioBenchDiagnostic armed; wait diner/Play and5 settled seconds, timeout20 evidence=%s"),*S->Root);return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanConversation"))){S47BeginRadioWomanConversationContract(Web);return;}
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanContract")))return;
  FString UserDir,Evening;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);
