@@ -1221,6 +1221,17 @@ namespace S47MannequinBake
    Contacts->SetStringField(TEXT("source"), TEXT("actual posed source-LOD0 clothing vertices, M_RW_Trim soles plus M_RW_Shoe uppers, below seat-10cm; extrema within 2mm of lowest; no repositioning"));
    Report->SetObjectField(TEXT("sole_contacts_output_cm"), Contacts); return true;
   }
+  FString RenderPackedDigest(const FStaticMeshLODResources& L)
+  {
+   const auto& B=L.VertexBuffers; const auto& T=B.StaticMeshVertexBuffer;
+   if(!B.PositionVertexBuffer.GetNumVertices() || B.PositionVertexBuffer.GetNumVertices()!=T.GetNumVertices() || !T.GetNumTexCoords() ||
+    !B.PositionVertexBuffer.GetVertexData() || !T.GetTangentData() || !T.GetTexCoordData() ||
+    (B.ColorVertexBuffer.GetNumVertices()&&!B.ColorVertexBuffer.GetVertexData()))return {};
+   FSHA1 H; H.Update(static_cast<const uint8*>(B.PositionVertexBuffer.GetVertexData()),B.PositionVertexBuffer.GetNumVertices()*B.PositionVertexBuffer.GetStride());
+   H.Update(static_cast<const uint8*>(T.GetTangentData()),T.GetTangentSize()); H.Update(static_cast<const uint8*>(T.GetTexCoordData()),T.GetTexCoordSize());
+   if(B.ColorVertexBuffer.GetNumVertices())H.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()),B.ColorVertexBuffer.GetNumVertices()*B.ColorVertexBuffer.GetStride());
+   H.Final(); FSHAHash Out; H.GetHash(Out.Hash); return Out.ToString().ToLower();
+  }
   FJson StaticAudit(UStaticMesh* Mesh)
   {
    FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName());
@@ -1244,13 +1255,21 @@ namespace S47MannequinBake
     if (Mesh->GetRenderData() && Mesh->GetRenderData()->LODResources.IsValidIndex(Index))
     {
      const FStaticMeshLODResources& Render = Mesh->GetRenderData()->LODResources[Index];
+     const FString PackedHash=RenderPackedDigest(Render); TArray<uint32> Indices; Render.IndexBuffer.GetCopy(Indices);
+     FString IndexHash;
+     if(!Indices.IsEmpty()){FSHA1 H; H.Update(reinterpret_cast<const uint8*>(Indices.GetData()),Indices.Num()*sizeof(uint32)); H.Final(); FSHAHash Out; H.GetHash(Out.Hash); IndexHash=Out.ToString().ToLower();}
+     Item->SetStringField(TEXT("render_packed_vertex_sha1"),PackedHash); Item->SetStringField(TEXT("render_uint32_indices_sha1"),IndexHash);
+     Item->SetBoolField(TEXT("render_cpu_payload_available"),PackedHash.Len()==40&&IndexHash.Len()==40&&Indices.Num()==Render.GetNumTriangles()*3);
      Item->SetNumberField(TEXT("render_vertices"), Render.GetNumVertices()); Item->SetNumberField(TEXT("render_triangles"), Render.GetNumTriangles());
      Item->SetBoolField(TEXT("render_full_precision_uvs"), Render.VertexBuffers.StaticMeshVertexBuffer.GetUseFullPrecisionUVs());
      Item->SetBoolField(TEXT("render_high_precision_tangents"), Render.VertexBuffers.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
      TArray<TSharedPtr<FJsonValue>> Sections;
      for (const FStaticMeshSection& Section : Render.Sections)
      {
-      FJson Part = Object(); Part->SetNumberField(TEXT("material_index"), Section.MaterialIndex); Part->SetNumberField(TEXT("triangles"), Section.NumTriangles); Sections.Add(Value(Part));
+      FJson Part = Object(); Part->SetNumberField(TEXT("material_index"), Section.MaterialIndex); Part->SetNumberField(TEXT("triangles"), Section.NumTriangles);
+      Part->SetNumberField(TEXT("first_index"),Section.FirstIndex); Part->SetNumberField(TEXT("min_vertex_index"),Section.MinVertexIndex); Part->SetNumberField(TEXT("max_vertex_index"),Section.MaxVertexIndex);
+      Part->SetBoolField(TEXT("collision"),Section.bEnableCollision); Part->SetBoolField(TEXT("cast_shadow"),Section.bCastShadow); Part->SetBoolField(TEXT("visible_in_ray_tracing"),Section.bVisibleInRayTracing);
+      Sections.Add(Value(Part));
      }
      Item->SetArrayField(TEXT("sections"), Sections);
     }
@@ -1414,6 +1433,7 @@ namespace S47MannequinBake
      Item->GetBoolField(TEXT("full_precision_uvs")) && Item->GetBoolField(TEXT("high_precision_tangents")) &&
      Item->GetBoolField(TEXT("render_full_precision_uvs")) && Item->GetBoolField(TEXT("render_high_precision_tangents")) &&
      FMath::IsNearlyEqual(Item->GetNumberField(TEXT("screen_size")), Limit->GetNumberField(TEXT("screen_size")), 0.000001), TEXT("render triangles, authored UV/normal/tangent and screen policy retained"))) return false;
+    if(Job->HasField(TEXT("postrepair_binding"))&&!Need(Item->GetBoolField(TEXT("render_cpu_payload_available")),TEXT("R11 actual full render vertex and uint32 index payloads available for runtime binding")))return false;
     FRawMesh Raw; Mesh->GetSourceModel(Index).LoadRawMesh(Raw);
     TArray<int32> SourceCounts, RenderCounts; SourceCounts.Init(0, Mesh->GetStaticMaterials().Num()); RenderCounts = SourceCounts;
     for (const int32 Slot : Raw.FaceMaterialIndices)
@@ -1440,6 +1460,10 @@ namespace S47MannequinBake
     if (Expected)
     {
      const FJson Old = Expected->GetArrayField(TEXT("lods"))[Index]->AsObject();
+     if(Job->HasField(TEXT("postrepair_binding"))&&!Need(Item->GetStringField(TEXT("render_packed_vertex_sha1"))==S47J::Str(Old,TEXT("render_packed_vertex_sha1"))&&
+      Item->GetStringField(TEXT("render_uint32_indices_sha1"))==S47J::Str(Old,TEXT("render_uint32_indices_sha1"))&&
+      FJsonValue::CompareEqual(*MakeShared<FJsonValueArray>(Item->GetArrayField(TEXT("sections"))),*MakeShared<FJsonValueArray>(S47J::Arr(Old,TEXT("sections")))),
+      TEXT("R11 separate fresh reader matches actual render vertex/index/section payloads")))return false;
      if (!Need(Item->GetStringField(TEXT("raw_sha1")) == Old->GetStringField(TEXT("raw_sha1")) && Item->GetStringField(TEXT("corner_sha1")) == Old->GetStringField(TEXT("corner_sha1")) && Triangles == Old->GetIntegerField(TEXT("triangles")), TEXT("fresh saved asset exact raw geometry/UV/normal/tangent/color/material digest"))) return false;
     }
     PreviousTriangles = Triangles;
