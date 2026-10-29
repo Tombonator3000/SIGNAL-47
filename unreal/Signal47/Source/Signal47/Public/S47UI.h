@@ -24,6 +24,7 @@ struct FS47TitleOpts
 	bool bGate = false, bTouch = false;
 	TFunction<void()> OnFirstTouch;       // main.ts firstTouch: the first key or click on the title (the music)
 	TFunction<void()> OnQuit;             // the desktop's Quit; unset: not offered
+	TFunction<void()> OnDev;              // the developer screen; unset: not offered
 	TFunction<void(const FString&)> OnSettingsAt; // the settings at a tab (the note's link; US47UI::Title sets it)
 	FString Version;                      // the corner's "UNREAL 0.0.1 · TAPE B"
 };
