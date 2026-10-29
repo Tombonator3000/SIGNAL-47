@@ -11,6 +11,7 @@ public:
  static TSharedPtr<FS47TownBuildings> Build(AS47Web* W);
  void Update();
  bool Audit(TArray<FString>& Lines) const;
+ TSharedPtr<class FS47TownSignal> Signal;
 private:
  TWeakObjectPtr<AS47Web> Web;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;

@@ -10,6 +10,10 @@ STREET=runpy.run_path(str(ROOT/'Tools/calichestreet/trim_street.py'))
 DESIGN=runpy.run_path(str(ROOT/'Tools/townbuildings/design.py'))
 LABELS=['Sheriff','Laundry','Feed','Cinema','Church']
 DEST='/Game/TownBuildings/Trim'
+# ENV-03: the old crossing's span wires, hanger, box and visors (Town.ts crossing()). The
+# Unreal-only signal under ArtSource/TrafficSignal replaces them; the wooden poles stay.
+# Measured from the immutable export: 96 town/dark (g1000) + 12 town/roof (g1003) triangles.
+SIGNAL_BOX=[-8.75,9.75,9.9,11.95,1980.8,2019.2];SIGNAL_TRIS={'g1000':96,'g1003':12}
 def sha(data):return hashlib.sha256(data).hexdigest()
 def inside(p,boxes):return any(b[0]<=p[0]<=b[1] and b[2]<=p[1]<=b[3] and b[4]<=p[2]<=b[5] for b in boxes)
 def cutboxes():
@@ -48,7 +52,7 @@ def verify_prepared(out,rows,files,export):
 def prepare(export,out,previous=None):
  manifest_bytes=(export/'manifest.json').read_bytes();man=json.loads(manifest_bytes);mh=sha(manifest_bytes);h=man['handles'];groups=['world.town.st','world.town.dressing.group'];groupids={h[g]['node']:g for g in groups};townst=h['world.town.st']['node']
  candidates={'g'+str(n['geo']):n for n in man['nodes'] if n.get('p') in groupids and n.get('geo') is not None}
- gas=json.loads((ROOT/'Tools/freemodels/models.json').read_text())['gas_station']['trim'];keep={h[k]['mat'] for k in gas.get('keep',[]) if k in h};boxes={'gas':gas['boxes'],'radio':[STREET['RADIO_BOX']],'souvenir':[STREET['SOUVENIR_BOX']],**cutboxes()};previousrows={}
+ gas=json.loads((ROOT/'Tools/freemodels/models.json').read_text())['gas_station']['trim'];keep={h[k]['mat'] for k in gas.get('keep',[]) if k in h};boxes={'gas':gas['boxes'],'radio':[STREET['RADIO_BOX']],'souvenir':[STREET['SOUVENIR_BOX']],**cutboxes(),'signal':[SIGNAL_BOX]};previousrows={}
  if previous:
   old=json.loads(previous.read_text());assert old['manifestSha256']==mh,('previous street source differs',old['manifestSha256'],mh);previousrows=old['meshes']
  out.mkdir(parents=True,exist_ok=True)
@@ -68,6 +72,7 @@ def prepare(export,out,previous=None):
      tri=idx[k:k+3];label=None
      for key,bs in boxes.items():
       if key in ['gas','radio','souvenir'] and (not is_static or preserve_gas):continue
+      if key=='signal' and not is_static:continue
       if all(inside(pos[v],bs)for v in tri):label=key;break
      if label:removed[label]+=1
      else:kept.extend(tri)
@@ -95,11 +100,12 @@ def prepare(export,out,previous=None):
    if keptprim:chosen.append(mi)
   if chosen:helper._write_part(j,binary,chosen,str(out),source['file']);files.append('trim_'+Path(source['file']).stem+'.glb')
  assert all(totals[k]>=30 for k in ['radio','souvenir']+LABELS),('expected building shell absent',totals)
+ assert {k:v['removedBy']['signal'] for k,v in report.items() if v['removedBy']['signal']}==SIGNAL_TRIS,('crossing signal cut differs',totals['signal'])
  # Protected dynamic/owned models are deliberately absent from candidate nodes, regardless of bounds.
  protected={k:v for k,v in h.items() if k in DESIGN['PROTECTED_RUNTIME'] or k.startswith(('world.town.runtime.panels.','world.town.proxies.','world.town.models.'))}
  protected.pop('world.town.dressing.props',None)
  for value in protected.values():assert value.get('node') not in [r['node']for r in report.values()]
- payload={'version':2,'status':'SOURCE_TRIM_PREPARED_NATIVE_UNVERIFIED','group':'world.town.st','groups':groups,'manifestSha256':mh,'sourceGeometrySha256':sourcehashes,'buildingPlanSha256':sha((ROOT/'Tools/townbuildings/design.py').read_bytes()),'composedGasTrim':gas,'boxes':boxes,'meshes':report,'files':sorted(files),'fileSha256':{f:sha((out/f).read_bytes())for f in files},'totalsRemovedBy':totals,'protectedHandles':protected,'preserved':['licensed laundry bench and its collider','patrol vehicle/door','people/paper/A02 figure','all gameplay proxies','all runtime panel objects and state','church street letterboard and light','sheriff flagpole'],'sourceVerification':verify_prepared(out,report,files,export), 'runtimeNotes':['Union cuts must replace existing CalicheStreet shared meshes atomically after all five building kits are ready.','Bind each native trim slot from originalMaterialIndices; imported default material is a placeholder.','Original dynamic sheriff/laundry opaque pictures need explicit rendering treatment by native building integration; this index-only trim leaves state/proxy objects intact.','No walk/drive collider changes are performed by this tool.']}
+ payload={'version':2,'status':'SOURCE_TRIM_PREPARED_NATIVE_UNVERIFIED','group':'world.town.st','groups':groups,'manifestSha256':mh,'sourceGeometrySha256':sourcehashes,'buildingPlanSha256':sha((ROOT/'Tools/townbuildings/design.py').read_bytes()),'composedGasTrim':gas,'boxes':boxes,'meshes':report,'files':sorted(files),'fileSha256':{f:sha((out/f).read_bytes())for f in files},'totalsRemovedBy':totals,'protectedHandles':protected,'preserved':['licensed laundry bench and its collider','patrol vehicle/door','people/paper/A02 figure','all gameplay proxies','all runtime panel objects and state','church street letterboard and light','sheriff flagpole','crossing wooden poles (g1002) and the blink panel/light/glow state'],'sourceVerification':verify_prepared(out,report,files,export), 'runtimeNotes':['Union cuts must replace existing CalicheStreet shared meshes atomically after all five building kits are ready.','Bind each native trim slot from originalMaterialIndices; imported default material is a placeholder.','Original dynamic sheriff/laundry opaque pictures need explicit rendering treatment by native building integration; this index-only trim leaves state/proxy objects intact.','No walk/drive collider changes are performed by this tool.']}
  (out/'town-patches.json').write_text(json.dumps(payload,indent=2)+'\n');return payload
 if __name__=='__main__':
  ap=argparse.ArgumentParser(description=__doc__);ap.add_argument('export',type=Path);ap.add_argument('out',type=Path);ap.add_argument('--previous-street',type=Path);a=ap.parse_args();r=prepare(a.export,a.out,a.previous_street);print(json.dumps({'status':r['status'],'meshes':{k:{x:v[x]for x in ['tris','acceptedPreviousTris','resultTris','hidden','originalMaterialIndices']}for k,v in r['meshes'].items()},'totalsRemovedBy':r['totalsRemovedBy'],'files':r['files']},indent=2))

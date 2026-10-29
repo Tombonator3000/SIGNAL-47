@@ -2,6 +2,7 @@
 #include "S47TownBuildings.h"
 #include "S47Web.h"
 #include "S47Three.h"
+#include "S47TownSignal.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Engine/StaticMesh.h"
@@ -77,6 +78,11 @@ TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
   if(!Comp||!Accepted||N->Geo!=R->GetIntegerField(TEXT("geo"))||N->Parent!=R->GetIntegerField(TEXT("parent"))){Reject(FString::Printf(TEXT("retirement source node%d g%d current%d"),I,N?N->Geo:-1,Comp?Tris(Comp->GetStaticMesh()):-1));return {};}
   Hide.AddUnique(I);
  }
+ // ENV-03: a union that cuts the old crossing installs the new signal with it, or nothing.
+ const TSharedPtr<FJsonObject>* Totals=nullptr;double SignalCut=0;
+ if(P->TryGetObjectField(TEXT("totalsRemovedBy"),Totals))(*Totals)->TryGetNumberField(TEXT("signal"),SignalCut);
+ TSharedPtr<FS47TownSignal> Signal;
+ if(SignalCut>0){Signal=FS47TownSignal::Prepare(W);if(!Signal){Reject(TEXT("crossing signal"));return {};}}
  auto F=MakeShared<FS47TownBuildings>();F->Web=W;
  for(const FPart& R:Ready)
  {
@@ -107,6 +113,7 @@ TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
  for(const TCHAR* Key:{TEXT("sheriffWin"),TEXT("laundroWin"),TEXT("laundro"),TEXT("marquee")})
   for(const FString& Path:W->PathsUnder(FString(TEXT("world.town.runtime.panels."))+Key+TEXT(".")))
    if(const auto* N=W->Node(W->Handle(Path)))if(auto* Comp=Cast<UStaticMeshComponent>(N->Comp.Get())){F->Retired.AddUnique(W->Handle(Path));Retire(Comp);}
+ if(Signal){Signal->Commit(F->Retired);F->Signal=Signal;}
  for(const auto& R:Ready)if(R.Name.EndsWith(TEXT("Interior"))&&(R.Family==TEXT("Sheriff")||R.Family==TEXT("Laundry")))
  {
   auto* L=NewObject<UPointLightComponent>(W);L->SetupAttachment(W->Node(R.Parent)->Comp.Get());L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetLightColor(FLinearColor(1,.86,.66));L->SetAttenuationRadius(650);L->SetSourceRadius(60);L->SetCastShadows(true);L->RegisterComponent();L->SetWorldLocation(S47Three::ToUE(R.At+FVector(-3.1,2.65,0)));F->Lamps.Add({L,R.Parent,R.Family});
@@ -124,6 +131,7 @@ void FS47TownBuildings::Update()
  AS47Web* W=Web.Get();if(!W)return;
  auto Level=[W](const FString& Family){if(Family==TEXT("Sheriff"))return FMath::Clamp(double(W->FloodPos(W->FloodSet(TEXT("town")),10).A)/4.5,0.,1.);if(Family==TEXT("Laundry"))return FMath::Clamp(double(W->FloodPos(W->FloodSet(TEXT("town")),11).A)/6.,0.,1.);return Family==TEXT("Feed")||Family==TEXT("Cinema")||Family==TEXT("Church")?0.:1.;};
  for(int32 I:Retired)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetHiddenInGame(true,false);C->SetVisibility(false,false);}
+ if(Signal)Signal->Update();
  for(auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*float(Level(G.Family)));
  for(auto& L:Lamps)if(auto* P=L.Light.Get()){const float V=FS47Obj(W,L.Parent).Shown()?float(Level(L.Family)*L.Lumens):0;P->SetIntensity(V);P->SetVisibility(V>1);}
 }
@@ -132,5 +140,6 @@ bool FS47TownBuildings::Audit(TArray<FString>& Lines) const
  AS47Web* W=Web.Get();bool Ok=W&&Parts.Num()==28&&PatchCount>0;
  for(const auto& P:Parts)Ok&=P.IsValid()&&P->GetStaticMesh()&&P->GetStaticMesh()->GetNumLODs()==3;
  for(int32 I:Retired){const auto* N=W?W->Node(I):nullptr;auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;Ok&=C&&!C->IsVisible()&&C->bHiddenInGame&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision;}
+ if(Signal)Ok&=Signal->Audit(Lines);
  Lines.Add(FString::Printf(TEXT("town models %s parts=%d/28 patches=%d retired=%d"),Ok?TEXT("PASS"):TEXT("FAIL"),Parts.Num(),PatchCount,Retired.Num()));return Ok;
 }

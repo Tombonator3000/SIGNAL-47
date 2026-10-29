@@ -21,3 +21,8 @@ unreal/Signal47/Tools/substationdetail/*.blend filter=lfs diff=lfs merge=lfs -te
 unreal/Signal47/Tools/substationdetail/*.glb filter=lfs diff=lfs merge=lfs -text
 unreal/Signal47/Tools/substationdetail/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/Signal47/Tools/substationdetail/exports/*.glb filter=lfs diff=lfs merge=lfs -text
+
+# Caliche crossing flasher (ENV-03): editable source, exports and maps.
+unreal/ArtSource/TrafficSignal/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/TrafficSignal/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/TrafficSignal/textures/*.png filter=lfs diff=lfs merge=lfs -text
