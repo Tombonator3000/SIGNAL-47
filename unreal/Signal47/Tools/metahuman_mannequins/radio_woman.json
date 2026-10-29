@@ -8,6 +8,11 @@
   "source_body_fbx_sha256": "292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92",
   "private_root": "/Game/MetaHumans/Mannequins/RadioWoman",
   "output_name": "SM_RadioWoman_Seated",
+  "clothes_bind": {
+    "policy": "canonical-native-body",
+    "imported_reference_pose_sha1": "2144e1ffc0504791556fd705e21b37add599da6f",
+    "canonical_reference_pose_sha1": "93838fa5259ddca476c5e523526483746f038133"
+  },
   "sources": {
     "body": "/Game/MetaHumans/MHC_Waitress/Body/SKM_MHC_Waitress_BodyMesh",
     "face": "/Game/MetaHumans/MHC_Waitress/Face/SKM_MHC_Waitress_FaceMesh",

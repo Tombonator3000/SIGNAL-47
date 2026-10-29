@@ -1,7 +1,7 @@
 """Guarded UE Python entry. Job path comes from S47_MANNEQUIN_JOB, never personal Saved.
 
-probe/bake import only into a fresh private run package. verify runs in a second
-editor process and only loads the saved output. This script does not launch UE.
+import creates and binds only a fresh private run package. Each later operation
+first verifies that saved bind in a different process. This script does not launch UE.
 """
 import json
 import os
@@ -12,12 +12,37 @@ import unreal
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from prepare import clothing_check, file_row, load, preservation, sha, write
+from prepare import (clothes_bind_receipt, clothes_bind_verification, clothing_check, file_row,
+                     import_assets, imported_receipt, load, native_file_row, preservation, receipt_file, sha, write_new)
 
 
 def require(test, message):
     if not test:
         raise RuntimeError(message)
+
+
+def native_suboperation(job, mode):
+    """Execute only the derived native mode, then restore the caller's job even on error."""
+    require(mode in ('bind-clothes', 'verify-clothes-bind'), 'Known clothes binding operation')
+    root = Path(job['python_report']).parent
+    job_path = root / ('job-' + job['mode'] + '-' + mode + '.json')
+    report_path = job['clothes_bind_report' if mode == 'bind-clothes' else 'clothes_bind_verify_report']
+    require(not job_path.exists() and not Path(report_path).exists(), 'Fresh clothes-binding jobs and receipts only')
+    write_new(job_path, dict(job, mode=mode, native_report=report_path))
+    previous = os.environ.get('S47_MANNEQUIN_JOB')
+    try:
+        os.environ['S47_MANNEQUIN_JOB'] = str(job_path)
+        unreal.SystemLibrary.execute_console_command(None, 'S47.MannequinBake')
+    finally:
+        if previous is None:
+            os.environ.pop('S47_MANNEQUIN_JOB', None)
+        else:
+            os.environ['S47_MANNEQUIN_JOB'] = previous
+    require(Path(report_path).is_file(), 'Native clothes-binding command actually wrote a receipt')
+    result = load(report_path)
+    require(result.get('status') == 'PASS' and result.get('mode') == mode and result.get('pid') == os.getpid(),
+            'Native clothes-binding acceptance: ' + result.get('error', 'missing same-process receipt'))
+    return job_path
 
 
 def native_file(project, asset):
@@ -138,21 +163,12 @@ def brow_coverage(sources):
                   for name, value in found.items()}
 
 
-def import_private(job, cfg, sources):
+def import_private(job, cfg, sources, job_path):
     receipt_path = Path(job['python_report']).parent / 'import-python.json'
+    require(job['mode'] == 'import' and not receipt_path.exists(), 'Import needs its own fresh process and immutable receipt')
     fbx, _ = clothing_check(job['clothing_report'])
     require(str(fbx) == job['clothing_fbx'] and sha(fbx) == job['clothing_fbx_sha256'], 'Pinned actual rest-clothes FBX')
-    if receipt_path.exists():
-        previous = load(receipt_path)
-        require(previous['status'] == 'PASS' and previous['clothing_fbx_sha256'] == job['clothing_fbx_sha256'],
-                'Existing private import must have its exact successful receipt')
-        for row in previous['saved_assets']:
-            require(file_row(native_file(job['project'], row['asset'])) == row['file'], 'Imported private asset changed since probe')
-        require(previous['cloth_materials'] == cloth_materials(job, cfg), 'Actual shared materials unchanged since import')
-        return previous
-    targets = [job['private_skeleton'], job['clothes_asset'], job['brow_material'], job['cloth_master']]
-    targets += [job['asset_root'] + '/' + name for name in cfg['materials']]
-    require(len(targets) == len(set(targets)) == 9, 'Exactly nine private import assets')
+    targets = import_assets(job, cfg)
     require(not any(unreal.EditorAssetLibrary.does_asset_exist(path) or native_file(job['project'], path).exists()
                     for path in targets), 'Fresh private import only; partial previous attempts need a new run')
     coverage, provenance = brow_coverage(sources)
@@ -213,65 +229,104 @@ def import_private(job, cfg, sources):
     create_surface(job['brow_material'], [.022, .012, .008], .52, coverage[0], coverage[1])
     # The import may update only its private skeleton. Persist and fingerprint that copy too.
     require(unreal.EditorAssetLibrary.save_loaded_asset(skeleton), 'Persist private import skeleton only')
+    # All nine assets must exist on disk before native bind; the final fingerprints
+    # describe the accepted saved bind, never the earlier imported reference pose.
+    for path in targets:
+        require(native_file(job['project'], path).is_file(), 'Save all nine private assets before native clothes bind')
+    before_bind = {path: file_row(native_file(job['project'], path)) for path in targets}
+    cloth_before = native_file_row(native_file(job['project'], job['clothes_asset']))
+    material_state = cloth_materials(job, cfg)
+    bind_job = native_suboperation(job, 'bind-clothes')
+    bound = clothes_bind_receipt(job, cfg)
+    require(bound['pid'] == os.getpid(), 'Native clothes bind ran inside this fresh importer')
+    require(bound['clothes_bind']['file_before'] == cloth_before, 'Bind receipt identifies the actual pre-bind imported cloth file')
+    require(all(file_row(native_file(job['project'], path)) == row for path, row in before_bind.items()
+                if path != job['clothes_asset']), 'Only the new private clothes file changed during native bind')
+    require(material_state == cloth_materials(job, cfg), 'Native rebind preserved actual material bindings')
     saved = [{'asset': path, 'file': file_row(native_file(job['project'], path))} for path in targets]
-    result = {'status': 'PASS', 'clothing_fbx_sha256': sha(fbx), 'private_skeleton': skeleton.get_path_name(),
+    result = {'status': 'PASS', 'mode': 'import', 'pid': os.getpid(), 'job_sha256': sha(job_path),
+              'clothing_fbx_sha256': sha(fbx), 'private_skeleton': skeleton.get_path_name(),
               'actual_clothing_slots': actual_names, 'saved_assets': saved, 'brow_coverage': provenance,
-              'cloth_materials': cloth_materials(job, cfg),
-              'limits': 'Native pose, surface rendering and runtime adoption not proved by import'}
-    write(receipt_path, result)
+              'assets_before_bind_sha256': before_bind,
+              'cloth_materials': material_state, 'clothes_bind_native_report': receipt_file(job['clothes_bind_report']),
+              'clothes_bind_job': receipt_file(bind_job), 'clothes_bind_state': bound['clothes_bind'],
+              'limits': 'Fresh-process bind verification, native pose, surface rendering and runtime adoption not proved by import'}
+    write_new(receipt_path, result)
     return result
 
 
 def main():
     job_path = Path(os.environ['S47_MANNEQUIN_JOB']).resolve(strict=True)
-    job, report = load(job_path), {'status': 'STARTED_NOT_ACCEPTED', 'pid': os.getpid(),
-                                 'engine_version': unreal.SystemLibrary.get_engine_version()}
+    job = load(job_path)
+    require(job['mode'] in ('import', 'probe', 'bake', 'verify'), 'Known native authoring operation')
+    # Refusing a repeated operation must not replace its old PASS or FAIL receipt.
+    require(not Path(job['python_report']).exists(), 'Use a fresh operation; previous Python receipt is immutable')
+    report = {'status': 'STARTED_NOT_ACCEPTED', 'pid': os.getpid(), 'mode': job['mode'],
+              'job_sha256': sha(job_path), 'engine_version': unreal.SystemLibrary.get_engine_version()}
     try:
         require(Path(job['project']).resolve() == Path(unreal.Paths.project_dir()).resolve(), 'Explicit authoring project matches editor')
         require(sha(job['contract']) == job['contract_sha256'], 'Frozen authoring contract')
         require(sha(job['clothing_report']) == job['clothing_report_sha256'], 'Byte-identical actual private clothing receipt')
         cfg = load(job['contract'])
-        require(job['mode'] in ('probe', 'bake', 'verify'), 'Known native authoring operation')
         null_rhi = '-nullrhi' in unreal.SystemLibrary.get_command_line().lower().split()
-        require(job['mode'] == 'probe' or not null_rhi, 'Bake and saved verification require actual RHI, never NullRHI')
+        require(job['mode'] in ('import', 'probe') or not null_rhi, 'Bake and saved verification require actual RHI, never NullRHI')
         report['render_context'] = {'null_rhi': null_rhi,
                                     'probe_is_pose_preflight_only': job['mode'] == 'probe'}
-        require(not Path(job['native_report']).exists() and not Path(job['python_report']).exists(), 'Fresh operation receipts')
+        require(not Path(job['native_report']).exists(), 'Fresh native operation receipt')
         report['preservation_before'] = preservation(job)
         sources = sources_available(cfg)
-        if job['mode'] in ('probe', 'bake'):
-            report['private_import'] = import_private(job, cfg, sources)
+        if job['mode'] == 'import':
+            report['private_import'] = import_private(job, cfg, sources, job_path)
+            report['import_receipt'] = receipt_file(Path(job['python_report']).parent / 'import-python.json')
+            report['cloth_materials'] = cloth_materials(job, cfg)
+            report['native_report'] = receipt_file(job['clothes_bind_report'])
         else:
-            require(unreal.EditorAssetLibrary.does_asset_exist(job['output_asset']), 'Actual saved output exists for fresh-process verify')
-            baked = load(Path(job['python_report']).parent / 'bake-python.json')
-            require(baked['status'] == 'PASS' and baked['pid'] != os.getpid(), 'Verifier is a fresh editor process after accepted bake')
-            require(file_row(native_file(job['project'], job['output_asset'])) ==
-                    {key: baked['output_asset'][key] for key in ('bytes', 'sha256')}, 'Unchanged actual saved bake payload before reload')
-        report['cloth_materials'] = cloth_materials(job, cfg)
-        imported = load(Path(job['python_report']).parent / 'import-python.json')
-        require(report['cloth_materials'] == imported['cloth_materials'], 'Actual saved shared material policy retained')
-        if job['mode'] == 'bake':
-            # A NullRHI probe updates/persists the graph, not actual shader proof.
-            # Re-evaluate both private masters in the real bake; native Audit then
-            # requires complete actual shader maps and zero errors for every slot.
-            report['private_master_compile_errors'] = {}
-            for asset in (job['cloth_master'], job['brow_material']):
-                errors = list(unreal.MaterialEditingLibrary.recompile_material(unreal.load_asset(asset)))
-                report['private_master_compile_errors'][asset] = errors
-                require(not errors, 'Actual private master compile errors: ' + repr(errors))
-        unreal.SystemLibrary.execute_console_command(None, 'S47.MannequinBake')
-        require(Path(job['native_report']).is_file(), 'Editor-only bake command is compiled and actually wrote a receipt')
-        native = load(job['native_report'])
-        require(native.get('status') == 'PASS' and native.get('mode') == job['mode'], 'Native authoring acceptance: ' + native.get('error', 'missing receipt'))
-        report['native_report'] = {'path': job['native_report'], **file_row(job['native_report'])}
+            imported = imported_receipt(job, cfg)
+            require(imported['pid'] != os.getpid(), 'Probe/bake/verify must freshly reload after the import/bind process')
+            import_operation = load(Path(job['python_report']).parent / 'import-operation-python.json')
+            require(import_operation.get('status') == 'PASS' and import_operation.get('mode') == 'import'
+                    and import_operation.get('pid') == imported['pid'] and import_operation.get('private_import') == imported
+                    and import_operation.get('import_receipt') == receipt_file(Path(job['python_report']).parent / 'import-python.json'),
+                    'The completed importer operation must accept its final bound nine-asset receipt')
+            report['cloth_materials'] = cloth_materials(job, cfg)
+            require(report['cloth_materials'] == imported['cloth_materials'], 'Actual saved shared material policy retained')
+            verify_job = native_suboperation(job, 'verify-clothes-bind')
+            verified = clothes_bind_verification(job, cfg, imported)
+            require(verified['pid'] == os.getpid(), 'Read-only clothes verification ran in this fresh process')
+            report['clothes_bind_verify_report'] = receipt_file(job['clothes_bind_verify_report'])
+            report['clothes_bind_verify_job'] = receipt_file(verify_job)
+            report['clothes_bind_state'] = verified['clothes_bind']
+            imported_receipt(job, cfg)
+            require(cloth_materials(job, cfg) == imported['cloth_materials'], 'Read-only bind verification retained all material bindings')
+            if job['mode'] == 'verify':
+                require(unreal.EditorAssetLibrary.does_asset_exist(job['output_asset']), 'Actual saved output exists for fresh-process verify')
+                baked = load(Path(job['python_report']).parent / 'bake-python.json')
+                require(baked['status'] == 'PASS' and baked['pid'] != os.getpid(), 'Verifier is a fresh editor process after accepted bake')
+                require(file_row(native_file(job['project'], job['output_asset'])) ==
+                        {key: baked['output_asset'][key] for key in ('bytes', 'sha256')}, 'Unchanged actual saved bake payload before reload')
+            if job['mode'] == 'bake':
+                # A NullRHI import saves the graph, not actual shader proof.
+                # Native Audit additionally requires complete actual shader maps.
+                report['private_master_compile_errors'] = {}
+                for asset in (job['cloth_master'], job['brow_material']):
+                    errors = list(unreal.MaterialEditingLibrary.recompile_material(unreal.load_asset(asset)))
+                    report['private_master_compile_errors'][asset] = errors
+                    require(not errors, 'Actual private master compile errors: ' + repr(errors))
+            unreal.SystemLibrary.execute_console_command(None, 'S47.MannequinBake')
+            require(Path(job['native_report']).is_file(), 'Editor-only bake command is compiled and actually wrote a receipt')
+            native = load(job['native_report'])
+            require(native.get('status') == 'PASS' and native.get('mode') == job['mode'] and native.get('pid') == os.getpid(),
+                    'Native authoring acceptance: ' + native.get('error', 'missing same-process receipt'))
+            report['native_report'] = receipt_file(job['native_report'])
+            if job['mode'] != 'probe':
+                report['output_asset'] = {'path': job['output_asset'], **file_row(native_file(job['project'], job['output_asset']))}
+            if job['mode'] == 'verify':
+                require(report['output_asset'] == baked['output_asset'], 'Read-only fresh-process verifier did not rewrite the baked asset')
+        imported_receipt(job, cfg)
         report['preservation_after'] = preservation(job)
-        if job['mode'] != 'probe':
-            report['output_asset'] = {'path': job['output_asset'], **file_row(native_file(job['project'], job['output_asset']))}
-        if job['mode'] == 'verify':
-            require(report['output_asset'] == baked['output_asset'], 'Read-only fresh-process verifier did not rewrite the baked asset')
-        report.update(status='PASS', mode=job['mode'], job_sha256=sha(job_path),
+        report.update(status='PASS',
                       limits='Private source/import/native bake only. No runtime integration, visual acceptance, FPS, installation or release.')
-        write(job['python_report'], report)
+        write_new(job['python_report'], report)
         unreal.log('S47 MANNEQUIN ' + job['mode'].upper() + ' PASS')
     except Exception as error:
         report.update(status='FAIL', error=str(error))
@@ -279,7 +334,7 @@ def main():
             report['preservation_after'] = preservation(job)
         except Exception as changed:
             report['preservation_error'] = str(changed)
-        write(job['python_report'], report)
+        write_new(job['python_report'], report)
         unreal.log_error('S47 MANNEQUIN ' + job['mode'].upper() + ' FAIL: ' + str(error))
         raise
 

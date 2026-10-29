@@ -28,9 +28,121 @@ def write(path, value):
     Path(path).write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n')
 
 
+def write_new(path, value):
+    """Immutable jobs/receipts: never replace a previous attempt, including failures."""
+    with Path(path).open('x', encoding='utf-8') as stream:
+        stream.write(json.dumps(value, ensure_ascii=False, indent=2) + '\n')
+
+
 def file_row(path):
     path = Path(path)
     return {'bytes': path.stat().st_size, 'sha256': sha(path)}
+
+
+def receipt_file(path):
+    return {'path': str(Path(path).resolve(strict=True)), **file_row(path)}
+
+
+def native_file_row(path):
+    """FSHA1 is available in the Linux editor; Python additionally binds SHA256."""
+    path = Path(path).resolve(strict=True)
+    digest = hashlib.sha1()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(4 * 1024 * 1024), b''):
+            digest.update(block)
+    return {'path': str(path), 'bytes': path.stat().st_size, 'sha1': digest.hexdigest()}
+
+
+def private_asset_file(job, asset):
+    if not asset.startswith(job['asset_root'] + '/') or '..' in asset:
+        raise RuntimeError('Asset is outside this fresh private run: ' + asset)
+    return Path(job['project']) / 'Content' / (asset.removeprefix('/Game/') + '.uasset')
+
+
+def import_assets(job, cfg):
+    assets = [job['private_skeleton'], job['clothes_asset'], job['brow_material'], job['cloth_master']]
+    assets += [job['asset_root'] + '/' + name for name in cfg['materials']]
+    if len(assets) != len(set(assets)) or len(assets) != 9:
+        raise RuntimeError('Exactly nine private import assets are required')
+    return assets
+
+
+def clothes_bind_receipt(job, cfg):
+    path = Path(job['clothes_bind_report'])
+    data = load(path)
+    state = data['clothes_bind']
+    policy = cfg['clothes_bind']
+    expected_file = private_asset_file(job, job['clothes_asset']).resolve(strict=True)
+    expected_object = job['clothes_asset'] + '.' + job['clothes_asset'].rsplit('/', 1)[1]
+    if (data.get('schema_version') != 1 or data.get('status') != 'PASS' or data.get('mode') != 'bind-clothes'
+            or type(data.get('pid')) is not int or data['pid'] <= 0
+            or state['asset'] != job['clothes_asset'] or state['object'] != expected_object
+            or state['private_skeleton'] != job['private_skeleton']
+            or policy['policy'] != 'canonical-native-body' or state['policy'] != policy['policy']
+            or state['imported_reference_pose_sha1'] != policy['imported_reference_pose_sha1']
+            or state['canonical_reference_pose_sha1'] != policy['canonical_reference_pose_sha1']
+            or state['reference_before_sha1'] != policy['imported_reference_pose_sha1']
+            or state['reference_after_sha1'] != policy['canonical_reference_pose_sha1']
+            or state['body_reference_sha1'] != policy['canonical_reference_pose_sha1']
+            or state['preserved_payload'] is not True
+            or not state['payload_before_sha1'] or state['payload_before_sha1'] != state['payload_after_sha1']
+            or not state['inverse_reference_after_sha1'] or state['inverse_reference_after_sha1'] != state['body_inverse_reference_sha1']
+            or state['file_after'] != native_file_row(expected_file)):
+        raise RuntimeError('Actual saved clothes rebind receipt/file/reference/payload differs')
+    return data
+
+
+def clothes_bind_verification(job, cfg, imported=None):
+    bound = clothes_bind_receipt(job, cfg)
+    verified = load(job['clothes_bind_verify_report'])
+    if (verified.get('schema_version') != 1 or verified.get('status') != 'PASS'
+            or verified.get('mode') != 'verify-clothes-bind' or type(verified.get('pid')) is not int
+            or verified['pid'] <= 0 or verified['pid'] == bound['pid']
+            or verified.get('bind_receipt') != native_file_row(job['clothes_bind_report'])
+            or verified.get('clothes_bind') != bound['clothes_bind']
+            or (imported is not None and verified['pid'] == imported['pid'])):
+        raise RuntimeError('Fresh-process read-only clothes-bind verification differs')
+    return verified
+
+
+def imported_receipt(job, cfg):
+    root = Path(job['python_report']).parent
+    imported = load(root / 'import-python.json')
+    saved = imported['saved_assets']
+    before = imported['assets_before_bind_sha256']
+    expected = import_assets(job, cfg)
+    bound = clothes_bind_receipt(job, cfg)
+    import_job = load(root / 'job-import.json')
+    bind_job = root / 'job-import-bind-clothes.json'
+    if (imported.get('status') != 'PASS' or imported.get('mode') != 'import'
+            or type(imported.get('pid')) is not int or imported['pid'] != bound['pid']
+            or imported.get('job_sha256') != sha(root / 'job-import.json')
+            or import_job != operation_jobs(job, root)['import']
+            or imported['clothing_fbx_sha256'] != job['clothing_fbx_sha256']
+            or len(saved) != 9 or {row['asset'] for row in saved} != set(expected)
+            or set(before) != set(expected)
+            or any(row['file'] != before[row['asset']] for row in saved if row['asset'] != job['clothes_asset'])
+            or imported.get('clothes_bind_native_report') != receipt_file(job['clothes_bind_report'])
+            or imported.get('clothes_bind_job') != receipt_file(bind_job)
+            or load(bind_job) != dict(import_job, mode='bind-clothes', native_report=job['clothes_bind_report'])
+            or imported.get('clothes_bind_state') != bound['clothes_bind']):
+        raise RuntimeError('Final nine-asset import receipt must follow the exact accepted native bind')
+    for row in saved:
+        if file_row(private_asset_file(job, row['asset'])) != row['file']:
+            raise RuntimeError('Private import asset changed after final bind receipt: ' + row['asset'])
+    return imported
+
+
+def operation_jobs(job, output):
+    """Import/bind is a separate process; each later read-only bind check has its own file."""
+    result = {}
+    for mode in ('import', 'probe', 'bake', 'verify'):
+        result[mode] = dict(job, mode=mode,
+                            clothes_bind_report=str(output / 'clothes-bind-native.json'),
+                            clothes_bind_verify_report=str(output / (mode + '-clothes-bind-verify-native.json')),
+                            native_report=str(output / ('clothes-bind-native.json' if mode == 'import' else mode + '-native.json')),
+                            python_report=str(output / ('import-operation-python.json' if mode == 'import' else mode + '-python.json')))
+    return result
 
 
 def source_check(inventory, project):
@@ -176,13 +288,10 @@ def main():
            'output_asset': asset_root + '/SM_RadioWoman_Seated', 'native_report': str(output / 'bake-native.json'),
            'bake_report': str(output / 'bake-native.json'), 'python_report': str(output / 'bake-python.json')}
     preservation(job)
-    write(output / 'job-bake.json', job)
-    for mode in ('probe', 'verify'):
-        variant = dict(job, mode=mode, native_report=str(output / (mode + '-native.json')),
-                       python_report=str(output / (mode + '-python.json')))
-        write(output / ('job-' + mode + '.json'), variant)
+    for mode, variant in operation_jobs(job, output).items():
+        write_new(output / ('job-' + mode + '.json'), variant)
     print(json.dumps({'status': 'PREPARED_NOT_PRODUCED', 'backed_up_files': len(before), 'job': str(output / 'job-bake.json'),
-                      'engine_started': False}, ensure_ascii=False))
+                      'first_job': str(output / 'job-import.json'), 'engine_started': False}, ensure_ascii=False))
 
 
 if __name__ == '__main__':

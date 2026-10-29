@@ -3,7 +3,8 @@
 import argparse
 from pathlib import Path
 
-from prepare import clothing_check, file_row, load, preservation, sha, write
+from prepare import (clothes_bind_verification, clothing_check, file_row, imported_receipt,
+                     load, operation_jobs, preservation, private_asset_file, receipt_file, sha, write_new)
 
 
 def main():
@@ -16,50 +17,67 @@ def main():
     if args.out.exists():
         raise RuntimeError('Use a new receipt path')
     root = Path(job['python_report']).parent
-    baked, verified = load(root / 'bake-python.json'), load(root / 'verify-python.json')
-    if (baked['status'] != 'PASS' or verified['status'] != 'PASS' or baked['pid'] == verified['pid']
-            or baked['output_asset'] != verified['output_asset'] or baked['mode'] != 'bake' or verified['mode'] != 'verify'
-            or baked['job_sha256'] != sha(args.job) or verified['job_sha256'] != sha(root / 'job-verify.json')):
-        raise RuntimeError('Actual separate-process native bake/reader receipts are required')
+    if job['mode'] != 'bake' or job != load(root / 'job-bake.json'):
+        raise RuntimeError('Final verification requires the frozen bake job')
     if sha(job['contract']) != job['contract_sha256'] or sha(job['clothing_report']) != job['clothing_report_sha256']:
         raise RuntimeError('Private authoring source receipt changed')
     fbx, _ = clothing_check(job['clothing_report'])
     if str(fbx) != job['clothing_fbx'] or sha(fbx) != job['clothing_fbx_sha256']:
         raise RuntimeError('Actual private authoring FBX changed')
+    imported = imported_receipt(job, cfg)
+    material_state = imported['cloth_materials']
     receipts = {}
-    for name in ('import-python.json', 'bake-python.json', 'bake-native.json', 'verify-python.json', 'verify-native.json'):
-        path = root / name
-        if load(path)['status'] != 'PASS':
-            raise RuntimeError('Rejected actual authoring operation: ' + name)
-        receipts[name] = file_row(path)
-    for name in ('bake', 'verify'):
-        py = load(root / (name + '-python.json'))
-        native = root / (name + '-native.json')
-        if file_row(native) != {key: py['native_report'][key] for key in ('bytes', 'sha256')}:
-            raise RuntimeError('Native receipt changed after Python acceptance')
+    operations = {}
+    for mode, expected_job in operation_jobs(job, root).items():
+        mode_job_path = root / ('job-' + mode + '.json')
+        mode_job = load(mode_job_path)
+        if mode_job != expected_job:
+            raise RuntimeError('Operation job differs from the frozen common authoring contract: ' + mode)
+        py = load(mode_job['python_report'])
+        native = load(mode_job['native_report'])
+        if (py.get('status') != 'PASS' or py.get('mode') != mode or type(py.get('pid')) is not int or py['pid'] <= 0
+                or py.get('job_sha256') != sha(mode_job_path)
+                or py.get('native_report') != receipt_file(mode_job['native_report'])
+                or native.get('status') != 'PASS' or native.get('mode') != ('bind-clothes' if mode == 'import' else mode)
+                or native.get('pid') != py['pid'] or py.get('cloth_materials') != material_state):
+            raise RuntimeError('Actual operation/native/material receipt differs: ' + mode)
+        operations[mode] = py
+        for path in (mode_job_path, Path(mode_job['python_report']), Path(mode_job['native_report'])):
+            receipts[path.name] = file_row(path)
+        if mode == 'import':
+            if (py['pid'] != imported['pid'] or py.get('import_receipt') != receipt_file(root / 'import-python.json')
+                    or py.get('private_import') != imported):
+                raise RuntimeError('Importer operation does not bind the final post-bind nine-asset receipt')
+            receipts['job-import-bind-clothes.json'] = file_row(root / 'job-import-bind-clothes.json')
+        else:
+            verified_bind = clothes_bind_verification(mode_job, cfg, imported)
+            verify_job = root / ('job-' + mode + '-verify-clothes-bind.json')
+            if (verified_bind['pid'] != py['pid']
+                    or py.get('clothes_bind_verify_report') != receipt_file(mode_job['clothes_bind_verify_report'])
+                    or py.get('clothes_bind_verify_job') != receipt_file(verify_job)
+                    or load(verify_job) != dict(mode_job, mode='verify-clothes-bind',
+                                               native_report=mode_job['clothes_bind_verify_report'])
+                    or py.get('clothes_bind_state') != verified_bind['clothes_bind']):
+                raise RuntimeError('Fresh operation did not accept its own read-only saved clothes-bind proof: ' + mode)
+            for path in (verify_job, Path(mode_job['clothes_bind_verify_report'])):
+                receipts[path.name] = file_row(path)
+    if len({row['pid'] for row in operations.values()}) != 4:
+        raise RuntimeError('Import, probe, bake and saved reader must be four separate editor processes')
+    baked, verified = operations['bake'], operations['verify']
+    if baked['output_asset'] != verified['output_asset']:
+        raise RuntimeError('Fresh reader did not preserve the accepted saved static output')
     original = preservation(job)
-    asset = Path(job['project']) / 'Content' / (job['output_asset'].removeprefix('/Game/') + '.uasset')
-    if file_row(asset) != {key: baked['output_asset'][key] for key in ('bytes', 'sha256')}:
+    if file_row(private_asset_file(job, job['output_asset'])) != {key: baked['output_asset'][key] for key in ('bytes', 'sha256')}:
         raise RuntimeError('Actual baked native payload changed')
-    saved = load(root / 'import-python.json')['saved_assets']
-    expected_assets = {job['private_skeleton'], job['clothes_asset'], job['brow_material'], job['cloth_master']}
-    expected_assets.update(job['asset_root'] + '/' + name for name in cfg['materials'])
-    if len(saved) != 9 or len(expected_assets) != 9 or {row['asset'] for row in saved} != expected_assets:
-        raise RuntimeError('All nine actual private import assets must be bound')
-    material_state = load(root / 'import-python.json')['cloth_materials']
-    if baked['cloth_materials'] != material_state or verified['cloth_materials'] != material_state:
-        raise RuntimeError('Actual native MI parents, overrides, values and cloth bindings changed')
     if (baked['render_context']['null_rhi'] or verified['render_context']['null_rhi']
             or set(baked['private_master_compile_errors']) != {job['cloth_master'], job['brow_material']}
             or any(baked['private_master_compile_errors'].values())):
         raise RuntimeError('Real-RHI bake/verify and both private masters without returned compile errors are required')
-    for item in saved:
-        path = Path(job['project']) / 'Content' / (item['asset'].removeprefix('/Game/') + '.uasset')
-        if file_row(path) != item['file']:
-            raise RuntimeError('Private import/material changed since authoring')
-    write(args.out, {'status': 'PASS', 'kind': 'private_mannequin_authoring_files_only', 'job_sha256': sha(args.job),
+    receipts['import-python.json'] = file_row(root / 'import-python.json')
+    write_new(args.out, {'status': 'PASS', 'kind': 'private_mannequin_authoring_files_only', 'job_sha256': sha(args.job),
                      'preservation': original, 'operation_receipts': receipts, 'output': baked['output_asset'],
-                     'cloth_materials': material_state, 'private_import_assets': len(saved),
+                     'clothes_bind': imported['clothes_bind_state'], 'cloth_materials': material_state,
+                     'private_import_assets': len(imported['saved_assets']),
                      'native_geometry': load(root / 'verify-native.json')['output'],
                      'limits': ['No runtime integration', 'No appearance/seat/contact acceptance', 'No human input or FPS',
                                 'No full matrix, installation or release', 'MetaHuman derivatives remain private']})
