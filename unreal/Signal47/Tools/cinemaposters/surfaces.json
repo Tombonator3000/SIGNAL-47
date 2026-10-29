@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "scope": "ART01_Plaza_exterior_v1",
+  "destination": "/Game/Signal47/Art/CinemaPosters",
+  "binding": "WebData/cinema-posters-binding.json",
+  "master": "/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque",
+  "plane": {
+    "asset": "SM_CinemaPosterPlane",
+    "source": "/Engine/BasicShapes/Plane.Plane",
+    "right_three": [0, 0, -1],
+    "down_three": [0, -1, 0],
+    "normal_three": [1, 0, 0],
+    "uv_basis": "u=(local_UE_x+50)/100; v=(local_UE_y+50)/100"
+  },
+  "tb2": {
+    "parent_handle": "world.town.group",
+    "site_world_three_m": [7985, 8.987393474578857, 2162],
+    "shell": {
+      "asset": "/Game/TownBuildings/SM_Town_Cinema_Shell.SM_Town_Cinema_Shell",
+      "node_name": "town-production:SM_Town_Cinema_Shell",
+      "material": "M_Town_PrintAtlas",
+      "lod_triangles": [9920, 6350, 3770],
+      "source_glb": "Signal47/Tools/townbuildings/exports/SM_Town_Cinema_Shell.glb",
+      "source_glb_sha256": "6d85aede150a6fb856576bee1ffa55a7ed58b98553a96b1143b2fd56a3132988"
+    },
+    "glass": {
+      "asset": "/Game/TownBuildings/SM_Town_Cinema_Glass.SM_Town_Cinema_Glass",
+      "node_name": "town-production:SM_Town_Cinema_Glass",
+      "material": "M_Town_Glass",
+      "lod_triangles": [50, 42, 38],
+      "source_glb": "Signal47/Tools/townbuildings/exports/SM_Town_Cinema_Glass.glb",
+      "source_glb_sha256": "cc7772abb81db45bb04512c36e3b3f007785cbc47adbd5f8a65b43f7df609248"
+    }
+  },
+  "preserve": {
+    "interaction": "town:cinema",
+    "exported_proxy_node": 1514,
+    "range_m": 2.6,
+    "note_nb": "Originale TB2-mesh, atlas, glass, etiketter, proxy og Closed-respons beholdes. Ingen interiøradgang eller ny oppgave. Fire innvendige plakatmotiver integreres ikke her."
+  },
+  "material_parameters": {
+    "scalars": {"NativeLighting": 1, "UseMap": 1, "MapIsLinear": 0, "Roughness": 0.88, "Metalness": 0, "EmissivePower": 0, "UseVertexColor": 0, "UseInstanceColor": 0},
+    "vectors": {"Color": [1, 1, 1, 1], "MapU": [1, 0, 0, 0], "MapV": [0, 1, 0, 0]}
+  },
+  "surfaces": [
+    {
+      "id": "desert-sky",
+      "catalog_id": "CINEMA_DESERT_SKY",
+      "source": "ArtSource/EnvironmentGraphics/jpg/01-cinema-desert-sky.jpg",
+      "source_sha256": "6b1db45bf4b4f8d5efc466f26f0d7b892da370e3ce3a4538111dffa73187fed7",
+      "source_dimensions_px": [1024, 1536],
+      "texture": "T_Cinema_DesertSky",
+      "material": "MI_Cinema_DesertSky",
+      "source_atlas_cell": 11,
+      "source_centre_blender_m": [0.162, -7, 1.51],
+      "local_centre_three_m": [0.162, 1.51, 7],
+      "frame_size_m": [1.13, 1.61],
+      "art_size_m": [1.0733333333333333, 1.61],
+      "lift_m": 0.001,
+      "glass_x_local_m": 0.25,
+      "glass_size_m": [1.16, 1.64]
+    },
+    {
+      "id": "friday-matinee",
+      "catalog_id": "CINEMA_FRIDAY_MATINEE",
+      "source": "ArtSource/EnvironmentGraphics/jpg/02-cinema-friday-matinee.jpg",
+      "source_sha256": "bf6dcbe8a86c1b4558c60cc1a218944d1107a5cae0849b21ef147603dfb70ed6",
+      "source_dimensions_px": [1024, 1536],
+      "texture": "T_Cinema_FridayMatinee",
+      "material": "MI_Cinema_FridayMatinee",
+      "source_atlas_cell": 12,
+      "source_centre_blender_m": [0.162, 7, 1.51],
+      "local_centre_three_m": [0.162, 1.51, -7],
+      "frame_size_m": [1.13, 1.61],
+      "art_size_m": [1.0733333333333333, 1.61],
+      "lift_m": 0.001,
+      "glass_x_local_m": 0.25,
+      "glass_size_m": [1.16, 1.64]
+    }
+  ],
+  "note_nb": "Katalogens historiske 1,13×1,77m er ikke TB2-flaten. Motivene legges innskrevet i faktisk 1,13×1,61m, uten strekk/beskjæring. Originalens smale sidekanter og all gammel geometri/materialbinding beholdes."
+}
