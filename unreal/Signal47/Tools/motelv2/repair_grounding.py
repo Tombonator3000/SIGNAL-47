@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import shutil
 import sys
 from pathlib import Path
@@ -17,6 +18,8 @@ from pathlib import Path
 PACKAGE = Path(__file__).resolve().parents[3] / 'ArtSource/MotelV2'
 REPAIR_ID = 'motel-grounded-20261029-v1'
 EPS = .0002
+NORMAL_COMPONENT_EPS = .0002
+NORMAL_DOT_EPS = .0000001
 
 
 def sha(path):
@@ -115,14 +118,49 @@ def plan_moves(part, coordinates, faces, contract, repaired=False):
     return moves, islands
 
 
-def mesh_snapshot(mesh):
+def unit_normal(vector):
+    assert len(vector) == 3 and all(math.isfinite(v) for v in vector), ('invalid normal', vector)
+    length = math.sqrt(sum(v * v for v in vector))
+    assert length > 1e-12, ('zero normal must not become automatic shading', vector)
+    return tuple(v / length for v in vector)
+
+
+def scaled_normal(normal, scale):
+    """Normal of an axis-scaled donor: normalize((S^-1)^T * n)."""
+    assert all(math.isfinite(v) and v > 0 for v in scale), ('invalid infill scale', scale)
+    return unit_normal(tuple(normal[a] / scale[a] for a in range(3)))
+
+
+def normal_check(actual, expected, label):
+    assert len(actual) == len(expected), (label, 'corner normal count', len(actual), len(expected))
+    max_component, min_dot = 0., 1.
+    for i, (got, wanted) in enumerate(zip(actual, expected)):
+        got_unit, wanted_unit = unit_normal(got), unit_normal(wanted)
+        delta = max(abs(got[a] - wanted[a]) for a in range(3))
+        dot = sum(got_unit[a] * wanted_unit[a] for a in range(3))
+        max_component, min_dot = max(max_component, delta), min(min_dot, dot)
+        assert delta <= NORMAL_COMPONENT_EPS and dot >= 1 - NORMAL_DOT_EPS, (
+            label, 'corner normal changed', i, delta, dot, got, wanted)
+    return {'corners': len(expected), 'max_component_delta': max_component, 'min_normalized_dot': min_dot}
+
+
+def mesh_snapshot(mesh, include_normals=True):
     positions = [tuple(v.co) for v in mesh.vertices]
     faces = [tuple(p.vertices) for p in mesh.polygons]
     uvs = {layer.name: [tuple(v.uv) for v in layer.data] for layer in mesh.uv_layers}
     assert all(len(face) == 3 for face in faces), 'production geometry must remain triangulated'
-    return {'positions': positions, 'faces': faces, 'uvs': uvs,
-            'smooth': [p.use_smooth for p in mesh.polygons],
-            'materials': [m.name if m else None for m in mesh.materials]}
+    snapshot = {'positions': positions, 'faces': faces, 'uvs': uvs,
+                'loop_vertices': [loop.vertex_index for loop in mesh.loops],
+                'loop_starts': [p.loop_start for p in mesh.polygons],
+                'loop_totals': [p.loop_total for p in mesh.polygons],
+                'smooth': [p.use_smooth for p in mesh.polygons],
+                'material_indices': [p.material_index for p in mesh.polygons],
+                'materials': [m.name if m else None for m in mesh.materials],
+                'has_custom_normals': mesh.has_custom_normals}
+    if include_normals:
+        snapshot['corner_normals'] = [tuple(normal.vector) for normal in mesh.corner_normals]
+        assert len(snapshot['corner_normals']) == len(snapshot['loop_vertices'])
+    return snapshot
 
 
 def append_service_pads(mesh, snapshot, source_island, contract):
@@ -131,17 +169,20 @@ def append_service_pads(mesh, snapshot, source_island, contract):
     The new fields meet the porch and north path edge to edge. No new atlas,
     material, procedural source dependency or coplanar covering plane is added.
     """
-    import bmesh
-    from mathutils import Vector
-
-    assert not mesh.has_custom_normals, 'custom normals need an explicit preservation path'
+    # Direct RNA append follows convert_trims.py. No BMesh roundtrip: every
+    # original face/loop remains at its old index, binding custom corner normals
+    # and atlas UVs to an explicit, checked topology prefix.
     source_ids = set(source_island['vertices'])
     source_faces = [i for i, face in enumerate(snapshot['faces']) if set(face) <= source_ids]
     assert source_faces and all(set(face).isdisjoint(source_ids) or set(face) <= source_ids for face in snapshot['faces'])
-    bm = bmesh.new()
-    bm.from_mesh(mesh)
-    uv_layers = {name: bm.loops.layers.uv.get(name) for name in snapshot['uvs']}
-    assert all(uv_layers.values())
+    assert [loop.vertex_index for loop in mesh.loops] == snapshot['loop_vertices']
+    assert [tuple(p.vertices) for p in mesh.polygons] == snapshot['faces']
+    positions = [tuple(v.co) for v in mesh.vertices]  # Includes the planned cabinet translations.
+    loop_vertices = list(snapshot['loop_vertices'])
+    loop_starts, loop_totals = list(snapshot['loop_starts']), list(snapshot['loop_totals'])
+    smooth, material_indices = list(snapshot['smooth']), list(snapshot['material_indices'])
+    expected_normals = list(snapshot['corner_normals'])
+    uvs = {name: list(values) for name, values in snapshot['uvs'].items()}
     source_box = source_island['bounds']
     added = []
     for label, surface in contract['surface_rectangles_blender_xy_m'].items():
@@ -149,27 +190,45 @@ def append_service_pads(mesh, snapshot, source_island, contract):
             continue
         x0, x1, y0, y1 = surface['rect']
         target = [[x0, y0, -.12], [x1, y1, surface['top_z']]]
+        scale = tuple((target[1][a] - target[0][a]) / (source_box[1][a] - source_box[0][a]) for a in range(3))
         vertices = {}
         for i in sorted(source_ids):
             old = snapshot['positions'][i]
-            co = [target[0][a] + (old[a] - source_box[0][a]) / (source_box[1][a] - source_box[0][a])
-                  * (target[1][a] - target[0][a]) for a in range(3)]
-            vertices[i] = bm.verts.new(Vector(co))
+            vertices[i] = len(positions)
+            positions.append(tuple(target[0][a] + (old[a] - source_box[0][a]) * scale[a] for a in range(3)))
         for face_index in source_faces:
             old_face = snapshot['faces'][face_index]
-            face = bm.faces.new([vertices[i] for i in old_face])
-            face.material_index = 0
-            face.smooth = snapshot['smooth'][face_index]
-            for corner, loop in enumerate(face.loops):
-                for name, layer in uv_layers.items():
-                    loop[layer].uv = snapshot['uvs'][name][face_index * 3 + corner]
+            loop_starts.append(len(loop_vertices))
+            loop_totals.append(len(old_face))
+            material_indices.append(snapshot['material_indices'][face_index])
+            smooth.append(snapshot['smooth'][face_index])
+            for corner, vertex in enumerate(old_face):
+                old_loop = snapshot['loop_starts'][face_index] + corner
+                assert snapshot['loop_vertices'][old_loop] == vertex
+                loop_vertices.append(vertices[vertex])
+                expected_normals.append(scaled_normal(snapshot['corner_normals'][old_loop], scale))
+                for name, values in uvs.items():
+                    values.append(snapshot['uvs'][name][old_loop])
         added.append({'name': label, 'bounds_blender_m': target,
-                      'vertices': len(vertices), 'triangles': len(source_faces)})
-    bm.normal_update()
-    bm.to_mesh(mesh)
-    bm.free()
+                      'vertices': len(vertices), 'triangles': len(source_faces),
+                      'normal_transform': 'normalized inverse transpose of positive diagonal scale',
+                      'scale_blender_m': scale})
+    mesh.vertices.add(len(positions) - len(mesh.vertices))
+    mesh.vertices.foreach_set('co', [c for v in positions for c in v])
+    mesh.loops.add(len(loop_vertices) - len(mesh.loops))
+    mesh.loops.foreach_set('vertex_index', loop_vertices)
+    mesh.polygons.add(len(loop_starts) - len(mesh.polygons))
+    mesh.polygons.foreach_set('loop_start', loop_starts)
+    mesh.polygons.foreach_set('loop_total', loop_totals)
+    mesh.polygons.foreach_set('material_index', material_indices)
+    mesh.polygons.foreach_set('use_smooth', smooth)
+    mesh.update(calc_edges=True)
+    assert {layer.name for layer in mesh.uv_layers} == set(uvs)
+    for layer in mesh.uv_layers:
+        layer.data.foreach_set('uv', [c for v in uvs[layer.name] for c in v])
+    mesh.normals_split_custom_set(expected_normals)
     mesh.update()
-    return added
+    return added, expected_normals
 
 
 def export_fbx(bpy, ob, path):
@@ -269,14 +328,28 @@ def repair(args, report):
                 for axis in range(3):
                     mesh.vertices[i].co[axis] += delta[axis]
         mesh.update()
-    pads = append_service_pads(objects['SM_Sierra_Office'].data, snapshots['SM_Sierra_Office'], donor, contract)
+    expected_normals = {name: before['corner_normals'] for name, before in snapshots.items()}
+    pads, expected_normals['SM_Sierra_Office'] = append_service_pads(
+        objects['SM_Sierra_Office'].data, snapshots['SM_Sierra_Office'], donor, contract)
+    # The other four parts only translate whole islands. Restore their original
+    # normals explicitly too; translation must not change authored shading.
+    for name in snapshots:
+        if name != 'SM_Sierra_Office':
+            objects[name].data.normals_split_custom_set(expected_normals[name])
+            objects[name].data.update()
+    after_snapshots = {}
+    report['corner_normal_preservation'] = {
+        'method': 'Explicit RNA topology prefix; original loop normals plus inverse-transpose donor normals',
+        'max_component_tolerance': NORMAL_COMPONENT_EPS, 'min_normalized_dot': 1 - NORMAL_DOT_EPS,
+        'in_memory': {}, 'reopened_saved_blend': {}}
     for name, before in snapshots.items():
-        after = mesh_snapshot(objects[name].data)
+        after = mesh_snapshot(objects[name].data, include_normals=False)
+        after_snapshots[name] = after
         count = len(before['positions'])
         assert after['materials'] == before['materials']
-        assert after['faces'][:len(before['faces'])] == before['faces'], (name, 'original topology changed')
+        for key in ('faces', 'loop_vertices', 'loop_starts', 'loop_totals', 'smooth', 'material_indices'):
+            assert after[key][:len(before[key])] == before[key], (name, 'original prefix changed', key)
         assert all(after['uvs'][key][:len(values)] == values for key, values in before['uvs'].items()), (name, 'original atlas UV changed')
-        assert after['smooth'][:len(before['smooth'])] == before['smooth'], (name, 'original smoothing changed')
         expected = list(before['positions'])
         for row in plans[name]:
             for i in row['vertices']:
@@ -284,6 +357,13 @@ def repair(args, report):
         assert all(abs(after['positions'][i][a] - expected[i][a]) < 1e-5 for i in range(count) for a in range(3)), (name, 'unplanned vertex change')
         if name != 'SM_Sierra_Office':
             assert len(after['positions']) == count and len(after['faces']) == len(before['faces'])
+        normals = [tuple(normal.vector) for normal in objects[name].data.corner_normals]
+        old_corners = len(before['loop_vertices'])
+        report['corner_normal_preservation']['in_memory'][name] = {
+            'source_had_custom_normals': before['has_custom_normals'],
+            'output_has_custom_normals': after['has_custom_normals'],
+            'original': normal_check(normals[:old_corners], expected_normals[name][:old_corners], name + ':original'),
+            'added': normal_check(normals[old_corners:], expected_normals[name][old_corners:], name + ':added')}
     scene = bpy.data.scenes['Sierra production exports']
     bpy.context.window.scene = scene
     for name in plans:
@@ -329,7 +409,28 @@ def repair(args, report):
         assert image.packed_file and image.filepath.startswith('//textures/'), ('nonportable texture', image.filepath)
     temporary = out / 'Sierra_Production.building.blend'
     bpy.ops.wm.save_as_mainfile(filepath=str(temporary), compress=True, relative_remap=False)
-    temporary.replace(out / 'Sierra_Production.blend')
+    saved_blend = out / 'Sierra_Production.blend'
+    temporary.replace(saved_blend)
+    saved_hash = sha(saved_blend)
+    # Acceptance reads the actual saved mesh/custom-normal data, not an
+    # in-memory modifier result. Do not publish a success manifest before this.
+    bpy.ops.wm.open_mainfile(filepath=str(saved_blend))
+    saved_objects = {ob.name: ob for ob in bpy.data.objects}
+    assert set(saved_objects) == set(manifest['parts'])
+    assert len(bpy.data.meshes) == 24 and len(bpy.data.materials) == 24 and len(bpy.data.images) == 67
+    for name, expected_snapshot in after_snapshots.items():
+        mesh = saved_objects[name].data
+        actual_snapshot = mesh_snapshot(mesh, include_normals=False)
+        for key, expected_value in expected_snapshot.items():
+            assert actual_snapshot[key] == expected_value, (name, 'saved source geometry/UV/material changed', key)
+        normals = [tuple(normal.vector) for normal in mesh.corner_normals]
+        old_corners = len(snapshots[name]['loop_vertices'])
+        report['corner_normal_preservation']['reopened_saved_blend'][name] = {
+            'original': normal_check(normals[:old_corners], expected_normals[name][:old_corners], name + ':saved-original'),
+            'added': normal_check(normals[old_corners:], expected_normals[name][old_corners:], name + ':saved-added'),
+            'topology_uv_material_smoothing_identical': True}
+    assert sha(saved_blend) == saved_hash, 'saved source verification changed output file'
+    assert sha(package / 'Sierra_Production.blend') == report['source_blend_sha256'], 'immutable input changed'
     manifest['status'] = 'SOURCE_GEOMETRY_REPAIRED_NATIVE_UNVERIFIED'
     manifest['grounding_repair'] = {'id': REPAIR_ID, 'input_blend_sha256': report['source_blend_sha256'],
                                     'input_manifest_sha256': report['source_manifest_sha256'],
