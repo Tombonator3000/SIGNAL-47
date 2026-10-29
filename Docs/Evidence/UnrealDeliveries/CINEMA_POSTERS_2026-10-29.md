@@ -2,7 +2,7 @@
 
 **Status:** Under arbeid. Målrettet native import og editorprøve består; pakket kontroll er UNVERIFIED. **Gjelder:** To eksisterende utvendige plakatskap på Plaza, UE 5.8.4 / Linux Vulkan, Low, 1280×720 og Picture off. **Sist kontrollert:** 29. oktober 2026.
 
-The Desert Sky og Friday Matinee er bundet til kinoens to utvendige trykkflater. Begge består faktisk material-/UV-/mål-/synlighetskontroll, dag/skumring/nattbilder og en sammenhengende fysisk fotrute med original Closed-interaksjon og full disk/title/Continue. Kinoen er fortsatt stengt. [Portabel editorkvittering](../../../unreal/Evidence/CINEMAPOSTERS-2026-10-29/editor-r3-receipt.json) fører komplette kilde-, native- og guardbindinger, faktiske avlesninger og råfilhashes. [Fem originale PNG-er](../../../unreal/Evidence/CINEMAPOSTERS-2026-10-29/README.md) er kopiert byteidentisk.
+The Desert Sky og Friday Matinee er bundet til kinoens to utvendige trykkflater. [PR228](https://github.com/Tombonator3000/SIGNAL-47/pull/228) leverer kilden. Begge består faktisk material-/UV-/mål-/synlighetskontroll, dag/skumring/nattbilder og en sammenhengende fysisk fotrute med original Closed-interaksjon og full disk/title/Continue. Kinoen er fortsatt stengt. [Portabel editorkvittering](../../../unreal/Evidence/CINEMAPOSTERS-2026-10-29/editor-r3-receipt.json) fører komplette kilde-, native- og guardbindinger, faktiske avlesninger og råfilhashes. [Fem originale PNG-er](../../../unreal/Evidence/CINEMAPOSTERS-2026-10-29/README.md) er kopiert byteidentisk.
 
 | Bevisnivå | Faktisk kilde og resultat |
 | --- | --- |
