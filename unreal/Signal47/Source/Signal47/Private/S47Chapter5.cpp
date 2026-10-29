@@ -457,7 +457,7 @@ void US47Chapter5::BindDinerTruck(const FS47Obj& Object)
 		const US47World::FChoice C = W->M->World->TruckChoice(TEXT("diner"));
 		if (C.Use) C.Use();
 	};
-	It.Examine = [W] { return W.IsValid() && W->InDiner() ? FString(TEXT("SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.")) : FString(); };
+	It.Examine = [W] { return W.IsValid() && W->InDiner() ? FString(TEXT("The service truck: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.")) : FString(); };
 	M->Inter->Add(It);
 }
 
@@ -832,7 +832,7 @@ FS47Doc US47Chapter5::DocMap()
 {
 	if (MapUrl.IsEmpty()) MapUrl = S47Drawings::ServiceMap();
 	FS47Doc D;
-	D.Id = TEXT("e14"); D.Title = TEXT("E14 / SARO 07 service map"); D.Kind = TEXT("map"); D.Stamp = TEXT("E14"); D.Page = TEXT(""); D.Image = MapUrl;
+	D.Id = TEXT("e14"); D.Title = TEXT("E14 / service truck route map"); D.Kind = TEXT("map"); D.Stamp = TEXT("E14"); D.Page = TEXT(""); D.Image = MapUrl;
 	D.Transcript = TEXT("From the door pocket of the service truck. The old Roswell road leaves the highway at the diner, and its mileposts count from there. Survey bolts in the shoulder are marked BM.\n\nC is not on it. E09A gives C as a direction from the transit, not a place.");
 	return D;
 }

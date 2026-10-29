@@ -523,6 +523,9 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
       TEXT("telefonens lukketransaksjon registrerer Caliche-oppdraget uten å gjenopprette strøm"))) return;
   if (!Load(TEXT("after-feeder-call"))) return;
   T.BeforeDrive = M->Story->Clock();
+  // Tom's play test 29 October: the truck refused the ordered drive once the signal had left Shift.
+  if (!Check(M->Story->Phase() != ES47Phase::Shift && M->World->TruckChoice && M->World->TruckChoice(TEXT("saro")).Label == TEXT("Drive / Caliche Junction inspection"),
+      TEXT("servicebilen tilbyr Caliche-kjøringen etter at signalet har flyttet fasen fra Shift"))) return;
   M->World->Autopilot = 0; M->World->DriveOut(true);
   UE_LOG(LogTemp, Display, TEXT("S47: night sequence ROAD-START FIXTURE: DriveOut(true) places the live driving controller on road; no continuous SARO-to-Caliche or manual input claim"));
   Stage(8, .2); return;

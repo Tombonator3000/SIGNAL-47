@@ -91,7 +91,7 @@ namespace
 
 	constexpr double TANK_TIME = 2.2, FIX_TIME = 1.5;
 	const TCHAR* RING = TEXT("ring3");
-	const TCHAR* TRUCK_EXAMINE = TEXT("SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.");
+	const TCHAR* TRUCK_EXAMINE = TEXT("The service truck: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.");
 
 	FString ClockText(double Sec, bool bSeconds = true) { return S47Text::ClockText(Sec, bSeconds); }
 

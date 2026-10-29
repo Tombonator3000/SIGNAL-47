@@ -103,7 +103,7 @@ namespace
 		if (FMath::Abs(m23) < 0.9999999) return FVector(X, FMath::Atan2(m13, m33), FMath::Atan2(m21, m22));
 		return FVector(X, FMath::Atan2(-m31, m11), 0);
 	}
-	const TCHAR* EXAMINE_TRUCK = TEXT("SARO 07: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.");
+	const TCHAR* EXAMINE_TRUCK = TEXT("The service truck: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.");
 
 	// the export's run-time data for the drive (export.js extras: drive), and its readers
 	TSharedPtr<FJsonObject> JObj(const TSharedPtr<FJsonObject>& O, const TCHAR* K) { const TSharedPtr<FJsonObject>* V = nullptr; return O.IsValid() && O->TryGetObjectField(K, V) ? *V : nullptr; }
@@ -135,11 +135,12 @@ void US47World::Init(US47Main* InM)
 		TruckChoice = [this](const FString& Place) -> FChoice
 		{
 			const bool EarlyReferenceTrip = M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done"));
-			if (M && M->Story && !M->Story->At(ES47Phase::Ch1) && !EarlyReferenceTrip)
+			// the 00:13 feeder trip is ordered whatever phase the signal has moved the night to
+			const bool ServiceTrip = M && M->Evening && M->Evening->ServicePending();
+			if (M && M->Story && !M->Story->At(ES47Phase::Ch1) && !EarlyReferenceTrip && !ServiceTrip)
 			{
-				return { TEXT("Service truck"), [this] { Toast(TEXT("SARO 07, the service truck. Not now: someone has to sit the console tonight."), 3.4f); } };
+				return { TEXT("Service truck"), [this] { Toast(TEXT("The service truck. Not now: someone has to sit the console tonight."), 3.4f); } };
 			}
-   const bool ServiceTrip = EarlyReferenceTrip && M->Evening->ServicePending();
 			return { ServiceTrip ? TEXT("Drive / Caliche Junction inspection") : EarlyReferenceTrip ? TEXT("Drive / optional Caliche reference round") : TEXT("Drive"), [this, Place] { Roam(Place); } };
 		};
 	}
