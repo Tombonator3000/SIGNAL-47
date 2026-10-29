@@ -647,6 +647,11 @@ void AS47HUD::SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed)
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
 	if (!Viewport || !PC) return;
+	// A dialogue line replaced by the next one closes and reopens the panel. Keep the pointer where
+	// the player left it instead of where the brief game-mode capture parked it (FIX-06).
+	const bool bReopen = !Modal.IsValid() && LastModalClosedAt > 0 && FPlatformTime::Seconds() - LastModalClosedAt < .75;
+	const FVector2D KeepCursor = Modal.IsValid() && FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : LastModalCursor;
+	const bool bKeep = Modal.IsValid() || bReopen;
 	CloseModal();
 	Modal = Widget;
 	ModalClosed = MoveTemp(OnClosed);
@@ -654,6 +659,7 @@ void AS47HUD::SetModal(TSharedPtr<SWidget> Widget, TFunction<void()> OnClosed)
 	if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetAllUserFocus(Widget, EFocusCause::SetDirectly);
 	PC->bShowMouseCursor = true;
 	PC->SetInputMode(FInputModeUIOnly());
+	if (bKeep && FSlateApplication::IsInitialized()) FSlateApplication::Get().SetCursorPos(KeepCursor);
 	if (Walker.IsValid()) Walker->SetActive(false);
 	if (Story.IsValid()) Story->SetPaused(true);
 }
@@ -663,6 +669,8 @@ void AS47HUD::CloseModal()
 	UGameViewportClient* Viewport = GEngine ? GEngine->GameViewport : nullptr;
 	APlayerController* PC = GetOwningPlayerController();
 	if (!Modal.IsValid() || !Viewport || !PC) return;
+	if (FSlateApplication::IsInitialized()) LastModalCursor = FSlateApplication::Get().GetCursorPos();
+	LastModalClosedAt = FPlatformTime::Seconds();
 	Viewport->RemoveViewportWidgetContent(Modal.ToSharedRef());
 	Modal.Reset();
 	FInputModeGameOnly Mode;

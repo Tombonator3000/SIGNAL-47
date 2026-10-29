@@ -64,6 +64,7 @@ protected:
 private:
 	TSharedPtr<SS47Hud> Hud;
 	TSharedPtr<SWidget> Modal;
+	FVector2D LastModalCursor = FVector2D::ZeroVector; double LastModalClosedAt = -1; // FIX-06: the pointer across a dialogue line change
 	TFunction<void()> ModalClosed;
 	// UI.prompt: what E does (the label) and the second thing (Q); bPromptOwn: set by a module this
 	// frame (UI->Prompt), not taken from what the walker looks at

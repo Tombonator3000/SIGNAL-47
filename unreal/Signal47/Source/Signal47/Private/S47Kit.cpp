@@ -81,7 +81,7 @@ namespace
 	}
 }
 
-S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width)
+S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width, bool bLow)
 {
 	TWeakObjectPtr<US47UI> U = UI;
 	FSlateFontInfo H3 = Term(26.f);
@@ -89,7 +89,7 @@ S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width)
 	return SNew(SBorder)
 		// .overlay: the dark over the game; a click on it closes the panel
 		.BorderImage(Box(Css(0x020306, 0.72f), FLinearColor::Transparent, 0.f))
-		.HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(12.f)
+		.HAlign(HAlign_Center).VAlign(bLow ? VAlign_Bottom : VAlign_Center).Padding(bLow ? FMargin(12.f, 12.f, 12.f, 72.f * PX) : FMargin(12.f))
 		.OnMouseButtonDown_Lambda([U](const FGeometry&, const FPointerEvent&) { if (U.IsValid()) U->Close(); return FReply::Handled(); })
 		[
 			SNew(SBox).WidthOverride(Width * PX).MaxDesiredHeight(1040.f)
