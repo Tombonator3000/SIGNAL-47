@@ -57,8 +57,18 @@ Editorbygg R3 fra `6cbf272e` består, 113,39 s. Reisen når faktisk positiv-gass
 
 Hele kandidaten er likevel **avvist** med FAIL/exit1 på siste geometrikontroll. Ranchdelingen valgte samlet originalfallback før noen komponent ble byttet. Ti avlesninger bekrefter manglende aktivering, og SARO skjuler derfor fortsatt gården. Lokal motorkilde viser at den nye indeksbufferens tomtilstand avviser `TrySetAllowCPUAccess(true)` før `SetIndices`; kravet skal utføres etter datainnfylling og før ressursinitialisering. Ingen bevaringskontroll fjernes. Privat råmappe `editor-r1-original` og `editor-r1-acceptance.json` bevarer forsøket. Passerte port-/diskdelsteg gir ikke samlet synlighets- eller pakkeaksept.
 
+## Avvist oppstart R2 og bestått editorreise R3
+
+R2 fra `3b419ff5` stoppet før kjøreruten med motorassert `StaticMesh->GetRenderData()->IsInitialized()`, etterfulgt av motorens SIGSEGV-avslutning. Det er en konkret oppstartsrekkefølgefeil ved den første komponentbindingen, ikke en ny tilfeldig trafikk- eller minnefeil. Guard registrerte exit−11 uten konkurranse. Nativefilene var byteidentiske med CPU-forberedelsen. Råcrash med kontekst er bevart privat, sammen med kilde-/modulhash; ingen R2-ruteaksept hevdes.
+
+`575ffd15` initialiserer alle seks kloner etter full preflight og før noen komponentbinding eller originalbytte. Editorbygg R5 og hele R3-reisen fra denne kilden består: **1709 selvtester, 27 kontroller, 380,331508 m kjøring og 30,971449 m gange / 190,920167 s**. Både bil og Walker stoppes fysisk ved porten. Faktisk positivt gasspådrag ved bilstopp er registrert, etterfulgt av vanlig GetOutHere, postkassegang, original bilinteraksjon, samme bilpose, fysisk revers og full disk/title/Continue med normal Flow.WriteSave etterpå.
+
+[Editor-R3-kvitteringen](../../../unreal/Evidence/FARM-ACCESS-2026-10-29/editor-r3-receipt.json) validerer sluttmarkør, normal exit0, alle ti bevaringsavlesninger, 300 faktisk synlige gårdstrekanter i riktig aktivt område før/etter områdeskiftet og etter Continue, samt original-/klonebuffere, indekser, materialer, RT, kollisjon og renderflagg. De CPU-forberedte nativefilene er uendret etter kjøring. Alle sju PNG-er har kontrollerte CRC/IEND/SHA og er åpnet. Den faktisk parkerte bilen har fremste kollisjonshjørne road-X 20.971988355 ved positiv gass 0.883110.
+
+Main med [PR222](https://github.com/Tombonator3000/SIGNAL-47/pull/222) er deretter samordnet i `c301ead9`, uten å endre gårdskoden. Oppdatert editorbygg R6 består. Pakket R1 er under produksjon fra denne rene kilden: 13 465 fryste runtime-inputfiler / 8 378 607 341 logiske byte. Den pakkede prøven skal også bekrefte main sine 1720 selvtester.
+
 ## Videre kontroll og leveringsgrense
 
-Postfiks-bygg og den sammenhengende kjøre-/gangreisen er **UNVERIFIED** til faktisk resultat foreligger. Den målrettede reisen skal bruke normal innkjøring, målt bilstopp ved positiv gass, GetOutHere, postkasse/port til fots, samme bilinteraksjon, fysisk revers til landeveien og ordinær disk/title/Continue. Den første isolerte case1-disken er en uttrykkelig kopi av det faktiske case0-snapshotet; denne fixturen må skilles fra senere normal Flow.WriteSave.
+Editorens postfiks-bygg og sammenhengende kjøre-/gangreise består med avgrensningen ovenfor. Pakket kontroll gjenstår. Den målrettede reisen skal bruke normal innkjøring, målt bilstopp ved positiv gass, GetOutHere, postkasse/port til fots, samme bilinteraksjon, fysisk revers til landeveien og ordinær disk/title/Continue. Den første isolerte case1-disken er en uttrykkelig kopi av det faktiske case0-snapshotet; denne fixturen må skilles fra senere normal Flow.WriteSave.
 
-Pakket spill, menneskelig input, subjektiv lesbarhet/lytting, FPS og fullmatrise er foreløpig **UNVERIFIED**. Ingen installasjon eller offentlig release er utført. Baseline er et feilbevis, ikke en ferdig levert kandidat.
+Pakket spill, menneskelig input, subjektiv lesbarhet/lytting, FPS og fullmatrise er foreløpig **UNVERIFIED**. Ingen installasjon eller offentlig release er utført. Baseline og R1/R2 er avviste forsøk; editor R3 er målrettet bestått. Pakket levering og PR-merge er ennå ikke ferdig.

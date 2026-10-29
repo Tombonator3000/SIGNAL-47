@@ -13,3 +13,5 @@
 | [cpu-prepare-r2-original.json](cpu-prepare-r2-original.json) | Byteoriginal native-forberedelseskvittering. Strukturkontroll av tre CPU-flagg, ikke fysisk/runtime/pakkeaksept. |
 
 Alle baselineforsøk og originalkopier beholdes i `~/scratch-bm/Signal47-farm-access-20261029`. Historisk E01-kamerapose og byggidentitet er fortsatt ukjent. Ingen installasjon eller offentlig release.
+
+Bestått editor R3 er bundet til `575ffd15`: [kvittering](editor-r3-receipt.json), [gård etter vanlig områdeskifte](editor-r3-after-handoff-ranch.png), [bil stoppet ved porten](editor-r3-car-port-blocked.png) og [ALDERETE-postkassen](editor-r3-mailbox.png). Alle sju originale rutebilder er åpnet; de øvrige originalene og hele resultatet er bevart privat med hash i kvitteringen. Metadata/bufferaudit beviser synlig plassering; selve gården er liten ved 400 meters avstand, og ingen ny subjektiv fjernlesbarhet eller E01-kamerarekonstruksjon hevdes.
