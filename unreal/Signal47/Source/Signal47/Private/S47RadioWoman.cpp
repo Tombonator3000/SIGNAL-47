@@ -24,7 +24,7 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47RadioWoman,Log,All);
 namespace
 {
- FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated");
+ FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated");
  FAutoConsoleVariableRef AssetCVar(TEXT("s47.RadioWoman.Asset"),AssetPath,TEXT("Private accepted bake candidate; evaluated when the world is built."),ECVF_Default);
  struct FExpected {int32 Node,Geo,Material,Triangles;};
  const FExpected Expected[]={{1481,1028,656,108},{1482,1029,657,156},{1483,1030,658,48},{1484,1031,641,36},{1485,1032,638,12},{1486,1033,659,100}};
@@ -645,13 +645,13 @@ namespace
  };
  bool MeasureAcceptedPostrepairSite(FS47RadioWomanState& S,FAcceptedPostrepairSite& Out,FString& Why)
  {
-  // All native payload/index/section/material pins come from the actual independent R11 reader.
-  const TCHAR* AcceptedR11Object=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated");
+  // All native payload/index/section/material pins come from the actual independent R12 reader.
+  const TCHAR* AcceptedR12Object=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated.SM_RadioWoman_Seated");
   const FVector BoundMeasuredSeat(798557.,213275.,800.7192316799915); // actual postrepair R2
   const auto Reject=[&](const TCHAR* Reason){Why=Reason;return false;};
   UStaticMesh* Mesh=S.NativeAsset.Get();TArray<int32> LODs;
-  if(!Mesh||Mesh->GetPathName()!=AcceptedR11Object||!NativeReady(Mesh,LODs))return Reject(TEXT("verified R11 asset not prepared"));
-  if(!S47R11NativePins::Validate(Mesh,Why))return false;
+  if(!Mesh||Mesh->GetPathName()!=AcceptedR12Object||!NativeReady(Mesh,LODs))return Reject(TEXT("verified R12 asset not prepared"));
+  if(!S47R12NativePins::Validate(Mesh,Why))return false;
   auto* W=S.Web.Get();const auto* Group=W?W->Node(1480):nullptr;
   if(!W||!Group||!Group->Comp.IsValid())return Reject(TEXT("actual original person frame missing"));
   // Runs only from the ordinary AfterTownStep hook, after visibility/schedule updates.
@@ -731,7 +731,7 @@ namespace
   Out.SeatUE=S.Seat;Out.SeatHits=S47J::Int(D,TEXT("candidate_seat_actual_hits"));Out.Placement=FTransform(FRotationMatrix::MakeFromXY(Out.Forward,Out.Right).ToQuat(),Out.SeatUE);Out.Diagnostics=D;
   D->SetNumberField(TEXT("area_epoch"),double(S.AreaEpoch));D->SetNumberField(TEXT("town_step_serial"),double(S.TownStepSerial));
   D->SetBoolField(TEXT("measured_seat_binding_valid"),true);D->SetBoolField(TEXT("all_lowest_soles_within_contact_limit"),true);
-  D->SetStringField(TEXT("status"),TEXT("LIVE_R11_SITE_CONTACT_ACCEPTED_BEFORE_SWAP"));D->SetBoolField(TEXT("contact_accepted"),true);
+  D->SetStringField(TEXT("status"),TEXT("LIVE_R12_SITE_CONTACT_ACCEPTED_BEFORE_SWAP"));D->SetBoolField(TEXT("contact_accepted"),true);
   Why=TEXT("verified R11 pose and current visible native contacts");return true;
  }
  bool ApplyRadioTranslation(FS47RadioWomanState& S,const FVector& DeltaUE)

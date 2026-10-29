@@ -1480,3 +1480,21 @@ PR224-kilde1ad50dfd er pushet. Frakkens R4-source-r3 author/fresh er faktisk PAS
 Runtimearbeidsmappen radio-woman-runtime-r12 starter fra samme1ad50dfd på egen gren. Evening sin494filers authoringkilde og bygde modul skal forbli uendret, slik at de faktiske nativebindingsbevisene kan kontrolleres. Ingen ny nativehash/LOD-pin eller R12-adopsjon er fylt uten faktisk bake/ferskleser. Source→runtime-kopi skal få egen identitetsbinding; opprinnelig leserkvittering omskrives ikke.
 
 HUM02 exportR3s første postload fikk -11/MeshObjectassert før FBX. Primærkilden viste manglende AllowCommandletRendering. R4 endrer bare wrapper/oppstartsflagget, beholder uendret faktiskbygd R3-modul og Disabled materialpikselbake. Faktisk A PID3029534 avsluttet0 etter296,974s uten contention/forbidden, med to fullstendige nativeuttak og Body-FBX2958320B/Face-FBX4616688B. Ny B pågår. Dette gir ikke kilde-/generator-/runtimeaksept. Alle tre historiske avslag er bevart. Ingen installasjon eller offentlig release.
+
+
+### 2026-10-29T23:07:45+01:00 Codex: ClothesR2 ferskleser, R12-probeavslag og egen runtimekopi
+
+ClothesR2s faktiske importPID3033187 ga source/bindPASS1808, men outerguardens semanticfalse beholdes: stdoutmarkøren manglet. Ny separat kontroll bandt faktisk Saved-logg, normalexit0 og råkvitteringer, uten reimport eller omskriving. Separat freshPID3039173/71,138s består med FullStdOutLogOutput, uendrede to nye assets og alle gamle Content/private/R11-filer.
+
+R12 R4AuthoringR1/probePID3049609 feiler faktisk255/95,500s uten konkurranse ved nativechecks507: unchanged source pin exists for Body-pakkenavn. Samme-PID klærleserPASS729.18 korrekte filpinner er skrevet med objektnøkler, men fryst C++ krever11 pakkenavn og7objektnavn. Neste separate adapter skal bare omdøpe disse11nøklene, beholde alle18 verdier og modul/kilde, og bevare R1FAIL. Ingen output eller aksept fra dette forsøket.
+
+Separat runtime-WT har nå full13 017filers/8 418 600 011byte Content-kopi, hver SHA256 kontrollert, egne inoder og ingen lenker. Authoring-WT/494inputs/modulfa623 endres ikke. Oppdatert origin/main22c5cf1d er allerede ancestor. BakeR12, sittebilder, funksjon/kontakt og samlet CinemaART01-pakke gjenstår.
+
+HUM02 to faktiske R4-postloads og CPU-R2-diagnosen består uten konkurranse: komplette native snapshots er like mellom PIDene, eksakt orientert geometri/materialruting/UV, men Imported/render-vekter, normaler/tangenter er målte ulike. Ingen toleransewaiver eller fullsourceaksept innføres. Ny eksplisitt material-only port fra stabil persistedRender er reviewet; konkret privat TG-R2host/build venter på ledig lease. Ingen installasjon/release.
+
+
+### 2026-10-29T23:17:57+01:00 Codex: faktisk R12 native bake/fresh og målte runtimepinner
+
+Navneadapter ef8911a9/d4630997 omdøper bare11av18nøkler og beholder alle filpinner og kilde/modul. ProbePID3058379/96,518s PASS3085, bakePID3059300/102,638s PASS3382 og ferskleserPID3060353/100,610s PASS903;729kleskontroller i hverPID, exit0/semantictrue ogUNCONTENDED. R1FAIL er urørt.20materialer og faktiskeLODer136883/52252/32492tri,85696/33637/22486vertices. Full bake/freshaudit identisk, R11pose bevart og bare én ny asset blant13017beskyttede Content-filer.
+
+R12asset6407964byte/SHAac78d509 er kopiert separat til runtime. Ny kopibinding lar originalleseren fortsette å peke på faktisk forfatterfil; runtimeasset har egen inode og identiske bytes. Nativeheader2440279b er generert fra den faktiske verifyrapporten7acb053b og uendret Validate-funksjon. Runtimekode peker nå påR12 og cook inkluderer ny mappe. Privat lisensiert geometri/teksturer forblir ignorert. Runtimebygg, sittebilder, kontakt/funksjon og samlet CinemaART01-pakke er fortsatt UNVERIFIED; ingen installasjon/release.

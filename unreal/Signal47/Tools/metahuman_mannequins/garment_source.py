@@ -433,10 +433,12 @@ def binding_from_plan(plan_path, output):
     plan=load(plan_path); inputs,p,base,cfg,fbx,blend=inputs_checked(plan['inputs']['path'])
     run=Path(plan['run_root']); protection(plan)
     imported,verified=load(run/'garment-import.json'),load(run/'garment-verify.json')
-    source_assets=set(cfg['sources'].values()) | {x['asset'] for x in load(Path(base['python_report']).parent/'import-python.json')['cloth_materials']['instances'].values()}
-    source_assets |= {base[k] for k in ('cloth_master','brow_material','clothes_asset','private_skeleton')}
-    # Match native GetPathName objectpaths, while file conversion strips the object suffix.
+    # Native keeps contract/job literals, but reads actual clothes, skeleton and
+    # material instances through GetPathName(). Preserve that exact mixed set.
     canonical=lambda s:s if '.' in s else s+'.'+s.rsplit('/',1)[1]
+    source_assets=set(cfg['sources'].values()) | {x['asset'] for x in load(Path(base['python_report']).parent/'import-python.json')['cloth_materials']['instances'].values()}
+    source_assets |= {base[k] for k in ('cloth_master','brow_material')}
+    source_assets |= {canonical(base[k]) for k in ('clothes_asset','private_skeleton')}
     value={'schema_version':1,'status':'READY_FOR_AUTHORING_ONLY','policy':'R12-local-coat-yoke16-only-r11-pose',
            'new_job_fields':{'clothes_asset':CLOTHES,'private_skeleton':SKELETON,'clothes_bind_report':str(run/'bind-native.json')},
            'source_plan_file':row(plan_path),
@@ -446,7 +448,7 @@ def binding_from_plan(plan_path, output):
            'reference_r11_job_file':inputs['pins']['r11_job'],'reference_r11_bake_file':inputs['pins']['r11_bake'],
            'reference_r11_native_file':inputs['pins']['r11_native'],
            'new_native_assets':verified['saved_assets'],
-           'unchanged_native_assets':{canonical(x):row(asset_file(base['project'],x)) for x in sorted(source_assets)},
+           'unchanged_native_assets':{x:row(asset_file(base['project'],x)) for x in sorted(source_assets)},
            'runtime_accepted':False,'appearance_accepted':False}
     need(imported['plan']==verified['plan']==row(plan_path),'Faktisk uendret kildeplan')
     output=Path(output)
