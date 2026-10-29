@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "scope": "Pure Python source geometry only; DCC/native/visual UNVERIFIED",
+  "source_revision": "caliche-homes-20261029-v1",
+  "source_contract_sha256": "c71b76ffe0a6938db8b423190d9c54ab18d84c4ac26f4168e963660ed85e9362",
+  "authoring_code_sha256": {
+    "build_source.py": "2120398c44c7d6eb01706ccb10cb7df7bf5db9524efa65b4691540aeb8f2dc2f",
+    "check_source.py": "0f9a2bf44330181f4c6dfb067a6ddf89cd40ebbfd59a92afe3017e6b13ade172",
+    "design.py": "ca0bcdb90992f27c6e111b72a63c64427c57197eef0f54d3408c7d19e86c2e99",
+    "home_geometry.py": "041717e7b13d8d3989b17a9fe9c6bf496255d514284ff535b13ae6563646e462",
+    "materials.py": "147a74dfc72d4a663eb9616054d8c3d216bb6fb173f95995e82ca81ee76e3992",
+    "source_data.py": "79fe2e69ca43bbeeb10ffc3c3a0c3e675e7bc89c2323eea3c0e960b20c703323",
+    "verify_source.py": "b4e22eabdbd742b7050e3df622fbf901167a19feb9060dc23215e573606650a5"
+  },
+  "parts": 12,
+  "houses": 4,
+  "lod_triangle_totals": {
+    "0": 8636,
+    "1": 5932,
+    "2": 3880
+  },
+  "closed_solid_totals": {
+    "0": 501,
+    "1": 393,
+    "2": 294
+  },
+  "opening_checks": [
+    "H01 LOD0 retained door clear",
+    "H01 LOD0 retained window clear",
+    "H02 LOD0 retained door clear",
+    "H02 LOD0 retained window clear",
+    "H03 LOD0 retained door clear",
+    "H03 LOD0 retained window clear",
+    "H04 LOD0 retained door clear",
+    "H04 LOD0 retained window clear",
+    "H01 LOD1 retained door clear",
+    "H01 LOD1 retained window clear",
+    "H02 LOD1 retained door clear",
+    "H02 LOD1 retained window clear",
+    "H03 LOD1 retained door clear",
+    "H03 LOD1 retained window clear",
+    "H04 LOD1 retained door clear",
+    "H04 LOD1 retained window clear",
+    "H01 LOD2 retained door clear",
+    "H01 LOD2 retained window clear",
+    "H02 LOD2 retained door clear",
+    "H02 LOD2 retained window clear",
+    "H03 LOD2 retained door clear",
+    "H03 LOD2 retained window clear",
+    "H04 LOD2 retained door clear",
+    "H04 LOD2 retained window clear"
+  ],
+  "winding": "Each emitted solid has two opposite uses per welded edge and positive signed volume",
+  "legacy": {
+    "status": "PASS",
+    "original_manifest_sha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+    "houses": [
+      "H01",
+      "H02",
+      "H03",
+      "H04"
+    ],
+    "scope": "Original leaf dimensions and protected handle identity; source geometry is read only"
+  }
+}
