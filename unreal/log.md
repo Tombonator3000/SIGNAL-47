@@ -1197,3 +1197,12 @@ Lokal produksjon/ASR og bevaring av Dale-mastere/genereringsmetadata, øvrige ba
 ## 2026-10-29 kl. 07:07 CET: dispatch PR221 klar for kontrollert fletting
 
 [PR221](https://github.com/Tombonator3000/SIGNAL-47/pull/221) samler de to nye SC01-dispatchopptakene, verktøyrettingen og målrettet pakket SC01 fra c5d05fa2. Dokumentene peker nå til den konkrete PR-en. Testet runtimekilde, konfigurasjon, Content og Narrative er uendret siden pakkefrys; kun leveringsdokumentasjon og originale bevis er lagt til. Main er kontrollert til d771cf9e, repoet er offentlig og PR-en går mot main. Eksakt endelig head og GitHub-kontroller bekreftes før merge. Ingen ny motorjobb, installasjon eller release.
+
+
+## 2026-10-29 kl. 07:13 CET: PR221 flettet, pakkeopprydding og ENV04-baseline
+
+Dispatch/STORY-04 er levert gjennom [PR221](https://github.com/Tombonator3000/SIGNAL-47/pull/221), faktisk main 5dcaa9ba03526c4effa603013218ebb0ddd5e6fd med foreldre d771cf9e og eksakt forventet head58a9095cbbe653b15ffe08c2f533e0c47b9c2916. PR-en var clean/main/nondraft, uten påkrevde GitHub-sjekker eller aktive workflows; lokal målrettet aksept er dokumentert i dispatchrapporten. Ingen installasjon/release.
+
+Kanonisk prune har etter gjennomsett plan pensjonert bare to eldre genererte payloads, Homes R1 og Natt R2: 14 filer / 8 923 143 555 logiske byte. Gjeldende dispatch R1 og to eldre motell R1/hus R2 beholdes. Gammel krasjkomparator og FIX01 R1 er fortsatt eksplisitt beskyttet for den åpne historiske minneundersøkelsen. Ferske før-/etterhashes bekrefter alle andre registrerte pakke-/installasjonsfiler og hele installerte Saved, 91 filer, uendret. Verktøyets apply returnerte0 og fullførte slettingen; første wrapper avviste ekstra slutt-JSON ved parsing. Ingen ny apply ble kjørt, og separat postkontroll brukte original førsnapshot/råstdout. Privat kvittering: Signal47-dispatch-report-20261029/post-prune-after-r1.json.
+
+ENV04 fra main d771cf9e er samordnet med PR221 i70a1491d. Opt-in FarmAccess-testbygg R1 stoppet før runtime på privat kameratilgang, rettet til offentlig PlayerCameraManager i839fa6fa. R2 editorbygg består, og fysisk baseline kjører med én erklært road-Z535 startfixture og deretter ordinær World/Drive. Ingen produktgeometri, kollisjon eller quest er endret. Faktisk road/SARO-overgang og før-/etterbilder viser de tre gårdskomponentene skjult i SARO; portprøven er ennå ikke ferdig.
