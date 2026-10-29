@@ -1064,3 +1064,7 @@ UNVERIFIED: fullmatrise, fersk menneskelig SC01/SC02/SC03, manuell helkjøring, 
 ## 2026-10-29T01:06:26+01:00: midlertidig hjelp til Claude og dørstemme
 
 Tom ba Codex videreføre Claudes konkrete Remote Control-økt frem til automatisk fortsettelse01:11. Opprinnelig delta er bevart; main a9db4175 flettet. Stop/Begin, Character voices-bryter og områdestopp rydder dørstemmen. Måling fant at Inter.Get ikke finner eksportert dør, slik at en physical-tag skjulte Master-ruting. Rettet via Web.Item/ObjAt og testet på 7a29935e796d6b036692a53d9f2b5712993ccf17. Editorbygg og 1709 selvtester PASS; SC01 185 kontroller/19 disk/Flow-restores/273.08m PASS. Faktisk fysisk stereorute har positiv PCM/RMS; SDL dummybackend, ingen menneskelig lytting. Rapport: Docs/Evidence/UnrealDeliveries/DOOR_VOICE_2026-10-29.md. Ingen installasjon eller release.
+
+## 2026-10-29 kl. 01:10 CET: Stemmen ved feil dør
+
+Etter siste kjøring (22:50), i korridoren mot besøksinngangen, spilles Dales eget opptak «Reyes? Dale. The logbook should be in front of you.» fra utsiden av døra. Åpner du den, er trappa tom, og det føres i notatboka. SC01-kontrakt PASS COMPLETE, 178 kontroller, 19 gjenopprettinger. Opptaket er logget som spilt (playing). Ikke lyttet på av et menneske.
