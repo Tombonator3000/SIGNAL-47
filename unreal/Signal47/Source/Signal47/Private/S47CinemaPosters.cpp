@@ -19,6 +19,7 @@
 #include "HAL/IConsoleManager.h"
 #include "MeshDescription.h"
 #include "StaticMeshAttributes.h"
+#include "TextureCompiler.h"
 #include "UObject/Package.h"
 #endif
 
@@ -390,22 +391,48 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
   ||!Original(F->Glass,TEXT("glass"),TEXT("SM_Town_Cinema_Glass"),TEXT("M_Town_Glass")))
  {Reject(TEXT("actual TB2 mesh/slots/LODs/transform or saved original-plane measurements"));return {};}
  auto* PlaneMesh=LoadObject<UStaticMesh>(nullptr,*Asset(TEXT("SM_CinemaPosterPlane")));
- UMaterialInterface* Materials[2]={};
+ UMaterialInterface* Materials[2]={};UTexture2D* Textures[2]={};
  for(int32 I=0;I<2;++I)
  {
   Materials[I]=LoadObject<UMaterialInterface>(nullptr,*Asset(Expected[I].Material));
-  auto* Texture=LoadObject<UTexture2D>(nullptr,*Asset(Expected[I].Texture));
+  Textures[I]=LoadObject<UTexture2D>(nullptr,*Asset(Expected[I].Texture));
+ }
+ auto LogMaterialReadback=[](const FJ& Actual)
+ {
+  FString Diagnostic;FJsonSerializer::Serialize(Actual,TJsonWriterFactory<>::Create(&Diagnostic));
+  UE_LOG(LogS47CinemaPosters,Display,TEXT("S47: cinema poster material preflight readback: %s"),*Diagnostic);
+ };
+#if WITH_EDITOR
+ for(int32 I=0;I<2;++I)
+ {
+  auto Before=MakeShared<FJsonObject>();Before->SetStringField(TEXT("id"),Expected[I].Id);Before->SetNumberField(TEXT("build_index"),I);
+  Before->SetStringField(TEXT("compilation_phase"),TEXT("before_targeted_editor_texture_compilation"));
+  Material(Materials[I],Textures[I],Expected[I],Before);LogMaterialReadback(Before);
+ }
+ if(Textures[0]&&Textures[1])
+ {
+  // The measured editor placeholder belongs only to these two owned prints.
+  // No global compilation drain, asset setter/save or cooked-runtime wait.
+  UTexture* OwnedTextures[2]={Textures[0],Textures[1]};
+  FTextureCompilingManager::Get().FinishCompilation(OwnedTextures);
+ }
+#endif
+ bool CompleteMaterials=true;
+ for(int32 I=0;I<2;++I)
+ {
   auto Actual=MakeShared<FJsonObject>();Actual->SetStringField(TEXT("id"),Expected[I].Id);Actual->SetNumberField(TEXT("build_index"),I);
-  const bool MaterialReady=Material(Materials[I],Texture,Expected[I],Actual);
+#if WITH_EDITOR
+  Actual->SetStringField(TEXT("compilation_phase"),TEXT("after_targeted_editor_texture_compilation"));
+  Actual->SetBoolField(TEXT("targeted_editor_compilation_requested"),Textures[0]&&Textures[1]);
+#else
+  Actual->SetStringField(TEXT("compilation_phase"),TEXT("runtime_validation"));
+#endif
+  const bool MaterialReady=Material(Materials[I],Textures[I],Expected[I],Actual);
   const FString SurfaceId=Str((*Surfaces)[I]->AsObject(),TEXT("id"));const bool SurfaceReady=SurfaceId==Expected[I].Id;
   Actual->SetStringField(TEXT("actual_binding_surface_id"),SurfaceId);Actual->SetBoolField(TEXT("binding_surface_identity_valid"),SurfaceReady);
-  if(!MaterialReady||!SurfaceReady)
-  {
-   FString Diagnostic;FJsonSerializer::Serialize(Actual,TJsonWriterFactory<>::Create(&Diagnostic));
-   UE_LOG(LogS47CinemaPosters,Warning,TEXT("S47: cinema poster material preflight readback: %s"),*Diagnostic);
-   Reject(TEXT("complete two-texture/material set"));return {};
-  }
+  LogMaterialReadback(Actual);CompleteMaterials&=MaterialReady&&SurfaceReady;
  }
+ if(!CompleteMaterials){Reject(TEXT("complete two-texture/material set"));return {};}
  if(!Plane(PlaneMesh,{},Arr(BindingData,TEXT("plane_saved_triangles")))){Reject(TEXT("own measured CPU plane/UV source"));return {};}
  // No original is hidden, trimmed or rebound. Prepare both unregistered components
  // before exposing either overlay; a failed registration destroys both additions.
