@@ -265,8 +265,9 @@ def plane():
     check('unchanged Engine Plane exists', isinstance(source, unreal.StaticMesh))
     expected = plane_payload(source)
     path = asset_path(SPEC['plane']['asset'])
-    mesh = E.load_asset(path)
-    if mesh is None and MODE == 'import':
+    exists = E.does_asset_exist(path)
+    mesh = E.load_asset(path) if exists else None
+    if not exists and MODE == 'import':
         mesh = E.duplicate_asset(SPEC['plane']['source'], path.split('.')[0])
         check('owned plane duplicated', isinstance(mesh, unreal.StaticMesh))
         mesh.set_editor_property('allow_cpu_access', True)
@@ -282,13 +283,14 @@ def plane():
 def texture(row):
     source = UNREAL_DIR / row['source']
     path = asset_path(row['texture'])
-    tex = E.load_asset(path)
-    if tex is None and MODE == 'import':
+    exists = E.does_asset_exist(path)
+    tex = E.load_asset(path) if exists else None
+    if not exists and MODE == 'import':
         task = unreal.AssetImportTask()
         task.filename, task.destination_path, task.destination_name = str(source), DEST, row['texture']
         task.automated, task.save, task.replace_existing = True, False, False
         T.import_asset_tasks([task])
-        tex = E.load_asset(path)
+        tex = E.load_asset(path) if E.does_asset_exist(path) else None
         check(row['id'] + ' new Texture2D imported', isinstance(tex, unreal.Texture2D))
         for key, value in texture_settings().items():
             tex.set_editor_property(key, value)
@@ -320,8 +322,9 @@ def material(row, tex):
     path = asset_path(row['material'])
     parent = E.load_asset(SPEC['master'])
     check('existing shared opaque document master', isinstance(parent, unreal.Material))
-    mi = E.load_asset(path)
-    if mi is None and MODE == 'import':
+    exists = E.does_asset_exist(path)
+    mi = E.load_asset(path) if exists else None
+    if not exists and MODE == 'import':
         mi = T.create_asset(row['material'], DEST, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
         check(row['id'] + ' new owned material instance', isinstance(mi, unreal.MaterialInstanceConstant))
         M.set_material_instance_parent(mi, parent)

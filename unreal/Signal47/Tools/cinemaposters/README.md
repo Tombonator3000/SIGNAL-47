@@ -1,8 +1,8 @@
 # Plaza: to utvendige plakatmotiver
 
-**Status:** Under arbeid, forfattet kilde. **Gjelder:** ART-01, to utvendige TB2-plakatskap, UE 5.8.4/Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Under arbeid, native R2 ikke akseptert. **Gjelder:** ART-01, to utvendige TB2-plakatskap, UE 5.8.4/Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026.
 
-Dette er en avgrenset importoppskrift og runtime-modul. Native import, fersk leser, bygg, produksjonsbilder, fysisk Closed-interaksjon, disk/Continue og pakket kontroll er **UNVERIFIED** inntil root har kjørt dem. Ingen Blender-, Unreal-, import-, render- eller byggjobb er kjørt av kildeforfatteren. Standardinstallasjonen og offentlig nedlasting berøres ikke.
+Dette er en avgrenset importoppskrift og runtime-modul. Editorbygget fra `a79db0ac` bestod på 117 sekunder. Native import R2 gav PASS i rapporten, men prosessen avsluttet med exit 1 og ble ikke akseptert. Ny resume-import R3, fersk leser, produksjonsbilder, fysisk Closed-interaksjon, disk/Continue og pakket kontroll er **UNVERIFIED**. Ingen Blender-, Unreal-, import-, render- eller byggjobb er kjørt av kildeforfatteren. Standardinstallasjonen og offentlig nedlasting berøres ikke.
 
 ## Flater og konverteringsbasis
 
@@ -34,13 +34,13 @@ Begge materialinstansene deler eksisterende `/Game/Web/Base/M_Web_Lit_Opaque`. D
 Root kjører begge kommandoene i **hver sin ferske prosess**, gjennom eksisterende `Scripts/unreal_guard.py require-idle` og egen reservasjon. Eksemplene forutsetter prosjektmappen `unreal/Signal47`, korrekt `UE_ROOT` og nye rapportstier utenfor Content:
 
 ```sh
-S47_CINEMA_MODE=import S47_CINEMA_REPORT=/absolutt/ny/import-r1.json \
+S47_CINEMA_MODE=import S47_CINEMA_REPORT=/absolutt/ny/import-r3.json \
   "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/Signal47.uproject" \
   -run=pythonscript -script="$PWD/Tools/cinemaposters/import_assets.py" \
   -unattended -nullrhi -nosplash -NoSound -NoLiveCoding
 
-S47_CINEMA_MODE=verify S47_CINEMA_REPORT=/absolutt/ny/saved-verify-r1.json \
-  S47_CINEMA_IMPORT_REPORT=/absolutt/ny/import-r1.json \
+S47_CINEMA_MODE=verify S47_CINEMA_REPORT=/absolutt/ny/saved-verify-r3.json \
+  S47_CINEMA_IMPORT_REPORT=/absolutt/ny/import-r3.json \
   "$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd" "$PWD/Signal47.uproject" \
   -run=pythonscript -script="$PWD/Tools/cinemaposters/import_assets.py" \
   -unattended -nullrhi -nosplash -NoSound -NoLiveCoding
@@ -52,7 +52,7 @@ Leseren bruker bare konstante `GetMeshDescription`/`FStaticMeshConstAttributes`-
 
 Standardmodus er `verify`. Den importerer eller lagrer ingen assets. Første import skriver bare fem eide assets og en bindingskandidat i den private rapporten; aktiv metadata forblir `RUNNING`. Første ferske leser krever den komplette PASS-importrapporten fra en annen prosess, identiske native filhasher og identisk måling. Først da publiseres PASS-binding med `fresh_saved_reader=true` og importrapportens SHA256. Senere verifisering av et allerede akseptert, identisk sett trenger ikke importvariabelen og skriver heller ikke bindingen på nytt.
 
-Eksisterende korrekte assets brukes uten settere/save ved gjentatt `import`. En feil, ukjent eller endret eksisterende fil avvises; skriptet sletter den ikke for å få en grønn prøve. Dersom en tidligere akseptert payload har endret hash, avviser `import` aktiveringen før annet arbeid. Råfiler og rapporter beholdes for roots vurdering.
+Eksisterende korrekte assets brukes uten settere/save ved gjentatt `import`. `EditorAssetLibrary.does_asset_exist` kontrollerer hvert eget plane-, Texture2D- og MI-asset før `load_asset`. Bare fraværende assets kan opprettes i importmodus. En eksisterende fil som ikke kan lastes eller har feil type/data, avvises gjennom samme strenge readback; verify-modus avviser også fraværende egne assets. En feil, ukjent eller endret eksisterende fil avvises; skriptet sletter den ikke for å få en grønn prøve. Dersom en tidligere akseptert payload har endret hash, avviser `import` aktiveringen før annet arbeid. Råfiler og rapporter beholdes for roots vurdering.
 
 Aktivering krever `Content/WebData/cinema-posters-binding.json`, versjon 1/PASS, fersklesermarkering og riktig SHA256 av surfaces-kontrakten. Root inkluderer denne i den eksisterende WebData-løypen og cooker eiermappen med fem assets. Ingen konfigurasjon eller cook-hook endres av disse forfatterfilene.
 
@@ -60,7 +60,11 @@ Importen leser **de faktisk lagrede StaticMeshDescription-ene** for kinoens Shel
 
 UV-hjørner, trekantpayload-hasher, totale LOD-tall, bounds, slotnavn, materialstier, faktisk gruppenavn-/seksjonsbinding og originale uasset-hasher skrives i bindingen. Hele den native materialrapporten bindes med en kanonisk SHA256. Den ferske leseren krever identisk måling og alle fem native filhasher. Det beskyttede førinventaret, forrige binding-hash og de målte gruppe-/navne-/seksjonsdataene skrives i privatrapporten **før** krav evalueres; et avslag beholder dermed faktisk diagnostikk.
 
-Første native import R1 ble kontrollert avvist ved shell/desert-sky/LOD2 etter 35 kontroller, før noen av de fem assets ble opprettet. To riktige trekanter og riktige mål var funnet, men første oppskrift antok feilaktig at gruppe-ID/slot/seksjon var samme indeks. Originalkilder, TB2 og Engine var uendret, og bare en inaktiv RUNNING-binding fantes. Den nye navnebaserte leseren erstatter denne indeksantakelsen; det er ingen endring av kravet om to trekanter, kildeplassering, mål eller alle tre LOD-er. Nytt bygg/import/ferskleserutfall er fortsatt UNVERIFIED.
+Første native import R1 ble kontrollert avvist ved shell/desert-sky/LOD2 etter 35 kontroller, før noen av de fem assets ble opprettet. To riktige trekanter og riktige mål var funnet, men første oppskrift antok feilaktig at gruppe-ID/slot/seksjon var samme indeks. Originalkilder, TB2 og Engine var uendret, og bare en inaktiv RUNNING-binding fantes. Den nye navnebaserte leseren erstatter denne indeksantakelsen; kravet om to trekanter, kildeplassering, mål og alle tre LOD-er beholdes.
+
+R2 ble kjørt med det nye editorbygget. `import-r2.json` har PASS etter 178 kontroller, alle fem egne assets ble lagret, og de faktiske materialkartene for Shell/Glass på alle tre LOD-er bestod. UE-commandleten avsluttet likevel med **exit 1**: første `load_asset` på hver fraværende egen fil logget ERROR før opprettingen lyktes. R2 er derfor **ikke akseptert**, og bindingen forblir inaktiv `RUNNING`. R2-rapport, rårapporter og assets bevares.
+
+Neste kjøring er en resume-import R3 med samme editorbinær og ferske rapportstier. Eksistenssjekken over fjerner de forventede fraværsfeilene; alle R2-assets må passere uendret eksisterendeasset-readback. Root krever både PASS-rapport og exit 0, samt byteidentiske egne og beskyttede assets før/etter. Deretter kjøres `saved-verify-r3` i en ny prosess med R3-importrapporten. Først full kandidatlikhet og fem riktige native filhasher kan publisere en PASS-binding. Disse R3-/ferskleserutfallene er fortsatt UNVERIFIED; denne Python-rettingen krever ikke nytt C++-bygg.
 
 Alle eksisterende filer i `Content/TownBuildings`, den delte materialmasteren og EnginePlane hashes før/etter. Bindingen beholder et portabelt inventarfingeravtrykk; rapporten beholder hele førinventaret. JPG-ene kontrolleres mot katalogens kildehash og uendret etter import. Ingen beskyttet original lagres. Kildehash, importfilnavn og native materialreadback er ikke en GPU-pikselavlesning av plakatbildet.
 
