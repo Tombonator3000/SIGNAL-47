@@ -31,6 +31,7 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
+#include "StaticMeshResources.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
 #include "Widgets/Text/STextBlock.h"
@@ -72,18 +73,111 @@ namespace S47RadioWomanConversation
   if(!End||At!=B.Num()||Idat<=0||Width<320||Height<200)return false;FSHAHash Hash;FSHA1::HashBuffer(B.GetData(),B.Num(),Hash.Hash);
   Out=S47J::New();S47J::Set(Out,TEXT("file"),Path);S47J::Set(Out,TEXT("sha1"),Hash.ToString());S47J::Set(Out,TEXT("bytes"),B.Num());S47J::Set(Out,TEXT("width"),double(Width));S47J::Set(Out,TEXT("height"),double(Height));S47J::Set(Out,TEXT("chunks"),Chunks);S47J::Set(Out,TEXT("all_chunk_crc_verified"),true);S47J::Set(Out,TEXT("iend_at_eof"),true);return true;
  }
+ // Only these measured scalar leaves can vary. Every other native/diagnostic leaf stays exact.
+ TArray<FString> LifecyclePaths()
+ {return {TEXT("area_epoch"),TEXT("measured_epoch"),TEXT("town_step_serial"),TEXT("bench_diagnostics.area_epoch"),TEXT("bench_diagnostics.town_step_serial"),TEXT("bench_diagnostics.readback_serial"),TEXT("bench_diagnostics.query_monotonic_seconds")};}
+ FJ StableNative(const FJ& Raw)
+ {
+  auto N=S47J::Clone(Raw);if(!N)return {};
+  for(const TCHAR* K:{TEXT("area_epoch"),TEXT("measured_epoch"),TEXT("town_step_serial")})N->RemoveField(K);
+  auto B=S47J::Obj(N,TEXT("bench_diagnostics"));if(!B)return {};
+  for(const TCHAR* K:{TEXT("area_epoch"),TEXT("town_step_serial"),TEXT("readback_serial"),TEXT("query_monotonic_seconds")})B->RemoveField(K);
+  return N;
+ }
+ bool LifecycleValues(const FJ& N,FJ& Out)
+ {
+  Out=S47J::New();auto B=S47J::Obj(N,TEXT("bench_diagnostics"));if(!N||!B)return false;
+  double E=0,ME=0,T=0,BE=0,MT=0,R=0,Q=0;
+  const auto Integer=[](const FJ& O,const TCHAR* K,double& V){return O&&O->TryGetNumberField(K,V)&&FMath::IsFinite(V)&&V>0&&V<=9007199254740991.&&FMath::FloorToDouble(V)==V;};
+  if(!Integer(N,TEXT("area_epoch"),E)||!Integer(N,TEXT("measured_epoch"),ME)||!Integer(N,TEXT("town_step_serial"),T)
+   ||!Integer(B,TEXT("area_epoch"),BE)||!Integer(B,TEXT("town_step_serial"),MT)||!Integer(B,TEXT("readback_serial"),R)
+   ||!B->TryGetNumberField(TEXT("query_monotonic_seconds"),Q)||!FMath::IsFinite(Q)||Q<=0||Q>FPlatformTime::Seconds()+.001
+   ||E!=ME||E!=BE||MT>T||!S47J::Bool(N,TEXT("active"))||!S47J::Bool(N,TEXT("preparation_complete"))
+   ||!S47J::Bool(N,TEXT("originals_captured"))||S47J::Bool(N,TEXT("pending_live_measurement"))
+   ||!S47J::Bool(N,TEXT("scene_measurement_after_town_step"))||!S47J::Bool(B,TEXT("measurement_valid"))
+   ||!S47J::Bool(B,TEXT("contact_accepted"))||!S47J::Arr(B,TEXT("mismatches")).IsEmpty())return false;
+  S47J::Set(Out,TEXT("area_epoch"),E);S47J::Set(Out,TEXT("measured_epoch"),ME);S47J::Set(Out,TEXT("town_step_serial"),T);
+  S47J::Set(Out,TEXT("measurement_town_step_serial"),MT);S47J::Set(Out,TEXT("readback_serial"),R);S47J::Set(Out,TEXT("measurement_monotonic_seconds"),Q);return true;
+ }
+ bool NativeLifecycle(const FJ& N,const FJ& Previous,const FJ& BeforeContinue,double ContinueAt,bool RequireNew,FJ& Out)
+ {
+  const bool Values=LifecycleValues(N,Out);bool Good=Values;FJ Old,Ref;
+  if(Previous)
+  {
+   Good&=LifecycleValues(Previous,Old);
+   if(Good)
+   {
+    const double E=S47J::Num(Out,TEXT("area_epoch")),T=S47J::Num(Out,TEXT("town_step_serial")),R=S47J::Num(Out,TEXT("readback_serial"));
+    const double PE=S47J::Num(Old,TEXT("area_epoch")),PT=S47J::Num(Old,TEXT("town_step_serial")),PR=S47J::Num(Old,TEXT("readback_serial"));
+    Good&=E>=PE&&T>=PT&&R>=PR;
+    if(R==PR)Good&=E==PE&&S47J::Num(Out,TEXT("measurement_town_step_serial"))==S47J::Num(Old,TEXT("measurement_town_step_serial"))&&S47J::Num(Out,TEXT("measurement_monotonic_seconds"))==S47J::Num(Old,TEXT("measurement_monotonic_seconds"));
+    else Good&=S47J::Num(Out,TEXT("measurement_town_step_serial"))>PT&&S47J::Num(Out,TEXT("measurement_monotonic_seconds"))>S47J::Num(Old,TEXT("measurement_monotonic_seconds"));
+   }
+  }
+  bool New=false;
+  if(RequireNew)
+  {
+   New=LifecycleValues(BeforeContinue,Ref)&&Values&&ContinueAt>0
+    &&S47J::Num(Out,TEXT("area_epoch"))>S47J::Num(Ref,TEXT("area_epoch"))
+    &&S47J::Num(Out,TEXT("readback_serial"))>S47J::Num(Ref,TEXT("readback_serial"))
+    &&S47J::Num(Out,TEXT("measurement_town_step_serial"))>S47J::Num(Ref,TEXT("town_step_serial"))
+    &&S47J::Num(Out,TEXT("measurement_monotonic_seconds"))>=ContinueAt
+    &&S47J::Num(Out,TEXT("measurement_monotonic_seconds"))>S47J::Num(Ref,TEXT("measurement_monotonic_seconds"));
+   Good&=New;
+  }
+  S47J::Set(Out,TEXT("observed_monotonic_seconds"),FPlatformTime::Seconds());S47J::Set(Out,TEXT("previous_snapshot_present"),bool(Previous));
+  S47J::Set(Out,TEXT("new_measurement_after_continue_required"),RequireNew);S47J::Set(Out,TEXT("new_measurement_after_continue"),New);S47J::Set(Out,TEXT("pass"),Good);return Good;
+ }
+ FJ FullMeshFingerprint(UStaticMesh* Mesh)
+ {
+  auto O=S47J::New();S47J::Set(O,TEXT("complete"),false);
+  if(!Mesh||!Mesh->bAllowCPUAccess||!Mesh->GetRenderData()||!Mesh->GetRenderData()->IsInitialized())return O;
+  const auto* Data=Mesh->GetRenderData();TArray<TSharedPtr<FJsonValue>> LODs;
+  for(int32 I=0;I<Data->LODResources.Num();++I)
+  {
+   const auto& L=Data->LODResources[I];const auto& B=L.VertexBuffers;const auto& T=B.StaticMeshVertexBuffer;
+   if(!B.PositionVertexBuffer.GetNumVertices()||B.PositionVertexBuffer.GetNumVertices()!=T.GetNumVertices()||!T.GetNumTexCoords()
+    ||!B.PositionVertexBuffer.GetVertexData()||!T.GetTangentData()||!T.GetTexCoordData()
+    ||(B.ColorVertexBuffer.GetNumVertices()&&!B.ColorVertexBuffer.GetVertexData())||!L.IndexBuffer.GetAllowCPUAccess()
+    ||L.IndexBuffer.GetNumIndices()<=0||L.IndexBuffer.GetIndexDataSize()!=L.IndexBuffer.GetNumIndices()*(L.IndexBuffer.Is32Bit()?4:2))return O;
+   FSHA1 H;H.Update(static_cast<const uint8*>(B.PositionVertexBuffer.GetVertexData()),B.PositionVertexBuffer.GetNumVertices()*B.PositionVertexBuffer.GetStride());
+   H.Update(static_cast<const uint8*>(T.GetTangentData()),T.GetTangentSize());H.Update(static_cast<const uint8*>(T.GetTexCoordData()),T.GetTexCoordSize());
+   if(B.ColorVertexBuffer.GetNumVertices())H.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()),B.ColorVertexBuffer.GetNumVertices()*B.ColorVertexBuffer.GetStride());
+   H.Final();FSHAHash Packed;H.GetHash(Packed.Hash);TArray<uint32> Indices;L.IndexBuffer.GetCopy(Indices);
+   if(Indices.Num()!=L.IndexBuffer.GetNumIndices()||Indices.Num()!=L.GetNumTriangles()*3)return O;
+   for(uint32 Index:Indices)if(Index>=B.PositionVertexBuffer.GetNumVertices())return O;
+   FSHAHash IndexHash;FSHA1::HashBuffer(Indices.GetData(),Indices.Num()*sizeof(uint32),IndexHash.Hash);
+   auto Row=S47J::New();S47J::Set(Row,TEXT("lod"),I);S47J::Set(Row,TEXT("vertices"),double(L.GetNumVertices()));S47J::Set(Row,TEXT("triangles"),L.GetNumTriangles());S47J::Set(Row,TEXT("indices"),Indices.Num());
+   S47J::Set(Row,TEXT("packed_vertex_sha1"),Packed.ToString().ToLower());S47J::Set(Row,TEXT("normalized_uint32_index_sha1"),IndexHash.ToString().ToLower());
+   S47J::Set(Row,TEXT("uv_channels"),double(T.GetNumTexCoords()));S47J::Set(Row,TEXT("full_precision_uvs"),T.GetUseFullPrecisionUVs());S47J::Set(Row,TEXT("high_precision_tangents"),T.GetUseHighPrecisionTangentBasis());
+   S47J::Set(Row,TEXT("position_stride"),double(B.PositionVertexBuffer.GetStride()));S47J::Set(Row,TEXT("color_vertices"),double(B.ColorVertexBuffer.GetNumVertices()));S47J::Set(Row,TEXT("color_stride"),double(B.ColorVertexBuffer.GetStride()));
+   TArray<TSharedPtr<FJsonValue>> Sections;
+   for(const auto& S:L.Sections)
+   {
+    if(S.MaterialIndex<0||S.MaterialIndex>=Mesh->GetStaticMaterials().Num()||uint64(S.FirstIndex)+uint64(S.NumTriangles)*3>uint64(Indices.Num())||!S.NumTriangles||S.MinVertexIndex>S.MaxVertexIndex||S.MaxVertexIndex>=B.PositionVertexBuffer.GetNumVertices())return O;
+    auto P=S47J::New();S47J::Set(P,TEXT("material_index"),S.MaterialIndex);S47J::Set(P,TEXT("triangles"),double(S.NumTriangles));S47J::Set(P,TEXT("first_index"),double(S.FirstIndex));S47J::Set(P,TEXT("min_vertex_index"),double(S.MinVertexIndex));S47J::Set(P,TEXT("max_vertex_index"),double(S.MaxVertexIndex));
+    S47J::Set(P,TEXT("collision"),S.bEnableCollision);S47J::Set(P,TEXT("cast_shadow"),S.bCastShadow);S47J::Set(P,TEXT("visible_in_ray_tracing"),S.bVisibleInRayTracing);S47J::Set(P,TEXT("affect_distance_field_lighting"),S.bAffectDistanceFieldLighting);S47J::Set(P,TEXT("force_opaque"),S.bForceOpaque);Sections.Add(MakeShared<FJsonValueObject>(P));
+   }
+   Row->SetArrayField(TEXT("sections"),Sections);LODs.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  TArray<FString> Materials;for(const auto& Slot:Mesh->GetStaticMaterials()){if(!Slot.MaterialInterface)return O;Materials.Add(Slot.MaterialInterface->GetPathName());}
+  if(LODs.IsEmpty()||Materials.IsEmpty())return O;O->SetArrayField(TEXT("lods"),LODs);S47J::Set(O,TEXT("native_material_paths"),Materials);
+  Vec(O,TEXT("bounds_min_cm"),Mesh->GetBoundingBox().Min);Vec(O,TEXT("bounds_max_cm"),Mesh->GetBoundingBox().Max);S47J::Set(O,TEXT("cpu_access"),bool(Mesh->bAllowCPUAccess));S47J::Set(O,TEXT("ray_tracing"),bool(Mesh->bSupportRayTracing));S47J::Set(O,TEXT("nanite"),bool(Mesh->GetNaniteSettings().bEnabled));S47J::Set(O,TEXT("complete"),true);return O;
+ }
+ FJ ComponentTransform(const FTransform& T)
+ {auto O=S47J::New();Vec(O,TEXT("location_ue_cm"),T.GetLocation());Vec(O,TEXT("scale"),T.GetScale3D());const FQuat Q=T.GetRotation();S47J::Set(O,TEXT("rotation_xyzw"),TArray<double>{Q.X,Q.Y,Q.Z,Q.W});return O;}
  struct FBinding
  {
   int32 Node=-1,Parent=-1,Geo=-1;TArray<int32> Mats;TWeakObjectPtr<USceneComponent> Component;TWeakObjectPtr<UStaticMesh> Mesh;
-  TArray<TWeakObjectPtr<UMaterialInterface>> Materials;FTransform Transform=FTransform::Identity;ECollisionEnabled::Type Collision=ECollisionEnabled::NoCollision;bool Hidden=false;
+  TArray<TWeakObjectPtr<UMaterialInterface>> Materials;FTransform Transform=FTransform::Identity;ECollisionEnabled::Type Collision=ECollisionEnabled::NoCollision;bool Hidden=false;FJ Fingerprint;FString MeshPath;uint32 MeshId=0;
  };
  struct FControl:TSharedFromThis<FControl>
  {
   TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root,PhotoName,SaveId;TWeakPtr<SWidget> OwnedModal;
   bool Done=false,Started=false,Requested=false;int32 Stage=0,Checks=0,NativeNode=-1,Waypoint=0,WalkSamples=0,Uses=0;
-  double Began=FPlatformTime::Seconds(),Since=Began,Ready=0,Last=Began,ProgressAt=Began,PhotoAt=0,WalkMetres=0,SavedYaw=0,SavedPitch=0,SavedClock=0,SavedFloor=0,RestoredGt=0;
+  double Began=FPlatformTime::Seconds(),Since=Began,Ready=0,Last=Began,ProgressAt=Began,PhotoAt=0,WalkMetres=0,SavedYaw=0,SavedPitch=0,SavedClock=0,SavedFloor=0,RestoredGt=0,ContinueAt=0;
   FVector LastFoot=FVector::ZeroVector,ProgressFoot=FVector::ZeroVector,SavedFoot=FVector::ZeroVector;TArray<FVector> Path;
-  TArray<FBinding> Bindings;TMap<FString,bool> Doors;FJ NativeBefore,QuestBefore,BeforeSave,PhotoMeta;
+  TArray<FBinding> Bindings;TMap<FString,bool> Doors;FJ NativeBefore,PreviousNative,BeforeContinueNative,PreFixtureNative,QuestBefore,BeforeSave,PhotoMeta;
   TArray<TSharedPtr<FJsonValue>> Executed,Events,Snapshots,Photos,Rays,Route;
   US47Main* Main()const{return Web.IsValid()?US47Main::Get(Web.Get()):nullptr;}
   FVector Target()const{return Web->Obj(TEXT("world.town.proxies.woman")).WorldPosition();}
@@ -101,7 +195,7 @@ namespace S47RadioWomanConversation
    if(Requested&&FScreenshotRequest::IsScreenshotRequested()&&FScreenshotRequest::GetFilename()==Root/(PhotoName+TEXT(".png")))FScreenshotRequest::Reset();
    auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("seconds"),FPlatformTime::Seconds()-Began);
    S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("walk_samples"),WalkSamples);S47J::Set(O,TEXT("ordinary_OnUse_calls"),Uses);S47J::Set(O,TEXT("last_modal_text"),FailedText);S47J::Set(O,TEXT("pending_capture"),PhotoMeta);
-   S47J::Set(O,TEXT("last_native_readback"),Web.IsValid()?Web->RadioWomanReadback():FJ());if(M&&M->Player){Vec(O,TEXT("final_player_three_m"),M->Player->Pos);S47J::Set(O,TEXT("final_clock_seconds"),M->Story?M->Story->Clock():0.);}
+   S47J::Set(O,TEXT("native_lifecycle_schema"),1);S47J::Set(O,TEXT("native_volatile_scalar_paths"),LifecyclePaths());S47J::Set(O,TEXT("last_native_readback"),Web.IsValid()?Web->RadioWomanReadback():FJ());if(M&&M->Player){Vec(O,TEXT("final_player_three_m"),M->Player->Pos);S47J::Set(O,TEXT("final_clock_seconds"),M->Story?M->Story->Clock():0.);}
    O->SetArrayField(TEXT("executed_checks"),Executed);O->SetArrayField(TEXT("events"),Events);O->SetArrayField(TEXT("snapshots"),Snapshots);O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("interaction_rays"),Rays);O->SetArrayField(TEXT("physical_route_samples"),Route);
    S47J::Set(O,TEXT("scope"),TEXT("One explicit isolated chapter2 exterior foot start and 18:30 clock fixture. Ordinary continuous Walker, actual camera/focus and Player.OnUse open the original woman's modal. Caliche.Choice(radio) is an explicit API choice, verified through actual Slate lines and met/asked flags. Full unchanged case0 snapshot copied to isolated case1, fresh reader, ordinary title/Continue and a second actual OnUse prove consumed-topic persistence."));
    S47J::Set(O,TEXT("limits"),TEXT("No car, commute, human controller, listening, FPS or appearance acceptance. Existing separate commute/LOD/sole/schedule contract retains its own scope. No native pose modification, new quest, full matrix, installation or release. A closed dialogue is saved; an open modal is not claimed persistent."));
@@ -113,17 +207,25 @@ namespace S47RadioWomanConversation
   {
    ++Checks;auto O=S47J::New();S47J::Set(O,TEXT("pass"),Pass);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("detail"),Why);S47J::Set(O,TEXT("at_seconds"),FPlatformTime::Seconds()-Began);Executed.Add(MakeShared<FJsonValueObject>(O));if(!Pass){Result(false,Why);return false;}return true;
   }
+  bool PreparedState(const FJ& Native,FJ& Receipt)
+  {
+   Receipt=S47J::New();const bool Active=S47J::Bool(Native,TEXT("active"));bool Good=Native&&S47J::Bool(Native,TEXT("preparation_complete"))&&S47J::Bool(Native,TEXT("originals_captured"));
+   TArray<FString> Lines;FJ Life;const bool Audit=Active?Web->AuditRadioWoman(Lines):false;
+   if(Active)Good&=Audit&&LifecycleValues(Native,Life);
+   else Good&=S47J::Bool(Native,TEXT("fallback_original_bindings_intact"))&&S47J::Bool(Native,TEXT("pending_live_measurement"))&&!S47J::Bool(Native,TEXT("scene_measurement_after_town_step"));
+   S47J::Set(Receipt,TEXT("observed_monotonic_seconds"),FPlatformTime::Seconds());S47J::Set(Receipt,TEXT("raw_native_readback"),Native);S47J::Set(Receipt,TEXT("kind"),Active?TEXT("ALREADY_MEASURED_VALID_ADOPTION"):TEXT("PREPARED_FULL_ORIGINAL_FALLBACK"));S47J::Set(Receipt,TEXT("native_audit_pass_if_active"),Audit);S47J::Set(Receipt,TEXT("native_audit_lines"),Lines);S47J::Set(Receipt,TEXT("pass"),Good);return Good;
+  }
   void Next(int32 Value,const FString& Why)
   {Stage=Value;Since=FPlatformTime::Seconds();auto O=S47J::New();S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("detail"),Why);Events.Add(MakeShared<FJsonValueObject>(O));UE_LOG(LogS47RadioWomanConversation,Display,TEXT("S47 RadioWomanConversation stage %d: %s"),Stage,*Why);}
   bool CaptureBindings()
   {
    for(int32 I=0;I<Web->PartCount();++I)if(const auto* Node=Web->Node(I))if(Node->Name==TEXT("mannequin:radio-woman")){if(!Check(NativeNode<0,TEXT("one unique adopted native mannequin")))return false;NativeNode=I;}
-   if(!Check(NativeNode>=0&&Web->Handle(TEXT("world.town.woman"))==1480&&Web->Handle(TEXT("world.town.proxies.woman"))==1544,TEXT("actual mannequin and unchanged woman1480/proxy1544 before fixture")))return false;
+   if(!Check(NativeNode>=0&&Web->Handle(TEXT("world.town.woman"))==1480&&Web->Handle(TEXT("world.town.proxies.woman"))==1544,TEXT("actual mannequin and unchanged woman1480/proxy1544 after real Enter and TownStep")))return false;
    for(int32 Index:{1480,1484,1485,1544,1545,NativeNode})
    {
     const auto* Node=Web->Node(Index);auto* Component=Node?Node->Comp.Get():nullptr;if(!Check(Node&&Component,TEXT("actual native/person/original housing/panel/proxy/leaf component exists")))return false;
     FBinding Row;Row.Node=Index;Row.Parent=Node->Parent;Row.Geo=Node->Geo;Row.Mats=Node->Mats;Row.Component=Component;Row.Transform=Component->GetComponentTransform();Row.Hidden=Component->bHiddenInGame;
-    if(auto* Static=Cast<UStaticMeshComponent>(Component)){Row.Mesh=Static->GetStaticMesh().Get();Row.Collision=Static->GetCollisionEnabled();for(int32 Slot=0;Slot<Static->GetNumMaterials();++Slot)Row.Materials.Add(Static->GetMaterial(Slot));}
+    if(auto* Static=Cast<UStaticMeshComponent>(Component)){Row.Mesh=Static->GetStaticMesh().Get();Row.Collision=Static->GetCollisionEnabled();for(int32 Slot=0;Slot<Static->GetNumMaterials();++Slot)Row.Materials.Add(Static->GetMaterial(Slot));Row.MeshPath=GetPathNameSafe(Row.Mesh.Get());Row.MeshId=Row.Mesh.IsValid()?Row.Mesh->GetUniqueID():0;if(Index==1484){Row.Fingerprint=FullMeshFingerprint(Row.Mesh.Get());if(!Check(Row.Mesh.IsValid()&&Row.Mesh->HasAnyFlags(RF_Transient)&&S47J::Bool(Row.Fingerprint,TEXT("complete")),TEXT("capture actual transient housing full vertex/index/section/material fingerprint")))return false;}}
     Bindings.Add(Row);
    }
    return true;
@@ -131,7 +233,7 @@ namespace S47RadioWomanConversation
   bool Snapshot(const FString& Name)
   {
    auto* M=Main();auto O=S47J::New();S47J::Set(O,TEXT("name"),Name);S47J::Set(O,TEXT("clock_seconds"),M->Story->Clock());S47J::Set(O,TEXT("area"),M->World->Area);Vec(O,TEXT("player_three_m"),M->Player->Pos);
-   const auto Native=Web->RadioWomanReadback();S47J::Set(O,TEXT("native_readback"),Native);TArray<FString> Lines;const bool Audit=Web->AuditRadioWoman(Lines);S47J::Set(O,TEXT("native_audit_pass"),Audit);S47J::Set(O,TEXT("native_audit_lines"),Lines);
+   const auto Native=Web->RadioWomanReadback();S47J::Set(O,TEXT("native_readback"),Native);FJ Life;const bool Lifecycle=NativeLifecycle(Native,PreviousNative,BeforeContinueNative,ContinueAt,Stage>=10,Life);S47J::Set(O,TEXT("native_lifecycle"),Life);TArray<FString> Lines;const bool Audit=Web->AuditRadioWoman(Lines);S47J::Set(O,TEXT("native_audit_pass"),Audit);S47J::Set(O,TEXT("native_audit_lines"),Lines);
    const auto* Interaction=M->Inter->Get(TEXT("town:woman"));bool Intact=Bindings.Num()==6&&Interaction&&Interaction->Object.W==Web.Get()&&Interaction->Object.I==1544&&FMath::Abs(Interaction->Range-2.6)<1e-9&&!Interaction->bLook&&bool(Interaction->Use);
    TArray<TSharedPtr<FJsonValue>> Rows;
    for(const auto& Saved:Bindings)
@@ -141,16 +243,22 @@ namespace S47RadioWomanConversation
     S47J::Set(Row,TEXT("node"),Saved.Node);S47J::Set(Row,TEXT("component"),GetPathNameSafe(Component));S47J::Set(Row,TEXT("actual_component_object_id"),double(Component?Component->GetUniqueID():0));
     if(auto* Static=Cast<UStaticMeshComponent>(Component))
     {
-     Good&=Static->GetStaticMesh()==Saved.Mesh.Get()&&Static->GetNumMaterials()==Saved.Materials.Num()&&Static->GetCollisionEnabled()==Saved.Collision;TArray<FString> Materials;
+     const bool SameMesh=Static->GetStaticMesh()==Saved.Mesh.Get();bool MeshGood=SameMesh;auto* Mesh=Static->GetStaticMesh().Get();
+     S47J::Set(Row,TEXT("mesh_identity_unchanged"),SameMesh);S47J::Set(Row,TEXT("actual_mesh_object_id"),double(Mesh?Mesh->GetUniqueID():0));S47J::Set(Row,TEXT("captured_mesh"),Saved.MeshPath);S47J::Set(Row,TEXT("captured_mesh_object_id"),double(Saved.MeshId));S47J::Set(Row,TEXT("actual_mesh_transient"),Mesh&&Mesh->HasAnyFlags(RF_Transient));
+     if(Saved.Node==1484){auto Fingerprint=FullMeshFingerprint(Mesh);const bool Match=S47J::Bool(Fingerprint,TEXT("complete"))&&Same(Saved.Fingerprint,Fingerprint);MeshGood=Mesh&&Mesh->HasAnyFlags(RF_Transient)&&Match;S47J::Set(Row,TEXT("actual_full_mesh_fingerprint"),Fingerprint);S47J::Set(Row,TEXT("captured_full_mesh_fingerprint"),Saved.Fingerprint);S47J::Set(Row,TEXT("full_mesh_fingerprint_matches_capture"),Match);}
+     Good&=MeshGood&&Static->GetNumMaterials()==Saved.Materials.Num()&&Static->GetCollisionEnabled()==Saved.Collision;S47J::Set(Row,TEXT("actual_collision_enabled"),int32(Static->GetCollisionEnabled()));TArray<FString> Materials;
      for(int32 Slot=0;Slot<Static->GetNumMaterials();++Slot){Good&=Saved.Materials.IsValidIndex(Slot)&&Static->GetMaterial(Slot)==Saved.Materials[Slot].Get();Materials.Add(GetPathNameSafe(Static->GetMaterial(Slot)));}
      S47J::Set(Row,TEXT("actual_mesh"),GetPathNameSafe(Static->GetStaticMesh().Get()));S47J::Set(Row,TEXT("actual_materials"),Materials);
     }
+    S47J::Set(Row,TEXT("actual_parent"),Node?Node->Parent:INDEX_NONE);S47J::Set(Row,TEXT("actual_geo"),Node?Node->Geo:INDEX_NONE);TArray<double> Mats;if(Node)for(int32 Mat:Node->Mats)Mats.Add(Mat);S47J::Set(Row,TEXT("actual_mats"),Mats);if(Component){S47J::Set(Row,TEXT("actual_component_transform"),ComponentTransform(Component->GetComponentTransform()));S47J::Set(Row,TEXT("actual_hidden_in_game"),bool(Component->bHiddenInGame));S47J::Set(Row,TEXT("actual_registered"),Component->IsRegistered());}
     S47J::Set(Row,TEXT("bindings_unchanged"),Good);Intact&=Good;Rows.Add(MakeShared<FJsonValueObject>(Row));
    }
    O->SetArrayField(TEXT("actual_protected_bindings"),Rows);S47J::Set(O,TEXT("actual_interaction_range_m"),Interaction?Interaction->Range:-1.);S47J::Set(O,TEXT("actual_modal_text"),ModalText());Snapshots.Add(MakeShared<FJsonValueObject>(O));
    if(!Write(Root/(Name+TEXT(".json")),O)){Result(false,TEXT("native/schedule/proxy snapshot write failed"));return false;}
    if(!Check(Audit&&Native&&S47J::Bool(Native,TEXT("active"))&&S47J::Bool(Native,TEXT("visible"))&&S47J::Bool(Native,TEXT("static_only"))&&S47J::Bool(Native,TEXT("no_collision"))&&S47J::Int(Native,TEXT("native_node"))==NativeNode&&S47J::Int(Native,TEXT("radio_housing_triangles"))==12&&S47J::Int(Native,TEXT("radio_panel_triangles"))==12,TEXT("actual accepted static mannequin and preserved radio audit: ")+Name))return false;
-   if(NativeBefore&&!Check(Same(NativeBefore,Native),TEXT("exact same native asset/geometry/seat/bounds/radio readback through conversation and full Continue")))return false;
+   if(!Check(Lifecycle,TEXT("actual monotone Enter epoch and measured after-TownStep lifecycle: ")+Name))return false;
+   if(NativeBefore&&!Check(Same(StableNative(NativeBefore),StableNative(Native)),TEXT("every stable native/diagnostic geometry/seat/bounds/radio field unchanged; only seven explicit scalar leaves vary")))return false;
+   PreviousNative=S47J::Clone(Native);
    return Check(Intact&&M->TownLayer->Town->bWomanIn&&Web->ObjAt(1480).Shown()&&Web->ObjAt(1544).Shown()&&M->Inter->LabelOf(TEXT("town:woman"))==TEXT("Woman on the bench"),TEXT("original native/person/radio/panel/proxy bindings and real TownStep presence remain intact: ")+Name);
   }
   bool Floor()
@@ -218,14 +326,17 @@ namespace S47RadioWomanConversation
    {
     if(M->Flow->bStarting||M->World->bBusy){Ready=0;return;}if(Ready==0){Ready=Now;return;}if(Now-Ready<2)return;
     if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->Flow->Saves.List().IsEmpty()&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()))&&M->Story->ChapterKey==TEXT("ch2")&&!M->Story->bEveningTimeline&&!M->Evening->Opening()&&!M->World->bDriving&&!M->UI->Modal()&&!M->Story->IsCinematic()&&!M->TownSeen.Contains(TEXT("met:radio_woman"))&&!M->TownSeen.Contains(TEXT("ask:radio_woman:radio")),TEXT("fresh isolated chapter2/case0 before sole declared foot/clock fixture, no old conversation or commute")))return;
-    if(!CaptureBindings())return;QuestBefore=Quest(M->Flow->GameState());if(!Check(QuestBefore.IsValid(),TEXT("actual complete chapter2 quest case before fixture")))return;
+    PreFixtureNative=Web->RadioWomanReadback();FJ Prepared;if(!Check(PreparedState(PreFixtureNative,Prepared),TEXT("actual preparation and originals: full original fallback or already measured valid adoption before fixture")))return;
+    if(!Write(Root/TEXT("pre-fixture-native.json"),Prepared)){Result(false,TEXT("pre-fixture native provenance write failed"));return;}QuestBefore=Quest(M->Flow->GameState());if(!Check(QuestBefore.IsValid(),TEXT("actual complete chapter2 quest case before fixture")))return;
     auto Fixture=S47J::New();S47J::Set(Fixture,TEXT("kind"),TEXT("EXPLICIT FOOT+CLOCK FIXTURE ONLY; no car, egress, natural arrival or earlier chronology acceptance"));Vec(Fixture,TEXT("foot_three_x_y_z"),FVector(7991,0,2138));S47J::Set(Fixture,TEXT("clock_before"),M->Story->Clock());S47J::Set(Fixture,TEXT("fixture_clock_seconds"),-19800.);
     if(!Write(Root/TEXT("explicit-foot-clock-fixture.json"),Fixture)){Result(false,TEXT("fixture provenance write failed"));return;}Started=true;M->World->Enter(TEXT("diner"));M->Player->Place(7991,2138,0);M->Story->SetClock(-19800);Next(1,TEXT("one explicit exterior foot start and 18:30 clock; ordinary TownStep supplies presence"));return;
    }
    if(M->Flow->bStarting||M->World->bBusy)return;if(Stage!=9&&M->Mode!=US47Main::EMode::Play){Result(false,TEXT("unexpected mode outside title/Continue stage"));return;}
    if(Stage==1)
    {
-    if(Now-Since<.8)return;if(!Floor()||!Snapshot(TEXT("arrival-before-conversation")))return;NativeBefore=S47J::Clone(Web->RadioWomanReadback());
+    if(Now-Since<.8)return;const auto ActualNative=Web->RadioWomanReadback();FJ ArrivedLife;if(!LifecycleValues(ActualNative,ArrivedLife)||!S47J::Bool(ActualNative,TEXT("visible")))return;
+    if(!Check(S47J::Num(ActualNative,TEXT("area_epoch"))>S47J::Num(PreFixtureNative,TEXT("area_epoch"))&&S47J::Num(ActualNative,TEXT("town_step_serial"))>S47J::Num(PreFixtureNative,TEXT("town_step_serial")),TEXT("fixture used real Enter and a newer ordinary TownStep, never test adoption")))return;
+    if(!CaptureBindings()||!Floor()||!Snapshot(TEXT("arrival-before-conversation")))return;NativeBefore=S47J::Clone(Web->RadioWomanReadback());
     const FVector Point=Target();Path={FVector(Point.X+2.05,0,2138),FVector(Point.X+2.05,0,Point.Z)};LastFoot=ProgressFoot=M->Player->Pos;Last=ProgressAt=Now;Waypoint=0;
     for(const auto& Position:Path)if(!Check(M->Player->Walkable(Position.X,Position.Z),TEXT("declared bench waypoints lie in original legal exterior walk area")))return;Next(2,TEXT("ordinary continuous Walker approach to existing woman proxy"));return;
    }
@@ -247,6 +358,8 @@ namespace S47RadioWomanConversation
    if(Stage==8)
    {
     if(Now-Since<.8)return;if(!Check(!M->UI->Modal()&&M->Flow->GameSaveBlock().IsEmpty()&&Same(QuestBefore,Quest(M->Flow->GameState())),TEXT("conversation changed no chapter/board quest and finished at legal closed-dialogue save boundary")))return;
+    BeforeContinueNative=Web->RadioWomanReadback();FJ BeforeLife;if(!Check(NativeLifecycle(BeforeContinueNative,PreviousNative,{},0,false,BeforeLife)&&Same(StableNative(NativeBefore),StableNative(BeforeContinueNative)),TEXT("actual valid stable adoption immediately before full title/Continue")))return;
+    auto BeforeNativeReceipt=S47J::New();S47J::Set(BeforeNativeReceipt,TEXT("raw_native_readback"),BeforeContinueNative);S47J::Set(BeforeNativeReceipt,TEXT("native_lifecycle"),BeforeLife);if(!Write(Root/TEXT("before-continue-native.json"),BeforeNativeReceipt)){Result(false,TEXT("pre-title native lifecycle provenance write failed"));return;}PreviousNative=S47J::Clone(BeforeContinueNative);
     BeforeSave=M->Flow->GameState();SavedFoot=M->Player->Pos;SavedFloor=M->Player->FloorY;SavedYaw=M->Player->Yaw;SavedPitch=M->Player->Pitch;SavedClock=M->Story->Clock();Doors=Web->DoorStates();
     if(!Check(S47J::Str(BeforeSave,TEXT("checkpoint"))==TEXT("chapter2"),TEXT("actual chapter2 checkpoint retained")))return;
     FS47SaveStore Writer(Root/TEXT("isolated-case1"));Writer.Init();FS47SaveCard Card;Card.Chapter=M->Story->ChapterTitle();Card.Place=M->Flow->PlaceName();Card.Clock=M->Story->ClockText(false);Card.Playtime=M->Playtime;FString Error;
@@ -257,7 +370,10 @@ namespace S47RadioWomanConversation
    if(Stage==9)
    {
     if(Now-Since<.6)return;const auto Meta=M->Flow->Saves.ContinueSave();if(!Check(M->Mode==US47Main::EMode::Title&&Meta&&Meta->Id==SaveId,TEXT("ordinary title resolves exact isolated disk save")))return;
-    if(!Check(M->Flow->OpenTestView(TEXT("continue")),TEXT("ordinary Continue action accepted")))return;RestoredGt=M->Story->Gt();
+    ContinueAt=FPlatformTime::Seconds();if(!Check(M->Flow->OpenTestView(TEXT("continue")),TEXT("ordinary Continue action accepted")))return;RestoredGt=M->Story->Gt();
+    const auto ImmediateNative=Web->RadioWomanReadback();FJ RestoredPrepared;const bool Prepared=PreparedState(ImmediateNative,RestoredPrepared);FJ ImmediateLife=S47J::New();const bool ActiveNow=S47J::Bool(ImmediateNative,TEXT("active"));const bool FreshIfActive=!ActiveNow||NativeLifecycle(ImmediateNative,BeforeContinueNative,BeforeContinueNative,ContinueAt,true,ImmediateLife);
+    auto Transition=S47J::New();S47J::Set(Transition,TEXT("action_start_monotonic_seconds"),ContinueAt);S47J::Set(Transition,TEXT("raw_before_continue"),BeforeContinueNative);S47J::Set(Transition,TEXT("immediate_prepared_state"),RestoredPrepared);S47J::Set(Transition,TEXT("immediate_lifecycle_if_active"),ImmediateLife);S47J::Set(Transition,TEXT("pass"),Prepared&&FreshIfActive&&S47J::Num(ImmediateNative,TEXT("area_epoch"))>S47J::Num(BeforeContinueNative,TEXT("area_epoch")));
+    if(!Write(Root/TEXT("continue-native-transition.json"),Transition)){Result(false,TEXT("synchronous Continue native transition provenance write failed"));return;}if(!Check(S47J::Bool(Transition,TEXT("pass")),TEXT("real Continue invalidated old epoch and retained full fallback or already fresh ordinary TownStep adoption")))return;
     if(!Check(M->Mode==US47Main::EMode::Play&&!M->Flow->bStarting&&FMath::Abs(M->Story->Clock()-SavedClock)<.001,TEXT("exact saved native clock immediately after full synchronous Continue before next frame")))return;Next(10,TEXT("complete OpenSave/StartGame, never direct subsystem restore"));return;
    }
    if(Stage==10)
@@ -284,6 +400,7 @@ namespace S47RadioWomanConversation
    {
     if(!Check(Photos.Num()==4&&Uses==2&&M->TownSeen.Contains(TEXT("met:radio_woman"))&&M->TownSeen.Contains(TEXT("ask:radio_woman:radio")),TEXT("all physical/modal/topic/Continue phases and actual conversation progress completed")))return;
     for(const auto& Value:Photos){const auto Old=S47J::Obj(Value->AsObject(),TEXT("png"));FJ Fresh;if(!Check(Png(S47J::Str(Old,TEXT("file")),Fresh)&&Same(Old,Fresh),TEXT("final unchanged viewport PNG signature/chunk CRC/IEND/SHA receipt")))return;}
+    if(!Snapshot(TEXT("final-closed-save")))return;
     Result(true,TEXT("physical chapter2 bench approach and actual HUD OnUse, original radio dialogue/topic progression, preserved static native/radio/proxy and full isolated disk/title/Continue"));
    }
   }
