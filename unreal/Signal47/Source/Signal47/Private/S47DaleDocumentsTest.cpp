@@ -20,8 +20,30 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
+#include "Widgets/Text/STextBlock.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47DaleDocs, Log, All);
+
+namespace
+{
+ struct FDeskPaper { const TCHAR* Use; const TCHAR* Doc; const TCHAR* Flag; double X, Z; };
+ // All approaches remain in the real room, south of deskFoot z9.31-radius.27
+ // and west of chairFoot x.94-radius.27. No placement follows the entry fixture.
+ const FDeskPaper DeskPapers[] = {
+  {TEXT("office:desk"), TEXT("EV_DALE_INDEX"), TEXT("deskSeen"), .35, 8.85},
+  {TEXT("office:index"), TEXT("EV_DALE_INDEX"), TEXT("indexRead"), .02, 8.96},
+  {TEXT("office:clippings"), TEXT("EV_DALE_CLIPPINGS"), TEXT("clippingsRead"), .60, 9.01},
+  {TEXT("office:note"), TEXT("EV_DALE_NOTE"), TEXT("noteRead"), .28, 8.90},
+  {TEXT("office:contact"), TEXT("EV_DALE_CONTACT"), TEXT("contactRead"), .62, 8.92},
+  {TEXT("office:folder"), TEXT("EV_DALE_INDEX"), TEXT("fieldSheet"), .08, 8.98}
+ };
+ void ModalText(const TSharedRef<SWidget>& Widget, TArray<FString>& Text)
+ {
+  if (Widget->GetTypeAsString() == TEXT("STextBlock")) Text.Add(StaticCastSharedRef<STextBlock>(Widget)->GetText().ToString());
+  FChildren* Children = Widget->GetChildren();
+  for (int32 Index = 0; Children && Index < Children->Num(); ++Index) ModalText(Children->GetChildAt(Index), Text);
+ }
+}
 
 FS47DaleDocumentsTest::FS47DaleDocumentsTest(US47Main* InM) : M(InM)
 { bEnabled = FParse::Param(FCommandLine::Get(), TEXT("S47DaleDocumentsContract")); }
@@ -30,7 +52,7 @@ void FS47DaleDocumentsTest::Fail(const FString& Why)
  if (bDone) return; bDone = true;
  if (M && M->Player) M->Player->TestMove.Reset();
  UE_LOG(LogS47DaleDocs, Error, TEXT("S47: Dale documents FAIL stage=%d checks=%d: %s"), Stage, Checks, *Why);
- if (!Root.IsEmpty()) { auto R = S47J::New(); S47J::Set(R,TEXT("status"),TEXT("FAIL")); S47J::Set(R,TEXT("reason"),Why); S47J::Set(R,TEXT("checks"),Checks); FFileHelper::SaveStringToFile(S47J::Write(R,true), *(Root / TEXT("result.json"))); }
+ if (!Root.IsEmpty()) { auto R = S47J::New(); S47J::Set(R,TEXT("status"),TEXT("FAIL")); S47J::Set(R,TEXT("reason"),Why); S47J::Set(R,TEXT("stage"),Stage); S47J::Set(R,TEXT("checks"),Checks); R->SetArrayField(TEXT("physicalDeskPapers"),PhysicalPapers); FFileHelper::SaveStringToFile(S47J::Write(R,true), *(Root / TEXT("result.json"))); }
  FPlatformMisc::RequestExitWithStatus(false, 1);
 }
 bool FS47DaleDocumentsTest::Check(bool Good, const FString& Why)
@@ -40,25 +62,74 @@ bool FS47DaleDocumentsTest::Check(bool Good, const FString& Why)
 }
 void FS47DaleDocumentsTest::Next(int32 Value, double Wait) { Stage = Value; Hold = Wait; }
 void FS47DaleDocumentsTest::Shot(const FString& Name) { FScreenshotRequest::RequestScreenshot(Root / (Name + TEXT(".png")), true, false); }
+bool FS47DaleDocumentsTest::OfficeFacts(const S47J::FObj& Office, int32 Completed, const FString& Context)
+{
+ for (int32 Index = 0; Index < UE_ARRAY_COUNT(DeskPapers); ++Index)
+ {
+  const TCHAR* Flag = DeskPapers[Index].Flag;
+  if (!Check(Office && Office->HasTypedField<EJson::Boolean>(Flag) && S47J::Bool(Office,Flag) == (Index < Completed),
+             Context + TEXT(" actual ") + Flag)) return false;
+ }
+ return Completed < UE_ARRAY_COUNT(DeskPapers) || Check(Office->HasTypedField<EJson::Number>(TEXT("fieldSheetAt"))
+  && FMath::IsFinite(S47J::Num(Office,TEXT("fieldSheetAt"))), Context + TEXT(" actual finite field-sheet acquisition clock"));
+}
+bool FS47DaleDocumentsTest::AuditArt(const FString& Context)
+{
+ TArray<FString> Lines; const bool Good = M->Office->AuditDocumentArt(Lines);
+ auto Evidence = S47J::New(); S47J::Set(Evidence,TEXT("context"),Context); S47J::Set(Evidence,TEXT("lines"),Lines);
+ S47J::Set(Evidence,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));
+ if (!Check(FFileHelper::SaveStringToFile(S47J::Write(Evidence,true),*(Root/(Context+TEXT(".art.json")))),TEXT("write actual art audit: ")+Context)) return false;
+ if (!Check(Good,TEXT("actual six bound document surfaces: ")+Context)) return false;
+ for (int32 Index = 0; Index < UE_ARRAY_COUNT(DeskPapers); ++Index)
+ {
+  const FS47Obj Obj = M->Office->Object(DeskPapers[Index].Use); const FBox Bounds = Obj.WorldBox();
+  const FS47Interactable* Item = M->Inter->Get(DeskPapers[Index].Use);
+  if (!Check(Obj && Bounds.IsValid && Item && Item->Object.I == Obj.I,TEXT("original physical paper/interaction identity: ")+FString(DeskPapers[Index].Use))) return false;
+  if (!PaperNodes.IsValidIndex(Index)) { PaperNodes.Add(Obj.I); PaperBounds.Add(Bounds); }
+  else if (!Check(PaperNodes[Index] == Obj.I && PaperBounds[Index].Min.Equals(Bounds.Min,1e-6)
+                 && PaperBounds[Index].Max.Equals(Bounds.Max,1e-6),TEXT("unchanged actual paper bounds/node: ")+FString(DeskPapers[Index].Use))) return false;
+ }
+ ++ArtAudits; return true;
+}
+bool FS47DaleDocumentsTest::FinishRestore()
+{
+ const auto Restored = M->Office->Save(); const auto Disk = S47J::Obj(RestoreReceipt,TEXT("diskOffice"));
+ S47J::Set(RestoreReceipt,TEXT("restoredOffice"),Restored);
+ if (!OfficeFacts(Restored,UE_ARRAY_COUNT(DeskPapers),TEXT("restored ")+PendingRestore)
+     || !Check(S47J::Num(Restored,TEXT("fieldSheetAt")) == S47J::Num(Disk,TEXT("fieldSheetAt")),TEXT("full Flow retains real field-sheet acquisition time: ")+PendingRestore)
+     || !AuditArt(TEXT("after-")+PendingRestore)) return false;
+ if (!Check(FFileHelper::SaveStringToFile(S47J::Write(RestoreReceipt,true),*(Root/(PendingRestore+TEXT(".office.json")))),TEXT("write source/disk/restored office facts: ")+PendingRestore)) return false;
+ PendingRestore.Reset(); RestoreReceipt.Reset(); return true;
+}
 bool FS47DaleDocumentsTest::StoreRestore(const FString& Name, const S47J::FObj& Snapshot)
 {
+ if (!AuditArt(TEXT("before-")+Name)) return false;
+ const auto SourceOffice = S47J::Obj(Snapshot,TEXT("office")), LiveOffice = M->Office->Save();
+ if (!OfficeFacts(SourceOffice,UE_ARRAY_COUNT(DeskPapers),TEXT("source snapshot ")+Name)
+     || !OfficeFacts(LiveOffice,UE_ARRAY_COUNT(DeskPapers),TEXT("live source ")+Name)) return false;
  FS47SaveStore Writer(Root / Name); Writer.Init(); FS47SaveCard Card; Card.Chapter = TEXT("Dale documents contract"); Card.Place = TEXT("Operations"); Card.Clock = M->Story->ClockText(true);
  FString Error; const auto Meta = Writer.Save(1, TEXT("manual"), 0, S47J::Clone(Snapshot), Card, Error);
  if (!Meta) { Fail(TEXT("isolated Writer failed: ") + Error); return false; }
  FS47SaveStore Reader(Root / Name); Reader.Init(); const auto Disk = Reader.Load(Meta->Id);
  if (!Check(Disk.IsValid(), TEXT("fresh isolated disk reader: ") + Name)) return false;
+ const auto DiskOffice = S47J::Obj(Disk,TEXT("office"));
+ if (!OfficeFacts(DiskOffice,UE_ARRAY_COUNT(DeskPapers),TEXT("actual disk ")+Name)
+     || !Check(S47J::Num(DiskOffice,TEXT("fieldSheetAt")) == S47J::Num(SourceOffice,TEXT("fieldSheetAt")),TEXT("disk preserves actual field-sheet acquisition time: ")+Name)) return false;
+ RestoreReceipt = S47J::New(); S47J::Set(RestoreReceipt,TEXT("cohort"),Name); S47J::Set(RestoreReceipt,TEXT("sourceOffice"),SourceOffice);
+ S47J::Set(RestoreReceipt,TEXT("liveSourceOffice"),LiveOffice); S47J::Set(RestoreReceipt,TEXT("diskOffice"),DiskOffice); PendingRestore = Name;
  FFileHelper::SaveStringToFile(S47J::Write(Disk,true), *(Root / (Name + TEXT(".loaded.json")))); ++Stores;
  US47Flow::FStart Start; Start.State = Disk; Start.CaseId = 0; Start.bDev = true; Start.Playtime = M->Playtime; M->Flow->StartGame(Start);
  return Check(M->Flow->bDevRun && M->Flow->CaseId == 0 && M->Office->WasUnlocked(), TEXT("full Flow restore keeps actual office access: ") + Name);
 }
 void FS47DaleDocumentsTest::Step(double Dt)
 {
- if (!bEnabled || bDone || !M || !M->Office || !M->Evening || !M->Flow || !M->Story || !M->World || !M->Player || !M->UI) return;
+ if (!bEnabled || bDone || !M || !M->Office || !M->Evening || !M->Flow || !M->Story || !M->World || !M->Player || !M->UI || !M->Inter) return;
  Elapsed += FMath::Clamp(Dt,0.,.2);
  if (Elapsed > 180) { Fail(TEXT("180 s timeout")); return; }
  if (M->Flow->bStarting || M->World->bBusy) return;
  if (Hold > 0) { Hold -= Dt; return; }
  if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("developer case zero required; no player save may be changed")); return; }
+ if (!PendingRestore.IsEmpty() && !FinishRestore()) return;
  auto Document = [this]() -> TSharedPtr<SS47Document>
  {
   const TSharedPtr<SWidget> Widget=M->Hud?M->Hud->ModalWidget():nullptr;
@@ -112,8 +183,79 @@ void FS47DaleDocumentsTest::Step(double Dt)
   }
   M->Player->TestMove.Reset();
   if(!Check(M->Office->Contains(At)&&WalkMetres>2.5,TEXT("native Walker/Resolve enters real room without placement")))return;
-  if(!Check(M->Office->Use(TEXT("office:folder"))&&M->Office->HasFieldSheet(),TEXT("short T02 folder route retains real field sheet")))return;
-  M->UI->Close(true);
+  if(!AuditArt(TEXT("entered-before-desk-papers")) || !OfficeFacts(M->Office->Save(),0,TEXT("before physical desk reading")))return;
+  DeskPaperIndex=0;DeskWalkStart=WalkMetres;LastProgress=Elapsed;Next(30,0);return;
+ }
+ if(Stage==30)
+ {
+  const FVector At=M->Player->Pos;const double Moved=FVector2D(At.X-LastWalk.X,At.Z-LastWalk.Z).Size();
+  if(Moved>.5){Fail(TEXT("desk-paper walk jumped beyond a native walking step"));return;}
+  WalkMetres+=Moved;LastWalk=At;if(Moved>.002)LastProgress=Elapsed;
+  const FDeskPaper& Paper=DeskPapers[DeskPaperIndex];const FVector D=FVector(Paper.X,At.Y,Paper.Z)-At;
+  const double Distance=FVector2D(D.X,D.Z).Size();
+  if(Distance>=.08)
+  {
+   if(Elapsed-LastProgress>4){Fail(FString(TEXT("native desk-paper approach blocked: "))+Paper.Use);return;}
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=-.12;M->Player->TestMove=FVector2D(0,-FMath::Min(1.,Distance*2));return;
+  }
+  M->Player->TestMove.Reset();
+  if(!Check(M->Office->Contains(At)&&M->Player->Walkable(At.X,At.Z)&&WalkMetres-DeskWalkStart>.08,
+            FString(TEXT("native Walker reaches separate desk-paper approach: "))+Paper.Use))return;
+  const FS47Obj Obj=M->Office->Object(Paper.Use);const FBox Bounds=Obj.WorldBox();
+  if(!Check(Obj&&Bounds.IsValid,FString(TEXT("actual target paper exists: "))+Paper.Use))return;
+  const FVector Aim=Bounds.GetCenter()-S47Three::ToThree(M->Player->EyeUE());
+  M->Player->Yaw=FMath::Atan2(-Aim.X,-Aim.Z);M->Player->Pitch=FMath::Atan2(Aim.Y,FVector2D(Aim.X,Aim.Z).Size());
+  Next(31,.25);return;
+ }
+ if(Stage==31)
+ {
+  const FDeskPaper& Paper=DeskPapers[DeskPaperIndex];const FVector Eye=M->Player->EyeUE(),Forward=M->Player->ForwardUE();
+  const FString Picked=M->Inter->Update(Eye,Forward);
+  PaperReceipt=S47J::New();S47J::Set(PaperReceipt,TEXT("interaction"),Paper.Use);S47J::Set(PaperReceipt,TEXT("expectedDocument"),Paper.Doc);
+  S47J::Set(PaperReceipt,TEXT("picked"),Picked);S47J::Set(PaperReceipt,TEXT("playerFocused"),M->Player->FocusedId());
+  S47J::Set(PaperReceipt,TEXT("positionThree"),TArray<double>{M->Player->Pos.X,M->Player->Pos.Y,M->Player->Pos.Z});
+  S47J::Set(PaperReceipt,TEXT("eyeUE"),TArray<double>{Eye.X,Eye.Y,Eye.Z});S47J::Set(PaperReceipt,TEXT("forwardUE"),TArray<double>{Forward.X,Forward.Y,Forward.Z});
+  S47J::Set(PaperReceipt,TEXT("approachWalkMetres"),WalkMetres-DeskWalkStart);
+  const bool Good=Picked==Paper.Use&&M->Player->FocusedId()==Paper.Use&&!M->UI->Modal()&&bool(M->Player->OnUse);
+  if(!Good){PhysicalPapers.Add(MakeShared<FJsonValueObject>(PaperReceipt));Fail(FString::Printf(TEXT("actual paper camera Pick/Focus expected %s, picked '%s', focus '%s'"),Paper.Use,*Picked,*M->Player->FocusedId()));return;}
+  if(!Check(true,FString(TEXT("actual camera ray and focused normal Use: "))+Paper.Use))return;
+  M->Player->OnUse(Picked);Next(32,.4);return;
+ }
+ if(Stage==32)
+ {
+  const FDeskPaper& Paper=DeskPapers[DeskPaperIndex];const auto Widget=Document();
+  const FS47Doc* Retained=M->Story->Docs().FindByPredicate([&](const FS47Doc& Doc){return Doc.Id==Paper.Doc;});
+  const FS47EveningDocument* Source=M->Evening->Pack.FindDocument(Paper.Doc);
+  if(!Check(Widget.IsValid()&&M->UI->Modal()&&Retained&&Source&&Retained->Title==Source->Title
+            &&Retained->Page==FString::Join(Source->Body,TEXT("\n\n"))&&!Retained->Page.IsEmpty(),
+            FString(TEXT("normal Use opens actual registered document modal: "))+Paper.Use))return;
+  TArray<FString> Text;ModalText(Widget.ToSharedRef(),Text);TArray<FString> Lines;Retained->Page.ParseIntoArray(Lines,TEXT("\n"),false);
+  bool bBody=true;int32 BodyLines=0;
+  for(const FString& Line:Lines)
+  {
+   if(Line.TrimStartAndEnd().IsEmpty()||Line.TrimStart().StartsWith(TEXT("- - -")))continue;
+   ++BodyLines;bBody&=Text.Contains(Line.StartsWith(TEXT("~ "))?Line.Mid(2):Line);
+  }
+  if(!Check(Text.Contains(Retained->Title)&&bBody&&BodyLines>0,FString(TEXT("actual Slate title and all paper body lines match document: "))+Paper.Doc))return;
+  if(!OfficeFacts(M->Office->Save(),DeskPaperIndex+1,FString(TEXT("after actual Use "))+Paper.Use))return;
+  S47J::Set(PaperReceipt,TEXT("modalTitle"),Retained->Title);S47J::Set(PaperReceipt,TEXT("actualSlateBodyLines"),BodyLines);
+  S47J::Set(PaperReceipt,TEXT("officeAfterUse"),M->Office->Save());S47J::Set(PaperReceipt,TEXT("status"),TEXT("PASS"));PhysicalPapers.Add(MakeShared<FJsonValueObject>(PaperReceipt));
+  Shot(FString::Printf(TEXT("desk-paper-%02d"),DeskPaperIndex));Next(33,.35);return;
+ }
+ if(Stage==33)
+ {
+  if(!SendKey(EKeys::Escape))return;Next(34,.2);return;
+ }
+ if(Stage==34)
+ {
+  if(!Check(!M->UI->Modal(),TEXT("focused Escape closes physical desk-paper modal")))return;
+  ++DeskPaperIndex;
+  if(DeskPaperIndex<UE_ARRAY_COUNT(DeskPapers)){DeskWalkStart=WalkMetres;LastWalk=M->Player->Pos;LastProgress=Elapsed;Next(30,0);return;}
+  if(!Check(M->Office->HasFieldSheet(),TEXT("physical sixth paper retains real T02 field sheet")))return;
+  Next(35,0);return;
+ }
+ if(Stage==35)
+ {
   for(const TCHAR* Id : {TEXT("office:private"),TEXT("office:arrayService")})
   {
    const FS47Obj Obj=M->Office->Object(Id);const FVector Eye=M->Player->EyeUE();const FVector Aim=(S47Three::ToUE(Obj.WorldBox().GetCenter())-Eye).GetSafeNormal();
@@ -251,8 +393,11 @@ void FS47DaleDocumentsTest::Step(double Dt)
  {
   for(const FString& Id:FS47Office::LibraryDocumentIds())if(!Check(M->Office->DocumentRead(Id),TEXT("full Flow restores actually read page: ")+Id))return;
   if(!Check(!M->Office->ReadLibraryDocument(TEXT("VHS_DALE_FIELD_01")),TEXT("unproduced film cannot be read as an optional paper")))return;
+  if(!Check(DeskPaperIndex==UE_ARRAY_COUNT(DeskPapers)&&PhysicalPapers.Num()==6&&Stores==5&&ArtAudits==11,
+            TEXT("six physical papers and art/facts through the original five disk/Flow cohorts")))return;
   auto R=S47J::New();S47J::Set(R,TEXT("status"),TEXT("PASS"));S47J::Set(R,TEXT("checks"),Checks);S47J::Set(R,TEXT("freshDiskFlowRestores"),Stores);S47J::Set(R,TEXT("nativeOfficeWalkMetres"),WalkMetres);S47J::Set(R,TEXT("actualSlateScrollKeys"),TotalScrollKeys);
-  S47J::Set(R,TEXT("scope"),TEXT("actual Office APIs, native entry, real document UI and focused Slate PageDown/PageUp/Escape through actual content end, existing typed document at large scale, isolated Writer/fresh reader/full Flow restores; initial chapter prerequisites are fixtures; human input, VHS, photos and ARRAY-01 encounter not tested"));
+  R->SetArrayField(TEXT("physicalDeskPapers"),PhysicalPapers);S47J::Set(R,TEXT("documentArtAudits"),ArtAudits);
+  S47J::Set(R,TEXT("scope"),TEXT("API-driven native Walker entry and six distinct desk approaches; actual camera ray/Focus and ordinary Player OnUse for all six art papers; registered document and actual Slate title/body; focused PageDown/PageUp/Escape through private-library content end and existing typed document at large scale; original five isolated Writer/fresh-reader/full-Flow cohorts with source/disk/restored office facts and actual art audits. Initial chapter prerequisites and corridor start are explicit fixtures; no human-input, listening, FPS, VHS, photos, ARRAY-01 encounter, full-matrix, installation or release claim."));
   FFileHelper::SaveStringToFile(S47J::Write(R,true),*(Root/TEXT("result.json")));bDone=true;
   UE_LOG(LogS47DaleDocs,Display,TEXT("S47: Dale documents contract PASS checks=%d diskRestores=%d root=%s"),Checks,Stores,*Root);FPlatformMisc::RequestExit(false);
  }
