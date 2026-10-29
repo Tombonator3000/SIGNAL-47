@@ -5,6 +5,7 @@
 #include "S47Substation.h"
 #include "S47Office.h"
 #include "S47SkyVisitors.h"
+#include "S47WorldLife.h"
 #include "S47Anomaly.h"
 #include "S47AnomalyWorld.h"
 
@@ -419,6 +420,7 @@ void US47Flow::Boot()
 		if (M->Evening && !M->Evening->Enabled() && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation();
 		if (M->Office) M->Office->Begin(nullptr, M->Story->bEveningTimeline && M->Evening && M->Evening->Opening());
 		if (M->SkyVisitors) M->SkyVisitors->Begin(nullptr, M->Story->bEveningTimeline);
+		if (M->Life) M->Life->PassageReset(false);
 		if (M->Anomaly) M->Anomaly->Begin(nullptr);
 		if (M->AnomalyWorld) M->AnomalyWorld->Begin();
 		if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
@@ -707,6 +709,14 @@ void US47Flow::StartGame(const FStart& O)
 	else if (M->Evening && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation(EveningSaved);
 	if (M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
+	if (M->Life)
+	{
+		// FX-01: a spent meteor passage stays spent. Without the field (an older save) the clock decides:
+		// past the passage it is marked spent on the first frame, unseen; nothing is queued.
+		const S47J::FObj P = S47J::Obj(O.State, TEXT("meteorPassage"));
+		const TSharedPtr<FJsonValue> Done = P.IsValid() ? P->TryGetField(TEXT("done")) : nullptr;
+		M->Life->PassageReset(Done.IsValid() && Done->Type == EJson::Boolean && Done->AsBool() && S47J::Num(P, TEXT("v")) == 1);
+	}
 	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
  // Both restored systems now belong to this case; validate T01 filing against its actual record.
@@ -1230,6 +1240,11 @@ S47J::FObj US47Flow::GameState()
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
+	if (M->Life)
+	{
+		const S47J::FObj P = S47J::New(); S47J::Set(P, TEXT("v"), 1); S47J::Set(P, TEXT("done"), M->Life->PassageDone());
+		S47J::Set(State, TEXT("meteorPassage"), P);
+	}
 	if (M->Observing && M->Observing->Enabled()) S47J::Set(State,TEXT("observing"),M->Observing->Save()); else State->RemoveField(TEXT("observing"));
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));

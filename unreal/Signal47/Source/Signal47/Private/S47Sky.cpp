@@ -9,6 +9,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "S47Fx.h"
 #include "S47Three.h"
 #include "S47Web.h"
 
@@ -110,7 +111,9 @@ void FS47Sky::MeteorStep(double Dt)
 	FMet& M = Met;
 	M.Next -= Dt;
 	// only while it is night: none in the dawn
-	if (M.Next <= 0) { M.Next = 18 + Rand() * 22; if (Daylight() < 0.3) MeteorNow(); }
+	// (FX-01: none of the rare ones just before, during or for a minute after the passage by the hole)
+	const bool bQuiet = PassageT > -3 && PassageT < PASSAGE_LEN + PASSAGE_QUIET;
+	if (M.Next <= 0) { M.Next = 18 + Rand() * 22; if (Daylight() < 0.3 && !bQuiet) MeteorNow(); }
 	if (M.T < 0) { bMetVisible = false; return; }
 	M.T += Dt;
 	const double TAIL = 0.2;                                   // the trail lingers a moment after the head is gone
@@ -123,6 +126,189 @@ void FS47Sky::MeteorStep(double Dt)
 	// (the strip's corners along the great circle from the start, and the way across it, are laid out
 	// from these by its material, M_WebMeteor: the loop over MET_N is its vertex shader)
 	bMetVisible = true;
+}
+
+// ---------- FX-01: the meteor passage by the star hole ----------
+
+const TArray<FS47Sky::FPassMet>& FS47Sky::PassageSchedule()
+{
+	static const TArray<FPassMet> Schedule = []
+	{
+		// Seconds into the passage: two first streaks, a denser stretch, two last ones as the hole begins.
+		// Low keeps the marked ones (nine, never more than three at once); High draws all fourteen.
+		static const double At[] = { 0.0, 1.5, 2.7, 3.1, 3.6, 4.0, 4.5, 4.9, 5.4, 5.9, 6.5, 7.1, 8.4, 9.7 };
+		static const bool Low[] = { true, true, true, false, true, false, true, false, true, false, true, false, true, true };
+		uint32 Seed = 4747;
+		auto R = [&Seed] { Seed = Seed * 1664525u + 1013904223u; return double(Seed >> 8) / double(1 << 24); };
+		const FVector H = S47SkyDir(STAR_HOLE.Az, STAR_HOLE.El);
+		const FVector Up = (FVector(0, 1, 0) - H * H.Y).GetSafeNormal(), Rt = FVector::CrossProduct(H, Up).GetSafeNormal();
+		TArray<FPassMet> Out;
+		for (int32 I = 0; I < UE_ARRAY_COUNT(At); ++I)
+		{
+			FPassMet P;
+			for (int32 Try = 0; Try < 200; ++Try)
+			{
+				// next to the field, 9 to 17 degrees out, any side of it
+				const double Ang = (9 + R() * 8) * DEG, Pa = R() * UE_DOUBLE_PI * 2;
+				P.Start = (H * FMath::Cos(Ang) + (Up * FMath::Cos(Pa) + Rt * FMath::Sin(Pa)) * FMath::Sin(Ang)).GetSafeNormal();
+				// away from the empty patch and a little down, as if from a radiant near it; never across it
+				const FVector Away = (P.Start * FVector::DotProduct(P.Start, H) - H).GetSafeNormal();
+				const FVector Down = (FVector(0, -1, 0) + P.Start * P.Start.Y).GetSafeNormal();
+				const FVector Side = FVector::CrossProduct(P.Start, Down).GetSafeNormal();
+				P.Tan = (Away * 0.8 + Down * 0.45 + Side * ((R() * 2 - 1) * 0.25)).GetSafeNormal();
+				P.Tan = (P.Tan - P.Start * FVector::DotProduct(P.Tan, P.Start)).GetSafeNormal();
+				P.Len = (6 + R() * 6) * DEG;
+				P.Dur = 0.4 + R() * 0.4;
+				P.Bright = I == 6 ? 2.3 : 1.1 + R() * 0.5;
+				bool bGood = true;
+				for (int32 K = 0; K <= 24 && bGood; ++K)
+				{
+					const double A = P.Len * K / 24;
+					const FVector D = P.Start * FMath::Cos(A) + P.Tan * FMath::Sin(A);
+					bGood = FMath::Acos(FMath::Clamp(FVector::DotProduct(D, H), -1.0, 1.0)) >= 7.5 * DEG && D.Y >= FMath::Sin(8 * DEG);
+				}
+				if (bGood) break;
+			}
+			P.At = At[I]; P.bLow = Low[I];
+			Out.Add(P);
+		}
+		return Out;
+	}();
+	return Schedule;
+}
+
+double FS47Sky::PassagePhaseAt(double Clock, double From)
+{
+	if (!FMath::IsFinite(From) || From > 2 * 86400.0) return -1e9;
+	const double S = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400.0, 86400.0);
+	if (S > 12 * 3600) return -1e9;
+	return S - (From - PASSAGE_LEAD);
+}
+
+bool FS47Sky::PassageLayout(const FPassMet& P, double T, double& OutHead, double& OutBack, double& OutFade)
+{
+	// (meteorStep's own layout and fade, for each streak of the passage)
+	if (!(T >= 0) || T > P.Dur + PASSAGE_TAIL) return false;
+	const double K = FMath::Min(1.0, T / P.Dur);
+	OutHead = P.Len * K;
+	OutBack = FMath::Max(0.0, OutHead - P.Len * 0.65) + P.Len * 0.65 * FMath::Max(0.0, T - P.Dur) / PASSAGE_TAIL;
+	OutFade = FMath::Min(1.0, T / 0.08) * (T > P.Dur ? 0.6 * (1 - (T - P.Dur) / PASSAGE_TAIL) : 1 - 0.4 * K);
+	return true;
+}
+
+int32 FS47Sky::PassageCount(bool bLow)
+{
+	int32 N = 0;
+	for (const FPassMet& P : PassageSchedule()) N += !bLow || P.bLow;
+	return N;
+}
+
+int32 FS47Sky::PassageMaxHeads(bool bLow)
+{
+	int32 Top = 0;
+	for (int32 Ms = 0; Ms <= int32((PASSAGE_LEN + PASSAGE_TAIL) * 100); ++Ms)
+	{
+		int32 N = 0;
+		for (const FPassMet& P : PassageSchedule()) { double H, B, F; N += (!bLow || P.bLow) && PassageLayout(P, Ms / 100.0 - P.At, H, B, F); }
+		Top = FMath::Max(Top, N);
+	}
+	return Top;
+}
+
+void FS47Sky::PassageStep(double Clock)
+{
+	PassageT = PassagePhaseAt(Clock, HoleFrom);
+	PassageHeads = 0;
+	if (bPassageDone) return;
+	if (PassageT > PASSAGE_LEN + PASSAGE_TAIL)
+	{
+		bPassageDone = true;
+		if (bLive) UE_LOG(LogS47Sky, Display, TEXT("S47: meteor passage spent (%d of %d streaks seen, %s); it does not play again"), PassageStarted, PassageCount(bPassageLow), bPassageLow ? TEXT("Low") : TEXT("High"));
+		return;
+	}
+	if (PassageT < 0) return;
+	const TArray<FPassMet>& Sch = PassageSchedule();
+	for (int32 I = 0; I < Sch.Num(); ++I)
+	{
+		double H, B, F;
+		if ((bPassageLow && !Sch[I].bLow) || !PassageLayout(Sch[I], PassageT - Sch[I].At, H, B, F)) continue;
+		++PassageHeads;
+		if (!(PassageBits & (uint64(1) << I)))
+		{
+			PassageBits |= uint64(1) << I; ++PassageStarted;
+			if (bLive && PassageStarted == 1) UE_LOG(LogS47Sky, Display, TEXT("S47: meteor passage begins at %.1f s (%s, %d streaks)"), PassageT, bPassageLow ? TEXT("Low") : TEXT("High"), PassageCount(bPassageLow));
+		}
+	}
+}
+
+int32 FS47Sky::PassageSlotsVisible() const
+{
+	int32 N = 0;
+	for (const TWeakObjectPtr<UStaticMeshComponent>& C : PassComps) N += C.IsValid() && C->IsVisible();
+	return N;
+}
+
+bool FS47Sky::PassageSelfTest(TArray<FString>& Lines)
+{
+	bool bOk = true;
+	auto Check = [&](bool bCond, const FString& What)
+	{
+		Lines.Add((bCond ? TEXT("ok   meteor passage: ") : TEXT("FAIL meteor passage: ")) + What); bOk &= bCond;
+		UE_LOG(LogS47Sky, Display, TEXT("S47: %s"), *Lines.Last());
+	};
+	const TArray<FPassMet>& Sch = PassageSchedule();
+	const FVector H = S47SkyDir(STAR_HOLE.Az, STAR_HOLE.El);
+	bool bNear = true, bClear = true, bUp = true, bInside = true, bSlots = true;
+	double MinOff = 180, MaxStart = 0;
+	for (int32 I = 0; I < Sch.Num(); ++I)
+	{
+		const FPassMet& P = Sch[I];
+		const double Start = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(P.Start, H), -1.0, 1.0)));
+		MaxStart = FMath::Max(MaxStart, Start); bNear &= Start >= 8.9 && Start <= 17.1;
+		for (int32 K = 0; K <= 48; ++K)
+		{
+			const double A = P.Len * K / 48;
+			const FVector D = P.Start * FMath::Cos(A) + P.Tan * FMath::Sin(A);
+			const double Off = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(D, H), -1.0, 1.0)));
+			MinOff = FMath::Min(MinOff, Off); bClear &= Off >= 7.4; bUp &= D.Y >= FMath::Sin(7.9 * DEG);
+		}
+		bInside &= P.At >= 0 && P.At + P.Dur <= PASSAGE_LEN && P.Dur >= .4 && P.Dur <= .8 && FMath::Abs(FVector::DotProduct(P.Start, P.Tan)) < 1e-9;
+		for (int32 J = I + PASSAGE_SLOTS; J < Sch.Num(); J += PASSAGE_SLOTS)
+			bSlots &= Sch[J].At > P.At + P.Dur + PASSAGE_TAIL;
+	}
+	Check(Sch.Num() == 14 && PassageCount(false) == 14 && PassageCount(true) == 9, TEXT("fourteen streaks on High, nine of them on Low"));
+	Check(PassageMaxHeads(false) >= 3 && PassageMaxHeads(false) <= 6 && PassageMaxHeads(true) >= 2 && PassageMaxHeads(true) <= 3,
+		FString::Printf(TEXT("at most %d heads at once on High (3 to 6), %d on Low (at most 3)"), PassageMaxHeads(false), PassageMaxHeads(true)));
+	Check(bNear && bClear && bUp, FString::Printf(TEXT("every streak starts 9 to 17 degrees from 026 / 32 (at most %.1f), never nearer than %.1f degrees (the hole's rim is %.1f), and stays above 8 degrees"), MaxStart, MinOff, STAR_HOLE.Outer));
+	Check(bInside && bSlots, TEXT("every streak inside the passage, and no two crossing at once share a strip"));
+	// The real event: the dishes begin to turn 3 s after it, HoleFrom is 10 s after it.
+	const double Ev = 2 * 3600 + 15 * 60 + 12, From = Ev + STAR_HOLE.After;
+	Check(PassagePhaseAt(Ev + 3, From) < 0 && FMath::IsNearlyEqual(PassagePhaseAt(Ev + 4, From), 0.0, 1e-9) && PassagePhaseAt(Ev + 15.3, From) > PASSAGE_LEN + PASSAGE_TAIL,
+		TEXT("from the event + 4 s (after the dishes begin to turn) to the event + 15.2 s"));
+	Check(S47StarHoleAt(Ev + 4 + PASSAGE_LEN + PASSAGE_TAIL, From) < .01 && S47StarHoleAt(From + 60, From) > .2,
+		TEXT("the passage dies away as the hole begins to show; the empty field is left to itself"));
+	Check(PassagePhaseAt(Ev + 5, TNumericLimits<double>::Max()) < -1e8 && PassagePhaseAt(14 * 3600, From) < -1e8 && PassagePhaseAt(Ev + 5 - 86400, From) == PassagePhaseAt(Ev + 5, From),
+		TEXT("none before the dishes turn (no event yet), none by day; the clock wraps"));
+	// One playback, frozen by a held clock, spent for good; a load mid-way restores the phase only.
+	FS47Sky S; S.HoleFrom = From;
+	S.SetClock(Ev + 3.5);
+	const bool bBefore = !S.PassageActive() && S.PassageHeads == 0 && !S.bPassageDone;
+	S.SetClock(Ev + 4 + 4.5); const double Held = S.PassageT; const int32 HeldHeads = S.PassageHeads;
+	S.SetClock(Ev + 4 + 4.5);
+	const bool bFrozen = S.PassageActive() && HeldHeads > 0 && S.PassageT == Held && S.PassageHeads == HeldHeads;
+	S.SetClock(Ev + 4 + PASSAGE_LEN + PASSAGE_TAIL + .05);
+	const bool bSpent = S.bPassageDone && S.PassageHeads == 0 && !S.PassageActive();
+	S.SetClock(Ev + 4 + 4.5);
+	const bool bNoReplay = S.bPassageDone && S.PassageHeads == 0 && !S.PassageActive();
+	Check(bBefore && bFrozen && bSpent && bNoReplay, TEXT("one playback: nothing before, a held clock freezes it, spent once past, never again (an earlier clock, a later night)"));
+	FS47Sky L; L.HoleFrom = From; L.PassageReset(false); L.SetClock(Ev + 4 + 5.4);
+	Check(L.PassageActive() && FMath::IsNearlyEqual(L.PassageT, 5.4, 1e-6) && L.PassageStarted == L.PassageHeads && L.PassageStarted <= PassageMaxHeads(false),
+		TEXT("a load mid-way resumes at the clock's phase, with no backlog of the streaks before it"));
+	FS47Sky D; D.HoleFrom = From; D.PassageReset(true); D.SetClock(Ev + 4 + 5.4);
+	Check(!D.PassageActive() && D.PassageHeads == 0, TEXT("a saved spent passage stays spent after a load"));
+	FS47Sky A; A.HoleFrom = From; A.PassageReset(false); A.SetClock(Ev + 40 * 60);
+	Check(A.bPassageDone && A.PassageStarted == 0, TEXT("a load (or a clock jump) past it marks it spent unseen; nothing is queued"));
+	return bOk;
 }
 
 void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
@@ -145,6 +331,7 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 	Evening = FMath::Pow(EveningK * EveningK * (3 - 2 * EveningK), 1.4);
 	// from 02:15, where the dishes point (it fades with the stars at dawn, by itself)
 	HoleK = S47StarHoleAt(Clock, HoleFrom);
+	PassageStep(Clock);
 	CloudCover = CloudCoverAt(Clock); Cirrus = CirrusAt(Clock);
 	const FLinearColor A(0.043f, 0.059f, 0.098f), B(0.19f, 0.2f, 0.25f);
 	FogColor = A + (B - A) * float(D * 0.8);
@@ -368,6 +555,18 @@ bool FS47Sky::Build(AS47Web* W)
 		MeteorMid = D;
 		MeteorComp = Part(W, N->Comp.Get(), W->GeoMesh(N->Geo), D, -2);
 		if (MeteorComp.IsValid()) MeteorComp->SetVisibility(false);
+		// FX-01: the passage's own small pool of the same strip (-S47FxOff: none, the clock logic stays)
+		PassComps.Reset(); PassMids.Reset();
+		if (!S47Fx::Off())
+			for (int32 K = 0; K < PASSAGE_SLOTS; ++K)
+			{
+				UMaterialInstanceDynamic* PD = UMaterialInstanceDynamic::Create(MeteorBase, W);
+				UStaticMeshComponent* C = Part(W, N->Comp.Get(), W->GeoMesh(N->Geo), PD, -2);
+				if (!C) continue;
+				C->SetVisibility(false);
+				S47Fx::Precache(C);
+				PassComps.Add(C); PassMids.Add(PD);
+			}
 	}
 	// the painted horizon (backdrop.ts), over all of them
 	if (const FS47WebNode* N = W->Node(int32(Num(TEXT("band"), -1))))
@@ -469,6 +668,30 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("Start"), V4(Met.Start));
 		D->SetVectorParameterValue(TEXT("Way"), V4(Met.Tan));
 		D->SetScalarParameterValue(TEXT("I"), float(MetI));
+	}
+	{
+		// FX-01: the passage's streaks, each on its own strip (streak i on strip i % PASSAGE_SLOTS)
+		bool Vis[PASSAGE_SLOTS] = {};
+		const TArray<FPassMet>& Sch = PassageSchedule();
+		if (PassageActive())
+			for (int32 I = 0; I < Sch.Num(); ++I)
+			{
+				const int32 K = I % PASSAGE_SLOTS;
+				double Hd, Bk, Fd;
+				UMaterialInstanceDynamic* D = PassMids.IsValidIndex(K) ? PassMids[K].Get() : nullptr;
+				if (!D || (bPassageLow && !Sch[I].bLow) || !PassageLayout(Sch[I], PassageT - Sch[I].At, Hd, Bk, Fd)) continue;
+				Common(D);
+				D->SetScalarParameterValue(TEXT("Yaw"), float(Yaw));
+				D->SetScalarParameterValue(TEXT("Scale"), float(SKY_SCALE * 100));
+				D->SetScalarParameterValue(TEXT("Back"), float(Bk));
+				D->SetScalarParameterValue(TEXT("Head"), float(Hd));
+				D->SetVectorParameterValue(TEXT("Start"), V4(Sch[I].Start));
+				D->SetVectorParameterValue(TEXT("Way"), V4(Sch[I].Tan));
+				D->SetScalarParameterValue(TEXT("I"), float(Sch[I].Bright * Fd * (1 - Daylight())));
+				Vis[K] = true;
+			}
+		for (int32 K = 0; K < PassComps.Num() && K < PASSAGE_SLOTS; ++K)
+			if (UStaticMeshComponent* C = PassComps[K].Get(); C && C->IsVisible() != Vis[K]) C->SetVisibility(Vis[K]);
 	}
 	const FS47WebNode* BackdropNode = W->Node(ConceptBackdropNode);
 	const UStaticMeshComponent* Backdrop = BackdropNode ? Cast<UStaticMeshComponent>(BackdropNode->Comp.Get()) : nullptr;
