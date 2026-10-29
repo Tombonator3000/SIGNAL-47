@@ -427,7 +427,9 @@ namespace
     FHitResult H;const bool Found=P.C->LineTraceComponent(H,Start,End,Q);auto Row=Record(W,Shell,H,Found,Start,End);
     Row->SetNumberField(TEXT("requested_node"),P.Index);Row->SetStringField(TEXT("requested_component"),GetPathNameSafe(P.C));Rows.Add(MakeShared<FJsonValueObject>(Row));
     if(Found)Seen.Add(P.Index);
-    if(Found&&H.bBlockingHit&&H.GetComponent()==P.C&&VisibleNow(W,P.C,P.Index)&&ActiveRoot(W,P.Index)&&H.ImpactNormal.Z>.7&&H.ImpactPoint.Z>Best){Best=H.ImpactPoint.Z;Out.Top=H;Out.Found=true;}
+    // LineTraceComponent returns its hit via bool; observed native component hits have bBlockingHit=false.
+    // Preserve that raw flag in Record. WorldProbe still requires its world blocking-hit contract.
+    if(Found&&H.GetComponent()==P.C&&VisibleNow(W,P.C,P.Index)&&ActiveRoot(W,P.Index)&&H.ImpactNormal.Z>.7&&H.ImpactPoint.Z>Best){Best=H.ImpactPoint.Z;Out.Top=H;Out.Found=true;}
    }
    Out.Json->SetArrayField(TEXT("actual_component_queries"),Rows);Out.Json->SetBoolField(TEXT("visible_upward_surface_candidate"),Out.Found);
    Out.Json->SetStringField(TEXT("scope"),TEXT("Separate exact registered visible component queries; Shell remains in the world probe. Highest measured upward candidate is not support/contact acceptance."));
