@@ -87,5 +87,76 @@
     "route": "road før diner; ingen dineraksept",
     "conclusion": "TSR100 er ikke tilstrekkelig tiltak. Produksjons-TSR er ikke endret.",
     "payload_unchanged_files": 7
+  },
+  "old_ultra_nanite_quarter_r3": {
+    "status": "AVVIST SOM TILSTREKKELIG TILTAK",
+    "changed_only": "Nanite kandidater4Mi/synlige1Mi, beholdt Ultra/TSR200",
+    "application": "sen ExecCmds",
+    "global_gpu_peak_mib": 9709,
+    "global_gpu_min_free_mib": 146,
+    "stage": "diner bestått, kontrollert stopp på vei ut før full retur",
+    "new_fatal": false,
+    "nanite_feedback_messages": 298,
+    "nanite_observed_peaks": {
+      "nodes": 1563,
+      "candidate_clusters": 8494,
+      "visible_clusters": 1384
+    },
+    "production_settings_changed": false
+  },
+  "old_ultra_nanite_early_r4": {
+    "status": "AVVIST SOM TILSTREKKELIG TILTAK",
+    "changed_only": "Nanite kandidater4Mi/synlige1Mi, beholdt Ultra/TSR200",
+    "application": "tidlig ForceDPCVars, faktiske32/12MiB fra første renderframe",
+    "global_gpu_peak_mib": 9593,
+    "global_gpu_min_free_mib": 262,
+    "stage": "diner bestått, kontrollert stopp på vei ut før full retur",
+    "new_fatal": false,
+    "nanite_feedback_messages": 287,
+    "nanite_observed_peaks": {
+      "nodes": 1561,
+      "candidate_clusters": 8362,
+      "visible_clusters": 1432
+    },
+    "production_settings_changed": false
+  },
+  "old_ultra_vsm_quarter_r5": {
+    "status": "PASS AVGRENSER MINNETILTAK",
+    "changed_only": "tidlig VSM NonNanite.CulledInstanceAllocationFactor0.25, original Ultra/TSR200 og Nanite16Mi/4Mi",
+    "actual_png_output": [
+      2560,
+      1440
+    ],
+    "route": "water: fysisk diner/2628m retur SARO, telefon/fullworld diskrestore, D01/papirer/klokke",
+    "route_seconds": 311.5,
+    "wall_seconds": 424.3895,
+    "contention": [],
+    "global_gpu_peak_mib": 8089,
+    "global_gpu_min_free_mib": 1767,
+    "vulkan_device_local_peak_mib": 6385.99,
+    "raw_vsm_status_messages": 300,
+    "visible_instance_overflow_bit8": 0,
+    "marking_queue_overflow_bit1": 6,
+    "visible_overflow_warnings": 0,
+    "allocation_warnings": 0,
+    "new_fatal": false,
+    "gpu_messages_truncated": false,
+    "csv_overflow_field_valid": false,
+    "csv_overflow_field_note": "UE5.8 stats-payload har to innskutte clusterfelt uten indekskompensasjon. Separat StatusFeedback type1 [1,flags] brukes.",
+    "payload_files_unchanged_after": 7,
+    "candidate_acceptance": "Pakket b70bf042 uten overstyring gjenstår"
+  },
+  "mitigation_source": {
+    "head": "b70bf042b841640b0121f7e00d20a2565cd3da37",
+    "file": "unreal/Signal47/Config/Linux/LinuxEngine.ini",
+    "cvar": "r.Shadow.Virtual.NonNanite.CulledInstanceAllocationFactor",
+    "value": 0.25,
+    "platform": "Linux",
+    "engine_modified": false,
+    "nanite_or_tsr_changed": false,
+    "scope": "målt reduksjon i konservativ VSM-bufferreserve; forklarer ikke alene første historiske startup-OOM eller historisk prosesskonkurranse",
+    "candidate_status": "VENTER PÅ PAKKET PRØVE",
+    "installed": false,
+    "public_release": false
   }
 }

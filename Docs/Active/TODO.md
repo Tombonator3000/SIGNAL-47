@@ -13,7 +13,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 
 | ID | Åpen oppgave | Underlag |
 | --- | --- | --- |
-| FIX-01 | [ ] Rett dokumentert årsak til Vulkan-minnemangel. Begge komplette krasjlogger og riktige binærer er sikret; undersøkelsen fortsetter med fysisk diner-rute og minnebudsjett. Eventuell historisk prosesskonkurranse er fortsatt uavklart. | [Kontrollert krasjgrunnlag og pågående A/B](Reports/PLAYTEST_TODO_2026-10-28.md). Gammel Ultra-pakke nådde kritisk GPU-bruk allerede på veien uten andre UE-jobber; egen prøve ble avbrutt kontrollert. Ingen dineraksept eller ferdig retting hevdes. |
+| FIX-01 | [ ] Reduser Vulkan-minnepress og avklar gjenværende historisk oppstarts-OOM/samtidighet. R5 med bare VSM-reserve0,25 består full diner/retur; ny pakket Linux-kandidat venter på kontroll. | [Målrettet minnetiltak og bevisgrenser](../Evidence/UnrealDeliveries/DINER_VULKAN_2026-10-29.md). Historisk første High/frame0-avslag er fortsatt uavklart. Ingen installasjon eller fullmatrise. |
 | FIX-02 | [ ] Rett Motor Courts gangnivå, svevende potter/stoler og usynlige kollisjonsvegger foran dørene. | Spillerbilder E02, E04 og E05 i [bevisgalleriet](../../unreal/Evidence/Playtest-2026-10-28/README.md). |
 | FIX-03 | [ ] Rett doble mottakslamper og kontroller faktisk bevegelig film/lyd på resepsjons-TV-en. | Bilde E03 og Toms observasjon. Stillbildet alene beviser ikke filmstans. |
 | FIX-04 | [ ] Rett bassengsti som blafrer, bassengkant/dekke under terreng og uønsket klump utenfor gjerdet. | E04/E05. Identifiser det konkrete uønskede meshet før fjerning. |
