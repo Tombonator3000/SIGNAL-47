@@ -239,6 +239,7 @@ void FS47Substation::InstallFollowup()
    else M->Evening->Trigger(TEXT("T02_CHECKS"));
   }, [] { return FString(TEXT("Keep an incomplete comparison unresolved. The STATION 01 field roll and Nora's route remain available. A verified disagreement also needs its own real reference photograph and return filing at SARO.")); });
  bFollowupBuilt = true;
+ InstallField();
  UE_LOG(LogS47Followup, Display, TEXT("S47: T02 physical fixture ready; reference=(7879,-1.35,520.5), separate band post / real pole A / outer conductors; T01 history preserved"));
 }
 

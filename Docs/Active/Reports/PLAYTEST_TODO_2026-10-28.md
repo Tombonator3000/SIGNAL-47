@@ -107,7 +107,7 @@ Den tidligere motel-R4-leveransen opphever ikke disse nye funnene. Modellplasser
 - [ ] Integrer vei/rampe og grusovergang naturlig i bakken med sammenhengende helning og korrekt terrengkontakt, uten hulrom eller skarpe pålagte plater.
 - [ ] Bevar serviceadgang, strømtilstander, lyd, SC02-lysbue og historietriggere under miljørettelsen.
 
-[PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184) leverte lampe-/kontaktpasset; det betyr ikke at alle eldre rekvisitter og alle terrengoverganger er erstattet. E06 er et nytt åpent kvalitetsfunn.
+[PR184](https://github.com/Tombonator3000/SIGNAL-47/pull/184) leverte lampe-/kontaktpasset; det betyr ikke at alle eldre rekvisitter og alle terrengoverganger er erstattet. E06 er fulgt opp med [FIX-07s kilde/native-levering](../../Evidence/UnrealDeliveries/SUBSTATION_FIELD_2026-10-29.md), ny T01 og kontrollerte før-/etterbilder. Pakket og installert oppfølging føres fortsatt separat.
 
 ## 8. Færre tester og aktiv arbeidsdeling med Claude
 
