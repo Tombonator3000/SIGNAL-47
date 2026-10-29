@@ -102,3 +102,5 @@ Pakket TV har 48 262 / 49 152 endrede GPU-piksler. Bilde-/lydklokkene går fra 1
 Rutens faktiske resultat, lagring og diagnostikk ligger i `/tmp/S47-motel-grounded-packed-route-r1/Saved/MotelV2Route/01A1861F9899799EB4C11DDEB2AE332F`. Tidligere avviste kilde-/editorforsøk er bevart.
 
 Dette er en målt kandidatprøve av en API-styrt motellreise med uttrykkelig kapittel 4-fixture. Tidligere kapitler, menneskelig input, subjektiv lytting, FPS og hele kapittel 4 er ikke gjennomspilt eller målt. Fullmatrise er UNVERIFIED; ingen installasjon i `~/Games/Signal47` eller offentlig release er utført.
+
+Videre lesende E04-kontroll fant at stein-/flekk-instansene regenereres av `FS47Flora::Bind` etter kamera og kvalitet. Instansindekser er derfor ikke stabile identiteter mellom eksponeringer. Utvalget innen tre meter fra gjerdets hjørner utelukker heller ikke gjenstander lenger bak gjerdet som projiseres nær stolpen. En sikker restretting krever en reproduserbar eksponering med faktisk kamerastilling, FOV/aspect, kvalitet og alle aktuelle instanser. Ingen kandidat er slettet på grunnlag av denne usikkerheten.

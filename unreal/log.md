@@ -1176,3 +1176,8 @@ Etter kontrollert plan og ledig guard er bare sju genererte payloadfiler fra avv
 Pakket R1 består motorens 1709 selvtester og samme API-styrte Walker/Resolve-reise som editor R11: 58 rutepunkter, 14 interaksjoner, 7/7 gjestedørnisjer, 4/4 blokkeringer og 1611 faktiske gulvstråler. Ruten går 178,695588 m på 143,029735 s, med faktisk rom 6-dørbruk og ordinær isolert disk/title/full Flow Continue. Normal exit 0, ingen registrert tungjobbkonkurranse eller forbudte markører. Kapittel 4-inngang, fire blockerplasseringer og én rutestartplassering er fortsatt uttrykkelige fixtures; ingen menneskelig input hevdes.
 
 Faktisk native TV-materialbinding og GPU-tekstur består: 48262/49152 piksler endres, frame 183 til 256 og lydklokkedelta 6,037333 s. To originale pakkede tekstur-PNG-er er åpnet og hashbundet. Avisens NoCollision-pane prøves fortsatt mot faktisk GPU-rendergeometri, ikke fysisk glasskollisjon eller sceneokklusjon. E04-klumpens identitet er fortsatt UNVERIFIED; ingen ekstra sletting, og hele FIX-04 er ikke lukket. Alle tidligere avviste forsøk beholdes. Menneskelig input, subjektiv lytting, FPS og fullmatrise er UNVERIFIED. Ingen installasjon i Games eller offentlig release.
+
+
+## 2026-10-29 kl. 06:38 CET: motell-PR opprettet
+
+[PR220](https://github.com/Tombonator3000/SIGNAL-47/pull/220) er opprettet mot main med den målrettet beståtte kandidatens uendrede runtime-inputs. E04s lille klump forblir åpen. Kamera-/kvalitetsavhengig flora gjør gamle instansindekser utilstrekkelige; tre meters nærhet er heller ingen sikker grense langs bildets siktstråle. Eksakt head og kontroller verifiseres før fletting. Ingen installasjon eller offentlig release.
