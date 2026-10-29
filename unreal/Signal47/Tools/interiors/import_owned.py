@@ -8,6 +8,7 @@ explicit source-material-index preservation proof required below.
 from pathlib import Path
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -287,17 +288,79 @@ def configure_mesh(mesh, name, materials):
     R.check(name + ' native mesh saved', R.E.save_loaded_asset(mesh))
 
 
+def native_null_face_proof(source, triangles):
+    """A full source description may retain the documented zero-area faces.
+
+    Compare their actual oriented corners/UVs too. Only the exact source zero
+    indices may be filtered before the unchanged finite-face correspondence.
+    """
+    finite, zero_indices, mapping = [], [], []
+    position_error, uv_error = 0., 0.
+    G.require(len(triangles) == source['source_triangles'], 'Full source description population differs')
+    for index, row in enumerate(triangles):
+        corners = row['corners']
+        G.require(len(corners) == 3 and all(len(p) == 5 and all(math.isfinite(v) for v in p) for p in corners),
+                  'Malformed or nonfinite source-description corner')
+        a, b, c = corners
+        ab, ac = [b[k] - a[k] for k in range(3)], [c[k] - a[k] for k in range(3)]
+        cross = (ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0])
+        if sum(v * v for v in cross) != 0.:
+            finite.append(row)
+            continue
+        zero_indices.append(index)
+        original = source['triangles'][index]
+        G.require(original['exact_zero_area'], 'Native zero-area face replaces a finite source face')
+        matched = None
+        for rotation in range(3):
+            position = max(abs(original['corners'][(i + rotation) % 3][axis] - corners[i][axis])
+                           for i in range(3) for axis in range(3))
+            uv = max(abs(original['corners'][(i + rotation) % 3][axis] - corners[i][axis])
+                     for i in range(3) for axis in (3, 4))
+            if position <= G.POSITION_TOLERANCE_CM and uv <= G.UV_TOLERANCE:
+                matched = position, uv, rotation
+                break
+        G.require(matched is not None, 'Native zero-area face position/oriented UV differs from its source')
+        position_error = max(position_error, matched[0])
+        uv_error = max(uv_error, matched[1])
+        mapping.append((index, row['id'], matched[2]))
+    G.require(zero_indices == source['exact_zero_area_indices'], 'Native zero-area indices do not exactly match the documented source indices')
+    return finite, {'status': 'PASS_EXACT_SOURCE_NULL_FACE_CORRESPONDENCE', 'triangles': len(zero_indices),
+                    'maximum_position_error_cm': position_error, 'maximum_uv0_error': uv_error,
+                    'correspondence_sha256': hashlib.sha256(json.dumps(mapping).encode()).hexdigest()}
+
+
 def native_geometry_proof(name, mesh, source):
     description = mesh.get_static_mesh_description(0)
     expected = source['renderable_triangles']
-    R.check(name + ' imported source contains every finite FBX triangle only', description is not None and
-            description.get_triangle_count() == expected,
-            {'fbx_source_triangles': source['source_triangles'], 'fbx_exact_zero_area': len(source['exact_zero_area_indices']),
-             'expected_mesh_description_triangles': expected})
+    count = description.get_triangle_count() if description is not None else None
+    observation = {'name': name, 'description_is_none': description is None,
+                   'actual_mesh_description_triangles': count,
+                   'actual_render_triangles': [mesh.get_num_triangles(lod) for lod in range(mesh.get_num_lods())],
+                   'fbx_source_triangles': source['source_triangles'],
+                   'fbx_exact_zero_area': len(source['exact_zero_area_indices']),
+                   'expected_finite_mesh_description_triangles': expected,
+                   'mode': 'fresh_saved_verify' if VERIFY_ONLY else 'same_process_after_import'}
+    R.report.setdefault('mesh_description_observations', []).append(observation)
+    R.check(name + ' actual MeshDescription observation', True, observation)
+    if description is None:
+        # UE5.8 GetStaticMeshDescription uses a typed cached-UObject cast, not
+        # the render buffers. A same-process null is not a geometry PASS. Only
+        # import may defer; the mandatory separate reader must obtain and prove
+        # the saved description before runtime placement or visual acceptance.
+        R.check(name + ' fresh reader requires an actual saved MeshDescription', not VERIFY_ONLY, observation)
+        R.report['geometry_correspondence'].append({
+            'name': name, 'status': 'GEOMETRY_DEFERRED_TO_REQUIRED_FRESH_READ',
+            'actual_mesh_description_triangles': None, 'source_fbx_sha256': source['fbx_sha256'],
+            'source_triangles': source['source_triangles'], 'expected_finite_triangles': expected,
+            'reason': 'Same-process GetStaticMeshDescription returned None; saved geometry is not yet accepted'})
+        R.flush()
+        return None
+    R.check(name + ' source description has only a documented complete population',
+            count in {expected, source['source_triangles']}, observation)
     triangles = []
     # IDs can be sparse. Use indexed corner instances; UE5.8 GetTriangleVertices
     # has an appended-array wrapper issue, so do not use that convenience call.
-    for index in range(expected * 4 + 64):
+    for index in range(count * 4 + 64):
         triangle = unreal.TriangleID()
         if not triangle.import_text('(IDValue=' + str(index) + ')'):
             R.check(name + ' reflected triangle ID conversion', False, index)
@@ -311,12 +374,22 @@ def native_geometry_proof(name, mesh, source):
             uv = description.get_vertex_instance_uv(instance, 0)
             corners.append((position.x, position.y, position.z, uv.x, uv.y))
         triangles.append({'id': index, 'corners': corners})
-        if len(triangles) == expected:
+        if len(triangles) == count:
             break
-    R.check(name + ' complete actual MeshDescription triangle enumeration', len(triangles) == expected)
+    R.check(name + ' complete actual MeshDescription triangle enumeration', len(triangles) == count)
+    null_proof = None
+    if count != expected:
+        triangles, null_proof = native_null_face_proof(source, triangles)
+        R.check(name + ' exact documented native zero faces verified before filtering',
+                null_proof['triangles'] == len(source['exact_zero_area_indices']), null_proof)
     # Fixed measured axes + DirectX V flip, complete one-to-one oriented corners
     # and UV0. Count differences alone never authorise a missing source face.
     proof = G.correspond(source, triangles)
+    proof['native_mesh_description_triangles'] = count
+    proof['native_finite_triangles'] = len(triangles)
+    proof['native_exact_zero_area_triangles'] = null_proof['triangles'] if null_proof else 0
+    if null_proof:
+        proof['native_zero_area_correspondence'] = null_proof
     R.check(name + ' full finite position orientation and UV0 correspondence',
             proof['matched_finite_triangles'] == expected, proof)
     R.report['geometry_correspondence'].append({'name': name, **proof})
@@ -366,7 +439,9 @@ def mesh_proof(name, mesh, row, materials, source_geometry):
                               'source_triangles': row['triangles'],
                               'source_exact_zero_area_triangles': len(source_geometry['exact_zero_area_indices']),
                               'source_renderable_triangles': source_geometry['renderable_triangles'],
-                              'native_mesh_description_triangles': description.get_triangle_count(),
+                              'native_mesh_description_triangles': description.get_triangle_count() if description is not None else None,
+                              'native_geometry_status': ('PASS_COMPLETE_FINITE_SOURCE_UV_CORRESPONDENCE' if description is not None else
+                                                         'GEOMETRY_DEFERRED_TO_REQUIRED_FRESH_READ'),
                               'materials': labels, 'centre_cm': centre, 'dimensions_cm': size, 'uv_channels': uvs,
                               'collision': 'NoCollision', 'support_ray_tracing': True})
 
@@ -396,10 +471,24 @@ try:
         if not VERIFY_ONLY:
             configure_mesh(mesh, name, materials)
         mesh_proof(name, mesh, row, materials, geometry[name])
-    R.report['status'] = 'PASS_NATIVE_SAVED_VERIFY' if VERIFY_ONLY else 'PASS_NATIVE_IMPORT_AND_VERIFY'
+    deferred = [row['name'] for row in R.report['geometry_correspondence']
+                if row['status'] == 'GEOMETRY_DEFERRED_TO_REQUIRED_FRESH_READ']
+    R.check('Every private mesh has an explicit geometry outcome',
+            len(R.report['geometry_correspondence']) == len(contract['parts']))
+    if VERIFY_ONLY:
+        R.check('Fresh saved reader completed all finite geometry proofs', not deferred and
+                all(row['status'] == 'PASS_COMPLETE_FINITE_SOURCE_UV_CORRESPONDENCE'
+                    for row in R.report['geometry_correspondence']))
+        R.report['status'] = 'PASS_NATIVE_SAVED_VERIFY'
+    elif deferred:
+        R.report['status'] = 'PASS_NATIVE_IMPORT_AWAITING_FRESH_GEOMETRY'
+        R.report['required_fresh_geometry'] = deferred
+        R.report['runtime_placement_gate'] = 'BLOCKED until separate PASS_NATIVE_SAVED_VERIFY'
+    else:
+        R.report['status'] = 'PASS_NATIVE_IMPORT_AND_VERIFY'
     R.flush()
-    unreal.log('S47 PRIVATE SARO INTERIORS NATIVE PASS: ' + str(len(contract['parts'])) +
-               ' meshes; geometry-only subsets share base bake; hollow/runtime acceptance separate')
+    unreal.log('S47 PRIVATE SARO INTERIORS ' + R.report['status'] + ': ' + str(len(contract['parts'])) +
+               ' meshes; saved geometry and hollow/runtime acceptance remain explicit separate gates')
 except Exception:
     R.report['status'] = 'FAIL'
     R.report['error'] = traceback.format_exc()
