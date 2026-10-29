@@ -21,7 +21,7 @@ def signature(mesh):
         'lod_triangles': [mesh.get_num_triangles(i) for i in range(mesh.get_num_lods())],
         'materials': [
             {'slot': str(slot.material_slot_name),
-             'imported_slot': str(slot.imported_material_slot_name),
+             'imported_slot': str(slot.get_editor_property('imported_material_slot_name')),
              'material': slot.material_interface.get_path_name() if slot.material_interface else None}
             for slot in mesh.get_editor_property('static_materials')
         ],
