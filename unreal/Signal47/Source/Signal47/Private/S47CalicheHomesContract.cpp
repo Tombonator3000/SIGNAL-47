@@ -16,6 +16,8 @@
 #include "S47Walker.h"
 #include "S47World.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/StaticMesh.h"
@@ -105,6 +107,10 @@ namespace
   FVector P=FVector::ZeroVector,S=FVector::OneVector;FQuat Q=FQuat::Identity;
  };
  struct FBinding {FString Path,Id;int32 Node=-1;double Range=0,ExamineRange=0;bool Look=false,Use=false,Examine=false;};
+ struct FProduced
+ {FString Asset,Source;int32 Parent=-1,Tris=0,Materials=0;FVector MetadataP=FVector::ZeroVector;FTransform Render=FTransform::Identity;FJ Row;};
+ struct FAttached
+ {TWeakObjectPtr<USceneComponent> Comp,Parent;TWeakObjectPtr<UStaticMesh> Mesh;TArray<TWeakObjectPtr<UMaterialInterface>> Materials;FTransform Relative=FTransform::Identity;FString Producer;};
  struct FControl : TSharedFromThis<FControl>
  {
   TWeakObjectPtr<AS47Web> Web;TWeakObjectPtr<US47World> WorldIdentity;FTimerHandle Timer;
@@ -113,6 +119,7 @@ namespace
   double NorthMetres=0,SouthMetres=0,WalkMetres=0,LastSpeed=0;int32 Track=0;
   FVector LastTruck=FVector::ZeroVector,LastFoot=FVector::ZeroVector,FootStart=FVector::ZeroVector;
   TArray<FVector> Walk;TArray<FProtected> Protected;TArray<FBinding> Bindings;TMap<FString,int32> Handles;
+  TMap<FString,FProduced> Producers;TArray<FAttached> Attached;
   TMap<FString,bool> Doors;TArray<TSharedPtr<FJsonValue>> Photos,Events;
   FS47DriveController* RoadDrive=nullptr;
   FString PhotoName;TWeakObjectPtr<UStaticMeshComponent> PhotoTarget;bool PhotoRequested=false;double PhotoAt=0;FJ PhotoMeta;
@@ -160,6 +167,85 @@ namespace
    Rows->SetArrayField(TEXT("posts"),Values);
    if(!SaveJson(Root/FString::Printf(TEXT("road-posts-stage-%d.json"),Stage),Rows)){Result(false,TEXT("could not write road-post evidence"));return false;}return true;
   }
+  bool ProducerContracts(const TSet<int32>& ProtectedIds)
+  {
+   auto* W=Web.Get();const auto Free=ReadJson(FPaths::ProjectContentDir()/TEXT("Free/free_models.json"));TMap<FString,FJ> Models;
+   for(const auto& V:S47J::Arr(Free,TEXT("models")))
+   {
+    const auto R=V->AsObject();Models.Add(FPaths::GetBaseFilename(S47J::Str(R,TEXT("asset"))),R);
+    const FString Name=S47J::Str(R,TEXT("name"));if(!Models.Contains(Name))Models.Add(Name,R);
+   }
+   TArray<FString> Files;const FString Dir=FPaths::ProjectConfigDir()/TEXT("Props");IFileManager::Get().FindFiles(Files,*(Dir/TEXT("*.json")),true,false);Files.Sort();
+   for(const auto& File:Files)
+   {
+    const auto Config=ReadJson(Dir/File);
+    for(const auto& V:S47J::Arr(Config,TEXT("props")))
+    {
+     const auto R=V->AsObject();int32 Parent=W->Handle(S47J::Str(R,TEXT("parent")));
+     if(Parent<0)for(const auto& Path:S47J::Strs(R,TEXT("replaces"))){Parent=W->Handle(Path);if(Parent>=0)break;}
+     if(Parent<0)Parent=W->Handle(S47J::Str(Config,TEXT("parent")));
+     if(!ProtectedIds.Contains(Parent))continue;
+     const FString Model=S47J::Str(R,TEXT("model")),Name=TEXT("prop:")+S47J::Str(R,TEXT("id"),Model);const auto* Found=Models.Find(Model);const auto At=S47J::Nums(R,TEXT("at"));
+     if(!Check(Found&&At.Num()==3&&FMath::IsFinite(At[0])&&FMath::IsFinite(At[1])&&FMath::IsFinite(At[2])&&S47J::Bool(R,TEXT("local"))&&!S47J::Has(R,TEXT("lit"))&&!S47J::Bool(R,TEXT("paper"))&&!S47J::Has(R,TEXT("when"))&&!Producers.Contains(Name),TEXT("protected prop has a unique finite local source/factory contract: ")+File+TEXT("/")+Name))return false;
+     FProduced E;E.Asset=S47J::Str(*Found,TEXT("asset"));E.Tris=S47J::Int(*Found,TEXT("tris"));E.Materials=S47J::Int(*Found,TEXT("materials"));E.Source=TEXT("Config/Props/")+File+TEXT(" + Free/free_models.json / AS47Props.BuildFile");E.Parent=Parent;E.MetadataP=FVector(At[0],At[1],At[2]);E.Row=R;
+     const double Scale=S47J::Num(R,TEXT("scale"),1),Yaw=S47J::Num(R,TEXT("yaw"));
+     if(!Check(FMath::IsFinite(Scale)&&Scale>0&&FMath::IsFinite(Yaw)&&E.Tris>0&&E.Materials>0,TEXT("protected prop has finite source transform and measured mesh contract")))return false;
+     double Matrix[16];S47Three::Compose(E.MetadataP,S47Three::Euler(0,FMath::DegreesToRadians(Yaw),0),FVector(Scale),Matrix);E.Render=S47Three::MatToUE(Matrix);
+     if(const auto Swing=S47J::Obj(R,TEXT("swing")))
+     {
+      const auto H=S47J::Nums(Swing,TEXT("hinge"));const int32 Open=W->Handle(S47J::Str(Swing,TEXT("open")));
+      if(!Check(H.Num()==2&&Open>=0&&!W->ObjAt(Open).Shown(),TEXT("this ordinary commute keeps the configured patrol-car swing closed")))return false;
+      const FVector Hinge=S47Three::ToUE(H[0],0,H[1]);const FTransform Turn=FTransform(-Hinge)*FTransform(FRotator(0,0,0))*FTransform(Hinge);E.Render=Turn*E.Render;
+     }
+     Producers.Add(Name,MoveTemp(E));
+    }
+   }
+   return Check(Producers.Num()==2&&Producers.Contains(TEXT("prop:patrolCar"))&&Producers.Contains(TEXT("prop:patrolCarDoor")),TEXT("complete protected Props inventory resolved from all configs: patrol body/door; Fleet has separate truck/SARO parents"));
+  }
+  bool AttachedComponents(const FString& Name,bool Capture)
+  {
+   auto* W=Web.Get();TSet<USceneComponent*> Known,Extras;
+   for(const auto& R:Protected)if(auto* C=R.Comp.Get())Known.Add(C);
+   for(auto* C:Known){TArray<USceneComponent*> Kids;C->GetChildrenComponents(true,Kids);for(auto* K:Kids)if(!Known.Contains(K))Extras.Add(K);}
+   if(Capture)
+   {
+    const auto* Patrol=Producers.Find(TEXT("prop:patrolCar"));const auto Bar=Patrol?S47J::Nums(S47J::Obj(Patrol->Row,TEXT("beacon")),TEXT("bar")):TArray<double>();
+    if(!Check(Bar.Num()==6&&Extras.Num()==5,TEXT("complete non-node attachment inventory: four patrol beacons and Anomaly price text")))return false;
+    for(auto* C:Extras)
+    {
+     int32 ParentNode=-1;for(const auto& R:Protected)if(R.Comp.Get()==C->GetAttachParent())ParentNode=R.Node;
+     const auto* PN=W->Node(ParentNode);const FString Part=C->GetName();FTransform Expected=FTransform::Identity;FString Producer;auto* Mesh=Cast<UStaticMeshComponent>(C);
+     if(ParentNode==1493&&Part==TEXT("AnomalyPriceInk"))
+     {
+      const auto* Text=Cast<UTextRenderComponent>(C);
+      if(!Check(Text&&Text->Text.ToString()==TEXT("$3.50")&&FMath::Abs(Text->WorldSize-6)<1e-6,TEXT("ordinary AnomalyWorld price-ink component/content binding")))return false;
+      Expected=FTransform(FRotator(0,-90,0),S47Three::ToUE(-.16,.35,-.041));Producer=TEXT("AnomalyWorld.InstallGeometry price ink");
+     }
+     else if(PN&&PN->Name==TEXT("prop:patrolCar"))
+     {
+      const bool Lens=Part==TEXT("PropBeaconLens0")||Part==TEXT("PropBeaconLens1"),Beam=Part==TEXT("PropBeaconBeam0")||Part==TEXT("PropBeaconBeam1");
+      if(!Check((Lens&&Mesh&&GetPathNameSafe(Mesh->GetStaticMesh())==TEXT("/Engine/BasicShapes/Cube.Cube"))||(Beam&&Cast<USpotLightComponent>(C)),TEXT("actual patrol beacon component belongs to AS47Props.AddBeacon: ")+Part))return false;
+      const int32 Half=Part.EndsWith(TEXT("0"))?0:1;const double Z0=Half==0?Bar[4]:.03,Z1=Half==0?-.03:Bar[5];
+      const FVector Lo=S47Three::ToUE(Bar[0],Bar[2],Z0),Hi=S47Three::ToUE(Bar[1],Bar[3],Z1);Expected.SetLocation((Lo+Hi)*.5+(Beam?FVector(0,0,9):FVector::ZeroVector));if(Lens)Expected.SetScale3D((Hi-Lo).GetAbs()/100.);Producer=TEXT("Config/Props/town.json beacon bar / AS47Props.AddBeacon; ordinary closed-car switch");
+     }
+     else{Result(false,TEXT("unknown attached component under protected handle: ")+Part);return false;}
+     if(!Check(Same(C->GetRelativeTransform(),Expected),TEXT("factory-authored actual attachment pose: ")+Part))return false;
+     FAttached A;A.Comp=C;A.Parent=C->GetAttachParent();A.Relative=C->GetRelativeTransform();A.Producer=Producer;if(Mesh)A.Mesh=Mesh->GetStaticMesh();
+     if(auto* P=Cast<UPrimitiveComponent>(C))for(int32 I=0;I<P->GetNumMaterials();++I)A.Materials.Add(TWeakObjectPtr<UMaterialInterface>(P->GetMaterial(I)));Attached.Add(MoveTemp(A));
+    }
+   }
+   if(!Check(Extras.Num()==Attached.Num(),TEXT("no attached components added/lost under protected handles at ")+Name))return false;
+   auto O=S47J::New();TArray<TSharedPtr<FJsonValue>> Rows;
+   for(const auto& A:Attached)
+   {
+    auto* C=A.Comp.Get();auto* Mesh=Cast<UStaticMeshComponent>(C);auto* P=Cast<UPrimitiveComponent>(C);
+    bool Okay=C&&Extras.Contains(C)&&C->GetAttachParent()==A.Parent.Get()&&Same(C->GetRelativeTransform(),A.Relative)&&(!A.Mesh.IsValid()||(Mesh&&Mesh->GetStaticMesh()==A.Mesh.Get()));
+    Okay&=(!P&&A.Materials.IsEmpty())||(P&&P->GetNumMaterials()==A.Materials.Num());if(Okay&&P)for(int32 I=0;I<A.Materials.Num();++I)Okay&=P->GetMaterial(I)==A.Materials[I].Get();
+    if(!Check(Okay,TEXT("preserved actual factory attachment/mesh/material/pose: ")+GetNameSafe(C)))return false;
+    auto R=S47J::New();S47J::Set(R,TEXT("component"),C->GetPathName());S47J::Set(R,TEXT("producer"),A.Producer);S47J::Set(R,TEXT("actual_relative"),Transform(C->GetRelativeTransform()));S47J::Set(R,TEXT("mesh"),GetPathNameSafe(Mesh?Mesh->GetStaticMesh():nullptr));Rows.Add(MakeShared<FJsonValueObject>(R));
+   }
+   O->SetArrayField(TEXT("factory_attachments"),Rows);if(!SaveJson(Root/(Name+TEXT("-attachments.json")),O)){Result(false,TEXT("could not write attached-component evidence"));return false;}return true;
+  }
   bool Preserve(const FString& Name,bool Capture=false)
   {
    auto* M=Main();auto* W=Web.Get();TArray<FString> Lines;
@@ -189,12 +275,13 @@ namespace
      if(!Check(H.Value>=0,TEXT("original handle exists: ")+H.Key))return false;
      W->ObjAt(H.Value).Traverse([&](FS47Obj O){Ids.Add(O.I);});
     }
-    TArray<int32> Ordered=Ids.Array();Ordered.Sort();int32 AnomalyDetails=0;
+    if(!ProducerContracts(Ids))return false;
+    TArray<int32> Ordered=Ids.Array();Ordered.Sort();int32 AnomalyDetails=0;TSet<FString> ProducedSeen;
     for(int32 I:Ordered)
     {
      const auto* N=W->Node(I);auto* C=N?N->Comp.Get():nullptr;
      if(!Check(N&&C,FString::Printf(TEXT("protected live component node %d"),I)))return false;
-     FVector P=FVector::ZeroVector,S=FVector::OneVector;FQuat Q=FQuat::Identity;FString Policy=TEXT("original exported local pose");FJ Src;
+     FVector P=FVector::ZeroVector,S=FVector::OneVector;FQuat Q=FQuat::Identity;FString Policy=TEXT("original exported local pose");FJ Src;FTransform Expected=FTransform::Identity;bool RenderOverride=false;
      if(Nodes.IsValidIndex(I))
      {
       Src=Nodes[I]->AsObject();const auto Matrix=S47J::Nums(Src,TEXT("m"));
@@ -211,6 +298,16 @@ namespace
        Policy=TEXT("ordinary AnomalyWorld.PlaceFigure fresh A02 reference: x20.31, original souvenir proxy Y-.62, z2062.3, yaw PI/2");
       }
      }
+     else if(const auto* E=Producers.Find(N->Name))
+     {
+      const auto* Static=Cast<UStaticMeshComponent>(C);const auto* Mesh=Static?Static->GetStaticMesh():nullptr;
+      bool Bound=N->Parent==E->Parent&&N->Geo==-1&&N->Mats.IsEmpty()&&Mesh&&Mesh->GetPathName()==E->Asset&&Mesh->GetNumLODs()>0&&Mesh->GetNumTriangles(0)==E->Tris&&Static->GetNumMaterials()==E->Materials&&Mesh->GetStaticMaterials().Num()==E->Materials;
+      if(Bound)for(int32 Slot=0;Slot<E->Materials;++Slot)Bound&=Static->GetMaterial(Slot)&&Static->GetMaterial(Slot)==Mesh->GetStaticMaterials()[Slot].MaterialInterface.Get();
+      if(!Check(Bound,TEXT("complete source-derived Props parent/mesh/triangle/material binding: ")+N->Name))return false;
+      // AS47Props preserves the actual render Q/S; AdoptNode intentionally records
+      // only P. Do not compare that metadata to the rendered yaw/scale.
+      P=E->MetadataP;Expected=E->Render;RenderOverride=true;Policy=E->Source+TEXT("; rendered local pose from local/yaw/scale/swing, AdoptNode P-only metadata");ProducedSeen.Add(N->Name);
+     }
      else
      {
       // These exact authored children are adopted by AnomalyWorld.InstallGeometry.
@@ -223,7 +320,7 @@ namespace
       if(!Check(N->Parent==1493&&N->Geo==-1&&N->Mats.IsEmpty()&&Static&&GetPathNameSafe(Static->GetStaticMesh())==TEXT("/Engine/BasicShapes/Cube.Cube"),TEXT("exact ordinary AnomalyWorld cutout detail identity: ")+N->Name))return false;
       Policy=TEXT("ordinary AnomalyWorld.InstallGeometry authored cutout detail; explicit name/parent/mesh/P/Q/S");++AnomalyDetails;
      }
-     double ExpectedMatrix[16];S47Three::Compose(P,Q,S,ExpectedMatrix);const FTransform Expected=S47Three::MatToUE(ExpectedMatrix);
+     if(!RenderOverride){double ExpectedMatrix[16];S47Three::Compose(P,Q,S,ExpectedMatrix);Expected=S47Three::MatToUE(ExpectedMatrix);}
      const bool PoseOkay=N->P.Equals(P,1e-7)&&N->S.Equals(S,1e-7)&&N->Q.Equals(Q,1e-7)&&Same(C->GetRelativeTransform(),Expected);
      if(!PoseOkay||I==1493||!Src)
      {
@@ -241,6 +338,7 @@ namespace
      Protected.Add(MoveTemp(R));
     }
     if(!Check(AnomalyDetails==3,TEXT("all three ordinary AnomalyWorld cutout detail descendants retained")))return false;
+    if(!Check(ProducedSeen.Num()==Producers.Num(),TEXT("all source-derived protected Props descendants actually installed")))return false;
     for(int32 I=0;I<4;++I)
     {
      const auto* It=M->Inter->Get(ProxyIds[I]);if(!Check(It&&It->Object.I==W->Handle(ProxyPaths[I])&&FMath::Abs(It->Range-ProxyRanges[I])<1e-8,TEXT("original proxy binding/range: ")+FString(ProxyIds[I])))return false;
@@ -269,6 +367,7 @@ namespace
     if(!Check(It&&It->Object.I==B.Node&&W->Handle(B.Path)==B.Node&&It->Range==B.Range&&It->ExamineRange==B.ExamineRange&&It->bLook==B.Look&&bool(It->Use)==B.Use&&bool(It->Examine)==B.Examine&&M->Inter->LabelOf(B.Id)==Expected,TEXT("live context/proxy/callback binding: ")+B.Id))return false;
     auto O=S47J::New();S47J::Set(O,TEXT("id"),B.Id);S47J::Set(O,TEXT("node"),B.Node);S47J::Set(O,TEXT("range_m"),B.Range);S47J::Set(O,TEXT("label"),Expected);S47J::Set(O,TEXT("callbacks_present"),B.Use);Interactions.Add(MakeShared<FJsonValueObject>(O));
    }
+   if(!AttachedComponents(Name,Capture))return false;
    Evidence->SetArrayField(TEXT("protected_nodes"),Rows);Evidence->SetArrayField(TEXT("proxy_bindings"),Interactions);S47J::Set(Evidence,TEXT("dynamic_visibility_and_light_colors"),TEXT("Production schedule remains active; their values are recorded, not frozen"));
    if(!SaveJson(Root/(Name+TEXT(".json")),Evidence)){Result(false,TEXT("could not write protected-node evidence"));return false;}return true;
   }
