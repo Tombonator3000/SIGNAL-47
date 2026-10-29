@@ -1282,3 +1282,21 @@ Fryst `05a49e8a` består editorbygg R3 og ni komplette dag/skumring/natt-PNG-er 
 Vanlig Walker/ray/fokus/Player.OnUse gir original Closed-respons. Normalruten består1720selvtester/87kontroller/441prøver/37,384956m, samletOff1720/69/442/37,403985m. Begge har fersk diskleser/full title-Continue og normal exit0 uten konkurranse. Ett eksplisitt kapittel2-fotutgangspunkt og en egen area-synlighetsfixture er merket; ingen naturlig ankomst, menneskelig input eller FPS-aksept hevdes. Alle293beskyttede originaler og fem egne nativeassets forblir byteidentiske.
 
 [Leveringsrapport](../Docs/Evidence/UnrealDeliveries/CINEMA_POSTERS_2026-10-29.md), portabel JSON og fem byteoriginale bilder følger. NativeR3/ferskleser168/169 er eget bevis fra `33ae8dc9`; avvisteR1/R2 er bevart. Pakket runtime er UNVERIFIED og planlegges i felles kandidat med HUM01. Ingen installasjon eller offentlig release. Standardspillet startet under HUM01s neste test; guard stoppet bare egen prosess, og alle nye tungejobber avventes mens spilløkten kjører.
+
+
+## 2026-10-29T17:41:04+01:00: smal lokal arkivkompatibilitet etter PR230
+
+Opprettet tynn sparse-worktree `observing-compat`, gren `codex/observing-archive-compat-20261029`, fra eksakt origin/main `12c95b17923885b6b3f5f0efb4e81e6368303f9e`. GIT_LFS_SKIP_SMUDGE er brukt; ingen Content eller avledede assets er kopiert. Claudes normale arkivrute og alle Story/Chapter2-kroker fra PR230 er beholdt. Claude er tilbake og fortsetter Spine/Timeline/Flow i sc03; dette delpasset berører ingen av hans filer.
+
+Konsollens Run2-sperre viser nå arkivperm i records room. UseBinder bruker eksisterende AdvanceClockTo i begge milepæler. Eksisterende v1-observinglagring uten archive-felt får `Archive=-1`, et uttrykkelig unntak som også bevares ved ny lagring. Ny sak starter fortsatt0. Unntaket lager ingen dokumenter eller hint og verken tilbyr, sperrer med eller markerer arkivoppgaven ferdig. Gamle Run2/Tune- og Run3/Done-kohorter er lagt til eksisterende SelfTest med faktisk Begin/Save/JSON/Begin uten Main.
+
+Privat forfatterkontroll har 21 lette kilde-/diff-/bevaringskontroller. Fryst patch er anvendt eksakt mot main230, og begge runtimekildefiler er byteidentiske med forslaget. CPP SHA256 er `0d79aebde710c806826fd7035a3318cc65a60d6ddc114105747b422fcf6d123e`; header SHA256 er `b8d31122ba69486ccbb1ab5a0ed1d170fea6136898e9d328d1ebc465be97dd46`. De to C++-kohortene er forfattet, ikke kjørt; bygg/native er UNVERIFIED. Root samordner kandidaten i HUM02-kopien til ett faktisk editorbygg, legacy-selvtester og målrettet Night80 før videre levering. Ingen motor, PR/push/merge, installasjon eller offentlig release er utført her.
+
+
+## 2026-10-29 kl. 18:10 CET: arkivkompatibilitet består målrettet editorprøve
+
+Kompatkilden `4a53a37f` er faktisk prøvd i rent, sammensatt Dale-bygg `31836606f020d968a1c2f5a7933389aff396aa67`. Dette bygget inkluderer en separat opt-in HUM02-støttesensor og er ikke PR-grenens HEAD. Begge Observing-filer har eksakt samme bytes/SHA256 i kandidaten og prøvd kilde. Faktisk editor-modul, plan, guardresultater, logger og opprinnelig UTF-16-resultat bindes i [portabel kvittering](Evidence/OBSERVING-COMPAT-2026-10-29/targeted-editor-r1-receipt.json). Originalbevisene er urørt.
+
+Editorbygg PASS, exit 0 / 23,38 s. Begge målrettede kjøringer har normal exit 0, semantic_success og ingen guardregistrert konkurranse. Samlet selvtestresultat er 1722, inkludert de to nye legacy-kohortene med faktisk Begin/Save/JSON/Begin. Night består 80 kontroller, fire produksjons-API-observasjoner og åtte ferske diskleser/full-Flow-restores; HUM02-sensoren er ikke aktiv i denne prøven. Night har de navngitte gamle SC01-/escaped-diskfixturene, og prøver SC03-grensen rundt 02:15 samt Locked/Printed-restore, ikke nytt SC03-innhold eller ny flukt.
+
+Full dokumentkontroll i Dale består med 369 Markdown-filer / 2173 lenker og 0 nye feil; nye kvitteringslenker kontrolleres også direkte fra denne tynne worktreeen. Dette delpasset oppdaterer bare egen koordineringsrad, append-only historikk og JSON-kvittering. Root eier PR/fletting. Fersk ordinær Continue i egen spillprosess, menneskelig input/lytting, FPS, fullmatrise, pakket kandidat, installasjon og offentlig release er UNVERIFIED. Claudes Spine/Timeline/Flow er urørt.
