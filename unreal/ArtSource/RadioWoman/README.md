@@ -2,7 +2,10 @@
 
 Dette er HUM-01 sin forfatterkilde for en nøktern 1986-vinterfrakk, løse bukser og lukkede sko. Klærne bygges fra egne ringer og paneler med stofftykkelse, krage, mørke knapper, lommer og skosåler. Servitrisens uniform brukes ikke som bekledning. Frakken har en faktisk åpen nedre front slik at den kan følge lårene i den senere sitteposen.
 
-**Status: kilde uten Blender-/Unreal-kontroll.** Et ferdig klesverktøy er et internt delsteg. Det godkjenner ingen ny mannequin, ingen passform i sittepose og ingen full HUM-01-leveranse.
+**Status: Under arbeid, R2-kilden er ikke produsert. Sist kontrollert: 29. oktober 2026.** Den opprinnelige kilden har faktisk saved/reopen og R11 har [kontakt-/funksjonsbevis med utseende FAIL](../../Evidence/RADIO-WOMAN-2026-10-29/r11-editor-functional-receipt.json). R2 tilføyer to målte skulderkapper for å lukke de synlige hudglipene. Ren Python-kontroll er bestått; faktisk R2-BVH, Blender-save/reopen, nye nativekilder, sittende skulderutseende og pakket runtime er UNVERIFIED.
+
+
+R2 velger øvre bue fra de 40 faktiske ytterringvertexene på hvert erme. Speilet armgrunnlag behandles separat. [shoulder_caps.py](shoulder_caps.py) lager to korte kapper fra faktiske utvendige frakk-/hudstråler og bevarer råquery før avslag. Original kropp, 17 eksisterende klesdeler og hele restskjelettet kontrolleres mot endring. Manglende treff eller fold gir avslag; sittende passform må vurderes etter separat nativebake.
 
 ## Privat inndata og utdata
 
@@ -40,7 +43,7 @@ Faktisk forfatting kjøres **bare av root i et ledig reservert tungjobb-vindu**,
 /home/tom/.local/opt/blender-5.2.2-linux-x64/blender --background \
   --python unreal/ArtSource/RadioWoman/build_clothes.py -- \
   /home/tom/scratch-bm/Signal47-metahuman-20261026/blender/waitress_body.fbx \
-  /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r1
+  /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r2
 ```
 
 Suksessmarkøren er `RADIO_WOMAN_CLOTHES_REST_EXPORTED`. Skriptet krever faktisk lagret og reåpnet `.blend`, uendret armatur og gyldige vekter/materialspor. Det beviser ikke at FBX importerer identisk i Unreal; det er neste nativeport. Ingen preview-rendering eller installasjon startes av skriptet.

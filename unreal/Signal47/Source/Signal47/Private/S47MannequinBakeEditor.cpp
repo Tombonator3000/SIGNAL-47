@@ -681,9 +681,145 @@ namespace S47MannequinBake
    if (B.ColorVertexBuffer.GetNumVertices()) Hash.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()), B.ColorVertexBuffer.GetNumVertices() * B.ColorVertexBuffer.GetStride());
    Hash.Final(); FSHAHash Out; Hash.GetHash(Out.Hash); return Out.ToString().ToLower();
   }
+  // R12 is an explicit new garment source over the accepted, unchanged R11 pose.
+  // Source/import/bind/read receipts must exist before this authoring path opens.
+  FJson GarmentSourceBinding, GarmentReferenceBake;
+  bool PrepareGarmentSourceBinding(const FJson& ReferenceJob)
+  {
+   if (!Job->HasField(TEXT("garment_source_binding"))) return true;
+   const FJson Pin = S47J::Obj(Job, TEXT("garment_source_binding")); FJson Input;
+   if (!PostrepairPinnedJson(Pin, Input)) return false;
+   Report->SetObjectField(TEXT("garment_source_binding_file"), Pin); Report->SetObjectField(TEXT("garment_source_binding_input"), Input);
+   const FString SourceRoot = TEXT("/Game/MetaHumans/Mannequins/RadioWoman/ClothesR2");
+   const FString NewClothes = SourceRoot + TEXT("/SKM_RadioWoman_Clothes"), NewSkeleton = SourceRoot + TEXT("/SKEL_RadioWoman_Clothes");
+   if (!Need(S47J::Int(Input, TEXT("schema_version")) == 1 && S47J::Str(Input, TEXT("status")) == TEXT("READY_FOR_AUTHORING_ONLY") &&
+    S47J::Str(Input, TEXT("policy")) == TEXT("R12-measured-shoulder-clothes-only-r11-pose") &&
+    !S47J::Bool(Input, TEXT("runtime_accepted")) && !S47J::Bool(Input, TEXT("appearance_accepted")) &&
+    Job->HasTypedField<EJson::Object>(TEXT("postrepair_binding")) &&
+    S47J::Str(Job, TEXT("output_asset")) == TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated"),
+    TEXT("R12 bounded new output and explicit source policy, closed until actual independent garment production"))) return false;
+   for (const TCHAR* Key : {TEXT("source_plan_file"), TEXT("source_report_file"), TEXT("source_fbx_file"), TEXT("source_blend_file"), TEXT("import_receipt_file"),
+    TEXT("source_verify_file"), TEXT("bind_receipt_file"), TEXT("bind_verify_file"), TEXT("reference_r11_job_file"), TEXT("reference_r11_bake_file")})
+    if (!Need(S47J::Str(S47J::Obj(Input, Key), TEXT("path")).StartsWith(TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/")), TEXT("R12 private immutable source/evidence file"))) return false;
+   FJson Source, Imported, Verified, Bound, BindVerified, ReferenceR11Job;
+   if (!PostrepairPinnedJson(S47J::Obj(Input, TEXT("source_report_file")), Source) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("import_receipt_file")), Imported) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("source_verify_file")), Verified) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("bind_receipt_file")), Bound) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("bind_verify_file")), BindVerified) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_r11_job_file")), ReferenceR11Job) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_r11_bake_file")), GarmentReferenceBake)) return false;
+   const FJson Caps = S47J::Obj(Source, TEXT("shoulder_caps")), State = S47J::Obj(Bound, TEXT("clothes_bind"));
+   const FJson Fields = S47J::Obj(Input, TEXT("new_job_fields"));
+   if (!Need(Fields.IsValid() && Fields->Values.Num() == 3 && S47J::Str(Fields, TEXT("clothes_asset")) == NewClothes &&
+    S47J::Str(Fields, TEXT("private_skeleton")) == NewSkeleton && S47J::Str(Fields, TEXT("clothes_bind_report")) == S47J::Str(S47J::Obj(Input, TEXT("bind_receipt_file")), TEXT("path")) &&
+    S47J::Str(Source, TEXT("status")) == TEXT("REST_CLOTHES_EXPORTED_NOT_ACCEPTED") && S47J::Bool(Source, TEXT("blend_reopened")) && S47J::Bool(Source, TEXT("source_body_payload_preserved")) &&
+    S47J::Str(Source, TEXT("input_body_sha256")) == TEXT("292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92") &&
+    S47J::Str(Source, TEXT("input_body_sha256_after")) == S47J::Str(Source, TEXT("input_body_sha256")) && !S47J::Bool(Source, TEXT("source_body_geometry_exported")) &&
+    S47J::Str(Source, TEXT("rest_skeleton_sha256")) == TEXT("9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113") &&
+    S47J::Str(Caps, TEXT("status")) == TEXT("REST_CAPS_MEASURED_NOT_SEATED_OR_NATIVE_ACCEPTED") && S47J::Arr(Caps, TEXT("sides")).Num() == 2 &&
+    !S47J::Bool(Caps, TEXT("source_body_faces_copied")) && !S47J::Bool(Caps, TEXT("source_body_mutated")) && S47J::Int(Caps, TEXT("preserved_original_parts")) == 17,
+    TEXT("R12 actual new rest-garment reopen, two measured caps, original body/ref and exact changed source fields"))) return false;
+   for (const TCHAR* Key : {TEXT("clothes_asset"), TEXT("private_skeleton"), TEXT("clothes_bind_report")})
+    if (!Need(S47J::Str(Job, Key) == S47J::Str(Fields, Key) && S47J::Str(Job, Key) != S47J::Str(ReferenceJob, Key), TEXT("R12 exact explicit new source field: ") + FString(Key))) return false;
+   for (const TCHAR* Key : {TEXT("asset_root"), TEXT("cloth_master"), TEXT("brow_material"), TEXT("contract"), TEXT("contract_sha256"), TEXT("source_snapshot"), TEXT("source_snapshot_sha256")})
+    if (!Need(S47J::Str(Job, Key) == S47J::Str(ReferenceJob, Key) && S47J::Str(ReferenceR11Job, Key) == S47J::Str(ReferenceJob, Key), TEXT("R12 retains actual R10 materials, Body/Face contract and source root: ") + FString(Key))) return false;
+   const double ImportPID = S47J::Num(Imported, TEXT("pid")), VerifyPID = S47J::Num(Verified, TEXT("pid"));
+   if (!Need(S47J::Str(Imported, TEXT("status")) == TEXT("PASS") && S47J::Str(Imported, TEXT("mode")) == TEXT("garment-import") && ImportPID > 0 &&
+    S47J::Str(Verified, TEXT("status")) == TEXT("PASS") && S47J::Str(Verified, TEXT("mode")) == TEXT("garment-verify") && VerifyPID > 0 && VerifyPID != ImportPID &&
+    ImportPID != FPlatformProcess::GetCurrentProcessId() && VerifyPID != FPlatformProcess::GetCurrentProcessId() &&
+    S47J::Str(Bound, TEXT("status")) == TEXT("PASS") && S47J::Str(Bound, TEXT("mode")) == TEXT("bind-clothes") && S47J::Num(Bound, TEXT("pid")) == ImportPID &&
+    S47J::Str(BindVerified, TEXT("status")) == TEXT("PASS") && S47J::Str(BindVerified, TEXT("mode")) == TEXT("verify-clothes-bind") && S47J::Num(BindVerified, TEXT("pid")) == VerifyPID &&
+    PostrepairEqual(State, S47J::Obj(BindVerified, TEXT("clothes_bind"))) && S47J::Bool(State, TEXT("preserved_payload")) &&
+    S47J::Str(State, TEXT("asset")) == NewClothes && S47J::Str(State, TEXT("private_skeleton")) == NewSkeleton &&
+    S47J::Str(State, TEXT("reference_after_sha1")) == FPose(Body->GetRefSkeleton()).Hash() &&
+    S47J::Str(State, TEXT("inverse_reference_after_sha1")) == InverseReferenceHash(Body) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("saved_assets")), S47J::Obj(Verified, TEXT("saved_assets"))) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("plan")), S47J::Obj(Verified, TEXT("plan"))) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("plan")), S47J::Obj(Input, TEXT("source_plan_file"))) &&
+    S47J::Bool(Imported, TEXT("all_preexisting_content_preserved")) && S47J::Bool(Verified, TEXT("all_preexisting_content_preserved")) &&
+    S47J::Bool(Imported, TEXT("all_private_inventory_preserved")) && S47J::Bool(Verified, TEXT("all_private_inventory_preserved")) &&
+    S47J::Bool(Imported, TEXT("all_r11_authoring_receipts_preserved")) && S47J::Bool(Verified, TEXT("all_r11_authoring_receipts_preserved")),
+    TEXT("R12 actual import/bind and independent saved-reader processes, strict canonical bind and preserved originals"))) return false;
+   const FJson Files = S47J::Obj(Input, TEXT("new_native_assets"));
+   if (!Need(Files.IsValid() && Files->Values.Num() == 2 && Files->HasTypedField<EJson::Object>(*NewClothes) && Files->HasTypedField<EJson::Object>(*NewSkeleton) &&
+    PostrepairEqual(Files, S47J::Obj(Verified, TEXT("saved_assets"))), TEXT("R12 exactly two new source assets, no replacement of R10/R11/materials"))) return false;
+   for (const auto& Entry : Files->Values)
+   {
+    const FString Package(Entry.Key.ToView());
+    const FString Path = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Package, FPackageName::GetAssetPackageExtension()));
+    TArray<uint8> Bytes; if (!PostrepairPinnedFile(Entry.Value->AsObject(), Bytes, Path)) return false;
+   }
+   TArray<uint8> SourceBytes;
+   if (!PostrepairPinnedFile(S47J::Obj(Input, TEXT("source_plan_file")), SourceBytes) ||
+    !PostrepairPinnedFile(S47J::Obj(Input, TEXT("source_fbx_file")), SourceBytes) || !PostrepairPinnedFile(S47J::Obj(Input, TEXT("source_blend_file")), SourceBytes)) return false;
+   if (!Need(S47J::Str(Job, TEXT("clothing_report")) == S47J::Str(S47J::Obj(Input, TEXT("source_report_file")), TEXT("path")) &&
+    S47J::Str(Job, TEXT("clothing_report_sha256")) == S47J::Str(S47J::Obj(Input, TEXT("source_report_file")), TEXT("sha256")) &&
+    S47J::Str(Job, TEXT("clothing_fbx")) == S47J::Str(S47J::Obj(Input, TEXT("source_fbx_file")), TEXT("path")) &&
+    S47J::Str(Job, TEXT("clothing_fbx_sha256")) == S47J::Str(S47J::Obj(Input, TEXT("source_fbx_file")), TEXT("sha256")),
+    TEXT("R12 actual job source report/FBX provenance equals the independently measured new source binding"))) return false;
+   const FJson SourceOutputs = S47J::Obj(Source, TEXT("output_files_sha256"));
+   for (const TCHAR* Key : {TEXT("source_fbx_file"), TEXT("source_blend_file")})
+   {
+    const FJson Row = S47J::Obj(Input, Key); const FString Path = S47J::Str(Row, TEXT("path"));
+    if (!Need(S47J::Str(SourceOutputs, *Path) == S47J::Str(Row, TEXT("sha256")), TEXT("R12 actual exported bytes linked by source report and dual-hash root receipt"))) return false;
+   }
+   FJson Geometry, Description; if (!GeometryState(Geometry, Description)) return false;
+   if (!Need(PostrepairEqual(Geometry, S47J::Obj(State, TEXT("geometry_after"))) &&
+    FPose(Clothes->GetRefSkeleton()).Hash() == FPose(Body->GetRefSkeleton()).Hash() && InverseReferenceHash(Clothes) == InverseReferenceHash(Body) &&
+    PostrepairEqual(SkeletalSource(Clothes), S47J::Obj(S47J::Obj(BindVerified, TEXT("skeletal_sources")), TEXT("clothes"))) &&
+    S47J::Str(GarmentReferenceBake, TEXT("status")) == TEXT("PASS") && S47J::Str(GarmentReferenceBake, TEXT("mode")) == TEXT("bake") &&
+    S47J::Str(S47J::Obj(GarmentReferenceBake, TEXT("output")), TEXT("asset")) == TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated") &&
+    PostrepairEqual(SkeletalSource(Body), S47J::Obj(S47J::Obj(GarmentReferenceBake, TEXT("skeletal_sources")), TEXT("body"))) &&
+    PostrepairEqual(SkeletalSource(Face), S47J::Obj(S47J::Obj(GarmentReferenceBake, TEXT("skeletal_sources")), TEXT("face"))) &&
+    PostrepairEqual(S47J::Obj(Report, TEXT("card_sources")), S47J::Obj(GarmentReferenceBake, TEXT("card_sources"))) &&
+    PostrepairEqual(S47J::Obj(ReferenceR11Job, TEXT("postrepair_binding")), S47J::Obj(Job, TEXT("postrepair_binding"))),
+    TEXT("R12 actual new Clothes payload plus unchanged accepted R11 Body, Face, cards and measured pose binding"))) return false;
+   USkeletalMesh* OldClothes = Load<USkeletalMesh>(S47J::Str(ReferenceJob, TEXT("clothes_asset")));
+   if (!Need(OldClothes && OldClothes->GetSkeleton(), TEXT("R12 actual retained R10 clothes source loads without replacement"))) return false;
+   const auto CurrentMaterials = Clothes->GetMaterials(), OldMaterials = OldClothes->GetMaterials();
+   if (!Need(CurrentMaterials.Num() == 5 && CurrentMaterials.Num() == OldMaterials.Num(), TEXT("R12 retains all five actual R10 material slots"))) return false;
+   for (int32 Index = 0; Index < CurrentMaterials.Num(); ++Index)
+    if (!Need(CurrentMaterials[Index].MaterialSlotName == OldMaterials[Index].MaterialSlotName && CurrentMaterials[Index].MaterialInterface == OldMaterials[Index].MaterialInterface,
+     TEXT("R12 actual identical original slot order and MIC object identity"))) return false;
+   const FJson NativeFiles = S47J::Obj(Input, TEXT("unchanged_native_assets"));
+   TSet<FString> RequiredAssets;
+   for (const auto& Entry : Contract->GetObjectField(TEXT("sources"))->Values) RequiredAssets.Add(Entry.Value->AsString());
+   for (const auto& Slot : OldMaterials) RequiredAssets.Add(GetPathNameSafe(Slot.MaterialInterface));
+   RequiredAssets.Add(S47J::Str(ReferenceJob, TEXT("cloth_master")));
+   RequiredAssets.Add(S47J::Str(ReferenceJob, TEXT("brow_material")));
+   RequiredAssets.Add(OldClothes->GetPathName()); RequiredAssets.Add(OldClothes->GetSkeleton()->GetPathName());
+   if (!Need(NativeFiles.IsValid() && NativeFiles->Values.Num() == RequiredAssets.Num(), TEXT("R12 complete exact unchanged original/native/material source file inventory"))) return false;
+   for (const FString& AssetName : RequiredAssets)
+   {
+    if (!Need(NativeFiles->HasTypedField<EJson::Object>(*AssetName), TEXT("R12 unchanged source pin exists: ") + AssetName)) return false;
+    const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(FPackageName::ObjectPathToPackageName(AssetName), FPackageName::GetAssetPackageExtension()));
+    TArray<uint8> Bytes; if (!PostrepairPinnedFile(S47J::Obj(NativeFiles, *AssetName), Bytes, Filename)) return false;
+   }
+   const FString ReferenceR11Path = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated"), FPackageName::GetAssetPackageExtension()));
+   if (!PostrepairPinnedFile(S47J::Obj(Input, TEXT("reference_r11_native_file")), SourceBytes, ReferenceR11Path)) return false;
+   GarmentSourceBinding = Input; Report->SetObjectField(TEXT("garment_source_binding"), Input); Report->SetNumberField(TEXT("garment_source_binding_version"), 1);
+   Report->SetObjectField(TEXT("garment_source_geometry_actual"), Geometry); return true;
+  }
+  bool CheckGarmentPoseUnchanged(const FJson& ActualReport)
+  {
+   if (!GarmentSourceBinding.IsValid()) return true;
+   for (const TCHAR* Key : {TEXT("foot_ik"), TEXT("hand_ik"), TEXT("seat_space_landmarks_cm")})
+   {
+    const auto* Actual = ActualReport->Values.Find(Key); const auto* Reference = GarmentReferenceBake->Values.Find(Key);
+    if (!Need(Actual && Reference && FJsonValue::CompareEqual(**Actual, **Reference), TEXT("R12 retains exact accepted R11 ankle/hand/seat data: ") + FString(Key))) return false;
+   }
+   if (!Need(S47J::Str(ActualReport, TEXT("posed_body_sha1")) == S47J::Str(GarmentReferenceBake, TEXT("posed_body_sha1")) &&
+    PostrepairEqual(S47J::Obj(ActualReport, TEXT("face_pose_transfer")), S47J::Obj(GarmentReferenceBake, TEXT("face_pose_transfer"))),
+    TEXT("R12 exact same canonical body pose, unchanged face transfer and rigid hair/card basis"))) return false;
+   Report->SetBoolField(TEXT("garment_reference_pose_unchanged"), true); return true;
+  }
+
   bool PreparePostrepairBinding()
   {
-   if (!Job->HasField(TEXT("postrepair_binding"))) return true; // Original R10 route remains explicit history.
+   if (!Job->HasField(TEXT("postrepair_binding")))
+   {
+    if (Job->HasField(TEXT("garment_source_binding"))) return Need(false, TEXT("new garment source requires the actual accepted postrepair binding"));
+    return true; // Original R10 route remains explicit history.
+   }
    const FString EvidenceRoot = TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/");
    const FJson InputPin = S47J::Obj(Job, TEXT("postrepair_binding"));
    if (!Need(S47J::Str(InputPin, TEXT("path")).StartsWith(EvidenceRoot), TEXT("R11 explicit private evidence-root binding path"))) return false;
@@ -701,8 +837,12 @@ namespace S47MannequinBake
    if (!PostrepairPinnedJson(S47J::Obj(Input, TEXT("acceptance_file")), Acceptance) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("raw_file")), Raw) ||
     !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_bake_file")), PostrepairReferenceBake) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_contract_file")), ReferenceContract) ||
     !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_job_file")), ReferenceJob)) return false;
+   if (!PrepareGarmentSourceBinding(ReferenceJob)) return false;
    for (const TCHAR* Key : {TEXT("clothes_asset"), TEXT("private_skeleton"), TEXT("brow_material"), TEXT("cloth_master"), TEXT("asset_root"), TEXT("clothes_bind_report")})
-    if (!Need(!S47J::Str(ReferenceJob, Key).IsEmpty() && S47J::Str(ReferenceJob, Key) == S47J::Str(Job, Key), TEXT("R11 explicitly reuses pinned R10 private source field: ") + FString(Key))) return false;
+   {
+    const bool NewGarmentField = GarmentSourceBinding.IsValid() && (FString(Key) == TEXT("clothes_asset") || FString(Key) == TEXT("private_skeleton") || FString(Key) == TEXT("clothes_bind_report"));
+    if (!Need(!S47J::Str(ReferenceJob, Key).IsEmpty() && (NewGarmentField || S47J::Str(ReferenceJob, Key) == S47J::Str(Job, Key)), TEXT("R11 unchanged R10 source or explicitly proven R12 garment-only field: ") + FString(Key))) return false;
+   }
    const FJson RawPin = S47J::Obj(Input, TEXT("raw_file")); const FString RawPath = S47J::Str(RawPin, TEXT("path"));
    const FJson AcceptedRaw = S47J::Obj(S47J::Obj(Acceptance, TEXT("raw")), *RawPath);
    if (!Need(S47J::Str(Acceptance, TEXT("status")) == TEXT("PASS_READONLY_POSTREPAIR_NATIVE_MEASUREMENT") &&
@@ -1499,6 +1639,10 @@ namespace S47MannequinBake
      if (!Need(PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_binding_file")), S47J::Obj(Job, TEXT("postrepair_binding"))) &&
       PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_binding")), PostrepairBinding) &&
       PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_derived_foot_targets")), PostrepairFloorTargets), TEXT("R11 fresh verify uses the exact same frozen files, reference and recomputed measured targets"))) return false;
+    if (Job->HasField(TEXT("garment_source_binding")) || Previous->HasField(TEXT("garment_source_binding")))
+     if (!Need(GarmentSourceBinding.IsValid() && PostrepairEqual(S47J::Obj(Previous, TEXT("garment_source_binding_file")), S47J::Obj(Job, TEXT("garment_source_binding"))) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("garment_source_binding")), GarmentSourceBinding) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("garment_source_geometry_actual")), S47J::Obj(Report, TEXT("garment_source_geometry_actual"))), TEXT("R12 fresh reader retains exact new source pins and actual full Clothes payload")) || !CheckGarmentPoseUnchanged(Previous)) return false;
     UStaticMesh* Saved = Load<UStaticMesh>(Job->GetStringField(TEXT("output_asset")));
     if (!Need(Saved != nullptr, TEXT("saved output really reloads as StaticMesh"))) return false;
     FAssetCompilingManager::Get().FinishAllCompilation();
@@ -1506,7 +1650,7 @@ namespace S47MannequinBake
    }
    FPose BodyPose(Body->GetRefSkeleton()), FacePose(Face->GetRefSkeleton()), ClothPose(Clothes->GetRefSkeleton()); FTransform Seat;
    if (!PoseBody(BodyPose, Seat) || !ReferenceDiagnostics(BodyPose, FacePose, ClothPose)
-    || !Transfer(BodyPose, Face, false, FacePose) || !Transfer(BodyPose, Clothes, true, ClothPose)) return false;
+    || !Transfer(BodyPose, Face, false, FacePose) || !Transfer(BodyPose, Clothes, true, ClothPose) || !CheckGarmentPoseUnchanged(Report)) return false;
    if (Mode == TEXT("probe")) return true;
    if (!Need(Mode == TEXT("bake") && !FPackageName::DoesPackageExist(Job->GetStringField(TEXT("output_asset"))), TEXT("fresh bake destination; no replacement of any previous candidate"))) return false;
    if (!Need(FApp::CanEverRender(), TEXT("bake has a render context; commandlets require AllowCommandletRendering, not NullRHI"))) return false;

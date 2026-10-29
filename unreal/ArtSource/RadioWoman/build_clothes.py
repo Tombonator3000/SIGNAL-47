@@ -16,6 +16,7 @@ HERE = Path(__file__).resolve().parent
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(HERE))
 import geometry as G
+import shoulder_caps
 
 PRIVATE_ROOT = Path.home()/'scratch-bm/Signal47-mannequins-20261029/private'
 
@@ -135,7 +136,8 @@ def build(args, cfg):
     report = {'status': 'STARTED_NOT_ACCEPTED', 'private_output': True,
               'input_body_fbx': str(source), 'input_body_sha256': before,
               'recipe_sha256': sha(__file__), 'geometry_sha256': sha(HERE/'geometry.py'),
-              'clothing_contract_sha256': sha(HERE/'clothing.json'), 'parts': [],
+              'clothing_contract_sha256': sha(HERE/'clothing.json'),
+              'shoulder_recipe_sha256': sha(HERE/'shoulder_caps.py'), 'parts': [],
               'limits': ['Bare klær i kildens restpose; ingen sittende mannequinaksept',
                          'Nativebaker eier kropp/klær/ansikt og autoritativ sittepose',
                          'Ingen import-, native LOD-, proxy-, radio-, natt- eller diskkontroll her']}
@@ -152,6 +154,8 @@ def build(args, cfg):
         body = max((o for o in bpy.context.scene.objects if o.type == 'MESH'), key=lambda o: len(o.data.vertices))
         reference = skeleton(arm)
         reference_sha = signature(reference)
+        if reference_sha != cfg['shoulder_caps']['source_skeleton_sha256'] or len(reference['bones']) != 342:
+            raise RuntimeError('R12 krever eksakt uendret målt 342-beins restskjelett')
         arm.data.pose_position = 'REST'
         bpy.context.scene.unit_settings.system = 'METRIC'
         bpy.context.scene.unit_settings.scale_length = 1.
@@ -273,6 +277,8 @@ def build(args, cfg):
                        for dz, rx, f, b in [(-.047, .108, .095, .095), (-.017, .084, .079, .078), (.008, .075, .073, .073)]]
         mesh('Coat_low_fold_collar', G.loft(collar_rows, 48, closed=False), 'M_RW_Trim', .002)
 
+        sleeve_profiles = {}
+
         def limb(name, centres, source_points, clearance, material):
             rows = []
             for i, centre in enumerate(centres):
@@ -289,6 +295,7 @@ def build(args, cfg):
                              'rx': max(abs(G.dot(p, u)) for p in radial)+clearance,
                              'front': max(-G.dot(p, v) for p in radial)+clearance,
                              'back': max(G.dot(p, v) for p in radial)+clearance})
+            sleeve_profiles[name] = rows
             return mesh(name, G.loft(rows, 40, exponent=1), material, .0018)
 
         for side in 'lr':
@@ -337,6 +344,22 @@ def build(args, cfg):
             upper_rows = [dict(base_row, centre=sole_rows[-1]['centre'])]+[shoe_section(low+z) for z in (.035, .060, .085, .110, .135)]
             upper = mesh('Shoe_upper_'+side, G.loft(upper_rows, 48, cap=True, exponent=.5), 'M_RW_Shoe')
             rigid[sole.name] = rigid[upper.name] = 'foot_'+side
+
+        # R12 tilføyer bare to korte, målte skulderkapper. Alle opprinnelige
+        # deler må være nøyaktig uendret før felles original vektoverføring.
+        body_snapshot = clothes_snapshot(body)
+        preserved_parts = {ob.name: clothes_snapshot(ob) for ob in parts}
+        shoulder_caps.build(body, coat, sleeve_profiles, list(parts), joint, mesh, cfg, report)
+        for ob in parts:
+            if ob.name in preserved_parts and clothes_snapshot(ob) != preserved_parts[ob.name]:
+                raise RuntimeError('Skuldertillegg endret opprinnelig klesdel: '+ob.name)
+        if clothes_snapshot(body) != body_snapshot:
+            raise RuntimeError('Skuldermåling endret original kroppspayload')
+        report['source_body_payload_preserved'] = True
+        report['existing_parts_preserved_before_weight_transfer'] = preserved_parts
+        report['shoulder_caps']['preserved_original_parts'] = len(preserved_parts)
+        if skeleton(arm) != reference:
+            raise RuntimeError('Skuldertillegg endret originalt restskjelett')
 
         # Bare vekter overføres; armaturets navn, hierarki og referansematriser endres aldri.
         for ob in parts:

@@ -39,26 +39,100 @@
     "add_leaf_bones": false,
     "bake_anim": false,
     "use_armature_deform_only": false,
-    "exported_objects": ["clothes_mesh", "unchanged_source_armature"],
+    "exported_objects": [
+      "clothes_mesh",
+      "unchanged_source_armature"
+    ],
     "body_geometry_exported": false,
     "reference_pose_changed": false,
     "note": "Eksportaksene er de faktiske Blender-defaultene fra uniform-v5, ikke Blender-modellens front/up. Ikke bytt beinbasis."
   },
   "materials": [
-    {"name": "M_RW_Coat", "base_color_linear": [0.07, 0.095, 0.115], "roughness": 0.88, "metallic": 0.0},
-    {"name": "M_RW_Trousers", "base_color_linear": [0.045, 0.039, 0.032], "roughness": 0.86, "metallic": 0.0},
-    {"name": "M_RW_Shoe", "base_color_linear": [0.016, 0.012, 0.01], "roughness": 0.57, "metallic": 0.0},
-    {"name": "M_RW_Trim", "base_color_linear": [0.052, 0.064, 0.072], "roughness": 0.9, "metallic": 0.0},
-    {"name": "M_RW_Button", "base_color_linear": [0.034, 0.028, 0.023], "roughness": 0.55, "metallic": 0.0}
+    {
+      "name": "M_RW_Coat",
+      "base_color_linear": [
+        0.07,
+        0.095,
+        0.115
+      ],
+      "roughness": 0.88,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Trousers",
+      "base_color_linear": [
+        0.045,
+        0.039,
+        0.032
+      ],
+      "roughness": 0.86,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Shoe",
+      "base_color_linear": [
+        0.016,
+        0.012,
+        0.01
+      ],
+      "roughness": 0.57,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Trim",
+      "base_color_linear": [
+        0.052,
+        0.064,
+        0.072
+      ],
+      "roughness": 0.9,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Button",
+      "base_color_linear": [
+        0.034,
+        0.028,
+        0.023
+      ],
+      "roughness": 0.55,
+      "metallic": 0.0
+    }
   ],
   "private_output": {
     "allowed_root": "~/scratch-bm/Signal47-mannequins-20261029/private",
-    "files": ["radio_woman_clothes_rest.blend", "SKM_RadioWoman_Clothes.fbx", "clothing-report.json"],
+    "files": [
+      "radio_woman_clothes_rest.blend",
+      "SKM_RadioWoman_Clothes.fbx",
+      "clothing-report.json"
+    ],
     "policy": "Alle avledede mesh-/rigg-/fitting-filer beholdes private. Offentlig Git får bare denne egne oppskriften og kontrakten."
   },
   "delivery_limits": [
     "Forfatterverktøyet er et internt delsteg, ikke ferdig HUM-01",
     "Faktiske restposebounds og rigg-/vekt-/outputhasher skrives først av Blender-kjøringen til privat clothing-report.json",
     "Sittende kontakt, radio/hender, native LOD, synlighet/proxy, nattregel, disk/title/Continue og pakket spill gjenstår"
-  ]
+  ],
+  "shoulder_caps": {
+    "policy": "measured-upper-shoulder-overlap-v1",
+    "source_skeleton_sha256": "9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113",
+    "rows": 5,
+    "proximal_extensions_m": [
+      0.015,
+      0.025,
+      0.035,
+      0.045,
+      0.055,
+      0.065,
+      0.075,
+      0.085,
+      0.095
+    ],
+    "skin_clearance_m": 0.025,
+    "seam_lift_m": 0.0015,
+    "scope": "Kun to nye skuldre. Originalfrakk, ermer, rigg, restpose, skala, materialer, bukser og sko bevares. Faktiske BVH-mål kreves. Ingen sittende eller nativeaksept.",
+    "ring_vertices": 40,
+    "upper_arc_intervals": 24,
+    "arc_policy": "Actual Solidify outer-ring maximum worldZ; 24 consecutive original ring intervals modulo40, independently per side"
+  }
 }
