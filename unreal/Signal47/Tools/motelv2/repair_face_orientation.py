@@ -188,6 +188,77 @@ def flip_snapshot(before, face_ids):
     return after
 
 
+def restore_attribute_defaults(mesh, expected, label):
+    """Bevar faktisk seleksjon, og gjenopprett fravær etter from_pydata.
+
+    Blender d13f752e3b9c, editors/mesh/mesh_data.cc:692-789 oppretter
+    .select_vert/.select_edge/.select_poly med TRUE ved collections.add.
+    RNA-getterne i makesrna/intern/rna_mesh.cc bruker FALSE ved fravær.
+    Bare disse kjente fabrikkdataene nullstilles når R5 mangler attributtet;
+    forfatterens eksisterende TRUE/FALSE-lister kopieres alltid uendret.
+    """
+    counts = {'POINT': len(expected['positions']), 'EDGE': len(expected['edges']),
+              'FACE': len(expected['faces']), 'CORNER': len(expected['loop_vertices'])}
+    receipt = {'authored_selection_preserved': {}, 'factory_defaults_removed': {}}
+
+    def values(attribute, domain, data_type):
+        assert (attribute.domain, attribute.data_type) == (domain, data_type), (
+            label, attribute.name, 'generated attribute schema differs', attribute.domain, attribute.data_type)
+        assert len(attribute.data) == counts[domain], (label, attribute.name, 'attribute count differs')
+        result = [False if data_type == 'BOOLEAN' else 0] * counts[domain]
+        attribute.data.foreach_get('value', result)
+        return result
+
+    for name, domain in G.SELECTION_ATTRIBUTES.items():
+        attribute = mesh.attributes.get(name)
+        wanted = expected['selection_attributes'].get(name)
+        if wanted is not None:
+            assert expected['attribute_schema'][name] == (domain, 'BOOLEAN')
+            assert len(wanted) == counts[domain] and all(type(v) is bool for v in wanted), (
+                label, name, 'invalid authored TRUE/FALSE payload')
+            if attribute is None:
+                attribute = mesh.attributes.new(name=name, domain=domain, type='BOOLEAN')
+            values(attribute, domain, 'BOOLEAN')  # Validate before writing.
+            attribute.data.foreach_set('value', wanted)
+            assert values(attribute, domain, 'BOOLEAN') == wanted, (label, name, 'authored selection changed')
+            receipt['authored_selection_preserved'][name] = {
+                'domain': domain, 'count': len(wanted), 'true': sum(wanted),
+                'false': len(wanted) - sum(wanted), 'payload_sha256': digest(wanted)}
+        else:
+            assert name not in expected['attribute_schema'], (label, name, 'missing authored selection payload')
+            if attribute is None:
+                continue
+            generated = values(attribute, domain, 'BOOLEAN')
+            defaults = [False] * counts[domain]
+            attribute.data.foreach_set('value', defaults)
+            assert values(attribute, domain, 'BOOLEAN') == defaults, (label, name, 'implicit FALSE default not restored')
+            mesh.attributes.remove(attribute)
+            assert mesh.attributes.get(name) is None, (label, name, 'source attribute absence not restored')
+            receipt['factory_defaults_removed'][name] = {
+                'domain': domain, 'count': len(generated), 'factory_true': sum(generated),
+                'factory_false': len(generated) - sum(generated), 'restored_implicit_default': False}
+    for attribute in list(mesh.attributes):
+        if attribute.name in expected['attribute_schema']:
+            continue
+        name = attribute.name
+        # These two known RNA setters create storage even when every value is
+        # the implicit default. Never remove a nondefault material/smooth flag.
+        assert name in {'material_index', 'sharp_face'}, (label, 'unexpected generated attribute', name)
+        data_type = 'INT' if name == 'material_index' else 'BOOLEAN'
+        wanted = expected['material_indices'] if name == 'material_index' else [not v for v in expected['smooth']]
+        default = 0 if name == 'material_index' else False
+        assert len(wanted) == counts['FACE'] and all(v == default for v in wanted), (
+            label, name, 'source absence incompatible with nondefault authored values')
+        assert values(attribute, 'FACE', data_type) == wanted, (label, name, 'generated values differ from source defaults')
+        attribute.data.foreach_set('value', [default] * counts['FACE'])
+        assert values(attribute, 'FACE', data_type) == wanted, (label, name, 'explicit default readback differs')
+        mesh.attributes.remove(attribute)
+        assert mesh.attributes.get(name) is None, (label, name, 'source attribute absence not restored')
+        receipt['factory_defaults_removed'][name] = {
+            'domain': 'FACE', 'count': counts['FACE'], 'restored_implicit_default': default}
+    return receipt
+
+
 def replace_mesh(bpy, ob, before, expected):
     """Ny tom mesh, ikke resizing/flip av et populert short2-normalbuffer."""
     old = ob.data
@@ -212,13 +283,7 @@ def replace_mesh(bpy, ob, before, expected):
             attribute = new.attributes.get('sharp_edge') or new.attributes.new(name='sharp_edge', domain='EDGE', type='BOOLEAN')
             attribute.data.foreach_set('value', expected['sharp_edges'])
         G.set_float_corner_normals(new, expected['corner_normals'])
-        for name, values in expected['selection_attributes'].items():
-            attribute = new.attributes.get(name) or new.attributes.new(name=name, domain=G.SELECTION_ATTRIBUTES[name], type='BOOLEAN')
-            attribute.data.foreach_set('value', values)
-        for attribute in list(new.attributes):
-            if attribute.name not in expected['attribute_schema']:
-                assert attribute.name in {'material_index', 'sharp_face'}, ('unexpected generated attribute', attribute.name)
-                new.attributes.remove(attribute)
+        attribute_receipt = restore_attribute_defaults(new, expected, ob.name)
         new.update()
         expect_signature(G.mesh_snapshot(new, include_normals=False), signature(expected), ob.name + ':replacement')
         G.normal_check([tuple(n.vector) for n in new.corner_normals], expected['corner_normals'], ob.name + ':replacement')
@@ -230,6 +295,7 @@ def replace_mesh(bpy, ob, before, expected):
     assert old.users == 0
     bpy.data.meshes.remove(old)
     new.name = old_name
+    return attribute_receipt
 
 
 def fbx_geometry(path):
@@ -500,7 +566,7 @@ def run(args, report):
             expected = flip_snapshot(before, [i for row in chosen for i in row['faces']])
             expected_signatures[part] = signature(expected)
             if args.apply:
-                replace_mesh(bpy, ob, before, expected)
+                report.setdefault('replacement_attributes', {})[part] = replace_mesh(bpy, ob, before, expected)
         else:
             expected_signatures[part] = signature(before)
     report.update(blender_version=bpy.app.version_string, measured_targets=measured,
