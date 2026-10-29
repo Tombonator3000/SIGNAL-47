@@ -4,6 +4,7 @@
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
 #include "S47MotelV2.h"
+#include "S47Office.h"
 #include "S47HighwayPower.h"
 #include "S47Main.h"
 #include "S47World.h"
@@ -88,7 +89,12 @@ void AS47Web::BeginProductionViews()
   {TEXT("homes-h03"),TEXT("diner"),{8012,0,2185},{8025,10.31875,2185}},
   {TEXT("homes-h04"),TEXT("diner"),{7994,0,2241},{7981,12.76855,2241}},
   {TEXT("homes-sign-south"),TEXT("diner"),{8001.8,0,2335},{8008.6,14.7472,2315}},
-  {TEXT("homes-sign-north"),TEXT("diner"),{8001.8,0,1865},{7991.4,4.3622,1895}}
+  {TEXT("homes-sign-north"),TEXT("diner"),{8001.8,0,1865},{7991.4,4.3622,1895}},
+  // ART-01: Dale's desk papers in Operations, from the chair side of the desk.
+  {TEXT("office-desk"),TEXT("saro"),{.30,0,8.70},{.25,.80,9.50}},
+  {TEXT("office-desk-left"),TEXT("saro"),{-.12,0,9.0},{-.12,.81,9.55}},
+  {TEXT("office-desk-right"),TEXT("saro"),{.75,0,9.0},{.75,.81,9.60}},
+  {TEXT("office-contact-close"),TEXT("saro"),{.76,0,8.98},{.76,.81,9.42}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -113,9 +119,9 @@ void AS47Web::BeginProductionViews()
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
-   const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-"));
+   const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-"));
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
-    ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("room6")&&(I<11||I>12))
+    ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
@@ -140,6 +146,7 @@ void AS47Web::BeginProductionViews()
    if(LightChanged){M->Story->SetClock(Clock[Light]);State->LastLight=Light;}
    const FString ViewName(V.Name);
    if(ViewName.StartsWith(TEXT("signal-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("signal-span")?55.f:22.f;}
+   else if(ViewName.StartsWith(TEXT("office-desk-"))||ViewName==TEXT("office-contact-close")){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-contact-close")?28.f:50.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
    if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
@@ -150,7 +157,8 @@ void AS47Web::BeginProductionViews()
   if(Now-State->Since<State->Hold)return;
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
-  if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
+  if(FString(V.Name).StartsWith(TEXT("office-")))Ok=M->Office&&M->Office->AuditDocumentArt(Lines);
+  else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }
   else if(I<13||I>=19) Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines);
   else { Ok=W->FieldModelComponents.Num()==29 && W->FieldModelBindings.Num()==2 && W->FieldModelRetired.Num()>0;

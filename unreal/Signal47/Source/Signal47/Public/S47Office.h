@@ -35,6 +35,8 @@ public:
  bool DocumentRead(const FString& Id) const;
  static const TArray<FString>& LibraryDocumentIds();
  static bool SelfTest(TArray<FString>& Lines);
+ // ART-01: finished paper art is bound, visible and still above its interactive paper.
+ bool AuditDocumentArt(TArray<FString>& Lines) const;
  // The chapter host owns Nora, P04/P05, calls and its original end callback.
  TFunction<bool()> CanDepart;
  TFunction<void()> OnDepart;

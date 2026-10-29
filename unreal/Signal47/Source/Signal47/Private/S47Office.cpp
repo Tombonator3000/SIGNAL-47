@@ -15,6 +15,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/Texture2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "StaticMeshResources.h"
 #include "RenderUtils.h"
@@ -43,6 +44,24 @@ namespace
   auto In = [](const FVector& P) { return InBox(P, -3.406, 2.006, -.006, .106, 6.569, 6.601); };
   return In(A) && In(B) && In(C) && FMath::Max3(A.X, B.X, C.X) - FMath::Min3(A.X, B.X, C.X) > 5.3;
  }
+ // ART-01: finished paper artwork from ArtSource (Tools/documentprops/surfaces.json).
+ // The art is a separate plane above each existing paper; the paper keeps its object
+ // name, interaction ID and document mapping. Without the texture the old paper stays.
+ struct FDocumentArt { const TCHAR* Object; const TCHAR* Asset; double Width, Depth; };
+ const FDocumentArt DocumentArt[] = {
+  {TEXT("office:fieldFolder"), TEXT("T_Doc_DaleFolder"), .24, .32},
+  {TEXT("office:workingIndex"), TEXT("T_Doc_DaleIndex"), .225, .30},
+  {TEXT("office:clippings"), TEXT("T_Doc_DaleClippings"), .255, .34},
+  {TEXT("office:foldedNote"), TEXT("T_Doc_DaleNote"), .15, .20},
+  {TEXT("office:contactCard"), TEXT("T_Doc_DaleContact"), .16, .12},
+  {TEXT("office:deskForms"), TEXT("T_Doc_ServiceForm"), .20, .30}
+ };
+ // UV rows (u' = a*u + b*v + c) for /Engine/BasicShapes/Plane. Its measured corners give
+ // u = (x + 50) / 100 and v = (y + 50) / 100 in UE cm. A reader facing +UE Y has -X on the
+ // right, so the image runs u' = 1 - u, and its top row (v' = 0) lies at the far +Y edge.
+ const FLinearColor DocumentMapU(-1, 0, 1, 0), DocumentMapV(0, -1, 1, 0);
+ UTexture2D* DocumentTexture(const TCHAR* Asset)
+ { return LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("/Game/Signal47/Art/Documents/%s.%s"), Asset, Asset)); }
  bool OldDoorPoint(const FVector& P) { return InBox(P, -.04, .94, -.01, 2.061, 6.499, 6.60); }
  // The immutable Annex export merges the closed Operations door with unrelated geometry.
  // Retire only its exact leaf/handle/sign, wide partition/painted faces and low skirting.
@@ -122,6 +141,9 @@ struct FS47Office::FVisual
  TArray<TPair<FS47Obj, FVector>> DrawerParts;
  TArray<FS47Obj> KeyParts;
  TWeakObjectPtr<UPointLightComponent> Light;
+ // ART-01 sheets: paper object name, its art plane and the bound texture.
+ struct FSheet { FString Paper; FS47Obj PaperObj, Art; TWeakObjectPtr<UTexture2D> Texture; };
+ TArray<FSheet> Sheets;
 };
 
 FS47Office::FS47Office(US47Main* InM) : Visual(MakeUnique<FVisual>()), M(InM) {}
@@ -237,12 +259,44 @@ void FS47Office::Init()
  Mesh(TEXT("office:chair"), Chair, FVector(1.19, 0, 8.73), FVector::OneVector, nullptr, .37);
  Mesh(TEXT("office:deskLamp"), Lamp, FVector(-.24, .79, 9.70), FVector::OneVector, nullptr);
  Collider(TEXT("office:deskFoot"), -.47, 1.21, 9.31, 10.16); Collider(TEXT("office:chairFoot"), .94, 1.55, 8.47, 9.02);
- FS47Obj DeskPaper = Box(TEXT("office:deskForms"), FVector(.39, .802, 9.37), FVector(.40, .018, .21), Paper);
- FS47Obj Folder = Box(TEXT("office:fieldFolder"), FVector(.05, .818, 9.35), FVector(.31, .026, .31), Kraft);
- FS47Obj Index = Box(TEXT("office:workingIndex"), FVector(-.28, .811, 9.52), FVector(.23, .009, .29), Paper);
- FS47Obj Clippings = Box(TEXT("office:clippings"), FVector(.79, .812, 9.73), FVector(.29, .014, .34), Paper);
- FS47Obj Note = Box(TEXT("office:foldedNote"), FVector(-.25, .824, 9.30), FVector(.20, .012, .13), Paper);
- FS47Obj Contact = Box(TEXT("office:contactCard"), FVector(.76, .813, 9.36), FVector(.16, .010, .10), Paper);
+ // ART-01: a paper with finished art takes the art's proportions around its centre. The
+ // larger sheets moved back onto the desktop (front edge Three z 9.31); the note now lies
+ // beside the cup instead of over the index, so neither printed face is hidden.
+ TMap<FString, UTexture2D*> ArtTextures; TMap<FString, FVector2D> ArtSizes; TMap<FString, FVector> PaperTops;
+ for (const FDocumentArt& Art : DocumentArt) if (UTexture2D* Tex = DocumentTexture(Art.Asset)) { ArtTextures.Add(Art.Object, Tex); ArtSizes.Add(Art.Object, FVector2D(Art.Width, Art.Depth)); }
+ auto PaperBox = [&](const TCHAR* Name, const FVector& At, const FVector& Size, UMaterialInterface* Mat)
+ {
+  const FVector2D* Art = ArtSizes.Find(Name); const FVector Used = Art ? FVector(Art->X, Size.Y, Art->Y) : Size;
+  PaperTops.Add(Name, At + FVector(0, Used.Y * .5, 0)); return Box(Name, At, Used, Mat);
+ };
+ FS47Obj DeskPaper = PaperBox(TEXT("office:deskForms"), FVector(.39, .802, 9.50), FVector(.40, .018, .21), Paper);
+ FS47Obj Folder = PaperBox(TEXT("office:fieldFolder"), FVector(.05, .818, 9.51), FVector(.31, .026, .31), Kraft);
+ FS47Obj Index = PaperBox(TEXT("office:workingIndex"), FVector(-.28, .811, 9.52), FVector(.23, .009, .29), Paper);
+ FS47Obj Clippings = PaperBox(TEXT("office:clippings"), FVector(.79, .812, 9.73), FVector(.29, .014, .34), Paper);
+ FS47Obj Note = PaperBox(TEXT("office:foldedNote"), FVector(1.02, .812, 9.47), FVector(.20, .012, .13), Paper);
+ FS47Obj Contact = PaperBox(TEXT("office:contactCard"), FVector(.76, .813, 9.42), FVector(.16, .010, .10), Paper);
+ if (UStaticMesh* Plane = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")))
+ {
+  const TMap<FString, FS47Obj> Papers = {{TEXT("office:deskForms"), DeskPaper}, {TEXT("office:fieldFolder"), Folder}, {TEXT("office:workingIndex"), Index},
+   {TEXT("office:clippings"), Clippings}, {TEXT("office:foldedNote"), Note}, {TEXT("office:contactCard"), Contact}};
+  for (const FDocumentArt& Art : DocumentArt)
+  {
+   UTexture2D* Tex = ArtTextures.FindRef(Art.Object); const FS47Obj* PaperObj = Papers.Find(Art.Object);
+   if (!Tex || !PaperObj) continue;
+   UMaterialInstanceDynamic* Mat = UMaterialInstanceDynamic::Create(Base, W);
+   Mat->SetVectorParameterValue(TEXT("Color"), FLinearColor(.92f, .92f, .92f)); Mat->SetScalarParameterValue(TEXT("NativeLighting"), 1);
+   Mat->SetScalarParameterValue(TEXT("Roughness"), .88f); Mat->SetScalarParameterValue(TEXT("Metalness"), 0); Mat->SetScalarParameterValue(TEXT("EmissivePower"), 0);
+   Mat->SetScalarParameterValue(TEXT("UseMap"), 1); Mat->SetScalarParameterValue(TEXT("MapIsLinear"), 0); Mat->SetTextureParameterValue(TEXT("Map"), Tex);
+   // Engine plane UVs (measured at import): the image's top faces the far edge of the desk
+   // (+Three Z) and reads left to right for a reader standing in front of it.
+   Mat->SetVectorParameterValue(TEXT("MapU"), DocumentMapU); Mat->SetVectorParameterValue(TEXT("MapV"), DocumentMapV);
+   const FVector Top = PaperTops.FindChecked(Art.Object) + FVector(0, .0008, 0);
+   FS47Obj Sheet = Mesh(FString(Art.Object) + TEXT(":art"), Plane, Top, FVector(Art.Width, 1, Art.Depth), Mat);
+   if (const FS47WebNode* N = W->Node(Sheet.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) { C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCastShadow(false); }
+   Visual->Sheets.Add({Art.Object, *PaperObj, Sheet, Tex});
+  }
+ }
+ auto HasArt = [this](const TCHAR* Paper) { return Visual->Sheets.ContainsByPredicate([Paper](const FVisual::FSheet& S) { return S.Paper == Paper; }); };
  // NP1 private notes and the separate array appendix remain real, reachable papers.
  // Their slim shelf fits below the authored bookcase without restoring the old cube cabinet.
  Box(TEXT("office:privateShelf"), FVector(-.66, .645, 8.75), FVector(.28, .035, .84), Wood);
@@ -260,10 +314,11 @@ void FS47Office::Init()
   FS47Obj Obj = Label(Name, Text, At, 0, Size); const FS47WebNode* N = W->Node(Obj.I);
   if (N && N->Comp.IsValid()) N->Comp->SetWorldRotation(FRotator(90, 0, 0)); return Obj;
  };
- PaperText(TEXT("office:folderPrint"), TEXT("FIELD CHECKS\nTAKE A COPY"), FVector(.05, .834, 9.35), 2.4f);
- PaperText(TEXT("office:indexPrint"), TEXT("WORKING INDEX"), FVector(-.28, .819, 9.52), 1.9f);
- PaperText(TEXT("office:notePrint"), TEXT("D. / WORKING NOTE"), FVector(-.25, .835, 9.30), 1.6f);
- PaperText(TEXT("office:contactPrint"), TEXT("DALE / SERVICE"), FVector(.76, .823, 9.36), 1.4f);
+ // The plain printed labels remain only where no finished art is bound.
+ if (!HasArt(TEXT("office:fieldFolder"))) PaperText(TEXT("office:folderPrint"), TEXT("FIELD CHECKS\nTAKE A COPY"), FVector(.05, .834, 9.51), 2.4f);
+ if (!HasArt(TEXT("office:workingIndex"))) PaperText(TEXT("office:indexPrint"), TEXT("WORKING INDEX"), FVector(-.28, .819, 9.52), 1.9f);
+ if (!HasArt(TEXT("office:foldedNote"))) PaperText(TEXT("office:notePrint"), TEXT("D. / WORKING NOTE"), FVector(1.02, .823, 9.47), 1.6f);
+ if (!HasArt(TEXT("office:contactCard"))) PaperText(TEXT("office:contactPrint"), TEXT("DALE / SERVICE"), FVector(.76, .823, 9.42), 1.4f);
  PaperText(TEXT("office:privatePrint"), TEXT("PRIVATE / NOTES"), FVector(-.64, .692, 8.98), 1.3f);
  PaperText(TEXT("office:arrayServicePrint"), TEXT("ARRAY SERVICE\nROW 1 / A + B"), FVector(-.65, .687, 8.48), 1.2f);
  // Ordinary service boards on the existing gravel row, not encounter-result props.
@@ -541,6 +596,28 @@ void FS47Office::SyncFacts()
 }
 
 void FS47Office::Changed() { Apply(); SyncFacts(); if (M) M->RequestAutosave(); }
+
+bool FS47Office::AuditDocumentArt(TArray<FString>& Lines) const
+{
+ bool bOk = bReady && Visual && Visual->Sheets.Num() == UE_ARRAY_COUNT(DocumentArt);
+ Lines.Add(FString::Printf(TEXT("document art %s: %d/%d sheets bound"), bOk ? TEXT("PASS") : TEXT("FAIL"), Visual ? Visual->Sheets.Num() : 0, int32(UE_ARRAY_COUNT(DocumentArt))));
+ if (!Visual) return false;
+ for (const TCHAR* Id : {TEXT("office:desk"), TEXT("office:folder"), TEXT("office:index"), TEXT("office:clippings"), TEXT("office:note"), TEXT("office:contact")})
+ { const bool bHave = Visual->Objects.Contains(Id) && Visual->Objects[Id].IsValid(); bOk &= bHave; if (!bHave) Lines.Add(FString(TEXT("document art FAIL: interaction paper missing ")) + Id); }
+ for (const FVisual::FSheet& Sheet : Visual->Sheets)
+ {
+  const UTexture2D* Tex = Sheet.Texture.Get();
+  const FBox ArtBox = Sheet.Art.IsValid() ? Sheet.Art.WorldBox() : FBox(ForceInit);
+  const FBox PaperBox = Sheet.PaperObj.IsValid() ? Sheet.PaperObj.WorldBox() : FBox(ForceInit);
+  const bool bOn = Sheet.Art.IsValid() && Sheet.Art.Shown() && Tex && Tex->GetSizeX() >= 1024 && Tex->GetSizeY() >= 1024
+   && ArtBox.IsValid && PaperBox.IsValid && ArtBox.Min.Y >= PaperBox.Max.Y - .0001 && ArtBox.Min.Y - PaperBox.Max.Y < .003
+   && FMath::Abs(ArtBox.GetCenter().X - PaperBox.GetCenter().X) < .001 && FMath::Abs(ArtBox.GetCenter().Z - PaperBox.GetCenter().Z) < .001;
+  bOk &= bOn;
+  Lines.Add(FString::Printf(TEXT("document art %s %s: %s %dx%d art=%.3fx%.3f m lift=%.4f m"), bOn ? TEXT("PASS") : TEXT("FAIL"), *Sheet.Paper, Tex ? *Tex->GetName() : TEXT("none"),
+   Tex ? Tex->GetSizeX() : 0, Tex ? Tex->GetSizeY() : 0, ArtBox.IsValid ? ArtBox.GetSize().X : 0., ArtBox.IsValid ? ArtBox.GetSize().Z : 0., ArtBox.IsValid && PaperBox.IsValid ? ArtBox.Min.Y - PaperBox.Max.Y : -1.));
+ }
+ return bOk;
+}
 
 bool FS47Office::Use(const FString& Id)
 {
