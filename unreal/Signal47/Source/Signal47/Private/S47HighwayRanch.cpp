@@ -136,9 +136,29 @@ namespace
   }
   return Covered==uint32(Indices.Num())&&Farm.Indices.Num()==E.Farm*3&&Rest.Indices.Num()==(E.Total-E.Farm)*3&&Farm.Bounds.IsValid&&Rest.Bounds.IsValid;
  }
- UStaticMesh* Clone(AS47Web* W,UStaticMesh* Original,const FSelection& Selected,bool Farm)
+ FString IndicesHash(const TArray<uint32>& Indices)
+ {
+  FSHA1 Hash;Bytes(Hash,Indices.GetData(),Indices.Num()*sizeof(uint32));return Finish(Hash);
+ }
+ void IndexDiagnosis(int32 Geo,const TCHAR* Part,UStaticMesh* Mesh,const FSelection& Want)
+ {
+  TArray<uint32> Actual;int32 Triangles=-1,Sections=-1;
+  if(Mesh&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==1)
+  {
+   const auto& L=Mesh->GetRenderData()->LODResources[0];L.IndexBuffer.GetCopy(Actual);Triangles=L.GetNumTriangles();Sections=L.Sections.Num();
+  }
+  UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch reject g%d part=%s branch=indices actualIndices=%d expectedIndices=%d actualTriangles=%d expectedTriangles=%d sections=%d expectedSections=%d actualIndexSHA1=%s expectedIndexSHA1=%s"),
+   Geo,Part,Actual.Num(),Want.Indices.Num(),Triangles,Want.Indices.Num()/3,Sections,Want.Sections.Num(),*IndicesHash(Actual),*IndicesHash(Want.Indices));
+ }
+ UStaticMesh* Clone(AS47Web* W,UStaticMesh* Original,const FSelection& Selected,bool Farm,int32 Geo)
  {
   const auto& Src=Original->GetRenderData()->LODResources[0];const auto& B=Src.VertexBuffers;
+  const TCHAR* Part=Farm?TEXT("farm"):TEXT("rest");
+  auto Reject=[&](const TCHAR* Branch)
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch reject g%d part=%s branch=%s selectedIndices=%d selectedTriangles=%d sourceVertexSHA1=%s"),Geo,Part,Branch,Selected.Indices.Num(),Selected.Indices.Num()/3,*VertexHash(Src));
+   return static_cast<UStaticMesh*>(nullptr);
+  };
   UStaticMesh* Copy=NewObject<UStaticMesh>(W,NAME_None,RF_Transient);
   Copy->bAllowCPUAccess=true;Copy->NeverStream=true;Copy->bSupportRayTracing=Original->bSupportRayTracing;
   Copy->GetStaticMaterials()=Original->GetStaticMaterials();Copy->SetLightMapCoordinateIndex(Original->GetLightMapCoordinateIndex());
@@ -154,20 +174,34 @@ namespace
   T.SetUseHighPrecisionTangentBasis(SourceT.GetUseHighPrecisionTangentBasis());T.SetUseFullPrecisionUVs(SourceT.GetUseFullPrecisionUVs());
   T.Init(SourceT.GetNumVertices(),SourceT.GetNumTexCoords(),true);
   // Same allocation policy as MakeWirePatch, with packed bytes copied rather than requantized.
-  if(T.GetTangentSize()!=SourceT.GetTangentSize()||T.GetTexCoordSize()!=SourceT.GetTexCoordSize())return nullptr;
+  if(T.GetTangentSize()!=SourceT.GetTangentSize()||T.GetTexCoordSize()!=SourceT.GetTexCoordSize())
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch buffer sizes g%d part=%s tangent=%d/%d uv=%d/%d"),Geo,Part,T.GetTangentSize(),SourceT.GetTangentSize(),T.GetTexCoordSize(),SourceT.GetTexCoordSize());
+   return Reject(TEXT("packed-tangent-uv-size"));
+  }
   FMemory::Memcpy(T.GetTangentData(),SourceT.GetTangentData(),SourceT.GetTangentSize());
   FMemory::Memcpy(T.GetTexCoordData(),SourceT.GetTexCoordData(),SourceT.GetTexCoordSize());
   const uint32 Colors=B.ColorVertexBuffer.GetNumVertices();
   if(Colors)
   {
    auto& C=Dst.VertexBuffers.ColorVertexBuffer;C.Init(Colors,true);
-   if(C.GetStride()!=B.ColorVertexBuffer.GetStride())return nullptr;
+   if(C.GetStride()!=B.ColorVertexBuffer.GetStride())
+   {
+    UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch color stride g%d part=%s actual=%u expected=%u colors=%u"),Geo,Part,C.GetStride(),B.ColorVertexBuffer.GetStride(),Colors);
+    return Reject(TEXT("packed-color-stride"));
+   }
    FMemory::Memcpy(C.GetVertexData(),B.ColorVertexBuffer.GetVertexData(),Colors*C.GetStride());
   }
   Dst.bHasColorVertexData=Src.bHasColorVertexData;Dst.bBuffersInlined=true;Dst.bIsOptionalLOD=false;
   Dst.SourceMeshBounds=Data->Bounds;Dst.MaxDeviation=Src.MaxDeviation;
-  if(!Dst.IndexBuffer.TrySetAllowCPUAccess(true))return nullptr;
   Dst.IndexBuffer.SetIndices(Selected.Indices,EIndexBufferStride::Force32Bit);
+  // UE5.8 initializes CachedNumIndices to -1. A fresh empty buffer cannot yet
+  // confirm retention; require success after SetIndices, before any RHI initialization.
+  if(!Dst.IndexBuffer.TrySetAllowCPUAccess(true))
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch CPU retention g%d part=%s indices=%d bytes=%d expectedIndices=%d"),Geo,Part,Dst.IndexBuffer.GetNumIndices(),Dst.IndexBuffer.GetIndexDataSize(),Selected.Indices.Num());
+   return Reject(TEXT("index-cpu-retention-after-set"));
+  }
   // Solid ranch and remainder retain native ray tracing, including a correct selected-index BLAS.
   bool InitRT=Copy->bSupportRayTracing;
 #if !WITH_EDITOR
@@ -175,7 +209,15 @@ namespace
 #endif
   if(InitRT)Data->InitializeRayTracingRepresentationFromRenderingLODs();
   const FBoxSphereBounds Bounds=Data->Bounds;Copy->SetRenderData(MoveTemp(Data));Copy->SetExtendedBounds(Bounds);
-  return VertexHash(Copy->GetRenderData()->LODResources[0])==VertexHash(Src)?Copy:nullptr;
+  const auto& Actual=Copy->GetRenderData()->LODResources[0];
+  const FString ActualHash=VertexHash(Actual),SourceHash=VertexHash(Src);
+  if(ActualHash!=SourceHash)
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch packed hash g%d part=%s actualSHA1=%s sourceSHA1=%s vertices=%u/%u uvChannels=%u/%u colors=%u/%u"),Geo,Part,*ActualHash,*SourceHash,
+    Actual.VertexBuffers.PositionVertexBuffer.GetNumVertices(),B.PositionVertexBuffer.GetNumVertices(),Actual.VertexBuffers.StaticMeshVertexBuffer.GetNumTexCoords(),SourceT.GetNumTexCoords(),Actual.VertexBuffers.ColorVertexBuffer.GetNumVertices(),Colors);
+   return Reject(TEXT("packed-vertex-hash"));
+  }
+  return Copy;
  }
  bool ExactIndices(UStaticMesh* Mesh,const FSelection& Want)
  {
@@ -220,10 +262,31 @@ void AS47Web::BuildHighwayRanch()
   if(!Select(Mesh,E,Part.FarmSelection,Part.RestSelection)){Reject(TEXT("CPU-ready exact 300/3972 partition required"));return;}
   Part.OriginalHash=MeshHash(Mesh);Part.VertexHash=VertexHash(Mesh->GetRenderData()->LODResources[0]);
   if(Part.OriginalHash.IsEmpty()){Reject(TEXT("source buffer fingerprint unavailable"));return;}
-  UStaticMesh* Rest=Clone(this,Mesh,Part.RestSelection,false);UStaticMesh* Farm=Clone(this,Mesh,Part.FarmSelection,true);
-  if(!Rest||!Farm||Rest->GetStaticMaterials()!=Mesh->GetStaticMaterials()||Farm->GetStaticMaterials()!=Mesh->GetStaticMaterials()
-   ||!ExactIndices(Rest,Part.RestSelection)||!ExactIndices(Farm,Part.FarmSelection)||MeshHash(Mesh)!=Part.OriginalHash)
-  {Reject(TEXT("exact packed buffer/index/slot preservation"));return;}
+  UStaticMesh* Rest=Clone(this,Mesh,Part.RestSelection,false,E.Geo);
+  if(!Rest){Reject(*FString::Printf(TEXT("g%d rest clone rejected; see precise branch above"),E.Geo));return;}
+  UStaticMesh* Farm=Clone(this,Mesh,Part.FarmSelection,true,E.Geo);
+  if(!Farm){Reject(*FString::Printf(TEXT("g%d farm clone rejected; see precise branch above"),E.Geo));return;}
+  for(UStaticMesh* Copy:{Rest,Farm})if(Copy->GetStaticMaterials()!=Mesh->GetStaticMaterials())
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch reject g%d part=%s branch=static-material-slots actualSlots=%d expectedSlots=%d actualMeshSHA1=%s sourceMeshSHA1=%s"),
+    E.Geo,Copy==Farm?TEXT("farm"):TEXT("rest"),Copy->GetStaticMaterials().Num(),Mesh->GetStaticMaterials().Num(),*MeshHash(Copy),*MeshHash(Mesh));
+   for(int32 Slot=0;Slot<FMath::Max(Copy->GetStaticMaterials().Num(),Mesh->GetStaticMaterials().Num());++Slot)
+   {
+    const auto* A=Copy->GetStaticMaterials().IsValidIndex(Slot)?&Copy->GetStaticMaterials()[Slot]:nullptr;
+    const auto* B=Mesh->GetStaticMaterials().IsValidIndex(Slot)?&Mesh->GetStaticMaterials()[Slot]:nullptr;
+    UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch g%d slot=%d actualName=%s sourceName=%s actualImported=%s sourceImported=%s actualMat=%s sourceMat=%s"),E.Geo,Slot,
+     A?*A->MaterialSlotName.ToString():TEXT("missing"),B?*B->MaterialSlotName.ToString():TEXT("missing"),A?*A->ImportedMaterialSlotName.ToString():TEXT("missing"),B?*B->ImportedMaterialSlotName.ToString():TEXT("missing"),*GetPathNameSafe(A?A->MaterialInterface.Get():nullptr),*GetPathNameSafe(B?B->MaterialInterface.Get():nullptr));
+   }
+   Reject(*FString::Printf(TEXT("g%d static material slots changed"),E.Geo));return;
+  }
+  if(!ExactIndices(Rest,Part.RestSelection)){IndexDiagnosis(E.Geo,TEXT("rest"),Rest,Part.RestSelection);Reject(*FString::Printf(TEXT("g%d rest indices changed"),E.Geo));return;}
+  if(!ExactIndices(Farm,Part.FarmSelection)){IndexDiagnosis(E.Geo,TEXT("farm"),Farm,Part.FarmSelection);Reject(*FString::Printf(TEXT("g%d farm indices changed"),E.Geo));return;}
+  const FString AfterOriginal=MeshHash(Mesh);
+  if(AfterOriginal!=Part.OriginalHash)
+  {
+   UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch reject g%d branch=original-mutated beforeSHA1=%s afterSHA1=%s verticesBeforeSHA1=%s verticesAfterSHA1=%s"),E.Geo,*Part.OriginalHash,*AfterOriginal,*Part.VertexHash,*VertexHash(Mesh->GetRenderData()->LODResources[0]));
+   Reject(*FString::Printf(TEXT("g%d original source fingerprint changed"),E.Geo));return;
+  }
   Part.RestMesh=Rest;Part.FarmMesh=Farm;Part.RestHash=MeshHash(Rest);Part.FarmHash=MeshHash(Farm);Ready->Parts.Add(MoveTemp(Part));
  }
  // Complete all checks and prepare unregistered visuals before committing any original swap.
