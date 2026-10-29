@@ -315,6 +315,27 @@ FVector2D S47Drawings::FServiceMap::Post(double Mi) const
 	return A.At(Mi * PerMile);
 }
 
+void S47Drawings::HandoverMarks(FS47Canvas& G)
+{
+	const auto& M = SERVICE_MAP();
+	const FVector2D C = M.Post(8.15), Courier = M.Post(10.4);
+	G.SetFill(0x244a62); G.SetStroke(0x244a62); G.SetFont(ELITE, 18); G.LineWidth = 2;
+	G.FillText(TEXT("SC12 / TRANSFER OVERLAY / 14 APR 1986"), 40, 700);
+	G.FillText(TEXT("STATION 01, north up on E14. C east to 8.15. Proposed handover beyond C: 10.4."), 40, 732, 1120);
+	G.FillText(TEXT("One dated patrol is not a safe-road guarantee. Confirm the courier with Ward."), 40, 760, 1120);
+	G.BeginPath(); G.MoveTo(M.Station.X + 12, M.Station.Y); G.LineTo(C.X - 12, C.Y); G.Stroke();
+	G.BeginPath(); G.MoveTo(C.X - 25, C.Y - 7); G.LineTo(C.X - 12, C.Y); G.LineTo(C.X - 25, C.Y + 7); G.Stroke();
+	G.FillText(TEXT("C EAST / 8.15"), C.X - 155, C.Y - 20);
+	G.BeginPath(); G.Arc(Courier.X, Courier.Y, 14, 0, PI * 2); G.Stroke();
+	G.FillText(TEXT("10.4 / HANDOVER"), Courier.X - 185, Courier.Y - 28);
+	G.FillText(TEXT("NOT C / CONFIRM BY PHONE"), Courier.X - 215, Courier.Y - 6, 230);
+}
+
+FString S47Drawings::HandoverMap()
+{
+	return Sheet(SERVICE_MAP().W, SERVICE_MAP().H, [](FS47Canvas& G) { ServiceMapCanvas(G); HandoverMarks(G); });
+}
+
 const S47Drawings::FServiceMap& S47Drawings::SERVICE_MAP()
 {
 	static const FServiceMap M = []

@@ -21,6 +21,7 @@
 #include "S47SaroNight.h"
 #include "S47StationTaken.h"
 #include "S47Story.h"
+#include "S47Spine.h"
 #include "S47TownLayer.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -84,6 +85,7 @@ S47J::FObj FS47Ch5State::Save() const
 	S47J::Set(O, TEXT("p13"), bP13);
 	S47J::Set(O, TEXT("wrong13"), Wrong13);
 	if (ArrayTold) S47J::Set(O, TEXT("arrayTold"), *ArrayTold);
+	if (SC12.Version == 1) S47J::Set(O, TEXT("sc12"), SC12.Save());
 	return O;
 }
 
@@ -111,6 +113,7 @@ FS47Ch5State FS47Ch5State::Load(const S47J::FObj& Saved)
 	C.Tracing = S47J::Uv(Saved, TEXT("tracing"));
 	C.bP13 = S47J::Bool(Saved, TEXT("p13"));
 	C.Wrong13 = S47J::Int(Saved, TEXT("wrong13"));
+	C.SC12 = FS47SC12State::Load(S47J::Obj(Saved, TEXT("sc12")));
 	return C;
 }
 
@@ -198,7 +201,11 @@ US47Chapter5* US47Chapter5::Register()
 	OnEnd = [W]
 	{
 		if (!W.IsValid() || !W->Host) return;
-		if (US47Chapter6* C6 = Cast<US47Chapter6>(W->Host->Chapter(TEXT("ch6")))) C6->BeginChapter6(nullptr);
+		if (US47Chapter6* C6 = Cast<US47Chapter6>(W->Host->Chapter(TEXT("ch6"))))
+		{
+			if (W->RevisedDiner()) { W->bActive = false; W->ApplySC12Props(); }
+			C6->BeginChapter6(nullptr);
+		}
 	};
 	return this;
 }
@@ -215,7 +222,7 @@ void US47Chapter5::BuildBook()
 	P13.Hints = { TEXT("C is a direction from the transit, not a place on a map."), TEXT("Lay a tracing of E09A on the service map, transit on STATION 01, north to north."), TEXT("Spread E14 on a table in the diner, lay the tracing on STATION 01 and follow C east to the road.") };
 	P13.Elsewhere = TEXT("Worked out on a table in the diner, with the service map and a tracing of E09A.");
 	P13.Open = [this] { return bStarted && S.bArrived; };
-	P13.Done = [this] { return S.bP13 ? FString(SUPPORTED) : FString(); };
+	P13.Done = [this] { return S.bP13 ? (RevisedDiner() ? DocFinding().Page : FString(SUPPORTED)) : FString(); };
 	O.Questions = { P13 };
 	O.Links = [this]() -> TArray<FString>& { NoLinks.Reset(); return NoLinks; }; // () => []
 	O.Wrong = [](const FString&, const FS47BookRule&) -> TOptional<FS47Result> { return {}; };
@@ -242,10 +249,14 @@ void US47Chapter5::Begin(const S47J::FObj& Saved)
 	Reset();
 	bActive = true; bStarted = true;
 	S = Saved.IsValid() ? FS47Ch5State::Load(Saved) : FS47Ch5State();
+	bFreshChapter = !Saved.IsValid();
+	MapUrl.Reset();
+	if (bFreshChapter && Host && Host->bEveningTimeline && M && M->Spine && M->Spine->UsesRevisedSC12()) S.SC12.Version = 1;
 	ApplyWorld();
 	if (!Saved.IsValid())
 	{
-		Note(FString::Printf(TEXT("%s. Out of room 6. %s C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night."), *Time(), *TruckWhere()));
+		Note(RevisedDiner() ? FString::Printf(TEXT("%s. Out with the secured originals. Mesa Diner is open. Compare the three separate sources, call Ward, and check the old road before agreeing a handover."), *Time())
+			: FString::Printf(TEXT("%s. Out of room 6. %s C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night."), *Time(), *TruckWhere()));
 		Toast(TruckWhere(), 3.4f);
 	}
 	Save();
@@ -258,6 +269,7 @@ void US47Chapter5::Reset()
 {
 	bActive = false; bStarted = false;
 	S = FS47Ch5State(); Lines.Reset(); Who.Reset(); Panel.Reset(); bLeaving = false;
+	bFreshChapter = false; PendingReadback = 0; ApplySC12Props();
 	if (M && M->Audio) M->Audio->AmRadioThree({});
 	ApplyWorld();
 }
@@ -267,7 +279,7 @@ S47J::FObj US47Chapter5::SaveState() const
 	return bStarted ? S.Save() : nullptr;
 }
 
-void US47Chapter5::Save() { if (OnSave) OnSave(); }
+void US47Chapter5::Save() { CaptureSC12Sources(); if (OnSave) OnSave(); }
 
 FString US47Chapter5::Time() const { return S47Text::ClockText(Host ? Host->Clock() : 0, false); }
 FString US47Chapter5::Area() const { return M && M->World ? M->World->Area : FString(TEXT("saro")); }
@@ -307,7 +319,16 @@ void US47Chapter5::ApplyWorld()
 		if (His) His.SetVisible(bActive && S.bRegular);
 		Dn->SetSignLit(true);
 	}
+	ApplySC12Props();
 	if (!bActive) return;
+	if (RevisedDiner())
+	{
+		for (const auto& D : S.SC12.SourcePapers) File(D);
+		if (S.SC12.bCompared) File(SourceCheckDoc());
+		if (S.SC12.bWarningSent) File(WarningDoc());
+		if (S.SC12.bPatrolRead) File(PatrolDoc());
+		if (S.SC12.bRouteReadback) File(RouteDoc());
+	}
 	if (S.bArrived) File(DocMap());
 	if (S.bClipped) File(DocClipping());
 	if (S.bP13) File(DocFinding());
@@ -317,6 +338,16 @@ void US47Chapter5::ApplyWorld()
 
 FString US47Chapter5::Objective() const
 {
+	if (RevisedDiner())
+	{
+		if (!S.bArrived) return TEXT("MESA DINER // CARRY THE SECURED SOURCES TO THE DINER");
+		if (!SourcesVerified()) return TEXT("MESA DINER // COMPARE THE THREE SOURCES ON THE BOOTH TABLE");
+		if (!S.SC12.bWarningSent) return TEXT("MESA DINER // CALL WARD. THREE SOURCE IDS AND THE FIRST BOUNDARY. WAIT FOR HER READBACK");
+		if (!S.SC12.bPatrolRead) return S.SC12.bDeputyHere ? TEXT("MESA DINER // READ THE DEPUTY'S DATED PATROL SHEET ON THE COUNTER") : TEXT("MESA DINER // THE DEPUTY IS DUE AT 05:15. THE DINER IS SAFE");
+		if (!S.bP13) return TEXT("MESA DINER // P13: STATION 01, NORTH UP ON E14. FOLLOW C EAST TO 8.15");
+		if (!S.SC12.bRouteReadback) return TEXT("MESA DINER // CALL WARD TO CONFIRM THE COURIER AT 10.4, BEYOND C AT 8.15");
+		return S.Stage == TEXT("complete") ? TEXT("OLD ROSWELL ROAD // CARRY THE ORIGINALS TO THE COURIER AT 10.4. NO READING AT C") : TEXT("MESA DINER // WARNING RECEIPTED. ORIGINALS TO THE COURIER AT 10.4. THE SERVICE TRUCK IS OUTSIDE");
+	}
 	if (S.Stage == TEXT("to-truck"))
 	{
 		const FString At = TruckAt();
@@ -335,6 +366,17 @@ FString US47Chapter5::Objective() const
 
 TArray<FS47Task> US47Chapter5::Tasks() const
 {
+	if (RevisedDiner()) return {
+		{ TEXT("Carry the secured source folder to Mesa Diner"), S.bArrived },
+		{ TEXT("Coffee and familiar voices (optional)"), S.bCoffee },
+		{ TEXT("Lay out and read the three independent local sources"), S.SC12.ReadMask == 7 },
+		{ TEXT("Check origins, clocks and the disconnected feed"), SourcesVerified() },
+		{ TEXT("Read three source IDs and the first boundary to Ward; confirm her readback"), S.SC12.bWarningSent },
+		{ TEXT("Read the deputy's dated patrol sheet after his 05:15 arrival"), S.SC12.bPatrolRead },
+		{ TEXT("P13: STATION 01, north up; C east to 8.15"), S.bP13 },
+		{ TEXT("Agree the courier at 10.4 and acknowledge the route's limits"), S.SC12.bRouteReadback },
+		{ TEXT("Carry the originals out in the service truck"), S.Stage == TEXT("complete") }
+	};
 	TArray<FS47Task> T = { { TEXT("Take the truck to the diner"), S.bArrived } };
 	if (S.bBell || S.bFile) T.Add({ TEXT("The new file on the operations terminal (optional)"), S.bFile });
 	if (S.bArrived) T.Append({
@@ -386,6 +428,7 @@ void US47Chapter5::ArrivedDiner()
 		Toast(TEXT("Mesa Diner. The service map from the door pocket is in your jacket."), 4);
 		Milestone();
 	}
+	if (RevisedDiner() && Host) Host->AdvanceClockTo(S47Timeline::Chapter5(true), TEXT("SC12 diner arrival"));
 	ApplyWorld();
 	Save();
 }
@@ -418,15 +461,15 @@ void US47Chapter5::BindDiner(FS47Diner& Dn)
 		auto Say = [W](const TCHAR* Text, float Secs) { return [W, Text, Secs] { if (W.IsValid()) W->Toast(Text, Secs); }; };
 		Add(TEXT("waitress"), [On] { return FString(On() ? TEXT("Talk to the waitress") : TEXT("The waitress")); },
 			[W, On] { if (!W.IsValid()) return; if (On()) W->OpenTalk(TEXT("waitress")); else W->Toast(TEXT("She is wiping the same stretch of counter."), 2.8f); }, 2.8);
-		Add(TEXT("driver"), [On] { return FString(On() ? TEXT("Talk to the driver") : TEXT("A driver at the counter")); },
-			[W, On] { if (!W.IsValid()) return; if (On()) W->OpenTalk(TEXT("driver")); else W->Toast(TEXT("He is eating eggs and not looking up."), 2.8f); }, 2.6,
+		Add(TEXT("driver"), [W, On] { return FString(On() && !W->RevisedDiner() ? TEXT("Talk to the driver") : TEXT("A driver at the counter")); },
+			[W, On] { if (!W.IsValid()) return; if (On() && !W->RevisedDiner()) W->OpenTalk(TEXT("driver")); else W->Toast(TEXT("He is eating eggs and not looking up."), 2.8f); }, 2.6,
 			[W] { return W.IsValid() && W->DriverMore && W->DriverMore->Examine ? W->DriverMore->Examine() : FString(); });
 		Add(TEXT("coffee"), [W, On] { return FString(On() && !W->S.bCoffee ? TEXT("Coffee") : TEXT("The coffee pot")); }, [W] { if (W.IsValid()) W->UseCoffee(); });
 		Add(TEXT("counter"), Str(TEXT("The radio behind the counter")), [W] { if (W.IsValid()) W->UseRadio(); });
 		Add(TEXT("clipping"), Str(TEXT("The clipping by the door")), [W] { if (W.IsValid()) W->ReadClipping(); });
 		Add(TEXT("payphone"), [W, On] { return FString(On() && !W->S.bWard ? TEXT("Payphone") : TEXT("Payphone")); }, [W] { if (W.IsValid()) W->UsePayphone(); });
-		Add(TEXT("booth"), [W, On] { return FString(On() ? (W->S.bP13 ? TEXT("The maps on the table") : TEXT("Spread the maps on the table")) : TEXT("A booth by the window")); },
-			[W, On] { if (!W.IsValid()) return; if (On()) W->OpenMap(); else W->Toast(TEXT("A booth by the window. The vinyl is cold."), 2.6f); });
+		Add(TEXT("booth"), [W, On] { return FString(On() ? (W->RevisedDiner() ? TEXT("The sources and maps on the table") : W->S.bP13 ? TEXT("The maps on the table") : TEXT("Spread the maps on the table")) : TEXT("A booth by the window")); },
+			[W, On] { if (!W.IsValid()) return; if (On()) { if (W->RevisedDiner()) W->OpenSources(); else W->OpenMap(); } else W->Toast(TEXT("A booth by the window. The vinyl is cold."), 2.6f); });
 		Add(TEXT("menu"), Str(TEXT("Menu board")), Say(TEXT("Coffee .35. Two eggs any style 1.95. Green chile stew 2.95. Pie .95, under a glass dome on the counter."), 4.2f));
 		Add(TEXT("jukebox"), Str(TEXT("Jukebox")), Say(TEXT("A card in the glass, in ballpoint: OUT OF ORDER. It has been there a while."), 3.2f));
 		Add(TEXT("window"), Str(TEXT("Window")), [W]
@@ -537,7 +580,7 @@ void US47Chapter5::ReadClipping()
 void US47Chapter5::UsePayphone()
 {
 	if (!bActive || !S.bArrived) { Toast(TEXT("A payphone in a niche. A dime for a local call."), 2.8f); return; }
-	if (S.bWard) { Toast(TEXT("She said what she had to say. Six o'clock."), 2.8f); return; }
+	if (S.bWard && !RevisedDiner()) { Toast(TEXT("She said what she had to say. Six o'clock."), 2.8f); return; }
 	OpenTalk(TEXT("ward"));
 }
 
@@ -546,6 +589,7 @@ void US47Chapter5::UsePayphone()
 void US47Chapter5::OpenTalk(const FString& InWho)
 {
 	Who = InWho;
+	PendingReadback = 0;
 	if (Who == TEXT("waitress"))
 	{
 		Lines = { Waitress(S.bCoffee ? TEXT("More? No? Suit yourself.") : TEXT("Morning. Or whatever this is.")) };
@@ -581,6 +625,7 @@ void US47Chapter5::OpenTalk(const FString& InWho)
 		};
 		if (M && M->Audio) M->Audio->Sfx(TEXT("click"), Snd(0.4f));
 	}
+	if (RevisedDiner() && Who == TEXT("ward")) Lines = { Aside(TEXT("The diner phone. A coin drops; Ward answers.")), Ward(S.SC12.bWarningSent ? TEXT("I have the warning in my dated log. The 06:00 series remains suspended.") : TEXT("Reyes. You are inside? Good. Keep the originals with you. What do the separate records support?")) };
 	if (!M || !M->UI) return;
 	TWeakObjectPtr<US47Chapter5> W = this;
 	const FString Talker = Who;
@@ -594,7 +639,7 @@ void US47Chapter5::OpenTalk(const FString& InWho)
 	O.OnRead = [](const FString&) {};
 	O.OnLines = [W, Talker, Spoken](const TArray<FLine>& L)
 	{
-		if (Talker != TEXT("ward") || !W.IsValid()) return;
+		if (Talker != TEXT("ward") || !W.IsValid() || W->RevisedDiner()) return; // New Ward lines remain text; no recording is credited.
 		// The panel retains the last two lines when another question is asked.
 		// Read only the newly appended speech, never the retained history or stage directions.
 		int32 Overlap = FMath::Min(Spoken->Num(), L.Num());
@@ -621,13 +666,14 @@ void US47Chapter5::OpenTalk(const FString& InWho)
 	{
 		if (!W.IsValid()) return;
 		if (W->M && W->M->Audio) W->M->Audio->StopPhoneCalls();
-		W->Panel.Reset(); W->Who.Reset();
+		W->Panel.Reset(); W->Who.Reset(); W->PendingReadback = 0;
 	};
 	Panel = S47Panels::Talk(M->UI, O);
 }
 
 S47Panels::FTalkView US47Chapter5::View() const
 {
+	if (RevisedDiner() && (Who == TEXT("ward") || Who == TEXT("sources"))) return SC12View();
 	S47Panels::FTalkView V;
 	V.Status = Objective(); V.Lines = Lines;
 	if (Who == TEXT("waitress"))
@@ -658,7 +704,8 @@ S47Panels::FTalkView US47Chapter5::View() const
 
 void US47Chapter5::Choose(const FString& Id)
 {
-	if (Id == TEXT("bye")) { if (M && M->UI) M->UI->Close(); return; }
+	if (Id == TEXT("bye")) { PendingReadback = 0; if (M && M->UI) M->UI->Close(); return; }
+	if (RevisedDiner() && ChooseSC12(Id)) { Save(); return; }
 	if (Who == TEXT("waitress"))
 	{
 		if (Id == TEXT("coffee")) { Lines = { You(TEXT("Coffee, please.")), Aside(TEXT("She pours without asking how you take it.")), Waitress(TEXT("Thirty-five cents. Pay when you go.")) }; Pour(); }
@@ -765,17 +812,24 @@ void US47Chapter5::OpenMap()
 	TWeakObjectPtr<US47Chapter5> W = this;
 	S47MapOverlay::FOpts O;
 	O.At = *S.Tracing;
-	O.Solved = S.bP13 ? SUPPORTED : TEXT("");
+	O.bHandover = RevisedDiner();
+	O.Solved = S.bP13 ? (RevisedDiner() ? DocFinding().Page : FString(SUPPORTED)) : FString();
 	O.Question = TEXT("P13 / Where does C cross the old Roswell road?");
 	O.Choices = {
-		{ TEXT("bm8"), TEXT("At the survey bolt just past the eight-mile post") },
+		{ TEXT("bm8"), RevisedDiner() ? TEXT("At C / 8.15, before the proposed handover at 10.4") : TEXT("At the survey bolt just past the eight-mile post") },
 		{ TEXT("bm6"), TEXT("At the bolt by the six-mile post") },
 		{ TEXT("bm10"), TEXT("At the bolt past the ten-mile post") },
 		{ TEXT("none"), TEXT("Nowhere. C runs clear of the road") },
 	};
-	O.OnMove = [W](double X, double Y, bool) { if (!W.IsValid()) return; W->S.Tracing = FVector2D(X, Y); W->Save(); };
+	O.OnMove = [W](double X, double Y, bool) { if (!W.IsValid()) return; W->MoveTracing(X, Y); };
 	O.OnChoose = [W](const FString& Id) { return W.IsValid() ? W->Answer(Id) : FS47Result(); };
 	S47MapOverlay::MapOverlay(M->UI, O);
+}
+
+void US47Chapter5::MoveTracing(double X, double Y)
+{
+	if (!FMath::IsFinite(X) || !FMath::IsFinite(Y)) return;
+	S.Tracing = FVector2D(X, Y); Save();
 }
 
 bool US47Chapter5::Aligned() const
@@ -785,6 +839,7 @@ bool US47Chapter5::Aligned() const
 
 FS47Result US47Chapter5::Answer(const FString& Id)
 {
+	if (RevisedDiner() && (!S.SC12.bWarningSent || !S.SC12.bPatrolRead)) return { false, TEXT("First get Ward's warning readback and read the deputy's dated patrol sheet. A map alone is no current road report.") };
 	// Unreal: record only an investigation actually performed on the map, including a correct guess.
 	if (!Aligned()) return { false, TEXT("Lay the tracing on STATION 01 first, transit on the station, north to north. Then follow C.") };
 	if (Id != TEXT("bm8"))
@@ -793,14 +848,16 @@ FS47Result US47Chapter5::Answer(const FString& Id)
 		Save();
 		return { false, Id == TEXT("none") ? TEXT("Follow C east from the station. It does meet the road.") : Id == TEXT("bm6") ? TEXT("That bolt is south of the line. C meets the road further on.") : TEXT("C meets the road before that.") };
 	}
+	if (RevisedDiner() && S.bP13) return { true, DocFinding().Page };
 	S.bP13 = true;
-	if (S.Stage == TEXT("diner")) S.Stage = TEXT("road");
+	if (S.Stage == TEXT("diner") && !RevisedDiner()) S.Stage = TEXT("road");
 	File(DocFinding());
-	Note(FString::Printf(TEXT("%s. P13: with E09A on STATION 01, C runs due east and crosses the old Roswell road just past the eight-mile post, at a survey bolt in the shoulder. The truck is outside."), *Time()));
+	Note(RevisedDiner() ? FString::Printf(TEXT("%s. P13: transit on STATION 01, north up on E14. C east to 8.15; proposed courier beyond it at 10.4. A is not C. Ward must confirm the courier and the patrol limits before departure."), *Time())
+		: FString::Printf(TEXT("%s. P13: with E09A on STATION 01, C runs due east and crosses the old Roswell road just past the eight-mile post, at a survey bolt in the shoulder. The truck is outside."), *Time()));
 	if (M && M->Audio) M->Audio->Sfx(TEXT("click"), Snd(0.5f));
 	Milestone();
 	Save();
-	return { true, SUPPORTED };
+	return { true, RevisedDiner() ? DocFinding().Page : FString(SUPPORTED) };
 }
 
 // ---------- out ----------
@@ -809,7 +866,8 @@ FS47Result US47Chapter5::Answer(const FString& Id)
 
 void US47Chapter5::Finish()
 {
-	if (S.Stage != TEXT("road") || bLeaving) return;
+	if (S.Stage != TEXT("road") || bLeaving || (RevisedDiner() && !ReadyForRoad())) return;
+	if (RevisedDiner() && Host) Host->AdvanceClockTo(S47Timeline::Departure, TEXT("SC12 agreed departure"));
 	bLeaving = true;
 	// the autosave is written after this frame; the state must still say 'road' then
 	Milestone();
@@ -830,10 +888,11 @@ void US47Chapter5::Finish()
 
 FS47Doc US47Chapter5::DocMap()
 {
-	if (MapUrl.IsEmpty()) MapUrl = S47Drawings::ServiceMap();
+	if (MapUrl.IsEmpty()) MapUrl = RevisedDiner() ? S47Drawings::HandoverMap() : S47Drawings::ServiceMap();
 	FS47Doc D;
 	D.Id = TEXT("e14"); D.Title = TEXT("E14 / service truck route map"); D.Kind = TEXT("map"); D.Stamp = TEXT("E14"); D.Page = TEXT(""); D.Image = MapUrl;
 	D.Transcript = TEXT("From the door pocket of the service truck. The old Roswell road leaves the highway at the diner, and its mileposts count from there. Survey bolts in the shoulder are marked BM.\n\nC is not on it. E09A gives C as a direction from the transit, not a place.");
+	if (RevisedDiner()) D.Transcript += TEXT("\n\nSC12 transfer overlay: place the transit on STATION 01, north to north on E14; follow C east to the crossing at 8.15. The proposed handover is beyond it at 10.4. A is the fixed reference, not C. The map is not a guarantee of a safe road, and the courier still needs Ward's confirmation.");
 	return D;
 }
 
@@ -872,6 +931,11 @@ FS47Doc US47Chapter5::DocFinding() const
 	FS47Doc D;
 	D.Id = TEXT("p13"); D.Title = TEXT("P13 / Where C crosses"); D.Kind = TEXT("typed"); D.Stamp = TEXT("P13"); D.Page = SUPPORTED;
 	D.Transcript = TEXT("The service map from the truck with E09A traced over it. C crosses the old road just past the eight-mile post.");
+	if (RevisedDiner())
+	{
+		D.Page = TEXT("P13 SUPPORTED / Transit on STATION 01, north up on E14. C runs east to the old Roswell road at 8.15; A and C are different. The courier's proposed bolt is 10.4, beyond C. Pass C without stopping or taking a reading. Confirm the courier with Ward. One patrol is no promise that the road is safe now.");
+		D.Transcript = D.Page;
+	}
 	return D;
 }
 
@@ -881,6 +945,7 @@ void US47Chapter5::Update(double Dt, double T)
 {
 	(void)Dt; (void)T;
 	if (!bActive || !M) return;
+	StepSC12(Dt);
 	// the terminal chimes once, the first time the player comes past the control room
 	if (S.Stage == TEXT("to-truck") && !S.bBell && Area() == TEXT("saro") && M->Player && M->Web
 		&& FVector::Distance(M->Player->Pos, M->Web->Obj(TEXT("room.objs.opsTerminal")).WorldPosition()) < 22)
@@ -1147,6 +1212,31 @@ bool US47Chapter5::SelfTest(TArray<FString>& Out)
 	const FString Again = S47J::Write(L.Save());
 	Check(L.Stage == TEXT("diner") && L.bBell && L.bCoffee && !L.bRegular && !L.ArrayTold && !L.Tracing && Again.Contains(TEXT("\"regular\":false")) && Again.Contains(TEXT("\"tracing\":null")) && Again.Contains(TEXT("\"later\":3")) && !Again.Contains(TEXT("arrayTold")),
 		TEXT("an older save: regular from fresh, no arrayTold, unknown fields kept"));
+	// New SC12 fields never appear in a legacy chapter state; interrupted live calls have no saved credit.
+	Check(!S47J::Has(S47J::Read(Json), TEXT("sc12")) && L.SC12.Version == 0, TEXT("legacy chapter5 keeps its exact JSON and route without retrospective SC12 gates"));
+	FS47SC12State New;
+	New.Version = 1; New.bLaid = true; New.ReadMask = 7; New.CheckMask = 7; New.bCompared = true;
+	New.Extra = S47J::Read(TEXT("{\"futureSourceField\":17}"));
+	FS47Doc Preserved;
+	Preserved.Id=TEXT("HR_HONDO_REMOTE"); Preserved.Title=TEXT("Original title"); Preserved.Kind=TEXT("typed"); Preserved.Stamp=TEXT("05:04 MST / 14 APR 86");
+	Preserved.Page=TEXT("SOURCE ID / HONDO-860414-LOG01\n04:56:55"); Preserved.Transcript=TEXT("Original transcript, not reconstructed");
+	Preserved.Image=TEXT("source-image-reference"); Preserved.Paper=TEXT("paper-art"); Preserved.PaperRatio=.7; Preserved.Sheets.Add({TEXT("second page"),TEXT("paper"),TEXT("strip"),TEXT("term")});
+	New.SourcePapers.Add(Preserved);
+	auto Round = FS47SC12State::Load(S47J::Read(S47J::Write(New.Save())));
+	Check(Round.Version == 1 && Round.bCompared && !Round.bWarningSent && S47J::Int(Round.Save(), TEXT("futureSourceField")) == 17,
+		TEXT("new comparison restores separately from warning; unknown SC12 fields preserved"));
+	Check(Round.SourcePapers.Num()==1 && Round.SourcePapers[0].Stamp==Preserved.Stamp && Round.SourcePapers[0].Page==Preserved.Page && Round.SourcePapers[0].Transcript==Preserved.Transcript && Round.SourcePapers[0].Image==Preserved.Image && Round.SourcePapers[0].Sheets.Num()==1 && Round.SourcePapers[0].Sheets[0].Term==TEXT("term"),
+		TEXT("acquired source page, timestamp, transcript, image and sheet payload survive exactly without a new template"));
+	New.bWarningSent = true; New.WarningStamp = TEXT("05:16"); New.bDeputyHere = true; New.bPatrolRead = true; New.PatrolStamp = TEXT("05:15");
+	New.bCourier = true; New.bRouteReadback = true; New.RouteStamp = TEXT("05:18");
+	Round = FS47SC12State::Load(S47J::Read(S47J::Write(New.Save())));
+	Check(Round.bWarningSent && Round.bPatrolRead && Round.bCourier && Round.bRouteReadback && Round.WarningStamp == TEXT("05:16") && Round.RouteStamp == TEXT("05:18"),
+		TEXT("warning, dated patrol and separate courier readback roundtrip without changing their stamps"));
+	auto Invalid = New.Save(); S47J::Set(Invalid, TEXT("compared"), false);
+	Round = FS47SC12State::Load(Invalid);
+	Check(!Round.bWarningSent && !Round.bCourier && !Round.bRouteReadback, TEXT("unverified comparison cannot restore downstream warning/courier credit"));
+	Invalid = New.Save(); S47J::Set(Invalid, TEXT("checks"), 99); Round = FS47SC12State::Load(Invalid);
+	Check(Round.CheckMask == 0 && !Round.bCompared && !Round.bWarningSent, TEXT("invalid source-check mask cannot be clamped into completed proof"));
 	// a new chapter is fresh again
 	C->Reset();
 	Check(!C->bActive && C->S.Stage == TEXT("to-truck") && !C->TruckTrip(TEXT("saro")) && C->Book->Threads().Num() == 0, TEXT("reset: not active, fresh"));

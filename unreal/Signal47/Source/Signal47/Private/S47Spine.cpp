@@ -15,6 +15,7 @@
 #include "S47World.h"
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
+#include "S47Chapter5.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -87,16 +88,19 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
  bEnabled = bTestSC03 = false; for (int32& S : State) S = 0;
+ bSC12Route = false;
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
   bEnabled = true;
+  bSC12Route = S47J::Num(Saved, TEXT("sc12Route")) == 1;
   State[SC04] = FMath::Clamp(S47J::Int(Saved, TEXT("sc04")), 0, 2);
   State[SC08] = FMath::Clamp(S47J::Int(Saved, TEXT("sc08")), 0, 2);
   State[SC11] = FMath::Clamp(S47J::Int(Saved, TEXT("sc11")), 0, 2);
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
+ bSC12Route = bEnabled;
 }
 
 void FS47Spine::Stop()
@@ -109,6 +113,7 @@ S47J::FObj FS47Spine::Save() const
 {
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version);
+ if (bSC12Route) S47J::Set(O, TEXT("sc12Route"), 1);
  S47J::Set(O, TEXT("sc04"), State[SC04]); S47J::Set(O, TEXT("sc08"), State[SC08]); S47J::Set(O, TEXT("sc11"), State[SC11]);
  return O;
 }
@@ -289,7 +294,12 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
  const bool Chapters = GateDone(SC08) < S47Timeline::Chapter3(true) && S47Timeline::Chapter3(true) < S47Timeline::Chapter4(true) &&
   S47Timeline::Chapter4(true) < GateDone(SC11) && GateDone(SC11) < S47Timeline::Chapter5(true) && S47Timeline::Chapter5(true) < S47Timeline::Departure;
  bool Cards = true; for (int32 G = 0; G < GateCount; ++G) Cards &= Card(EGate(G)).Page.StartsWith(TEXT("PLACEHOLDER"));
- const bool Ok = Thirteen && Ordered && Chapters && Cards;
+ FS47Spine Old(nullptr), New(nullptr);
+ Old.Begin(S47J::Read(TEXT("{\"v\":1,\"sc04\":2,\"sc08\":2,\"sc11\":2}")),false);
+ New.Begin(S47J::Read(TEXT("{\"v\":1,\"sc04\":2,\"sc08\":2,\"sc11\":2,\"sc12Route\":1}")),false);
+ const bool Cohorts = Old.Enabled() && !Old.UsesRevisedSC12() && !S47J::Has(Old.Save(),TEXT("sc12Route")) && New.UsesRevisedSC12();
+ Lines.Add(FString::Printf(TEXT("%s spine: absent SC12 route marker stays legacy over resave; explicit new route survives"), Cohorts ? TEXT("PASS") : TEXT("FAIL")));
+ const bool Ok = Thirteen && Ordered && Chapters && Cards && Cohorts;
  Lines.Add(FString::Printf(TEXT("%s spine: 13 scenarios, placeholders ordered SC04 %.0f < SC08 %.0f < ch3 %.0f < ch4 %.0f < SC11 %.0f < ch5 %.0f < departure"),
   Ok ? TEXT("PASS") : TEXT("FAIL"), GateDone(SC04), GateDone(SC08), S47Timeline::Chapter3(true), S47Timeline::Chapter4(true), GateDone(SC11), S47Timeline::Chapter5(true)));
  return Ok;
@@ -299,6 +309,8 @@ void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
+ // SC12 owns its own source/readback/disk contract; it is not the SC11 placeholder contract.
+ if (Test.Mode == TEXT("sc12")) { if (auto* C5 = Cast<US47Chapter5>(M->Story->Chapter(TEXT("ch5")))) C5->ControlSC12Test(Dt); return; }
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
  {
