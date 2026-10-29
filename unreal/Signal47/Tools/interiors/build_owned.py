@@ -358,7 +358,11 @@ def export(low, output, recenter=True):
 
 
 def box_face_partition(mesh):
-    """The historical five disconnected islands, using the same min-Z > .2 rule."""
+    """Partition the actual evaluated mesh: one 515-face body, two lid islands.
+
+    The original editable object has five islands; evaluation joins its body.
+    Keep the measured 515/120/25 topology and the historical min-Z > .2 rule.
+    """
     O.require(len(mesh.polygons) == 660 and all(len(face.vertices) == 3 for face in mesh.polygons),
               'ArchiveBox must remain the exact triangulated 660-face source')
     parents = list(range(len(mesh.vertices)))
@@ -386,8 +390,9 @@ def box_face_partition(mesh):
         info.append({'minimum_z_m': float(minimum), 'triangles': len(faces),
                      'subset': 'lid' if is_lid else 'body'})
     body = set(range(660)) - lid
-    O.require(len(info) == 5 and len(body) == 515 and len(lid) == 145,
-              'Historical ArchiveBox 515/145 component split no longer matches: ' + str(info))
+    O.require(sorted((row['subset'],row['triangles']) for row in info) ==
+              [('body',515),('lid',25),('lid',120)] and len(body) == 515 and len(lid) == 145,
+              'Evaluated ArchiveBox 515/120/25 component split no longer matches: ' + str(info))
     return body, lid, info
 
 

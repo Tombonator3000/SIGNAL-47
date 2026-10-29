@@ -249,7 +249,9 @@ def build():
         if bevel:
             mod=o.modifiers.new("Physical_edge_radius","BEVEL")
             mod.width=min(bevel,min(size)*.24)
-            mod.segments=3
+            # These millimetre edge radii need two physical steps, with weighted
+            # normals retaining the highlight; three oversamples the archive mouldings.
+            mod.segments=2
             bpy.ops.object.modifier_apply(modifier=mod.name)
             mod=o.modifiers.new("Weighted_corner_normals","WEIGHTED_NORMAL")
             mod.keep_sharp=True

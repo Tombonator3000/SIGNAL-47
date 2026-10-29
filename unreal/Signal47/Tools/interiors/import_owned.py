@@ -109,7 +109,9 @@ def source_inputs(source):
                 all(union.get(key) is True for key in ('source_faces_disjoint', 'source_faces_complete',
                     'closed_geometry_unchanged', 'shared_origin', 'shared_baked_atlas')))
         islands = union.get('source_components', [])
-        R.check('historical exact five source islands', len(islands) == 5 and
+        R.check('actual evaluated body and two lid islands',
+                sorted((row['subset'],row['triangles']) for row in islands) ==
+                [('body',515),('lid',25),('lid',120)] and
                 sum(row['triangles'] for row in islands if row['subset'] == 'body') == 515 and
                 sum(row['triangles'] for row in islands if row['subset'] == 'lid') == 145 and
                 all((row['minimum_z_m'] > .2) == (row['subset'] == 'lid') for row in islands))

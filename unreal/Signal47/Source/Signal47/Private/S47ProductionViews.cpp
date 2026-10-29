@@ -7,6 +7,7 @@
 #include "S47Office.h"
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
+#include "S47OfficeOwned.h"
 #include "S47HighwayPower.h"
 #include "S47Main.h"
 #include "S47World.h"
@@ -15,6 +16,13 @@
 #include "S47Story.h"
 #include "S47Startup.h"
 #include "S47UI.h"
+#include "Components/LocalLightComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Components/RectLightComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "HAL/PlatformFileManager.h"
@@ -37,6 +45,69 @@ namespace
   uint8 Header[8],Tail[12];
   return File->Read(Header,sizeof(Header)) && File->Seek(File->Size()-sizeof(Tail)) && File->Read(Tail,sizeof(Tail))
    && FMemory::Memcmp(Header,Signature,sizeof(Header))==0 && FMemory::Memcmp(Tail,End,sizeof(Tail))==0;
+ }
+ bool ProductionLabFootClear(AS47Web* W,const FVector& Foot,double Radius,double& Clearance)
+ {
+  if(!W||W->Area()!=TEXT("saro"))return false;
+  const FS47Area Lab=W->Rect(TEXT("yard.zone.lab"));
+  if(!Lab.bValid||!Lab.Contains(Foot.X,Foot.Z,-Radius))return false;
+  int32 Zones=0;
+  for(const FS47Rect& R:W->Zones())if(R.Id==TEXT("lab")&&R.bEnabled&&
+   FMath::IsNearlyEqual(R.MinX,Lab.MinX)&&FMath::IsNearlyEqual(R.MaxX,Lab.MaxX)&&
+   FMath::IsNearlyEqual(R.MinZ,Lab.MinZ)&&FMath::IsNearlyEqual(R.MaxZ,Lab.MaxZ))++Zones;
+  if(Zones!=1)return false;
+  Clearance=TNumericLimits<double>::Max();
+  for(const FS47Rect& C:W->Colliders())if(C.bEnabled)
+  {
+   const double X=FMath::Max3(C.MinX-Foot.X,0.,Foot.X-C.MaxX);
+   const double Z=FMath::Max3(C.MinZ-Foot.Z,0.,Foot.Z-C.MaxZ);
+   Clearance=FMath::Min(Clearance,FMath::Sqrt(X*X+Z*Z));
+  }
+  return Clearance>=Radius;
+ }
+ bool ProductionLabDetailReady(AS47Web* W,TArray<FString>& Lines)
+ {
+  // A bounded installation check, not PhotoLabDetail's strict post-bake asset
+  // contract, visual acceptance, exposure timing or a player interaction test.
+  static const TCHAR* Names[]={TEXT("SM_PhotoLab_WetCabinetDetail"),TEXT("SM_PhotoLab_RinseSink"),
+   TEXT("SM_PhotoLab_EnlargerDetail"),TEXT("SM_PhotoLab_ProcessDetails"),TEXT("SM_PhotoLab_StorageDetail"),
+   TEXT("SM_PhotoLab_ArchiveDetail"),TEXT("SM_PhotoLab_RecordsDetail"),TEXT("SM_PhotoLab_SafelightHousing"),
+   TEXT("SM_PhotoLab_Ventilation"),TEXT("SM_PhotoLab_UtilityDetail")};
+  const int32 Parent=W->Handle(TEXT("yard.occluders[2]"));
+  const FS47WebNode* Lab=W->Node(Parent);
+  bool Ok=Lab&&Lab->Comp.IsValid()&&Lab->Parent==W->Handle(TEXT("yard.group"))&&
+   W->NodeWorldThree(Parent).Equals(FTransform::Identity,.0001)&&W->ObjAt(Parent).Shown();
+  TSet<FString> Seen;int32 Count=0;
+  for(int32 I=0;I<W->PartCount();++I)
+  {
+   const FS47WebNode* N=W->Node(I);
+   if(!N||!N->Name.StartsWith(TEXT("photoLabDetail:")))continue;
+   ++Count;const FString Name=N->Name.RightChop(15);
+   bool Known=false;for(const TCHAR* Expected:Names)Known|=Name==Expected;
+   const bool Unique=!Seen.Contains(Name);Seen.Add(Name);
+   const UStaticMeshComponent* C=Cast<UStaticMeshComponent>(N->Comp.Get());
+   bool Part=Known&&Unique&&C&&C->GetStaticMesh()&&Lab&&N->Parent==Parent&&
+    C->GetAttachParent()==Lab->Comp.Get()&&N->bVis&&W->ObjAt(I).Shown()&&C->IsVisible()&&!C->bHiddenInGame&&
+    C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&!C->GetGenerateOverlapEvents()&&
+    C->GetComponentTransform().Equals(FTransform::Identity,.001);
+   if(C&&C->GetStaticMesh())
+   {
+    const FString Path=TEXT("/Game/Signal47/Art/PhotoLab/")+Name+TEXT(".")+Name;
+    Part&=C->GetStaticMesh()->GetPathName()==Path&&C->GetNumMaterials()>0;
+    for(int32 Slot=0;Slot<C->GetNumMaterials();++Slot)
+    {
+     UMaterialInterface* Material=C->GetMaterial(Slot);FLinearColor Glow;
+     Part&=Material&&Material->GetPathName().StartsWith(TEXT("/Game/Signal47/Art/PhotoLab/Materials/M_PhotoLab_"))&&
+      Material->GetVectorParameterValue(FMaterialParameterInfo(TEXT("EmissiveFactor")),Glow)&&
+      FMath::Max3(FMath::Abs(Glow.R),FMath::Abs(Glow.G),FMath::Abs(Glow.B))<.0001f;
+    }
+   }
+   Ok&=Part;
+   Lines.Add(FString::Printf(TEXT("photolab fixture part %s %s: typed native mesh, fixed parent, visible, NoCollision, nonemissive material bindings"),*Name,Part?TEXT("PASS"):TEXT("FAIL")));
+  }
+  Ok&=Count==UE_ARRAY_COUNT(Names)&&Seen.Num()==UE_ARRAY_COUNT(Names);
+  Lines.Add(FString::Printf(TEXT("photolab fixture installation %s: %d exact adopted parts; strict baked topology/UV/LOD contract and visual review separate"),Ok?TEXT("PASS"):TEXT("FAIL"),Count));
+  return Ok;
  }
 }
 void AS47Web::BeginProductionViews()
@@ -104,9 +175,14 @@ void AS47Web::BeginProductionViews()
   // SARO interiors: explicit fixed cameras, separate from the unchanged desk views.
   // Research board faces -X at x1.65, z8.13..10.19; camera clears the west cabinet.
   {TEXT("office-room-overview"),TEXT("saro"),{.40,0,7.75},{.50,1.35,9.25}},
-  {TEXT("office-research-wall"),TEXT("saro"),{-.18,0,8.65},{1.65,1.76,9.16}},
+  {TEXT("office-research-wall"),TEXT("saro"),{0,0,8.65},{1.65,1.76,9.16}},
   {TEXT("office-corridor-west-east"),TEXT("saro"),{-5.35,0,5.70},{.90,1.10,5.80}},
-  {TEXT("office-passing-bay"),TEXT("saro"),{.35,0,5.45},{.40,1.35,7.15}}
+  {TEXT("office-passing-bay"),TEXT("saro"),{.35,0,5.45},{.40,1.35,7.15}},
+  // Photolab fixtures append after every existing index. All stand inside the
+  // original lab walk rectangle with a clear 0.27m body radius.
+  {TEXT("photolab-overview"),TEXT("saro"),{15.7,0,-.85},{15.9,1.25,-3.85}},
+  {TEXT("photolab-wetbench-enlarger"),TEXT("saro"),{16.2,0,-4.1},{16.6,1.28,-5.43}},
+  {TEXT("photolab-records-storage"),TEXT("saro"),{14.35,0,-2.5},{17.75,1.02,-1.4}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -140,10 +216,10 @@ void AS47Web::BeginProductionViews()
   while(State->Index<UE_ARRAY_COUNT(Views)*3)
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
-   const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-")),Cinema=Name==TEXT("cinema")||Name.StartsWith(TEXT("cinema-poster-"));
+   const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-")),Cinema=Name==TEXT("cinema")||Name.StartsWith(TEXT("cinema-poster-")),PhotoLab=Name.StartsWith(TEXT("photolab-"));
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
     ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
-    ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
+    ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))||(State->Suite==TEXT("photolab")&&!PhotoLab)
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
   // This branch is reached only after the final PendingFile has a complete PNG terminator.
@@ -173,7 +249,14 @@ void AS47Web::BeginProductionViews()
    else if(ViewName.StartsWith(TEXT("office-desk-"))||ViewName==TEXT("office-contact-close")){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-contact-close")?28.f:50.f;}
    else if(ViewName==TEXT("office-room-overview")||ViewName==TEXT("office-research-wall")||ViewName==TEXT("office-corridor-west-east")||ViewName==TEXT("office-passing-bay"))
    {State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-research-wall")?74.f:ViewName==TEXT("office-passing-bay")?80.f:78.f;}
+   else if(ViewName.StartsWith(TEXT("photolab-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("photolab-overview")?82.f:ViewName==TEXT("photolab-records-storage")?78.f:72.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
+   if(ViewName.StartsWith(TEXT("photolab-")))
+   {
+    double Clearance;
+    if(!FMath::IsNearlyEqual(M->Player->Radius,.27,.0001)||!ProductionLabFootClear(W,V.Foot,.27,Clearance))
+    {Fail(TEXT("photolab fixture is outside the enabled lab walk or overlaps a body-radius collider"));return;}
+   }
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
    if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
    const FVector Eye(V.Foot.X,M->Player->FloorY+M->Player->Eye,V.Foot.Z),D=V.Target-Eye;
@@ -183,7 +266,34 @@ void AS47Web::BeginProductionViews()
   if(Now-State->Since<State->Hold)return;
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
-  if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);Ok&=S47SaroDoorDetail::Audit(W,Lines);}
+  if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);Ok&=S47SaroDoorDetail::Audit(W,Lines);Ok&=S47OfficeOwned::Audit(W,Lines);}
+  else if(FString(V.Name).StartsWith(TEXT("photolab-")))
+  {
+   Ok=ProductionLabDetailReady(W,Lines);double Clearance=0;
+   const bool Placement=ProductionLabFootClear(W,M->Player->Pos,.27,Clearance)&&
+    FMath::IsNearlyEqual(M->Player->Radius,.27,.0001)&&FMath::Abs(M->Player->FloorY)<.001&&
+    FMath::IsNearlyEqual(M->Player->Pos.X,V.Foot.X,.001)&&FMath::IsNearlyEqual(M->Player->Pos.Z,V.Foot.Z,.001);
+   Ok&=Placement;
+   Lines.Add(FString::Printf(TEXT("photolab fixture placement %s: floor=%.4fm body-radius=.27m collider clearance=%.3fm; fixed camera only"),Placement?TEXT("PASS"):TEXT("FAIL"),M->Player->FloorY,Clearance));
+   const FS47Light Normal=W->Light(TEXT("lab.normal")),Safe=W->Light(TEXT("lab.safelight")),Enlarger=W->Light(TEXT("lab.enlarger"));
+   bool Baseline=Cast<UPointLightComponent>(Normal.Component())&&Cast<UPointLightComponent>(Safe.Component())&&Cast<UPointLightComponent>(Enlarger.Component())&&
+    Normal.Visible()&&Safe.Visible()&&Enlarger.Visible()&&FMath::IsNearlyEqual(Normal.Intensity(),1.f,.001f)&&
+    FMath::Abs(Safe.Intensity())<.001f&&FMath::Abs(Enlarger.Intensity())<.001f;
+   // Roles and five fitted sources are defined by S47LabLighting.cpp. This reads
+   // their normal working-light baseline; it never switches exposure or power.
+   TSet<int32> Roles;Baseline&=W->LabLights.Num()==5;
+   for(const auto& Light:W->LabLights)
+   {
+    const ULocalLightComponent* C=Light.Light.Get();const bool Working=Light.Role==1||Light.Role==2;
+    const bool Typed=C&&(Light.Role==3?C->IsA<USpotLightComponent>():C->IsA<URectLightComponent>());
+    const FS47WebNode* N=W->Node(Light.Node);
+    Baseline&=Typed&&!Roles.Contains(Light.Role)&&Light.Role>=0&&Light.Role<=4&&N&&
+     (Working?(W->ObjAt(Light.Node).Shown()&&C->IsVisible()&&C->Intensity>0):FMath::Abs(C->Intensity)<.001f);
+    Roles.Add(Light.Role);
+   }
+   Ok&=Baseline;
+   Lines.Add(FString::Printf(TEXT("photolab fixture light baseline %s: normal=%.3f safe=%.3f enlarger=%.3f; five original typed sources, no driver/power writes"),Baseline?TEXT("PASS"):TEXT("FAIL"),Normal.Intensity(),Safe.Intensity(),Enlarger.Intensity()));
+  }
   else if(State->Suite==TEXT("cinema-posters")){Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines)&&W->AuditCinemaPosters(Lines);}
   else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }

@@ -285,6 +285,63 @@
     }
   },
   {
+    "name": "M_Office_BinderOlive",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.83,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_BinderOlive_base.png",
+      "roughness": "textures/M_Office_BinderOlive_rough.png",
+      "normal": "textures/M_Office_BinderOlive_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_BinderFadedGray",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.85,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_BinderFadedGray_base.png",
+      "roughness": "textures/M_Office_BinderFadedGray_rough.png",
+      "normal": "textures/M_Office_BinderFadedGray_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_BinderTan",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.8,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_BinderTan_base.png",
+      "roughness": "textures/M_Office_BinderTan_rough.png",
+      "normal": "textures/M_Office_BinderTan_normal_dx.png"
+    }
+  },
+  {
     "name": "M_Office_Diffuser",
     "base_color_linear": [
       1,
@@ -301,6 +358,44 @@
       "base_color": "textures/M_Office_Diffuser_base.png",
       "roughness": "textures/M_Office_Diffuser_rough.png",
       "normal": "textures/M_Office_Diffuser_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_CorridorTubeWest",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_CorridorTubeWest_base.png",
+      "roughness": "textures/M_Office_CorridorTubeWest_rough.png",
+      "normal": "textures/M_Office_CorridorTubeWest_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_CorridorTubeEast",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_CorridorTubeEast_base.png",
+      "roughness": "textures/M_Office_CorridorTubeEast_rough.png",
+      "normal": "textures/M_Office_CorridorTubeEast_normal_dx.png"
     }
   }
 ]

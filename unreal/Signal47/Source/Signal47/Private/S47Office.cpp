@@ -5,6 +5,7 @@
 #include "S47Kit.h"
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
+#include "S47OfficeOwned.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -456,7 +457,11 @@ void FS47Office::Init()
   }
  }
  FS47Obj OldProxy = W->Obj(TEXT("annex.objs.officeDoor")); if (OldProxy) { OldProxy.SetVisible(false); if (const FS47WebNode* N = W->Node(OldProxy.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
- bReady = true; S47SaroInterior::Build(W); S47SaroDoorDetail::Build(W); Apply();
+ bReady = true; S47SaroInterior::Build(W); S47SaroDoorDetail::Build(W);
+ if (S47OfficeOwned::Build(W))
+  // Capsule envelope includes the propped lid, which overhangs the body by 34mm.
+  Collider(TEXT("office:ownedOpenBox"), -.817, -.391, 8.537, 8.900);
+ Apply();
  UE_LOG(LogS47Office, Display, TEXT("S47: Operations ready physical portal=10 skirting=8 leaf/handle/sign=26; own spare/drawer; eight authored Blender/PBR assemblies; early physical access; field sheet independent of unavailable tape"));
 }
 

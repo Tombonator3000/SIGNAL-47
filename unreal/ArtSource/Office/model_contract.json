@@ -82,8 +82,13 @@
       "original_components": 27,
       "runtime_origin_three_m": [
         0.47,
-        1.035,
-        7.07
+        1.047,
+        7.2
+      ],
+      "runtime_scale_three": [
+        1,
+        1,
+        0.8181818181818181
       ]
     },
     "SM_Office_SpareKey": {
@@ -113,17 +118,17 @@
       ]
     },
     "SM_Office_Room": {
-      "triangles": 20404,
+      "triangles": 94884,
       "bounds_local_m": [
         [
-          -0.9300000071525574,
+          -6.01200008392334,
           -10.420000076293945,
           -0.06749999523162842
         ],
         [
-          1.8799999952316284,
-          -6.604000091552734,
-          2.7799999713897705
+          2.01200008392334,
+          -4.788000106811523,
+          2.8000001907348633
         ]
       ],
       "materials": [
@@ -133,12 +138,14 @@
         "M_Office_Walnut",
         "M_Office_CreamEnamel",
         "M_Office_CeilingTile",
-        "M_Office_AgedBrass",
-        "M_Office_BrushedMetal",
         "M_Office_CabinetEnamel",
-        "M_Office_Diffuser"
+        "M_Office_BrushedMetal",
+        "M_Office_Diffuser",
+        "M_Office_CorridorTubeWest",
+        "M_Office_CorridorTubeEast",
+        "M_Office_Paper"
       ],
-      "original_components": 111,
+      "original_components": 520,
       "runtime_origin_three_m": [
         0,
         0,
@@ -199,7 +206,7 @@
       ]
     },
     "SM_Office_Dressing": {
-      "triangles": 19728,
+      "triangles": 30860,
       "bounds_local_m": [
         [
           -0.8400000333786011,
@@ -207,25 +214,28 @@
           0.013000000268220901
         ],
         [
-          1.7549999952316284,
+          1.7799999713897705,
           -7.454999923706055,
-          2.307500123977661
+          2.447499990463257
         ]
       ],
       "materials": [
         "M_Office_Walnut",
         "M_Office_CabinetEnamel",
-        "M_Office_BinderBurgundy",
+        "M_Office_BinderBlue",
         "M_Office_Paper",
         "M_Office_AgedBrass",
-        "M_Office_BinderBlue",
+        "M_Office_BinderOlive",
+        "M_Office_BinderBurgundy",
+        "M_Office_BinderFadedGray",
+        "M_Office_BinderTan",
         "M_Office_Cork",
         "M_Office_BlackBakelite",
+        "M_Office_BrushedMetal",
         "M_Office_CreamEnamel",
-        "M_Office_ChairFabric",
-        "M_Office_BrushedMetal"
+        "M_Office_ChairFabric"
       ],
-      "original_components": 141,
+      "original_components": 195,
       "runtime_origin_three_m": [
         0,
         0,

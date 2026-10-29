@@ -1048,9 +1048,10 @@ bool AS47Web::RehouseSaroCorridorLights(bool bApply)
 	struct FBinding { int32 Node, Geo, Pool; double X; const TCHAR* Material; };
 	const FBinding Bindings[] = {{484,316,0,-3.7,TEXT("M_Office_CorridorTubeWest")}, {485,317,1,.2,TEXT("M_Office_CorridorTubeEast")}};
 	TArray<FFixtureLight*> Found; TArray<int32> Slots;
+	const auto PoolKey = [](int32 Group, int32 Slot) { return (uint64(uint32(Group)) << 32) | uint32(Slot); };
 	for (const FBinding& B : Bindings)
 	{
-		if (!Nodes.IsValidIndex(B.Node) || Nodes[B.Node].Geo != B.Geo || !SuppressedPools.Contains(PoolId(Set,B.Pool))) return false;
+		if (!Nodes.IsValidIndex(B.Node) || Nodes[B.Node].Geo != B.Geo || !SuppressedPools.Contains(PoolKey(Set,B.Pool))) return false;
 		FFixtureLight* Fixture = nullptr;
 		for (FFixtureLight& F : FixtureLights) if (F.Node == B.Node && F.Set == Set && F.Slot == B.Pool)
 		{ if (Fixture) return false; Fixture = &F; }
