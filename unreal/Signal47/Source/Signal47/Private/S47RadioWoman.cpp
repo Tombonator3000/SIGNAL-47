@@ -18,10 +18,12 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47RadioWoman,Log,All);
 namespace
 {
- FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR9/SM_RadioWoman_Seated");
+ FString AssetPath=TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR10/SM_RadioWoman_Seated");
  FAutoConsoleVariableRef AssetCVar(TEXT("s47.RadioWoman.Asset"),AssetPath,TEXT("Private accepted bake candidate; evaluated when the world is built."),ECVF_Default);
  struct FExpected {int32 Node,Geo,Material,Triangles;};
  const FExpected Expected[]={{1481,1028,656,108},{1482,1029,657,156},{1483,1030,658,48},{1484,1031,641,36},{1485,1032,638,12},{1486,1033,659,100}};
+ // Actual g1074 seat, measured with nine native traces; legacy body origin is higher.
+ constexpr double MeasuredSeatFromLegacyCm=-6.559057316375288,MaxSeatFrameErrorCm=.25,MaxSoleGapCm=1.5;
  const FBox RadioBox(FVector(-.1,.06,-.36),FVector(.1,.18,-.30));
  const FBox ShoeBoxes[]={FBox(FVector(-.16,-.445,-.56),FVector(-.04,-.375,-.36)),FBox(FVector(.04,-.445,-.56),FVector(.16,-.375,-.36))};
  struct FOriginal
@@ -137,7 +139,7 @@ namespace
  }
  TSharedPtr<FJsonObject> SoleGroundDiagnostics(AS47Web* W,UStaticMesh* Mesh,const FTransform& Placement,const FCollisionQueryParams& Query)
  {
-  auto J=MakeShared<FJsonObject>();J->SetStringField(TEXT("scope"),TEXT("Diagnostic only: every unique lowest LOD0 Shoe/Trim vertex within0.15cm of its side minimum, at the measured seat and unchanged Group basis; no placement or acceptance effect."));
+  auto J=MakeShared<FJsonObject>();J->SetStringField(TEXT("scope"),TEXT("Actual startup contact evidence: every unique lowest LOD0 Shoe/Trim vertex within0.15cm of its side minimum, at the measured seat and unchanged Group basis; all points must satisfy the strict contact gate before adoption."));
   J->SetStringField(TEXT("source_asset"),GetPathNameSafe(Mesh));J->SetObjectField(TEXT("measured_seat_transform"),Transform(Placement));J->SetNumberField(TEXT("lowest_band_cm"),.15);
   auto* World=W?W->GetWorld():nullptr;J->SetBoolField(TEXT("world_available"),World!=nullptr);
   const bool Available=Mesh&&Mesh->bAllowCPUAccess&&Mesh->GetRenderData()&&Mesh->GetRenderData()->LODResources.Num()==3;
@@ -185,6 +187,26 @@ namespace
   }
   J->SetArrayField(TEXT("feet"),Feet);return J;
  }
+
+ bool SoleGroundReady(const TSharedPtr<FJsonObject>& Data)
+ {
+  bool Available=false,Valid=false,World=false;const TArray<TSharedPtr<FJsonValue>>* Feet=nullptr;
+  if(!Data||!Data->TryGetBoolField(TEXT("geometry_available"),Available)||!Available
+   ||!Data->TryGetBoolField(TEXT("selection_indices_valid"),Valid)||!Valid
+   ||!Data->TryGetBoolField(TEXT("world_available"),World)||!World
+   ||!Data->TryGetArrayField(TEXT("feet"),Feet)||Feet->Num()!=2)return false;
+  for(const auto& Value:*Feet)
+  {
+   const auto Foot=Value->AsObject();double Count=0,Hits=0,Up=0,Min=0,Max=0;
+   if(!Foot||!Foot->TryGetNumberField(TEXT("unique_lowest_sole_vertices"),Count)||Count<3||Count>256
+    ||!Foot->TryGetNumberField(TEXT("ground_hits"),Hits)||Hits!=Count
+    ||!Foot->TryGetNumberField(TEXT("upward_ground_hits"),Up)||Up!=Count
+    ||!Foot->TryGetNumberField(TEXT("minimum_gap_cm"),Min)||!FMath::IsFinite(Min)||Min< -MaxSoleGapCm
+    ||!Foot->TryGetNumberField(TEXT("maximum_gap_cm"),Max)||!FMath::IsFinite(Max)||Max>MaxSoleGapCm)return false;
+  }
+  return true;
+ }
+
 }
 
 struct FS47RadioWomanState
@@ -201,7 +223,7 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
 {
  auto Result=MakeShared<FS47RadioWoman>();Result->State=MakeShared<FS47RadioWomanState>();auto& S=*Result->State;S.Web=W;
  auto& D=S.BenchDiagnostics;D->SetBoolField(TEXT("trace_attempted"),false);D->SetNumberField(TEXT("anchor_node"),1480);D->SetNumberField(TEXT("bench_node"),1562);
- D->SetNumberField(TEXT("required_surface_hits"),5);D->SetNumberField(TEXT("planned_samples"),9);D->SetNumberField(TEXT("maximum_anchor_delta_cm"),2.);D->SetNumberField(TEXT("maximum_spread_cm"),1.5);
+ D->SetNumberField(TEXT("required_surface_hits"),5);D->SetNumberField(TEXT("planned_samples"),9);D->SetNumberField(TEXT("expected_seat_from_legacy_anchor_cm"),MeasuredSeatFromLegacyCm);D->SetNumberField(TEXT("maximum_measured_seat_frame_error_cm"),MaxSeatFrameErrorCm);D->SetNumberField(TEXT("maximum_spread_cm"),1.5);
  auto Reject=[&](const TCHAR* Why){S.Why=Why;UE_LOG(LogS47RadioWoman,Warning,TEXT("S47: radio woman original fallback: %s; original group/radio/proxy retained"),Why);return Result;};
  if(!W)return Reject(TEXT("missing web"));
  const auto* Group=W->Node(1480);const auto* Proxy=W->Node(1544);
@@ -241,7 +263,8 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
   D->SetArrayField(TEXT("bench_bounds_min_ue_cm"),Vec(Bench->Bounds.GetBox().Min));D->SetArrayField(TEXT("bench_bounds_max_ue_cm"),Vec(Bench->Bounds.GetBox().Max));
   D->SetNumberField(TEXT("bench_collision_enabled"),int32(Bench->GetCollisionEnabled()));D->SetBoolField(TEXT("bench_visible"),Bench->IsVisible());
  }
- if(!BenchNode||BenchNode->Geo!=1074||BenchNode->Name!=TEXT("lic:garden_bench")||!Bench||!Bench->GetStaticMesh())return Reject(TEXT("actual laundromat bench unavailable"));
+ if(!BenchNode||BenchNode->Geo!=1074||BenchNode->Name!=TEXT("lic:garden_bench")||!Bench||!Bench->GetStaticMesh()
+  ||Bench->GetStaticMesh()!=W->GeoMesh(1074)||Bench->GetStaticMesh()->GetPathName()!=TEXT("/Game/Web/Geo/geo_008/StaticMeshes/g1074.g1074"))return Reject(TEXT("actual laundromat bench unavailable"));
  const FVector Anchor=Group->Comp->GetComponentLocation();TArray<double> Heights;
  const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSeat),true);
  D->SetBoolField(TEXT("trace_attempted"),true);TArray<TSharedPtr<FJsonValue>> Samples;
@@ -290,7 +313,13 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
  S.SeatHits=Heights.Num();if(Heights.Num()<5)return Reject(TEXT("actual bench seat requires five of nine physical surface samples"));
  Heights.Sort();S.Seat=FVector(Anchor.X,Anchor.Y,Heights[Heights.Num()/2]);
  D->SetObjectField(TEXT("native_sole_ground_diagnostics"),SoleGroundDiagnostics(W,S.NativeAsset.Get(),FTransform(FRotationMatrix::MakeFromXY(GroundForward,GroundRight).ToQuat(),S.Seat),GroundQuery));
- if(FMath::Abs(S.Seat.Z-Anchor.Z)>2.||Heights.Last()-Heights[0]>1.5)return Reject(TEXT("measured bench seat differs from canonical seat anchor"));
+ const double SeatFrameError=FMath::Abs((S.Seat.Z-Anchor.Z)-MeasuredSeatFromLegacyCm);
+ D->SetNumberField(TEXT("actual_measured_seat_frame_error_cm"),SeatFrameError);
+ D->SetBoolField(TEXT("measured_seat_binding_valid"),SeatFrameError<=MaxSeatFrameErrorCm);
+ if(SeatFrameError>MaxSeatFrameErrorCm||Heights.Last()-Heights[0]>1.5)return Reject(TEXT("actual bench seat differs from the measured g1074 seat binding"));
+ const auto SoleData=D->GetObjectField(TEXT("native_sole_ground_diagnostics"));const bool SolesReady=SoleGroundReady(SoleData);
+ D->SetBoolField(TEXT("all_lowest_soles_within_contact_limit"),SolesReady);D->SetNumberField(TEXT("maximum_sole_ground_gap_cm"),MaxSoleGapCm);
+ if(!SolesReady)return Reject(TEXT("every actual lowest sole vertex must reach physical ground within1.5cm before adoption"));
  S.Forward=Group->Comp->GetComponentTransform().TransformVectorNoScale(S47Three::DirToUE(FVector(0,0,-1))).GetSafeNormal();
  S.Right=Group->Comp->GetComponentTransform().TransformVectorNoScale(S47Three::DirToUE(FVector(1,0,0))).GetSafeNormal();
  if(!S.Forward.Equals(FVector::ForwardVector,.00001)||!S.Right.Equals(FVector::RightVector,.00001))return Reject(TEXT("canonical road-facing orientation"));
@@ -319,6 +348,7 @@ bool FS47RadioWoman::Audit(TArray<FString>& Lines) const
  const auto& S=*State;auto* W=S.Web.Get();auto* C=S.Native.Get();Check(W&&C&&C->IsRegistered()&&C->GetStaticMesh()==S.NativeAsset.Get(),TEXT("one actual static mesh registered"));if(!W||!C)return false;
  const auto* Adopted=W->Node(S.NativeNode);Check(Adopted&&Adopted->Parent==1480&&Adopted->Name==TEXT("mannequin:radio-woman")&&W->NodeOf(C)==S.NativeNode,TEXT("native belongs to original person visibility owner"));
  Check(C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&!C->IsComponentTickEnabled()&&C->GetComponentTransform().Equals(S.Placement,.02),TEXT("static-only NoCollision and measured placement retained"));
+ Check(S.BenchDiagnostics->GetBoolField(TEXT("measured_seat_binding_valid"))&&S.BenchDiagnostics->GetBoolField(TEXT("all_lowest_soles_within_contact_limit")),TEXT("measured bench binding and every lowest sole passed physical pre-adoption contact"));
  Check(W->Handle(TEXT("world.town.woman"))==1480&&W->Handle(TEXT("world.town.proxies.woman"))==1544&&W->IsVisible(1480)==W->IsVisible(1544),TEXT("original person/proxy ownership and schedule agree"));
  for(int32 I=0;I<S.Original.Num();++I)
  {
