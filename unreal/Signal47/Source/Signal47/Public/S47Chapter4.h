@@ -15,6 +15,7 @@ class US47Motel;
 class US47Chapter1;
 class US47Chapter2;
 class FS47WalkieSound;
+class FS47SC10Contract;
 
 // story/Chapter4.ts Ch4State: the saved state of chapter four, written and read with the
 // TypeScript's own field names ({ v: 1, stage, exitOpen, arrived, greeted, placed, shown, p10,
@@ -142,6 +143,7 @@ public:
 	void TestDrive(const FString& Stop);
 
 private:
+	friend class FS47SC10Contract;
 	TArray<S47Panels::FTalkLine> Lines;
 	FString Mode = TEXT("menu");      // 'menu' | 'table' | 'control' | 'tone' | 'mark'
 	TOptional<FS47Result> Reply;
@@ -168,6 +170,9 @@ private:
 	void Note(const FString& Text);
 	void Toast(const FString& Text, float Secs) const;
 	void Milestone() const;
+	bool TextOnlyNora() const;
+	void RestoreTalk();
+	void ContinueAfterRoom();
 	FVector Pos(const FS47Obj& O) const { return O.WorldPosition(); }
 	FString Area() const;
 	bool InRoom() const;

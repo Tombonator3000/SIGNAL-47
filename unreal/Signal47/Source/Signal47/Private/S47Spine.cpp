@@ -15,6 +15,7 @@
 #include "S47World.h"
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
+#include "S47SC10Contract.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -299,6 +300,7 @@ void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
+ if (Test.Mode == TEXT("sc10")) { S47StepSC10Contract(M, Dt); return; }
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
  {
