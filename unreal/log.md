@@ -1238,3 +1238,10 @@ Første editorbyggR2 ble avvist på testens JSON-arraytype; R3 består10,13s og 
 ## 2026-10-29 kl. 09:48 CET: HUM01, faktisk UE-helper krever ny CPU-overgang per LOD
 
 Lesende gjennomgang fant at forhåndsaktivert CPU-skinning kunne beholde en tidligere LOD-cache. Installert UE5.8.4 `GetCPUSkinnedVertices` velger LOD, men `SetCPUSkinningEnabled(true, true)` returnerer tidlig når CPU-skinning allerede er på. Bakeren lar nå helperen eie false→true→false-overgangen for hver faktisk LOD, og krever opprinnelig/gjenopprettet GPU-tilstand. Vertex-/seksjons-/cornerhash-kravene er uendret. Dette er kildefiks før ny målrettet nativeprøve, ikke ny motoraksept. Installasjonssamtalens reserverte vindu er fortsatt aktivt; ingen motor startet her.
+
+
+## 2026-10-29 kl. 10:26 CET: HUM01 R4 avvist ved faktisk Face/Body-bindbasis
+
+Etter installasjonseierens faktiske frigivelse kl.10:20:44 og frisk require-idle består editor R6. NullRHI-probe R4 avviser korrekt etter29nativekontroller på `shared native reference pose matches: pelvis in SKM_MHC_Waitress_FaceMesh`, kontrollert feilexit255 etter24,41s uten timeout eller registrert konkurranse. Privat import av ni assets med delt klesmaster/fem MI består, og alle350førfiler er byteidentiske etter forsøket. Ingen pose, statisk bake, shader-/RHI-aksept eller runtimefigur er godkjent av dette. Rålogger/feilkvitteringer og alle R4-assets bevares.
+
+Den faktiske optimaliserte kvinnelige kilden har fire body-/face-LOD-er, ikke seks: body60816/15196/6632/1952tri, face34514/6872/1524/356tri, klær21288tri. Den friske R5-kontrakten bruker derfor overall0/1/3 for nær/mellom/fjern. Før hår/bryn gir dette116618/43356/23596tri; faktiske kort må fortsatt måles og alle opprinnelige150k/70k/40k-tak beholdes. Face/Body-bindbasis diagnostiseres mot faktisk assembly/UE-følgesemantikk; klærnes strenge felles referanse-/foreldrekrav beholdes. R5 er bare kildevalg, ikke produsert eller akseptert. ART01 bruker nå neste motorvindu fra egen arbeidskopi; ingen standardinstallasjon endres her.

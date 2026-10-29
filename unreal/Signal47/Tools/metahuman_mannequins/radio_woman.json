@@ -41,9 +41,24 @@
     "correctives": "reference local transforms follow their posed parent; no dynamic RBF evaluation"
   },
   "lods": [
-    {"overall_source_lod": 1, "cards": "near", "screen_size": 1.0, "max_triangles": 150000},
-    {"overall_source_lod": 3, "cards": "far", "screen_size": 0.25, "max_triangles": 70000},
-    {"overall_source_lod": 5, "cards": "far", "screen_size": 0.07, "max_triangles": 40000}
+    {
+      "overall_source_lod": 0,
+      "cards": "near",
+      "screen_size": 1.0,
+      "max_triangles": 150000
+    },
+    {
+      "overall_source_lod": 1,
+      "cards": "far",
+      "screen_size": 0.25,
+      "max_triangles": 70000
+    },
+    {
+      "overall_source_lod": 3,
+      "cards": "far",
+      "screen_size": 0.07,
+      "max_triangles": 40000
+    }
   ],
   "cloth_surface": {
     "master_name": "M_RW_ClothSurface",
@@ -52,22 +67,67 @@
     "instances": "MaterialInstanceConstant; original five slot names retained"
   },
   "materials": {
-    "M_RW_Coat": {"color": [0.07, 0.095, 0.115], "roughness": 0.88},
-    "M_RW_Trousers": {"color": [0.045, 0.039, 0.032], "roughness": 0.86},
-    "M_RW_Shoe": {"color": [0.016, 0.012, 0.010], "roughness": 0.57},
-    "M_RW_Trim": {"color": [0.052, 0.064, 0.072], "roughness": 0.9},
-    "M_RW_Button": {"color": [0.034, 0.028, 0.023], "roughness": 0.55}
+    "M_RW_Coat": {
+      "color": [
+        0.07,
+        0.095,
+        0.115
+      ],
+      "roughness": 0.88
+    },
+    "M_RW_Trousers": {
+      "color": [
+        0.045,
+        0.039,
+        0.032
+      ],
+      "roughness": 0.86
+    },
+    "M_RW_Shoe": {
+      "color": [
+        0.016,
+        0.012,
+        0.01
+      ],
+      "roughness": 0.57
+    },
+    "M_RW_Trim": {
+      "color": [
+        0.052,
+        0.064,
+        0.072
+      ],
+      "roughness": 0.9
+    },
+    "M_RW_Button": {
+      "color": [
+        0.034,
+        0.028,
+        0.023
+      ],
+      "roughness": 0.55
+    }
   },
   "integration_limits": {
     "anchor": "world.town.woman",
     "proxy": "world.town.proxies.woman",
-    "preserve_radio_nodes": [1484, 1485],
+    "preserve_radio_nodes": [
+      1484,
+      1485
+    ],
     "mixed_radio_and_shoes_node": 1484,
     "do_not_hide_entire_mixed_node": true,
     "schedule_owner": "FS47Town::SetPeople",
     "runtime_integrated": false,
     "waitress_unchanged": true,
     "eyelashes": "No separate authored card mesh found; no strands are silently converted",
-    "requires_visual_review": ["coat and thigh intersections", "hands beside original lap radio", "neutral eyes and face", "seat and shoe contact", "hair and brow coverage", "all three LOD silhouettes"]
+    "requires_visual_review": [
+      "coat and thigh intersections",
+      "hands beside original lap radio",
+      "neutral eyes and face",
+      "seat and shoe contact",
+      "hair and brow coverage",
+      "all three LOD silhouettes"
+    ]
   }
 }
