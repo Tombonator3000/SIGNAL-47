@@ -16,9 +16,11 @@
 #include "Engine/World.h"
 #include "HAL/IConsoleManager.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/PlatformTime.h"
 #include "GameFramework/Actor.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/Material.h"
+#include "Materials/MaterialInstance.h"
 #include "MaterialShared.h"
 #include "MeshDescription.h"
 #include "Misc/App.h"
@@ -32,6 +34,7 @@
 #include "RHI.h"
 #include "Rendering/SkeletalMeshRenderData.h"
 #include "Rendering/SkeletalMeshModel.h"
+#include "RenderingThread.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/MemoryWriter.h"
@@ -41,6 +44,7 @@
 #include "StaticMeshResources.h"
 #include "SkeletalRenderPublic.h"
 #include "SkeletalMeshAttributes.h"
+#include "ShaderCompiler.h"
 #include "TwoBoneIK.h"
 #include "UObject/Package.h"
 #include "UObject/SavePackage.h"
@@ -995,9 +999,24 @@ namespace S47MannequinBake
   }
   bool Audit(UStaticMesh* Mesh, const FJson& Expected = nullptr)
   {
-   // The shader compiler registers with FAssetCompilingManager in UE5.8. Finish
-   // it too; static mesh compilation alone does not prove a usable material.
+   // Asset compilers finish in manager order. A mesh/usage update can enqueue
+   // shaders after the shader manager's turn, so finish shaders explicitly
+   // after every asset compiler and apply their results before render flush.
+   FJson Barrier = Object(); Report->SetObjectField(TEXT("material_shader_barrier"), Barrier);
+   Barrier->SetBoolField(TEXT("shader_manager_exists"), GShaderCompilingManager != nullptr);
+   if (!Need(IsInGameThread() && FApp::CanEverRender() && GShaderCompilingManager,
+    TEXT("actual RHI authoring audit with game-thread shader compiler available"))) return false;
+   const double BarrierStart = FPlatformTime::Seconds();
+   Barrier->SetNumberField(TEXT("jobs_before"), GShaderCompilingManager->GetNumRemainingJobs());
    FAssetCompilingManager::Get().FinishAllCompilation();
+   Barrier->SetNumberField(TEXT("jobs_after_asset_compilers"), GShaderCompilingManager->GetNumRemainingJobs());
+   GShaderCompilingManager->FinishAllCompilation();
+   GShaderCompilingManager->ProcessAsyncResults(false, true);
+   FlushRenderingCommands();
+   Barrier->SetNumberField(TEXT("jobs_after"), GShaderCompilingManager->GetNumRemainingJobs());
+   Barrier->SetBoolField(TEXT("is_compiling_after"), GShaderCompilingManager->IsCompiling());
+   Barrier->SetBoolField(TEXT("explicit_finish_all_completed"), true); Barrier->SetBoolField(TEXT("async_results_applied"), true);
+   Barrier->SetBoolField(TEXT("render_commands_flushed"), true); Barrier->SetNumberField(TEXT("seconds"), FPlatformTime::Seconds() - BarrierStart);
    const FJson Actual = StaticAudit(Mesh); Report->SetObjectField(TEXT("output"), Actual);
    const auto& Settings = Contract->GetArrayField(TEXT("lods")); const auto& LODs = Actual->GetArrayField(TEXT("lods"));
    if (!Need(LODs.Num() == Settings.Num() && Mesh->GetRenderData() && Mesh->GetRenderData()->LODResources.Num() == Settings.Num(), TEXT("three actual authored and render LODs"))) return false;
@@ -1055,8 +1074,20 @@ namespace S47MannequinBake
    {
     UMaterialInterface* Material = Slot.MaterialInterface; const FMaterialResource* Resource = Material ? Material->GetMaterialResource(GMaxRHIShaderPlatform) : nullptr;
     FJson State = Object(); State->SetStringField(TEXT("material"), GetPathNameSafe(Material));
+    const UMaterialInstance* Instance = Cast<UMaterialInstance>(Material); const UMaterial* Base = Material ? Material->GetMaterial() : nullptr;
+    const bool MapExists = Resource && Resource->GetGameThreadShaderMap();
+    const bool Complete = Resource && Resource->IsGameThreadShaderMapComplete();
+    const bool Default = Base == UMaterial::GetDefaultMaterial(MD_Surface) || (Resource && Resource->IsDefaultMaterial());
+    State->SetBoolField(TEXT("resource_exists"), Resource != nullptr); State->SetBoolField(TEXT("shadermap_exists"), MapExists);
+    State->SetBoolField(TEXT("complete"), Complete); State->SetBoolField(TEXT("default"), Default);
+    State->SetStringField(TEXT("base"), GetPathNameSafe(Base)); State->SetStringField(TEXT("parent"), Instance ? GetPathNameSafe(Instance->Parent) : TEXT("None"));
+    State->SetBoolField(TEXT("material_is_compiling"), Material && Material->IsCompiling());
+    State->SetBoolField(TEXT("base_is_compiling"), Base && Base->IsCompiling());
+    State->SetStringField(TEXT("resource_material"), Resource ? GetPathNameSafe(Resource->GetMaterialInterface()) : TEXT("None"));
+    State->SetStringField(TEXT("resource_base"), Resource ? GetPathNameSafe(Resource->GetMaterial()) : TEXT("None"));
+    State->SetNumberField(TEXT("shader_platform"), int32(GMaxRHIShaderPlatform));
     TArray<TSharedPtr<FJsonValue>> Errors; if (Resource) for (const FString& Message : Resource->GetCompileErrors()) Errors.Add(MakeShared<FJsonValueString>(Message));
-    const bool Ready = Resource && Resource->GetGameThreadShaderMap() && Resource->IsGameThreadShaderMapComplete() && Errors.IsEmpty() && Material->GetMaterial() != UMaterial::GetDefaultMaterial(MD_Surface);
+    const bool Ready = Resource && MapExists && Complete && Errors.IsEmpty() && Base && !Default;
     State->SetArrayField(TEXT("errors"), Errors); State->SetBoolField(TEXT("shader_ready"), Ready); Compile.Add(Value(State)); ShadersReady &= Ready;
    }
    Report->SetArrayField(TEXT("actual_material_compile"), Compile);
