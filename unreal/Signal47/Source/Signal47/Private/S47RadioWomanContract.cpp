@@ -82,6 +82,7 @@ namespace S47RadioWomanContract
    auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);
    S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("seconds"),FPlatformTime::Seconds()-Began);
    S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("explicit_off_fallback"),Fallback);
+   if(Web.IsValid())S47J::Set(O,TEXT("native_readback"),Web->RadioWomanReadback());
    O->SetArrayField(TEXT("snapshots"),Snapshots);O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("events"),Events);
    S47J::Set(O,TEXT("scope"),TEXT("Explicit saved-car start road x=-6 z=2138, then ordinary GetOutHere/Walker/Inter.Pick and UseId. Caliche.Choice is API-driven. Declared clock fixtures exercise actual TownStep schedule. Actual case0 snapshot copied unchanged to isolated case1 disk for ordinary title/Continue. Human input, listening, FPS, whole night/full matrix and installation unverified."));
    const bool Written=Write(Root/TEXT("result.json"),O);if(Web.IsValid())Web->GetWorldTimerManager().ClearTimer(Timer);

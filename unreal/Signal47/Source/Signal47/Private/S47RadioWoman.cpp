@@ -128,6 +128,13 @@ namespace
   return B.IsValid&&B.Min.Z< -15&&B.Min.Z> -80&&B.Max.Z>50&&B.Max.Z<135&&B.GetSize().X>30&&B.GetSize().X<140&&B.GetSize().Y>20&&B.GetSize().Y<140;
  }
  TArray<TSharedPtr<FJsonValue>> Vec(const FVector& P){return {MakeShared<FJsonValueNumber>(P.X),MakeShared<FJsonValueNumber>(P.Y),MakeShared<FJsonValueNumber>(P.Z)};}
+ TSharedPtr<FJsonObject> Transform(const FTransform& T)
+ {
+  auto J=MakeShared<FJsonObject>();const FQuat Q=T.GetRotation();
+  J->SetArrayField(TEXT("location_ue_cm"),Vec(T.GetLocation()));J->SetArrayField(TEXT("scale"),Vec(T.GetScale3D()));
+  const TArray<TSharedPtr<FJsonValue>> Rotation={MakeShared<FJsonValueNumber>(Q.X),MakeShared<FJsonValueNumber>(Q.Y),MakeShared<FJsonValueNumber>(Q.Z),MakeShared<FJsonValueNumber>(Q.W)};
+  J->SetArrayField(TEXT("rotation_xyzw"),Rotation);return J;
+ }
 }
 
 struct FS47RadioWomanState
@@ -136,15 +143,23 @@ struct FS47RadioWomanState
  TWeakObjectPtr<UStaticMesh> Cut;TWeakObjectPtr<UStaticMeshComponent> Native;
  FString Why=TEXT("not attempted"),Asset,Packed;bool Active=false;int32 NativeNode=INDEX_NONE,SeatHits=0;
  FTransform Placement;FVector Seat=FVector::ZeroVector,Forward=FVector::ZeroVector,Right=FVector::ZeroVector;
+ TSharedPtr<FJsonObject> BenchDiagnostics=MakeShared<FJsonObject>();
  TArray<uint32> FullIndices,RadioIndices;TArray<int32> LODs;
 };
 
 TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
 {
  auto Result=MakeShared<FS47RadioWoman>();Result->State=MakeShared<FS47RadioWomanState>();auto& S=*Result->State;S.Web=W;
+ auto& D=S.BenchDiagnostics;D->SetBoolField(TEXT("trace_attempted"),false);D->SetNumberField(TEXT("anchor_node"),1480);D->SetNumberField(TEXT("bench_node"),1562);
+ D->SetNumberField(TEXT("required_surface_hits"),5);D->SetNumberField(TEXT("planned_samples"),9);D->SetNumberField(TEXT("maximum_anchor_delta_cm"),2.);D->SetNumberField(TEXT("maximum_spread_cm"),1.5);
  auto Reject=[&](const TCHAR* Why){S.Why=Why;UE_LOG(LogS47RadioWoman,Warning,TEXT("S47: radio woman original fallback: %s; original group/radio/proxy retained"),Why);return Result;};
  if(!W)return Reject(TEXT("missing web"));
  const auto* Group=W->Node(1480);const auto* Proxy=W->Node(1544);
+ if(Group&&Group->Comp.IsValid())
+ {
+  D->SetArrayField(TEXT("anchor_ue_cm"),Vec(Group->Comp->GetComponentLocation()));D->SetObjectField(TEXT("anchor_transform"),Transform(Group->Comp->GetComponentTransform()));
+  D->SetStringField(TEXT("anchor_component"),GetPathNameSafe(Group->Comp.Get()));D->SetNumberField(TEXT("anchor_parent"),Group->Parent);
+ }
  if(W->Handle(TEXT("world.town.woman"))!=1480||W->Handle(TEXT("world.town.proxies.woman"))!=1544||!Group||!Proxy||Group->Parent!=1431||Proxy->Parent!=1431
   ||!Group->Comp.IsValid()||!Proxy->Comp.IsValid()||!Group->P.Equals(FVector(-14.43,7.926916740199588,2132.75),.00001)
   ||!Group->S.Equals(FVector::OneVector,.00001)||!Group->Q.Equals(S47Three::Euler(0,-UE_DOUBLE_PI/2,0,TEXT("XYZ")),.00001)||Group->Children.Num()!=6)return Reject(TEXT("exact person/proxy/seat/basis"));
@@ -168,13 +183,37 @@ TSharedPtr<FS47RadioWoman> FS47RadioWoman::Build(AS47Web* W)
  S.Cut=Cut;
  // Measure the seat against the actual existing purchased bench, not the old origin alone.
  const auto* BenchNode=W->Node(1562);auto* Bench=BenchNode?Cast<UStaticMeshComponent>(BenchNode->Comp.Get()):nullptr;
+ if(BenchNode){D->SetNumberField(TEXT("bench_geo"),BenchNode->Geo);D->SetNumberField(TEXT("bench_parent"),BenchNode->Parent);D->SetStringField(TEXT("bench_name"),BenchNode->Name);}
+ if(Bench)
+ {
+  D->SetStringField(TEXT("bench_component"),GetPathNameSafe(Bench));D->SetStringField(TEXT("bench_mesh"),GetPathNameSafe(Bench->GetStaticMesh().Get()));
+  D->SetObjectField(TEXT("bench_transform"),Transform(Bench->GetComponentTransform()));D->SetObjectField(TEXT("bench_relative_transform"),Transform(Bench->GetRelativeTransform()));
+  D->SetArrayField(TEXT("bench_bounds_min_ue_cm"),Vec(Bench->Bounds.GetBox().Min));D->SetArrayField(TEXT("bench_bounds_max_ue_cm"),Vec(Bench->Bounds.GetBox().Max));
+  D->SetNumberField(TEXT("bench_collision_enabled"),int32(Bench->GetCollisionEnabled()));D->SetBoolField(TEXT("bench_visible"),Bench->IsVisible());
+ }
  if(!BenchNode||BenchNode->Geo!=1074||BenchNode->Name!=TEXT("lic:garden_bench")||!Bench||!Bench->GetStaticMesh())return Reject(TEXT("actual laundromat bench unavailable"));
  const FVector Anchor=Group->Comp->GetComponentLocation();TArray<double> Heights;
  const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RadioWomanSeat),true);
+ D->SetBoolField(TEXT("trace_attempted"),true);TArray<TSharedPtr<FJsonValue>> Samples;
  for(double X:{-2.,0.,2.})for(double Y:{-2.,0.,2.})
  {
   const FVector At=Anchor+FVector(X,Y,0);FHitResult Hit;
-  if(Bench->LineTraceComponent(Hit,At+FVector(0,0,20),At-FVector(0,0,15),Q)&&Hit.ImpactNormal.Z>.7)Heights.Add(Hit.ImpactPoint.Z);
+  const FVector Start=At+FVector(0,0,20),End=At-FVector(0,0,15);
+  const bool Found=Bench->LineTraceComponent(Hit,Start,End,Q),Accepted=Found&&Hit.ImpactNormal.Z>.7;
+  if(Accepted)Heights.Add(Hit.ImpactPoint.Z);
+  auto Sample=MakeShared<FJsonObject>();Sample->SetNumberField(TEXT("sample_index"),Samples.Num());Sample->SetArrayField(TEXT("sample_ue_cm"),Vec(At));
+  Sample->SetArrayField(TEXT("trace_start_ue_cm"),Vec(Start));Sample->SetArrayField(TEXT("trace_end_ue_cm"),Vec(End));Sample->SetBoolField(TEXT("hit"),Found);
+  Sample->SetBoolField(TEXT("blocking_hit"),Hit.bBlockingHit);Sample->SetBoolField(TEXT("start_penetrating"),Hit.bStartPenetrating);Sample->SetBoolField(TEXT("accepted_surface"),Accepted);
+  Sample->SetArrayField(TEXT("impact_ue_cm"),Vec(Hit.ImpactPoint));Sample->SetArrayField(TEXT("impact_normal_ue"),Vec(Hit.ImpactNormal));Sample->SetNumberField(TEXT("face_index"),Hit.FaceIndex);
+  Sample->SetStringField(TEXT("requested_bench_component"),GetPathNameSafe(Bench));Sample->SetStringField(TEXT("hit_component"),GetPathNameSafe(Hit.GetComponent()));Sample->SetNumberField(TEXT("hit_node"),W->NodeOf(Hit.GetComponent()));
+  Samples.Add(MakeShared<FJsonValueObject>(Sample));
+ }
+ D->SetArrayField(TEXT("samples"),Samples);D->SetNumberField(TEXT("surface_hits"),Heights.Num());
+ if(!Heights.IsEmpty())
+ {
+  auto Sorted=Heights;Sorted.Sort();const double Median=Sorted[Sorted.Num()/2],Spread=Sorted.Last()-Sorted[0];
+  D->SetNumberField(TEXT("minimum_ue_cm"),Sorted[0]);D->SetNumberField(TEXT("maximum_ue_cm"),Sorted.Last());D->SetNumberField(TEXT("median_ue_cm"),Median);
+  D->SetNumberField(TEXT("spread_cm"),Spread);D->SetNumberField(TEXT("median_minus_anchor_cm"),Median-Anchor.Z);D->SetBoolField(TEXT("anchor_within_2cm"),FMath::Abs(Median-Anchor.Z)<=2.);D->SetBoolField(TEXT("spread_within_1_5cm"),Spread<=1.5);
  }
  S.SeatHits=Heights.Num();if(Heights.Num()<5)return Reject(TEXT("actual bench seat requires five of nine physical surface samples"));
  Heights.Sort();S.Seat=FVector(Anchor.X,Anchor.Y,Heights[Heights.Num()/2]);
@@ -233,6 +272,7 @@ TSharedPtr<FJsonObject> FS47RadioWoman::Readback() const
  J->SetNumberField(TEXT("person_node"),1480);J->SetNumberField(TEXT("proxy_node"),1544);J->SetStringField(TEXT("interaction"),TEXT("radio_woman"));
  J->SetStringField(TEXT("schedule_owner"),TEXT("FS47Town::SetPeople / NightPerson 18:00..04:50"));J->SetStringField(TEXT("packed_vertex_sha1"),S.Packed);
  J->SetNumberField(TEXT("bench_surface_hits"),S.SeatHits);J->SetArrayField(TEXT("measured_seat_ue_cm"),Vec(S.Seat));
+ J->SetObjectField(TEXT("bench_diagnostics"),S.BenchDiagnostics);
  J->SetArrayField(TEXT("native_forward_ue"),Vec(S.Forward));J->SetArrayField(TEXT("native_right_ue"),Vec(S.Right));
  J->SetStringField(TEXT("limits"),TEXT("Runtime installation audit; root must verify actual seated coat/hand/radio/foot contact, all LOD views, interaction and disk/title/Continue. No human/FPS acceptance."));
  if(auto* C=S.Native.Get())
