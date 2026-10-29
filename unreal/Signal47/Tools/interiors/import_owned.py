@@ -466,6 +466,14 @@ try:
         material_proof(name, mat, by_material[name]['texture_sha256'])
         materials[name] = mat
     for name, row in contract['parts'].items():
+        if not VERIFY_ONLY and R.E.does_asset_exist(DEST + '/' + name):
+            existing = R.E.load_asset(DEST + '/' + name)
+            R.check(name + ' refresh only exact generated private mesh',
+                    name in NAMES | DERIVATIVES and isinstance(existing, unreal.StaticMesh) and
+                    existing.get_path_name() == DEST + '/' + name + '.' + name)
+            # Same deterministic refresh used by Office and the field kit.
+            # Atomic reimport changed the cable's source to 806 faces in R9.
+            R.check(name + ' replace generated private mesh only', R.E.delete_asset(DEST + '/' + name))
         mesh = R.E.load_asset(DEST + '/' + name) if VERIFY_ONLY else R.import_mesh(SOURCE / 'Export' / (name + '.fbx'), DEST)
         R.check(name + ' native StaticMesh exists', isinstance(mesh, unreal.StaticMesh))
         if not VERIFY_ONLY:
