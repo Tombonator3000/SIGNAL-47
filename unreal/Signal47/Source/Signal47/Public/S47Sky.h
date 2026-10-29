@@ -126,6 +126,14 @@ public:
 	void PassageReset(bool bDone) { bPassageDone = bDone; PassageT = -1e9; PassageHeads = PassageStarted = 0; PassageBits = 0; }
 	int32 PassageSlotsBuilt() const { return PassComps.Num(); }
 	int32 PassageSlotsVisible() const;
+	/** Tests: the first drawn strip's bounds and whether the renderer drew it lately. */
+	FString PassageDebug() const;
+	/** Tests: how far along the most advanced crossing streak is (0..1, its head; -1 none). */
+	double PassageLongest() const;
+	/** Tests: draw the passage's strips this frame or not (an A/B pair of the same frozen moment). */
+	bool bPassageHiddenForTest = false;
+	/** The passage's streaks against the rare shooting star (same strip and shader; brighter, being several at once in one sector). */
+	static constexpr double PASSAGE_GAIN = 2.0;
 	static bool PassageSelfTest(TArray<FString>& Lines);
 
 private:

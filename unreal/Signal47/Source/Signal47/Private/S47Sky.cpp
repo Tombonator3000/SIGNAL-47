@@ -151,13 +151,13 @@ const TArray<FS47Sky::FPassMet>& FS47Sky::PassageSchedule()
 				// next to the field, 9 to 17 degrees out, any side of it
 				const double Ang = (9 + R() * 8) * DEG, Pa = R() * UE_DOUBLE_PI * 2;
 				P.Start = (H * FMath::Cos(Ang) + (Up * FMath::Cos(Pa) + Rt * FMath::Sin(Pa)) * FMath::Sin(Ang)).GetSafeNormal();
-				// away from the empty patch and a little down, as if from a radiant near it; never across it
+				// away from the empty patch and a little down (kept above 20 degrees, clear of the dishes), as if from a radiant near it; never across it
 				const FVector Away = (P.Start * FVector::DotProduct(P.Start, H) - H).GetSafeNormal();
 				const FVector Down = (FVector(0, -1, 0) + P.Start * P.Start.Y).GetSafeNormal();
 				const FVector Side = FVector::CrossProduct(P.Start, Down).GetSafeNormal();
 				P.Tan = (Away * 0.8 + Down * 0.45 + Side * ((R() * 2 - 1) * 0.25)).GetSafeNormal();
 				P.Tan = (P.Tan - P.Start * FVector::DotProduct(P.Tan, P.Start)).GetSafeNormal();
-				P.Len = (6 + R() * 6) * DEG;
+				P.Len = (8 + R() * 6) * DEG;
 				P.Dur = 0.4 + R() * 0.4;
 				P.Bright = I == 6 ? 2.3 : 1.1 + R() * 0.5;
 				bool bGood = true;
@@ -165,7 +165,7 @@ const TArray<FS47Sky::FPassMet>& FS47Sky::PassageSchedule()
 				{
 					const double A = P.Len * K / 24;
 					const FVector D = P.Start * FMath::Cos(A) + P.Tan * FMath::Sin(A);
-					bGood = FMath::Acos(FMath::Clamp(FVector::DotProduct(D, H), -1.0, 1.0)) >= 7.5 * DEG && D.Y >= FMath::Sin(8 * DEG);
+					bGood = FMath::Acos(FMath::Clamp(FVector::DotProduct(D, H), -1.0, 1.0)) >= 7.5 * DEG && D.Y >= FMath::Sin(20 * DEG);
 				}
 				if (bGood) break;
 			}
@@ -248,6 +248,26 @@ int32 FS47Sky::PassageSlotsVisible() const
 	return N;
 }
 
+double FS47Sky::PassageLongest() const
+{
+	double Top = -1;
+	if (!PassageActive()) return Top;
+	for (const FPassMet& P : PassageSchedule())
+	{
+		const double T = PassageT - P.At;
+		if ((!bPassageLow || P.bLow) && T >= 0 && T <= P.Dur) Top = FMath::Max(Top, T / P.Dur);
+	}
+	return Top;
+}
+
+FString FS47Sky::PassageDebug() const
+{
+	for (const TWeakObjectPtr<UStaticMeshComponent>& C : PassComps)
+		if (C.IsValid() && C->IsVisible())
+			return FString::Printf(TEXT("%s bounds origin %s radius %.1f boundsScale %.1f rendered %d"), *C->GetName(), *C->Bounds.Origin.ToString(), C->Bounds.SphereRadius, C->BoundsScale, C->WasRecentlyRendered(.2f));
+	return TEXT("no strip drawn");
+}
+
 bool FS47Sky::PassageSelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
@@ -270,7 +290,7 @@ bool FS47Sky::PassageSelfTest(TArray<FString>& Lines)
 			const double A = P.Len * K / 48;
 			const FVector D = P.Start * FMath::Cos(A) + P.Tan * FMath::Sin(A);
 			const double Off = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(D, H), -1.0, 1.0)));
-			MinOff = FMath::Min(MinOff, Off); bClear &= Off >= 7.4; bUp &= D.Y >= FMath::Sin(7.9 * DEG);
+			MinOff = FMath::Min(MinOff, Off); bClear &= Off >= 7.4; bUp &= D.Y >= FMath::Sin(19.9 * DEG);
 		}
 		bInside &= P.At >= 0 && P.At + P.Dur <= PASSAGE_LEN && P.Dur >= .4 && P.Dur <= .8 && FMath::Abs(FVector::DotProduct(P.Start, P.Tan)) < 1e-9;
 		for (int32 J = I + PASSAGE_SLOTS; J < Sch.Num(); J += PASSAGE_SLOTS)
@@ -279,7 +299,7 @@ bool FS47Sky::PassageSelfTest(TArray<FString>& Lines)
 	Check(Sch.Num() == 14 && PassageCount(false) == 14 && PassageCount(true) == 9, TEXT("fourteen streaks on High, nine of them on Low"));
 	Check(PassageMaxHeads(false) >= 3 && PassageMaxHeads(false) <= 6 && PassageMaxHeads(true) >= 2 && PassageMaxHeads(true) <= 3,
 		FString::Printf(TEXT("at most %d heads at once on High (3 to 6), %d on Low (at most 3)"), PassageMaxHeads(false), PassageMaxHeads(true)));
-	Check(bNear && bClear && bUp, FString::Printf(TEXT("every streak starts 9 to 17 degrees from 026 / 32 (at most %.1f), never nearer than %.1f degrees (the hole's rim is %.1f), and stays above 8 degrees"), MaxStart, MinOff, STAR_HOLE.Outer));
+	Check(bNear && bClear && bUp, FString::Printf(TEXT("every streak starts 9 to 17 degrees from 026 / 32 (at most %.1f), never nearer than %.1f degrees (the hole's rim is %.1f), and stays above 20 degrees (clear of the dishes and the horizon)"), MaxStart, MinOff, STAR_HOLE.Outer));
 	Check(bInside && bSlots, TEXT("every streak inside the passage, and no two crossing at once share a strip"));
 	// The real event: the dishes begin to turn 3 s after it, HoleFrom is 10 s after it.
 	const double Ev = 2 * 3600 + 15 * 60 + 12, From = Ev + STAR_HOLE.After;
@@ -673,7 +693,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		// FX-01: the passage's streaks, each on its own strip (streak i on strip i % PASSAGE_SLOTS)
 		bool Vis[PASSAGE_SLOTS] = {};
 		const TArray<FPassMet>& Sch = PassageSchedule();
-		if (PassageActive())
+		if (PassageActive() && !bPassageHiddenForTest)
 			for (int32 I = 0; I < Sch.Num(); ++I)
 			{
 				const int32 K = I % PASSAGE_SLOTS;
@@ -687,7 +707,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 				D->SetScalarParameterValue(TEXT("Head"), float(Hd));
 				D->SetVectorParameterValue(TEXT("Start"), V4(Sch[I].Start));
 				D->SetVectorParameterValue(TEXT("Way"), V4(Sch[I].Tan));
-				D->SetScalarParameterValue(TEXT("I"), float(Sch[I].Bright * Fd * (1 - Daylight())));
+				D->SetScalarParameterValue(TEXT("I"), float(PASSAGE_GAIN * Sch[I].Bright * Fd * (1 - Daylight())));
 				Vis[K] = true;
 			}
 		for (int32 K = 0; K < PassComps.Num() && K < PASSAGE_SLOTS; ++K)

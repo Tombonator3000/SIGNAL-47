@@ -32,7 +32,7 @@ namespace
 		FString Root;
 		int32 Phase = 0, Checks = 0, Shots = 0, MaxHeads = 0, Natural = 0;
 		double T = 0, Since = 0, Ev = 0, From = 0, LastShot = -10, HeldClock = 0, HeldPhase = 0;
-		int32 HeldHeads = 0;
+		int32 HeldHeads = 0, HeldStage = 0;
 		bool bDone = false, bBackground = false, bPaused = false, bOutside = false;
 		S47J::FObj Ch1State;
 	};
@@ -70,11 +70,13 @@ TFunction<void(double)> US47WorldLife::MakePassageContract()
 			FPlatformMisc::RequestExitWithStatus(false, 1);
 			return false;
 		};
-		auto Shot = [&S](const FString& Name)
+		TWeakObjectPtr<US47WorldLife> Life = L;
+		auto Shot = [&S, Life, M](const FString& Name)
 		{
 			FScreenshotRequest::RequestScreenshot(S.Root / Name, false, false);
 			++S.Shots; S.LastShot = S.T;
 			UE_LOG(LogS47MeteorPassage, Display, TEXT("S47: meteor passage screenshot %s"), *Name);
+			if (const US47WorldLife* Lf = Life.Get(); Lf && Lf->Sky) UE_LOG(LogS47MeteorPassage, Display, TEXT("S47: meteor passage strip: %s eye %s"), *Lf->Sky->PassageDebug(), *M->Player->EyeUE().ToString());
 		};
 		auto Aim = [M]()
 		{
@@ -134,9 +136,9 @@ TFunction<void(double)> US47WorldLife::MakePassageContract()
 		if (S.bOutside && !Sky.bPassageDone) { if (M->Story->Shot.IsValid() && M->Story->Shot->IsOn()) M->Story->Shot->Stop(); Aim(); }
 		if (S.Phase == 3)
 		{
-			if (Sky.PassageActive() && Sky.PassageHeads > 0 && S.T - S.LastShot > .55 && S.Shots < 10 && Sky.PassageT > 1.25)
+			if (Sky.PassageActive() && Sky.PassageLongest() >= .75 && S.T - S.LastShot > .45 && S.Shots < 12 && Sky.PassageT > 1.25)
 				Shot(FString::Printf(TEXT("%02d-passage-%04.1fs-%dheads.png"), S.Shots, Sky.PassageT, Sky.PassageHeads));
-			if (!S.bPaused && Sky.PassageT >= 4.6 && Sky.PassageHeads > 0)
+			if (!S.bPaused && Sky.PassageT >= 4.0 && Sky.PassageLongest() >= .85)
 			{
 				// What an open panel or the menu's held story does: the clock stops, the passage with it.
 				S.bPaused = true; M->Story->SetPaused(true);
@@ -149,12 +151,23 @@ TFunction<void(double)> US47WorldLife::MakePassageContract()
 		}
 		if (S.Phase == 4)
 		{
-			if (S.T - S.Since < 1.2) return;
-			if (!Check(M->Story->Clock() == S.HeldClock && Sky.PassageT == S.HeldPhase && Sky.PassageHeads == S.HeldHeads && Sky.PassageSlotsVisible() == S.HeldHeads,
-				FString::Printf(TEXT("held story clock freezes the passage at %.2f s with %d streaks drawn"), S.HeldPhase, S.HeldHeads))) return;
-			Shot(TEXT("05-held.png"));
-			M->Story->SetPaused(false);
-			S.Phase = 3;
+			// Frozen: check, then an A/B pair of the same held moment (strips drawn, strips hidden).
+			const double H = S.T - S.Since;
+			if (S.HeldStage == 0 && H >= .3)
+			{
+				if (!Check(M->Story->Clock() == S.HeldClock && Sky.PassageT == S.HeldPhase && Sky.PassageHeads == S.HeldHeads && Sky.PassageSlotsVisible() == S.HeldHeads,
+					FString::Printf(TEXT("held story clock freezes the passage at %.2f s with %d streaks drawn"), S.HeldPhase, S.HeldHeads))) return;
+				Shot(TEXT("10-held-A-with-streaks.png")); S.HeldStage = 1;
+			}
+			else if (S.HeldStage == 1 && H >= .5) { Sky.bPassageHiddenForTest = true; S.HeldStage = 2; }
+			else if (S.HeldStage == 2 && H >= .8) { Shot(TEXT("11-held-B-streaks-hidden.png")); S.HeldStage = 3; }
+			else if (S.HeldStage == 3 && H >= 1.1)
+			{
+				Sky.bPassageHiddenForTest = false;
+				if (!Check(M->Story->Clock() == S.HeldClock && Sky.PassageT == S.HeldPhase, TEXT("still frozen after 1.1 s held"))) return;
+				M->Story->SetPaused(false);
+				S.Phase = 3;
+			}
 			return;
 		}
 		if (S.Phase == 5)
