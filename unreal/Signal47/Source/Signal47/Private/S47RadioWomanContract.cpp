@@ -84,7 +84,8 @@ namespace S47RadioWomanContract
    S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("explicit_off_fallback"),Fallback);
    O->SetArrayField(TEXT("snapshots"),Snapshots);O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("events"),Events);
    S47J::Set(O,TEXT("scope"),TEXT("Explicit saved-car start road x=-6 z=2138, then ordinary GetOutHere/Walker/Inter.Pick and UseId. Caliche.Choice is API-driven. Declared clock fixtures exercise actual TownStep schedule. Actual case0 snapshot copied unchanged to isolated case1 disk for ordinary title/Continue. Human input, listening, FPS, whole night/full matrix and installation unverified."));
-   Write(Root/TEXT("result.json"),O);if(Web.IsValid())Web->GetWorldTimerManager().ClearTimer(Timer);
+   const bool Written=Write(Root/TEXT("result.json"),O);if(Web.IsValid())Web->GetWorldTimerManager().ClearTimer(Timer);
+   if(!Written){UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioWoman contract FAIL stage=%d: final result could not be written: %s"),Stage,*Root);FPlatformMisc::RequestExitWithStatus(false,1);return;}
    if(Pass){UE_LOG(LogS47RadioWomanContract,Display,TEXT("S47: RadioWoman contract PASS checks=%d walk=%.3fm evidence=%s"),Checks,WalkMetres,*Root);FPlatformMisc::RequestExit(false);}
    else{UE_LOG(LogS47RadioWomanContract,Error,TEXT("S47: RadioWoman contract FAIL stage=%d: %s evidence=%s"),Stage,*Why,*Root);FPlatformMisc::RequestExitWithStatus(false,1);}
   }
