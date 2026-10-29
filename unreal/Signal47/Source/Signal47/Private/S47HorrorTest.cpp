@@ -50,7 +50,8 @@ struct FS47HorrorTest::FState
 	bool bArcCloseup = false;
 	float ArcOriginalFov = 0;
 	FS47Substation::FArcSnapshot PausedArc;
-	bool bObservingRestored = false, bObservingResumed = false;
+	bool bObservingRestored = false, bObservingResumed = false, bCursorProbe = false;
+	int32 CursorChecks = 0;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
 	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector;
 	double DoorOut = 1;
@@ -266,10 +267,20 @@ void FS47HorrorTest::Step(double Dt)
 		const auto* Line = H.Pack.CurrentLine();
 		if (!Line) { Fail(TEXT("unexpected choice or missing live line in baseline SC01 scene")); return; }
 		if (T.LastLine != Line->Id)
-		{ T.LastLine = Line->Id; T.LineAt = T.Elapsed; Shot(TEXT("dialogue-") + Line->Id); return; }
+		{
+			// FIX-06: the next line keeps the pointer where the player left it.
+			if (T.bCursorProbe && FSlateApplication::IsInitialized())
+			{
+				T.bCursorProbe = false;
+				if (!Check(FVector2D::Distance(FSlateApplication::Get().GetCursorPos(), FVector2D(417, 333)) < 3, TEXT("the next dialogue line keeps the mouse pointer in place"))) return;
+				++T.CursorChecks;
+			}
+			T.LastLine = Line->Id; T.LineAt = T.Elapsed; Shot(TEXT("dialogue-") + Line->Id); return;
+		}
 		// Recorded lines are allowed to finish through the real audio host. UI-only
 		// description lines use normal manual acknowledgement, with no fake takes.
 		if (T.Elapsed - T.LineAt < FMath::Max(.5, Line->Duration + 1.0)) return;
+		if (FSlateApplication::IsInitialized()) { FSlateApplication::Get().SetCursorPos(FVector2D(417, 333)); T.bCursorProbe = true; }
 		if (!Enter()) return;
 		T.LastLine.Empty(); T.Hold = Next==107?0:.25;
 	};
