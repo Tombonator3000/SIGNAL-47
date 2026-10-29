@@ -9,6 +9,7 @@
 #include "S47Chapter6.h"
 #include "S47Main.h"
 #include "S47Story.h"
+#include "S47Spine.h"
 
 namespace
 {
@@ -42,4 +43,12 @@ void S47RegisterChapters(AS47Story* Host, US47Main* M)
 	C5->OnSave = [M] { M->RequestAutosave(false); };
 	TWeakObjectPtr<US47Chapter2> W2 = C2;
 	C1->OnEnd = [W2](const FString& Method) { if (W2.IsValid()) W2->AfterChapterOne(Method); };
+	// The spine (S47Spine.h): chapter two's end waits for the SC08 placeholder, chapter four's for SC11.
+	if (M && M->Spine)
+	{
+		const TWeakPtr<FS47Spine> WS = M->Spine;
+		M->Spine->AfterSC08 = C2->OnEnd; M->Spine->AfterSC11 = C4->OnEnd;
+		C2->OnEnd = [WS, End = C2->OnEnd] { if (const auto S = WS.Pin(); S && S->HoldChapterEnd(FS47Spine::SC08)) return; if (End) End(); };
+		C4->OnEnd = [WS, End = C4->OnEnd] { if (const auto S = WS.Pin(); S && S->HoldChapterEnd(FS47Spine::SC11)) return; if (End) End(); };
+	}
 }

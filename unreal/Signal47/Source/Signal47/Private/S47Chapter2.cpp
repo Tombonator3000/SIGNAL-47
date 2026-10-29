@@ -914,7 +914,8 @@ void US47Chapter2::BeginChapter2(const S47J::FObj& SavedCase)
 	}
 	else
 	{
-		Host->SetClock(FMath::Max(Host->Clock(), Host->EventClockSec() + 40 * 60));
+		// Evening cases: SC07 follows SC06 at about 03:40 (approved timeline); legacy keeps forty minutes.
+		Host->SetClock(FMath::Max(Host->Clock(), Host->EventClockSec() + (Host->bEveningTimeline ? 15 : 40) * 60));
 		if (M && M->Player) M->Player->Place(3.35, 1.45, 2.75); // at the supervisor desk, facing the phone
 	}
 	if (M && M->UI) M->UI->Fade(false);

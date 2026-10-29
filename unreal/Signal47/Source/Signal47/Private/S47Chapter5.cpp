@@ -940,9 +940,9 @@ void US47Chapter5::JumpChapter5()
 		S47J::FObj Case = M && M->Flow ? M->Flow->ComposeCase() : S47J::FObj();
 		if (!Case.IsValid()) { Case = S47J::New(); S47J::Set(Case, TEXT("notes"), Host->Notes()); }
 		S47J::Set(Case, TEXT("ch4"), J4);
-		S47J::Set(Case, TEXT("clock"), (Host->bEveningTimeline ? 4 * 3600.0 + 8 * 60 : 4 * 3600.0 + 58 * 60));
+		S47J::Set(Case, TEXT("clock"), (Host->bEveningTimeline ? 5 * 3600.0 + 10 * 60 : 4 * 3600.0 + 58 * 60));
 		C4->BeginChapter4(Case);
-		Host->SetClock((Host->bEveningTimeline ? 4 * 3600.0 + 8 * 60 : 4 * 3600.0 + 58 * 60));
+		Host->SetClock((Host->bEveningTimeline ? 5 * 3600.0 + 10 * 60 : 4 * 3600.0 + 58 * 60));
 	}
 	BeginChapter5(nullptr);
 }
