@@ -69,7 +69,7 @@ namespace
       Material->GetBlendMode()!=BLEND_Opaque || Material->IsTwoSided())
    return Fail(Why,FString(Spec.Name)+TEXT(" original opaque native material identity differs"));
   FLinearColor Color, Emissive; float Strength=0;
-  if (!Material->GetVectorParameterValue(FMaterialParameterInfo(TEXT("Color")),Color) || !Color.Equals(FLinearColor::White,.0001f) ||
+  if (!Material->GetVectorParameterValue(FMaterialParameterInfo(TEXT("TextureTint")),Color) || !Color.Equals(FLinearColor::White,.0001f) ||
       !Material->GetVectorParameterValue(FMaterialParameterInfo(TEXT("EmissiveFactor")),Emissive) ||
       FMath::Max3(FMath::Abs(Emissive.R),FMath::Abs(Emissive.G),FMath::Abs(Emissive.B))>.0001f ||
       !Material->GetScalarParameterValue(FMaterialParameterInfo(TEXT("NormalStrength")),Strength) || !FMath::IsNearlyEqual(Strength,1.f,.0001f))
