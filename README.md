@@ -12,13 +12,15 @@ Førstepersons kosmisk etterforskning ved SARO i New Mexico, 1986. Gjeldende spi
 
 ## Spill på Linux
 
-[Offentlig Linux-testutgave 28. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-28), x86-64 med Vulkan. Du trenger ikke Unreal-editoren for å spille den pakkede utgaven. Den offentlige nedlastingen og utviklingsmaskinens lokale installasjon kan være forskjellige; se statuslenken ovenfor.
+[Komplett Linux-testutgave 29. oktober 2026](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), x86-64 med Vulkan. Modeller, teksturer og lyd følger med. Du trenger verken Git, Unreal-editor eller separate Artifacts. Denne utgaven har samme runtime som installert Farm R1; se statuslenken ovenfor.
 
-Fra en klon eller kildeutpakking:
+Last ned bare [Spill-SIGNAL47.sh](https://github.com/Tombonator3000/SIGNAL-47/releases/download/playtest-linux-2026-10-29/Spill-SIGNAL47.sh) til en skrivbar mappe og kjør:
 
 ```sh
-./Spill-SIGNAL47.sh
+bash Spill-SIGNAL47.sh
 ```
+
+Den henter og kontrollerer alle tre spillarkivene automatisk, om lag 4 GB. Beregn minst 12 GB ledig plass. Prøv først vanlig oppstart; `--wayland` tvinger Wayland, mens `--x11` krever XWayland/DISPLAY i en Wayland-økt. Behold gammel `Linux/Signal47/Saved` før oppdatering. [Detaljer og kontrollgrunnlag](Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md).
 
 ## Kilder, design og historikk
 
