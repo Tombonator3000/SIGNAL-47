@@ -7,6 +7,7 @@
 #include "S47Horror.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47SC11.h"
 #include "S47Spine.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -36,10 +37,31 @@ class FS47SC12Contract : public TSharedFromThis<FS47SC12Contract>
  TArray<FVector> Path;
  TArray<TSharedPtr<FJsonValue>> Evidence, Rays;
  FS47Doc Third;
+ TArray<FS47Doc> AcquiredSources;
  US47Main* M() const { return Main.Get(); }
  US47Chapter5* C() const { return M() && M()->Story ? Cast<US47Chapter5>(M()->Story->Chapter(TEXT("ch5"))) : nullptr; }
  bool Write(const FString& Name, const FJ& O) const { return FFileHelper::SaveStringToFile(S47J::Write(O, true), *(Root / Name)); }
  static bool Same(const FJ& A, const FJ& B) { return A && B && FJsonValue::CompareEqual(FJsonValueObject(A), FJsonValueObject(B)); }
+ static FJ DocFields(const FS47Doc& D)
+ {
+  auto O = S47J::New(); S47J::Set(O,TEXT("id"),D.Id); S47J::Set(O,TEXT("title"),D.Title); S47J::Set(O,TEXT("kind"),D.Kind);
+  S47J::Set(O,TEXT("stamp"),D.Stamp); S47J::Set(O,TEXT("page"),D.Page); S47J::Set(O,TEXT("transcript"),D.Transcript);
+  S47J::Set(O,TEXT("image"),D.Image); S47J::Set(O,TEXT("paper"),D.Paper); S47J::Set(O,TEXT("paperRatio"),D.PaperRatio);
+  TArray<TSharedPtr<FJsonValue>> Sheets;
+  for (const auto& Sheet : D.Sheets)
+  {
+   auto Row = S47J::New(); S47J::Set(Row,TEXT("page"),Sheet.Page); S47J::Set(Row,TEXT("paper"),Sheet.Paper);
+   S47J::Set(Row,TEXT("strip"),Sheet.Strip); S47J::Set(Row,TEXT("term"),Sheet.Term); Sheets.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  O->SetArrayField(TEXT("sheets"),Sheets); return O;
+ }
+ TArray<TSharedPtr<FJsonValue>> CurrentSources() const
+ {
+  TArray<TSharedPtr<FJsonValue>> Rows;
+  if (M() && M()->Story) for (const auto& Original : AcquiredSources)
+   if (const auto* Actual = M()->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Original.Id; })) Rows.Add(MakeShared<FJsonValueObject>(DocFields(*Actual)));
+  return Rows;
+ }
  void Result(bool Pass, const FString& Why)
  {
   const auto KeepAlive = AsShared(); if (Done) return; Done = true;
@@ -48,7 +70,8 @@ class FS47SC12Contract : public TSharedFromThis<FS47SC12Contract>
   S47J::Set(O, TEXT("stage"), Stage); S47J::Set(O, TEXT("checks"), Checks); S47J::Set(O, TEXT("diskFlowRestores"), Restores);
   S47J::Set(O, TEXT("ordinaryRayUses"), RayUses); S47J::Set(O, TEXT("walkMetres"), WalkMetres); S47J::Set(O, TEXT("seconds"), Elapsed);
   S47J::Set(O, TEXT("lastReadback"), C() ? C()->SC12Readback() : FJ()); O->SetArrayField(TEXT("checksExecuted"), Evidence); O->SetArrayField(TEXT("rays"), Rays);
-  S47J::Set(O, TEXT("scope"), TEXT("Explicit isolated chapter5/SC11-secured-source fixture, not a SC11 escape. One declared diner/foot start. Ordinary Walker between booth, phone and dated patrol sheet; actual camera/focus/ray and Player.OnUse. Conversation choices and tracing motion use the exact production callbacks, not human Slate input. Incomplete sources, early acknowledgements, interrupted calls, map errors and full disk/title/Continue at each stable boundary. Final service-truck choice is a labelled production API action, not a measured road drive. No screenshots, listening, full-night, packaging or installation acceptance."));
+  O->SetArrayField(TEXT("actualHostSourcePapers"),CurrentSources());
+  S47J::Set(O, TEXT("scope"), TEXT("Explicit isolated chapter5/SC11-secured-source fixture using the actual FS47SC11 document factories, not a played SC11 escape. One declared diner/foot start. Ordinary Walker between booth, phone and dated patrol sheet; actual camera/focus/ray and Player.OnUse. Conversation choices and tracing motion use the exact production callbacks, not human Slate input. Incomplete sources, early acknowledgements, interrupted calls, map errors and full disk/title/Continue at each stable boundary. All current Host.Docs source fields are independently compared with acquired fixture pages before and after Continue. Final service-truck choice is a labelled production API action, not a measured road drive. No screenshots, listening, full-night, packaging or installation acceptance."));
   const bool Written = Root.IsEmpty() || Write(TEXT("result.json"), O);
   if (Pass && Written) { UE_LOG(LogTemp, Display, TEXT("S47: spine contract sc12 PASS COMPLETE: %d checks, %d restores, %d rays, %.3fm"), Checks, Restores, RayUses, WalkMetres); FPlatformMisc::RequestExitWithStatus(false, 0); }
   else { UE_LOG(LogTemp, Error, TEXT("S47: spine contract sc12 FAIL stage %d: %s"), Stage, *Why); FPlatformMisc::RequestExitWithStatus(false, 1); }
@@ -64,18 +87,8 @@ class FS47SC12Contract : public TSharedFromThis<FS47SC12Contract>
   const auto R = C()->SC12Readback();
   S47J::Set(R, TEXT("name"), Name); S47J::Set(R, TEXT("area"), M()->World->Area);
   S47J::Set(R, TEXT("case"), M()->Flow->ComposeCase());
+  R->SetArrayField(TEXT("actualHostSourcePapers"),CurrentSources());
   if (!Write(Name + TEXT(".json"), R)) { Result(false, TEXT("readback write failed: ") + Name); return false; } return true;
- }
- // Derived only from the already-authored source pack, under the declared opt-in SC11-output fixture.
- FS47Doc Fixture(const TCHAR* Authored, const TCHAR* Id, const TCHAR* SourceId)
- {
-  FS47Doc D; const auto* P = M()->Horror->Pack.FindDocument(Authored); if (!P) return D;
-  D.Id = Id; D.Title = P->Title; D.Kind = P->Kind; D.Stamp = TEXT("14 APR 1986 / SC11 OUTPUT FIXTURE");
-  D.Page = FString(TEXT("SOURCE ID / ")) + SourceId + TEXT("\n\n") + FString::Join(P->Body, TEXT("\n\n"));
-  const TCHAR* OldTimes[] = {TEXT("03:56"),TEXT("03:57"),TEXT("04:00"),TEXT("04:01"),TEXT("04:04")};
-  const TCHAR* NewTimes[] = {TEXT("04:56"),TEXT("04:57"),TEXT("05:00"),TEXT("05:01"),TEXT("05:04")};
-  for (int32 I=0;I<5;++I) D.Page.ReplaceInline(OldTimes[I],NewTimes[I]);
-  D.Transcript = D.Page; return D;
  }
  bool Choice(const FString& Id)
  {
@@ -90,6 +103,14 @@ class FS47SC12Contract : public TSharedFromThis<FS47SC12Contract>
   if (!Check(!M()->UI->Modal() && M()->Flow->GameSaveBlock().IsEmpty(), TEXT("normal stable save boundary: ") + Name)) return false;
   const auto Before = M()->Flow->GameState(), State5 = S47J::Obj(S47J::Obj(Before, TEXT("case")), TEXT("ch5"));
   const double Clock = M()->Story->Clock(); const FVector Foot = M()->Player->Pos;
+  TArray<FS47Doc> BeforePapers;
+  for (const auto& Original : AcquiredSources)
+  {
+   const auto* Actual = M()->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Original.Id; });
+   if (!Actual) { if (!Check(Stage == 1 && Original.Id == Third.Id, TEXT("only the declared missing-third-source cohort may omit a paper: ") + Original.Id)) return false; continue; }
+   if (!Check(Same(DocFields(*Actual),DocFields(Original)), TEXT("actual acquired Host.Docs payload before disk: ") + Original.Id + TEXT(" / ") + Name)) return false;
+   BeforePapers.Add(*Actual);
+  }
   if (!Check(Before && State5 && S47J::Str(Before, TEXT("checkpoint")) == TEXT("chapter5"), TEXT("actual complete chapter5 snapshot before disk: ") + Name)) return false;
   FS47SaveStore Writer(Root / Name / TEXT("case1")); Writer.Init(); FS47SaveCard Card; Card.Chapter = M()->Story->ChapterTitle(); Card.Place = M()->Flow->PlaceName(); Card.Clock = M()->Story->ClockText(false); Card.Playtime = M()->Playtime;
   FString Error; const auto Meta = Writer.Save(1, TEXT("manual"), 0, Before, Card, Error);
@@ -102,6 +123,13 @@ class FS47SC12Contract : public TSharedFromThis<FS47SC12Contract>
   M()->Flow->OpenSave(*Meta); ++Restores;
   if (!Check(C() && Same(C()->S.Save(), State5) && FMath::Abs(M()->Story->Clock() - Clock) < .001 && M()->World->Area == TEXT("diner") && M()->Player->Pos.Equals(Foot, .015) && C()->PendingReadback == 0,
    TEXT("full Flow Continue keeps complete ch5/clock/area/pose; no live pending acknowledgement survives: ") + Name)) return false;
+  for (const auto& Original : AcquiredSources)
+  {
+   const auto* Had = BeforePapers.FindByPredicate([&](const FS47Doc& D) { return D.Id == Original.Id; });
+   const auto* Actual = M()->Story->Docs().FindByPredicate([&](const FS47Doc& D) { return D.Id == Original.Id; });
+   if (!Check((Had && Actual && Same(DocFields(*Actual),DocFields(*Had))) || (!Had && !Actual),
+    TEXT("full Flow keeps actual Host.Docs fields, not replacement templates: ") + Original.Id + TEXT(" / ") + Name)) return false;
+  }
   return Snapshot(Name + TEXT("-continued"));
  }
  void WalkTo(const TArray<FVector>& Local)
@@ -150,8 +178,13 @@ public:
   if (Stage == 0)
   {
    if (Elapsed < 3 || !C()->Diner()) return;
-   FString UserDir; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir); UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::NormalizeDirectoryName(UserDir);
-   if (!Check(UserDir.StartsWith(TEXT("/tmp/")) && !UserDir.Contains(TEXT("..")) && M()->Flow->bDevRun && M()->Flow->CaseId == 0 && M()->Story->bEveningTimeline && M()->Story->ChapterKey == TEXT("ch5"), TEXT("isolated /tmp developer chapter5 fixture; no personal case"))) return;
+   FString UserDir; const bool HasUserDir = FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
+   const bool NoParentTraversal = !UserDir.Contains(TEXT("..")); UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::NormalizeDirectoryName(UserDir);
+   if (!Check(HasUserDir && NoParentTraversal && UserDir.StartsWith(TEXT("/tmp/"))
+    && FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir)
+    && FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M()->Flow->Saves.Dir),UserDir)
+    && M()->Flow->Saves.List().IsEmpty() && M()->Flow->bDevRun && M()->Flow->CaseId == 0 && M()->Story->bEveningTimeline && M()->Story->ChapterKey == TEXT("ch5"),
+    TEXT("fresh isolated /tmp developer chapter5 fixture; actual Saved and SaveStore lie inside that profile"))) return;
    Root = FPaths::ProjectSavedDir() / TEXT("SpineSC12Contract") / FGuid::NewGuid().ToString(EGuidFormats::Digits);
    if (!IFileManager::Get().MakeDirectory(*Root, true)) { Result(false, TEXT("fresh evidence directory unavailable")); return; }
    Armed = true;
@@ -164,10 +197,12 @@ public:
   {
    if (!Check(M()->World->Area == TEXT("diner"), TEXT("declared diner transition actually completed before any foot placement"))) return;
    C()->ArrivedDiner();
-   const auto Local = Fixture(TEXT("HR_SARO_ORIGINAL"), TEXT("HR_SARO_ORIGINAL"), TEXT("SARO07-860414-RX01"));
-   const auto Hondo = Fixture(TEXT("HR_HONDO_LOCAL"), TEXT("HR_HONDO_REMOTE"), TEXT("HONDO-860414-LOG01"));
-   Third = Fixture(TEXT("HR_SITE11_LOCAL"), TEXT("HR_SITE11_REMOTE"), TEXT("SITE11-860414-TR01"));
-   if (!Check(!Local.Page.IsEmpty() && !Hondo.Page.IsEmpty() && !Third.Page.IsEmpty(), TEXT("authored source templates exist for declared SC11-output fixture"))) return;
+   // These are the same factories the actual SC11 uses. The complete local source is an explicit
+   // prerequisite fixture; calling this factory is never credited as playing its escape.
+   const auto Local = FS47SC11::ReceiverDoc(true,TEXT("05:10:00 / SC12 PREREQUISITE FIXTURE"));
+   const auto Hondo = FS47SC11::HondoDoc(); Third = FS47SC11::Site11Doc(); AcquiredSources = {Local,Hondo,Third};
+   if (!Check(Local.Page.Contains(TEXT("ctx_hr_h07_escape_complete / WORLD ESCAPE RECORDED"))
+    && !Hondo.Page.IsEmpty() && !Third.Page.IsEmpty(), TEXT("actual SC11 document factories supply the explicit secured-source fixture; no new escape credit"))) return;
    M()->Story->AddDoc(Local); M()->Story->AddDoc(Hondo);
    M()->Story->DocsMutable().RemoveAll([](const FS47Doc& D) { return D.Id == TEXT("HR_SITE11_REMOTE"); });
    const FVector At = C()->Diner()->Group.LocalToWorld(FVector(-.8, 0, 3.05));
@@ -208,7 +243,9 @@ public:
   if (Stage == 6)
   {
    Look(TEXT("diner:payphone")); if (!Use(TEXT("diner:payphone")) || !Choice(TEXT("send-warning"))) return;
-   if (!Check(C()->PendingReadback == 1 && !C()->S.SC12.bWarningSent && !M()->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("HR_WARNING_RECEIPT"); }), TEXT("three IDs and04:56:08 displayed in readback, not yet an acknowledged warning"))) return;
+   if (!Check(C()->PendingReadback == 1 && !C()->S.SC12.bWarningSent && !M()->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("HR_WARNING_RECEIPT"); })
+    && C()->Lines.ContainsByPredicate([](const S47Panels::FTalkLine& L) { return L.Text.Contains(TEXT("Hondo local clock / 04:56:08")) && L.Text.Contains(TEXT("04:56:09")); }),
+    TEXT("three IDs, Hondo04:56:08 and separate SARO04:56:09 displayed in readback, not yet acknowledged"))) return;
    Close(); if (!Check(C()->PendingReadback == 0 && !C()->S.SC12.bWarningSent, TEXT("hanging up before confirmation gives no receipt")) || !Restore(TEXT("interrupted-warning"))) return;
    Next(7,.5); return;
   }

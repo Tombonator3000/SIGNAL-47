@@ -22,6 +22,7 @@
 #include "S47StationTaken.h"
 #include "S47Story.h"
 #include "S47Spine.h"
+#include "S47SC11.h"
 #include "S47TownLayer.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -1217,15 +1218,15 @@ bool US47Chapter5::SelfTest(TArray<FString>& Out)
 	FS47SC12State New;
 	New.Version = 1; New.bLaid = true; New.ReadMask = 7; New.CheckMask = 7; New.bCompared = true;
 	New.Extra = S47J::Read(TEXT("{\"futureSourceField\":17}"));
-	FS47Doc Preserved;
-	Preserved.Id=TEXT("HR_HONDO_REMOTE"); Preserved.Title=TEXT("Original title"); Preserved.Kind=TEXT("typed"); Preserved.Stamp=TEXT("05:04 MST / 14 APR 86");
-	Preserved.Page=TEXT("SOURCE ID / HONDO-860414-LOG01\n04:56:55"); Preserved.Transcript=TEXT("Original transcript, not reconstructed");
+	FS47Doc Preserved = FS47SC11::HondoDoc();
+	Preserved.Title=TEXT("Original title"); Preserved.Stamp=TEXT("05:04 MST / 14 APR 86");
+	Preserved.Transcript=TEXT("Original transcript, not reconstructed");
 	Preserved.Image=TEXT("source-image-reference"); Preserved.Paper=TEXT("paper-art"); Preserved.PaperRatio=.7; Preserved.Sheets.Add({TEXT("second page"),TEXT("paper"),TEXT("strip"),TEXT("term")});
-	New.SourcePapers.Add(Preserved);
+	New.SourcePapers = {Preserved, FS47SC11::ReceiverDoc(true, TEXT("05:10:00 / SELFTEST FIXTURE")), FS47SC11::Site11Doc()};
 	auto Round = FS47SC12State::Load(S47J::Read(S47J::Write(New.Save())));
 	Check(Round.Version == 1 && Round.bCompared && !Round.bWarningSent && S47J::Int(Round.Save(), TEXT("futureSourceField")) == 17,
 		TEXT("new comparison restores separately from warning; unknown SC12 fields preserved"));
-	Check(Round.SourcePapers.Num()==1 && Round.SourcePapers[0].Stamp==Preserved.Stamp && Round.SourcePapers[0].Page==Preserved.Page && Round.SourcePapers[0].Transcript==Preserved.Transcript && Round.SourcePapers[0].Image==Preserved.Image && Round.SourcePapers[0].Sheets.Num()==1 && Round.SourcePapers[0].Sheets[0].Term==TEXT("term"),
+	Check(Round.SourcePapers.Num()==3 && Round.SourcePapers[0].Stamp==Preserved.Stamp && Round.SourcePapers[0].Page==Preserved.Page && Round.SourcePapers[0].Transcript==Preserved.Transcript && Round.SourcePapers[0].Image==Preserved.Image && Round.SourcePapers[0].Sheets.Num()==1 && Round.SourcePapers[0].Sheets[0].Term==TEXT("term"),
 		TEXT("acquired source page, timestamp, transcript, image and sheet payload survive exactly without a new template"));
 	New.bWarningSent = true; New.WarningStamp = TEXT("05:16"); New.bDeputyHere = true; New.bPatrolRead = true; New.PatrolStamp = TEXT("05:15");
 	New.bCourier = true; New.bRouteReadback = true; New.RouteStamp = TEXT("05:18");
@@ -1237,6 +1238,19 @@ bool US47Chapter5::SelfTest(TArray<FString>& Out)
 	Check(!Round.bWarningSent && !Round.bCourier && !Round.bRouteReadback, TEXT("unverified comparison cannot restore downstream warning/courier credit"));
 	Invalid = New.Save(); S47J::Set(Invalid, TEXT("checks"), 99); Round = FS47SC12State::Load(Invalid);
 	Check(Round.CheckMask == 0 && !Round.bCompared && !Round.bWarningSent, TEXT("invalid source-check mask cannot be clamped into completed proof"));
+	FS47SC12State MissingRaw = New;
+	MissingRaw.SourcePapers[0].Transcript = MissingRaw.SourcePapers[0].Page;
+	MissingRaw.SourcePapers[0].Page = TEXT("SOURCE ID / HONDO-860414-LOG01\n04:56:55");
+	Round = FS47SC12State::Load(MissingRaw.Save());
+	Check(!Round.bCompared && !Round.bWarningSent && !Round.bCourier, TEXT("source ID and a complete transcript cannot replace missing raw optical page fields"));
+	MissingRaw = New;
+	MissingRaw.SourcePapers[1].Page.ReplaceInline(TEXT("ctx_hr_h07_escape_complete / WORLD ESCAPE RECORDED"), TEXT("LOCAL ORIGINAL SECURED"));
+	Round = FS47SC12State::Load(MissingRaw.Save());
+	Check(!Round.bCompared && !Round.bWarningSent, TEXT("an uncompleted SARO original cannot restore a source comparison or warning"));
+	MissingRaw = New;
+	MissingRaw.SourcePapers[2].Page.ReplaceInline(TEXT("04:57:42 R3"), TEXT("04:57:43 R3"));
+	Round = FS47SC12State::Load(MissingRaw.Save());
+	Check(!Round.bCompared && !Round.bWarningSent, TEXT("Site 11's actual third boundary cannot be silently replaced by another source's time"));
 	// a new chapter is fresh again
 	C->Reset();
 	Check(!C->bActive && C->S.Stage == TEXT("to-truck") && !C->TruckTrip(TEXT("saro")) && C->Book->Threads().Num() == 0, TEXT("reset: not active, fresh"));

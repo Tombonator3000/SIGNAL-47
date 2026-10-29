@@ -25,12 +25,55 @@ namespace
  constexpr double DeputyArrival = 5 * 3600 + 15 * 60;
  const TCHAR* SourceDocs[] = { TEXT("HR_SARO_ORIGINAL"), TEXT("HR_HONDO_REMOTE"), TEXT("HR_SITE11_REMOTE") };
  const TCHAR* SourceIds[] = { TEXT("SARO07-860414-RX01"), TEXT("HONDO-860414-LOG01"), TEXT("SITE11-860414-TR01") };
- const TCHAR* FirstBoundary = TEXT("04:56:08 MST, 14 APR 1986");
+ const TCHAR* FirstBoundary = TEXT("Hondo local clock / 04:56:08 MST, 14 APR 1986");
  const FS47Doc* Source(const AS47Story* H, int32 I)
  {
   return H && I >= 0 && I < 3 ? H->Docs().FindByPredicate([I](const FS47Doc& D) { return D.Id == SourceDocs[I]; }) : nullptr;
  }
- FString TextOf(const FS47Doc* D) { return D ? D->Page + TEXT("\n") + D->Transcript : FString(); }
+ template<SIZE_T N> bool HasFields(const FString& Page, const TCHAR* const (&Fields)[N])
+ {
+  for (const TCHAR* Field : Fields) if (!Page.Contains(Field, ESearchCase::CaseSensitive)) return false;
+  return true;
+ }
+ bool SourceRecord(const FS47Doc& D, int32 Index)
+ {
+  if (Index < 0 || Index >= 3 || D.Id != SourceDocs[Index]
+   || !D.Page.Contains(FString(TEXT("SOURCE ID / ")) + SourceIds[Index], ESearchCase::CaseSensitive)) return false;
+  // These are the actual acquired page fields behind the offered conclusions. IDs and transcripts
+  // cannot supply absent measurements, a disconnected feed or an unplayed SARO escape.
+  if (Index == 0)
+  {
+   static const TCHAR* const Local[] = {TEXT("ORIGINAL STRIP AND COMMAND LOG"), TEXT("Passive receiver, local station clock"),
+    TEXT("not the network retransmission"), TEXT("04:56:09  first boundary"), TEXT("04:56:56  second boundary"), TEXT("04:57:43  third boundary"),
+    TEXT("REYES / FIELD ADDENDUM, "), TEXT("The local task light was switched off at its own control"),
+    TEXT("The room was observed with that local source off"), TEXT("The originals were carried out of SARO"),
+    TEXT("ctx_hr_h07_escape_complete / WORLD ESCAPE RECORDED")};
+   return HasFields(D.Page, Local);
+  }
+  static const TCHAR* const Remote[] = {TEXT("COMPLETE COPY RECEIVED AT SARO 05:04"), TEXT("PAIRED OPTICAL HEADS"),
+   TEXT("Range uncertainty per reading: 0.04 km"), TEXT("Observation interval: 04:56:00 to 05:04:00 MST, 14 APR 1986"), TEXT("within one second")};
+  if (!HasFields(D.Page, Remote)) return false;
+  if (Index == 1)
+  {
+   static const TCHAR* const Hondo[] = {TEXT("LOCAL SOURCE / HONDO"), TEXT("battery-backed event logger"), TEXT("operator's separate optical sheet"),
+    TEXT("not the SARO telex forwarded back"), TEXT("Power remained available during the earlier SARO blackout"),
+    TEXT("04:56:08 R1; 04:56:55 R2; 04:57:42 R3"), TEXT("surveyed baseline 480 m"),
+    TEXT("At 05:00:00, local triangulated slant ranges: track H-A 18.4 km, H-B 21.1 km"),
+    TEXT("At 05:00:30: H-A 18.3 km, H-B 21.0 km"), TEXT("At 05:01:00: H-A 18.2 km, H-B 20.9 km"),
+    TEXT("Clock check against the time service before and after")};
+   return HasFields(D.Page, Hondo);
+  }
+  static const TCHAR* const Site[] = {TEXT("LOCAL SOURCE / SITE 11"), TEXT("independently clocked transit observations"),
+   TEXT("Receiver was disconnected from the intersite audio feed during the second observation"),
+   TEXT("04:56:08 R1; 04:56:56 R2; 04:57:42 R3"), TEXT("surveyed baseline 620 m"),
+   TEXT("At 05:00:00, local triangulated slant ranges: track S-A 22.6 km, S-B 24.0 km"),
+   TEXT("At 05:00:30: S-A 22.5 km, S-B 23.9 km"), TEXT("At 05:01:00: S-A 22.4 km, S-B 23.8 km"), TEXT("Clock check before and after")};
+  return HasFields(D.Page, Site);
+ }
+ bool SourceRecord(const AS47Story* Host, int32 Index)
+ {
+  const FS47Doc* D = Source(Host, Index); return D && SourceRecord(*D, Index);
+ }
  FS47Doc Paper(const TCHAR* Id, const TCHAR* Title, const FString& Stamp, const FString& Page)
  {
   FS47Doc D; D.Id = Id; D.Title = Title; D.Kind = TEXT("typed"); D.Stamp = Stamp; D.Page = Page; D.Transcript = Page; return D;
@@ -85,9 +128,11 @@ FS47SC12State FS47SC12State::Load(const S47J::FObj& O)
  for (const auto& V : S47J::Arr(O,TEXT("sources"))) if (V && V->Type == EJson::Object)
  {
   const FS47Doc D=LoadPaper(V->AsObject());
-  for (int32 I=0;I<3;++I) if (D.Id==SourceDocs[I] && TextOf(&D).Contains(FString(TEXT("SOURCE ID / "))+SourceIds[I],ESearchCase::CaseSensitive)
+  for (int32 I=0;I<3;++I) if (SourceRecord(D, I)
    && !F.SourcePapers.ContainsByPredicate([&](const FS47Doc& P){return P.Id==D.Id;})) F.SourcePapers.Add(D);
  }
+ // A stored conclusion cannot outlive the acquired raw pages that supported it.
+ if (F.SourcePapers.Num() != 3) F.bCompared = F.bWarningSent = F.bCourier = F.bRouteReadback = false;
  return F;
 }
 
@@ -97,7 +142,7 @@ void US47Chapter5::CaptureSC12Sources()
  for (int32 I=0;I<3;++I)
  {
   const FS47Doc* D=Source(Host,I);
-  if (D && TextOf(D).Contains(FString(TEXT("SOURCE ID / "))+SourceIds[I],ESearchCase::CaseSensitive)
+  if (D && SourceRecord(*D, I)
    && !S.SC12.SourcePapers.ContainsByPredicate([&](const FS47Doc& P){return P.Id==D->Id;})) S.SC12.SourcePapers.Add(*D);
  }
 }
@@ -106,8 +151,7 @@ bool US47Chapter5::HasSC12Sources() const
 {
  for (int32 I = 0; I < 3; ++I)
  {
-  const FS47Doc* D = Source(Host, I);
-  if (!D || !TextOf(D).Contains(FString(TEXT("SOURCE ID / ")) + SourceIds[I], ESearchCase::CaseSensitive)) return false;
+  if (!SourceRecord(Host, I)) return false;
  }
  return true;
 }
@@ -164,7 +208,7 @@ void US47Chapter5::BuildSC12Props()
  {
   const FString Id = FString::Printf(TEXT("source%d"), I);
   const FS47Obj O = Mesh(Id, Cube, FVector(.34 + I * .35, .8055, 3.05), FVector(.285, .006, .35), 0xeee6d0, true);
-  Labelled(Id, O, [Weak, I] { return Weak.IsValid() && Weak->S.SC12.bLaid && Source(Weak->Host, I) ? FString::Printf(TEXT("Read %s"), SourceIds[I]) : FString(); },
+  Labelled(Id, O, [Weak, I] { return Weak.IsValid() && Weak->S.SC12.bLaid && SourceRecord(Weak->Host, I) ? FString::Printf(TEXT("Read %s"), SourceIds[I]) : FString(); },
    [Weak, I] { if (Weak.IsValid()) Weak->ReadSource(I); });
   // Authored paper, not a photograph or a new source: the carried originals remain in Story::Docs.
   FS47Canvas Page(512, 640); Page.SetFill(0xeee6d0); Page.FillRect(0, 0, 512, 640); Page.SetFill(0x243128);
@@ -193,7 +237,7 @@ void US47Chapter5::ApplySC12Props()
  {
   const bool SourcePaper = Entry.Key.StartsWith(TEXT("source"));
   const int32 I = SourcePaper ? FCString::Atoi(*Entry.Key.Mid(6)) : -1;
-  const bool Show = bActive && RevisedDiner() && S.bArrived && (SourcePaper ? S.SC12.bLaid && Source(Host, I) != nullptr : S.SC12.bDeputyHere);
+  const bool Show = bActive && RevisedDiner() && S.bArrived && (SourcePaper ? S.SC12.bLaid && SourceRecord(Host, I) : S.SC12.bDeputyHere);
   FS47Obj O = Entry.Value; O.SetVisible(Show);
   if (const auto* N = M && M->Web ? M->Web->Node(O.I) : nullptr) if (auto* C = Cast<UStaticMeshComponent>(N->Comp.Get()))
    C->SetCollisionEnabled(Show && (SourcePaper || Entry.Key == TEXT("patrol") || Entry.Key == TEXT("deputyBody")) ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
@@ -251,7 +295,7 @@ void US47Chapter5::ReadSource(int32 Index)
 {
  if (!RevisedDiner() || !bActive || !S.SC12.bLaid || !InDiner()) return;
  const FS47Doc* D = Source(Host, Index);
- if (!D) { Toast(TEXT("That source is not in the folder."), 3); return; }
+ if (!D || !SourceRecord(*D, Index)) { Toast(TEXT("That complete raw source is not in the folder. A source ID alone cannot replace its observations."), 4); return; }
  // Store the actual carried paper; merely finding a label never verifies the comparison.
  S.SC12.ReadMask |= (1 << Index); Save();
  if (M && M->UI) M->UI->Document(*D);
@@ -273,7 +317,7 @@ S47Panels::FTalkView US47Chapter5::SC12View() const
  S47Panels::FTalkView V; V.Status = Objective(); V.Lines = Lines;
  if (Who == TEXT("sources"))
  {
-  for (int32 I = 0; I < 3; ++I) if (Source(Host, I)) V.Choices.Add({ FString::Printf(TEXT("read%d"), I), FString::Printf(TEXT("Read %s"), SourceIds[I]) });
+  for (int32 I = 0; I < 3; ++I) if (SourceRecord(Host, I)) V.Choices.Add({ FString::Printf(TEXT("read%d"), I), FString::Printf(TEXT("Read %s"), SourceIds[I]) });
   if (S.SC12.ReadMask == 7 && HasSC12Sources())
   {
    if (!(S.SC12.CheckMask & 1)) V.Choices.Add({ TEXT("origins"), TEXT("Compare the three local origins") });
@@ -286,7 +330,7 @@ S47Panels::FTalkView US47Chapter5::SC12View() const
  }
  if (!S.SC12.bWarningSent)
  {
-  if (PendingReadback == 1) V.Choices.Add({ TEXT("ack-warning"), TEXT("Confirm all three IDs and 04:56:08 in Ward's readback") });
+  if (PendingReadback == 1) V.Choices.Add({ TEXT("ack-warning"), TEXT("Confirm all three IDs, Hondo 04:56:08 and SARO 04:56:09 in Ward's readback") });
   else if (SourcesVerified()) V.Choices.Add({ TEXT("send-warning"), TEXT("Read the three source IDs and the first boundary time") });
   else V.Choices.Add({ TEXT("local-warning"), TEXT("Report local danger; the source comparison is still incomplete") });
  }
@@ -312,10 +356,8 @@ bool US47Chapter5::ChooseSC12(const FString& Id)
   }
   if (Id == TEXT("clocks"))
   {
-   if (!TextOf(Source(Host, 1)).Contains(TEXT("04:56:55")) || !TextOf(Source(Host, 2)).Contains(TEXT("04:56:56")))
-   { Lines = { Line(TEXT(""), TEXT("The separate boundary and clock records are incomplete. Do not fill in a missing time.")) }; return true; }
    S.SC12.CheckMask |= 2;
-   Lines = { Line(TEXT(""), TEXT("Hondo: 04:56:08, 04:56:55, 04:57:42. Site 11: 04:56:08, 04:56:56, 04:57:42. The middle boundaries differ by one second; checked local clocks explain the resolution, not perfect simultaneity. The optical readings at 05:00, 05:00:30 and 05:01 show decreasing ranges at each station. Same phase order, different local measurements. No arrival minute or global fleet count follows.")) };
+   Lines = { Line(TEXT(""), TEXT("Hondo: 04:56:08, 04:56:55, 04:57:42. Site 11: 04:56:08, 04:56:56, 04:57:42. SARO's separate local clock: 04:56:09, 04:56:56, 04:57:43. Keep both the first-boundary and middle-boundary differences. Checked local clocks explain the resolution, not perfect simultaneity. The optical readings at 05:00, 05:00:30 and 05:01 show decreasing ranges at each remote station. Same phase order, different local measurements. No arrival minute or global fleet count follows.")) };
   }
   if (Id == TEXT("feeds"))
   {
@@ -337,14 +379,14 @@ bool US47Chapter5::ChooseSC12(const FString& Id)
  if (Id == TEXT("send-warning") && SourcesVerified() && !S.SC12.bWarningSent)
  {
   PendingReadback = 1;
-  Lines = { Line(TEXT("YOU"), FString::Printf(TEXT("Three independent local records: %s; %s; %s. First boundary: %s. Same order, different local readings. Site 11's middle boundary is one second later. The optical tracks continue to close."), SourceIds[0], SourceIds[1], SourceIds[2], FirstBoundary)),
-   Line(TEXT("E. WARD"), FString::Printf(TEXT("Readback: %s; %s; %s. First boundary %s. I have the difference and the limits. I am entering this in my dated log outside SARO. Is that correct?"), SourceIds[0], SourceIds[1], SourceIds[2], FirstBoundary)) };
+  Lines = { Line(TEXT("YOU"), FString::Printf(TEXT("Three independent local records: %s; %s; %s. First boundary on Hondo's record: %s. SARO's own first boundary is 04:56:09. Same order, different local readings. Site 11's middle boundary is one second later than Hondo's. The optical tracks continue to close."), SourceIds[0], SourceIds[1], SourceIds[2], FirstBoundary)),
+   Line(TEXT("E. WARD"), FString::Printf(TEXT("Readback: %s; %s; %s. First boundary %s; SARO's local first boundary 04:56:09. I have the separate clocks, difference and limits. I am entering this in my dated log outside SARO. Is that correct?"), SourceIds[0], SourceIds[1], SourceIds[2], FirstBoundary)) };
  }
  if (Id == TEXT("ack-warning") && PendingReadback == 1 && SourcesVerified())
  {
   PendingReadback = 0; S.SC12.bWarningSent = true; S.bWard = true; S.SC12.WarningStamp = Time(); File(WarningDoc());
   Lines = { Line(TEXT("YOU"), TEXT("Correct.")), Line(TEXT("E. WARD"), TEXT("Warning received. The 06:00 series remains suspended. No new observer closes a reference. I have asked the other sites to acknowledge. Keep the photographs and complete tables in the folder; you have not sent me the pictures. The courier has the field map. Check yours before we agree a bolt.")) };
-  Note(FString::Printf(TEXT("%s. Ward read back the three source IDs and 04:56:08 MST, 14 APR 1986, then acknowledged the warning in her dated external log. The 06:00 hold continues. Originals and photographs remain in the folder."), *Time())); Milestone();
+  Note(FString::Printf(TEXT("%s. Ward read back the three source IDs and Hondo's 04:56:08 MST, 14 APR 1986, retaining SARO's local 04:56:09, then acknowledged the warning in her dated external log. The 06:00 hold continues. Originals and photographs remain in the folder."), *Time())); Milestone();
  }
  if (Id == TEXT("request-courier") && S.SC12.bWarningSent && S.SC12.bPatrolRead && S.bP13 && !S.SC12.bRouteReadback)
  {
@@ -365,12 +407,12 @@ bool US47Chapter5::ChooseSC12(const FString& Id)
 FS47Doc US47Chapter5::SourceCheckDoc() const
 {
  return Paper(TEXT("HR_NETWORK_CHECK"), TEXT("Three sources / comparison and limits"), TEXT("14 APR 1986 / MST"),
-  TEXT("SARO07-860414-RX01 / original receiver run and separately written room observation. HONDO-860414-LOG01 / local battery-backed event logger and independent optical heads. SITE11-860414-TR01 / local receiver and transit record, intersite audio feed disconnected during the second observation.\n\nHondo boundaries: 04:56:08, 04:56:55, 04:57:42. Site 11 boundaries: 04:56:08, 04:56:56, 04:57:42. Keep the one-second difference. The clocks were checked within one second; same phase order is not exact simultaneity.\n\nSeparate optical readings at 05:00, 05:00:30 and 05:01 show continuing approach. Matching recorded speech alone proves none of this. Supported working warning: coordinated preparation for an arrival. Identity, purpose, global count and an arrival minute remain unknown."));
+  TEXT("SARO07-860414-RX01 / original receiver run and separately written room observation after the actual escape. HONDO-860414-LOG01 / local battery-backed event logger and independent optical heads. SITE11-860414-TR01 / local receiver and transit record, intersite audio feed disconnected during the second observation.\n\nHondo boundaries: 04:56:08, 04:56:55, 04:57:42. Site 11 boundaries: 04:56:08, 04:56:56, 04:57:42. SARO's separate local clock: 04:56:09, 04:56:56, 04:57:43. Keep the first and middle one-second differences. The remote clocks were checked within one second; same phase order is not exact simultaneity.\n\nSeparate optical readings at 05:00, 05:00:30 and 05:01 show continuing approach. Matching recorded speech alone proves none of this. Supported working warning: coordinated preparation for an arrival. Identity, purpose, global count and an arrival minute remain unknown."));
 }
 FS47Doc US47Chapter5::WarningDoc() const
 {
  return Paper(TEXT("HR_WARNING_RECEIPT"), TEXT("Ward / dated warning receipt"), S.SC12.WarningStamp + TEXT(" MST / 14 APR 1986"),
-  FString::Printf(TEXT("ACKNOWLEDGED %s MST / 14 APR 1986 / E. WARD\n\nRead back and confirmed: %s; %s; %s. First boundary: %s. Different local measurements and the Site 11 middle-boundary difference retained. Entered in Ward's dated call log outside SARO.\n\nThe 06:00 morning series remains suspended. No observer is to close a reference. Other sites asked to acknowledge. This does not claim external activity has stopped.\n\nPhotographs, negatives, raw tables and complete originals remain in Reyes's transfer folder. The telephone sent no photographs. Courier location not agreed by this receipt."), *S.SC12.WarningStamp, SourceIds[0], SourceIds[1], SourceIds[2], FirstBoundary));
+  FString::Printf(TEXT("ACKNOWLEDGED %s MST / 14 APR 1986 / E. WARD\n\nRead back and confirmed: %s; %s; %s. First boundary: %s. SARO's separate local first boundary is 04:56:09. Different local measurements and the Site 11 middle-boundary difference retained; no exact simultaneity claimed. Entered in Ward's dated call log outside SARO.\n\nThe 06:00 morning series remains suspended. No observer is to close a reference. Other sites asked to acknowledge. This does not claim external activity has stopped.\n\nPhotographs, negatives, raw tables and complete originals remain in Reyes's transfer folder. The telephone sent no photographs. Courier location not agreed by this receipt."), *S.SC12.WarningStamp, SourceIds[0], SourceIds[1], SourceIds[2], FirstBoundary));
 }
 FS47Doc US47Chapter5::PatrolDoc() const
 {
