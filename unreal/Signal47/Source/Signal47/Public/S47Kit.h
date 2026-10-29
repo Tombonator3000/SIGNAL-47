@@ -33,7 +33,8 @@ namespace S47Kit
 	struct FResult { bool bOk = false; FString Text; };
 
 	// the dark panel with its heading (h3) and Close
-	SIGNAL47_API FW Shell(US47UI* UI, const FString& Title, FW Body, float Width = 1040.f);
+	// bLow: a dialogue line, at the lower middle so it covers less of the world (Tom 28.10.2026).
+	SIGNAL47_API FW Shell(US47UI* UI, const FString& Title, FW Body, float Width = 1040.f, bool bLow = false);
 
 	// text (.lp-text, .lp-sub, .lp-small, .lp-q); Tone: 0 plain, 1 good, -1 bad
 	SIGNAL47_API FW Text(const FString& S, int32 Tone = 0);

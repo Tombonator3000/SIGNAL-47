@@ -320,7 +320,7 @@ void FS47Horror::ShowDialogue()
   const FString Id=C->Id;Rows.Add(S47Kit::Button(C->Label,[this,Id]{if(Pack.Select(Id)){M->UI->Close(true);bDialogueOpen=false;Changed();ShowDialogue();}},Rows.IsEmpty()));if(!Primary)Primary=Rows.Last();
  }
  const FString Title=S->Channel==TEXT("phone")?TEXT("TELEPHONE"):S->Channel==TEXT("walkie")?TEXT("WALKIE-TALKIE"):TEXT("SHIFT RECORD");
- M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Unread(S47Kit::Col(Rows)),820),[this]
+ M->UI->Open(S47Kit::Shell(M->UI,Title,S47Kit::Unread(S47Kit::Col(Rows)),820,true),[this]
  {ObserveVoice();bDialogueOpen=false;bResumeRequested=false;Spoken.Empty();if(Voice)Voice->Stop();Changed();});
  FocusPrimary(Primary);
 }
@@ -388,7 +388,15 @@ FString FS47Horror::Objective() const
   return TEXT("CALICHE JUNCTION // KEEP SOLID COVER BETWEEN YOU AND THE BODY. REACH SARO 07 OUTSIDE THE FENCE AND DRIVE");
  }
  if(!M->FieldCamera || !M->FieldCamera->bHave)return TEXT("EVENING ROUND // COLLECT THE CAMERA BESIDE THE EAST DOOR");
- if(!bEast || !bCorridor)return TEXT("EVENING ROUND // FROM INSIDE, OPEN THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE AT THE WEST END OF THE CORRIDOR");
+ if(!bEast || !bCorridor)
+ {
+  // A door left open (a save, or opened from outside) gives no inside opening; say what to do (FIX-06).
+  const auto Doors=M->Web?M->Web->DoorStates():TMap<FString,bool>();
+  if(!bEast && Doors.FindRef(TEXT("east")))return TEXT("EVENING ROUND // THE EAST SERVICE DOOR STANDS OPEN. CLOSE IT, THEN OPEN IT FROM INSIDE THE CONTROL ROOM");
+  if(!bCorridor && Doors.FindRef(TEXT("exit")))return TEXT("EVENING ROUND // THE VISITOR ENTRANCE STANDS OPEN. CLOSE IT, THEN OPEN IT FROM THE CORRIDOR");
+  if(!bEast)return bCorridor?TEXT("EVENING ROUND // FROM INSIDE THE CONTROL ROOM, OPEN THE EAST SERVICE DOOR"):TEXT("EVENING ROUND // FROM INSIDE, OPEN THE EAST SERVICE DOOR AND THE VISITOR ENTRANCE AT THE WEST END OF THE CORRIDOR");
+  return TEXT("EVENING ROUND // FROM THE CORRIDOR, OPEN THE VISITOR ENTRANCE AT ITS WEST END");
+ }
  if(!bBaseline)return TEXT("CONTROL ROOM // CHECK 1419.900 MHz / AZ 042 / GAIN 55 / BW 48");
  if(M->Observing && M->Observing->Active())return M->Observing->Objective();
  if(!Visual->LampChangeChecked())return TEXT("NORTH WINDOW // FROM INSIDE, SWITCH THE MARKED LAMP OFF AND ON WHILE WATCHING IT THROUGH THE GLASS");

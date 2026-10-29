@@ -18,7 +18,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 | FIX-03 | [ ] Rett doble mottakslamper og kontroller faktisk bevegelig film/lyd på resepsjons-TV-en. | Bilde E03 og Toms observasjon. Stillbildet alene beviser ikke filmstans. |
 | FIX-04 | [ ] Rett bassengsti som blafrer, bassengkant/dekke under terreng og uønsket klump utenfor gjerdet. | E04/E05. Identifiser det konkrete uønskede meshet før fjerning. |
 | FIX-05 | [ ] Rett telefonretning og overlappende ICE-/avis-/skilt-/veggdeler ved motellet. | E05. Bevar ønsket retro keramikkmønster. |
-| FIX-06 | [ ] Behold museposisjonen ved ny SARO-dialog, flytt tekstpanelet ned og rett veiledning/fremdrift ved service-/besøksdør. | [Detaljert feilrapport](Reports/PLAYTEST_TODO_2026-10-28.md). Ny dørtekst på main er ikke alene bevis på installert eller fungerende løsning. |
+| FIX-06 | [x] (PR214, kilde, SC01-kontrakt PASS 190) Behold museposisjonen ved ny SARO-dialog, flytt tekstpanelet ned og rett veiledning/fremdrift ved service-/besøksdør. | [Detaljert feilrapport](Reports/PLAYTEST_TODO_2026-10-28.md). Ny dørtekst på main er ikke alene bevis på installert eller fungerende løsning. |
 | FIX-07 | [ ] Erstatt gjenværende enkle/svevende trafodeler og integrer rampe, grus og fundamenter naturlig i bakken. | E06. Bevar service, strøm, lyd, adgang og SC02. |
 
 ## Omgivelser og mennesker
