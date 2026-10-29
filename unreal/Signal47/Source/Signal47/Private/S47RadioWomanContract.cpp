@@ -287,8 +287,11 @@ namespace S47RadioWomanContract
   }
  };
 }
+void S47BeginRadioWomanConversationContract(AS47Web* Web);
+
 void S47BeginRadioWomanContract(AS47Web* Web)
 {
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanConversation"))){S47BeginRadioWomanConversationContract(Web);return;}
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47RadioWomanContract")))return;
  FString UserDir,Evening;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);
  bool Conflict=false;for(const TCHAR* P:{TEXT("S47ProductionViews"),TEXT("S47FarmAccessContract"),TEXT("S47CalicheHomesContract"),TEXT("S47MotelV2Route"),TEXT("S47Title"),TEXT("S47SmokeTest"),TEXT("S47HorrorArrival"),TEXT("S47HorrorContract")})Conflict|=FParse::Param(FCommandLine::Get(),P);
