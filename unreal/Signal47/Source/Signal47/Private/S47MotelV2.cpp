@@ -308,6 +308,7 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
  }
  if(W)
  {
+  {
   const auto* N=W->Node(770);const auto* Parent=W->Node(767);auto* C=CourtLightPools.Get();auto* Material=CourtLightPoolMaterial.Get();
   Check(N&&C&&N->Comp.Get()==C&&N->Geo==530&&N->Parent==767&&!N->bInstanced&&N->Mats.Num()==1&&N->Mats[0]==351
    &&Parent&&Parent->Name==TEXT("dress/court")&&Parent->Comp.IsValid()&&C->GetAttachParent()==Parent->Comp.Get(),TEXT("original court light-pool component identity"));
@@ -315,6 +316,7 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
    &&Material&&C->GetMaterial(0)==Material&&Material->GetBlendMode()==BLEND_Additive
    &&C->GetRelativeTransform().Equals(CourtLightPoolRelativeTransform,.0001),TEXT("original court light-pool mesh, material and transform preserved"));
   Check(C&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("additive court light pools must remain NoCollision"));
+  }
   for(const int32 I:RetiredNamedRoots)Check(!W->IsVisible(I),FString::Printf(TEXT("superseded reception lamp root%d remains visible"),I));
   for(const auto& Move:MovedInteractions)
   {
