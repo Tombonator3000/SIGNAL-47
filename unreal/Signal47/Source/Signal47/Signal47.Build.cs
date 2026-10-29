@@ -10,7 +10,7 @@ public class Signal47 : ModuleRules
 		if (Target.bBuildEditor)
 		{
 			// HUM-01 private pose conversion is authoring code, absent from the game binary.
-			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "MeshDescription", "StaticMeshDescription", "RawMesh", "AnimationCore", "AssetRegistry" });
+			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "MeshDescription", "StaticMeshDescription", "SkeletalMeshDescription", "RawMesh", "AnimationCore", "AssetRegistry" });
 		}
 		// (Unreal only) where the free models stand, read at run time (S47Props.h)
 		RuntimeDependencies.Add("$(ProjectDir)/Config/Props/*.json", StagedFileType.UFS);
