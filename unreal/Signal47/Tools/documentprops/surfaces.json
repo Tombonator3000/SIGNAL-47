@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "destination": "/Game/Signal47/Art/Documents",
+  "note_nb": "ART-01 første leveranse: Dales skrivebord i Operations. Objektnavn og interaksjons-ID-er er uendret; dokument-ID-ene som åpnes styres fortsatt av S47Office::Use.",
+  "surfaces": [
+    {"object": "office:fieldFolder", "interaction": "office:folder", "opens": "EV_DALE_INDEX (feltark)", "source": "ArtSource/Documents/jpg/01-dale-folder.jpg", "catalog_id": "DALE_FOLDER", "asset": "T_Doc_DaleFolder", "size_m": [0.24, 0.32]},
+    {"object": "office:workingIndex", "interaction": "office:index", "opens": "EV_DALE_INDEX", "source": "ArtSource/Documents/jpg/05-ev-dale-index.jpg", "catalog_id": "EV_DALE_INDEX", "asset": "T_Doc_DaleIndex", "size_m": [0.225, 0.30]},
+    {"object": "office:clippings", "interaction": "office:clippings", "opens": "EV_DALE_CLIPPINGS", "source": "ArtSource/Documents/jpg/06-ev-dale-clippings.jpg", "catalog_id": "EV_DALE_CLIPPINGS", "asset": "T_Doc_DaleClippings", "size_m": [0.255, 0.34]},
+    {"object": "office:foldedNote", "interaction": "office:note", "opens": "EV_DALE_NOTE", "source": "ArtSource/Documents/jpg/08-ev-dale-note.jpg", "catalog_id": "EV_DALE_NOTE", "asset": "T_Doc_DaleNote", "size_m": [0.15, 0.20]},
+    {"object": "office:contactCard", "interaction": "office:contact", "opens": "EV_DALE_CONTACT", "source": "ArtSource/Documents/jpg/07-ev-dale-contact.jpg", "catalog_id": "EV_DALE_CONTACT", "asset": "T_Doc_DaleContact", "size_m": [0.16, 0.12]},
+    {"object": "office:deskForms", "interaction": "office:desk", "opens": "EV_DALE_INDEX (skrivebordet)", "source": "ArtSource/EnvironmentGraphics/jpg/42-service-form.jpg", "catalog_id": "SERVICE_FORM", "asset": "T_Doc_ServiceForm", "size_m": [0.20, 0.30]}
+  ]
+}
