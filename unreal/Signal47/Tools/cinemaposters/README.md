@@ -68,6 +68,8 @@ Neste kjøring er en resume-import R3 med samme editorbinær og ferske rapportst
 
 Alle eksisterende filer i `Content/TownBuildings`, den delte materialmasteren og EnginePlane hashes før/etter. Bindingen beholder et portabelt inventarfingeravtrykk; rapporten beholder hele førinventaret. JPG-ene kontrolleres mot katalogens kildehash og uendret etter import. Ingen beskyttet original lagres. Kildehash, importfilnavn og native materialreadback er ikke en GPU-pikselavlesning av plakatbildet.
 
+Faktisk resumeimport R3 og separat ferskleser R3 fra `33ae8dc9` består med normal exit0 på 12,18 s og 9,13 s. De har 168/169 kontroller og ulike PID-er. Alle fem assets har nøyaktig samme filhasher som etter R2, alle 293 beskyttede originaler er byteidentiske, og aktiv binding er først nå PASS med `fresh_saved_reader=true` og riktig R3-importrapporthash. Ny C++ var uendret siden det beståtte editorbygget fra `a79db0ac`; Python-oppskriften er den korrigerte kilden. Dette er native import-/ferskleseraksept. Runtimebilder, faktisk Closed/Continue/Off og pakket kontroll er fortsatt UNVERIFIED.
+
 ## Runtime-API og bevisgrenser
 
 [FS47CinemaPosters](../../Source/Signal47/Public/S47CinemaPosters.h) har følgende integrasjonspunkter for root:
