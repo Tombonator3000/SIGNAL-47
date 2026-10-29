@@ -25,6 +25,7 @@
 #include "Engine/World.h"
 #include "TextureResource.h"
 #include "RHICommandList.h"
+#include "RHIGPUReadback.h"
 #include "RenderingThread.h"
 #include "Internationalization/Regex.h"
 #include "HAL/FileManager.h"
@@ -47,14 +48,33 @@ namespace
  {
   UStaticMesh* Mesh=C?C->GetStaticMesh().Get():nullptr;
   if(!C||!C->IsVisible()||C->bHiddenInGame||C->GetCollisionEnabled()!=ECollisionEnabled::NoCollision
-   ||!Mesh||!Mesh->bAllowCPUAccess||!Mesh->GetRenderData()||Mesh->GetRenderData()->LODResources.IsEmpty())return false;
-  const auto& L=Mesh->GetRenderData()->LODResources[0];const auto Indices=L.IndexBuffer.GetArrayView();
-  const FVector D=End-Start;double Nearest=2.;
-  for(int32 I=0;I+2<Indices.Num();I+=3)
+   ||!Mesh||!Mesh->GetRenderData()||Mesh->GetRenderData()->LODResources.IsEmpty())return false;
+  const auto& L=Mesh->GetRenderData()->LODResources[0];
+  const uint32 Stride=L.VertexBuffers.PositionVertexBuffer.GetStride(),Count=L.VertexBuffers.PositionVertexBuffer.GetNumVertices();
+  const uint32 IndexCount=L.IndexBuffer.GetNumIndices(),IndexStride=L.IndexBuffer.Is32Bit()?4:2;
+  if(Stride<sizeof(FVector3f)||Count==0||IndexCount==0)return false;
+  TArray<uint8> Vertices,Indices;bool Read=false;
+  // CPU copies are intentionally discarded by normal assets/cook. Read the
+  // retained GPU buffers without changing the asset's CPU-memory policy.
+  ENQUEUE_RENDER_COMMAND(S47MotelPaneReadback)([&](FRHICommandListImmediate& Cmd)
   {
-   const FVector A=C->GetComponentTransform().TransformPosition(FVector(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I])));
-   const FVector B=C->GetComponentTransform().TransformPosition(FVector(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I+1])));
-   const FVector V=C->GetComponentTransform().TransformPosition(FVector(L.VertexBuffers.PositionVertexBuffer.VertexPosition(Indices[I+2])));
+   FRHIGPUBufferReadback V(TEXT("S47PanePositions")),I(TEXT("S47PaneIndices"));
+   if(!L.VertexBuffers.PositionVertexBuffer.VertexBufferRHI||!L.IndexBuffer.IndexBufferRHI)return;
+   V.EnqueueCopy(Cmd,L.VertexBuffers.PositionVertexBuffer.VertexBufferRHI,Stride*Count);
+   I.EnqueueCopy(Cmd,L.IndexBuffer.IndexBufferRHI,IndexStride*IndexCount);Cmd.BlockUntilGPUIdle();
+   if(!V.IsReady()||!I.IsReady())return;
+   const void* VP=V.Lock(Stride*Count);const void* IP=I.Lock(IndexStride*IndexCount);
+   if(VP&&IP){Vertices.SetNumUninitialized(Stride*Count);Indices.SetNumUninitialized(IndexStride*IndexCount);FMemory::Memcpy(Vertices.GetData(),VP,Vertices.Num());FMemory::Memcpy(Indices.GetData(),IP,Indices.Num());Read=true;}
+   if(VP)V.Unlock();if(IP)I.Unlock();
+  });FlushRenderingCommands();
+  if(!Read){UE_LOG(LogS47MotelRoute,Error,TEXT("S47: newspaper native GPU buffer readback not ready"));return false;}
+  auto Vertex=[&](uint32 N){FVector3f V;FMemory::Memcpy(&V,Vertices.GetData()+N*Stride,sizeof(V));return C->GetComponentTransform().TransformPosition(FVector(V));};
+  auto Index=[&](uint32 N){if(IndexStride==4){uint32 I;FMemory::Memcpy(&I,Indices.GetData()+N*4,4);return I;}uint16 I;FMemory::Memcpy(&I,Indices.GetData()+N*2,2);return uint32(I);};
+  const FVector D=End-Start;double Nearest=2.;
+  for(uint32 I=0;I+2<IndexCount;I+=3)
+  {
+   const uint32 IA=Index(I),IB=Index(I+1),IC=Index(I+2);if(IA>=Count||IB>=Count||IC>=Count)return false;
+   const FVector A=Vertex(IA),B=Vertex(IB),V=Vertex(IC);
    const FVector E1=B-A,E2=V-A,H=FVector::CrossProduct(D,E2);const double Det=FVector::DotProduct(E1,H);if(FMath::Abs(Det)<1e-9)continue;
    const FVector S=Start-A;const double U=FVector::DotProduct(S,H)/Det;if(U<0||U>1)continue;
    const FVector Q=FVector::CrossProduct(S,E1);const double VV=FVector::DotProduct(D,Q)/Det;if(VV<0||U+VV>1)continue;
