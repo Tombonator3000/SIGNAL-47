@@ -35,7 +35,7 @@
 struct FS47SC09Test
 {
  US47Chapter3* C = nullptr;
- bool bDone = false, bTravelFixture = false, bWasDriving = false;
+ bool bDone = false, bTravelFixture = false, bWasDriving = false, bAimed = false;
  int32 Stage = 0, Checks = 0, Loads = 0, Candidate = 0;
  double T = 0, Since = 3, OdoStart = 0, OutMetres = 0, BackMetres = 0;
  FString Root, PendingItem;
@@ -93,7 +93,7 @@ struct FS47SC09Test
    if (!M->Player->Walkable(X,Z)) continue;
    if (C->Area()==TEXT("station01") && Hut.Contains(At.X,At.Z)!=Hut.Contains(X,Z)) continue;
    if (Legal++ != Candidate) continue;
-   M->Player->Place(X,Z,0); PendingItem=Id;
+   M->Player->Place(X,Z,0); PendingItem=Id;bAimed=false;
    UE_LOG(LogTemp,Display,TEXT("S47: sc09 standing-position API fixture %s at %.3f,%.3f"),*Id,X,Z);
    return true;
   }
@@ -101,16 +101,24 @@ struct FS47SC09Test
  }
  bool Use()
  {
-  auto* M=Main(); const FVector At=Target(PendingItem); Aim(At);
-  const FString Picked=M->Inter->Pick(M->Player->EyeUE(),(S47Three::ToUE(At)-M->Player->EyeUE()).GetSafeNormal());
+  auto* M=Main(); const FVector At=Target(PendingItem);
+  const FVector Eye=M->Player->EyeUE(),Forward=M->Player->ForwardUE(),End=S47Three::ToUE(At);
+  const FString Picked=M->Inter->Pick(Eye,Forward),Focused=M->Inter->Update(Eye,Forward);
   auto E=S47J::New(); S47J::Set(E,TEXT("item"),PendingItem); S47J::Set(E,TEXT("picked"),Picked);
   S47J::Set(E,TEXT("standThree"),TArray<double>{M->Player->Pos.X,M->Player->Pos.Y,M->Player->Pos.Z}); Events.Add(MakeShared<FJsonValueObject>(E));
-  FHitResult Hit; const FVector Eye=M->Player->EyeUE(), End=S47Three::ToUE(At);
-  const bool Obstructed=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Eye,End,ECC_Visibility)
-   && Hit.Distance < FVector::Dist(Eye,End)-35.;
+  const auto* Interaction=M->Inter->Get(PendingItem);FS47Obj TargetObject=Interaction?Interaction->Object:FS47Obj();
+  if(!TargetObject)if(const auto* Item=M->Web->Item(PendingItem))TargetObject=M->Web->ObjAt(Item->Node);
+  FHitResult Hit;
+  const bool HasHit=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Eye,End,ECC_Visibility);
+  const bool HitTarget=HasHit&&TargetObject&&M->Web->NodeOf(Hit.GetComponent())==TargetObject.I;
+  // The transit's own large query proxy is a valid target surface, not a wall
+  // hiding it. Independent opaque geometry still rejects the sight line.
+  const bool Obstructed=HasHit&&!HitTarget&&Hit.Distance<FVector::Dist(Eye,End)-35.;
   S47J::Set(E,TEXT("opaqueObstruction"),Obstructed);
+  S47J::Set(E,TEXT("visibilityHitIsTarget"),HitTarget);S47J::Set(E,TEXT("focused"),Focused);
+  S47J::Set(E,TEXT("cameraForwardDotTarget"),FVector::DotProduct(Forward,(End-Eye).GetSafeNormal()));
   S47J::Set(E,TEXT("visibilityHit"),Hit.GetComponent()?Hit.GetComponent()->GetPathName():FString());
-  if(Picked!=PendingItem||Obstructed)
+  if(Picked!=PendingItem||Focused!=PendingItem||Obstructed||FVector::DotProduct(Forward,(End-Eye).GetSafeNormal())<.995)
   { UE_LOG(LogTemp,Display,TEXT("S47: sc09 stand candidate %d to %s picked '%s'; obstruction=%d"),Candidate,*PendingItem,*Picked,Obstructed); return false; }
   if (!Check(bool(M->Player->OnUse),TEXT("actual aimed unobstructed interaction ray: ")+PendingItem)) return false;
   M->Player->OnUse(Picked); return true;
@@ -120,6 +128,7 @@ struct FS47SC09Test
   if (Stage==Start) { if (Stand(Id)) Next(Start+1); return true; }
   if (Stage==Start+1)
   {
+   if(!bAimed){Aim(Target(PendingItem));bAimed=true;Since=T+.15;return true;}
    if (Use()) {Candidate=0;if (Close) Main()->UI->Close(); Next(Then);}
    else if (!bDone) {++Candidate;Next(Start,.1);}
    return true;
