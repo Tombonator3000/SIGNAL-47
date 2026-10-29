@@ -87,7 +87,11 @@ TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
   const int32 I=W->AdoptNode(Comp,R.Parent,TEXT("town-production:")+R.Name);F->Parts.Add(Comp);F->Nodes.Add(I);
   for(int32 K=0;K<Comp->GetNumMaterials();++K)
   {
-   const FString Name=Comp->GetMaterial(K)->GetName();if(!Name.EndsWith(TEXT("Glow")))continue;
+   // TB1 names every emissive slot *Glow; TB2 also has bulbs, neon, lenses and lit glass.
+   // Gate every nonzero emissive slot by the same family/clock rule so closed buildings stay dark.
+   UMaterialInterface* Mat=Comp->GetMaterial(K);FLinearColor Emissive=FLinearColor::Black;
+   const bool Lit=Mat&&Mat->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("EmissiveFactor")),Emissive)&&(Emissive.R+Emissive.G+Emissive.B)>0;
+   if(!Mat||(!Mat->GetName().EndsWith(TEXT("Glow"))&&!Lit))continue;
    if(auto* Mid=Comp->CreateDynamicMaterialInstance(K)){const FLinearColor Base=Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor"));F->Glows.Add({Mid,R.Family,Base});}
   }
  }
