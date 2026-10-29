@@ -10,7 +10,7 @@
   "sourceGeometrySha256": {
     "geo_008.glb": "0e87d2acf6bbe9044304423d096ea75f7c731dd1af15c545b2d79691e5e2bfee"
   },
-  "buildingPlanSha256": "8c73e01b668ae607eac141db4ed598f6341acf686ad9fdf8008d5479764ace60",
+  "buildingPlanSha256": "cb2d7c3b66465568095d14a8f4f27425751f72c6f29d650f718397e126fd9975",
   "composedGasTrim": {
     "group": "world.town.st",
     "keep": [
@@ -163,6 +163,16 @@
         2093.95,
         2097.05
       ]
+    ],
+    "signal": [
+      [
+        -8.75,
+        9.75,
+        9.9,
+        11.95,
+        1980.8,
+        2019.2
+      ]
     ]
   },
   "meshes": {
@@ -187,7 +197,8 @@
         "Laundry": 144,
         "Feed": 0,
         "Cinema": 168,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 128,
       "radioRemoved": 72,
@@ -215,8 +226,8 @@
         468,
         512
       ],
-      "resultTris": 228,
-      "removed": 284,
+      "resultTris": 132,
+      "removed": 380,
       "removedBy": {
         "gas": 44,
         "radio": 60,
@@ -225,7 +236,8 @@
         "Laundry": 12,
         "Feed": 12,
         "Cinema": 24,
-        "Church": 12
+        "Church": 12,
+        "signal": 96
       },
       "gasRemoved": 44,
       "radioRemoved": 60,
@@ -239,7 +251,7 @@
       "sourceMaterialIds": [
         641
       ],
-      "retainedIndexSha256": "659fceb9ed1d209dd50b2b3233b8836681f030e0ef1713d6fe19f595bc9c85ac",
+      "retainedIndexSha256": "593b8288cec2f4bcf2afbdfadb550c3d7f97e724f752debb1cdad62305618b43",
       "originalIndexSha256": "57c372795f4a7d1f49185aa616ab07e32b7c75f35222d5a0996b9cbcd3f92ff4"
     },
     "g1001": {
@@ -263,7 +275,8 @@
         "Laundry": 0,
         "Feed": 2,
         "Cinema": 12,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 2,
       "radioRemoved": 0,
@@ -300,7 +313,8 @@
         "Laundry": 0,
         "Feed": 12,
         "Cinema": 0,
-        "Church": 26
+        "Church": 26,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -329,8 +343,8 @@
         156,
         180
       ],
-      "resultTris": 60,
-      "removed": 120,
+      "resultTris": 48,
+      "removed": 132,
       "removedBy": {
         "gas": 24,
         "radio": 12,
@@ -339,7 +353,8 @@
         "Laundry": 12,
         "Feed": 12,
         "Cinema": 12,
-        "Church": 24
+        "Church": 24,
+        "signal": 12
       },
       "gasRemoved": 24,
       "radioRemoved": 12,
@@ -353,7 +368,7 @@
       "sourceMaterialIds": [
         643
       ],
-      "retainedIndexSha256": "378b6f9e84439579cfc0eefbe947063e938b74e9aa0dc32bd8312754ee828ce9",
+      "retainedIndexSha256": "e1c0fdb4bb9722b29caf3ca511cd9e6ac6c739e9f6a4e0341ca91065b35ab2d4",
       "originalIndexSha256": "11deda148d8fd05aaf9d7bdc704d3aa9f04d72908652cdfd3fa0cd4f64dd6cc1"
     },
     "g1004": {
@@ -375,7 +390,8 @@
         "Laundry": 15,
         "Feed": 48,
         "Cinema": 40,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -412,7 +428,8 @@
         "Laundry": 0,
         "Feed": 0,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 120,
       "radioRemoved": 0,
@@ -451,7 +468,8 @@
         "Laundry": 24,
         "Feed": 24,
         "Cinema": 12,
-        "Church": 24
+        "Church": 24,
+        "signal": 0
       },
       "gasRemoved": 50,
       "radioRemoved": 24,
@@ -488,7 +506,8 @@
         "Laundry": 2,
         "Feed": 0,
         "Cinema": 6,
-        "Church": 4
+        "Church": 4,
+        "signal": 0
       },
       "gasRemoved": 2,
       "radioRemoved": 0,
@@ -525,7 +544,8 @@
         "Laundry": 0,
         "Feed": 0,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 48,
       "radioRemoved": 0,
@@ -562,7 +582,8 @@
         "Laundry": 0,
         "Feed": 60,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 2,
       "radioRemoved": 0,
@@ -599,7 +620,8 @@
         "Laundry": 0,
         "Feed": 50,
         "Cinema": 12,
-        "Church": 144
+        "Church": 144,
+        "signal": 0
       },
       "gasRemoved": 48,
       "radioRemoved": 2,
@@ -634,7 +656,8 @@
         "Laundry": 0,
         "Feed": 0,
         "Cinema": 144,
-        "Church": 72
+        "Church": 72,
+        "signal": 0
       },
       "gasRemoved": 36,
       "radioRemoved": 0,
@@ -669,7 +692,8 @@
         "Laundry": 0,
         "Feed": 0,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 24,
       "radioRemoved": 0,
@@ -704,7 +728,8 @@
         "Laundry": 0,
         "Feed": 60,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -741,7 +766,8 @@
         "Laundry": 60,
         "Feed": 0,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 60,
@@ -775,7 +801,8 @@
         "Laundry": 0,
         "Feed": 0,
         "Cinema": 72,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -809,7 +836,8 @@
         "Laundry": 0,
         "Feed": 0,
         "Cinema": 0,
-        "Church": 40
+        "Church": 40,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -843,7 +871,8 @@
         "Laundry": 1131,
         "Feed": 2231,
         "Cinema": 1491,
-        "Church": 686
+        "Church": 686,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -879,7 +908,8 @@
         "Laundry": 222,
         "Feed": 274,
         "Cinema": 310,
-        "Church": 198
+        "Church": 198,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -915,7 +945,8 @@
         "Laundry": 0,
         "Feed": 4,
         "Cinema": 0,
-        "Church": 0
+        "Church": 0,
+        "signal": 0
       },
       "gasRemoved": 0,
       "radioRemoved": 0,
@@ -937,7 +968,7 @@
     "trim_geo_008.glb"
   ],
   "fileSha256": {
-    "trim_geo_008.glb": "f3784382835bb09f54b2ff2d1005bec7d835505dcd2b30c029504513c09fdce5"
+    "trim_geo_008.glb": "259a05df39b270e06ba897b85c534a1a56473e6c45a786f7b1cb98d21571d6a1"
   },
   "totalsRemovedBy": {
     "gas": 528,
@@ -947,7 +978,8 @@
     "Laundry": 1622,
     "Feed": 2789,
     "Cinema": 2303,
-    "Church": 1230
+    "Church": 1230,
+    "signal": 108
   },
   "protectedHandles": {
     "world.room6.objs.door": {
@@ -1292,7 +1324,8 @@
     "all gameplay proxies",
     "all runtime panel objects and state",
     "church street letterboard and light",
-    "sheriff flagpole"
+    "sheriff flagpole",
+    "crossing wooden poles (g1002) and the blink panel/light/glow state"
   ],
   "sourceVerification": {
     "status": "PASS",

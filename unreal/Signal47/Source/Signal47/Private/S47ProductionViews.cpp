@@ -76,15 +76,19 @@ void AS47Web::BeginProductionViews()
   {TEXT("motel-pool-gate"),TEXT("saro"),{-53.2,0,680.6},{-59,-2.1,674}},
   {TEXT("motel-pool-north"),TEXT("saro"),{-57.8,0,666.4},{-59,-2.1,674.5}},
   {TEXT("motel-reception-tv"),TEXT("saro"),{-45.2,0,675.8},{-47.77,-.37,676.85}},
-  {TEXT("motel-arrival"),TEXT("saro"),{-30.8,0,669.7},{-45.1,-.4,683}}
+  {TEXT("motel-arrival"),TEXT("saro"),{-30.8,0,669.7},{-45.1,-.4,683}},
+  // ENV-03: the crossing's flasher, a long-lens look up from the shoulder and the whole span.
+  {TEXT("signal-close"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}},
+  {TEXT("signal-span"),TEXT("diner"),{8012,0,1995},{8000.5,10.6,2002}},
+  {TEXT("signal-close-later"),TEXT("diner"),{8004.2,0,2006},{8000.5,10.85,2000}}
  };
- struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
+ struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
  const TWeakObjectPtr<AS47Web> Self=this;FTimerHandle Timer;
  GetWorldTimerManager().SetTimer(Timer,[Self,State]{
   if(State->Done)return;AS47Web* W=Self.Get();auto* M=W?US47Main::Get(W):nullptr;
   if(!M||!M->Flow||!M->Story||!M->World||!M->Player)return;
-  auto RestoreFixtureFloor=[State,M]{if(State->bFloorOverride){M->Player->Floor=MoveTemp(State->PreviousFloor);State->bFloorOverride=false;}};
+  auto RestoreFixtureFloor=[State,M]{if(State->bFloorOverride){M->Player->Floor=MoveTemp(State->PreviousFloor);State->bFloorOverride=false;}if(State->PrevFov>0){M->Player->Fov=State->PrevFov;State->PrevFov=-1;}};
   auto Fail=[State,RestoreFixtureFloor](const TCHAR* Why){RestoreFixtureFloor();State->Done=true;UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);};
   if(!State->PendingFile.IsEmpty())
   {
@@ -102,7 +106,7 @@ void AS47Web::BeginProductionViews()
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
    if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
-    ||(State->Suite==TEXT("motel")&&I!=9&&I!=10&&I<19)||(State->Suite==TEXT("room6")&&(I<11||I>12))
+    ||(State->Suite==TEXT("motel")&&I!=9&&I!=10&&(I<19||I>22))||(State->Suite==TEXT("signal")&&I<23)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
@@ -124,6 +128,7 @@ void AS47Web::BeginProductionViews()
    }
    static const double Clock[]={-12.*3600,-5.5*3600,-2.*3600};
    if(LightChanged){M->Story->SetClock(Clock[Light]);State->LastLight=Light;}
+   if(I>=23){State->PrevFov=M->Player->Fov;M->Player->Fov=I==24?55.f:22.f;}
    M->Player->Place(V.Foot.X,V.Foot.Z,0);
    if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture must stand on authored floor0"));return;}
    const FVector Eye(V.Foot.X,M->Player->FloorY+M->Player->Eye,V.Foot.Z),D=V.Target-Eye;
@@ -140,7 +145,7 @@ void AS47Web::BeginProductionViews()
    for(const auto& C:W->FieldModelComponents)Ok&=C.IsValid();
    for(const auto& C:W->FieldModelRetired)Ok&=C.IsValid()&&C->bHiddenInGame;
    Lines.Add(FString::Printf(TEXT("field kit %s: %d parts, %d live bindings, %d old leaves hidden"),Ok?TEXT("PASS"):TEXT("FAIL"),W->FieldModelComponents.Num(),W->FieldModelBindings.Num(),W->FieldModelRetired.Num())); }
-  if(I==9||I==10||I==11||I==12||I>=19) Ok&=W->MotelV2&&W->MotelV2->Audit(Lines);
+  if(I==9||I==10||I==11||I==12||(I>=19&&I<23)) Ok&=W->MotelV2&&W->MotelV2->Audit(Lines);
   for(const auto& Line:Lines)UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production %s"),*Line);
   if(!Ok){Fail(TEXT("native installation audit"));return;}
   static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};const FString Name=FString(Lights[Light])+TEXT("-")+V.Name,File=State->Dir/(Name+TEXT(".png"));

@@ -1,0 +1,157 @@
+[
+  {
+    "name": "M_TownSignal_Paint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.6,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.25,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_TownSignal_Paint_base.png",
+      "roughness": "textures/M_TownSignal_Paint_rough.png",
+      "normal": "textures/M_TownSignal_Paint_normal.png"
+    }
+  },
+  {
+    "name": "M_TownSignal_Dark",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.82,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.15,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_TownSignal_Dark_base.png",
+      "roughness": "textures/M_TownSignal_Dark_rough.png",
+      "normal": "textures/M_TownSignal_Dark_normal.png"
+    }
+  },
+  {
+    "name": "M_TownSignal_Galv",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.85,
+    "roughness": 0.45,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.18,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_TownSignal_Galv_base.png",
+      "roughness": "textures/M_TownSignal_Galv_rough.png",
+      "normal": "textures/M_TownSignal_Galv_normal.png"
+    }
+  },
+  {
+    "name": "M_TownSignal_Cable",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.8,
+    "specular": 0.35,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.2,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_TownSignal_Cable_base.png",
+      "roughness": "textures/M_TownSignal_Cable_rough.png",
+      "normal": "textures/M_TownSignal_Cable_normal.png"
+    }
+  },
+  {
+    "name": "M_TownSignal_Lens",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0.0,
+    "roughness": 0.12,
+    "specular": 0.5,
+    "emission": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "emission_strength": 0,
+    "normal_convention": "DirectX",
+    "normal_strength": 0.1,
+    "texture_tint_linear": [
+      1,
+      1,
+      1
+    ],
+    "textures": {
+      "base_color": "textures/M_TownSignal_Lens_base.png",
+      "roughness": "textures/M_TownSignal_Lens_rough.png",
+      "normal": "textures/M_TownSignal_Lens_normal.png"
+    }
+  }
+]

@@ -1,0 +1,184 @@
+{
+  "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
+  "units": "metres",
+  "mapping": "Three (x,y,z) -> Blender (x,-z,y) -> UE centimetres (x,z,y)*100",
+  "destination": "/Game/TownSignal",
+  "originality": "Original metric bpy geometry and procedural PBR textures. No third-party imagery or meshes.",
+  "pivot_town_three_m": [
+    0.5,
+    11.459,
+    2000.0
+  ],
+  "pivot_world_three_m": [
+    8000.5,
+    11.459,
+    2000.0
+  ],
+  "wire_axis_three": [
+    0.43195932168591594,
+    0.0,
+    -0.9018930892343301
+  ],
+  "swing_note": "Head rotates about the pivot; span is fixed. Light pool (0,-1.05,0) and lens glows (0,-0.63,0) of the old crossing keep their pivot-relative places.",
+  "lens_material": "M_TownSignal_Lens",
+  "lens_runtime_parameters": {
+    "EmissiveFactor": "linear RGB, zero when off, multiplies the amber texture"
+  },
+  "lenses": [
+    {
+      "center_three_m": [
+        0.255,
+        -0.63,
+        0.0
+      ],
+      "normal_three": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "center_three_m": [
+        -0.255,
+        -0.63,
+        0.0
+      ],
+      "normal_three": [
+        -1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "center_three_m": [
+        0.0,
+        -0.63,
+        0.255
+      ],
+      "normal_three": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "center_three_m": [
+        0.0,
+        -0.63,
+        -0.255
+      ],
+      "normal_three": [
+        0.0,
+        0.0,
+        -1.0
+      ]
+    }
+  ],
+  "light_pool_three_m": [
+    0,
+    -1.05,
+    0
+  ],
+  "glow_three_m": [
+    0,
+    -0.63,
+    0
+  ],
+  "parts": {
+    "SM_Caliche_Signal_Head": {
+      "bounds_local_m": [
+        [
+          -0.4698144793510437,
+          -0.4698144793510437,
+          -0.9315000176429749
+        ],
+        [
+          0.4698144793510437,
+          0.4698144793510437,
+          0.014151499606668949
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -0.4698144793510437,
+          -0.9315000176429749,
+          -0.4698144793510437
+        ],
+        [
+          0.4698144793510437,
+          0.014151499606668949,
+          0.4698144793510437
+        ]
+      ],
+      "materials": [
+        "M_TownSignal_Galv",
+        "M_TownSignal_Cable",
+        "M_TownSignal_Paint",
+        "M_TownSignal_Dark",
+        "M_TownSignal_Lens"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "lod_triangles": [
+        15716,
+        8564,
+        3360
+      ],
+      "editable_components": [
+        93,
+        93,
+        55
+      ]
+    },
+    "SM_Caliche_Signal_Span": {
+      "bounds_local_m": [
+        [
+          -9.264599800109863,
+          -19.167604446411133,
+          -7.455624580383301
+        ],
+        [
+          9.241584777832031,
+          19.167604446411133,
+          0.38499999046325684
+        ]
+      ],
+      "bounds_three_m": [
+        [
+          -9.264599800109863,
+          -7.455624580383301,
+          -19.167604446411133
+        ],
+        [
+          9.241584777832031,
+          0.38499999046325684,
+          19.167604446411133
+        ]
+      ],
+      "materials": [
+        "M_TownSignal_Galv",
+        "M_TownSignal_Cable",
+        "M_TownSignal_Dark"
+      ],
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "lod_triangles": [
+        13172,
+        6788,
+        1448
+      ],
+      "editable_components": [
+        57,
+        57,
+        24
+      ]
+    }
+  },
+  "total_LOD0_triangles": 28888
+}
