@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -16,7 +17,8 @@ HERE = Path(__file__).resolve().parent
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(HERE))
 import geometry as G
-import shoulder_caps
+import coat_yoke
+import failure_scene
 
 PRIVATE_ROOT = Path.home()/'scratch-bm/Signal47-mannequins-20261029/private'
 
@@ -137,7 +139,8 @@ def build(args, cfg):
               'input_body_fbx': str(source), 'input_body_sha256': before,
               'recipe_sha256': sha(__file__), 'geometry_sha256': sha(HERE/'geometry.py'),
               'clothing_contract_sha256': sha(HERE/'clothing.json'),
-              'shoulder_recipe_sha256': sha(HERE/'shoulder_caps.py'), 'parts': [],
+              'shoulder_recipe_sha256': sha(HERE/'coat_yoke.py'), 'pid': os.getpid(), 'parts': [],
+              'producer_files': {n: coat_yoke.file_row(HERE/n) for n in ('build_clothes.py','geometry.py','clothing.json','coat_yoke.py','surface_cpu.py','failure_scene.py','verify_source.py','yoke-inputs.json','own-yoke-surface-recipe.json')},
               'limits': ['Bare klær i kildens restpose; ingen sittende mannequinaksept',
                          'Nativebaker eier kropp/klær/ansikt og autoritativ sittepose',
                          'Ingen import-, native LOD-, proxy-, radio-, natt- eller diskkontroll her']}
@@ -162,7 +165,7 @@ def build(args, cfg):
             'bone_count': len(reference['bones']), 'armature_object_name': arm.name,
             'expected_blender_bones': 341, 'separate_native_bones': 342,
             'scope': 'Actual Blender source reference, not the native import/Body reference'}
-        if (reference_sha != cfg['shoulder_caps']['source_skeleton_sha256']
+        if (reference_sha != cfg['coat_yoke']['source_skeleton_sha256']
                 or len(reference['bones']) != 341 or reference['object_name'] != 'root'):
             raise RuntimeError('R12 krever eksakt målt Blender-restskjelett: 341 bein, object root, hash9b1eb; native342 er separat')
         arm.data.pose_position = 'REST'
@@ -354,21 +357,20 @@ def build(args, cfg):
             upper = mesh('Shoe_upper_'+side, G.loft(upper_rows, 48, cap=True, exponent=.5), 'M_RW_Shoe')
             rigid[sole.name] = rigid[upper.name] = 'foot_'+side
 
-        # R12 tilføyer bare to korte, målte skulderkapper. Alle opprinnelige
-        # deler må være nøyaktig uendret før felles original vektoverføring.
+        # R4 changes only own upper Coat_body. All actual licensed input,
+        # lower coat outside its declared fan, and16 other parts stay fixed.
         body_snapshot = clothes_snapshot(body)
         preserved_parts = {ob.name: clothes_snapshot(ob) for ob in parts}
-        shoulder_caps.build(body, coat, sleeve_profiles, list(parts), joint, mesh, cfg, report)
-        for ob in parts:
-            if ob.name in preserved_parts and clothes_snapshot(ob) != preserved_parts[ob.name]:
-                raise RuntimeError('Skuldertillegg endret opprinnelig klesdel: '+ob.name)
-        if clothes_snapshot(body) != body_snapshot:
-            raise RuntimeError('Skuldermåling endret original kroppspayload')
+        yoke_values = coat_yoke.apply(body, arm, coat, parts, cfg, report, clothes_snapshot, skeleton)
+        if clothes_snapshot(body) != body_snapshot or skeleton(arm) != reference:
+            raise RuntimeError('Lokal frakkretting endret original Body/restskjelett')
         report['source_body_payload_preserved'] = True
-        report['existing_parts_preserved_before_weight_transfer'] = preserved_parts
-        report['shoulder_caps']['preserved_original_parts'] = len(preserved_parts)
-        if skeleton(arm) != reference:
-            raise RuntimeError('Skuldertillegg endret originalt restskjelett')
+        report['source_body_object_name'] = body.name
+        for part in report['parts']:
+            if part['name'] == coat.name:
+                part['original_constructed_counts'] = {k:part[k] for k in ('vertices','triangles')}
+                coat.data.calc_loop_triangles()
+                part.update(vertices=len(coat.data.vertices), triangles=len(coat.data.loop_triangles))
 
         # Bare vekter overføres; armaturets navn, hierarki og referansematriser endres aldri.
         for ob in parts:
@@ -397,6 +399,7 @@ def build(args, cfg):
             ob.parent = arm
             ob.matrix_world = matrix
             ob.select_set(False)
+        coat_yoke.tag_parts(parts, report)
         bpy.ops.object.select_all(action='DESELECT')
         for ob in parts:
             ob.select_set(True)
@@ -451,6 +454,8 @@ def build(args, cfg):
             raise RuntimeError('Lagring/reåpning endret materialrekkefølgen')
         if clothes_snapshot(reopened) != snapshot:
             raise RuntimeError('Lagring/reåpning endret posisjoner, UV, vekter, flater eller deformasjonbinding')
+        report['saved_reopened_fit'] = {}
+        coat_yoke.fit_actual(coat_yoke.recover_parts(reopened, report), yoke_values, report['saved_reopened_fit'])
         if sha(source) != before:
             raise RuntimeError('Privat original-FBX ble endret')
         report.update(status='REST_CLOTHES_EXPORTED_NOT_ACCEPTED', blend_reopened=True,
@@ -460,6 +465,10 @@ def build(args, cfg):
         print('RADIO_WOMAN_CLOTHES_REST_EXPORTED', str(report_path))
     except Exception as error:
         report.update(status='FAIL', error=str(error), input_body_sha256_after=sha(source))
+        try:
+            report['failure_capture'] = failure_scene.capture(bpy, output, report, clothes_snapshot, skeleton, locals())
+        except Exception as capture_error:
+            report['failure_capture_error'] = repr(capture_error)
         report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n')
         raise
 
@@ -469,10 +478,15 @@ def main():
     parser.add_argument('body_fbx', type=Path, nargs='?')
     parser.add_argument('output', type=Path, nargs='?')
     parser.add_argument('--check-source', action='store_true')
+    parser.add_argument('--check-inputs', action='store_true')
     args = parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else None)
     cfg = config()
+    if args.check_inputs:
+        coat_yoke.inputs_checked(cfg)
+        print('R4_ACTUAL_SKIN_INPUTS_PASS_SOURCE_FIT_UNVERIFIED')
+        return
     if args.check_source:
-        print('RADIO_WOMAN_CLOTHES_SOURCE_PASS', json.dumps(G.check_geometry(), sort_keys=True))
+        print('RADIO_WOMAN_CLOTHES_LIGHT_GEOMETRY_ONLY', json.dumps(G.check_geometry(), sort_keys=True))
         return
     if args.body_fbx is None or args.output is None:
         parser.error('Oppgi privat body_fbx og ny privat outputmappe')

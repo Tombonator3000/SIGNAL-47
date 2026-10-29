@@ -9,7 +9,7 @@
     "up": "+Z",
     "front": "-Y",
     "pose": "Uendret importert restpose. Nativebaker eier eneste sittende pose.",
-    "geometry": "Egne konstruerte frakk-/bukse-/skoflater. Bare skalare kroppsmål og deformasjonvekter overføres.",
+    "geometry": "Egne konstruerte frakk-/bukse-/skoflater. Øvre egen Coat_body formes mot faktisk privat Body+Face-resthud; ingen hudtriangler kopieres. Originale deformasjonvekter overføres.",
     "cloth_simulation": false,
     "winter_coat": "Dempet skiferblå ullfrakk til midt på låret, enkel krage, mørke knapper, lommer og åpen nedre front",
     "trousers": "Løse mørkebrune bukser med egne hofte- og beinpaneler",
@@ -113,26 +113,17 @@
     "Faktiske restposebounds og rigg-/vekt-/outputhasher skrives først av Blender-kjøringen til privat clothing-report.json",
     "Sittende kontakt, radio/hender, native LOD, synlighet/proxy, nattregel, disk/title/Continue og pakket spill gjenstår"
   ],
-  "shoulder_caps": {
-    "policy": "measured-upper-shoulder-overlap-v1",
+  "coat_yoke": {
+    "policy": "actual-combined-skin-local-coat-yoke-v1",
     "source_skeleton_sha256": "9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113",
-    "rows": 5,
-    "proximal_extensions_m": [
-      0.015,
-      0.025,
-      0.035,
-      0.045,
-      0.055,
-      0.065,
-      0.075,
-      0.085,
-      0.095
-    ],
-    "skin_clearance_m": 0.025,
-    "seam_lift_m": 0.0015,
-    "scope": "Kun to nye skuldre. Originalfrakk, ermer, rigg, restpose, skala, materialer, bukser og sko bevares. Faktiske BVH-mål kreves. Ingen sittende eller nativeaksept.",
-    "ring_vertices": 40,
-    "upper_arc_intervals": 24,
-    "arc_policy": "Actual Solidify outer-ring maximum worldZ; 24 consecutive original ring intervals modulo40, independently per side"
+    "minimum_clearance_m": 0.006,
+    "outer_target_m": 0.012,
+    "inputs": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/clothing-shoulder-r12-r4/proposed/yoke-inputs.json",
+      "bytes": 2520,
+      "sha256": "97c5474b8cab5cab23ba233ba17b66e3a3616b182fd22f6e48d918e1b100f79d",
+      "sha1": "99c3877b95ca2ef419d9dbb8075443b7f28ed76f"
+    },
+    "scope": "Only upper own Coat_body plus declared lower normal/inner boundary fan,16 original parts fixed. Actual full Body+Face skin/frame. New topology upper bands only. Finite samples; no continuous-surface, seated/native or appearance acceptance."
   }
 }

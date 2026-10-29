@@ -1,8 +1,8 @@
 # Statiske MetaHuman-figurer, HUM-01
 
-**Status:** R9 privat native authoring PASS; R10 målt sittepose og runtimeaksept UNVERIFIED. **Gjelder:** privat forfatting av én sittende radio-kvinne i UE 5.8.4. **Sist kontrollert:** 29. oktober 2026.
+**Status:** R11 privat native og editor kontakt/funksjon PASS; skulderutseende FAIL. R4-kilden består faktisk saved/reopen og separat fersk leser. Ny R12-kildebinding er integrert; native/pakke er UNVERIFIED. **Gjelder:** privat forfatting av én sittende radio-kvinne i UE 5.8.4. **Sist kontrollert:** 29. oktober 2026.
 
-Dette er bakeløypen, ikke ferdig HUM-01 eller runtime-integrasjon. Radiokvinnens eksisterende håndtak, radio, proxy, dialog, tidsplan og lagring eies av den senere integrasjonen. Servitrisens animasjon og assets beholdes. Ingen mannlig prototype, ny casting, nedlasting eller Creator-assembly inngår.
+Dette er bakeløypen for HUM-01. R11-runtimeintegrasjonen har separat [kontakt-/funksjonsbevis](../../../Evidence/RADIO-WOMAN-2026-10-29/r11-editor-functional-receipt.json), men utseendeavslag holder leveransen åpen. Radiokvinnens håndtak, radio, proxy, dialog, tidsplan og lagring har fortsatt egne runtimekontroller. Servitrisens animasjon og assets beholdes. Ingen mannlig prototype, ny casting, nedlasting eller Creator-assembly inngår.
 
 `radio_woman.json` beskriver én autoritativ native sittepose. Referanseskjelettet bestemmer beinbasis og faktisk kroppsmål. Beinets startpose beholder R9s lår med 3 graders fall, kneutslag, nedoverrettede legger og flat referanseorientering på føttene. R10 bruker deretter ikke-strekkende TwoBoneIK til de faktisk målte ankelmålene beskrevet nedenfor. Hendene bruker samme eksisterende IK- og håndleddspolicy, med målt høydekompensasjon for setet. Håndleddet beholder faktisk referanselokal transform relativt til den nye underarmen; det beholder ikke en løs verdensrotasjon fra A-posen. Dette er ikke et ferdig radiogrep. Kroppens pose overføres til klær med samme navngitte bein, foreldre og målte referansematriser. Ansiktets felles bein følger kroppen; egne ansiktsgrener beholder faktiske lokale referansetransformer. Rigid hår og bryn bruker samme målte head-delta.
 
@@ -119,3 +119,12 @@ Prosjektbiblioteket ble søkt for MetaHuman/pose/bake og delte materialer. De ge
 
 
 Faktisk fresh R9 fra `74fbb7a4` består import/canonical bind i egen PID, ny NullRHI-poseprobe med 2270 kontroller, RHI-bake med 2564 kontroller, ny RHI-verifikasjon med 89 kontroller og filbinding. Alle fire native prosesser har forskjellige PID-er. Begge faktiske RHI-materialavlesninger er Ready uten default/feil. Den lagrede StaticMesh-en har tre LOD-er med 134803/50172/30412 trekanter og 84656/32597/21446 rendervertices, CPU-retention/RT på, Nanite/kollisjon av. Alle395 førfiler og10 nyeprivatefiler er bevart; original FBX, Blender, Body, Face og Creator er uendret. Dette er privat native authoringaksept, ikke runtime-/utseende- eller pakkeaksept. Råkvitteringer og radio-r9-native-acceptance.json ligger privat.
+
+
+## Gjeldende R12-inngang
+
+Ny [frakkilde](../../../ArtSource/RadioWoman/README.md) former bare øvre egen Coat_body og bevarer de andre 16 delene. Komplett faktisk Body+Face-resthud og native→FBX-ramme er kontrollert. Normalfotavtrykket avledes fra faktiske flyttede/tilførte vertices og orientert retopologi. Finitt flateprøving beholder 6 mm ytre klaring og avviser målt innerpenetrasjon; den er ingen sittende eller kontinuerlig helflateaksept.
+
+[garment_source.py](garment_source.py) krever faktisk kildeproduksjon, separat fersk Blenderleser og korrekt bygget modul før den kan forberede to nye private ClothesR2-assets. Fem R10 MIC-er, clothMaster og Brow gjenbrukes. Vanlig ni-asset-import avviser denne R4-kilden uten den separate ferskrapporten. Deretter gjelder fortsatt canonical bind, full payloadbevaring og egen fersk nativekildeleser.
+
+[run_r12.py](run_r12.py) krever denne faktiske kildebindingen. Bare klærnes asset, private skjelett og bindrapport kan skifte fra den målte R11-jobben; pose, fot-/hånd-IK, FaceCopy, Body/Face/cards og materialer beholdes. BakeR12 skal være ny. READY_FOR_AUTHORING_ONLY er en forberedelsesstatus: probe, RHI-bake, ferskleser, nativekontakt, bilder, funksjonsrute og pakket kontroll må fortsatt bestå før levering. Root kjører alle tunge trinn sekvensielt gjennom guard og felles reservasjon.

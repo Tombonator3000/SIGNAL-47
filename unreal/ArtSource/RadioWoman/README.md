@@ -2,10 +2,11 @@
 
 Dette er HUM-01 sin forfatterkilde for en nøktern 1986-vinterfrakk, løse bukser og lukkede sko. Klærne bygges fra egne ringer og paneler med stofftykkelse, krage, mørke knapper, lommer og skosåler. Servitrisens uniform brukes ikke som bekledning. Frakken har en faktisk åpen nedre front slik at den kan følge lårene i den senere sitteposen.
 
-**Status: Under arbeid, R3-kilden har måleavslag. Sist kontrollert: 29. oktober 2026.** Den opprinnelige kilden har faktisk saved/reopen og R11 har [kontakt-/funksjonsbevis med utseende FAIL](../../Evidence/RADIO-WOMAN-2026-10-29/r11-editor-functional-receipt.json). R3 forsøker å tilføye to målte skulderkapper for å lukke de synlige hudglipene. Ren Python-kontroll er bestått. Faktisk R3 består den eksakte 341-beins Blender-referansen, men frakksømmen avvises før kappeopprettelse. Saved/reopen, nye nativekilder, sittende skulderutseende og pakket runtime er UNVERIFIED.
+**Status: Under arbeid, ny lokal frakkretting har faktisk saved/reopen og separat fersk kildekontroll. Sist kontrollert: 29. oktober 2026.** R11 har [kontakt-/funksjonsbevis med utseende FAIL](../../Evidence/RADIO-WOMAN-2026-10-29/r11-editor-functional-receipt.json) på to skuldergliper. Et separat, lesende [Body/Face-uttak](../../Evidence/RADIO-WOMAN-2026-10-29/rest-surface-frame-r1-receipt.json) har nå bevist komplett hudgrunnlag og faktisk native→FBX-ramme. [Faktisk R4-kilde](../../Evidence/RADIO-WOMAN-2026-10-29/r4-source-r3-receipt.json) består med 23 368 trekanter og 16 bevarte deler. Ny ClothesR2/BakeR12, sittende skulderutseende og pakket runtime er fortsatt UNVERIFIED.
 
+[coat_yoke.py](coat_yoke.py) former øvre egen `Coat_body_open_lower_front` mot den målte, private Body+Face-huden. De øvrige 16 delene beholdes. [Egen ytterflate](own-yoke-surface-recipe.json) har eksplisitt ny halsring og lokal oppdeling; ingen hudtriangler kopieres. Nedre ytre posisjoner/UV og nedre indre posisjoner har avgrensede, eksakte bevaringsområder. Normalvirkningen av nye/flyttede vertices og orienterte flater avledes fra faktisk nabotopologi. Utenfor dette området gjelder en stram numerisk kontroll, med alle rånormaler bevart.
 
-R3 velger øvre bue fra de 40 faktiske ytterringvertexene på hvert erme. Speilet armgrunnlag behandles separat. [shoulder_caps.py](shoulder_caps.py) lager to korte kapper fra faktiske utvendige frakk-/hudstråler og bevarer råquery før avslag. Original kropp, 17 eksisterende klesdeler og hele restskjelettet kontrolleres mot endring. Manglende treff eller fold gir avslag; sittende passform må vurderes etter separat nativebake.
+Ytterstoffmålet er 12 mm og stofftykkelsen 2,5 mm. Faktiske flate-/hudprøver må holde minst 6 mm ytre klaring, og innerstoffet må være uten målt hudpenetrasjon. Prøvene er finitte; de beviser ingen kontinuerlig helflate. [verify_source.py](verify_source.py) åpner den faktisk lagrede kilden i en annen Blenderprosess og gjentar referanse-, payload-, delidentitets- og fitkontroll uten ny eksport eller lagring. De tidligere kappeforsøkene og [shoulder_caps.py](shoulder_caps.py) beholdes som historikk etter faktiske avslag.
 
 ## Privat inndata og utdata
 
@@ -40,18 +41,18 @@ PYTHONDONTWRITEBYTECODE=1 python3 unreal/ArtSource/RadioWoman/build_clothes.py -
 Faktisk forfatting kjøres **bare av root i et ledig reservert tungjobb-vindu**, gjennom eksisterende `HeavyReservation`, `unreal_guard.py require-idle` og `run_owned`. Payloadkommandoen fra worktreeroten er:
 
 ```sh
-/home/tom/.local/opt/blender-5.2.2-linux-x64/blender --background \
+/home/tom/.local/opt/blender-5.2.2-linux-x64/blender --background --factory-startup --threads 1 --python-exit-code 1 \
   --python unreal/ArtSource/RadioWoman/build_clothes.py -- \
   /home/tom/scratch-bm/Signal47-metahuman-20261026/blender/waitress_body.fbx \
-  /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r3
+  /home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r4-r3
 ```
 
-Suksessmarkøren er `RADIO_WOMAN_CLOTHES_REST_EXPORTED`. Skriptet krever faktisk lagret og reåpnet `.blend`, uendret armatur og gyldige vekter/materialspor. Det beviser ikke at FBX importerer identisk i Unreal; det er neste nativeport. Ingen preview-rendering eller installasjon startes av skriptet.
+Velg et ubrukt runnavn; eksemplet viser den aktuelle, private kandidaten. Suksessmarkøren er `RADIO_WOMAN_CLOTHES_REST_EXPORTED`. Skriptet krever faktisk lagret og reåpnet `.blend`, uendret armatur og gyldige vekter/materialspor. Det beviser ikke at FBX importerer identisk i Unreal; det er neste nativeport. Separat fersk leser må også bestå før den dedikerte [to-asset-importen](../../Signal47/Tools/metahuman_mannequins/garment_source.py) og [R12-runneren](../../Signal47/Tools/metahuman_mannequins/run_r12.py) kan brukes. De gjenbruker R10-materialene og R11-posen. Ingen preview-rendering eller installasjon startes av skriptet.
 
 ## Grunnlag og gjenstående kontroll
 
 Prosjektbiblioteket ble søkt først. [Scenario Blender Rigging](https://github.com/scenario-labs/skills/blob/f0adb5b5ebc1fc8f7e333554d2aeb767c5558d6b/skills/dcc/blender/scenario-blender-rigging/SKILL.md) er MIT og oppgir faktisk Blender 5.2.1-prøving. Her brukes rådene om felles vektkilde, normaliserte begrensede vekter og separat deformasjonskontroll som referanse. Ingen helper er installert eller kopiert. Lokalt mål er Blender 5.2.2. Prosjektets egen [uniformkilde](../WaitressUniform/build_uniform.py) gir den eksisterende FBX-/Data Transfer-praksisen; denne kilden lager nye vinterplagg.
 
-Lett kontroll undersøker egne geometriindekser, ikke-degenererte flater, positiv winding på lukket prøvevolum, UV-søm og faktisk åpen front, og avviser snudd radbasis. Den er kjørt med PASS. Separate lette fixtures består også for privatbane, kilde-PIN, normaliserte/fire vekter og avvisning av tomme/fremmede/fem vekter. Valgte flateinndelinger tilsvarer beregnet 21 288 trekanter etter stofftykkelse; dette er ingen måling av et Blender-asset.
+Lett kontroll undersøker egne geometriindekser, ikke-degenererte flater, positiv winding på lukket prøvevolum, UV-søm og faktisk åpen front, og avviser snudd radbasis. Den er kjørt med PASS. Separate lette fixtures består også for privatbane, kilde-PIN, normaliserte/fire vekter og avvisning av tomme/fremmede/fem vekter. Ny lokal frakkretting forventes å gi 23 368 klestriangler etter stofftykkelse, under uendret 24 000-grense. Faktisk produksjon og separat fersk kildeprosess bekrefter 23 368 trekanter. De finitte prøvene måler minst 6,819 mm ytre klaring og 4,577 mm indre klaring. Dette er ingen kontinuerlig helflate- eller sitteposeaksept.
 
 Blender-API, faktisk kroppspassform, deformasjon ved sitting, FBX-/native-referanseskjelett, LOD/minnebudsjett og pakket visuell aksept er **UNVERIFIED** inntil de er kjørt. Hele HUM-01 krever også presis bevaring av radioen, opprinnelig proxy/samhandling og nattregel, ingen dobbel kropp, samt disk/title/Continue i faktisk pakket spill. Dagens ferdige animerte servitrise er separat og skal bevares.

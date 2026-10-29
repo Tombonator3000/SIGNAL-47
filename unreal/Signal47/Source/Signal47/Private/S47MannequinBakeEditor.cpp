@@ -696,21 +696,22 @@ namespace S47MannequinBake
    const FString SourceRoot = TEXT("/Game/MetaHumans/Mannequins/RadioWoman/ClothesR2");
    const FString NewClothes = SourceRoot + TEXT("/SKM_RadioWoman_Clothes"), NewSkeleton = SourceRoot + TEXT("/SKEL_RadioWoman_Clothes");
    if (!Need(S47J::Int(Input, TEXT("schema_version")) == 1 && S47J::Str(Input, TEXT("status")) == TEXT("READY_FOR_AUTHORING_ONLY") &&
-    S47J::Str(Input, TEXT("policy")) == TEXT("R12-measured-shoulder-clothes-only-r11-pose") &&
+    S47J::Str(Input, TEXT("policy")) == TEXT("R12-local-coat-yoke16-only-r11-pose") &&
     !S47J::Bool(Input, TEXT("runtime_accepted")) && !S47J::Bool(Input, TEXT("appearance_accepted")) &&
     Job->HasTypedField<EJson::Object>(TEXT("postrepair_binding")) &&
     S47J::Str(Job, TEXT("output_asset")) == TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated"),
     TEXT("R12 bounded new output and explicit source policy, closed until actual independent garment production"))) return false;
    for (const TCHAR* Key : {TEXT("source_plan_file"), TEXT("source_report_file"), TEXT("source_fbx_file"), TEXT("source_blend_file"), TEXT("import_receipt_file"),
-    TEXT("source_verify_file"), TEXT("bind_receipt_file"), TEXT("bind_verify_file"), TEXT("reference_r11_job_file"), TEXT("reference_r11_bake_file")})
+    TEXT("source_verify_file"), TEXT("blender_source_verify_file"), TEXT("bind_receipt_file"), TEXT("bind_verify_file"), TEXT("reference_r11_job_file"), TEXT("reference_r11_bake_file")})
     if (!Need(S47J::Str(S47J::Obj(Input, Key), TEXT("path")).StartsWith(TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/")), TEXT("R12 private immutable source/evidence file"))) return false;
-   FJson Source, Imported, Verified, Bound, BindVerified, ReferenceR11Job;
+   FJson Source, Imported, Verified, Bound, BindVerified, ReferenceR11Job, FreshSource;
    if (!PostrepairPinnedJson(S47J::Obj(Input, TEXT("source_report_file")), Source) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("blender_source_verify_file")), FreshSource) ||
     !PostrepairPinnedJson(S47J::Obj(Input, TEXT("import_receipt_file")), Imported) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("source_verify_file")), Verified) ||
     !PostrepairPinnedJson(S47J::Obj(Input, TEXT("bind_receipt_file")), Bound) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("bind_verify_file")), BindVerified) ||
     !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_r11_job_file")), ReferenceR11Job) ||
     !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_r11_bake_file")), GarmentReferenceBake)) return false;
-   const FJson Caps = S47J::Obj(Source, TEXT("shoulder_caps")), State = S47J::Obj(Bound, TEXT("clothes_bind"));
+   const FJson Yoke = S47J::Obj(Source, TEXT("coat_yoke")), State = S47J::Obj(Bound, TEXT("clothes_bind"));
    const FJson Fields = S47J::Obj(Input, TEXT("new_job_fields"));
    if (!Need(Fields.IsValid() && Fields->Values.Num() == 3 && S47J::Str(Fields, TEXT("clothes_asset")) == NewClothes &&
     S47J::Str(Fields, TEXT("private_skeleton")) == NewSkeleton && S47J::Str(Fields, TEXT("clothes_bind_report")) == S47J::Str(S47J::Obj(Input, TEXT("bind_receipt_file")), TEXT("path")) &&
@@ -718,9 +719,70 @@ namespace S47MannequinBake
     S47J::Str(Source, TEXT("input_body_sha256")) == TEXT("292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92") &&
     S47J::Str(Source, TEXT("input_body_sha256_after")) == S47J::Str(Source, TEXT("input_body_sha256")) && !S47J::Bool(Source, TEXT("source_body_geometry_exported")) &&
     S47J::Str(Source, TEXT("rest_skeleton_sha256")) == TEXT("9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113") &&
-    S47J::Str(Caps, TEXT("status")) == TEXT("REST_CAPS_MEASURED_NOT_SEATED_OR_NATIVE_ACCEPTED") && S47J::Arr(Caps, TEXT("sides")).Num() == 2 &&
-    !S47J::Bool(Caps, TEXT("source_body_faces_copied")) && !S47J::Bool(Caps, TEXT("source_body_mutated")) && S47J::Int(Caps, TEXT("preserved_original_parts")) == 17,
-    TEXT("R12 actual new rest-garment reopen, two measured caps, original body/ref and exact changed source fields"))) return false;
+    S47J::Str(Yoke, TEXT("status")) == TEXT("REST_YOKE_MEASURED_NOT_SEATED_OR_NATIVE_ACCEPTED") &&
+    S47J::Str(Yoke, TEXT("policy")) == TEXT("actual-combined-skin-local-coat-yoke-v1") &&
+    S47J::Str(Yoke, TEXT("mutable_part")) == TEXT("Coat_body_open_lower_front") && S47J::Int(Yoke, TEXT("preserved_original_parts")) == 16 &&
+    S47J::Int(Source, TEXT("triangles")) == 23368 && S47J::Arr(S47J::Obj(Source, TEXT("rest_skeleton")), TEXT("bones")).Num() == 341,
+    TEXT("R12 actual bounded upper own Coat_body, exact16 preserved parts, original341-source/342-native separation"))) return false;
+   auto ExplicitFalse = [](const FJson& Data, const TCHAR* Key)
+   { return Data.IsValid() && Data->HasTypedField<EJson::Boolean>(Key) && !S47J::Bool(Data, Key); };
+   for (const TCHAR* Key : {TEXT("source_body_faces_copied"), TEXT("source_body_mutated"), TEXT("native_accepted"), TEXT("seated_fit_accepted")})
+    if (!Need(ExplicitFalse(Yoke, Key), TEXT("R12 explicit source-only scope: ") + FString(Key))) return false;
+   const double ProducerPID = S47J::Num(Source, TEXT("pid")), ReaderPID = S47J::Num(FreshSource, TEXT("pid"));
+   if (!Need(S47J::Str(FreshSource, TEXT("status")) == TEXT("FRESH_SOURCE_SAMPLED_PASS_NOT_NATIVE_OR_APPEARANCE") &&
+    S47J::Str(FreshSource, TEXT("mode")) == TEXT("verify-source") && ProducerPID > 0 && ReaderPID > 0 && ProducerPID != ReaderPID &&
+    ProducerPID != FPlatformProcess::GetCurrentProcessId() && ReaderPID != FPlatformProcess::GetCurrentProcessId() &&
+    S47J::Num(FreshSource, TEXT("producer_pid")) == ProducerPID &&
+    ExplicitFalse(FreshSource, TEXT("source_mutated")) && ExplicitFalse(FreshSource, TEXT("asset_save_called")) &&
+    ExplicitFalse(FreshSource, TEXT("native_accepted")) && ExplicitFalse(FreshSource, TEXT("appearance_accepted")) &&
+    S47J::Str(FreshSource, TEXT("source_reference_sha256")) == S47J::Str(Source, TEXT("rest_skeleton_sha256")) &&
+    PostrepairEqual(S47J::Obj(FreshSource, TEXT("source_report")), S47J::Obj(Input, TEXT("source_report_file"))) &&
+    PostrepairEqual(S47J::Obj(FreshSource, TEXT("garment_payload_snapshot")), S47J::Obj(Source, TEXT("garment_payload_snapshot"))) &&
+    PostrepairEqual(S47J::Obj(FreshSource, TEXT("source_files")), S47J::Obj(Yoke, TEXT("source_files"))),
+    TEXT("R12 actual independent Blender saved-source reader, unchanged complete garment/ref and immutable skin chain"))) return false;
+   const FJson Preserved = S47J::Obj(Yoke, TEXT("preserved_parts"));
+   if (!Need(Preserved.IsValid() && Preserved->Values.Num() == 16 && !Preserved->HasField(TEXT("Coat_body_open_lower_front")),
+    TEXT("R12 exactly16 other original garment parts"))) return false;
+   for (const auto& Entry : Preserved->Values)
+   {
+    const FString Part(Entry.Key.ToView());
+    if (!Need(PostrepairEqual(Entry.Value->AsObject(), S47J::Obj(S47J::Obj(Source, TEXT("existing_parts_before_yoke")), *Part)) &&
+     PostrepairEqual(Entry.Value->AsObject(), S47J::Obj(S47J::Obj(Source, TEXT("existing_parts_preserved_before_weight_transfer")), *Part)),
+     TEXT("R12 exact actual preserved garment part: ") + Part)) return false;
+   }
+   for (const FJson& Fit : {S47J::Obj(Yoke, TEXT("fit")), S47J::Obj(Source, TEXT("saved_reopened_fit")), S47J::Obj(FreshSource, TEXT("actual_fit"))})
+    if (!Need(S47J::Str(Fit, TEXT("status")) == TEXT("REST_YOKE_SAMPLED_NOT_SEATED_OR_NATIVE_ACCEPTED") &&
+     S47J::Num(Fit, TEXT("minimum_clearance_m")) == .006 && S47J::Num(Fit, TEXT("outer_target_m")) == .012 &&
+     ExplicitFalse(Fit, TEXT("continuous_surface_proof")) && S47J::Int(Fit, TEXT("upper_facet_samples")) == 10752 &&
+     S47J::Num(Fit, TEXT("upper_facet_minimum_m")) >= .006 && S47J::Int(Fit, TEXT("required_skin_rays")) > 0 &&
+     S47J::Num(Fit, TEXT("required_skin_minimum_m")) >= .006 && S47J::Num(Fit, TEXT("actual_inner_minimum_m")) > 0 &&
+     S47J::Arr(Fit, TEXT("facets")).Num() >= 10752 &&
+     S47J::Arr(Fit, TEXT("coverage")).Num() == S47J::Int(Fit, TEXT("required_skin_rays")) + S47J::Int(Fit, TEXT("intentional_neck_rays")),
+     TEXT("R12 actual finite source/reopen/fresh face and skin samples retain strict6mm outer gate"))) return false;
+   for (const FJson& FilesToCheck : {S47J::Obj(Yoke, TEXT("source_files")), S47J::Obj(Source, TEXT("producer_files"))})
+   {
+    if (!Need(FilesToCheck.IsValid() && FilesToCheck->Values.Num() > 0, TEXT("R12 full actual source/skin/producer file inventory"))) return false;
+    for (const auto& Entry : FilesToCheck->Values)
+    {
+     TArray<uint8> CheckedBytes;
+     if (!PostrepairPinnedFile(Entry.Value->AsObject(), CheckedBytes)) return false;
+    }
+   }
+   FJson SkinInput, Frame, NativeRest, NativeAcceptance;
+   const FJson SourceFiles = S47J::Obj(Yoke, TEXT("source_files"));
+   if (!PostrepairPinnedJson(S47J::Obj(Yoke, TEXT("inputs")), SkinInput) ||
+    !PostrepairPinnedJson(S47J::Obj(SourceFiles, TEXT("frame_confirmation")), Frame) ||
+    !PostrepairPinnedJson(S47J::Obj(SourceFiles, TEXT("native_rest")), NativeRest) ||
+    !PostrepairPinnedJson(S47J::Obj(SourceFiles, TEXT("native_acceptance")), NativeAcceptance)) return false;
+   if (!Need(S47J::Str(SkinInput, TEXT("policy")) == TEXT("actual-combined-skin-local-coat-yoke-v1") &&
+    PostrepairEqual(S47J::Obj(SkinInput, TEXT("files")), SourceFiles) &&
+    S47J::Str(Frame, TEXT("status")) == TEXT("PASS_COMPLETE_NATIVE_SKIN_FRAME_ONLY_NOT_GARMENT_FIT") &&
+    PostrepairEqual(S47J::Obj(Frame, TEXT("native_report")), S47J::Obj(SourceFiles, TEXT("native_rest"))) &&
+    S47J::Str(NativeRest, TEXT("status")) == TEXT("PASS") && S47J::Str(NativeRest, TEXT("mode")) == TEXT("rest-surface-diagnostic") &&
+    ExplicitFalse(NativeRest, TEXT("asset_save_called")) &&
+    S47J::Str(NativeAcceptance, TEXT("status")) == TEXT("PASS_READONLY_REST_SURFACES_ONLY_NOT_FRAME_OR_GARMENT_FIT") &&
+    PostrepairEqual(S47J::Obj(NativeAcceptance, TEXT("native_report")), S47J::Obj(SourceFiles, TEXT("native_rest"))),
+    TEXT("R12 measured complete actual native Body+Face rest skin and independent frame provenance, never Body-only fit"))) return false;
    for (const TCHAR* Key : {TEXT("clothes_asset"), TEXT("private_skeleton"), TEXT("clothes_bind_report")})
     if (!Need(S47J::Str(Job, Key) == S47J::Str(Fields, Key) && S47J::Str(Job, Key) != S47J::Str(ReferenceJob, Key), TEXT("R12 exact explicit new source field: ") + FString(Key))) return false;
    for (const TCHAR* Key : {TEXT("asset_root"), TEXT("cloth_master"), TEXT("brow_material"), TEXT("contract"), TEXT("contract_sha256"), TEXT("source_snapshot"), TEXT("source_snapshot_sha256")})
@@ -736,6 +798,9 @@ namespace S47MannequinBake
     S47J::Str(State, TEXT("reference_after_sha1")) == FPose(Body->GetRefSkeleton()).Hash() &&
     S47J::Str(State, TEXT("inverse_reference_after_sha1")) == InverseReferenceHash(Body) &&
     PostrepairEqual(S47J::Obj(Imported, TEXT("saved_assets")), S47J::Obj(Verified, TEXT("saved_assets"))) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("blender_source_verify")), S47J::Obj(Input, TEXT("blender_source_verify_file"))) &&
+    PostrepairEqual(S47J::Obj(Verified, TEXT("blender_source_verify")), S47J::Obj(Input, TEXT("blender_source_verify_file"))) &&
+    ImportPID != ProducerPID && ImportPID != ReaderPID && VerifyPID != ProducerPID && VerifyPID != ReaderPID &&
     PostrepairEqual(S47J::Obj(Imported, TEXT("plan")), S47J::Obj(Verified, TEXT("plan"))) &&
     PostrepairEqual(S47J::Obj(Imported, TEXT("plan")), S47J::Obj(Input, TEXT("source_plan_file"))) &&
     S47J::Bool(Imported, TEXT("all_preexisting_content_preserved")) && S47J::Bool(Verified, TEXT("all_preexisting_content_preserved")) &&

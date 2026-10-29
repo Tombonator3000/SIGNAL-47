@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "status": "PASS_SAVED_AND_SEPARATE_FRESH_SOURCE_FINITE_SAMPLES_ONLY",
+  "recorded_at": "2026-10-29T22:08:31+01:00",
+  "producer_pid": 3010170,
+  "fresh_pid": 3010729,
+  "actual_processes": {
+    "r4-r3-source-require-idle": {
+      "returncode": 0,
+      "semantic_success": true,
+      "contention": [],
+      "stop_reason": null,
+      "wall_seconds": 0.506742998957634,
+      "guard_sha256": "4115a63210699ade2b6c9cb117da004ed5865d265a7560f3b62491671d982b4c"
+    },
+    "r4-r3-source-preflight": {
+      "returncode": 0,
+      "semantic_success": true,
+      "contention": [],
+      "stop_reason": null,
+      "wall_seconds": 1.519894522964023,
+      "guard_sha256": "7383638127fa0e64e18d2c0ff46246b6f93f81e4ee66d21a0766bd7edfbde4e0"
+    },
+    "r4-r3-source-author": {
+      "returncode": 0,
+      "semantic_success": true,
+      "contention": [],
+      "stop_reason": null,
+      "wall_seconds": 30.96291788504459,
+      "guard_sha256": "6b5e84e2ffe40284fe510dcadc2cf67c48ac4905ccd4b93fc3aa564e272b77ed"
+    },
+    "r4-r3-source-fresh": {
+      "returncode": 0,
+      "semantic_success": true,
+      "contention": [],
+      "stop_reason": null,
+      "wall_seconds": 15.72912361199269,
+      "guard_sha256": "953ec2efbbeae55970edc405a03ff95749041c2df485b08eab6bbe22561ca520"
+    }
+  },
+  "raw_evidence": {
+    "source_freeze": {
+      "file": "clothing-source-freeze.json",
+      "bytes": 9084,
+      "sha256": "1aca92099dbb3bca6c59e1236b9ffd91336515adb3661ec24b130ae0fe04c253"
+    },
+    "source_report": {
+      "file": "clothing-report.json",
+      "bytes": 146773999,
+      "sha256": "9566c10043397e2d9fb8ad0fe9f769ecbae4a51610f90527f3e2b0a5f7b9bd9e"
+    },
+    "fresh_report": {
+      "file": "fresh-source-reader-r1.json",
+      "bytes": 39751275,
+      "sha256": "3c5728792022b4720781e61ea2b44b0660cda4c8fc46c27eebf3409b2c127612"
+    },
+    "blend": {
+      "file": "radio_woman_clothes_rest.blend",
+      "bytes": 3788712,
+      "sha256": "76e9133151de88f18bbe3c4255269de9cfbed71e101c63309e79925a0816d3c9"
+    },
+    "fbx": {
+      "file": "SKM_RadioWoman_Clothes.fbx",
+      "bytes": 1407500,
+      "sha256": "4aa96bda253307b2564dc3c2320fa88c23b1953e77bf1de5fe00c4d6877dabcf"
+    }
+  },
+  "source": {
+    "original_body_payload_preserved": true,
+    "blender_reference_bones": 341,
+    "native_reference_bones": 342,
+    "rest_skeleton_sha256": "9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113",
+    "triangles": 23368,
+    "triangle_budget": 24000,
+    "original_parts_preserved": 16,
+    "mutable_part": "Coat_body_open_lower_front",
+    "body_faces_copied": false
+  },
+  "finite_fit": {
+    "minimum_clearance_m": 0.006,
+    "outer_target_m": 0.012,
+    "upper_facet_samples": 10752,
+    "upper_facet_minimum_m": 0.006818986738805044,
+    "required_skin_rays": 9498,
+    "required_skin_minimum_m": 0.006854179322567014,
+    "actual_inner_minimum_m": 0.0045768310890070335,
+    "continuous_surface_proof": false
+  },
+  "root_raw_reconstruction_validation": "PASS",
+  "native_accepted": false,
+  "seated_fit_accepted": false,
+  "appearance_accepted": false,
+  "runtime_accepted": false,
+  "packed_accepted": false,
+  "previous_r11_appearance": "FAIL_TWO_SHOULDER_GAPS",
+  "historical_failed_attempts_preserved": [
+    "R4-source-r1-original-Solidify-rim-order",
+    "R4-source-r2-local-normal-neighbourhood"
+  ]
+}

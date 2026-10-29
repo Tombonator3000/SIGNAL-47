@@ -167,7 +167,7 @@ def source_check(inventory, project):
     return rows
 
 
-def clothing_check(report):
+def clothing_check(report, fresh_source_report=None):
     data = load(report)
     if (data.get('status') != 'REST_CLOTHES_EXPORTED_NOT_ACCEPTED' or not data.get('blend_reopened')
             or data.get('input_body_sha256') != PIN or data.get('input_body_sha256_after') != PIN
@@ -202,6 +202,39 @@ def clothing_check(report):
         if (item['base_color_linear'] != expected_mat['color'] or item['roughness'] != expected_mat['roughness']
                 or item['metallic'] != 0):
             raise RuntimeError('Clothing palette differs')
+    if 'coat_yoke' in data:
+        # R4 is not a new nine-asset import shortcut. Only the dedicated
+        # two-source-asset helper supplies this independently measured reader.
+        if fresh_source_report is None:
+            raise RuntimeError('R4 upper-Coat source requires its separate actual fresh source reader')
+        fresh = load(fresh_source_report)
+        yoke = data['coat_yoke']
+        actual_row = dict(path=str(Path(report).resolve(strict=True)), **file_row(report),
+                          sha1=native_file_row(report)['sha1'])
+        if (yoke.get('policy') != 'actual-combined-skin-local-coat-yoke-v1'
+                or yoke.get('status') != 'REST_YOKE_MEASURED_NOT_SEATED_OR_NATIVE_ACCEPTED'
+                or yoke.get('mutable_part') != 'Coat_body_open_lower_front'
+                or yoke.get('preserved_original_parts') != 16
+                or len(yoke.get('preserved_parts', {})) != 16
+                or data.get('pid', 0) <= 0
+                or fresh.get('status') != 'FRESH_SOURCE_SAMPLED_PASS_NOT_NATIVE_OR_APPEARANCE'
+                or fresh.get('pid', 0) <= 0 or fresh.get('pid') == data['pid']
+                or fresh.get('producer_pid') != data['pid']
+                or fresh.get('source_report') != actual_row
+                or fresh.get('asset_save_called') is not False
+                or fresh.get('source_mutated') is not False
+                or fresh.get('source_reference_sha256') != data['rest_skeleton_sha256']
+                or fresh.get('garment_payload_snapshot') != data['garment_payload_snapshot']):
+            raise RuntimeError('R4 requires actual upper-Coat+16-preserved and separate saved-source proof')
+        for fit in (yoke['fit'], data['saved_reopened_fit'], fresh['actual_fit']):
+            if (fit.get('status') != 'REST_YOKE_SAMPLED_NOT_SEATED_OR_NATIVE_ACCEPTED'
+                    or fit.get('minimum_clearance_m') != .006
+                    or fit.get('upper_facet_samples') != 10752
+                    or fit.get('upper_facet_minimum_m', -1) < .006
+                    or fit.get('required_skin_rays', 0) <= 0
+                    or fit.get('required_skin_minimum_m', -1) < .006
+                    or fit.get('continuous_surface_proof') is not False):
+                raise RuntimeError('R4 sampled source proof/unchanged6mm gate is missing')
     return paths[0], data
 
 
