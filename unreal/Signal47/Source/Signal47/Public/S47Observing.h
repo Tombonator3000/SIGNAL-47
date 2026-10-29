@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47Rx.h"
 class US47Main;
+class FS47RecordedDialogue;
 struct FS47Task;
 struct FS47Doc;
 
@@ -24,9 +25,12 @@ public:
  static const TArray<FRun>& Runs();
  static constexpr int32 Version = 1;
 
- explicit FS47Observing(US47Main* InM) : M(InM) {}
+ explicit FS47Observing(US47Main* InM);
+ ~FS47Observing();
  void Begin(const S47J::FObj& Saved, bool bNewCase);
- void Stop() { bEnabled = false; }
+ void Stop();
+ void SetCharacterVoicesEnabled(bool bValue);
+ bool DoorVoicePlaying() const;
  void Step(double Dt);
  S47J::FObj Save() const;
  bool Enabled() const { return bEnabled; }
@@ -42,6 +46,8 @@ public:
  // 2 on generator power, 3 logged) and the round to the array gate before Virgo A (0, 1 chained, 2 found open).
  int32 GeneratorStep() const { return GenStep; }
  int32 YardStep() const { return Yard; }
+ // After the last run: Dale's voice outside the visitor entrance (1 heard, 2 door opened on nobody).
+ int32 DoorVoiceStep() const { return DoorVoice; }
  bool ChorePending() const;
  static FVector PanelPoint() { return FVector(5.93, 1.35, .65); }
  static FVector GatePoint() { return FVector(-1.0, 0, -20.0); }
@@ -58,7 +64,9 @@ public:
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bScheduleFiled = false;
- int32 Run = 0, HintMask = 0, Ticks = 0, GenStep = 0, Yard = 0;
+ int32 Run = 0, HintMask = 0, Ticks = 0, GenStep = 0, Yard = 0, DoorVoice = 0;
+ TSharedPtr<FS47RecordedDialogue> Voice;
+ void StepDoorVoice();
  double GenT = 0, FlickerT = -1;
  TArray<bool> HeldTubes;
  bool bPanelBuilt = false;

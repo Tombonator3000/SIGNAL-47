@@ -25,3 +25,15 @@ Claude-adapteren og dens tester; to avgrensede hjelpere har kildeindeks og
 reservasjon/prosesskontroll. Eksisterende kvelds-/SC03-arbeid har egne eiere.
 Dette passet kjører raske Python-/prosesstester og en avgrenset Claude-probe.
 Ingen tung motorjobb eller reservasjon av Toms spillmaskin er planlagt.
+
+## Midlertidig hjelp til Claude, 29. oktober 2026 kl. 00:46
+
+Tom ba Codex hjelpe Claude i `claude/evening-door-voice`, arbeidskopi `sc03`,
+frem til Claudes automatiske fortsettelse kl. 01:11. Codex eier midlertidig
+den opprinnelige dørstemmeendringen i Observing/HorrorTest og én liten
+OnCharacters-krok i Flow. Test 11 var allerede PASS før kvotestoppet.
+Codex retter Stop/Begin og talebryter og kjører én målrettet SC01-kontroll
+under felles reservasjon. Vinduet frigis før 01:11; videre eierskap går til
+samme Claude-økt. Ingen installasjon eller offentlig utgave i dette passet.
+
+2026-10-29T01:06:26+01:00: Midlertidig dørstemmehjelp er kildeklar og kontrollert. Bygg/test er ferdig, reservasjonen er frigitt og Codex starter ingen nye motorjobber før overleveringen01:11. Claude beholder videre kvelds-/SC03-eierskap. Testet kilde 7a29935e796d6b036692a53d9f2b5712993ccf17; rapporten er lenket fra STATUS/TODO.

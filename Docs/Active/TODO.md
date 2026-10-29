@@ -53,8 +53,9 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 - [x] **STORY-04A, kilde:** Fire ekte arrayobservasjoner 19:00 til 22:50 med papirer og hint er flettet i PR206. Pakket/installert levering føres separat i STATUS.
 - [x] **STORY-04B, kilde:** SC01 med klask mot ruta i stedet for hånd, avtrykk når skjermen heves, og lampetest bare innenfra. Fem ekte observatorielyder med kreditering i arrayarbeidet (PR208). SC01-kontrakt PASS, 157 kontroller.
 - [x] **STORY-04C, kilde:** Aggregattest 19:35 på fjernpanel og runde til arraygjerdet 21:40 der porten står åpen igjen (PR210). SC01-kontrakt PASS, 176 kontroller.
-- [ ] **STORY-04:** Viderefør kveldsarbeidet: stemmen ved feil dør. Nye dispatchopptak for SC01_FIRST_REPORT_001/002 (ny tekst). Ikke legg inn tidlige alienmøter som bryter den nye regien.
+- [ ] **STORY-04:** Viderefør kveldsarbeidet: nye dispatchopptak for SC01_FIRST_REPORT_001/002 (ny tekst). Ikke legg inn tidlige alienmøter som bryter den nye regien.
 - [x] **STORY-04D, kilde og målrettet kontroll:** Ett SKY01-lys starter naturlig ved 21:30 og fortsetter over kveldens korte hopp. Fem himmeltrinn består 24 grafiske sikt-/lagringskontroller med faktisk feltkamerabilde. Inngår i PR209, uten installasjon.
+- [x] **STORY-04E, kilde og målrettet kontroll:** Dales gjenbrukte stemme ved den tomme besøksinngangen, lagret hendelse og stopp ved sak/talebryter/områdebytte. Editor: 1709 selvtester, SC01 185/19 og målt romlig PCM. [Kvittering](../Evidence/UnrealDeliveries/DOOR_VOICE_2026-10-29.md). Ingen ny pakke/installasjon.
 - [ ] **FX-01:** Produser den korte meteorpassasjen ved stjernehullet med riktig hendelsestid og engangsavspilling. [Design og kilder](../Design/Proposals/NIAGARA_VFX_2026-10-28.md).
 - [ ] **FX-02:** Produser den store UFO-avsløringen med cloud tank-skyer som del av finalen, med bevart THE EVENT og 1947-bilde. [Finaleretning](../Design/Proposals/FINALE_CLOUD_TANK_UFO.md).
 - [ ] **ART-01:** Integrer ferdige plakater, bilder og dokumentrekvisitter på riktige flater med lesbare UV-/materialbindinger. Bevar fungerende dokument-ID-er og bevisgrunnlag.
