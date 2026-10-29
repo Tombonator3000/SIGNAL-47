@@ -289,17 +289,20 @@ void AS47Web::BeginMotelV2Route()
   P->TestMove.Reset();if(!S->Reached){S->Reached=Now;return;}if(Now-S->Reached<.25)return;
   const double Floor=FS47MotelV2::FloorAt(P->Pos.X,P->Pos.Z);
   if(!FMath::IsFinite(Floor)||FMath::Abs(P->FloorY-Floor)>.012){Fail(TEXT("Walker floor does not match authored surface height"));return;}
-  int32 GroundHits=0;
+  int32 GroundHits=0;TArray<FString> FloorSamples;
   // Five foot samples allow a genuine2cm concrete joint, but reject an invisible raised plane.
   for(const FVector2D& Offset:{FVector2D(0,0),FVector2D(.035,0),FVector2D(-.035,0),FVector2D(0,.035),FVector2D(0,-.035)})
   {
    FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47MotelRouteFloor),true,P);
-   if(W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(P->Pos.X+Offset.X,Floor+.025,P->Pos.Z+Offset.Y),S47Three::ToUE(P->Pos.X+Offset.X,Floor-.2,P->Pos.Z+Offset.Y),ECC_Visibility,Q))
+   const bool Hit=W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(P->Pos.X+Offset.X,Floor+.025,P->Pos.Z+Offset.Y),S47Three::ToUE(P->Pos.X+Offset.X,Floor-.2,P->Pos.Z+Offset.Y),ECC_Visibility,Q);
+   if(Hit)
    {
     const auto* N=W->Node(W->NodeOf(H.GetComponent()));if(N&&N->Name.StartsWith(TEXT("motel-v2:"))&&FMath::Abs(S47Three::ToThree(H.ImpactPoint).Y-Floor)<.015)++GroundHits;
+    FloorSamples.Add(FString::Printf(TEXT("offset=%.3f,%.3f hit=%s node=%s height=%.6f expected=%.6f"),Offset.X,Offset.Y,*GetNameSafe(H.GetComponent()),N?*N->Name:TEXT("unregistered"),S47Three::ToThree(H.ImpactPoint).Y,Floor));
    }
+   else FloorSamples.Add(FString::Printf(TEXT("offset=%.3f,%.3f no collision hit, expected height=%.6f"),Offset.X,Offset.Y,Floor));
   }
-  if(GroundHits<3){Fail(FString::Printf(TEXT("native visible walking surface absent under feet: %d/5 rays"),GroundHits));return;}S->FloorRays+=5;
+  if(GroundHits<3){for(const auto& Line:FloorSamples)UE_LOG(LogS47MotelRoute,Error,TEXT("S47: motel V2 floor diagnosis %s"),*Line);Fail(FString::Printf(TEXT("native visible walking surface absent under feet: %d/5 rays"),GroundHits));return;}S->FloorRays+=5;
   if(Goal.Action==6){FString Error;if(!PoolExteriorSample(M,S->Root,Error)){Fail(Error);return;}}
   if(Goal.Action==2||Goal.Action==3)
   {
@@ -310,8 +313,9 @@ void AS47Web::BeginMotelV2Route()
    if(!N||(Phone?N->Name!=TEXT("prop:motelPhone"):!N->Name.StartsWith(TEXT("motel-v2:SM_Sierra_Office")))||FVector::Distance(S47Three::ToThree(H.ImpactPoint),Target)>.25){Fail(TEXT("physical payphone/newspaper front ray missed actual prop"));return;}
    if(Phone)
    {
-    const FS47Obj Prop(W,W->NodeOf(H.GetComponent()));const FVector Front=Prop.WorldQuaternion().RotateVector(FVector(0,0,1));
-    if(FVector::DotProduct(P->Pos-Prop.WorldPosition(),Front)<.6){Fail(TEXT("payphone approached from back rather than usable front"));return;}
+    const FVector FrontUE=H.GetComponent()->GetComponentQuat().RotateVector(S47Three::DirToUE(FVector(0,0,1)));
+    const FVector Front(FrontUE.X,FrontUE.Z,FrontUE.Y),At=S47Three::ToThree(H.GetComponent()->GetComponentLocation());
+    if(FVector::DotProduct(P->Pos-At,Front)<.6){Fail(TEXT("payphone approached from back rather than usable front"));return;}
    }
    UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 route physical prop PASS %s front ray distance=%.3fm; no new product interaction"),Phone?TEXT("payphone"):TEXT("newspaper"),H.Distance/100.);
   }

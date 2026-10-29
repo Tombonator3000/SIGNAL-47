@@ -277,6 +277,39 @@ def import_mesh(source, destination, name, report):
     return mesh
 
 
+def configure_query_collision(mesh, report):
+    """Keep thin triangles and explicitly enable their visibility-query geometry.
+
+    UE5.8 FbxStaticMeshImport.cpp disables section collision when no custom
+    collision is imported and RemoveDegenerates is false. BodySetup's complex
+    trace flag alone does not re-enable those sections. Walker keeps its 2D
+    gameplay colliders; runtime components still choose which channels to block.
+    """
+    body = mesh.get_editor_property('body_setup')
+    report.check(mesh.get_name() + ' query BodySetup exists', body is not None)
+    counts = [mesh.get_num_sections(lod) for lod in range(S.get_lod_count(mesh))]
+    report.check(mesh.get_name() + ' query section population', bool(counts) and all(n > 0 for n in counts), counts)
+    before = [[bool(S.is_section_collision_enabled(mesh, lod, section)) for section in range(count)]
+              for lod, count in enumerate(counts)]
+    report.data.setdefault('query_collision_before', {})[mesh.get_name()] = before
+    report.flush()
+    body.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
+    for lod, sections in enumerate(before):
+        for section, enabled in enumerate(sections):
+            if not enabled:
+                S.enable_section_collision(mesh, True, lod, section)
+
+
+def verify_query_collision(mesh, report):
+    body = mesh.get_editor_property('body_setup')
+    report.check(mesh.get_name() + ' saved complex query collision', body is not None and
+                 body.get_editor_property('collision_trace_flag') == unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
+    for lod in range(S.get_lod_count(mesh)):
+        count = mesh.get_num_sections(lod)
+        report.check(mesh.get_name() + ' LOD' + str(lod) + ' saved query sections', count > 0 and
+                     all(S.is_section_collision_enabled(mesh, lod, section) for section in range(count)), count)
+
+
 def finish_mesh(mesh, report, authored_screens=None):
     authored = is_authored_motel_part(mesh)
     # SetLodBuildSettings and even proxy/Nanite property edits call PostEditChange.
@@ -288,12 +321,10 @@ def finish_mesh(mesh, report, authored_screens=None):
         current = screens + ([.005] if S.get_lod_count(mesh) == 4 else [])
         report.check(mesh.get_name() + ' preserve accepted screens before property edits',
                      S.set_lod_screen_sizes(mesh, current))
+    configure_query_collision(mesh, report)
     nanite = mesh.get_editor_property('nanite_settings')
     nanite.enabled = False
     mesh.set_editor_property('nanite_settings', nanite)
-    body = mesh.get_editor_property('body_setup')
-    if body:
-        body.set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
     for lod in range(S.get_lod_count(mesh)):
         settings = S.get_lod_build_settings(mesh, lod)
         settings.set_editor_property('use_full_precision_u_vs', True)
@@ -476,6 +507,7 @@ def verify_mesh(name, mesh, lods, expected_materials, report):
     check = report.check
     check(name + ' saved native mesh', isinstance(mesh, unreal.StaticMesh))
     check(name + ' exact LOD count', S.get_lod_count(mesh) == len(lods) + (1 if is_authored_motel_part(mesh) else 0))
+    verify_query_collision(mesh, report)
     slots = list(mesh.get_editor_property('static_materials'))
     actual_materials = [str(slot.get_editor_property('material_slot_name')) for slot in slots]
     check(name + ' exact authored material slots', actual_materials == expected_materials,
