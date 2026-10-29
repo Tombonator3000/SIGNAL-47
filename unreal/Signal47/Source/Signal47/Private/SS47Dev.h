@@ -14,6 +14,8 @@ public:
 	SLATE_BEGIN_ARGS(SS47Dev) {}
 		SLATE_ARGUMENT(TArray<FS47DevEntry>, Entries)
 		SLATE_ARGUMENT(TFunction<void()>, OnBack)
+		SLATE_ARGUMENT(FString, Title)
+		SLATE_ARGUMENT(FString, Note)
 	SLATE_END_ARGS()
 	void Construct(const FArguments& InArgs);
 	virtual bool SupportsKeyboardFocus() const override { return true; }

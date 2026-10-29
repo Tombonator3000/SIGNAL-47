@@ -67,6 +67,7 @@ class SIGNAL47_API AS47Web : public AActor
 	GENERATED_BODY()
 
 public:
+	void RefreshFog() { UpdateNativeFog(); } // the fog again now (a developer event changed it)
 	AS47Web();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
