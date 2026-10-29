@@ -153,7 +153,8 @@ def main(root):
             bpy.ops.export_scene.fbx(filepath=str(path), use_selection=True, object_types={'MESH'},
                                      axis_forward='-Y', axis_up='Z', apply_unit_scale=True,
                                      apply_scale_options='FBX_SCALE_UNITS', use_mesh_modifiers=False,
-                                     mesh_smooth_type='OFF', use_triangles=False, bake_anim=False, path_mode='AUTO')
+                                     mesh_smooth_type='OFF', use_triangles=False, bake_anim=False, path_mode='AUTO',
+                                     colors_type='LINEAR', prioritize_active_color=True)
             verify_fbx(path, row, uv, normals, colors, slots)
             receipt.append({'name': name, 'triangles': row['result_tris'], 'bounds_local_m': actual_bounds,
                             'bounds_blender_m': actual_bounds, 'materials': list(row['materials']),
