@@ -1068,3 +1068,7 @@ Tom ba Codex videreføre Claudes konkrete Remote Control-økt frem til automatis
 ## 2026-10-29 kl. 01:10 CET: Stemmen ved feil dør
 
 Etter siste kjøring (22:50), i korridoren mot besøksinngangen, spilles Dales eget opptak «Reyes? Dale. The logbook should be in front of you.» fra utsiden av døra. Åpner du den, er trappa tom, og det føres i notatboka. SC01-kontrakt PASS COMPLETE, 178 kontroller, 19 gjenopprettinger. Opptaket er logget som spilt (playing). Ikke lyttet på av et menneske.
+
+## 2026-10-29 kl. 01:21 CET: FIX-06, SARO-dialogen
+
+Musepekeren hoppet når neste dialoglinje kom, fordi panelet lukkes og åpnes igjen og spillmodusen fanger pekeren et øyeblikk. HUD tar nå vare på pekerposisjonen ved lukking og setter den tilbake når et nytt panel åpnes innen 0,75 s. Dialogpanelene i Horror og Evening ligger nede i midten (Shell bLow); andre paneler er uendret. Dørmålet sier nå konkret hva som mangler, også når en dør står åpen fra en lagring eller er åpnet utenfra. SC01-kontrakt PASS COMPLETE, 190 kontroller, 19 gjenopprettinger; to faktiske linjeskift beholder pekeren. Bildet av telefondialogen er vurdert: panelet ligger nede i midten. Ekte musebruk av et menneske er ikke prøvd.

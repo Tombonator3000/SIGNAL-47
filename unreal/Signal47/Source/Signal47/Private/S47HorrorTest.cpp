@@ -263,7 +263,7 @@ void FS47HorrorTest::Step(double Dt)
 	};
 	auto Drain = [this, &T, &H, &Enter](int32 Next)
 	{
-		if (!H.Pack.CurrentScene()) { T.LastLine.Empty(); Stage(Next, Next==107?0:.2); return; }
+		if (!H.Pack.CurrentScene()) { T.LastLine.Empty(); T.bCursorProbe = false; Stage(Next, Next==107?0:.2); return; }
 		const auto* Line = H.Pack.CurrentLine();
 		if (!Line) { Fail(TEXT("unexpected choice or missing live line in baseline SC01 scene")); return; }
 		if (T.LastLine != Line->Id)
