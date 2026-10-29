@@ -72,20 +72,20 @@ Ingen nytt bilde av signalet fulgte denne rapporten. Senere kontroll begrenses t
 
 ## 5. Sierra Motor Court: terrengkontakt, kollisjon, mottak og basseng
 
-**Åpen, høy prioritet.** Bruk [E02](../../../unreal/Evidence/Playtest-2026-10-28/02-motel-walkway.png), [E03](../../../unreal/Evidence/Playtest-2026-10-28/03-reception-tv-lamps.png), [E04](../../../unreal/Evidence/Playtest-2026-10-28/04-pool-approach.png) og [E05](../../../unreal/Evidence/Playtest-2026-10-28/05-payphone-wall.png).
+**Målrettet kandidat R1 består i pakket spill; E04-klumpen står åpen.** Bruk [E02](../../../unreal/Evidence/Playtest-2026-10-28/02-motel-walkway.png), [E03](../../../unreal/Evidence/Playtest-2026-10-28/03-reception-tv-lamps.png), [E04](../../../unreal/Evidence/Playtest-2026-10-28/04-pool-approach.png) og [E05](../../../unreal/Evidence/Playtest-2026-10-28/05-payphone-wall.png). [Motellrapporten](../../Evidence/UnrealDeliveries/MOTEL_GROUNDING_2026-10-29.md) og [hashbundet pakket R1-kvittering](../../../unreal/Evidence/MOTEL-GROUNDING-2026-10-29/packed-r1-receipt.json) skiller beståtte prøver fra åpne punkter.
 
-- [ ] Rett nivåene foran romdørene: gangsonen skal møte bakken og tersklene naturlig, uten nedsenkede felt eller feil trinn langs dørene.
-- [ ] Sett blomsterpotter og stoler på faktisk overflate. E02 viser tydelig en svevende potte med skygge under.
-- [ ] Fjern usynlige kollisjonsvegger i gangsonen og ved dørene. Prøv en sammenhengende spasertur langs fasaden og inn til dørene, ikke bare teleporterte kamerabilder.
-- [ ] Fjern eller rett doble/overlappende lamper i resepsjonen. E03 viser to lampebaser/støtter som ser ut til å dele skjerm.
-- [ ] Rett resepsjons-TV slik at de eksisterende filmene faktisk spiller med riktig program og lyd. E03 viser et motiv på CRT-en; et stillbilde beviser ikke om filmen går eller står fast. Filmfeilen er Toms observasjon og skal sjekkes i bevegelse.
-- [ ] Rett gangfelt/gangvei til bassenget som blafrer av og på. Undersøk overlappende flater, terreng og dybdekonflikt; ikke fastslå z-fighting bare fra E04/E05.
-- [ ] Hev/tilpass bassengkant og dekke til riktig terrengnivå. Bevar en logisk gangadkomst og gjerdeport.
-- [ ] Identifiser og fjern den rare klumpen utenfor bassengområdet. E04/E05 avgrenser området, men hvilket mesh Tom mener må identifiseres før sletting.
-- [ ] Vend telefonkiosken/telefonen mot brukbar gangside og sørg for fri plass foran håndsettet.
-- [ ] Rett motellveggen ved telefon, ICE/avis og dekor. E05 viser overlappende deler/skilt ved veggen; sjekk restgeometri fra gammelt motell, veggtykkelse og monteringsdybde. Bevar ønsket retro keramikkmønster.
+- [x] Kilde/native og editor: synlig ganggulv, terskler og Walker-nivå følger 14 forfattede gulvflater. R6b retter 172 identifiserte lukkede gulvøyers vinding; presist g456-terrengkutt bevarer innkjøringen.
+- [x] Kilde/native og editor: stolene settes etter målt fotpunkt, og potter med korrekt base beholdes. Bekreftede gamle stol-, ICE- og aviskollidere pensjoneres med de gamle dublettene; hus, gjerde og gjenværende potter beholdes.
+- [x] Editor R11: sammenhengende API-styrt Walker/Resolve går 178,6332 m / 58 punkter, med 14 interaksjoner, sju dørnisjer, fire faktiske blokkeringer og 1 611 gulvstråler. Faktisk rom 6-dørbruk og ordinær isolert disk/title/full Flow Continue består.
+- [x] Resepsjon: bare den aktive gamle marmorlampen, node 737, pensjoneres; asset/kreditering beholdes. Åpnet R2-kamerabilde viser resepsjonen, men er fra før siste g456-trim.
+- [x] TV R11: faktisk native skjermmateriale er bundet til GPU-teksturen, 48 034 / 49 152 piksler endres, frame 185 blir 258 og lydklokken går 6,0373 s frem. Ingen produksjonsretting av eksisterende TV-avspilling var nødvendig.
+- [x] Kilde/editor: terreng kuttes under forfattet bassengsti og dekke; faktisk portadkomst og dekkerunde består. Dette er målrettet rute-/geometribevis, ikke en menneskelig vurdering av flimmer.
+- [ ] Identifiser den lille mørke klumpen utenfor gjerdet i E04 før eventuell fjerning. Diagnosen skriver 18 meshkomponenter, 57 instanser og åtte stråler, men ingen matching til originalmotivet er fastslått. Den tilsiktede brune pumpekassen er ikke utpekt som feilen. Ingen ekstra sletting er gjort.
+- [x] Kilde/editor: telefonen vender mot fri gangside med faktisk fysisk fronttreff. ICE/avis flyttes samlet, bekreftede restdeler fjernes og keramikk bevares. NoCollision-avisglasset kontrolleres med faktiske GPU-rendertriangler; dette er ikke fysisk treff eller sceneokklusjonsbevis.
+- [x] Pakket R1 fra `2d13e231` etter main/ENV02-samordning: 1 709 selvtester, 58/14/7/4, 1 611 gulvstråler, 178,695588 m / 143,029735 s, faktisk rom 6 og ordinær disk/title/Continue. TV har 48 262 / 49 152 endrede GPU-piksler, frame 183 → 256 og lydklokkedelta 6,037333 s. Begge originale tekstur-PNG-er er åpnet. Kandidatens kilde, 13 458 inputfiler og åtte payloads er hashbundet; dette endrer ikke installasjonen eller E04-klumpens åpne identitet.
+- [ ] Menneskelig input, subjektiv lytting, FPS og fullmatrise/installasjon/release er fortsatt UNVERIFIED eller ikke utført. R2-kamerafixtures erstatter ikke fysisk rute, og API-ruten er ikke menneskelig input.
 
-Den tidligere motel-R4-leveransen opphever ikke disse nye funnene. Modellplassering, terrengkontakt, bevegelse, kollisjon og TV-avspilling trenger egen avgrenset rettelse.
+Avviste R1–R9 beholdes med konkrete årsaker i rapporten. R10-planen stoppet i bygg på `-Wshadow`; ingen R10-rute ble kjørt. Ni gulvprøver med minst 6/9 gyldige treff dekker en faktisk 2 cm kildefuge uten å endre høyde- eller native-eierkrav. Additiv dekor node 770 bevares visuelt og mister bare sin feilaktige gulvkollisjon. Den tidligere motel-R4-leveransen lukker ikke disse nye restpunktene.
 
 ## 6. SARO: musehopp, tekstpanel og øst-/utgangsdør
 

@@ -54,6 +54,7 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  struct FPatch {UStaticMeshComponent* Comp;UStaticMesh* Mesh;TArray<int32> Slots;bool Hidden;};
  struct FCar {int32 Node;FVector Target;FString Id;};
  TArray<FPart> NewParts;TArray<FPatch> Patches;TArray<UStaticMeshComponent*> Retired;TArray<FCar> Cars;
+ TArray<int32> RetiredRoots;TArray<FMovedInteraction> Moves;
  TArray<FS47Rect> Disable,Add,Zones;TArray<TPair<FS47Rect,FS47Rect>> CarRects;TArray<FFloor> NewFloors;
  TMap<int32,FVector> Protected;
  for(const TCHAR* H:{TEXT("world.motel.tv.group"),TEXT("world.motel.objs.envelope"),TEXT("world.motel.objs.message"),TEXT("world.motel.objs.key6Hook"),TEXT("world.motel.objs.officePhoneHandset"),TEXT("world.motel.objs.room6DoorLeaf"),TEXT("world.motel.proxies.register"),TEXT("world.motel.proxies.room6Door")})
@@ -64,6 +65,16 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  // The room6 window owns a live lit/dark material. Its old native replacement had hidden this leaf.
  auto* RoomWindow=MeshAt(W,686);const auto* WindowNode=W->Node(686);
  if(!RoomWindow||!WindowNode||WindowNode->Geo!=471||WindowNode->Parent!=663||RoomWindow->GetNumMaterials()!=1){Reject(TEXT("room6 live window predecessor"));return {};}
+ // weathering.ts pool(...,'up') legger additive lyskvad 2cm over mottakerflaten
+ // for å unngå z-fighting. Tegning og materialbinding beholdes; dette er
+ // lysdekor, ikke solide gulvflater som skal besvare fysikkspørringer.
+ const auto* PoolNode=W->Node(770);const auto* PoolParent=W->Node(767);auto* LightPools=MeshAt(W,770);
+ UStaticMesh* PoolMesh=LightPools?LightPools->GetStaticMesh():nullptr;
+ UMaterialInterface* PoolMaterial=LightPools?LightPools->GetMaterial(0):nullptr;
+ if(!PoolNode||PoolNode->Geo!=530||PoolNode->Parent!=767||PoolNode->bInstanced||PoolNode->Mats.Num()!=1||PoolNode->Mats[0]!=351
+  ||!PoolParent||PoolParent->Name!=TEXT("dress/court")||!PoolParent->Comp.IsValid()||!LightPools||LightPools->GetAttachParent()!=PoolParent->Comp.Get()
+  ||!PoolMesh||PoolMesh!=W->GeoMesh(530)||LightPools->GetNumMaterials()!=1||!PoolMaterial||PoolMaterial!=W->MatAsset(351)||PoolMaterial->GetBlendMode()!=BLEND_Additive)
+ {Reject(TEXT("original court light pools node770/g530/parent767/material351 additive binding"));return {};}
  // Four existing native exterior parts must exist. Room 6 is deliberately a separate untouched set.
  for(const TCHAR* Name:{TEXT("SM_Town_Motel_Shell"),TEXT("SM_Town_Motel_Glass"),TEXT("SM_Town_Motel_Office"),TEXT("SM_Town_Motel_Fixtures")})
  {
@@ -142,6 +153,25 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   auto* C=MeshAt(W,int32(I));const auto* N=W->Node(int32(I));
   if(!C||N->Geo!=int32(G)||N->Parent!=int32(P)||Protected.Contains(int32(I))){Reject(TEXT("retire predecessor"));return {};}Retired.AddUnique(C);
  }
+ if(J->TryGetArrayField(TEXT("retire_named_nodes"),Rows))for(const auto& V:*Rows)
+ {
+  const auto R=V->AsObject();double I,P;FString Name;
+  if(!R||!R->TryGetNumberField(TEXT("node"),I)||!R->TryGetNumberField(TEXT("parent"),P)||!R->TryGetStringField(TEXT("name"),Name)) {Reject(TEXT("named retirement metadata"));return {};}
+  const auto* N=W->Node(int32(I));
+  // Only the measured active reception lamp is superseded. Keep its asset and credit.
+  if(int32(I)!=737||int32(P)!=689||Name!=TEXT("lic:lamp_marble")||!N||N->Parent!=int32(P)||N->Name!=Name||Protected.Contains(int32(I))) {Reject(TEXT("named retirement predecessor"));return {};}
+  RetiredRoots.Add(int32(I));TArray<int32> Pending=N->Children;int32 Meshes=0;
+  while(!Pending.IsEmpty()) {const int32 K=Pending.Pop(EAllowShrinking::No);const auto* Child=W->Node(K);if(!Child){Reject(TEXT("named retirement child"));return {};}Pending.Append(Child->Children);if(auto* C=MeshAt(W,K)){Retired.AddUnique(C);++Meshes;}}
+  if(Meshes!=2){Reject(TEXT("reception lamp must contain exactly two original leaves"));return {};}
+ }
+ if(J->TryGetArrayField(TEXT("move_interaction_nodes"),Rows))for(const auto& V:*Rows)
+ {
+  const auto R=V->AsObject();double I,G,P;FString Handle;const FValues *Expected=nullptr,*Target=nullptr,*Scale=nullptr;
+  if(!R||!R->TryGetNumberField(TEXT("node"),I)||!R->TryGetNumberField(TEXT("geo"),G)||!R->TryGetNumberField(TEXT("parent"),P)||!R->TryGetStringField(TEXT("handle"),Handle)||!R->TryGetArrayField(TEXT("expected_world_three_m"),Expected)||!VectorValid(*Expected,3)||!R->TryGetArrayField(TEXT("world_three_m"),Target)||!VectorValid(*Target,3)||!R->TryGetArrayField(TEXT("scale"),Scale)||!VectorValid(*Scale,3)) {Reject(TEXT("interaction relocation metadata"));return {};}
+  const auto* N=W->Node(int32(I));const FVector Size=Vec(*Scale);
+  if(Handle!=TEXT("world.motel.proxies.iceMachine")||W->Handle(Handle)!=int32(I)||!N||N->Geo!=int32(G)||N->Parent!=int32(P)||!W->WorldThree(int32(I)).Equals(Vec(*Expected),.01)||!N->S.Equals(FVector::OneVector,.0001)||Size.GetMin()<=0||Protected.Contains(int32(I))) {Reject(TEXT("interaction relocation predecessor"));return {};}
+  Moves.Add({int32(I),Vec(*Target),Size});
+ }
  for(const TCHAR* Prop:{TEXT("motelBlade"),TEXT("motelNeon")})
  {
   if(auto* C=MeshAt(W,FindChild(W,Motel,FString(TEXT("prop:"))+Prop)))Retired.AddUnique(C);
@@ -168,10 +198,15 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  {
   const int32 I=FindChild(W,Motel,FString(TEXT("prop:"))+Id);const FValues* A=nullptr;
   if(!MeshAt(W,I)||W->Node(I)->Parent!=Motel||!(*CarJson)->TryGetArrayField(Id,A)||!VectorValid(*A,3)){Reject(FString(TEXT("original car "))+Id);return {};}
-  FVector Target=Vec(*A);Target.Y=W->WorldThree(I).Y;Cars.Add({I,Target,Id});
+  Cars.Add({I,Vec(*A),Id});
  }
+ if(Retired.Contains(LightPools)||Patches.ContainsByPredicate([LightPools](const FPatch& P){return P.Comp==LightPools;}))
+ {Reject(TEXT("original court light pools must remain untrimmed and unretired"));return {};}
  // All validation ends before the first mutation. A missing cooked asset leaves the full predecessor visible.
  auto F=MakeShared<FS47MotelV2>();F->Web=W;F->ProtectedPositions=Protected;F->ExpectedPartCount=NewParts.Num()+1;
+ F->CourtLightPools=LightPools;F->CourtLightPoolMesh=PoolMesh;F->CourtLightPoolMaterial=PoolMaterial;
+ F->CourtLightPoolRelativeTransform=LightPools->GetRelativeTransform();LightPools->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ F->RetiredNamedRoots=RetiredRoots;F->MovedInteractions=Moves;F->PayphoneNode=FindChild(W,Motel,TEXT("prop:motelPhone"));
  for(const auto& Pair:Protected)F->ProtectedComponents.Add(Pair.Key,W->Node(Pair.Key)->Comp);
  for(const auto& G:SignGlows)F->RetiredSignGlows.Add(FIntPoint(G.Node,G.Point));
  for(const auto& P:SignPools){const int32 Set=W->FloodSet(P.Key);F->RetiredSignPools.Add(FIntPoint(Set,P.Slot));W->SuppressFloodLight(Set,P.Slot);}
@@ -199,6 +234,8 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   for(int32 S=0;S<P.Slots.Num();++S)P.Comp->SetMaterial(S,Mats[P.Slots[S]]);
  }
  for(auto* C:Retired){Retire(C);F->Retired.Add(C);}
+ for(const int32 I:RetiredRoots)W->SetVisible(I,false);
+ for(const auto& Move:Moves){const auto* N=W->Node(Move.Node);W->SetPosition(Move.Node,Move.Position-W->WorldThree(N->Parent));W->SetScale(Move.Node,Move.Scale);}
  auto& Colliders=W->CollidersMutable(TEXT("saro"));
  for(int32 I=0;I<Colliders.Num();++I)for(const auto& R:Disable)if(Same(Colliders[I],R))
  {
@@ -242,6 +279,7 @@ void FS47MotelV2::Update()
 {
  for(const auto& P:Retired)if(auto* C=P.Get())Retire(C);
  AS47Web* W=Web.Get();if(!W)return;const int32 Set=W->FloodSet(TEXT("court"));
+ for(const int32 I:RetiredNamedRoots)W->SetVisible(I,false);
  // Retired sign halos are mirrored in SARO, the road and STATION01. Keep only these six points dark.
  for(const auto& P:RetiredSignGlows)if(auto* G=W->Glow(P.X)){G->SetSize(P.Y,0);G->SetColor(P.Y,FLinearColor::Black);}
  // Keep the historical flicker width as the new sign's emission feed, but remove the old coloured light.
@@ -270,6 +308,31 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
  }
  if(W)
  {
+  {
+  const auto* N=W->Node(770);const auto* Parent=W->Node(767);auto* C=CourtLightPools.Get();auto* Material=CourtLightPoolMaterial.Get();
+  Check(N&&C&&N->Comp.Get()==C&&N->Geo==530&&N->Parent==767&&!N->bInstanced&&N->Mats.Num()==1&&N->Mats[0]==351
+   &&Parent&&Parent->Name==TEXT("dress/court")&&Parent->Comp.IsValid()&&C->GetAttachParent()==Parent->Comp.Get(),TEXT("original court light-pool component identity"));
+  Check(C&&CourtLightPoolMesh.IsValid()&&C->GetStaticMesh()==CourtLightPoolMesh.Get()&&C->GetNumMaterials()==1
+   &&Material&&C->GetMaterial(0)==Material&&Material->GetBlendMode()==BLEND_Additive
+   &&C->GetRelativeTransform().Equals(CourtLightPoolRelativeTransform,.0001),TEXT("original court light-pool mesh, material and transform preserved"));
+  Check(C&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("additive court light pools must remain NoCollision"));
+  }
+  for(const int32 I:RetiredNamedRoots)Check(!W->IsVisible(I),FString::Printf(TEXT("superseded reception lamp root%d remains visible"),I));
+  for(const auto& Move:MovedInteractions)
+  {
+   const auto* N=W->Node(Move.Node);
+   Check(N&&W->WorldThree(Move.Node).Equals(Move.Position,.001)&&N->S.Equals(Move.Scale,.0001),FString::Printf(TEXT("relocated interaction node%d no longer matches native front"),Move.Node));
+  }
+  const auto* Phone=MeshAt(W,PayphoneNode);
+  Check(Phone&&Phone->GetStaticMesh()&&Phone->GetStaticMesh()->GetName()==TEXT("payphone_blue"),TEXT("original payphone asset missing"));
+  if(Phone)
+  {
+   // AdoptNode records a prop's position only. Measure the actual rendered transform,
+   // whose imported glTF axes use the Three-to-Unreal swap, rather than its identity node Q.
+   Check(S47Three::ToThree(Phone->GetComponentLocation()).Equals(FVector(-43.25,-2.0985683853163195,671.32),.01),TEXT("payphone base differs from measured path height"));
+   const FVector KeypadFront=Phone->GetComponentQuat().RotateVector(S47Three::DirToUE(FVector(0,0,1)));
+   Check(KeypadFront.Equals(S47Three::DirToUE(FVector(0,0,-1)),.001),TEXT("payphone keypad does not face north path"));
+  }
   for(const auto& Pair:ProtectedComponents)
   {
    const auto* N=W->Node(Pair.Key);auto* Expected=Pair.Value.Get();auto* Actual=N?N->Comp.Get():nullptr;

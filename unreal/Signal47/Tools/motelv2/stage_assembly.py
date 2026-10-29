@@ -30,12 +30,103 @@ def overlap_area(a, b):
     return max(0, min(a[1], b[1]) - max(a[0], b[0])) * max(0, min(a[3], b[3]) - max(a[2], b[2]))
 
 
+def verify_grounding(source, manifest, trim, layout):
+    """Bind repaired geometry, ground cuts and walking heights to one source."""
+    path = source / 'grounding-contract.json'
+    grounding = read(path)
+    repair = manifest['grounding_repair']
+    assert repair['id'] == grounding['repair_id'] == 'motel-grounded-20261029-v1'
+    assert repair['contract_sha256'] == trim['grounding_contract_sha256'] == sha(path)
+    origin = manifest['parts']['SM_Sierra_Office']['site_world_three_m']
+    expected = []
+    for surface in grounding['surface_rectangles_blender_xy_m'].values():
+        x0, x1, y0, y1 = surface['rect']
+        pieces = [[x0, x1, y0, y1]]
+        if 'water_rect' in surface:
+            a, b, c, d = surface['water_rect']
+            assert x0 < a < b < x1 and y0 < c < d < y1
+            pieces = [[x0, a, y0, y1], [b, x1, y0, y1],
+                      [a, b, y0, c], [a, b, d, y1]]
+        for a, b, c, d in pieces:
+            expected.append(([origin[0] + a, origin[0] + b, origin[2] - d, origin[2] - c],
+                             origin[1] + surface['top_z']))
+    remaining = list(layout['floors'])
+    for footprint, height in expected:
+        matches = [row for row in remaining if len(row['rect']) == 4
+                   and all(math.isclose(a, b, abs_tol=.0001) for a, b in zip(row['rect'], footprint))
+                   and math.isclose(row['y'], height, abs_tol=.00001)]
+        assert len(matches) == 1, ('runtime floor differs from repaired source', footprint, height)
+        remaining.remove(matches[0])
+    assert not remaining, ('runtime floors without authored surface', remaining)
+    # FloorAt uses first match. Raised tiles/deck must precede their underlay.
+    for index, earlier in enumerate(layout['floors']):
+        for later in layout['floors'][index + 1:]:
+            if overlap_area(earlier['rect'], later['rect']) > 1e-8:
+                assert earlier['y'] >= later['y'] - .00001, 'lower floor shadows a raised visible surface'
+
+
+def verify_asphalt(trim):
+    """The actual original asphalt is partially replaced; its approach stays."""
+    row = trim['meshes']['g456']
+    assert (row['node'], row['geo'], row['parent'], row['source_tris'], row['result_tris']) == (671, 456, 663, 24, 30)
+    assert row['accepted_previous_tris'] == [24] and row['original_material_indices'] == [0]
+    assert row['source_material_ids'] == [320] and row['hidden'] is False
+    assert row['asset'] == '/Game/MotelV2/Trim/g456.g456' and row['fbx'] == 'exports/g456.fbx'
+    translation = row['source_parent_translation_three_m']
+    assert translation == [-2.5, -2.098568384594018, 650]
+    holes = [[a - translation[0], b - translation[0], c - translation[2], d - translation[2]]
+             for a, b, c, d in trim['ground_openings_world_xz_m']]
+    proof = trim['legacy_asphalt_verification']
+    assert proof['status'] == 'PASS' and proof['original_buffer_prefix_identical'] is True
+    assert (proof['node'], proof['geo'], proof['parent'], proof['source_material_ids']) == (671, 456, 663, [320])
+    assert row['ground_holes_local_xz_m'] == proof['ground_holes_local_xz_m'] == holes
+    assert proof['source_geometry_sha256'] == trim['source_geometry_sha256']['geo_003.glb']
+    assert proof['source_geometry_sha256'] == 'fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9'
+    for key, expected in (('original_top_area_m2', 786.39), ('native_overlap_top_area_m2', 562.70),
+                          ('retained_approach_top_area_m2', 223.69)):
+        assert math.isclose(proof[key], expected, rel_tol=0., abs_tol=.0001), (key, proof[key])
+    assert proof['cleared_inside_rays'] > 0 and proof['preserved_outside_rays'] > 0
+    assert len(proof['waypoint11_footprint']) == 5
+    assert all(sample['old_hit_y_m'] and sample['new_hit_y_m'] == [] for sample in proof['waypoint11_footprint'])
+
+
+def verify_asphalt_native_delta(imported, project):
+    """Every existing file and the single new asset are bound before staging."""
+    project = project.resolve()
+    asset = '/Game/MotelV2/Trim/g456.g456'
+    filename = 'Content/MotelV2/Trim/g456.uasset'
+    assert imported['changed_native_assets'] == [asset]
+    changed = imported['changed_native_files_sha256']
+    assert set(changed) == {filename}, 'asphalt delta may change only g456'
+    expected = changed[filename]
+    assert len(expected) == 64 and all(c in '0123456789abcdef' for c in expected)
+    path = project / filename
+    native = project / 'Content/MotelV2'
+    assert path.resolve().is_relative_to(native.resolve()) and sha(path) == expected, 'new asphalt asset changed after import'
+    actual = {str(p.relative_to(project)): sha(p) for p in sorted(native.rglob('*')) if p.is_file() and p != path}
+    assert actual and imported['preserved_native_before_sha256'] == actual, (
+        'complete preserved native inventory must match actual disk, excluding only new g456')
+
+
 def stage(args):
     source, trims = args.source.resolve(), args.trims.resolve()
     contract, trim = read(source / 'manifest.json'), read(trims / 'trim-manifest.json')
     layout = read(args.layout)
     imported, verified = read(args.import_report), read(args.verify_report)
-    assert imported['kind'] == 'native-import' and verified['kind'] == 'saved-native-read-only'
+    assert imported['kind'] in ('native-import', 'oriented-floor-import', 'legacy-asphalt-trim-import') and verified['kind'] == 'saved-native-read-only'
+    if imported['kind'] == 'legacy-asphalt-trim-import':
+        verify_asphalt_native_delta(imported, args.project)
+    if imported['kind'] == 'oriented-floor-import':
+        # A source-audited delta imports eleven owners and re-verifies the full
+        # inventory. Its additional hash gate must retain every unrelated asset.
+        audit_sha = imported.get('source_orientation_audit_sha256', '')
+        assert len(audit_sha) == 64 and all(c in '0123456789abcdef' for c in audit_sha)
+        preserved = imported.get('preserved_native_before_sha256', {})
+        assert preserved, 'oriented delta must bind its preserved native inventory'
+        for filename, digest in preserved.items():
+            path = args.project.resolve() / filename
+            assert path.resolve().is_relative_to(args.project.resolve() / 'Content/MotelV2')
+            assert sha(path) == digest, ('unrelated native changed after oriented import', filename)
     for proof in (imported, verified):
         assert proof['status'] == 'PASS' and proof['checks'] and all(c['pass'] for c in proof['checks'])
         assert proof['source_sha256']['manifest'] == sha(source / 'manifest.json')
@@ -48,10 +139,26 @@ def stage(args):
     for proof in (imported, verified):
         assert {r['name'] for r in proof['meshes']} == expected_meshes
     assert 0 < verified['resident_lod_budget']['actual_triangles'] <= 24000
+    verify_grounding(source, contract, trim, layout)
+    verify_asphalt(trim)
     assert layout['version'] == 1
     assert set(layout['retire_native']) == {'SM_Town_Motel_Shell', 'SM_Town_Motel_Glass', 'SM_Town_Motel_Office', 'SM_Town_Motel_Fixtures'}
     assert {(r['node'], r['geo'], r['parent']) for r in layout['retire_nodes']} == {(26, 19, 25), (27, 20, 25), (28, 21, 25)}
     assert set(layout['retire_props']) == {'motelBlade', 'motelNeon'}
+    assert layout['retire_named_nodes'] == [
+        {'node': 737, 'name': 'lic:lamp_marble', 'parent': 689}
+    ], 'only the identified duplicate reception lamp group may be retired'
+    moves = layout['move_interaction_nodes']
+    assert len(moves) == 1
+    move = moves[0]
+    assert (move['handle'], move['node'], move['geo'], move['parent']) == (
+        'world.motel.proxies.iceMachine', 742, 506, 662)
+    assert len(move['expected_world_three_m']) == 3
+    assert all(math.isclose(a, b, abs_tol=.000001) for a, b in zip(
+        move['expected_world_three_m'], [-43.13, -1.398568384594018, 678.1]))
+    for key in ('world_three_m', 'scale'):
+        assert len(move[key]) == 3 and all(isinstance(v, (int, float)) and math.isfinite(v) for v in move[key])
+    assert all(0 < v <= 2 for v in move['scale']), 'interaction proxy scale must remain bounded'
     assert set(layout['car_positions']) == {'motelCar1', 'motelCar2', 'motelCar3'}
     for value in layout['car_positions'].values():
         assert len(value) == 3 and all(math.isfinite(v) for v in value)
@@ -83,7 +190,7 @@ def stage(args):
                        'bounds_local_m': row['bounds_local_m']}
     patches = trim['patches']
     assert len({r['node'] for r in patches}) == len(patches)
-    assert {r['geo'] for r in patches} == {4, 457, 461, 463, 464, 467, 528, 529, 663}
+    assert {r['geo'] for r in patches} == {4, 456, 457, 459, 461, 463, 464, 467, 528, 529, 663}
     for row in patches:
         assert row['accepted_previous_tris'] and row['result_tris'] >= 0
         assert row['hidden'] == (row['result_tris'] == 0)
@@ -92,6 +199,7 @@ def stage(args):
         else:
             assert row['asset'] == f"/Game/MotelV2/Trim/g{row['geo']}.g{row['geo']}"
     result = {key: layout[key] for key in ('version', 'retire_native', 'retire_nodes', 'retire_props',
+              'retire_named_nodes', 'move_interaction_nodes',
               'disable_colliders', 'add_colliders', 'add_zones', 'floors', 'car_positions')}
     result.update(parts=parts, patches=patches,
                   provenance={'manifest_sha256': sha(source / 'manifest.json'),

@@ -1,0 +1,71 @@
+{
+  "status": "PASS_TARGETED_EDITOR_ROUTE",
+  "runtime_source_head": "d707abd4",
+  "route": {
+    "status": "PASS",
+    "reason": "continuous motel route, physical room6 use and ordinary disk Continue",
+    "waypoints": 58,
+    "interactions": 14,
+    "doorRecesses": 7,
+    "floorRays": 1611,
+    "walkedMetres": 178.63319955613585,
+    "tvBefore": "picture 15.48 s (frame 185), sound 15.48 s, level 0.320, brightness 0.14",
+    "tvAfter": "picture 21.52 s (frame 258), sound 21.52 s, level 0.320, brightness 0.22",
+    "tvTexture": "/Engine/Transient.Texture2D_34",
+    "elapsedSeconds": 142.99888913199538,
+    "tvAudioClockDelta": 6.037333333333333,
+    "poolExteriorDiagnostic": "pool-exterior.json",
+    "method": "API-driven normal Walker/Resolve; four explicit blocker placements then one route-start placement; actual interaction rays and room6Door use; native TV texture GPU readback and production programme/audio clocks; ordinary isolated disk save/title/Continue.",
+    "limits": "Legacy chapter4 entry is an explicit developer fixture. Earlier chapters, human input, subjective listening and full chapter4 content were not played."
+  },
+  "images": {
+    "day-motel-office.png": {
+      "bytes": 2095556,
+      "sha256": "5c67161be726d81b3dcc4ec4674b2eb0474dda16ae4b95bebaa5ffe649fb3c99",
+      "source": "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/editor-views-r2/day-motel-office.png",
+      "kind": "actual static editor camera fixture R2 before precise g456 asphalt trim"
+    },
+    "day-motel-phone-wall.png": {
+      "bytes": 2293440,
+      "sha256": "2a8768f365826ae341480fed4bccfa80a93422c1ba914e79f00c5472582cd505",
+      "source": "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/editor-views-r2/day-motel-phone-wall.png",
+      "kind": "actual static editor camera fixture R2 before precise g456 asphalt trim"
+    },
+    "day-motel-pool-exterior.png": {
+      "bytes": 2235703,
+      "sha256": "497be6ea8f60fd83747ae17b87513e116b72e9cc5b15a8694294b3ea93b4fad6",
+      "source": "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/editor-views-r2/day-motel-pool-exterior.png",
+      "kind": "actual static editor camera fixture R2 before precise g456 asphalt trim"
+    },
+    "day-motel-pool-north.png": {
+      "bytes": 2026797,
+      "sha256": "10758b8593edcc93ca4cb819a0bd268598e040860da530e042e8b05bd24559e0",
+      "source": "/home/tom/scratch-bm/Signal47-motel-grounded-20261029/editor-views-r2/day-motel-pool-north.png",
+      "kind": "actual static editor camera fixture R2 before precise g456 asphalt trim"
+    },
+    "tv-before.png": {
+      "bytes": 41494,
+      "sha256": "14856b7b4033f8ed37184fbaef1769a070e2d5810ecde711795b602caec70f56",
+      "source": "/tmp/S47-motel-grounded-editor-r11/Saved/MotelV2Route/01A18608FAC476D58D47A5B93C4FDDE8/tv-before.png",
+      "kind": "actual GPU texture readback during full editor route R11"
+    },
+    "tv-after.png": {
+      "bytes": 53361,
+      "sha256": "a7c53c9d64b6df2d08e79a9450f942a9a215e2d74e2632af72ec9c776aa43e39",
+      "source": "/tmp/S47-motel-grounded-editor-r11/Saved/MotelV2Route/01A18608FAC476D58D47A5B93C4FDDE8/tv-after.png",
+      "kind": "actual GPU texture readback during full editor route R11"
+    }
+  },
+  "view_result": {
+    "returncode": 0,
+    "wall_seconds": 146.2106850220007,
+    "contention": [],
+    "performance_status": "UNCONTENDED",
+    "semantic_success": true
+  },
+  "human_input": "UNVERIFIED",
+  "human_listening": "UNVERIFIED",
+  "e04_pool_clump_identity": "UNVERIFIED",
+  "installed": false,
+  "public_release": false
+}

@@ -297,7 +297,8 @@ double US47Night::Dawn() const
 
 double US47Night::SaroFloorAt(const AS47Web* Web, double X, double Z)
 {
-	// The rear motel deck and paths are outside the legacy court rectangle. Water has no floor override.
+	// Native motel slabs, asphalt and pool approaches supply their measured visible top heights.
+	// This comes before the legacy flat court fallback; water has no walking floor override.
 	const double MotelFloor = FS47MotelV2::FloorAt(X, Z);
 	if (FMath::IsFinite(MotelFloor)) return MotelFloor;
 	// world/Grounds.ts floorAt: the height of the ground under the player anywhere in SARO's scene
@@ -907,7 +908,9 @@ bool US47Night::SelfTest(TArray<FString>& Lines)
 	bool bOk = true;
 	auto Check = [&](bool bCond, const FString& What) { Lines.Add(FString::Printf(TEXT("%s night: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), *What)); bOk &= bCond; };
 	// Grounds.floorAt: the floors, the ground, the ramp half way, the array, the motel
-	Check(SaroFloorAt(nullptr, 0, 0) == 0 && FMath::IsNearlyEqual(SaroFloorAt(nullptr, 9.8, 14.5), GROUND * 0.5, 1e-9) && SaroFloorAt(nullptr, -12, -208) == GROUND && FMath::IsNearlyEqual(SaroFloorAt(nullptr, -40, 680), S47Geo::MOTEL_AT().Y),
+	// The authored asphalt is 8 cm below the porch. With V2 disabled the original flat court remains.
+	const double MotelCourtY = S47Geo::MOTEL_AT().Y - (FMath::IsFinite(FS47MotelV2::FloorAt(-40, 680)) ? 0.08 : 0.0);
+	Check(SaroFloorAt(nullptr, 0, 0) == 0 && FMath::IsNearlyEqual(SaroFloorAt(nullptr, 9.8, 14.5), GROUND * 0.5, 1e-9) && SaroFloorAt(nullptr, -12, -208) == GROUND && FMath::IsNearlyEqual(SaroFloorAt(nullptr, -40, 680), MotelCourtY),
 		TEXT("the ground under SARO's scene"));
 	// the townSeen key set writes a fresh key down once
 	FS47TownSeen T;

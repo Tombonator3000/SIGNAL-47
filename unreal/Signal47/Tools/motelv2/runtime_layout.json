@@ -123,6 +123,30 @@
       -34.321241906987794,
       712.5179623406941,
       714.6820376593058
+    ],
+    [
+      -43.35,
+      -42.75,
+      690.8,
+      691.4
+    ],
+    [
+      -43.35,
+      -42.75,
+      710.7,
+      711.3
+    ],
+    [
+      -43.52,
+      -42.77,
+      677.67,
+      678.53
+    ],
+    [
+      -41.76,
+      -41.34,
+      676.37,
+      676.83
     ]
   ],
   "add_colliders": [
@@ -257,6 +281,48 @@
       -59.8,
       680.85,
       681.85
+    ],
+    [
+      -43.10200014,
+      -42.59799995,
+      683.58881989,
+      684.15141239
+    ],
+    [
+      -43.10200014,
+      -42.59799995,
+      693.58882179,
+      694.15141335
+    ],
+    [
+      -43.10200014,
+      -42.59799995,
+      708.58881989,
+      709.15141525
+    ],
+    [
+      -45.1,
+      -44.3,
+      670.9543,
+      671.645
+    ],
+    [
+      -46.27,
+      -45.73,
+      671.0173,
+      671.6
+    ],
+    [
+      -43.175000095,
+      -42.624999905,
+      672.725000048,
+      673.275
+    ],
+    [
+      -43.175000095,
+      -42.624999905,
+      690.725000763,
+      691.275
     ]
   ],
   "add_zones": [
@@ -342,28 +408,130 @@
         681.4
       ],
       "y": -2.0985683853163195
+    },
+    {
+      "name": "covered-room-walk",
+      "rect": [
+        -43.605,
+        -40.755,
+        671.635,
+        720.615
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "reception-tiles",
+      "rect": [
+        -48.106,
+        -43.714,
+        672.304,
+        677.496
+      ],
+      "y": -2.0865683853163195
+    },
+    {
+      "name": "reception-underlay",
+      "rect": [
+        -48.12,
+        -43.68,
+        672.225,
+        677.575
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "reception-threshold",
+      "rect": [
+        -43.68,
+        -43.605,
+        673.4,
+        674.8
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "service-west",
+      "rect": [
+        -46.32,
+        -43.605,
+        671.5,
+        671.67
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "service-bridge",
+      "rect": [
+        -43.605,
+        -40.9,
+        671.5,
+        671.635
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "court-asphalt",
+      "rect": [
+        -40.8,
+        -30.2,
+        667.9,
+        721.9
+      ],
+      "y": -2.1785683853163196
     }
   ],
   "car_positions": {
     "motelCar1": [
       -37.45,
-      -2.0985683853163195,
+      -2.1785683853163196,
       683.7
     ],
     "motelCar2": [
       -37.45,
-      -2.0985683853163195,
+      -2.1785683853163196,
       703.9
     ],
     "motelCar3": [
       -37.45,
-      -2.0985683853163195,
+      -2.1785683853163196,
       712.9
     ]
   },
   "notes": [
-    "World Three metres; only adapted pool deck and approach have floor overrides. Water excluded.",
-    "Legacy posts updated to visible Blender posts; player truck parking, room6 leaf, original interaction proxies unchanged.",
-    "Walking zones overlap at gate and northwest corner for walker radius0.27; floors stay exact slabs."
+    "World Three metres. Every native walking surface uses its measured visible top: covered walk/thresholds0, reception terracotta+0.012 over underlay0, asphalt-0.08, pool deck+0.06 in authored Blender metres. Water excluded.",
+    "Legacy posts and exactly identified superseded props use coordinated source trims and collider retirement. Original buildings, fences, three detailed car assets, room6 leaf and document anchors remain authoritative.",
+    "The two service strips meet the existing north path edge to edge, with no coplanar overlapping slab. Walking zones may overlap for walker radius0.27; floors remain exact slab footprints.",
+    "Original pot geometry and its three colliders are retained at their measured base0. Native chair feet are grounded by the source repair. Reception lamp737 alone is retired with its two leaves; asset and credit retained.",
+    "ICE interaction keeps its original handle/ID but its thin proxy lies on the measured new north-facing cabinet front. Payphone facing is measured from the prepared keypad plane, not inferred from a screenshot."
+  ],
+  "retire_named_nodes": [
+    {
+      "node": 737,
+      "name": "lic:lamp_marble",
+      "parent": 689
+    }
+  ],
+  "move_interaction_nodes": [
+    {
+      "handle": "world.motel.proxies.iceMachine",
+      "node": 742,
+      "geo": 506,
+      "parent": 662,
+      "expected_world_three_m": [
+        -43.13,
+        -1.398568384594018,
+        678.1
+      ],
+      "world_three_m": [
+        -44.7,
+        -1.4685683853163196,
+        670.985
+      ],
+      "scale": [
+        1.0256410256410258,
+        0.9,
+        0.06818181818181818
+      ]
+    }
   ]
 }
