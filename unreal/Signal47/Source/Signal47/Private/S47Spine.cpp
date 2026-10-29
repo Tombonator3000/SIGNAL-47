@@ -16,6 +16,7 @@
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
 #include "Misc/CommandLine.h"
+#include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -318,11 +319,17 @@ void FS47Spine::ControlTest(double Dt)
   const FString Id = GateItem(G);
   if (M->World && M->World->Area == TEXT("saro") && M->Player && M->Inter)
   {
-   const FVector S = StandPoint(G);
-   M->Player->Place(S.X, S.Z, 0); M->Player->Pitch = 0;
    const FVector Eye = M->Player->EyeUE(), At = S47Three::ToUE(GatePoint(G));
    const FString Picked = M->Inter->Pick(Eye, (At - Eye).GetSafeNormal());
-   if (Picked != Id || !M->Player->OnUse) { Fail(FString::Printf(TEXT("ray to %s picked '%s'"), *Id, *Picked)); return false; }
+   if (Picked != Id || !M->Player->OnUse)
+   {
+    FHitResult Hit; FString What = TEXT("nothing");
+    if (M->Web && M->Web->GetWorld()->LineTraceSingleByChannel(Hit, Eye, Eye + (At - Eye).GetSafeNormal() * 400, ECC_Visibility))
+     What = FString::Printf(TEXT("%s at %.0f cm"), Hit.GetComponent() ? *Hit.GetComponent()->GetName() : TEXT("?"), Hit.Distance);
+    const bool bVisible = Posts.IsValidIndex(G) && Posts[G].IsValid() && Posts[G]->IsVisible();
+    Fail(FString::Printf(TEXT("ray to %s picked '%s'; trace hit %s; eye %s target %s; post visible %d; area %s"), *Id, *Picked, *What, *Eye.ToString(), *At.ToString(), bVisible, *M->World->Area));
+    return false;
+   }
    M->Player->OnUse(Picked);
    UE_LOG(LogTemp, Display, TEXT("S47: spine contract actual ray and production use: %s"), *Id);
   }
@@ -334,6 +341,8 @@ void FS47Spine::ControlTest(double Dt)
   if (M->UI) M->UI->Close(true);
   return true;
  };
+ // The walker takes its new pose on the next tick: place, wait, then read.
+ const auto Stand = [this](EGate G) { const FVector S = StandPoint(G); if (M->Player && M->World && M->World->Area == TEXT("saro")) { M->Player->Place(S.X, S.Z, 0); M->Player->Pitch = 0; } };
  const auto RoundTrip = [this](EGate G, int32 Want)
  {
   FS47Spine Fresh(nullptr); Fresh.Begin(S47J::Read(S47J::Write(Save())), false);
@@ -356,6 +365,10 @@ void FS47Spine::ControlTest(double Dt)
   M->Story->ConsoleAction();
   if (!Check(M->Story->Rx.Stage == Stage && M->Story->Clock() == Before, TEXT("the console refuses residual work while SC04 holds"))) return;
   if (!Check(RoundTrip(SC04, 1), TEXT("saved spine reloads with SC04 pending"))) return;
+  Stand(SC04); Next(5); return;
+ }
+ if (Test.Stage == 5)
+ {
   if (!Read(SC04)) return;
   if (!Check(Gate(SC04) == 2 && !HoldsResidual() && M->Story->Clock() >= GateDone(SC04) && M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("spine_sc04"); }) && !Posts[SC04]->IsVisible(),
    TEXT("reading the SC04 card files it, jumps to 03:15 and releases the console"))) return;
@@ -373,6 +386,10 @@ void FS47Spine::ControlTest(double Dt)
  if (Test.Stage == 3)
  {
   if (!Check(!M->Story->Begun.Contains(TEXT("ch3")), TEXT("chapter three still waits after a second and a half"))) return;
+  Stand(SC08); Next(6); return;
+ }
+ if (Test.Stage == 6)
+ {
   if (!Read(SC08)) return;
   if (!Check(Gate(SC08) == 2 && M->Story->Clock() >= GateDone(SC08), TEXT("reading the SC08 card jumps to 04:20 and continues chapter two's end"))) return;
   Next(4, 2.5); return;
@@ -396,6 +413,10 @@ void FS47Spine::ControlTest(double Dt)
  if (Test.Stage == 21)
  {
   if (!Check(!M->Story->Begun.Contains(TEXT("ch5")), TEXT("chapter five still waits after a second and a half"))) return;
+  Stand(SC11); Next(23); return;
+ }
+ if (Test.Stage == 23)
+ {
   if (!Read(SC11)) return;
   if (!Check(Gate(SC11) == 2 && M->Story->Clock() >= GateDone(SC11), TEXT("reading the SC11 card jumps to 05:10 and continues chapter four's end"))) return;
   Next(22, 2.5); return;
