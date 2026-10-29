@@ -179,10 +179,19 @@ namespace
  bool Material(UMaterialInterface* Material,UTexture2D* Texture,const FExpected& E,const FJ& Output)
  {
   const auto* Instance=Cast<UMaterialInstance>(Material);UTexture* Map=nullptr;
-  bool Ok=Instance&&Texture&&Instance->GetPathName()==Asset(E.Material)&&Texture->GetPathName()==Asset(E.Texture)
-   &&Instance->Parent&&Instance->Parent->GetPathName()==MasterPath
-   &&Instance->GetTextureParameterValue(FMaterialParameterInfo(TEXT("Map")),Map)&&Map==Texture
-   &&Texture->SRGB&&Texture->GetSizeX()>=1024&&Texture->GetSizeY()>=1024&&Texture->GetSizeX()<=2048&&Texture->GetSizeY()<=2048;
+  const bool HaveMap=Instance&&Instance->GetTextureParameterValue(FMaterialParameterInfo(TEXT("Map")),Map);
+  const int32 SizeX=Texture?Texture->GetSizeX():0,SizeY=Texture?Texture->GetSizeY():0;
+  bool Ok=true;auto Identity=MakeShared<FJsonObject>();auto ScalarChecks=MakeShared<FJsonObject>();auto VectorChecks=MakeShared<FJsonObject>();
+  auto Require=[&](const TCHAR* Key,bool Pass){Identity->SetBoolField(Key,Pass);Ok&=Pass;};
+  Require(TEXT("material_instance_exists"),Instance!=nullptr);Require(TEXT("texture_exists"),Texture!=nullptr);
+  Require(TEXT("material_path"),Instance&&Instance->GetPathName()==Asset(E.Material));
+  Require(TEXT("texture_path"),Texture&&Texture->GetPathName()==Asset(E.Texture));
+  Require(TEXT("parent_exists"),Instance&&Instance->Parent);
+  Require(TEXT("parent_path"),Instance&&Instance->Parent&&Instance->Parent->GetPathName()==MasterPath);
+  Require(TEXT("Map_parameter_exists"),HaveMap);Require(TEXT("Map_is_expected_texture"),HaveMap&&Map==Texture);
+  Require(TEXT("texture_srgb"),Texture&&Texture->SRGB);
+  Require(TEXT("texture_size_x_min_1024"),Texture&&SizeX>=1024);Require(TEXT("texture_size_y_min_1024"),Texture&&SizeY>=1024);
+  Require(TEXT("texture_size_x_max_2048"),Texture&&SizeX<=2048);Require(TEXT("texture_size_y_max_2048"),Texture&&SizeY<=2048);
   auto Scalars=MakeShared<FJsonObject>();auto Vectors=MakeShared<FJsonObject>();
   const TPair<const TCHAR*,float> Required[]={
    {TEXT("NativeLighting"),1},{TEXT("UseMap"),1},{TEXT("MapIsLinear"),0},{TEXT("Roughness"),.88f},
@@ -191,7 +200,9 @@ namespace
   for(const auto& P:Required)
   {
    float Actual=-100;const bool Have=Material&&Material->GetScalarParameterValue(FMaterialParameterInfo(P.Key),Actual);
-   Ok&=Have&&FMath::IsNearlyEqual(Actual,P.Value,.00001f);Scalars->SetNumberField(P.Key,Actual);
+   const bool Match=Have&&FMath::IsNearlyEqual(Actual,P.Value,.00001f);Ok&=Match;Scalars->SetNumberField(P.Key,Actual);
+   auto Check=MakeShared<FJsonObject>();Check->SetBoolField(TEXT("present"),Have);Check->SetBoolField(TEXT("matches"),Match);
+   Check->SetNumberField(TEXT("expected"),P.Value);ScalarChecks->SetObjectField(P.Key,Check);
   }
   const TPair<const TCHAR*,FLinearColor> VectorValues[]={
    {TEXT("Color"),FLinearColor::White},{TEXT("MapU"),FLinearColor(1,0,0,0)},{TEXT("MapV"),FLinearColor(0,1,0,0)}
@@ -199,15 +210,28 @@ namespace
   for(const auto& P:VectorValues)
   {
    FLinearColor Actual=FLinearColor::Transparent;const bool Have=Material&&Material->GetVectorParameterValue(FMaterialParameterInfo(P.Key),Actual);
-   Ok&=Have&&Actual.Equals(P.Value,.00001f);Vectors->SetArrayField(P.Key,Values({Actual.R,Actual.G,Actual.B,Actual.A}));
+   const bool Match=Have&&Actual.Equals(P.Value,.00001f);Ok&=Match;Vectors->SetArrayField(P.Key,Values({Actual.R,Actual.G,Actual.B,Actual.A}));
+   auto Check=MakeShared<FJsonObject>();Check->SetBoolField(TEXT("present"),Have);Check->SetBoolField(TEXT("matches"),Match);
+   Check->SetArrayField(TEXT("expected"),Values({P.Value.R,P.Value.G,P.Value.B,P.Value.A}));VectorChecks->SetObjectField(P.Key,Check);
   }
   if(Output)
   {
    Output->SetStringField(TEXT("actual_material_slot0"),GetPathNameSafe(Material));Output->SetStringField(TEXT("actual_Map"),GetPathNameSafe(Map));
    Output->SetStringField(TEXT("actual_material_parent"),Instance?GetPathNameSafe(Instance->Parent):TEXT("none"));
    Output->SetObjectField(TEXT("actual_scalars"),Scalars);Output->SetObjectField(TEXT("actual_vectors"),Vectors);
-   Output->SetArrayField(TEXT("actual_texture_size_px"),Values({Texture?Texture->GetSizeX():0,Texture?Texture->GetSizeY():0}));
+   Output->SetObjectField(TEXT("material_identity_checks"),Identity);Output->SetObjectField(TEXT("material_scalar_checks"),ScalarChecks);
+   Output->SetObjectField(TEXT("material_vector_checks"),VectorChecks);
+   Output->SetStringField(TEXT("expected_material"),Asset(E.Material));Output->SetStringField(TEXT("expected_texture"),Asset(E.Texture));
+   Output->SetStringField(TEXT("expected_material_parent"),MasterPath);Output->SetStringField(TEXT("actual_texture"),GetPathNameSafe(Texture));
+   Output->SetArrayField(TEXT("actual_texture_size_px"),Values({double(SizeX),double(SizeY)}));
    Output->SetBoolField(TEXT("actual_texture_srgb"),Texture&&Texture->SRGB);
+   const UTexture2D* ConstTexture=Texture;Output->SetBoolField(TEXT("actual_texture_resource_exists"),ConstTexture&&ConstTexture->GetResource()!=nullptr);
+#if WITH_EDITOR
+   Output->SetBoolField(TEXT("actual_texture_is_compiling"),ConstTexture&&ConstTexture->IsCompiling());
+   Output->SetBoolField(TEXT("actual_texture_is_default_placeholder"),ConstTexture&&ConstTexture->IsDefaultTexture());
+   Output->SetBoolField(TEXT("actual_texture_async_cache_complete"),ConstTexture&&ConstTexture->IsAsyncCacheComplete());
+   Output->SetStringField(TEXT("texture_platform_status_method"),TEXT("const IsAsyncCacheComplete; no GetPlatformData, blocking or implied platform-data presence"));
+#endif
    Output->SetBoolField(TEXT("actual_material_valid"),Ok);
   }
   return Ok;
@@ -371,8 +395,16 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
  {
   Materials[I]=LoadObject<UMaterialInterface>(nullptr,*Asset(Expected[I].Material));
   auto* Texture=LoadObject<UTexture2D>(nullptr,*Asset(Expected[I].Texture));
-  if(!Material(Materials[I],Texture,Expected[I],{})||Str((*Surfaces)[I]->AsObject(),TEXT("id"))!=Expected[I].Id)
-  {Reject(TEXT("complete two-texture/material set"));return {};}
+  auto Actual=MakeShared<FJsonObject>();Actual->SetStringField(TEXT("id"),Expected[I].Id);Actual->SetNumberField(TEXT("build_index"),I);
+  const bool MaterialReady=Material(Materials[I],Texture,Expected[I],Actual);
+  const FString SurfaceId=Str((*Surfaces)[I]->AsObject(),TEXT("id"));const bool SurfaceReady=SurfaceId==Expected[I].Id;
+  Actual->SetStringField(TEXT("actual_binding_surface_id"),SurfaceId);Actual->SetBoolField(TEXT("binding_surface_identity_valid"),SurfaceReady);
+  if(!MaterialReady||!SurfaceReady)
+  {
+   FString Diagnostic;FJsonSerializer::Serialize(Actual,TJsonWriterFactory<>::Create(&Diagnostic));
+   UE_LOG(LogS47CinemaPosters,Warning,TEXT("S47: cinema poster material preflight readback: %s"),*Diagnostic);
+   Reject(TEXT("complete two-texture/material set"));return {};
+  }
  }
  if(!Plane(PlaneMesh,{},Arr(BindingData,TEXT("plane_saved_triangles")))){Reject(TEXT("own measured CPU plane/UV source"));return {};}
  // No original is hidden, trimmed or rebound. Prepare both unregistered components
