@@ -1,0 +1,1222 @@
+{
+	"status": "PASS",
+	"scenario": "SC01",
+	"checks": 220,
+	"diskFlowRestores": 21,
+	"nativeWalkMetres": 273.15679026676014,
+	"normalPhoto": "free36@-4173",
+	"evidence": [
+		{
+			"check": "old case without cohort remains disabled and keeps its clock",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "unknown future content revision retains old flow without invented SC01 credit",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "fractional content revision is rejected",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "boolean schema cannot be coerced to numeric version one",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "new cohort begins with no SC01 physical completion",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "fresh dispatch-audio cohort has no invented Dale-heard fact",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "DispatchRecordings requires full SC01 with an audible production dialogue graph",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "dispatch acceptance binds exactly the original two-line phone scene",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "current exact dispatch role/text/recording identity: SC01_FIRST_REPORT_001",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "production role/text resolver selects the exact new take: SC01_FIRST_REPORT_001",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "production bank decodes the actual dispatch PCM: SC01_FIRST_REPORT_001",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "decoded mono48k PCM frames match the selected take duration: SC01_FIRST_REPORT_001",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "actual dispatch PCM contains non-silent signal: SC01_FIRST_REPORT_001",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "exact selected dispatch WAV is present on disk: SC01_FIRST_REPORT_001",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "current exact dispatch role/text/recording identity: SC01_FIRST_REPORT_002",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "production role/text resolver selects the exact new take: SC01_FIRST_REPORT_002",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "production bank decodes the actual dispatch PCM: SC01_FIRST_REPORT_002",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "decoded mono48k PCM frames match the selected take duration: SC01_FIRST_REPORT_002",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "actual dispatch PCM contains non-silent signal: SC01_FIRST_REPORT_002",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "exact selected dispatch WAV is present on disk: SC01_FIRST_REPORT_002",
+			"stage": 0,
+			"elapsed": 3.0159930973313749
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 1,
+			"elapsed": 10.164307079743594
+		},
+		{
+			"check": "the next dialogue line keeps the mouse pointer in place",
+			"stage": 1,
+			"elapsed": 10.429059656802565
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 1,
+			"elapsed": 15.18231174047105
+		},
+		{
+			"check": "the next dialogue line keeps the mouse pointer in place",
+			"stage": 1,
+			"elapsed": 15.446672136662528
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 1,
+			"elapsed": 21.276448292890564
+		},
+		{
+			"check": "actual brief acknowledgement does not grant the physical round",
+			"stage": 2,
+			"elapsed": 21.764220707351342
+		},
+		{
+			"check": "fresh isolated disk reader: before-normal",
+			"stage": 2,
+			"elapsed": 21.764220707351342
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: before-normal",
+			"stage": 2,
+			"elapsed": 21.764220707351342
+		},
+		{
+			"check": "fresh disk/full Flow before round remains incomplete and window unarmed",
+			"stage": 3,
+			"elapsed": 22.380393279017881
+		},
+		{
+			"check": "actual ray and production use: fieldCamera",
+			"stage": 4,
+			"elapsed": 22.598590295528993
+		},
+		{
+			"check": "actual field-camera collection grants the existing early camera",
+			"stage": 4,
+			"elapsed": 22.598590295528993
+		},
+		{
+			"check": "actual ray and production use: rack",
+			"stage": 6,
+			"elapsed": 25.054178397869691
+		},
+		{
+			"check": "normal rack action powers the receiver",
+			"stage": 6,
+			"elapsed": 25.054178397869691
+		},
+		{
+			"check": "actual ray and production use: crtCenter",
+			"stage": 8,
+			"elapsed": 28.617472792742774
+		},
+		{
+			"check": "actual receiver console opens before calibration",
+			"stage": 8,
+			"elapsed": 28.617472792742774
+		},
+		{
+			"check": "normal ConsoleAction accepts the known calibration reference",
+			"stage": 8,
+			"elapsed": 28.617472792742774
+		},
+		{
+			"check": "coordinator witnesses the calibrated normal receiver",
+			"stage": 9,
+			"elapsed": 29.044933922355995
+		},
+		{
+			"check": "new evening opens the observing schedule after the receiver reference",
+			"stage": 9,
+			"elapsed": 29.044933922355995
+		},
+		{
+			"check": "the observing schedule is filed with the papers",
+			"stage": 600,
+			"elapsed": 29.466799945337698
+		},
+		{
+			"check": "actual ray and production use: crtCenter",
+			"stage": 601,
+			"elapsed": 29.686428213259205
+		},
+		{
+			"check": "the console shows the scheduled run's card",
+			"stage": 601,
+			"elapsed": 29.686428213259205
+		},
+		{
+			"check": "off-source settings start no run and keep the clock",
+			"stage": 601,
+			"elapsed": 29.686428213259205
+		},
+		{
+			"check": "the scheduled settings start the run at its source's time",
+			"stage": 601,
+			"elapsed": 29.686428213259205
+		},
+		{
+			"check": "actual ray and production use: printer",
+			"stage": 604,
+			"elapsed": 45.882755770115182
+		},
+		{
+			"check": "data step files the run's paper, advances the clock and keeps exactly the expected hints",
+			"stage": 604,
+			"elapsed": 45.882755770115182
+		},
+		{
+			"check": "the observing schedule is filed with the papers",
+			"stage": 600,
+			"elapsed": 49.82096501509659
+		},
+		{
+			"check": "the next run waits for the scheduled chore",
+			"stage": 600,
+			"elapsed": 49.82096501509659
+		},
+		{
+			"check": "actual ray and production use: obs:generator",
+			"stage": 611,
+			"elapsed": 54.60176938562654
+		},
+		{
+			"check": "remote start begins the weekly generator test at its time",
+			"stage": 611,
+			"elapsed": 54.60176938562654
+		},
+		{
+			"check": "actual ray and production use: obs:generator",
+			"stage": 612,
+			"elapsed": 59.021101678488776
+		},
+		{
+			"check": "transfer leaves only the emergency tube lit",
+			"stage": 612,
+			"elapsed": 59.021101678488776
+		},
+		{
+			"check": "actual ray and production use: obs:generator",
+			"stage": 613,
+			"elapsed": 62.341722345678136
+		},
+		{
+			"check": "transfer back restores the room lights and logs the test",
+			"stage": 613,
+			"elapsed": 62.341722345678136
+		},
+		{
+			"check": "the observing schedule is filed with the papers",
+			"stage": 600,
+			"elapsed": 66.901098605943844
+		},
+		{
+			"check": "actual ray and production use: crtCenter",
+			"stage": 601,
+			"elapsed": 67.119641885859892
+		},
+		{
+			"check": "the console shows the scheduled run's card",
+			"stage": 601,
+			"elapsed": 67.119641885859892
+		},
+		{
+			"check": "off-source settings start no run and keep the clock",
+			"stage": 601,
+			"elapsed": 67.119641885859892
+		},
+		{
+			"check": "the scheduled settings start the run at its source's time",
+			"stage": 601,
+			"elapsed": 67.119641885859892
+		},
+		{
+			"check": "the pulsar's stray ticks played during the integration",
+			"stage": 602,
+			"elapsed": 79.928421847289428
+		},
+		{
+			"check": "fresh isolated disk reader: observing-mid-pulsar",
+			"stage": 602,
+			"elapsed": 79.928421847289428
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: observing-mid-pulsar",
+			"stage": 602,
+			"elapsed": 79.928421847289428
+		},
+		{
+			"check": "fresh disk restore resumes the same integration and keeps the heard hint",
+			"stage": 602,
+			"elapsed": 80.443449581740424
+		},
+		{
+			"check": "actual ray and production use: printer",
+			"stage": 604,
+			"elapsed": 89.262643462745473
+		},
+		{
+			"check": "data step files the run's paper, advances the clock and keeps exactly the expected hints",
+			"stage": 604,
+			"elapsed": 89.262643462745473
+		},
+		{
+			"check": "the observing schedule is filed with the papers",
+			"stage": 600,
+			"elapsed": 93.198817429831252
+		},
+		{
+			"check": "actual ray and production use: crtCenter",
+			"stage": 601,
+			"elapsed": 93.423071935540065
+		},
+		{
+			"check": "the console shows the scheduled run's card",
+			"stage": 601,
+			"elapsed": 93.423071935540065
+		},
+		{
+			"check": "off-source settings start no run and keep the clock",
+			"stage": 601,
+			"elapsed": 93.423071935540065
+		},
+		{
+			"check": "the scheduled settings start the run at its source's time",
+			"stage": 601,
+			"elapsed": 93.423071935540065
+		},
+		{
+			"check": "actual ray and production use: opsTerminal",
+			"stage": 604,
+			"elapsed": 119.12806731066667
+		},
+		{
+			"check": "data step files the run's paper, advances the clock and keeps exactly the expected hints",
+			"stage": 604,
+			"elapsed": 119.12806731066667
+		},
+		{
+			"check": "the observing schedule is filed with the papers",
+			"stage": 600,
+			"elapsed": 124.60234052478336
+		},
+		{
+			"check": "the next run waits for the scheduled chore",
+			"stage": 600,
+			"elapsed": 124.60234052478336
+		},
+		{
+			"check": "actual ray and production use: doorEast",
+			"stage": 621,
+			"elapsed": 129.84723675926216
+		},
+		{
+			"check": "the round leaves by the east door",
+			"stage": 621,
+			"elapsed": 129.84723675926216
+		},
+		{
+			"check": "reaching the chained array gate completes the check at its time",
+			"stage": 622,
+			"elapsed": 148.01909189322032
+		},
+		{
+			"check": "walking back, the chained gate is found open",
+			"stage": 623,
+			"elapsed": 155.53693636809476
+		},
+		{
+			"check": "fresh isolated disk reader: observing-gate-open",
+			"stage": 623,
+			"elapsed": 155.53693636809476
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: observing-gate-open",
+			"stage": 623,
+			"elapsed": 155.53693636809476
+		},
+		{
+			"check": "fresh disk restore keeps the finished round",
+			"stage": 624,
+			"elapsed": 156.14845923916437
+		},
+		{
+			"check": "actual ray and production use: doorEast",
+			"stage": 626,
+			"elapsed": 167.41154782357626
+		},
+		{
+			"check": "the east door is closed again after the round",
+			"stage": 626,
+			"elapsed": 167.41154782357626
+		},
+		{
+			"check": "the observing schedule is filed with the papers",
+			"stage": 600,
+			"elapsed": 172.49644456035458
+		},
+		{
+			"check": "actual ray and production use: crtCenter",
+			"stage": 601,
+			"elapsed": 172.71508538420312
+		},
+		{
+			"check": "the console shows the scheduled run's card",
+			"stage": 601,
+			"elapsed": 172.71508538420312
+		},
+		{
+			"check": "off-source settings start no run and keep the clock",
+			"stage": 601,
+			"elapsed": 172.71508538420312
+		},
+		{
+			"check": "the scheduled settings start the run at its source's time",
+			"stage": 601,
+			"elapsed": 172.71508538420312
+		},
+		{
+			"check": "actual ray and production use: crtLeft",
+			"stage": 604,
+			"elapsed": 189.84352857596241
+		},
+		{
+			"check": "data step files the run's paper, advances the clock and keeps exactly the expected hints",
+			"stage": 604,
+			"elapsed": 189.84352857596241
+		},
+		{
+			"check": "schedule complete by 22:50 with four filed runs; the desert sound is back",
+			"stage": 605,
+			"elapsed": 190.16717948182486
+		},
+		{
+			"check": "actual ray and production use: doorEast",
+			"stage": 11,
+			"elapsed": 196.551993253408
+		},
+		{
+			"check": "actual inside east-door opening is witnessed",
+			"stage": 11,
+			"elapsed": 196.551993253408
+		},
+		{
+			"check": "one actual exterior on-state view is not both lamp states",
+			"stage": 13,
+			"elapsed": 213.80204493622296
+		},
+		{
+			"check": "actual ray and production use: horror:lampOutside",
+			"stage": 14,
+			"elapsed": 214.02651411364786
+		},
+		{
+			"check": "physical outside lamp switch turns the reference off",
+			"stage": 14,
+			"elapsed": 214.02651411364786
+		},
+		{
+			"check": "both actual direct lamp states are observed without glass credit",
+			"stage": 15,
+			"elapsed": 215.04037521663122
+		},
+		{
+			"check": "actual ray and production use: horror:lampOutside",
+			"stage": 16,
+			"elapsed": 215.26031119911931
+		},
+		{
+			"check": "outside control restores normal lamp",
+			"stage": 16,
+			"elapsed": 215.26031119911931
+		},
+		{
+			"check": "fallback JPEG without actual photo-lens target cannot grant normal reference",
+			"stage": 17,
+			"elapsed": 215.78115314873867
+		},
+		{
+			"check": "35 synthetic budget entries leave the final real exposure reserved for the required reference",
+			"stage": 17,
+			"elapsed": 215.78115314873867
+		},
+		{
+			"check": "fresh isolated disk reader: old-exhausted-roll-without-reference",
+			"stage": 17,
+			"elapsed": 215.78115314873867
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: old-exhausted-roll-without-reference",
+			"stage": 17,
+			"elapsed": 215.78115314873867
+		},
+		{
+			"check": "earlier exhausted cohort retains every print and existing receiver progression without invented reference or new SC01 gate",
+			"stage": 170,
+			"elapsed": 216.40230243070982
+		},
+		{
+			"check": "fresh isolated disk reader: reserved-final-frame-restored",
+			"stage": 170,
+			"elapsed": 216.40230243070982
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: reserved-final-frame-restored",
+			"stage": 170,
+			"elapsed": 216.40230243070982
+		},
+		{
+			"check": "fresh Flow restores the reserved final frame before any genuine reference",
+			"stage": 171,
+			"elapsed": 217.01691567036323
+		},
+		{
+			"check": "ordinary shutter refuses another subject without spending the reserved frame or granting reference credit",
+			"stage": 172,
+			"elapsed": 217.37910726363771
+		},
+		{
+			"check": "normal camera shutter captures an actual instant-back reference",
+			"stage": 173,
+			"elapsed": 217.74816410965286
+		},
+		{
+			"check": "actual rendered reference pixels establish the normal photo",
+			"stage": 173,
+			"elapsed": 217.74816410965286
+		},
+		{
+			"check": "required real reference uses only the reserved 36th frame and preserves every preceding album entry",
+			"stage": 173,
+			"elapsed": 217.74816410965286
+		},
+		{
+			"check": "one actual glass-view state is not a complete comparison",
+			"stage": 19,
+			"elapsed": 237.22983166272752
+		},
+		{
+			"check": "actual ray and production use: horror:lamp",
+			"stage": 20,
+			"elapsed": 237.44690786744468
+		},
+		{
+			"check": "inside physical switch turns the same exterior lamp off",
+			"stage": 20,
+			"elapsed": 237.44690786744468
+		},
+		{
+			"check": "actual through-glass and exterior on/off comparisons both complete",
+			"stage": 21,
+			"elapsed": 238.46207453752868
+		},
+		{
+			"check": "actual ray and production use: horror:lamp",
+			"stage": 22,
+			"elapsed": 238.67703164531849
+		},
+		{
+			"check": "actual ray and production use: doorSouth",
+			"stage": 24,
+			"elapsed": 246.23252891306765
+		},
+		{
+			"check": "isolated door-voice fixture starts the real recorded source",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "production Character voices setting stops the door recording while audio is suspended",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "resuming and re-enabling speech does not replay the heard door event",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "isolated stop fixture begins with an active recorded source",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "stopping observing clears its live door recording",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "isolated restore fixture begins with an active recorded source",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "beginning a saved case stops the previous recording and retains the heard event",
+			"stage": 25,
+			"elapsed": 249.85624754824676
+		},
+		{
+			"check": "actual ray and production use: exitDoor",
+			"stage": 26,
+			"elapsed": 250.07664886652492
+		},
+		{
+			"check": "actual corridor-side fire-exit action is witnessed",
+			"stage": 26,
+			"elapsed": 250.07664886652492
+		},
+		{
+			"check": "the corridor triggers and retains Dale's door-voice event",
+			"stage": 26,
+			"elapsed": 250.07664886652492
+		},
+		{
+			"check": "the opened visitor entrance shows nobody and is logged",
+			"stage": 27,
+			"elapsed": 264.73459723801352
+		},
+		{
+			"check": "actual ray and production use: horror:screen",
+			"stage": 28,
+			"elapsed": 264.95319163636304
+		},
+		{
+			"check": "fresh isolated disk reader: pending-check-missing-photo",
+			"stage": 29,
+			"elapsed": 266.07215109677054
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: pending-check-missing-photo",
+			"stage": 29,
+			"elapsed": 266.07215109677054
+		},
+		{
+			"check": "a missing original photo cancels pending supported conclusion without granting or trapping its result",
+			"stage": 290,
+			"elapsed": 266.59611614444293
+		},
+		{
+			"check": "fresh isolated disk reader: pending-check-original-restored",
+			"stage": 290,
+			"elapsed": 266.59611614444293
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: pending-check-original-restored",
+			"stage": 290,
+			"elapsed": 266.59611614444293
+		},
+		{
+			"check": "the actual supported pending H01 check resumes after original-photo restore",
+			"stage": 291,
+			"elapsed": 267.10829267301597
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 29,
+			"elapsed": 268.32489514048211
+		},
+		{
+			"check": "the next dialogue line keeps the mouse pointer in place",
+			"stage": 29,
+			"elapsed": 268.59276055893861
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 29,
+			"elapsed": 269.59816261287779
+		},
+		{
+			"check": "actual opaque shutter blocks normal lamp, completes reference round and arms an unseen window event",
+			"stage": 29,
+			"elapsed": 269.8620188832283
+		},
+		{
+			"check": "fresh isolated disk reader: after-normal",
+			"stage": 29,
+			"elapsed": 269.8620188832283
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: after-normal",
+			"stage": 29,
+			"elapsed": 269.8620188832283
+		},
+		{
+			"check": "full Flow restore retains real round facts without window completion",
+			"stage": 30,
+			"elapsed": 270.47393194795586
+		},
+		{
+			"check": "fresh isolated disk reader: missing-reference-target",
+			"stage": 30,
+			"elapsed": 270.47393194795586
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: missing-reference-target",
+			"stage": 30,
+			"elapsed": 270.47393194795586
+		},
+		{
+			"check": "fresh Flow refuses reference credit when real retained photo lacks the actual lamp target",
+			"stage": 301,
+			"elapsed": 270.99578155693598
+		},
+		{
+			"check": "fresh isolated disk reader: reference-target-restored",
+			"stage": 301,
+			"elapsed": 270.99578155693598
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: reference-target-restored",
+			"stage": 301,
+			"elapsed": 270.99578155693598
+		},
+		{
+			"check": "actual original photo target restores its valid reference credit",
+			"stage": 302,
+			"elapsed": 271.50935874530114
+		},
+		{
+			"check": "fresh isolated disk reader: missing-reference-id",
+			"stage": 302,
+			"elapsed": 271.50935874530114
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: missing-reference-id",
+			"stage": 302,
+			"elapsed": 271.50935874530114
+		},
+		{
+			"check": "a missing original album photo cannot retain normal-reference credit",
+			"stage": 303,
+			"elapsed": 272.02177342423238
+		},
+		{
+			"check": "fresh isolated disk reader: reference-id-restored",
+			"stage": 303,
+			"elapsed": 272.02177342423238
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: reference-id-restored",
+			"stage": 303,
+			"elapsed": 272.02177342423238
+		},
+		{
+			"check": "fresh isolated disk reader: bad-content-revision",
+			"stage": 304,
+			"elapsed": 272.53711329423822
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: bad-content-revision",
+			"stage": 304,
+			"elapsed": 272.53711329423822
+		},
+		{
+			"check": "actual full Flow rejects unsupported SC content without granting completion",
+			"stage": 31,
+			"elapsed": 273.05711277411319
+		},
+		{
+			"check": "fresh isolated disk reader: normal-restored",
+			"stage": 31,
+			"elapsed": 273.05711277411319
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: normal-restored",
+			"stage": 31,
+			"elapsed": 273.05711277411319
+		},
+		{
+			"check": "good content revision restores normal round after rejected future fixture",
+			"stage": 32,
+			"elapsed": 273.67018806678243
+		},
+		{
+			"check": "actual ray and production use: horror:screen",
+			"stage": 33,
+			"elapsed": 273.88923959922977
+		},
+		{
+			"check": "raising the checked shade shows clear glass and starts no window event",
+			"stage": 330,
+			"elapsed": 275.21020805207081
+		},
+		{
+			"check": "actual ray and production use: horror:screen",
+			"stage": 331,
+			"elapsed": 275.42813035123982
+		},
+		{
+			"check": "closing the shade for the night arms the slap without hearing or marks yet",
+			"stage": 34,
+			"elapsed": 276.28703871858306
+		},
+		{
+			"check": "actual modal holds the pending slap without accrued time",
+			"stage": 35,
+			"elapsed": 277.40155040682293
+		},
+		{
+			"check": "fresh isolated disk reader: mid-window",
+			"stage": 35,
+			"elapsed": 277.40155040682293
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: mid-window",
+			"stage": 35,
+			"elapsed": 277.40155040682293
+		},
+		{
+			"check": "fresh disk/full Flow keeps the pending slap behind the closed shade",
+			"stage": 37,
+			"elapsed": 277.91545659326948
+		},
+		{
+			"check": "the slap is heard behind the closed shade and leaves real exterior marks without completing the inspection",
+			"stage": 38,
+			"elapsed": 279.59600764629431
+		},
+		{
+			"check": "actual ray and production use: horror:screen",
+			"stage": 381,
+			"elapsed": 279.90676325676031
+		},
+		{
+			"check": "looking away cannot inspect or partially credit the exterior mark target",
+			"stage": 380,
+			"elapsed": 281.76193178002723
+		},
+		{
+			"check": "actual ray and production use: horror:marks",
+			"stage": 39,
+			"elapsed": 282.13404525374062
+		},
+		{
+			"check": "one room-light state is not both actual mark comparisons",
+			"stage": 39,
+			"elapsed": 282.13404525374062
+		},
+		{
+			"check": "actual ray and production use: horror:roomLamp",
+			"stage": 40,
+			"elapsed": 282.35437847324647
+		},
+		{
+			"check": "actual ray and production use: horror:marks",
+			"stage": 41,
+			"elapsed": 282.8716364747379
+		},
+		{
+			"check": "actual marks persist across both room-lamp states through the real glass",
+			"stage": 41,
+			"elapsed": 282.8716364747379
+		},
+		{
+			"check": "the next dialogue line keeps the mouse pointer in place",
+			"stage": 42,
+			"elapsed": 283.18975942698307
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 42,
+			"elapsed": 284.20232848194428
+		},
+		{
+			"check": "the next dialogue line keeps the mouse pointer in place",
+			"stage": 42,
+			"elapsed": 284.47340325941332
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 42,
+			"elapsed": 285.47386590857059
+		},
+		{
+			"check": "fresh isolated disk reader: after-window",
+			"stage": 42,
+			"elapsed": 285.74491696432233
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: after-window",
+			"stage": 42,
+			"elapsed": 285.74491696432233
+		},
+		{
+			"check": "full Flow restore preserves actual hand witness and inspected outside marks",
+			"stage": 43,
+			"elapsed": 286.36750130821019
+		},
+		{
+			"check": "actual ray and production use: exitDoor",
+			"stage": 45,
+			"elapsed": 296.74137655831873
+		},
+		{
+			"check": "known fire exit is actually secured from its inside after the window event",
+			"stage": 45,
+			"elapsed": 296.74137655831873
+		},
+		{
+			"check": "actual ray and production use: doorEast",
+			"stage": 47,
+			"elapsed": 305.69136348925531
+		},
+		{
+			"check": "known east door is actually secured after the exterior check",
+			"stage": 47,
+			"elapsed": 305.69136348925531
+		},
+		{
+			"check": "SC01 completes after genuine round/marks/security while reporting remains a distinct optional contact",
+			"stage": 48,
+			"elapsed": 306.11124318093061
+		},
+		{
+			"check": "actual ray and production use: phone",
+			"stage": 50,
+			"elapsed": 307.27556472830474
+		},
+		{
+			"check": "opening the actual contact menu alone gives no report readback",
+			"stage": 50,
+			"elapsed": 307.27556472830474
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 51,
+			"elapsed": 307.59654348809272
+		},
+		{
+			"check": "starting the real phone exchange gives no premature report receipt",
+			"stage": 51,
+			"elapsed": 307.59654348809272
+		},
+		{
+			"check": "fresh isolated disk reader: before-report-readback",
+			"stage": 51,
+			"elapsed": 307.59654348809272
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: before-report-readback",
+			"stage": 51,
+			"elapsed": 307.59654348809272
+		},
+		{
+			"check": "skip probe acts on genuinely partial first dispatch PCM",
+			"stage": 52,
+			"elapsed": 308.21139309508726
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 52,
+			"elapsed": 308.21139309508726
+		},
+		{
+			"check": "skipping one actual response advances its text without premature report acknowledgement",
+			"stage": 52,
+			"elapsed": 308.38107358803973
+		},
+		{
+			"check": "fresh isolated disk reader: dispatch-skip-control-restored",
+			"stage": 52,
+			"elapsed": 308.38107358803973
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: dispatch-skip-control-restored",
+			"stage": 52,
+			"elapsed": 308.38107358803973
+		},
+		{
+			"check": "isolated skip control restores the original first response, no route shortcut",
+			"stage": 52,
+			"elapsed": 309.01640458544716
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 52,
+			"elapsed": 309.01640458544716
+		},
+		{
+			"check": "production Character voices mute opens the next response as text with no active recording or report credit",
+			"stage": 52,
+			"elapsed": 309.18906227266416
+		},
+		{
+			"check": "fresh isolated disk reader: dispatch-mute-control-restored",
+			"stage": 52,
+			"elapsed": 309.18906227266416
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: dispatch-mute-control-restored",
+			"stage": 52,
+			"elapsed": 309.18906227266416
+		},
+		{
+			"check": "complete actual dispatch PCM through production phone filter/source/routed meters and audible bus: SC01_FIRST_REPORT_001",
+			"stage": 52,
+			"elapsed": 319.23361093224958
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 52,
+			"elapsed": 319.23361093224958
+		},
+		{
+			"check": "complete actual dispatch PCM through production phone filter/source/routed meters and audible bus: SC01_FIRST_REPORT_002",
+			"stage": 52,
+			"elapsed": 330.10941971233115
+		},
+		{
+			"check": "actual focused Slate Enter activates the displayed primary button",
+			"stage": 52,
+			"elapsed": 330.10941971233115
+		},
+		{
+			"check": "both exact recordings completed through the real phone after isolated skip/mute controls",
+			"stage": 52,
+			"elapsed": 330.37220955220982
+		},
+		{
+			"check": "only completed actual dispatch response grants the distinct report receipt",
+			"stage": 53,
+			"elapsed": 330.69438947783783
+		},
+		{
+			"check": "complete dispatch audio creates no new Dale-reference-heard fact",
+			"stage": 53,
+			"elapsed": 330.69438947783783
+		},
+		{
+			"check": "fresh isolated disk reader: after-report",
+			"stage": 53,
+			"elapsed": 330.69438947783783
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: after-report",
+			"stage": 53,
+			"elapsed": 330.69438947783783
+		},
+		{
+			"check": "fresh disk/full Flow retains exactly one actual report, real photo and completed SC01",
+			"stage": 54,
+			"elapsed": 331.31531934300438
+		},
+		{
+			"check": "SC01 acceptance does not falsely complete the later H02 physical route",
+			"stage": 54,
+			"elapsed": 331.31531934300438
+		},
+		{
+			"check": "ordinary report disk/full Flow preserves original Dale-heard fact; test memory retains both completed audio receipts",
+			"stage": 54,
+			"elapsed": 331.31531934300438
+		},
+		{
+			"check": "live acceptance includes continuous native walking and independent disk readers",
+			"stage": 54,
+			"elapsed": 331.31531934300438
+		},
+		{
+			"check": "actual ray and production use: doorEast",
+			"stage": 56,
+			"elapsed": 332.23581792833284
+		},
+		{
+			"check": "reopening a known exit after completed SC01 does not revoke progress",
+			"stage": 56,
+			"elapsed": 332.23581792833284
+		},
+		{
+			"check": "fresh isolated disk reader: completed-door-reopened",
+			"stage": 56,
+			"elapsed": 332.23581792833284
+		},
+		{
+			"check": "full Flow restore retains isolated developer case: completed-door-reopened",
+			"stage": 56,
+			"elapsed": 332.23581792833284
+		},
+		{
+			"check": "completed SC01 survives Continue with a subsequently reopened exit",
+			"stage": 57,
+			"elapsed": 332.85156291956082
+		}
+	],
+	"missedHand": false,
+	"dispatchRecordingsRequired": true,
+	"dispatch_audio": [
+		{
+			"kind": "catalog-and-actual-PCM-preflight",
+			"line_id": "SC01_FIRST_REPORT_001",
+			"role": "DISPATCH",
+			"voice": "caliche_dispatch",
+			"text": "SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location.",
+			"wav": "../../../Signal47/Content/Audio/Raw/voice/horror/SC01_FIRST_REPORT_001.wav",
+			"wav_sha1": "7878728C2BF4BF8AE970837D53F08CED932296C3",
+			"frames": 480960,
+			"sample_rate": 48000,
+			"channels": 1,
+			"duration": 10.02,
+			"pcm_peak": 0.610015869140625,
+			"pcm_rms": 0.088220675037093146
+		},
+		{
+			"kind": "catalog-and-actual-PCM-preflight",
+			"line_id": "SC01_FIRST_REPORT_002",
+			"role": "DISPATCH",
+			"voice": "caliche_dispatch",
+			"text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.",
+			"wav": "../../../Signal47/Content/Audio/Raw/voice/horror/SC01_FIRST_REPORT_002.wav",
+			"wav_sha1": "A80540D438BFCC27CCBB2A8C9B8399EFD6CA63BE",
+			"frames": 521280,
+			"sample_rate": 48000,
+			"channels": 1,
+			"duration": 10.859999999999999,
+			"pcm_peak": 0.699798583984375,
+			"pcm_rms": 0.084626610178046333
+		},
+		{
+			"clip_id": "SC01_FIRST_REPORT_001",
+			"channel": "phone",
+			"receiver_filter": true,
+			"pcm_peak": 0.610015869140625,
+			"pcm_rms": 0.088220675037093146,
+			"source_samples": 20480,
+			"routed_samples": 20480,
+			"source_peak": 0.474945068359375,
+			"source_rms": 0.1066573036773181,
+			"routed_peak": 0.54108738899230957,
+			"routed_rms": 0.093045322808935058,
+			"bus_gain": 1,
+			"kind": "explicit-pending-call-skip-control",
+			"played_seconds_before_skip": 0.42666666666667652,
+			"dale_reference_heard_before": true
+		},
+		{
+			"kind": "explicit-pending-call-muted-next-line-control",
+			"line_id": "SC01_FIRST_REPORT_002",
+			"active_recording": false,
+			"dale_reference_heard_unchanged": true
+		},
+		{
+			"clip_id": "SC01_FIRST_REPORT_001",
+			"channel": "phone",
+			"receiver_filter": true,
+			"pcm_peak": 0.610015869140625,
+			"pcm_rms": 0.088220675037093146,
+			"source_samples": 481280,
+			"routed_samples": 481280,
+			"source_peak": 0.610015869140625,
+			"source_rms": 0.088191341478497678,
+			"routed_peak": 0.74777877330780029,
+			"routed_rms": 0.088907500459833588,
+			"bus_gain": 1,
+			"kind": "world-phone-dialogue",
+			"line_id": "SC01_FIRST_REPORT_001",
+			"role": "DISPATCH",
+			"text": "SARO control-room window. Something struck the outside of the glass and left marks. I have your time and location.",
+			"voice": "caliche_dispatch",
+			"wav_sha1": "7878728C2BF4BF8AE970837D53F08CED932296C3",
+			"decoded_seconds": 10.02,
+			"master_gain": 0.80000001192092896,
+			"sfx_gain": 1,
+			"natural_end": true,
+			"call_cursor": 0,
+			"pass": true
+		},
+		{
+			"clip_id": "SC01_FIRST_REPORT_002",
+			"channel": "phone",
+			"receiver_filter": true,
+			"pcm_peak": 0.699798583984375,
+			"pcm_rms": 0.084626610178046333,
+			"source_samples": 522240,
+			"routed_samples": 522240,
+			"source_peak": 0.699798583984375,
+			"source_rms": 0.084548792589011504,
+			"routed_peak": 0.82078719139099121,
+			"routed_rms": 0.087248264795609029,
+			"bus_gain": 1,
+			"kind": "world-phone-dialogue",
+			"line_id": "SC01_FIRST_REPORT_002",
+			"role": "DISPATCH",
+			"text": "Stay behind a secured door if you can. Call us if the person enters the building. This report is open; I cannot say who was out there.",
+			"voice": "caliche_dispatch",
+			"wav_sha1": "A80540D438BFCC27CCBB2A8C9B8399EFD6CA63BE",
+			"decoded_seconds": 10.859999999999999,
+			"master_gain": 0.80000001192092896,
+			"sfx_gain": 1,
+			"natural_end": true,
+			"call_cursor": 1,
+			"pass": true
+		}
+	],
+	"dispatch_audio_limits": "Exact role/text-ID, real mono48k PCM and natural full source/routed production-phone graph acceptance. Skip/mute controls restore the actual pending call before full playback. No human listening or subjective voice/ASR approval asserted; no Dale-heard flag is fabricated.",
+	"fixture": "Post-handover evening, one initial room placement and 35 explicitly synthetic film-budget entries. Receiver dials controlled through production console; subsequent movement uses native Walker/Resolve, interactions require aimed camera rays, UI uses focused Slate Enter. The reserved reference is a new actual rendered capture.",
+	"limits": "Scripted live contract, not human play/listening, full-night pacing, physical Xbox or whole-story acceptance. SC02+ and H01 closure remain separate."
+}
