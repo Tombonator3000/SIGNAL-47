@@ -1,6 +1,6 @@
 # Caliche-boliger og innkjøringsskilt
 
-**Status:** Under arbeid, målrettet pakket kandidat R2 levert; PR/fletting venter root. **Gjelder:** ENV-02, kilde `1665723fda9484b168755709089678fcfb8e6749`, UE 5.8.4/Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026 kl. 06:02 CET.
+**Status:** Levert som målrettet pakket kandidat R2; [PR219](https://github.com/Tombonator3000/SIGNAL-47/pull/219) mot main. **Gjelder:** ENV-02, kilde `1665723fda9484b168755709089678fcfb8e6749`, UE 5.8.4/Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026 kl. 06:02 CET.
 
 [Pakket R2-kvittering](../../../unreal/Evidence/ENV02-2026-10-29/packed-r2-receipt.json) binder den faktiske binæren, alle åtte payloadfiler, rute-/fallbackresultater og de to vedlagte originale pakkede skiltbildene. Dette er en akseptert kandidat, uten ny installasjon eller offentlig release.
 
@@ -39,4 +39,4 @@ Binæren `candidate-r2/Linux/Signal47/Binaries/Linux/Signal47` er 314 163 392 by
 
 Rågrunnlaget i `~/scratch-bm/Signal47-caliche-homes-20261029` omfatter `package-plan-r2b.json`, `homes-packed-route-r2.log`/`.result.json`, `homes-packed-fallback-r2.log`/`.result.json` og fingeravtrykkene. Detaljresultater og disk-/poseavlesninger ligger under `/tmp/S47-caliche-homes-packed-route-r2/Saved/CalicheHomesContract/01A1860262B07CD6B354610914B1F7A3` og fallbackens `/tmp/S47-caliche-homes-packed-fallback-r2/Saved/CalicheHomesContractFallback/01A186047CC07A979ED5190F26DECFAD`.
 
-Bibliotekssøket gav ingen prøvd erstatning for prosjektets eksisterende Unreal 5.8.4-løype. Generelle FBX- og Meshy-referanser er ikke brukt som nativebevis. Pakkeloggen har et VSM-varsel om Non-Nanite Marking Job Queue; ytelse, nattlige husplaner, subjektiv lytting og menneskelig input er ikke akseptert. Ingen fullmatrise, installasjon i Games eller offentlig release er utført. Avviste R1-forsøk og øvrige rålogger er bevart; PR-status og fletting oppdateres av root separat.
+Bibliotekssøket gav ingen prøvd erstatning for prosjektets eksisterende Unreal 5.8.4-løype. Generelle FBX- og Meshy-referanser er ikke brukt som nativebevis. Pakkeloggen har et VSM-varsel om Non-Nanite Marking Job Queue; ytelse, nattlige husplaner, subjektiv lytting og menneskelig input er ikke akseptert. Ingen fullmatrise, installasjon i Games eller offentlig release er utført. Avviste R1-forsøk og øvrige rålogger er bevart; PR219 går mot main med eksakt head og kontroller verifisert før fletting.

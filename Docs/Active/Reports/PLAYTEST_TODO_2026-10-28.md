@@ -11,7 +11,7 @@ Seks originale spillerbilder og to krasjvedlegg er bevart. [Bevisgalleri](../../
 **Delvis levert som kandidat. Installert utgave og menneskelig førerhuskontroll gjenstår.**
 
 - [ ] Integrer de oppgraderte TB2-modellene for sheriffstasjon, kino og feed-bygning helt frem til den installerte utgaven: native import, materialer, assembly, korrekt erstatning, pakking og lokal levering.
-- [x] Oppgrader de fire vanlige bolighusene i egen ENV-02-kandidat. Pakket R2 fra `1665723f` består native og målrettet rute-/fallbackkontroll; PR/fletting venter root. Dette er en separat leveranse fra TB2s fem spesialbygninger.
+- [x] Oppgrader de fire vanlige bolighusene i egen ENV-02-kandidat. Pakket R2 fra `1665723f` består native og målrettet rute-/fallbackkontroll; [PR219](https://github.com/Tombonator3000/SIGNAL-47/pull/219), opprettet mot main. Dette er en separat leveranse fra TB2s fem spesialbygninger.
 - [ ] Finn de eksisterende Caliche-skiltene og sørg for et troverdig, lesbart byskilt ved innkjøringen i installert spill. Rett synlighet, retning eller plassering ved behov; adkomst må stemme med faktisk vei.
 - [ ] Sammenlign faktisk installert fasade med godkjent Blender-modell. Før Blender-kilde, native asset, runtime-kandidat og installert pakke som separate statuser.
 
