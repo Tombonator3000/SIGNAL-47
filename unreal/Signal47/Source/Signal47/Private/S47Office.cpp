@@ -3,6 +3,7 @@
 #include "S47Flow.h"
 #include "S47Inter.h"
 #include "S47Kit.h"
+#include "S47SaroInterior.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -11,7 +12,7 @@
 #include "S47Web.h"
 #include "S47World.h"
 #include "Components/BoxComponent.h"
-#include "Components/PointLightComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
@@ -24,7 +25,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Office, Log, All);
 
 namespace
 {
- constexpr double HingeX = -.03, HingeZ = 6.57, LeafWidth = 1.0;
+ constexpr double FrontOffset = .50;
+ constexpr double HingeX = -.03, HingeZ = 6.57 + FrontOffset, LeafWidth = 1.0;
  struct FPortalPatch
  {
   UStaticMeshComponent* Comp = nullptr;
@@ -140,7 +142,8 @@ struct FS47Office::FVisual
  TMap<FString, FS47Obj> Objects;
  TArray<TPair<FS47Obj, FVector>> DrawerParts;
  TArray<FS47Obj> KeyParts;
- TWeakObjectPtr<UPointLightComponent> Light;
+ TWeakObjectPtr<URectLightComponent> Light;
+ bool bRecoverLegacyPose = false;
  // ART-01 sheets: paper object name, its art plane and the bound texture.
  struct FSheet { FString Paper; FS47Obj PaperObj, Art; TWeakObjectPtr<UTexture2D> Texture; };
  TArray<FSheet> Sheets;
@@ -216,43 +219,48 @@ void FS47Office::Init()
  };
  auto Collider = [W](const TCHAR* Id, double X0, double X1, double Z0, double Z1)
  { W->CollidersMutable(TEXT("saro")).Add({X0, X1, Z0, Z1, FString(Id), true}); };
- // Replace exactly the corridor partition, including the green records-facing rear.
- Box(TEXT("office:partitionLeft"), FVector(-1.74, 1.4, 6.70), FVector(3.32, 2.8, .2), Wall);
- Box(TEXT("office:partitionRecords"), FVector(-1.74, 1.4, 6.803), FVector(3.32, 2.8, .006), Green);
- Box(TEXT("office:partitionRight"), FVector(1.5, 1.4, 6.70), FVector(1, 2.8, .2), Wall);
- Box(TEXT("office:partitionHeader"), FVector(.46, 2.46, 6.70), FVector(1.08, .68, .2), Wall);
- Box(TEXT("office:partitionSkirtingLeft"), FVector(-1.74, .05, 6.585), FVector(3.32, .1, .02), Wood);
- Box(TEXT("office:partitionSkirtingRight"), FVector(1.5, .05, 6.585), FVector(1, .1, .02), Wood);
+ // Keep the records partition and its entrance in place. Recess only Operations
+ // by 0.5m to form a real passing bay without squeezing the archive table route.
+ Box(TEXT("office:partitionRecordsWest"), FVector(-2.17, 1.4, 6.70), FVector(2.46, 2.8, .2), Wall);
+ Box(TEXT("office:partitionRecords"), FVector(-2.17, 1.4, 6.803), FVector(2.46, 2.8, .006), Green);
+ Box(TEXT("office:partitionLeft"), FVector(-.51, 1.4, 6.70 + FrontOffset), FVector(.86, 2.8, .2), Wall);
+ Box(TEXT("office:partitionRight"), FVector(1.5, 1.4, 6.70 + FrontOffset), FVector(1, 2.8, .2), Wall);
+ Box(TEXT("office:partitionHeader"), FVector(.46, 2.46, 6.70 + FrontOffset), FVector(1.08, .68, .2), Wall);
+ Box(TEXT("office:partitionSkirtingRecords"), FVector(-2.17, .05, 6.585), FVector(2.46, .1, .02), Wood);
+ Box(TEXT("office:partitionSkirtingLeft"), FVector(-.51, .05, 6.585 + FrontOffset), FVector(.86, .1, .02), Wood);
+ Box(TEXT("office:partitionSkirtingRight"), FVector(1.5, .05, 6.585 + FrontOffset), FVector(1, .1, .02), Wood);
  // Original Blender joinery, floor tiles, ceiling grid, door frame and PBR surfaces.
  Mesh(TEXT("office:authoredRoom"), Room, FVector::ZeroVector, FVector::OneVector, nullptr);
  Mesh(TEXT("office:authoredDressing"), Dressing, FVector::ZeroVector, FVector::OneVector, nullptr);
- Collider(TEXT("office:leftPartition"), -3.4, -.08, 6.6, 6.8); Collider(TEXT("office:rightPartition"), 1, 2, 6.6, 6.8);
+ Collider(TEXT("office:recordsPartition"), -3.4, -.94, 6.6, 6.8);
+ Collider(TEXT("office:leftPartition"), -.94, -.08, 6.6 + FrontOffset, 6.8 + FrontOffset); Collider(TEXT("office:rightPartition"), 1, 2, 6.6 + FrontOffset, 6.8 + FrontOffset);
  Collider(TEXT("office:westWall"), -.94, -.82, 6.6, 10.43); Collider(TEXT("office:eastWall"), 1.77, 1.89, 6.6, 10.43); Collider(TEXT("office:rearWall"), -.94, 1.89, 10.31, 10.43);
- W->ZonesMutable(TEXT("saro")).Add({-.82, 1.77, 6.8, 10.31, TEXT("office:roomZone"), true});
+ W->ZonesMutable(TEXT("saro")).Add({-.82, 1.77, 6.8 + FrontOffset, 10.31, TEXT("office:roomZone"), true});
+ W->ZonesMutable(TEXT("saro")).Add({-.82, 1.77, 5.70, 6.60 + FrontOffset, TEXT("office:passingBayZone"), true});
  // Walker shrinks each rectangle by the capsule radius independently. Overlap both
  // corridor and room by more than two radii, so an open doorway has no centreline gap.
- W->ZonesMutable(TEXT("saro")).Add({-.08, 1, 5.70, 7.50, TEXT("office:thresholdZone"), false});
+ W->ZonesMutable(TEXT("saro")).Add({-.08, 1, 5.70, 7.50 + FrontOffset, TEXT("office:thresholdZone"), false});
  Collider(TEXT("office:doorCollider"), HingeX, HingeX + LeafWidth, HingeZ - .035, HingeZ + .035);
  UBoxComponent* Hinge = NewObject<UBoxComponent>(W, TEXT("OperationsDoorHinge")); Hinge->SetMobility(EComponentMobility::Movable); Hinge->SetupAttachment(Group); Hinge->SetCollisionEnabled(ECollisionEnabled::NoCollision); Hinge->SetBoxExtent(FVector(1)); Hinge->RegisterComponent(); Hinge->SetWorldLocation(S47Three::ToUE(FVector(HingeX, 0, HingeZ)));
  Visual->Leaf = W->ObjAt(W->AdoptNode(Hinge, Root, TEXT("office:doorHinge")));
  FS47Obj DoorPanel = Mesh(TEXT("office:doorLeaf"), Door, FVector(.47, 1.035, HingeZ), FVector::OneVector, nullptr, 0, Visual->Leaf.I);
  // The Blender leaf includes real lock cylinder, lever, hinges and kick plates.
- Label(TEXT("office:doorTitle"), TEXT("DALE / OPERATIONS"), FVector(.47, 1.65, 6.523), -90, 3.3f, Visual->Leaf.I);
- Label(TEXT("office:doorTitleInside"), TEXT("OPERATIONS"), FVector(.47, 1.65, 6.617), 90, 3.3f, Visual->Leaf.I);
- Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585), FVector(.30, .31, .018), Paper);
- Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572), -90, 2.8f);
+ Label(TEXT("office:doorTitle"), TEXT("DALE / OPERATIONS"), FVector(.47, 1.65, 6.523 + FrontOffset), -90, 3.3f, Visual->Leaf.I);
+ Label(TEXT("office:doorTitleInside"), TEXT("OPERATIONS"), FVector(.47, 1.65, 6.617 + FrontOffset), 90, 3.3f, Visual->Leaf.I);
+ Box(TEXT("office:spareNotice"), FVector(-.29, 1.45, 6.585 + FrontOffset), FVector(.30, .31, .018), Paper);
+ Label(TEXT("office:spareText"), TEXT("SPARE IN\nSERVICE DRAWER"), FVector(-.29, 1.45, 6.572 + FrontOffset), -90, 2.8f);
  // Own service cabinet at the workbench. It is unrelated to the archive's REEL047 drawer.
- Mesh(TEXT("office:serviceCabinet"), Cabinet, FVector(-.59, .525, 6.32), FVector::OneVector, nullptr);
- Collider(TEXT("office:serviceCabinetFoot"), -.94, -.26, 6.045, 6.60);
- FS47Obj DrawerFront = Mesh(TEXT("office:serviceDrawer"), Drawer, FVector(-.59, .85, 6.22), FVector::OneVector, nullptr);
+ Mesh(TEXT("office:serviceCabinet"), Cabinet, FVector(-.59, .525, 6.32 + FrontOffset), FVector::OneVector, nullptr);
+ Collider(TEXT("office:serviceCabinetFoot"), -.94, -.26, 6.045 + FrontOffset, 6.60 + FrontOffset);
+ FS47Obj DrawerFront = Mesh(TEXT("office:serviceDrawer"), Drawer, FVector(-.59, .85, 6.22 + FrontOffset), FVector::OneVector, nullptr);
  Visual->DrawerParts.Add({DrawerFront, DrawerFront.Position()});
- FS47Obj KeyBody = Mesh(TEXT("office:taggedSpare"), Spare, FVector(-.59, .805, 6.17), FVector::OneVector, nullptr);
+ FS47Obj KeyBody = Mesh(TEXT("office:taggedSpare"), Spare, FVector(-.59, .805, 6.17 + FrontOffset), FVector::OneVector, nullptr);
  Visual->DrawerParts.Add({KeyBody, KeyBody.Position()}); Visual->KeyParts.Add(KeyBody);
  // The real paper inset on the plastic tag is the usable face. The bounds centre
  // of the entire cut key falls inside its open split ring and is not a surface.
- FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513, .8086, 6.215), FVector(.053, .001, .025), Paper);
+ FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513, .8086, 6.215 + FrontOffset), FVector(.053, .001, .025), Paper);
  Visual->DrawerParts.Add({KeyTag, KeyTag.Position()}); Visual->KeyParts.Add(KeyTag);
- Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59, 1.14, 6.565), -90, 3.f);
+ Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59, 1.14, 6.565 + FrontOffset), -90, 3.f);
  // Blender furniture has rolled steel edges, individual drawer fronts, hardware,
  // five casters and upholstery. Paper objects keep their existing interaction IDs.
  Mesh(TEXT("office:desk"), Desk, FVector(.37, 0, 9.73), FVector::OneVector, nullptr);
@@ -340,10 +348,13 @@ void FS47Office::Init()
  Collider(TEXT("office:deckFoot"), -.77, -.17, 7.43, 8.07);
  FS47Obj Deck = Box(TEXT("office:cassette"), FVector(-.43, .72, 8.08), FVector(.20, .025, .12), Ink);
  PaperText(TEXT("office:tapePrint"), TEXT("FIELD 01"), FVector(-.43, .739, 8.08), 1.8f);
- UPointLightComponent* Light = NewObject<UPointLightComponent>(W, TEXT("OperationsDeskLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
- Light->SetWorldLocation(S47Three::ToUE(FVector(.30, 2.35, 8.55))); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(350); Light->SetLightColor(FLinearColor(1, .79f, .48f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
- FS47Obj Depart = Box(TEXT("office:departureCard"), FVector(1.39, 1.45, 6.815), FVector(.55, .30, .015), Paper);
- Label(TEXT("office:departureText"), TEXT("SURVEY FILE\nSTATION 01"), FVector(1.39, 1.45, 6.829), 90, 3.8f);
+ // Native fixture dimensions follow build_office.py. The emitter sits below the
+ // two opal diffusers, faces down and retains the existing power/area driver.
+ URectLightComponent* Light = NewObject<URectLightComponent>(W, TEXT("OperationsCeilingLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
+ Light->SetWorldLocation(S47Three::ToUE(FVector(.47, 2.594, 8.8))); Light->SetWorldRotation(FRotator(-90, 0, 0));
+ Light->SetSourceWidth(32); Light->SetSourceHeight(115); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(500); Light->SetLightColor(FLinearColor(1, .88f, .72f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
+ FS47Obj Depart = Box(TEXT("office:departureCard"), FVector(1.39, 1.45, 6.815 + FrontOffset), FVector(.55, .30, .015), Paper);
+ Label(TEXT("office:departureText"), TEXT("SURVEY FILE\nSTATION 01"), FVector(1.39, 1.45, 6.829 + FrontOffset), 90, 3.8f);
  Visual->Objects.Add(TEXT("office:door"), DoorPanel); Visual->Objects.Add(TEXT("officeDoor"), DoorPanel);
  Visual->Objects.Add(TEXT("office:drawer"), DrawerFront); Visual->Objects.Add(TEXT("office:key"), KeyTag);
  Visual->Objects.Add(TEXT("office:desk"), DeskPaper); Visual->Objects.Add(TEXT("office:folder"), Folder); Visual->Objects.Add(TEXT("office:index"), Index);
@@ -398,12 +409,13 @@ void FS47Office::Init()
   }
  }
  FS47Obj OldProxy = W->Obj(TEXT("annex.objs.officeDoor")); if (OldProxy) { OldProxy.SetVisible(false); if (const FS47WebNode* N = W->Node(OldProxy.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
- bReady = true; Apply();
+ bReady = true; S47SaroInterior::Build(W); Apply();
  UE_LOG(LogS47Office, Display, TEXT("S47: Operations ready physical portal=10 skirting=8 leaf/handle/sign=26; own spare/drawer; eight authored Blender/PBR assemblies; early physical access; field sheet independent of unavailable tape"));
 }
 
 void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
 {
+ Visual->bRecoverLegacyPose = Saved.IsValid() && S47J::Num(Saved, TEXT("interiorLayout"), 1) < 2;
  bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
  bDoorInspected = bDoorTarget = bDrawerTarget = false;
  bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
@@ -453,10 +465,10 @@ bool FS47Office::HasFieldSheet() const
 { return bReady && bKey && bUnlocked && bEverOpened && bEntered && bFieldSheet && FMath::IsFinite(FieldSheetAt); }
 
 bool FS47Office::Contains(const FVector& P) const
-{ return bReady && InBox(P, -.82, 1.77, -2, 4, 6.80, 10.31); }
+{ return bReady && InBox(P, -.82, 1.77, -2, 4, 6.80 + FrontOffset, 10.31); }
 
 bool FS47Office::InThreshold(const FVector& P, double Radius) const
-{ return bReady && P.X >= -.08 - Radius && P.X <= 1 + Radius && P.Z >= 6.05 - Radius && P.Z <= 7.05 + Radius; }
+{ return bReady && P.X >= -.08 - Radius && P.X <= 1 + Radius && P.Z >= 6.05 - Radius && P.Z <= 7.05 + FrontOffset + Radius; }
 
 bool FS47Office::RestoreDoorwayAt(const FVector& P, double Radius)
 {
@@ -717,7 +729,7 @@ void FS47Office::Apply()
   C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, Entry.Value.Shown() ? ECR_Block : ECR_Ignore);
  // bPowered belongs to RX bank 3, not the building lighting circuit. The office
  // is lit during handover before the receiver is started, and goes dark with SARO.
- if (UPointLightComponent* Light = Visual->Light.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
+ if (URectLightComponent* Light = Visual->Light.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
  for (FS47Rect& Rect : M->Web->ZonesMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:thresholdZone")) Rect.bEnabled = DoorOpen();
  const double Angle = PI * .5 * DoorK, EndX = HingeX + LeafWidth * FMath::Cos(Angle), EndZ = HingeZ + LeafWidth * FMath::Sin(Angle);
  for (FS47Rect& Rect : M->Web->CollidersMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:doorCollider"))
@@ -727,6 +739,46 @@ void FS47Office::Apply()
 void FS47Office::Step(double Dt)
 {
  if (!bBuilt) Init(); if (!bReady) return;
+ // One-time migration after Flow has applied the incoming pose. Old valid room
+ // poses can now intersect the recessed partition or moved vending machine.
+ // Preserve every story fact and the view; only obstructed legacy poses move.
+ if (Visual->bRecoverLegacyPose && M && M->Flow && !M->Flow->bStarting && M->Player && M->World)
+ {
+  Visual->bRecoverLegacyPose = false;
+  const FVector Before = M->Player->Pos; const double R = M->Player->Radius;
+  if (M->World->Area == TEXT("saro") && InBox(Before, -1.1, 2.05, -2, 4, 6.0, 8.35))
+  {
+   auto Clear = [&](double X, double Z)
+   {
+    if (!M->Player->Walkable(X, Z)) return false;
+    for (const FS47Rect& C : M->Web->Colliders()) if (C.bEnabled && X + R > C.MinX && X - R < C.MaxX && Z + R > C.MinZ && Z - R < C.MaxZ) return false;
+    return true;
+   };
+   if (!Clear(Before.X, Before.Z))
+   {
+    const bool bKeepInside = bEntered && WasUnlocked() && Before.Z >= 6.8;
+    double Best = TNumericLimits<double>::Max(); FVector At = Before;
+    // Search only this changed bay/room, keeping the inside room anchor clear.
+    // A failed search leaves the pose visible as a test failure rather than
+    // teleporting to an unrelated start or unlocking a door.
+    for (int32 X = -10; X <= 30; ++X) for (int32 Z = 106; Z <= 174; ++Z)
+    {
+     const double PX = X * .05, PZ = Z * .05;
+     if (bKeepInside && PZ < 6.8 + FrontOffset + R + .02) continue;
+     if (!Clear(PX, PZ)) continue;
+     const double Distance = FMath::Square(PX - Before.X) + FMath::Square(PZ - Before.Z);
+     if (Distance < Best) { Best = Distance; At = FVector(PX, 0, PZ); }
+    }
+    if (Best < TNumericLimits<double>::Max())
+    {
+     const double Pitch = M->Player->Pitch; M->Player->Place(At.X, At.Z, M->Player->Yaw); M->Player->Pitch = Pitch;
+     M->RequestAutosave();
+     UE_LOG(LogS47Office, Display, TEXT("S47: legacy interior pose migrated %.3f %.3f -> %.3f %.3f; story/key/documents/view preserved"), Before.X, Before.Z, At.X, At.Z);
+    }
+    else UE_LOG(LogS47Office, Error, TEXT("S47: legacy interior pose has no clear local recovery at %.3f %.3f"), Before.X, Before.Z);
+   }
+  }
+ }
  if (!bDoorTarget && DoorK > 0 && M && M->Player && M->World && M->World->Area == TEXT("saro") && InThreshold(M->Player->Pos, M->Player->Radius))
  { bDoorTarget = true; if (M) M->RequestAutosave(); }
  const bool WasOpen = DoorOpen();
@@ -742,7 +794,7 @@ void FS47Office::Step(double Dt)
 
 S47J::FObj FS47Office::Save() const
 {
- auto O = S47J::New(); S47J::Set(O, TEXT("v"), 1); S47J::Set(O, TEXT("routeVersion"), 1); S47J::Set(O, TEXT("routeRequired"), bRequired);
+ auto O = S47J::New(); S47J::Set(O, TEXT("v"), 1); S47J::Set(O, TEXT("interiorLayout"), Visual->bRecoverLegacyPose ? 1 : 2); S47J::Set(O, TEXT("routeVersion"), 1); S47J::Set(O, TEXT("routeRequired"), bRequired);
  S47J::Set(O, TEXT("key"), bKey); S47J::Set(O, TEXT("unlocked"), WasUnlocked()); S47J::Set(O, TEXT("everOpened"), bEverOpened);
  S47J::Set(O, TEXT("entered"), bEntered); S47J::Set(O, TEXT("doorInspected"), bDoorInspected); S47J::Set(O, TEXT("doorOpen"), bDoorTarget); S47J::Set(O, TEXT("drawerOpen"), bDrawerTarget);
  S47J::Set(O, TEXT("deskSeen"), bDeskSeen); S47J::Set(O, TEXT("indexRead"), bIndexRead); S47J::Set(O, TEXT("clippingsRead"), bClippingsRead);

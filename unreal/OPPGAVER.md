@@ -53,3 +53,8 @@ Codex i denne samtalen eier installasjon til ~/Games/Signal47/Linux, med farmR1 
 ## Komplett testnedlasting, 2026-10-29 kl. 11:13 CET
 
 Codex i production-coordinator eier starter og distribusjonsdocs på codex/download-playtest-20261029. [Farm R1-nedlastingen](../Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md) er publisert og vedlegg/anonym tilgang verifisert. Ingen motorreservasjon, ny pakking/cook, endring av standardinstallasjonen eller arbeid i ART01/HUM01 inngår. Alle lokale kilde-, Saved- og rollbackfiler er bevart.
+
+
+## 2026-10-29T19:56:02+01:00: SARO interiørpass startet etter ferdig Claude-installasjon
+
+Codex TRIPO-chat eier `codex/saro-interiors-20261029`, tynn isolert arbeidskopi `saro-interiors-20261029`, fra main `22c5cf1d`. Filansvar: Office-kilder, ny avgrenset interiør-/dørintegrasjon, senere archiveprops og PhotoLab; endringer i delte Web/Walker/manifest-ankre spesifiseres før implementering. Claude beholder Spine/Timeline/Story/Flow og akt1. Lesende hjelpere kartlegger faktisk korridorgeometri og eide originalmodeller. Først kontor/gang/dørsett, deretter arkiv/fotolab. Ingen ny fysisk Dale-scene. HUM01 har tungreservasjonen; dette passet gjør foreløpig bare lett kildearbeid, ingen Blender/Unreal/pakking. Lokal installasjon krever samlet kontroll og bevart Saved; ingen offentlig release eller pengebruk.

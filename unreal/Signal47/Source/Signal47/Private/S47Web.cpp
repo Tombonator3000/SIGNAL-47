@@ -20,6 +20,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/MaterialBillboardComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -920,6 +921,121 @@ const TArray<FS47Rect>& AS47Web::Colliders() const
 	static const TArray<FS47Rect> Empty;
 	const auto* P = Walks.Find(WalkKey(Walks, CurrentArea));
 	return P ? P->Value : Empty;
+}
+
+bool AS47Web::SetWalkZoneBounds(const FString& Area, const FString& Id, const FS47Area& Bounds, const TArray<FString>& RectAliases)
+{
+	if (!Bounds.bValid || !FMath::IsFinite(Bounds.MinX) || !FMath::IsFinite(Bounds.MaxX) ||
+		!FMath::IsFinite(Bounds.MinZ) || !FMath::IsFinite(Bounds.MaxZ) ||
+		Bounds.MinX >= Bounds.MaxX || Bounds.MinZ >= Bounds.MaxZ || RectAliases.IsEmpty()) return false;
+	auto* Walk = Walks.Find(Area);
+	if (!Walk) return false;
+	FS47Rect* Zone = nullptr;
+	for (FS47Rect& R : Walk->Key) if (R.Id == Id)
+	{
+		if (Zone) return false; // An ambiguous ID must not change either zone.
+		Zone = &R;
+	}
+	if (!Zone) return false;
+	// Validate the complete change before writing. A missing or stale semantic alias
+	// must not leave movement and phone/roof/horror room detection disagreeing.
+	for (const FString& Path : RectAliases)
+	{
+		const FS47Area* R = HandleRects.Find(Path);
+		if (!R || !R->bValid || !FMath::IsNearlyEqual(R->MinX, Zone->MinX, 1e-6) ||
+			!FMath::IsNearlyEqual(R->MaxX, Zone->MaxX, 1e-6) || !FMath::IsNearlyEqual(R->MinZ, Zone->MinZ, 1e-6) ||
+			!FMath::IsNearlyEqual(R->MaxZ, Zone->MaxZ, 1e-6)) return false;
+	}
+	Zone->MinX = Bounds.MinX; Zone->MaxX = Bounds.MaxX; Zone->MinZ = Bounds.MinZ; Zone->MaxZ = Bounds.MaxZ;
+	for (const FString& Path : RectAliases) HandleRects.FindChecked(Path) = Bounds;
+	return true;
+}
+
+bool AS47Web::RecessSaroVending(bool bApply)
+{
+	// Unreal-only: use the new Operations bay without moving the archive or changing
+	// any vending use/album/material identity. Validate every coupled part first.
+	const FVector Original(1.35, 0, 6.2), Offset(0, 0, .35);
+	const int32 Group = Handle(TEXT("annex.objs.vending")), Parent = Handle(TEXT("annex.interior"));
+	if (!Nodes.IsValidIndex(Group) || Nodes[Group].Parent != Parent || !Nodes[Group].Comp.IsValid() ||
+		!Nodes[Group].Q.Equals(FQuat::Identity, .0001) || !Nodes[Group].S.Equals(FVector::OneVector, .0001) ||
+		!NodeWorldThree(Parent).Equals(FTransform::Identity, .0001)) return false;
+	const FVector Current = NodeWorldThree(Group).GetLocation();
+	const bool bMoved = Current.Equals(Original + Offset, .0001);
+	if (!bMoved && !Current.Equals(Original, .0001)) return false;
+	const FVector ExistingOffset = bMoved ? Offset : FVector::ZeroVector;
+	const FVector ItemMin = FVector(.95, 0, 5.835) + ExistingOffset;
+	const FVector ItemMax = FVector(1.75, 1.8, 6.56) + ExistingOffset;
+	FS47WebItem* Item = ItemList.FindByPredicate([](const FS47WebItem& I) { return I.Id == TEXT("vending"); });
+	const FBox Actual = ObjAt(Group).WorldBox();
+	if (!Item || Item->Node != Group || !Item->bBox || !Item->Min.Equals(ItemMin, .003) ||
+		!Item->Max.Equals(ItemMax, .003) || !Actual.IsValid || !Actual.Min.Equals(ItemMin, .003) || !Actual.Max.Equals(ItemMax, .003)) return false;
+	// No relocation without the completed native bay. Its east wall and closed leaf
+	// leave the original 0.8m-wide machine clear at z=6.185..6.91.
+	const FS47Obj Annex = ObjAt(Handle(TEXT("annex.group")));
+	const FS47Obj Partition = Annex.Find(TEXT("office:partitionRight"));
+	const FS47Obj Hinge = Annex.Find(TEXT("office:doorHinge"));
+	if (!Partition || !Hinge || !Partition.WorldPosition().Equals(FVector(1.5, 1.4, 7.2), .0001) ||
+		!Hinge.WorldPosition().Equals(FVector(-.03, 0, 7.07), .0001)) return false;
+	auto* Walk = Walks.Find(TEXT("saro"));
+	FS47Area* Alias = HandleRects.Find(TEXT("annex.colliders[0]"));
+	if (!Walk || !Alias || !Alias->bValid) return false;
+	const double Front = 5.8 + ExistingOffset.Z, Back = 6.6 + ExistingOffset.Z;
+	if (!FMath::IsNearlyEqual(Alias->MinX, .93, 1e-6) || !FMath::IsNearlyEqual(Alias->MaxX, 1.77, 1e-6) ||
+		!FMath::IsNearlyEqual(Alias->MinZ, Front, 1e-6) || !FMath::IsNearlyEqual(Alias->MaxZ, Back, 1e-6)) return false;
+	const TArray<FString> ColliderAliases = {TEXT("annex.colliders[0]"), TEXT("world.d.player.colliders[32]"), TEXT("world.d.saro.colliders[32]")};
+	for (const FString& Path : ColliderAliases)
+	{
+		const FS47Area* R = HandleRects.Find(Path);
+		if (!R || !R->bValid || !FMath::IsNearlyEqual(R->MinX, Alias->MinX, 1e-6) || !FMath::IsNearlyEqual(R->MaxX, Alias->MaxX, 1e-6) ||
+			!FMath::IsNearlyEqual(R->MinZ, Alias->MinZ, 1e-6) || !FMath::IsNearlyEqual(R->MaxZ, Alias->MaxZ, 1e-6)) return false;
+	}
+	FS47Rect* Collider = nullptr;
+	for (FS47Rect& R : Walk->Value) if (FMath::IsNearlyEqual(R.MinX, .93, 1e-6) && FMath::IsNearlyEqual(R.MaxX, 1.77, 1e-6) &&
+		FMath::IsNearlyEqual(R.MinZ, Front, 1e-6) && FMath::IsNearlyEqual(R.MaxZ, Back, 1e-6))
+	{
+		if (Collider || !R.bEnabled) return false;
+		Collider = &R;
+	}
+	if (!Collider) return false;
+	const int32 ScreenMat = HandleMat(TEXT("annex.screens[0]")), Set = FloodSet(TEXT("annex"));
+	if (ScreenMat < 0 || !FloodSets.IsValidIndex(Set) || !FloodSets[Set].Pos.IsValidIndex(2)) return false;
+	FScreenLight* Screen = nullptr;
+	for (FScreenLight& S : ScreenLights) if (Nodes.IsValidIndex(S.Node) && Nodes[S.Node].Parent == Group && Nodes[S.Node].Mats.Contains(ScreenMat))
+	{
+		if (Screen || S.Screen != -1 || !S.Light.IsValid()) return false;
+		Screen = &S;
+	}
+	if (!Screen) return false;
+	const FBox Pane = ObjAt(Screen->Node).WorldBox();
+	if (!Pane.IsValid || FVector::Distance(ToThree(Screen->Light->GetComponentLocation()), Pane.GetCenter()) > .10) return false;
+	const FLinearColor Pool = FloodSets[Set].Pos[2];
+	if (!FVector(Pool.R, Pool.G, Pool.B).Equals(FVector(1.35, 1.2, 5.6) + ExistingOffset, .0001)) return false;
+	FPoolLight* NativePool = nullptr;
+	for (FPoolLight& P : PoolLights) if (P.Set == Set && P.Slot == 2)
+	{
+		if (NativePool || !P.Light.IsValid()) return false;
+		NativePool = &P;
+	}
+	if (!NativePool) return false;
+	if (bMoved && !NativePool->Light->GetComponentLocation().Equals(ToUE(FVector(Pool.R, Pool.G, Pool.B)), .1)) return false;
+	if (!bApply || bMoved) return true;
+	// All references are now proven. SetPosition propagates the original group to its
+	// screen and body; world-root-attached native lights must follow explicitly.
+	SetPosition(Group, Nodes[Group].P + Offset);
+	Item->Min += Offset; Item->Max += Offset;
+	Collider->MinZ += Offset.Z; Collider->MaxZ += Offset.Z;
+	for (const FString& Path : ColliderAliases)
+	{
+		FS47Area& R = HandleRects.FindChecked(Path); R.MinZ += Offset.Z; R.MaxZ += Offset.Z;
+	}
+	Screen->Light->AddWorldOffset(ToUE(Offset));
+	FloodSets[Set].Pos[2].B += float(Offset.Z);
+	NativePool->Light->SetWorldLocation(ToUE(FVector(Pool.R, Pool.G, Pool.B) + Offset));
+	// The existing pool suppression, intensity, colour, power/flicker and screen
+	// material remain unchanged; the physical pane continues to drive them.
+	UploadFlood(Set);
+	return true;
 }
 
 // ---------- items ----------

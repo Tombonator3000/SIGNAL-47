@@ -8,6 +8,7 @@ import bpy, math, json, sys
 from mathutils import Vector
 import numpy as np
 ROOT=Path(__file__).resolve().parent
+FRONT_OFFSET=.50  # Operations passing bay; keep rear furniture/story anchors fixed.
 OUT=ROOT/'Export'; TEX=ROOT/'textures'; PRE=ROOT/'Preview'
 for p in (OUT,TEX,PRE):p.mkdir(parents=True,exist_ok=True)
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -21,34 +22,61 @@ EDIT=bpy.data.collections.new('01_EDITABLE_ORIGINAL_COMPONENTS');SC.collection.c
 EXPORT=bpy.data.collections.new('02_NATIVE_EXPORT_PARTS');SC.collection.children.link(EXPORT)
 STUDIO=bpy.data.collections.new('03_PREVIEW_ONLY');SC.collection.children.link(STUDIO)
 MATS={};ROWS=[];PARTS={};CURRENT=[];ORIGINALS={}
-rng=np.random.default_rng(47026);N=512
+rng=np.random.default_rng(47026);N=1024
 v,u=np.mgrid[0:N,0:N]/N
 fine=rng.normal(0,1,(N,N));slow=np.sin(u*51)*np.sin(v*39)+np.sin(u*173+v*21)*.3
 
 def imwrite(name,arr):
-    im=bpy.data.images.new(name,N,N,alpha=True);im.pixels.foreach_set(arr.astype(np.float32).ravel());im.filepath_raw=str(TEX/(name+'.png'));im.file_format='PNG';im.save();bpy.data.images.remove(im)
+    # Arrays already contain encoded albedo or raw linear data. Do not apply a
+    # second colour transform while writing roughness and tangent normals.
+    im=bpy.data.images.new(name,N,N,alpha=True);im.colorspace_settings.name='Non-Color';im.pixels.foreach_set(arr.astype(np.float32).ravel());im.filepath_raw=str(TEX/(name+'.png'));im.file_format='PNG';im.save();bpy.data.images.remove(im)
     return bpy.data.images.load(str(TEX/(name+'.png')),check_existing=True)
 def mat(name,color,rough=.7,metal=0,kind='paint'):
     name='M_Office_'+name;m=bpy.data.materials.new(name);m.use_nodes=True
     p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*color,1);p.inputs['Roughness'].default_value=rough;p.inputs['Metallic'].default_value=metal
-    if kind=='wood':field=np.sin(u*127+np.sin(v*8)*2)*.32+np.sin(u*317+np.sin(v*17)*1.5)*.17+slow*.06+fine*.04
-    elif kind=='fabric':field=(np.sin(u*1600)+np.sin(v*1600))*.12+fine*.10
-    elif kind=='tile':field=slow*.025+fine*.03
-    else:field=slow*.035+fine*.025
+    # Cube projection uses a one-metre span. Heights are metres, independent of
+    # colour: painted steel, woven cloth and wood must not share a noisy bump.
+    if kind=='wood':
+        grain=np.sin(math.tau*(u*21+np.sin(v*math.tau)*.28))
+        field=grain*.18+np.sin(math.tau*u*57)*.06+slow*.025+fine*.012
+        height=grain*.00010+np.sin(math.tau*u*57)*.000025
+    elif kind=='fabric':
+        weave=np.sin(math.tau*u*250)*np.sin(math.tau*v*250)
+        field=weave*.055+fine*.018
+        height=weave*.00010
+    elif kind=='tile':
+        field=slow*.018+fine*.012
+        height=np.sin(math.tau*u*17)*np.sin(math.tau*v*19)*.000018
+    else:
+        field=slow*.025+fine*.009
+        height=np.sin(math.tau*u*73)*np.sin(math.tau*v*67)*.000015
     rgba=np.ones((N,N,4));linear=np.clip(np.array(color)[None,None,:]*(1+field[:,:,None]),.001,1)
     rgba[:,:,:3]=np.where(linear<.0031308,linear*12.92,1.055*linear**(1/2.4)-.055)
     base=imwrite(name+'_base',rgba);base.colorspace_settings.name='sRGB'
-    r=np.ones((N,N,4));r[:,:,:3]=np.clip(rough+field[:,:,None]*.10,.1,1);rim=imwrite(name+'_rough',r);rim.colorspace_settings.name='Non-Color'
+    r=np.ones((N,N,4));r[:,:,:3]=np.clip(rough+field[:,:,None]*.35,.1,1);rim=imwrite(name+'_rough',r);rim.colorspace_settings.name='Non-Color'
+    # Match the existing native import recipe's DirectX tangent convention.
+    dx=(np.roll(height,-1,axis=1)-np.roll(height,1,axis=1))*(N*.5)
+    dy=(np.roll(height,-1,axis=0)-np.roll(height,1,axis=0))*(N*.5)
+    normal=np.stack((-dx,dy,np.ones_like(dx)),axis=2)
+    normal/=np.linalg.norm(normal,axis=2,keepdims=True)
+    nr=np.ones((N,N,4));nr[:,:,:3]=normal*.5+.5
+    nim=imwrite(name+'_normal_dx',nr);nim.colorspace_settings.name='Non-Color'
     nodes=m.node_tree.nodes;links=m.node_tree.links
     for image,socket in ((base,'Base Color'),(rim,'Roughness')):
         n=nodes.new('ShaderNodeTexImage');n.image=image;links.new(n.outputs['Color'],p.inputs[socket])
-    ROWS.append({'name':name,'base_color_linear':[1,1,1,1],'roughness':rough,'metallic':metal,'specular':.33,'textures':{'base_color':'textures/'+name+'_base.png','roughness':'textures/'+name+'_rough.png'}})
+    n=nodes.new('ShaderNodeTexImage');n.image=nim
+    # Blender previews use OpenGL normals; invert G only in the preview graph.
+    separate=nodes.new('ShaderNodeSeparateColor');links.new(n.outputs['Color'],separate.inputs['Color'])
+    inv=nodes.new('ShaderNodeMath');inv.operation='SUBTRACT';inv.inputs[0].default_value=1;links.new(separate.outputs['Green'],inv.inputs[1])
+    combine=nodes.new('ShaderNodeCombineColor');links.new(separate.outputs['Red'],combine.inputs['Red']);links.new(inv.outputs[0],combine.inputs['Green']);links.new(separate.outputs['Blue'],combine.inputs['Blue'])
+    bump=nodes.new('ShaderNodeNormalMap');links.new(combine.outputs[0],bump.inputs['Color']);links.new(bump.outputs['Normal'],p.inputs['Normal'])
+    ROWS.append({'name':name,'base_color_linear':[1,1,1,1],'roughness':rough,'metallic':metal,'specular':.33,'normal_strength':1.,'normal_convention':'DirectX','textures':{'base_color':'textures/'+name+'_base.png','roughness':'textures/'+name+'_rough.png','normal':'textures/'+name+'_normal_dx.png'}})
     MATS[name]=m;return m
 WALL=mat('SageWall',(.27,.31,.25),.91)
 TRIM=mat('CreamEnamel',(.49,.46,.36),.63)
 WOOD=mat('Walnut',(.10,.053,.026),.54,kind='wood')
-DESK=mat('TankerGreen',(.105,.15,.13),.49,.42)
-STEEL=mat('CabinetEnamel',(.19,.23,.21),.57,.38)
+DESK=mat('TankerGreen',(.105,.15,.13),.49)
+STEEL=mat('CabinetEnamel',(.19,.23,.21),.57)
 DARK=mat('BlackBakelite',(.018,.023,.021),.49)
 BRASS=mat('AgedBrass',(.32,.22,.075),.31,.82)
 CHROME=mat('BrushedMetal',(.34,.37,.36),.29,.84)
@@ -192,11 +220,11 @@ for ix in range(5):
 for ix in range(6):box('Ceiling_T_bar',(-.88+ix*.54,2.712,8.49),(.012,.018,3.76),TRIM,.002)
 for iz in range(7):box('Ceiling_cross_T',(.47,2.712,6.61+iz*.626),(2.7,.018,.012),TRIM,.002)
 for x in (-.062,1.032):
-    box('Door_steel_jamb',(x,1.08,6.70),(.055,2.16,.23),TRIM,.005)
-    box('Door_stop',(x+(.027 if x<0 else -.027),1.075,6.685),(.015,2.15,.025),WOOD,.002)
-box('Door_frame_head',(.485,2.145,6.70),(1.15,.065,.23),TRIM,.005)
-box('Threshold_brass',(.47,.014,6.69),(1.06,.018,.24),BRASS,.003)
-for x in (.1,.84):cyl('Threshold_screw',(x,.024,6.69),(x,.025,6.69),.005,CHROME,12)
+    box('Door_steel_jamb',(x,1.08,6.70+FRONT_OFFSET),(.055,2.16,.23),TRIM,.005)
+    box('Door_stop',(x+(.027 if x<0 else -.027),1.075,6.685+FRONT_OFFSET),(.015,2.15,.025),WOOD,.002)
+box('Door_frame_head',(.485,2.145,6.70+FRONT_OFFSET),(1.15,.065,.23),TRIM,.005)
+box('Threshold_brass',(.47,.014,6.69+FRONT_OFFSET),(1.06,.018,.24),BRASS,.003)
+for x in (.1,.84):cyl('Threshold_screw',(x,.024,6.69+FRONT_OFFSET),(x,.025,6.69+FRONT_OFFSET),.005,CHROME,12)
 # Fluorescent fixture housing and split diffusers, attached to actual ceiling.
 box('Fluorescent_backplate',(.47,2.68,8.8),(.38,.07,1.22),STEEL,.012)
 for x in (.37,.57):box('Fluorescent_opal_diffuser',(x,2.625,8.8),(.16,.045,1.15),LIGHT,.013)
@@ -291,8 +319,8 @@ finish('SM_Office_Dressing')
 
 # Save source with editable assemblies composed at runtime placements, export objects hidden.
 placements={
-'SM_Office_ServiceCabinet':(-.59,.525,6.32),'SM_Office_ServiceDrawer':(-.59,.85,6.22),
-'SM_Office_Door':(.47,1.035,6.57),'SM_Office_SpareKey':(-.59,.805,6.17),
+'SM_Office_ServiceCabinet':(-.59,.525,6.32+FRONT_OFFSET),'SM_Office_ServiceDrawer':(-.59,.85,6.22+FRONT_OFFSET),
+'SM_Office_Door':(.47,1.035,6.57+FRONT_OFFSET),'SM_Office_SpareKey':(-.59,.805,6.17+FRONT_OFFSET),
 'SM_Office_Desk':(.37,0,9.73),'SM_Office_Chair':(1.19,0,8.73),
 'SM_Office_Room':(0,0,0),'SM_Office_Dressing':(0,0,0)}
 # All original components are grouped sequentially according to part component counts.
