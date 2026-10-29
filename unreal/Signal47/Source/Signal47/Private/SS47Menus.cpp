@@ -61,6 +61,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 	Items.Add({ TEXT("NEW NIGHT"), true, [this] { if (O.OnStart) O.OnStart(); } });
 	Items.Add({ TEXT("LOAD CASE"), O.bCanLoad, [this] { if (O.OnLoad) O.OnLoad(); } });
 	Items.Add({ TEXT("SETTINGS"), true, [this] { if (O.OnSettings) O.OnSettings(); } });
+	if (O.OnDev) Items.Add({ TEXT("DEVELOPER"), true, [this] { if (O.OnDev) O.OnDev(); } });
 	if (O.OnQuit) Items.Add({ TEXT("QUIT"), true, [this] { if (O.OnQuit) O.OnQuit(); } });
 	Sel = Items[0].bUsable ? 0 : 1;
 

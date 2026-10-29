@@ -156,7 +156,7 @@ FS47Doc FS47Observing::Chart(int32 I)
 void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
- bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Archive = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
+ bReplay = false; bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Archive = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -536,6 +536,7 @@ FS47Observing::FS47Observing(US47Main* InM) : M(InM)
  {
   // Not the phone: the voice is on the far side of the visitor entrance.
   FS47RecordedDialogue::FOutput Out;
+  if (bReplay) { Out.At = ReplayAt; Out.Channel = TEXT("physical"); return Out; } // SC04: the same words from another door
   FS47Obj Door;
   if (const auto* It = M && M->Inter ? M->Inter->Get(TEXT("exitDoor")) : nullptr) Door = It->Object;
   // Exported prologue doors use Web's fallback registry rather than Inter's added objects.
@@ -559,8 +560,20 @@ void FS47Observing::SetCharacterVoicesEnabled(bool bValue)
 
 bool FS47Observing::DoorVoicePlaying() const { return Voice && Voice->Playing(); }
 
+void FS47Observing::ReplayDoorFragment(const FVector& At)
+{
+ if (!M || !M->Evening || !M->Audio || !Voice || !M->Audio->bCharacterVoices) return;
+ const auto* Scene = M->Evening->Pack.FindScene(TEXT("D01_HANDOVER"));
+ const FS47EveningLine* L = Scene ? Scene->Lines.FindByPredicate([](const FS47EveningLine& Line) { return Line.Id == DoorLine; }) : nullptr;
+ if (!L) return;
+ FS47DialogueInput In; In.Voice = L->VoiceProfile; In.Lines.Add({ L->Speaker, L->Text });
+ ReplayAt = At; bReplay = true; Voice->SetEnabled(true); Voice->Play(In);
+ UE_LOG(LogTemp, Display, TEXT("S47: SC04 door fragment %s again: %s"), DoorLine, *Voice->State());
+}
+
 void FS47Observing::StepDoorVoice()
 {
+ if (bReplay) { if (!Voice || (!Voice->Playing() && !Voice->Loading())) bReplay = false; return; }
  if (!M->World || M->World->Area != TEXT("saro") || (M->Horror && M->Horror->Complete())) { if (Voice && Voice->Playing()) Voice->Stop(); return; }
  if (DoorVoice >= 2 || !M->Player || !M->World || M->World->Area != TEXT("saro") || !M->Web || !M->Horror || !M->Horror->Enabled() || M->Horror->Complete()) return;
  const FVector P = M->Player->Pos;
