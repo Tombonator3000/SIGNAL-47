@@ -230,7 +230,7 @@ void AS47HUD::Start()
 		{
 			TWeakObjectPtr<US47Audio> A = Audio;
 			TWeakObjectPtr<AS47HUD> Self = this;
-			Saro->OnMugShatter = [A, Self](const FVector& P) { if (A.IsValid()) A->Play(TEXT("ceramic"), 1.f, P + FVector(0, 0, 20)); };
+			Saro->OnMugShatter = [A, Self](const FVector& P) { if (A.IsValid()) A->Play(TEXT("ceramic"), 1.f, P + FVector(0, 0, 20)); if(Self.IsValid() && Self->Story.IsValid())Self->Story->RoomCeramicShattered(); };
 		}
 		Audio->StartRoomTone();
 		Audio->StartNight(); // main.ts: the night outside (core/ambience.ts)

@@ -16,6 +16,7 @@
 #include "S47World.h"
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
+#include "S47SC05Contract.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -97,14 +98,21 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
   State[SC08] = FMath::Clamp(S47J::Int(Saved, TEXT("sc08")), 0, 2);
   State[SC11] = FMath::Clamp(S47J::Int(Saved, TEXT("sc11")), 0, 2);
   Act04.Begin(S47J::Obj(Saved, TEXT("sc04d")));
+  const auto CallSaved=S47J::Obj(Saved,TEXT("sc05d"));
+  const bool Adopt=!CallSaved && State[SC04]==2 && M && M->Story && M->Story->NightSequence()
+   && M->Story->ChapterKey==TEXT("prologue") && M->Story->Phase()==ES47Phase::Residual
+   && FS47SC05::CanAdoptSC04(S47J::Obj(Saved,TEXT("sc04d")));
+  Act05.Begin(CallSaved,Adopt);
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
+ Act05.Begin(nullptr,bEnabled);
 }
 
 void FS47Spine::Stop()
 {
  Act04.Stop();
+ Act05.Stop();
  for (auto& P : Posts) if (P.IsValid()) P->SetVisibility(false);
  for (auto& S : Signs) if (S.IsValid()) S->SetVisibility(false);
 }
@@ -113,6 +121,7 @@ S47J::FObj FS47Spine::Save() const
 {
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version);
+ if(Act05.Enabled()) S47J::Set(O,TEXT("sc05d"),Act05.Save());
  S47J::Set(O, TEXT("sc04"), State[SC04]); S47J::Set(O, TEXT("sc08"), State[SC08]); S47J::Set(O, TEXT("sc11"), State[SC11]);
  if (State[SC04] >= 1) S47J::Set(O, TEXT("sc04d"), Act04.Save());
  return O;
@@ -160,6 +169,7 @@ int32 FS47Spine::Current() const
 FString FS47Spine::Label(const FString& Id) const
 {
  if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Label(Id);
+ if(const FString L=Act05.Label(Id);!L.IsEmpty())return L;
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G))) return State[G] == 1 ? FString::Printf(TEXT("%s placeholder: read the card"), Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10].Id) : FString();
  return FString();
@@ -168,6 +178,7 @@ FString FS47Spine::Label(const FString& Id) const
 bool FS47Spine::Use(const FString& Id)
 {
  if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Use(Id);
+ if(Act05.Use(Id))return true;
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G)) && State[G] == 1) { Finish(EGate(G)); return true; }
  return false;
@@ -194,6 +205,7 @@ void FS47Spine::Finish(EGate G)
 
 FString FS47Spine::Objective() const
 {
+ if(Act05.Active())return Act05.Objective();
  switch (Pending())
  {
  case SC04: return Act04.Objective();
@@ -205,6 +217,7 @@ FString FS47Spine::Objective() const
 
 TArray<FS47Task> FS47Spine::Tasks() const
 {
+ if(Act05.Active())return Act05.Tasks();
  TArray<FS47Task> Out;
  const EGate G = Pending();
  if (G == GateCount) return Out;
@@ -277,6 +290,8 @@ void FS47Spine::Step(double Dt)
 {
  if (!bEnabled || !M || !M->Story) return;
  Build();
+ Act05.Step(Dt);
+ if(M->Mode==US47Main::EMode::Play && M->UI && Act05.Active())M->UI->Objective(Act05.Objective());
  // SC03's end opens SC04: the control room holds until the originals are secured.
  if (State[SC04] == 0 && (bTestSC03 || (M->Horror && M->Horror->SC03 && M->Horror->SC03->Complete())))
  {
@@ -304,7 +319,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
  const bool Chapters = GateDone(SC08) < S47Timeline::Chapter3(true) && S47Timeline::Chapter3(true) < S47Timeline::Chapter4(true) &&
   S47Timeline::Chapter4(true) < GateDone(SC11) && GateDone(SC11) < S47Timeline::Chapter5(true) && S47Timeline::Chapter5(true) < S47Timeline::Departure;
  bool Cards = true; for (int32 G = 0; G < GateCount; ++G) Cards &= Card(EGate(G)).Page.StartsWith(TEXT("PLACEHOLDER"));
- const bool Ok = Thirteen && Ordered && Chapters && Cards;
+ const bool Ok = Thirteen && Ordered && Chapters && Cards && FS47SC05::SelfTest(Lines);
  Lines.Add(FString::Printf(TEXT("%s spine: 13 scenarios, placeholders ordered SC04 %.0f < SC08 %.0f < ch3 %.0f < ch4 %.0f < SC11 %.0f < ch5 %.0f < departure"),
   Ok ? TEXT("PASS") : TEXT("FAIL"), GateDone(SC04), GateDone(SC08), S47Timeline::Chapter3(true), S47Timeline::Chapter4(true), GateDone(SC11), S47Timeline::Chapter5(true)));
  return Ok;
@@ -314,6 +329,7 @@ void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
  if (Test.Mode == TEXT("sc04") || Test.Mode == TEXT("sc04hide") || Test.Mode == TEXT("sc04long")) { FS47SC04Contract::Step(M, Dt); return; }
+ if (Test.Mode == TEXT("sc05") && M && M->Story) { S47SC05Contract::Step(M,Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)

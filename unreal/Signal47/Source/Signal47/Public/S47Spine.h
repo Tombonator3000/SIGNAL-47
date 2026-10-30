@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47SC04.h"
+#include "S47SC05.h"
 class US47Main;
 class UStaticMeshComponent;
 class UTextRenderComponent;
@@ -27,9 +28,12 @@ public:
  static FVector StandPoint(EGate G);
  static const TCHAR* GateItem(EGate G);
 
- explicit FS47Spine(US47Main* InM) : M(InM), Act04(InM) {}
+ explicit FS47Spine(US47Main* InM) : M(InM), Act04(InM), Act05(InM) {}
  // SC04 is built (S47SC04.h); its gate is held while it runs instead of a placeholder card.
  const FS47SC04& Secure() const { return Act04; }
+ FS47SC05& Call() { return Act05; }
+ const FS47SC05& Call() const { return Act05; }
+ bool CallBusy() const { return Act05.Active(); }
  void Begin(const S47J::FObj& Saved, bool bNewCase);
  void Stop();
  void Step(double Dt);
@@ -59,6 +63,7 @@ public:
  void ControlTest(double Dt);
 private:
  US47Main* M = nullptr;
+ FS47SC05 Act05;
  bool bEnabled = false, bTestSC03 = false;
  int32 State[GateCount] = { 0, 0, 0 };
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Posts;

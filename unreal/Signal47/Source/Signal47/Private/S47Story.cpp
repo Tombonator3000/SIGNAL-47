@@ -201,6 +201,21 @@ void AS47Story::HondoTelex(double Filed, TOptional<double> At)
 	if (I >= 0) DocsList[I] = S47Docs::Telex(TelexRoll(), bEveningTimeline);
 }
 
+bool AS47Story::RevisedSC05() const
+{
+ const auto* M=US47Main::Get(this); return M && M->Spine && M->Spine->Call().Active();
+}
+void AS47Story::RoomCeramicShattered()
+{
+ if(auto* M=US47Main::Get(this);M && M->Spine)M->Spine->Call().CeramicShattered();
+}
+void AS47Story::CompleteRevisedCall()
+{
+ auto* M=US47Main::Get(this); if(!M || !M->Spine || !M->Spine->Call().Done())return;
+ SetPhase(ES47Phase::End);
+ ChapterBreak({TEXT("SC05 // THE ROOM REPEATED THE CALL"),TEXT("The call does not explain Ortiz. The original print and the room check are secured. Next: test what survives on film at B-12."),TEXT("CHAPTER ONE"),TEXT("THE SECOND EXPOSURE"),[this]{BeginChapter(TEXT("ch1"));}});
+}
+
 bool AS47Story::NightSequence() const
 {
  const auto* M = US47Main::Get(this);
@@ -313,6 +328,7 @@ FString AS47Story::SurveyModeText() const
 
 TArray<FS47Task> AS47Story::Tasks() const
 {
+ if(const auto* M=US47Main::Get(this);M && M->Spine && M->Spine->Call().Active())return M->Spine->Call().Tasks();
  if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening())
  {
   const auto& P=M->Evening->Pack;
@@ -392,6 +408,7 @@ FString AS47Story::Label(const FString& Id) const
 void AS47Story::Use(const FString& Id)
 {
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
+ if(auto* M=US47Main::Get(this);M && M->Spine && M->Spine->Use(Id))return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
 	if (Id == TEXT("anomaly:shiftlog"))
 	{
@@ -595,12 +612,18 @@ void AS47Story::PowerUp(bool bInstant)
 
 void AS47Story::ConsoleAzimuth()
 {
+ if(RevisedSC05())return; // passive receiver search while the automatic array schedule is held
 	PointDishes(Rx.Azimuth, SurveyEl, 9);
 }
 
 const FS47Profile& AS47Story::ConsoleProfile() const
 {
 	if (const auto* M = US47Main::Get(this); M && M->Observing) if (const FS47Profile* P = M->Observing->ConsoleProfile()) return *P;
+ if(RevisedSC05() && Rx.Stage==2)
+ {
+  static const FS47Profile Passive=[] { FS47Profile P=S47Signal::Profiles()[2]; P.Card=TEXT("PASSIVE RESIDUAL / 1420.4 MHz / NARROW BAND / HIGH GAIN / SEARCH AZIMUTH / AUTO SLEW HELD"); return P; }();
+  return Passive;
+ }
 	return Rx.Profile();
 }
 
@@ -634,7 +657,7 @@ void AS47Story::StagePassed()
 	if (S==0) if (const auto* Main=US47Main::Get(this); Main && Main->Horror) Main->Horror->CalibrationChecked();
 	Note(S47Signal::Profiles()[FMath::Min(S, 2)].Note);
 	Rx.Advance();
-	PointDishes(Rx.Azimuth, SurveyEl, 6);
+	if(!RevisedSC05())PointDishes(Rx.Azimuth, SurveyEl, 6);
 	if (Audio.IsValid()) { Audio->Play(TEXT("beep_1320"), 0.3f); Audio->Play(TEXT("beep_1760"), 0.3f); }
 	if (S == 0) Toast(TEXT("Calibrated. Next, the highway relay near 1420.1."));
 	else if (S == 1) { SetPhase(ES47Phase::Survey); Toast(TEXT("Notched. The survey sweep takes over from here.")); }
@@ -843,6 +866,7 @@ void AS47Story::StartCountdown()
 {
 	SetPhase(ES47Phase::Countdown);
 	LineDeadT = GameTime;
+ if(auto* M=US47Main::Get(this);M && M->Spine)M->Spine->Call().LineDead();
 	Log(TEXT("STATION CLOCK  WWVB REFERENCE LOST"));
 	if (bRadioOn && Audio.IsValid()) Audio->AmRadioJam(true);
 	After(40, [this] { TripK3(); });
@@ -855,6 +879,7 @@ void AS47Story::Event()
 {
 	SetPhase(ES47Phase::Event);
 	EventClock = ClockSec;
+ if(auto* M=US47Main::Get(this);M && M->Spine)M->Spine->Call().RoomEvent();
 	Log(TEXT("LINE POWER  DIP 1.2 S"));
 	Log(TEXT("STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47"));
 	if (bRadioOn) After(3.5, [this] { if (Audio.IsValid()) Audio->AmRadioJam(false); });
@@ -864,7 +889,7 @@ void AS47Story::Event()
 	CrtGlitch = 0.5f;
 	if (Saro.IsValid() && Saro->IsMugVisible()) { bMugFalling = true; Saro->DropMug(); }
 	After(1.4, [this] { Toast(TEXT("The floor is still shaking."), 2.4f); });
-	After(3.0, [this] { TurnDishes(); });
+	if(!RevisedSC05())After(3.0, [this] { TurnDishes(); });
 }
 
 void AS47Story::TurnDishes()
