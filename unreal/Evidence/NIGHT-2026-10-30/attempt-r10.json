@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "status": "FAIL",
+  "complete_night_accepted": false,
+  "attempt": "Night R10",
+  "frozen_source": "cbe52f547d8778571f6b0ea4136762ac4e092d0c",
+  "runtime_source": "cbe52f547d8778571f6b0ea4136762ac4e092d0c",
+  "build_receipt": {
+    "source_commit": "cbe52f547d8778571f6b0ea4136762ac4e092d0c",
+    "freeze_sha256": "4ab6f56698753bfd0394768a65f517dd10c9e691e74af9feb6a0bade58da9da9",
+    "source_files": 638,
+    "bytes": 19767384,
+    "sha256": "e2125156ff0783ef2c1cb318caa8d2db967282b5defeab8c5ba766f57d2d9491",
+    "build_log_sha256": "134442b66af8b35045917b3b201fb963627807ba7a41ac621ea0824987694977"
+  },
+  "guard": {
+    "returncode": 1,
+    "wall_seconds": 1360.7681213970063,
+    "semantic_success": false,
+    "expected_found": false,
+    "forbidden_found": [
+      "night contract FAIL"
+    ],
+    "stop_reason": null
+  },
+  "result": {
+    "status": "FAIL",
+    "scenario": "NIGHT_SC01_SC03_PREFIX",
+    "chain_id": "01A18B69B8D4709D8EE9F30531664122",
+    "stage": 16,
+    "reason": "actual HorrorTest night adapter rejected; raw component FAIL retained",
+    "checks": 3318,
+    "restores": 5,
+    "walked_metres": 86.79186745522608,
+    "driven_metres": 6859.120174462689,
+    "actual_ray_uses": 4
+  },
+  "component_failure": {
+    "status": "FAIL",
+    "stage": 900,
+    "reason": "native Walker path blocked at 7988.680 2048.395 toward 7989.946 2048.395",
+    "checks": 232
+  },
+  "raw_result_sha256": "f16fbd48d9498f8014cd23606993d1514aff74f31b3ca6b5c288de9e1435422e",
+  "source_freeze_sha256": "b3f5745fde9ca743dc46ab0ce4d89837ee1c018fa1c6b5036cc02599c0cdbdd9",
+  "retained_raw_files": 140,
+  "retained_raw_bytes": 101152280,
+  "native_grounding": {
+    "pass": true,
+    "park_three_m": [
+      7992.547157313388,
+      4.284453171402915,
+      2050.1700506250936
+    ],
+    "actual_pivot_ue_cm": [
+      799254.7157313388,
+      205017.00506250936,
+      428.4453171402915
+    ],
+    "body_sha1": "F51F4D6FE24395B0350328EDE3A8D5A64CF80810",
+    "clearance_centres": 681,
+    "collider_comparisons": 251289,
+    "clearance_overlaps": []
+  },
+  "native_grounding_sha256": "94a1c1326a8bdde05166d0d436a0d5d5d81b96a14cedb18eb3a56e6c30af892a",
+  "native_source_wheel_gaps_cm": [
+    {
+      "wheel": "FL",
+      "gap_cm": -0.3536696056418691,
+      "pass": true
+    },
+    {
+      "wheel": "FR",
+      "gap_cm": 1.0347878528457386,
+      "pass": true
+    },
+    {
+      "wheel": "RL",
+      "gap_cm": -1.2077381263072198,
+      "pass": true
+    },
+    {
+      "wheel": "RR",
+      "gap_cm": -0.7469893268023498,
+      "pass": true
+    }
+  ],
+  "actual_native_picture": {
+    "sha256": "716aca88729bbcf21becc341c2fa7628c3645b365d209182db580899c79aa524",
+    "bytes": 1521825,
+    "opened_by_codex": true,
+    "visual_scope": "PASS_GROUNDING_ONLY",
+    "human_visual_acceptance": false,
+    "rt_resident_warning_mib": 80.147,
+    "rt_budget_mib": 400
+  },
+  "limits": "Fresh ordinary new-case cohort. SC01/SC02 accepted separately; native SC03 grounding measured and image opened. SC03 physical route fails before identification/lift/completion/normal final truck OnUse. No accepted SC03 output for SC04. No complete-night, human input, performance, packed, install or release acceptance.",
+  "accepted_sc01": {
+    "status": "PASS",
+    "scenario": "SC01",
+    "mode": "night",
+    "chain_id": "01A18B69B8D4709D8EE9F30531664122",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r10/Saved/NightContract/01A18B69B8D4709D8EE9F30531664122/sc01/sc01-complete.disk.json",
+      "bytes": 376918,
+      "sha1": "BC69CE361731AD9A04520055A1963C8C7A334F7F"
+    },
+    "previous_checkpoint_file": null,
+    "previous_result_file": null
+  },
+  "sc01_raw_result_sha256": "1f36aec1d65a9296e76c9d821e0cd07577639eeb2883a2b7b91d9a4f18f638f7",
+  "accepted_sc02": {
+    "status": "PASS",
+    "scenario": "SC02",
+    "mode": "night",
+    "chain_id": "01A18B69B8D4709D8EE9F30531664122",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r10/Saved/NightContract/01A18B69B8D4709D8EE9F30531664122/sc02/sc02-complete.disk.json",
+      "bytes": 391894,
+      "sha1": "D1F30EB658B5F827CE9442E11C208CB98565BBBF"
+    },
+    "previous_checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r10/Saved/NightContract/01A18B69B8D4709D8EE9F30531664122/sc01/sc01-complete.disk.json",
+      "bytes": 376918,
+      "sha1": "BC69CE361731AD9A04520055A1963C8C7A334F7F"
+    },
+    "previous_result_file": {
+      "path": "/tmp/S47-chain-night-night-r10/Saved/NightContract/01A18B69B8D4709D8EE9F30531664122/sc01/result.json",
+      "bytes": 4977492,
+      "sha1": "32465FAD898F7616BCD97122365EF56566BE5801"
+    }
+  },
+  "sc02_raw_result_sha256": "7196690935532cb28be4437ec8f15772ffc48f8baa35ad7b3c2e036ce0626887"
+}

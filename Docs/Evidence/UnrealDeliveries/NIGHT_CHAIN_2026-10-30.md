@@ -1,6 +1,6 @@
 # Faktisk nattkjede fra ny sak
 
-**Status:** Under arbeid. R9s avgrensede API-prefiks består. Den vanlige spillerreisen og hele natten er fortsatt ikke akseptert. **Gjelder:** SC01 til SC13, Night R1 til R9 på de eksakte byggene i kvitteringen. **Sist kontrollert:** 30. oktober 2026.
+**Status:** Under arbeid. R9s avgrensede API-prefiks består. Den vanlige spillerreisen og hele natten er fortsatt ikke akseptert. **Gjelder:** SC01 til SC13, Night R1 til R10 på de eksakte byggene i kvitteringen. **Sist kontrollert:** 30. oktober 2026.
 
 Prøven starter en ordinær tom case1 fra ny sak, kjører personlig bil til SARO, går inn med native Walker/kameraray og gjennomfører D01. Den bruker faktiske spillhandlinger, dokumenter og disk/fullFlow. Senere kapitler skal bare konsumere faktiske foreldre med søsken-PASS, samme chain_id og eksakt filhash. Navngitte scenariofixturer i andre rapporter er separate målrettede bevis.
 
@@ -39,3 +39,8 @@ SC04s første forsøk med faktisk R9-forelder tok imot kilde/dokumenter og gjenn
 
 
 SC03s målrettede geometriretting består i R16/focused R3: original modell på fri bakke, fire kildeavledede dekkpunkter mot faktisk native underlag, full bilklaring og åpnet før-løft-bilde. [Rapport, før/etter og avgrensninger](SC03_GROUNDING_2026-10-30.md). Dette er en faktisk R9-kilde gjenopprettet i utviklerprofil og aldri en ny SC03-forelder. NightR10 kjører fra ordinær ny sak med samme måleport og vanlig HUD-OnUse for siste bilretur. Ingen helreiseaksept ennå.
+
+
+R10 fra bygget `cbe52f54`/modul `e2125156` får **FAIL** etter1360,768s. SC01 og SC02 har faktiske søsken-PASS i kjede `01A18B69B8D4709D8EE9F30531664122`. Root har3318kontroller/fem diskforløp/86,792m gange/6859,120m kjøring. SC03s native bakkemåling består i denne ordinære nye saken: fire kildeavledede dekkpunkter,681klaringssentre/251289kollidersammenligninger og ingen biloverlapp. Før-løft-bildet er åpnet og viser bilen på bakken; RT-residentadvarsel80,147/400MiB består og gir ingen ytelsesaksept.
+
+Den videre testruten fra fotoståsted til Ortiz blir faktisk blokkert vedx7988,680/z2048,395. Det faste måletx7989,946/z2048,395 ligger i den bevarte pumpeøyas kollisjonsrektangel. Ingen range/kollisjon eller spillfakta endres for å passere. Dette avviser SC03 før identifikasjon, løft, deputy og normal sluttreise; siste HUD-OnUse er fortsatt UNVERIFIED. Det finnes ingen ny godkjent SC03-forelder. [R10-kvitteringen](../../../unreal/Evidence/NIGHT-2026-10-30/attempt-r10.json) binder begge beståtte delgrenser, nativegeometrien, bildet og det faktiske avbruddet.140råfiler/101152280bytes er bevart byteidentisk privat.

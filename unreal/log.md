@@ -1490,3 +1490,8 @@ R15/af726d25 består12,700s. FocusedR1 avviste feil antakelse om skjult attachRo
 R16-editor består12,198s med module2125156. FocusedR3 PASS49,062s/8kontroller/1disk-Flow/16,361m nativegange fra uendret faktisk R9-midarrival. Fire kildeavledede dekkpunkter transformert med faktisk native komponent har avvik −1,208..+1,035cm mot vist g1004 gjennom world- og direkte komponentstråler. Hele boksen med10cm margin er fri over681 prøver. Original Fairheaven-uasset/bounds/hash er uendret. PNG er åpnet: bakkekontakt/fri stolpe godkjent av Codex; kamera er ikke identisk med førbildet. Originale nativePNG-er/alleFAIL/raw er bevart. RT-residentvarsel85,223MiB/400MiB i bildet er fortsatt åpent, ingenFPS/menneskeligaksept. Dette er SC03Grounding developer-case0 actual-source restore, aldri SC03-parent.
 
 Faktisk NightR10 fra ordinær nycase har startet fra R16, med638fryste inputs og GroundingCheck samt vanlig HUDOnUse for sisteSC03retur. Ingen andre motorjobber eller Source/Content-mutasjoner. Resten av faktisk SC04–SC13-kjede er fortsatt UNVERIFIED. Ingen installasjon/release.
+
+
+### 2026-10-30T07:34:41.390479+01:00
+
+NightR10/cbe52f54 FAIL1360,768s før Ortiz: fast Near-mål inne i pumpeøyas collider. SC01/02PASS, faktisk native SC03-groundingPASS/åpnet bilde,140råfiler bytebevart. [Rapport](../Docs/Evidence/UnrealDeliveries/NIGHT_CHAIN_2026-10-30.md). Ingen SC03-forelder eller vanlig sluttreiseaksept, ingen installasjon/release. Privat avgrenset rute- og SC07/SC11/SC13-bevisretting forberedes før nytt bygg.
