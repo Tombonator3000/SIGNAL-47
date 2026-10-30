@@ -33,7 +33,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 | HUM-01 | [ ] Lag sittende radio-kvinne med passende klær og bevart radio, proxy og tilstedeværelse. | [Mannequin-plan](../../unreal/Signal47/Tools/metahuman/mannequins-plan.json). Kvinnelig prototype finnes lokalt. |
 | HUM-02 | [ ] Lag mannlig MetaHuman-grunnvariant og bak stående røykende mann og sittende diner-sjåfør. | Ferdig mannlig kilde og alle nye poser/baking mangler. Bruk statiske positurer med delte spillmaterialer og LOD. |
 | HUM-03 | [ ] Poler senere servitrisens stoff, portrett/utseende og servicegester. | [Levert figurpilot](../Evidence/UnrealDeliveries/METAHUMAN_WAITRESS.md). Behold fungerende figur og dialog. |
-| HUM-04 | Under arbeid: alle14 Tripo-figurer importert som midlertidige statiske mannekenger. Korte modellkontroller består; spillbilder og lokal levering pågår. | [Import og rolleplasseringer](../../unreal/Signal47/Tools/triponpcs/README.md). Originalriggene bevares for senere animasjon. |
+| HUM-04 | [x] Alle 14 Tripo-figurer importert og lokalt installert som midlertidige statiske mannekenger. | [Installasjon og bilder](../Evidence/UnrealDeliveries/TRIPO_MANNEQUINS_2026-10-30.md). Originalriggene bevares for senere animasjon. |
 
 ## Grafikk, lys, lyd og effekter
 
