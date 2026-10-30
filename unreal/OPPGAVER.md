@@ -74,3 +74,7 @@ Alle målrettede tester går sekvensielt gjennom delt reservasjon og require-idl
 ## SC09 og neste motorvindu, 2026-10-30T01:03:18+01:00
 
 Codex har avsluttet SC09 R12 fra e81c6815 i motel-v2-unreal: målrettet PASS98/12disk med eksplisitt60-grense. [PR234](https://github.com/Tombonator3000/SIGNAL-47/pull/234) er utkast; [rapporten](../Docs/Evidence/UnrealDeliveries/SC09_2026-10-30.md) fører åpne GPU-/regresjonsgrenser. Modul og råbevis er bevart. Denne arbeidskopien gjenbrukes nå til egen SC04-leveringsgren; én avgrenset serie med bygg og SC04-kontrakter venter delt reservasjon. Originalsc03 og installert standard berøres ikke.
+
+## Samlet kilde og neste motorvindu, 2026-10-30T02:14:21+01:00
+
+Codex eier [utkast PR237](https://github.com/Tombonator3000/SIGNAL-47/pull/237), gren `codex/night-through-sc13-20261030`. Agentenes avgrensede SC06–SC12-testfiler er fryst og committet; root eier nå alle nye endringer, integrasjon, SC13-kunst og samtlige motorjobber. Den bygde arbeidskopien `motel-v2-unreal` holder fortsatt fryst SC04R6/c3fec0ec i delt kø. Neste steg er dens målrettede ruter, deretter samlet bygg og den faktiske nattkjeden fra ny sak. Ingen annen Codex-agent starter motor eller Blender. Originalsc03, installert standard og fremmede prosesser er urørt.

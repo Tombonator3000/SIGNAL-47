@@ -1319,3 +1319,10 @@ Ny `-S47SpineContract=sc09` krever `-S47Jump=chapter3 -S47EveningTimeline -S47Ca
 ### 2026-10-30T01:02:16+01:00: SC09 R12 målrettet PASS, ordinære turer og 12 diskforløp
 
 Kilde e81c6815, egen editor og eksplisitt 60-bildersgrense består 98 kontroller med ordinære World-turer begge veier, faktisk feltkamera/nullprøve/mørkeromsretry, Nora og overgang til SC10. Alle 12 disklesinger/fullFlow består. Begge feltbilder er åpnet. R9/R11 DEVICE_LOST uten grense er fortsatt FAIL/uavklart, ikke lukket av R12. Se [rapport](../Docs/Evidence/UnrealDeliveries/SC09_2026-10-30.md). PR234 forblir utkast mens nye scenarioregresjoner samordnes.
+
+
+### 2026-10-30T02:14:21+01:00: samlet nattkilde i utkast PR237, faktisk motorvindu avventes
+
+Egen integrasjonsgren fra origin/main22c5 samler SC04 til SC13, den ordinære ny-sak/pendling/D01/SC01/T01/SC02/SC03-kontrakten og eksplisitte faktiske lagringsgrenser. Foreldre-PASS, scenario, samme chain_id og filsti/størrelse/SHA1 kontrolleres. Case1, vanlig manual, frisk diskleser, tittel og Fortsett brukes; tidligere navngitte oppsett beholdes adskilt. SC06/07/08-adaptere20aa2a21, SC11/12-adaptere63e55ca6 og SC09/10-adapterebc271941 er fryst med tydelig filansvar. Root har beholdt alle fire scenarioeiere i Spine og versjon1/2, og rettet faktisk tidsbevaring på mottakerstripen. Bare aktiv ny SC12-tur bruker ordinær tid uten den gamle ekstra avstandsakselerasjonen; øvrige kjøreturer bevares.
+
+Lette kilde-, API-, avgrensede geometri- og lenkekontroller består. Dette samlede treet er ennå ikke bygd. SC04R6/c3fec0ec har ventet på delt reservasjon mens en annen cook/fullmatrise fullføres. Ingen fremmed prosess er endret. Første sammensatte bygg/prefiks og faktiske SC04–SC13-etterledd gjenstår. Original SC13-oppskrift og import-/ferskleserplan er bevart, men Blender/native/shader/RHI/bildeaksept er ikke utført. [PR237](https://github.com/Tombonator3000/SIGNAL-47/pull/237) er utkast, ikke en ferdig spillutgave. Ingen installasjon eller offentlig release.
