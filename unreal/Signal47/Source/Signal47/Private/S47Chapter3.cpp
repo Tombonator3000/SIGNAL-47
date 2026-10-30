@@ -20,6 +20,7 @@
 #include "S47Story.h"
 #include "S47Substation.h"
 #include "S47Three.h"
+#include "S47Timeline.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -31,7 +32,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Ch3, Log, All);
 namespace
 {
 	// ---------- the sources and replies (Unity Station26 text) ----------
-	const TCHAR* TRANSIT = TEXT("FIELD TRANSIT / STATION 01 / E09A\n\n1947 / A: triangle with bar; mounted in the concrete footing on the transit sight line. B: fixed comparison marker to the west. C: closing sight line, shown in the original arrangement.\n\nCompare the empty footing, present markers and this diagram. Photograph both the footing and the marked post before recording which position changed.");
+	const TCHAR* TRANSIT = TEXT("FIELD TRANSIT / STATION 01 / E09A\n\nField assistant / T. Vega.\n\n1947 / A: triangle with bar; mounted in the concrete footing on the transit sight line. B: fixed comparison marker to the west. C: closing sight line, shown in the original arrangement.\n\nCompare the empty footing, present markers and this diagram. Photograph both the footing and the marked post before recording which position changed.");
 	const TCHAR* TIMING_1947 = TEXT("FIELD TIMING RECORD / STATION 01 / E10\n\n02:17:00 / Carrier ceased. Recorded voice: ‘Reference west. No. East. Hold the last reading.’\n02:17:47 / Local relay impact and reference motion observed.\nFinal observation / Not entered.");
 	const TCHAR* TIMING_1986 = TEXT("NEW RECEIVER OBSERVATION / 1986\nThe received fragment repeats the same correction, ‘west’ to ‘east,’ in the same place. The original field record identifies the speaker as T. Vega.");
 
@@ -126,6 +127,7 @@ S47J::FObj FS47Ch3State::Save() const
 	using namespace S47J;
 	FObj O = Extra.IsValid() ? Clone(Extra) : New();
 	Set(O, TEXT("v"), 1);
+	if (SurveyVersion > 0) Set(O, TEXT("surveyVersion"), SurveyVersion);
 	Set(O, TEXT("stage"), Stage);
 	Set(O, TEXT("arrived"), bArrived);
 	Set(O, TEXT("readE09a"), bReadE09a); Set(O, TEXT("readE10"), bReadE10); Set(O, TEXT("heard"), bHeard);
@@ -140,7 +142,9 @@ S47J::FObj FS47Ch3State::Save() const
 	Set(O, TEXT("p06"), bP06); Set(O, TEXT("p07"), bP07); Set(O, TEXT("p08"), bP08); Set(O, TEXT("p09"), bP09);
 	Set(O, TEXT("wrong06"), Wrong06); Set(O, TEXT("wrong08"), Wrong08); Set(O, TEXT("wrong09"), Wrong09); Set(O, TEXT("rejected"), Rejected);
 	Set(O, TEXT("called"), bCalled);
+	if (NoraAt) Set(O, TEXT("noraAt"), *NoraAt);
 	Set(O, TEXT("dev"), Dev);
+	if (Fogged > 0) Set(O, TEXT("fogged"), Fogged);
 	if (Links) Set(O, TEXT("links"), *Links); else O->RemoveField(TEXT("links"));
 	if (Fb.IsValid()) O->SetField(TEXT("fb"), Fb); else O->RemoveField(TEXT("fb"));
 	return O;
@@ -152,6 +156,7 @@ FS47Ch3State FS47Ch3State::Load(const S47J::FObj& Saved)
 	FS47Ch3State C;
 	if (!Saved.IsValid()) return C;
 	C.Extra = Clone(Saved);
+	C.SurveyVersion = FMath::Clamp(Int(Saved, TEXT("surveyVersion")), 0, 1);
 	C.Stage = Str(Saved, TEXT("stage"), C.Stage);
 	C.bArrived = Bool(Saved, TEXT("arrived"));
 	C.bReadE09a = Bool(Saved, TEXT("readE09a")); C.bReadE10 = Bool(Saved, TEXT("readE10")); C.bHeard = Bool(Saved, TEXT("heard"));
@@ -164,7 +169,9 @@ FS47Ch3State FS47Ch3State::Load(const S47J::FObj& Saved)
 	C.bP06 = Bool(Saved, TEXT("p06")); C.bP07 = Bool(Saved, TEXT("p07")); C.bP08 = Bool(Saved, TEXT("p08")); C.bP09 = Bool(Saved, TEXT("p09"));
 	C.Wrong06 = Int(Saved, TEXT("wrong06")); C.Wrong08 = Int(Saved, TEXT("wrong08")); C.Wrong09 = Int(Saved, TEXT("wrong09")); C.Rejected = Int(Saved, TEXT("rejected"));
 	C.bCalled = Bool(Saved, TEXT("called"));
+	if (Saved->HasTypedField<EJson::Number>(TEXT("noraAt"))) C.NoraAt = Num(Saved, TEXT("noraAt"));
 	C.Dev = Int(Saved, TEXT("dev"));
+	C.Fogged = Int(Saved, TEXT("fogged"));
 	if (Saved->HasTypedField<EJson::Array>(TEXT("links"))) C.Links = Strs(Saved, TEXT("links"));
 	if (Has(Saved, TEXT("fb"))) C.Fb = Saved->TryGetField(TEXT("fb"));
 	return C;
@@ -437,6 +444,8 @@ void US47Chapter3::Begin(const S47J::FObj& Saved)
 	Reset();
 	bActive = true; bStarted = true;
 	S = Saved.IsValid() ? FS47Ch3State::Load(Saved) : FS47Ch3State();
+	// Tom 29 October: only new timeline cases move Nora after the developed field copies.
+	if (!Saved && Host && Host->bEveningTimeline) S.SurveyVersion = 1;
 	// (Prologue.ts books(): the board reads the books of the chapters that have started)
 	if (M && Book) M->Books.AddUnique(Book.Get());
 	// chapter one's camera and wet bench answer to this chapter now
@@ -453,6 +462,7 @@ void US47Chapter3::Begin(const S47J::FObj& Saved)
 	ApplyWorld();
 	if (!Saved.IsValid())
 	{
+		if (S.SurveyVersion == 1) Note(TEXT("STATION 01 uses the fixed survey markers on E09A. The array service sheet names observer positions A and B; it is not a record of the station marker positions. Keep the two comparisons separate."));
 		Note(FString::Printf(TEXT("%s. N. Vega wants me at the cut cable at STATION 01 before I bring her anything. The service truck is on the pad below the east landing. The keys are always in it."), *Time()));
 		Toast(TEXT("The service truck is parked on the pad below the east landing."), 4);
 	}
@@ -466,6 +476,7 @@ void US47Chapter3::Reset()
 {
 	US47Audio* A = Au();
 	bActive = false; bStarted = false; bRinging = false;
+	++DevGeneration; bEndQueued = false; FieldDarkroom(false);
 	S = FS47Ch3State(); Busy.Reset(); PanelRefresh = nullptr; CallT = -1; bRadioOn = false;
 	if (US47Chapter1* C1 = Ch1()) { C1->Field.Reset(); C1->Lab = nullptr; }
 	if (A && A->Ctx.IsValid()) { A->Stop(RING); A->Radio({}); }
@@ -496,12 +507,17 @@ void US47Chapter3::ApplyWorld()
 	if (S.bP07) File(DocFinding(TEXT("p07")));
 	if (S.bP08) File(DocFinding(TEXT("p08")));
 	if (S.bP09) File(DocFinding(TEXT("p09")));
+	if (S.SurveyVersion == 1 && S.bCalled) File(DocNoraCall());
 	if (S.Dev >= 3 && S.F3 && S.F4)
 	{
 		if (US47Chapter1* C1 = Ch1()) { C1->HangPrint(2, *S.F3); C1->HangPrint(3, *S.F4); }
 		File(DocPhoto(*S.F3)); File(DocPhoto(*S.F4));
 	}
-	if (S.Stage == TEXT("call") && !S.bCalled) CallT = Gt() + 2.5; // it rings again
+	if (S.SurveyVersion == 1) FieldDarkroom(S.Stage == TEXT("develop") && S.Dev == 1);
+	if (S.SurveyVersion == 1 && FieldCopiesSecured() && S.Stage == TEXT("develop")) S.Stage = TEXT("nora");
+	if (S.SurveyVersion == 1 && S.Stage == TEXT("complete")) Finish();
+	if ((S.SurveyVersion == 0 && S.Stage == TEXT("call") && !S.bCalled)
+		|| (S.SurveyVersion == 1 && S.Stage == TEXT("nora") && !S.bCalled && FieldCopiesSecured())) CallT = Gt() + 2.5; // it rings again
 }
 
 // ---------- saving ----------
@@ -510,6 +526,7 @@ FString US47Chapter3::SaveBlock() const
 {
 	if (Driving()) return TEXT("Not while driving. The game saves when you get there.");
 	if (Busy == TEXT("tank")) return TEXT("Not while the film is in the tank.");
+	if (S.SurveyVersion == 1 && Busy == TEXT("fix")) return TEXT("Not while the field prints are in the fixer.");
 	return FString();
 }
 
@@ -535,6 +552,7 @@ FString US47Chapter3::Objective() const
 		return TEXT("STATION 01 // MATCH THE 1947 AND 1986 TIMING RECORDS ON THE CASE BOARD");
 	}
 	if (St == TEXT("call")) return bRinging ? TEXT("STATION 01 // THE FIELD TELEPHONE IS RINGING") : TEXT("STATION 01 // FIELD RECORD COMPLETE");
+	if (St == TEXT("nora")) return bRinging ? TEXT("SARO // ANSWER NORA ON THE CONTROL-ROOM TELEPHONE") : TEXT("SARO // BOTH FIELD PRINTS SECURED. WAIT FOR THE TELEPHONE");
 	if (St == TEXT("return"))
 	{
 		if (!Driving()) return TEXT("STATION 01 // DRIVE BACK TO SARO WITH THE FIELD ROLL");
@@ -566,11 +584,12 @@ TArray<FS47Task> US47Chapter3::Tasks() const
 	});
 	// once the player has been in at the bench: the drawer under it, which nothing asks for
 	if (S.bHeard || S.bReadE10) T.Add({ TEXT("The drawer under the hut bench (optional)"), S.Fb.IsValid() });
-	if (S.bP09) T.Add({ TEXT("Answer the field telephone"), S.bCalled });
-	if (S.bCalled) T.Append({
-		{ TEXT("Drive back to SARO"), S.Stage == TEXT("develop") || S.Stage == TEXT("complete") },
+	if (S.SurveyVersion == 0 && S.bP09) T.Add({ TEXT("Answer the field telephone"), S.bCalled });
+	if (S.bCalled || (S.SurveyVersion == 1 && S.bP09)) T.Append({
+		{ TEXT("Drive back to SARO"), S.Stage == TEXT("develop") || S.Stage == TEXT("nora") || S.Stage == TEXT("complete") },
 		{ TEXT("Develop FRAMES 03 and 04 in the photo lab"), S.Dev >= 3 },
 	});
+	if (S.SurveyVersion == 1 && S.Dev >= 3) T.Add({ TEXT("Answer Nora after securing both developed field copies"), S.bCalled });
 	return T;
 }
 
@@ -600,6 +619,7 @@ void US47Chapter3::ArrivedStation()
 {
 	if (S.bArrived) return;
 	S.bArrived = true;
+	if (S.SurveyVersion == 1 && Host) Host->AdvanceClockTo(S47Timeline::Chapter3(true), TEXT("SC09 / STATION 01 arrival"));
 	if (S.Stage == TEXT("to-truck")) S.Stage = TEXT("station");
 	Note(FString::Printf(TEXT("%s. STATION 01. A stucco hut, a transit on a concrete pier, marker posts, and a cable on the ground. The vehicle gate is chained; the walk gate beside it is open."), *Time()));
 	Toast(TEXT("STATION 01. The transit stands on its pier inside the fence."), 4);
@@ -610,6 +630,7 @@ void US47Chapter3::ArrivedSaro()
 {
 	if (S.Stage != TEXT("return")) return;
 	S.Stage = TEXT("develop");
+	if (S.SurveyVersion == 1 && Host) Host->AdvanceClockTo(4 * 3600 + 40 * 60, TEXT("SC09 / return with exposed field roll"));
 	Note(FString::Printf(TEXT("%s. Back at SARO with the field roll: FRAME 03 and FRAME 04, still sealed. The photo lab is east of the walk."), *Time()));
 	Toast(TEXT("Back at SARO. The film goes to the wet bench in the photo lab."), 4);
 	Milestone();
@@ -896,28 +917,64 @@ FS47Result US47Chapter3::SubmitTiming(const FString& C)
 	if (!S.bP09)
 	{
 		S.bP09 = true;
-		S.Stage = TEXT("call");
+		S.Stage = S.SurveyVersion == 1 ? TEXT("return") : TEXT("call");
 		File(DocFinding(TEXT("p09")));
 		Note(TEXT("P09: the carrier ceased at 02:17:00 and the relay impact came 47 seconds later, at 02:17:47. Tonight's fragment repeats T. Vega's correction and adds nothing after it."));
 		if (US47Audio* A = Au()) A->Sfx(TEXT("click"), Snd(0.5f));
-		CallT = Gt() + 4.0;
+		CallT = S.SurveyVersion == 1 ? -1 : Gt() + 4.0;
+		if (S.SurveyVersion == 1) Toast(TEXT("Field record complete. Return to SARO and develop both frames before contacting Nora."), 4);
 		Milestone();
 	}
 	return { true, SUPPORTED_TIMING };
 }
 
-// ---------- Nora on the field telephone ----------
+// ---------- Nora: legacy field telephone, or after both SC09 field copies at SARO ----------
+
+bool US47Chapter3::FieldCopiesSecured() const
+{
+	if (!S.bP06 || !S.bP07 || !S.bP08 || !S.bP09 || S.Dev < 3 || !S.F3 || !S.F4 || S.F3->Id != TEXT("frame03") || S.F4->Id != TEXT("frame04")
+		|| S.F3->Url.IsEmpty() || S.F4->Url.IsEmpty()) return false;
+	if (!Host) return true;
+	for (const FS47Photo* P : { &S.F3.GetValue(), &S.F4.GetValue() })
+		if (!Host->Docs().ContainsByPredicate([P](const FS47Doc& D) { return D.Id == P->Id && D.Kind == TEXT("photo") && D.Image == P->Url; })) return false;
+	return true;
+}
+
+FString US47Chapter3::PhoneLabel() const
+{
+	return bActive && S.SurveyVersion == 1 && Area() == TEXT("saro") && bRinging && FieldCopiesSecured()
+		? FString(TEXT("Answer Nora Vega")) : FString();
+}
+
+bool US47Chapter3::AnswerSaroPhone()
+{
+	if (!bActive || S.SurveyVersion != 1 || Area() != TEXT("saro")) return false;
+	if (!bRinging || !FieldCopiesSecured()) { Toast(TEXT("Secure both developed STATION 01 field copies before calling Nora."), 3); return true; }
+	bRinging = false; CallT = -1;
+	if (US47Audio* A = Au()) A->Stop(RING, .02f);
+	const FS47Doc D = DocNoraCall();
+	if (US47UI* U = Ui()) U->Document(D, [this]
+	{
+		if (!bActive || S.bCalled || !FieldCopiesSecured()) return;
+		S.NoraAt = Host ? Host->Clock() : 0.; S.bCalled = true; File(DocNoraCall());
+		Note(FString::Printf(TEXT("%s. Both STATION 01 field prints secured. Nora called SARO: bring the original record and the two developed prints to room 6."), *Time()));
+		Finish();
+	});
+	return true;
+}
 
 void US47Chapter3::Ring()
 {
 	US47Station* St = Site();
-	const FS47Obj O = St ? St->Proxy(TEXT("fieldPhone")) : FS47Obj();
-	if (!O || Area() != TEXT("station01")) { CallT = Gt() + 3; return; }
+	const bool bSaroCall = S.SurveyVersion == 1;
+	if (bSaroCall && (S.Stage != TEXT("nora") || !FieldCopiesSecured())) return;
+	const FS47Obj O = bSaroCall && M && M->Web ? M->Web->Obj(TEXT("room.objs.phone")) : St ? St->Proxy(TEXT("fieldPhone")) : FS47Obj();
+	if (!O || Area() != (bSaroCall ? TEXT("saro") : TEXT("station01"))) { CallT = Gt() + 3; return; }
 	bRinging = true;
 	FS47Sound Snd_;
 	Snd_.Gain = 0.9f; Snd_.Rate = 0.82f; Snd_.At = Pos(O);
 	if (US47Audio* A = Au()) A->LoopSfx(RING, TEXT("phoneRing"), Snd_);
-	After(0.8, [this] { Toast(TEXT("The field telephone on the hut wall is ringing."), 3.4f); });
+	After(0.8, [this] { Toast(S.SurveyVersion == 1 ? TEXT("The control-room telephone is ringing. Both field prints are secured.") : TEXT("The field telephone on the hut wall is ringing."), 3.4f); });
 }
 
 void US47Chapter3::UsePhone()
@@ -1059,7 +1116,11 @@ void US47Chapter3::Expose()
 	O.Time = ClockText(Clock);
 	O.Seed = FMath::FloorToDouble(Clock * 1000);
 	TArray<FColor> Print;
-	F->Expose(O, Print);
+	const bool bCaptured = F->Expose(O, Print);
+	if (!bCaptured || Print.Num() != US47FieldCamera::PRINT_W * US47FieldCamera::PRINT_H)
+	{
+		++S.Rejected; Toast(TEXT("The exposure did not register. Keep the negative slot and take this frame again."), 4); Save(); return;
+	}
 	// (this.d.view.draw(): the next frame draws as usual)
 	FS47Photo Photo;
 	Photo.Id = bCable ? TEXT("frame04") : TEXT("frame03");
@@ -1068,6 +1129,7 @@ void US47Chapter3::Expose()
 	Photo.Clock = Clock;
 	Photo.Url = S47Image::ToDataUrl(Print, US47FieldCamera::PRINT_W, US47FieldCamera::PRINT_H, true, 86);
 	Photo.Targets = Targets;
+	if (Photo.Url.IsEmpty()) { ++S.Rejected; Toast(TEXT("No usable exposure was recorded. Take this frame again."), 4); Save(); return; }
 	UE_LOG(LogS47Ch3, Display, TEXT("S47: %s exposed, %d targets, %d kB"), *Photo.Id, Targets.Num(), Photo.Url.Len() / 1024);
 	if (US47Audio* A = Au()) A->Shutter();
 	if (US47UI* U = Ui()) U->ShutterFlash();
@@ -1106,18 +1168,25 @@ bool US47Chapter3::UseBench()
 	}
 	if (Busy == TEXT("tank")) { Toast(TEXT("The tank is sealed. Give it a moment.")); return true; }
 	if (!Busy.IsEmpty()) return true;
+	if (S.SurveyVersion == 1 && S.Dev <= 1 && M && M->Web && M->Web->IsDoorOpen(TEXT("labDoor")))
+	{ Toast(TEXT("Darkroom. Shut the door before making the field prints."), 3.5f); return true; }
 	const int32 Step = S.Dev == 0 ? 0 : S.Dev == 1 ? 2 : 3;
 	S47Panels::WetBench(U, TEXT("FRAMES 03 + 04 / STATION 01 FIELD ROLL"), Step, FString(), [this]
 	{
+		if (S.SurveyVersion == 1 && S.Dev <= 1 && M && M->Web && M->Web->IsDoorOpen(TEXT("labDoor")))
+		{ Toast(TEXT("Darkroom. Shut the door before making the field prints."), 3.5f); return; }
+		const int32 Generation = DevGeneration;
 		US47Audio* A = Au();
 		if (S.Dev == 0)
 		{
 			Busy = TEXT("tank");
+			if (S.SurveyVersion == 1) FieldDarkroom(true);
 			if (A) A->PourThree();
-			Toast(TEXT("Field roll in the sealed tank."), 3);
-			After(TANK_TIME, [this]
+			Toast(S.Fogged > 0 ? TEXT("Fresh paper from both retained negatives. Keep the door shut until fixed.") : TEXT("Field roll in the sealed tank."), 3);
+			After(TANK_TIME, [this, Generation]
 			{
-				Busy.Reset(); S.Dev = 1; Save();
+				if (!bActive || Generation != DevGeneration) return;
+				Busy.Reset(); S.Dev = 1; if (S.SurveyVersion == 1) FieldDarkroom(true); Save();
 				if (US47Audio* A2 = Au()) A2->Beep(1500, 0.12f, 0.05f);
 				Toast(TEXT("Contact prints ready. Transfer them to the fixer."), 3);
 			}, TEXT("lab3"));
@@ -1125,12 +1194,14 @@ bool US47Chapter3::UseBench()
 		else if (S.Dev == 1)
 		{
 			Busy = TEXT("fix");
+			if (S.SurveyVersion == 1) FieldDarkroom(true);
 			if (A) A->PourThree();
 			if (US47Chapter1* C1 = Ch1(); C1 && S.F3) C1->FixPrint(*S.F3);
 			Toast(TEXT("Prints in the fixer. The images are becoming stable."), 3);
-			After(FIX_TIME, [this]
+			After(FIX_TIME, [this, Generation]
 			{
-				Busy.Reset(); S.Dev = 2; Save();
+				if (!bActive || Generation != DevGeneration) return;
+				Busy.Reset(); S.Dev = 2; if (S.SurveyVersion == 1) FieldDarkroom(false); Save();
 				if (US47Audio* A2 = Au()) A2->Beep(1500, 0.12f, 0.05f);
 				Toast(TEXT("Prints fixed. Collect them at the bench."), 3);
 			}, TEXT("lab3"));
@@ -1138,6 +1209,40 @@ bool US47Chapter3::UseBench()
 		else Collect();
 	});
 	return true;
+}
+
+// Same authored darkroom controls as chapter one; no source image or negative is altered.
+void US47Chapter3::FieldDarkroom(bool bOn)
+{
+	if (!M || !M->Web) return;
+	AS47Web* W = M->Web;
+	W->Light(TEXT("lab.enlarger")).SetIntensity(bOn && Busy == TEXT("tank") ? 1.f : 0.f);
+	if (bOn == bFieldDarkroom) return;
+	W->Light(TEXT("lab.normal")).SetIntensity(bOn ? 0.f : 1.f);
+	W->Light(TEXT("lab.safelight")).SetIntensity(bOn ? 1.f : 0.f);
+	const int32 Set = W->FloodSet(TEXT("lab"));
+	if (Set >= 0) for (int32 K = 0; K < W->FloodCount(Set); ++K)
+	{
+		const FLinearColor Color = W->FloodCol(Set, K);
+		const bool Red = Color.R > 0 && Color.G < .35f * Color.R && Color.B < .35f * Color.R;
+		if (bOn)
+		{
+			const float Intensity = W->FloodPos(Set, K).A; LabLampBase.Add(K, Intensity);
+			W->SetFlood(Set, K, Red ? Intensity * 1.5f : 0.f);
+		}
+		else if (const float* Intensity = LabLampBase.Find(K)) W->SetFlood(Set, K, *Intensity);
+	}
+	bFieldDarkroom = bOn;
+	if (!bOn) LabLampBase.Reset();
+}
+
+void US47Chapter3::FogFieldPrints()
+{
+	++DevGeneration; ++S.Fogged; S.Dev = 0; Busy.Reset(); FieldDarkroom(false);
+	if (US47Chapter1* C1 = Ch1()) C1->ClearWetPrint();
+	Toast(TEXT("The field prints fogged in the light. Both negatives are retained. Shut the door and print again."), 4);
+	Note(TEXT("The lab door opened before the field prints were fixed. Fresh paper is needed; FRAME 03 and FRAME 04 negatives are unchanged."));
+	Save();
 }
 
 void US47Chapter3::Collect()
@@ -1176,12 +1281,37 @@ bool US47Chapter3::BandInLook(double U, double V) const
 
 void US47Chapter3::Finish()
 {
-	if (S.Stage == TEXT("complete")) return;
+	if (S.Stage == TEXT("complete"))
+	{
+		// A save taken between filing and the chapter card resumes the same continuation once.
+		if (S.SurveyVersion == 1 && S.bCalled && FieldCopiesSecured() && !bEndQueued)
+		{
+			bEndQueued = true; TWeakObjectPtr<US47Chapter3> W = this;
+			After(.8, [W] { if (W.IsValid() && W->bActive && W->OnEnd) W->OnEnd(); });
+		}
+		return;
+	}
+	if (S.SurveyVersion == 1)
+	{
+		if (!FieldCopiesSecured()) return;
+		if (!S.bCalled)
+		{
+			if (S.Stage != TEXT("nora"))
+			{
+				S.Stage = TEXT("nora"); CallT = Gt() + 2.5;
+				Note(TEXT("Both STATION 01 field copies are developed and secured. The originals stay together while I wait for Nora."));
+				Milestone();
+			}
+			return;
+		}
+		if (Host) Host->AdvanceClockTo(4 * 3600 + 45 * 60, TEXT("SC09 / both copies secured and Nora answered"));
+	}
 	S.Stage = TEXT("complete");
 	Note(TEXT("FIELD RECORD FILED: STATION 01, P06 to P09, with frames 03 and 04. Next: room 6 at Sierra Motor Court, with the original 1947 record and the prints."));
 	Milestone();
+	bEndQueued = true;
 	TWeakObjectPtr<US47Chapter3> W = this;
-	After(0.8, [W] { if (W.IsValid() && W->OnEnd) W->OnEnd(); });
+	After(0.8, [W] { if (W.IsValid() && W->bActive && W->OnEnd) W->OnEnd(); });
 }
 
 // ---------- documents ----------
@@ -1191,6 +1321,15 @@ FS47Doc US47Chapter3::DocTransit()
 	FS47Doc D;
 	D.Id = TEXT("e09a"); D.Title = TEXT("E09A / Field transit record"); D.Kind = TEXT("typed"); D.Stamp = TEXT("E09A"); D.Page = TRANSIT; D.Image = TransitImage();
 	D.Transcript = TEXT("From the steel frame on the transit pier. A plan of the 1947 set-up: A in its footing on the transit sight line, B to the west, C running off the sheet.");
+	return D;
+}
+
+FS47Doc US47Chapter3::DocNoraCall() const
+{
+	FS47Doc D; D.Id = TEXT("sc09_nora_call"); D.Title = TEXT("Nora Vega / SARO telephone"); D.Kind = TEXT("typed"); D.Stamp = ClockText(S.NoraAt.Get(Host ? Host->Clock() : 0.), false);
+	// Ward, Ortiz, Earl and Nora remain text until their voices are produced. No heard flag or synthetic voice credit.
+	D.Page = TEXT("NORA VEGA: So you went out there.\n\nNORA VEGA: You have seen the cable now. It did not break by itself.\n\nREYES: Both field prints are fixed. The footing and the cable.\n\nNORA VEGA: Room 6. Bring the original record and both developed prints. Then I will tell you the rest.");
+	D.Transcript = TEXT("A telephone conversation after FRAME 03 and FRAME 04 were developed and secured at SARO.");
 	return D;
 }
 
@@ -1243,9 +1382,11 @@ void US47Chapter3::Update(double Dt, double T)
 	(void)Dt;
 	if (!bActive) return;
 	US47Station* St = Site();
+	if (S.SurveyVersion == 1 && S.Stage == TEXT("develop") && (S.Dev == 1 || !Busy.IsEmpty())
+		&& M && M->Web && M->Web->IsDoorOpen(TEXT("labDoor"))) FogFieldPrints();
 	if (FS47Obj Handset = St ? St->Obj(TEXT("fieldPhoneHandset")) : FS47Obj())
 	{
-		Handset.SetRotZ(bRinging ? FMath::Sin(T * 70) * 0.05 * (FMath::Sin(T * 2.2) > -0.2 ? 1 : 0) : 0);
+		Handset.SetRotZ(bRinging && S.SurveyVersion == 0 ? FMath::Sin(T * 70) * 0.05 * (FMath::Sin(T * 2.2) > -0.2 ? 1 : 0) : 0);
 	}
 	// the receiver keeps its carrier once it is on, but only out at the station
 	const bool bWant = S.bHeard && Area() == TEXT("station01");
@@ -1259,7 +1400,7 @@ void US47Chapter3::Update(double Dt, double T)
 	if (Area() == TEXT("station01") && !Driving() && !S.bArrived) ArrivedStation();
 	if (US47UI* U = Ui())
 	{
-		const FString Local = M && M->Substation ? M->Substation->FollowupObjective() : FString();
+		const FString Local = M && M->Substation && (S.SurveyVersion == 0 || M->Substation->FollowupCameraContext()) ? M->Substation->FollowupObjective() : FString();
 		U->Objective(Local.IsEmpty() ? Objective() : Local);
 	}
 }
@@ -1280,7 +1421,7 @@ void US47Chapter3::BeginChapter3(const S47J::FObj& SavedCase)
 		Host->NotesMutable() = S47J::Strs(SavedCase, TEXT("notes"));
 		Host->SetClock(S47J::Num(SavedCase, TEXT("clock"), Host->Clock()));
 	}
-	else Host->SetClock(FMath::Max(Host->Clock(), S47Timeline::Chapter3(Host->bEveningTimeline)));
+	else Host->AdvanceClockTo(S47Timeline::Chapter3(Host->bEveningTimeline), TEXT("SC09 / chapter begins"));
 	if (US47UI* U = Ui()) U->Fade(false);
 	Host->BeginChapter(TEXT("ch3"), Ch3);
 }
@@ -1681,6 +1822,21 @@ bool US47Chapter3::SelfTest(TArray<FString>& Lines)
 	C->S.Links.Reset();
 	B.Backfill();
 	Check(C->S.Links && C->S.Links->Num() == 3, TEXT("backfill restores the three findings' threads"));
+	// Missing route field is a real legacy exemption, retained through JSON; no retroactive prints/call requirement.
+	const auto Legacy = FS47Ch3State::Load(S47J::Read(TEXT("{\"v\":1,\"stage\":\"call\",\"p09\":true}")));
+	Check(Legacy.SurveyVersion == 0 && !Legacy.Save()->HasField(TEXT("surveyVersion")), TEXT("legacy call save stays the original field-call route after serialization"));
+	C->S.SurveyVersion = 1; C->S.bCalled = false; C->S.Dev = 2; C->S.bP09 = false;
+	const auto NewFinding = C->SubmitTiming(TEXT("02:17:47"));
+	Check(NewFinding.bOk && C->S.Stage == TEXT("return") && C->CallT < 0 && !C->bRinging, TEXT("new SC09 P09 opens return without Nora or forced field-call abduction"));
+	C->S.Dev = 3; C->S.F4.Reset();
+	Check(!C->FieldCopiesSecured(), TEXT("one field copy cannot qualify the Nora call"));
+	C->S.F4 = P4; C->S.Stage = TEXT("develop"); C->Finish();
+	Check(C->S.Stage == TEXT("nora") && !C->S.bCalled, TEXT("both collected field copies queue Nora instead of completing SC09"));
+	const FString Negative3 = C->S.F3->Url, Negative4 = C->S.F4->Url;
+	C->S.Stage = TEXT("develop"); C->S.Dev = 1; C->FogFieldPrints();
+	const auto FogSave = FS47Ch3State::Load(S47J::Read(S47J::Write(C->SaveState())));
+	Check(C->S.Dev == 0 && C->S.Fogged == 1 && FogSave.SurveyVersion == 1 && FogSave.Fogged == 1
+		&& FogSave.F3 && FogSave.F4 && FogSave.F3->Url == Negative3 && FogSave.F4->Url == Negative4, TEXT("fogged field paper keeps both negatives and retry state across save/read"));
 	C->MarkAsGarbage();
 	return bOk;
 }

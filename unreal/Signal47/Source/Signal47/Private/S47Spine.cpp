@@ -17,6 +17,7 @@
 #include "S47Walker.h"
 #include "S47World.h"
 #include "S47Chapter2.h"
+#include "S47Chapter3.h"
 #include "S47Chapter4.h"
 #include "S47SC05Contract.h"
 #include "Misc/CommandLine.h"
@@ -337,6 +338,11 @@ void FS47Spine::ControlTest(double Dt)
  if(Test.Mode==TEXT("sc06"))return; // Dedicated contract runs before the Play gate in Step.
  if(Test.Mode==TEXT("sc07"))return; // Dedicated contract runs before the Play gate in Step.
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
+ if (Test.Mode == TEXT("sc09"))
+ {
+  if (auto* C3 = Cast<US47Chapter3>(M->Story->Chapter(TEXT("ch3")))) C3->ControlSC09Test(Dt);
+  return;
+ }
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
  {

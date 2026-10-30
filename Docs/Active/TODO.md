@@ -75,3 +75,5 @@ Den tidligere lange [unreal-todoen er bevart som historisk restliste](../Archive
 ## Arbeidsregel
 
 Test etter risiko og samle sammenhengende leveranser. Dokumentendringer trenger lenke-/vedlegg-/diffkontroll, ikke motorbygg. En liten PR utløser ikke fullmatrise; en nødvendig samlet installasjons-/releasekontroll kjøres én gang. Bruk avgrensede subagenter med tydelig filansvar. Én tung jobb om gangen, og ingen test samtidig med Toms spilløkt.
+
+- [ ] **SC09-levering:** [R12 målrettet prøve PASS](../Evidence/UnrealDeliveries/SC09_2026-10-30.md). Samlet helnatt/regresjoner og Vulkan DEVICE_LOST gjenstår.

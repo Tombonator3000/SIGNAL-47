@@ -10,6 +10,7 @@
 #include "S47Json.h"
 #include "S47Chapter3.generated.h"
 
+struct FS47SC09Test;
 class US47Station;
 class US47StationTaken;
 class US47Chapter1;
@@ -20,7 +21,8 @@ class US47Chapter1;
 // p06, p07, p08, p09, wrong06, wrong08, wrong09, rejected, called, dev, links?, fb? }).
 struct SIGNAL47_API FS47Ch3State
 {
-	FString Stage = TEXT("to-truck");  // Stage3: 'to-truck' | 'station' | 'call' | 'return' | 'develop' | 'complete'
+	int32 SurveyVersion = 0; // 0: original field call; 1: SC09 prints secured before Nora calls at SARO
+	FString Stage = TEXT("to-truck");  // Stage3: 'to-truck' | 'station' | 'call' | 'return' | 'develop' | 'nora' | 'complete'
 	bool bArrived = false;
 	bool bReadE09a = false, bReadE10 = false, bHeard = false;
 	struct FSeen { bool bFooting = false, bMarkerA = false, bMarkerB = false, bStakes = false, bDiagram = false, bHut = false; };
@@ -30,6 +32,8 @@ struct SIGNAL47_API FS47Ch3State
 	bool bP06 = false, bP07 = false, bP08 = false, bP09 = false;
 	int32 Wrong06 = 0, Wrong08 = 0, Wrong09 = 0, Rejected = 0;
 	bool bCalled = false;
+	TOptional<double> NoraAt;
+	int32 Fogged = 0; // failed field paper; both exposed negatives remain unchanged
 	int32 Dev = 0;                      // the field roll: 0 sealed, 1 developed, 2 print in fixer, 3 collected
 	TOptional<TArray<FString>> Links;   // this chapter's threads on the case board, 'a|b' sorted
 	// T. Vega's field book from the drawer in the hut, once read (story/fieldBook.ts FbSave): kept
@@ -51,8 +55,8 @@ struct SIGNAL47_API FS47Ch3State
 // tonight's receiver. P06 and P07 go in either order, P08 needs both and its own photograph, P09
 // needs P08. P07 is made at the lamp; P06, P08 and P09 are made on the case board, by tying the
 // records and the frames together (SPILLDESIGN.md: "Kapittel 3 på bordet").
-// New in the web version: the drive out in the SARO service truck, Nora's call on the hut's field
-// telephone after P09, and the drive back to develop both frames at the SARO wet bench.
+// Legacy web saves retain Nora's field call after P09. New SC09 cases return and secure both
+// developed copies first, then answer Nora on the ordinary SARO telephone (Tom, 29 October).
 //
 // The host side (Prologue.ts beginChapter3 and jumpChapter3, main.ts's hooks for the chapter, its
 // ch3.onEnd and the station from world/Station01.ts) is here too, as BeginChapter3, JumpChapter3
@@ -138,9 +142,21 @@ public:
 	// tools/chapter3.py plays the web version. With -S47Drive the truck is driven there first.
 	// (-S47Ch3Break with -S47Jump=chapter2: chapter two's end and its card into this chapter.)
 	void TestDrive(const FString& Stop);
+	// SC09 owns the ordinary SARO telephone only after both developed field copies are secured.
+	FString PhoneLabel() const;
+	bool AnswerSaroPhone();
+	void ControlSC09Test(double Dt);
 
 private:
-	bool bBound = false;
+	friend struct FS47SC09Test;
+	TSharedPtr<FS47SC09Test> SC09Test;
+	bool FieldCopiesSecured() const;
+	bool bBound = false, bEndQueued = false;
+	int32 DevGeneration = 0;
+	void FogFieldPrints();
+	void FieldDarkroom(bool bOn);
+	bool bFieldDarkroom = false;
+	TMap<int32, float> LabLampBase;
 	FString Busy;                       // 'tank' | 'fix' | '' (null)
 	TFunction<void()> PanelRefresh;     // the null test's panel, while it is the last one opened
 	struct FImages { FString Transit; } Images;
@@ -207,6 +223,7 @@ private:
 	// documents
 	FS47Doc DocTransit();
 	FS47Doc DocTiming() const;
+	FS47Doc DocNoraCall() const;
 	FS47Doc DocDiagram() const;
 	FS47Doc DocFinding(const FString& K) const;
 	FS47Doc DocPhoto(const FS47Photo& P) const;
