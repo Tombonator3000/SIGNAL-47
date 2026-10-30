@@ -15,6 +15,7 @@
 #include "S47World.h"
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
+#include "S47SC05Contract.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -94,7 +95,11 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
   State[SC04] = FMath::Clamp(S47J::Int(Saved, TEXT("sc04")), 0, 2);
   State[SC08] = FMath::Clamp(S47J::Int(Saved, TEXT("sc08")), 0, 2);
   State[SC11] = FMath::Clamp(S47J::Int(Saved, TEXT("sc11")), 0, 2);
-  Act05.Begin(S47J::Obj(Saved,TEXT("sc05d")),false);
+  const auto CallSaved=S47J::Obj(Saved,TEXT("sc05d"));
+  const bool Adopt=!CallSaved && State[SC04]==2 && M && M->Story && M->Story->NightSequence()
+   && M->Story->ChapterKey==TEXT("prologue") && M->Story->Phase()==ES47Phase::Residual
+   && FS47SC05::CanAdoptSC04(S47J::Obj(Saved,TEXT("sc04d")));
+  Act05.Begin(CallSaved,Adopt);
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
@@ -308,6 +313,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if (Test.Mode == TEXT("sc05") && M && M->Story) { S47SC05Contract::Step(M,Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)

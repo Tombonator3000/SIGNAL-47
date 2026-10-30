@@ -1,4 +1,5 @@
 #include "S47SC05.h"
+#include "S47SC04.h"
 #include "S47Main.h"
 #include "S47Spine.h"
 #include "S47Story.h"
@@ -40,6 +41,13 @@ void FS47SC05::Begin(const S47J::FObj& Saved, bool bFresh)
   Notes=S47J::Strs(Saved,TEXT("notes"));
   for (const auto& V:S47J::Arr(Saved,TEXT("papers"))) { const auto O=V->AsObject(); if(O) { FS47Doc D=ReadPaper(O); if(!D.Id.IsEmpty() && !D.Page.IsEmpty()) Papers.Add(D); } }
   if(M && M->Story && S47J::Has(Saved,TEXT("notes")))M->Story->NotesMutable()=Notes;
+  const auto Pointing=S47J::Arr(Saved,TEXT("pointing"));
+  if(M && M->Web && Pointing.Num()==M->Web->DishCount())for(int32 I=0;I<Pointing.Num();++I)
+  {
+   if(!Pointing[I] || Pointing[I]->Type!=EJson::Array)continue;
+   const auto& A=Pointing[I]->AsArray();double Az=0,El=0;
+   if(A.Num()==2 && A[0]->TryGetNumber(Az) && A[1]->TryGetNumber(El) && FMath::IsFinite(Az) && FMath::IsFinite(El))M->Web->SnapDish(I,Az,El);
+  }
  }
  Refile();
 }
@@ -54,7 +62,11 @@ S47J::FObj FS47SC05::Save() const
  auto O=S47J::New(); S47J::Set(O,TEXT("v"),1); S47J::Set(O,TEXT("done"),bDone); S47J::Set(O,TEXT("lineDead"),bLineDead);
  S47J::Set(O,TEXT("room"),bRoom); S47J::Set(O,TEXT("ceramic"),bCeramic); S47J::Set(O,TEXT("compared"),bCompared); S47J::Set(O,TEXT("encoderRead"),bEncoderRead); S47J::Set(O,TEXT("moveLogged"),bMoveLogged);
  S47J::Set(O,TEXT("deadAt"),DeadAt); S47J::Set(O,TEXT("roomAt"),RoomAt); S47J::Set(O,TEXT("roomAfter"),RoomAfter); S47J::Set(O,TEXT("notes"),M && M->Story ? M->Story->Notes() : Notes);
- TArray<TSharedPtr<FJsonValue>> A; for(const auto& D:Papers) A.Add(MakeShared<FJsonValueObject>(WritePaper(D))); O->SetArrayField(TEXT("papers"),A); return O;
+ TArray<TSharedPtr<FJsonValue>> A; for(const auto& D:Papers) A.Add(MakeShared<FJsonValueObject>(WritePaper(D))); O->SetArrayField(TEXT("papers"),A);
+ TArray<TSharedPtr<FJsonValue>> Pointing;
+ if(M && M->Web)for(int32 I=0;I<M->Web->DishCount();++I)
+  Pointing.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(M->Web->DishAz(I)),MakeShared<FJsonValueNumber>(M->Web->DishEl(I))}));
+ O->SetArrayField(TEXT("pointing"),Pointing);return O;
 }
 void FS47SC05::Keep(const FS47Doc& D)
 {
@@ -148,6 +160,19 @@ TArray<FS47Task> FS47SC05::Tasks() const
   {TEXT("Compare the actual room event with the dead line"),bCompared},
   {TEXT("Read S-03 against the held reference"),bEncoderRead}};
 }
+bool FS47SC05::CanAdoptSC04(const S47J::FObj& Saved)
+{
+ if(S47J::Int(Saved,TEXT("sourcesVersion"))!=1 || S47J::Int(Saved,TEXT("step"))!=int32(FS47SC04::EStep::Done))return false;
+ for(const TCHAR* Fact:{TEXT("schedule"),TEXT("strip"),TEXT("journal"),TEXT("binder"),TEXT("escaped")})if(!S47J::Bool(Saved,Fact))return false;
+ bool Schedule=false,Strip=false;
+ for(const auto& V:S47J::Arr(Saved,TEXT("sources")))if(V && V->Type==EJson::Object)
+ {
+  const auto D=V->AsObject();if(S47J::Str(D,TEXT("page")).IsEmpty())continue;
+  Schedule|=S47J::Str(D,TEXT("id"))==TEXT("sc04_schedule");Strip|=S47J::Str(D,TEXT("id"))==TEXT("sc04_strip");
+ }
+ return Schedule && Strip;
+}
+
 bool FS47SC05::SelfTest(TArray<FString>& Out)
 {
  FS47Doc D; D.Id=TEXT("source"); D.Title=TEXT("actual"); D.Kind=TEXT("hand"); D.Stamp=TEXT("03:16:02"); D.Page=TEXT("measured source"); D.Transcript=TEXT("a"); D.Image=TEXT("b"); D.Paper=TEXT("c"); D.PaperRatio=1.47; D.Sheets.Add({TEXT("page"),TEXT("paper"),TEXT("strip"),TEXT("term")});

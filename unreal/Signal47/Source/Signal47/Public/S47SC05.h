@@ -30,6 +30,7 @@ public:
  bool EncoderRead() const { return bEncoderRead; }
  bool Shattered() const { return bCeramic; }
  static bool SelfTest(TArray<FString>& Out);
+ static bool CanAdoptSC04(const S47J::FObj& Saved);
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bDone = false, bLineDead = false, bRoom = false, bCeramic = false;

@@ -362,6 +362,7 @@ TArray<FS47Task> AS47Story::Tasks() const
 
 FString AS47Story::Label(const FString& Id) const
 {
+ if(const auto* M=US47Main::Get(this);M && M->Spine)if(const FString L=M->Spine->Label(Id);!L.IsEmpty())return L;
 	if (Id == TEXT("logbook")) if (const auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) return TEXT("Shift folder / compare local records");
 	if (Id == TEXT("logbook")) return bLogRead ? TEXT("Read the shift log") : TEXT("Read Dale's shift log");
 	if (Id == TEXT("workOrder")) return TEXT("Read the work order");
@@ -406,6 +407,7 @@ FString AS47Story::Label(const FString& Id) const
 void AS47Story::Use(const FString& Id)
 {
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
+ if(auto* M=US47Main::Get(this);M && M->Spine && M->Spine->Use(Id))return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
 	if (Id == TEXT("anomaly:shiftlog"))
 	{
