@@ -105,7 +105,10 @@ namespace
   if (!Count || !B.PositionVertexBuffer.GetVertexData() || !B.StaticMeshVertexBuffer.GetTangentData() ||
       !B.StaticMeshVertexBuffer.GetTexCoordData() || !B.StaticMeshVertexBuffer.GetNumTexCoords() ||
       Src.IndexBuffer.GetIndexDataSize()==0 || (Colors && (Colors!=Count || !B.ColorVertexBuffer.GetVertexData())))
-   return Fail(Why,TEXT("rear-wall position, tangent, UV, color or index CPU buffer is absent"));
+   return Fail(Why,FString::Printf(TEXT("g%d rear-wall CPU data missing: position=%d tangent=%d UV=%d color=%d indexBytes=%u"),Geo,
+    B.PositionVertexBuffer.GetVertexData()!=nullptr,B.StaticMeshVertexBuffer.GetTangentData()!=nullptr,
+    B.StaticMeshVertexBuffer.GetTexCoordData()!=nullptr,!Colors||B.ColorVertexBuffer.GetVertexData()!=nullptr,
+    Src.IndexBuffer.GetIndexDataSize()));
   TArray<uint32> Old; Src.IndexBuffer.GetCopy(Old);
   if (Old.Num()%3) return Fail(Why,TEXT("rear-wall source has an incomplete triangle"));
   Plan.Component=Comp; Plan.Source=Source; Plan.BeforeTriangles=Old.Num()/3;
@@ -193,6 +196,7 @@ namespace
    if (Colors) Dst.VertexBuffers.ColorVertexBuffer.VertexColor(I)=V?V->Color:B.ColorVertexBuffer.VertexColor(I);
   }
   Dst.bHasColorVertexData=Colors; Dst.bBuffersInlined=true; Dst.bIsOptionalLOD=false; Dst.SourceMeshBounds=Data->Bounds; Dst.MaxDeviation=0;
+  Dst.IndexBuffer.TrySetAllowCPUAccess(true);
   Dst.IndexBuffer.SetIndices(Plan.Indices,EIndexBufferStride::Force32Bit);
   bool RT=true;
 #if !WITH_EDITOR

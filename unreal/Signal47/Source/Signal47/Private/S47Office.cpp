@@ -146,7 +146,11 @@ namespace
    for (uint32 Vertex = 0; Vertex < Colors; ++Vertex) Dst.VertexBuffers.ColorVertexBuffer.VertexColor(Vertex) = Buffers.ColorVertexBuffer.VertexColor(Vertex);
   }
   Dst.bHasColorVertexData = Colors > 0; Dst.bBuffersInlined = true; Dst.bIsOptionalLOD = false;
-  Dst.SourceMeshBounds = Data->Bounds; Dst.MaxDeviation = 0; Dst.IndexBuffer.SetIndices(Keep, EIndexBufferStride::Force32Bit);
+  Dst.SourceMeshBounds = Data->Bounds; Dst.MaxDeviation = 0;
+  // The window clips this transient portal mesh next. Retain its actual index
+  // array after RHI upload in cooked builds, as well as the asset-level flag.
+  Dst.IndexBuffer.TrySetAllowCPUAccess(true);
+  Dst.IndexBuffer.SetIndices(Keep, EIndexBufferStride::Force32Bit);
   bool bInitRayTracing = Cut->bSupportRayTracing;
 #if !WITH_EDITOR
   bInitRayTracing = bInitRayTracing && IsRayTracingAllowed();
