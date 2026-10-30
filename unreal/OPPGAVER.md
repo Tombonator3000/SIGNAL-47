@@ -70,3 +70,7 @@ Claudes hjerteslag fra23:15 ble over75min gammelt. Codex overtok SC03-polering, 
 | SC13 | Codex/Trafo, sc13-finale | Kilde686b94f5 fryst med original UFO/avgrensede volumskyer. Blender/native/motor/bildeaksept gjenstår. |
 
 Alle målrettede tester går sekvensielt gjennom delt reservasjon og require-idle. Samlet fullmatrise og eventuell installasjon samordnes per akt. Ingen installasjon eller offentlig spillutgave inngår i dette kildepunktet.
+
+## Samlet kjeding, 2026-10-30T01:49:44+01:00
+
+Codex samler de fryste scenarioene i egen `codex/night-through-sc13-20261030`, opprettet fra main22c5. Root eier integrasjon, SC04/SC05/SC13 og alle motorjobber. Sky eier bare SC06/07-testadapterne, Nat bare SC09/10-testadapterne og Trafo bare SC11/12-testadapterne i denne kopien. De faktiske foreldrelagringene beholder originaler, klokke og kjede-id gjennom vanlig case1/disk/title/Fortsett. Nattprefikset ny sak til SC03 er kildeklart; hele SC01–SC13 er ikke kjørt. SC04R6 fra c3fec0ec venter fortsatt på delt motorvindu. Fremmede prosesser og originalsc03 berøres ikke.
