@@ -34,6 +34,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 
 namespace
 {
@@ -59,6 +61,25 @@ namespace
  FJ Papers(US47Main* M)
  {
   auto O=S47J::New();O->SetArrayField(TEXT("docs"),S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")));return O;
+ }
+ FString NightButtonText(const TSharedRef<SWidget>& Widget)
+ {
+  if(!Widget->GetVisibility().IsVisible())return {};if(Widget->GetTypeAsString()==TEXT("STextBlock"))return StaticCastSharedRef<STextBlock>(Widget)->GetText().ToString();
+  FString Text;FChildren* Children=Widget->GetChildren();for(int32 I=0;Children&&I<Children->Num();++I)Text+=NightButtonText(Children->GetChildAt(I));return Text;
+ }
+ void NightFindButtons(const TSharedRef<SWidget>& Widget,const FString& Label,TArray<TSharedRef<SButton>>& Out)
+ {
+  if(!Widget->GetVisibility().IsVisible()||!Widget->IsEnabled())return;
+  if(Widget->GetTypeAsString()==TEXT("SButton")&&NightButtonText(Widget).TrimStartAndEnd()==Label)Out.Add(StaticCastSharedRef<SButton>(Widget));
+  FChildren* Children=Widget->GetChildren();for(int32 I=0;Children&&I<Children->Num();++I)NightFindButtons(Children->GetChildAt(I),Label,Out);
+ }
+ FJ NightFocus(const TSharedPtr<SWidget>& Modal)
+ {
+  auto O=S47J::New();TArray<FString> Chain;bool Inside=false;
+  const auto Keyboard=FSlateApplication::Get().GetKeyboardFocusedWidget(),User0=FSlateApplication::Get().GetUserFocusedWidget(0);
+  S47J::Set(O,TEXT("keyboard_widget"),Keyboard?Keyboard->GetTypeAsString():FString(TEXT("none")));S47J::Set(O,TEXT("user0_widget"),User0?User0->GetTypeAsString():FString(TEXT("none")));
+  for(TSharedPtr<SWidget> At=Keyboard;At;At=At->GetParentWidget()){Chain.Add(At->GetTypeAsString());Inside|=At==Modal;}
+  S47J::Set(O,TEXT("keyboard_parent_chain"),Chain);S47J::Set(O,TEXT("keyboard_inside_actual_modal"),Inside);return O;
  }
 }
 
@@ -335,8 +356,33 @@ void FS47NightContract::Tick(double Dt)
   {
    if(D01Line!=Line->Id){D01Line=Line->Id;LineAt=Now;return;}if(Now-LineAt<FMath::Max(.7,Line->Duration+.5))return;
    if(!Check(M()->ModalOpen()&&FSlateApplication::IsInitialized(),TEXT("actual D01 displayed primary Continue/Slate available")))return;
-   const bool Handled=FSlateApplication::Get().ProcessKeyDownEvent(FKeyEvent(EKeys::Enter,FModifierKeysState(),0,false,0,0));FSlateApplication::Get().ProcessKeyUpEvent(FKeyEvent(EKeys::Enter,FModifierKeysState(),0,false,0,0));
-   if(!Check(Handled,TEXT("actual D01 focused Slate Enter after source line duration; no listening claim")))return;D01Line.Reset();return;
+   // Shell is a non-focusable SBorder. Focus its actual production Continue SButton,
+   // then route both Enter events through Slate. Never call Pack.Advance from the test.
+   const auto Modal=M()->Hud->ModalWidget();const auto* Scene=E.Pack.CurrentScene();TArray<TSharedRef<SButton>> Buttons;if(Modal)NightFindButtons(Modal.ToSharedRef(),TEXT("Continue"),Buttons);
+   const FString BeforeScene=Scene?Scene->Id:FString(),BeforeLine=Line->Id;const int32 BeforeIndex=E.Pack.NextLine();
+   const bool Terminal=Scene&&BeforeIndex+1==Scene->Lines.Num()&&Scene->Choices.IsEmpty();
+   auto Input=S47J::New();S47J::Set(Input,TEXT("kind"),TEXT("actual Slate focus + Enter down/up to bound D01 Continue button; API input, not human/listening acceptance"));
+   S47J::Set(Input,TEXT("scene_before"),BeforeScene);S47J::Set(Input,TEXT("line_before"),BeforeLine);S47J::Set(Input,TEXT("cursor_before"),BeforeIndex);S47J::Set(Input,TEXT("terminal_line"),Terminal);
+   S47J::Set(Input,TEXT("line_duration_seconds"),Line->Duration);S47J::Set(Input,TEXT("elapsed_display_wall_seconds"),Now-LineAt);S47J::Set(Input,TEXT("enabled_continue_buttons"),Buttons.Num());
+   S47J::Set(Input,TEXT("focus_before"),NightFocus(Modal));S47J::Set(Input,TEXT("pack_before"),E.Pack.Save());Actions.Add(MakeShared<FJsonValueObject>(Input));
+   const FString Proof=Root/FString::Printf(TEXT("d01-primary-%03d.raw.json"),Actions.Num());
+   if(!Write(Proof,Input)){Finish(false,TEXT("cannot retain raw D01 primary/focus input before action"));return;}
+   if(!Check(Scene&&Buttons.Num()==1&&Buttons[0]->SupportsKeyboardFocus(),TEXT("one actual visible enabled focusable production D01 Continue button")))return;
+   const TSharedPtr<SWidget> Primary=Buttons[0];const bool FocusRequest=FSlateApplication::Get().SetKeyboardFocus(Primary,EFocusCause::SetDirectly);
+   const bool FocusMatches=FSlateApplication::Get().GetKeyboardFocusedWidget()==Primary&&FSlateApplication::Get().GetUserFocusedWidget(0)==Primary;
+   S47J::Set(Input,TEXT("focus_request_returned"),FocusRequest);S47J::Set(Input,TEXT("focus_matches_actual_continue"),FocusMatches);S47J::Set(Input,TEXT("focus_after_request"),NightFocus(Modal));
+   if(!Write(Proof,Input)){Finish(false,TEXT("cannot retain raw actual D01 focus result"));return;}
+   if(!Check(FocusMatches,TEXT("Slate keyboard/user0 focus is the actual D01 Continue child, not its non-focusable shell")))return;
+   const bool Down=FSlateApplication::Get().ProcessKeyDownEvent(FKeyEvent(EKeys::Enter,FModifierKeysState(),0,false,0,0));
+   const bool Up=FSlateApplication::Get().ProcessKeyUpEvent(FKeyEvent(EKeys::Enter,FModifierKeysState(),0,false,0,0));
+   const auto* AfterScene=E.Pack.CurrentScene();const auto* AfterLine=E.Pack.CurrentLine();
+   const bool Moved=Terminal?!AfterScene&&!AfterLine&&E.Pack.NextLine()==0:AfterScene&&AfterScene->Id==BeforeScene&&E.Pack.NextLine()==BeforeIndex+1&&(!AfterLine||AfterLine->Id!=BeforeLine);
+   S47J::Set(Input,TEXT("key_down_handled"),Down);S47J::Set(Input,TEXT("key_up_handled"),Up);S47J::Set(Input,TEXT("actual_line_scene_transition"),Moved);
+   S47J::Set(Input,TEXT("scene_after"),AfterScene?AfterScene->Id:FString());S47J::Set(Input,TEXT("line_after"),AfterLine?AfterLine->Id:FString());S47J::Set(Input,TEXT("cursor_after"),E.Pack.NextLine());
+   S47J::Set(Input,TEXT("focus_after_action"),NightFocus(M()->Hud->ModalWidget()));S47J::Set(Input,TEXT("pack_after"),E.Pack.Save());
+   if(!Write(Proof,Input)){Finish(false,TEXT("cannot retain raw D01 button event/transition result"));return;}
+   if(!Check(Down&&Up&&Moved,TEXT("actual focused production Continue consumes Slate Enter down/up and advances exactly one displayed line/terminal scene after full duration; API, no listening claim")))return;
+   D01Line.Reset();return;
   }
   if(const auto* Scene=E.Pack.CurrentScene())
   {
