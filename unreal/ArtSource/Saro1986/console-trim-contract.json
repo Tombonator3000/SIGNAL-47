@@ -1,0 +1,32 @@
+{
+  "asset": "SM_Saro1986_ConsoleTrim",
+  "triangles": 4676,
+  "bounds_local_m": [
+    [
+      -3.4549999237060547,
+      3.42900013923645,
+      0.03299999237060547
+    ],
+    [
+      3.4549999237060547,
+      4.340000152587891,
+      0.7720000147819519
+    ]
+  ],
+  "materials": [
+    "M_Office_Walnut",
+    "M_Office_BlackBakelite",
+    "M_Office_BrushedMetal"
+  ],
+  "reuse_materials": {
+    "M_Office_Walnut": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut",
+    "M_Office_BrushedMetal": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal",
+    "M_Office_BlackBakelite": "/Game/Signal47/Art/Office/Materials/M_Office_BlackBakelite"
+  },
+  "units": "metres",
+  "mapping": "Blender(x,-z,y) -> UE(100x,100z,100y)",
+  "source": "console_trim.py",
+  "editable_components": 31,
+  "collision": "NoCollision; within original console collider x[-3.5,3.5],z[-4.5,-3.42]",
+  "protected": "original y.780 desktop, all CRTs/displays/keys/knobs/papers, floor and shoulder space"
+}

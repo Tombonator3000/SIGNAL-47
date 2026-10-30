@@ -1,0 +1,28 @@
+{
+  "asset": "SM_Saro_HangingJacket",
+  "fbx": "Export/SM_Saro_HangingJacket.fbx",
+  "triangles": 9088,
+  "bounds_local_m": [
+    [
+      -0.09608786553144455,
+      -0.3144765794277191,
+      1.0448426008224487
+    ],
+    [
+      0.041999999433755875,
+      0.30844977498054504,
+      1.7799999713897705
+    ]
+  ],
+  "materials": [
+    "M_Saro_JacketNavy",
+    "M_Saro_JacketTape",
+    "M_Saro_JacketThread"
+  ],
+  "units": "metres",
+  "mapping": "Blender (x,-z,y) to UE (100x,100z,100y)",
+  "collision": "NoCollision; original jacket query and saved visibility retained",
+  "reuse_materials": {},
+  "source": "period_props.py",
+  "editable_components": 24
+}

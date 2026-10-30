@@ -193,7 +193,10 @@ void AS47Web::BeginProductionViews()
   {TEXT("interior-corridor-east-west"),TEXT("saro"),{1.20,0,5.25},{-4.8,1.35,5.7}},
   {TEXT("interior-control-wide"),TEXT("saro"),{-.3,0,2.8},{.5,1.35,-3.7}},
   {TEXT("interior-control-rack"),TEXT("saro"),{3.65,0,.2},{5.5,1.2,-1.75}},
-  {TEXT("interior-control-console"),TEXT("saro"),{.35,0,-1.4},{.15,1.1,-4.0}}
+  {TEXT("interior-control-console"),TEXT("saro"),{.35,0,-1.4},{.15,1.1,-4.0}},
+  {TEXT("interior-phone-detail"),TEXT("saro"),{1.85,0,3.15},{3.02,.85,2.36}},
+  {TEXT("interior-jacket-detail"),TEXT("saro"),{4.5,0,3.3},{5.88,1.43,2.42}},
+  {TEXT("interior-rx3-detail"),TEXT("saro"),{4.0,0,-2.40},{5.34,1.28,-2.44}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -267,7 +270,7 @@ void AS47Web::BeginProductionViews()
    else if(ViewName==TEXT("office-room-overview")||ViewName==TEXT("office-research-wall")||ViewName==TEXT("office-corridor-west-east")||ViewName==TEXT("office-passing-bay"))
    {State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-research-wall")?74.f:ViewName==TEXT("office-passing-bay")?80.f:78.f;}
    else if(ViewName.StartsWith(TEXT("photolab-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("photolab-overview")?82.f:ViewName==TEXT("photolab-records-storage")?78.f:72.f;}
-   else if(ViewName.StartsWith(TEXT("interior-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("interior-control-rack")?60.f:ViewName==TEXT("interior-control-console")?68.f:78.f;}
+   else if(ViewName.StartsWith(TEXT("interior-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("interior-control-rack")?60.f:ViewName.EndsWith(TEXT("-detail"))?50.f:ViewName==TEXT("interior-control-console")?68.f:78.f;}
    else if(ViewName==TEXT("tripo-dale")){State->PrevFov=M->Player->Fov;M->Player->Fov=100.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    if(ViewName.StartsWith(TEXT("photolab-")))

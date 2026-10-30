@@ -1383,3 +1383,6 @@ Gren codex/saro-corridor-control-20261030: gang først vist med malt vegg/VCT og
 
 ### 2026-10-30T17:08 SARO gang/kontrollrom installert
 PR256/main153c1039, kilde2b9080ce: revidert gang med slitasje/servicepanel og kontrollrom med native flater/vinduslys. Linux-pakke,1740 selvtester,14 figurer og korte pakkede/installerte kameraer består;68 payloadnoder/134 Saved-noder bevart, to gamle pakkepayloads pensjonert. ENV-06/07 avventer visuell godkjenning.
+
+### 2026-10-30T18:37+01:00 SARO 1986, nytt detaljpass
+Gren codex/saro-1986-props-20261030: RX3-instrumenter, riktig monterte trykk, telefon/hule bøtter, tynn inventarjakke, brune stoler og finérkonsoll er bygget og kontrollert i samme Unreal-kameraer. Tripo H3.1-armatur er generert for55 eksisterende kreditter; filoverføring/import er fortsatt uavklart, ingen ny installasjon ennå.

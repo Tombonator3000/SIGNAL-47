@@ -21,6 +21,10 @@
 #include "S47TownLayer.h"
 #include "S47TripoNpcs.h"
 #include "S47SaroRooms.h"
+#include "S47SaroLegacyCleanup.h"
+#include "S47Rx3Detail.h"
+#include "S47SaroPeriodProps.h"
+#include "S47PeriodFixtures.h"
 
 #include "S47Flow.h"
 #include "S47Radio.h"
@@ -166,6 +170,10 @@ void US47Main::Step(double Dt)
 		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);
 		TripoNpcs->Step();
 		FS47SaroRooms::Update(this, Dt);
+		if (Web && Web->IsLoaded()) S47SaroLegacyCleanup::Build(Web.Get());
+		FS47Rx3Detail::Update(this, Dt);
+		FS47SaroPeriodProps::Update(this, Dt);
+		S47PeriodFixtures::Update(this, Dt);
 	}
 	if (SkyVisitors) SkyVisitors->Step(Dt);
 	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);

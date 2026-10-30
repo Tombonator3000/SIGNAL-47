@@ -46,7 +46,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon e
 
 ## Pågående arbeid og kjente feil
 
-**SARO gang og kontrollrom:** [PR256 er installert](../Evidence/UnrealDeliveries/SARO_GANG_CONTROL_2026-10-30.md). Gangen er revidert med mer detaljering og slitasje etter Toms tilbakemelding; kontrollrommet får native overflater/himling, vinduslys og arbeidsgrupper. De to rommene avventer visuell godkjenning, ENV-06/ENV-07.
+**SARO gang og kontrollrom:** [PR256 er installert](../Evidence/UnrealDeliveries/SARO_GANG_CONTROL_2026-10-30.md). Gangen er revidert med mer detaljering og slitasje etter Toms tilbakemelding; kontrollrommet får native overflater/himling, vinduslys og arbeidsgrupper. Tom svarte «Nesten» og ba om et nytt pass med tydelig 1980-tallsdesign: RX3, telefon, bøtter, klær, plakatmontering og nye Tripo-armaturer. Detaljpasset er under arbeid; standardinstallasjonen er fortsatt PR256. [Analyse og visuell føring](../Design/SARO_1986.md). ENV-06/ENV-07 står åpne.
 
 **Dale, visuelt godkjent kontorpilot:** [PR251 er installert](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md), med synlig malingsflate, oppdaterte egne overflater,72 native rekvisitter og romlig vindus-/lampelys. Tom godkjente den viste og installerte kontorpiloten 30. oktober 2026 med beskjed «Godkjent». ENV-05 er lukket; kontoret er visuell referanse for videre romarbeid. Dette passet bruker ingen nye kreditter.
 
