@@ -1,6 +1,6 @@
 # SARO gang og kontrollrom
 
-**Status:** Under arbeid. **Gjelder:** Egne native overflater og dekor, UE5.8.4/Linux. **Sist kontrollert:** 30. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Egne native overflater og dekor, UE5.8.4/Linux. **Sist kontrollert:** 30. oktober 2026.
 
 Gangen har i tillegg egne slitasjeatlas, trafikkmerker, malingsavslag og veggstøttede servicedetaljer. Gangen kom først, deretter kontrollrommet, med godkjente Dales kontor som visuell referanse. Redigerbare kilder ligger i `unreal/ArtSource/SaroInteriors`. Begge finishmeshes deler originalens verdensnullpunkt og bruker eksisterende egne Office-teksturer i nye materialer. Godkjente Office-assets blir bare lest.
 

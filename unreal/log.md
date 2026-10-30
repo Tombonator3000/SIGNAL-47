@@ -1380,3 +1380,6 @@ Tom svarte «Godkjent» på den viste og installerte kontorpiloten fra PR251/67d
 
 ### 2026-10-30T16:37:26+01:00 SARO gang og kontrollrom
 Gren codex/saro-corridor-control-20261030: gang først vist med malt vegg/VCT og varmere armaturer, deretter kontrollrom med egne overflater/himling, døgnstyrt vinduslys og15 dekorprops. Editorbygg og faktiske Low/High før/etter består; godkjente Office-kilder/native er urørt, samlet pakke følger.
+
+### 2026-10-30T17:08 SARO gang/kontrollrom installert
+PR256/main153c1039, kilde2b9080ce: revidert gang med slitasje/servicepanel og kontrollrom med native flater/vinduslys. Linux-pakke,1740 selvtester,14 figurer og korte pakkede/installerte kameraer består;68 payloadnoder/134 Saved-noder bevart, to gamle pakkepayloads pensjonert. ENV-06/07 avventer visuell godkjenning.

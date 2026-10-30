@@ -1,0 +1,12 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 256,
+  "source": "2b9080ced45845c4e860b32f7ca3852e14c67032",
+  "merge": "153c1039482878379c690ee2c055d6186bafbfa3",
+  "installed_at": "2026-10-30T17:08:24.859178+01:00",
+  "saved_nodes": 134,
+  "payload_nodes": 68,
+  "figures": 14,
+  "visual_approval": "awaiting_Tom",
+  "image": "corridor-installed-low.png"
+}
