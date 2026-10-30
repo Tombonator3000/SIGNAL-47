@@ -300,6 +300,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if(Test.Mode==TEXT("sc06"))return; // Dedicated contract runs before the Play gate in Step.
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
