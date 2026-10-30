@@ -244,6 +244,12 @@ FS47Doc FS47SC04::StripDoc(const FString& Taken,const FString& Restored,const FS
 
 FString FS47SC04::Label(const FString& Id) const
 {
+ // Spine dispatches this owner only while SC04 is pending. The restored feeder no longer
+ // grants the earlier inspection-trip exception, so this exact SC03 cohort owns its return.
+ if (Id == TEXT("dinerTruck") && P == EStep::Drive && M && M->Mode == US47Main::EMode::Play
+  && M->Story && M->Story->NightSequence() && M->Horror && M->Horror->SC03 && M->Horror->SC03->Complete()
+  && M->World && M->World->Area == TEXT("diner") && M->World->TruckAt == TEXT("diner")
+  && !M->World->bCommuteVehicle && !M->World->bDriving && !M->World->bBusy) return TEXT("Return to SARO");
  const bool bWork = P == EStep::Collect || P == EStep::Hunt || P == EStep::Calm;
  if (!bWork) return FString();
  if (Id == TEXT("opsTerminal") && !F.bSchedule) return TEXT("Hold the automatic schedule");
@@ -257,6 +263,11 @@ FString FS47SC04::Label(const FString& Id) const
 bool FS47SC04::Use(const FString& Id)
 {
  if (Label(Id).IsEmpty() || !M || !M->Story || !M->UI) return false;
+ if (Id == TEXT("dinerTruck"))
+ {
+  M->World->DriveBack();
+  return true;
+ }
  AS47Story& S = *M->Story;
  if (Id == TEXT("opsTerminal"))
  {

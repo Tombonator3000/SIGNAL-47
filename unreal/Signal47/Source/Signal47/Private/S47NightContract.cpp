@@ -484,9 +484,14 @@ void FS47NightContract::Tick(double Dt)
   if(GoItem(TEXT("dinerTruck")))Next(17,0);return;
  case 17:if(Walk()&&Face(TEXT("dinerTruck")))Next(18,.3);return;
  case 18:
-  if(!Use(TEXT("dinerTruck"),false))return;
-  if(!Check(!M()->World->bCommuteVehicle&&!M()->World->bDriving&&M()->World->TruckAt==TEXT("diner"),TEXT("actual preserved service truck at diner before explicit native return-target API")))return;
-  M()->World->Autopilot=10;M()->World->DriveBack();Next(19);return;
+  if(!Check(!M()->World->bCommuteVehicle&&!M()->World->bDriving&&M()->World->TruckAt==TEXT("diner")&&M()->Inter->LabelOf(TEXT("dinerTruck"))==TEXT("Return to SARO"),TEXT("actual preserved service truck offers the ordinary SC03 return interaction")))return;
+  M()->World->Autopilot=10;
+  if(!Use(TEXT("dinerTruck"),true)||!Record(TEXT("actual-sc03-normal-truck-use")))return;
+  Next(181,0);return;
+ case 181:
+  if(!M()->World->bDriving){if(Now-Mark>20)Finish(false,TEXT("ordinary SC03 truck OnUse never started the return trip"));return;}
+  if(!Check(!M()->World->bCommuteVehicle&&M()->World->CabTruck(),TEXT("ordinary bound HUD OnUse actually starts the service-cab return")))return;
+  Next(19,0);return;
  case 19:
   if(M()->World->bDriving){if(Now-Mark>480)Finish(false,TEXT("ordinary post-SC03 return did not park at SARO"));return;}
   if(!Record(TEXT("actual-post-sc03-parking"))){Finish(false,TEXT("cannot retain actual post-SC03 parking state"));return;}
