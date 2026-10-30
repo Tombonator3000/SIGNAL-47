@@ -493,6 +493,7 @@ void US47Chapter5::BindDinerTruck(const FS47Obj& Object)
 	It.Label = [W]
 	{
 		if (!W.IsValid() || !W->InDiner() || !W->M->World || !W->M->World->TruckChoice) return FString();
+		if (W->M->Spine) if (const FString L = W->M->Spine->Label(TEXT("dinerTruck")); !L.IsEmpty()) return L;
 		return W->M->World->TruckChoice(TEXT("diner")).Label;
 	};
 	It.Use = [W]
