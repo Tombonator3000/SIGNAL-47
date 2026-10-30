@@ -1,0 +1,106 @@
+{
+  "status": "TARGETED_PASS_DELIVERY_PENDING",
+  "source_commit": "95807f4f3536094561328475acccbcdb6b14a284",
+  "installed_source": "3dcba420",
+  "native_private_assets_tracked": false,
+  "money_spent_by_this_pass": 0,
+  "physical_r14": {
+    "checks": 180,
+    "walked_metres": 21.08625788568938,
+    "disk_full_flow_restores": 16,
+    "isolated_title_continue_rounds": 14,
+    "fixtures": 7,
+    "four_owned_props_actually_placed": true
+  },
+  "documents_r14": {
+    "checks": 580,
+    "disk_restores": 5
+  },
+  "source_r8": {
+    "office_parts": 8,
+    "office_triangles": 148940,
+    "archive_parts": 11,
+    "archive_triangles": 13968,
+    "photolab_parts": 10,
+    "photolab_triangles": 44648
+  },
+  "archive_r17": {
+    "status": "PASS",
+    "actual_render_lods": 33
+  },
+  "tray_r18": {
+    "mode": "verify_saved_only",
+    "source_description_sha1": "FD60AF36C5DE4D71AC18A835FF329EA2D36288A4",
+    "normalized_render_sha1": "9099D3484EE04895EB84F6098AF7FA4DE2A3945C",
+    "fixed_render_sha1": "A3A6BA0AAB5C9110607CF3C30790BE7C32FBF45C",
+    "changed_source_vertices": 54,
+    "changed_render_vertices": 36,
+    "triangles": 544,
+    "full_normalized_description_equal": true,
+    "oriented_render_corners_equal": true,
+    "collision": "source body policy retained; runtime reuses original BodySetup for exact query geometry",
+    "status": "PASS",
+    "error": ""
+  },
+  "editor_r18": {
+    "status": "PASS_TARGETED_ENGINE_ONLY",
+    "steps": [
+      {
+        "returncode": 0,
+        "wall_seconds": 19.84103158401558,
+        "contention": [],
+        "stop_reason": null,
+        "name": "build"
+      },
+      {
+        "returncode": 0,
+        "wall_seconds": 18.805346222012304,
+        "contention": [],
+        "stop_reason": null,
+        "name": "tray-prepare"
+      },
+      {
+        "returncode": 0,
+        "wall_seconds": 19.802838077011984,
+        "contention": [],
+        "stop_reason": null,
+        "name": "tray-saved-fresh"
+      },
+      {
+        "returncode": 0,
+        "wall_seconds": 65.78497386199888,
+        "contention": [],
+        "stop_reason": null,
+        "name": "archive-high-views"
+      },
+      {
+        "returncode": 0,
+        "wall_seconds": 62.79381491499953,
+        "contention": [],
+        "stop_reason": null,
+        "name": "photolab-high-views"
+      },
+      {
+        "returncode": 0,
+        "wall_seconds": 67.87655885197455,
+        "contention": [],
+        "stop_reason": null,
+        "name": "lighting-review"
+      }
+    ],
+    "native_reused_from": "Office fresh r2 and private r11 with exact byte pins",
+    "source_commit": "7114d56a8391b3f3ddfc6dd0f94f31c3ea0af789",
+    "compiled_module": {
+      "path": "unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+      "bytes": 17804544,
+      "sha256": "e003423e6511067174e5e1b3c0ddc26f774b59b73a4282a98a544b685b9c9763"
+    }
+  },
+  "raw_evidence_root": "/home/tom/scratch-bm/Signal47-interiors-20261029",
+  "limitations": [
+    "No human input/FPS acceptance",
+    "Low has no Lumen indirect lighting",
+    "Packaged combined matrix and installation pending",
+    "R14 Cohorts=10 field is stale; actual14 per-round receipts retained; future counter fixed"
+  ]
+}
