@@ -115,8 +115,8 @@ void FS47SC10Contract::Result(bool Good, const FString& Why)
  Report->SetArrayField(TEXT("executed_checks"),Executed); Report->SetArrayField(TEXT("restores"),Cohorts);
  Report->SetArrayField(TEXT("rays"),Rays); Report->SetArrayField(TEXT("photos"),Photos);
  const bool Written = !Root.IsEmpty() && FFileHelper::SaveStringToFile(S47J::Write(Report,true),*(Root/TEXT("result.json")));
- if (Good && Written) UE_LOG(LogTemp,Display,TEXT("S47: spine contract sc10 PASS COMPLETE: %d checks, %d stores, %d actual uses, %.3fm, normalContinue=PASS evidence=%s"),Checks,Stores,Uses,Walked,*Root);
- else UE_LOG(LogTemp,Error,TEXT("S47: spine contract sc10 FAIL stage=%d checks=%d: %s (result written %d)"),Stage,Checks,*Why,Written);
+ if(Good && Written){UE_LOG(LogTemp,Display,TEXT("S47: spine contract sc10 PASS COMPLETE: %d checks, %d stores, %d actual uses, %.3fm, normalContinue=PASS evidence=%s"),Checks,Stores,Uses,Walked,*Root);}
+ else {UE_LOG(LogTemp,Error,TEXT("S47: spine contract sc10 FAIL stage=%d checks=%d: %s (result written %d)"),Stage,Checks,*Why,Written);}
  FPlatformMisc::RequestExitWithStatus(false,Good && Written ? 0 : 1);
 }
 
