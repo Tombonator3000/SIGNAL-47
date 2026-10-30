@@ -9,7 +9,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
 | --- | --- | --- |
 | Kildekode på `main` | [PR251](https://github.com/Tombonator3000/SIGNAL-47/pull/251): Dales kontorpilot med Tripo14 og SC11 fra PR250. Senere [PR252](https://github.com/Tombonator3000/SIGNAL-47/pull/252), main `c1da2bf7`, tilpasser SC09/SC10. | PR252 er nyere enn den lokalt installerte kontorpakken. Samlet SC01 til SC13-gjennomspilling gjenstår. |
-| Teknisk kontrollert kandidat | Kontorpilot `67d308c2`, [installasjon og bilder](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md). | Editorbygg, Linux-pakke,1740 selvtester, alle14 modeller og kort kontorprøve består. Toms visuelle godkjenning avventes. |
+| Teknisk kontrollert kandidat | Kontorpilot `67d308c2`, [installasjon og bilder](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md). | Editorbygg, Linux-pakke,1740 selvtester, alle14 modeller og kort kontorprøve består. Tom godkjente den viste kontorpiloten 30. oktober 2026. |
 | Lokal installasjon | Kontorpilot `67d308c2` / PR251, installert 30. oktober kl.14:26. | 68 payload-noder og134 Saved-noder kontrollert. SC11 og Tripo14 er med; senere PR252 gjenstår neste pakke. |
 | Offentlig nedlasting | Uendret, eldre enn lokal installasjon. [Komplett Linux-testutgave 29. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), Farm R1 gjennom PR223. [Nedlasting og kvittering](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md). | Eldre enn dagens lokale SARO-installasjon. Én selvstendig startfil henter alle tre kontrollerte Farm R1-arkiver uten Git eller separate Artifacts. Andre maskiner er fortsatt UNVERIFIED. |
 
@@ -46,7 +46,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon e
 
 ## Pågående arbeid og kjente feil
 
-**Dale, prioritert visuell pilot30. oktober:** [PR251 er installert](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md), med synlig malingsflate, oppdaterte egne overflater,72 native rekvisitter og romlig vindus-/lampelys. Før/etter på Low og dag på High er vist til Tom. Visuell godkjenning av ENV-05 avventes. Dette passet bruker ingen nye kreditter.
+**Dale, visuelt godkjent kontorpilot:** [PR251 er installert](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md), med synlig malingsflate, oppdaterte egne overflater,72 native rekvisitter og romlig vindus-/lampelys. Tom godkjente den viste og installerte kontorpiloten 30. oktober 2026 med beskjed «Godkjent». ENV-05 er lukket; kontoret er visuell referanse for videre romarbeid. Dette passet bruker ingen nye kreditter.
 
 SARO-interiørpasset er levert i [PR236](https://github.com/Tombonator3000/SIGNAL-47/pull/236), flettet til main `5dce2c8b`, og faktisk installert lokalt. Kontor/gang/dører, arkiv og fotolab er native/visuelt kontrollert; alle33 arkiv-rendernivåer og den uavhengig beviste trågklonen består. Fryst kandidat95807f4f består samlet111/111,1723 selvtester og pakket fysisk Office/gang180/21,09m/16disk-fullFlow. Seks ark består580 kontroller. Installert payload68/68 og Saved134/134 er kontrollert; isolert faktisk tittel/Fortsett og27 Low-kameraer består. [Rapport med før/etter og leveringsgrenser](../Evidence/UnrealDeliveries/SARO_INTERIORS_2026-10-30.md). Ingen kjøp, ny fysisk Dale-scene eller offentlig release. Menneskelig input/FPS er ikke akseptert av API-/Walker-prøvene.
 
