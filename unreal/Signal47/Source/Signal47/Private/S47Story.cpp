@@ -16,6 +16,7 @@
 #include "S47HUD.h"
 #include "S47Chapter.h"
 #include "S47Chapter2.h"
+#include "S47Chapter3.h"
 #include "S47Chapter5.h"
 #include "S47DecoderDesk.h"
 #include "S47Ambience.h"
@@ -373,6 +374,9 @@ FString AS47Story::Label(const FString& Id) const
 	}
 	if (Id == TEXT("phone"))
 	{
+		// SC09: Nora calls only after both field copies are developed and secured.
+		if (const auto* C3 = ChapterKey == TEXT("ch3") ? Cast<US47Chapter3>(Chapter(TEXT("ch3"))) : nullptr)
+			if (const FString L = C3->PhoneLabel(); !L.IsEmpty()) return L;
 		// phase 'ch2': this.ch2.phoneLabel()
 		if (const US47Chapter2* C2 = ChapterKey == TEXT("ch2") ? Cast<US47Chapter2>(Chapter(TEXT("ch2"))) : nullptr) return C2->PhoneLabel();
 		return bRinging ? TEXT("Answer the phone") : CurrentPhase == ES47Phase::Call ? FString() : TEXT("Telephone");
@@ -469,6 +473,9 @@ void AS47Story::Use(const FString& Id)
 	}
 	if (Id == TEXT("phone"))
 	{
+		// SC09 owns this line only for its versioned post-development call.
+		if (auto* C3 = ChapterKey == TEXT("ch3") ? Cast<US47Chapter3>(Chapter(TEXT("ch3"))) : nullptr)
+			if (C3->AnswerSaroPhone()) return;
 		// phase 'ch2': this.ch2.usePhone()
 		if (US47Chapter2* C2 = ChapterKey == TEXT("ch2") ? Cast<US47Chapter2>(Chapter(TEXT("ch2"))) : nullptr) { C2->UsePhone(); return; }
 		// phases 'ch3' to 'ch5': the supervisor line is quiet, and where to go instead
@@ -1271,9 +1278,10 @@ void AS47Story::Tick(float DeltaSeconds)
 
 	// printer paper feeding out
 	if (CurrentPhase == ES47Phase::Printing) Saro->SetPrinterPaper(FMath::Clamp(float((GameTime - PrintT) / 5.2), 0.001f, 1.f));
-	// phone handset rattle while ringing (this.ringing || this.ch2.ringing)
+	// The same physical handset follows the prologue and both chapter calls.
 	const US47Chapter2* C2 = Cast<US47Chapter2>(Chapter(TEXT("ch2")));
-	Saro->SetHandsetRattle(bRinging || (C2 && C2->bRinging));
+	const US47Chapter3* C3 = ChapterKey == TEXT("ch3") ? Cast<US47Chapter3>(Chapter(TEXT("ch3"))) : nullptr;
+	Saro->SetHandsetRattle(bRinging || (C2 && C2->bRinging) || (C3 && !C3->PhoneLabel().IsEmpty()));
 
 	// receiver tone
 	if (bPowered && !NS.bK3Open && Audio.IsValid())
@@ -1349,6 +1357,8 @@ double AS47Story::VoicesDuck() const
 	// a ringing phone, a call on the line, or a voice reading: the tones step back to a quarter
 	const US47Main* M = US47Main::Get(this);
 	bool bVoice = bRinging || (Audio.IsValid() && Audio->PhonePlaying());
+	if (const auto* C3 = ChapterKey == TEXT("ch3") ? Cast<US47Chapter3>(Chapter(TEXT("ch3"))) : nullptr)
+		bVoice |= !C3->PhoneLabel().IsEmpty();
 	if (M && M->UI)
 	{
 		bVoice |= M->UI->NpcDialogue.IsValid() && M->UI->NpcDialogue->Playing();

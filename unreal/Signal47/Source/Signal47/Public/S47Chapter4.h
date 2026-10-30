@@ -168,6 +168,8 @@ private:
 	void Note(const FString& Text);
 	void Toast(const FString& Text, float Secs) const;
 	void Milestone() const;
+	void RestoreTalk();
+	void ContinueAfterRoom();
 	FVector Pos(const FS47Obj& O) const { return O.WorldPosition(); }
 	FString Area() const;
 	bool InRoom() const;

@@ -9,8 +9,8 @@ public class Signal47 : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "RHI", "ApplicationCore", "JsonUtilities", "UMG", "RenderCore", "ImageWrapper", "AudioMixer", "MoviePlayer", "HairStrandsCore", "AnimGraphRuntime", "Niagara" });
 		if (Target.bBuildEditor)
 		{
-			// Read-only saved material-group mapping for the cinema authoring importer.
-			PrivateDependencyModuleNames.AddRange(new string[] { "MeshDescription", "StaticMeshDescription" });
+			// HUM01 pose conversion and read-only cinema material mapping are editor-only.
+			PrivateDependencyModuleNames.AddRange(new string[] { "UnrealEd", "MeshDescription", "StaticMeshDescription", "SkeletalMeshDescription", "RawMesh", "AnimationCore", "AssetRegistry" });
 		}
 		// (Unreal only) where the free models stand, read at run time (S47Props.h)
 		RuntimeDependencies.Add("$(ProjectDir)/Config/Props/*.json", StagedFileType.UFS);

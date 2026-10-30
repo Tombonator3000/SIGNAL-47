@@ -18,6 +18,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "GameFramework/Actor.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47HorrorSC03, Log, All);
@@ -178,14 +179,33 @@ bool FS47HorrorSC03::Busy() const
 
 double FS47HorrorSC03::Ground(double X, double Z) const
 {
- // The first visible surface straight down; the fuel stop's apron, kerb or gravel.
- if (!M || !M->Web || !M->Web->GetWorld()) return M && M->Player ? M->Player->FloorY : 0;
+ // Hidden exported/old-road components can still block queries. Settle only on
+ // a shown, registered surface in the fuel stop's currently loaded area.
+ if (!M || !M->Web || !M->Web->GetWorld() || !M->World ||
+  (M->World->Area != TEXT("diner") && M->World->Area != TEXT("road"))) return TNumericLimits<double>::Lowest();
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC03Ground), true);
  for (const auto& C : W->All) if (C.IsValid()) Q.AddIgnoredComponent(C.Get());
- FHitResult H;
- // Start below the pump canopy: at the night window's height, never from the sky.
- const double From = GroundRef + 1.0;
- if (M->Web->GetWorld()->LineTraceSingleByChannel(H, S47Three::ToUE(X, From, Z), S47Three::ToUE(X, From - 12, Z), ECC_Visibility, Q)) return H.ImpactPoint.Z / 100.0;
+ const double From = GroundRef + 1.0; // below the canopy, at the night window
+ for (int32 Attempt = 0; Attempt < 32; ++Attempt)
+ {
+  FHitResult H;
+  if (!M->Web->GetWorld()->LineTraceSingleByChannel(H, S47Three::ToUE(X, From, Z), S47Three::ToUE(X, From - 12, Z), ECC_Visibility, Q)) break;
+  const auto* C = H.GetComponent(); const int32 Id = C ? M->Web->NodeOf(C) : -1;
+  const auto* N = M->Web->Node(Id);
+  if (!C || !C->IsRegistered() || !N || N->Comp.Get() != C) break;
+  bool Shown = C->IsVisible() && !C->bHiddenInGame && C->GetOwner() && !C->GetOwner()->IsHidden();
+  int32 Parent = Id, Depth = 0;
+  for (; Parent >= 0 && Depth < 128; ++Depth)
+  {
+   const auto* A = M->Web->Node(Parent); if (!A || !A->Comp.IsValid()) return TNumericLimits<double>::Lowest();
+   // A hidden attachment helper does not hide a child unless visibility was propagated.
+   Shown &= A->bVis; Parent = A->Parent;
+  }
+  if (Parent >= 0) break;
+  if (!Shown) { Q.AddIgnoredComponent(C); continue; }
+  if (H.bBlockingHit && H.ImpactNormal.Z > .5) return H.ImpactPoint.Z / 100.0;
+  break; // a shown wall, underside or unknown blocker must not be bypassed
+ }
  return TNumericLimits<double>::Lowest(); // nothing loaded under it yet
 }
 
@@ -222,6 +242,9 @@ bool FS47HorrorSC03::Build()
  // Wagon 23 stops beyond the pumps, nose towards the road, in plain view of the night window.
  const FVector Away = FVector(PumpAt.X - Counter.X, 0, PumpAt.Z - Counter.Z).GetSafeNormal();
  Park = PumpAt + Away * 5.5 + FVector(Away.Z, 0, -Away.X) * 2.0;
+ // The former pivot was inside the south canopy post. Move the complete scene
+ // 2.95 m sideways onto the preserved apron; approach, people and props follow Park.
+ Park += FVector(-Away.Z, 0, Away.X) * 2.95;
  Approach = Park + Away * 34;
  DeputyFrom = Sheriff ? Sheriff->Object.WorldPosition() : Counter + FVector(0, 0, 25);
  if (true)
@@ -408,7 +431,7 @@ void FS47HorrorSC03::Apply()
  const FQuat Car = S47Three::Euler(0, Heading, 0);
  auto PoseCar = [&](UStaticMeshComponent* C, const FVector& At, const FQuat& Q)
  {
-  if (!C) return; double E[16]; S47Three::Compose(At + FVector(0, .5, 0), Q, FVector::OneVector, E);
+  if (!C) return; double E[16]; S47Three::Compose(At, Q, FVector::OneVector, E);
   C->SetWorldTransform(S47Three::MatToUE(E)); C->AddLocalRotation(FRotator(0, -90, 0));
  };
  PoseCar(W->Wagon.Get(), WagonAt, Car);
@@ -429,21 +452,22 @@ void FS47HorrorSC03::Apply()
   Cs[Index].MinX = WagonAt.X - Ex; Cs[Index].MaxX = WagonAt.X + Ex; Cs[Index].MinZ = WagonAt.Z - Ez; Cs[Index].MaxZ = WagonAt.Z + Ez;
   Cs[Index].bEnabled = bWagon && P != EPhase::Arrival;
  }
+ // Keep the fixtures at their body-relative heights after removing the extra body lift.
  const FVector Up(0, 1, 0), Right = Car.RotateVector(FVector(1, 0, 0)), Fwd = Car.RotateVector(FVector(0, 0, -1));
  for (int32 I = 0; I < W->Bar.Num(); ++I) if (auto* B = W->Bar[I].Get())
  {
-  B->SetWorldLocation(S47Three::ToUE(WagonAt + Up * 2.02 + Right * ((I - 1) * .42) + Fwd * .25));
+  B->SetWorldLocation(S47Three::ToUE(WagonAt + Up * 1.52 + Right * ((I - 1) * .42) + Fwd * .25));
   B->SetWorldRotation(FRotator(0, -FMath::RadiansToDegrees(Heading) - 90, 0)); B->SetWorldScale3D(FVector(.36, .12, .09)); B->SetVisibility(bWagon);
  }
  for (int32 I = 0; I < W->Labels.Num(); ++I) if (auto* T = W->Labels[I].Get())
  {
   const double S = I == 0 ? 1 : -1;
-  T->SetWorldLocation(S47Three::ToUE(WagonAt + Up * 1.05 + Right * (S * .93) + Fwd * .6));
+  T->SetWorldLocation(S47Three::ToUE(WagonAt + Up * .55 + Right * (S * .93) + Fwd * .6));
   T->SetWorldRotation(FRotator(0, -FMath::RadiansToDegrees(Heading) + (S > 0 ? 0 : 180), 0)); T->SetVisibility(bWagon);
  }
  if (W->Amber.IsValid())
  {
-  W->Amber->SetWorldLocation(S47Three::ToUE(WagonAt + Up * 2.2));
+  W->Amber->SetWorldLocation(S47Three::ToUE(WagonAt + Up * 1.7));
   const bool On = bWagon && !bOrtizGone && P != EPhase::Lift; W->Amber->SetIntensity(On ? 1800.f * (FMath::Fmod(Clock, 1.0) < .5 ? 1.f : .25f) : 0.f);
  }
  // Ortiz beside the driver's door.
@@ -640,7 +664,12 @@ void FS47HorrorSC03::CallFinished(const FString& SceneId)
 
 void FS47HorrorSC03::ScenePresented(const FString& SceneId)
 {
- if (SceneId == TEXT("SC03_RECEIVER_QUESTION") && P == EPhase::Deputy) { SetPhase(EPhase::Complete); Apply(); }
+ if (SceneId == TEXT("SC03_RECEIVER_QUESTION") && P == EPhase::Deputy)
+ {
+  SetPhase(EPhase::Complete);
+  if (M && M->Story && M->Story->bEveningTimeline) M->Story->AdvanceClockTo(2 * 3600 + 44 * 60, TEXT("SC03 deputy report complete"));
+  Apply();
+ }
 }
 
 FString FS47HorrorSC03::Objective() const

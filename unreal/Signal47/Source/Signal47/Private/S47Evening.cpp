@@ -242,6 +242,9 @@ void FS47Evening::Stop()
 }
 void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
 {
+ // Investigation-only saves carry no arrival transaction. Restore that stored
+ // mode before the normal evening path can move their car or reset their clock.
+ if (S47J::Bool(Saved,TEXT("investigationOnly"))) { BeginInvestigation(Saved); return; }
  Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = true;
  // Versioned opt-in belongs only to new nights. Missing/unknown versions retain the old route.
  bServiceRoute = !Saved && !bPastOpening; bServiceFiled = false;
@@ -274,7 +277,8 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  bool bMigratedArrival=false;
  if (Commute())
  {
-  M->Story->SetClock(-6*3600-40*60); // late afternoon; shift time has not begun
+  // Fresh commute begins before the shift. Continue keeps the clock actually saved.
+  M->Story->SetClock(S47J::Num(Saved,TEXT("clock"),-6*3600-40*60));
   const S47J::FObj Car = S47J::Obj(Saved,TEXT("car"));
   if (!Saved || S47J::Bool(Car,TEXT("driving"))) M->World->BeginCommute(Car);
   else

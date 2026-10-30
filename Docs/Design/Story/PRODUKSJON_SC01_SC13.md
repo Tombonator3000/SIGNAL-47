@@ -13,17 +13,17 @@ Pakkescener (SC01 til SC03) ligger i `unreal/Narrative/HorrorStory/modules/unifi
 | SC01 | 18:00-23:40 | Ferdig | - |
 | 00:13-02:00 | strømbrudd, trafotur | Ferdig | - |
 | SC02 | 02:00 | Ferdig | - |
-| SC03 | 02:15-02:45 | Tekster rettet (PR245); klokkeregel 02:44 gjenstår | Claude |
+| SC03 | 02:15-02:45 | Tekster PR245; klokke 02:44 og vognretting lagt inn i PR260 | Claude |
 | SC04 | 02:55-03:15 | Ferdig (PR239) | - |
 | SC05 | 03:15-03:25 | Rettet (PR244) | - |
 | SC06 | 03:25-03:40 | Rettet (PR246) | - |
 | SC07 | 03:40-03:55 | Rettet (PR246) | - |
 | SC08 | 04:00-04:20 | Ferdig (PR240) | - |
-| SC09 | 04:25-04:45 | Stasjonshendelsen og Tomás rettet (30.10); Noras samtale gjenstår | Claude |
+| SC09 | 04:25-04:45 | Stasjon/Tomás og SARO-samtale etter fremkalling lagt inn (PR252/260) | Claude |
 | SC10 | 04:50-05:00 | Ny sluttreplikk og SARO som neste mål (30.10) | - |
 | SC11 | 05:00-05:10 | Ferdig (PR250) | - |
-| SC12 | 05:12-05:20 | Ward påkrevd med tre kilder, sheriff 05:15 med patruljeark, avreisekontroll (30.10); E14-kurermerke gjenstår | - |
-| SC13 | 05:20-05:29:47 | Mål og oppgave mot kureren 10.4 (30.10); skilt og ekko venter | - |
+| SC12 | 05:12-05:20 | Ward/tre kilder og sheriff/patruljeark PR254; E14-kurérmerke PR260 | - |
+| SC13 | 05:20-05:29:47 | Mål/oppgave og retningsskilt10.4 lagt inn; nytt ekko venter Toms valg | - |
 
 ---
 
@@ -41,7 +41,7 @@ Ferdig. Ingen arbeid.
 
 **Inn:** SC02-flukten vist, klokka hopper til 02:15 (`S47Horror.cpp:702-703`). **Ut:** sheriffens spørsmål vist, spinet åpner SC04 (`S47Spine.cpp`).
 
-Forløpet er riktig og bygget (`S47HorrorSC03.cpp` fasene Report, Wait, Arrival, Meet, Lift, Retreat, Calm, Deputy, Complete). Det som gjenstår er tekst og to små regler.
+Forløpet er bygget (`S47HorrorSC03.cpp` fasene Report, Wait, Arrival, Meet, Lift, Retreat, Calm, Deputy, Complete). Tekstene ble rettet i PR245. PR260 legger til vogn-/terrengretting og max-klokka02:44; nyere samlet vanlig reise er fortsatt egen kontroll.
 
 ### Arbeidsliste
 1. Sheriffens replikker i `unified_scenarios.json` (scenen `SC03_RECEIVER_QUESTION`, rundt linje 657 og 669) peker på klokka ni. Ny tekst:
@@ -127,7 +127,7 @@ Ferdig (PR240). Mulig senere justering etter Toms spilling: den korte veien opp 
 
 ### Arbeidsliste
 1. **Død hendelse.** `Public/S47StationTaken.h:39` og `S47Away.cpp:79,534`: `STATION_LAST` = 04:35 − 18:50 = 04:16:10, så `StationDue()` er alltid for sent når kapittel 3 starter 04:25. Bruk `S47Timeline::Chapter4(E) − 18 min 50 s` (04:31:10 i kveldstidslinjen). Rett selvtesten (`S47StationTaken.cpp:133,147`).
-2. **Noras samtale på feil sted.** (Åpen 30.10: kontrolltelefonen har ingen kapittel 3-krok, og en ny `Inter->Add("phone")` ville overstyre telefonen for alle kapitler. Trenger en ringekrok i `AS47Story` som kapittel 3 kan bruke, slik `PhoneHook` i kapittel 2.) Revisjonen: Nora ringer først når begge feltkopiene er fremkalt. Flytt samtalen fra feltelefonen på STATION 01 (`S47Chapter3.cpp:899-903, 923-959`) til SARO: når `Collect` på våtbenken er ferdig (`:1158`), ringer kontrolltelefonen etter 3 s. Replikkene:
+2. **Noras samtale.** Implementert i PR260 med kapittel3-krok på den eksisterende SARO-telefonen, versjonert progresjon og bevarte eldre saker. Målrettet editorprøve består93 kontroller og12 gjenopprettinger; reiseendepunktene er uttrykkelige fixtures. Revisjonen: Nora ringer først når begge feltkopiene er fremkalt. Flytt samtalen fra feltelefonen på STATION 01 (`S47Chapter3.cpp:899-903, 923-959`) til SARO: når `Collect` på våtbenken er ferdig (`:1158`), ringer kontrolltelefonen etter 3 s. Replikkene:
    - `So you went out there.`
    - `This line still rings in the motel office. I heard it ring at four, every night, for a year.`
    - `You have the frames now. Look at them before you believe them.`
@@ -150,7 +150,7 @@ Ferdig (PR240). Mulig senere justering etter Toms spilling: den korte veien opp 
    - `Tomás walked out to the closing point and did not walk back.`
    - `Don't finish his observation. Get the originals to the courier, and don't stop at C.`
 2. **Neste mål etter rommet** (`:474`, notat `:1206`, kort `:260`): under rammen går turen til SARO. Objektiv `SARO // THE REMOTE SHEETS COME IN AT 05:04. GET THE ORIGINALS OUT`, notat `Next: SARO. Hondo and Site 11 are sending their sheets. Then the courier.` Uten ramme (eldre saker) beholdes dagens tekst.
-3. Finalens ekko (`S47Chapter6.cpp:410` «Do not stop on the line.») endres til `A woman's voice: "Don't stop at C."` så det speiler den nye replikken.
+3. Valgfritt nytt finaleekko, venter fortsatt Toms valg som i avklaringslista: (`S47Chapter6.cpp:410` «Do not stop on the line.») foreslås endret til `A woman's voice: "Don't stop at C."` så det speiler den nye replikken.
 
 **Rask sjekk:** `-S47Jump=chapter4` med rammen, snakk ferdig med Nora, les objektivet.
 

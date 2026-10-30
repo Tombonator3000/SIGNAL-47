@@ -1,0 +1,92 @@
+{
+  "status": "PASS_TARGETED",
+  "source_commit": "e81c68157bd401742b7e5e120076a3240162b356",
+  "scope": "SC09 editor, Low/Off 1280x720, explicit t.MaxFPS=60",
+  "measured_fps": null,
+  "source_files": 493,
+  "build": {
+    "source_commit": "e81c68157bd401742b7e5e120076a3240162b356",
+    "freeze_sha256": "3259fb37c1e75c63828cf30a9b8197a75dc80b0ff6b5a14087f1577726f421f7",
+    "module": "/home/tom/scratch-bm/wt/motel-v2-unreal/unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+    "bytes": 17635568,
+    "sha256": "359ad229e184a97d194d81458e9ceb71ba8da8259068b67370cd9f0c49ee5d15"
+  },
+  "result": {
+    "checks": 98,
+    "restores": 12,
+    "elapsed": 296.3823772184551,
+    "outboundMetres": 1433.055178540836,
+    "returnMetres": 1447.4424081376328,
+    "travelFixture": false,
+    "limits": [
+      "Chapter3 jump is a developer prerequisite fixture, not an SC01-SC08 playthrough.",
+      "Individual standing/camera positions and Slate button simulation are API fixtures, not human input or a complete on-foot route.",
+      "Ordinary World trips use API autopilot; no human driving or real-time duration claim.",
+      "Nora is written dialogue. No recording-heard, human listening, FPS, full matrix, installation or release claim."
+    ]
+  },
+  "raw_result": {
+    "path": "/tmp/S47-sc09-station-r12-capped-full-travel/Saved/SpineContract/sc09/01A18A16CE9676868A21DA3C7980880E/result.json",
+    "bytes": 9112571,
+    "sha256": "793dca3262433567c16a84c0ec35a46e7a1a03880ecc5873e3eb18bc28e52993"
+  },
+  "runs": {
+    "require-idle": {
+      "returncode": 0,
+      "wall_seconds": 0.506676044955384,
+      "semantic_success": true,
+      "stop_reason": null,
+      "expected_found": true,
+      "forbidden_found": [],
+      "raw_sha256": "6010feed142839e0b478965397aa2477fadef0740e2730ba183c7253df520c32"
+    },
+    "preflight": {
+      "returncode": 0,
+      "wall_seconds": 0.5067734449985437,
+      "semantic_success": true,
+      "stop_reason": null,
+      "expected_found": true,
+      "forbidden_found": [],
+      "raw_sha256": "d5ebdbf8fbea690a2ec144d9c1a242d5b75b12586a222687f465f05ecf1b5f98"
+    },
+    "sc09": {
+      "returncode": 0,
+      "wall_seconds": 330.65326502599055,
+      "semantic_success": true,
+      "stop_reason": null,
+      "expected_found": true,
+      "forbidden_found": [],
+      "raw_sha256": "d749599a780a45953a1231ae664f0c7cd980ef64f209844fc19ae7689b43fb6b"
+    }
+  },
+  "earlier_failures": {
+    "r9": "Vulkan VK_ERROR_DEVICE_LOST before field work",
+    "r10": "contract checked SARO arrival before real 0.4s callback; corrected e81c6815",
+    "r11": "Vulkan VK_ERROR_DEVICE_LOST after STATION01 restore"
+  },
+  "unverified": [
+    "SC01-SC08 full preceding journey",
+    "new SC04/SC08/SC11/night regressions",
+    "human input",
+    "measured FPS",
+    "full matrix",
+    "packaged build",
+    "installation"
+  ],
+  "photos": [
+    {
+      "name": "frame03.jpg",
+      "bytes": 157630,
+      "sha256": "04f42fdd1392aa59bad05481509d2a0d200396a0b496e5ef04ae93fb9ab43105",
+      "reviewed": true,
+      "kind": "actual field-camera RHI"
+    },
+    {
+      "name": "frame04.jpg",
+      "bytes": 183729,
+      "sha256": "18c0724c5b51414cdcf899763d66c22d8702084f6045f6d295f9a3bffd831d22",
+      "reviewed": true,
+      "kind": "actual field-camera RHI"
+    }
+  ]
+}

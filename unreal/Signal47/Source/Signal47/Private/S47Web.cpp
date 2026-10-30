@@ -1,5 +1,7 @@
 #include "S47Web.h"
 #include "Components/BoxComponent.h"
+#include "S47RadioWoman.h"
+#include "S47RadioWomanContract.h"
 #include "S47GraphicsReview.h"
 #include "S47RenderAudit.h"
 #include "S47Picture.h"
@@ -701,6 +703,7 @@ void AS47Web::BeginPlay()
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
 	CinemaPosters = FS47CinemaPosters::Build(this,TownBuildings.IsValid());
 	MotelV2 = FS47MotelV2::Build(this);
+	RadioWoman = FS47RadioWoman::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
 	S47PhotoLabDetail::Build(this);
 	S47SubstationDetail::Build(this);
@@ -784,7 +787,22 @@ void AS47Web::BeginPlay()
 	BeginCalicheHomesContract();
 	StartCinemaPostersContract();
 	StartFarmAccessContract();
+	S47BeginRadioWomanContract(this);
 	UE_LOG(LogS47Web, Display, TEXT("S47: web world ready, %s"), *Summary());
+}
+
+void AS47Web::RadioWomanAfterTownStep()
+{
+ if (RadioWoman) RadioWoman->AfterTownStep();
+}
+
+bool AS47Web::AuditRadioWoman(TArray<FString>& Lines) const
+{
+	return RadioWoman.IsValid() && RadioWoman->Audit(Lines);
+}
+TSharedPtr<FJsonObject> AS47Web::RadioWomanReadback() const
+{
+	return RadioWoman.IsValid() ? RadioWoman->Readback() : MakeShared<FJsonObject>();
 }
 
 // ---------- visibility and transforms ----------
@@ -871,6 +889,8 @@ void AS47Web::Enter(const FString& Area)
 	if (CalicheHomes) CalicheHomes->Update();
 	if (CinemaPosters) CinemaPosters->Update();
 	if (MotelV2) MotelV2->Update();
+	// Enter may be synchronous during Continue; a sampled bRestoring edge is insufficient.
+	if (RadioWoman) RadioWoman->InvalidateAreaEpoch();
 	const FString* T = SkyTex.Find(Area);
 	if (!T) T = SkyTex.Find(TEXT("saro"));
 	if (T && SkyMid)

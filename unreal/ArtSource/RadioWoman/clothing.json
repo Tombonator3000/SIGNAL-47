@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "status": "SOURCE_ONLY_UNVERIFIED",
+  "purpose": "Egen nøktern vinterbekledning til radio-kvinnen i Caliche, New Mexico 1986",
+  "source_body_fbx_sha256": "292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92",
+  "source_skeleton": "/Game/MetaHumans/Common/Female/Medium/NormalWeight/Body/metahuman_base_skel",
+  "authoring": {
+    "units": "metres",
+    "up": "+Z",
+    "front": "-Y",
+    "pose": "Uendret importert restpose. Nativebaker eier eneste sittende pose.",
+    "geometry": "Egne konstruerte frakk-/bukse-/skoflater. Øvre egen Coat_body formes mot faktisk privat Body+Face-resthud; ingen hudtriangler kopieres. Originale deformasjonvekter overføres.",
+    "cloth_simulation": false,
+    "winter_coat": "Dempet skiferblå ullfrakk til midt på låret, enkel krage, mørke knapper, lommer og åpen nedre front",
+    "trousers": "Løse mørkebrune bukser med egne hofte- og beinpaneler",
+    "shoes": "Lukkede mørke lave skinnsko med egen såle"
+  },
+  "fit": {
+    "coat_clearance_m": 0.032,
+    "sleeve_clearance_m": 0.025,
+    "trouser_clearance_m": 0.018,
+    "shoe_clearance_m": 0.01,
+    "fabric_thickness_m": 0.0025,
+    "maximum_vertex_influences": 4,
+    "maximum_lod0_triangles": 24000,
+    "seated_fit_status": "UNVERIFIED; kontrolleres etter autoritativ nativepose"
+  },
+  "fbx": {
+    "filename": "SKM_RadioWoman_Clothes.fbx",
+    "mesh_name": "SKM_RadioWoman_Clothes",
+    "axis_forward": "-Z",
+    "axis_up": "Y",
+    "global_scale": 1.0,
+    "apply_unit_scale": true,
+    "apply_scale_options": "FBX_SCALE_NONE",
+    "use_space_transform": true,
+    "bake_space_transform": false,
+    "automatic_bone_orientation_on_source_import": false,
+    "add_leaf_bones": false,
+    "bake_anim": false,
+    "use_armature_deform_only": false,
+    "exported_objects": [
+      "clothes_mesh",
+      "unchanged_source_armature"
+    ],
+    "body_geometry_exported": false,
+    "reference_pose_changed": false,
+    "note": "Eksportaksene er de faktiske Blender-defaultene fra uniform-v5, ikke Blender-modellens front/up. Ikke bytt beinbasis."
+  },
+  "materials": [
+    {
+      "name": "M_RW_Coat",
+      "base_color_linear": [
+        0.07,
+        0.095,
+        0.115
+      ],
+      "roughness": 0.88,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Trousers",
+      "base_color_linear": [
+        0.045,
+        0.039,
+        0.032
+      ],
+      "roughness": 0.86,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Shoe",
+      "base_color_linear": [
+        0.016,
+        0.012,
+        0.01
+      ],
+      "roughness": 0.57,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Trim",
+      "base_color_linear": [
+        0.052,
+        0.064,
+        0.072
+      ],
+      "roughness": 0.9,
+      "metallic": 0.0
+    },
+    {
+      "name": "M_RW_Button",
+      "base_color_linear": [
+        0.034,
+        0.028,
+        0.023
+      ],
+      "roughness": 0.55,
+      "metallic": 0.0
+    }
+  ],
+  "private_output": {
+    "allowed_root": "~/scratch-bm/Signal47-mannequins-20261029/private",
+    "files": [
+      "radio_woman_clothes_rest.blend",
+      "SKM_RadioWoman_Clothes.fbx",
+      "clothing-report.json"
+    ],
+    "policy": "Alle avledede mesh-/rigg-/fitting-filer beholdes private. Offentlig Git får bare denne egne oppskriften og kontrakten."
+  },
+  "delivery_limits": [
+    "Forfatterverktøyet er et internt delsteg, ikke ferdig HUM-01",
+    "Faktiske restposebounds og rigg-/vekt-/outputhasher skrives først av Blender-kjøringen til privat clothing-report.json",
+    "Sittende kontakt, radio/hender, native LOD, synlighet/proxy, nattregel, disk/title/Continue og pakket spill gjenstår"
+  ],
+  "coat_yoke": {
+    "policy": "actual-combined-skin-local-coat-yoke-v1",
+    "source_skeleton_sha256": "9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113",
+    "minimum_clearance_m": 0.006,
+    "outer_target_m": 0.012,
+    "inputs": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/clothing-shoulder-r12-r4/proposed/yoke-inputs.json",
+      "bytes": 2520,
+      "sha256": "97c5474b8cab5cab23ba233ba17b66e3a3616b182fd22f6e48d918e1b100f79d",
+      "sha1": "99c3877b95ca2ef419d9dbb8075443b7f28ed76f"
+    },
+    "scope": "Only upper own Coat_body plus declared lower normal/inner boundary fan,16 original parts fixed. Actual full Body+Face skin/frame. New topology upper bands only. Finite samples; no continuous-surface, seated/native or appearance acceptance."
+  }
+}

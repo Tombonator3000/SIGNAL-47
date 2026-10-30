@@ -9,7 +9,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
 | --- | --- | --- |
 | Kildekode på `main` | [PR258](https://github.com/Tombonator3000/SIGNAL-47/pull/258), main `ebaad3c0`: SARO 1986-rekvisitter, RX3 og siste Tripo-armatur, med godkjent Dales kontor, Tripo14 og tidligere historiekilde. | Samlet SC01 til SC13-gjennomspilling gjenstår. |
-| Teknisk kontrollert kandidat | SARO 1986-kandidat `0468d167`, [installasjon og bilder](../Evidence/UnrealDeliveries/SARO_1986_PROPS_2026-10-30.md). | Editorbygg, Linux-pakke, 1740 selvtester, alle 14 modeller og korte gang-/nattkontrollromkameraer består. Visuell godkjenning avventes. |
+| Teknisk kontrollert kandidat | SARO 1986-kandidat `0468d167`, [installasjon og bilder](../Evidence/UnrealDeliveries/SARO_1986_PROPS_2026-10-30.md). | Editorbygg, Linux-pakke, 1740 selvtester, alle 14 modeller og korte gang-/nattkontrollromkameraer består. Tom har godkjent gangen og kontrollrommet for nå. |
 | Lokal installasjon | SARO 1986-kandidat `0468d167` / PR258, installert 30. oktober kl.19:45. | 68 payload-noder og 134 Saved-noder kontrollert. Godkjente Dales kontor, Tripo14 og tidligere historiekilde er med. |
 | Offentlig nedlasting | Uendret, eldre enn lokal installasjon. [Komplett Linux-testutgave 29. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), Farm R1 gjennom PR223. [Nedlasting og kvittering](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md). | Eldre enn dagens lokale SARO-installasjon. Én selvstendig startfil henter alle tre kontrollerte Farm R1-arkiver uten Git eller separate Artifacts. Andre maskiner er fortsatt UNVERIFIED. |
 
@@ -46,7 +46,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon e
 
 ## Pågående arbeid og kjente feil
 
-**SARO gang og kontrollrom:** [PR258 er installert](../Evidence/UnrealDeliveries/SARO_1986_PROPS_2026-10-30.md). Detaljpasset gir RX3 analoge instrumenter/kabler, konsollen valnøttfronter og brune stoler, riktig telefon/hule bøtter, tynn inventarjakke, korrekt monterte plakater og åtte armaturer fra siste Tripo-eksport med rette T12-rør. De to blokkformede dekorjakkene er fjernet. [Analyse og visuell føring](../Design/SARO_1986.md). ENV-06/ENV-07 står åpne for Toms vurdering; Low har mørkere himling enn High.
+**SARO gang og kontrollrom:** [PR258 er installert](../Evidence/UnrealDeliveries/SARO_1986_PROPS_2026-10-30.md). Detaljpasset gir RX3 analoge instrumenter/kabler, konsollen valnøttfronter og brune stoler, riktig telefon/hule bøtter, tynn inventarjakke, korrekt monterte plakater og åtte armaturer fra siste Tripo-eksport med rette T12-rør. De to blokkformede dekorjakkene er fjernet. [Analyse og visuell føring](../Design/SARO_1986.md). Tom godkjente gangen og kontrollrommet «for nå» 30. oktober; ENV-06/ENV-07 er lukket for PR258. Mørkere Low-himling står som senere polering.
 
 **Dale, visuelt godkjent kontorpilot:** [PR251 er installert](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md), med synlig malingsflate, oppdaterte egne overflater,72 native rekvisitter og romlig vindus-/lampelys. Tom godkjente den viste og installerte kontorpiloten 30. oktober 2026 med beskjed «Godkjent». ENV-05 er lukket; kontoret er visuell referanse for videre romarbeid. Dette passet bruker ingen nye kreditter.
 

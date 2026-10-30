@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "PINNED_ACTUAL_SKIN_AND_OWN_SURFACE_ONLY",
+  "policy": "actual-combined-skin-local-coat-yoke-v1",
+  "files": {
+    "recipe": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/clothing-shoulder-r12-r4/proposed/own-yoke-surface-recipe.json",
+      "bytes": 984957,
+      "sha256": "4c517ff9fd45189babeded78df1cad98467ea3a9396a077f7d71384bbecd442a",
+      "sha1": "0d373aa082b0b579be90ba804904674525d888f5"
+    },
+    "native_rest": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/rest-surface-diagnostic-r1/runs/r1/native-rest-surfaces.json",
+      "bytes": 24124032,
+      "sha256": "1cf5db568213c66a7d5abe05c32d75dbc0bd4bf4beb2fa500fb5d2de3fa2f65b",
+      "sha1": "2b52345b4b246acb73361ac2bd39b55d9f6cee84"
+    },
+    "native_acceptance": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/rest-surface-diagnostic-r1/root-series-r1/rest-surface-acceptance.json",
+      "bytes": 2219,
+      "sha256": "6f0567f6259cbf981028bc5149acd94ee4bfb842692502562ab9d57ec4fcafc4",
+      "sha1": "e1c7710499a545a1947f38062e3e07394a38af4a"
+    },
+    "frame_confirmation": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/clothing-shoulder-r12-r4/analysis/native-skin-confirmation-r1.json",
+      "bytes": 93205,
+      "sha256": "7e9a0ebc6de99cb65c9f71ec1cbc473b8a2bcb0ab11cf39e5939fc4493a7c779",
+      "sha1": "b79006be6c23ee1326c20b246e3e71bbe76d0f4e"
+    },
+    "converted_skin": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/clothing-shoulder-r12-r4/analysis/native-skin-world-r1.json.gz",
+      "bytes": 1856714,
+      "sha256": "4622ccb74d9fd3366d7711d0c1d1b77157746f4e9c1b39a7beb5583753433deb",
+      "sha1": "7339f9d294655393d5758bbe2103553f59f76ed6"
+    },
+    "source_scene": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/private/clothes-r3-diagnostic-r1/actual-world-geometry.json.gz",
+      "bytes": 12513371,
+      "sha256": "1630b4122dabc07b04900aad603588cbf9ecdb13045a1fde522d853ff599f3e8",
+      "sha1": "45ced9e7f476f51dbc2db5ca519b6f1fff4e780a"
+    },
+    "capture_acceptance": {
+      "path": "/home/tom/scratch-bm/Signal47-mannequins-20261029/clothing-shoulder-r12-r3-diagnostic-r1/root-run-r1/diagnostic-capture-acceptance.json",
+      "bytes": 2508,
+      "sha256": "0921aa402e7c47afed9ee420df39774c3fd7554b1e0e32151eaad087af620047",
+      "sha1": "767bb4e64d7a37a44dfe8545317c0f04ad607944"
+    }
+  },
+  "runtime_accepted": false,
+  "source_fit_accepted": false
+}

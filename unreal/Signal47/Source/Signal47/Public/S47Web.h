@@ -32,6 +32,7 @@ class FJsonObject;
 class FS47MotelV2;
 class FS47RouteNature;
 struct FS47HighwayRanch;
+class FS47RadioWoman;
 
 // A walkable rectangle or a collider, in the web version's terms (metres, x and z).
 struct FS47Rect { double MinX = 0, MaxX = 0, MinZ = 0, MaxZ = 0; FString Id; bool bEnabled = true; };
@@ -107,6 +108,9 @@ public:
 	bool AuditHighwayRanch(TArray<FString>& Lines) const;
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
+	void RadioWomanAfterTownStep();
+	bool AuditRadioWoman(TArray<FString>& Lines) const;
+	TSharedPtr<FJsonObject> RadioWomanReadback() const;
 	bool AuditCinemaPosters(TArray<FString>& Lines) const;
 	TSharedPtr<FJsonObject> CinemaPostersReadback() const;
 	TArray<FString> PathsUnder(const FString& Prefix) const;
@@ -337,6 +341,7 @@ private:
 	void StartCinemaPostersContract();
 	TSharedPtr<FS47MotelV2> MotelV2;
 	TSharedPtr<FS47RouteNature> RouteNature;
+	TSharedPtr<FS47RadioWoman> RadioWoman;
 	void BeginProductionViews();
 	void BeginMotelV2Route();
 	void BeginCalicheHomesContract();

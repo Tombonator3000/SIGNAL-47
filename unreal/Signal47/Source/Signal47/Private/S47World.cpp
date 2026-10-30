@@ -18,6 +18,9 @@
 #include "S47Geo.h"
 #include "S47GroundCover.h"
 #include "S47HUD.h"
+#include "S47Horror.h"
+#include "S47HorrorSC03.h"
+#include "S47Substation.h"
 #include "S47Inter.h"
 #include "S47Legs.h"
 #include "S47Main.h"
@@ -135,6 +138,22 @@ void US47World::Init(US47Main* InM)
 	{
 		TruckChoice = [this](const FString& Place) -> FChoice
 		{
+			// The two authored transports survive T01's removal of the feeder-trip exception.
+			// Horror still decides the escape; these choices grant no general pre-chapter drive.
+			const FS47Truck* Parked = TruckHere();
+			const bool NightTransport = M && M->Mode == US47Main::EMode::Play && M->Story && M->Story->NightSequence()
+				&& M->Story->Phase() == ES47Phase::Residual && M->Horror && M->Substation && M->Substation->HasNormalResult()
+				&& !M->Story->FeederOutage() && !bCommuteVehicle && !bDriving && !bBusy && Parked && !Parked->IsPersonalVehicle();
+			if (NightTransport && Place == TEXT("diner") && Area == TEXT("diner") && TruckAt == TEXT("diner") && M->Horror->SC02Meeting())
+			{
+				return { TEXT("Return to SARO"), [this] { DriveBack(); } };
+			}
+			if (NightTransport && Place == TEXT("saro") && Area == TEXT("saro") && TruckAt == TEXT("saro")
+				&& M->Horror->SC02Escaped() && M->Horror->SC03 && M->Horror->SC03->Phase() == FS47HorrorSC03::EPhase::Report
+				&& !M->Horror->SC03->Facts().bDispatch)
+			{
+				return { TEXT("Drive to Caliche fuel stop"), [this] { DriveToDiner(nullptr); } };
+			}
 			const bool EarlyReferenceTrip = M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done"));
 			// the 00:13 feeder trip is ordered whatever phase the signal has moved the night to
 			const bool ServiceTrip = M && M->Evening && M->Evening->ServicePending();

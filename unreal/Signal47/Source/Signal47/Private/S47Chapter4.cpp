@@ -352,6 +352,7 @@ void US47Chapter4::Begin(const S47J::FObj& Saved)
 	Reset();
 	bActive = true; bStarted = true;
 	S = Saved.IsValid() ? FS47Ch4State::Load(Saved) : FS47Ch4State();
+	RestoreTalk();
 	// the field roll is developed and filed; the camera has nothing left to do tonight
 	if (US47Chapter1* C1 = Host ? Cast<US47Chapter1>(Host->Chapter(TEXT("ch1"))) : nullptr)
 	{
@@ -370,6 +371,8 @@ void US47Chapter4::Begin(const S47J::FObj& Saved)
 		Toast(TEXT("Room 6 is at Sierra Motor Court, down the highway south. Take the truck, or walk the shoulder from the visitor entrance."), 4.6f);
 	}
 	Save();
+	// A save can land after leaving the room, before the chapter continuation fires.
+	if (S.Stage == TEXT("complete")) ContinueAfterRoom();
 	static bool bDriven = false;
 	FString Stop;
 	if (!bDriven && FParse::Value(FCommandLine::Get(), TEXT("S47Ch4Drive="), Stop)) { bDriven = true; TestDrive(Stop); }
@@ -377,6 +380,7 @@ void US47Chapter4::Begin(const S47J::FObj& Saved)
 
 void US47Chapter4::Reset()
 {
+	if (Host) Host->Cancel(TEXT("ch4-complete"));
 	bActive = false; bStarted = false; AfterText.Reset();
 	S = FS47Ch4State(); Lines.Reset(); Mode = TEXT("menu"); Reply.Reset(); Panel.Reset();
 	if (Court)
@@ -433,6 +437,15 @@ bool US47Chapter4::File(const FS47Doc& Doc)
 void US47Chapter4::Note(const FString& Text) { if (Host) Host->Note(Text); else if (!TestNotes.Contains(Text)) TestNotes.Add(Text); }
 void US47Chapter4::Toast(const FString& Text, float Secs) const { if (M && M->UI) M->UI->Toast(Text, Secs); }
 void US47Chapter4::Milestone() const { if (Host && Host->OnCheckpoint) Host->OnCheckpoint(TEXT("chapter4")); }
+void US47Chapter4::RestoreTalk()
+{
+	if (!S.bP10 && S.bGreeted)
+	{
+		Mode = S.bShown ? TEXT("control") : TEXT("table");
+		Lines = { Aside(S.bShown ? TEXT("The prints and the original are still on the table. She waits for the control you used.")
+			: TEXT("She waits for the two prints and the 1947 original on the table.")) };
+	}
+}
 FString US47Chapter4::Area() const { return M && M->World ? M->World->Area : FString(TEXT("saro")); }
 bool US47Chapter4::InRoom() const { return Area() == TEXT("room6"); }
 bool US47Chapter4::ExitOpen() const { return M && M->Web ? M->Web->DoorStates().FindRef(TEXT("exit")) : S.bExitOpen; }
@@ -794,8 +807,8 @@ void US47Chapter4::UsePhone()
 	if (S.bP12) { Toast(TEXT("The handset is back on the cradle. The carrier is still there, if you listen for it."), 3.2f); return; }
 	OpenTalk();
 	Choose(TEXT("line"));
-	// (as in the web version, the panel opened above is not drawn again for the line: it shows the
-	// lines from before until the next click)
+	// OpenTalk drew the previous exchange; the nightstand phone must show this one immediately.
+	if (Panel && Panel->Refresh) Panel->Refresh();
 }
 
 // ---------- the conversation ----------
@@ -819,6 +832,7 @@ void US47Chapter4::OpenTalk()
 		};
 		Save();
 	}
+	else if (!S.bP10) RestoreTalk();
 	else if (S.bP10 && !S.Mark.Get(false) && Taken && Taken() && (Mode == TEXT("menu") || Mode == TEXT("mark")))
 	{
 		// taken since, or the chair never sat in: she sees it as you come to the table
@@ -940,9 +954,10 @@ void US47Chapter4::ToggleChip(const FString& Id)
 
 void US47Chapter4::ShowEvidence()
 {
+	if (Mode != TEXT("table")) return;
 	const TArray<FString>& P = S.Placed;
-	const bool bPrints = P.Contains(TEXT("frame01")) && P.Contains(TEXT("frame02"));
-	if (!bPrints || !P.Contains(TEXT("e07")))
+	const bool bPrints = Have(TEXT("frame01")) && Have(TEXT("frame02")) && P.Contains(TEXT("frame01")) && P.Contains(TEXT("frame02"));
+	if (!bPrints || !Have(TEXT("e07")) || !P.Contains(TEXT("e07")))
 	{
 		S.Wrong10++;
 		Reply = FS47Result{ false, !bPrints ? TEXT("N. VEGA: \"Both prints from B-12. The first one, and the control.\"") : TEXT("N. VEGA: \"And the original. The one from the field box, not the service copy.\"") };
@@ -979,6 +994,7 @@ void US47Chapter4::FaceDown(const FString& How)
 
 void US47Chapter4::Choose(const FString& Id)
 {
+	if (!View().Choices.ContainsByPredicate([&](const S47Panels::FTalkChoice& Choice) { return Choice.Id == Id && !Choice.bDisabled; })) return;
 	if (M && M->Audio) M->Audio->StopPhoneCalls();
 	if (M && M->UI && M->UI->NpcDialogue) M->UI->NpcDialogue->Stop();
 	Reply.Reset();
@@ -1209,8 +1225,17 @@ void US47Chapter4::Finish()
 	Note(bSaroNext ? FString(TEXT("ROOM 6: P10 to P12 recorded, with her correction (E12), Tomás' letter (E13) and his last field card (E11). Next: SARO. Hondo and Site 11 are sending their sheets. Then the courier."))
 		: FString(TEXT("ROOM 6: P10 to P12 recorded, with her correction (E12), Tomás' letter (E13) and his last field card (E11). Next: the road south, where C crosses it.")));
 	Milestone();
+	ContinueAfterRoom();
+}
+
+void US47Chapter4::ContinueAfterRoom()
+{
 	TWeakObjectPtr<US47Chapter4> W = this;
-	if (Host) Host->After(1.2, [W] { if (W.IsValid() && W->OnEnd) W->OnEnd(); });
+	if (Host)
+	{
+		Host->Cancel(TEXT("ch4-complete"));
+		Host->After(1.2, [W] { if (W.IsValid() && W->bActive && W->S.Stage == TEXT("complete") && W->OnEnd) W->OnEnd(); }, TEXT("ch4-complete"));
+	}
 }
 
 // ---------- documents ----------
@@ -1615,6 +1640,18 @@ bool US47Chapter4::SelfTest(TArray<FString>& Out)
 	const FString Again = S47J::Write(L.Save());
 	Check(L.Stage == TEXT("room") && L.bExitOpen && L.Topics.bTomas && !L.Topics.bRecord && L.Tone.IsEmpty() && L.Read.bLetter && !L.Read.bCard && !L.Cb && !L.Links
 		&& Again.Contains(TEXT("\"tone\":null")) && Again.Contains(TEXT("\"later\":3")) && Again.Contains(TEXT("\"seen\":{\"photo\":false,\"window\":false}")), TEXT("an older save: missing fields fresh, unknown ones kept"));
+	// Saving between greeting, table and control must reopen the outstanding step.
+	US47Chapter4* F = NewObject<US47Chapter4>(GetTransientPackage());
+	F->S = FS47Ch4State::Load(S47J::Read(TEXT("{\"stage\":\"room\",\"arrived\":true,\"greeted\":true,\"placed\":[\"e07\"],\"later\":3}")));
+	F->RestoreTalk();
+	Check(F->Mode == TEXT("table") && F->View().Table.IsSet() && F->S.Placed == TArray<FString>{TEXT("e07")}, TEXT("saved greeting restores the table and its chosen paper"));
+	F->S.bShown = true; F->RestoreTalk();
+	Check(F->Mode == TEXT("control") && F->View().Choices.Num() == 3 && !F->View().Question.IsEmpty(), TEXT("saved table restores the unanswered control question"));
+	const FString BeforeInvalid = S47J::Write(F->S.Save()); F->Choose(TEXT("end")); F->Choose(TEXT("anything"));
+	Check(S47J::Write(F->S.Save()) == BeforeInvalid && !F->S.bP10 && !F->S.bTold, TEXT("unoffered choices cannot skip the control or finish Nora"));
+	F->Mode = TEXT("table"); F->S.bShown = false; F->S.Placed = {TEXT("frame01"),TEXT("frame02"),TEXT("e07")};
+	F->ShowEvidence();
+	Check(!F->S.bShown && F->Reply && !F->Reply->bOk, TEXT("saved chip names cannot stand in for actually filed evidence"));
 	// the CB call on the way, only with the truck driven 9 s (no world: no trip, no call)
 	US47Chapter4* E = NewObject<US47Chapter4>(GetTransientPackage());
 	E->BuildBook(); E->bStarted = true; E->bActive = true;
@@ -1633,6 +1670,6 @@ bool US47Chapter4::SelfTest(TArray<FString>& Out)
 	US47Room6::DrawSnow(Snow, 2.0, [&K] { return (K++ % 7) / 7.0; });
 	// band = (2 * 9) % 72 = 18: rows 14 to 22 are lifted by 40
 	Check(Snow.Num() == 96 * 72 && Snow[18 * 96 + 1].B == 40 && Snow[0].B == 0 && Snow[1].R == FS47Canvas::Clamp8(215.0 / 7 * 0.92), TEXT("the television's snow and its rolling band"));
-	C->MarkAsGarbage(); D->MarkAsGarbage(); E->MarkAsGarbage();
+	C->MarkAsGarbage(); D->MarkAsGarbage(); E->MarkAsGarbage(); F->MarkAsGarbage();
 	return bOk;
 }
