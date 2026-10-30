@@ -1,0 +1,39 @@
+{
+  "status": "PASS_INSTALLED_SAVED_PRESERVED",
+  "tested_source": "95807f4f3536094561328475acccbcdb6b14a284",
+  "merge_commit": "5dce2c8bbf916bf5e91e1b6786ffbe1eaa5dd119",
+  "pr": "https://github.com/Tombonator3000/SIGNAL-47/pull/236",
+  "steps": [
+    {
+      "returncode": 0,
+      "wall_seconds": 27.006814345018938,
+      "contention": [],
+      "stop_reason": null,
+      "name": "installed-continue"
+    },
+    {
+      "returncode": 0,
+      "wall_seconds": 98.97838877997128,
+      "contention": [],
+      "stop_reason": null,
+      "name": "installed-office-low"
+    }
+  ],
+  "binary_sha256": "4817d0ba90c37e9495ca696e14167e13034fc56888fb2f28a53b322da267a5ed",
+  "backup": "/home/tom/scratch-bm/Signal47-interiors-20261029/install-r1/previous-installed",
+  "installed_at": "2026-10-30T02:51:50.344034+01:00",
+  "payload_nodes": 68,
+  "saved_nodes_unchanged": 134,
+  "before_saved_manifest_sha256": "bf04ac366d1a32945eb8fc918b6f40269544cfc51f2fe13fe47fb878ba296af3",
+  "after_saved_manifest_sha256": "bf04ac366d1a32945eb8fc918b6f40269544cfc51f2fe13fe47fb878ba296af3",
+  "raw_receipt_sha256": "baa7409688590b3a36f97434247725938fde201a612675d2c1d9c3874c820f72",
+  "retired_packages": 3,
+  "retired_payload_files": 21,
+  "remaining_complete_packages": [
+    "/home/tom/scratch-bm/Signal47-interiors-20261029/delivery-r1/candidate/Linux",
+    "/home/tom/scratch-bm/Signal47-interiors-20261029/install-r1/previous-installed",
+    "/home/tom/scratch-bm/Signal47-install-spine-20261029/candidate/Linux"
+  ],
+  "human_input_fps": "UNVERIFIED",
+  "public_release": "UNCHANGED"
+}

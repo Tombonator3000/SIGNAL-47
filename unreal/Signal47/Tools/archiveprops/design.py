@@ -1,7 +1,20 @@
 """Original 1986 records-room assets, tied to the unchanged native story anchors."""
-REVISION = 'R1-original-SARO-records-room-1986'
+REVISION = 'R2-used-SARO-records-room-1986'
 BUDGET_TRIANGLES = 65000
 ROOM_BOUNDS_THREE = [-6, -1, 6.8, 10.5]
+
+# Ordinary storage only. Row 2's central bay remains reserved for the existing
+# STATION 01 fall event and the independently animated fire drawer/reel.
+SHELF_GAMEPLAY_BAY = {'row': 2, 'centre_z': -.05, 'half_width_z': .32}
+SHELF_CONTENT_VARIANTS = {
+ (0, 1): 'open', (0, 4): 'folders', (1, 2): 'gap', (1, 5): 'open',
+ (2, 0): 'folders', (3, 4): 'open', (3, 6): 'gap',
+}
+BOOK_HEIGHTS = (.30, .265, .285, .25, .295, .275)
+BOOK_WIDTHS = (.068, .060, .073, .057, .065, .070)
+BOOK_LEAN_DEGREES = {1: -4., 9: 3.5}
+# The separate, interactable ServiceBinder sits on the clear centre of the case.
+TOP_BINDER_CLEAR_X = (-.30, .32)
 
 def part(role, at, parent='annex.interior', local=False, **kw):
     return dict(role=role, site_world_three_m=at, parent_handle=parent,

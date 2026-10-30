@@ -37,6 +37,7 @@ De engelske forfatterkildene i [Narrative/HorrorStory](../../unreal/Narrative/Ho
 | D-10 | Nanite utvides etter innhold og faktisk nytte, særlig tette solide miljømodeller. | Ingen global konvertering av vegetasjon, glass eller effekter; bevar RT-fallback og collision. [Kildegjennomgang](../Research/Unreal/UNREAL_SKILLS_2026-10-28.md). |
 | D-11 | Den ønskede visuelle retningen er et troverdig retro New Mexico-motell og sammenhengende 1986-farger gjennom dag/natt. | Bevar keramikkmønster, mørkt trepanel, KELVORA-TV og de tre detaljerte bilene. Bare den dårlige blokkbilmodellen skulle bort. Fargeforsøk må passe dagens `M_WebTone`. |
 | D-12 | Finalen skal vurderes med en stor, langsom UFO-avsløring bak to skybanker som velter fremover fra hver sin side. | SC13 er anbefalt hovedplassering. Konsepter er regi, ikke implementert effekt. [Finalenotat](../Design/Proposals/FINALE_CLOUD_TANK_UFO.md). |
+| D-13 | Dales kontor skal være et personlig, rotete konspirasjonskontor fra 1986. Forbindelsesgangen skal få reell plass og bedre geometri; kontor/gang/dører prioriteres før arkiv/fotolab. | Toms føring 29. oktober. Bruk eide originalmodeller før ny modellering/Tripo, bevar fungerende dokumenter, nøkkel/skuff/dører, lysdrivere og Saved. Ingen kjøp eller automatisk fysisk Dale-scene. |
 
 ## Arbeid, testing og levering
 

@@ -13,6 +13,9 @@ import numpy as np
 from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+from surface_fields import surface_channels, normal_map
+from detail_pass import append_detail
 OUT, TEX, PRE = (ROOT / p for p in ('Export', 'textures', 'Preview'))
 for p in (OUT, TEX, PRE):
     p.mkdir(parents=True, exist_ok=True)
@@ -41,7 +44,7 @@ EXPORT = collection('02_NATIVE_EXPORTS_HIDDEN')
 CONTEXT = collection('03_EXISTING_LAYOUT_PREVIEW_ONLY')
 STUDIO = collection('04_REVIEW_CAMERAS_LIGHTS_ONLY')
 CURRENT, PARTS, MATS, ROWS = [], {}, {}, []
-N = 512
+N = 1024
 rng = np.random.default_rng(471027)
 v, u = np.mgrid[0:N, 0:N] / N
 noise = rng.normal(0, 1, (N, N))
@@ -49,6 +52,9 @@ noise = rng.normal(0, 1, (N, N))
 # Original procedural PBR, following the existing Operations office recipe.
 def image(name, pixels):
     im = bpy.data.images.new(name, N, N, alpha=True)
+    # Albedo is already sRGB-encoded; data maps are already linear. Saving the
+    # arrays as Non-Color prevents an unintended second colour transform.
+    im.colorspace_settings.name = 'Non-Color'
     im.pixels.foreach_set(pixels.astype(np.float32).ravel())
     im.filepath_raw = str(TEX / (name + '.png'))
     im.file_format = 'PNG'
@@ -61,42 +67,54 @@ def material(name, color, rough=.65, metal=0, kind='paint'):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     bsdf = m.node_tree.nodes.get('Principled BSDF')
-    field = np.sin(u * 61) * np.sin(v * 47) * .018 + noise * .012
-    if kind == 'metal':
-        field += np.sin(u * 1200) * .012
-    if kind == 'paper':
-        field += noise * .016
+    color_field, roughness, height = surface_channels(kind, u, v, noise, rough)
     rgba = np.ones((N, N, 4))
-    linear = np.clip(np.array(color)[None, None, :] * (1 + field[:, :, None]), .001, 1)
+    linear = np.clip(np.array(color)[None, None, :] * color_field[:, :, None], .001, 1)
     rgba[:, :, :3] = np.where(linear < .0031308, linear * 12.92, 1.055 * linear ** (1 / 2.4) - .055)
     base = image(name + '_base', rgba)
     base.colorspace_settings.name = 'sRGB'
-    rgba[:, :, :3] = np.clip(rough + field[:, :, None] * .35, .08, 1)
+    rgba[:, :, :3] = roughness[:, :, None]
     rim = image(name + '_rough', rgba)
     rim.colorspace_settings.name = 'Non-Color'
+    nim = image(name + '_normal_dx', normal_map(height))
+    nim.colorspace_settings.name = 'Non-Color'
     bsdf.inputs['Metallic'].default_value = metal
     bsdf.inputs['Roughness'].default_value = rough
     for im, socket in ((base, 'Base Color'), (rim, 'Roughness')):
         tex = m.node_tree.nodes.new('ShaderNodeTexImage')
         tex.image = im
         m.node_tree.links.new(tex.outputs['Color'], bsdf.inputs[socket])
+    # Native delivery uses DirectX normals. Blender previews invert G only in
+    # their node graph, following the existing Office material/export recipe.
+    nodes, links = m.node_tree.nodes, m.node_tree.links
+    tex = nodes.new('ShaderNodeTexImage'); tex.image = nim
+    separate = nodes.new('ShaderNodeSeparateColor'); links.new(tex.outputs['Color'], separate.inputs['Color'])
+    inv = nodes.new('ShaderNodeMath'); inv.operation = 'SUBTRACT'; inv.inputs[0].default_value = 1
+    links.new(separate.outputs['Green'], inv.inputs[1])
+    combine = nodes.new('ShaderNodeCombineColor')
+    links.new(separate.outputs['Red'], combine.inputs['Red']); links.new(inv.outputs[0], combine.inputs['Green'])
+    links.new(separate.outputs['Blue'], combine.inputs['Blue'])
+    normal = nodes.new('ShaderNodeNormalMap'); links.new(combine.outputs[0], normal.inputs['Color'])
+    links.new(normal.outputs['Normal'], bsdf.inputs['Normal'])
     ROWS.append({'name': name, 'base_color_linear': [1, 1, 1, 1], 'roughness': rough,
-                 'metallic': metal, 'specular': .33,
+                 'metallic': metal, 'specular': .33, 'normal_strength': 1.,
+                 'normal_convention': 'DirectX', 'surface_kind': kind, 'uv_span_m': 1.,
                  'textures': {'base_color': 'textures/' + name + '_base.png',
-                              'roughness': 'textures/' + name + '_rough.png'}})
+                              'roughness': 'textures/' + name + '_rough.png',
+                              'normal': 'textures/' + name + '_normal_dx.png'}})
     MATS[name] = m
     return m
 
-ENAMEL = material('AgedGreyGreen', (.18, .23, .21), .58, .25)
-CREAM = material('CreamEnamel', (.51, .49, .39), .59, .12)
+ENAMEL = material('AgedGreyGreen', (.18, .23, .21), .58)
+CREAM = material('CreamEnamel', (.51, .49, .39), .59)
 STEEL = material('BrushedStainless', (.38, .41, .39), .32, .86, 'metal')
-DARK = material('Bakelite', (.019, .023, .021), .48)
-RUBBER = material('Rubber', (.012, .014, .012), .86)
+DARK = material('Bakelite', (.019, .023, .021), .48, kind='bakelite')
+RUBBER = material('Rubber', (.012, .014, .012), .86, kind='rubber')
 PAPER = material('Manila', (.57, .49, .33), .94, kind='paper')
 WHITE = material('DialIvory', (.69, .66, .54), .83)
-BROWN = material('AmberPlastic', (.22, .072, .018), .34)
-BLUE = material('BlueCap', (.023, .061, .13), .49)
-RED = material('OxideHandle', (.24, .045, .025), .53)
+BROWN = material('AmberPlastic', (.22, .072, .018), .34, kind='plastic')
+BLUE = material('BlueCap', (.023, .061, .13), .49, kind='plastic')
+RED = material('OxideHandle', (.24, .045, .025), .53, kind='plastic')
 
 def xyz(p):
     return Vector((p[0], -p[2], p[1]))
@@ -191,6 +209,8 @@ def screw(name, x, y, z):
     box(name+'_slot', (x, y, z+.004), (.006, .0012, .001), DARK, 0)
 
 def finish(name, purpose, collision='existing', protect=()):
+    append_detail(name, box, cyl, ring, pipe,
+                  {key.removeprefix('M_PhotoLab_'): value for key, value in MATS.items()})
     objs = list(CURRENT)
     CURRENT.clear()
     assert objs, name

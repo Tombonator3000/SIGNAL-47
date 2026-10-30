@@ -1,0 +1,416 @@
+{
+  "version": 1,
+  "scope": "Decorative references only; original live document IDs/read state unchanged",
+  "destination": "/Game/Signal47/Art/Office/Reference",
+  "textures": [
+    {
+      "name": "T_OfficeResearch_Map",
+      "source": "textures/research_array_map.png",
+      "size": [
+        1600,
+        1152
+      ],
+      "sha256": "9c8f4aca6f337b1cd4015edf50d56f5e92f0c86b9691faf7e57abee4e3787a6b"
+    },
+    {
+      "name": "T_OfficeResearch_Photos",
+      "source": "textures/research_photo_atlas.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "ba9dc99293c08d8c7c3afe08013cfc5133d3e6c8c26f2d3dc483aad1e56d913f"
+    }
+  ],
+  "surfaces": [
+    {
+      "name": "office:research:ArrayMap",
+      "component": "Research_sheet_ArrayMap",
+      "art_asset": "T_OfficeResearch_ArrayMap",
+      "centre": [
+        1.6592,
+        1.74,
+        9.18
+      ],
+      "body_centre": [
+        1.66,
+        1.74,
+        9.18
+      ],
+      "width_m": 0.61,
+      "height_m": 0.44,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.04013179253255973,
+        0.999194395114446
+      ],
+      "up_axis": [
+        0,
+        0.999194395114446,
+        0.04013179253255973
+      ],
+      "roll_degrees": -2.3,
+      "kind": "working array map",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Map.T_OfficeResearch_Map",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:ClippingLeft",
+      "component": "Research_sheet_ClippingLeft",
+      "art_asset": "T_OfficeResearch_ClippingLeft",
+      "centre": [
+        1.659375,
+        2.11,
+        8.47
+      ],
+      "body_centre": [
+        1.66,
+        2.11,
+        8.47
+      ],
+      "width_m": 0.4,
+      "height_m": 0.29,
+      "depth_m": 0.00025,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.06104853953485687,
+        0.9981347984218669
+      ],
+      "up_axis": [
+        0,
+        0.9981347984218669,
+        -0.06104853953485687
+      ],
+      "roll_degrees": 3.5,
+      "kind": "newspaper clipping",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleClippings.T_Doc_DaleClippings",
+      "image_crop": [
+        0,
+        0,
+        0.864,
+        0.47
+      ]
+    },
+    {
+      "name": "office:research:ClippingRight",
+      "component": "Research_sheet_ClippingRight",
+      "art_asset": "T_OfficeResearch_ClippingRight",
+      "centre": [
+        1.6583750000000002,
+        2.14,
+        9.78
+      ],
+      "body_centre": [
+        1.659,
+        2.14,
+        9.78
+      ],
+      "width_m": 0.39,
+      "height_m": 0.28,
+      "depth_m": 0.00025,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.0697564737441253,
+        0.9975640502598242
+      ],
+      "up_axis": [
+        0,
+        0.9975640502598242,
+        0.0697564737441253
+      ],
+      "roll_degrees": -4.0,
+      "kind": "newspaper clipping",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleClippings.T_Doc_DaleClippings",
+      "image_crop": [
+        0,
+        0.47,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:FieldPhoto",
+      "component": "Research_sheet_FieldPhoto",
+      "art_asset": "T_OfficeResearch_FieldPhoto",
+      "centre": [
+        1.6522000000000001,
+        1.69,
+        8.77
+      ],
+      "body_centre": [
+        1.653,
+        1.69,
+        8.77
+      ],
+      "width_m": 0.25,
+      "height_m": 0.2,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        0.052335956242943835
+      ],
+      "roll_degrees": -3.0,
+      "kind": "field photograph",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0,
+        0.05,
+        0.5,
+        0.45
+      ]
+    },
+    {
+      "name": "office:research:PhotoPair",
+      "component": "Research_sheet_PhotoPair",
+      "art_asset": "T_OfficeResearch_PhotoPair",
+      "centre": [
+        1.6592,
+        1.3,
+        8.46
+      ],
+      "body_centre": [
+        1.66,
+        1.3,
+        8.46
+      ],
+      "width_m": 0.31,
+      "height_m": 0.23,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.0697564737441253,
+        0.9975640502598242
+      ],
+      "up_axis": [
+        0,
+        0.9975640502598242,
+        -0.0697564737441253
+      ],
+      "roll_degrees": 4.0,
+      "kind": "photo and caption card",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0,
+        0.55,
+        0.5,
+        0.921
+      ]
+    },
+    {
+      "name": "office:research:WorkingNote",
+      "component": "Research_sheet_WorkingNote",
+      "art_asset": "T_OfficeResearch_WorkingNote",
+      "centre": [
+        1.6582000000000001,
+        1.26,
+        9.08
+      ],
+      "body_centre": [
+        1.659,
+        1.26,
+        9.08
+      ],
+      "width_m": 0.25,
+      "height_m": 0.24,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.08715574274765817,
+        0.9961946980917455
+      ],
+      "up_axis": [
+        0,
+        0.9961946980917455,
+        0.08715574274765817
+      ],
+      "roll_degrees": -5.0,
+      "kind": "handwritten working sheet",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleNote.T_Doc_DaleNote",
+      "image_crop": [
+        0,
+        0,
+        1,
+        0.72
+      ]
+    },
+    {
+      "name": "office:research:FieldCard",
+      "component": "Research_sheet_FieldCard",
+      "art_asset": "T_OfficeResearch_FieldCard",
+      "centre": [
+        1.6502000000000001,
+        1.64,
+        9.54
+      ],
+      "body_centre": [
+        1.651,
+        1.64,
+        9.54
+      ],
+      "width_m": 0.32,
+      "height_m": 0.35,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.03489949670250097,
+        0.9993908270190958
+      ],
+      "up_axis": [
+        0,
+        0.9993908270190958,
+        -0.03489949670250097
+      ],
+      "roll_degrees": 2.0,
+      "kind": "field note card",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleIndex.T_Doc_DaleIndex",
+      "image_crop": [
+        0,
+        0,
+        1,
+        0.8203
+      ]
+    },
+    {
+      "name": "office:research:ContactStrip",
+      "component": "Research_sheet_ContactStrip",
+      "art_asset": "T_OfficeResearch_ContactStrip",
+      "centre": [
+        1.6502000000000001,
+        2.01,
+        9.18
+      ],
+      "body_centre": [
+        1.651,
+        2.01,
+        9.18
+      ],
+      "width_m": 0.35,
+      "height_m": 0.16,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.026176948307873153,
+        0.9996573249755573
+      ],
+      "up_axis": [
+        0,
+        0.9996573249755573,
+        0.026176948307873153
+      ],
+      "roll_degrees": -1.5,
+      "kind": "photographic contact strip",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0.5,
+        0.13,
+        1,
+        0.35857
+      ]
+    },
+    {
+      "name": "office:research:ShiftNote",
+      "component": "Research_sheet_ShiftNote",
+      "art_asset": "T_OfficeResearch_ShiftNote",
+      "centre": [
+        1.6572,
+        1.29,
+        9.78
+      ],
+      "body_centre": [
+        1.658,
+        1.29,
+        9.78
+      ],
+      "width_m": 0.32,
+      "height_m": 0.21,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        -0.052335956242943835
+      ],
+      "roll_degrees": 3.0,
+      "kind": "folded shift note",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleContact.T_Doc_DaleContact",
+      "image_crop": [
+        0,
+        0,
+        1,
+        0.875
+      ]
+    }
+  ],
+  "native_import": "UNVERIFIED",
+  "runtime_appearance": "UNVERIFIED"
+}

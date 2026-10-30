@@ -244,6 +244,10 @@ void AS47Web::UpdateFixtureLighting()
 				D->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.35f, 0.35f, 0.33f));
 				D->SetVectorParameterValue(TEXT("Emissive"), P.Color * (K * 1.4f));
 			}
+			// An authored housing can replace the old visible mesh while this exact
+			// exported node/slot continues to own power, dimming and flicker.
+			if (UMaterialInstanceDynamic* D = P.NativeDiffuser.Get())
+				D->SetVectorParameterValue(TEXT("EmissiveFactor"), P.Color * (K * 1.4f));
 			P.LastK = K;
 			if (FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"))) UE_LOG(LogTemp, Display, TEXT("S47: fixture node=%d k=%.4f lm=%.2f"), P.Node, K, L->Intensity);
 		}

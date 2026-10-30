@@ -6,7 +6,7 @@
   "authorship": "Original photo-lab detail geometry and procedural PBR; existing Office export recipe",
   "parts": {
     "SM_PhotoLab_WetCabinetDetail": {
-      "triangles": 3960,
+      "triangles": 11112,
       "bounds_local_m": [
         [
           13.09000015258789,
@@ -28,9 +28,10 @@
         "M_PhotoLab_Bakelite",
         "M_PhotoLab_AgedGreyGreen",
         "M_PhotoLab_BrushedStainless",
-        "M_PhotoLab_Rubber"
+        "M_PhotoLab_Rubber",
+        "M_PhotoLab_DialIvory"
       ],
-      "original_components": 50,
+      "original_components": 146,
       "purpose": "Six recessed cabinet doors, folded edge, pulls and hinges.",
       "collision": "existing",
       "protected_originals": [
@@ -41,7 +42,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_RinseSink": {
-      "triangles": 2632,
+      "triangles": 4400,
       "bounds_local_m": [
         [
           17.435998916625977,
@@ -66,7 +67,7 @@
         "M_PhotoLab_OxideHandle",
         "M_PhotoLab_BlueCap"
       ],
-      "original_components": 29,
+      "original_components": 45,
       "purpose": "Open stainless sink with drain, trap, gooseneck, valves and grounded legs.",
       "collision": "Existing dressLab corner: x17.35..19,z-5.85..-5.15; confirm bounds after import",
       "protected_originals": [
@@ -75,7 +76,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_EnlargerDetail": {
-      "triangles": 3260,
+      "triangles": 5192,
       "bounds_local_m": [
         [
           16.762998580932617,
@@ -100,7 +101,7 @@
         "M_PhotoLab_DialIvory",
         "M_PhotoLab_CreamEnamel"
       ],
-      "original_components": 55,
+      "original_components": 108,
       "purpose": "Vented cover, carrier, focus control, scale and open optical ring.",
       "collision": "existing",
       "protected_originals": [
@@ -110,7 +111,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_ProcessDetails": {
-      "triangles": 1380,
+      "triangles": 3224,
       "bounds_local_m": [
         [
           13.746000289916992,
@@ -132,9 +133,11 @@
         "M_PhotoLab_CreamEnamel",
         "M_PhotoLab_DialIvory",
         "M_PhotoLab_Bakelite",
-        "M_PhotoLab_OxideHandle"
+        "M_PhotoLab_OxideHandle",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Rubber"
       ],
-      "original_components": 31,
+      "original_components": 56,
       "purpose": "Analogue timer face, tray grips and graduated measuring cylinder.",
       "collision": "existing",
       "protected_originals": [
@@ -144,7 +147,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_StorageDetail": {
-      "triangles": 3840,
+      "triangles": 6276,
       "bounds_local_m": [
         [
           12.83750057220459,
@@ -154,7 +157,7 @@
         [
           13.191999435424805,
           5.5,
-          1.8499999046325684
+          1.850000023841858
         ]
       ],
       "runtime_origin_three_m": [
@@ -171,7 +174,7 @@
         "M_PhotoLab_Bakelite",
         "M_PhotoLab_CreamEnamel"
       ],
-      "original_components": 40,
+      "original_components": 125,
       "purpose": "Shelf brackets, folded edges, film cartons and sealed chemistry.",
       "collision": "existing",
       "protected_originals": [
@@ -180,7 +183,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_ArchiveDetail": {
-      "triangles": 1896,
+      "triangles": 3640,
       "bounds_local_m": [
         [
           18.177000045776367,
@@ -202,9 +205,10 @@
         "M_PhotoLab_BrushedStainless",
         "M_PhotoLab_AgedGreyGreen",
         "M_PhotoLab_Bakelite",
-        "M_PhotoLab_Manila"
+        "M_PhotoLab_Manila",
+        "M_PhotoLab_DialIvory"
       ],
-      "original_components": 22,
+      "original_components": 50,
       "purpose": "Steel supports, drawers and negative-sleeve rack.",
       "collision": "existing",
       "protected_originals": [
@@ -216,7 +220,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_RecordsDetail": {
-      "triangles": 1620,
+      "triangles": 2708,
       "bounds_local_m": [
         [
           15.679999351501465,
@@ -237,9 +241,12 @@
       "materials": [
         "M_PhotoLab_AgedGreyGreen",
         "M_PhotoLab_Rubber",
-        "M_PhotoLab_Manila"
+        "M_PhotoLab_Manila",
+        "M_PhotoLab_BrushedStainless",
+        "M_PhotoLab_Bakelite",
+        "M_PhotoLab_DialIvory"
       ],
-      "original_components": 15,
+      "original_components": 31,
       "purpose": "Folded desk apron, grounded feet and small film-envelope sorter.",
       "collision": "existing",
       "protected_originals": [
@@ -251,7 +258,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_SafelightHousing": {
-      "triangles": 1276,
+      "triangles": 2200,
       "bounds_local_m": [
         [
           14.817000389099121,
@@ -273,9 +280,10 @@
         "M_PhotoLab_AgedGreyGreen",
         "M_PhotoLab_BrushedStainless",
         "M_PhotoLab_Bakelite",
-        "M_PhotoLab_CreamEnamel"
+        "M_PhotoLab_CreamEnamel",
+        "M_PhotoLab_Rubber"
       ],
-      "original_components": 15,
+      "original_components": 29,
       "purpose": "Wall standoffs and removable lamp cases around original diffusers.",
       "collision": "existing",
       "protected_originals": [
@@ -286,7 +294,7 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_Ventilation": {
-      "triangles": 1748,
+      "triangles": 2236,
       "bounds_local_m": [
         [
           18.30499839782715,
@@ -310,7 +318,7 @@
         "M_PhotoLab_BrushedStainless",
         "M_PhotoLab_AgedGreyGreen"
       ],
-      "original_components": 22,
+      "original_components": 29,
       "purpose": "Screwed extractor grille and surface-mounted switch/conduit.",
       "collision": "existing",
       "protected_originals": [
@@ -319,11 +327,11 @@
       "integration": "additive; never hide original parent nodes"
     },
     "SM_PhotoLab_UtilityDetail": {
-      "triangles": 2004,
+      "triangles": 3660,
       "bounds_local_m": [
         [
           12.699999809265137,
-          3.077500104904175,
+          3.075974941253662,
           0.009999997913837433
         ],
         [
@@ -344,14 +352,14 @@
         "M_PhotoLab_Rubber",
         "M_PhotoLab_AgedGreyGreen"
       ],
-      "original_components": 23,
+      "original_components": 65,
       "purpose": "Pipe clips, junctions, cabinet zone seals and shelf end folds.",
       "collision": "existing",
       "protected_originals": [],
       "integration": "additive; never hide original parent nodes"
     }
   },
-  "triangles_lod0": 23616,
+  "triangles_lod0": 44648,
   "legacy_removal_bounds": [],
   "lod_plan": "native import 1.0/0.50/0.20; verify geometric openings and measured ray-tracing footprint",
   "collision_plan": "reuse existing lab bench, shelf, archive, records and chemistry-corner colliders; all new components query/physics off",

@@ -1,6 +1,6 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 30. oktober 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
@@ -8,12 +8,12 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
 | --- | --- | --- |
-| Kildekode på `main` | Kontrollert gjennom [PR227](https://github.com/Tombonator3000/SIGNAL-47/pull/227), main `0551e89d`: kveld/natt, SC01, Linux-minne, TB2, trafofelt, boliger, motell, dispatch, meteor, gård og seks nye skrivebordsark. | Kildekode er fortsatt et eget leveringsnivå. HUM-01 og senere ART-01-ark/plakater inngår ikke i Farm R1-installasjonen eller nedlastingen. |
-| Akseptert og testet kandidat | Farm R1, kilde `c301ead9`, runtimeidentisk med main gjennom PR223. [Samlet kontroll og kvittering](../Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md). | 111/111 kanoniske tilfeller, 1720 selvtester og pakket meteor Low/High med 18 kontroller hver PASS. Tidligere målrettede leveranser beholder egne bevisgrenser. |
-| Lokal installasjon | Main `3dcba420` (PR228 til PR232) med rammen SC01 til SC13 er installert 29. oktober etter 111/111 i fullmatrisen. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_SPINE_2026-10-29.md). | 68 payload-noder lik kandidaten, 134 Saved-noder uendret, installert røyktest med rammekontrakt SC08 PASS. Forrige Farm R1-installasjon er bevart som tilbakekopi. |
-| Offentlig nedlasting | Uendret, eldre enn lokal installasjon. [Komplett Linux-testutgave 29. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), Farm R1 gjennom PR223. [Nedlasting og kvittering](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md). | Samme runtime som lokal installasjon. Én selvstendig startfil henter alle tre kontrollerte arkiver uten Git eller separate Artifacts. Andre maskiner er fortsatt UNVERIFIED. |
+| Kildekode på `main` | Kontrollert gjennom [PR236](https://github.com/Tombonator3000/SIGNAL-47/pull/236), main `5dce2c8b`: tidligere kveld/natt og Spine-ramme, miljøer, seks skrivebordsark og nytt SARO-interiørpass. | Kildekode er fortsatt et eget leveringsnivå. HUM-01 og senere ART-01-ark/plakater inngår ikke i Farm R1-installasjonen eller nedlastingen. |
+| Akseptert og testet kandidat | SARO-interiør, fryst `95807f4f`, runtimeidentisk med main `5dce2c8b`. [Kvitteringer](../Evidence/UnrealDeliveries/SARO_INTERIORS_2026-10-30.md). | Én samlet111/111,1723 selvtester, pakket Office180/16disk og cooked-lab9 PASS. |
+| Lokal installasjon | SARO-interiørkandidat95807f4f / main5dce2c8b er installert30. oktober. [Installasjonskvittering](../Evidence/UnrealDeliveries/SARO_INTERIORS_2026-10-30/installation-receipt.json). | 68 payload-noder samsvarer,134 Saved-noder er uendret. Installert tittel/Fortsett og27 Low-kameraer PASS. |
+| Offentlig nedlasting | Uendret, eldre enn lokal installasjon. [Komplett Linux-testutgave 29. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), Farm R1 gjennom PR223. [Nedlasting og kvittering](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md). | Eldre enn dagens lokale SARO-installasjon. Én selvstendig startfil henter alle tre kontrollerte Farm R1-arkiver uten Git eller separate Artifacts. Andre maskiner er fortsatt UNVERIFIED. |
 
-Git-fletting endrer ikke installasjonen eller nedlastingen. Den navngitte 29. oktober-prereleasen er Farm R1; lokal installasjon er fra 29. oktober kveld nyere (main `3dcba420`). Eldre releaser beholdes som historikk; ingen stabil `latest`-release forutsettes.
+Git-fletting endrer ikke installasjonen eller nedlastingen. Den navngitte 29. oktober-prereleasen er Farm R1; lokal installasjon er nyere fra30. oktober (kandidat95807f4f / main5dce2c8b). Eldre releaser beholdes som historikk; ingen stabil `latest`-release forutsettes.
 
 ## Hva som er levert, og hva som fortsatt mangler
 
@@ -44,6 +44,8 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Den navngitte 29. ok
 | Windows og andre maskiner | Byggegrunnlag/veiledning finnes. Ferdig verifisert Win64-leveranse og kompatibilitet på mottakermaskiner er ikke bekreftet. | Føres som åpne oppgaver i [TODO](TODO.md). |
 
 ## Pågående arbeid og kjente feil
+
+SARO-interiørpasset er levert i [PR236](https://github.com/Tombonator3000/SIGNAL-47/pull/236), flettet til main `5dce2c8b`, og faktisk installert lokalt. Kontor/gang/dører, arkiv og fotolab er native/visuelt kontrollert; alle33 arkiv-rendernivåer og den uavhengig beviste trågklonen består. Fryst kandidat95807f4f består samlet111/111,1723 selvtester og pakket fysisk Office/gang180/21,09m/16disk-fullFlow. Seks ark består580 kontroller. Installert payload68/68 og Saved134/134 er kontrollert; isolert faktisk tittel/Fortsett og27 Low-kameraer består. [Rapport med før/etter og leveringsgrenser](../Evidence/UnrealDeliveries/SARO_INTERIORS_2026-10-30.md). Ingen kjøp, ny fysisk Dale-scene eller offentlig release. Menneskelig input/FPS er ikke akseptert av API-/Walker-prøvene.
 
 Codex sin nattsekvens er målrettet levert gjennom PR209. Claudes videre kvelds-/SC03-arbeid har egen arbeidskopi. Den lokale arbeidsdelingen føres i [OPPGAVER](../../unreal/OPPGAVER.md). En arbeidsgren, en kjørende test eller en manusendring er ikke en ferdig leveranse. Neste statusoppdatering må vise nøyaktig testet kandidat, merge og eventuell installasjon hver for seg.
 

@@ -1,10 +1,27 @@
 {
-  "source": "R1-original-SARO-records-room-1986",
+  "source": "R2-used-SARO-records-room-1986",
   "base_color_px": 1024,
   "atlas_px": 2048,
   "normal_roughness_px": 512,
   "normal_convention": "DirectX",
   "assets": "Original deterministic paint/wood/cardboard and fictional English labels",
   "external_assets": false,
+  "ordinary_label_subcells": {
+    "cell": 14,
+    "grid": [
+      2,
+      2
+    ]
+  },
+  "protected_story_atlas_cells": [
+    0,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "kraft_recipe_unchanged": true,
+  "packed_texture_count": 18,
   "native_visual_status": "UNVERIFIED"
 }

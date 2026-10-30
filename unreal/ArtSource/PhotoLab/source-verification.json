@@ -16,7 +16,7 @@
       "name": "SM_PhotoLab_WetCabinetDetail geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 3960,
+        "triangles": 11112,
         "bounds_error_m": 0.0
       }
     },
@@ -29,7 +29,7 @@
       "name": "SM_PhotoLab_RinseSink geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 2632,
+        "triangles": 4400,
         "bounds_error_m": 0.0
       }
     },
@@ -42,7 +42,7 @@
       "name": "SM_PhotoLab_EnlargerDetail geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 3260,
+        "triangles": 5192,
         "bounds_error_m": 0.0
       }
     },
@@ -55,7 +55,7 @@
       "name": "SM_PhotoLab_ProcessDetails geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 1380,
+        "triangles": 3224,
         "bounds_error_m": 0.0
       }
     },
@@ -68,7 +68,7 @@
       "name": "SM_PhotoLab_StorageDetail geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 3840,
+        "triangles": 6276,
         "bounds_error_m": 0.0
       }
     },
@@ -81,7 +81,7 @@
       "name": "SM_PhotoLab_ArchiveDetail geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 1896,
+        "triangles": 3640,
         "bounds_error_m": 0.0
       }
     },
@@ -94,7 +94,7 @@
       "name": "SM_PhotoLab_RecordsDetail geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 1620,
+        "triangles": 2708,
         "bounds_error_m": 0.0
       }
     },
@@ -107,7 +107,7 @@
       "name": "SM_PhotoLab_SafelightHousing geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 1276,
+        "triangles": 2200,
         "bounds_error_m": 0.0
       }
     },
@@ -120,7 +120,7 @@
       "name": "SM_PhotoLab_Ventilation geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 1748,
+        "triangles": 2236,
         "bounds_error_m": 0.0
       }
     },
@@ -133,7 +133,7 @@
       "name": "SM_PhotoLab_UtilityDetail geometry/UVs/bounds/pivot/export",
       "pass": true,
       "detail": {
-        "triangles": 2004,
+        "triangles": 3660,
         "bounds_error_m": 0.0
       }
     },
@@ -145,7 +145,7 @@
     {
       "name": "Actual total detail budget",
       "pass": true,
-      "detail": 23616
+      "detail": 44648
     },
     {
       "name": "M_PhotoLab_AgedGreyGreen nonemissive PBR",
@@ -276,7 +276,7 @@
   "meshes": [
     {
       "name": "SM_PhotoLab_WetCabinetDetail",
-      "triangles": 3960,
+      "triangles": 11112,
       "bounds_blender_m": [
         [
           13.09000015258789,
@@ -289,11 +289,11 @@
           0.9375
         ]
       ],
-      "fbx_sha256": "dc3a3a5ae291790d9d8c7ca1eac4c08d564c101a970a4b5122d29b0765e28f58"
+      "fbx_sha256": "28048230e90dab0fa9408d5e3cf60be325910deedc4b12c5e50e9a99013f1f9b"
     },
     {
       "name": "SM_PhotoLab_RinseSink",
-      "triangles": 2632,
+      "triangles": 4400,
       "bounds_blender_m": [
         [
           17.435998916625977,
@@ -306,11 +306,11 @@
           1.2193915843963623
         ]
       ],
-      "fbx_sha256": "d905dd0d59dd907252cde55822fb3ea2f9f4731017c563b7b074e48821375d5f"
+      "fbx_sha256": "6d12983323a2d2c1d0a84ed67b8db31bbb99f1428dc2157d21cc622d91b9a1a0"
     },
     {
       "name": "SM_PhotoLab_EnlargerDetail",
-      "triangles": 3260,
+      "triangles": 5192,
       "bounds_blender_m": [
         [
           16.762998580932617,
@@ -323,11 +323,11 @@
           1.9014999866485596
         ]
       ],
-      "fbx_sha256": "d04c7817255f73df3f6f7d602dcc099e1ffea644d0153e404d54cf16719dadfc"
+      "fbx_sha256": "bedd551ac12aeb7f86a4f525a03070dd6c6062ffcc4d896e1461c1015486173d"
     },
     {
       "name": "SM_PhotoLab_ProcessDetails",
-      "triangles": 1380,
+      "triangles": 3224,
       "bounds_blender_m": [
         [
           13.746000289916992,
@@ -340,11 +340,11 @@
           1.1299999952316284
         ]
       ],
-      "fbx_sha256": "06136d8a60f02e35172d8495f85ade749292bc36d90c3d02c7a4b79999af806d"
+      "fbx_sha256": "3895ee8cd31ad039460774cd41eda4361537838077dffcda33d4bd4599439b41"
     },
     {
       "name": "SM_PhotoLab_StorageDetail",
-      "triangles": 3840,
+      "triangles": 6276,
       "bounds_blender_m": [
         [
           12.83750057220459,
@@ -354,14 +354,14 @@
         [
           13.191999435424805,
           5.5,
-          1.8499999046325684
+          1.850000023841858
         ]
       ],
-      "fbx_sha256": "25024543de5fe54d8a8f2f149422a079331909ab23278fb54a0d3ae72fac1e5a"
+      "fbx_sha256": "9f4686b0d2703fc46031f301cdd35d82e2f51b76242d8fe94b7e516e7d83baa1"
     },
     {
       "name": "SM_PhotoLab_ArchiveDetail",
-      "triangles": 1896,
+      "triangles": 3640,
       "bounds_blender_m": [
         [
           18.177000045776367,
@@ -374,11 +374,11 @@
           1.125
         ]
       ],
-      "fbx_sha256": "7f6f2a74b4367861817d5ddcb59799f205136d623010fbffe56a6b15835b10c8"
+      "fbx_sha256": "8cc93a824e2a3057b962e0439901ed049b0b6e718a55ce6634d5473350c214ca"
     },
     {
       "name": "SM_PhotoLab_RecordsDetail",
-      "triangles": 1620,
+      "triangles": 2708,
       "bounds_blender_m": [
         [
           15.679999351501465,
@@ -391,11 +391,11 @@
           1.0149999856948853
         ]
       ],
-      "fbx_sha256": "c125c2b68bf1886735f4fccac8bfb4d5d7779ed79ff3c42190d67e56762e3563"
+      "fbx_sha256": "aafbbfa9e93be601790b719942e784c8ad5f066aedef8acfded13d34fead5a14"
     },
     {
       "name": "SM_PhotoLab_SafelightHousing",
-      "triangles": 1276,
+      "triangles": 2200,
       "bounds_blender_m": [
         [
           14.817000389099121,
@@ -408,11 +408,11 @@
           2.8064491748809814
         ]
       ],
-      "fbx_sha256": "df0b271b320d85f89b88cafcd25e4c31a5ac801466bcfb8427f6c65c858cc000"
+      "fbx_sha256": "c8fd56cb94cf6f63b0ed288b1518421bb92a35859e2fc8a6e16f9b0bbd03944a"
     },
     {
       "name": "SM_PhotoLab_Ventilation",
-      "triangles": 1748,
+      "triangles": 2236,
       "bounds_blender_m": [
         [
           18.30499839782715,
@@ -425,15 +425,15 @@
           2.4800000190734863
         ]
       ],
-      "fbx_sha256": "d03537b78186682f5d139b9198a3856723f8e744103693e72029cfdc0521ccdc"
+      "fbx_sha256": "053c34bc1b97435f5d19cb57406b5912928c7374b31002228da07af5cc48e99b"
     },
     {
       "name": "SM_PhotoLab_UtilityDetail",
-      "triangles": 2004,
+      "triangles": 3660,
       "bounds_blender_m": [
         [
           12.699999809265137,
-          3.077500104904175,
+          3.075974941253662,
           0.009999997913837433
         ],
         [
@@ -442,7 +442,7 @@
           2.755000114440918
         ]
       ],
-      "fbx_sha256": "d66a1b34a67ed9e4bd21e57c982256e8c1514de9584784d9f076c652db97cd6b"
+      "fbx_sha256": "ec10a91d8d09fd5f921f462d304992dfbdcb1f2604e1a9091886ca05592e48bc"
     }
   ],
   "apertures": [
@@ -516,29 +516,39 @@
     }
   ],
   "native_tested": false,
-  "source_sha256": "173fe6435eaef703ceded4767a062cda88601ea3a3a86c68a56f8bcf0f9d0835",
-  "contract_sha256": "ebd3f835887d6b75c38a3fd0a5be8d9ac2706b0c871bc72a02aea0965d4d3a6e",
+  "source_sha256": "b0626e188d1e7644adf3c84d37fc247647dbcda8042457738de1acb8f55667d6",
+  "contract_sha256": "6f57f6088e24e3d7317c28074e89f3a4768dfd4e8577f791116c20e48d88be4e",
   "texture_sha256": {
-    "textures/M_PhotoLab_AgedGreyGreen_base.png": "5d74d4f847d520336c3a089c7800a6a32af3cf9148dcb62c92846b3245fdf495",
-    "textures/M_PhotoLab_AgedGreyGreen_rough.png": "08fef89edee1dc9afe983f7b9156ae663309dfa192400e7ff6d4aca8e7754bb3",
-    "textures/M_PhotoLab_CreamEnamel_base.png": "4e8f1ebeb854ac641ca4386c4d967889e69230b6cd1055d0b5bacab74acbc005",
-    "textures/M_PhotoLab_CreamEnamel_rough.png": "4f006de69285c7ffe4979ba25123f7e35a3a9de9cf90f9d8a9b22dc6a47376a3",
-    "textures/M_PhotoLab_BrushedStainless_base.png": "98856ef09a6e0396fd5321604fe912d678b808c58dbc54ae8e18f6223b68ec20",
-    "textures/M_PhotoLab_BrushedStainless_rough.png": "c09111b289188a133b4c317d11d46530ce6dd62b87e2c8dd70960f2577facda6",
-    "textures/M_PhotoLab_Bakelite_base.png": "17edd2c10f55a416637c4cd9fa5795debb8b5013c34b96bf24e314b038430e4f",
-    "textures/M_PhotoLab_Bakelite_rough.png": "6be6da133f3314f8bf65b2efb10944c34bd4bc695f63689eb2472f0fa1ae352e",
-    "textures/M_PhotoLab_Rubber_rough.png": "b22173669c2466385e3d31aeaa1eac5158acd4da98f0d7f15c5fa461ca2bad37",
-    "textures/M_PhotoLab_Rubber_base.png": "b8d2f127c110b40bd62ba8e9af6b74c8db47b7884143ede43c99a40f9fd1f96c",
-    "textures/M_PhotoLab_Manila_base.png": "a0f2e88bba672ef0332357d94f7b17c633de7f2c41d02ae27ab868f2e5d27f6d",
-    "textures/M_PhotoLab_Manila_rough.png": "83597d3f306cedab5e6e2b22d3eb61f92b5a65aee584eaffbdd3a6cf6b567fba",
-    "textures/M_PhotoLab_DialIvory_base.png": "1519bb2d6c99c482bf9fc8c5f9423063cfac74a90ecbbbe7d8f0197b5fd0750e",
-    "textures/M_PhotoLab_DialIvory_rough.png": "4ded0144c48ad79b563323d21642e04c5422e846e0f13678ab7215696afc4cbe",
-    "textures/M_PhotoLab_AmberPlastic_rough.png": "d9ea97bfd5a21e34d3dd7e1572f78750127b34695b8d2ef49416372ebba6fe4d",
-    "textures/M_PhotoLab_AmberPlastic_base.png": "d982b5fb70598f88fdd2f55a25c77441344d5a2092c937d98a807b963809e939",
-    "textures/M_PhotoLab_BlueCap_rough.png": "bfcd4f06eccb8c76faa64bffdd9f2e7df518106b9086d9d764a8a26b2bc35e80",
-    "textures/M_PhotoLab_BlueCap_base.png": "7b443ae719694acf4888fc0729ac4d02a88d69587763c91d573b6bb02d8b2a69",
-    "textures/M_PhotoLab_OxideHandle_base.png": "5f57e443e7be97b15ff3c857a1fa6dcd069ae41eaa2dfece9a05db157c697479",
-    "textures/M_PhotoLab_OxideHandle_rough.png": "2f0d25912bdc95d6893c51da33235f23f06a85bcd84d62e84b0163ffa9c53638"
+    "textures/M_PhotoLab_AgedGreyGreen_rough.png": "eaef193a057c8ef97bab5590068298d8760e8e1c178e0ebc5a213750acc853e9",
+    "textures/M_PhotoLab_AgedGreyGreen_normal_dx.png": "13a1836e5b86476183908241d1bb8a01e64b3f1967ca0538fcd0a084677fda77",
+    "textures/M_PhotoLab_AgedGreyGreen_base.png": "e0245f850b37cc7e139c069cd8d0c9cb66e0d5ee9202077a6cb340646cd0d3eb",
+    "textures/M_PhotoLab_CreamEnamel_normal_dx.png": "13a1836e5b86476183908241d1bb8a01e64b3f1967ca0538fcd0a084677fda77",
+    "textures/M_PhotoLab_CreamEnamel_base.png": "ee67c8bd0ef89eae7ba9e66e00bd424b6f01f731bd9857375d0c7ef46bdd2919",
+    "textures/M_PhotoLab_CreamEnamel_rough.png": "70b623029121367c5ff27cc1f317af951da93efb1fdd94ef9f2b980ba0b7b325",
+    "textures/M_PhotoLab_BrushedStainless_base.png": "6ec8aafa017f45599ec7c6efe1c7e4f54277e101d9b8e6ce8b77691705e1973c",
+    "textures/M_PhotoLab_BrushedStainless_normal_dx.png": "cb7f88c7703f8f9de6fc7db8e723a8823c19c59cc64c92d67ebad2aa65a22aaa",
+    "textures/M_PhotoLab_BrushedStainless_rough.png": "8920bf9e8fd99b9bc44b132f63db62b0462284e2cdef049f23e580b8498ed17b",
+    "textures/M_PhotoLab_Bakelite_normal_dx.png": "0507126938f45444bbc8ac40d0e77cb242869f96d1694b9b2267c6a098d1ca34",
+    "textures/M_PhotoLab_Bakelite_base.png": "08ec5223a939ea8e8b56da5829986b8458d2f2eeb3705a4196795eea87ff2557",
+    "textures/M_PhotoLab_Bakelite_rough.png": "98dc88777d75e3ef8c35cfe893436717f5b05b16e95339e18dc1a67dffaf73bf",
+    "textures/M_PhotoLab_Rubber_rough.png": "fd49e8af85a13e34588a6cbcb34d6740ee894ba7afe7b78c63a43dab979dbc55",
+    "textures/M_PhotoLab_Rubber_normal_dx.png": "c4fbb42e69e8e51dd061de8fa1bb69a45c6a3e625317b0c71e180df70e473156",
+    "textures/M_PhotoLab_Rubber_base.png": "3b791914a61769e794a1ca8f519520d1d6c2d95b10d27aeb8cfbcf3010c84189",
+    "textures/M_PhotoLab_Manila_normal_dx.png": "5ba6eba5044f8a4a2858d5e3aa184db87b0428020a35cb4654c3414a6193485e",
+    "textures/M_PhotoLab_Manila_base.png": "c1e8d46bed5486ade644f76c788bf6cf3226e6f7273c918d74ce81ad9b2759f5",
+    "textures/M_PhotoLab_Manila_rough.png": "75a67b303b9a647cc624d6c89123cbb2ba79acaeab38015c182fe5a42787ca40",
+    "textures/M_PhotoLab_DialIvory_rough.png": "98c5f696338e1ecca019a1055f3441cffbb03d0acc15945eda5cac5e87de324b",
+    "textures/M_PhotoLab_DialIvory_normal_dx.png": "13a1836e5b86476183908241d1bb8a01e64b3f1967ca0538fcd0a084677fda77",
+    "textures/M_PhotoLab_DialIvory_base.png": "347a2ed3a9e268b548d40aae3364183bfb421eee8d8e2fa53b4d0d8969196e41",
+    "textures/M_PhotoLab_AmberPlastic_normal_dx.png": "0507126938f45444bbc8ac40d0e77cb242869f96d1694b9b2267c6a098d1ca34",
+    "textures/M_PhotoLab_AmberPlastic_rough.png": "4eff0a356f2eef07f7a3a4ef3b60825ccc574753d49b802cf2242e7d052a1134",
+    "textures/M_PhotoLab_AmberPlastic_base.png": "141d4a4a82203b167bfeaf963a1b88543f8f0a6846fb5b700ee8cd2a5af444ce",
+    "textures/M_PhotoLab_BlueCap_base.png": "8257cb7207d5db9a1d449e24e686a13d878a0281882bf88df729063899d4dfd7",
+    "textures/M_PhotoLab_BlueCap_normal_dx.png": "0507126938f45444bbc8ac40d0e77cb242869f96d1694b9b2267c6a098d1ca34",
+    "textures/M_PhotoLab_BlueCap_rough.png": "6ffa4deabd1356a150ff9311574cf43959a41f8c9b9e8e67c1953fa28cdb9ce7",
+    "textures/M_PhotoLab_OxideHandle_normal_dx.png": "0507126938f45444bbc8ac40d0e77cb242869f96d1694b9b2267c6a098d1ca34",
+    "textures/M_PhotoLab_OxideHandle_base.png": "f624153a4737265d7fcb42ea27d5ed94bd5b32dc7fb5f875808fefa84be879cd",
+    "textures/M_PhotoLab_OxideHandle_rough.png": "67037655c5106aa97dcb4d443b12bdf47f20e5c69c554740ec7a3c1b40243fca"
   },
   "limitations": "Source checks only. Native LOD apertures, lighting modes, collision placement and final game images need actual engine review."
 }
