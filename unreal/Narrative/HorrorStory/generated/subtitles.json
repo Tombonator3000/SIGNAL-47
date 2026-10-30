@@ -1070,7 +1070,7 @@
         {
           "line_id": "SC03_ORTIZ_IDENTIFY_003",
           "speaker": "ORTIZ",
-          "text": "All right. We write that down from here. Nobody needs you any closer to that yard tonight.",
+          "text": "All right. We write that down from here. Nobody needs you any closer to that yard before daylight.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -1190,7 +1190,7 @@
         {
           "line_id": "SC03_RECEIVER_QUESTION_001",
           "speaker": "DEPUTY",
-          "text": "Your outfit up the road runs a receiver all night. Was it on at nine o'clock?",
+          "text": "Your outfit up the road runs a receiver all night. Was it on when she went up?",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1208,7 +1208,7 @@
         {
           "line_id": "SC03_RECEIVER_QUESTION_003",
           "speaker": "DEPUTY",
-          "text": "Then I want its log and the strip chart from nine for this report. You have the keys. I'll follow you up to the gate.",
+          "text": "Then I want its log and tonight's strip chart for this report. You have the keys. I'll follow you up to the gate.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1232,7 +1232,7 @@
         {
           "line_id": "SC04_LIMITED_RETURN_002",
           "speaker": "DEPUTY",
-          "text": "The receiver log and the strip chart from nine o'clock. Bring whatever else that case will need, and lock the door behind you. I'll be back up this road.",
+          "text": "The receiver log and tonight's strip chart. Bring whatever else that case will need, and lock the door behind you. I'll be back up this road.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1265,7 +1265,7 @@
         {
           "line_id": "SC04_LOCAL_HOLD_002",
           "speaker": "DESCRIPTION",
-          "text": "The receiver log and strip chart from 21:00, the shift journal and the T01 card are secured for the missing-person report. T01 is filed here, once. Turning off a local schedule has not turned off the sky.",
+          "text": "The receiver log and tonight's strip chart, the shift journal and the T01 card are secured for the missing-person report. T01 is filed here, once. Turning off a local schedule has not turned off the sky.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1367,7 +1367,7 @@
         {
           "line_id": "SC04_SAFE_ROOM_AGREEMENT_002",
           "speaker": "WARD",
-          "text": "Read me the receiver log's heading and the nine o'clock entry. That is what the missing-person report needs. Leave the automatic schedule locked.",
+          "text": "Read me the receiver log's heading and the entry for the minute she went up. That is what the missing-person report needs. Leave the automatic schedule locked.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
