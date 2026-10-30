@@ -1,0 +1,130 @@
+{
+  "status": "FAIL_PARTIAL_TARGETED",
+  "source_commit": "c3fec0ec6d87697c4a655b0126992dcdd638023e",
+  "source_files": 564,
+  "scope": "SC04 R6 before PR236; Linux UE5.8.4 Vulkan, Low, Picture off, 1280x720, explicit t.MaxFPS=60",
+  "build": {
+    "source_commit": "c3fec0ec6d87697c4a655b0126992dcdd638023e",
+    "freeze_sha256": "f5573ea880bedb833377e0ba6dc0eac97178f95d525ea03af8b13e4a859bd7f1",
+    "module": "/home/tom/scratch-bm/wt/motel-v2-unreal/unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+    "bytes": 17899832,
+    "sha256": "bee28005a86a852444a8791dfc6e707b12167551514699f2592169c6a4b7a223"
+  },
+  "runs": {
+    "build-receipt": {
+      "returncode": 0,
+      "wall_seconds": 0.5068322420120239,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "74eaf07038c149ede22e7430df9b2f081a737e0b20eb7a88389de2c92009e53c"
+    },
+    "editor": {
+      "returncode": 0,
+      "wall_seconds": 12.207842734991573,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "38aa14f4f39d181679fd601588f4603cda1b2c108d5035d1be98e2f0ab334281"
+    },
+    "preflight": {
+      "returncode": 0,
+      "wall_seconds": 0.5072625280008651,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "d0f922b29013be16be84e180be3de1a0b7be672792c59427fd186c2d3182b747"
+    },
+    "require-idle": {
+      "returncode": 0,
+      "wall_seconds": 0.5074159629875794,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "4e94fd84124fec746895a268f4c76792d852cb59505f660b4f01b3eb94709620"
+    },
+    "sc04": {
+      "returncode": 0,
+      "wall_seconds": 98.86954662099015,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "f7164bab08399f78e58475c459505c4193c151ecf7db0d8d9cba4e0aa91d6eb5"
+    },
+    "sc04hide": {
+      "returncode": 1,
+      "wall_seconds": 211.3953913699952,
+      "semantic_success": false,
+      "expected_found": false,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "403255efaad5a6ad2bd47f59f91ed6c6771c57e4576e7d14d5b2c35e4f295c09"
+    }
+  },
+  "scenarios": [
+    {
+      "mode": "sc04",
+      "status": "PASS",
+      "reason": "SC04 physical collection, live annex route/capture, source custody and ordinary disk/title continuation",
+      "checks": 314,
+      "stores": 5,
+      "ray_uses": 12,
+      "walked_metres": 50.59654860451797,
+      "result": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/runtime-r6/raw/sc04/01A18A78785C7407B29E31F279417B06/result.json",
+      "sha256": "d1c08ec4830f3e115e1bf77b83dc0045674e9198a3c8cc92936135534c402bcd"
+    },
+    {
+      "mode": "sc04hide",
+      "status": "FAIL",
+      "reason": "still/closed-door solution never reached actual departure",
+      "checks": 203,
+      "stores": 2,
+      "ray_uses": 7,
+      "walked_metres": 30.372412776257057,
+      "result": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/runtime-r6/raw/sc04hide/01A18A79ED3B7B71A8386A4A9C2E4562/result.json",
+      "sha256": "ddb3039790b138acddb093fc312e4d1e406a36cc884cc6cd06fc16caed7132db"
+    }
+  ],
+  "sc04long": "UNEXECUTED_AFTER_SC04HIDE_FAIL",
+  "photos": [
+    {
+      "name": "pale-body-open-records-door.png",
+      "bytes": 1082107,
+      "sha256": "6ad86489f3f88e5c030afaec5ee2ecdd8dd6f6fbbb413718eec13cc272d5494b",
+      "reviewed_by_codex": true,
+      "scope": "Actual editor runtime PNG; opened after completed route. Not human input or measured performance."
+    },
+    {
+      "name": "closed-door-holds-body.png",
+      "bytes": 930407,
+      "sha256": "32b859a50f0404a746faa1e948bdbda6d0759797f771bf20d550eb855d6fd256",
+      "reviewed_by_codex": true,
+      "scope": "Actual editor runtime PNG; opened after completed route. Not human input or measured performance."
+    }
+  ],
+  "source_diagnosis": {
+    "old_corridor_max_z": 6.35,
+    "new_main_corridor_max_z": 6.57,
+    "body_radius": 0.27,
+    "observed_body_position": [
+      -3.9,
+      6.22
+    ],
+    "old_legal_max_z": 6.08,
+    "new_legal_max_z": 6.3,
+    "scope": "CPU/source explanation. New main runtime remains unverified."
+  },
+  "limits": [
+    "Named SC01-SC03/T01 prior-night fixture, not actual preceding chapters.",
+    "No same-night chain_id, whole-night acceptance or actual after-chapter adapter proof.",
+    "Primary route PASS314/5 disk. Hide FAIL203/2 disk. Long not run.",
+    "PNG also shows raytracing resident-geometry budget warning; no FPS or audio acceptance.",
+    "New PR236 office/corridor source and integrated SC05-SC13 were not part of R6.",
+    "No packaging, full matrix, installation or release in this series."
+  ]
+}
