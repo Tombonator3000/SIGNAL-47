@@ -88,7 +88,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
  bEnabled = bTestSC03 = false; for (int32& S : State) S = 0;
- Act04.Begin(nullptr); Act08.Begin(nullptr);
+ Act04.Begin(nullptr); Act08.Begin(nullptr); Act11.Begin(nullptr);
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -98,6 +98,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
   State[SC11] = FMath::Clamp(S47J::Int(Saved, TEXT("sc11")), 0, 2);
   Act04.Begin(S47J::Obj(Saved, TEXT("sc04d")));
   Act08.Begin(S47J::Obj(Saved, TEXT("sc08d")));
+  Act11.Begin(S47J::Obj(Saved, TEXT("sc11d")));
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
@@ -105,7 +106,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 
 void FS47Spine::Stop()
 {
- Act04.Stop(); Act08.Stop();
+ Act04.Stop(); Act08.Stop(); Act11.Stop();
  for (auto& P : Posts) if (P.IsValid()) P->SetVisibility(false);
  for (auto& S : Signs) if (S.IsValid()) S->SetVisibility(false);
 }
@@ -117,6 +118,7 @@ S47J::FObj FS47Spine::Save() const
  S47J::Set(O, TEXT("sc04"), State[SC04]); S47J::Set(O, TEXT("sc08"), State[SC08]); S47J::Set(O, TEXT("sc11"), State[SC11]);
  if (State[SC04] >= 1) S47J::Set(O, TEXT("sc04d"), Act04.Save());
  if (State[SC08] >= 1) S47J::Set(O, TEXT("sc08d"), Act08.Save());
+ if (State[SC11] >= 1) S47J::Set(O, TEXT("sc11d"), Act11.Save());
  return O;
 }
 
@@ -134,7 +136,7 @@ bool FS47Spine::HoldChapterEnd(EGate G)
 {
  if (!bEnabled || State[G] == 2) return false;
  State[G] = 1;
- if (M && M->UI) M->UI->Toast(FString::Printf(TEXT("%s. Next: %s.%s"), M->Story ? *M->Story->ClockText(false) : TEXT(""), Scenarios()[G == SC08 ? 7 : 10].Title, G == SC08 ? TEXT(" Earl's night line ends at four.") : TEXT(" This part of the night is a marked placeholder.")), 5);
+ if (M && M->UI) M->UI->Toast(FString::Printf(TEXT("%s. Next: %s.%s"), M->Story ? *M->Story->ClockText(false) : TEXT(""), Scenarios()[G == SC08 ? 7 : 10].Title, G == SC08 ? TEXT(" Earl's night line ends at four.") : TEXT(" Hondo and Site 11 are sending their sheets to SARO.")), 5);
  UE_LOG(LogTemp, Display, TEXT("S47: spine holds %s placeholder"), GateItem(G));
  if (M) M->RequestAutosave(false);
  return true;
@@ -164,6 +166,7 @@ FString FS47Spine::Label(const FString& Id) const
 {
  if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Label(Id);
  if (bEnabled && State[SC08] == 1 && Id != GateItem(SC08)) return Act08.Label(Id);
+ if (bEnabled && State[SC11] == 1 && Id != GateItem(SC11)) return Act11.Label(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G))) return State[G] == 1 ? FString::Printf(TEXT("%s placeholder: read the card"), Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10].Id) : FString();
  return FString();
@@ -173,6 +176,7 @@ bool FS47Spine::Use(const FString& Id)
 {
  if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Use(Id);
  if (bEnabled && State[SC08] == 1 && Id != GateItem(SC08)) return Act08.Use(Id);
+ if (bEnabled && State[SC11] == 1 && Id != GateItem(SC11)) return Act11.Use(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G)) && State[G] == 1) { Finish(EGate(G)); return true; }
  return false;
@@ -203,7 +207,7 @@ FString FS47Spine::Objective() const
  {
  case SC04: return Act04.Objective();
  case SC08: return Act08.Objective();
- case SC11: return TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
+ case SC11: return Act11.Objective();
  default: return FString();
  }
 }
@@ -215,6 +219,7 @@ TArray<FS47Task> FS47Spine::Tasks() const
  if (G == GateCount) return Out;
  if (G == SC04) return Act04.Tasks();
  if (G == SC08) return Act08.Tasks();
+ if (G == SC11) return Act11.Tasks();
  const FScenario& Sc = Scenarios()[G == SC08 ? 7 : 10];
  Out.Add({ FString::Printf(TEXT("%s %s (%s) - placeholder"), Sc.Id, Sc.Title, Sc.Window), false });
  Out.Add({ FString::Printf(TEXT("Read the marked card: %s"), Sc.Place), false });
@@ -272,7 +277,7 @@ void FS47Spine::ShowPosts()
 {
  for (int32 G = 0; G < Posts.Num() && G < GateCount; ++G)
  {
-  const bool bShow = bEnabled && State[G] == 1 && G != SC04 && G != SC08;
+  const bool bShow = false; // every gate is built now (SC04, SC08, SC11); the posts stay for older saves' code paths
   if (Posts[G].IsValid()) Posts[G]->SetVisibility(bShow);
   if (Signs.IsValidIndex(G) && Signs[G].IsValid()) Signs[G]->SetVisibility(bShow);
   if (Posts[G].IsValid()) Posts[G]->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
@@ -306,6 +311,14 @@ void FS47Spine::Step(double Dt)
   UE_LOG(LogTemp, Display, TEXT("S47: spine SC08 done at clock %.0f; chapter two's end continues"), M->Story->Clock());
   M->RequestAutosave(false);
   if (AfterSC08) AfterSC08();
+ }
+ if (State[SC11] == 1 && Act11.Step(Dt))
+ {
+  State[SC11] = 2;
+  M->Story->SetClock(FMath::Max(M->Story->Clock(), GateDone(SC11)));
+  UE_LOG(LogTemp, Display, TEXT("S47: spine SC11 done at clock %.0f; chapter four's end continues"), M->Story->Clock());
+  M->RequestAutosave(false);
+  if (AfterSC11) AfterSC11();
  }
  ShowPosts();
  if (M->Mode == US47Main::EMode::Play && M->UI && Pending() != GateCount) M->UI->Objective(Objective());
@@ -380,6 +393,7 @@ void FS47Spine::ControlTest(double Dt)
  };
  if (Test.Mode.StartsWith(TEXT("sc04"))) { SC04Test(Dt, Fail, Check); return; }
  if (Test.Mode.StartsWith(TEXT("sc08play")) || Test.Mode == TEXT("sc08caught")) { SC08Test(Dt, Fail, Check); return; }
+ if (Test.Mode == TEXT("sc11play") || Test.Mode == TEXT("sc11caught")) { SC11Test(Dt, Fail, Check); return; }
  if (Test.T > 240) { Fail(TEXT("timeout")); return; }
  const bool bSC08 = Test.Mode == TEXT("sc08");
  if (Test.Stage == 0)
@@ -444,11 +458,11 @@ void FS47Spine::ControlTest(double Dt)
  if (Test.Stage == 21)
  {
   if (!Check(!M->Story->Begun.Contains(TEXT("ch5")), TEXT("chapter five still waits after a second and a half"))) return;
-  Stand(SC11); Next(23); return;
+  UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: SC11 counted done without playing it (-S47SpineContract=sc11play plays it)"));
+  Act11.TestComplete(); Next(23); return;
  }
  if (Test.Stage == 23)
  {
-  if (!Read(SC11)) return;
   if (!Check(Gate(SC11) == 2 && M->Story->Clock() >= GateDone(SC11), TEXT("reading the SC11 card jumps to 05:10 and continues chapter four's end"))) return;
   Next(22, 2.5); return;
  }
@@ -760,6 +774,129 @@ void FS47Spine::SC08Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFu
  case 14:
   if (!M->Story->Begun.Contains(TEXT("ch3"))) { if (Test.T - Test.Mark > 12) Fail(TEXT("chapter three did not begin after SC08")); return; }
   if (!Check(M->Story->Clock() >= S47Timeline::Chapter3(true) && Current() == 8, TEXT("chapter three begins as SC09 at 04:25"))) return;
+  Test.bDone = true;
+  UE_LOG(LogTemp, Display, TEXT("S47: spine contract %s PASS COMPLETE: %d checks"), *Test.Mode, Test.Checks);
+  FPlatformMisc::RequestExit(false);
+  return;
+ default: return;
+ }
+}
+
+// The SC11 contract from the chapter four jump, chapter four's end called as the chapter calls it.
+// The drive from the motel is a labelled area fixture; the originals, the telex and the truck are
+// actual rays; doors on the long way are opened by fixture; the player moves in walker steps.
+void FS47Spine::SC11Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check)
+{
+ const FS47SC11& A = Act11;
+ const bool bCaught = Test.Mode == TEXT("sc11caught");
+ const auto Next = [this](int32 S, double Wait = .3) { Test.Stage = S; Test.Since = Test.T + Wait; Test.Mark = Test.T; Test.Cand = 0; };
+ if (Test.T < Test.Since) return;
+ if (Test.T > 360) { Fail(FString::Printf(TEXT("timeout; SC11 step %d body %s at %s, player %s"), int32(A.Phase()), FS47SC11::BodyName(A.Body()), *A.BodyAt().ToString(), *FVector2D(M->Player->Pos.X, M->Player->Pos.Z).ToString())); return; }
+ const FVector2D Pl(M->Player->Pos.X, M->Player->Pos.Z);
+ const auto Glide = [this, Dt](double Speed)
+ {
+  if (Test.Route.IsEmpty()) return true;
+  const FVector2D P(M->Player->Pos.X, M->Player->Pos.Z), D = Test.Route[0] - P;
+  const double Step = Speed * Dt;
+  const FVector2D N = D.Size() <= Step ? Test.Route[0] : P + D.GetSafeNormal() * Step;
+  M->Player->Place(N.X, N.Y, FMath::Atan2(-D.X, -D.Y));
+  if (D.Size() <= Step) Test.Route.RemoveAt(0);
+  return Test.Route.IsEmpty();
+ };
+ const auto ItemAt = [this](const TCHAR* Id)
+ {
+  if (const auto* It = M->Web->Item(Id)) { const FBox Bx = M->Web->ObjAt(It->Node).WorldBox(); if (Bx.IsValid) return Bx.GetCenter(); }
+  return S47Three::ToThree(M->Web->PropLocation(Id));
+ };
+ // Stand (even stage) then an actual ray and the production use (odd stage), trying stand points.
+ const auto StandUse = [&](int32 Stage, const TCHAR* Id, TFunctionRef<void()> Done)
+ {
+  const FVector I = ItemAt(Id);
+  if (Test.Stage == Stage)
+  {
+   int32 Seen = 0; bool bFound = false; FVector2D S;
+   for (const double R : {1.1, 1.5, 1.9, 2.4}) for (int32 K = 0; K < 16 && !bFound; ++K)
+   {
+    const FVector2D C(I.X + R * FMath::Cos(K * PI / 8), I.Z + R * FMath::Sin(K * PI / 8));
+    if (!M->Player->Walkable(C.X, C.Y)) continue;
+    FHitResult Hit; const FVector From = S47Three::ToUE(FVector(C.X, 1.62, C.Y)), To = S47Three::ToUE(I);
+    if (M->Web->GetWorld()->LineTraceSingleByChannel(Hit, From, To, ECC_Visibility) && Hit.Distance < FVector::Dist(From, To) - 35 && M->Web->UsableAt(Hit.GetComponent()) != Id) continue;
+    if (Seen++ == Test.Cand) { S = C; bFound = true; }
+   }
+   if (!bFound) { Fail(FString::Printf(TEXT("no stand point sees %s"), Id)); return; }
+   M->Player->Place(S.X, S.Y, FMath::Atan2(-(I.X - S.X), -(I.Z - S.Y))); M->Player->Pitch = 0;
+   Test.Stage = Stage + 1; Test.Since = Test.T + .4; return;
+  }
+  const FVector Eye = M->Player->EyeUE(), At = S47Three::ToUE(I);
+  const FString Picked = M->Inter->Pick(Eye, (At - Eye).GetSafeNormal(), 3.2);
+  if (Picked != Id) { if (++Test.Cand > 50) { Fail(FString::Printf(TEXT("ray to %s picked %s"), Id, *Picked)); return; } Test.Stage = Stage; return; }
+  M->Player->OnUse(Picked); if (M->UI) M->UI->Close(true);
+  UE_LOG(LogTemp, Display, TEXT("S47: spine contract actual ray and production use: %s"), Id);
+  Done();
+ };
+ switch (Test.Stage)
+ {
+ case 0:
+ {
+  if (Test.T < 3) return;
+  US47Chapter4* C4 = Cast<US47Chapter4>(M->Story->Chapter(TEXT("ch4")));
+  if (!Check(bEnabled && C4 && C4->OnEnd, TEXT("chapter four jump with the spine and chapter four's end"))) return;
+  C4->OnEnd();
+  if (!Check(Gate(SC11) == 1 && A.Phase() == FS47SC11::EStep::Drive && !M->Story->Begun.Contains(TEXT("ch5")), TEXT("chapter four's end holds for the built SC11; chapter five waits"))) return;
+  UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: the drive from the motel to SARO is an area fixture"));
+  M->World->PlaceTruck(TEXT("saro")); M->World->Enter(TEXT("saro")); M->Player->Place(0, .3, 0);
+  Next(1, 1.0); return;
+ }
+ case 1:
+  if (!Check(A.Phase() == FS47SC11::EStep::Collect && M->Story->Clock() >= 5 * 3600, TEXT("at SARO: 05:00, the originals next"))) return;
+  Next(2); return;
+ case 2: case 3: StandUse(2, TEXT("printer"), [&] { if (Check(A.Facts().bOriginal, TEXT("the receiver original is torn off"))) Next(4); }); return;
+ case 4: case 5: StandUse(4, TEXT("logbook"), [&] { if (Check(A.Facts().bSheet && A.Phase() == FS47SC11::EStep::Telex && M->Story->Clock() >= 5 * 3600 + 4 * 60, TEXT("the event sheet is taken; 05:04, the telex prints"))) Next(6, 0); }); return;
+ case 6:
+  if (A.Label(TEXT("telex")).IsEmpty()) { if (Test.T - Test.Mark > 60) Fail(TEXT("the telex never finished")); return; }
+  Next(7, 0); return;
+ case 7: case 8: StandUse(7, TEXT("telex"), [&] { if (Check(A.Facts().bRemote && A.Phase() == FS47SC11::EStep::Siege && M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("sc11_remote"); }), TEXT("the remote sheets are torn off; the siege starts"))) Next(bCaught ? 9 : 12, 0); }); return;
+ // ---- sc11caught: towards the service door, to meet it ----
+ case 9: Test.Route = {FVector2D(0, .3), FVector2D(3.4, .3), FVector2D(4.6, 1.6)}; Next(10, 0); return;
+ case 10:
+  if (A.Facts().Captures == 0) { Glide(1.9); if (Test.T - Test.Mark > 60) Fail(FString::Printf(TEXT("not met at the service door: body %s at %s"), FS47SC11::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
+  if (Test.Hop == 0) { Test.Hop = 1; Test.Since = Test.T + .3; return; }
+  Test.Hop = 0;
+  if (!Check(A.Facts().Captures == 1 && A.Phase() == FS47SC11::EStep::Siege && FVector2D::Distance(Pl, FVector2D(-4.2, 3.2)) < .8, TEXT("taken: the siege starts again at the telex, the originals kept"))) return;
+  Next(12, .2); return;
+ // ---- both: the long way, out by the annex and the fire exit, round the north side, down to the truck ----
+ case 12:
+  UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: the corridor door and the fire exit opened by API on the long way"));
+  M->Web->SetDoorOpen(TEXT("doorSouth"), true, true); M->Web->SetDoorOpen(TEXT("exitDoor"), true, true);
+  Test.Route = {FVector2D(-2.4, 2.9), FVector2D(-2.4, 5.7), FVector2D(-4.75, 5.7), FVector2D(-7.0, 5.7), FVector2D(-11.1, 5.7), FVector2D(-11.1, 0), FVector2D(-9, -8)};
+  Next(13, 0); return;
+ case 13:
+  if (A.Facts().Captures > (bCaught ? 1 : 0)) { Fail(FString::Printf(TEXT("caught on the long way at %s"), *Pl.ToString())); return; }
+  if (!Glide(3.0)) return;
+  Next(18, 0); return;
+ case 18:
+  // At the north-west corner, out of its sight and hearing, until it has gone into the building (as a player would wait).
+  if (A.Facts().Captures > (bCaught ? 1 : 0)) { Fail(FString::Printf(TEXT("caught waiting at the corner at %s"), *Pl.ToString())); return; }
+  if (A.Body() == FS47SC11::EBody::Away || FS47SC11::Room(A.BodyAt()) == 3) { if (Test.T - Test.Mark > 90) Fail(FString::Printf(TEXT("it never went inside: %s at %s"), FS47SC11::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
+  Check(true, TEXT("waited at the north-west corner until the body was inside"));
+  Test.Route = {FVector2D(5, -8), FVector2D(5, -12), FVector2D(9.5, -12), FVector2D(9.5, 0), FVector2D(10.2, 1.6), FVector2D(10.2, 4.5), FVector2D(7.2, 4.8), FVector2D(7.2, 6.6)};
+  Next(19, 0); return;
+ case 19:
+  if (A.Facts().Captures > (bCaught ? 1 : 0)) { Fail(FString::Printf(TEXT("caught on the last stretch at %s"), *Pl.ToString())); return; }
+  if (!Glide(3.0)) return;
+  Next(14, .3); return;
+ case 14: case 15: StandUse(14, TEXT("truck"), [&] { Next(16, 1.5); }); return;
+ case 16:
+  if (Gate(SC11) != 2) { if (Test.T - Test.Mark > 10) Fail(FString::Printf(TEXT("SC11 did not finish at the truck: step %d"), int32(A.Phase()))); return; }
+  if (!Check(A.Facts().bEscaped && A.Facts().Captures == (bCaught ? 1 : 0) && M->Story->Clock() >= GateDone(SC11), TEXT("away in the truck with the originals: 05:10"))) return;
+  {
+   FS47Spine Fresh(nullptr); Fresh.Begin(S47J::Read(S47J::Write(Save())), false);
+   if (!Check(Fresh.Gate(SC11) == 2 && Fresh.Searched().Phase() == FS47SC11::EStep::Done && Fresh.Searched().Facts().bRemote, TEXT("saved spine reloads with SC11 done and its facts"))) return;
+  }
+  Next(17, 2.5); return;
+ case 17:
+  if (!M->Story->Begun.Contains(TEXT("ch5"))) { if (Test.T - Test.Mark > 12) Fail(TEXT("chapter five did not begin after SC11")); return; }
+  if (!Check(M->Story->Clock() >= S47Timeline::Chapter5(true) && Current() == 11, TEXT("chapter five begins as SC12 at 05:12"))) return;
   Test.bDone = true;
   UE_LOG(LogTemp, Display, TEXT("S47: spine contract %s PASS COMPLETE: %d checks"), *Test.Mode, Test.Checks);
   FPlatformMisc::RequestExit(false);

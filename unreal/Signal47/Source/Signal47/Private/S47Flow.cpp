@@ -413,7 +413,7 @@ void US47Flow::Boot()
 		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && (FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine) || FParse::Value(FCommandLine::Get(),TEXT("S47SpineStart="),Spine))) { M->Spine->Begin(nullptr,true); if (Spine==TEXT("SC04")) M->Spine->TestOpenSC04(); if (Spine==TEXT("SC08")) M->Spine->TestOpenSC08(); if (Spine==TEXT("SC05")) { M->Spine->TestDoneSC04(); M->Story->SetClock(FMath::Max(M->Story->Clock(), FS47Spine::GateDone(FS47Spine::SC04))); } } }
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && (FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine) || FParse::Value(FCommandLine::Get(),TEXT("S47SpineStart="),Spine))) { M->Spine->Begin(nullptr,true); if (Spine==TEXT("SC04")) M->Spine->TestOpenSC04(); if (Spine==TEXT("SC08")) M->Spine->TestOpenSC08(); if (Spine==TEXT("SC11")) M->Spine->TestOpenSC11(); if (Spine==TEXT("SC05")) { M->Spine->TestDoneSC04(); M->Story->SetClock(FMath::Max(M->Story->Clock(), FS47Spine::GateDone(FS47Spine::SC04))); } } }
 		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
 		{
 		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
@@ -1853,6 +1853,7 @@ void US47Flow::OpenDev()
 	Add(TEXT("Night, acts two to four"), TEXT("SC08 They point at you"), TEXT("04:00, Earl's reel, the array"), TEXT("-S47EveningTimeline -S47SpineStart=SC08 -S47Jump=chapter2"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC09 Chapter three"), TEXT("STATION 01"), Night + TEXT("chapter3"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC10 Chapter four, then SC11"), TEXT("Room 6, then the placeholder"), Night + TEXT("chapter4"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC11 SARO is searched"), TEXT("05:00, the telex, the siege"), TEXT("-S47EveningTimeline -S47SpineStart=SC11 -S47Jump=chapter4"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC12 Chapter five"), TEXT("Mesa Diner"), Night + TEXT("chapter5"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC13 Chapter six"), TEXT("the road north"), Night + TEXT("chapter6"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC13 The last mile"), TEXT("near C 8.15"), Night + TEXT("chapter6:lastmile"));
