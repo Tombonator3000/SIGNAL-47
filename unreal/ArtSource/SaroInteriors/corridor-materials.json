@@ -102,5 +102,26 @@
     ],
     "source_material": "M_Office_FloorLinoleum",
     "source_use": "read-only approved Office PBR maps; separate corridor material"
+  },
+  {
+    "name": "M_Saro_CorridorWear",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.93,
+    "metallic": 0,
+    "specular": 0.2,
+    "alpha_mode": "dithered_masked",
+    "opacity_from_base_color": true,
+    "two_sided": false,
+    "normal_strength": 0,
+    "textures": {
+      "base_color": "textures/corridor_wear_base.png",
+      "roughness": "textures/corridor_wear_rough.png"
+    },
+    "source_use": "Original seeded grime, hand scuffs, heel/rubber marks and paint chips; no baked light"
   }
 ]
