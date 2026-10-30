@@ -30,6 +30,8 @@ struct FS47NightState
 	TOptional<double> Hondo;
 	// Acquisition stamp of the actual paper, distinct from solve time and the later array event.
 	TOptional<double> PrintoutAt;
+	// When the residual was locked on the console (SC05 at 03:1x in the evening timeline); unset in older saves.
+	TOptional<double> LockAt;
 	/** (Unreal only, Tom's request) T. Vega's seven keyed on the processor: TAPE A has come (tapeA). */
 	bool bTapeA = false;
 };
@@ -80,6 +82,8 @@ public:
 	double Clock() const { return ClockSec; } // seconds after midnight
 	FString ClockText(bool bSeconds = true) const { return S47Text::ClockText(ClockSec, bSeconds); }
 	ES47Phase Phase() const { return CurrentPhase; }
+	// The residual's lock time for papers and notes: the console's own when there is one, else the authored 02:14.
+	FString LockStamp() const;
 	bool At(ES47Phase P) const { return (int32)CurrentPhase >= (int32)P; }
 	bool IsCinematic() const { return bCinematic; }
 	bool IsPaused() const { return bPaused; }

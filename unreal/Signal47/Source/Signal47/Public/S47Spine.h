@@ -58,6 +58,8 @@ public:
  // Contract fixture: SC03's end without driving the whole of SC03.
  void TestOpenSC04() { bTestSC03 = true; }
  // Developer start: SC08 held as chapter two's end would hold it.
+ // Developer start for SC05: SC04 counted done, the clock at its end.
+ void TestDoneSC04() { if (bEnabled) { State[SC04] = 2; Act04.TestComplete(); } }
  void TestOpenSC08() { if (bEnabled && State[SC08] == 0) State[SC08] = 1; }
  // -S47SpineContract=sc08 (with -S47Jump=chapter2) or =sc11 (with -S47Jump=chapter4), -S47EveningTimeline.
  void ControlTest(double Dt);

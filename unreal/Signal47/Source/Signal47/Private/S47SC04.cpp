@@ -136,8 +136,8 @@ void FS47SC04::SetStep(EStep Next)
 FS47Doc FS47SC04::ScheduleDoc()
 {
  FS47Doc D; D.Id = TEXT("sc04_schedule"); D.Title = TEXT("Automatic schedule, held"); D.Kind = TEXT("typed"); D.Stamp = TEXT("AUTO HOLD");
- D.Page = TEXT("SARO OPS / AUTOMATIC SCHEDULE\n\nSERIES 06:00 SURVEY ........ HELD\nAUTO SLEW ................... HELD\nAUTO PRINT .................. HELD\nRECEIVER .................... ON / PASSIVE\nSTRIP RECORDER .............. ON\n\nHOLD KEYED AT THE OPS TERMINAL BY: R. REYES\nREASON: MISSING-PERSON REPORT, CALICHE. NOTHING RUNS UNATTENDED.");
- D.Transcript = TEXT("The automatic schedule is held at the ops terminal. The survey, the slews and the printer stop; the receiver stays on, passive, and the strip recorder keeps writing.");
+ D.Page = TEXT("SARO OPS / AUTOMATIC SCHEDULE\n\nSERIES 06:00 SURVEY ........ HELD\nSCHEDULED SLEWS ............. HELD\nMANUAL CONTROL .............. LIVE\nPRINTER ..................... LIVE\nRECEIVER .................... ON / PASSIVE\nSTRIP RECORDER .............. ON\n\nHOLD KEYED AT THE OPS TERMINAL BY: R. REYES\nREASON: MISSING-PERSON REPORT, CALICHE. NOTHING RUNS UNATTENDED.");
+ D.Transcript = TEXT("The automatic schedule is held at the ops terminal. The 06:00 series and the scheduled slews stop; manual control and the printer stay live, the receiver stays on, passive, and the strip recorder keeps writing.");
  return D;
 }
 
@@ -170,7 +170,7 @@ bool FS47SC04::Use(const FString& Id)
  {
   F.bSchedule = true; S.AddDoc(ScheduleDoc());
   if (M->Audio) M->Audio->Play(TEXT("click"), .5f);
-  M->UI->Toast(TEXT("AUTO HOLD. The survey, the slews and the printer stop. The receiver stays on, passive."), 4);
+  M->UI->Toast(TEXT("AUTO HOLD. The 06:00 series and the scheduled slews stop. Manual control and the printer stay live."), 4);
   S.Note(FString::Printf(TEXT("%s. Held the automatic schedule at the ops terminal. Nothing runs by itself now; the receiver listens, passive."), *S.ClockText(false)));
  }
  else if (Id == TEXT("printer"))
