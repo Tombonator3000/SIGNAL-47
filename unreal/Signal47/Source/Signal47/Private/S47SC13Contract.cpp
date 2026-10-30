@@ -8,6 +8,7 @@
 #include "S47Inter.h"
 #include "S47Main.h"
 #include "S47NightContract.h"
+#include "S47RoadShape.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
 #include "S47Story.h"
@@ -38,8 +39,8 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
  using FJ=S47J::FObj;
  TWeakObjectPtr<US47Main> Main;
  FString Root,Mode,Source,SourceResultPath,SourceHash,SourceResultHash,Chain,PhotoBefore,PendingPhoto,SourceCustodyPath,SourceCustodyHash;
- FJ Departure,SourceResult,PauseBefore,PendingFrame,ExpectedCustody,CustodyFile;
- TOptional<FS47SaveMeta> SaveMeta;
+ FJ Departure,SourceResult,PauseBefore,PendingFrame,ExpectedCustody,CustodyFile,ManualDisk,ManualSelection;
+ TOptional<FS47SaveMeta> SaveMeta,ManualMeta;
  int32 Stage=0,Checks=0,Waypoint=0,RestoreCount=0;
  bool Done=false,Armed=false,PhotoRequested=false,DidPause=false,DidKey=false,DidDoor=false,LinePlaced=false;
  double Start=FPlatformTime::Seconds(),Since=Start,LastWall=Start,EndAt=0,WalkMetres=0,DriveMetres=0,MaxMile=0,EventAt=0,PullAt=0;
@@ -55,6 +56,7 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
  static bool Same(const FJ&A,const FJ&B){return A&&B&&FJsonValue::CompareEqual(FJsonValueObject(A),FJsonValueObject(B));}
  static FJ Read(const FString& File){FString S;return FFileHelper::LoadFileToString(S,*File)?S47J::Read(S):FJ();}
  static FString FileHash(const FString& File){TArray<uint8>B;if(File.IsEmpty()||!FFileHelper::LoadFileToArray(B,*File))return {};FSHAHash H;FSHA1::HashBuffer(B.GetData(),B.Num(),H.Hash);return H.ToString();}
+ static FJ FileIdentity(const FString& File){auto O=S47J::New();S47J::Set(O,TEXT("path"),File);S47J::Set(O,TEXT("bytes"),double(IFileManager::Get().FileSize(*File)));S47J::Set(O,TEXT("sha1"),FileHash(File));return O;}
  static FJ DocumentInventory(const FJ& Papers)
  {
   // Same source semantics as SC12: full fields/sheets by ID; only ratio's old
@@ -89,6 +91,23 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
   const bool Good=ExpectedCustody&&Actual&&Same(ExpectedCustody,Actual);S47J::Set(Proof,TEXT("pass"),Good);
   return Check(Write(Name+TEXT(".custody.json"),Proof)&&Good,TEXT("all actual SC12 document IDs/full fields/sheets and27 native encoders retained: ")+Name);
  }
+ bool NativeDinerPark(const FString& Name)
+ {
+  const auto ParentPose=S47J::Obj(Departure,TEXT("truckPose"));bool ParentValid=ParentPose&&S47J::Str(Departure,TEXT("truck"))==TEXT("diner")&&S47J::Str(Departure,TEXT("area"))==TEXT("diner")&&S47J::Str(ParentPose,TEXT("at"))==TEXT("diner");
+  for(const TCHAR* Key:{TEXT("x"),TEXT("y"),TEXT("z"),TEXT("h"),TEXT("p"),TEXT("r")}){double V=0;ParentValid&=ParentPose&&ParentPose->TryGetNumberField(Key,V)&&FMath::IsFinite(V);}
+  auto Expected=S47J::New();S47J::Set(Expected,TEXT("at"),TEXT("diner"));S47J::Set(Expected,TEXT("area"),TEXT("diner"));S47J::Set(Expected,TEXT("pose"),ParentPose);
+  const auto Actual=M()->World->TruckSave();const auto* Truck=M()->World->TruckHere();
+  // Exact World.cpp625/887 park rectangle. TruckOnLot's extra2m is NOT the
+  // InBox condition used before DriveOldRoad's canonical-placement fallback.
+  const auto& D=S47RoadShape::DINER();const FVector Origin=S47Legs::ORIGINS(TEXT("road"))+FVector(D.X,D.Y+.1,D.Z);
+  const FS47Box2 Park{Origin.X+5,Origin.X+14,Origin.Z-4,Origin.Z+14};
+  const bool ExactPark=Truck&&Truck->Position.X>=Park.MinX&&Truck->Position.X<=Park.MaxX&&Truck->Position.Z>=Park.MinZ&&Truck->Position.Z<=Park.MaxZ;
+  const bool Good=ParentValid&&Same(Expected,Actual)&&Truck&&ExactPark&&!Truck->IsPersonalVehicle()&&!M()->World->bCommuteVehicle&&M()->World->Area==TEXT("diner")&&M()->World->TruckAt==TEXT("diner")&&!M()->World->bDriving&&!M()->World->bBusy;
+  auto Proof=S47J::New();S47J::Set(Proof,TEXT("parent_departure_sha1"),SourceHash);S47J::Set(Proof,TEXT("expected_truck_from_parent"),Expected);S47J::Set(Proof,TEXT("actual_native_truck"),Actual);
+  S47J::Set(Proof,TEXT("exact_world_diner_park_xz"),TArray<double>{Park.MinX,Park.MaxX,Park.MinZ,Park.MaxZ});S47J::Set(Proof,TEXT("inside_exact_park"),ExactPark);S47J::Set(Proof,TEXT("parent_pose_valid"),ParentValid);
+  S47J::Set(Proof,TEXT("actual_component_origin_three_m"),Truck?Truck->Group.WorldPosition().ToString():FString(TEXT("missing")));S47J::Set(Proof,TEXT("pass"),Good);
+  return Check(Write(Name+TEXT(".truck.json"),Proof)&&Good,TEXT("exact native service-truck pose retained from SC12 inside real diner park before any fallback: ")+Name);
+ }
  static bool CompletePng(const TArray<uint8>& B)
  {
   const uint8 Sig[]={137,80,78,71,13,10,26,10};if(B.Num()<33||FMemory::Memcmp(B.GetData(),Sig,8))return false;
@@ -115,6 +134,7 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
   S47J::Set(O,TEXT("source_prerequisite_fixtures"),Mode==TEXT("legacy"));S47J::Set(O,TEXT("complete_night_accepted"),false);
   S47J::Set(O,TEXT("source_result_sha1"),SourceResultHash);S47J::Set(O,TEXT("source_departure_initial_sha1"),SourceHash);
   S47J::Set(O,TEXT("source_sc12_actual_custody_file"),CustodyFile);
+  S47J::Set(O,TEXT("ordinary_departure_manual_selection"),ManualSelection);
   S47J::Set(O,TEXT("sourceSC12"),SourceResult);S47J::Set(O,TEXT("sourceDepartureSHA1"),FileHash(Source));S47J::Set(O,TEXT("ordinaryDiskContinues"),RestoreCount);
   S47J::Set(O,TEXT("walkMetres"),WalkMetres);S47J::Set(O,TEXT("driveMetres"),DriveMetres);S47J::Set(O,TEXT("maximumMile"),MaxMile);S47J::Set(O,TEXT("eventWallSeconds"),PullAt-EventAt);
   S47J::Set(O,TEXT("pullWallSeconds"),EndAt-PullAt);S47J::Set(O,TEXT("originalPhotoSHA1"),PhotoBefore);S47J::Set(O,TEXT("currentPhotoSHA1"),PhotoHash());
@@ -232,9 +252,17 @@ public:
   {
    const auto Case=S47J::Obj(Departure,TEXT("case"));
    if(!Check(C5()->bActive&&!C()->bActive&&M()->World->Area==TEXT("diner")&&Same(C5()->SaveState(),S47J::Obj(Case,TEXT("ch5")))&&FMath::Abs(M()->Story->Clock()-19200)<.2&&M()->Flow->GameSaveBlock().IsEmpty(),TEXT("normal disk/title/Continue preserves every SC12 source/receipt/map fact at safe05:20 departure")))return;
-   if(!Custody(TEXT("departure-after-continue")))return;
+   if(!Custody(TEXT("departure-after-continue"))||!NativeDinerPark(TEXT("departure-after-continue")))return;
    FJ Proof;FString Error;if(!Check(S47NightContract::RoundTrip(M(),Root,TEXT("departure-custody-manual"),Proof,Error),TEXT("ordinary departure manual/fresh-reader/title/Continue: ")+Error))return;
-   ++RestoreCount;if(!Custody(TEXT("departure-after-manual-continue")))return;
+   ++RestoreCount;if(!Custody(TEXT("departure-after-manual-continue"))||!NativeDinerPark(TEXT("departure-after-manual-continue")))return;
+   FS47SaveStore ManualReader(M()->Flow->Saves.Dir);ManualReader.Init();ManualMeta=ManualReader.ContinueSave();ManualDisk=ManualMeta?ManualReader.Load(ManualMeta->Id):FJ();
+   const auto DiskPin=S47J::Obj(Proof,TEXT("checkpoint_file"));
+   if(!Check(ManualMeta&&ManualMeta->CaseId==1&&ManualMeta->Kind==TEXT("manual")&&ManualMeta->Slot==0&&DiskPin&&Same(ManualDisk,Read(S47J::Str(DiskPin,TEXT("path"))))
+    &&Same(DiskPin,FileIdentity(S47J::Str(DiskPin,TEXT("path")))),TEXT("fresh reader pins the actual latest ordinary manual card and its exact decoded checkpoint")))return;
+   const FString RecordPath=ManualReader.Dir/(TEXT("save-")+ManualMeta->Id.Replace(TEXT(":"),TEXT("-"))+TEXT(".json")); // S47Saves.cpp181's existing on-disk format.
+   const auto RecordPin=FileIdentity(RecordPath);if(!Check(S47J::Num(RecordPin,TEXT("bytes"))>0&&!S47J::Str(RecordPin,TEXT("sha1")).IsEmpty(),TEXT("actual ordinary manual save-record bytes exist for the measured card")))return;
+   auto Card=S47J::New();ManualMeta->Write(Card);ManualSelection=S47J::New();S47J::Set(ManualSelection,TEXT("card"),Card);S47J::Set(ManualSelection,TEXT("checkpoint_file"),DiskPin);S47J::Set(ManualSelection,TEXT("save_record_file"),RecordPin);
+   if(!Check(Write(TEXT("ordinary-departure-manual-selection.json"),ManualSelection),TEXT("retained actual ordinary manual metadata and both decoded/record file pins")))return;
    if(!Snapshot(TEXT("departure-after-continue")))return;PathToTruck();Next(2);return;
   }
   if(Stage==2)
@@ -249,6 +277,7 @@ public:
    if(Now-Since<.5)return;
    const FString Pick=M()->Inter->Update(M()->Player->EyeUE(),M()->Player->ForwardUE());
    if(!Check(Pick==TEXT("dinerTruck")&&M()->Player->FocusedId()==Pick&&bool(M()->Player->OnUse),TEXT("actual settled player-camera ray/focus -> original service truck before ordinary OnUse")))return;
+   if(!NativeDinerPark(TEXT("departure-before-truck-use")))return;
    M()->Player->OnUse(Pick);Next(4);return;
   }
   if(Stage==4)
@@ -332,14 +361,22 @@ public:
    if(M()->Mode!=US47Main::EMode::Title){if(E>115)Result(false,TEXT("unmodified title/credits/photo chain did not naturally return to title"));return;}
    if(!Check(PhotoBefore==PhotoHash()&&Shots.Num()>=(Mode==TEXT("legacy")?8:9),TEXT("original1947 image bytes unchanged and requested actual viewport phases completed")))return;
    if(Mode==TEXT("legacy")){Result(true,TEXT("legacy fixed ending remains unchanged, no revised sky or extra route gates"));return;}
-   FS47SaveStore Reader(M()->Flow->Saves.Dir);Reader.Init();if(!Check(SaveMeta&&Same(Reader.Load(SaveMeta->Id),Departure),TEXT("whole ending never overwrote the safe diner departure checkpoint")))return;
-   M()->Flow->OpenSave(*SaveMeta);++RestoreCount;Next(8);return;
+   FS47SaveStore Reader(M()->Flow->Saves.Dir);Reader.Init();const auto Selected=Reader.ContinueSave(),Live=M()->Flow->Saves.ContinueSave();const auto SelectedDisk=Selected?Reader.Load(Selected->Id):FJ();
+   auto SelectedCard=S47J::New();if(Selected)Selected->Write(SelectedCard);
+   const auto RecordPin=S47J::Obj(ManualSelection,TEXT("save_record_file")),DiskPin=S47J::Obj(ManualSelection,TEXT("checkpoint_file"));
+   const bool Chosen=ManualMeta&&Selected&&Live&&Selected->Id==ManualMeta->Id&&Selected->SavedAt==ManualMeta->SavedAt&&Live->Id==Selected->Id&&Live->SavedAt==Selected->SavedAt
+    &&Same(SelectedCard,S47J::Obj(ManualSelection,TEXT("card")))&&Same(SelectedDisk,ManualDisk)&&Same(RecordPin,FileIdentity(S47J::Str(RecordPin,TEXT("path"))))&&Same(DiskPin,FileIdentity(S47J::Str(DiskPin,TEXT("path"))));
+   auto Selection=S47J::New();S47J::Set(Selection,TEXT("expected_manual"),ManualSelection);S47J::Set(Selection,TEXT("actual_fresh_continue_card"),SelectedCard);S47J::Set(Selection,TEXT("pass"),Chosen);
+   const bool DiskWritten=SelectedDisk&&Write(TEXT("final-title-continue.disk.json"),SelectedDisk);S47J::Set(Selection,TEXT("actual_fresh_continue_disk"),FileIdentity(Root/TEXT("final-title-continue.disk.json")));
+   if(!Check(Write(TEXT("final-title-continue.selection.json"),Selection)&&DiskWritten&&Chosen,TEXT("fresh final-title reader selects the exact latest ordinary manual card; ending changed neither its metadata nor disk bytes")))return;
+   if(!Check(M()->Flow->OpenTestView(TEXT("continue")),TEXT("ordinary final-title Continue opens its actually selected save")))return;
+   ++RestoreCount;Next(8);return;
   }
   if(Stage==8)
   {
    const auto Case=S47J::Obj(Departure,TEXT("case"));
    if(!Check(C5()->bActive&&!C()->bActive&&!C()->FinaleSky&&M()->World->Area==TEXT("diner")&&Same(C5()->SaveState(),S47J::Obj(Case,TEXT("ch5")))&&FMath::Abs(M()->Story->Clock()-19200)<.3,TEXT("ordinary post-ending Continue returns to exact source/receipt/P13/courier departure, with no duplicate finale objects")))return;
-   if(!Custody(TEXT("post-ending-continue")))return;
+   if(!Custody(TEXT("post-ending-continue"))||!NativeDinerPark(TEXT("post-ending-continue")))return;
    if(!Snapshot(TEXT("post-ending-continue")))return;Result(true,TEXT("physical road to involuntary C8.15 stop, original47+34 ending, own sky phases and normal full disk/title/Continue"));
   }
  }

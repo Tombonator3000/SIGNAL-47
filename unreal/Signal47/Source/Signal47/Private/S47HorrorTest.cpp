@@ -202,7 +202,7 @@ struct FS47HorrorTest::FState
 {
 	bool bEnabled = false, bDone = false, bPendingNormalTest = false, bMissHand = false;
 	bool bNight = false, bNightWaiting = false, bNightFailed = false;
-	bool bSC03Grounding = false;
+	bool bSC03Grounding = false, bSC03ContinueAfterGrounding = false;
 	FString NightBoundary;
 	int32 Stage = 0, Checks = 0, Stores = 0, WalkIndex = 0, AfterWalk = 0;
 	double Elapsed = 0, Since = 0, Hold = 3, WalkMetres = 0, LastProgress = 0, PausedHandTime = 0;
@@ -215,7 +215,7 @@ struct FS47HorrorTest::FState
 	bool bObservingRestored = false, bObservingResumed = false, bCursorProbe = false;
 	int32 CursorChecks = 0;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
-	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector;
+	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector, OrtizGoal = FVector::ZeroVector;
 	double DoorOut = 1;
 	TArray<FVector> Points;
 	FVector LastFoot = FVector::ZeroVector, FirstHand = FVector::ZeroVector;
@@ -237,7 +237,8 @@ FS47HorrorTest::FS47HorrorTest(US47Main* InM) : State(MakeUnique<FState>()), M(I
 	State->bEnabled = FParse::Value(FCommandLine::Get(), TEXT("S47HorrorContract="), State->Mode);
 	State->bDispatchRecordings = FParse::Param(FCommandLine::Get(), TEXT("S47DispatchRecordings"));
 	State->bSC03Grounding = FParse::Param(FCommandLine::Get(), TEXT("S47SC03Grounding"));
-	State->bEnabled |= State->bDispatchRecordings;
+	State->bSC03ContinueAfterGrounding = FParse::Param(FCommandLine::Get(), TEXT("S47SC03ContinueAfterGrounding"));
+	State->bEnabled |= State->bDispatchRecordings || State->bSC03ContinueAfterGrounding;
 	// The window event is now a slap heard behind the shade; it cannot be missed by looking away.
 	State->bMissHand = false;
 	State->bArcCloseup = State->Mode == TEXT("Arc") && FParse::Param(FCommandLine::Get(), TEXT("S47ArcCloseup"));
@@ -361,16 +362,17 @@ bool FS47HorrorTest::Pick(const FString& Id, const FString& Alternate, bool bUse
 {
 	if (!Object(Id)) { Fail(TEXT("missing physical target: ") + Id); return false; }
 	const FVector Eye = M->Player->EyeUE(), TargetDirection = (S47Three::ToUE(Target(Id)) - Eye).GetSafeNormal();
-	const FVector Direction=State->bNight?M->Player->ForwardUE():TargetDirection;
+	const bool ActualCamera=State->bNight || State->bSC03ContinueAfterGrounding;
+	const FVector Direction=ActualCamera?M->Player->ForwardUE():TargetDirection;
 	const FString Actual = M->Inter->Pick(Eye, Direction);
 	const double Dot = FVector::DotProduct(TargetDirection, M->Player->ForwardUE());
-	const FString Focus=State->bNight?M->Inter->Update(Eye,Direction):Actual;
-	if(State->bNight)
+	const FString Focus=ActualCamera?M->Inter->Update(Eye,Direction):Actual;
+	if(ActualCamera)
 	{
 	 auto Ray=S47J::New();S47J::Set(Ray,TEXT("kind"),TEXT("actual-camera-ray"));S47J::Set(Ray,TEXT("item"),Id);S47J::Set(Ray,TEXT("picked"),Actual);S47J::Set(Ray,TEXT("focus"),Focus);
 	 S47J::Set(Ray,TEXT("eye_ue_cm"),Eye.ToString());S47J::Set(Ray,TEXT("forward_ue"),Direction.ToString());S47J::Set(Ray,TEXT("activate_bound_hud_onuse"),bUse);State->Evidence.Add(MakeShared<FJsonValueObject>(Ray));
 	}
-	if ((Actual != Id && (Alternate.IsEmpty() || Actual != Alternate)) || Dot < .94 || (bUse && !M->Player->OnUse) || (State->bNight&&(Focus!=Actual||M->Player->FocusedId()!=Actual)))
+	if ((Actual != Id && (Alternate.IsEmpty() || Actual != Alternate)) || Dot < .94 || (bUse && !M->Player->OnUse) || (ActualCamera&&(Focus!=Actual||M->Player->FocusedId()!=Actual)))
 	{
 		Fail(FString::Printf(TEXT("actual aimed ray for %s picked '%s', view dot %.3f"), *Id, *Actual, Dot));
 		return false;
@@ -620,6 +622,7 @@ void FS47HorrorTest::Step(double Dt)
 			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror native navigation PASS COMPLETE: %d checks"), T.Checks);
 			FPlatformMisc::RequestExit(false); return;
 		}
+		if (T.bSC03ContinueAfterGrounding && (!T.bSC03Grounding || T.Mode!=TEXT("SC03Resume"))) { Fail(TEXT("focused continuation requires SC03Resume + S47SC03Grounding and the actual-source SHA1 gate"));return; }
 		if (T.bSC03Grounding && T.Mode!=TEXT("SC03Resume")) { Fail(TEXT("focused SC03 grounding requires SC03Resume and an actual revision-3 mid-arrival source"));return; }
 		if (T.Mode == TEXT("SC03Resume"))
 		{
@@ -1816,6 +1819,69 @@ void FS47HorrorTest::Step(double Dt)
 	};
 	auto Payphone=[this](){return Target(TEXT("town:payphone"));};
 	auto Front=[this](const FVector& At,double D){FVector V=At-M->Player->Pos;V.Y=0;V=V.GetSafeNormal();return FVector(At.X-V.X*D,0,At.Z-V.Z*D);};
+	// Select a real ordinary-use position, not the old fixed Near inside the preserved pump island.
+	// Candidate rays are read-only predictions. The arrived camera/focus/HUD ray still decides Use.
+	auto PlanOrtiz=[this,&T,&S3](TArray<FVector>& Route)
+	{
+		auto Proof=S47J::New();S47J::Set(Proof,TEXT("kind"),TEXT("SC03 ordinary Ortiz approach, live candidate rays and full FindPath"));S47J::Set(Proof,TEXT("pass"),false);
+		TArray<TSharedPtr<FJsonValue>> Candidates,PathRows;
+		auto SaveProof=[&]()
+		{
+			Proof->SetArrayField(TEXT("candidates"),Candidates);Proof->SetArrayField(TEXT("path"),PathRows);T.Evidence.Add(MakeShared<FJsonValueObject>(Proof));
+			return FFileHelper::SaveStringToFile(S47J::Write(Proof,true),*(T.Root/TEXT("sc03-ortiz-use-approach.json")));
+		};
+		const auto* Ortiz=M->Inter->Get(TEXT("horror:ortiz"));const auto* CarItem=M->Inter->Get(TEXT("horror:wagon23"));
+		const auto* OrtizNode=Ortiz&&Ortiz->Object?M->Web->Node(Ortiz->Object.I):nullptr;const auto* CarNode=CarItem&&CarItem->Object?M->Web->Node(CarItem->Object.I):nullptr;
+		const auto* OrtizComp=OrtizNode?Cast<UPrimitiveComponent>(OrtizNode->Comp.Get()):nullptr;const auto* CarComp=CarNode?Cast<UStaticMeshComponent>(CarNode->Comp.Get()):nullptr;
+		S47J::Set(Proof,TEXT("ortiz"),SC03Component(M->Web.Get(),OrtizComp));S47J::Set(Proof,TEXT("wagon"),SC03Component(M->Web.Get(),CarComp));
+		if(!Ortiz||!CarComp||!OrtizComp||!SC03Shown(M->Web.Get(),OrtizComp)||!SC03Shown(M->Web.Get(),CarComp)||S3.Phase()!=EP::Meet||!FMath::IsNearlyEqual(Ortiz->Range,2.6,1e-6))
+		{S47J::Set(Proof,TEXT("reason"),TEXT("ordinary visible Ortiz/wagon/Meet/range identity is required"));SaveProof();Fail(TEXT("ordinary Ortiz route lacks actual native identity/range"));return false;}
+		FVector Forward=S47Three::ToThree(CarComp->GetComponentQuat().RotateVector(FVector::ForwardVector));Forward.Y=0;Forward.Normalize();
+		FVector Right=S47Three::ToThree(CarComp->GetComponentQuat().RotateVector(FVector::RightVector));Right.Y=0;Right.Normalize();
+		const FVector O=S3.OrtizPoint(),AtTarget=Target(TEXT("horror:ortiz"));const FVector2D Start(M->Player->Pos.X,M->Player->Pos.Z);const auto& Blocks=M->Web->Colliders();
+		SC03Vector(Proof,TEXT("native_forward_three"),Forward);SC03Vector(Proof,TEXT("native_right_three"),Right);SC03Vector(Proof,TEXT("ortiz_target_three_m"),AtTarget);S47J::Set(Proof,TEXT("range_m"),Ortiz->Range);S47J::Set(Proof,TEXT("walker_radius_m"),M->Player->Radius);
+		// Front/back first, then the same bounded native-frame perimeter. No guessed new park/offset.
+		const int32 Angles[]={0,8,1,15,7,9,2,14,6,10,3,13,5,11,4,12};
+		for(double Distance:{2.35,1.65,2.05})for(int32 Angle:Angles)
+		{
+			const double Radians=Angle*UE_DOUBLE_PI/8;const FVector Offset=(Forward*FMath::Cos(Radians)+Right*FMath::Sin(Radians))*Distance;
+			const FVector2D Goal(O.X+Offset.X,O.Z+Offset.Z);auto Row=S47J::New();Candidates.Add(MakeShared<FJsonValueObject>(Row));S47J::Set(Row,TEXT("angle_index"),Angle);S47J::Set(Row,TEXT("offset_m"),Distance);S47J::Set(Row,TEXT("xz_m"),TArray<double>{Goal.X,Goal.Y});
+			if(!M->Player->Walkable(Goal.X,Goal.Y)||M->Player->InTruck(Goal.X,Goal.Y)){S47J::Set(Row,TEXT("rejected"),TEXT("not native Walkable or inside actual truck"));continue;}
+			FString Blocker;bool Blocked=false;
+			for(const auto& Box:Blocks)if(Box.bEnabled&&Goal.X>=Box.MinX-M->Player->Radius&&Goal.X<=Box.MaxX+M->Player->Radius&&Goal.Y>=Box.MinZ-M->Player->Radius&&Goal.Y<=Box.MaxZ+M->Player->Radius){Blocked=true;Blocker=Box.Id;S47J::Set(Row,TEXT("blocked_bounds_xz_m"),TArray<double>{Box.MinX,Box.MaxX,Box.MinZ,Box.MaxZ});break;}
+			if(Blocked){S47J::Set(Row,TEXT("blocked_by"),Blocker);continue;}
+			// Same public floor providers/priorities as Walker in this diner area, without moving it.
+			double Floor=AS47Props::FloorAt(Goal.X,Goal.Y);FString Provider=TEXT("Props.FloorAt");
+			if(FMath::IsNaN(Floor)&&M->Player->LandFloor){Floor=M->Player->LandFloor(Goal.X,Goal.Y);Provider=TEXT("Walker.LandFloor");}
+			if(FMath::IsNaN(Floor)&&M->Player->Floor){Floor=M->Player->Floor(Goal.X,Goal.Y);Provider=TEXT("Walker.Floor");}
+			S47J::Set(Row,TEXT("candidate_floor_provider"),Provider);if(!FMath::IsFinite(Floor)){S47J::Set(Row,TEXT("rejected"),TEXT("no finite production floor provider"));continue;}
+			S47J::Set(Row,TEXT("candidate_floor_m"),Floor);const FVector Eye=S47Three::ToUE(FVector(Goal.X,Floor+M->Player->Eye,Goal.Y)),TargetUE=S47Three::ToUE(AtTarget),Direction=(TargetUE-Eye).GetSafeNormal();
+			SC03Vector(Row,TEXT("candidate_eye_ue_cm"),Eye);const double RayDistance=FVector::Dist(Eye,TargetUE)/100.;S47J::Set(Row,TEXT("target_distance_m"),RayDistance);
+			const FString Picked=M->Inter->Pick(Eye,Direction);S47J::Set(Row,TEXT("picked"),Picked);if(RayDistance>2.6||Picked!=TEXT("horror:ortiz")){S47J::Set(Row,TEXT("rejected"),TEXT("ordinary interaction ray/range cannot reach Ortiz"));continue;}
+			FCollisionQueryParams Query(SCENE_QUERY_STAT(S47SC03OrtizApproach),true,M->Player.Get());TArray<TSharedPtr<FJsonValue>> Queries;bool VisibleLine=false;
+			for(int32 Retry=0;Retry<32;++Retry)
+			{
+				FHitResult Hit;const bool HitAnything=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Eye,TargetUE,ECC_Visibility,Query);const auto* Component=Hit.GetComponent();bool Known=false;const bool Shown=Component&&SC03Shown(M->Web.Get(),Component,&Known);
+				auto Q=S47J::New();S47J::Set(Q,TEXT("hit"),HitAnything);S47J::Set(Q,TEXT("blocking"),Hit.bBlockingHit);S47J::Set(Q,TEXT("known"),Known);S47J::Set(Q,TEXT("identity"),SC03Component(M->Web.Get(),Component));SC03Vector(Q,TEXT("impact_ue_cm"),Hit.ImpactPoint);Queries.Add(MakeShared<FJsonValueObject>(Q));
+				if(HitAnything&&Hit.bBlockingHit&&Component==OrtizComp&&Shown){VisibleLine=true;break;}
+				if(HitAnything&&Hit.bBlockingHit&&Component&&Known&&Component->IsRegistered()&&!Shown){S47J::Set(Q,TEXT("excluded"),TEXT("freshly mapped registered hidden component only"));Query.AddIgnoredComponent(Component);continue;}
+				break; // unknown or shown blocker, missed ray, or the bounded query limit: reject candidate
+			}
+			Row->SetArrayField(TEXT("visibility_queries"),Queries);if(!VisibleLine){S47J::Set(Row,TEXT("rejected"),TEXT("first actual visible/unknown blocker is not Ortiz"));continue;}
+			TArray<FVector2D> Seeds;Seeds.Add(Start);const double SeedRadius=FMath::Min(100.,FVector2D::Distance(Start,Goal)+10)*.5;
+			for(int32 I=0;I<16;++I){const double A=I*UE_DOUBLE_PI/8;Seeds.Add(Start+FVector2D(FMath::Cos(A),FMath::Sin(A))*SeedRadius);}
+			const auto Planned=FS47ThreatNavigation::FindPath(Start,Goal,Seeds,Blocks,M->Player->Radius,[&](const FVector2D& A,const FVector2D& B)
+			{
+				const int32 Count=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(A,B)/.05));
+				for(int32 I=0;I<=Count;++I){const auto P=FMath::Lerp(A,B,double(I)/Count);if(!M->Player->Walkable(P.X,P.Y)||M->Player->InTruck(P.X,P.Y))return false;}return true;
+			});
+			S47J::Set(Row,TEXT("path_points"),Planned.Num());if(Planned.IsEmpty()){S47J::Set(Row,TEXT("rejected"),TEXT("no complete live collider/native-Walkable route"));continue;}
+			for(const auto& Point:Planned){Route.Add(FVector(Point.X,0,Point.Y));PathRows.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(Point.X),MakeShared<FJsonValueNumber>(Point.Y)}));}
+			T.OrtizGoal=FVector(Goal.X,0,Goal.Y);S47J::Set(Row,TEXT("selected"),true);S47J::Set(Proof,TEXT("pass"),true);SC03Vector(Proof,TEXT("selected_goal_three_m"),T.OrtizGoal);
+			if(!SaveProof()){Fail(TEXT("could not preserve actual Ortiz use-approach proof"));return false;}return true;
+		}
+		S47J::Set(Proof,TEXT("reason"),TEXT("no offered <=2.6m clear-ray/native-walkable candidate has a full collider-safe route"));SaveProof();Fail(TEXT("no actual ordinary Ortiz approach; no straight fallback or placement"));return false;
+	};
 	if(T.Stage==200)
 	{
 		if(H.Pack.CurrentScene()){Drain(200);return;}
@@ -1889,7 +1955,7 @@ void FS47HorrorTest::Step(double Dt)
 		}
 		// Ortiz stands at the driver's side; reach her from her own side, around the wagon's solid body.
 		const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out=Out.GetSafeNormal();
-		const FVector Wide(O.X+Out.X*3.2,0,O.Z+Out.Z*3.2),Near(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5);
+		const FVector Wide(O.X+Out.X*3.2,0,O.Z+Out.Z*3.2);
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 approach Ortiz %.2f %.2f from her side via %.2f %.2f"),O.X,O.Z,Wide.X,Wide.Z);
 		const FVector2D RouteStart(M->Player->Pos.X,M->Player->Pos.Z),RouteGoal(Wide.X,Wide.Z);
 		TArray<FVector2D> ApproachSeeds;const double SeedRadius=FMath::Min(100.,FVector2D::Distance(RouteStart,RouteGoal)+10)*.5;
@@ -1905,7 +1971,6 @@ void FS47HorrorTest::Step(double Dt)
 		RouteProof->SetArrayField(TEXT("path"),RoutePoints);T.Evidence.Add(MakeShared<FJsonValueObject>(RouteProof));
 		if (!FFileHelper::SaveStringToFile(S47J::Write(RouteProof,true),*(T.Root/TEXT("sc03-ortiz-approach.json")))) { Fail(TEXT("could not preserve native Ortiz approach route"));return; }
 		if (!Check(!Planned.IsEmpty(),TEXT("actual collider-safe native walking route around the preserved pump island to Ortiz"))) return;
-		if (!(T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck")))) ApproachPoints.Add(Near);
 		Go(MoveTemp(ApproachPoints),2071);return;
 	}
 	if(T.Stage==2071)
@@ -1917,7 +1982,7 @@ void FS47HorrorTest::Step(double Dt)
 			if (!Body) { Fail(TEXT("lost the actual wagon body before native picture"));return; }
 			const FVector Centre=Body->Bounds.Origin;Aim(FVector(Centre.X,Centre.Z,Centre.Y)/100);Stage(2072,.5);return;
 		}
-		Aim(S3.OrtizPoint());Stage(208,.4);return;
+		TArray<FVector> Route;if(!PlanOrtiz(Route))return;Go(Route,2074);return;
 	}
 	if (T.Stage==2072) { Shot(TEXT("sc03-wagon-grounded-before-lift"));Stage(2073,.5);return; }
 	if (T.Stage==2073)
@@ -1929,17 +1994,21 @@ void FS47HorrorTest::Step(double Dt)
 		if (!Check(S3.Phase()==EP::Meet && !S3.Facts().bIdentified && !S3.Facts().bObserved && !S3.LightOn(),TEXT("native photograph is before identification and intended Ortiz lift"))) return;
 		FSHAHash PngHash;FSHA1::HashBuffer(Png.GetData(),Png.Num(),PngHash.Hash);auto PictureRow=S47J::New();S47J::Set(PictureRow,TEXT("path"),Picture);S47J::Set(PictureRow,TEXT("bytes"),Png.Num());S47J::Set(PictureRow,TEXT("sha1"),PngHash.ToString());S47J::Set(PictureRow,TEXT("iend"),true);
 		T.Evidence.Add(MakeShared<FJsonValueObject>(PictureRow));
-		if (!T.bSC03Grounding)
+		if (!T.bSC03Grounding || T.bSC03ContinueAfterGrounding)
 		{
-			const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out.Normalize();
-			Go({FVector(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5)},2074);return;
+			TArray<FVector> Route;if(!PlanOrtiz(Route))return;Go(Route,2074);return;
 		}
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC03Grounding"));S47J::Set(Result,TEXT("mode"),TEXT("focused-actual-source-developer-restore"));S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);S47J::Set(Result,TEXT("picture"),PictureRow);Result->SetArrayField(TEXT("evidence"),T.Evidence);
 		S47J::Set(Result,TEXT("limits"),TEXT("Focused editor measurement from the outer-freeze-pinned actual mid-arrival disk, restored without revision/fact/clock edits through the existing isolated developer case0 fresh-reader/Flow path. Native Walker/API camera, source-derived tire points with actual native transform, actual world/direct pavement rays and sampled runtime-collider envelope. Does not replay SC01/02, outbound travel, rendered arrival, SC03 identification/lift/completion or whole night. No SC03 chapter PASS/checkpoint: this result is ineligible as SC04 parent. Image opening/visual acceptance, human input, listening, FPS, packed/full-matrix/install/release remain UNVERIFIED."));
 		if (!FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")))) { Fail(TEXT("could not preserve focused geometry result"));return; }
 		T.bDone=true;M->Player->TestMove.Reset();UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 grounding PASS MEASURED (focused actual-source restore, no chapter acceptance)"));FPlatformMisc::RequestExit(false);return;
 	}
-	if (T.Stage==2074) { Aim(S3.OrtizPoint());Stage(208,.4);return; }
+	if (T.Stage==2074)
+	{
+		auto Reached=S47J::New();S47J::Set(Reached,TEXT("kind"),TEXT("Ortiz approach actual arrived Walker state"));SC03Vector(Reached,TEXT("goal_three_m"),T.OrtizGoal);SC03Vector(Reached,TEXT("actual_player_three_m"),M->Player->Pos);SC03Vector(Reached,TEXT("actual_eye_ue_cm"),M->Player->EyeUE());S47J::Set(Reached,TEXT("actual_floor_m"),M->Player->FloorY);T.Evidence.Add(MakeShared<FJsonValueObject>(Reached));
+		if(!Check(FVector2D::Distance(FVector2D(M->Player->Pos.X,M->Player->Pos.Z),FVector2D(T.OrtizGoal.X,T.OrtizGoal.Z))<=.12&&M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z)&&S3.Phase()==EP::Meet,TEXT("actual native Walker reaches selected ordinary Ortiz approach before aiming")))return;
+		Aim(S3.OrtizPoint());Stage(208,.4);return;
+	}
 	if(T.Stage==208)
 	{
 		if(T.Aimed.IsEmpty())Shot(TEXT("sc03-ortiz"));
@@ -2046,7 +2115,7 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		if(H.Pack.CurrentScene()){Drain(226);return;}
 		if(S3.Phase()!=EP::Complete){if(T.Elapsed-T.Since>5)Fail(TEXT("the deputy's question did not complete SC03"));return;}
-		if(!StoreRestore(TEXT("sc03-complete"),M->Flow->GameState()))return;
+		if(!StoreRestore(T.bSC03ContinueAfterGrounding?TEXT("sc03-focused-continuation-complete"):TEXT("sc03-complete"),M->Flow->GameState()))return;
 		Stage(227,1.0);return;
 	}
 	if(T.Stage==227)
@@ -2054,6 +2123,13 @@ void FS47HorrorTest::Step(double Dt)
 		int32 Docs=0;for(const auto& D:M->Story->Docs())if(D.Id.StartsWith(TEXT("HR_DISPATCH")) || D.Id.StartsWith(TEXT("HR_MISSING")) || D.Id.StartsWith(TEXT("HR_LOCAL_HOLD")) || D.Id.StartsWith(TEXT("HR_HELPER_TRACE")))++Docs;
 		if(!Check(S3.Complete() && Docs==4,TEXT("completed SC03 and its four papers survive Continue, each once")))return;
 		if(T.bNight){T.bNightWaiting=true;T.NightBoundary=TEXT("sc03");return;}
+		if(T.bSC03ContinueAfterGrounding)
+		{
+			T.bDone=true;M->Player->TestMove.Reset();auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC03FocusedContinuation"));S47J::Set(Result,TEXT("mode"),TEXT("focused-actual-source-developer-continuation"));S47J::Set(Result,TEXT("eligible_sc04_parent"),false);S47J::Set(Result,TEXT("sourceSnapshot"),T.RestoreSource);S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);Result->SetArrayField(TEXT("evidence"),T.Evidence);
+			S47J::Set(Result,TEXT("limits"),TEXT("Focused developer case0 continuation of the outer-freeze-pinned actual revision3 mid-arrival disk through unchanged bytes/fresh Reader/full Flow. Source SC01/SC02/T01/outbound trip are not replayed. Native grounding/before-lift PNG, ordinary Ortiz walk/ray/OnUse, actual identification/lift/cover/traces/calls/deputy and later disk restores run here. No fresh-night/chapter PASS or sc03-complete checkpoint: ineligible SC04 parent. API camera/walking/autopilot are not human input; image opening, listening, FPS, packed/full-matrix/install/release are not accepted by this result."));
+			if(!FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")))){T.bDone=false;Fail(TEXT("could not preserve focused continuation result"));return;}
+			UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 focused continuation PASS MEASURED (actual-source developer case0, ineligible SC04 parent)"));FPlatformMisc::RequestExit(false);return;
+		}
 		T.bDone=true;M->Player->TestMove.Reset();
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode);
 		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);Result->SetArrayField(TEXT("evidence"),T.Evidence);
