@@ -8,7 +8,7 @@ Elleve plasseringer følger eksisterende rolleankre direkte. Mara, Tall One og C
 
 Editorbygg, kontroll av alle 14 faktiske native modeller/materialer/størrelser, Linux-pakking, 1735 selvtester og kort pakket diner-smoke består. Installert modellkontroll og kveldskamera består også. Alle 68 payload-noder samsvarer med kandidaten og alle 134 personlige Saved-noder er bevart. Kontrollen gjelder import og statisk visning; senere animasjon gjenstår. Ingen fullmatrise eller ny offentlig spillrelease.
 
-En parallell act1-2-installasjon erstattet først pakken. Etter at dens kontroll var ferdig, ble Tripo-kandidaten installert igjen kl.13:28 og kontrollert mot kandidaten. Den bygger på samme PR246-grunnlag med Tripo-endringene i tillegg. Nativefilene er også speilet privat til hovedprosjektets `Content/Licensed/TripoNPC`. Kanonisk opprydding er forsøkt, men en annen aktiv motorjobb blokkerer sletting; gjeldende kandidat og tilbakekopier er bevart.
+En parallell act1-2-installasjon erstattet først pakken. Etter at dens kontroll var ferdig, ble Tripo-kandidaten installert igjen kl.13:28 og kontrollert mot kandidaten. Den bygger på samme PR246-grunnlag med Tripo-endringene i tillegg. Nativefilene er også speilet privat til hovedprosjektets `Content/Licensed/TripoNPC`. Kanonisk opprydding er utført. Gjeldende kandidat og to eldre komplette bygg er beholdt, sammen med kilder, assets, Saved og bilder.
 
 Faste kameraer, Low, kl.18:30. Førbildene bruker `S47TripoNpcsOff`. Radio-kvinnens etterbilde kommer fra det installerte spillet; patronens etterbilde kommer fra editorkandidaten og er også kontrollert i den pakkede diner-visningen.
 

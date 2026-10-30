@@ -1364,3 +1364,5 @@ Alle14 aktive figurer klargjort og importert privat med teksturer/treLOD; ny vis
 
 ### 2026-10-30T13:28 Tripo14 levert
 PR247/main81736f2a, kilde8a512269: 14 statiske figurer importert og installert, 1735 selvtester og kort pakket/installerte modellkontroller består; 134 Saved-noder bevart. Eldre parallell act1-2-installasjon er samordnet og erstattet med Tripo-supersettet. Nativefilene finnes også privat i hovedprosjektet; kanonisk prune exit1. Ingen fullmatrise, kredittbruk eller offentlig release.
+
+Kanonisk prune er senere utført etter at det fremmede motorvinduet var frigitt. Fem eldre pakkepayloads er pensjonert; current og to eldre komplette bygg beholdes, med kilder, assets, Saved og bilder urørt.
