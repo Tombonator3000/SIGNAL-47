@@ -3,6 +3,8 @@
 #include "S47SC06Contract.h"
 #include "S47SC07Contract.h"
 #include "S47SC11Contract.h"
+#include "S47SC08Contract.h"
+#include "S47Flow.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -96,13 +98,16 @@ FS47Doc FS47Spine::Card(EGate G)
 void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
- bEnabled = bTestSC03 = false; for (int32& S : State) S = 0;
+ bEnabled = bTestSC03 = bSC08New = false; for (int32& S : State) S = 0;
  Act04.Begin(nullptr);
  bRevisedSC11 = false; Act11.Begin(nullptr);
  bSC12Route = false;
+ Act08.Begin(nullptr,false);
  if (Saved)
  {
-  if (S47J::Int(Saved, TEXT("v")) != Version) return;
+  const int32 V=S47J::Int(Saved,TEXT("v"));
+  if (V!=1 && V!=Version) return;
+  bSC08New=V==Version || (M && M->Flow && FS47SC08::CanAdoptSC07(M->Flow->Carry));
   bEnabled = true;
   bSC12Route = S47J::Num(Saved, TEXT("sc12Route")) == 1;
   State[SC04] = FMath::Clamp(S47J::Int(Saved, TEXT("sc04")), 0, 2);
@@ -115,12 +120,14 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
    && FS47SC05::CanAdoptSC04(S47J::Obj(Saved,TEXT("sc04d")));
   Act05.Begin(CallSaved,Adopt);
   if (const auto SiegeSaved = S47J::Obj(Saved, TEXT("sc11d"))) { bRevisedSC11 = true; Act11.Begin(SiegeSaved); }
+  Act08.Begin(S47J::Obj(Saved,TEXT("sc08d")),bSC08New && State[SC08]>=1);
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
  Act05.Begin(nullptr,bEnabled);
  bRevisedSC11 = bEnabled;
  bSC12Route = bEnabled;
+ bSC08New=bEnabled;
 }
 
 void FS47Spine::Stop()
@@ -128,6 +135,7 @@ void FS47Spine::Stop()
  Act04.Stop();
  Act05.Stop();
  Act11.Stop();
+ Act08.Stop();
  for (auto& P : Posts) if (P.IsValid()) P->SetVisibility(false);
  for (auto& S : Signs) if (S.IsValid()) S->SetVisibility(false);
 }
@@ -135,12 +143,13 @@ void FS47Spine::Stop()
 S47J::FObj FS47Spine::Save() const
 {
  if (!bEnabled) return nullptr;
- auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version);
+ auto O = S47J::New(); S47J::Set(O, TEXT("v"), bSC08New?Version:1);
  if(Act05.Enabled()) S47J::Set(O,TEXT("sc05d"),Act05.Save());
  if (bSC12Route) S47J::Set(O, TEXT("sc12Route"), 1);
  S47J::Set(O, TEXT("sc04"), State[SC04]); S47J::Set(O, TEXT("sc08"), State[SC08]); S47J::Set(O, TEXT("sc11"), State[SC11]);
  if (State[SC04] >= 1) S47J::Set(O, TEXT("sc04d"), Act04.Save());
  if (bRevisedSC11) S47J::Set(O, TEXT("sc11d"), Act11.Save());
+ if (bSC08New && State[SC08]>=1) S47J::Set(O,TEXT("sc08d"),Act08.Save());
  return O;
 }
 
@@ -165,6 +174,13 @@ bool FS47Spine::HoldChapterEnd(EGate G)
   return true;
  }
  State[G] = 1;
+ if (G==SC08 && bSC08New)
+ {
+  Act08.Begin(nullptr,true);
+  if(M&&M->UI)M->UI->Toast(TEXT("The corrected originals are in your jacket. Earl has kept the labelled reel after sign-off; go to the 1420 AM public door."),6);
+  if(M)M->RequestAutosave(false);
+  return true;
+ }
  if (M && M->UI) M->UI->Toast(FString::Printf(TEXT("%s. Next: %s. This part of the night is a marked placeholder."), M->Story ? *M->Story->ClockText(false) : TEXT(""), Scenarios()[G == SC08 ? 7 : 10].Title), 5);
  UE_LOG(LogTemp, Display, TEXT("S47: spine holds %s placeholder"), GateItem(G));
  if (M) M->RequestAutosave(false);
@@ -196,6 +212,7 @@ FString FS47Spine::Label(const FString& Id) const
  if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Label(Id);
  if(const FString L=Act05.Label(Id);!L.IsEmpty())return L;
  if (SiegeBusy()) return Act11.Label(Id);
+ if(bEnabled && bSC08New && State[SC08]==1)return Act08.Label(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G))) return State[G] == 1 ? FString::Printf(TEXT("%s placeholder: read the card"), Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10].Id) : FString();
  return FString();
@@ -206,6 +223,7 @@ bool FS47Spine::Use(const FString& Id)
  if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Use(Id);
  if(Act05.Use(Id))return true;
  if (SiegeBusy()) return Act11.Use(Id);
+ if(bEnabled && bSC08New && State[SC08]==1)return Act08.Use(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G)) && State[G] == 1) { Finish(EGate(G)); return true; }
  return false;
@@ -246,7 +264,7 @@ FString FS47Spine::Objective() const
  switch (Pending())
  {
  case SC04: return Act04.Objective();
- case SC08: return TEXT("ARRAY GATE // SC08 PLACEHOLDER: THEY POINT AT YOU. READ THE YELLOW PLACEHOLDER POST INSIDE THE ARRAY GATE");
+ case SC08: if(bSC08New)return Act08.Objective(); return TEXT("ARRAY GATE // SC08 PLACEHOLDER: THEY POINT AT YOU. READ THE YELLOW PLACEHOLDER POST INSIDE THE ARRAY GATE");
  case SC11: return bRevisedSC11 ? Act11.Objective() : TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
  default: return FString();
  }
@@ -260,6 +278,7 @@ TArray<FS47Task> FS47Spine::Tasks() const
  if (G == SC11 && bRevisedSC11) return Act11.Tasks();
  if (G == GateCount) return Out;
  if (G == SC04) return Act04.Tasks();
+ if (G==SC08 && bSC08New)return Act08.Tasks();
  const FScenario& Sc = Scenarios()[G == SC08 ? 7 : 10];
  Out.Add({ FString::Printf(TEXT("%s %s (%s) - placeholder"), Sc.Id, Sc.Title, Sc.Window), false });
  Out.Add({ FString::Printf(TEXT("Read the marked card: %s"), Sc.Place), false });
@@ -317,7 +336,7 @@ void FS47Spine::ShowPosts()
 {
  for (int32 G = 0; G < Posts.Num() && G < GateCount; ++G)
  {
-  const bool bShow = bEnabled && State[G] == 1 && G != SC04 && !(G == SC11 && bRevisedSC11);
+  const bool bShow = bEnabled && State[G] == 1 && G != SC04 && !(G==SC08 && bSC08New) && !(G == SC11 && bRevisedSC11);
   if (Posts[G].IsValid()) Posts[G]->SetVisibility(bShow);
   if (Signs.IsValidIndex(G) && Signs[G].IsValid()) Signs[G]->SetVisibility(bShow);
   if (Posts[G].IsValid()) Posts[G]->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
@@ -348,6 +367,13 @@ void FS47Spine::Step(double Dt)
   UE_LOG(LogTemp, Display, TEXT("S47: spine SC04 done at clock %.0f"), M->Story->Clock());
   M->RequestAutosave(false);
  }
+ if (bSC08New && State[SC08]==1 && Act08.Step(Dt))
+ {
+  State[SC08]=2;
+  UE_LOG(LogTemp,Display,TEXT("S47: spine SC08 actual comparison/field escape complete at clock %.3f"),M->Story->Clock());
+  if(AfterSC08)AfterSC08();
+  M->RequestAutosave(false);
+ }
  ShowPosts();
  if (M->Mode == US47Main::EMode::Play && M->UI && Pending() != GateCount) M->UI->Objective(Objective());
 }
@@ -368,12 +394,14 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
  const bool Ok = Thirteen && Ordered && Chapters && Cards && Cohorts && FS47SC05::SelfTest(Lines);
  Lines.Add(FString::Printf(TEXT("%s spine: 13 scenarios, placeholders ordered SC04 %.0f < SC08 %.0f < ch3 %.0f < ch4 %.0f < SC11 %.0f < ch5 %.0f < departure"),
   Ok ? TEXT("PASS") : TEXT("FAIL"), GateDone(SC04), GateDone(SC08), S47Timeline::Chapter3(true), S47Timeline::Chapter4(true), GateDone(SC11), S47Timeline::Chapter5(true)));
- return FS47SC11::SelfTest(Lines) && Ok;
+ const bool Body08=FS47SC08::SelfTest(Lines), Body11=FS47SC11::SelfTest(Lines);
+ return Body08 && Body11 && Ok;
 }
 
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if(Test.Mode==TEXT("sc08")||Test.Mode==TEXT("sc08long")||Test.Mode==TEXT("sc08retry")){FS47SC08Contract::Step(M,Dt);return;}
  if (Test.Mode == TEXT("sc04") || Test.Mode == TEXT("sc04hide") || Test.Mode == TEXT("sc04long")) { FS47SC04Contract::Step(M, Dt); return; }
  if (Test.Mode == TEXT("sc05") && M && M->Story) { S47SC05Contract::Step(M,Dt); return; }
  if(Test.Mode==TEXT("sc06"))return; // Dedicated contract runs before the Play gate in Step.

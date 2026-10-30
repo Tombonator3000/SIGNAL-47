@@ -1,3 +1,4 @@
+#include "S47Spine.h"
 // main.ts: SARO's own happenings (saroDark, saroPower, arrayBack, follow, lineLights, reel047,
 // reelTape, recWalk), in the order main.ts builds and steps them
 #include "S47SaroNight.h"
@@ -412,6 +413,7 @@ void US47SaroNight::StepArray(double Dt, bool bModal)
 {
 	if (M->Mode != US47Main::EMode::Play) return;
 	bArrayStepped = true;
+ if(M->Spine && M->Spine->ArrayBusy())return; // SC08 owns its three actual encoders; the reel and lamps still frame.
 	const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
 	// the array put back on the schedule (story/arrayBack.ts): its time stops while a panel is open,
 	// as the night's does; before the time away, which may not begin while it runs
@@ -471,6 +473,8 @@ void US47SaroNight::StepLate(double Dt, bool bModal)
 		}
 		// the eyes from where the player stands now (the dishes have one owner at a time: while the
 		// archive's phone has them tipped, the warning's dishes do not begin)
+		if(!(M->Spine && M->Spine->ArrayBusy()))
+  {
 		FS47FollowIn F;
 		F.Stage = AbStage();
 		if (TestWarn) F.Warning = FS47FollowIn::FWarn{ *TestWarn, S47Follow::WARN };
@@ -484,6 +488,7 @@ void US47SaroNight::StepLate(double Dt, bool bModal)
 		F.Woke = Abduct.Last ? Abduct.Last() : 0;
 		F.bOver = Abduct.Over && Abduct.Over();
 		Follow->Update(Dt, F);
+  }
 	}
 	else Follow->Wait();
 	// the corner clock in seconds while the warning counts its 47 (abduction.warnClock ?? saroDark.clockShow ?? archive.clockShow ?? ch6.clockShow)
