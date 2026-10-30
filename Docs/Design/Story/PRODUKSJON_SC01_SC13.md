@@ -13,17 +13,17 @@ Pakkescener (SC01 til SC03) ligger i `unreal/Narrative/HorrorStory/modules/unifi
 | SC01 | 18:00-23:40 | Ferdig | - |
 | 00:13-02:00 | strømbrudd, trafotur | Ferdig | - |
 | SC02 | 02:00 | Ferdig | - |
-| SC03 | 02:15-02:45 | Spillbar, tekster gamle | Claude |
+| SC03 | 02:15-02:45 | Tekster rettet (PR245); klokkeregel 02:44 gjenstår | Claude |
 | SC04 | 02:55-03:15 | Ferdig (PR239) | - |
-| SC05 | 03:15-03:25 | Gammel kode, fire logikkfeil | Claude |
-| SC06 | 03:25-03:40 | Gammel kode, hopptider gamle | Claude |
-| SC07 | 03:40-03:55 | Gammel kode, frøet fra 20:30 ikke koblet | Claude |
+| SC05 | 03:15-03:25 | Rettet (PR244) | - |
+| SC06 | 03:25-03:40 | Rettet (PR246) | - |
+| SC07 | 03:40-03:55 | Rettet (PR246) | - |
 | SC08 | 04:00-04:20 | Ferdig (PR240) | - |
-| SC09 | 04:25-04:45 | Gammel kode, en hendelse død, Nora på feil sted | Codex |
-| SC10 | 04:50-05:00 | Gammel kode, ny sluttreplikk mangler | Codex |
-| SC11 | 05:00-05:10 | Plassholder | Codex |
-| SC12 | 05:12-05:20 | Gammel kode, sheriff og patruljeark mangler | Codex |
-| SC13 | 05:20-05:29:47 | Ferdig i grunnen, mål og tekster gamle | Codex |
+| SC09 | 04:25-04:45 | Stasjonshendelsen og Tomás rettet (30.10); Noras samtale gjenstår | Claude |
+| SC10 | 04:50-05:00 | Ny sluttreplikk og SARO som neste mål (30.10) | - |
+| SC11 | 05:00-05:10 | Ferdig (PR250) | - |
+| SC12 | 05:12-05:20 | Gammel kode, sheriff og patruljeark mangler | Claude |
+| SC13 | 05:20-05:29:47 | Ferdig i grunnen, mål og tekster gamle | Claude |
 
 ---
 
@@ -127,7 +127,7 @@ Ferdig (PR240). Mulig senere justering etter Toms spilling: den korte veien opp 
 
 ### Arbeidsliste
 1. **Død hendelse.** `Public/S47StationTaken.h:39` og `S47Away.cpp:79,534`: `STATION_LAST` = 04:35 − 18:50 = 04:16:10, så `StationDue()` er alltid for sent når kapittel 3 starter 04:25. Bruk `S47Timeline::Chapter4(E) − 18 min 50 s` (04:31:10 i kveldstidslinjen). Rett selvtesten (`S47StationTaken.cpp:133,147`).
-2. **Noras samtale på feil sted.** Revisjonen: Nora ringer først når begge feltkopiene er fremkalt. Flytt samtalen fra feltelefonen på STATION 01 (`S47Chapter3.cpp:899-903, 923-959`) til SARO: når `Collect` på våtbenken er ferdig (`:1158`), ringer kontrolltelefonen etter 3 s. Replikkene:
+2. **Noras samtale på feil sted.** (Åpen 30.10: kontrolltelefonen har ingen kapittel 3-krok, og en ny `Inter->Add("phone")` ville overstyre telefonen for alle kapitler. Trenger en ringekrok i `AS47Story` som kapittel 3 kan bruke, slik `PhoneHook` i kapittel 2.) Revisjonen: Nora ringer først når begge feltkopiene er fremkalt. Flytt samtalen fra feltelefonen på STATION 01 (`S47Chapter3.cpp:899-903, 923-959`) til SARO: når `Collect` på våtbenken er ferdig (`:1158`), ringer kontrolltelefonen etter 3 s. Replikkene:
    - `So you went out there.`
    - `This line still rings in the motel office. I heard it ring at four, every night, for a year.`
    - `You have the frames now. Look at them before you believe them.`

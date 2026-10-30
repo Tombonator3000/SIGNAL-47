@@ -1,6 +1,7 @@
 // main.ts: the time away and the trucks (abduction, truckTaken, truckOnB, lostNights, theThird, starHole,
 // flashFrames), in the order main.ts builds and steps them
 #include "S47Away.h"
+#include "S47Timeline.h"
 #include "S47Keys.h"
 
 #include "Components/SceneCaptureComponent2D.h"
@@ -531,7 +532,8 @@ FString US47Away::StationDue() const
 	if (M->World->Indoors(P)) return TEXT("inside");
 	const FS47Obj Door = M->Web->Obj(TEXT("world.site.proxies.hutDoor"));
 	if (Door) { const FVector D = Door.WorldPosition(); if (FMath::Sqrt(FMath::Square(P.X - D.X) + FMath::Square(P.Z - D.Z)) < OUT_OF_DOOR) return TEXT("door"); }
-	if (Clock() > STATION_LAST) return TEXT("late");
+	// Evening cases: chapter three is 04:25 and four 04:50 (approved timeline), so the window ends before 04:50.
+	if (Clock() > ((M->Story && M->Story->bEveningTimeline) ? S47Timeline::Chapter4(true) - (17 * 60 + 60 + 47 + 3) : STATION_LAST)) return TEXT("late");
 	if (Cinematic() || M->OneAtATime() || (M->Audio && M->Audio->PhonePlaying())) return TEXT("busy");
 	// (stationTaken.begin is its port's: without it, nothing shuts the hut)
 	if (!StationBegin) return TEXT("story");

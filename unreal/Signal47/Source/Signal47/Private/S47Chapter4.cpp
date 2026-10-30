@@ -1,4 +1,5 @@
 #include "S47Chapter4.h"
+#include "S47Spine.h"
 #include "S47Chapter3.h"
 
 #include "Engine/World.h"
@@ -470,8 +471,10 @@ FString US47Chapter4::Objective() const
 		}
 		return TEXT("ROOM 6 // ASK HER WHERE C WENT");
 	}
-	if (S.Stage == TEXT("leave")) return bRoom ? TEXT("ROOM 6 // THE ROAD SOUTH IS NEXT. LEAVE ROOM 6") : TEXT("SIERRA MOTOR COURT // THE ROAD SOUTH IS NEXT");
-	if (S.Stage == TEXT("complete")) return TEXT("MESA DINER // TAKE THE ROAD SOUTH AND CHECK THE SERVICE MAP");
+	// Under the spine SC11 at SARO comes next (Hondo and Site 11 send their sheets); older cases keep the road south.
+	const bool bSaroNext = M && M->Spine && M->Spine->Enabled() && M->Spine->Gate(FS47Spine::SC11) != 2;
+	if (S.Stage == TEXT("leave")) return bSaroNext ? (bRoom ? TEXT("ROOM 6 // SARO NEXT: HONDO AND SITE 11 ARE SENDING THEIR SHEETS. LEAVE ROOM 6") : TEXT("SIERRA MOTOR COURT // BACK TO SARO FOR THE REMOTE SHEETS")) : bRoom ? TEXT("ROOM 6 // THE ROAD SOUTH IS NEXT. LEAVE ROOM 6") : TEXT("SIERRA MOTOR COURT // THE ROAD SOUTH IS NEXT");
+	if (S.Stage == TEXT("complete")) return bSaroNext ? TEXT("SARO // THE REMOTE SHEETS COME IN AT 05:04. GET THE ORIGINALS OUT") : TEXT("MESA DINER // TAKE THE ROAD SOUTH AND CHECK THE SERVICE MAP");
 	return FString();
 }
 
@@ -1191,11 +1194,10 @@ void US47Chapter4::Ending()
 	Lines = {
 		You(TEXT("Where did C go?")),
 		Nv(TEXT("East from the station, over the fence, and on across the old highway to Roswell. There is a survey bolt in the shoulder where it crosses.")),
-		Nv(TEXT("Tomás walked out to the closing point with the last reading.")),
-		Nv(TEXT("If you want to know whether the line still holds, drive the road.")),
-		Nv(TEXT("Do not stop on the line.")),
+		Nv(TEXT("Tomás walked out to the closing point with the last reading, and did not walk back.")),
+		Nv(TEXT("Don't finish his observation. Get the originals to the courier, and don't stop at C.")),
 	};
-	Note(FString::Printf(TEXT("%s. C ran east from STATION 01 and crosses the old highway to Roswell at a survey bolt in the shoulder. Tomás walked out to the closing point with the last reading. \"If you want to know whether the line still holds, drive the road. Do not stop on the line.\""), *Time()));
+	Note(FString::Printf(TEXT("%s. C ran east from STATION 01 and crosses the old highway to Roswell at a survey bolt in the shoulder. Tomás walked out to the closing point with the last reading and did not walk back. \"Don't finish his observation. Get the originals to the courier, and don't stop at C.\""), *Time()));
 	Milestone();
 }
 
@@ -1203,7 +1205,9 @@ void US47Chapter4::Finish()
 {
 	if (S.Stage == TEXT("complete")) return;
 	S.Stage = TEXT("complete");
-	Note(TEXT("ROOM 6: P10 to P12 recorded, with her correction (E12), Tomás' letter (E13) and his last field card (E11). Next: the road south, where C crosses it."));
+	const bool bSaroNext = M && M->Spine && M->Spine->Enabled() && M->Spine->Gate(FS47Spine::SC11) != 2;
+	Note(bSaroNext ? FString(TEXT("ROOM 6: P10 to P12 recorded, with her correction (E12), Tomás' letter (E13) and his last field card (E11). Next: SARO. Hondo and Site 11 are sending their sheets. Then the courier."))
+		: FString(TEXT("ROOM 6: P10 to P12 recorded, with her correction (E12), Tomás' letter (E13) and his last field card (E11). Next: the road south, where C crosses it.")));
 	Milestone();
 	TWeakObjectPtr<US47Chapter4> W = this;
 	if (Host) Host->After(1.2, [W] { if (W.IsValid() && W->OnEnd) W->OnEnd(); });
@@ -1575,7 +1579,7 @@ bool US47Chapter4::SelfTest(TArray<FString>& Out)
 	V = C->View();
 	Check(V.Given.Num() == 3 && V.Given[0].Id == TEXT("correction") && V.Choices.Last().Label == TEXT("Step back from the table"), TEXT("on the table: her three papers"));
 	C->Choose(TEXT("end"));
-	Check(C->S.bTold && C->S.Stage == TEXT("leave") && C->Lines.Last().Text == TEXT("Do not stop on the line.") && C->View().Choices.Last().Label == TEXT("Leave her be"), TEXT("where C goes: across the highway to Roswell"));
+	Check(C->S.bTold && C->S.Stage == TEXT("leave") && C->Lines.Last().Text == TEXT("Don't finish his observation. Get the originals to the courier, and don't stop at C.") && C->View().Choices.Last().Label == TEXT("Leave her be"), TEXT("where C goes: across the highway to Roswell"));
 	// the walkie's label as the radio goes (no sound here)
 	Check(C->WalkieLabel() == TEXT("Field radio, 1947"), TEXT("the field radio from 1947 lies on the table"));
 	C->WalkieState = TEXT("playing");

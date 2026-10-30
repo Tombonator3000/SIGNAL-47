@@ -226,7 +226,7 @@ FString FS47FieldBook::DrawerLabel() const { return Read() || Draft ? TEXT("T. V
 
 FString FS47FieldBook::DrawerExamine() const
 {
-	return Read() || Draft ? TEXT("Pencils, a dry rubber band, and a field book in green cloth: T. VEGA, FIELD BOOK 3.")
+	return Read() || Draft ? TEXT("Pencils, a dry rubber band, and a field book in green cloth: T. VEGA, FIELD BOOK 3. Inside the cover: Tomás Vega, field engineer. If found, return to STATION 01.")
 		: TEXT("A shallow drawer under the bench top, below the lamp. The pull is worn bright.");
 }
 
