@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47SC04.h"
 #include "S47SC08.h"
+#include "S47SC11.h"
 class US47Main;
 class UStaticMeshComponent;
 class UTextRenderComponent;
@@ -28,10 +29,11 @@ public:
  static FVector StandPoint(EGate G);
  static const TCHAR* GateItem(EGate G);
 
- explicit FS47Spine(US47Main* InM) : M(InM), Act04(InM), Act08(InM) {}
+ explicit FS47Spine(US47Main* InM) : M(InM), Act04(InM), Act08(InM), Act11(InM) {}
  // SC04 is built (S47SC04.h); its gate is held while it runs instead of a placeholder card.
  const FS47SC04& Secure() const { return Act04; }
  const FS47SC08& Point() const { return Act08; } // SC08 They point at you (S47SC08.h)
+ const FS47SC11& Searched() const { return Act11; } // SC11 SARO is searched (S47SC11.h)
  void Begin(const S47J::FObj& Saved, bool bNewCase);
  void Stop();
  void Step(double Dt);
@@ -61,6 +63,7 @@ public:
  // Developer start for SC05: SC04 counted done, the clock at its end.
  void TestDoneSC04() { if (bEnabled) { State[SC04] = 2; Act04.TestComplete(); } }
  void TestOpenSC08() { if (bEnabled && State[SC08] == 0) State[SC08] = 1; }
+ void TestOpenSC11() { if (bEnabled && State[SC11] == 0) State[SC11] = 1; }
  // -S47SpineContract=sc08 (with -S47Jump=chapter2) or =sc11 (with -S47Jump=chapter4), -S47EveningTimeline.
  void ControlTest(double Dt);
 private:
@@ -72,12 +75,15 @@ private:
  bool bBuilt = false;
  FS47SC04 Act04;
  FS47SC08 Act08;
+ FS47SC11 Act11;
  struct FTest { FString Mode; int32 Stage = 0, Checks = 0, Item = 0, Cand = 0, Hop = 0; double T = 0, Since = 0, Mark = 0, ClockMark = 0; bool bDone = false, bInit = false; TArray<FVector2D> Route; FString Miss; };
  // -S47SpineContract=sc04 (capture, then the lure: the short way), sc04hide (the shut records door) or sc04long
  // (out by the fire exit, round the north side, in by the service door), with -S47Jump=residual;
  // sc08play / sc08caught (the reel, the sheet, the stakes, the meeting) with -S47Jump=chapter2.
  void SC04Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check);
  void SC08Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check);
+ // -S47SpineContract=sc11play / sc11caught with -S47Jump=chapter4: the originals, the telex, the siege, the truck.
+ void SC11Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check);
  FTest Test;
  void Build();
  void ShowPosts();

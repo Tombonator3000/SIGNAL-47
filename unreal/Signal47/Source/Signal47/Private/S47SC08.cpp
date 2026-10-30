@@ -354,7 +354,8 @@ void FS47SC08::RouteTo(int32 Goal)
   }
  if (Prev[Goal] == -2) return;
  for (int32 N = Goal; N >= 0; N = Prev[N]) Path.Insert(N, 0);
- if (Path.Num() > 1 && FVector2D::Distance(Pos, Nodes()[Path[0]].At) < .2) Path.RemoveAt(0);
+ // Already past the first node towards the second (a replan mid-edge): go on, not back.
+ if (Path.Num() > 1 && (FVector2D::Distance(Pos, Nodes()[Path[0]].At) < .2 || FVector2D::Distance(Pos, Nodes()[Path[1]].At) < FVector2D::Distance(Nodes()[Path[0]].At, Nodes()[Path[1]].At))) Path.RemoveAt(0);
 }
 
 bool FS47SC08::Walk(double Speed, double Dt)
