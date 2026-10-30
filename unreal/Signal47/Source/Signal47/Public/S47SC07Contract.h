@@ -4,6 +4,7 @@
 class US47Main;
 class US47Chapter2;
 
+// -S47Title, no Jump/placement: actual case1 manual/disk/title/Continue at every cohort.
 // Opt-in physical continuation from a real SC06 PASS/checkpoint, never an invented predecessor.
 class FS47SC07Contract
 {
@@ -12,14 +13,14 @@ public:
 private:
  explicit FS47SC07Contract(US47Main* InMain):M(InMain){}
  US47Main* M=nullptr;
- FString Root,PriorPath,Pending;
+ FString Root,PriorPath,Pending,ChainId;
  bool Enabled=false,Initialized=false,Done=false,TitleContinued=false;
- int32 Stage=0,Checks=0,Stores=0,Uses=0,Cursor=0,Samples=0;
+ int32 Stage=0,Checks=0,Stores=0,TitleContinues=0,Uses=0,Cursor=0,Samples=0;
  double Began=0,Wait=0,Progress=0,Metres=0;
  FVector Last=FVector::ZeroVector,Aim=FVector::ZeroVector;
  TArray<FVector2D> Route;
  TArray<TSharedPtr<FJsonValue>> Executed,Rays,Restores,Photos;
- TMap<FString,FString> Papers;
+ TMap<FString,S47J::FObj> Papers;
  S47J::FObj Expected,PriorReceipt;
  US47Chapter2* Act() const;
  void Tick(double Dt);
@@ -34,4 +35,6 @@ private:
  bool Documents(bool Remember=false);
  bool Store(const FString& Name,bool Final=false);
  bool Restored();
+ bool InputUnchanged() const;
+ bool ContinueDisk(const FString& Name,const S47J::FObj& State);
 };

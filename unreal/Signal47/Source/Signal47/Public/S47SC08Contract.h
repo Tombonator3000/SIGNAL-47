@@ -5,7 +5,7 @@ class US47Main;
 class FS47SC08;
 
 // Consumes actual SC07 PASS + hash-bound sc07-complete.disk.json. No placement fixture.
-// -S47Case=0 -S47EveningTimeline -S47Jump=chapter2 -S47SpineContract=sc08|sc08long|sc08retry
+// -S47Title -S47SpineContract=sc08|sc08long|sc08retry; no Jump/Place/developer bootstrap.
 // -S47SC07Checkpoint=<absolute checkpoint> and a fresh isolated /tmp UserDir.
 class FS47SC08Contract
 {
@@ -15,14 +15,14 @@ private:
  explicit FS47SC08Contract(US47Main* Main):M(Main){}
  US47Main* M=nullptr;
  FString Mode,Root,PriorPath,Pending,ChainId;
- int32 Stage=0,Checks=0,Uses=0,Stores=0,Cursor=0,WalkSamples=0,CaptureBefore=0;
+ int32 Stage=0,Checks=0,Uses=0,Stores=0,TitleContinues=0,Cursor=0,WalkSamples=0,CaptureBefore=0;
  double Began=0,Mark=0,Wait=0,Walked=0,OdoStart=0,OdoOut=0,ClockBeforeCapture=0;
  bool Started=false,Done=false,NormalContinue=false,BodyWitness=false,CoverWitness=false,SearchRead=false,GrabNegative=false;
  FVector Aim=FVector::ZeroVector,LastWalk=FVector::ZeroVector;
  TArray<FVector2D> Route;
  TArray<FString> Pictures;
  TArray<TSharedPtr<FJsonValue>> Executed,Rays,States,Restores,Photos,Negatives;
- TMap<FString,FString> Papers;
+ TMap<FString,S47J::FObj> Papers;
  S47J::FObj PriorReceipt,Expected,FirstNative,SecondNative;
  FS47SC08* Act() const;
  void Tick(double Dt);
@@ -40,6 +40,8 @@ private:
  bool Documents(bool Remember=false);
  bool Store(const FString& Name,bool Final=false);
  bool Restored();
+ bool InputUnchanged() const;
+ bool ContinueDisk(const FString& Name,const S47J::FObj& State);
  bool RenderBody();
  void ObserveCover();
  void Snapshot(const FString& Name);

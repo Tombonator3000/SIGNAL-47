@@ -50,6 +50,19 @@ namespace
   TArray<uint8> B;if(!FFileHelper::LoadFileToArray(B,*Path))return nullptr;FSHAHash H;FSHA1::HashBuffer(B.GetData(),B.Num(),H.Hash);
   auto O=S47J::New();S47J::Set(O,TEXT("path"),Path);S47J::Set(O,TEXT("bytes"),B.Num());S47J::Set(O,TEXT("sha1"),H.ToString());return O;
  }
+ bool SC06Same(const S47J::FObj& A,const S47J::FObj& B){return A&&B&&FJsonValue::CompareEqual(FJsonValueObject(A),FJsonValueObject(B));}
+ // Only the known serialization name differs: chapter-owned paperRatio vs routine ratio.
+ // All FS47Doc strings, image bytes and complete sheets are compared; raw inputs remain byteoriginal.
+ S47J::FObj SC06Doc(const S47J::FObj& Raw)
+ {
+  auto D=S47J::Clone(Raw);if(!D)return nullptr;
+  if(D->HasField(TEXT("paperRatio"))&&!D->HasField(TEXT("ratio"))){D->SetField(TEXT("ratio"),D->GetField<EJson::None>(TEXT("paperRatio")));D->RemoveField(TEXT("paperRatio"));}return D;
+ }
+ bool SC06Bytes(const S47J::FObj& A,const S47J::FObj& B)
+ {return A&&B&&S47J::Num(A,TEXT("bytes"),-1)==S47J::Num(B,TEXT("bytes"),-2)&&S47J::Str(A,TEXT("sha1"))==S47J::Str(B,TEXT("sha1"));}
+ bool SC06Copy(const FString& From,const FString& To)
+ {TArray<uint8> Bytes;return FFileHelper::LoadFileToArray(Bytes,*From)&&FFileHelper::SaveArrayToFile(Bytes,*To)&&SC06Bytes(SC06File(From),SC06File(To));}
+
 }
 US47Chapter1* FS47SC06Contract::Act() const{return M&&M->Story?Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1"))):nullptr;}
 void FS47SC06Contract::Next(int32 Value,double Delay){Stage=Value;Wait=Delay;Progress=FPlatformTime::Seconds();}
@@ -60,11 +73,11 @@ bool FS47SC06Contract::Check(bool Good,const FString& Why)
 }
 void FS47SC06Contract::Finish(bool Good,const FString& Why)
 {
- if(Done)return;Done=true;if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
+ if(Done)return;if(Good&&!Check(InputUnchanged(),TEXT("parent checkpoint/result and both byteoriginal copies remain SHA/length-identical before PASS")))return;Done=true;if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
  auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("scenario"),TEXT("SC06"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("stage"),Stage);
- S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("stores"),Stores);S47J::Set(O,TEXT("native_uses"),Uses);S47J::Set(O,TEXT("walk_samples"),Samples);S47J::Set(O,TEXT("walked_metres"),Metres);S47J::Set(O,TEXT("method"),Method);S47J::Set(O,TEXT("normal_title_continue"),TitleContinued);
+ S47J::Set(O,TEXT("chain_id"),ChainId);S47J::Set(O,TEXT("ordinary_title_continues"),TitleContinues);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("stores"),Stores);S47J::Set(O,TEXT("native_uses"),Uses);S47J::Set(O,TEXT("walk_samples"),Samples);S47J::Set(O,TEXT("walked_metres"),Metres);S47J::Set(O,TEXT("method"),Method);S47J::Set(O,TEXT("normal_title_continue"),TitleContinued);
  S47J::Set(O,TEXT("prerequisite"),PriorReceipt);S47J::Set(O,TEXT("expected_restore_state"),Expected);S47J::Set(O,TEXT("checkpoint_file"),Root.IsEmpty()?nullptr:SC06File(Root/TEXT("sc06-complete.disk.json")));S47J::Set(O,TEXT("final_state"),M&&M->Flow?M->Flow->GameState():nullptr);S47J::Set(O,TEXT("elapsed_seconds"),FPlatformTime::Seconds()-Began);
- S47J::Set(O,TEXT("source_method"),TEXT("Actual SC05 PASS and complete disk checkpoint; ordinary full Flow restore. Native Walker TestMove/Resolve, actual camera Pick/focus/HUD OnUse, actual Slate button/print pointer callbacks, real field-camera RHI exposures, production board rules, real fog/reprint, disk/title Continue."));
+ S47J::Set(O,TEXT("source_method"),TEXT("Actual SC05 PASS and complete disk checkpoint; byteoriginal isolated case1 transfer followed by ordinary title Continue, with normal manual/Reader/title/Continue at every later cohort. Native Walker TestMove/Resolve, actual camera Pick/focus/HUD OnUse, actual Slate button/print pointer callbacks, real field-camera RHI exposures, production board rules, real fog/reprint, disk/title Continue."));
  S47J::Set(O,TEXT("limits"),TEXT("SC01-SC05 are consumed from the named real predecessor, not replayed. One selected B-12 method per process; run passive and active separately. API actions are not human input. Image payload/geometry checks do not certify visual quality, audio listening, FPS, full matrix, installation or release."));
  O->SetArrayField(TEXT("executed_checks"),Executed);O->SetArrayField(TEXT("rays"),Rays);O->SetArrayField(TEXT("restores"),Restores);O->SetArrayField(TEXT("photographs"),Photos);
  S47J::Set(O,TEXT("checkpoint"),Root/TEXT("sc06-complete.disk.json"));const bool Written=!Root.IsEmpty()&&FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
@@ -121,20 +134,46 @@ bool FS47SC06Contract::Photograph()
 }
 bool FS47SC06Contract::Documents(bool Remember)
 {
- TMap<FString,FString> Now;for(const auto& V:S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")))if(V&&V->Type==EJson::Object){auto D=V->AsObject();Now.Add(S47J::Str(D,TEXT("id")),S47J::Write(D));}
- for(const auto& P:Papers)if(!Check(Now.Contains(P.Key)&&Now[P.Key]==P.Value,TEXT("all acquired document/image/stamp/sheets preserved: ")+P.Key))return false;if(Remember)Papers=MoveTemp(Now);return true;
+ TMap<FString,S47J::FObj> Now;for(const auto& V:S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")))if(V&&V->Type==EJson::Object){auto D=V->AsObject();Now.Add(S47J::Str(D,TEXT("id")),SC06Doc(D));}
+ for(const auto& P:Papers)if(!Check(Now.Contains(P.Key)&&SC06Same(Now[P.Key],P.Value),TEXT("all acquired document/image/stamp/sheets preserved: ")+P.Key))return false;if(Remember)Papers=MoveTemp(Now);return true;
+}
+bool FS47SC06Contract::InputUnchanged() const
+{
+ if(ChainId.IsEmpty()||!PriorReceipt)return false;
+ for(const TCHAR* Kind:{TEXT("checkpoint"),TEXT("result")})
+ {
+  const auto Source=S47J::Obj(PriorReceipt,Kind),Copy=S47J::Obj(PriorReceipt,FCString::Strcmp(Kind,TEXT("checkpoint"))==0?TEXT("byteoriginal_checkpoint"):TEXT("byteoriginal_result"));
+  if(!SC06Bytes(Source,SC06File(S47J::Str(Source,TEXT("path"))))||!SC06Bytes(Source,Copy)||!SC06Bytes(Copy,SC06File(S47J::Str(Copy,TEXT("path")))))return false;
+ }
+ return true;
+}
+bool FS47SC06Contract::ContinueDisk(const FString& Name,const S47J::FObj& State)
+{
+ M->Flow->ToTitle();FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();const auto Selected=Reader.ContinueSave(),Actual=M->Flow->Saves.ContinueSave();const auto Disk=Selected?Reader.Load(Selected->Id):nullptr;
+ if(!Check(M->Mode==US47Main::EMode::Title&&Selected&&Selected->CaseId==1&&Actual&&Selected->Id==Actual->Id&&SC06Same(Disk,State),TEXT("ordinary title and independent reader choose the actual full case1 cohort: ")+Name))return false;
+ Expected=S47J::Clone(Disk);Pending=Name;
+ if(!Check(M->Flow->OpenTestView(TEXT("continue")),TEXT("ordinary title Continue opens actual selected case1 disk: ")+Name))return false;
+ ++Stores;++TitleContinues;TitleContinued=true;return true;
 }
 bool FS47SC06Contract::Store(const FString& Name,bool Final)
 {
- if(M->ModalOpen()||M->Story->IsCinematic()||!M->Flow->GameSaveBlock().IsEmpty()){if(FPlatformTime::Seconds()-Progress>20)Finish(false,TEXT("ordinary save gate blocked: ")+Name);return false;}
- if(!Documents(true))return false;Expected=S47J::Clone(M->Flow->GameState());FS47SaveStore Writer(Root/TEXT("cohorts")/Name);Writer.Init();FS47SaveCard Card;Card.Chapter=TEXT("SC06");Card.Clock=M->Story->ClockText(true);Card.Place=M->Flow->PlaceName();FString Error;const auto Meta=Writer.Save(1,TEXT("manual"),0,Expected,Card,Error);FS47SaveStore Reader(Writer.Dir);Reader.Init();const auto Disk=Meta?Reader.Load(Meta->Id):nullptr;
- if(!Check(Disk&&S47J::Write(Disk)==S47J::Write(Expected)&&FFileHelper::SaveStringToFile(S47J::Write(Disk,true),*(Root/(Name+TEXT(".disk.json")))),TEXT("full isolated writer + independent fresh disk reader: ")+Name+Error))return false;
- if(Final&&!Check(FFileHelper::SaveStringToFile(S47J::Write(Disk,true),*(Root/TEXT("sc06-complete.disk.json"))),TEXT("stable actual SC06 checkpoint for SC07")))return false;
- Pending=Name;++Stores;US47Flow::FStart Start;Start.State=Disk;Start.bDev=true;M->Flow->StartGame(Start);return true;
+ M->Player->TestMove.Reset();M->Player->bTestRun=false;
+ const FString Block=M->Flow->SaveBlock();
+ if(M->ModalOpen()||M->Story->IsCinematic()||M->World->bBusy||M->Flow->bStarting||!Block.IsEmpty()){if(FPlatformTime::Seconds()-Progress>25)Finish(false,TEXT("ordinary save gate blocked: ")+Name+TEXT(" / ")+Block);return false;}
+ if(!Check(M->Flow->CaseId==1&&!M->Flow->bDevRun,TEXT("ordinary gameplay case1 before manual save: ")+Name)||!Documents(true))return false;
+ Expected=S47J::Clone(M->Flow->GameState());FString Error;const auto Meta=M->Flow->WriteSave(TEXT("manual"),0,Error);FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();const auto Disk=Meta?Reader.Load(Meta->Id):nullptr;
+ if(!Check(Meta&&Meta->CaseId==1&&Meta->Kind==TEXT("manual")&&SC06Same(Disk,Expected)&&FFileHelper::SaveStringToFile(S47J::Write(Disk,true),*(Root/(Name+TEXT(".disk.json")))),TEXT("Flow.SaveBlock/manual write + independent full disk reader: ")+Name+TEXT(" / ")+Error))return false;
+ if(Final&&!Check(FFileHelper::SaveStringToFile(S47J::Write(Disk,true),*(Root/TEXT("sc06-complete.disk.json"))),TEXT("stable actual SC06 complete checkpoint for next scenario")))return false;
+ return ContinueDisk(Name,Disk);
 }
 bool FS47SC06Contract::Restored()
 {
  const auto Actual=M->Flow->GameState(),WantCase=S47J::Obj(Expected,TEXT("case")),Pose=S47J::Obj(Expected,TEXT("pose"));
+ if(!Check(M->Mode==US47Main::EMode::Play&&M->Flow->CaseId==1&&!M->Flow->bDevRun&&SC06Same(M->Flow->Carry,Expected),TEXT("normal case1/full Flow carries every original input field without developer restore: ")+Pending))return false;
+ const auto WantSpine=S47J::Obj(Expected,TEXT("spine")),NowSpine=S47J::Obj(Actual,TEXT("spine"));const int32 WasVersion=S47J::Int(WantSpine,TEXT("v")),NowVersion=S47J::Int(NowSpine,TEXT("v"));
+ if(!Check((WasVersion==1||WasVersion==2)&&NowVersion>=WasVersion&&NowVersion<=2,TEXT("legitimate Spine v1/v2 retained without downgrade: ")+Pending))return false;
+ for(const TCHAR* Field:{TEXT("sc04d"),TEXT("sc05d")})if(S47J::Obj(WantSpine,Field)&&!Check(SC06Same(S47J::Obj(WantSpine,Field),S47J::Obj(NowSpine,Field)),FString(TEXT("all actual prior custody/pointing/facts retained: "))+Field+TEXT(" / ")+Pending))return false;
+ if(!Check(M->World->Area==S47J::Str(Expected,TEXT("area"))&&M->Flow->CheckpointName()==S47J::Str(Expected,TEXT("checkpoint")),TEXT("actual saved area/checkpoint retained: ")+Pending))return false;
  if(!Check(S47J::Write(S47J::Obj(S47J::Obj(Actual,TEXT("case")),TEXT("s")))==S47J::Write(S47J::Obj(WantCase,TEXT("s")))&&M->Story->Clock()>=S47J::Num(WantCase,TEXT("clock"))&&M->Story->Clock()-S47J::Num(WantCase,TEXT("clock"))<4,TEXT("actual full Flow retains SC06 photo/control/source state and forward-only clock: ")+Pending))return false;
  if(!Check(S47J::Write(S47J::Obj(Actual,TEXT("doors")))==S47J::Write(S47J::Obj(Expected,TEXT("doors")))&&FMath::Abs(M->Player->Pos.X-S47J::Num(Pose,TEXT("x")))<.04&&FMath::Abs(M->Player->Pos.Z-S47J::Num(Pose,TEXT("z")))<.04&&FMath::Abs(M->Player->Yaw-S47J::Num(Pose,TEXT("yaw")))<.001&&FMath::Abs(M->Player->Pitch-S47J::Num(Pose,TEXT("pitch")))<.001,TEXT("saved doors/real pose/camera restored: ")+Pending)||!Documents())return false;
  auto R=S47J::New();S47J::Set(R,TEXT("name"),Pending);S47J::Set(R,TEXT("actual"),Actual);Restores.Add(MakeShared<FJsonValueObject>(R));Pending.Reset();Last=M->Player->Pos;return true;
@@ -146,16 +185,31 @@ void FS47SC06Contract::Tick(double Dt)
  if(FPlatformTime::Seconds()-Began>420){Finish(false,TEXT("420-second wall timeout"));return;}if(S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy)return;if(Wait>0){Wait-=Dt;return;}
  if(Stage==0)
  {
-  if(M->Mode!=US47Main::EMode::Play)return;FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);User=FPaths::ConvertRelativePathToFull(User);FPaths::CollapseRelativeDirectories(User);
-  if(!Check((User.StartsWith(TEXT("/tmp/"))||User.StartsWith(TEXT("/var/tmp/")))&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),User)&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),User)&&M->Flow->CaseId==0&&M->Flow->bDevRun&&M->Flow->Saves.List().IsEmpty(),TEXT("explicit fresh isolated developer profile before any mutation")))return;
+  if(!Check(FParse::Param(FCommandLine::Get(),TEXT("S47Title")),TEXT("actual chain requires title startup, no chapter Jump fixture")))return;
+  if(M->Mode!=US47Main::EMode::Title)return;FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);User=FPaths::ConvertRelativePathToFull(User);FPaths::CollapseRelativeDirectories(User);
+  if(!Check((User.StartsWith(TEXT("/tmp/"))||User.StartsWith(TEXT("/var/tmp/")))&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),User)&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),User)&&FParse::Param(FCommandLine::Get(),TEXT("S47Title"))&&!M->Flow->bDevRun&&M->Flow->Saves.List().IsEmpty()&&!IFileManager::Get().DirectoryExists(*(FPaths::ProjectSavedDir()/TEXT("SC06Contract"))),TEXT("fresh isolated title profile before any case/proof mutation; no developer night")))return;
+  for(const TCHAR* Flag:{TEXT("S47Jump"),TEXT("S47Face"),TEXT("S47Walk"),TEXT("S47WalkFrom"),TEXT("S47Place"),TEXT("S47Drive"),TEXT("S47Auto"),TEXT("S47Use"),TEXT("S47Press"),TEXT("S47Open"),TEXT("S47ProductionViews"),TEXT("S47NightSequenceContract"),TEXT("S47HorrorContract"),TEXT("S47Ch1Drive"),TEXT("S47Ch2Drive")})
+  {FString Value;if(FParse::Param(FCommandLine::Get(),Flag)||FParse::Value(FCommandLine::Get(),*(FString(Flag)+TEXT("=")),Value)){Finish(false,FString(TEXT("independent Jump/pose/input/story driver is forbidden in actual chain: "))+Flag);return;}}
   Root=FPaths::ProjectSavedDir()/TEXT("SC06Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits);IFileManager::Get().MakeDirectory(*Root,true);
   FParse::Value(FCommandLine::Get(),TEXT("S47SC05Checkpoint="),PriorPath);FString Data,ReceiptText;const FString Receipt=FPaths::GetPath(PriorPath)/TEXT("result.json");const bool Loaded=FFileHelper::LoadFileToString(Data,*PriorPath)&&FFileHelper::LoadFileToString(ReceiptText,*Receipt);auto Prior=Loaded?S47J::Read(Data):nullptr;auto Result=Loaded?S47J::Read(ReceiptText):nullptr;
   if(!Check(Prior&&Result&&S47J::Str(Result,TEXT("status"))==TEXT("PASS")&&S47J::Str(Result,TEXT("scenario"))==TEXT("SC05")&&S47J::Obj(Prior,TEXT("case")),TEXT("actual named SC05 PASS and complete disk prerequisite; no substitute documents")))return;
+  if(!Check(S47J::Str(Prior,TEXT("checkpoint"))==TEXT("chapter1"),TEXT("actual SC05 complete checkpoint is chapter1"))||!Check(S47J::Bool(S47J::Obj(S47J::Obj(Prior,TEXT("spine")),TEXT("sc05d")),TEXT("done"))&&S47J::Int(S47J::Obj(S47J::Obj(Prior,TEXT("case")),TEXT("s")),TEXT("sc06Version"))==1,TEXT("actual completed SC05 opens opt-in SC06; no chapter factory")))return;
   const auto Certified=S47J::Obj(Result,TEXT("checkpoint_file")),ActualFile=SC06File(PriorPath);
   if(!Check(Certified&&ActualFile&&S47J::Str(Certified,TEXT("path"))==PriorPath&&S47J::Num(Certified,TEXT("bytes"))==S47J::Num(ActualFile,TEXT("bytes"))&&S47J::Str(Certified,TEXT("sha1"))==S47J::Str(ActualFile,TEXT("sha1")),TEXT("SC05 PASS pins these exact prerequisite disk bytes")))return;
   PriorReceipt=S47J::New();S47J::Set(PriorReceipt,TEXT("checkpoint"),SC06File(PriorPath));S47J::Set(PriorReceipt,TEXT("result"),SC06File(Receipt));
+  ChainId=S47J::Str(Result,TEXT("chain_id"));if(!Check(!ChainId.IsEmpty(),TEXT("exact non-empty actual predecessor chain_id; no local chain root")))return;
+  const int32 InputSpine=S47J::Int(S47J::Obj(Prior,TEXT("spine")),TEXT("v"));if(!Check((InputSpine==1||InputSpine==2)&&S47J::Int(Prior,TEXT("timelineVersion"))==2,TEXT("actual new-night source with qualified Spine v1 or v2")))return;
+  const FString CheckCopy=Root/TEXT("input-sc05.byteoriginal.disk.json"),ResultCopy=Root/TEXT("input-sc05.byteoriginal.result.json");
+  if(!Check(SC06Copy(PriorPath,CheckCopy)&&SC06Copy(Receipt,ResultCopy),TEXT("retain byteoriginal parent checkpoint/result without reserialization")))return;
+  S47J::Set(PriorReceipt,TEXT("byteoriginal_checkpoint"),SC06File(CheckCopy));S47J::Set(PriorReceipt,TEXT("byteoriginal_result"),SC06File(ResultCopy));
+  FString CopiedState,CopiedResult;if(!Check(FFileHelper::LoadFileToString(CopiedState,*CheckCopy)&&FFileHelper::LoadFileToString(CopiedResult,*ResultCopy)&&SC06Same(S47J::Read(CopiedState),Prior)&&SC06Same(S47J::Read(CopiedResult),Result),TEXT("parsed predecessor state/PASS equal the exact byteoriginal evidence copies")))return;
+  for(const TCHAR* Part:{TEXT("s"),TEXT("ch2")})for(const auto& V:S47J::Arr(S47J::Obj(S47J::Obj(Prior,TEXT("case")),Part),TEXT("sources")))if(V&&V->Type==EJson::Object){const auto D=V->AsObject();Papers.Add(S47J::Str(D,TEXT("id")),SC06Doc(D));}
+  if(!Check(!Papers.IsEmpty()&&InputUnchanged(),TEXT("actual full acquired source inventory and immutable raw input pins")))return;
   FParse::Value(FCommandLine::Get(),TEXT("S47SC06Method="),Method);if(Method.IsEmpty())Method=TEXT("passive");if(!Check(Method==TEXT("passive")||Method==TEXT("active"),TEXT("explicit supported control method")))return;
-  US47Flow::FStart Start;Start.State=Prior;Start.bDev=true;M->Flow->StartGame(Start);Next(1,.5);return;
+  Expected=S47J::Clone(Prior);FS47SaveCard Card;Card.Chapter=TEXT("SC05 actual completed checkpoint");Card.Place=S47J::Str(Prior,TEXT("area"));Card.Clock=S47Text::ClockText(S47J::Num(S47J::Obj(Prior,TEXT("case")),TEXT("clock")),true);FString Error;
+  const auto Seed=M->Flow->Saves.Save(1,TEXT("manual"),0,Expected,Card,Error);FS47SaveStore SeedReader(M->Flow->Saves.Dir);SeedReader.Init();const auto Imported=Seed?SeedReader.Load(Seed->Id):nullptr;
+  if(!Check(Seed&&Seed->CaseId==1&&SC06Same(Imported,Prior),TEXT("only exact parent full state transferred into isolated case1/manual; independent reader: ")+Error))return;
+  if(!ContinueDisk(TEXT("actual-sc05-input"),Imported))return;Next(1,.3);return;
  }
  if(!Pending.IsEmpty()&&!Restored())return;if(M->Mode!=US47Main::EMode::Play)return;auto* C=Act();
  switch(Stage)
@@ -228,17 +282,9 @@ void FS47SC06Contract::Tick(double Dt)
  case 55:if(!Use(TEXT("records")))return;Next(56);return;
  case 56:if(!Button(TEXT("FILE PRINTS AND CLOSE THE LOCAL CASE")))return;Next(57,3);return;
  case 57:if(M->Story->IsCinematic())return;if(!Check(C->S.bFiled&&C->S.F1&&C->S.F2&&C->S.Fog1==1&&M->Story->Clock()>=3*3600+40*60&&M->Story->ChapterKey==TEXT("ch2"),TEXT("actual report completion advances to03:40 and ordinary Chapter2")))return;if(!Store(TEXT("sc06-complete"),true))return;Next(58);return;
- case 58:
- {
-  if(!Documents(true))return;auto State=M->Flow->GameState();US47Flow::FStart Start;Start.State=State;Start.CaseId=1;Start.bDev=false;M->Flow->StartGame(Start);Next(59,.5);return;
- }
- case 59:
- {
-  if(!M->Flow->SaveBlock().IsEmpty())return;FString Error;const auto Meta=M->Flow->WriteSave(TEXT("manual"),0,Error);if(!Check(Meta.IsSet(),TEXT("ordinary isolated case1 manual save: ")+Error))return;
-  M->Flow->ToTitle();FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();const auto Selected=Reader.ContinueSave();Expected=Selected?Reader.Load(Selected->Id):nullptr;
-  if(!Check(Expected&&FFileHelper::SaveStringToFile(S47J::Write(Expected,true),*(Root/TEXT("normal-continue.disk.json")))&&M->Flow->OpenTestView(TEXT("continue")),TEXT("ordinary title Continue uses actual independent disk choice")))return;Pending=TEXT("ordinary-title-continue");++Stores;TitleContinued=true;Next(60,.5);return;
- }
- case 60:if(!Check(M->Flow->CaseId==1&&!M->Flow->bDevRun&&TitleContinued&&Restores.Num()==Stores&&Photos.Num()==2&&Uses>=14&&Stores>=5&&Metres>60&&Samples>100,TEXT("both real photographs, fog/reprint, physical route and full disk/title continuation completed")))return;Finish(true,TEXT("actual B-12 control, two exposures and source-preserving continuation"));return;
+ case 58:if(!Documents(true))return;Next(59);return;
+ case 59:if(!Store(TEXT("ordinary-title-continue")))return;Next(60,.3);return;
+ case 60:if(!Check(M->Flow->CaseId==1&&!M->Flow->bDevRun&&TitleContinued&&TitleContinues==Stores&&Restores.Num()==Stores&&Photos.Num()==2&&Uses>=14&&Stores>=5&&Metres>60&&Samples>100,TEXT("both real photographs, fog/reprint, physical route and full disk/title continuation completed")))return;Finish(true,TEXT("actual B-12 control, two exposures and source-preserving continuation"));return;
  default:Finish(false,TEXT("unknown SC06 stage"));return;
  }
 }
