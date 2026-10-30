@@ -1880,9 +1880,9 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		if (T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck")))
 		{
-			S47J::FObj Proof;const bool Good=SC03GroundingProof(M,Proof);T.Evidence.Add(MakeShared<FJsonValueObject>(Proof));
+			S47J::FObj Proof;const bool GroundingValid=SC03GroundingProof(M,Proof);T.Evidence.Add(MakeShared<FJsonValueObject>(Proof));
 			if (!FFileHelper::SaveStringToFile(S47J::Write(Proof,true),*(T.Root/TEXT("sc03-before-lift-grounding.json")))) { Fail(TEXT("could not preserve native grounding measurements"));return; }
-			if (!Check(Good,TEXT("SC03 native pivot, source-wheel contacts and full footprint/approach clearance before lift"))) return;
+			if (!Check(GroundingValid,TEXT("SC03 native pivot, source-wheel contacts and full footprint/approach clearance before lift"))) return;
 		}
 		// Ortiz stands at the driver's side; reach her from her own side, around the wagon's solid body.
 		const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out=Out.GetSafeNormal();
