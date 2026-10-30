@@ -175,8 +175,16 @@ void US47Chapter6::ThirdGlints(const TArray<FVector>* Pts, const FLinearColor& C
 }
 
 TOptional<FVector> US47Chapter6::ThirdAt() const { return Third && bThirdShown ? TOptional<FVector>(Third->Head()) : TOptional<FVector>(); }
-FString US47Chapter6::Objective() const { return Stage == TEXT("drive") ? TEXT("THE OLD ROSWELL ROAD // C CROSSES JUST PAST MILE 8") : FString(); }
-TArray<FS47Task> US47Chapter6::Tasks() const { return { { TEXT("Drive out to where C crosses the old road, just past mile 8"), Stage != TEXT("drive") } }; }
+// SC13 under the spine: the originals go to the courier at mile 10.4, past C at 8.15 (PRODUKSJON_SC01_SC13.md).
+FString US47Chapter6::Objective() const
+{
+	if (Stage != TEXT("drive")) return FString();
+	return Host && Host->bEveningTimeline ? TEXT("THE OLD ROAD // THE COURIER WAITS AT MILE 10.4. PASS C WITHOUT STOPPING") : TEXT("THE OLD ROSWELL ROAD // C CROSSES JUST PAST MILE 8");
+}
+TArray<FS47Task> US47Chapter6::Tasks() const
+{
+	return { { Host && Host->bEveningTimeline ? TEXT("Carry the originals to the courier at mile 10.4") : TEXT("Drive out to where C crosses the old road, just past mile 8"), Stage != TEXT("drive") } };
+}
 
 // ---------- the drive ----------
 void US47Chapter6::Drive(double Dt)

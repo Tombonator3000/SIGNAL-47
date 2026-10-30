@@ -134,6 +134,9 @@ private:
 	void BuildBook();
 	void ApplyWorld();
 	void Save();
+	// SC12 under the spine (S47Spine.h): Ward must have the sources; the deputy's patrol sheet at 05:15.
+	bool Spined() const;
+	bool PatrolRead() const;
 	FString Time() const;
 	bool InDiner() const;
 	FString TruckWhere() const;
