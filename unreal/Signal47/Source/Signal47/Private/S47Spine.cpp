@@ -13,6 +13,7 @@
 #include "S47Timeline.h"
 #include "S47Walker.h"
 #include "S47World.h"
+#include "S47NightContract.h"
 #include "S47Chapter2.h"
 #include "S47Chapter4.h"
 #include "Misc/CommandLine.h"
@@ -298,6 +299,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if(Test.Mode==TEXT("night")&&M&&M->Story){S47NightContract::Step(M,Dt);return;}
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)

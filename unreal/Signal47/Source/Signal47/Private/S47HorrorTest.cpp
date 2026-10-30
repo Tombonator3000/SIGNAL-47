@@ -14,12 +14,14 @@
 #include "S47Image.h"
 #include "S47Main.h"
 #include "S47Night.h"
+#include "S47NightContract.h"
 #include "S47Kit.h"
 #include "S47Saves.h"
 #include "S47Story.h"
 #include "S47Props.h"
 #include "S47Substation.h"
 #include "S47Three.h"
+#include "S47Timeline.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -64,6 +66,8 @@ namespace
 struct FS47HorrorTest::FState
 {
 	bool bEnabled = false, bDone = false, bPendingNormalTest = false, bMissHand = false;
+	bool bNight = false, bNightWaiting = false, bNightFailed = false;
+	FString NightBoundary;
 	int32 Stage = 0, Checks = 0, Stores = 0, WalkIndex = 0, AfterWalk = 0;
 	double Elapsed = 0, Since = 0, Hold = 3, WalkMetres = 0, LastProgress = 0, PausedHandTime = 0;
 	double LineAt = 0, SC02Clock = 0, SC02Seen = 0, SC02RunMetres = 0;
@@ -102,11 +106,57 @@ FS47HorrorTest::FS47HorrorTest(US47Main* InM) : State(MakeUnique<FState>()), M(I
 }
 FS47HorrorTest::~FS47HorrorTest() = default;
 
+bool FS47HorrorTest::BeginNight(const FString& EvidenceRoot)
+{
+	FString Mode;FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Mode);
+	if(Mode!=TEXT("night")||State->bEnabled||!M||!M->Flow||!M->Horror||!M->Evening||!M->Story||
+	 M->Flow->bDevRun||M->Flow->CaseId!=1||!M->Evening->NightSequence()||M->Evening->Opening()||
+	 !M->Evening->Pack.Flag(TEXT("handover_done"))||!M->Horror->Enabled()||M->Horror->Complete()||
+	 M->Horror->BaselineChecked()||M->Story->Rx.Stage!=0)return false;
+	State->bEnabled=State->bNight=true;State->Mode=TEXT("SC03");State->Root=EvidenceRoot;
+	State->bDispatchRecordings=false;State->bMissHand=false;State->Stage=1;State->Hold=.4;
+	State->Elapsed=State->Since=0;State->LastFoot=M->Player->Pos;
+	return IFileManager::Get().MakeDirectory(*EvidenceRoot,true);
+}
+
+bool FS47HorrorTest::ResumeNight(const FString& Boundary)
+{
+	auto& T=*State;
+	if(!T.bNight||!T.bNightWaiting||T.bNightFailed||T.NightBoundary!=Boundary||!M||!M->Horror||!M->World||!M->Story)return false;
+	if(Boundary==TEXT("sc01"))
+	{
+	 if(!M->Horror->Complete()||!M->Evening->FeederOutage()||!M->Evening->FeederCallAnswered()||M->World->bDriving||M->World->Area!=TEXT("saro")||M->World->bCommuteVehicle)return false;
+	 Stage(101,.3);
+	}
+	else if(Boundary==TEXT("t01"))
+	{
+	 if(!M->Substation->HasNormalResult()||M->Evening->FeederOutage()||!M->Evening->DriveTimeSkipped()||M->World->bDriving)return false;
+	 Stage(107,.3);
+	}
+	else if(Boundary==TEXT("sc02"))
+	{
+	 if(!M->Horror->SC02Escaped()||M->World->bDriving||M->World->Area!=TEXT("saro"))return false;
+	 Stage(200,.3);
+	}
+	else return false;
+	T.bNightWaiting=false;T.NightBoundary.Reset();return true;
+}
+
+S47J::FObj FS47HorrorTest::NightReadback() const
+{
+	const auto& T=*State;auto R=S47J::New();S47J::Set(R,TEXT("night_adapter"),T.bNight);
+	S47J::Set(R,TEXT("failed"),T.bNightFailed);S47J::Set(R,TEXT("waiting"),T.bNightWaiting);S47J::Set(R,TEXT("boundary"),T.NightBoundary);
+	S47J::Set(R,TEXT("stage"),T.Stage);S47J::Set(R,TEXT("checks"),T.Checks);S47J::Set(R,TEXT("stores"),T.Stores);S47J::Set(R,TEXT("walked_metres"),T.WalkMetres);
+	S47J::Set(R,TEXT("captured"),T.bCaptured);S47J::Set(R,TEXT("normal_photo"),T.NormalPhoto);S47J::Set(R,TEXT("t01_stamp"),T.T01Stamp);
+	S47J::Set(R,TEXT("sc02_clock"),T.SC02Clock);R->SetArrayField(TEXT("executed_checks"),T.Evidence);return R;
+}
+
 void FS47HorrorTest::Fail(const FString& Why)
 {
 	if (State->bDone) return;
 	if(State->bDispatchMutedSetting && M && M->Flow){M->Flow->Settings().OnCharacters(State->bDispatchOriginalCharacters);State->bDispatchMutedSetting=false;}
 	State->bDone = true;
+	State->bNightFailed=State->bNight;
 	if (M && M->Player)
 	{
 		M->Player->TestMove.Reset(); M->Player->bTestRun = false;
@@ -121,7 +171,7 @@ void FS47HorrorTest::Fail(const FString& Why)
 		S47J::Set(Result,TEXT("dispatchRecordingsRequired"),State->bDispatchRecordings);Result->SetArrayField(TEXT("dispatch_audio"),State->DispatchEvidence);
 		FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(State->Root / TEXT("result.json")));
 	}
-	FPlatformMisc::RequestExitWithStatus(false, 1);
+	if(!State->bNight)FPlatformMisc::RequestExitWithStatus(false, 1);
 }
 
 bool FS47HorrorTest::Check(bool Good, const FString& Why)
@@ -172,10 +222,17 @@ void FS47HorrorTest::Aim(const FVector& Point)
 bool FS47HorrorTest::Pick(const FString& Id, const FString& Alternate, bool bUse)
 {
 	if (!Object(Id)) { Fail(TEXT("missing physical target: ") + Id); return false; }
-	const FVector Eye = M->Player->EyeUE(), Direction = (S47Three::ToUE(Target(Id)) - Eye).GetSafeNormal();
+	const FVector Eye = M->Player->EyeUE(), TargetDirection = (S47Three::ToUE(Target(Id)) - Eye).GetSafeNormal();
+	const FVector Direction=State->bNight?M->Player->ForwardUE():TargetDirection;
 	const FString Actual = M->Inter->Pick(Eye, Direction);
-	const double Dot = FVector::DotProduct(Direction, M->Player->ForwardUE());
-	if ((Actual != Id && (Alternate.IsEmpty() || Actual != Alternate)) || Dot < .94 || (bUse && !M->Player->OnUse))
+	const double Dot = FVector::DotProduct(TargetDirection, M->Player->ForwardUE());
+	const FString Focus=State->bNight?M->Inter->Update(Eye,Direction):Actual;
+	if(State->bNight)
+	{
+	 auto Ray=S47J::New();S47J::Set(Ray,TEXT("kind"),TEXT("actual-camera-ray"));S47J::Set(Ray,TEXT("item"),Id);S47J::Set(Ray,TEXT("picked"),Actual);S47J::Set(Ray,TEXT("focus"),Focus);
+	 S47J::Set(Ray,TEXT("eye_ue_cm"),Eye.ToString());S47J::Set(Ray,TEXT("forward_ue"),Direction.ToString());S47J::Set(Ray,TEXT("activate_bound_hud_onuse"),bUse);State->Evidence.Add(MakeShared<FJsonValueObject>(Ray));
+	}
+	if ((Actual != Id && (Alternate.IsEmpty() || Actual != Alternate)) || Dot < .94 || (bUse && !M->Player->OnUse) || (State->bNight&&(Focus!=Actual||M->Player->FocusedId()!=Actual)))
 	{
 		Fail(FString::Printf(TEXT("actual aimed ray for %s picked '%s', view dot %.3f"), *Id, *Actual, Dot));
 		return false;
@@ -231,6 +288,16 @@ bool FS47HorrorTest::Walk()
 
 bool FS47HorrorTest::StoreRestore(const FString& Name, const S47J::FObj& Snapshot, bool bRestore)
 {
+	if(State->bNight)
+	{
+	 const auto Actual=M->Flow->GameState();
+	 if(!Check(Snapshot&&Actual&&FJsonValue::CompareEqual(FJsonValueObject(Snapshot),FJsonValueObject(Actual)),TEXT("night checkpoint is current unmodified production state: ")+Name))return false;
+	 S47J::FObj Proof;FString Error;
+	 if(!S47NightContract::RoundTrip(M,State->Root,Name,Proof,Error,bRestore)){Fail(Error);return false;}
+	 if(bRestore)++State->Stores;
+	 State->Evidence.Add(MakeShared<FJsonValueObject>(Proof));State->LastFoot=M->Player->Pos;State->LastProgress=State->Elapsed;
+	 return true;
+	}
 	FS47SaveStore Writer(State->Root / Name); Writer.Init(); FS47SaveCard Card;
 	Card.Chapter = TEXT("SC01 live contract"); Card.Place = TEXT("SARO"); Card.Clock = M->Story->ClockText(true);
 	FString Error;
@@ -312,6 +379,7 @@ void FS47HorrorTest::Step(double Dt)
 {
 	auto& T = *State;
 	if (!T.bEnabled || T.bDone) return;
+	if(T.bNightWaiting)return;
 	if (!M || !M->Player || !M->Story || !M->World || !M->Web || !M->Flow || !M->UI || !M->Inter || !M->Evening || !M->Horror || !M->Horror->Visual || !M->Night || !M->Night->Album)
 	{ Fail(TEXT("live SC01 runtime dependency missing")); return; }
 	// Only Walk() may request running, and only on the explicitly labelled escape route.
@@ -321,8 +389,8 @@ void FS47HorrorTest::Step(double Dt)
 	// Story pause also covers the modal panels that this controller must acknowledge.
 	if (M->Story->IsPaused()) M->Player->TestMove.Reset();
 	T.Elapsed += FMath::Clamp(Dt, 0., .2);
-	if (T.Elapsed > (T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 600)) { Fail(TEXT("live horror contract control timeout")); return; }
-	if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("developer case zero required; never write a player case")); return; }
+	if (T.Elapsed > (T.bNight?3600:T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 600)) { Fail(TEXT("live horror contract control timeout")); return; }
+	if (T.bNight?M->Flow->bDevRun||M->Flow->CaseId!=1:!M->Flow->bDevRun||M->Flow->CaseId!=0) { Fail(TEXT("live controller lost its explicit isolated case policy")); return; }
 	if (M->Flow->bStarting || M->World->bBusy)
 	{
 		M->Player->TestMove.Reset();
@@ -739,6 +807,11 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if (T.Stage == 17)
 	{
+		if(T.bNight)
+		{
+		 if(!Check(M->Night->Album->Shots().IsEmpty()&&H.ReferenceFrameReserved(),TEXT("night real film roll contains no synthetic budget entries or precredited reference")))return;
+		 T.BudgetPhotos=M->Night->Album->Shots();Stage(173,.35);return;
+		}
 		FS47AlbumShot Fallback; Fallback.Id=TEXT("isolated-fallback-negative");Fallback.Url=TEXT("data:image/jpeg;base64,AA==");
 		H.Photo(Fallback);
 		if(!Check(!H.ReferencePhotographed(),TEXT("fallback JPEG without actual photo-lens target cannot grant normal reference")))return;
@@ -791,8 +864,8 @@ void FS47HorrorTest::Step(double Dt)
 		if (!Check(!Shot.Url.IsEmpty() && !Shot.bUnavailable && H.ReferencePhotographed(), TEXT("actual rendered reference pixels establish the normal photo"))) return;
 		bool Kept=Before==T.BudgetPhotos.Num();for(int32 I=0;I<T.BudgetPhotos.Num() && Kept;++I)
 		 {const auto& Prior=T.BudgetPhotos[I];const auto& Now=M->Night->Album->Shots()[I];Kept=Now.Id==Prior.Id && Now.Url==Prior.Url && Now.Clock==Prior.Clock && Now.Targets.Num()==Prior.Targets.Num();}
-		if(!Check(Kept && M->Night->Album->Shots().Num()==FS47Album::ROLL && M->Night->Album->Left()==0,
-		 TEXT("required real reference uses only the reserved 36th frame and preserves every preceding album entry")))return;
+		if(!Check(Kept && (T.bNight?M->Night->Album->Shots().Num()==1&&M->Night->Album->Left()==FS47Album::ROLL-1:M->Night->Album->Shots().Num()==FS47Album::ROLL&&M->Night->Album->Left()==0),
+			 T.bNight?TEXT("night first actual reference retains the remaining35 real film frames"):TEXT("required real reference uses only the reserved 36th frame and preserves every preceding album entry")))return;
 		C1->ToggleCamera();
 		Go({FVector(6.1,0,-12),FVector(7.6,0,-12),FVector(9.3,0,-12),FVector(9.3,0,1.6),FVector(6.1,0,1.6),FVector(5.2,0,1.6),FVector(4.2,0,-1.2),FVector(4.45,0,-3.1)},18); return;
 	}
@@ -827,6 +900,11 @@ void FS47HorrorTest::Step(double Dt)
 	if (T.Stage == 25)
 	{
 		Aim(Target(TEXT("exitDoor"))); Shot(TEXT("door-voice-corridor"));
+		if(T.bNight)
+		{
+		 if(!Check(M->Observing->DoorVoiceStep()>=1,TEXT("night keeps only the naturally triggered Dale-door event; no voice-replay state fixture")))return;
+		 Stage(26);return;
+		}
 		FS47Observing& O = *M->Observing;
 		// Isolated lifecycle fixtures only: the ordinary door interaction follows below.
 		const auto Saved = S47J::Clone(O.Save()), Replay = S47J::Clone(Saved);
@@ -870,7 +948,7 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if (T.Stage == 29)
 	{
-		if(H.Pack.CurrentScene() && H.Pack.CurrentScene()->Id==TEXT("H01_CHECK") && !T.bPendingNormalTest)
+		if(!T.bNight && H.Pack.CurrentScene() && H.Pack.CurrentScene()->Id==TEXT("H01_CHECK") && !T.bPendingNormalTest)
 		{
 			T.bPendingNormalTest=true;T.PendingNormal=S47J::Clone(M->Flow->GameState());
 			auto Bad=S47J::Clone(T.PendingNormal);S47J::Set(S47J::Obj(Bad,TEXT("horror")),TEXT("referencePhoto"),TEXT("isolated-pending-missing-photo"));
@@ -897,6 +975,7 @@ void FS47HorrorTest::Step(double Dt)
 	if (T.Stage == 30)
 	{
 		if (!Check(H.NormalComplete() && H.BaselineChecked() && H.DoorEastTried() && H.DoorCorridorTried() && !H.Complete() && V.ScreenClosed(), TEXT("full Flow restore retains real round facts without window completion"))) return;
+		if(T.bNight){Stage(32,.3);return;}
 		auto Bad = S47J::Clone(T.AfterNormal);
 		for(const auto& Value:S47J::Arr(S47J::Obj(Bad,TEXT("album")),TEXT("shots")))
 		{
@@ -1157,6 +1236,7 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==57)
 	{
 		if(!Check(H.Complete() && H.ReportAcknowledged()!=T.bMissHand && M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("completed SC01 survives Continue with a subsequently reopened exit")))return;
+		if(T.bNight){T.bNightWaiting=true;T.NightBoundary=TEXT("sc01");return;}
 		if(T.Mode==TEXT("SC02")){Stage(100,.5);return;}
 		T.bDone=true;M->Player->TestMove.Reset();M->Player->bTestRun=false;
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC01"));
@@ -1197,6 +1277,7 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==101)
 	{
 		if(!AimPick(TEXT("truck"),Target(TEXT("truck")),false))return;
+		if(T.bNight&&!Check(M->Evening->FeederOutage()&&M->Evening->FeederCallAnswered()&&!M->Evening->DriveTimeSkipped()&&!M->World->bCommuteVehicle,TEXT("night takes actual SAROservice truck only after real00:13county-call acknowledgment")))return;
 		M->World->Autopilot=10;M->World->DriveOut(false);Stage(102,.6);return;
 	}
 	if(T.Stage==102)
@@ -1218,6 +1299,12 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==104)
 	{
 		T.FieldEgress=M->Player->Pos;
+		if(T.bNight&&!Check(M->Evening->FeederOutage()&&M->Evening->DriveTimeSkipped()&&M->Story->Clock()>=S47Timeline::FeederDrive&&M->Story->Clock()<S47Timeline::FirstEncounter,TEXT("night real road transition produced01:35trip before SC02 and before T01 power restoration")))return;
+		if(T.bNight)
+		{
+		 const auto Fault=M->Substation->FaultSnapshot();
+		 if(!Check(Fault.bRequested&&Fault.bReady&&Fault.bActive&&Fault.bArcVisible&&Fault.bLampsVisible&&Fault.bSafe&&Fault.ArcLumens>0&&M->Substation->ArcCount()==0,TEXT("actual distant field fault lamps/calm arc are present before T01 without an early SC02burst")))return;
+		}
 		if(!Check(!Th.Active() && Sc02()==TEXT("t01"),TEXT("no pale body before the T01 result is secured")))return;
 		const auto A=M->Substation->ArcSnapshot();
 		if(!Check(A.Bursts==0 && !A.bNiagaraActive && !A.bMeshVisible && A.FlashLumens==0 && A.MaterialIntensity==0,
@@ -1244,6 +1331,7 @@ void FS47HorrorTest::Step(double Dt)
 		T.T01Stamp=M->Substation->NormalCompletionStamp();
 		// Persist this real pre-meeting result for bounded High/Low/calm/off comparisons.
 		if(!StoreRestore(TEXT("arc-pre-meeting"),M->Flow->GameState(),false))return;
+		if(T.bNight){T.bNightWaiting=true;T.NightBoundary=TEXT("t01");return;}
 		Stage(107,.4);return;
 	}
 	if(T.Stage==107)
@@ -1492,6 +1580,7 @@ void FS47HorrorTest::Step(double Dt)
 		if(!Check(Arc.Bursts==T.ArcBursts && !Arc.bNiagaraActive && !Arc.bMeshVisible && Arc.FlashLumens==0 && Arc.MaterialIntensity==0,
 			TEXT("SC02 Continue/capture/escape preserves arc silence and the cumulative burst count")))return;
 		if(!Check(H.SC02Escaped() && M->Substation->HasNormalResult() && !Th.Active(),TEXT("escaped meeting and T01 survive Continue without restarting the body")))return;
+		if(T.bNight){T.bNightWaiting=true;T.NightBoundary=TEXT("sc02");return;}
 		if(T.Mode==TEXT("SC03")){Stage(200,.5);return;}
 		T.bDone=true;M->Player->TestMove.Reset();M->Player->bTestRun=false;
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode==TEXT("SC02Resume")?TEXT("SC02Resume"):TEXT("SC02"));
@@ -1717,6 +1806,7 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		int32 Docs=0;for(const auto& D:M->Story->Docs())if(D.Id.StartsWith(TEXT("HR_DISPATCH")) || D.Id.StartsWith(TEXT("HR_MISSING")) || D.Id.StartsWith(TEXT("HR_LOCAL_HOLD")) || D.Id.StartsWith(TEXT("HR_HELPER_TRACE")))++Docs;
 		if(!Check(S3.Complete() && Docs==4,TEXT("completed SC03 and its four papers survive Continue, each once")))return;
+		if(T.bNight){T.bNightWaiting=true;T.NightBoundary=TEXT("sc03");return;}
 		T.bDone=true;M->Player->TestMove.Reset();
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode);
 		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);Result->SetArrayField(TEXT("evidence"),T.Evidence);

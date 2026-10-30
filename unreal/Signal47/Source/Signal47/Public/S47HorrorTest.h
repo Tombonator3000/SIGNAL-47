@@ -15,6 +15,11 @@ public:
 	explicit FS47HorrorTest(US47Main* InM);
 	~FS47HorrorTest();
 	void Step(double Dt);
+	// Explicit night-only adapter. Each entry requires the actual preceding D01/SC01/T01
+	// boundary; these entry points neither start chapters nor synthesize prerequisites.
+	bool BeginNight(const FString& EvidenceRoot);
+	bool ResumeNight(const FString& Boundary);
+	S47J::FObj NightReadback() const;
 
 private:
 	struct FState;
