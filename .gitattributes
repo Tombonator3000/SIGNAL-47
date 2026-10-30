@@ -32,3 +32,5 @@ unreal/ArtSource/FinaleSky/CloudTank-*/*.blend filter=lfs diff=lfs merge=lfs -te
 unreal/ArtSource/FinaleSky/CloudTank-*/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v2/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v2/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/FinalCraft-v3/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/FinalCraft-v3/exports/*.fbx filter=lfs diff=lfs merge=lfs -text

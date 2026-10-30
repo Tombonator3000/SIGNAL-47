@@ -1398,3 +1398,6 @@ PR260, kilde12c1ac3d/main755fe7fc: SC09-retur/fremkalling/Nora, SC03/SC04/SC10-r
 
 ### 2026-10-30T23:53+01:00 UFO-finale under arbeid
 Gren codex/ufo-finale-20261030: eget fartøy v2 og Mantaflow/wavelet-skyer koblet til eksisterende C8.15-finale, med faktisk 256³ PF_R16F i Unreal. Editorbygg og før/etterbilder består; hel sekvens, ytelse og pakking gjenstår, aktiv iterering til minst kl.08 etter Toms bestilling. Installert standard og Saved er urørt.
+
+### 2026-10-31T00:08+01:00 Stabil finale og skrog v3
+PR262 under arbeid: opptak av vanlig C6 avdekket ustabil fjæring ved lange frames. Eksakt fjærløsning med samme K/C består bygg og1750 selvtester, og nytt faktisk opptak viser riktig kamera. Eget skrog v3 er importert med dyp konstruksjonskrage; øvrig nattarbeid fortsetter før levering.

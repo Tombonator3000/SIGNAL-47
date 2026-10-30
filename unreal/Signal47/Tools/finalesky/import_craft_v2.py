@@ -1,7 +1,7 @@
-"""Replace only /Game/FinaleSky/SM_S47_FinalCraft from the separate v2 source.
+"""Replace only /Game/FinaleSky/SM_S47_FinalCraft from a separate v2/v3 source.
 
 Root runs Unreal through unreal_guard with S47_CRAFT_V2_SOURCE set to the new
-output directory or manifest.json. Existing four material instances are read only.
+output directory or manifest.json (v2 or v3). Existing four material instances are read only.
 Use the legacy FBX importer, as in this project's proven native recipe.
 """
 import importlib.util
@@ -14,14 +14,14 @@ import unreal
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parents[1]
 DEST,NAME = '/Game/FinaleSky','SM_S47_FinalCraft'
-REVISION = 'S47-FINALE-SKY-2'
+REVISIONS = {'S47-FINALE-SKY-2':'v2','S47-FINALE-SKY-3':'v3'}
 ROLES = ('Hull','Ribs','Recess','Light')
 SLOTS = ['M_S47_Final'+role for role in ROLES]
 
 
-def log(message):
-    unreal.log('S47 CRAFT V2 '+message)
-    print('S47 CRAFT V2 '+message,flush=True)
+def log(message,variant='v2'):
+    unreal.log('S47 CRAFT '+variant.upper()+' '+message)
+    print('S47 CRAFT '+variant.upper()+' '+message,flush=True)
 
 
 class Checks:
@@ -34,8 +34,10 @@ class Checks:
 def read_source(path):
     path = path/'manifest.json' if path.is_dir() else path
     data = json.loads(path.read_text())
-    assert data.get('schema') == 1 and data.get('revision') == REVISION
-    assert data.get('authorship') == 'Original SIGNAL / 47 craft geometry v2'
+    assert data.get('schema') == 1 and data.get('revision') in REVISIONS
+    variant = REVISIONS[data['revision']]
+    assert data.get('authorship') == 'Original SIGNAL / 47 craft geometry '+variant
+    assert data.get('variant',variant) == variant
     assert data.get('mesh') == NAME and data.get('destination') == DEST
     assert data.get('material_slots') == SLOTS
     assert [row['lod'] for row in data['lods']] == [0,1,2]
@@ -48,6 +50,7 @@ def read_source(path):
 
 def main():
     manifest = read_source(Path(os.environ['S47_CRAFT_V2_SOURCE']).expanduser().resolve())
+    variant = REVISIONS[manifest['revision']]
     editor = unreal.EditorAssetLibrary
     subsystem = (unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
                  or unreal.new_object(unreal.StaticMeshEditorSubsystem))
@@ -59,7 +62,7 @@ def main():
 
     # Reuse only the explicit mesh-import function; it replaces this exact owned
     # mesh and creates neither materials nor textures. No v1 gate is involved.
-    spec = importlib.util.spec_from_file_location('s47_craft_v2_fbx',PROJECT/'Tools/motelv2/native.py')
+    spec = importlib.util.spec_from_file_location('s47_craft_'+variant+'_fbx',PROJECT/'Tools/motelv2/native.py')
     helper = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(helper)
     helper.DEST = DEST
@@ -99,7 +102,7 @@ def main():
         assert count == row['triangles'], (lod,count,row['triangles'])
         counts.append(count)
     log('IMPORT COMPLETE saved=%s lod_triangles=%s slots=%s collision=off; runtime view pending' %
-        (mesh.get_path_name(),counts,actual_names))
+        (mesh.get_path_name(),counts,actual_names),variant)
 
 
 if __name__ == '__main__':

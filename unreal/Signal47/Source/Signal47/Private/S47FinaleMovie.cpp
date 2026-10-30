@@ -5,6 +5,7 @@
 #include "S47Json.h"
 #include "S47Main.h"
 #include "S47Story.h"
+#include "S47Walker.h"
 #include "S47World.h"
 #include "SS47Ending.h"
 #include "HAL/FileManager.h"
@@ -176,6 +177,14 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 	S47J::Set(S.PendingRow, TEXT("eventSeconds"), C->Et); S47J::Set(S.PendingRow, TEXT("pulloutSeconds"), C->Pt);
 	S47J::Set(S.PendingRow, TEXT("endingPhase"), EndingPhase); S47J::Set(S.PendingRow, TEXT("endingCardSeconds"), CardSeconds);
 	S47J::Set(S.PendingRow, TEXT("photoAlpha"), PhotoAlpha); S47J::Set(S.PendingRow, TEXT("photoVisible"), bPhotoVisible);
+	if (M->Player)
+	{
+		const FVector Eye = M->Player->EyeUE();
+		const bool bFinite = !Eye.ContainsNaN();
+		S47J::Set(S.PendingRow, TEXT("eyeFinite"), bFinite);
+		if (bFinite) S47J::Set(S.PendingRow, TEXT("eyeUE"), TArray<double>{ Eye.X, Eye.Y, Eye.Z });
+		else S47J::SetNull(S.PendingRow, TEXT("eyeUE"));
+	}
 	S.RequestWall = WallNow;
 	// Keep cadence on the simulation grid; a slow PNG skips slots instead of queuing work.
 	S.NextFrame = (FMath::FloorToDouble(SimNow * S.TargetFps) + 1) / S.TargetFps;

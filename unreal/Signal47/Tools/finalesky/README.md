@@ -34,7 +34,7 @@ S47_CLOUD_FIELD=volume UnrealEditor-Cmd Signal47.uproject -run=pythonscript -scr
 
 Volumfeltet har 18 innganger: de 13 opprinnelige pluss `DensityA/B/C`, `Density` og `DecodeScale`. To naboframes interpoleres i eksplisitt Chapter6-fase. Derivater og lysprober leser samme 3D-tetthet; små slør får forsiktig feltwarp. Det analytiske feltet er et eget alternativ, uten fluidteksturer. Editor-runtime etterspør de egne shaderkartene med `EnsureIsComplete` før plassering. Cook inkluderer `/Game/FinaleSky`.
 
-Det aktive fartøyet er [FinalCraft-v2](../../../ArtSource/FinaleSky/FinalCraft-v2/README.md), importert med tre egne LOD-er og de fire eksisterende materialinstansene. `build_craft_v2.py` bygger `geometry_v2.py` til en fersk Blender-/FBX-kilde; `import_craft_v2.py` oppdaterer bare `/Game/FinaleSky/SM_S47_FinalCraft`. Det bruker ingen gammel v1-gate.
+Det aktive fartøyet er [FinalCraft-v3](../../../ArtSource/FinaleSky/FinalCraft-v3/README.md), importert med tre egne LOD-er og de fire eksisterende materialinstansene. `build_craft_v2.py --variant v3` bygger `geometry_v3.py` til en fersk Blender-/FBX-kilde; v2 er fortsatt tilgjengelig som separat variant. `import_craft_v2.py` oppdaterer deretter bare `/Game/FinaleSky/SM_S47_FinalCraft`. Det bruker ingen gammel v1-gate.
 
 ## Visuell iterering
 

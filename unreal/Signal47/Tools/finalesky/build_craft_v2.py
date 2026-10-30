@@ -1,10 +1,11 @@
-"""Build the separate original v2 craft source and its three authored FBX LODs.
+"""Build a separate original v2/v3 craft source and its three authored FBX LODs.
 
 Root runs background Blender through unreal_guard. The output must be fresh.
 No v1 contract/archive is read or written, and no native/runtime acceptance is implied.
 """
 import argparse
 import hashlib
+import importlib
 import json
 from pathlib import Path
 import sys
@@ -13,9 +14,7 @@ import bpy
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
-from geometry_v2 import build
-
-REVISION = 'S47-FINALE-SKY-2'
+REVISIONS = dict(v2='S47-FINALE-SKY-2',v3='S47-FINALE-SKY-3')
 MESH = 'SM_S47_FinalCraft'
 SLOTS = ['M_S47_Final'+role for role in ('Hull','Ribs','Recess','Light')]
 MATERIALS = {
@@ -26,8 +25,8 @@ MATERIALS = {
 }
 
 
-def log(message):
-    print('S47 CRAFT V2 ' + message,flush=True)
+def log(message,variant='v2'):
+    print('S47 CRAFT '+variant.upper()+' '+message,flush=True)
 
 
 def material_palette():
@@ -66,7 +65,11 @@ def mesh_data(name,vertices,triangles,uv,materials,palette):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--variant',choices=('v2','v3'),default='v2')
     args = parser.parse_args(sys.argv[sys.argv.index('--')+1:])
+    revision = REVISIONS[args.variant]
+    geometry_name = 'geometry_'+args.variant
+    build = importlib.import_module(geometry_name).build
     out = args.output.expanduser().resolve()
     if out.exists():
         raise FileExistsError('Fresh output directory required: '+str(out))
@@ -77,7 +80,7 @@ def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.context.scene.unit_settings.system = 'METRIC'
     bpy.context.scene.unit_settings.scale_length = 1
-    sources = bpy.data.collections.new('EDITABLE_ORIGINAL_V2_SOLIDS')
+    sources = bpy.data.collections.new('EDITABLE_ORIGINAL_'+args.variant.upper()+'_SOLIDS')
     bpy.context.scene.collection.children.link(sources)
     sources.hide_viewport = sources.hide_render = True
     palette = material_palette()
@@ -96,17 +99,17 @@ def main():
                                  [solid.material]*len(solid.triangles),palette)
                 original = bpy.data.objects.new('SRC_'+solid.name,data)
                 sources.objects.link(original)
-                original['authorship'] = 'Original SIGNAL / 47 v2'
+                original['authorship'] = 'Original SIGNAL / 47 '+args.variant
         name = MESH+('' if lod == 0 else '_LOD'+str(lod))
         data = mesh_data(name,vertices,triangles,uv,materials,palette)
         obj = bpy.data.objects.new(name,data)
         bpy.context.scene.collection.objects.link(obj)
-        obj['source_revision'] = REVISION
+        obj['source_revision'] = revision
         obj['radius_m'],obj['runtime_radius_m'] = 1,680
         bpy.ops.object.select_all(action='DESELECT')
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
-        target = out/'exports'/(name+'.fbx')
+        target = out/'exports'/(name+('_v3' if args.variant == 'v3' else '')+'.fbx')
         bpy.ops.export_scene.fbx(filepath=str(target),use_selection=True,object_types={'MESH'},
             apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',axis_forward='-Y',axis_up='Z',
             bake_anim=False,add_leaf_bones=False,mesh_smooth_type='FACE')
@@ -115,14 +118,19 @@ def main():
                          triangles=len(data.loop_triangles),vertices=len(data.vertices),solids=len(solids)))
         obj.hide_render = lod != 0
         obj.hide_set(lod != 0)
-        log('EXPORTED LOD%d triangles=%d solids=%d file=%s' % (lod,len(data.loop_triangles),len(solids),target))
-    source = out/'FinalCraft-v2.blend'
+        log('EXPORTED LOD%d triangles=%d solids=%d file=%s' % (lod,len(data.loop_triangles),len(solids),target),args.variant)
+    source = out/('FinalCraft-'+args.variant+'.blend')
     bpy.ops.wm.save_as_mainfile(filepath=str(source))
     inputs = []
-    for path in (Path(__file__).resolve(),HERE/'geometry_v2.py',HERE/'geometry.py'):
+    source_paths = [Path(__file__).resolve(),HERE/(geometry_name+'.py')]
+    if args.variant == 'v3':
+        source_paths.append(HERE/'geometry_v2.py')  # Actual read-only shape-helper dependency.
+    source_paths.append(HERE/'geometry.py')
+    for path in source_paths:
         inputs.append(dict(path=str(path.relative_to(HERE.parents[3])),
                            sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
-    manifest = dict(schema=1,revision=REVISION,authorship='Original SIGNAL / 47 craft geometry v2',
+    manifest = dict(schema=1,revision=revision,authorship='Original SIGNAL / 47 craft geometry '+args.variant,
+        variant=args.variant,generator=Path(__file__).name,geometry=geometry_name+'.py',
         mesh=MESH,destination='/Game/FinaleSky',material_slots=SLOTS,materials=MATERIALS,
         runtime_radius_m=680,lod_screen_sizes=[1,.35,.12],lods=lods,
         source_blend=source.name,source_inputs=inputs,
@@ -130,8 +138,8 @@ def main():
         native_mapping='(Bx,-By,Bz)*100cm, clockwise front faces; native UV=(u,1-v)',
         status='SOURCE_SAVED_EXPORTS_CREATED',native_imported=False,runtime_viewed=False)
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
-    log('SOURCE SAVED '+str(source))
-    log('COMPLETE '+str(out/'manifest.json'))
+    log('SOURCE SAVED '+str(source),args.variant)
+    log('COMPLETE '+str(out/'manifest.json'),args.variant)
 
 
 if __name__ == '__main__':
