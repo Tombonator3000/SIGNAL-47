@@ -242,6 +242,9 @@ void FS47Evening::Stop()
 }
 void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
 {
+ // Investigation-only saves carry no arrival transaction. Restore that stored
+ // mode before the normal evening path can move their car or reset their clock.
+ if (S47J::Bool(Saved,TEXT("investigationOnly"))) { BeginInvestigation(Saved); return; }
  Stop(); Pack.Reset(); RadioPack.Reset(); bEnabled = true;
  // Versioned opt-in belongs only to new nights. Missing/unknown versions retain the old route.
  bServiceRoute = !Saved && !bPastOpening; bServiceFiled = false;
