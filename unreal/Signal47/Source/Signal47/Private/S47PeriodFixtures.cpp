@@ -46,7 +46,7 @@ namespace
 
  FEdit Cut(const FString& Id,const FVector& Min,const FVector& Max,const TCHAR* Slot=nullptr)
  {
-  FEdit E; E.Id=Id; E.RootPath=TEXT("room.group"); E.GeometryIds={77};
+  FEdit E; E.Id=Id; E.RootPath=TEXT("room.group"); E.GeometryIds={54};
   E.ThreeBounds=FBox(Min,Max); E.MaxTriangles=2000;
   if (Slot) E.MaterialSlotNames.Add(FName(Slot));
   return E;

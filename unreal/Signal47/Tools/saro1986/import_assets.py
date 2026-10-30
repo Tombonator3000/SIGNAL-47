@@ -111,7 +111,7 @@ def fixtures():
 def legacy():
     command = unreal.SystemLibrary.get_command_line()
     match = re.search(r'-S47Saro1986CpuGeos=([0-9,]+)', command)
-    geos = [int(value) for value in match.group(1).split(',')] if match else [59, 77, 219, 376]
+    geos = [int(value) for value in match.group(1).split(',')] if match else [54, 59, 219, 376]
     for geo in geos:
         matches = list((PROJECT / 'Content/Web/Geo').glob(f'*/StaticMeshes/g{geo}.uasset'))
         require('one measured legacy mesh package', len(matches) == 1, geo)
