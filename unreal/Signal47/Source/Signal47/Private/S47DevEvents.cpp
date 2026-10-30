@@ -255,8 +255,8 @@ void FS47DevEvents::FinishTest(bool Good,const FString& Reason)
  O->SetArrayField(TEXT("pictures"),Pictures); S47J::Set(O,TEXT("limits"),TEXT("Isolated developer-case API callbacks and actual delayed native component/clock readback. One valid visible floor and current pale torso render; six PNG CRC/IEND/SHA receipts. This is not F10/Slate keyboard-input, human visual/listening/FPS or story-progress acceptance."));
  Stop(); S47J::Set(O,TEXT("after_stop"),Readback()); S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));
  const bool Written=!TestDir.IsEmpty() && FFileHelper::SaveStringToFile(S47J::Write(O,true),*(TestDir/TEXT("result.json")));
- if (Good && Written) UE_LOG(LogS47DevEvents,Display,TEXT("S47: developer events contract PASS COMPLETE: %d actual actions evidence=%s"),TestStep,*TestDir);
- else UE_LOG(LogS47DevEvents,Error,TEXT("S47: developer events contract FAIL: %s (result written %d)"),*Reason,Written);
+ if(Good && Written){UE_LOG(LogS47DevEvents,Display,TEXT("S47: developer events contract PASS COMPLETE: %d actual actions evidence=%s"),TestStep,*TestDir);}
+ else {UE_LOG(LogS47DevEvents,Error,TEXT("S47: developer events contract FAIL: %s (result written %d)"),*Reason,Written);}
  FPlatformMisc::RequestExitWithStatus(false,Good && Written?0:1);
 }
 
