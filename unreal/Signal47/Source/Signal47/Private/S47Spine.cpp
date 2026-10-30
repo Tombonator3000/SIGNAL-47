@@ -127,7 +127,8 @@ FS47Spine::EGate FS47Spine::Pending() const
  return GateCount;
 }
 
-bool FS47Spine::HoldsResidual() const { return bEnabled && State[SC04] == 1; }
+// From the 00:13 outage until SC04 is done the console is passive: the residual belongs to SC05 (03:15).
+bool FS47Spine::HoldsResidual() const { return bEnabled && State[SC04] != 2 && M && M->Story && M->Story->Phase() == ES47Phase::Residual; }
 
 bool FS47Spine::HoldChapterEnd(EGate G)
 {
@@ -295,6 +296,7 @@ void FS47Spine::Step(double Dt)
   State[SC04] = 2;
   M->Story->SetClock(FMath::Max(M->Story->Clock(), GateDone(SC04)));
   UE_LOG(LogTemp, Display, TEXT("S47: spine SC04 done at clock %.0f"), M->Story->Clock());
+  M->Story->After(8.0, [S = TWeakObjectPtr<AS47Story>(M->Story.Get())] { if (S.IsValid()) S->Toast(TEXT("03:15. The residual is still there under the hydrogen line. The console."), 5); });
   M->RequestAutosave(false);
  }
  if (State[SC08] == 1 && Act08.Step(Dt))

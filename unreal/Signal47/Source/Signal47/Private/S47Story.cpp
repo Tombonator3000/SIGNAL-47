@@ -2,6 +2,7 @@
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47Horror.h"
+#include "S47HorrorSC03.h"
 #include "S47Evening.h"
 #include "S47Anomaly.h"
 #include "S47Walker.h"
@@ -66,7 +67,7 @@ void AS47Story::Bind(AS47Web* InSaro, AS47HUD* InHud, US47Audio* InAudio)
 		FS47DecoderDeskDeps Dd;
 		Dd.UI = M->UI; Dd.Audio = InAudio; Dd.Room = InSaro; Dd.Inter = M->Inter;
 		Dd.Locked = [this] { return Rx.Stage >= 3; };
-		Dd.Recorded = [this] { return TimelineText(TEXT("02:14")); };
+		Dd.Recorded = [this] { return LockStamp(); };
 		Dd.Busy = [this] { return bCinematic; };
 		Dd.Power = [this] { return bPowered && !NS.bK3Open; };
 		// (Unreal only, Tom's request: the bought unit's meters and the tones' answer, S47DecoderDesk.h)
@@ -332,7 +333,8 @@ TArray<FS47Task> AS47Story::Tasks() const
 		T.Add({ TEXT("Power up RX bank 3"), bPowered });
 		T.Add({ TEXT("Calibrate on 1419.900 MHz"), Rx.Stage >= 1 });
 		T.Add({ TEXT("Notch the highway relay near 1420.1"), Rx.Stage >= 2 });
-		T.Add({ TEXT("Babysit the survey until 06:00"), At(ES47Phase::Residual) });
+		if (const auto* M = US47Main::Get(this); bEveningTimeline && M && M->Horror && M->Horror->SC03 && M->Horror->SC03->Facts().bLocalOrder) T.Add({ TEXT("The 06:00 series is suspended (Ward)"), true });
+		else T.Add({ TEXT("Babysit the survey until 06:00"), At(ES47Phase::Residual) });
 		T.Add({ TEXT("Coffee (optional)"), Coffee != ECoffee::None });
 	}
 	if (At(ES47Phase::Residual)) T.Add({ TEXT("Find the residual near 1420.4"), Rx.Stage >= 3 });
@@ -444,7 +446,7 @@ void AS47Story::Use(const FString& Id)
 		const FString ArrayAt = ArrayText ? ArrayText() : FString();
 		if (!ArrayAt.IsEmpty()) Toast(ArrayAt);
 		else if (At(ES47Phase::Event)) Toast(TEXT("S-01 to S-27: no control command recorded."));
-		else if (Rx.Stage >= 2) Toast(FString::Printf(TEXT("Array on survey schedule. Az %s, el %d. Nothing logged since midnight."), *S47Text::Pad(Saro.IsValid() ? Saro->DishAz(0) : ParkAz, 3), (int32)SurveyEl));
+		else if (Rx.Stage >= 2) Toast(FString::Printf(TEXT("Array on survey schedule. Az %s, el %d. %s"), *S47Text::Pad(Saro.IsValid() ? Saro->DishAz(0) : ParkAz, 3), (int32)SurveyEl, bEveningTimeline && At(ES47Phase::Residual) ? TEXT("Logged tonight: the 00:13 outage and the restore. Nothing scheduled since.") : TEXT("Nothing logged since midnight.")));
 		else Toast(TEXT("Array parked. Receiver needs calibrating before the survey can start."));
 		return;
 	}
@@ -604,10 +606,12 @@ const FS47Profile& AS47Story::ConsoleProfile() const
 	return Rx.Profile();
 }
 
+FString AS47Story::LockStamp() const { return NS.LockAt ? S47Text::ClockText(*NS.LockAt, false) : TimelineText(TEXT("02:14")); }
+
 void AS47Story::ConsoleAction()
 {
  if (FeederOutage()) { Rx.Status = TEXT("FEEDER OUT / K3 OPEN / ARRAY DRIVE DEAD"); return; }
- if (const auto* M = US47Main::Get(this); M && M->Spine && M->Spine->HoldsResidual()) { Rx.Status = TEXT("SECURE THE ORIGINALS BEFORE THE RESIDUAL"); Toast(M->Spine->Objective(), 4); return; }
+ if (const auto* M = US47Main::Get(this); M && M->Spine && M->Spine->HoldsResidual()) { Rx.Status = TEXT("RECEIVER ON PASSIVE. NO SURVEY WORK TONIGHT"); Toast(TEXT("The county has the night now. Nothing to tune until the originals are safe."), 4); return; }
 
 	if (const auto* M = US47Main::Get(this); M && M->Observing && M->Observing->ConsoleAction()) return;
 	if (!Rx.Pass()) { Rx.Status = TEXT("NO LOCK  /  ADJUST PARAMETERS"); return; }
@@ -641,6 +645,7 @@ void AS47Story::StagePassed()
 	else if (S == 2)
 	{
 		SetPhase(ES47Phase::Locked);
+  NS.LockAt = FMath::RoundToDouble(ClockSec);
   const FString Pattern = TEXT("Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.");
   Note(NightSequence() ? ClockText(false) + TEXT(". ") + Pattern : TimelineText(TEXT("02:14. ") + Pattern));
 		Toast(TEXT("Four pulses. A gap. Seven pulses. Again."), 4.f);
@@ -938,7 +943,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 	NotesList.Empty();
 	for (const FString& N : { FString(S47Signal::Profiles()[0].Note), FString(S47Signal::Profiles()[1].Note),
 		FString(TEXT("02:13:47. Unlogged residual on the spectrum near 1420.4. Survey schedule says nothing should be there.")),
-		FString(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.")),
+		NS.LockAt ? LockStamp() + TEXT(". Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.") : FString(TEXT("02:14. Pulse group: four, a gap, seven. Repeats every 5.2 seconds. Not the relay. Not anything in the schedule.")),
 		FString(TEXT("Direction solve: RA 05h 17m, Dec -05. Somewhere in Orion.")),
 		FString(TEXT("Source distance on the solve: -39 light years. A negative distance. The solver cannot produce that.")),
 		FString(TEXT("Outside line. No voice. Room tone, a printer, a heavy thud, a gasp, something ceramic breaking. Then nothing.")),
@@ -964,6 +969,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 			if (A.Num() >= 2) NS.Log.Add({ A[0]->AsNumber(), A[1]->AsString() });
 		}
 		if (S47J::Has(Ns, TEXT("solveAt"))) NS.SolveAt = S47J::Num(Ns, TEXT("solveAt"));
+		if (S47J::Has(Ns, TEXT("lockAt"))) NS.LockAt = S47J::Num(Ns, TEXT("lockAt"));
 		NS.bJacket = S47J::Bool(Ns, TEXT("jacket"));
 		double PrintoutAt = 0;
 		if (Ns->TryGetNumberField(TEXT("printoutAt"), PrintoutAt) && FMath::IsFinite(PrintoutAt)) NS.PrintoutAt = PrintoutAt;
@@ -990,7 +996,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 		else if (Id == TEXT("halley")) DocsList.Add(S47Docs::HalleyPoster());
 		else if (Id == TEXT("telex")) DocsList.Add(S47Docs::Telex(TelexRoll(), bEveningTimeline));
 		// (Unreal only: T. Vega's page and TAPE A, S47DecoderDesk.h)
-		else if (const TOptional<FS47Doc> Pd = FS47DecoderDesk::PaperById(Id)) DocsList.Add(Id == TEXT("tapeA") ? FS47DecoderDesk::TapeDoc(TimelineText(TEXT("02:14"))) : *Pd);
+		else if (const TOptional<FS47Doc> Pd = FS47DecoderDesk::PaperById(Id)) DocsList.Add(Id == TEXT("tapeA") ? FS47DecoderDesk::TapeDoc(LockStamp()) : *Pd);
 	}
 	ApplyK3(NS.bK3Open);
 	// (room.setTelexRoll: the telex is not ported yet)
@@ -1363,6 +1369,7 @@ TSharedPtr<FJsonObject> AS47Story::SaveRoutine() const
   : CurrentPhase == ES47Phase::Residual ? TEXT("residual") : TEXT("shift");
  Set(O,TEXT("phase"),Stable); Set(O,TEXT("solved"),Rx.bSolved);
  if (NS.SolveAt) Set(O,TEXT("solveAt"),*NS.SolveAt);
+ if (NS.LockAt) Set(O,TEXT("lockAt"),*NS.LockAt);
  if (NS.PrintoutAt) Set(O,TEXT("printoutAt"),*NS.PrintoutAt);
  Set(O,TEXT("residualVisible"),bResidualVisible);
  Set(O,TEXT("coffee"),int32(Coffee)); Set(O,TEXT("radioOn"),bRadioOn); Set(O,TEXT("radioHeard"),bRadioHeard); Set(O,TEXT("opsLines"),OpsLines);
@@ -1391,8 +1398,9 @@ void AS47Story::RestoreRoutine(const TSharedPtr<FJsonObject>& Saved)
  const bool bNightResidual = NightSequence() && Int(Saved,TEXT("routineVersion")) == 2 &&
   (Stable == TEXT("residual") || Stable == TEXT("locked") || Stable == TEXT("printed"));
  if (bNightResidual) CurrentPhase = Stable == TEXT("printed") ? ES47Phase::Printed : Stable == TEXT("locked") ? ES47Phase::Locked : ES47Phase::Residual;
- NS.SolveAt.Reset(); NS.PrintoutAt.Reset();
+ NS.SolveAt.Reset(); NS.PrintoutAt.Reset(); NS.LockAt.Reset();
  if (bNightResidual && Has(Saved,TEXT("solveAt"))) NS.SolveAt=Num(Saved,TEXT("solveAt"));
+ if (bNightResidual && Has(Saved,TEXT("lockAt"))) NS.LockAt=Num(Saved,TEXT("lockAt"));
  if (bNightResidual && Has(Saved,TEXT("printoutAt"))) NS.PrintoutAt=Num(Saved,TEXT("printoutAt"));
  Rx.bSolved = bNightResidual && CurrentPhase == ES47Phase::Printed && Bool(Saved,TEXT("solved"));
  bResidualVisible = bNightResidual && Bool(Saved,TEXT("residualVisible"));

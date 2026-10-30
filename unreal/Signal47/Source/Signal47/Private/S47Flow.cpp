@@ -413,7 +413,7 @@ void US47Flow::Boot()
 		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && (FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine) || FParse::Value(FCommandLine::Get(),TEXT("S47SpineStart="),Spine))) { M->Spine->Begin(nullptr,true); if (Spine==TEXT("SC04")) M->Spine->TestOpenSC04(); if (Spine==TEXT("SC08")) M->Spine->TestOpenSC08(); } }
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && (FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine) || FParse::Value(FCommandLine::Get(),TEXT("S47SpineStart="),Spine))) { M->Spine->Begin(nullptr,true); if (Spine==TEXT("SC04")) M->Spine->TestOpenSC04(); if (Spine==TEXT("SC08")) M->Spine->TestOpenSC08(); if (Spine==TEXT("SC05")) { M->Spine->TestDoneSC04(); M->Story->SetClock(FMath::Max(M->Story->Clock(), FS47Spine::GateDone(FS47Spine::SC04))); } } }
 		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
 		{
 		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
@@ -1486,6 +1486,7 @@ S47J::FObj US47Flow::ComposeCase() const
 		for (const FS47LogLine& L : N.Log) Log.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{ MakeShared<FJsonValueNumber>(L.Clock), MakeShared<FJsonValueString>(L.Text) }));
 		Ns->SetArrayField(TEXT("log"), Log);
 		if (N.SolveAt) S47J::Set(Ns, TEXT("solveAt"), *N.SolveAt); else S47J::SetNull(Ns, TEXT("solveAt"));
+		if (N.LockAt) S47J::Set(Ns, TEXT("lockAt"), *N.LockAt);
 		if (N.PrintoutAt) S47J::Set(Ns, TEXT("printoutAt"), *N.PrintoutAt); else S47J::SetNull(Ns, TEXT("printoutAt"));
 		S47J::Set(Ns, TEXT("jacket"), N.bJacket);
 		// array: copyArraySave(this.ns.array); hondo: this.ns.hondo
@@ -1844,9 +1845,9 @@ void US47Flow::OpenDev()
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("SARO parking lot"), TEXT("arrived"), TEXT("-S47Evening=parking"));
 	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("Dale's handover call"), TEXT("18:00, control room"), TEXT("-S47Evening=phone"));
 	Add(TEXT("Night, act one"), TEXT("SC04 Secure the originals"), TEXT("02:55, SARO"), TEXT("-S47EveningTimeline -S47SpineStart=SC04 -S47Jump=residual"));
-	Add(TEXT("Night, act one"), TEXT("SC05 The residual on the console"), TEXT("console"), TEXT("-S47EveningTimeline -S47Jump=residual"));
-	Add(TEXT("Night, act one"), TEXT("SC05 The direction solved"), TEXT("printout"), TEXT("-S47EveningTimeline -S47Jump=printed"));
-	Add(TEXT("Night, act one"), TEXT("SC05 The 47 seconds"), TEXT("after the call"), TEXT("-S47EveningTimeline -S47Jump=countdown"));
+	Add(TEXT("Night, act one"), TEXT("SC05 The residual on the console"), TEXT("console"), TEXT("-S47EveningTimeline -S47SpineStart=SC05 -S47Jump=residual"));
+	Add(TEXT("Night, act one"), TEXT("SC05 The direction solved"), TEXT("printout"), TEXT("-S47EveningTimeline -S47SpineStart=SC05 -S47Jump=printed"));
+	Add(TEXT("Night, act one"), TEXT("SC05 The 47 seconds"), TEXT("after the call"), TEXT("-S47EveningTimeline -S47SpineStart=SC05 -S47Jump=countdown"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC06 Chapter one"), TEXT("B-12, the second exposure"), Night + TEXT("chapter1"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC07 Chapter two, then SC08"), TEXT("records, then the placeholder"), Night + TEXT("chapter2"));
 	Add(TEXT("Night, acts two to four"), TEXT("SC08 They point at you"), TEXT("04:00, Earl's reel, the array"), TEXT("-S47EveningTimeline -S47SpineStart=SC08 -S47Jump=chapter2"));
