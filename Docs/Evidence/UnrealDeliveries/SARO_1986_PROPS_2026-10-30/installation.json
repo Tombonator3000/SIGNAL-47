@@ -1,0 +1,12 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 258,
+  "source": "0468d1673046523bb1abcb74b42b93e091650532",
+  "merge": "ebaad3c04fa4878bb3b41005bf7c45b711a655ec",
+  "installed_at": "2026-10-30T19:45:36.986628+01:00",
+  "saved_nodes": 134,
+  "payload_nodes": 68,
+  "figures": 14,
+  "image": "/home/tom/scratch-bm/Signal47-saro-1986-props-20261030/installed/day-office-corridor-west-east.png",
+  "visual_approval": "awaiting_Tom"
+}
