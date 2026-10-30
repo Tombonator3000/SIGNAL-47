@@ -17,6 +17,7 @@
 #include "S47Timeline.h"
 #include "S47Walker.h"
 #include "S47World.h"
+#include "S47NightContract.h"
 #include "S47Chapter2.h"
 #include "S47Chapter3.h"
 #include "S47Chapter4.h"
@@ -380,7 +381,7 @@ void FS47Spine::ControlTest(double Dt)
  if (Test.Mode.StartsWith(TEXT("sc11"))) { FS47SC11Contract::Step(M, Dt); return; }
  // The opt-in final-road contract also observes Flow's real-time ending and its return to title.
  if (Test.Mode == TEXT("sc13") && M && M->Story) { S47SC13Contract::Step(M,Dt); return; }
- if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
+ if(Test.Mode==TEXT("night")&&M&&M->Story){S47NightContract::Step(M,Dt);return;}
  if (Test.Mode == TEXT("sc09"))
  {
   if (auto* C3 = Cast<US47Chapter3>(M->Story->Chapter(TEXT("ch3")))) C3->ControlSC09Test(Dt);
@@ -389,6 +390,7 @@ void FS47Spine::ControlTest(double Dt)
  if (Test.Mode == TEXT("sc10")) { S47StepSC10Contract(M, Dt); return; }
  // SC12 owns its own source/readback/disk contract; it is not the SC11 placeholder contract.
  if (Test.Mode == TEXT("sc12")) { if (auto* C5 = Cast<US47Chapter5>(M->Story->Chapter(TEXT("ch5")))) C5->ControlSC12Test(Dt); return; }
+ if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
  {
