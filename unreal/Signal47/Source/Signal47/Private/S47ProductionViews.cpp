@@ -188,7 +188,12 @@ void AS47Web::BeginProductionViews()
   // Temporary Tripo bodies, from the same fixed cameras with and without the new visuals.
   {TEXT("tripo-dale"),TEXT("saro"),{-.10,0,7.65},{1.07,1.15,7.88}},
   {TEXT("tripo-radio-woman"),TEXT("diner"),{7988.30,0,2135.00},{7985.57,8.47,2132.75}},
-  {TEXT("tripo-diner-patron"),TEXT("diner"),{7978.40,0,2003.70},{7976.55,5.38,2001.55}}
+  {TEXT("tripo-diner-patron"),TEXT("diner"),{7978.40,0,2003.70},{7976.55,5.38,2001.55}},
+  // SARO interior revision: ordinary eye-height views with the live room layout.
+  {TEXT("interior-corridor-east-west"),TEXT("saro"),{1.20,0,5.25},{-4.8,1.35,5.7}},
+  {TEXT("interior-control-wide"),TEXT("saro"),{-.3,0,2.8},{.5,1.35,-3.7}},
+  {TEXT("interior-control-rack"),TEXT("saro"),{3.65,0,.2},{5.5,1.2,-1.75}},
+  {TEXT("interior-control-console"),TEXT("saro"),{.35,0,-1.4},{.15,1.1,-4.0}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -226,11 +231,12 @@ void AS47Web::BeginProductionViews()
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
    const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-")),Cinema=Name==TEXT("cinema")||Name.StartsWith(TEXT("cinema-poster-")),PhotoLab=Name.StartsWith(TEXT("photolab-"));
+   const bool Interiors=Name.StartsWith(TEXT("interior-"))||Name==TEXT("office-corridor-west-east")||Name==TEXT("office-passing-bay");
    if((!State->OnlyView.IsEmpty()&&Name!=State->OnlyView)||(State->OnlyLight!=INDEX_NONE&&State->Index/UE_ARRAY_COUNT(Views)!=State->OnlyLight)
     ||(State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
     ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))||(State->Suite==TEXT("photolab")&&!PhotoLab)
-    ||(State->Suite==TEXT("triponpcs")&&!Name.StartsWith(TEXT("tripo-")))
+    ||(State->Suite==TEXT("triponpcs")&&!Name.StartsWith(TEXT("tripo-")))||(State->Suite==TEXT("interiors")&&!Interiors)
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
   // This branch is reached only after the final PendingFile has a complete PNG terminator.
@@ -261,6 +267,7 @@ void AS47Web::BeginProductionViews()
    else if(ViewName==TEXT("office-room-overview")||ViewName==TEXT("office-research-wall")||ViewName==TEXT("office-corridor-west-east")||ViewName==TEXT("office-passing-bay"))
    {State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-research-wall")?74.f:ViewName==TEXT("office-passing-bay")?80.f:78.f;}
    else if(ViewName.StartsWith(TEXT("photolab-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("photolab-overview")?82.f:ViewName==TEXT("photolab-records-storage")?78.f:72.f;}
+   else if(ViewName.StartsWith(TEXT("interior-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("interior-control-rack")?60.f:ViewName==TEXT("interior-control-console")?68.f:78.f;}
    else if(ViewName==TEXT("tripo-dale")){State->PrevFov=M->Player->Fov;M->Player->Fov=100.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    if(ViewName.StartsWith(TEXT("photolab-")))

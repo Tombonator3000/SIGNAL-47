@@ -1,0 +1,127 @@
+[
+  {
+    "name": "M_Saro_Corridor_UpperPaint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.91,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_SageWall_base.png",
+      "roughness": "../Office/textures/M_Office_SageWall_rough.png",
+      "normal": "../Office/textures/M_Office_SageWall_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      1.5490196,
+      1.4361702,
+      1.42
+    ],
+    "source_material": "M_Office_SageWall",
+    "source_use": "read-only approved Office PBR maps; separate corridor material"
+  },
+  {
+    "name": "M_Saro_Corridor_VCT",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.65,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_FloorLinoleum_base.png",
+      "roughness": "../Office/textures/M_Office_FloorLinoleum_rough.png",
+      "normal": "../Office/textures/M_Office_FloorLinoleum_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      1.3191489,
+      1.2941176,
+      1.2715517
+    ],
+    "source_material": "M_Office_FloorLinoleum",
+    "source_use": "read-only approved Office PBR maps; separate corridor material"
+  },
+  {
+    "name": "M_Saro_Corridor_VCTFaded",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.65,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_FloorLinoleum_base.png",
+      "roughness": "../Office/textures/M_Office_FloorLinoleum_rough.png",
+      "normal": "../Office/textures/M_Office_FloorLinoleum_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      1.3659574,
+      1.3176471,
+      1.2801724
+    ],
+    "source_material": "M_Office_FloorLinoleum",
+    "source_use": "read-only approved Office PBR maps; separate corridor material"
+  },
+  {
+    "name": "M_Saro_Corridor_VCTRepair",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.65,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_FloorLinoleum_base.png",
+      "roughness": "../Office/textures/M_Office_FloorLinoleum_rough.png",
+      "normal": "../Office/textures/M_Office_FloorLinoleum_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      1.1914894,
+      1.1882353,
+      1.1982759
+    ],
+    "source_material": "M_Office_FloorLinoleum",
+    "source_use": "read-only approved Office PBR maps; separate corridor material"
+  },
+  {
+    "name": "M_Saro_CorridorWear",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.93,
+    "metallic": 0,
+    "specular": 0.2,
+    "alpha_mode": "dithered_masked",
+    "opacity_from_base_color": true,
+    "two_sided": false,
+    "normal_strength": 0,
+    "textures": {
+      "base_color": "textures/corridor_wear_base.png",
+      "roughness": "textures/corridor_wear_rough.png"
+    },
+    "source_use": "Original seeded grime, hand scuffs, heel/rubber marks and paint chips; no baked light"
+  }
+]

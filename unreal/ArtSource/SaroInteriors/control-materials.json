@@ -1,0 +1,106 @@
+[
+  {
+    "name": "M_Saro_Control_UpperPaint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.91,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_SageWall_base.png",
+      "roughness": "../Office/textures/M_Office_SageWall_rough.png",
+      "normal": "../Office/textures/M_Office_SageWall_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      1.372549,
+      1.3652482,
+      1.46
+    ],
+    "source_material": "M_Office_SageWall",
+    "source_use": "Read-only approved Office PBR, separate Control material"
+  },
+  {
+    "name": "M_Saro_Control_LowerPaint",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.91,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_SageWall_base.png",
+      "roughness": "../Office/textures/M_Office_SageWall_rough.png",
+      "normal": "../Office/textures/M_Office_SageWall_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      0.4117647,
+      0.5496454,
+      0.62
+    ],
+    "source_material": "M_Office_SageWall",
+    "source_use": "Read-only approved Office PBR, separate Control material"
+  },
+  {
+    "name": "M_Saro_Control_Acoustic",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.98,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_CeilingTile_base.png",
+      "roughness": "../Office/textures/M_Office_CeilingTile_rough.png",
+      "normal": "../Office/textures/M_Office_CeilingTile_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      1.0869565,
+      1.0851064,
+      1.0930233
+    ],
+    "source_material": "M_Office_CeilingTile",
+    "source_use": "Read-only approved Office PBR, separate Control material"
+  },
+  {
+    "name": "M_Saro_Control_RackSteel",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.57,
+    "metallic": 0.25,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "../Office/textures/M_Office_CabinetEnamel_base.png",
+      "roughness": "../Office/textures/M_Office_CabinetEnamel_rough.png",
+      "normal": "../Office/textures/M_Office_CabinetEnamel_normal_dx.png"
+    },
+    "texture_tint_linear": [
+      0.2736842,
+      0.2869565,
+      0.3
+    ],
+    "source_material": "M_Office_CabinetEnamel",
+    "source_use": "Read-only approved Office PBR, separate Control material"
+  }
+]

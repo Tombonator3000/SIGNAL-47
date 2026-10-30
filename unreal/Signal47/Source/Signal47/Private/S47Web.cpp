@@ -1071,6 +1071,10 @@ bool AS47Web::RehouseSaroCorridorLights(bool bApply)
 		Light->SetWorldLocation(ToUE(FVector(B.X,2.696,5.7)));
 		Light->SetWorldRotation(FRotationMatrix::MakeFromXY(FVector(0,0,-1),FVector(1,0,0)).Rotator());
 		Light->SetSourceWidth(124); Light->SetSourceHeight(30);
+		// The native SARO room pass keeps these exact drivers while using neutral
+		// warm-white tubes; the opt-out retains the earlier cool corridor reference.
+		F.Color = Hex(FParse::Param(FCommandLine::Get(), TEXT("S47SaroRoomsOff")) ? 0xeef3ff : 0xfff3df);
+		Light->SetLightColor(F.Color);
 		// Keep the existing 32lm tube, power/dimming/flicker and pool suppression.
 		if (!F.NativeDiffuser.IsValid())
 		{

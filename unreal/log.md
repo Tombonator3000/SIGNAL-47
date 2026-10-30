@@ -1377,3 +1377,6 @@ Kontorpilotens kanoniske prune er utført etter installasjonen: to eldre pakkepa
 
 ### 2026-10-30T16:01:29+01:00 Dales kontor visuelt godkjent
 Tom svarte «Godkjent» på den viste og installerte kontorpiloten fra PR251/67d308c2. ENV-05 er lukket for Dales kontor, som er visuell referanse for videre romarbeid; kun status og beslutning er oppdatert.
+
+### 2026-10-30T16:37:26+01:00 SARO gang og kontrollrom
+Gren codex/saro-corridor-control-20261030: gang først vist med malt vegg/VCT og varmere armaturer, deretter kontrollrom med egne overflater/himling, døgnstyrt vinduslys og15 dekorprops. Editorbygg og faktiske Low/High før/etter består; godkjente Office-kilder/native er urørt, samlet pakke følger.

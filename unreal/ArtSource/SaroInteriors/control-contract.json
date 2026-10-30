@@ -1,0 +1,37 @@
+{
+  "units": "metres",
+  "mapping": "Blender (x,-z,y) to UE (100x,100z,100y)",
+  "asset": "SM_Saro_ControlRoomFinishes",
+  "triangles": 7638,
+  "bounds_local_m": [
+    [
+      -5.994999885559082,
+      -4.49399995803833,
+      0.014999999664723873
+    ],
+    [
+      5.994999885559082,
+      4.49399995803833,
+      2.996999979019165
+    ]
+  ],
+  "materials": [
+    "M_Saro_Control_LowerPaint",
+    "M_Saro_Control_UpperPaint",
+    "M_Saro_Control_Acoustic",
+    "M_Office_CreamEnamel",
+    "M_Office_BrushedMetal",
+    "M_Saro_Control_RackSteel"
+  ],
+  "reuse_materials": {
+    "M_Office_CreamEnamel": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel",
+    "M_Office_BrushedMetal": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal",
+    "M_Office_BlackBakelite": "/Game/Signal47/Art/Office/Materials/M_Office_BlackBakelite"
+  },
+  "source": "control_finishes.py",
+  "editable_components": 427,
+  "floor_top_m": 0,
+  "collision": "NoCollision; original gameplay unchanged",
+  "protected": "hex floor, window, doors, posters, screens, printer, DSP, telex, phones and rack controls",
+  "office": "read-only approved maps/native reuse; no Office rebuild"
+}

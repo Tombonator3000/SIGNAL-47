@@ -1,6 +1,6 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 28. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 30. oktober 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
@@ -39,6 +39,8 @@ De engelske forfatterkildene i [Narrative/HorrorStory](../../unreal/Narrative/Ho
 | D-12 | Finalen skal vurderes med en stor, langsom UFO-avsløring bak to skybanker som velter fremover fra hver sin side. | SC13 er anbefalt hovedplassering. Konsepter er regi, ikke implementert effekt. [Finalenotat](../Design/Proposals/FINALE_CLOUD_TANK_UFO.md). |
 | D-13 | Dales kontor skal være et personlig, rotete konspirasjonskontor fra 1986. Forbindelsesgangen skal få reell plass og bedre geometri; kontor/gang/dører prioriteres før arkiv/fotolab. | Toms føring 29. oktober. Bruk eide originalmodeller før ny modellering/Tripo, bevar fungerende dokumenter, nøkkel/skuff/dører, lysdrivere og Saved. Ingen kjøp eller automatisk fysisk Dale-scene. Tom godkjente den viste og installerte kontorpiloten fra PR251 30. oktober 2026; denne er visuell referanse for videre romarbeid. |
 | D-14 | Tom 30. oktober ber om alle14 eksisterende Tripo-figurer importert og plassert som statiske mannekenger foreløpig. | Bruk eksisterende rolleankre og scenevilkår, bevar originalriggene og fungerende dialog. Tripo-servitrisen er reserve ved kjøkkenet; MetaHuman ved disken beholdes. Ingen ny animasjonsløype bestilles nå. |
+
+| D-15 | SARO-gangen forbedres først, deretter kontrollrommet, med samme metode som visuelt godkjent Dales kontor. | Toms bestilling 30. oktober. Bruk eksisterende eide modeller, egne PBR-overflater og faktisk før/etter i Unreal; bevar fungerende spillankre og lagringer. |
 
 ## Arbeid, testing og levering
 
