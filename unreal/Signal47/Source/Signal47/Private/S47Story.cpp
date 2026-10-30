@@ -983,7 +983,7 @@ void AS47Story::AfterPrologue(const TSharedPtr<FJsonObject>& Saved)
 	else
 	{
 		NS.SolveAt = E - 60;
-		NS.Log = { { TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
+		NS.Log = { { bEveningTimeline ? 1 * 3600 + 52 * 60 : TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") }, { E - 60, TEXT("SOLVE  RANGE NEGATIVE") },
 			{ E - 47, TEXT("STATION CLOCK  WWVB REFERENCE LOST") }, { E - 7, TEXT("RX BANK 3  K3 OPEN") }, { E, TEXT("LINE POWER  DIP 1.2 S") },
 			{ E, TEXT("STATION CLOCK  WWVB REFERENCE RESTORED  HOLDOVER 00:00:47") }, { E + 3, TEXT("ARRAY  S-01 TO S-27 MOTION  NO COMMAND") }, { E + 70, TEXT("RX BANK 3  K3 CLOSED") } };
 	}
@@ -1063,7 +1063,8 @@ void AS47Story::ResetAll()
  ApplyFeederPower(false);
 	Timers.Empty();
 	GameTime = 0; ClockSec = bEveningTimeline ? S47Timeline::ShiftStart : StartClock;
-	EventClock = bEveningTimeline ? 15 * 60 + 12 : 2 * 3600 + 15 * 60 + 12;
+	// Evening cases: where SC05 puts the event in the approved timeline (03:16:30); jumps and fallbacks use it.
+	EventClock = bEveningTimeline ? 3 * 3600 + 16 * 60 + 30 : 2 * 3600 + 15 * 60 + 12;
 	if (US47Main* Main = US47Main::Get(this); Main && Main->Radio) Main->Radio->bEveningTimeline = bEveningTimeline;
 	CurrentPhase = ES47Phase::Intro; bCinematic = false;
 	bLogRead = false; Coffee = ECoffee::None; bPowered = false; bAnswered = false;
@@ -1190,7 +1191,7 @@ void AS47Story::Jump(const FString& Target)
 	if (Idx >= 1)
 	{
 		PowerUp(true);
-		NS.Log.Add({ TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") });
+		NS.Log.Add({ bEveningTimeline ? 1 * 3600 + 52 * 60 : TimelineTime(23 * 3600 + 44 * 60), TEXT("RX BANK 3  K3 CLOSED") });
 		Rx.Advance(); Rx.Advance();
 		Note(S47Signal::Profiles()[0].Note); Note(S47Signal::Profiles()[1].Note);
 		ClockSec = bEveningTimeline ? FMath::Max(ClockSec, TimelineTime(SkipClock)) : SkipClock;

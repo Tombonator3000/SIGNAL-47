@@ -531,7 +531,10 @@ void US47Chapter2::Interactables()
 	{
 		if (M && M->Spine) { const FString L = M->Spine->Label(TEXT("binder")); if (!L.IsEmpty()) return L; }
 		if (M && M->Observing) { const FString L = M->Observing->Label(TEXT("binder")); if (!L.IsEmpty()) return L; }
-		return On() ? FString(TEXT("Service copies, reference records")) : FString();
+		if (!On()) return FString();
+		// SC04 took the run binder for the county; the service copies are on the shelf behind it.
+		if (M && M->Spine && M->Spine->Secure().Phase() == FS47SC04::EStep::Done) return FString(TEXT("The service copies, behind where the run binder stood"));
+		return FString(TEXT("Service copies, reference records"));
 	}, [this] { if (!(M && M->Observing && M->Observing->Use(TEXT("binder")))) TakeBinder(); });
 	Add(TEXT("lineage"), [On] { return On() ? FString(TEXT("Maintenance card index")) : FString(); }, [this] { TakeLineage(); });
 	Add(TEXT("workTable"), [this, On] { return On() ? FString(AnyRead() ? TEXT("Lay out the records") : TEXT("Work table")) : FString(); }, [this] { OpenTable(); });
@@ -543,7 +546,7 @@ void US47Chapter2::Interactables()
 		return FString(S.Stage == TEXT("call-nora") ? TEXT("Call the key holder") : TEXT("Wall phone"));
 	}, [this] { if (!(PhoneHook.Use && PhoneHook.Use(TEXT("room")))) UseRecPhone(); });
 	Add(TEXT("vending"), [On] { return On() ? FString(TEXT("Vending machine")) : FString(); }, [this] { Toast(TEXT("Cola, orange soda, peanut butter crackers. Somebody's dime is stuck in the coin return.")); });
-	Add(TEXT("officeDoor"), [On] { return On() ? FString(TEXT("Operations office")) : FString(); }, [this] { Toast(TEXT("Locked. Dale took the key home.")); });
+	// (the operations office door is S47Office's: Bind("officeDoor") replaces any registration here)
 	Add(TEXT("restroomDoor"), [On] { return On() ? FString(TEXT("Restrooms")) : FString(); }, [this] { Toast(TEXT("Not now.")); });
 }
 
@@ -669,8 +672,9 @@ TArray<FS47BoardCard> US47Chapter2::BoardCards()
 			Line(TEXT("e06.fault"), TEXT("The additional mark is attributed to a fault in plate development.")),
 			Line(TEXT("e06.omit"), TEXT("The incomplete closing sight line has been omitted from the service copy.")),
 			Line(TEXT("e06.repeat"), TEXT("No repeat observation is required.")),
-			Line(TEXT("e06.sig"), TEXT("N. VEGA / FIELD TECHNICIAN")) }),
-		Card(TEXT("rx"), TEXT("printout"), TEXT("RX"), Host ? Host->TimelineText(TEXT("PRINTOUT, 02:14")) : FString(TEXT("PRINTOUT, 02:14")), true, FString(), FString(), FString(), 898, 640, 266, {
+			Line(TEXT("e06.sig"), TEXT("N. VEGA / FIELD TECHNICIAN")),
+			Line(TEXT("e06.stamp"), TEXT("Stamped AMENDED / SERVICE COPY: the same stamp as the 1979 page in the run binder.")) }),
+		Card(TEXT("rx"), TEXT("printout"), TEXT("RX"), Host ? (Host->Night().PrintoutAt ? TEXT("PRINTOUT, ") + S47Text::ClockText(*Host->Night().PrintoutAt, false) : Host->TimelineText(TEXT("PRINTOUT, 02:14"))) : FString(TEXT("PRINTOUT, 02:14")), true, FString(), FString(), FString(), 898, 640, 266, {
 			Line(TEXT("rx.dist"), TEXT("SOURCE DISTANCE:  -39 LY")) }),
 		Card(TEXT("b12"), TEXT("b12lineage"), TEXT("B-12"), TEXT("LINEAGE CARD"), S.Read.bLineage, WHERE_LINEAGE, FString(), LINEAGE, 600, 14, 278, {
 			Line(TEXT("b12.id"), TEXT("The B-12 vane retains the fixed-point survey identified as STATION 01.")),
@@ -806,6 +810,9 @@ FS47Doc US47Chapter2::DocAmended()
 {
 	FS47Doc D;
 	D.Id = TEXT("e06"); D.Title = TEXT("E06 / Amended service copy, 1947"); D.Kind = TEXT("typed"); D.Stamp = TEXT("E06"); D.Page = AMENDED;
+	// The evening's 20:30 filing (S47Observing obs_runbinder) is the seed: the same stamp, 32 years apart.
+	if (Host && Host->Docs().ContainsByPredicate([](const FS47Doc& X) { return X.Id == TEXT("obs_runbinder"); }))
+		D.Page += TEXT("\n\nSame stamp as the 1979 page in the run binder: AMENDED / SERVICE COPY. Thirty-two years apart, the same hand.");
 	if (Images.Amended.IsEmpty()) Images.Amended = S47Drawings2::Arrangement(false);
 	D.Image = Images.Amended;
 	D.Transcript = TEXT("The service copy of the same record, filed with the routine reference records. Same title, same signature. Its own arrangement drawing is clipped to the back.");
@@ -918,7 +925,7 @@ void US47Chapter2::BeginChapter2(const S47J::FObj& SavedCase)
 	else
 	{
 		// Evening cases: SC07 follows SC06 at about 03:40 (approved timeline); legacy keeps forty minutes.
-		Host->SetClock(FMath::Max(Host->Clock(), Host->EventClockSec() + (Host->bEveningTimeline ? 15 : 40) * 60));
+		Host->SetClock(Host->bEveningTimeline ? FMath::Max(Host->Clock(), 3 * 3600. + 40 * 60) : FMath::Max(Host->Clock(), Host->EventClockSec() + 40 * 60));
 		if (M && M->Player) M->Player->Place(3.35, 1.45, 2.75); // at the supervisor desk, facing the phone
 	}
 	if (M && M->UI) M->UI->Fade(false);
@@ -947,7 +954,7 @@ void US47Chapter2::JumpChapter2()
 		Done = S47J::New();
 		S47J::Set(Done, TEXT("s"), Ch1);
 		S47J::Set(Done, TEXT("notes"), Host->Notes());
-		S47J::Set(Done, TEXT("clock"), Host->EventClockSec() + 35 * 60);
+		S47J::Set(Done, TEXT("clock"), Host->bEveningTimeline ? FMath::Max(Host->EventClockSec() + 35 * 60, 3 * 3600. + 40 * 60) : Host->EventClockSec() + 35 * 60);
 	}
 	// Prologue.beginChapter1(done), the host's part, when chapter one is in this version (when it
 	// is not, its part is skipped: chapter two begins straight after the prologue). The integrator
