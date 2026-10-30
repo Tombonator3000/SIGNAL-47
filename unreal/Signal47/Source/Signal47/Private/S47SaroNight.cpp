@@ -1,6 +1,7 @@
 // main.ts: SARO's own happenings (saroDark, saroPower, arrayBack, follow, lineLights, reel047,
 // reelTape, recWalk), in the order main.ts builds and steps them
 #include "S47SaroNight.h"
+#include "S47SaroInterior.h"
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -332,6 +333,7 @@ FString US47SaroNight::DarkWhere() const
 	if (Area() != TEXT("saro") || Driving()) return TEXT("away");
 	if (Inside(TEXT("yard.zone.lab"), P) || Inside(TEXT("yard.zone.labDoor"), P)) return TEXT("lab");
 	if (Inside(TEXT("room.bounds"), P)) return TEXT("room");
+	if (S47SaroInterior::ContainsPassingBay(M->Web, P)) return TEXT("away");
 	// the annex: not out where the night is
 	for (const TCHAR* B : { TEXT("room.bounds"), TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") }) if (Inside(B, P)) return TEXT("away");
 	return FMath::Sqrt(FMath::Square(P.X - 6) + FMath::Square(P.Z + 2)) < 34 && !OnHighway(P) ? TEXT("yard") : TEXT("away");

@@ -737,7 +737,10 @@ void US47Flow::StartGame(const FStart& O)
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player)
 	{
-		const double X = S47J::Num(Pose, TEXT("x")), Z = S47J::Num(Pose, TEXT("z"));
+		FVector RestoredPose(S47J::Num(Pose, TEXT("x")), 0, S47J::Num(Pose, TEXT("z")));
+		// Migrate changed native interior bounds before rejecting an old valid room pose.
+		if (M->Office) M->Office->MigrateRestoredPose(RestoredPose, M->Player->Radius);
+		const double X = RestoredPose.X, Z = RestoredPose.Z;
 		// Old saves can have a closed door disabling the threshold under their pose.
 		// Recover that one doorway before applying the normal saved-pose walkability gate.
 		if (!M->Player->Walkable(X, Z) && M->Web) M->Web->RestoreDoorwayAt(FVector(X, 0, Z), M->Player->Radius);

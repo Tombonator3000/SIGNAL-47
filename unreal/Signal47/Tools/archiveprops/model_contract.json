@@ -1,13 +1,13 @@
 {
   "status": "SOURCE_GENERATED_NATIVE_UNVERIFIED",
-  "source_revision": "R1-original-SARO-records-room-1986",
+  "source_revision": "R2-used-SARO-records-room-1986",
   "units": "metres",
   "blender_up": "Z",
   "mapping": "Blender=(three.x,-three.z,three.y); imported UE=(100bx,-100by,100bz)",
   "asset_root": "/Game/ArchiveProps",
   "parts": {
     "SM_ArchiveProps_ShelvingStorage": {
-      "triangles": 5482,
+      "triangles": 5688,
       "bounds_local_m": [
         [
           -0.25699999928474426,
@@ -27,13 +27,19 @@
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Metal",
         "M_ArchiveProps_Rubber",
-        "M_ArchiveProps_KraftEdge"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge",
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown"
       ],
       "used_materials": [
+        "M_ArchiveProps_BookBlue",
+        "M_ArchiveProps_BookBrown",
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Kraft",
         "M_ArchiveProps_KraftEdge",
         "M_ArchiveProps_Metal",
+        "M_ArchiveProps_Paper",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_Rubber",
         "M_ArchiveProps_SteelGreen"
@@ -64,13 +70,13 @@
         "lic:archive_box_lid"
       ],
       "lod_triangles": [
-        5482,
-        3266,
-        1802
+        5688,
+        3316,
+        2006
       ]
     },
     "SM_ArchiveProps_FilingCabinets": {
-      "triangles": 2970,
+      "triangles": 3114,
       "bounds_local_m": [
         [
           -0.7900000214576721,
@@ -129,13 +135,13 @@
         "lic:filing_cabinet"
       ],
       "lod_triangles": [
-        2970,
-        1674,
+        3114,
+        1818,
         1020
       ]
     },
     "SM_ArchiveProps_CardIndex": {
-      "triangles": 1710,
+      "triangles": 1758,
       "bounds_local_m": [
         [
           -0.4830000102519989,
@@ -155,11 +161,13 @@
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_DarkSteel",
         "M_ArchiveProps_Metal",
-        "M_ArchiveProps_Paper"
+        "M_ArchiveProps_Paper",
+        "M_ArchiveProps_KraftEdge"
       ],
       "used_materials": [
         "M_ArchiveProps_BeigeEnamel",
         "M_ArchiveProps_DarkSteel",
+        "M_ArchiveProps_KraftEdge",
         "M_ArchiveProps_Metal",
         "M_ArchiveProps_Paper",
         "M_ArchiveProps_PrintAtlas",
@@ -188,13 +196,13 @@
         332
       ],
       "lod_triangles": [
-        1710,
-        1054,
+        1758,
+        1078,
         714
       ]
     },
     "SM_ArchiveProps_Bookcase": {
-      "triangles": 1404,
+      "triangles": 1704,
       "bounds_local_m": [
         [
           -0.949999988079071,
@@ -211,6 +219,7 @@
         "M_ArchiveProps_Walnut",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_Brass",
+        "M_ArchiveProps_Paper",
         "M_ArchiveProps_BookBlue",
         "M_ArchiveProps_BookBrown"
       ],
@@ -218,6 +227,7 @@
         "M_ArchiveProps_BookBlue",
         "M_ArchiveProps_BookBrown",
         "M_ArchiveProps_Brass",
+        "M_ArchiveProps_Paper",
         "M_ArchiveProps_PrintAtlas",
         "M_ArchiveProps_Walnut"
       ],
@@ -244,9 +254,9 @@
         367
       ],
       "lod_triangles": [
-        1404,
-        984,
-        732
+        1704,
+        1108,
+        748
       ]
     },
     "SM_ArchiveProps_WorkTable": {
@@ -644,7 +654,7 @@
   "lods": {
     "0": {
       "SM_ArchiveProps_ShelvingStorage": {
-        "triangles": 5482,
+        "triangles": 5688,
         "bounds_local_m": [
           [
             -0.25699999928474426,
@@ -664,13 +674,19 @@
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Metal",
           "M_ArchiveProps_Rubber",
-          "M_ArchiveProps_KraftEdge"
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown"
         ],
         "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown",
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Kraft",
           "M_ArchiveProps_KraftEdge",
           "M_ArchiveProps_Metal",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_Rubber",
           "M_ArchiveProps_SteelGreen"
@@ -701,13 +717,13 @@
           "lic:archive_box_lid"
         ],
         "lod_triangles": [
-          5482,
-          3266,
-          1802
+          5688,
+          3316,
+          2006
         ]
       },
       "SM_ArchiveProps_FilingCabinets": {
-        "triangles": 2970,
+        "triangles": 3114,
         "bounds_local_m": [
           [
             -0.7900000214576721,
@@ -766,13 +782,13 @@
           "lic:filing_cabinet"
         ],
         "lod_triangles": [
-          2970,
-          1674,
+          3114,
+          1818,
           1020
         ]
       },
       "SM_ArchiveProps_CardIndex": {
-        "triangles": 1710,
+        "triangles": 1758,
         "bounds_local_m": [
           [
             -0.4830000102519989,
@@ -792,11 +808,13 @@
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Metal",
-          "M_ArchiveProps_Paper"
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_KraftEdge"
         ],
         "used_materials": [
           "M_ArchiveProps_BeigeEnamel",
           "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_KraftEdge",
           "M_ArchiveProps_Metal",
           "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
@@ -825,13 +843,13 @@
           332
         ],
         "lod_triangles": [
-          1710,
-          1054,
+          1758,
+          1078,
           714
         ]
       },
       "SM_ArchiveProps_Bookcase": {
-        "triangles": 1404,
+        "triangles": 1704,
         "bounds_local_m": [
           [
             -0.949999988079071,
@@ -848,6 +866,7 @@
           "M_ArchiveProps_Walnut",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_Brass",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_BookBlue",
           "M_ArchiveProps_BookBrown"
         ],
@@ -855,6 +874,7 @@
           "M_ArchiveProps_BookBlue",
           "M_ArchiveProps_BookBrown",
           "M_ArchiveProps_Brass",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_Walnut"
         ],
@@ -881,9 +901,9 @@
           367
         ],
         "lod_triangles": [
-          1404,
-          984,
-          732
+          1704,
+          1108,
+          748
         ]
       },
       "SM_ArchiveProps_WorkTable": {
@@ -1280,7 +1300,7 @@
     },
     "1": {
       "SM_ArchiveProps_ShelvingStorage": {
-        "triangles": 3266,
+        "triangles": 3316,
         "bounds_local_m": [
           [
             -0.25699999928474426,
@@ -1299,12 +1319,18 @@
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Rubber",
-          "M_ArchiveProps_KraftEdge"
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown"
         ],
         "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown",
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Kraft",
           "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_Rubber",
           "M_ArchiveProps_SteelGreen"
@@ -1336,7 +1362,7 @@
         ]
       },
       "SM_ArchiveProps_FilingCabinets": {
-        "triangles": 1674,
+        "triangles": 1818,
         "bounds_local_m": [
           [
             -0.7900000214576721,
@@ -1396,7 +1422,7 @@
         ]
       },
       "SM_ArchiveProps_CardIndex": {
-        "triangles": 1054,
+        "triangles": 1078,
         "bounds_local_m": [
           [
             -0.4830000102519989,
@@ -1416,11 +1442,13 @@
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Metal",
-          "M_ArchiveProps_Paper"
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_KraftEdge"
         ],
         "used_materials": [
           "M_ArchiveProps_BeigeEnamel",
           "M_ArchiveProps_DarkSteel",
+          "M_ArchiveProps_KraftEdge",
           "M_ArchiveProps_Metal",
           "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
@@ -1450,7 +1478,7 @@
         ]
       },
       "SM_ArchiveProps_Bookcase": {
-        "triangles": 984,
+        "triangles": 1108,
         "bounds_local_m": [
           [
             -0.949999988079071,
@@ -1467,6 +1495,7 @@
           "M_ArchiveProps_Walnut",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_Brass",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_BookBlue",
           "M_ArchiveProps_BookBrown"
         ],
@@ -1474,6 +1503,7 @@
           "M_ArchiveProps_BookBlue",
           "M_ArchiveProps_BookBrown",
           "M_ArchiveProps_Brass",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_Walnut"
         ],
@@ -1859,7 +1889,7 @@
     },
     "2": {
       "SM_ArchiveProps_ShelvingStorage": {
-        "triangles": 1802,
+        "triangles": 2006,
         "bounds_local_m": [
           [
             -0.25699999928474426,
@@ -1877,12 +1907,18 @@
           "M_ArchiveProps_Kraft",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_DarkSteel",
-          "M_ArchiveProps_KraftEdge"
+          "M_ArchiveProps_Paper",
+          "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown"
         ],
         "used_materials": [
+          "M_ArchiveProps_BookBlue",
+          "M_ArchiveProps_BookBrown",
           "M_ArchiveProps_DarkSteel",
           "M_ArchiveProps_Kraft",
           "M_ArchiveProps_KraftEdge",
+          "M_ArchiveProps_Paper",
           "M_ArchiveProps_PrintAtlas",
           "M_ArchiveProps_SteelGreen"
         ],
@@ -2021,7 +2057,7 @@
         ]
       },
       "SM_ArchiveProps_Bookcase": {
-        "triangles": 732,
+        "triangles": 748,
         "bounds_local_m": [
           [
             -0.949999988079071,
@@ -2425,7 +2461,7 @@
       }
     }
   },
-  "total_LOD0_triangles": 13270,
+  "total_LOD0_triangles": 13968,
   "room_bounds_three_xxzz": [
     -6,
     -1,

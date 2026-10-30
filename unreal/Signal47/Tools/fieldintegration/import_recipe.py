@@ -50,7 +50,7 @@ def material(row, dest, src):
     base_sample = None
     texture_alpha = None
     for role, filename in row.get('textures', {}).items():
-        if role not in ('base_color', 'normal', 'roughness'):
+        if role not in ('base_color', 'normal', 'roughness', 'metallic'):
             continue
         path = Path(filename)
         if not path.is_absolute():
@@ -78,7 +78,7 @@ def material(row, dest, src):
             tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)
             # Source normals are DirectX tangent-space, exported explicitly by the generator.
             tex.set_editor_property('flip_green_channel', False)
-        elif role == 'roughness':
+        elif role in ('roughness', 'metallic'):
             # L-mode source PNGs otherwise auto-import as Grayscale while this graph
             # deliberately samples linear colour and takes R.
             tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_DEFAULT)
@@ -92,7 +92,7 @@ def material(row, dest, src):
             uv = expression(mat, unreal.MaterialExpressionTextureCoordinate, u_tiling=scale, v_tiling=scale)
             check(name+' UV scale connection', M.connect_material_expressions(uv, '', sample, 'UVs'))
         prop = {'base_color': unreal.MaterialProperty.MP_BASE_COLOR, 'normal': unreal.MaterialProperty.MP_NORMAL,
-                'roughness': unreal.MaterialProperty.MP_ROUGHNESS}[role]
+                'roughness': unreal.MaterialProperty.MP_ROUGHNESS, 'metallic': unreal.MaterialProperty.MP_METALLIC}[role]
         if role == 'normal':
             # Decode first, then blend towards the neutral tangent normal; avoid embossed stucco.
             neutral = expression(mat, unreal.MaterialExpressionConstant3Vector, constant=unreal.LinearColor(0,0,1))
@@ -112,7 +112,7 @@ def material(row, dest, src):
                 check(name+' tint color', M.connect_material_expressions(tint, 'RGB', multiply, 'B'))
                 M.connect_material_property(multiply, '', prop)
             else:
-                M.connect_material_property(sample, 'RGB' if role != 'roughness' else 'R', prop)
+                M.connect_material_property(sample, 'R' if role in ('roughness', 'metallic') else 'RGB', prop)
         if role == 'base_color':
             base_sample = sample
         if role == 'base_color' and row.get('opacity_from_base_color'):

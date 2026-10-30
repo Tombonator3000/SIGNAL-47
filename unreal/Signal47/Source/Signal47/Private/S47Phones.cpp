@@ -1,6 +1,7 @@
 // main.ts: the phones, the archive and the records (archivePhone, archiveDishes, officePhone, roofSteps,
 // fieldBook, sameThread, looks, the closer look), in the order main.ts builds and steps them
 #include "S47Phones.h"
+#include "S47SaroInterior.h"
 #include "S47Keys.h"
 
 #include "Engine/Texture2D.h"
@@ -313,6 +314,7 @@ FString US47Phones::ArcWhere() const
 	const FString Area = M->World ? M->World->Area : FString(TEXT("saro"));
 	if (Area != TEXT("saro") || Driving()) return TEXT("away");
 	if (InSaro(TEXT("annex.zone.records")) && !InSaro(TEXT("annex.zone.recordsDoor"))) return TEXT("records");
+	if (M->Player && S47SaroInterior::ContainsPassingBay(M->Web, M->Player->Pos)) return TEXT("annex");
 	for (const TCHAR* Z : { TEXT("annex.zone.southDoor"), TEXT("annex.zone.corridor"), TEXT("annex.zone.recordsDoor"), TEXT("annex.zone.records") }) if (InSaro(Z)) return TEXT("annex");
 	if (InSaro(TEXT("room.bounds"))) return TEXT("room");
 	return M->Space == TEXT("yard") ? TEXT("out") : TEXT("away");
