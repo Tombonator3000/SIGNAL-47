@@ -142,3 +142,6 @@ R4-editor fra d27ea475 består11,179s, modul2d9213ed er privatbevart. Endringen 
 ### 2026-10-30T03:55:48+01:00 Original finale og native ferskleser består
 
 R5 fra7d19482b beståreditor10,157s, originalBlender2,538s, nativeapply65/35,057s og separatferskleser47/38,111s. Sju nativefiler har identiske hashes mellomPID-er; originale blend/FBX-er, manifest og kildeparitet er bevart iVerifiedSource. Bare etterbeggePASS er runtimebinding aktivert. [Nativefinalerapport](../Docs/Evidence/UnrealDeliveries/SC13_FINALE_2026-10-30.md) skiller dette fra liveRHI/sky/modell/bilder/ytelse/kjøring, som fortsattgjenstår. Ny D01-inputkontroll er faktiskkompilert, ikke ennåspilt. NesteNightR3 skalstartes med eksaktmodul ognativepins fra faktiskbygg, ingenhopp ellerfabrikkerteforeldre. Ingeninstallasjon/release.
+
+
+2026-10-30T04:06:16+01:00: Codex fortsetter samlekjeden i PR237. NightR3: faktisk D01 og Observing videre, men FAIL ved eastDoor/adapter621; Sky eier kun HorrorTest.cpp/h for konkret dørtilstand, root alle andre filer og tunge jobber. Råbevis og R5-modul bevart. Ingen installasjon/release.

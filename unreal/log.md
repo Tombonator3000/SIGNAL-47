@@ -1395,3 +1395,8 @@ R4-editor fra d27ea475 består11,179s, modul2d9213ed er privatbevart. Endringen 
 ### 2026-10-30T03:55:48+01:00 Original finale og native ferskleser består
 
 R5 fra7d19482b beståreditor10,157s, originalBlender2,538s, nativeapply65/35,057s og separatferskleser47/38,111s. Sju nativefiler har identiske hashes mellomPID-er; originale blend/FBX-er, manifest og kildeparitet er bevart iVerifiedSource. Bare etterbeggePASS er runtimebinding aktivert. [Nativefinalerapport](../Docs/Evidence/UnrealDeliveries/SC13_FINALE_2026-10-30.md) skiller dette fra liveRHI/sky/modell/bilder/ytelse/kjøring, som fortsattgjenstår. Ny D01-inputkontroll er faktiskkompilert, ikke ennåspilt. NesteNightR3 skalstartes med eksaktmodul ognativepins fra faktiskbygg, ingenhopp ellerfabrikkerteforeldre. Ingeninstallasjon/release.
+
+
+### Codex 2026-10-30T04:06:16+01:00 NightR3 faktisk D01, avgrenset døravslag
+
+R3 fra R5-modul a8966806/7d19482b består den ordinære nye casen, 2623,17m faktisk pendling, 62,28m native gange, disk/fullFlow og D01 med faktisk fokuserte knapper. Etter flere ordinære Observing-løp stopper HorrorTest stage621: ray/HUD-bruken traff doorEast, men døras ettertilstand er lukket. FAIL/rc1/460,848s, 2287 prefikskontroller og 66 adapterkontroller er bevart privat under Signal47-night-chain-20261030/night-r3/raw; ingen full natt-PASS. Sky undersøker kun HorrorTest.cpp/h, root eier videre integrasjon og heavyjobber. Main0a742091/PR238 er kontrollert som SARO-dokumentasjon og tas inn før neste kildefrys. Ingen installasjon/release.
