@@ -104,6 +104,8 @@ class FS47SC05Contract : public TSharedFromThis<FS47SC05Contract>
   auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("scenario"),TEXT("SC05"));S47J::Set(O,TEXT("mode"),TEXT("sc05"));
   S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("reason"),Reason);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("stores"),Stores);S47J::Set(O,TEXT("actual_ray_uses"),Uses);
   S47J::Set(O,TEXT("walked_metres"),Walked);S47J::Set(O,TEXT("walk_samples"),WalkSamples);S47J::Set(O,TEXT("normal_title_continue"),NormalContinue);S47J::Set(O,TEXT("ordinary_title_continues"),TitleContinues);
+  const FString Chain=S47J::Str(PriorResult,TEXT("chain_id"));if(!Chain.IsEmpty())S47J::Set(O,TEXT("chain_id"),Chain);
+  S47J::Set(O,TEXT("source_prerequisite_fixtures"),S47J::Bool(PriorResult,TEXT("source_prerequisite_fixtures"),true));
   S47J::Set(O,TEXT("source_sc04_checkpoint"),Input);S47J::Set(O,TEXT("source_sc04_sha1"),InputSHA);S47J::Set(O,TEXT("source_sc04_result_sha1"),InputResultSHA);S47J::Set(O,TEXT("source_sc04_raw_result"),PriorResult);
   S47J::Set(O,TEXT("source_sc04_unchanged"),!InputSHA.IsEmpty()&&Hash(Input)==InputSHA&&Hash(InputResult)==InputResultSHA);
   S47J::Set(O,TEXT("actual_room_game_seconds"),A()?A()->ActualInterval():-1);S47J::Set(O,TEXT("dead_line_to_event_wall_seconds"),EventWall>0?EventWall-CountdownWall:0);S47J::Set(O,TEXT("pause_wall_seconds"),PauseWall);
@@ -112,7 +114,7 @@ class FS47SC05Contract : public TSharedFromThis<FS47SC05Contract>
   if(!Complete.IsEmpty()&&IFileManager::Get().FileExists(*Complete))
   {auto File=S47J::New();S47J::Set(File,TEXT("path"),Complete);S47J::Set(File,TEXT("bytes"),double(IFileManager::Get().FileSize(*Complete)));S47J::Set(File,TEXT("sha1"),Hash(Complete));S47J::Set(O,TEXT("checkpoint_file"),File);}
   S47J::Set(O,TEXT("method"),TEXT("Actual SC04 PASS/checkpoint input, ordinary case1 disk/title/Continue. Native Walker TestMove/Resolve and actual camera Pick/Update/HUD OnUse. Console dial edits/action and offered CRT EXIT are explicitly API. Real 47 game seconds, ordinary pause5wallseconds; no clock/Event/Place or prior-fact fixture."));
-  S47J::Set(O,TEXT("limits"),TEXT("SC04's own explicit prior SC01-SC03/T01 fixture scope is inherited unchanged, not replayed. Audio-call route and context are measured, not physical speaker/PCM acceptance. PNGs do not grant human visual/input/performance/installed acceptance."));
+  S47J::Set(O,TEXT("limits"),Chain.IsEmpty()?TEXT("The actual SC04 result's prior fixture scope is inherited unchanged and never accepted as a complete night. Audio route/context and PNGs do not grant human visual/input/listening/performance/installed acceptance."):TEXT("The actual same-night SC03/SC04 chain and all parent bytes are inherited unchanged. Audio route/context and PNGs do not grant human visual/input/listening/performance/installed acceptance. SC06-SC13 are not executed by this driver."));
   S47J::Set(O,TEXT("human_visual_acceptance"),false);S47J::Set(O,TEXT("human_input"),false);S47J::Set(O,TEXT("installed"),false);
   double OuterSeconds=0;FParse::Value(FCommandLine::Get(),TEXT("S47Seconds="),OuterSeconds);
   S47J::Set(O,TEXT("smoke_focus_and_outer_timer"),FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest")));S47J::Set(O,TEXT("outer_timer_seconds"),OuterSeconds);
@@ -315,7 +317,7 @@ bool FS47SC05Contract::InputGate()
    &&S47J::Str(File,TEXT("sha1")).Equals(InputSHA,ESearchCase::IgnoreCase),TEXT("when supplied, SC04 checkpoint_file binds exact actual input path/bytes/SHA1")))return false;
  }
  if(!Check(S47J::Int(Original,TEXT("timelineVersion"))==2&&S47J::Str(Original,TEXT("checkpoint"))==TEXT("nightService")&&S47J::Str(Original,TEXT("area"))==TEXT("saro")
-  &&S47J::Int(Spine,TEXT("v"))==1&&S47J::Int(Spine,TEXT("sc04"))==2&&S47J::Int(Facts,TEXT("step"))==4&&S47J::Int(Facts,TEXT("sourcesVersion"))==1
+  &&(S47J::Int(Spine,TEXT("v"))==1||S47J::Int(Spine,TEXT("v"))==2)&&S47J::Int(Spine,TEXT("sc04"))==2&&S47J::Int(Facts,TEXT("step"))==4&&S47J::Int(Facts,TEXT("sourcesVersion"))==1
   &&S47J::Bool(Facts,TEXT("schedule"))&&S47J::Bool(Facts,TEXT("strip"))&&S47J::Bool(Facts,TEXT("journal"))&&S47J::Bool(Facts,TEXT("binder"))&&S47J::Bool(Facts,TEXT("escaped"))
   &&S47J::Str(Routine,TEXT("phase"))==TEXT("residual")&&S47J::Bool(Routine,TEXT("residualVisible"))&&S47J::Bool(Routine,TEXT("powered"))&&!S47J::Bool(Routine,TEXT("k3"))
   &&S47J::Num(Routine,TEXT("clock"))>=11700&&S47J::Num(Routine,TEXT("clock"))<11760,TEXT("normal actual03:15 SC04 completed-source cohort, passive residual with restored supply")))return false;
