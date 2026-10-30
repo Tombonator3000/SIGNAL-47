@@ -92,5 +92,6 @@ private:
  bool BeamSeesPlayer(int32 Index) const;
  TOptional<FVector2D> Heard(double Dt);
  bool AtEscape() const;
+ bool ClearWalk(const FVector2D& From,const FVector2D& To) const;
  double Ground() const;
 };

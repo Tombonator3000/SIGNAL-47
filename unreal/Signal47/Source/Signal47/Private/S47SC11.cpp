@@ -21,7 +21,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47SC11, Log, All);
 namespace
 {
  enum { Office, ControlDoor, Corridor, RecordsDoor, Exit, Stoop, Ramp, West, NorthWest,
-  North, NorthSteps, EastSteps, EastWalk, Landing, EastDoor, Control, ControlEast, Truck, Records, LandingGap, TruckGap };
+  North, NorthSteps, EastSteps, EastWalk, Landing, EastDoor, Control, ControlEast, Truck, Records, LandingGap, TruckGap, RecordsEast, RecordsNE, RecordsWest, RecordsSW };
  const FVector BeamSources[] = {FVector(-10, 7, -17), FVector(6, 8, -18), FVector(18, 6, 2)};
  const FVector BeamTargets[] = {FVector(-3.6, 1.7, -2), FVector(.2, 1.7, -1), FVector(3, 1.6, 1.6)};
  const FVector2D RestartAt(1.2, .3);
@@ -80,8 +80,9 @@ const TArray<FS47SC11::FNode>& FS47SC11::Nodes()
   {TEXT("ramp"), {-11.1,5.7}}, {TEXT("west"), {-11.1,0}}, {TEXT("north-west"), {-9,-7.5}},
   {TEXT("north"), {0,-12}}, {TEXT("north-steps"), {6,-12}}, {TEXT("east-steps"), {8.7,-12}},
   {TEXT("east-walk"), {8.7,-7.5}}, {TEXT("landing"), {8.7,1.6}}, {TEXT("east-door"), {6.9,1.6}},
-  {TEXT("control"), {1.2,.3}}, {TEXT("control-east"), {4.7,1.6}}, {TEXT("truck"), {7.2,4.0}}, {TEXT("records"), {-3.9,8.2}},
-  {TEXT("landing-gap"), {9.95,1.6}}, {TEXT("truck-gap"), {9.95,4.0}}};
+  {TEXT("control"), {1.2,.3}}, {TEXT("control-east"), {4.7,1.6}}, {TEXT("truck"), {7.2,4.0}}, {TEXT("records"), {-3.9,7.5}},
+  {TEXT("landing-gap"), {9.95,1.6}}, {TEXT("truck-gap"), {9.95,4.0}}, {TEXT("records-east"),{-2.3,7.6}},
+  {TEXT("records-ne"),{-2.2,9.6}}, {TEXT("records-west"),{-5.,7.7}}, {TEXT("records-sw"),{-5.,9.2}}};
  return N;
 }
 
@@ -90,7 +91,8 @@ const TArray<TPair<int32,int32>>& FS47SC11::Edges()
  static const TArray<TPair<int32,int32>> E = {{Office,Corridor},{ControlDoor,Corridor},{Corridor,RecordsDoor},
   {RecordsDoor,Records},{RecordsDoor,Exit},{Exit,Stoop},{Stoop,Ramp},{Ramp,West},{West,NorthWest},
   {NorthWest,North},{North,NorthSteps},{NorthSteps,EastSteps},{EastSteps,EastWalk},{EastWalk,Landing},
-  {Landing,EastDoor},{Landing,LandingGap},{LandingGap,TruckGap},{TruckGap,Truck},{EastDoor,ControlEast},{ControlEast,Control},{Control,ControlDoor}};
+  {Landing,EastDoor},{Landing,LandingGap},{LandingGap,TruckGap},{TruckGap,Truck},{EastDoor,ControlEast},{ControlEast,Control},{Control,ControlDoor},
+  {Records,RecordsEast},{RecordsEast,RecordsNE},{Records,RecordsWest},{RecordsWest,RecordsSW}};
  return E;
 }
 
@@ -382,6 +384,20 @@ void FS47SC11::RouteTo(int32 Goal)
  if(Path.Num()>1&&FVector2D::Distance(Pos,Nodes()[Path[0]].At)<.2)Path.RemoveAt(0);
 }
 
+bool FS47SC11::ClearWalk(const FVector2D& From,const FVector2D& To) const
+{
+ if(!M || !M->Web || !M->Player)return false;
+ constexpr double Radius=.27;
+ for(const auto& C:M->Web->Colliders())if(C.bEnabled)
+ {
+  const FGap Expanded={TEXT("body"),C.MinX-Radius,C.MaxX+Radius,C.MinZ-Radius,C.MaxZ+Radius,0,false};
+  if(Through(From,To,Expanded))return false;
+ }
+ const int32 Samples=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(From,To)/.05));
+ for(int32 I=0;I<=Samples;++I){const auto At=FMath::Lerp(From,To,double(I)/Samples);if(!M->Player->Walkable(At.X,At.Y))return false;}
+ return true;
+}
+
 bool FS47SC11::Walk(double Speed,double Dt)
 {
  if(Path.IsEmpty()){Gait=FMath::Max(0.,Gait-Dt*3);return true;}
@@ -404,6 +420,8 @@ bool FS47SC11::Walk(double Speed,double Dt)
   }
  }
  Yaw=HeadYaw=YawTo(D);const double Len=FMath::Min(Dist,Speed*Dt);
+ const FVector2D Candidate=Dist>.00001?Pos+D/Dist*Len:To;
+ if(!ClearWalk(Pos,Candidate)){Gait=FMath::Max(0.,Gait-Dt*3);return false;}
  Gait=FMath::Min(1.,Gait+Dt*3);Stride+=Len*2.1;
  if(Dist<=Len+.00001){Pos=To;Path.RemoveAt(0);return Path.IsEmpty();}
  Pos+=D/Dist*Len;return false;
@@ -559,7 +577,7 @@ void FS47SC11::StepHunt(double Dt)
    if(LostT>2.6){Enter(EBody::Listen);RouteTo(Nearest(LastKnown));break;}
    const FVector2D D=LastKnown-Pos;const double Dist=D.Size();
    const FVector2D Candidate=Dist>.001?Pos+D/Dist*FMath::Min(2.05*Dt,Dist):Pos;
-   if(Room(Pos)==Room(LastKnown)&&ClosedDoorTo(LastKnown).IsEmpty()&&M->Player->Walkable(Candidate.X,Candidate.Y)&&ClearSight(FVector(Pos.X,Y+1.2,Pos.Y),FVector(LastKnown.X,1.2,LastKnown.Y)))
+   if(Room(Pos)==Room(LastKnown)&&ClosedDoorTo(LastKnown).IsEmpty()&&ClearWalk(Pos,Candidate)&&ClearSight(FVector(Pos.X,Y+1.2,Pos.Y),FVector(LastKnown.X,1.2,LastKnown.Y)))
    {Pos=Candidate;Yaw=HeadYaw=YawTo(D);Gait=1.2;Stride+=2.05*Dt*2.1;}
    else{if(Path.IsEmpty())RouteTo(Nearest(LastKnown));Walk(2.05,Dt);}
    if(!M->World->bDriving&&FVector2D::Distance(Pos,Player)<.85&&ClearSight(FVector(Pos.X,Y+1.2,Pos.Y),Cam))Enter(EBody::Grab);

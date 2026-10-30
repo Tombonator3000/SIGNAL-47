@@ -123,7 +123,9 @@ bool FS47SC11Contract::Use(const FString& Id)
  const FVector Eye=M->Player->EyeUE(),Forward=M->Player->ForwardUE();const FString Picked=M->Inter->Pick(Eye,Forward),Focus=M->Inter->Update(Eye,Forward);
  auto Row=S47J::New();S47J::Set(Row,TEXT("id"),Id);S47J::Set(Row,TEXT("picked"),Picked);S47J::Set(Row,TEXT("focused"),Focus);
  S47J::Set(Row,TEXT("eye_ue_cm"),Eye.ToString());S47J::Set(Row,TEXT("forward_ue"),Forward.ToString());S47J::Set(Row,TEXT("target_distance_m"),FVector::Dist(Eye,Aim)/100.);
- S47J::Set(Row,TEXT("actual_range_m"),M->Inter->RangeOf(Id));Rays.Add(MakeShared<FJsonValueObject>(Row));
+ const auto* Item=M->Inter->Get(Id);const auto* WebItem=M->Web->Item(Id);
+ const double Range=Item && Item->Range>0?Item->Range:WebItem?WebItem->Range:-1.;
+ S47J::Set(Row,TEXT("actual_range_m"),Range);Rays.Add(MakeShared<FJsonValueObject>(Row));
  if(!Check(Picked==Id&&Focus==Id&&M->Player->OnUse&&FVector::DotProduct(Forward,(Aim-Eye).GetSafeNormal())>.995,TEXT("actual camera ray/focus/ordinary HUD OnUse: ")+Id))return false;
  M->Player->OnUse(Picked);++Uses;return true;
 }
