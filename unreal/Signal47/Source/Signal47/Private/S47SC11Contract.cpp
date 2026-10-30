@@ -80,8 +80,8 @@ void FS47SC11Contract::Finish(bool Good,const FString& Why)
  Out->SetArrayField(TEXT("executed_checks"),Executed);Out->SetArrayField(TEXT("rays"),Rays);Out->SetArrayField(TEXT("states"),States);
  Out->SetArrayField(TEXT("restores"),Restores);Out->SetArrayField(TEXT("sight_queries"),Sight);Out->SetArrayField(TEXT("photos"),Photos);
  const bool Written=!Root.IsEmpty()&&FFileHelper::SaveStringToFile(S47J::Write(Out,true),*(Root/TEXT("result.json")));
- if(Good&&Written)UE_LOG(LogTemp,Display,TEXT("S47: spine contract %s PASS COMPLETE: %d checks, %d stores, %d actual uses, %.3fm evidence=%s"),*Mode,Checks,Stores,Uses,Walked,*Root);
- else UE_LOG(LogTemp,Error,TEXT("S47: spine contract %s FAIL stage=%d: %s (result written %d)"),*Mode,Stage,*Why,Written);
+ if(Good&&Written){UE_LOG(LogTemp,Display,TEXT("S47: spine contract %s PASS COMPLETE: %d checks, %d stores, %d actual uses, %.3fm evidence=%s"),*Mode,Checks,Stores,Uses,Walked,*Root);}
+ else {UE_LOG(LogTemp,Error,TEXT("S47: spine contract %s FAIL stage=%d: %s (result written %d)"),*Mode,Stage,*Why,Written);}
  FPlatformMisc::RequestExitWithStatus(false,Good&&Written?0:1);
 }
 bool FS47SC11Contract::Check(bool Good,const FString& Why)
