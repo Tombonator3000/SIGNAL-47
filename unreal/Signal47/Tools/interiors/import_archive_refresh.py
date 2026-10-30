@@ -30,7 +30,9 @@ MUTABLE_FIELDS = {'materials', 'lod_triangles', 'bounds_local_m'}
 VERIFY_ONLY = (os.environ.get('S47_ARCHIVE_VERIFY_ONLY') == '1' or
                'S47ArchiveRefreshVerifyOnly' in unreal.SystemLibrary.get_command_line())
 sys.path.insert(0, str(HERE.parent / 'fieldintegration'))
+sys.path.insert(0, str(HERE))
 import import_recipe as R
+import verify_archive_lod_axes as LOD
 
 R.REPORT = Path(unreal.Paths.project_saved_dir()) / 'archive-refresh-native.json'
 R.report = {'status': 'RUNNING', 'engine': unreal.SystemLibrary.get_engine_version(),
@@ -223,7 +225,7 @@ def archive_mesh(name, destination):
     return R.import_mesh(SOURCE / 'exports' / (name + '.fbx'), destination)
 
 
-def mesh_measurements(name, mesh, source, materials):
+def mesh_measurements(name, mesh, source, materials, lod_contract):
     R.check(name + ' native mesh exists', isinstance(mesh, unreal.StaticMesh))
     slots = mesh.get_editor_property('static_materials')
     names = [str(slot.material_slot_name) for slot in slots]
@@ -245,6 +247,9 @@ def mesh_measurements(name, mesh, source, materials):
     R.check(name + ' original complex interaction query geometry', body is not None and
             body.get_editor_property('collision_trace_flag') == unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
     for lod in range(3):
+        render = LOD.measure_render_lod(mesh, lod, lod_contract[str(lod)][name])
+        R.report.setdefault('actual_render_lod_geometry', []).append({'name': name, **render})
+        R.check(name + ' actual render axes position and topology LOD ' + str(lod), render['pass'], render)
         build = R.S.get_lod_build_settings(mesh, lod)
         R.check(name + ' saved UV precision LOD ' + str(lod), build.get_editor_property('use_full_precision_u_vs') and
                 not build.get_editor_property('remove_degenerates') and R.S.get_num_uv_channels(mesh, lod) >= 1)
@@ -259,11 +264,26 @@ def mesh_measurements(name, mesh, source, materials):
     return result
 
 
+previous_interchange = None
 try:
     R.report['recipe_sha256'] = sha(Path(__file__))
     before = ASSEMBLY.read_bytes()
     assembly = json.loads(before)
     contract, rows, hashes = validate_inputs(assembly)
+    # Fail before material/mesh mutation if the render-reader plugin is absent.
+    LOD.require_render_api()
+    if not VERIFY_ONLY:
+        R.check('Global Interchange override is restricted to the import commandlet',
+                '-run=pythonscript' in unreal.SystemLibrary.get_command_line().lower())
+        variable = 'Interchange.FeatureFlags.Import.Enable'
+        R.check('Installed global Interchange variable exists',
+                bool(unreal.SystemLibrary.get_console_variable_string_value(variable)))
+        previous_interchange = unreal.SystemLibrary.get_console_variable_int_value(variable)
+        unreal.SystemLibrary.execute_console_command(None, variable + ' 0')
+        R.check('Custom LOD import uses the same legacy FBX transform as LOD0',
+                unreal.SystemLibrary.get_console_variable_int_value(variable) == 0,
+                {'variable': variable, 'previous_value': previous_interchange, 'import_value': 0,
+                 'scope': 'This Python import commandlet only; restored on exit'})
     R.report['source_sha256'] = hashes
     R.report['assembly_before_sha256'] = hashlib.sha256(before).hexdigest()
     materials = {}
@@ -299,7 +319,7 @@ try:
                 for section in range(mesh.get_num_sections(lod)):
                     R.S.enable_section_collision(mesh, True, lod, section)
             R.check(name + ' native mesh saved', R.E.save_loaded_asset(mesh))
-        measured[name] = mesh_measurements(name, mesh, source, materials)
+        measured[name] = mesh_measurements(name, mesh, source, materials, contract['lods'])
     probe = archive_mesh('axis_probe', DEST + '/Verification')
     R.check('Saved asymmetric archive axis probe exists', isinstance(probe, unreal.StaticMesh))
     bound = probe.get_bounds()
@@ -353,3 +373,7 @@ except Exception:
     R.report['error'] = traceback.format_exc()
     R.flush()
     raise
+finally:
+    if previous_interchange is not None:
+        unreal.SystemLibrary.execute_console_command(
+            None, 'Interchange.FeatureFlags.Import.Enable ' + str(previous_interchange))
