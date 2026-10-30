@@ -213,7 +213,7 @@ bool FS47SC04Contract::Restored()
 }
 bool FS47SC04Contract::BodySight(FHitResult& Hit,TArray<FString>& Ignored) const
 {
- const auto* A=Act();if(!A||!A->Pale.Torso)return false;
+ const auto* A=Act();if(!A||!A->Pale.Torso.IsValid())return false;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04ContractOpaqueBody),true);
  for(int32 I=0;I<32;++I)
  {
