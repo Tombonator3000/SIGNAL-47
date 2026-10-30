@@ -162,7 +162,7 @@ namespace S47RadioWomanConversation
   }
   TArray<FString> Materials;for(const auto& Slot:Mesh->GetStaticMaterials()){if(!Slot.MaterialInterface)return O;Materials.Add(Slot.MaterialInterface->GetPathName());}
   if(LODs.IsEmpty()||Materials.IsEmpty())return O;O->SetArrayField(TEXT("lods"),LODs);S47J::Set(O,TEXT("native_material_paths"),Materials);
-  Vec(O,TEXT("bounds_min_cm"),Mesh->GetBoundingBox().Min);Vec(O,TEXT("bounds_max_cm"),Mesh->GetBoundingBox().Max);S47J::Set(O,TEXT("cpu_access"),bool(Mesh->bAllowCPUAccess));S47J::Set(O,TEXT("ray_tracing"),bool(Mesh->bSupportRayTracing));S47J::Set(O,TEXT("nanite"),bool(Mesh->GetNaniteSettings().bEnabled));S47J::Set(O,TEXT("complete"),true);return O;
+  Vec(O,TEXT("bounds_min_cm"),Mesh->GetBoundingBox().Min);Vec(O,TEXT("bounds_max_cm"),Mesh->GetBoundingBox().Max);S47J::Set(O,TEXT("cpu_access"),bool(Mesh->bAllowCPUAccess));S47J::Set(O,TEXT("ray_tracing"),bool(Mesh->bSupportRayTracing));S47J::Set(O,TEXT("nanite"),bool(Mesh->HasValidNaniteData()));S47J::Set(O,TEXT("complete"),true);return O;
  }
  FJ ComponentTransform(const FTransform& T)
  {auto O=S47J::New();Vec(O,TEXT("location_ue_cm"),T.GetLocation());Vec(O,TEXT("scale"),T.GetScale3D());const FQuat Q=T.GetRotation();S47J::Set(O,TEXT("rotation_xyzw"),TArray<double>{Q.X,Q.Y,Q.Z,Q.W});return O;}

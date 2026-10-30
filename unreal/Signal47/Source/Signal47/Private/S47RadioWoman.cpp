@@ -126,7 +126,7 @@ namespace
  }
  bool NativeReady(UStaticMesh* Mesh,TArray<int32>& LODs)
  {
-  if(!Mesh||!Mesh->bAllowCPUAccess||!Mesh->bSupportRayTracing||Mesh->GetNaniteSettings().bEnabled||!Mesh->GetRenderData()
+  if(!Mesh||!Mesh->bAllowCPUAccess||!Mesh->bSupportRayTracing||Mesh->HasValidNaniteData()||!Mesh->GetRenderData()
    ||!Mesh->GetRenderData()->IsInitialized()||Mesh->GetRenderData()->LODResources.Num()!=3||Mesh->GetStaticMaterials().IsEmpty())return false;
   int32 Previous=MAX_int32;const int32 Limits[]={150000,70000,40000};
   for(int32 I=0;I<3;++I)

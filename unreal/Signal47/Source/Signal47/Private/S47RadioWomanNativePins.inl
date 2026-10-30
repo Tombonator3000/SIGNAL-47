@@ -84,7 +84,7 @@ namespace S47R12NativePins
  {
   const auto Reject=[&](const TCHAR* Text){Why=Text;return false;};
   if(!Mesh || Mesh->GetPathName()!=AcceptedObject || !Mesh->bAllowCPUAccess
-   || !Mesh->bSupportRayTracing || Mesh->GetNaniteSettings().bEnabled)
+   || !Mesh->bSupportRayTracing || Mesh->HasValidNaniteData())
    return Reject(TEXT("actual R11 native asset/CPU/RT policy differs"));
   const auto* Data=Mesh->GetRenderData();
   if(!Data || !Data->IsInitialized() || Data->LODResources.Num()!=3)
