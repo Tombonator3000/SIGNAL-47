@@ -1,5 +1,5 @@
 {
-  "_doc": "Individually placed native office models; Three metres and degree rotations. Original Free PBR, selected Tripo books/chair, deliberately occupied holders and supported sill/desk groups. No new gameplay IDs or walking colliders.",
+  "_doc": "Individually placed native office models; Three metres and degree rotations. Original Free PBR and Old West books, irregular supported paper/file groups and dark notebooks. Six live desk papers remain unobscured. No new gameplay IDs or walking colliders.",
   "area": "saro",
   "parent": "annex.group",
   "props": [
@@ -161,12 +161,12 @@
       "id": "dale-upper-pocket-notebook",
       "model": "office_assets_radio_Notebook_50",
       "at": [
-        -0.641,
-        2.1775,
-        8.385
+        -0.638,
+        2.25508,
+        8.419
       ],
-      "yaw": 88.3,
-      "scale": 0.65,
+      "yaw": 81,
+      "scale": 0.69,
       "ground": false,
       "trace": false,
       "collide": false
@@ -175,12 +175,12 @@
       "id": "dale-upper-file-black",
       "model": "office_assets_radio_FileBox_Black_7",
       "at": [
-        -0.642,
+        -0.612,
         2.1775,
-        9.1
+        9.055
       ],
-      "yaw": -1,
-      "scale": 0.92,
+      "yaw": -7,
+      "scale": 0.84,
       "ground": false,
       "trace": false,
       "collide": false
@@ -189,12 +189,12 @@
       "id": "dale-upper-file-green",
       "model": "office_assets_radio_FileBox_Green_8",
       "at": [
-        -0.646,
+        -0.678,
         2.1775,
-        9.235
+        9.26
       ],
-      "yaw": 1.5,
-      "scale": 0.94,
+      "yaw": 8.5,
+      "scale": 0.81,
       "ground": false,
       "trace": false,
       "collide": false
@@ -204,7 +204,7 @@
       "model": "retro_office_props_Paper_Thick_A",
       "at": [
         -0.646,
-        2.17674,
+        2.21339,
         9.51
       ],
       "yaw": 1.5,
@@ -218,7 +218,7 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.641,
-        2.24514,
+        2.28179,
         9.51
       ],
       "yaw": -2,
@@ -302,12 +302,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.641,
-        1.26894,
+        1.27354,
         8.369
       ],
-      "yaw": -3.4,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": -3.8,
+      "pitch": -95,
+      "scale": 0.78,
       "ground": false,
       "trace": false,
       "collide": false
@@ -317,12 +317,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.641,
-        1.27398,
+        1.29202,
         8.39
       ],
-      "yaw": -2.0,
-      "pitch": -90,
-      "scale": 0.86,
+      "yaw": -1.6,
+      "pitch": -89,
+      "scale": 0.89,
       "ground": false,
       "trace": false,
       "collide": false
@@ -332,12 +332,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.641,
-        1.2639,
+        1.27018,
         8.411000000000001
       ],
-      "yaw": -0.6000000000000001,
-      "pitch": -88,
-      "scale": 0.8,
+      "yaw": 2.2,
+      "pitch": -84,
+      "scale": 0.76,
       "ground": false,
       "trace": false,
       "collide": false
@@ -347,27 +347,27 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.646,
-        1.26894,
+        1.28698,
         8.494
       ],
-      "yaw": 1.1,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": -1.5,
+      "pitch": -94,
+      "scale": 0.86,
       "ground": false,
       "trace": false,
       "collide": false
     },
     {
       "id": "dale-lower-file-green-file-2",
-      "model": "retro_office_props_File_A",
+      "model": "office_assets_radio_Notebook_50",
       "at": [
         -0.646,
-        1.27398,
+        1.25045,
         8.515
       ],
       "yaw": 2.5,
       "pitch": -90,
-      "scale": 0.86,
+      "scale": 0.85,
       "ground": false,
       "trace": false,
       "collide": false
@@ -377,12 +377,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.646,
-        1.2639,
+        1.26346,
         8.536000000000001
       ],
-      "yaw": 3.9,
-      "pitch": -88,
-      "scale": 0.8,
+      "yaw": 6.7,
+      "pitch": -87,
+      "scale": 0.72,
       "ground": false,
       "trace": false,
       "collide": false
@@ -392,12 +392,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.637,
-        1.26894,
+        1.2769,
         8.623999999999999
       ],
-      "yaw": -2.4,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": -4.8,
+      "pitch": -96,
+      "scale": 0.8,
       "ground": false,
       "trace": false,
       "collide": false
@@ -437,12 +437,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.647,
-        1.79894,
+        1.7985,
         9.379
       ],
-      "yaw": -4.4,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": -6.3,
+      "pitch": -94,
+      "scale": 0.75,
       "ground": false,
       "trace": false,
       "collide": false
@@ -467,12 +467,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.647,
-        1.7939,
+        1.82034,
         9.421000000000001
       ],
-      "yaw": -1.6,
-      "pitch": -88,
-      "scale": 0.8,
+      "yaw": 2.2,
+      "pitch": -85,
+      "scale": 0.88,
       "ground": false,
       "trace": false,
       "collide": false
@@ -482,27 +482,27 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.64,
-        1.79894,
+        1.82538,
         9.529
       ],
-      "yaw": 0.6000000000000001,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": -0.7,
+      "pitch": -93,
+      "scale": 0.91,
       "ground": false,
       "trace": false,
       "collide": false
     },
     {
       "id": "dale-middle-file-black-file-2",
-      "model": "retro_office_props_File_A",
+      "model": "office_assets_radio_Notebook_50",
       "at": [
         -0.64,
-        1.80398,
+        1.78045,
         9.55
       ],
       "yaw": 2.0,
       "pitch": -90,
-      "scale": 0.86,
+      "scale": 0.85,
       "ground": false,
       "trace": false,
       "collide": false
@@ -512,12 +512,12 @@
       "model": "retro_office_props_File_A",
       "at": [
         -0.64,
-        1.7939,
+        1.79346,
         9.571000000000002
       ],
-      "yaw": 3.4,
-      "pitch": -88,
-      "scale": 0.8,
+      "yaw": 5.8,
+      "pitch": -86,
+      "scale": 0.72,
       "ground": false,
       "trace": false,
       "collide": false
@@ -526,28 +526,28 @@
       "id": "dale-upper-file-black-file-1",
       "model": "retro_office_props_File_A",
       "at": [
-        -0.642,
-        2.3289400000000002,
-        9.078999999999999
+        -0.612,
+        2.31842,
+        9.034
       ],
-      "yaw": -2.4,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": -11.8,
+      "pitch": -96,
+      "scale": 0.69,
       "ground": false,
       "trace": false,
       "collide": false
     },
     {
       "id": "dale-upper-file-black-file-2",
-      "model": "retro_office_props_File_A",
+      "model": "office_assets_radio_Notebook_50",
       "at": [
-        -0.642,
-        2.3339800000000004,
-        9.1
+        -0.612,
+        2.31045,
+        9.055
       ],
-      "yaw": -1.0,
+      "yaw": -7.0,
       "pitch": -90,
-      "scale": 0.86,
+      "scale": 0.85,
       "ground": false,
       "trace": false,
       "collide": false
@@ -556,13 +556,13 @@
       "id": "dale-upper-file-black-file-3",
       "model": "retro_office_props_File_A",
       "at": [
-        -0.642,
-        2.3239,
-        9.121
+        -0.612,
+        2.35202,
+        9.076
       ],
-      "yaw": 0.3999999999999999,
-      "pitch": -88,
-      "scale": 0.8,
+      "yaw": -3.5,
+      "pitch": -86,
+      "scale": 0.89,
       "ground": false,
       "trace": false,
       "collide": false
@@ -571,28 +571,28 @@
       "id": "dale-upper-file-green-file-1",
       "model": "retro_office_props_File_A",
       "at": [
-        -0.646,
-        2.3289400000000002,
-        9.213999999999999
+        -0.678,
+        2.35202,
+        9.239
       ],
-      "yaw": 0.10000000000000009,
-      "pitch": -92,
-      "scale": 0.83,
+      "yaw": 3.3,
+      "pitch": -93,
+      "scale": 0.89,
       "ground": false,
       "trace": false,
       "collide": false
     },
     {
       "id": "dale-upper-file-green-file-2",
-      "model": "retro_office_props_File_A",
+      "model": "office_assets_radio_Notebook_50",
       "at": [
-        -0.646,
-        2.3339800000000004,
-        9.235
+        -0.678,
+        2.30283,
+        9.26
       ],
-      "yaw": 1.5,
-      "pitch": -90,
-      "scale": 0.86,
+      "yaw": 8.5,
+      "pitch": -91,
+      "scale": 0.79,
       "ground": false,
       "trace": false,
       "collide": false
@@ -601,13 +601,13 @@
       "id": "dale-upper-file-green-file-3",
       "model": "retro_office_props_File_A",
       "at": [
-        -0.646,
-        2.3239,
-        9.256
+        -0.678,
+        2.3285,
+        9.281
       ],
-      "yaw": 2.9,
-      "pitch": -88,
-      "scale": 0.8,
+      "yaw": 12.5,
+      "pitch": -85,
+      "scale": 0.75,
       "ground": false,
       "trace": false,
       "collide": false
@@ -734,6 +734,303 @@
       ],
       "yaw": 179,
       "scale": 1,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-lower-reading-overflow",
+      "model": "retro_office_props_Paper_Thick_B",
+      "at": [
+        -0.627,
+        1.1951,
+        8.905
+      ],
+      "yaw": 6,
+      "scale": 0.72,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-lower-reading-loose-sheet",
+      "model": "retro_office_props_Paper_Creased_A",
+      "at": [
+        -0.612,
+        1.24334,
+        8.906
+      ],
+      "yaw": -7,
+      "scale": 0.6,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-lower-tray-sorted-sheets",
+      "model": "retro_office_props_Paper_Plain_A",
+      "at": [
+        -0.633,
+        1.249,
+        9.482
+      ],
+      "yaw": 2,
+      "scale": 0.57,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-middle-returned-loose-sheet",
+      "model": "retro_office_props_Paper_Creased_C",
+      "at": [
+        -0.625,
+        1.7015,
+        9.193
+      ],
+      "yaw": -10,
+      "scale": 0.64,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-upper-retained-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        -0.632,
+        2.28405,
+        9.492
+      ],
+      "yaw": 8,
+      "scale": 0.78,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-upper-retained-overflow",
+      "model": "retro_office_props_Paper_Thick_B",
+      "at": [
+        -0.635,
+        2.29185,
+        9.501
+      ],
+      "yaw": -4,
+      "scale": 0.7,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-upper-retained-loose-sheet",
+      "model": "retro_office_props_Paper_Creased_A",
+      "at": [
+        -0.612,
+        2.33875,
+        9.513
+      ],
+      "yaw": 7,
+      "scale": 0.57,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-desk-pending-overflow",
+      "model": "retro_office_props_Paper_Thick_A",
+      "at": [
+        0.306,
+        0.8502,
+        10.033
+      ],
+      "yaw": 86,
+      "scale": 0.74,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-desk-pending-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        0.29,
+        0.9168,
+        10.026
+      ],
+      "yaw": 94,
+      "scale": 0.8,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-desk-pending-loose-sheet",
+      "model": "retro_office_props_Paper_Creased_A",
+      "at": [
+        0.306,
+        0.9256,
+        10.02
+      ],
+      "yaw": 81,
+      "scale": 0.58,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-desk-working-pen",
+      "model": "retro_office_props_Pen_B",
+      "at": [
+        0.425,
+        0.805,
+        9.78
+      ],
+      "yaw": 26,
+      "scale": 0.82,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-sill-file-overflow",
+      "model": "retro_office_props_Paper_Thick_A",
+      "at": [
+        -0.288,
+        1.137,
+        10.506
+      ],
+      "yaw": 3,
+      "scale": 0.73,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-sill-file-loose-sheet",
+      "model": "retro_office_props_Paper_Creased_C",
+      "at": [
+        -0.272,
+        1.2027,
+        10.493
+      ],
+      "yaw": -8,
+      "scale": 0.7,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-sill-small-archive-stack",
+      "model": "retro_office_props_Paper_Thick_B",
+      "at": [
+        0.55,
+        1.0793,
+        10.582
+      ],
+      "yaw": -4,
+      "scale": 0.72,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-sill-small-archive-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        0.56,
+        1.12755,
+        10.579
+      ],
+      "yaw": 6,
+      "scale": 0.72,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-desk-wastebasket",
+      "model": "retro_office_props_TrashBin",
+      "at": [
+        1.42,
+        0.012,
+        9.91
+      ],
+      "yaw": -12,
+      "scale": 0.88,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-wastebasket-paper-a",
+      "model": "retro_office_props_Paper_Crumpled_A",
+      "at": [
+        1.393,
+        0.213,
+        9.892
+      ],
+      "yaw": 24,
+      "scale": 0.69,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-wastebasket-paper-b",
+      "model": "retro_office_props_Paper_Crumpled_B",
+      "at": [
+        1.448,
+        0.198,
+        9.94
+      ],
+      "yaw": -17,
+      "scale": 0.61,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-upper-pocket-book-lower",
+      "model": "/Game/Northwood/Meshes/Props/Nanite/SM_Books_NN_01k.SM_Books_NN_01k",
+      "at": [
+        -0.636357,
+        2.197194,
+        8.300691
+      ],
+      "yaw": 88,
+      "roll": 90,
+      "scale": 0.85,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-upper-pocket-book-upper",
+      "model": "/Game/Northwood/Meshes/Props/Nanite/SM_Books_NN_01l.SM_Books_NN_01l",
+      "at": [
+        -0.660326,
+        2.235982,
+        8.318752
+      ],
+      "yaw": 96,
+      "roll": 90,
+      "scale": 0.8,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "dale-upper-retained-book-base",
+      "model": "/Game/Northwood/Meshes/Props/Nanite/SM_Books_NN_01p.SM_Books_NN_01p",
+      "at": [
+        -0.636914,
+        2.195913,
+        9.402947
+      ],
+      "yaw": 87,
+      "roll": 90,
+      "scale": 0.81,
       "ground": false,
       "trace": false,
       "collide": false
