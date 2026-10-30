@@ -401,6 +401,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if(!M || !M->Story)return;
  if(Test.Mode==TEXT("sc08")||Test.Mode==TEXT("sc08long")||Test.Mode==TEXT("sc08retry")){FS47SC08Contract::Step(M,Dt);return;}
  if (Test.Mode == TEXT("sc04") || Test.Mode == TEXT("sc04hide") || Test.Mode == TEXT("sc04long")) { FS47SC04Contract::Step(M, Dt); return; }
  if (Test.Mode == TEXT("sc05") && M && M->Story) { S47SC05Contract::Step(M,Dt); return; }

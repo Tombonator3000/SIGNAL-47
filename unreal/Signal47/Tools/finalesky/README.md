@@ -29,9 +29,11 @@ Planen skriver tre målrettede RHI-kjøringer. Alle bruker `-S47Case=0 -S47Eveni
 
 | Modus | Tillegg | Faktisk omfang |
 |---|---|---|
-| `full` | `-S47Jump=chapter5 -S47SC13Mode=full -S47Quality=high -S47SC13Departure=<diskfil>` | Vanlig disk/title/Continue ved 05:20, faktisk Walker til servicebilen, ray/focus/OnUse, sammenhengende kjøring fra diner-lot til C, avslutning og vanlig Continue tilbake til avreise. |
-| `line` | `-S47Jump=chapter5 -S47SC13Mode=line -S47Quality=low -S47SC13Comfort -S47SC13Departure=<diskfil>` | Samme avreisegrunnlag og interaksjon, deretter én uttrykkelig utviklerfixture ved siste linje. Low, calm-flash og still-shots. Dette er ikke full kjøretur. |
+| `full` | `-S47Title -S47SC13Mode=full -S47Quality=high -S47SC13Departure=<diskfil>` | Vanlig disk/title/Continue ved 05:20, faktisk Walker til servicebilen, ray/focus/OnUse, sammenhengende kjøring fra diner-lot til C, avslutning og vanlig Continue tilbake til avreise. |
+| `line` | `-S47Title -S47SC13Mode=line -S47Quality=low -S47SC13Comfort -S47SC13Departure=<diskfil>` | Samme avreisegrunnlag og interaksjon, deretter én uttrykkelig utviklerfixture ved siste linje. Low, calm-flash og still-shots. Dette er ikke full kjøretur. |
 | `legacy` | `-S47Jump=chapter6:line -S47SC13Mode=legacy -S47Quality=high` | Original siste-linje-fixture uten SC12-rute eller nye kunstkrav. Ingen ny-rute-adopsjon. |
+
+Full og line krever ikke-tom faktisk `chain_id`, SC12-scenario og `departure_checkpoint_file` med nøyaktig sti, størrelse og SHA1. Foreldrefilene bytekopieres og skal være uendret ved slutt. Titteloppstarten lager ingen forutgående kapittelfakta. `line` beholder sin uttrykkelige siste-linje-fixture etter vanlig lasting; den teller ikke som full kjøretur.
 
 Forventet slutmarkør er `S47: spine contract sc13 PASS COMPLETE: <modus>`. Resultater ligger i `Saved/SpineSC13Contract/<GUID>/result.json` med utførte kontroller, rå snapshots, fasebilder, faktiske rammetider og SHA1 for originalt 1947-bilde. Selvtesttallet må leses fra den aktuelle råloggen, ikke kopieres fra eldre kjøringer. Root må binde faktisk source-head, bygget modul, argv, profil, guardresultat og råfiler før godkjenning.
 

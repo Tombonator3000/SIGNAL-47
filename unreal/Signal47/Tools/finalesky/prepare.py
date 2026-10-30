@@ -37,11 +37,12 @@ def main():
         dump(out/'sc12-input-pins.json',{str(p):dict(bytes=p.stat().st_size,sha256=sha(p))for p in (departure,departure.parent/'result.json')})
         for mode,quality,comfort in [('full','high',False),('line','low',True),('legacy','high',False)]:
             args=[a.editor.with_name('UnrealEditor'),project/'Signal47.uproject','-game','-unattended','-nosplash','-windowed','-ResX=1280','-ResY=720',
-                  '-S47Case=0','-S47EveningTimeline','-S47Jump='+('chapter6:line'if mode=='legacy'else 'chapter5'),'-S47SpineContract=sc13',
+                  '-S47Case=0','-S47EveningTimeline',*(['-S47Jump=chapter6:line']if mode=='legacy'else ['-S47Title']),'-S47SpineContract=sc13',
+                  '-RenderOffscreen','-NoCrashDialog','-nocrashreports','-S47SmokeTest','-S47Seconds='+('1250'if mode=='full'else '400'),'-ExecCmds=t.MaxFPS 60',
                   '-S47SC13Mode='+mode,'-S47Quality='+quality,'-S47SC13Departure='+str(departure),'-S47SelfTest',
                   '-UserDir=/tmp/S47-sc13-'+mode+'-'+out.name,'-stdout','-FullStdOutLogOutput','-UTF8Output']
             if comfort:args+=['-S47SC13Comfort']
-            runtime.append(dict(name='sc13-'+mode+'-'+quality,command=[str(v)for v in args],cwd=str(project),timeout=1200 if mode=='full'else 300,
+            runtime.append(dict(name='sc13-'+mode+'-'+quality,command=[str(v)for v in args],cwd=str(project),timeout=1320 if mode=='full'else 450,
                                 expected='S47: spine contract sc13 PASS COMPLETE: '+mode,scope='complete13.1km road'if mode=='full'else 'declared last-line fixture only'))
     files=[p for p in(project/'Tools/finalesky').glob('*')if p.is_file()]
     files+=[project.parent/'ArtSource/FinaleSky/source-contract.json']
