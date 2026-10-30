@@ -211,6 +211,25 @@ bool FS47SC04Contract::Restored()
  auto Row=S47J::New();S47J::Set(Row,TEXT("name"),Pending);S47J::Set(Row,TEXT("pass"),true);S47J::Set(Row,TEXT("facts"),A->Save());S47J::Set(Row,TEXT("clock"),M->Story->Clock());
  Restores.Add(MakeShared<FJsonValueObject>(Row));Pending.Reset();LastWalk=M->Player->Pos;return true;
 }
+bool FS47SC04Contract::WaitForBody(const FString& Context)
+{
+ const auto* A=Act();const auto* Torso=A?A->Pale.Torso.Get():nullptr;
+ if(!Torso)return false;
+ const FVector Eye=M->Player->EyeUE(),Target=Torso->Bounds.Origin;FHitResult Hit;
+ const bool Block=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Eye,Target,ECC_Visibility,FCollisionQueryParams(SCENE_QUERY_STAT(S47SC04ContractBodyWait),true));
+ const double Dot=FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal());
+ const bool Ready=A->Pale.Rendered()&&Block&&A->Pale.Owns(Hit.GetComponent())&&Dot>.995;
+ if(Ready)return true;
+ FacePoint(S47Three::ToThree(Target));
+ if(FPlatformTime::Seconds()-Mark>35)
+ {
+  auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("body-visibility-timeout"));S47J::Set(Row,TEXT("context"),Context);
+  S47J::Set(Row,TEXT("body_xz"),A->Pos.ToString());S47J::Set(Row,TEXT("rendered"),A->Pale.Rendered());S47J::Set(Row,TEXT("camera_dot"),Dot);
+  S47J::Set(Row,TEXT("blocking_hit"),Block);S47J::Set(Row,TEXT("first_component"),Hit.GetComponent()?Hit.GetComponent()->GetPathName():TEXT("none"));
+  Negatives.Add(MakeShared<FJsonValueObject>(Row));Finish(false,TEXT("no actual unobscured body/camera witness: ")+Context);
+ }
+ return false;
+}
 bool FS47SC04Contract::RenderChecks()
 {
  const auto* A=Act();if(!Check(A&&A->Pale.bBuilt&&A->Pale.All.Num()==10&&A->Pale.Rendered(),TEXT("actual ten-part pale body rendered from this legal player camera")))return false;
@@ -346,9 +365,7 @@ void FS47SC04Contract::Tick(double Dt)
   const auto* Torso=A->Pale.Torso.Get();
   if(!A->bShown||!RecordsPlanned||A->Pos.Y>6.4||!Torso)
   {if(FPlatformTime::Seconds()-Mark>35)Finish(false,TEXT("no actual pre-closure planned records route"));return;}
-  const FVector Target=S47Three::ToThree(Torso->Bounds.Origin);
-  if(!A->Pale.Rendered()||!S47Facing(FS47Cam::Of(M->Player),Target,20,18))
-  {FacePoint(Target);return;}
+  if(!WaitForBody(TEXT("planned records route before ordinary closure")))return;
   if(!RenderChecks())return;Snapshot(TEXT("planned-records-route-before-close"));Shot(TEXT("pale-body-open-records-door"));
   if(Face(TEXT("recordsDoor")))Next(22,.08);return;
  }
@@ -437,9 +454,7 @@ void FS47SC04Contract::Tick(double Dt)
  case 63:
  {
   const auto* Torso=A->Pale.Torso.Get();if(!A->bShown||!Torso){if(FPlatformTime::Seconds()-Mark>35)Finish(false,TEXT("no actual body at west opening"));return;}
-  const FVector Target=S47Three::ToThree(Torso->Bounds.Origin);FacePoint(Target);
-  if(!A->Pale.Rendered()||!S47Facing(FS47Cam::Of(M->Player),Target,20,18))
-  {if(FPlatformTime::Seconds()-Mark>35)Finish(false,TEXT("no actual legal exterior camera/render witness"));return;}
+  if(!WaitForBody(TEXT("west opening from actual ramp endpoint")))return;
   if(!RenderChecks())return;Snapshot(TEXT("actual-body-west-exit"));Shot(TEXT("pale-body-west-exit"));
   Path({FVector2D(-11.1,0),FVector2D(-9,-7.5),FVector2D(0,-12),FVector2D(6,-12),FVector2D(8.7,-12),FVector2D(8.7,-7.5),FVector2D(8.7,1.6),FVector2D(7.6,1.6)});Next(64,0);return;
  }
