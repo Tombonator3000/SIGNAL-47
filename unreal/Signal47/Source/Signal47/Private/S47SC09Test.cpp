@@ -100,8 +100,15 @@ struct FS47SC09Test
  TMap<FString,FString> Documents() const
  {
   TMap<FString,FString> Out;
-  for(const auto& V:S47J::Arr(Main()->Story->SaveRoutine(),TEXT("docs")))if(V&&V->Type==EJson::Object)
-  {const auto D=V->AsObject();Out.Add(S47J::Str(D,TEXT("id")),S47J::Write(D));}return Out;
+  for(const auto& V:S47J::Arr(Main()->Story->SaveRoutine(),TEXT("docs")))
+  {
+   if(V&&V->Type==EJson::Object)
+   {
+    const auto D=V->AsObject();
+    Out.Add(S47J::Str(D,TEXT("id")),S47J::Write(D));
+   }
+  }
+  return Out;
  }
  bool Papers(const TMap<FString,FString>& ExpectedDocs,const FString& Context)
  {

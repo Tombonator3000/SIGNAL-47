@@ -179,8 +179,16 @@ bool FS47SC10Contract::RoomFacts(const FString& Context)
 
 TMap<FString,FString> FS47SC10Contract::Documents() const
 {
- TMap<FString,FString> Out;for(const auto& V:S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")))if(V&&V->Type==EJson::Object)
- {const auto D=V->AsObject();Out.Add(S47J::Str(D,TEXT("id")),S47J::Write(D));}return Out;
+ TMap<FString,FString> Out;
+ for(const auto& V:S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")))
+ {
+  if(V&&V->Type==EJson::Object)
+  {
+   const auto D=V->AsObject();
+   Out.Add(S47J::Str(D,TEXT("id")),S47J::Write(D));
+  }
+ }
+ return Out;
 }
 bool FS47SC10Contract::Papers(const TMap<FString,FString>& Want,const FString& Context)
 {
