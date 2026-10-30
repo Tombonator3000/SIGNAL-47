@@ -1,5 +1,6 @@
 // Unreal-only photolab detailing. The exported meshes already contain their world placement.
 #include "S47PhotoLabDetail.h"
+#include "S47PhotoLabTrayFix.h"
 
 #include "S47Web.h"
 #include "Components/StaticMeshComponent.h"
@@ -117,6 +118,7 @@ bool Build(AS47Web* W)
   W->AdoptNode(C, Parent, Prefix + Parts[I].Name);
  }
  UE_LOG(LogTemp, Display, TEXT("S47: photolab detail installed parts=%d triangles=%d; original collision, interactions and light controls retained"), Meshes.Num(), TotalTriangles);
+ S47PhotoLabTrayFix::Build(W);
  return true;
 }
 }

@@ -8,6 +8,7 @@
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
 #include "S47OfficeOwned.h"
+#include "S47PhotoLabTrayFix.h"
 #include "S47HighwayPower.h"
 #include "S47Main.h"
 #include "S47World.h"
@@ -270,7 +271,7 @@ void AS47Web::BeginProductionViews()
   if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);Ok&=S47SaroDoorDetail::Audit(W,Lines);Ok&=S47OfficeOwned::Audit(W,Lines);}
   else if(FString(V.Name).StartsWith(TEXT("photolab-")))
   {
-   Ok=ProductionLabDetailReady(W,Lines);double Clearance=0;
+   Ok=ProductionLabDetailReady(W,Lines);Ok&=S47PhotoLabTrayFix::Audit(W,Lines);double Clearance=0;
    const bool Placement=ProductionLabFootClear(W,M->Player->Pos,.27,Clearance)&&
     FMath::IsNearlyEqual(M->Player->Radius,.27,.0001)&&FMath::Abs(M->Player->FloorY)<.001&&
     FMath::IsNearlyEqual(M->Player->Pos.X,V.Foot.X,.001)&&FMath::IsNearlyEqual(M->Player->Pos.Z,V.Foot.Z,.001);
