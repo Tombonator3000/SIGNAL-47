@@ -392,7 +392,7 @@ void FS47SC04Contract::Tick(double Dt)
   if(S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||(!ActualInput&&M->Mode!=US47Main::EMode::Play))return;
   Began=FPlatformTime::Seconds();FString UserDir,Jump;FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Mode);FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);
   UserDir=FPaths::ConvertRelativePathToFull(UserDir);FPaths::CollapseRelativeDirectories(UserDir);
-  if(!Check((Mode==TEXT("sc04")||Mode==TEXT("sc04hide")||Mode==TEXT("sc04long"))&&(ActualInput?Jump.IsEmpty():Jump==TEXT("residual"))&&M->Flow->CaseId==0&&M->Flow->bDevRun
+  if(!Check((Mode==TEXT("sc04")||Mode==TEXT("sc04hide")||Mode==TEXT("sc04long"))&&(ActualInput?Jump.IsEmpty():Jump==TEXT("residual"))&&M->Flow->CaseId==0&&(M->Flow->bDevRun||(ActualInput&&M->Mode==US47Main::EMode::Title))
    &&(ActualInput||FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")))&&(UserDir.StartsWith(TEXT("/tmp/"))||UserDir.StartsWith(TEXT("/var/tmp/")))
    &&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir)&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),UserDir),TEXT("isolated explicit temporary profile; Saved/Saves contained before any proof/save writes")))return;
   Root=FPaths::ProjectSavedDir()/TEXT("SC04Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits);IFileManager::Get().MakeDirectory(*Root,true);Started=true;

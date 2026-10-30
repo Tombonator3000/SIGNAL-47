@@ -36,7 +36,7 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
 {
  using FJ=S47J::FObj;
  TWeakObjectPtr<US47Main> Main;
- FString Root,Mode,Source,PhotoBefore,PendingPhoto;
+ FString Root,Mode,Source,SourceResultPath,SourceHash,SourceResultHash,Chain,PhotoBefore,PendingPhoto;
  FJ Departure,SourceResult,PauseBefore,PendingFrame;
  TOptional<FS47SaveMeta> SaveMeta;
  int32 Stage=0,Checks=0,Waypoint=0,RestoreCount=0;
@@ -73,8 +73,12 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
  void Result(bool Pass,const FString& Why)
  {
   const auto Keep=AsShared();if(Done)return;Done=true;
+  if(Mode!=TEXT("legacy")&&(FileHash(Source)!=SourceHash||FileHash(SourceResultPath)!=SourceResultHash))Pass=false;
   if(M()&&M()->Player)M()->Player->TestMove.Reset();if(M()&&M()->World)M()->World->Autopilot.Reset();
   auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("mode"),Mode);S47J::Set(O,TEXT("checks"),Checks);
+  S47J::Set(O,TEXT("scenario"),TEXT("SC13"));if(!Chain.IsEmpty())S47J::Set(O,TEXT("chain_id"),Chain);
+  S47J::Set(O,TEXT("source_prerequisite_fixtures"),Mode==TEXT("legacy"));S47J::Set(O,TEXT("complete_night_accepted"),false);
+  S47J::Set(O,TEXT("source_result_sha1"),SourceResultHash);S47J::Set(O,TEXT("source_departure_initial_sha1"),SourceHash);
   S47J::Set(O,TEXT("sourceSC12"),SourceResult);S47J::Set(O,TEXT("sourceDepartureSHA1"),FileHash(Source));S47J::Set(O,TEXT("ordinaryDiskContinues"),RestoreCount);
   S47J::Set(O,TEXT("walkMetres"),WalkMetres);S47J::Set(O,TEXT("driveMetres"),DriveMetres);S47J::Set(O,TEXT("maximumMile"),MaxMile);S47J::Set(O,TEXT("eventWallSeconds"),PullAt-EventAt);
   S47J::Set(O,TEXT("pullWallSeconds"),EndAt-PullAt);S47J::Set(O,TEXT("originalPhotoSHA1"),PhotoBefore);S47J::Set(O,TEXT("currentPhotoSHA1"),PhotoHash());
@@ -138,12 +142,14 @@ public:
   if(Now-Start>1150){Result(false,TEXT("SC13 physical journey timeout; no teleport/clock recovery"));return;}
   if(Stage==0)
   {
-   if(M()->Mode!=US47Main::EMode::Play||M()->Flow->bStarting||M()->World->bBusy||Now-Start<3)return;
+   if(M()->Flow->bStarting||M()->World->bBusy||Now-Start<3)return;
    FString UserDir;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);UserDir=FPaths::ConvertRelativePathToFull(UserDir);FPaths::NormalizeDirectoryName(UserDir);
+   FParse::Value(FCommandLine::Get(),TEXT("S47SC13Mode="),Mode);if(Mode.IsEmpty())Mode=TEXT("full");FString Jump;FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);
+   if(!Check(UserDir.StartsWith(TEXT("/tmp/"))&&UserDir!=TEXT("/tmp")&&!UserDir.Contains(TEXT(".."))&&M()->Flow->CaseId==0&&M()->Flow->Saves.List().IsEmpty()
+    &&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir)&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M()->Flow->Saves.Dir),UserDir)
+    &&(Mode==TEXT("full")||Mode==TEXT("line")||Mode==TEXT("legacy"))&&(Mode==TEXT("legacy")?(M()->Flow->bDevRun&&Jump==TEXT("chapter6:line")):Jump.IsEmpty()),TEXT("fresh isolated profile and contained Saved/Saves before mutation; actual SC12 consumer has no chapter jump")))return;
    Root=FPaths::ProjectSavedDir()/TEXT("SpineSC13Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits);
    if(!IFileManager::Get().MakeDirectory(*Root,true)){Result(false,TEXT("fresh evidence directory unavailable"));return;}
-   FParse::Value(FCommandLine::Get(),TEXT("S47SC13Mode="),Mode);if(Mode.IsEmpty())Mode=TEXT("full");
-   if(!Check(UserDir.StartsWith(TEXT("/tmp/"))&&!UserDir.Contains(TEXT(".."))&&M()->Flow->bDevRun&&M()->Flow->CaseId==0&&(Mode==TEXT("full")||Mode==TEXT("line")||Mode==TEXT("legacy")),TEXT("explicit isolated developer SC13 mode/profile")))return;
    // Exercise the existing settings callbacks in this isolated profile; no product flag is forced.
    const auto Settings=M()->Flow->Settings();
    if(FParse::Param(FCommandLine::Get(),TEXT("S47SC13Comfort"))){if(Settings.OnCalmFlash)Settings.OnCalmFlash(true);if(Settings.OnStillShots)Settings.OnStillShots(true);}
@@ -151,7 +157,13 @@ public:
    Armed=true;
    if(Mode==TEXT("legacy")){if(!Check(C()->bActive&&!C()->RevisedFinale(),TEXT("legacy last-line fixture remains original without new route facts")))return;Next(4);return;}
    FParse::Value(FCommandLine::Get(),TEXT("S47SC13Departure="),Source);Source=FPaths::ConvertRelativePathToFull(Source);
-   Departure=Read(Source);SourceResult=Read(FPaths::GetPath(Source)/TEXT("result.json"));
+   FPaths::CollapseRelativeDirectories(Source);FPaths::NormalizeFilename(Source);SourceResultPath=FPaths::GetPath(Source)/TEXT("result.json");
+   Departure=Read(Source);SourceResult=Read(SourceResultPath);SourceHash=FileHash(Source);SourceResultHash=FileHash(SourceResultPath);Chain=S47J::Str(SourceResult,TEXT("chain_id"));
+   const auto Pin=S47J::Obj(SourceResult,TEXT("departure_checkpoint_file"));
+   if(!Check(FPaths::GetCleanFilename(Source)==TEXT("departure-checkpoint.disk.json")&&S47J::Str(SourceResult,TEXT("scenario"))==TEXT("SC12")&&!Chain.IsEmpty()
+    &&Pin&&FPaths::ConvertRelativePathToFull(S47J::Str(Pin,TEXT("path")))==Source&&S47J::Num(Pin,TEXT("bytes"),-1)==IFileManager::Get().FileSize(*Source)&&S47J::Str(Pin,TEXT("sha1")).Equals(SourceHash,ESearchCase::IgnoreCase),TEXT("actual same-night SC12 PASS binds exact departure path/bytes/hash and retained chain")))return;
+   const auto Copy=[&](const FString& From,const FString& To){TArray<uint8> Bytes;return FFileHelper::LoadFileToArray(Bytes,*From)&&FFileHelper::SaveArrayToFile(Bytes,*To)&&FileHash(From)==FileHash(To);};
+   if(!Check(Copy(Source,Root/TEXT("input-sc12.byteoriginal.disk.json"))&&Copy(SourceResultPath,Root/TEXT("input-sc12.byteoriginal.result.json")),TEXT("byteidentical parent checkpoint/result retained before real Continue")))return;
    const auto Case=S47J::Obj(Departure,TEXT("case")),Ch5=S47J::Obj(Case,TEXT("ch5")),R=S47J::Obj(Ch5,TEXT("sc12"));
    if(!Check(S47J::Str(SourceResult,TEXT("status"))==TEXT("PASS")&&S47J::Int(SourceResult,TEXT("ordinaryRayUses"))>=6&&S47J::Int(SourceResult,TEXT("diskFlowRestores"))>=8
     &&S47J::Str(Departure,TEXT("checkpoint"))==TEXT("chapter5")&&S47J::Str(Ch5,TEXT("stage"))==TEXT("road")&&S47J::Int(R,TEXT("v"))==1&&S47J::Bool(R,TEXT("routeReadback"))&&S47J::Num(Case,TEXT("clock"))==19200,

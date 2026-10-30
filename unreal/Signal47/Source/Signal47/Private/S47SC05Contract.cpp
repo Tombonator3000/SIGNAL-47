@@ -356,7 +356,7 @@ bool FS47SC05Contract::Begin()
  Profile=Full(Profile);const FString Saved=Full(FPaths::ProjectSavedDir()),Store=Full(M()->Flow->Saves.Dir);
  // This precedes MakeDirectory, input copying, save writing and any case-state mutation.
  if(!Check(Mode==TEXT("sc05")&&Profile.StartsWith(TEXT("/tmp/"))&&Profile!=TEXT("/tmp")&&FPaths::IsUnderDirectory(Saved,Profile)&&FPaths::IsUnderDirectory(Store,Profile)
-  &&M()->Flow->CaseId==0&&M()->Flow->bDevRun&&M()->Flow->Saves.List().IsEmpty()&&!IFileManager::Get().DirectoryExists(*(Saved/TEXT("SC05Contract"))),TEXT("fresh explicit/tmp profile, Saved/Saves containment before every proof/save write")))return false;
+  &&M()->Flow->CaseId==0&&(M()->Flow->bDevRun||M()->Mode==US47Main::EMode::Title)&&M()->Flow->Saves.List().IsEmpty()&&!IFileManager::Get().DirectoryExists(*(Saved/TEXT("SC05Contract"))),TEXT("fresh explicit/tmp profile, Saved/Saves containment before every proof/save write")))return false;
  double OuterSeconds=0;FParse::Value(FCommandLine::Get(),TEXT("S47Seconds="),OuterSeconds);
  if(!Check(!FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest"))||(FMath::IsFinite(OuterSeconds)&&OuterSeconds>=480),TEXT("optional SmokeTest only suppresses lost-focus pause and supplies outer timer>=480s; cannot grant contract PASS")))return false;
  for(const auto* Flag:{TEXT("S47NightSequenceContract"),TEXT("S47HorrorContract"),TEXT("S47SubstationTest"),TEXT("S47SubstationTestLoad"),TEXT("S47ProductionViews"),TEXT("S47MotelV2Route"),TEXT("S47Ch4Drive"),TEXT("S47Ch1Drive"),TEXT("S47Ch2Drive"),TEXT("S47SC09Contract"),TEXT("S47RadioWomanContract"),TEXT("S47Use"),TEXT("S47Press"),TEXT("S47Open"),TEXT("S47Auto"),TEXT("S47Face"),TEXT("S47WalkFrom"),TEXT("S47Shot")})
@@ -379,7 +379,7 @@ void FS47SC05Contract::Tick(double Dt)
  const auto Keep=AsShared();if(Done||!M()||!M()->Flow||!M()->Player||!M()->Story||!M()->Spine||!M()->Evening||!M()->Web||!M()->World||!M()->Inter||!M()->Hud||!M()->UI||!M()->Substation)return;
  if(!Started)
  {
-  if(S47Startup::Blocking()||M()->Flow->bStarting||M()->World->bBusy||M()->Mode!=US47Main::EMode::Play)return;
+  if(S47Startup::Blocking()||M()->Flow->bStarting||M()->World->bBusy||(M()->Mode!=US47Main::EMode::Play&&M()->Mode!=US47Main::EMode::Title))return;
   if(Begin())Next(1,.4);return;
  }
  const double Now=FPlatformTime::Seconds();if(Now-Began>360){Finish(false,TEXT("360s physical SC05 timeout; no clock/pose recovery"));return;}
