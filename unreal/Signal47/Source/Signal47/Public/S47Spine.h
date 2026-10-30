@@ -43,6 +43,7 @@ public:
  FS47SC11* Siege() { return bRevisedSC11 ? &Act11 : nullptr; }
  const FS47SC11* Siege() const { return bRevisedSC11 ? &Act11 : nullptr; }
  bool SiegeBusy() const { return bEnabled && bRevisedSC11 && State[SC11] == 1; }
+ bool UsesRevisedSC12() const { return bEnabled && bSC12Route; }
  // 0 not reached, 1 pending (the placeholder waits), 2 done.
  int32 Gate(EGate G) const { return State[G]; }
  // The placeholder that holds the story now, or GateCount.
@@ -71,6 +72,7 @@ private:
  bool bEnabled = false, bTestSC03 = false;
  bool bRevisedSC11 = false;
  FS47SC11 Act11;
+ bool bSC12Route = false; // absent in old spine saves; never acquired by resaving an old case
  int32 State[GateCount] = { 0, 0, 0 };
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Posts;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Signs;

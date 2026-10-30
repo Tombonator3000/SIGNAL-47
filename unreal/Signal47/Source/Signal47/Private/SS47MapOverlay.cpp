@@ -31,14 +31,16 @@ namespace
 	constexpr int32 TW = 620 + 2 * TPAD, TH = 300 + 2 * TPAD;
 	constexpr double TX = 70 + TPAD, TY = 150 + TPAD; // the transit, on the tracing's own picture
 
-	UTexture2D* MapTexture()
+	UTexture2D* MapTexture(bool bHandover)
 	{
-		static TWeakObjectPtr<UTexture2D> T;
+		static TWeakObjectPtr<UTexture2D> Legacy, Handover;
+		auto& T = bHandover ? Handover : Legacy;
 		if (!T.IsValid())
 		{
 			const S47Drawings::FServiceMap& Mp = S47Drawings::SERVICE_MAP();
 			FS47Canvas G(Mp.W, Mp.H);
 			S47Drawings::ServiceMapCanvas(G);
+			if (bHandover) S47Drawings::HandoverMarks(G);
 			T = S47Image::FromPixels(G.Px, G.W, G.H);
 		}
 		return T.Get();
@@ -117,16 +119,17 @@ struct FS47MapDrag
 class SS47MapCanvas : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SS47MapCanvas) {}
+	SLATE_BEGIN_ARGS(SS47MapCanvas) : _Handover(false) {}
 		SLATE_ARGUMENT(TSharedPtr<FS47MapDrag>, Drag)
 		SLATE_ARGUMENT(TFunction<void(double, double, bool)>, OnMove)
+		SLATE_ARGUMENT(bool, Handover)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& A)
 	{
 		D = A._Drag.IsValid() ? A._Drag : MakeShared<FS47MapDrag>();
 		OnMove = A._OnMove;
-		Base = S47Kit::BrushFor(MapTexture());
+		Base = S47Kit::BrushFor(MapTexture(A._Handover));
 		Sheet = S47Kit::BrushFor(TracingTexture());
 	}
 
@@ -216,7 +219,7 @@ TSharedRef<SWidget> S47MapOverlay::MapOverlay(US47UI* UI, const FOpts& O)
 	// <div class="mapov"><canvas data-map width="1200" height="800">
 	const S47Kit::FW Map = SNew(SBox).HAlign(HAlign_Center).Padding(FMargin(0, 4 * PX, 0, 10 * PX))
 		[
-			SNew(SS47MapCanvas).Drag(D).OnMove(O.OnMove)
+			SNew(SS47MapCanvas).Drag(D).OnMove(O.OnMove).Handover(O.bHandover)
 		];
 	// <div data-ask>: the question and a button for each answer
 	TArray<S47Kit::FW> Buttons;

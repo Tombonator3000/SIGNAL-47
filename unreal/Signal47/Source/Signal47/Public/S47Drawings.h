@@ -60,6 +60,9 @@ namespace S47Drawings
 	// serviceMapCanvas: the service map painted on a canvas of SERVICE_MAP's size, for the overlay at
 	// the diner (SS47MapOverlay)
 	SIGNAL47_API void ServiceMapCanvas(FS47Canvas& G);
+	// New SC12 only: an additional transfer annotation, never painted into a legacy E14.
+	SIGNAL47_API void HandoverMarks(FS47Canvas& G);
+	SIGNAL47_API FString HandoverMap();
 	// E09A traced onto onion-skin: the transit at (X, Y), C running east to the edge of the sheet, A
 	// and B close by, and the north arrow. Drawn over the service map.
 	SIGNAL47_API void DrawTracing(FS47Canvas& G, double X, double Y);

@@ -4,6 +4,8 @@
 #include "Components/MaterialBillboardComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "S47Main.h"
+#include "S47Chapter5.h"
+#include "S47Story.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "S47Web.h"
@@ -151,7 +153,12 @@ void FS47Town::SetPaper(bool bOn) { bPaperIn = bOn; Paper.SetVisible(bOn); }
 void FS47Town::Update(double T, double Clock, bool bHold)
 {
 	const double Day = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400, 86400.0);
-	const bool bDeputy = S47Timeline::DeputyOnDuty(Clock);
+	// New SC12: the deputy is on his way to / at Mesa Diner, not also at the old desk.
+	// Legacy cases retain the original 04:30 office and patrol-car schedule.
+	const auto* C5 = M && M->Story ? Cast<US47Chapter5>(M->Story->Chapter(TEXT("ch5"))) : nullptr;
+	const bool bDinerDeputy = C5 && C5->bActive && C5->RevisedDiner();
+	if (bDinerDeputy && bCarOut) SetCarOut(false);
+	const bool bDeputy = !bDinerDeputy && S47Timeline::DeputyOnDuty(Clock);
 	if (bDeputy != bDeputyIn && !(bDeputy && bCarOut && bHold)) SetDeputy(bDeputy);
 	const bool bPaper = Day >= 4 * 3600 + 45 * 60 && Day < 12 * 3600;
 	if (bPaper != bPaperIn) SetPaper(bPaper);

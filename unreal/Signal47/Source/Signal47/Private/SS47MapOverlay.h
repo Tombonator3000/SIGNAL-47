@@ -20,6 +20,7 @@ namespace S47MapOverlay
 		FVector2D At = FVector2D::ZeroVector;          // where the tracing's transit lies on the map now
 		FString Solved;                                // the recorded finding, once there is one ('' null)
 		FString Question;
+		bool bHandover = false; // optional SC12-only annotation; the legacy map remains unchanged
 		TArray<FChoice> Choices;
 		TFunction<void(double X, double Y, bool bAligned)> OnMove;
 		TFunction<FS47Result(const FString& Id)> OnChoose;

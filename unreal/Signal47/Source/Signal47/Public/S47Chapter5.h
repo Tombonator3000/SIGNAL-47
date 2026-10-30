@@ -10,6 +10,20 @@
 #include "S47Chapter5.generated.h"
 
 class FS47Diner;
+class FS47SC12Contract;
+
+// New spine cases only. Absent in an older chapter-five save: the original route stays original.
+struct SIGNAL47_API FS47SC12State
+{
+	int32 Version = 0, ReadMask = 0, CheckMask = 0;
+	bool bLaid = false, bCompared = false, bWarningSent = false;
+	bool bDeputyHere = false, bPatrolRead = false, bCourier = false, bRouteReadback = false;
+	FString WarningStamp, PatrolStamp, RouteStamp;
+	TArray<FS47Doc> SourcePapers; // exact acquired papers, not templates reconstructed from their IDs
+	S47J::FObj Extra;
+	S47J::FObj Save() const;
+	static FS47SC12State Load(const S47J::FObj& Saved);
+};
 
 // story/Chapter5.ts Ch5State: the saved state of chapter five, written and read with the
 // TypeScript's own field names ({ v: 1, stage, bell, file, arrived, coffee, lights, clipped, aunt,
@@ -31,6 +45,7 @@ struct SIGNAL47_API FS47Ch5State
 	TOptional<FVector2D> Tracing;       // where the tracing lies on the map (null: not laid out yet)
 	bool bP13 = false; int32 Wrong13 = 0;
 	S47J::FObj Extra;                   // a saved state as it came, so fields this version does not know stay in it
+	FS47SC12State SC12;
 
 	S47J::FObj Save() const;
 	static FS47Ch5State Load(const S47J::FObj& Saved);
@@ -120,7 +135,17 @@ public:
 	// old road), as tools/chapter5.py plays it.
 	void TestDrive(const FString& Stop);
 
+	bool RevisedDiner() const { return bStarted && S.SC12.Version == 1; }
+	bool SourcesVerified() const;
+	bool ReadyForRoad() const;
+	bool SC12Choice(const FString& Id); // same offered choices as the panel, for the full-night driver
+	// Short read-only interface for the night contract and the sheriff's existing presence schedule.
+	S47J::FObj SC12Readback() const;
+	FS47Obj SC12Object(const FString& Id) const;
+	void ControlSC12Test(double Dt);
+
 private:
+	friend class FS47SC12Contract;
 	TArray<S47Panels::FTalkLine> Lines;
 	FString Who;                      // 'waitress' | 'driver' | 'ward' | '' (null)
 	TOptional<S47Panels::FTalkHandle> Panel;
@@ -128,6 +153,10 @@ private:
 	FString ClippingUrl, MapUrl;      // '' null
 	bool bLeaving = false;
 	bool bRadioBusy = false;
+	bool bFreshChapter = false;
+	int32 PendingReadback = 0; // live call only: 1 warning, 2 road. Never saved or resumed as acknowledgement.
+	TMap<FString, FS47Obj> SC12Props;
+	TSharedPtr<FS47SC12Contract> SC12Contract;
 	TArray<FString> NoLinks;          // the book's links: () => [] (a fresh empty list each time)
 	TArray<FString> TestNotes, TestDocs; // without a host (the self test)
 
@@ -158,10 +187,26 @@ private:
 	void Choose(const FString& Id);
 
 	void OpenMap();
+	void MoveTracing(double X, double Y);
 	bool Aligned() const;
 	void Finish();
 
 	FS47Doc DocMap();
 	FS47Doc DocClipping();
 	FS47Doc DocFinding() const;
+	bool HasSC12Sources() const;
+	void CaptureSC12Sources();
+	void BuildSC12Props();
+	void ApplySC12Props();
+	void StepSC12(double Dt);
+	void OpenSources();
+	void ReadSource(int32 Index);
+	void ReadPatrol();
+	bool ChooseSC12(const FString& Id);
+	S47Panels::FTalkView SC12View() const;
+	void UpdateRoadReady();
+	FS47Doc SourceCheckDoc() const;
+	FS47Doc WarningDoc() const;
+	FS47Doc PatrolDoc() const;
+	FS47Doc RouteDoc() const;
 };
