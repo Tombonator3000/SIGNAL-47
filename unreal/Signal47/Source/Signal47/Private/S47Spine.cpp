@@ -391,11 +391,9 @@ void FS47Spine::ControlTest(double Dt)
  }
  if (Test.Stage == 1)
  {
-  if (!Check(Gate(SC04) == 1 && HoldsResidual() && Pending() == SC04 && Act04.Phase() == FS47SC04::EStep::Collect && Tasks().Num() == 5 && !(Posts.IsValidIndex(SC04) && Posts[SC04].IsValid() && Posts[SC04]->IsVisible()),
-   TEXT("SC03's end opens the built SC04 at SARO: no placeholder post, five tasks, residual console held"))) return;
-  const double Before = M->Story->Clock(); const int32 Stage = M->Story->Rx.Stage;
-  M->Story->ConsoleAction();
-  if (!Check(M->Story->Rx.Stage == Stage && M->Story->Clock() == Before, TEXT("the console refuses residual work while SC04 holds"))) return;
+  // (The console hold belongs to the residual phase after 00:13; the sc04 contract checks it.)
+  if (!Check(Gate(SC04) == 1 && Pending() == SC04 && Act04.Phase() == FS47SC04::EStep::Collect && Tasks().Num() == 5 && !(Posts.IsValidIndex(SC04) && Posts[SC04].IsValid() && Posts[SC04]->IsVisible()),
+   TEXT("SC03's end opens the built SC04 at SARO: no placeholder post, five tasks"))) return;
   if (!Check(RoundTrip(SC04, 1), TEXT("saved spine reloads with SC04 pending"))) return;
   // SC04 has its own contract (-S47SpineContract=sc04); here it is counted done by fixture.
   UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: SC04 counted done without playing it"));
