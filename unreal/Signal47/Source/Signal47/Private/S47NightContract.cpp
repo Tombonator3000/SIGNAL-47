@@ -140,6 +140,7 @@ class FS47NightContract : public TSharedFromThis<FS47NightContract>
  bool Record(const FString& Name)
  {
   auto O=S47J::New();S47J::Set(O,TEXT("name"),Name);S47J::Set(O,TEXT("game_state"),M()->Flow->GameState());S47J::Set(O,TEXT("clock"),M()->Story->Clock());
+  S47J::Set(O,TEXT("cinematic"),M()->Story->IsCinematic());S47J::Set(O,TEXT("modal_open"),M()->ModalOpen());S47J::Set(O,TEXT("ordinary_save_block"),M()->Flow->SaveBlock());
   S47J::Set(O,TEXT("adapter"),M()->HorrorTest->NightReadback());S47J::Set(O,TEXT("pointing"),Encoders(M()));
   const auto F=M()->Substation->FaultSnapshot();auto Fault=S47J::New();
   S47J::Set(Fault,TEXT("requested"),F.bRequested);S47J::Set(Fault,TEXT("active"),F.bActive);S47J::Set(Fault,TEXT("arc_visible"),F.bArcVisible);S47J::Set(Fault,TEXT("lamps_visible"),F.bLampsVisible);
@@ -488,6 +489,16 @@ void FS47NightContract::Tick(double Dt)
   M()->World->Autopilot=10;M()->World->DriveBack();Next(19);return;
  case 19:
   if(M()->World->bDriving){if(Now-Mark>480)Finish(false,TEXT("ordinary post-SC03 return did not park at SARO"));return;}
+  if(!Record(TEXT("actual-post-sc03-parking"))){Finish(false,TEXT("cannot retain actual post-SC03 parking state"));return;}
+  Next(20,0);return;
+ case 20:
+  // Park releases its ordinary cinematic hold after 0.4 game seconds. Do not
+  // request the real manual checkpoint until that production transaction ends.
+  if(M()->Story->IsCinematic()||M()->ModalOpen()||!M()->Flow->SaveBlock().IsEmpty())
+  {
+   if(Now-Mark>20){Record(TEXT("actual-sc03-return-save-blocked"));Finish(false,TEXT("ordinary post-SC03 parking never reached an unblocked save boundary: ")+M()->Flow->SaveBlock());}
+   return;
+  }
   if(!Check(M()->World->Area==TEXT("saro")&&M()->World->TruckAt==TEXT("saro")&&M()->Horror->SC03->Complete()&&!M()->Evening->FeederOutage()&&M()->Story->Phase()==ES47Phase::Residual&&M()->Story->Rx.Stage==2&&M()->Story->bResidualVisible,TEXT("real return parks SC03-complete cohort at SARO with unsolved passive residual for SC04")))return;
   if(!Boundary(TEXT("sc03"))||!Record(TEXT("sc04-input-ready")))return;
   Finish(true,TEXT("actual newcase/commute/D01/SC01-observing/00:13/T01/SC02/SC03/SARO-return prefix complete; use its real checkpoint for SC04-SC13"));return;
