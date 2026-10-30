@@ -23,6 +23,22 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Ch2, Log, All);
 
 namespace
 {
+	// New cases own the actual acquired paper, including images, timestamps and every sheet.
+	S47J::FObj SC07PaperJson(const FS47Doc& D)
+	{
+		auto O=S47J::New(); S47J::Set(O,TEXT("id"),D.Id); S47J::Set(O,TEXT("title"),D.Title); S47J::Set(O,TEXT("kind"),D.Kind);
+		S47J::Set(O,TEXT("stamp"),D.Stamp); S47J::Set(O,TEXT("page"),D.Page); S47J::Set(O,TEXT("transcript"),D.Transcript);
+		S47J::Set(O,TEXT("image"),D.Image); S47J::Set(O,TEXT("paper"),D.Paper); S47J::Set(O,TEXT("paperRatio"),D.PaperRatio);
+		TArray<TSharedPtr<FJsonValue>> A; for(const auto& P:D.Sheets){auto R=S47J::New(); S47J::Set(R,TEXT("page"),P.Page); S47J::Set(R,TEXT("paper"),P.Paper); S47J::Set(R,TEXT("strip"),P.Strip); S47J::Set(R,TEXT("term"),P.Term); A.Add(MakeShared<FJsonValueObject>(R));} O->SetArrayField(TEXT("sheets"),A); return O;
+	}
+	FS47Doc SC07ReadPaper(const S47J::FObj& O)
+	{
+		FS47Doc D; D.Id=S47J::Str(O,TEXT("id")); D.Title=S47J::Str(O,TEXT("title")); D.Kind=S47J::Str(O,TEXT("kind")); D.Stamp=S47J::Str(O,TEXT("stamp"));
+		D.Page=S47J::Str(O,TEXT("page")); D.Transcript=S47J::Str(O,TEXT("transcript")); D.Image=S47J::Str(O,TEXT("image")); D.Paper=S47J::Str(O,TEXT("paper")); D.PaperRatio=S47J::Num(O,TEXT("paperRatio"));
+		for(const auto& V:S47J::Arr(O,TEXT("sheets")))if(V && V->Type==EJson::Object){auto R=V->AsObject(); D.Sheets.Add({S47J::Str(R,TEXT("page")),S47J::Str(R,TEXT("paper")),S47J::Str(R,TEXT("strip")),S47J::Str(R,TEXT("term"))});} return D;
+	}
+
+
 	// ---------- the sources (Unity WorldCase22 text) ----------
 	const TCHAR* ORIGINAL = TEXT("FIELD SURVEY RECORD / STATION 01 / 1947\n\nThe reference remained visible in the plate after the lamp circuit was opened. A second plate was exposed with the local lamp isolated. The retained mark did not follow the new position of the physical vane.\n\nThe arrangement used three references: A, the fixed survey point; B, the optical comparison vane; and C, the closing sight line. The run was interrupted before the final observation was entered. Preserve the original plates and the complete arrangement drawing.\n\nN. VEGA / FIELD TECHNICIAN");
 	const TCHAR* AMENDED = TEXT("FIELD SURVEY RECORD / STATION 01 / 1947\nAMENDED COPY\n\nThe additional mark is attributed to a fault in plate development. The lamp and comparison vane are sufficient to describe the test. The incomplete closing sight line has been omitted from the service copy.\n\nNo repeat observation is required. Retain the amended copy with the routine reference records.\n\nN. VEGA / FIELD TECHNICIAN");
@@ -121,6 +137,7 @@ S47J::FObj FS47Ch2State::Save() const
 {
 	S47J::FObj O = Extra.IsValid() ? S47J::Clone(Extra) : S47J::New();
 	S47J::Set(O, TEXT("v"), 1);
+	if(SequenceVersion>0){S47J::Set(O,TEXT("sc07Version"),SequenceVersion); S47J::Set(O,TEXT("binderCompared"),bBinderCompared); TArray<TSharedPtr<FJsonValue>> A; for(const auto& D:Sources)A.Add(MakeShared<FJsonValueObject>(SC07PaperJson(D))); O->SetArrayField(TEXT("sources"),A);}
 	S47J::Set(O, TEXT("stage"), Stage);
 	S47J::Set(O, TEXT("answered"), bAnswered);
 	S47J::Set(O, TEXT("door"), bDoor);
@@ -150,6 +167,8 @@ FS47Ch2State FS47Ch2State::Load(const S47J::FObj& Saved)
 	FS47Ch2State C;
 	if (!Saved.IsValid()) return C;
 	C.Extra = S47J::Clone(Saved);
+	C.SequenceVersion=S47J::Int(Saved,TEXT("sc07Version")); C.bBinderCompared=S47J::Bool(Saved,TEXT("binderCompared"));
+	if(C.SequenceVersion>0)for(const auto& V:S47J::Arr(Saved,TEXT("sources")))if(V && V->Type==EJson::Object){auto D=SC07ReadPaper(V->AsObject()); if(!D.Id.IsEmpty())C.Sources.Add(MoveTemp(D));}
 	C.Stage = S47J::Str(Saved, TEXT("stage"), C.Stage);
 	C.bAnswered = S47J::Bool(Saved, TEXT("answered"));
 	C.bDoor = S47J::Bool(Saved, TEXT("door"));
@@ -261,6 +280,10 @@ void US47Chapter2::Begin(const S47J::FObj& Saved)
 	bHoldRing = bHold;
 	bActive = true; bStarted = true;
 	S = Saved.IsValid() ? FS47Ch2State::Load(Saved) : FS47Ch2State();
+	const auto* Prior=Host?Host->Chapter(TEXT("ch1")):nullptr;
+	if(!Saved && Host && Host->bEveningTimeline && Prior && S47J::Int(Prior->SaveState(),TEXT("sc06Version"))==1)
+	{S.SequenceVersion=1; Host->AdvanceClockTo(3*3600+40*60,TEXT("SC07 records comparison begins")); KeepSources();}
+	if(S.SequenceVersion>0 && !HasBinderSeed())S.bBinderCompared=false;
 	ApplyWorld();
 	if (S.Stage == TEXT("ward-call")) Ring();
 	// a case kept between her two calls: she calls back once the player is in the control room
@@ -278,7 +301,7 @@ void US47Chapter2::Reset()
 
 S47J::FObj US47Chapter2::SaveState() const
 {
-	return bStarted ? S.Save() : nullptr;
+	if(!bStarted)return nullptr; FS47Ch2State Copy=S; if(Copy.SequenceVersion>0 && Host)Copy.Sources=Host->Docs(); return Copy.Save();
 }
 
 void US47Chapter2::ApplyWorld()
@@ -286,6 +309,7 @@ void US47Chapter2::ApplyWorld()
 	// a case from before the doors were free: doors.set('south', true, true). (AS47Web opens a door
 	// by toggling it, which swings it and sounds as the player opening it would.)
 	if (S.bDoor && M && M->Web) M->Web->SetDoorOpen(TEXT("doorSouth"), true, true);
+	if(S.SequenceVersion>0){if(Host)for(const auto& D:S.Sources)Host->AddDoc(D); return;}
 	if (S.Read.bOriginal) File(DocOriginal());
 	if (S.Read.bIndex) File(DocIndex());
 	if (S.Read.bAmended) File(DocAmended());
@@ -300,7 +324,29 @@ void US47Chapter2::File(const FS47Doc& Doc)
 	if (Host) Host->AddDoc(Doc);
 }
 
-void US47Chapter2::Save() { if (OnSave) OnSave(); }
+void US47Chapter2::KeepSources(){if(S.SequenceVersion>0 && Host)S.Sources=Host->Docs();}
+void US47Chapter2::Save(){KeepSources(); if(OnSave)OnSave();}
+bool US47Chapter2::HasBinderSeed() const
+{
+	const auto* D=S.Sources.FindByPredicate([](const FS47Doc& P){return P.Id==TEXT("obs_runbinder");});
+	return D && D->Stamp==TEXT("RUN BINDER") && D->Page.Contains(TEXT("14 APR 1979")) && D->Page.Contains(TEXT("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")) && D->Page.Contains(TEXT("AMENDED / SERVICE COPY"));
+}
+FString US47Chapter2::SaveBlock() const
+{
+	return S.SequenceVersion>0 && Host && Host->IsCinematic() ? FString(TEXT("Let the actual telephone conversation finish first.")) : FString();
+}
+bool US47Chapter2::ReadyForDeparture() const
+{
+	if(S.SequenceVersion<=0)return true;
+	if(!S.bBinderCompared || !HasBinderSeed() || !S.bP04 || !S.bP05 || !S.bCalled || !Host)return false;
+	const auto Have=[this](const TCHAR* Id){const auto* D=Host->Docs().FindByPredicate([&](const FS47Doc& P){return P.Id==Id;}); return D && !D->Page.IsEmpty();};
+	return M && M->Office && M->Office->HasFieldSheet() && M->Office->HasFieldNote() && Have(TEXT("EV_DALE_INDEX")) && Have(TEXT("EV_DALE_NOTE")) && Have(TEXT("e07")) && Have(TEXT("e06")) && Have(TEXT("b12lineage")) && Have(TEXT("e08")) && Have(TEXT("p04")) && Have(TEXT("p05")) && Have(TEXT("access"));
+}
+bool US47Chapter2::CompleteOfficeRoute()
+{
+	if(!ReadyForDeparture())return false;
+	KeepSources(); if(S.SequenceVersion>0 && Host)Host->AdvanceClockTo(3*3600+55*60,TEXT("SC07 actual corrected sources and Dale field folder retained")); Save(); return true;
+}
 
 FString US47Chapter2::Time() const { return S47Text::ClockText(Host ? Host->Clock() : 0, false); }
 
@@ -339,7 +385,7 @@ FString US47Chapter2::Objective() const
 	if (S.Stage == TEXT("complete"))
 	{
 		if (M && M->Office && M->Office->RouteRequired() && !M->Office->DepartureReleased())
-			return M->Office->HasFieldSheet() ? TEXT("SARO OPERATIONS // FIELD SHEET RETAINED. USE THE DEPARTURE CARD WHEN READY FOR STATION 01")
+			return S.SequenceVersion>0 && !ReadyForDeparture() ? TEXT("SARO OPERATIONS // RETAIN THE FIELD CHECKS INDEX AND DALE'S FOLDED NOTE; THE PRIVATE COLLECTION IS OPTIONAL") : M->Office->HasFieldSheet() ? TEXT("SARO OPERATIONS // FIELD SHEET RETAINED. USE THE DEPARTURE CARD WHEN READY FOR STATION 01")
 			 : TEXT("SARO OPERATIONS // SERVICE DRAWER: TAKE THE SPARE KEY, THEN COLLECT THE FIELD CHECKS COPY");
 		return TEXT("STATION 01 // FIELD ACCESS PREPARED");
 	}
@@ -365,6 +411,7 @@ TArray<FS47Task> US47Chapter2::Tasks() const
 	{
 		T.Add({TEXT("Find the Operations spare key in the service drawer"), M->Office->HasKey()});
 		T.Add({TEXT("Collect the Field checks copy in Operations; VHS is optional"), M->Office->HasFieldSheet()});
+		if(S.SequenceVersion>0)T.Add({TEXT("Retain Dale's folded note with the field-check index; private reading is optional"), ReadyForDeparture()});
 		T.Add({TEXT("Use the Operations departure card when ready for STATION 01"), M->Office->DepartureReleased()});
 	}
 	if (S.ArrayAsk.Get(false)) T.Add({ TEXT("Put the array back on the schedule (operations terminal)"), ArrayTried ? ArrayTried() : false });
@@ -580,6 +627,11 @@ void US47Chapter2::TakeBinder()
 	if (!M || !M->UI) return;
 	M->UI->Document(DocAmended(), [this, bFirst]
 	{
+		if(S.SequenceVersion>0 && HasBinderSeed())
+		{
+			S.bBinderCompared=true;
+			Note(TEXT("The AMENDED / SERVICE COPY stamp is the one seen while filing the run binder at 20:30. That April 1979 page is a separate record; E07's retained C and E06's omitted C must be compared on their own."));
+		}
 		if (bFirst) Note(FString::Printf(TEXT("%s. The service copy of the same 1947 record. Same title, same signature. It calls the mark a development fault."), *Time()));
 		Save();
 	});
@@ -687,6 +739,7 @@ TArray<FS47BoardCard> US47Chapter2::BoardCards()
 // P04: the Unity rules and replies.
 FS47Result US47Chapter2::Compare(const FString& Finding)
 {
+	if(S.SequenceVersion>0 && (!HasBinderSeed() || !S.bBinderCompared))return {false,TEXT("Compare the actual amended service copy with the retained run binder from 20:30 before recording the correction.")};
 	if (!S.Read.bOriginal || !S.Read.bAmended) return { false, TEXT("Read both the original protocol and amended copy before recording a comparison.") };
 	if (Finding != TEXT("omitted-c"))
 	{
@@ -918,7 +971,9 @@ void US47Chapter2::BeginChapter2(const S47J::FObj& SavedCase)
 	else
 	{
 		// Evening cases: SC07 follows SC06 at about 03:40 (approved timeline); legacy keeps forty minutes.
-		Host->SetClock(FMath::Max(Host->Clock(), Host->EventClockSec() + (Host->bEveningTimeline ? 15 : 40) * 60));
+		const auto* Prior=Host->Chapter(TEXT("ch1"));
+		if(Host->bEveningTimeline && Prior && S47J::Int(Prior->SaveState(),TEXT("sc06Version"))==1)Host->AdvanceClockTo(3*3600+40*60,TEXT("SC07 after B-12 report"));
+		else Host->SetClock(FMath::Max(Host->Clock(),Host->EventClockSec()+(Host->bEveningTimeline?15:40)*60));
 		if (M && M->Player) M->Player->Place(3.35, 1.45, 2.75); // at the supervisor desk, facing the phone
 	}
 	if (M && M->UI) M->UI->Fade(false);
@@ -1057,6 +1112,13 @@ bool US47Chapter2::SelfTest(TArray<FString>& Lines)
 	Check(L.Stage == TEXT("records") && L.bAnswered && L.Read.bOriginal && !L.Read.bIndex && L.Wrong04 == 1 && !L.ArrayAsk && L.Links.Num() == 0
 		&& S47J::Num(L.Save(), TEXT("later")) == 7 && !S47J::Has(L.Save(), TEXT("arrayAsk")), TEXT("an older save: missing fields fresh, unknown ones kept"));
 	C->MarkAsGarbage();
+	{
+		const auto LegacyComplete=FS47Ch2State::Load(S47J::Read(TEXT("{\"stage\":\"complete\",\"called\":true}")));
+		Check(LegacyComplete.SequenceVersion==0 && LegacyComplete.bCalled && !LegacyComplete.bBinderCompared,TEXT("legacy completed archive gains no retroactive binder/Office prerequisite"));
+		FS47Ch2State Owned; Owned.SequenceVersion=1; Owned.bBinderCompared=true; FS47Doc D; D.Id=TEXT("source"); D.Stamp=TEXT("20:30:00"); D.Page=TEXT("actual"); D.Image=TEXT("image"); D.PaperRatio=1.47; D.Sheets.Add({TEXT("a"),TEXT("b"),TEXT("c"),TEXT("d")}); Owned.Sources.Add(D);
+		const auto Again=FS47Ch2State::Load(S47J::Read(S47J::Write(Owned.Save())));
+		Check(Again.SequenceVersion==1 && Again.bBinderCompared && Again.Sources.Num()==1 && S47J::Write(SC07PaperJson(Again.Sources[0]))==S47J::Write(SC07PaperJson(D)),TEXT("SC07 exact acquired source, image, stamp and sheets survive JSON"));
+	}
 	return bOk;
 }
 

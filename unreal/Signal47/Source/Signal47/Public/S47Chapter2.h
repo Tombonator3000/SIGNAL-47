@@ -15,6 +15,9 @@ class US47Annex;
 // called, links, arrayAsk? }).
 struct SIGNAL47_API FS47Ch2State
 {
+	int32 SequenceVersion = 0;
+	bool bBinderCompared = false;
+	TArray<FS47Doc> Sources;
 	FString Stage = TEXT("ward-call");   // Stage2: 'ward-call' | 'records' | 'call-nora' | 'complete'
 	bool bAnswered = false, bDoor = false, bEntered = false;
 	struct FRead { bool bOriginal = false, bAmended = false, bLineage = false, bIndex = false; };
@@ -59,6 +62,9 @@ public:
 	virtual void Reset() override;
 	virtual S47J::FObj SaveState() const override; // this.s once begun (Prologue.composeCase: ch2), else null
 	virtual void Update(double Dt, double T) override;
+	virtual FString SaveBlock() const override;
+	bool ReadyForDeparture() const;
+	bool CompleteOfficeRoute();
 	virtual FString Objective() const override;
 	virtual TArray<FS47Task> Tasks() const override;
 	virtual void DoorChanged(const FString& Id, bool bOpen) override;
@@ -118,6 +124,8 @@ private:
 	void BuildBook();
 	void Interactables();
 	void ApplyWorld();
+	void KeepSources();
+	bool HasBinderSeed() const;
 	void File(const FS47Doc& Doc);
 	void Save();
 	FString Time() const;

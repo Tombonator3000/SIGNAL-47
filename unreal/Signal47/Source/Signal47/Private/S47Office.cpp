@@ -1,4 +1,5 @@
 #include "S47Office.h"
+#include "S47Chapter2.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
 #include "S47Inter.h"
@@ -491,8 +492,21 @@ bool FS47Office::InReach(const FString& Id) const
  const FVector At = Obj.WorldPosition(); return FVector2D(M->Player->Pos.X - At.X, M->Player->Pos.Z - At.Z).Size() <= 2.2;
 }
 
+bool FS47Office::RouteRequired() const
+{
+ const auto* C=M && M->Story?Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))):nullptr;
+ return bRequired || (C && C->S.SequenceVersion==1);
+}
+bool FS47Office::DepartureReleased() const
+{
+ const auto* C=M && M->Story?Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))):nullptr;
+ return bDeparted && HasFieldSheet() && (!C || C->ReadyForDeparture());
+}
 bool FS47Office::WantsDeparture() const
-{ return !bDeparted && HasFieldSheet() && CanDepart && CanDepart(); }
+{
+ const auto* C=M && M->Story?Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))):nullptr;
+ return !bDeparted && HasFieldSheet() && (!C || C->ReadyForDeparture()) && CanDepart && CanDepart();
+}
 
 void FS47Office::RefileReadDocuments()
 {
@@ -678,6 +692,7 @@ bool FS47Office::Use(const FString& Id)
  if (Id == TEXT("office:depart"))
  {
   if (!WantsDeparture()) return false;
+  if(auto* C=Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))); C && !C->CompleteOfficeRoute())return false;
   bDeparted = true; Changed(); // Save the explicit release before the captured chapter end callback.
   UE_LOG(LogS47Office, Display, TEXT("S47: office explicit departure released; actual field sheet at %.3f"), FieldSheetAt);
   if (OnDepart) OnDepart(); return true;

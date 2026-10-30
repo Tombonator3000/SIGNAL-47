@@ -20,10 +20,11 @@ public:
  bool Ready() const { return bReady; }
  bool HasKey() const { return bKey; }
  bool HasFieldSheet() const;
+ bool HasFieldNote() const { return bReady && bKey && bUnlocked && bEverOpened && bEntered && bNoteRead; }
  bool WasUnlocked() const { return bKey && bUnlocked; }
  bool DoorOpen() const { return bReady && DoorK >= .995; }
- bool RouteRequired() const { return bRequired; }
- bool DepartureReleased() const { return bDeparted && HasFieldSheet(); }
+ bool RouteRequired() const;
+ bool DepartureReleased() const;
  bool WantsDeparture() const;
  bool Contains(const FVector& P) const;
  bool InThreshold(const FVector& P, double Radius = 0) const;
