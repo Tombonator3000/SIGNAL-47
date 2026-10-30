@@ -1,6 +1,7 @@
 #include "S47World.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
+#include "S47Chapter5.h"
 #include "S47EveningVisual.h"
 #include "S47Timeline.h"
 #include "S47Keys.h"
@@ -835,7 +836,12 @@ void US47World::Roam(const FString& From)
 void US47World::DriveToDiner(TFunction<void()> OnArrive)
 {
 	FS47TripOpts O;
-	O.PerMetre = 0.19;
+	const auto* C5=M&&M->Story?Cast<US47Chapter5>(M->Story->Chapter(TEXT("ch5"))):nullptr;
+	// Revised SC12 already starts at05:12. Ordinary activity time covers this real trip;
+	// the old additional seconds-per-metre would spend the entire05:20 window on the road.
+	const bool Revised=C5&&C5->bActive&&C5->RevisedDiner();
+	O.PerMetre = Revised ? 0.0 : 0.19;
+	if(Revised)UE_LOG(LogS47World,Display,TEXT("S47: SC12 diner trip uses ordinary story time, no extra distance clock; departure %.3f"),M->Story->Clock());
 	O.OnArrive = MoveTemp(OnArrive);
 	O.Hint = TEXT("Mesa Diner is the lit sign on the right. Leave the truck on its lot: stop there.");
 	StartTrip(TruckAt.IsEmpty() ? FString(TEXT("saro")) : TruckAt, TEXT("diner"), O);
