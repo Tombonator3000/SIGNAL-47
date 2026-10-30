@@ -5,6 +5,9 @@
 #include "S47EveningPack.h"
 #include "S47Flow.h"
 #include "S47HUD.h"
+#include "S47Horror.h"
+#include "S47HorrorSC03.h"
+#include "S47ThreatNavigation.h"
 #include "S47Inter.h"
 #include "S47Main.h"
 #include "S47Seen.h"
@@ -34,6 +37,14 @@
 
 namespace
 {
+ FString SC04Hash(const FString& File)
+ {
+  TArray<uint8> Bytes;if(!FFileHelper::LoadFileToArray(Bytes,*File))return {};
+  FSHAHash Hash;FSHA1::HashBuffer(Bytes.GetData(),Bytes.Num(),Hash.Hash);return Hash.ToString();
+ }
+ bool SC04Same(const S47J::FObj& A,const S47J::FObj& B){return A&&B&&FJsonValue::CompareEqual(FJsonValueObject(A),FJsonValueObject(B));}
+ FString SC04Full(FString Path){Path=FPaths::ConvertRelativePathToFull(Path);FPaths::CollapseRelativeDirectories(Path);FPaths::NormalizeFilename(Path);return Path;}
+
  void SC04Text(const TSharedRef<SWidget>& Widget,TArray<FString>& Out)
  {
   if(!Widget->GetVisibility().IsVisible())return;
@@ -68,6 +79,7 @@ void FS47SC04Contract::Next(int32 Value,double Wait){Stage=Value;Hold=Wait;Mark=
 void FS47SC04Contract::Finish(bool Good,const FString& Why)
 {
  if(Done)return;Done=true;
+ if(ActualInput&&(SC04Hash(InputFile)!=InputHash||SC04Hash(InputResultFile)!=InputResultHash))Good=false;
  if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
  auto Out=S47J::New();S47J::Set(Out,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(Out,TEXT("mode"),Mode);
  S47J::Set(Out,TEXT("stage"),Stage);S47J::Set(Out,TEXT("reason"),Why);S47J::Set(Out,TEXT("checks"),Checks);
@@ -79,6 +91,15 @@ void FS47SC04Contract::Finish(bool Good,const FString& Why)
  S47J::Set(Out,TEXT("limits"),TEXT("Prior SC01-SC03/T01, return drive, and their inherited papers are explicit fixtures, not replayed. sc04 measures closed-after-plan and run-away-from-Grab negatives; sc04hide measures still/closed-door escape; sc04long measures actual west/north/east traversal. Saved hunts restart their AI locally while preserving the real saved player pose, not a half-serialized chase. Later chapter restores without routine are outside this SC04 contract and belong to the continuation contract. API input is not human input. PNG integrity/render/opaque depth flags are not visual, audio, FPS or pixel-occlusion acceptance."));
  Out->SetArrayField(TEXT("executed_checks"),Executed);Out->SetArrayField(TEXT("rays"),Rays);Out->SetArrayField(TEXT("states"),States);
  Out->SetArrayField(TEXT("restores"),Restores);Out->SetArrayField(TEXT("photos"),Photos);Out->SetArrayField(TEXT("negative_observations"),Negatives);
+ S47J::Set(Out,TEXT("source_prerequisite_fixtures"),!ActualInput);S47J::Set(Out,TEXT("actual_sc03_input"),ActualInput);
+ if(ActualInput)
+ {
+  S47J::Set(Out,TEXT("chain_id"),Chain);S47J::Set(Out,TEXT("source_sc03_checkpoint"),InputFile);S47J::Set(Out,TEXT("source_sc03_checkpoint_sha1"),InputHash);
+  S47J::Set(Out,TEXT("source_sc03_result"),InputResultFile);S47J::Set(Out,TEXT("source_sc03_result_sha1"),InputResultHash);
+  S47J::Set(Out,TEXT("source_sc03_result_raw"),InputResult);
+  S47J::Set(Out,TEXT("method"),TEXT("Actual SC03 same-night PASS/hash-bound complete disk; normal isolated case1/title/Continue, physical service-pad approach through the ordinary east door. No prior facts, clock or player placement manufactured. Subsequent ordinary Walker/camera/HUD, physical hunt, acquired originals and independent full disk/Flow/title continuation."));
+  S47J::Set(Out,TEXT("limits"),TEXT("Earlier scenario acceptance is inherited only from the exact input/result bytes. No earlier fixture is invoked here. Native opaque environment trace to actual collisionless torso bounds plus camera/current render/mainpass/depth flags is not triangle/pixel/human visual acceptance. Later SC05-SC13 remain unexecuted by this driver."));
+ }
  S47J::Set(Out,TEXT("requested_picture_paths"),Pictures);
  S47J::Set(Out,TEXT("scenario"),TEXT("SC04"));
  const FString Checkpoint=Root.IsEmpty()?FString():Root/TEXT("sc04-complete.disk.json");
@@ -188,7 +209,7 @@ bool FS47SC04Contract::Restore(const FString& Name)
  FS47SaveStore Reader(Writer.Dir);Reader.Init();const auto Disk=Reader.Load(Meta->Id);
  if(!Check(Disk&&S47J::Write(Disk)==S47J::Write(Expected),TEXT("independent fresh disk reader: ")+Name))return false;
  if(!Check(FFileHelper::SaveStringToFile(S47J::Write(Disk,true),*(Root/(Name+TEXT(".disk.json")))),TEXT("retained full raw disk record: ")+Name))return false;
- ++Stores;Pending=Name;US47Flow::FStart Start;Start.State=Disk;Start.CaseId=0;Start.bDev=true;Start.Playtime=M->Playtime;M->Flow->StartGame(Start);return true;
+ ++Stores;Pending=Name;US47Flow::FStart Start;Start.State=Disk;Start.CaseId=ActualInput?1:0;Start.bDev=!ActualInput;Start.Playtime=M->Playtime;M->Flow->StartGame(Start);return true;
 }
 bool FS47SC04Contract::Restored()
 {
@@ -217,7 +238,7 @@ bool FS47SC04Contract::BodySight(FHitResult& Hit,TArray<FString>& Ignored) const
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04ContractOpaqueBody),true);
  for(int32 I=0;I<32;++I)
  {
-  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),A->Pale.Torso->Bounds.Origin,ECC_Visibility,Q))return false;
+  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),A->Pale.Torso->Bounds.Origin,ECC_Visibility,Q))return true;
   const UPrimitiveComponent* C=Hit.GetComponent();if(!C)return false;
   if(A->Pale.Owns(C))return true;
   bool Solid=C->IsVisible()&&!C->bHiddenInGame;
@@ -227,7 +248,7 @@ bool FS47SC04Contract::BodySight(FHitResult& Hit,TArray<FString>& Ignored) const
    float Opacity=1;Mat->GetScalarParameterValue(TEXT("Opacity"),Opacity);
    if(Mat->GetBlendMode()==BLEND_Additive||(Mat->GetBlendMode()==BLEND_Translucent&&Opacity<.5f))Solid=false;
   }
-  if(Solid)return true;
+  if(Solid)return false;
   Ignored.Add(C->GetPathName());Q.AddIgnoredComponent(C);
  }
  return false;
@@ -239,7 +260,7 @@ bool FS47SC04Contract::WaitForBody(const FString& Context)
  const FVector Eye=M->Player->EyeUE(),Target=Torso->Bounds.Origin;FHitResult Hit;
  TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
  const double Dot=FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal());
- const bool Ready=A->Pale.Rendered()&&Block&&A->Pale.Owns(Hit.GetComponent())&&Dot>.995;
+ const bool Ready=A->Pale.Rendered()&&Block&&Dot>.995;
  if(Ready)return true;
  if(FPlatformTime::Seconds()-VisibilityAt>.25)
  {
@@ -263,7 +284,7 @@ bool FS47SC04Contract::RenderChecks()
  const auto* A=Act();if(!Check(A&&A->Pale.bBuilt&&A->Pale.All.Num()==10&&A->Pale.Rendered(),TEXT("actual ten-part pale body rendered from this legal player camera")))return false;
  const FVector Eye=M->Player->EyeUE(),Target=A->Pale.Torso->Bounds.Origin;FHitResult Hit;
  TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
- if(!Check(Block&&A->Pale.Owns(Hit.GetComponent())&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces body; first visible opaque hit is its native component")))return false;
+ if(!Check(Block&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces native torso bounds; no visible opaque scene surface blocks the sight line")))return false;
  TSet<FString> Meshes;TArray<TSharedPtr<FJsonValue>> Parts;
  for(const auto& Weak:A->Pale.All)
  {
@@ -281,7 +302,58 @@ bool FS47SC04Contract::RenderChecks()
  const TSet<FString> Wanted={TEXT("SM_SC02_PaleTorso"),TEXT("SM_SC02_PaleHead"),TEXT("SM_SC02_PaleUpperArm"),TEXT("SM_SC02_PaleLowerArm"),TEXT("SM_SC02_PaleThigh"),TEXT("SM_SC02_PaleShin")};
  bool Same=Meshes.Num()==Wanted.Num();for(const auto& Name:Wanted)Same&=Meshes.Contains(Name);
  if(!Check(Same,TEXT("six original SC02 meshes supply all ten visible parts")))return false;
- auto Row=S47J::New();S47J::Set(Row,TEXT("scope"),TEXT("Current torso render + mainpass/depth flags. No pixel-occlusion/visual acceptance."));Row->SetArrayField(TEXT("parts"),Parts);Negatives.Add(MakeShared<FJsonValueObject>(Row));RenderWitness=true;return true;
+ auto Row=S47J::New();S47J::Set(Row,TEXT("scope"),TEXT("Actual opaque scene trace is clear to native torso bounds; original body meshes have no physics collision. Current torso render + mainpass/depth flags. No triangle-hit, pixel-occlusion or visual acceptance."));Row->SetArrayField(TEXT("parts"),Parts);Negatives.Add(MakeShared<FJsonValueObject>(Row));RenderWitness=true;return true;
+}
+bool FS47SC04Contract::Input()
+{
+ InputFile=SC04Full(InputFile);InputResultFile=FPaths::GetPath(InputFile)/TEXT("result.json");FString Raw,ResultRaw;
+ if(!Check(FPaths::GetCleanFilename(InputFile)==TEXT("sc03-complete.disk.json")&&FFileHelper::LoadFileToString(Raw,*InputFile)&&FFileHelper::LoadFileToString(ResultRaw,*InputResultFile),TEXT("actual SC03 complete disk and sibling result readable")))return false;
+ InputState=S47J::Read(Raw);InputResult=S47J::Read(ResultRaw);InputHash=SC04Hash(InputFile);InputResultHash=SC04Hash(InputResultFile);Chain=S47J::Str(InputResult,TEXT("chain_id"));
+ const auto Pin=S47J::Obj(InputResult,TEXT("checkpoint_file")),Routine=S47J::Obj(InputState,TEXT("routine")),Spine=S47J::Obj(InputState,TEXT("spine")),Facts=S47J::Obj(Spine,TEXT("sc04d"));
+ if(!Check(InputState&&InputResult&&S47J::Str(InputResult,TEXT("status"))==TEXT("PASS")&&S47J::Str(InputResult,TEXT("scenario"))==TEXT("SC03")&&S47J::Str(InputResult,TEXT("mode"))==TEXT("night")&&!Chain.IsEmpty()
+  &&S47J::Bool(InputResult,TEXT("normal_title_continue"))&&!S47J::Bool(InputResult,TEXT("source_prerequisite_fixtures"))
+  &&Pin&&SC04Full(S47J::Str(Pin,TEXT("path")))==InputFile&&S47J::Num(Pin,TEXT("bytes"),-1)==IFileManager::Get().FileSize(*InputFile)&&S47J::Str(Pin,TEXT("sha1")).Equals(InputHash,ESearchCase::IgnoreCase),TEXT("same-night SC03 PASS binds actual checkpoint path/bytes/hash, real title continuation and chain")))return false;
+ if(!Check(S47J::Int(InputState,TEXT("timelineVersion"))==2&&S47J::Str(InputState,TEXT("checkpoint"))==TEXT("nightService")&&S47J::Str(InputState,TEXT("area"))==TEXT("saro")
+  &&(S47J::Int(Spine,TEXT("v"))==1||S47J::Int(Spine,TEXT("v"))==2)&&S47J::Int(Spine,TEXT("sc04"))==1&&Facts&&(S47J::Int(Facts,TEXT("step"))==0||S47J::Int(Facts,TEXT("step"))==1)
+  &&!S47J::Bool(Facts,TEXT("schedule"))&&!S47J::Bool(Facts,TEXT("strip"))&&!S47J::Bool(Facts,TEXT("journal"))&&!S47J::Bool(Facts,TEXT("binder"))&&!S47J::Bool(Facts,TEXT("escaped"))
+  &&Routine&&S47J::Str(Routine,TEXT("phase"))==TEXT("residual")&&S47J::Int(Routine,TEXT("rxStage"))==2&&S47J::Bool(Routine,TEXT("residualVisible"))&&S47J::Bool(Routine,TEXT("powered"))&&!S47J::Bool(Routine,TEXT("k3")),TEXT("actual returned SC03 nightService cohort has unplayed pending SC04 and passive unsolved residual")))return false;
+ bool Binder=false;
+ for(const auto& V:S47J::Arr(Routine,TEXT("docs")))if(V&&V->Type==EJson::Object)
+ {
+  const auto D=V->AsObject();const FString Id=S47J::Str(D,TEXT("id"));if(!Check(!Id.IsEmpty()&&!Documents.Contains(Id),TEXT("unique actual SC03 original: ")+Id))return false;
+  Documents.Add(Id,S47J::Write(D));Binder|=Id==TEXT("obs_runbinder")&&!S47J::Str(D,TEXT("page")).IsEmpty();
+ }
+ if(!Check(Binder,TEXT("actual20:30 run binder is already acquired by this night; never fabricated here")))return false;
+ const auto Copy=[&](const FString& From,const FString& To){TArray<uint8> Bytes;return FFileHelper::LoadFileToArray(Bytes,*From)&&FFileHelper::SaveArrayToFile(Bytes,*To)&&SC04Hash(From)==SC04Hash(To);};
+ if(!Check(Copy(InputFile,Root/TEXT("input-sc03.byteoriginal.disk.json"))&&Copy(InputResultFile,Root/TEXT("input-sc03.byteoriginal.result.json")),TEXT("retain byteidentical actual SC03 complete source/result")))return false;
+ FS47SaveCard Card;Card.Chapter=TEXT("SC03 complete actual night");Card.Place=TEXT("SARO service pad");Card.Clock=S47Text::ClockText(S47J::Num(Routine,TEXT("clock")),true);FString Error;
+ const auto Meta=M->Flow->Saves.Save(1,TEXT("manual"),0,InputState,Card,Error);FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();
+ if(!Check(Meta&&SC04Same(Reader.Load(Meta->Id),InputState),TEXT("isolated real case1 stores only actual SC03 full disk; independent reader: ")+Error))return false;
+ ++Stores;Expected=S47J::Clone(InputState);M->Flow->ToTitle();FS47SaveStore TitleReader(M->Flow->Saves.Dir);TitleReader.Init();const auto Selected=TitleReader.ContinueSave();
+ if(!Check(M->Mode==US47Main::EMode::Title&&Selected&&Selected->Id==Meta->Id&&SC04Same(TitleReader.Load(Selected->Id),InputState)&&M->Flow->OpenTestView(TEXT("continue")),TEXT("ordinary title and fresh Continue load actual SC03 state")))return false;
+ Pending=TEXT("actual-sc03-input");NormalContinue=true;return true;
+}
+bool FS47SC04Contract::Approach(const FString& Id)
+{
+ const auto* I=M->Inter->Get(Id);const auto* E=M->Web->Item(Id);const FS47Obj Object=I&&I->Object?I->Object:E?M->Web->ObjAt(E->Node):FS47Obj();
+ const FBox Bounds=Object.WorldBox();if(!Check(Object&&Bounds.IsValid,TEXT("actual original geometry for native approach: ")+Id))return false;
+ const FVector Center=Bounds.GetCenter();const FVector2D Start(M->Player->Pos.X,M->Player->Pos.Z);const double Range=I&&I->Range>0?I->Range:E&&E->Range>0?E->Range:2.4;
+ const auto Traversable=[&](const FVector2D& A,const FVector2D& B)
+ {
+  const int32 Count=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(A,B)/.04));for(int32 J=0;J<=Count;++J){const FVector2D P=FMath::Lerp(A,B,double(J)/Count);if(P.X < -13 || P.X > 13 || P.Y < -13 || P.Y > 12 || !M->Player->Walkable(P.X,P.Y))return false;}return true;
+ };
+ const TArray<FVector2D> Seeds={{9.95,4.0},{9.95,1.6},{8.7,1.6},{7.6,1.6},{6.9,1.6},{4.7,1.6},{1.2,.3},{-2.4,2.9},{-4.15,2.45}};
+ TArray<FVector2D> Best;double BestCost=1e100;
+ const auto Try=[&](const FVector2D& P)
+ {
+  if(!Traversable(P,P))return;const FVector Eye(P.X,M->Player->FloorY+M->Player->Eye,P.Y),D=Center-Eye;
+  if(D.Size()>Range-.08||M->Inter->Pick(S47Three::ToUE(Eye),S47Three::DirToUE(D.GetSafeNormal()))!=Id)return;
+  auto Found=FS47ThreatNavigation::FindPath(Start,P,Seeds,M->Web->Colliders(),M->Player->Radius,Traversable);if(Found.IsEmpty())return;
+  double Cost=0;FVector2D At=Start;for(const auto& Point:Found){Cost+=FVector2D::Distance(At,Point);At=Point;}if(Cost<BestCost){BestCost=Cost;Best=MoveTemp(Found);}
+ };
+ Try(Start);for(double Radius:{.7,1.1,1.6,2.05})for(int32 J=0;J<16;++J){const double Angle=PI*J/8.;Try({Center.X+Radius*FMath::Cos(Angle),Center.Z+Radius*FMath::Sin(Angle)});}
+ if(!Check(!Best.IsEmpty(),TEXT("complete native-collider/radius/walkable route to actual item ray: ")+Id))return false;
+ Path(MoveTemp(Best));return true;
 }
 bool FS47SC04Contract::Fixture()
 {
@@ -316,16 +388,18 @@ void FS47SC04Contract::Tick(double Dt)
  if(Done||!M||!M->Story||!M->Player||!M->World||!M->Web||!M->Inter||!M->Flow||!M->UI||!M->Spine||!M->Evening||!M->Substation)return;
  if(!Started)
  {
-  if(S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
+  FParse::Value(FCommandLine::Get(),TEXT("S47SC03Checkpoint="),InputFile);ActualInput=!InputFile.IsEmpty();
+  if(S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||(!ActualInput&&M->Mode!=US47Main::EMode::Play))return;
   Began=FPlatformTime::Seconds();FString UserDir,Jump;FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Mode);FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);
   UserDir=FPaths::ConvertRelativePathToFull(UserDir);FPaths::CollapseRelativeDirectories(UserDir);
-  if(!Check((Mode==TEXT("sc04")||Mode==TEXT("sc04hide")||Mode==TEXT("sc04long"))&&Jump==TEXT("residual")&&M->Flow->CaseId==0&&M->Flow->bDevRun
-   &&FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline"))&&(UserDir.StartsWith(TEXT("/tmp/"))||UserDir.StartsWith(TEXT("/var/tmp/")))
+  if(!Check((Mode==TEXT("sc04")||Mode==TEXT("sc04hide")||Mode==TEXT("sc04long"))&&(ActualInput?Jump.IsEmpty():Jump==TEXT("residual"))&&M->Flow->CaseId==0&&M->Flow->bDevRun
+   &&(ActualInput||FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")))&&(UserDir.StartsWith(TEXT("/tmp/"))||UserDir.StartsWith(TEXT("/var/tmp/")))
    &&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir)&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),UserDir),TEXT("isolated explicit temporary profile; Saved/Saves contained before any proof/save writes")))return;
   Root=FPaths::ProjectSavedDir()/TEXT("SC04Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits);IFileManager::Get().MakeDirectory(*Root,true);Started=true;
   for(const TCHAR* Flag:{TEXT("S47NightSequenceContract"),TEXT("S47HorrorContract"),TEXT("S47SubstationTest"),TEXT("S47SubstationTestLoad"),TEXT("S47ProductionViews"),TEXT("S47MotelV2Route"),TEXT("S47Ch4Drive"),TEXT("S47SC09Contract"),TEXT("S47RadioWomanContract")})
   {FString Value;if(FParse::Param(FCommandLine::Get(),Flag)||FParse::Value(FCommandLine::Get(),*(FString(Flag)+TEXT("=")),Value)){Finish(false,TEXT("independent runtime driver also enabled"));return;}}
-  if(!Check(M->Flow->Saves.List().IsEmpty()&&M->Spine->Enabled()&&M->Story->bEveningTimeline&&M->World->Area==TEXT("saro"),TEXT("fresh isolated residual entry is only a precursor to the named normal-night fixture")))return;
+  if(!Check(M->Flow->Saves.List().IsEmpty()&&(ActualInput||(M->Spine->Enabled()&&M->Story->bEveningTimeline&&M->World->Area==TEXT("saro"))),TEXT("fresh isolated entry; actual SC03 consumer has no chapter jump or prior-fact setup")))return;
+  if(ActualInput){if(Input())Next(601,.5);return;}
   if(!Fixture())return;Next(1,.5);return;
  }
  if(FPlatformTime::Seconds()-Began>360){Finish(false,TEXT("360s SC04 timeout"));return;}
@@ -340,9 +414,18 @@ void FS47SC04Contract::Tick(double Dt)
  {Finish(false,TEXT("unexpected actual capture outside the explicit capture cohort"));return;}
  switch(Stage)
  {
+ case 601:
+  if(!Check(M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->Horror&&M->Horror->SC03&&M->Horror->SC03->Complete()&&M->Substation->HasNormalResult()&&!M->Evening->FeederOutage(),TEXT("normal actual SC03/T01 case restored without prerequisite fixture")))return;
+  if(Approach(TEXT("doorEast")))Next(602,0);return;
+ case 602:if(Walk()){if(Face(TEXT("doorEast")))Next(603,.2);}return;
+ case 603:
+  if(!M->Web->IsDoorOpen(TEXT("doorEast"))&&!Use(TEXT("doorEast")))return;
+  if(!Check(M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("ordinary original service door admits the actual returning player")))return;
+  if(Approach(TEXT("opsTerminal")))Next(604,0);return;
+ case 604:if(Walk())Next(1,.2);return;
  case 1:
  {
-  if(!Check(A->Phase()==FS47SC04::EStep::Collect&&M->Spine->Gate(FS47Spine::SC04)==1&&M->Spine->HoldsResidual()&&M->Story->Clock()>=2*3600+55*60&&M->Flow->CheckpointName()==TEXT("nightService")&&!A->F.bEscaped,TEXT("SC03-end fixture opens actual SC04 collection at02:55 with normal nightService custody")))return;
+  if(!Check(A->Phase()==FS47SC04::EStep::Collect&&M->Spine->Gate(FS47Spine::SC04)==1&&M->Spine->HoldsResidual()&&M->Story->Clock()>=2*3600+55*60&&M->Flow->CheckpointName()==TEXT("nightService")&&!A->F.bEscaped,ActualInput?TEXT("actual SC03 cohort opens SC04 collection with normal nightService custody"):TEXT("SC03-end fixture opens actual SC04 collection at02:55 with normal nightService custody")))return;
   const int32 RxStage=M->Story->Rx.Stage;M->Story->ConsoleAction();
   if(!Check(M->Story->Rx.Stage==RxStage&&A->Label(TEXT("recPhone")).IsEmpty(),TEXT("residual console held and lure unavailable before meeting"))||!Sources(TEXT("arrival")))return;
   if(Face(TEXT("opsTerminal")))Next(2,.25);return;
@@ -524,7 +607,7 @@ void FS47SC04Contract::Tick(double Dt)
  case 85:
   for(const FString& File:Pictures){S47J::FObj Receipt;if(!SC04Png(File,Receipt)&&FPlatformTime::Seconds()-Mark<8)return;}
   for(const FString& File:Pictures){S47J::FObj Receipt;if(!Check(SC04Png(File,Receipt),TEXT("actual PNG complete CRC/IEND/EOF/SHA: ")+File))return;Photos.Add(MakeShared<FJsonValueObject>(Receipt));}
-  if(!Check(Stores==(Short?5:4)&&Restores.Num()==Stores&&RenderWitness&&NormalContinue&&Uses>=(Hide?9:10)&&Walked>(Long?85:35)&&WalkSamples>100
+  if(!Check(Stores==(Short?5:4)+(ActualInput?1:0)&&Restores.Num()==Stores&&RenderWitness&&NormalContinue&&Uses>=(Hide?9:10)&&Walked>(Long?85:35)&&WalkSamples>100
    &&Photos.Num()==(Short?6:Hide?5:4)&&(!Short||(DoorNegative&&GrabNegative))&&(!Hide||DoorNegative),TEXT("all required route/negative/body/source/disk/title/PNG steps actually executed")))return;
   Finish(true,TEXT("SC04 physical collection, live annex route/capture, source custody and ordinary disk/title continuation"));return;
  default:Finish(false,TEXT("unknown SC04 contract stage"));return;
