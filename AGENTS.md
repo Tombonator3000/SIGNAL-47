@@ -30,7 +30,7 @@ Brukeren ba 13. september om større inkrementer og subagenter. Ved videreførin
 
 Utilgjengelig skrivebord eller testutstyr blokkerer den berørte testen, ikke alt utviklingsarbeid. Bruk eksisterende Unity-/Blender-automatisering og isolerte testprofiler der dette gir nyttig bevis. Ikke omgå skjermlås eller gjenta forespørsler om en allerede kjent utilgjengelig handling. Bevar kjent fungerende standard når kandidaten mangler nødvendige tester for å bli standard.
 
-Skill konseptbilder, Blender-render, runtime-bilder, API-scenario, ekte input og ytelsesmåling. Merk PASS/FAIL/UNVERIFIED med faktisk grunnlag. Merge lukker ikke uutførte tester. En designbibel for 5–6 timer er ikke implementert eller målt spilletid. Oppdater gjeldende overlevering med resultat, bevis og nøyaktige gjenstående avhengigheter; ikke kall hele spillet ferdig fordi ett steg er ferdig.
+Under utvikling gjelder «Iterer først, test tungt mot slutten» i `unreal/AGENTS.md` (Tom 30. oktober 2026): bygg og én rask sjekk, ingen kvitteringsløyper. Ved installasjon og release: skill konseptbilder, Blender-render, runtime-bilder, API-scenario, ekte input og ytelsesmåling, og merk PASS/FAIL/UNVERIFIED med faktisk grunnlag. Merge lukker ikke uutførte tester. En designbibel for 5–6 timer er ikke implementert eller målt spilletid. Oppdater gjeldende overlevering med resultat, bevis og nøyaktige gjenstående avhengigheter; ikke kall hele spillet ferdig fordi ett steg er ferdig.
 
 ## Gjeldende dokumentasjon
 

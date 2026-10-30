@@ -65,6 +65,10 @@ public:
 	TSharedPtr<FS47SaroDark> Dark;
 	TSharedPtr<FS47ArrayBack> ArrayBack;
 	TSharedPtr<FS47DishesFollow> Follow;
+	// SC08 (S47SC08.h): the dishes' follow started without a time away, as the developer's warning does;
+	// unset ends it (they hold the place, then go home to 026). Held below its end while the meeting runs.
+	void StoryFollow(TOptional<double> WarnAt) { TestWarn = WarnAt; }
+	TOptional<double> StoryFollowAt() const { return TestWarn; }
 	TSharedPtr<FS47LineLights> LineLights;
 	TSharedPtr<FS47Reel047> Reel047;
 	TSharedPtr<FS47ReelTape> ReelTape;
