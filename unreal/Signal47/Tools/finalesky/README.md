@@ -1,6 +1,6 @@
 # SC13: kildebygg, native binding og fysisk kontrakt
 
-Status: **Under arbeid. Kun lett CPU-kildekontroll og statisk API-lesing er utført.** Ingen kommando nedenfor er et utført Blender-, motor-, import-, runtime- eller pakkebevis.
+Status: **Kilde og native består i R5 fra 7d19482b.** Faktisk Blender-lagring/gjenåpning, import65 og separat ferskleser47 består. Runtime-RHI, live shader, bilder, ytelse og kjøretur er fortsatt UNVERIFIED. Kommandoene nedenfor beskriver arbeidsflyten.
 
 Kildene er [source-contract.json](../../../ArtSource/FinaleSky/source-contract.json), [geometry.py](geometry.py) og [cloud_field.hlsl](cloud_field.hlsl). [Kildebeskrivelsen](../../../ArtSource/FinaleSky/README.md) forklarer opphav og bevaringskrav. Ingen Engine-asset eller eksisterende global sky endres.
 
@@ -52,3 +52,8 @@ Fallback uten verifisert kunst beholder original finale, men ny-rute-kontrakten 
 Kontrollert mot lokal UE5.8.4: `FbxMainImport.cpp` aksekonvertering, `FbxStaticMeshImport.cpp` UV/hjørnerekkefølge, `FStaticMeshConstAttributes`, `FStaticMeshSection`, målrettet `FStaticMeshCompilingManager::FinishCompilation`, `MaterialExpressions.cpp` SceneDepth/PixelDepth og `UMaterial::GetMaterialResource(EShaderPlatform)`. Prosjektets `Tools/motelv2/native.py` gjenbrukes bare for FBXFactory/import og rapportskriving. Materialsetterens returbool er ikke bevis i denne UE-versjonen; faktiske parent-/parameterverdier avleses.
 
 Prosjektbibliotek: UDS-metodekort og `kevinpbuckley/unreal-engine-skills` sine Niagara-sekvens/VFX-referanser, festet til bibliotekets `b22b11d0a46bac2d55eae8d3273d2ef22c08a95d`. Referansene er metodekunnskap med uavklart gjenbrukslisens og uten prosjekt-PASS; ingen kildekode eller assets er kopiert. UDS er ikke installert.
+
+
+## Faktisk kilde- og nativekontroll 30. oktober 2026
+
+Originalkilden er faktisk lagret og gjenåpnet i Blender. R5 fra7d19482b består65importkontroller og47i separatferskPID. Alle treLOD-er beholder15268/10004/7076triangler, UV/orientering/materialnavn og opprinnelig graf. Kollisjonskart og faktiske renderseksjoner er kontrollert separat etter bytekontrollert reload av kun eget lagret mesh. Sju nativefiler og verifisert binding er bevart. Tidligere readonly-, maskpinne- og NullRHI-seksjonsavslag er beholdt privat. Dette gir ingen RHI-/bilde-/GPU-/reiseaksept. Se Docs/Evidence/UnrealDeliveries/SC13_FINALE_2026-10-30.md fra reporoten og portabel nativekvittering i unreal/Evidence/SC13-2026-10-30.

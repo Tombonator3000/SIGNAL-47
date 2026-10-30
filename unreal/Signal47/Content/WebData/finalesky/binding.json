@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "status": "PASS",
+  "importPID": 3313682,
+  "freshPID": 3313943,
+  "source_manifest_sha256": "b54bf438f32057ef1e0b41a26435f10d8940157837d2d33bdfa3b6722d42ceb5",
+  "native_files_sha256": {
+    "FinaleSky/M_S47_FinalSurface.uasset": "5be1a6608b8c5e078aa14f2a52d702a482923130e3b0d55492f0deb2bd2cac7c",
+    "FinaleSky/MI_S47_FinalHull.uasset": "486933e405b823e4e5add69b747f5598b9b5799574570acbb7045d7521615b22",
+    "FinaleSky/MI_S47_FinalLight.uasset": "7da5d58428dd4207288bd8cc03ea1b75f46f7f1223129bf94d9e0a064579d755",
+    "FinaleSky/MI_S47_FinalRecess.uasset": "0a30a366f9f1692aeb970ef59b19bc4813a8061a302ff15fbeec77d28d65b3db",
+    "FinaleSky/MI_S47_FinalRibs.uasset": "519d36ba13b557be2a830b5956032d1bf1767a670a869724414541ce6bb4a088",
+    "FinaleSky/M_S47_FinalCloud.uasset": "ba88403545ef465f33e9cb2a51882303f75ff15ae26baf0268d60249bf1bd566",
+    "FinaleSky/SM_S47_FinalCraft.uasset": "c3d44f25fa61ae1bc140a3a936c7aca9fb0630f551ee4112e08c7ec289b99e65"
+  },
+  "import_report_sha256": "f62482c9a4c87b75db2ad2ca08c02eaf3d6f91019c062a6684d633514b309a57",
+  "assets": {
+    "mesh": {
+      "path": "/Game/FinaleSky/SM_S47_FinalCraft.SM_S47_FinalCraft",
+      "allowCPUAccess": true,
+      "materials": [
+        "/Game/FinaleSky/MI_S47_FinalHull.MI_S47_FinalHull",
+        "/Game/FinaleSky/MI_S47_FinalRibs.MI_S47_FinalRibs",
+        "/Game/FinaleSky/MI_S47_FinalRecess.MI_S47_FinalRecess",
+        "/Game/FinaleSky/MI_S47_FinalLight.MI_S47_FinalLight"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "vertices": 27460,
+          "texcoords": 2,
+          "triangles": 15268,
+          "packedVertexSHA1": "6be78feb9e20f0355d9d3348a71ce7af086a01bd",
+          "normalizedUint32IndexSHA1": "c06f6911a1edb6eacd73ce09845567696a32dc68",
+          "sections": [
+            {
+              "material": 0,
+              "first": 0,
+              "triangles": 4220,
+              "min": 0,
+              "max": 8063,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 1,
+              "first": 12660,
+              "triangles": 7472,
+              "min": 8064,
+              "max": 21123,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 2,
+              "first": 35076,
+              "triangles": 2684,
+              "min": 21124,
+              "max": 25923,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 3,
+              "first": 43128,
+              "triangles": 892,
+              "min": 25924,
+              "max": 27459,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            }
+          ]
+        },
+        {
+          "lod": 1,
+          "vertices": 18080,
+          "texcoords": 2,
+          "triangles": 10004,
+          "packedVertexSHA1": "f537b98cca4d0d8f27da7321b1ba68f478bd448a",
+          "normalizedUint32IndexSHA1": "b8bfb693cda6747adfc4637b6fd0cd418667b8e3",
+          "sections": [
+            {
+              "material": 0,
+              "first": 0,
+              "triangles": 2460,
+              "min": 0,
+              "max": 4703,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 1,
+              "first": 7380,
+              "triangles": 4528,
+              "min": 4704,
+              "max": 12703,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 2,
+              "first": 20964,
+              "triangles": 2364,
+              "min": 12704,
+              "max": 16943,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 3,
+              "first": 28056,
+              "triangles": 652,
+              "min": 16944,
+              "max": 18079,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            }
+          ]
+        },
+        {
+          "lod": 2,
+          "vertices": 12800,
+          "texcoords": 2,
+          "triangles": 7076,
+          "packedVertexSHA1": "d5c3820a47de8a8fe80fe7c9fe615624f1167773",
+          "normalizedUint32IndexSHA1": "473e0a19ee016fbc66a7bc4d9db1a8f378cc5515",
+          "sections": [
+            {
+              "material": 0,
+              "first": 0,
+              "triangles": 1404,
+              "min": 0,
+              "max": 2687,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 1,
+              "first": 4212,
+              "triangles": 2992,
+              "min": 2688,
+              "max": 7999,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 2,
+              "first": 13188,
+              "triangles": 2172,
+              "min": 8000,
+              "max": 11903,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            },
+            {
+              "material": 3,
+              "first": 19704,
+              "triangles": 508,
+              "min": 11904,
+              "max": 12799,
+              "collision": false,
+              "shadow": true,
+              "forceOpaque": false
+            }
+          ]
+        }
+      ],
+      "minCm": [
+        -100,
+        -100,
+        -9.700000762939453
+      ],
+      "maxCm": [
+        100,
+        100,
+        8.5
+      ]
+    },
+    "materials": [
+      {
+        "path": "/Game/FinaleSky/MI_S47_FinalHull.MI_S47_FinalHull",
+        "parent": "/Game/FinaleSky/M_S47_FinalSurface.M_S47_FinalSurface",
+        "read": true,
+        "color": [
+          0.07500000298023224,
+          0.09000000357627869,
+          0.10499999672174454,
+          1
+        ],
+        "roughness": 0.5299999713897705,
+        "metallic": 0.7799999713897705,
+        "glow": 0,
+        "shaderReady": false
+      },
+      {
+        "path": "/Game/FinaleSky/MI_S47_FinalRibs.MI_S47_FinalRibs",
+        "parent": "/Game/FinaleSky/M_S47_FinalSurface.M_S47_FinalSurface",
+        "read": true,
+        "color": [
+          0.17000000178813934,
+          0.1899999976158142,
+          0.20999999344348907,
+          1
+        ],
+        "roughness": 0.3700000047683716,
+        "metallic": 0.8500000238418579,
+        "glow": 0,
+        "shaderReady": false
+      },
+      {
+        "path": "/Game/FinaleSky/MI_S47_FinalRecess.MI_S47_FinalRecess",
+        "parent": "/Game/FinaleSky/M_S47_FinalSurface.M_S47_FinalSurface",
+        "read": true,
+        "color": [
+          0.00800000037997961,
+          0.014000000432133675,
+          0.024000000208616257,
+          1
+        ],
+        "roughness": 0.6600000262260437,
+        "metallic": 0.36000001430511475,
+        "glow": 0.02500000037252903,
+        "shaderReady": false
+      },
+      {
+        "path": "/Game/FinaleSky/MI_S47_FinalLight.MI_S47_FinalLight",
+        "parent": "/Game/FinaleSky/M_S47_FinalSurface.M_S47_FinalSurface",
+        "read": true,
+        "color": [
+          0.36000001430511475,
+          0.5199999809265137,
+          0.6299999952316284,
+          1
+        ],
+        "roughness": 0.3199999928474426,
+        "metallic": 0.07999999821186066,
+        "glow": 1.7999999523162842,
+        "shaderReady": false
+      }
+    ],
+    "cloudPath": "/Game/FinaleSky/M_S47_FinalCloud.M_S47_FinalCloud",
+    "cloudShaderReady": false,
+    "status": "MEASURED"
+  },
+  "scope": "native source/payload only; visuals/GPU/whole drive UNVERIFIED"
+}

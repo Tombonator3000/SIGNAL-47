@@ -15,3 +15,8 @@ To endelige, lokale volum har et originalt analytisk tetthetsfelt med sammenheng
 Chapter6 eier fase, pause, område og opprydding. Nye saker krever den komplette, lagrede SC12-ruten; klokkeslett alene aktiverer ikke endringen. Manglende eller avvist kunstbinding lar den opprinnelige avslutningen gå videre. Testen godtar da ikke det nye bildet som levert. EVENT 47 sekunder, uttrekk 34 sekunder og originalbildet fra 1947 er uendret.
 
 Valget av lokalt volum fremfor de foreslåtte flate flipbook-kortene skyldes den eksisterende bevegelige avslutningskameraet og kravet om faktisk dybdetildekking. Prosjektbibliotekets UDS- og UE-Niagara-referanser var metodekunnskap; UDS finnes ikke i prosjektet, og ingen kode eller assets derfra er kopiert. Kompatibilitetsgrunnlaget er prosjektets eksisterende FBX/materialløype og lokal UE5.8.4. Utseende, spillerreaksjon, pakking og 60 FPS er fortsatt UNVERIFIED.
+
+
+## Faktisk kilde- og nativekontroll 30. oktober 2026
+
+Originalkilden er faktisk lagret og gjenåpnet i Blender. R5 fra7d19482b består65importkontroller og47i separatferskPID. Alle treLOD-er beholder15268/10004/7076triangler, UV/orientering/materialnavn og opprinnelig graf. Kollisjonskart og faktiske renderseksjoner er kontrollert separat etter bytekontrollert reload av kun eget lagret mesh. Sju nativefiler og verifisert binding er bevart. Tidligere readonly-, maskpinne- og NullRHI-seksjonsavslag er beholdt privat. Dette gir ingen RHI-/bilde-/GPU-/reiseaksept. Se Docs/Evidence/UnrealDeliveries/SC13_FINALE_2026-10-30.md fra reporoten og portabel nativekvittering i unreal/Evidence/SC13-2026-10-30.

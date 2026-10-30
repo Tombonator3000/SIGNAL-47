@@ -1,0 +1,162 @@
+{
+  "status": "PASS_SOURCE_AND_NATIVE_ONLY",
+  "source_commit": "7d19482be73bca59ca9aa9e1228b9a3fedb1737b",
+  "build": {
+    "source_commit": "7d19482be73bca59ca9aa9e1228b9a3fedb1737b",
+    "freeze_sha256": "8ba11d20fdc2f1d1d9d7219dfcfbdd62e5136666e6848dd8043f4333b6e3b803",
+    "source_files": 632,
+    "module": "/home/tom/scratch-bm/wt/motel-v2-unreal/unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+    "preserved": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/integrated-native-r5/preserved-module/libUnrealEditor-Signal47.so",
+    "bytes": 19682504,
+    "sha256": "a8966806211807f3a2a56429d293f9e446667ff7c5f42e2af8757525fa3cbadb",
+    "build_log_sha256": "198dc4c8e88388f7369882fb16f58733480e70c582f9d52af28db2514b647605"
+  },
+  "runs": {
+    "editor": {
+      "returncode": 0,
+      "wall_seconds": 10.156629081000574,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null
+    },
+    "finale-source-r1": {
+      "returncode": 0,
+      "wall_seconds": 2.5380365339806303,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null
+    },
+    "finale-apply-r1": {
+      "returncode": 0,
+      "wall_seconds": 35.05719927599421,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null
+    },
+    "finale-verify-r1": {
+      "returncode": 0,
+      "wall_seconds": 38.1113774330006,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null
+    }
+  },
+  "import_checks": 65,
+  "fresh_checks": 47,
+  "independent_pids": [
+    3313682,
+    3313943
+  ],
+  "raw_import": {
+    "path": "/home/tom/scratch-bm/Signal47-sc13-finale-20261030/finale-native-r4/import-r1.json",
+    "bytes": 40834005,
+    "sha256": "f62482c9a4c87b75db2ad2ca08c02eaf3d6f91019c062a6684d633514b309a57"
+  },
+  "raw_fresh": {
+    "path": "/home/tom/scratch-bm/Signal47-sc13-finale-20261030/finale-native-r4/fresh-r1.json",
+    "bytes": 40829041,
+    "sha256": "a1080f81181f35f47666cf73ec9e2ced15e3a8e1a80da3f7597aa70fff149420"
+  },
+  "native_files_sha256": {
+    "FinaleSky/M_S47_FinalSurface.uasset": "5be1a6608b8c5e078aa14f2a52d702a482923130e3b0d55492f0deb2bd2cac7c",
+    "FinaleSky/MI_S47_FinalHull.uasset": "486933e405b823e4e5add69b747f5598b9b5799574570acbb7045d7521615b22",
+    "FinaleSky/MI_S47_FinalLight.uasset": "7da5d58428dd4207288bd8cc03ea1b75f46f7f1223129bf94d9e0a064579d755",
+    "FinaleSky/MI_S47_FinalRecess.uasset": "0a30a366f9f1692aeb970ef59b19bc4813a8061a302ff15fbeec77d28d65b3db",
+    "FinaleSky/MI_S47_FinalRibs.uasset": "519d36ba13b557be2a830b5956032d1bf1767a670a869724414541ce6bb4a088",
+    "FinaleSky/M_S47_FinalCloud.uasset": "ba88403545ef465f33e9cb2a51882303f75ff15ae26baf0268d60249bf1bd566",
+    "FinaleSky/SM_S47_FinalCraft.uasset": "c3d44f25fa61ae1bc140a3a936c7aca9fb0630f551ee4112e08c7ec289b99e65"
+  },
+  "binding_sha256": "4b782219ca28d1a79c336050562fd8cc4f3d2cbd675d22a264c878b7f283f309",
+  "source_files": [
+    {
+      "path": "unreal/ArtSource/FinaleSky/VerifiedSource/FinaleSky.blend",
+      "bytes": 1219767,
+      "sha256": "31ddecb9c0c8cd37200643f78e38ba39ca7ead574ee1261249ba389454f3c16c"
+    },
+    {
+      "path": "unreal/ArtSource/FinaleSky/VerifiedSource/reopened-native-reference.json.gz",
+      "bytes": 689784,
+      "sha256": "b0c15349dd7454f29c42bd3bdb71620bedadba70fcbbbfe99606163b8d87e4a5"
+    },
+    {
+      "path": "unreal/ArtSource/FinaleSky/VerifiedSource/manifest.json",
+      "bytes": 4747,
+      "sha256": "b54bf438f32057ef1e0b41a26435f10d8940157837d2d33bdfa3b6722d42ceb5"
+    },
+    {
+      "path": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft.fbx",
+      "bytes": 581500,
+      "sha256": "e4ffab61c61c7d5c422c24a2a5fdda08c70bb56f01758aa49998662144980c64"
+    },
+    {
+      "path": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft_LOD1.fbx",
+      "bytes": 386396,
+      "sha256": "1623ba4c6fc4534aed7239c84414f9df6cd43c5c5848153ec78f1341cc8d45c8"
+    },
+    {
+      "path": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft_LOD2.fbx",
+      "bytes": 276460,
+      "sha256": "6e33c588e726175a017bc35d4c8abd581cde2bf31a7e740c6f358d28da40fe3b"
+    }
+  ],
+  "lods": [
+    {
+      "fbx": "exports/SM_S47_FinalCraft.fbx",
+      "fbx_sha256": "e4ffab61c61c7d5c422c24a2a5fdda08c70bb56f01758aa49998662144980c64",
+      "mesh_sha256": "19ea6922d4dc2f65c3a886cbff4bc9cf4fe9cf15d9aeb23b5a2074fad1015bb2",
+      "minimum_signed_volume_m3": 1.9719486462301486e-07,
+      "name": "SM_S47_FinalCraft",
+      "slots": [
+        "M_S47_FinalHull",
+        "M_S47_FinalRibs",
+        "M_S47_FinalRecess",
+        "M_S47_FinalLight"
+      ],
+      "solids": 167,
+      "triangles": 15268,
+      "vertices": 28288
+    },
+    {
+      "fbx": "exports/SM_S47_FinalCraft_LOD1.fbx",
+      "fbx_sha256": "1623ba4c6fc4534aed7239c84414f9df6cd43c5c5848153ec78f1341cc8d45c8",
+      "mesh_sha256": "4bcc2ae082e9ed98580f6813b2c232928b673b622706c330d9e7b6725791a311",
+      "minimum_signed_volume_m3": 1.9719486462301486e-07,
+      "name": "SM_S47_FinalCraft_LOD1",
+      "slots": [
+        "M_S47_FinalHull",
+        "M_S47_FinalRibs",
+        "M_S47_FinalRecess",
+        "M_S47_FinalLight"
+      ],
+      "solids": 167,
+      "triangles": 10004,
+      "vertices": 18720
+    },
+    {
+      "fbx": "exports/SM_S47_FinalCraft_LOD2.fbx",
+      "fbx_sha256": "6e33c588e726175a017bc35d4c8abd581cde2bf31a7e740c6f358d28da40fe3b",
+      "mesh_sha256": "d139d0c291ca6dd022dc4755d3a1aa1d9f9a7fd0a2b5f604aa25015456dd2939",
+      "minimum_signed_volume_m3": 1.9719486462301486e-07,
+      "name": "SM_S47_FinalCraft_LOD2",
+      "slots": [
+        "M_S47_FinalHull",
+        "M_S47_FinalRibs",
+        "M_S47_FinalRecess",
+        "M_S47_FinalLight"
+      ],
+      "solids": 167,
+      "triangles": 7076,
+      "vertices": 13440
+    }
+  ],
+  "limits": [
+    "Actual Blender save/reopen and source/saved/render/material graph parity only.",
+    "NullRHI SectionInfoMap and actual render flags both checked after own saved-package reload; independent fresh PID repeats strict gates.",
+    "No RHI cloud/ship image, live shader, GPU/FPS, full drive, human input, package, installation or release acceptance.",
+    "Prior failed native attempts and all written bytes retained privately."
+  ]
+}
