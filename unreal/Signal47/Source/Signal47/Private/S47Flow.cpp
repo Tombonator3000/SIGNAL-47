@@ -2,6 +2,12 @@
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
+#include "SS47Dev.h"
+#include "S47DevEvents.h"
+#include "Misc/App.h"
+#include "HAL/PlatformProcess.h"
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
@@ -353,6 +359,9 @@ void US47Flow::Init(US47Main* InM)
 	// key, registered before this one)
 	auto Pause = [this] { if (M->Mode != EMode::Play) return false; OpenPause(); return true; };
 	M->OnAction(TEXT("pause"), Pause);
+	// F9: keep a developer start point here (the title's Developer lists them)
+	M->OnAction(TEXT("devevents"), [this] { if (M->Mode != EMode::Play || !M->DevEvents) return false; M->DevEvents->Open(); return true; });
+	M->OnAction(TEXT("devstart"), [this] { if (M->Mode != EMode::Play) return false; DevSave(); return true; });
 	// V: the last description read again (ui.readLastDescription), not in a cinematic
 	M->OnAction(TEXT("describe"), [this]
 	{
@@ -404,7 +413,7 @@ void US47Flow::Boot()
 		if (M->Anomaly) M->Anomaly->Data = FS47AnomalyData();
 		if (M->Night) M->Night->Restore(S47J::FObj());
 		FString Jump;
-		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine)) M->Spine->Begin(nullptr,true); }
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump)) { M->Story->bEveningTimeline=FParse::Param(FCommandLine::Get(),TEXT("S47EveningTimeline")); M->Story->bOpeningHeld=false; M->Story->Jump(Jump); FString Spine; if (M->Spine && (FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Spine) || FParse::Value(FCommandLine::Get(),TEXT("S47SpineStart="),Spine))) { M->Spine->Begin(nullptr,true); if (Spine==TEXT("SC04")) M->Spine->TestOpenSC04(); } }
 		else if (FParse::Param(FCommandLine::Get(), TEXT("S47Evening")) || FParse::Value(FCommandLine::Get(), TEXT("S47Evening="), Jump) || FParse::Value(FCommandLine::Get(), TEXT("S47EveningRoute="), Jump))
 		{
 		 M->Story->bEveningTimeline=true; M->Story->Reset(); M->Evening->Begin();
@@ -434,6 +443,7 @@ void US47Flow::Boot()
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -540,6 +550,7 @@ void US47Flow::ShowTitle()
 	// Continue's line: the case, the chapter, the night's clock and the place ("CASE 1 · CHAPTER TWO · 03:12 · CONTROL ROOM")
 	O.Cont = Cont ? FString::Printf(TEXT("CASE %d \u00B7 %s \u00B7 %s \u00B7 %s"), Cont->CaseId, *S47Theme::ChapterLine(Cont->Chapter).Key, *Cont->Clock, *Cont->Place.ToUpper()) : FString();
 	// Quit: the desktop's way out
+	O.OnDev = [this] { OpenDev(); };
 	O.OnQuit = [this] { UKismetSystemLibrary::QuitGame(M->Hud, M->Hud ? M->Hud->GetOwningPlayerController() : nullptr, EQuitPreference::Quit, false); };
 	FString Version;
 	if (!GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni)) GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GEngineIni);
@@ -580,6 +591,9 @@ void US47Flow::ShowTitle()
 	TitleEl = M->UI->Title(O);
 	TitleView(true);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: title shown%s, %d saves"), bGate ? TEXT(" (gated)") : TEXT(""), Saves.List().Num());
+	// the developer screen straight away, for its screenshot (Scripts/screenshots.sh dev)
+	static bool bDevShown = false;
+	if (!bDevShown && FParse::Param(FCommandLine::Get(), TEXT("S47DevScreen"))) { bDevShown = true; OpenDev(); }
 }
 
 void US47Flow::ShowTitleAgain()
@@ -622,6 +636,7 @@ void US47Flow::StartGame(const FStart& O)
 	bStarting = true;
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
@@ -808,6 +823,7 @@ void US47Flow::LeavePlay()
 	if (M->TownLayer) M->TownLayer->Leave(false);
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -839,6 +855,7 @@ void US47Flow::ToTitle()
 	if (M->TownLayer) M->TownLayer->Leave(true);
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -1775,4 +1792,87 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	Check(TEXT("heard boy and old reel prevent a repeat after restore"), Main->Radio->bBoyCalled && !Main->Radio->Receivers.Num());
 	Main->TripRadio.Reset(); Main->Radio.Reset();
 	return bOk;
+}
+
+// ---------- the developer screen ----------
+
+FString US47Flow::DevDir() { return FPaths::ProjectSavedDir() / TEXT("DevStarts"); }
+
+void US47Flow::DevRelaunch(const FString& Args)
+{
+	// A fresh process with the same flags the contracts use, in the developer case (never saved).
+	// Packaged: the binary with the project name, as Signal47.sh starts it; in the editor: -game.
+	const FString Exe = FPlatformProcess::ExecutablePath();
+	FString Lead = FApp::GetProjectName();
+	if (GIsEditor || FPaths::GetCleanFilename(Exe).StartsWith(TEXT("UnrealEditor"))) Lead = FString::Printf(TEXT("\"%s\" -game"), *FPaths::ConvertRelativePathToFull(FPaths::GetProjectFilePath()));
+	FString Keep, UserDir;
+	if (FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir)) Keep = FString::Printf(TEXT(" -UserDir=\"%s\""), *UserDir);
+	const FString Line = FString::Printf(TEXT("%s -S47Case=0 %s%s"), *Lead, *Args, *Keep);
+	UE_LOG(LogS47Flow, Display, TEXT("S47: developer start: %s %s"), *Exe, *Line);
+	FProcHandle P = FPlatformProcess::CreateProc(*Exe, *Line, true, false, false, nullptr, 0, nullptr, nullptr);
+	if (!P.IsValid()) { M->UI->Toast(TEXT("The developer start could not launch a new game process."), 5); return; }
+	FPlatformProcess::CloseProc(P);
+	UKismetSystemLibrary::QuitGame(M->Hud, M->Hud ? M->Hud->GetOwningPlayerController() : nullptr, EQuitPreference::Quit, false);
+}
+
+void US47Flow::DevSave()
+{
+	if (M->Mode != EMode::Play || bStarting) return;
+	const S47J::FObj State = GameState();
+	if (!State.IsValid()) { M->UI->Toast(TEXT("No start point: the night has no state to keep yet."), 3); return; }
+	const FString Area = M->World ? M->World->Area : FString(TEXT("night"));
+	const FString Name = FString::Printf(TEXT("%s %s %s %s"), *FDateTime::Now().ToString(TEXT("%Y-%m-%d %H%M%S")),
+		*M->Story->ClockText(false).Replace(TEXT(":"), TEXT("")), *M->Story->ChapterKey, *Area);
+	const FString File = DevDir() / (Name.TrimStartAndEnd() + TEXT(".json"));
+	if (!FFileHelper::SaveStringToFile(S47J::Write(State, true), *File)) { M->UI->Toast(TEXT("The start point could not be written."), 4); return; }
+	UE_LOG(LogS47Flow, Display, TEXT("S47: developer start point saved %s"), *File);
+	M->UI->Toast(FString::Printf(TEXT("Developer start point kept: %s, %s. Title > Developer lists it."), *M->Story->ClockText(false), *Area), 4);
+}
+
+void US47Flow::OpenDev()
+{
+	if (bStarting || M->UI->Modal()) return;
+	TArray<FS47DevEntry> E;
+	const auto Add = [this, &E](const TCHAR* Group, const TCHAR* Label, const TCHAR* Note, const FString& Args)
+	{ E.Add({ Group, Label, Note, [this, Args] { DevRelaunch(Args); } }); };
+	const FString Night = TEXT("-S47EveningTimeline -S47SpineStart=on -S47Jump=");
+	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("The drive to SARO"), TEXT("18:00 on the road"), TEXT("-S47Evening=commute"));
+	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("Mesa Diner supper"), TEXT("on the way"), TEXT("-S47Evening=diner"));
+	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("SARO parking lot"), TEXT("arrived"), TEXT("-S47Evening=parking"));
+	Add(TEXT("Evening, 18:00 to 24:00"), TEXT("Dale's handover call"), TEXT("18:00, control room"), TEXT("-S47Evening=phone"));
+	Add(TEXT("Night, act one"), TEXT("SC04 Secure the originals"), TEXT("02:55, SARO"), TEXT("-S47EveningTimeline -S47SpineStart=SC04 -S47Jump=residual"));
+	Add(TEXT("Night, act one"), TEXT("SC05 The residual on the console"), TEXT("console"), TEXT("-S47EveningTimeline -S47Jump=residual"));
+	Add(TEXT("Night, act one"), TEXT("SC05 The direction solved"), TEXT("printout"), TEXT("-S47EveningTimeline -S47Jump=printed"));
+	Add(TEXT("Night, act one"), TEXT("SC05 The 47 seconds"), TEXT("after the call"), TEXT("-S47EveningTimeline -S47Jump=countdown"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC06 Chapter one"), TEXT("B-12, the second exposure"), Night + TEXT("chapter1"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC07 Chapter two, then SC08"), TEXT("records, then the placeholder"), Night + TEXT("chapter2"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC09 Chapter three"), TEXT("STATION 01"), Night + TEXT("chapter3"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC10 Chapter four, then SC11"), TEXT("Room 6, then the placeholder"), Night + TEXT("chapter4"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC12 Chapter five"), TEXT("Mesa Diner"), Night + TEXT("chapter5"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC13 Chapter six"), TEXT("the road north"), Night + TEXT("chapter6"));
+	Add(TEXT("Night, acts two to four"), TEXT("SC13 The last mile"), TEXT("near C 8.15"), Night + TEXT("chapter6:lastmile"));
+	Add(TEXT("Night, acts two to four"), TEXT("The event"), TEXT("05:29"), TEXT("-S47EveningTimeline -S47Jump=event"));
+	// F9's own start points, newest first: loaded in this process into the developer case.
+	TArray<FString> Files;
+	IFileManager::Get().FindFiles(Files, *(DevDir() / TEXT("*.json")), true, false);
+	Files.Sort([](const FString& A, const FString& B) { return A > B; });
+	for (int32 i = 0; i < Files.Num() && i < 24; ++i)
+	{
+		const FString Path = DevDir() / Files[i];
+		E.Add({ TEXT("Your start points (F9)"), FPaths::GetBaseFilename(Files[i]), TEXT("load"), [this, Path]
+		{
+			FString Text;
+			const S47J::FObj State = FFileHelper::LoadFileToString(Text, *Path) ? S47J::Read(Text) : S47J::FObj();
+			M->UI->Close(true);
+			if (!State.IsValid()) { M->UI->Toast(TEXT("That start point could not be read."), 4); return; }
+			M->UI->RemoveScreen(TitleEl); TitleEl.Reset();
+			FStart S; S.CaseId = 0; S.bDev = true; S.State = State;
+			StartGame(S);
+		} });
+	}
+	if (Files.IsEmpty()) E.Add({ TEXT("Your start points (F9)"), TEXT("None yet"), TEXT("F9 in a night"), [] {} });
+	TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).OnBack([this] { M->UI->Close(true); });
+	M->UI->Open(El, [this] { if (M->Mode == EMode::Title) ShowTitleAgain(); });
+	FSlateApplication::Get().SetKeyboardFocus(El);
+	UE_LOG(LogS47Flow, Display, TEXT("S47: developer screen with %d entries, %d start points"), E.Num(), Files.Num());
 }

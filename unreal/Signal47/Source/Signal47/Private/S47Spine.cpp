@@ -1,4 +1,5 @@
 #include "S47Spine.h"
+#include "S47SC04Contract.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -87,6 +88,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
  bEnabled = bTestSC03 = false; for (int32& S : State) S = 0;
+ Act04.Begin(nullptr);
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -94,6 +96,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
   State[SC04] = FMath::Clamp(S47J::Int(Saved, TEXT("sc04")), 0, 2);
   State[SC08] = FMath::Clamp(S47J::Int(Saved, TEXT("sc08")), 0, 2);
   State[SC11] = FMath::Clamp(S47J::Int(Saved, TEXT("sc11")), 0, 2);
+  Act04.Begin(S47J::Obj(Saved, TEXT("sc04d")));
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
@@ -101,6 +104,7 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
 
 void FS47Spine::Stop()
 {
+ Act04.Stop();
  for (auto& P : Posts) if (P.IsValid()) P->SetVisibility(false);
  for (auto& S : Signs) if (S.IsValid()) S->SetVisibility(false);
 }
@@ -110,6 +114,7 @@ S47J::FObj FS47Spine::Save() const
  if (!bEnabled) return nullptr;
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version);
  S47J::Set(O, TEXT("sc04"), State[SC04]); S47J::Set(O, TEXT("sc08"), State[SC08]); S47J::Set(O, TEXT("sc11"), State[SC11]);
+ if (State[SC04] >= 1) S47J::Set(O, TEXT("sc04d"), Act04.Save());
  return O;
 }
 
@@ -154,6 +159,7 @@ int32 FS47Spine::Current() const
 
 FString FS47Spine::Label(const FString& Id) const
 {
+ if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Label(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G))) return State[G] == 1 ? FString::Printf(TEXT("%s placeholder: read the card"), Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10].Id) : FString();
  return FString();
@@ -161,6 +167,7 @@ FString FS47Spine::Label(const FString& Id) const
 
 bool FS47Spine::Use(const FString& Id)
 {
+ if (bEnabled && State[SC04] == 1 && Id != GateItem(SC04)) return Act04.Use(Id);
  for (int32 G = 0; G < GateCount; ++G)
   if (Id == GateItem(EGate(G)) && State[G] == 1) { Finish(EGate(G)); return true; }
  return false;
@@ -189,7 +196,7 @@ FString FS47Spine::Objective() const
 {
  switch (Pending())
  {
- case SC04: return TEXT("SARO // SC04 PLACEHOLDER: SECURE THE ORIGINALS. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
+ case SC04: return Act04.Objective();
  case SC08: return TEXT("ARRAY GATE // SC08 PLACEHOLDER: THEY POINT AT YOU. READ THE YELLOW PLACEHOLDER POST INSIDE THE ARRAY GATE");
  case SC11: return TEXT("SARO // SC11 PLACEHOLDER: SARO IS SEARCHED. READ THE YELLOW PLACEHOLDER POST IN THE CONTROL ROOM");
  default: return FString();
@@ -201,7 +208,8 @@ TArray<FS47Task> FS47Spine::Tasks() const
  TArray<FS47Task> Out;
  const EGate G = Pending();
  if (G == GateCount) return Out;
- const FScenario& Sc = Scenarios()[G == SC04 ? 3 : G == SC08 ? 7 : 10];
+ if (G == SC04) return Act04.Tasks();
+ const FScenario& Sc = Scenarios()[G == SC08 ? 7 : 10];
  Out.Add({ FString::Printf(TEXT("%s %s (%s) - placeholder"), Sc.Id, Sc.Title, Sc.Window), false });
  Out.Add({ FString::Printf(TEXT("Read the marked card: %s"), Sc.Place), false });
  return Out;
@@ -258,7 +266,7 @@ void FS47Spine::ShowPosts()
 {
  for (int32 G = 0; G < Posts.Num() && G < GateCount; ++G)
  {
-  const bool bShow = bEnabled && State[G] == 1;
+  const bool bShow = bEnabled && State[G] == 1 && G != SC04;
   if (Posts[G].IsValid()) Posts[G]->SetVisibility(bShow);
   if (Signs.IsValidIndex(G) && Signs[G].IsValid()) Signs[G]->SetVisibility(bShow);
   if (Posts[G].IsValid()) Posts[G]->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
@@ -273,8 +281,15 @@ void FS47Spine::Step(double Dt)
  if (State[SC04] == 0 && (bTestSC03 || (M->Horror && M->Horror->SC03 && M->Horror->SC03->Complete())))
  {
   State[SC04] = 1;
-  UE_LOG(LogTemp, Display, TEXT("S47: spine opens SC04 placeholder after SC03"));
+  UE_LOG(LogTemp, Display, TEXT("S47: spine opens SC04 after SC03"));
   if (M->UI) M->UI->Toast(TEXT("Next: get back to SARO. The deputy needs the receiver log for the missing-person report."), 5);
+  M->RequestAutosave(false);
+ }
+ if (State[SC04] == 1 && Act04.Step(Dt))
+ {
+  State[SC04] = 2;
+  M->Story->SetClock(FMath::Max(M->Story->Clock(), GateDone(SC04)));
+  UE_LOG(LogTemp, Display, TEXT("S47: spine SC04 done at clock %.0f"), M->Story->Clock());
   M->RequestAutosave(false);
  }
  ShowPosts();
@@ -298,6 +313,7 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
 void FS47Spine::ControlTest(double Dt)
 {
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
+ if (Test.Mode == TEXT("sc04") || Test.Mode == TEXT("sc04hide") || Test.Mode == TEXT("sc04long")) { FS47SC04Contract::Step(M, Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
@@ -359,19 +375,19 @@ void FS47Spine::ControlTest(double Dt)
  }
  if (Test.Stage == 1)
  {
-  if (!Check(Gate(SC04) == 1 && HoldsResidual() && Pending() == SC04 && Tasks().Num() == 2 && Posts.IsValidIndex(SC04) && Posts[SC04].IsValid() && Posts[SC04]->IsVisible(),
-   TEXT("SC03's end opens the SC04 placeholder: post shown, tasks, residual console held"))) return;
+  if (!Check(Gate(SC04) == 1 && HoldsResidual() && Pending() == SC04 && Act04.Phase() == FS47SC04::EStep::Collect && Tasks().Num() == 5 && !(Posts.IsValidIndex(SC04) && Posts[SC04].IsValid() && Posts[SC04]->IsVisible()),
+   TEXT("SC03's end opens the built SC04 at SARO: no placeholder post, five tasks, residual console held"))) return;
   const double Before = M->Story->Clock(); const int32 Stage = M->Story->Rx.Stage;
   M->Story->ConsoleAction();
   if (!Check(M->Story->Rx.Stage == Stage && M->Story->Clock() == Before, TEXT("the console refuses residual work while SC04 holds"))) return;
   if (!Check(RoundTrip(SC04, 1), TEXT("saved spine reloads with SC04 pending"))) return;
-  Stand(SC04); Next(5); return;
+  // SC04 has its own contract (-S47SpineContract=sc04); here it is counted done by fixture.
+  UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: SC04 counted done without playing it"));
+  Act04.TestComplete(); Next(5); return;
  }
  if (Test.Stage == 5)
  {
-  if (!Read(SC04)) return;
-  if (!Check(Gate(SC04) == 2 && !HoldsResidual() && M->Story->Clock() >= GateDone(SC04) && M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("spine_sc04"); }) && !Posts[SC04]->IsVisible(),
-   TEXT("reading the SC04 card files it, jumps to 03:15 and releases the console"))) return;
+  if (!Check(Gate(SC04) == 2 && !HoldsResidual() && M->Story->Clock() >= GateDone(SC04), TEXT("SC04 done jumps to 03:15 and releases the console"))) return;
   Next(2); return;
  }
  if (Test.Stage == 2)

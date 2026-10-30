@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47SC04.h"
 class US47Main;
 class UStaticMeshComponent;
 class UTextRenderComponent;
@@ -26,7 +27,9 @@ public:
  static FVector StandPoint(EGate G);
  static const TCHAR* GateItem(EGate G);
 
- explicit FS47Spine(US47Main* InM) : M(InM) {}
+ explicit FS47Spine(US47Main* InM) : M(InM), Act04(InM) {}
+ // SC04 is built (S47SC04.h); its gate is held while it runs instead of a placeholder card.
+ const FS47SC04& Secure() const { return Act04; }
  void Begin(const S47J::FObj& Saved, bool bNewCase);
  void Stop();
  void Step(double Dt);
@@ -61,7 +64,8 @@ private:
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Posts;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Signs;
  bool bBuilt = false;
- struct FTest { FString Mode; int32 Stage = 0, Checks = 0; double T = 0, Since = 0; bool bDone = false, bInit = false; };
+ FS47SC04 Act04;
+ struct FTest { FString Mode; int32 Stage = 0, Checks = 0, Item = 0, Cand = 0, Hop = 0; double T = 0, Since = 0, Mark = 0, ClockMark = 0; bool bDone = false, bInit = false; TArray<FVector2D> Route; FString Miss; };
  FTest Test;
  void Build();
  void ShowPosts();

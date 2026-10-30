@@ -30,21 +30,28 @@ struct FS47SkyVisitorState
 
 class FS47SkyVisitors
 {
+ friend class FS47DevEvents;
 public:
  explicit FS47SkyVisitors(US47Main* InM);
  ~FS47SkyVisitors();
  void Begin(const S47J::FObj& Saved = nullptr, bool bNewNight = false);
  void Step(double Dt);
- S47J::FObj Save() const { return State.Save(); }
+ S47J::FObj Save() const { return bDevOverride ? BeforeDev.Save() : State.Save(); }
  const FS47SkyVisitorState& Data() const { return State; }
  static FVector WorldPosition(const FVector& MapPoint, const FString& Area);
  // Export meshes use a dedicated visibility trace. Transparent glass and hidden
  // area copies do not conceal a light; an opaque roof, wall or mesa does.
  bool ClearLine(const FVector& Eye, const FVector& At) const;
  static bool SelfTest(TArray<FString>& Lines);
+ // Developer events (S47DevEvents.h): show a stage now as -S47SkyVisit=N does; 0 returns to the schedule.
+ void DevStage(int32 Stage);
+ bool DevActive() const { return bDevOverride; }
 private:
  US47Main* M = nullptr;
  FS47SkyVisitorState State;
+ FS47SkyVisitorState BeforeDev;
+ bool bDevOverride = false;
+ int32 BeforeDevTestStage = 0;
  TArray<TWeakObjectPtr<UMaterialBillboardComponent>> Points;
  bool bBuilt = false;
  double ObservationStep = 0;

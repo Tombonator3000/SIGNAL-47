@@ -65,6 +65,11 @@ public:
 	// ---------- the flow ----------
 	void ShowTitle();
 	void ShowTitleAgain();
+	// The developer screen (SS47Dev.h): start points by relaunching with the test flags, and F9's own.
+	void OpenDev();
+	void DevRelaunch(const FString& Args);
+	void DevSave();
+	static FString DevDir();
 	void RequestNewNight(int32 InCaseId, bool bReplace = false);
 	void OpenSave(const FS47SaveMeta& Meta);
 	struct FStart { int32 CaseId = 0; double Playtime = 0; S47J::FObj State; FString Jump; bool bDev = false; bool bReplaceCase = false; };

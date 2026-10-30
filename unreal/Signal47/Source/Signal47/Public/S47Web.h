@@ -65,8 +65,10 @@ UCLASS()
 class SIGNAL47_API AS47Web : public AActor
 {
 	GENERATED_BODY()
+ friend class FS47DevEvents;
 
 public:
+	void RefreshFog() { UpdateNativeFog(); } // the fog again now (a developer event changed it)
 	AS47Web();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -535,11 +537,12 @@ private:
 	void ApplyHemi();
 
 	// doors
-	struct FDoor { FString Id, Inter, Name, Area, Sound; double Range = 2.4; bool bOpen = false; double K = 0, From = 0, T0 = -1; TArray<int32> MovedNodes; TArray<TArray<double>> Shut, Open; TArray<int32> Zones; TOptional<FS47Rect> Leaf; int32 Proxy = -1; };
+	struct FDoor { FString Id, Inter, Name, Area, Sound; double Range = 2.4; bool bOpen = false; double K = 0, From = 0, T0 = -1; TArray<int32> MovedNodes; TArray<TArray<double>> Shut, Open; TArray<int32> Zones; TOptional<FS47Rect> Leaf; int32 Proxy = -1; TWeakObjectPtr<class UBoxComponent> Doorway; };
 	TArray<FDoor> Doors;
 	double DoorT = 0;
 	void ApplyDoor(FDoor& D, double K);
 	void SetDoor(FDoor& D, bool bOpen, bool bInstant);
+	void DoorwayPick(FDoor& D);
 	FDoor* DoorByItem(const FString& ItemId);
 	const FDoor* DoorByItem(const FString& ItemId) const;
 
