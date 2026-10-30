@@ -89,7 +89,7 @@ S47J::FObj FS47FinaleSky::InspectAssets()
 {
  auto O=S47J::New();UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,CraftPath);auto Audit=MeshAudit(Mesh);S47J::Set(O,TEXT("mesh"),Audit);
  UMaterialInterface* Cloud=LoadObject<UMaterialInterface>(nullptr,CloudPath);
- bool Good=Mesh&&Mesh->bAllowCPUAccess&&S47J::Arr(Audit,TEXT("lods")).Num()==3&&Mesh->GetStaticMaterials().Num()==4&&Cloud&&Cloud->GetMaterial()&&Cloud->GetBlendMode()==BLEND_Translucent&&Cloud->GetMaterial()->GetMaterialDomain()==MD_Surface;
+ bool Good=Mesh&&Mesh->bAllowCPUAccess&&S47J::Arr(Audit,TEXT("lods")).Num()==3&&Mesh->GetStaticMaterials().Num()==4&&Cloud&&Cloud->GetMaterial()&&Cloud->GetBlendMode()==BLEND_Translucent&&Cloud->GetMaterial()->MaterialDomain==MD_Surface;
  TArray<TSharedPtr<FJsonValue>> Mats;
  for(const auto* N:MatNames)
  {
