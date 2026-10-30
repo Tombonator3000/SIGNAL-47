@@ -14,6 +14,7 @@
 class SS47Ending;
 class FS47ThirdFigure;
 class UTexture2D;
+class USceneComponent;
 
 // story/Chapter6.ts: "Roswell Road". Nothing here is saved: Continue returns to the diner.
 UCLASS()
@@ -85,6 +86,9 @@ private:
 	bool bThirdShown = false;
 	FString JumpAt;
 	bool bJumpPlaced = false;
+	UPROPERTY() TArray<TObjectPtr<USceneComponent>> CourierSign;
+	void BuildCourierSign();
+	void DropCourierSign();
 	double TestClock = 0; // a hostless chapter for the self test
 	double Clock() const;
 	void SetClock(double C);

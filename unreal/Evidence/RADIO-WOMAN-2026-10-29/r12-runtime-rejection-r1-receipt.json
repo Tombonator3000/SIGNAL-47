@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "status": "R12_RUNTIME_REJECTED_AT_CONTINUOUS_WALKER_APPROACH",
+  "recorded_at": "2026-10-29T23:40:10+01:00",
+  "source_commit": "935658a249369fdfebf9a6045ba273229743eeaa",
+  "actual_processes": {
+    "r12-integrated-editor-r1": {
+      "returncode": 0,
+      "semantic_success": true,
+      "wall_seconds": 208.60823617799906,
+      "contention": [],
+      "stop_reason": null,
+      "expected_found": true,
+      "forbidden_found": [],
+      "performance_status": "UNCONTENDED",
+      "guard": {
+        "file": "r12-integrated-editor-r1.result.json",
+        "bytes": 3658,
+        "sha256": "7c319bc1e16f90c641a91b50a70ceb7b078064e273f38db804f180a89f7736a8"
+      }
+    },
+    "r12-integrated-conversation-r1": {
+      "returncode": 1,
+      "semantic_success": false,
+      "wall_seconds": 60.145317405986134,
+      "contention": [],
+      "stop_reason": null,
+      "expected_found": false,
+      "forbidden_found": [
+        "RadioWomanConversation FAIL"
+      ],
+      "performance_status": "UNCONTENDED",
+      "guard": {
+        "file": "r12-integrated-conversation-r1.result.json",
+        "bytes": 3697,
+        "sha256": "9c537275921ea8a0ce6b45b5f7031a295e95b8bcca14866a4f62e1a53896185c"
+      }
+    }
+  },
+  "selftests": 1723,
+  "conversation": {
+    "status": "FAIL",
+    "checks": 20,
+    "stage": 2,
+    "reason": "nonphysical Walker discontinuity; no placement recovery",
+    "raw_result": {
+      "file": "result.json",
+      "bytes": 7556693,
+      "sha256": "a80cbb1ddf6f9adb6336e43732d8e901d6de58a60566f65833624616d3fefd9e"
+    }
+  },
+  "journey_executed": false,
+  "off_executed": false,
+  "sitting_appearance_accepted": false,
+  "contact_accepted": false,
+  "runtime_accepted": false,
+  "cooked_accepted": false,
+  "installed": false,
+  "stopped_for": "Toms nye SC09-SC13-prioritet i HANDOFF 29.10 ca23:15; ingen nye HUM-serier."
+}

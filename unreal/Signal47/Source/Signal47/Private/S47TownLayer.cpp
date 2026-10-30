@@ -230,12 +230,14 @@ void US47TownLayer::MorningStep(double Dt, bool bModal)
 }
 void US47TownLayer::WorldStep(double Dt)
 {
+	bool bRadioWomanTownUpdated = false;
 	const FString A = Area(); const auto Cam = Camera();
 	if (A == TEXT("diner") || A == TEXT("road") || A == TEXT("roswell"))
 	{
 		Diner->Update(Dt, M->T); const auto P = M->Player->Pos; bool bHold = false;
 		if (A == TEXT("diner") && !Town->InTown(P.X, P.Z) && !M->World->Indoors(P)) for (const auto& Stop : S47RoadTerrain::ROAD_STOPS()) if (FString(Stop.Name) == TEXT("The highway north of Caliche") && P.X - 8000 >= Stop.MinX && P.X - 8000 <= Stop.MaxX && P.Z >= Stop.MinZ && P.Z <= Stop.MaxZ) bHold = true;
 		Town->Update(M->T, Clock(), bHold);
+		bRadioWomanTownUpdated = true;
 	}
 	const FString HArea = A == TEXT("saro") ? TEXT("saro") : A == TEXT("road") || A == TEXT("diner") ? TEXT("road") : TEXT("");
 	TOptional<FS47HerdHeadlights> Lamps;
@@ -252,6 +254,8 @@ void US47TownLayer::WorldStep(double Dt)
 	const FVector O = Diner->Group.WorldPosition();
 	if (A == TEXT("road") || A == TEXT("diner")) Diner->SetNear(1 - Smooth(120, 520, DistXZ(Cam.Pos, O)));
 	if (A == TEXT("roswell")) { const bool bNear = DistXZ(Cam.Pos, O) < 2600; Diner->Group.SetVisible(bNear); Town->Group.SetVisible(bNear); Diner->SetNear(0); }
+	// Measure only after the actual schedule AND final area/proximity visibility.
+	if (bRadioWomanTownUpdated && M->Web) M->Web->RadioWomanAfterTownStep();
 }
 void US47TownLayer::ShareLights()
 {

@@ -33,9 +33,10 @@ namespace
  double Wrap(double A) { while (A > PI) A -= 2 * PI; while (A < -PI) A += 2 * PI; return A; }
  double YawTo(const FVector2D& D) { return FMath::Atan2(D.Y, D.X); } // UE yaw from three x/z
  // The door zones of walks.saro (exitDoor, recordsDoor, southDoor): the openings between the rooms.
- struct FGap { const TCHAR* Door; double X0, X1, Z0, Z1; };
+ struct FGap { const TCHAR* Door; double X0, X1, Z0, Z1, Plane; bool bX; };
  struct FDoorNoise { const TCHAR* Door; double Reach; };
- const FGap Gaps[] = {{TEXT("exitDoor"), -6.9, -5.0, 5.25, 6.15}, {TEXT("recordsDoor"), -4.38, -3.42, 5.6, 7.7}, {TEXT("doorSouth"), -2.88, -1.92, 3.6, 5.8}, {TEXT("doorEast"), 5.0, 7.1, 1.12, 2.08}};
+ const FGap Gaps[] = {{TEXT("exitDoor"), -6.9, -5.0, 5.25, 6.15, -6.27, true}, {TEXT("recordsDoor"), -4.38, -3.42, 5.6, 7.7, 6.85, false},
+  {TEXT("doorSouth"), -2.88, -1.92, 3.6, 5.8, 4.72, false}, {TEXT("doorEast"), 5.0, 7.1, 1.12, 2.08, 6.06, true}};
  // A door the player moves is a sound at its opening: the heavy outer doors carry, the light inner ones less.
  const double GapReach[] = {14, 7, 7, 14};
  // FS47HorrorThreat's Liang-Barsky test: does segment A-B touch the rectangle?
@@ -51,6 +52,19 @@ namespace
    return true;
   };
   return Clip(-D.X, A.X - R.X0) && Clip(D.X, R.X1 - A.X) && Clip(-D.Y, A.Y - R.Z0) && Clip(D.Y, R.Z1 - A.Y);
+ }
+ bool ClosedDoorBetween(const AS47Web* Web, const FVector2D& A, const FVector2D& Z)
+ {
+  if (!Web) return false;
+  for (const auto& G : Gaps)
+  {
+   if (Web->IsDoorOpen(G.Door)) continue;
+   const double From = (G.bX ? A.X : A.Y) - G.Plane, To = (G.bX ? Z.X : Z.Y) - G.Plane;
+   if ((From > 0 && To > 0) || (From < 0 && To < 0) || FMath::Abs(To - From) < 1e-8) continue;
+   const double K = -From / (To - From), Across = G.bX ? FMath::Lerp(A.Y, Z.Y, K) : FMath::Lerp(A.X, Z.X, K);
+   if (K >= 0 && K <= 1 && Across >= (G.bX ? G.Z0 : G.X0) && Across <= (G.bX ? G.Z1 : G.X1)) return true;
+  }
+  return false;
  }
 }
 
@@ -361,6 +375,9 @@ bool FS47SC04::Walk(double Speed, double Dt)
  if (Path.IsEmpty()) { Gait = FMath::Max(0.0, Gait - Dt * 3); return true; }
  const FVector2D To = Nodes()[Path[0]].At, D = To - Pos;
  const double Dist = D.Size(), StepLen = Speed * Dt;
+ const FVector2D Next = Dist > StepLen ? Pos + D / Dist * StepLen : To;
+ // A door can close after RouteTo chose the edge. Recheck the actual next step.
+ if (ClosedDoorBetween(M->Web.Get(), Pos, Next)) { Gait = FMath::Max(0.0, Gait - Dt * 3); Enter(EBody::Listen); return false; }
  BodyYaw = YawTo(D); HeadYaw = BodyYaw;
  Gait = FMath::Min(1.0, Gait + Dt * 3); Stride += StepLen * 2.1;
  if (Dist <= StepLen) { Pos = To; Path.RemoveAt(0); return Path.IsEmpty(); }
@@ -651,7 +668,7 @@ void FS47SC04::Think(double Dt)
    const FVector2D D = Goal - Pos; const double Dist = D.Size(), StepLen = ChaseSpeed * Dt;
    BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Min(1.4, Gait + Dt * 4); Stride += StepLen * 2.1;
    const FVector2D Next = Dist > StepLen ? Pos + D / Dist * StepLen : Goal;
-   if (M->Player->Walkable(Next.X, Next.Y)) Pos = Next;
+   if (M->Player->Walkable(Next.X, Next.Y) && !ClosedDoorBetween(M->Web.Get(), Pos, Next)) Pos = Next;
    Path.Reset();
   }
   else
@@ -659,10 +676,12 @@ void FS47SC04::Think(double Dt)
    if (Path.IsEmpty() || StateT > .5) { RouteTo(Nearest(Goal)); StateT = 0; }
    Walk(ChaseSpeed, Dt);
   }
-  if (FVector2D::Distance(Pos, Pl) < Reach && bSees) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
+  if (!M->World->bDriving && FVector2D::Distance(Pos, Pl) < Reach && bSees && !ClosedDoorBetween(M->Web.Get(), Pos, Pl)) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
   break;
  }
  case EBody::Grab:
+  if (M->World->bDriving || FVector2D::Distance(Pos, Pl) >= Reach || !bSees || ClosedDoorBetween(M->Web.Get(), Pos, Pl) || (bSafe && Room(Pos) != 0))
+  { Enter(EBody::Chase); break; }
   if (StateT >= GrabHold) { bShown = false; Capture(); }
   break;
  default: break;

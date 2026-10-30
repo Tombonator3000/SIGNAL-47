@@ -277,7 +277,8 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  bool bMigratedArrival=false;
  if (Commute())
  {
-  M->Story->SetClock(-6*3600-40*60); // late afternoon; shift time has not begun
+  // Fresh commute begins before the shift. Continue keeps the clock actually saved.
+  M->Story->SetClock(S47J::Num(Saved,TEXT("clock"),-6*3600-40*60));
   const S47J::FObj Car = S47J::Obj(Saved,TEXT("car"));
   if (!Saved || S47J::Bool(Car,TEXT("driving"))) M->World->BeginCommute(Car);
   else

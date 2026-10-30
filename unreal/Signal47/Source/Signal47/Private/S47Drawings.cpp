@@ -297,6 +297,12 @@ namespace
 			G.BeginPath(); G.MoveTo(X - 9, Y - 13); G.LineTo(X + 9, Y - 13); G.LineTo(X, Y - 27); G.ClosePath(); G.Stroke();
 			G.BeginPath(); G.Arc(X, Y - 18, 2.2, 0, PI * 2); G.Fill();
 			G.SetFont(ELITE, 16); G.FillText(TEXT("BM"), X - 30, Y - 16);
+			if (FMath::IsNearlyEqual(B.Mi, 10.4))
+			{
+				// The courier lies beyond C. This label never changes P13's crossing at 8.15.
+				G.SetFont(OSWALD_600, 20); G.FillText(TEXT("COURIER 10.4"), X - 170, Y - 32);
+				G.BeginPath(); G.MoveTo(X - 30, Y - 30); G.LineTo(X - 10, Y - 20); G.Stroke();
+			}
 		}
 		// STATION 01 north of the road, with its fence
 		const double Sx = Mp.Station.X, Sy = Mp.Station.Y;

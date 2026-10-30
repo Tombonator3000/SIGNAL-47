@@ -355,7 +355,7 @@ struct FS47SC09Test
   if(Stage==59)
   {
    if(!Check(C->S.Stage==TEXT("nora")&&!C->S.bCalled,TEXT("closing secured field prints queues Nora, no SC10 credit")))return;
-   if(!Restore(TEXT("both-copies-before-nora")))return;Next(60,3);return;
+   if(!Restore(TEXT("both-copies-before-nora")))return;Next(60,3.5);return;
   }
   if(Stage==60){if(!Check(C->bRinging&&M->Story->Label(TEXT("phone"))==TEXT("Answer Nora Vega"),TEXT("only now the ordinary SARO phone rings for Nora")))return;Next(62);return;}
   if(UsePair(62,TEXT("phone"),64,false))return;
@@ -365,6 +365,11 @@ struct FS47SC09Test
    if(!Check(Widget&&M->UI->Modal()&&!C->S.bCalled&&HasText(Widget.ToSharedRef(),TEXT("Nora Vega / SARO telephone")),TEXT("normal phone ray opens written Nora conversation; not yet acknowledged")))return;
    M->UI->Close();
    if(!Check(C->S.bCalled&&C->S.Stage==TEXT("complete")&&C->S.NoraAt&&M->Story->Clock()>=4*3600+45*60,TEXT("closing actual Nora conversation completes SC09 at 04:45 or later")))return;
+   if(!Check(M->Story->Docs().ContainsByPredicate([](const FS47Doc& D)
+    {return D.Id==TEXT("sc09_nora_call")&&D.Page.Contains(TEXT("I heard it ring at four, every night, for a year."))
+     &&D.Page.Contains(TEXT("You have the frames now. Look at them before you believe them."))
+     &&D.Page.Contains(TEXT("Room 6, Sierra Motor Court. Bring the original record and both prints."));}),
+    TEXT("filed SARO call retains the current production dialogue and Room6 invitation")))return;
    if(!Restore(TEXT("nora-complete-before-sc10")))return;Next(66,2.5);return;
   }
   if(Stage==66)

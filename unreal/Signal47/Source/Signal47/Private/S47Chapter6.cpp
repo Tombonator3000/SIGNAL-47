@@ -5,6 +5,9 @@
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/Texture2D.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "S47Away.h"
 #include "S47CB.h"
@@ -14,6 +17,7 @@
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Main.h"
+#include "S47OldRoadLayout.h"
 #include "S47TheThird.h"
 #include "S47Three.h"
 #include "S47Truck.h"
@@ -120,6 +124,7 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 		W->SetClock(W->Host && W->Host->bEveningTimeline ? FMath::Max(W->Clock(), LEAVE) : LEAVE);
 		if (W->M->Audio) W->M->Audio->CabRadio(TEXT("talk"));
 		W->Note(W->Time() + TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post."));
+		W->BuildCourierSign();
 		W->PlaceJump();
 	});
 	if (Host) Host->After(3, [W] { if (W.IsValid() && W->bActive && !W->Frames) W->DrawFrames(); });
@@ -143,14 +148,64 @@ void US47Chapter6::Reset()
 	if (M && M->World) M->World->OldControl.Reset();
 	if (M && M->Web) { M->Web->SetChapter6Fog({}); M->Web->SetDawnLift({}); M->Web->SetSunElevation({}); }
 	if (M && M->Audio) { M->Audio->CabRadio(TEXT("")); M->Audio->Silence(false); }
-	Bed.Stop(); Bed = FS47Pressure(); DropThird(); bJumpPlaced = false; JumpAt.Reset();
+	Bed.Stop(); Bed = FS47Pressure(); DropThird(); DropCourierSign(); bJumpPlaced = false; JumpAt.Reset();
 }
 
 void US47Chapter6::BeginDestroy()
 {
 	// Native resources may outlive Main's scene tables during editor shutdown.
-	if (Ending) Ending->Dispose(); Ending.Reset(); Bed.Stop(); Bed = FS47Pressure(); Third.Reset();
+	if (Ending) Ending->Dispose(); Ending.Reset(); Bed.Stop(); Bed = FS47Pressure(); Third.Reset(); DropCourierSign();
 	Super::BeginDestroy();
+}
+
+void US47Chapter6::BuildCourierSign()
+{
+	if (!Host || !Host->bEveningTimeline || !M || !M->Web || !M->World || !CourierSign.IsEmpty()) return;
+	const FS47OldRoad* Road = M->World->OldRoad();
+	if (!Road || !M->Web->GetRootComponent()) return;
+	UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+	if (!Cube || !Base) return;
+	// A direction sign near the junction, before the finale interrupts the drive at C (8.15).
+	// The courier's actual 10.4-mile destination lies beyond this chapter's drivable stretch.
+	const double Along = S47OldRoadLayout::SAt(.12);
+	FVector At = Road->Lane(Along, 5.6);
+	At.Y = Road->Height(At.X, At.Z);
+	FVector Face = Road->Lane(Along) - Road->Lane(Along + 4);
+	Face.Y = 0;
+	const FRotator Rotation = FRotationMatrix::MakeFromXZ(S47Three::DirToUE(Face.GetSafeNormal()), FVector::UpVector).Rotator();
+	const FQuat Q = Rotation.Quaternion();
+	const FVector GroundUE = S47Three::ToUE(At);
+	AS47Web* Web = M->Web;
+	auto Part = [&](const TCHAR* Name, const FVector& OffsetCm, const FVector& Size, uint32 Color)
+	{
+		auto* C = NewObject<UStaticMeshComponent>(Web, Name);
+		C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(Web->GetRootComponent()); C->SetStaticMesh(Cube);
+		C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCastShadow(true);
+		auto* Mat = UMaterialInstanceDynamic::Create(Base, C);
+		Mat->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(Color));
+		Mat->SetScalarParameterValue(TEXT("Roughness"), .8f); Mat->SetScalarParameterValue(TEXT("Metalness"), 0.f);
+		Mat->SetScalarParameterValue(TEXT("NativeLighting"), 1.f); C->SetMaterial(0, Mat);
+		C->RegisterComponent(); C->SetWorldLocationAndRotation(GroundUE + Q.RotateVector(OffsetCm), Rotation); C->SetWorldScale3D(Size);
+		CourierSign.Add(C);
+	};
+	Part(TEXT("SC13CourierPostLeft"), FVector(0, -70, 98), FVector(.06, .06, 1.96), 0x777a73);
+	Part(TEXT("SC13CourierPostRight"), FVector(0, 70, 98), FVector(.06, .06, 1.96), 0x777a73);
+	Part(TEXT("SC13CourierBoard"), FVector(0, 0, 205), FVector(.045, 1.9, .72), 0x254b3b);
+	auto* Ink = NewObject<UTextRenderComponent>(Web, TEXT("SC13CourierSignText"));
+	Ink->SetMobility(EComponentMobility::Movable); Ink->SetupAttachment(Web->GetRootComponent());
+	Ink->SetText(FText::FromString(TEXT("COURIER\nAT MILE 10.4"))); Ink->SetWorldSize(11.f);
+	Ink->SetHorizontalAlignment(EHTA_Center); Ink->SetVerticalAlignment(EVRTA_TextCenter);
+	Ink->SetTextRenderColor(FColor(232, 233, 211)); Ink->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Ink->RegisterComponent(); Ink->SetWorldLocationAndRotation(GroundUE + Q.RotateVector(FVector(3.5, 0, 205)), Rotation);
+	CourierSign.Add(Ink);
+	UE_LOG(LogS47Ch6, Display, TEXT("S47: courier direction sign AT MILE 10.4 near junction at %.2f %.2f %.2f"), At.X, At.Y, At.Z);
+}
+
+void US47Chapter6::DropCourierSign()
+{
+	for (const auto& Component : CourierSign) if (IsValid(Component.Get())) Component->DestroyComponent();
+	CourierSign.Reset();
 }
 
 void US47Chapter6::DropThird()

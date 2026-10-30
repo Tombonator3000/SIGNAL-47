@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "status": "PASS_PRIVATE_NATIVE_AUTHORING_NOT_RUNTIME_OR_APPEARANCE",
+  "recorded_at": "2026-10-29T23:17:57+01:00",
+  "source_commit": "1ad50dfdcddb2272e494689b2dded269df44890d",
+  "authoring_editor_module": {
+    "file": "libUnrealEditor-Signal47.so",
+    "bytes": 18451080,
+    "sha256": "fa623c99a52bd26243b99c83e618dcdbf04f35d8c42e0cb7ade6ff1f70e3ad08"
+  },
+  "phases": {
+    "probe": {
+      "pid": 3058379,
+      "native_checks": 3085,
+      "clothes_checks": 729,
+      "returncode": 0,
+      "semantic_success": true,
+      "wall_seconds": 96.51758625602815,
+      "contention": [],
+      "guard": {
+        "file": "r12-r4-native-r2-probe.result.json",
+        "bytes": 4849,
+        "sha256": "6a5429f9303c30ded496a728585c0c1d3e9a8db0677b5df7c8839fee7a134771"
+      },
+      "native_report": {
+        "file": "probe-native.json",
+        "bytes": 2242352,
+        "sha256": "bc7a52958ccbb4ca38459bee01a9f41367f2f259b128ff2bbeef2a0fd6bb3b4a"
+      },
+      "python_report": {
+        "file": "probe-python.json",
+        "bytes": 4906,
+        "sha256": "f48c4045a0f5079687a209cca4500299ae77041eaedf95605a480ad0e6854da0"
+      }
+    },
+    "bake": {
+      "pid": 3059300,
+      "native_checks": 3382,
+      "clothes_checks": 729,
+      "returncode": 0,
+      "semantic_success": true,
+      "wall_seconds": 102.63815174601041,
+      "contention": [],
+      "guard": {
+        "file": "r12-r4-native-r2-bake.result.json",
+        "bytes": 4850,
+        "sha256": "7d98794ef938e15347b9b82e71480082e512b23869dd0247cdc9ece5c2a79f56"
+      },
+      "native_report": {
+        "file": "bake-native.json",
+        "bytes": 2443064,
+        "sha256": "d04d93f25249a20dcf459d405f0f4ed08d5589fd15518396a8a846c9c7d75af8"
+      },
+      "python_report": {
+        "file": "bake-python.json",
+        "bytes": 5360,
+        "sha256": "fcf648d472dbe14b926c8521188f4fd97dcfa37f651a687c05da8094732341cf"
+      }
+    },
+    "verify": {
+      "pid": 3060353,
+      "native_checks": 903,
+      "clothes_checks": 729,
+      "returncode": 0,
+      "semantic_success": true,
+      "wall_seconds": 100.61049727199133,
+      "contention": [],
+      "guard": {
+        "file": "r12-r4-native-r2-verify.result.json",
+        "bytes": 4851,
+        "sha256": "b1053094313f71e53d50a48f7732727b63db50f39ad608d4aa99e9cac40e335d"
+      },
+      "native_report": {
+        "file": "verify-native.json",
+        "bytes": 223875,
+        "sha256": "7acb053b409c64f5030cb5d583a26e37a743bfaa0bd9c74a8d9805ce4921e0f3"
+      },
+      "python_report": {
+        "file": "verify-python.json",
+        "bytes": 5561,
+        "sha256": "0ad4109a1f090b735308f0570505c74be7ad66111233b9962967685f22c15a71"
+      }
+    }
+  },
+  "saved_output": {
+    "file": "SM_RadioWoman_Seated.uasset",
+    "bytes": 6407964,
+    "sha256": "ac78d509bd404343e651fada9f36b6c357cde03d9321e31e23d0acd0ae13cdce"
+  },
+  "native_asset": "/Game/MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated.SM_RadioWoman_Seated",
+  "materials": 20,
+  "lods": [
+    {
+      "index": 0,
+      "triangles": 136883,
+      "vertices": 85696,
+      "raw_sha1": "a72fc6838034a4babc8c6019147cee7b95bc1868",
+      "corner_sha1": "1806f4e4e552d7e7118877dd05c6e3e0c2ade3c0",
+      "packed_vertex_sha1": "d781a33f19cc46d3db6c57d3f5f38302ec5ade07",
+      "uint32_indices_sha1": "f0bfcbc98a097b120d8e040bd983f7ca408c64f5"
+    },
+    {
+      "index": 1,
+      "triangles": 52252,
+      "vertices": 33637,
+      "raw_sha1": "f25eed5729118c9272f10978f83d0649b1fa40ed",
+      "corner_sha1": "118396c2bc39d6eac3c524ca13382d112db5f964",
+      "packed_vertex_sha1": "8cbf154624247baea6e066faba73a519cdbcd696",
+      "uint32_indices_sha1": "2ecbc973c4da201ce28afc663edf4a5c30660e41"
+    },
+    {
+      "index": 2,
+      "triangles": 32492,
+      "vertices": 22486,
+      "raw_sha1": "7ec6d86f115e86b9f4f8a4dbae729e4ec4a5c943",
+      "corner_sha1": "886660287aea25168062ba8f974368e4cd42a264",
+      "packed_vertex_sha1": "8896edf95c6fc1aae28051744c69cc29e4984741",
+      "uint32_indices_sha1": "21ef0a9c8544fa88442cf05edee200271c0409fe"
+    }
+  ],
+  "garment_reference_pose_unchanged": true,
+  "preserved_content_files": 13017,
+  "only_new_content": [
+    "MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated.uasset"
+  ],
+  "native_acceptance": {
+    "file": "r12-verify-independent-acceptance-r1.json",
+    "bytes": 2296,
+    "sha256": "78e57318c98b3ad89c9764066ae0834bad07317358a8d0d8769b26ac57bcf53c"
+  },
+  "runtime_pin_header": {
+    "file": "S47RadioWomanNativePins.inl",
+    "bytes": 8692,
+    "sha256": "2440279b28f078eb8b6e9bb0306fd1a53f54e41d4322b85956b106baa3d9c714"
+  },
+  "runtime_copy_binding": {
+    "file": "native-asset-copy-binding-r1.json",
+    "bytes": 1260,
+    "sha256": "7f8d9a9d683d3d1ca3abf0b79b363c2e95ae3f798bb529d7b054b32de1030554"
+  },
+  "historical_probe_failure": {
+    "returncode": 255,
+    "semantic_success": false,
+    "guard": {
+      "file": "r12-r4-native-probe.result.json",
+      "bytes": 4821,
+      "sha256": "2690131ba77faea2a51544d92decf8653c95ef06a2c369dbd4f23a4aef1d6e16"
+    },
+    "reason": "11 package/object key names; new data-only adapter retains all 18 file pins",
+    "preserved": true
+  },
+  "runtime_accepted": false,
+  "contact_accepted": false,
+  "appearance_accepted": false,
+  "cooked_accepted": false,
+  "installed": false,
+  "limits": [
+    "Lisensiert geometri, FBX og textures forblir private og ignorerte.",
+    "Nativeforfatting bekrefter ikke sitteutseende eller faktisk runtimekontakt, funksjon, lagring eller pakke.",
+    "Historiske import-stdout- og R12-probeavslag er bevart; ingen råstatus overskrives."
+  ]
+}

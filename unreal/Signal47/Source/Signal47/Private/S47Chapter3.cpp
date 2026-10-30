@@ -517,7 +517,7 @@ void US47Chapter3::ApplyWorld()
 	if (S.SurveyVersion == 1 && FieldCopiesSecured() && S.Stage == TEXT("develop")) S.Stage = TEXT("nora");
 	if (S.SurveyVersion == 1 && S.Stage == TEXT("complete")) Finish();
 	if ((S.SurveyVersion == 0 && S.Stage == TEXT("call") && !S.bCalled)
-		|| (S.SurveyVersion == 1 && S.Stage == TEXT("nora") && !S.bCalled && FieldCopiesSecured())) CallT = Gt() + 2.5; // it rings again
+		|| (S.SurveyVersion == 1 && S.Stage == TEXT("nora") && !S.bCalled && FieldCopiesSecured())) CallT = Gt() + (S.SurveyVersion == 1 ? 3.0 : 2.5); // it rings again
 }
 
 // ---------- saving ----------
@@ -667,7 +667,7 @@ void US47Chapter3::BindSite(US47Station* Site)
 			[this] { if (Taken && Taken->Shut && Taken->Shut()) { if (Taken->TryDoor) Taken->TryDoor(); } else Look(TEXT("hut")); });
 		Add(TEXT("s1receiver"), TEXT("receiver"), [this] { return FString(S.bHeard ? TEXT("Receiver") : TEXT("Switch on the receiver")); }, [this] { UseReceiver(); });
 		Add(TEXT("s1timing"), TEXT("timingLog"), [this] { return FString(S.bReadE10 ? TEXT("Lay out the field record") : TEXT("Read the timing log (E10)")); }, [this] { UseTimingLog(); });
-		Add(TEXT("s1phone"), TEXT("fieldPhone"), [this] { return FString(bRinging ? TEXT("Answer the field telephone") : TEXT("Field telephone")); }, [this] { UsePhone(); });
+		Add(TEXT("s1phone"), TEXT("fieldPhone"), [this] { return FString(S.SurveyVersion == 0 && bRinging ? TEXT("Answer the field telephone") : TEXT("Field telephone")); }, [this] { UsePhone(); });
 		Add(TEXT("s1gate"), TEXT("gate"), [] { return FString(TEXT("Vehicle gate")); }, [this] { Toast(TEXT("Chained and padlocked. N. Vega holds the key. The walk gate beside it is open."), 3.6f); });
 		// the truck outside the gate, any time it stands there (with the truck somewhere else,
 		// World.parkAt has put its handle out of the way: nothing to use)
@@ -979,6 +979,11 @@ void US47Chapter3::Ring()
 
 void US47Chapter3::UsePhone()
 {
+	if (S.SurveyVersion == 1)
+	{
+		Toast(TEXT("A dial tone, and a long way off, another phone ringing that nobody answers."), 3.6f);
+		return;
+	}
 	US47Audio* A = Au();
 	if (!bRinging)
 	{
@@ -1298,7 +1303,7 @@ void US47Chapter3::Finish()
 		{
 			if (S.Stage != TEXT("nora"))
 			{
-				S.Stage = TEXT("nora"); CallT = Gt() + 2.5;
+				S.Stage = TEXT("nora"); CallT = Gt() + 3.0;
 				Note(TEXT("Both STATION 01 field copies are developed and secured. The originals stay together while I wait for Nora."));
 				Milestone();
 			}
@@ -1328,7 +1333,7 @@ FS47Doc US47Chapter3::DocNoraCall() const
 {
 	FS47Doc D; D.Id = TEXT("sc09_nora_call"); D.Title = TEXT("Nora Vega / SARO telephone"); D.Kind = TEXT("typed"); D.Stamp = ClockText(S.NoraAt.Get(Host ? Host->Clock() : 0.), false);
 	// Ward, Ortiz, Earl and Nora remain text until their voices are produced. No heard flag or synthetic voice credit.
-	D.Page = TEXT("NORA VEGA: So you went out there.\n\nNORA VEGA: You have seen the cable now. It did not break by itself.\n\nREYES: Both field prints are fixed. The footing and the cable.\n\nNORA VEGA: Room 6. Bring the original record and both developed prints. Then I will tell you the rest.");
+	D.Page = TEXT("NORA VEGA: So you went out there.\n\nNORA VEGA: This line still rings in the motel office. I heard it ring at four, every night, for a year.\n\nNORA VEGA: You have the frames now. Look at them before you believe them.\n\nNORA VEGA: Room 6, Sierra Motor Court. Bring the original record and both prints.");
 	D.Transcript = TEXT("A telephone conversation after FRAME 03 and FRAME 04 were developed and secured at SARO.");
 	return D;
 }

@@ -1,0 +1,1962 @@
+// Local authoring only. Licensed source/derived assets stay in ignored MetaHumans.
+// No runtime registration, person, animation graph, or waitress asset is changed.
+#if WITH_EDITOR
+#include "AssetCompilingManager.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Animation/Skeleton.h"
+#include "Animation/AnimInstance.h"
+#include "AnimNodes/AnimNode_CopyPoseFromMesh.h"
+#include "Components/PoseableMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Dom/JsonObject.h"
+#include "S47Json.h"
+#include "DynamicRHI.h"
+#include "Editor.h"
+#include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshSourceData.h"
+#include "Engine/World.h"
+#include "HAL/IConsoleManager.h"
+#include "HAL/PlatformProcess.h"
+#include "HAL/PlatformTime.h"
+#include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialInstance.h"
+#include "MaterialShared.h"
+#include "MeshDescription.h"
+#include "Misc/App.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
+#include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
+#include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
+#include "Modules/ModuleManager.h"
+#include "PhysicsEngine/BodySetup.h"
+#include "RawMesh.h"
+#include "RHI.h"
+#include "Rendering/SkeletalMeshRenderData.h"
+#include "Rendering/SkeletalMeshModel.h"
+#include "RenderingThread.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/MemoryWriter.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+#include "StaticMeshCompiler.h"
+#include "StaticMeshAttributes.h"
+#include "StaticMeshResources.h"
+#include "StaticParameterSet.h"
+#include "SkeletalRenderPublic.h"
+#include "SkeletalMeshAttributes.h"
+#include "ShaderCompiler.h"
+#include "VertexFactory.h"
+#include "TwoBoneIK.h"
+#include "UObject/Package.h"
+#include "UObject/SavePackage.h"
+#include "UObject/UnrealType.h"
+#include "UObject/StrongObjectPtr.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogS47MannequinBake, Log, All);
+namespace S47MannequinBake
+{
+ using FJson = TSharedPtr<FJsonObject>;
+ FJson Object() { return MakeShared<FJsonObject>(); }
+ TSharedPtr<FJsonValue> Value(const FJson& Input) { return MakeShared<FJsonValueObject>(Input); }
+ TArray<TSharedPtr<FJsonValue>> Vector(const FVector& Input)
+ {
+  return {MakeShared<FJsonValueNumber>(Input.X), MakeShared<FJsonValueNumber>(Input.Y), MakeShared<FJsonValueNumber>(Input.Z)};
+ }
+ FJson TransformData(const FTransform& Input)
+ {
+  FJson Data = Object(); const FQuat Rotation = Input.GetRotation();
+  Data->SetArrayField(TEXT("translation_cm"), Vector(Input.GetLocation())); Data->SetArrayField(TEXT("scale"), Vector(Input.GetScale3D()));
+  Data->SetArrayField(TEXT("rotation_quat_xyzw"), {MakeShared<FJsonValueNumber>(Rotation.X), MakeShared<FJsonValueNumber>(Rotation.Y),
+   MakeShared<FJsonValueNumber>(Rotation.Z), MakeShared<FJsonValueNumber>(Rotation.W)}); return Data;
+ }
+ FString Digest(TArray<uint8>& Bytes)
+ {
+  uint8 Hash[FSHA1::DigestSize]; FSHA1::HashBuffer(Bytes.GetData(), Bytes.Num(), Hash);
+  return BytesToHex(Hash, UE_ARRAY_COUNT(Hash)).ToLower();
+ }
+ FString RawDigest(FRawMesh& Raw)
+ {
+  TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); Writer << Raw; return Digest(Bytes);
+ }
+ // Wedge attributes and winding are semantic source data; vertex/triangle IDs and
+ // smoothing masks may change during MeshDescription serialization. No numeric
+ // quantization is used here. Tangent-Y is represented by its handedness, as UE does.
+ FString CornerDigest(const FRawMesh& Raw)
+ {
+  TArray<FString> Triangles;
+  for (int32 Triangle = 0; Triangle < Raw.FaceMaterialIndices.Num(); ++Triangle)
+  {
+   FString Best;
+   for (int32 Start = 0; Start < 3; ++Start)
+   {
+    TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); int32 Material = Raw.FaceMaterialIndices[Triangle]; Writer << Material;
+    for (int32 Offset = 0; Offset < 3; ++Offset)
+    {
+     const int32 Wedge = Triangle * 3 + (Start + Offset) % 3;
+     FVector3f Position = Raw.GetWedgePosition(Wedge), Tangent = Raw.WedgeTangentX[Wedge], Normal = Raw.WedgeTangentZ[Wedge];
+     float Sign = ((Normal ^ Tangent) | Raw.WedgeTangentY[Wedge]) < 0 ? -1.0f : 1.0f;
+     FColor Color = Raw.WedgeColors.IsValidIndex(Wedge) ? Raw.WedgeColors[Wedge] : FColor::White;
+     Writer << Position << Tangent << Normal << Sign << Color;
+     for (const auto& Channel : Raw.WedgeTexCoords)
+     {
+      bool Present = Channel.Num() != 0; Writer << Present;
+      if (Present) { FVector2f UV = Channel[Wedge]; Writer << UV; }
+     }
+    }
+    const FString Candidate = Digest(Bytes); if (Start == 0 || Candidate < Best) Best = Candidate;
+   }
+   Triangles.Add(Best);
+  }
+  Triangles.Sort(); TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); Writer << Triangles; return Digest(Bytes);
+ }
+ bool Read(const FString& Path, FJson& Out)
+ {
+  FString Text;
+  return FFileHelper::LoadFileToString(Text, *Path) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Out) && Out.IsValid();
+ }
+ bool Write(const FString& Path, const FJson& Input)
+ {
+  FString Text; FJsonSerializer::Serialize(Input.ToSharedRef(), TJsonWriterFactory<>::Create(&Text));
+  return FFileHelper::SaveStringToFile(Text, *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+ }
+ struct FPose
+ {
+  const FReferenceSkeleton& Ref;
+  TArray<FTransform> Local, Component;
+  explicit FPose(const FReferenceSkeleton& InRef) : Ref(InRef), Local(InRef.GetRefBonePose()) { Rebuild(); }
+  void Rebuild()
+  {
+   Component.SetNum(Local.Num());
+   for (int32 Index = 0; Index < Local.Num(); ++Index)
+   {
+    const int32 Parent = Ref.GetParentIndex(Index);
+    Component[Index] = Parent == INDEX_NONE ? Local[Index] : Local[Index] * Component[Parent];
+   }
+  }
+  void Set(int32 Index, const FTransform& Transform)
+  {
+   const int32 Parent = Ref.GetParentIndex(Index);
+   Local[Index] = Parent == INDEX_NONE ? Transform : Transform.GetRelativeTransform(Component[Parent]);
+   Local[Index].NormalizeRotation(); Rebuild();
+  }
+  void Aim(int32 Index, int32 Child, const FVector& Direction)
+  {
+   FTransform Transform = Component[Index];
+   const FVector OldDirection = (Component[Child].GetLocation() - Transform.GetLocation()).GetSafeNormal();
+   Transform.SetRotation(FQuat::FindBetweenNormals(OldDirection, Direction.GetSafeNormal()) * Transform.GetRotation());
+   Set(Index, Transform);
+  }
+  FString Hash() const
+  {
+   TArray<uint8> Bytes; FMemoryWriter Writer(Bytes);
+   for (int32 Index = 0; Index < Local.Num(); ++Index)
+   {
+    FString Name = Ref.GetBoneName(Index).ToString(); int32 Parent = Ref.GetParentIndex(Index); FTransform Transform = Local[Index];
+    Writer << Name << Parent << Transform;
+   }
+   return Digest(Bytes);
+  }
+ };
+
+ struct FBake
+ {
+  FJson Job, Contract, Report = Object();
+  FString Error, Mode, ReportPath;
+  int32 Checks = 0;
+  AActor* Actor = nullptr;
+  USkeletalMesh* Body = nullptr;
+  USkeletalMesh* Face = nullptr;
+  USkeletalMesh* Clothes = nullptr;
+  UStaticMesh* HairNear = nullptr;
+  UStaticMesh* HairFar = nullptr;
+  UStaticMesh* BrowsNear = nullptr;
+  UStaticMesh* BrowsFar = nullptr;
+  UMaterialInterface* HairMaterial = nullptr;
+  UMaterialInterface* BrowMaterial = nullptr;
+  TArray<FVector> LeftSole, RightSole;
+  TArray<FTransform> FaceReferenceCopyLocal;
+  ~FBake() { if (Actor) Actor->Destroy(); }
+  bool Need(bool Test, const FString& Detail)
+  {
+   ++Checks;
+   if (!Test)
+   {
+    Error = Detail; UE_LOG(LogS47MannequinBake, Error, TEXT("S47 Mannequin FAIL %s"), *Detail);
+   }
+   return Test;
+  }
+  template<typename T> T* Load(const FString& Path) { return LoadObject<T>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet); }
+  double PoseNumber(const TCHAR* Key) const { return Contract->GetObjectField(TEXT("pose"))->GetNumberField(Key); }
+  bool SameReference(const FTransform& First, const FTransform& Second) const
+  {
+   return First.GetLocation().Equals(Second.GetLocation(), PoseNumber(TEXT("max_shared_reference_error_cm"))) &&
+    First.GetScale3D().Equals(Second.GetScale3D(), 0.00001) &&
+    FMath::RadiansToDegrees(First.GetRotation().AngularDistance(Second.GetRotation())) <= PoseNumber(TEXT("max_shared_reference_angle_degrees"));
+  }
+  FJson SkeletalSource(USkeletalMesh* Mesh)
+  {
+   FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName());
+   Data->SetStringField(TEXT("reference_pose_sha1"), FPose(Mesh->GetRefSkeleton()).Hash());
+   Data->SetNumberField(TEXT("bones"), Mesh->GetRefSkeleton().GetNum());
+   TArray<TSharedPtr<FJsonValue>> LODs, Materials;
+   for (const FSkeletalMeshLODRenderData& LOD : Mesh->GetResourceForRendering()->LODRenderData)
+   {
+    FJson Item = Object(); Item->SetNumberField(TEXT("vertices"), LOD.GetNumVertices());
+    Item->SetNumberField(TEXT("triangles"), LOD.MultiSizeIndexContainer.GetIndexBuffer()->Num() / 3);
+    Item->SetNumberField(TEXT("uv_channels"), LOD.StaticVertexBuffers.StaticMeshVertexBuffer.GetNumTexCoords());
+    LODs.Add(Value(Item));
+   }
+   for (const FSkeletalMaterial& Material : Mesh->GetMaterials())
+   {
+    FJson Item = Object(); Item->SetStringField(TEXT("slot"), Material.MaterialSlotName.ToString());
+    Item->SetStringField(TEXT("material"), GetPathNameSafe(Material.MaterialInterface)); Materials.Add(Value(Item));
+   }
+   Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("materials"), Materials); return Data;
+  }
+  FJson CardSource(UStaticMesh* Mesh)
+  {
+   FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName()); TArray<TSharedPtr<FJsonValue>> LODs;
+   if (Mesh->GetRenderData()) for (const FStaticMeshLODResources& LOD : Mesh->GetRenderData()->LODResources)
+   {
+    FJson Row = Object(); Row->SetNumberField(TEXT("vertices"), LOD.GetNumVertices()); Row->SetNumberField(TEXT("triangles"), LOD.GetNumTriangles()); LODs.Add(Value(Row));
+   }
+   Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("bounds_min_cm"), Vector(Mesh->GetBoundingBox().Min));
+   Data->SetArrayField(TEXT("bounds_max_cm"), Vector(Mesh->GetBoundingBox().Max)); return Data;
+  }
+  // Pure native payload reads: no component, animation evaluation, CPU skinning,
+  // render-context claim, reference-pose edit or source save in a NullRHI probe.
+  bool ReferenceData(USkeletalMesh* Mesh, const FPose& Reference, FJson& Data, TArray<int32>& Direct)
+  {
+   Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName());
+   Direct.Init(0, Reference.Local.Num()); TArray<FBox> Bounds; Bounds.Init(FBox(ForceInit), Direct.Num());
+   TArray<TSharedPtr<FJsonValue>> LODs; TArray<TArray<int32>> PerLOD;
+   bool Valid = true; int32 LODIndex = 0;
+   for (const FSkeletalMeshLODRenderData& LOD : Mesh->GetResourceForRendering()->LODRenderData)
+   {
+    FJson Row = Object(); Row->SetNumberField(TEXT("lod"), LODIndex++); const FSkinWeightVertexBuffer* Weights = LOD.GetSkinWeightVertexBuffer();
+    const auto& Positions = LOD.StaticVertexBuffers.PositionVertexBuffer;
+    const bool Available = Weights && Weights->GetNumVertices() == LOD.GetNumVertices() && Weights->GetDataVertexBuffer()->GetWeightData()
+     && (!Weights->GetVariableBonesPerVertex() || Weights->GetLookupVertexBuffer()->GetLookupData()) && Positions.GetVertexData();
+    Row->SetBoolField(TEXT("cpu_payload_available"), Available); Row->SetNumberField(TEXT("vertices"), LOD.GetNumVertices());
+    TArray<int32>& Hits = PerLOD.AddDefaulted_GetRef(); Hits.Init(0, Direct.Num());
+    TArray<TSharedPtr<FJsonValue>> SectionRows;
+    if (Available) for (const FSkelMeshRenderSection& Section : LOD.RenderSections)
+    {
+     FJson SectionRow = Object(); SectionRow->SetNumberField(TEXT("base_vertex"), Section.BaseVertexIndex);
+     SectionRow->SetNumberField(TEXT("vertices"), Section.NumVertices); SectionRow->SetBoolField(TEXT("disabled"), Section.bDisabled);
+     SectionRows.Add(Value(SectionRow));
+     if (uint64(Section.BaseVertexIndex) + Section.NumVertices > LOD.GetNumVertices()) { Valid = false; continue; }
+     for (uint32 Vertex = Section.BaseVertexIndex; Vertex < Section.BaseVertexIndex + Section.NumVertices; ++Vertex)
+     {
+      uint32 WeightOffset = 0, Count = 0; Weights->GetVertexInfluenceOffsetCount(Vertex, WeightOffset, Count);
+      if (Count > Weights->GetMaxBoneInfluences()) { Valid = false; continue; }
+      for (uint32 Influence = 0; Influence < Count; ++Influence)
+      {
+       if (!Weights->GetBoneWeight(Vertex, Influence)) continue;
+       const uint32 LocalBone = Weights->GetBoneIndex(Vertex, Influence);
+       if (LocalBone >= uint32(Section.BoneMap.Num())) { Valid = false; continue; }
+       const int32 Bone = Section.BoneMap[LocalBone]; if (!Direct.IsValidIndex(Bone)) { Valid = false; continue; }
+       ++Direct[Bone]; ++Hits[Bone]; Bounds[Bone] += FVector(Positions.VertexPosition(Vertex));
+      }
+     }
+    }
+    Valid &= Available; Row->SetArrayField(TEXT("sections"), SectionRows); LODs.Add(Value(Row));
+   }
+   TArray<bool> Affects; Affects.Init(false, Direct.Num()); for (int32 Index = 0; Index < Direct.Num(); ++Index) Affects[Index] = Direct[Index] != 0;
+   for (int32 Index = Direct.Num() - 1; Index >= 0; --Index)
+   { const int32 Parent = Reference.Ref.GetParentIndex(Index); if (Affects[Index] && Parent != INDEX_NONE) Affects[Parent] = true; }
+   TArray<TSharedPtr<FJsonValue>> Bones;
+   for (int32 Index = 0; Index < Direct.Num(); ++Index)
+   {
+    FJson Row = Object(); const int32 Parent = Reference.Ref.GetParentIndex(Index);
+    Row->SetNumberField(TEXT("index"), Index); Row->SetStringField(TEXT("name"), Reference.Ref.GetBoneName(Index).ToString());
+    Row->SetStringField(TEXT("parent"), Parent == INDEX_NONE ? TEXT("None") : Reference.Ref.GetBoneName(Parent).ToString());
+    Row->SetObjectField(TEXT("reference_local"), TransformData(Reference.Local[Index])); Row->SetObjectField(TEXT("reference_component"), TransformData(Reference.Component[Index]));
+    Row->SetNumberField(TEXT("nonzero_vertex_influences_all_lods"), Direct[Index]); Row->SetBoolField(TEXT("affects_weighted_descendants"), Affects[Index]);
+    TArray<TSharedPtr<FJsonValue>> WeightedLODs; for (const TArray<int32>& Hits : PerLOD) WeightedLODs.Add(MakeShared<FJsonValueNumber>(Hits[Index]));
+    Row->SetArrayField(TEXT("nonzero_vertex_influences_per_lod"), WeightedLODs);
+    if (Bounds[Index].IsValid) { Row->SetArrayField(TEXT("weighted_reference_bounds_min_cm"), Vector(Bounds[Index].Min)); Row->SetArrayField(TEXT("weighted_reference_bounds_max_cm"), Vector(Bounds[Index].Max)); }
+    Bones.Add(Value(Row));
+   }
+   Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("bones"), Bones); Data->SetBoolField(TEXT("weight_scan_complete"), Valid); return Valid;
+  }
+  bool ReferenceDiagnostics(const FPose& BodyPose, const FPose& FacePose, const FPose& ClothPose)
+  {
+   const FPose BodyReference(BodyPose.Ref); FJson Evidence = Object(); Report->SetObjectField(TEXT("reference_diagnostics"), Evidence);
+   FJson BodyData, FaceData, ClothData; TArray<int32> BodyWeights, FaceWeights, ClothWeights;
+   const bool BodyValid = ReferenceData(Body, BodyReference, BodyData, BodyWeights);
+   const bool FaceValid = ReferenceData(Face, FacePose, FaceData, FaceWeights);
+   const bool ClothValid = ReferenceData(Clothes, ClothPose, ClothData, ClothWeights);
+   Evidence->SetObjectField(TEXT("body"), BodyData); Evidence->SetObjectField(TEXT("face"), FaceData); Evidence->SetObjectField(TEXT("clothes"), ClothData);
+   auto Shared = [&](const TCHAR* Key, const FPose& Target, const TArray<int32>& Weights)
+   {
+    TArray<TSharedPtr<FJsonValue>> Rows; int32 Mismatches = 0;
+    for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+    {
+     const FName Name = Target.Ref.GetBoneName(Index); const int32 BodyIndex = BodyReference.Ref.FindBoneIndex(Name); if (BodyIndex == INDEX_NONE) continue;
+     const FTransform& SourceRef = BodyReference.Component[BodyIndex]; const FTransform& TargetRef = Target.Component[Index];
+     const bool Same = SameReference(SourceRef, TargetRef); Mismatches += Same ? 0 : 1; FJson Row = Object();
+     Row->SetStringField(TEXT("bone"), Name.ToString()); Row->SetNumberField(TEXT("body_index"), BodyIndex); Row->SetNumberField(TEXT("target_index"), Index);
+     Row->SetBoolField(TEXT("same_reference_with_original_limits"), Same);
+     Row->SetNumberField(TEXT("translation_error_cm"), FVector::Distance(SourceRef.GetLocation(), TargetRef.GetLocation()));
+     Row->SetNumberField(TEXT("rotation_error_degrees"), FMath::RadiansToDegrees(SourceRef.GetRotation().AngularDistance(TargetRef.GetRotation())));
+     Row->SetNumberField(TEXT("scale_max_error"), (SourceRef.GetScale3D() - TargetRef.GetScale3D()).GetAbsMax());
+     Row->SetObjectField(TEXT("target_ref_relative_to_body_ref"), TransformData(TargetRef.GetRelativeTransform(SourceRef)));
+     Row->SetObjectField(TEXT("body_posed_component"), TransformData(BodyPose.Component[BodyIndex]));
+     Row->SetNumberField(TEXT("target_direct_vertex_influences_all_lods"), Weights[Index]); Rows.Add(Value(Row));
+    }
+    FJson Data = Object(); Data->SetArrayField(TEXT("all_shared_bones"), Rows); Data->SetNumberField(TEXT("mismatches"), Mismatches); Evidence->SetObjectField(Key, Data);
+   };
+   Shared(TEXT("face_body"), FacePose, FaceWeights); Shared(TEXT("clothes_body"), ClothPose, ClothWeights);
+   const TCHAR* FaceClassPath = TEXT("/Game/MetaHumans/Waitress/Anims/ABP_Face_Waitress.ABP_Face_Waitress_C");
+   UClass* FaceClass = LoadClass<UAnimInstance>(nullptr, FaceClassPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+   UAnimInstance* Defaults = FaceClass ? FaceClass->GetDefaultObject<UAnimInstance>() : nullptr; TArray<TSharedPtr<FJsonValue>> Nodes;
+   if (Defaults) for (TFieldIterator<FStructProperty> It(Defaults->GetClass()); It; ++It) if (It->Struct == FAnimNode_CopyPoseFromMesh::StaticStruct())
+   {
+    const auto* Node = It->ContainerPtrToValuePtr<FAnimNode_CopyPoseFromMesh>(Defaults); FJson Row = Object();
+    Row->SetStringField(TEXT("property"), It->GetName()); Row->SetBoolField(TEXT("use_mesh_pose"), Node->bUseMeshPose);
+    Row->SetStringField(TEXT("root_bone_to_copy"), Node->RootBoneToCopy.ToString()); Nodes.Add(Value(Row));
+   }
+   Evidence->SetStringField(TEXT("runtime_face_class"), FaceClassPath); Evidence->SetArrayField(TEXT("runtime_class_default_copy_pose_nodes"), Nodes);
+   Evidence->SetStringField(TEXT("scope"), TEXT("read-only native reference transforms and actual nonzero skin weights/BoneMap; all render LODs, including disabled sections; class defaults, not evaluated runtime pose. S47Waitress sets Body source, attached-parent and curves on instances. Compatibility limits remain unchanged; no face-basis policy or geometry correction accepted here."));
+   return Need(BodyValid && FaceValid && ClothValid && Nodes.Num() > 0, TEXT("complete native reference/weight diagnostics and existing waitress CopyPose graph available"));
+  }
+  bool Preflight()
+  {
+   if (!Need(GIsEditor && GEditor && !GEditor->PlayWorld, TEXT("editor authoring world, no PIE or game"))) return false;
+   const FJson Sources = Contract->GetObjectField(TEXT("sources"));
+   Body = Load<USkeletalMesh>(Sources->GetStringField(TEXT("body")));
+   Face = Load<USkeletalMesh>(Sources->GetStringField(TEXT("face")));
+   Clothes = Load<USkeletalMesh>(Job->GetStringField(TEXT("clothes_asset")));
+   HairNear = Load<UStaticMesh>(Sources->GetStringField(TEXT("hair_near")));
+   HairFar = Load<UStaticMesh>(Sources->GetStringField(TEXT("hair_far")));
+   BrowsNear = Load<UStaticMesh>(Sources->GetStringField(TEXT("brows_near")));
+   BrowsFar = Load<UStaticMesh>(Sources->GetStringField(TEXT("brows_far")));
+   HairMaterial = Load<UMaterialInterface>(Sources->GetStringField(TEXT("hair_material")));
+   BrowMaterial = Load<UMaterialInterface>(Job->GetStringField(TEXT("brow_material")));
+   if (!Need(Body && Face && Clothes && HairNear && HairFar && BrowsNear && BrowsFar && HairMaterial && BrowMaterial,
+    TEXT("all existing female, cloth, actual hair/brow card meshes and surface materials available"))) return false;
+   FAssetCompilingManager::Get().FinishAllCompilation();
+   if (!Need(Body->GetResourceForRendering() && Face->GetResourceForRendering() && Clothes->GetResourceForRendering(), TEXT("native skeletal render data available"))) return false;
+   if (!Need(Clothes->GetLODNum() == 1, TEXT("authored clothes import has exactly its single source LOD0"))) return false;
+   const FString Output = Job->GetStringField(TEXT("output_asset"));
+   if (!Need(Output.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")) && !Output.Contains(TEXT("..")), TEXT("private bounded output package"))) return false;
+   if (!Need(Clothes->GetSkeleton() != Body->GetSkeleton() && Clothes->GetSkeleton() &&
+    Clothes->GetSkeleton()->GetPathName().StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")), TEXT("cloth importer used private skeleton copy"))) return false;
+   FJson Inputs = Object(); Inputs->SetObjectField(TEXT("body"), SkeletalSource(Body)); Inputs->SetObjectField(TEXT("face"), SkeletalSource(Face));
+   Inputs->SetObjectField(TEXT("clothes"), SkeletalSource(Clothes)); Report->SetObjectField(TEXT("skeletal_sources"), Inputs);
+   FJson Cards = Object(); Cards->SetObjectField(TEXT("hair_near"), CardSource(HairNear)); Cards->SetObjectField(TEXT("hair_far"), CardSource(HairFar));
+   Cards->SetObjectField(TEXT("brows_near"), CardSource(BrowsNear)); Cards->SetObjectField(TEXT("brows_far"), CardSource(BrowsFar)); Report->SetObjectField(TEXT("card_sources"), Cards);
+   return true;
+  }
+  FString InverseReferenceHash(const USkeletalMesh* Mesh) const
+  {
+   TArray<uint8> Bytes; FMemoryWriter Writer(Bytes); int32 Count = Mesh->GetRefBasesInvMatrix().Num(); Writer << Count;
+   for (const FMatrix44f& Matrix : Mesh->GetRefBasesInvMatrix()) { FMatrix44f Copy = Matrix; Writer << Copy; }
+   return Digest(Bytes);
+  }
+  bool FileState(const FString& Path, FJson& Data)
+  {
+   TArray<uint8> Bytes;
+   if (!Need(FFileHelper::LoadFileToArray(Bytes, *Path) && Bytes.Num() > 0, TEXT("actual saved private file readable for SHA1: ") + Path)) return false;
+   Data = Object(); Data->SetStringField(TEXT("path"), FPaths::ConvertRelativePathToFull(Path));
+   Data->SetNumberField(TEXT("bytes"), Bytes.Num()); Data->SetStringField(TEXT("sha1"), Digest(Bytes)); return true;
+  }
+  bool DescriptionHash(FMeshDescription& Description, FString& Hash)
+  {
+   TArray<uint8> Bytes; FMemoryWriter Writer(Bytes, true); FObjectAndNameAsStringProxyArchive Archive(Writer, false);
+   Description.Serialize(Archive); Hash = Digest(Bytes);
+   return Need(!Archive.IsError(), TEXT("complete MeshDescription serialized without filtering any geometry or attribute"));
+  }
+  bool DescriptionState(FJson& Data)
+  {
+   Data = Object(); Report->SetObjectField(TEXT("clothes_bind_actual_description"), Data);
+   const FString ImportedPin = TEXT("2144e1ffc0504791556fd705e21b37add599da6f"), BodyPin = TEXT("93838fa5259ddca476c5e523526483746f038133");
+   FMeshDescription* Description = Clothes->GetMeshDescription(0);
+   if (!Need(Description != nullptr, TEXT("actual imported clothes MeshDescription available"))) return false;
+   FString FullHash; if (!DescriptionHash(*Description, FullHash)) return false;
+   Data->SetStringField(TEXT("policy"), TEXT("canonical-body-bone-pose-only")); Data->SetStringField(TEXT("full_sha1"), FullHash);
+   const FSkeletalMeshAttributesShared Attributes(*Description); const FReferenceSkeleton& BodyRef = Body->GetRefSkeleton();
+   if (!Need(Attributes.HasBones() && Attributes.GetNumBones() == 342 && Attributes.HasBoneNameAttribute() &&
+    Attributes.HasBoneParentIndexAttribute() && Attributes.HasBonePoseAttribute() && FPose(BodyRef).Hash() == BodyPin,
+    TEXT("complete 342-bone Description metadata and exact pinned canonical Body reference"))) return false;
+   const auto Names = Attributes.GetBoneNames(); const auto Parents = Attributes.GetBoneParentIndices(); const auto Poses = Attributes.GetBonePoses();
+   if (!Need(Names.IsValid() && Parents.IsValid() && Poses.IsValid(), TEXT("actual typed Description bone-name/parent/pose attributes available"))) return false;
+   TArray<FTransform> OriginalPoses; TArray<uint8> ReferenceBytes; FMemoryWriter ReferenceWriter(ReferenceBytes);
+   for (int32 Index = 0; Index < 342; ++Index)
+   {
+    const FBoneID BoneID(Index);
+    if (!Need(Attributes.IsBoneValid(BoneID) && Names.Get(BoneID) == BodyRef.GetBoneName(Index) && Parents.Get(BoneID) == BodyRef.GetParentIndex(Index),
+     FString::Printf(TEXT("exact Description bone name/index/parent %d"), Index))) return false;
+    FString Name = Names.Get(BoneID).ToString(); int32 Parent = Parents.Get(BoneID); FTransform Pose = Poses.Get(BoneID);
+    OriginalPoses.Add(Pose); ReferenceWriter << Name << Parent << Pose;
+   }
+   const FString ReferenceHash = Digest(ReferenceBytes); Data->SetStringField(TEXT("reference_pose_sha1"), ReferenceHash); Data->SetNumberField(TEXT("bones"), 342);
+   if (!Need(ReferenceHash == ImportedPin || ReferenceHash == BodyPin, TEXT("actual full Description bone metadata matches exact pinned import or canonical Body reference"))) return false;
+   // This is a detached deep copy. Do not Register attributes, commit source
+   // data, or edit the native asset. Only its existing 342 Bone::Pose values
+   // are replaced. Whole-description hashes retain every other attribute.
+   FMeshDescription Canonical(*Description); FString CopyBefore;
+   if (!DescriptionHash(Canonical, CopyBefore) || !Need(CopyBefore == FullHash, TEXT("detached Description copy initially retains every serialized byte"))) return false;
+   FSkeletalMeshAttributes CopyAttributes(Canonical); auto CopyPoses = CopyAttributes.GetBonePoses();
+   for (int32 Index = 0; Index < 342; ++Index) CopyPoses.Set(FBoneID(Index), BodyRef.GetRefBonePose()[Index]);
+   FString CanonicalHash; if (!DescriptionHash(Canonical, CanonicalHash)) return false;
+   Data->SetStringField(TEXT("canonical_full_sha1"), CanonicalHash); Data->SetStringField(TEXT("canonical_reference_pose_sha1"), BodyPin);
+   FString UntouchedDuringCopy;
+   if (!DescriptionHash(*Description, UntouchedDuringCopy) || !Need(UntouchedDuringCopy == FullHash,
+    TEXT("actual Description stays byte-identical while the detached copy holds canonical bone poses"))) return false;
+   // Reverse exactly those replacements to prove the detached operation leaves
+   // all non-pose data intact; rehash the real Description to reject aliasing.
+   for (int32 Index = 0; Index < 342; ++Index) CopyPoses.Set(FBoneID(Index), OriginalPoses[Index]);
+   FString RestoredHash, UntouchedHash;
+   if (!DescriptionHash(Canonical, RestoredHash) || !DescriptionHash(*Description, UntouchedHash) ||
+    !Need(RestoredHash == FullHash && UntouchedHash == FullHash, TEXT("only detached Bone::Pose replacements occurred; real Description and every other attribute remain exact"))) return false;
+   Data->SetBoolField(TEXT("detached_roundtrip_preserved"), true); Data->SetBoolField(TEXT("actual_preserved_during_copy"), true);
+   return Need(Mode != TEXT("verify-clothes-bind") || (ReferenceHash == BodyPin && FullHash == CanonicalHash),
+    TEXT("fresh saved reader has actual canonical Body bone metadata and the entire canonical Description without mutating it"));
+  }
+  bool GeometryState(FJson& Data, FJson& DescriptionData)
+  {
+   FSkeletalMeshModel* Model = Clothes->GetImportedModel(); FSkeletalMeshRenderData* Render = Clothes->GetResourceForRendering();
+   if (!Need(Model && Model->LODModels.Num() == 1 && Render && Render->LODRenderData.Num() == 1 &&
+    Clothes->GetMorphTargets().IsEmpty() && Clothes->GetSkinWeightProfiles().IsEmpty() && Model->LODModels[0].SkinWeightProfiles.IsEmpty(),
+    TEXT("bounded single-LOD clothes has complete import/render data without morphs or alternate skin-weight profiles"))) return false;
+   Data = Object();
+   // Use the engine's complete editor importer serialization, including soft
+   // vertices, all influences, source sections/BoneMaps, maps and attributes.
+   // Name/object paths, rather than process-local name indices, make the hash
+   // comparable in the separate saved reader. No loading archive is used here.
+   TArray<uint8> ImportedBytes; FMemoryWriter ImportedWriter(ImportedBytes, true);
+   FObjectAndNameAsStringProxyArchive ImportedArchive(ImportedWriter, false); Model->Serialize(ImportedArchive, Clothes);
+   // Model::Serialize does not contain the derived LOD vertex-attribute table.
+   // Preserve it explicitly as well, in stable name order.
+   TArray<FString> AttributeNames;
+   for (const auto& Attribute : Model->LODModels[0].VertexAttributes) AttributeNames.Add(Attribute.Key.ToString());
+   AttributeNames.Sort(); ImportedArchive << AttributeNames;
+   for (const FString& Name : AttributeNames)
+   {
+    auto& Attribute = Model->LODModels[0].VertexAttributes.FindChecked(FName(*Name));
+    uint8 Type = uint8(Attribute.DataType); ImportedArchive << Type << Attribute.ComponentCount << Attribute.Values;
+   }
+   if (!Need(!ImportedArchive.IsError(), TEXT("complete imported LOD model serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("imported_model_sha1"), Digest(ImportedBytes));
+   if (!DescriptionState(DescriptionData)) return false;
+   Data->SetStringField(TEXT("mesh_description_sha1"), DescriptionData->GetStringField(TEXT("canonical_full_sha1")));
+   TArray<uint8> RenderBytes; FMemoryWriter RenderWriter(RenderBytes, true);
+   FObjectAndNameAsStringProxyArchive RenderArchive(RenderWriter, false);
+   const auto Buffer = [&](const void* Pointer, int64 Size)
+   {
+    RenderArchive << Size;
+    if (!Need(Size >= 0 && (Size == 0 || Pointer), TEXT("native CPU payload present for complete buffer preservation"))) return false;
+    if (Size) RenderArchive.Serialize(const_cast<void*>(Pointer), Size);
+    return true;
+   };
+   FSkeletalMeshLODRenderData& LOD = Render->LODRenderData[0];
+   const FPositionVertexBuffer& Positions = LOD.StaticVertexBuffers.PositionVertexBuffer;
+   const FStaticMeshVertexBuffer& Vertices = LOD.StaticVertexBuffers.StaticMeshVertexBuffer;
+   const FColorVertexBuffer& Colors = LOD.StaticVertexBuffers.ColorVertexBuffer;
+   const FSkinWeightVertexBuffer& Weights = LOD.SkinWeightVertexBuffer;
+   uint32 VertexCount = LOD.GetNumVertices(), UVCount = Vertices.GetNumTexCoords(), ColorCount = Colors.GetNumVertices();
+   uint32 PositionStride = Positions.GetStride(), ColorStride = Colors.GetStride();
+   bool FullUV = Vertices.GetUseFullPrecisionUVs(), HighTangents = Vertices.GetUseHighPrecisionTangentBasis();
+   bool VariableWeights = Weights.GetVariableBonesPerVertex(); uint32 BoneBytes = Weights.GetBoneIndexByteSize(), WeightBytes = Weights.GetBoneWeightByteSize();
+   uint32 WeightVertices = Weights.GetNumVertices(), MaxInfluences = Weights.GetMaxBoneInfluences();
+   RenderArchive << VertexCount << UVCount << ColorCount << PositionStride << ColorStride << FullUV << HighTangents;
+   RenderArchive << VariableWeights << BoneBytes << WeightBytes << WeightVertices << MaxInfluences;
+   if (!Need(VertexCount > 0 && Positions.GetNumVertices() == VertexCount && Vertices.GetNumVertices() == VertexCount && WeightVertices == VertexCount,
+    TEXT("all original render and weight vertices present"))) return false;
+   if (!Buffer(Positions.GetVertexData(), int64(Positions.GetNumVertices()) * PositionStride) ||
+    !Buffer(Vertices.GetTangentData(), Vertices.GetTangentSize()) || !Buffer(Vertices.GetTexCoordData(), Vertices.GetTexCoordSize()) ||
+    !Buffer(Colors.GetVertexData(), int64(ColorCount) * ColorStride) ||
+    !Buffer(Weights.GetDataVertexBuffer()->GetWeightData(), Weights.GetDataVertexBuffer()->GetVertexDataSize()) ||
+    !Buffer(Weights.GetLookupVertexBuffer()->GetLookupData(), Weights.GetLookupVertexBuffer()->GetVertexDataSize())) return false;
+   const FRawStaticIndexBuffer16or32Interface* Indices = LOD.MultiSizeIndexContainer.GetIndexBuffer();
+   if (!Need(Indices && Indices->Num() > 0, TEXT("complete native index buffer available"))) return false;
+   uint8 IndexBytes = LOD.MultiSizeIndexContainer.GetDataTypeSize(); int32 IndexCount = Indices->Num(); RenderArchive << IndexBytes << IndexCount;
+   for (int32 Index = 0; Index < IndexCount; ++Index) { uint32 Vertex = Indices->Get(Index); RenderArchive << Vertex; }
+   RenderArchive << LOD.RenderSections << LOD.ActiveBoneIndices << LOD.RequiredBones;
+   int32 UnifiedCount = LOD.UnifiedBoneMap.Num(); RenderArchive << UnifiedCount;
+   for (FBoneIndexType Bone : LOD.UnifiedBoneMap) RenderArchive << Bone;
+   LOD.VertexAttributeBuffers.Serialize(RenderArchive);
+   if (!Need(!RenderArchive.IsError(), TEXT("native render/weight/section payload serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("render_buffers_sha1"), Digest(RenderBytes)); Data->SetNumberField(TEXT("vertices"), VertexCount);
+   Data->SetNumberField(TEXT("triangles"), IndexCount / 3); Data->SetNumberField(TEXT("sections"), LOD.RenderSections.Num());
+   TArray<uint8> MaterialBytes; FMemoryWriter MaterialWriter(MaterialBytes, true);
+   FObjectAndNameAsStringProxyArchive MaterialArchive(MaterialWriter, false);
+   int32 MaterialCount = Clothes->GetMaterials().Num(); MaterialArchive << MaterialCount;
+   for (FSkeletalMaterial& Material : Clothes->GetMaterials()) FSkeletalMaterial::StaticStruct()->SerializeItem(MaterialArchive, &Material, nullptr);
+   FSkeletalMeshLODInfo* Info = Clothes->GetLODInfo(0);
+   if (!Need(Info != nullptr, TEXT("original source LOD material map and settings available"))) return false;
+   FSkeletalMeshLODInfo::StaticStruct()->SerializeItem(MaterialArchive, Info, nullptr);
+   if (!Need(!MaterialArchive.IsError(), TEXT("original material slots and LOD map serialized for preservation"))) return false;
+   Data->SetStringField(TEXT("materials_lod_info_sha1"), Digest(MaterialBytes));
+   FString Skeleton = Clothes->GetSkeleton()->GetPathName(); Data->SetStringField(TEXT("skeleton"), Skeleton);
+   TArray<uint8> PayloadBytes; FMemoryWriter PayloadWriter(PayloadBytes);
+   for (const TCHAR* Key : {TEXT("imported_model_sha1"), TEXT("mesh_description_sha1"), TEXT("render_buffers_sha1"), TEXT("materials_lod_info_sha1")})
+   { FString Hash = Data->GetStringField(Key); PayloadWriter << Hash; }
+   PayloadWriter << Skeleton; Data->SetStringField(TEXT("payload_sha1"), Digest(PayloadBytes)); return true;
+  }
+  bool ClothesBinding(bool Verify)
+  {
+   const FString ImportedPin = TEXT("2144e1ffc0504791556fd705e21b37add599da6f"), BodyPin = TEXT("93838fa5259ddca476c5e523526483746f038133");
+   const FJson* BindingContract = nullptr;
+   if (!Need(Contract->TryGetObjectField(TEXT("clothes_bind"), BindingContract) &&
+    (*BindingContract)->GetStringField(TEXT("policy")) == TEXT("canonical-native-body") &&
+    (*BindingContract)->GetStringField(TEXT("imported_reference_pose_sha1")) == ImportedPin &&
+    (*BindingContract)->GetStringField(TEXT("canonical_reference_pose_sha1")) == BodyPin,
+    TEXT("explicit measured clothes-import and canonical native body reference pins"))) return false;
+   const FString Asset = Job->GetStringField(TEXT("clothes_asset")), Skeleton = Job->GetStringField(TEXT("private_skeleton"));
+   const FString Root = FPackageName::GetLongPackagePath(Job->GetStringField(TEXT("output_asset")));
+   if (!Need(Root.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")) && !Root.Contains(TEXT("..")) &&
+    FPackageName::GetLongPackagePath(Asset) == Root && FPackageName::GetLongPackagePath(Skeleton) == Root &&
+    Clothes->GetOutermost()->GetName() == Asset && Clothes->GetSkeleton()->GetOutermost()->GetName() == Skeleton &&
+    Clothes->GetOutermost() != Body->GetOutermost() && Clothes->GetOutermost() != Clothes->GetSkeleton()->GetOutermost(),
+    TEXT("only this run's newly imported clothes package is a permitted bind/save target; private skeleton stays separate"))) return false;
+   const FReferenceSkeleton& BodyRef = Body->GetRefSkeleton(); const FReferenceSkeleton& ClothRef = Clothes->GetRefSkeleton();
+   if (!Need(BodyRef.GetNum() == 342 && BodyRef.GetRawBoneNum() == 342 && ClothRef.GetNum() == 342 && ClothRef.GetRawBoneNum() == 342,
+    TEXT("exact measured native 342-bone body and cloth hierarchies"))) return false;
+   for (int32 Index = 0; Index < 342; ++Index)
+    if (!Need(ClothRef.GetBoneName(Index) == BodyRef.GetBoneName(Index) && ClothRef.GetParentIndex(Index) == BodyRef.GetParentIndex(Index),
+     FString::Printf(TEXT("exact cloth/body bone name, index and parent %d"), Index))) return false;
+   const FString BodyReference = FPose(BodyRef).Hash(), BodyInverse = InverseReferenceHash(Body);
+   if (!Need(BodyReference == BodyPin && Body->GetRefBasesInvMatrix().Num() == 342, TEXT("unchanged measured canonical Body reference and complete inverse bind matrices"))) return false;
+   FJson Before, DescriptionBefore; if (!GeometryState(Before, DescriptionBefore)) return false;
+   const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Asset, FPackageName::GetAssetPackageExtension()));
+   FJson FileBefore; if (!FileState(Filename, FileBefore)) return false;
+   if (Verify)
+   {
+    // Keep actual fresh-process evidence outside the immutable bind child.
+    // It must survive an early receipt mismatch, before the child is updated.
+    Report->SetObjectField(TEXT("clothes_bind_actual_geometry_before"), Before);
+    FJson Actual = Object(); Actual->SetStringField(TEXT("asset"), Asset); Actual->SetStringField(TEXT("object"), Clothes->GetPathName());
+    Actual->SetStringField(TEXT("private_skeleton"), Skeleton); Actual->SetStringField(TEXT("reference_sha1"), FPose(ClothRef).Hash());
+    Actual->SetStringField(TEXT("inverse_reference_sha1"), InverseReferenceHash(Clothes)); Actual->SetStringField(TEXT("body_reference_sha1"), BodyReference);
+    Actual->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse); Actual->SetNumberField(TEXT("bones"), ClothRef.GetNum());
+    Actual->SetNumberField(TEXT("inverse_matrices"), Clothes->GetRefBasesInvMatrix().Num()); Actual->SetBoolField(TEXT("package_dirty"), Clothes->GetOutermost()->IsDirty());
+    Actual->SetObjectField(TEXT("file"), FileBefore); Report->SetObjectField(TEXT("clothes_bind_actual_before"), Actual);
+   }
+   FJson Data = Object(); Report->SetObjectField(TEXT("clothes_bind"), Data);
+   if (Verify)
+   {
+    const FString ReceiptPath = Job->GetStringField(TEXT("clothes_bind_report")); FJson Previous;
+    if (!Need(FPaths::ConvertRelativePathToFull(ReceiptPath) != FPaths::ConvertRelativePathToFull(ReportPath) && Read(ReceiptPath, Previous) &&
+     Previous->GetIntegerField(TEXT("schema_version")) == 1 && Previous->GetStringField(TEXT("status")) == TEXT("PASS") &&
+     Previous->GetStringField(TEXT("mode")) == TEXT("bind-clothes") && Previous->GetNumberField(TEXT("pid")) > 0 &&
+     Previous->GetNumberField(TEXT("pid")) != FPlatformProcess::GetCurrentProcessId(), TEXT("successful original bind receipt from a different native process"))) return false;
+    const FJson Saved = Previous->GetObjectField(TEXT("clothes_bind")); Data->Values = Saved->Values;
+    const FJson* ExpectedDescription = nullptr; const FJson* HistoricalBefore = nullptr; const FJson* HistoricalAfter = nullptr;
+    if (!Need(Saved->TryGetObjectField(TEXT("description_saved_expected"), ExpectedDescription) &&
+     Saved->TryGetObjectField(TEXT("description_before"), HistoricalBefore) && Saved->TryGetObjectField(TEXT("description_after"), HistoricalAfter) &&
+     (*ExpectedDescription)->GetStringField(TEXT("policy")) == TEXT("canonical-body-bone-pose-only") &&
+     (*ExpectedDescription)->GetIntegerField(TEXT("bones")) == 342 && (*ExpectedDescription)->GetStringField(TEXT("reference_pose_sha1")) == BodyPin &&
+     (*HistoricalBefore)->GetStringField(TEXT("canonical_full_sha1")) == (*ExpectedDescription)->GetStringField(TEXT("full_sha1")) &&
+     (*HistoricalAfter)->GetStringField(TEXT("canonical_full_sha1")) == (*ExpectedDescription)->GetStringField(TEXT("full_sha1")) &&
+     (*HistoricalBefore)->GetBoolField(TEXT("detached_roundtrip_preserved")) && (*HistoricalAfter)->GetBoolField(TEXT("detached_roundtrip_preserved")) &&
+     (*HistoricalBefore)->GetBoolField(TEXT("actual_preserved_during_copy")) && (*HistoricalAfter)->GetBoolField(TEXT("actual_preserved_during_copy")) &&
+     (*ExpectedDescription)->GetStringField(TEXT("full_sha1")) == DescriptionBefore->GetStringField(TEXT("full_sha1")) &&
+     DescriptionBefore->GetStringField(TEXT("reference_pose_sha1")) == BodyPin,
+     TEXT("actual entire saved Description exactly matches the bind's proven canonical-only metadata copy and Body reference"))) return false;
+    FJson Matches = Object(); const FJson SavedGeometry = Saved->GetObjectField(TEXT("geometry_before"));
+    for (const auto& Entry : Before->Values)
+    {
+     const TSharedPtr<FJsonValue>* Expected = SavedGeometry->Values.Find(Entry.Key);
+     Matches->SetBoolField(Entry.Key, Expected && FJsonValue::CompareEqual(**Expected, *Entry.Value));
+    }
+    Matches->SetBoolField(TEXT("asset"), Saved->GetStringField(TEXT("asset")) == Asset);
+    Matches->SetBoolField(TEXT("object"), Saved->GetStringField(TEXT("object")) == Clothes->GetPathName());
+    Matches->SetBoolField(TEXT("private_skeleton"), Saved->GetStringField(TEXT("private_skeleton")) == Skeleton);
+    Matches->SetBoolField(TEXT("reference_after_sha1"), Saved->GetStringField(TEXT("reference_after_sha1")) == FPose(ClothRef).Hash());
+    Matches->SetBoolField(TEXT("inverse_reference_after_sha1"), Saved->GetStringField(TEXT("inverse_reference_after_sha1")) == InverseReferenceHash(Clothes));
+    Matches->SetBoolField(TEXT("file_after"), FJsonValue::CompareEqual(*Value(Saved->GetObjectField(TEXT("file_after"))), *Value(FileBefore)));
+    Report->SetObjectField(TEXT("clothes_bind_verify_matches"), Matches);
+    if (!Need(Saved->GetStringField(TEXT("asset")) == Asset && Saved->GetStringField(TEXT("object")) == Clothes->GetPathName() &&
+     Saved->GetStringField(TEXT("private_skeleton")) == Skeleton && Saved->GetStringField(TEXT("policy")) == TEXT("canonical-native-body") &&
+     Saved->GetStringField(TEXT("imported_reference_pose_sha1")) == ImportedPin && Saved->GetStringField(TEXT("canonical_reference_pose_sha1")) == BodyPin &&
+     Saved->GetStringField(TEXT("reference_before_sha1")) == ImportedPin && Saved->GetBoolField(TEXT("preserved_payload")) &&
+     Saved->GetStringField(TEXT("payload_before_sha1")) == Before->GetStringField(TEXT("payload_sha1")) &&
+     FJsonValue::CompareEqual(*Value(Saved->GetObjectField(TEXT("geometry_before"))), *Value(Before)),
+     TEXT("original bind receipt pins this exact private mesh and its complete unchanged imported/render payload"))) return false;
+    Data->SetStringField(TEXT("reference_after_sha1"), FPose(ClothRef).Hash()); Data->SetStringField(TEXT("body_reference_sha1"), BodyReference);
+    Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes)); Data->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse);
+    Data->SetStringField(TEXT("payload_after_sha1"), Before->GetStringField(TEXT("payload_sha1"))); Data->SetObjectField(TEXT("geometry_after"), Before);
+    Data->SetObjectField(TEXT("file_after"), FileBefore);
+    if (!Need(FPose(ClothRef).Hash() == BodyPin && InverseReferenceHash(Clothes) == BodyInverse &&
+     Clothes->GetRefBasesInvMatrix().Num() == 342 && FJsonValue::CompareEqual(*Value(Data), *Value(Saved)) && !Clothes->GetOutermost()->IsDirty(),
+     TEXT("fresh saved cloth reference, inverse matrices, all payload fields and actual file SHA1 match original bind receipt without mutation"))) return false;
+    FJson ReceiptFile; if (!FileState(ReceiptPath, ReceiptFile)) return false; Report->SetObjectField(TEXT("bind_receipt"), ReceiptFile);
+    FJson FileAfter; return FileState(Filename, FileAfter) && Need(FJsonValue::CompareEqual(*Value(FileBefore), *Value(FileAfter)), TEXT("read-only bind verification leaves actual cloth package byte-identical"));
+   }
+   if (!Need(FPose(ClothRef).Hash() == ImportedPin && Clothes->GetRefBasesInvMatrix().Num() == 342,
+    TEXT("only the exact measured FBX-import reference pose may be canonicalized once"))) return false;
+   Data->SetStringField(TEXT("asset"), Asset); Data->SetStringField(TEXT("object"), Clothes->GetPathName()); Data->SetStringField(TEXT("private_skeleton"), Skeleton);
+   Data->SetStringField(TEXT("policy"), TEXT("canonical-native-body")); Data->SetStringField(TEXT("imported_reference_pose_sha1"), ImportedPin);
+   Data->SetStringField(TEXT("canonical_reference_pose_sha1"), BodyPin); Data->SetStringField(TEXT("reference_before_sha1"), FPose(ClothRef).Hash());
+   Data->SetStringField(TEXT("inverse_reference_before_sha1"), InverseReferenceHash(Clothes)); Data->SetStringField(TEXT("body_reference_sha1"), BodyReference);
+   Data->SetStringField(TEXT("body_inverse_reference_sha1"), BodyInverse); Data->SetStringField(TEXT("payload_before_sha1"), Before->GetStringField(TEXT("payload_sha1")));
+   Data->SetObjectField(TEXT("geometry_before"), Before); Data->SetObjectField(TEXT("file_before"), FileBefore);
+   Data->SetObjectField(TEXT("description_before"), DescriptionBefore);
+   FJson ExpectedDescription = Object(); ExpectedDescription->SetStringField(TEXT("policy"), TEXT("canonical-body-bone-pose-only"));
+   ExpectedDescription->SetNumberField(TEXT("bones"), 342); ExpectedDescription->SetStringField(TEXT("reference_pose_sha1"), BodyPin);
+   ExpectedDescription->SetStringField(TEXT("full_sha1"), DescriptionBefore->GetStringField(TEXT("canonical_full_sha1")));
+   Data->SetObjectField(TEXT("description_saved_expected"), ExpectedDescription);
+   // SetRefSkeleton alone neither clears nor recomputes the inverse matrices.
+   // CalculateInvRefMatrices deliberately does nothing while the count matches.
+   Clothes->SetRefSkeleton(BodyRef); Clothes->GetRefBasesInvMatrix().Reset(); Clothes->CalculateInvRefMatrices();
+   Data->SetStringField(TEXT("reference_after_sha1"), FPose(Clothes->GetRefSkeleton()).Hash());
+   Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes));
+   if (!Need(FPose(Clothes->GetRefSkeleton()).Hash() == BodyPin && InverseReferenceHash(Clothes) == BodyInverse &&
+    Clothes->GetRefBasesInvMatrix().Num() == 342, TEXT("native canonical reference and recomputed inverse bind matrices match Body exactly"))) return false;
+   for (int32 Index = 0; Index < 342; ++Index)
+    if (!Need(SameReference(Clothes->GetRefSkeleton().GetRefBonePose()[Index], BodyRef.GetRefBonePose()[Index]),
+     FString::Printf(TEXT("strict unchanged cloth/body reference tolerance after canonical bind %d"), Index))) return false;
+   FJson After, DescriptionAfter; if (!GeometryState(After, DescriptionAfter)) return false;
+   Data->SetObjectField(TEXT("description_after"), DescriptionAfter);
+   Data->SetObjectField(TEXT("geometry_after"), After); Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1")));
+   if (!Need(FJsonValue::CompareEqual(*Value(Before), *Value(After)), TEXT("canonical bind changes no imported geometry, UVs, normals, tangents, weights, indices, BoneMaps, sections or materials"))) return false;
+   Clothes->MarkPackageDirty(); FSavePackageArgs Args; Args.TopLevelFlags = RF_Public | RF_Standalone;
+   if (!Need(UPackage::SavePackage(Clothes->GetOutermost(), Clothes, *Filename, Args), TEXT("only new private Clothes package saved after canonical bind"))) return false;
+   FAssetCompilingManager::Get().FinishAllCompilation();
+   if (!GeometryState(After, DescriptionAfter)) return false;
+   Data->SetObjectField(TEXT("description_after"), DescriptionAfter);
+   Data->SetObjectField(TEXT("geometry_after"), After); Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1")));
+   if (!Need(FJsonValue::CompareEqual(*Value(Before), *Value(After)) && FPose(Clothes->GetRefSkeleton()).Hash() == BodyPin &&
+    InverseReferenceHash(Clothes) == BodyInverse && FPose(BodyRef).Hash() == BodyReference && InverseReferenceHash(Body) == BodyInverse,
+    TEXT("post-save cloth retains full payload and canonical reference; actual Body remains unchanged"))) return false;
+   FJson FileAfter; if (!FileState(Filename, FileAfter)) return false;
+   Data->SetObjectField(TEXT("file_after"), FileAfter); Data->SetObjectField(TEXT("geometry_after"), After);
+   Data->SetStringField(TEXT("reference_after_sha1"), FPose(Clothes->GetRefSkeleton()).Hash()); Data->SetStringField(TEXT("inverse_reference_after_sha1"), InverseReferenceHash(Clothes));
+   Data->SetStringField(TEXT("payload_after_sha1"), After->GetStringField(TEXT("payload_sha1"))); Data->SetBoolField(TEXT("preserved_payload"), true); return true;
+  }
+  // Explicit private R11 input. Root/Python SHA256 pins the same file bytes which
+  // this existing native SHA1 implementation reads again. No new crypto module.
+  FJson PostrepairBinding, PostrepairReferenceBake, PostrepairFloorTargets;
+  bool PostrepairPinnedFile(const FJson& Pin, TArray<uint8>& Bytes, const FString& ExpectedPath = FString())
+  {
+   const FString Path = S47J::Str(Pin, TEXT("path")), SHA1 = S47J::Str(Pin, TEXT("sha1")), SHA256 = S47J::Str(Pin, TEXT("sha256"));
+   FString Canonical = FPaths::ConvertRelativePathToFull(Path); FPaths::NormalizeFilename(Canonical);
+   auto Hex = [](const FString& Hash, int32 Length) { if (Hash.Len() != Length) return false; for (TCHAR C : Hash) if (!FChar::IsHexDigit(C)) return false; return true; };
+   if (!Need(Pin.IsValid() && !FPaths::IsRelative(Path) && !Path.Contains(TEXT("..")) && Canonical == Path &&
+    (ExpectedPath.IsEmpty() || Path == ExpectedPath) && Hex(SHA1, 40) && Hex(SHA256, 64) &&
+    FFileHelper::LoadFileToArray(Bytes, *Path) && Bytes.Num() > 0 && double(Bytes.Num()) == S47J::Num(Pin, TEXT("bytes")) &&
+    Digest(Bytes).Equals(SHA1, ESearchCase::IgnoreCase), TEXT("R11 actual pinned file bytes/SHA1 and explicit root/Python SHA256 binding: ") + Path)) return false;
+   return true;
+  }
+  bool PostrepairPinnedJson(const FJson& Pin, FJson& Data)
+  {
+   TArray<uint8> Bytes; if (!PostrepairPinnedFile(Pin, Bytes)) return false;
+   const FUTF8ToTCHAR Converted(reinterpret_cast<const ANSICHAR*>(Bytes.GetData()), Bytes.Num());
+   const FString Text(Converted.Length(), Converted.Get());
+   return Need(FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Data) && Data.IsValid(), TEXT("R11 JSON parsed from the exact natively SHA1-checked UTF8 bytes"));
+  }
+  bool PostrepairEqual(const FJson& A, const FJson& B)
+  {
+   return A.IsValid() && B.IsValid() && FJsonValue::CompareEqual(*Value(A), *Value(B));
+  }
+  bool PostrepairVector(const FJson& Data, const TCHAR* Key, FVector& Out)
+  {
+   const auto Values = S47J::Nums(Data, Key); if (Values.Num() != 3) return false;
+   for (double V : Values) if (!FMath::IsFinite(V)) return false;
+   Out = FVector(Values[0], Values[1], Values[2]); return true;
+  }
+  bool PostrepairFrame(const FJson& Data, FTransform& Out)
+  {
+   FVector Position, Scale; const auto Q = S47J::Nums(Data, TEXT("rotation_xyzw"));
+   if (!PostrepairVector(Data, TEXT("location_ue_cm"), Position) || !PostrepairVector(Data, TEXT("scale"), Scale) || Q.Num() != 4) return false;
+   for (double V : Q) if (!FMath::IsFinite(V)) return false;
+   const FQuat Rotation(Q[0], Q[1], Q[2], Q[3]);
+   if (!Rotation.IsNormalized() || !Scale.Equals(FVector::OneVector, .000001)) return false;
+   Out = FTransform(Rotation, Position, Scale); return Out.IsValid();
+  }
+  FString PostrepairPacked(UStaticMesh* Mesh)
+  {
+   if (!Mesh || !Mesh->bAllowCPUAccess || !Mesh->GetRenderData() || Mesh->GetRenderData()->LODResources.Num() != 3) return {};
+   const auto& B = Mesh->GetRenderData()->LODResources[0].VertexBuffers; const auto& T = B.StaticMeshVertexBuffer;
+   if (!B.PositionVertexBuffer.GetNumVertices() || B.PositionVertexBuffer.GetNumVertices() != T.GetNumVertices() || !T.GetNumTexCoords() ||
+    !B.PositionVertexBuffer.GetVertexData() || !T.GetTangentData() || !T.GetTexCoordData() ||
+    (B.ColorVertexBuffer.GetNumVertices() && !B.ColorVertexBuffer.GetVertexData())) return {};
+   FSHA1 Hash; Hash.Update(static_cast<const uint8*>(B.PositionVertexBuffer.GetVertexData()), B.PositionVertexBuffer.GetNumVertices() * B.PositionVertexBuffer.GetStride());
+   Hash.Update(static_cast<const uint8*>(T.GetTangentData()), T.GetTangentSize()); Hash.Update(static_cast<const uint8*>(T.GetTexCoordData()), T.GetTexCoordSize());
+   if (B.ColorVertexBuffer.GetNumVertices()) Hash.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()), B.ColorVertexBuffer.GetNumVertices() * B.ColorVertexBuffer.GetStride());
+   Hash.Final(); FSHAHash Out; Hash.GetHash(Out.Hash); return Out.ToString().ToLower();
+  }
+  // R12 is an explicit new garment source over the accepted, unchanged R11 pose.
+  // Source/import/bind/read receipts must exist before this authoring path opens.
+  FJson GarmentSourceBinding, GarmentReferenceBake;
+  bool PrepareGarmentSourceBinding(const FJson& ReferenceJob)
+  {
+   if (!Job->HasField(TEXT("garment_source_binding"))) return true;
+   const FJson Pin = S47J::Obj(Job, TEXT("garment_source_binding")); FJson Input;
+   if (!PostrepairPinnedJson(Pin, Input)) return false;
+   Report->SetObjectField(TEXT("garment_source_binding_file"), Pin); Report->SetObjectField(TEXT("garment_source_binding_input"), Input);
+   const FString SourceRoot = TEXT("/Game/MetaHumans/Mannequins/RadioWoman/ClothesR2");
+   const FString NewClothes = SourceRoot + TEXT("/SKM_RadioWoman_Clothes"), NewSkeleton = SourceRoot + TEXT("/SKEL_RadioWoman_Clothes");
+   if (!Need(S47J::Int(Input, TEXT("schema_version")) == 1 && S47J::Str(Input, TEXT("status")) == TEXT("READY_FOR_AUTHORING_ONLY") &&
+    S47J::Str(Input, TEXT("policy")) == TEXT("R12-local-coat-yoke16-only-r11-pose") &&
+    !S47J::Bool(Input, TEXT("runtime_accepted")) && !S47J::Bool(Input, TEXT("appearance_accepted")) &&
+    Job->HasTypedField<EJson::Object>(TEXT("postrepair_binding")) &&
+    S47J::Str(Job, TEXT("output_asset")) == TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR12/SM_RadioWoman_Seated"),
+    TEXT("R12 bounded new output and explicit source policy, closed until actual independent garment production"))) return false;
+   for (const TCHAR* Key : {TEXT("source_plan_file"), TEXT("source_report_file"), TEXT("source_fbx_file"), TEXT("source_blend_file"), TEXT("import_receipt_file"),
+    TEXT("source_verify_file"), TEXT("blender_source_verify_file"), TEXT("bind_receipt_file"), TEXT("bind_verify_file"), TEXT("reference_r11_job_file"), TEXT("reference_r11_bake_file")})
+    if (!Need(S47J::Str(S47J::Obj(Input, Key), TEXT("path")).StartsWith(TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/")), TEXT("R12 private immutable source/evidence file"))) return false;
+   FJson Source, Imported, Verified, Bound, BindVerified, ReferenceR11Job, FreshSource;
+   if (!PostrepairPinnedJson(S47J::Obj(Input, TEXT("source_report_file")), Source) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("blender_source_verify_file")), FreshSource) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("import_receipt_file")), Imported) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("source_verify_file")), Verified) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("bind_receipt_file")), Bound) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("bind_verify_file")), BindVerified) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_r11_job_file")), ReferenceR11Job) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_r11_bake_file")), GarmentReferenceBake)) return false;
+   const FJson Yoke = S47J::Obj(Source, TEXT("coat_yoke")), State = S47J::Obj(Bound, TEXT("clothes_bind"));
+   const FJson Fields = S47J::Obj(Input, TEXT("new_job_fields"));
+   if (!Need(Fields.IsValid() && Fields->Values.Num() == 3 && S47J::Str(Fields, TEXT("clothes_asset")) == NewClothes &&
+    S47J::Str(Fields, TEXT("private_skeleton")) == NewSkeleton && S47J::Str(Fields, TEXT("clothes_bind_report")) == S47J::Str(S47J::Obj(Input, TEXT("bind_receipt_file")), TEXT("path")) &&
+    S47J::Str(Source, TEXT("status")) == TEXT("REST_CLOTHES_EXPORTED_NOT_ACCEPTED") && S47J::Bool(Source, TEXT("blend_reopened")) && S47J::Bool(Source, TEXT("source_body_payload_preserved")) &&
+    S47J::Str(Source, TEXT("input_body_sha256")) == TEXT("292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92") &&
+    S47J::Str(Source, TEXT("input_body_sha256_after")) == S47J::Str(Source, TEXT("input_body_sha256")) && !S47J::Bool(Source, TEXT("source_body_geometry_exported")) &&
+    S47J::Str(Source, TEXT("rest_skeleton_sha256")) == TEXT("9b1eb0e830b3041e7d931692f06845d9c433b7265bce9b8c5ed09e2463eea113") &&
+    S47J::Str(Yoke, TEXT("status")) == TEXT("REST_YOKE_MEASURED_NOT_SEATED_OR_NATIVE_ACCEPTED") &&
+    S47J::Str(Yoke, TEXT("policy")) == TEXT("actual-combined-skin-local-coat-yoke-v1") &&
+    S47J::Str(Yoke, TEXT("mutable_part")) == TEXT("Coat_body_open_lower_front") && S47J::Int(Yoke, TEXT("preserved_original_parts")) == 16 &&
+    S47J::Int(Source, TEXT("triangles")) == 23368 && S47J::Arr(S47J::Obj(Source, TEXT("rest_skeleton")), TEXT("bones")).Num() == 341,
+    TEXT("R12 actual bounded upper own Coat_body, exact16 preserved parts, original341-source/342-native separation"))) return false;
+   auto ExplicitFalse = [](const FJson& Data, const TCHAR* Key)
+   { return Data.IsValid() && Data->HasTypedField<EJson::Boolean>(Key) && !S47J::Bool(Data, Key); };
+   for (const TCHAR* Key : {TEXT("source_body_faces_copied"), TEXT("source_body_mutated"), TEXT("native_accepted"), TEXT("seated_fit_accepted")})
+    if (!Need(ExplicitFalse(Yoke, Key), TEXT("R12 explicit source-only scope: ") + FString(Key))) return false;
+   const double ProducerPID = S47J::Num(Source, TEXT("pid")), ReaderPID = S47J::Num(FreshSource, TEXT("pid"));
+   if (!Need(S47J::Str(FreshSource, TEXT("status")) == TEXT("FRESH_SOURCE_SAMPLED_PASS_NOT_NATIVE_OR_APPEARANCE") &&
+    S47J::Str(FreshSource, TEXT("mode")) == TEXT("verify-source") && ProducerPID > 0 && ReaderPID > 0 && ProducerPID != ReaderPID &&
+    ProducerPID != FPlatformProcess::GetCurrentProcessId() && ReaderPID != FPlatformProcess::GetCurrentProcessId() &&
+    S47J::Num(FreshSource, TEXT("producer_pid")) == ProducerPID &&
+    ExplicitFalse(FreshSource, TEXT("source_mutated")) && ExplicitFalse(FreshSource, TEXT("asset_save_called")) &&
+    ExplicitFalse(FreshSource, TEXT("native_accepted")) && ExplicitFalse(FreshSource, TEXT("appearance_accepted")) &&
+    S47J::Str(FreshSource, TEXT("source_reference_sha256")) == S47J::Str(Source, TEXT("rest_skeleton_sha256")) &&
+    PostrepairEqual(S47J::Obj(FreshSource, TEXT("source_report")), S47J::Obj(Input, TEXT("source_report_file"))) &&
+    PostrepairEqual(S47J::Obj(FreshSource, TEXT("garment_payload_snapshot")), S47J::Obj(Source, TEXT("garment_payload_snapshot"))) &&
+    PostrepairEqual(S47J::Obj(FreshSource, TEXT("source_files")), S47J::Obj(Yoke, TEXT("source_files"))),
+    TEXT("R12 actual independent Blender saved-source reader, unchanged complete garment/ref and immutable skin chain"))) return false;
+   const FJson Preserved = S47J::Obj(Yoke, TEXT("preserved_parts"));
+   if (!Need(Preserved.IsValid() && Preserved->Values.Num() == 16 && !Preserved->HasField(TEXT("Coat_body_open_lower_front")),
+    TEXT("R12 exactly16 other original garment parts"))) return false;
+   for (const auto& Entry : Preserved->Values)
+   {
+    const FString Part(Entry.Key.ToView());
+    if (!Need(PostrepairEqual(Entry.Value->AsObject(), S47J::Obj(S47J::Obj(Source, TEXT("existing_parts_before_yoke")), *Part)) &&
+     PostrepairEqual(Entry.Value->AsObject(), S47J::Obj(S47J::Obj(Source, TEXT("existing_parts_preserved_before_weight_transfer")), *Part)),
+     TEXT("R12 exact actual preserved garment part: ") + Part)) return false;
+   }
+   for (const FJson& Fit : {S47J::Obj(Yoke, TEXT("fit")), S47J::Obj(Source, TEXT("saved_reopened_fit")), S47J::Obj(FreshSource, TEXT("actual_fit"))})
+    if (!Need(S47J::Str(Fit, TEXT("status")) == TEXT("REST_YOKE_SAMPLED_NOT_SEATED_OR_NATIVE_ACCEPTED") &&
+     S47J::Num(Fit, TEXT("minimum_clearance_m")) == .006 && S47J::Num(Fit, TEXT("outer_target_m")) == .012 &&
+     ExplicitFalse(Fit, TEXT("continuous_surface_proof")) && S47J::Int(Fit, TEXT("upper_facet_samples")) == 10752 &&
+     S47J::Num(Fit, TEXT("upper_facet_minimum_m")) >= .006 && S47J::Int(Fit, TEXT("required_skin_rays")) > 0 &&
+     S47J::Num(Fit, TEXT("required_skin_minimum_m")) >= .006 && S47J::Num(Fit, TEXT("actual_inner_minimum_m")) > 0 &&
+     S47J::Arr(Fit, TEXT("facets")).Num() >= 10752 &&
+     S47J::Arr(Fit, TEXT("coverage")).Num() == S47J::Int(Fit, TEXT("required_skin_rays")) + S47J::Int(Fit, TEXT("intentional_neck_rays")),
+     TEXT("R12 actual finite source/reopen/fresh face and skin samples retain strict6mm outer gate"))) return false;
+   for (const FJson& FilesToCheck : {S47J::Obj(Yoke, TEXT("source_files")), S47J::Obj(Source, TEXT("producer_files"))})
+   {
+    if (!Need(FilesToCheck.IsValid() && FilesToCheck->Values.Num() > 0, TEXT("R12 full actual source/skin/producer file inventory"))) return false;
+    for (const auto& Entry : FilesToCheck->Values)
+    {
+     TArray<uint8> CheckedBytes;
+     if (!PostrepairPinnedFile(Entry.Value->AsObject(), CheckedBytes)) return false;
+    }
+   }
+   FJson SkinInput, Frame, NativeRest, NativeAcceptance;
+   const FJson SourceFiles = S47J::Obj(Yoke, TEXT("source_files"));
+   if (!PostrepairPinnedJson(S47J::Obj(Yoke, TEXT("inputs")), SkinInput) ||
+    !PostrepairPinnedJson(S47J::Obj(SourceFiles, TEXT("frame_confirmation")), Frame) ||
+    !PostrepairPinnedJson(S47J::Obj(SourceFiles, TEXT("native_rest")), NativeRest) ||
+    !PostrepairPinnedJson(S47J::Obj(SourceFiles, TEXT("native_acceptance")), NativeAcceptance)) return false;
+   if (!Need(S47J::Str(SkinInput, TEXT("policy")) == TEXT("actual-combined-skin-local-coat-yoke-v1") &&
+    PostrepairEqual(S47J::Obj(SkinInput, TEXT("files")), SourceFiles) &&
+    S47J::Str(Frame, TEXT("status")) == TEXT("PASS_COMPLETE_NATIVE_SKIN_FRAME_ONLY_NOT_GARMENT_FIT") &&
+    PostrepairEqual(S47J::Obj(Frame, TEXT("native_report")), S47J::Obj(SourceFiles, TEXT("native_rest"))) &&
+    S47J::Str(NativeRest, TEXT("status")) == TEXT("PASS") && S47J::Str(NativeRest, TEXT("mode")) == TEXT("rest-surface-diagnostic") &&
+    ExplicitFalse(NativeRest, TEXT("asset_save_called")) &&
+    S47J::Str(NativeAcceptance, TEXT("status")) == TEXT("PASS_READONLY_REST_SURFACES_ONLY_NOT_FRAME_OR_GARMENT_FIT") &&
+    PostrepairEqual(S47J::Obj(NativeAcceptance, TEXT("native_report")), S47J::Obj(SourceFiles, TEXT("native_rest"))),
+    TEXT("R12 measured complete actual native Body+Face rest skin and independent frame provenance, never Body-only fit"))) return false;
+   for (const TCHAR* Key : {TEXT("clothes_asset"), TEXT("private_skeleton"), TEXT("clothes_bind_report")})
+    if (!Need(S47J::Str(Job, Key) == S47J::Str(Fields, Key) && S47J::Str(Job, Key) != S47J::Str(ReferenceJob, Key), TEXT("R12 exact explicit new source field: ") + FString(Key))) return false;
+   for (const TCHAR* Key : {TEXT("asset_root"), TEXT("cloth_master"), TEXT("brow_material"), TEXT("contract"), TEXT("contract_sha256"), TEXT("source_snapshot"), TEXT("source_snapshot_sha256")})
+    if (!Need(S47J::Str(Job, Key) == S47J::Str(ReferenceJob, Key) && S47J::Str(ReferenceR11Job, Key) == S47J::Str(ReferenceJob, Key), TEXT("R12 retains actual R10 materials, Body/Face contract and source root: ") + FString(Key))) return false;
+   const double ImportPID = S47J::Num(Imported, TEXT("pid")), VerifyPID = S47J::Num(Verified, TEXT("pid"));
+   if (!Need(S47J::Str(Imported, TEXT("status")) == TEXT("PASS") && S47J::Str(Imported, TEXT("mode")) == TEXT("garment-import") && ImportPID > 0 &&
+    S47J::Str(Verified, TEXT("status")) == TEXT("PASS") && S47J::Str(Verified, TEXT("mode")) == TEXT("garment-verify") && VerifyPID > 0 && VerifyPID != ImportPID &&
+    ImportPID != FPlatformProcess::GetCurrentProcessId() && VerifyPID != FPlatformProcess::GetCurrentProcessId() &&
+    S47J::Str(Bound, TEXT("status")) == TEXT("PASS") && S47J::Str(Bound, TEXT("mode")) == TEXT("bind-clothes") && S47J::Num(Bound, TEXT("pid")) == ImportPID &&
+    S47J::Str(BindVerified, TEXT("status")) == TEXT("PASS") && S47J::Str(BindVerified, TEXT("mode")) == TEXT("verify-clothes-bind") && S47J::Num(BindVerified, TEXT("pid")) == VerifyPID &&
+    PostrepairEqual(State, S47J::Obj(BindVerified, TEXT("clothes_bind"))) && S47J::Bool(State, TEXT("preserved_payload")) &&
+    S47J::Str(State, TEXT("asset")) == NewClothes && S47J::Str(State, TEXT("private_skeleton")) == NewSkeleton &&
+    S47J::Str(State, TEXT("reference_after_sha1")) == FPose(Body->GetRefSkeleton()).Hash() &&
+    S47J::Str(State, TEXT("inverse_reference_after_sha1")) == InverseReferenceHash(Body) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("saved_assets")), S47J::Obj(Verified, TEXT("saved_assets"))) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("blender_source_verify")), S47J::Obj(Input, TEXT("blender_source_verify_file"))) &&
+    PostrepairEqual(S47J::Obj(Verified, TEXT("blender_source_verify")), S47J::Obj(Input, TEXT("blender_source_verify_file"))) &&
+    ImportPID != ProducerPID && ImportPID != ReaderPID && VerifyPID != ProducerPID && VerifyPID != ReaderPID &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("plan")), S47J::Obj(Verified, TEXT("plan"))) &&
+    PostrepairEqual(S47J::Obj(Imported, TEXT("plan")), S47J::Obj(Input, TEXT("source_plan_file"))) &&
+    S47J::Bool(Imported, TEXT("all_preexisting_content_preserved")) && S47J::Bool(Verified, TEXT("all_preexisting_content_preserved")) &&
+    S47J::Bool(Imported, TEXT("all_private_inventory_preserved")) && S47J::Bool(Verified, TEXT("all_private_inventory_preserved")) &&
+    S47J::Bool(Imported, TEXT("all_r11_authoring_receipts_preserved")) && S47J::Bool(Verified, TEXT("all_r11_authoring_receipts_preserved")),
+    TEXT("R12 actual import/bind and independent saved-reader processes, strict canonical bind and preserved originals"))) return false;
+   const FJson Files = S47J::Obj(Input, TEXT("new_native_assets"));
+   if (!Need(Files.IsValid() && Files->Values.Num() == 2 && Files->HasTypedField<EJson::Object>(*NewClothes) && Files->HasTypedField<EJson::Object>(*NewSkeleton) &&
+    PostrepairEqual(Files, S47J::Obj(Verified, TEXT("saved_assets"))), TEXT("R12 exactly two new source assets, no replacement of R10/R11/materials"))) return false;
+   for (const auto& Entry : Files->Values)
+   {
+    const FString Package(Entry.Key.ToView());
+    const FString Path = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Package, FPackageName::GetAssetPackageExtension()));
+    TArray<uint8> Bytes; if (!PostrepairPinnedFile(Entry.Value->AsObject(), Bytes, Path)) return false;
+   }
+   TArray<uint8> SourceBytes;
+   if (!PostrepairPinnedFile(S47J::Obj(Input, TEXT("source_plan_file")), SourceBytes) ||
+    !PostrepairPinnedFile(S47J::Obj(Input, TEXT("source_fbx_file")), SourceBytes) || !PostrepairPinnedFile(S47J::Obj(Input, TEXT("source_blend_file")), SourceBytes)) return false;
+   if (!Need(S47J::Str(Job, TEXT("clothing_report")) == S47J::Str(S47J::Obj(Input, TEXT("source_report_file")), TEXT("path")) &&
+    S47J::Str(Job, TEXT("clothing_report_sha256")) == S47J::Str(S47J::Obj(Input, TEXT("source_report_file")), TEXT("sha256")) &&
+    S47J::Str(Job, TEXT("clothing_fbx")) == S47J::Str(S47J::Obj(Input, TEXT("source_fbx_file")), TEXT("path")) &&
+    S47J::Str(Job, TEXT("clothing_fbx_sha256")) == S47J::Str(S47J::Obj(Input, TEXT("source_fbx_file")), TEXT("sha256")),
+    TEXT("R12 actual job source report/FBX provenance equals the independently measured new source binding"))) return false;
+   const FJson SourceOutputs = S47J::Obj(Source, TEXT("output_files_sha256"));
+   for (const TCHAR* Key : {TEXT("source_fbx_file"), TEXT("source_blend_file")})
+   {
+    const FJson Row = S47J::Obj(Input, Key); const FString Path = S47J::Str(Row, TEXT("path"));
+    if (!Need(S47J::Str(SourceOutputs, *Path) == S47J::Str(Row, TEXT("sha256")), TEXT("R12 actual exported bytes linked by source report and dual-hash root receipt"))) return false;
+   }
+   FJson Geometry, Description; if (!GeometryState(Geometry, Description)) return false;
+   if (!Need(PostrepairEqual(Geometry, S47J::Obj(State, TEXT("geometry_after"))) &&
+    FPose(Clothes->GetRefSkeleton()).Hash() == FPose(Body->GetRefSkeleton()).Hash() && InverseReferenceHash(Clothes) == InverseReferenceHash(Body) &&
+    PostrepairEqual(SkeletalSource(Clothes), S47J::Obj(S47J::Obj(BindVerified, TEXT("skeletal_sources")), TEXT("clothes"))) &&
+    S47J::Str(GarmentReferenceBake, TEXT("status")) == TEXT("PASS") && S47J::Str(GarmentReferenceBake, TEXT("mode")) == TEXT("bake") &&
+    S47J::Str(S47J::Obj(GarmentReferenceBake, TEXT("output")), TEXT("asset")) == TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated.SM_RadioWoman_Seated") &&
+    PostrepairEqual(SkeletalSource(Body), S47J::Obj(S47J::Obj(GarmentReferenceBake, TEXT("skeletal_sources")), TEXT("body"))) &&
+    PostrepairEqual(SkeletalSource(Face), S47J::Obj(S47J::Obj(GarmentReferenceBake, TEXT("skeletal_sources")), TEXT("face"))) &&
+    PostrepairEqual(S47J::Obj(Report, TEXT("card_sources")), S47J::Obj(GarmentReferenceBake, TEXT("card_sources"))) &&
+    PostrepairEqual(S47J::Obj(ReferenceR11Job, TEXT("postrepair_binding")), S47J::Obj(Job, TEXT("postrepair_binding"))),
+    TEXT("R12 actual new Clothes payload plus unchanged accepted R11 Body, Face, cards and measured pose binding"))) return false;
+   USkeletalMesh* OldClothes = Load<USkeletalMesh>(S47J::Str(ReferenceJob, TEXT("clothes_asset")));
+   if (!Need(OldClothes && OldClothes->GetSkeleton(), TEXT("R12 actual retained R10 clothes source loads without replacement"))) return false;
+   const auto CurrentMaterials = Clothes->GetMaterials(), OldMaterials = OldClothes->GetMaterials();
+   if (!Need(CurrentMaterials.Num() == 5 && CurrentMaterials.Num() == OldMaterials.Num(), TEXT("R12 retains all five actual R10 material slots"))) return false;
+   for (int32 Index = 0; Index < CurrentMaterials.Num(); ++Index)
+    if (!Need(CurrentMaterials[Index].MaterialSlotName == OldMaterials[Index].MaterialSlotName && CurrentMaterials[Index].MaterialInterface == OldMaterials[Index].MaterialInterface,
+     TEXT("R12 actual identical original slot order and MIC object identity"))) return false;
+   const FJson NativeFiles = S47J::Obj(Input, TEXT("unchanged_native_assets"));
+   TSet<FString> RequiredAssets;
+   for (const auto& Entry : Contract->GetObjectField(TEXT("sources"))->Values) RequiredAssets.Add(Entry.Value->AsString());
+   for (const auto& Slot : OldMaterials) RequiredAssets.Add(GetPathNameSafe(Slot.MaterialInterface));
+   RequiredAssets.Add(S47J::Str(ReferenceJob, TEXT("cloth_master")));
+   RequiredAssets.Add(S47J::Str(ReferenceJob, TEXT("brow_material")));
+   RequiredAssets.Add(OldClothes->GetPathName()); RequiredAssets.Add(OldClothes->GetSkeleton()->GetPathName());
+   if (!Need(NativeFiles.IsValid() && NativeFiles->Values.Num() == RequiredAssets.Num(), TEXT("R12 complete exact unchanged original/native/material source file inventory"))) return false;
+   for (const FString& AssetName : RequiredAssets)
+   {
+    if (!Need(NativeFiles->HasTypedField<EJson::Object>(*AssetName), TEXT("R12 unchanged source pin exists: ") + AssetName)) return false;
+    const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(FPackageName::ObjectPathToPackageName(AssetName), FPackageName::GetAssetPackageExtension()));
+    TArray<uint8> Bytes; if (!PostrepairPinnedFile(S47J::Obj(NativeFiles, *AssetName), Bytes, Filename)) return false;
+   }
+   const FString ReferenceR11Path = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR11/SM_RadioWoman_Seated"), FPackageName::GetAssetPackageExtension()));
+   if (!PostrepairPinnedFile(S47J::Obj(Input, TEXT("reference_r11_native_file")), SourceBytes, ReferenceR11Path)) return false;
+   GarmentSourceBinding = Input; Report->SetObjectField(TEXT("garment_source_binding"), Input); Report->SetNumberField(TEXT("garment_source_binding_version"), 1);
+   Report->SetObjectField(TEXT("garment_source_geometry_actual"), Geometry); return true;
+  }
+  bool CheckGarmentPoseUnchanged(const FJson& ActualReport)
+  {
+   if (!GarmentSourceBinding.IsValid()) return true;
+   for (const TCHAR* Key : {TEXT("foot_ik"), TEXT("hand_ik"), TEXT("seat_space_landmarks_cm")})
+   {
+    const auto* Actual = ActualReport->Values.Find(Key); const auto* Reference = GarmentReferenceBake->Values.Find(Key);
+    if (!Need(Actual && Reference && FJsonValue::CompareEqual(**Actual, **Reference), TEXT("R12 retains exact accepted R11 ankle/hand/seat data: ") + FString(Key))) return false;
+   }
+   if (!Need(S47J::Str(ActualReport, TEXT("posed_body_sha1")) == S47J::Str(GarmentReferenceBake, TEXT("posed_body_sha1")) &&
+    PostrepairEqual(S47J::Obj(ActualReport, TEXT("face_pose_transfer")), S47J::Obj(GarmentReferenceBake, TEXT("face_pose_transfer"))),
+    TEXT("R12 exact same canonical body pose, unchanged face transfer and rigid hair/card basis"))) return false;
+   Report->SetBoolField(TEXT("garment_reference_pose_unchanged"), true); return true;
+  }
+
+  bool PreparePostrepairBinding()
+  {
+   if (!Job->HasField(TEXT("postrepair_binding")))
+   {
+    if (Job->HasField(TEXT("garment_source_binding"))) return Need(false, TEXT("new garment source requires the actual accepted postrepair binding"));
+    return true; // Original R10 route remains explicit history.
+   }
+   const FString EvidenceRoot = TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/");
+   const FJson InputPin = S47J::Obj(Job, TEXT("postrepair_binding"));
+   if (!Need(S47J::Str(InputPin, TEXT("path")).StartsWith(EvidenceRoot), TEXT("R11 explicit private evidence-root binding path"))) return false;
+   FJson Input; if (!PostrepairPinnedJson(InputPin, Input)) return false;
+   Report->SetObjectField(TEXT("postrepair_binding_file"), InputPin);
+   Report->SetObjectField(TEXT("postrepair_binding_input"), Input);
+   if (!Need(S47J::Int(Input, TEXT("schema_version")) == 1 && S47J::Str(Input, TEXT("status")) == TEXT("READY_FOR_AUTHORING_ONLY") &&
+    S47J::Str(Input, TEXT("policy")) == TEXT("actual-tb2-visible-support-r10-reference") && !S47J::Bool(Input, TEXT("runtime_accepted")) &&
+    !S47J::Bool(Input, TEXT("contact_accepted")), TEXT("R11 explicit schema/policy; authoring only, never runtime/contact acceptance"))) return false;
+   for (const TCHAR* Key : {TEXT("acceptance_file"), TEXT("reference_bake_file"), TEXT("reference_contract_file"), TEXT("reference_job_file")})
+    if (!Need(S47J::Str(S47J::Obj(Input, Key), TEXT("path")).StartsWith(EvidenceRoot), TEXT("R11 private authoring evidence path: ") + FString(Key))) return false;
+   const FString RawInputPath = S47J::Str(S47J::Obj(Input, TEXT("raw_file")), TEXT("path"));
+   if (!Need(RawInputPath.StartsWith(TEXT("/tmp/S47-")) && RawInputPath.Contains(TEXT("/Saved/RadioBenchPostRepairDiagnostic/")) && RawInputPath.EndsWith(TEXT("/result.json")), TEXT("R11 isolated actual postrepair raw-result path"))) return false;
+   FJson Acceptance, Raw, ReferenceContract, ReferenceJob;
+   if (!PostrepairPinnedJson(S47J::Obj(Input, TEXT("acceptance_file")), Acceptance) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("raw_file")), Raw) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_bake_file")), PostrepairReferenceBake) || !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_contract_file")), ReferenceContract) ||
+    !PostrepairPinnedJson(S47J::Obj(Input, TEXT("reference_job_file")), ReferenceJob)) return false;
+   if (!PrepareGarmentSourceBinding(ReferenceJob)) return false;
+   for (const TCHAR* Key : {TEXT("clothes_asset"), TEXT("private_skeleton"), TEXT("brow_material"), TEXT("cloth_master"), TEXT("asset_root"), TEXT("clothes_bind_report")})
+   {
+    const bool NewGarmentField = GarmentSourceBinding.IsValid() && (FString(Key) == TEXT("clothes_asset") || FString(Key) == TEXT("private_skeleton") || FString(Key) == TEXT("clothes_bind_report"));
+    if (!Need(!S47J::Str(ReferenceJob, Key).IsEmpty() && (NewGarmentField || S47J::Str(ReferenceJob, Key) == S47J::Str(Job, Key)), TEXT("R11 unchanged R10 source or explicitly proven R12 garment-only field: ") + FString(Key))) return false;
+   }
+   const FJson RawPin = S47J::Obj(Input, TEXT("raw_file")); const FString RawPath = S47J::Str(RawPin, TEXT("path"));
+   const FJson AcceptedRaw = S47J::Obj(S47J::Obj(Acceptance, TEXT("raw")), *RawPath);
+   if (!Need(S47J::Str(Acceptance, TEXT("status")) == TEXT("PASS_READONLY_POSTREPAIR_NATIVE_MEASUREMENT") &&
+    PostrepairEqual(AcceptedRaw, RawPin) &&
+    S47J::Str(Raw, TEXT("status")) == TEXT("MEASURED") && !S47J::Bool(Raw, TEXT("timeout")) && S47J::Bool(Raw, TEXT("phase_matches_request")) &&
+    S47J::Str(PostrepairReferenceBake, TEXT("status")) == TEXT("PASS") && S47J::Str(PostrepairReferenceBake, TEXT("mode")) == TEXT("bake") &&
+    S47J::Str(Job, TEXT("contract")) == S47J::Str(S47J::Obj(Input, TEXT("reference_contract_file")), TEXT("path")) && PostrepairEqual(ReferenceContract, Contract),
+    TEXT("R11 frozen root acceptance/raw/reference-bake link and exact unchanged reference contract file/content"))) return false;
+   const FJson Native = S47J::Obj(Raw, TEXT("native_readback")), D = S47J::Obj(Native, TEXT("bench_diagnostics"));
+   if (!Need(S47J::Bool(D, TEXT("measurement_valid")) && S47J::Str(D, TEXT("source_geometry_phase")) == TEXT("POST_REPAIR_RIGID_SOURCE_FRAME_NATIVE_QUERY") &&
+    !S47J::Bool(Native, TEXT("active")) && S47J::Bool(Native, TEXT("fallback_original_bindings_intact")) &&
+    S47J::Str(D, TEXT("area_at_query")) == TEXT("diner") && S47J::Arr(D, TEXT("mismatches")).IsEmpty() &&
+    !S47J::Bool(D, TEXT("entire_laundry_shell_ignored")), TEXT("R11 actual read-only postrepair measurement, original fallback and correct live area"))) return false;
+   const FString ReferenceAsset = S47J::Str(D, TEXT("sole_projection_asset"));
+   if (!Need(ReferenceAsset.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/BakeR10/")) && ReferenceAsset != Job->GetStringField(TEXT("output_asset")) &&
+    S47J::Str(S47J::Obj(PostrepairReferenceBake, TEXT("output")), TEXT("asset")) == ReferenceAsset,
+    TEXT("R11 measured historical R10 reference is a different asset from the fresh output"))) return false;
+   const FJson Assets = S47J::Obj(Acceptance, TEXT("native_assets")); if (!Need(Assets.IsValid() && Assets->Values.Num() == 4 &&
+    Assets->HasTypedField<EJson::Object>(ReferenceAsset) && Assets->HasTypedField<EJson::Object>(TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell")), TEXT("R11 four frozen actual native packages including reference and Shell"))) return false;
+   const FJson ReferenceFile = S47J::Obj(S47J::Obj(Assets, *ReferenceAsset), TEXT("file"));
+   if (!Need(S47J::Str(Acceptance, TEXT("reference_bake_native_path")) == S47J::Str(ReferenceFile, TEXT("path")) &&
+    S47J::Str(Acceptance, TEXT("reference_bake_native_sha1")).Equals(S47J::Str(ReferenceFile, TEXT("sha1")), ESearchCase::IgnoreCase) &&
+    S47J::Str(Acceptance, TEXT("reference_bake_native_sha256")) == S47J::Str(ReferenceFile, TEXT("sha256")), TEXT("R11 native reference fields name the measured uasset, separate from the pinned JSON pose report"))) return false;
+   UStaticMesh* ReferenceMesh = nullptr; TArray<TSharedPtr<FJsonValue>> NativeAssets;
+   for (const auto& Entry : Assets->Values)
+   {
+    const FString AssetName(Entry.Key.ToView());
+    const FJson Pin = Entry.Value->AsObject(), File = S47J::Obj(Pin, TEXT("file")); const FString Package(FPackageName::ObjectPathToPackageName(AssetName));
+    if (!Need(AssetName.StartsWith(TEXT("/Game/")) && !AssetName.Contains(TEXT("..")) && FPackageName::IsValidLongPackageName(Package), TEXT("R11 valid native long package/object path"))) return false;
+    const FString Filename = FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Package, FPackageName::GetAssetPackageExtension()));
+    TArray<uint8> Bytes; if (!PostrepairPinnedFile(File, Bytes, Filename)) return false;
+    UStaticMesh* Actual = Load<UStaticMesh>(AssetName); if (Actual) FAssetCompilingManager::Get().FinishAllCompilation();
+    FJson Row = Object(); Row->SetStringField(TEXT("asset"), AssetName); Row->SetObjectField(TEXT("file"), File);
+    if (!Need(Actual && Actual->GetPathName() == AssetName && Actual->GetNumLODs() > 0, TEXT("R11 actual saved native mesh reloads: ") + AssetName)) return false;
+    const auto Expected = S47J::Nums(Pin, TEXT("lod_triangles")); TArray<TSharedPtr<FJsonValue>> Counts;
+    const bool ThreeLODs = AssetName == ReferenceAsset || AssetName == TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell");
+    if (!Need(!ThreeLODs || (Actual->GetNumLODs() == 3 && Expected.Num() == 3), TEXT("R11 character and Shell actual three-LOD identity"))) return false;
+    for (int32 I = 0; I < Actual->GetNumLODs(); ++I)
+    {
+     const int32 Triangles = Actual->GetNumTriangles(I); Counts.Add(MakeShared<FJsonValueNumber>(Triangles));
+     if (!Need(Triangles > 0 && (Expected.IsEmpty() || (Expected.IsValidIndex(I) && Expected[I] == Triangles)), TEXT("R11 actual positive native geometry; compare only actually premeasured LOD counts"))) return false;
+    }
+    Row->SetArrayField(TEXT("actual_lod_triangles"), Counts); Row->SetStringField(TEXT("lod_scope"), ThreeLODs ? TEXT("compared with actual R2 three-LOD observation") : TEXT("first authoring reader observation; R2 did not capture these LODs")); NativeAssets.Add(Value(Row));
+    if (AssetName == ReferenceAsset) ReferenceMesh = Actual;
+   }
+   Report->SetArrayField(TEXT("postrepair_native_packages_actual"), NativeAssets);
+   if (!Need(ReferenceMesh && PostrepairPacked(ReferenceMesh) == S47J::Str(D, TEXT("actual_selected_sole_packed_vertex_sha1")).ToLower() &&
+    S47J::Nums(S47J::Obj(Assets, *ReferenceAsset), TEXT("lod_triangles")) == S47J::Nums(D, TEXT("actual_projection_lod_triangles")), TEXT("R11 actual CPU R10 reference payload/all three LOD counts are the measured projection geometry"))) return false;
+   FTransform Frame; FVector Anchor, MeasuredSeat, AcceptedSeat;
+   if (!Need(PostrepairFrame(S47J::Obj(D, TEXT("measured_seat_projection_frame")), Frame) && PostrepairVector(D, TEXT("unchanged_original_anchor_ue_cm"), Anchor) &&
+    PostrepairVector(D, TEXT("measured_candidate_seat_ue_cm"), MeasuredSeat) && PostrepairVector(Acceptance, TEXT("measured_seat_ue_cm"), AcceptedSeat) &&
+    Frame.GetLocation().Equals(MeasuredSeat, .00001) && FMath::Abs(MeasuredSeat.X - Anchor.X) <= .00001 && FMath::Abs(MeasuredSeat.Y - Anchor.Y) <= .00001 &&
+    MeasuredSeat.Equals(AcceptedSeat, .00001) && S47J::Int(Native, TEXT("person_node"), -1) == 1480 &&
+    Frame.TransformVectorNoScale(FVector::UpVector).Equals(FVector::UpVector, .000001) && S47J::Int(D, TEXT("candidate_seat_actual_hits")) >= 5 &&
+    S47J::Num(D, TEXT("candidate_seat_spread_cm"), 1e6) <= 1.5, TEXT("R11 actually measured TB2 seat, unchanged anchor XY and correct centimetre/+X/+Y/+Z frame"))) return false;
+   // Read-only diagnostics do not populate the ordinary adoption-state Forward/Right
+   // members. The explicit measured frame and all 96 vertex/world pairs are authoritative.
+   const FJson TB2 = S47J::Obj(D, TEXT("tb2_identity"));
+   FTransform ShellFrame;
+   if (!Need(PostrepairFrame(S47J::Obj(TB2, TEXT("transform")), ShellFrame) && ShellFrame.Equals(FTransform(FQuat::Identity, FVector(798500, 213300, 801.3043546669646)), .001) &&
+    S47J::Str(TB2, TEXT("name")) == TEXT("town-production:SM_Town_Laundry_Shell") && S47J::Int(TB2, TEXT("parent"), -1) == 1431 &&
+    S47J::Str(TB2, TEXT("mesh")) == TEXT("/Game/TownBuildings/SM_Town_Laundry_Shell.SM_Town_Laundry_Shell") &&
+    S47J::Bool(TB2, TEXT("registered")) && S47J::Bool(TB2, TEXT("shown")) && S47J::Bool(TB2, TEXT("bVisible")) && !S47J::Bool(TB2, TEXT("hidden_in_game")), TEXT("R11 measured shown TB2 identity, never hidden g1074"))) return false;
+   const auto Slats = S47J::Arr(D, TEXT("native_slat_traces")); if (!Need(Slats.Num() == 6, TEXT("R11 actual six repaired slats"))) return false;
+   for (const auto& Entry : Slats)
+   {
+    const FJson Row = Entry->AsObject(); const auto Traces = S47J::Arr(Row, TEXT("traces"));
+    if (!Need(S47J::Int(Row, TEXT("actual_top_hits")) == 3 && Traces.Num() == 3, TEXT("R11 three measured tops on every slat"))) return false;
+    for (const auto& Trace : Traces) if (!Need(S47J::Bool(Trace->AsObject(), TEXT("actual_repaired_slat_top_match")), TEXT("R11 actual repaired slat classification"))) return false;
+   }
+   PostrepairBinding = Input; PostrepairFloorTargets = Object(); int32 RequiredBottoms = 0;
+   auto VisibleCandidate = [&](const FJson& Hit, FVector& Impact, FVector& Normal)
+   {
+    const FJson Surface = S47J::Obj(Hit, TEXT("surface_identity"));
+    return S47J::Bool(Hit, TEXT("hit")) && !S47J::Bool(Hit, TEXT("start_penetrating")) && PostrepairVector(Hit, TEXT("impact_ue_cm"), Impact) && PostrepairVector(Hit, TEXT("impact_normal_ue"), Normal) && Normal.Z > .7 &&
+     S47J::Bool(Surface, TEXT("actually_shown_registered")) && S47J::Bool(Surface, TEXT("active_area_root")) && S47J::Bool(Surface, TEXT("material_available")) &&
+     !S47J::Bool(Surface, TEXT("same_laundry_shell")) && Assets->HasTypedField<EJson::Object>(S47J::Str(Surface, TEXT("mesh")));
+   };
+   for (const auto& Entry : S47J::Arr(D, TEXT("bench_underside_and_visible_surface_traces")))
+   {
+    const FJson Row = Entry->AsObject(); if (!S47J::Bool(Row, TEXT("required_interior_foot_sample"))) continue; ++RequiredBottoms; FVector Impact, Normal;
+    const FJson Near = S47J::Obj(S47J::Obj(Row, TEXT("measured_visible_surface_probes")), TEXT("direct_near_contact_component_probes_no_skipped_gap"));
+    if (!Need(S47J::Bool(Row, TEXT("actual_repaired_bottom_match")) && VisibleCandidate(S47J::Obj(Near, TEXT("highest_measured_visible_candidate")), Impact, Normal), TEXT("R11 four actual repaired undersides with directly measured shown near support; no world self-bench used as floor"))) return false;
+   }
+   if (!Need(RequiredBottoms == 4 && S47J::Int(D, TEXT("seat_slat_count")) == 4 && S47J::Int(D, TEXT("back_slat_count")) == 2, TEXT("R11 exact repaired bench query cohort"))) return false;
+   const auto Feet = S47J::Arr(D, TEXT("selected_sole_projection")); if (!Need(Feet.Num() == 2, TEXT("R11 both measured projection feet"))) return false;
+   for (int32 Side = 0; Side < 2; ++Side)
+   {
+    const FJson Foot = Feet[Side]->AsObject(); const auto Samples = S47J::Arr(Foot, TEXT("samples")); const TCHAR* BoneName = Side == 0 ? TEXT("foot_l") : TEXT("foot_r");
+    if (!Need(S47J::Int(Foot, TEXT("side"), -1) == Side && S47J::Int(Foot, TEXT("unique_lowest_sole_vertices")) == 48 && Samples.Num() == 48, TEXT("R11 exact 48 actual sole samples per side"))) return false;
+    double Minimum = 1e20, Maximum = -1e20; TArray<FVector> Unique; const auto& ReferencePositions = ReferenceMesh->GetRenderData()->LODResources[0].VertexBuffers.PositionVertexBuffer;
+    for (const auto& Entry : Samples)
+    {
+     const FJson Sample = Entry->AsObject(), Direct = S47J::Obj(Sample, TEXT("direct_visible_component_probes")); FVector Local, Projected, Impact, Normal;
+     const int32 Vertex = S47J::Int(Sample, TEXT("native_vertex_index"), -1);
+     if (!Need(S47J::Bool(Sample, TEXT("world_direct_visible_provider_agree")) && PostrepairVector(Sample, TEXT("native_local_cm"), Local) &&
+      Vertex >= 0 && uint32(Vertex) < ReferencePositions.GetNumVertices() && Local.Equals(FVector(ReferencePositions.VertexPosition(Vertex)), .00001) &&
+      !Unique.ContainsByPredicate([&](const FVector& Previous) { return Previous.Equals(Local, .00001); }) &&
+      (Side == 0 ? Local.Y < 0 : Local.Y > 0) && PostrepairVector(Sample, TEXT("projected_world_ue_cm"), Projected) &&
+      Projected.Equals(Frame.TransformPosition(Local), .00001) && VisibleCandidate(S47J::Obj(Direct, TEXT("highest_measured_visible_candidate")), Impact, Normal),
+      TEXT("R11 same actual reference vertices/frame with shown, world/direct-agreed support; direct API bBlockingHit is not invented"))) return false;
+     Unique.Add(Local);
+     const double Gap = Projected.Z - Impact.Z;
+     if (!Need(S47J::Has(Sample, TEXT("gap_to_direct_visible_candidate_cm")) && FMath::IsNearlyEqual(Gap, S47J::Num(Sample, TEXT("gap_to_direct_visible_candidate_cm")), .00001), TEXT("R11 actual measured gap reconstructed from points"))) return false;
+     Minimum = FMath::Min(Minimum, Gap); Maximum = FMath::Max(Maximum, Gap);
+    }
+    FJson OldFoot; for (const auto& Entry : S47J::Arr(PostrepairReferenceBake, TEXT("foot_ik"))) if (S47J::Str(Entry->AsObject(), TEXT("bone")) == BoneName) OldFoot = Entry->AsObject();
+    FVector Prior, Seed; if (!Need(PostrepairVector(OldFoot, TEXT("actual_foot_output_cm"), Prior) && PostrepairVector(OldFoot, TEXT("seed_foot_output_cm"), Seed), TEXT("R11 actual reference ankle/seed output landmarks"))) return false;
+    const double Delta = -.5 * (Minimum + Maximum); const FVector Target = Prior + FVector::UpVector * Delta;
+    FJson TargetData = Object(); TargetData->SetStringField(TEXT("output_side"), Side == 0 ? TEXT("negative_Y") : TEXT("positive_Y")); TargetData->SetNumberField(TEXT("actual_rays"), 48);
+    TargetData->SetNumberField(TEXT("minimum_gap_cm"), Minimum); TargetData->SetNumberField(TEXT("maximum_gap_cm"), Maximum); TargetData->SetNumberField(TEXT("reference_vertical_delta_cm"), Delta);
+    TargetData->SetArrayField(TEXT("reference_actual_foot_output_cm"), Vector(Prior)); TargetData->SetArrayField(TEXT("reference_seed_foot_output_cm"), Vector(Seed)); TargetData->SetArrayField(TEXT("target_output_cm"), Vector(Target));
+    TargetData->SetNumberField(TEXT("vertical_lift_cm"), Target.Z - Seed.Z); PostrepairFloorTargets->SetObjectField(BoneName, TargetData);
+   }
+   Report->SetObjectField(TEXT("postrepair_binding"), Input); Report->SetObjectField(TEXT("postrepair_derived_foot_targets"), PostrepairFloorTargets);
+   Report->SetNumberField(TEXT("postrepair_binding_version"), 1);
+   Report->SetStringField(TEXT("postrepair_hand_policy"), TEXT("Unchanged reference seat-local hand targets; no old g1074/world-height compensation. Derived radio relocation and authored grip require separate runtime/bake evidence."));
+   return true;
+  }
+
+  bool PoseBody(FPose& Posed, FTransform& Seat)
+  {
+   const auto Bone = [&](const TCHAR* Name) { return Posed.Ref.FindBoneIndex(Name); };
+   const TCHAR* Required[] = {TEXT("pelvis"),TEXT("thigh_l"),TEXT("thigh_r"),TEXT("calf_l"),TEXT("calf_r"),TEXT("foot_l"),TEXT("foot_r"),
+    TEXT("upperarm_l"),TEXT("upperarm_r"),TEXT("lowerarm_l"),TEXT("lowerarm_r"),TEXT("hand_l"),TEXT("hand_r"),TEXT("head")};
+   for (const TCHAR* Name : Required) if (!Need(Bone(Name) != INDEX_NONE, FString(TEXT("required native pose bone ")) + Name)) return false;
+   const FPose Reference(Posed.Ref);
+   FVector Left = Posed.Component[Bone(TEXT("thigh_l"))].GetLocation() - Posed.Component[Bone(TEXT("thigh_r"))].GetLocation(); Left.Z = 0;
+   if (!Need(Left.Normalize(), TEXT("measured hip left axis"))) return false;
+   const FVector Forward = (FVector::UpVector ^ Left).GetSafeNormal();
+   const FVector Pelvis = Posed.Component[Bone(TEXT("pelvis"))].GetLocation();
+   Seat = FTransform(FRotationMatrix::MakeFromXZ(Forward, FVector::UpVector).ToQuat(), Pelvis - FVector::UpVector * PoseNumber(TEXT("pelvis_above_seat_cm")));
+   const double Drop = FMath::DegreesToRadians(PoseNumber(TEXT("thigh_drop_degrees")));
+   const bool UsePostrepair = Job->HasField(TEXT("postrepair_binding"));
+   const FJson Binding = UsePostrepair ? PostrepairBinding : Contract->GetObjectField(TEXT("measured_seat_binding"));
+   if (!Need(!UsePostrepair || (Binding.IsValid() && PostrepairFloorTargets.IsValid() && Contract->GetObjectField(TEXT("pose"))->GetBoolField(TEXT("no_stretching"))), TEXT("R11 private measured binding prepared with unchanged no-stretch pose policy"))) return false;
+   Report->SetObjectField(TEXT("measured_seat_binding"), Binding);
+   if (!UsePostrepair && !Need(Binding->GetStringField(TEXT("policy")) == TEXT("measured-bench-seat-and-original-ground") &&
+    Binding->GetStringField(TEXT("raw_result_sha256")) == TEXT("846064eeb055566ad7170583bd2dc7b737f0717b21c8a1aa37aa3f7f38579d7c") &&
+    Contract->GetObjectField(TEXT("pose"))->GetBoolField(TEXT("no_stretching")) &&
+    FMath::IsNearlyEqual(PoseNumber(TEXT("hand_above_pelvis_cm")) + Binding->GetNumberField(TEXT("legacy_seat_delta_cm")),
+     Binding->GetNumberField(TEXT("previous_hand_above_pelvis_cm")), 0.000000001),
+    TEXT("explicit measured bench/96-sole-sample binding and hand-height compensation, without stretching"))) return false;
+   // The legacy branch above is R10 history. R11 keeps reference seat-local hands;
+   // no original g1074/radio WORLD-height compensation is applied to the new site.
+   TArray<TSharedPtr<FJsonValue>> IK, FootIK;
+   for (const bool IsLeft : {true, false})
+   {
+    const int32 Thigh = Bone(IsLeft ? TEXT("thigh_l") : TEXT("thigh_r"));
+    const int32 Calf = Bone(IsLeft ? TEXT("calf_l") : TEXT("calf_r"));
+    const int32 Foot = Bone(IsLeft ? TEXT("foot_l") : TEXT("foot_r"));
+    if (!Need(Posed.Ref.GetParentIndex(Calf) == Thigh && Posed.Ref.GetParentIndex(Foot) == Calf, TEXT("native direct thigh/calf/foot chain"))) return false;
+    const double ThighLength = FVector::Distance(Posed.Component[Thigh].GetLocation(), Posed.Component[Calf].GetLocation());
+    const double CalfLength = FVector::Distance(Posed.Component[Calf].GetLocation(), Posed.Component[Foot].GetLocation());
+    Posed.Aim(Thigh, Calf, Forward * FMath::Cos(Drop) - FVector::UpVector * FMath::Sin(Drop) + Left * ((IsLeft ? 1 : -1) * PoseNumber(TEXT("knee_splay_cm")) / ThighLength));
+    Posed.Aim(Calf, Foot, -FVector::UpVector);
+    FTransform FlatFoot = Posed.Component[Foot]; FlatFoot.SetRotation(Reference.Component[Foot].GetRotation()); Posed.Set(Foot, FlatFoot);
+    // Preserve the proven R9 seed, then lift only its ankle target by the measured
+    // ground residual. The solver keeps both native segment lengths, with no stretch.
+    const TCHAR* FootName = IsLeft ? TEXT("foot_l") : TEXT("foot_r");
+    const FJson FloorTarget = UsePostrepair ? PostrepairFloorTargets->GetObjectField(FootName) : Binding->GetObjectField(TEXT("foot_floor_targets"))->GetObjectField(FootName);
+    const double Lift = FloorTarget->GetNumberField(TEXT("vertical_lift_cm"));
+    FTransform ThighPose = Posed.Component[Thigh], CalfPose = Posed.Component[Calf], FootPose = Posed.Component[Foot];
+    const FTransform SeedThigh = ThighPose, SeedCalf = CalfPose, SeedFoot = FootPose;
+    FVector FootTarget = SeedFoot.GetLocation() + FVector::UpVector * Lift; const FVector KneePole = SeedCalf.GetLocation();
+    if (UsePostrepair)
+    {
+     FVector ReferenceSeed, TargetOutput;
+     if (!Need(PostrepairVector(FloorTarget, TEXT("reference_seed_foot_output_cm"), ReferenceSeed) && PostrepairVector(FloorTarget, TEXT("target_output_cm"), TargetOutput) &&
+      ReferenceSeed.Equals(Seat.InverseTransformPosition(SeedFoot.GetLocation()), PoseNumber(TEXT("max_foot_target_error_cm"))), TEXT("R11 actual current canonical leg-seed is the pinned reference seed"))) return false;
+     FootTarget = Seat.TransformPosition(TargetOutput);
+     if (!Need(FootTarget.Equals(SeedFoot.GetLocation() + FVector::UpVector * Lift, PoseNumber(TEXT("max_foot_target_error_cm"))), TEXT("R11 separately measured target changes only the reference ankle vertical coordinate"))) return false;
+    }
+    const FVector ReachDelta = FootTarget - SeedThigh.GetLocation(); const double Reach = ReachDelta.Size();
+    const FVector PoleDelta = KneePole - SeedThigh.GetLocation();
+    const FVector PoleProjection = PoleDelta - ReachDelta.GetSafeNormal() * FVector::DotProduct(PoleDelta, ReachDelta.GetSafeNormal());
+    const bool Reachable = ThighLength > 0 && CalfLength > 0 && Reach > FMath::Abs(ThighLength - CalfLength) && Reach < ThighLength + CalfLength && !PoleProjection.IsNearlyZero();
+    FJson FootItem = Object(); FootIK.Add(Value(FootItem)); Report->SetArrayField(TEXT("foot_ik"), FootIK);
+    FootItem->SetStringField(TEXT("bone"), FootName); FootItem->SetObjectField(TEXT("measured_floor_target"), FloorTarget);
+    FootItem->SetObjectField(TEXT("seed_thigh_component"), TransformData(SeedThigh)); FootItem->SetObjectField(TEXT("seed_calf_component"), TransformData(SeedCalf)); FootItem->SetObjectField(TEXT("seed_foot_component"), TransformData(SeedFoot));
+    FootItem->SetArrayField(TEXT("target_native_cm"), Vector(FootTarget)); FootItem->SetArrayField(TEXT("knee_pole_native_cm"), Vector(KneePole));
+    FootItem->SetArrayField(TEXT("seed_foot_output_cm"), Vector(Seat.InverseTransformPosition(SeedFoot.GetLocation())));
+    FootItem->SetNumberField(TEXT("vertical_lift_cm"), Lift); FootItem->SetNumberField(TEXT("upper_length_cm"), ThighLength); FootItem->SetNumberField(TEXT("lower_length_cm"), CalfLength);
+    FootItem->SetNumberField(TEXT("target_reach_cm"), Reach); FootItem->SetNumberField(TEXT("minimum_reach_cm"), FMath::Abs(ThighLength-CalfLength)); FootItem->SetNumberField(TEXT("maximum_reach_cm"), ThighLength+CalfLength);
+    FootItem->SetBoolField(TEXT("reachable_without_stretch"), Reachable); FootItem->SetBoolField(TEXT("allow_stretching"), false);
+    if (UsePostrepair) FootItem->SetStringField(TEXT("target_policy"), TEXT("Pinned R10 actual ankle output + new per-foot vertical correction; vertical_lift_cm is total from current canonical seed, not the R10 residual alone"));
+    if (!Need(Reachable && FloorTarget->GetIntegerField(TEXT("actual_rays")) == 48 &&
+     FloorTarget->GetStringField(TEXT("output_side")) == (IsLeft ? TEXT("negative_Y") : TEXT("positive_Y")) &&
+     (UsePostrepair || FMath::IsNearlyEqual(Lift, -0.5 * (FloorTarget->GetNumberField(TEXT("minimum_gap_cm")) + FloorTarget->GetNumberField(TEXT("maximum_gap_cm"))), 0.000000001)),
+     FString(TEXT("measured native ankle target reachable before no-stretch IK: ")) + FootName)) return false;
+    AnimationCore::SolveTwoBoneIK(ThighPose, CalfPose, FootPose, KneePole, FootTarget, ThighLength, CalfLength, false, 1.0, 1.0);
+    Posed.Set(Thigh, ThighPose); Posed.Set(Calf, CalfPose); Posed.Set(Foot, FootPose);
+    const FTransform ActualThigh = Posed.Component[Thigh], ActualCalf = Posed.Component[Calf], ActualFoot = Posed.Component[Foot];
+    const auto RotationError = [](const FTransform& A, const FTransform& B) { return FMath::RadiansToDegrees(A.GetRotation().GetNormalized().AngularDistance(B.GetRotation().GetNormalized())); };
+    const double AnkleError = FVector::Distance(ActualFoot.GetLocation(), FootTarget), RootError = FVector::Distance(ActualThigh.GetLocation(), SeedThigh.GetLocation());
+    const double UpperError = FMath::Abs(FVector::Distance(ActualThigh.GetLocation(), ActualCalf.GetLocation()) - ThighLength);
+    const double LowerError = FMath::Abs(FVector::Distance(ActualCalf.GetLocation(), ActualFoot.GetLocation()) - CalfLength);
+    const double FootRotationError = RotationError(ActualFoot, Reference.Component[Foot]);
+    const double SolverRotationError = FMath::Max3(RotationError(ActualThigh, ThighPose), RotationError(ActualCalf, CalfPose), RotationError(ActualFoot, FootPose));
+    const bool ScaleRetained = ActualThigh.GetScale3D().Equals(SeedThigh.GetScale3D(), 0.000001) && ActualCalf.GetScale3D().Equals(SeedCalf.GetScale3D(), 0.000001) && ActualFoot.GetScale3D().Equals(SeedFoot.GetScale3D(), 0.000001);
+    FootItem->SetObjectField(TEXT("actual_thigh_component"), TransformData(ActualThigh)); FootItem->SetObjectField(TEXT("actual_calf_component"), TransformData(ActualCalf)); FootItem->SetObjectField(TEXT("actual_foot_component"), TransformData(ActualFoot));
+    FootItem->SetObjectField(TEXT("reference_flat_foot_component"), TransformData(Reference.Component[Foot])); FootItem->SetArrayField(TEXT("actual_foot_output_cm"), Vector(Seat.InverseTransformPosition(ActualFoot.GetLocation())));
+    FootItem->SetNumberField(TEXT("ankle_target_error_cm"), AnkleError); FootItem->SetNumberField(TEXT("thigh_root_error_cm"), RootError); FootItem->SetNumberField(TEXT("upper_length_error_cm"), UpperError); FootItem->SetNumberField(TEXT("lower_length_error_cm"), LowerError);
+    FootItem->SetNumberField(TEXT("flat_reference_rotation_error_degrees"), FootRotationError); FootItem->SetNumberField(TEXT("solver_rotation_error_degrees"), SolverRotationError); FootItem->SetBoolField(TEXT("all_three_component_scales_retained"), ScaleRetained);
+    if (!Need(AnkleError <= PoseNumber(TEXT("max_foot_target_error_cm")) && RootError <= PoseNumber(TEXT("max_foot_target_error_cm")) &&
+     UpperError <= PoseNumber(TEXT("max_foot_segment_error_cm")) && LowerError <= PoseNumber(TEXT("max_foot_segment_error_cm")) &&
+     FootRotationError <= PoseNumber(TEXT("max_foot_rotation_error_degrees")) && SolverRotationError <= PoseNumber(TEXT("max_foot_rotation_error_degrees")) && ScaleRetained,
+     FString(TEXT("actual ankle/segment lengths/flat reference rotation and all three scales preserved after IK: ")) + FootName)) return false;
+    const int32 Upper = Bone(IsLeft ? TEXT("upperarm_l") : TEXT("upperarm_r"));
+    const int32 Lower = Bone(IsLeft ? TEXT("lowerarm_l") : TEXT("lowerarm_r"));
+    const int32 Hand = Bone(IsLeft ? TEXT("hand_l") : TEXT("hand_r"));
+    if (!Need(Posed.Ref.GetParentIndex(Lower) == Upper && Posed.Ref.GetParentIndex(Hand) == Lower, TEXT("native direct upperarm/lowerarm/hand chain"))) return false;
+    const double Side = IsLeft ? 1 : -1;
+    const FVector Target = Pelvis + Forward * PoseNumber(TEXT("hand_forward_cm")) + Left * (Side * PoseNumber(TEXT("hand_side_cm"))) + FVector::UpVector * PoseNumber(TEXT("hand_above_pelvis_cm"));
+    const FVector Elbow = Pelvis + Forward * PoseNumber(TEXT("elbow_forward_cm")) + Left * (Side * PoseNumber(TEXT("elbow_side_cm"))) + FVector::UpVector * PoseNumber(TEXT("elbow_above_pelvis_cm"));
+    FTransform UpperPose = Posed.Component[Upper], LowerPose = Posed.Component[Lower], HandPose = Posed.Component[Hand];
+    AnimationCore::SolveTwoBoneIK(UpperPose, LowerPose, HandPose, Elbow, Target, false, 1.0, 1.0);
+    Posed.Set(Upper, UpperPose); Posed.Set(Lower, LowerPose);
+    // SolveTwoBoneIK deliberately retains the end bone's old WORLD rotation.
+    // Keep the native local hand transform instead, so wrist/fingers follow the
+    // newly posed forearm. A radio grip must be authored/reviewed separately.
+    const bool LocalHandRetained = Posed.Local[Hand].Equals(Reference.Local[Hand], 0.000001);
+    const double TargetError = FVector::Distance(Posed.Component[Hand].GetLocation(), Target);
+    FJson Item = Object(); Item->SetStringField(TEXT("side"), IsLeft ? TEXT("left") : TEXT("right"));
+    Item->SetArrayField(TEXT("target_native_cm"), Vector(Target)); Item->SetNumberField(TEXT("error_cm"), TargetError); IK.Add(Value(Item));
+    Item->SetBoolField(TEXT("reference_local_hand_retained"), LocalHandRetained);
+    Item->SetStringField(TEXT("reference_local_hand"), Reference.Local[Hand].ToString()); Item->SetStringField(TEXT("actual_local_hand"), Posed.Local[Hand].ToString());
+    Item->SetStringField(TEXT("actual_component_hand"), Posed.Component[Hand].ToString());
+    if (!Need(LocalHandRetained && TargetError <= PoseNumber(TEXT("max_hand_target_error_cm")), TEXT("non-stretched hand target reached with native reference-local wrist orientation"))) return false;
+   }
+   Report->SetArrayField(TEXT("hand_ik"), IK);
+   Report->SetStringField(TEXT("posed_body_sha1"), Posed.Hash());
+   FJson Landmarks = Object();
+   for (const TCHAR* Name : Required) Landmarks->SetArrayField(Name, Vector(Seat.InverseTransformPosition(Posed.Component[Bone(Name)].GetLocation())));
+   Report->SetObjectField(TEXT("seat_space_landmarks_cm"), Landmarks);
+   Report->SetStringField(TEXT("output_axes"), TEXT("+X forward, +Y right, +Z up; origin seat"));
+   return true;
+  }
+  bool Transfer(const FPose& Authoritative, USkeletalMesh* Mesh, bool IsClothes, FPose& Target)
+  {
+   if (!IsClothes) return CopyFace(Authoritative, Target);
+   const FPose BodyReference(Authoritative.Ref), TargetReference(Target.Ref);
+   int32 Shared = 0; TArray<TSharedPtr<FJsonValue>> Mapping;
+   for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+   {
+    const FName Name = Target.Ref.GetBoneName(Index); const int32 SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (SourceIndex == INDEX_NONE)
+    {
+     if (IsClothes && !Need(false, FString(TEXT("cloth bone missing from native body: ")) + Name.ToString())) return false;
+     continue; // Facial-only branches keep their actual reference local transform.
+    }
+    if (!Need(SameReference(BodyReference.Component[SourceIndex], TargetReference.Component[Index]),
+     FString(TEXT("shared native reference pose matches: ")) + Name.ToString() + TEXT(" in ") + Mesh->GetName())) return false;
+    if (IsClothes)
+    {
+     const int32 SourceParent = Authoritative.Ref.GetParentIndex(SourceIndex), TargetParent = Target.Ref.GetParentIndex(Index);
+     const FName SourceName = SourceParent == INDEX_NONE ? NAME_None : Authoritative.Ref.GetBoneName(SourceParent);
+     const FName TargetName = TargetParent == INDEX_NONE ? NAME_None : Target.Ref.GetBoneName(TargetParent);
+     if (!Need(SourceName == TargetName, FString(TEXT("cloth parent matches body: ")) + Name.ToString())) return false;
+    }
+    Target.Set(Index, Authoritative.Component[SourceIndex]); ++Shared; Mapping.Add(MakeShared<FJsonValueString>(Name.ToString()));
+   }
+   if (!Need(Shared > 0 && (IsClothes || Target.Ref.FindBoneIndex(TEXT("head")) != INDEX_NONE), TEXT("actual shared pose and face head present"))) return false;
+   FJson Data = Object(); Data->SetNumberField(TEXT("shared_bones"), Shared); Data->SetArrayField(TEXT("names"), Mapping); Data->SetStringField(TEXT("pose_sha1"), Target.Hash());
+   Report->SetObjectField(IsClothes ? TEXT("cloth_pose_transfer") : TEXT("face_pose_transfer"), Data); return true;
+  }
+  bool CopyFace(const FPose& Authoritative, FPose& Target)
+  {
+   const FJson Diagnostic = Report->GetObjectField(TEXT("reference_diagnostics"));
+   const auto& Nodes = Diagnostic->GetArrayField(TEXT("runtime_class_default_copy_pose_nodes"));
+   if (!Need(Nodes.Num() == 1 && !Nodes[0]->AsObject()->GetBoolField(TEXT("use_mesh_pose")) &&
+    Nodes[0]->AsObject()->GetStringField(TEXT("root_bone_to_copy")) == TEXT("None"), TEXT("existing waitress graph uses one unrestricted local-space CopyPose"))) return false;
+   const FPose BodyReference(Authoritative.Ref), FaceReference(Target.Ref); FPose ReferenceCopy(Target.Ref);
+   const auto& WeightRows = Diagnostic->GetObjectField(TEXT("face"))->GetArrayField(TEXT("bones"));
+   if (!Need(WeightRows.Num() == Target.Local.Num(), TEXT("complete measured face weights correspond to native reference skeleton"))) return false;
+   // R5 measured four different, unweighted lower-spine reference positions. The
+   // longer Face spine_04 LOCAL transform compensates them, so all weighted CS
+   // frames agree with Body. Copy the COMPLETE common parent chain, as the actual
+   // ABP node does; skipping those ancestors would lose the spine_04 compensation.
+   const TArray<FName> Bridge = {TEXT("pelvis"),TEXT("spine_01"),TEXT("spine_02"),TEXT("spine_03")};
+   TArray<TSharedPtr<FJsonValue>> Mapping, Exceptions; int32 Unmapped = 0;
+   for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+   {
+    const FName Name = Target.Ref.GetBoneName(Index); const int32 SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (SourceIndex == INDEX_NONE) { ++Unmapped; continue; }
+    const int32 SourceParent = Authoritative.Ref.GetParentIndex(SourceIndex), TargetParent = Target.Ref.GetParentIndex(Index);
+    const FName SourceName = SourceParent == INDEX_NONE ? NAME_None : Authoritative.Ref.GetBoneName(SourceParent);
+    const FName TargetName = TargetParent == INDEX_NONE ? NAME_None : Target.Ref.GetBoneName(TargetParent);
+    if (!Need(SourceName == TargetName, FString(TEXT("complete same-name CopyPose parent chain: ")) + Name.ToString())) return false;
+    if (!SameReference(BodyReference.Component[SourceIndex], FaceReference.Component[Index]))
+    {
+     const FTransform& SourceRef = BodyReference.Component[SourceIndex]; const FTransform& FaceRef = FaceReference.Component[Index];
+     if (!Need(Bridge.Contains(Name) && WeightRows[Index]->AsObject()->GetIntegerField(TEXT("nonzero_vertex_influences_all_lods")) == 0 &&
+      SourceRef.GetScale3D().Equals(FaceRef.GetScale3D(), 0.00001) &&
+      FMath::RadiansToDegrees(SourceRef.GetRotation().AngularDistance(FaceRef.GetRotation())) <= PoseNumber(TEXT("max_shared_reference_angle_degrees")) &&
+      SameReference(SourceRef, Authoritative.Component[SourceIndex]), FString(TEXT("measured unweighted stationary lower-spine bind bridge only: ")) + Name.ToString())) return false;
+     FJson Row = Object(); Row->SetStringField(TEXT("bone"), Name.ToString());
+     Row->SetObjectField(TEXT("face_ref_relative_to_body_ref"), TransformData(FaceRef.GetRelativeTransform(SourceRef))); Exceptions.Add(Value(Row));
+    }
+    // Match FAnimNode_CopyPoseFromMesh::Evaluate_AnyThread, bUseMeshPose=false.
+    Target.Local[Index] = SourceParent != INDEX_NONE && TargetParent != INDEX_NONE
+     ? Authoritative.Component[SourceIndex].GetRelativeTransform(Authoritative.Component[SourceParent]) : Authoritative.Component[SourceIndex];
+    ReferenceCopy.Local[Index] = SourceParent != INDEX_NONE && TargetParent != INDEX_NONE
+     ? BodyReference.Component[SourceIndex].GetRelativeTransform(BodyReference.Component[SourceParent]) : BodyReference.Component[SourceIndex];
+    Mapping.Add(MakeShared<FJsonValueString>(Name.ToString()));
+   }
+   Target.Rebuild(); ReferenceCopy.Rebuild(); int32 Weighted = 0;
+   for (int32 Index = 0; Index < Target.Local.Num(); ++Index)
+   {
+    const FName Name = Target.Ref.GetBoneName(Index); const int32 SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (SourceIndex == INDEX_NONE)
+    {
+     if (!Need(Target.Local[Index].Equals(FaceReference.Local[Index], 0.000001), TEXT("unmapped facial branches retain exact native reference local transforms"))) return false;
+    }
+    else if (!Need(SameReference(Target.Component[Index], Authoritative.Component[SourceIndex]),
+     FString(TEXT("local CopyPose equals complete mapped body component frame: ")) + Name.ToString())) return false;
+    if (WeightRows[Index]->AsObject()->GetIntegerField(TEXT("nonzero_vertex_influences_all_lods")) > 0)
+    {
+     ++Weighted;
+     if (!Need(SameReference(ReferenceCopy.Component[Index], FaceReference.Component[Index]),
+      FString(TEXT("whole-chain reference copy preserves actual weighted face bind frame: ")) + Name.ToString())) return false;
+    }
+   }
+   for (const TCHAR* Name : {TEXT("spine_04"),TEXT("spine_05"),TEXT("clavicle_l"),TEXT("clavicle_r"),TEXT("neck_01"),TEXT("neck_02"),TEXT("head")})
+   {
+    const int32 Index = Target.Ref.FindBoneIndex(Name), SourceIndex = Authoritative.Ref.FindBoneIndex(Name);
+    if (!Need(Index != INDEX_NONE && SourceIndex != INDEX_NONE &&
+     SameReference(ReferenceCopy.Component[Index], FaceReference.Component[Index]) &&
+     SameReference(Target.Component[Index], Authoritative.Component[SourceIndex]), FString(TEXT("native shoulder/neck/head seam anchor retained: ")) + Name)) return false;
+   }
+   if (!Need(Exceptions.Num() == Bridge.Num() && Weighted > 0, TEXT("exact four measured bind bridges and actual weighted face frames checked"))) return false;
+   const int32 Head = Target.Ref.FindBoneIndex(TEXT("head")); const FTransform Delta = FaceReference.Component[Head].Inverse() * Target.Component[Head];
+   if (!Need(SameReference(FaceReference.Component[Head] * Delta, Target.Component[Head]), TEXT("rigid card head delta closes against the actual copied face head frame"))) return false;
+   FaceReferenceCopyLocal = ReferenceCopy.Local;
+   FJson Data = Object(); Data->SetStringField(TEXT("method"), TEXT("measured ABP_Face_Waitress local-space CopyPose; complete common parent chain, native local refs for unmapped facial branches"));
+   Data->SetArrayField(TEXT("names"), Mapping); Data->SetArrayField(TEXT("compensated_unweighted_bind_bridges"), Exceptions);
+   Data->SetNumberField(TEXT("shared_bones"), Mapping.Num()); Data->SetNumberField(TEXT("unmapped_reference_branches"), Unmapped); Data->SetNumberField(TEXT("weighted_bind_frames_checked"), Weighted);
+   Data->SetObjectField(TEXT("native_face_reference_head"), TransformData(FaceReference.Component[Head]));
+   Data->SetObjectField(TEXT("reference_copy_head"), TransformData(ReferenceCopy.Component[Head]));
+   Data->SetObjectField(TEXT("posed_head"), TransformData(Target.Component[Head])); Data->SetObjectField(TEXT("rigid_cards_head_delta"), TransformData(Delta));
+   Data->SetStringField(TEXT("pose_sha1"), Target.Hash()); Data->SetStringField(TEXT("reference_copy_pose_sha1"), ReferenceCopy.Hash());
+   Data->SetStringField(TEXT("limit"), TEXT("native frame/CopyPose proof; real-RHI bake additionally requires all-vertex native face bind closure; visual seam/neutral-face review remains separate"));
+   Report->SetObjectField(TEXT("face_pose_transfer"), Data); return true;
+  }
+  UPoseableMeshComponent* Component(USkeletalMesh* Mesh, const FPose& Posed, const TCHAR* Name)
+  {
+   UPoseableMeshComponent* Part = NewObject<UPoseableMeshComponent>(Actor, Name, RF_Transient);
+   Part->SetSkinnedAssetAndUpdate(Mesh); Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+   Part->SetComponentTickEnabled(false); Actor->AddInstanceComponent(Part); Part->RegisterComponent();
+   Part->BoneSpaceTransforms = Posed.Local; Part->RefreshBoneTransforms();
+   // GetCPUSkinnedVertices must own its false->true transition for each LOD;
+   // pre-enabling CPU skinning skips the render-state rebuild and keeps a stale cache.
+   return Part;
+  }
+  bool FaceBindGeometry()
+  {
+   FPose ReferenceCopy(Face->GetRefSkeleton());
+   if (!Need(FaceReferenceCopyLocal.Num() == ReferenceCopy.Local.Num(), TEXT("accepted complete Face reference-copy pose available"))) return false;
+   ReferenceCopy.Local = FaceReferenceCopyLocal; ReferenceCopy.Rebuild();
+   UPoseableMeshComponent* Bind = Component(Face, ReferenceCopy, TEXT("FaceBindClosure")); TArray<int32> Used;
+   TArray<TSharedPtr<FJsonValue>> Rows;
+   for (const auto& Settings : Contract->GetArrayField(TEXT("lods")))
+   {
+    const int32 LODIndex = Settings->AsObject()->GetIntegerField(TEXT("overall_source_lod")); if (Used.Contains(LODIndex)) continue; Used.Add(LODIndex);
+    if (!Need(LODIndex >= Bind->ComputeMinLOD() && LODIndex < Face->GetLODNum() && !Bind->GetCPUSkinningEnabled(), TEXT("fresh real-RHI Face bind-closure LOD read without min-LOD omission"))) return false;
+    TArray<FFinalSkinVertex> Vertices; Bind->GetCPUSkinnedVertices(Vertices, LODIndex);
+    const auto& Positions = Face->GetResourceForRendering()->LODRenderData[LODIndex].StaticVertexBuffers.PositionVertexBuffer;
+    if (!Need(!Bind->GetCPUSkinningEnabled() && Vertices.Num() == int32(Positions.GetNumVertices()) && Vertices.Num() > 0,
+     TEXT("native CPU helper returned every selected Face bind vertex and restored GPU state"))) return false;
+    double Maximum = 0; int32 Worst = INDEX_NONE; bool Finite = true;
+    for (int32 Index = 0; Index < Vertices.Num(); ++Index)
+    {
+     const FVector Native(Positions.VertexPosition(Index)), Actual(Vertices[Index].Position); Finite &= !Actual.ContainsNaN();
+     const double Distance = FVector::Distance(Native, Actual); if (Distance > Maximum) { Maximum = Distance; Worst = Index; }
+    }
+    FJson Row = Object(); Row->SetNumberField(TEXT("lod"), LODIndex); Row->SetNumberField(TEXT("vertices"), Vertices.Num());
+    Row->SetNumberField(TEXT("max_reference_position_error_cm"), Maximum); Row->SetNumberField(TEXT("worst_vertex"), Worst); Rows.Add(Value(Row));
+    Report->SetArrayField(TEXT("native_face_bind_geometry"), Rows);
+    if (!Need(Finite && Maximum <= PoseNumber(TEXT("max_shared_reference_error_cm")), TEXT("actual native CPU reference copy preserves every Face bind position within unchanged reference limit"))) return false;
+   }
+   Bind->DestroyComponent(); return true;
+  }
+  bool AppendNative(UMeshComponent* Part, int32 OverallLOD, int32 BaseSlot, const FTransform& Seat, FRawMesh& Raw,
+   int32& UsedUVs, const FJson& Provenance, bool CaptureSoles)
+  {
+   const FMatrix Transform = Part->GetComponentTransform().ToMatrixWithScale() * Seat.ToMatrixWithScale().Inverse();
+   const int32 BaseVertex = Raw.VertexPositions.Num(), BeforeFaces = Raw.FaceMaterialIndices.Num();
+   TArray<TSharedPtr<FJsonValue>> Sections;
+   auto Wedge = [&](int32 Vertex, const FVector3f& X, const FVector3f& Y, const FVector3f& Z, const FColor& Color, const FStaticMeshVertexBuffer& UVs)
+   {
+    Raw.WedgeIndices.Add(BaseVertex + Vertex);
+    Raw.WedgeTangentX.Add((FVector4f)Transform.TransformVector((FVector)X));
+    Raw.WedgeTangentY.Add((FVector4f)Transform.TransformVector((FVector)Y));
+    Raw.WedgeTangentZ.Add((FVector4f)Transform.TransformVector((FVector)Z)); Raw.WedgeColors.Add(Color);
+    const int32 Count = UVs.GetNumTexCoords(); UsedUVs = FMath::Max(UsedUVs, Count);
+    for (int32 Channel = 0; Channel < MAX_MESH_TEXTURE_COORDS; ++Channel)
+     Raw.WedgeTexCoords[Channel].Add(Channel < Count ? UVs.GetVertexUV(Vertex, Channel) : FVector2f::ZeroVector);
+   };
+   auto Section = [&](int32 NativeSlot, int32 ResolvedSlot, int32 Triangles)
+   {
+    FJson Item = Object(); Item->SetNumberField(TEXT("native_material_index"), NativeSlot); Item->SetNumberField(TEXT("resolved_source_slot"), ResolvedSlot);
+    Item->SetNumberField(TEXT("output_slot"), BaseSlot + ResolvedSlot); Item->SetNumberField(TEXT("triangles"), Triangles);
+    Item->SetStringField(TEXT("material"), GetPathNameSafe(Part->GetMaterial(ResolvedSlot))); Sections.Add(Value(Item));
+    for (int32 Triangle = 0; Triangle < Triangles; ++Triangle) { Raw.FaceMaterialIndices.Add(BaseSlot + ResolvedSlot); Raw.FaceSmoothingMasks.Add(0); }
+   };
+   if (USkinnedMeshComponent* Skin = Cast<USkinnedMeshComponent>(Part))
+   {
+    const int32 LODIndex = FMath::Min(OverallLOD, Skin->GetNumLODs() - 1);
+    if (!Need(LODIndex >= Skin->ComputeMinLOD(), TEXT("every posed source contributes to selected LOD; no min-LOD omission"))) return false;
+    if (!Need(!Skin->GetCPUSkinningEnabled(), TEXT("native CPU helper begins from GPU state for a fresh selected-LOD cache"))) return false;
+    TArray<FFinalSkinVertex> Vertices; Skin->GetCPUSkinnedVertices(Vertices, LODIndex);
+    if (!Need(!Skin->GetCPUSkinningEnabled(), TEXT("native CPU helper restores GPU state after selected-LOD readback"))) return false;
+    const FSkeletalMeshLODRenderData& LOD = Skin->GetSkinnedAsset()->GetResourceForRendering()->LODRenderData[LODIndex];
+    if (!Need(Vertices.Num() > 0 && Vertices.Num() == int32(LOD.GetNumVertices()), TEXT("actual CPU-skinned source vertex count"))) return false;
+    for (const FFinalSkinVertex& Vertex : Vertices) Raw.VertexPositions.Add((FVector4f)Transform.TransformPosition((FVector)Vertex.Position));
+    const FRawStaticIndexBuffer16or32Interface& Indices = *LOD.MultiSizeIndexContainer.GetIndexBuffer();
+    const auto& Buffers = LOD.StaticVertexBuffers;
+    if (!Need(Buffers.ColorVertexBuffer.GetNumVertices() == 0 || Buffers.ColorVertexBuffer.GetNumVertices() == uint32(Vertices.Num()), TEXT("source skin colors are absent or complete"))) return false;
+    const FSkeletalMeshLODInfo* Info = Skin->GetSkinnedAsset()->GetLODInfo(LODIndex);
+    for (int32 SectionIndex = 0; SectionIndex < LOD.RenderSections.Num(); ++SectionIndex)
+    {
+     const FSkelMeshRenderSection& Source = LOD.RenderSections[SectionIndex]; int32 Slot = Source.MaterialIndex;
+     if (Info->LODMaterialMap.IsValidIndex(SectionIndex) && Info->LODMaterialMap[SectionIndex] != INDEX_NONE) Slot = Info->LODMaterialMap[SectionIndex];
+     if (!Need(Slot >= 0 && Slot < Part->GetNumMaterials() && Skin->IsMaterialSectionShown(Source.MaterialIndex, LODIndex) &&
+      Source.BaseIndex + Source.NumTriangles * 3 <= uint32(Indices.Num()), TEXT("exact shown native skin section, original LOD material map and index range"))) return false;
+     Section(Source.MaterialIndex, Slot, Source.NumTriangles);
+     const bool IsShoe = CaptureSoles && (Part->GetMaterial(Slot)->GetName() == TEXT("M_RW_Shoe") || Part->GetMaterial(Slot)->GetName() == TEXT("M_RW_Trim"));
+     for (uint32 Offset = 0; Offset < Source.NumTriangles * 3; ++Offset)
+     {
+      const uint32 Vertex = Indices.Get(Source.BaseIndex + Offset);
+      if (Vertex >= uint32(Vertices.Num())) return Need(false, TEXT("skin source index outside vertex buffer"));
+      const FFinalSkinVertex& Skinned = Vertices[Vertex];
+      Wedge(Vertex, FVector3f(Skinned.TangentX.ToFVector()), Skinned.GetTangentY(), FVector3f(Skinned.TangentZ.ToFVector()),
+       Buffers.ColorVertexBuffer.GetNumVertices() ? Buffers.ColorVertexBuffer.VertexColor(Vertex) : FColor::White, Buffers.StaticMeshVertexBuffer);
+      if (IsShoe)
+      {
+       const FVector Point(Raw.VertexPositions[BaseVertex + Vertex]);
+       // Collar/coat trim is excluded by its actual seat-relative height; soles use Trim, uppers Shoe.
+       if (Point.Z < -10) (Point.Y < 0 ? LeftSole : RightSole).Add(Point);
+      }
+     }
+    }
+    Provenance->SetNumberField(TEXT("source_lod"), LODIndex); Provenance->SetStringField(TEXT("source_asset"), Skin->GetSkinnedAsset()->GetPathName());
+   }
+   else
+   {
+    UStaticMeshComponent* Static = CastChecked<UStaticMeshComponent>(Part); const FStaticMeshRenderData* Data = Static->GetStaticMesh()->GetRenderData();
+    const int32 LODIndex = FMath::Min(OverallLOD, Data->LODResources.Num() - 1); const FStaticMeshLODResources& LOD = Data->LODResources[LODIndex];
+    const auto& Buffers = LOD.VertexBuffers; const FIndexArrayView Indices = LOD.IndexBuffer.GetArrayView();
+    if (!Need(LOD.GetNumVertices() > 0 && (Buffers.ColorVertexBuffer.GetNumVertices() == 0 || Buffers.ColorVertexBuffer.GetNumVertices() == uint32(LOD.GetNumVertices())), TEXT("actual complete static card vertex/color buffers"))) return false;
+    for (int32 Vertex = 0; Vertex < LOD.GetNumVertices(); ++Vertex) Raw.VertexPositions.Add((FVector4f)Transform.TransformPosition((FVector)Buffers.PositionVertexBuffer.VertexPosition(Vertex)));
+    for (const FStaticMeshSection& Source : LOD.Sections)
+    {
+     if (!Need(Source.MaterialIndex >= 0 && Source.MaterialIndex < Part->GetNumMaterials() && Source.FirstIndex + Source.NumTriangles * 3 <= uint32(Indices.Num()), TEXT("actual card section/index range and original material slot"))) return false;
+     Section(Source.MaterialIndex, Source.MaterialIndex, Source.NumTriangles);
+     for (uint32 Offset = 0; Offset < Source.NumTriangles * 3; ++Offset)
+     {
+      const uint32 Vertex = Indices[Source.FirstIndex + Offset]; if (Vertex >= uint32(LOD.GetNumVertices())) return Need(false, TEXT("card source index outside vertex buffer"));
+      Wedge(Vertex, FVector3f(Buffers.StaticMeshVertexBuffer.VertexTangentX(Vertex)), Buffers.StaticMeshVertexBuffer.VertexTangentY(Vertex), FVector3f(Buffers.StaticMeshVertexBuffer.VertexTangentZ(Vertex)),
+       Buffers.ColorVertexBuffer.GetNumVertices() ? Buffers.ColorVertexBuffer.VertexColor(Vertex) : FColor::White, Buffers.StaticMeshVertexBuffer);
+     }
+    }
+    Provenance->SetNumberField(TEXT("source_lod"), LODIndex); Provenance->SetStringField(TEXT("source_asset"), Static->GetStaticMesh()->GetPathName());
+   }
+   Provenance->SetStringField(TEXT("part"), Part->GetName()); Provenance->SetArrayField(TEXT("sections"), Sections);
+   Provenance->SetNumberField(TEXT("triangles"), Raw.FaceMaterialIndices.Num() - BeforeFaces);
+   return Need(Raw.FaceMaterialIndices.Num() > BeforeFaces, TEXT("every actual source part contributes triangles"));
+  }
+  void StoreDescription(UStaticMesh* Output, int32 LODIndex, const FRawMesh& Raw)
+  {
+   // Build MeshDescription directly. SaveRawMesh's legacy conversion welds positions
+   // and discards degenerate faces; that is unsuitable as an exact source boundary.
+   FMeshDescription* Description = Output->CreateMeshDescription(LODIndex); FStaticMeshAttributes Attributes(*Description); Attributes.Register();
+   auto Positions = Attributes.GetVertexPositions(); auto Normals = Attributes.GetVertexInstanceNormals(); auto Tangents = Attributes.GetVertexInstanceTangents();
+   auto Signs = Attributes.GetVertexInstanceBinormalSigns(); auto Colors = Attributes.GetVertexInstanceColors(); auto UVs = Attributes.GetVertexInstanceUVs();
+   auto SlotNames = Attributes.GetPolygonGroupMaterialSlotNames(); int32 UVCount = 0;
+   for (const auto& Channel : Raw.WedgeTexCoords) if (Channel.Num()) ++UVCount; UVs.SetNumChannels(UVCount);
+   TArray<FVertexID> Vertices; for (const FVector3f& Position : Raw.VertexPositions) { const FVertexID ID = Description->CreateVertex(); Positions[ID] = Position; Vertices.Add(ID); }
+   TArray<int32> UsedSlots; for (const int32 Slot : Raw.FaceMaterialIndices) UsedSlots.AddUnique(Slot); UsedSlots.Sort();
+   for (int32 SectionIndex = 0; SectionIndex < UsedSlots.Num(); ++SectionIndex)
+   {
+    const int32 Slot = UsedSlots[SectionIndex]; const FPolygonGroupID ID(Slot); Description->CreatePolygonGroupWithID(ID);
+    SlotNames[ID] = Output->GetStaticMaterials()[Slot].ImportedMaterialSlotName; Output->GetSectionInfoMap().Set(LODIndex, SectionIndex, FMeshSectionInfo(Slot));
+   }
+   for (int32 Triangle = 0; Triangle < Raw.FaceMaterialIndices.Num(); ++Triangle)
+   {
+    FVertexInstanceID Corners[3];
+    for (int32 Corner = 0; Corner < 3; ++Corner)
+    {
+     const int32 WedgeIndex = Triangle * 3 + Corner; const FVertexInstanceID ID = Description->CreateVertexInstance(Vertices[Raw.WedgeIndices[WedgeIndex]]); Corners[Corner] = ID;
+     Normals[ID] = Raw.WedgeTangentZ[WedgeIndex]; Tangents[ID] = Raw.WedgeTangentX[WedgeIndex];
+     Signs[ID] = ((Raw.WedgeTangentZ[WedgeIndex] ^ Raw.WedgeTangentX[WedgeIndex]) | Raw.WedgeTangentY[WedgeIndex]) < 0 ? -1.0f : 1.0f;
+     Colors[ID] = FVector4f(FLinearColor::FromSRGBColor(Raw.WedgeColors[WedgeIndex]));
+     for (int32 Channel = 0; Channel < UVCount; ++Channel) UVs.Set(ID, Channel, Raw.WedgeTexCoords[Channel][WedgeIndex]);
+    }
+    Description->CreateTriangle(FPolygonGroupID(Raw.FaceMaterialIndices[Triangle]), Corners);
+   }
+   Description->BuildIndexers(); Output->CommitMeshDescription(LODIndex);
+  }
+  bool SoleContacts()
+  {
+   FJson Contacts = Object();
+   for (const bool IsLeft : {true, false})
+   {
+    const TArray<FVector>& Points = IsLeft ? LeftSole : RightSole;
+    if (!Need(Points.Num() > 0, TEXT("actual low Shoe+Trim vertices for both sole contacts"))) return false;
+    FVector Low = Points[0]; for (const FVector& Point : Points) if (Point.Z < Low.Z) Low = Point;
+    TArray<FVector> Flat; for (const FVector& Point : Points) if (Point.Z <= Low.Z + 0.2) Flat.AddUnique(Point);
+    FVector Heel = Flat[0], Toe = Flat[0], SideMin = Flat[0], SideMax = Flat[0];
+    for (const FVector& Point : Flat) { if (Point.X < Heel.X) Heel = Point; if (Point.X > Toe.X) Toe = Point; if (Point.Y < SideMin.Y) SideMin = Point; if (Point.Y > SideMax.Y) SideMax = Point; }
+    FJson Item = Object(); Item->SetNumberField(TEXT("min_z_cm"), Low.Z); Item->SetNumberField(TEXT("flat_unique_vertices"), Flat.Num());
+    Item->SetArrayField(TEXT("lowest"), Vector(Low)); Item->SetArrayField(TEXT("heel"), Vector(Heel)); Item->SetArrayField(TEXT("toe"), Vector(Toe));
+    Item->SetArrayField(TEXT("side_min"), Vector(SideMin)); Item->SetArrayField(TEXT("side_max"), Vector(SideMax));
+    Contacts->SetObjectField(IsLeft ? TEXT("left") : TEXT("right"), Item);
+   }
+   Contacts->SetStringField(TEXT("source"), TEXT("actual posed source-LOD0 clothing vertices, M_RW_Trim soles plus M_RW_Shoe uppers, below seat-10cm; extrema within 2mm of lowest; no repositioning"));
+   Report->SetObjectField(TEXT("sole_contacts_output_cm"), Contacts); return true;
+  }
+  FString RenderPackedDigest(const FStaticMeshLODResources& L)
+  {
+   const auto& B=L.VertexBuffers; const auto& T=B.StaticMeshVertexBuffer;
+   if(!B.PositionVertexBuffer.GetNumVertices() || B.PositionVertexBuffer.GetNumVertices()!=T.GetNumVertices() || !T.GetNumTexCoords() ||
+    !B.PositionVertexBuffer.GetVertexData() || !T.GetTangentData() || !T.GetTexCoordData() ||
+    (B.ColorVertexBuffer.GetNumVertices()&&!B.ColorVertexBuffer.GetVertexData()))return {};
+   FSHA1 H; H.Update(static_cast<const uint8*>(B.PositionVertexBuffer.GetVertexData()),B.PositionVertexBuffer.GetNumVertices()*B.PositionVertexBuffer.GetStride());
+   H.Update(static_cast<const uint8*>(T.GetTangentData()),T.GetTangentSize()); H.Update(static_cast<const uint8*>(T.GetTexCoordData()),T.GetTexCoordSize());
+   if(B.ColorVertexBuffer.GetNumVertices())H.Update(static_cast<const uint8*>(B.ColorVertexBuffer.GetVertexData()),B.ColorVertexBuffer.GetNumVertices()*B.ColorVertexBuffer.GetStride());
+   H.Final(); FSHAHash Out; H.GetHash(Out.Hash); return Out.ToString().ToLower();
+  }
+  FJson StaticAudit(UStaticMesh* Mesh)
+  {
+   FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName());
+   Data->SetStringField(TEXT("class"), Mesh->GetClass()->GetName());
+   Data->SetBoolField(TEXT("nanite"), Mesh->GetNaniteSettings().bEnabled); Data->SetBoolField(TEXT("ray_tracing"), Mesh->bSupportRayTracing);
+   Data->SetBoolField(TEXT("body_no_collision"), Mesh->GetBodySetup() && Mesh->GetBodySetup()->DefaultInstance.GetCollisionEnabled() == ECollisionEnabled::NoCollision);
+   Data->SetBoolField(TEXT("cpu_access"), Mesh->bAllowCPUAccess); Data->SetBoolField(TEXT("auto_screen_sizes"), Mesh->GetAutoComputeLODScreenSize());
+   Data->SetArrayField(TEXT("bounds_min_cm"), Vector(Mesh->GetBoundingBox().Min)); Data->SetArrayField(TEXT("bounds_max_cm"), Vector(Mesh->GetBoundingBox().Max));
+   TArray<TSharedPtr<FJsonValue>> LODs, Materials;
+   for (int32 Index = 0; Index < Mesh->GetNumSourceModels(); ++Index)
+   {
+    FRawMesh Raw; const FStaticMeshSourceModel& Model = Mesh->GetSourceModel(Index); Model.LoadRawMesh(Raw);
+    FJson Item = Object(); Item->SetNumberField(TEXT("index"), Index); Item->SetNumberField(TEXT("triangles"), Raw.WedgeIndices.Num() / 3);
+    Item->SetNumberField(TEXT("vertices"), Raw.VertexPositions.Num()); Item->SetStringField(TEXT("raw_sha1"), RawDigest(Raw));
+    Item->SetBoolField(TEXT("raw_valid"), Raw.IsValid()); Item->SetStringField(TEXT("corner_sha1"), Raw.IsValid() ? CornerDigest(Raw) : TEXT("INVALID"));
+    Item->SetNumberField(TEXT("screen_size"), Model.ScreenSize.Default);
+    Item->SetBoolField(TEXT("recompute_normals"), Model.BuildSettings.bRecomputeNormals); Item->SetBoolField(TEXT("recompute_tangents"), Model.BuildSettings.bRecomputeTangents);
+    Item->SetBoolField(TEXT("generate_lightmap_uvs"), Model.BuildSettings.bGenerateLightmapUVs); Item->SetBoolField(TEXT("full_precision_uvs"), Model.BuildSettings.bUseFullPrecisionUVs);
+    Item->SetBoolField(TEXT("high_precision_tangents"), Model.BuildSettings.bUseHighPrecisionTangentBasis);
+    int32 UVs = 0; for (const auto& Channel : Raw.WedgeTexCoords) if (Channel.Num()) ++UVs; Item->SetNumberField(TEXT("uv_channels"), UVs);
+    if (Mesh->GetRenderData() && Mesh->GetRenderData()->LODResources.IsValidIndex(Index))
+    {
+     const FStaticMeshLODResources& Render = Mesh->GetRenderData()->LODResources[Index];
+     const FString PackedHash=RenderPackedDigest(Render); TArray<uint32> Indices; Render.IndexBuffer.GetCopy(Indices);
+     FString IndexHash;
+     if(!Indices.IsEmpty()){FSHA1 H; H.Update(reinterpret_cast<const uint8*>(Indices.GetData()),Indices.Num()*sizeof(uint32)); H.Final(); FSHAHash Out; H.GetHash(Out.Hash); IndexHash=Out.ToString().ToLower();}
+     Item->SetStringField(TEXT("render_packed_vertex_sha1"),PackedHash); Item->SetStringField(TEXT("render_uint32_indices_sha1"),IndexHash);
+     Item->SetBoolField(TEXT("render_cpu_payload_available"),PackedHash.Len()==40&&IndexHash.Len()==40&&Indices.Num()==Render.GetNumTriangles()*3);
+     Item->SetNumberField(TEXT("render_vertices"), Render.GetNumVertices()); Item->SetNumberField(TEXT("render_triangles"), Render.GetNumTriangles());
+     Item->SetBoolField(TEXT("render_full_precision_uvs"), Render.VertexBuffers.StaticMeshVertexBuffer.GetUseFullPrecisionUVs());
+     Item->SetBoolField(TEXT("render_high_precision_tangents"), Render.VertexBuffers.StaticMeshVertexBuffer.GetUseHighPrecisionTangentBasis());
+     TArray<TSharedPtr<FJsonValue>> Sections;
+     for (const FStaticMeshSection& Section : Render.Sections)
+     {
+      FJson Part = Object(); Part->SetNumberField(TEXT("material_index"), Section.MaterialIndex); Part->SetNumberField(TEXT("triangles"), Section.NumTriangles);
+      Part->SetNumberField(TEXT("first_index"),Section.FirstIndex); Part->SetNumberField(TEXT("min_vertex_index"),Section.MinVertexIndex); Part->SetNumberField(TEXT("max_vertex_index"),Section.MaxVertexIndex);
+      Part->SetBoolField(TEXT("collision"),Section.bEnableCollision); Part->SetBoolField(TEXT("cast_shadow"),Section.bCastShadow); Part->SetBoolField(TEXT("visible_in_ray_tracing"),Section.bVisibleInRayTracing);
+      Sections.Add(Value(Part));
+     }
+     Item->SetArrayField(TEXT("sections"), Sections);
+    }
+    LODs.Add(Value(Item));
+   }
+   for (const FStaticMaterial& Material : Mesh->GetStaticMaterials()) Materials.Add(MakeShared<FJsonValueString>(GetPathNameSafe(Material.MaterialInterface)));
+   Data->SetArrayField(TEXT("lods"), LODs); Data->SetArrayField(TEXT("materials"), Materials); return Data;
+  }
+  FJson MaterialState(UMaterialInterface* Material)
+  {
+   const FMaterialResource* Resource = Material ? Material->GetMaterialResource(GMaxRHIShaderPlatform) : nullptr;
+   const UMaterialInstance* Instance = Cast<UMaterialInstance>(Material); const UMaterial* Base = Material ? Material->GetMaterial() : nullptr;
+   FMaterialShaderMap* Map = Resource ? Resource->GetGameThreadShaderMap() : nullptr;
+   const bool Complete = Resource && Resource->IsGameThreadShaderMapComplete();
+   const bool Default = Base == UMaterial::GetDefaultMaterial(MD_Surface) || (Resource && Resource->IsDefaultMaterial());
+   FJson State = Object(); State->SetStringField(TEXT("material"), GetPathNameSafe(Material));
+   State->SetBoolField(TEXT("resource_exists"), Resource != nullptr); State->SetBoolField(TEXT("shadermap_exists"), Map != nullptr);
+   State->SetBoolField(TEXT("complete"), Complete); State->SetBoolField(TEXT("default"), Default);
+   State->SetStringField(TEXT("base"), GetPathNameSafe(Base)); State->SetStringField(TEXT("parent"), Instance ? GetPathNameSafe(Instance->Parent) : TEXT("None"));
+   State->SetBoolField(TEXT("material_is_compiling"), Material && Material->IsCompiling()); State->SetBoolField(TEXT("base_is_compiling"), Base && Base->IsCompiling());
+   State->SetStringField(TEXT("resource_material"), Resource ? GetPathNameSafe(Resource->GetMaterialInterface()) : TEXT("None"));
+   State->SetStringField(TEXT("resource_base"), Resource ? GetPathNameSafe(Resource->GetMaterial()) : TEXT("None"));
+   State->SetNumberField(TEXT("shader_platform"), int32(GMaxRHIShaderPlatform));
+   State->SetNumberField(TEXT("usage_flags"), Material ? Material->GetUsageFlags() : 0); State->SetNumberField(TEXT("base_usage_flags"), Base ? Base->GetUsageFlags() : 0);
+   State->SetBoolField(TEXT("used_with_skeletal_mesh"), Material && Material->GetUsageByFlag(MATUSAGE_SkeletalMesh));
+   State->SetBoolField(TEXT("base_used_with_skeletal_mesh"), Base && Base->GetUsageByFlag(MATUSAGE_SkeletalMesh));
+   State->SetBoolField(TEXT("package_dirty"), Material && Material->GetOutermost()->IsDirty());
+   if (Instance)
+   {
+    const FStaticParameterSet Parameters = Instance->GetStaticParameters(); FJson Overrides = Object();
+    State->SetBoolField(TEXT("has_static_permutation_resource"), Instance->bHasStaticPermutationResource);
+    State->SetBoolField(TEXT("has_static_parameters"), Instance->HasStaticParameters()); State->SetBoolField(TEXT("static_parameters_empty"), Parameters.IsEmpty());
+    State->SetNumberField(TEXT("static_switches"), Parameters.StaticSwitchParameters.Num());
+    State->SetNumberField(TEXT("static_component_masks"), Parameters.EditorOnly.StaticComponentMaskParameters.Num());
+    State->SetBoolField(TEXT("static_material_layers"), Parameters.bHasMaterialLayers); State->SetBoolField(TEXT("has_overridden_base_properties"), Instance->HasOverridenBaseProperties());
+    for (TFieldIterator<FProperty> Field(FMaterialInstanceBasePropertyOverrides::StaticStruct()); Field; ++Field)
+    {
+     FString Text; Field->ExportTextItem_Direct(Text, Field->ContainerPtrToValuePtr<void>(&Instance->BasePropertyOverrides), nullptr, nullptr, PPF_None);
+     Overrides->SetStringField(Field->GetName(), Text);
+    }
+    State->SetObjectField(TEXT("base_overrides"), Overrides);
+   }
+   if (Resource)
+   {
+    State->SetNumberField(TEXT("quality_level"), int32(Resource->GetQualityLevel()));
+    FJson Flags = Object(); Flags->SetBoolField(TEXT("skeletal_mesh"), Resource->IsUsedWithSkeletalMesh());
+    Flags->SetBoolField(TEXT("morph_targets"), Resource->IsUsedWithMorphTargets()); Flags->SetBoolField(TEXT("static_lighting"), Resource->IsUsedWithStaticLighting());
+    Flags->SetBoolField(TEXT("instanced_static_meshes"), Resource->IsUsedWithInstancedStaticMeshes()); Flags->SetBoolField(TEXT("special_engine_material"), Resource->IsSpecialEngineMaterial());
+    State->SetObjectField(TEXT("resource_should_cache_flags"), Flags);
+   }
+   if (Map)
+   {
+    const FMaterialShaderMapId& ID = Map->GetShaderMapId(); FJson MapID = Object(); MapID->SetStringField(TEXT("base_material_id"), ID.BaseMaterialId.ToString());
+    MapID->SetNumberField(TEXT("quality_level"), int32(ID.QualityLevel)); MapID->SetNumberField(TEXT("feature_level"), int32(ID.FeatureLevel));
+    MapID->SetNumberField(TEXT("usage"), int32(ID.Usage)); MapID->SetStringField(TEXT("base_property_overrides_hash"), LexToString(ID.BasePropertyOverridesHash));
+    State->SetObjectField(TEXT("shader_map_id"), MapID); State->SetBoolField(TEXT("compilation_finalized"), Map->IsCompilationFinalized());
+    State->SetBoolField(TEXT("compiled_successfully"), Map->CompiledSuccessfully()); State->SetNumberField(TEXT("compiling_id"), Map->GetCompilingId());
+    const bool Valid = Map->IsValidForRendering(); State->SetBoolField(TEXT("valid_for_rendering"), Valid);
+    if (Valid)
+    {
+     int32 Shaders = 0, Pipelines = 0; Map->CountNumShaders(Shaders, Pipelines); State->SetNumberField(TEXT("shader_count"), Shaders); State->SetNumberField(TEXT("pipeline_count"), Pipelines);
+     State->SetStringField(TEXT("shader_content_hash"), LexToString(static_cast<const FXxHash64&>(Map->GetShaderContentHash()))); TArray<TSharedPtr<FJsonValue>> Factories;
+     for (TLinkedList<FVertexFactoryType*>::TIterator It(FVertexFactoryType::GetTypeList()); It; ++It)
+     {
+      const FVertexFactoryType* Factory = *It; const FString Name = Factory->GetName();
+      if (!Name.Contains(TEXT("LocalVertexFactory")) && !Name.Contains(TEXT("GPUSkin"))) continue;
+      FJson FactoryState = Object(); FactoryState->SetStringField(TEXT("vertex_factory"), Name); const FMeshMaterialShaderMap* MeshMap = Map->GetMeshShaderMap(Factory);
+      FactoryState->SetBoolField(TEXT("map_exists"), MeshMap != nullptr); FactoryState->SetNumberField(TEXT("shader_count"), MeshMap ? MeshMap->GetNumShaders() : 0);
+      for (TLinkedList<FShaderType*>::TIterator ShaderIt(FShaderType::GetTypeList()); ShaderIt; ++ShaderIt)
+      {
+       const FShaderType* Shader = *ShaderIt; const FString ShaderName = Shader->GetName();
+       if (ShaderName == TEXT("FDepthOnlyVS") || ShaderName == TEXT("FDepthOnlyPS") || ShaderName == TEXT("TBasePassVSFNoLightMapPolicy"))
+        FactoryState->SetBoolField(ShaderName, Resource->ShouldCache(Shader, Factory));
+      }
+      Factories.Add(Value(FactoryState));
+     }
+     State->SetArrayField(TEXT("vertex_factories_material_should_cache"), Factories);
+    }
+   }
+   TArray<TSharedPtr<FJsonValue>> Errors; if (Resource) for (const FString& Message : Resource->GetCompileErrors()) Errors.Add(MakeShared<FJsonValueString>(Message));
+   State->SetArrayField(TEXT("errors"), Errors); State->SetBoolField(TEXT("shader_ready"), Resource && Map && Complete && Errors.IsEmpty() && Base && !Default); return State;
+  }
+  bool DiagnoseMaterials()
+  {
+   if (!Need(FApp::CanEverRender() && GDynamicRHI && RHIGetInterfaceType() != ERHIInterfaceType::Null && GShaderCompilingManager,
+    TEXT("materials diagnosis requires actual RHI and shader compiler, never NullRHI"))) return false;
+   const FString Root = Job->GetStringField(TEXT("asset_root")); TArray<UMaterialInterface*> Selected;
+   if (!Need(Root.StartsWith(TEXT("/Game/MetaHumans/Mannequins/RadioWoman/")) && !Root.Contains(TEXT("..")) && Clothes->GetMaterials().Num() == 5,
+    TEXT("exact five actual private clothes slots for this run"))) return false;
+   for (const FSkeletalMaterial& Slot : Clothes->GetMaterials())
+   {
+    UMaterialInterface* Material = Slot.MaterialInterface; const UMaterialInstance* Instance = Cast<UMaterialInstance>(Material);
+    if (!Need(Material && Instance && Instance->Parent && Instance->Parent->GetOutermost()->GetName() == Job->GetStringField(TEXT("cloth_master")) &&
+     Material->GetOutermost()->GetName().StartsWith(Root + TEXT("/")) &&
+     Contract->GetObjectField(TEXT("materials"))->HasField(Material->GetName()) && Slot.MaterialSlotName.ToString() == Material->GetName() && !Selected.Contains(Material),
+     TEXT("each actual clothing MI and slot is distinct, authored and inside the correct private run"))) return false;
+    Selected.Add(Material);
+   }
+   FJson Diagnostic = Object(); Report->SetObjectField(TEXT("materials"), Diagnostic); Diagnostic->SetBoolField(TEXT("explicit_transient_usage_replay"), true);
+   Diagnostic->SetStringField(TEXT("scope"), TEXT("actual clothes slots; replay CheckMaterialUsage(SkeletalMesh) as recorded during R8 component registration; in-memory shader work only, no asset save, output mesh, pose or geometry mutation"));
+   TArray<TSharedPtr<FJsonValue>> Loaded, Usage, After, Replay;
+   Diagnostic->SetNumberField(TEXT("jobs_loaded_before"), GShaderCompilingManager->GetNumRemainingJobs());
+   for (UMaterialInterface* Material : Selected) Loaded.Add(Value(MaterialState(Material)));
+   Diagnostic->SetArrayField(TEXT("loaded_before"), Loaded);
+   bool UsageAccepted = true;
+   for (UMaterialInterface* Material : Selected)
+   {
+    FJson Request = Object(); Request->SetStringField(TEXT("material"), Material->GetPathName()); Request->SetBoolField(TEXT("needed_before"), !Material->GetUsageByFlag(MATUSAGE_SkeletalMesh));
+    const bool Accepted = Material->CheckMaterialUsage(MATUSAGE_SkeletalMesh); UsageAccepted &= Accepted;
+    Request->SetBoolField(TEXT("check_material_usage_returned"), Accepted); Replay.Add(Value(Request));
+   }
+   Diagnostic->SetBoolField(TEXT("all_usage_requests_succeeded"), UsageAccepted);
+   Diagnostic->SetArrayField(TEXT("usage_replay"), Replay); Diagnostic->SetNumberField(TEXT("jobs_after_usage_before_ensure"), GShaderCompilingManager->GetNumRemainingJobs());
+   for (UMaterialInterface* Material : Selected) Usage.Add(Value(MaterialState(Material))); Diagnostic->SetArrayField(TEXT("after_usage_before_ensure"), Usage);
+   for (UMaterialInterface* Material : Selected) Material->EnsureIsComplete();
+   GShaderCompilingManager->FinishAllCompilation(); GShaderCompilingManager->ProcessAsyncResults(false, true); FlushRenderingCommands();
+   Diagnostic->SetNumberField(TEXT("jobs_after_ensure"), GShaderCompilingManager->GetNumRemainingJobs()); bool Ready = true;
+   for (UMaterialInterface* Material : Selected) { FJson State = MaterialState(Material); Ready &= State->GetBoolField(TEXT("shader_ready")) && Material->GetUsageByFlag(MATUSAGE_SkeletalMesh); After.Add(Value(State)); }
+   Diagnostic->SetArrayField(TEXT("after_ensure"), After); Diagnostic->SetBoolField(TEXT("assets_saved"), false);
+   return Need(UsageAccepted && Ready, TEXT("all five actual private MI resources support the actual usage replay and are complete and nondefault after EnsureIsComplete"));
+  }
+  bool Audit(UStaticMesh* Mesh, const FJson& Expected = nullptr)
+  {
+   // Asset compilers finish in manager order. A mesh/usage update can enqueue
+   // shaders after the shader manager's turn, so finish shaders explicitly
+   // after every asset compiler and apply their results before render flush.
+   FJson Barrier = Object(); Report->SetObjectField(TEXT("material_shader_barrier"), Barrier);
+   Barrier->SetBoolField(TEXT("shader_manager_exists"), GShaderCompilingManager != nullptr);
+   if (!Need(IsInGameThread() && FApp::CanEverRender() && GShaderCompilingManager,
+    TEXT("actual RHI authoring audit with game-thread shader compiler available"))) return false;
+   const double BarrierStart = FPlatformTime::Seconds();
+   Barrier->SetNumberField(TEXT("jobs_before"), GShaderCompilingManager->GetNumRemainingJobs());
+   FAssetCompilingManager::Get().FinishAllCompilation();
+   Barrier->SetNumberField(TEXT("jobs_after_asset_compilers"), GShaderCompilingManager->GetNumRemainingJobs());
+   TArray<TSharedPtr<FJsonValue>> BeforeEnsure;
+   for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials()) BeforeEnsure.Add(Value(MaterialState(Slot.MaterialInterface)));
+   Report->SetArrayField(TEXT("actual_material_compile_before_ensure"), BeforeEnsure);
+   // Usage changes can create a valid but incomplete shader map with None
+   // precompilation and no queued jobs. Waiting alone cannot submit those.
+   // EnsureIsComplete requests jobs for each actual selected MI/resource.
+   for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials()) if (Slot.MaterialInterface) Slot.MaterialInterface->EnsureIsComplete();
+   Barrier->SetNumberField(TEXT("jobs_after_ensure"), GShaderCompilingManager->GetNumRemainingJobs());
+   Barrier->SetBoolField(TEXT("actual_selected_slots_ensure_completed"), true);
+   GShaderCompilingManager->FinishAllCompilation();
+   GShaderCompilingManager->ProcessAsyncResults(false, true);
+   FlushRenderingCommands();
+   Barrier->SetNumberField(TEXT("jobs_after"), GShaderCompilingManager->GetNumRemainingJobs());
+   Barrier->SetBoolField(TEXT("is_compiling_after"), GShaderCompilingManager->IsCompiling());
+   Barrier->SetBoolField(TEXT("explicit_finish_all_completed"), true); Barrier->SetBoolField(TEXT("async_results_applied"), true);
+   Barrier->SetBoolField(TEXT("render_commands_flushed"), true); Barrier->SetNumberField(TEXT("seconds"), FPlatformTime::Seconds() - BarrierStart);
+   const FJson Actual = StaticAudit(Mesh); Report->SetObjectField(TEXT("output"), Actual);
+   const auto& Settings = Contract->GetArrayField(TEXT("lods")); const auto& LODs = Actual->GetArrayField(TEXT("lods"));
+   if (!Need(LODs.Num() == Settings.Num() && Mesh->GetRenderData() && Mesh->GetRenderData()->LODResources.Num() == Settings.Num(), TEXT("three actual authored and render LODs"))) return false;
+   int32 PreviousTriangles = MAX_int32;
+   for (int32 Index = 0; Index < LODs.Num(); ++Index)
+   {
+    const FJson Item = LODs[Index]->AsObject(), Limit = Settings[Index]->AsObject(); const int32 Triangles = Item->GetIntegerField(TEXT("triangles"));
+    if (!Need(Triangles > 0 && Triangles < PreviousTriangles && Triangles <= Limit->GetIntegerField(TEXT("max_triangles")), FString::Printf(TEXT("measured decreasing LOD %d triangle budget"), Index))) return false;
+    if (!Need(Item->GetBoolField(TEXT("raw_valid")) && Triangles == Item->GetIntegerField(TEXT("render_triangles")) && Item->GetIntegerField(TEXT("uv_channels")) > 0 &&
+     !Item->GetBoolField(TEXT("recompute_normals")) && !Item->GetBoolField(TEXT("recompute_tangents")) && !Item->GetBoolField(TEXT("generate_lightmap_uvs")) &&
+     Item->GetBoolField(TEXT("full_precision_uvs")) && Item->GetBoolField(TEXT("high_precision_tangents")) &&
+     Item->GetBoolField(TEXT("render_full_precision_uvs")) && Item->GetBoolField(TEXT("render_high_precision_tangents")) &&
+     FMath::IsNearlyEqual(Item->GetNumberField(TEXT("screen_size")), Limit->GetNumberField(TEXT("screen_size")), 0.000001), TEXT("render triangles, authored UV/normal/tangent and screen policy retained"))) return false;
+    if(Job->HasField(TEXT("postrepair_binding"))&&!Need(Item->GetBoolField(TEXT("render_cpu_payload_available")),TEXT("R11 actual full render vertex and uint32 index payloads available for runtime binding")))return false;
+    FRawMesh Raw; Mesh->GetSourceModel(Index).LoadRawMesh(Raw);
+    TArray<int32> SourceCounts, RenderCounts; SourceCounts.Init(0, Mesh->GetStaticMaterials().Num()); RenderCounts = SourceCounts;
+    for (const int32 Slot : Raw.FaceMaterialIndices)
+    {
+     if (Slot < 0 || Slot >= SourceCounts.Num()) return Need(false, TEXT("raw source material index outside original table"));
+     ++SourceCounts[Slot];
+    }
+    const FStaticMeshLODResources& Render = Mesh->GetRenderData()->LODResources[Index];
+    for (const FStaticMeshSection& Section : Render.Sections)
+    {
+     if (!Need(Section.MaterialIndex >= 0 && Section.MaterialIndex < RenderCounts.Num() &&
+      Section.FirstIndex + Section.NumTriangles * 3 <= uint32(Render.IndexBuffer.GetNumIndices()), TEXT("actual render section uses valid original material/index range"))) return false;
+     RenderCounts[Section.MaterialIndex] += Section.NumTriangles;
+    }
+    if (!Need(SourceCounts == RenderCounts, TEXT("actual render material bindings and per-slot triangles exactly match native source corners"))) return false;
+    TArray<TSharedPtr<FJsonValue>> BindingCounts;
+    for (int32 Slot = 0; Slot < SourceCounts.Num(); ++Slot)
+    {
+     FJson Binding = Object(); Binding->SetNumberField(TEXT("slot"), Slot); Binding->SetNumberField(TEXT("source_triangles"), SourceCounts[Slot]);
+     Binding->SetNumberField(TEXT("render_triangles"), RenderCounts[Slot]); Binding->SetStringField(TEXT("material"), GetPathNameSafe(Mesh->GetStaticMaterials()[Slot].MaterialInterface));
+     BindingCounts.Add(Value(Binding));
+    }
+    Item->SetArrayField(TEXT("actual_material_bindings"), BindingCounts);
+    if (Expected)
+    {
+     const FJson Old = Expected->GetArrayField(TEXT("lods"))[Index]->AsObject();
+     if(Job->HasField(TEXT("postrepair_binding"))&&!Need(Item->GetStringField(TEXT("render_packed_vertex_sha1"))==S47J::Str(Old,TEXT("render_packed_vertex_sha1"))&&
+      Item->GetStringField(TEXT("render_uint32_indices_sha1"))==S47J::Str(Old,TEXT("render_uint32_indices_sha1"))&&
+      FJsonValue::CompareEqual(*MakeShared<FJsonValueArray>(Item->GetArrayField(TEXT("sections"))),*MakeShared<FJsonValueArray>(S47J::Arr(Old,TEXT("sections")))),
+      TEXT("R11 separate fresh reader matches actual render vertex/index/section payloads")))return false;
+     if (!Need(Item->GetStringField(TEXT("raw_sha1")) == Old->GetStringField(TEXT("raw_sha1")) && Item->GetStringField(TEXT("corner_sha1")) == Old->GetStringField(TEXT("corner_sha1")) && Triangles == Old->GetIntegerField(TEXT("triangles")), TEXT("fresh saved asset exact raw geometry/UV/normal/tangent/color/material digest"))) return false;
+    }
+    PreviousTriangles = Triangles;
+   }
+   if (!Need(!Mesh->GetNaniteSettings().bEnabled && Mesh->bSupportRayTracing && Mesh->bAllowCPUAccess && !Mesh->GetAutoComputeLODScreenSize() &&
+    Actual->GetBoolField(TEXT("body_no_collision")), TEXT("explicit conventional static LOD policy, NoCollision and RT fallback"))) return false;
+   if (Expected)
+   {
+    const auto& Before = Expected->GetArrayField(TEXT("materials")); const auto& After = Actual->GetArrayField(TEXT("materials"));
+    if (!Need(Before.Num() == After.Num(), TEXT("fresh saved material slot count"))) return false;
+    for (int32 Index = 0; Index < Before.Num(); ++Index) if (!Need(Before[Index]->AsString() == After[Index]->AsString(), TEXT("fresh saved material pointer identity"))) return false;
+   }
+   TArray<TSharedPtr<FJsonValue>> Compile;
+   bool ShadersReady = true;
+   for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials())
+   {
+    FJson State = MaterialState(Slot.MaterialInterface); ShadersReady &= State->GetBoolField(TEXT("shader_ready")); Compile.Add(Value(State));
+   }
+   Report->SetArrayField(TEXT("actual_material_compile"), Compile);
+   if (!Need(ShadersReady, TEXT("all actual material resources have complete shader maps, no compile errors or default-surface fallback"))) return false;
+   return true;
+  }
+  // HUM01 only: raw LOD0 plus the already proven Body-reference Face copy.
+  // No PoseBody, registered component, actor, animation evaluation or asset save.
+  bool RestSurfaceDiagnostic()
+  {
+   if (!Need(FParse::Param(FCommandLine::Get(), TEXT("NullRHI")), TEXT("explicit NullRHI rest-buffer diagnostic"))) return false;
+   const FJson Pins = S47J::Obj(Job, TEXT("rest_surface_provenance")); FJson Previous, Accepted;
+   if (!PostrepairPinnedJson(S47J::Obj(Pins, TEXT("bake_report")), Previous) ||
+    !PostrepairPinnedJson(S47J::Obj(Pins, TEXT("bake_acceptance")), Accepted)) return false;
+   if (!Need(S47J::Str(Previous, TEXT("status")) == TEXT("PASS") && S47J::Str(Previous, TEXT("mode")) == TEXT("bake") &&
+    S47J::Str(Accepted, TEXT("status")) == TEXT("NATIVE_AUTHORING_PHASE_PASS") && S47J::Str(Accepted, TEXT("mode")) == TEXT("bake") &&
+    S47J::Num(Previous, TEXT("pid")) == 2810453 && S47J::Num(Accepted, TEXT("pid")) == 2810453 &&
+    S47J::Str(S47J::Obj(Accepted, TEXT("native_report")), TEXT("sha256")) == S47J::Str(S47J::Obj(Pins, TEXT("bake_report")), TEXT("sha256")),
+    TEXT("actual accepted R11 RHI bind-closure provenance, not a new RHI claim"))) return false;
+   auto SourceFile = [&](USkeletalMesh* Mesh, const TCHAR* Key)
+   {
+    TArray<uint8> Bytes;
+    return PostrepairPinnedFile(S47J::Obj(Pins, Key), Bytes,
+     FPaths::ConvertRelativePathToFull(FPackageName::LongPackageNameToFilename(Mesh->GetPackage()->GetName(), FPackageName::GetAssetPackageExtension())));
+   };
+   if (!SourceFile(Body, TEXT("body_file")) || !SourceFile(Face, TEXT("face_file"))) return false;
+   const FJson OldSources = S47J::Obj(Previous, TEXT("skeletal_sources"));
+   if (!Need(PostrepairEqual(SkeletalSource(Body), S47J::Obj(OldSources, TEXT("body"))) &&
+    PostrepairEqual(SkeletalSource(Face), S47J::Obj(OldSources, TEXT("face"))), TEXT("unchanged actual R11 Body/Face native reference, LOD and material sources"))) return false;
+   const auto OldClosure = S47J::Arr(Previous, TEXT("native_face_bind_geometry")); bool HasLOD0 = false;
+   for (const auto& V : OldClosure)
+   {
+    const FJson R = V->AsObject(); const int32 L = int32(S47J::Num(R, TEXT("lod")));
+    if (!Need(Face->GetResourceForRendering()->LODRenderData.IsValidIndex(L) &&
+     S47J::Num(R, TEXT("vertices")) == Face->GetResourceForRendering()->LODRenderData[L].GetNumVertices() &&
+     S47J::Num(R, TEXT("max_reference_position_error_cm")) <= PoseNumber(TEXT("max_shared_reference_error_cm")), TEXT("actual prior RHI all-vertex Face closure retains the original limit"))) return false;
+    HasLOD0 |= L == 0;
+   }
+   if (!Need(HasLOD0, TEXT("actual R11 closure contains LOD0"))) return false;
+   FPose BodyRef(Body->GetRefSkeleton()), FaceRef(Face->GetRefSkeleton()), ClothRef(Clothes->GetRefSkeleton()), FaceCopy(Face->GetRefSkeleton());
+   if (!ReferenceDiagnostics(BodyRef, FaceRef, ClothRef)) return false;
+   const FJson NowDiag = S47J::Obj(Report, TEXT("reference_diagnostics")), OldDiag = S47J::Obj(Previous, TEXT("reference_diagnostics"));
+   if (!Need(PostrepairEqual(S47J::Obj(NowDiag, TEXT("body")), S47J::Obj(OldDiag, TEXT("body"))) &&
+    PostrepairEqual(S47J::Obj(NowDiag, TEXT("face")), S47J::Obj(OldDiag, TEXT("face"))), TEXT("actual full reference and weighted-bone scans still match R11")) ||
+    !CopyFace(BodyRef, FaceCopy)) return false;
+   const FJson Copy = S47J::Obj(Report, TEXT("face_pose_transfer")), OldCopy = S47J::Obj(Previous, TEXT("face_pose_transfer"));
+   if (!Need(FaceCopy.Hash() == S47J::Str(OldCopy, TEXT("reference_copy_pose_sha1")) &&
+    S47J::Str(Copy, TEXT("reference_copy_pose_sha1")) == FaceCopy.Hash() &&
+    S47J::Num(Copy, TEXT("weighted_bind_frames_checked")) == S47J::Num(OldCopy, TEXT("weighted_bind_frames_checked")),
+    TEXT("existing CopyFace applied only to unchanged BodyRef; exact prior reference-copy hash"))) return false;
+   auto MatrixRows = [](const FMatrix& M)
+   {
+    TArray<TSharedPtr<FJsonValue>> Rows;
+    for (int32 R = 0; R < 4; ++R) { TArray<TSharedPtr<FJsonValue>> Cells;
+     for (int32 C = 0; C < 4; ++C) Cells.Add(MakeShared<FJsonValueNumber>(M.M[R][C]));
+     Rows.Add(MakeShared<FJsonValueArray>(Cells)); }
+    return Rows;
+   };
+   FJson Surfaces = Object(); Report->SetObjectField(TEXT("rest_surfaces"), Surfaces);
+   auto Dump = [&](const TCHAR* Key, USkeletalMesh* Mesh, const FPose& Native, const FPose& RefCopy)
+   {
+    const auto& LOD = Mesh->GetResourceForRendering()->LODRenderData[0]; const auto& B = LOD.StaticVertexBuffers;
+    const auto* Weights = LOD.GetSkinWeightVertexBuffer(); const auto* Indices = LOD.MultiSizeIndexContainer.GetIndexBuffer();
+    if (!Need(Weights && Indices && Indices->Num() > 0 && Indices->Num() % 3 == 0 && Indices->GetResourceDataSize() > 0 &&
+     B.PositionVertexBuffer.GetVertexData() && B.StaticMeshVertexBuffer.GetTangentData() &&
+     Weights->GetDataVertexBuffer()->GetWeightData() && (!Weights->GetVariableBonesPerVertex() || Weights->GetLookupVertexBuffer()->GetLookupData()) &&
+     Weights->GetNumVertices() == LOD.GetNumVertices() && B.PositionVertexBuffer.GetNumVertices() == LOD.GetNumVertices() &&
+     B.StaticMeshVertexBuffer.GetNumVertices() == LOD.GetNumVertices() && Mesh->GetRefBasesInvMatrix().Num() == Native.Local.Num(),
+     TEXT("complete actual rest LOD0 CPU buffers, weights and inverse references"))) return false;
+    TArray<uint8> Bytes; FMemoryWriter Payload(Bytes); TArray<TSharedPtr<FJsonValue>> Bones, Positions, Normals, CopyPositions, Triangles, TriangleSections, TriangleSlots, Sections;
+    TArray<FMatrix44f> Matrices;
+    for (int32 I = 0; I < Native.Local.Num(); ++I)
+    {
+     const int32 Parent = Native.Ref.GetParentIndex(I); FJson R = Object(); R->SetNumberField(TEXT("index"), I); R->SetStringField(TEXT("name"), Native.Ref.GetBoneName(I).ToString());
+     R->SetNumberField(TEXT("parent_index"), Parent); R->SetArrayField(TEXT("local_matrix4x4"), MatrixRows(Native.Local[I].ToMatrixWithScale()));
+     R->SetArrayField(TEXT("component_matrix4x4"), MatrixRows(Native.Component[I].ToMatrixWithScale()));
+     R->SetArrayField(TEXT("body_reference_copy_local_matrix4x4"), MatrixRows(RefCopy.Local[I].ToMatrixWithScale()));
+     R->SetArrayField(TEXT("body_reference_copy_component_matrix4x4"), MatrixRows(RefCopy.Component[I].ToMatrixWithScale())); Bones.Add(Value(R));
+     Matrices.Add(Mesh->GetRefBasesInvMatrix()[I] * FMatrix44f(RefCopy.Component[I].ToMatrixWithScale()));
+    }
+    // Public pure CPU skin-position helper; no registration, MeshObject or RHI readback.
+    TStrongObjectPtr<UPoseableMeshComponent> Carrier(NewObject<UPoseableMeshComponent>(GetTransientPackage(), NAME_None, RF_Transient));
+    Carrier->SetSkinnedAssetAndUpdate(Mesh); TArray<FVector3f> Skinned;
+    if (!Need(!Carrier->IsRegistered() && !Carrier->GetCPUSkinningEnabled() && !Carrier->LeaderPoseComponent.IsValid(), TEXT("unregistered reference-only carrier, no evaluated pose"))) return false;
+    USkinnedMeshComponent::ComputeSkinnedPositions(Carrier.Get(), Skinned, Matrices, LOD, *Weights);
+    if (!Need(Skinned.Num() == int32(LOD.GetNumVertices()), TEXT("direct CPU helper returned every native vertex"))) return false;
+    double MaxDelta = 0; int32 Worst = INDEX_NONE;
+    for (int32 I = 0; I < Skinned.Num(); ++I)
+    {
+     FVector3f P = B.PositionVertexBuffer.VertexPosition(I), N(B.StaticMeshVertexBuffer.VertexTangentZ(I)), C = Skinned[I];
+     if (!Need(!P.ContainsNaN() && !N.ContainsNaN() && !C.ContainsNaN() && N.SizeSquared() > .1f, TEXT("finite measured native/copy positions and render normal"))) return false;
+     const double D = FVector::Distance(FVector(P), FVector(C)); if (D > MaxDelta) { MaxDelta = D; Worst = I; }
+     Positions.Add(MakeShared<FJsonValueArray>(Vector(FVector(P)))); Normals.Add(MakeShared<FJsonValueArray>(Vector(FVector(N))));
+     CopyPositions.Add(MakeShared<FJsonValueArray>(Vector(FVector(C)))); Payload << P << N << C;
+    }
+    const auto* Info = Mesh->GetLODInfo(0); if (!Need(Info != nullptr, TEXT("actual LOD0 material remap"))) return false;
+    uint32 Covered = 0;
+    for (int32 S = 0; S < LOD.RenderSections.Num(); ++S)
+    {
+     const auto& Section = LOD.RenderSections[S]; int32 Slot = Section.MaterialIndex;
+     if (Info->LODMaterialMap.IsValidIndex(S) && Info->LODMaterialMap[S] != INDEX_NONE) Slot = Info->LODMaterialMap[S];
+     if (!Need(Slot >= 0 && Slot < Mesh->GetMaterials().Num() && uint64(Section.BaseIndex) + uint64(Section.NumTriangles)*3 <= uint64(Indices->Num()), TEXT("exact original section index range and LOD material slot"))) return false;
+     FJson R = Object(); R->SetNumberField(TEXT("section"), S); R->SetNumberField(TEXT("base_index"), Section.BaseIndex); R->SetNumberField(TEXT("triangles"), Section.NumTriangles);
+     R->SetNumberField(TEXT("native_material_index"), Section.MaterialIndex); R->SetNumberField(TEXT("resolved_material_slot"), Slot); R->SetBoolField(TEXT("disabled"), Section.bDisabled);
+     R->SetStringField(TEXT("material"), GetPathNameSafe(Mesh->GetMaterials()[Slot].MaterialInterface)); Sections.Add(Value(R));
+     for (uint32 T = 0; T < Section.NumTriangles; ++T) { TArray<TSharedPtr<FJsonValue>> Tri;
+      for (uint32 K = 0; K < 3; ++K) { uint32 Index = Indices->Get(Section.BaseIndex + T*3 + K);
+       if (!Need(Index < uint32(Skinned.Num()), TEXT("actual rest triangle vertex index"))) return false;
+       Tri.Add(MakeShared<FJsonValueNumber>(Index)); Payload << Index; }
+      Triangles.Add(MakeShared<FJsonValueArray>(Tri)); TriangleSections.Add(MakeShared<FJsonValueNumber>(S)); TriangleSlots.Add(MakeShared<FJsonValueNumber>(Slot)); Payload << S << Slot; }
+     Covered += Section.NumTriangles*3;
+    }
+    FJson Data = Object(); Data->SetStringField(TEXT("asset"), Mesh->GetPathName()); Data->SetNumberField(TEXT("lod"), 0);
+    Data->SetStringField(TEXT("coordinates"), TEXT("native mesh/component-local centimetres; no Seat/actor/world transform; UE row-vector local*parent matrices"));
+    Data->SetStringField(TEXT("reference_pose_sha1"), Native.Hash()); Data->SetStringField(TEXT("copy_reference_pose_sha1"), RefCopy.Hash());
+    Data->SetStringField(TEXT("inverse_reference_sha1"), InverseReferenceHash(Mesh)); Data->SetStringField(TEXT("surface_payload_sha1"), Digest(Bytes));
+    Data->SetArrayField(TEXT("bones"), Bones); Data->SetArrayField(TEXT("positions_native_reference_cm"), Positions); Data->SetArrayField(TEXT("normals_native_reference"), Normals);
+    Data->SetArrayField(TEXT("positions_body_reference_copy_cm"), CopyPositions); Data->SetArrayField(TEXT("triangles"), Triangles); Data->SetArrayField(TEXT("triangle_sections"), TriangleSections);
+    Data->SetArrayField(TEXT("triangle_material_slots"), TriangleSlots); Data->SetArrayField(TEXT("sections"), Sections); Data->SetNumberField(TEXT("copy_max_delta_from_native_cm"), MaxDelta); Data->SetNumberField(TEXT("copy_worst_vertex"), Worst);
+    Data->SetStringField(TEXT("copy_method"), TEXT("ComputeSkinnedPositions on raw LOD0 weights/BoneMap and native inverse-bind * reference-copy CS; unregistered carrier, no animation/RHI/morph"));
+    Surfaces->SetObjectField(Key, Data);
+    return Need(Covered == uint32(Indices->Num()) && MaxDelta <= PoseNumber(TEXT("max_shared_reference_error_cm")), TEXT("full section index coverage and unchanged raw/reference-copy position limit"));
+   };
+   if (!Dump(TEXT("body"), Body, BodyRef, BodyRef) || !Dump(TEXT("face"), Face, FaceRef, FaceCopy)) return false;
+   if (!SourceFile(Body, TEXT("body_file")) || !SourceFile(Face, TEXT("face_file"))) return false;
+   Report->SetObjectField(TEXT("rest_surface_provenance"), Pins); Report->SetArrayField(TEXT("prior_R11_RHI_face_bind_geometry"), OldClosure);
+   Report->SetBoolField(TEXT("new_RHI_bind_test"), false); Report->SetBoolField(TEXT("asset_save_called"), false); Report->SetBoolField(TEXT("runtime_accepted"), false);
+   Report->SetStringField(TEXT("diagnostic_limit"), TEXT("raw rest surfaces and measured reference-copy only; native-to-FBX/Blender mapping, garment fit, pose and visual acceptance remain separate"));
+   return true;
+  }
+
+  bool Run()
+  {
+   if (!Preflight()) return false;
+   if (Mode == TEXT("rest-surface-diagnostic")) return RestSurfaceDiagnostic();
+   if (Mode == TEXT("bind-clothes") || Mode == TEXT("verify-clothes-bind")) return ClothesBinding(Mode == TEXT("verify-clothes-bind"));
+   if (Mode == TEXT("materials")) return DiagnoseMaterials();
+   if (!PreparePostrepairBinding()) return false;
+   if (Mode == TEXT("verify"))
+   {
+    FJson Previous; if (!Need(Read(Job->GetStringField(TEXT("bake_report")), Previous) && Previous->GetStringField(TEXT("status")) == TEXT("PASS"), TEXT("actual successful private bake receipt"))) return false;
+    if (Previous->HasField(TEXT("postrepair_binding")) || Job->HasField(TEXT("postrepair_binding")))
+     if (!Need(PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_binding_file")), S47J::Obj(Job, TEXT("postrepair_binding"))) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_binding")), PostrepairBinding) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("postrepair_derived_foot_targets")), PostrepairFloorTargets), TEXT("R11 fresh verify uses the exact same frozen files, reference and recomputed measured targets"))) return false;
+    if (Job->HasField(TEXT("garment_source_binding")) || Previous->HasField(TEXT("garment_source_binding")))
+     if (!Need(GarmentSourceBinding.IsValid() && PostrepairEqual(S47J::Obj(Previous, TEXT("garment_source_binding_file")), S47J::Obj(Job, TEXT("garment_source_binding"))) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("garment_source_binding")), GarmentSourceBinding) &&
+      PostrepairEqual(S47J::Obj(Previous, TEXT("garment_source_geometry_actual")), S47J::Obj(Report, TEXT("garment_source_geometry_actual"))), TEXT("R12 fresh reader retains exact new source pins and actual full Clothes payload")) || !CheckGarmentPoseUnchanged(Previous)) return false;
+    UStaticMesh* Saved = Load<UStaticMesh>(Job->GetStringField(TEXT("output_asset")));
+    if (!Need(Saved != nullptr, TEXT("saved output really reloads as StaticMesh"))) return false;
+    FAssetCompilingManager::Get().FinishAllCompilation();
+    return Audit(Saved, Previous->GetObjectField(TEXT("output")));
+   }
+   FPose BodyPose(Body->GetRefSkeleton()), FacePose(Face->GetRefSkeleton()), ClothPose(Clothes->GetRefSkeleton()); FTransform Seat;
+   if (!PoseBody(BodyPose, Seat) || !ReferenceDiagnostics(BodyPose, FacePose, ClothPose)
+    || !Transfer(BodyPose, Face, false, FacePose) || !Transfer(BodyPose, Clothes, true, ClothPose) || !CheckGarmentPoseUnchanged(Report)) return false;
+   if (Mode == TEXT("probe")) return true;
+   if (!Need(Mode == TEXT("bake") && !FPackageName::DoesPackageExist(Job->GetStringField(TEXT("output_asset"))), TEXT("fresh bake destination; no replacement of any previous candidate"))) return false;
+   if (!Need(FApp::CanEverRender(), TEXT("bake has a render context; commandlets require AllowCommandletRendering, not NullRHI"))) return false;
+   UWorld* World = GEditor->GetEditorWorldContext().World();
+   if (!Need(World != nullptr, TEXT("isolated editor authoring world"))) return false;
+   FActorSpawnParameters Spawn; Spawn.ObjectFlags = RF_Transient; Actor = World->SpawnActor<AActor>(AActor::StaticClass(), Spawn);
+   if (!Need(Actor != nullptr, TEXT("transient authoring actor"))) return false;
+   TArray<UMeshComponent*> Parts;
+   Parts.Add(Component(Body, BodyPose, TEXT("Body"))); Parts.Add(Component(Face, FacePose, TEXT("Face"))); Parts.Add(Component(Clothes, ClothPose, TEXT("Clothes")));
+   for (int32 Index = 0; Index < 3; ++Index) if (!Need(CastChecked<USkinnedMeshComponent>(Parts[Index])->MeshObject != nullptr, TEXT("actual CPU skin mesh object registered for each posed part"))) return false;
+   if (!FaceBindGeometry()) return false;
+   const int32 FaceHead = FacePose.Ref.FindBoneIndex(TEXT("head")); const FPose FaceReference(FacePose.Ref);
+   const FTransform HeadDelta = FaceReference.Component[FaceHead].Inverse() * FacePose.Component[FaceHead];
+   auto Cards = [&](const TCHAR* Name, UStaticMesh* Mesh, UMaterialInterface* Material)
+   {
+    UStaticMeshComponent* Part = NewObject<UStaticMeshComponent>(Actor, Name, RF_Transient); Part->SetStaticMesh(Mesh);
+    Part->SetWorldTransform(HeadDelta); Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    for (int32 Slot = 0; Slot < Mesh->GetStaticMaterials().Num(); ++Slot) Part->SetMaterial(Slot, Material);
+    Part->SetComponentTickEnabled(false); Actor->AddInstanceComponent(Part); Part->RegisterComponent(); Parts.Add(Part); return Part;
+   };
+   UStaticMeshComponent* Hair = Cards(TEXT("HairCards"), HairNear, HairMaterial);
+   UStaticMeshComponent* Brows = Cards(TEXT("BrowCards"), BrowsNear, BrowMaterial);
+   // The local multi-component ConvertMeshesToStaticMesh compacts an already
+   // accumulated slot map after each skinned part. Read its underlying native CPU
+   // vertex/section APIs directly, preserving every original slot and LOD remap.
+   TArray<FRawMesh> RawLODs; TArray<FStaticMaterial> Materials; TArray<int32> BaseSlots, SlotCounts; TArray<TSharedPtr<FJsonValue>> Provenance;
+   for (int32 PartIndex = 0; PartIndex < Parts.Num(); ++PartIndex)
+   {
+    UMeshComponent* Part = Parts[PartIndex]; BaseSlots.Add(Materials.Num()); SlotCounts.Add(Part->GetNumMaterials());
+    for (int32 Slot = 0; Slot < Part->GetNumMaterials(); ++Slot)
+    {
+     UMaterialInterface* Material = Part->GetMaterial(Slot); if (!Need(Material != nullptr, TEXT("actual material for every original source slot"))) return false;
+     const FName Name(*FString::Printf(TEXT("Part%d_Slot%d"), PartIndex, Slot)); Materials.Add(FStaticMaterial(Material, Name, Name));
+    }
+   }
+   const auto& LODSettings = Contract->GetArrayField(TEXT("lods"));
+   for (int32 Index = 0; Index < LODSettings.Num(); ++Index)
+   {
+    const FJson Settings = LODSettings[Index]->AsObject(); const bool Far = Settings->GetStringField(TEXT("cards")) == TEXT("far");
+    Hair->SetStaticMesh(Far ? HairFar : HairNear); Brows->SetStaticMesh(Far ? BrowsFar : BrowsNear);
+    for (int32 Slot = 0; Slot < Hair->GetNumMaterials(); ++Slot) Hair->SetMaterial(Slot, HairMaterial);
+    for (int32 Slot = 0; Slot < Brows->GetNumMaterials(); ++Slot) Brows->SetMaterial(Slot, BrowMaterial);
+    const int32 SourceLOD = Settings->GetIntegerField(TEXT("overall_source_lod"));
+    if (!Need(SourceLOD >= 0 && SourceLOD < Face->GetLODNum(), TEXT("requested actual overall face LOD exists"))) return false;
+    FRawMesh& Raw = RawLODs.AddDefaulted_GetRef(); int32 UsedUVs = 0; TArray<TSharedPtr<FJsonValue>> Contributions;
+    for (int32 PartIndex = 0; PartIndex < Parts.Num(); ++PartIndex)
+    {
+     UMeshComponent* Part = Parts[PartIndex]; if (!Need(Part->GetNumMaterials() == SlotCounts[PartIndex], TEXT("actual near/far source slot count stable"))) return false;
+     for (int32 Slot = 0; Slot < SlotCounts[PartIndex]; ++Slot)
+      if (!Need(Part->GetMaterial(Slot) == Materials[BaseSlots[PartIndex] + Slot].MaterialInterface, TEXT("original material identities remain fixed across LODs"))) return false;
+     FJson Contribution = Object();
+     if (!AppendNative(Part, SourceLOD, BaseSlots[PartIndex], Seat, Raw, UsedUVs, Contribution, Index == 0 && PartIndex == 2)) return false;
+     Contributions.Add(Value(Contribution));
+    }
+    for (int32 Channel = UsedUVs; Channel < MAX_MESH_TEXTURE_COORDS; ++Channel) Raw.WedgeTexCoords[Channel].Empty();
+    if (!Need(Raw.IsValid() && UsedUVs > 0 && UsedUVs <= MAX_MESH_TEXTURE_COORDS, TEXT("actual CPU-skinned/native corner attributes valid without material compaction"))) return false;
+    bool Finite = true;
+    for (const FVector3f& Position : Raw.VertexPositions) Finite &= !Position.ContainsNaN();
+    for (const FVector3f& Normal : Raw.WedgeTangentZ) Finite &= !Normal.ContainsNaN() && Normal.SizeSquared() > 0.1f;
+    for (const FVector3f& Tangent : Raw.WedgeTangentX) Finite &= !Tangent.ContainsNaN() && Tangent.SizeSquared() > 0.1f;
+    for (const auto& Channel : Raw.WedgeTexCoords) for (const FVector2f& UV : Channel) Finite &= !UV.ContainsNaN();
+    if (!Need(Finite, TEXT("finite native positions/UVs and nonzero authored tangent basis"))) return false;
+    FJson Item = Object(); Item->SetNumberField(TEXT("output_lod"), Index); Item->SetNumberField(TEXT("overall_source_lod"), SourceLOD);
+    Item->SetStringField(TEXT("hair_asset"), Hair->GetStaticMesh()->GetPathName()); Item->SetStringField(TEXT("brow_asset"), Brows->GetStaticMesh()->GetPathName());
+    Item->SetArrayField(TEXT("parts"), Contributions); Item->SetStringField(TEXT("source_corner_sha1"), CornerDigest(Raw)); Provenance.Add(Value(Item));
+   }
+   if (!SoleContacts()) return false;
+   const FString OutputPath = Job->GetStringField(TEXT("output_asset")); UPackage* Package = CreatePackage(*OutputPath);
+   UStaticMesh* Output = NewObject<UStaticMesh>(Package, *FPackageName::GetLongPackageAssetName(OutputPath), RF_Public | RF_Standalone);
+   Output->InitResources(); Output->SetLightingGuid(); Output->GetStaticMaterials() = Materials;
+   Output->SetAutoComputeLODScreenSize(false); Output->bAllowCPUAccess = true; Output->bSupportRayTracing = true; Output->GetNaniteSettings().bEnabled = false;
+   for (int32 Index = 0; Index < RawLODs.Num(); ++Index)
+   {
+    FStaticMeshSourceModel& Model = Output->AddSourceModel();
+    Model.BuildSettings.bRecomputeNormals = false; Model.BuildSettings.bRecomputeTangents = false;
+    Model.BuildSettings.bRemoveDegenerates = false; Model.BuildSettings.bUseHighPrecisionTangentBasis = true;
+    Model.BuildSettings.bUseFullPrecisionUVs = true; Model.BuildSettings.bGenerateLightmapUVs = false;
+    Model.ReductionSettings.PercentTriangles = 1.0f; Model.ScreenSize.Default = LODSettings[Index]->AsObject()->GetNumberField(TEXT("screen_size"));
+    StoreDescription(Output, Index, RawLODs[Index]);
+   }
+   Output->GetOriginalSectionInfoMap().CopyFrom(Output->GetSectionInfoMap());
+   Output->SetImportVersion(EImportStaticMeshVersion::LastVersion); Output->Build(false); Output->PostEditChange();
+   FStaticMeshCompilingManager::Get().FinishAllCompilation();
+   Output->CreateBodySetup(); Output->GetBodySetup()->DefaultInstance.SetCollisionEnabled(ECollisionEnabled::NoCollision);
+   Report->SetArrayField(TEXT("conversion_provenance"), Provenance);
+   if (!Audit(Output)) return false;
+   const auto& SavedLODs = Report->GetObjectField(TEXT("output"))->GetArrayField(TEXT("lods"));
+   for (int32 Index = 0; Index < SavedLODs.Num(); ++Index)
+    if (!Need(SavedLODs[Index]->AsObject()->GetStringField(TEXT("corner_sha1")) == Provenance[Index]->AsObject()->GetStringField(TEXT("source_corner_sha1")), TEXT("output retains exact native positions, winding, corner UVs/normals/tangent handedness/colors and original material map"))) return false;
+   FAssetRegistryModule::AssetCreated(Output); Output->MarkPackageDirty();
+   FSavePackageArgs Args; Args.TopLevelFlags = RF_Public | RF_Standalone;
+   return Need(UPackage::SavePackage(Package, Output, *FPackageName::LongPackageNameToFilename(OutputPath, FPackageName::GetAssetPackageExtension()), Args), TEXT("only new private static output saved"));
+  }
+ };
+ void Execute()
+ {
+  FBake Bake; const FString JobPath = FPlatformMisc::GetEnvironmentVariable(TEXT("S47_MANNEQUIN_JOB"));
+  if (!Read(JobPath, Bake.Job)) { UE_LOG(LogS47MannequinBake, Error, TEXT("S47 Mannequin FAIL missing private job JSON")); return; }
+  Bake.ReportPath = Bake.Job->GetStringField(TEXT("native_report")); Bake.Mode = Bake.Job->GetStringField(TEXT("mode"));
+  if (Bake.Mode == TEXT("rest-surface-diagnostic") &&
+   (!Bake.ReportPath.StartsWith(TEXT("/home/tom/scratch-bm/Signal47-mannequins-20261029/rest-surface-diagnostic-r1/runs/")) ||
+    Bake.ReportPath.Contains(TEXT("..")) || Bake.ReportPath != FPaths::ConvertRelativePathToFull(Bake.ReportPath) || FPaths::FileExists(Bake.ReportPath)))
+  { UE_LOG(LogS47MannequinBake, Error, TEXT("Rest diagnostic requires a new bounded private JSON output")); return; }
+  const bool ReadContract = Read(Bake.Job->GetStringField(TEXT("contract")), Bake.Contract);
+  const bool Passed = ReadContract && Bake.Run();
+  Bake.Report->SetNumberField(TEXT("schema_version"), 1); Bake.Report->SetNumberField(TEXT("pid"), FPlatformProcess::GetCurrentProcessId());
+  Bake.Report->SetStringField(TEXT("status"), Passed ? TEXT("PASS") : TEXT("FAIL")); Bake.Report->SetStringField(TEXT("mode"), Bake.Mode);
+  Bake.Report->SetStringField(TEXT("error"), Bake.Error); Bake.Report->SetNumberField(TEXT("checks"), Bake.Checks);
+  Bake.Report->SetStringField(TEXT("evidence_limit"), TEXT("native authoring only; appearance, runtime adoption/schedule, input and performance require separate proof; no installation/release"));
+  if (!Write(Bake.ReportPath, Bake.Report)) UE_LOG(LogS47MannequinBake, Error, TEXT("S47 Mannequin FAIL cannot write private receipt"));
+  UE_LOG(LogS47MannequinBake, Display, TEXT("S47 Mannequin %s %s checks=%d report=%s"), Passed ? TEXT("PASS") : TEXT("FAIL"), *Bake.Mode, Bake.Checks, *Bake.ReportPath);
+ }
+ FAutoConsoleCommand BakeCommand(TEXT("S47.MannequinBake"), TEXT("Private editor-only mannequin pose/bake/verify; requires S47_MANNEQUIN_JOB JSON."), FConsoleCommandDelegate::CreateStatic(&Execute));
+}
+#endif

@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "id": "radio_woman",
+  "status": "authoring_contract_unverified",
+  "engine": "5.8.4",
+  "bake_api": "USkinnedMeshComponent::GetCPUSkinnedVertices plus actual native static/render sections into MeshDescription; no multi-part material compaction",
+  "source_inventory": "Signal47-mannequins-20261029/source-inventory.json",
+  "source_body_fbx_sha256": "292e178b06f0d172d3a43220bf3ac42270e500671a6a8eec5969465348bc3e92",
+  "private_root": "/Game/MetaHumans/Mannequins/RadioWoman",
+  "output_name": "SM_RadioWoman_Seated",
+  "clothes_bind": {
+    "policy": "canonical-native-body",
+    "imported_reference_pose_sha1": "2144e1ffc0504791556fd705e21b37add599da6f",
+    "canonical_reference_pose_sha1": "93838fa5259ddca476c5e523526483746f038133"
+  },
+  "sources": {
+    "body": "/Game/MetaHumans/MHC_Waitress/Body/SKM_MHC_Waitress_BodyMesh",
+    "face": "/Game/MetaHumans/MHC_Waitress/Face/SKM_MHC_Waitress_FaceMesh",
+    "skeleton": "/Game/MetaHumans/Common/Female/Medium/NormalWeight/Body/metahuman_base_skel",
+    "hair_near": "/Game/MetaHumans/MHC_Waitress/Grooms/Hair_M_Layered_CardsMesh_Group0_LOD1",
+    "hair_far": "/Game/MetaHumans/MHC_Waitress/Grooms/Hair_M_Layered_CardsMesh_Group0_LOD3",
+    "brows_near": "/Game/MetaHumans/MHC_Waitress/Grooms/Eyebrows_M_SlightArch_CardsMesh_Group0_LOD1",
+    "brows_far": "/Game/MetaHumans/MHC_Waitress/Grooms/Eyebrows_M_SlightArch_CardsMesh_Group0_LOD3",
+    "brows_groom": "/Game/MetaHumans/MHC_Waitress/Grooms/Eyebrows_M_SlightArch",
+    "hair_material": "/Game/MetaHumans/Waitress/Uniform/M_Waitress_HairCards"
+  },
+  "measured_seat_binding": {
+    "policy": "measured-bench-seat-and-original-ground",
+    "source_commit": "2e71ef81e14027ba0651ccac8ae4e420871b0ac8",
+    "raw_result_sha256": "846064eeb055566ad7170583bd2dc7b737f0717b21c8a1aa37aa3f7f38579d7c",
+    "private_summary": "Signal47-mannequins-20261029/bench-diagnostic-r2-summary.json",
+    "bench_node": 1562,
+    "bench_geo": 1074,
+    "person_owner_node": 1480,
+    "town_parent_node": 1431,
+    "measured_seat_ue_cm": 786.1326167035835,
+    "legacy_seat_delta_cm": -6.559057316375288,
+    "seat_surface_hits": 9,
+    "seat_spread_cm": 0.07708936695610191,
+    "previous_hand_above_pelvis_cm": 8.0,
+    "hand_target_lift_cm": 6.559057316375288,
+    "foot_floor_targets": {
+      "foot_l": {
+        "output_side": "negative_Y",
+        "actual_rays": 48,
+        "minimum_gap_cm": -5.611588503672351,
+        "maximum_gap_cm": -4.976066851036194,
+        "vertical_lift_cm": 5.2938276773542725,
+        "predicted_flat_sole_residual_min_cm": -0.31776082631807867,
+        "predicted_flat_sole_residual_max_cm": 0.31776082631807867,
+        "ground_components": [
+          1242,
+          1823
+        ],
+        "actual_ground_z_min_cm": 747.388430563897,
+        "actual_ground_z_max_cm": 748.0239484018359,
+        "minimum_up_normal_z": 0.9995100463817134
+      },
+      "foot_r": {
+        "output_side": "positive_Y",
+        "actual_rays": 48,
+        "minimum_gap_cm": -6.31156230400552,
+        "maximum_gap_cm": -5.851316054073209,
+        "vertical_lift_cm": 6.081439179039364,
+        "predicted_flat_sole_residual_min_cm": -0.2301231249661555,
+        "predicted_flat_sole_residual_max_cm": 0.2301231249661555,
+        "ground_components": [
+          1242
+        ],
+        "actual_ground_z_min_cm": 748.263778949063,
+        "actual_ground_z_max_cm": 748.724021384298,
+        "minimum_up_normal_z": 0.9995100463817134
+      }
+    },
+    "scope": "Actual native bench9/9 and ground96/96 under unchanged R9 lowest Shoe/Trim vertices. Keep original leg seed, lift each seed ankle only in +Z with native no-stretch IK and exact segment lengths/flat reference-component foot rotation/scales. Original radio/proxy/bench/ground remain unchanged. Midrange residuals predict contact only; fresh R10 native and actual runtime/appearance acceptance required.",
+    "runtime_accepted": false
+  },
+  "pose": {
+    "method": "native_ref_skeleton_component_space_limb_aim_and_two_bone_ik",
+    "units": "UE centimetres",
+    "output_axes": "+X forward, +Y right, +Z up; origin is seat, not feet",
+    "pelvis_above_seat_cm": 8.0,
+    "thigh_drop_degrees": 3.0,
+    "knee_splay_cm": 1.5,
+    "hand_forward_cm": 27.0,
+    "hand_side_cm": 16.0,
+    "hand_above_pelvis_cm": 14.559057316375288,
+    "elbow_forward_cm": 5.0,
+    "elbow_side_cm": 34.0,
+    "elbow_above_pelvis_cm": 24.0,
+    "max_hand_target_error_cm": 0.05,
+    "max_shared_reference_error_cm": 0.025,
+    "max_shared_reference_angle_degrees": 0.02,
+    "no_stretching": true,
+    "hand_orientation": "native reference-local wrist follows newly posed forearm; no claimed authored radio grip",
+    "facial_expression": "actual face reference pose, no RigLogic or animation evaluation",
+    "correctives": "reference local transforms follow their posed parent; no dynamic RBF evaluation",
+    "max_foot_target_error_cm": 1e-05,
+    "max_foot_segment_error_cm": 1e-05,
+    "max_foot_rotation_error_degrees": 1e-05,
+    "foot_orientation": "native reference-component flat foot rotation retained through explicit no-stretch two-bone IK"
+  },
+  "lods": [
+    {
+      "overall_source_lod": 0,
+      "cards": "near",
+      "screen_size": 1.0,
+      "max_triangles": 150000
+    },
+    {
+      "overall_source_lod": 1,
+      "cards": "far",
+      "screen_size": 0.25,
+      "max_triangles": 70000
+    },
+    {
+      "overall_source_lod": 3,
+      "cards": "far",
+      "screen_size": 0.07,
+      "max_triangles": 40000
+    }
+  ],
+  "cloth_surface": {
+    "master_name": "M_RW_ClothSurface",
+    "color_parameter": "RWColor",
+    "roughness_parameter": "RWRoughness",
+    "instances": "MaterialInstanceConstant; original five slot names retained"
+  },
+  "materials": {
+    "M_RW_Coat": {
+      "color": [
+        0.07,
+        0.095,
+        0.115
+      ],
+      "roughness": 0.88
+    },
+    "M_RW_Trousers": {
+      "color": [
+        0.045,
+        0.039,
+        0.032
+      ],
+      "roughness": 0.86
+    },
+    "M_RW_Shoe": {
+      "color": [
+        0.016,
+        0.012,
+        0.01
+      ],
+      "roughness": 0.57
+    },
+    "M_RW_Trim": {
+      "color": [
+        0.052,
+        0.064,
+        0.072
+      ],
+      "roughness": 0.9
+    },
+    "M_RW_Button": {
+      "color": [
+        0.034,
+        0.028,
+        0.023
+      ],
+      "roughness": 0.55
+    }
+  },
+  "integration_limits": {
+    "anchor": "world.town.woman",
+    "proxy": "world.town.proxies.woman",
+    "preserve_radio_nodes": [
+      1484,
+      1485
+    ],
+    "mixed_radio_and_shoes_node": 1484,
+    "do_not_hide_entire_mixed_node": true,
+    "schedule_owner": "FS47Town::SetPeople",
+    "runtime_integrated": false,
+    "waitress_unchanged": true,
+    "eyelashes": "No separate authored card mesh found; no strands are silently converted",
+    "requires_visual_review": [
+      "coat and thigh intersections",
+      "hands beside original lap radio",
+      "neutral eyes and face",
+      "seat and shoe contact",
+      "hair and brow coverage",
+      "all three LOD silhouettes"
+    ]
+  }
+}
