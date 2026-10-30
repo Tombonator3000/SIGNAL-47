@@ -923,7 +923,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 *Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes.*
 
-**ORTIZ [SC03_ORTIZ_IDENTIFY_003]**: All right. We write that down from here. Nobody needs you any closer to that yard tonight.
+**ORTIZ [SC03_ORTIZ_IDENTIFY_003]**: All right. We write that down from here. Nobody needs you any closer to that yard before daylight.
 
 *Ny regional kveldshjelper. Servicetekniker i hvit vogn23; vanlig identifikasjon før synlig bortføring. Ingen eksisterende nødvendig NPC fjernes.*
 
@@ -1012,13 +1012,13 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 ### SC03_RECEIVER_QUESTION (early_shift / physical / live)
 
-**Utløser:** Sheriffbetjenten er faktisk kommet til bensinstasjonen etter savnetmeldingen. Han spør om SARO-mottakeren stod på klokka 21:00; den gjorde det. Dette er grunnen til returen i SC04, ikke en ordre om normal drift.
+**Utløser:** Sheriffbetjenten er faktisk kommet til bensinstasjonen etter savnetmeldingen. Han spør om SARO-mottakeren stod på da Ortiz ble tatt; den gjorde det. Dette er grunnen til returen i SC04, ikke en ordre om normal drift.
 
 **Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
 
 **Krav:** {"all": ["ctx_hr_sc03_missing_readback", "ctx_hr_sc03_deputy_at_stop"], "none": ["hr_sc03_receiver_question_presented"]}
 
-**DEPUTY [SC03_RECEIVER_QUESTION_001]**: Your outfit up the road runs a receiver all night. Was it on at nine o'clock?
+**DEPUTY [SC03_RECEIVER_QUESTION_001]**: Your outfit up the road runs a receiver all night. Was it on when she went up?
 
 *Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler.*
 
@@ -1026,7 +1026,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 *Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
 
-**DEPUTY [SC03_RECEIVER_QUESTION_003]**: Then I want its log and the strip chart from nine for this report. You have the keys. I'll follow you up to the gate.
+**DEPUTY [SC03_RECEIVER_QUESTION_003]**: Then I want its log and tonight's strip chart for this report. You have the keys. I'll follow you up to the gate.
 
 *Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler.*
 
@@ -1045,7 +1045,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 *Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler.*
 
-**DEPUTY [SC04_LIMITED_RETURN_002]**: The receiver log and the strip chart from nine o'clock. Bring whatever else that case will need, and lock the door behind you. I'll be back up this road.
+**DEPUTY [SC04_LIMITED_RETURN_002]**: The receiver log and tonight's strip chart. Bring whatever else that case will need, and lock the door behind you. I'll be back up this road.
 
 *Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler.*
 
@@ -1058,7 +1058,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 ### SC04_LOCAL_HOLD (early_shift / ui / live)
 
-**Utløser:** Bare etter faktisk fysisk betjening/kontroll og sikrede originaler (mottakerlogg og stripskriver fra 21:00, skiftjournal og T01-journal). T01 arkiveres her én gang. Eget local hold-resultat.
+**Utløser:** Bare etter faktisk fysisk betjening/kontroll og sikrede originaler (mottakerlogg og nattens stripskriver, skiftjournal og T01-journal). T01 arkiveres her én gang. Eget local hold-resultat.
 
 **Regi:** Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.
 
@@ -1068,7 +1068,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 *Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
 
-**DESCRIPTION [SC04_LOCAL_HOLD_002]**: The receiver log and strip chart from 21:00, the shift journal and the T01 card are secured for the missing-person report. T01 is filed here, once. Turning off a local schedule has not turned off the sky.
+**DESCRIPTION [SC04_LOCAL_HOLD_002]**: The receiver log and tonight's strip chart, the shift journal and the T01 card are secured for the missing-person report. T01 is filed here, once. Turning off a local schedule has not turned off the sky.
 
 *Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken.*
 
@@ -1155,7 +1155,7 @@ Time of acknowledgement is entered when this call is actually completed. Do not 
 
 *Eksisterende vakthavende. Må ikke slås sammen med Dale.*
 
-**WARD [SC04_SAFE_ROOM_AGREEMENT_002]**: Read me the receiver log's heading and the nine o'clock entry. That is what the missing-person report needs. Leave the automatic schedule locked.
+**WARD [SC04_SAFE_ROOM_AGREEMENT_002]**: Read me the receiver log's heading and the entry for the minute she went up. That is what the missing-person report needs. Leave the automatic schedule locked.
 
 *Eksisterende vakthavende. Må ikke slås sammen med Dale.*
 
@@ -1605,7 +1605,7 @@ typed / SARO / NIGHT SHIFT / 13-14 APR 1986
 
 The physical auto/survey schedule has been placed in its marked isolated state and checked locally. Passive reception remains available.
 
-Secured for the missing-person report: the receiver log and strip chart covering 21:00, the dated shift journal and the T01 service card. T01 is filed with them, once. A separately authorised bounded array check remains possible; unattended operation stays suspended.
+Secured for the missing-person report: the receiver log and tonight's strip chart, the dated shift journal and the T01 service card. T01 is filed with them, once. A separately authorised bounded array check remains possible; unattended operation stays suspended.
 
 **Produksjon:** Ekte betjening/kontroll og papirhenting. T01-arkiveringen skjer her én gang (EveningShifts eksisterende filing). Ingen avbryting av all strøm eller K3 som global bryter.
 
