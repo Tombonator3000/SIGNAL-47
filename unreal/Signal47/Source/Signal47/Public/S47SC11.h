@@ -73,6 +73,7 @@ private:
  int32 Patrol = 0;
  FString WaitingDoor;
  FString EscapedAt;
+ int32 RuntimeRoom(const FVector2D& At) const;
  void Refile();
  void SetStep(EStep Next);
  void BuildLights();

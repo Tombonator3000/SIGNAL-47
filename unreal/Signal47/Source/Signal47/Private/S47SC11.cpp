@@ -12,6 +12,7 @@
 #include "S47Three.h"
 #include "S47Flow.h"
 #include "S47HorrorPack.h"
+#include "S47SaroInterior.h"
 #include "Engine/World.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -103,6 +104,12 @@ int32 FS47SC11::Room(const FVector2D& At)
  // Keep its measured jambs but bound it in z before testing any annex room.
  if(At.Y<=-4.4||At.Y>=10.5)return 3;
  return FS47SC04::Room(At);
+}
+
+int32 FS47SC11::RuntimeRoom(const FVector2D& At) const
+{
+ if (M && S47SaroInterior::ContainsPassingBay(M->Web.Get(), FVector(At.X, 0, At.Y))) return 1;
+ return Room(At);
 }
 
 FS47Doc FS47SC11::ReceiverDoc(bool bComplete, const FString& EscapedAt)
@@ -233,7 +240,7 @@ void FS47SC11::ObserveRoom(double Dt)
  if(F.ObservedRoom||!F.CheckedLocalLight||!LocalLightOff()||!OutsideLightStillOn()||!M->Player||M->ModalOpen())return;
  const auto Cam=FS47Cam::Of(M->Player);
  const FVector Window=M->Web->Vec(TEXT("room.windowLights.wins[1].c"));
- const bool Looking=Room(FVector2D(Cam.Pos.X,Cam.Pos.Z))==0&&S47Facing(Cam,Window,12,35)&&ClearSight(Cam.Pos,Window);
+ const bool Looking=RuntimeRoom(FVector2D(Cam.Pos.X,Cam.Pos.Z))==0&&S47Facing(Cam,Window,12,35)&&ClearSight(Cam.Pos,Window);
  ObserveT=Looking?ObserveT+Dt:0;
  if(ObserveT<.8)return;
  F.ObservedRoom=true;
@@ -309,7 +316,7 @@ bool FS47SC11::Step(double Dt)
  if(!M||!M->Story||!M->World||!M->Web)return false;
  const bool Play=M->Mode==US47Main::EMode::Play&&!M->bPausedByMenu&&!(M->Flow&&M->Flow->bStarting);
  if(P==EStep::Done)return true;
- if(P==EStep::Return&&M->World->Area==TEXT("saro")&&!M->World->bDriving&&M->Player&&Room(FVector2D(M->Player->Pos.X,M->Player->Pos.Z))!=3&&Play)
+ if(P==EStep::Return&&M->World->Area==TEXT("saro")&&!M->World->bDriving&&M->Player&&RuntimeRoom(FVector2D(M->Player->Pos.X,M->Player->Pos.Z))!=3&&Play)
  {
   M->Story->AdvanceClockTo(Arrive,TEXT("SC11 returned to SARO"));SetStep(EStep::Collect);
   M->UI->Toast(TEXT("The receiver has kept writing. The remote copies finish at 05:04. Take the originals; leave nothing you need behind."),6);
@@ -353,7 +360,7 @@ int32 FS47SC11::Nearest(const FVector2D& At) const
  int32 Best=0;double Dist=1e9;
  for(int32 I=0;I<Nodes().Num();++I)
  {
-  const double D=FVector2D::Distance(At,Nodes()[I].At)+(Room(At)==Room(Nodes()[I].At)?0:100);
+  const double D=FVector2D::Distance(At,Nodes()[I].At)+(RuntimeRoom(At)==RuntimeRoom(Nodes()[I].At)?0:100);
   if(D<Dist){Dist=D;Best=I;}
  }
  return Best;
@@ -454,7 +461,7 @@ bool FS47SC11::SeesPlayer() const
  if(!bShown||!M||!M->Player||M->World->bDriving)return false;
  const FVector Cam=FS47Cam::Of(M->Player).Pos;const FVector2D Player(Cam.X,Cam.Z),D=Player-Pos;const double Dist=D.Size();
  if(Dist>15)return false;
- const int32 A=Room(Pos),Z=Room(Player);
+ const int32 A=RuntimeRoom(Pos),Z=RuntimeRoom(Player);
  if(A!=Z)
  {
   const auto Open=[this,&Player](int32 G){return M->Web->IsDoorOpen(Gaps[G].Door)&&Through(Pos,Player,Gaps[G]);};
@@ -499,7 +506,7 @@ TOptional<FVector2D> FS47SC11::Heard(double Dt)
 
 double FS47SC11::Ground() const
 {
- if(Room(Pos)!=3||!M||!M->Web||!M->Web->GetWorld())return 0;
+ if(RuntimeRoom(Pos)!=3||!M||!M->Web||!M->Web->GetWorld())return 0;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC11Ground),true);for(const auto& C:Pale.All)if(C.IsValid())Q.AddIgnoredComponent(C.Get());
  FHitResult H;if(!M->Web->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(Pos.X,Y+1.5,Pos.Y),S47Three::ToUE(Pos.X,Y-3,Pos.Y),ECC_Visibility,Q))return Y;
  return S47Three::ToThree(H.ImpactPoint).Y;
@@ -517,7 +524,7 @@ bool FS47SC11::AtEscape() const
   return M->World->Area==TEXT("saro")&&bDriveStarted&&FVector2D::Distance(FVector2D(Cam.X,Cam.Z),FVector2D(DriveStart.X,DriveStart.Z))>5.;
  }
  const FVector Pp=M->Player->Pos;
- return M->World->Area==TEXT("saro")&&Room(FVector2D(Pp.X,Pp.Z))==3&&Pp.X>=6.6&&Pp.X<=13&&Pp.Z>=2.7&&Pp.Z<=12.4;
+ return M->World->Area==TEXT("saro")&&RuntimeRoom(FVector2D(Pp.X,Pp.Z))==3&&Pp.X>=6.6&&Pp.X<=13&&Pp.Z>=2.7&&Pp.Z<=12.4;
 }
 
 void FS47SC11::Capture()
@@ -578,7 +585,7 @@ void FS47SC11::StepHunt(double Dt)
    if(LostT>2.6){Enter(EBody::Listen);RouteTo(Nearest(LastKnown));break;}
    const FVector2D D=LastKnown-Pos;const double Dist=D.Size();
    const FVector2D Candidate=Dist>.001?Pos+D/Dist*FMath::Min(2.05*Dt,Dist):Pos;
-   if(Room(Pos)==Room(LastKnown)&&ClosedDoorTo(LastKnown).IsEmpty()&&ClearWalk(Pos,Candidate)&&ClearSight(FVector(Pos.X,Y+1.2,Pos.Y),FVector(LastKnown.X,1.2,LastKnown.Y)))
+   if(RuntimeRoom(Pos)==RuntimeRoom(LastKnown)&&ClosedDoorTo(LastKnown).IsEmpty()&&ClearWalk(Pos,Candidate)&&ClearSight(FVector(Pos.X,Y+1.2,Pos.Y),FVector(LastKnown.X,1.2,LastKnown.Y)))
    {Pos=Candidate;Yaw=HeadYaw=YawTo(D);Gait=1.2;Stride+=2.05*Dt*2.1;}
    else{if(Path.IsEmpty())RouteTo(Nearest(LastKnown));Walk(2.05,Dt);}
    if(!M->World->bDriving&&FVector2D::Distance(Pos,Player)<.85&&ClearSight(FVector(Pos.X,Y+1.2,Pos.Y),Cam))Enter(EBody::Grab);
@@ -592,7 +599,7 @@ void FS47SC11::StepHunt(double Dt)
   if(bShown)Y=Ground();
   if(bShown&&M->Audio&&FMath::FloorToDouble(Before/PI)!=FMath::FloorToDouble(Stride/PI))
   {
-   const auto Pick=M->Audio->StepPick(Room(Pos)==3?TEXT("concrete"):TEXT("tile"));FS47Sound O;O.Gain=Pick.Gain*.8;O.At=FVector(Pos.X,Y+.05,Pos.Y);M->Audio->Sfx(Pick.Name,O);
+   const auto Pick=M->Audio->StepPick(RuntimeRoom(Pos)==3?TEXT("concrete"):TEXT("tile"));FS47Sound O;O.Gain=Pick.Gain*.8;O.At=FVector(Pos.X,Y+.05,Pos.Y);M->Audio->Sfx(Pick.Name,O);
   }
  }
  Pale.Apply(bShown&&M->World->Area==TEXT("saro"),FVector(Pos.X,Y,Pos.Y),Yaw,HeadYaw,Gait,Stride,Clock,

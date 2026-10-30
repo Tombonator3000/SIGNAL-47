@@ -13,6 +13,8 @@
 #include "S47Horror.h"
 #include "S47HorrorSC03.h"
 #include "S47Observing.h"
+#include "S47Office.h"
+#include "S47SaroInterior.h"
 #include "S47Substation.h"
 #include "Engine/World.h"
 #include "Components/PrimitiveComponent.h"
@@ -30,8 +32,6 @@ namespace
  enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl, NOfficeCabSouth, NOfficeCabWest };
  // Where the binder is read from, and where a capture starts the annex again.
  const FVector2D BinderStand(-2.3, 9.45);
- const FVector OfficePhone(.45, 1.1, 6.6);
- const FVector OfficeDoor(.45, 1.2, 6.9); // the wrong door: behind it is an office nobody has a key to but Ward
  double Wrap(double A) { while (A > PI) A -= 2 * PI; while (A < -PI) A += 2 * PI; return A; }
  double YawTo(const FVector2D& D) { return FMath::Atan2(D.Y, D.X); } // UE yaw from three x/z
  // The door zones of walks.saro (exitDoor, recordsDoor, southDoor): the openings between the rooms.
@@ -125,6 +125,28 @@ int32 FS47SC04::Room(const FVector2D& At)
  if (At.Y >= 4.6 && At.Y < 6.6 && At.X > -6.0 && At.X < 2.0) return 1;
  if (At.Y >= 6.6 && At.Y < 10.5 && At.X > -5.9 && At.X < -1.2) return 2;
  return 3;
+}
+
+int32 FS47SC04::RuntimeRoom(const FVector2D& At) const
+{
+ // The native bay is real indoor floor beyond the old exported rectangle. Use its
+ // current zone/collider contract; never extend the unchanged west records wall.
+ if (M && S47SaroInterior::ContainsPassingBay(M->Web.Get(), FVector(At.X, 0, At.Y))) return 1;
+ return Room(At);
+}
+
+TOptional<FVector> FS47SC04::OfficeSoundAt() const
+{
+ if (!M || !M->Office || !M->Office->Ready()) return {};
+ const FS47Obj Door = M->Office->Object(TEXT("office:door"));
+ const FS47Obj Hinge = Door.Parent(), Frame = Hinge.Parent();
+ if (!Door || !Hinge || !Frame || Hinge.Name() != TEXT("office:doorHinge")) return {};
+ // Undo ONLY the animated hinge turn, retaining the actual leaf centre and its
+ // parent's basis. +Z of this closed frame faces into Operations. The voice/ring
+ // stays 12cm behind that closed leaf even while the player's door stands open.
+ const FVector Offset = Hinge.WorldQuaternion().UnrotateVector(Door.WorldPosition() - Hinge.WorldPosition());
+ const FVector Closed = Hinge.WorldPosition() + Frame.WorldQuaternion().RotateVector(Offset);
+ return Closed + Frame.WorldDirection().GetSafeNormal() * .12;
 }
 
 // ---------- saving ----------
@@ -271,12 +293,14 @@ bool FS47SC04::Use(const FString& Id)
  }
  else if (Id == TEXT("recPhone"))
  {
+  const auto RingAt = OfficeSoundAt();
+  if (!RingAt.IsSet()) { UE_LOG(LogS47SC04, Warning, TEXT("S47: SC04 office ring unavailable: actual Operations leaf missing")); return false; }
   F.bLure = true; bLureRinging = true; LureT = 0;
   if (M->Audio)
   {
    M->Audio->Play(TEXT("click"), .4f);
    // Four rings behind the office door, dulled by it (FS47ArchivePhone::Ring's through-the-wall ring).
-   for (int32 I = 0; I < 4; ++I) { FS47Sound O; O.Gain = .9f; O.Lp = 1800.f; O.At = OfficePhone; O.When = 1.f + I * 3.2f; O.Dur = 2.4f; M->Audio->Sfx(TEXT("phoneRing"), O); }
+   for (int32 I = 0; I < 4; ++I) { FS47Sound O; O.Gain = .9f; O.Lp = 1800.f; O.At = RingAt.GetValue(); O.When = 1.f + I * 3.2f; O.Dur = 2.4f; M->Audio->Sfx(TEXT("phoneRing"), O); }
   }
   M->UI->Toast(TEXT("You dial the operations office. Down the corridor, behind its door, the phone starts ringing."), 4);
   UE_LOG(LogS47SC04, Display, TEXT("S47: SC04 lure: the operations office rings"));
@@ -362,7 +386,7 @@ void FS47SC04::Finish()
 
 bool FS47SC04::PlayerInControl() const
 {
- return M && M->Player && M->World && M->World->Area == TEXT("saro") && Room(FVector2D(M->Player->Pos.X, M->Player->Pos.Z)) == 0;
+ return M && M->Player && M->World && M->World->Area == TEXT("saro") && RuntimeRoom(FVector2D(M->Player->Pos.X, M->Player->Pos.Z)) == 0;
 }
 
 bool FS47SC04::PlayerSafe() const
@@ -400,10 +424,10 @@ bool FS47SC04::EdgeOpen(int32 A, int32 Bn) const
 int32 FS47SC04::Nearest(const FVector2D& At) const
 {
  int32 Best = NCorrRec; double D = 1e9;
- const int32 R = Room(At);
+ const int32 R = RuntimeRoom(At);
  for (int32 I = 0; I < Nodes().Num(); ++I)
  {
-  const double Dist = FVector2D::Distance(Nodes()[I].At, At) + (Room(Nodes()[I].At) == R ? 0 : 50);
+  const double Dist = FVector2D::Distance(Nodes()[I].At, At) + (RuntimeRoom(Nodes()[I].At) == R ? 0 : 50);
   if (Dist < D) { D = Dist; Best = I; }
  }
  return Best;
@@ -508,7 +532,7 @@ bool FS47SC04::SeesPlayer() const
  // Between rooms only through an open doorway the line actually crosses: the exported walls have
  // gaps at some jambs that a trace slips through, and no player would call that being seen.
  const FVector2D From(E.X, E.Z), To(Cam.Pos.X, Cam.Pos.Z);
- const int32 RA = Room(From), RB = Room(To);
+ const int32 RA = RuntimeRoom(From), RB = RuntimeRoom(To);
  if (RA != RB)
  {
   const auto Open = [this, &From, &To](int32 G) { return M->Web->IsDoorOpen(Gaps[G].Door) && Through(From, To, Gaps[G]); };
@@ -549,7 +573,7 @@ TOptional<FVector2D> FS47SC04::Heard(double Dt)
  LastPlayer = Pl; bHavePlayer = true; NoiseCool -= Dt;
  if (Speed < .4 || Speed > 12 || NoiseCool > 0) return {}; // still, or placed
  // A shut door takes most of a footstep: each closed door between the rooms divides the reach by three.
- const int32 A = Room(Pos), Bp = Room(Pl);
+ const int32 A = RuntimeRoom(Pos), Bp = RuntimeRoom(Pl);
  int32 Shut = 0;
  const auto Closed = [this](const TCHAR* Door) { return M->Web && !M->Web->IsDoorOpen(Door); };
  const auto Between = [A, Bp](int32 X, int32 Z) { return (A == X && Bp == Z) || (A == Z && Bp == X); };
@@ -568,7 +592,7 @@ TOptional<FVector2D> FS47SC04::Heard(double Dt)
 double FS47SC04::Ground() const
 {
  // Indoors the floor is level at zero; outside the stoop and the ramp step down to the yard.
- if (Room(Pos) != 3 || !M || !M->Web || !M->Web->GetWorld()) return 0;
+ if (RuntimeRoom(Pos) != 3 || !M || !M->Web || !M->Web->GetWorld()) return 0;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04Ground), true);
  for (const auto& C : Pale.All) if (const UStaticMeshComponent* Part = C.Get()) Q.AddIgnoredComponent(Part);
  FHitResult H;
@@ -594,7 +618,7 @@ void FS47SC04::Sounds(double Before)
  if (!M->Audio || !bShown) return;
  if (FMath::FloorToDouble(Stride / PI) != FMath::FloorToDouble(Before / PI))
  {
-  const auto Pick = M->Audio->StepPick(Room(Pos) == 3 ? TEXT("concrete") : TEXT("tile"));
+  const auto Pick = M->Audio->StepPick(RuntimeRoom(Pos) == 3 ? TEXT("concrete") : TEXT("tile"));
   FS47Sound O; O.Gain = Pick.Gain * (B == EBody::Chase ? 1.f : .75f); O.At = FVector(Pos.X, Y + .05, Pos.Y);
   M->Audio->Sfx(Pick.Name, O);
  }
@@ -631,7 +655,7 @@ void FS47SC04::Think(double Dt)
  if (!bVoice && T >= 1.5)
  {
   bVoice = true;
-  if (M->Observing) M->Observing->ReplayDoorFragment(OfficeDoor);
+  if (const auto At = OfficeSoundAt(); M->Observing && At.IsSet()) M->Observing->ReplayDoorFragment(At.GetValue());
   M->UI->Toast(TEXT("From behind the operations office door, Dale's voice, the same words and the same pause: \"Reyes? Dale. The logbook should be in front of you.\" Only Ward has a key to that office."), 7);
  }
  // A door the player moves is heard at its opening; before the body is in, it remembers where.
@@ -663,9 +687,9 @@ void FS47SC04::Think(double Dt)
   while (Patrol < UE_ARRAY_COUNT(Round))
   {
    const int32 N = Round[Patrol++];
-   const int32 R = Room(Nodes()[N].At);
+   const int32 R = RuntimeRoom(Nodes()[N].At);
    if (R == 2 && !M->Web->IsDoorOpen(TEXT("recordsDoor"))) continue;
-   if (R == 3 && !M->Web->IsDoorOpen(TEXT("exitDoor")) && Room(Pos) != 3) continue;
+   if (R == 3 && !M->Web->IsDoorOpen(TEXT("exitDoor")) && RuntimeRoom(Pos) != 3) continue;
    RouteTo(N); if (!Path.IsEmpty() || FVector2D::Distance(Pos, Nodes()[N].At) < .2) return true;
   }
   return false;
@@ -680,18 +704,18 @@ void FS47SC04::Think(double Dt)
  {
   bShown = false; Enter(EBody::Away); T = -1e9; // it does not come back this round
   F.bEscaped = true;
-  if (M->Audio) M->Audio->Play(TEXT("door_latch"), .5f, S47Three::ToUE(OfficeDoor));
+  if (const auto At = OfficeSoundAt(); M->Audio && At.IsSet()) M->Audio->Play(TEXT("door_latch"), .5f, S47Three::ToUE(At.GetValue()));
   M->Story->Note(FString::Printf(TEXT("%s. Something walked the annex and went back into the operations office. The latch clicked. Nobody has a key to that office but Ward."), *M->Story->ClockText(false)));
   UE_LOG(LogS47SC04, Display, TEXT("S47: SC04 body went back into the office; escape"));
   SetStep(EStep::Calm);
  };
- const FVector BangAt = Room(Pos) == 3 ? FVector(6.1, 1.2, 1.6) : FVector(-2.4, 1.2, 4.7);
+ const FVector BangAt = RuntimeRoom(Pos) == 3 ? FVector(6.1, 1.2, 1.6) : FVector(-2.4, 1.2, 4.7);
  switch (B)
  {
  case EBody::Away:
   if (T >= 5.0)
   {
-   if (M->Audio) M->Audio->Play(TEXT("door_latch"), .6f, S47Three::ToUE(OfficeDoor));
+   if (const auto At = OfficeSoundAt(); M->Audio && At.IsSet()) M->Audio->Play(TEXT("door_latch"), .6f, S47Three::ToUE(At.GetValue()));
    bShown = true; Pos = Nodes()[NOffice].At; BodyYaw = HeadYaw = PI; Enter(EBody::Door);
   }
   break;
@@ -727,13 +751,13 @@ void FS47SC04::Think(double Dt)
  case EBody::Listen:
   if (SeeAcc >= SeeTime) { Enter(EBody::Chase); break; }
   if (bLureRinging && !bSafe) { Enter(EBody::Lured); RouteTo(NOffice); break; }
-  if (Sound && Room(*Sound) == 2 && FVector2D::Distance(Pos, Nodes()[NCorrRec].At) < .4)
+  if (Sound && RuntimeRoom(*Sound) == 2 && FVector2D::Distance(Pos, Nodes()[NCorrRec].At) < .4)
   {
    M->Web->SetDoorOpen(TEXT("recordsDoor"), true, false); LastDoors.Add(TEXT("recordsDoor"), true);
    UE_LOG(LogS47SC04, Display, TEXT("S47: SC04 body heard steps behind the records door and opens it"));
    Enter(EBody::Search); Investigate(*Sound); break;
   }
-  if (Sound && Room(*Sound) == 0 && !bBanged) { bBanged = true; if (M->Audio) M->Audio->Play(TEXT("thud"), .7f, S47Three::ToUE(BangAt)); }
+  if (Sound && RuntimeRoom(*Sound) == 0 && !bBanged) { bBanged = true; if (M->Audio) M->Audio->Play(TEXT("thud"), .7f, S47Three::ToUE(BangAt)); }
   if (StateT > ListenTime) { Enter(EBody::Search); if (!NextPatrol()) { Enter(EBody::Leave); RouteTo(NOffice); } }
   break;
  case EBody::Lured:
@@ -744,7 +768,7 @@ void FS47SC04::Think(double Dt)
  case EBody::Chase:
  {
   if (bSees) LostT = 0; else LostT += Dt;
-  if (bSafe && Room(Pos) != 0)
+  if (bSafe && RuntimeRoom(Pos) != 0)
   {
    // The door was shut in its face: one blow, a listen, and it goes.
    Enter(EBody::Listen); bBanged = true;
@@ -761,7 +785,7 @@ void FS47SC04::Think(double Dt)
   const FVector2D Goal = LastKnown;
   const FVector2D D = Goal - Pos; const double Dist = D.Size(), StepLen = FMath::Min(ChaseSpeed*Dt,Dist);
   const FVector2D Candidate = Dist > 1e-8 ? Pos + D / Dist * StepLen : Pos;
-  if (Room(Goal) == Room(Pos) && ClosedDoorTo(Goal).IsEmpty() && ClearWalk(Pos,Candidate))
+  if (RuntimeRoom(Goal) == RuntimeRoom(Pos) && ClosedDoorTo(Goal).IsEmpty() && ClearWalk(Pos,Candidate))
   {
    BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Min(1.4, Gait + Dt * 4); Stride += StepLen * 2.1;
    Pos = Candidate;
@@ -776,7 +800,7 @@ void FS47SC04::Think(double Dt)
   break;
  }
  case EBody::Grab:
-  if (M->World->bDriving || FVector2D::Distance(Pos,Pl) >= Reach || !bSees || !ClosedDoorTo(Pl).IsEmpty() || (bSafe && Room(Pos)!=0))
+  if (M->World->bDriving || FVector2D::Distance(Pos,Pl) >= Reach || !bSees || !ClosedDoorTo(Pl).IsEmpty() || (bSafe && RuntimeRoom(Pos)!=0))
   { Enter(EBody::Chase); break; }
   if (StateT >= GrabHold) { bShown = false; Capture(); }
   break;

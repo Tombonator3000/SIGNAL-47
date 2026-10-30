@@ -15,7 +15,8 @@ struct FS47Task;
 // Dale's door fragment from the fire exit, word for word, then the pale body comes in and searches.
 //
 // The annex (S47Annex.h, Content/WebData/manifest.json walks.saro), three.js metres:
-//   corridor x -5.75..1.75, z 5.05..6.35; fire exit at its west end (x -6.3), stoop and ramp outside.
+//   exported corridor x -5.75..1.75, z 5.05..6.35; the native interior keeps its ID and extends
+//   z to 4.84..6.57 plus the measured Operations passing bay. Fire exit, stoop and ramp stay west.
 //   records room x -5.75..-1.25, z 7.05..10.25, its door at x -4.4..-3.4; work table x -4.5..-2.8, z 8.2..9.
 //   control-room door x -2.9..-1.9, z 4.7. The operations office is the closed door at the east end.
 // The corridor has no loop, so the story's two answers are fitted to it: keep the records door shut
@@ -59,7 +60,7 @@ public:
  static const TArray<FNode>& Nodes();
  static const TArray<TPair<int32, int32>>& Edges();
  static const TCHAR* BodyName(EBody In);
- static int32 Room(const FVector2D& At); // 0 control, 1 corridor, 2 records, 3 outside
+ static int32 Room(const FVector2D& At); // Legacy/source classifier: 0 control, 1 corridor, 2 records, 3 outside.
 
 private:
  US47Main* M = nullptr;
@@ -80,6 +81,8 @@ private:
  TArray<FS47Doc> SourcePapers;
  bool bBodyUnavailable = false;
  FString BlockedDoor;
+ int32 RuntimeRoom(const FVector2D& At) const;
+ TOptional<FVector> OfficeSoundAt() const;
  void KeepSources();
  void Refile();
  FString ClosedDoorTo(const FVector2D& Target) const;

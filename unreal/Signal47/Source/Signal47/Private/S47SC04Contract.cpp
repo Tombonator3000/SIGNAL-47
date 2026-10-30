@@ -10,6 +10,8 @@
 #include "S47ThreatNavigation.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47Office.h"
+#include "S47SaroInterior.h"
 #include "S47Seen.h"
 #include "S47Spine.h"
 #include "S47Startup.h"
@@ -426,6 +428,38 @@ void FS47SC04Contract::Tick(double Dt)
  case 1:
  {
   if(!Check(A->Phase()==FS47SC04::EStep::Collect&&M->Spine->Gate(FS47Spine::SC04)==1&&M->Spine->HoldsResidual()&&M->Story->Clock()>=2*3600+55*60&&M->Flow->CheckpointName()==TEXT("nightService")&&!A->F.bEscaped,ActualInput?TEXT("actual SC03 cohort opens SC04 collection with normal nightService custody"):TEXT("SC03-end fixture opens actual SC04 collection at02:55 with normal nightService custody")))return;
+  // Read the actual native bay/door contract without placing the player, opening
+  // Operations or granting an office-entry fact. Aperture coverage is conditional
+  // on the CURRENT ordinary door state; a closed state is not an open-door trial.
+  auto Bay=S47J::New();S47J::Set(Bay,TEXT("name"),TEXT("native-operations-bay-classification"));States.Add(MakeShared<FJsonValueObject>(Bay));
+  const FVector2D BayAt(.47,6.8),Aperture(.47,7.25),RecordsWall(-1.2,6.9),Vending(1.35,6.8);
+  const bool Open=M->Office&&M->Office->DoorOpen();const int32 Near=A->Nearest(BayAt);
+  TArray<TSharedPtr<FJsonValue>> Points;
+  for(const FVector2D& Point:{BayAt,Aperture,RecordsWall,Vending,FVector2D(-2.2,9.6),FVector2D(-3,-12),FVector2D(-4,680)})
+  {
+   auto Row=S47J::New();S47J::Set(Row,TEXT("xz"),Point.ToString());S47J::Set(Row,TEXT("room"),A->RuntimeRoom(Point));
+   S47J::Set(Row,TEXT("passing_bay"),S47SaroInterior::ContainsPassingBay(M->Web.Get(),FVector(Point.X,0,Point.Y)));Points.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  Bay->SetArrayField(TEXT("points"),Points);S47J::Set(Bay,TEXT("office_door_open"),Open);S47J::Set(Bay,TEXT("nearest_node"),Near);
+  const FS47Obj Door=M->Office?M->Office->Object(TEXT("office:door")):FS47Obj();const FS47Obj Hinge=Door.Parent();
+  const auto* DoorNode=M->Web->Node(Door.I);const auto* HingeNode=M->Web->Node(Hinge.I);
+  const auto* Leaf=DoorNode?DoorNode->Comp.Get():nullptr;const auto* Pivot=HingeNode?HingeNode->Comp.Get():nullptr;
+  const auto* Frame=Pivot?Pivot->GetAttachParent():nullptr;const auto Sound=A->OfficeSoundAt();
+  FVector ExpectedSound=FVector::ZeroVector;const bool Bound=Leaf&&Pivot&&Frame&&Leaf->GetAttachParent()==Pivot;
+  if(Bound)
+  {
+   FTransform Closed=Pivot->GetRelativeTransform();Closed.SetRotation(FQuat::Identity);Closed*=Frame->GetComponentTransform();
+   ExpectedSound=Closed.TransformPosition(Leaf->GetRelativeLocation())+Frame->GetComponentQuat().RotateVector(S47Three::DirToUE(FVector(0,0,1)))*12;
+  }
+  S47J::Set(Bay,TEXT("door_component"),Leaf?Leaf->GetPathName():TEXT("missing"));S47J::Set(Bay,TEXT("door_actual_ue_cm"),Leaf?Leaf->GetComponentLocation().ToString():TEXT("missing"));
+  S47J::Set(Bay,TEXT("closed_leaf_sound_expected_ue_cm"),ExpectedSound.ToString());S47J::Set(Bay,TEXT("closed_leaf_sound_actual_three_m"),Sound.IsSet()?Sound.GetValue().ToString():TEXT("missing"));
+  if(!Check(M->Office&&M->Office->Ready()&&A->RuntimeRoom(BayAt)==1&&M->Player->Walkable(BayAt.X,BayAt.Y)
+   &&FS47SC04::Nodes().IsValidIndex(Near)&&A->RuntimeRoom(FS47SC04::Nodes()[Near].At)==1
+   &&S47SaroInterior::ContainsPassingBay(M->Web.Get(),FVector(Aperture.X,0,Aperture.Y))==Open&&A->RuntimeRoom(Aperture)==(Open?1:3)
+   &&A->RuntimeRoom(RecordsWall)==3&&A->RuntimeRoom(Vending)==3&&A->RuntimeRoom(FVector2D(-2.2,9.6))==2
+   &&A->RuntimeRoom(FVector2D(-3,-12))==3&&A->RuntimeRoom(FVector2D(-4,680))==3,
+   TEXT("live native bay/aperture follows actual Operations door; nearest remains corridor, records wall/vending/north/motel are not added")))return;
+  if(!Check(Bound&&Sound.IsSet()&&S47Three::ToUE(Sound.GetValue()).Equals(ExpectedSound,.02),TEXT("SC04 voice/ring/latch point matches actual native leaf in its closed frame, 12cm into Operations")))return;
   const int32 RxStage=M->Story->Rx.Stage;M->Story->ConsoleAction();
   if(!Check(M->Story->Rx.Stage==RxStage&&A->Label(TEXT("recPhone")).IsEmpty(),TEXT("residual console held and lure unavailable before meeting"))||!Sources(TEXT("arrival")))return;
   if(Face(TEXT("opsTerminal")))Next(2,.25);return;
@@ -481,8 +515,14 @@ void FS47SC04Contract::Tick(double Dt)
   if(Face(TEXT("recordsDoor")))Next(22,.08);return;
  }
  case 22:
+ {
   if(!Check(A->Pos.Y<6.85&&M->Web->IsDoorOpen(TEXT("recordsDoor")),TEXT("body is still on corridor side when ordinary door is closed after planning"))||!Use(TEXT("recordsDoor"))||!Check(!M->Web->IsDoorOpen(TEXT("recordsDoor")),TEXT("actual records door now closed")))return;
+  const bool ReturnClear=A->ClearWalk(FVector2D(-3.9,6.22),FVector2D(-3.9,6.05));auto Return=S47J::New();
+  S47J::Set(Return,TEXT("kind"),TEXT("native-closed-records-return-clearance"));S47J::Set(Return,TEXT("from_xz"),FVector2D(-3.9,6.22).ToString());S47J::Set(Return,TEXT("to_xz"),FVector2D(-3.9,6.05).ToString());
+  S47J::Set(Return,TEXT("clear_walk"),ReturnClear);S47J::Set(Return,TEXT("corridor_max_z"),M->Web->Rect(TEXT("annex.zone.corridor")).MaxZ);Negatives.Add(MakeShared<FJsonValueObject>(Return));
+  if(!Check(ReturnClear,TEXT("closed records bridge leaves native radius-.27 return 6.22→6.05 walkable, without collider/pose bypass")))return;
   DoorAt=FPlatformTime::Seconds();Snapshot(TEXT("closed-after-planned-route"));Next(23,0);return;
+ }
  case 23:
  {
   if(!Check(!M->Web->IsDoorOpen(TEXT("recordsDoor"))&&A->Pos.Y<=6.85&&A->F.Captures==0,TEXT("actual closed door stops body on corridor side each observed step")))return;
@@ -496,7 +536,7 @@ void FS47SC04Contract::Tick(double Dt)
  // The long covered solution: remain still; walking after the listener arrives would make noise.
  case 30:
   if(A->Body()==FS47SC04::EBody::Listen)SawListen=true;
-  if(A->F.Captures!=0||(A->Body()!=FS47SC04::EBody::Away&&FS47SC04::Room(A->Pos)==2)){Finish(false,TEXT("body captured or entered records through actual closed door"));return;}
+  if(A->F.Captures!=0||(A->Body()!=FS47SC04::EBody::Away&&A->RuntimeRoom(A->Pos)==2)){Finish(false,TEXT("body captured or entered records through actual closed door"));return;}
   if(A->Phase()!=FS47SC04::EStep::Calm){if(FPlatformTime::Seconds()-Mark>145)Finish(false,TEXT("still/closed-door solution never reached actual departure"));return;}
   if(!Check(A->F.bEscaped&&SawListen,TEXT("body listened and actually returned to office while player stayed still")))return;
   if(Face(TEXT("recordsDoor")))Next(54,.2);return;
@@ -570,7 +610,7 @@ void FS47SC04Contract::Tick(double Dt)
   Path({FVector2D(-11.1,0),FVector2D(-9,-7.5),FVector2D(0,-12),FVector2D(6,-12),FVector2D(8.7,-12),FVector2D(8.7,-7.5),FVector2D(8.7,1.6),FVector2D(7.6,1.6)});Next(64,0);return;
  }
  case 64:
-  if(A->bShown&&FS47SC04::Room(A->Pos)==3)HeardOutside=true;
+  if(A->bShown&&A->RuntimeRoom(A->Pos)==3)HeardOutside=true;
   if(A->F.Captures){Finish(false,TEXT("actual capture on west/north perimeter route"));return;}
   if(Walk(true)){if(Face(TEXT("doorEast")))Next(65,.15);}return;
  case 65:
@@ -581,7 +621,7 @@ void FS47SC04Contract::Tick(double Dt)
   if(!Use(TEXT("doorEast"))||!Check(!M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("east service door really closes behind the returning player")))return;
   Path({FVector2D(1.2,.3),FVector2D(-2.4,2.9)});Next(55,0);return;
  case 80:
-  if(Long&&A->bShown&&FS47SC04::Room(A->Pos)==3)HeardOutside=true;
+  if(Long&&A->bShown&&A->RuntimeRoom(A->Pos)==3)HeardOutside=true;
   if(A->F.Captures!=CaptureBefore){Finish(false,TEXT("capture after reaching control-room cover"));return;}
   if(M->Spine->Gate(FS47Spine::SC04)!=2){if(FPlatformTime::Seconds()-Mark>145)Finish(false,TEXT("actual SC04 never completed behind the closed control-room doors"));return;}
   if(!Check(A->Phase()==FS47SC04::EStep::Done&&A->F.bEscaped&&!M->Spine->HoldsResidual()&&M->Story->Clock()>=3*3600+15*60&&A->F.Captures==(Short?1:0)&&A->F.bLure==Short,TEXT("real escape/locked control room alone releases residual at03:15, correct capture/lure facts"))||!Sources(TEXT("completed")))return;

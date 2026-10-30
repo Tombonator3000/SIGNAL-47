@@ -7,6 +7,8 @@
 #include "S47HUD.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47Office.h"
+#include "S47SaroInterior.h"
 #include "S47NightContract.h"
 #include "S47SC05.h"
 #include "S47Seen.h"
@@ -531,12 +533,29 @@ void FS47SC11Contract::Tick(double Dt)
   if(!Check(!Entry.IsEmpty(),TEXT("complete native walkable open-door entry into bounded control room; no pose recovery")))return;
   Path(MoveTemp(Entry));Next(105,0);return;
  }
- case 105:if(Walk()){if(!Check(A->Phase()==FS47SC11::EStep::Collect&&FS47SC11::Room(FVector2D(M->Player->Pos.X,M->Player->Pos.Z))==0,TEXT("only actual Walker entry into SARO control room starts SC11 collection")))return;Next(1,0);}return;
+ case 105:if(Walk()){if(!Check(A->Phase()==FS47SC11::EStep::Collect&&A->RuntimeRoom(FVector2D(M->Player->Pos.X,M->Player->Pos.Z))==0,TEXT("only actual Walker entry into SARO control room starts SC11 collection")))return;Next(1,0);}return;
  case 1:
+ {
   if(!Check(A->Phase()==FS47SC11::EStep::Collect&&M->Story->Clock()>=FS47SC11::Arrive&&M->Story->Clock()<FS47SC11::RemoteReady&&!A->F.Escaped&&!A->HuntLive(),TEXT("05:00 collection begins before remote records or hunt"))||!SightChecks()||!Sources(TEXT("arrival")))return;
+  auto Bay=S47J::New();S47J::Set(Bay,TEXT("name"),TEXT("native-operations-bay-classification"));States.Add(MakeShared<FJsonValueObject>(Bay));
+  const FVector2D BayAt(.47,6.8),Aperture(.47,7.25);const bool Open=M->Office&&M->Office->DoorOpen();const int32 Near=A->Nearest(BayAt);
+  TArray<TSharedPtr<FJsonValue>> Points;
+  for(const FVector2D& Point:{BayAt,Aperture,FVector2D(-1.2,6.9),FVector2D(1.35,6.8),FVector2D(-2.2,9.6),FVector2D(-3,-12),FVector2D(-4,680)})
+  {
+   auto Row=S47J::New();S47J::Set(Row,TEXT("xz"),Point.ToString());S47J::Set(Row,TEXT("room"),A->RuntimeRoom(Point));
+   S47J::Set(Row,TEXT("passing_bay"),S47SaroInterior::ContainsPassingBay(M->Web.Get(),FVector(Point.X,0,Point.Y)));Points.Add(MakeShared<FJsonValueObject>(Row));
+  }
+  Bay->SetArrayField(TEXT("points"),Points);S47J::Set(Bay,TEXT("office_door_open"),Open);S47J::Set(Bay,TEXT("nearest_node"),Near);
+  if(!Check(M->Office&&M->Office->Ready()&&A->RuntimeRoom(BayAt)==1&&M->Player->Walkable(BayAt.X,BayAt.Y)
+   &&FS47SC11::Nodes().IsValidIndex(Near)&&A->RuntimeRoom(FS47SC11::Nodes()[Near].At)==1
+   &&S47SaroInterior::ContainsPassingBay(M->Web.Get(),FVector(Aperture.X,0,Aperture.Y))==Open&&A->RuntimeRoom(Aperture)==(Open?1:3)
+   &&A->RuntimeRoom(FVector2D(-1.2,6.9))==3&&A->RuntimeRoom(FVector2D(1.35,6.8))==3&&A->RuntimeRoom(FVector2D(-2.2,9.6))==2
+   &&A->RuntimeRoom(FVector2D(-3,-12))==3&&A->RuntimeRoom(FVector2D(-4,680))==3,
+   TEXT("live native SC11 bay/aperture follows actual door; corridor route excludes records wall/vending and distant outside")))return;
   // Manifest chair 15 ends at x=-4.57. Keep the .27m Walker footprint clear,
   // while the actual original opsTerminal remains inside its 2.4m use range.
   Path({FVector2D(0,.3),FVector2D(-4.15,2.45)});Next(2,0);return;
+ }
  case 2:if(Walk()){if(Face(TEXT("opsTerminal")))Next(3,.35);}return;
  case 3:
   if(!Use(TEXT("opsTerminal"))||!Document(TEXT("HR_SARO_RX_SECURED"),TEXT("SARO07-860414-RX01"))||!Check(A->F.Receiver&&!A->F.Escaped&&!A->HuntLive(),TEXT("receiver original secured, escape still incomplete")))return;
