@@ -664,7 +664,20 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 620) { Aim(Target(TEXT("doorEast"))); Stage(621); return; }
 		if (T.Stage == 621)
 		{
-			if (!Pick(TEXT("doorEast")) || !Check(M->Web->IsDoorOpen(TEXT("doorEast")), TEXT("the round leaves by the east door"))) return;
+			// A real arrival may leave this door open; the named post-handover fixture did not.
+			// Always prove the actual ray/focus. Only use the bound toggle when an opening is needed.
+			const bool WasOpen=M->Web->IsDoorOpen(TEXT("doorEast"));const auto Hinge=M->Web->Obj(TEXT("room.doorHinge"));
+			auto DoorProof=S47J::New();S47J::Set(DoorProof,TEXT("kind"),TEXT("observing-round east-door precondition; already-open is ray-only, never a fabricated new use"));
+			S47J::Set(DoorProof,TEXT("stage"),T.Stage);S47J::Set(DoorProof,TEXT("door_open_before"),WasOpen);S47J::Set(DoorProof,TEXT("activate_bound_hud_onuse"),!WasOpen);
+			S47J::Set(DoorProof,TEXT("hinge_rotation_before"),Hinge?Hinge.Rotation().ToString():FString(TEXT("missing")));S47J::Set(DoorProof,TEXT("game_state_before"),M->Flow->GameState());
+			T.Evidence.Add(MakeShared<FJsonValueObject>(DoorProof));const FString ProofPath=T.Root/TEXT("observing-round-east-door.raw.json");
+			if(!Check(FFileHelper::SaveStringToFile(S47J::Write(DoorProof,true),*ProofPath),TEXT("retain actual door state/instantaneous animation before the round's ray/use")))return;
+			const bool Ray=Pick(TEXT("doorEast"),FString(),!WasOpen);
+			S47J::Set(DoorProof,TEXT("ray_focus_pass"),Ray);S47J::Set(DoorProof,TEXT("door_open_after"),M->Web->IsDoorOpen(TEXT("doorEast")));
+			S47J::Set(DoorProof,TEXT("hinge_rotation_after_instantaneous"),Hinge?Hinge.Rotation().ToString():FString(TEXT("missing")));S47J::Set(DoorProof,TEXT("game_state_after"),M->Flow->GameState());
+			const bool Written=FFileHelper::SaveStringToFile(S47J::Write(DoorProof,true),*ProofPath);if(!Ray)return;
+			if(!Check(Written,TEXT("retain actual ray/use result and door target; native Walker still validates the animated passage")))return;
+			if (!Check(M->Web->IsDoorOpen(TEXT("doorEast")), TEXT("the round leaves by the east door"))) return;
 			Go({FVector(5.2,0,1.6),FVector(6.1,0,1.6),FVector(9.3,0,1.6),FVector(9.3,0,-12),FVector(6.1,0,-12),FVector(2.0,0,-15.5),FVector(-1.0,0,-17.6)}, 622); return;
 		}
 		if (T.Stage == 622)
