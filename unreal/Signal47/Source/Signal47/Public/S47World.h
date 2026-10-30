@@ -125,6 +125,8 @@ public:
 	/** Get in where the truck stands and drive anywhere (Tom 15 October: the truck any time). */
 	void Roam(const FString& From);
 	/** From the diner's lot out onto the old road (chapter six). Ready() runs behind the black. */
+	// The SC12 departure choice selects SARO 07 without moving either parked vehicle.
+	bool SelectServiceForOldRoad();
 	void DriveOldRoad(TFunction<void()> Ready);
 
 	/** Get in and drive from where the truck stands to another place, the whole way (to empty:

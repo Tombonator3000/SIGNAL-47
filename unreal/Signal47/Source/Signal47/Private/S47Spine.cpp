@@ -23,6 +23,7 @@
 #include "S47SC05Contract.h"
 #include "S47SC10Contract.h"
 #include "S47Chapter5.h"
+#include "S47SC13Contract.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -377,6 +378,8 @@ void FS47Spine::ControlTest(double Dt)
  if(Test.Mode==TEXT("sc06"))return; // Dedicated contract runs before the Play gate in Step.
  if(Test.Mode==TEXT("sc07"))return; // Dedicated contract runs before the Play gate in Step.
  if (Test.Mode.StartsWith(TEXT("sc11"))) { FS47SC11Contract::Step(M, Dt); return; }
+ // The opt-in final-road contract also observes Flow's real-time ending and its return to title.
+ if (Test.Mode == TEXT("sc13") && M && M->Story) { S47SC13Contract::Step(M,Dt); return; }
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  if (Test.Mode == TEXT("sc09"))
  {

@@ -14,6 +14,8 @@
 class SS47Ending;
 class FS47ThirdFigure;
 class UTexture2D;
+class FS47FinaleSky;
+class FS47SC13Contract;
 
 // story/Chapter6.ts: "Roswell Road". Nothing here is saved: Continue returns to the diner.
 UCLASS()
@@ -62,8 +64,16 @@ public:
 	void JumpChapter6(const FString& At = FString());
 	S47J::FObj BeganCase;
 	static bool SelfTest(TArray<FString>& Lines);
+	// New SC12-derived route only. Legacy saves never acquire the revised ending from a clock.
+	bool RevisedFinale() const { return bActive && bRevisedSC13; }
+	S47J::FObj FinaleReadback() const;
+	void ControlSC13Test(double Dt);
 
 private:
+	friend class FS47SC13Contract;
+	bool bRevisedSC13 = false;
+	TSharedPtr<FS47FinaleSky> FinaleSky;
+	TSharedPtr<FS47SC13Contract> SC13Contract;
 	double Et = 0, Pt = 0;
 	TSet<FString> Done;
 	FS47Pressure Bed;

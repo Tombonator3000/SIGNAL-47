@@ -864,6 +864,15 @@ void US47World::DriveBack()
 	StartTrip(TruckAt.IsEmpty() ? FString(TEXT("station01")) : TruckAt, TEXT("saro"), O);
 }
 
+bool US47World::SelectServiceForOldRoad()
+{
+	if (bDriving || Area != TEXT("diner") || TruckAt != TEXT("diner") || !TruckP || !OldTruckP) return false;
+	bCommuteVehicle = false;
+	TruckP->SetPersonalVehicle(false);
+	OldTruckP->SetPersonalVehicle(false);
+	return true;
+}
+
 void US47World::DriveOldRoad(TFunction<void()> Ready)
 {
 	EnsureLegs();
