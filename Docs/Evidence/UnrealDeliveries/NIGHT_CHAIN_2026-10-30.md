@@ -1,6 +1,6 @@
 # Faktisk nattkjede fra ny sak
 
-**Status:** Under arbeid. Ingen prefikskjøring eller hel natt er akseptert ennå. **Gjelder:** SC01 til SC13, Night R1 til R7 på de eksakte byggene i kvitteringen. **Sist kontrollert:** 30. oktober 2026.
+**Status:** Under arbeid. Ingen prefikskjøring eller hel natt er akseptert ennå. **Gjelder:** SC01 til SC13, Night R1 til R9 på de eksakte byggene i kvitteringen. **Sist kontrollert:** 30. oktober 2026.
 
 Prøven starter en ordinær tom case1 fra ny sak, kjører personlig bil til SARO, går inn med native Walker/kameraray og gjennomfører D01. Den bruker faktiske spillhandlinger, dokumenter og disk/fullFlow. Senere kapitler skal bare konsumere faktiske foreldre med søsken-PASS, samme chain_id og eksakt filhash. Navngitte scenariofixturer i andre rapporter er separate målrettede bevis.
 
@@ -23,4 +23,9 @@ R7 fra R9-bygget `e5913b51` og modul `c48cc043` gjennomfører SC01 og SC02 med f
 
 R7 får likevel FAIL etter1450,894s ved det siste rutevalget til den parkerte bilen, før retur til SARO. Root har3324kontroller/fem diskforløp/86,90m gange/6859,00m kjøring. SC02-checkpoint er392304bytes med SHA1 `4B93D5440D8A8B8F9649609D60BDA15CAA038F53`. Det finnes ingen akseptert SC03-forelder for SC04 ennå. [R7-kvitteringen](../../../unreal/Evidence/NIGHT-2026-10-30/attempt-r7.json) binder alle delgrensene og det faktiske avbruddet.
 
-Kildeanalysen viser at alle48gamle rutemål lå innenfor bilens konservative, roterte AABB ved den faktiske parkeringsposen. Ny kilde `1f23752b` legger til én kandidatring og leser gulvhøyden ved målet gjennom områdets eksisterende gulvprovider. Alle kollidere og strenge native krav til gange,3D-rekkevidde og ray beholdes; rådiagnostikk skrives før PASS/FAIL. R10-editor består10,171s med modul `1d588f6d`; faktisk NightR8 kjører fra ordinær ny sak. Den nye ruten er fortsatt UNVERIFIED.
+Kildeanalysen viser at alle48gamle rutemål lå innenfor bilens konservative, roterte AABB ved den faktiske parkeringsposen. Ny kilde `1f23752b` legger til én kandidatring og leser gulvhøyden ved målet gjennom områdets eksisterende gulvprovider. Alle kollidere og strenge native krav til gange,3D-rekkevidde og ray beholdes; rådiagnostikk skrives før PASS/FAIL. R10-editor består10,171s med modul `1d588f6d`; NightR8 ble kontrollert avbrutt av Codex før ny kildefrys, som beskrevet nedenfor. Den nye ruten er fortsatt UNVERIFIED.
+
+
+R8 er **INTERRUPTED_BY_CODEX**, uten kontraktresultat. Lesende kildekontroll fant at World::Park setter driving=false straks, men beholder cinematic i0,4s. Den gamle stage19 kunne dermed be om vanlig lagring før transaksjonen var ferdig. Codex sendte SIGTERM bare til sin wrapper med verifisert PID og eksakt privat plan; guard ryddet kun sin egen barnesesjon, og etterfølgende require-idle besto. Wrapperen videreførte InterruptedError uten å skrive night.result.json. Dette er et avbrudd, ikke et nytt runtime-FAIL eller PASS.23råfiler, logger, kildefrys og separat avbruddskvittering er bevart privat.
+
+Ny kilde `4f93a8a3` skriver faktisk parkeringsstatus og venter deretter maks20s på vanlig cinematic-/modalfri tilstand og tom SaveBlock. Den lukker eller nullstiller ingenting; timeout beholder råtilstand og blokkeringstekst. R11-editor består10,175s med modul `ade134e0`. NightR9 starter fra ordinær ny sak med samme638pinnede inputs; både siste bilrute og sluttgrensen trenger fortsatt denne faktiske prøven.

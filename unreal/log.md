@@ -1455,3 +1455,10 @@ R7/e5913b51/modulc48cc043 består SC01/Fortsett/27×042 og den nye gangruten til
 R7 fra e5913b51/modul c48cc043 har faktisk SC01/Fortsett/27×042 og SC02 med søsken-PASS i samme kjede. T01 gjenoppretter feederen; SC02 gjennomfører fangst, retry, flukt og retur. SC03s Caliche-hendelser er gjennomført. Root får FAIL etter 1450,894s ved stage16, siste GoItem(dinerTruck) før SARO-retur, med 3324 egne kontroller/fem diskforløp/86,90m gange/6859,00m kjøring. Adapterens 273 kontroller/16 lagringsforløp/531,24m gange er separate. Ingen akseptert SC03-forelder eller hel natt. R7-kvitteringen, råfiler og moduler er bevart.
 
 Bilens faktiske AABB omfatter alle 48 gamle rutemål. Kilde1f23752b beholder kollidere, rekkevidde og ray; én ekstra kandidatring og områdets gulvprovider gir nye mål med detaljert rådiagnostikk. R10-editor består 10,171s med modul1d588f6d. NightR8 kjører fra ordinær ny sak med 638 fryste inputs. Ingen installasjon eller offentlig release.
+
+
+### Codex 2026-10-30T05:59:12+01:00 egen R8 avbrutt, R11 bygg og faktisk R9
+
+Lesende kontroll bekrefter at vanlig Park setter driving=false før0,4s cinematic er over. Egen R8 ble derfor avbrutt gjennom verifisert wrapper3358426 og eksakt privatplan. Guard ryddet kun sin egen barnesesjon; require-idle besto etterpå.23råfiler/hash, logg og avbruddskvittering er privatbevart. InterruptedError ble videreført uten night.result.json; ingen kontraktaksept eller runtime-FAIL påstås.
+
+Kilde4f93a8a3 skriver faktisk parkering og venter maks20s på cinematic/modal/SaveBlock før uendret SC03-Check/Boundary. Ingen produktfelt eller modaler tvinges. R11-editor består10,175s med modulade134e0, bytebevart privat. Faktisk NightR9 kjører fra ordinær nycase med638fryste inputs. Root eier alle nye mutasjoner og tunge jobber; agenter gjør bare lesende kontroll. Ingen installasjon eller offentlig release.
