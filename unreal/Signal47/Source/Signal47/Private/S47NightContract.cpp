@@ -114,7 +114,7 @@ class FS47NightContract : public TSharedFromThis<FS47NightContract>
  TArray<FVector> Route;
  TArray<TSharedPtr<FJsonValue>> Evidence,States,Transitions,Actions;
  TArray<FLinearColor> BeaconBaseline;
- FJ HeldPapers,PreviousBoundary,PreviousResult;
+ FJ HeldPapers,PreviousBoundary,PreviousResult,StartupStatus;
  void Next(int32 N,double Hold=.2){Stage=N;Mark=FPlatformTime::Seconds();Wait=Hold;}
  bool Record(const FString& Name)
  {
@@ -125,6 +125,20 @@ class FS47NightContract : public TSharedFromThis<FS47NightContract>
   S47J::Set(Fault,TEXT("arc_lumens"),F.ArcLumens);S47J::Set(Fault,TEXT("lamp_lumens"),F.LampLumens);S47J::Set(Fault,TEXT("strike_bursts"),M()->Substation->ArcCount());S47J::Set(O,TEXT("fault"),Fault);
   States.Add(MakeShared<FJsonValueObject>(O));return Write(Root/(Name+TEXT(".raw.json")),O);
  }
+ // StartTrip is a real 0.4-game-second transaction. Preserve its actual individual
+ // predicates and full state before any startup rejection; no production field is forced.
+ bool RecordStartup(const FString& Name)
+ {
+  auto O=S47J::New();S47J::Set(O,TEXT("name"),Name);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("frame"),double(GFrameCounter));
+  S47J::Set(O,TEXT("clock"),M()->Story->Clock());S47J::Set(O,TEXT("game_state"),M()->Flow->GameState());
+  S47J::Set(O,TEXT("mode_play"),M()->Mode==US47Main::EMode::Play);S47J::Set(O,TEXT("case_id"),M()->Flow->CaseId);S47J::Set(O,TEXT("developer_run"),M()->Flow->bDevRun);
+  S47J::Set(O,TEXT("flow_starting"),M()->Flow->bStarting);S47J::Set(O,TEXT("startup_blocking"),S47Startup::Blocking());S47J::Set(O,TEXT("paused_by_menu"),M()->bPausedByMenu);
+  S47J::Set(O,TEXT("evening_enabled"),M()->Evening->Enabled());S47J::Set(O,TEXT("opening"),M()->Evening->Opening());S47J::Set(O,TEXT("commute"),M()->Evening->Commute());
+  S47J::Set(O,TEXT("opening_held"),M()->Story->bOpeningHeld);S47J::Set(O,TEXT("world_busy"),M()->World->bBusy);S47J::Set(O,TEXT("driving"),M()->World->bDriving);S47J::Set(O,TEXT("commute_vehicle"),M()->World->bCommuteVehicle);
+  S47J::Set(O,TEXT("area"),M()->World->Area);S47J::Set(O,TEXT("leg"),M()->World->Leg);S47J::Set(O,TEXT("cab_exists"),M()->World->CabTruck()!=nullptr);
+  S47J::Set(O,TEXT("horror_enabled"),M()->Horror->Enabled());S47J::Set(O,TEXT("spine_enabled"),M()->Spine->Enabled());
+  StartupStatus=O;States.Add(MakeShared<FJsonValueObject>(O));return Write(Root/(Name+TEXT(".raw.json")),O);
+ }
  void Finish(bool Good,const FString& Why)
  {
   const auto Keep=AsShared();if(Done)return;Done=true;M()->Player->TestMove.Reset();M()->Player->bTestRun=false;
@@ -133,7 +147,7 @@ class FS47NightContract : public TSharedFromThis<FS47NightContract>
   S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("restores"),Restores);S47J::Set(O,TEXT("walked_metres"),Walked);
   S47J::Set(O,TEXT("driven_metres"),Driven);S47J::Set(O,TEXT("walk_samples"),WalkSamples);S47J::Set(O,TEXT("actual_ray_uses"),RayUses);
   O->SetArrayField(TEXT("executed_checks"),Evidence);O->SetArrayField(TEXT("states"),States);O->SetArrayField(TEXT("transitions"),Transitions);O->SetArrayField(TEXT("actions"),Actions);
-  S47J::Set(O,TEXT("actual_horror_route"),M()->HorrorTest->NightReadback());
+  S47J::Set(O,TEXT("actual_horror_route"),M()->HorrorTest->NightReadback());S47J::Set(O,TEXT("startup_status"),StartupStatus);
   S47J::Set(O,TEXT("sc03_complete_checkpoint"),Root/TEXT("sc03/sc03-complete.disk.json"));
   if(IFileManager::Get().FileExists(*(Root/TEXT("sc03/sc03-complete.disk.json"))))S47J::Set(O,TEXT("checkpoint_file"),File(Root/TEXT("sc03/sc03-complete.disk.json")));
   S47J::Set(O,TEXT("limits"),TEXT("Actual normal newcase1/commute/park/D01 and continuous SC01-observing/outage/T01/SC02/SC03 production cohort. Driving uses explicitly labelled native autopilot/route-target APIs; receiver dials use production APIs. Legacy test-only budget/revision/prerequisite fixtures are excluded. Product capture/retry and normal drive/park/load placement remain product behavior, never a test recovery. SC04-SC13, full-night pacing, physical input/listening/visual/performance/package/install acceptance remain UNVERIFIED."));
@@ -264,11 +278,13 @@ bool FS47NightContract::Begin()
  if(!Check(!FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest"))||(FMath::IsFinite(Seconds)&&Seconds>=5400),TEXT("optional focus SmokeTest needs5400s outer timer; outer exit never grants night PASS")))return false;
  Chain=FGuid::NewGuid().ToString(EGuidFormats::Digits);Root=Saved/TEXT("NightContract")/Chain;
  if(!IFileManager::Get().MakeDirectory(*Root,true)){Finish(false,TEXT("own fresh evidence directory unavailable"));return false;}
- Started=true;US47Flow::FStart NewNight;NewNight.CaseId=1;M()->Flow->StartGame(NewNight);
- if(!Check(!M()->Flow->bDevRun&&M()->Flow->CaseId==1&&M()->Evening->Commute()&&M()->World->bDriving&&M()->World->bCommuteVehicle&&M()->Horror->Enabled()&&M()->Spine->Enabled(),TEXT("ordinary empty-state/noJump newcase creates actual personal commute and fresh production cohort")))return false;
- if(!Check(M()->World->CabTruck()!=nullptr,TEXT("actual normal new-night cab exists before autopilot control")))return false;
- M()->World->Autopilot=16;LastDrive=M()->World->CabTruck()->Position;LastLeg=M()->World->Leg;Next(1,.5);
- if(!Record(TEXT("ordinary-new-night"))){Finish(false,TEXT("cannot write actual ordinary-new-night source record"));return false;}return true;
+ Started=true;Began=FPlatformTime::Seconds();Next(0,0);
+ if(!RecordStartup(TEXT("before-ordinary-new-night"))){Finish(false,TEXT("cannot retain raw pre-newcase startup state"));return false;}
+ US47Flow::FStart NewNight;NewNight.CaseId=1;M()->Flow->StartGame(NewNight);
+ // BeginCommute -> StartTrip does not set bDriving until Story.After(0.4).
+ // Stage0 waits for that genuine transaction rather than manufacturing a cab/cohort.
+ if(!RecordStartup(TEXT("ordinary-new-night-start-requested"))){Finish(false,TEXT("cannot retain actual requested newcase startup state"));return false;}
+ return true;
 }
 
 void FS47NightContract::Tick(double Dt)
@@ -276,6 +292,19 @@ void FS47NightContract::Tick(double Dt)
  const auto Keep=AsShared();if(Done||!M()||!M()->Story||!M()->Flow||!M()->Player||!M()->World||!M()->Web||!M()->UI||!M()->Hud||!M()->Inter||!M()->Horror||!M()->HorrorTest||!M()->Evening||!M()->Observing||!M()->Substation||!M()->Spine||!M()->Night||!M()->Night->Album)return;
  if(!Started){if(!S47Startup::Blocking()&&!M()->Flow->bStarting&&M()->Mode==US47Main::EMode::Play)Begin();return;}
  const double Now=FPlatformTime::Seconds();if(Now-Began>4800){Finish(false,TEXT("4800s real night-prefix timeout; no fixture/recovery"));return;}
+ if(Stage==0)
+ {
+  if(S47Startup::Blocking()||M()->Flow->bStarting||M()->World->bBusy)
+  {
+   if(Now-Mark>30){RecordStartup(TEXT("ordinary-new-night-start-timeout"));Finish(false,TEXT("ordinary newcase deferred StartTrip did not finish within30wallseconds; raw startup retained"));}return;
+  }
+  if(!RecordStartup(TEXT("ordinary-new-night-start-settled"))){Finish(false,TEXT("cannot retain settled newcase startup state before validation"));return;}
+  if(!Check(M()->Mode==US47Main::EMode::Play&&!M()->Flow->bDevRun&&M()->Flow->CaseId==1&&M()->Evening->Commute()&&M()->World->bDriving&&M()->World->bCommuteVehicle&&M()->Horror->Enabled()&&M()->Spine->Enabled(),TEXT("ordinary empty-state/noJump newcase creates actual personal commute and fresh production cohort after real deferred trip startup")))return;
+  if(!Check(M()->World->CabTruck()!=nullptr,TEXT("actual normal new-night cab exists before autopilot control")))return;
+  // The developer boot before this newcase is not the night's monotonic clock baseline.
+  LastClock=M()->Story->Clock();M()->World->Autopilot=16;LastDrive=M()->World->CabTruck()->Position;LastLeg=M()->World->Leg;Next(1,.5);
+  if(!Record(TEXT("ordinary-new-night")))Finish(false,TEXT("cannot write actual ordinary-new-night source record"));return;
+ }
  const auto Adapter=M()->HorrorTest->NightReadback();if(S47J::Bool(Adapter,TEXT("failed"))){Finish(false,TEXT("actual HorrorTest night adapter rejected; raw component FAIL retained"));return;}
  if(M()->bPausedByMenu){Finish(false,TEXT("unexpected external activation pause; use explicit focus wrapper or focused window, never auto-resume"));return;}
  if(M()->Story->Clock()+.0001<LastClock){Finish(false,TEXT("night production clock moved backwards"));return;}LastClock=M()->Story->Clock();
