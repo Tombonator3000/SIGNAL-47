@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "status": "FAIL_PREFIX_INCOMPLETE",
+  "complete_night_accepted": false,
+  "attempt": "Night R7",
+  "frozen_head": "e5913b51f76ef89b51cbfe7025f4f284055200fa",
+  "build_receipt": {
+    "source_commit": "e5913b51f76ef89b51cbfe7025f4f284055200fa",
+    "freeze_sha256": "4362a20b7a2ee27b325887efdc0c954088cf2c75c981503891987a4eceeef67f",
+    "source_files": 638,
+    "bytes": 19694136,
+    "sha256": "c48cc0435127776758534bc980fd918c1ec95f958975aa7d7388fc12a4064aec",
+    "build_log_sha256": "aeffd7323a92794b4c02687f2d4fee843ffee4653b835269e588da4c0d94ebd3"
+  },
+  "source_freeze_sha256": "abc099d54a7513b955218d3006f1450181fa91e4a476084f5f927692ba7d022b",
+  "guard": {
+    "returncode": 1,
+    "wall_seconds": 1450.8944471700233,
+    "semantic_success": false,
+    "expected_found": false,
+    "forbidden_found": [
+      "night contract FAIL"
+    ],
+    "stop_reason": null
+  },
+  "result": {
+    "status": "FAIL",
+    "scenario": "NIGHT_SC01_SC03_PREFIX",
+    "chain_id": "01A18B05B601777FA0410CA48D9E1BC4",
+    "stage": 16,
+    "reason": "bounded measured walkable route reaches native ray target; no fallback: dinerTruck",
+    "checks": 3324,
+    "restores": 5,
+    "walked_metres": 86.90181576065756,
+    "driven_metres": 6859.001643748895,
+    "actual_ray_uses": 4
+  },
+  "raw_result_sha256": "57a4f34c8750f32935ebd6654ebec8fe2068b5c36ded907e18e8c72efb1d3c94",
+  "accepted_sc01": {
+    "status": "PASS",
+    "scenario": "SC01",
+    "mode": "night",
+    "chain_id": "01A18B05B601777FA0410CA48D9E1BC4",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r7/Saved/NightContract/01A18B05B601777FA0410CA48D9E1BC4/sc01/sc01-complete.disk.json",
+      "bytes": 377324,
+      "sha1": "AF4E3121AAB47B3EA9286DAE570367D2D895ED5A"
+    },
+    "previous_checkpoint_file": null,
+    "previous_result_file": null
+  },
+  "sc01_raw_result_sha256": "ea3ddb19f7fbeb63a26e8097d48b5ffa268a0486a41ad84d237444758f32f7a1",
+  "accepted_sc02": {
+    "status": "PASS",
+    "scenario": "SC02",
+    "mode": "night",
+    "chain_id": "01A18B05B601777FA0410CA48D9E1BC4",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r7/Saved/NightContract/01A18B05B601777FA0410CA48D9E1BC4/sc02/sc02-complete.disk.json",
+      "bytes": 392304,
+      "sha1": "4B93D5440D8A8B8F9649609D60BDA15CAA038F53"
+    },
+    "previous_checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r7/Saved/NightContract/01A18B05B601777FA0410CA48D9E1BC4/sc01/sc01-complete.disk.json",
+      "bytes": 377324,
+      "sha1": "AF4E3121AAB47B3EA9286DAE570367D2D895ED5A"
+    },
+    "previous_result_file": {
+      "path": "/tmp/S47-chain-night-night-r7/Saved/NightContract/01A18B05B601777FA0410CA48D9E1BC4/sc01/result.json",
+      "bytes": 4977494,
+      "sha1": "068AC07A92EA257D207B2C6AA152AE58F262A81E"
+    }
+  },
+  "sc02_raw_result_sha256": "8ebb06ebaa1ece32a1f5525e71f0d4896762ae4b404463758a8c72d27b58c0bf",
+  "outage": {
+    "raw_sha256": "b03a46a42ef8a4fbe1bf3ce029704dc26027963d0fd31ee8ac8de0a36ebf0d89",
+    "clock": 827.0000732913613,
+    "scope": "actual state evidence; no new chapter acceptance implied"
+  },
+  "t01-restored": {
+    "raw_sha256": "e460f2dd408bbab3a92bb12e5938588460aa107567a979b9adf92a74eb3b78fb",
+    "clock": 5741.768450746313,
+    "scope": "actual state evidence; no new chapter acceptance implied"
+  },
+  "actual-sc03-caliche-complete": {
+    "raw_sha256": "1ad2330560294ad49a7e66fc0c1914d1a59ad77c164b6f36d59b79ceac45846f",
+    "clock": 8956.119803573833,
+    "scope": "actual state evidence; no new chapter acceptance implied"
+  },
+  "actual_horror_route": {
+    "night_adapter": true,
+    "failed": false,
+    "waiting": true,
+    "boundary": "sc03",
+    "stage": 227,
+    "checks": 273,
+    "stores": 16,
+    "walked_metres": 531.2397120390789,
+    "captured": true,
+    "normal_photo": "free1@-3574",
+    "t01_stamp": "14 APR 1986 / 01:35:41",
+    "sc02_clock": 7200
+  },
+  "sc03_boundary_accepted": false,
+  "limits": "SC01 and SC02 have actual sibling PASS in this chain. SC03 Caliche state is actual, but final native approach/drive back to SARO failed; no accepted SC03 parent for SC04. Root and adapter metrics are separate. Physical input, listening, human visual acceptance, performance, SC04-SC13 actual chain, package/install remain UNVERIFIED."
+}
