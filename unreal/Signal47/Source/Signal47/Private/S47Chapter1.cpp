@@ -71,6 +71,21 @@ namespace
 		return O;
 	}
 
+	// New cases own the actual acquired paper, including images, timestamps and every sheet.
+	S47J::FObj SC06PaperJson(const FS47Doc& D)
+	{
+		auto O=S47J::New(); S47J::Set(O,TEXT("id"),D.Id); S47J::Set(O,TEXT("title"),D.Title); S47J::Set(O,TEXT("kind"),D.Kind);
+		S47J::Set(O,TEXT("stamp"),D.Stamp); S47J::Set(O,TEXT("page"),D.Page); S47J::Set(O,TEXT("transcript"),D.Transcript);
+		S47J::Set(O,TEXT("image"),D.Image); S47J::Set(O,TEXT("paper"),D.Paper); S47J::Set(O,TEXT("paperRatio"),D.PaperRatio);
+		TArray<TSharedPtr<FJsonValue>> A; for(const auto& P:D.Sheets){auto R=S47J::New(); S47J::Set(R,TEXT("page"),P.Page); S47J::Set(R,TEXT("paper"),P.Paper); S47J::Set(R,TEXT("strip"),P.Strip); S47J::Set(R,TEXT("term"),P.Term); A.Add(MakeShared<FJsonValueObject>(R));} O->SetArrayField(TEXT("sheets"),A); return O;
+	}
+	FS47Doc SC06ReadPaper(const S47J::FObj& O)
+	{
+		FS47Doc D; D.Id=S47J::Str(O,TEXT("id")); D.Title=S47J::Str(O,TEXT("title")); D.Kind=S47J::Str(O,TEXT("kind")); D.Stamp=S47J::Str(O,TEXT("stamp"));
+		D.Page=S47J::Str(O,TEXT("page")); D.Transcript=S47J::Str(O,TEXT("transcript")); D.Image=S47J::Str(O,TEXT("image")); D.Paper=S47J::Str(O,TEXT("paper")); D.PaperRatio=S47J::Num(O,TEXT("paperRatio"));
+		for(const auto& V:S47J::Arr(O,TEXT("sheets")))if(V && V->Type==EJson::Object){auto R=V->AsObject(); D.Sheets.Add({S47J::Str(R,TEXT("page")),S47J::Str(R,TEXT("paper")),S47J::Str(R,TEXT("strip")),S47J::Str(R,TEXT("term"))});} return D;
+	}
+
 	// [d.page, d.transcript].filter(Boolean).join('\n\n')
 	FString Full(const FS47Doc& D)
 	{
@@ -95,6 +110,7 @@ TSharedPtr<FJsonObject> FS47CaseState::ToJson() const
 	using namespace S47J;
 	FObj O = New();
 	Set(O, TEXT("v"), V);
+	if(SequenceVersion>0){Set(O,TEXT("sc06Version"),SequenceVersion); TArray<TSharedPtr<FJsonValue>> A; for(const auto& D:Sources)A.Add(MakeShared<FJsonValueObject>(SC06PaperJson(D))); O->SetArrayField(TEXT("sources"),A);}
 	Set(O, TEXT("stage"), Stage);
 	Set(O, TEXT("eventClock"), EventClock);
 	Set(O, TEXT("camera"), bCamera); Set(O, TEXT("door"), bDoor); Set(O, TEXT("labDoor"), bLabDoor); Set(O, TEXT("log"), bLog); Set(O, TEXT("returned"), bReturned);
@@ -122,6 +138,8 @@ FS47CaseState FS47CaseState::FromJson(const TSharedPtr<FJsonObject>& O, double E
 	using namespace S47J;
 	FS47CaseState S = Fresh(EventClock);
 	if (!O.IsValid()) return S;
+	S.SequenceVersion=Int(O,TEXT("sc06Version"));
+	if(S.SequenceVersion>0)for(const auto& V:Arr(O,TEXT("sources")))if(V && V->Type==EJson::Object){auto D=SC06ReadPaper(V->AsObject()); if(!D.Id.IsEmpty())S.Sources.Add(MoveTemp(D));}
 	S.Stage = Str(O, TEXT("stage"), S.Stage);
 	S.EventClock = Num(O, TEXT("eventClock"), S.EventClock);
 	S.bCamera = Bool(O, TEXT("camera")); S.bDoor = Bool(O, TEXT("door")); S.bLabDoor = Bool(O, TEXT("labDoor")); S.bLog = Bool(O, TEXT("log")); S.bReturned = Bool(O, TEXT("returned"));
@@ -374,6 +392,7 @@ void US47Chapter1::BeginCase(const S47J::FObj& Saved, double InEventClock)
 	Reset();
 	Active = true;
 	S = Saved.IsValid() ? FS47CaseState::FromJson(Saved, InEventClock) : FS47CaseState::Fresh(InEventClock);
+	if(!Saved && Host && Host->bEveningTimeline){S.SequenceVersion=1; Host->AdvanceClockTo(3*3600+25*60,TEXT("SC06 B-12 investigation begins")); KeepSources();}
 	if (M && M->Anomaly && M->Anomaly->Data.bEarlyCamera)
 	{
 		S.bCamera = true;
@@ -425,8 +444,8 @@ void US47Chapter1::ApplyWorld()
 	// a case from before the doors were free remembers which of its doors were open
 	if (M && M->Web)
 	{
-		if (S.bDoor) M->Web->SetDoorOpen(TEXT("east"), true, true);
-		if (S.bLabDoor) M->Web->SetDoorOpen(TEXT("lab"), true, true);
+		if (S.bDoor) M->Web->SetDoorOpen(TEXT("doorEast"), true, true);
+		if (S.bLabDoor) M->Web->SetDoorOpen(TEXT("labDoor"), true, true);
 		bEastOpen = M->Web->IsDoorOpen(TEXT("doorEast"));
 		bLabOpen = M->Web->IsDoorOpen(TEXT("labDoor"));
 	}
@@ -434,13 +453,15 @@ void US47Chapter1::ApplyWorld()
 	{
 		if (Yard)
 		{
-			Yard->SetVane(S.Method == TEXT("passive") ? -60 : 45);
+			Yard->SetVane(S.Method == TEXT("passive") ? -60 : (S.SequenceVersion>0 ? 42 : 45));
 			Yard->SetWorkLamp(S.Method == TEXT("passive") ? 0 : 1.35);
 		}
 		bSettled = true;
 	}
 	if (S.F1 && S.Dev1 >= 3) HangPrint(0, *S.F1);
 	if (S.F2 && S.Dev2 >= 3) HangPrint(1, *S.F2);
+	// New SC06 cases refile their actual acquired payload, never paper inferred from flags.
+	if(S.SequenceVersion>0){if(Host)for(const auto& D:S.Sources)Host->AddDoc(D); return;}
 	// documents filed so far
 	if (S.bLog) File(DocS03());
 	if (S.F1 && S.Dev1 >= 3) File(DocPhoto(*S.F1));
@@ -464,8 +485,22 @@ void US47Chapter1::ShowCamera(bool bOn)
 	FS47Obj(Cam).SetVisible(bOn);
 }
 
+void US47Chapter1::KeepSources()
+{
+	if(S.SequenceVersion>0 && Host)S.Sources=Host->Docs();
+}
+S47J::FObj US47Chapter1::SaveState() const
+{
+	FS47CaseState Copy=S; if(Copy.SequenceVersion>0 && Host)Copy.Sources=Host->Docs(); return Copy.ToJson();
+}
+FString US47Chapter1::SaveBlock() const
+{
+	if(S.SequenceVersion<=0)return FString();
+	return !Busy.IsEmpty() || AnimVane.IsSet() ? FString(TEXT("Let the darkroom step or local reference movement finish first.")) : FString();
+}
 void US47Chapter1::Save()
 {
+	KeepSources();
 	if (SaveHook) SaveHook();
 	if (M && M->Board.Refresh) M->Board.Refresh();
 }
@@ -1186,7 +1221,7 @@ void US47Chapter1::UseB12()
 	S47Panels::B12Control(Ui(), FString(), [this](const FString& Mth)
 	{
 		S.Method = Mth;
-		const double Target = Mth == TEXT("passive") ? -60 : 45;
+		const double Target = Mth == TEXT("passive") ? -60 : (S.SequenceVersion>0 ? 42 : 45);
 		AnimVane = FVaneAnim{ 0, Target, Gt() };
 		bSettled = false;
 		if (US47Audio* A = Au()) A->Servo(float(VANE_TIME), Yard ? Yard->VaneObj.WorldPosition() : FVector::ZeroVector);
@@ -1369,7 +1404,11 @@ void US47Chapter1::Shutter()
 	O.Time = ClockText(Clock);
 	O.Seed = FMath::FloorToDouble(Clock * 1000);
 	TArray<FColor> Print;
-	F->Expose(O, Print);
+	if(!F->Expose(O,Print) || Print.Num()!=US47FieldCamera::PRINT_W*US47FieldCamera::PRINT_H)
+	{
+		Toast(TEXT("The exposure did not complete. The sealed frame is still available; try again."),4);
+		UE_LOG(LogS47Chapter1,Error,TEXT("S47: SC06 native exposure failed; no frame, stage or film credit")); return;
+	}
 	// (this.d.view.draw(): the next frame draws as usual)
 	FS47Photo Photo;
 	Photo.Id = Id;
@@ -1416,6 +1455,9 @@ FString US47Chapter1::ReportText() const
 void US47Chapter1::FileReport()
 {
 	if (S.bFiled) return;
+	if(S.SequenceVersion>0 && (!S.bConcluded || !S.bObserved || !S.F1 || !S.F2 || S.F1->Url.IsEmpty() || S.F2->Url.IsEmpty() || S.Dev1<3 || S.Dev2<3))
+	{Toast(TEXT("Keep both developed exposures and the recorded control finding before filing.")); return;}
+	if(S.SequenceVersion>0 && Host)Host->AdvanceClockTo(3*3600+40*60,TEXT("SC06 actual two-exposure report filed"));
 	S.bFiled = true;
 	NoteIt(TEXT("LOCAL CASE CLOSED: S-03 and B-12 records filed together. Preserve negatives. Follow-up: why does the original return report a distance of -39 LY?"));
 	if (US47Audio* A = Au()) A->Sfx(TEXT("thudSoft"), Snd(0.4f));
@@ -1837,6 +1879,14 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 		C->S.Links.Reset();
 		B.Backfill();
 		Expect(C->S.Links && C->S.Links->Num() == 4 && C->S.Links->Contains(bLight ? TEXT("hyp.light|refsheet.lamp") : TEXT("hyp.drift|refsheet.drive")), TEXT("backfill restores the chosen hypothesis's thread"));
+	}
+	{
+		FS47CaseState Old=FS47CaseState::FromJson(S47J::Read(TEXT("{\"stage\":\"complete\",\"filed\":true}")),0);
+		Expect(Old.SequenceVersion==0 && Old.bFiled && Old.Sources.IsEmpty(),TEXT("legacy completed case gains no SC06 source or control prerequisite"));
+		FS47CaseState Actual=FS47CaseState::Fresh(12300); Actual.SequenceVersion=1;
+		FS47Doc D; D.Id=TEXT("acquired-before-SC06"); D.Title=TEXT("source"); D.Kind=TEXT("printout"); D.Stamp=TEXT("03:23:47"); D.Page=TEXT("raw source"); D.Transcript=TEXT("verbatim"); D.Image=TEXT("original-image-bytes"); D.Paper=TEXT("original-paper"); D.PaperRatio=1.47; D.Sheets.Add({TEXT("p"),TEXT("paper"),TEXT("strip"),TEXT("term")}); Actual.Sources.Add(D);
+		const auto Again=FS47CaseState::FromJson(S47J::Read(S47J::Write(Actual.ToJson())),0);
+		Expect(Again.SequenceVersion==1 && Again.Sources.Num()==1 && S47J::Write(SC06PaperJson(Again.Sources[0]))==S47J::Write(SC06PaperJson(D)),TEXT("SC06 owned acquisition preserves all paper/image/stamp/sheet bytes across JSON"));
 	}
 	return bOk;
 }

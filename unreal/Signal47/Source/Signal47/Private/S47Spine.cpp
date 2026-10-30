@@ -1,5 +1,6 @@
 #include "S47Spine.h"
 #include "S47SC04Contract.h"
+#include "S47SC06Contract.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -288,6 +289,7 @@ void FS47Spine::ShowPosts()
 
 void FS47Spine::Step(double Dt)
 {
+ FS47SC06Contract::Step(M,Dt);
  if (!bEnabled || !M || !M->Story) return;
  Build();
  Act05.Step(Dt);
@@ -330,6 +332,7 @@ void FS47Spine::ControlTest(double Dt)
  if (!Test.bInit) { Test.bInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47SpineContract="), Test.Mode); }
  if (Test.Mode == TEXT("sc04") || Test.Mode == TEXT("sc04hide") || Test.Mode == TEXT("sc04long")) { FS47SC04Contract::Step(M, Dt); return; }
  if (Test.Mode == TEXT("sc05") && M && M->Story) { S47SC05Contract::Step(M,Dt); return; }
+ if(Test.Mode==TEXT("sc06"))return; // Dedicated contract runs before the Play gate in Step.
  if (Test.Mode.IsEmpty() || Test.bDone || !M || !M->Story || M->Mode != US47Main::EMode::Play) return;
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
