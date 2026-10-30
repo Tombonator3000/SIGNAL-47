@@ -137,7 +137,7 @@ void FS47TripoNpcs::Update()
   const FString& R = Slot.Role; Slot.bBound = false; C->SetVisibility(false);
   if (R == TEXT("patron")) OnObject(Slot, TEXT("world.diner.objs.driver"), FVector(0,.28,0), true);
   else if (R == TEXT("nora")) OnObject(Slot, TEXT("world.room6.objs.nora"), FVector::ZeroVector, true);
-  else if (R == TEXT("radio_woman")) OnObject(Slot, TEXT("world.town.woman"), FVector(0,-.34,-.13), true);
+  else if (R == TEXT("radio_woman")) OnObject(Slot, TEXT("world.town.woman"), FVector(0,.12,.02), true);
   else if (R == TEXT("souvenir_man")) OnObject(Slot, TEXT("world.town.smoker"), FVector::ZeroVector, true);
   else if (R == TEXT("dale"))
   {
