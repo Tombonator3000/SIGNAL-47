@@ -1,4 +1,5 @@
 #include "S47Chapter5.h"
+#include "S47Spine.h"
 
 #include "Components/MeshComponent.h"
 #include "Engine/Texture.h"
@@ -245,7 +246,8 @@ void US47Chapter5::Begin(const S47J::FObj& Saved)
 	ApplyWorld();
 	if (!Saved.IsValid())
 	{
-		Note(FString::Printf(TEXT("%s. Out of room 6. %s C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night."), *Time(), *TruckWhere()));
+		if (Spined()) Note(FString::Printf(TEXT("%s. Out of SARO with the originals. The diner is the nearest phone that isn't ours. C crosses the old road to Roswell; the road leaves the highway at the diner."), *Time()));
+		else Note(FString::Printf(TEXT("%s. Out of room 6. %s C crosses the old road to Roswell; the road leaves the highway at the diner south of here, the one that is open all night."), *Time(), *TruckWhere()));
 		Toast(TruckWhere(), 3.4f);
 	}
 	Save();
@@ -268,6 +270,9 @@ S47J::FObj US47Chapter5::SaveState() const
 }
 
 void US47Chapter5::Save() { if (OnSave) OnSave(); }
+
+bool US47Chapter5::Spined() const { return M && M->Spine && M->Spine->Enabled(); }
+bool US47Chapter5::PatrolRead() const { return Host && Host->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("sc12_patrol"); }); }
 
 FString US47Chapter5::Time() const { return S47Text::ClockText(Host ? Host->Clock() : 0, false); }
 FString US47Chapter5::Area() const { return M && M->World ? M->World->Area : FString(TEXT("saro")); }
@@ -342,8 +347,8 @@ TArray<FS47Task> US47Chapter5::Tasks() const
 		{ TEXT("Ask the waitress about the lights over the mesa"), S.bLights },
 		{ TEXT("The clipping on the wall"), S.bClipped },
 		{ TEXT("Find where C crosses the old Roswell road (P13)"), S.bP13 },
-		{ TEXT("Ask the driver about the old road"), S.bOctober },
-		{ TEXT("Call Ward from the payphone (optional)"), S.bWard },
+		{ Spined() ? TEXT("The deputy's patrol sheet") : TEXT("Ask the driver about the old road"), Spined() ? PatrolRead() : S.bOctober },
+		{ Spined() ? TEXT("Read the three sources to Ward from the payphone") : TEXT("Call Ward from the payphone (optional)"), S.bWard },
 		{ TEXT("Drive the old road"), S.Stage == TEXT("complete") },
 	});
 	return T;
@@ -364,7 +369,13 @@ TOptional<US47Chapter5::FTrip> US47Chapter5::TruckTrip(const FString& Place)
 {
 	if (!bActive) return {};
 	TWeakObjectPtr<US47Chapter5> W = this;
-	if (S.Stage == TEXT("road") && Place == TEXT("diner")) return FTrip{ TEXT("Drive the old road"), [W] { if (W.IsValid()) W->Finish(); } };
+	if (S.Stage == TEXT("road") && Place == TEXT("diner")) return FTrip{ TEXT("Drive the old road"), [W]
+	{
+		if (!W.IsValid()) return;
+		// SC12: Ward has the sources before the originals go (PRODUKSJON_SC01_SC13.md).
+		if (W->Spined() && !W->S.bWard) { W->Toast(TEXT("Not yet. Ward has to have the sources before you go."), 3.4f); return; }
+		W->Finish();
+	} };
 	if (S.Stage == TEXT("to-truck") || (S.Stage == TEXT("road") && Place != TEXT("diner")))
 	{
 		return FTrip{ TEXT("Drive to Mesa Diner"), [W]
@@ -650,7 +661,7 @@ S47Panels::FTalkView US47Chapter5::View() const
 		V.Choices.Add({ TEXT("what"), TEXT("Ask what they said") });
 		// only when it was tried (the console log is hers to read): the count, not a word before
 		if (!S.ArrayTold.Get(false) && (ArrayCount ? ArrayCount() : 0) > 0) V.Choices.Add({ TEXT("array"), TEXT("Tell her the array would not stay on the schedule") });
-		V.Choices.Add({ TEXT("road"), TEXT("Tell her you are checking the old road first") });
+		V.Choices.Add({ TEXT("road"), Spined() ? TEXT("Read her the three sources") : TEXT("Tell her you are checking the old road first") });
 	}
 	if (Who == TEXT("ward") && S.bWard) V.Choices.Add({ TEXT("bye"), TEXT("Hang up") });
 	return V;
@@ -739,7 +750,26 @@ void US47Chapter5::Choose(const FString& Id)
 			Lines = L;
 			Note(FString::Printf(TEXT("%s. Ward already had it from the console log: \"You tried it %s. It went back %s.\" Then: \"Leave it where it is.\""), *Time(), *K, *K));
 		}
-		if (Id == TEXT("road"))
+		if (Id == TEXT("road") && Spined())
+		{
+			S.bWard = true;
+			Lines = {
+				You(TEXT("Three sources. H-1, S-11, and ours, SARO-3. First limit for all three: 05:29:47.")),
+				Ward(TEXT("H-1, S-11, SARO-3. 05:29:47. I have it written down, with the time you called.")),
+				Ward(TEXT("Get the originals to the courier. Don't wait for me.")),
+				Aside(TEXT("She hangs up.")),
+			};
+			FS47Doc D; D.Id = TEXT("sc12_warning"); D.Title = TEXT("Warning receipt, Ward"); D.Kind = TEXT("hand"); D.Stamp = TEXT("MESA DINER");
+			D.Page = FString::Printf(TEXT("%s. Read to Dr. Ward from the Mesa Diner payphone:\n\nH-1 (Hondo), S-11 (Site 11), SARO-3 (ours).\nFirst limit for all three: 05:29:47.\n\nRead back correctly. She has the time I called."), *Time());
+			D.Transcript = TEXT("The warning read to Ward from the diner's payphone: three sources, H-1, S-11 and SARO-3, the same first limit, 05:29:47. She read it back and has the time of the call.");
+			File(D);
+			Note(FString::Printf(TEXT("%s. Ward has the three sources, read back: H-1, S-11, SARO-3, first limit 05:29:47. \"Get the originals to the courier. Don't wait for me.\""), *Time()));
+			if (M && M->Audio) M->Audio->Sfx(TEXT("click"), Snd(0.4f));
+			// The deputy comes in while she reads them back (05:15, PRODUKSJON_SC01_SC13.md).
+			if (Host) Host->SetClock(FMath::Max(Host->Clock(), 5 * 3600. + 15 * 60));
+			Milestone();
+		}
+		else if (Id == TEXT("road"))
 		{
 			S.bWard = true;
 			Lines = {
@@ -770,7 +800,7 @@ void US47Chapter5::OpenMap()
 	O.Choices = {
 		{ TEXT("bm8"), TEXT("At the survey bolt just past the eight-mile post") },
 		{ TEXT("bm6"), TEXT("At the bolt by the six-mile post") },
-		{ TEXT("bm10"), TEXT("At the bolt past the ten-mile post") },
+		{ TEXT("bm10"), TEXT("At the mile-ten turnout") },
 		{ TEXT("none"), TEXT("Nowhere. C runs clear of the road") },
 	};
 	O.OnMove = [W](double X, double Y, bool) { if (!W.IsValid()) return; W->S.Tracing = FVector2D(X, Y); W->Save(); };
@@ -888,6 +918,17 @@ void US47Chapter5::Update(double Dt, double T)
 		S.bBell = true;
 		if (M->Audio) { M->Audio->Beep(880, 0.12f, 0.08f); M->Audio->Beep(880, 0.12f, 0.08f, 0.22f); }
 		Toast(TEXT("Inside, the operations terminal chimes once."), 3);
+		Save();
+	}
+	// SC12: at 05:15 the deputy comes in, gets coffee and leaves his patrol sheet on the counter.
+	if (Spined() && S.bArrived && InDiner() && Host && Host->Clock() >= 5 * 3600. + 15 * 60 && !PatrolRead())
+	{
+		FS47Doc D; D.Id = TEXT("sc12_patrol"); D.Title = TEXT("The deputy's patrol sheet"); D.Kind = TEXT("typed"); D.Stamp = TEXT("PATROL / 14 APR");
+		D.Page = TEXT("PATROL SHEET / 14 APR 1986\n\n04:30  OLD ROAD NORTH TO MILE 11 ...... CLEAR\n       SURVEY BOLT AT 8.15 STILL IN THE ROAD\n       COURIER POINT MILE 10.4\n\n(He says: \"Road's open north. I drove it at four-thirty. Nothing on it but a bolt the county keeps meaning to pull.\")");
+		D.Transcript = TEXT("The deputy's patrol sheet from the diner counter: the old road north clear to mile 11 at 04:30, the survey bolt at 8.15 still in the road, the courier point at mile 10.4.");
+		File(D);
+		Toast(TEXT("05:15. The deputy comes in, nods to the waitress and leaves his patrol sheet on the counter while she pours."), 5);
+		Note(FString::Printf(TEXT("%s. The deputy's patrol sheet: the old road clear to mile 11 at 04:30, the bolt at 8.15 still in the road, the courier point at mile 10.4."), *Time()));
 		Save();
 	}
 	// the grey comes up in the east while the player is in the diner

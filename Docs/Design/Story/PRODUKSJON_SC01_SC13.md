@@ -22,8 +22,8 @@ Pakkescener (SC01 til SC03) ligger i `unreal/Narrative/HorrorStory/modules/unifi
 | SC09 | 04:25-04:45 | Stasjonshendelsen og Tomás rettet (30.10); Noras samtale gjenstår | Claude |
 | SC10 | 04:50-05:00 | Ny sluttreplikk og SARO som neste mål (30.10) | - |
 | SC11 | 05:00-05:10 | Ferdig (PR250) | - |
-| SC12 | 05:12-05:20 | Gammel kode, sheriff og patruljeark mangler | Claude |
-| SC13 | 05:20-05:29:47 | Ferdig i grunnen, mål og tekster gamle | Claude |
+| SC12 | 05:12-05:20 | Ward påkrevd med tre kilder, sheriff 05:15 med patruljeark, avreisekontroll (30.10); E14-kurermerke gjenstår | - |
+| SC13 | 05:20-05:29:47 | Mål og oppgave mot kureren 10.4 (30.10); skilt og ekko venter | - |
 
 ---
 
