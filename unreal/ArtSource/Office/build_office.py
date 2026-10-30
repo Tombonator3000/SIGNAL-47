@@ -236,7 +236,12 @@ for ix in range(6):
         box('Individual_linoleum_tile',(x,.002,z),(.447,.008,.467),TILE,.001)
 box('West_painted_lining',(-.88,1.39,8.49),(.10,2.78,3.76),WALL,.002)
 box('East_painted_lining',(1.83,1.39,8.49),(.10,2.78,3.76),WALL,.002)
-box('Rear_painted_lining',(.47,1.39,10.37),(2.8,2.78,.10),WALL,.002)
+# Real rear window, not a blind attached to an opaque wall. The native helper
+# opens the original Annex paint/concrete behind this lining at the same X/Y.
+box('Rear_lining_left',(-.74,1.39,10.37),(.38,2.78,.10),WALL,.002)
+box('Rear_lining_right',(1.585,1.39,10.37),(.57,2.78,.10),WALL,.002)
+box('Rear_lining_below_window',(.375,.54,10.37),(1.85,1.08,.10),WALL,.002)
+box('Rear_lining_above_window',(.375,2.59,10.37),(1.85,.38,.10),WALL,.002)
 for x in (-.80,1.75):
     box('Baseboard',(x,.075,8.49),(.035,.15,3.70),WOOD,.004)
     box('Picture_rail',(x,2.31,8.49),(.029,.035,3.68),TRIM,.003)
@@ -303,36 +308,39 @@ finish('SM_Office_Chair')
 for y in (1.10,1.63,2.16):
     box('West_wall_book_shelf',(-.64,y,9.0),(.35,.035,1.42),WOOD,.007)
     for z in (8.44,9.56):box('Shelf_bracket',(-.75,y-.10,z),(.18,.20,.021),STEEL,.003)
-for i in range(15):
-    z=8.37+i*.086+(-.004,.003,0,.006,-.003)[i%5]
-    h=(.27,.31,.285,.335,.26,.30)[i%6]
-    thickness=(.052,.066,.071,.059,.076)[i%5]
-    first=len(CURRENT)
-    box('Service_binder',(-.60,1.12+h/2,z),(.28,h,thickness),(BLUE,OLIVE,RED,GRAY,BLUE,TAN)[i%6],.004)
-    box('Binder_spine_label',(-.449,1.22+h*.2,z),(.004,.095,.039),PAPER,.001)
-    cyl('Binder_finger_ring',(-.447,1.175,z),(-.444,1.175,z),.009,BRASS,16)
-    # Lean small groups about the actual shelf contact, including their labels.
-    pivot=xyz((-.60,1.12,z));angle=(-.035,.025,0,-.018,.035)[i%5]
-    lean=Matrix.Translation(pivot)@Matrix.Rotation(angle,4,'X')@Matrix.Translation(-pivot)
-    for component in CURRENT[first:]:component.matrix_world=lean@component.matrix_world
+# Shelf contents are individual original PBR models in Config/Props/dale-office.json.
+# Keep the shelf boards/supports here; retire the repeated procedural binder run.
 box('Archive_storage_box',(-.63,1.78,8.56),(.29,.26,.46),PAPER,.006)
 box('Archive_box_lid',(-.63,1.925,8.56),(.315,.035,.48),CORK,.004)
-box('Private_folder_stack',(-.63,2.205,8.73),(.27,.055,.48),CORK,.004)
+# Original Old West book stacks now occupy this upper shelf in the native layout.
 # Physical research wall and incoming folders. Finished art is bound natively,
 # just like the six independent live desk papers; blank bodies are not art acceptance.
 sys.path.insert(0,str(ROOT))
 import research_dressing
 research_dressing.build(box,cyl,curve,MATS)
-import shelf_dressing
-(ROOT/'shelf-dressing.json').write_text(json.dumps(shelf_dressing.build(box,MATS),indent=2)+'\n')
-# Rear blind over existing opaque lining: a credible interior glazed panel, no fake exterior view.
-box('Glazed_panel_frame',(.47,1.83,10.298),(1.37,.94,.07),TRIM,.009)
-box('Glazed_panel_dark_back',(.47,1.83,10.254),(1.25,.83,.020),DARK,.004)
-for i in range(19):
-    sl=box('Venetian_blind_slat',(.47,1.44+i*.042,10.225),(1.23,.032,.045),TRIM,.002);sl.rotation_euler.x=-.25
-for x in (.03,.91):cyl('Blind_ladder_cord',(x,1.41,10.195),(x,2.23,10.195),.0025,PAPER,12)
-cyl('Blind_pull_cord',(1.12,1.40,10.21),(1.12,2.25,10.21),.002,DARK,12)
-box('Blind_head_rail',(.47,2.275,10.24),(1.34,.065,.085),TRIM,.005)
+# shelf_dressing.py/shelf-dressing.json are retained source history. Their old
+# Shelf_* solids are replaced by individually placed native paper/file models.
+# The rough opening is X[-.55,1.30], height[1.08,2.40]. Deep jambs bridge the
+# inner lining at Z10.32 to the original exterior at Z10.80. No opaque back or
+# exported fake-lit pane: S47OfficeWindow supplies a passive translucent pane.
+for x in (-.568,1.318):
+    box('Window_deep_side_reveal',(x,1.74,10.56),(.036,1.32,.50),TRIM,.002)
+    box('Window_inner_side_architrave',(x,1.74,10.292),(.065,1.39,.035),TRIM,.003)
+    box('Window_outer_side_frame',(x,1.74,10.802),(.055,1.39,.035),TRIM,.003)
+box('Window_deep_head',(.375,2.418,10.56),(1.922,.036,.50),TRIM,.002)
+box('Window_sill',(.375,1.06,10.55),(1.98,.04,.56),TRIM,.004)
+box('Window_inner_head_architrave',(.375,2.422,10.292),(1.99,.065,.035),TRIM,.003)
+box('Window_outer_head_frame',(.375,2.422,10.802),(1.99,.055,.035),TRIM,.003)
+# Painted 0.9mm metal slats, 25mm chord. Partly raised and tilted 28 degrees:
+# the lower .39m stays open, while separated thin slats filter the upper light.
+for i in range(35):
+    sl=box('Venetian_blind_thin_slat',(.375,1.49+i*.025,10.267),(1.79,.0009,.025),TRIM,.00015)
+    sl.rotation_euler.x=-math.radians(28)
+for x in (-.17,.92):
+    cyl('Blind_ladder_cord',(x,1.475,10.253),(x,2.39,10.253),.0008,PAPER,12)
+cyl('Blind_pull_cord',(1.264,1.45,10.25),(1.264,2.39,10.25),.001,DARK,12)
+box('Blind_bottom_rail',(.375,1.475,10.267),(1.80,.012,.025),TRIM,.002)
+box('Blind_head_rail',(.375,2.388,10.263),(1.91,.036,.055),TRIM,.004)
 # Water radiator under noticeboard.
 for i in range(10):box('Radiator_section',(1.66,.43,8.53+i*.043),(.12,.49,.032),TRIM,.012)
 for y in (.23,.64):cyl('Radiator_header',(1.66,y,8.50),(1.66,y,8.97),.022,TRIM)
@@ -340,10 +348,22 @@ for y in (.23,.64):cyl('Radiator_header',(1.66,y,8.50),(1.66,y,8.97),.022,TRIM)
 cyl('Coffee_mug_body',(.91,.804,9.97),(.91,.895,9.97),.039,TRIM,32)
 cyl('Coffee_dark_surface',(.91,.897,9.97),(.91,.899,9.97),.032,DARK,32)
 torus('Coffee_mug_handle',(.957,.853,9.97),.030,.006,TRIM,axis='Z')
-for x,z in ((.65,9.98),(.70,10.01)):
+for x,z in ((.70,10.02),(.75,10.05)):
     cyl('Pencil_in_pot',(x,.80,z),(x+.018,.995,z+.01),.004,WOOD,8)
-cyl('Pencil_cup',(.67,.803,10.0),(.67,.88,10.0),.033,STEEL,24)
+cyl('Pencil_cup',(.72,.803,10.04),(.72,.88,10.04),.033,STEEL,24)
 box('Desk_blotter',(.32,.802,9.69),(.64,.003,.45),CLOTH,.006)
+# The lamp cable drops behind the desk, with a little slack at the skirting.
+# Its actual outlet is on the rear lining, clear of the new window opening.
+box('Rear_outlet_plate',(-.38,.28,10.310),(.070,.115,.006),TRIM,.004)
+for y in (.257,.300):
+    for x in (-.395,-.380):
+        box('Outlet_contact_slot',(x,y,10.305),(.003,.014,.0015),DARK,.0004)
+box('Lamp_power_plug',(-.38,.28,10.285),(.024,.029,.033),DARK,.004)
+curve('Desk_lamp_power_cable',[
+    (-.24,.802,9.77),(-.33,.803,9.91),(-.39,.802,10.08),
+    (-.42,.76,10.18),(-.43,.40,10.20),(-.43,.10,10.23),
+    (-.42,.035,10.20),(-.30,.035,10.21),(-.30,.06,10.25),
+    (-.38,.267,10.268)],.0022,DARK)
 # VHS stand modeled as open steel trolley, casters and shelves instead of solid cube.
 for x in (-.70,-.24):
     for z in (7.50,8.0):

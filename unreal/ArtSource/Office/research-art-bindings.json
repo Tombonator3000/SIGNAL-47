@@ -10,6 +10,7 @@
         1600,
         1152
       ],
+      "original_project_art": "existing actual 27-position map",
       "sha256": "9c8f4aca6f337b1cd4015edf50d56f5e92f0c86b9691faf7e57abee4e3787a6b"
     },
     {
@@ -19,7 +20,88 @@
         1254,
         1254
       ],
+      "original_project_art": "approved ordinary site-photo atlas",
       "sha256": "ba9dc99293c08d8c7c3afe08013cfc5133d3e6c8c26f2d3dc483aad1e56d913f"
+    },
+    {
+      "name": "T_OfficeResearch_Handover",
+      "source": "textures/research_reference_handover.jpg",
+      "size": [
+        1086,
+        1448
+      ],
+      "original_project_art": "dokumenter/2026-10-26/jpg/02-ev-handover.jpg",
+      "sha256": "c83bbf65d2dc06f62ba9a306af856b1230c5088194430d74687685fec26af28c"
+    },
+    {
+      "name": "T_OfficeResearch_ServiceLog",
+      "source": "textures/research_reference_service_log.jpg",
+      "size": [
+        1086,
+        1448
+      ],
+      "original_project_art": "dokumenter/2026-10-26/jpg/03-ev-service-log.jpg",
+      "sha256": "8756f25d87656cd0b04b82f19d0d3ac76a80750bc6a322ee57d559e0c131a26d"
+    },
+    {
+      "name": "T_OfficeResearch_RadioSchedule",
+      "source": "textures/research_reference_radio_schedule.jpg",
+      "size": [
+        1086,
+        1448
+      ],
+      "original_project_art": "dokumenter/2026-10-26/jpg/04-ev-radio-schedule.jpg",
+      "sha256": "897e5d6cd19a38fe2623a6ad581f095e41d1d6e4a05d98edb3927fd396cdd702"
+    },
+    {
+      "name": "T_OfficeResearch_SkyLog",
+      "source": "textures/research_reference_skylog.jpg",
+      "size": [
+        1086,
+        1448
+      ],
+      "original_project_art": "dokumenter/2026-10-26/jpg/09-ev-dale-skylog.jpg",
+      "sha256": "e108fb998ae4406e2371344cc8bfa6b59f258c087e4c6fd32f023f6b0184f254"
+    },
+    {
+      "name": "T_OfficeResearch_SkyWatch",
+      "source": "textures/research_reference_sky_watch.jpg",
+      "size": [
+        1086,
+        1448
+      ],
+      "original_project_art": "dokumenter/2026-10-26/jpg/31-sky-watch-flyer-1984.jpg",
+      "sha256": "faa08feda94390f41be2959abe6b7e8529ed24327bb66ad9781b6691a89b2612"
+    },
+    {
+      "name": "T_OfficeResearch_RadioQuiet",
+      "source": "textures/research_reference_radio_quiet.jpg",
+      "size": [
+        1536,
+        1024
+      ],
+      "original_project_art": "miljografikk/2026-10-26/jpg/37-saro-radio-quiet.jpg",
+      "sha256": "54a8cb4f73d9b626bbcbf653af9cd25c1fbe7c8aefb3370279d72ae03c351fd7"
+    },
+    {
+      "name": "T_OfficeResearch_MaintenanceTag",
+      "source": "textures/research_reference_maintenance_tag.jpg",
+      "size": [
+        1024,
+        1536
+      ],
+      "original_project_art": "miljografikk/2026-10-26/jpg/40-maintenance-tag.jpg",
+      "sha256": "9a3b1a52208f1e026355d3f55237d1c5ad790cbf40affe6ad10ed9dc14f66f1b"
+    },
+    {
+      "name": "T_OfficeResearch_ServiceRequest",
+      "source": "textures/research_reference_service_request.jpg",
+      "size": [
+        1024,
+        1536
+      ],
+      "original_project_art": "miljografikk/2026-10-26/jpg/42-service-form.jpg",
+      "sha256": "ab7c9fe3087b55af9800614ba0d8fc013b125347396aea647aefcfbdf8e3af4f"
     }
   ],
   "surfaces": [
@@ -408,6 +490,823 @@
         0,
         1,
         0.875
+      ]
+    },
+    {
+      "name": "office:research:SkyWatchFlyer",
+      "component": "Research_sheet_SkyWatchFlyer",
+      "art_asset": "T_OfficeResearch_SkyWatchFlyer",
+      "centre": [
+        1.6612,
+        2.205,
+        8.92
+      ],
+      "body_centre": [
+        1.662,
+        2.205,
+        8.92
+      ],
+      "width_m": 0.27,
+      "height_m": 0.36,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.03489949670250097,
+        0.9993908270190958
+      ],
+      "up_axis": [
+        0,
+        0.9993908270190958,
+        -0.03489949670250097
+      ],
+      "roll_degrees": 2.0,
+      "kind": "1984 community sky-watch flyer",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_SkyWatch.T_OfficeResearch_SkyWatch",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:SkyLogLower",
+      "component": "Research_sheet_SkyLogLower",
+      "art_asset": "T_OfficeResearch_SkyLogLower",
+      "centre": [
+        1.6602000000000001,
+        1.27,
+        8.77
+      ],
+      "body_centre": [
+        1.661,
+        1.27,
+        8.77
+      ],
+      "width_m": 0.23,
+      "height_m": 0.28,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.04187565372919962,
+        0.9991228300988584
+      ],
+      "up_axis": [
+        0,
+        0.9991228300988584,
+        0.04187565372919962
+      ],
+      "roll_degrees": -2.4,
+      "kind": "existing sky observation note",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_SkyLog.T_OfficeResearch_SkyLog",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:ServiceLogLower",
+      "component": "Research_sheet_ServiceLogLower",
+      "art_asset": "T_OfficeResearch_ServiceLogLower",
+      "centre": [
+        1.6612,
+        1.31,
+        9.39
+      ],
+      "body_centre": [
+        1.662,
+        1.31,
+        9.39
+      ],
+      "width_m": 0.23,
+      "height_m": 0.33,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.03141075907812829,
+        0.9995065603657316
+      ],
+      "up_axis": [
+        0,
+        0.9995065603657316,
+        -0.03141075907812829
+      ],
+      "roll_degrees": 1.8,
+      "kind": "1986 local service copy",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_ServiceLog.T_OfficeResearch_ServiceLog",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:RadioSchedule",
+      "component": "Research_sheet_RadioSchedule",
+      "art_asset": "T_OfficeResearch_RadioSchedule",
+      "centre": [
+        1.6612,
+        1.81,
+        8.33
+      ],
+      "body_centre": [
+        1.662,
+        1.81,
+        8.33
+      ],
+      "width_m": 0.25,
+      "height_m": 0.33,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        0.052335956242943835
+      ],
+      "roll_degrees": -3.0,
+      "kind": "1986 public radio schedule",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_RadioSchedule.T_OfficeResearch_RadioSchedule",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:HandoverCopy",
+      "component": "Research_sheet_HandoverCopy",
+      "art_asset": "T_OfficeResearch_HandoverCopy",
+      "centre": [
+        1.6612,
+        2.13,
+        8.25
+      ],
+      "body_centre": [
+        1.662,
+        2.13,
+        8.25
+      ],
+      "width_m": 0.16,
+      "height_m": 0.23,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.06104853953485687,
+        0.9981347984218669
+      ],
+      "up_axis": [
+        0,
+        0.9981347984218669,
+        -0.06104853953485687
+      ],
+      "roll_degrees": 3.5,
+      "kind": "1986 operations handover",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Handover.T_OfficeResearch_Handover",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:RadioQuietStrip",
+      "component": "Research_sheet_RadioQuietStrip",
+      "art_asset": "T_OfficeResearch_RadioQuietStrip",
+      "centre": [
+        1.6612,
+        2.315,
+        9.65
+      ],
+      "body_centre": [
+        1.662,
+        2.315,
+        9.65
+      ],
+      "width_m": 0.46,
+      "height_m": 0.15,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.01745240643728351,
+        0.9998476951563913
+      ],
+      "up_axis": [
+        0,
+        0.9998476951563913,
+        0.01745240643728351
+      ],
+      "roll_degrees": -1.0,
+      "kind": "reference sign print",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_RadioQuiet.T_OfficeResearch_RadioQuiet",
+      "image_crop": [
+        0,
+        0.04,
+        1,
+        0.52
+      ]
+    },
+    {
+      "name": "office:research:MaintenanceTag",
+      "component": "Research_sheet_MaintenanceTag",
+      "art_asset": "T_OfficeResearch_MaintenanceTag",
+      "centre": [
+        1.6462,
+        1.46,
+        9.88
+      ],
+      "body_centre": [
+        1.647,
+        1.46,
+        9.88
+      ],
+      "width_m": 0.16,
+      "height_m": 0.24,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.0697564737441253,
+        0.9975640502598242
+      ],
+      "up_axis": [
+        0,
+        0.9975640502598242,
+        0.0697564737441253
+      ],
+      "roll_degrees": -4.0,
+      "kind": "unfilled maintenance tag",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_MaintenanceTag.T_OfficeResearch_MaintenanceTag",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:ServiceRequest",
+      "component": "Research_sheet_ServiceRequest",
+      "art_asset": "T_OfficeResearch_ServiceRequest",
+      "centre": [
+        1.6612,
+        1.7,
+        10.035
+      ],
+      "body_centre": [
+        1.662,
+        1.7,
+        10.035
+      ],
+      "width_m": 0.2,
+      "height_m": 0.31,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        -0.052335956242943835
+      ],
+      "roll_degrees": 3.0,
+      "kind": "blank service request",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_ServiceRequest.T_OfficeResearch_ServiceRequest",
+      "image_crop": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "office:research:ReceiverPhoto",
+      "component": "Research_sheet_ReceiverPhoto",
+      "art_asset": "T_OfficeResearch_ReceiverPhoto",
+      "centre": [
+        1.6482,
+        1.91,
+        9.84
+      ],
+      "body_centre": [
+        1.649,
+        1.91,
+        9.84
+      ],
+      "width_m": 0.28,
+      "height_m": 0.2,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        0.052335956242943835
+      ],
+      "roll_degrees": -3.0,
+      "kind": "ordinary receiver reference photo",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0.515,
+        0.025,
+        0.985,
+        0.475
+      ]
+    },
+    {
+      "name": "office:research:ArrayReversePhoto",
+      "component": "Research_sheet_ArrayReversePhoto",
+      "art_asset": "T_OfficeResearch_ArrayReversePhoto",
+      "centre": [
+        1.6482,
+        1.94,
+        8.63
+      ],
+      "body_centre": [
+        1.649,
+        1.94,
+        8.63
+      ],
+      "width_m": 0.28,
+      "height_m": 0.2,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.0697564737441253,
+        0.9975640502598242
+      ],
+      "up_axis": [
+        0,
+        0.9975640502598242,
+        -0.0697564737441253
+      ],
+      "roll_degrees": 4.0,
+      "kind": "ordinary dish reference photo",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0.515,
+        0.515,
+        0.985,
+        0.985
+      ]
+    },
+    {
+      "name": "office:research:RoadPhotoLower",
+      "component": "Research_sheet_RoadPhotoLower",
+      "art_asset": "T_OfficeResearch_RoadPhotoLower",
+      "centre": [
+        1.6482,
+        1.415,
+        8.23
+      ],
+      "body_centre": [
+        1.649,
+        1.415,
+        8.23
+      ],
+      "width_m": 0.15,
+      "height_m": 0.15,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.08715574274765817,
+        0.9961946980917455
+      ],
+      "up_axis": [
+        0,
+        0.9961946980917455,
+        0.08715574274765817
+      ],
+      "roll_degrees": -5.0,
+      "kind": "ordinary service road print",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0.025,
+        0.515,
+        0.485,
+        0.985
+      ]
+    },
+    {
+      "name": "office:research:DishPhotoHeader",
+      "component": "Research_sheet_DishPhotoHeader",
+      "art_asset": "T_OfficeResearch_DishPhotoHeader",
+      "centre": [
+        1.6482,
+        2.315,
+        9.25
+      ],
+      "body_centre": [
+        1.649,
+        2.315,
+        9.25
+      ],
+      "width_m": 0.24,
+      "height_m": 0.15,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        -0.052335956242943835
+      ],
+      "roll_degrees": 3.0,
+      "kind": "ordinary array contact print",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Photos.T_OfficeResearch_Photos",
+      "image_crop": [
+        0.025,
+        0.04,
+        0.485,
+        0.34
+      ]
+    },
+    {
+      "name": "office:research:IndexSlip",
+      "component": "Research_sheet_IndexSlip",
+      "art_asset": "T_OfficeResearch_IndexSlip",
+      "centre": [
+        1.6472,
+        1.45,
+        9.14
+      ],
+      "body_centre": [
+        1.648,
+        1.45,
+        9.14
+      ],
+      "width_m": 0.2,
+      "height_m": 0.11,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        0.052335956242943835
+      ],
+      "roll_degrees": -3.0,
+      "kind": "existing working-index fragment",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleIndex.T_Doc_DaleIndex",
+      "image_crop": [
+        0.08,
+        0.12,
+        0.92,
+        0.58
+      ]
+    },
+    {
+      "name": "office:research:ClippingsStrip",
+      "component": "Research_sheet_ClippingsStrip",
+      "art_asset": "T_OfficeResearch_ClippingsStrip",
+      "centre": [
+        1.6482,
+        2.3,
+        8.51
+      ],
+      "body_centre": [
+        1.649,
+        2.3,
+        8.51
+      ],
+      "width_m": 0.34,
+      "height_m": 0.13,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.03489949670250097,
+        0.9993908270190958
+      ],
+      "up_axis": [
+        0,
+        0.9993908270190958,
+        0.03489949670250097
+      ],
+      "roll_degrees": -2.0,
+      "kind": "existing newspaper heading fragment",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleClippings.T_Doc_DaleClippings",
+      "image_crop": [
+        0.02,
+        0.02,
+        0.97,
+        0.28
+      ]
+    },
+    {
+      "name": "office:research:ScheduleRows",
+      "component": "Research_sheet_ScheduleRows",
+      "art_asset": "T_OfficeResearch_ScheduleRows",
+      "centre": [
+        1.6452,
+        2.11,
+        9.38
+      ],
+      "body_centre": [
+        1.646,
+        2.11,
+        9.38
+      ],
+      "width_m": 0.22,
+      "height_m": 0.17,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.03489949670250097,
+        0.9993908270190958
+      ],
+      "up_axis": [
+        0,
+        0.9993908270190958,
+        -0.03489949670250097
+      ],
+      "roll_degrees": 2.0,
+      "kind": "ordinary schedule working copy",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_RadioSchedule.T_OfficeResearch_RadioSchedule",
+      "image_crop": [
+        0.06,
+        0.33,
+        0.94,
+        0.85
+      ]
+    },
+    {
+      "name": "office:research:SkySketch",
+      "component": "Research_sheet_SkySketch",
+      "art_asset": "T_OfficeResearch_SkySketch",
+      "centre": [
+        1.6462,
+        1.48,
+        8.66
+      ],
+      "body_centre": [
+        1.647,
+        1.48,
+        8.66
+      ],
+      "width_m": 0.24,
+      "height_m": 0.16,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.052335956242943835,
+        0.9986295347545738
+      ],
+      "up_axis": [
+        0,
+        0.9986295347545738,
+        -0.052335956242943835
+      ],
+      "roll_degrees": 3.0,
+      "kind": "existing skylog pencil sketch",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_SkyLog.T_OfficeResearch_SkyLog",
+      "image_crop": [
+        0.035,
+        0.61,
+        0.965,
+        0.985
+      ]
+    },
+    {
+      "name": "office:research:MapDetailLeft",
+      "component": "Research_sheet_MapDetailLeft",
+      "art_asset": "T_OfficeResearch_MapDetailLeft",
+      "centre": [
+        1.6462,
+        1.78,
+        8.54
+      ],
+      "body_centre": [
+        1.647,
+        1.78,
+        8.54
+      ],
+      "width_m": 0.2,
+      "height_m": 0.15,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.03489949670250097,
+        0.9993908270190958
+      ],
+      "up_axis": [
+        0,
+        0.9993908270190958,
+        -0.03489949670250097
+      ],
+      "roll_degrees": 2.0,
+      "kind": "existing array-map detail",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_Map.T_OfficeResearch_Map",
+      "image_crop": [
+        0.06,
+        0.19,
+        0.66,
+        0.72
+      ]
+    },
+    {
+      "name": "office:research:ServiceLogMargin",
+      "component": "Research_sheet_ServiceLogMargin",
+      "art_asset": "T_OfficeResearch_ServiceLogMargin",
+      "centre": [
+        1.6452,
+        1.96,
+        10.03
+      ],
+      "body_centre": [
+        1.646,
+        1.96,
+        10.03
+      ],
+      "width_m": 0.18,
+      "height_m": 0.13,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        -0.0697564737441253,
+        0.9975640502598242
+      ],
+      "up_axis": [
+        0,
+        0.9975640502598242,
+        0.0697564737441253
+      ],
+      "roll_degrees": -4.0,
+      "kind": "ordinary service-log excerpt",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Office/Reference/T_OfficeResearch_ServiceLog.T_OfficeResearch_ServiceLog",
+      "image_crop": [
+        0.06,
+        0.3,
+        0.95,
+        0.72
+      ]
+    },
+    {
+      "name": "office:research:NotePencilFragment",
+      "component": "Research_sheet_NotePencilFragment",
+      "art_asset": "T_OfficeResearch_NotePencilFragment",
+      "centre": [
+        1.6462,
+        1.2,
+        9.55
+      ],
+      "body_centre": [
+        1.647,
+        1.2,
+        9.55
+      ],
+      "width_m": 0.18,
+      "height_m": 0.11,
+      "depth_m": 0.0006,
+      "normal_axis": [
+        -1,
+        0,
+        0
+      ],
+      "right_axis": [
+        0,
+        0.03489949670250097,
+        0.9993908270190958
+      ],
+      "up_axis": [
+        0,
+        0.9993908270190958,
+        -0.03489949670250097
+      ],
+      "roll_degrees": 2.0,
+      "kind": "existing handwritten note fragment",
+      "requires_finished_art": true,
+      "texture_asset": "/Game/Signal47/Art/Documents/T_Doc_DaleNote.T_Doc_DaleNote",
+      "image_crop": [
+        0.07,
+        0.22,
+        0.93,
+        0.69
       ]
     }
   ],

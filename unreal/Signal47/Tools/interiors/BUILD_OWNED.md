@@ -27,3 +27,26 @@ Private resultater: `Export/*.fbx`, fire teksturer per objekt, `materials.json`,
 **Native avhengighet:** Atlasmaterialet trenger `textures.metallic`. Eksisterende `fieldintegration/import_recipe.py` støtter bare metallandel som konstant. Native import må eksplisitt støtte dette teksturkallet før disse materialradene brukes; ellers blir kabelens plast og krom feil. `required_native_features` oppgir kravet i begge kontraktene. Normalstyrke er satt til 1 for den ekte bakeresultatet, med DirectX-normal og ingen grønnkanalvending. Native import og spillaksept er separate, gjenstående steg.
 
 Prinsippene for append og pivot kommer fra prosjektets historiske `web/src/assets/licensed/tools/build_models.py`. Den gamle web-oppskriftens diffuse/AO-baking, metallandel 0 og forenklede GLB-er gjenbrukes ikke som produksjonsresultat.
+
+
+## Dales modellrevisjon,30. oktober
+
+Det faktiske kontoret settes sammen i `S47Office.cpp`, med enkeltrekvisitter i
+`Config/Props/dale-office.json`. Sistnevnte bruker Three-koordinater i meter,
+høyde i Y og `yaw`, `pitch`, `roll` i grader. Lampelys følger SAROs strømtilstand.
+`S47OfficeWindow.cpp` åpner bare de målte bakveggsflatene; Blender-karmen og
+persiennene følger samme åpning. `Tools/office/prepare_cpu.py` bevarer nødvendige
+kildedata til den pakkede vindusåpningen.
+
+Pult og lampe er eksisterende native `retro_office_props` med deres PBR-kart.
+Stolen er generert fra egen bildereferanse i Tripo, retopologisert til18073
+triangler og eksportert med fire PBR-kart. `prepare_dale_prop.py -- chair` lager
+metrisk FBX og2K-kart fra den private eksporten; `import_dale_prop.py` bruker
+prosjektets eksisterende importoppskrift og lager tre LOD-er. Manglende privat
+stolpakke faller tilbake til den eksisterende native kontorstolen.
+
+Bokgruppene bruker originale Old West Learning `SM_Books_NN_01a/b/e/i`, med
+opprinnelige materialer og avhengigheter under `/Game/Northwood`.
+Private stol- og bokfiler ligger i `~/Assets/signal47-native/`, utenfor Git.
+Ingen separat API, kjøp eller kredittpåfylling brukes. De seks lesearkene
+beholder sine egne interaksjons- og dokument-ID-er.

@@ -1,10 +1,12 @@
-"""Behold CPU-data for seks eksisterende kontormesher, uten ny geometriimport."""
+"""Behold CPU-data for sju eksisterende kontormesher, uten ny geometriimport."""
 import json
 from pathlib import Path
 
 import unreal
 
-EXPECTED = {341: 20, 342: 52, 346: 48, 349: 24, 351: 36, 352: 2}
+# g313 contains the outer Annex rear wall. The Office window clips only its
+# two rear-facing planes; all other original triangles remain unchanged.
+EXPECTED = {313: 96, 341: 20, 342: 52, 346: 48, 349: 24, 351: 36, 352: 2}
 
 
 def signature(mesh):

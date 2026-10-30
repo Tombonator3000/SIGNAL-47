@@ -24,8 +24,8 @@
     },
     {
       "mesh": "SM_Office_Room",
-      "triangles": 94884,
-      "components": 520
+      "triangles": 95448,
+      "components": 523
     },
     {
       "mesh": "SM_Office_Desk",
@@ -39,8 +39,8 @@
     },
     {
       "mesh": "SM_Office_Dressing",
-      "triangles": 32012,
-      "components": 291
+      "triangles": 31664,
+      "components": 213
     }
   ]
 }

@@ -6,6 +6,7 @@
 #include "S47SaroInterior.h"
 #include "S47SaroDoorDetail.h"
 #include "S47OfficeOwned.h"
+#include "S47OfficeWindow.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -20,6 +21,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/PackageName.h"
 #include "StaticMeshResources.h"
 #include "RenderUtils.h"
 
@@ -144,7 +146,11 @@ namespace
    for (uint32 Vertex = 0; Vertex < Colors; ++Vertex) Dst.VertexBuffers.ColorVertexBuffer.VertexColor(Vertex) = Buffers.ColorVertexBuffer.VertexColor(Vertex);
   }
   Dst.bHasColorVertexData = Colors > 0; Dst.bBuffersInlined = true; Dst.bIsOptionalLOD = false;
-  Dst.SourceMeshBounds = Data->Bounds; Dst.MaxDeviation = 0; Dst.IndexBuffer.SetIndices(Keep, EIndexBufferStride::Force32Bit);
+  Dst.SourceMeshBounds = Data->Bounds; Dst.MaxDeviation = 0;
+  // The window clips this transient portal mesh next. Retain its actual index
+  // array after RHI upload in cooked builds, as well as the asset-level flag.
+  Dst.IndexBuffer.TrySetAllowCPUAccess(true);
+  Dst.IndexBuffer.SetIndices(Keep, EIndexBufferStride::Force32Bit);
   bool bInitRayTracing = Cut->bSupportRayTracing;
 #if !WITH_EDITOR
   bInitRayTracing = bInitRayTracing && IsRayTracingAllowed();
@@ -164,7 +170,7 @@ struct FS47Office::FVisual
  TMap<FString, FS47Obj> Objects;
  TArray<TPair<FS47Obj, FVector>> DrawerParts;
  TArray<FS47Obj> KeyParts;
- TWeakObjectPtr<URectLightComponent> Light;
+ TWeakObjectPtr<URectLightComponent> Light, TaskLight, DeskBounce;
  bool bRecoverLegacyPose = false;
  bool bMigrationFailed = false;
  bool bOwnedPreparing = false, bOwnedFootprint = false;
@@ -188,8 +194,13 @@ void FS47Office::Init()
  UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
  UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
  auto Authored = [](const TCHAR* Name) { return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Game/Signal47/Art/Office/%s.%s"), Name, Name)); };
- UStaticMesh* Desk = Authored(TEXT("SM_Office_Desk"));
- UStaticMesh* Chair = Authored(TEXT("SM_Office_Chair"));
+ // Unreal art revision: use the existing authored PBR furniture instead of
+ // another layer of details over the simple procedural desk and chair.
+ UStaticMesh* Desk = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Free/Office/retro_office_props/StaticMeshes/retro_office_props_PI_TankerDesk.retro_office_props_PI_TankerDesk"));
+ const TCHAR* ChairPackage = TEXT("/Game/Licensed/DaleRealism/SM_Dale_Chair_H31");
+ UStaticMesh* Chair = FPackageName::DoesPackageExist(ChairPackage)
+  ? LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Licensed/DaleRealism/SM_Dale_Chair_H31.SM_Dale_Chair_H31"))
+  : LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Free/Office/retro_office_props/StaticMeshes/retro_office_props_PI_OfficeChair.retro_office_props_PI_OfficeChair"));
  UStaticMesh* Room = Authored(TEXT("SM_Office_Room"));
  UStaticMesh* Dressing = Authored(TEXT("SM_Office_Dressing"));
  UStaticMesh* Door = Authored(TEXT("SM_Office_Door"));
@@ -298,28 +309,34 @@ void FS47Office::Init()
  FS47Obj KeyTag = Box(TEXT("office:keyTagPaper"), FVector(-.513, .8086, 6.215 + FrontOffset), FVector(.053, .001, .025), Paper);
  Visual->DrawerParts.Add({KeyTag, KeyTag.Position()}); Visual->KeyParts.Add(KeyTag);
  Label(TEXT("office:drawerLabel"), TEXT("SERVICE / SPARE"), FVector(-.59, 1.14, 6.565 + FrontOffset), -90, 3.f);
- // Blender furniture has rolled steel edges, individual drawer fronts, hardware,
- // five casters and upholstery. Paper objects keep their existing interaction IDs.
- Mesh(TEXT("office:desk"), Desk, FVector(.37, 0, 9.73), FVector::OneVector, nullptr);
- Mesh(TEXT("office:chair"), Chair, FVector(1.19, 0, 8.73), FVector::OneVector, nullptr, .37);
+ // The native desk's measured top is .790m. A 10mm height offset retains the
+ // existing .800m work surface and all six independent document/use anchors.
+ Mesh(TEXT("office:desk"), Desk, FVector(.37, .01, 9.73), FVector::OneVector, nullptr, PI);
+ const FS47Obj ChairObj = Mesh(TEXT("office:chair"), Chair, FVector(1.15, 0, 8.73), FVector::OneVector, nullptr, .37);
  Mesh(TEXT("office:deskLamp"), Lamp, FVector(-.24, .79, 9.70), FVector::OneVector, nullptr);
- Collider(TEXT("office:deskFoot"), -.47, 1.21, 9.31, 10.16); Collider(TEXT("office:chairFoot"), .94, 1.55, 8.47, 9.02);
+ Collider(TEXT("office:deskFoot"), -.47, 1.21, 9.31, 10.16);
+ // Both chair candidates are authored at metre scale. Walking follows the
+ // actual rotated native envelope, including armrests and the caster base.
+ const FBox ChairBounds = ChairObj.WorldBox();
+ if (ChairBounds.IsValid)
+  Collider(TEXT("office:chairFoot"), ChairBounds.Min.X, ChairBounds.Max.X, ChairBounds.Min.Z, ChairBounds.Max.Z);
  // ART-01: a paper with finished art takes the art's proportions around its centre. The
  // larger sheets moved back onto the desktop (front edge Three z 9.31); the note now lies
  // beside the cup instead of over the index, so neither printed face is hidden.
  TMap<FString, UTexture2D*> ArtTextures; TMap<FString, FVector2D> ArtSizes; TMap<FString, FVector> PaperTops;
  for (const FDocumentArt& Art : DocumentArt) if (UTexture2D* Tex = DocumentTexture(Art.Asset)) { ArtTextures.Add(Art.Object, Tex); ArtSizes.Add(Art.Object, FVector2D(Art.Width, Art.Depth)); }
- auto PaperBox = [&](const TCHAR* Name, const FVector& At, const FVector& Size, UMaterialInterface* Mat)
+ auto PaperBox = [&](const TCHAR* Name, const FVector& At, const FVector& Size, UMaterialInterface* Mat, double YawDegrees)
  {
   const FVector2D* Art = ArtSizes.Find(Name); const FVector Used = Art ? FVector(Art->X, Size.Y, Art->Y) : Size;
-  PaperTops.Add(Name, At + FVector(0, Used.Y * .5, 0)); return Box(Name, At, Used, Mat);
+  PaperTops.Add(Name, At + FVector(0, Used.Y * .5, 0));
+  return Mesh(Name, Cube, At, Used, Mat, FMath::DegreesToRadians(YawDegrees));
  };
- FS47Obj DeskPaper = PaperBox(TEXT("office:deskForms"), FVector(.39, .802, 9.50), FVector(.40, .018, .21), Paper);
- FS47Obj Folder = PaperBox(TEXT("office:fieldFolder"), FVector(.05, .818, 9.51), FVector(.31, .026, .31), Kraft);
- FS47Obj Index = PaperBox(TEXT("office:workingIndex"), FVector(-.28, .811, 9.52), FVector(.23, .009, .29), Paper);
- FS47Obj Clippings = PaperBox(TEXT("office:clippings"), FVector(.79, .812, 9.73), FVector(.29, .014, .34), Paper);
- FS47Obj Note = PaperBox(TEXT("office:foldedNote"), FVector(1.02, .812, 9.47), FVector(.20, .012, .13), Paper);
- FS47Obj Contact = PaperBox(TEXT("office:contactCard"), FVector(.76, .813, 9.42), FVector(.16, .010, .10), Paper);
+ FS47Obj DeskPaper = PaperBox(TEXT("office:deskForms"), FVector(.39, .8044, 9.50), FVector(.40, .0008, .21), Paper, 2.5);
+ FS47Obj Folder = PaperBox(TEXT("office:fieldFolder"), FVector(.05, .8055, 9.51), FVector(.31, .003, .31), Kraft, -4);
+ FS47Obj Index = PaperBox(TEXT("office:workingIndex"), FVector(-.28, .8044, 9.52), FVector(.23, .0008, .29), Paper, 6);
+ FS47Obj Clippings = PaperBox(TEXT("office:clippings"), FVector(.79, .8046, 9.73), FVector(.29, .0012, .34), Paper, -3);
+ FS47Obj Note = PaperBox(TEXT("office:foldedNote"), FVector(1.02, .8043, 9.47), FVector(.20, .0006, .13), Paper, 5);
+ FS47Obj Contact = PaperBox(TEXT("office:contactCard"), FVector(.76, .8042, 9.42), FVector(.16, .0004, .10), Paper, -7);
  if (UStaticMesh* Plane = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane")))
  {
   const TMap<FString, FS47Obj> Papers = {{TEXT("office:deskForms"), DeskPaper}, {TEXT("office:fieldFolder"), Folder}, {TEXT("office:workingIndex"), Index},
@@ -337,6 +354,7 @@ void FS47Office::Init()
    Mat->SetVectorParameterValue(TEXT("MapU"), DocumentMapU); Mat->SetVectorParameterValue(TEXT("MapV"), DocumentMapV);
    const FVector Top = PaperTops.FindChecked(Art.Object) + FVector(0, .0008, 0);
    FS47Obj Sheet = Mesh(FString(Art.Object) + TEXT(":art"), Plane, Top, FVector(Art.Width, 1, Art.Depth), Mat);
+   Sheet.SetRotation(PaperObj->Rotation());
    if (const FS47WebNode* N = W->Node(Sheet.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) { C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetCastShadow(false); }
    Visual->Sheets.Add({Art.Object, *PaperObj, Sheet, Tex});
   }
@@ -407,6 +425,19 @@ void FS47Office::Init()
  URectLightComponent* Light = NewObject<URectLightComponent>(W, TEXT("OperationsCeilingLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
  Light->SetWorldLocation(S47Three::ToUE(FVector(.47, 2.594, 8.8))); Light->SetWorldRotation(FRotator(-90, 0, 0));
  Light->SetSourceWidth(115); Light->SetSourceHeight(32); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(90); Light->SetLightColor(FLinearColor(1, .88f, .72f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
+ // The native banker's lamp has a wide shade, 28cm above its foot. Keep its
+ // small warm pool under the shade rather than illuminating the entire room.
+ URectLightComponent* Task = NewObject<URectLightComponent>(W, TEXT("OperationsDeskLight")); Task->SetMobility(EComponentMobility::Movable); Task->SetupAttachment(Group);
+ Task->SetWorldLocation(S47Three::ToUE(FVector(-.24, 1.030, 9.59))); Task->SetWorldRotation(FRotator(-90, 0, 0));
+ Task->SetSourceWidth(55); Task->SetSourceHeight(4); Task->SetIntensityUnits(ELightUnits::Lumens); Task->SetIntensity(2);
+ Task->SetLightColor(FLinearColor(1, .69f, .39f)); Task->SetAttenuationRadius(100); Task->SetCastShadows(true); Task->RegisterComponent(); Visual->TaskLight = Task;
+ // Low has no GI. Approximate the first ceiling-fixture bounce off this real
+ // desktop with 7% of its flux. It faces up, retains wall occlusion and is
+ // disabled whenever Lumen supplies that reflection itself.
+ URectLightComponent* Bounce = NewObject<URectLightComponent>(W, TEXT("OperationsDesktopBounce")); Bounce->SetMobility(EComponentMobility::Movable); Bounce->SetupAttachment(Group);
+ Bounce->SetWorldLocation(S47Three::ToUE(FVector(.37, .84, 9.73))); Bounce->SetWorldRotation(FRotator(90, 0, 0));
+ Bounce->SetSourceWidth(150); Bounce->SetSourceHeight(70); Bounce->SetIntensityUnits(ELightUnits::Lumens); Bounce->SetIntensity(6.3);
+ Bounce->SetLightColor(FLinearColor(.82f, .76f, .61f)); Bounce->SetAttenuationRadius(260); Bounce->SetCastShadows(true); Bounce->RegisterComponent(); Visual->DeskBounce = Bounce;
  FS47Obj Depart = Box(TEXT("office:departureCard"), FVector(1.39, 1.45, 6.815 + FrontOffset), FVector(.55, .30, .015), Paper);
  Label(TEXT("office:departureText"), TEXT("SURVEY FILE\nSTATION 01"), FVector(1.39, 1.45, 6.829 + FrontOffset), 90, 3.8f);
  Visual->Objects.Add(TEXT("office:door"), DoorPanel); Visual->Objects.Add(TEXT("officeDoor"), DoorPanel);
@@ -464,6 +495,8 @@ void FS47Office::Init()
  }
  FS47Obj OldProxy = W->Obj(TEXT("annex.objs.officeDoor")); if (OldProxy) { OldProxy.SetVisible(false); if (const FS47WebNode* N = W->Node(OldProxy.I)) if (UPrimitiveComponent* C = Cast<UPrimitiveComponent>(N->Comp.Get())) C->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
  bReady = true; S47SaroInterior::Build(W); S47SaroDoorDetail::Build(W);
+ if (!S47OfficeWindow::Build(W))
+  UE_LOG(LogS47Office, Warning, TEXT("S47: Operations rear window unavailable; native Room/Dressing and original CPU-retention update required"));
  const bool bOwnedReady = S47OfficeOwned::Build(W, &Visual->bOwnedPreparing);
  if (bOwnedReady || Visual->bOwnedPreparing)
  {
@@ -678,6 +711,7 @@ bool FS47Office::AuditDocumentArt(TArray<FString>& Lines) const
  bool bOk = bReady && Visual && Visual->Sheets.Num() == UE_ARRAY_COUNT(DocumentArt);
  Lines.Add(FString::Printf(TEXT("document art %s: %d/%d sheets bound"), bOk ? TEXT("PASS") : TEXT("FAIL"), Visual ? Visual->Sheets.Num() : 0, int32(UE_ARRAY_COUNT(DocumentArt))));
  if (!Visual) return false;
+ bOk &= S47OfficeWindow::Audit(M->Web, Lines);
  const bool bReferences = Visual->References.Num() == UE_ARRAY_COUNT(ResearchArt); bOk &= bReferences;
  Lines.Add(FString::Printf(TEXT("research art %s: %d/%d decorative references; live document acquisition separate"), bReferences ? TEXT("PASS") : TEXT("FAIL"), Visual->References.Num(), int32(UE_ARRAY_COUNT(ResearchArt))));
  for (int32 I = 0; I < Visual->References.Num(); ++I)
@@ -737,10 +771,15 @@ bool FS47Office::AuditDocumentArt(TArray<FString>& Lines) const
    && ArtComp->GetNumMaterials() == 1 && ArtComp->GetCollisionEnabled() == ECollisionEnabled::NoCollision && !ArtComp->CastShadow;
   const FBox ArtBox = Sheet.Art.IsValid() ? Sheet.Art.WorldBox() : FBox(ForceInit);
   const FBox PaperBox = Sheet.PaperObj.IsValid() ? Sheet.PaperObj.WorldBox() : FBox(ForceInit);
+  const FS47WebNode* PaperNode = M->Web->Node(Sheet.PaperObj.I);
+  const UPrimitiveComponent* PaperComp = PaperNode ? Cast<UPrimitiveComponent>(PaperNode->Comp.Get()) : nullptr;
+  const bool bSizeAndPose = Expected && ArtComp && PaperComp &&
+   ArtComp->GetComponentScale().Equals(S47Three::DirToUE(FVector(Expected->Width,1,Expected->Depth)),.00001) &&
+   ArtComp->GetComponentQuat().Equals(PaperComp->GetComponentQuat(),.00001);
   const bool bOn = bMaterial && bPlane && Sheet.Art.IsValid() && Sheet.Art.Shown() && Tex && Tex->GetSizeX() >= 1024 && Tex->GetSizeY() >= 1024
    && ArtBox.IsValid && PaperBox.IsValid && ArtBox.Min.Y >= PaperBox.Max.Y - .0001 && ArtBox.Min.Y - PaperBox.Max.Y < .003
    && FMath::Abs(ArtBox.GetCenter().X - PaperBox.GetCenter().X) < .001 && FMath::Abs(ArtBox.GetCenter().Z - PaperBox.GetCenter().Z) < .001
-   && FMath::Abs(ArtBox.GetSize().X - Expected->Width) < .001 && FMath::Abs(ArtBox.GetSize().Z - Expected->Depth) < .001;
+   && bSizeAndPose;
   bOk &= bOn;
   Lines.Add(FString::Printf(TEXT("document art %s %s: %s %dx%d art=%.3fx%.3f m lift=%.4f m"), bOn ? TEXT("PASS") : TEXT("FAIL"), *Sheet.Paper, Tex ? *Tex->GetName() : TEXT("none"),
    Tex ? Tex->GetSizeX() : 0, Tex ? Tex->GetSizeY() : 0, ArtBox.IsValid ? ArtBox.GetSize().X : 0., ArtBox.IsValid ? ArtBox.GetSize().Z : 0., ArtBox.IsValid && PaperBox.IsValid ? ArtBox.Min.Y - PaperBox.Max.Y : -1.));
@@ -817,6 +856,8 @@ void FS47Office::Apply()
  // bPowered belongs to RX bank 3, not the building lighting circuit. The office
  // is lit during handover before the receiver is started, and goes dark with SARO.
  if (URectLightComponent* Light = Visual->Light.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
+ if (URectLightComponent* Light = Visual->TaskLight.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
+ if (URectLightComponent* Light = Visual->DeskBounce.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark && M->Web->GetGraphicsSettings().IndirectLighting == 0);
  for (FS47Rect& Rect : M->Web->ZonesMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:thresholdZone")) Rect.bEnabled = DoorOpen();
  const double Angle = PI * .5 * DoorK, EndX = HingeX + LeafWidth * FMath::Cos(Angle), EndZ = HingeZ + LeafWidth * FMath::Sin(Angle);
  for (FS47Rect& Rect : M->Web->CollidersMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:doorCollider"))

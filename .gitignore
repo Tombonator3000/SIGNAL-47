@@ -15,3 +15,6 @@ __pycache__/
 !Unity/Assets/Signal47/Art/ThirdParty/Kenney/interface-sounds.zip
 
 .dream-loop/
+
+# Selected original Fab assets are installed locally, never in the public repo.
+unreal/Signal47/Content/Northwood/

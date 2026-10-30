@@ -1,4 +1,4 @@
-"""Import only the two original reference textures; no new document/interactions."""
+"""Import only explicit existing reference textures; no new document/interactions."""
 from pathlib import Path
 import hashlib
 import json
