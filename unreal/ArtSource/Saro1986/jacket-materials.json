@@ -1,0 +1,43 @@
+[
+  {
+    "name": "M_Saro_JacketNavy",
+    "base_color_linear": [
+      0.025,
+      0.037,
+      0.067,
+      1
+    ],
+    "roughness": 0.94,
+    "metallic": 0,
+    "specular": 0.26,
+    "normal_convention": "DirectX",
+    "textures": {
+      "roughness": "../Office/textures/M_Office_ChairFabric_rough.png",
+      "normal": "../Office/textures/M_Office_ChairFabric_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Saro_JacketTape",
+    "base_color_linear": [
+      0.36,
+      0.39,
+      0.37,
+      1
+    ],
+    "roughness": 0.55,
+    "metallic": 0.08,
+    "specular": 0.45
+  },
+  {
+    "name": "M_Saro_JacketThread",
+    "base_color_linear": [
+      0.2,
+      0.23,
+      0.26,
+      1
+    ],
+    "roughness": 0.91,
+    "metallic": 0,
+    "specular": 0.22
+  }
+]

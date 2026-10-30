@@ -16,6 +16,7 @@ Gjeldende planrekkefølge er ført i [DECISIONS](../Active/DECISIONS.md). Ny kve
 
 ## Visuell retning og senere innhold
 
+- [SARO-kontor og kontrollrom i 1986](SARO_1986.md), analyse av Toms referanser og føringer for neste detaljpass.
 - [Levert designbibel, 42 sider, med redigerbare kilder](../DesignBible-2026-10-27/README.md). Fast snapshot; overstyrer ikke nyere beslutninger.
 - [Visuelle mål og konsepter](../VisualTargets).
 - [Tidligere konsept 11](Concepts/CONCEPT_11.md), referanse.

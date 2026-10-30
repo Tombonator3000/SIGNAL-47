@@ -21,7 +21,7 @@ WALL_NORTH = 4.835
 WALL_SOUTH = 6.579
 REUSE = {
     name: "/Game/Signal47/Art/Office/Materials/" + name
-    for name in ("M_Office_CreamEnamel", "M_Office_BrushedMetal", "M_Office_BlackBakelite", "M_Office_CabinetEnamel")
+    for name in ("M_Office_CreamEnamel", "M_Office_BrushedMetal", "M_Office_BlackBakelite", "M_Office_CabinetEnamel", "M_Office_Walnut")
 }
 
 
@@ -79,53 +79,50 @@ def layout():
                 quad(name+"_%d_%d" % (i, j), points if north else list(reversed(points)),
                      "M_Saro_Corridor_UpperPaint")
 
-    def notice_hole(x, y, width, height, tilt=0):
-        # Include the tilted paper and both top tape pieces, then a 3mm margin.
-        points = []
-        for u in (-width/2, width/2):
-            for v in (-height/2, height/2):
-                points.append((u*math.cos(tilt)-v*math.sin(tilt),
-                               u*math.sin(tilt)+v*math.cos(tilt)))
-        for u in (-width/2+.01, width/2-.01):
-            v = height/2-.01
-            center = (u*math.cos(tilt)-v*math.sin(tilt),
-                      u*math.sin(tilt)+v*math.cos(tilt))
-            angle = tilt+.6
-            for a in (-.0175, .0175):
-                for b in (-.008, .008):
-                    points.append((center[0]+a*math.cos(angle)-b*math.sin(angle),
-                                   center[1]+a*math.sin(angle)+b*math.cos(angle)))
-        return (x+min(p[0] for p in points)-.003, x+max(p[0] for p in points)+.003,
-                y+min(p[1] for p in points)-.003, y+max(p[1] for p in points)+.003)
-
     # The 1.20m dado and all three door surrounds belong to the existing layer.
-    # Preserve the complete north noticeboard, including its physical back.
+    # Original printed matter is surface-mounted by S47SaroLegacyCleanup.
+    # Keep the plaster continuous behind it rather than cutting display niches.
     wall("North_upper", [(-5.96, -2.94, 1.218, 2.752),
                          (-1.86, 1.96, 1.218, 2.752),
-                         (-2.94, -1.86, 2.205, 2.752)], WALL_NORTH, True,
-         holes=((-1.18, -.02, 1.20, 2.01),
-                notice_hole(-4.4, 1.55, .4, .55, .01),
-                notice_hole(-5.25, 1.45, .14, .19),
-                (-4.033, -3.467, 1.4005, 1.7995),  # .03m aerial frame plus 3mm.
-                (-3.118, -3.042, 1.1895, 1.3105)))  # Original switch plate.
+                         (-2.94, -1.86, 2.205, 2.752)], WALL_NORTH, True)
     wall("South_upper", [(-5.96, -4.45, 1.218, 2.752),
                          (-3.35, -.96, 1.218, 2.752),
-                         (-4.45, -3.35, 2.185, 2.752)], WALL_SOUTH, False,
-         holes=(notice_hole(-2.3, 1.45, .36, .5, -.015),))
+                         (-4.45, -3.35, 2.185, 2.752)], WALL_SOUTH, False)
 
-    # Short end-wall returns. A hole protects the original battery EXIT sign;
-    # the native FIRE EXIT enamel plate is already in front of the finish skin.
+    # Short end-wall returns. The original battery EXIT sign also moves in
+    # front of its new wall finish; the FIRE EXIT plate is already proud of it.
     for name, x, west, head in (("West", -5.981, True, 2.215),
                                 ("East", 1.978, False, 2.215)):
         spans = [(4.84, 5.165, 1.218, 2.752),
                  (6.235, 6.57, 1.218, 2.752),
                  (5.165, 6.235, head, 2.752)]
         for i, rect in enumerate(spans):
-            pieces = subtract(rect, (5.44, 5.96, 2.20, 2.44)) if west else [rect]
+            pieces = [rect]
             for j, (a, b, lo, hi) in enumerate(pieces):
                 points = [(x, lo, b), (x, lo, a), (x, hi, a), (x, hi, b)]
                 quad(name+"_upper_%d_%d" % (i, j), points if west else list(reversed(points)),
                      "M_Saro_Corridor_UpperPaint")
+
+    # Surface-mounted slim frames for the original quiet/safety prints. Graphics
+    # remain their own original runtime triangles and keep their original UVs.
+    # A dark backing sits behind the relocated paper; the profiles are in front
+    # of the plaster, not decorative borders around holes in the wall.
+    for name, x, y, width, height, north in (("Quiet", -4.4, 1.55, .438, .590, True),
+                                            ("Safety", -2.3, 1.45, .410, .545, False)):
+        wall_z = WALL_NORTH if north else WALL_SOUTH
+        direction = 1 if north else -1
+        profile_z = wall_z+direction*.0034
+        backing_z = wall_z+direction*.0012
+        rail = .022
+        box(name+"_print_backing", (x, y, backing_z), (width+rail*2, height+rail*2, .001),
+            "M_Office_BlackBakelite", .0002)
+        for edge in (-1, 1):
+            box(name+"_frame_vertical_%s" % edge,
+                (x+edge*(width/2+rail/2), y, profile_z), (rail, height, .0028),
+                "M_Office_Walnut", .0007)
+            box(name+"_frame_horizontal_%s" % edge,
+                (x, y+edge*(height/2+rail/2), profile_z), (width+rail*2, rail, .0028),
+                "M_Office_Walnut", .0007)
 
     # Retain the existing 30cm grid. Small scattered replacement/faded tiles
     # avoid a perfect alternating checkerboard and retain the old recessed joints.
