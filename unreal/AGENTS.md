@@ -7,7 +7,23 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 - Repoet er offentlig. Kjøpte eller lisensierte assets legges ikke inn. Modellene i `Unity/Assets/Signal47/Art` er egne (Blender) eller CC0 (Poly Haven); se `web/THIRD_PARTY_NOTICES.md` og manifestene ved siden av modellene.
 - Unreal: logikken er portert fra `web/src` (se `PORTERING.md`). Nye forbedringer (lys, modeller, mekanikk) er ønsket; når noe avviker fra nettversjonen, si det i en kort kommentar. Verdenen bygges fra eksporten i `Tools/webexport`, men kan byttes ut eller forbedres der Tom ber om det. Binærfiler (uasset) går gjennom Git LFS. Binaries, Intermediate, Saved, DerivedDataCache og de genererte mappene under Content (`Web`, `WebData`, `Audio`, `Licensed`) committes aldri.
 - Bygg ikke editor-målet mens editoren er åpen.
-- Test etter risiko, bestemt av Tom 28. oktober 2026: raske relevante kontroller og én målrettet kontroll av den endrede delen. Dokumentasjon/todo trenger lenke-/vedlegg-/diffkontroll, ikke motorbygg. Ikke kjør full `Scripts/screenshots.sh` for hver modell, rekvisitt, menyfane eller liten PR. Samle endringer og kjør en nødvendig fullmatrise én gang før samlet lokal installasjon eller offentlig release; gjenta bare ved nye relevante endringer, feil eller konkret uavklart risiko. Bruk subagenter aktivt med tydelig filansvar, og samordne med Claude i `OPPGAVER.md`. Én tung jobb om gangen og ingen tester samtidig med Toms spilløkt.
+- Test etter risiko, bestemt av Tom 28. oktober 2026, skjerpet 30. oktober: under utvikling er fart og iterasjon viktigere enn bevis. Én tung jobb om gangen og ingen tester samtidig med Toms spilløkt.
+
+## Iterer først, test tungt mot slutten (Tom 30. oktober 2026)
+
+Tom: «Alt for mye testing, nå mer iterering, forenkle og ta tunge tester heller mot slutten av ferdig spill.»
+
+| Når | Hva som kreves | Hva som ikke kreves |
+|---|---|---|
+| Vanlig endring (kode, scenario, modell, lys, rom) | Bygg pluss én rask sjekk av det som er endret: én kontrakt, ett skjermbilde eller én kort kjøring. | Kvitteringer, SHA-er, frosne kildefiler, ferske lesere, private kø-serier, PASS-rapporter, full regresjon. |
+| Visuelt arbeid (rom, modeller, materialer, lys) | Før- og etterbilde. Iterer mange ganger på kort tid; vis Tom bildet når det er et tydelig steg. | Måling av hver flate, materialaudit per objekt, egne bevisdokumenter. |
+| PR og merge | Bygg og den raske sjekken over. Små, hyppige PR-er. | Full regresjon eller fullmatrise per PR. |
+| Lokal installasjon så Tom kan spille | Pakking, selvtest og en kort røyktest av det nye. | Fullmatrisen. |
+| Slutten av en akt | Alle scenariokontrakter én gang samlet. | |
+| Før offentlig release eller når Tom ber om det | Fullmatrisen og helnattskontrakten. | |
+
+Logg kort: hva, gren, resultat, i én til tre linjer i `log.md` eller overleveringen. Ingen egne leveringsrapporter under `Docs/Evidence/` for vanlig arbeid; bare for installasjon og release. Når noe feiler: rett det og gå videre, uten å bevare og dokumentere hvert mislykket forsøk. Det som fortsatt gjelder: Saved og personlige lagringer røres ikke, ingen offentlig release eller endring av repoets synlighet uten Tom, kjøpte og lisensierte assets holdes utenfor Git.
+
 - Kanon fra `web/memory.md` gjelder: 1420.405 MHz, 47 sekunder, 27 antenner, az 026. Spilltekst på engelsk (New Mexico, 1986). Dokumenter og logg på norsk, uten emoji og uten tankestrek.
 - Felles oppgaveliste og arbeidsdeling med Codex: `OPPGAVER.md`.
 - Logg vesentlige resultater i `log.md` med dato og klokkeslett (Europe/Oslo). Oppdater berørt hovedfil i `../Docs/Active/`; `memory.md` og `todo.md` er korte pekere og skal ikke fylles med nye kopier. `OPPGAVER.md` er bare koordinering/eierskap. Følg `../Docs/AGENTS.md` for kategorier, statusmerking og lenkekontroll.
@@ -15,7 +31,7 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 ## PR-er går mot main, bestemt 27. oktober 2026
 
 - Alle PR-er for spillet går mot `main`. Lag nye grener fra oppdatert `origin/main`, ikke fra en annen arbeidsgren.
-- Sjekk grunnlagsgrenen før fletting, for eksempel med `gh pr view <nr> --json baseRefName`. Er den ikke `main`, rett den med `gh pr edit <nr> --base main` før fletting. Før fletting gjelder den risikobaserte testregelen ovenfor; en liten PR utløser ikke fullmatrisen alene.
+- Sjekk grunnlagsgrenen før fletting, for eksempel med `gh pr view <nr> --json baseRefName`. Er den ikke `main`, rett den med `gh pr edit <nr> --base main` før fletting. Før fletting gjelder «Iterer først» ovenfor: bygg og én rask sjekk.
 - `unreal-port-core` var avtalt integrasjonsgren for historiearbeidet fram til 26. oktober (`HISTORIE_IMPLEMENTERINGSPLAN.md`), og PR #147 til #166 og #168 gikk dit med vilje. Main fikk det meste via PR #167, men de 17 siste commitene (PR #163 til #166 og #168, med SC01) ble aldri flettet videre. Det er det regelen over skal hindre: ingen arbeid skal bli stående på en sidegren. Flettingen inn i main står øverst i `OPPGAVER.md`, og `unreal-port-core` slettes når den er flettet.
 
 ## Varig grense for lokale testbygg, bestemt 25. oktober 2026
