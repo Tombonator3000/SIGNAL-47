@@ -50,15 +50,58 @@ def cork_fields(size):
     # Physical microroughness, not displacement: <=80 micrometres relief.
     height=grains*.000045-pores*.000035
     return field,height
+
+def value_field(rows,columns,seed):
+    """Seamless, gently filtered noise; no repeated sine-wave surface pattern."""
+    grid=np.random.default_rng(seed).uniform(-1,1,(rows,columns))
+    yy=v*rows;xx=u*columns
+    iy=yy.astype(np.int32);ix=xx.astype(np.int32)
+    fy=yy-iy;fx=xx-ix
+    fy=fy*fy*(3-2*fy);fx=fx*fx*(3-2*fx)
+    a=grid[iy%rows,ix%columns]*(1-fx)+grid[iy%rows,(ix+1)%columns]*fx
+    b=grid[(iy+1)%rows,ix%columns]*(1-fx)+grid[(iy+1)%rows,(ix+1)%columns]*fx
+    return a*(1-fy)+b*fy
+
 def mat(name,color,rough=.7,metal=0,kind='paint'):
     name='M_Office_'+name;m=bpy.data.materials.new(name);m.use_nodes=True
     p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*color,1);p.inputs['Roughness'].default_value=rough;p.inputs['Metallic'].default_value=metal
     # Cube projection uses a one-metre span. Heights are metres, independent of
     # colour: painted steel, woven cloth and wood must not share a noisy bump.
+    rough_field=None
     if kind=='wood':
-        grain=np.sin(math.tau*(u*21+np.sin(v*math.tau)*.28))
-        field=grain*.18+np.sin(math.tau*u*57)*.06+slow*.025+fine*.012
-        height=grain*.00010+np.sin(math.tau*u*57)*.000025
+        # Long interrupted pores in varnished walnut, rather than evenly spaced
+        # black stripes. Wear changes the varnish sheen more than its colour.
+        grain=value_field(3,93,4703101)
+        fibres=value_field(13,389,4703102)
+        pores=np.clip((-fibres-.40)*1.7,0,1)
+        wear=value_field(7,9,4703103)
+        field=grain*.16+fibres*.035-pores*.055+wear*.025
+        height=grain*.000025-pores*.000012
+        rough_field=grain*.035+wear*.070+pores*.05
+    elif kind=='wall':
+        # Old matte paint has broad, quiet tonal variation and fine orange peel;
+        # a coarse, high-frequency normal makes grazing light look like soot.
+        clouds=value_field(5,7,4703111)
+        roller=value_field(93,71,4703112)
+        peel=value_field(267,251,4703113)
+        field=clouds*.032+roller*.010+peel*.006
+        height=peel*.000012+roller*.000006
+        rough_field=clouds*.023+roller*.014
+    elif kind=='linoleum':
+        # Mineral flecks and shallow polish wear in an old resilient floor.
+        # Marks live mainly in roughness, not a baked shadow/dirt overlay.
+        body=value_field(19,23,4703121)
+        flecks=value_field(271,293,4703122)
+        polish=value_field(7,11,4703123)
+        field=body*.028+flecks*.055
+        height=flecks*.000008
+        rough_field=polish*.095+body*.035+flecks*.018
+    elif kind=='acoustic':
+        pores=value_field(373,347,4703131)
+        pits=np.clip((-pores-.47)*2.8,0,1)
+        field=value_field(9,11,4703132)*.018-pits*.085
+        height=-pits*.000035
+        rough_field=pits*.025
     elif kind=='cork':
         field,height=cork_fields(N)
     elif kind=='fabric':
@@ -74,7 +117,8 @@ def mat(name,color,rough=.7,metal=0,kind='paint'):
     rgba=np.ones((N,N,4));linear=np.clip(np.array(color)[None,None,:]*(1+field[:,:,None]),.001,1)
     rgba[:,:,:3]=np.where(linear<.0031308,linear*12.92,1.055*linear**(1/2.4)-.055)
     base=imwrite(name+'_base',rgba);base.colorspace_settings.name='sRGB'
-    r=np.ones((N,N,4));r[:,:,:3]=np.clip(rough+field[:,:,None]*.35,.1,1);rim=imwrite(name+'_rough',r);rim.colorspace_settings.name='Non-Color'
+    if rough_field is None:rough_field=field*.35
+    r=np.ones((N,N,4));r[:,:,:3]=np.clip(rough+rough_field[:,:,None],.1,1);rim=imwrite(name+'_rough',r);rim.colorspace_settings.name='Non-Color'
     # Match the existing native import recipe's DirectX tangent convention.
     dx=(np.roll(height,-1,axis=1)-np.roll(height,1,axis=1))*(N*.5)
     dy=(np.roll(height,-1,axis=0)-np.roll(height,1,axis=0))*(N*.5)
@@ -93,7 +137,7 @@ def mat(name,color,rough=.7,metal=0,kind='paint'):
     bump=nodes.new('ShaderNodeNormalMap');links.new(combine.outputs[0],bump.inputs['Color']);links.new(bump.outputs['Normal'],p.inputs['Normal'])
     ROWS.append({'name':name,'base_color_linear':[1,1,1,1],'roughness':rough,'metallic':metal,'specular':.33,'normal_strength':1.,'normal_convention':'DirectX','textures':{'base_color':'textures/'+name+'_base.png','roughness':'textures/'+name+'_rough.png','normal':'textures/'+name+'_normal_dx.png'}})
     MATS[name]=m;return m
-WALL=mat('SageWall',(.27,.31,.25),.91)
+WALL=mat('SageWall',(.255,.282,.250),.91,kind='wall')
 TRIM=mat('CreamEnamel',(.49,.46,.36),.63)
 WOOD=mat('Walnut',(.10,.053,.026),.54,kind='wood')
 DESK=mat('TankerGreen',(.105,.15,.13),.49)
@@ -104,8 +148,8 @@ CHROME=mat('BrushedMetal',(.34,.37,.36),.29,.84)
 CLOTH=mat('ChairFabric',(.12,.19,.16),.89,kind='fabric')
 PAPER=mat('Paper',(.64,.59,.44),.96)
 CORK=mat('Cork',(.21,.14,.075),.93,kind='cork')
-TILE=mat('FloorLinoleum',(.25,.29,.25),.68,kind='tile')
-CEILING=mat('CeilingTile',(.46,.47,.40),.98,kind='tile')
+TILE=mat('FloorLinoleum',(.235,.255,.232),.65,kind='linoleum')
+CEILING=mat('CeilingTile',(.46,.47,.43),.98,kind='acoustic')
 RED=mat('BinderBurgundy',(.16,.038,.025),.73)
 BLUE=mat('BinderBlue',(.032,.069,.10),.76)
 OLIVE=mat('BinderOlive',(.084,.090,.049),.83)
@@ -234,7 +278,9 @@ for ix in range(6):
     for iz in range(8):
         x=-.88+(ix+.5)*.45;z=6.61+(iz+.5)*.47
         box('Individual_linoleum_tile',(x,.002,z),(.447,.008,.467),TILE,.001)
-box('West_painted_lining',(-.88,1.39,8.49),(.10,2.78,3.76),WALL,.002)
+# The original records partition ends at x=-.80. Its old block texture must
+# remain behind the new paint skin, with 5mm clearance rather than z fighting.
+box('West_painted_lining',(-.845,1.39,8.49),(.10,2.78,3.76),WALL,.002)
 box('East_painted_lining',(1.83,1.39,8.49),(.10,2.78,3.76),WALL,.002)
 # Real rear window, not a blind attached to an opaque wall. The native helper
 # opens the original Annex paint/concrete behind this lining at the same X/Y.
@@ -310,8 +356,12 @@ for y in (1.10,1.63,2.16):
     for z in (8.44,9.56):box('Shelf_bracket',(-.75,y-.10,z),(.18,.20,.021),STEEL,.003)
 # Shelf contents are individual original PBR models in Config/Props/dale-office.json.
 # Keep the shelf boards/supports here; retire the repeated procedural binder run.
-box('Archive_storage_box',(-.63,1.78,8.56),(.29,.26,.46),PAPER,.006)
-box('Archive_box_lid',(-.63,1.925,8.56),(.315,.035,.48),CORK,.004)
+# A labelled kraft carton reads separately from the loose white paper groups.
+box('Archive_storage_box',(-.63,1.78,8.56),(.29,.26,.46),TAN,.006)
+box('Archive_box_lid',(-.63,1.925,8.548),(.315,.035,.48),TAN,.004)
+box('Archive_carton_label',(-.483,1.79,8.57),(.003,.064,.17),PAPER,.001)
+for y,z,w in ((1.807,8.57,.13),(1.788,8.595,.08),(1.771,8.58,.11)):
+    box('Archive_label_type',(-.4808,y,z),(.0006,.0015,w),GRAY,.0001)
 # Original Old West book stacks now occupy this upper shelf in the native layout.
 # Physical research wall and incoming folders. Finished art is bound natively,
 # just like the six independent live desk papers; blank bodies are not art acceptance.

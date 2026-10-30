@@ -1366,3 +1366,6 @@ Alle14 aktive figurer klargjort og importert privat med teksturer/treLOD; ny vis
 PR247/main81736f2a, kilde8a512269: 14 statiske figurer importert og installert, 1735 selvtester og kort pakket/installerte modellkontroller består; 134 Saved-noder bevart. Eldre parallell act1-2-installasjon er samordnet og erstattet med Tripo-supersettet. Nativefilene finnes også privat i hovedprosjektet; kanonisk prune exit1. Ingen fullmatrise, kredittbruk eller offentlig release.
 
 Kanonisk prune er senere utført etter at det fremmede motorvinduet var frigitt. Fem eldre pakkepayloads er pensjonert; current og to eldre komplette bygg beholdes, med kilder, assets, Saved og bilder urørt.
+
+### 2026-10-30T14:16 Dales kontor, visuell pilot
+Gren codex/dale-visual-pilot-20261030: malingslinjen ligger nå foran gammel blokkvegg, egne overflater er oppdatert og72 native rekvisitter har mer varierte grupper. Editorbygg og før/etter dag/skumring på Low samt dag på High består; vinduslys følger døgnet og elektriske lys følger strøm. Kandidaten er vist til Tom, visuell godkjenning avventes.

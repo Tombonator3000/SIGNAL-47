@@ -206,7 +206,7 @@
       ]
     },
     "SM_Office_Dressing": {
-      "triangles": 31664,
+      "triangles": 32416,
       "bounds_local_m": [
         [
           -0.8400000333786011,
@@ -222,16 +222,18 @@
       "materials": [
         "M_Office_Walnut",
         "M_Office_CabinetEnamel",
+        "M_Office_BinderTan",
         "M_Office_Paper",
-        "M_Office_Cork",
+        "M_Office_BinderFadedGray",
         "M_Office_BlackBakelite",
+        "M_Office_Cork",
         "M_Office_AgedBrass",
         "M_Office_BrushedMetal",
         "M_Office_BinderBurgundy",
         "M_Office_CreamEnamel",
         "M_Office_ChairFabric"
       ],
-      "original_components": 213,
+      "original_components": 217,
       "runtime_origin_three_m": [
         0,
         0,

@@ -7,6 +7,7 @@
 #include "S47SaroDoorDetail.h"
 #include "S47OfficeOwned.h"
 #include "S47OfficeWindow.h"
+#include "S47Sky.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -14,6 +15,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "Components/BoxComponent.h"
 #include "Components/RectLightComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -170,7 +172,7 @@ struct FS47Office::FVisual
  TMap<FString, FS47Obj> Objects;
  TArray<TPair<FS47Obj, FVector>> DrawerParts;
  TArray<FS47Obj> KeyParts;
- TWeakObjectPtr<URectLightComponent> Light, TaskLight, DeskBounce;
+ TWeakObjectPtr<URectLightComponent> Light, TaskLight, DeskBounce, WindowLight;
  bool bRecoverLegacyPose = false;
  bool bMigrationFailed = false;
  bool bOwnedPreparing = false, bOwnedFootprint = false;
@@ -424,20 +426,28 @@ void FS47Office::Init()
  // two opal diffusers, faces down and retains the existing power/area driver.
  URectLightComponent* Light = NewObject<URectLightComponent>(W, TEXT("OperationsCeilingLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
  Light->SetWorldLocation(S47Three::ToUE(FVector(.47, 2.594, 8.8))); Light->SetWorldRotation(FRotator(-90, 0, 0));
- Light->SetSourceWidth(115); Light->SetSourceHeight(32); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(90); Light->SetLightColor(FLinearColor(1, .88f, .72f)); Light->SetAttenuationRadius(380); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
+ Light->SetSourceWidth(115); Light->SetSourceHeight(32); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(32); Light->SetLightColor(FLinearColor(1, .94f, .84f)); Light->SetAttenuationRadius(340); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
  // The native banker's lamp has a wide shade, 28cm above its foot. Keep its
  // small warm pool under the shade rather than illuminating the entire room.
  URectLightComponent* Task = NewObject<URectLightComponent>(W, TEXT("OperationsDeskLight")); Task->SetMobility(EComponentMobility::Movable); Task->SetupAttachment(Group);
  Task->SetWorldLocation(S47Three::ToUE(FVector(-.24, 1.030, 9.59))); Task->SetWorldRotation(FRotator(-90, 0, 0));
- Task->SetSourceWidth(55); Task->SetSourceHeight(4); Task->SetIntensityUnits(ELightUnits::Lumens); Task->SetIntensity(2);
- Task->SetLightColor(FLinearColor(1, .69f, .39f)); Task->SetAttenuationRadius(100); Task->SetCastShadows(true); Task->RegisterComponent(); Visual->TaskLight = Task;
- // Low has no GI. Approximate the first ceiling-fixture bounce off this real
- // desktop with 7% of its flux. It faces up, retains wall occlusion and is
- // disabled whenever Lumen supplies that reflection itself.
+ Task->SetSourceWidth(38); Task->SetSourceHeight(5); Task->SetIntensityUnits(ELightUnits::Lumens); Task->SetIntensity(2.4f);
+ Task->SetLightColor(FLinearColor(1, .72f, .46f)); Task->SetAttenuationRadius(82); Task->SetCastShadows(true); Task->RegisterComponent(); Visual->TaskLight = Task;
+ // Unreal room revision: the real rear opening supplies the broad sky key.
+ // The vertical emitter is behind the blind, at the rear lining plane, so its
+ // forward hemisphere includes the full ceiling instead of leaving a dark seam.
+ // All room surfaces still occlude it. This is sky fill, never an electric lamp.
+ URectLightComponent* Window = NewObject<URectLightComponent>(W, TEXT("OperationsWindowSky")); Window->SetMobility(EComponentMobility::Movable); Window->SetupAttachment(Group);
+ Window->SetWorldLocation(S47Three::ToUE(FVector(.375, 1.77, 10.315))); Window->SetWorldRotation(FRotator(0, -90, 0));
+ Window->SetSourceWidth(166); Window->SetSourceHeight(100); Window->SetIntensityUnits(ELightUnits::Lumens); Window->SetIntensity(0);
+ Window->SetLightColor(FLinearColor(.82f, .90f, 1)); Window->SetAttenuationRadius(335); Window->SetCastShadows(true); Window->RegisterComponent(); Visual->WindowLight = Window;
+ // Low has no GI. Approximate the first fixture and window bounce off this real
+ // desktop. It faces up, retains wall occlusion, and is disabled whenever Lumen
+ // supplies the reflection itself. Each contribution keeps its own driver.
  URectLightComponent* Bounce = NewObject<URectLightComponent>(W, TEXT("OperationsDesktopBounce")); Bounce->SetMobility(EComponentMobility::Movable); Bounce->SetupAttachment(Group);
  Bounce->SetWorldLocation(S47Three::ToUE(FVector(.37, .84, 9.73))); Bounce->SetWorldRotation(FRotator(90, 0, 0));
- Bounce->SetSourceWidth(150); Bounce->SetSourceHeight(70); Bounce->SetIntensityUnits(ELightUnits::Lumens); Bounce->SetIntensity(6.3);
- Bounce->SetLightColor(FLinearColor(.82f, .76f, .61f)); Bounce->SetAttenuationRadius(260); Bounce->SetCastShadows(true); Bounce->RegisterComponent(); Visual->DeskBounce = Bounce;
+ Bounce->SetSourceWidth(150); Bounce->SetSourceHeight(70); Bounce->SetIntensityUnits(ELightUnits::Lumens); Bounce->SetIntensity(2.2f);
+ Bounce->SetLightColor(FLinearColor(.86f, .80f, .68f)); Bounce->SetAttenuationRadius(230); Bounce->SetCastShadows(true); Bounce->RegisterComponent(); Visual->DeskBounce = Bounce;
  FS47Obj Depart = Box(TEXT("office:departureCard"), FVector(1.39, 1.45, 6.815 + FrontOffset), FVector(.55, .30, .015), Paper);
  Label(TEXT("office:departureText"), TEXT("SURVEY FILE\nSTATION 01"), FVector(1.39, 1.45, 6.829 + FrontOffset), 90, 3.8f);
  Visual->Objects.Add(TEXT("office:door"), DoorPanel); Visual->Objects.Add(TEXT("officeDoor"), DoorPanel);
@@ -855,9 +865,25 @@ void FS47Office::Apply()
   C->SetCollisionResponseToChannel(ECC_GameTraceChannel1, Entry.Value.Shown() ? ECR_Block : ECR_Ignore);
  // bPowered belongs to RX bank 3, not the building lighting circuit. The office
  // is lit during handover before the receiver is started, and goes dark with SARO.
- if (URectLightComponent* Light = Visual->Light.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
+ const FS47Sky* Sky = M->Life && M->Life->Sky.IsValid() ? M->Life->Sky.Get() : nullptr;
+ const float Daylight = Sky ? float(FMath::Clamp(Sky->Daylight(), 0., 1.)) : 0.f;
+ const bool Powered = M->Story && !M->Story->bDark;
+ if (URectLightComponent* Light = Visual->Light.Get())
+ { Light->SetIntensity(FMath::Lerp(46.f, 32.f, Daylight)); Light->SetVisibility(Visible && M->Story && !M->Story->bDark); }
  if (URectLightComponent* Light = Visual->TaskLight.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
- if (URectLightComponent* Light = Visual->DeskBounce.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark && M->Web->GetGraphicsSettings().IndirectLighting == 0);
+ if (URectLightComponent* Light = Visual->DeskBounce.Get())
+ {
+  Light->SetIntensity((Powered ? 2.2f : 0.f) + 1.2f * Daylight);
+  Light->SetVisibility(Visible && (Powered || Daylight > .001f) && M->Web->GetGraphicsSettings().IndirectLighting == 0);
+ }
+ if (URectLightComponent* Light = Visual->WindowLight.Get())
+ {
+  // The same sky curve as the exterior handles noon, dusk and dawn. At night
+  // there is no substitute window glow, including during the SARO blackout.
+  Light->SetIntensity(42.f * Daylight);
+  Light->SetLightColor(FMath::Lerp(FLinearColor(.82f, .90f, 1), FLinearColor(1, .87f, .72f), Sky ? float(Sky->Evening) : 0.f));
+  Light->SetVisibility(Visible && Daylight > .001f);
+ }
  for (FS47Rect& Rect : M->Web->ZonesMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:thresholdZone")) Rect.bEnabled = DoorOpen();
  const double Angle = PI * .5 * DoorK, EndX = HingeX + LeafWidth * FMath::Cos(Angle), EndZ = HingeZ + LeafWidth * FMath::Sin(Angle);
  for (FS47Rect& Rect : M->Web->CollidersMutable(TEXT("saro"))) if (Rect.Id == TEXT("office:doorCollider"))
