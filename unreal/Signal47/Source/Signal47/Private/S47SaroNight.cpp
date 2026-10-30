@@ -1,7 +1,7 @@
-#include "S47Spine.h"
 // main.ts: SARO's own happenings (saroDark, saroPower, arrayBack, follow, lineLights, reel047,
 // reelTape, recWalk), in the order main.ts builds and steps them
 #include "S47SaroNight.h"
+#include "S47Spine.h"
 #include "S47SaroInterior.h"
 
 #include "Engine/Engine.h"
