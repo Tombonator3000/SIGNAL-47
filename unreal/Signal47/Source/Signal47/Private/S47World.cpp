@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47Spine.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
 #include "S47EveningVisual.h"
@@ -158,7 +159,7 @@ void US47World::Init(US47Main* InM)
 		T.Id = TEXT("truck");
 		T.Object = M->Web->Obj(TEXT("yard.objs.truck"));
 		T.Range = 3.2;
-		T.Label = [this] { return TruckChoice ? TruckChoice(TEXT("saro")).Label : FString(); };
+		T.Label = [this] { if (M->Spine) { const FString L = M->Spine->Label(TEXT("truck")); if (!L.IsEmpty()) return L; } return TruckChoice ? TruckChoice(TEXT("saro")).Label : FString(); };
 		T.Use = [this] { if (TruckChoice) TruckChoice(TEXT("saro")).Use(); };
 		T.Examine = [] { return FString(EXAMINE_TRUCK); };
 		M->Inter->Add(T);
