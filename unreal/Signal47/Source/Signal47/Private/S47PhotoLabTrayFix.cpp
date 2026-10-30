@@ -89,7 +89,7 @@ namespace
    Proof->SourceDescriptionHash.IsEmpty()||Proof->SourceRenderHash.IsEmpty()||Proof->FixedRenderHash.IsEmpty()||
    !Source->GetBoundingBox().Min.Equals(Proof->SourceMin,.001)||!Source->GetBoundingBox().Max.Equals(Proof->SourceMax,.001)||
    !MaterialsSame(Source,Fixed)||!BodySamePolicy(Source,Fixed)||!Fixed->bAllowCPUAccess||
-   Source->bSupportRayTracing!=Fixed->bSupportRayTracing||Source->GetNaniteSettings().bEnabled!=Fixed->GetNaniteSettings().bEnabled)
+   Source->bSupportRayTracing!=Fixed->bSupportRayTracing||Source->HasValidNaniteData()!=Fixed->HasValidNaniteData())
    return Fail(Why,TEXT("cooked proof, source bounds, slots, CPU retention, RT or collision policy differs"));
   FString Actual,Normalized;int32 Changed=0,Ignored=0;
   if(!RenderHash(Fixed,false,Actual,Changed)||!RenderHash(Fixed,true,Normalized,Ignored)||
