@@ -222,19 +222,53 @@ class FS47NightContract : public TSharedFromThis<FS47NightContract>
   const auto O=Object(Id);const auto B=O.WorldBox();if(!Check(O&&B.IsValid,TEXT("actual return-target bounds: ")+Id))return false;
   const auto* Item=M()->Inter->Get(Id);const double Range=Item&&Item->Range>0?Item->Range:3.2;
   const FVector C=B.GetCenter();const FVector2D From(M()->Player->Pos.X,M()->Player->Pos.Z);
+  auto Proof=S47J::New();S47J::Set(Proof,TEXT("kind"),TEXT("hypothetical approach planning; actual settled camera/use still required after native walking"));
+  S47J::Set(Proof,TEXT("item"),Id);S47J::Set(Proof,TEXT("stage"),Stage);S47J::Set(Proof,TEXT("area"),M()->World->Area);S47J::Set(Proof,TEXT("game_state"),M()->Flow->GameState());
+  S47J::Set(Proof,TEXT("target_node"),O.I);S47J::Set(Proof,TEXT("inter_registered"),Item!=nullptr);S47J::Set(Proof,TEXT("inter_label"),M()->Inter->LabelOf(Id));
+  S47J::Set(Proof,TEXT("inter_has_use"),Item&&bool(Item->Use));S47J::Set(Proof,TEXT("range_m"),Range);S47J::Set(Proof,TEXT("walker_radius_m"),M()->Player->Radius);
+  S47J::Set(Proof,TEXT("from_three_m"),TArray<double>{From.X,M()->Player->FloorY,From.Y});S47J::Set(Proof,TEXT("eye_height_m"),M()->Player->Eye);
+  S47J::Set(Proof,TEXT("target_min_three_m"),TArray<double>{B.Min.X,B.Min.Y,B.Min.Z});S47J::Set(Proof,TEXT("target_max_three_m"),TArray<double>{B.Max.X,B.Max.Y,B.Max.Z});
+  auto Rects=[](const TArray<FS47Rect>& Values)
+  {
+   TArray<TSharedPtr<FJsonValue>> Rows;for(int32 I=0;I<Values.Num();++I){const auto& V=Values[I];auto R=S47J::New();S47J::Set(R,TEXT("index"),I);S47J::Set(R,TEXT("id"),V.Id);S47J::Set(R,TEXT("enabled"),V.bEnabled);S47J::Set(R,TEXT("bounds_xxzz_m"),TArray<double>{V.MinX,V.MaxX,V.MinZ,V.MaxZ});Rows.Add(MakeShared<FJsonValueObject>(R));}return Rows;
+  };
+  Proof->SetArrayField(TEXT("live_colliders"),Rects(M()->Web->Colliders()));Proof->SetArrayField(TEXT("live_zones"),Rects(M()->Web->Zones()));
+  auto Blockers=[&](const FVector2D& At)
+  {
+   TArray<FString> Hits;const auto& Blocks=M()->Web->Colliders();const double Pad=M()->Player->Radius;
+   for(int32 I=0;I<Blocks.Num();++I){const auto& V=Blocks[I];if(V.bEnabled&&At.X>=V.MinX-Pad&&At.X<=V.MaxX+Pad&&At.Y>=V.MinZ-Pad&&At.Y<=V.MaxZ+Pad)Hits.Add(FString::FromInt(I)+TEXT(":")+V.Id);}return Hits;
+  };
+  S47J::Set(Proof,TEXT("from_navigation_blockers"),Blockers(From));TArray<TSharedPtr<FJsonValue>> Candidates;
   TArray<FVector2D> Seeds;const double Radius=FMath::Min(100.,FVector2D(C.X-From.X,C.Z-From.Y).Size()+10);
   for(int32 I=0;I<16;++I){const double A=I*UE_DOUBLE_PI/8;Seeds.Add(From+FVector2D(FMath::Cos(A),FMath::Sin(A))*Radius*.5);}
   TArray<FVector2D> Best;double BestLength=1e100;
-  for(double R:{1.5,2.,2.7})for(int32 I=0;I<16;++I)
+  // A parked, rotated truck's conservative AABB can contain every old 2.7 m
+  // candidate. The extra ring still has to pass the unchanged 3D range and ray.
+  for(double R:{1.5,2.,2.7,Range-.2})for(int32 I=0;I<16;++I)
   {
    const double A=I*UE_DOUBLE_PI/8;const FVector2D To(C.X+R*FMath::Cos(A),C.Z+R*FMath::Sin(A));
-   if(!M()->Player->Walkable(To.X,To.Y))continue;const FVector Eye(To.X,M()->Player->FloorY+M()->Player->Eye,To.Y),D=C-Eye;
-   if(D.Size()>Range-.08||M()->Inter->Pick(S47Three::ToUE(Eye),S47Three::DirToUE(D.GetSafeNormal()))!=Id)continue;
+   auto Candidate=S47J::New();Candidates.Add(MakeShared<FJsonValueObject>(Candidate));S47J::Set(Candidate,TEXT("radius_m"),R);S47J::Set(Candidate,TEXT("direction_index"),I);S47J::Set(Candidate,TEXT("goal_xz_m"),TArray<double>{To.X,To.Y});S47J::Set(Candidate,TEXT("navigation_blockers"),Blockers(To));
+   const bool Walkable=M()->Player->Walkable(To.X,To.Y);S47J::Set(Candidate,TEXT("walkable"),Walkable);if(!Walkable){S47J::Set(Candidate,TEXT("reject"),TEXT("not-walkable"));continue;}
+   // Read the area's actual floor at this goal, not the player's floor many metres away.
+   double Floor=0;bool HasFloor=false;FString FloorSource;
+   if(M()->Player->LandFloor){Floor=M()->Player->LandFloor(To.X,To.Y);HasFloor=FMath::IsFinite(Floor);if(HasFloor)FloorSource=TEXT("Player.LandFloor");}
+   if(!HasFloor&&M()->Player->Floor){Floor=M()->Player->Floor(To.X,To.Y);HasFloor=FMath::IsFinite(Floor);if(HasFloor)FloorSource=TEXT("Player.Floor");}
+   S47J::Set(Candidate,TEXT("has_actual_goal_floor"),HasFloor);S47J::Set(Candidate,TEXT("floor_provider"),FloorSource);
+   if(!HasFloor){S47J::Set(Candidate,TEXT("reject"),TEXT("no-actual-goal-floor"));continue;}
+   const FVector OldEye(To.X,M()->Player->FloorY+M()->Player->Eye,To.Y),OldD=C-OldEye,Eye(To.X,Floor+M()->Player->Eye,To.Y),D=C-Eye;
+   const FString Pick=M()->Inter->Pick(S47Three::ToUE(Eye),S47Three::DirToUE(D.GetSafeNormal()));
+   S47J::Set(Candidate,TEXT("goal_floor_m"),Floor);S47J::Set(Candidate,TEXT("goal_eye_three_m"),TArray<double>{Eye.X,Eye.Y,Eye.Z});S47J::Set(Candidate,TEXT("goal_eye_distance_m"),D.Size());S47J::Set(Candidate,TEXT("goal_eye_pick"),Pick);
+   S47J::Set(Candidate,TEXT("old_player_floor_eye_distance_m"),OldD.Size());S47J::Set(Candidate,TEXT("old_player_floor_eye_pick"),M()->Inter->Pick(S47Three::ToUE(OldEye),S47Three::DirToUE(OldD.GetSafeNormal())));
+   if(D.Size()>Range-.08){S47J::Set(Candidate,TEXT("reject"),TEXT("outside-unchanged-3d-range"));continue;}
+   if(Pick!=Id){S47J::Set(Candidate,TEXT("reject"),TEXT("actual-pick-differs"));continue;}
    auto Found=FS47ThreatNavigation::FindPath(From,To,Seeds,M()->Web->Colliders(),M()->Player->Radius,[&](const FVector2D& X,const FVector2D& Y)
    {const int32 N=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(X,Y)/.05));for(int32 J=0;J<=N;++J){const auto Q=FMath::Lerp(X,Y,double(J)/N);if(!M()->Player->Walkable(Q.X,Q.Y))return false;}return true;});
    double Length=0;auto Previous=From;for(const auto& P:Found){Length+=FVector2D::Distance(Previous,P);Previous=P;}
+   S47J::Set(Candidate,TEXT("route_points"),Found.Num());S47J::Set(Candidate,TEXT("route_length_m"),Length);S47J::Set(Candidate,TEXT("reject"),Found.IsEmpty()?TEXT("navigation-route-empty"):TEXT(""));
    if(!Found.IsEmpty()&&Length<BestLength){Best=MoveTemp(Found);BestLength=Length;}
   }
+  Proof->SetArrayField(TEXT("candidates"),Candidates);TArray<TSharedPtr<FJsonValue>> Chosen;for(const auto& V:Best){auto Point=S47J::New();S47J::Set(Point,TEXT("xz_m"),TArray<double>{V.X,V.Y});Chosen.Add(MakeShared<FJsonValueObject>(Point));}Proof->SetArrayField(TEXT("chosen_route"),Chosen);S47J::Set(Proof,TEXT("route_found"),!Best.IsEmpty());
+  Actions.Add(MakeShared<FJsonValueObject>(Proof));if(!Check(Write(Root/(TEXT("go-item-")+Id+TEXT(".raw.json")),Proof),TEXT("retain actual approach candidates/floor/rays/live-colliders before route result: ")+Id))return false;
   if(!Check(!Best.IsEmpty(),TEXT("bounded measured walkable route reaches native ray target; no fallback: ")+Id))return false;
   TArray<FVector> P;for(const auto& V:Best)P.Add(FVector(V.X,0,V.Y));Path(MoveTemp(P));return true;
  }
