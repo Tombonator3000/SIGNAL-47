@@ -3,6 +3,7 @@
 #include "S47FieldCamera.h"
 #include "S47Image.h"
 #include "S47Office.h"
+#include "S47Phones.h"
 #include "S47Flow.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
@@ -42,6 +43,38 @@ namespace
  bool SC07Copy(const FString& From,const FString& To)
  {TArray<uint8> Bytes;return FFileHelper::LoadFileToArray(Bytes,*From)&&FFileHelper::SaveArrayToFile(Bytes,*To)&&SC07Bytes(SC07File(From),SC07File(To));}
 
+ // Observer only: these are the same phone/roof states used by the registered recPhone hook.
+ // They are never assigned here; retain phase transitions and the final live state on failure.
+ S47J::FObj SC07TelephoneState(US47Main* M)
+ {
+  auto O=S47J::New();auto* C=M&&M->Story?Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))):nullptr;
+  S47J::Set(O,TEXT("available"),M&&M->Phones&&M->Phones->Archive&&M->Phones->RoofSteps&&C);
+  if(!M||!M->Phones||!M->Phones->Archive||!M->Phones->RoofSteps||!C)return O;
+  const auto& A=*M->Phones->Archive;const auto& Roof=*M->Phones->RoofSteps;const auto In=M->Phones->ArcIn();
+  S47J::Set(O,TEXT("chapter"),M->Story->ChapterKey);S47J::Set(O,TEXT("chapter_stage"),C->S.Stage);S47J::Set(O,TEXT("called"),C->S.bCalled);S47J::Set(O,TEXT("supervisor_ringing"),C->bRinging);
+  S47J::Set(O,TEXT("archive_phase"),A.Phase);S47J::Set(O,TEXT("archive_phase_seconds"),A.T);S47J::Set(O,TEXT("archive_pending"),A.Pending());S47J::Set(O,TEXT("archive_off"),A.bOff);S47J::Set(O,TEXT("archive_racing"),A.Racing());S47J::Set(O,TEXT("archive_resting"),A.Resting());
+  S47J::Set(O,TEXT("archive_how"),A.How);S47J::Set(O,TEXT("archive_via"),A.Via);S47J::Set(O,TEXT("arc_call"),M->TownSeen.Contains(TEXT("arc:call")));S47J::Set(O,TEXT("arc_done"),M->TownSeen.Contains(TEXT("arc:done")));
+  S47J::Set(O,TEXT("roof_phase"),Roof.Phase);S47J::Set(O,TEXT("roof_busy"),Roof.Busy());S47J::Set(O,TEXT("hook_ok"),In.bOk);S47J::Set(O,TEXT("hook_others"),In.bOthers);S47J::Set(O,TEXT("hook_where"),In.Where);
+  S47J::Set(O,TEXT("cinematic"),M->Story->IsCinematic());S47J::Set(O,TEXT("modal"),M->ModalOpen());S47J::Set(O,TEXT("clock"),M->Story->Clock());S47J::Set(O,TEXT("save_block"),M->Flow?M->Flow->SaveBlock():FString());
+  if(M->Player){S47J::Set(O,TEXT("player_three"),M->Player->Pos.ToString());}
+  return O;
+ }
+ void SC07ObserveTelephone(US47Main* M,int32 Stage,TArray<TSharedPtr<FJsonValue>>& RayRecords)
+ {
+  // Nest the observations under the actual successful/failed phone ray. Check/use counts stay exact.
+  S47J::FObj Ray;
+  for(int32 Index=RayRecords.Num()-1;Index>=0;--Index)
+  {
+   const auto& V=RayRecords[Index];if(!V||V->Type!=EJson::Object)continue;
+   if(S47J::Str(V->AsObject(),TEXT("id"))==TEXT("recPhone")){Ray=V->AsObject();break;}
+  }
+  if(!Ray)return;
+  const auto State=SC07TelephoneState(M);auto Stable=S47J::Clone(State);Stable->RemoveField(TEXT("archive_phase_seconds"));Stable->RemoveField(TEXT("clock"));
+  const FString Key=S47J::Write(Stable);auto States=S47J::Arr(Ray,TEXT("telephone_states"));
+  if(!States.IsEmpty()&&S47J::Str(States.Last()->AsObject(),TEXT("state_key"))==Key)return;
+  auto R=S47J::New();S47J::Set(R,TEXT("stage"),Stage);S47J::Set(R,TEXT("state_key"),Key);S47J::Set(R,TEXT("actual"),State);States.Add(MakeShared<FJsonValueObject>(R));Ray->SetArrayField(TEXT("telephone_states"),States);
+ }
+
 }
 US47Chapter2* FS47SC07Contract::Act() const{return M&&M->Story?Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))):nullptr;}
 void FS47SC07Contract::Next(int32 Value,double Delay){Stage=Value;Wait=Delay;Progress=FPlatformTime::Seconds();}
@@ -58,6 +91,7 @@ void FS47SC07Contract::Finish(bool Good,const FString& Why)
  S47J::Set(O,TEXT("prerequisite"),PriorReceipt);S47J::Set(O,TEXT("expected_restore_state"),Expected);S47J::Set(O,TEXT("checkpoint_file"),Root.IsEmpty()?nullptr:SC07File(Root/TEXT("sc07-complete.disk.json")));S47J::Set(O,TEXT("final_state"),M&&M->Flow?M->Flow->GameState():nullptr);S47J::Set(O,TEXT("elapsed_seconds"),FPlatformTime::Seconds()-Began);
  S47J::Set(O,TEXT("source_method"),TEXT("Actual SC06 PASS and complete disk checkpoint; byteoriginal isolated case1 transfer followed by ordinary title Continue, with normal manual/Reader/title/Continue at every later cohort. Native Walker TestMove/Resolve, actual camera Pick/focus/HUD OnUse, real document modals, production archive board and telephone, physical Operations drawer/key/door/field-folder/note, disk/title Continue."));
  S47J::Set(O,TEXT("limits"),TEXT("SC01-SC06 are consumed from the named real predecessor, not replayed. The20:30 run-binder seed must already be actually retained; no source substitute or optional-document read quota. VHS and six private pages are not played or credited. API actions are not human input. No visual quality, audio listening, FPS, full matrix, installation or release acceptance."));
+ S47J::Set(O,TEXT("telephone_state"),SC07TelephoneState(M));
  O->SetArrayField(TEXT("executed_checks"),Executed);O->SetArrayField(TEXT("rays"),Rays);O->SetArrayField(TEXT("restores"),Restores);O->SetArrayField(TEXT("photographs"),Photos);
  S47J::Set(O,TEXT("checkpoint"),Root/TEXT("sc07-complete.disk.json"));const bool Written=!Root.IsEmpty()&&FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  if(Good&&Written){UE_LOG(LogTemp,Display,TEXT("S47: spine contract sc07 PASS COMPLETE: %d checks, %d restores, %.3fm evidence=%s"),Checks,Stores,Metres,*Root);}
@@ -212,8 +246,31 @@ void FS47SC07Contract::Tick(double Dt)
  }
  case 24:Path({{-2.3,7.5},{-2.3,9.25}},25);return;
  case 25:if(!Walk())return;if(!Face(TEXT("recPhone")))return;Next(26);return;
- case 26:if(!Use(TEXT("recPhone")))return;Next(27,.3);return;
- case 27:if(M->Story->IsCinematic())return;if(!Check(C->S.bCalled&&C->S.Stage==TEXT("complete")&&!M->Story->Begun.Contains(TEXT("ch3")),TEXT("Nora's actual call completes and physical Operations still guards departure")))return;if(!Store(TEXT("after-nora-before-office")))return;Next(28);return;
+ case 26:
+  SC07ObserveTelephone(M,Stage,Rays);
+  if(!Use(TEXT("recPhone")))return;
+  SC07ObserveTelephone(M,Stage,Rays);Next(27,.3);return;
+ case 27:
+ {
+  SC07ObserveTelephone(M,Stage,Rays);
+  if(!M->Phones||!M->Phones->Archive||!M->Phones->RoofSteps){Finish(false,TEXT("registered phone/roof systems disappeared"));return;}
+  const auto& Archive=*M->Phones->Archive;const auto& Roof=*M->Phones->RoofSteps;
+  if(M->Story->IsCinematic()||M->ModalOpen())return;
+  if(!C->S.bCalled)
+  {
+   // The ordinary recPhone hook owns its roof build, dead line and 47-second event before Nora.
+   // A ringing archive phone needs a real answer; line/count/moment and moving dishes must finish.
+   if(Roof.Busy()||Archive.Phase==TEXT("line")||Archive.Phase==TEXT("count")||Archive.Phase==TEXT("moment")||(Archive.Phase!=TEXT("ringing")&&Archive.Racing()))return;
+   if(Archive.Phase!=TEXT("ringing")&&Archive.Pending()&&M->Phones->ArcIn().bOthers)return;
+   if(!Check(C->S.Stage==TEXT("call-nora")&&M->Story->ChapterKey==TEXT("ch2")&&(Archive.Phase==TEXT("idle")||Archive.Phase==TEXT("ringing")||Archive.Phase==TEXT("done")),TEXT("ordinary same-phone retry is offered only at a real quiet/archive-answer boundary")))return;
+   // Re-aim and use the same actual geometry through Pick/focus/HUD OnUse on the following tick.
+   if(!Face(TEXT("recPhone")))return;
+   Next(26);return;
+  }
+  if(Archive.Racing()||Roof.Busy())return;
+  if(!Check(C->S.bCalled&&C->S.Stage==TEXT("complete")&&!M->Story->Begun.Contains(TEXT("ch3")),TEXT("Nora's actual call completes and physical Operations still guards departure")))return;
+  if(!Store(TEXT("after-nora-before-office")))return;Next(28);return;
+ }
  case 28:Path({{-2.3,7.5},{-3.9,7.5},{-3.9,6.05},{-1.5,6.05},{-1.5,5.6},{.45,5.6},{.45,6.05}},29);return;
  case 29:if(!Walk())return;if(!Face(TEXT("office:drawer")))return;Next(30);return;
  case 30:if(!M->Office->HasKey()){if(!Use(TEXT("office:drawer")))return;Next(31,.7);}else Next(33,0);return;
