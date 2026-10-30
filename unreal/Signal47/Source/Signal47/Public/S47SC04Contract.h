@@ -3,6 +3,7 @@
 #include "S47Json.h"
 class US47Main;
 class FS47SC04;
+struct FHitResult;
 
 // -S47Case=0 -S47EveningTimeline -S47Jump=residual -S47SpineContract=sc04|sc04hide|sc04long.
 // Explicit normal nightService prior-night fixture; owner survives ordinary disk/Flow/title restores.
@@ -15,8 +16,8 @@ private:
  US47Main* M=nullptr;
  FString Mode,Root,Pending;
  int32 Stage=0,Checks=0,Uses=0,Stores=0,Cursor=0,WalkSamples=0,CaptureBefore=0;
- double Began=0,Mark=0,Hold=0,Walked=0,GrabClock=0,GrabAt=0,DoorAt=0;
- bool Started=false,Done=false,NormalContinue=false,RenderWitness=false,DoorNegative=false,GrabNegative=false,HeardOutside=false,SawListen=false;
+ double Began=0,Mark=0,Hold=0,Walked=0,GrabClock=0,GrabAt=0,DoorAt=0,VisibilityAt=0;
+ bool Started=false,Done=false,NormalContinue=false,RenderWitness=false,DoorNegative=false,GrabNegative=false,HeardOutside=false,SawListen=false,RecordsRouteSeen=false;
  FVector Aim=FVector::ZeroVector,LastWalk=FVector::ZeroVector;
  TArray<FVector2D> Route;
  TArray<FString> Pictures;
@@ -38,6 +39,7 @@ private:
  void Snapshot(const FString& Name);
  bool Restore(const FString& Name);
  bool Restored();
+ bool BodySight(FHitResult& Hit,TArray<FString>& Ignored) const;
  bool WaitForBody(const FString& Context);
  bool RenderChecks();
  bool Fixture();
