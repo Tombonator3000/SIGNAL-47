@@ -1386,3 +1386,6 @@ PR256/main153c1039, kilde2b9080ce: revidert gang med slitasje/servicepanel og ko
 
 ### 2026-10-30T18:37+01:00 SARO 1986, nytt detaljpass
 Gren codex/saro-1986-props-20261030: RX3-instrumenter, riktig monterte trykk, telefon/hule bøtter, tynn inventarjakke, brune stoler og finérkonsoll er bygget og kontrollert i samme Unreal-kameraer. Tripo H3.1-armatur er generert for55 eksisterende kreditter; filoverføring/import er fortsatt uavklart, ingen ny installasjon ennå.
+
+### 2026-10-30T19:45+01:00 SARO 1986 installert
+PR258, kilde0468d167/main ebaad3c0: siste Tripo-eksport med rette T12-rør erstatter gammel feilvariant; RX3 og perioderekvisitter er levert. Bygg,1740 selvtester,14 figurer og korte pakkede dag/natt-kameraer består; payload68 og Saved134 kontrollert. To eldre pakkepayloads pensjonert, current+2 beholdt; visuell godkjenning og Low-himling står åpne.
