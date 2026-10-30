@@ -186,9 +186,12 @@ void AS47Web::BeginProductionViews()
   {TEXT("photolab-records-storage"),TEXT("saro"),{14.35,0,-2.5},{17.75,1.02,-1.4}},
   {TEXT("office-owned-props"),TEXT("saro"),{.4,0,8.3},{-.60,.23,8.70}}
  };
- struct FState {int32 Index=0,LastLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
+ struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
  State->bExit=FParse::Param(FCommandLine::Get(),TEXT("S47ProductionExit"));
+ // Fast art iteration: request one existing camera/time without rerunning a suite.
+ FParse::Value(FCommandLine::Get(),TEXT("S47ProductionView="),State->OnlyView);
+ FParse::Value(FCommandLine::Get(),TEXT("S47ProductionLight="),State->OnlyLight);
  const TWeakObjectPtr<AS47Web> Self=this;
  GetWorldTimerManager().SetTimer(State->Timer,[Self,State]{
   if(State->Done)return;AS47Web* W=Self.Get();auto* M=W?US47Main::Get(W):nullptr;
@@ -219,7 +222,8 @@ void AS47Web::BeginProductionViews()
   {
    const int32 I=State->Index%UE_ARRAY_COUNT(Views);const bool Saro=I<4;
    const FString Name(Views[I].Name);const bool Motel=Name.StartsWith(TEXT("motel-")),Signal=Name.StartsWith(TEXT("signal-")),Homes=Name.StartsWith(TEXT("homes-")),Office=Name.StartsWith(TEXT("office-")),Cinema=Name==TEXT("cinema")||Name.StartsWith(TEXT("cinema-poster-")),PhotoLab=Name.StartsWith(TEXT("photolab-"));
-   if((State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
+   if((!State->OnlyView.IsEmpty()&&Name!=State->OnlyView)||(State->OnlyLight!=INDEX_NONE&&State->Index/UE_ARRAY_COUNT(Views)!=State->OnlyLight)
+    ||(State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
     ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))||(State->Suite==TEXT("photolab")&&!PhotoLab)
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;

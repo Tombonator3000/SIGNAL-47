@@ -80,10 +80,10 @@ namespace
 
 	// the props' three.js matrix (position, rotation.y, scale) as Unreal's (S47Three: the glTF swap);
 	// the free models came in through the same glTF import, so a model's own axes are three's
-	FTransform ThreeToUE(const FVector& P, double YawDeg, double Scale)
+	FTransform ThreeToUE(const FVector& P, double YawDeg, double Scale, double PitchDeg = 0, double RollDeg = 0)
 	{
 		double E[16];
-		S47Three::Compose(P, S47Three::Euler(0, FMath::DegreesToRadians(YawDeg), 0), FVector(Scale), E);
+		S47Three::Compose(P, S47Three::Euler(FMath::DegreesToRadians(PitchDeg), FMath::DegreesToRadians(YawDeg), FMath::DegreesToRadians(RollDeg)), FVector(Scale), E);
 		return S47Three::MatToUE(E);
 	}
 }
@@ -270,7 +270,10 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 			else if (bHigh) { UE_LOG(LogS47Props, Warning, TEXT("S47: props: %s %s: no ground under %.1f %.1f"), *Name, *Id, Th.X, Th.Z); Th.Y = 0; }
 		}
 		const double Yaw = Num(P, TEXT("yaw"), 0), Scale = Num(P, TEXT("scale"), 1);
-		const FTransform T = ThreeToUE(Th, Yaw, Scale);
+		// Office files can stand upright or lean inside a magazine holder. Existing
+		// placements retain zero pitch/roll, including every door and vehicle.
+		const double Pitch = Num(P, TEXT("pitch"), 0), Roll = Num(P, TEXT("roll"), 0);
+		const FTransform T = ThreeToUE(Th, Yaw, Scale, Pitch, Roll);
 		UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("Prop_%s_%d"), *Id, Placed.Num()));
 		C->SetMobility(EComponentMobility::Movable);
 		C->SetStaticMesh(Mesh);
@@ -287,7 +290,7 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 			// in the parent's own terms: it goes where the story moves the node (S47Town PlaceCar)
 			if (FMath::IsNaN(Th.Y)) Th.Y = 0;
 			C->AttachToComponent(PN->Comp.IsValid() ? PN->Comp.Get() : W->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			C->SetRelativeTransform(ThreeToUE(Th, Yaw, Scale));
+			C->SetRelativeTransform(ThreeToUE(Th, Yaw, Scale, Pitch, Roll));
 		}
 		else
 		{

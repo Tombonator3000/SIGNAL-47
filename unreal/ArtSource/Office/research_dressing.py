@@ -7,7 +7,7 @@ exports, imports bpy, or creates a ninth native asset type.
 
 All dimensions use the project's Three (x, height, z) metres. SURFACES are actual
 front-face art anchors, viewed from the room towards +X. Their local horizontal
-direction is +Z before roll. Nine finished art bindings are required separately;
+direction is +Z before roll. Finished art bindings are required separately;
 plain paper geometry is not visual acceptance of the research wall.
 """
 from math import cos, radians, sin
@@ -45,6 +45,28 @@ SURFACES = (
     _surface('FieldCard', 1.651, 1.64, 9.54, .32, .35, 2.0, 'field note card'),
     _surface('ContactStrip', 1.651, 2.01, 9.18, .35, .16, -1.5, 'photographic contact strip'),
     _surface('ShiftNote', 1.658, 1.29, 9.78, .32, .21, 3.0, 'folded shift note'),
+    # Older full sheets sit behind the original nine. Foreground contact prints
+    # and short paper fragments bridge their edges without concealing the map.
+    # These are existing routine copies and undecided observations, not findings.
+    _surface('SkyWatchFlyer', 1.662, 2.205, 8.92, .27, .36, 2.0, '1984 community sky-watch flyer'),
+    _surface('SkyLogLower', 1.661, 1.27, 8.77, .23, .28, -2.4, 'existing sky observation note'),
+    _surface('ServiceLogLower', 1.662, 1.31, 9.39, .23, .33, 1.8, '1986 local service copy'),
+    _surface('RadioSchedule', 1.662, 1.81, 8.33, .25, .33, -3.0, '1986 public radio schedule'),
+    _surface('HandoverCopy', 1.662, 2.13, 8.25, .16, .23, 3.5, '1986 operations handover'),
+    _surface('RadioQuietStrip', 1.662, 2.315, 9.65, .46, .15, -1.0, 'reference sign print'),
+    _surface('MaintenanceTag', 1.647, 1.46, 9.88, .16, .24, -4.0, 'unfilled maintenance tag'),
+    _surface('ServiceRequest', 1.662, 1.70, 10.035, .20, .31, 3.0, 'blank service request'),
+    _surface('ReceiverPhoto', 1.649, 1.91, 9.84, .28, .20, -3.0, 'ordinary receiver reference photo'),
+    _surface('ArrayReversePhoto', 1.649, 1.94, 8.63, .28, .20, 4.0, 'ordinary dish reference photo'),
+    _surface('RoadPhotoLower', 1.649, 1.415, 8.23, .15, .15, -5.0, 'ordinary service road print'),
+    _surface('DishPhotoHeader', 1.649, 2.315, 9.25, .24, .15, 3.0, 'ordinary array contact print'),
+    _surface('IndexSlip', 1.648, 1.45, 9.14, .20, .11, -3.0, 'existing working-index fragment'),
+    _surface('ClippingsStrip', 1.649, 2.30, 8.51, .34, .13, -2.0, 'existing newspaper heading fragment'),
+    _surface('ScheduleRows', 1.646, 2.11, 9.38, .22, .17, 2.0, 'ordinary schedule working copy'),
+    _surface('SkySketch', 1.647, 1.48, 8.66, .24, .16, 3.0, 'existing skylog pencil sketch'),
+    _surface('MapDetailLeft', 1.647, 1.78, 8.54, .20, .15, 2.0, 'existing array-map detail'),
+    _surface('ServiceLogMargin', 1.646, 1.96, 10.03, .18, .13, -4.0, 'ordinary service-log excerpt'),
+    _surface('NotePencilFragment', 1.647, 1.20, 9.55, .18, .11, 2.0, 'existing handwritten note fragment'),
 )
 
 
@@ -127,39 +149,4 @@ def build(box, cyl, curve, materials):
                   (a[2] + b[2]) / 2)
         curve('Research_thread_' + str(index), [a, middle, b], .00085, thread)
 
-    # Incoming field folders occupy only the rear-left tabletop margin. The
-    # closest paper edge stays behind z=9.95, clear of all six interactive sheets,
-    # the cup at (.91,9.97), pencils around (.67,10.0), and lamp at (-.24,9.70).
-    # No floor dressing or west-shelf additions enter the access/private zones.
-    def folder_piece(name, centre, offset, size, mat, yaw, bevel=.0008):
-        c, s = cos(yaw), sin(yaw)
-        dx, dy, dz = offset
-        at = (centre[0] + dx * c + dz * s, centre[1] + dy,
-              centre[2] - dx * s + dz * c)
-        piece = box(name, at, size, mat, bevel)
-        piece.rotation_euler.z = yaw
-        return piece
-
-    for index, (height, yaw_degrees, width, depth, cover) in enumerate((
-            (.802, -3.0, .35, .14, cork),
-            (.818, 2.0, .34, .135, blue),
-            (.833, -.5, .33, .13, cork))):
-        centre = (.22 + index * .004, height, 10.035 - index * .002)
-        yaw = radians(yaw_degrees)
-        prefix = 'Incoming_field_folder_' + str(index)
-        folder_piece(prefix + '_lower_cover', centre, (0, 0, 0),
-                     (width, .0012, depth), cover, yaw)
-        folder_piece(prefix + '_fold', centre, (-width / 2 + .003, .006, 0),
-                     (.006, .013, depth), cover, yaw, .0015)
-        for layer in range(4):
-            folder_piece(prefix + '_page_edge_' + str(layer), centre,
-                         (.002 + (layer % 2) * .001, .002 + layer * .002, 0),
-                         (width - .016, .0007, depth - .009 - (layer % 2) * .002), paper, yaw, .0001)
-        folder_piece(prefix + '_upper_cover', centre, (.001, .011, 0),
-                     (width - .004, .0012, depth - .003), cover, yaw)
-        folder_piece(prefix + '_index_tab', centre, (.075, .0105, depth / 2 - .001),
-                     (.052, .0015, .012), cover, yaw, .0004)
-    box('Incoming_folder_clip_back', (.348, .846, 9.990), (.025, .008, .012), dark, .001)
-    for x in (.339, .357):
-        curve('Incoming_folder_clip_wire', [(x, .847, 9.986), (x, .861, 9.994),
-                                            (x, .861, 10.009), (x, .847, 10.010)], .0012, steel)
+    # Rear desktop now uses the existing native telephone and case-file props.

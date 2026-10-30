@@ -45,6 +45,8 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Den navngitte 29. ok
 
 ## Pågående arbeid og kjente feil
 
+**Dale, ny visuell revisjon30. oktober:** Tom har avvist realismenivået i PR236. Ny isolert revisjon bruker ekte vindusåpning, PBR-pult, Tripo-stol og originalbøker fra Old West sammen med mapper, skrivemaskin og28 veggark. Lav grafikk får avgrenset refleksjonslys fra skrivebordet. Native før/etter er gjennomsett; pakking og lokal installasjon gjenstår. Dette er ikke Toms visuelle aksept.95 eksisterende Tripo-kreditter brukt, ingen kjøp.
+
 SARO-interiørpasset er levert i [PR236](https://github.com/Tombonator3000/SIGNAL-47/pull/236), flettet til main `5dce2c8b`, og faktisk installert lokalt. Kontor/gang/dører, arkiv og fotolab er native/visuelt kontrollert; alle33 arkiv-rendernivåer og den uavhengig beviste trågklonen består. Fryst kandidat95807f4f består samlet111/111,1723 selvtester og pakket fysisk Office/gang180/21,09m/16disk-fullFlow. Seks ark består580 kontroller. Installert payload68/68 og Saved134/134 er kontrollert; isolert faktisk tittel/Fortsett og27 Low-kameraer består. [Rapport med før/etter og leveringsgrenser](../Evidence/UnrealDeliveries/SARO_INTERIORS_2026-10-30.md). Ingen kjøp, ny fysisk Dale-scene eller offentlig release. Menneskelig input/FPS er ikke akseptert av API-/Walker-prøvene.
 
 Codex sin nattsekvens er målrettet levert gjennom PR209. Claudes videre kvelds-/SC03-arbeid har egen arbeidskopi. Den lokale arbeidsdelingen føres i [OPPGAVER](../../unreal/OPPGAVER.md). En arbeidsgren, en kjørende test eller en manusendring er ikke en ferdig leveranse. Neste statusoppdatering må vise nøyaktig testet kandidat, merge og eventuell installasjon hver for seg.
