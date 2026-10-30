@@ -80,10 +80,24 @@ void FS47SC04Contract::Finish(bool Good,const FString& Why)
  Out->SetArrayField(TEXT("executed_checks"),Executed);Out->SetArrayField(TEXT("rays"),Rays);Out->SetArrayField(TEXT("states"),States);
  Out->SetArrayField(TEXT("restores"),Restores);Out->SetArrayField(TEXT("photos"),Photos);Out->SetArrayField(TEXT("negative_observations"),Negatives);
  S47J::Set(Out,TEXT("requested_picture_paths"),Pictures);
- S47J::Set(Out,TEXT("sc04_complete_checkpoint"),Root.IsEmpty()?FString():Root/TEXT("sc04-complete.disk.json"));
+ S47J::Set(Out,TEXT("scenario"),TEXT("SC04"));
+ const FString Checkpoint=Root.IsEmpty()?FString():Root/TEXT("sc04-complete.disk.json");
+ S47J::Set(Out,TEXT("sc04_complete_checkpoint"),Checkpoint);
+ if(Good)
+ {
+  TArray<uint8> Bytes;
+  if(!FFileHelper::LoadFileToArray(Bytes,*Checkpoint))Good=false;
+  else
+  {
+   FSHAHash Hash;FSHA1::HashBuffer(Bytes.GetData(),Bytes.Num(),Hash.Hash);auto Pin=S47J::New();
+   S47J::Set(Pin,TEXT("path"),Checkpoint);S47J::Set(Pin,TEXT("bytes"),Bytes.Num());S47J::Set(Pin,TEXT("sha1"),Hash.ToString());
+   S47J::Set(Out,TEXT("checkpoint_file"),Pin);
+  }
+ }
+ S47J::Set(Out,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));
  const bool Written=!Root.IsEmpty()&&FFileHelper::SaveStringToFile(S47J::Write(Out,true),*(Root/TEXT("result.json")));
- if(Good&&Written)UE_LOG(LogTemp,Display,TEXT("S47: spine contract %s PASS COMPLETE: %d checks, %d stores, %d actual uses, %.3fm evidence=%s"),*Mode,Checks,Stores,Uses,Walked,*Root);
- else UE_LOG(LogTemp,Error,TEXT("S47: spine contract %s FAIL stage=%d: %s (result written %d)"),*Mode,Stage,*Why,Written);
+ if(Good&&Written){UE_LOG(LogTemp,Display,TEXT("S47: spine contract %s PASS COMPLETE: %d checks, %d stores, %d actual uses, %.3fm evidence=%s"),*Mode,Checks,Stores,Uses,Walked,*Root);}
+ else {UE_LOG(LogTemp,Error,TEXT("S47: spine contract %s FAIL stage=%d: %s (result written %d)"),*Mode,Stage,*Why,Written);}
  FPlatformMisc::RequestExitWithStatus(false,Good&&Written?0:1);
 }
 bool FS47SC04Contract::Check(bool Good,const FString& Why)
