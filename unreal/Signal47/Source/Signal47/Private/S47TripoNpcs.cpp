@@ -25,9 +25,14 @@ namespace
 
  bool Shown(const USceneComponent* C)
  {
-  for (const USceneComponent* P = C; P; P = P->GetAttachParent())
-   if (!P->IsVisible() || P->bHiddenInGame) return false;
-  return C && C->GetOwner() && !C->GetOwner()->IsHidden();
+  if (!C || !C->IsVisible() || !C->GetOwner() || C->GetOwner()->IsHidden()) return false;
+  // Query-only boxes are hidden in game by default, even while their mesh
+  // children are drawn. Observe the original drawable parts, not that shim.
+  if (C->IsA<UStaticMeshComponent>()) return !C->bHiddenInGame;
+  TArray<USceneComponent*> Children; C->GetChildrenComponents(true, Children);
+  for (const USceneComponent* Child : Children)
+   if (Child->IsA<UStaticMeshComponent>() && Child->IsVisible() && !Child->bHiddenInGame) return true;
+  return false;
  }
 
  // Only suppress the old rendering. Its visibility flags, transforms and pick
@@ -132,7 +137,7 @@ void FS47TripoNpcs::Update()
   const FString& R = Slot.Role; Slot.bBound = false; C->SetVisibility(false);
   if (R == TEXT("patron")) OnObject(Slot, TEXT("world.diner.objs.driver"), FVector(0,.28,0), true);
   else if (R == TEXT("nora")) OnObject(Slot, TEXT("world.room6.objs.nora"), FVector::ZeroVector, true);
-  else if (R == TEXT("radio_woman")) OnObject(Slot, TEXT("world.town.woman"), FVector(0,-.44,0), true);
+  else if (R == TEXT("radio_woman")) OnObject(Slot, TEXT("world.town.woman"), FVector(0,-.34,-.13), true);
   else if (R == TEXT("souvenir_man")) OnObject(Slot, TEXT("world.town.smoker"), FVector::ZeroVector, true);
   else if (R == TEXT("dale"))
   {
@@ -228,10 +233,11 @@ void FS47TripoNpcs::Update()
   const FS47Obj Old = W->Obj(TEXT("world.town.woman"));
   if (Woman && Old)
   {
-   const FVector Centre = Old.LocalToWorld(FVector(0,.12,-.33));
+   const FVector Centre = S47Three::ToThree(Woman->GetComponentLocation()) + FVector(.30,.70,0);
    FTransform T=Pose(Centre,Old.WorldQuaternion());
    const double Span=Radio->GetStaticMesh()->GetBoundingBox().GetSize().GetMax();
    T.SetScale3D(FVector(22./FMath::Max(Span,1.)));
+   T.SetLocation(T.GetLocation() - T.TransformVector(Radio->GetStaticMesh()->GetBoundingBox().GetCenter()));
    Radio->SetWorldTransform(T); Radio->SetVisibility(Woman->IsVisible());
   }
  }
