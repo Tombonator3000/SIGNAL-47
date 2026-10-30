@@ -10,9 +10,12 @@
     "roughness": 0.91,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_SageWall_base.png",
-      "roughness": "textures/M_Office_SageWall_rough.png"
+      "roughness": "textures/M_Office_SageWall_rough.png",
+      "normal": "textures/M_Office_SageWall_normal_dx.png"
     }
   },
   {
@@ -26,9 +29,12 @@
     "roughness": 0.63,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_CreamEnamel_base.png",
-      "roughness": "textures/M_Office_CreamEnamel_rough.png"
+      "roughness": "textures/M_Office_CreamEnamel_rough.png",
+      "normal": "textures/M_Office_CreamEnamel_normal_dx.png"
     }
   },
   {
@@ -42,9 +48,12 @@
     "roughness": 0.54,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_Walnut_base.png",
-      "roughness": "textures/M_Office_Walnut_rough.png"
+      "roughness": "textures/M_Office_Walnut_rough.png",
+      "normal": "textures/M_Office_Walnut_normal_dx.png"
     }
   },
   {
@@ -56,11 +65,14 @@
       1
     ],
     "roughness": 0.49,
-    "metallic": 0.42,
+    "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_TankerGreen_base.png",
-      "roughness": "textures/M_Office_TankerGreen_rough.png"
+      "roughness": "textures/M_Office_TankerGreen_rough.png",
+      "normal": "textures/M_Office_TankerGreen_normal_dx.png"
     }
   },
   {
@@ -72,11 +84,14 @@
       1
     ],
     "roughness": 0.57,
-    "metallic": 0.38,
+    "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_CabinetEnamel_base.png",
-      "roughness": "textures/M_Office_CabinetEnamel_rough.png"
+      "roughness": "textures/M_Office_CabinetEnamel_rough.png",
+      "normal": "textures/M_Office_CabinetEnamel_normal_dx.png"
     }
   },
   {
@@ -90,9 +105,12 @@
     "roughness": 0.49,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_BlackBakelite_base.png",
-      "roughness": "textures/M_Office_BlackBakelite_rough.png"
+      "roughness": "textures/M_Office_BlackBakelite_rough.png",
+      "normal": "textures/M_Office_BlackBakelite_normal_dx.png"
     }
   },
   {
@@ -106,9 +124,12 @@
     "roughness": 0.31,
     "metallic": 0.82,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_AgedBrass_base.png",
-      "roughness": "textures/M_Office_AgedBrass_rough.png"
+      "roughness": "textures/M_Office_AgedBrass_rough.png",
+      "normal": "textures/M_Office_AgedBrass_normal_dx.png"
     }
   },
   {
@@ -122,9 +143,12 @@
     "roughness": 0.29,
     "metallic": 0.84,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_BrushedMetal_base.png",
-      "roughness": "textures/M_Office_BrushedMetal_rough.png"
+      "roughness": "textures/M_Office_BrushedMetal_rough.png",
+      "normal": "textures/M_Office_BrushedMetal_normal_dx.png"
     }
   },
   {
@@ -138,9 +162,12 @@
     "roughness": 0.89,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_ChairFabric_base.png",
-      "roughness": "textures/M_Office_ChairFabric_rough.png"
+      "roughness": "textures/M_Office_ChairFabric_rough.png",
+      "normal": "textures/M_Office_ChairFabric_normal_dx.png"
     }
   },
   {
@@ -154,9 +181,12 @@
     "roughness": 0.96,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_Paper_base.png",
-      "roughness": "textures/M_Office_Paper_rough.png"
+      "roughness": "textures/M_Office_Paper_rough.png",
+      "normal": "textures/M_Office_Paper_normal_dx.png"
     }
   },
   {
@@ -170,9 +200,12 @@
     "roughness": 0.93,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_Cork_base.png",
-      "roughness": "textures/M_Office_Cork_rough.png"
+      "roughness": "textures/M_Office_Cork_rough.png",
+      "normal": "textures/M_Office_Cork_normal_dx.png"
     }
   },
   {
@@ -186,9 +219,12 @@
     "roughness": 0.68,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_FloorLinoleum_base.png",
-      "roughness": "textures/M_Office_FloorLinoleum_rough.png"
+      "roughness": "textures/M_Office_FloorLinoleum_rough.png",
+      "normal": "textures/M_Office_FloorLinoleum_normal_dx.png"
     }
   },
   {
@@ -202,9 +238,12 @@
     "roughness": 0.98,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_CeilingTile_base.png",
-      "roughness": "textures/M_Office_CeilingTile_rough.png"
+      "roughness": "textures/M_Office_CeilingTile_rough.png",
+      "normal": "textures/M_Office_CeilingTile_normal_dx.png"
     }
   },
   {
@@ -218,9 +257,12 @@
     "roughness": 0.73,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_BinderBurgundy_base.png",
-      "roughness": "textures/M_Office_BinderBurgundy_rough.png"
+      "roughness": "textures/M_Office_BinderBurgundy_rough.png",
+      "normal": "textures/M_Office_BinderBurgundy_normal_dx.png"
     }
   },
   {
@@ -234,9 +276,69 @@
     "roughness": 0.76,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_BinderBlue_base.png",
-      "roughness": "textures/M_Office_BinderBlue_rough.png"
+      "roughness": "textures/M_Office_BinderBlue_rough.png",
+      "normal": "textures/M_Office_BinderBlue_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_BinderOlive",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.83,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_BinderOlive_base.png",
+      "roughness": "textures/M_Office_BinderOlive_rough.png",
+      "normal": "textures/M_Office_BinderOlive_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_BinderFadedGray",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.85,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_BinderFadedGray_base.png",
+      "roughness": "textures/M_Office_BinderFadedGray_rough.png",
+      "normal": "textures/M_Office_BinderFadedGray_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_BinderTan",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.8,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_BinderTan_base.png",
+      "roughness": "textures/M_Office_BinderTan_rough.png",
+      "normal": "textures/M_Office_BinderTan_normal_dx.png"
     }
   },
   {
@@ -250,9 +352,50 @@
     "roughness": 0.56,
     "metallic": 0,
     "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
     "textures": {
       "base_color": "textures/M_Office_Diffuser_base.png",
-      "roughness": "textures/M_Office_Diffuser_rough.png"
+      "roughness": "textures/M_Office_Diffuser_rough.png",
+      "normal": "textures/M_Office_Diffuser_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_CorridorTubeWest",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_CorridorTubeWest_base.png",
+      "roughness": "textures/M_Office_CorridorTubeWest_rough.png",
+      "normal": "textures/M_Office_CorridorTubeWest_normal_dx.png"
+    }
+  },
+  {
+    "name": "M_Office_CorridorTubeEast",
+    "base_color_linear": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "roughness": 0.56,
+    "metallic": 0,
+    "specular": 0.33,
+    "normal_strength": 1.0,
+    "normal_convention": "DirectX",
+    "textures": {
+      "base_color": "textures/M_Office_CorridorTubeEast_base.png",
+      "roughness": "textures/M_Office_CorridorTubeEast_rough.png",
+      "normal": "textures/M_Office_CorridorTubeEast_normal_dx.png"
     }
   }
 ]

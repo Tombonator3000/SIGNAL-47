@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "pack": "Vintage Liminal Props Pack",
+  "publisher": "Šime Bugarija",
+  "license": "Superhive Standard License, purchased by Tom 2026-10-19",
+  "license_evidence_sha256": "49ac27b9520893119cb6410d8817a4b5e10534479a4ca8b06cf55759ddf3f858",
+  "privacy": "Originals, staged blends, textures, exports and derived uassets remain private; public recipes contain metadata only.",
+  "inventory_scope": "Historical Blender inventory from 2026-10-19; this recipe binds its bytes and current original bytes. It does not reopen Blender or certify new native/runtime results.",
+  "sources": [
+    {
+      "blend": "2_Electronics_Audio_Video_Cables.blend",
+      "source_sha256": "affda33d18118305ff9122d84fedb75d838c6cc4972c5120ebb1ebf6eadae1b2",
+      "inventory": "inv_2_Electronics_Audio_Video_Cables.json",
+      "inventory_sha256": "7d371042e10daa8e63d408cbbdaf3f53bc4f60997515966199620b8ffa106021",
+      "objects": [
+        {"name": "13_Coaxial Signal Cable", "triangles": 14386, "role": "Dale radio workspace, one loose cable coil"},
+        {"name": "20_Audio Cassette Tape", "triangles": 3546, "role": "Dale recordings; verify physical scale and replace label with story artwork"}
+      ]
+    },
+    {
+      "blend": "3_Office_Supplies.blend",
+      "source_sha256": "d8225cb3e1c80623d051f863b3cabcce2fc3283a040469ed8c733b73443e6b38",
+      "inventory": "inv_3_Office_Supplies.json",
+      "inventory_sha256": "7ca1bac1d8cbbdfc7bf29b5a9f4e80d0097c719188ea2f63104f08272a149fc6",
+      "objects": [
+        {"name": "24_Cardboard Archive Box", "triangles": 660, "role": "Dale and archive open storage, body and lid separated after inspection"}
+      ]
+    },
+    {
+      "blend": "5_Furniture_Wooden_Cabinets.blend",
+      "source_sha256": "9272e6f9ee871c789e5f07ec59a6928c6d6afcc840553124c34792172ecbc671",
+      "inventory": "inv_5_Furniture_Wooden_Cabinets.json",
+      "inventory_sha256": "a9bdcd55e66512614e02a9c276255f0405dee22d819828c239cf5a3a6bcb3802",
+      "objects": [
+        {"name": "57_Wooden Bookcase", "triangles": 614, "role": "Dale personal research shelving"}
+      ]
+    }
+  ],
+  "next_steps": {
+    "blender": "Append only selected object names from immutable originals with auto-execution disabled (-Y). Reuse historical build_models.py append/pivot helpers, not its web diffuse-only bake.",
+    "materials": "Bake base color, roughness and DirectX tangent normal separately from actual source graphs; keep material slots for metal. Preserve the box Overlay UV during source evaluation. Do not bake scene lighting into base color.",
+    "native": "Reuse Tools/fieldintegration/import_recipe.py FBX/PBR helpers with explicit private destination /Game/Licensed/Interiors. Actual native import, dimensions, normal strength and runtime appearance remain unverified."
+  }
+}

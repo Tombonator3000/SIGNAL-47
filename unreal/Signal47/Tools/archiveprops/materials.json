@@ -7,7 +7,7 @@
       1,
       1
     ],
-    "metallic": 0.43,
+    "metallic": 0,
     "roughness": 0.72,
     "specular": 0.27,
     "normal_strength": 0.1,
@@ -34,7 +34,7 @@
       1,
       1
     ],
-    "metallic": 0.35,
+    "metallic": 0,
     "roughness": 0.73,
     "specular": 0.27,
     "normal_strength": 0.1,
@@ -61,7 +61,7 @@
       1,
       1
     ],
-    "metallic": 0.25,
+    "metallic": 0,
     "roughness": 0.68,
     "specular": 0.27,
     "normal_strength": 0.1,

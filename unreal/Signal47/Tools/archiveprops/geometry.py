@@ -8,6 +8,8 @@ import importlib.util, math
 _p=Path(__file__).resolve().parent.parent/'substation'/'meshkit.py'
 _s=importlib.util.spec_from_file_location('s47_archive_original_primitives',_p)
 base=importlib.util.module_from_spec(_s);_s.loader.exec_module(base)
+from design import (SHELF_GAMEPLAY_BAY, SHELF_CONTENT_VARIANTS, BOOK_HEIGHTS,
+                    BOOK_WIDTHS, BOOK_LEAN_DEGREES, TOP_BINDER_CLEAR_X)
 T=lambda p:(p[0],-p[2],p[1])
 class Mesh(base.Mesh):
  def face(self,ps,mat,uv=None,smooth=False):
@@ -15,28 +17,68 @@ class Mesh(base.Mesh):
  def b(self,name,at,size,mat):self.box(name,T(at),(size[0],size[2],size[1]),mat)
  def rb(self,name,at,size,radius,mat,lod):self.rounded_box(name,T(at),(size[0],size[2],size[1]),radius,mat,[4,2,1][lod])
  def rod(self,name,a,b,r,mat,lod):self.tube(name,T(a),T(b),r,mat,[12,8,6][lod])
- def print(self,name,at,w,h,cell,normal=(1,0,0)):
+ def print(self,name,at,w,h,cell,normal=(1,0,0),subcell=None):
   # 4x4 atlas with generous gutters, fixed physical label dimensions.
   self.tag=name;n=base.unit(T(normal));right=base.unit(base.cross((0,0,1),n));up=base.cross(n,right)
   ps=[base.add(T(at),base.add(base.mul(right,x*w/2),base.mul(up,y*h/2)))for x,y in [(-1,-1),(1,-1),(1,1),(-1,1)]]
   col,row=cell%4,cell//4;u0,u1=(col+.04)/4,(col+.96)/4;v0,v1=1-(row+.96)/4,1-(row+.04)/4
+  if subcell is not None:
+   assert cell==14 and subcell in range(4),'Only the unused ordinary-label cell is subdivided'
+   qx,qy=subcell%2,subcell//2
+   u0,u1=(col+qx*.5+.025)/4,(col+(qx+1)*.5-.025)/4
+   v0,v1=1-(row+(qy+1)*.5-.025)/4,1-(row+qy*.5+.025)/4
   self.face(ps,'PrintAtlas',[(u0,v0),(u1,v0),(u1,v1),(u0,v1)])
  def topprint(self,name,at,w,d,cell):
   self.tag=name;cx,cy,cz=T(at);ps=[(cx-w/2,cy-d/2,cz),(cx+w/2,cy-d/2,cz),(cx+w/2,cy+d/2,cz),(cx-w/2,cy+d/2,cz)]
   col,row=cell%4,cell//4;u0,u1=(col+.04)/4,(col+.96)/4;v0,v1=1-(row+.96)/4,1-(row+.04)/4
   self.face(ps,'PrintAtlas',[(u0,v0),(u1,v0),(u1,v1),(u0,v1)])
 
-def carton(m,at,size,lod,label=1):
+def carton(m,at,size,lod,label=1,label_subcell=None):
  x,y,z=at;w,h,d=size
  # Closed archive cartons are deliberately separate from the story's falling box.
  m.rb('Kraft_archive_carton',(x,y+h/2,z),(w,h,d),.006,'Kraft',lod)
  m.b('Overhanging_card_lid',(x,y+h+.005,z),(w+.014,.018,d+.014),'KraftEdge')
  m.b('Lid_wrapped_fold',(x+w/2+.006,y+h-.012,z),(.009,.035,d+.012),'KraftEdge')
- m.print('Archive_carton_index',(x+w/2+.011,y+h*.49,z),min(d*.67,.22),min(h*.43,.10),label)
+ m.print('Archive_carton_index',(x+w/2+.011,y+h*.49,z),min(d*.67,.22),min(h*.43,.10),label,subcell=label_subcell)
  if lod<2:
   # Recessed hand-slot, not a reflective or unlit floating rectangle.
   m.b('Handslot_dark_recess',(x+w/2+.007,y+h-.052,z),(.008,.018,.065),'Rubber')
   for dz in [-.038,.038]:m.b('Handslot_reinforced_corner',(x+w/2+.012,y+h-.052,z+dz),(.004,.024,.012),'KraftEdge')
+
+def storage_folders(m,at,size,lod,variant):
+ x,y,z=at;w,h,d=size
+ count=[5,3,2][lod]
+ for index in range(count):
+  zz=z-d*.38+index*d*.76/max(1,count-1);hh=h-.025-(index%3)*.014
+  m.b('Used_field_folder_cover',(x,y+hh/2+.006,zz),(w-.035,hh,.008),'BookBrown' if index%3 else 'BookBlue')
+  m.b('Visible_folder_paper_edges',(x+.002,y+hh/2+.008,zz+.005),(w-.052,hh-.018,.003),'Paper')
+  m.b('Staggered_field_folder_tab',(x+.03,y+hh+.007,zz),(.075,.022,.011),'KraftEdge')
+  if lod<2:m.print('Folder_reference_index',(x,y+hh*.63,zz-.0045),min(.12,w*.55),.055,
+                   14,normal=(0,0,-1),subcell=(variant+index)%4)
+
+def ordinary_storage(m,at,size,lod,variant,kind='closed'):
+ """Static cartons/folders share no mesh with the animated FieldBox."""
+ x,y,z=at;w,h,d=size;start=len(m.uv)
+ if kind=='folders':
+  storage_folders(m,at,size,lod,variant)
+ elif kind=='open':
+  # A real five-panel hollow carton, plus its existing-size lid resting upright
+  # against the back. No dark cap or filled cube pretends to be an opening.
+  t=.005
+  m.b('Open_archive_carton_floor',(x,y+.005,z),(w,.010,d),'Kraft')
+  for xx in [x-w/2+t/2,x+w/2-t/2]:m.b('Open_carton_long_side',(xx,y+h/2,z),(t,h,d),'Kraft')
+  for zz in [z-d/2+t/2,z+d/2-t/2]:m.b('Open_carton_end',(x,y+h/2,zz),(w-2*t,h,t),'Kraft')
+  m.b('Upright_archive_lid',(x-w/2-.005,y+(w+.014)/2,z),(.008,w+.014,d+.014),'KraftEdge')
+  m.print('Open_carton_reference',(x+w/2+.001,y+h*.48,z),min(d*.67,.22),.095,14,subcell=variant%4)
+  # Sparse file groups sit on the bottom, well below the next shelf.
+  storage_folders(m,(x,y+.011,z),(.29,h*.72,d*.83),lod,variant)
+ else:
+  carton(m,at,size,lod,14,label_subcell=variant%4)
+ # Shift metre-projected paper/paint grain per ordinary object. Atlas labels
+ # retain their exact UVs; all story-prop UVs bypass this helper entirely.
+ for index in range(start,len(m.uv)):
+  if not m.mat[index].endswith('PrintAtlas'):
+   m.uv[index]=[(u+(variant%7)*.137,v+((variant*3)%11)*.113) for u,v in m.uv[index]]
 
 def shelving(lod):
  m=Mesh('SM_ArchiveProps_ShelvingStorage')
@@ -57,8 +99,13 @@ def shelving(lod):
  for row,y in enumerate([.135,.635,1.135,1.635]):
   for col,z in enumerate([-1.18,-.76,-.34,.08,.50,.92,1.30]):
    # STATION 01 and the hidden fire drawer need a real clear bay at z=-.05.
-   if row==2 and abs(z+.05)<.32:continue
-   h=.26+((row*7+col)%3)*.026;carton(m,(-.03,y,z),(.34,h,.32 if col<6 else .22),lod,1+((row+col)%3))
+   bay=SHELF_GAMEPLAY_BAY
+   if row==bay['row'] and abs(z-bay['centre_z'])<bay['half_width_z']:continue
+   kind=SHELF_CONTENT_VARIANTS.get((row,col),'closed')
+   if kind=='gap':continue
+   variant=row*7+col;h=.26+(variant%3)*.026
+   ordinary_storage(m,(-.03+((variant%3)-1)*.010,y,z+((variant%5)-2)*.004),
+                    (.34,h,.32 if col<6 else .22),lod,variant,kind)
  m.print('Rack_inventory_plate',(.246,2.245,-1.12),.43,.095,4)
  return m
 
@@ -74,8 +121,11 @@ def filing(lod):
    m.print('Drawer_typed_index',(x,h+.09,-.335-out),.10,.046,5,normal=(0,0,-1))
    m.rod('Chrome_cabinet_pull',(x-.067,h+.018,-.353-out),(x+.067,h+.018,-.353-out),.009,'Metal',lod)
    for dx in [-.065,.065]:m.b('Pull_standoff',(x+dx,h+.018,-.34-out),(.018,.018,.027),'Metal')
+   if lod<2:
+    m.b('Worn_paint_below_drawer_pull',(x+(.032 if (idx+row)%2 else -.029),h+.005,-.3322-out),
+        (.049 if row%2 else .037,.004,.0008),'Metal')
    if lod==0:m.rod('Cabinet_lock_cylinder',(x+.15,h+.082,-.334-out),(x+.15,h+.082,-.345-out),.008,'Metal',lod)
-  if lod<2:carton(m,(x,1.325,0),(.39,.25,.44),lod,2)
+  if lod<2:ordinary_storage(m,(x,1.325,(idx-1)*.009),(.39,.23+idx*.010,.44),lod,31+idx)
  return m
 
 def cardindex(lod):
@@ -90,7 +140,10 @@ def cardindex(lod):
    m.rod('Index_label_pull',(front-.036,y-.014,z-.047),(front-.036,y-.014,z+.047),.007,'Metal',lod)
    if opened:
     m.b('Open_index_tray',(-.34,y-.08,z),(.23,.014,.23),'DarkSteel')
-    for i in range([10,6,3][lod]):m.b('Standing_filing_card',(-.42+i*.019,y-.01,z),(.003,.16,.21),'Paper')
+    for i in range([10,6,3][lod]):
+     hh=.16-(i%3)*.009
+     m.b('Standing_filing_card',(-.42+i*.019,y-.09+hh/2,z),(.003,hh,.21),'Paper')
+     if lod<2 and i%3==0:m.b('Reference_card_divider_tab',(-.42+i*.019,y-.09+hh+.006,z-.045+(i%2)*.08),(.004,.014,.065),'KraftEdge')
  m.b('Index_top_overhang',(0,1.064,0),(.53,.028,.93),'SteelOlive')
  # Physical wall-mounted title plate, clear of the cabinet top, at the old anchor.
  m.b('Lineage_title_plate',(.241,1.30,0),(.008,.18,.50),'BeigeEnamel')
@@ -103,11 +156,24 @@ def bookcase(lod):
  for y in [.035,.43,.88]:m.b('Walnut_fixed_shelf',(0,y,0),(w,.04,d),'Walnut')
  m.b('Hardboard_back',(0,h/2,.17),(w-.05,h-.05,.02),'Walnut')
  for i,x in enumerate([-.85,-.75,-.65,-.55,-.45,-.35,.40,.50,.60,.70,.80,.90]):
-  m.rb('Cloth_bound_service_volume',(x,1.05,0),(.073,.3,.25),.004,'BookBlue' if i%2==0 else 'BookBrown',lod)
-  for y in [.95,1.16]:m.b('Gold_spine_rule',(x,y,-.128),(.053,.005,.003),'Brass')
-  if lod<2:m.print('Binder_spine_index',(x,1.055,-.129),.046,.11,8,normal=(0,0,-1))
- for i in range([9,6,3][lod]):
-  x=-.73+i*.16;m.b('Stored_maintenance_volume',(x,.22,0),(.13,.31,.25),'BookBrown'if i%2 else'BookBlue')
+  start=len(m.v);width=BOOK_WIDTHS[i%len(BOOK_WIDTHS)];height=BOOK_HEIGHTS[i%len(BOOK_HEIGHTS)]
+  assert x+width/2<=TOP_BINDER_CLEAR_X[0] or x-width/2>=TOP_BINDER_CLEAR_X[1]
+  m.rb('Cloth_bound_service_volume',(x,.90+height/2,0),(width,height,.25),.004,'BookBlue' if i%3 else 'BookBrown',lod)
+  for y in [.93,.90+height-.034]:m.b('Gold_spine_rule',(x,y,-.128),(width-.018,.004,.003),'Brass')
+  if lod<2:
+   m.print('Binder_spine_index',(x,.90+height*.52,-.129),width-.022,.087+(i%2)*.009,14,normal=(0,0,-1),subcell=i%4)
+   if i%3==1:m.b('Exposed_service_volume_page_edge',(x+width/2-.003,.90+height/2,.004),(.003,height-.018,.227),'Paper')
+  angle=math.radians(BOOK_LEAN_DEGREES.get(i,0));c,s=math.cos(angle),math.sin(angle)
+  for index in range(start,len(m.v)):
+   xx,zz,yy=m.v[index];dx,dy=xx-x,yy-.90
+   m.v[index]=(x+dx*c-dy*s,zz,.90+dx*s+dy*c+abs(s)*width/2)
+ for i in range([8,5,2][lod]):
+  x=-.73+i*.16;hh=.26+(i%3)*.019
+  m.b('Stored_maintenance_volume',(x,.055+hh/2,0),(.115+(i%2)*.009,hh,.25),'BookBrown'if i%3 else'BookBlue')
+ for i in range([3,2,1][lod]):
+  m.rb('Horizontal_reference_volume',(.62+(i%2)*.009,.074+i*.036,-.003+(i%2)*.008),
+       (.30,.033,.25),.003,'BookBrown' if i%2 else 'BookBlue',lod)
+  if lod==0:m.b('Horizontal_volume_paper_edge',(.623,.074+i*.036,-.129),(.272,.022,.004),'Paper')
  return m
 
 def table(lod):

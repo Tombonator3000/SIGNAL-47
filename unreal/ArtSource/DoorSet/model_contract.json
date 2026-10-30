@@ -1,0 +1,167 @@
+{
+  "units": "metres",
+  "mapping": "Blender (x,-z,y) to UE (100x,100z,100y)",
+  "authorship": "Original Office-compatible beveled joinery and hardware",
+  "parts": {
+    "SM_DoorFrame_Service": {
+      "triangles": 5388,
+      "bounds_local_m": [
+        [
+          -0.052000001072883606,
+          -0.10400000214576721,
+          -0.003999999724328518
+        ],
+        [
+          1.0520000457763672,
+          0.10400000214576721,
+          2.133999824523926
+        ]
+      ],
+      "materials": [
+        "M_Office_CabinetEnamel",
+        "M_Office_BlackBakelite",
+        "M_Office_BrushedMetal"
+      ],
+      "original_components": 57
+    },
+    "SM_DoorFrame_Archive": {
+      "triangles": 6684,
+      "bounds_local_m": [
+        [
+          -0.07899999618530273,
+          -0.11299999803304672,
+          -0.003999999724328518
+        ],
+        [
+          1.0789999961853027,
+          0.11299999803304672,
+          2.1610000133514404
+        ]
+      ],
+      "materials": [
+        "M_Office_Walnut",
+        "M_Office_BlackBakelite",
+        "M_Office_CreamEnamel",
+        "M_Office_BrushedMetal",
+        "M_Office_AgedBrass"
+      ],
+      "original_components": 69
+    }
+  },
+  "frames": {
+    "SM_DoorFrame_Service": {
+      "leaf_width_m": 1.0,
+      "leaf_height_m": 2.07,
+      "leaf_bottom_m": 0.012,
+      "leaf_core_thickness_m": 0.045,
+      "office_leaf_core_thickness_m": 0.055,
+      "office_leaf_perimeter_rear_m": 0.032,
+      "leaf_depth_scale": 0.8181818181818181,
+      "scaled_leaf_perimeter_rear_m": 0.02618181818181818,
+      "side_and_head_clearance_m": 0.004,
+      "stop_clearance_m": 0.002,
+      "stop_contact_z_m": 0.028181818181818183,
+      "solid_stop_front_z_m": 0.030181818181818185,
+      "frame_depth_m": 0.18,
+      "threshold_top_m": 0.008,
+      "hinge_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "leaf_midplane_z_m": 0,
+      "opening_x_m": [
+        -0.004,
+        1.004
+      ],
+      "opening_y_m": [
+        0.008,
+        2.086
+      ],
+      "scale_contract": {
+        "FrameScaleX": "actual leaf width / leaf_width_m",
+        "FrameScaleY": "actual leaf height / leaf_height_m",
+        "ue_scale": "(FrameScaleX, 1, FrameScaleY)",
+        "leaf_location_three_m": [
+          0.5,
+          1.047,
+          0
+        ],
+        "leaf_mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door"
+      },
+      "style": "service",
+      "name": "SM_DoorFrame_Service",
+      "origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_Office_BlackBakelite",
+        "M_Office_BrushedMetal",
+        "M_Office_CabinetEnamel"
+      ],
+      "component_count": 57
+    },
+    "SM_DoorFrame_Archive": {
+      "leaf_width_m": 1.0,
+      "leaf_height_m": 2.07,
+      "leaf_bottom_m": 0.012,
+      "leaf_core_thickness_m": 0.045,
+      "office_leaf_core_thickness_m": 0.055,
+      "office_leaf_perimeter_rear_m": 0.032,
+      "leaf_depth_scale": 0.8181818181818181,
+      "scaled_leaf_perimeter_rear_m": 0.02618181818181818,
+      "side_and_head_clearance_m": 0.004,
+      "stop_clearance_m": 0.002,
+      "stop_contact_z_m": 0.028181818181818183,
+      "solid_stop_front_z_m": 0.030181818181818185,
+      "frame_depth_m": 0.18,
+      "threshold_top_m": 0.008,
+      "hinge_origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "leaf_midplane_z_m": 0,
+      "opening_x_m": [
+        -0.004,
+        1.004
+      ],
+      "opening_y_m": [
+        0.008,
+        2.086
+      ],
+      "scale_contract": {
+        "FrameScaleX": "actual leaf width / leaf_width_m",
+        "FrameScaleY": "actual leaf height / leaf_height_m",
+        "ue_scale": "(FrameScaleX, 1, FrameScaleY)",
+        "leaf_location_three_m": [
+          0.5,
+          1.047,
+          0
+        ],
+        "leaf_mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door"
+      },
+      "style": "archive",
+      "name": "SM_DoorFrame_Archive",
+      "origin_three_m": [
+        0,
+        0,
+        0
+      ],
+      "materials": [
+        "M_Office_AgedBrass",
+        "M_Office_BlackBakelite",
+        "M_Office_BrushedMetal",
+        "M_Office_CreamEnamel",
+        "M_Office_Walnut"
+      ],
+      "component_count": 69
+    }
+  },
+  "leaf_asset": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+  "office_material_root": "/Game/Signal47/Art/Office/Materials",
+  "office_source_sha256": "61f337a07de4cadfb49a3ee39cf569c29a0e4222e61f0d309730a1c6e53f809e",
+  "collision": "None; existing runtime doors/proxies retain authority"
+}

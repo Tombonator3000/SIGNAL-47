@@ -78,7 +78,9 @@ void AS47Web::BuildLabLighting()
 		return -1;
 	};
 	const int32 Wall = Glass(SafeWall, 0, TEXT("yard.redGlass[0]"), FVector(0, 0, 1), 24.f, 4.f);
-	Glass(Ceiling, 1, TEXT("yard.redGlass[1]"), FVector(0, -1, 0), 45.f, 6.f);
+	// Normal work light serves the actual 40.9 m2 lab. Its former 45 lm left
+	// the wet bench unlit even with Lumen. Safe ceiling flux stays independently 12 lm.
+	Glass(Ceiling, 1, TEXT("yard.redGlass[1]"), FVector(0, -1, 0), 450.f, 6.f);
 	Glass(Warning, 0, TEXT("yard.redGlass[2]"), FVector(-1, 0, 0), 0.5f, 0.8f);
 	if (Wall >= 0)
 	{
