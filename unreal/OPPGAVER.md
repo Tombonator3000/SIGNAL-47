@@ -127,3 +127,8 @@ SC04R6 fra c3fec0ec består hovedruten314/5disk/12ray/50,60m, men skjuling feile
 ### 2026-10-30T03:01:27+01:00 Fryst tilpasning og Content-grunnlag
 
 Tilpasning66a73755 er fryst: runtime-rom bruker faktisk bay/aperture og SC04-lydpunkt følger faktisk Operations-blad. De42grafkantene og kollisjonskravene er uendret. Nativebay/lyd/dørregresjoner er skrevet, ikke kjørt. Content-kontroll av12991inputs fant ingen manglende Git-/genererte filer etter lokal gjenbruk av19privateLicensed-filer; tre genererte nativeg910–g912 er deretter bytekopiert fra hashbundetSARO-kandidat med originale lokalbytes bevart. To audioJSON-er er semantisk identiske og beholder lokalformat. Privatekjøptebytes forblir utenforGit. Nytt integrertbygg og SC13Blender/import/ferskleser er neste tunge serie; faktisk nattkjede gjenstår.
+
+
+### 2026-10-30T03:27:02+01:00 SC04 målrettet PASS, faktisk nattoppstart avvist
+
+IntegrerteditorR2/de09bb4e består15,761s og gir modulca52ee55. SC04R7 består alletreruter:798kontroller/13disk-fullFlow/31bruk og184,09m nativegange. R6s gangsonefeil er bevart og konkretprøvd på ny main. [Oppdatert rapport](../Docs/Evidence/UnrealDeliveries/SC04_2026-10-30.md) skiller navngitt startfixture fra faktisk natt. Første nativefinaleforsøk feilet på readonlyPython-property; editorpropertyretting02cd er separat. Neste nativeforsøk feilet ved maskens faktiske pinnavn. Ingenbinding er aktivert. Faktisk NightR1 består1774selvtester, men avviser ny-sak/pendlerstatus i stage0 førSC01; rawbevis er bevart, faktisk Async/Flow-oppstart undersøkes uten kildefixtures. Alleviderekapitler er fortsattUNVERIFIED. Ingeninstallasjon/release i dettepasset.

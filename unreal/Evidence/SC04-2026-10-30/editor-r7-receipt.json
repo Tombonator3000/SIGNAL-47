@@ -1,0 +1,139 @@
+{
+  "status": "PASS_TARGETED_NATIVE_FIXTURES",
+  "source_commit": "de09bb4ee9dee93e68dbdb458aa7b207058912ea",
+  "base_main": "5dce2c8bbf916bf5e91e1b6786ffbe1eaa5dd119",
+  "runtime_frozen_files": 623,
+  "runtime_freeze_sha256": "20428ed50e1f72228a893ef3f7990305909d7b3a3064c62b89afd0cb66dcfdfb",
+  "build": {
+    "source_commit": "de09bb4ee9dee93e68dbdb458aa7b207058912ea",
+    "freeze_sha256": "182e7f87a49be2cfe9da158d95130fa1916eda4f5457e15ff5e1b19615ad2a98",
+    "source_files": 632,
+    "module": "/home/tom/scratch-bm/wt/motel-v2-unreal/unreal/Signal47/Binaries/Linux/libUnrealEditor-Signal47.so",
+    "preserved": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/integrated-native-r2/preserved-module/libUnrealEditor-Signal47.so",
+    "bytes": 19663112,
+    "sha256": "ca52ee55aa8ca59d53ef5832dac1ccc4c8f0b69be2573afc903e6753cf922261",
+    "build_log_sha256": "fa35f5a2348a650f7a7657b858ee102298e76c9a5cd37afa8a1a0d2a2a7c794f"
+  },
+  "runs": {
+    "require-idle": {
+      "returncode": 0,
+      "wall_seconds": 0.5080862030154094,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "a3e8859aa157a1f4c1a4c6342a88cd8252df97ac645b67f0cae91b67267ce6d1"
+    },
+    "preflight": {
+      "returncode": 0,
+      "wall_seconds": 0.5063881410169415,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "137166a97f554cb4b59a562ba2c9d712a7c087b7e9d384fb9d6f92d65be2326d"
+    },
+    "sc04": {
+      "returncode": 0,
+      "wall_seconds": 103.37875673000235,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "d96e90f6ef32a21fae185dc8cb942b42087cafc91dc843f16e9e30fd34c5e7e1"
+    },
+    "sc04hide": {
+      "returncode": 0,
+      "wall_seconds": 82.02414493804099,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "046876e635bfe6663880ae0c11543bd38cce700c71cd582ef09bee37c8d29f9c"
+    },
+    "sc04long": {
+      "returncode": 0,
+      "wall_seconds": 105.41356260096654,
+      "semantic_success": true,
+      "expected_found": true,
+      "forbidden_found": [],
+      "stop_reason": null,
+      "raw_sha256": "118b49b7ff5649f55987bad4904a7075146ff0e6fd9865476485232cd4e92143"
+    }
+  },
+  "selftests": {
+    "sc04": 1774,
+    "sc04hide": 1774,
+    "sc04long": 1774
+  },
+  "scenarios": [
+    {
+      "mode": "sc04",
+      "status": "PASS",
+      "checks": 317,
+      "stores": 5,
+      "ray_uses": 12,
+      "walked_metres": 50.57360519144058,
+      "elapsed_driver": 65.21700879698619,
+      "source_result": "/tmp/S47-sc04-integrated-r7/Saved/SC04Contract/01A18A93A1A6797AB9F502F648DD39C6/result.json",
+      "preserved_result": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/runtime-r7/raw/sc04/01A18A93A1A6797AB9F502F648DD39C6/result.json",
+      "sha256": "360cd43b47915e22d84517b9b3e8efa2d491352ff70fdaa8dc29efbc30759b55"
+    },
+    {
+      "mode": "sc04hide",
+      "status": "PASS",
+      "checks": 271,
+      "stores": 4,
+      "ray_uses": 9,
+      "walked_metres": 36.501904958192284,
+      "elapsed_driver": 47.11931362602627,
+      "source_result": "/tmp/S47-sc04hide-integrated-r7/Saved/SC04Contract/01A18A9529C27C2B91343D780139732F/result.json",
+      "preserved_result": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/runtime-r7/raw/sc04hide/01A18A9529C27C2B91343D780139732F/result.json",
+      "sha256": "94246ed67b01d0049fc1d005490bd30373cba71095b533a12fead06e8969120a"
+    },
+    {
+      "mode": "sc04long",
+      "status": "PASS",
+      "checks": 210,
+      "stores": 4,
+      "ray_uses": 10,
+      "walked_metres": 97.01000085899071,
+      "elapsed_driver": 71.43442886299454,
+      "source_result": "/tmp/S47-sc04long-integrated-r7/Saved/SC04Contract/01A18A96666072D2A17DC2E6E8FE6474/result.json",
+      "preserved_result": "/home/tom/scratch-bm/Signal47-sc04-handoff-20261030/runtime-r7/raw/sc04long/01A18A96666072D2A17DC2E6E8FE6474/result.json",
+      "sha256": "4eece8964e6550504fa611398f38a995bfa370164a100158ce9f51e5f4c79646"
+    }
+  ],
+  "checks": 798,
+  "disk_full_flow": 13,
+  "actual_uses": 31,
+  "walked_metres": 184.08551100862357,
+  "photos": [
+    {
+      "mode": "sc04",
+      "name": "pale-body-open-records-door.png",
+      "bytes": 1194732,
+      "sha256": "1e9d12a087aeef4ebc604aca6d8d2672e3b7659cd480e533333ace9bcab0674d",
+      "opened_by_codex": true,
+      "limit": "West frame is dark; no general visual, pixel, performance or human input acceptance."
+    },
+    {
+      "mode": "sc04long",
+      "name": "pale-body-west-exit.png",
+      "bytes": 799194,
+      "sha256": "1f206a6e138e7b3a1feed315feb63531aeaa50fdef0cf265ce4e6a4b07b7030a",
+      "opened_by_codex": true,
+      "limit": "West frame is dark; no general visual, pixel, performance or human input acceptance."
+    }
+  ],
+  "whole_night_accepted": false,
+  "human_input": false,
+  "measured_fps": null,
+  "limits": [
+    "Named earlier SC01-SC03/T01 fixture remains explicit; actual parent adapter is unverified.",
+    "All runtime Source/Config/Scripts/Narrative and selected actual native pins/module remained frozen. Only non-runtime importer changed independently.",
+    "Primary/capture, still closed-door departure and long actual west/north/east route passed; counts include repeated per-frame checks.",
+    "R6 prior hide FAIL is retained, not retroactively changed.",
+    "No packaged, full-matrix, installation or release acceptance in this series."
+  ]
+}
