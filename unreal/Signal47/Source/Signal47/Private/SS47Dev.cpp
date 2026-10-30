@@ -36,12 +36,12 @@ void SS47Dev::Construct(const FArguments& InArgs)
 		SNew(SBorder).BorderImage(Box(Night(.94f))).Padding(Pad(96, 56, 96, 40))
 		[
 			SNew(SVerticalBox)
-			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(TEXT("DEVELOPER / START POINTS"))).Font(Heading(54, 2)).ColorAndOpacity(Head())]
+			+ SVerticalBox::Slot().AutoHeight()[SNew(STextBlock).Text(FText::FromString(InArgs._Title.IsEmpty() ? FString(TEXT("DEVELOPER / START POINTS")) : InArgs._Title)).Font(Heading(54, 2)).ColorAndOpacity(Head())]
 			+ SVerticalBox::Slot().AutoHeight().Padding(Pad(0, 6, 0, 10))
 			[
 				SNew(STextBlock).AutoWrapText(true).Font(Term(22)).ColorAndOpacity(Body())
-				.Text(FText::FromString(TEXT("Each start runs in the developer case: your own cases are never saved over. A start point restarts the game at that place. ")
-					TEXT("Press F9 anywhere in a night to keep a start point of your own; it is listed at the bottom. Escape: back to the title.")))
+				.Text(FText::FromString(!InArgs._Note.IsEmpty() ? InArgs._Note : FString(TEXT("Each start runs in the developer case: your own cases are never saved over. A start point restarts the game at that place. ")
+					TEXT("Press F9 anywhere in a night to keep a start point of your own, and F10 for events. Escape: back to the title."))))
 			]
 			+ SVerticalBox::Slot().FillHeight(1)[SAssignNew(Scroll, SScrollBox) + SScrollBox::Slot()[List]]
 		]

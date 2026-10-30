@@ -59,6 +59,7 @@ public:
 	TSharedPtr<class FS47Horror> Horror;
 	TSharedPtr<class FS47Observing> Observing; // evening array work before SC01's window round
 	TSharedPtr<class FS47Spine> Spine; // SC01 to SC13 order and the marked placeholders (S47Spine.h)
+	TSharedPtr<class FS47DevEvents> DevEvents; // F10: developer events in a night (S47DevEvents.h)
 	TSharedPtr<class FS47HorrorTest> HorrorTest;
 	TSharedPtr<class FS47Evening> Evening; // authored evening opening and persistent pack gates
 	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)

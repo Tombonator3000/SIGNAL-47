@@ -22,9 +22,12 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
 {
  if (bBuilt) return true;
  if (bFailed || !W || !W->IsLoaded()) return false;
- const int32 GroupIndex = W->Handle(Group);
- const FS47WebNode* GroupNode = W->Node(GroupIndex);
- USceneComponent* GroupComp = GroupNode ? GroupNode->Comp.Get() : nullptr;
+ // "#root": on the web actor itself, outside the scene's groups, so no area hides it (the developer
+ // events' body); its visibility is then only Apply's.
+ const bool bLoose = FCString::Strcmp(Group, TEXT("#root")) == 0;
+ const int32 GroupIndex = bLoose ? -1 : W->Handle(Group);
+ const FS47WebNode* GroupNode = bLoose ? nullptr : W->Node(GroupIndex);
+ USceneComponent* GroupComp = bLoose ? W->GetRootComponent() : GroupNode ? GroupNode->Comp.Get() : nullptr;
  auto Load = [](const TCHAR* Name) { return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Game/Signal47/HorrorSC02/%s.%s"), Name, Name)); };
  UStaticMesh* TorsoMesh = Load(TEXT("SM_SC02_PaleTorso"));
  UStaticMesh* HeadMesh = Load(TEXT("SM_SC02_PaleHead"));
@@ -41,8 +44,9 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
  UBoxComponent* R = NewObject<UBoxComponent>(W, *FString::Printf(TEXT("%sRoot"), Prefix));
  R->SetMobility(EComponentMobility::Movable); R->SetupAttachment(GroupComp);
  R->SetCollisionEnabled(ECollisionEnabled::NoCollision); R->SetBoxExtent(FVector(1)); R->RegisterComponent();
- const int32 RootNode = W->AdoptNode(R, GroupIndex, FString::Printf(TEXT("%s:root"), Prefix));
- Root = W->ObjAt(RootNode); RootComp = R;
+ const int32 RootNode = bLoose ? -1 : W->AdoptNode(R, GroupIndex, FString::Printf(TEXT("%s:root"), Prefix));
+ if (!bLoose) Root = W->ObjAt(RootNode);
+ RootComp = R;
  // The joints of FS47HorrorThreat::Build (model_contract.json): the right side is the left mesh mirrored.
  auto Part = [&](const TCHAR* Name, UStaticMesh* Mesh, USceneComponent* Parent, int32 ParentNode, const FVector& At, const FVector& Scale, int32& Node)
  {
@@ -51,7 +55,7 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly); C->SetCollisionResponseToAllChannels(ECR_Ignore);
   C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block); C->SetCastShadow(true);
   C->SetRelativeLocation(At); C->SetRelativeScale3D(Scale); C->RegisterComponent();
-  Node = W->AdoptNode(C, ParentNode, FString::Printf(TEXT("%s:%s"), Prefix, Name));
+  Node = bLoose ? -1 : W->AdoptNode(C, ParentNode, FString::Printf(TEXT("%s:%s"), Prefix, Name));
   All.Add(C);
   return C;
  };
@@ -87,7 +91,8 @@ bool FS47PaleBody::Rendered() const
 void FS47PaleBody::Apply(bool bShow, const FVector& Feet, double BodyYaw, double HeadYaw, double Gait, double Phase, double Clock, EPose Pose)
 {
  if (!bBuilt) return;
- Root.SetVisible(bShow);
+ if (Root) Root.SetVisible(bShow);
+ else if (UBoxComponent* R = RootComp.Get()) R->SetVisibility(bShow, true);
  if (bCollide != bShow)
  {
   // Hidden parts never block a sight, floor or pick trace.

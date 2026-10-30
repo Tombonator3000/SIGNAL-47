@@ -3,6 +3,7 @@
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "SS47Dev.h"
+#include "S47DevEvents.h"
 #include "Misc/App.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/FileManager.h"
@@ -359,6 +360,7 @@ void US47Flow::Init(US47Main* InM)
 	auto Pause = [this] { if (M->Mode != EMode::Play) return false; OpenPause(); return true; };
 	M->OnAction(TEXT("pause"), Pause);
 	// F9: keep a developer start point here (the title's Developer lists them)
+	M->OnAction(TEXT("devevents"), [this] { if (M->Mode != EMode::Play || !M->DevEvents) return false; M->DevEvents->Open(); return true; });
 	M->OnAction(TEXT("devstart"), [this] { if (M->Mode != EMode::Play) return false; DevSave(); return true; });
 	// V: the last description read again (ui.readLastDescription), not in a cinematic
 	M->OnAction(TEXT("describe"), [this]
@@ -441,6 +443,7 @@ void US47Flow::Boot()
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -633,6 +636,7 @@ void US47Flow::StartGame(const FStart& O)
 	bStarting = true;
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
@@ -819,6 +823,7 @@ void US47Flow::LeavePlay()
 	if (M->TownLayer) M->TownLayer->Leave(false);
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -850,6 +855,7 @@ void US47Flow::ToTitle()
 	if (M->TownLayer) M->TownLayer->Leave(true);
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
+	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
