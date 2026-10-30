@@ -368,6 +368,7 @@ FString US47Night::SurfaceAt() const
 bool US47Night::OneAtATime() const
 {
  if(M && M->Spine && M->Spine->CallBusy())return true;
+ if (M && M->Spine && M->Spine->SiegeBusy()) return true;
 	if (M && M->Horror && M->Horror->Busy()) return true;
 	if (M && M->Evening && M->Evening->MealBusy()) return true;
 	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;

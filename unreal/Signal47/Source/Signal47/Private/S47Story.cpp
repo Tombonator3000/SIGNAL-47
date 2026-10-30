@@ -411,6 +411,7 @@ FString AS47Story::Label(const FString& Id) const
 
 void AS47Story::Use(const FString& Id)
 {
+ if (const auto* M = US47Main::Get(this); M && M->Spine && M->Spine->Use(Id)) return;
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
  if(auto* M=US47Main::Get(this);M && M->Spine && M->Spine->Use(Id))return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
