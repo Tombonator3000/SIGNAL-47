@@ -42,6 +42,8 @@ public:
  // area copies do not conceal a light; an opaque roof, wall or mesa does.
  bool ClearLine(const FVector& Eye, const FVector& At) const;
  static bool SelfTest(TArray<FString>& Lines);
+ // Developer events (S47DevEvents.h): show a stage now as -S47SkyVisit=N does; 0 returns to the schedule.
+ void DevStage(int32 Stage) { TestStage = FMath::Clamp(Stage, 0, 5); if (TestStage && !State.bEnabled) State.Begin(nullptr, true); }
 private:
  US47Main* M = nullptr;
  FS47SkyVisitorState State;

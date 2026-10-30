@@ -2,6 +2,7 @@
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
+#include "S47DevEvents.h"
 #include "S47HorrorTest.h"
 #include "S47Evening.h"
 #include "S47Substation.h"
@@ -74,6 +75,7 @@ void US47Main::Step(double Dt)
 	if (Observing) Observing->Step(Dt);
 	if (Horror) Horror->Step(Dt);
 	if (Spine) Spine->Step(Dt);
+	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
 	if (Substation) Substation->Step(Dt);

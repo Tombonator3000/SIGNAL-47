@@ -1,4 +1,5 @@
 #include "S47Web.h"
+#include "S47DevEvents.h"
 
 #include "Components/DirectionalLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -391,6 +392,12 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 	}
 }
 
+float AS47Web::RefreshFog()
+{
+	UpdateNativeFog();
+	return LightingFog ? LightingFog->FogDensity : -1.f;
+}
+
 void AS47Web::UpdateNativeFog()
 {
 	if (!LightingFog) return;
@@ -404,13 +411,16 @@ void AS47Web::UpdateNativeFog()
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
-	LightingFog->SetFogDensity(FMath::Clamp(FogDensity * 2.f + Caliche * .0012f, 0.0003f, 0.012f));
+	// a developer event's fog (S47DevEvents.h) holds over the night's own until it is set back
+	LightingFog->SetFogDensity(GS47DevFogDensity >= 0.f ? GS47DevFogDensity : FMath::Clamp(FogDensity * 2.f + Caliche * .0012f, 0.0003f, 0.012f));
 	// SKY.md: aerial perspective of the concept. Through late afternoon and dusk the far mesas go
 	// dusty blue-violet, with a warm glow in the haze toward the low (or just set) sun.
 	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);
 	const float Dusk = FMath::Clamp(SkyEvening * 3.f, 0.f, 1.f) * FMath::Clamp(D * 3.f, 0.f, 1.f);
 	const FLinearColor Blue = FLinearColor(.16f, .19f, .30f) * FMath::Lerp(.25f, 1.f, D);
 	LightingFog->SetFogInscatteringColor(FMath::Lerp(FogColor, Blue, Dusk * .75f) * FMath::Lerp(.12f, .32f, Caliche));
+	// A developer fog is a grey night mist, lit enough to be seen (the night's own inscatter is near black).
+	if (GS47DevFogDensity >= 0.f) LightingFog->SetFogInscatteringColor(FLinearColor(.045f, .05f, .06f));
 	LightingFog->SetDirectionalInscatteringExponent(6.f);
 	LightingFog->SetDirectionalInscatteringStartDistance(3000.f);
 	LightingFog->SetDirectionalInscatteringColor(FLinearColor(.55f, .26f, .10f) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * FMath::Lerp(.15f, .45f, Caliche)));

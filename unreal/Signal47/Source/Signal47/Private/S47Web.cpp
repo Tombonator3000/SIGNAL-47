@@ -1,4 +1,5 @@
 #include "S47Web.h"
+#include "Components/BoxComponent.h"
 #include "S47GraphicsReview.h"
 #include "S47RenderAudit.h"
 #include "S47Picture.h"
@@ -1431,7 +1432,33 @@ void AS47Web::SetDoor(FDoor& D, bool bOpen, bool bInstant)
 	}
 	if (bInstant) { D.T0 = -1; ApplyDoor(D, bOpen ? 1 : 0); }
 	else if (bChanged) { D.From = D.K; D.T0 = DoorT; }
+	DoorwayPick(D);
 	if (bChanged && OnDoorChanged) OnDoorChanged(D.Id, bOpen);
+}
+
+// An open leaf stands edge-on to one side of its doorway (the corridor door seen from the control
+// room is a few centimetres wide), so the closed leaf's own box answers the use ray while the door
+// is open: look at the doorway and close it. Pick channel only; it never blocks sight or walking.
+void AS47Web::DoorwayPick(FDoor& D)
+{
+	if (!D.Doorway.IsValid() && D.bOpen)
+	{
+		const FS47WebItem* I = Item(D.Inter);
+		const FS47WebNode* Hinge = Nodes.IsValidIndex(D.Proxy) ? &Nodes[D.Proxy] : nullptr;
+		USceneComponent* Parent = Hinge ? Hinge->Comp.Get() : nullptr;
+		if (!I || !I->bBox || !Parent || !GetWorld()) return;
+		UBoxComponent* B = NewObject<UBoxComponent>(this, *FString::Printf(TEXT("Doorway_%s"), *D.Id));
+		B->SetMobility(EComponentMobility::Movable); B->SetupAttachment(Parent);
+		B->SetCollisionEnabled(ECollisionEnabled::QueryOnly); B->SetCollisionResponseToAllChannels(ECR_Ignore);
+		B->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+		B->SetHiddenInGame(true); B->SetVisibility(false); B->RegisterComponent();
+		const FVector Half = (I->Max - I->Min) * .5;
+		B->SetWorldLocation(ToUE((I->Min + I->Max) * .5)); B->SetWorldRotation(FRotator::ZeroRotator);
+		B->SetBoxExtent(FVector(FMath::Abs(Half.X), FMath::Abs(Half.Z), FMath::Abs(Half.Y)) * 100.0);
+		AdoptNode(B, D.Proxy, FString::Printf(TEXT("doorway:%s"), *D.Id));
+		D.Doorway = B;
+	}
+	if (UBoxComponent* B = D.Doorway.Get()) B->SetCollisionEnabled(D.bOpen ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 }
 
 TMap<FString, bool> AS47Web::DoorStates() const

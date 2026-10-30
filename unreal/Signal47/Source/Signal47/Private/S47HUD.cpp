@@ -2,6 +2,7 @@
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
+#include "S47DevEvents.h"
 #include "S47HorrorTest.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -163,6 +164,7 @@ void AS47HUD::Start()
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
+		bOk &= FS47SC04::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
@@ -195,6 +197,7 @@ void AS47HUD::Start()
 	M->CaseBoard = NewObject<US47CaseBoard>(M); M->CaseBoard->Init(M);
 	// Before the chapters: chapter two's and four's ends route through the spine's placeholders.
 	if (!M->Spine) M->Spine = MakeShared<FS47Spine>(M);
+	if (!M->DevEvents) M->DevEvents = MakeShared<FS47DevEvents>(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{
@@ -635,7 +638,7 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Spine && M->Spine->Use(Id)) && !(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
 	else if (Story.IsValid()) Story->Use(Id);
 }
 

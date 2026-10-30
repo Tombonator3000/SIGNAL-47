@@ -31,6 +31,8 @@ public:
  void Stop();
  void SetCharacterVoicesEnabled(bool bValue);
  bool DoorVoicePlaying() const;
+ // SC04: the same door fragment again from the fire exit, word for word (no state, no hint).
+ void ReplayDoorFragment(const FVector& At); // three.js metres, where the voice is heard
  void Step(double Dt);
  S47J::FObj Save() const;
  bool Enabled() const { return bEnabled; }
@@ -70,6 +72,8 @@ private:
  bool bEnabled = false, bScheduleFiled = false;
  int32 Run = 0, HintMask = 0, Ticks = 0, GenStep = 0, Archive = 0, Yard = 0, DoorVoice = 0;
  TSharedPtr<FS47RecordedDialogue> Voice;
+ bool bReplay = false; // SC04's fragment owns the voice until it ends
+ FVector ReplayAt = FVector::ZeroVector;
  void StepDoorVoice();
  double GenT = 0, FlickerT = -1;
  TArray<bool> HeldTubes;
