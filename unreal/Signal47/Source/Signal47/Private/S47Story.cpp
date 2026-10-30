@@ -621,15 +621,16 @@ void AS47Story::PowerUp(bool bInstant)
 void AS47Story::ConsoleAzimuth()
 {
  if(RevisedSC05())return; // passive receiver search while the automatic array schedule is held
+ if(NightSequence() && ChapterKey==TEXT("prologue") && Rx.Stage>=2)return; // the survey's physical hold survives receiver dial changes
 	PointDishes(Rx.Azimuth, SurveyEl, 9);
 }
 
 const FS47Profile& AS47Story::ConsoleProfile() const
 {
 	if (const auto* M = US47Main::Get(this); M && M->Observing) if (const FS47Profile* P = M->Observing->ConsoleProfile()) return *P;
- if(RevisedSC05() && Rx.Stage==2)
+ if((RevisedSC05() || (NightSequence() && ChapterKey==TEXT("prologue"))) && Rx.Stage==2)
  {
-  static const FS47Profile Passive=[] { FS47Profile P=S47Signal::Profiles()[2]; P.Card=TEXT("PASSIVE RESIDUAL / 1420.4 MHz / NARROW BAND / HIGH GAIN / SEARCH AZIMUTH / AUTO SLEW HELD"); return P; }();
+  static const FS47Profile Passive=[] { FS47Profile P=S47Signal::Profiles()[2]; P.Card=TEXT("PASSIVE RESIDUAL / 1420.4 MHz / NARROW BAND / HIGH GAIN / SEARCH RECEIVER AZIMUTH / AUTO SLEW HELD"); return P; }();
   return Passive;
  }
 	return Rx.Profile();
@@ -665,10 +666,20 @@ void AS47Story::StagePassed()
 	if (S==0) if (const auto* Main=US47Main::Get(this); Main && Main->Horror) Main->Horror->CalibrationChecked();
 	Note(S47Signal::Profiles()[FMath::Min(S, 2)].Note);
 	Rx.Advance();
+	// Revised night: the relay is a receiver check, not the array's overnight hold.
+	// Return through the ordinary drive so SC05's held 042 source is physically true.
+	const bool bReturnReference = S == 1 && NightSequence();
+	if (bReturnReference)
+	{
+		Rx.Azimuth = 42.;
+		Rx.Status = TEXT("SURVEY / ARRAY HOLD AZ 042 / RECEIVER ONLY");
+		ConsoleLog(TEXT("SURVEY HOLD / RETURN TO CALIBRATION REFERENCE AZ 042"));
+		Note(ClockText() + TEXT(". Relay notched. The array was commanded back to the calibration reference, AZ 042, for the unattended survey."));
+	}
 	if(!RevisedSC05())PointDishes(Rx.Azimuth, SurveyEl, 6);
 	if (Audio.IsValid()) { Audio->Play(TEXT("beep_1320"), 0.3f); Audio->Play(TEXT("beep_1760"), 0.3f); }
 	if (S == 0) Toast(TEXT("Calibrated. Next, the highway relay near 1420.1."));
-	else if (S == 1) { SetPhase(ES47Phase::Survey); Toast(TEXT("Notched. The survey sweep takes over from here.")); }
+	else if (S == 1) { SetPhase(ES47Phase::Survey); Toast(bReturnReference ? TEXT("Notched. The array returns to calibration AZ 042 for the survey hold.") : TEXT("Notched. The survey sweep takes over from here.")); }
 	else if (S == 2)
 	{
 		SetPhase(ES47Phase::Locked);
@@ -712,7 +723,12 @@ void AS47Story::LogClosed()
 void AS47Story::RelayFirst()
 {
 	if (CurrentPhase != ES47Phase::Survey) return;
- if (NightSequence()) { TimeSkip(); return; }
+ if (NightSequence())
+ {
+  // Slew is degrees/second: finish the real reference return before the time jump.
+  if(Saro.IsValid() && Saro->DishesMoving()) { After(.1,[this]{RelayFirst();},TEXT("skip"));return; }
+  TimeSkip();return;
+ }
 	TripK3();
 	After(0.5, [this] { Toast(TEXT("A clack from the rack. Bank 3 has dropped out again."), 3.4f); });
 	After(DipAfter, [this] { LightsDip(); }, TEXT("skip"));

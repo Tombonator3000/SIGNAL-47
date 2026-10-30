@@ -1408,3 +1408,13 @@ Main5dce2c8b har PR236; runtime-inputs er identiske med fryst kandidat95807f4f/b
 ### Codex 2026-10-30T04:11:36+01:00 NightR4 kjører etter konkret dørretting
 
 R3s tre faktiske diskfiler har østdøra åpen fra ankomst; adapterens ubetingede bruk lukket den. Kilde bdf15548 beholder faktisk kameraray/fokus og åpner via bundet HUD-bruk bare ved behov, med samme harde åpen-/native gangkontroll og egne før/etterrådata. Dokumentasjonsmain0a742091 er flettet som52660c19. R6-editor/d13d7639 består12,708s; modul8f3f80f4 er privatbevart. NightR4 starter fra ny sak med638frysteinputs, faktisk modul og native7/binding pinnet. D01- og dørrettingene trenger fortsatt dette faktiske nattresultatet. Hele senere kjeden og finale-RHI er fortsattUNVERIFIED. Ingen installasjon/release.
+
+
+### Codex 2026-10-30T04:21:16+01:00 NightR4 fullførte Observing, eldre testtid avvist
+
+R4/d13d7639 består ny sak, pendling2623,15m/native62,29m, D01 og heleObserving med allefireløp/generator/20:30binder/gate. Door621-råfil viser openBefore=true/use=false/ray=true/openAfter=true; rettingen er faktiskprøvd. Deretter FAIL adapter605/82kontroller/rc1/522,565s: gammelkontrakt krevde22:50før23:00, mens nyEveningkoordinator faktisk flytter23:00 etter sistefiling. Raw er bevart under night-r4/raw; prefixSC01 er ikkeakseptert. Sky eier kunHorrorTest.cpp/h for korrektnytid ogsammehardeobservasjons-/lydkrav, root alleandreendringer/bygg. Lesendegjennomgang avSC05 haravdekket42sompåståttførtilstandmotekteencoder; ingenfakta/lagringer erendret foråtilpassekjeden. Ingeninstallasjon/release.
+
+
+### 2026-10-30T04:30:57+01:00 Faktisk kalibreringshold før SC05, nativeprøve gjenstår
+
+Lesende gjennomgang fant at Observing faktisk etterlaterRx146; en gyldig relay kan være090, mens SC05 hevdet held042 uten egenprodusent. NyNightSequence gir nå ved vanlig vellykket relay en eksplisittkommando tilbake til opprinneligkalibrering042 via uendretPointDishes/6graderpersekund. Logg/notat/toast beskriver sendtkommando. RelayFirst venter på faktiskDishesMoving=false før tidshopp; mottakerazimut erpassiv i nyprologue/Stage2ogsenere. Kortteksten sier receiverazimuth, ikkefysiskarraystyring. EldreNightSequence=false oggamlelagredeencodere normaliseresikke. Nightkontrakten bruker fortsattgyldigrelay090, prøver derettermottaker090og krever alle27faktiskeencodere042vedoutage. IngenSnap/fixture/konstruertfeltkilde. Kilde-/diffkontrollbestår; faktisknyruntimeerUNVERIFIED. Sammebygg inkluderer b76870b6s førFile/etterkoordinator-tidsbevis.

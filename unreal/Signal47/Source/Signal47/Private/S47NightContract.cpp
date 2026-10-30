@@ -413,11 +413,16 @@ void FS47NightContract::Tick(double Dt)
  case 9:
   if(!Use(TEXT("crtCenter")))return;
   {auto& Rx=M()->Story->Rx;const auto& P=S47Signal::Profiles()[1];Rx.Frequency=P.F;Rx.Gain=(P.Gain[0]+P.Gain[1])*.5;Rx.Bandwidth=(P.Bw[0]+P.Bw[1])*.5;Rx.Azimuth=(P.Az[0]+P.Az[1])*.5;M()->Story->ConsoleAzimuth();M()->Story->ConsoleAction();}
-  if(!Check(M()->Story->Rx.Stage==2&&M()->Story->Phase()==ES47Phase::Survey,TEXT("actual receiver relay action starts unattended survey only after full real SC01")))return;
+  if(!Check(M()->Story->Rx.Stage==2&&M()->Story->Phase()==ES47Phase::Survey&&FMath::Abs(M()->Story->Rx.Azimuth-42.)<.001,TEXT("actual receiver relay action starts survey and commands ordinary calibration042 return even from valid relay090"))||!Record(TEXT("actual-relay-commanded-reference-return")))return;
+  // Ordinary receiver-only search during the held survey must not retarget the array.
+  M()->Story->Rx.Azimuth=90.;M()->Story->ConsoleAzimuth();
   {const auto W=M()->Hud->ModalWidget();if(!Check(W&&W->GetTypeAsString()==TEXT("SS47ScreenView"),TEXT("actual CRT view supplies offered EXIT API")))return;StaticCastSharedPtr<SS47ScreenView>(W)->Leave();}Next(10);return;
  case 10:
   if(!M()->Story->bResidualVisible||M()->Story->IsCinematic()||M()->ModalOpen())return;
-  if(!Check(M()->Evening->FeederOutage()&&M()->Story->bDark&&M()->Story->Night().bK3Open&&!M()->Story->Rx.bPowered&&M()->Story->Rx.Stage==2&&M()->Story->Clock()>=S47Timeline::Residual(true)&&M()->Story->Clock()<900&&(!M()->Horror->Threat||!M()->Horror->Threat->Active()),TEXT("normal ConsoleClosed/survey timer creates00:13residual/feederoutage/K3out and no early alien"))||!Power(true)||!Cycle(TEXT("actual-outage-before-county-call"))||!Record(TEXT("outage")))return;
+  if(!Check(M()->Evening->FeederOutage()&&M()->Story->bDark&&M()->Story->Night().bK3Open&&!M()->Story->Rx.bPowered&&M()->Story->Rx.Stage==2&&M()->Story->Clock()>=S47Timeline::Residual(true)&&M()->Story->Clock()<900&&(!M()->Horror->Threat||!M()->Horror->Threat->Active()),TEXT("normal ConsoleClosed/survey timer creates00:13residual/feederoutage/K3out and no early alien")))return;
+  if(!Check(M()->Web->DishCount()==27,TEXT("actual27 encoders remain available after power cut")))return;
+  for(int32 I=0;I<27;++I)if(!Check(FMath::Abs(M()->Web->DishAz(I)-42.)<.05,TEXT("ordinary array drive settled at held042 before the feeder cut; actual encoder S-")+FString::FromInt(I+1)))return;
+  if(!Power(true)||!Cycle(TEXT("actual-outage-before-county-call"))||!Record(TEXT("outage")))return;
   Path({FVector(0,0,-1.2),FVector(4.2,0,-1.2),FVector(3.8,0,1.4)});Next(11,0);return;
  case 11:if(Walk()&&Face(TEXT("phone")))Next(12,.3);return;
  case 12:
