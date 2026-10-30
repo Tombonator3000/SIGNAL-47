@@ -217,7 +217,7 @@ bool FS47SC04Contract::BodySight(FHitResult& Hit,TArray<FString>& Ignored) const
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04ContractOpaqueBody),true);
  for(int32 I=0;I<32;++I)
  {
-  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),A->Pale.Torso->Bounds.Origin,ECC_Visibility,Q))return false;
+  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),A->Pale.Torso->Bounds.Origin,ECC_Visibility,Q))return true;
   const UPrimitiveComponent* C=Hit.GetComponent();if(!C)return false;
   if(A->Pale.Owns(C))return true;
   bool Solid=C->IsVisible()&&!C->bHiddenInGame;
@@ -227,7 +227,7 @@ bool FS47SC04Contract::BodySight(FHitResult& Hit,TArray<FString>& Ignored) const
    float Opacity=1;Mat->GetScalarParameterValue(TEXT("Opacity"),Opacity);
    if(Mat->GetBlendMode()==BLEND_Additive||(Mat->GetBlendMode()==BLEND_Translucent&&Opacity<.5f))Solid=false;
   }
-  if(Solid)return true;
+  if(Solid)return false;
   Ignored.Add(C->GetPathName());Q.AddIgnoredComponent(C);
  }
  return false;
@@ -239,7 +239,7 @@ bool FS47SC04Contract::WaitForBody(const FString& Context)
  const FVector Eye=M->Player->EyeUE(),Target=Torso->Bounds.Origin;FHitResult Hit;
  TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
  const double Dot=FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal());
- const bool Ready=A->Pale.Rendered()&&Block&&A->Pale.Owns(Hit.GetComponent())&&Dot>.995;
+ const bool Ready=A->Pale.Rendered()&&Block&&Dot>.995;
  if(Ready)return true;
  if(FPlatformTime::Seconds()-VisibilityAt>.25)
  {
@@ -263,7 +263,7 @@ bool FS47SC04Contract::RenderChecks()
  const auto* A=Act();if(!Check(A&&A->Pale.bBuilt&&A->Pale.All.Num()==10&&A->Pale.Rendered(),TEXT("actual ten-part pale body rendered from this legal player camera")))return false;
  const FVector Eye=M->Player->EyeUE(),Target=A->Pale.Torso->Bounds.Origin;FHitResult Hit;
  TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
- if(!Check(Block&&A->Pale.Owns(Hit.GetComponent())&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces body; first visible opaque hit is its native component")))return false;
+ if(!Check(Block&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces native torso bounds; no visible opaque scene surface blocks the sight line")))return false;
  TSet<FString> Meshes;TArray<TSharedPtr<FJsonValue>> Parts;
  for(const auto& Weak:A->Pale.All)
  {
@@ -281,7 +281,7 @@ bool FS47SC04Contract::RenderChecks()
  const TSet<FString> Wanted={TEXT("SM_SC02_PaleTorso"),TEXT("SM_SC02_PaleHead"),TEXT("SM_SC02_PaleUpperArm"),TEXT("SM_SC02_PaleLowerArm"),TEXT("SM_SC02_PaleThigh"),TEXT("SM_SC02_PaleShin")};
  bool Same=Meshes.Num()==Wanted.Num();for(const auto& Name:Wanted)Same&=Meshes.Contains(Name);
  if(!Check(Same,TEXT("six original SC02 meshes supply all ten visible parts")))return false;
- auto Row=S47J::New();S47J::Set(Row,TEXT("scope"),TEXT("Current torso render + mainpass/depth flags. No pixel-occlusion/visual acceptance."));Row->SetArrayField(TEXT("parts"),Parts);Negatives.Add(MakeShared<FJsonValueObject>(Row));RenderWitness=true;return true;
+ auto Row=S47J::New();S47J::Set(Row,TEXT("scope"),TEXT("Actual opaque scene trace is clear to native torso bounds; original body meshes have no physics collision. Current torso render + mainpass/depth flags. No triangle-hit, pixel-occlusion or visual acceptance."));Row->SetArrayField(TEXT("parts"),Parts);Negatives.Add(MakeShared<FJsonValueObject>(Row));RenderWitness=true;return true;
 }
 bool FS47SC04Contract::Fixture()
 {
