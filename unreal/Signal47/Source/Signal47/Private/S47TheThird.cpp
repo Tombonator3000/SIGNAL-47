@@ -22,53 +22,76 @@ namespace
 FS47ThirdFigure::FS47ThirdFigure(AS47Web* Web, const FString& Name)
 {
 	G = MakeUnique<FS47Group>(Web, Name);
-	// Walker.baked: the walker standing as a person stands, not a post (the feet a little apart, the
-	// arms off the sides), the head a little down and forward, as if it looked at the ground in front of it
-	const FLinearColor Coat = Hex(0x2a3036), Dark = Hex(0x15171a), Band = Hex(0xd8dccc);
+	// Unreal: an original rounded garment silhouette replaces the old walker's boxes.
+	// The feet, head and tape anchors remain the same for both FRAME 03 and the road.
+	const FLinearColor Coat = Hex(0x2a3036), Dark = Hex(0x15171a);
+	const FLinearColor Hair = Hex(0x221b15), Hand = Hex(0x312b25), Shoe = Hex(0x101216);
 	FS47Node* Body = G->Group(&G->Root());
+	// The shoulder yoke overlaps the soft back and the slightly flared jacket hem.
+	// These volumes share their back-light response, so their joins do not draw seams.
+	Rounded(Body, FVector(.52,.55,.30), Coat, FVector(0,1.18,.008));
+	Rounded(Body, FVector(.51,.24,.285), Coat, FVector(0,1.345,.002));
+	Rounded(Body, FVector(.44,.21,.29), Coat, FVector(0,.975,.006));
+	Rounded(Body, FVector(.36,.21,.235), Dark, FVector(0,.86,.012));
+	Rounded(Body, FVector(.18,.115,.18), Coat, FVector(0,1.435,.006));
+	Rounded(Body, FVector(.105,.10,.12), Hair, FVector(0,1.482,-.018));
 	for (int32 k = 0; k < 2; ++k)
 	{
 		const double Sd = k ? 1 : -1;
-		FS47Node* Hip = G->Group(Body, FVector(Sd * 0.11, 0.84, 0), FVector(0, 0, Sd * 0.05));
-		Box(Hip, 0.2, 0.84, 0.2, Dark, false, FVector(0, -0.42, 0));
-		FS47Node* Sh = G->Group(Body, FVector(Sd * 0.32, 1.42, 0), FVector(0, 0, Sd * 0.1));
-		Box(Sh, 0.12, 0.6, 0.14, Coat, false, FVector(0, -0.3, 0));
-		Box(Sh, 0.13, 0.05, 0.15, Band, true, FVector(0, -0.24, 0));
+		// Slightly bent knees and narrower calves leave a readable gap between the legs.
+		Rounded(Body, FVector(.185,.44,.22), Dark, FVector(Sd*.108,.659,.016), FVector(.06,0,Sd*.04));
+		Rounded(Body, FVector(.143,.15,.16), Dark, FVector(Sd*.121,.438,-.009));
+		Rounded(Body, FVector(.139,.34,.165), Dark, FVector(Sd*.125,.263,.022), FVector(-.06,0,-Sd*.012));
+		Rounded(Body, FVector(.115,.115,.13), Dark, FVector(Sd*.125,.105,.027));
+		// Soles touch y=0. The two toes turn out a little and are not in lockstep.
+		Rounded(Body, FVector(.145,.11,.285), Shoe, FVector(Sd*.125,.055,k ? -.025 : -.055), FVector(0,-Sd*.07,0));
+
+		// Dropped shoulders, a soft elbow and forward-hanging hands, with no straight
+		// shoulder-to-wrist cylinder. The sleeve tape stays at its canonical 1.18 m.
+		Rounded(Body, FVector(.175,.205,.19), Coat, FVector(Sd*.245,1.357,.004));
+		Rounded(Body, FVector(.145,.30,.16), Coat, FVector(Sd*.290,1.30,.006), FVector(.035,0,Sd*.18));
+		Rounded(Body, FVector(.126,.13,.145), Coat, FVector(Sd*.317,1.15,-.006));
+		Rounded(Body, FVector(.116,.27,.135), Coat, FVector(Sd*.323,1.026,-.039), FVector(.16,0,-Sd*.045));
+		Rounded(Body, FVector(.113,.058,.128), Coat, FVector(Sd*.319,.936,-.055));
+		Rounded(Body, FVector(.085,.135,.093), Hand, FVector(Sd*.319,.874,-.066), FVector(.10,0,Sd*.035));
+		ReflectiveBand(Body, FVector(Sd*.312,1.18,.006), .052, .057, .05, 8);
 	}
-	Box(Body, 0.5, 0.62, 0.28, Coat, false, FVector(0, 1.14, 0));
-	Box(Body, 0.52, 0.08, 0.3, Band, true, FVector(0, 1.2, 0));
-	// (from behind the head is hair, not skin; it is only ever seen from behind)
-	FFace H;
-	H.M = G->Basic(FLinearColor::Black, TEXT("M_Web_Unlit_Opaque"));
-	H.Base = Hex(0x221b15); H.Shade = 1;
-	G->Sphere(Body, 0.13, H.M, FVector(0, 1.575, -0.045));
-	Faces.Add(H);
+	ReflectiveBand(Body, FVector(0,1.2,.008), .260, .158, .07, 12);
+	// Only the back of the hair is defined; Reyes is never given a face.
+	Rounded(Body, FVector(.235,.26,.245), Hair, FVector(0,1.575,-.045), FVector(-.12,0,0));
 	Recolor();
 	Show();
 }
 
 FS47ThirdFigure::~FS47ThirdFigure() {}
 
-void FS47ThirdFigure::Box(FS47Node* Parent, double W, double H, double Dp, const FLinearColor& Base, bool bBand, const FVector& P, const FVector& R)
+void FS47ThirdFigure::Rounded(FS47Node* Parent, const FVector& Size, const FLinearColor& Base, const FVector& P, const FVector& R)
 {
-	// a box as its six faces, each a plane with its own light
-	FS47Node* B = G->Group(Parent, P, R);
-	struct FF { FVector N; FVector At; FVector Rot; double Fw, Fh; };
-	const FF Fs[6] = {
-		{ FVector(0, 0, 1), FVector(0, 0, Dp / 2), FVector(0, 0, 0), W, H },
-		{ FVector(0, 0, -1), FVector(0, 0, -Dp / 2), FVector(0, UE_DOUBLE_PI, 0), W, H },
-		{ FVector(1, 0, 0), FVector(W / 2, 0, 0), FVector(0, UE_DOUBLE_HALF_PI, 0), Dp, H },
-		{ FVector(-1, 0, 0), FVector(-W / 2, 0, 0), FVector(0, -UE_DOUBLE_HALF_PI, 0), Dp, H },
-		{ FVector(0, 1, 0), FVector(0, H / 2, 0), FVector(-UE_DOUBLE_HALF_PI, 0, 0), W, Dp },
-		{ FVector(0, -1, 0), FVector(0, -H / 2, 0), FVector(UE_DOUBLE_HALF_PI, 0, 0), W, Dp },
-	};
-	for (const FF& F : Fs)
+	FFace F;
+	F.M = G->Basic(FLinearColor::Black, TEXT("M_Web_Unlit_Opaque"));
+	F.Base = Base; F.Shade = Shade(FVector(0,0,1));
+	FS47Node* Part = G->Group(Parent, P, R);
+	G->Sphere(Part, 1, F.M, FVector::ZeroVector, Size * .5);
+	Faces.Add(F);
+}
+
+void FS47ThirdFigure::ReflectiveBand(FS47Node* Parent, const FVector& P, double HalfWidth, double HalfDepth, double Height, int32 Segments)
+{
+	// A thin tape strip follows the rear of the garment, instead of a bright box
+	// through the torso. Each facet retains the original direction-dependent return.
+	constexpr double Arc = 75 * UE_DOUBLE_PI / 180;
+	for (int32 I = 0; I < Segments; ++I)
 	{
-		FFace Fc;
-		Fc.M = G->Basic(FLinearColor::Black, TEXT("M_Web_Unlit_Opaque_2S"));
-		Fc.Base = Base; Fc.Shade = Shade(F.N); Fc.bBand = bBand;
-		G->Plane(B, F.Fw, F.Fh, Fc.M, F.At, F.Rot);
-		Faces.Add(Fc);
+		const double A = -Arc + 2 * Arc * I / Segments, B = -Arc + 2 * Arc * (I+1) / Segments;
+		const FVector From(HalfWidth*FMath::Sin(A),0,HalfDepth*FMath::Cos(A));
+		const FVector To(HalfWidth*FMath::Sin(B),0,HalfDepth*FMath::Cos(B));
+		const FVector Along = To-From;
+		const double Turn = FMath::Atan2(-Along.Z,Along.X);
+		FFace F;
+		F.M = G->Basic(FLinearColor::Black, TEXT("M_Web_Unlit_Opaque_2S"));
+		F.Base = Hex(0xd8dccc); F.Shade = Shade(FVector(FMath::Sin(Turn),0,FMath::Cos(Turn))); F.bBand = true;
+		G->Plane(Parent, Along.Size(), Height, F.M, P+(From+To)*.5, FVector(0,Turn,0));
+		Faces.Add(F);
 	}
 }
 

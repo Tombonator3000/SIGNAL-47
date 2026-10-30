@@ -28,9 +28,9 @@ class UMaterialInstanceDynamic;
 // Both are the same figure as the one standing where the player was taken (story/recording.ts, Walker),
 // baked into one draw in the web version, lit by a shader of its own: the jacket and the jeans in the
 // light from behind them (how much of it each face gets, by which way it faces), the tape giving the
-// light back in the light's own colour. Here the figure is the walker's boxes standing as the bake has
-// them, each face a plane of its own with that face's colour worked out the same way (S47Figures); the
-// head, seen only from behind, is the hair.
+// light back in the light's own colour. Unreal uses an original rounded garment silhouette with the
+// same caller-controlled baked colours (S47Figures), preserving the walker's foot, head and tape
+// anchors. Each tape facet keeps the directional return; the rear of the head is only hair.
 
 /** theThird.ts ThirdFigure: someone in a SARO jacket, lit by what the caller says. Built facing -z from
  *  the feet, like the player at yaw 0. */
@@ -70,7 +70,8 @@ private:
 	double YawV = 0;
 	void Recolor();
 	void Show();
-	void Box(FS47Node* Parent, double W, double H, double Dp, const FLinearColor& Base, bool bBand, const FVector& P, const FVector& R = FVector::ZeroVector);
+	void Rounded(FS47Node* Parent, const FVector& Size, const FLinearColor& Base, const FVector& P, const FVector& R = FVector::ZeroVector);
+	void ReflectiveBand(FS47Node* Parent, const FVector& P, double HalfWidth, double HalfDepth, double Height, int32 Segments);
 };
 
 /** Where it stands for FRAME 03: how far from the transit, and the way C's stakes run from it, in degrees

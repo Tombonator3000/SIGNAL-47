@@ -25,6 +25,8 @@
 #include "S47Rx3Detail.h"
 #include "S47SaroPeriodProps.h"
 #include "S47PeriodFixtures.h"
+#include "S47FinalePreview.h"
+#include "S47FinaleMovie.h"
 
 #include "S47Flow.h"
 #include "S47Radio.h"
@@ -180,6 +182,8 @@ void US47Main::Step(double Dt)
 	if (AnomalyTest) AnomalyTest->Step(Dt);
 	if (T02Test) T02Test->Step(Dt);
 	if (GraphicsTest) GraphicsTest->Step(Dt);
+	FS47FinalePreview::Step(this,Dt);
+	FS47FinaleMovie::Step(this,Dt);
 }
 
 void US47Main::InitRadio()

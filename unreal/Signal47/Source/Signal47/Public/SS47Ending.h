@@ -45,6 +45,7 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
+	friend struct FS47FinaleMovie; // Read-only observation of the ordinary ending card and photo alpha.
 	enum class ECard : uint8 { None, Title, Credits, Photo };
 	ECard Card = ECard::None;
 	bool bGone = false, bBoughtSfx = false, bLargeText = false, bPaperPlayed = false;

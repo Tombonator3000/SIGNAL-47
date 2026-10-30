@@ -26,3 +26,9 @@ unreal/Signal47/Tools/substationdetail/exports/*.glb filter=lfs diff=lfs merge=l
 unreal/ArtSource/TrafficSignal/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/TrafficSignal/Export/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/TrafficSignal/textures/*.png filter=lfs diff=lfs merge=lfs -text
+
+# Editable original cloud-tank bakes and hero-craft sources.
+unreal/ArtSource/FinaleSky/CloudTank-*/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/CloudTank-*/*.png filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/FinalCraft-v2/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/FinalCraft-v2/exports/*.fbx filter=lfs diff=lfs merge=lfs -text

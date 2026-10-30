@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "authorship": "Original SIGNAL / 47",
+  "blender": "5.2.2 LTS",
+  "simulation_resolution_max": 128,
+  "frame_range": [
+    1,
+    96
+  ],
+  "fps": 24,
+  "picked_frames": [
+    48,
+    72,
+    96
+  ],
+  "atlas_size": 128,
+  "domain_dimensions_m": [
+    10,
+    14,
+    8
+  ],
+  "buoyancy_density": -0.14000000059604645,
+  "buoyancy_heat": 0.0,
+  "vorticity": 0.18000000715255737,
+  "cache_format": "OPENVDB",
+  "adaptive_domain": false,
+  "noise": false,
+  "density_axes": "X forward, Y across bank, Z up; leading lip toward -X",
+  "emitters": [
+    {
+      "name": "Broad_rear_sheet",
+      "position": [
+        1.7,
+        -0.1,
+        2.55
+      ],
+      "scale": [
+        1.28,
+        4.75,
+        0.36
+      ],
+      "velocity": [
+        -1.2,
+        0.03,
+        -0.12
+      ],
+      "density": 0.72
+    },
+    {
+      "name": "Heavy_left_overhang",
+      "position": [
+        0.62,
+        -4.6,
+        2.05
+      ],
+      "scale": [
+        1.05,
+        1.05,
+        0.64
+      ],
+      "velocity": [
+        -1.65,
+        0.08,
+        -0.18
+      ],
+      "density": 0.94
+    },
+    {
+      "name": "Left_upper_fold",
+      "position": [
+        1.12,
+        -3.15,
+        2.75
+      ],
+      "scale": [
+        0.92,
+        1.26,
+        0.54
+      ],
+      "velocity": [
+        -1.3,
+        -0.1,
+        -0.1
+      ],
+      "density": 0.86
+    },
+    {
+      "name": "Low_leading_cap",
+      "position": [
+        0.25,
+        -1.43,
+        1.9
+      ],
+      "scale": [
+        1.05,
+        1.18,
+        0.66
+      ],
+      "velocity": [
+        -1.9,
+        0.1,
+        -0.3
+      ],
+      "density": 1.0
+    },
+    {
+      "name": "Centre_hanging_sheet",
+      "position": [
+        1.03,
+        0.15,
+        2.45
+      ],
+      "scale": [
+        0.85,
+        1.02,
+        0.43
+      ],
+      "velocity": [
+        -1.38,
+        -0.1,
+        -0.14
+      ],
+      "density": 0.78
+    },
+    {
+      "name": "High_right_head",
+      "position": [
+        1.28,
+        1.82,
+        2.92
+      ],
+      "scale": [
+        0.82,
+        1.06,
+        0.52
+      ],
+      "velocity": [
+        -1.25,
+        0.06,
+        -0.1
+      ],
+      "density": 0.88
+    },
+    {
+      "name": "Right_heavy_fold",
+      "position": [
+        0.58,
+        3.52,
+        2.24
+      ],
+      "scale": [
+        1.13,
+        1.3,
+        0.65
+      ],
+      "velocity": [
+        -1.72,
+        -0.09,
+        -0.24
+      ],
+      "density": 0.96
+    },
+    {
+      "name": "Trailing_right_wisp",
+      "position": [
+        1.65,
+        5.03,
+        2.63
+      ],
+      "scale": [
+        0.75,
+        0.79,
+        0.39
+      ],
+      "velocity": [
+        -1.16,
+        -0.12,
+        -0.1
+      ],
+      "density": 0.68
+    }
+  ]
+}

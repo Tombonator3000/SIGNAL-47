@@ -345,9 +345,39 @@ void AS47Web::ApplyGraphicsSettings(const FS47GraphicsSettings& Settings)
 		Readback->GetBoolField(TEXT("cloudVisible")), Readback->GetNumberField(TEXT("cloudSamples")));
 }
 
+void AS47Web::SetFinaleGroundShade(float Shade)
+{
+	FinaleGroundShade = FMath::Clamp(Shade, 0.f, .82f);
+	if (FinaleGroundShade <= 0) UpdateFinaleSkyCapture(); // Hide/Drop restores the exact original anchor now.
+}
+
+void AS47Web::UpdateFinaleSkyCapture()
+{
+	if (!NightSky) return;
+	if (CurrentArea == TEXT("roswell") && FinaleGroundShade > 0)
+	{
+		if (!FinaleSkyCaptureRestore.IsSet())
+		{
+			FinaleSkyCaptureRestore = NightSky->GetComponentLocation();
+			NightSky->SetWorldLocation(Eye); bSkyCaptured = false;
+		}
+		else if (FVector::DistSquared(NightSky->GetComponentLocation(), Eye) >= 25000. * 25000.)
+		{
+			NightSky->SetWorldLocation(Eye); bSkyCaptured = false;
+		}
+	}
+	else if (FinaleSkyCaptureRestore.IsSet())
+	{
+		NightSky->SetWorldLocation(*FinaleSkyCaptureRestore);
+		FinaleSkyCaptureRestore.Reset(); bSkyCaptured = false;
+	}
+}
+
 void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
 {
 	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash; SkyEvening = Evening;
+	// Only the active Roswell view loses native ground fill; the living sky keeps its own curves.
+	const float FinaleLight = CurrentArea == TEXT("roswell") ? 1.f - FinaleGroundShade : 1.f;
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	UpdateCloudLight(SunDirection, Daylight);
 	if (DawnSun)
@@ -364,7 +394,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		DawnSun->SetForwardShadingPriority(GroundSun > 0.f ? Lights.Num() + 1 : 0);
 		// The existing fixed exposure is intentionally retained. These are calibrated game
 		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
-		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)));
+		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)) * FinaleLight);
 		DawnSun->SetLightColor(Evening > 0.f
 			? FMath::Lerp(FLinearColor(1.f, 0.36f, 0.14f), FLinearColor(1.f, 0.76f, 0.52f), FMath::Clamp(Evening, 0.f, 1.f))
 			: FLinearColor(1.f, 0.55f, 0.28f));
@@ -384,7 +414,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// shapes its direction and colour, and night (few clouds) stays as dark as before.
 		static const float Boost = [] { float V = 2.4f; FParse::Value(FCommandLine::Get(), TEXT("S47SkyBoost="), V); return V; }();
 		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) : 1.f;
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill);
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
@@ -493,16 +523,19 @@ void AS47Web::UpdateNativeLighting()
 	for (FLabLight& P : LabLights) Bounce(P.Light.Get());
 	if (NightSky) NightSky->SetIndirectLightingIntensity(Indirect);
 	Bounce(DawnSun);
+	const float FinaleLight = CurrentArea == TEXT("roswell") ? 1.f - FinaleGroundShade : 1.f;
 	for (FLightRef& R : Lights) if (UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
 		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
-		Moon->SetIntensity(R.Base > 0 ? LocalMoon * (1.f - SkyDawn) + SkyFlash * 0.8f : 0.f);
+		Moon->SetIntensity(R.Base > 0 ? (LocalMoon * (1.f - SkyDawn) + SkyFlash * 0.8f) * FinaleLight : 0.f);
 		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
 		Bounce(Moon);
 		Moon->SetLightSourceAngle(0.52f);
 		Moon->SetLightSourceSoftAngle(0.08f);
 	}
+	// Keep nearby C6 geometry inside the existing 15km exclusion. Recapture remains throttled below.
+	UpdateFinaleSkyCapture();
 	const float CalicheSky = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	const bool bCalicheBoundary = (CalicheSky == 0.f && CapturedCaliche > 0.f) || (CalicheSky == 1.f && CapturedCaliche < 1.f);
 	if (NightSky && !NightSky->bRealTimeCapture && LightingRunTime > 2 && LightingRunTime - SkyCaptureTime > 2 && (!bSkyCaptured || FMath::Abs(CapturedDawn - SkyDawn) > 0.08f || FMath::Abs(CapturedCaliche - CalicheSky) > 0.08f || bCalicheBoundary))

@@ -14,6 +14,7 @@
 #include "S47Chapter4.h"
 #include "S47Chapter5.h"
 #include "S47Flow.h"
+#include "S47FinaleSky.h"
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Main.h"
@@ -114,6 +115,8 @@ void US47Chapter6::Note(const FString& Text) const { if (Host) Host->Note(Text);
 void US47Chapter6::Begin(const S47J::FObj& Saved)
 {
 	Reset(); bActive = true; bStarted = true; Stage = TEXT("drive");
+	// Visual addition only: no new story/save eligibility and no independent finale clock.
+	if (M && !FParse::Param(FCommandLine::Get(), TEXT("S47FinaleSkyOff"))) FinaleSky = MakeShared<FS47FinaleSky>(M);
 	// Art is local in Unreal. Decode the photograph now and draw FLASH before the moment needs it.
 	S47Image::Art(TEXT("photo1947"));
 	if (M && M->Audio) M->Audio->AmRadioThree({});
@@ -126,6 +129,7 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 		W->Note(W->Time() + TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post."));
 		W->BuildCourierSign();
 		W->PlaceJump();
+		if (W->FinaleSky) W->FinaleSky->Prepare();
 	});
 	if (Host) Host->After(3, [W] { if (W.IsValid() && W->bActive && !W->Frames) W->DrawFrames(); });
 }
@@ -140,6 +144,7 @@ void US47Chapter6::Reset()
 {
 	bActive = false; bStarted = false; Stage = TEXT("drive");
 	Et = 0; Pt = 0; Done.Empty(); Idle = 0; BackT = 0; StopS.Reset();
+	FinaleSky.Reset();
 	if (LastMile.Cb && !LastMile.ClosedAt && M && M->CB) M->CB->Stop();
 	LastMile = FLastMile(); Tries = FTries(); Cues.Empty(); KeyLamps.Reset();
 	SkyLift.Reset(); SunElev.Reset();
@@ -154,6 +159,7 @@ void US47Chapter6::Reset()
 void US47Chapter6::BeginDestroy()
 {
 	// Native resources may outlive Main's scene tables during editor shutdown.
+	FinaleSky.Reset();
 	if (Ending) Ending->Dispose(); Ending.Reset(); Bed.Stop(); Bed = FS47Pressure(); Third.Reset(); DropCourierSign();
 	Super::BeginDestroy();
 }
@@ -625,9 +631,22 @@ void US47Chapter6::Update(double Dt, double InT)
 	if (Stage == TEXT("drive")) Drive(Dt);
 	else if (Stage == TEXT("event")) Event(Dt);
 	else if (Stage == TEXT("pullout")) Pullout(Dt);
+	if (FinaleSky && M && M->World)
+	{
+		const auto* Road = M->World->OldRoad(); const auto* Driver = M->World->OldDrive();
+		if (Road && Driver) FinaleSky->Step(Road->Where(Driver->Pos.X, Driver->Pos.Z).Mi, Stage, Et, Pt);
+		else FinaleSky->Hide();
+	}
 	if (M && M->UI) M->UI->Objective(Objective());
 	// main.ts sky.setDawnLift / setClock: the world-life renderer consumes AS47Web's overrides.
 	if (M && M->Web) { M->Web->SetDawnLift(SkyLift.Get(M->World && M->World->Area == TEXT("roswell") ? 1.0 : 0.7)); M->Web->SetSunElevation(SunElev); }
+}
+
+S47J::FObj US47Chapter6::FinaleSkyReadback() const
+{
+	if (FinaleSky) return FinaleSky->Readback();
+	auto O = S47J::New(); S47J::Set(O, TEXT("ready"), false); S47J::Set(O, TEXT("shown"), false);
+	return O;
 }
 
 // ---------- the host (Prologue.ts) and the developer menu (main.ts) ----------

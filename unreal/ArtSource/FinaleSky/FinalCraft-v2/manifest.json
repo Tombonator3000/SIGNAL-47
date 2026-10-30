@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "revision": "S47-FINALE-SKY-2",
+  "authorship": "Original SIGNAL / 47 craft geometry v2",
+  "mesh": "SM_S47_FinalCraft",
+  "destination": "/Game/FinaleSky",
+  "material_slots": [
+    "M_S47_FinalHull",
+    "M_S47_FinalRibs",
+    "M_S47_FinalRecess",
+    "M_S47_FinalLight"
+  ],
+  "materials": {
+    "Hull": {
+      "color": [
+        0.075,
+        0.09,
+        0.105,
+        1
+      ],
+      "roughness": 0.53,
+      "metallic": 0.78,
+      "glow": 0
+    },
+    "Ribs": {
+      "color": [
+        0.17,
+        0.19,
+        0.21,
+        1
+      ],
+      "roughness": 0.37,
+      "metallic": 0.85,
+      "glow": 0
+    },
+    "Recess": {
+      "color": [
+        0.008,
+        0.014,
+        0.024,
+        1
+      ],
+      "roughness": 0.66,
+      "metallic": 0.36,
+      "glow": 0.025
+    },
+    "Light": {
+      "color": [
+        0.36,
+        0.52,
+        0.63,
+        1
+      ],
+      "roughness": 0.32,
+      "metallic": 0.08,
+      "glow": 1.8
+    }
+  },
+  "runtime_radius_m": 680,
+  "lod_screen_sizes": [
+    1,
+    0.35,
+    0.12
+  ],
+  "lods": [
+    {
+      "lod": 0,
+      "name": "SM_S47_FinalCraft",
+      "fbx": "exports/SM_S47_FinalCraft.fbx",
+      "triangles": 13396,
+      "vertices": 24544,
+      "solids": 59
+    },
+    {
+      "lod": 1,
+      "name": "SM_S47_FinalCraft_LOD1",
+      "fbx": "exports/SM_S47_FinalCraft_LOD1.fbx",
+      "triangles": 8228,
+      "vertices": 15168,
+      "solids": 59
+    },
+    {
+      "lod": 2,
+      "name": "SM_S47_FinalCraft_LOD2",
+      "fbx": "exports/SM_S47_FinalCraft_LOD2.fbx",
+      "triangles": 5300,
+      "vertices": 9888,
+      "solids": 59
+    }
+  ],
+  "source_blend": "FinalCraft-v2.blend",
+  "source_inputs": [
+    {
+      "path": "unreal/Signal47/Tools/finalesky/build_craft_v2.py",
+      "sha256": "fb47b82d43c0783634cf921b914eb80cb8d27e79216391d5a708c0991adf3b73"
+    },
+    {
+      "path": "unreal/Signal47/Tools/finalesky/geometry_v2.py",
+      "sha256": "420c2ab76937c21e82071ada9b4bc83c232b2938fc8f92f5ea4f5196780b70b1"
+    },
+    {
+      "path": "unreal/Signal47/Tools/finalesky/geometry.py",
+      "sha256": "ef04eecf60a8c1c20457649edfe0aafdb449983c5185c78815a0a7cf8f7509b6"
+    }
+  ],
+  "source_axis": "Blender metres Z-up; FBX -Y/Z and FBX_SCALE_UNITS; native forceFrontX plus yaw90",
+  "native_mapping": "(Bx,-By,Bz)*100cm, clockwise front faces; native UV=(u,1-v)",
+  "status": "SOURCE_SAVED_EXPORTS_CREATED",
+  "native_imported": false,
+  "runtime_viewed": false
+}
