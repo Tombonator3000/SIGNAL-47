@@ -132,3 +132,8 @@ Tilpasning66a73755 er fryst: runtime-rom bruker faktisk bay/aperture og SC04-lyd
 ### 2026-10-30T03:27:02+01:00 SC04 målrettet PASS, faktisk nattoppstart avvist
 
 IntegrerteditorR2/de09bb4e består15,761s og gir modulca52ee55. SC04R7 består alletreruter:798kontroller/13disk-fullFlow/31bruk og184,09m nativegange. R6s gangsonefeil er bevart og konkretprøvd på ny main. [Oppdatert rapport](../Docs/Evidence/UnrealDeliveries/SC04_2026-10-30.md) skiller navngitt startfixture fra faktisk natt. Første nativefinaleforsøk feilet på readonlyPython-property; editorpropertyretting02cd er separat. Neste nativeforsøk feilet ved maskens faktiske pinnavn. Ingenbinding er aktivert. Faktisk NightR1 består1774selvtester, men avviser ny-sak/pendlerstatus i stage0 førSC01; rawbevis er bevart, faktisk Async/Flow-oppstart undersøkes uten kildefixtures. Alleviderekapitler er fortsattUNVERIFIED. Ingeninstallasjon/release i dettepasset.
+
+
+### 2026-10-30T03:39:32+01:00 Nytt faktisk nattforsøk og avgrenset nativeavslag
+
+R4-editor fra d27ea475 består11,179s, modul2d9213ed er privatbevart. Endringen fra tidligere runtime er bare nattkontraktens venting på produktets faktiske0,4s kjørecallback; alle produksjonskrav er beholdt. Nativeapply består35kontroller før avslag på LOD2s kollisjonsflagg. Alle7skrevne nativebytes og første5delfiler er bevart privat; binding er fortsatt fraværende. NightR2 er faktisk startet med normal nycase1 og faktiskpendling, ingenhopp eller foreldrekilder. AgentNat eier kunimporterPython for kollisjonsfinalisering; SourceCpp/Content/module er fryst og ingenagentstarterheavyjobb. Videre natt- og finaleaksept gjenstår. Ingeninstallasjon/release i dettepasset.
