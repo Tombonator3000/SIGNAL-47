@@ -173,9 +173,37 @@ def apply(root,manifest,report):
         b=S.get_lod_build_settings(mesh,lod)
         for key,value in [('use_full_precision_u_vs',True),('remove_degenerates',False),('recompute_normals',False),('recompute_tangents',True),('use_mikk_t_space',True)]:b.set_editor_property(key,value)
         S.set_lod_build_settings(mesh,lod,b)
-        for section in range(mesh.get_num_sections(lod)):S.enable_section_collision(mesh,False,lod,section)
+    # Finalize every authored LOD before editing its SectionInfoMap. The reflected
+    # setter calls PostEditChange, but a NullRHI cache hit need not copy this map
+    # back into FStaticMeshLODResources::Sections (InitResources is skipped).
+    collision=[];report.data['section_collision_map_apply']=collision
+    for lod in range(3):
+        count=mesh.get_num_sections(lod)
+        report.check('LOD'+str(lod)+' actual sections exist before collision policy',count>0,count)
+        row=dict(lod=lod,before=[bool(S.is_section_collision_enabled(mesh,lod,s))for s in range(count)])
+        collision.append(row);report.flush()
+        for section in range(count):S.enable_section_collision(mesh,False,lod,section)
+        row['after']=[bool(S.is_section_collision_enabled(mesh,lod,s))for s in range(count)]
+        report.check('LOD'+str(lod)+' actual SectionInfoMap disables every section',not any(row['after']),row)
     report.check('three owned authored screens',S.set_lod_screen_sizes(mesh,[1.,.35,.12]))
     report.check('save only own craft mesh',E.save_loaded_asset(mesh))
+    # Re-read the SAVED owned package, never accept stale render flags or mutate
+    # render data by hand. FinishPostLoadInternal calls ResolveSectionInfo on the
+    # saved map in headless UE5.8, unlike FinishBuildInternal. The independent
+    # later PID still has to prove the complete saved/render payload unchanged.
+    package=mesh.get_outermost();package_name=package.get_name()
+    report.check('reload restricted to the saved own craft package',package_name==DEST+'/SM_S47_FinalCraft',package_name)
+    path=PROJECT/'Content/FinaleSky/SM_S47_FinalCraft.uasset'
+    before=dict(bytes=path.stat().st_size,sha256=sha(path))
+    row=dict(package=package_name,file=str(path),before=before,mode='ASSUME_NEGATIVE')
+    report.data['saved_owned_mesh_reload']=row;report.flush()
+    # A dirty/unsaved package must be rejected, not silently discarded or saved.
+    result=unreal.EditorLoadingAndSavingUtils.reload_packages([package],unreal.ReloadPackagesInteractionMode.ASSUME_NEGATIVE)
+    row['result']=str(result);row['after']=dict(bytes=path.stat().st_size,sha256=sha(path))
+    report.check('saved own mesh reload succeeded without errors',isinstance(result,tuple)and len(result)==2 and result[0]is True and not str(result[1]),row)
+    report.check('reload changes no saved mesh bytes',row['after']==before,row)
+    mesh=load('SM_S47_FinalCraft')
+    report.check('saved own mesh reacquired after package reload',isinstance(mesh,unreal.StaticMesh)and mesh.get_path_name()==DEST+'/SM_S47_FinalCraft.SM_S47_FinalCraft')
 
 
 def actual(output):
@@ -237,7 +265,7 @@ def verify(root,manifest,data,report):
     report.check('actual mesh slots keep correct own material instance by imported name',all(data['mesh']['materials'][i]==DEST+'/MI_S47_Final'+name.removeprefix('M_S47_Final')+'.MI_S47_Final'+name.removeprefix('M_S47_Final')for i,name in enumerate(names)))
     with gzip.open(root/manifest['native_reference']['path'],'rt')as f:reference=json.load(f)
     report.check('complete source/saved/render LOD inventory',len(reference['lods'])==len(data['savedSource']['lods'])==len(data['mesh']['lods'])==len(manifest['lods'])==3)
-    results=[]
+    results=[];report.data['oriented_source_parity']=results
     for lod,(src,saved,render)in enumerate(zip(reference['lods'],data['savedSource']['lods'],data['mesh']['lods'])):
         report.check('actual LOD identity '+str(lod),src['lod']==saved['lod']==render['lod']==lod)
         triangles=[dict(p=[p['v']for p in t['p']],uv=[u['v']for u in t['uv']],material=t['material'])for t in saved['triangles']]
@@ -245,8 +273,10 @@ def verify(root,manifest,data,report):
         report.check('LOD'+str(lod)+' actual saved/render/source triangle counts',len(triangles)==render['triangles']==manifest['lods'][lod]['triangles'])
         for g in saved['groups']:
             report.check('LOD'+str(lod)+' actual group name -> global slot',g['name']in names and 0<=g['slot']<len(names) and names[g['slot']]==g['name'],g)
-        report.check('LOD'+str(lod)+' actual sections route all four named materials',set(s['material']for s in render['sections'])==set(range(4)) and all(not s['collision']for s in render['sections']))
-    report.data['oriented_source_parity']=results
+        report.check('LOD'+str(lod)+' actual sections route all four named materials',set(s['material']for s in render['sections'])==set(range(4)),render['sections'])
+        collision=[bool(S.is_section_collision_enabled(mesh,lod,s))for s in range(mesh.get_num_sections(lod))]
+        report.check('LOD'+str(lod)+' saved SectionInfoMap disables every actual section',len(collision)==len(render['sections'])>0 and not any(collision),collision)
+        report.check('LOD'+str(lod)+' actual render sections have collision disabled',all(not s['collision']for s in render['sections']),render['sections'])
     for role,row in manifest['contract']['materials'].items():
         mi=load('MI_S47_Final'+role);a=next(x for x in data['materials']if x['path']==mi.get_path_name())
         report.check(role+' actual parent/Color/PBR/Glow',a['read']and a['parent']==DEST+'/M_S47_FinalSurface.M_S47_FinalSurface'and max(abs(x-y)for x,y in zip(a['color'],row['color']))<1e-6 and all(abs(a[k]-row[k])<1e-6 for k in ('roughness','metallic','glow')),a)
