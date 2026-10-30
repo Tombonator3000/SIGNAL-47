@@ -42,7 +42,7 @@ struct FS47T02Test::FState
  bool bEnabled = false, bDone = false, bNative = false, bNativeStarted = false, bReturn = false, bUnresolved = false, bEarlyOffice = false, bArrivalOffice = false;
  bool bOutSaro = false, bOutRoad = false, bBackRoad = false, bBackSaro = false;
  bool bSaroInterior = false;
- int32 Stage = 0, Checks = 0, Loads = 0, StoreReads = 0, WalkIndex = 0;
+ int32 Stage = 0, Checks = 0, Loads = 0, StoreReads = 0, WalkIndex = 0, InteriorContinues = 0;
  double Elapsed = 0, Since = 0, Hold = 3, WalkDistance = 0, LastProgress = 0;
  double LastClock = 0, OdoStart = 0, OutMetres = 0, BackMetres = 0, NativeWalkMetres = 0;
  FVector LastFoot = FVector::ZeroVector;
@@ -606,7 +606,7 @@ void FS47T02Test::Step(double Dt)
       TEXT("actual title Continue selects only isolated cohort: ")+Name)) return false;
      if (!Check(M->Flow->OpenTestView(TEXT("continue")) && M->Mode==US47Main::EMode::Play && M->Flow->CaseId==1 && !M->Flow->bStarting,
       TEXT("actual title/Continue production OpenSave completed: ")+Name)) return false;
-     ++T.Loads;
+     ++T.Loads; ++T.InteriorContinues;
      const FVector Actual=M->Player->Pos;
      const auto After=M->Flow->GameState(), AfterOffice=S47J::Clone(S47J::Obj(After,TEXT("office")));
      auto ExpectedOffice=S47J::Clone(SourceOffice); ExpectedOffice->RemoveField(TEXT("interiorLayout")); AfterOffice->RemoveField(TEXT("interiorLayout"));
@@ -662,7 +662,7 @@ void FS47T02Test::Step(double Dt)
  if (T.Stage == 98)
  {
   auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), T.bArrivalOffice ? TEXT("PASS_ARRIVAL_OFFICE_PHYSICAL_AND_DISK") : TEXT("PASS_EARLY_OFFICE_PHYSICAL_AND_DISK")); S47J::Set(Result, TEXT("checks"), T.Checks); S47J::Set(Result, TEXT("walkedMetres"), T.WalkDistance); S47J::Set(Result, TEXT("freshStoreFullFlowRestores"), T.Loads);
-  S47J::Set(Result,TEXT("saroInteriorContract"),T.bSaroInterior); S47J::Set(Result,TEXT("interiorTitleContinueCohorts"),T.bSaroInterior?10:0);
+  S47J::Set(Result,TEXT("saroInteriorContract"),T.bSaroInterior); S47J::Set(Result,TEXT("interiorTitleContinueCohorts"),T.InteriorContinues);
   FFileHelper::SaveStringToFile(S47J::Write(Result,true), *(T.Root/TEXT("result.json")));
   T.bDone = true; M->Player->TestMove.Reset();
   UE_LOG(LogS47T02Test, Display, TEXT("S47: early office PASS COMPLETE: %d checks, real key/drawer/door/paper interaction, %.2f m Walker, fresh disk/full Flow restore, no premature departure or VHS credit; artifacts %s"), T.Checks, T.WalkDistance, *T.Root);
