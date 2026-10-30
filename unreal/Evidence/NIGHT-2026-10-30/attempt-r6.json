@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "status": "FAIL_PREFIX_INCOMPLETE",
+  "complete_night_accepted": false,
+  "attempt": "Night R6",
+  "frozen_head": "5e87cf75d9722d05233d33d9c0491ee5e5e408c4",
+  "build_receipt": {
+    "source_commit": "5e87cf75d9722d05233d33d9c0491ee5e5e408c4",
+    "freeze_sha256": "02734752ec2bb49e6d547d722a8d7cb0530c19c05561c04bd63ec2c747de8783",
+    "source_files": 638,
+    "bytes": 19694328,
+    "sha256": "2ab7880e2a2d2c1c66a4fbe24eb60843f62073513729f94e2d418515881ad47a",
+    "build_log_sha256": "eb08dbafddda84bd9512e8e68bc01b120c50ff35fad3d31c1892e5f6ac3736ca"
+  },
+  "source_freeze_sha256": "323938efa2af308465e34d0b2805d2b952dfca0d2d922b0fd069aea8c9a0f914",
+  "guard": {
+    "returncode": 1,
+    "wall_seconds": 740.976770436042,
+    "semantic_success": false,
+    "expected_found": false,
+    "forbidden_found": [
+      "night contract FAIL"
+    ],
+    "stop_reason": null
+  },
+  "result": {
+    "status": "FAIL",
+    "scenario": "NIGHT_SC01_SC03_PREFIX",
+    "chain_id": "01A18AF0B6157401B89384CEA946786A",
+    "stage": 13,
+    "reason": "native night route blocked at 9.300/3.080 to 9.300/4.000",
+    "checks": 5292,
+    "restores": 4,
+    "walked_metres": 84.55167064837153,
+    "driven_metres": 2623.163503875308,
+    "actual_ray_uses": 4
+  },
+  "raw_result_sha256": "ecfbeae787d6e6921e1c42ff1b232f9f0ba20ab92be73d6e7598fd37f96dd336",
+  "accepted_sc01": {
+    "status": "PASS",
+    "scenario": "SC01",
+    "mode": "night",
+    "chain_id": "01A18AF0B6157401B89384CEA946786A",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r6/Saved/NightContract/01A18AF0B6157401B89384CEA946786A/sc01/sc01-complete.disk.json",
+      "bytes": 376938,
+      "sha1": "2FA5186B247A9A80666E4DA32018F48EC61AC088"
+    },
+    "previous_checkpoint_file": null,
+    "previous_result_file": null
+  },
+  "after_report_roundtrip": {
+    "clock_before": -3493.64982756041,
+    "clock_after": -3493.64982756041,
+    "raw_sha256": "f27a3026457fb738972a9135ef6b19f014d71ee9a61b2cc421d03c8f4f516485",
+    "pass": true
+  },
+  "outage": {
+    "clock": 827.0000789687037,
+    "actual27_pointing": [
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ],
+      [
+        42,
+        48
+      ]
+    ],
+    "raw_sha256": "2c9b848e971fc9816e2e5c0e38091b1262ac5dc78a2d0bf45e6e9484d22bd8a8"
+  },
+  "sc01_raw_result_sha256": "8f198f6d2399390f2b7b5b79c9fc614b5ff9e2183c2c5d5d29a38d5c1890f786"
+}

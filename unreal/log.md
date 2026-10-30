@@ -1433,3 +1433,8 @@ R5/6abfab4d/modulfc5f522f avvises med rc1/661,432s ved SC01 etterrapport/Fortset
 ### Codex 2026-10-30T04:53:07+01:00 R8-bestått og faktisk NightR6 startet
 
 Horror-rettingen c08ca466 bevarer den inaktive terminalhistorikken ved last. Aktive samtaler bruker nøyaktig gammel Num−1-grense, og alle nye samtaler nullstiller før visning. Ingen testport eller rapportfakta er endret. SC03-scener har faktisk to linjer nå; det hevdes ingen ekstra lengdefeil der. Editor R8 fra5e87cf75 består10,162s med privatbevart modul2ab7880e. NightR6 er faktisk startet fra ny sak med638inputs og alle modul-/nativepins. R5s siste ekte dørstate var østlukket; neste ordinære gjenåpning har korrekt førtilstand. Alle agenter er ferdige/fryst, root eier hele videre kjeden og heavyjobbene. Ny terminalcursoraksept, fysisk042, T01/SC02/SC03 og resten avSC13 gjenstår. Ingen installasjon/release.
+
+
+### Codex 2026-10-30T05:14:18+01:00 R6 avgrenset rekkverkssperre, ruteretting fryst
+
+R6/5e87cf75 har faktisk SC01-PASS, identisk etterrapport/Fortsett og27encodere042/48 ved00:13:47. Etter fylkestelefonen treffer gammel fast testrute rekkverket vedx9,30/z3,08. Manifestkollider19 harx[6,3;9,4]/z[3,35;3,45], og radius0,27 gir nøyaktig stopp3,08. FAIL/rc1/740,977s,5292prefikskontroller/firedisk,84,55m gange/2623,16m pendling er bevart; prefikset er ikke godkjent. Sky64b67f79 gjenbruker eksisterendeGoItem(truck) med faktiske bounds/ray/range/livekollider/gangsoner. IngenPlace, kollisjonssvekkelse eller nye fakta; nesteNativeResume går til101, ikke fixture100. Rapport og R6-kvittering skiller beståttSC01/042 fra videreFAIL. Ny R9-editor ogNightR7 følger. Ingeninstallasjon/release.
