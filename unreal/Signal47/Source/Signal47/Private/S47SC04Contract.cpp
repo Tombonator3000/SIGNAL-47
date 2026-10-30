@@ -258,9 +258,9 @@ bool FS47SC04Contract::WaitForBody(const FString& Context)
  const auto* A=Act();const auto* Torso=A?A->Pale.Torso.Get():nullptr;
  if(!Torso)return false;
  const FVector Eye=M->Player->EyeUE(),Target=Torso->Bounds.Origin;FHitResult Hit;
- TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
+ TArray<FString> Ignored;const bool Clear=BodySight(Hit,Ignored);
  const double Dot=FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal());
- const bool Ready=A->Pale.Rendered()&&Block&&Dot>.995;
+ const bool Ready=A->Pale.Rendered()&&Clear&&Dot>.995;
  if(Ready)return true;
  if(FPlatformTime::Seconds()-VisibilityAt>.25)
  {
@@ -274,7 +274,7 @@ bool FS47SC04Contract::WaitForBody(const FString& Context)
  {
   auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("body-visibility-timeout"));S47J::Set(Row,TEXT("context"),Context);
   S47J::Set(Row,TEXT("body_xz"),A->Pos.ToString());S47J::Set(Row,TEXT("rendered"),A->Pale.Rendered());S47J::Set(Row,TEXT("camera_dot"),Dot);
-  S47J::Set(Row,TEXT("blocking_hit"),Block);S47J::Set(Row,TEXT("first_component"),Hit.GetComponent()?Hit.GetComponent()->GetPathName():TEXT("none"));
+  S47J::Set(Row,TEXT("opaque_trace_clear"),Clear);S47J::Set(Row,TEXT("first_component"),Hit.GetComponent()?Hit.GetComponent()->GetPathName():TEXT("none"));
   Negatives.Add(MakeShared<FJsonValueObject>(Row));Finish(false,TEXT("no actual unobscured body/camera witness: ")+Context);
  }
  return false;
@@ -283,8 +283,8 @@ bool FS47SC04Contract::RenderChecks()
 {
  const auto* A=Act();if(!Check(A&&A->Pale.bBuilt&&A->Pale.All.Num()==10&&A->Pale.Rendered(),TEXT("actual ten-part pale body rendered from this legal player camera")))return false;
  const FVector Eye=M->Player->EyeUE(),Target=A->Pale.Torso->Bounds.Origin;FHitResult Hit;
- TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
- if(!Check(Block&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces native torso bounds; no visible opaque scene surface blocks the sight line")))return false;
+ TArray<FString> Ignored;const bool Clear=BodySight(Hit,Ignored);
+ if(!Check(Clear&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces native torso bounds; no visible opaque scene surface blocks the sight line")))return false;
  TSet<FString> Meshes;TArray<TSharedPtr<FJsonValue>> Parts;
  for(const auto& Weak:A->Pale.All)
  {
