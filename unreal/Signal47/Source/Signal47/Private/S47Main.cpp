@@ -20,6 +20,7 @@
 #include "SS47Widgets.h"
 #include "S47TownLayer.h"
 #include "S47TripoNpcs.h"
+#include "S47SaroRooms.h"
 
 #include "S47Flow.h"
 #include "S47Radio.h"
@@ -164,6 +165,7 @@ void US47Main::Step(double Dt)
 	{
 		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);
 		TripoNpcs->Step();
+		FS47SaroRooms::Update(this, Dt);
 	}
 	if (SkyVisitors) SkyVisitors->Step(Dt);
 	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);

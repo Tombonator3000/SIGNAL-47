@@ -1,0 +1,220 @@
+{
+  "_doc": "Decorative control-room work groups only. Three metres and degree rotations. Console/supervisor tops at .78m, north native filing cabinet at 1.32m. Four irregular groups in measured free surfaces; no new documents, facts, interaction IDs, cables or collision. Preserve all existing devices and story surfaces. Draft for activation only after corridor-first comparison.",
+  "area": "saro",
+  "parent": "room.group",
+  "props": [
+    {
+      "id": "control-detail-rx-left-papers-base",
+      "model": "retro_office_props_Paper_Thick_B",
+      "at": [
+        -1.25,
+        0.77922,
+        -4.09
+      ],
+      "yaw": -7,
+      "scale": 0.78,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-rx-left-used-folder",
+      "model": "retro_office_props_File_A",
+      "at": [
+        -1.245,
+        0.83148,
+        -4.085
+      ],
+      "yaw": 3,
+      "scale": 0.77,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-rx-left-reference-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        -1.26,
+        0.83379,
+        -4.078
+      ],
+      "yaw": -11,
+      "scale": 0.78,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-rx-left-loose-return",
+      "model": "retro_office_props_Paper_Creased_C",
+      "at": [
+        -1.246,
+        0.84237,
+        -4.066
+      ],
+      "yaw": 5,
+      "scale": 0.62,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-rx-right-reference-holder",
+      "model": "office_assets_radio_FileBox_Black_7",
+      "at": [
+        1.22,
+        0.78,
+        -4.08
+      ],
+      "yaw": -4,
+      "scale": 0.86,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-rx-right-folder-low",
+      "model": "retro_office_props_File_A",
+      "at": [
+        1.215,
+        0.94276,
+        -4.101
+      ],
+      "yaw": -7,
+      "scale": 0.82,
+      "ground": false,
+      "trace": false,
+      "collide": false,
+      "pitch": -93
+    },
+    {
+      "id": "control-detail-rx-right-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        1.222,
+        0.91168,
+        -4.08
+      ],
+      "yaw": -3,
+      "scale": 0.84,
+      "ground": false,
+      "trace": false,
+      "collide": false,
+      "pitch": -90
+    },
+    {
+      "id": "control-detail-rx-right-folder-high",
+      "model": "retro_office_props_File_A",
+      "at": [
+        1.22,
+        0.9562,
+        -4.058
+      ],
+      "yaw": 2,
+      "scale": 0.9,
+      "ground": false,
+      "trace": false,
+      "collide": false,
+      "pitch": -87
+    },
+    {
+      "id": "control-detail-supervisor-closed-incoming-file",
+      "model": "retro_office_props_File_A",
+      "at": [
+        2.245,
+        0.78,
+        2.86
+      ],
+      "yaw": -4,
+      "scale": 0.73,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-supervisor-returned-papers",
+      "model": "retro_office_props_Paper_Thick_B",
+      "at": [
+        2.25,
+        0.78146,
+        2.856
+      ],
+      "yaw": 5,
+      "scale": 0.73,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-supervisor-working-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        2.239,
+        0.83037,
+        2.848
+      ],
+      "yaw": -8,
+      "scale": 0.73,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-supervisor-small-note-pad",
+      "model": "office_assets_radio_Notepad_11",
+      "at": [
+        2.257,
+        0.8384,
+        2.853
+      ],
+      "yaw": 9,
+      "scale": 0.85,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-cabinet-retained-file",
+      "model": "retro_office_props_File_A",
+      "at": [
+        -5.7,
+        1.321,
+        -1.21
+      ],
+      "yaw": 86,
+      "scale": 0.86,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-cabinet-retained-pages",
+      "model": "retro_office_props_Paper_Thick_B",
+      "at": [
+        -5.693,
+        1.3228,
+        -1.213
+      ],
+      "yaw": 93,
+      "scale": 0.81,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    },
+    {
+      "id": "control-detail-cabinet-retained-notebook",
+      "model": "office_assets_radio_Notebook_50",
+      "at": [
+        -5.685,
+        1.37707,
+        -1.207
+      ],
+      "yaw": 83,
+      "scale": 0.83,
+      "ground": false,
+      "trace": false,
+      "collide": false
+    }
+  ]
+}

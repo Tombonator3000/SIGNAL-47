@@ -1,0 +1,38 @@
+{
+  "units": "metres",
+  "mapping": "Blender (x,-z,y) to UE (100x,100z,100y)",
+  "asset": "SM_Saro_CorridorFinishes",
+  "triangles": 3622,
+  "bounds_local_m": [
+    [
+      -5.980999946594238,
+      -6.580999851226807,
+      0.00800000037997961
+    ],
+    [
+      1.9780000448226929,
+      -4.832499980926514,
+      2.752000093460083
+    ]
+  ],
+  "materials": [
+    "M_Saro_Corridor_UpperPaint",
+    "M_Saro_Corridor_VCTRepair",
+    "M_Saro_Corridor_VCT",
+    "M_Saro_Corridor_VCTFaded",
+    "M_Office_CreamEnamel",
+    "M_Office_BrushedMetal",
+    "M_Office_BlackBakelite"
+  ],
+  "reuse_materials": {
+    "M_Office_CreamEnamel": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel",
+    "M_Office_BrushedMetal": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal",
+    "M_Office_BlackBakelite": "/Game/Signal47/Art/Office/Materials/M_Office_BlackBakelite"
+  },
+  "source": "corridor_finishes.py",
+  "editable_components": 221,
+  "floor_top_m": 0.008,
+  "collision": "NoCollision; original gameplay unchanged",
+  "protected": "noticeboard, five papers, signs, all door apertures, lamps and maintenance hatch",
+  "office": "read-only source textures and native material reuse; no Office rebuild"
+}
