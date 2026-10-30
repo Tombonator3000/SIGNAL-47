@@ -211,15 +211,43 @@ bool FS47SC04Contract::Restored()
  auto Row=S47J::New();S47J::Set(Row,TEXT("name"),Pending);S47J::Set(Row,TEXT("pass"),true);S47J::Set(Row,TEXT("facts"),A->Save());S47J::Set(Row,TEXT("clock"),M->Story->Clock());
  Restores.Add(MakeShared<FJsonValueObject>(Row));Pending.Reset();LastWalk=M->Player->Pos;return true;
 }
+bool FS47SC04Contract::BodySight(FHitResult& Hit,TArray<FString>& Ignored) const
+{
+ const auto* A=Act();if(!A||!A->Pale.Torso)return false;
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04ContractOpaqueBody),true);
+ for(int32 I=0;I<32;++I)
+ {
+  if(!M->Web->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),A->Pale.Torso->Bounds.Origin,ECC_Visibility,Q))return false;
+  const UPrimitiveComponent* C=Hit.GetComponent();if(!C)return false;
+  if(A->Pale.Owns(C))return true;
+  bool Solid=C->IsVisible()&&!C->bHiddenInGame;
+  const auto* Node=M->Web->Node(M->Web->NodeOf(C));if(Node&&Node->Name.StartsWith(TEXT("proxy")))Solid=false;
+  if(const auto* Mat=C->GetMaterial(FMath::Max<int32>(0,Hit.ElementIndex)))
+  {
+   float Opacity=1;Mat->GetScalarParameterValue(TEXT("Opacity"),Opacity);
+   if(Mat->GetBlendMode()==BLEND_Additive||(Mat->GetBlendMode()==BLEND_Translucent&&Opacity<.5f))Solid=false;
+  }
+  if(Solid)return true;
+  Ignored.Add(C->GetPathName());Q.AddIgnoredComponent(C);
+ }
+ return false;
+}
 bool FS47SC04Contract::WaitForBody(const FString& Context)
 {
  const auto* A=Act();const auto* Torso=A?A->Pale.Torso.Get():nullptr;
  if(!Torso)return false;
  const FVector Eye=M->Player->EyeUE(),Target=Torso->Bounds.Origin;FHitResult Hit;
- const bool Block=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Eye,Target,ECC_Visibility,FCollisionQueryParams(SCENE_QUERY_STAT(S47SC04ContractBodyWait),true));
+ TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
  const double Dot=FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal());
  const bool Ready=A->Pale.Rendered()&&Block&&A->Pale.Owns(Hit.GetComponent())&&Dot>.995;
  if(Ready)return true;
+ if(FPlatformTime::Seconds()-VisibilityAt>.25)
+ {
+  VisibilityAt=FPlatformTime::Seconds();auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("actual-body-visibility-wait"));
+  S47J::Set(Row,TEXT("body_xz"),A->Pos.ToString());S47J::Set(Row,TEXT("camera_dot"),Dot);S47J::Set(Row,TEXT("rendered"),A->Pale.Rendered());
+  S47J::Set(Row,TEXT("first_opaque_component"),Hit.GetComponent()?Hit.GetComponent()->GetPathName():TEXT("none"));S47J::Set(Row,TEXT("ignored_nonvisual_components"),Ignored);
+  Negatives.Add(MakeShared<FJsonValueObject>(Row));
+ }
  FacePoint(S47Three::ToThree(Target));
  if(FPlatformTime::Seconds()-Mark>35)
  {
@@ -234,8 +262,8 @@ bool FS47SC04Contract::RenderChecks()
 {
  const auto* A=Act();if(!Check(A&&A->Pale.bBuilt&&A->Pale.All.Num()==10&&A->Pale.Rendered(),TEXT("actual ten-part pale body rendered from this legal player camera")))return false;
  const FVector Eye=M->Player->EyeUE(),Target=A->Pale.Torso->Bounds.Origin;FHitResult Hit;
- const bool Block=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Eye,Target,ECC_Visibility,FCollisionQueryParams(SCENE_QUERY_STAT(S47SC04ContractBody),true));
- if(!Check(Block&&A->Pale.Owns(Hit.GetComponent())&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces body; opaque first visibility hit is its native component")))return false;
+ TArray<FString> Ignored;const bool Block=BodySight(Hit,Ignored);
+ if(!Check(Block&&A->Pale.Owns(Hit.GetComponent())&&FVector::DotProduct(M->Player->ForwardUE(),(Target-Eye).GetSafeNormal())>.97,TEXT("actual camera faces body; first visible opaque hit is its native component")))return false;
  TSet<FString> Meshes;TArray<TSharedPtr<FJsonValue>> Parts;
  for(const auto& Weak:A->Pale.All)
  {
@@ -354,7 +382,7 @@ void FS47SC04Contract::Tick(double Dt)
   Snapshot(TEXT("all-originals-hunt-pending"));Next(15,.1);return;
  case 15:if(Restore(TEXT("hunt-pending-no-escape")))Next(16,.4);return;
  case 16:
-  CaptureBefore=0;
+  CaptureBefore=0;RecordsRouteSeen=false;
   if(Long){Path({FVector2D(-2.3,7.65),FVector2D(-3.9,7.65),FVector2D(-3.9,6.05),FVector2D(-4.75,5.7)});Next(60,0);}
   else{Path({FVector2D(-2.3,7.7),FVector2D(-3.9,7.7)});Next(20,0);}return;
  // Close the real door after an actual route into records has already been computed.
@@ -362,8 +390,8 @@ void FS47SC04Contract::Tick(double Dt)
  case 21:
  {
   bool RecordsPlanned=false;for(int32 Node:A->Path)RecordsPlanned|=FS47SC04::Nodes().IsValidIndex(Node)&&FS47SC04::Room(FS47SC04::Nodes()[Node].At)==2;
-  const auto* Torso=A->Pale.Torso.Get();
-  if(!A->bShown||!RecordsPlanned||A->Pos.Y>6.4||!Torso)
+  RecordsRouteSeen|=RecordsPlanned;const auto* Torso=A->Pale.Torso.Get();
+  if(!A->bShown||!RecordsRouteSeen||A->Pos.Y>6.65||!Torso)
   {if(FPlatformTime::Seconds()-Mark>35)Finish(false,TEXT("no actual pre-closure planned records route"));return;}
   if(!WaitForBody(TEXT("planned records route before ordinary closure")))return;
   if(!RenderChecks())return;Snapshot(TEXT("planned-records-route-before-close"));Shot(TEXT("pale-body-open-records-door"));
