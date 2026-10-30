@@ -64,7 +64,7 @@ class FS47SC12Contract : public TSharedFromThis<FS47SC12Contract>
  TWeakObjectPtr<US47Main> Main;
  bool Done = false, Armed = false, ActualInput = false, SawDriving = false;
  int32 Stage = 0, Checks = 0, Restores = 0, RayUses = 0, Waypoint = 0;
- double Elapsed = 0, Wait = 0, WalkMetres = 0, Stalled = 0, Driven = 0, DriveOdo = 0;
+ double Elapsed = 0, Wait = 0, WalkMetres = 0, Stalled = 0, Driven = 0, DriveOdo = 0, ArrivalStoppedAt = -1;
  FString Root, Chain, InputPath, LastDriveLeg;
  FJ InputState, InputFile, InputResultFile, InitialPointing, CheckpointFile, DepartureFile;
  TMap<FString,FJ> OriginalDocs;
@@ -411,6 +411,27 @@ public:
     return;
    }
    if(!SawDriving){if(Elapsed-Stalled>20)Result(false,TEXT("actual truck OnUse never began the production diner drive"));return;}
+   // Park stops the truck immediately, then delivers the ordinary chapter
+   // arrival only after its real 0.4s cinematic hold. Wait for that transaction.
+   const FString SaveBlock=M()->Flow->SaveBlock();
+   const bool Ready=C()->S.bArrived&&C()->S.Stage==TEXT("diner")&&!M()->World->bBusy&&!M()->Flow->bStarting&&!M()->Story->IsCinematic()&&!M()->ModalOpen()&&SaveBlock.IsEmpty();
+   const auto ArrivalStatus=[&](const FString& Name)
+   {
+    auto R=S47J::New();S47J::Set(R,TEXT("name"),Name);S47J::Set(R,TEXT("clock"),M()->Story->Clock());S47J::Set(R,TEXT("wait_seconds"),Elapsed-ArrivalStoppedAt);
+    S47J::Set(R,TEXT("callback_ready"),Ready);S47J::Set(R,TEXT("chapter_arrived"),C()->S.bArrived);S47J::Set(R,TEXT("chapter_stage"),C()->S.Stage);
+    S47J::Set(R,TEXT("cinematic"),M()->Story->IsCinematic());S47J::Set(R,TEXT("modal"),M()->ModalOpen());S47J::Set(R,TEXT("save_block"),SaveBlock);
+    S47J::Set(R,TEXT("driving"),M()->World->bDriving);S47J::Set(R,TEXT("world_busy"),M()->World->bBusy);S47J::Set(R,TEXT("flow_starting"),M()->Flow->bStarting);
+    S47J::Set(R,TEXT("area"),M()->World->Area);S47J::Set(R,TEXT("truck_at"),M()->World->TruckAt);S47J::Set(R,TEXT("truck_on_lot"),M()->World->TruckOnLot());
+    S47J::Set(R,TEXT("odometer"),M()->World->Odometer());S47J::Set(R,TEXT("actual_state"),M()->Flow->GameState());Transitions.Add(MakeShared<FJsonValueObject>(R));
+    return Check(Write(Name+TEXT(".raw.json"),R),TEXT("retained actual diner parking transaction status: ")+Name);
+   };
+   if(ArrivalStoppedAt<0){ArrivalStoppedAt=Elapsed;if(!ArrivalStatus(TEXT("actual-diner-first-stop")))return;}
+   if(!Ready)
+   {
+    if(Elapsed-ArrivalStoppedAt>8){if(!ArrivalStatus(TEXT("actual-diner-arrival-timeout")))return;Result(false,TEXT("ordinary diner parking callback/cinematic/modal/save gate did not settle within8s"));}
+    return;
+   }
+   if(!ArrivalStatus(TEXT("actual-diner-arrival-ready")))return;
    Driven=(M()->World->Odometer()-DriveOdo)*1609.344;M()->World->Autopilot.Reset();
    auto R=S47J::New();S47J::Set(R,TEXT("name"),TEXT("ordinary-saro-to-diner"));S47J::Set(R,TEXT("driven_metres"),Driven);S47J::Set(R,TEXT("odometer_before"),DriveOdo);S47J::Set(R,TEXT("odometer_after"),M()->World->Odometer());S47J::Set(R,TEXT("autopilot_target_mps"),20);S47J::Set(R,TEXT("actual_state"),M()->Flow->GameState());Transitions.Add(MakeShared<FJsonValueObject>(R));
    if(!Check(Driven>1000&&M()->World->Area==TEXT("diner")&&M()->World->TruckAt==TEXT("diner")&&M()->World->TruckOnLot()&&C()->S.bArrived&&C()->S.Stage==TEXT("diner")

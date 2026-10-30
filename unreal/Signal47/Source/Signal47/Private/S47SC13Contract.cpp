@@ -7,6 +7,7 @@
 #include "S47Flow.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47NightContract.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
 #include "S47Story.h"
@@ -36,8 +37,8 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
 {
  using FJ=S47J::FObj;
  TWeakObjectPtr<US47Main> Main;
- FString Root,Mode,Source,SourceResultPath,SourceHash,SourceResultHash,Chain,PhotoBefore,PendingPhoto;
- FJ Departure,SourceResult,PauseBefore,PendingFrame;
+ FString Root,Mode,Source,SourceResultPath,SourceHash,SourceResultHash,Chain,PhotoBefore,PendingPhoto,SourceCustodyPath,SourceCustodyHash;
+ FJ Departure,SourceResult,PauseBefore,PendingFrame,ExpectedCustody,CustodyFile;
  TOptional<FS47SaveMeta> SaveMeta;
  int32 Stage=0,Checks=0,Waypoint=0,RestoreCount=0;
  bool Done=false,Armed=false,PhotoRequested=false,DidPause=false,DidKey=false,DidDoor=false,LinePlaced=false;
@@ -54,6 +55,40 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
  static bool Same(const FJ&A,const FJ&B){return A&&B&&FJsonValue::CompareEqual(FJsonValueObject(A),FJsonValueObject(B));}
  static FJ Read(const FString& File){FString S;return FFileHelper::LoadFileToString(S,*File)?S47J::Read(S):FJ();}
  static FString FileHash(const FString& File){TArray<uint8>B;if(File.IsEmpty()||!FFileHelper::LoadFileToArray(B,*File))return {};FSHAHash H;FSHA1::HashBuffer(B.GetData(),B.Num(),H.Hash);return H.ToString();}
+ static FJ DocumentInventory(const FJ& Papers)
+ {
+  // Same source semantics as SC12: full fields/sheets by ID; only ratio's old
+  // spelling is canonicalized. No factory paper, dropped field or local baseline.
+  const auto Rows=S47J::Arr(Papers,TEXT("docs"));if(Rows.IsEmpty())return {};
+  auto Out=S47J::New();
+  for(const auto& V:Rows)
+  {
+   if(!V||V->Type!=EJson::Object)return {};auto D=S47J::Clone(V->AsObject());const FString Id=S47J::Str(D,TEXT("id"));
+   if(!D||Id.IsEmpty()||Out->HasField(Id))return {};
+   if(S47J::Has(D,TEXT("ratio"))){if(S47J::Has(D,TEXT("paperRatio"))&&S47J::Num(D,TEXT("paperRatio"))!=S47J::Num(D,TEXT("ratio")))return {};S47J::Set(D,TEXT("paperRatio"),S47J::Num(D,TEXT("ratio")));D->RemoveField(TEXT("ratio"));}
+   Out->SetObjectField(Id,D);
+  }
+  return Out;
+ }
+ FJ ActualCustody() const
+ {
+  if(!M()||!M()->Story||!M()->Web||M()->Web->DishCount()!=27)return {};
+  const auto Docs=DocumentInventory(M()->Story->SaveRoutine());if(!Docs)return {};
+  auto Out=S47J::New(),Encoders=S47J::New();TArray<TSharedPtr<FJsonValue>> Pointing;
+  for(int32 I=0;I<27;++I)
+  {
+   const double Az=M()->Web->DishAz(I),El=M()->Web->DishEl(I);if(!FMath::IsFinite(Az)||!FMath::IsFinite(El))return {};
+   Pointing.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(Az),MakeShared<FJsonValueNumber>(El)}));
+  }
+  Encoders->SetArrayField(TEXT("pointing"),Pointing);S47J::Set(Out,TEXT("documents"),Docs);S47J::Set(Out,TEXT("encoders"),Encoders);return Out;
+ }
+ bool Custody(const FString& Name)
+ {
+  const auto Actual=ActualCustody();auto Proof=S47J::New();S47J::Set(Proof,TEXT("source_file"),CustodyFile);
+  S47J::Set(Proof,TEXT("expected_actual_sc12"),ExpectedCustody);S47J::Set(Proof,TEXT("actual_sc13"),Actual);
+  const bool Good=ExpectedCustody&&Actual&&Same(ExpectedCustody,Actual);S47J::Set(Proof,TEXT("pass"),Good);
+  return Check(Write(Name+TEXT(".custody.json"),Proof)&&Good,TEXT("all actual SC12 document IDs/full fields/sheets and27 native encoders retained: ")+Name);
+ }
  static bool CompletePng(const TArray<uint8>& B)
  {
   const uint8 Sig[]={137,80,78,71,13,10,26,10};if(B.Num()<33||FMemory::Memcmp(B.GetData(),Sig,8))return false;
@@ -73,12 +108,13 @@ class FS47SC13Contract : public TSharedFromThis<FS47SC13Contract>
  void Result(bool Pass,const FString& Why)
  {
   const auto Keep=AsShared();if(Done)return;Done=true;
-  if(Mode!=TEXT("legacy")&&(FileHash(Source)!=SourceHash||FileHash(SourceResultPath)!=SourceResultHash))Pass=false;
+  if(Mode!=TEXT("legacy")&&(FileHash(Source)!=SourceHash||FileHash(SourceResultPath)!=SourceResultHash||FileHash(SourceCustodyPath)!=SourceCustodyHash))Pass=false;
   if(M()&&M()->Player)M()->Player->TestMove.Reset();if(M()&&M()->World)M()->World->Autopilot.Reset();
   auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("mode"),Mode);S47J::Set(O,TEXT("checks"),Checks);
   S47J::Set(O,TEXT("scenario"),TEXT("SC13"));if(!Chain.IsEmpty())S47J::Set(O,TEXT("chain_id"),Chain);
   S47J::Set(O,TEXT("source_prerequisite_fixtures"),Mode==TEXT("legacy"));S47J::Set(O,TEXT("complete_night_accepted"),false);
   S47J::Set(O,TEXT("source_result_sha1"),SourceResultHash);S47J::Set(O,TEXT("source_departure_initial_sha1"),SourceHash);
+  S47J::Set(O,TEXT("source_sc12_actual_custody_file"),CustodyFile);
   S47J::Set(O,TEXT("sourceSC12"),SourceResult);S47J::Set(O,TEXT("sourceDepartureSHA1"),FileHash(Source));S47J::Set(O,TEXT("ordinaryDiskContinues"),RestoreCount);
   S47J::Set(O,TEXT("walkMetres"),WalkMetres);S47J::Set(O,TEXT("driveMetres"),DriveMetres);S47J::Set(O,TEXT("maximumMile"),MaxMile);S47J::Set(O,TEXT("eventWallSeconds"),PullAt-EventAt);
   S47J::Set(O,TEXT("pullWallSeconds"),EndAt-PullAt);S47J::Set(O,TEXT("originalPhotoSHA1"),PhotoBefore);S47J::Set(O,TEXT("currentPhotoSHA1"),PhotoHash());
@@ -168,6 +204,23 @@ public:
    if(!Check(S47J::Str(SourceResult,TEXT("status"))==TEXT("PASS")&&S47J::Int(SourceResult,TEXT("ordinaryRayUses"))>=6&&S47J::Int(SourceResult,TEXT("diskFlowRestores"))>=8
     &&S47J::Str(Departure,TEXT("checkpoint"))==TEXT("chapter5")&&S47J::Str(Ch5,TEXT("stage"))==TEXT("road")&&S47J::Int(R,TEXT("v"))==1&&S47J::Bool(R,TEXT("routeReadback"))&&S47J::Num(Case,TEXT("clock"))==19200,
     TEXT("actual passed SC12 sibling departure checkpoint, full05:20 state; no fabricated route facts")))return;
+   // This is the predecessor's live before/after witness, tied to the same
+   // checkpoint as its sibling PASS. First-load loss cannot seed a new baseline.
+   SourceCustodyPath=FPaths::GetPath(Source)/TEXT("sc12-complete.roundtrip.json");SourceCustodyHash=FileHash(SourceCustodyPath);
+   const auto Witness=Read(SourceCustodyPath),WitnessPin=S47J::Obj(Witness,TEXT("checkpoint_file")),CompletePin=S47J::Obj(SourceResult,TEXT("checkpoint_file"));
+   const auto Docs=DocumentInventory(S47J::Obj(Witness,TEXT("documents_after"))),Encoders=S47J::Obj(Witness,TEXT("encoders_after"));
+   bool PointingValid=Encoders&&S47J::Arr(Encoders,TEXT("pointing")).Num()==27;
+   for(const auto& V:S47J::Arr(Encoders,TEXT("pointing")))
+   {if(!V||V->Type!=EJson::Array||V->AsArray().Num()!=2){PointingValid=false;continue;}for(const auto& N:V->AsArray())if(!N||N->Type!=EJson::Number||!FMath::IsFinite(N->AsNumber()))PointingValid=false;}
+   if(!Check(S47J::Str(SourceResult,TEXT("mode"))==TEXT("actual-checkpoint")&&!SourceCustodyHash.IsEmpty()&&Witness&&Docs&&PointingValid&&WitnessPin&&CompletePin
+    &&S47J::Str(Witness,TEXT("name"))==TEXT("sc12-complete")&&S47J::Bool(Witness,TEXT("pass"))&&S47J::Bool(Witness,TEXT("restored"))
+    &&S47J::Has(Witness,TEXT("ordinary_save_block"))&&S47J::Str(Witness,TEXT("ordinary_save_block")).IsEmpty()&&S47J::Num(Witness,TEXT("clock_before"))==19200&&S47J::Num(Witness,TEXT("clock_after"))==19200
+    &&Same(S47J::Obj(Witness,TEXT("documents_before")),S47J::Obj(Witness,TEXT("documents_after")))&&Same(S47J::Obj(Witness,TEXT("encoders_before")),Encoders)
+    &&Same(WitnessPin,CompletePin)&&S47J::Str(WitnessPin,TEXT("sha1")).Equals(SourceHash,ESearchCase::IgnoreCase)&&S47J::Num(WitnessPin,TEXT("bytes"),-1)==IFileManager::Get().FileSize(*Source)
+    &&FileHash(S47J::Str(WitnessPin,TEXT("path")))==SourceHash,TEXT("real SC12 native custody witness binds the same complete/departure bytes, sibling actual PASS and chain")))return;
+   ExpectedCustody=S47J::New();S47J::Set(ExpectedCustody,TEXT("documents"),Docs);S47J::Set(ExpectedCustody,TEXT("encoders"),Encoders);
+   CustodyFile=S47J::New();S47J::Set(CustodyFile,TEXT("path"),SourceCustodyPath);S47J::Set(CustodyFile,TEXT("bytes"),double(IFileManager::Get().FileSize(*SourceCustodyPath)));S47J::Set(CustodyFile,TEXT("sha1"),SourceCustodyHash);
+   if(!Check(Copy(SourceCustodyPath,Root/TEXT("input-sc12.byteoriginal.roundtrip.json"))&&FileHash(Root/TEXT("input-sc12.byteoriginal.roundtrip.json"))==SourceCustodyHash,TEXT("actual parent custody raw bytes retained before SC13 load")))return;
    M()->Flow->Saves=FS47SaveStore(Root/TEXT("case1"));M()->Flow->Saves.Init();FS47SaveCard Card;Card.Clock=TEXT("05:20");Card.Place=TEXT("Mesa Diner");Card.Chapter=TEXT("All Night");FString Error;
    SaveMeta=M()->Flow->Saves.Save(1,TEXT("manual"),0,Departure,Card,Error);FS47SaveStore Reader(M()->Flow->Saves.Dir);Reader.Init();
    if(!Check(SaveMeta&&Same(Reader.Load(SaveMeta->Id),Departure),TEXT("fresh reader equals complete SC12 departure on isolated disk: ")+Error))return;
@@ -179,6 +232,9 @@ public:
   {
    const auto Case=S47J::Obj(Departure,TEXT("case"));
    if(!Check(C5()->bActive&&!C()->bActive&&M()->World->Area==TEXT("diner")&&Same(C5()->SaveState(),S47J::Obj(Case,TEXT("ch5")))&&FMath::Abs(M()->Story->Clock()-19200)<.2&&M()->Flow->GameSaveBlock().IsEmpty(),TEXT("normal disk/title/Continue preserves every SC12 source/receipt/map fact at safe05:20 departure")))return;
+   if(!Custody(TEXT("departure-after-continue")))return;
+   FJ Proof;FString Error;if(!Check(S47NightContract::RoundTrip(M(),Root,TEXT("departure-custody-manual"),Proof,Error),TEXT("ordinary departure manual/fresh-reader/title/Continue: ")+Error))return;
+   ++RestoreCount;if(!Custody(TEXT("departure-after-manual-continue")))return;
    if(!Snapshot(TEXT("departure-after-continue")))return;PathToTruck();Next(2);return;
   }
   if(Stage==2)
@@ -283,6 +339,7 @@ public:
   {
    const auto Case=S47J::Obj(Departure,TEXT("case"));
    if(!Check(C5()->bActive&&!C()->bActive&&!C()->FinaleSky&&M()->World->Area==TEXT("diner")&&Same(C5()->SaveState(),S47J::Obj(Case,TEXT("ch5")))&&FMath::Abs(M()->Story->Clock()-19200)<.3,TEXT("ordinary post-ending Continue returns to exact source/receipt/P13/courier departure, with no duplicate finale objects")))return;
+   if(!Custody(TEXT("post-ending-continue")))return;
    if(!Snapshot(TEXT("post-ending-continue")))return;Result(true,TEXT("physical road to involuntary C8.15 stop, original47+34 ending, own sky phases and normal full disk/title/Continue"));
   }
  }
