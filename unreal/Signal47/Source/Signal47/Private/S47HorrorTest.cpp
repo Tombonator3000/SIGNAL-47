@@ -1897,8 +1897,8 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		if (T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck")))
 		{
-			const auto* Item=M->Inter->Get(TEXT("horror:wagon23"));const auto* Node=Item && Item->Object ? M->Web->Node(Item->Object.I) : nullptr;
-			const auto* Body=Node ? Cast<UStaticMeshComponent>(Node->Comp.Get()) : nullptr;
+			const auto* Item=M->Inter->Get(TEXT("horror:wagon23"));const auto* WagonNode=Item && Item->Object ? M->Web->Node(Item->Object.I) : nullptr;
+			const auto* Body=WagonNode ? Cast<UStaticMeshComponent>(WagonNode->Comp.Get()) : nullptr;
 			if (!Body) { Fail(TEXT("lost the actual wagon body before native picture"));return; }
 			const FVector Centre=Body->Bounds.Origin;Aim(FVector(Centre.X,Centre.Z,Centre.Y)/100);Stage(2072,.5);return;
 		}
