@@ -83,7 +83,7 @@ struct FS47HorrorTest::FState
 	double DoorOut = 1;
 	TArray<FVector> Points;
 	FVector LastFoot = FVector::ZeroVector, FirstHand = FVector::ZeroVector;
-	S47J::FObj BeforeNormal, AfterNormal, AfterWindow, AfterReport, PendingNormal, FilmReserveBase;
+	S47J::FObj BeforeNormal, AfterNormal, AfterWindow, AfterReport, PendingNormal, FilmReserveBase, ObservingCompletion;
 	TArray<FS47AlbumShot> BudgetPhotos;
 	TArray<TSharedPtr<FJsonValue>> Evidence;
 	bool bDispatchRecordings = false, bDispatchDaleBefore = false, bDispatchMutedSetting = false, bDispatchOriginalCharacters = true;
@@ -763,8 +763,21 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 603) { Aim(Target(DataId)); Stage(604); return; }
 		if (T.Stage == 604)
 		{
-			const auto& Run = FS47Observing::Runs()[R];
+			const auto& Run = FS47Observing::Runs()[R];const bool Last=R+1==FS47Observing::Runs().Num();
+			const FString CompletionPath=T.Root/TEXT("observing-completion-clock.raw.json");
+			if(Last)
+			{
+				T.ObservingCompletion=S47J::New();S47J::Set(T.ObservingCompletion,TEXT("kind"),TEXT("actual final File then Evening north-window clock coordinator; no clock setter or invented paper"));
+				S47J::Set(T.ObservingCompletion,TEXT("clock_before_file"),M->Story->Clock());S47J::Set(T.ObservingCompletion,TEXT("state_before_file"),M->Flow->GameState());
+				T.Evidence.Add(MakeShared<FJsonValueObject>(T.ObservingCompletion));
+				if(!Check(FFileHelper::SaveStringToFile(S47J::Write(T.ObservingCompletion,true),*CompletionPath),TEXT("retain actual final-run state before native data use")))return;
+			}
 			if (!Pick(DataId)) return;
+			if(Last)
+			{
+				S47J::Set(T.ObservingCompletion,TEXT("clock_after_file"),M->Story->Clock());S47J::Set(T.ObservingCompletion,TEXT("state_after_file"),M->Flow->GameState());
+				if(!Check(FFileHelper::SaveStringToFile(S47J::Write(T.ObservingCompletion,true),*CompletionPath),TEXT("retain actual22:50 filing before closing its document and clock coordination")))return;
+			}
 			const FString DocId = FS47Observing::Chart(R).Id;
 			static const int32 Expect[] = { 0, 17, 147, 191 };
 			if (!Check(O.RunIndex() == R + 1 && M->Story->Clock() >= Run.Slot + Run.Minutes * 60 &&
@@ -781,10 +794,23 @@ void FS47HorrorTest::Step(double Dt)
 		}
 		if (T.Stage == 605)
 		{
-			int32 DoneRows = 0; for (const auto& Row : H.Tasks()) DoneRows += Row.bDone && Row.Text.Contains(TEXT(":")) ? 1 : 0;
-			if (!Check(O.Done() && !O.Active() && M->Story->Rx.Stage == 1 && DoneRows == 7 && M->Story->Clock() < -3600 && M->Story->Clock() >= -4200 &&
-				!(M->Audio && M->Audio->Night && M->Audio->Night->IsStill()),
-				TEXT("schedule complete by 22:50 with four filed runs; the desert sound is back"))) return;
+			int32 DoneRows=0;TArray<TSharedPtr<FJsonValue>> Tasks;for(const auto& Row:H.Tasks())
+			{
+				DoneRows+=Row.bDone&&Row.Text.Contains(TEXT(":"))?1:0;auto Task=S47J::New();S47J::Set(Task,TEXT("text"),Row.Text);S47J::Set(Task,TEXT("done"),Row.bDone);Tasks.Add(MakeShared<FJsonValueObject>(Task));
+			}
+			if(!Check(T.ObservingCompletion.IsValid(),TEXT("actual final native File has retained its before/after state")))return;
+			const double Clock=M->Story->Clock(),Filed=S47J::Num(T.ObservingCompletion,TEXT("clock_after_file"),1e9);
+			const bool Still=M->Audio&&M->Audio->Night&&M->Audio->Night->IsStill();
+			// File itself remains22:50. Only the real NightSequence advances to23:00 on the
+			// next Evening.Step after UI close; the named legacy fixture has no such coordinator.
+			const bool TimeOk=T.bNight?(M->Evening->NightSequence()&&Clock>=-3600&&Clock< -3598):(Clock>=-4200&&Clock< -3600);
+			S47J::Set(T.ObservingCompletion,TEXT("clock_after_coordinator"),Clock);S47J::Set(T.ObservingCompletion,TEXT("state_after_coordinator"),M->Flow->GameState());
+			S47J::Set(T.ObservingCompletion,TEXT("actual_night_adapter"),T.bNight);S47J::Set(T.ObservingCompletion,TEXT("night_sequence"),M->Evening->NightSequence());S47J::Set(T.ObservingCompletion,TEXT("bounded_time_pass"),TimeOk);
+			S47J::Set(T.ObservingCompletion,TEXT("observing_done"),O.Done());S47J::Set(T.ObservingCompletion,TEXT("observing_active"),O.Active());S47J::Set(T.ObservingCompletion,TEXT("rx_stage"),M->Story->Rx.Stage);
+			S47J::Set(T.ObservingCompletion,TEXT("done_rows"),DoneRows);S47J::Set(T.ObservingCompletion,TEXT("night_audio_present"),M->Audio&&M->Audio->Night);S47J::Set(T.ObservingCompletion,TEXT("desert_still"),Still);T.ObservingCompletion->SetArrayField(TEXT("tasks"),Tasks);
+			if(!Check(FFileHelper::SaveStringToFile(S47J::Write(T.ObservingCompletion,true),*(T.Root/TEXT("observing-completion-clock.raw.json"))),TEXT("retain every actual completion/audio/task/time predicate before validation")))return;
+			if (!Check(O.Done() && !O.Active() && M->Story->Rx.Stage == 1 && DoneRows == 7 && Filed>=-4200&&Filed< -3600&&TimeOk&&!Still,
+				T.bNight?TEXT("four runs filed in22:50..<23:00window; actual new-night coordinator reaches23:00..<23:00:02, seven tasks done and desert sound restored"):TEXT("legacy four-run schedule stays in22:50..<23:00window with desert sound restored"))) return;
 			Go({FVector(-2.15,0,-1.2), FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.2,0,1.6)}, 10); return;
 		}
 	}
