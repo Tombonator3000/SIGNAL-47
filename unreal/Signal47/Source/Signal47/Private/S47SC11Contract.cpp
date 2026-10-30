@@ -1,16 +1,20 @@
 #include "S47SC11Contract.h"
 #include "S47SC11.h"
 #include "S47Chapter4.h"
+#include "S47Chapter5.h"
 #include "S47Docs.h"
 #include "S47Flow.h"
 #include "S47HUD.h"
 #include "S47Inter.h"
 #include "S47Main.h"
+#include "S47NightContract.h"
+#include "S47SC05.h"
 #include "S47Seen.h"
 #include "S47Spine.h"
 #include "S47Startup.h"
 #include "S47Story.h"
 #include "S47Three.h"
+#include "S47ThreatNavigation.h"
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
@@ -21,6 +25,7 @@
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
+#include "HAL/PlatformProcess.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
@@ -33,6 +38,32 @@
 
 namespace
 {
+ using FJ=S47J::FObj;
+ FString SC11Full(FString Path){Path=FPaths::ConvertRelativePathToFull(Path);FPaths::CollapseRelativeDirectories(Path);FPaths::NormalizeFilename(Path);return Path;}
+ bool SC11Same(const FJ& A,const FJ& B){return A&&B&&FJsonValue::CompareEqual(FJsonValueObject(A),FJsonValueObject(B));}
+ FString SC11Hash(const FString& Path)
+ {
+  TArray<uint8> Bytes;if(!FFileHelper::LoadFileToArray(Bytes,*Path))return {};
+  FSHAHash Hash;FSHA1::HashBuffer(Bytes.GetData(),Bytes.Num(),Hash.Hash);return Hash.ToString();
+ }
+ FJ SC11File(const FString& Path)
+ {
+  auto O=S47J::New();S47J::Set(O,TEXT("path"),SC11Full(Path));S47J::Set(O,TEXT("bytes"),double(IFileManager::Get().FileSize(*Path)));S47J::Set(O,TEXT("sha1"),SC11Hash(Path));return O;
+ }
+ FJ SC11Read(const FString& Path){FString Text;return FFileHelper::LoadFileToString(Text,*Path)?S47J::Read(Text):FJ();}
+ FJ SC11SourceDoc(const FJ& Saved)
+ {
+  if(!Saved)return nullptr;auto O=S47J::Clone(Saved);if(!O)return nullptr;
+  // The two existing production FS47Doc serializers differ only in this field name.
+  if(S47J::Has(O,TEXT("paperRatio"))){if(S47J::Has(O,TEXT("ratio"))&&S47J::Num(O,TEXT("ratio"))!=S47J::Num(O,TEXT("paperRatio")))return nullptr;S47J::Set(O,TEXT("ratio"),S47J::Num(O,TEXT("paperRatio")));O->RemoveField(TEXT("paperRatio"));}
+  return O;
+ }
+ FJ SC11Pointing(US47Main* M)
+ {
+  auto O=S47J::New();TArray<TSharedPtr<FJsonValue>> A;
+  for(int32 I=0;I<M->Web->DishCount();++I)A.Add(MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(M->Web->DishAz(I)),MakeShared<FJsonValueNumber>(M->Web->DishEl(I))}));
+  O->SetArrayField(TEXT("pointing"),A);return O;
+ }
  void SC11Text(const TSharedRef<SWidget>& Widget,TArray<FString>& Out)
  {
   if(!Widget->GetVisibility().IsVisible())return;
@@ -65,11 +96,127 @@ namespace
 FS47SC11* FS47SC11Contract::Act() const{return M&&M->Spine?M->Spine->Siege():nullptr;}
 void FS47SC11Contract::Next(int32 Value,double Wait){Stage=Value;Hold=Wait;Mark=FPlatformTime::Seconds();}
 
+bool FS47SC11Contract::StableInput(const FJ& Saved,const FString& Context)
+{
+ const auto Now=M->Flow->GameState(),Pose=S47J::Obj(Saved,TEXT("pose")),Case=S47J::Obj(Saved,TEXT("case"));
+ const auto WasSpine=S47J::Obj(Saved,TEXT("spine")),NowSpine=S47J::Obj(Now,TEXT("spine"));
+ if(!Check(M->Mode==US47Main::EMode::Play&&M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->Story->bEveningTimeline
+  &&Pose&&M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z)&&M->World->Area==S47J::Str(Saved,TEXT("area"))
+  &&M->Flow->CheckpointName()==S47J::Str(Saved,TEXT("checkpoint"))&&M->Story->Clock()==S47J::Num(Case,TEXT("clock"))
+  &&FMath::Abs(M->Player->Pos.X-S47J::Num(Pose,TEXT("x")))<.0001&&FMath::Abs(M->Player->Pos.Z-S47J::Num(Pose,TEXT("z")))<.0001
+  &&FMath::Abs(M->Player->Yaw-S47J::Num(Pose,TEXT("yaw")))<.00001&&FMath::Abs(M->Player->Pitch-S47J::Num(Pose,TEXT("pitch")))<.00001,
+  Context+TEXT(" actual case1/title Continue retains exact clock/area/checkpoint/walkable pose without Place")))return false;
+ const auto Match=[&](const FJ& A,const FJ& B,const TCHAR* Key)
+ {const auto X=A?A->TryGetField(Key):nullptr,Y=B?B->TryGetField(Key):nullptr;return(!X&&!Y)||(X&&Y&&FJsonValue::CompareEqual(*X,*Y));};
+ for(const TCHAR* Key:{TEXT("s"),TEXT("ch2"),TEXT("ch3"),TEXT("ch4"),TEXT("ch5")})
+  if(!Check(Match(Case,S47J::Obj(Now,TEXT("case")),Key),Context+TEXT(" full original chapter bytes: ")+Key))return false;
+ for(const TCHAR* Key:{TEXT("sc04"),TEXT("sc08"),TEXT("sc11"),TEXT("sc12Route"),TEXT("sc04d"),TEXT("sc05d"),TEXT("sc06d"),TEXT("sc07d"),TEXT("sc08d"),TEXT("sc11d")})
+  if(!Check(Match(WasSpine,NowSpine,Key),Context+TEXT(" actual prior gate/source payload: ")+Key))return false;
+ const int32 Version=S47J::Int(NowSpine,TEXT("v"));
+ if(!Check((Version==1||Version==2)&&M->Web->DishCount()==27,Context+TEXT(" supported source-qualified v1/v2 and actual27 encoders")))return false;
+ for(const TCHAR* Key:{TEXT("doors"),TEXT("horror"),TEXT("observing"),TEXT("substation")})
+  if(!Check(Match(Saved,Now,Key),Context+TEXT(" preserved production field: ")+Key))return false;
+ return Check(FFileHelper::SaveStringToFile(S47J::Write(Now,true),*(Root/(Context+TEXT(".actual.json")))),Context+TEXT(" retain full unmodified post-Continue state"));
+}
+
+bool FS47SC11Contract::AdoptInput()
+{
+ InputPath=SC11Full(InputPath);const FString ResultPath=FPaths::GetPath(InputPath)/TEXT("result.json");
+ InputState=SC11Read(InputPath);const auto Prior=SC11Read(ResultPath),Pin=S47J::Obj(Prior,TEXT("checkpoint_file"));
+ InputFile=SC11File(InputPath);InputResultFile=SC11File(ResultPath);Chain=S47J::Str(Prior,TEXT("chain_id"));
+ if(!Check(FPaths::GetCleanFilename(InputPath)==TEXT("sc10-complete.disk.json")&&InputState&&Prior&&Pin
+  &&S47J::Str(Prior,TEXT("status"))==TEXT("PASS")&&S47J::Str(Prior,TEXT("scenario"))==TEXT("SC10")
+  &&S47J::Str(Prior,TEXT("mode"))==TEXT("actual-checkpoint")&&!Chain.IsEmpty()
+  &&SC11Full(S47J::Str(Pin,TEXT("path")))==InputPath&&S47J::Num(Pin,TEXT("bytes"))==S47J::Num(InputFile,TEXT("bytes"))
+  &&S47J::Num(InputFile,TEXT("bytes"))>0&&S47J::Str(Pin,TEXT("sha1")).Equals(S47J::Str(InputFile,TEXT("sha1")),ESearchCase::IgnoreCase),
+  TEXT("actual SC10 complete disk is byte/hash-bound to its sibling PASS/scenario/actual mode/nonempty chain_id")))return false;
+ const auto Spine=S47J::Obj(InputState,TEXT("spine")),Case=S47J::Obj(InputState,TEXT("case")),C4=S47J::Obj(Case,TEXT("ch4")),Siege=S47J::Obj(Spine,TEXT("sc11d"));
+ const int32 Version=S47J::Int(Spine,TEXT("v"));
+ if(!Check(S47J::Int(InputState,TEXT("timelineVersion"))==2&&(Version==1||Version==2)&&FS47SC05::CanAdoptSC04(S47J::Obj(Spine,TEXT("sc04d")))
+  &&S47J::Int(Spine,TEXT("sc04"))==2&&S47J::Int(Spine,TEXT("sc08"))==2&&S47J::Int(Spine,TEXT("sc11"))==1
+  &&S47J::Int(Spine,TEXT("sc12Route"))==1&&Siege&&S47J::Int(Siege,TEXT("step"))==int32(FS47SC11::EStep::Return)
+  &&!S47J::Bool(Siege,TEXT("ctx_hr_h07_escape_complete"))&&S47J::Str(C4,TEXT("stage"))==TEXT("complete")
+  &&S47J::Bool(C4,TEXT("told"))&&S47J::Bool(C4,TEXT("p10"))&&S47J::Bool(C4,TEXT("p11"))&&S47J::Bool(C4,TEXT("p12"))
+  &&!S47J::Obj(Case,TEXT("ch5"))&&S47J::Str(InputState,TEXT("area"))==TEXT("saro")&&S47J::Str(InputState,TEXT("checkpoint"))==TEXT("chapter4")
+  &&S47J::Num(Case,TEXT("clock"))>=FS47SC11::Arrive,TEXT("real C4 complete at05:00 or later, retained SC04 sources, SC11 Return at motel before actual SARO arrival; legacy fixture not adopted")))return false;
+ for(const TCHAR* Key:{TEXT("receiver"),TEXT("event"),TEXT("hondo"),TEXT("site11"),TEXT("checkedLocalLight"),TEXT("observedRoom"),TEXT("ctx_hr_h07_escape_complete")})
+  if(!Check(!S47J::Bool(Siege,Key),FString(TEXT("pending SC10 input has no unplayed SC11 fact: "))+Key))return false;
+ TArray<uint8> DiskBytes,ResultBytes;
+ if(!Check(FFileHelper::LoadFileToArray(DiskBytes,*InputPath)&&FFileHelper::LoadFileToArray(ResultBytes,*ResultPath)
+  &&FFileHelper::SaveArrayToFile(DiskBytes,*(Root/TEXT("sc10-input-original.disk.json")))&&FFileHelper::SaveArrayToFile(ResultBytes,*(Root/TEXT("sc10-input-result-original.json")))
+  &&SC11Hash(Root/TEXT("sc10-input-original.disk.json"))==SC11Hash(InputPath)&&SC11Hash(Root/TEXT("sc10-input-result-original.json"))==SC11Hash(ResultPath),TEXT("retain byte-original SC10 input and raw PASS privately, never rewrite their source files")))return false;
+ // Import the complete foreign checkpoint into this fresh isolated case; no field is patched.
+ FS47SaveCard Card;Card.Chapter=TEXT("SC10 actual input");Card.Place=TEXT("Sierra Motor Court");Card.Clock=TEXT("actual saved time");FString Error;
+ const auto Meta=M->Flow->Saves.Save(1,TEXT("manual"),0,InputState,Card,Error);FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();
+ if(!Check(Meta&&SC11Same(Reader.Load(Meta->Id),InputState),TEXT("isolated case1 storage and independent reader preserve full SC10 state: ")+Error))return false;
+ ++Stores;M->Flow->ToTitle();FS47SaveStore TitleReader(M->Flow->Saves.Dir);TitleReader.Init();const auto Selected=TitleReader.ContinueSave(),Live=M->Flow->Saves.ContinueSave();
+ if(!Check(M->Mode==US47Main::EMode::Title&&Selected&&Live&&Selected->Id==Meta->Id&&Live->Id==Meta->Id&&SC11Same(TitleReader.Load(Selected->Id),InputState)
+  &&M->Flow->OpenTestView(TEXT("continue")),TEXT("actual input enters via ordinary title/fresh reader/Continue, not fixture StartGame")))return false;
+ if(!StableInput(InputState,TEXT("sc10-input")))return false;
+ if(!Check(Act()&&Act()->Phase()==FS47SC11::EStep::Return&&!M->World->bDriving&&!M->World->bCommuteVehicle&&M->World->TruckAt==TEXT("motel")
+  &&M->World->AtMotel(M->Player->Pos)&&!M->Story->Begun.Contains(TEXT("ch5"))
+  &&M->Story->Docs().ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("obs_runbinder")&&!D.Page.IsEmpty();}),TEXT("actual motel return position/service truck and genuine20:30 binder; no OnEnd, prior-doc factory or transport fixture")))return false;
+ const auto Array=S47J::Obj(Spine,TEXT("sc08d"));InitialPointing=S47J::New();InitialPointing->SetArrayField(TEXT("pointing"),S47J::Arr(Array,TEXT("pointings")));
+ if(!Check(S47J::Int(Array,TEXT("v"))==1&&S47J::Bool(Array,TEXT("escaped"))&&S47J::Int(Array,TEXT("plays"))>=2
+  &&S47J::Arr(Array,TEXT("pointings")).Num()==27&&SC11Same(InitialPointing,SC11Pointing(M)),TEXT("all27 loaded encoders equal actual completed SC08 serialized readings, not a new post-load baseline")))return false;
+ const auto SavedSources=S47J::Arr(Array,TEXT("sources")),LiveDocs=S47J::Arr(M->Story->SaveRoutine(),TEXT("docs"));
+ if(!Check(!SavedSources.IsEmpty(),TEXT("completed SC08 carries the actual preceding source inventory")))return false;
+ for(const auto& V:SavedSources)
+ {
+  const auto Paper=V&&V->Type==EJson::Object?SC11SourceDoc(V->AsObject()):FJ();
+  if(!Check(Paper&&!S47J::Str(Paper,TEXT("id")).IsEmpty()&&LiveDocs.ContainsByPredicate([&](const TSharedPtr<FJsonValue>& D){return D&&D->Type==EJson::Object&&SC11Same(Paper,D->AsObject());}),TEXT("input full serialized source/sheets match actual owned document: ")+S47J::Str(Paper,TEXT("id"))))return false;
+ }
+ for(const FS47Doc& Doc:M->Story->Docs())OriginalDocs.Add(Doc.Id,Doc.Page);
+ for(const auto& V:S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")))if(V&&V->Type==EJson::Object)FullOriginalDocs.Add(S47J::Str(V->AsObject(),TEXT("id")),S47J::Clone(V->AsObject()));
+ auto R=S47J::New();S47J::Set(R,TEXT("name"),TEXT("actual-sc10-title-continue"));S47J::Set(R,TEXT("pass"),true);S47J::Set(R,TEXT("checkpoint"),InputFile);S47J::Set(R,TEXT("result"),InputResultFile);Restores.Add(MakeShared<FJsonValueObject>(R));
+ NormalContinue=true;return true;
+}
+
+bool FS47SC11Contract::GoItem(const FString& Id)
+{
+ const auto* It=M->Inter->Get(Id);const auto* WebItem=M->Web->Item(Id);const FS47Obj Object=It&&It->Object?It->Object:WebItem?M->Web->ObjAt(WebItem->Node):FS47Obj();
+ const FBox B=Object.WorldBox();if(!Check(Object&&B.IsValid,TEXT("actual approach target: ")+Id))return false;
+ const double Range=It&&It->Range>0?It->Range:WebItem?WebItem->Range:3.2;const FVector Center=B.GetCenter();const FVector2D From(M->Player->Pos.X,M->Player->Pos.Z);
+ TArray<FVector2D> Seeds;for(const auto& N:FS47SC11::Nodes())Seeds.Add(N.At);
+ const auto Segment=[&](const FVector2D& A,const FVector2D& Z){const int32 N=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(A,Z)/.05));for(int32 I=0;I<=N;++I){const auto P=FMath::Lerp(A,Z,double(I)/N);if(!M->Player->Walkable(P.X,P.Y))return false;}return true;};
+ TArray<FVector2D> Best;double Cost=1e100;
+ for(double R:{1.1,1.6,2.1,2.6})for(int32 I=0;I<16;++I)
+ {
+  const double Angle=UE_DOUBLE_PI*I/8;const FVector2D To(Center.X+R*FMath::Cos(Angle),Center.Z+R*FMath::Sin(Angle));if(!M->Player->Walkable(To.X,To.Y))continue;
+  const FVector Eye(To.X,M->Player->FloorY+M->Player->Eye,To.Y),D=Center-Eye;
+  if(D.Size()>Range-.08||M->Inter->Pick(S47Three::ToUE(Eye),S47Three::DirToUE(D.GetSafeNormal()))!=Id)continue;
+  auto Found=FS47ThreatNavigation::FindPath(From,To,Seeds,M->Web->Colliders(),M->Player->Radius,Segment);double Length=0;auto Previous=From;
+  for(const auto& P:Found){Length+=FVector2D::Distance(Previous,P);Previous=P;}if(!Found.IsEmpty()&&Length<Cost){Best=MoveTemp(Found);Cost=Length;}
+ }
+ if(!Check(!Best.IsEmpty(),TEXT("complete bounded walkable path to actual ray target, no Place recovery: ")+Id))return false;
+ Path(MoveTemp(Best));return true;
+}
+
+bool FS47SC11Contract::ExportBoundary()
+{
+ auto* C5=Cast<US47Chapter5>(M->Story->Chapter(TEXT("ch5")));
+ if(!Check(C5&&C5->bActive&&C5->RevisedDiner()&&C5->S.Stage==TEXT("to-truck")&&!C5->S.bArrived&&!C5->S.SC12.bLaid
+  &&M->Spine->Gate(FS47Spine::SC11)==2&&Act()->F.Escaped&&M->World->Area==TEXT("saro")&&!M->World->bDriving
+  &&M->Flow->CheckpointName()==TEXT("chapter5"),TEXT("natural C5 start after actual SC11 escape, before any SC12 action; actual clock retained")))return false;
+ if(!Sources(TEXT("sc11-complete")))return false;
+ FJ Proof;FString Error;const bool Cycled=S47NightContract::RoundTrip(M,Root,TEXT("sc11-complete"),Proof,Error);
+ if(!Check(Cycled,TEXT("SC11 output genuine manual/fresh-reader/title/Continue: ")+Error))return false;
+ ++Stores;Restores.Add(MakeShared<FJsonValueObject>(Proof));CheckpointFile=SC11File(Root/TEXT("sc11-complete.disk.json"));
+ return Check(SC11Same(InputFile,SC11File(InputPath))&&SC11Same(InputResultFile,SC11File(FPaths::GetPath(InputPath)/TEXT("result.json")))
+  &&SC11Same(SC11Pointing(M),InitialPointing),TEXT("original SC10 input/PASS and all27 encoders remain unchanged through the actual SC11 journey"));
+}
+
 void FS47SC11Contract::Finish(bool Good,const FString& Why)
 {
+ const auto KeepAlive=AsShared();
  if(Done)return;Done=true;
  if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
+ if(M&&M->World)M->World->Autopilot.Reset();
  auto Out=S47J::New();S47J::Set(Out,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(Out,TEXT("mode"),Mode);
+ S47J::Set(Out,TEXT("scenario"),TEXT("SC11"));S47J::Set(Out,TEXT("mode"),ActualInput?TEXT("actual-checkpoint"):Mode);S47J::Set(Out,TEXT("chain_id"),Chain);
+ S47J::Set(Out,TEXT("process_id"),double(FPlatformProcess::GetCurrentProcessId()));S47J::Set(Out,TEXT("checkpoint_file"),CheckpointFile);
+ auto Prior=S47J::New();S47J::Set(Prior,TEXT("checkpoint"),InputFile);S47J::Set(Prior,TEXT("result"),InputResultFile);S47J::Set(Out,TEXT("prerequisite"),Prior);
+ S47J::Set(Out,TEXT("driven_metres"),Driven);S47J::Set(Out,TEXT("final_state"),M&&M->Flow?M->Flow->GameState():FJ());Out->SetArrayField(TEXT("transitions"),Transitions);
  S47J::Set(Out,TEXT("stage"),Stage);S47J::Set(Out,TEXT("reason"),Why);S47J::Set(Out,TEXT("checks"),Checks);S47J::Set(Out,TEXT("actual_ray_uses"),Uses);
  S47J::Set(Out,TEXT("stores"),Stores);S47J::Set(Out,TEXT("walked_metres"),Walked);S47J::Set(Out,TEXT("walk_samples"),WalkSamples);
  S47J::Set(Out,TEXT("normal_title_continue"),NormalContinue);S47J::Set(Out,TEXT("actual_body_render_witness"),RenderWitness);
@@ -77,6 +224,11 @@ void FS47SC11Contract::Finish(bool Good,const FString& Why)
  S47J::Set(Out,TEXT("elapsed_seconds"),FPlatformTime::Seconds()-Began);
  S47J::Set(Out,TEXT("method"),TEXT("Declared chapter4/prior-night and OnEnd fixture; one walkable SARO start. All subsequent player movement is native Walker input/Resolve, all world uses actual camera ray/focus/HUD OnUse. Actual local intensity, three moving spotlights, room observation, physical escape/capture and fresh disk/full Flow/title Continue."));
  S47J::Set(Out,TEXT("limits"),TEXT("SC01-SC10 and the return drive are explicit fixtures, not replayed. Escape is the actual truck-pad approach boundary, not boarding/driving. Closed-door query is a named reversible geometry fixture; opacity/depth flags and LOS are not pixel-based visual acceptance. API input is not human input; PNG integrity is not visual/FPS acceptance."));
+ if(ActualInput)
+ {
+  S47J::Set(Out,TEXT("method"),TEXT("Actual hash-bound SC10 sibling PASS/full case1 checkpoint. Ordinary native Walker to the retained motel truck; labelled native DriveBack/autopilot controls, continuous actual drive and park, then Walker/camera-ray/OnUse into SARO. Production sources/light/observation/hunt/escape and natural C5 start. Genuine manual/fresh-reader/title/Continue at every stable boundary; original full source payloads and27 encoders preserved."));
+  S47J::Set(Out,TEXT("limits"),TEXT("Prior scenarios are bound actual predecessor evidence, not replayed by this process. Test route-target/autopilot/panel APIs are not human input. Reversible closed-door geometry query is labelled separately. Body proof is recent native render plus clear camera-to-torso-bounds sight/view angle, not a collision hit or visual/pixel acceptance. Output precedes SC12 actions; full-night, packaging and installation remain unaccepted."));
+ }
  Out->SetArrayField(TEXT("executed_checks"),Executed);Out->SetArrayField(TEXT("rays"),Rays);Out->SetArrayField(TEXT("states"),States);
  Out->SetArrayField(TEXT("restores"),Restores);Out->SetArrayField(TEXT("sight_queries"),Sight);Out->SetArrayField(TEXT("photos"),Photos);
  const bool Written=!Root.IsEmpty()&&FFileHelper::SaveStringToFile(S47J::Write(Out,true),*(Root/TEXT("result.json")));
@@ -98,7 +250,9 @@ bool FS47SC11Contract::Walk(bool Run)
 {
  auto* Player=M->Player.Get();const double Distance=FVector2D(Player->Pos.X-LastWalk.X,Player->Pos.Z-LastWalk.Z).Size();
  if(Distance>.8){Finish(false,TEXT("Walker discontinuity; no route placement recovery"));return false;}
+ if(ActualInput&&!Player->Walkable(Player->Pos.X,Player->Pos.Z)){Finish(false,TEXT("actual predecessor route left native walkable land; no recovery"));return false;}
  Walked+=Distance;++WalkSamples;LastWalk=Player->Pos;
+ if(!Route.IsValidIndex(Cursor)){Player->TestMove.Reset();return true;}
  if(FPlatformTime::Seconds()-Mark>24){Finish(false,TEXT("native Walker stalled before ")+Route[Cursor].ToString());return false;}
  const FVector2D Delta=Route[Cursor]-FVector2D(Player->Pos.X,Player->Pos.Z);
  if(Delta.Size()<.10){Player->TestMove.Reset();++Cursor;Mark=FPlatformTime::Seconds();if(Cursor==Route.Num())return true;return false;}
@@ -118,7 +272,7 @@ bool FS47SC11Contract::Face(const FString& Id)
  if(!Check(!OriginalNodes.Contains(Id)||OriginalNodes[Id]==Object.I,TEXT("same original interaction node: ")+Id))return false;
  OriginalNodes.Add(Id,Object.I);FacePoint(Box.GetCenter());return true;
 }
-bool FS47SC11Contract::Use(const FString& Id)
+bool FS47SC11Contract::Use(const FString& Id,bool Activate)
 {
  const FVector Eye=M->Player->EyeUE(),Forward=M->Player->ForwardUE();const FString Picked=M->Inter->Pick(Eye,Forward),Focus=M->Inter->Update(Eye,Forward);
  auto Row=S47J::New();S47J::Set(Row,TEXT("id"),Id);S47J::Set(Row,TEXT("picked"),Picked);S47J::Set(Row,TEXT("focused"),Focus);
@@ -126,8 +280,9 @@ bool FS47SC11Contract::Use(const FString& Id)
  const auto* Item=M->Inter->Get(Id);const auto* WebItem=M->Web->Item(Id);
  const double Range=Item && Item->Range>0?Item->Range:WebItem?WebItem->Range:-1.;
  S47J::Set(Row,TEXT("actual_range_m"),Range);Rays.Add(MakeShared<FJsonValueObject>(Row));
+ S47J::Set(Row,TEXT("activate_bound_hud_onuse"),Activate);
  if(!Check(Picked==Id&&Focus==Id&&M->Player->OnUse&&FVector::DotProduct(Forward,(Aim-Eye).GetSafeNormal())>.995,TEXT("actual camera ray/focus/ordinary HUD OnUse: ")+Id))return false;
- M->Player->OnUse(Picked);++Uses;return true;
+ if(Activate){M->Player->OnUse(Picked);++Uses;}return true;
 }
 bool FS47SC11Contract::Document(const FString& Id,const FString& Fragment)
 {
@@ -136,11 +291,19 @@ bool FS47SC11Contract::Document(const FString& Id,const FString& Fragment)
  const bool Visible=Text.ContainsByPredicate([&](const FString& Value){return Value.Contains(Fragment);});
  if(!Check(Doc&&Doc->Page.Contains(Fragment)&&M->UI->Modal()&&Visible,TEXT("actual original document and visible modal: ")+Id))return false;
  SourcePages.Add(Id,Doc->Page);
+ if(ActualInput)for(const auto& V:S47J::Arr(M->Story->SaveRoutine(),TEXT("docs")))if(V&&V->Type==EJson::Object&&S47J::Str(V->AsObject(),TEXT("id"))==Id)FullOriginalDocs.Add(Id,S47J::Clone(V->AsObject()));
  M->UI->Close(true);return true;
 }
 bool FS47SC11Contract::Sources(const FString& Context)
 {
  FS47SC11* A=Act();if(!Check(A!=nullptr,Context+TEXT(" live siege owner")))return false;
+ if(ActualInput)
+ {
+  const auto Docs=S47J::Arr(M->Story->SaveRoutine(),TEXT("docs"));
+  for(const auto& Entry:FullOriginalDocs)
+   if(!Check(Docs.ContainsByPredicate([&](const TSharedPtr<FJsonValue>& V){return V&&V->Type==EJson::Object&&SC11Same(V->AsObject(),Entry.Value);}),Context+TEXT(" complete actual document fields/sheets preserved: ")+Entry.Key))return false;
+  if(!Check(SC11Same(SC11Pointing(M),InitialPointing),Context+TEXT(" all27 actual encoders preserved")))return false;
+ }
  for(const auto& Entry:OriginalDocs)
   if(!Check(M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D){return D.Id==Entry.Key&&D.Page==Entry.Value;}),Context+TEXT(" preceding original preserved: ")+Entry.Key))return false;
  const struct {const TCHAR* Id;bool Have;} Need[]={
@@ -186,10 +349,17 @@ bool FS47SC11Contract::Restore(const FString& Name)
  M->Player->TestMove.Reset();
  if(M->Story->IsCinematic()||M->World->bBusy||M->Flow->bStarting)
  {if(FPlatformTime::Seconds()-Mark>20)Finish(false,TEXT("save checkpoint still cinematic/busy: ")+Name);return false;}
- M->UI->Close(true);const FString Block=M->Flow->GameSaveBlock();
+ M->UI->Close(true);const FString Block=ActualInput?M->Flow->SaveBlock():M->Flow->GameSaveBlock();
  if(!Block.IsEmpty()||M->Story->IsCinematic()||M->World->bBusy||M->ModalOpen())
  {if(FPlatformTime::Seconds()-Mark>20)Finish(false,TEXT("ordinary gameplay save gate: ")+Name+TEXT(" / ")+Block);return false;}
  Expected=S47J::Clone(M->Flow->GameState());
+ if(ActualInput)
+ {
+  if(!Sources(TEXT("before manual ")+Name))return false;
+  FJ Proof;FString Error;const bool Cycled=S47NightContract::RoundTrip(M,Root,Name,Proof,Error);
+  if(!Check(Cycled,TEXT("ordinary actual case1 manual/fresh-reader/title/Continue: ")+Name+TEXT(" / ")+Error))return false;
+  ++Stores;Pending=Name;NormalContinue=true;return true;
+ }
  FS47SaveStore Writer(Root/TEXT("cohorts")/Name);Writer.Init();FS47SaveCard Card;Card.Chapter=TEXT("SC11");Card.Place=M->Flow->PlaceName();Card.Clock=M->Story->ClockText(true);
  FString Error;const auto Meta=Writer.Save(1,TEXT("manual"),0,Expected,Card,Error);
  if(!Check(Meta.IsSet(),TEXT("isolated complete disk write: ")+Name+TEXT(" / ")+Error))return false;
@@ -203,6 +373,21 @@ bool FS47SC11Contract::Restored()
  FS47SC11* A=Act();const auto Spine=S47J::Obj(Expected,TEXT("spine")),Saved=S47J::Obj(Spine,TEXT("sc11d")),Case=S47J::Obj(Expected,TEXT("case")),Pose=S47J::Obj(Expected,TEXT("pose"));
  if(!Check(A&&M->Story->bEveningTimeline&&S47J::Write(A->Save())==S47J::Write(Saved)&&M->Spine->Gate(FS47Spine::SC11)==S47J::Int(Spine,TEXT("sc11")),TEXT("full Flow retains facts/gate without fabricated escape: ")+Pending))return false;
  const bool Hunting=A->HuntLive();
+ if(ActualInput)
+ {
+  const auto Now=M->Flow->GameState();const auto BeforeCase=S47J::Obj(Expected,TEXT("case")),NowCase=S47J::Obj(Now,TEXT("case"));
+  for(const TCHAR* Key:{TEXT("s"),TEXT("ch2"),TEXT("ch3"),TEXT("ch4"),TEXT("ch5")})
+  {
+   const auto X=BeforeCase?BeforeCase->TryGetField(Key):nullptr,Y=NowCase?NowCase->TryGetField(Key):nullptr;
+   if(!Check((!X&&!Y)||(X&&Y&&FJsonValue::CompareEqual(*X,*Y)),FString(TEXT("actual full Flow retains prior chapter/source state: "))+Key+TEXT(" / ")+Pending))return false;
+  }
+  const auto NowSpine=S47J::Obj(Now,TEXT("spine"));
+  for(const TCHAR* Key:{TEXT("sc04d"),TEXT("sc05d"),TEXT("sc06d"),TEXT("sc07d"),TEXT("sc08d")})
+  {
+   const auto X=Spine?Spine->TryGetField(Key):nullptr,Y=NowSpine?NowSpine->TryGetField(Key):nullptr;
+   if(!Check((!X&&!Y)||(X&&Y&&FJsonValue::CompareEqual(*X,*Y)),FString(TEXT("actual full Flow retains preceding Spine source payload: "))+Key+TEXT(" / ")+Pending))return false;
+  }
+ }
  if(!Check(M->Story->Clock()>=S47J::Num(Case,TEXT("clock"))&&M->Story->Clock()-S47J::Num(Case,TEXT("clock"))<4
   &&M->World->Area==S47J::Str(Expected,TEXT("area"))&&FMath::Abs(M->Player->Pos.X-S47J::Num(Pose,TEXT("x")))<.04&&FMath::Abs(M->Player->Pos.Z-S47J::Num(Pose,TEXT("z")))<.04
   &&FMath::Abs(M->Player->Yaw-S47J::Num(Pose,TEXT("yaw")))<.001
@@ -255,7 +440,14 @@ bool FS47SC11Contract::RenderChecks()
  const TSet<FString> ExpectedMeshes={TEXT("SM_SC02_PaleTorso"),TEXT("SM_SC02_PaleHead"),TEXT("SM_SC02_PaleUpperArm"),TEXT("SM_SC02_PaleLowerArm"),TEXT("SM_SC02_PaleThigh"),TEXT("SM_SC02_PaleShin")};
  bool SameMeshes=Meshes.Num()==ExpectedMeshes.Num();for(const FString& Name:ExpectedMeshes)SameMeshes&=Meshes.Contains(Name);
  if(!Check(SameMeshes,TEXT("all six original SC02 meshes supply the ten rendered body parts")))return false;
- auto Witness=S47J::New();S47J::Set(Witness,TEXT("method"),TEXT("Current actual torso render plus camera LOS; material/main-pass depth checks, not pixel occlusion proof"));Witness->SetArrayField(TEXT("actual_body_parts"),Parts);Sight.Add(MakeShared<FJsonValueObject>(Witness));
+ const auto* Torso=A->Pale.Torso.Get();if(!Check(Torso!=nullptr,TEXT("actual torso component supplies current native bounds")))return false;
+ const FVector Eye=M->Player->EyeUE(),Forward=M->Player->ForwardUE();const double Dot=FVector::DotProduct(Forward,(Torso->Bounds.Origin-Eye).GetSafeNormal());
+ const bool Clear=A->ClearSight(S47Three::ToThree(Eye),S47Three::ToThree(Torso->Bounds.Origin));
+ if(!Check(Clear&&Dot>.995&&Torso->WasRecentlyRendered(.25f),TEXT("actual camera clear to native torso bounds, dot>.995 and recent render; collisionless original needs no body physics hit")))return false;
+ auto Witness=S47J::New();S47J::Set(Witness,TEXT("method"),TEXT("Actual collisionless torso bounds, camera ClearSight/view dot and recent render; opaque/main-pass/depth checks, no body physics-hit or pixel acceptance"));
+ S47J::Set(Witness,TEXT("camera_eye_ue_cm"),Eye.ToString());S47J::Set(Witness,TEXT("camera_forward_ue"),Forward.ToString());S47J::Set(Witness,TEXT("native_torso_component"),Torso->GetPathName());
+ S47J::Set(Witness,TEXT("native_torso_bounds_origin_ue_cm"),Torso->Bounds.Origin.ToString());S47J::Set(Witness,TEXT("native_torso_bounds_extent_cm"),Torso->Bounds.BoxExtent.ToString());
+ S47J::Set(Witness,TEXT("camera_dot"),Dot);S47J::Set(Witness,TEXT("clear_sight"),Clear);S47J::Set(Witness,TEXT("recent_render"),true);Witness->SetArrayField(TEXT("actual_body_parts"),Parts);Sight.Add(MakeShared<FJsonValueObject>(Witness));
  RenderWitness=true;return true;
 }
 void FS47SC11Contract::EscapeRoute()
@@ -276,14 +468,19 @@ void FS47SC11Contract::Tick(double Dt)
  {
   if(S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
   Began=FPlatformTime::Seconds();FString UserDir,Jump;FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Mode);FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir);FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);
+  ActualInput=FParse::Value(FCommandLine::Get(),TEXT("S47SC10Checkpoint="),InputPath);
+  const bool NoParentTraversal=!UserDir.Contains(TEXT(".."));
   UserDir=FPaths::ConvertRelativePathToFull(UserDir);FPaths::CollapseRelativeDirectories(UserDir);
-  if(!Check((Mode==TEXT("sc11")||Mode==TEXT("sc11long")||Mode==TEXT("sc11retry"))&&M->Flow->CaseId==0&&M->Flow->bDevRun&&Jump==TEXT("chapter4")
+  if(!Check((Mode==TEXT("sc11")||Mode==TEXT("sc11long")||Mode==TEXT("sc11retry"))&&M->Flow->CaseId==0&&M->Flow->bDevRun&&(ActualInput?Jump.IsEmpty():Jump==TEXT("chapter4"))&&NoParentTraversal
    &&(UserDir.StartsWith(TEXT("/tmp/"))||UserDir.StartsWith(TEXT("/var/tmp/")))&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),UserDir)
-   &&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),UserDir),TEXT("isolated chapter4 fixture; Saved and Saves both beneath explicit temporary profile")))return;
+   &&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),UserDir)
+   &&!IFileManager::Get().DirectoryExists(*(FPaths::ProjectSavedDir()/TEXT("SC11Contract"))),TEXT("explicit isolated fresh /tmp profile; actual input has no jump, legacy keeps named chapter4 fixture; Saved/Saves contained before writes")))return;
   Root=FPaths::ProjectSavedDir()/TEXT("SC11Contract")/FGuid::NewGuid().ToString(EGuidFormats::Digits);IFileManager::Get().MakeDirectory(*Root,true);Started=true;
-  for(const TCHAR* Flag:{TEXT("S47Ch4Drive"),TEXT("S47MotelV2Route"),TEXT("S47HorrorContract"),TEXT("S47RadioWomanContract"),TEXT("S47ProductionViews")})
+  for(const TCHAR* Flag:{TEXT("S47Ch4Drive"),TEXT("S47MotelV2Route"),TEXT("S47HorrorContract"),TEXT("S47RadioWomanContract"),TEXT("S47ProductionViews"),TEXT("S47Drive"),TEXT("S47Auto"),TEXT("S47WalkFrom"),TEXT("S47Place"),TEXT("S47EveningBootstrap"),TEXT("S47SC11Checkpoint")})
   {FString Value;if(FParse::Param(FCommandLine::Get(),Flag)||FParse::Value(FCommandLine::Get(),*(FString(Flag)+TEXT("=")),Value)){Finish(false,TEXT("independent runtime driver also enabled"));return;}}
-  if(!Check(M->Flow->Saves.List().IsEmpty()&&M->Spine->Enabled()&&M->Story->bEveningTimeline&&M->World->Area==TEXT("saro")&&Act(),TEXT("fresh isolated new-evening SC11, actual siege available")))return;
+  if(!Check(M->Flow->Saves.List().IsEmpty(),TEXT("fresh isolated SaveStore required before input import or fixture")))return;
+  if(ActualInput){if(AdoptInput()&&GoItem(TEXT("truck")))Next(100,0);return;}
+  if(!Check(M->Spine->Enabled()&&M->Story->bEveningTimeline&&M->World->Area==TEXT("saro")&&Act(),TEXT("fresh isolated new-evening SC11, actual siege available")))return;
   auto* C4=Cast<US47Chapter4>(M->Story->Chapter(TEXT("ch4")));
   if(!Check(C4&&C4->bActive&&C4->OnEnd&&M->Player->Walkable(1.2,.3),TEXT("declared prior SC01-SC10/chapter4 fixture and legal SARO start")))return;
   for(const FS47Doc& Doc:M->Story->Docs())OriginalDocs.Add(Doc.Id,Doc.Page);
@@ -291,7 +488,7 @@ void FS47SC11Contract::Tick(double Dt)
   UE_LOG(LogTemp,Display,TEXT("S47: SC11 FIXTURE prior SC01-SC10 supplied by chapter4 jump/OnEnd; not replayed, no return drive claim"));
   M->Player->Place(1.2,.3,0);C4->OnEnd();Next(1,.6);return;
  }
- if(FPlatformTime::Seconds()-Began>300){Finish(false,TEXT("300s SC11 timeout"));return;}
+ if(FPlatformTime::Seconds()-Began>(ActualInput?900:300)){Finish(false,TEXT("SC11 contract timeout; actual motel return has a separate explicit900s budget"));return;}
  if(M->Flow->bStarting||S47Startup::Blocking()||M->World->bBusy)return;
  if(Hold>0){Hold-=Dt;return;}
  if(!Pending.IsEmpty()&&!Restored())return;
@@ -299,6 +496,42 @@ void FS47SC11Contract::Tick(double Dt)
  if(Stage>=50&&Stage<80&&A->F.Captures!=CapturesBefore){Finish(false,TEXT("unexpected actual capture on chosen escape route"));return;}
  switch(Stage)
  {
+ case 100:if(Walk()){if(Face(TEXT("truck")))Next(101,.35);}return;
+ case 101:
+  if(!Check(A->Phase()==FS47SC11::EStep::Return&&!A->F.Receiver&&!A->F.Escaped&&M->World->AtMotel(M->Player->Pos)&&M->World->TruckAt==TEXT("motel"),TEXT("motel remains real SC11 Return; no collection or escape before driving"))||!Use(TEXT("truck"),false))return;
+  DriveOdo=M->World->Odometer();SawDriving=false;LastDriveLeg.Reset();M->World->Autopilot=10;M->World->DriveBack();Next(102,.2);return;
+ case 102:
+ {
+  if(M->World->bDriving)
+  {
+   SawDriving=true;const double Distance=(M->World->Odometer()-DriveOdo)*1609.344;
+   if(Distance<0||M->World->bCommuteVehicle){Check(false,TEXT("ordinary motel→SARO trip lost service vehicle/continuous odometer"));return;}
+   if(LastDriveLeg!=M->World->Leg)
+   {
+    LastDriveLeg=M->World->Leg;auto R=S47J::New();S47J::Set(R,TEXT("name"),TEXT("actual-return-drive-leg"));S47J::Set(R,TEXT("leg"),LastDriveLeg);S47J::Set(R,TEXT("area"),M->World->Area);
+    S47J::Set(R,TEXT("clock"),M->Story->Clock());S47J::Set(R,TEXT("odometer"),M->World->Odometer());S47J::Set(R,TEXT("actual_truck_three_m"),M->World->CabTruck()?M->World->CabTruck()->Position.ToString():TEXT("missing"));Transitions.Add(MakeShared<FJsonValueObject>(R));
+   }
+   return;
+  }
+  if(!SawDriving){if(FPlatformTime::Seconds()-Mark>15)Finish(false,TEXT("normal motel return never entered the actual drive"));return;}
+  Driven=(M->World->Odometer()-DriveOdo)*1609.344;M->World->Autopilot.Reset();
+  auto R=S47J::New();S47J::Set(R,TEXT("name"),TEXT("ordinary-motel-to-saro"));S47J::Set(R,TEXT("driven_metres"),Driven);S47J::Set(R,TEXT("odometer_before"),DriveOdo);S47J::Set(R,TEXT("odometer_after"),M->World->Odometer());S47J::Set(R,TEXT("autopilot_target_mps"),10);S47J::Set(R,TEXT("actual_state"),M->Flow->GameState());Transitions.Add(MakeShared<FJsonValueObject>(R));
+  if(!Check(Driven>400&&M->World->Area==TEXT("saro")&&M->World->TruckAt==TEXT("saro")&&M->World->TruckOnLot()&&A->Phase()==FS47SC11::EStep::Return,TEXT("real return drive parked at SARO; outside pad never counts as bounded room arrival")))return;
+  if(GoItem(TEXT("doorEast")))Next(103,0);return;
+ }
+ case 103:if(Walk()){if(Face(TEXT("doorEast")))Next(104,.35);}return;
+ case 104:
+ {
+  if(!M->Web->IsDoorOpen(TEXT("doorEast"))&&!Use(TEXT("doorEast")))return;
+  if(!Check(M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("ordinary actual east-door use, no collider/visibility setter")))return;
+  TArray<FVector2D> Seeds;for(const auto& N:FS47SC11::Nodes())Seeds.Add(N.At);
+  const FVector2D From(M->Player->Pos.X,M->Player->Pos.Z),To(1.2,.3);
+  auto Entry=FS47ThreatNavigation::FindPath(From,To,Seeds,M->Web->Colliders(),M->Player->Radius,[&](const FVector2D& X,const FVector2D& Y)
+  {const int32 N=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(X,Y)/.05));for(int32 I=0;I<=N;++I){const auto P=FMath::Lerp(X,Y,double(I)/N);if(!M->Player->Walkable(P.X,P.Y))return false;}return true;});
+  if(!Check(!Entry.IsEmpty(),TEXT("complete native walkable open-door entry into bounded control room; no pose recovery")))return;
+  Path(MoveTemp(Entry));Next(105,0);return;
+ }
+ case 105:if(Walk()){if(!Check(A->Phase()==FS47SC11::EStep::Collect&&FS47SC11::Room(FVector2D(M->Player->Pos.X,M->Player->Pos.Z))==0,TEXT("only actual Walker entry into SARO control room starts SC11 collection")))return;Next(1,0);}return;
  case 1:
   if(!Check(A->Phase()==FS47SC11::EStep::Collect&&M->Story->Clock()>=FS47SC11::Arrive&&M->Story->Clock()<FS47SC11::RemoteReady&&!A->F.Escaped&&!A->HuntLive(),TEXT("05:00 collection begins before remote records or hunt"))||!SightChecks()||!Sources(TEXT("arrival")))return;
   // Manifest chair 15 ends at x=-4.57. Keep the .27m Walker footprint clear,
@@ -356,7 +589,8 @@ void FS47SC11Contract::Tick(double Dt)
   const auto* Torso=A->Pale.Torso.Get();if(!Torso){if(FPlatformTime::Seconds()-Mark>20)Finish(false,TEXT("no actual body torso"));return;}
   const FVector Target=S47Three::ToThree(Torso->Bounds.Origin);FacePoint(Target);
   const FS47Cam Cam=FS47Cam::Of(M->Player);
-  if(!A->Pale.Rendered()||!A->ClearSight(Cam.Pos,Target)||!S47Facing(Cam,Target,20,8))
+  const double ViewDot=FVector::DotProduct(M->Player->ForwardUE(),(Torso->Bounds.Origin-M->Player->EyeUE()).GetSafeNormal());
+  if(!A->Pale.Rendered()||!A->ClearSight(Cam.Pos,Target)||ViewDot<=.995||!S47Facing(Cam,Target,20,8))
   {if(FPlatformTime::Seconds()-Mark>25)Finish(false,TEXT("no legal actual torso render/LOS witness through the open south door"));return;}
   if(!RenderChecks())return;Snapshot(TEXT("actual-hunt-body"));Shot(TEXT("pale-body-open-door"));Next(24,.15);return;
  }
@@ -419,6 +653,13 @@ void FS47SC11Contract::Tick(double Dt)
   if(Restore(TEXT("completed-world-escape")))Next(82,.5);return;
  case 82:
   if(!Check(A->Phase()==FS47SC11::EStep::Done&&A->F.Escaped&&!A->bShown&&!A->OutsideLightStillOn(),TEXT("completed disk restore does not restart hunt or erase escape")))return;
+  if(ActualInput)
+  {
+   if(!ExportBoundary())return;
+   for(const FString& File:Pictures){FJ Receipt;if(!Check(SC11Png(File,Receipt),TEXT("complete actual PNG CRC/IEND/EOF/SHA: ")+File))return;Photos.Add(MakeShared<FJsonValueObject>(Receipt));}
+   if(!Check(Stores>=6&&Restores.Num()>=6&&RenderWitness&&NormalContinue&&Uses>=8&&Driven>400&&Walked>(Mode==TEXT("sc11long")?80:30),TEXT("actual predecessor/return/collection/hunt/escape and ordinary disk/title chain completed")))return;
+   Finish(true,TEXT("SC11 actual SC10→motel return→SARO sources/light/hunt/escape→natural C5 boundary"));return;
+  }
   M->Flow->Saves=FS47SaveStore(Root/TEXT("normal-save"));M->Flow->Saves.Init();M->Flow->CaseId=1;M->Flow->bDevRun=false;M->Flow->Saves.SetActive(1);Next(83,.4);return;
  case 83:
  {
@@ -446,5 +687,5 @@ void FS47SC11Contract::Step(US47Main* Main,double Dt)
 {
  static TWeakObjectPtr<US47Main> Owner;static TSharedPtr<FS47SC11Contract> Run;
  if(Owner.Get()!=Main){Owner=Main;Run=MakeShareable(new FS47SC11Contract(Main));}
- if(Run)Run->Tick(Dt);
+ const auto KeepAlive=Run;if(KeepAlive)KeepAlive->Tick(Dt);
 }
