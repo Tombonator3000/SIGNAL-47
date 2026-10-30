@@ -62,3 +62,5 @@ En ny styringsdel, `FS47Spine`, eier rekkefølgen SC01 til SC13 for nye saker. D
 3. Installasjon av rammen, så Tom kan spille fra 18:00 til finalen med plassholdere og vurdere tempo og logikk.
 4. Akt 1 (SC03 til SC05), akt 2 (SC06 til SC08), akt 3 (SC09 og SC10), akt 4 (SC11 til SC13). Full matrise og installasjon én gang per akt.
 5. Logikkpasset STORY-05 når alle plassholdere er byttet ut.
+
+Detaljert produksjonsmanus per scenario: [PRODUKSJON_SC01_SC13.md](PRODUKSJON_SC01_SC13.md).
