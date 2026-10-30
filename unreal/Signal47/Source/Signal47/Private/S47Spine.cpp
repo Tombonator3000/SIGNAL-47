@@ -1,4 +1,5 @@
 #include "S47Spine.h"
+#include "S47SC06Contract.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -267,6 +268,7 @@ void FS47Spine::ShowPosts()
 
 void FS47Spine::Step(double Dt)
 {
+ FS47SC06Contract::Step(M,Dt);
  if (!bEnabled || !M || !M->Story) return;
  Build();
  // SC03's end opens SC04: the control room holds until the originals are secured.

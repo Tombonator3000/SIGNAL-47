@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47BoardRules.h"
 #include "S47Chapter.h"
+#include "S47Docs.h"
 #include "S47FieldCamera.h"
 #include "S47Chapter1.generated.h"
 
@@ -19,6 +20,9 @@ struct FS47Viewfinder;
 struct SIGNAL47_API FS47CaseState
 {
 	int32 V = 1;
+	// Opt-in SC06 route. Missing field is the unchanged legacy case.
+	int32 SequenceVersion = 0;
+	TArray<FS47Doc> Sources;
 	FString Stage = TEXT("collect-camera"); // collect-camera | motor-log | first-exposure | develop-first | interpret-first | choose-control | observe-control | second-exposure | develop-second | compare-exposures | file-report | complete
 	double EventClock = 0;
 	bool bCamera = false, bDoor = false, bLabDoor = false, bLog = false, bReturned = false;
@@ -84,7 +88,8 @@ public:
 	// clock ...), or null for a new chapter; a bare CaseState is taken as well.
 	virtual void Begin(const S47J::FObj& Saved) override;
 	virtual void Reset() override;
-	virtual S47J::FObj SaveState() const override { return S.ToJson(); } // serialize()
+	virtual S47J::FObj SaveState() const override;
+	virtual FString SaveBlock() const override;
 	virtual void Update(double Dt, double T) override;
 	virtual FString Objective() const override;
 	virtual TArray<FS47Task> Tasks() const override;
@@ -131,6 +136,7 @@ public:
 	void TestDrive(const FString& Stop);
 
 private:
+	friend class FS47SC06Contract;
 	UPROPERTY() TObjectPtr<US47Yard> Yard;
 	UPROPERTY() TMap<FString, TObjectPtr<UTexture2D>> Images;
 	TUniquePtr<FS47RuleBook> BookPtr;
@@ -163,6 +169,7 @@ private:
 	void BuildBook();
 	void Interactables();
 	void ApplyWorld();
+	void KeepSources();
 	void ShowCamera(bool bOn);
 	void Save();
 	bool File(const FS47Doc& Doc);

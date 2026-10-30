@@ -1420,7 +1420,7 @@ FString US47Flow::GameSaveBlock() const
   return TEXT("Let the signal transient and emergency switchover finish before saving.");
 	if (S->IsCinematic()) return TEXT("Not right now. Let the moment finish first.");
 	if (S->At(ES47Phase::Ringing) && ChapterNo(S) == 0) return TEXT("Not during the call and what follows it. The game saves again when the night moves on.");
-	for (const TCHAR* K : { TEXT("ch3"), TEXT("ch4"), TEXT("ch5"), TEXT("ch6") })
+	for (const TCHAR* K : { TEXT("ch1"), TEXT("ch2"), TEXT("ch3"), TEXT("ch4"), TEXT("ch5"), TEXT("ch6") })
 	{
 		if (S->ChapterKey == K) { const US47Chapter* C = S->Chapter(K); return C ? C->SaveBlock() : FString(); }
 	}
