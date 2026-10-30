@@ -1476,3 +1476,17 @@ R9 fra4f93a8a3/modulade134e0 avslutter PASS_PREFIX_ONLY/rc0/1748,706s ved ekte S
 Dette er ikke ferdig spillerreise: nativebilder avviser vognplasseringen, og kildekontroll fant at vanlig E på dinerTruck ble avvist selv om testens direkte DriveBack virket. Kilde25788273/f55d3f35 gir eksakt SC04.Drive/NightSequence/SC03Complete/diner/servicebil-port, vanlig OnUse og synlig HUD-merkelapp Return to SARO. Night18 bruker nå ekte bundet OnUse og venter på vanlig kjørecallback. Ingen runtimeaksept av denne rettingen ennå. Nat forbereder separat vogn-/underlagsretting privat. Neste samledeR12/NightR10 skal starte fra ny sak, uten nytt resume-rammeverk.
 
 SC04-r1 konsumerte R9s ekte forelder med tittel/Fortsett og fire diskforløp. FAIL103,956s/stage56/454kontroller/11ray/71,679m skyldes at ankomsttestruten aldri lukket østdøra. Sky eier bare SC04Contract for vanlig innvendig gange/ray/lukking før opsTerminal; alle øvrige porter beholdes. Ingen SC04-aksept. Ingen installasjon eller offentlig release.
+
+
+### Codex 2026-10-30T06:50:21+01:00 samlet kilde bygget, focused SC03 startet
+
+Samlet kilde26148ba9 inkluderer normal retur/HUD-bro, fysisk SC04-ankomstlukking og SC03s fri vognplassering/basepivot/visningskvalifisert gulv. R12/R13 ble avvist av streng Wshadow i testens lokale Node; første rot-retting traff feil navn, andre retter den konkrete kollisjonen. Begge feilbygg er bevart uten nativeaksept. R14-editor består12.191s med modul68e198a2, bytebevart privat. Focused-r1 kjører fra faktisk R9-midarrival394158bytes/SHA1 51308480037DF7A8AF9348531C2A6E2798636DFE; kilde638 og26module-/source-/parentpinner er fryst. Dette er isolert developer-case0/ferskReader/Flow-restore og geometri/bildeprøve, ikke nySC03PASS eller SC04-forelder. Alle agentfiler er fryst; root eier motor og neste endringer. Ny NightR10 fra ordinær ny sak følger etter faktisk geometri-/bildekontroll. Ingen installasjon eller release.
+
+
+### Codex 2026-10-30T07:06:51+01:00 SC03 native geometri og før-løft-bilde består, ny R10
+
+R15/af726d25 består12,700s. FocusedR1 avviste feil antakelse om skjult attachRoot; UE-kilde bekrefter component-local visibility. FocusedR2 bevarer alle faktiske R9-kilder og består native4.284453m pivot/dekk/underlag/full bilklaring, men gammel gangrute treffer eksisterende pumpesokkel. R2FAIL47,980s er bevart. cbe52f54 gjenbruker eksisterende FS47ThreatNavigation med alle livekollidere og nativeWalkable, uten fallback/Place.
+
+R16-editor består12,198s med module2125156. FocusedR3 PASS49,062s/8kontroller/1disk-Flow/16,361m nativegange fra uendret faktisk R9-midarrival. Fire kildeavledede dekkpunkter transformert med faktisk native komponent har avvik −1,208..+1,035cm mot vist g1004 gjennom world- og direkte komponentstråler. Hele boksen med10cm margin er fri over681 prøver. Original Fairheaven-uasset/bounds/hash er uendret. PNG er åpnet: bakkekontakt/fri stolpe godkjent av Codex; kamera er ikke identisk med førbildet. Originale nativePNG-er/alleFAIL/raw er bevart. RT-residentvarsel85,223MiB/400MiB i bildet er fortsatt åpent, ingenFPS/menneskeligaksept. Dette er SC03Grounding developer-case0 actual-source restore, aldri SC03-parent.
+
+Faktisk NightR10 fra ordinær nycase har startet fra R16, med638fryste inputs og GroundingCheck samt vanlig HUDOnUse for sisteSC03retur. Ingen andre motorjobber eller Source/Content-mutasjoner. Resten av faktisk SC04–SC13-kjede er fortsatt UNVERIFIED. Ingen installasjon/release.

@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "status": "PASS_FOCUSED_GROUNDING_ONLY",
+  "complete_night_accepted": false,
+  "source_commit": "cbe52f547d8778571f6b0ea4136762ac4e092d0c",
+  "module_sha256": "e2125156ff0783ef2c1cb318caa8d2db967282b5defeab8c5ba766f57d2d9491",
+  "source_freeze_sha256": "6fca2c099c7c1d96455d3601e91227d6652fba5e1f09802e01cad47e0bcfb8c5",
+  "guard": {
+    "returncode": 0,
+    "wall_seconds": 49.06163499096874,
+    "semantic_success": true,
+    "expected_found": true,
+    "forbidden_found": [],
+    "stop_reason": null
+  },
+  "result": {
+    "status": "PASS",
+    "scenario": "SC03Grounding",
+    "mode": "focused-actual-source-developer-restore",
+    "checks": 8,
+    "diskFlowRestores": 1,
+    "nativeWalkMetres": 16.36071438584243
+  },
+  "raw_result_sha256": "71c04e1b5bdbaa332c2f9afb12036bafab3a68411ed96e0c44fad7ffe02d84fa",
+  "native_proof_sha256": "770b7c4471022c7fe31e13d1c8ff70f605416f564d9998d767c7724edc09571d",
+  "actual_park_three_m": [
+    7992.547157313388,
+    4.284453171402915,
+    2050.1700506250936
+  ],
+  "actual_native_pivot_ue_cm": [
+    799254.7157313388,
+    205017.00506250936,
+    428.4453171402915
+  ],
+  "native_body_hash": "F51F4D6FE24395B0350328EDE3A8D5A64CF80810",
+  "body_bounds_min_cm": [
+    -251.38961791992188,
+    -88.32157897949219,
+    0.0022382172755897045
+  ],
+  "body_bounds_max_cm": [
+    251.38963317871094,
+    92.77543640136719,
+    139.80419921875
+  ],
+  "source_wheel_samples": [
+    {
+      "wheel": "FL",
+      "source_native_local_cm": [
+        144.17987631103293,
+        65.129025256208,
+        0.09409055495536167
+      ],
+      "actual_world_cm": [
+        799365.7744005036,
+        204904.3303152621,
+        428.53940769524684
+      ],
+      "gap_cm": -0.3536696056418691,
+      "pass": true
+    },
+    {
+      "wheel": "FR",
+      "source_native_local_cm": [
+        144.17984927457044,
+        -80.8516622872997,
+        0.0022389661488486645
+      ],
+      "actual_world_cm": [
+        799228.8399326346,
+        204853.7406656775,
+        428.44755610644035
+      ],
+      "gap_cm": 1.0347878528457386,
+      "pass": true
+    },
+    {
+      "wheel": "RL",
+      "source_native_local_cm": [
+        -120.98268701294168,
+        65.129025256208,
+        0.09409055495536167
+      ],
+      "actual_world_cm": [
+        799273.8821912529,
+        205153.0611072191,
+        428.53940769524684
+      ],
+      "gap_cm": -1.2077381263072198,
+      "pass": true
+    },
+    {
+      "wheel": "RR",
+      "source_native_local_cm": [
+        -120.98271404940417,
+        -80.8516622872997,
+        0.0022389661488486645
+      ],
+      "actual_world_cm": [
+        799136.9477233838,
+        205102.47145763447,
+        428.44755610644035
+      ],
+      "gap_cm": -0.7469893268023498,
+      "pass": true
+    }
+  ],
+  "wheel_method": "source-derived tire minima + actual native component transform + world/direct floor trace",
+  "clearance_method": "full horizontal native-body envelope and 10 cm margin against actual road+diner runtime colliders; 5 cm centre spacing, not a rendered full arrival or continuous 3D mesh sweep",
+  "clearance_centres": 681,
+  "collider_comparisons": 251289,
+  "overlaps": 0,
+  "actual_source_sha1": "51308480037DF7A8AF9348531C2A6E2798636DFE",
+  "image_review": {
+    "reviewer": "Codex",
+    "opened": true,
+    "status": "PASS_GROUNDING_ONLY",
+    "before_sha256": "f3a02291e7c9c7d1464f615de122eca1e5a156c8da7ce5f852fd8bae15fe9f4c",
+    "after_sha256": "b6923f7bd9578ea2ba4e3ad16b22ec48a0dba05073ced714bb7bc504a07b5c2a",
+    "same_camera": false,
+    "human_visual_acceptance": false
+  },
+  "known_warning": "Actual after PNG contains ray-tracing always-resident warning85.223MiB/400MiB budget20%. No FPS or warning resolution claim.",
+  "limits": "Focused editor measurement from the outer-freeze-pinned actual mid-arrival disk, restored without revision/fact/clock edits through the existing isolated developer case0 fresh-reader/Flow path. Native Walker/API camera, source-derived tire points with actual native transform, actual world/direct pavement rays and sampled runtime-collider envelope. Does not replay SC01/02, outbound travel, rendered arrival, SC03 identification/lift/completion or whole night. No SC03 chapter PASS/checkpoint: this result is ineligible as SC04 parent. Image opening/visual acceptance, human input, listening, FPS, packed/full-matrix/install/release remain UNVERIFIED.",
+  "r1": {
+    "guard": {
+      "returncode": 1,
+      "wall_seconds": 38.75003679597285,
+      "semantic_success": false
+    },
+    "reason": "SC03 native pivot, source-wheel contacts and full footprint/approach clearance before lift",
+    "native_proof_pass": false,
+    "raw_result_sha256": "5aff09ebf9cffaba045da9be9d0fc4b8a8740d1aa43ca463fbc420524c64de63",
+    "native_proof_sha256": "694ad1ec5b2f94b4ab73d213a0cbe2a8c74d4e3303552180d45946e13d3cedcf"
+  },
+  "r2": {
+    "guard": {
+      "returncode": 1,
+      "wall_seconds": 47.980444755987264,
+      "semantic_success": false
+    },
+    "reason": "native Walker path blocked at 7988.680 2053.156 toward 7989.180 2053.156",
+    "native_proof_pass": true,
+    "raw_result_sha256": "6d38f4583f772e38e03249a8765e4a85f9c6001f98253b15483ee3aabc07449f",
+    "native_proof_sha256": "770b7c4471022c7fe31e13d1c8ff70f605416f564d9998d767c7724edc09571d"
+  }
+}
