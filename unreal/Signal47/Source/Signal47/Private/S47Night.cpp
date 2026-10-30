@@ -1,3 +1,4 @@
+#include "S47Spine.h"
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
@@ -366,6 +367,7 @@ FString US47Night::SurfaceAt() const
 
 bool US47Night::OneAtATime() const
 {
+ if(M && M->Spine && M->Spine->ArrayBusy())return true;
 	if (M && M->Horror && M->Horror->Busy()) return true;
 	if (M && M->Evening && M->Evening->MealBusy()) return true;
 	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;
