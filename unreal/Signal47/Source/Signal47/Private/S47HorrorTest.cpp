@@ -7,6 +7,7 @@
 #include "S47Flow.h"
 #include "S47Horror.h"
 #include "S47HorrorThreat.h"
+#include "S47ThreatNavigation.h"
 #include "S47HorrorSC03.h"
 #include "S47HorrorVisual.h"
 #include "S47HUD.h"
@@ -1889,11 +1890,23 @@ void FS47HorrorTest::Step(double Dt)
 		// Ortiz stands at the driver's side; reach her from her own side, around the wagon's solid body.
 		const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out=Out.GetSafeNormal();
 		const FVector Wide(O.X+Out.X*3.2,0,O.Z+Out.Z*3.2),Near(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5);
-		const FVector Mid=(M->Player->Pos+Wide)*.5;FVector Side=Mid-Wg;Side.Y=0;
-		const FVector Around=Wg+Side.GetSafeNormal()*4.5;
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 approach Ortiz %.2f %.2f from her side via %.2f %.2f"),O.X,O.Z,Wide.X,Wide.Z);
-		if (T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck"))) { Go({FVector(Around.X,0,Around.Z),Wide},2071);return; }
-		Go({FVector(Around.X,0,Around.Z),Wide,Near},2071);return;
+		const FVector2D RouteStart(M->Player->Pos.X,M->Player->Pos.Z),RouteGoal(Wide.X,Wide.Z);
+		TArray<FVector2D> ApproachSeeds;const double SeedRadius=FMath::Min(100.,FVector2D::Distance(RouteStart,RouteGoal)+10)*.5;
+		for (int32 SeedIndex=0;SeedIndex<16;++SeedIndex) { const double SeedAngle=SeedIndex*UE_DOUBLE_PI/8;ApproachSeeds.Add(RouteStart+FVector2D(FMath::Cos(SeedAngle),FMath::Sin(SeedAngle))*SeedRadius); }
+		const auto Planned=FS47ThreatNavigation::FindPath(RouteStart,RouteGoal,ApproachSeeds,M->Web->Colliders(),M->Player->Radius,[&](const FVector2D& RouteA,const FVector2D& RouteB)
+		{
+			const int32 SampleCount=FMath::Max(1,FMath::CeilToInt(FVector2D::Distance(RouteA,RouteB)/.05));
+			for (int32 SampleIndex=0;SampleIndex<=SampleCount;++SampleIndex) { const auto SampleAt=FMath::Lerp(RouteA,RouteB,double(SampleIndex)/SampleCount);if (!M->Player->Walkable(SampleAt.X,SampleAt.Y)) return false; }return true;
+		});
+		auto RouteProof=S47J::New();S47J::Set(RouteProof,TEXT("kind"),TEXT("SC03 live-collider/native-Walkable approach to Ortiz, no straight-line fallback"));TArray<TSharedPtr<FJsonValue>> RoutePoints;TArray<FVector> ApproachPoints;
+		S47J::Set(RouteProof,TEXT("from_xz_m"),TArray<double>{RouteStart.X,RouteStart.Y});S47J::Set(RouteProof,TEXT("goal_xz_m"),TArray<double>{RouteGoal.X,RouteGoal.Y});S47J::Set(RouteProof,TEXT("walker_radius_m"),M->Player->Radius);
+		for (const auto& At:Planned) { ApproachPoints.Add(FVector(At.X,0,At.Y));auto Point=S47J::New();S47J::Set(Point,TEXT("xz_m"),TArray<double>{At.X,At.Y});RoutePoints.Add(MakeShared<FJsonValueObject>(Point)); }
+		RouteProof->SetArrayField(TEXT("path"),RoutePoints);T.Evidence.Add(MakeShared<FJsonValueObject>(RouteProof));
+		if (!FFileHelper::SaveStringToFile(S47J::Write(RouteProof,true),*(T.Root/TEXT("sc03-ortiz-approach.json")))) { Fail(TEXT("could not preserve native Ortiz approach route"));return; }
+		if (!Check(!Planned.IsEmpty(),TEXT("actual collider-safe native walking route around the preserved pump island to Ortiz"))) return;
+		if (!(T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck")))) ApproachPoints.Add(Near);
+		Go(MoveTemp(ApproachPoints),2071);return;
 	}
 	if(T.Stage==2071)
 	{
