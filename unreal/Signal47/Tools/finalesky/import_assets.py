@@ -67,13 +67,42 @@ def node(mat,cls,**props):
     return n
 
 
+def expression_link(mat,source,output,target,input_name,connect=True):
+    names=list(M.get_material_expression_input_names(target))
+    outputs=list(M.get_material_expression_output_names(source))
+    # MaterialEditingLibrary explicitly selects GetInput(0) for the empty FName.
+    # ComponentMask's reflected "Input" is shortened to NAME_None, not "Input".
+    index=0 if input_name=='' else names.index(input_name)
+    assert 0<=index<len(names)and outputs,('missing actual material pin',names,outputs,input_name,output)
+    expected_output=outputs[0]if output==''else output
+    assert expected_output in outputs,('missing actual expression output',output,outputs)
+    if connect:
+        assert M.connect_material_expressions(source,output,target,input_name),('material connection failed',source.get_path_name(),output,target.get_path_name(),input_name,names,outputs)
+    linked=list(M.get_inputs_for_material_expression(mat,target))
+    # A bool+one FString out parameter becomes str on success, None on failure in PyGenUtil.
+    # The successful primary Custom output is an empty string, which must not be treated as false.
+    actual_output=M.get_input_node_output_name_for_material_expression(target,source)
+    row=dict(target=target.get_path_name(),source=source.get_path_name(),input_names=names,input_index=index,
+             source_output_names=outputs,actual_output=actual_output,actual_inputs=[n.get_path_name()if n else None for n in linked])
+    assert len(linked)==len(names)and linked[index]==source and linked.count(source)==1 and actual_output is not None and actual_output==expected_output,('actual expression link readback mismatch',row)
+    return row
+
+
+def property_link(mat,source,output,prop):
+    outputs=list(M.get_material_expression_output_names(source));assert outputs
+    expected=outputs[0]if output==''else output
+    assert expected in outputs and M.connect_material_property(source,output,prop),('material property connection failed',source.get_path_name(),output,str(prop),outputs)
+    assert M.get_material_property_input_node(mat,prop)==source and M.get_material_property_input_node_output_name(mat,prop)==expected,('actual material property link mismatch',str(prop))
+
+
 def custom(mat,code,inputs,out):
     n=node(mat,unreal.MaterialExpressionCustom,code=code,output_type=out)
     rows=[]
     for name,_,_ in inputs:
         r=unreal.CustomInput();r.set_editor_property('input_name',name);rows.append(r)
     n.set_editor_property('inputs',rows)
-    for name,source,output in inputs:assert M.connect_material_expressions(source,output,n,name)
+    assert list(M.get_material_expression_input_names(n))==[name for name,_,_ in inputs]
+    for name,source,output in inputs:expression_link(mat,source,output,n,name)
     return n
 
 
@@ -90,7 +119,7 @@ def make_materials(contract):
     pat=custom(mat,'float seam=pow(abs(sin(UV.x*301.5929)),44.);float grain=sin(UV.x*4777.+sin(UV.y*717.))*sin(UV.y*3991.);return C*(.89+.065*grain-.18*seam);',
                [('UV',uv,''),('C',color,'RGB')],unreal.CustomMaterialOutputType.CMOT_FLOAT3)
     emission=custom(mat,'return C*K;',[('C',color,'RGB'),('K',glow,'')],unreal.CustomMaterialOutputType.CMOT_FLOAT3)
-    for n,prop in [(pat,unreal.MaterialProperty.MP_BASE_COLOR),(rough,unreal.MaterialProperty.MP_ROUGHNESS),(metal,unreal.MaterialProperty.MP_METALLIC),(emission,unreal.MaterialProperty.MP_EMISSIVE_COLOR)]:assert M.connect_material_property(n,'',prop)
+    for n,prop in [(pat,unreal.MaterialProperty.MP_BASE_COLOR),(rough,unreal.MaterialProperty.MP_ROUGHNESS),(metal,unreal.MaterialProperty.MP_METALLIC),(emission,unreal.MaterialProperty.MP_EMISSIVE_COLOR)]:property_link(mat,n,'',prop)
     M.recompile_material(mat);assert E.save_loaded_asset(mat)
     instances={}
     for role,row in contract['materials'].items():
@@ -112,8 +141,8 @@ def make_materials(contract):
     field=custom(cloud,(HERE/'cloud_field.hlsl').read_text(),inputs,unreal.CustomMaterialOutputType.CMOT_FLOAT4)
     rgb=node(cloud,unreal.MaterialExpressionComponentMask,r=True,g=True,b=True,a=False)
     alpha=node(cloud,unreal.MaterialExpressionComponentMask,r=False,g=False,b=False,a=True)
-    assert M.connect_material_expressions(field,'',rgb,'Input')and M.connect_material_expressions(field,'',alpha,'Input')
-    assert M.connect_material_property(rgb,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)and M.connect_material_property(alpha,'',unreal.MaterialProperty.MP_OPACITY)
+    expression_link(cloud,field,'',rgb,'');expression_link(cloud,field,'',alpha,'')
+    property_link(cloud,rgb,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR);property_link(cloud,alpha,'',unreal.MaterialProperty.MP_OPACITY)
     M.recompile_material(cloud);assert E.save_loaded_asset(cloud)
     return instances
 
@@ -179,6 +208,27 @@ def compare_triangles(expected,actual):
     return dict(triangles=len(used),max_position_error_cm=maxp,max_uv_error=maxuv,missing=0)
 
 
+def graph_readback(mat,properties):
+    nodes=[]
+    for n in M.get_material_expressions(mat):
+        names=list(M.get_material_expression_input_names(n));linked=list(M.get_inputs_for_material_expression(mat,n))
+        assert len(names)==len(linked),('actual graph input inventory mismatch',n.get_path_name(),names)
+        inputs=[]
+        for name,source in zip(names,linked):
+            output=M.get_input_node_output_name_for_material_expression(n,source)if source else None
+            assert source is None or(linked.count(source)==1 and output is not None),('actual linked-node output is missing or ambiguous',n.get_path_name(),name)
+            inputs.append(dict(name=name,source=source.get_path_name()if source else None,source_output=output))
+        row=dict(node=n.get_path_name(),type=n.get_class().get_name(),inputs=inputs,outputs=list(M.get_material_expression_output_names(n)))
+        if isinstance(n,unreal.MaterialExpressionComponentMask):row['mask_channels']=[bool(n.get_editor_property(k))for k in ('r','g','b','a')]
+        nodes.append(row)
+    roots=[]
+    for prop in properties:
+        n=M.get_material_property_input_node(mat,prop);output=M.get_material_property_input_node_output_name(mat,prop)
+        assert n is not None and output in list(M.get_material_expression_output_names(n)),('actual graph root is not connected',str(prop))
+        roots.append(dict(property=str(prop),node=n.get_path_name(),output=output))
+    return dict(material=mat.get_path_name(),nodes=sorted(nodes,key=lambda r:r['node']),properties=roots)
+
+
 def verify(root,manifest,data,report):
     report.check('compiled actual own native inventory',data['status']=='MEASURED'and data['mesh']['allowCPUAccess']and len(data['mesh']['lods'])==3)
     mesh=load('SM_S47_FinalCraft');slots=list(mesh.get_editor_property('static_materials'))
@@ -204,6 +254,21 @@ def verify(root,manifest,data,report):
     codes=[n.get_editor_property('code')for n in expressions if isinstance(n,unreal.MaterialExpressionCustom)]
     report.check('actual saved finite field is exact original HLSL',codes==[(HERE/'cloud_field.hlsl').read_text()])
     report.check('actual depth-connected material nodes',sum(isinstance(n,unreal.MaterialExpressionSceneDepth)for n in expressions)==1 and sum(isinstance(n,unreal.MaterialExpressionPixelDepth)for n in expressions)==1)
+    field=next(n for n in expressions if isinstance(n,unreal.MaterialExpressionCustom))
+    report.check('actual saved field inputs retain all13 authored pin names',list(M.get_material_expression_input_names(field))==['WP','Camera','SceneDepth','PixelDepth','BankCenter','BankExtent','Forward','Right','Phase','Growth','Side','Samples','Glow'])
+    masks=[n for n in expressions if isinstance(n,unreal.MaterialExpressionComponentMask)]
+    report.check('actual saved field has exactly two separate component masks',len(masks)==2)
+    rows=[]
+    for role,channels,prop in [('RGB',(True,True,True,False),unreal.MaterialProperty.MP_EMISSIVE_COLOR),('A',(False,False,False,True),unreal.MaterialProperty.MP_OPACITY)]:
+        matches=[n for n in masks if tuple(bool(n.get_editor_property(k))for k in ('r','g','b','a'))==channels]
+        report.check('actual saved '+role+' channel selection',len(matches)==1)
+        mask=matches[0];row=expression_link(cloud,field,'',mask,'',connect=False);rows.append(row)
+        outputs=list(M.get_material_expression_output_names(mask))
+        report.check('actual saved '+role+' mask links field primary output to correct material property',M.get_material_property_input_node(cloud,prop)==mask and M.get_material_property_input_node_output_name(cloud,prop)==outputs[0],row)
+    report.data['actual_cloud_mask_links']=rows
+    report.data['material_graphs']={
+        'surface':graph_readback(load('M_S47_FinalSurface'),[unreal.MaterialProperty.MP_BASE_COLOR,unreal.MaterialProperty.MP_ROUGHNESS,unreal.MaterialProperty.MP_METALLIC,unreal.MaterialProperty.MP_EMISSIVE_COLOR]),
+        'cloud':graph_readback(cloud,[unreal.MaterialProperty.MP_EMISSIVE_COLOR,unreal.MaterialProperty.MP_OPACITY])}
 
 
 def main():
@@ -221,6 +286,7 @@ def main():
         if mode=='verify':
             previous=read(job['import_report']);report.check('independent actual import PID',previous['status']=='PASS'and previous['pid']!=os.getpid()and previous['native_files_sha256']==report.data['native_files_sha256']and previous['manifest_sha256']==report.data['manifest_sha256'])
             old=previous['assets']['mesh'];report.check('complete saved/render LOD payload identical between PIDs',old==data['mesh'])
+            report.check('complete actual material graph nodes/pins/links identical between PIDs',previous['material_graphs']==report.data['material_graphs'])
             binding=dict(schema=1,status='PASS',importPID=previous['pid'],freshPID=os.getpid(),source_manifest_sha256=sha(root/'manifest.json'),
                          native_files_sha256=report.data['native_files_sha256'],import_report_sha256=sha(job['import_report']),assets={k:v for k,v in data.items()if k!='savedSource'},scope='native source/payload only; visuals/GPU/whole drive UNVERIFIED')
             path=Path(job['binding']);assert not path.exists()and path.parent.is_dir();dump(path,binding)
