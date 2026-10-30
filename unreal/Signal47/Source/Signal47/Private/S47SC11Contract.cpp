@@ -228,8 +228,8 @@ void FS47SC11Contract::Finish(bool Good,const FString& Why)
  S47J::Set(Out,TEXT("limits"),TEXT("SC01-SC10 and the return drive are explicit fixtures, not replayed. Escape is the actual truck-pad approach boundary, not boarding/driving. Closed-door query is a named reversible geometry fixture; opacity/depth flags and LOS are not pixel-based visual acceptance. API input is not human input; PNG integrity is not visual/FPS acceptance."));
  if(ActualInput)
  {
-  S47J::Set(Out,TEXT("method"),TEXT("Actual hash-bound SC10 sibling PASS/full case1 checkpoint. Ordinary native Walker to the retained motel truck; labelled native DriveBack/autopilot controls, continuous actual drive and park, then Walker/camera-ray/OnUse into SARO. Production sources/light/observation/hunt/escape and natural C5 start. Genuine manual/fresh-reader/title/Continue at every stable boundary; original full source payloads and27 encoders preserved."));
-  S47J::Set(Out,TEXT("limits"),TEXT("Prior scenarios are bound actual predecessor evidence, not replayed by this process. Test route-target/autopilot/panel APIs are not human input. Reversible closed-door geometry query is labelled separately. Body proof is recent native render plus clear camera-to-torso-bounds sight/view angle, not a collision hit or visual/pixel acceptance. Output precedes SC12 actions; full-night, packaging and installation remain unaccepted."));
+  S47J::Set(Out,TEXT("method"),TEXT("Actual hash-bound SC10 sibling PASS/full case1 checkpoint. Ordinary native Walker to the retained motel truck; actual Return to SARO HUD label/camera-ray/focus/OnUse, then labelled autopilot controls, continuous actual drive and completed park, then Walker/camera-ray/OnUse into SARO. Production sources/light/observation/hunt/escape and natural C5 start. Genuine manual/fresh-reader/title/Continue at every stable boundary; original full source payloads and27 encoders preserved."));
+  S47J::Set(Out,TEXT("limits"),TEXT("Prior scenarios are bound actual predecessor evidence, not replayed by this process. Native Walker/autopilot/panel APIs are not human input. Reversible closed-door geometry query is labelled separately. Body proof is recent native render plus clear camera-to-torso-bounds sight/view angle, not a collision hit or visual/pixel acceptance. Output precedes SC12 actions; full-night, packaging and installation remain unaccepted."));
  }
  Out->SetArrayField(TEXT("executed_checks"),Executed);Out->SetArrayField(TEXT("rays"),Rays);Out->SetArrayField(TEXT("states"),States);
  Out->SetArrayField(TEXT("restores"),Restores);Out->SetArrayField(TEXT("sight_queries"),Sight);Out->SetArrayField(TEXT("photos"),Photos);
@@ -282,7 +282,7 @@ bool FS47SC11Contract::Use(const FString& Id,bool Activate)
  const auto* Item=M->Inter->Get(Id);const auto* WebItem=M->Web->Item(Id);
  const double Range=Item && Item->Range>0?Item->Range:WebItem?WebItem->Range:-1.;
  S47J::Set(Row,TEXT("actual_range_m"),Range);Rays.Add(MakeShared<FJsonValueObject>(Row));
- S47J::Set(Row,TEXT("activate_bound_hud_onuse"),Activate);
+ S47J::Set(Row,TEXT("activate_bound_hud_onuse"),Activate);S47J::Set(Row,TEXT("actual_hud_label"),M->Inter->LabelOf(Id));
  if(!Check(Picked==Id&&Focus==Id&&M->Player->OnUse&&FVector::DotProduct(Forward,(Aim-Eye).GetSafeNormal())>.995,TEXT("actual camera ray/focus/ordinary HUD OnUse: ")+Id))return false;
  if(Activate){M->Player->OnUse(Picked);++Uses;}return true;
 }
@@ -500,12 +500,24 @@ void FS47SC11Contract::Tick(double Dt)
  {
  case 100:if(Walk()){if(Face(TEXT("truck")))Next(101,.35);}return;
  case 101:
-  if(!Check(A->Phase()==FS47SC11::EStep::Return&&!A->F.Receiver&&!A->F.Escaped&&M->World->AtMotel(M->Player->Pos)&&M->World->TruckAt==TEXT("motel"),TEXT("motel remains real SC11 Return; no collection or escape before driving"))||!Use(TEXT("truck"),false))return;
-  DriveOdo=M->World->Odometer();SawDriving=false;LastDriveLeg.Reset();M->World->Autopilot=10;M->World->DriveBack();Next(102,.2);return;
+  if(!Check(A->Phase()==FS47SC11::EStep::Return&&!A->F.Receiver&&!A->F.Escaped&&M->World->AtMotel(M->Player->Pos)&&M->World->TruckAt==TEXT("motel")
+   &&M->Inter->LabelOf(TEXT("truck"))==TEXT("Return to SARO"),TEXT("actual motel service truck offers the pending SC11 return through the visible normal HUD label")))return;
+  DriveOdo=M->World->Odometer();SawDriving=false;LastDriveLeg.Reset();M->World->Autopilot=10;
+  if(!Use(TEXT("truck"),true))return;
+  Next(102,.2);return;
  case 102:
  {
   if(M->World->bDriving)
   {
+   if(!SawDriving)
+   {
+    const auto ActualTrip=M->World->TripNow();
+    if(!Check(ActualTrip&&ActualTrip->From==TEXT("motel")&&ActualTrip->To==TEXT("saro")&&M->World->Leg==TEXT("saro")
+     &&M->World->CabTruck()&&!M->World->CabTruck()->IsPersonalVehicle()&&!M->World->bCommuteVehicle,
+     TEXT("ordinary bound HUD OnUse actually starts the same service-cab motel to SARO trip")))return;
+    auto R=S47J::New();S47J::Set(R,TEXT("name"),TEXT("actual-normal-truck-onuse-trip"));S47J::Set(R,TEXT("trip_from"),ActualTrip->From);
+    S47J::Set(R,TEXT("trip_to"),ActualTrip->To);S47J::Set(R,TEXT("trip_number"),ActualTrip->N);S47J::Set(R,TEXT("actual_state"),M->Flow->GameState());Transitions.Add(MakeShared<FJsonValueObject>(R));
+   }
    SawDriving=true;const double Distance=(M->World->Odometer()-DriveOdo)*1609.344;
    if(Distance<0||M->World->bCommuteVehicle){Check(false,TEXT("ordinary motel→SARO trip lost service vehicle/continuous odometer"));return;}
    if(LastDriveLeg!=M->World->Leg)
@@ -515,7 +527,15 @@ void FS47SC11Contract::Tick(double Dt)
    }
    return;
   }
-  if(!SawDriving){if(FPlatformTime::Seconds()-Mark>15)Finish(false,TEXT("normal motel return never entered the actual drive"));return;}
+  if(!SawDriving){if(FPlatformTime::Seconds()-Mark>15)Finish(false,TEXT("normal motel truck OnUse never entered the actual drive"));return;}
+  Next(1021,0);return;
+ }
+ case 1021:
+ {
+  // Park holds the ordinary camera/controls for 0.4 game seconds after the stop.
+  // Wait for that transaction; do not move/collect during its cinematic hold.
+  if(M->Story->IsCinematic()||M->ModalOpen()||!M->Flow->GameSaveBlock().IsEmpty())
+  {if(FPlatformTime::Seconds()-Mark>20)Finish(false,TEXT("ordinary motel return parking transaction never completed"));return;}
   Driven=(M->World->Odometer()-DriveOdo)*1609.344;M->World->Autopilot.Reset();
   auto R=S47J::New();S47J::Set(R,TEXT("name"),TEXT("ordinary-motel-to-saro"));S47J::Set(R,TEXT("driven_metres"),Driven);S47J::Set(R,TEXT("odometer_before"),DriveOdo);S47J::Set(R,TEXT("odometer_after"),M->World->Odometer());S47J::Set(R,TEXT("autopilot_target_mps"),10);S47J::Set(R,TEXT("actual_state"),M->Flow->GameState());Transitions.Add(MakeShared<FJsonValueObject>(R));
   if(!Check(Driven>400&&M->World->Area==TEXT("saro")&&M->World->TruckAt==TEXT("saro")&&M->World->TruckOnLot()&&A->Phase()==FS47SC11::EStep::Return,TEXT("real return drive parked at SARO; outside pad never counts as bounded room arrival")))return;

@@ -252,6 +252,12 @@ void FS47SC11::ObserveRoom(double Dt)
 
 FString FS47SC11::Label(const FString& Id) const
 {
+ // SiegeBusy dispatches this owner only while SC11 is pending. Own the actual
+ // motel return without changing the free-drive choices elsewhere in the night.
+ if(Id==TEXT("truck")&&P==EStep::Return&&M&&M->Mode==US47Main::EMode::Play
+  &&M->Story&&M->Story->NightSequence()&&M->World&&M->Player
+  &&M->World->Area==TEXT("saro")&&M->World->TruckAt==TEXT("motel")&&M->World->AtMotel(M->Player->Pos)
+  &&!M->World->bCommuteVehicle&&!M->World->bDriving&&!M->World->bBusy)return TEXT("Return to SARO");
  if(P==EStep::Hunt&&(Id==TEXT("opsTerminal")||Id==TEXT("printer")||Id==TEXT("logbook")))return TEXT("All records secured / get out of SARO");
  if(P!=EStep::Collect||!M||!M->Story)return FString();
  if(Id==TEXT("opsTerminal"))return !F.Receiver?TEXT("Secure the receiver original"):!F.CheckedLocalLight?TEXT("Switch off the local task light"):LocalLightOff()?TEXT("Restore the local task light"):TEXT("Switch off the local task light");
@@ -263,6 +269,7 @@ FString FS47SC11::Label(const FString& Id) const
 bool FS47SC11::Use(const FString& Id)
 {
  if(Label(Id).IsEmpty()||!M->UI||!M->Web)return false;
+ if(Id==TEXT("truck")){M->World->DriveBack();return true;}
  if(P==EStep::Hunt){M->UI->Toast(TEXT("All four records are in the folder. Get them out."),3);return true;}
  AS47Story& S=*M->Story;
  if(Id==TEXT("opsTerminal"))

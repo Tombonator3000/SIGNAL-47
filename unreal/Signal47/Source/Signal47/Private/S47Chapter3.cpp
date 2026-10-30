@@ -17,6 +17,7 @@
 #include "S47PhoneScripts.h"
 #include "S47Station.h"
 #include "S47StationTaken.h"
+#include "S47Spine.h"
 #include "S47Story.h"
 #include "S47Substation.h"
 #include "S47Three.h"
@@ -609,7 +610,12 @@ void US47Chapter3::BindSaroTruck(const FS47Obj& Object)
 	if (!M || !M->Inter) return;
 	FS47Interactable It;
 	It.Id = TEXT("truck"); It.Object = Object; It.Range = 3.2;
-	It.Label = [this] { return M && M->World && M->World->TruckChoice ? M->World->TruckChoice(TEXT("saro")).Label : FString(); };
+	It.Label = [this]
+	{
+		if (!M || !M->World || !M->World->TruckChoice) return FString();
+		if (M->Spine) if (const FString L = M->Spine->Label(TEXT("truck")); !L.IsEmpty()) return L;
+		return M->World->TruckChoice(TEXT("saro")).Label;
+	};
 	It.Use = [this] { if (M && M->World && M->World->TruckChoice) M->World->TruckChoice(TEXT("saro")).Use(); };
 	It.Examine = [] { return FString(TRUCK_EXAMINE); };
 	M->Inter->Add(It);
