@@ -8,12 +8,12 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
 | --- | --- | --- |
-| Kildekode på `main` | [PR251](https://github.com/Tombonator3000/SIGNAL-47/pull/251): Dales kontorpilot med Tripo14 og SC11 fra PR250. Senere [PR252](https://github.com/Tombonator3000/SIGNAL-47/pull/252), main `c1da2bf7`, tilpasser SC09/SC10. | PR252 er nyere enn den lokalt installerte kontorpakken. Samlet SC01 til SC13-gjennomspilling gjenstår. |
-| Teknisk kontrollert kandidat | Kontorpilot `67d308c2`, [installasjon og bilder](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md). | Editorbygg, Linux-pakke,1740 selvtester, alle14 modeller og kort kontorprøve består. Tom godkjente den viste kontorpiloten 30. oktober 2026. |
-| Lokal installasjon | Kontorpilot `67d308c2` / PR251, installert 30. oktober kl.14:26. | 68 payload-noder og134 Saved-noder kontrollert. SC11 og Tripo14 er med; senere PR252 gjenstår neste pakke. |
+| Kildekode på `main` | [PR256](https://github.com/Tombonator3000/SIGNAL-47/pull/256), main `153c1039`: SARO gang/kontrollrom, med godkjent Dales kontor, Tripo14 og SC09/SC10-kilde fra PR252. | Samlet SC01 til SC13-gjennomspilling gjenstår. |
+| Teknisk kontrollert kandidat | SARO-kandidat `2b9080ce`, [installasjon og bilder](../Evidence/UnrealDeliveries/SARO_GANG_CONTROL_2026-10-30.md). | Editorbygg, Linux-pakke, 1740 selvtester, alle 14 modeller og korte gang-/nattkontrollromkameraer består. Ny visuell godkjenning avventes. |
+| Lokal installasjon | SARO-kandidat `2b9080ce` / PR256, installert 30. oktober kl.17:08. | 68 payload-noder og 134 Saved-noder kontrollert. Godkjente Dales kontor, Tripo14 og PR252 er med. |
 | Offentlig nedlasting | Uendret, eldre enn lokal installasjon. [Komplett Linux-testutgave 29. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), Farm R1 gjennom PR223. [Nedlasting og kvittering](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md). | Eldre enn dagens lokale SARO-installasjon. Én selvstendig startfil henter alle tre kontrollerte Farm R1-arkiver uten Git eller separate Artifacts. Andre maskiner er fortsatt UNVERIFIED. |
 
-Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon er nå kontorpiloten 30. oktober med Tripo14 og SC11; den offentlige29. oktober-utgaven er fortsatt eldre Farm R1.
+Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon er nå SARO gang/kontrollrom 30. oktober med godkjent Dales kontor og Tripo14; den offentlige29. oktober-utgaven er fortsatt eldre Farm R1.
 
 ## Hva som er levert, og hva som fortsatt mangler
 
@@ -29,7 +29,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon e
 | Vulkan-minnetiltak på Linux | Kilde i PR215 og målrettet kandidat R1, med separat High/natt-R2. Første historiske startup-OOM er fortsatt uavklart. | [Kildebinding, målinger og begrensninger](../Evidence/UnrealDeliveries/DINER_VULKAN_2026-10-29.md). Det målrettede minnebevisets R1 er før PR216/TB2; tiltaket inngår nå også i installert Farm R1 med samlet 111/111-kontroll. |
 | Trafoens feltutstyr og bakke, FIX-07 | Kilde/native kontrollert: fire modeller, 84 lagrede LOD-kontroller og ny T01 med 1709 selvtester. Claudes T02/SC02 og før-/etterbilder er bevart. | [Kvittering og begrensninger](../Evidence/UnrealDeliveries/SUBSTATION_FIELD_2026-10-29.md). Inngår nå i pakket og installert Farm R1 med samlet 111/111-kontroll. |
 | Ny nattsekvens og SKY01 | Implementert gjennom PR209 og målrettet pakket i nattkandidat R2. Strømbrudd 00:13, trafotur 01:35, T01-strømrestore, SC02 ca. 02:00 og SC03-grense ca. 02:15. | [Leveringsrapport og bevisgrenser](../Evidence/UnrealDeliveries/NATTSEKVENS_2026-10-28.md). Inngår nå i lokal Farm R1; offentlig 29. oktober-pakke er identisk. |
-| SC03 og resten av historien | Spine binder SC01 til SC13. SC04/SC08 er implementert i PR239/PR240, SC11 i PR250. Kontorpakken inkluderer PR250/251; SC09/SC10-tilpasningene i PR252 er nyere kilde. | Hele SC01 til SC13-reisen er ikke verifisert av denne leveransen. [Produksjonsmanus](../Design/Story/PRODUKSJON_SC01_SC13.md). |
+| SC03 og resten av historien | Spine binder SC01 til SC13. SC04/SC08 er implementert i PR239/PR240, SC11 i PR250, SC09/SC10-tilpasninger i PR252. Kildene er med i SARO-pakken fra PR256. | Hele SC01 til SC13-reisen er ikke verifisert av denne visuelle leveransen. [Produksjonsmanus](../Design/Story/PRODUKSJON_SC01_SC13.md). |
 | Motellreise, FIX-02 til FIX-05 | Levert kandidat R1 fra `2d13e231`: 1709 selvtester, 58 punkter, 14 interaksjoner, 7 dørnisjer, 4 blokkeringer og 1 611 gulvstråler over 178,70 m / 143,03 s. Pakket TV-GPU og ordinær disk/title/Continue består; editor R11, R6b og lagret native 32 er kontrollert separat. [PR220](https://github.com/Tombonator3000/SIGNAL-47/pull/220) er flettet i main. | [Rapport og pakket R1-kvittering](../Evidence/UnrealDeliveries/MOTEL_GROUNDING_2026-10-29.md). E04-klumpens identitet, menneskelig input, lytting og FPS er UNVERIFIED. Inngår nå i installert Farm R1 med samlet 111/111-kontroll; offentlig 29. oktober-pakke er identisk. |
 | Tidligere motel, fotolab, trafo og lysbue | Tidligere leveranser er flettet og lokalt installert. Nye målrettede kilde-/editorprøver endrer ikke installasjonen. | [Motel](../Evidence/UnrealDeliveries/MOTEL_V2.md), [fotolab](../Evidence/UnrealDeliveries/PHOTOLAB_DETAIL.md), [trafo](../Evidence/UnrealDeliveries/SUBSTATION_DETAIL.md), [lysbue](../Evidence/UnrealDeliveries/FX_ARC_2026-10-28.md). |
 | MetaHuman-servitrise | Én fungerende figur er lokalt installert, med uniform, hårkort og taleanimasjon. | [Figurpilot](../Evidence/UnrealDeliveries/METAHUMAN_WAITRESS.md). Videre visuell polering gjenstår. |
@@ -45,6 +45,8 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon e
 | Windows og andre maskiner | Byggegrunnlag/veiledning finnes. Ferdig verifisert Win64-leveranse og kompatibilitet på mottakermaskiner er ikke bekreftet. | Føres som åpne oppgaver i [TODO](TODO.md). |
 
 ## Pågående arbeid og kjente feil
+
+**SARO gang og kontrollrom:** [PR256 er installert](../Evidence/UnrealDeliveries/SARO_GANG_CONTROL_2026-10-30.md). Gangen er revidert med mer detaljering og slitasje etter Toms tilbakemelding; kontrollrommet får native overflater/himling, vinduslys og arbeidsgrupper. De to rommene avventer visuell godkjenning, ENV-06/ENV-07.
 
 **Dale, visuelt godkjent kontorpilot:** [PR251 er installert](../Evidence/UnrealDeliveries/DALE_OFFICE_PILOT_2026-10-30.md), med synlig malingsflate, oppdaterte egne overflater,72 native rekvisitter og romlig vindus-/lampelys. Tom godkjente den viste og installerte kontorpiloten 30. oktober 2026 med beskjed «Godkjent». ENV-05 er lukket; kontoret er visuell referanse for videre romarbeid. Dette passet bruker ingen nye kreditter.
 
