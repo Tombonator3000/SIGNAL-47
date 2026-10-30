@@ -38,6 +38,7 @@ private:
  void Snapshot(const FString& Name);
  bool Restore(const FString& Name);
  bool Restored();
+ bool WaitForBody(const FString& Context);
  bool RenderChecks();
  bool Fixture();
  void Shot(const FString& Name);

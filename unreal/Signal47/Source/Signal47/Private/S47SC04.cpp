@@ -26,7 +26,7 @@ namespace
  constexpr double BodyRadius = .27; // The same measured clearance as the annex graph and ordinary Walker.
  constexpr double SightRange = 14, SightCos = .342, ListenCos = .7, LureCos = .87, WalkHear = 9, RunHear = 14;
  constexpr double ListenTime = 5, LureTime = 12, FadeTime = 1.2;
- enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl };
+ enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl, NOfficeCabSouth, NOfficeCabWest };
  // Where the binder is read from, and where a capture starts the annex again.
  const FVector2D BinderStand(-2.3, 9.45);
  const FVector OfficePhone(.45, 1.1, 6.6);
@@ -94,14 +94,16 @@ const TArray<FS47SC04::FNode>& FS47SC04::Nodes()
   {TEXT("exit"), FVector2D(-5.3, 5.7)}, {TEXT("stoop"), FVector2D(-7.0, 5.7)}, {TEXT("rampEnd"), FVector2D(-11.1, 5.7)},
   {TEXT("westMid"), FVector2D(-11.1, 0.0)}, {TEXT("westNorth"), FVector2D(-9.0, -7.5)},
   {TEXT("recordsIn"), FVector2D(-3.9, 7.5)}, {TEXT("recordsEast"), FVector2D(-2.3, 7.6)}, {TEXT("recordsBinder"), FVector2D(-2.2, 9.6)},
-  {TEXT("recordsWest"), FVector2D(-5.0, 7.7)}, {TEXT("recordsBox"), FVector2D(-5.0, 9.2)}, {TEXT("controlDoor"), FVector2D(-2.4, 3.6)}};
+  {TEXT("recordsWest"), FVector2D(-5.0, 7.7)}, {TEXT("recordsBox"), FVector2D(-5.0, 9.2)}, {TEXT("controlDoor"), FVector2D(-2.4, 3.6)},
+  {TEXT("officeCabinetSouth"), FVector2D(-1.5, 5.6)}, {TEXT("officeCabinetWest"), FVector2D(-1.5, 6.05)}};
  return N;
 }
 
 const TArray<TPair<int32, int32>>& FS47SC04::Edges()
 {
- // Measured free (walks.saro zones less colliders, 0.27 m clearance); the ramp is left past its rails.
- static const TArray<TPair<int32, int32>> E = {{NOffice, NCorrSouth}, {NCorrSouth, NCorrRec}, {NCorrRec, NExit}, {NExit, NStoop}, {NStoop, NRamp},
+ // Measured free against current WebColliders, including the dynamic Office cabinet foot.
+ // Pass south then west of it with 0.27 m clearance; the ramp is left past its rails.
+ static const TArray<TPair<int32, int32>> E = {{NOffice, NOfficeCabSouth}, {NOfficeCabSouth, NOfficeCabWest}, {NOfficeCabWest, NCorrSouth}, {NCorrSouth, NCorrRec}, {NCorrRec, NExit}, {NExit, NStoop}, {NStoop, NRamp},
   {NRamp, NWestMid}, {NWestMid, NWestNorth}, {NCorrRec, NRecIn}, {NRecIn, NRecEast}, {NRecEast, NRecNE}, {NRecIn, NRecW}, {NRecW, NRecSW}, {NCorrSouth, NControl}};
  return E;
 }
