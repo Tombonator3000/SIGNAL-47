@@ -102,7 +102,10 @@ void FS47Horror::Begin(const S47J::FObj& Saved,bool bNewCase)
   CallScene=S47J::Str(Saved,TEXT("callScene"));if(CallScene.IsEmpty() || !Pack.FindScene(CallScene))CallScene=TEXT("SC01_FIRST_REPORT");
   CallQueue.Reset();if(const auto* Q=Saved->Values.Find(TEXT("callQueue"));Q && Q->IsValid() && (*Q)->Type==EJson::Array)for(const auto& V:(*Q)->AsArray())if(V.IsValid() && V->Type==EJson::String && Pack.FindScene(V->AsString()))CallQueue.Add(V->AsString());
   const auto* CallLines=Pack.FindScene(CallScene);
-  CallCursor=FMath::Clamp(S47J::Int(Saved,TEXT("callCursor")),0,CallLines?FMath::Max(0,CallLines->Lines.Num()-1):1);
+  // AdvanceDialogue saves Num after a completed call. Only a live call must
+  // still point at a response line; restoring it cannot grant completion.
+  const int32 MaxCallCursor=CallLines?FMath::Max(0,CallLines->Lines.Num()-(bWorldCall?1:0)):1;
+  CallCursor=FMath::Clamp(S47J::Int(Saved,TEXT("callCursor")),0,MaxCallCursor);
   // Physical facts must be restored before the pack validates a pending result.
   Context();FString Error;
   if(!Pack.Load(S47J::Obj(Saved,TEXT("pack")),Error))
