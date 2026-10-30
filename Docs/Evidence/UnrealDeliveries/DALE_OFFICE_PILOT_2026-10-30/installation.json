@@ -1,0 +1,12 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 251,
+  "source": "67d308c23ccecdf02ea0711981dcd272b7557204",
+  "merge": "c44739a905502fae1c46ac5376fdf40dc5a710ac",
+  "installed_at": "2026-10-30T14:26:38.633688+01:00",
+  "saved_nodes": 134,
+  "payload_nodes": 68,
+  "figures": 14,
+  "visual_approval": "awaiting_Tom",
+  "image": "installed-low.png"
+}
