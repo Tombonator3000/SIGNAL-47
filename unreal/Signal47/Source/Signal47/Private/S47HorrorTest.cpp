@@ -78,7 +78,9 @@ namespace
 		{
 			const auto* N=Web->Node(Id);
 			if (!N || !N->Comp.IsValid()) return false;
-			Shown&=N->bVis && N->Comp->IsVisible() && !N->Comp->bHiddenInGame;Id=N->Parent;
+			// Match UE's component-local visibility; structural hidden boxes do not
+			// inherit their flags into a visible mesh. Keep scene metadata ancestry.
+			Shown&=N->bVis;Id=N->Parent;
 		}
 		if (Id>=0) return false;
 		if (Known) *Known=true;

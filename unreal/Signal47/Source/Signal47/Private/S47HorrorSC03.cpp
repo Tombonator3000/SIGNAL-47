@@ -198,7 +198,9 @@ double FS47HorrorSC03::Ground(double X, double Z) const
   for (; Parent >= 0 && Depth < 128; ++Depth)
   {
    const auto* A = M->Web->Node(Parent); if (!A || !A->Comp.IsValid()) return TNumericLimits<double>::Lowest();
-   Shown &= A->bVis && A->Comp->IsVisible() && !A->Comp->bHiddenInGame; Parent = A->Parent;
+   // UE visibility belongs to each component; a hidden attachment helper does
+   // not hide its children unless SetVisibility/SetHiddenInGame propagates it.
+   Shown &= A->bVis; Parent = A->Parent;
   }
   if (Parent >= 0) break;
   if (!Shown) { Q.AddIgnoredComponent(C); continue; }
