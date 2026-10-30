@@ -35,6 +35,11 @@
 #include "Misc/ScopeExit.h"
 #include "Misc/SecureHash.h"
 #include "UnrealClient.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
 #include "S47Observing.h"
 #include "S47Audio.h"
 #include "S47Ambience.h"
@@ -61,12 +66,140 @@ namespace
 		S47J::Set(O,TEXT("pcm_peak"),L.PcmPeak);S47J::Set(O,TEXT("pcm_rms"),L.PcmRms);S47J::Set(O,TEXT("source_samples"),double(L.SourceSamples));S47J::Set(O,TEXT("routed_samples"),double(L.RoutedSamples));
 		S47J::Set(O,TEXT("source_peak"),L.SourcePeak);S47J::Set(O,TEXT("source_rms"),L.SourceRms);S47J::Set(O,TEXT("routed_peak"),L.RoutedPeak);S47J::Set(O,TEXT("routed_rms"),L.RoutedRms);S47J::Set(O,TEXT("bus_gain"),L.BusGain);return O;
 	}
+	// Opt-in, pre-lift SC03 measurement. No asset mutation or CPU render-buffer access.
+	bool SC03Shown(const AS47Web* Web, const UPrimitiveComponent* C, bool* Known=nullptr)
+	{
+		if (Known) *Known=false;
+		if (!Web || !C || !C->IsRegistered() || !C->GetOwner()) return false;
+		int32 Id=Web->NodeOf(C), Depth=0;const auto* Self=Web->Node(Id);
+		if (!Self || Self->Comp.Get()!=C) return false;
+		bool Shown=C->IsVisible() && !C->bHiddenInGame && !C->GetOwner()->IsHidden();
+		for (; Id>=0 && Depth<128; ++Depth)
+		{
+			const auto* N=Web->Node(Id);
+			if (!N || !N->Comp.IsValid()) return false;
+			Shown&=N->bVis && N->Comp->IsVisible() && !N->Comp->bHiddenInGame;Id=N->Parent;
+		}
+		if (Id>=0) return false;
+		if (Known) *Known=true;
+		return Shown;
+	}
+	void SC03Vector(const S47J::FObj& O, const TCHAR* Key, const FVector& V) { S47J::Set(O,Key,TArray<double>{V.X,V.Y,V.Z}); }
+	S47J::FObj SC03Component(const AS47Web* Web, const UPrimitiveComponent* C)
+	{
+		auto O=S47J::New();if (!C) return O;
+		const int32 Id=Web->NodeOf(C);const auto* N=Web->Node(Id);
+		S47J::Set(O,TEXT("component"),C->GetPathName());S47J::Set(O,TEXT("node"),Id);S47J::Set(O,TEXT("registered"),C->IsRegistered());
+		S47J::Set(O,TEXT("visible"),C->IsVisible());S47J::Set(O,TEXT("hidden_in_game"),C->bHiddenInGame);S47J::Set(O,TEXT("shown"),SC03Shown(Web,C));
+		S47J::Set(O,TEXT("collision"),int32(C->GetCollisionEnabled()));S47J::Set(O,TEXT("visibility_response"),int32(C->GetCollisionResponseToChannel(ECC_Visibility)));
+		S47J::Set(O,TEXT("world_transform"),C->GetComponentTransform().ToString());
+		if (N) { S47J::Set(O,TEXT("parent"),N->Parent);S47J::Set(O,TEXT("geo"),N->Geo);S47J::Set(O,TEXT("name"),N->Name);S47J::Set(O,TEXT("metadata_visible"),N->bVis); }
+		TArray<TSharedPtr<FJsonValue>> Ancestors;int32 Parent=Id;
+		for (int32 Depth=0;Parent>=0 && Depth<128;++Depth)
+		{
+			const auto* A=Web->Node(Parent);auto Row=S47J::New();S47J::Set(Row,TEXT("node"),Parent);
+			if (!A) { S47J::Set(Row,TEXT("missing"),true);Ancestors.Add(MakeShared<FJsonValueObject>(Row));break; }
+			S47J::Set(Row,TEXT("bVis"),A->bVis);S47J::Set(Row,TEXT("component_valid"),A->Comp.IsValid());
+			if (A->Comp.IsValid()) { S47J::Set(Row,TEXT("visible"),A->Comp->IsVisible());S47J::Set(Row,TEXT("hidden_in_game"),A->Comp->bHiddenInGame); }
+			Ancestors.Add(MakeShared<FJsonValueObject>(Row));Parent=A->Parent;
+		}
+		O->SetArrayField(TEXT("ancestors"),Ancestors);
+		if (const auto* S=Cast<UStaticMeshComponent>(C)) { if (S->GetStaticMesh()) S47J::Set(O,TEXT("mesh"),S->GetStaticMesh()->GetPathName()); }
+		return O;
+	}
+	bool SC03GroundingProof(US47Main* M, S47J::FObj& Out)
+	{
+		Out=S47J::New();S47J::Set(Out,TEXT("kind"),TEXT("SC03-before-lift-native-grounding"));S47J::Set(Out,TEXT("pass"),false);
+		auto Need=[&Out](bool Good,const TCHAR* Why) { if (!Good) S47J::Set(Out,TEXT("reason"),Why);return Good; };
+		const auto* Item=M->Inter->Get(TEXT("horror:wagon23"));const auto* Node=Item && Item->Object ? M->Web->Node(Item->Object.I) : nullptr;
+		auto* C=Node ? Cast<UStaticMeshComponent>(Node->Comp.Get()) : nullptr;auto* Mesh=C ? C->GetStaticMesh().Get() : nullptr;
+		S47J::Set(Out,TEXT("body"),SC03Component(M->Web.Get(),C));S47J::Set(Out,TEXT("area"),M->World->Area);S47J::Set(Out,TEXT("web_area"),M->Web->Area());
+		if (!Need(C && Mesh && Mesh->GetPathName()==TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_body.fairheaven_sw84_body") && SC03Shown(M->Web.Get(),C) && M->World->Area==TEXT("diner") && M->Web->Area()==TEXT("diner"),TEXT("actual Inter->Web component must draw the original native wagon body"))) return false;
+		const FBox Box=Mesh->GetBoundingBox();SC03Vector(Out,TEXT("native_bounds_min_cm"),Box.Min);SC03Vector(Out,TEXT("native_bounds_max_cm"),Box.Max);
+		const FTransform Pose=C->GetComponentTransform();const FVector Park=M->Horror->SC03->WagonPoint();SC03Vector(Out,TEXT("park_three_m"),Park);SC03Vector(Out,TEXT("actual_pivot_ue_cm"),Pose.GetLocation());
+		const FString BodyFile=FPaths::ProjectContentDir()/TEXT("Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_body.uasset");TArray<uint8> Bytes;
+		if (!Need(FFileHelper::LoadFileToArray(Bytes,*BodyFile) && !Bytes.IsEmpty(),TEXT("editor proof must bind the actual unchanged native uasset bytes"))) return false;
+		FSHAHash Hash;FSHA1::HashBuffer(Bytes.GetData(),Bytes.Num(),Hash.Hash);S47J::Set(Out,TEXT("body_file"),BodyFile);S47J::Set(Out,TEXT("body_bytes"),Bytes.Num());S47J::Set(Out,TEXT("body_sha1"),Hash.ToString());
+		if (!Need(Hash.ToString().Equals(TEXT("f51f4d6fe24395b0350328ede3a8d5a64cf80810"),ESearchCase::IgnoreCase) && Box.Min.Equals(FVector(-251.4,-88.3,0),.11) && Box.Max.Equals(FVector(251.4,92.8,139.8),.11) && Pose.GetScale3D().Equals(FVector::OneVector,1e-6) && Pose.GetLocation().Equals(S47Three::ToUE(Park),.01),TEXT("source-bound original body, base pivot and unit scale; no added 50 cm lift"))) return false;
+		FCollisionQueryParams BaseQ(SCENE_QUERY_STAT(S47SC03GroundingContract),true);BaseQ.bReturnFaceIndex=true;
+		// Ignore only this transient SC03 assembly, never the town, gas station or pavement.
+		const auto* Window=M->Inter->Get(TEXT("town:gasWindow"));
+		if (!Need(Window,TEXT("actual gas window required for a ray below the canopy"))) return false;
+		const double FromZ=(Window->Object.WorldPosition().Y+1)*100;
+		auto* Assembly=C->GetAttachParent();TArray<USceneComponent*> Children;if (Assembly) Assembly->GetChildrenComponents(true,Children);
+		for (auto* Child:Children) { if (auto* P=Cast<UPrimitiveComponent>(Child)) BaseQ.AddIgnoredComponent(P); }
+		auto Floor=[&](const FString& Label,const FVector& Point,bool RequirePave,FHitResult& Final)
+		{
+			auto Row=S47J::New();S47J::Set(Row,TEXT("label"),Label);SC03Vector(Row,TEXT("sample_ue_cm"),Point);
+			TArray<TSharedPtr<FJsonValue>> Queries;FCollisionQueryParams Q=BaseQ;bool Good=false;
+			const FVector From(Point.X,Point.Y,FromZ),To(Point.X,Point.Y,FromZ-1200);
+			SC03Vector(Row,TEXT("from_ue_cm"),From);SC03Vector(Row,TEXT("to_ue_cm"),To);
+			for (int32 I=0;I<32;++I)
+			{
+				FHitResult H;const bool Hit=M->Web->GetWorld()->LineTraceSingleByChannel(H,From,To,ECC_Visibility,Q);auto Raw=S47J::New();
+				S47J::Set(Raw,TEXT("query_hit"),Hit);S47J::Set(Raw,TEXT("blocking"),H.bBlockingHit);S47J::Set(Raw,TEXT("identity"),SC03Component(M->Web.Get(),H.GetComponent()));SC03Vector(Raw,TEXT("impact_ue_cm"),H.ImpactPoint);SC03Vector(Raw,TEXT("normal"),H.ImpactNormal);S47J::Set(Raw,TEXT("face"),H.FaceIndex);
+				Queries.Add(MakeShared<FJsonValueObject>(Raw));auto* Surface=H.GetComponent();const auto* N=Surface ? M->Web->Node(M->Web->NodeOf(Surface)) : nullptr;
+				if (!Hit || !H.bBlockingHit || !Surface || !Surface->IsRegistered() || !N || N->Comp.Get()!=Surface) break;
+				bool Known=false;const bool Shown=SC03Shown(M->Web.Get(),Surface,&Known);if (!Known) break;
+				if (!Shown) { S47J::Set(Raw,TEXT("excluded"),TEXT("freshly mapped, registered and actually hidden component"));Q.AddIgnoredComponent(Surface);continue; }
+				Final=H;int32 Section=INDEX_NONE;const auto* Material=Surface->GetMaterialFromCollisionFaceIndex(H.FaceIndex,Section);
+				S47J::Set(Raw,TEXT("section"),Section);S47J::Set(Raw,TEXT("material"),Material ? Material->GetPathName() : FString());
+				FHitResult Direct;const bool DirectHit=Surface->LineTraceComponent(Direct,From,To,Q);S47J::Set(Raw,TEXT("direct_hit"),DirectHit);S47J::Set(Raw,TEXT("direct_blocking_raw"),Direct.bBlockingHit);SC03Vector(Raw,TEXT("direct_impact_ue_cm"),Direct.ImpactPoint);SC03Vector(Raw,TEXT("direct_normal"),Direct.ImpactNormal);
+				const auto* S=Cast<UStaticMeshComponent>(Surface);const bool Pave=N->Parent==1432 && N->Geo==1004 && N->Mats.Num()==1 && N->Mats[0]==644 && M->Web->NodeOf(Surface)==1453 && S && S->GetStaticMesh() && S->GetStaticMesh()->GetPathName().EndsWith(TEXT("/g1004.g1004"));
+				Good=H.ImpactNormal.Z>.9 && Surface->GetCollisionEnabled()!=ECollisionEnabled::NoCollision && Surface->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block && DirectHit && Direct.ImpactPoint.Equals(H.ImpactPoint,.025) && FVector::DotProduct(Direct.ImpactNormal,H.ImpactNormal)>.99999 && (!RequirePave || Pave);
+				break; // a shown or unknown blocker never permits a retry past it
+			}
+			Row->SetArrayField(TEXT("queries"),Queries);S47J::Set(Row,TEXT("pass"),Good);
+			auto Rays=S47J::Arr(Out,TEXT("floor_rays"));Rays.Add(MakeShared<FJsonValueObject>(Row));Out->SetArrayField(TEXT("floor_rays"),Rays);return Good;
+		};
+		FHitResult Centre;if (!Need(Floor(TEXT("actual body pivot"),Pose.GetLocation(),true,Centre) && FMath::Abs(Centre.ImpactPoint.Z-Pose.GetLocation().Z)<.025,TEXT("park pivot must equal the first shown native g1004 pavement, confirmed by direct component query"))) return false;
+		// Named source tire minima, transformed by the ACTUAL native body component. Not
+		// a runtime render-buffer/wheel-physics readback. glTF and native hashes are pinned.
+		S47J::Set(Out,TEXT("wheel_method"),TEXT("source-derived tire minima + actual native component transform + world/direct floor trace"));
+		S47J::Set(Out,TEXT("prepared_gltf_sha256"),TEXT("732b57fc7771a34234c578606c4604b4009e81366fb8cc17e04269862ac0b9ed"));
+		S47J::Set(Out,TEXT("prepared_scene_bin_sha256"),TEXT("328763bcc5361f4d7bed6837e124bd83ea0229a17516503c55bd2682af5c8478"));
+		const FVector Tires[]={FVector(144.17987631103293,65.129025256208,.09409055495536167),FVector(144.17984927457044,-80.8516622872997,.0022389661488486645),FVector(-120.98268701294168,65.129025256208,.09409055495536167),FVector(-120.98271404940417,-80.8516622872997,.0022389661488486645)};
+		const TCHAR* Names[]={TEXT("FL"),TEXT("FR"),TEXT("RL"),TEXT("RR")};TArray<TSharedPtr<FJsonValue>> Wheels;bool WheelsGood=true;
+		for (int32 I=0;I<4;++I)
+		{
+			const FVector At=Pose.TransformPosition(Tires[I]);FHitResult GroundHit;const bool Hit=Floor(Names[I],At,true,GroundHit);const double Gap=At.Z-GroundHit.ImpactPoint.Z;
+			auto Row=S47J::New();S47J::Set(Row,TEXT("wheel"),Names[I]);SC03Vector(Row,TEXT("source_native_local_cm"),Tires[I]);SC03Vector(Row,TEXT("actual_world_cm"),At);S47J::Set(Row,TEXT("gap_cm"),Gap);S47J::Set(Row,TEXT("pass"),Hit && FMath::Abs(Gap)<=1.5);Wheels.Add(MakeShared<FJsonValueObject>(Row));WheelsGood&=Hit && FMath::Abs(Gap)<=1.5;
+		}
+		Out->SetArrayField(TEXT("source_wheel_samples"),Wheels);if (!Need(WheelsGood,TEXT("all four source-derived tire samples must be within 1.5 cm of shown, world/direct-agreeing g1004"))) return false;
+		const auto* Pump=M->Inter->Get(TEXT("town:pumps"));if (!Need(Pump && Window,TEXT("actual fuel-stop anchors required for approach clearance"))) return false;
+		FVector Forward=Pose.GetRotation().RotateVector(FVector(1,0,0)),Right=Pose.GetRotation().RotateVector(FVector(0,1,0));Forward.Z=Right.Z=0;Forward.Normalize();Right.Normalize();
+		FVector Away=Pump->Object.WorldPosition()-Window->Object.WorldPosition();Away.Y=0;Away.Normalize();
+		if (!Need(FVector::DotProduct(Forward,S47Three::DirToUE(Away))>.99999,TEXT("native wagon front must follow the real pump/window approach frame"))) return false;
+		const double HalfL=FMath::Max(2.55,FMath::Max(FMath::Abs(Box.Min.X),FMath::Abs(Box.Max.X))/100)+.10,HalfW=FMath::Max(.95,FMath::Max(FMath::Abs(Box.Min.Y),FMath::Abs(Box.Max.Y))/100)+.10;
+		const FVector Approach=Park+Away*34;SC03Vector(Out,TEXT("approach_three_m"),Approach);S47J::Set(Out,TEXT("clearance_margin_m"),.10);S47J::Set(Out,TEXT("clearance_method"),TEXT("full horizontal native-body envelope and 10 cm margin against actual road+diner runtime colliders; 5 cm centre spacing, not a rendered full arrival or continuous 3D mesh sweep"));
+		TArray<TSharedPtr<FJsonValue>> Overlaps;int32 Samples=0,Boxes=0;
+		for (int32 Step=0;Step<=680;++Step)
+		{
+			++Samples;const FVector At=FMath::Lerp(Approach,Park,double(Step)/680);
+			for (const FString& Area:{FString(TEXT("road")),FString(TEXT("diner"))})
+			{
+				for (const auto& B:M->Web->CollidersMutable(Area))
+				{
+					if (!B.bEnabled || B.Id==TEXT("sc03:wagon23")) { continue; }
+					++Boxes;
+					const double Ex=(B.MaxX-B.MinX)*.5,Ez=(B.MaxZ-B.MinZ)*.5,Dx=(B.MinX+B.MaxX)*.5-At.X,Dz=(B.MinZ+B.MaxZ)*.5-At.Z;
+					const bool Overlap=FMath::Abs(Dx)<=HalfW*FMath::Abs(Right.X)+HalfL*FMath::Abs(Forward.X)+Ex && FMath::Abs(Dz)<=HalfW*FMath::Abs(Right.Y)+HalfL*FMath::Abs(Forward.Y)+Ez && FMath::Abs(Dx*Right.X+Dz*Right.Y)<=HalfW+Ex*FMath::Abs(Right.X)+Ez*FMath::Abs(Right.Y) && FMath::Abs(Dx*Forward.X+Dz*Forward.Y)<=HalfL+Ex*FMath::Abs(Forward.X)+Ez*FMath::Abs(Forward.Y);
+					if (Overlap) { auto Row=S47J::New();S47J::Set(Row,TEXT("area"),Area);S47J::Set(Row,TEXT("id"),B.Id);S47J::Set(Row,TEXT("step"),Step);S47J::Set(Row,TEXT("rect"),TArray<double>{B.MinX,B.MaxX,B.MinZ,B.MaxZ});SC03Vector(Row,TEXT("centre_three_m"),At);Overlaps.Add(MakeShared<FJsonValueObject>(Row)); }
+				}
+			}
+		}
+		Out->SetArrayField(TEXT("clearance_overlaps"),Overlaps);S47J::Set(Out,TEXT("clearance_centres"),Samples);S47J::Set(Out,TEXT("collider_comparisons"),Boxes);
+		if (!Need(Overlaps.IsEmpty(),TEXT("the full parked footprint and approach must clear actual road/diner colliders"))) return false;
+		S47J::Set(Out,TEXT("pass"),true);return true;
+	}
+
 }
 
 struct FS47HorrorTest::FState
 {
 	bool bEnabled = false, bDone = false, bPendingNormalTest = false, bMissHand = false;
 	bool bNight = false, bNightWaiting = false, bNightFailed = false;
+	bool bSC03Grounding = false;
 	FString NightBoundary;
 	int32 Stage = 0, Checks = 0, Stores = 0, WalkIndex = 0, AfterWalk = 0;
 	double Elapsed = 0, Since = 0, Hold = 3, WalkMetres = 0, LastProgress = 0, PausedHandTime = 0;
@@ -83,6 +216,7 @@ struct FS47HorrorTest::FState
 	double DoorOut = 1;
 	TArray<FVector> Points;
 	FVector LastFoot = FVector::ZeroVector, FirstHand = FVector::ZeroVector;
+	S47J::FObj SC03GroundingSource;
 	S47J::FObj BeforeNormal, AfterNormal, AfterWindow, AfterReport, PendingNormal, FilmReserveBase, ObservingCompletion;
 	TArray<FS47AlbumShot> BudgetPhotos;
 	TArray<TSharedPtr<FJsonValue>> Evidence;
@@ -99,6 +233,7 @@ FS47HorrorTest::FS47HorrorTest(US47Main* InM) : State(MakeUnique<FState>()), M(I
 {
 	State->bEnabled = FParse::Value(FCommandLine::Get(), TEXT("S47HorrorContract="), State->Mode);
 	State->bDispatchRecordings = FParse::Param(FCommandLine::Get(), TEXT("S47DispatchRecordings"));
+	State->bSC03Grounding = FParse::Param(FCommandLine::Get(), TEXT("S47SC03Grounding"));
 	State->bEnabled |= State->bDispatchRecordings;
 	// The window event is now a slap heard behind the shade; it cannot be missed by looking away.
 	State->bMissHand = false;
@@ -482,6 +617,7 @@ void FS47HorrorTest::Step(double Dt)
 			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror native navigation PASS COMPLETE: %d checks"), T.Checks);
 			FPlatformMisc::RequestExit(false); return;
 		}
+		if (T.bSC03Grounding && T.Mode!=TEXT("SC03Resume")) { Fail(TEXT("focused SC03 grounding requires SC03Resume and an actual revision-3 mid-arrival source"));return; }
 		if (T.Mode == TEXT("SC03Resume"))
 		{
 			if (!FParse::Value(FCommandLine::Get(), TEXT("S47HorrorRestore="), T.RestoreSource) || T.RestoreSource.IsEmpty())
@@ -491,6 +627,18 @@ void FS47HorrorTest::Step(double Dt)
 			if (!FFileHelper::LoadFileToString(Text, *T.RestoreSource)) { Fail(TEXT("could not read SC03Resume source snapshot: ") + T.RestoreSource); return; }
 			const auto Saved = S47J::Read(Text);
 			const auto Horror = S47J::Obj(Saved, TEXT("horror")), Meeting = S47J::Obj(Horror, TEXT("sc02"));
+			if (T.bSC03Grounding)
+			{
+				const auto Scene=S47J::Obj(Horror,TEXT("sc03")),Service=S47J::Obj(Saved,TEXT("substation"));FString ExpectedSha;TArray<uint8> SourceBytes;
+				if (!FParse::Value(FCommandLine::Get(),TEXT("S47HorrorRestoreSHA1="),ExpectedSha) || ExpectedSha.Len()!=40 || !FFileHelper::LoadFileToArray(SourceBytes,*T.RestoreSource) || SourceBytes.IsEmpty()) { Fail(TEXT("focused source needs actual original bytes and an explicit outer-freeze SHA1"));return; }
+				FSHAHash SourceHash;FSHA1::HashBuffer(SourceBytes.GetData(),SourceBytes.Num(),SourceHash.Hash);
+				if (!Check(SourceHash.ToString().Equals(ExpectedSha,ESearchCase::IgnoreCase) && S47J::Int(Horror,TEXT("contentRevision"))==3 && S47J::Str(Saved,TEXT("area"))==TEXT("diner") && S47J::Str(Meeting,TEXT("phase"))==TEXT("escaped") && !S47J::Str(Meeting,TEXT("escapeStamp")).IsEmpty() && S47J::Bool(Service,TEXT("complete")) && S47J::Bool(Service,TEXT("observed")) && S47J::Str(Scene,TEXT("phase"))==TEXT("meet") && S47J::Bool(Scene,TEXT("dispatch")) && S47J::Bool(Scene,TEXT("assigned")) && !S47J::Bool(Scene,TEXT("identified")) && !S47J::Bool(Scene,TEXT("observed")),TEXT("actual revision-3 source is parked at Caliche before identification/lift; no fact/revision rewrite"))) return;
+				if (!FFileHelper::SaveArrayToFile(SourceBytes,*(T.Root/TEXT("focused-input-original.json")))) { Fail(TEXT("could not preserve exact original source bytes"));return; }
+				auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("focused actual-source restore in isolated developer case0"));S47J::Set(Row,TEXT("path"),T.RestoreSource);S47J::Set(Row,TEXT("bytes"),SourceBytes.Num());S47J::Set(Row,TEXT("sha1"),SourceHash.ToString());T.Evidence.Add(MakeShared<FJsonValueObject>(Row));
+				T.SC03GroundingSource=S47J::Clone(Saved);
+				if (!StoreRestore(TEXT("sc03-focused-actual-source"),Saved)) return;
+				Stage(206,1.0);return;
+			}
 			if (!Check(Saved && Horror && S47J::Int(Horror, TEXT("contentRevision")) >= 2 && S47J::Str(Meeting, TEXT("phase")) == TEXT("escaped") &&
 				!S47J::Str(Meeting, TEXT("escapeStamp")).IsEmpty() && !S47J::Obj(Horror, TEXT("sc03")),
 				TEXT("source snapshot is an actual escaped SC02 case before SC03"))) return;
@@ -1715,23 +1863,68 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==206)
 	{
+		if (T.bSC03Grounding)
+		{
+			if (M->Story->IsCinematic() || M->ModalOpen() || !M->Flow->GameSaveBlock().IsEmpty()) { if (T.Elapsed-T.Since>20) Fail(TEXT("focused source did not reach an ordinary stable restore boundary"));return; }
+			const auto Actual=M->Flow->GameState(),ExpectedH=S47J::Obj(T.SC03GroundingSource,TEXT("horror")),ActualH=S47J::Obj(Actual,TEXT("horror"));
+			const auto BeforeRoutine=S47J::Obj(T.SC03GroundingSource,TEXT("routine")),AfterRoutine=S47J::Obj(Actual,TEXT("routine"));
+			const double SourceClock=S47J::Num(BeforeRoutine,TEXT("clock"),-1e9),CurrentClock=M->Story->Clock();
+			const bool Same=Actual && ExpectedH && ActualH && BeforeRoutine && AfterRoutine && S47J::Obj(ActualH,TEXT("sc03")) && S47J::Obj(ActualH,TEXT("sc02")) && S47J::Obj(Actual,TEXT("substation")) && !S47J::Arr(BeforeRoutine,TEXT("docs")).IsEmpty() && FJsonValue::CompareEqual(FJsonValueObject(S47J::Obj(ExpectedH,TEXT("sc03"))),FJsonValueObject(S47J::Obj(ActualH,TEXT("sc03")))) && FJsonValue::CompareEqual(FJsonValueObject(S47J::Obj(ExpectedH,TEXT("sc02"))),FJsonValueObject(S47J::Obj(ActualH,TEXT("sc02")))) && FJsonValue::CompareEqual(FJsonValueObject(S47J::Obj(T.SC03GroundingSource,TEXT("substation"))),FJsonValueObject(S47J::Obj(Actual,TEXT("substation")))) && FJsonValue::CompareEqual(FJsonValueArray(S47J::Arr(BeforeRoutine,TEXT("docs"))),FJsonValueArray(S47J::Arr(AfterRoutine,TEXT("docs")))) && FMath::IsFinite(SourceClock) && CurrentClock>=SourceClock && CurrentClock-SourceClock<=T.Elapsed-T.Since+3;
+			auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("focused source actual post-Flow preservation"));S47J::Set(Row,TEXT("source_clock"),SourceClock);S47J::Set(Row,TEXT("actual_clock"),CurrentClock);S47J::Set(Row,TEXT("actual_state"),Actual);S47J::Set(Row,TEXT("pass"),Same);T.Evidence.Add(MakeShared<FJsonValueObject>(Row));
+			if (!Check(Same,TEXT("focused Flow restore preserves all actual SC02/SC03/T01 facts, complete document bytes and elapsed clock"))) return;
+		}
 		if(!Check(S3.Phase()==EP::Meet,TEXT("Continue during the arrival restores a parked wagon and Ortiz, no replayed drive")))return;
 		Stage(207,.3);return;
 	}
 	if(T.Stage==207)
 	{
+		if (T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck")))
+		{
+			S47J::FObj Proof;const bool Good=SC03GroundingProof(M,Proof);T.Evidence.Add(MakeShared<FJsonValueObject>(Proof));
+			if (!FFileHelper::SaveStringToFile(S47J::Write(Proof,true),*(T.Root/TEXT("sc03-before-lift-grounding.json")))) { Fail(TEXT("could not preserve native grounding measurements"));return; }
+			if (!Check(Good,TEXT("SC03 native pivot, source-wheel contacts and full footprint/approach clearance before lift"))) return;
+		}
 		// Ortiz stands at the driver's side; reach her from her own side, around the wagon's solid body.
 		const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out=Out.GetSafeNormal();
 		const FVector Wide(O.X+Out.X*3.2,0,O.Z+Out.Z*3.2),Near(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5);
 		const FVector Mid=(M->Player->Pos+Wide)*.5;FVector Side=Mid-Wg;Side.Y=0;
 		const FVector Around=Wg+Side.GetSafeNormal()*4.5;
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 approach Ortiz %.2f %.2f from her side via %.2f %.2f"),O.X,O.Z,Wide.X,Wide.Z);
+		if (T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck"))) { Go({FVector(Around.X,0,Around.Z),Wide},2071);return; }
 		Go({FVector(Around.X,0,Around.Z),Wide,Near},2071);return;
 	}
 	if(T.Stage==2071)
 	{
+		if (T.bSC03Grounding || FParse::Param(FCommandLine::Get(),TEXT("S47SC03GroundingCheck")))
+		{
+			const auto* Item=M->Inter->Get(TEXT("horror:wagon23"));const auto* Node=Item && Item->Object ? M->Web->Node(Item->Object.I) : nullptr;
+			const auto* Body=Node ? Cast<UStaticMeshComponent>(Node->Comp.Get()) : nullptr;
+			if (!Body) { Fail(TEXT("lost the actual wagon body before native picture"));return; }
+			const FVector Centre=Body->Bounds.Origin;Aim(FVector(Centre.X,Centre.Z,Centre.Y)/100);Stage(2072,.5);return;
+		}
 		Aim(S3.OrtizPoint());Stage(208,.4);return;
 	}
+	if (T.Stage==2072) { Shot(TEXT("sc03-wagon-grounded-before-lift"));Stage(2073,.5);return; }
+	if (T.Stage==2073)
+	{
+		TArray<uint8> Png;const FString Picture=T.Root/TEXT("sc03-wagon-grounded-before-lift.png");
+		static const uint8 Signature[]={137,80,78,71,13,10,26,10};
+		const bool Ready=FFileHelper::LoadFileToArray(Png,*Picture) && Png.Num()>5000 && !FMemory::Memcmp(Png.GetData(),Signature,8) && !FMemory::Memcmp(Png.GetData()+Png.Num()-8,"IEND",4);
+		if (!Ready) { if (T.Elapsed-T.Since>10) Fail(TEXT("actual before-lift PNG did not finish with IEND"));return; }
+		if (!Check(S3.Phase()==EP::Meet && !S3.Facts().bIdentified && !S3.Facts().bObserved && !S3.LightOn(),TEXT("native photograph is before identification and intended Ortiz lift"))) return;
+		FSHAHash PngHash;FSHA1::HashBuffer(Png.GetData(),Png.Num(),PngHash.Hash);auto PictureRow=S47J::New();S47J::Set(PictureRow,TEXT("path"),Picture);S47J::Set(PictureRow,TEXT("bytes"),Png.Num());S47J::Set(PictureRow,TEXT("sha1"),PngHash.ToString());S47J::Set(PictureRow,TEXT("iend"),true);
+		T.Evidence.Add(MakeShared<FJsonValueObject>(PictureRow));
+		if (!T.bSC03Grounding)
+		{
+			const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out.Normalize();
+			Go({FVector(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5)},2074);return;
+		}
+		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC03Grounding"));S47J::Set(Result,TEXT("mode"),TEXT("focused-actual-source-developer-restore"));S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);S47J::Set(Result,TEXT("picture"),PictureRow);Result->SetArrayField(TEXT("evidence"),T.Evidence);
+		S47J::Set(Result,TEXT("limits"),TEXT("Focused editor measurement from the outer-freeze-pinned actual mid-arrival disk, restored without revision/fact/clock edits through the existing isolated developer case0 fresh-reader/Flow path. Native Walker/API camera, source-derived tire points with actual native transform, actual world/direct pavement rays and sampled runtime-collider envelope. Does not replay SC01/02, outbound travel, rendered arrival, SC03 identification/lift/completion or whole night. No SC03 chapter PASS/checkpoint: this result is ineligible as SC04 parent. Image opening/visual acceptance, human input, listening, FPS, packed/full-matrix/install/release remain UNVERIFIED."));
+		if (!FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")))) { Fail(TEXT("could not preserve focused geometry result"));return; }
+		T.bDone=true;M->Player->TestMove.Reset();UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 grounding PASS MEASURED (focused actual-source restore, no chapter acceptance)"));FPlatformMisc::RequestExit(false);return;
+	}
+	if (T.Stage==2074) { Aim(S3.OrtizPoint());Stage(208,.4);return; }
 	if(T.Stage==208)
 	{
 		if(T.Aimed.IsEmpty())Shot(TEXT("sc03-ortiz"));
