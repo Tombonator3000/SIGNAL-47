@@ -195,6 +195,7 @@ void FS47SC04Contract::Snapshot(const FString& Name)
   S47J::Set(Row,TEXT("body_shown"),A->bShown);S47J::Set(Row,TEXT("actual_torso_recent_render"),A->Pale.Rendered());S47J::Set(Row,TEXT("body_state_elapsed"),A->StateT);
   TArray<double> Plan;for(int32 Node:A->Path)Plan.Add(Node);S47J::Set(Row,TEXT("planned_route_nodes"),Plan);
   S47J::Set(Row,TEXT("records_door_open"),M->Web->IsDoorOpen(TEXT("recordsDoor")));S47J::Set(Row,TEXT("south_door_open"),M->Web->IsDoorOpen(TEXT("doorSouth")));
+  S47J::Set(Row,TEXT("east_door_open"),M->Web->IsDoorOpen(TEXT("doorEast")));
  }
  States.Add(MakeShared<FJsonValueObject>(Row));
 }
@@ -423,8 +424,17 @@ void FS47SC04Contract::Tick(double Dt)
  case 603:
   if(!M->Web->IsDoorOpen(TEXT("doorEast"))&&!Use(TEXT("doorEast")))return;
   if(!Check(M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("ordinary original service door admits the actual returning player")))return;
-  if(Approach(TEXT("opsTerminal")))Next(604,0);return;
- case 604:if(Walk())Next(1,.2);return;
+  // The real SC03 arrival leaves this door open. Close it from inside through
+  // the same ordinary entry path/use as the long route, before collection.
+  Path({FVector2D(6.9,1.6),FVector2D(4.3,1.6)});Next(604,0);return;
+ case 604:if(Walk()){if(Face(TEXT("doorEast")))Next(605,.2);}return;
+ case 605:
+  Snapshot(TEXT("actual-arrival-east-door-before-inside-close"));
+  if(M->Web->IsDoorOpen(TEXT("doorEast"))&&!Use(TEXT("doorEast")))return;
+  Snapshot(TEXT("actual-arrival-east-door-after-inside-close"));
+  if(!Check(!M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("ordinary inside camera/ray/HUD use closes the actual arrival east door before collection")))return;
+  if(Approach(TEXT("opsTerminal")))Next(606,0);return;
+ case 606:if(Walk())Next(1,.2);return;
  case 1:
  {
   if(!Check(A->Phase()==FS47SC04::EStep::Collect&&M->Spine->Gate(FS47Spine::SC04)==1&&M->Spine->HoldsResidual()&&M->Story->Clock()>=2*3600+55*60&&M->Flow->CheckpointName()==TEXT("nightService")&&!A->F.bEscaped,ActualInput?TEXT("actual SC03 cohort opens SC04 collection with normal nightService custody"):TEXT("SC03-end fixture opens actual SC04 collection at02:55 with normal nightService custody")))return;
