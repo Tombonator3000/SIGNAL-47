@@ -54,3 +54,8 @@ Codex i denne samtalen eier installasjon til ~/Games/Signal47/Linux, med farmR1 
 ## Komplett testnedlasting, 2026-10-29 kl. 11:13 CET
 
 Codex i production-coordinator eier starter og distribusjonsdocs på codex/download-playtest-20261029. [Farm R1-nedlastingen](../Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md) er publisert og vedlegg/anonym tilgang verifisert. Ingen motorreservasjon, ny pakking/cook, endring av standardinstallasjonen eller arbeid i ART01/HUM01 inngår. Alle lokale kilde-, Saved- og rollbackfiler er bevart.
+
+
+## SC09 og neste motorvindu, 2026-10-30T01:03:18+01:00
+
+Codex har avsluttet SC09 R12 fra e81c6815 i motel-v2-unreal: målrettet PASS98/12disk med eksplisitt60-grense. [PR234](https://github.com/Tombonator3000/SIGNAL-47/pull/234) er utkast; [rapporten](../Docs/Evidence/UnrealDeliveries/SC09_2026-10-30.md) fører åpne GPU-/regresjonsgrenser. Modul og råbevis er bevart. Denne arbeidskopien gjenbrukes nå til egen SC04-leveringsgren; én avgrenset serie med bygg og SC04-kontrakter venter delt reservasjon. Originalsc03 og installert standard berøres ikke.
