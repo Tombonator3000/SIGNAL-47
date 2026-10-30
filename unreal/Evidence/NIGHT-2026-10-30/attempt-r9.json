@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "status": "PASS_PREFIX_API_LIMITED",
+  "contract_status": "PASS_PREFIX_ONLY",
+  "complete_night_accepted": false,
+  "attempt": "Night R9",
+  "frozen_source": "4f93a8a34831389307f39128a32d96619496b00f",
+  "build_receipt": {
+    "source_commit": "4f93a8a34831389307f39128a32d96619496b00f",
+    "freeze_sha256": "f08bb845a0b141ae50eb5f2bc28e69dfab225d57cad67cb19a707d36a7ea9c91",
+    "source_files": 638,
+    "bytes": 19710376,
+    "sha256": "ade134e0fc378827a9e64bdf0822ce6cc79c7ddc7f8586f022224059c36ed5f1",
+    "build_log_sha256": "b1dfb7ae09fe7f2d0994bca9c3ebbc577b54837e61c61bd798b2d6982fbca4ad"
+  },
+  "guard": {
+    "returncode": 0,
+    "wall_seconds": 1748.7063251360087,
+    "semantic_success": true,
+    "expected_found": true,
+    "forbidden_found": [],
+    "stop_reason": null
+  },
+  "result": {
+    "scenario": "NIGHT_SC01_SC03_PREFIX",
+    "chain_id": "01A18B2C9FCD73C19DA24DF0AB9458BC",
+    "stage": 20,
+    "checks": 5391,
+    "restores": 6,
+    "walked_metres": 151.1676000864726,
+    "driven_metres": 9197.737429141735,
+    "actual_ray_uses": 4,
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc03/sc03-complete.disk.json",
+      "bytes": 549034,
+      "sha1": "94F9EC6B3B2384B483B9FF9DF9850E01B92047C6"
+    }
+  },
+  "raw_result_sha256": "17115879c302b133b4a04d6c4447a0e9a7e33563e425a020f653fbd571d94cff",
+  "source_freeze_sha256": "85e5885164c97b9c50633e32f1352e48deb08cae8d03638af05f7bd6771567ba",
+  "known_product_failures": [
+    "SC03 wagon overlaps canopy column and floats; actual native images failed visual review.",
+    "Normal dinerTruck E rejects return; this run used explicit DriveBack API after actual native ray. It does not prove the ordinary return interaction."
+  ],
+  "limits": "Actual new-case cohort, sources, normal disk/title/Continue and chapter boundaries are retained. Full player journey remains unaccepted until both product failures are fixed and retested. Later SC04-SC13 remain unaccepted.",
+  "accepted_sc01": {
+    "status": "PASS",
+    "scenario": "SC01",
+    "mode": "night",
+    "chain_id": "01A18B2C9FCD73C19DA24DF0AB9458BC",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc01/sc01-complete.disk.json",
+      "bytes": 377096,
+      "sha1": "80A525006C7E92E7F4A6AD25B924FE8F331BFB60"
+    },
+    "previous_checkpoint_file": null,
+    "previous_result_file": null
+  },
+  "sc01_raw_result_sha256": "2d086573ce1fa07f9f12d9ca39a28c7cdf4d879140f995846c25e2f369b0b7a8",
+  "accepted_sc02": {
+    "status": "PASS",
+    "scenario": "SC02",
+    "mode": "night",
+    "chain_id": "01A18B2C9FCD73C19DA24DF0AB9458BC",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc02/sc02-complete.disk.json",
+      "bytes": 392072,
+      "sha1": "90097DE79849ED85E82303003784507F42B3CB2A"
+    },
+    "previous_checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc01/sc01-complete.disk.json",
+      "bytes": 377096,
+      "sha1": "80A525006C7E92E7F4A6AD25B924FE8F331BFB60"
+    },
+    "previous_result_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc01/result.json",
+      "bytes": 4977480,
+      "sha1": "D023CDBB585DC78CA8E02D1DB0FB25D03BE70C9E"
+    }
+  },
+  "sc02_raw_result_sha256": "eede33f7b0cf88181f4b872a3e3a0fb577a9cb2b842d51baaaf353c5b03a6998",
+  "accepted_sc03": {
+    "status": "PASS",
+    "scenario": "SC03",
+    "mode": "night",
+    "chain_id": "01A18B2C9FCD73C19DA24DF0AB9458BC",
+    "checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc03/sc03-complete.disk.json",
+      "bytes": 549034,
+      "sha1": "94F9EC6B3B2384B483B9FF9DF9850E01B92047C6"
+    },
+    "previous_checkpoint_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc02/sc02-complete.disk.json",
+      "bytes": 392072,
+      "sha1": "90097DE79849ED85E82303003784507F42B3CB2A"
+    },
+    "previous_result_file": {
+      "path": "/tmp/S47-chain-night-night-r9/Saved/NightContract/01A18B2C9FCD73C19DA24DF0AB9458BC/sc02/result.json",
+      "bytes": 6576964,
+      "sha1": "EFA9D4C0E7DA4CF1D87AB6AFFB86B83A0ED46D75"
+    }
+  },
+  "sc03_raw_result_sha256": "49def972dbdbb5a138b260691477b8e03e6a5fc37b83c26f3c4a1fe55c0ba08a",
+  "actual-post-sc03-parking": {
+    "clock": 10500,
+    "cinematic": true,
+    "modal_open": false,
+    "ordinary_save_block": "Not right now. Let the moment finish first.",
+    "raw_sha256": "0c7e2a58e00a5dbacc657ea7adc66c1b4a3e5e5310983a5ad6779fd8cecb7389"
+  },
+  "sc04-input-ready": {
+    "clock": 10500.407631698996,
+    "cinematic": false,
+    "modal_open": false,
+    "ordinary_save_block": "",
+    "raw_sha256": "9e81dadd80891a671e0da7a9be968a6f4e60109db2abfb9f28caee213b2bdf65"
+  },
+  "diner_approach": {
+    "route_found": true,
+    "raw_sha256": "4a91a242656430ae984b32edbb56f3bada5ee8866512e096a6049ccab66316bd",
+    "chosen_route": [
+      {
+        "xz_m": [
+          7989.897207378328,
+          2004.9873246679867
+        ]
+      }
+    ],
+    "eligible": [
+      {
+        "radius_m": 3,
+        "goal_floor_m": 4.309006389843892,
+        "goal_eye_distance_m": 3.073916335671695,
+        "old_player_floor_eye_distance_m": 3.185036443307332
+      },
+      {
+        "radius_m": 3,
+        "goal_floor_m": 4.309006389843892,
+        "goal_eye_distance_m": 3.0739163356715147,
+        "old_player_floor_eye_distance_m": 3.1850364433071583
+      },
+      {
+        "radius_m": 3,
+        "goal_floor_m": 4.309006389843892,
+        "goal_eye_distance_m": 3.0739163356715147,
+        "old_player_floor_eye_distance_m": 3.1850364433071583
+      },
+      {
+        "radius_m": 3,
+        "goal_floor_m": 4.309006389843892,
+        "goal_eye_distance_m": 3.073916335671695,
+        "old_player_floor_eye_distance_m": 3.185036443307332
+      },
+      {
+        "radius_m": 3,
+        "goal_floor_m": 4.309006389843892,
+        "goal_eye_distance_m": 3.0739163356715147,
+        "old_player_floor_eye_distance_m": 3.1850364433071583
+      },
+      {
+        "radius_m": 3,
+        "goal_floor_m": 4.309006389843892,
+        "goal_eye_distance_m": 3.0739163356715147,
+        "old_player_floor_eye_distance_m": 3.1850364433071583
+      }
+    ]
+  }
+}

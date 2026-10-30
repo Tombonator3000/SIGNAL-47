@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "status": "FAIL",
+  "attempt": "Actual-parent SC04 R1",
+  "source": "4f93a8a34831389307f39128a32d96619496b00f",
+  "guard": {
+    "returncode": 1,
+    "wall_seconds": 103.95585463900352,
+    "semantic_success": false,
+    "expected_found": false,
+    "forbidden_found": [
+      "spine contract sc04 FAIL"
+    ],
+    "stop_reason": null
+  },
+  "result": {
+    "mode": "sc04",
+    "stage": 56,
+    "reason": "both original control-room doors really closed from inside",
+    "checks": 454,
+    "stores": 4,
+    "actual_ray_uses": 11,
+    "walked_metres": 71.67908793786341,
+    "walk_samples": 2271,
+    "normal_title_continue": true,
+    "actual_body_render_witness": true,
+    "actual_sc03_input": true,
+    "chain_id": "01A18B2C9FCD73C19DA24DF0AB9458BC",
+    "source_sc03_checkpoint_sha1": "94F9EC6B3B2384B483B9FF9DF9850E01B92047C6",
+    "source_sc03_result_sha1": "A8A695610DD7355CF97094F84541AAB85ECDCEF0"
+  },
+  "raw_result_sha256": "d98c1492e64161f2720967eca57c2e51810c78ec27c301614e315ec7a199bb4b",
+  "limits": "Actual SC03 adoption and first four disk cohorts ran. Test arrival route left east door open; later both-closed assertion correctly failed. No SC04 acceptance."
+}

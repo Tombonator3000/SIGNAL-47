@@ -1462,3 +1462,17 @@ Bilens faktiske AABB omfatter alle 48 gamle rutemål. Kilde1f23752b beholder kol
 Lesende kontroll bekrefter at vanlig Park setter driving=false før0,4s cinematic er over. Egen R8 ble derfor avbrutt gjennom verifisert wrapper3358426 og eksakt privatplan. Guard ryddet kun sin egen barnesesjon; require-idle besto etterpå.23råfiler/hash, logg og avbruddskvittering er privatbevart. InterruptedError ble videreført uten night.result.json; ingen kontraktaksept eller runtime-FAIL påstås.
 
 Kilde4f93a8a3 skriver faktisk parkering og venter maks20s på cinematic/modal/SaveBlock før uendret SC03-Check/Boundary. Ingen produktfelt eller modaler tvinges. R11-editor består10,175s med modulade134e0, bytebevart privat. Faktisk NightR9 kjører fra ordinær nycase med638fryste inputs. Root eier alle nye mutasjoner og tunge jobber; agenter gjør bare lesende kontroll. Ingen installasjon eller offentlig release.
+
+
+### Codex 2026-10-30T06:14:32+01:00 SC03 visuelt avslag fra faktisk R7
+
+Åpnede nativebilder sc03-ortiz/taken/figures/deputy fra R7 viser at wagon23 svever allerede før Ortiz løftes. CPU-geometrien gir første treff Y5,3968567 i rød prop, betong under4,5177219; SC03s PoseCar legger i tillegg til0,50m selv om Fairheaven-pivoten er på basen. Foreløpig avvik er1,379m. Dette er eget FAIL_VISUAL, adskilt fra faktisk funksjonell SC01/SC02-PASS. R9 fortsetter urørt for prefiksets virkelige forelder. Nat kontrollerer hele bilfotavtrykkets klaring uten filendringer. Målrettet retting/komponentmåling/bildeaksept gjenstår. Privat førkvittering binder fire åpnede PNG-er med hash. Ingen installasjon/release.
+
+
+### Codex 2026-10-30T06:36:27+01:00 faktisk prefiks på API-grense, to produktfeil og SC04-dør
+
+R9 fra4f93a8a3/modulade134e0 avslutter PASS_PREFIX_ONLY/rc0/1748,706s ved ekte SC03/SARO-grense,5391rootkontroller/6disk/151,168m gange/9197,737m kjøring. SC01/SC02/SC03 har søsken-PASS og samme chain01A18B2C9FCD73C19DA24DF0AB9458BC; SC03-fil549034bytes/SHA1 94F9EC6B3B2384B483B9FF9DF9850E01B92047C6. Ny3m-rute og målgulv er faktisk gjennomført med kameraray, og stage20 venter til vanlig parkering er lagringsbar. Alle råfiler, kildefrys og modul er bevart; portabelR9-kvittering er merket PASS_PREFIX_API_LIMITED.
+
+Dette er ikke ferdig spillerreise: nativebilder avviser vognplasseringen, og kildekontroll fant at vanlig E på dinerTruck ble avvist selv om testens direkte DriveBack virket. Kilde25788273/f55d3f35 gir eksakt SC04.Drive/NightSequence/SC03Complete/diner/servicebil-port, vanlig OnUse og synlig HUD-merkelapp Return to SARO. Night18 bruker nå ekte bundet OnUse og venter på vanlig kjørecallback. Ingen runtimeaksept av denne rettingen ennå. Nat forbereder separat vogn-/underlagsretting privat. Neste samledeR12/NightR10 skal starte fra ny sak, uten nytt resume-rammeverk.
+
+SC04-r1 konsumerte R9s ekte forelder med tittel/Fortsett og fire diskforløp. FAIL103,956s/stage56/454kontroller/11ray/71,679m skyldes at ankomsttestruten aldri lukket østdøra. Sky eier bare SC04Contract for vanlig innvendig gange/ray/lukking før opsTerminal; alle øvrige porter beholdes. Ingen SC04-aksept. Ingen installasjon eller offentlig release.
