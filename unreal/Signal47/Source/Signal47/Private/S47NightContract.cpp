@@ -429,7 +429,9 @@ void FS47NightContract::Tick(double Dt)
   if(!Use(TEXT("phone"))||!Check(M()->ModalOpen()&&!M()->Evening->FeederCallAnswered(),TEXT("actual county phone document opens without premature acknowledgment")))return;
   M()->UI->Close(true);
   if(!Check(M()->Evening->FeederCallAnswered()&&M()->Evening->FeederOutage()&&!M()->Evening->DriveTimeSkipped()&&M()->Story->Docs().ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("EV_FEEDER_CALL")&&!D.Page.IsEmpty();}),TEXT("actual close callback acquires county-call source and orders service trip without restoring power"))||!Cycle(TEXT("actual-county-call")))return;
-  Path({FVector(4.2,0,1.6),FVector(5.2,0,1.6),FVector(7.5,0,1.6),FVector(9.3,0,1.6),FVector(9.3,0,4),FVector(10.8,0,8)});Next(13,0);return;
+  // The landing railing blocks x9.3 at z3.35; use the live cab's ray/range
+  // and all current colliders/walk zones instead of crossing that railing.
+  if(GoItem(TEXT("truck")))Next(13,0);return;
  case 13:
   if(!Walk())return;if(!Check(M()->HorrorTest->ResumeNight(TEXT("sc01")),TEXT("resume same actual cohort at physical service truck; native field drive/T01 rays, no direct road fixture")))return;Next(14);return;
  case 14:
