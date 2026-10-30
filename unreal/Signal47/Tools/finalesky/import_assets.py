@@ -71,8 +71,8 @@ def custom(mat,code,inputs,out):
     n=node(mat,unreal.MaterialExpressionCustom,code=code,output_type=out)
     rows=[]
     for name,_,_ in inputs:
-        r=unreal.CustomInput();r.input_name=name;rows.append(r)
-    n.inputs=rows
+        r=unreal.CustomInput();r.set_editor_property('input_name',name);rows.append(r)
+    n.set_editor_property('inputs',rows)
     for name,source,output in inputs:assert M.connect_material_expressions(source,output,n,name)
     return n
 
@@ -82,8 +82,8 @@ def vector(mat,name,value):return node(mat,unreal.MaterialExpressionVectorParame
 
 
 def make_materials(contract):
-    mat=new_material('M_S47_FinalSurface');mat.blend_mode=unreal.BlendMode.BLEND_OPAQUE
-    mat.shading_model=unreal.MaterialShadingModel.MSM_DEFAULT_LIT;mat.two_sided=False
+    mat=new_material('M_S47_FinalSurface');mat.set_editor_property('blend_mode',unreal.BlendMode.BLEND_OPAQUE)
+    mat.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_DEFAULT_LIT);mat.set_editor_property('two_sided',False)
     color=vector(mat,'Color',(.1,.1,.1,1));rough=scalar(mat,'Roughness',.5);metal=scalar(mat,'Metallic',.75);glow=scalar(mat,'Glow',0)
     uv=node(mat,unreal.MaterialExpressionTextureCoordinate,coordinate_index=0)
     # Original machined wear: small radial seams and brushed variation; no borrowed texture.
@@ -101,9 +101,9 @@ def make_materials(contract):
         M.set_material_instance_vector_parameter_value(mi,'Color',unreal.LinearColor(*row['color']))
         for key in ('roughness','metallic','glow'):M.set_material_instance_scalar_parameter_value(mi,key.title(),row[key])
         assert E.save_loaded_asset(mi);instances['M_S47_Final'+role]=mi
-    cloud=new_material('M_S47_FinalCloud');cloud.material_domain=unreal.MaterialDomain.MD_SURFACE
-    cloud.blend_mode=unreal.BlendMode.BLEND_TRANSLUCENT;cloud.shading_model=unreal.MaterialShadingModel.MSM_UNLIT
-    cloud.two_sided=False;cloud.translucency_pass=unreal.MaterialTranslucencyPass.MTP_BEFORE_DOF
+    cloud=new_material('M_S47_FinalCloud');cloud.set_editor_property('material_domain',unreal.MaterialDomain.MD_SURFACE)
+    cloud.set_editor_property('blend_mode',unreal.BlendMode.BLEND_TRANSLUCENT);cloud.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_UNLIT)
+    cloud.set_editor_property('two_sided',False);cloud.set_editor_property('translucency_pass',unreal.MaterialTranslucencyPass.MTP_BEFORE_DOF)
     cloud.set_editor_property('use_translucency_vertex_fog',False)
     inputs=[('WP',node(cloud,unreal.MaterialExpressionWorldPosition),''),('Camera',node(cloud,unreal.MaterialExpressionCameraPositionWS),''),
             ('SceneDepth',node(cloud,unreal.MaterialExpressionSceneDepth),''),('PixelDepth',node(cloud,unreal.MaterialExpressionPixelDepth),'')]
@@ -139,9 +139,10 @@ def apply(root,manifest,report):
         mesh.set_material(i,instances[name])
     for lod in (1,2):report.check('own authored LOD'+str(lod),S.import_lod(mesh,lod,str(root/manifest['lods'][lod]['fbx']))==lod)
     mesh.set_editor_property('allow_cpu_access',True)
-    nano=mesh.get_editor_property('nanite_settings');nano.enabled=False;mesh.set_editor_property('nanite_settings',nano)
+    nano=mesh.get_editor_property('nanite_settings');nano.set_editor_property('enabled',False);mesh.set_editor_property('nanite_settings',nano)
     for lod in range(3):
-        b=S.get_lod_build_settings(mesh,lod);b.use_full_precision_u_vs=True;b.remove_degenerates=False;b.recompute_normals=False;b.recompute_tangents=True;b.use_mikk_t_space=True
+        b=S.get_lod_build_settings(mesh,lod)
+        for key,value in [('use_full_precision_u_vs',True),('remove_degenerates',False),('recompute_normals',False),('recompute_tangents',True),('use_mikk_t_space',True)]:b.set_editor_property(key,value)
         S.set_lod_build_settings(mesh,lod,b)
         for section in range(mesh.get_num_sections(lod)):S.enable_section_collision(mesh,False,lod,section)
     report.check('three owned authored screens',S.set_lod_screen_sizes(mesh,[1.,.35,.12]))
