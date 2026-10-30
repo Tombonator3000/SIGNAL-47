@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "status": "FAIL_PREFIX_INCOMPLETE",
+  "complete_night_accepted": false,
+  "attempts": [
+    {
+      "attempt": "Night R1",
+      "frozen_head": "02cd3eb624bc3c2819ec86666085d8278bfb4b6d",
+      "build_receipt": {
+        "source_commit": "de09bb4ee9dee93e68dbdb458aa7b207058912ea",
+        "freeze_sha256": "182e7f87a49be2cfe9da158d95130fa1916eda4f5457e15ff5e1b19615ad2a98",
+        "source_files": 632,
+        "bytes": 19663112,
+        "sha256": "ca52ee55aa8ca59d53ef5832dac1ccc4c8f0b69be2573afc903e6753cf922261",
+        "build_log_sha256": "fa35f5a2348a650f7a7657b858ee102298e76c9a5cd37afa8a1a0d2a2a7c794f"
+      },
+      "source_freeze_sha256": "8953fe44c8301131795daa530c8668a39904fd70ceb9d795f00b1e50dd83d20d",
+      "guard": {
+        "returncode": 1,
+        "wall_seconds": 32.64937168901088,
+        "semantic_success": false,
+        "expected_found": false,
+        "forbidden_found": [
+          "night contract FAIL"
+        ],
+        "stop_reason": null
+      },
+      "result": {
+        "status": "FAIL",
+        "scenario": "NIGHT_SC01_SC03_PREFIX",
+        "chain_id": "01A18A9D782D740EAD8B195357B680CB",
+        "process_id": 3300102,
+        "stage": 0,
+        "reason": "ordinary empty-state/noJump newcase creates actual personal commute and fresh production cohort",
+        "checks": 3,
+        "restores": 0,
+        "walked_metres": 0,
+        "driven_metres": 0,
+        "actual_ray_uses": 0
+      },
+      "raw_result": {
+        "bytes": 1985,
+        "sha256": "2b141c2ac5642a2f6e179f390dbc7e9e8f0e2d7f577f3076e5fd4d45cd43119b"
+      },
+      "runtime_source": "de09bb4ee9dee93e68dbdb458aa7b207058912ea"
+    },
+    {
+      "attempt": "Night R2",
+      "frozen_head": "d27ea4758b5693ca2cd47193b0f49991a4a791b7",
+      "build_receipt": {
+        "source_commit": "d27ea4758b5693ca2cd47193b0f49991a4a791b7",
+        "freeze_sha256": "a411a9e0248d96bc39fc85c716b1fe2a5964bedc5a02f3b73445f1a1205c2638",
+        "source_files": 632,
+        "bytes": 19670568,
+        "sha256": "2d9213ed17a64a5ec9f4296fcf9b2b7643927e355bf5ac040e0c9c2c23f7ad85",
+        "build_log_sha256": "0bddc94faf9e436ad9fa7c17008fcfa92efa5f22ac7fdcf3ba26c60e630a2f29"
+      },
+      "source_freeze_sha256": "427cc958cc335c0eab3131f33557e80af97bb53102d010ed99a30e781526e691",
+      "guard": {
+        "returncode": 1,
+        "wall_seconds": 258.2794871990336,
+        "semantic_success": false,
+        "expected_found": false,
+        "forbidden_found": [
+          "night contract FAIL"
+        ],
+        "stop_reason": null
+      },
+      "result": {
+        "status": "FAIL",
+        "scenario": "NIGHT_SC01_SC03_PREFIX",
+        "chain_id": "01A18AAA037B7FE4A1F82767A0583894",
+        "process_id": 3305910,
+        "stage": 6,
+        "reason": "actual D01 focused Slate Enter after source line duration; no listening claim",
+        "checks": 2231,
+        "restores": 1,
+        "walked_metres": 62.28522782500311,
+        "driven_metres": 2623.157672148458,
+        "actual_ray_uses": 2
+      },
+      "raw_result": {
+        "bytes": 482295,
+        "sha256": "e708cdb2f59c3842e6c9a5967135a08a1548ffb81316f14e7978334ab1dc5f8e"
+      },
+      "runtime_source": "d27ea4758b5693ca2cd47193b0f49991a4a791b7"
+    },
+    {
+      "attempt": "Night R3",
+      "frozen_head": "0f94ba51b0aae89be088f5176260cd54cb7a4072",
+      "build_receipt": {
+        "source_commit": "7d19482be73bca59ca9aa9e1228b9a3fedb1737b",
+        "freeze_sha256": "8ba11d20fdc2f1d1d9d7219dfcfbdd62e5136666e6848dd8043f4333b6e3b803",
+        "source_files": 632,
+        "bytes": 19682504,
+        "sha256": "a8966806211807f3a2a56429d293f9e446667ff7c5f42e2af8757525fa3cbadb",
+        "build_log_sha256": "198dc4c8e88388f7369882fb16f58733480e70c582f9d52af28db2514b647605"
+      },
+      "source_freeze_sha256": "b419d789b9d8ccbaad3e124b2cbc12741a20d5a6cc0c328e3815b89d00a4c2df",
+      "guard": {
+        "returncode": 1,
+        "wall_seconds": 460.84810842300067,
+        "semantic_success": false,
+        "expected_found": false,
+        "forbidden_found": [
+          "night contract FAIL"
+        ],
+        "stop_reason": null
+      },
+      "result": {
+        "status": "FAIL",
+        "scenario": "NIGHT_SC01_SC03_PREFIX",
+        "chain_id": "01A18ABD917E7557AE75AF9D8F4DBB61",
+        "process_id": 3315485,
+        "stage": 7,
+        "reason": "actual HorrorTest night adapter rejected; raw component FAIL retained",
+        "checks": 2287,
+        "restores": 1,
+        "walked_metres": 62.28446058785663,
+        "driven_metres": 2623.1743355514614,
+        "actual_ray_uses": 2
+      },
+      "raw_result": {
+        "bytes": 1893818,
+        "sha256": "d23c1957214e9a8634f5cc042b48e2c20aaaf1ed93cfa3c62af3b4b67e56440b"
+      },
+      "adapter": {
+        "status": "FAIL",
+        "stage": 621,
+        "checks": 66,
+        "reason": "the round leaves by the east door",
+        "raw_sha256": "d185ece2a04e4ace3431a57094cd601b90ea1bf95acd4a64186c99ba2519bae6"
+      }
+    },
+    {
+      "attempt": "Night R4",
+      "frozen_head": "d13d76397627bb08e60c454d6b2d8f49fdc53973",
+      "build_receipt": {
+        "source_commit": "d13d76397627bb08e60c454d6b2d8f49fdc53973",
+        "freeze_sha256": "52617a4880080ed7a1400c7a9a6a8832d46159aad7b9e0081164b863f6acb967",
+        "source_files": 615,
+        "bytes": 19686056,
+        "sha256": "8f3f80f4d6148bf45ded27423dc92a3e9059da5356f4d273f404764b52927361",
+        "build_log_sha256": "6da0e6b9dd1f8d97c1553b042d149b7aa4caaf0fe53b6b823a3be2787a1c48a9"
+      },
+      "source_freeze_sha256": "c657058c0f24abcbf3a9fec93d9b1d4ec4f40e52b33ba59d7c47fedbce3db801",
+      "guard": {
+        "returncode": 1,
+        "wall_seconds": 522.5650754770031,
+        "semantic_success": false,
+        "expected_found": false,
+        "forbidden_found": [
+          "night contract FAIL"
+        ],
+        "stop_reason": null
+      },
+      "result": {
+        "status": "FAIL",
+        "scenario": "NIGHT_SC01_SC03_PREFIX",
+        "chain_id": "01A18ACA5CC0726DA3F9B660B29B4A8C",
+        "process_id": 3321608,
+        "stage": 7,
+        "reason": "actual HorrorTest night adapter rejected; raw component FAIL retained",
+        "checks": 2287,
+        "restores": 1,
+        "walked_metres": 62.285144011338716,
+        "driven_metres": 2623.14912169853,
+        "actual_ray_uses": 2
+      },
+      "raw_result": {
+        "bytes": 2695924,
+        "sha256": "6e1b696148bfa270b19e91f2b6fd68f6febd4b86c5f0df95ec2435830cccc75e"
+      },
+      "adapter": {
+        "status": "FAIL",
+        "stage": 605,
+        "checks": 82,
+        "reason": "schedule complete by 22:50 with four filed runs; the desert sound is back",
+        "raw_sha256": "bbb91f69cf5def8de4ed408028b8cb281d562acce3bdffb0cd040e23bf8387ad"
+      }
+    },
+    {
+      "attempt": "Night R5",
+      "frozen_head": "6abfab4db9aca16cde9750fffad185e6064487f4",
+      "build_receipt": {
+        "source_commit": "6abfab4db9aca16cde9750fffad185e6064487f4",
+        "freeze_sha256": "fbf5ffa612c54a863abca30eb8c77d7efc382186086adaac12c407a8e6c93360",
+        "source_files": 638,
+        "bytes": 19694296,
+        "sha256": "fc5f522f3e015a1568582a5c4195429b6dd9730f4e314f2b30f25a499a47fd3c",
+        "build_log_sha256": "879e5e12df1d9ef09ca7a7a4bd5412f1544adbd75edf06dc5093078a4df0d98a"
+      },
+      "source_freeze_sha256": "706b9c530eb0c85b9c24ea942abe54d0bce9826a0de5a9024ea74fa2a4c57979",
+      "guard": {
+        "returncode": 1,
+        "wall_seconds": 661.4322021409753,
+        "semantic_success": false,
+        "expected_found": false,
+        "forbidden_found": [
+          "night contract FAIL"
+        ],
+        "stop_reason": null
+      },
+      "result": {
+        "status": "FAIL",
+        "scenario": "NIGHT_SC01_SC03_PREFIX",
+        "chain_id": "01A18ADE419D7BC38310B3F9EFEA5551",
+        "process_id": 3332917,
+        "stage": 7,
+        "reason": "actual HorrorTest night adapter rejected; raw component FAIL retained",
+        "checks": 2287,
+        "restores": 1,
+        "walked_metres": 62.28129328064034,
+        "driven_metres": 2623.1562498369103,
+        "actual_ray_uses": 2
+      },
+      "raw_result": {
+        "bytes": 4587440,
+        "sha256": "1095c13d20fad41eddcb70937631be4439bed2ffd11da818e7e85dd3ef853c35"
+      },
+      "adapter": {
+        "status": "FAIL",
+        "stage": 53,
+        "checks": 151,
+        "reason": "after-report: full Flow changed clock/pose/sourcebytes/27encoders or protected production state; raw before/actual retained",
+        "raw_sha256": "58f2a08728f864f4092eb632f53926bae8e8f4404eecd007c94e6c01a0cd06b6"
+      }
+    }
+  ]
+}
