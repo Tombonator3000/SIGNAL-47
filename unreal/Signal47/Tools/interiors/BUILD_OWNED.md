@@ -1,6 +1,8 @@
 # Private originalmodeller for interiørpasset
 
-**Status:** Under arbeid. **Gjelder:** Fire valgte Vintage-originaler. **Sist kontrollert:** 29. oktober 2026.
+**Status:** Referanse. **Gjelder:** Vintage-oppskriften fra29. oktober og Dale-revisjonen fra30. oktober. **Sist kontrollert:**30. oktober2026.
+
+R1-beskrivelsen nedenfor er historikk for første bakeforsøk. Senere native levering er dokumentert i [SARO-pass](../../../../Docs/Evidence/UnrealDeliveries/SARO_INTERIORS_2026-10-30.md) og [Dale-revisjon](../../../../Docs/Evidence/UnrealDeliveries/DALE_REALISM_2026-10-30.md).
 
 `owned_sources.py` validerer originalfiler, historisk inventar og lisensnotis uten motorjobb. Første Blender-kjøring R1 stoppet før første ferdige objekt fordi en støvgruppe tok imot shaderen gjennom `NodeGroupInput`. R1-rapport og logg er bevart privat. Oppskriften følger nå denne inngangen til riktig ytre gruppesocket gjennom eksplisitte gruppegrenser og interface-ID-er. Rettet Blender-/bake-/FBX-resultat, native og visuell aksept er fortsatt UNVERIFIED inntil ny kjøring.
 

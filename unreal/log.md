@@ -1352,3 +1352,7 @@ Main5dce2c8b har PR236; runtime-inputs er identiske med fryst kandidat95807f4f/b
 
 ### 2026-10-30T09:59+01:00 Dales modeller og vindu
 Gren codex/dale-realism-20261030 fra main2f303722: ekte bakvindu, native PBR-pult,18073-tri Tripo-stol, originale Old West-bøker,51 plasserte rekvisitter,28 saksveggark og lokalt lampelys. Editor bygg og Low/High-bilder bestått; pakking og lokal levering følger.95 eksisterende kreditter brukt, ingen kjøp.
+
+
+### 2026-10-30T10:16+01:00 Dale installert
+PR242/main452e7d9f, kilde5aa3ce12: pakking, selvtest, kort OfficeEarly og pakket vindu/High-bilde bestått. Lokal installasjon og Low-bilde kontrollert;134 Saved-noder bevart. To eldre pakkepayloads/14 filer ryddet, current+2older beholdt. Visuelt referansemål er fortsatt åpent.
