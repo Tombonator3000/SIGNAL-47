@@ -13,6 +13,7 @@
 #include "S47Horror.h"
 #include "S47HorrorSC03.h"
 #include "S47Observing.h"
+#include "S47Substation.h"
 #include "Engine/World.h"
 #include "Components/PrimitiveComponent.h"
 #include "Materials/MaterialInterface.h"
@@ -210,11 +211,11 @@ FS47Doc FS47SC04::ScheduleDoc()
  return D;
 }
 
-FS47Doc FS47SC04::StripDoc(const FString& Taken)
+FS47Doc FS47SC04::StripDoc(const FString& Taken,const FString& Restored,const FString& Torn)
 {
  const FString When = Taken.IsEmpty() ? FString(TEXT("02:31")) : Taken;
- FS47Doc D; D.Id = TEXT("sc04_strip"); D.Title = TEXT("Receiver strip chart, 00:00 to 02:58"); D.Kind = TEXT("typed"); D.Stamp = TEXT("STRIP / RX 3");
- D.Page = FString::Printf(TEXT("RECEIVER STRIP / RX BANK 3 / 13-14 APRIL\n\n00:13  pen to zero. Feeder out, K3 open.\n01:52  pen back. Power restored from T01.\n%s  pen to the stop for forty seconds. No slew, no command, nothing on the log.\n02:58  torn off by R. Reyes for the county.\n\nPencil, in the margin: same minute as the fuel stop."), *When);
+ FS47Doc D; D.Id = TEXT("sc04_strip"); D.Title = FString::Printf(TEXT("Receiver strip chart, 00:00 to %s"),*Torn); D.Kind = TEXT("typed"); D.Stamp = TEXT("STRIP / RX 3");
+ D.Page = FString::Printf(TEXT("RECEIVER STRIP / RX BANK 3 / 13-14 APRIL\n\n00:13  pen to zero. Feeder out, K3 open.\n%s  pen back. Power restored from T01.\n%s  pen to the stop for forty seconds. No slew, no command, nothing on the log.\n%s  torn off by R. Reyes for the county.\n\nPencil, in the margin: same minute as the fuel stop."), *Restored, *When, *Torn);
  D.Transcript = FString::Printf(TEXT("Tonight's strip off the receiver. The pen drops to zero at the outage, comes back when T01 is restored, and at %s it goes to the stop for forty seconds with nothing on the command log. The same minute Ortiz was taken."), *When);
  return D;
 }
@@ -246,7 +247,9 @@ bool FS47SC04::Use(const FString& Id)
  {
   F.bStrip = true;
   const FString Taken = M->Horror && M->Horror->SC03 ? M->Horror->SC03->Facts().TakenStamp : FString();
-  const FS47Doc D = StripDoc(Taken); S.AddDoc(D);
+  const auto T01=M->Substation?M->Substation->Save():S47J::FObj();
+  const FString Restored=T01&&S47J::Has(T01,TEXT("completedAt"))?S47Text::ClockText(S47J::Num(T01,TEXT("completedAt")),true):FString(TEXT("time not retained"));
+  const FS47Doc D = StripDoc(Taken,Restored,S.ClockText(false)); S.AddDoc(D);
   if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
   M->UI->Document(D);
   S.Note(FString::Printf(TEXT("%s. Tore tonight's strip off the receiver. At %s the pen went to the stop for forty seconds. Nothing on the command log."), *S.ClockText(false), Taken.IsEmpty() ? TEXT("02:31") : *Taken));
@@ -810,7 +813,8 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
   TEXT("collected originals and captures round-trip; a saved meeting restarts at the binder"));
  FS47SC04 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Drive && Fresh.Label(TEXT("binder")).IsEmpty() && Fresh.Tasks().Num() == 1, TEXT("a new SC04 starts with the drive and offers nothing in the annex yet"));
- Check(StripDoc(TEXT("02:31")).Page.Contains(TEXT("02:31")) && !ScheduleDoc().Page.IsEmpty(), TEXT("the strip names the minute Ortiz was taken"));
+ const auto ActualStrip=StripDoc(TEXT("02:31"),TEXT("01:43:08"),TEXT("02:59"));
+ Check(ActualStrip.Page.Contains(TEXT("02:31")) && ActualStrip.Page.Contains(TEXT("01:43:08")) && ActualStrip.Title.Contains(TEXT("02:59")) && !ScheduleDoc().Page.IsEmpty(), TEXT("the strip retains actual Ortiz, restored-power and acquired-paper times"));
  FS47SC04 Papers(nullptr); Papers.P=EStep::Calm; Papers.F.bSchedule=Papers.F.bStrip=Papers.F.bJournal=Papers.F.bBinder=true;
  FS47Doc Prior; Prior.Id=TEXT("prior-original"); Prior.Title=TEXT("Original title"); Prior.Kind=TEXT("hand"); Prior.Stamp=TEXT("ACTUAL 21:37");
  Prior.Page=TEXT("actual raw page"); Prior.Transcript=TEXT("separate transcript"); Prior.Image=TEXT("image-reference"); Prior.Paper=TEXT("paper-art"); Prior.PaperRatio=.71;

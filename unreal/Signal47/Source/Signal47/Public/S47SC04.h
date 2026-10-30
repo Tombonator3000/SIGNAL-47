@@ -51,7 +51,7 @@ public:
  const TArray<FS47Doc>& SecuredSources() const { return SourcePapers; }
  // Contract fixture for later scenarios' tests: SC04 counted as done without playing it.
  void TestComplete();
- static FS47Doc StripDoc(const FString& Taken);
+ static FS47Doc StripDoc(const FString& Taken,const FString& Restored=TEXT("01:52"),const FString& Torn=TEXT("02:58"));
  static FS47Doc ScheduleDoc();
  static bool SelfTest(TArray<FString>& Lines);
  // Graph for tests: three.js x/z.
