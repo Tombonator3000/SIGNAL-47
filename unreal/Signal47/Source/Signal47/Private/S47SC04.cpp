@@ -795,7 +795,7 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
  for (int32 I = NRecIn; I <= NRecSW; ++I) Rooms &= Room(Nodes()[I].At) == 2;
  Check(Rooms, TEXT("every graph node lies in the room it names"));
  bool Short = true; for (const auto& E : Edges()) Short &= FVector2D::Distance(Nodes()[E.Key].At, Nodes()[E.Value].At) < 8;
- Check(Edges().Num() == 13 && Short, TEXT("thirteen edges: corridor, records room, the west wall outside, three doors one edge each"));
+ Check(Edges().Num() == 15 && Short && Room(Nodes()[NOfficeCabSouth].At)==1 && Room(Nodes()[NOfficeCabWest].At)==1, TEXT("fifteen edges: cabinet detour, corridor, records room, outside west wall and actual door crossings"));
  Check(Room(FVector2D(7.5, 1.6)) == 3 && Room(FVector2D(4.3, 1.6)) == 0, TEXT("the east landing is outside and the service door leads into the control room"));
  Check(Room(FVector2D(-2.4,-12)) == 3 && Room(FVector2D(-4,680)) == 3 && Room(FVector2D(-3.9,11)) == 3,
   TEXT("north perimeter, motel and land beyond records are outside the bounded annex"));
