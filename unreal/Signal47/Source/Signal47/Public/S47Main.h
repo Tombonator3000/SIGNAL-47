@@ -55,6 +55,7 @@ public:
 	TSharedPtr<class FS47GraphicsTest> GraphicsTest; // opt-in isolated settings contract
 	TSharedPtr<class FS47T02Test> T02Test; // explicit isolated live-contract flag only
 	TSharedPtr<class FS47DaleDocumentsTest> DaleDocumentsTest;
+	TSharedPtr<class FS47TripoNpcs> TripoNpcs; // temporary static Tripo roster, existing story anchors
 	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Horror> Horror;
 	TSharedPtr<class FS47Observing> Observing; // evening array work before SC01's window round

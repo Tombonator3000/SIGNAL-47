@@ -1356,3 +1356,7 @@ Gren codex/dale-realism-20261030 fra main2f303722: ekte bakvindu, native PBR-pul
 
 ### 2026-10-30T10:16+01:00 Dale installert
 PR242/main452e7d9f, kilde5aa3ce12: pakking, selvtest, kort OfficeEarly og pakket vindu/High-bilde bestått. Lokal installasjon og Low-bilde kontrollert;134 Saved-noder bevart. To eldre pakkepayloads/14 filer ryddet, current+2older beholdt. Visuelt referansemål er fortsatt åpent.
+
+
+### 2026-10-30T12:40+01:00 Tripo14, statiske mannekenger
+Alle14 aktive figurer klargjort og importert privat med teksturer/treLOD; ny visuell rollemodul bevarer dialog, tidsvilkår og lagringer. Editorbygg og kort14-modellkontroll består;11 direkte ankere og3SC03-ankere. Samme spillkameraer brukes før/etter; lokal pakking følger.

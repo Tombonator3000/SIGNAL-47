@@ -19,6 +19,7 @@
 #include "S47Chapter6.h"
 #include "SS47Widgets.h"
 #include "S47TownLayer.h"
+#include "S47TripoNpcs.h"
 
 #include "S47Flow.h"
 #include "S47Radio.h"
@@ -159,6 +160,11 @@ void US47Main::Step(double Dt)
 	// main.ts: the sky, the lamps, the shared lights, the fog's colour, the painted horizon, the areas'
 	// glows and windows (and World.update's light in the air), the ground cover before the picture
 	if (Life) Life->Step(Dt);
+	if (Web && Web->IsLoaded())
+	{
+		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);
+		TripoNpcs->Step();
+	}
 	if (SkyVisitors) SkyVisitors->Step(Dt);
 	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);
 	if (AnomalyTest) AnomalyTest->Step(Dt);

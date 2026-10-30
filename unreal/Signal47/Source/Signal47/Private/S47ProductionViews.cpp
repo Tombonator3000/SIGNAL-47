@@ -184,7 +184,11 @@ void AS47Web::BeginProductionViews()
   {TEXT("photolab-overview"),TEXT("saro"),{15.7,0,-.85},{15.9,1.25,-3.85}},
   {TEXT("photolab-wetbench-enlarger"),TEXT("saro"),{16.2,0,-4.1},{16.6,1.28,-5.43}},
   {TEXT("photolab-records-storage"),TEXT("saro"),{14.35,0,-2.5},{17.75,1.02,-1.4}},
-  {TEXT("office-owned-props"),TEXT("saro"),{.4,0,8.3},{-.60,.23,8.70}}
+  {TEXT("office-owned-props"),TEXT("saro"),{.4,0,8.3},{-.60,.23,8.70}},
+  // Temporary Tripo bodies, from the same fixed cameras with and without the new visuals.
+  {TEXT("tripo-dale"),TEXT("saro"),{-.10,0,7.65},{1.07,1.15,7.88}},
+  {TEXT("tripo-radio-woman"),TEXT("diner"),{7988.30,0,2135.00},{7985.57,8.47,2132.75}},
+  {TEXT("tripo-diner-patron"),TEXT("diner"),{7978.40,0,2003.70},{7976.55,5.38,2001.55}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -226,6 +230,7 @@ void AS47Web::BeginProductionViews()
     ||(State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
     ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))||(State->Suite==TEXT("photolab")&&!PhotoLab)
+    ||(State->Suite==TEXT("triponpcs")&&!Name.StartsWith(TEXT("tripo-")))
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
   // This branch is reached only after the final PendingFile has a complete PNG terminator.
@@ -256,6 +261,7 @@ void AS47Web::BeginProductionViews()
    else if(ViewName==TEXT("office-room-overview")||ViewName==TEXT("office-research-wall")||ViewName==TEXT("office-corridor-west-east")||ViewName==TEXT("office-passing-bay"))
    {State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-research-wall")?74.f:ViewName==TEXT("office-passing-bay")?80.f:78.f;}
    else if(ViewName.StartsWith(TEXT("photolab-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("photolab-overview")?82.f:ViewName==TEXT("photolab-records-storage")?78.f:72.f;}
+   else if(ViewName==TEXT("tripo-dale")){State->PrevFov=M->Player->Fov;M->Player->Fov=100.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    if(ViewName.StartsWith(TEXT("photolab-")))
    {

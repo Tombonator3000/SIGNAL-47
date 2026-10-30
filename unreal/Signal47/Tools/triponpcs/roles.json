@@ -1,0 +1,16 @@
+{
+  "dale": {"height_m": 1.80, "pose": "standing"},
+  "patron": {"height_m": 1.82, "pose": "seated"},
+  "waitress": {"height_m": 1.68, "pose": "standing"},
+  "nora": {"height_m": 1.72, "pose": "seated"},
+  "attendant": {"height_m": 1.79, "pose": "standing"},
+  "deputy": {"height_m": 1.86, "pose": "standing"},
+  "earl": {"height_m": 1.78, "pose": "standing"},
+  "radio_woman": {"height_m": 1.66, "pose": "seated"},
+  "souvenir_man": {"height_m": 1.80, "pose": "standing"},
+  "mara_ortiz": {"height_m": 1.73, "pose": "standing"},
+  "hereford_25": {"height_m": 1.42, "pose": "source"},
+  "shadow_man": {"height_m": 1.96, "pose": "standing", "unlit_black": true},
+  "tall_one": {"height_m": 2.25, "pose": "standing"},
+  "crawler": {"height_m": 0.92, "pose": "source"}
+}
