@@ -1,0 +1,158 @@
+{
+  "actual_source_reopen": true,
+  "contract": {
+    "acceptance": "UNVERIFIED until guarded Blender, saved native import/fresh PID, actual RHI occlusion/views and whole drive contract. No NPC/installed/release claim.",
+    "authorship": "Original SIGNAL / 47 geometry and analytic cloud field. No third-party images, models or simulations.",
+    "cloud_policy": {
+      "banks": 2,
+      "global_sky_unchanged": true,
+      "local_finite_volumes": true,
+      "opaque_scene_depth_clip": true,
+      "samples_high": 56,
+      "samples_low": 28,
+      "ufo_opacity": 1
+    },
+    "destination": "/Game/FinaleSky",
+    "fixed_timing": {
+      "departure": "05:20:00",
+      "event": "05:29:00",
+      "event_seconds": 47,
+      "final_photo": "original photo1947",
+      "pull_seconds": 34
+    },
+    "lod_radial_segments": [
+      192,
+      112,
+      64
+    ],
+    "material_slots": [
+      "M_S47_FinalHull",
+      "M_S47_FinalRibs",
+      "M_S47_FinalRecess",
+      "M_S47_FinalLight"
+    ],
+    "materials": {
+      "Hull": {
+        "color": [
+          0.075,
+          0.09,
+          0.105,
+          1
+        ],
+        "glow": 0,
+        "metallic": 0.78,
+        "roughness": 0.53
+      },
+      "Light": {
+        "color": [
+          0.36,
+          0.52,
+          0.63,
+          1
+        ],
+        "glow": 1.8,
+        "metallic": 0.08,
+        "roughness": 0.32
+      },
+      "Recess": {
+        "color": [
+          0.008,
+          0.014,
+          0.024,
+          1
+        ],
+        "glow": 0.025,
+        "metallic": 0.36,
+        "roughness": 0.66
+      },
+      "Ribs": {
+        "color": [
+          0.17,
+          0.19,
+          0.21,
+          1
+        ],
+        "glow": 0,
+        "metallic": 0.85,
+        "roughness": 0.37
+      }
+    },
+    "mesh": "SM_S47_FinalCraft",
+    "revision": "S47-FINALE-SKY-1",
+    "runtime_radius_m": 680,
+    "schema": 1,
+    "source_axis": "Blender metres Z-up. Existing FBX -Y/Z, native forceFrontX + yaw90: (Bx,-By,Bz)*100cm; FBX importer retains corner order into UE clockwise front faces; native UV=(u,1-v)."
+  },
+  "lods": [
+    {
+      "fbx": "exports/SM_S47_FinalCraft.fbx",
+      "fbx_sha256": "e4ffab61c61c7d5c422c24a2a5fdda08c70bb56f01758aa49998662144980c64",
+      "mesh_sha256": "19ea6922d4dc2f65c3a886cbff4bc9cf4fe9cf15d9aeb23b5a2074fad1015bb2",
+      "minimum_signed_volume_m3": 1.9719486462301486e-07,
+      "name": "SM_S47_FinalCraft",
+      "slots": [
+        "M_S47_FinalHull",
+        "M_S47_FinalRibs",
+        "M_S47_FinalRecess",
+        "M_S47_FinalLight"
+      ],
+      "solids": 167,
+      "triangles": 15268,
+      "vertices": 28288
+    },
+    {
+      "fbx": "exports/SM_S47_FinalCraft_LOD1.fbx",
+      "fbx_sha256": "1623ba4c6fc4534aed7239c84414f9df6cd43c5c5848153ec78f1341cc8d45c8",
+      "mesh_sha256": "4bcc2ae082e9ed98580f6813b2c232928b673b622706c330d9e7b6725791a311",
+      "minimum_signed_volume_m3": 1.9719486462301486e-07,
+      "name": "SM_S47_FinalCraft_LOD1",
+      "slots": [
+        "M_S47_FinalHull",
+        "M_S47_FinalRibs",
+        "M_S47_FinalRecess",
+        "M_S47_FinalLight"
+      ],
+      "solids": 167,
+      "triangles": 10004,
+      "vertices": 18720
+    },
+    {
+      "fbx": "exports/SM_S47_FinalCraft_LOD2.fbx",
+      "fbx_sha256": "6e33c588e726175a017bc35d4c8abd581cde2bf31a7e740c6f358d28da40fe3b",
+      "mesh_sha256": "d139d0c291ca6dd022dc4755d3a1aa1d9f9a7fd0a2b5f604aa25015456dd2939",
+      "minimum_signed_volume_m3": 1.9719486462301486e-07,
+      "name": "SM_S47_FinalCraft_LOD2",
+      "slots": [
+        "M_S47_FinalHull",
+        "M_S47_FinalRibs",
+        "M_S47_FinalRecess",
+        "M_S47_FinalLight"
+      ],
+      "solids": 167,
+      "triangles": 7076,
+      "vertices": 13440
+    }
+  ],
+  "native": false,
+  "native_reference": {
+    "bytes": 689784,
+    "path": "reopened-native-reference.json.gz",
+    "sha256": "b0c15349dd7454f29c42bd3bdb71620bedadba70fcbbbfe99606163b8d87e4a5"
+  },
+  "revision": "S47-FINALE-SKY-1",
+  "runtime": false,
+  "schema": 1,
+  "source_blend": {
+    "bytes": 1219767,
+    "path": "FinaleSky.blend",
+    "sha256": "31ddecb9c0c8cd37200643f78e38ba39ca7ead574ee1261249ba389454f3c16c"
+  },
+  "source_inputs": {
+    "unreal/ArtSource/FinaleSky/source-contract.json": "5c1f8186fe51492e768d0e3c9d09b601086085d5c81f7a9a1a557f34fce2f94f",
+    "unreal/Signal47/Tools/finalesky/build_source.py": "10677a2721c56e11ec7d2a973b5297fba33e789c1115ba78f8f2855a0122b5d2",
+    "unreal/Signal47/Tools/finalesky/cloud_field.hlsl": "b8e72ffeefb983e999219a5018d6e150fe08350f88eea4df31ded939bafd8e27",
+    "unreal/Signal47/Tools/finalesky/geometry.py": "ef04eecf60a8c1c20457649edfe0aafdb449983c5185c78815a0a7cf8f7509b6"
+  },
+  "status": "SOURCE_REOPEN_PASS_NATIVE_UNVERIFIED",
+  "visual": false
+}

@@ -1,0 +1,132 @@
+{
+  "source_commit": "f9e949750d1034f68832a266eaf2c754e7d1be69",
+  "runtime_active": false,
+  "files": [
+    {
+      "source": "unreal/ArtSource/FinaleSky/README.md",
+      "archive": "unreal/ArtSource/FinaleSky/README.md",
+      "bytes": 4024,
+      "sha256": "998b08483bdb4371da0ac68ee13b94f8cd6c9da336768a2e60e83c5fa1bb4af7"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/source-contract.json",
+      "archive": "unreal/ArtSource/FinaleSky/source-contract.json",
+      "bytes": 1506,
+      "sha256": "5c1f8186fe51492e768d0e3c9d09b601086085d5c81f7a9a1a557f34fce2f94f"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/VerifiedSource/FinaleSky.blend",
+      "archive": "unreal/ArtSource/FinaleSky/VerifiedSource/FinaleSky.blend",
+      "bytes": 1219767,
+      "sha256": "31ddecb9c0c8cd37200643f78e38ba39ca7ead574ee1261249ba389454f3c16c"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/VerifiedSource/manifest.json",
+      "archive": "unreal/ArtSource/FinaleSky/VerifiedSource/manifest.json",
+      "bytes": 4747,
+      "sha256": "b54bf438f32057ef1e0b41a26435f10d8940157837d2d33bdfa3b6722d42ceb5"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/VerifiedSource/reopened-native-reference.json.gz",
+      "archive": "unreal/ArtSource/FinaleSky/VerifiedSource/reopened-native-reference.json.gz",
+      "bytes": 689784,
+      "sha256": "b0c15349dd7454f29c42bd3bdb71620bedadba70fcbbbfe99606163b8d87e4a5"
+    },
+    {
+      "source": "unreal/Signal47/Tools/finalesky/README.md",
+      "archive": "unreal/Signal47/Tools/finalesky/README.md",
+      "bytes": 8275,
+      "sha256": "e498d2f2dac3da19a3a69254cdaca509aee1be105828f03d444f96a10c73122d"
+    },
+    {
+      "source": "unreal/Signal47/Tools/finalesky/build_source.py",
+      "archive": "unreal/Signal47/Tools/finalesky/build_source.py",
+      "bytes": 6484,
+      "sha256": "10677a2721c56e11ec7d2a973b5297fba33e789c1115ba78f8f2855a0122b5d2"
+    },
+    {
+      "source": "unreal/Signal47/Tools/finalesky/check_source.py",
+      "archive": "unreal/Signal47/Tools/finalesky/check_source.py",
+      "bytes": 1379,
+      "sha256": "15ad76bdfc401951434d208dcf51feac1c229117568467ce11b8f35a9cf787c2"
+    },
+    {
+      "source": "unreal/Signal47/Tools/finalesky/geometry.py",
+      "archive": "unreal/Signal47/Tools/finalesky/geometry.py",
+      "bytes": 4023,
+      "sha256": "ef04eecf60a8c1c20457649edfe0aafdb449983c5185c78815a0a7cf8f7509b6"
+    },
+    {
+      "source": "unreal/Signal47/Tools/finalesky/cloud_field.hlsl",
+      "archive": "unreal/Signal47/Tools/finalesky/cloud_field.hlsl",
+      "bytes": 3590,
+      "sha256": "b8e72ffeefb983e999219a5018d6e150fe08350f88eea4df31ded939bafd8e27"
+    },
+    {
+      "source": "unreal/Signal47/Tools/finalesky/import_assets.py",
+      "archive": "unreal/Signal47/Tools/finalesky/import_assets.py",
+      "bytes": 24530,
+      "sha256": "9b323c86679e82138bd87a7a5a44e1ecf2acd6ab8cd14dec2a3f53bcc868ff0a"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft.fbx",
+      "archive": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft.fbx",
+      "bytes": 581500,
+      "sha256": "e4ffab61c61c7d5c422c24a2a5fdda08c70bb56f01758aa49998662144980c64"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft_LOD1.fbx",
+      "archive": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft_LOD1.fbx",
+      "bytes": 386396,
+      "sha256": "1623ba4c6fc4534aed7239c84414f9df6cd43c5c5848153ec78f1341cc8d45c8"
+    },
+    {
+      "source": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft_LOD2.fbx",
+      "archive": "unreal/ArtSource/FinaleSky/VerifiedSource/exports/SM_S47_FinalCraft_LOD2.fbx",
+      "bytes": 276460,
+      "sha256": "6e33c588e726175a017bc35d4c8abd581cde2bf31a7e740c6f358d28da40fe3b"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/MI_S47_FinalHull.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/MI_S47_FinalHull.uasset",
+      "bytes": 4830,
+      "sha256": "486933e405b823e4e5add69b747f5598b9b5799574570acbb7045d7521615b22"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/MI_S47_FinalLight.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/MI_S47_FinalLight.uasset",
+      "bytes": 4835,
+      "sha256": "7da5d58428dd4207288bd8cc03ea1b75f46f7f1223129bf94d9e0a064579d755"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/MI_S47_FinalRecess.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/MI_S47_FinalRecess.uasset",
+      "bytes": 4840,
+      "sha256": "0a30a366f9f1692aeb970ef59b19bc4813a8061a302ff15fbeec77d28d65b3db"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/MI_S47_FinalRibs.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/MI_S47_FinalRibs.uasset",
+      "bytes": 4830,
+      "sha256": "519d36ba13b557be2a830b5956032d1bf1767a670a869724414541ce6bb4a088"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/M_S47_FinalCloud.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/M_S47_FinalCloud.uasset",
+      "bytes": 16928,
+      "sha256": "ba88403545ef465f33e9cb2a51882303f75ff15ae26baf0268d60249bf1bd566"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/M_S47_FinalSurface.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/M_S47_FinalSurface.uasset",
+      "bytes": 8355,
+      "sha256": "5be1a6608b8c5e078aa14f2a52d702a482923130e3b0d55492f0deb2bd2cac7c"
+    },
+    {
+      "source": "unreal/Signal47/Content/FinaleSky/SM_S47_FinalCraft.uasset",
+      "archive": "unreal/ArtSource/FinaleSky/NativeArchive/SM_S47_FinalCraft.uasset",
+      "bytes": 903624,
+      "sha256": "c3d44f25fa61ae1bc140a3a936c7aca9fb0630f551ee4112e08c7ec289b99e65"
+    }
+  ]
+}

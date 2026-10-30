@@ -4,7 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
-| Videreføring etter Claude og åpne PR-er | Codex, `codex/claude-continuation-20261030` | Root integrerer PR224/234/235/237 med siste main, fullfører SC09-feltretur/fremkalling/Nora-telefon og åpne små manuspunkt. Tre lesende hjelpere undersøker historie-PR-er, HUM01 og siste Claude-resultat. Alle motorjobber kjøres sekvensielt av root. |
+| Videreføring etter Claude og åpne PR-er | Codex, avsluttet via PR260 | SC09/SARO-telefon og avgrensede storyrettinger levert; PR234 flettet, PR224/235/237 erstattet. Alle egne tunge vinduer er frigitt. FinaleSky-forfatterarkiv er uaktivert; neste åpne hovedarbeid står i TODO. |
 | SARO 1986, gang og kontrollrom | Codex, teknisk avsluttet via PR258 | Root har avsluttet armaturer/import/bygg/levering; office_light RX3, office_materials plakater/rydding og office_dressing telefon/bøtter/jakke er integrert. Tom har godkjent PR258 for nå. Eventuell senere polering koordineres av root. Godkjente Dale er bevart. |
 | Ett kontor til visuell vurdering | Codex, avsluttet kildearbeid i `tripo-mannequins-20261030` | PR251 er flettet og installert. Office.cpp, dale-office.json og ArtSource/Office-filansvar er frigitt. Hent egne Office-nativefiler fra riktig GitLFS-revisjon ved videre bygg. Tom godkjente kontorpiloten 30. oktober 2026; filansvaret er fortsatt frigitt. |
 | Tripo14 statiske figurer | Codex, avsluttet i `tripo-mannequins-20261030` | Filansvaret er frigitt. Ingen egen aktiv tung reservasjon. Private native assets finnes under Content/Licensed/TripoNPC i arbeidskopien og hovedprosjektet. |
