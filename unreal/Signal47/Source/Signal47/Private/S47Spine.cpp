@@ -20,6 +20,7 @@
 #include "S47Chapter3.h"
 #include "S47Chapter4.h"
 #include "S47SC05Contract.h"
+#include "S47SC10Contract.h"
 #include "Misc/CommandLine.h"
 #include "Engine/World.h"
 #include "Components/StaticMeshComponent.h"
@@ -343,6 +344,7 @@ void FS47Spine::ControlTest(double Dt)
   if (auto* C3 = Cast<US47Chapter3>(M->Story->Chapter(TEXT("ch3")))) C3->ControlSC09Test(Dt);
   return;
  }
+ if (Test.Mode == TEXT("sc10")) { S47StepSC10Contract(M, Dt); return; }
  Test.T += Dt;
  const auto Fail = [this](const FString& Why)
  {
