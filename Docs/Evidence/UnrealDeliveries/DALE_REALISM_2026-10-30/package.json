@@ -1,0 +1,26 @@
+{
+  "source": "5aa3ce12",
+  "status": "PACKAGED_SMOKE_PASSED",
+  "steps": [
+    {
+      "name": "editor-build",
+      "returncode": 0,
+      "seconds": 14.212669957021717
+    },
+    {
+      "name": "package",
+      "returncode": 0,
+      "seconds": 177.9454797320068
+    },
+    {
+      "name": "office-smoke",
+      "returncode": 0,
+      "seconds": 46.863891911983956
+    },
+    {
+      "name": "view-high",
+      "returncode": 0,
+      "seconds": 20.84770727198338
+    }
+  ]
+}
