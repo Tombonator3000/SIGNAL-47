@@ -10,6 +10,7 @@
 #include "S47Audio.h"
 #include "S47Image.h"
 #include "S47EarlDialogue.h"
+#include "S47Spine.h"
 #include "S47Timeline.h"
 #include "S47NpcDialogue.h"
 #include "S47Flow.h"
@@ -275,7 +276,7 @@ void FS47Caliche::BindTown()
 	auto OnAir = [this] { return S47Timeline::LocalOnAir(Day()); };
 	auto EarlHere = [this] { return S47Timeline::EarlOnDuty(Day()); };
 	Add(TEXT("studio"), [] { return TEXT("Studio window"); }, [this, OnAir] { if (Day() >= 18 * 3600) { M->UI->Toast(TEXT("The evening presenter at the microphone. A record plays. The red ON AIR light is on; Earl starts the Night Line at midnight."), 4.6); return; } M->UI->Toast(OnAir() ? TEXT("The Night Line, through the glass: the host at the microphone with his headphones on, the red ON AIR light. He does not look up.") : TEXT("The studio is empty and the red light is off. Through the wall, the carrier: a hum with nothing in it."), 4.6); }, [OnAir] { return OnAir() ? TEXT("Reels turning on the deck behind him. A coffee can of pencils, a phone with its line light blinking.") : TEXT("His chair pushed back. The phone's line light still blinking."); });
-	Add(TEXT("amDoor"), [EarlHere] { return EarlHere() ? TEXT("Buzzer") : TEXT("Door"); }, [this, EarlHere] { if (EarlHere()) Talk(TEXT("host")); else if (Day() >= 18 * 3600) M->UI->Toast(TEXT("The presenter waves from behind the glass. A card: NIGHT LINE / EARL / MIDNIGHT TO FOUR."), 4.2); else M->UI->Toast(TEXT("1420 AM. A buzzer and a card: STUDIO IN USE, PLEASE WAIT. Nobody comes. Through the door, the carrier."), 4.2); });
+	Add(TEXT("amDoor"), [this, EarlHere] { if (M->Spine) { const FString L = M->Spine->Label(TEXT("amDoor")); if (!L.IsEmpty()) return L; } return FString(EarlHere() ? TEXT("Buzzer") : TEXT("Door")); }, [this, EarlHere] { if (EarlHere()) Talk(TEXT("host")); else if (Day() >= 18 * 3600) M->UI->Toast(TEXT("The presenter waves from behind the glass. A card: NIGHT LINE / EARL / MIDNIGHT TO FOUR."), 4.2); else M->UI->Toast(TEXT("1420 AM. A buzzer and a card: STUDIO IN USE, PLEASE WAIT. Nobody comes. Through the door, the carrier."), 4.2); });
 	Add(TEXT("souvenir"), [] { return TEXT("Shop window"); }, [this] { M->UI->Toast(M->TownSeen.Contains(TEXT("ev:cutout")) && !Town->bCutoutOut ? TEXT("The cardboard alien is back in the window. There is dew on it, and grit from the road along its feet.") : TEXT("A cardboard alien, life size if they come in that size. A rubber mask. Bags of crumpled foil, a dollar each: GENUINE DEBRIS."), 4.6); }, [] { return TEXT("The foil has been crumpled by hand. There is a price sticker on the alien too."); });
 	Add(TEXT("souvenirSign"), [] { return TEXT("Sign"); }, Say(TEXT("SAUCER CRASH 1947. TOURS. ASK INSIDE. Painted by hand, and painted over at least once."), 3.8), {}, 3.4);
 	Add(TEXT("souvenirDoor"), [] { return TEXT("Door"); }, Say(TEXT("CLOSED. The hours are on a card faded white."), 3));
