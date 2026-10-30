@@ -2,7 +2,7 @@
 
 Den aktive visuelle koblingen ligger i `S47FinaleSky.cpp`. Den følger Chapter6 sin fase ved C8.15 og legger ingen ny progresjonsport på eldre lagringer. EVENT beholder47sekunder, uttrekket34sekunder, og den opprinnelige sluttsekvensen med1947-foto er urørt. `-S47FinaleSkyOff` beholder den tidligere avslutningen.
 
-Fartøyet er opakt. To lokale volum tegner bare kubenes utgangsflater med reversert culling og deaktivert vanlig dybdetest. Strålemarsjen avsluttes ved faktisk SceneDepth, så sky foran skroget skjuler det og sky bak skroget klippes. Skyene bruker samme translucency-pass som stjernene, med sortering mellom stjerner og nær glassgeometri. Skydome, historieklokke og globalt daggry endres ikke. Negativ fill demper native sol-, sky- og månelys bare i den aktive Roswell-visningen; dette er et regigrep, ikke et fysisk skyggeavtrykk.
+Fartøyet er opakt. To lokale volum tegner bare kubenes utgangsflater med reversert culling og deaktivert vanlig dybdetest. Strålemarsjen avsluttes ved faktisk SceneDepth, så sky foran skroget skjuler det og sky bak skroget klippes. Skyene bruker samme translucency-pass som stjernene, med sortering mellom stjerner og nær glassgeometri. Skydome, historieklokke og globalt daggry endres ikke. To private bakke-MID-er fjerner de overlappende coarse/ribbon-nettenes ulike vertexfarger under finalen; overflatetekstur og originalgeometri beholdes, og eksakte originalmaterialer gjenopprettes ved cleanup. Negativ fill demper native sol-, sky- og månelys bare i den aktive Roswell-visningen; dette er et regigrep, ikke et fysisk skyggeavtrykk.
 
 ## Arbeidsløype
 
@@ -42,7 +42,7 @@ Det aktive fartøyet er [FinalCraft-v3](../../../ArtSource/FinaleSky/FinalCraft-
 
 `-S47FinalePreview=2,14,24,68 -S47FinaleShots=/ny/bildemappe -UserDir=/tmp/unik-profil` gir uttrykkelig frosne utviklerbilder fra C8.15 og eksisterende uttrekk. De er ikke en gjennomspilt kjøretur. `-S47FinaleClean` skjuler UI i bildene. Valgfri `-S47FinaleSweep=/sti/valg.json` leser `frames` med `name`, `phase` og `tune`; bare kjente finaleparametere kan endres. Tidspunktene sorteres stigende.
 
-`-S47FinaleMovie=/ny/opptaksmappe -S47Jump=chapter6:line -S47Auto=24.6 -S47Case=0 -UserDir=/tmp/unik-profil` observerer vanlig gameplay etter en utviklerinngang, uten å fryse tid eller styre kamera, bil, UI eller lyd. PNG og `frames.json` inneholder request-tider for avspilling med variabel bildefrekvens. Hele tittel/kreditt/foto-forløpet beholdes; normalt stoppes opptaket8sekunder etter synlig foto. `-S47FinaleMovieEarlyEnd=8` gir bare uttrekket og merkes ufullstendig slutt. Skjermfangst er ikke ytelsesmåling og inkluderer ikke lyd.
+`-S47FinaleMovie=/ny/opptaksmappe -S47Jump=chapter6:line -S47Auto=24.6 -S47Case=0 -UserDir=/tmp/unik-profil` observerer vanlig gameplay etter en utviklerinngang, uten å fryse tid eller styre kamera, bil, UI eller lyd. PNG og `frames.json` inneholder request-tider for avspilling med variabel bildefrekvens. Hele tittel/kreditt/foto-forløpet beholdes; normalt stoppes opptaket8sekunder etter synlig foto. `-S47FinaleMovieEarlyEnd=8` gir bare uttrekket og merkes ufullstendig slutt. Skjermfangst er ikke ytelsesmåling. Opt-in `-S47FinaleMovieAudio` tar opp den faktiske mastermiksen og skriver lokal `master-mix.wav` synkront før avslutning. Manifestet oppgir faktisk lydformat og om filen ble ferdig; etterspurt lyd som feiler gir ufullstendig opptak, mens PNG beholdes. Med lyd brukes `wallSeconds` og opptaksforespørselens offset til avspilling; ingen ny lydasset eller miksruting opprettes.
 
 ## Bevarte originaler
 

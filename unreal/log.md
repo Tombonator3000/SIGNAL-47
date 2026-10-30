@@ -1401,3 +1401,6 @@ Gren codex/ufo-finale-20261030: eget fartøy v2 og Mantaflow/wavelet-skyer koble
 
 ### 2026-10-31T00:08+01:00 Stabil finale og skrog v3
 PR262 under arbeid: opptak av vanlig C6 avdekket ustabil fjæring ved lange frames. Eksakt fjærløsning med samme K/C består bygg og1750 selvtester, og nytt faktisk opptak viser riktig kamera. Eget skrog v3 er importert med dyp konstruksjonskrage; øvrig nattarbeid fortsetter før levering.
+
+### 2026-10-31T00:55+01:00 Finale, bilde/lyd og ytelse
+PR262 under arbeid: dypere skydekke og roligere foldlys, faktisk spillopptak med mastermiks og originalfoto. High1080p EVENT ca87.8FPS/GPU10.53ms motOff98.8/GPU9.27; Low fikk ett Vulkan-heng under uttrekk, LowOff består og repro undersøkes. Private bakke-MID-er demper albedotrekantene; ingen ny installasjon.

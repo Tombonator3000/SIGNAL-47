@@ -95,9 +95,9 @@ int count=clamp((int)Samples,16,128);
 float stepLength=(leave-enter)/count;
 uint volumeWidth,volumeHeight,volumeDepth;
 DensityA.GetDimensions(volumeWidth,volumeHeight,volumeDepth);
-// A tetrahedron's diagonal has length sqrt(3). Each probe therefore lies 1.6
-// source voxels from its centre for both 128^3 and 256^3, including growth scale.
-float3 normalStep=(3.2/1.7320508)/max(float3(volumeWidth,volumeHeight,volumeDepth),1);
+// A tetrahedron's diagonal has length sqrt(3). Each probe lies three source
+// voxels from its centre: broad paint folds carry the light rather than fine noise.
+float3 normalStep=(6.0/1.7320508)/max(float3(volumeWidth,volumeHeight,volumeDepth),1);
 normalStep*=lerp(.70,1,saturate(Growth));
 float jitter=field.hash(floor((Camera+ray*enter)*.023));
 float3 lightDirection=normalize(float3(.61,-.34,.72));
@@ -125,7 +125,7 @@ for(int i=0;i<128;++i)
  if(rho<.001)continue;
  float alpha=1-exp(-rho*extinction*stepLength);
 
- // Four tetrahedral 3D probes form a bulk normal at a radius of 1.6 atlas voxels.
+ // Four tetrahedral 3D probes form a bulk normal at a radius of three atlas voxels.
  // Actual texture density, including its mirrored/warped mapping, drives the normal;
  // there are no fine procedural derivative highlights or reflection/specular lobes.
  float3 e0=float3(1,-1,-1),e1=float3(-1,-1,1),e2=float3(-1,1,-1),e3=float3(1,1,1);

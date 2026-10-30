@@ -12,6 +12,7 @@
 #include "Engine/Texture.h"
 #include "HAL/IConsoleManager.h"
 #include "Materials/Material.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MaterialShared.h"
 #include "Misc/PackageName.h"
@@ -29,39 +30,39 @@ namespace
 {
 	const TCHAR* CraftPath = TEXT("/Game/FinaleSky/SM_S47_FinalCraft.SM_S47_FinalCraft");
 	const TCHAR* CloudPath = TEXT("/Game/FinaleSky/M_S47_FinalCloud.M_S47_FinalCloud");
-	TAutoConsoleVariable<float> CVarCraftForward(TEXT("r.S47.Finale.CraftForward"), 1100.f,
+	TAutoConsoleVariable<float> CVarCraftForward(TEXT("r.S47.Finale.CraftForward"), 2100.f,
 		TEXT("Finale craft distance ahead of C8.15, metres (100..10000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarCraftRight(TEXT("r.S47.Finale.CraftRight"), 120.f,
+	TAutoConsoleVariable<float> CVarCraftRight(TEXT("r.S47.Finale.CraftRight"), 100.f,
 		TEXT("Finale craft offset right of the C8.15 road tangent, metres (-10000..10000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarCraftHeight(TEXT("r.S47.Finale.CraftHeight"), 315.f,
+	TAutoConsoleVariable<float> CVarCraftHeight(TEXT("r.S47.Finale.CraftHeight"), 680.f,
 		TEXT("Finale craft height above C8.15, metres (10..10000); existing slow drift is added."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarCraftScale(TEXT("r.S47.Finale.CraftScale"), 680.f,
-		TEXT("Finale craft uniform authored-mesh scale (10..5000); default gives roughly 680m radius."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarCraftFill(TEXT("r.S47.Finale.CraftFill"), .018f,
+	TAutoConsoleVariable<float> CVarCraftScale(TEXT("r.S47.Finale.CraftScale"), 1000.f,
+		TEXT("Finale craft uniform authored-mesh scale (10..5000); default gives roughly 1000m radius."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarCraftFill(TEXT("r.S47.Finale.CraftFill"), 0.065f,
 		TEXT("Very weak original Hull/Ribs material glow (0..0.15); Light and Recess stay authored."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankForward(TEXT("r.S47.Finale.BankForward"), 920.f,
+	TAutoConsoleVariable<float> CVarBankForward(TEXT("r.S47.Finale.BankForward"), 1100.f,
 		TEXT("Finale cloud-bank distance ahead of C8.15, metres (50..10000); existing 90m advance is subtracted."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankSpread(TEXT("r.S47.Finale.BankSpread"), 495.f,
+	TAutoConsoleVariable<float> CVarBankSpread(TEXT("r.S47.Finale.BankSpread"), 280.f,
 		TEXT("Finale cloud-bank base distance to each side of the road tangent, metres (0..5000); BankRevealSpread is added over the reveal."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankRevealSpread(TEXT("r.S47.Finale.BankRevealSpread"), 235.f,
+	TAutoConsoleVariable<float> CVarBankRevealSpread(TEXT("r.S47.Finale.BankRevealSpread"), 520.f,
 		TEXT("Finale cloud-bank extra distance to each side at full reveal, metres (0..5000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankRevealRise(TEXT("r.S47.Finale.BankRevealRise"), 300.f,
+	TAutoConsoleVariable<float> CVarBankRevealRise(TEXT("r.S47.Finale.BankRevealRise"), 450.f,
 		TEXT("Finale cloud-bank vertical rise over the existing reveal, metres (0..2000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankHeight(TEXT("r.S47.Finale.BankHeight"), 351.f,
+	TAutoConsoleVariable<float> CVarBankHeight(TEXT("r.S47.Finale.BankHeight"), 300.f,
 		TEXT("Finale cloud-bank base height above C8.15, metres (10..10000); existing slow roll is added."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankDepth(TEXT("r.S47.Finale.BankDepth"), 420.f,
+	TAutoConsoleVariable<float> CVarBankDepth(TEXT("r.S47.Finale.BankDepth"), 950.f,
 		TEXT("Finale cloud-bank forward half-extent, metres (50..2000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankWidth(TEXT("r.S47.Finale.BankWidth"), 560.f,
+	TAutoConsoleVariable<float> CVarBankWidth(TEXT("r.S47.Finale.BankWidth"), 1200.f,
 		TEXT("Finale cloud-bank sideways half-extent, metres (50..2000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankThickness(TEXT("r.S47.Finale.BankThickness"), 255.f,
+	TAutoConsoleVariable<float> CVarBankThickness(TEXT("r.S47.Finale.BankThickness"), 1000.f,
 		TEXT("Finale cloud-bank vertical half-extent, metres (50..2000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarDensity(TEXT("r.S47.Finale.Density"), 1.f,
+	TAutoConsoleVariable<float> CVarDensity(TEXT("r.S47.Finale.Density"), 1.7f,
 		TEXT("Finale baked cloud-volume density multiplier (0.1..12); analytic material ignores an unbound input."), ECVF_Default);
-	TAutoConsoleVariable<int32> CVarSamples(TEXT("r.S47.Finale.Samples"), 64,
+	TAutoConsoleVariable<int32> CVarSamples(TEXT("r.S47.Finale.Samples"), 96,
 		TEXT("Finale cloud raymarch samples (16..128); Low effects caps the applied value at 28."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarGlow(TEXT("r.S47.Finale.Glow"), 1.f,
-		TEXT("Finale cloud glow multiplier (0..10); 1 keeps the authored 0.12..0.34 phase curve."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarShade(TEXT("r.S47.Finale.Shade"), .82f,
+	TAutoConsoleVariable<float> CVarGlow(TEXT("r.S47.Finale.Glow"), 1.1f,
+		TEXT("Finale cloud glow multiplier (0..10); scales the authored 0.12..0.34 phase curve."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarShade(TEXT("r.S47.Finale.Shade"), 0.6f,
 		TEXT("Maximum view-based native ground-light reduction (0..0.82), faded by finale phase, proximity and pullout height; not a physical cloud shadow."), ECVF_Default);
 	double Tune(const TAutoConsoleVariable<float>& Variable, double Min, double Max)
 	{
@@ -224,8 +225,70 @@ bool FS47FinaleSky::Prepare()
 	return true;
 }
 
+void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
+{
+	if (!bActive)
+	{
+		for (const FGroundMaterial& Saved : GroundMaterials)
+			if (auto* C = Saved.Component.Get()) C->SetMaterial(0, Saved.Original.Get());
+		GroundMaterials.Reset(); bGroundMaterialLookupTried = false;
+		return;
+	}
+	if (bGroundMaterialLookupTried) return;
+	bGroundMaterialLookupTried = true;
+	auto* M = Main.Get(); auto* W = M ? M->Web.Get() : nullptr;
+	const auto* Root = W ? W->Node(W->Handle(TEXT("world.oldRoad.group"))) : nullptr;
+	if (!Root || Root->Name != TEXT("oldroad")) return;
+	const FS47WebNode* RibbonNode = nullptr;
+	int32 RibbonIndex = INDEX_NONE, RibbonCount = 0;
+	for (int32 I : Root->Children)
+		if (const auto* N = W->Node(I); N && N->Name == TEXT("desert"))
+		{
+			RibbonNode = N; RibbonIndex = I; ++RibbonCount;
+		}
+	auto* Ribbon = RibbonNode ? Cast<UStaticMeshComponent>(RibbonNode->Comp.Get()) : nullptr;
+	if (RibbonCount != 1 || !Ribbon || !Ribbon->GetStaticMesh() || RibbonNode->Mats.Num() != 1 || !Ribbon->GetMaterial(0)) return;
+	UStaticMeshComponent* Plain = nullptr;
+	int32 PlainIndex = INDEX_NONE, PlainCount = 0;
+	for (int32 I : Root->Children)
+	{
+		const auto* N = W->Node(I);
+		if (!N || !N->Name.IsEmpty() || N->bInstanced || N->Mats != RibbonNode->Mats) continue;
+		auto* C = Cast<UStaticMeshComponent>(N->Comp.Get());
+		if (!C || !C->GetStaticMesh() || C->GetMaterial(0) != Ribbon->GetMaterial(0)) continue;
+		Plain = C; PlainIndex = I; ++PlainCount;
+	}
+	if (PlainCount != 1) return; // A changed or ambiguous export keeps its original materials.
+	// OldRoad.ts shares m.ground between the unnamed coarse plain and its desert ribbon.
+	// Their different vertex-colour interpolation is isolated here for the local visual A/B.
+	TArray<FGroundMaterial> Pending;
+	for (auto* C : { Plain, Ribbon })
+	{
+		auto* Original = C->GetMaterial(0);
+		float VertexColour = 0;
+		if (!Original->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("UseVertexColor")), VertexColour)) return;
+		UMaterialInterface* Parent = Original;
+		// UE rejects MID parents. Retain the real constant/base parent (and its static switches),
+		// then copy the source hierarchy's actual scalar, vector and texture uniforms.
+		while (auto* DynamicParent = Cast<UMaterialInstanceDynamic>(Parent)) Parent = DynamicParent->Parent.Get();
+		if (!Parent || (!Cast<UMaterial>(Parent) && !Cast<UMaterialInstanceConstant>(Parent))) return;
+		FGroundMaterial Saved; Saved.Component = C; Saved.Original.Reset(Original);
+		Saved.Replacement.Reset(UMaterialInstanceDynamic::Create(Parent, C));
+		if (!Saved.Replacement) return;
+		Saved.Replacement->CopyMaterialUniformParameters(Original);
+		Saved.Replacement->SetScalarParameterValue(TEXT("UseVertexColor"), 0.f);
+		Pending.Add(MoveTemp(Saved));
+	}
+	// Install neither until both private MIDs are ready; never mutate the shared original.
+	GroundMaterials = MoveTemp(Pending);
+	for (const FGroundMaterial& Saved : GroundMaterials) Saved.Component->SetMaterial(0, Saved.Replacement.Get());
+	UE_LOG(LogS47FinaleSky, Display, TEXT("S47: FinaleSky local ground vertex-colour A/B: plain N%d and desert N%d, private slot0 MIDs UseVertexColor=0; originals retained"),
+		PlainIndex, RibbonIndex);
+}
+
 void FS47FinaleSky::Hide()
 {
+	SetGroundMaterialOverride(false);
 	bShown = false;
 	GroundShade = 0;
 	if (auto* M = Main.Get()) if (M->Web) M->Web->SetFinaleGroundShade(0);
@@ -253,7 +316,7 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	// No independent clock: a paused or restored C6 supplies exactly the same cloud field.
 	Phase = Stage == TEXT("drive") ? -80 * (1 - Smooth(5.9, 8.15, Mile)) : Stage == TEXT("event") ? E : 47 + P;
 	Growth = Smooth(-80, 6, Phase); Reveal = Smooth(5, 21, Phase);
-	if (!Prepare()) return;
+	if (!Prepare()) { SetGroundMaterialOverride(false); return; }
 	Tuning.CraftForward = Tune(CVarCraftForward, 100, 10000);
 	Tuning.CraftRight = Tune(CVarCraftRight, -10000, 10000);
 	Tuning.CraftHeight = Tune(CVarCraftHeight, 10, 10000);
@@ -276,6 +339,7 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	bLow = M->Web->GetGraphicsSettings().Effects == 0;
 	AppliedSamples = bLow ? FMath::Min(Tuning.Samples, 28) : Tuning.Samples;
 	bShown = Growth > .001;
+	SetGroundMaterialOverride(bShown);
 	const FVector Base = S47Three::ToUE(Crossing), Up = FVector::UpVector;
 	const FVector Eye = M->Player ? M->Player->EyeUE() : Base;
 	const double DistanceM = FVector::Dist2D(Eye, Base) * .01;
@@ -327,6 +391,7 @@ S47J::FObj FS47FinaleSky::Readback() const
 {
 	auto O = S47J::New();
 	S47J::Set(O, TEXT("ready"), bReady); S47J::Set(O, TEXT("shown"), bShown); S47J::Set(O, TEXT("failure"), Failure);
+	S47J::Set(O, TEXT("groundVertexColorOverride"), GroundMaterials.Num() == 2);
 	S47J::Set(O, TEXT("phase"), Phase); S47J::Set(O, TEXT("growth"), Growth); S47J::Set(O, TEXT("reveal"), Reveal);
 	S47J::Set(O, TEXT("samples"), AppliedSamples); S47J::Set(O, TEXT("craftOpacity"), 1.);
 	auto Applied = S47J::New();

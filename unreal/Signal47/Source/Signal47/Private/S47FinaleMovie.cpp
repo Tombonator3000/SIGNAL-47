@@ -8,11 +8,14 @@
 #include "S47Walker.h"
 #include "S47World.h"
 #include "SS47Ending.h"
+#include "AudioDeviceManager.h"
+#include "AudioMixerDevice.h"
 #include "HAL/FileManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
+#include "Sound/SampleBufferIO.h"
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47FinaleMovie, Log, All);
@@ -25,10 +28,13 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 	{
 		bool bInit = false, bOwnsOutput = false, bStarted = false, bDone = false, bEarly = false;
 		bool bSawEvent = false, bSawPullout = false, bSawEnd = false, bSawPhoto = false, bSavedPhoto = false;
+		bool bAudioRequested = false, bAudioStarted = false;
 		double WallStart = FPlatformTime::Seconds(), SimTotal = 0, SimStart = 0, CaptureWallStart = 0;
 		double NextFrame = 0, RequestWall = 0, EndAt = -1, PhotoAt = -1, PhotoCardAt = -1;
 		double TargetFps = 15, Tail = 8, EarlyTail = 8;
-		FString Dir, Pending, LastStage;
+		double AudioStartRequestOffset = -1;
+		Audio::FMixerDevice* AudioMixer = nullptr;
+		FString Dir, Pending, LastStage, AudioError;
 		S47J::FObj PendingRow;
 		TArray<TSharedPtr<FJsonValue>> Frames;
 	};
@@ -43,14 +49,69 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 	const auto Finish = [&](bool bComplete, const FString& Reason)
 	{
 		S.bDone = true;
+		FString FinalReason = Reason, AudioFile, AudioError = S.AudioError;
+		bool bAudioSaved = false;
+		int32 AudioChannels = 0, AudioSampleRate = 0;
+		double AudioDuration = 0;
+		if (S.bAudioRequested)
+		{
+			if (S.bAudioStarted)
+			{
+				S.bAudioStarted = false;
+				auto* Mixer = FAudioDeviceManager::GetAudioMixerDeviceFromWorldContext(M->Player.Get());
+				if (!Mixer || Mixer != S.AudioMixer) AudioError = TEXT("master audio device disappeared or changed");
+				else
+				{
+					float Channels = 0, SampleRate = 0;
+					const auto& Recorded = Mixer->StopRecording(nullptr, Channels, SampleRate);
+					if (Recorded.Num() == 0 || !FMath::IsFinite(Channels) || !FMath::IsFinite(SampleRate)
+						|| Channels < 1 || SampleRate < 1)
+						AudioError = TEXT("master recording produced no valid audio samples");
+					else
+					{
+						AudioChannels = FMath::RoundToInt(Channels); AudioSampleRate = FMath::RoundToInt(SampleRate);
+						AudioDuration = double(Recorded.Num()) / AudioChannels / AudioSampleRate;
+						const FString WavPath = S.Dir / TEXT("master-mix.wav");
+						if (Files.FileExists(*WavPath)) AudioError = TEXT("refusing an existing master-mix.wav");
+						else
+						{
+							const Audio::TSampleBuffer<int16> Buffer(Recorded, AudioChannels, AudioSampleRate);
+							Audio::FSoundWavePCMWriter Writer;
+							FString WrittenPath;
+							// Finish disk I/O before manifest/Exit; a WAV export creates no sound asset.
+							const bool bWriteReturned = Writer.SynchronouslyWriteToWavFile(Buffer, TEXT("master-mix"), S.Dir, &WrittenPath);
+							Audio::ESoundWavePCMWriterState WriteState = Audio::ESoundWavePCMWriterState::Idle;
+							Writer.CheckStatus(&WriteState);
+							bAudioSaved = bWriteReturned && Writer.IsDone()
+								&& WriteState == Audio::ESoundWavePCMWriterState::Suceeded
+								&& Files.FileSize(*WavPath) > int64(Buffer.GetNumSamples()) * int64(sizeof(int16));
+							if (bAudioSaved)
+							{
+								AudioFile = FPaths::GetCleanFilename(WrittenPath);
+								UE_LOG(LogS47FinaleMovie, Display, TEXT("S47: finale movie saved %s: %d channels, %d Hz, %.3f audio seconds"),
+									*AudioFile, AudioChannels, AudioSampleRate, AudioDuration);
+							}
+							else AudioError = TEXT("master mix WAV write did not complete successfully");
+						}
+					}
+				}
+			}
+			else if (AudioError.IsEmpty()) AudioError = TEXT("master recording was not started");
+			if (!bAudioSaved)
+			{
+				bComplete = false;
+				FinalReason += TEXT("; requested audio incomplete: ") + AudioError;
+				UE_LOG(LogS47FinaleMovie, Error, TEXT("S47: finale movie audio incomplete: %s; PNG files retained"), *AudioError);
+			}
+		}
 		if (S.bOwnsOutput)
 		{
 			auto Manifest = S47J::New();
 			S47J::Set(Manifest, TEXT("schema"), 1);
-			S47J::Set(Manifest, TEXT("kind"), TEXT("developer-jump-gameplay-visual-capture"));
+			S47J::Set(Manifest, TEXT("kind"), S.bAudioRequested ? TEXT("developer-jump-gameplay-audiovisual-capture") : TEXT("developer-jump-gameplay-visual-capture"));
 			S47J::Set(Manifest, TEXT("source"), TEXT("chapter6:line developer jump; subsequent gameplay timing and camera remain untouched"));
 			S47J::Set(Manifest, TEXT("complete"), bComplete);
-			S47J::Set(Manifest, TEXT("reason"), Reason);
+			S47J::Set(Manifest, TEXT("reason"), FinalReason);
 			S47J::Set(Manifest, TEXT("fullEnding"), bComplete && !S.bEarly && S.bSawEvent && S.bSawPullout && S.bSawEnd && S.bSavedPhoto);
 			S47J::Set(Manifest, TEXT("earlyEnd"), S.bEarly);
 			S47J::Set(Manifest, TEXT("photoObserved"), S.bSawPhoto);
@@ -61,8 +122,34 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 			S47J::Set(Manifest, TEXT("showUI"), true);
 			S47J::Set(Manifest, TEXT("eventSeconds"), 47.);
 			S47J::Set(Manifest, TEXT("pulloutSeconds"), 34.);
-			S47J::Set(Manifest, TEXT("timing"), TEXT("simulationSeconds records Main's simulation time at each screenshot request. Use adjacent timestamps for variable-frame-rate playback; wallSeconds also records the request time. Ending cards retain their ordinary Slate clock."));
-			S47J::Set(Manifest, TEXT("limits"), TEXT("Visual motion capture only; screenshot cost changes frame pacing and supplies no profiling evidence. Audio is not recorded."));
+			S47J::Set(Manifest, TEXT("audioRequested"), S.bAudioRequested);
+			if (S.bAudioRequested)
+			{
+				S47J::Set(Manifest, TEXT("audioComplete"), bAudioSaved);
+				S47J::SetOrNull(Manifest, TEXT("audioFile"), AudioFile);
+				S47J::SetOrNull(Manifest, TEXT("audioError"), AudioError);
+				if (AudioChannels > 0)
+				{
+					S47J::Set(Manifest, TEXT("audioChannels"), AudioChannels);
+					S47J::Set(Manifest, TEXT("audioSampleRate"), AudioSampleRate);
+					S47J::Set(Manifest, TEXT("audioDurationSeconds"), AudioDuration);
+				}
+				else
+				{
+					S47J::SetNull(Manifest, TEXT("audioChannels"));
+					S47J::SetNull(Manifest, TEXT("audioSampleRate"));
+					S47J::SetNull(Manifest, TEXT("audioDurationSeconds"));
+				}
+				if (S.AudioStartRequestOffset >= 0) S47J::Set(Manifest, TEXT("audioStartRequestOffsetSeconds"), S.AudioStartRequestOffset);
+				else S47J::SetNull(Manifest, TEXT("audioStartRequestOffsetSeconds"));
+				S47J::Set(Manifest, TEXT("audioPlaybackTimeline"), TEXT("wallSeconds"));
+			}
+			S47J::Set(Manifest, TEXT("timing"), S.bAudioRequested
+				? TEXT("For playback with live master audio, use wallSeconds and adjacent screenshot request times for variable-frame-rate picture timing. Place the WAV at audioStartRequestOffsetSeconds from CaptureWallStart. This is the start request offset, not a sample-accurate audio-thread timestamp. simulationSeconds records Main's simulation time. Ending cards retain their ordinary Slate clock.")
+				: TEXT("simulationSeconds records Main's simulation time at each screenshot request. Use adjacent timestamps for variable-frame-rate playback; wallSeconds also records the request time. Ending cards retain their ordinary Slate clock."));
+			S47J::Set(Manifest, TEXT("limits"), S.bAudioRequested
+				? TEXT("Screenshot cost changes frame pacing and supplies no profiling evidence. audioComplete reports whether the live master mix was saved; an incomplete capture retains all PNG files.")
+				: TEXT("Visual motion capture only; screenshot cost changes frame pacing and supplies no profiling evidence. Audio is not recorded."));
 			Manifest->SetArrayField(TEXT("frames"), S.Frames);
 			if (!FFileHelper::SaveStringToFile(S47J::Write(Manifest, true), *(S.Dir / TEXT("frames.json")),
 				FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &Files, FILEWRITE_NoReplaceExisting))
@@ -72,12 +159,13 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 			}
 		}
 		UE_LOG(LogS47FinaleMovie, Display, TEXT("S47: finale movie %s: %s, %d frames, %.3f simulation seconds"),
-			bComplete ? TEXT("COMPLETE") : TEXT("STOPPED"), *Reason, S.Frames.Num(), SimNow);
+			bComplete ? TEXT("COMPLETE") : TEXT("STOPPED"), *FinalReason, S.Frames.Num(), SimNow);
 		FPlatformMisc::RequestExitWithStatus(false, bComplete ? 0 : 1);
 	};
 	if (!S.bInit)
 	{
 		S.bInit = true;
+		S.bAudioRequested = FParse::Param(FCommandLine::Get(), TEXT("S47FinaleMovieAudio"));
 		FString UserDir, Jump, Other;
 		double AutoSpeed = 0;
 		const bool bExplicitUserDir = FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
@@ -114,6 +202,22 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		if (!M->Flow || !M->Flow->bDevRun || M->Flow->CaseId != 0)
 		{ Finish(false, TEXT("capture requires an isolated developer case")); return; }
 		S.bStarted = true; S.SimStart = M->T; S.CaptureWallStart = WallNow;
+		if (S.bAudioRequested)
+		{
+			S.AudioMixer = FAudioDeviceManager::GetAudioMixerDeviceFromWorldContext(M->Player.Get());
+			if (S.AudioMixer)
+			{
+				S.AudioStartRequestOffset = FPlatformTime::Seconds() - S.CaptureWallStart;
+				S.AudioMixer->StartRecording(nullptr, 600.f);
+				S.bAudioStarted = true;
+				UE_LOG(LogS47FinaleMovie, Display, TEXT("S47: finale movie requested live master audio at wall offset %.6f"), S.AudioStartRequestOffset);
+			}
+			else
+			{
+				S.AudioError = TEXT("no audio mixer device was available at capture start");
+				UE_LOG(LogS47FinaleMovie, Warning, TEXT("S47: finale movie %s; continuing PNG capture"), *S.AudioError);
+			}
+		}
 		UE_LOG(LogS47FinaleMovie, Display, TEXT("S47: finale movie observes normal gameplay at %.1f target fps, UI included; %s"), S.TargetFps, *S.Dir);
 	}
 	if (!C) { Finish(false, TEXT("chapter six disappeared")); return; }
