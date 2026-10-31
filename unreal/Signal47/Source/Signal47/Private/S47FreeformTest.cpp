@@ -242,6 +242,13 @@ void FS47FreeformTest::Step(double Dt)
   if(EventIndex>=Ids.Num()){Go(30);return;}
   M->Player->Place(0,-1.2,PI);
   if(!Check(F.Director->Force(Ids[EventIndex]),TEXT("explicit native event fixture starts: ")+Ids[EventIndex]))return;
+  const FString Id=Ids[EventIndex];
+  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass")||Id==TEXT("empty_car"))
+  {
+   const bool Car=Id==TEXT("empty_car");M->Player->Place(Car?12.:9.3,Car?12.:-12.,0);
+   const FVector D=F.Director->EventAnchor()-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  }
   Go(22,Ids[EventIndex]==TEXT("observer")||Ids[EventIndex]==TEXT("service_presence")?12.:.6);return;
  }
  if(Stage==22)
