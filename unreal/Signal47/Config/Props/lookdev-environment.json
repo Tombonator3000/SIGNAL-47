@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "scope": "Existing SARO and Sierra Motor Court lighting, including their ordinary day/night clock. No new sky or fog actor.",
+  "units": "Dimensionless gains and EV stops applied after existing calibrated native light values. Fog albedo channels are 0..255. No Blender watts to Unreal lux conversion.",
+  "day": {
+    "sky_gain": 1.0,
+    "sun_gain": 1.0,
+    "moon_gain": 1.0,
+    "indirect_gain": 1.0,
+    "exposure_ev": 0.0,
+    "fog_density_gain": 1.0,
+    "scattering_distribution": 0.32,
+    "fog_albedo": [210, 220, 235],
+    "exterior_scattering": 0.35,
+    "fsss_scene_color": 0.0
+  },
+  "night": {
+    "sky_gain": 1.04,
+    "sun_gain": 1.0,
+    "moon_gain": 1.02,
+    "indirect_gain": 0.98,
+    "exposure_ev": 0.025,
+    "fog_density_gain": 1.04,
+    "scattering_distribution": 0.42,
+    "fog_albedo": [205, 217, 235],
+    "exterior_scattering": 0.45,
+    "fsss_scene_color": 0.055
+  }
+}

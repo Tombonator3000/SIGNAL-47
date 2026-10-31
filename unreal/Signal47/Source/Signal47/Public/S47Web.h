@@ -486,6 +486,19 @@ private:
 	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0;
 	float FinaleGroundShade = 0;
 	TOptional<FVector> FinaleSkyCaptureRestore;
+	// Authored lookdev modifies the existing time-driven rig only near SARO and its motel.
+	// These gains never replace story sun directions, user ToneK or -S47Exposure.
+	struct FLookdevEnvironmentValues
+	{
+		float SkyGain = 1, SunGain = 1, MoonGain = 1, IndirectGain = 1, ExposureEV = 0;
+		float FogDensityGain = 1, Scattering = .35f, ExteriorScattering = .35f, Fsss = 0;
+		FLinearColor FogAlbedo = FLinearColor(210.f / 255.f, 220.f / 255.f, 235.f / 255.f);
+	};
+	FLookdevEnvironmentValues LookdevDay, LookdevNight;
+	bool bLookdevEnvironment = false;
+	void LoadLookdevEnvironment();
+	float LookdevEnvironmentWeight() const;
+	FLookdevEnvironmentValues LookdevEnvironmentNow() const;
 	// SKY.md: volumetric clouds, their cloud-only light (set sun from below / moon) and drift.
 	UPROPERTY() TObjectPtr<class UVolumetricCloudComponent> Clouds;
 	UPROPERTY() TObjectPtr<class UMaterialInstanceDynamic> CloudMid;

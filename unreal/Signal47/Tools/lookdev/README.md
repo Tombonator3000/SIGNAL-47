@@ -2,7 +2,19 @@
 
 **Status:** Gjeldende verktøy. **Gjelder:** originale produksjonsskript for Blender 5.2.2 og UE 5.8.4; eksplisitt valgte egne/eide modeller. **Sist kontrollert:** 31. oktober 2026.
 
-Dette er kjørbare verktøy for Toms bestilling etter [Yokoharas demonstrasjon](https://www.youtube.com/watch?v=kCuoHpv-uZY), ikke forfatterens upubliserte skript. Arbeidsdelingen er generering/gjenbruk, lokal bearbeiding i Blender og native materialer/lys i Unreal. Verktøyene endrer ikke automatisk SARO, motellet eller installert spill. Faktisk spillintegrasjon og leveringsstatus føres i [STATUS](../../../../Docs/Active/STATUS.md).
+Dette er kjørbare verktøy for Toms bestilling etter [Yokoharas demonstrasjon](https://www.youtube.com/watch?v=kCuoHpv-uZY), ikke forfatterens upubliserte skript. Arbeidsdelingen er generering/gjenbruk, lokal bearbeiding i Blender og native materialer/lys i Unreal. Preview-verktøyene skriver egne prøvescener. Produksjonsintegrasjonen under kobler valgte materialer og lys til den faktiske spillverdenen; installert spill følger separat leveringsstatus i [STATUS](../../../../Docs/Active/STATUS.md).
+
+## Produksjon: SARO og Sierra Motor Court
+
+[build_production.py](build_production.py) lager 17 native materialvarianter fra faktiske kildegrafer under `/Game/Signal47/Art/LookdevProduction`. De er med i kilde og cook-oppsettet. Én 128² lineær maske gir forsiktig UV-basert slitasje og glansvariasjon; dette er ikke geometrisk kantdeteksjon. Originale teksturer, normalgrafer, UV-er og geometri beholdes. Kontorets motellatlas beholder BaseColor helt, slik at etiketter og trykk ikke recoloreres. CreamEnamel-normalen, som fire Office-grafer deler, følger med både som uendret kildeasset og én egen produksjonskopi. Dermed fungerer både spillet og regenerering fra en ren klon.
+
+[lookdev-bindings.json](../../Config/Props/lookdev-bindings.json) velger eksakte kildematerialer og meshstier. `S47Lookdev` setter varianter på de aktuelle slottene, også når SARO-rom opprettes senere. Eksisterende dynamiske materialer hoppes over, slik at aktive strøm-, skjerm- og fargedrivere beholder pekerne sine. Room6s levende glass, tekst/skjermer og emissive materialer er unntatt. Manglende variant beholder originalmaterialet.
+
+[lookdev-environment.json](../../Config/Props/lookdev-environment.json) gir separate dag-/nattverdier til eksisterende himmel, sol, eksponering og native tåke. Profilen gjelder nær SARO/motellet med myk geografisk overgang. Solretning og vær kommer fortsatt fra spillets klokke. Brukerens eksponering legges til, og tåke Off/Low/High beholder sine kvalitetsgrenser. FSSS brukes bare ved natt og tåke satt til High (Ultra-preset); vanlig High-preset bruker fortsatt sin lettere tåke. Ingen ekstra himmel- eller tåkeaktør opprettes. SARO-veggarmaturer har korrigert lysretning og kildestørrelse, med samme candela, rekkevidde og strømkurser.
+
+Regenerering gjøres i et ledig, reservert motorvindu med prosjektets eksisterende `unreal_guard.py`, ved å kjøre `UnrealEditor-Cmd <uproject> -run=pythonscript -script=<absolutt sti til build_production.py> -unattended -nullrhi`. Rapporten går til prosjektets private `Saved/LookdevProduction/build-report.json`, eller `S47_LOOKDEV_PRODUCTION_REPORT`. Godkjente bindingsrader vedlikeholdes eksplisitt i konfigurasjonen; generatoren endrer ikke spillets konfigurasjon eller verdensplasseringer.
+
+`-S47LookdevOff` gir samme spill med opprinnelige materialer, miljøverdier og vegglampeoptikk for før/etter. Opt-in `S47GraphicsReview` skriver native material-/miljøavlesning sammen med bildet. Dette er utviklingsverktøy, ikke nye innstillinger i spillerens meny.
 
 ## Filer
 
@@ -14,9 +26,10 @@ Dette er kjørbare verktøy for Toms bestilling etter [Yokoharas demonstrasjon](
 | [pipeline.py](pipeline.py) | Import av Tripo-GLB eller Blender-fil, objektinventar, kildevern, prøvescene, før/etter, lagring i ny Blender-fil og valgfri FBX. |
 | [launch.py](launch.py) | Starter Blender gjennom prosjektets eksisterende vern mot samtidige motor-/spilljobber og timeout. |
 | [unreal_setup.py](unreal_setup.py) | Leser manifest, lager først importplan, deretter valgfritt native PBR-/glassmaterialer og et separat lys-/tåkekart i egen Lookdev-mappe. |
+| [build_production.py](build_production.py) | Lager avgrensede SARO-/motellvarianter med opprinnelige grafer, kildevern og eksplisitte bindingsrader til runtime. |
 | [example.json](example.json) | Redigerbar materialoppskrift med separate dag-/nattprofiler og uttrykkelige Unreal-lysverdier. |
 
-Ingen MCP, API-kreditter eller ny Tripo-generering kreves for å behandle en eksisterende modell. Originalmodeller, UV-er, rigger, transformasjoner og personlige Saved bevares. Genererte/private resultater skal ligge utenfor Git. Skriptene avviser eksisterende resultatmappe fremfor å overskrive et tidligere arbeid.
+Ingen MCP, API-kreditter eller ny Tripo-generering kreves for å behandle en eksisterende modell. Originalmodeller, UV-er, rigger, transformasjoner og personlige Saved bevares. Private preview-resultater ligger utenfor Git; de eksplisitt integrerte produksjonsmaterialene versjoneres med spillet. Preview-skriptene avviser eksisterende resultatmappe fremfor å overskrive et tidligere arbeid.
 
 ## Kjør prøvescenen først
 

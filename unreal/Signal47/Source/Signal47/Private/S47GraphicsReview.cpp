@@ -26,6 +26,12 @@
 #include "RenderTimer.h"
 #include "DynamicRHI.h"
 #include "UnrealClient.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 
 namespace S47GraphicsReview
 {
@@ -35,6 +41,47 @@ enum class EState { World, RackOnline, RackDark, IndicatorsOnline, IndicatorsDar
 static bool ExteriorPowerState(EState State)
 { return State == EState::ExteriorOnline || State == EState::ExteriorCut || State == EState::ExteriorRestored; }
 struct FCamera { const TCHAR* Name; const TCHAR* Area; double X, Z, Yaw, Pitch; int32 Lab = -1; EState State = EState::World; };
+static bool ReviewExteriorSources(AS47Web* W, const TCHAR* State, bool Online)
+{
+ // Read the actual native emitters and lens material, not a computed desired feed.
+ // This runs only for the three opt-in fixture review cameras below.
+ TArray<USpotLightComponent*> Lights; W->GetComponents(Lights);
+ TArray<UStaticMeshComponent*> Meshes; W->GetComponents(Meshes);
+ const bool Lookdev = !FParse::Param(FCommandLine::Get(), TEXT("S47LookdevOff"));
+ bool Pass = true;
+ for (const TCHAR* Role : { TEXT("WestSouth"), TEXT("WestNorth"), TEXT("WingWest"), TEXT("WingEast"), TEXT("LabDoor"), TEXT("AnnexSouth"), TEXT("FireExit") })
+ {
+  const FString LightName = FString(TEXT("S47Exterior_")) + Role;
+  const FString MeshName = FString(TEXT("S47Fixture_")) + (FString(Role) == TEXT("FireExit") ? TEXT("EntranceCanopy") : Role);
+  USpotLightComponent* Light = nullptr; UStaticMeshComponent* Fixture = nullptr;
+  for (USpotLightComponent* L : Lights) if (L && L->GetName() == LightName) Light = L;
+  for (UStaticMeshComponent* Mesh : Meshes) if (Mesh && Mesh->GetName() == MeshName) Fixture = Mesh;
+  const int32 Slot = Fixture ? Fixture->GetMaterialIndex(TEXT("M_ExteriorFixtures_Lens")) : -1;
+  UMaterialInterface* Lens = Fixture && Slot >= 0 ? Fixture->GetMaterial(Slot) : nullptr;
+  FLinearColor Emission = FLinearColor::Black;
+  const bool LensValue = Lens && Lens->GetVectorParameterValue(FMaterialParameterInfo(TEXT("EmissiveFactor")), Emission);
+  const float E = FMath::Max3(Emission.R, Emission.G, Emission.B);
+  const bool LightState = Light && (Online ? Light->IsVisible() && Light->Intensity > .001f : !Light->IsVisible() && Light->Intensity < .001f);
+  const bool LensState = LensValue && (Online ? E > .001f : E < .001f);
+  double FacadeAngle = -1;
+  bool Beam = true;
+  if (Light && Fixture && FString(Role) != TEXT("FireExit"))
+  {
+   // One metre below the actual mounting plate is the wall surface, not an
+   // invented floating target. New optics must place it inside the useful cone.
+   const FVector WallPoint = Fixture->GetComponentLocation() + FVector(0, 0, -100);
+   const FVector ToWall = (WallPoint - Light->GetComponentLocation()).GetSafeNormal();
+   FacadeAngle = FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(FVector::DotProduct(Light->GetForwardVector(), ToWall), -1., 1.)));
+   Beam = !Lookdev || FacadeAngle < Light->InnerConeAngle;
+  }
+  Pass &= LightState && LensState && Beam;
+  UE_LOG(LogTemp, Display, TEXT("S47: fixture readback %s %s visible=%d cd=%.4f lens=%.4f facadeAngle=%.3f inner=%.3f outer=%.3f sourceRadiusCm=%.3f lookdev=%d pass=%d"),
+   State, Role, Light && Light->IsVisible() ? 1 : 0, Light ? Light->Intensity : -1.f, E, FacadeAngle,
+   Light ? Light->InnerConeAngle : -1.f, Light ? Light->OuterConeAngle : -1.f,
+   Light ? Light->SourceRadius : -1.f, Lookdev ? 1 : 0, LightState && LensState && Beam ? 1 : 0);
+ }
+ return Pass;
+}
 static constexpr int32 WorldCameraCount = 20;
 // three.js metres, yaw and pitch in radians. Kept identical for baseline, candidate and PSO recording.
 static const FCamera Cameras[] = {
@@ -59,6 +106,7 @@ static const FCamera Cameras[] = {
  { TEXT("old-road"), TEXT("roswell"), 19080.25, -4575.53, 0.1, -0.02 },
  { TEXT("cab"), TEXT("saro"), 0, 0, 0, 0 },
  // Extra state coverage is opt-in; the original twenty cameras retain their baseline views.
+ { TEXT("motel-lobby"), TEXT("saro"), -46, 675.7, -0.64, -0.12 },
  { TEXT("rack-online"), TEXT("saro"), 0, 0, 0, 0, -1, EState::RackOnline },
  { TEXT("rack-dark"), TEXT("saro"), 0, 0, 0, 0, -1, EState::RackDark },
  { TEXT("indicators-online"), TEXT("saro"), -0.4, 2.2, UE_DOUBLE_PI, -0.35, -1, EState::IndicatorsOnline },
@@ -78,9 +126,9 @@ static const FCamera Cameras[] = {
  { TEXT("terminal-online"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsOnline },
  { TEXT("terminal-dark"), TEXT("saro"), -0.05, 3.4, 2.5, -0.1, -1, EState::IndicatorsDark },
  // The real SARO outage feed drives both new fixture glass and native emitters.
- { TEXT("fixtures-online"), TEXT("saro"), -11.4, 12.6, -1.6195, 0.14, -1, EState::ExteriorOnline },
- { TEXT("fixtures-cut"), TEXT("saro"), -11.4, 12.6, -1.6195, 0.14, -1, EState::ExteriorCut },
- { TEXT("fixtures-restored"), TEXT("saro"), -11.4, 12.6, -1.6195, 0.14, -1, EState::ExteriorRestored },
+ { TEXT("fixtures-online"), TEXT("saro"), -4.8, 17.8, -0.38, 0.12, -1, EState::ExteriorOnline },
+ { TEXT("fixtures-cut"), TEXT("saro"), -4.8, 17.8, -0.38, 0.12, -1, EState::ExteriorCut },
+ { TEXT("fixtures-restored"), TEXT("saro"), -4.8, 17.8, -0.38, 0.12, -1, EState::ExteriorRestored },
  // Original Blender asset review cameras; opt-in so historical review routes retain their views.
  { TEXT("array-front"), TEXT("saro"), 22, -68, 2.72, 0.38 },
  { TEXT("array-rear"), TEXT("saro"), -2, -20, -0.48, 0.42 },
@@ -117,6 +165,8 @@ void Tick(AS47Web* W, float)
   FString Clock, Timeline;
   double ReviewClock = 0;
   TArray<int32> Selection;
+  TArray<float> MotelFeeds;
+  float MotelScale = -1;
   TSharedPtr<SWidget> Title;
   TArray<float> Frames, Game, Draw, Gpu;
  };
@@ -309,6 +359,26 @@ void Tick(AS47Web* W, float)
   S.Draw.Add(FPlatformTime::ToMilliseconds(GRenderThreadTime)); S.Gpu.Add(FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles()));
  }
  if (Since < Hold - 0.3 || S.Frames.IsEmpty()) return;
+ if (ExteriorPowerState(V.State)) {
+  bool Pass = ReviewExteriorSources(W, V.Name, V.State != EState::ExteriorCut);
+  const int32 Court = W->FloodSet(TEXT("court"));
+  TArray<float> Feeds;
+  for (int32 I = 2; Court >= 0 && I <= 7 && I < W->FloodSlots(Court); ++I) Feeds.Add(W->FloodPos(Court, I).A * W->FloodScaleOf(Court));
+  if (S.MotelFeeds.IsEmpty()) { S.MotelFeeds = Feeds; S.MotelScale = W->FloodScaleOf(Court); }
+  bool MotelUnchanged = Feeds.Num() == 6 && Feeds.Num() == S.MotelFeeds.Num();
+  // Motel::Update legitimately flickers court slot4 on run-time T, even with
+  // the story clock held. Keep the stable feeds unchanged and check that this
+  // lamp remains inside its existing 4.6..5.0 width envelope during SARO's cut.
+  for (int32 I = 0; I < Feeds.Num() && I < S.MotelFeeds.Num(); ++I)
+   if (I != 2) MotelUnchanged &= FMath::IsNearlyEqual(Feeds[I], S.MotelFeeds[I], .00001f);
+  const float R34 = W->FloodPos(Court, 4).A;
+  const bool MotelFlicker = R34 >= 4.5999f && R34 <= 5.0001f && FMath::IsNearlyEqual(W->FloodScaleOf(Court), S.MotelScale, .00001f);
+  MotelUnchanged &= MotelFlicker;
+  Pass &= MotelUnchanged;
+  UE_LOG(LogTemp, Display, TEXT("S47: fixture review native sources/lenses %s motelFeedsUnchanged=%d motelR34Width=%.5f motelFlickerInRange=%d %s"),
+   V.Name, MotelUnchanged ? 1 : 0, R34, MotelFlicker ? 1 : 0, Pass ? TEXT("PASS") : TEXT("FAIL"));
+  if (!Pass) { UE_LOG(LogTemp, Error, TEXT("S47: fixture source, cone or power readback failed")); S.Done = true; return; }
+ }
  const FVector ActualEye = S47Three::ToThree(M->Player->EyeUE());
  UE_LOG(LogTemp, Display, TEXT("S47: graphics actual pose %s area=%s floor=%.5f eyeThree=(%.5f,%.5f,%.5f)"),
   V.Name, V.Area, M->Player->FloorY, ActualEye.X, ActualEye.Y, ActualEye.Z);
@@ -335,6 +405,12 @@ void Tick(AS47Web* W, float)
   Average * S.Frames.Num(), Average, P95, Mean(S.Game), Mean(S.Draw), Mean(S.Gpu));
  if (!FFileHelper::SaveStringToFile(Row, *(Directory / TEXT("frames.csv")), FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &IFileManager::Get(), FILEWRITE_Append)) {
   UE_LOG(LogTemp, Error, TEXT("S47: could not append graphics sample")); S.Done = true; return;
+ }
+ FString Readback;
+ const auto Writer = TJsonWriterFactory<>::Create(&Readback);
+ if (!FJsonSerializer::Serialize(W->GraphicsReadback().ToSharedRef(), Writer)
+     || !FFileHelper::SaveStringToFile(Readback, *(Directory / (FString(V.Name) + TEXT(".json"))))) {
+  UE_LOG(LogTemp, Error, TEXT("S47: could not save graphics readback %s"), V.Name); S.Done = true; return;
  }
  FScreenshotRequest::RequestScreenshot(ShotPath, true, false);
  UE_LOG(LogTemp, Display, TEXT("S47: graphics sample %s"), *Row.TrimEnd());

@@ -20,8 +20,12 @@
 #include "S47Three.h"
 #include "S47Sky.h"
 #include "S47Wind.h"
+#include "S47Geo.h"
+#include "S47Json.h"
+#include "S47Lookdev.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "UnrealClient.h"
 
@@ -59,6 +63,83 @@ namespace
 	// Diagnostic A/B uses the previous night fill with identical geometry and materials.
 	bool PreviousNight() { return FParse::Param(FCommandLine::Get(), TEXT("S47PreviousNight")); }
 	float NightSkyIntensity(float Dawn) { return FMath::Lerp(PreviousNight() ? 0.18f : 0.055f, 1.98f, FMath::Clamp(Dawn, 0.f, 1.f)); }
+}
+
+void AS47Web::LoadLookdevEnvironment()
+{
+	bLookdevEnvironment = false;
+	if (FParse::Param(FCommandLine::Get(), TEXT("S47LookdevOff"))) return;
+	FString Text;
+	const FString Path = FPaths::ProjectConfigDir() / TEXT("Props/lookdev-environment.json");
+	const auto Root = FFileHelper::LoadFileToString(Text, *Path) ? S47J::Read(Text) : S47J::FObj();
+	if (!Root || S47J::Int(Root, TEXT("schema_version"), -1) != 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("S47: lookdev environment missing or invalid, existing lighting retained: %s"), *Path);
+		return;
+	}
+	auto Read = [](const S47J::FObj& Json, FLookdevEnvironmentValues& Out)
+	{
+		if (!Json) return false;
+		bool bOk = true;
+		auto Value = [&](const TCHAR* Key, float& Target, double Low, double High)
+		{
+			double Number = 0;
+			if (!Json->TryGetNumberField(Key, Number) || !FMath::IsFinite(Number) || Number < Low || Number > High) bOk = false;
+			else Target = float(Number);
+		};
+		// Deliberately bounded art controls, not an alternate physical daylight renderer.
+		Value(TEXT("sky_gain"), Out.SkyGain, .75, 1.25);
+		Value(TEXT("sun_gain"), Out.SunGain, .75, 1.25);
+		Value(TEXT("moon_gain"), Out.MoonGain, .75, 1.25);
+		Value(TEXT("indirect_gain"), Out.IndirectGain, .75, 1.25);
+		Value(TEXT("exposure_ev"), Out.ExposureEV, -.15, .15);
+		Value(TEXT("fog_density_gain"), Out.FogDensityGain, .8, 1.2);
+		Value(TEXT("scattering_distribution"), Out.Scattering, 0, .6);
+		Value(TEXT("exterior_scattering"), Out.ExteriorScattering, 0, .65);
+		Value(TEXT("fsss_scene_color"), Out.Fsss, 0, .07);
+		const TArray<double> Albedo = S47J::Nums(Json, TEXT("fog_albedo"));
+		if (Albedo.Num() != 3) return false;
+		for (double Channel : Albedo) if (!FMath::IsFinite(Channel) || Channel < 0 || Channel > 255) bOk = false;
+		if (bOk) Out.FogAlbedo = FLinearColor(float(Albedo[0] / 255), float(Albedo[1] / 255), float(Albedo[2] / 255));
+		return bOk;
+	};
+	FLookdevEnvironmentValues Day, Night;
+	if (!Read(S47J::Obj(Root, TEXT("day")), Day) || !Read(S47J::Obj(Root, TEXT("night")), Night))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("S47: lookdev environment profile outside bounded ranges; existing lighting retained"));
+		return;
+	}
+	LookdevDay = Day; LookdevNight = Night; bLookdevEnvironment = true;
+	UE_LOG(LogTemp, Display, TEXT("S47: authored lookdev day/night profiles connected to existing SARO/motel sky, exposure and fog; sun direction remains clock-driven"));
+}
+
+float AS47Web::LookdevEnvironmentWeight() const
+{
+	if (!bLookdevEnvironment || PreviousNight() || CurrentArea != TEXT("saro")) return 0;
+	// Motel exterior shares SARO's scene; do not spread this small lens/air adjustment
+	// along the whole highway, into Caliche, or into the finale's atmosphere.
+	const FVector At = S47Three::ToThree(Eye);
+	const S47Geo::FRect Site = { -65, 60, -70, 110 };
+	const double Outside = FMath::Min(S47Geo::Outside(Site, At.X, At.Z), S47Geo::Outside(S47Geo::MOTEL_RECT(), At.X, At.Z));
+	return 1.f - float(FMath::SmoothStep(10.0, 50.0, Outside));
+}
+
+AS47Web::FLookdevEnvironmentValues AS47Web::LookdevEnvironmentNow() const
+{
+	FLookdevEnvironmentValues Result;
+	const float Weight = LookdevEnvironmentWeight(), Day = FMath::Clamp(SkyDawn, 0.f, 1.f);
+	if (Weight <= 0) return Result;
+	auto Blend = [&](float FLookdevEnvironmentValues::*Field)
+	{
+		Result.*Field = FMath::Lerp(Result.*Field, FMath::Lerp(LookdevNight.*Field, LookdevDay.*Field, Day), Weight);
+	};
+	Blend(&FLookdevEnvironmentValues::SkyGain); Blend(&FLookdevEnvironmentValues::SunGain);
+	Blend(&FLookdevEnvironmentValues::MoonGain); Blend(&FLookdevEnvironmentValues::IndirectGain);
+	Blend(&FLookdevEnvironmentValues::ExposureEV); Blend(&FLookdevEnvironmentValues::FogDensityGain);
+	Blend(&FLookdevEnvironmentValues::Scattering); Blend(&FLookdevEnvironmentValues::ExteriorScattering);
+	Blend(&FLookdevEnvironmentValues::Fsss);
+	Result.FogAlbedo = FMath::Lerp(Result.FogAlbedo, FMath::Lerp(LookdevNight.FogAlbedo, LookdevDay.FogAlbedo, Day), Weight);
+	return Result;
 }
 
 float AS47Web::LightIntensity(const FString& Uuid) const
@@ -149,6 +230,7 @@ void AS47Web::UpdateArrayLighting()
 
 void AS47Web::BuildNativeLighting()
 {
+	LoadLookdevEnvironment();
 	PoolRoots.SetNum(FloodSets.Num());
 	for (const FS47WebNode& N : Nodes) for (const int32 MatId : N.Mats)
 		if (const int32* Set = MatFloodSet.Find(MatId)) PoolRoots[*Set].AddUnique(N.Root);
@@ -278,6 +360,31 @@ TSharedPtr<FJsonObject> AS47Web::GraphicsReadback() const
 	O->SetBoolField(TEXT("cloudVisible"), Clouds && Clouds->IsVisible());
 	O->SetNumberField(TEXT("cloudSamples"), Clouds ? Clouds->ViewSampleCountScale : 0.f);
 	O->SetBoolField(TEXT("skyRealtimeCapture"), NightSky && NightSky->bRealTimeCapture);
+	const auto Look = LookdevEnvironmentNow();
+	auto Environment = MakeShared<FJsonObject>();
+	Environment->SetBoolField(TEXT("enabled"), bLookdevEnvironment);
+	Environment->SetNumberField(TEXT("spatialWeight"), LookdevEnvironmentWeight());
+	Environment->SetNumberField(TEXT("dayWeight"), FMath::Clamp(SkyDawn, 0.f, 1.f));
+	Environment->SetNumberField(TEXT("skyGain"), Look.SkyGain);
+	Environment->SetNumberField(TEXT("sunGain"), Look.SunGain);
+	Environment->SetNumberField(TEXT("moonGain"), Look.MoonGain);
+	Environment->SetNumberField(TEXT("indirectGain"), Look.IndirectGain);
+	Environment->SetNumberField(TEXT("sceneExposureEV"), Look.ExposureEV);
+	Environment->SetNumberField(TEXT("userExposureEV"), ExposureOffset);
+	Environment->SetNumberField(TEXT("actualExposureEV"), LightingPost ? LightingPost->Settings.AutoExposureBias : 0.f);
+	Environment->SetNumberField(TEXT("actualSkyIntensity"), NightSky ? NightSky->Intensity : 0.f);
+	Environment->SetNumberField(TEXT("actualSunIntensity"), DawnSun ? DawnSun->Intensity : 0.f);
+	if (DawnSun)
+	{
+		const FVector SunDirection = S47Three::ToThree(-DawnSun->GetForwardVector()).GetSafeNormal();
+		S47J::Set(Environment, TEXT("actualSunDirectionThree"), TArray<double>{ SunDirection.X, SunDirection.Y, SunDirection.Z });
+	}
+	Environment->SetNumberField(TEXT("actualFogDensity"), LightingFog ? LightingFog->FogDensity : 0.f);
+	Environment->SetNumberField(TEXT("actualScatteringDistribution"), LightingFog ? LightingFog->VolumetricFogScatteringDistribution : 0.f);
+	Environment->SetBoolField(TEXT("actualFSSS"), LightingFog && LightingFog->bEnableFSSS);
+	Environment->SetNumberField(TEXT("actualFSSSSceneColor"), LightingFog ? LightingFog->FSSSSceneColorScatteringAmountScale : 0.f);
+	O->SetObjectField(TEXT("lookdevEnvironment"), Environment);
+	O->SetObjectField(TEXT("lookdevMaterials"), S47Lookdev::Readback(this));
 	return O;
 }
 
@@ -345,6 +452,7 @@ void AS47Web::ApplyGraphicsSettings(const FS47GraphicsSettings& Settings)
 		P.bOverride_LumenRayLightingMode = true; P.LumenRayLightingMode = Reflection == 3 ? ELumenRayLightingModeOverride::HitLightingForReflections : ELumenRayLightingModeOverride::SurfaceCache;
 	}
 	ApplyCloudQuality();
+	UpdateNativeFog(); // Apply the Fog Off/Low gate before the menu's immediate readback.
 	if (Reflection != Graphics.Reflections)
 		UE_LOG(LogTemp, Display, TEXT("S47: graphics reflections requested=%d resolved=screen-space because indirect lighting is off; Lumen preference retained"), Graphics.Reflections);
 	UE_LOG(LogTemp, Display, TEXT("S47: lighting quality %s, Lumen %s, volumetrics %s"), *Graphics.LegacyQuality(), GI > 0 ? TEXT("on") : TEXT("off"), Graphics.Fog > 0 ? TEXT("on") : TEXT("off"));
@@ -388,6 +496,7 @@ void AS47Web::UpdateFinaleSkyCapture()
 void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening)
 {
 	SkyDawn = Daylight; SkySun = Sun; SkyFlash = Flash; SkyEvening = Evening;
+	const auto Look = LookdevEnvironmentNow();
 	// Only the active Roswell view loses native ground fill; the living sky keeps its own curves.
 	const float FinaleLight = CurrentArea == TEXT("roswell") ? 1.f - FinaleGroundShade : 1.f;
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
@@ -406,7 +515,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		DawnSun->SetForwardShadingPriority(GroundSun > 0.f ? Lights.Num() + 1 : 0);
 		// The existing fixed exposure is intentionally retained. These are calibrated game
 		// light values, not a physical 120,000 lux daylight rig; avoid overexposing the cabin.
-		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)) * FinaleLight);
+		DawnSun->SetIntensity(GroundSun * FMath::Lerp(8.f, 14.f, FMath::Clamp(Evening, 0.f, 1.f)) * FinaleLight * Look.SunGain);
 		DawnSun->SetLightColor(Evening > 0.f
 			? FMath::Lerp(FLinearColor(1.f, 0.36f, 0.14f), FLinearColor(1.f, 0.76f, 0.52f), FMath::Clamp(Evening, 0.f, 1.f))
 			: FLinearColor(1.f, 0.55f, 0.28f));
@@ -428,7 +537,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// This compensates visible native cloud bases. The cleared finale needs no
 		// extra fill when its own banks replace that weather, regardless of capability.
 		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) * CloudFinaleWeatherWeight : 1.f;
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight);
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
@@ -445,18 +554,27 @@ float AS47Web::RefreshFog()
 void AS47Web::UpdateNativeFog()
 {
 	if (!LightingFog) return;
-	const bool bScattering = FParse::Param(FCommandLine::Get(), TEXT("S47FogScattering")) &&
+	const auto Look = LookdevEnvironmentNow();
+	// High's existing fog alone receives a bounded screen-space multiple-scattering
+	// approximation near the two authored locations. Low and Off never enable it.
+	const bool bDiagnostic = FParse::Param(FCommandLine::Get(), TEXT("S47FogScattering"));
+	const bool bAuthored = bLookdevEnvironment && LookdevEnvironmentWeight() > 0 && Look.Fsss > .001f && Graphics.Fog == 2;
+	const bool bScattering = (bDiagnostic || bAuthored) &&
 		Graphics.Fog > 0 && CurrentArea == TEXT("saro") && SkyDawn < .65f;
-	if (LightingFog->bEnableFSSS != bScattering)
+	const float ScatteringAmount = bDiagnostic ? .07f : Look.Fsss;
+	if (LightingFog->bEnableFSSS != bScattering || !FMath::IsNearlyEqual(LightingFog->FSSSSceneColorScatteringAmountScale, ScatteringAmount, .0001f))
 	{
 		LightingFog->bEnableFSSS = bScattering;
+		LightingFog->FSSSSceneColorScatteringAmountScale = ScatteringAmount;
 		LightingFog->MarkRenderStateDirty();
 	}
+	LightingFog->SetVolumetricFogScatteringDistribution(Look.Scattering);
+	LightingFog->SetVolumetricFogAlbedo(Look.FogAlbedo.ToFColor(false));
 	// FogExp2 is not a physical extinction coefficient. Match its thin night air near eye level,
 	// with a long view distance; local lamps and beams now scatter through the actual volume.
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
 	// a developer event's fog (S47DevEvents.h) holds over the night's own until it is set back
-	LightingFog->SetFogDensity(GS47DevFogDensity >= 0.f ? GS47DevFogDensity : FMath::Clamp(FogDensity * 2.f + Caliche * .0012f, 0.0003f, 0.012f));
+	LightingFog->SetFogDensity(GS47DevFogDensity >= 0.f ? GS47DevFogDensity : FMath::Clamp((FogDensity * 2.f + Caliche * .0012f) * Look.FogDensityGain, 0.0003f, 0.012f));
 	// SKY.md: aerial perspective of the concept. Through late afternoon and dusk the far mesas go
 	// dusty blue-violet, with a warm glow in the haze toward the low (or just set) sun.
 	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);
@@ -523,11 +641,20 @@ void AS47Web::UpdateNativeLighting()
 	UpdateArrayLighting();
 	UpdateExteriorLighting();
 	UpdateLabLighting();
+	const auto Look = LookdevEnvironmentNow();
+	if (LightingPost)
+	{
+		// User brightness still controls ToneK independently; retain the exact user EV
+		// and add only the authored scene correction instead of writing over either.
+		LightingPost->Settings.AutoExposureBias = ExposureOffset + Look.ExposureEV;
+	}
+	for (FExteriorLight& P : ExteriorLights) if (ULightComponent* L = P.Light.Get())
+		L->SetVolumetricScatteringIntensity(Look.ExteriorScattering);
 	// Lumen's direct-light surface-cache pass applies each light's IndirectLightingScale.
 	// PostProcess.IndirectLightingIntensity only scales precomputed GI in this UE version.
 	// Lower bounce at night without dimming the actual lamp, screen or flashlight pools;
 	// return to the existing daylight response along the world's dawn curve.
-	const float Indirect = PreviousNight() ? 1.f : FMath::Lerp(0.52f, 1.f, FMath::Clamp(SkyDawn, 0.f, 1.f));
+	const float Indirect = (PreviousNight() ? 1.f : FMath::Lerp(0.52f, 1.f, FMath::Clamp(SkyDawn, 0.f, 1.f))) * Look.IndirectGain;
 	auto Bounce = [Indirect](ULightComponent* Light) { if (Light) Light->SetIndirectLightingIntensity(Indirect); };
 	for (FPoolLight& P : PoolLights) Bounce(P.Light.Get());
 	for (FFixtureLight& P : FixtureLights) Bounce(P.Light.Get());
@@ -542,7 +669,8 @@ void AS47Web::UpdateNativeLighting()
 	{
 		// Keep each area's original moon direction; the sun is driven by the living sky above.
 		const float LocalMoon = FMath::Lerp(PreviousNight() ? 0.16f : 0.055f, 0.24f, float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye)))));
-		Moon->SetIntensity(R.Base > 0 ? (LocalMoon * (1.f - SkyDawn) + SkyFlash * 0.8f) * FinaleLight : 0.f);
+		// Lightning keeps its authored brightness; only the moon baseline receives the gain.
+		Moon->SetIntensity(R.Base > 0 ? (LocalMoon * (1.f - SkyDawn) * Look.MoonGain + SkyFlash * 0.8f) * FinaleLight : 0.f);
 		if (!PreviousNight()) Moon->SetLightColor(FLinearColor(0.40f, 0.55f, 1.f));
 		Bounce(Moon);
 		Moon->SetLightSourceAngle(0.52f);
