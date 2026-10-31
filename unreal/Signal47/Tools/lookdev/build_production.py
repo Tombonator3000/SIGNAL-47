@@ -43,7 +43,8 @@ M = unreal.MaterialEditingLibrary
 PARAM_ARRAYS = ('scalar_parameter_values', 'vector_parameter_values', 'double_vector_parameter_values',
                 'texture_parameter_values', 'texture_collection_parameter_values', 'parameter_collection_parameter_values',
                 'runtime_virtual_texture_parameter_values', 'sparse_volume_texture_parameter_values', 'font_parameter_values')
-SARO_PREFIXES = ['SM_Office_', 'SM_Saro_CorridorFinishes', 'SM_Saro_ControlRoomFinishes']
+SARO_PREFIXES = ['SM_Office_', 'SM_Saro_CorridorFinishes', 'SM_Saro_ControlRoomFinishes',
+                 'SM_Saro1986_OfficeRoomCpu']
 # Several Office graphs share this previously local normal asset, now included
 # with the source assets so regeneration also works in a clean checkout.
 # Own only this exact dependency where a selected clone actually references it.
@@ -95,6 +96,7 @@ def plan():
                          'profile': profile, 'mesh_prefixes': [
                              ('/Game/MotelV2/' if scope == 'motel' else
                               '/Game/Signal47/Art/Office/' if prefix.startswith('SM_Office_') else
+                              '/Game/Signal47/Art/Saro1986/' if prefix.startswith('SM_Saro1986_') else
                               '/Game/Signal47/Art/SaroInteriors/') + prefix for prefix in prefixes]})
     room = '/Game/Signal47/Art/SaroInteriors/Materials'
     office = '/Game/Signal47/Art/Office/Materials'
