@@ -17,6 +17,7 @@
 #include "Misc/Paths.h"
 #include "S47Audio.h"
 #include "S47FieldCamera.h"
+#include "S47TripoFleet.h"
 #include "S47FreeModels.h"
 #include "S47Props.h"
 #include "S47Geo.h"
@@ -185,7 +186,7 @@ void US47World::Init(US47Main* InM)
 		T.Range = 3.2;
 		T.Label = [this] { if (M->Spine) { const FString L = M->Spine->Label(TEXT("truck")); if (!L.IsEmpty()) return L; } return TruckChoice ? TruckChoice(TEXT("saro")).Label : FString(); };
 		T.Use = [this] { if (TruckChoice) TruckChoice(TEXT("saro")).Use(); };
-		T.Examine = [] { return FString(EXAMINE_TRUCK); };
+		T.Examine = [this] { return ServiceDescription(TEXT("saro")); };
 		M->Inter->Add(T);
 		FS47Interactable S;
 		S.Id = TEXT("s1truck");
@@ -194,7 +195,7 @@ void US47World::Init(US47Main* InM)
 		FS47Obj Spot = S.Object;
 		S.Label = [this, Spot] { return Area == TEXT("station01") && Spot.Position().Y > -100 && TruckChoice ? TruckChoice(TEXT("station01")).Label : FString(); };
 		S.Use = [this] { if (TruckChoice) TruckChoice(TEXT("station01")).Use(); };
-		S.Examine = [this, Spot] { return Area == TEXT("station01") && Spot.Position().Y > -100 ? FString(EXAMINE_TRUCK) : FString(); };
+		S.Examine = [this, Spot] { return Area == TEXT("station01") && Spot.Position().Y > -100 ? ServiceDescription(TEXT("station01")) : FString(); };
 		M->Inter->Add(S);
 		// the truck left on the old road (out of it anywhere, Tom 22 October 2026: the web version has no
 		// way out there), got into again where it stands; chapter six's drive goes on
@@ -532,6 +533,11 @@ void US47World::BeginDestroy()
 }
 
 void US47World::Hold(bool bOn) { if (M && M->Story) M->Story->SetCinematic(bOn); }
+FString US47World::ServiceDescription(const FString& Place)const
+{
+ const FS47Truck* Truck=TruckOf(Place);
+ return Truck&&Truck->TripoJeep()?FString(TEXT("The observatory's white Jeep. Open sides, worn seats, and the service keys where they always are.")):FString(EXAMINE_TRUCK);
+}
 void US47World::Fade(bool bOn) { if (M && M->UI) M->UI->Fade(bOn, TEXT("")); }
 void US47World::Toast(const FString& Text, float Secs) { if (M && M->UI) M->UI->Toast(Text, Secs); }
 bool US47World::FirstTime(const FString& Id)
@@ -558,6 +564,7 @@ void US47World::EnsureLegs()
 	TruckP = MakeUnique<FS47Truck>(); TruckP->Bind(M, TEXT("world.legs.road.drive.truck"), CabSet(TEXT("truck")), this);
 	ParkedP = MakeUnique<FS47Truck>(); ParkedP->Bind(M, TEXT("world.legs.station01.drive.truck"), CabSet(TEXT("parked")), this);
 	OldTruckP = MakeUnique<FS47Truck>(); OldTruckP->Bind(M, TEXT("world.oldTruck"), CabSet(TEXT("oldTruck")), this);
+	FS47TripoFleet::InstallWorld(W);
 	for (FS47Truck* T : { SaroTruckP.Get(), TruckP.Get(), ParkedP.Get(), OldTruckP.Get() }) if (T->DashTarget()) Keep.Add(T->DashTarget());
 	// initSaro: SARO's on its pad by the service yard (YARD.truck); ensureStation: the one the
 	// player came in, parked outside the gate (Station01 anchors.truck)
@@ -685,6 +692,21 @@ void US47World::EnsureLegs()
 		L.Drive = MakeUnique<FS47DriveController>(L.Truck, A.Get());
 		L.Drive->OnBump = Thud;
 		L.Area = MoveTemp(A);
+	}
+	// Imported drive lists predate the actual replacement footprints. Add only
+	// these explicitly owned static vehicles after those lists are loaded.
+	for(auto& Pair:Legs)
+	{
+		const TCHAR* Walk=Pair.Key==TEXT("saro")?TEXT("saro"):TEXT("road");
+		if(Pair.Key!=TEXT("saro")&&Pair.Key!=TEXT("road")&&Pair.Key!=TEXT("roswell"))continue;
+		bool Tractor=false;
+		for(const auto& R:W->CollidersMutable(Walk))if(R.bEnabled&&R.Id.StartsWith(TEXT("tripo:")))
+		{
+			Tractor|=R.Id==TEXT("tripo:mesa-tractor");
+			const bool Already=Pair.Value.Area->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return !O.bCircle&&FMath::IsNearlyEqual(O.MinX,R.MinX,.001)&&FMath::IsNearlyEqual(O.MaxX,R.MaxX,.001)&&FMath::IsNearlyEqual(O.MinZ,R.MinZ,.001)&&FMath::IsNearlyEqual(O.MaxZ,R.MaxZ,.001);});
+			if(!Already)Pair.Value.Area->Obstacles.Add(FS47Obstacle::Box(R.MinX,R.MaxX,R.MinZ,R.MaxZ));
+		}
+		if(Tractor)Pair.Value.Area->Obstacles.RemoveAll([](const FS47Obstacle& O){return !O.bCircle&&FMath::IsNearlyEqual(O.MinX,7983.65,.001)&&FMath::IsNearlyEqual(O.MaxX,7994.8,.001)&&FMath::IsNearlyEqual(O.MinZ,1984.4,.001)&&FMath::IsNearlyEqual(O.MaxZ,1987.2,.001);});
 	}
 	UE_LOG(LogS47World, Display, TEXT("S47: drive legs: saro %d, road %d, station01 %d, roswell %d obstacles%s"),
 		Legs[TEXT("saro")].Area->Obstacles.Num(), Legs[TEXT("road")].Area->Obstacles.Num(), Legs[TEXT("station01")].Area->Obstacles.Num(), Legs[TEXT("roswell")].Area->Obstacles.Num(),
@@ -919,7 +941,7 @@ void US47World::ParkAt(FString Id)
 	if (!T || !M || !M->Web) return;
 	const bool bHere = TruckAt == Id || (Id == TEXT("saro") && TruckAt == TEXT("motel"));
 	const double H = T->Rotation.Y, C = FMath::Abs(FMath::Cos(H)), Sn = FMath::Abs(FMath::Sin(H));
-	const double Hx = 1.05 * C + 2.75 * Sn, Hz = 1.05 * Sn + 2.75 * C;
+	const double Hx = T->HalfWidth() * C + T->HalfLength() * Sn, Hz = T->HalfWidth() * Sn + T->HalfLength() * C;
 	const FVector& G = T->Position;
 	auto Put = [&](const TCHAR* WalkArea, int32 Index)
 	{
@@ -934,7 +956,7 @@ void US47World::ParkAt(FString Id)
 	if (M->Player)
 	{
 		const FString A = AreaOf(Id);
-		if (bHere) { AS47Walker::FTruckBox B; B.Area = A; B.X = G.X; B.Z = G.Z; B.Heading = H; M->Player->TruckBox = B; }
+		if (bHere) { AS47Walker::FTruckBox B; B.Area = A; B.X = G.X; B.Z = G.Z; B.Heading = H; B.HalfW=T->HalfWidth(); B.HalfL=T->HalfLength(); M->Player->TruckBox = B; }
 		else if (M->Player->TruckBox && M->Player->TruckBox->Area == A) M->Player->TruckBox.Reset();
 	}
 	if (Id == TEXT("saro")) Put(TEXT("saro"), SaroCol);

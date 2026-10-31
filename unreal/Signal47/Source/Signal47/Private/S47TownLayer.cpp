@@ -21,6 +21,7 @@
 #include "S47Lines.h"
 #include "S47Main.h"
 #include "S47MotelTv.h"
+#include "S47Evening.h"
 #include "S47MorningHolds.h"
 #include "S47Night.h"
 #include "S47NinthCow.h"
@@ -44,6 +45,16 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Base64.h"
 #include "TimerManager.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Engine/Texture2D.h"
+#include "TextureResource.h"
+#include "RHICommandList.h"
+#include "RenderingThread.h"
+#include "Internationalization/Regex.h"
+#include "Misc/Base64.h"
+#include "Misc/Paths.h"
+#include "HAL/FileManager.h"
 #if __has_include("S47Chapter3.h")
 #include "S47Chapter3.h"
 #endif
@@ -197,9 +208,7 @@ void US47TownLayer::EventsOnB(double Dt, bool bModal)
 {
 	const auto& H = M->Night->Hooks; const bool bOk = !bModal && !Cinematic() && At(TEXT("ch1")) && Phase() != TEXT("ch6") && M->Night->Dawn() < .3 && !Is(H.AbductionBusy) && !Is(H.OfficePhoneBusy) && !Is(H.ArrayBackBusy);
 	FS47PastureIn P; P.bOk = bOk; P.Area = Area() == TEXT("saro") ? TEXT("saro") : Area() == TEXT("road") || Area() == TEXT("diner") ? TEXT("road") : TEXT(""); P.Cam = Camera(); P.Clock = Clock(); P.bDriving = Driving(); Pasture->Update(Dt, P);
-	FS47MotelTvIn T; T.bOk = bOk; T.bSaro = Area() == TEXT("saro"); const FVector Pos = M->Player->Pos;
-	const auto& AtM = S47Geo::MOTEL_AT(); const FVector Door(-41.1 + AtM.X, 0, 24.1 + AtM.Z);
-	T.bHere = T.bSaro && !Driving() && (M->Web->Rect(TEXT("world.motel.zones[2]")).Contains(Pos) || DistXZ(Pos, Door) < 5); T.bTruckOnLot = M->World->TruckAt == TEXT("motel"); T.Cam = Camera(); T.Clock = Clock(); T.May = M->Night->Curve->May(TEXT("long")); T.Unrest = M->Night->Curve->Unrest(); MotelTv->Update(Dt, T);
+
 	if ((LineBCheck += Dt) > 1 && !M->TownSeen.Contains(TEXT("lineB")))
 	{
 		// mapMarks().filter((m) => m.line === 'B'): the town's marks and the times away (S47Away's)
@@ -233,6 +242,18 @@ void US47TownLayer::MorningStep(double Dt, bool bModal)
 void US47TownLayer::WorldStep(double Dt)
 {
 	S47CalicheAccess::Update();
+	{
+		// The ordinary broadcast also runs through the motel opening, when Main holds
+		// Night::Step (and therefore EventsOnB). Only its anomalous event waits for the shift.
+		const auto& H = M->Night->Hooks;
+		const bool bOk = (!M->Evening || !M->Evening->Opening()) && !M->ModalOpen() && !Cinematic() &&
+			At(TEXT("ch1")) && Phase() != TEXT("ch6") && M->Night->Dawn() < .3 &&
+			!Is(H.AbductionBusy) && !Is(H.OfficePhoneBusy) && !Is(H.ArrayBackBusy);
+		FS47MotelTvIn T; T.bOk = bOk; T.bSaro = Area() == TEXT("saro"); const FVector Pos = M->Player->Pos;
+		const auto& AtM = S47Geo::MOTEL_AT(); const FVector Door(-41.1 + AtM.X, 0, 24.1 + AtM.Z);
+		T.bHere = T.bSaro && !Driving() && (M->Web->Rect(TEXT("world.motel.zones[2]")).Contains(Pos) || DistXZ(Pos, Door) < 5); T.bTruckOnLot = M->World->TruckAt == TEXT("motel"); T.Cam = Camera(); T.Clock = Clock(); T.May = M->Night->Curve->May(TEXT("long")); T.Unrest = M->Night->Curve->Unrest(); MotelTv->Update(Dt, T);
+	}
+
 	bool bRadioWomanTownUpdated = false;
 	const FString A = Area(); const auto Cam = Camera();
 	if (A == TEXT("diner") || A == TEXT("road") || A == TEXT("roswell"))
@@ -379,15 +400,69 @@ void US47TownLayer::TestFlags()
 		}
 		if (bRoad) { M->World->Enter(TEXT("saro")); M->Player->Place(-24, 220, 0); if (Road == TEXT("car")) L->Roadside->CarNow(M->Player->Pos); else if (Road == TEXT("roof")) { M->Player->Place(-24, 600, 2.3); L->Roadside->RoofNow(); } else L->Roadside->SilenceNow(L->RoadsideIn(false)); UE_LOG(LogS47Town, Display, TEXT("S47: roadside test %s"), *Road); }
 		if (bHerd) { M->World->Enter(TEXT("saro")); L->Pasture->Now(); FS47PastureIn S; S.bOk = true; S.Cam = L->Camera(); S.Clock = L->Clock(); L->Pasture->Update(.05, S); M->Player->Place(-55, 856, -PI / 2); if (Herd == TEXT("missing")) L->Pasture->TakeNinth(); UE_LOG(LogS47Town, Display, TEXT("S47: pasture test %s"), *L->Pasture->Stage); }
-		if (bTv) { M->World->PlaceTruck(TEXT("motel")); M->World->Enter(TEXT("saro")); const FS47Obj TvObj = M->Web->Obj(TEXT("world.motel.tv.group")); const FVector P = TvObj.WorldPosition(), Front = TvObj.WorldDirection(); const bool bProgramme = Tv.StartsWith(TEXT("programme")), bNear = Tv == TEXT("programme-near"); const double Back = bNear ? 1.25 : 1.8;
+		if (bTv) {
+			const bool bOpening = Tv == TEXT("programme-opening");
+			if (bOpening && M->Evening)
+			{
+				// Normal parked-arrival state, with the handover still pending. This
+				// specifically keeps Main's nightly event loop held during the samples.
+				M->Evening->Begin(nullptr, true);
+				auto Arrival = M->Evening->Save();
+				S47J::Set(S47J::Obj(S47J::Obj(Arrival,TEXT("pack")),TEXT("flags")), TEXT("handover_done"), false);
+				S47J::Set(Arrival,TEXT("clock"),-21600.0);
+				M->Evening->Begin(Arrival);
+			}
+			M->World->PlaceTruck(TEXT("motel")); M->World->Enter(TEXT("saro")); const FS47Obj TvObj = M->Web->Obj(TEXT("world.motel.tv.group")); const FVector P = TvObj.WorldPosition(), Front = TvObj.WorldDirection(); const bool bProgramme = Tv.StartsWith(TEXT("programme")), bNear = Tv == TEXT("programme-near") || bOpening; const double Back = bNear ? 1.25 : 1.8;
 			const FVector Stand(P.X + Front.X * Back, 0, P.Z + Front.Z * Back); const FVector Screen = TvObj.LocalToWorld(FVector(-0.045, 0.18, 0.1815));
 			M->Player->Place(Stand.X, Stand.Z, FMath::Atan2(Front.X, Front.Z)); M->Player->Pitch = 0.04;
 			// (the view kept on the middle of the screen through the run, from wherever the walker stands: a
 			// stray mouse on the test machine must not turn it off the set)
 			auto Hold = [Self, Screen] { if (!Self.IsValid() || !Self->M->Player) return; auto* Pl = Self->M->Player.Get(); const double Dx = Screen.X - Pl->Pos.X, Dz = Screen.Z - Pl->Pos.Z; Pl->Yaw = FMath::Atan2(-Dx, -Dz); Pl->Pitch = FMath::Atan2(Screen.Y - Pl->FloorY - Pl->Eye, FMath::Sqrt(Dx * Dx + Dz * Dz)); };
-			Hold(); FTimerHandle HoldTimer; M->Web->GetWorldTimerManager().SetTimer(HoldTimer, Hold, 0.25f, true); M->Story->SetClock(bProgramme ? 5 * 3600 + 10 * 60 : 3 * 3600 + 20 * 60); if (!bProgramme) L->MotelTv->Now(); UE_LOG(LogS47Town, Display, TEXT("S47: motel television test %s"), *L->MotelTv->Mode);
+			Hold(); FTimerHandle HoldTimer; M->Web->GetWorldTimerManager().SetTimer(HoldTimer, Hold, 0.25f, true); M->Story->SetClock(bOpening ? -21600 : bProgramme ? 5 * 3600 + 10 * 60 : 3 * 3600 + 20 * 60); if (!bProgramme) L->MotelTv->Now(); UE_LOG(LogS47Town, Display, TEXT("S47: motel television test %s"), *L->MotelTv->Mode);
 			// the late broadcast (when staged): before, under and after the event
 			for (const float At : { 4.f, 10.f, 52.f }) { FTimerHandle BroadcastTimer; M->Web->GetWorldTimerManager().SetTimer(BroadcastTimer, [Self] { if (Self.IsValid()) UE_LOG(LogS47Town, Display, TEXT("S47: motel television %s, broadcast %s"), *Self->MotelTv->Mode, *Self->MotelTv->ProgrammeState()); }, At, false); }
+
+			if (bOpening)
+			{
+				FString Proof; FParse::Value(FCommandLine::Get(), TEXT("S47MotelTvProof="), Proof);
+				if (Proof.IsEmpty()) Proof = FPaths::ProjectSavedDir() / TEXT("Tests/TVOpening");
+				IFileManager::Get().MakeDirectory(*Proof, true);
+				auto First = MakeShared<TArray<FColor>>(); auto FirstTimes = MakeShared<FVector2D>(-1,-1);
+				for (int32 Sample = 0; Sample < 2; ++Sample)
+				{
+					FTimerHandle SampleTimer;
+					M->Web->GetWorldTimerManager().SetTimer(SampleTimer, [Self, Proof, First, FirstTimes, Sample]
+					{
+						if (!Self.IsValid()) return; auto* M = Self->M.Get();
+						const FString State = Self->MotelTv->ProgrammeState();
+						const FRegexPattern Pattern(TEXT("picture ([0-9.]+) s \\(frame ([0-9]+)\\), sound ([0-9.]+) s, level ([0-9.]+)"));
+						FRegexMatcher Match(Pattern,State);
+						bool Good = M->Evening && M->Evening->Opening() && M->Story->bOpeningHeld && Match.FindNext();
+						FVector2D Times(-1,-1); if (Good) { Times=FVector2D(FCString::Atod(*Match.GetCaptureGroup(1)),FCString::Atod(*Match.GetCaptureGroup(3))); Good &= FCString::Atod(*Match.GetCaptureGroup(4)) > 0; }
+						UMaterialInstanceDynamic* Mid=nullptr; UTexture* Image=nullptr; float Enabled=0;
+						TArray<UStaticMeshComponent*> Components; M->Web->GetComponents(Components);
+						for (auto* C : Components) if (C->GetName()==TEXT("Kelvora_OfficeTV") && C->IsVisible()) Mid=Cast<UMaterialInstanceDynamic>(C->GetMaterial(1));
+						Good &= Mid && Mid->GetTextureParameterValue(FMaterialParameterInfo(TEXT("EmissiveMap")),Image) && Mid->GetScalarParameterValue(FMaterialParameterInfo(TEXT("UseEmissiveMap")),Enabled) && Enabled > .99f;
+						auto* Tube=Cast<UTexture2D>(Image); auto* Resource=Tube?Tube->GetResource():nullptr;
+						Good &= Resource && Resource->TextureRHI.IsValid(); TArray<FColor> Pixels;
+						if (Good)
+						{
+							const FTextureRHIRef Texture=Resource->TextureRHI;
+							ENQUEUE_RENDER_COMMAND(S47TVOpeningRead)([Texture,&Pixels](FRHICommandListImmediate& Cmd){Cmd.ReadSurfaceData(Texture,FIntRect(0,0,256,192),Pixels,FReadSurfaceDataFlags(RCM_UNorm));});
+							FlushRenderingCommands(); Good &= Pixels.Num()==256*192;
+						}
+						if (Good)
+						{
+							const FString Url=S47Image::ToDataUrl(Pixels,256,192,false); TArray<uint8> Bytes;
+							Good &= FBase64::Decode(Url.Mid(Url.Find(TEXT(","))+1),Bytes) && FFileHelper::SaveArrayToFile(Bytes,*(Proof/FString::Printf(TEXT("opening-screen-%d.png"),Sample)));
+							if (!Sample) { *First=Pixels; *FirstTimes=Times; }
+							else { int32 Changed=0; for(int32 I=0;I<Pixels.Num();++I) if(First->IsValidIndex(I) && (*First)[I]!=Pixels[I]) ++Changed; Good &= Times.X>FirstTimes->X+.5 && Times.Y>FirstTimes->Y+.5 && Changed>Pixels.Num()/20; }
+						}
+						UE_LOG(LogS47Town,Display,TEXT("S47: TV opening sample%d %s held=%d opening=%d actual native GPU screen; %s"),Sample,Good?TEXT("PASS"):TEXT("FAIL"),M->Story->bOpeningHeld,M->Evening&&M->Evening->Opening(),*State);
+					},4.f+Sample*2.f,false);
+				}
+			}
+
 			if (Tv == TEXT("frame"))
 			{
 				FTimerHandle FrameTimer; M->Web->GetWorldTimerManager().SetTimer(FrameTimer, [Self]

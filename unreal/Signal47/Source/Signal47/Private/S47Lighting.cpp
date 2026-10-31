@@ -500,6 +500,9 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 	// Only the active Roswell view loses native ground fill; the living sky keeps its own curves.
 	const float FinaleLight = CurrentArea == TEXT("roswell") ? 1.f - FinaleGroundShade : 1.f;
 	const float Caliche = float(S47CalicheVisualWeight(HighwayMapEye(S47Three::ToThree(Eye))));
+	// Golden hour belongs to the low western sun, with no grading applied to the night.
+	const float Golden = FMath::Clamp(Evening * 4.f, 0.f, 1.f) *
+		(1.f - FMath::SmoothStep(.035f, .18f, float(SunDirection.Y)));
 	UpdateCloudLight(SunDirection, Daylight);
 	if (DawnSun)
 	{
@@ -522,6 +525,7 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// The old dawn-only orange sun should not tint a whole noon street orange.
 		const float HighSun = Caliche * FMath::Clamp(float((SunDirection.Y - 0.08) / 0.45), 0.f, 1.f);
 		DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, 0.94f, 0.83f), HighSun));
+		DawnSun->SetLightColor(FMath::Lerp(DawnSun->GetLightColor(), FLinearColor(1.f, .58f, .24f), Golden * .8f));
 	}
 	if (NightSky)
 	{
@@ -537,11 +541,12 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// This compensates visible native cloud bases. The cleared finale needs no
 		// extra fill when its own banks replace that weather, regardless of capability.
 		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) * CloudFinaleWeatherWeight : 1.f;
-		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain);
+		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight * Look.SkyGain * FMath::Lerp(1.f, .78f, Golden));
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.
 		const FLinearColor NightTint = FMath::Lerp(FLinearColor(0.42f, 0.57f, 1.f), FLinearColor(0.64f, 0.75f, 1.f), Caliche);
-		NightSky->SetLightColor(FMath::Lerp(NightTint, FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f)));
+		const FLinearColor SkyTint = FMath::Lerp(NightTint, FLinearColor(0.93f, 0.95f, 1.f), FMath::Clamp(Daylight, 0.f, 1.f));
+		NightSky->SetLightColor(FMath::Lerp(SkyTint, FLinearColor(.72f, .82f, .94f), Golden * .55f));
 	}
 }
 
@@ -579,13 +584,15 @@ void AS47Web::UpdateNativeFog()
 	// dusty blue-violet, with a warm glow in the haze toward the low (or just set) sun.
 	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);
 	const float Dusk = FMath::Clamp(SkyEvening * 3.f, 0.f, 1.f) * FMath::Clamp(D * 3.f, 0.f, 1.f);
+	// The broad sky remains cool; amber is concentrated in the forward solar haze.
+	const float Amber = 4.f * FMath::Clamp(SkyEvening, 0.f, 1.f) * (1.f - FMath::Clamp(SkyEvening, 0.f, 1.f));
 	const FLinearColor Blue = FLinearColor(.16f, .19f, .30f) * FMath::Lerp(.25f, 1.f, D);
-	LightingFog->SetFogInscatteringColor(FMath::Lerp(FogColor, Blue, Dusk * .75f) * FMath::Lerp(.12f, .32f, Caliche));
+	LightingFog->SetFogInscatteringColor(FMath::Lerp(FogColor, Blue, Dusk * FMath::Lerp(.75f, .36f, Amber)) * FMath::Lerp(.12f, .32f, Caliche));
 	// A developer fog is a grey night mist, lit enough to be seen (the night's own inscatter is near black).
 	if (GS47DevFogDensity >= 0.f) LightingFog->SetFogInscatteringColor(FLinearColor(.045f, .05f, .06f));
-	LightingFog->SetDirectionalInscatteringExponent(6.f);
+	LightingFog->SetDirectionalInscatteringExponent(FMath::Lerp(6.f, 3.f, Amber));
 	LightingFog->SetDirectionalInscatteringStartDistance(3000.f);
-	LightingFog->SetDirectionalInscatteringColor(FLinearColor(.55f, .26f, .10f) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * FMath::Lerp(.15f, .45f, Caliche)));
+	LightingFog->SetDirectionalInscatteringColor(FMath::Lerp(FLinearColor(.55f, .26f, .10f), FLinearColor(1.f, .43f, .12f), Amber) * (Dusk * FMath::Max(SkyGlow, FMath::Clamp(SkySun, 0.f, 1.f)) * (FMath::Lerp(.15f, .45f, Caliche) + .35f * Amber)));
 	LightingFog->SetStartDistance(7000.f * Caliche);
 	LightingFog->SetVolumetricFogDistance(FMath::Lerp(14000.f, 120000.f, Caliche));
 }

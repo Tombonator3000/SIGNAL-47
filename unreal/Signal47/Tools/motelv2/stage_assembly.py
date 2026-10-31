@@ -39,7 +39,20 @@ def verify_grounding(source, manifest, trim, layout):
     assert repair['contract_sha256'] == trim['grounding_contract_sha256'] == sha(path)
     origin = manifest['parts']['SM_Sierra_Office']['site_world_three_m']
     expected = []
-    for surface in grounding['surface_rectangles_blender_xy_m'].values():
+    surfaces = grounding['surface_rectangles_blender_xy_m']
+    if 'rear_pool' in manifest:
+        assert manifest['rear_pool']['offset_blender_m'] == [0, -25, 0]
+        assert layout['rear_pool']['world_offset_z_m'] == 25
+        # Preserve the immutable grounding predecessor and compose only the
+        # explicit rear-pool relocation, leaving lobby, rooms and road fixed.
+        for key in ('pool_enclosure', 'west_pool_approach', 'pool_gate_threshold'):
+            for field in ('rect', 'water_rect'):
+                if field in surfaces[key]:
+                    surfaces[key][field][2] -= 25
+                    surfaces[key][field][3] -= 25
+        surfaces['rear_pool_route'] = {'rect': [-5.2, -4., -20., 3.4], 'top_z': 0}
+        surfaces['rear_pool_link'] = {'rect': [-8., -4., -21.6, -20.], 'top_z': 0}
+    for surface in surfaces.values():
         x0, x1, y0, y1 = surface['rect']
         pieces = [[x0, x1, y0, y1]]
         if 'water_rect' in surface:
@@ -143,7 +156,7 @@ def stage(args):
     verify_asphalt(trim)
     assert layout['version'] == 1
     assert set(layout['retire_native']) == {'SM_Town_Motel_Shell', 'SM_Town_Motel_Glass', 'SM_Town_Motel_Office', 'SM_Town_Motel_Fixtures'}
-    assert {(r['node'], r['geo'], r['parent']) for r in layout['retire_nodes']} == {(26, 19, 25), (27, 20, 25), (28, 21, 25)}
+    assert layout['retire_nodes'] == [], 'Preserve large roadside sign faces and poles26/27/28'
     assert set(layout['retire_props']) == {'motelBlade', 'motelNeon'}
     assert layout['retire_named_nodes'] == [
         {'node': 737, 'name': 'lic:lamp_marble', 'parent': 689}
@@ -166,7 +179,7 @@ def stage(args):
         assert layout[key]
         for value in layout[key]:
             rect(value)
-    hole = [-61., -56.8, 669.8, 678.]
+    hole = layout.get('rear_pool', {}).get('water_rect', [-61., -56.8, 669.8, 678.])
     assert any(all(abs(a - b) < .0001 for a, b in zip(value, hole)) for value in layout['add_colliders']), 'water needs collider'
     for floor in layout['floors']:
         rect(floor['rect'])
@@ -207,6 +220,8 @@ def stage(args):
                               'runtime_layout_sha256': sha(args.layout),
                               'native_import_report_sha256': sha(args.import_report),
                               'saved_native_report_sha256': sha(args.verify_report)})
+    if 'rear_pool' in contract:
+        result['rear_pool'] = contract['rear_pool']
     project = args.project.resolve()
     assert project.is_dir() and (project / 'Signal47.uproject').is_file()
     destination = project / 'Content/MotelV2/assembly.json'

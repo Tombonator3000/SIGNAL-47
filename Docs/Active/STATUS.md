@@ -6,7 +6,15 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Freeform under gjennomføring
 
-PR297 implementerer separat Freeform med vedvarende døgn, SARO-målearbeid, fysisk forsynings-/servicereise, seksten situasjonsstyrte hendelser og tre mysterielinjer. Koden er foreløpig ikke motorvalidert eller lokalt installert. Bygg/test venter på maskinens eksisterende produksjonsreservasjon; gjeldende installasjon er fortsatt Roswell-rettingen nedenfor. [Plan og avgrensning](../Design/Story/SARO_STORY_FREEFORM.md#godkjent-gjennomføring-vedvarende-døgn-og-hendelsesregissør).
+PR297 implementerer separat Freeform med vedvarende døgn, SARO-målearbeid, fysisk forsynings-/servicereise, seksten situasjonsstyrte hendelser og tre mysterielinjer. Koden er foreløpig ikke motorvalidert eller lokalt installert. Bygg/test venter på maskinens eksisterende produksjonsreservasjon; nyeste modell-/terrengkandidat fra PR298 pakkes separat. [Plan og avgrensning](../Design/Story/SARO_STORY_FREEFORM.md#godkjent-gjennomføring-vedvarende-døgn-og-hendelsesregissør).
+
+## Tripo-flåte, motellretting og varm solnedgang
+
+Tom avsluttet spilltesten og ba om fullføring. Fem originale Tripo-modeller er bevart privat og klargjort i Blender med PBR og tre LOD-er. Nærmodellene er redusert fra 3 769 015 til 364 631 trekanter. Jeep erstatter servicekjøretøyet, den gamle SARO-trucken står i sideparkeringen, og dinerens trekkvogn og politibil er erstattet med Toms modeller. Politidøren beholder faktisk hengsel og interaksjon. UFO-ene har egne F10-forhåndsvisninger; historiens finale er bevart. Jeepens sammenbygde kildehjul er ennå ikke separat animert.
+
+Caliche og motellets faktiske LOD-er bruker nå samme FBX-koordinatramme. Store motellskilt finnes også i nærverdenen, og hele bassenget er flyttet bak romrekken med terrasse, gjerde, adkomst og terrengkutt. TV-en oppdaterer filmer og lyd også i åpningsfasen. Terminalens viste 100 % og godkjenning bruker samme avrunding. Solnedgangen har egen varm ravgul horisont og gyllent skylys med kjøligere skygger, uten å endre nattprofilen.
+
+Editorbygg, 1838 selvtester, faktiske filmrammer/lydklokker, inn-/utkobling av de to UFO-ene og målrettede bilder består. Pakking, kort pakket prøve og lokal installasjon pågår. Personlige Saved er ikke endret. [Skript og begrensninger](../../unreal/Signal47/Tools/tripofleet/README.md).
 
 ## Aktive SARO-arbeidsstasjoner og antenneservice
 

@@ -86,6 +86,8 @@ public:
 	 *  prop has that door (the exported thing answers as before). */
 	static bool UseDoor(const FString& Use);
 	static bool IsDoorOpen(const FString& Use);
+	/** Retarget the existing deputy car, story swing and beacon to inspected source parts. */
+	static bool RetargetPatrolCar(UStaticMesh* Body,UStaticMesh* Door,const FVector& HingeThree);
 
 	/** The floor a prop lays down there (its "floors": a building one walks into, its steps), NaN
 	 *  where it has none (AS47Walker::FloorAt asks first). Three's world terms. */

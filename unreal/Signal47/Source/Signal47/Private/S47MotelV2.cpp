@@ -387,15 +387,23 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
   for(const auto& P:RetiredSignPools)Check(W->FloodCol(P.X,P.Y).Equals(FLinearColor::Black),FString::Printf(TEXT("legacy sign flood remains set%d slot%d"),P.X,P.Y));
  }
  const auto PhotoTarget=SignPhotoTarget();
+ // The road-area distant landmark has a matching original SARO-area face and
+ // support. The separate native entrance sign must not retire that counterpart.
+ for(const FIntPoint& Sign:{FIntPoint(26,19),FIntPoint(27,20),FIntPoint(28,21)})
+ {
+  const auto* N=W?W->Node(Sign.X):nullptr;auto* C=W?MeshAt(W,Sign.X):nullptr;
+  Check(N&&N->Parent==25&&N->Geo==Sign.Y&&C&&C->IsVisible()&&!C->bHiddenInGame,
+   FString::Printf(TEXT("large roadside sign near-area counterpart missing node%d"),Sign.X));
+ }
  Check(PhotoTarget.IsSet(),TEXT("authored sign photo target unavailable"));
  if(PhotoTarget.IsSet())Check(PhotoTarget->Equals(FVector(-41.2320000172,2.1300242489,669.1897799015),.01),TEXT("authored sign photo target differs from verified sign-face bounds"));
  const auto Landscape=LandscapeFootprints();
  auto Cleared=[&Landscape](double X,double Z){for(const auto& B:Landscape)if(X>=B.X&&X<=B.Y&&Z>=B.Z&&Z<=B.W)return true;return false;};
  // Integration boundary checks: the new paved/water surfaces are clear; neighbouring desert is untouched.
  Check(Landscape.Num()==Floors.Num()+1&&!Floors.IsEmpty(),TEXT("landscape exclusion count does not match installed floors plus water"));
- for(const FVector2D& P:{FVector2D(-63,674),FVector2D(-58.9,674),FVector2D(-53.2,680.6),FVector2D(-47,670.7)})
+ for(const FVector2D& P:{FVector2D(-63,699),FVector2D(-58.9,699),FVector2D(-53.2,705.6),FVector2D(-47,670.7),FVector2D(-50.5,683),FVector2D(-52,695.7)})
   Check(Cleared(P.X,P.Y),FString::Printf(TEXT("landscape footprint misses built surface %.2f %.2f"),P.X,P.Y));
- for(const FVector2D& P:{FVector2D(-65.2,674),FVector2D(-59,665.6),FVector2D(-52.2,680.6),FVector2D(-47,669.5)})
+ for(const FVector2D& P:{FVector2D(-65.2,699),FVector2D(-59,690.6),FVector2D(-52.2,705.6),FVector2D(-47,669.5),FVector2D(-58.9,674)})
   Check(!Cleared(P.X,P.Y),FString::Printf(TEXT("landscape footprint clears neighbouring desert %.2f %.2f"),P.X,P.Y));
  Lines.Add(FString::Printf(TEXT("motel V2 %s parts=%d/%d patches=%d retired=%d cars=%d/3 protected=%d/8 disabledColliders=%d addedColliders=%d floors=%d"),Ok?TEXT("PASS"):TEXT("FAIL"),Parts.Num(),ExpectedPartCount,PatchCount,Retired.Num(),CarCount,ProtectedComponents.Num(),DisabledColliderIds.Num(),AddedColliders,Floors.Num()));return Ok;
 }
@@ -411,7 +419,7 @@ TArray<FVector4> FS47MotelV2::LandscapeFootprints()
  if(Floors.IsEmpty())return Out; // Missing assets / explicit opt-out preserve the original desert.
  for(const auto& F:Floors)Out.Add(FVector4(F.MinX,F.MaxX,F.MinZ,F.MaxZ));
  // Water deliberately has no walking floor, but must also reject grass, scrub and stones.
- Out.Add(FVector4(-61,-56.8,669.8,678));
+ Out.Add(FVector4(-61,-56.8,694.8,703));
  return Out;
 }
 

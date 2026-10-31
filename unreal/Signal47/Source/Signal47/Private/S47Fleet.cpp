@@ -1,4 +1,5 @@
 #include "S47Fleet.h"
+#include "S47TripoFleet.h"
 #include "S47Truck.h"
 #include "S47Three.h"
 #include "S47SaroSite.h"
@@ -121,6 +122,7 @@ namespace
 TUniquePtr<FS47Fleet> FS47Fleet::Install(AS47Web* W,FS47Truck& T)
 {
  if(!W||!T.Group||!T.Body||!T.Shell||!T.Cab)return {};
+ if(auto Jeep=FS47TripoFleet::InstallJeep(W,T))return Jeep;
  const TCHAR* Names[]={TEXT("SM_Saro07_Body"),TEXT("SM_Saro07_Shell"),TEXT("SM_Saro07_Glass"),TEXT("SM_Saro07_Cabin"),TEXT("SM_Saro07_Branding"),TEXT("SM_Saro07_HeadLens"),TEXT("SM_Saro07_TailLens"),TEXT("SM_Saro07_WheelFL"),TEXT("SM_Saro07_WheelFR"),TEXT("SM_Saro07_WheelRL"),TEXT("SM_Saro07_WheelRR")};
  TArray<UStaticMesh*> Meshes;for(const TCHAR* Name:Names){auto* A=Asset(Name);if(!A){UE_LOG(LogS47Fleet,Warning,TEXT("S47: fleet unavailable %s; complete legacy truck retained"),Name);return {};}Meshes.Add(A);}
  // Preserve the original live cluster/radio faces and all moving instrument assemblies.
@@ -172,6 +174,10 @@ void FS47Fleet::Wheels(double Travel,double Steer,const double Drops[4])
 void FS47Fleet::Lenses(const FLinearColor& Color,double Head,double Tail)
 {
  ExpectedHead=Color*float(Head*1.6);ExpectedTail=FLinearColor(1,.025,.01)*float(Tail);
+ if(bTripoJeep)
+ {
+  for(auto& P:HeadMids)if(auto* M=P.Get()){M->SetVectorParameterValue(TEXT("S47Headlamp"),ExpectedHead);M->SetVectorParameterValue(TEXT("S47Taillamp"),ExpectedTail);}return;
+ }
  for(auto& P:HeadMids)if(auto* M=P.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),ExpectedHead);
  for(auto& P:TailMids)if(auto* M=P.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),ExpectedTail);
 }
@@ -203,6 +209,15 @@ TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W,bool bSiteReady)
 bool FS47Fleet::Audit(TArray<FString>& Lines)const
 {
  bool Ok=true;auto Check=[&](bool B,const FString& N){Ok&=B;Lines.Add(FString(B?TEXT("PASS fleet: "):TEXT("FAIL fleet: "))+N);};
+ if(bTripoJeep)
+ {
+  Check(bReady&&NativeParts.Num()==1,TEXT("original textured Tripo Jeep bound atomically"));
+  for(auto& Part:NativeParts){auto* C=Part.Get();Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetNumLODs()==3&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("three source LODs; transport collision remains explicit"));}
+  Check(WheelParts.IsEmpty(),TEXT("no manufactured wheel parts for a source with fused wheels"));
+  Check(!HeadMids.IsEmpty(),TEXT("source lens mask has switched head/tail material parameters"));
+  for(auto& P:HeadMids)Check(P.IsValid()&&P->K2_GetVectorParameterValue(TEXT("S47Headlamp")).Equals(ExpectedHead,.0001f)&&P->K2_GetVectorParameterValue(TEXT("S47Taillamp")).Equals(ExpectedTail,.0001f),TEXT("actual inspected source lenses follow both switches"));
+  return Ok;
+ }
  Check(bReady&&NativeParts.Num()==13,TEXT("complete fitted C10 body/shell/glass/cabin/lenses/four wheels"));
  for(int32 I=0;I<NativeParts.Num();++I)
  {

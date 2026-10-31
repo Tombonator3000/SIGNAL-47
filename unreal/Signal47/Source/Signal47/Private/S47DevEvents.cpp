@@ -16,6 +16,8 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Misc/CommandLine.h"
 #include "UnrealClient.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47DevEvents, Log, All);
 
@@ -61,6 +63,9 @@ void FS47DevEvents::AddBuiltIn()
   Add(TEXT("Sky"), FString::Printf(TEXT("Sky lights, stage %d"), S), S == 1 ? TEXT("one pale light") : S == 5 ? TEXT("the last") : TEXT("more of them"),
    [this, Say, S] { if (M->SkyVisitors) M->SkyVisitors->DevStage(S); Say(FString::Printf(TEXT("sky lights stage %d"), S)); });
  Add(TEXT("Sky"), TEXT("Sky lights, by the clock"), TEXT("back to the schedule"), [this, Say] { if (M->SkyVisitors) M->SkyVisitors->DevStage(0); Say(TEXT("sky lights by the clock")); });
+ Add(TEXT("Tripo craft preview"),TEXT("Triangular craft: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(false);});
+ Add(TEXT("Tripo craft preview"),TEXT("Flying saucer: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(true);});
+ Add(TEXT("Tripo craft preview"),TEXT("Remove craft preview"),TEXT("remove the temporary model completely"),[this]{if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();});
  // ---- weather ----
  Add(TEXT("Weather"), TEXT("Fog: the night's own"), TEXT("as the scene has it"), [this, Say] { GS47DevFogDensity = -1.f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("fog as the night has it")); });
  Add(TEXT("Weather"), TEXT("Fog: light"), TEXT("about 100 m"), [this, Say] { GS47DevFogDensity = .04f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("light fog")); });
@@ -93,6 +98,24 @@ void FS47DevEvents::SpawnRoswell(int32 Mode,bool bRoof)
  const int32 Made=M->Night->Glimpses->DevSpawn(RoswellNumber,Behaviour,bRoof);
  if (M->UI) M->UI->Toast(FString::Printf(TEXT("Roswell: %d of %d placed on free %s. Behaviour: %s."),Made,RoswellNumber,bRoof?TEXT("roof"):TEXT("floor"),FS47RoswellBrain::ModeName(Behaviour)),4);
  UE_LOG(LogS47DevEvents,Display,TEXT("S47: Roswell developer spawn count=%d requested=%d mode=%s roof=%d"),Made,RoswellNumber,FS47RoswellBrain::ModeName(Behaviour),bRoof?1:0);
+}
+
+void FS47DevEvents::SpawnCraft(bool bSaucer)
+{
+ if(!M||!M->Web||!M->Player)return;
+ const TCHAR* Id=bSaucer?TEXT("ufo_saucer"):TEXT("ufo_triangle");
+ const TCHAR* Name=bSaucer?TEXT("SM_TripoFleet_Saucer"):TEXT("SM_TripoFleet_Triangle");
+ const FString Path=FString::Printf(TEXT("/Game/Licensed/TripoFleet/%s/%s.%s"),Id,Name,Name);
+ UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*Path);
+ if(!Mesh){if(M->UI)M->UI->Toast(TEXT("Tripo source model is not installed in this build."),4);return;}
+ if(auto* Previous=CraftPreview.Get())Previous->DestroyComponent();
+ auto* C=NewObject<UStaticMeshComponent>(M->Web.Get());C->SetStaticMesh(Mesh);C->SetMobility(EComponentMobility::Movable);
+ C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+ const FVector P=M->Player->Pos;const double Yaw=M->Player->Yaw;
+ const FVector At(P.X-FMath::Sin(Yaw)*18,P.Y+7.5,P.Z-FMath::Cos(Yaw)*18);
+ C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldRotation(FRotator::ZeroRotator);CraftPreview=C;
+ if(M->UI)M->UI->Toast(TEXT("Tripo craft preview ahead. View outdoors; F10 removes it. Nothing is saved."),5);
+ UE_LOG(LogS47DevEvents,Display,TEXT("S47: temporary Tripo craft preview %s at%s; no story/finale replacement"),Name,*At.ToString());
 }
 
 void FS47DevEvents::SpawnPale()
@@ -155,16 +178,31 @@ void FS47DevEvents::ControlTest(double Dt)
 {
  if (!bTestInit) { bTestInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsContract="), TestDir); }
  if (TestDir.IsEmpty() || bTestDone || !M || M->Mode != US47Main::EMode::Play) return;
+ FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);
+ TArray<const FEvent*> Events;
+ for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() || Event.Group==OnlyGroup) Events.Add(&Event);
  TestT += Dt;
  // a picture a moment after its event, once the scene has taken it
  if (!ShotName.IsEmpty() && TestT >= ShotAt) { FScreenshotRequest::RequestScreenshot(TestDir / (ShotName + TEXT(".png")), false, false); ShotName.Reset(); }
  if (TestT < 4 + TestStep * 2.5) return;
- if (TestStep < List.Num())
+ if (TestStep < Events.Num())
  {
-  const FEvent& Ev = List[TestStep];
-  UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer events contract %d/%d: %s / %s"), TestStep + 1, List.Num(), *Ev.Group, *Ev.Label);
+  const FEvent& Ev = *Events[TestStep];
+  if (TestStep==0 && OnlyGroup==TEXT("Tripo craft preview"))
+  {
+   // These large exterior assets cannot be judged through the control-room roof.
+   // The opt-in, isolated test uses the same ordinary spawn functions outdoors.
+   M->World->Enter(TEXT("saro")); M->Player->Place(7,19,UE_DOUBLE_PI); M->Player->Pitch=0;
+   M->Story->SetClock(12*3600); M->Story->SetPaused(true); M->Story->SetCinematic(true);
+  }
+  UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer events contract %d/%d: %s / %s"), TestStep + 1, Events.Num(), *Ev.Group, *Ev.Label);
   if (Ev.Fn) Ev.Fn();
-  if (Ev.Label.StartsWith(TEXT("Pale")) || Ev.Label.StartsWith(TEXT("Fog")) || Ev.Label == TEXT("Meteor shower"))
+  const bool Craft=Ev.Group==TEXT("Tripo craft preview"),Remove=Ev.Label==TEXT("Remove craft preview");
+  if (Craft && (CraftPreview.IsValid()==Remove))
+  { bTestDone=true; UE_LOG(LogS47DevEvents,Error,TEXT("S47: developer craft contract FAIL: native preview creation/removal")); FPlatformMisc::RequestExit(false); return; }
+  if (Craft && !Remove && M->Player)
+  { const FVector D=S47Three::ToThree(CraftPreview->GetComponentLocation())-M->Player->Pos-FVector(0,M->Player->Eye,0); M->Player->Yaw=FMath::Atan2(-D.X,-D.Z); M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size()); }
+  if (Ev.Label.StartsWith(TEXT("Pale")) || Ev.Label.StartsWith(TEXT("Fog")) || Ev.Label == TEXT("Meteor shower") || (Craft && !Remove))
   {
    // the body: the camera turned to it for its picture
    if (Ev.Label.StartsWith(TEXT("Pale")) && M->Player && PaleLeft > 0)
@@ -174,13 +212,14 @@ void FS47DevEvents::ControlTest(double Dt)
   ++TestStep; return;
  }
  bTestDone = true;
- const bool bPale = Pale.bBuilt;
- UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer events contract %s COMPLETE: %d events run, pale body %s, fog %.3f"), bPale ? TEXT("PASS") : TEXT("FAIL"), TestStep, bPale ? TEXT("built") : TEXT("missing"), GS47DevFogDensity);
+ const bool bPale = Pale.bBuilt,bPassed=OnlyGroup.IsEmpty()?bPale:Events.Num()>0;
+ UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer events contract %s COMPLETE: %d events run, pale body %s, fog %.3f"), bPassed ? TEXT("PASS") : TEXT("FAIL"), TestStep, bPale ? TEXT("built") : TEXT("missing"), GS47DevFogDensity);
  FPlatformMisc::RequestExit(false);
 }
 
 void FS47DevEvents::Stop()
 {
+ if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();
  if (M && M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear();
  ShowerLeft = 0; PaleLeft = 0; GS47DevFogDensity = -1.f;
  Pale.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);

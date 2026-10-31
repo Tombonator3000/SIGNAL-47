@@ -290,6 +290,7 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 		DrawDash();
 	}
 	Fleet=FS47Fleet::Install(Web,*this);
+	ServiceDriverEye=DriverEye;
 	SetDriving(false);
 	Update(0, 0);
 	ApplyLights();
@@ -325,7 +326,7 @@ int32 FS47Truck::CompassReads() const
 	return (A + 360) % 360;
 }
 
-FVector FS47Truck::CompassAt() const { return LocalToWorld(COMPASS); }
+FVector FS47Truck::CompassAt() const { return LocalToWorld(COMPASS+(TripoJeep()?FVector(0,.115,.242):FVector::ZeroVector)); }
 
 double FS47Truck::Bearing() const
 {
@@ -532,7 +533,7 @@ void FS47Truck::PlaceHeadlights()
 		USpotLightComponent* L = Headlights[I].Get();
 		if (!L) continue;
 		const double X = I == 0 ? -0.657 : 0.657;
-		const FVector Lamp=Fleet?FS47Fleet::Headlamp(I):FVector(X,0.8435,-2.65);
+		const FVector Lamp=Fleet?Fleet->Headlamp(I):FVector(X,0.8435,-2.65);
 		const FVector P = Group.LocalToWorld(Lamp);
 		// A slight downward aim keeps the verge visible without lighting the night sky.
 		const FVector Target = Group.LocalToWorld(FVector(Lamp.X, 0.1, Lamp.Z-30));
@@ -598,7 +599,7 @@ bool FS47Truck::RadioHit(const FVector& From, const FVector& Dir, double Far) co
 {
 	// the faceplate's hit box: 0.46 x 0.14 x 0.09 at (0.14, 1.06, -0.4) in the cab, tipped 0.2 back
 	const FQuat Box = Euler(0.2, 0, 0);
-	const FVector C(0.14, 1.06, -0.4), Half(0.23, 0.07, 0.045);
+	const FVector C=FVector(0.14,1.06,-0.4)+(TripoJeep()?FVector(0,.115,.242):FVector::ZeroVector), Half(0.23, 0.07, 0.045);
 	const FVector O = Box.UnrotateVector(WorldToLocal(From) - C);
 	const FVector D = Box.UnrotateVector(Quat().UnrotateVector(Dir));
 	double T0 = 0, T1 = Far;
@@ -622,8 +623,8 @@ bool FS47Truck::AuditProductionArt(TArray<FString>& Lines)const
  Check(Needles.IsValid()&&Keys.IsValid()&&CompassCard.IsValid()&&WheelSpin.IsValid()&&DashRT.IsValid(),TEXT("live gauges, radio atlas, keys, compass and steering retained"));
  if(Fleet)for(int32 I=0;I<2;++I)
  {
-  const auto* L=Headlights[I].Get();const FVector P=LocalToWorld(FS47Fleet::Headlamp(I));
-  Check(L&&L->GetComponentLocation().Equals(S47Three::ToUE(P),.10),TEXT("real spotlight follows C10 sealed-beam anchor"));
+  const auto* L=Headlights[I].Get();const FVector P=LocalToWorld(Fleet->Headlamp(I));
+  Check(L&&L->GetComponentLocation().Equals(S47Three::ToUE(P),.10),TEXT("real spotlight follows the installed vehicle's sealed-beam anchor"));
   if(L)Check(L->IsVisible()==(Group.Shown()&&bHeadOn&&LightLevel>.01),TEXT("real spotlight visibility matches truck and headlight switch"));
  }
  return Ok;

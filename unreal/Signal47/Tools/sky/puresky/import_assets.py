@@ -89,6 +89,7 @@ def parameter(cls, name, **properties):
 
 
 params = {
+    'SunsetStrength': parameter(unreal.MaterialExpressionScalarParameter, 'SunsetStrength', default_value=0.0),
     'PureSkyTexture': parameter(unreal.MaterialExpressionTextureObjectParameter, 'PureSkyTexture', texture=texture),
     'PureSkyWeight': parameter(unreal.MaterialExpressionScalarParameter, 'PureSkyWeight', default_value=0.0),
     'PureSkyYaw': parameter(unreal.MaterialExpressionScalarParameter, 'PureSkyYaw', default_value=MANIFEST['yaw_radians']),

@@ -14,8 +14,12 @@ public:
  bool Audit(TArray<FString>& Lines) const;
  void Lenses(const FLinearColor& Color,double Head,double Tail);
  bool Ready() const {return bReady;}
- static FVector Headlamp(int32 Side){return Side==0?FVector(-.720,.684,-2.073):FVector(.728,.687,-2.070);}
+ FVector Headlamp(int32 Side)const{return bTripoJeep?JeepHeadlamps[Side==0?0:1]:(Side==0?FVector(-.720,.684,-2.073):FVector(.728,.687,-2.070));}
+ bool IsTripoJeep()const{return bTripoJeep;}
 private:
+ friend class FS47TripoFleet;
+ bool bTripoJeep=false;
+ FVector JeepHeadlamps[2];
  bool bReady=false;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> WheelParts;
  TArray<FVector> WheelAt;
