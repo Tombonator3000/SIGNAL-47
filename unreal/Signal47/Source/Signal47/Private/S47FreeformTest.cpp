@@ -37,7 +37,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  S47J::Set(O,TEXT("method"),TEXT("Isolated native Freeform integration: actual timed encoder settling, acquisition and audio; production workstation callbacks, full disk/Flow restores, accelerated day transitions and explicit event fixtures. Screenshots are native Vulkan. Fixture placement does not establish a natural town drive or human input/listening."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
@@ -81,6 +81,14 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==0)
  {
   if(Age<3)return;
+  FString From;
+  if(FParse::Value(FCommandLine::Get(),TEXT("S47FreeformTestFrom="),From))
+  {
+   if(!Check(M->Flow->bDevRun&&From.StartsWith(TEXT("/tmp/S47-freeform-")),TEXT("field subset requires an isolated developer fixture")))return;
+   FString Text;if(!Check(FFileHelper::LoadFileToString(Text,*From),TEXT("previous third-day fixture read for field-only iteration")))return;
+   const auto State=S47J::Read(Text);if(!Check(State&&S47J::Str(State,TEXT("sessionMode"))==TEXT("freeform"),TEXT("field fixture retains Freeform identity")))return;
+   bFieldResume=true;US47Flow::FStart Start;Start.bDev=true;Start.State=State;M->Flow->StartGame(Start);Go(20,.4);return;
+  }
   if(!Check(M->IsFreeform()&&!M->Horror->Enabled()&&!M->Observing->Enabled()&&!M->Spine->Enabled()&&M->Story->ChapterKey==TEXT("freeform"),TEXT("Freeform starts without authored Story controllers")))return;
   if(!Check(F.Day()==1&&F.Budget()==120&&F.Jobs().Num()==3&&F.Field&&F.Director,TEXT("day one has three jobs, starting budget and physical/director adapters")))return;
   F.Director->Stop();F.OpenOperations();Shot(TEXT("operations"));Go(1,.4);return;
@@ -190,6 +198,7 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(!Check(F.Field->ParcelStage()==2,TEXT("physical purchase survives ordinary Continue without duplication")))return;
   const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
+  UE_LOG(LogTemp,Display,TEXT("S47 cargo fixture: player %.3f %.3f floor %.3f, rack %.3f %.3f %.3f, area %s vehicle %s"),M->Player->Pos.X,M->Player->Pos.Z,M->Player->FloorY,P.X,P.Y,P.Z,*M->World->Area,*M->World->ServicePlace());
   F.Field->Use(TEXT("ff:cargo"));
   if(!Check(F.Field->ParcelStage()==3,TEXT("carried purchase is secured as physical truck cargo")))return;
   if(!Restore(TEXT("loaded-cargo")))return;F.Director->Stop();Go(421,.4);return;

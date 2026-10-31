@@ -10,7 +10,7 @@ public:
  void Step(double Dt);
 private:
  US47Main* M=nullptr;
- bool bInit=false,bDone=false,bAudioMarked=false;
+ bool bInit=false,bDone=false,bAudioMarked=false,bFieldResume=false;
  int32 Stage=0,Checks=0,Restores=0,JobIndex=0,EventIndex=0,DayRuns=0;
  double Age=0,At=0,Hold=0,InitialAz=0,InitialEl=0,PausedAz=0,PausedEl=0;
  FString Root;
