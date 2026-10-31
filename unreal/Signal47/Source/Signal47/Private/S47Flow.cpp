@@ -808,7 +808,7 @@ void US47Flow::StartGame(const FStart& O)
   // restores the explicitly saved parked service vehicle independently.
   if(M->World)
   {
-   FString At=S47J::Str(O.State,TEXT("truck"),TEXT("saro"));if(!M->World->TruckOf(At))At=TEXT("saro");
+   FString At=S47J::Str(O.State,TEXT("truck"),TEXT("saro"));if(At!=TEXT("saro")&&At!=TEXT("motel")&&At!=TEXT("station01")&&At!=TEXT("diner"))At=TEXT("saro");
    M->World->PlaceTruck(At,S47J::Obj(O.State,TEXT("truckPose")));
   }
   M->Freeform->Begin(S47J::Obj(O.State,TEXT("freeform")),O.bLethal);
