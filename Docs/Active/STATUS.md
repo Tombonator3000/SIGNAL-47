@@ -12,6 +12,10 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 37 mapper med regenererbare byggefiler/cache er ryddet: **82.1GB netto frigjort**, **86.4GB ledig**. Kontroll av570416 bevarte filer og uendret Git-arbeidsstatus består. Installert spill, spillagringer, kilder, assets, bevis og kjøpte ressurser er bevart. [OPS-01/02 i TODO](TODO.md) fører resultat og behovet for vedlikehold av avsluttede arbeidskopiers cache. Ingen spillrettelse er bygget eller installert; Toms venting på ferdig spilltest gjelder fortsatt.
 
+## Nye spillerfunn31. oktober
+
+Tom har meldt motell-/resepsjonsvegger og åpenbar dørfarge, svevende Caliche-deler, ønsket midlertidig fri adgang, feilplassert radiomann, behov for egne Tripo-aliens/kuer og feil radiostøy. Snap-zoom/lydsting er ført som forslag. [PLAY-31-01 til06 i TODO](TODO.md) samler punktene; ingen er rettet eller ferdigmeldt. Spillrettinger avventer fortsatt Toms ferdige test.
+
 ## Fire forskjellige leveringsnivåer
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
