@@ -1094,6 +1094,13 @@ void FS47HorrorTest::Step(double Dt)
 			M->Story->ConsoleAction();
 			if (!Check(O.Phase() == FS47Observing::EStep::Tune && Rx.Stage == 1 && M->Story->Clock() == Clock, TEXT("off-source settings start no run and keep the clock"))) return;
 			Rx.Azimuth = (Run.P.Az[0] + Run.P.Az[1]) / 2; M->Story->ConsoleAzimuth();
+			if (O.WorkEnabled())
+			{
+				bool KeptPointing = true;
+				for (int32 I=0; I<M->Web->DishCount(); ++I)
+					KeptPointing &= FMath::IsNearlyEqual(M->Web->DishTargetAz(I), Rx.Azimuth, .001) && FMath::IsNearlyEqual(M->Web->DishTargetEl(I), Run.El, .001);
+				if (!Check(KeptPointing, TEXT("receiver tuning preserves the tracking terminal's commanded azimuth and source elevation"))) return;
+			}
 			M->Story->ConsoleAction();
 			if (!Check(O.Phase() == FS47Observing::EStep::Integrating && Rx.Stage == 1 && M->Story->Clock() >= Run.Slot, TEXT("the scheduled settings start the run at its source's time"))) return;
 			M->UI->Close(true); M->Story->ConsoleClosed();

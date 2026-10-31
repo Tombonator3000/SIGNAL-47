@@ -605,6 +605,10 @@ void AS47Story::PowerUp(bool bInstant)
 
 void AS47Story::ConsoleAzimuth()
 {
+	// Scheduled workstation observations own physical pointing at the tracking
+	// terminal. Receiver tuning must not overwrite their source elevation.
+	const US47Main* M = US47Main::Get(this);
+	if (M && M->Observing && M->Observing->WorkEnabled() && M->Observing->Active()) return;
 	PointDishes(Rx.Azimuth, SurveyEl, 9);
 }
 
