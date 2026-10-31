@@ -804,6 +804,13 @@ void US47Flow::StartGame(const FStart& O)
 	if (!bFreeform && M->AnomalyWorld) M->AnomalyWorld->Begin();
 	if (bFreeform && M->Freeform)
  {
+  // Legacy Story recovery maps a generic road save back to SARO. Freeform
+  // restores the explicitly saved parked service vehicle independently.
+  if(M->World)
+  {
+   FString At=S47J::Str(O.State,TEXT("truck"),TEXT("saro"));if(!M->World->TruckOf(At))At=TEXT("saro");
+   M->World->PlaceTruck(At,S47J::Obj(O.State,TEXT("truckPose")));
+  }
   M->Freeform->Begin(S47J::Obj(O.State,TEXT("freeform")),O.bLethal);
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
  }
@@ -1282,7 +1289,12 @@ FString US47Flow::SaveBlock() const
 	if (bDevRun) return TEXT("This is a developer run. Nothing is saved.");
 	if (M->Mode != EMode::Play || !CaseId) return TEXT("There is no night running to save.");
 	if (M->IsFreeform() && M->Freeform && M->Freeform->Dead()) return TEXT("Load the last save to resume this assignment.");
-	if (M->IsFreeform()) return (bStarting || (M->World && M->World->bBusy)) ? FString(TEXT("Let the journey finish before saving.")) : FString();
+	if (M->IsFreeform())
+ {
+  if(bStarting || (M->World && M->World->bBusy))return TEXT("Let the journey finish before saving.");
+  if(M->World && M->World->bDriving)return TEXT("Park and get out before saving the current supply trip.");
+  return FString();
+ }
 	// (the time away's 47 seconds, the array put back, SARO going dark: not in the Unreal version yet)
 	// (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
 	if (M->Phones) { const FString B = M->Phones->SaveBlock(); if (!B.IsEmpty()) return B; }

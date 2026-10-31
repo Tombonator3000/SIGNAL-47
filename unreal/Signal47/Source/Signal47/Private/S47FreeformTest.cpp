@@ -49,7 +49,15 @@ bool FS47FreeformTest::Restore(const FString& Name)
  if(!Check(FFileHelper::SaveStringToFile(S47J::Write(O),*File),TEXT("full state written to isolated disk: ")+Name))return false;
  FString Text;if(!Check(FFileHelper::LoadFileToString(Text,*File),TEXT("fresh disk state read: ")+Name))return false;
  const auto State=S47J::Read(Text);if(!Check(State&&S47J::Str(State,TEXT("sessionMode"))==TEXT("freeform"),TEXT("saved mode identity retained: ")+Name))return false;
- US47Flow::FStart S;S.bDev=true;S.State=State;M->Flow->StartGame(S);++Restores;return Check(M->IsFreeform()&&M->Freeform->Active(),TEXT("ordinary Flow restore starts Freeform: ")+Name);
+ US47Flow::FStart S;S.bDev=true;S.State=State;M->Flow->StartGame(S);++Restores;
+ if(!Check(M->IsFreeform()&&M->Freeform->Active(),TEXT("ordinary Flow restore starts Freeform: ")+Name))return false;
+ const auto P=S47J::Obj(State,TEXT("truckPose"));
+ if(P&&M->World)
+ {
+  const FVector Expected(S47J::Num(P,TEXT("x")),S47J::Num(P,TEXT("y")),S47J::Num(P,TEXT("z")));
+  if(!Check(M->World->ServicePlace()==S47J::Str(State,TEXT("truck"))&&M->World->ServicePosition().Equals(Expected,.01),TEXT("parked service vehicle identity and actual pose survive Continue: ")+Name))return false;
+ }
+ return true;
 }
 bool FS47FreeformTest::FileAtBinder()
 {
