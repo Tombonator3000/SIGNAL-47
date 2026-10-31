@@ -2,6 +2,8 @@
 #include "S47TripoNpcsTest.h"
 
 #include "S47Main.h"
+#include "S47Night.h"
+#include "S47Glimpses.h"
 #include "S47Herd.h"
 #include "S47Story.h"
 #include "S47Three.h"
@@ -220,6 +222,10 @@ void FS47TripoNpcs::Update()
   }
   else if (R == TEXT("shadow_man"))
   {
+   if (FParse::Param(FCommandLine::Get(),TEXT("S47RoswellOff"))) continue;
+   // The little Roswell is owned by Glimpses, with its own skin/peek pose.
+   // Retain the old shadow model only when that separate asset is unavailable.
+   if (M->Night && M->Night->Glimpses && M->Night->Glimpses->HasNativeBody()) continue;
    const FS47Obj O = S47SceneObject(W,TEXT("glimpse"));
    if (O) { Place(Slot,O.WorldPosition(),O.WorldQuaternion(),O.Shown()); Mask(NodeComponent(O)); }
   }

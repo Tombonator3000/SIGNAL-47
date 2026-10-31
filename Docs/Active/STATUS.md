@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Aktivt først: 0.1 liten Roswell-alien
+
+Tom har prioritert liten Roswell-alien foran resten av arbeidet: referansebilder, faktisk Tripo3D-modell, Blender, Unreal og bruk i Glimpse-møtene. To modellreferanser er generert og lagret privat. Den nye H3.1-modellen er generert fra frontreferansen i Tripo3D, retopologisert og rigget der, klargjort i Blender til 1,20 m med PBR-kart og tre LOD-er, og importert som en separat native Roswell-figur. Alle tre faktiske render-LOD-er har riktig størrelse/retning. Native Vulkan-før/etter viser vinduspeek, hodevending og plantet dukking helt bak karmen; 1778 selvtester og kort røyktest består. Dette er en kontrollert kamera-/modellprøve, ikke naturlig helnattsspilling. Linux-pakking og lokal installasjon gjenstår. Den store jakt-alienen beholdes. Se delstegene i [TODO](TODO.md).
+
 ## Blender-/Tripo-materialer og separate lysoppsett
 
 [Lookdev-skriptpakken](../../unreal/Signal47/Tools/lookdev/README.md) er laget etter Toms bestilling: selektiv materialforbedring, maskert overflateslitasje/bump, tynn og solid glassvariant, fysisk daghimmel, solretning/eksponering, egen nattrigg og avgrenset scattering/tåke. Original geometri, UV-er, transformasjoner og riggdata bevares. Blender 5.2.2-prøven består med 36 materialkontroller, dag/natt-bytte, åtte 512² PBR-kart, FBX og samme-kamera før/etter samt nattpreview. Ni importplankontroller består. En eksisterende H31-Tripo-GLB er også importert, materialforbedret og eksportert med fire bakte kart og uendret geometri. Native UE 5.8.4-editorprøve med NullRHI har opprettet fire materialgrafer, åtte teksturer og separate dag-/nattkart med native lys/tåke uten editorfeil. NullRHI er editor-/API-kontroll, ikke grafisk spillaksept.
@@ -18,7 +22,7 @@ PLAY-31-39/40 fører Toms funn av utilstrekkelig lys fra SARO-utelampene og for 
 
 ## Nytt prioritert krasj: SARO kontrollrom
 
-Tom har fått renderstans/krasj i installert `f32d4553` etter retur til SARO, spilltid 03:00 ved SC04/AUTO HOLD. PLAY-31-16/P1 i [TODO](TODO.md) har første prioritet. Fatalrapporten bekrefter 60 sekunders venting på grafikktråden; symboliserte RHI-/rendertråder peker på Vulkan-presentasjon og GPU-occlusion-resultat. Utløsende årsak er fortsatt uavklart. Lagringer og full krasjmappe er kopiert og kontrollert, 43 filer/5 019 681 byte; originalene er uendret. Autosaven etter terminalhandlingen er gyldig JSON med kontrollrom/03:00 og lagret AUTO HOLD, men faktisk Continue etter krasjet er ikke prøvd. [Krasjfakta og bevisgrenser](../Evidence/Playtest-2026-10-31/saro-render-crash-facts.json). Ingen ny motorjobb, systemendring eller spillinstallasjon i oppfølgingen.
+Tom har fått renderstans/krasj i installert `f32d4553` etter retur til SARO, spilltid 03:00 ved SC04/AUTO HOLD. PLAY-31-16/P1 i [TODO](TODO.md) er neste kritiske prioritet etter Toms nye 0.1-bestilling. Fatalrapporten bekrefter 60 sekunders venting på grafikktråden; symboliserte RHI-/rendertråder peker på Vulkan-presentasjon og GPU-occlusion-resultat. Utløsende årsak er fortsatt uavklart. Lagringer og full krasjmappe er kopiert og kontrollert, 43 filer/5 019 681 byte; originalene er uendret. Autosaven etter terminalhandlingen er gyldig JSON med kontrollrom/03:00 og lagret AUTO HOLD, men faktisk Continue etter krasjet er ikke prøvd. [Krasjfakta og bevisgrenser](../Evidence/Playtest-2026-10-31/saro-render-crash-facts.json). Ingen ny motorjobb, systemendring eller spillinstallasjon i oppfølgingen.
 
 ## SC04 etter gjenstart: dørtilbakemelding og jakt
 

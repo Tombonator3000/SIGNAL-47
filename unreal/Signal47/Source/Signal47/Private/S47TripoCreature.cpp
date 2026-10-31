@@ -5,12 +5,11 @@
 #include "ReferenceSkeleton.h"
 #include "Misc/CommandLine.h"
 
-bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString& Name)
+bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString& Name, const TCHAR* AssetPath)
 {
  if (Ready()) return true;
  if (!W || !Parent || FParse::Param(FCommandLine::Get(), TEXT("S47TripoNpcsOff"))) return false;
- auto* Asset = LoadObject<USkeletalMesh>(nullptr,
-  TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_Pale.SK_Tripo_Pale"), nullptr, LOAD_NoWarn | LOAD_Quiet);
+ auto* Asset = LoadObject<USkeletalMesh>(nullptr, AssetPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
  if (!Asset) return false;
  const FReferenceSkeleton& Skeleton = Asset->GetRefSkeleton();
  for (const TCHAR* Bone : {TEXT("pelvis"), TEXT("head"), TEXT("upperarm_l"), TEXT("upperarm_r"), TEXT("thigh_l"), TEXT("thigh_r")})
@@ -25,8 +24,77 @@ bool FS47TripoCreature::Build(AS47Web* W, USceneComponent* Parent, const FString
  C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetGenerateOverlapEvents(false);
  C->SetCanEverAffectNavigation(false); C->SetCastShadow(true); C->BoundsScale=1.35f;
  C->SetVisibility(false); C->RegisterComponent(); Mesh=C;
- UE_LOG(LogTemp,Display,TEXT("S47: animated Tripo pale body %s ready, %d original skin bones"), *Name, Rest.Num());
+ UE_LOG(LogTemp,Display,TEXT("S47: animated Tripo body %s ready, %d original skin bones, %s"), *Name, Rest.Num(), AssetPath);
  return true;
+}
+
+void FS47TripoCreature::Peek(bool bShow, double Exposure, double HeadTurn, double Clock)
+{
+ auto* C=Mesh.Get(); if (!C) return;
+ C->SetVisibility(bShow); if (!bShow) return;
+ TArray<FTransform> Pose=Rest;
+ for (int32 I=0; I<Pose.Num(); ++I) if (Parents[I]>=0) Pose[I]=Pose[I]*Pose[Parents[I]];
+ const auto Descends=[&](int32 Child,int32 Root)
+ { for (int32 P=Child; P>=0; P=Parents[P]) if (P==Root) return true; return false; };
+ const auto Rotate=[&](int32 Bone,const FQuat& Q)
+ {
+  if (Bone<0) return;
+  const FVector Pivot=Pose[Bone].GetLocation();
+  for (int32 I=0; I<Pose.Num(); ++I) if (Descends(I,Bone))
+  {
+   Pose[I].SetLocation(Pivot+Q.RotateVector(Pose[I].GetLocation()-Pivot));
+   Pose[I].SetRotation((Q*Pose[I].GetRotation()).GetNormalized());
+  }
+ };
+ const auto Bone=[&](const TCHAR* Name) { return Names.IndexOfByKey(FName(Name)); };
+ const auto Aim=[&](int32 A,int32 B,const FVector& Target)
+ {
+  if (A>=0 && B>=0) Rotate(A,FQuat::FindBetweenNormals(
+   (Pose[B].GetLocation()-Pose[A].GetLocation()).GetSafeNormal(),(Target-Pose[A].GetLocation()).GetSafeNormal()));
+ };
+ const int32 Pelvis=Bone(TEXT("pelvis"));
+ const double Duck=(1.-FMath::Clamp(Exposure,0.,1.))*S47Roswell::DuckM*100.;
+ // Save the feet before lowering the pelvis. Two-bone legs then bend towards
+ // +Y, with the original foot contact and orientation rather than floor sinking.
+ for (int32 Side=0; Side<2; ++Side)
+ {
+  const int32 Hip=Bone(Side==0?TEXT("thigh_l"):TEXT("thigh_r"));
+  const int32 Knee=Bone(Side==0?TEXT("calf_l"):TEXT("calf_r"));
+  const int32 Foot=Bone(Side==0?TEXT("foot_l"):TEXT("foot_r"));
+  if (Hip<0 || Knee<0 || Foot<0) continue;
+  const FVector Target=Pose[Foot].GetLocation(); const FQuat FootQ=Pose[Foot].GetRotation();
+  const double Upper=(Pose[Knee].GetLocation()-Pose[Hip].GetLocation()).Size();
+  const double Lower=(Pose[Foot].GetLocation()-Pose[Knee].GetLocation()).Size();
+  for (int32 I=0; I<Pose.Num(); ++I) if (Descends(I,Hip)) Pose[I].AddToTranslation(FVector(0,0,-Duck));
+  const FVector H=Pose[Hip].GetLocation(), To=Target-H;
+  const double Dist=FMath::Clamp(To.Size(),FMath::Abs(Upper-Lower)+.001,Upper+Lower-.001);
+  const FVector Along=To.GetSafeNormal();
+  const FVector Bend=(FVector::YAxisVector-Along*FVector::DotProduct(Along,FVector::YAxisVector)).GetSafeNormal();
+  const double A=(Upper*Upper-Lower*Lower+Dist*Dist)/(2.*Dist);
+  const FVector K=H+Along*A+Bend*FMath::Sqrt(FMath::Max(0.,Upper*Upper-A*A));
+  Aim(Hip,Knee,K); Aim(Knee,Foot,Target);
+  Rotate(Foot,(FootQ*Pose[Foot].GetRotation().Inverse()).GetNormalized());
+ }
+ // Lower the upper body exactly as far as its hips. The leg transforms above
+ // are already in the crouched component-space pose, and must not move twice.
+ if (Pelvis>=0) for (int32 I=0; I<Pose.Num(); ++I) if (Descends(I,Pelvis))
+ {
+  const int32 L=Bone(TEXT("thigh_l")), R=Bone(TEXT("thigh_r"));
+  if (!Descends(I,L) && !Descends(I,R)) Pose[I].AddToTranslation(FVector(0,0,-Duck));
+ }
+ for (int32 Side=0; Side<2; ++Side)
+ {
+  const int32 Arm=Bone(Side==0?TEXT("upperarm_l"):TEXT("upperarm_r"));
+  const int32 Elbow=Bone(Side==0?TEXT("lowerarm_l"):TEXT("lowerarm_r"));
+  const int32 Hand=Bone(Side==0?TEXT("hand_l"):TEXT("hand_r"));
+  if (Arm>=0 && Elbow>=0) Aim(Arm,Elbow,Pose[Arm].GetLocation()+FVector(Side==0?-4.:4.,3.,-30.));
+  if (Elbow>=0 && Hand>=0) Aim(Elbow,Hand,Pose[Elbow].GetLocation()+FVector(0,7.+Duck*.35,-20.));
+ }
+ Rotate(Bone(TEXT("head")),FQuat(FVector::UpVector,FMath::Clamp(HeadTurn,-.65,.65)));
+ Rotate(Bone(TEXT("head")),FQuat(FVector::YAxisVector,FMath::DegreesToRadians(3.*FMath::Sin(Clock*.7))));
+ C->BoneSpaceTransforms.SetNum(Pose.Num());
+ for (int32 I=0; I<Pose.Num(); ++I) C->BoneSpaceTransforms[I]=Parents[I]<0?Pose[I]:Pose[I].GetRelativeTransform(Pose[Parents[I]]);
+ C->MarkRefreshTransformDirty(); C->RefreshBoneTransforms();
 }
 
 bool FS47TripoCreature::Rendered() const

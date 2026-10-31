@@ -876,7 +876,7 @@ void US47Night::TestFlags()
 		if (bCall) { N->Calls->Now(); UE_LOG(LogS47Night, Display, TEXT("S47: a call asked for")); }
 		if (bGlimpse)
 		{
-			static const TCHAR* SPOT_IDS[] = { TEXT("S-11"), TEXT("S-14"), TEXT("S-19"), TEXT("S-22"), TEXT("town-south"), TEXT("town-mast"), TEXT("town-west"), TEXT("diner-west"), TEXT("diner-north"), TEXT("shoulder") };
+			static const TCHAR* SPOT_IDS[] = { TEXT("control-window-west"), TEXT("control-window-east"), TEXT("control-corner"), TEXT("wing-corner"), TEXT("S-11"), TEXT("S-14"), TEXT("S-19"), TEXT("S-22"), TEXT("town-south"), TEXT("town-mast"), TEXT("town-west"), TEXT("diner-west"), TEXT("diner-north"), TEXT("shoulder") };
 			bool bUp = false;
 			const FS47GlimpsesIn G = N->GlimpseIn(true);
 			if (!Spot.IsEmpty()) bUp = N->Glimpses->Now(G, Spot);
