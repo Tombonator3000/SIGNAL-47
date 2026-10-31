@@ -142,15 +142,19 @@ FS47RoswellContacts FS47RoswellMotion::Apply(FS47TripoCreature& R,const FS47Rosw
   const int32 Arm=Bone(S==0?TEXT("upperarm_l"):TEXT("upperarm_r"));
   const int32 Elbow=Bone(S==0?TEXT("lowerarm_l"):TEXT("lowerarm_r"));
   const int32 Hand=Bone(S==0?TEXT("hand_l"):TEXT("hand_r"));
-  const double Sign=S==0?-1.:1., ArmSwing=(S==0?-Wave:Wave)*Motion;
+  // FBX scene conversion mirrors the imported X axis. Derive anatomical
+  // outward from this mesh, not from a left/right naming convention.
+  const int32 Chest=Bone(TEXT("spine_03"));
+  const double Sign=Arm>=0 && Chest>=0?FMath::Sign(Ref[Arm].GetLocation().X-Ref[Chest].GetLocation().X):1.;
+  const double ArmSwing=(S==0?-Wave:Wave)*Motion;
   if (Arm>=0 && Elbow>=0)
   {
-   const FVector Idle(Sign*4.,(Sneak?8.:2.)+ArmSwing*(Run?15.:(Sneak?2.:8.)),-26.);
-   const FVector Grab(Sign*9.,28.,-7.);
+   const FVector Idle(Sign*(Sneak?13.:12.),(Sneak?8.:2.)+ArmSwing*(Run?15.:(Sneak?2.:8.)),-24.);
+   const FVector Grab(Sign*13.,28.,-7.);
    Aim(Arm,Elbow,P[Arm].GetLocation()+FMath::Lerp(Idle,Grab,Reach));
   }
   if (Elbow>=0 && Hand>=0)
-   Aim(Elbow,Hand,P[Elbow].GetLocation()+FMath::Lerp(FVector(Sign*1.,(Sneak?15.:7.)+ArmSwing*5.,-21.),FVector(Sign*2.,24.,0),Reach));
+   Aim(Elbow,Hand,P[Elbow].GetLocation()+FMath::Lerp(FVector(Sign*(Sneak?6.:4.),(Sneak?15.:7.)+ArmSwing*5.,-21.),FVector(Sign*6.,24.,0),Reach));
   // Gently curl the retained finger chains; the source skin keeps its shape.
   for (const TCHAR* Digit:{TEXT("Index"),TEXT("Middle"),TEXT("Ring"),TEXT("Pinky"),TEXT("Thumb")})
   {

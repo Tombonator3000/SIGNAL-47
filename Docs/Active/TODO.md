@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Aktiv rettelse: Roswell armer og bakke-AI
+
+- [ ] **P1 / 0.1 oppfølging:** Tom rapporterer [armer inne i kroppen](../Evidence/Playtest-2026-10-31/35-roswell-arm-clipping.png) og at Curious/Hunt står stille på bakken, mens Annex-tak virker. Retting under arbeid: bruk faktisk importert riggside, tydelig klarering i idle/lytting/lusking/løping/grab, rettferdig rutebudsjett per figur og målte terrengsteg. Kontroller hver av seks individer på bakken, separat fra takprøven. Ikke ferdigmeld på grunnlag av én figur som beveger seg. Tidligere AI-prøve var for svak her. Bygg, native billedkontroll og lokal installasjon gjenstår; personlige Saved bevares.
+
 ## 0.1 Først: liten Roswell-alien til Glimpse
 
 Tom prioriterte 31. oktober denne sammenhengende leveransen før resten av listen. Samordnes med PLAY-31-37. Den høye jakt-alienen beholdes.

@@ -27,6 +27,9 @@ public:
  static constexpr double Radius = .22, Height = 1.20, MaxStep = .24;
 
  TOptional<double> Floor(const FVector& NearFoot) const;
+ // Project a proposed horizontal microstep onto its measured support BEFORE
+ // the brain commits its position. A bool-only collision callback cannot plant Y.
+ TOptional<FVector> GroundedStep(const FVector& From, const FVector& Desired) const;
  bool IsStandable(const FVector& Foot) const;
  bool MoveAllowed(const FVector& From, const FVector& To) const;
  // Empty means no complete physical route; no partial/direct fallback is supplied.

@@ -29,7 +29,7 @@ struct FS47RoswellGroup::FImpl
  FVector LastPlayer=FVector::ZeroVector;
  bool bLastPlayer=false,bDev=false; FString Scene;
  double Wait=120+FMath::FRand()*180;
- int32 Serial=0,PlansThisFrame=0;
+ int32 Serial=0,PlansThisFrame=0,DecisionTurn=0;
  void IgnoreBodies()
  {
   World.IgnoredComponents.Reset();
@@ -97,7 +97,7 @@ int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoo
  if (!bRoof && !bNatural)
  {
   Places.Reset();
-  for (double D:{3.5,5.5,7.5}) for (double Turn:{0.,.55,-.55,1.,-1.,1.5,-1.5})
+  for (double D:{2.8,3.5,4.5,5.5,7.5}) for (double Turn:{0.,.3,-.3,.55,-.55,.8,-.8,1.,-1.,1.25,-1.25,1.5,-1.5})
   {
    const double Yaw=M->Player->Yaw+Turn;
    FVector At=Feet+FVector(-FMath::Sin(Yaw)*D,0,-FMath::Cos(Yaw)*D);
@@ -153,9 +153,10 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   }
  }
  P->IgnoreBodies(); P->PlansThisFrame=0;
- for (auto& Ptr:P->Actors)
+ const int32 First=P->Actors.IsEmpty()?0:P->DecisionTurn++%P->Actors.Num();
+ for (int32 Index=0;Index<P->Actors.Num();++Index)
  {
-  auto& A=*Ptr; if (!A.bActive || !A.Root.IsValid() || !A.Body) continue;
+  auto& A=*P->Actors[(First+Index)%P->Actors.Num()]; if (!A.bActive || !A.Root.IsValid() || !A.Body) continue;
   const bool Held=bHeld || (A.bNatural && A.bRoof && RoofBusy);
   if (!Held) A.Refresh-=FMath::Min(Dt,.25);
   if (A.Refresh<=0)
@@ -167,9 +168,13 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   }
   FS47RoswellBrain::FWorld W;
   W.Points=A.Points;
-  W.FindPath=[this,&A](const FVector& From,const FVector& To)
+  bool PlannedThisActor=false;
+  W.PlanningReady=[this,&PlannedThisActor]{return !PlannedThisActor && P->PlansThisFrame<2;};
+  W.GroundedStep=[this](const FVector& From,const FVector& Desired){return P->World.GroundedStep(From,Desired);};
+  W.FindPath=[this,&A,&PlannedThisActor](const FVector& From,const FVector& To)
   {
-   if (++P->PlansThisFrame>2) return TArray<FVector>();
+   if (PlannedThisActor || P->PlansThisFrame>=2) return TArray<FVector>();
+   PlannedThisActor=true; ++P->PlansThisFrame;
    auto Route=P->World.Path(From,To);
    if (A.bRoof) UE_LOG(LogTemp,Display,TEXT("S47: Roswell roof route from=%s to=%s points=%d"),*From.ToCompactString(),*To.ToCompactString(),Route.Num());
    return Route;

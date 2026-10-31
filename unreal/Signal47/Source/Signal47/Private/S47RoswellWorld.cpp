@@ -9,6 +9,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/ScopeExit.h"
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Props.h"
@@ -23,6 +24,11 @@ namespace
  FVector2D Flat(const FVector& P) { return FVector2D(P.X, P.Z); }
  FIntVector Millimetres(const FVector& P) { return FIntVector(FMath::RoundToInt(P.X * 1000), FMath::RoundToInt(P.Y * 1000), FMath::RoundToInt(P.Z * 1000)); }
  bool RoofDiagnostics() { static const bool On = FParse::Param(FCommandLine::Get(), TEXT("S47RoswellRoofOnly")); return On; }
+ bool GroundDiagnostics()
+ {
+  static const bool On = [] { FString Path; return FParse::Value(FCommandLine::Get(), TEXT("S47RoswellAIContract="), Path); }();
+  return On;
+ }
  FCollisionQueryParams Query(const TArray<TWeakObjectPtr<UPrimitiveComponent>>& Ignore)
  {
   FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RoswellPhysical), true);
@@ -183,12 +189,29 @@ TOptional<double> FS47RoswellWorld::Floor(const FVector& NearFoot) const
  const bool bRoof = RoofLayer(NearFoot);
  if (bRoof && !InRoof(NearFoot)) return {};
  if (bRoof && !EnsureRoofSupport()) return {};
- FVector P = NearFoot;
- if (!bRoof) P.Y = ExpectedGround(P.X, P.Z, P.Y);
- const auto Y = Support(P);
+ // A native sidewalk/ramp may differ from the legacy area height. Prefer the
+ // nearby physical surface; the authored height is a second measured query,
+ // never a returned floor when native support is absent.
+ auto Y = Support(NearFoot);
+ if (!Y.IsSet() && !bRoof)
+ {
+  FVector P = NearFoot; P.Y = ExpectedGround(P.X, P.Z, P.Y);
+  if (FMath::Abs(P.Y - NearFoot.Y) <= .8) Y = Support(P);
+ }
  if (!Y.IsSet()) return {};
  if (bRoof && FMath::Abs(Y.GetValue() - 3.2) > .16) return {};
  return Y;
+}
+
+TOptional<FVector> FS47RoswellWorld::GroundedStep(const FVector& From, const FVector& Desired) const
+{
+ if (!Finite(From) || !Finite(Desired) || RoofLayer(From) != RoofLayer(Desired)) return {};
+ FVector Planted = Desired;
+ const auto Y = Floor(Planted);
+ if (!Y.IsSet() || FMath::Abs(Y.GetValue() - From.Y) > MaxStep) return {};
+ Planted.Y = Y.GetValue();
+ if (!IsStandable(Planted) || !MoveAllowed(From, Planted)) return {};
+ return Planted;
 }
 
 TArray<FS47Rect> FS47RoswellWorld::Blocks(bool bRoof) const
@@ -216,7 +239,8 @@ bool FS47RoswellWorld::BodyClear(const FVector& From, const FVector& To) const
  // Sole clearance prevents a supporting slab's triangle from becoming a body wall.
  const FVector Lift(0, Height * .5 + .035, 0);
  const auto Capsule = FCollisionShape::MakeCapsule(Radius * 100, Height * 50);
- auto Clear = [this, &Q, &H, &Capsule](const FVector& A, const FVector& B)
+ const bool bGroundQuery = !RoofLayer(From);
+ auto Clear = [this, &Q, &H, &Capsule, bGroundQuery](const FVector& A, const FVector& B)
  {
   if (!NativeQueryAllowed()) return false;
   const bool Clear = !M->Web->GetWorld()->SweepSingleByChannel(H, S47Three::ToUE(A), S47Three::ToUE(B),
@@ -229,6 +253,17 @@ bool FS47RoswellWorld::BodyClear(const FVector& From, const FVector& To) const
     const auto* C = H.GetComponent(); const auto* N = M->Web->Node(M->Web->NodeOf(C));
     UE_LOG(LogTemp, Display, TEXT("S47: Roswell roof capsule blocked A=%s B=%s component=%s node=%s hit=%s normal=%s penetrating=%d"),
      *A.ToCompactString(), *B.ToCompactString(), *GetNameSafe(C), N ? *N->Name : TEXT("none"),
+     *S47Three::ToThree(H.ImpactPoint).ToCompactString(), *H.ImpactNormal.ToCompactString(), H.bStartPenetrating ? 1 : 0);
+   }
+  }
+  if (!Clear && bGroundQuery && GroundDiagnostics())
+  {
+   static int32 Logged = 0;
+   if (Logged++ < 64)
+   {
+    const auto* C = H.GetComponent(); const auto* N = M->Web->Node(M->Web->NodeOf(C));
+    UE_LOG(LogTemp, Display, TEXT("S47: Roswell ground capsule blocked planning=%d A=%s B=%s component=%s node=%s hit=%s normal=%s penetrating=%d"),
+     bPlanning ? 1 : 0, *A.ToCompactString(), *B.ToCompactString(), *GetNameSafe(C), N ? *N->Name : TEXT("none"),
      *S47Three::ToThree(H.ImpactPoint).ToCompactString(), *H.ImpactNormal.ToCompactString(), H.bStartPenetrating ? 1 : 0);
    }
   }
@@ -297,9 +332,25 @@ bool FS47RoswellWorld::MoveAllowed(const FVector& From, const FVector& To) const
 
 TArray<FVector> FS47RoswellWorld::Path(const FVector& From, const FVector& To) const
 {
+ int32 ReturnedPoints = 0;
+ bool bCounted = false;
+ const TCHAR* Outcome = TEXT("invalid request");
+ const TCHAR* Method = TEXT("none");
+ ON_SCOPE_EXIT
+ {
+  if (GroundDiagnostics())
+  {
+   static int32 Logged = 0;
+   if (Logged++ < 96)
+    UE_LOG(LogTemp, Display, TEXT("S47: Roswell native path from=%s to=%s roof=%d method=%s outcome=%s points=%d queries=%d exhausted=%d"),
+     *From.ToCompactString(), *To.ToCompactString(), RoofLayer(From) ? 1 : 0, Method, Outcome,
+     ReturnedPoints, bCounted ? PlanningQueries : 0, bCounted && bPlanningExhausted ? 1 : 0);
+  }
+ };
  if (!M || !M->Web || !Finite(From) || !Finite(To) || RoofLayer(From) != RoofLayer(To) ||
   FVector2D::Distance(Flat(From), Flat(To)) > 35) return {};
  PlanningSupport.Reset(); PlanningStand.Reset(); PlanningQueries = 0; bPlanningExhausted = false;
+ bCounted = true; Outcome = TEXT("endpoint not standable");
  TGuardValue<bool> PlanningScope(bPlanning, true);
  if (!IsStandable(From) || !IsStandable(To)) return {};
  const bool bRoof = RoofLayer(From);
@@ -312,10 +363,13 @@ TArray<FVector> FS47RoswellWorld::Path(const FVector& From, const FVector& To) c
  };
  TArray<FVector2D> Route;
  // The common open-ground/roof case needs no graph or candidate collision pass.
+ Method = TEXT("direct");
  if (MoveAllowed(From, To)) Route.Add(Flat(To));
  else
  {
+ Outcome = TEXT("native query budget");
  if (bPlanningExhausted) return {};
+ Method = TEXT("graph");
  TArray<FVector2D> Seeds;
  for (const FPoint& P : Candidates((From + To) * .5, M->Web->Area(), bRoof)) Seeds.Add(Flat(P.Pos));
  if (bPlanningExhausted) return {};
@@ -326,7 +380,9 @@ TArray<FVector> FS47RoswellWorld::Path(const FVector& From, const FVector& To) c
    return X.IsSet() && Y.IsSet() && MoveAllowed(X.GetValue(), Y.GetValue());
   });
  }
+ Outcome = bPlanningExhausted ? TEXT("native query budget") : TEXT("no complete graph route");
  if (bPlanningExhausted || Route.IsEmpty()) return {};
+ Outcome = TEXT("support lost while lifting route");
  TArray<FVector> Result;
  FVector Previous = From;
  // Densify returned 3D path so a raised strip/ramp's height is not interpolated as flat.
@@ -366,7 +422,10 @@ TArray<FVector> FS47RoswellWorld::Path(const FVector& From, const FVector& To) c
   }
   Compact.Add(Result[End]); Anchor = Result[End]; Begin = End + 1;
  }
- return !bPlanningExhausted && Compact.Num() <= 96 ? Compact : TArray<FVector>();
+ if (bPlanningExhausted) { Outcome = TEXT("native query budget"); return {}; }
+ if (Compact.Num() > 96) { Outcome = TEXT("too many compact waypoints"); return {}; }
+ Outcome = TEXT("complete native route"); ReturnedPoints = Compact.Num();
+ return Compact;
 }
 
 bool FS47RoswellWorld::ClearSight(const FVector& Eye, const FVector& Target) const
@@ -435,6 +494,18 @@ TArray<FS47RoswellWorld::FPoint> FS47RoswellWorld::Candidates(const FVector& Nea
  }
  if (Scene == TEXT("saro") && FMath::Abs(Near.X) < 50 && FMath::Abs(Near.Z) < 40)
  {
+  // Native support validates these approaches to the three authored changes
+  // between desert (-.6) and the plinth (0). Collider corners alone cannot
+  // discover the middle of a ramp; jumping straight over its .6m curb is invalid.
+  Add(TEXT("visitor-ramp-low"), -10.95, -.6, 5.7, false, false);
+  Add(TEXT("visitor-ramp-mid"), -9.1, -.3, 5.7, false, false);
+  Add(TEXT("visitor-ramp-high"), -7.3, 0, 5.7, false, false);
+  Add(TEXT("yard-ramp-low"), 9.8, -.6, 16.95, false, false);
+  Add(TEXT("yard-ramp-mid"), 9.8, -.3, 14.5, false, false);
+  Add(TEXT("yard-ramp-high"), 9.8, 0, 12.1, false, false);
+  Add(TEXT("array-steps-low"), 6.7, -.6, -12, false, false);
+  Add(TEXT("array-steps-mid"), 7.55, -.3, -12, false, false);
+  Add(TEXT("array-steps-high"), 8.4, 0, -12, false, false);
   Add(TEXT("window-west"), -4.5, 0, -5.25, false, true);
   Add(TEXT("window-east"), .9, 0, -5.25, false, true);
   Add(TEXT("control-corner"), 6.95, -.6, -5.25, true, false);

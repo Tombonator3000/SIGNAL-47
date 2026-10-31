@@ -87,6 +87,7 @@ private:
 	void SyncGroup();
 	TSharedPtr<FS47RoswellGroup> Group;
 	friend struct FS47RoswellPreviewDriver;
+	friend struct FS47RoswellPoseDriver;
 	bool bPreviewDriver = false;
 	TWeakObjectPtr<AS47Web> Web;
 	FS47Obj Fig;
