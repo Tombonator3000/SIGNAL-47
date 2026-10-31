@@ -1,0 +1,81 @@
+{
+  "schema": "s47-roswell-delivery-v1",
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "source": "48ba239ee2c0cac57b9aced7a630c5b4f3e60cb5",
+  "pr": 287,
+  "model": {
+    "provider": "Tripo3D H3.1",
+    "task_id": "07a6a3d8-9676-4f16-be35-593bfdffbaf0",
+    "height_m": 1.2,
+    "source_sha256": "7c30f56309e00a1982bfc60f54c25288091679b76c165c1e3951eef359d4119c",
+    "original_downloads_unchanged": true,
+    "source_rig_bones": 65,
+    "native_skin_bones": 66,
+    "lod_triangles": [
+      19259,
+      9627,
+      3851
+    ],
+    "native_asset": "/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell",
+    "maximum_geometry_probe_error_cm": 8.140522226297952e-06
+  },
+  "editor_validation": {
+    "self_checks": 1778,
+    "rhi": "Vulkan",
+    "viewport": [
+      1280,
+      720
+    ],
+    "scope": "controlled ordinary Glimpses window/pose fixture, not natural encounter pacing or playthrough",
+    "feet_planted": true,
+    "covered_after_retreat": true
+  },
+  "notes": [
+    "Tall pursuing Pale Figure preserved",
+    "No public release",
+    "Sources and generated model/native assets private"
+  ],
+  "merge": "04fdb1c8c8be025f7c2aec033500bc6a96c2657d",
+  "installed_at": "2026-10-31T17:02:30.674469+01:00",
+  "package_validation": {
+    "self_checks": 1778,
+    "rhi": "Vulkan",
+    "viewport": [
+      1280,
+      720
+    ],
+    "images": 5,
+    "actual_skin_rendered": true,
+    "exit_code": 0
+  },
+  "installation": {
+    "payload_nodes": 68,
+    "saved_nodes": 152,
+    "saved_files": 124,
+    "saved_unchanged": true,
+    "short_smoke": {
+      "returncode": 0,
+      "wall_seconds": 43.19894623494474,
+      "contention": [],
+      "stop_reason": null
+    }
+  },
+  "images": {
+    "before.png": "9805f9ca3ff391743c78a90625302658970d062c436df7402d2cdad54b09be53",
+    "installed-peek.png": "10629a21b391c5fad23882438d894ca710877a3949394adfdd5524e17e84b8a0",
+    "installed-covered.png": "d227920470740105971639e3084c78aeb2860b889efe57fe290934a4ae569a41"
+  },
+  "package_files": {
+    "Signal47/Content/Paks/Signal47-Linux.pak": "cf4d9377c70d2aa4c81c8f60c38129da319e09e14f8d526a134dc65edbf17539",
+    "Signal47/Content/Paks/global.ucas": "2b2700b847812fdcd2978c5d24d34b02c3c9f8b53f6fcb0f9e77e8bef0d2d777",
+    "Signal47/Content/Paks/Signal47-Linux.ucas": "19b220901d70c9cb0d3f8a674f965aa2a206e48ccc6f40eabf8eab83b31b4a98",
+    "Signal47/Content/Paks/global.utoc": "00ff1cffedfad0ea75171ed5dd80ea886c14543819e5c09fa4c3f8854b25d858",
+    "Signal47/Content/Paks/Signal47-Linux.utoc": "6366233b9ebc08361426908746f12a88f2bda1354af0da1c1143ac1c4b3f4e91"
+  },
+  "prune": {
+    "retired_packages": 1,
+    "retired_payload_files": 7,
+    "kept_older_packages": 2,
+    "rollback_payloads_preserved": true
+  }
+}
