@@ -1484,3 +1484,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 13:45 | codex/blender-lookdev-workflow-20261031 | Kjørbar material-/glass-/slitasje-/volum-/dag/nattpakke. Blender5.2.2:36 materialkontroller,8x512² bakte PBR-kart,FBX,før/etter/natt PASS;9 importplankontroller og UE5.8.4-editor/NullRHI native material-/nattkartoppretting PASS. Bare egne prøver; ingen C++-endring, spillinstallasjon eller release.
 
 2026-10-31 13:50 | lookdev-oppfølging | Også native dagkart og eksisterende H31-Tripo-GLB med materialpass/4kart/FBX består. Motorvindu frigitt; dokument-/diffkontroll uten nye feil. Eksportens kopinavn føres eksplisitt i manifestet.
+
+2026-10-31 14:55 CET: `codex/lookdev-live-integration-20261031` kobler 17 native SARO-/motellvarianter til 47 materialslotter og eksisterende dag/natt/tåke; veggarmaturenes optikk er rettet med samme strømstyring. Editorbygg, Vulkan-før/etter, dag/Low/tåke High og faktisk strømkutt/retur består; opprinnelige materialpakker er uendret. Ingen ny spillpakke/installasjon/release.

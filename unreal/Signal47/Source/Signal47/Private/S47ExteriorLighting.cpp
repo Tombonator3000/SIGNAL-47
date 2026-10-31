@@ -8,12 +8,26 @@
 #include "S47ExteriorFixtures.h"
 #include "S47SaroArrival.h"
 
+namespace
+{
+	bool LookdevExterior() { return !FParse::Param(FCommandLine::Get(), TEXT("S47LookdevOff")); }
+	FVector WallPackDownlight(const FVector& LensNormal)
+	{
+		// A wall pack has an asymmetric downlight optic. Its emitting lens tilts only
+		// 16.7 degrees below horizontal; using that as the beam aim puts the nearby
+		// facade at the outer cone's almost-dark edge instead of washing down it.
+		const FVector Out = FVector(LensNormal.X, 0, LensNormal.Z).GetSafeNormal();
+		return (Out * .35 + FVector(0, -1, 0)).GetSafeNormal();
+	}
+}
+
 void AS47Web::BuildExteriorLighting()
 {
 	for (FExteriorLight& P : ExteriorLights) if (P.Light.IsValid()) P.Light->DestroyComponent();
 	ExteriorLights.Reset();
 	const int32 Site = FloodSet(TEXT("site")), Court = FloodSet(TEXT("court"));
 	const bool bLog = FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"));
+	const bool bLookdev = LookdevExterior();
 	const auto Fixtures = S47ExteriorFixtures::ReplaceLegacy(this);
 	if (Fixtures.Contains(TEXT("FireExit")) && SaroArrival) SaroArrival->RetireCanopyLight();
 	auto Add = [&](const TCHAR* Name, const TCHAR* OwnerPath, int32 Set, int32 Slot, const TCHAR* GlowPath, int32 GlowIndex,
@@ -27,10 +41,20 @@ void AS47Web::BuildExteriorLighting()
 		{
 			P.At = Fixture->Aperture;
 			// The wall-pack optic spreads down within its broad beam; canopy points straight down.
-			const FVector Aim = FString(Name) == TEXT("FireExit") ? Fixture->Normal : (Fixture->Normal + FVector(0,-.6,0)).GetSafeNormal();
+			const bool bCanopy = FString(Name) == TEXT("FireExit");
+			const FVector Aim = bCanopy ? Fixture->Normal : bLookdev ? WallPackDownlight(Fixture->Normal)
+				: (Fixture->Normal + FVector(0,-.6,0)).GetSafeNormal();
+			if (bLookdev && !bCanopy)
+			{
+				// The original emitter is 8 mm beyond the lens centre. Its old 9 cm
+				// spherical source overlapped the opaque diffuser/casting. Keep a small
+				// finite source wholly outside that surface without moving the fitting.
+				P.At += Fixture->Normal * .025;
+			}
 			P.Target = P.At + Aim * 4;
 			P.Diffuser = Fixture->Lens; P.Fixture = Fixture->Mesh; P.bAuthoredLens = true;
-			Source = FMath::Min(Fixture->Width, Fixture->Height) * .5f; SoftSource = Source * .6f;
+			Source = FMath::Min(Fixture->Width, Fixture->Height) * (bLookdev && !bCanopy ? .12f : .5f);
+			SoftSource = Source * .6f;
 		}
 		P.Reference = FMath::Max(0.001f, FloodPos(Set, Slot).A * FloodScaleOf(Set));
 		P.GlowNode = Handle(GlowPath); P.Glow = GlowIndex;
@@ -68,8 +92,8 @@ void AS47Web::BuildExteriorLighting()
 			const FLinearColor F = FloodSets[S].Pos[I];
 			if (FVector(F.R, F.G, F.B).Equals(OldAt, 0.12)) SuppressFloodLight(S, I);
 		}
-		if (bLog) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s set=%d slot=%d source=%s target=%s cd=%.2f reach=%.2fm"),
-			Name, Set, Slot, *P.At.ToString(), *P.Target.ToString(), Candela, Reach);
+		if (bLog) UE_LOG(LogTemp, Display, TEXT("S47: exterior %s set=%d slot=%d source=%s target=%s cd=%.2f reach=%.2fm sourceRadius=%.2fcm lookdev=%d"),
+			Name, Set, Slot, *P.At.ToString(), *P.Target.ToString(), Candela, Reach, Source, bLookdev ? 1 : 0);
 	};
 	// Exterior.ts: the three old highway pools lie between eight separate armature heads.
 	// Fit all eight actual sources to their exported glows, preserving the existing power state.

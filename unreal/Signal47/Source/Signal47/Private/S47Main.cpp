@@ -25,6 +25,7 @@
 #include "S47Rx3Detail.h"
 #include "S47SaroPeriodProps.h"
 #include "S47PeriodFixtures.h"
+#include "S47Lookdev.h"
 #include "S47FinalePreview.h"
 #include "S47FinaleMovie.h"
 
@@ -177,6 +178,7 @@ void US47Main::Step(double Dt)
 		FS47Rx3Detail::Update(this, Dt);
 		FS47SaroPeriodProps::Update(this, Dt);
 		S47PeriodFixtures::Update(this, Dt);
+		S47Lookdev::Update(this, Dt);
 	}
 	if (SkyVisitors) SkyVisitors->Step(Dt);
 	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);

@@ -154,3 +154,7 @@ Root eier dokumentkartlegging og to originalbilder på `codex/linux-portability-
 Root eier `Tools/lookdev/` på `codex/blender-lookdev-workflow-20261031`, med avgrenset material-, lys- og Unreal-adapterarbeid fra underagenter. Bare root kjører Blender/Unreal sekvensielt gjennom eksisterende guard. Ingen spillprosess er aktiv ved start; kun private prøvescener og egne Lookdev-assets, ingen ny standardinstallasjon eller offentlig spillrelease.
 
 Lookdev-vinduet er frigitt etter Blender- og native UE-editorprøver. Underagentene er ferdige; ingen motorprosess eller aktiv installasjonsjobb står igjen. Genererte Lookdev-uassets er lokale prøver og inngår ikke i kilde-PR-en.
+
+## Lookdev koblet til SARO og motell
+
+Root eier `codex/lookdev-live-integration-20261031`, med avgrensede bidrag til produksjonsmaterialer, eksisterende miljølys og veggarmaturer. 17 native varianter er laget med kildevern; faktisk runtime binder 47 slotter. Editorbygg, Vulkan-før/etter, dag, Low, tåke High og ekte SARO-strømkutt/gjenoppretting er prøvd sekvensielt. Motorvinduet er frigitt. Ingen ny pakking, standardinstallasjon eller offentlig release. Gjeldende status og gjenstående tester føres i `Docs/Active/STATUS.md` og `TODO.md`.

@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "bindings": [
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_UpperPaint.M_Saro_Control_UpperPaint",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_UpperPaint.M_LDP_M_Saro_Control_UpperPaint",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_LowerPaint.M_Saro_Control_LowerPaint",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_LowerPaint.M_LDP_M_Saro_Control_LowerPaint",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_RackSteel.M_Saro_Control_RackSteel",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_RackSteel.M_LDP_M_Saro_Control_RackSteel",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_UpperPaint.M_Saro_Corridor_UpperPaint",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_UpperPaint.M_LDP_M_Saro_Corridor_UpperPaint",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCT.M_Saro_Corridor_VCT",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCT.M_LDP_M_Saro_Corridor_VCT",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCTFaded.M_Saro_Corridor_VCTFaded",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCTFaded.M_LDP_M_Saro_Corridor_VCTFaded",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCTRepair.M_Saro_Corridor_VCTRepair",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCTRepair.M_LDP_M_Saro_Corridor_VCTRepair",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_SageWall.M_Office_SageWall",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_SageWall.M_LDP_M_Office_SageWall",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_TankerGreen.M_Office_TankerGreen",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_TankerGreen.M_LDP_M_Office_TankerGreen",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/Signal47/Art/Office/Materials/M_Office_FloorLinoleum.M_Office_FloorLinoleum",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_FloorLinoleum.M_LDP_M_Office_FloorLinoleum",
+      "scope": "saro",
+      "mesh_prefixes": [
+        "/Game/Signal47/Art/Office/SM_Office_",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes",
+        "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes"
+      ]
+    },
+    {
+      "source_material_path": "/Game/MotelV2/Materials/M_MotelV2_Office.M_MotelV2_Office",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_Office.M_LDP_M_MotelV2_Office",
+      "scope": "motel",
+      "mesh_prefixes": [
+        "/Game/MotelV2/SM_Sierra_Office"
+      ]
+    },
+    {
+      "source_material_path": "/Game/MotelV2/Materials/M_MotelV2_RoofShell.M_MotelV2_RoofShell",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_RoofShell.M_LDP_M_MotelV2_RoofShell",
+      "scope": "motel",
+      "mesh_prefixes": [
+        "/Game/MotelV2/SM_Sierra_RoofShell"
+      ]
+    },
+    {
+      "source_material_path": "/Game/MotelV2/Materials/M_MotelV2_Glass.M_MotelV2_Glass",
+      "replacement_material_path": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_Glass.M_LDP_M_MotelV2_Glass",
+      "scope": "motel",
+      "mesh_prefixes": [
+        "/Game/MotelV2/SM_Sierra_Glass"
+      ]
+    }
+  ]
+}
