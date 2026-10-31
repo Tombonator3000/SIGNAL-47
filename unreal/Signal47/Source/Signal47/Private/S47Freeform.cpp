@@ -28,6 +28,13 @@ namespace
  int32 SafeInt(const S47J::FObj& O,const TCHAR* K,int32 D=0) { return int32(FMath::Clamp(SafeNum(O,K,D),-100000000.,100000000.)); }
  const double Ticks[]={9.30,9.48,9.66,9.84,11.40,11.60,11.80,12.00,12.20,12.40,12.60};
  const FVector2D Cross[]={{0,.5},{0,-.5},{.5,0},{-.5,0},{0,0}};
+ const double BeamOffsets[]={-.5,.5,0};
+ bool Specialized(const FString& Id){return Id==TEXT("wrong_source")||Id==TEXT("time_disagreement")||Id==TEXT("duplicate_print");}
+ double BeamLevel(double ActualAz,double SourceAz)
+ {return .08+.92*FMath::Exp(-FMath::Square(FMath::FindDeltaAngleDegrees(ActualAz,SourceAz)/.35));}
+ FString InstrumentConclusion(const FString& Id)
+ {return Id==TEXT("time_disagreement")?TEXT("timing_path"):Id==TEXT("duplicate_print")?TEXT("duplicate_mismatch"):TEXT("off_source");}
+
  bool JsonVersion(const S47J::FObj& O)
  {
   const auto V=O?O->TryGetField(TEXT("v")):nullptr;
@@ -64,10 +71,15 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   {
    if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();if(!O)continue;FJob J;
    J.Phenomenon=S47J::Str(O,TEXT("phenomenon"));J.Id=S47J::Str(O,TEXT("id"));J.Day=FMath::Max(1,SafeInt(O,TEXT("day"),1));J.Slot=FMath::Clamp(SafeInt(O,TEXT("slot")),0,2);J.Source=FMath::Clamp(SafeInt(O,TEXT("source")),0,3);
-   J.Stage=EJobStage(FMath::Clamp(SafeInt(O,TEXT("stage")),0,7));J.Elapsed=FMath::Clamp(SafeNum(O,TEXT("elapsed")),0.,40.);J.Quality=FMath::Clamp(SafeNum(O,TEXT("quality"),1),0.,1.);
+   J.Stage=EJobStage(FMath::Clamp(SafeInt(O,TEXT("stage")),0,7));J.Elapsed=FMath::Clamp(SafeNum(O,TEXT("elapsed")),0.,40.);J.Quality=FMath::Clamp(SafeNum(O,TEXT("quality"),1),0.,1.);J.ReceivedLevel=FMath::Clamp(SafeNum(O,TEXT("receivedLevel"),1),0.,1.);
    J.bAnomaly=S47J::Bool(O,TEXT("anomaly"));J.bControl=S47J::Bool(O,TEXT("control"));J.bAudioReviewed=S47J::Bool(O,TEXT("reviewed"));J.bPrinted=S47J::Bool(O,TEXT("printed"));J.bPaid=S47J::Bool(O,TEXT("paid"));
    J.ControlAt=FMath::Clamp(SafeNum(O,TEXT("controlAt")),0.,8.);J.OriginalCovered=FMath::Clamp(SafeNum(O,TEXT("originalCovered")),0.,18.);J.ControlCovered=FMath::Clamp(SafeNum(O,TEXT("controlCovered")),0.,8.);
    J.MarkStart=SafeNum(O,TEXT("markStart"),-1);J.MarkEnd=SafeNum(O,TEXT("markEnd"),-1);
+   J.ReceiverClock=SafeNum(O,TEXT("receiverClock"));J.ReferenceClock=SafeNum(O,TEXT("referenceClock"));J.ControlReceiverClock=SafeNum(O,TEXT("controlReceiverClock"));J.ControlReferenceClock=SafeNum(O,TEXT("controlReferenceClock"));J.DuplicateClock=SafeNum(O,TEXT("duplicateClock"));J.DuplicateInterval=SafeNum(O,TEXT("duplicateInterval"));
+   J.BeamPoint=FMath::Clamp(SafeInt(O,TEXT("beamPoint")),0,2);J.BeamSettle=FMath::Clamp(SafeNum(O,TEXT("beamSettle")),0.,1.);J.BeamSample=FMath::Clamp(SafeNum(O,TEXT("beamSample")),0.,8./3.);J.BeamAz=S47J::Nums(O,TEXT("beamAz"));J.BeamEl=S47J::Nums(O,TEXT("beamEl"));J.BeamAmplitude=S47J::Nums(O,TEXT("beamAmplitude"));
+   J.bBeamVerified=S47J::Bool(O,TEXT("beamVerified"));J.bClockMeasured=S47J::Bool(O,TEXT("clockMeasured"));J.bDuplicateCollected=S47J::Bool(O,TEXT("duplicateCollected"));J.OriginalPage=S47J::Str(O,TEXT("originalPage"));J.OriginalStamp=S47J::Str(O,TEXT("originalStamp"));J.DuplicatePage=S47J::Str(O,TEXT("duplicatePage"));J.DuplicateStamp=S47J::Str(O,TEXT("duplicateStamp"));
+   const auto ValidSamples=[](const TArray<double>& A){if(A.Num()>3)return false;for(double V:A)if(!FMath::IsFinite(V))return false;return true;};
+   if(!ValidSamples(J.BeamAz)||!ValidSamples(J.BeamEl)||!ValidSamples(J.BeamAmplitude)){J.BeamAz.Reset();J.BeamEl.Reset();J.BeamAmplitude.Reset();J.bBeamVerified=false;J.bControl=false;J.ControlAt=0;}
    if(!J.Id.IsEmpty()&&!Work.ContainsByPredicate([&](const FJob& X){return X.Id==J.Id;}))Work.Add(J);
   }
   Selected=FMath::Clamp(SafeInt(Saved,TEXT("selected")),0,FMath::Max(0,Work.Num()-1));AudioSourceIndex=FMath::Clamp(SafeInt(Saved,TEXT("audioSource")),0,1);
@@ -123,12 +135,14 @@ FString FS47FreeformSession::JobLine(const FJob& J)const
 }
 bool FS47FreeformSession::PointReady()const
 {
- if(!M||!M->Web||M->Web->DishCount()!=27||!CurrentJob()||!HasPower())return false;
- const FVector2D Off=bCrossRunning?Cross[CrossPoint]:FVector2D::ZeroVector;int32 Count=0;
- for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))
- {
-  ++Count;if(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),TargetAz()+Off.X))>.1||FMath::Abs(M->Web->DishEl(I)-TargetEl()-Off.Y)>.1)return false;
- }
+ const FVector2D Off=bCrossRunning?Cross[CrossPoint]:FVector2D::ZeroVector;
+ return CurrentJob()&&EncodersAt(TargetAz()+Off.X,TargetEl()+Off.Y);
+}
+bool FS47FreeformSession::EncodersAt(double Az,double El)const
+{
+ if(!M||!M->Web||M->Web->DishCount()!=27||!HasPower())return false;
+ int32 Count=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))
+ {++Count;if(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Az))>.1||FMath::Abs(M->Web->DishEl(I)-El)>.1)return false;}
  return Count>=24;
 }
 void FS47FreeformSession::Step(double Dt)
@@ -178,13 +192,47 @@ void FS47FreeformSession::StepWork(double Dt)
  }
  if(J->bControl&&J->ControlAt<8)
  {
-  J->ControlAt=FMath::Min(8.,J->ControlAt+Dt);
-  if(J->ControlAt>=8){Changed(TEXT("Internal control complete. Review original and control at the signal processor."));if(Director)Director->Use(TEXT("ff:control"));}
+  if(J->Phenomenon==TEXT("wrong_source"))
+  {
+   const double Az=TargetAz()+BeamOffsets[J->BeamPoint];
+   J->BeamSettle=EncodersAt(Az,TargetEl())?FMath::Min(1.,J->BeamSettle+Dt):0;
+   if(J->BeamSettle>=1)
+   {
+    const double Sample=FMath::Min(Dt,8./3.-J->BeamSample);
+    J->BeamSample+=Sample;J->ControlAt=FMath::Min(8.,J->ControlAt+Sample);
+    if(J->BeamSample>=8./3.-1e-6)
+    {
+     double ActualAz=0,ActualEl=0;int32 Count=0;
+     for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I)){ActualAz+=M->Web->DishAz(I);ActualEl+=M->Web->DishEl(I);++Count;}
+     ActualAz/=FMath::Max(1,Count);ActualEl/=FMath::Max(1,Count);
+     J->BeamAz.Add(ActualAz);J->BeamEl.Add(ActualEl);J->BeamAmplitude.Add(BeamLevel(ActualAz,TargetAz()+.5));
+     if(J->BeamPoint<2){++J->BeamPoint;PointBeamControl();}
+     else {J->bBeamVerified=true;J->ControlAt=8;Changed(TEXT("Three real beam samples retained; the array has returned to centre. Compare their signal levels at OPS."));if(Director)Director->Use(TEXT("ff:control"));}
+    }
+   }
+  }
+  else
+  {
+   J->ControlAt=FMath::Min(8.,J->ControlAt+Dt);
+   if(J->ControlAt>=8)
+   {
+    J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
+    if(J->bClockMeasured)Changed(TEXT("Both device counters read at the same internal-reference pulse. Compare original and control clock offsets at OPS."));
+    else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("Master acquisition register checked. Collect the separate duplicate at the printer, then compare its stamp with the retained original."));
+    else Changed(TEXT("Internal control complete. Review original and control at the signal processor."));
+    if(Director)Director->Use(TEXT("ff:control"));
+   }
+  }
  }
 }
 void FS47FreeformSession::PointCross()
 {
  Settle=CrossSample=0;if(M&&M->Web)M->Web->PointDishes(TargetAz()+Cross[CrossPoint].X,TargetEl()+Cross[CrossPoint].Y,2.2);
+}
+void FS47FreeformSession::PointBeamControl()
+{
+ FJob* J=Job();if(!J)return;J->BeamSettle=J->BeamSample=0;
+ if(M&&M->Web)M->Web->PointDishes(TargetAz()+BeamOffsets[J->BeamPoint],TargetEl(),2.2);
 }
 bool FS47FreeformSession::SelectJob(int32 Index)
 {
@@ -207,33 +255,90 @@ bool FS47FreeformSession::StartAcquisition()
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Pointed||!PointReady()||Settle<1||!M||!M->Story)return false;
  if(!M->Story->Rx.Pass(Profile(J->Source))){Feedback=TEXT("Receiver off source. Check frequency, gain, bandwidth and azimuth against the card.");return false;}
  J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=J->Slot==1&&bAnomaly;J->Phenomenon=J->bAnomaly?PhenomenonId:FString();
+ J->ReferenceClock=WorldClock;J->ReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);
  int32 Available=0;for(int32 I=0;I<27;++I)Available+=M->Web->DishRemoteAvailable(I)?1:0;J->Quality=double(Available)/27;
+ double ActualAz=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))ActualAz+=M->Web->DishAz(I);
+ ActualAz/=FMath::Max(1,Available);J->ReceivedLevel=BeamLevel(ActualAz,TargetAz()+(J->Phenomenon==TEXT("wrong_source")?.5:0));
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
  Changed(TEXT("Acquisition started. Only physically settled pointing is integrated."));return true;
 }
 void FS47FreeformSession::PrintJob(bool bPacket)
 {
  FJob* J=Job();if(!J||!M||!M->Story)return;
- FS47Doc D;D.Id=J->Id+(bPacket?TEXT("-packet"):TEXT("-original"));D.Title=(bPacket?TEXT("Registered packet: "):TEXT("Original observation: "))+J->Id;D.Kind=TEXT("printout");D.Stamp=Reference(*J);
+ FS47Doc D;D.Id=J->Id+(bPacket?TEXT("-packet"):TEXT("-original"));D.Title=(bPacket?TEXT("Registered packet: "):TEXT("Original observation: "))+J->Id;D.Kind=TEXT("printout");D.Stamp=Reference(*J)+FString::Printf(TEXT(" / ORIGINAL COUNTER %.3f"),J->ReferenceClock);
  D.Page=Reference(*J)+TEXT("\n")+FS47Observing::Runs()[J->Source].Source+FString::Printf(TEXT("\nACTUAL ARRAY / QUALITY %.0f %%\nF %.3f MHz / AZ %.1f / EL %.1f\nINTEGRATION %.1f SECONDS\n"),J->Quality*100,Profile(J->Source).F,TargetAz(),TargetEl(),J->Elapsed);
- if(J->Phenomenon==TEXT("time_disagreement"))D.Page+=TEXT("RX CLOCK vs independent reference: +3.2 s offset at the same pulse. Check the internal reference before interpreting the discrepancy.\n");
- else if(J->Phenomenon==TEXT("wrong_source"))D.Page+=TEXT("Signal persists in the adjacent beam. Encoder pointing matches command; signal origin does not yet agree with the scheduled source.\n");
- else if(J->Phenomenon==TEXT("duplicate_print"))D.Page+=TEXT("PROVENANCE: ORIGINAL RX RECORD. A separate duplicate was received with an inconsistent timestamp; this original is retained unchanged.\n");
+ if(J->Phenomenon==TEXT("time_disagreement"))D.Page+=FString::Printf(TEXT("ORIGINAL SIMULTANEOUS CLOCK READBACK\nRX COUNTER %.3f s / INDEPENDENT COUNTER %.3f s / DELTA %+.3f s\nRun the internal reference before interpreting this mismatch.\n"),J->ReceiverClock,J->ReferenceClock,J->ReceiverClock-J->ReferenceClock);
+ else if(J->Phenomenon==TEXT("wrong_source"))D.Page+=FString::Printf(TEXT("CENTRE-BEAM RECEIVED LEVEL %.3f / NORMAL REFERENCE 1.000\nEncoder pointing matches command. An adjacent-beam control is still required; no off-source origin has been established.\n"),J->ReceivedLevel);
+ else if(J->Phenomenon==TEXT("duplicate_print"))D.Page+=TEXT("PROVENANCE: ORIGINAL RX RECORD. A printer duplicate has been queued separately. Preserve this original before collecting or comparing the later copy.\n");
  else if(J->bAnomaly)D.Page+=TEXT("Extra ticks outside the reference period. Original retained.\n");else D.Page+=TEXT("Result consistent with the current reference; no anomalous origin established.\n");
- if(bPacket)D.Page+=FString::Printf(TEXT("REGISTERED / INTERNAL CONTROL %.1f SECONDS\nMARK %.1f TO %.1f SECONDS / CONCLUSION: SOURCE UNRESOLVED\nPHYSICAL FILING PENDING."),J->ControlAt,J->MarkStart,J->MarkEnd);
+ D.Page+=FString::Printf(TEXT("CAPTURE CLOCK %.3f SECONDS / OBSERVED INTERVAL %.3f SECONDS\n"),J->ReferenceClock,J->Elapsed);
+ if(!bPacket)
+ {
+  if(J->OriginalPage.IsEmpty()){J->OriginalPage=D.Page;J->OriginalStamp=D.Stamp;}
+  else {D.Page=J->OriginalPage;D.Stamp=J->OriginalStamp;}
+ }
+ if(bPacket)
+ {
+  if(Specialized(J->Phenomenon))D.Page+=ControlSummary(*J)+TEXT("\nREGISTERED / PHYSICAL FILING PENDING.");
+  else D.Page+=FString::Printf(TEXT("REGISTERED / INTERNAL CONTROL %.1f SECONDS\nMARK %.1f TO %.1f SECONDS / CONCLUSION: SOURCE UNRESOLVED\nPHYSICAL FILING PENDING."),J->ControlAt,J->MarkStart,J->MarkEnd);
+ }
  D.Transcript=D.Page;M->Story->AddDoc(D);if(M->UI)M->UI->Document(D);
 }
 bool FS47FreeformSession::CollectChart()
 {
  FJob* J=Job();if(!J)return false;
  if(J->Stage==EJobStage::Chart){J->Stage=EJobStage::Recorded;J->bPrinted=true;PrintJob(false);Changed();return true;}
+ if(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected){CollectDuplicate();return J->bDuplicateCollected;}
  if(J->Stage==EJobStage::Registered&&J->bAnomaly){J->Stage=EJobStage::Packet;PrintJob(true);Changed();return true;}
  return false;
+}
+void FS47FreeformSession::CollectDuplicate()
+{
+ FJob* J=Job();if(!J||!J->bPrinted||J->bDuplicateCollected||!M||!M->Story)return;
+ if(J->OriginalPage.IsEmpty())if(const FS47Doc* D=M->Story->Docs().FindByPredicate([&](const FS47Doc& X){return X.Id==J->Id+TEXT("-original");})){J->OriginalPage=D->Page;J->OriginalStamp=D->Stamp;}
+ if(J->OriginalPage.IsEmpty())return;
+ J->DuplicateClock=J->ReferenceClock+2.4;J->DuplicateInterval=FMath::Max(0.,J->Elapsed-1.);
+ const FString OriginalLine=FString::Printf(TEXT("CAPTURE CLOCK %.3f SECONDS / OBSERVED INTERVAL %.3f SECONDS"),J->ReferenceClock,J->Elapsed);
+ const FString DuplicateLine=FString::Printf(TEXT("CAPTURE CLOCK %.3f SECONDS / OBSERVED INTERVAL %.3f SECONDS"),J->DuplicateClock,J->DuplicateInterval);
+ if(!J->OriginalPage.Contains(OriginalLine,ESearchCase::CaseSensitive)){Feedback=TEXT("This retained legacy original has no independent capture-counter record. Keep it intact and make a new incident observation.");return;}
+ J->DuplicatePage=TEXT("SEPARATE PRINTER COPY / ORIGIN UNVERIFIED\n\n")+J->OriginalPage.Replace(*OriginalLine,*DuplicateLine,ESearchCase::CaseSensitive);
+ J->DuplicateStamp=Reference(*J)+FString::Printf(TEXT(" / COPY COUNTER %.3f"),J->DuplicateClock);
+ FS47Doc D;D.Id=J->Id+TEXT("-duplicate");D.Title=TEXT("Separate printer duplicate: ")+J->Id;D.Kind=TEXT("printout");D.Stamp=J->DuplicateStamp;D.Page=J->DuplicatePage;D.Transcript=D.Page;
+ M->Story->AddDoc(D);J->bDuplicateCollected=true;if(M->UI)M->UI->Document(D);Changed();
+}
+FString FS47FreeformSession::ControlSummary(const FJob& J)const
+{
+ if(J.Phenomenon==TEXT("wrong_source"))
+ {
+  FString Text=TEXT("ADJACENT-BEAM CONTROL / ACTUAL ENCODERS AND SAMPLED AMPLITUDE\n");
+  for(int32 I=0;I<J.BeamAz.Num()&&I<J.BeamEl.Num()&&I<J.BeamAmplitude.Num();++I)Text+=FString::Printf(TEXT("%s: AZ %.3f EL %.3f / LEVEL %.3f\n"),I==0?TEXT("WEST"):I==1?TEXT("EAST"):TEXT("CENTRE"),J.BeamAz[I],J.BeamEl[I],J.BeamAmplitude[I]);
+  return Text+(J.bBeamVerified?TEXT("All samples follow one second of actual encoder settling. Compare the off-centre maximum against the schedule."):TEXT("Control incomplete; no off-source conclusion yet."));
+ }
+ if(J.Phenomenon==TEXT("time_disagreement"))return FString::Printf(TEXT("SIMULTANEOUS DEVICE CLOCK READBACKS\nORIGINAL: RX %.3f / INDEPENDENT %.3f / DELTA %+.3f s\nINTERNAL CONTROL: RX %.3f / INDEPENDENT %.3f / DELTA %+.3f s\n%s"),J.ReceiverClock,J.ReferenceClock,J.ReceiverClock-J.ReferenceClock,J.ControlReceiverClock,J.ControlReferenceClock,J.ControlReceiverClock-J.ControlReferenceClock,J.bClockMeasured?TEXT("The timing discrepancy survives the internal reference; it is not evidence of missing time or a sky source."):TEXT("Timed independent control still required."));
+ if(J.Phenomenon==TEXT("duplicate_print"))return FString::Printf(TEXT("ORIGINAL: COUNTER %.3f / INTERVAL %.3f s\nSEPARATE COPY: COUNTER %.3f / INTERVAL %.3f s\n%s"),J.ReferenceClock,J.Elapsed,J.DuplicateClock,J.DuplicateInterval,J.bDuplicateCollected?TEXT("The physical copies are retained separately. Compare them with the independent master register; never amend the original."):TEXT("Collect the separate copy at the printer before comparing."));
+ return TEXT("Original and internal-reference recordings retained.");
+}
+bool FS47FreeformSession::CompareInstrument()
+{
+ FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bControl||J->ControlAt<8||!Specialized(J->Phenomenon))return false;
+ bool Verified=false;
+ if(J->Phenomenon==TEXT("wrong_source"))Verified=J->bBeamVerified&&J->BeamAz.Num()==3&&J->BeamEl.Num()==3&&J->BeamAmplitude.Num()==3&&J->BeamAmplitude[1]>J->BeamAmplitude[0]+.25&&J->BeamAmplitude[1]>J->BeamAmplitude[2]+.25;
+ else if(J->Phenomenon==TEXT("time_disagreement"))Verified=J->bClockMeasured&&FMath::IsNearlyEqual(J->ReceiverClock-J->ReferenceClock,3.2,.001)&&FMath::IsNearlyEqual(J->ControlReceiverClock-J->ControlReferenceClock,3.2,.001);
+ else if(J->Phenomenon==TEXT("duplicate_print")&&J->bDuplicateCollected&&M&&M->Story)
+ {
+  const FS47Doc* Original=M->Story->Docs().FindByPredicate([&](const FS47Doc& D){return D.Id==J->Id+TEXT("-original");});
+  const FS47Doc* Copy=M->Story->Docs().FindByPredicate([&](const FS47Doc& D){return D.Id==J->Id+TEXT("-duplicate");});
+  Verified=Original&&Copy&&Original->Page==J->OriginalPage&&Original->Stamp==J->OriginalStamp&&Copy->Page==J->DuplicatePage&&Copy->Stamp==J->DuplicateStamp&&J->DuplicatePage!=J->OriginalPage&&FMath::IsNearlyEqual(J->DuplicateClock-J->ReferenceClock,2.4,.001)&&FMath::IsNearlyEqual(J->Elapsed-J->DuplicateInterval,1.,.001);
+ }
+ if(!Verified){Feedback=TEXT("The required independent measurements or retained originals are incomplete. Do the physical control before comparing.");return false;}
+ J->bAudioReviewed=true;RecordEvidence(J->Phenomenon,ControlSummary(*J));if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("Measured comparison retained. Register the supported instrumental conclusion at OPS."));return true;
 }
 bool FS47FreeformSession::StartControl()
 {
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bAnomaly||J->bControl||!HasPower())return false;
- J->bControl=true;J->ControlAt=0;Changed(TEXT("External input terminated. Eight-second internal reference running; original retained."));return true;
+ J->bControl=true;J->ControlAt=0;
+ if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("Adjacent-beam control commanded: west, east, then centre. Each sample waits for real encoder settling."));}
+ else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("Checking the independent master acquisition register; original paper retained."):TEXT("External input terminated. Eight-second internal reference running; original retained."));return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::AudioAction(const FString& Action)
@@ -249,6 +354,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
  }
  else if(Action==TEXT("confirm"))
  {
+  if(Specialized(J->Phenomenon))return CompareInstrument();
   if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
   if(J->MarkStart<0||J->MarkStart>9.30||J->MarkEnd<12.60||J->MarkEnd-J->MarkStart>6){Feedback=TEXT("Mark both short groups of extra ticks, between about 9 and 13 seconds.");return false;}
   J->bAudioReviewed=true;RecordEvidence(TEXT("pulse-review"),TEXT("Original and internal reference reviewed. Extra ticks are absent from the short control; source remains unresolved."));
@@ -279,7 +385,8 @@ FString FS47FreeformSession::AudioDisplay()const{return FString::Printf(TEXT("%s
 bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded)return false;
- if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=TEXT("unresolved"))){Feedback=TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
+ if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
+ if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
  J->Stage=EJobStage::Registered;
  if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}J->Stage=EJobStage::Filed;}
  Changed(J->bAnomaly?TEXT("Registered. Collect the labelled packet at the printer, then file its originals in the binder."):TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return true;
@@ -434,16 +541,27 @@ void FS47FreeformSession::OpenOperations()
   {
    if(J->bAnomaly)
    {
-    Rows.Add(S47Kit::Small(TEXT("Compare the original with the internal reference at the signal processor before registering.")));
-    Rows.Add(S47Kit::Button(TEXT("The quiet control proves a sky source"),[this]{RegisterComparison(TEXT("sky"));OpenOperations();}));
-    Rows.Add(S47Kit::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+    if(Specialized(J->Phenomenon))
+    {
+     Rows.Add(S47Kit::Small(ControlSummary(*J)));
+     Rows.Add(S47Kit::Button(TEXT("Compare the retained instrument measurements"),[this]{CompareInstrument();OpenOperations();}));
+     const FString Conclusion=InstrumentConclusion(J->Phenomenon);
+     const FString Label=J->Phenomenon==TEXT("wrong_source")?TEXT("Register an off-centre maximum; origin unresolved"):J->Phenomenon==TEXT("time_disagreement")?TEXT("Register disagreement in the receiver timing path"):TEXT("Register mismatched duplicate; preserve original");
+     Rows.Add(S47Kit::Button(Label,[this,Conclusion]{RegisterComparison(Conclusion);OpenOperations();},true));
+    }
+    else
+    {
+     Rows.Add(S47Kit::Small(TEXT("Compare the original with the internal reference at the signal processor before registering.")));
+     Rows.Add(S47Kit::Button(TEXT("The quiet control proves a sky source"),[this]{RegisterComparison(TEXT("sky"));OpenOperations();}));
+     Rows.Add(S47Kit::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+    }
    }
    else Rows.Add(S47Kit::Button(TEXT("Register routine result / $20"),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
   }
  }
  Rows.Add(S47Kit::Small(Feedback));
  Rows.Add(S47Kit::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; comparison locates extra ticks; field kit permits local S-03 diagnosis and includes two fuses and a relay.")));
- Rows.Add(S47Kit::Row({S47Kit::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47Kit::Button(TEXT("Rest until morning"),[this]{Rest();})}));
+ Rows.Add(S47Kit::Row({S47Kit::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47Kit::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){const int32 Index=I;U.Add(S47Kit::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
  SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / OPERATIONS AND DAILY WORK"),S47Kit::Col(Rows),1000));
@@ -457,6 +575,11 @@ void FS47FreeformSession::OpenTracking()
  Rows.Add(S47Kit::Text(TAttribute<FString>::CreateLambda([this]{return PointReady()?Settle>=1?TEXT("ACTUAL ENCODERS STEADY / READY"):TEXT("ON TARGET / SETTLING"):TEXT("ARRAY MOVING OR DEGRADED / WAIT FOR ENCODERS");}),TAttribute<int32>(0)));
  Rows.Add(S47Kit::Button(TEXT("Point array to selected source"),[this]{if(PointSelected())M->UI->Close();},true,CurrentJob()->Stage<=EJobStage::Pointed));
  Rows.Add(S47Kit::Small(TEXT("Watch the actual dishes through the window. Up to three isolated antennas permit degraded acquisition. Fewer than 24 require service.")));
+ if(CurrentJob()->Phenomenon==TEXT("wrong_source")&&CurrentJob()->Stage==EJobStage::Recorded)
+ {
+  Rows.Add(S47Kit::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ADJACENT CONTROL %d/3 / SETTLE %.1f s / SAMPLE %.1f s\n%s"),J->BeamPoint+1,J->BeamSettle,J->BeamSample,*ControlSummary(*J)):FString();}),TAttribute<int32>(0)));
+  Rows.Add(S47Kit::Button(TEXT("Measure west, east and centre beams"),[this]{if(StartControl())M->UI->Close();},true,!CurrentJob()->bControl));
+ }
  SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / TRACKING"),S47Kit::Col(Rows),900),true);
 }
 void FS47FreeformSession::OpenStatus()
@@ -520,7 +643,13 @@ void FS47FreeformSession::OpenAudio()
  Rows.Add(S47Kit::Paper(Reference(*J)+TEXT("\nORIGINAL / 18 s   INTERNAL CONTROL / 8 s")));
  if(!J->bAnomaly||J->ControlAt<8)
  {
-  Rows.Add(S47Kit::Small(TEXT("Retain an anomalous original at the printer, then run the internal reference at the receiver rack. A normal job can be registered directly at OPS.")));
+  Rows.Add(S47Kit::Small(J->Phenomenon==TEXT("wrong_source")?TEXT("Retain the original chart, then command the physical three-beam control at the tracking terminal. Each beam must settle before it is measured."):TEXT("Retain an anomalous original at the printer, then run the internal reference at the receiver rack. A normal job can be registered directly at OPS.")));
+ }
+ else if(Specialized(J->Phenomenon))
+ {
+  Rows.Add(S47Kit::Paper(ControlSummary(*J)));
+  Rows.Add(S47Kit::Small(Feedback));
+  Rows.Add(S47Kit::Button(TEXT("Retain the measured instrument comparison"),[this]{if(CompareInstrument())M->UI->Close();},true));
  }
  else
  {
@@ -599,8 +728,10 @@ FString FS47FreeformSession::Objective()const
   case EJobStage::Chart:return TEXT("PRINTER // RETAIN THE ORIGINAL OBSERVATION CHART");
   case EJobStage::Recorded:
    if(!J->bAnomaly)return TEXT("OPERATIONS // REGISTER THE ROUTINE RESULT");
-   if(!J->bControl)return TEXT("RECEIVER RACK // RECORD AN INDEPENDENT INTERNAL CONTROL");
-   if(J->ControlAt<8)return TEXT("INTERNAL CONTROL RUNNING // ORIGINAL RETAINED");
+   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING // MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER RACK // RECORD AN INDEPENDENT INTERNAL CONTROL");
+   if(J->ControlAt<8)return J->Phenomenon==TEXT("wrong_source")?TEXT("ADJACENT-BEAM CONTROL // REAL ENCODERS SETTLE BEFORE EACH SAMPLE"):TEXT("INTERNAL CONTROL RUNNING // ORIGINAL RETAINED");
+   if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return TEXT("PRINTER // COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL");
+   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPERATIONS // REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPERATIONS // COMPARE THE RETAINED INSTRUMENT MEASUREMENTS");
    return J->bAudioReviewed?TEXT("OPERATIONS // REGISTER THE SUPPORTED CONCLUSION"):TEXT("SIGNAL PROCESSOR // REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
   case EJobStage::Registered:return TEXT("PRINTER // COLLECT THE LABELLED REGISTERED PACKET");
   case EJobStage::Packet:return TEXT("RECORDS // PLACE THE ORIGINAL PACKET IN THE BINDER");
@@ -620,7 +751,8 @@ S47J::FObj FS47FreeformSession::Save()const
  TArray<TSharedPtr<FJsonValue>> Jobs;
  for(const FJob& J:Work)
  {
-  auto A=S47J::New();S47J::Set(A,TEXT("id"),J.Id);S47J::Set(A,TEXT("day"),J.Day);S47J::Set(A,TEXT("slot"),J.Slot);S47J::Set(A,TEXT("source"),J.Source);S47J::Set(A,TEXT("phenomenon"),J.Phenomenon);S47J::Set(A,TEXT("stage"),int32(J.Stage));S47J::Set(A,TEXT("elapsed"),J.Elapsed);S47J::Set(A,TEXT("quality"),J.Quality);S47J::Set(A,TEXT("anomaly"),J.bAnomaly);S47J::Set(A,TEXT("control"),J.bControl);S47J::Set(A,TEXT("reviewed"),J.bAudioReviewed);S47J::Set(A,TEXT("printed"),J.bPrinted);S47J::Set(A,TEXT("paid"),J.bPaid);S47J::Set(A,TEXT("controlAt"),J.ControlAt);S47J::Set(A,TEXT("originalCovered"),J.OriginalCovered);S47J::Set(A,TEXT("controlCovered"),J.ControlCovered);S47J::Set(A,TEXT("markStart"),J.MarkStart);S47J::Set(A,TEXT("markEnd"),J.MarkEnd);Jobs.Add(MakeShared<FJsonValueObject>(A));
+  auto A=S47J::New();S47J::Set(A,TEXT("id"),J.Id);S47J::Set(A,TEXT("day"),J.Day);S47J::Set(A,TEXT("slot"),J.Slot);S47J::Set(A,TEXT("source"),J.Source);S47J::Set(A,TEXT("phenomenon"),J.Phenomenon);S47J::Set(A,TEXT("stage"),int32(J.Stage));S47J::Set(A,TEXT("elapsed"),J.Elapsed);S47J::Set(A,TEXT("quality"),J.Quality);S47J::Set(A,TEXT("receivedLevel"),J.ReceivedLevel);S47J::Set(A,TEXT("anomaly"),J.bAnomaly);S47J::Set(A,TEXT("control"),J.bControl);S47J::Set(A,TEXT("reviewed"),J.bAudioReviewed);S47J::Set(A,TEXT("printed"),J.bPrinted);S47J::Set(A,TEXT("paid"),J.bPaid);S47J::Set(A,TEXT("controlAt"),J.ControlAt);S47J::Set(A,TEXT("originalCovered"),J.OriginalCovered);S47J::Set(A,TEXT("controlCovered"),J.ControlCovered);S47J::Set(A,TEXT("markStart"),J.MarkStart);S47J::Set(A,TEXT("markEnd"),J.MarkEnd);S47J::Set(A,TEXT("receiverClock"),J.ReceiverClock);S47J::Set(A,TEXT("referenceClock"),J.ReferenceClock);S47J::Set(A,TEXT("controlReceiverClock"),J.ControlReceiverClock);S47J::Set(A,TEXT("controlReferenceClock"),J.ControlReferenceClock);S47J::Set(A,TEXT("duplicateClock"),J.DuplicateClock);S47J::Set(A,TEXT("duplicateInterval"),J.DuplicateInterval);
+  S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);Jobs.Add(MakeShared<FJsonValueObject>(A));
  }
  O->SetArrayField(TEXT("jobs"),Jobs);
  auto F=S47J::New(),D=S47J::New();for(const auto& P:Findings){S47J::Set(F,*P.Key,P.Value);S47J::Set(D,*P.Key,FindingDays.FindRef(P.Key));}S47J::Set(O,TEXT("findings"),F);S47J::Set(O,TEXT("findingDays"),D);
@@ -639,6 +771,19 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  S.TestAdvance(86400);Check(S.Day()==2&&S.Jobs().Num()==6,TEXT("Freeform new days retain unfinished work and create distinct daily job identities"));
  auto Saved=S.Save();FS47FreeformSession R(nullptr);R.Begin(S47J::Read(S47J::Write(Saved)));Check(R.Day()==2&&R.Budget()==15&&R.HasFinding(TEXT("extra_pulse"))&&R.Jobs().Num()==6&&!R.AudioPlaying(),TEXT("Freeform disk JSON restore retains economy, days, evidence and paused audio"));
  R.RecordEvidence(TEXT("feeder_fault"),TEXT("control"));R.RecordEvidence(TEXT("wrong_source"),TEXT("adjacent beam"));Check(R.MysterySteps[0]==3,TEXT("Freeform mystery comparison requires independent records across days"));
+ FS47FreeformSession Instrument(nullptr);Instrument.Begin(nullptr);Instrument.Selected=1;
+ auto* I=Instrument.Job();I->Stage=EJobStage::Recorded;I->bAnomaly=I->bControl=true;I->ControlAt=8;I->Phenomenon=TEXT("wrong_source");
+ Check(!Instrument.CompareInstrument(),TEXT("off-source comparison cannot be granted by elapsed time without three settled beam samples"));
+ I->BeamAz={99.5,100.5,100};I->BeamEl={30,30,30};I->BeamAmplitude={.08,1,.2};I->bBeamVerified=true;I->OriginalPage=TEXT("retained original bytes");
+ Check(Instrument.CompareInstrument()&&Instrument.HasFinding(TEXT("wrong_source")),TEXT("three verified beam samples retain an off-centre comparison, not an alien-origin claim"));
+ auto InstrumentSaved=S47J::Read(S47J::Write(Instrument.Save()));FS47FreeformSession Readback(nullptr);Readback.Begin(InstrumentSaved);
+ Check(Readback.CurrentJob()&&Readback.CurrentJob()->BeamAz.Num()==3&&Readback.CurrentJob()->BeamAz[1]==100.5&&Readback.CurrentJob()->OriginalPage==TEXT("retained original bytes"),TEXT("measured encoders and immutable original snapshot survive JSON restore"));
+ I=Instrument.Job();I->bAudioReviewed=false;I->Phenomenon=TEXT("time_disagreement");I->ReceiverClock=103.2;I->ReferenceClock=100;I->ControlReceiverClock=203.2;I->ControlReferenceClock=200;
+ Check(!Instrument.CompareInstrument(),TEXT("clock numbers alone do not substitute for the timed independent-control readback"));
+ I->bClockMeasured=true;Check(Instrument.CompareInstrument(),TEXT("simultaneous original and control device readings establish a repeated timing-path discrepancy"));
+ I->bAudioReviewed=false;I->Phenomenon=TEXT("duplicate_print");I->bDuplicateCollected=true;I->DuplicatePage=TEXT("different copy");
+ Check(!Instrument.CompareInstrument(),TEXT("duplicate metadata cannot grant comparison without two actual retained document originals"));
+ Instrument.Stop();Readback.Stop();
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
  S.Stop();R.Stop();return OK;
 }

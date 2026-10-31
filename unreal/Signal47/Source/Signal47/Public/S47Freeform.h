@@ -17,9 +17,14 @@ public:
   FString Id, Phenomenon;
   int32 Day=1, Slot=0, Source=0;
   EJobStage Stage=EJobStage::New;
-  double Elapsed=0, Quality=1;
+  double Elapsed=0, Quality=1, ReceivedLevel=1;
   bool bAnomaly=false,bControl=false,bAudioReviewed=false,bPrinted=false,bPaid=false;
   double ControlAt=0, OriginalCovered=0,ControlCovered=0, MarkStart=-1,MarkEnd=-1;
+  double ReceiverClock=0,ReferenceClock=0,ControlReceiverClock=0,ControlReferenceClock=0,DuplicateClock=0,DuplicateInterval=0;
+  int32 BeamPoint=0;double BeamSettle=0,BeamSample=0;
+  TArray<double> BeamAz,BeamEl,BeamAmplitude;
+  bool bBeamVerified=false,bClockMeasured=false,bDuplicateCollected=false;
+  FString OriginalPage,OriginalStamp,DuplicatePage,DuplicateStamp;
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -54,6 +59,7 @@ public:
  bool StartControl();
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
+ bool CompareInstrument();
  bool RegisterComparison(const FString& Conclusion);
  bool FilePacket();
  bool Rest();
@@ -112,6 +118,10 @@ private:
  void Changed(const FString& Text=FString());
  void UpdateMysteries();
  bool PointReady() const;
+ bool EncodersAt(double Az,double El) const;
+ void PointBeamControl();
+ void CollectDuplicate();
+ FString ControlSummary(const FJob& J) const;
  bool HasPower() const;
  double TargetAz() const;
  double TargetEl() const;

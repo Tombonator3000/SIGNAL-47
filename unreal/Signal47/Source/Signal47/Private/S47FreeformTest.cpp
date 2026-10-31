@@ -235,6 +235,10 @@ void FS47FreeformTest::Step(double Dt)
   Shot(FString::Printf(TEXT("event-%02d"),EventIndex));
   if(F.Director->ActiveEvent()==TEXT("observer")||F.Director->ActiveEvent()==TEXT("service_presence"))
    if(!Check(M->Night&&M->Night->Glimpses&&!M->Night->Glimpses->Individuals().IsEmpty(),TEXT("controlled encounter has a real native individual after its warning")))return;
+  if(F.Director->ActiveEvent()==TEXT("feeder_fault"))
+  { M->World->Enter(TEXT("road"));Go(90,.4);return; }
+  if(F.Director->ActiveEvent()==TEXT("wrong_source")||F.Director->ActiveEvent()==TEXT("time_disagreement")||F.Director->ActiveEvent()==TEXT("duplicate_print"))
+  { Go(60);return; }
   if(F.Director->ActiveEvent()==TEXT("landing_trace"))
   {
    const FVector P=F.Director->EventAnchor();M->Player->Place(P.X-1.5,P.Z,0);
@@ -266,6 +270,62 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(!F.HasFinding(TEXT("sample-analysis")))return;
   if(!Check(F.InventoryCount(TEXT("archived_fragment"))==1&&!F.Field->AnalyzeSample(),TEXT("timed analysis seals the original and cannot duplicate evidence")))return;
+  F.Director->Stop();F.Director->Begin(nullptr);++EventIndex;Go(21,.3);return;
+ }
+ if(Stage==60)
+ {
+  const auto P=F.ConsoleProfile();if(!Check(P&&F.CurrentJob(),TEXT("instrument anomaly supplies a retained observation job")))return;
+  auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+  if(!Check(F.PointSelected(),TEXT("specialized investigation commands its actual array pointing")))return;
+  Go(61);return;
+ }
+ if(Stage==61){if(!F.StartAcquisition())return;Go(62);return;}
+ if(Stage==62)
+ {
+  if(F.CurrentJob()->Stage!=J::Chart)return;
+  if(!Check(F.CollectChart()&&F.StartControl(),TEXT("retained original precedes its distinct measured instrument control")))return;
+  Go(63);return;
+ }
+ if(Stage==63)
+ {
+  if(F.CurrentJob()->ControlAt<8)return;
+  const auto* Job=F.CurrentJob();const FString Id=Job->Phenomenon;
+  if(Id==TEXT("wrong_source"))
+   if(!Check(Job->bBeamVerified&&Job->BeamAz.Num()==3&&Job->BeamAmplitude.Num()==3,TEXT("three real settled adjacent-beam samples precede off-source evidence")))return;
+  if(Id==TEXT("time_disagreement"))
+   if(!Check(Job->bClockMeasured&&FMath::Abs(Job->ReceiverClock-Job->ReferenceClock)>1&&FMath::Abs(Job->ControlReceiverClock-Job->ControlReferenceClock)>1,TEXT("independent clock readbacks establish the actual repeated disagreement")))return;
+  if(Id==TEXT("duplicate_print"))
+   if(!Check(F.CollectChart()&&F.CurrentJob()->bDuplicateCollected&&F.CurrentJob()->OriginalPage!=F.CurrentJob()->DuplicatePage,TEXT("a separate collected duplicate differs from the preserved original")))return;
+  if(!Restore(TEXT("measured-")+Id))return;
+  Go(64,.3);return;
+ }
+ if(Stage==64)
+ {
+  const FString Id=F.CurrentJob()->Phenomenon;
+  if(!Check(F.CompareInstrument(),TEXT("measured distinct instrument comparison survives Continue: ")+Id))return;
+  const FString Conclusion=Id==TEXT("wrong_source")?TEXT("off_source"):Id==TEXT("time_disagreement")?TEXT("timing_path"):TEXT("duplicate_mismatch");
+  if(!Check(F.RegisterComparison(Conclusion)&&F.CollectChart()&&F.FilePacket(),TEXT("supported instrument finding is registered, collected and archived: ")+Id))return;
+  F.OpenArchive();Shot(TEXT("comparison-")+Id);Go(65,.3);return;
+ }
+ if(Stage==65)
+ {
+  M->UI->Close(true);F.Director->Stop();F.Director->Begin(nullptr);++EventIndex;Go(21,.3);return;
+ }
+ if(Stage==90)
+ {
+  if(M->World->bBusy)return;const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X-1.4,P.Z,0);
+  F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));
+  Go(91);return;
+ }
+ if(Stage==91)
+ {
+  if(F.PowerFault())return;
+  if(!Check(true,TEXT("physical feeder isolation, replacement and timed test restore actual supply")))return;
+  if(!Restore(TEXT("feeder-repaired")))return;M->World->Enter(TEXT("saro"));M->Player->Place(0,-1.2,PI);Go(92,.6);return;
+ }
+ if(Stage==92)
+ {
+  if(!Check(!F.PowerFault(),TEXT("repaired feeder remains powered after ordinary Continue")))return;
   F.Director->Stop();F.Director->Begin(nullptr);++EventIndex;Go(21,.3);return;
  }
  if(Stage==30)
