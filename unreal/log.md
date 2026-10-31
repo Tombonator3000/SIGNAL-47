@@ -1452,3 +1452,7 @@ Codex på codex/deputy-playtest-blocker-20261031: PLAY-31-07/P1 fører Toms vanl
 
 ### 2026-10-31T09:19+01:00 Trafostasjon og svevende sheriffdeler
 Codex på codex/playtest-substation-grounding-20261031: PLAY-31-08 fører Toms manglende trafolys-animasjon og summing/elektrisk lyd; PLAY-31-02/07 har fått originalbildet fra sherifftrappa02:44 som underlag. PNG er kopiert byteidentisk. Ingen spillrettelse, bygg, motorprøve eller installasjon.
+
+
+### 2026-10-31T09:21+01:00 Retur til SARO blokkert etter deputy
+Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms dokumenterte servicebilavslag kl.02:46; rådet om retur til SARO er avkreftet for denne tilstanden. Original PNG bevart byteidentisk og koblet til PLAY-31-07. Ingen spillkode, bygg, motorprøve, lagringsendring eller installasjon.
