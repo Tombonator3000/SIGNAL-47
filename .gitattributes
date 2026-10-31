@@ -34,3 +34,5 @@ unreal/ArtSource/FinaleSky/FinalCraft-v2/*.blend filter=lfs diff=lfs merge=lfs -
 unreal/ArtSource/FinaleSky/FinalCraft-v2/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v3/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v3/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/FinalCraft-v4/*.blend filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/FinaleSky/FinalCraft-v4/exports/*.fbx filter=lfs diff=lfs merge=lfs -text

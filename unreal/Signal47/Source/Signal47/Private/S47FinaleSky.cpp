@@ -7,6 +7,8 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
+#include "S47Sky.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -39,10 +41,14 @@ namespace
 		TEXT("Finale craft height above C8.15, metres (10..10000); existing slow drift is added."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarCraftScale(TEXT("r.S47.Finale.CraftScale"), 1000.f,
 		TEXT("Finale craft uniform authored-mesh scale (10..5000); default gives roughly 1000m radius."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarCraftFill(TEXT("r.S47.Finale.CraftFill"), 0.065f,
+	TAutoConsoleVariable<float> CVarCraftFill(TEXT("r.S47.Finale.CraftFill"), 0.1f,
 		TEXT("Very weak original Hull/Ribs material glow (0..0.15); Light and Recess stay authored."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarCabFill(TEXT("r.S47.Finale.CabFill"), .8f,
 		TEXT("Local empty-cab pullout fill, candela (0..20); fades over pullout 0.8..8.2 seconds."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarStarScale(TEXT("r.S47.Finale.StarScale"), .3f,
+		TEXT("Ready finale's private rendered star diameter multiplier (0.2..1); blends during approach and holds through pullout."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarStarDim(TEXT("r.S47.Finale.StarDim"), .7f,
+		TEXT("Ready finale's local minimum StarsMid display dimming (0..1); never changes the sky/story Dawn."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankForward(TEXT("r.S47.Finale.BankForward"), 1100.f,
 		TEXT("Finale cloud-bank distance ahead of C8.15, metres (50..10000); existing 90m advance is subtracted."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankSpread(TEXT("r.S47.Finale.BankSpread"), 280.f,
@@ -63,7 +69,7 @@ namespace
 		TEXT("Finale baked cloud-volume density multiplier (0.1..12); analytic material ignores an unbound input."), ECVF_Default);
 	TAutoConsoleVariable<int32> CVarSamples(TEXT("r.S47.Finale.Samples"), 96,
 		TEXT("Finale cloud raymarch samples (16..128); Low effects caps the applied value at 28."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarGlow(TEXT("r.S47.Finale.Glow"), 1.1f,
+	TAutoConsoleVariable<float> CVarGlow(TEXT("r.S47.Finale.Glow"), 4.f,
 		TEXT("Finale cloud glow multiplier (0..10); scales the authored 0.12..0.34 phase curve."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarShade(TEXT("r.S47.Finale.Shade"), 0.6f,
 		TEXT("Maximum view-based native ground-light reduction (0..0.82), faded by finale phase, proximity and pullout height; not a physical cloud shadow."), ECVF_Default);
@@ -313,6 +319,25 @@ void FS47FinaleSky::UpdateCabFill(double PullSeconds, bool bActive)
 	Fill->SetIntensity(float(Strength)); Fill->SetVisibility(Strength > 0);
 }
 
+void FS47FinaleSky::UpdateStarPresentation(double Scale, double MinimumDimming)
+{
+	auto* M = Main.Get();
+	const TSharedPtr<FS47Sky> Sky = M && M->Life ? M->Life->Sky : nullptr;
+	if (const TSharedPtr<FS47Sky> Previous = StarSky.Pin(); Previous && Previous != Sky)
+	{
+		Previous->FinaleStarScale = 1;
+		Previous->FinaleStarDim = 0;
+	}
+	StarSky = Sky;
+	AppliedStarScale = Sky ? FMath::Clamp(Scale, .2, 1.) : 1;
+	AppliedStarDim = Sky ? FMath::Clamp(MinimumDimming, 0., 1.) : 0;
+	if (Sky)
+	{
+		Sky->FinaleStarScale = AppliedStarScale;
+		Sky->FinaleStarDim = AppliedStarDim;
+	}
+}
+
 void FS47FinaleSky::UpdateSteeringClones(bool bPullout)
 {
 	auto* M = Main.Get(); auto* W = M ? M->Web.Get() : nullptr;
@@ -386,6 +411,7 @@ void FS47FinaleSky::UpdateSteeringClones(bool bPullout)
 
 void FS47FinaleSky::Hide()
 {
+	UpdateStarPresentation(1, 0);
 	UpdateSteeringClones(false);
 	UpdateCabFill(0, false);
 	SetGroundMaterialOverride(false);
@@ -419,13 +445,15 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	// No independent clock: a paused or restored C6 supplies exactly the same cloud field.
 	Phase = Stage == TEXT("drive") ? -80 * (1 - Smooth(5.9, 8.15, Mile)) : Stage == TEXT("event") ? E : 47 + P;
 	Growth = Smooth(-80, 6, Phase); Reveal = Smooth(5, 21, Phase);
-	if (!Prepare()) { SetGroundMaterialOverride(false); UpdateCabFill(0, false); UpdateSteeringClones(false); return; }
+	if (!Prepare()) { UpdateStarPresentation(1, 0); SetGroundMaterialOverride(false); UpdateCabFill(0, false); UpdateSteeringClones(false); return; }
 	Tuning.CraftForward = Tune(CVarCraftForward, 100, 10000);
 	Tuning.CraftRight = Tune(CVarCraftRight, -10000, 10000);
 	Tuning.CraftHeight = Tune(CVarCraftHeight, 10, 10000);
 	Tuning.CraftScale = Tune(CVarCraftScale, 10, 5000);
 	Tuning.CraftFill = Tune(CVarCraftFill, 0, .15);
 	Tuning.CabFill = Tune(CVarCabFill, 0, 20);
+	Tuning.StarScale = Tune(CVarStarScale, .2, 1);
+	Tuning.StarDim = Tune(CVarStarDim, 0, 1);
 	for (auto& Mid : CraftFillMids) if (Mid.IsValid()) Mid->SetScalarParameterValue(TEXT("Glow"), Tuning.CraftFill);
 	Tuning.BankForward = Tune(CVarBankForward, 50, 10000);
 	Tuning.BankSpread = Tune(CVarBankSpread, 0, 5000);
@@ -443,6 +471,9 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	bLow = M->Web->GetGraphicsSettings().Effects == 0;
 	AppliedSamples = bLow ? FMath::Min(Tuning.Samples, 28) : Tuning.Samples;
 	bShown = Growth > .001;
+	// Private display calibration, independent of the height-based shade through all pullout.
+	const double StarBlend = bShown ? Smooth(-75, -15, Phase) : 0;
+	UpdateStarPresentation(FMath::Lerp(1., Tuning.StarScale, StarBlend), Tuning.StarDim * StarBlend);
 	UpdateCabFill(P, bShown && Stage == TEXT("pullout"));
 	UpdateSteeringClones(bShown && Stage == TEXT("pullout"));
 	SetGroundMaterialOverride(bShown);
@@ -518,6 +549,13 @@ S47J::FObj FS47FinaleSky::Readback() const
 	S47J::Set(Applied, TEXT("craftFill"), Tuning.CraftFill);
 	S47J::Set(Applied, TEXT("cabFillCandela"), Tuning.CabFill);
 	S47J::Set(Applied, TEXT("cabFillAppliedCandela"), CabFillLight.IsValid() ? double(CabFillLight->Intensity) : 0.);
+	S47J::Set(Applied, TEXT("starScale"), Tuning.StarScale);
+	S47J::Set(Applied, TEXT("starScaleApplied"), AppliedStarScale);
+	S47J::Set(Applied, TEXT("starDim"), Tuning.StarDim);
+	S47J::Set(Applied, TEXT("starDimMinimumApplied"), AppliedStarDim);
+	if (const TSharedPtr<FS47Sky> Sky = StarSky.Pin())
+		S47J::Set(Applied, TEXT("starDimmingApplied"), FMath::Max(Sky->StarDimming(), FMath::Clamp(Sky->FinaleStarDim, 0., 1.)));
+	else S47J::SetNull(Applied, TEXT("starDimmingApplied"));
 	S47J::Set(Applied, TEXT("bankForwardM"), Tuning.BankForward); S47J::Set(Applied, TEXT("bankSpreadM"), Tuning.BankSpread);
 	S47J::Set(Applied, TEXT("bankRevealSpreadM"), Tuning.BankRevealSpread);
 	S47J::Set(Applied, TEXT("bankRevealRiseM"), Tuning.BankRevealRise);

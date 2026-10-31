@@ -66,6 +66,7 @@ void FS47FinalePreview::Step(US47Main* M,double Dt)
  {
   if(Frame.Tune)for(const auto& Pair:Frame.Tune->Values)
   {
+   // Artist allowlist: only registered r.S47.Finale.* CVars, including StarScale/StarDim.
    const FString Key=FString(TEXT("r.S47.Finale."))+FString(*Pair.Key);
    auto* Var=IConsoleManager::Get().FindConsoleVariable(*Key);double Value=0;
    if(!Var||!Pair.Value->TryGetNumber(Value)){Fail(TEXT("unknown finale artist parameter"));return;}

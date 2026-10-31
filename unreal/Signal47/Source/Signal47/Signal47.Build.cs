@@ -7,6 +7,8 @@ public class Signal47 : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Json", "Slate", "SlateCore" });
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "RHI", "ApplicationCore", "JsonUtilities", "UMG", "RenderCore", "ImageWrapper", "AudioMixer", "MoviePlayer", "HairStrandsCore", "AnimGraphRuntime", "Niagara" });
+		// Opt-in developer finale capture; ordinary screenshots retain their existing path.
+		PrivateDependencyModuleNames.Add("ImageWriteQueue");
 		if (Target.bBuildEditor)
 		{
 			// HUM01 pose conversion and read-only cinema material mapping are editor-only.

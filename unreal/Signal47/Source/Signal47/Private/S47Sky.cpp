@@ -645,7 +645,11 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("FlashDir"), V4(FlashDir));
 	}
 	Common(StarsMid.Get());
-	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("Dawn"), float(StarDimming()));
+	if (UMaterialInstanceDynamic* D = StarsMid.Get())
+	{
+		D->SetScalarParameterValue(TEXT("Dawn"), float(FMath::Max(StarDimming(), FMath::Clamp(FinaleStarDim, 0., 1.))));
+		D->SetScalarParameterValue(TEXT("PR"), float(FMath::Clamp(FinaleStarScale, .2, 1.)));
+	}
 	// SKY.md: the volumetric layer. Its own clouds replace the painted ones (Low keeps the painted).
 	const float Vol = W->CloudsActive() ? 1.f : 0.f;
 	for (UMaterialInstanceDynamic* D : { DomeMid.Get(), PureSkyMid.Get() }) if (D)

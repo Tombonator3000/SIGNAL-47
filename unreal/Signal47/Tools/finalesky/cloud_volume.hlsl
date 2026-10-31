@@ -23,7 +23,7 @@ struct S47FinalCloudVolume
  float3 sourcePoint(float3 p,float4 state)
  {
   // state = Phase, Growth, Side, frame coordinate. No engine Time or particle age.
-  float bank=step(0,state.z),seconds=state.x+bank*9;
+  float bank=step(0,state.z),seconds=state.x+bank*24;
   float3 q=p/lerp(.70,1,saturate(state.y));
   // Opposite banks have a different baked phase as well as a mirrored cross-bank axis.
   q.y*=state.z<0?-1:1;
@@ -89,7 +89,7 @@ float solidDistance=SceneDepth/max(PixelDepth,1)*distanceToProxy;
 leave=min(leave,solidDistance-1);
 if(leave<=enter||Growth<=0)return float4(0,0,0,0);
 float bank=step(0,Side);
-float frameCoordinate=2*smoothstep(-35,72,Phase+bank*9);
+float frameCoordinate=2*smoothstep(-35,72,Phase+bank*24);
 float4 state=float4(Phase,Growth,Side,frameCoordinate);
 int count=clamp((int)Samples,16,128);
 float stepLength=(leave-enter)/count;

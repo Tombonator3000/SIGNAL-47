@@ -1407,3 +1407,6 @@ PR262 under arbeid: dypere skydekke og roligere foldlys, faktisk spillopptak med
 
 ### 2026-10-31T01:41+01:00 Skyåpning og tom kabin
 PR262: separat sen skystigning, førersidekamera og lokale rattkopier forbedrer reveal/uttrekk; bygg og sju før/etterbilder består. Materiallokal VRS-endring gir jevnere Low-skykanter; kildegjennomgang fant ingen blockers. Full innkjøring med lyd pågår; Low-henget er ikke reprodusert og installert standard er fortsatt PR260.
+
+### 2026-10-31T02:43+01:00 Fartøy v4 og jevnere filmopptak
+PR262: eget v4-skrog, ulik fluidfase, roligere stjerner og kabin/klokkeregi; bygg og før/etterbilder består. Faktisk diner-innkjøring fullfører med lyd/foto; opt-in PNG-kø gir21.6 fangede bilder/s i EVENT, ingen spill-FPS-påstand. Lokal installasjon er fortsatt PR260, pakket Low-kontroll gjenstår.

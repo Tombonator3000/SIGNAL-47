@@ -53,6 +53,10 @@ public:
 	double Daylight() const { const double Base = FMath::Max(Dawn, Evening); return Base + (1.0 - Base) * Midday; }
 	/** Stars stay absent until civil twilight; the old morning star fade remains unchanged. */
 	double StarDimming() const { const double Base = Evening > 0 ? FMath::Min(1.0, Evening / 0.05) : Dawn; return Base + (1.0 - Base) * Midday; }
+	/** Rendering only: diameter multiplier on the private StarsMid's existing PR uniform. */
+	double FinaleStarScale = 1;
+	/** Local display-only dimming floor on StarsMid; never changes Dawn or StarDimming(). */
+	double FinaleStarDim = 0;
 	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
 	double Sun = 0;
 	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)
