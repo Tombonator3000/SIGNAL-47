@@ -53,6 +53,8 @@ Tom bestemte 31. oktober at **0.1, liten Roswell-alien**, kommer først: referan
 | D-23 | Undersøkelsesløkken skal hovedsakelig foregå på SARO-basen, ved antennefeltet og i teknisk område. Første implementering styrker Story-kvelden før 00:00. | Toms bestilling 31. oktober: normalreferanse, avvik, fysisk kontroll, sikret bevis, sammenligning og forståelig neste handling. Gjenbruk Observing-kvelden, bevar den senere historieeskaleringen og gamle lagringer. VOTV-01 i [TODO](TODO.md) fører leveringen. |
 | D-24 | SARO-utstyret får faste aktive roller, faktisk antennebevegelse og flere fysiske servicesteg i Story før midnatt. | Tom godkjente gjennomføringsplanen 31. oktober: Story først, S-03-service i flere steg, maskinregistrering og fysisk arkiv. Nabobygget føres til senere Freeform. [Plan](../Design/Story/SARO_STORY_FREEFORM.md#aktive-arbeidsstasjoner-og-antenneservice). |
 
+Tom utvidet 0.1 etter modellleveransen: Roswell-figurene skal ha nysgjerrig, sky AI med lusking/skjul, gode bevegelser og romlige småsteg/taklyder. Dev-menyen skal styre antall og velge stilleståing, aktiv lusking eller jakt. Dette er bestilt implementering; jakt blir et eksplisitt dev-valg, mens vanlige bakgrunnsmøter beholder den nysgjerrige rollen.
+
 ## Linux som distribusjonsmål, 31. oktober
 
 Mottakerens Arch/niri/Nvidia-rapport understreker at Linux-distribusjonen skal beskrive faktiske arkitektur-, ABI-, driver- og øktkrav fremfor å kreve Ubuntu. Utviklingsmaskin og støttet spillermaskin holdes atskilt; kompatibilitet krever konkret grafisk prøve. [Linux-veiledningen](Guides/LINUX_RUNTIME.md) fører dagens krav og begrensninger. Bedre oppstartssjekker prioriteres i PLAY-31-38; Flatpak vurderes i SHIP-04 som tillegg, ikke som allerede vedtatt eller verifisert erstatning.

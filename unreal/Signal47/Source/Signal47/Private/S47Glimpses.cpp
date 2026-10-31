@@ -60,8 +60,29 @@ FS47Glimpses::FS47Glimpses(AS47Web* InWeb) : Web(InWeb)
 	Wait = Rnd(120, 300);
 }
 
+void FS47Glimpses::Attach(US47Main* Main)
+{
+ if (bRoswell && Main) Group=MakeShared<FS47RoswellGroup>(Main,BodyRoot.Get(),&Body);
+}
+int32 FS47Glimpses::DevSpawn(int32 Number,FS47RoswellBrain::EMode Mode,bool bRoof)
+{ return Group?Group->Spawn(Number,Mode,bRoof):0; }
+void FS47Glimpses::DevMode(FS47RoswellBrain::EMode Mode) { if (Group) Group->SetMode(Mode); }
+void FS47Glimpses::DevClear() { if (Group) Group->Clear(); Hide(); }
+void FS47Glimpses::SyncGroup()
+{
+ Count=Group->NightCount; const auto Views=Group->Views(); bVisible=!Views.IsEmpty();
+ Up=bVisible?FString::Printf(TEXT("roswell-%d"),Views[0].Id):FString();
+ if (bVisible) { FigPos=Views[0].Pos; Fig.SetPosition(FigPos); }
+ Fig.SetVisible(bVisible);
+}
+void FS47Glimpses::DevStep(double Dt,const FS47GlimpsesIn& Input)
+{ if (Group && Group->Developer() && !bPreviewDriver) { Group->Update(Dt,Input); SyncGroup(); } }
+TArray<FS47RoswellGroup::FView> FS47Glimpses::Individuals() const
+{ return Group?Group->Views():TArray<FS47RoswellGroup::FView>(); }
+
 TOptional<FVector> FS47Glimpses::Where() const
 {
+	if (Group && !bPreviewDriver) { const auto Views=Group->Views(); return Views.IsEmpty()?TOptional<FVector>():TOptional<FVector>(Views[0].Eye); }
 	if (Up.IsEmpty()) return {};
 	return FVector(FigPos.X, FigPos.Y + (bRoswell?S47Roswell::HeadM-(bWindow?S47Roswell::DuckM*(1.-ExposureNow):0):.6), FigPos.Z);
 }
@@ -82,6 +103,8 @@ FS47Glimpses::FSight FS47Glimpses::Sight(const FS47Cam& Cam, const FVector& At, 
 void FS47Glimpses::Update(double Dt, const FS47GlimpsesIn& S)
 {
 	if (bPreviewDriver) return; // Opt-in isolated preview owns this same controller's clock.
+	if (Group)
+ { if (!Group->Developer()) { Group->Update(Dt,S); SyncGroup(); } return; }
 	if (bRoswell) { UpdateRoswell(Dt,S); return; }
 	T += Dt;
 	if (!Up.IsEmpty())
@@ -154,6 +177,7 @@ void FS47Glimpses::Place(const FAt& At, const FVector& Cam)
 
 bool FS47Glimpses::Now(const FS47GlimpsesIn& S, const FString& Id)
 {
+ if (Group && !bPreviewDriver) return Group->Spawn(1,FS47RoswellBrain::EMode::Curious)>0;
 	if (S.Scene.IsEmpty()) return false;
 	const TOptional<FAt> At = Pick(S, Id);
 	if (!At) return false;
@@ -268,7 +292,7 @@ void FS47Glimpses::SetVisible(bool bOn)
 
 void FS47Glimpses::Hide() { SetVisible(false); Up.Reset(); }
 
-void FS47Glimpses::Reset() { Hide(); Count = 0; Wait = Rnd(120, 300); }
+void FS47Glimpses::Reset() { if (Group) { Group->Clear(); Group->NightCount=0; } Hide(); Count = 0; Wait = Rnd(120, 300); }
 
 bool FS47Glimpses::SelfTest(TArray<FString>& Lines)
 {
@@ -322,5 +346,5 @@ bool FS47Glimpses::SelfTest(TArray<FString>& Lines)
 	Check(G.Up.IsEmpty(),TEXT("retreat completes after actual cover or a turn away"));
 	G.Count=8; G.Wait=0; G.Update(1000,S);
 	Check(G.Up.IsEmpty(),TEXT("native Roswell preserves the eight-appearance night limit"));
-	return bOk;
+	return FS47RoswellBrain::SelfTest(Lines) && bOk;
 }

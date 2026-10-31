@@ -4,8 +4,10 @@
 #include "S47Obj.h"
 #include "S47Seen.h"
 #include "S47TripoCreature.h"
+#include "S47RoswellGroup.h"
 
 class AS47Web;
+class US47Main;
 
 // web/src/core/glimpses.ts. The original distant silhouette remains the asset-missing fallback.
 // Tom, 31 October: the actual small Roswell body now peeks at nearby windows/corners,
@@ -32,6 +34,7 @@ class AS47Web;
 struct FS47GlimpsesIn
 {
 	bool bOk = false;
+	bool bHeld = false;
 	/** 'saro' | 'road' | empty (null). */
 	FString Scene;
 	FS47Cam Cam;
@@ -66,6 +69,12 @@ public:
 	bool Visible() const { return bVisible; }
 	bool HasNativeBody() const { return bRoswell; }
 
+	void Attach(US47Main* Main);
+	int32 DevSpawn(int32 Number, FS47RoswellBrain::EMode Mode, bool bRoof=false);
+	void DevMode(FS47RoswellBrain::EMode Mode);
+	void DevClear();
+	void DevStep(double Dt,const FS47GlimpsesIn& Input);
+	TArray<FS47RoswellGroup::FView> Individuals() const;
 	void Update(double Dt, const FS47GlimpsesIn& S);
 	/** Put it at a named place now if it can stand there (the developer menu, the tests). */
 	bool Now(const FS47GlimpsesIn& S, const FString& Id);
@@ -75,6 +84,8 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
+	void SyncGroup();
+	TSharedPtr<FS47RoswellGroup> Group;
 	friend struct FS47RoswellPreviewDriver;
 	bool bPreviewDriver = false;
 	TWeakObjectPtr<AS47Web> Web;
