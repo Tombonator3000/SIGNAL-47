@@ -14,6 +14,8 @@ Tom spiller igjen og rapporterer manglende respons ved dørlukking, trang flukt 
 
 Tom har også dokumentert alien overlappende med inngangsdøren og meldt fastlåsing, PLAY-31-19/P1. Ny bærbar feltradio fra skrivebordet ved start, skurring nær aliens og samordnet lyd-/musikkvarsling er bestilt gjennom PLAY-31-20/21 og D-19. Senere Dale-kontakt er fortsatt en idé. Ett nytt originalbilde er bevart. Dette er registrert arbeid, ikke implementerte radio-/AI-endringer.
 
+Tom bestiller også et samlet animasjonspass for aliens, PLAY-31-22: walk/run/crab walk/grab og overganger. Dagens prosedyrestyrte Tripo-skin og eldre klipp for en annen fellesmodell er kartlagt lesende; kompatibilitet/retargeting og visuell forbedring gjenstår. Ett nytt originalbilde fra arkivdøren er bevart. Ingen animasjonsimport eller spillendring i denne oppfølgingen.
+
 ## Ny spillerregresjon i Caliche
 
 Tom har etter installert PR272 meldt feil plassering/orientering på kirken og flere bybygg, samt et løsrevet dørblad ved vaskeriet. PLAY-31-10/P1 er åpen og PLAY-31-02 er gjenåpnet i [TODO](TODO.md). De fire originalbildene er bevart. Importloggen bekrefter at CalicheAccess bruker legacy FBX for LOD0, men Interchange for LOD1/2. Det gir en konkret forklaring på avstandsavhengig feilretning og løsrevne dører. Eksakt geometriavvik og rettelse er ennå ikke bekreftet i en ny motorprøve. Den installerte pakken er fortsatt `f32d4553`, med kjent regresjon. Toms aktive spilløkt er ikke avbrutt; ingen ny spillkode, import, bygg eller installasjon er utført i denne oppfølgingen.
