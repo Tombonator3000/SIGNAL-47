@@ -1,0 +1,21 @@
+{
+  "curious": [
+    "id=7 travel=5.879 contacts=12 sounds=12 pass=1",
+    "id=8 travel=8.400 contacts=14 sounds=14 pass=1",
+    "id=9 travel=2.933 contacts=12 sounds=12 pass=1",
+    "id=10 travel=2.770 contacts=11 sounds=11 pass=1",
+    "id=11 travel=2.945 contacts=12 sounds=12 pass=1",
+    "id=12 travel=2.582 contacts=10 sounds=10 pass=1"
+  ],
+  "hunt": [
+    "id=7 new-travel=6.090 contacts=11 sounds=11 caught=0 pass=1",
+    "id=8 new-travel=6.118 contacts=11 sounds=11 caught=1 pass=1",
+    "id=9 new-travel=7.275 contacts=12 sounds=12 caught=0 pass=1",
+    "id=10 new-travel=5.580 contacts=11 sounds=11 caught=0 pass=1",
+    "id=11 new-travel=5.390 contacts=10 sounds=10 caught=0 pass=1",
+    "id=12 new-travel=6.207 contacts=11 sounds=11 caught=1 pass=1"
+  ],
+  "scope": "Packaged Vulkan High; ordinary developer callbacks in isolated Case0. Six ground subjects, stand/pause/roof/clear; no full natural night acceptance.",
+  "source": "130f975f8e53c3e7ac7c66f9496b297a0f4f688e",
+  "self_checks": 1824
+}

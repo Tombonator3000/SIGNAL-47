@@ -1509,3 +1509,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 19:10 CET | codex/freeform-town-supplies-20261031 | Byens forsyninger, bruktutstyr, reservedeler og feeder-vedlikehold ført i Freeform-planen, D-25 og MODE-03C. Første prøve avgrenset til sikringer/relé/aggregatdrivstoff med reservelager og døgnbudsjett. Kun plan; ingen spillendring eller installasjon.
 
 2026-10-31 19:51 | codex/roswell-arm-clearance-20261031 | Retter native speilede armsider, rutebudsjett og fysiske terrengsteg. Editorbygg, 1824 selvtester og seks individuelt prøvde Curious/Hunt-figurer med kontaktlyd består; lokal pakking/installasjon følger.
+
+2026-10-31 20:08 | Roswell-retting130f975f / PR295 | Pakket/installert kl.20:03 CET: 1824 selvtester, seks Curious/Hunt på bakken, armposer og installert røykprøve består; 155 Saved-elementer uendret. To gamle payload pensjonert; egne tunge jobber og reservasjon avsluttet.

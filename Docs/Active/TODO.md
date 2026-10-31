@@ -6,7 +6,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Aktiv rettelse: Roswell armer og bakke-AI
 
-- [ ] **P1 / 0.1 oppfølging:** Tom rapporterer [armer inne i kroppen](../Evidence/Playtest-2026-10-31/35-roswell-arm-clipping.png) og at Curious/Hunt står stille på bakken, mens Annex-tak virker. Retting under arbeid: bruk faktisk importert riggside, tydelig klarering i idle/lytting/lusking/løping/grab, rettferdig rutebudsjett per figur og målte terrengsteg. Kontroller hver av seks individer på bakken, separat fra takprøven. Ikke ferdigmeld på grunnlag av én figur som beveger seg. Tidligere AI-prøve var for svak her. Bygg, native billedkontroll og lokal installasjon gjenstår; personlige Saved bevares.
+- [x] **P1 / 0.1 oppfølging:** Tom rapporterer [armer inne i kroppen](../Evidence/Playtest-2026-10-31/35-roswell-arm-clipping.png) og at Curious/Hunt står stille på bakken, mens Annex-tak virker. Rettet og installert `130f975f` kl.20:03 CET: faktisk importert riggside, klarering i idle/lytting/lusking/løping/grab, rettferdig rutebudsjett per figur og målte terrengsteg. Editor/pakke kontrollerer hver av seks individer på bakken i både Curious og Hunt, separat fra takprøven. Tidligere AI-prøve var for svak her. Bygg, 1824 selvtester, native billedkontroll og kort installert prøve består; alle 155 personlige Saved-elementer er uendret. [Levering og grenser](../Evidence/UnrealDeliveries/ROSWELL_REPAIR_2026-10-31.md). Naturlig tempo og videre polering forblir åpne under PLAY-31-37.
 
 ## 0.1 Først: liten Roswell-alien til Glimpse
 
