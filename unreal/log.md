@@ -1448,3 +1448,7 @@ Codex på codex/playtest-findings-20261031: Toms seks meldte områder er registr
 
 ### 2026-10-31T09:18+01:00 Spillerfunn: deputy-mål blir stående etter samtale
 Codex på codex/deputy-playtest-blocker-20261031: PLAY-31-07/P1 fører Toms vanlige SC03-forløp og mulig progresjonsstopp etter deputy-samtalen. Kildepunkter for samtalekvittering, figuridentitet og SC04-overgang er registrert uten å fastslå årsak. Ingen kildeendring, motorjobb, test, Saved-endring eller installasjon.
+
+
+### 2026-10-31T09:19+01:00 Trafostasjon og svevende sheriffdeler
+Codex på codex/playtest-substation-grounding-20261031: PLAY-31-08 fører Toms manglende trafolys-animasjon og summing/elektrisk lyd; PLAY-31-02/07 har fått originalbildet fra sherifftrappa02:44 som underlag. PNG er kopiert byteidentisk. Ingen spillrettelse, bygg, motorprøve eller installasjon.
