@@ -690,6 +690,31 @@ bool AS47Props::Shown(int32 Node) const
 	return true;
 }
 
+bool AS47Props::RetargetPatrolCar(UStaticMesh* Body,UStaticMesh* Door,const FVector& HingeThree)
+{
+ AS47Props* P=Instance.Get();if(!P||!Body||!Door)return false;
+ FPlaced* BodyPlace=P->Placed.FindByPredicate([](const FPlaced& V){return V.Id==TEXT("patrolCar");});
+ FPlaced* DoorPlace=P->Placed.FindByPredicate([](const FPlaced& V){return V.Id==TEXT("patrolCarDoor");});
+ if(!BodyPlace||!DoorPlace||!BodyPlace->Comp.IsValid()||!DoorPlace->Comp.IsValid())return false;
+ UStaticMeshComponent* Car=BodyPlace->Comp.Get();UStaticMeshComponent* Leaf=DoorPlace->Comp.Get();
+ FSwing* Swing=P->Swings.FindByPredicate([&](const FSwing& S){return S.Comp.Get()==Leaf;});
+ if(!Swing)return false;
+ Car->SetStaticMesh(Body);Car->EmptyOverrideMaterials();Car->SetRelativeTransform(FTransform::Identity);BodyPlace->Rest=FTransform::Identity;
+ Leaf->SetStaticMesh(Door);Leaf->EmptyOverrideMaterials();
+ Swing->Hinge=FVector::ZeroVector;Swing->Rest=FTransform(S47Three::ToUE(HingeThree));Swing->Deg=58;Swing->K=-1;
+ Leaf->SetRelativeTransform(Swing->Rest);DoorPlace->Rest=Swing->Rest;
+ // Existing story switch, rotating-beacon timing and component identities stay.
+ // Only the physical fixtures follow the actual Tripo roof bar.
+ for(FBeacon& B:P->Beacons)if(B.Car.Get()==Car)for(int32 Side=0;Side<2;++Side)
+ {
+  const FVector At=S47Three::ToUE(Side==0?-.46:.46,1.67,.21);
+  if(auto* C=B.Lens[Side].Get()){C->SetRelativeLocation(At);C->SetRelativeScale3D(FVector(.44,.28,.10));}
+  if(auto* L=B.Light[Side].Get())L->SetRelativeLocation(At+FVector(0,0,9));
+ }
+ UE_LOG(LogS47Props,Display,TEXT("S47: Tripo patrol body/source door retargeted; deputy proxies, door switch and beacon timing retained"));
+ return true;
+}
+
 void AS47Props::AddSwing(UStaticMeshComponent* C, const TSharedPtr<FJsonObject>& J)
 {
 	FSwing S;

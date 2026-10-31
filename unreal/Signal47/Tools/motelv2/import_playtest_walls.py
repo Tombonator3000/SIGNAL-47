@@ -4,8 +4,13 @@ S47_MOTEL_WALL_SOURCE, S47_MOTEL_REPORT. Original materials/textures stay untouc
 import json,os,sys,traceback
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent));import native as N
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'calicheaccess'))
+from lod_geometry import verify_lod
 root=Path(os.environ['S47_MOTEL_WALL_SOURCE']);report=N.Report(os.environ['S47_MOTEL_REPORT'],'playtest-wall-import')
+flag='Interchange.FeatureFlags.Import.FBX';previous=N.unreal.SystemLibrary.get_console_variable_int_value(flag)
 try:
+ N.unreal.SystemLibrary.execute_console_command(None,flag+' 0')
+ report.check('legacy FBX for every authored LOD',N.unreal.SystemLibrary.get_console_variable_int_value(flag)==0)
  repaired=json.loads((root/'repair.json').read_text());manifest=json.loads((root/'manifest.json').read_text());assembly_path=Path(N.unreal.Paths.project_content_dir())/'MotelV2/assembly.json';assembly=json.loads(assembly_path.read_text())
  for name in repaired['parts']:
   spec=manifest['parts'][name];mesh=N.import_mesh(root/'exports'/(name+'.fbx'),N.DEST,name,report)
@@ -14,6 +19,14 @@ try:
   for lod in [1,2]:report.check(name+' repaired LOD'+str(lod),N.S.import_lod(mesh,lod,str(root/'exports'/(name+'_LOD'+str(lod)+'.fbx')))==lod)
   N.finish_mesh(mesh,report,N.AUTHORED_SCREEN_SIZES)
   N.E.save_loaded_asset(mesh)
+  geometry=[verify_lod(mesh,lod,root/'exports'/(name+('_LOD'+str(lod)if lod else'')+'.fbx'),spec['lod_triangles'][lod])for lod in range(3)]
+  report.data.setdefault('actual_render_geometry',{})[name]=geometry
   assembly['parts'][name]['lod_triangles']=[mesh.get_num_triangles(i)for i in range(N.S.get_lod_count(mesh))]
+  assembly['parts'][name]['bounds_local_m']=spec['bounds_local_m']
+ if 'rear_pool' in manifest:
+  layout=json.loads((Path(__file__).resolve().parent/'runtime_layout.json').read_text())
+  for key in ['add_colliders','add_zones','floors','retire_nodes']:assembly[key]=layout[key]
+  assembly['rear_pool']=manifest['rear_pool']
  assembly_path.write_text(json.dumps(assembly,indent=2)+'\n');report.data['status']='PASS';report.flush();N.unreal.log('MOTEL_PLAYTEST_WALL_IMPORT_PASS')
 except Exception:report.data.update(status='FAIL',error=traceback.format_exc());report.flush();raise
+finally:N.unreal.SystemLibrary.execute_console_command(None,flag+' '+str(previous))

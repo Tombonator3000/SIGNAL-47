@@ -324,7 +324,7 @@ def verify_asphalt(original, actual, holes, translation):
             'waypoint11_footprint': regression}
 
 
-def prepare_asphalt(export, out, manifest, nodes, openings):
+def prepare_asphalt(export, out, manifest, nodes, openings, expected_result_triangles=30):
     """Separate packet: existing ten patches and GLB bytes stay unchanged."""
     node, parent, root = nodes[671], nodes[663], nodes[662]
     assert node['geo'] == 456 and node['p'] == 663 and node['mats'] == [320]
@@ -344,7 +344,9 @@ def prepare_asphalt(export, out, manifest, nodes, openings):
     original = mesh_triangles(doc, original_binary, mesh)
     holes = [[a - translation[0], b - translation[0], c - translation[2], d - translation[2]] for a, b, c, d in openings]
     result = clip_native_footprints(doc, binary, mesh, holes, include_vertical_faces=True)
-    assert result['source_tris'] == 24 and result['result_tris'] == 30
+    assert result['source_tris'] == 24 and result['result_tris'] > 0
+    if expected_result_triangles is not None:
+        assert result['result_tris'] == expected_result_triangles
     result['removed_source_surface_area_m2'] = result.pop('removed_projected_source_area_m2')
     result['clip_area_metric'] = '3D polygon area; includes vertical old asphalt sides, not only its XZ projection'
     filename = 'trim_asphalt_geo_003.glb'
@@ -353,7 +355,7 @@ def prepare_asphalt(export, out, manifest, nodes, openings):
     assert check_binary[:len(original_binary)] == original_binary, 'old asphalt source attributes changed'
     actual = check_doc['meshes'][0]
     indices = [v[0] for p in actual['primitives'] for v in helper._values(check_doc, check_binary, p['indices'])]
-    assert len(indices) == 30 * 3
+    assert len(indices) == result['result_tris'] * 3
     row = {**result, 'node': 671, 'parent': 663, 'geo': 456, 'accepted_previous_tris': [24],
            'asset': '/Game/MotelV2/Trim/g456.g456', 'original_material_indices': [0],
            'source_material_ids': [320], 'hidden': False, 'fbx': 'exports/g456.fbx',

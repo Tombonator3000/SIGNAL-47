@@ -367,7 +367,9 @@ void FS47Sky::SetClock(double Clock, TOptional<double> SunElevDeg)
 		// Western sun: never mirror the old eastern sunrise or drag it round after dusk.
 		SunDir = S47SkyDir(281, EveningEl);
 		Sun = Clamp01((EveningEl + 0.55) / 1.5);
-		const FLinearColor Haze(0.34f, 0.26f, 0.24f);
+		// Warm dust at sunset, fading back to the original cold night air at 19:07.
+		const float Amber = float(4 * Evening * (1 - Evening));
+		const FLinearColor Haze = FMath::Lerp(FLinearColor(.34f, .26f, .24f), FLinearColor(.48f, .25f, .12f), Amber);
 		FogColor = A + (Haze - A) * float(Evening * 0.8);
 	}
 	if (Midday > 0)
@@ -610,10 +612,18 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 {
 	AS47Web* W = Web.Get();
 	if (!bLive || !W) return;
-	const float DayWeight = PureSkyMid.IsValid() ? float(PureSkyWeight) : 0.f;
+	// The daytime photograph contains grey overcast clouds. Hand its radiance to
+	// the existing amber western horizon / cool zenith recipe as the sun lowers.
+	// This is a sky-only blend, never an orange postprocess on the player or night.
+	const float GoldenSky = float(Clamp01(Evening * 4) * (1 - Smooth01((SunDir.Y - .035) / .145)));
+	const float DayWeight = PureSkyMid.IsValid() ? float(PureSkyWeight) * (1.f - .88f * GoldenSky) : 0.f;
 	UMaterialInstanceDynamic* ActiveDome = DayWeight > 0.f ? PureSkyMid.Get() : DomeMid.Get();
 	if (DomeComp.IsValid() && DomeComp->GetMaterial(0) != ActiveDome) DomeComp->SetMaterial(0, ActiveDome);
-	if (PureSkyMid.IsValid()) PureSkyMid->SetScalarParameterValue(TEXT("PureSkyWeight"), DayWeight);
+	if (PureSkyMid.IsValid())
+	{
+		PureSkyMid->SetScalarParameterValue(TEXT("PureSkyWeight"), DayWeight);
+		PureSkyMid->SetScalarParameterValue(TEXT("SunsetStrength"), GoldenSky);
+	}
 	// sky.group.rotation.y = world.skyYaw; group.position.copy(follow); ten times as far (SKY_SCALE)
 	W->SetLocal(GroupNode, Eye, S47Three::Euler(0, Yaw, 0), FVector(SKY_SCALE));
 	const FLinearColor Holes = V4(HoleDir), HoleRad(float(HoleR.X), float(HoleR.Y), 0.f, 0.f);
@@ -624,7 +634,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("HoleDir"), Holes);
 		D->SetVectorParameterValue(TEXT("HoleR"), HoleRad);
 		D->SetScalarParameterValue(TEXT("Hole"), float(HoleK));
-		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), FMath::Max(float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))), GoldenSky));
 	};
 	auto Sunny = [&](UMaterialInstanceDynamic* D)
 	{
@@ -632,7 +642,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetScalarParameterValue(TEXT("Yaw"), float(Yaw));
 		D->SetScalarParameterValue(TEXT("Dawn"), float(Daylight()));
 		D->SetScalarParameterValue(TEXT("Sun"), float(Sun));
-		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), FMath::Max(float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))), GoldenSky));
 		D->SetVectorParameterValue(TEXT("SunDir"), V4(SunDir));
 		for (int32 k = 0; k < 3; ++k) D->SetVectorParameterValue(*FString::Printf(TEXT("Glow%d"), k), FLinearColor(float(Glow[k].X), float(Glow[k].Y), float(Glow[k].Z), float(Glow[k].W)));
 	};
@@ -640,7 +650,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 	{
 		Sunny(D); Common(D);
 		D->SetScalarParameterValue(TEXT("Flash"), float(Flash));
-		D->SetScalarParameterValue(TEXT("ConceptBlend"), float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))));
+		D->SetScalarParameterValue(TEXT("ConceptBlend"), FMath::Max(float(S47CalicheVisualWeight(W->HighwayMapEye(Eye))), GoldenSky));
 		D->SetScalarParameterValue(TEXT("Midday"), float(Midday));
 		D->SetVectorParameterValue(TEXT("FlashDir"), V4(FlashDir));
 	}

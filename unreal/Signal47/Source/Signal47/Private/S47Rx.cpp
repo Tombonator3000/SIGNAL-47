@@ -79,10 +79,8 @@ bool FS47Rx::Pass() const
 
 bool FS47Rx::Pass(const FS47Profile& P) const
 {
-	return FMath::Abs(Frequency - P.F) <= P.FTol
-		&& Gain >= P.Gain[0] && Gain <= P.Gain[1]
-		&& Bandwidth >= P.Bw[0] && Bandwidth <= P.Bw[1]
-		&& Azimuth >= P.Az[0] && Azimuth <= P.Az[1];
+	// Unlike the original strict windows, accept the lock promised by the visible meter.
+	return S47Signal::CarrierPercent(Quality(P)) == 100;
 }
 
 double FS47Rx::Pulse(double T) const
@@ -205,6 +203,43 @@ bool S47RxSelfTest(TArray<FString>& Out)
 	Rx.Gain = 70;
 	Check(!Rx.Pass(), TEXT("pass false with gain 70 (> 65)"));
 	Near(Rx.Quality(), 0.94965844314957926, 1e-9, TEXT("quality with gain 70"));
+
+	// The visible 99/100 boundary must agree with acceptance for every profile,
+	// including scheduled observations which supply their own profile.
+	{
+		Check(S47Signal::CarrierPercent(.99499) == 99 && S47Signal::CarrierPercent(.99501) == 100,
+			TEXT("carrier rounding boundary is shared by display and acceptance"));
+		for (const FS47Profile& P : S47Signal::Profiles())
+		{
+			FS47Rx R;
+			R.Gain = (P.Gain[0] + P.Gain[1]) / 2;
+			R.Bandwidth = (P.Bw[0] + P.Bw[1]) / 2;
+			R.Azimuth = (P.Az[0] + P.Az[1]) / 2;
+			for (double Q : { .99499, .99501 })
+			{
+				R.Frequency = P.F + P.FTol + FMath::Max(P.FTol * 4, .025) * FMath::Sqrt(-FMath::Loge(Q));
+				const bool FullMeter = S47Signal::CarrierPercent(R.Quality(P)) == 100;
+				Check(FullMeter == (Q > .995) && R.Pass(P) == FullMeter,
+					FString::Printf(TEXT("%s accepts exactly the displayed 100 near frequency boundary %.5f"), *P.Stage, Q));
+			}
+			R.Frequency = P.F;
+			R.Gain = P.Gain[1] + .8; R.Bandwidth = P.Bw[1] + .8; R.Azimuth = P.Az[1] + .8;
+			Check(R.Pass(P) && S47Signal::CarrierPercent(R.Quality(P)) == 100,
+				FString::Printf(TEXT("%s accepts rounded full carrier with several slightly imperfect dials"), *P.Stage));
+			R.Gain = P.Gain[1] + 6;
+			Check(!R.Pass(P) && S47Signal::CarrierPercent(R.Quality(P)) < 100,
+				FString::Printf(TEXT("%s still rejects visibly incomplete tuning"), *P.Stage));
+		}
+	}
+
+
+	// A saved lock stage cannot fabricate full carrier after its dials drift.
+	{
+		FS47Rx R;
+		R.Stage = 3;
+		Check(S47Signal::CarrierPercent(R.Quality()) < 100 && !R.Pass(),
+			TEXT("stage 3 uses actual profile quality rather than forcing 100 percent"));
+	}
 
 	// Pulse
 	{

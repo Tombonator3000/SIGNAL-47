@@ -107,6 +107,14 @@ static const FCamera Cameras[] = {
  { TEXT("cab"), TEXT("saro"), 0, 0, 0, 0 },
  // Extra state coverage is opt-in; the original twenty cameras retain their baseline views.
  { TEXT("motel-lobby"), TEXT("saro"), -46, 675.7, -0.64, -0.12 },
+ // Identical physical lens across the road/SARO area handover:
+ // roadThree = saroThree + (8024,0,-300); the large sign centre is
+ // (-32.9,3.7014316154,680.2) / (7991.1,3.7014316154,380.2).
+ { TEXT("motel-sign-road"), TEXT("road"), 7998, 410, 0.22753, 0.12 },
+ { TEXT("motel-sign-near"), TEXT("saro"), -26, 710, 0.22753, 0.12 },
+ // Stand on the new pool's north-west deck and look across the water toward
+ // the room row's rear wall, keeping the pool/room relationship readable.
+ { TEXT("motel-rear"), TEXT("saro"), -63, 692.5, -2.50, -0.12 },
  { TEXT("rack-online"), TEXT("saro"), 0, 0, 0, 0, -1, EState::RackOnline },
  { TEXT("rack-dark"), TEXT("saro"), 0, 0, 0, 0, -1, EState::RackDark },
  { TEXT("indicators-online"), TEXT("saro"), -0.4, 2.2, UE_DOUBLE_PI, -0.35, -1, EState::IndicatorsOnline },
@@ -143,6 +151,8 @@ static const FCamera Cameras[] = {
  { TEXT("street-souvenir-window"), TEXT("diner"), 8018.6, 2062.3, -UE_DOUBLE_HALF_PI, -0.06 },
  { TEXT("street-radio-detail"), TEXT("diner"), 8015.4, 2038.7, -1.20, 0.07 },
  { TEXT("street-souvenir-detail"), TEXT("diner"), 8015.0, 2066.5, -1.20, 0.07 },
+ { TEXT("street-feed-front"), TEXT("diner"), 7997, 2202, UE_DOUBLE_HALF_PI, 0.10 },
+ { TEXT("street-church-front"), TEXT("diner"), 8010, 2095.5, -UE_DOUBLE_HALF_PI, 0.14 },
  // Sky and cloud review (SKY.md): the evening commute's start south of town, looking north up the
  // road toward Caliche as in the dusk concept; the same spot toward the western sunset and up.
  { TEXT("sky-commute"), TEXT("road"), 8001.8, 2335, 0, 0.04 },

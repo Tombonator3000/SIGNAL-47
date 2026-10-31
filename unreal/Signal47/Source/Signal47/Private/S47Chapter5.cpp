@@ -475,7 +475,7 @@ void US47Chapter5::BindDinerTruck(const FS47Obj& Object)
 		const US47World::FChoice C = W->M->World->TruckChoice(TEXT("diner"));
 		if (C.Use) C.Use();
 	};
-	It.Examine = [W] { return W.IsValid() && W->InDiner() ? FString(TEXT("The service truck: a white pickup with tired paint and a toolbox in the bed. The keys are in it, like always.")) : FString(); };
+	It.Examine = [W] { return W.IsValid()&&W->InDiner()&&W->M->World?W->M->World->ServiceDescription(TEXT("diner")):FString(); };
 	M->Inter->Add(It);
 }
 

@@ -127,7 +127,7 @@ namespace
   S47J::Set(O,TEXT("method"),TEXT("Visible native/legacy mesh bounds and actual ISM instance world bounds within3m of each exterior fence corner, plus actual complex visibility rays from the uninterrupted Walker route. Proximity uses the nearest XZ point of each AABB; instance bounds transform the mesh-local box, excluding shader sway."));
   S47J::Set(O,TEXT("limits"),TEXT("Large joined-mesh bounds can include distant islands. A fence hit can occlude the small dark E04/E05 candidate. These data identify candidates; they do not identify or authorize removing the brown pump housing or an unknown triangle."));
   S47J::Set(O,TEXT("eye_three_m"),TArray<double>{P->Pos.X,P->FloorY+P->Eye,P->Pos.Z});
-  static const FVector2D Corners[]={{-64.9,665.9},{-53.9,665.9},{-64.9,682.9},{-53.9,682.9}};
+  static const FVector2D Corners[]={{-64.9,690.9},{-53.9,690.9},{-64.9,707.9},{-53.9,707.9}};
   TArray<TSharedPtr<FJsonValue>> Meshes,Rays,Instances;
   for(int32 I=0;I<W->PartCount();++I)
   {
@@ -213,10 +213,13 @@ void AS47Web::BeginMotelV2Route()
   {-42.3,671,nullptr,nullptr},{-42.3,670.35,nullptr,nullptr},
   {-43.25,670.35,nullptr,nullptr,2},{-44.7,670.35,TEXT("iceMachine"),TEXT("court:iceMachine")},
   {-46,670.35,nullptr,nullptr,3},{-53.2,670.55,nullptr,nullptr},
-  {-53.2,680.6,nullptr,nullptr,6},{-55.5,680.6,nullptr,nullptr},
-  {-55.5,667.3,nullptr,nullptr},{-64.2,667.3,nullptr,nullptr},
-  {-64.2,679.5,nullptr,nullptr},{-55.5,679.5,nullptr,nullptr},{-55.5,680.6,nullptr,nullptr},
-  {-53.2,680.6,nullptr,nullptr},{-53.2,670.55,nullptr,nullptr},
+  // Walk the existing exterior ground west of the preserved rear wall (X=-52.5).
+  {-53.2,695.7,nullptr,nullptr},
+  {-53.2,705.6,nullptr,nullptr,6},{-55.5,705.6,nullptr,nullptr},
+  {-55.5,692.3,nullptr,nullptr},{-64.2,692.3,nullptr,nullptr},
+  {-64.2,704.5,nullptr,nullptr},{-55.5,704.5,nullptr,nullptr},{-55.5,705.6,nullptr,nullptr},
+  {-53.2,705.6,nullptr,nullptr},{-53.2,695.7,nullptr,nullptr},
+  {-53.2,670.55,nullptr,nullptr},
   {-42.3,670.55,nullptr,nullptr},{-42.3,671,nullptr,nullptr},{-42,671,nullptr,nullptr},
   {-42,674.1,nullptr,nullptr},{-42.25,674.1,nullptr,nullptr},{-42.25,680,nullptr,nullptr},
   // Approach each door from the continuous aisle, then retreat before passing the next chair/pot.
@@ -296,7 +299,7 @@ void AS47Web::BeginMotelV2Route()
       if(B.bEnabled&&Match){S->Box=B;Found=true;break;}
      }
      if(!Found){Fail(TEXT("preserved collision fixture rectangle missing"));return;}
-     const double Z=Kind==0?674.9:Kind==3?700:(S->Box.MinZ+S->Box.MaxZ)*.5;
+     const double Z=Kind==3?700:(S->Box.MinZ+S->Box.MaxZ)*.5;
      P->Place(S->Box.MaxX+.8,Z,UE_DOUBLE_PI/2);S->ProbeStart=P->Pos;S->Since=Now;P->TestMove=FVector2D(0,-1);++S->Probe;return;
     }
     if(Now-S->Since<2)return;P->TestMove.Reset();const double Moved=S->ProbeStart.X-P->Pos.X;

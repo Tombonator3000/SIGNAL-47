@@ -95,7 +95,8 @@ def is_glow(m):
 
 def adaptation(ob):
  name=cleanbase(ob.name)
- if any('09 Revised pool' in c.name for c in ob.users_collection):return Matrix.Translation(Vector((11,-29,0)))@Matrix.Rotation(math.pi,4,'Z')
+ # Rear of the middle room row, 25m south of the former lobby-side pool.
+ if any('09 Revised pool' in c.name for c in ob.users_collection):return Matrix.Translation(Vector((11,-54,0)))@Matrix.Rotation(math.pi,4,'Z')
  if name=='Continuous parking and drive':return Matrix.Translation(Vector((5.1,0,0)))@Matrix.Diagonal(Vector((10.6/12.9,1,1,1)))@Matrix.Translation(Vector((-5.1,0,0)))
  if name=='V2 Reception counter laminate top':
   return Matrix.Translation(Vector((-.8,-.35,.985)))@Matrix.Diagonal(Vector((1.16/.98,3.34/3.08,.07/.055,1)))@Matrix.Translation(Vector((.2,.7,-.99)))
@@ -135,10 +136,13 @@ def add_runtime_supports():
  tube('Native telephone mouthpiece stem',(.23,2.51,1.73),(.23,2.42,1.69),.018,dark,6)
  coll=bpy.data.collections.new('Native restored pool walk');source_scene.collection.children.link(coll)
  concrete='Warm poured concrete'
- box('Native west pool approach',(-7.3,-.75,-.06),(1.2,11.5,.12),concrete)
+ box('Native west pool approach',(-7.3,-25.75,-.06),(1.2,11.5,.12),concrete)
+ # Keep the lobby's north path. Route around the rear wall, not through guest rooms.
  box('Native north pool approach',(-1.5,4.2,-.06),(13,1.6,.12),concrete)
+ box('Native rear pool approach',(-4.6,-8.3,-.06),(1.2,23.4,.12),concrete)
+ box('Native rear pool link',(-6,-20.8,-.06),(4,1.6,.12),concrete)
  # Join east gate at x-8 with no thin sand gap to the west walking strip.
- box('Native pool gate threshold',(-7.9,-5.7,-.06),(.2,1.6,.12),concrete)
+ box('Native pool gate threshold',(-7.9,-30.7,-.06),(.2,1.6,.12),concrete)
  bpy.context.view_layer.update()
 
 add_runtime_supports()

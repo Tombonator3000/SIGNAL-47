@@ -256,6 +256,7 @@ def import_mesh(source, destination, name, report):
     data.remove_degenerates = False
     data.convert_scene = True
     data.convert_scene_unit = True
+    data.import_uniform_scale = 1.
     data.force_front_x_axis = True
     data.set_editor_property('coordinate_system_policy', unreal.CoordinateSystemPolicy.MATCH_UP_FORWARD_AXES)
     data.import_rotation = unreal.Rotator(pitch=0, yaw=90, roll=0)

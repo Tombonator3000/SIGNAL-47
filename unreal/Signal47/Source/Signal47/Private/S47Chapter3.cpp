@@ -611,7 +611,7 @@ void US47Chapter3::BindSaroTruck(const FS47Obj& Object)
 	It.Id = TEXT("truck"); It.Object = Object; It.Range = 3.2;
 	It.Label = [this] { return M && M->World && M->World->TruckChoice ? M->World->TruckChoice(TEXT("saro")).Label : FString(); };
 	It.Use = [this] { if (M && M->World && M->World->TruckChoice) M->World->TruckChoice(TEXT("saro")).Use(); };
-	It.Examine = [] { return FString(TRUCK_EXAMINE); };
+	It.Examine = [this] { return M&&M->World?M->World->ServiceDescription(TEXT("saro")):FString(TRUCK_EXAMINE); };
 	M->Inter->Add(It);
 }
 
@@ -682,7 +682,7 @@ void US47Chapter3::BindSite(US47Station* Site)
 			{
 				if (!(Area() == TEXT("station01") && Spot.Position().Y > -100)) return FString();
 				const FString T = Taken && Taken->Truck ? Taken->Truck() : FString();
-				return T.IsEmpty() ? FString(TRUCK_EXAMINE) : T;
+				return T.IsEmpty() ? (M&&M->World?M->World->ServiceDescription(TEXT("station01")):FString(TRUCK_EXAMINE)) : T;
 			};
 			Inter->Add(It);
 		}
