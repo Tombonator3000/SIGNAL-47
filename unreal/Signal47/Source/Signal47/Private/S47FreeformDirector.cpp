@@ -21,6 +21,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Misc/PackageName.h"
 #include "../../../../Narrative/Freeform/generated/FreeformEvents.inl"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
@@ -52,6 +53,8 @@ struct FS47FreeformDirector::FEffects
  FS47Obj Sample,Car;
  TSharedPtr<uint8> Life=MakeShared<uint8>(0);
  bool bBuilt=false;
+ FVector HullCentreOffsetUE=FVector::ZeroVector;
+ double HullLampDrop=.25;
  ~FEffects(){Life.Reset();for(auto& P:Parts)if(P.IsValid())P->DestroyComponent();for(auto& L:Lights)if(L.IsValid())L->DestroyComponent();}
  UStaticMeshComponent* Mesh(const FString& Name,const TCHAR* Asset,const FVector& At,const FVector& Scale,uint32 Color,bool bOriginal=false)
  {
@@ -65,8 +68,23 @@ struct FS47FreeformDirector::FEffects
  void Build(FS47FreeformDirector* Owner)
  {
   if(bBuilt||!M||!M->Web||!M->Web->IsLoaded()||!M->Inter)return;Query.Init(M);
-  // Effects are native bounded geometry; the car reuses the project's imported parked sedan.
-  Mesh(TEXT("FreeformUfoHull"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(5,35,-80),FVector(8,.4,8),0x393c3c);
+  // Reuse Tom's imported saucer when locally available. Optional licensed art
+  // is never required for compiling or running the public-source fallback.
+  const TCHAR* SaucerPath=TEXT("/Game/Licensed/TripoFleet/ufo_saucer/SM_TripoFleet_Saucer.SM_TripoFleet_Saucer");
+  UStaticMeshComponent* Hull=nullptr;
+  if(FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(FString(SaucerPath))))
+   Hull=Mesh(TEXT("FreeformUfoHull"),SaucerPath,FVector(5,35,-80),FVector(1),0xffffff,true);
+  if(Hull)
+  {
+   const FBoxSphereBounds B=Hull->GetStaticMesh()->GetBounds();
+   const double Width=FMath::Max(1.,2.*double(FMath::Max(B.BoxExtent.X,B.BoxExtent.Y)));
+   const double Scale=800./Width; // native centimetres: eight metres across
+   Hull->SetWorldScale3D(FVector(Scale));HullCentreOffsetUE=FVector(B.Origin)*Scale;
+   HullLampDrop=FMath::Clamp(double(B.BoxExtent.Z)*Scale*.0075+.05,.25,1.2);
+   UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform close-pass native saucer width=%.2fm scale=%.5f; original PBR retained"),Width*Scale/100.,Scale);
+  }
+  else
+   Mesh(TEXT("FreeformUfoHull"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(5,35,-80),FVector(8,.4,8),0x393c3c);
   for(int32 I=0;I<3;++I)
   {
    auto* C=Mesh(FString::Printf(TEXT("FreeformUfoLamp%d"),I),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(5,35,-80),FVector(.35),0xc7dbbc);
@@ -249,8 +267,14 @@ void FS47FreeformDirector::Draw()
  {
   const bool Hull=I==0;C->SetVisibility(Sky&&(!Hull||Event==TEXT("close_pass")));
   const double Side=Event==TEXT("response_lights")?0:Age*(Event==TEXT("close_pass")?2.3:5.);
-  const FVector At=Anchor+FVector(Side+(I-2)*5.,FMath::Sin(Age*.2+I)*.6,0);
-  C->SetWorldLocation(S47Three::ToUE(At));
+  const FVector Centre=Anchor+FVector(Side,FMath::Sin(Age*.2)*.6,0);
+  // The close-pass hull and its lamps share one transform. Three bounded
+  // underside positions stay within the eight-metre hull instead of trailing
+  // a displaced hull ten metres to the side of an unrelated light line.
+  const FVector AttachedLamps[]={FVector(-2.55,-Effects->HullLampDrop,-1.35),FVector(2.55,-Effects->HullLampDrop,-1.35),FVector(0,-Effects->HullLampDrop,2.7)};
+  const FVector Offset=Hull?FVector::ZeroVector:Event==TEXT("close_pass")?AttachedLamps[I-1]:FVector((I-2)*5.,(FMath::Sin(Age*.2+I)-FMath::Sin(Age*.2))*.6,0);
+  const FVector At=Centre+Offset;
+  C->SetWorldLocation(S47Three::ToUE(At)-(Hull?Effects->HullCentreOffsetUE:FVector::ZeroVector));
   if(!Hull)if(auto* Mat=Cast<UMaterialInstanceDynamic>(C->GetMaterial(0)))
   {
    // Slow independent lamps; honour calm-flash preference by keeping a steady output.
