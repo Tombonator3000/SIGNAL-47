@@ -52,6 +52,8 @@ Tom bestemte 31. oktober at **0.1, liten Roswell-alien**, kommer først: referan
 | D-22 | Senere Freeform skal ha vedvarende dager og netter, SARO-arbeid og varierte tilfeldige hendelser, aliens og skrekk, uten Story-finalen. | Tom ber nå om planen i TODO. Freeform er planlagt, ikke implementert modus. Del SARO og relevante systemer, men gi modusene egne fremdriftsregler og lagringer. [TODO](TODO.md#story-og-freeform). |
 | D-23 | Undersøkelsesløkken skal hovedsakelig foregå på SARO-basen, ved antennefeltet og i teknisk område. Første implementering styrker Story-kvelden før 00:00. | Toms bestilling 31. oktober: normalreferanse, avvik, fysisk kontroll, sikret bevis, sammenligning og forståelig neste handling. Gjenbruk Observing-kvelden, bevar den senere historieeskaleringen og gamle lagringer. VOTV-01 i [TODO](TODO.md) fører leveringen. |
 
+Tom utvidet 0.1 etter modellleveransen: Roswell-figurene skal ha nysgjerrig, sky AI med lusking/skjul, gode bevegelser og romlige småsteg/taklyder. Dev-menyen skal styre antall og velge stilleståing, aktiv lusking eller jakt. Dette er bestilt implementering; jakt blir et eksplisitt dev-valg, mens vanlige bakgrunnsmøter beholder den nysgjerrige rollen.
+
 ## Linux som distribusjonsmål, 31. oktober
 
 Mottakerens Arch/niri/Nvidia-rapport understreker at Linux-distribusjonen skal beskrive faktiske arkitektur-, ABI-, driver- og øktkrav fremfor å kreve Ubuntu. Utviklingsmaskin og støttet spillermaskin holdes atskilt; kompatibilitet krever konkret grafisk prøve. [Linux-veiledningen](Guides/LINUX_RUNTIME.md) fører dagens krav og begrensninger. Bedre oppstartssjekker prioriteres i PLAY-31-38; Flatpak vurderes i SHIP-04 som tillegg, ikke som allerede vedtatt eller verifisert erstatning.

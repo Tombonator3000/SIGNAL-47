@@ -125,6 +125,7 @@ void US47Night::Init(US47Main* InM)
 	Calls = MakeShared<FS47NightCalls>(M->Audio.Get());
 	// them, in the background, at the edge of the view (core/glimpses.ts)
 	Glimpses = MakeShared<FS47Glimpses>(M->Web.Get());
+	Glimpses->Attach(M);
 	// the flashlight on the passenger seat comes along the first time the player gets in
 	if (M->World)
 	{
@@ -473,6 +474,7 @@ FS47GlimpsesIn US47Night::GlimpseIn(bool bOk) const
 	FS47Truck* Tr = Driving() ? M->World->TruckHere() : nullptr;
 	FS47GlimpsesIn G;
 	G.bOk = bOk;
+	G.bHeld = M->bPausedByMenu || (M->UI && M->UI->Modal()) || Cinematic();
 	G.Scene = A == TEXT("saro") ? TEXT("saro") : bRoad ? TEXT("road") : TEXT("");
 	G.Cam = Camera();
 	G.Clock = Clock();
