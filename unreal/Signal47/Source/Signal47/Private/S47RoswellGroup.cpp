@@ -9,6 +9,7 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47Web.h"
+#include "S47World.h"
 #include "S47Three.h"
 #include "Components/PoseableMeshComponent.h"
 
@@ -27,7 +28,8 @@ struct FS47RoswellGroup::FImpl
  US47Main* M=nullptr; FS47RoswellWorld World;
  TArray<TUniquePtr<FIndividual>> Actors;
  FVector LastPlayer=FVector::ZeroVector;
- bool bLastPlayer=false,bDev=false; FString Scene;
+ bool bLastPlayer=false,bDev=false,bControlled=false; FString Scene;
+ S47J::FObj PendingRestore;
  double Wait=120+FMath::FRand()*180;
  int32 Serial=0,PlansThisFrame=0,DecisionTurn=0;
  void IgnoreBodies()
@@ -78,23 +80,23 @@ bool FS47RoswellGroup::Developer() const { return P->bDev; }
 void FS47RoswellGroup::Clear()
 {
  for (auto& A:P->Actors) P->Hide(*A);
- P->bDev=false; P->bLastPlayer=false; P->Wait=120+FMath::FRand()*180;
+ P->bDev=false; P->bControlled=false; P->bLastPlayer=false; P->PendingRestore.Reset(); P->Wait=120+FMath::FRand()*180;
 }
 void FS47RoswellGroup::SetMode(FS47RoswellBrain::EMode Mode)
 {
  for (auto& A:P->Actors) if (A->bActive && !A->bNatural) A->Brain.SetMode(Mode);
 }
-int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoof,bool bNatural)
+int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoof,bool bNatural,bool bControlled)
 {
  auto* M=P->M;
  if (!M || !M->Player || !M->Web || !M->Night || !M->Night->Glimpses || !M->Night->Glimpses->HasNativeBody()) return 0;
- if (!bNatural) { Clear(); P->bDev=true; }
+ if (!bNatural) { Clear(); P->bDev=!bControlled; P->bControlled=bControlled; }
  P->Scene=M->Web->Area(); P->IgnoreBodies();
  const FVector Feet(M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z);
  const auto Cam=M->Night->GlimpseIn(true).Cam;
  auto Places=P->World.Candidates(Feet,P->Scene,bRoof);
  // Dev ground placements are in front of the actual player; no wall/floor bypass.
- if (!bRoof && !bNatural)
+ if (!bRoof && !bNatural && !bControlled)
  {
   Places.Reset();
   for (double D:{2.8,3.5,4.5,5.5,7.5}) for (double Turn:{0.,.3,-.3,.55,-.55,.8,-.8,1.,-1.,1.25,-1.25,1.5,-1.5})
@@ -111,7 +113,7 @@ int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoo
  for (const auto& Place:Places)
  {
   if (Spawned>=FMath::Clamp(Count,1,6) || P->Occupied(Place.Pos)>=1) continue;
-  if (bNatural)
+  if (bNatural || bControlled)
   {
    const FVector To=Place.Pos+FVector(0,1.08,0)-Cam.Pos;
    if (To.Size()>26 || To.Size()<3) continue;
@@ -120,7 +122,7 @@ int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoo
   }
   auto* A=P->Slot(); if (!A || !A->Body || !A->Body->Ready()) break;
   A->Id=++P->Serial; A->bActive=true; A->bRoof=bRoof; A->bNatural=bNatural;
-  A->Contacts=0; A->Refresh=0; A->Life=90+FMath::FRand()*90;
+  A->Contacts=0; A->Refresh=0; A->Life=bControlled?120:90+FMath::FRand()*90;
   A->Motion.Reset(); A->Foley.Reset();
   A->Brain.Start(bNatural?FS47RoswellBrain::EMode::Curious:Mode,Place.Pos,
    FMath::Atan2(Feet.X-Place.Pos.X,Feet.Z-Place.Pos.Z),A->Id*491+317);
@@ -131,7 +133,22 @@ int32 FS47RoswellGroup::Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoo
 void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
 {
  auto* M=P->M; if (!M || !M->Web || !M->Player) return;
- if (!P->Scene.IsEmpty() && M->Web->Area()!=P->Scene) Clear();
+ if(P->PendingRestore)
+ {
+  if(M->Web->Area()!=S47J::Str(P->PendingRestore,TEXT("scene")))return;
+  const auto Pending=S47J::Clone(P->PendingRestore);Restore(Pending);
+ }
+ if (!P->Scene.IsEmpty() && M->Web->Area()!=P->Scene)
+ {
+  if(P->bControlled)
+  {
+   // A controlled Freeform visit remains at its site while another area is active.
+   // Keep brain/path/memory; only its render/audio presentation is suspended.
+   for(auto& A:P->Actors)if(A->bActive){A->Foley.Reset();if(A->Body&&A->Body->Mesh.IsValid())A->Body->Mesh->SetVisibility(false,true);}
+   P->bLastPlayer=false;return;
+  }
+  Clear();
+ }
  P->Scene=M->Web->Area();
  const bool bHeld=M->Mode!=US47Main::EMode::Play || M->bPausedByMenu || (M->UI && M->UI->Modal()) ||
   Input.bHeld || (!P->bDev && !Input.bOk);
@@ -141,7 +158,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
  int32 Active=0;
  for (const auto& A:P->Actors) Active+=A->bActive?1:0;
  const bool RoofBusy=M->Night && M->Night->Hooks.RoofStepsBusy && M->Night->Hooks.RoofStepsBusy();
- if (!bHeld && !P->bDev && Input.bOk && !Input.Scene.IsEmpty() && Active==0 && NightCount<8 && Input.May!=TOptional<bool>(false))
+ if (!bHeld && !P->bDev && !P->bControlled && Input.bOk && !Input.Scene.IsEmpty() && Active==0 && NightCount<8 && Input.May!=TOptional<bool>(false))
  {
   P->Wait-=FMath::Min(Dt,.25)*Input.Pace.Get(1.);
   if (P->Wait<=0)
@@ -183,7 +200,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   W.CanMove=[this](const FVector& From,const FVector& To){return P->World.MoveAllowed(From,To);};
   W.Sight=[this](const FVector& From,const FVector& To){return P->World.ClearSight(From,To);};
   W.Occupancy=[this,&A](const FVector& At){return P->Occupied(At,&A);};
-  FS47RoswellBrain::FInput In; In.bHeld=Held; In.PlayerFeet=Feet; In.PlayerEye=Input.Cam.Pos;
+  FS47RoswellBrain::FInput In; In.bHeld=Held; In.bCanContact=!(M->World&&M->World->bDriving); In.PlayerFeet=Feet; In.PlayerEye=Input.Cam.Pos;
   In.PlayerForward=Input.Cam.Forward; In.PlayerSpeed=Speed; In.bFlashlight=Input.bFlashlight;
   A.Brain.Tick(Dt,In,W);
   A.Root->SetWorldLocation(S47Three::ToUE(A.Brain.Pos));
@@ -202,7 +219,7 @@ void FS47RoswellGroup::Update(double Dt,const FS47GlimpsesIn& Input)
   FS47RoswellFoley Surface; Surface.bHeld=Held; Surface.bRoof=A.bRoof; Surface.bMetal=false;
   Surface.Crouch=A.Brain.Crouch; Surface.bOccluded=!P->World.ClearSight(Input.Cam.Pos,A.Brain.Pos+FVector(0,.1,0));
   A.Foley.Step(M->Audio,Contact,Surface);
-  if (A.Brain.bContact && M->UI) M->UI->Toast(TEXT("Roswell test: caught you. Move away, change behaviour or clear the group in F10."),3);
+  if (P->bDev && A.Brain.bContact && M->UI) M->UI->Toast(TEXT("Roswell test: caught you. Move away, change behaviour or clear the group in F10."),3);
   if (!Held && A.bNatural)
   {
    A.Life-=FMath::Min(Dt,.25);
@@ -219,4 +236,35 @@ TArray<FS47RoswellGroup::FView> FS47RoswellGroup::Views() const
   Out.Add({A->Id,A->Brain.Mode,A->Brain.State,A->Brain.Pos,A->Brain.Eye(),A->Brain.DistanceTravelled,A->Brain.Age,
    A->Brain.Velocity.Size(),A->Brain.Crouch,A->bRoof,A->Body && A->Body->Rendered(),A->Contacts,A->Foley.Played()});
  return Out;
+}
+
+S47J::FObj FS47RoswellGroup::Save() const
+{
+ if(P->PendingRestore)return S47J::Clone(P->PendingRestore);
+ auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("scene"),P->Scene);S47J::Set(O,TEXT("serial"),P->Serial);S47J::Set(O,TEXT("controlled"),P->bControlled);S47J::Set(O,TEXT("nightCount"),NightCount);
+ TArray<TSharedPtr<FJsonValue>> A;
+ for(const auto& I:P->Actors)if(I->bActive)
+ {auto R=S47J::New();S47J::Set(R,TEXT("id"),I->Id);S47J::Set(R,TEXT("roof"),I->bRoof);S47J::Set(R,TEXT("natural"),I->bNatural);S47J::Set(R,TEXT("life"),I->Life);S47J::Set(R,TEXT("brain"),I->Brain.Save());A.Add(MakeShared<FJsonValueObject>(R));}
+ O->SetArrayField(TEXT("individuals"),A);return O;
+}
+bool FS47RoswellGroup::Restore(const S47J::FObj& Saved)
+{
+ Clear();if(!Saved||S47J::Num(Saved,TEXT("v"))!=1)return false;
+ P->Scene=S47J::Str(Saved,TEXT("scene"));P->Serial=S47J::Int(Saved,TEXT("serial"));P->bControlled=S47J::Bool(Saved,TEXT("controlled"));NightCount=S47J::Int(Saved,TEXT("nightCount"));
+ const auto Items=S47J::Arr(Saved,TEXT("individuals"));if(Items.Num()>6)return false;
+ if(P->bControlled && P->M && P->M->Web && P->M->Web->Area()!=P->Scene)
+ {P->PendingRestore=S47J::Clone(Saved);return true;}
+ for(const auto& Value:Items)
+ {
+  auto R=Value->AsObject();FS47RoswellBrain Brain;if(!Brain.Restore(S47J::Obj(R,TEXT("brain"))))continue;
+  if(!P->World.IsStandable(Brain.Pos))continue;
+  auto* I=P->Slot();if(!I)break;I->Id=S47J::Int(R,TEXT("id"));I->bActive=true;I->bRoof=S47J::Bool(R,TEXT("roof"));I->bNatural=S47J::Bool(R,TEXT("natural"));I->Life=FMath::Clamp(S47J::Num(R,TEXT("life")),0.,180.);I->Brain=MoveTemp(Brain);I->Refresh=0;I->Motion.Reset();I->Foley.Reset();
+  if(I->Root.IsValid())I->Root->SetWorldLocation(S47Three::ToUE(I->Brain.Pos));
+ }
+ P->IgnoreBodies();return true;
+}
+void FS47RoswellGroup::ReleaseControlled()
+{
+ P->bControlled=false;
+ for(auto& I:P->Actors)if(I->bActive){I->bNatural=true;I->Life=0;I->Brain.SetMode(FS47RoswellBrain::EMode::Curious);}
 }

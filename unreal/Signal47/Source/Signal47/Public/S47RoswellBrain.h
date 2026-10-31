@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "S47Json.h"
 
 // Tom, 31 October 2026: a curious, shy Roswell is an actual moving observer,
 // not a silhouette that pops away. This controller owns no world objects or saves.
@@ -20,6 +21,7 @@ public:
  struct FInput
  {
   bool bHeld = false, bPlayerValid = true, bFlashlight = false;
+  bool bCanContact = true; // a visible driver is protected by the cab even if a sight ray passes glass
   FVector PlayerFeet = FVector::ZeroVector, PlayerEye = FVector::ZeroVector;
   FVector PlayerForward = FVector(0,0,-1);
   // Measured movement, not a key held while the player is blocked by a wall.
@@ -48,6 +50,8 @@ public:
 
  void Start(EMode InMode, const FVector& At, double Facing, int32 Seed);
  void SetMode(EMode InMode);
+ S47J::FObj Save() const;
+ bool Restore(const S47J::FObj& Saved);
  void Tick(double Dt, const FInput& In, const FWorld& World);
 
  EMode Mode = EMode::Curious;

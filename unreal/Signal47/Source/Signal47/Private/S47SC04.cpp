@@ -16,6 +16,8 @@
 #include "S47Substation.h"
 #include "Engine/World.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/PoseableMeshComponent.h"
 #include "Materials/MaterialInterface.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47SC04, Log, All);
@@ -26,6 +28,7 @@ namespace
  constexpr double WalkSpeed = 1.15, ChaseSpeed = 2.1, SeeTime = .35, LoseTime = 2.6, Reach = .9, GrabHold = .7;
  constexpr double SightRange = 14, SightCos = .342, ListenCos = .7, LureCos = .87, WalkHear = 9, RunHear = 14;
  constexpr double ListenTime = 5, LureTime = 12, FadeTime = 1.2;
+ constexpr double BodyRadius = .27, RefugeHold = 1.2;
  enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl };
  // Where the binder is read from, and where a capture starts the annex again.
  const FVector2D BinderStand(-2.3, 9.45);
@@ -53,6 +56,18 @@ namespace
    return true;
   };
   return Clip(-D.X, A.X - R.X0) && Clip(D.X, R.X1 - A.X) && Clip(-D.Y, A.Y - R.Z0) && Clip(D.Y, R.Z1 - A.Y);
+ }
+ // A centre-line test alone lets the visible body enter a shut leaf before its
+ // centre crosses the plane. Keep the controller's full capsule on the near side.
+ bool DoorVolume(const FVector2D& P, const FGap& G, double Radius)
+ {
+  const double Along=G.bX?P.X:P.Y,Across=G.bX?P.Y:P.X;
+  return FMath::Abs(Along-G.Plane)<Radius && Across>=(G.bX?G.Z0:G.X0)-Radius && Across<=(G.bX?G.Z1:G.X1)+Radius;
+ }
+ bool MovingOutOfDoor(const FVector2D& A,const FVector2D& Z,const FGap& G)
+ {
+  const double From=(G.bX?A.X:A.Y)-G.Plane,To=(G.bX?Z.X:Z.Y)-G.Plane;
+  return From*To>0 && FMath::Abs(To)>FMath::Abs(From)+1e-7;
  }
  bool ClosedDoorBetween(const AS47Web* Web, const FVector2D& A, const FVector2D& Z)
  {
@@ -134,7 +149,7 @@ S47J::FObj FS47SC04::Save() const
 
 void FS47SC04::Stop()
 {
- B = EBody::Away; bShown = false; Path.Reset(); bLureRinging = false; FadeT = -1;
+ B = EBody::Away; bShown = false; Path.Reset(); bLureRinging = false; FadeT = -1; RefugeT = BlockedT = 0; bRefugeRetreat = false;
  Pale.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);
 }
 
@@ -237,7 +252,12 @@ FString FS47SC04::Objective() const
  switch (P)
  {
  case EStep::Drive: return TEXT("SC04 // DRIVE BACK TO SARO. THE DEPUTY NEEDS THE RECEIVER LOG FOR THE MISSING-PERSON REPORT");
- case EStep::Hunt: return TEXT("ANNEX // SOMETHING CAME OUT OF THE OPERATIONS OFFICE. GET TO THE CONTROL ROOM AND SHUT ITS DOORS");
+ case EStep::Hunt:
+  if (!PlayerInControl()) return TEXT("ANNEX // GET TO THE CONTROL ROOM. SHUT THE CORRIDOR AND SERVICE DOORS BEHIND YOU");
+  if (bShown && Room(Pos)==0) return TEXT("CONTROL ROOM // IT IS INSIDE. BREAK SIGHT AND GET CLEAR BEFORE SECURING THE ROOM");
+  if (M && M->Web && M->Web->IsDoorOpen(TEXT("doorSouth"))) return TEXT("CONTROL ROOM // SHUT THE CORRIDOR DOOR. STEP CLEAR OF ITS THRESHOLD");
+  if (M && M->Web && M->Web->IsDoorOpen(TEXT("doorEast"))) return TEXT("CONTROL ROOM // SHUT THE SERVICE DOOR. STEP CLEAR OF ITS THRESHOLD");
+  return bRefugeRetreat ? TEXT("CONTROL ROOM // BOTH DOORS SECURED. FOOTSTEPS ARE WITHDRAWING; STAY IN COVER") : TEXT("CONTROL ROOM // BOTH DOORS SECURED. STAY QUIET WHILE IT CHECKS THE ANNEX");
  default: break;
  }
  if (P == EStep::Calm && F.bSchedule && F.bStrip && F.bJournal && F.bBinder) return TEXT("CONTROL ROOM // SHUT THE CORRIDOR AND SERVICE DOORS. STAY IN COVER");
@@ -321,7 +341,7 @@ bool FS47SC04::PlayerSafe() const
 void FS47SC04::StartHunt(bool bRetry)
 {
  SetStep(EStep::Hunt);
- T = bRetry ? 1.0 : 0; bVoice = false; bBanged = false; bListened = false; bLureRinging = false; SeeAcc = LostT = 0; Patrol = 0;
+ T = bRetry ? 1.0 : 0; bVoice = false; bBanged = false; bListened = false; bLureRinging = false; SeeAcc = LostT = RefugeT = BlockedT = 0; bRefugeRetreat = false; RetreatGoal = NOffice; Patrol = 0;
  Pos = Nodes()[NOffice].At; Y = 0; BodyYaw = HeadYaw = PI; Gait = 0; Path.Reset(); PendingNoise.Reset(); LastDoors.Reset();
  Enter(EBody::Away);
  UE_LOG(LogS47SC04, Display, TEXT("S47: SC04 annex meeting %s"), bRetry ? TEXT("starts again at the binder") : TEXT("starts"));
@@ -382,11 +402,58 @@ bool FS47SC04::Walk(double Speed, double Dt)
  const double Dist = D.Size(), StepLen = Speed * Dt;
  const FVector2D Next = Dist > StepLen ? Pos + D / Dist * StepLen : To;
  // A door can close after RouteTo chose the edge. Recheck the actual next step.
- if (ClosedDoorBetween(M->Web.Get(), Pos, Next)) { Gait = FMath::Max(0.0, Gait - Dt * 3); Enter(EBody::Listen); return false; }
+ if (ClosedDoorBetween(M->Web.Get(), Pos, Next) || !PhysicalStep(Next))
+ {
+  Gait = FMath::Max(0.0, Gait - Dt * 3); BlockedT += Dt;
+  if (B != EBody::Leave) Enter(EBody::Listen);
+  return false;
+ }
+ BlockedT = 0;
  BodyYaw = YawTo(D); HeadYaw = BodyYaw;
  Gait = FMath::Min(1.0, Gait + Dt * 3); Stride += StepLen * 2.1;
  if (Dist <= StepLen) { Pos = To; Path.RemoveAt(0); return Path.IsEmpty(); }
  Pos += D / Dist * StepLen;
+ return false;
+}
+
+bool FS47SC04::ClearOfClosedDoors() const
+{
+ if(!M||!M->Web)return false;
+ for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&DoorVolume(Pos,G,BodyRadius))return false;
+ return true;
+}
+
+bool FS47SC04::PhysicalStep(const FVector2D& To) const
+{
+ if(!M||!M->Web||!M->Web->GetWorld()||To.ContainsNaN()||Pos.ContainsNaN())return false;
+ for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&DoorVolume(To,G,BodyRadius)&&!MovingOutOfDoor(Pos,To,G))return false;
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04BodyStep),true,M->Player);
+ for(const auto& C:Pale.All)if(auto* Part=C.Get())Q.AddIgnoredComponent(Part);
+ if(auto* Skin=Pale.Creature.Mesh.Get())Q.AddIgnoredComponent(Skin);
+ const FVector A=S47Three::ToUE(Pos.X,Y+1.0,Pos.Y),Z=S47Three::ToUE(To.X,Y+1.0,To.Y);
+ const FCollisionShape Capsule=FCollisionShape::MakeCapsule(float(BodyRadius*100),94.f);
+ // A door may have closed while the body already overlapped its near face.
+ // Permit only outward separation on the SAME side of that exact door; a
+ // complete second sweep must still be clear of every other world obstacle.
+ for(int32 Attempt=0;Attempt<8;++Attempt)
+ {
+  FHitResult Hit;
+  if(!M->Web->GetWorld()->SweepSingleByChannel(Hit,A,Z,FQuat::Identity,ECC_Visibility,Capsule,Q))return true;
+  bool bSeparating=false;
+  if(Hit.bStartPenetrating)for(const auto& G:Gaps)
+  {
+   if(M->Web->IsDoorOpen(G.Door)||!DoorVolume(Pos,G,BodyRadius+.08)||!MovingOutOfDoor(Pos,To,G))continue;
+   const auto* Item=M->Web->Item(G.Door);const auto* N=Item?M->Web->Node(Item->Node):nullptr;
+   const auto* Root=N?N->Comp.Get():nullptr;const auto* Part=Hit.GetComponent();
+   if(Root&&Part&&(Part==Root||Part->IsAttachedTo(Root)))
+   {Q.AddIgnoredComponent(Part);bSeparating=true;break;}
+  }
+  if(bSeparating)continue;
+  // Same bounded low-step retry as the existing native threat controller.
+  // A full-height wall or door still intersects the lifted capsule.
+  const FVector Lift(0,0,30);
+  return !M->Web->GetWorld()->SweepSingleByChannel(Hit,A+Lift,Z+Lift,FQuat::Identity,ECC_Visibility,Capsule,Q);
+ }
  return false;
 }
 
@@ -396,6 +463,7 @@ void FS47SC04::LogSight() const
  const FS47Cam Cam = FS47Cam::Of(M->Player);
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04SightLog), true);
  for (const auto& C : Pale.All) if (const UStaticMeshComponent* Part = C.Get()) Q.AddIgnoredComponent(Part);
+ if (auto* Skin=Pale.Creature.Mesh.Get()) Q.AddIgnoredComponent(Skin);
  TArray<FHitResult> Hits;
  M->Web->GetWorld()->LineTraceMultiByChannel(Hits, S47Three::ToUE(Eye()), S47Three::ToUE(Cam.Pos), ECC_Visibility, Q);
  FString List;
@@ -432,6 +500,7 @@ bool FS47SC04::SeesPlayer() const
  AS47Web* W = M->Web.Get();
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04Sight), true);
  for (const auto& C : Pale.All) if (const UStaticMeshComponent* Part = C.Get()) Q.AddIgnoredComponent(Part);
+ if (auto* Skin=Pale.Creature.Mesh.Get()) Q.AddIgnoredComponent(Skin);
  const FVector A = S47Three::ToUE(E), Bp = S47Three::ToUE(Cam.Pos);
  for (int32 I = 0; I < 16; ++I)
  {
@@ -481,6 +550,7 @@ double FS47SC04::Ground() const
  if (Room(Pos) != 3 || !M || !M->Web || !M->Web->GetWorld()) return 0;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04Ground), true);
  for (const auto& C : Pale.All) if (const UStaticMeshComponent* Part = C.Get()) Q.AddIgnoredComponent(Part);
+ if (auto* Skin=Pale.Creature.Mesh.Get()) Q.AddIgnoredComponent(Skin);
  FHitResult H;
  if (!M->Web->GetWorld()->LineTraceSingleByChannel(H, S47Three::ToUE(Pos.X, Y + 1.5, Pos.Y), S47Three::ToUE(Pos.X, Y - 3, Pos.Y), ECC_Visibility, Q)) return Y;
  return S47Three::ToThree(H.ImpactPoint).Y;
@@ -547,14 +617,24 @@ void FS47SC04::Think(double Dt)
  TOptional<FVector2D> DoorNoise;
  for (int32 G = 0; G < UE_ARRAY_COUNT(Gaps); ++G)
  {
-  const bool bOpen = M->Web->IsDoorOpen(Gaps[G].Door);
+  bool bOpen = M->Web->IsDoorOpen(Gaps[G].Door);
   const bool* Was = LastDoors.Find(Gaps[G].Door);
+  if(Was && *Was && !bOpen && bShown && DoorVolume(Pos,Gaps[G],BodyRadius+.04))
+  {
+   // The player can be clear while the intruder still occupies the opening.
+   // The leaf bounces back on that body instead of closing through it.
+   M->Web->SetDoorOpen(Gaps[G].Door,true,false);bOpen=true;
+   if(M->UI)M->UI->Toast(TEXT("The door cannot latch: something is still in the opening. Get clear and wait for it to pass."),4);
+   UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 door %s blocked by intruder at %.2f %.2f"),Gaps[G].Door,Pos.X,Pos.Y);
+  }
   if (Was && *Was != bOpen)
   {
    const FVector2D At((Gaps[G].X0 + Gaps[G].X1) * .5, (Gaps[G].Z0 + Gaps[G].Z1) * .5);
    if (!bShown) PendingNoise = At;
    else if (FVector2D::Distance(At, Pos) <= GapReach[G]) DoorNoise = At;
   }
+  if (Was && *Was != bOpen && !bOpen && PlayerInControl() && (G==2 || G==3) && M->UI)
+   M->UI->Toast(G==2?TEXT("Corridor door secured. Check the service door, then stay in cover."):TEXT("Service door secured. Check the corridor door, then stay in cover."),4);
   LastDoors.Add(Gaps[G].Door, bOpen);
  }
  const bool bSees = bShown && SeesPlayer();
@@ -594,6 +674,42 @@ void FS47SC04::Think(double Dt)
   UE_LOG(LogS47SC04, Display, TEXT("S47: SC04 body went back into the office; escape"));
   SetStep(EStep::Calm);
  };
+ // A secured refuge ends pursuit, but never removes an intruder from inside
+ // the same room. Sound cannot restart the patrol indefinitely through shut doors.
+ const bool Refuge = bSafe && bShown && Room(Pos)!=0 && ClearOfClosedDoors();
+ RefugeT = Refuge ? RefugeT+Dt : 0;
+ if (bRefugeRetreat && !Refuge)
+ {
+  bRefugeRetreat=false; RefugeT=0; Enter(EBody::Search); NextPatrol();
+ }
+ if (!bRefugeRetreat && RefugeT>=RefugeHold)
+ {
+  bRefugeRetreat=true; RetreatGoal=Room(Pos)==3?NWestNorth:NOffice;
+  Enter(EBody::Leave);RouteTo(RetreatGoal);
+  if(M->UI)M->UI->Toast(TEXT("Both control-room doors are secured. The steps pause, then begin moving away. Stay in cover."),5);
+  UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 refuge secured; physical withdrawal to %d"),RetreatGoal);
+ }
+ if (bRefugeRetreat)
+ {
+  // The creature can operate the records-room latch from its own side, as in
+  // the existing listening branch. It still has to walk through the real opening.
+  if(Room(Pos)==2 && !M->Web->IsDoorOpen(TEXT("recordsDoor")))
+  {M->Web->SetDoorOpen(TEXT("recordsDoor"),true,false);LastDoors.Add(TEXT("recordsDoor"),true);}
+  if(Path.IsEmpty() && FVector2D::Distance(Pos,Nodes()[RetreatGoal].At)>.2)RouteTo(RetreatGoal);
+  if(Walk(WalkSpeed*1.2,Dt) && FVector2D::Distance(Pos,Nodes()[RetreatGoal].At)<.3)
+  {
+   if(RetreatGoal==NOffice)Vanish();
+   else
+   {
+    bShown=false;Enter(EBody::Away);T=-1e9;F.bEscaped=true;SetStep(EStep::Calm);
+    M->Story->Note(M->Story->ClockText(false)+TEXT(". The steps withdrew along the west wall. Stayed in the secured control room with the originals."));
+   }
+  }
+  // A newly swung leaf can invalidate the previous edge. Replan from the actual
+  // position; do not award escape or snap through a wall on a movement timeout.
+  if(BlockedT>1){RouteTo(RetreatGoal);BlockedT=0;}
+  return;
+ }
  const FVector BangAt = Room(Pos) == 3 ? FVector(6.1, 1.2, 1.6) : FVector(-2.4, 1.2, 4.7);
  switch (B)
  {
@@ -673,7 +789,7 @@ void FS47SC04::Think(double Dt)
    const FVector2D D = Goal - Pos; const double Dist = D.Size(), StepLen = ChaseSpeed * Dt;
    BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Min(1.4, Gait + Dt * 4); Stride += StepLen * 2.1;
    const FVector2D Next = Dist > StepLen ? Pos + D / Dist * StepLen : Goal;
-   if (M->Player->Walkable(Next.X, Next.Y) && !ClosedDoorBetween(M->Web.Get(), Pos, Next)) Pos = Next;
+   if (M->Player->Walkable(Next.X, Next.Y) && !ClosedDoorBetween(M->Web.Get(), Pos, Next) && PhysicalStep(Next)) Pos = Next;
    Path.Reset();
   }
   else
@@ -706,6 +822,10 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
  for (int32 I = NStoop; I <= NWestNorth; ++I) Rooms &= Room(Nodes()[I].At) == 3;
  for (int32 I = NRecIn; I <= NRecSW; ++I) Rooms &= Room(Nodes()[I].At) == 2;
  Check(Rooms, TEXT("every graph node lies in the room it names"));
+ Check(DoorVolume(FVector2D(-2.4,4.6),Gaps[2],BodyRadius)&&!DoorVolume(FVector2D(-2.4,4.4),Gaps[2],BodyRadius),TEXT("the full body stops before the corridor door plane, not after its centre crosses"));
+ Check(MovingOutOfDoor(FVector2D(-2.4,4.85),FVector2D(-2.4,4.95),Gaps[2])&&!MovingOutOfDoor(FVector2D(-2.4,4.85),FVector2D(-2.4,4.65),Gaps[2]),TEXT("closed-leaf separation can move outward on its own side but never through the door"));
+ Check(Room(FVector2D(-2.4,3.6))==0&&Room(FVector2D(-2.4,5.1))==1,TEXT("a creature already inside the refuge is not treated as safely outside it"));
+
  bool Short = true; for (const auto& E : Edges()) Short &= FVector2D::Distance(Nodes()[E.Key].At, Nodes()[E.Value].At) < 8;
  Check(Edges().Num() == 13 && Short, TEXT("thirteen edges: corridor, records room, the west wall outside, three doors one edge each"));
  Check(Room(FVector2D(7.5, 1.6)) == 3 && Room(FVector2D(4.3, 1.6)) == 0, TEXT("the east landing is outside and the service door leads into the control room"));
@@ -715,6 +835,9 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
   TEXT("collected originals and captures round-trip; a saved meeting restarts at the binder"));
  FS47SC04 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Drive && Fresh.Label(TEXT("binder")).IsEmpty() && Fresh.Tasks().Num() == 1, TEXT("a new SC04 starts with the drive and offers nothing in the annex yet"));
+ A.bRefugeRetreat=true;A.RefugeT=4;A.Stop();Check(!A.bRefugeRetreat&&A.RefugeT==0, TEXT("stopping a hunt clears refuge timers without changing collected originals"));
+ Check(int32(EStep::Hunt)==2&&int32(EStep::Calm)==3&&int32(EBody::Leave)==8, TEXT("existing saved step/body enum values are retained"));
+
  const FS47Doc Timed = StripDoc(TEXT("02:27:13"),TEXT("14 APR 1986 / 01:48:09"),TEXT("02:56:04"));
  Check(Timed.Page.Contains(TEXT("01:48:09")) && Timed.Page.Contains(TEXT("02:27:13")) && Timed.Page.Contains(TEXT("02:56:04")) && Timed.Title.EndsWith(TEXT("02:56:04")) && !Timed.Page.Contains(TEXT("02:58")), TEXT("the strip uses actual restoration, disappearance and tear times instead of the draft schedule"));
  Check(!StripDoc(FString()).Page.Contains(TEXT("01:52")) && StripDoc(FString()).Page.Contains(TEXT("Time not recorded")) && !ScheduleDoc().Page.IsEmpty(), TEXT("missing legacy timestamps remain unknown rather than becoming invented evidence"));

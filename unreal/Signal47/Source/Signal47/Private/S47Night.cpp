@@ -1,3 +1,5 @@
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
@@ -176,29 +178,30 @@ void US47Night::Init(US47Main* InM)
 		S.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
 		return S47AlbumSubjects::AlbumSubjects(S);
 	};
-	A.Place = [Self] { return Self.IsValid() ? Self->PlaceName() : FString(); };
+	A.Place = [Self] { return Self.IsValid() ? (Self->M->IsFreeform() && Self->M->Freeform ? FString::Printf(TEXT("DAY %d / %s"),Self->M->Freeform->Day(),*Self->PlaceName()) : Self->PlaceName()) : FString(); };
 	A.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
-	A.Extra = [Self] { return Self.IsValid() && Self->Hooks.AbductionExtra ? Self->Hooks.AbductionExtra() : 0; };
+	A.Extra = [Self] { return Self.IsValid() && !Self->M->IsFreeform() && Self->Hooks.AbductionExtra ? Self->Hooks.AbductionExtra() : 0; };
 	// (ext.dishArray.cull(photoCam): Unreal culls the instances per view by itself)
-	A.Before = [Self] { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->BeforePhoto(); };
-	A.After = [Self] { if (Self.IsValid() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->AfterPhoto(); };
+	A.Before = [Self] { if (Self.IsValid() && !Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->BeforePhoto(); };
+	A.After = [Self] { if (Self.IsValid() && !Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->AfterPhoto(); };
 	// someone on the film only: out in the night where the glimpses are (SARO, the highway, Caliche)
 	A.GhostGround = [Self]() -> TFunction<double(double, double)>
 	{
-		if (!Self.IsValid()) return nullptr;
+		if (!Self.IsValid() || Self->M->IsFreeform()) return nullptr;
 		const FS47GlimpsesIn G = Self->GlimpseIn(true);
 		if (G.Scene.IsEmpty() || Self->M->Space != TEXT("yard") || Self->Driving() || !Self->At(TEXT("ch1")) || Self->Phase() == TEXT("ch6") || Self->Dawn() >= 0.3) return nullptr;
 		// (Caliche's own ground by the diner's lot, world/Town.ts floorAt, is the town's: the road's ground here)
 		return G.Ground;
 	};
-	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid()) { if(Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); if(Self->M->Horror)Self->M->Horror->TagPhoto(Shot); } };
+	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid()) { if(!Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); if(!Self->M->IsFreeform() && Self->M->Horror)Self->M->Horror->TagPhoto(Shot); } };
 	A.Small = [Self] { return Self.IsValid() && Self->M->Flow && Self->M->Flow->Saves.bFallback; };
 	A.Done = [Self](const FS47AlbumShot& Shot, bool bFirst, int32 Left)
 	{
 		if (!Self.IsValid()) return;
 		US47Main* Mn = Self->M;
-		if (Mn->Anomaly) Mn->Anomaly->Photo(Shot);
+		if (!Mn->IsFreeform() && Mn->Anomaly) Mn->Anomaly->Photo(Shot);
 		if (Mn->Horror) Mn->Horror->Photo(Shot);
+		if (Mn->IsFreeform() && Mn->Freeform && Mn->Freeform->Director) Mn->Freeform->Director->Photo(Shot);
 		if (Mn->Audio) Mn->Audio->Shutter();
 		Mn->UI->ShutterFlash();
 		// the patch with no stars in it, on the print (story/starHole.ts)
@@ -220,7 +223,7 @@ void US47Night::Init(US47Main* InM)
 	};
 	// once in the night: the face a foot from the lens, on the first free frame out of doors in
 	// chapter four (core/filmFace.ts). Only on the print; in the scene there is nothing.
-	A.Face = [Self] { return Self.IsValid() && Self->M->Mode == EMode::Play && Self->Phase() == TEXT("ch4") && Self->M->Space == TEXT("yard") && !Self->Driving() && !Self->Cinematic() && !Self->Is(Self->Hooks.AbductionBusy); };
+	A.Face = [Self] { return Self.IsValid() && !Self->M->IsFreeform() && Self->M->Mode == EMode::Play && Self->Phase() == TEXT("ch4") && Self->M->Space == TEXT("yard") && !Self->Driving() && !Self->Cinematic() && !Self->Is(Self->Hooks.AbductionBusy); };
 	// the first close look at it, come up: the night goes quiet round the player while it is looked
 	// at, the music with it, and the notebook gets a line in the player's hand
 	A.FaceSeen = [Self](const FS47AlbumShot& Shot)
@@ -248,7 +251,7 @@ void US47Night::Init(US47Main* InM)
 		if (US47Chapter2* Ch2 = Cast<US47Chapter2>(Host->Chapter(TEXT("ch2")))) Ch2->Quiet = [Self] { return !Self.IsValid() || (!Self->OneAtATime() && !(Self->M->Audio && Self->M->Audio->PhonePlaying())); };
 	}
 	// the kit's line for the camera (core/album.ts rollText)
-	if (M->Flow) M->Flow->RollText = [Self] { return Self.IsValid() ? FS47Album::RollText(Self->Album->Left()) : FString(); };
+	if (M->Flow) M->Flow->RollText = [Self] { return Self.IsValid() ? (Self->M->IsFreeform() ? FString::Printf(TEXT("%d free frames available"),Self->Album->Left()) : FS47Album::RollText(Self->Album->Left())) : FString(); };
 
 	// main.ts input.onKey: F switches the flashlight
 	M->OnAction(TEXT("light"), [Self] { if (Self.IsValid()) Self->ToggleLight(); return true; });
@@ -265,7 +268,7 @@ void US47Night::ToggleLight()
 
 FString US47Night::Phase() const { return M->Story ? M->Story->ChapterKey : FString(TEXT("prologue")); }
 bool US47Night::At(const FString& Chapter) const { return ChapterNo(Phase()) >= ChapterNo(Chapter); }
-double US47Night::Clock() const { return M->Story ? M->Story->Clock() : 0; }
+double US47Night::Clock() const { return M->IsFreeform() && M->Freeform ? M->Freeform->Clock() : M->Story ? M->Story->Clock() : 0; }
 bool US47Night::Modal() const { return M->ModalOpen(); }
 bool US47Night::Cinematic() const { return M->Story && M->Story->IsCinematic(); }
 bool US47Night::Driving() const { return M->World && M->World->bDriving; }
@@ -716,6 +719,7 @@ void US47Night::FlashlightStep(double Dt)
 
 void US47Night::Step(double Dt)
 {
+	if (M->IsFreeform()) return;
 	if (M->Mode != EMode::Play) return;
 	const bool bModal = Modal();
 	// the print with the face has come up (core/album.ts): said once, when nothing else holds the player

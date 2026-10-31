@@ -1,3 +1,5 @@
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Flow.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
@@ -383,6 +385,11 @@ void US47Flow::BeginDestroy()
 void US47Flow::Boot()
 {
 	const bool bTitle = FParse::Param(FCommandLine::Get(), TEXT("S47Title"));
+ if (FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest")) || FParse::Param(FCommandLine::Get(),TEXT("S47Freeform")))
+ {
+  FString User; FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+  if (User.StartsWith(TEXT("/tmp/"))) { FStart S; S.bDev=true; S.bFreeform=true; StartGame(S); return; }
+ }
 	if (HasTestFlag() && !bTitle)
 	{
 		// straight into play, as every test run starts (main.ts devStart: a run that is never saved,
@@ -469,7 +476,18 @@ void US47Flow::Step(double Dt)
 			StaticCastSharedPtr<SS47Title>(TitleEl)->FocusMenu();
 		}
 	}
-	// frame(): right after the frame, so the save's picture is this frame
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Dead() && (!bDeathShown || !M->ModalOpen()))
+ {
+  bDeathShown=true;
+  M->UI->Open(S47Kit::Shell(M->UI,TEXT("FREEFORM / CONTACT LOST"),S47Kit::Col({
+   S47Kit::Text(TEXT("This assignment uses death and reload. Continue from the latest successful save.")),
+   S47Kit::Button(TEXT("Load last save"),[this] { if (const auto Last=Saves.Latest(CaseId)) OpenSave(*Last); else ToTitle(); },true),
+   S47Kit::Button(TEXT("Return to title"),[this] { ToTitle(); })
+  }),800));
+ }
+ // Never replace the pre-contact save with a dead session.
+ if (M->IsFreeform() && M->Freeform && M->Freeform->Dead()) return;
+ // frame(): right after the frame, so the save's picture is this frame
 	FlushAutosave();
 }
 
@@ -548,7 +566,7 @@ void US47Flow::ShowTitle()
 	O.bGate = bGate;
 	O.bTouch = false;
 	// Continue's line: the case, the chapter, the night's clock and the place ("CASE 1 · CHAPTER TWO · 03:12 · CONTROL ROOM")
-	O.Cont = Cont ? FString::Printf(TEXT("CASE %d \u00B7 %s \u00B7 %s \u00B7 %s"), Cont->CaseId, *S47Theme::ChapterLine(Cont->Chapter).Key, *Cont->Clock, *Cont->Place.ToUpper()) : FString();
+	O.Cont = Cont ? FString::Printf(TEXT("CASE %d \u00B7 %s \u00B7 %s \u00B7 %s"), Cont->CaseId, *(Cont->Chapter.StartsWith(TEXT("FREEFORM")) ? Cont->Chapter : S47Theme::ChapterLine(Cont->Chapter).Key), *Cont->Clock, *Cont->Place.ToUpper()) : FString();
 	// Quit: the desktop's way out
 	O.OnDev = [this] { OpenDev(); };
 	O.OnQuit = [this] { UKismetSystemLibrary::QuitGame(M->Hud, M->Hud ? M->Hud->GetOwningPlayerController() : nullptr, EQuitPreference::Quit, false); };
@@ -556,6 +574,7 @@ void US47Flow::ShowTitle()
 	if (!GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GGameIni)) GConfig->GetString(TEXT("/Script/EngineSettings.GeneralProjectSettings"), TEXT("ProjectVersion"), Version, GEngineIni);
 	O.Version = FString::Printf(TEXT("UNREAL %s \u00B7 TAPE B"), Version.IsEmpty() ? TEXT("0.0") : *Version);
 	O.OnContinue = [this] { const TOptional<FS47SaveMeta> C = Saves.ContinueSave(); if (C) OpenSave(*C); };
+	O.OnFreeform = [this] { RequestNewFreeform(); };
 	O.OnStart = [this]
 	{
 		if (bStarting || Opening->Active() || M->UI->Modal()) return;
@@ -603,6 +622,28 @@ void US47Flow::ShowTitleAgain()
 	ShowTitle();
 }
 
+void US47Flow::RequestNewFreeform()
+{
+ if (bStarting || M->Mode != EMode::Title) return;
+ auto Choose = [this](bool bLethal)
+ {
+  M->UI->Close();
+  auto Start = [this,bLethal](int32 Id,bool bReplace)
+  { FStart S; S.CaseId=Id; S.bReplaceCase=bReplace; S.bFreeform=true; S.bLethal=bLethal; StartGame(S); };
+  const int32 Free = Saves.FreeCase();
+  if (Free) { Start(Free,false); return; }
+  FS47SaveMenuOpts O; O.Mode=TEXT("new"); O.Metas=Saves.List(); O.ActiveCase=Saves.Active();
+  O.OnNewCase=[Start](int32 Id) { Start(Id,true); }; S47SaveMenu::Open(M->UI,O);
+ };
+ M->UI->Open(S47Kit::Shell(M->UI,TEXT("NEW FREEFORM / CONSEQUENCES"),S47Kit::Col({
+  S47Kit::Text(TEXT("A continuing SARO assignment. Work, investigate and improve the base across days and nights.")),
+  S47Kit::Button(TEXT("Local recovery / recommended"),[Choose] { Choose(false); },true),
+  S47Kit::Small(TEXT("A capture costs time or interrupts field work. Filed evidence and repaired equipment survive.")),
+  S47Kit::Button(TEXT("Death / reload last save"),[Choose] { Choose(true); }),
+  S47Kit::Small(TEXT("Captures end the attempt. Return to the latest saved state. Story cases keep their own rules."))
+ }),850));
+}
+
 void US47Flow::RequestNewNight(int32 InCaseId, bool bReplace)
 {
 	if (bStarting || M->Mode != EMode::Title || Opening->Active()) return;
@@ -614,9 +655,16 @@ void US47Flow::RequestNewNight(int32 InCaseId, bool bReplace)
 // Open a save: from the title, the pause menu or Continue.
 void US47Flow::OpenSave(const FS47SaveMeta& Meta)
 {
-	Opening->Dismiss();
-	if (M->Mode == EMode::Play) LeavePlay();
 	const S47J::FObj State = Saves.Load(Meta.Id);
+ if (State)
+ {
+  const FString Identity=S47J::Str(State,TEXT("sessionMode"),TEXT("story"));
+  const auto F=S47J::Obj(State,TEXT("freeform")); const auto V=F?F->TryGetField(TEXT("v")):nullptr;
+  if ((Identity!=TEXT("story")&&Identity!=TEXT("freeform")) || (Identity==TEXT("freeform")&&(!V||V->Type!=EJson::Number||V->AsNumber()!=1)))
+  { M->UI->Toast(TEXT("This save needs a compatible session version. The current game is still running."),5); return; }
+ }
+ Opening->Dismiss();
+ if (State && M->Mode == EMode::Play) LeavePlay();
 	if (!State.IsValid())
 	{
 		M->UI->Toast(TEXT("That save could not be read. Your other saves are unchanged."), 5);
@@ -633,13 +681,23 @@ void US47Flow::OpenSave(const FS47SaveMeta& Meta)
 void US47Flow::StartGame(const FStart& O)
 {
 	if (bStarting) return;
+ const FString Identity = S47J::Str(O.State,TEXT("sessionMode"),TEXT("story"));
+ const bool bFreeform = O.State ? Identity==TEXT("freeform") : O.bFreeform;
+ if (O.State && (Identity!=TEXT("story") && Identity!=TEXT("freeform"))) { M->UI->Toast(TEXT("This session mode is not supported by this version."),5); return; }
+ const auto FreeState=S47J::Obj(O.State,TEXT("freeform"));
+ const auto FreeVersion=FreeState?FreeState->TryGetField(TEXT("v")):nullptr;
+ if (bFreeform && O.State && (!FreeVersion || FreeVersion->Type!=EJson::Number || FreeVersion->AsNumber()!=1))
+ { M->UI->Toast(TEXT("This Freeform save version cannot be opened safely."),5); return; }
+ if (M->Freeform) M->Freeform->Stop();
+ M->SessionMode = bFreeform ? ES47SessionMode::Freeform : ES47SessionMode::Story;
+ bDeathShown=false;
 	bStarting = true;
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
-	const bool bEveningTimeline = (!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2;
+	const bool bEveningTimeline = !bFreeform && ((!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2);
 	const auto EveningSaved = S47J::Obj(O.State,TEXT("evening"));
 	const bool bOpening = bEveningTimeline && (!O.State.IsValid() || S47J::Str(O.State,TEXT("checkpoint"))==TEXT("evening"));
 	M->Story->bEveningTimeline=bEveningTimeline; M->Story->bOpeningHeld=false;
@@ -687,7 +745,8 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Night) M->Night->Restore(O.State);
 	// (Night::Restore puts the rest back in main.ts's order: the town's, the times away, the phones, the thread)
 	const FString Checkpoint = O.State.IsValid() ? S47J::Str(O.State, TEXT("checkpoint")) : FString();
-	if (bOpening) { M->Story->Reset(); M->Story->bOpeningHeld=true; }
+	if (bFreeform) M->Story->BeginFreeform(S47J::Obj(O.State,TEXT("routine")));
+	else if (bOpening) { M->Story->Reset(); M->Story->bOpeningHeld=true; }
 	else StartStory(!Checkpoint.IsEmpty() ? Checkpoint : O.Jump);
 	if (LoadBoard && O.State.IsValid()) LoadBoard(S47J::Obj(S47J::Obj(O.State, TEXT("case")), TEXT("board")));
 	// the doors as they were left
@@ -725,8 +784,9 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
 	else if (M->Evening && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation(EveningSaved);
-	if (M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
-	if (M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
+	if (bFreeform) { if(M->Office)M->Office->Begin(nullptr,false); if(M->SkyVisitors)M->SkyVisitors->Begin(nullptr,false); if(M->AnomalyWorld)M->AnomalyWorld->Reset(); }
+	if (!bFreeform && M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
+	if (!bFreeform && M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (M->Life)
 	{
 		// FX-01: a spent meteor passage stays spent. Without the field (an older save) the clock decides:
@@ -735,19 +795,25 @@ void US47Flow::StartGame(const FStart& O)
 		const TSharedPtr<FJsonValue> Done = P.IsValid() ? P->TryGetField(TEXT("done")) : nullptr;
 		M->Life->PassageReset(Done.IsValid() && Done->Type == EJson::Boolean && Done->AsBool() && S47J::Num(P, TEXT("v")) == 1);
 	}
-	if (M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
+	if (!bFreeform && M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
  // Both restored systems now belong to this case; validate T01 filing against its actual record.
  if (M->Evening) M->Evening->ValidateServiceRestore();
  if (M->Evening) M->Evening->ValidateInvestigationRestore();
-	if (M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
-	if (M->AnomalyWorld) M->AnomalyWorld->Begin();
-	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
+	if (!bFreeform && M->Anomaly) M->Anomaly->Begin(S47J::Obj(O.State,TEXT("anomaly")));
+	if (!bFreeform && M->AnomalyWorld) M->AnomalyWorld->Begin();
+	if (bFreeform && M->Freeform)
+ {
+  M->Freeform->Begin(S47J::Obj(O.State,TEXT("freeform")),O.bLethal);
+  if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
+ }
+ if (bFreeform && M->FieldCamera) M->FieldCamera->bHave=true;
+ if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
  // Before SC01: its normal round counts the evening schedule as part of the work.
- if (M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
- if (M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()),O.State.IsValid() && O.State->HasField(TEXT("spine")));
- if (M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
- if (M->Spine && !(O.State.IsValid() && O.State->HasField(TEXT("spine")))) M->Spine->ResumeAfterSC03();
+ if (!bFreeform && M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
+ if (!bFreeform && M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()),O.State.IsValid() && O.State->HasField(TEXT("spine")));
+ if (!bFreeform && M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
+ if (!bFreeform && M->Spine && !(O.State.IsValid() && O.State->HasField(TEXT("spine")))) M->Spine->ResumeAfterSC03();
 
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
@@ -807,6 +873,7 @@ void US47Flow::FadeInSoon(float Secs)
 // Stop the night that is running, without the title screen (before opening another save).
 void US47Flow::LeavePlay()
 {
+	if (M->Freeform) M->Freeform->Stop();
 	M->UI->Fade(true, FString());
 	// (fcam.raise(false): the field camera is chapter one's)
 	M->UI->Viewfinder(false);
@@ -838,6 +905,7 @@ void US47Flow::LeavePlay()
 
 void US47Flow::ToTitle()
 {
+	if (M->Freeform) M->Freeform->Stop();
 	Opening->Dismiss();
 	if (M->Audio) M->Audio->Silence(false);
 	M->Mode = EMode::Title;
@@ -1047,6 +1115,7 @@ FS47PauseOpts US47Flow::PauseStatus(FS47PauseOpts O) const
 	if (S)
 	{
 		if (const US47Chapter* C = S->Chapter(S->ChapterKey); C && C->bActive) O.Objective = C->Objective();
+		if (M->IsFreeform() && M->Freeform) O.Objective=M->Freeform->Objective();
 		for (const FS47Task& T : S->Tasks()) if (!T.bDone) O.OpenTasks.Add(T.Text);
 		if (S->Notes().Num()) O.LastNote = S->Notes().Last();
 	}
@@ -1202,7 +1271,7 @@ void US47Flow::DoorChanged(const FString& Id, bool bOpen)
 	{
 		for (const TCHAR* K : { TEXT("ch1"), TEXT("ch2"), TEXT("ch4") }) if (US47Chapter* C = M->Story->Chapter(K)) C->DoorChanged(Id, bOpen);
 	}
-	if (M->Horror) M->Horror->DoorChanged(Id,bOpen);
+	if (!M->IsFreeform() && M->Horror) M->Horror->DoorChanged(Id,bOpen);
 	if (M->Mode == EMode::Play && !bRestoringNow) RequestAutosave(false);
 }
 
@@ -1212,6 +1281,8 @@ FString US47Flow::SaveBlock() const
 {
 	if (bDevRun) return TEXT("This is a developer run. Nothing is saved.");
 	if (M->Mode != EMode::Play || !CaseId) return TEXT("There is no night running to save.");
+	if (M->IsFreeform() && M->Freeform && M->Freeform->Dead()) return TEXT("Load the last save to resume this assignment.");
+	if (M->IsFreeform()) return (bStarting || (M->World && M->World->bBusy)) ? FString(TEXT("Let the journey finish before saving.")) : FString();
 	// (the time away's 47 seconds, the array put back, SARO going dark: not in the Unreal version yet)
 	// (nor from the archive's phone ringing until the dishes are down, nor while reel 047 runs)
 	if (M->Phones) { const FString B = M->Phones->SaveBlock(); if (!B.IsEmpty()) return B; }
@@ -1261,6 +1332,8 @@ S47J::FObj US47Flow::GameState()
 	// (the fields of the systems not in the Unreal version yet, as the opened save had them)
 	const S47J::FObj State = Carry.IsValid() ? S47J::Clone(Carry) : S47J::New();
 	S47J::Set(State, TEXT("v"), 3);
+	S47J::Set(State,TEXT("sessionMode"),M->IsFreeform()?TEXT("freeform"):TEXT("story"));
+	if (M->IsFreeform() && M->Freeform) S47J::Set(State,TEXT("freeform"),M->Freeform->Save()); else State->RemoveField(TEXT("freeform"));
 	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);
 	if (M->Evening && M->Evening->Enabled()) S47J::Set(State,TEXT("evening"),M->Evening->Save());
 	if (M->Anomaly) S47J::Set(State,TEXT("anomaly"),M->Anomaly->Save());
@@ -1277,7 +1350,7 @@ S47J::FObj US47Flow::GameState()
  else if (!M->Spine || !M->Spine->PreserveUnknownSave()) State->RemoveField(TEXT("spine"));
  // Otherwise retain Carry's exact unknown JSON value; disabling an unsupported version must not erase it.
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
-	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
+	if (Checkpoint == TEXT("freeform") || Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());
 	S47J::Set(State, TEXT("checkpoint"), Checkpoint);
 	S47J::Set(State, TEXT("case"), SnapshotCase());
@@ -1315,7 +1388,7 @@ TOptional<FS47SaveMeta> US47Flow::WriteSave(const FString& Kind, int32 Slot, FSt
 	const S47J::FObj State = GameState();
 	const bool bPrologue = S47J::Str(State, TEXT("checkpoint")) == TEXT("residual");
 	FS47SaveCard Card;
-	Card.Chapter = M->Story ? M->Story->ChapterTitle() : FString();
+	Card.Chapter = M->IsFreeform() && M->Freeform ? FString::Printf(TEXT("FREEFORM / DAY %d"),M->Freeform->Day()) : M->Story ? M->Story->ChapterTitle() : FString();
 	Card.Place = PlaceName();
 	Card.Clock = M->Evening && M->Evening->Commute() ? FString(TEXT("Late afternoon")) : bPrologue ? FString(M->Story && M->Story->bEveningTimeline ? TEXT("00:13") : TEXT("02:13")) : S47Text::ClockText(M->Story ? M->Story->Clock() : 0, false);
 	Card.Playtime = M->Playtime;
@@ -1414,6 +1487,7 @@ FString US47Flow::PlaceName(const FVector& P) const
 
 FString US47Flow::CheckpointName() const
 {
+	if (M->IsFreeform()) return TEXT("freeform");
 	// Where a save resumes. The prologue only has safe points at the start of the night and at
 	// 02:13; inside a chapter the chapter's own state is the resume point.
 	const AS47Story* S = M->Story;
@@ -1529,11 +1603,11 @@ void US47Flow::OpenNotebook()
 	// (game.openDoc: T. Vega's field book opens in a view of its own, story/fieldBook.ts)
 	TWeakObjectPtr<US47Main> Mn = M;
 	TArray<FS47Task> NotebookTasks = S->Tasks();
-	if (M->Anomaly) NotebookTasks.Append(M->Anomaly->Tasks());
-	if (M->Substation) NotebookTasks.Append(M->Substation->FollowupTasks());
+	if (!M->IsFreeform() && M->Anomaly) NotebookTasks.Append(M->Anomaly->Tasks());
+	if (!M->IsFreeform() && M->Substation) NotebookTasks.Append(M->Substation->FollowupTasks());
 	M->UI->Notebook(NotebookTasks, S->Notes(), S->Docs(), [UI, Mn](const FS47Doc& Doc)
  {
-  if (Mn.IsValid() && Mn->Anomaly && Mn->Anomaly->OpenDoc(Doc)) return;
+  if (Mn.IsValid() && !Mn->IsFreeform() && Mn->Anomaly && Mn->Anomaly->OpenDoc(Doc)) return;
   if (Mn.IsValid() && Mn->Phones && Mn->Phones->OpenDoc(Doc)) return;
   if (UI.IsValid() && Mn.IsValid() && Mn->Substation && Doc.Id == TEXT("EV_TRAFO_FOLLOWUP"))
   {
@@ -1557,7 +1631,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 	X.People = PeopleItems();
 	X.bTouch = false;
 	// album.view(game.clock): the free frames, as far as each has come up
-	if (M->Night && M->Night->Album && M->Story) X.Album = M->Night->Album->View(M->Story->Clock());
+	if (M->Night && M->Night->Album && M->Story) X.Album = M->Night->Album->View(M->IsFreeform() && M->Freeform ? M->Freeform->Clock() : M->Story->Clock());
 	return X;
 }
 

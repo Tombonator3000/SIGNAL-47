@@ -129,6 +129,7 @@ public:
 	void Toast(const FString& S, float Secs = 3.2f);
 	double Gt() const { return GameTime; }
 	void SetClock(double Sec) { ClockSec = Sec; }
+	void BeginFreeform(const TSharedPtr<FJsonObject>& Routine);
 	void AimArray(double Az, double El, double Slew) { PointDishes(Az, El, Slew); }
 	// The console's card: the evening observing run while one is scheduled (S47Observing), else the stage's.
 	const FS47Profile& ConsoleProfile() const;

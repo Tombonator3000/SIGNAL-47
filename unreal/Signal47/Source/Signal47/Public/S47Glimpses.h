@@ -71,6 +71,11 @@ public:
 
 	void Attach(US47Main* Main);
 	int32 DevSpawn(int32 Number, FS47RoswellBrain::EMode Mode, bool bRoof=false);
+	int32 ControlledSpawn(int32 Number, FS47RoswellBrain::EMode Mode, bool bRoof=false);
+	void ControlledStep(double Dt, const FS47GlimpsesIn& Input);
+	void ControlledRelease();
+	S47J::FObj SaveControlled() const;
+	bool RestoreControlled(const S47J::FObj& Saved);
 	void DevMode(FS47RoswellBrain::EMode Mode);
 	void DevClear();
 	void DevStep(double Dt,const FS47GlimpsesIn& Input);

@@ -69,7 +69,9 @@ private:
  int32 Patrol = 0;
  TArray<int32> Path;
  bool bShown = false, bHavePlayer = false, bVoice = false, bBanged = false, bLureRinging = false, bRestartHunt = false, bListened = false;
- double LureT = 0, FadeT = -1;
+ double LureT = 0, FadeT = -1, RefugeT = 0, BlockedT = 0;
+ bool bRefugeRetreat = false;
+ int32 RetreatGoal = 0;
  TOptional<FVector2D> PendingNoise; // a door moved before the body was in: it starts there
  TMap<FString, bool> LastDoors;
  double Ground() const;
@@ -86,6 +88,8 @@ private:
  void LogSight() const;
  TOptional<FVector2D> Heard(double Dt);
  bool PlayerSafe() const;
+ bool PhysicalStep(const FVector2D& To) const;
+ bool ClearOfClosedDoors() const;
  bool PlayerInControl() const;
  void Capture();
  void Finish();

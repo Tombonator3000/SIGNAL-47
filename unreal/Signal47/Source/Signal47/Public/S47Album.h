@@ -72,7 +72,7 @@ struct FS47AlbumShot
  *  has been looked at closely since. */
 struct FS47FaceSave { FString Id; bool bUp = false, bSeen = false; };
 /** What is kept with the case (GameState.album). */
-struct FS47AlbumSave { TArray<FS47AlbumShot> Shots; int32 Ghosts = 0; TOptional<FS47FaceSave> Face; };
+struct FS47AlbumSave { TArray<FS47AlbumShot> Shots; int32 Ghosts = 0, FilmCapacity = 36; TOptional<FS47FaceSave> Face; };
 
 struct FS47AlbumDeps
 {
@@ -124,6 +124,9 @@ public:
 	const TArray<FS47AlbumShot>& Shots() const { return Data.Shots; }
 	/** Free frames left on the roll tonight. */
 	int32 Left() const;
+	/** Freeform may load another pack. Existing photographs and identifiers remain intact. */
+	bool AddFilm(int32 Frames = ROLL);
+	int32 FilmCapacity() const { return Data.FilmCapacity; }
 	/** Take a free frame now (Chapter1.shutter, when the case has no frame to take here). */
 	FS47AlbumShot Expose();
 	/** What a frame taken now would name, without taking it (the tests). */

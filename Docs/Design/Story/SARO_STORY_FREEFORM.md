@@ -81,3 +81,13 @@ Hendelser skal knyttes til situasjonen og gi plass til respons. Eksempler på he
 Førsteversjonen krever ikke omfattende butikkøkonomi, behovsmålere eller global fysikksimulering. Viktige medier og instrumenter skal ha pålitelige tilstander; løs fysikk kan utvides avgrenset etter [VotV-notatet](../../Research/VoicesOfTheVoid/GAMEPLAY_LESSONS.md).
 
 Kanon gjelder fortsatt: New Mexico i 1986, 1420.405 MHz, 27 antenner, azimut 026 og Story-hendelsens faste 47 sekunder. Spilltekst skrives på engelsk, dokumentasjon på norsk.
+
+## Godkjent gjennomføring: vedvarende døgn og hendelsesregissør
+
+Tom godkjente gjennomføringsplanen 31. oktober etter valg av 60–90 minutter per døgn, lokal recovery med valgfri død/lasting, utstyr/skjul/flukt og fremgang gjennom mysterier og bedre base. Første balanse bruker 75 minutter aktiv tid per døgn fra kl.08:00. Tre daglige oppdrag gir 20 dollar hver; tredje oppdrag velges. Startbudsjett er120 dollar. Sikring5, relé25, donorapparat15 og aggregatkanne10 dollar er spillverdier som skal balanseres gjennom spilling.
+
+Freeform får egen modusidentitet og lagring. En ny hendelsesregissør eier tempo, tilfeldige valg, aktive hendelser og hvile, mens eksisterende apparater, sanser og bevegelse gjenbrukes. Hendelser er situasjonsstyrt, én større sekvens om gangen, og ingen backlog etter pause. Første døgn har ingen farlig jakt. Startprofilen er2–4 små muligheter og0–2 undersøkelser per døgn, maksimalt ett farlig møte med35 prosent nattmulighet fra døgn2 og stor hendelse med10 prosent fra døgn4/minst3 døgn mellom. Etter fare følger minst8 aktive minutters hvile.
+
+Katalogen omfatter ekstra puls, taklyder, antennefeil, observatør, feederavvik, farlig serviceområde, signal på feil sted, avsenderløst telex, tom bil, lysmønster, spor/gjenstand, uenige tidsstempler, ekstra utskrift, passasje over basen, stille sone og sjelden stor nærhendelse. Hver hendelse skal ha fysiske/lydlige/instrumentelle følger, respons og avslutning. Tre mysterielinjer følger gjentatte intervaller, besøk rundt basen og uenige registreringer over flere døgn. Ingen full forklaring eller slutt kreves for å fortsette.
+
+Gjennomføringen går fra modus/lagring og drift/forsyninger til de første seks hendelsene, tredøgnsprøve, utvidet katalog/mysterier og lokal levering. Før farlige møter godkjennes må fysisk sikt, dører, rekkevidde, tilflukt og tidsavgrenset tilbaketrekning fungere. Åpne Story-krasj og SC04-feil føres fortsatt etter faktisk kontroll. Referanser: The Vast of Night, Close Encounters, Nope, Roadside Picnic og Solaris brukes som designinspirasjon med egne assets og scener.

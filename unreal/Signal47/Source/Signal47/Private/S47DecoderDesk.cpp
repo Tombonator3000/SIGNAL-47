@@ -1,3 +1,5 @@
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 // story/Decoder.ts
 #include "S47DecoderDesk.h"
 
@@ -91,6 +93,8 @@ FS47DecoderDesk::FS47DecoderDesk(FS47DecoderDeskDeps InD) : D(MoveTemp(InD))
 		I.Label = [this, Life]
 		{
 			if (!Life.IsValid()) return FString();
+			if (const auto* M = US47Main::Get(D.Room.Get()); M && M->IsFreeform() && M->Freeform)
+				if (const FString L = M->Freeform->Label(TEXT("decoder")); !L.IsEmpty()) return L;
 			if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing)
 				if (const FString L = M->Observing->Label(TEXT("decoder")); !L.IsEmpty()) return L;
 			return Label();
@@ -98,6 +102,7 @@ FS47DecoderDesk::FS47DecoderDesk(FS47DecoderDeskDeps InD) : D(MoveTemp(InD))
 		I.Use = [this, Life]
 		{
 			if (!Life.IsValid()) return;
+			if (const auto* M = US47Main::Get(D.Room.Get()); M && M->IsFreeform() && M->Freeform && M->Freeform->Use(TEXT("decoder"))) return;
 			if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing && M->Observing->Use(TEXT("decoder"))) return;
 			Use();
 		};
@@ -280,7 +285,8 @@ void FS47DecoderDesk::Update(double Dt)
 {
 	const auto* Main = US47Main::Get(D.Room.Get());
 	const auto* Obs = Main && Main->Observing ? Main->Observing.Get() : nullptr;
-	const bool bObservingAudio = Obs && !Obs->AudioDisplay().IsEmpty();
+	const auto* Free = Main && Main->IsFreeform() && Main->Freeform ? Main->Freeform.Get() : nullptr;
+	const bool bObservingAudio = (Free && !Free->AudioDisplay().IsEmpty()) || (Obs && !Obs->AudioDisplay().IsEmpty());
 	if (Player.IsValid()) Player->Update();
 	// (Unreal only) the answer's timeline and the developer's run of it; the bought unit's needles, display
 	// and page, whoever has the deck
@@ -299,7 +305,7 @@ void FS47DecoderDesk::Update(double Dt)
 	{
 		const double Mine = Player.IsValid() ? Player->TakeLevel() : 0.0;
 		const double Reel047 = D.ReelLevel ? D.ReelLevel() : 0.0;
-		const double ObservingLevel = bObservingAudio ? Obs->AudioLevel() : 0.0;
+		const double ObservingLevel = Free ? Free->AudioLevel() : bObservingAudio ? Obs->AudioLevel() : 0.0;
 		KitPtr->Update(Dt, FMath::Max3(Mine, Reel047, ObservingLevel), CanvasMap());
 		KitPtr->ShowPage(PageThere());
 		// (the developer's runs: the level and the needles in the log, for the meters' calibration)
@@ -321,6 +327,8 @@ void FS47DecoderDesk::Update(double Dt)
 
 FString FS47DecoderDesk::ScreenLine() const
 {
+	if (const auto* M = US47Main::Get(D.Room.Get()); M && M->IsFreeform() && M->Freeform)
+		if (const FString Line = M->Freeform->AudioDisplay(); !Line.IsEmpty()) return Line;
 	if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing)
 		if (const FString Line = M->Observing->AudioDisplay(); !Line.IsEmpty()) return Line;
 	if (!(D.Locked && D.Locked())) return TEXT("NO TAPE");
@@ -344,6 +352,8 @@ void FS47DecoderDesk::DrawScreen()
 		const double Level = M->Observing->AudioLevel();
 		Pic.Cur = Level > .01 ? FMath::Clamp(FMath::RoundToInt(Level * 10), 0, 10) : -1;
 	}
+	if (const auto* M = US47Main::Get(D.Room.Get()); M && M->IsFreeform() && M->Freeform && !M->Freeform->AudioDisplay().IsEmpty())
+	{ Pic.bLocked=true; const double Level=M->Freeform->AudioLevel(); Pic.Cur=Level>.01?FMath::Clamp(FMath::RoundToInt(Level*10),0,10):-1; }
 	Widget->P = Pic;
 	Renderer->DrawWidget(Target.Get(), Widget.ToSharedRef(), FVector2D(256, 72), 0.f);
 	// (one canvas in the web version, drawn by whichever draws last: here the screen shows this target
