@@ -116,3 +116,7 @@ Spilltestrettelser er ferdig levert gjennom PR272, pakke `f32d4553`, kl.10:39. F
 ## Ny Caliche-regresjon 31. oktober
 
 Root eier workflow/TODO og originalbildene på `codex/asset-workflow-caliche-findings-20261031`; early_logic undersøker importtransformer lesende. Spillet er aktivt. Ingen kildeendring, import, bygg eller installasjon kjøres i denne dokumentoppfølgingen. PLAY-31-10 i TODO fører videre retting.
+
+## Fortsatt spilltest: nye miljøfunn og kjøretøy
+
+Root eier kun dokumentoppfølging og seks originalbilder på `codex/playtest-environment-vehicles-20261031`. Spillet er aktivt; ingen import, Blender-, Unreal-, bygge- eller installasjonsjobb. TODO fører åpne rettelser og bestilt bilbytte; ingen modeller er byttet i denne oppfølgingen.

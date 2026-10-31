@@ -8,6 +8,10 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 Tom har etter installert PR272 meldt feil plassering/orientering på kirken og flere bybygg, samt et løsrevet dørblad ved vaskeriet. PLAY-31-10/P1 er åpen og PLAY-31-02 er gjenåpnet i [TODO](TODO.md). De fire originalbildene er bevart. Importloggen bekrefter at CalicheAccess bruker legacy FBX for LOD0, men Interchange for LOD1/2. Det gir en konkret forklaring på avstandsavhengig feilretning og løsrevne dører. Eksakt geometriavvik og rettelse er ennå ikke bekreftet i en ny motorprøve. Den installerte pakken er fortsatt `f32d4553`, med kjent regresjon. Toms aktive spilløkt er ikke avbrutt; ingen ny spillkode, import, bygg eller installasjon er utført i denne oppfølgingen.
 
+## Fortsatt spilltest: trafo, motell, kjøretøy og SARO-vei
+
+Tom melder fortsatt utilstrekkelig trafoeffekt, glippe ved rampen, feil/mulig invertering i motellobbyen, svevende deler ved bassenget, svakt neonskilt og brått skifte i veibredde før SARO. PLAY-31-01 er gjenåpnet, PLAY-31-08 er fortsatt åpen med presisert effektbestilling, og PLAY-31-11 til 15 fører de øvrige funnene og bestilt Tripo-bilbytte i [TODO](TODO.md). Seks nye originalbilder er bevart. Kulverten ved gjerdet har en bekreftet T02-referansefunksjon i kildekoden. Truck ved dineren og politibil skal byttes med Toms modeller; jeep skal prøves som kjørbar SARO-bil med gammel service-truck bevart på sideparkeringen. Modellidentitet/import gjenstår. Ingen ny spillkode, motorjobb eller installasjon er utført mens spilltesten pågår; installasjonen er fortsatt `f32d4553`.
+
 ## Spilltestrettelser levert 31. oktober
 
 [PR272](https://github.com/Tombonator3000/SIGNAL-47/pull/272) er flettet og Linux-pakken `f32d4553` er installert kl. 10:39. Motell/Caliche, NPC-plassering, Tripo-modeller, lyd/trafo og logikkrettelser er med. Den faktisk blokkerte SC03-saken består 15 kontroller av vanlig Continue, inkludert SC04 og returlabel, uten nye vitnefakta eller endrede rapporttider.68 payload-noder og 126 Saved-noder er kontrollert; Saved er uendret. [Levering, bilder og grenser](../Evidence/UnrealDeliveries/PLAYTEST_FIXES_2026-10-31.md).
