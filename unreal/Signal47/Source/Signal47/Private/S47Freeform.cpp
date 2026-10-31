@@ -365,7 +365,7 @@ bool FS47FreeformSession::Upgrade(int32 Index)
  static const int32 Prices[]={60,80,50};if(Index<0||Index>=3||Upgrades[Index]||!Spend(Prices[Index]))return false;
  Upgrades[Index]=true;
  if(Index==0)AddItem(TEXT("relay"),1);
- if(Index==2){AddItem(TEXT("fuse"),2);AddItem(TEXT("battery"),1);}
+ if(Index==2){AddItem(TEXT("fuse"),2);AddItem(TEXT("relay"),1);}
  Changed(TEXT("Upgrade installed. Its function is listed on the operations work order."));return true;
 }
 bool FS47FreeformSession::Rest()
@@ -442,6 +442,7 @@ void FS47FreeformSession::OpenOperations()
   }
  }
  Rows.Add(S47Kit::Small(Feedback));
+ Rows.Add(S47Kit::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; comparison locates extra ticks; field kit permits local S-03 diagnosis and includes two fuses and a relay.")));
  Rows.Add(S47Kit::Row({S47Kit::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47Kit::Button(TEXT("Rest until morning"),[this]{Rest();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){const int32 Index=I;U.Add(S47Kit::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));

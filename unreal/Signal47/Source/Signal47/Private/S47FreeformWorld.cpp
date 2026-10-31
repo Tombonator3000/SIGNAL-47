@@ -341,7 +341,7 @@ bool FS47FreeformWorld::ServiceUse()
  switch(Service)
  {
   case 0:case 9:Change(TEXT("S-03 relay and local movement are in service. No replacement is required."));return true;
-  case 1:Change(TEXT("Read S-03's fault on the status terminal before opening its service hatch."));return true;
+  case 1:if(M->Freeform->HasUpgrade(2)){DiagnoseService();Change(TEXT("Field test kit confirms a failed command relay here. Isolate LOCAL before opening the hatch."));}else Change(TEXT("Read S-03's fault on the status terminal before opening its service hatch."));return true;
   case 2:Service=3;Change(TEXT("S-03 set to LOCAL. Remote movement is isolated. Open the cover."));break;
   case 3:Service=4;Change(TEXT("Hatch open. The command relay is not closing; seat a compatible replacement from your stock."));break;
   case 4:if(!Consume(TEXT("relay"))){Change(TEXT("No compatible relay in SARO stock. A new relay or a tested donor controller is available at Caliche."));return true;}Service=5;Change(TEXT("Replacement relay seated. Close the cover before the movement test."));break;

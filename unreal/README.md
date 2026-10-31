@@ -19,3 +19,12 @@ Den tidligere lange [README-en er bevart](../Docs/Archive/Superseded/Unreal/READ
 Under **Roswell aliens** velges 1, 2, 3 eller 6 individer. Ståprøven varer åtte aktive sekunder. **Curious: stalk and hide** gir lytting, lusking, vindus-/hjørnetitting og flukt ved oppdagelse. **Hunt** er en eksplisitt utviklerprøve uten historieskade. Gruppen kan bytte atferd på stedet eller fjernes samlet; egne valg prøver fysisk takvandring. Plasseringen avviser manglende gulv og opptatte steder og viser faktisk antall opprettet. Individene deler modellressurs, men har hver sin riggpose, navigasjon, oppfatningsminne og fotlyd. Den store Pale-jakten er separat.
 
 Den avgrensede utviklerprøven kjøres med `-S47Case=0 -S47Evening=parking -UserDir=/tmp/<egen-profil> -S47RoswellAIContract=/absolutt/bildemappe`. Den bruker de vanlige menyhandlingene og kontrollerer flere kropper, ståtid, pause, lusking/fotkontakt, eksplisitt jakt, tak og nullstilling. Lydprøven lagres i bildemappen. Dette er en isolert test, ikke en hel natt eller menneskelig spillaksept.
+
+
+### Freeform
+
+**NEW FREEFORM** oppretter en egen sak med lokal recovery eller valgfri død/lasting. Meny og lagringskort viser hvilken modus saken tilhører. Eksisterende saker uten modusfelt åpnes som Story.
+
+Arbeidsordren og oppdragene finnes ved hjørne-PC/telex. Høyre PC retter antennene, midt-PC tar opp, venstre PC viser tilstand, og lydutstyret sammenligner original og kontroll. Rutinearbeid registreres digitalt; undersøkelser får merket pakke ved skriveren og originaler i arkivet. Servicebenken står ved den tilgjengelige fasaden til bygget ved SARO-skiltet. Caliches forsyningsluke selger deler og film som hentes, lastes og leveres fysisk. Film fylles på ved benken uten tap av gamle fotografier.
+
+Utviklerprøven bruker eksplisitt `-S47FreeformTest -UserDir=/tmp/<egen-profil>`. Den starter en isolert utviklersak og skriver `Saved/FreeformTest/result.json` og runtime-bilder. Prøven bruker produksjonscallbacker og navngitte plasserings-/hendelsesfixtures; den er ikke menneskelig input/lytting eller naturlig tre døgn med spillfølelse. Vanlig Freeform startes fra menyen. Se STATUS for faktisk bygget og installert versjon.
