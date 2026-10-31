@@ -45,6 +45,7 @@ private:
 		TWeakObjectPtr<UStaticMeshComponent> Component;
 		TStrongObjectPtr<UMaterialInterface> Original;
 		TStrongObjectPtr<UMaterialInstanceDynamic> Replacement;
+		bool bOriginalCastShadow = false;
 	};
 	TArray<FGroundMaterial> GroundMaterials;
 	bool bGroundMaterialLookupTried = false;

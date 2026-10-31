@@ -73,6 +73,8 @@ namespace
 		TEXT("Finale cloud glow multiplier (0..10); scales the authored 0.12..0.34 phase curve."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarShade(TEXT("r.S47.Finale.Shade"), 0.6f,
 		TEXT("Maximum view-based native ground-light reduction (0..0.82), faded by finale phase, proximity and pullout height; not a physical cloud shadow."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarGroundCastShadow(TEXT("r.S47.Finale.GroundCastShadow"), 0.f,
+		TEXT("Local finale ground: 0 disables coarse-grid self-shadow casting on the two private ground material overrides; 1 preserves each original flag. Receives shadows normally."), ECVF_Default);
 	double Tune(const TAutoConsoleVariable<float>& Variable, double Min, double Max)
 	{
 		return FMath::Clamp(double(Variable.GetValueOnGameThread()), Min, Max);
@@ -249,11 +251,25 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 	if (!bActive)
 	{
 		for (const FGroundMaterial& Saved : GroundMaterials)
-			if (auto* C = Saved.Component.Get()) C->SetMaterial(0, Saved.Original.Get());
+			if (auto* C = Saved.Component.Get())
+			{
+				C->SetMaterial(0, Saved.Original.Get());
+				if (C->CastShadow != Saved.bOriginalCastShadow) C->SetCastShadow(Saved.bOriginalCastShadow);
+			}
 		GroundMaterials.Reset(); bGroundMaterialLookupTried = false;
 		return;
 	}
-	if (bGroundMaterialLookupTried) return;
+	const bool bCastEnabled = Tune(CVarGroundCastShadow, 0, 1) >= .5;
+	const auto ApplyCastShadow = [this, bCastEnabled]()
+	{
+		for (const FGroundMaterial& Saved : GroundMaterials)
+			if (auto* C = Saved.Component.Get())
+			{
+				const bool bCast = Saved.bOriginalCastShadow && bCastEnabled;
+				if (C->CastShadow != bCast) C->SetCastShadow(bCast);
+			}
+	};
+	if (bGroundMaterialLookupTried) { ApplyCastShadow(); return; }
 	bGroundMaterialLookupTried = true;
 	auto* M = Main.Get(); auto* W = M ? M->Web.Get() : nullptr;
 	const auto* Root = W ? W->Node(W->Handle(TEXT("world.oldRoad.group"))) : nullptr;
@@ -300,9 +316,14 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 	}
 	// Install neither until both private MIDs are ready; never mutate the shared original.
 	GroundMaterials = MoveTemp(Pending);
-	for (const FGroundMaterial& Saved : GroundMaterials) Saved.Component->SetMaterial(0, Saved.Replacement.Get());
-	UE_LOG(LogS47FinaleSky, Display, TEXT("S47: FinaleSky local ground vertex-colour A/B: plain N%d and desert N%d, private slot0 MIDs UseVertexColor=0; originals retained"),
-		PlainIndex, RibbonIndex);
+	for (FGroundMaterial& Saved : GroundMaterials)
+	{
+		Saved.bOriginalCastShadow = Saved.Component->CastShadow;
+		Saved.Component->SetMaterial(0, Saved.Replacement.Get());
+	}
+	ApplyCastShadow();
+	UE_LOG(LogS47FinaleSky, Display, TEXT("S47: FinaleSky local ground: plain N%d and desert N%d, private slot0 MIDs UseVertexColor=0; CastShadow originals=(%d,%d) enabled=%d; originals retained"),
+		PlainIndex, RibbonIndex, GroundMaterials[0].bOriginalCastShadow, GroundMaterials[1].bOriginalCastShadow, bCastEnabled);
 }
 
 void FS47FinaleSky::UpdateCabFill(double PullSeconds, bool bActive)
@@ -534,6 +555,10 @@ S47J::FObj FS47FinaleSky::Readback() const
 	auto O = S47J::New();
 	S47J::Set(O, TEXT("ready"), bReady); S47J::Set(O, TEXT("shown"), bShown); S47J::Set(O, TEXT("failure"), Failure);
 	S47J::Set(O, TEXT("groundVertexColorOverride"), GroundMaterials.Num() == 2);
+	bool bGroundCastShadowEnabled = false;
+	for (const FGroundMaterial& Saved : GroundMaterials)
+		if (const auto* C = Saved.Component.Get()) bGroundCastShadowEnabled |= C->CastShadow;
+	S47J::Set(O, TEXT("groundCastShadowEnabled"), bGroundCastShadowEnabled);
 	int32 SteeringCount = 0, SteeringVisible = 0;
 	for (const FSteeringClone& Part : SteeringClones) if (const auto* C = Part.Rendered.Get())
 	{

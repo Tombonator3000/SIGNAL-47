@@ -1410,3 +1410,6 @@ PR262: separat sen skystigning, førersidekamera og lokale rattkopier forbedrer 
 
 ### 2026-10-31T02:43+01:00 Fartøy v4 og jevnere filmopptak
 PR262: eget v4-skrog, ulik fluidfase, roligere stjerner og kabin/klokkeregi; bygg og før/etterbilder består. Faktisk diner-innkjøring fullfører med lyd/foto; opt-in PNG-kø gir21.6 fangede bilder/s i EVENT, ingen spill-FPS-påstand. Lokal installasjon er fortsatt PR260, pakket Low-kontroll gjenstår.
+
+### 2026-10-31T02:58+01:00 Lokal terrengskygge i finale
+PR262: parret fase68-bilde viser at skyggekasting fra de to grove bakkenodene lager midtfeltflaten. Scoped CastShadow av fjerner flaten; originale flagg/materialer gjenopprettes, geometri/collision/øvrige skygger er urørt. Bygg og bildepar består; HD-opptak og pakking følger.
