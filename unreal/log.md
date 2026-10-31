@@ -1464,3 +1464,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 11:29 | codex/asset-workflow-caliche-findings-20261031 | Gjenbruk først lagt i arbeidsflyt og D-17. Fire originale spillerbilder bevart; PLAY-31-10/P1 fører ny Caliche-regresjon og PLAY-31-02 er gjenåpnet. Statisk importavvik funnet; ingen spillkode/motorjobb/installasjon under aktiv spilløkt.
 
 2026-10-31 11:39 | codex/playtest-environment-vehicles-20261031 | Seks originale spillerbilder bevart. Motellobby gjenåpnet og trafoeffekt presisert; rampe/kulvert, basseng, neon, Tripo-biler og SARO-veiskjøt ført i TODO. T02-kulvertens funksjon bekreftet lesende; ingen spillkode/import/motorjobb/installasjon under aktiv spilling.
+
+2026-10-31 11:46 | codex/saro-render-crash-20261031 | PLAY-31-16/P1: faktisk SARO/AUTO HOLD-krasj sikret med 43 filer/5 019 681 byte og tre originalbilder lokalt. Bekreftet 60s render-timeout; Vulkan-present-/occlusion-venting symbolisert, rotårsak uavklart. Siste autosave gyldig med AUTO HOLD; ingen endring av Saved, motorjobb eller installasjon.

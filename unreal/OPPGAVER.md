@@ -120,3 +120,7 @@ Root eier workflow/TODO og originalbildene på `codex/asset-workflow-caliche-fin
 ## Fortsatt spilltest: nye miljøfunn og kjøretøy
 
 Root eier kun dokumentoppfølging og seks originalbilder på `codex/playtest-environment-vehicles-20261031`. Spillet er aktivt; ingen import, Blender-, Unreal-, bygge- eller installasjonsjobb. TODO fører åpne rettelser og bestilt bilbytte; ingen modeller er byttet i denne oppfølgingen.
+
+## SARO-krasj ved AUTO HOLD
+
+Root eier lesende krasjdiagnose og dokumentoppfølging på `codex/saro-render-crash-20261031`. Prosess4100828 har krasjet og er avsluttet. Krasjmappe, SaveGames/DevStarts og originalbilder er sikret lokalt. Ingen tung reservasjon er tatt, ingen repro startet; videre retting føres som første prioritet i PLAY-31-16.

@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Nytt prioritert krasj: SARO kontrollrom
+
+Tom har fått renderstans/krasj i installert `f32d4553` etter retur til SARO, spilltid 03:00 ved SC04/AUTO HOLD. PLAY-31-16/P1 i [TODO](TODO.md) har første prioritet. Fatalrapporten bekrefter 60 sekunders venting på grafikktråden; symboliserte RHI-/rendertråder peker på Vulkan-presentasjon og GPU-occlusion-resultat. Utløsende årsak er fortsatt uavklart. Lagringer og full krasjmappe er kopiert og kontrollert, 43 filer/5 019 681 byte; originalene er uendret. Autosaven etter terminalhandlingen er gyldig JSON med kontrollrom/03:00 og lagret AUTO HOLD, men faktisk Continue etter krasjet er ikke prøvd. [Krasjfakta og bevisgrenser](../Evidence/Playtest-2026-10-31/saro-render-crash-facts.json). Ingen ny motorjobb, systemendring eller spillinstallasjon i oppfølgingen.
+
 ## Ny spillerregresjon i Caliche
 
 Tom har etter installert PR272 meldt feil plassering/orientering på kirken og flere bybygg, samt et løsrevet dørblad ved vaskeriet. PLAY-31-10/P1 er åpen og PLAY-31-02 er gjenåpnet i [TODO](TODO.md). De fire originalbildene er bevart. Importloggen bekrefter at CalicheAccess bruker legacy FBX for LOD0, men Interchange for LOD1/2. Det gir en konkret forklaring på avstandsavhengig feilretning og løsrevne dører. Eksakt geometriavvik og rettelse er ennå ikke bekreftet i en ny motorprøve. Den installerte pakken er fortsatt `f32d4553`, med kjent regresjon. Toms aktive spilløkt er ikke avbrutt; ingen ny spillkode, import, bygg eller installasjon er utført i denne oppfølgingen.
