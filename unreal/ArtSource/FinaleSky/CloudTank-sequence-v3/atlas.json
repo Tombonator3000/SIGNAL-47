@@ -1,0 +1,378 @@
+{
+  "schema": 1,
+  "authorship": "Original SIGNAL / 47 Mantaflow density",
+  "cache_kind": "noise",
+  "density_grid": "density_noise",
+  "dimensions_xyz": [
+    256,
+    256,
+    256
+  ],
+  "tiles_xy": [
+    16,
+    16
+  ],
+  "png_size_xy": [
+    4096,
+    4096
+  ],
+  "linear": true,
+  "channels": 1,
+  "bit_depth": 16,
+  "density_decode": "sample.r * density_scale",
+  "density_scale": 2.0,
+  "array_order": "density[z,y,x]; x varies fastest",
+  "atlas_order": "tile=(z % columns,z // columns); PNG row inside tile is increasing y; no flips",
+  "source_cube_min_xyz": [
+    -45,
+    8,
+    -27
+  ],
+  "source_cube_edge_voxels": 248,
+  "source_sampling": "isotropic trilinear fit into shared cube, two source voxels of empty padding",
+  "border": "outermost texels are zero; texture address clamp; sRGB must be false",
+  "frames": [
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0048.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        24,
+        11,
+        66
+      ],
+      "active_max_xyz": [
+        155,
+        244,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        132,
+        234,
+        79
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 48,
+      "png": "density-0048.png",
+      "float_cube": "density-0048.npy",
+      "source_preview": "density-0048-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 2.0,
+      "occupied_voxels": 1004980
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0054.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        19,
+        11,
+        64
+      ],
+      "active_max_xyz": [
+        155,
+        245,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        137,
+        235,
+        81
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 54,
+      "png": "density-0054.png",
+      "float_cube": "density-0054.npy",
+      "source_preview": "density-0054-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.9990055561065674,
+      "occupied_voxels": 1074104
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0060.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        15,
+        11,
+        61
+      ],
+      "active_max_xyz": [
+        155,
+        245,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        141,
+        235,
+        84
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 60,
+      "png": "density-0060.png",
+      "float_cube": "density-0060.npy",
+      "source_preview": "density-0060-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.9916701316833496,
+      "occupied_voxels": 1143788
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0066.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        11,
+        11,
+        58
+      ],
+      "active_max_xyz": [
+        155,
+        245,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        145,
+        235,
+        87
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 66,
+      "png": "density-0066.png",
+      "float_cube": "density-0066.npy",
+      "source_preview": "density-0066-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.9719040393829346,
+      "occupied_voxels": 1214499
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0072.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        7,
+        11,
+        55
+      ],
+      "active_max_xyz": [
+        155,
+        246,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        149,
+        236,
+        90
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 72,
+      "png": "density-0072.png",
+      "float_cube": "density-0072.npy",
+      "source_preview": "density-0072-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.9022563695907593,
+      "occupied_voxels": 1285909
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0078.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        4,
+        11,
+        53
+      ],
+      "active_max_xyz": [
+        155,
+        248,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        152,
+        238,
+        92
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 78,
+      "png": "density-0078.png",
+      "float_cube": "density-0078.npy",
+      "source_preview": "density-0078-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.8702127933502197,
+      "occupied_voxels": 1357956
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0084.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        1,
+        11,
+        51
+      ],
+      "active_max_xyz": [
+        155,
+        249,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        155,
+        239,
+        94
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 84,
+      "png": "density-0084.png",
+      "float_cube": "density-0084.npy",
+      "source_preview": "density-0084-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.8179421424865723,
+      "occupied_voxels": 1430841
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0090.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        1,
+        11,
+        50
+      ],
+      "active_max_xyz": [
+        156,
+        251,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        156,
+        241,
+        95
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 90,
+      "png": "density-0090.png",
+      "float_cube": "density-0090.npy",
+      "source_preview": "density-0090-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.733394980430603,
+      "occupied_voxels": 1504257
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/cloud-wavelet128x2-v01/cache/noise/fluid_noise_0096.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        1,
+        10,
+        48
+      ],
+      "active_max_xyz": [
+        156,
+        253,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        156,
+        244,
+        97
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 96,
+      "png": "density-0096.png",
+      "float_cube": "density-0096.npy",
+      "source_preview": "density-0096-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.6999709606170654,
+      "occupied_voxels": 1578519
+    }
+  ]
+}

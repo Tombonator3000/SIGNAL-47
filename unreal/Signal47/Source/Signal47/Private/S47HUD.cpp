@@ -217,7 +217,14 @@ void AS47HUD::Start()
 		.PromptAlt_Lambda([this] { return FText::FromString(PromptAlt); })
 		// (in the cab only what the drive offers: the walker's last look is not a prompt there)
 		.ShowPrompt_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && (bPromptOwn || !(M->World && M->World->bDriving)); })
-		.Clock_Lambda([this, Playing, M] { return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() && !(M->Evening && M->Evening->Commute()) ? Story->ClockText(false) : FString()); })
+		.Clock_Lambda([this, Playing, M]
+		{
+			if (Story.IsValid())
+				if (const auto* C = Cast<US47Chapter6>(Story->Chapter(TEXT("ch6"))); C && C->bActive
+					&& (C->Stage == TEXT("pullout") || C->Stage == TEXT("end"))) return FText::GetEmpty();
+			// The watch leaves the picture with the driver; captions and pause controls retain their own widgets.
+			return FText::FromString(Story.IsValid() && Playing() && !Modal.IsValid() && !(M->Evening && M->Evening->Commute()) ? Story->ClockText(false) : FString());
+		})
 		.ShowAim_Lambda([this, Playing, M] { return !Modal.IsValid() && Playing() && !(M->World && M->World->bDriving); });
 	Viewport->AddViewportWidgetContent(Hud.ToSharedRef(), 20);
 	PC->bShowMouseCursor = false;

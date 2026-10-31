@@ -10,7 +10,7 @@ Dato: 28. oktober 2026. Bestilt av Tom i samtalen om cloud tank-effekten.
 
 **Anbefalt plassering:** Hovedavsløringen i **SC13: Siste vei mot Roswell**, ved det ufrivillige motorstoppet på **C 8.15**. SC12 kan få et kort, ufullstendig varsel i himmelen etter at varslingen og ruteplanleggingen er ferdig. Hele fartøyet skal ikke avsløres der.
 
-Status: **ønsket og registrert for senere produksjon**. Plasseringen i SC13 er en dramaturgisk anbefaling innenfor Toms bestilling. Ingen ny effekt, modell, scenekode, lyd eller ferdig spillsekvens er levert. Utseende, spillerreaksjon og 60+ FPS er **UNVERIFIED**.
+Status: **under aktiv produksjon**, videreført natten 30. til31. oktober i [utkast PR262](https://github.com/Tombonator3000/SIGNAL-47/pull/262). Egne fartøy-/fluidkilder og faktisk editorsekvens finnes. Dette dokumentet beholder regiforslaget; [hovedstatus](../../Active/STATUS.md) fører hva som er kontrollert, installert og fortsatt åpent. Visuell sluttaksept, spillerreaksjon og 60+ FPS er fortsatt **UNVERIFIED**.
 
 Dette dokumentet er et nytt regitillegg til [historierevisjonen](../Story/HISTORIE_SC02_SC13_REVISJON.md), [implementeringsplanen](../Story/HISTORIE_IMPLEMENTERINGSPLAN.md) og [hovedforløpet](../Story/MISSION_FLOW_1800_ROSWELL.md). Det erstatter ikke slutten eller innfører et nytt scenario. Avvik fra den tidligere regien er den tydeligere, fysiske fartøyavsløringen i SC13. Genererte manusfiler er ikke endret.
 
@@ -136,7 +136,7 @@ Forhåndslast modell, teksturer og lyd før motorstoppet. Prøv varm og kald inn
 - [ ] Kontroller at skyene faktisk skjuler UFO-en, at sortering og bounds holder, og at Low bevarer avsløringens lesbarhet.
 - [ ] Ta ekte runtime-bilder før/under/etter avsløringen og mål ytelse ved maksimal skjermdekning på High og Low.
 - [ ] Spilltest om øyeblikket oppleves langsomt, enormt og truende, og om 1947-bildet fortsatt har siste virkning. Spillerpåvirkning kan ikke godkjennes ut fra et stillbilde.
-- [ ] Kjør relevante scenarioprøver og påkrevd fullmatrise før en senere PR som endrer spillet. Før kode, pakket kandidat, installasjon og release separat.
+- [ ] Følg Toms nyere regel «Iterer først, test tungt mot slutten» i [Unreal-instruksen](../../../unreal/AGENTS.md): bygg og rask visuell sjekk under arbeidet, pakking/selvtest/kort røyktest ved installasjon, fullmatrise først ved offentlig release eller særskilt bestilling. Før kode, pakket kandidat, installasjon og release separat.
 
 ## Referanser og kildeavgrensning
 

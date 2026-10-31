@@ -246,12 +246,17 @@ void FS47DriveController::Pose(double Dt, double WheelAngle, bool bSettle)
 	const double LatAcc = -Speed * YawRate; // positive in a right turn: the body leans left
 	const double Tp = G.Pitch + FMath::Clamp(Accel * 0.0025, -0.03, 0.015) + Bump * 0.6;
 	const double Tr = G.Roll + FMath::Clamp(LatAcc * 0.005, -0.05, 0.05);
+	const double K = 140, C = 18, Damping = C / 2, W = FMath::Sqrt(K - Damping * Damping);
+	const double H = FMath::Max(0., Dt), Decay = FMath::Exp(-Damping * H);
+	const double Cos = FMath::Cos(W * H), SinOverW = FMath::Sin(W * H) / W;
 	auto Spring = [&](double& X, double& Vx, double Target)
 	{
 		if (Dt <= 0) { if (bSettle) { X = Target; Vx = 0; } return; }
-		const double K = 140, C = 18;
-		const double Acc = K * (Target - X) - C * Vx;
-		Vx += Acc * Dt; X = X + Vx * Dt;
+		// Exact damped spring for this frame's target: the same stiffness and damping stay
+		// stable through a hitch, without shortening the driving step or the game clock.
+		const double Offset = X - Target, BeforeV = Vx;
+		X = Target + Decay * (Offset * Cos + (BeforeV + Damping * Offset) * SinOverW);
+		Vx = Decay * (BeforeV * Cos - (Damping * BeforeV + K * Offset) * SinOverW);
 	};
 	Spring(B.Y, B.VY, G.Y + Bump);
 	Spring(B.Pitch, B.VP, Tp);
@@ -307,6 +312,33 @@ bool S47Drive::SelfTest(TArray<FString>& Lines)
 		const FVector ExpectedEye = LevelBody.RotateVector(FVector(-.42, 1.48, .2)) + Calm.Pos;
 		Check(Near3(Moving.Pos, Calm.Pos, 1e-12) && Near(Moving.Speed, Calm.Speed) && Near(Moving.Heading, Calm.Heading), TEXT("camera comfort preserves the vehicle's motion and handling"));
 		Check(Near3(Calm.CamPos, ExpectedEye, 1e-9) && Calm.CamQuat.Equals(LevelBody * S47Three::Euler(Calm.Look().Y, Calm.Look().X, 0, TEXT("YXZ")), 1e-9), TEXT("comfort camera omits suspension sway, road vibration and engine shake"));
+	}
+	{
+		struct FHitchRoad : IS47DriveArea
+		{
+			virtual FS47Surface Surface(double, double) const override { return { ES47SurfaceKind::Gravel, 1, 30, .8 }; }
+			virtual bool HasHeight() const override { return true; }
+			virtual double Height(double X, double Z) const override { return .25 * FMath::Sin(X * .9) + .18 * FMath::Sin(Z * .47); }
+		} A;
+		// An unbound truck records the actual body pose without creating scene components.
+		FS47Truck Truck;
+		FS47DriveController D(&Truck, &A);
+		D.Place(FVector::ZeroVector, 0);
+		const double Steps[] = { .016, .2, .33 };
+		bool bBounded = true;
+		double LowGround = 1, HighGround = -1;
+		for (int32 I = 0; I < 90; ++I)
+		{
+			D.Update(Steps[I % UE_ARRAY_COUNT(Steps)], { .13, .8 }, FVector2D::ZeroVector);
+			const double GroundY = A.Height(D.Pos.X, D.Pos.Z);
+			LowGround = FMath::Min(LowGround, GroundY); HighGround = FMath::Max(HighGround, GroundY);
+			bBounded &= !Truck.Position.ContainsNaN() && !Truck.Rotation.ContainsNaN()
+				&& FMath::Abs(Truck.Position.Y) < 1 && FMath::Abs(Truck.Rotation.X) < .8 && FMath::Abs(Truck.Rotation.Z) < .8
+				&& !D.CamPos.ContainsNaN() && !D.CamQuat.ContainsNaN() && D.CamQuat.IsNormalized()
+				&& FVector::Dist(D.CamPos, FVector(D.Pos.X, GroundY, D.Pos.Z)) < 3;
+		}
+		Check(bBounded && D.Pos.Size() > 10 && HighGround - LowGround > .1,
+			TEXT("body and driver camera remain finite and bounded over uneven ground with alternating 16/200/330 ms frames"));
 	}
 	{
 		// SteerFor is the inverse of the step: the curvature it asks for is the curvature driven

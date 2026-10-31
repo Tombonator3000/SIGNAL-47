@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "authorship": "Original SIGNAL / 47 Mantaflow density",
+  "cache_kind": "noise",
+  "density_grid": "density_noise",
+  "dimensions_xyz": [
+    256,
+    256,
+    256
+  ],
+  "tiles_xy": [
+    16,
+    16
+  ],
+  "png_size_xy": [
+    4096,
+    4096
+  ],
+  "linear": true,
+  "channels": 1,
+  "bit_depth": 16,
+  "density_decode": "sample.r * density_scale",
+  "density_scale": 2.0,
+  "array_order": "density[z,y,x]; x varies fastest",
+  "atlas_order": "tile=(z % columns,z // columns); PNG row inside tile is increasing y; no flips",
+  "source_cube_min_xyz": [
+    -45,
+    8,
+    -27
+  ],
+  "source_cube_edge_voxels": 248,
+  "source_sampling": "isotropic trilinear fit into shared cube, two source voxels of empty padding",
+  "border": "outermost texels are zero; texture address clamp; sRGB must be false",
+  "frames": [
+    {
+      "source": "cache/noise/fluid_noise_0048.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        24,
+        11,
+        66
+      ],
+      "active_max_xyz": [
+        155,
+        244,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        132,
+        234,
+        79
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 48,
+      "png": "density-0048.png",
+      "source_preview": "density-0048-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 2.0,
+      "occupied_voxels": 1004980
+    },
+    {
+      "source": "cache/noise/fluid_noise_0072.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        7,
+        11,
+        55
+      ],
+      "active_max_xyz": [
+        155,
+        246,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        149,
+        236,
+        90
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 72,
+      "png": "density-0072.png",
+      "source_preview": "density-0072-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.9022563695907593,
+      "occupied_voxels": 1285909
+    },
+    {
+      "source": "cache/noise/fluid_noise_0096.vdb",
+      "grid": "density_noise",
+      "active_min_xyz": [
+        1,
+        10,
+        48
+      ],
+      "active_max_xyz": [
+        156,
+        253,
+        144
+      ],
+      "actual_dimensions_xyz": [
+        156,
+        244,
+        97
+      ],
+      "array_order_verified": "XYZ against VDB accessor",
+      "index_origin_world": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "voxel_size": [
+        0.0546875,
+        0.0546875,
+        0.0546875
+      ],
+      "frame": 96,
+      "png": "density-0096.png",
+      "source_preview": "density-0096-BLENDER-density-projections.png",
+      "source_preview_bit_depth": 8,
+      "source_preview_type": "Blender Mantaflow density MIP, front/side/top; not a render or Unreal image",
+      "fitted_peak": 1.6999709606170654,
+      "occupied_voxels": 1578519
+    }
+  ],
+  "source_note": "Portable Blender and baked atlas source. Full VDB/noise caches and float arrays are preserved in the local bake output; regenerate them with bake_clouds.py."
+}

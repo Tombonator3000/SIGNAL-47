@@ -13,6 +13,9 @@
 
 class SS47Ending;
 class FS47ThirdFigure;
+class FS47FinaleSky;
+struct FS47FinalePreview;
+struct FS47FinaleMovie;
 class UTexture2D;
 class USceneComponent;
 
@@ -38,6 +41,7 @@ public:
 	TSharedPtr<SS47Ending> Ending;
 	TSharedPtr<FS47ThirdFigure> Third;
 	TOptional<FVector> ThirdAt() const;
+	S47J::FObj FinaleSkyReadback() const;
 
 	struct FLastMile
 	{
@@ -65,6 +69,8 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
+	friend struct FS47FinalePreview;
+	friend struct FS47FinaleMovie;
 	double Et = 0, Pt = 0;
 	TSet<FString> Done;
 	FS47Pressure Bed;
@@ -87,6 +93,7 @@ private:
 	FString JumpAt;
 	bool bJumpPlaced = false;
 	UPROPERTY() TArray<TObjectPtr<USceneComponent>> CourierSign;
+	TSharedPtr<FS47FinaleSky> FinaleSky;
 	void BuildCourierSign();
 	void DropCourierSign();
 	double TestClock = 0; // a hostless chapter for the self test

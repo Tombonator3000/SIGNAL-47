@@ -645,14 +645,22 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 		D->SetVectorParameterValue(TEXT("FlashDir"), V4(FlashDir));
 	}
 	Common(StarsMid.Get());
-	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("Dawn"), float(StarDimming()));
-	// SKY.md: the volumetric layer. Its own clouds replace the painted ones (Low keeps the painted).
-	const float Vol = W->CloudsActive() ? 1.f : 0.f;
+	if (UMaterialInstanceDynamic* D = StarsMid.Get())
+	{
+		D->SetScalarParameterValue(TEXT("Dawn"), float(FMath::Max(StarDimming(), FMath::Clamp(FinaleStarDim, 0., 1.))));
+		D->SetScalarParameterValue(TEXT("PR"), float(FMath::Clamp(FinaleStarScale, .2, 1.)));
+	}
+	// Keep native capability separate from this private material's fallback-weather blend.
+	// Low has no native layer: raising Vol toward 1 fades its painted cloud alternative.
+	const float WeatherWeight = float(FMath::Clamp(FinaleWeatherWeight, 0., 1.));
+	const float NativeVol = W->CloudsActive() ? 1.f : 0.f;
+	const float Vol = FMath::Max(NativeVol, 1.f - WeatherWeight);
 	for (UMaterialInstanceDynamic* D : { DomeMid.Get(), PureSkyMid.Get() }) if (D)
 	{
 		D->SetScalarParameterValue(TEXT("VolClouds"), Vol);
 		// The painted cirrus above the layer, drifting slowly with the same west-southwest wind.
-		D->SetScalarParameterValue(TEXT("Cirrus"), float(Cirrus));
+		// Gate by actual capability too: Low's synthetic Vol blend must not wake new cirrus mid-fade.
+		D->SetScalarParameterValue(TEXT("Cirrus"), float(Cirrus) * WeatherWeight * NativeVol);
 		D->SetVectorParameterValue(TEXT("CirrusDrift"), FLinearColor(float(FMath::Fmod(Time * 0.0011, 1000.0)), float(FMath::Fmod(Time * 0.0004, 1000.0)), 0.f, 0.f));
 	}
 	if (UMaterialInstanceDynamic* D = StarsMid.Get()) D->SetScalarParameterValue(TEXT("VolClouds"), Vol);
@@ -674,7 +682,7 @@ void FS47Sky::Draw(const FVector& Eye, double Yaw)
 			Comet = SunDir.GetSafeNormal(); CometK = 0.85 * (1 - FMath::Clamp((SunDir.Y - 0.25) / 0.15, 0.0, 1.0));
 		}
 		W->SetClouds(float(CloudCover), float(Cirrus), FVector4(Hole.X, Hole.Y, Hole.Z, HoleK), FVector4(Comet.X, Comet.Y, Comet.Z, CometK),
-			float(Flash), Turn(FlashDir), Time, DayWeight);
+			float(Flash), Turn(FlashDir), Time, DayWeight, WeatherWeight);
 	}
 	if (CometComp.IsValid() && CometComp->IsVisible() != bComet) CometComp->SetVisibility(bComet);
 	if (MeteorComp.IsValid() && MeteorComp->IsVisible() != bMetVisible) MeteorComp->SetVisibility(bMetVisible);

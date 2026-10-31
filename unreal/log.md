@@ -1395,3 +1395,27 @@ Tom godkjente SARO-gangen og kontrollrommet for nå, og ba om alle PR-er gjennom
 
 ### 2026-10-30T20:47+01:00 Videreføring etter Claude installert
 PR260, kilde12c1ac3d/main755fe7fc: SC09-retur/fremkalling/Nora, SC03/SC04/SC10-rettinger og kurérmerking levert. Editor1749/SC09 93+12/SC04 17, pakket1749/SC09 93+12/Tripo14 og installertkamera består;68payload og134Saved bevart. PR234 flettet,224/235/237 erstattet; egen FinaleSky-kilde bevares uaktivert. To eldre pakker pensjonert, current+2 beholdt; ingen offentligrelease eller helreiseaksept.
+
+### 2026-10-30T23:53+01:00 UFO-finale under arbeid
+Gren codex/ufo-finale-20261030: eget fartøy v2 og Mantaflow/wavelet-skyer koblet til eksisterende C8.15-finale, med faktisk 256³ PF_R16F i Unreal. Editorbygg og før/etterbilder består; hel sekvens, ytelse og pakking gjenstår, aktiv iterering til minst kl.08 etter Toms bestilling. Installert standard og Saved er urørt.
+
+### 2026-10-31T00:08+01:00 Stabil finale og skrog v3
+PR262 under arbeid: opptak av vanlig C6 avdekket ustabil fjæring ved lange frames. Eksakt fjærløsning med samme K/C består bygg og1750 selvtester, og nytt faktisk opptak viser riktig kamera. Eget skrog v3 er importert med dyp konstruksjonskrage; øvrig nattarbeid fortsetter før levering.
+
+### 2026-10-31T00:55+01:00 Finale, bilde/lyd og ytelse
+PR262 under arbeid: dypere skydekke og roligere foldlys, faktisk spillopptak med mastermiks og originalfoto. High1080p EVENT ca87.8FPS/GPU10.53ms motOff98.8/GPU9.27; Low fikk ett Vulkan-heng under uttrekk, LowOff består og repro undersøkes. Private bakke-MID-er demper albedotrekantene; ingen ny installasjon.
+
+### 2026-10-31T01:41+01:00 Skyåpning og tom kabin
+PR262: separat sen skystigning, førersidekamera og lokale rattkopier forbedrer reveal/uttrekk; bygg og sju før/etterbilder består. Materiallokal VRS-endring gir jevnere Low-skykanter; kildegjennomgang fant ingen blockers. Full innkjøring med lyd pågår; Low-henget er ikke reprodusert og installert standard er fortsatt PR260.
+
+### 2026-10-31T02:43+01:00 Fartøy v4 og jevnere filmopptak
+PR262: eget v4-skrog, ulik fluidfase, roligere stjerner og kabin/klokkeregi; bygg og før/etterbilder består. Faktisk diner-innkjøring fullfører med lyd/foto; opt-in PNG-kø gir21.6 fangede bilder/s i EVENT, ingen spill-FPS-påstand. Lokal installasjon er fortsatt PR260, pakket Low-kontroll gjenstår.
+
+### 2026-10-31T02:58+01:00 Lokal terrengskygge i finale
+PR262: parret fase68-bilde viser at skyggekasting fra de to grove bakkenodene lager midtfeltflaten. Scoped CastShadow av fjerner flaten; originale flagg/materialer gjenopprettes, geometri/collision/øvrige skygger er urørt. Bygg og bildepar består; HD-opptak og pakking følger.
+
+### 2026-10-31T04:04+01:00 Fartøy v5 og ni fluidstadier
+PR262: åtte brede undersidefelt, ni faktiske256³ PF_R16F-frames og roligere stjerner består bygg/før-etter. JPEG95-arbeidsopptak gir23.8/23.6 fangede bilder/s i EVENT/uttrekk, ingen spill-FPS-påstand. Finere skyjitter og jevn midtpanorering er bygget; nytt helt diner-opptak pågår før pakking/Low-kontroll.
+
+### 2026-10-31T05:55+01:00 Native vær og terreng i finalen
+PR262: valgt skyåpning1250/løft500, lokal vær- og lysfading, native-klare High-bilder og egen normalvariant fjerner terrengsømmen; bygg/før-etter og korrekt kabininngang består. Metallvariasjon og192/256 marsjsteg ga ingen tydelig gevinst og er tatt ut igjen. Ny pakking/levering følger, ingen endring av installert standard ennå.

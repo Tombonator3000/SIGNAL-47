@@ -159,25 +159,27 @@ void AS47Web::ApplyCloudQuality()
 	// light from below (the set sun) turned into speckle.
 	static const float ShadowKm = Tune(TEXT("S47CloudShadowKm="), 0.f);
 	Clouds->SetShadowTracingDistance(ShadowKm > 0.f ? ShadowKm : bUltra ? 2.f : 1.2f);
-	Clouds->SetVisibility(CloudsActive());
+	Clouds->SetVisibility(CloudsActive() && CloudFinaleWeatherWeight > 0.f);
 	if (DawnSun && DawnSun->bCastCloudShadows != (Graphics.Clouds > 0 && Graphics.Shadows > 0))
 	{
 		DawnSun->bCastCloudShadows = Graphics.Clouds > 0 && Graphics.Shadows > 0;
 		DawnSun->MarkRenderStateDirty();
 	}
-	// The ambient follows the clouds: real-time capture of the sky dome and the cloud layer.
-	if (NightSky && NightSky->bRealTimeCapture != CloudsActive())
+	// The ambient follows visible native weather. The cleared finale uses on-change capture.
+	const bool bCaptureRealtime = CloudsActive() && CloudFinaleWeatherWeight > 0.f;
+	if (NightSky && NightSky->bRealTimeCapture != bCaptureRealtime)
 	{
-		NightSky->SetRealTimeCapture(CloudsActive());
+		NightSky->SetRealTimeCapture(bCaptureRealtime);
 		bSkyCaptured = false;
 	}
 	UE_LOG(LogTemp, Display, TEXT("S47: clouds %s, view samples %.2f, sky capture %s"), CloudsActive() ? TEXT("on") : TEXT("off"),
 		Clouds->ViewSampleCountScale, NightSky && NightSky->bRealTimeCapture ? TEXT("real-time") : TEXT("on change"));
 }
 
-void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight)
+void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight, float FinaleWeatherWeight)
 {
 	CloudCover = Cover; CloudCirrus = Cirrus;
+	CloudFinaleWeatherWeight = FMath::Clamp(FinaleWeatherWeight, 0.f, 1.f);
 	const float PureWeight = FMath::Clamp(PureSkyWeight, 0.f, 1.f);
 	const float CloudWeight = 1.f - PureWeight;
 	// Low captures on change. Dawn is already constant through the 06:00-07:00 photograph
@@ -193,8 +195,17 @@ void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const
 	if (PureSkyWeight > 0.f) { CloudCover *= CloudWeight; CloudCirrus *= CloudWeight; }
 	if (!Clouds || !CloudMid) return;
 	const bool bOn = CloudsActive();
-	if (Clouds->IsVisible() != bOn) Clouds->SetVisibility(bOn);
-	if (NightSky && NightSky->bRealTimeCapture != bOn) { NightSky->SetRealTimeCapture(bOn); bSkyCaptured = false; }
+	// Hidden native weather uses the existing eye-following, on-change sky capture.
+	// Keep the same local sky capture during the cleared finale's pullout, even as
+	// editor cloud capability becomes ready. Restore realtime with visible weather.
+	const bool bVisible = bOn && CloudFinaleWeatherWeight > 0.f;
+	if (Clouds->IsVisible() != bVisible) Clouds->SetVisibility(bVisible);
+	if (NightSky && NightSky->bRealTimeCapture != bVisible)
+	{
+		NightSky->SetRealTimeCapture(bVisible); bSkyCaptured = false;
+		UE_LOG(LogTemp, Display, TEXT("S47: sky capture realtime=%d native-weather-capable=%d visible=%d finale-weather=%.3f"),
+			bVisible, bOn, bVisible, CloudFinaleWeatherWeight);
+	}
 	const double Dt = CloudTime < 0 ? 0.0 : FMath::Clamp(Time - CloudTime, 0.0, 0.5);
 	CloudTime = Time;
 	// About 9 m/s at altitude from the west-southwest (UE +X east, +Y south), and a slow change of shape.
@@ -204,7 +215,7 @@ void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const
 	if (!bOn) return;
 	static const float CoverOverride = Tune(TEXT("S47CloudCover="), -1.f), Ext = Tune(TEXT("S47CloudExt="), 0.010f), AmbScale = Tune(TEXT("S47CloudAmb="), .55f);
 	if (CoverOverride >= 0.f) Cover = CoverOverride;
-	CloudMid->SetScalarParameterValue(TEXT("Ext"), PureSkyWeight > 0.f ? Ext * CloudWeight : Ext);
+	CloudMid->SetScalarParameterValue(TEXT("Ext"), (PureSkyWeight > 0.f ? Ext * CloudWeight : Ext) * CloudFinaleWeatherWeight);
 	// The sky's light on the clouds: cool blue by day, dusty violet-grey through dusk, nearly
 	// nothing at night (the moon's edge light is the cloud light's job).
 	const float D = FMath::Clamp(SkyDawn, 0.f, 1.f);
@@ -242,7 +253,7 @@ void AS47Web::UpdateCloudLight(const FVector& SunDirection, float Daylight)
 	static const float GlowScale = Tune(TEXT("S47CloudGlow="), 1.8f), GlowEl = Tune(TEXT("S47CloudGlowEl="), 1.5f);
 	const float GlowI = 5.f * SkyGlow * GlowScale;
 	const float Total = GlowI + MoonI;
-	if (!CloudsActive() || Total < 1e-4f)
+	if (!CloudsActive() || CloudFinaleWeatherWeight <= 0.f || Total < 1e-4f)
 	{
 		if (CloudLight->Intensity != 0.f) CloudLight->SetIntensity(0.f);
 		return;
@@ -255,5 +266,5 @@ void AS47Web::UpdateCloudLight(const FVector& SunDirection, float Daylight)
 	const FVector GlowDir = S47Three::DirToUE(-(Flat * FMath::Cos(Below) + FVector(0, FMath::Sin(Below), 0))).GetSafeNormal();
 	CloudLight->SetWorldRotation((GlowDir * GlowI + MoonDir * MoonI).GetSafeNormal().Rotation());
 	CloudLight->SetLightColor((GlowColor * GlowI + FLinearColor(.62f, .72f, 1.f) * MoonI) / Total);
-	CloudLight->SetIntensity(Total);
+	CloudLight->SetIntensity(Total * CloudFinaleWeatherWeight);
 }

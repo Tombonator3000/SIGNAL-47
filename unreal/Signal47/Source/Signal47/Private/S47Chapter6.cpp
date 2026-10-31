@@ -14,6 +14,7 @@
 #include "S47Chapter4.h"
 #include "S47Chapter5.h"
 #include "S47Flow.h"
+#include "S47FinaleSky.h"
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Main.h"
@@ -114,6 +115,8 @@ void US47Chapter6::Note(const FString& Text) const { if (Host) Host->Note(Text);
 void US47Chapter6::Begin(const S47J::FObj& Saved)
 {
 	Reset(); bActive = true; bStarted = true; Stage = TEXT("drive");
+	// Visual addition only: no new story/save eligibility and no independent finale clock.
+	if (M && !FParse::Param(FCommandLine::Get(), TEXT("S47FinaleSkyOff"))) FinaleSky = MakeShared<FS47FinaleSky>(M);
 	// Art is local in Unreal. Decode the photograph now and draw FLASH before the moment needs it.
 	S47Image::Art(TEXT("photo1947"));
 	if (M && M->Audio) M->Audio->AmRadioThree({});
@@ -126,6 +129,9 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 		W->Note(W->Time() + TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post."));
 		W->BuildCourierSign();
 		W->PlaceJump();
+		float AutoSpeed = 0;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), AutoSpeed) && AutoSpeed > 0) W->M->World->Autopilot = AutoSpeed;
+		if (W->FinaleSky) W->FinaleSky->Prepare();
 	});
 	if (Host) Host->After(3, [W] { if (W.IsValid() && W->bActive && !W->Frames) W->DrawFrames(); });
 }
@@ -140,6 +146,7 @@ void US47Chapter6::Reset()
 {
 	bActive = false; bStarted = false; Stage = TEXT("drive");
 	Et = 0; Pt = 0; Done.Empty(); Idle = 0; BackT = 0; StopS.Reset();
+	FinaleSky.Reset();
 	if (LastMile.Cb && !LastMile.ClosedAt && M && M->CB) M->CB->Stop();
 	LastMile = FLastMile(); Tries = FTries(); Cues.Empty(); KeyLamps.Reset();
 	SkyLift.Reset(); SunElev.Reset();
@@ -154,6 +161,7 @@ void US47Chapter6::Reset()
 void US47Chapter6::BeginDestroy()
 {
 	// Native resources may outlive Main's scene tables during editor shutdown.
+	FinaleSky.Reset();
 	if (Ending) Ending->Dispose(); Ending.Reset(); Bed.Stop(); Bed = FS47Pressure(); Third.Reset(); DropCourierSign();
 	Super::BeginDestroy();
 }
@@ -560,8 +568,16 @@ US47Chapter6::FKeyframes US47Chapter6::Keyframes() const
 {
 	const FVector& P = TruckAt.Pos; const double H = TruckAt.Heading; const FVector F(-FMath::Sin(H), 0, -FMath::Cos(H));
 	FKeyframes K;
-	K.Front = P + F * 9 + S47_UP * 1.9; K.AtTruck = P + S47_UP * 1.2;
-	K.High = P + Dir(104) * 170 + S47_UP * 140; K.Westward = P + Dir(284) * 160;
+	const bool bFinaleArt = FinaleSky && FinaleSky->Ready();
+	const FVector Right(FMath::Cos(H), 0, -FMath::Sin(H));
+	// The ready finale looks down into the empty bench from the driver's side, above the dash.
+	// Missing/off art retains the original front view; all timing and later keyframes stay authored.
+	K.Front = bFinaleArt ? P + F * 7 - Right * 3.3 + S47_UP * 2.5 : P + F * 9 + S47_UP * 1.9;
+	K.AtTruck = bFinaleArt ? P - Right * .25 + S47_UP * 1.25 : P + S47_UP * 1.2;
+	K.High = P + Dir(104) * 170 + S47_UP * 140;
+	// Keep the rising wide view on the distant horizon. The old ground-level target
+	// spent the middle of the ready craft reveal looking down at the bare road plane.
+	K.Westward = P + Dir(284) * 160 + S47_UP * (bFinaleArt ? 145. : 0.);
 	K.SunSide = P + Dir(259) * 120 + S47_UP * 150; K.Sunward = P + Dir(79) * 3000 + S47_UP * 60;
 	K.Top = P + Dir(259) * 220 + S47_UP * 650;
 	const double Az = FMath::DegreesToRadians(LAST_LOOK_AZ), El = FMath::DegreesToRadians(LAST_LOOK_EL);
@@ -584,7 +600,15 @@ void US47Chapter6::Shoot(FS47View& Out)
 		Q = FQuat::Slerp(From.Q, LookAt(Pos, K.AtTruck), Sm(0.5, 5.5, V));
 	}
 	else if (V < 13) { const double E = Sm(6.5, 13, V); Pos = FMath::Lerp(K.Front, K.High, E); Q = LookAt(Pos, FMath::Lerp(K.AtTruck, K.Westward, E)); }
-	else if (V < 21) { const double E = Sm(13, 21, V); Pos = FMath::Lerp(K.High, K.SunSide, E); Q = LookAt(Pos, FMath::Lerp(K.Westward, K.Sunward, E)); }
+	else if (V < 21)
+	{
+		const double E = Sm(13, 21, V); Pos = FMath::Lerp(K.High, K.SunSide, E);
+		// The moving aim point passed near the camera and whipped the horizon round.
+		// Ready art keeps the same endpoint views, with a steady eased angular turn.
+		Q = FinaleSky && FinaleSky->Ready()
+			? FQuat::Slerp(LookAt(K.High, K.Westward), LookAt(K.SunSide, K.Sunward), E)
+			: LookAt(Pos, FMath::Lerp(K.Westward, K.Sunward, E));
+	}
 	else { const double E = Sm(21, PULL, V); Pos = FMath::Lerp(K.SunSide, K.Top, E); Q = LookAt(Pos, FMath::Lerp(K.Sunward, K.Stars, Sm(22, PULL, V))); }
 	ViewOf(Pos, Q, Out);
 }
@@ -625,9 +649,22 @@ void US47Chapter6::Update(double Dt, double InT)
 	if (Stage == TEXT("drive")) Drive(Dt);
 	else if (Stage == TEXT("event")) Event(Dt);
 	else if (Stage == TEXT("pullout")) Pullout(Dt);
+	if (FinaleSky && M && M->World)
+	{
+		const auto* Road = M->World->OldRoad(); const auto* Driver = M->World->OldDrive();
+		if (Road && Driver) FinaleSky->Step(Road->Where(Driver->Pos.X, Driver->Pos.Z).Mi, Stage, Et, Pt);
+		else FinaleSky->Hide();
+	}
 	if (M && M->UI) M->UI->Objective(Objective());
 	// main.ts sky.setDawnLift / setClock: the world-life renderer consumes AS47Web's overrides.
 	if (M && M->Web) { M->Web->SetDawnLift(SkyLift.Get(M->World && M->World->Area == TEXT("roswell") ? 1.0 : 0.7)); M->Web->SetSunElevation(SunElev); }
+}
+
+S47J::FObj US47Chapter6::FinaleSkyReadback() const
+{
+	if (FinaleSky) return FinaleSky->Readback();
+	auto O = S47J::New(); S47J::Set(O, TEXT("ready"), false); S47J::Set(O, TEXT("shown"), false);
+	return O;
 }
 
 // ---------- the host (Prologue.ts) and the developer menu (main.ts) ----------
@@ -668,8 +705,6 @@ void US47Chapter6::PlaceJump()
 	const bool bLast = JumpAt == TEXT("lastmile");
 	const FS47OldRoad::FPose P = R->PoseAt(bLast ? 6.8 : 8.06); D->Place(P.Pos, P.Heading);
 	SetClock(bLast ? 5 * 3600 + 27 * 60 : 5 * 3600 + 28 * 60 + 30); bJumpPlaced = true;
-	float AutoSpeed = 0;
-	if (FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), AutoSpeed) && AutoSpeed > 0) M->World->Autopilot = AutoSpeed;
 	UE_LOG(LogS47Ch6, Display, TEXT("S47: ch6 %s, mile %.2f"), *JumpAt, bLast ? 6.8 : 8.06);
 }
 

@@ -81,9 +81,11 @@ public:
 	const FPostProcessSettings* GetGraphicsPostProcess() const;
 	TSharedPtr<FJsonObject> GraphicsReadback() const;
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
+	// View-based finale negative fill, not a physical cloud-shadow footprint. Native ground lights only.
+	void SetFinaleGroundShade(float Shade);
 	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
 	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
-	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight = 0.f);
+	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight = 0.f, float FinaleWeatherWeight = 1.f);
 	float CloudCoverNow() const { return CloudCover; }
 	bool CloudsActive() const;
 	void SuppressFloodLight(int32 Set, int32 Index);
@@ -482,11 +484,14 @@ private:
 	int32 LightingQuality = 1;
 	FS47GraphicsSettings Graphics;
 	float SkyDawn = 0, SkySun = 0, SkyFlash = 0, SkyEvening = 0, SkyGlow = 0;
+	float FinaleGroundShade = 0;
+	TOptional<FVector> FinaleSkyCaptureRestore;
 	// SKY.md: volumetric clouds, their cloud-only light (set sun from below / moon) and drift.
 	UPROPERTY() TObjectPtr<class UVolumetricCloudComponent> Clouds;
 	UPROPERTY() TObjectPtr<class UMaterialInstanceDynamic> CloudMid;
 	UPROPERTY() TObjectPtr<UDirectionalLightComponent> CloudLight;
 	float CloudCover = 0, CloudCirrus = 0;
+	float CloudFinaleWeatherWeight = 1; // Visual extinction/visibility only; CloudsActive remains capability.
 	double CloudTime = -1;
 	FVector CloudWind = FVector::ZeroVector;
 	void BuildClouds();
@@ -494,6 +499,7 @@ private:
 	void UpdateCloudLight(const FVector& SunDirection, float Daylight);
 	void BuildNativeLighting();
 	void UpdateNativeLighting();
+	void UpdateFinaleSkyCapture();
 	void UpdateNativeFog();
 	void SampleLightingPerformance(float Dt);
 	void ReviewLighting(); // -S47LightingReview=<directory>: fixed cameras, no gameplay input
