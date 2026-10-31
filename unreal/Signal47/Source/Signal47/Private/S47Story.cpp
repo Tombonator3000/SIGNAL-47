@@ -1,6 +1,6 @@
+#include "S47Story.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
-#include "S47Story.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47Horror.h"

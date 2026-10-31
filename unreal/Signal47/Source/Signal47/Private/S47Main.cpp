@@ -1,7 +1,7 @@
+#include "S47Main.h"
 #include "S47FreeformTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
-#include "S47Main.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"

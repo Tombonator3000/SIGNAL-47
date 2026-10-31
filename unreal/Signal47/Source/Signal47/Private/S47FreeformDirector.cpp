@@ -147,7 +147,12 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   bEffectsApplied=S47J::Bool(O,TEXT("effectsApplied"),Age>0||Stage>0);
   bSeen=S47J::Bool(O,TEXT("seen"));bPhoto=S47J::Bool(O,TEXT("photographed"));bControlled=S47J::Bool(O,TEXT("controlled"));bCompared=S47J::Bool(O,TEXT("compared"));Anchor=ReadVector(O,TEXT("anchor"));
   Random.Initialize(S47J::Int(O,TEXT("random"),4701986));
-  if(const auto H=S47J::Obj(O,TEXT("history")))for(const auto& Pair:H->Values)if(Definition(Pair.Key))LastDays.Add(Pair.Key,int32(Pair.Value->AsNumber()));
+  if(const auto H=S47J::Obj(O,TEXT("history")))for(const auto& Pair:H->Values)
+  {
+   const FString Key(*Pair.Key);double SavedDay=0;
+   if(Definition(Key)&&Pair.Value.IsValid()&&Pair.Value->TryGetNumber(SavedDay)&&FMath::IsFinite(SavedDay))
+    LastDays.Add(Key,int32(FMath::Clamp(SavedDay,0.,1000000.)));
+  }
   GroupRestore=S47J::Clone(S47J::Obj(O,TEXT("group")));
  }
  bApplied=false;bChoiceStored=!Event.IsEmpty();

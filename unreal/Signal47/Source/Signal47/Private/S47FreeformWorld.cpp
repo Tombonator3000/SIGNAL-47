@@ -75,7 +75,7 @@ void FS47FreeformWorld::Stop()
  if(bFuelHeld&&M&&M->World)M->World->HoldTruck(0);bFuelHeld=false;
  if(M&&M->Web)for(auto& C:M->Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench"))C.bEnabled=false;
  if(M&&M->Web&&S03()>=0)M->Web->SetDishRemoteAvailable(S03(),true);
- for(const FS47Obj& O:Parts)if(O){O.SetVisible(false);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+ for(FS47Obj O:Parts)if(O){O.SetVisible(false);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
 }
 
 S47J::FObj FS47FreeformWorld::Save() const
@@ -220,7 +220,7 @@ bool FS47FreeformWorld::Build()
 
 void FS47FreeformWorld::Apply()
 {
- if(!bBuilt)return;for(const FS47Obj& O:Parts)if(O){O.SetVisible(bActive);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(bActive&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
+ if(!bBuilt)return;for(FS47Obj O:Parts)if(O){O.SetVisible(bActive);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(bActive&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
  if(BenchSample)BenchSample.SetVisible(bActive&&(InventoryCount(TEXT("fragment"))>0||InventoryCount(TEXT("archived_fragment"))>0||BenchJob==TEXT("fragment")));
  if(BenchLamp){const bool Testing=!BenchJob.IsEmpty();BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float(BenchSeconds/3.)*.8f:.15f);}
  const bool Open=bActive&&Service>=4&&Service<=5;
@@ -240,11 +240,11 @@ void FS47FreeformWorld::Apply()
   if(const auto* N=ParcelRoad.W->Node(ParcelRoad.I))if(N->Comp.IsValid())Q.AddIgnoredComponent(Cast<UPrimitiveComponent>(N->Comp.Get()));
   if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(Eye),S47Three::ToUE(Position),ECC_Visibility,Q))Position=S47Three::ToThree(Hit.Location)+(Eye-Position).GetSafeNormal()*.12;
  }
- for(const auto& Pair:TArray<TPair<FS47Obj,bool>>{{ParcelSaro,!Road},{ParcelRoad,Road}})if(Pair.Key)
+ for(auto Pair:TArray<TPair<FS47Obj,bool>>{{ParcelSaro,!Road},{ParcelRoad,Road}})if(Pair.Key)
  {
   const bool Show=bActive&&Payload>0&&Pair.Value;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(Position));C->SetCollisionEnabled(Show&&Payload!=2?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}Pair.Key.SetVisible(Show);
  }
- for(const auto& Pair:TArray<TPair<FS47Obj,bool>>{{CargoSaro,!Road},{CargoRoad,Road}})if(Pair.Key)
+ for(auto Pair:TArray<TPair<FS47Obj,bool>>{{CargoSaro,!Road},{CargoRoad,Road}})if(Pair.Key)
  {
   const bool Show=bActive&&Pair.Value&&M&&M->World&&!M->World->bDriving;if(const auto* N=Pair.Key.W->Node(Pair.Key.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetWorldLocation(S47Three::ToUE(TruckPoint()));C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}Pair.Key.SetVisible(Show);
  }

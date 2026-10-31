@@ -1,7 +1,7 @@
+#include "S47DecoderDesk.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 // story/Decoder.ts
-#include "S47DecoderDesk.h"
 
 #include "Brushes/SlateColorBrush.h"
 #include "Engine/TextureRenderTarget2D.h"
