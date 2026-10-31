@@ -1289,7 +1289,7 @@ void SS47Console::Construct(const FArguments& InArgs)
 				+ SHorizontalBox::Slot().FillWidth(1.f)[RxText(FText::FromString(TEXT("SARO / RX CONTROL 03")), 30.f, RxPhos(), RxGlow(), 1.2f)]
 				+ SHorizontalBox::Slot().AutoWidth()
 				[
-					RxText(RxStr([this] { const double Q = !Story ? 0 : Story->Rx.Stage >= 3 ? 1.0 : Story->SurveyOnly() ? 0.0 : Story->ConsoleQuality(); return FString::Printf(TEXT("CARRIER %d%%"), FMath::RoundToInt(Q * 100)); }), 22.f)
+					RxText(RxStr([this] { const double Q = !Story || Story->SurveyOnly() ? 0.0 : Story->ConsoleQuality(); return FString::Printf(TEXT("CARRIER %d%%"), S47Signal::CarrierPercent(Q)); }), 22.f)
 				]
 			]
 			// .status: the receiver's line, with the terminal's cursor after it

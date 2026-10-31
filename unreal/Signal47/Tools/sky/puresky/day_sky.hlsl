@@ -1,3 +1,23 @@
+// Sky radiance only: amber western dust through golden hour, with a cool upper sky.
+// Strength is zero at noon, dawn and full night; original night material is untouched.
+struct S47SunsetGrade {
+ float3 grade(float3 color, float3 view, float yaw, float3 sun, float strength) {
+  float3 u=-view*rsqrt(max(dot(view,view),1e-12));
+  float3 t=float3(u.x,u.z,u.y);
+  float3 d=float3(t.x*cos(yaw)-t.z*sin(yaw),t.y,t.x*sin(yaw)+t.z*cos(yaw));
+  float2 flat=d.xz*rsqrt(max(dot(d.xz,d.xz),1e-12));
+  float2 solar=sun.xz*rsqrt(max(dot(sun.xz,sun.xz),1e-12));
+  float west=pow(saturate(.5+.5*dot(flat,solar)),2.0);
+  float low=exp(-max(d.y,0.0)*3.8);
+  float k=saturate(strength)*west*low;
+  // Suppress violet/blue in the dusty low western sky, not in distant shadows.
+  float3 amber=color*float3(1.25,.73,.27);
+  amber+=float3(.30,.105,.012)*low;
+  float halo=pow(saturate(dot(d,sun)),18.0)*exp(-max(d.y,0.0)*2.0);
+  return max(lerp(color,amber,k)+float3(.26,.10,.012)*halo*strength,0.0);
+ }
+};
+S47SunsetGrade s47sunset;
 // Day-only photograph. The original night material is a separate runtime asset.
 float pureW = saturate(PureSkyWeight);
 float3 pureRadiance = float3(0, 0, 0);
@@ -40,5 +60,5 @@ float3 pureRadiance = float3(0, 0, 0);
         sunCaliche += float3(1.0,0.72,0.43)*max(Sun,0.0)*smoothstep(0.99996,0.99999,pureSd)*3.0;
     }
     pureRadiance += lerp(sunMain,sunCaliche,saturate(ConceptBlend));
-    [branch] if (pureW >= 1.0) return pureRadiance;
+    [branch] if (pureW >= 1.0) return s47sunset.grade(pureRadiance,V,Yaw,SunDir,SunsetStrength);
 }

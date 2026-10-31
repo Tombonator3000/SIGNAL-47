@@ -206,6 +206,7 @@ FS47DriveController::FGround FS47DriveController::Ground() const
 // Overlap of the truck's footprint (an oriented rectangle) with any obstacle.
 bool FS47DriveController::Hit() const
 {
+	const double HalfW=Truck?Truck->HalfWidth()-.05:HALF_W, HalfL=Truck?Truck->HalfLength()-.10:HALF_L;
 	const double C = FMath::Cos(Heading), Sn = FMath::Sin(Heading), X = Pos.X, Z = Pos.Z;
 	if (Area->Blocked(X, Z)) return true;
 	for (const FS47Obstacle& O : Area->Obstacles)
@@ -213,19 +214,19 @@ bool FS47DriveController::Hit() const
 		if (O.bCircle)
 		{
 			const double Dx = O.X - X, Dz = O.Z - Z;
-			if (Dx * Dx + Dz * Dz > FMath::Square(O.R + 2.9)) continue;
+			if (Dx * Dx + Dz * Dz > FMath::Square(O.R + FMath::Sqrt(HalfW*HalfW+HalfL*HalfL))) continue;
 			const double Lx = Dx * C - Dz * Sn, Lz = Dx * Sn + Dz * C;
-			const double Qx = Lx - FMath::Clamp(Lx, -HALF_W, HALF_W), Qz = Lz - FMath::Clamp(Lz, -HALF_L, HALF_L);
+			const double Qx = Lx - FMath::Clamp(Lx, -HalfW, HalfW), Qz = Lz - FMath::Clamp(Lz, -HalfL, HalfL);
 			if (Qx * Qx + Qz * Qz < O.R * O.R) return true;
 		}
 		else
 		{
 			const double Bx = (O.MinX + O.MaxX) / 2, Bz = (O.MinZ + O.MaxZ) / 2, Hx = (O.MaxX - O.MinX) / 2, Hz = (O.MaxZ - O.MinZ) / 2;
 			const double Ac = FMath::Abs(C), As = FMath::Abs(Sn), Dx = Bx - X, Dz = Bz - Z;
-			if (FMath::Abs(Dx) > Hx + HALF_W * Ac + HALF_L * As) continue;
-			if (FMath::Abs(Dz) > Hz + HALF_W * As + HALF_L * Ac) continue;
-			if (FMath::Abs(Dx * C - Dz * Sn) > HALF_W + Hx * Ac + Hz * As) continue;
-			if (FMath::Abs(Dx * Sn + Dz * C) > HALF_L + Hx * As + Hz * Ac) continue;
+			if (FMath::Abs(Dx) > Hx + HalfW * Ac + HalfL * As) continue;
+			if (FMath::Abs(Dz) > Hz + HalfW * As + HalfL * Ac) continue;
+			if (FMath::Abs(Dx * C - Dz * Sn) > HalfW + Hx * Ac + Hz * As) continue;
+			if (FMath::Abs(Dx * Sn + Dz * C) > HalfL + Hx * As + Hz * Ac) continue;
 			return true;
 		}
 	}

@@ -3,6 +3,7 @@
 #include "S47Web.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
+#include "S47MotelV2.h"
 #include "S47RoadTerrain.h"
 #include "S47Three.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
@@ -32,6 +33,10 @@ namespace
 
  bool Clear(double X,double Z,double Radius,bool Rock,bool Gravel)
  {
+  // Native pool, deck and rear paths supersede the old fixed motel footprint.
+  // This generator uses road-local metres; the installed footprint uses SARO.
+  for(const FVector4& B:FS47MotelV2::LandscapeFootprints())
+   if(X-24>=B.X-Radius&&X-24<=B.Y+Radius&&Z+300>=B.Z-Radius&&Z+300<=B.W+Radius)return false;
   // The complete transformed footprint must clear the road, its 16.5m flat
   // verge (large rocks additionally clear the 20.4m driving boundary), and walks.
   const double Lane=Rock?20.4:Gravel?6.3:Z<100?10.0:7.5;
@@ -115,7 +120,7 @@ namespace
 
  bool LegacyNature(const FString& Name)
  {
-  for(const TCHAR* Prefix:{TEXT("props:rocksWest"),TEXT("props:rocksEast"),TEXT("props:sage"),TEXT("props:yucca"),TEXT("props:tumbleweed")})
+  for(const TCHAR* Prefix:{TEXT("props:rocksWest"),TEXT("props:rocksEast"),TEXT("props:rocksSaro"),TEXT("props:sage"),TEXT("props:yucca"),TEXT("props:tumbleweed")})
    if(Name.StartsWith(Prefix))return true;
   return false;
  }
@@ -345,6 +350,16 @@ TSharedPtr<FS47RouteNature> FS47RouteNature::Build(AS47Web* W)
    FTransform T;if(!C->GetInstanceTransform(K,T,true))continue;
    FVector At=S47Three::ToThree(T.GetLocation());if(Site)At+=SiteToCanonical;
    bool Replace=false;for(const auto& B:Clusters)if(FMath::Square(At.X-8000-B.X)+FMath::Square(At.Z-B.Z)<13*13){Replace=true;break;}
+   // Preserve natural dressing everywhere else, but clear an intersecting
+   // original instance's complete visible footprint from actual native slabs.
+   if(C->GetStaticMesh())
+   {
+    const FBox Bounds=C->GetStaticMesh()->GetBoundingBox().TransformBy(T);
+    FVector Low=S47Three::ToThree(Bounds.Min),High=S47Three::ToThree(Bounds.Max);
+    if(!Site){Low-=SiteToCanonical;High-=SiteToCanonical;}
+    for(const FVector4& B:FS47MotelV2::LandscapeFootprints())
+     if(High.X>B.X-.12&&Low.X<B.Y+.12&&High.Z>B.Z-.12&&Low.Z<B.W+.12){Replace=true;break;}
+   }
    if(Replace&&C->RemoveInstance(K))++Result->RetiredInstances;
   }
  }

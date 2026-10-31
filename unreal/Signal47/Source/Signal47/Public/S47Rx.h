@@ -23,6 +23,8 @@ namespace S47Signal
 {
 	// The three stage profiles: CALIBRATION, INTERFERENCE, ANOMALY.
 	SIGNAL47_API const TArray<FS47Profile>& Profiles();
+	// One rounding rule for the terminal meter and tuning acceptance.
+	inline int32 CarrierPercent(double Quality) { return FMath::RoundToInt(Quality * 100); }
 	constexpr double FMin = 1419.5;
 	constexpr double FMax = 1420.7;
 }
@@ -44,7 +46,7 @@ public:
 	// 0..1, how close the dials are to the profile window (Gaussian falloff outside it).
 	double Quality() const;
 	double Quality(const FS47Profile& P) const;
-	// True when every dial is inside the profile window.
+	// True when the terminal carrier meter rounds to 100 percent.
 	bool Pass() const;
 	bool Pass(const FS47Profile& P) const;
 	// 4 pulses, pause, 7 pulses. Returns a 0..1 envelope; 1 before stage 3.

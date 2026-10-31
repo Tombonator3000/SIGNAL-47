@@ -70,6 +70,7 @@ public:
 	FString ServicePlace() const;
 	FVector ServicePosition() const;
 	double ServiceHeading() const;
+	FString ServiceDescription(const FString& Place)const;
 	S47J::FObj TransportSave() const;
 	void RestoreTransport(const S47J::FObj& Saved);
 	bool SelectTransport(bool bPersonal);

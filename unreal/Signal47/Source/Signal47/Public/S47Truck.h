@@ -70,6 +70,9 @@ struct SIGNAL47_API FS47Truck
 	void SetPersonalVehicle(bool bOn);
 	bool IsPersonalVehicle() const { return bPersonalVehicle; }
 	bool ProductionArtReady() const { return Fleet && Fleet->Ready(); }
+	bool TripoJeep()const{return Fleet&&Fleet->IsTripoJeep();}
+	double HalfWidth()const{return TripoJeep()?1.02:1.05;}
+	double HalfLength()const{return TripoJeep()?2.12:2.75;}
 	bool AuditProductionArt(TArray<FString>& Lines)const;
 	/** The camera has left the driver's seat (a cut): the whole truck again. */
 	void ViewFrom(const FVector& CamThree);

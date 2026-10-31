@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Tripo-flåte, motellretting og varm solnedgang
+
+Tom avsluttet spilltesten og ba om fullføring. Fem originale Tripo-modeller er bevart privat og klargjort i Blender med PBR og tre LOD-er. Nærmodellene er redusert fra 3 769 015 til 364 631 trekanter. Jeep erstatter servicekjøretøyet, den gamle SARO-trucken står i sideparkeringen, og dinerens trekkvogn og politibil er erstattet med Toms modeller. Politidøren beholder faktisk hengsel og interaksjon. UFO-ene har egne F10-forhåndsvisninger; historiens finale er bevart. Jeepens sammenbygde kildehjul er ennå ikke separat animert.
+
+Caliche og motellets faktiske LOD-er bruker nå samme FBX-koordinatramme. Store motellskilt finnes også i nærverdenen, og hele bassenget er flyttet bak romrekken med terrasse, gjerde, adkomst og terrengkutt. TV-en oppdaterer filmer og lyd også i åpningsfasen. Terminalens viste 100 % og godkjenning bruker samme avrunding. Solnedgangen har egen varm ravgul horisont og gyllent skylys med kjøligere skygger, uten å endre nattprofilen.
+
+Editorbygg, 1838 selvtester, faktiske filmrammer/lydklokker, inn-/utkobling av de to UFO-ene og målrettede bilder består. Pakking, kort pakket prøve og lokal installasjon pågår. Personlige Saved er ikke endret. [Skript og begrensninger](../../unreal/Signal47/Tools/tripofleet/README.md).
+
 ## Aktive SARO-arbeidsstasjoner og antenneservice
 
 Toms utvidede SARO-løkke er implementert og lokalt installert fra runtimekilde `3e723bba` kl.18:56 CET. En ny natt bruker venstre PC til antennestatus/diagnose, høyre PC til faktisk antenneretning, mottakeren til opptak, lydutstyret til original-/kontrollsammenligning og operasjonsterminalen til registrering. S-03 krever fysisk kontaktreparasjon og synlig lokal bevegelsestest. Merket papirpakke må hentes fra skriveren og legges i arkivmappen. Alle 27 antenner beveger seg; normalreferansen har fempunktsmåling, og opptak venter på stabil faktisk retning. Den nyeste Roswell-koden fra main inngår.

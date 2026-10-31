@@ -222,6 +222,8 @@ void AS47Web::SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const
 	FLinearColor Amb = FMath::Lerp(FLinearColor(.0035f, .0045f, .008f), FLinearColor(.40f, .45f, .56f), FMath::Pow(D, 1.4f));
 	const float Dusk = FMath::Clamp(SkyEvening * 2.f, 0.f, 1.f) * (1.f - D) * 4.f * D;
 	Amb *= FMath::Lerp(FLinearColor::White, FLinearColor(.95f, .78f, 1.05f), FMath::Clamp(Dusk, 0.f, 1.f));
+	const float Amber = 4.f * FMath::Clamp(SkyEvening, 0.f, 1.f) * (1.f - FMath::Clamp(SkyEvening, 0.f, 1.f));
+	Amb = FMath::Lerp(Amb, FLinearColor(.46f, .17f, .055f) * FMath::Pow(D, .8f), Amber * .75f);
 	CloudMid->SetVectorParameterValue(TEXT("Ambient"), Amb * AmbScale);
 	CloudMid->SetScalarParameterValue(TEXT("Cover"), Cover);
 	CloudMid->SetScalarParameterValue(TEXT("Cirrus"), Cirrus);
@@ -244,6 +246,10 @@ void AS47Web::UpdateCloudLight(const FVector& SunDirection, float Daylight)
 	// The set (or rising) sun keeps lighting the cloud bases from below the horizon: warm orange
 	// just after sunset, deep red toward the end of civil twilight, gone by about -8 degrees.
 	SkyGlow = FMath::SmoothStep(-8.f, -0.8f, El) * (1.f - FMath::SmoothStep(-0.4f, 1.4f, El));
+	// Catch the low sun before the disk sets, rather than leaving the clouds grey
+	// through the 18:20 arrival. The existing dawn and full-night endpoints stay exact.
+	const float Golden = FMath::Clamp(SkyEvening * 4.f, 0.f, 1.f) * (1.f - FMath::SmoothStep(1.5f, 6.f, El));
+	SkyGlow = FMath::Max(SkyGlow, Golden * .85f);
 	const FLinearColor GlowColor = FMath::Lerp(FLinearColor(1.f, .20f, .07f), FLinearColor(1.f, .42f, .15f), FMath::SmoothStep(-6.f, -1.f, El));
 	FVector MoonDir = FVector::ZeroVector;
 	for (const FLightRef& R : Lights) if (const UDirectionalLightComponent* Moon = Cast<UDirectionalLightComponent>(R.L.Get()))

@@ -2,6 +2,8 @@
 #include "S47Timeline.h"
 
 #include "Components/MaterialBillboardComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "S47Main.h"
 #include "S47RoadTerrain.h"
@@ -136,8 +138,11 @@ void FS47Town::PlaceCar()
 	const double X = bOut ? CarShoulder.X : -12.3, Z = bOut ? CarShoulder.Z : 2106.5, Y = S47RoadTerrain::SurfaceY(X, Z);
 	Car.SetVisible(bHere); CarDoor.SetVisible(bOut); Car.SetPosition(FVector(X, Y, Z)); Car.SetRotY(bOut ? 0.04 : 0);
 	FS47Obj P = Proxy(TEXT("patrolCar")); P.SetPosition(FVector(X, Y + 0.8, Z));
-	FS47Area C; C.bValid = true; C.MinX = bHere ? X - 1 + Origin.X : 1e9; C.MaxX = bHere ? X + 1 + Origin.X : 1e9;
-	C.MinZ = bHere ? Z - 2.7 + Origin.Z : 1e9; C.MaxZ = bHere ? Z + 2.7 + Origin.Z : 1e9;
+	double HalfW=1,HalfL=2.7;
+	if(M&&M->Web)if(const FS47Obj Native=Car.Find(TEXT("prop:patrolCar")))if(const auto* N=M->Web->Node(Native.I))if(const auto* Component=Cast<UStaticMeshComponent>(N->Comp.Get()))
+		if(Component->GetStaticMesh()&&Component->GetStaticMesh()->GetName()==TEXT("SM_TripoFleet_PoliceCar")){const FVector Extent=Component->GetStaticMesh()->GetBounds().BoxExtent/100.;const double C=FMath::Abs(FMath::Cos(bOut?.04:0)),S=FMath::Abs(FMath::Sin(bOut?.04:0));HalfW=Extent.X*C+Extent.Y*S;HalfL=Extent.X*S+Extent.Y*C;}
+	FS47Area C; C.bValid = true; C.MinX = bHere ? X - HalfW + Origin.X : 1e9; C.MaxX = bHere ? X + HalfW + Origin.X : 1e9;
+	C.MinZ = bHere ? Z - HalfL + Origin.Z : 1e9; C.MaxZ = bHere ? Z + HalfL + Origin.Z : 1e9;
 	if (M && M->Web) for (const auto& Pair : CarColliders)
 	{
 		auto& Cs = M->Web->CollidersMutable(Pair.Key); if (!Cs.IsValidIndex(Pair.Value)) continue;

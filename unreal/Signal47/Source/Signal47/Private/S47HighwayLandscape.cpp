@@ -92,7 +92,17 @@ void AS47Web::BuildHighwayLandscape()
    const double Px=X+Random.FRandRange(-1.1f,1.1f),Pz=Z+Random.FRandRange(-1.1f,1.1f);
    const double Fade=FMath::Clamp((100-FMath::Abs(Pz-Seam))/25,0.0,1.0);
    if(FMath::Abs(Px)<7.5 || Cover.Cover(Px,Pz)<=0 || Random.FRand()>K.Density*Fade)continue;
-   const double H=Cover.Ground(Px,Pz),Scale=K.Scale*Random.FRandRange(.7f,1.3f);
+   const double Scale=K.Scale*Random.FRandRange(.7f,1.3f);
+   const FBox Bounds=Mesh->GetBoundingBox();
+   const double Radius=FMath::Sqrt(FMath::Square(FMath::Max(FMath::Abs(Bounds.Min.X),FMath::Abs(Bounds.Max.X)))+
+    FMath::Square(FMath::Max(FMath::Abs(Bounds.Min.Y),FMath::Abs(Bounds.Max.Y))))*Scale/100.+.15;
+   bool Blocked=false;
+   // Cover.Cover is only the vegetation rule; the installed native slab/water
+   // exclusions live in Cover.Blocks and must also gate these overlap instances.
+   for(const FS47FloraRect& B:Cover.Blocks)
+    if(Px>=B.MinX-Radius&&Px<=B.MaxX+Radius&&Pz>=B.MinZ-Radius&&Pz<=B.MaxZ+Radius){Blocked=true;break;}
+   if(Blocked)continue;
+   const double H=Cover.Ground(Px,Pz);
    C->AddInstance(FTransform(FRotator(0,Random.FRandRange(0.f,360.f),0),S47Three::ToUE(Px,H,Pz-Seam),FVector(Scale)),false);
    ++HighwayBridgeInstances;
   }

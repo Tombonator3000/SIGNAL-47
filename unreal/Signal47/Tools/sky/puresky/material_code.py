@@ -19,6 +19,6 @@ def day_code(original):
     for old in endings:
         assert code.count(old) == 1, old
         expression = old[len('return '):-1]
-        code = code.replace(old, 'return lerp(' + expression + ', pureRadiance, pureW);', 1)
+        code = code.replace(old, 'return s47sunset.grade(lerp(' + expression + ', pureRadiance, pureW),V,Yaw,SunDir,SunsetStrength);', 1)
     assert code.startswith(HELPER)
     return HELPER + (ROOT / 'day_sky.hlsl').read_text() + code[len(HELPER):]

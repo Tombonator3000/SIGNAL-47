@@ -6,23 +6,7 @@
     "SM_Town_Motel_Office",
     "SM_Town_Motel_Fixtures"
   ],
-  "retire_nodes": [
-    {
-      "node": 26,
-      "geo": 19,
-      "parent": 25
-    },
-    {
-      "node": 27,
-      "geo": 20,
-      "parent": 25
-    },
-    {
-      "node": 28,
-      "geo": 21,
-      "parent": 25
-    }
-  ],
+  "retire_nodes": [],
   "retire_props": [
     "motelBlade",
     "motelNeon"
@@ -225,62 +209,62 @@
     [
       -64.96,
       -64.84,
-      665.84,
-      682.96
+      690.84,
+      707.96
     ],
     [
       -64.96,
       -53.84,
-      665.84,
-      665.96
+      690.84,
+      690.96
     ],
     [
       -64.96,
       -53.84,
-      682.84,
-      682.96
+      707.84,
+      707.96
     ],
     [
       -53.96,
       -53.84,
-      681.3,
-      682.96
+      706.3,
+      707.96
     ],
     [
       -53.96,
       -53.84,
-      665.84,
-      679.9
+      690.84,
+      704.9
     ],
     [
       -54.34,
       -53.84,
-      681.36,
-      682.66
+      706.36,
+      707.66
     ],
     [
       -61.0,
       -56.8,
-      669.8,
-      678.0
+      694.8,
+      703.0
     ],
     [
       -63.7,
       -62.9,
-      673.9,
-      675.9
+      698.9,
+      700.9
     ],
     [
       -63.7,
       -62.9,
-      670.9,
-      672.9
+      695.9,
+      697.9
     ],
     [
       -60.8,
       -59.8,
-      680.85,
-      681.85
+      705.85,
+      706.85
     ],
     [
       -43.10200014,
@@ -329,20 +313,32 @@
     [
       -64.9,
       -53.9,
-      665.9,
-      682.9
+      690.9,
+      707.9
     ],
     [
       -54.5,
       -52.6,
-      669.9,
-      681.4
+      694.9,
+      706.4
     ],
     [
       -53.9,
       -40.9,
       669.9,
       671.5
+    ],
+    [
+      -53.9,
+      -52.6,
+      670.8,
+      695.6
+    ],
+    [
+      -53.9,
+      -49.9,
+      694.9,
+      696.5
     ]
   ],
   "floors": [
@@ -350,8 +346,8 @@
       "rect": [
         -64.9,
         -61.0,
-        665.9,
-        682.9
+        690.9,
+        707.9
       ],
       "y": -2.0385683853163195
     },
@@ -359,8 +355,8 @@
       "rect": [
         -56.8,
         -53.9,
-        665.9,
-        682.9
+        690.9,
+        707.9
       ],
       "y": -2.0385683853163195
     },
@@ -368,8 +364,8 @@
       "rect": [
         -61.0,
         -56.8,
-        678.0,
-        682.9
+        703.0,
+        707.9
       ],
       "y": -2.0385683853163195
     },
@@ -377,8 +373,8 @@
       "rect": [
         -61.0,
         -56.8,
-        665.9,
-        669.8
+        690.9,
+        694.8
       ],
       "y": -2.0385683853163195
     },
@@ -386,8 +382,8 @@
       "rect": [
         -53.8,
         -52.6,
-        669.9,
-        681.4
+        694.9,
+        706.4
       ],
       "y": -2.0985683853163195
     },
@@ -404,8 +400,8 @@
       "rect": [
         -54.0,
         -53.6,
-        679.8,
-        681.4
+        704.8,
+        706.4
       ],
       "y": -2.0985683853163195
     },
@@ -478,6 +474,26 @@
         721.9
       ],
       "y": -2.1785683853163196
+    },
+    {
+      "name": "rear-pool-route",
+      "rect": [
+        -51.1,
+        -49.9,
+        671.5,
+        694.9
+      ],
+      "y": -2.0985683853163195
+    },
+    {
+      "name": "rear-pool-link",
+      "rect": [
+        -53.9,
+        -49.9,
+        694.9,
+        696.5
+      ],
+      "y": -2.0985683853163195
     }
   ],
   "car_positions": {
@@ -502,7 +518,9 @@
     "Legacy posts and exactly identified superseded props use coordinated source trims and collider retirement. Original buildings, fences, three detailed car assets, room6 leaf and document anchors remain authoritative.",
     "The two service strips meet the existing north path edge to edge, with no coplanar overlapping slab. Walking zones may overlap for walker radius0.27; floors remain exact slab footprints.",
     "Original pot geometry and its three colliders are retained at their measured base0. Native chair feet are grounded by the source repair. Reception lamp737 alone is retired with its two leaves; asset and credit retained.",
-    "ICE interaction keeps its original handle/ID but its thin proxy lies on the measured new north-facing cabinet front. Payphone facing is measured from the prepared keypad plane, not inferred from a screenshot."
+    "ICE interaction keeps its original handle/ID but its thin proxy lies on the measured new north-facing cabinet front. Payphone facing is measured from the prepared keypad plane, not inferred from a screenshot.",
+    "Pool kit and west gate approach moved25m south behind middle rooms. Original north lobby path joins new rear route outside the guest-room rear wall; rooms/road/lobby/gameplay anchors unchanged.",
+    "Original large roadside Sierra faces26/27 and support28 stay visible inSARO, matching roadarea far-sign. Native V2Sign remains the separate small entrance sign; no distance-based disappearance."
   ],
   "retire_named_nodes": [
     {
@@ -533,5 +551,14 @@
         0.06818181818181818
       ]
     }
-  ]
+  ],
+  "rear_pool": {
+    "world_offset_z_m": 25,
+    "water_rect": [
+      -61,
+      -56.8,
+      694.8,
+      703.0
+    ]
+  }
 }

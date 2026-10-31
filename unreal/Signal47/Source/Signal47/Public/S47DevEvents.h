@@ -35,4 +35,6 @@ private:
  void SpawnRoswell(int32 Mode,bool bRoof=false);
  void AddBuiltIn();
  void SpawnPale();
+ void SpawnCraft(bool bSaucer);
+ TWeakObjectPtr<class UStaticMeshComponent> CraftPreview;
 };

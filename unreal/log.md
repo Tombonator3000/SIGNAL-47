@@ -1511,3 +1511,7 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 19:51 | codex/roswell-arm-clearance-20261031 | Retter native speilede armsider, rutebudsjett og fysiske terrengsteg. Editorbygg, 1824 selvtester og seks individuelt prøvde Curious/Hunt-figurer med kontaktlyd består; lokal pakking/installasjon følger.
 
 2026-10-31 20:08 | Roswell-retting130f975f / PR295 | Pakket/installert kl.20:03 CET: 1824 selvtester, seks Curious/Hunt på bakken, armposer og installert røykprøve består; 155 Saved-elementer uendret. To gamle payload pensjonert; egne tunge jobber og reservasjon avsluttet.
+
+2026-10-31 21:32 | codex/tripo-ufo-vehicles-20261031 | To UFO-er og tre biler hentet privat fra Tripo; GLB/PBR-preflight består, Blender/native skript klargjort. Rx 100-prosentregel rettet kun i kildeutkast; nye by-/motell-/TV-funn ført. Tom spiller videre, ingen motorjobb, installasjon eller Saved-endring.
+
+2026-10-31 23:35 | codex/tripo-ufo-vehicles-20261031 | Fem Tripo/PBR-modeller og tre LOD-er importert, Caliche/motell-LOD rettet, basseng bak romrekken, TV/100-prosentregel og ravgul solnedgang. Editorbygg,1838 selvtester og målrettede Vulkan-bilder består; lokal pakking/installasjon følger.
