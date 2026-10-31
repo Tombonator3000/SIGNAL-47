@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Linux-mottaker og nye SARO-lysfeil
+
+PLAY-31-38/P1 fører manglende grafisk oppstart hos mottaker med RTX5090, Arch/niri og DMS. Den publiserte starteren heter `Spill-SIGNAL47.sh`; den er hentet og verifisert, og direkte lesing av hoved-ZIP-en bekrefter intern `Linux/Signal47.sh` med riktig hash. Mottakerens konkrete startfeil er fortsatt uavklart. [Ny Linux-veiledning](Guides/LINUX_RUNTIME.md) fører avhengigheter, korrekt startfil og avgrenset feilsøking. Flatpak er et forslag under SHIP-04, ikke levert distribusjon. Ingen starter-/motorendring, driverinstallasjon eller ny release er utført.
+
+PLAY-31-39/40 fører Toms nye funn av utilstrekkelig lys fra SARO-utelampene og for store fluer/møll. To originalbilder er bevart byteidentisk. Rettelser og visuell prøve gjenstår; spilltesten er ikke avbrutt.
+
 ## Nytt prioritert krasj: SARO kontrollrom
 
 Tom har fått renderstans/krasj i installert `f32d4553` etter retur til SARO, spilltid 03:00 ved SC04/AUTO HOLD. PLAY-31-16/P1 i [TODO](TODO.md) har første prioritet. Fatalrapporten bekrefter 60 sekunders venting på grafikktråden; symboliserte RHI-/rendertråder peker på Vulkan-presentasjon og GPU-occlusion-resultat. Utløsende årsak er fortsatt uavklart. Lagringer og full krasjmappe er kopiert og kontrollert, 43 filer/5 019 681 byte; originalene er uendret. Autosaven etter terminalhandlingen er gyldig JSON med kontrollrom/03:00 og lagret AUTO HOLD, men faktisk Continue etter krasjet er ikke prøvd. [Krasjfakta og bevisgrenser](../Evidence/Playtest-2026-10-31/saro-render-crash-facts.json). Ingen ny motorjobb, systemendring eller spillinstallasjon i oppfølgingen.

@@ -144,3 +144,7 @@ Root eier dokumentoppfølging og to originalbilder på `codex/board-grouping-fee
 ## Samlet Finding-, meny-, telefon- og lydoppfølging
 
 Root eier dokumentene og ti originale spillbilder på `codex/board-finding-placement-20261031`; bredt Glimpse-skrivebordsbilde er sikret lokalt. PLAY-31-23/24 er presisert, PLAY-31-27 til37 fører nye punkter. Ingen andre filer eies for implementering i denne oppfølgingen; ingen motorreservasjon eller generering mens Tom spiller.
+
+## Linux-mottaker og SARO-utelamper/insekter
+
+Root eier dokumentkartlegging og to originalbilder på `codex/linux-portability-feedback-20261031`. PLAY-31-38/P1 fører ekstern grafisk oppstart; PLAY-31-39/40 fører lys/insektstørrelse, SHIP-04 mulig Flatpak. Ingen motorreservasjon, spill-/starterendring eller publisering mens Tom spiller.
