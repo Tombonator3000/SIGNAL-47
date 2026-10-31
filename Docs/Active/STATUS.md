@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Freeform under gjennomføring
+
+PR297 implementerer separat Freeform med vedvarende døgn, SARO-målearbeid, fysisk forsynings-/servicereise, seksten situasjonsstyrte hendelser og tre mysterielinjer. Koden er foreløpig ikke motorvalidert eller lokalt installert. Bygg/test venter på maskinens eksisterende produksjonsreservasjon; gjeldende installasjon er fortsatt Roswell-rettingen nedenfor. [Plan og avgrensning](../Design/Story/SARO_STORY_FREEFORM.md#godkjent-gjennomføring-vedvarende-døgn-og-hendelsesregissør).
+
 ## Aktive SARO-arbeidsstasjoner og antenneservice
 
 Toms utvidede SARO-løkke er implementert og lokalt installert fra runtimekilde `3e723bba` kl.18:56 CET. En ny natt bruker venstre PC til antennestatus/diagnose, høyre PC til faktisk antenneretning, mottakeren til opptak, lydutstyret til original-/kontrollsammenligning og operasjonsterminalen til registrering. S-03 krever fysisk kontaktreparasjon og synlig lokal bevegelsestest. Merket papirpakke må hentes fra skriveren og legges i arkivmappen. Alle 27 antenner beveger seg; normalreferansen har fempunktsmåling, og opptak venter på stabil faktisk retning. Den nyeste Roswell-koden fra main inngår.

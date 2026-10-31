@@ -114,7 +114,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();bEnabled=true;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
@@ -124,6 +124,9 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   SeenDay=S47J::Int(O,TEXT("seenDay"));MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
   auto Time=[&](const TCHAR* K,double Max=1e9){const double V=S47J::Num(O,K);return FMath::IsFinite(V)?FMath::Clamp(V,0.,Max):0.;};
   Age=Time(TEXT("age"),1000);ActiveTime=Time(TEXT("activeTime"));NextAt=Time(TEXT("nextAt"));RestUntil=Time(TEXT("restUntil"));SoundAt=Time(TEXT("soundAt"));
+  // Logical event effects and native presentation have different lifetimes.
+  // An older v1 save with elapsed time has already applied its one-shot effects.
+  bEffectsApplied=S47J::Bool(O,TEXT("effectsApplied"),Age>0||Stage>0);
   bSeen=S47J::Bool(O,TEXT("seen"));bPhoto=S47J::Bool(O,TEXT("photographed"));bControlled=S47J::Bool(O,TEXT("controlled"));bCompared=S47J::Bool(O,TEXT("compared"));Anchor=ReadVector(O,TEXT("anchor"));
   Random.Initialize(S47J::Int(O,TEXT("random"),4701986));
   if(const auto H=S47J::Obj(O,TEXT("history")))for(const auto& Pair:H->Values)if(Definition(Pair.Key))LastDays.Add(Pair.Key,int32(Pair.Value->AsNumber()));
@@ -142,6 +145,7 @@ S47J::FObj FS47FreeformDirector::Save()const
  auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("age"),Age);S47J::Set(O,TEXT("activeTime"),ActiveTime);S47J::Set(O,TEXT("nextAt"),NextAt);S47J::Set(O,TEXT("restUntil"),RestUntil);S47J::Set(O,TEXT("soundAt"),SoundAt);S47J::Set(O,TEXT("random"),Random.GetCurrentSeed());
+ S47J::Set(O,TEXT("effectsApplied"),bEffectsApplied);
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
  auto H=S47J::New();for(const auto& Pair:LastDays)S47J::Set(H,*Pair.Key,Pair.Value);S47J::Set(O,TEXT("history"),H);
  if(GroupRestore)S47J::Set(O,TEXT("group"),GroupRestore);else if(M&&M->Night&&M->Night->Glimpses)S47J::Set(O,TEXT("group"),M->Night->Glimpses->SaveControlled());
@@ -172,7 +176,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
   if(D->Family==TEXT("major")&&(M->Freeform->Day()-LastMajorDay<3||M->Freeform->Clock()<3*86400.+19*3600.))return false;
  }
  if((Id==TEXT("observer")||Id==TEXT("service_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;
- if(Id==TEXT("s03_failure")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()))return false;
+ if(Id==TEXT("s03_failure")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||M->Freeform->PowerFault()))return false;
  if(Id==TEXT("feeder_fault")&&M->Freeform->PowerFault())return false;
  if(Id==TEXT("empty_car")&&(!Effects->Car||InView(FVector(15,1,7))))return false;
  if(Id==TEXT("landing_trace")&&InView(FVector(12,.1,-12),40))return false;
@@ -181,7 +185,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
 bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
 {
  Effects->Build(this);if(!Eligible(Id,Forced))return false;
- Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bChoiceStored=false;Scene=M->Web->Area();
+ Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  Anchor=Id==TEXT("empty_car")?FVector(15,1,7):Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  LastDays.Add(Id,M->Freeform->Day());if(const auto* D=Definition(Id)){if(D->Family==TEXT("threat"))LastThreatDay=M->Freeform->Day();if(D->Family==TEXT("major"))LastMajorDay=M->Freeform->Day();}
@@ -213,14 +217,28 @@ void FS47FreeformDirector::Apply()
   bChoiceStored=true;
  }
  bApplied=true;
- if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
- if(Event==TEXT("s03_failure")&&M->Freeform->Field)M->Freeform->Field->TriggerServiceFault();
- if(Event==TEXT("feeder_fault"))M->Freeform->SetPowerFault(true);
+ if(!bEffectsApplied)
+ {
+  // These mutate persistent gameplay state once. Recreating a saved incident's
+  // presentation must never break a repaired feeder/relay, re-arm a cleared
+  // anomaly or replay its initial warning/telex sound.
+  bEffectsApplied=true;
+  if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
+  if(Event==TEXT("s03_failure")&&M->Freeform->Field)
+  {
+   M->Freeform->Field->TriggerServiceFault();
+   if(!M->Freeform->Field->HasArrayFault()){Finish(false);return;}
+  }
+  if(Event==TEXT("feeder_fault"))M->Freeform->SetPowerFault(true);
+  if(Event==TEXT("service_presence")&&Stage==0)
+  {if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.6f,.At=Anchor});if(M->UI)M->UI->Toast(TEXT("A heavy scrape beyond the service door. Something moves against the yard fence."),5);}
+  if(Event==TEXT("unsigned_telex")&&M->Audio)M->Audio->Sfx(TEXT("printer"),FS47Sound{.Gain=.25f,.At=FVector(-4,1,2)});
+  Changed();
+ }
+ // Rehydrate only presentation. Existing encounter brains, field originals,
+ // component fault states and the next scheduled sound come from their saves.
  if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
- if(Event==TEXT("service_presence")&&Stage==0)
- {if(M->Audio)M->Audio->Sfx(TEXT("thudSoft"),FS47Sound{.Gain=.6f,.At=Anchor});if(M->UI)M->UI->Toast(TEXT("A heavy scrape beyond the service door. Something moves against the yard fence."),5);}
- if(Event==TEXT("unsigned_telex")&&M->Audio)M->Audio->Sfx(TEXT("printer"),FS47Sound{.Gain=.25f,.At=FVector(-4,1,2)});
  Draw();
 }
 void FS47FreeformDirector::Draw()
@@ -272,6 +290,10 @@ void FS47FreeformDirector::Step(double Dt)
   if(Start(Id,false)){const auto* D=Definition(Id);if(D->Family==TEXT("minor")||D->Family==TEXT("maintenance"))--MinorLeft;else --InvestLeft;Changed();}return;
  }
  Apply();if(!bApplied||Event.IsEmpty())return;Age+=Dt;Draw();const auto* Def=Definition(Event);if(!Def){Finish(false);return;}
+ // Hardware can be repaired at a separate physical site (the feeder is on the
+ // road). Complete against its saved authority before applying scene-local rules.
+ if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}
+ if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if(Scene!=M->Web->Area())
  {if(Event==TEXT("service_presence"))Finish(true,TEXT("The encounter ended when the player left the site."));return;}
  if(Event==TEXT("observer")||Event==TEXT("service_presence"))
@@ -300,8 +322,6 @@ void FS47FreeformDirector::Step(double Dt)
    Finish(Event==TEXT("service_presence")||bPhoto);return;
   }
  }
- if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}
- if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if((Event==TEXT("roof_steps")||Event==TEXT("quiet_zone")||Event==TEXT("flyover")||Event==TEXT("close_pass"))&&Age>=SoundAt)
  {
   SoundAt=Age+(Event==TEXT("roof_steps")?Random.FRandRange(2.5,5):Random.FRandRange(5,8));
@@ -338,7 +358,7 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
  Effects->Hide();if(M&&M->Audio){M->Audio->Stop(TEXT("freeformEvent"));M->Audio->HoldRoomTone(1);}
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s ended evidence=%d"),*Event,Evidence);
  if(Threat)RestUntil=ActiveTime+480;else RestUntil=FMath::Max(RestUntil,ActiveTime+45);
- Event.Empty();Stage=0;bApplied=false;NextAt=FMath::Max(NextAt,RestUntil);Changed();
+ Event.Empty();Stage=0;bApplied=bEffectsApplied=false;NextAt=FMath::Max(NextAt,RestUntil);Changed();
 }
 FString FS47FreeformDirector::Label(const FString& Id)const
 {
@@ -395,6 +415,10 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Check(S47J::Write(Saved)==S47J::Write(R.Save()),TEXT("idle director seed, budgets and schedule round-trip without reroll"));
  auto Active=S47J::Clone(Saved);S47J::Set(Active,TEXT("event"),TEXT("extra_pulse"));S47J::Set(Active,TEXT("age"),12.5);S47J::Set(Active,TEXT("controlled"),true);R.Begin(Active);
  Check(R.ActiveEvent()==TEXT("extra_pulse")&&R.EventAge()==12.5&&R.Busy(),TEXT("pending incident restores its selected identity, control and phase"));
+ auto Applied=S47J::Clone(Active);S47J::Set(Applied,TEXT("event"),TEXT("feeder_fault"));S47J::Set(Applied,TEXT("effectsApplied"),true);R.Begin(Applied);
+ Check(S47J::Bool(R.Save(),TEXT("effectsApplied"))&&R.EventId()==TEXT("feeder_fault"),TEXT("saved applied hardware incident keeps its consumed-effect fact across presentation restore"));
+ Applied->RemoveField(TEXT("effectsApplied"));R.Begin(Applied);
+ Check(S47J::Bool(R.Save(),TEXT("effectsApplied")),TEXT("older elapsed v1 incident is treated as already applied instead of retriggering hardware"));
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Busy(),TEXT("unknown revision never starts an invented event"));
  FS47RoswellBrain Brain;Brain.Start(FS47RoswellBrain::EMode::Curious,FVector(2,0,3),.4,77);Brain.bHasPlayerMemory=true;Brain.LastKnownPlayer=FVector(8,0,9);auto B=Brain.Save();FS47RoswellBrain Copy;
  Check(Copy.Restore(B)&&Copy.Pos==Brain.Pos&&Copy.LastKnownPlayer==Brain.LastKnownPlayer&&Copy.bHasPlayerMemory,TEXT("active native observer keeps identity-space position and measured player memory"));

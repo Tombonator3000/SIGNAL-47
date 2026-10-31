@@ -166,7 +166,22 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==42)
  {
   if(!Check(F.Field->ParcelStage()==2,TEXT("physical purchase survives ordinary Continue without duplication")))return;
-  M->World->Enter(TEXT("saro"));Go(43,.4);return;
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
+  F.Field->Use(TEXT("ff:cargo"));
+  if(!Check(F.Field->ParcelStage()==3,TEXT("carried purchase is secured as physical truck cargo")))return;
+  if(!Restore(TEXT("loaded-cargo")))return;F.Director->Stop();Go(421,.4);return;
+ }
+ if(Stage==421)
+ {
+  if(!Check(F.Field->ParcelStage()==3,TEXT("loaded cargo survives ordinary Continue")))return;
+  M->World->Enter(TEXT("saro"));Go(422,.4);return;
+ }
+ if(Stage==422)
+ {
+  if(M->World->bBusy)return;const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
+  F.Field->Use(TEXT("ff:cargo"));
+  if(!Check(F.Field->ParcelStage()==2,TEXT("truck cargo must be unloaded before physical bench delivery")))return;
+  Go(43,.3);return;
  }
  if(Stage==43)
  {
@@ -264,6 +279,12 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==24)
  {
   if(!Check(F.Field->AnalyzeSample(),TEXT("physical sample analysis starts at the service bench")))return;
+  Go(241,.7);return;
+ }
+ if(Stage==241)
+ {
+  if(!Restore(TEXT("sample-analysis-running")))return;
+  if(!Check(!F.HasFinding(TEXT("sample-analysis"))&&F.InventoryCount(TEXT("fragment"))==0,TEXT("in-progress sample analysis restores without early completion or a duplicated loose sample")))return;
   Go(25);return;
  }
  if(Stage==25)
