@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-31",
+  "status": "UNVERIFIED",
+  "runtime_tested": false,
+  "repository": "NVlabs/motionbricks",
+  "commit": "54fc563aeaaf819a753d72cc9fdc6713989cdd43",
+  "hugging_face": "https://huggingface.co/nvidia/MotionBricks",
+  "project": "https://nvlabs.github.io/motionbricks/",
+  "source_scope": "README, runtime API, scene preview, package metadata and license texts only; no model weights or sample motions",
+  "sources": [
+    {
+      "path": "LICENSE",
+      "bytes": 34215,
+      "sha256": "94571f8dc8a121eff4e57add70ee015ae2878f7a8bc464f35f7dc8ff6897e1a1",
+      "git_blob_sha": "f6083b8e8a68bc9274a066ef2989f28225b6c5fc",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/LICENSE"
+    },
+    {
+      "path": "README.md",
+      "bytes": 18570,
+      "sha256": "f41fac886f80d2558aa57a838d5f779ee9afc7ef5cd08282cde1e6d1402bb765",
+      "git_blob_sha": "f67df1405656d31f64c043ea709fa8af92b7126e",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/README.md"
+    },
+    {
+      "path": "assets/motions/LICENSE.txt",
+      "bytes": 9450,
+      "sha256": "237a1d70dfd78d5aa0d6a4c9ced68827aa0e2eb2514f3148c993258f733de065",
+      "git_blob_sha": "39469f1948d715f483c2ccbc5a1cc7d8d22c8b8d",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/assets/motions/LICENSE.txt"
+    },
+    {
+      "path": "assets/motions/README.md",
+      "bytes": 5964,
+      "sha256": "094fb142e0283236c7de06aead9337153a7acd3e6cc1093c84357ac3ce8604ce",
+      "git_blob_sha": "67ceb7e959b5762e19ce339eff584f6fc47d9306",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/assets/motions/README.md"
+    },
+    {
+      "path": "docs/runtime_api.md",
+      "bytes": 26410,
+      "sha256": "ac94ab14e0d8d0ac8dd86a41122e69e8b9557bfc962f10df671a7a5f1cbac6c0",
+      "git_blob_sha": "08c316510972cc088562050e7e27e73a3ef69dd8",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/docs/runtime_api.md"
+    },
+    {
+      "path": "docs/scene_preview.md",
+      "bytes": 24660,
+      "sha256": "2d94aa476aba33d46b0c32ec2c51fbe627d0c093623464e64015bab4e836b1e7",
+      "git_blob_sha": "7d9b5f7fa6a053a1be6ad85ddadb55f5a9dab71d",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/docs/scene_preview.md"
+    },
+    {
+      "path": "motionbricks/assets/onnx/LICENSE.md",
+      "bytes": 547,
+      "sha256": "76c05aa5f17327631284b865bf71d4b61d8aadd6737b6cc24c33752641f2ee71",
+      "git_blob_sha": "6b4344cc391a184564be0e9be387bc40de091c5f",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/motionbricks/assets/onnx/LICENSE.md"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 866,
+      "sha256": "c018d0c43408d4c74850242ebcf36f61fb302d8dad25e501a8930a61a47d0373",
+      "git_blob_sha": "4911f9de16bb4a1666cbfff78b4e10d39ac70b29",
+      "source_url": "https://github.com/NVlabs/motionbricks/blob/54fc563aeaaf819a753d72cc9fdc6713989cdd43/pyproject.toml"
+    }
+  ],
+  "preserved_sources": "https://github.com/Tombonator3000/prosjektbibliotek/blob/main/docs/motionbricks-sources.json",
+  "integration": "Reference and proposed baked-animation workflow only; no code vendoring, model/sample downloads or runtime integration."
+}
