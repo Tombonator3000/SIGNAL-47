@@ -212,3 +212,9 @@ Den tidligere lange [unreal-todoen er bevart som historisk restliste](../Archive
 Test etter risiko og samle sammenhengende leveranser. Dokumentendringer trenger lenke-/vedlegg-/diffkontroll, ikke motorbygg. En liten PR utløser ikke fullmatrise; en nødvendig samlet installasjons-/releasekontroll kjøres én gang. Bruk avgrensede subagenter med tydelig filansvar. Én tung jobb om gangen, og ingen test samtidig med Toms spilløkt.
 
 - [ ] **SC09-levering:** [PR260 er installert](../Evidence/UnrealDeliveries/CLAUDE_CONTINUATION_2026-10-30.md): SARO-samtale etter begge feltkopier, nyere dialog og3s ringing. Editor/pakke93 kontroller/12 gjenopprettinger og1749 selvtester består med reiseendepunkt-fixtures. Samlet vanlig helnatt og historisk Vulkan DEVICE_LOST er fortsatt åpne.
+
+
+## Animasjonsverktøy: MotionBricks
+
+- [x] **ANIM-00:** Registrer MotionBricks i repo og prosjektbibliotek med festet NVIDIA-kilde, lisensskille og foreslått Blender/Tripo3D/Unreal-arbeidsflyt. [Vurdering og kilder](../Research/MotionBricks/README.md). Dette er referansearbeid; verktøy/modeller er ikke installert og lokal integrasjon er UNVERIFIED.
+- [ ] **ANIM-01:** Avgrenset produksjonsprøve på en kopi av den lille Roswell-riggen: egne start-/målpositurer for stå, luske, hjørnetitting og flukt; SOMA-kartlegging, generering, eksportbro, retargeting og baking i Blender, deretter vanlig Unreal-klipp og samme-sekvens før/etter. Kontroller føtter, hender/skuldre, root motion, loop/overganger, kollisjon og kontakt-Foley. Bevar dagens fungerende AI/rigg/klipp. Bruk egne eller produksjonsklarerte kilder; ingen automatisk bruk av BONES-evalueringsklipp i spillet. Ikke gjør NVIDIA-/CUDA-inferens til spillerkrav som del av prøven. Åpne krasj-/progresjonsfeil beholder prioritet.
