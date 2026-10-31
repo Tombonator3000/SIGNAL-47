@@ -1,6 +1,7 @@
 #include "S47FreeformTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47FreeformWorld.h"
 #include "S47HUD.h"
 #include "S47RecoveryCheck.h"
 #include "S47TripoCreature.h"
@@ -173,6 +174,7 @@ void AS47HUD::Start()
 		bOk &= FS47Observing::SelfTest(Lines);
 		bOk &= FS47FreeformSession::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
+		bOk &= FS47FreeformWorld::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
 		bOk &= FS47SC04::SelfTest(Lines);
 		bOk &= FS47SC08::SelfTest(Lines);
