@@ -1,6 +1,7 @@
 #include "S47HUD.h"
 #include "S47RecoveryCheck.h"
 #include "S47TripoCreature.h"
+#include "S47RoswellPreview.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
@@ -589,6 +590,7 @@ void AS47HUD::Start()
 void AS47HUD::StartTests()
 {
 	S47CreaturePreview::Start(US47Main::Get(this));
+	S47RoswellPreview::Start(US47Main::Get(this));
 	if (FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")))
 	{
 		float Seconds = 3.f;

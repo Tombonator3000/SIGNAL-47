@@ -64,3 +64,30 @@ AI-kropp beholdes fordi dens observerbarhet inngår i spillreglene.
 `-S47TripoNpcsTest` gjør én kort kontroll av alle 14 faktiske native modeller,
 materialer, størrelser og kollisjon, og logger separat antallet sceneankre
 som finnes akkurat da. Kameraer og røyktester bruker en isolert UserDir.
+
+## Liten Roswell-alien for Glimpse
+
+`prepare_roswell.py` klargjør en separat, faktisk rigget Tripo-GLB/FBX.
+Oppgi originalfil med `--source` eller `S47_ROSWELL_SOURCE`, og privat
+resultatmappe med `--output` eller `S47_ROSWELL_DIR`. Standardresultatet er
+`modeller/roswell-glimpse-20261031/prepared` i Toms private modellmappe.
+Originalkilden bevares. Kopien normaliseres til 1,20 meter, gulvpivot og
+samme akser som den eksisterende Pale-importen. `.blend` beholder rigg,
+skin, UV-er og pakkede kildebilder; FBX LOD0/1/2 har identisk skjelett og
+koordinatramme. PBR-kart eksporteres til Unreal, med DirectX-normaler bare
+i UE-kopien. Ukjente bindeledd krever en eksplisitt JSON `--bone-map`;
+skriptet lager ikke en erstatningsfigur eller en falsk rigg.
+
+`import_roswell.py` leser samme resultatmappe og oppretter kun
+`/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell`, tilhørende materialer,
+teksturer, skjelett og tre importerte LOD-er. Den høye Pale-modellen og
+de statiske menneskene røres ikke. Kjør begge verktøyene sekvensielt via
+prosjektets guard. Skripter og import er ikke i seg selv bevis på sett
+bevegelse eller fungerende Glimpse i spillet; dette prøves i native runtime.
+
+Unreal-importen krever `-EnablePlugins=GeometryScripting` og legacy-FBX for
+alle LOD-er: `-ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0`.
+Skriptet setter og leser også det samme flagget i importprosessen. Eksplisitt
+enhetskonvertering bevarer meter til centimeter. Hver faktisk render-LOD
+kontrolleres mot sine egne Blender-grenser og ni asymmetriske vertexpunkter,
+slik at et riktig felles asset-bound ikke skjuler feilvendt/mikroskopisk LOD.

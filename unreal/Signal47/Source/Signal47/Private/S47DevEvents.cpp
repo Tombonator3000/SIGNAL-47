@@ -38,7 +38,7 @@ void FS47DevEvents::AddBuiltIn()
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
  // ---- aliens ----
  Add(TEXT("Aliens"), TEXT("Pale body, here"), TEXT("stands ahead of you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("pale body")); });
- Add(TEXT("Aliens"), TEXT("Glimpse"), TEXT("a figure at the edge of sight"), [this, Say]
+ Add(TEXT("Aliens"), TEXT("Glimpse"), TEXT("a small curious Roswell at a nearby window or corner"), [this, Say]
  {
   if (!M->Night || !M->Night->Glimpses) return;
   const bool bOk = M->Night->Glimpses->Now(M->Night->GlimpseIn(true), FString());

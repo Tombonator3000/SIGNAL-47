@@ -3,6 +3,10 @@
 
 #include "S47Three.h"
 #include "S47Web.h"
+#include "Components/PoseableMeshComponent.h"
+#include "Engine/World.h"
+#include "Materials/MaterialInterface.h"
+#include "Misc/CommandLine.h"
 
 namespace
 {
@@ -23,12 +27,35 @@ namespace
 	};
 	const int32 MAX = 8;
 	double Rnd(double A, double B) { return A + FMath::FRand() * (B - A); }
+	struct FPeek { const TCHAR* Id; double X,Z; FVector Cover; bool bWindow; };
+	// The control windows start at Y=.94, with a real raised strip at Y=0
+	// outside them. A 1.20m body can look over the sill without floating.
+	const FPeek PEEKS[] = {
+		{ TEXT("control-window-west"), -4.5,-5.25,FVector::ZeroVector,true },
+		{ TEXT("control-window-east"), .9,-5.25,FVector::ZeroVector,true },
+		{ TEXT("control-corner"), 6.95,-5.25,FVector(0,0,1.25),false },
+		{ TEXT("wing-corner"), 19.75,-6.35,FVector(0,0,1.25),false },
+	};
+	double Ease(double X) { X=FMath::Clamp(X,0.,1.); return X*X*(3.-2.*X); }
 }
 
 FS47Glimpses::FS47Glimpses(AS47Web* InWeb) : Web(InWeb)
 {
 	// new Silhouette('glimpse', 0x14100c), hidden, under the scene (the export has it)
 	Fig = S47SceneObject(InWeb, TEXT("glimpse"));
+	if (InWeb && !FParse::Param(FCommandLine::Get(),TEXT("S47RoswellOff")))
+	{
+		auto* Root=NewObject<USceneComponent>(InWeb,TEXT("RoswellGlimpseRoot"));
+		InWeb->AddInstanceComponent(Root); Root->SetMobility(EComponentMobility::Movable);
+		Root->SetupAttachment(InWeb->GetRootComponent()); Root->RegisterComponent(); BodyRoot=Root;
+		bRoswell=Body.Build(InWeb,Root,TEXT("RoswellGlimpseBody"),
+			TEXT("/Game/Licensed/TripoNPC/Roswell/SK_Tripo_Roswell.SK_Tripo_Roswell"));
+		if (bRoswell) Fig.Traverse([&](FS47Obj O)
+		{
+			if (const auto* N=InWeb->Node(O.I)) if (auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))
+			{ C->SetRenderInMainPass(false); C->SetRenderInDepthPass(false); C->SetVisibleInRayTracing(false); C->SetCastShadow(false); }
+		});
+	}
 	SetVisible(false);
 	Wait = Rnd(120, 300);
 }
@@ -36,13 +63,13 @@ FS47Glimpses::FS47Glimpses(AS47Web* InWeb) : Web(InWeb)
 TOptional<FVector> FS47Glimpses::Where() const
 {
 	if (Up.IsEmpty()) return {};
-	return FVector(FigPos.X, FigPos.Y + 0.6, FigPos.Z);
+	return FVector(FigPos.X, FigPos.Y + (bRoswell?S47Roswell::HeadM-(bWindow?S47Roswell::DuckM*(1.-ExposureNow):0):.6), FigPos.Z);
 }
 
-FS47Glimpses::FSight FS47Glimpses::Sight(const FS47Cam& Cam, const FVector& At)
+FS47Glimpses::FSight FS47Glimpses::Sight(const FS47Cam& Cam, const FVector& At, double HeadY)
 {
 	// degrees from the middle of the view to the figure, and whether it is in the view at all
-	const FVector Head(At.X, At.Y + 0.6, At.Z);
+	const FVector Head(At.X, At.Y + HeadY, At.Z);
 	const FVector To = Head - Cam.Pos;
 	FSight S;
 	S.Dist = To.Size();
@@ -54,6 +81,8 @@ FS47Glimpses::FSight FS47Glimpses::Sight(const FS47Cam& Cam, const FVector& At)
 
 void FS47Glimpses::Update(double Dt, const FS47GlimpsesIn& S)
 {
+	if (bPreviewDriver) return; // Opt-in isolated preview owns this same controller's clock.
+	if (bRoswell) { UpdateRoswell(Dt,S); return; }
 	T += Dt;
 	if (!Up.IsEmpty())
 	{
@@ -81,20 +110,31 @@ TOptional<FS47Glimpses::FAt> FS47Glimpses::Pick(const FS47GlimpsesIn& S, const F
 	// a place 40 to 300 m off, in the view but well off its middle (the tests can name one)
 	TArray<FAt> Out;
 	auto Ground = [&S](double X, double Z) { return S.Ground ? S.Ground(X, Z) : 0.0; };
-	for (const FSpot& Sp : SPOTS) if (S.Scene == Sp.Scene && (Only.IsEmpty() || Only == Sp.Id)) Out.Add({ Sp.Id, FVector(Sp.X, Ground(Sp.X, Sp.Z), Sp.Z), Sp.Rim });
+	if (bRoswell && S.Scene==TEXT("saro") && !S.Truck)
+		for (const FPeek& P:PEEKS) if ((Only.IsEmpty() || Only==P.Id) &&
+			(!P.bWindow || !Only.IsEmpty() || (S.Cam.Pos.X>-6.3 && S.Cam.Pos.X<6.3 && S.Cam.Pos.Z>-4.5 && S.Cam.Pos.Z<4.5)))
+			Out.Add({P.Id,FVector(P.X,Ground(P.X,P.Z),P.Z),0,P.Cover,P.bWindow,S.Scene});
+	for (const FSpot& Sp : SPOTS) if (S.Scene == Sp.Scene && (Only.IsEmpty() || Only == Sp.Id)) Out.Add({ Sp.Id, FVector(Sp.X, Ground(Sp.X, Sp.Z), Sp.Z), Sp.Rim,FVector::ZeroVector,false,S.Scene });
 	// on the highway, at the far end of the headlights on the shoulder
 	if (S.Truck && S.Scene == TEXT("road") && (Only.IsEmpty() || Only == TEXT("shoulder")))
 	{
 		const FVector D = FVector(S.Truck->Dir.X, 0, S.Truck->Dir.Z).GetSafeNormal(), Side(-D.Z, 0, D.X);
-		FVector P = S.Truck->Pos + D * Rnd(110, 160) + Side * ((FMath::FRand() < 0.5 ? -1 : 1) * 8.5);
+		FVector P = S.Truck->Pos + D * (bRoswell?Rnd(22,36):Rnd(110,160)) + Side * ((FMath::FRand() < 0.5 ? -1 : 1) * 8.5);
 		P.Y = Ground(P.X, P.Z);
-		Out.Add({ TEXT("shoulder"), P, 0x1c1610 });
+		Out.Add({ TEXT("shoulder"), P, 0x1c1610,FVector::ZeroVector,false,S.Scene });
 	}
 	TArray<FAt> Ok;
 	for (const FAt& O : Out)
 	{
-		const FSight Sg = Sight(S.Cam, O.P);
-		if (Sg.Dist > 40 && Sg.Dist < 300 && Sg.bInView && (!Only.IsEmpty() || Sg.Off > 30)) Ok.Add(O);
+		const FSight Sg = Sight(S.Cam,O.P,bRoswell?S47Roswell::HeadM:.6);
+		if (bRoswell)
+		{
+			// Close enough to identify a small body. Opaque world geometry still
+			// blocks a candidate: this never reveals an alien through a building.
+			if (Sg.Dist>2.5 && Sg.Dist<(S.Truck?45.:26.) && Sg.bInView &&
+				(!Only.IsEmpty() || Sg.Off>8.) && ClearLine(S.Cam.Pos,O.P+FVector(0,S47Roswell::ProbeM,0))) Ok.Add(O);
+		}
+		else if (Sg.Dist > 40 && Sg.Dist < 300 && Sg.bInView && (!Only.IsEmpty() || Sg.Off > 30)) Ok.Add(O);
 	}
 	if (!Ok.Num()) return {};
 	return Ok[FMath::Min(Ok.Num() - 1, int32(FMath::FRand() * Ok.Num()))];
@@ -103,14 +143,18 @@ TOptional<FS47Glimpses::FAt> FS47Glimpses::Pick(const FS47GlimpsesIn& S, const F
 void FS47Glimpses::Place(const FAt& At, const FVector& Cam)
 {
 	FigPos = At.P;
+	BasePos=At.P; Cover=At.Cover; bWindow=At.bWindow; ActiveScene=At.Scene;
+	Facing=FMath::Atan2(Cam.X-At.P.X,Cam.Z-At.P.Z); Noticed=0; Withdraw=-1;
 	Fig.SetPosition(At.P);
 	Fig.SetRotY(FMath::Atan2(Cam.X - At.P.X, Cam.Z - At.P.Z));   // facing the player
 	Stand(At, Cam);
 	SetVisible(true); Up = At.Id; T = 0; Count++;
+	if (bRoswell) DrawRoswell(0,0);
 }
 
 bool FS47Glimpses::Now(const FS47GlimpsesIn& S, const FString& Id)
 {
+	if (S.Scene.IsEmpty()) return false;
 	const TOptional<FAt> At = Pick(S, Id);
 	if (!At) return false;
 	Place(*At, S.Cam.Pos);
@@ -126,10 +170,100 @@ void FS47Glimpses::Stand(const FAt& At, const FVector& Cam)
 	if (Parts.Num() > 1) Parts[1].SetColor(S47Three::Hex(At.Rim));
 }
 
+bool FS47Glimpses::ClearLine(const FVector& Eye, const FVector& Head, FString* BlockedBy) const
+{
+	if (BlockedBy) BlockedBy->Reset();
+	AS47Web* W=Web.Get();
+	if (!W || !W->GetWorld()) return true; // Pure logic fixtures have no renderer.
+	// Same opaque rule as the threat: interaction shims and clear window glass
+	// do not block a view, but the actual walls and window sill do.
+	FCollisionQueryParams Q(SCENE_QUERY_STAT(S47RoswellSight),true);
+	// The old silhouette remains a logical/photo handle after its draw is
+	// masked. It must not occlude its replacement when that handle is visible.
+	Fig.Traverse([&](FS47Obj O)
+	{
+		if (const auto* N=W->Node(O.I)) if (const auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())) Q.AddIgnoredComponent(C);
+	});
+	if (const auto* Root=BodyRoot.Get())
+	{
+		TArray<USceneComponent*> Parts; Root->GetChildrenComponents(true,Parts);
+		for (const auto* Part:Parts) if (const auto* C=Cast<UPrimitiveComponent>(Part)) Q.AddIgnoredComponent(C);
+	}
+	for (int32 I=0; I<24; ++I)
+	{
+		FHitResult H;
+		if (!W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(Eye),S47Three::ToUE(Head),ECC_Visibility,Q)) return true;
+		const auto* C=H.GetComponent(); if (!C) return false;
+		bool Solid=C->IsVisible() && !C->bHiddenInGame;
+		if (const auto* N=W->Node(W->NodeOf(C))) if (N->Name.StartsWith(TEXT("proxy"))) Solid=false;
+		if (const auto* Mat=C->GetMaterial(FMath::Max<int32>(0,H.ElementIndex)))
+		{
+			float Opacity=1; Mat->GetScalarParameterValue(TEXT("Opacity"),Opacity);
+			if (Mat->GetBlendMode()==BLEND_Additive || (Mat->GetBlendMode()==BLEND_Translucent && Opacity<.5f)) Solid=false;
+		}
+		if (Solid) { if (BlockedBy) *BlockedBy=C->GetName(); return false; }
+		Q.AddIgnoredComponent(C);
+	}
+	return false;
+}
+
+void FS47Glimpses::DrawRoswell(double Exposure, double Clock)
+{
+	ExposureNow=Exposure;
+	FigPos=BasePos+Cover*(1.-Exposure);
+	Fig.SetPosition(FigPos);
+	if (auto* Root=BodyRoot.Get())
+	{
+		Root->SetWorldLocation(S47Three::ToUE(FigPos));
+		Root->SetWorldRotation(FRotationMatrix::MakeFromX(
+			S47Three::DirToUE(FVector(FMath::Sin(Facing),0,FMath::Cos(Facing)))).Rotator());
+	}
+	const double HeadTurn=.20*FMath::Sin(Clock*.85);
+	if (bWindow || Cover.IsNearlyZero() || Exposure>.995 || Exposure<.005) Body.Peek(bVisible,bWindow?Exposure:1.,HeadTurn,Clock);
+	else Body.Apply(bVisible,HeadTurn,.65,Clock*5.,Clock,false,true);
+}
+
+void FS47Glimpses::UpdateRoswell(double Dt, const FS47GlimpsesIn& S)
+{
+	if (!Up.IsEmpty())
+	{
+		if (S.Scene!=ActiveScene) { Hide(); return; }
+		// Menus/other guarded scenes temporarily hide the body without spending
+		// its readable interval or moving it while the player cannot respond.
+		if (!S.bOk) { Body.Peek(false,1,0,T); return; }
+		T+=Dt;
+		const FSight Seen=Sight(S.Cam,BasePos,S47Roswell::HeadM);
+		const bool bLooked=Seen.bInView && Seen.Off<18. && ClearLine(S.Cam.Pos,BasePos+FVector(0,S47Roswell::ProbeM,0));
+		if (T>1.25 && bLooked) Noticed+=Dt;
+		else Noticed=FMath::Max(0.,Noticed-Dt*.4);
+		// Readable recognition first; no vanish on the same frame as a look,
+		// flashlight or zoom. It then physically withdraws along its cover path.
+		if (Withdraw<0 && (Noticed>1.15 || Seen.Dist<2.5 || T>12. ||
+			(S.bFlashlight && bLooked && T>2.5) || (S.Zoom>.25 && bLooked && T>2.5) ||
+			(S.May==TOptional<bool>(false) && !Seen.bInView))) Withdraw=T;
+		const double Exposure=Withdraw>=0?1.-Ease((T-Withdraw)/1.5):Ease(T/1.25);
+		DrawRoswell(Exposure,T);
+		// A retreat must really reach cover. An open-ground sighting can remain
+		// watching until the player turns away; it never pops out in clear sight.
+		if (Withdraw>=0 && T-Withdraw>=1.5 &&
+			(!Seen.bInView || !ClearLine(S.Cam.Pos,FigPos+FVector(0,bWindow?S47Roswell::HeightM-S47Roswell::DuckM:S47Roswell::HeadM,0)))) Hide();
+		return;
+	}
+	if (!S.bOk || S.Scene.IsEmpty() || Count>=MAX || S.May==TOptional<bool>(false)) return;
+	const double Day=FMath::Fmod(FMath::Fmod(S.Clock,86400.)+86400.,86400.);
+	const double K=FMath::Clamp((Day-2.5*3600.)/(2.5*3600.),0.,1.);
+	Wait-=Dt*(.6+1.4*K)*S.Pace.Get(1);
+	if (Wait>0) return;
+	Wait=Rnd(20,40);
+	const auto At=Pick(S); if (!At) return;
+	Place(*At,S.Cam.Pos); Wait=Rnd(150,330);
+}
+
 void FS47Glimpses::SetVisible(bool bOn)
 {
 	bVisible = bOn;
 	Fig.SetVisible(bOn);
+	if (!bOn && bRoswell) Body.Peek(false,1,0,0);
 }
 
 void FS47Glimpses::Hide() { SetVisible(false); Up.Reset(); }
@@ -168,5 +302,25 @@ bool FS47Glimpses::SelfTest(TArray<FString>& Lines)
 	G.Count = 8;
 	G.Update(1000, S);
 	Check(G.Up.IsEmpty(), TEXT("at most eight in a night"));
+	// Native Roswell behaviour is independent of asset loading in this pure
+	// fixture. Visual skin, cover and scale still need the ordinary GPU check.
+	G.bRoswell=true; G.Reset();
+	S.Ground=[](double,double) { return 0.; };
+	S.Cam.Pos=FVector(-4.5,1.62,0);
+	Aim(FVector(-4.5,S47Roswell::HeadM,-5.25)-S.Cam.Pos);
+	Check(G.Now(S,TEXT("control-window-west")) && G.Count==1 && G.HasNativeBody(),
+		TEXT("Roswell has a separate nearby window anchor, not the distant shadow"));
+	for (int32 I=0; I<4; ++I) G.Update(.5,S);
+	Check(!G.Up.IsEmpty() && G.Withdraw<0 && G.ExposureNow==1.,
+		TEXT("looking at the small figure leaves a readable recognition interval"));
+	const double HeldAt=G.T; S.bOk=false; G.Update(20,S); S.bOk=true;
+	Check(G.T==HeldAt && !G.Up.IsEmpty(),TEXT("guarded/menu time does not consume the Roswell interval"));
+	G.Update(.3,S); G.Update(.7,S);
+	Check(!G.Up.IsEmpty() && G.Withdraw>=0 && G.ExposureNow>0 && G.ExposureNow<1.,
+		TEXT("noticed Roswell withdraws over time instead of vanishing in one frame"));
+	Aim(FVector(0,0,1)); G.Update(1,S);
+	Check(G.Up.IsEmpty(),TEXT("retreat completes after actual cover or a turn away"));
+	G.Count=8; G.Wait=0; G.Update(1000,S);
+	Check(G.Up.IsEmpty(),TEXT("native Roswell preserves the eight-appearance night limit"));
 	return bOk;
 }
