@@ -52,6 +52,14 @@ namespace
 	{
 		TArray<FString> Out;
 		IFileManager::Get().FindFiles(Out, *(PropsDir() / TEXT("*.json")), true, false);
+		// Config/Props is staged as one directory, but these two files belong to
+		// S47Lookdev and S47Lighting, not the placement schema. Use the same explicit
+		// discovery contract at runtime and in SelfTest; do not hide an unknown or
+		// malformed placement file merely because its required area/props is absent.
+		Out.RemoveAll([](const FString& Name)
+		{
+			return Name == TEXT("lookdev-bindings.json") || Name == TEXT("lookdev-environment.json");
+		});
 		Out.Sort();
 		return Out;
 	}

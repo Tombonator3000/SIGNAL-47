@@ -4,11 +4,15 @@
 
 class AS47Web;
 class UStaticMeshComponent;
+class UStaticMesh;
 
 // Narrow render edits for explicitly selected legacy SARO parts. Original
 // assets, material bindings, UVs, collision and gameplay handles are retained.
 namespace S47SaroLegacyCleanup
 {
+ // The exact authored source behind this helper's transient render copies.
+ // Other meshes keep their own path; names alone never establish provenance.
+ FString SourceAssetPath(const UStaticMesh* Mesh);
  struct FEdit
  {
   FString Id;

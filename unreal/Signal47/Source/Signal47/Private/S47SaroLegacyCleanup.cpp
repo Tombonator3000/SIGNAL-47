@@ -14,6 +14,7 @@ namespace
 {
  struct FState { TSet<FString> Applied; FString Failure; bool bBuilt=false; };
  TMap<TWeakObjectPtr<AS47Web>,FState> States;
+ TMap<TWeakObjectPtr<const UStaticMesh>,FString> SourcePaths;
  struct FVertex
  {
   FVector3f Position,X,Y,Z; TArray<FVector2f> UV; FColor Color=FColor::White;
@@ -164,7 +165,11 @@ namespace
   RT&=IsRayTracingAllowed();
 #endif
   if (RT && !Plan.Indices.IsEmpty()) Data->InitializeRayTracingRepresentationFromRenderingLODs();
-  Cut->SetRenderData(MoveTemp(Data)); Cut->SetExtendedBounds(FBoxSphereBounds(Plan.Bounds)); return Cut;
+  Cut->SetRenderData(MoveTemp(Data)); Cut->SetExtendedBounds(FBoxSphereBounds(Plan.Bounds));
+  for (auto It=SourcePaths.CreateIterator();It;++It) if (!It.Key().IsValid()) It.RemoveCurrent();
+  const FString SourcePath=SourceAssetPath(Plan.Source);
+  SourcePaths.Add(Cut,SourcePath);
+  return Cut;
  }
  bool Run(AS47Web* W,UStaticMeshComponent* Explicit,const TArray<FEdit>& Input,FString* Why)
  {
@@ -224,6 +229,12 @@ namespace
  }
 }
 
+FString SourceAssetPath(const UStaticMesh* Mesh)
+{
+ if (!Mesh) return FString();
+ if (const FString* Source=SourcePaths.Find(Mesh)) return *Source;
+ return Mesh->GetPathName();
+}
 bool Apply(AS47Web* W,const TArray<FEdit>& Edits,FString* Why) { return Run(W,nullptr,Edits,Why); }
 bool ApplyToComponent(AS47Web* W,UStaticMeshComponent* Component,const TArray<FEdit>& Edits,FString* Why)
 {

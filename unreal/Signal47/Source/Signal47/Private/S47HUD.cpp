@@ -176,7 +176,11 @@ void AS47HUD::Start()
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
 		bOk &= AS47Props::SelfTest(Lines); // (Unreal only: the free models' data files, Config/Props)
 		bOk &= SS47ScreenView::SelfTest(Lines); // (the station's screens in use: the camera's aim, the glass's pixels; the board's cursor)
-		for (const FString& L : Lines) if (L.StartsWith(TEXT("FAIL"))) UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
+		// Several modules prefix their failures ("props: FAIL ...") or put FAIL
+		// after the check name. Keep those diagnostics when the overall test fails.
+		for (const FString& L : Lines)
+			if (L.StartsWith(TEXT("FAIL")) || L.Contains(TEXT(": FAIL")) || L.EndsWith(TEXT(" FAIL")))
+				UE_LOG(LogS47HUD, Warning, TEXT("S47: %s"), *L);
 		UE_LOG(LogS47HUD, Display, TEXT("S47: self test %s (%d checks)"), bOk ? TEXT("OK") : TEXT("FAILED"), Lines.Num());
 	}
 
