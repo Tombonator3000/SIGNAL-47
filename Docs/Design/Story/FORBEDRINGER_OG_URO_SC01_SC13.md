@@ -12,6 +12,16 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 
 **Prioritet A** betyr anbefalt første pass etter feilretting. **B** er senere polering. Liten/middels beskriver omfang, ikke tidsløfte. Følelsen må vurderes med faktisk spilling; dette er regi og designvurderinger fra kode/manus.
 
+## Bærbar feltradio og varsling ved alienmøter
+
+**Ny bestilling fra Tom 31. oktober:** En walkietalkie ligger på skrivebordet ved spillstart og kan plukkes opp og tas med. Først er den et vanlig arbeidsredskap. Når en alien faktisk er nær, brytes den normale mottakingen av rar skurring. Avviket får en hørbar kilde som spilleren allerede kjenner, og kan skape uro før fienden er tydelig synlig. Nærhet bør påvirke klang/intensitet uten et presist avstandstall. La støyen trekke seg tilbake når nærheten opphører; unngå konstant høy støy gjennom hele møtet.
+
+**Gameplay:** Pickup og bæring må lagres, bordmodellen fjernes når den tas, og eldre saker må kunne hente radioen uten omstart. Nødvendige eksisterende samtaler skal fortsatt være nåbare om radioen ikke er tatt. Gjenbruk en egnet radio fra prosjektet og eksisterende radiolyd der det passer. Den nye SARO-feltradioen er et eget objekt; Tomás' batteriløse radio i Rom6 og dens 4+7-/EVENT-funksjon bevares.
+
+**Lydregi:** Tom ber også om musikk eller lydcue når aliens kommer. Prøv en kort markering ved møtestart/oppdagelse og la radio, skritt og stillhet bære resten. Samordne signalene, så uroen ikke blir tre samtidige alarmer. Hendelser og nærhet skal følge faktiske fiender, uten å røpe fremtidige spawns eller legge alienvarsler inn i den rolige åpningen. Vanlig radio kan introduseres før første møte. Bevar taleforståelighet, lydvalg og mulighet for tekstlig indikasjon.
+
+**Videre idé, ikke besluttet:** Dale kan senere kontaktes via feltradioen. Det kan også gi grunnlag for å kjenne igjen en gjentatt stemme ved service-yard-døren. Tidspunkt, replikker og eventuell ny samtale avklares mot eksisterende historie; ingen ny stemmerolle trengs. PLAY-31-20/21 i [TODO](../../Active/TODO.md) fører bestilt radio/lyd. Funksjonene er ikke implementert ennå.
+
 ## Åpningen, egen bil og ankomst
 
 **Gameplay:** Gjør første arbeidsmål og riktig besøksinngang tydelige. Ankomst skal godta god parkering uten at spilleren må gjette en bestemt vinkel. Matstopp forblir valgfritt, og egen bil får en konsekvent rolle når den senere åpnes for bruk.
@@ -59,6 +69,8 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 **Skrekk:** Gjenbruk det tidligere Dale-fragmentet med identisk pause, fra feil dør. La spilleren få tid til å kjenne det igjen. Bak en lukket dør kan fottrinnene stanse og lytte før de går videre. Den korte stillheten tvinger spilleren til å velge når døren skal åpnes.
 
 **Nytt spillerfunn 31. oktober, spilltid 03:03:** Tom opplever at dørlukking ikke gir fremdrift, og at alien kommer plutselig fra gangen og inn i et arkiv som er for trangt til å unnslippe. Dette er en gameplayfeil som må undersøkes, ikke en ønsket skrekkeffekt. PLAY-31-17 i [TODO](../../Active/TODO.md) fører dørlukking/progresjon. Logg/kilde viser at trygg dørtilstand og avsluttet fienderunde er forskjellige vakter; HUD må gjøre handlingene forståelige.
+
+**Tilleggsfunn kl.03:05:** Alien kan ifølge Tom sette seg fast i inngangsdøren. PLAY-31-19 fører passering, dør-/kroppsoverlapp og gjenoppretting av ruten. Fastlåsing skal ikke brukes som løsningen på jakten eller gi permanent progresjonsstopp.
 
 **Toms alternative regi, til utprøving gjennom PLAY-31-18:** La møtet starte utenfor ved service yard, med banking og det gjenkjennelige Dale-fragmentet. Spilleren hører hvor stemmen kommer fra, velger å åpne og ser alien stå fysisk utenfor terskelen. En kort oppdagelses-/reaksjonspause gir tid til å rygge før jakten begynner. Dette er et alternativ til anbefalingen om stemmen fra Operations-døren ovenfor, ikke en ekstra alien som dukker opp inne samtidig.
 

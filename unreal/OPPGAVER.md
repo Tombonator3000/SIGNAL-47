@@ -127,4 +127,4 @@ Root eier lesende krasjdiagnose og dokumentoppfølging på `codex/saro-render-cr
 
 ## SC04 dører og jakt under fortsatt spilltest
 
-Root eier dokumentoppfølging, SC04-forslaget og ett originalbilde på `codex/sc04-doors-chase-feedback-20261031`. Tom spiller igjen. PLAY-31-17/18 fører henholdsvis feilretting og sceneforslag; ingen kildeendring, motorjobb eller installasjon.
+Root eier dokumentoppfølging, SC04-forslaget, radio-/lydbestillingen og to originalbilder på `codex/sc04-doors-chase-feedback-20261031`. Tom spiller igjen. PLAY-31-17/19 fører dør/progresjon, PLAY-31-18 sceneforslag og PLAY-31-20/21 bærbar radio/lyd. Ingen kildeendring, motorjobb eller installasjon.
