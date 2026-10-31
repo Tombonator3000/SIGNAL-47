@@ -599,7 +599,15 @@ void US47Chapter6::Shoot(FS47View& Out)
 		const double E = Sm(0, 6.5, V); Pos = FMath::Lerp(From.Pos, K.Front, E);
 		Q = FQuat::Slerp(From.Q, LookAt(Pos, K.AtTruck), Sm(0.5, 5.5, V));
 	}
-	else if (V < 13) { const double E = Sm(6.5, 13, V); Pos = FMath::Lerp(K.Front, K.High, E); Q = LookAt(Pos, FMath::Lerp(K.AtTruck, K.Westward, E)); }
+	else if (V < 13)
+	{
+		const double E = Sm(6.5, 13, V); Pos = FMath::Lerp(K.Front, K.High, E);
+		// The rising camera and moving aim nearly crossed at seven seconds. Keep
+		// both authored endpoint views, with a steady turn throughout the first lift.
+		Q = FinaleSky && FinaleSky->Ready()
+			? FQuat::Slerp(LookAt(K.Front, K.AtTruck), LookAt(K.High, K.Westward), E)
+			: LookAt(Pos, FMath::Lerp(K.AtTruck, K.Westward, E));
+	}
 	else if (V < 21)
 	{
 		const double E = Sm(13, 21, V); Pos = FMath::Lerp(K.High, K.SunSide, E);
