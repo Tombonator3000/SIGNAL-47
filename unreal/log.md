@@ -1436,3 +1436,7 @@ Codex på codex/game-logic-review-20261031: statisk helreisegjennomgang med tre 
 
 ### 2026-10-31T08:27+01:00 Spillrettinger utsatt etter Toms beskjed
 Codex på codex/story-logic-fixes-20261031: Tom vil spille ferdig før retting. Egne ubygde kildeutkast er lagt til side og tilbakestilt; feil står åpne i TODO. Forslag til gameplay/skrekk/uro for åpning og SC01–SC13 er dokumentert. Ingen bygg, spilltest, installasjon eller personlig Saved-endring.
+
+
+### 2026-10-31T08:38+01:00 Lokal diskopprydding
+Codex på codex/disk-cleanup-20261031:37 genererte cachemapper/268886 filer fjernet, netto82.1GB frigjort og86.4GB ledig.570416 bevarte filer og alle arbeidskopiers Git-status uendret; installasjon/Saved/kilder/assets/bevis bevart. Vanlig pakkeprune hadde ingen ekstra gamle payloads; OPS-02 fører gjenværende vedlikeholdsbehov. Lokal manifest/kvittering i scratch-bm/cleanup-20261031; ingen motorjobb, spillrettelse eller installasjon.
