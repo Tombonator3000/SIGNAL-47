@@ -1492,3 +1492,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 15:50 CET | codex/votv-gameplay-lessons-20261031 | Eget VotV-gameplaynotat og VOTV-01 til05 koblet til gjeldende TODO. Første nye forslag er eksisterende kontrollreise med tydelig handling, resultat og lokal recovery, etter åpne P1-er; T01/SC08/SC09 og rettet LOGIC-08 videreføres. Kun dokumentasjon; ingen spillkode, motorjobb, installasjon eller dekompilerte spillfiler i Git.
 
 2026-10-31 16:48 CET | codex/roswell-glimpse-alien-20261031 | Prioritet0.1: to referanser, ekte Tripo H3.1/retopo/rigg og privat Blender/native1.20m Roswell med tre konsistente LOD-er. Editorbygg,1778 selvtester og Vulkan-vinduspeek/plantet retrett består; pakke/installasjon gjenstår. Pale beholdt.
+
+2026-10-31 17:07 CET | codex/roswell-delivery-20261031 | PR287/main04fdb1c8, pakke48ba239e installert17:02: 1778 selvtester og pakket/installert Roswell-peek/retrett PASS;152 Saved-noder/124 filer uendret. Ett eldre payload/7filer pensjonert, current+2older og tilbakeføring bevart; motorvindu frigitt. Ingen release.
