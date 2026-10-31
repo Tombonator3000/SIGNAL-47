@@ -1501,3 +1501,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 18:14: Roswell nysgjerrig AI, egne bevegelses-/Foley-drivere og F10-flokk 1/2/3/6 på `codex/roswell-curiosity-ai-20261031`. Editorbygg og målrettet Vulkan-prøve består med faktisk takvandring; nyeste SARO main inngår. Pakking/installasjon følger, naturlig helnatt og menneskelig lydaksept gjenstår.
 
 2026-10-31 18:26: Roswell AI levert via PR291, installert `de8962fa` kl.18:22 CET. Pakke:1804 selvtester og seksindivid-/takprøve; installert kort prøve består,124 Saved-filer uendret. Prune pensjonerte én gammel payload/sju filer; gjeldende+to eldre beholdes med midlertidig beskyttet SARO-rollback. Egne tunge jobber/reservasjon avsluttet.
+
+2026-10-31 18:56 CET | codex/saro-workstations-20261031 | Aktive SARO-PC-er, fysisk S-03-service, reell antennebevegelse, lydsammenligning og papirarkiv installert fra 3e723bba. Editor/pakke 163 kontroller, 9 disk-/Flow-restores, 1819 selvtester og installert Fortsett PASS; 152 Saved-elementer uendret. Tre eldre payload pensjonert; current+2older, egne motorvinduer frigitt. Ingen offentlig release.
