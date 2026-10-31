@@ -217,13 +217,13 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==43)
  {
   if(M->World->bBusy)return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z+1.5,0);
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
-  Snapshot=F.Field->Save();F.Field->Stop();Go(431,.3);return;
+  Snapshot=F.Field->Save();F.Field->Stop();Go(431,6.0);return;
  }
  if(Stage==431){Shot(TEXT("bench-before"));Go(432,.2);return;}
- if(Stage==432){F.Field->Begin(Snapshot);Go(433,.3);return;}
+ if(Stage==432){F.Field->Begin(Snapshot);Go(433,2.0);return;}
  if(Stage==433){Shot(TEXT("bench-after"));Go(44,.2);return;}
  if(Stage==44)
  {
@@ -312,7 +312,7 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(!Photo.Id.IsEmpty()&&!Photo.Url.IsEmpty(),TEXT("native camera renders and retains the actual physical trace")))return;
   F.Director->Use(TEXT("ff:event-sample"));
   if(!Check(F.InventoryCount(TEXT("fragment"))==1&&F.HasFinding(TEXT("landing_trace")),TEXT("photographed trace becomes one retained physical sample")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X-1.4,P.Z,0);Go(24,.3);return;
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
  }
  if(Stage==24)
  {
@@ -333,6 +333,9 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==60)
  {
+  int32 Pending=INDEX_NONE;
+  for(int32 I=0;I<F.Jobs().Num();++I){const auto& Job=F.Jobs()[I];if(Job.Day==F.Day()&&Job.Slot==1&&Job.Stage<=J::Pointed){Pending=I;break;}}
+  if(!Check(Pending!=INDEX_NONE&&F.SelectJob(Pending),TEXT("investigation selects its available pulsar or incident job through OPS")))return;
   const auto P=F.ConsoleProfile();if(!Check(P&&F.CurrentJob(),TEXT("instrument anomaly supplies a retained observation job")))return;
   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
   if(!Check(F.PointSelected(),TEXT("specialized investigation commands its actual array pointing")))return;

@@ -21,7 +21,7 @@
 
 namespace
 {
- const FVector BenchAt(21.6,-.57,6.2);
+ const FVector BenchAt(24.0,-.57,6.2);
  const FVector GeneratorAt(5.93,1.35,.65);
  const FVector CabinetLocal(0,.62,.29);
  const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film") };
