@@ -1,6 +1,6 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 30. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 31. oktober 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
@@ -42,6 +42,7 @@ De engelske forfatterkildene i [Narrative/HorrorStory](../../unreal/Narrative/Ho
 
 | D-15 | SARO-gangen forbedres først, deretter kontrollrommet, med samme metode som visuelt godkjent Dales kontor. | Toms bestilling 30. oktober. Bruk eksisterende eide modeller, egne PBR-overflater og faktisk før/etter i Unreal; bevar fungerende spillankre og lagringer. Tom godkjente begge rommene for nå 30. oktober, for installert PR258. |
 | D-16 | Troverdig 1980-tallsdesign er en kjerne i spillet. SARO skal ha gjenkjennelige instrumenter, møbler, telefoner, beholdere og tekstiler, med forskjellige materialer og funksjonelle detaljer. | Toms presisering og fire kontorreferanser 30. oktober. Nytt detaljpass prioriterer RX3 og gjenbrukbare Tripo-armaturer; plakater monteres foran maling og blokklær fjernes eller erstattes. [Analyse og føring](../Design/SARO_1986.md). |
+| D-17 | Gjenbruk først ved 3D-arbeid. Søk i eksisterende prosjektassets, Toms Tripo-modeller og eide kilder før ny modellering; bruk egnede bibliotekmodeller når samlet kvalitet og tidsbruk blir bedre. | Toms bestilling 31. oktober etter gjennomgang av arbeidsprinsippet. [Konkret arbeidsflyt](../../unreal/AGENTS.md). Bevar plassering, retning, hengsler, gulv og interaksjoner ved teknisk utskifting; sluttkontroll i Unreal. Verktøyvalg er fleksibelt og innebærer ingen automatisk installasjon, betaling eller publisering av råassets. |
 
 ## Arbeid, testing og levering
 

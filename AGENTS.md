@@ -6,6 +6,10 @@ Tom har bestemt at alt videre spillarbeid kun gjelder Unreal-versjonen i `unreal
 
 Svar på norsk. Dette er kildekoden til SIGNAL / 47, et spill om kosmisk etterforskning ved SARO i New Mexico, 1986. Bevar Blender-kilder, spillkonstanter, fungerende interaksjoner, originale assets og lisenskreditering.
 
+## Gjenbruk av modeller
+
+Tom har 31. oktober bestemt gjenbruk først: søk i eksisterende prosjektassets, Tripo-modeller og bibliotek før ny modellering. Følg den konkrete arbeidsflyten i [Unreal-reglene](unreal/AGENTS.md); bevar fungerende verdensplasseringer og spillankre ved utskifting.
+
 ## Historiske spor
 
 `web/` (three.js) og `Unity/` er arkiv og referanse. Reglene i `web/AGENTS.md` og resten av denne fila gjelder bare hvis Tom ber om arbeid der.
