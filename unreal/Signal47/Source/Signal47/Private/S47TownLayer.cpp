@@ -5,6 +5,7 @@
 #include "S47Away.h"
 #include "S47Ambience.h"
 #include "S47Caliche.h"
+#include "S47CalicheAccess.h"
 #include "S47Chapter.h"
 #include "S47Curve.h"
 #include "S47Cutouts.h"
@@ -150,6 +151,7 @@ void US47TownLayer::Init(US47Main* InM)
 		auto Before = M->Player->OnStep; M->Player->OnStep = [this, Before] { if (Roadside->bSilent) return; if (Before) Before(); else M->Audio->Step(M->Night->SurfaceAt()); };
 	}
 
+	S47CalicheAccess::Init(M);
 	TestFlags();
 }
 
@@ -230,6 +232,7 @@ void US47TownLayer::MorningStep(double Dt, bool bModal)
 }
 void US47TownLayer::WorldStep(double Dt)
 {
+	S47CalicheAccess::Update();
 	bool bRadioWomanTownUpdated = false;
 	const FString A = Area(); const auto Cam = Camera();
 	if (A == TEXT("diner") || A == TEXT("road") || A == TEXT("roswell"))
@@ -329,11 +332,13 @@ void US47TownLayer::ResetPastureTv() { Pasture->Reset(); MotelTv->Reset(); }
 void US47TownLayer::ResetNinthMorning() { Ninth->Reset(); if (!Ninth->Found()) M->Books.Remove(Ninth->Book.Get()); Morning->Reset(); }
 void US47TownLayer::Refile(const S47J::FObj& State)
 {
+	S47CalicheAccess::Restore(State);
 	for (const FS47Doc& D : FS47Caliche::TownWitnessDocs(M->TownSeen)) M->Story->AddDoc(D);
 	MotelTv->Refile(S47J::Str(S47J::Obj(State, TEXT("motelTv")), TEXT("url"))); Roadside->Reset();
 }
 void US47TownLayer::Save(const S47J::FObj& State) const
 {
+	S47CalicheAccess::Save(State);
 	FString Frame; for (const FS47Doc& D : M->Story->Docs()) if (D.Id == TEXT("motel-tv-frame")) Frame = D.Image;
 	if (!Frame.IsEmpty()) { auto Tv = S47J::New(); S47J::Set(Tv, TEXT("id"), TEXT("motel-tv-frame")); S47J::Set(Tv, TEXT("url"), Frame); S47J::Set(State, TEXT("motelTv"), Tv); } else State->RemoveField(TEXT("motelTv"));
 }

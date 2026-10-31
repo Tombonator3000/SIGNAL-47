@@ -266,11 +266,11 @@ void US47Chapter6::Drive(double Dt)
 	SetClock(FMath::Min(Clock(), T - 0.05));
 	const double H = Drv->Heading, Fx = Drv->Pos.X - FMath::Sin(H) * 2.3, Fz = Drv->Pos.Z - FMath::Cos(H) * 2.3;
 	if (Road->PastC(Fx, Fz) >= 0) { StartEvent(); return; }
-	if (Road->bHitBack) { Road->bHitBack = false; if (BackT <= 0) { Toast(TEXT("Ward can wait. The bolt is ahead."), 3.4f); BackT = 6; } }
+	if (Road->bHitBack) { Road->bHitBack = false; if (BackT <= 0) { Toast(Host && Host->bEveningTimeline ? TEXT("Ward has the sources. The courier is ahead at mile 10.4. Keep going past C.") : TEXT("Ward can wait. The bolt is ahead."), 3.4f); BackT = 6; } }
 	BackT -= Dt;
 	Idle = FMath::Abs(Drv->Speed) < 0.5 ? Idle + Dt : 0;
 	for (const auto& R : RADIO) if (At.Mi >= R.Key && !Done.Contains(R.Value)) { Done.Add(R.Value); if (At.Mi < R.Key + 0.4) Toast(R.Value, 5); }
-	if (Idle > 40 && At.Mi > 7.6 && !Done.Contains(TEXT("nudge"))) { Done.Add(TEXT("nudge")); Toast(TEXT("The line is just ahead, past the eight-mile post."), 4); }
+	if (Idle > 40 && At.Mi > 7.6 && !Done.Contains(TEXT("nudge"))) { Done.Add(TEXT("nudge")); Toast(Host && Host->bEveningTimeline ? TEXT("C is ahead, past the eight-mile post. Keep going to the courier at mile 10.4.") : TEXT("The line is just ahead, past the eight-mile post."), 4); }
 	if (Idle > 40 && At.Mi < 0.2 && !Done.Contains(TEXT("across"))) { Done.Add(TEXT("across")); Toast(TEXT("The old road is across the highway, going off to the east."), 4); }
 }
 

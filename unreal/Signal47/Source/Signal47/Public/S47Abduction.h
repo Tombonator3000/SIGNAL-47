@@ -81,6 +81,8 @@ struct FS47AbductIn
 	double Clock = 0;
 	/** The clock by which the story's next fixed point comes; the lost time stops short of it. */
 	double NextFixed = -1e9;
+	/** The fixed evening timeline keeps the encounter but never skips story minutes. */
+	bool bNoTimeLoss = false;
 	/** Chapter three or four: the one before chapter five is due. */
 	bool bLate = false;
 	bool bCalm = false;
@@ -311,6 +313,7 @@ private:
 	double WarnFrom = 0;
 	double Top = 1;
 	double Lost = 0;
+	bool bNoTimeLoss = false;
 	double From = 0;
 	FVector Take = FVector::ZeroVector;
 	TArray<TStrongObjectPtr<UTexture2D>> Frames;

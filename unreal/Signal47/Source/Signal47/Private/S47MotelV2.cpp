@@ -221,6 +221,30 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(Slot!=INDEX_NONE)for(int32 K=0;K<C->GetNumMaterials();++K)if(auto* Mid=C->CreateDynamicMaterialInstance(K))
    F->Glows.Add({Mid,Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor")),Slot,Slot==6?4.f:Slot==0?6.f:9.f});
  }
+ // Playtest: natural oiled timber over the seven static painted leaves. Hardware and frames stay.
+ // The live Room6 leaf retains its movement/interaction and receives the same restrained brown tint.
+ if(auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube")))
+ if(auto* Wood=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_DarkWood.M_Town_DarkWood")))
+ for(int32 Room=1;Room<=8;++Room)if(Room!=6)
+ {
+  const double DoorY=-.1-5.*Room;
+  auto Panel=[&](double X,double Y,double Z,double Width,double Height)
+  {
+   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(Motel)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Wood);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(true);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(X,Z,-Y)));C->SetWorldScale3D(FVector(.012,Width,Height));W->AdoptNode(C,Motel,FString::Printf(TEXT("motel-v2:timber-door-%d"),Room));F->Parts.Add(C);++F->ExpectedPartCount;
+  };
+  Panel(2.322,DoorY,1.035,.94,2.05);
+  for(double DY:{-.215,.215})for(double Z:{.40,1.02,1.66})Panel(2.331,DoorY+DY,Z,.35,.48);
+  // The thin finish covers the old inset peephole: retain its original position in front of timber.
+  if(auto* Cylinder=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cylinder.Cylinder")))
+  if(auto* Metal=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/TownBuildings/Materials/M_Town_Metal.M_Town_Metal")))
+  {
+   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(Motel)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cylinder);C->SetMaterial(0,Metal);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE(FVector(-45.9,-2.0985683853163195,674.9)+FVector(2.345,1.62,-DoorY)));C->SetWorldRotation(FRotator(90,0,0));C->SetWorldScale3D(FVector(.024,.024,.014));W->AdoptNode(C,Motel,FString::Printf(TEXT("motel-v2:timber-door-peephole-%d"),Room));F->Parts.Add(C);++F->ExpectedPartCount;
+  }
+ }
+ W->Obj(TEXT("world.motel.objs.room6DoorLeaf")).SetColor(S47Three::Hex(0x61432b));
+ W->Obj(TEXT("world.room6.objs.door")).SetColor(S47Three::Hex(0x61432b));
  // Copy only the dedicated pane, sharing the original dynamic material so gameplay still switches it.
  {
   auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(W->Node(663)->Comp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(RoomWindow->GetStaticMesh());

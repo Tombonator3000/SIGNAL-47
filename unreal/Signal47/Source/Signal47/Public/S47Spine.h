@@ -34,7 +34,10 @@ public:
  const FS47SC04& Secure() const { return Act04; }
  const FS47SC08& Point() const { return Act08; } // SC08 They point at you (S47SC08.h)
  const FS47SC11& Searched() const { return Act11; } // SC11 SARO is searched (S47SC11.h)
- void Begin(const S47J::FObj& Saved, bool bNewCase);
+ // Raw field presence distinguishes absent legacy state from an unsupported/malformed saved blob.
+ void Begin(const S47J::FObj& Saved, bool bNewCase, bool bSavedFieldPresent = false);
+ bool PreserveUnknownSave() const { return bUnrecognizedSavedSpine; }
+ bool ResumeAfterSC03(); // Narrow recovery for the pre-Spine night-service cohort.
  void Stop();
  void Step(double Dt);
  S47J::FObj Save() const;
@@ -43,6 +46,8 @@ public:
  int32 Gate(EGate G) const { return State[G]; }
  // The placeholder that holds the story now, or GateCount.
  EGate Pending() const;
+ // Active authored scenes own the night until their entire gate is complete.
+ bool Protected() const { return Pending() != GateCount; }
  // Before the residual console work: SC04 holds the control room after SC03.
  bool HoldsResidual() const;
  // The chapter ends that continue only after their placeholder (S47Chapters.cpp).
@@ -69,6 +74,7 @@ public:
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bTestSC03 = false;
+ bool bMissingSavedSpine = true, bUnrecognizedSavedSpine = false;
  int32 State[GateCount] = { 0, 0, 0 };
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Posts;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Signs;

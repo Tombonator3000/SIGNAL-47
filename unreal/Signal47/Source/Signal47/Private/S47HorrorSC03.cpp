@@ -680,7 +680,7 @@ FString FS47HorrorSC03::Objective() const
  case EPhase::Wait: return TEXT("FUEL STOP // WAIT IN VIEW OF THE NIGHT WINDOW FOR WAGON TWENTY-THREE");
  case EPhase::Arrival: return TEXT("FUEL STOP // A WAGON IS PULLING IN");
  case EPhase::Meet: return TEXT("FUEL STOP // MEET MARA ORTIZ BY HER WAGON");
- case EPhase::Lift: return F.bIdentified ? TEXT("FUEL STOP // TELL ORTIZ WHAT YOU SAW") : TEXT("FUEL STOP // MEET MARA ORTIZ BY HER WAGON");
+ case EPhase::Lift: return TEXT("FUEL STOP // WATCH ORTIZ BY THE WAGON. SOMETHING IS HAPPENING TO HER");
  case EPhase::Retreat: return TEXT("FUEL STOP // GET BEHIND SOLID COVER: INSIDE THE STATION OR IN YOUR TRUCK");
  case EPhase::Calm: return F.bMissing ? TEXT("FUEL STOP // STAY WITH THE PHONE") : TEXT("FUEL STOP // REPORT ORTIZ MISSING FROM THE PAYPHONE. HER THINGS STAY WHERE THEY LIE");
  case EPhase::Deputy: return F.bDeputyHere ? TEXT("FUEL STOP // TALK TO THE DEPUTY") : TEXT("FUEL STOP // THE DEPUTY IS COMING FROM THE SUBSTATION OFFICE");
@@ -712,7 +712,9 @@ bool FS47HorrorSC03::SelfTest(TArray<FString>& Lines)
  auto Future = Write(EPhase::Report, FFacts()); S47J::Set(Future, TEXT("v"), 2);
  Check(!Read(Future, P0, B), TEXT("unknown save version rejected"));
  Check(Read(nullptr, P0, B) && P0 == EPhase::Off, TEXT("absent field is a case before SC03"));
- FS47HorrorSC03 S(nullptr, nullptr); S.P = EPhase::Report;
+ FS47HorrorSC03 S(nullptr, nullptr); S.P = EPhase::Lift; S.F.bIdentified=true;
+ Check(S.Objective().Contains(TEXT("WATCH ORTIZ")) && !S.Use(TEXT("horror:ortiz")), TEXT("the lift asks for observation instead of an unavailable second conversation"));
+ S.P = EPhase::Report;
  Check(S.CallScenes().Num() == 2 && S.CallScenes()[0] == TEXT("SC03_DISPATCH_RECEIPT"), TEXT("payphone in report places dispatch then Ward"));
  S.CallFinished(TEXT("SC03_RELIEF_CONTACT")); Check(S.P == EPhase::Report, TEXT("Ward's contact without the dispatch readback does not start the wait"));
  S.CallFinished(TEXT("SC03_DISPATCH_RECEIPT")); S.CallFinished(TEXT("SC03_RELIEF_CONTACT"));

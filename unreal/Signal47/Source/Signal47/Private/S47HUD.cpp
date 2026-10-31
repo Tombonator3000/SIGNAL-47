@@ -1,4 +1,6 @@
 #include "S47HUD.h"
+#include "S47RecoveryCheck.h"
+#include "S47TripoCreature.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
@@ -582,6 +584,7 @@ void AS47HUD::Start()
 
 void AS47HUD::StartTests()
 {
+	S47CreaturePreview::Start(US47Main::Get(this));
 	if (FParse::Param(FCommandLine::Get(), TEXT("S47SmokeTest")))
 	{
 		float Seconds = 3.f;
@@ -904,6 +907,7 @@ void AS47HUD::FinishSmokeTest()
 	UE_LOG(LogS47HUD, Display, TEXT("S47: smoke test OK, RHI %s, frame %llu, viewport %dx%d, parts %d, phase %d, modal %s"),
 		GDynamicRHI ? GDynamicRHI->GetName() : TEXT("none"), (unsigned long long)GFrameCounter, int32(Size.X), int32(Size.Y),
 		Saro.IsValid() ? Saro->PartCount() : 0, Story.IsValid() ? (int32)Story->Phase() : -1, Modal.IsValid() ? TEXT("open") : TEXT("none"));
+	if (!S47RecoveryCheck::Run(US47Main::Get(this))) { FPlatformMisc::RequestExitWithStatus(false,1);return; }
 	FPlatformMisc::RequestExit(false, TEXT("S47SmokeTest"));
 }
 

@@ -5,7 +5,7 @@
   "nora": {"height_m": 1.72, "pose": "seated"},
   "attendant": {"height_m": 1.79, "pose": "standing"},
   "deputy": {"height_m": 1.86, "pose": "standing"},
-  "earl": {"height_m": 1.78, "pose": "standing"},
+  "earl": {"height_m": 1.78, "pose": "seated"},
   "radio_woman": {"height_m": 1.66, "pose": "seated"},
   "souvenir_man": {"height_m": 1.80, "pose": "standing"},
   "mara_ortiz": {"height_m": 1.73, "pose": "standing"},

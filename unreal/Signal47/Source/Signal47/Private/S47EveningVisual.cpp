@@ -197,7 +197,8 @@ void FS47EveningVisual::Build()
 	    Part->SetMaterial(K,Material);
 	   }
 	   Part->SetVisibility(false);Part->RegisterComponent();
-	   Part->SetWorldTransform(Original->GetComponentTransform().GetRelativeTransform(Source)*Park);ServiceParts.Add(Part);
+	   ServiceLocal.Add(Original->GetComponentTransform().GetRelativeTransform(Source));
+	   Part->SetWorldTransform(ServiceLocal.Last()*Park);ServiceParts.Add(Part);
 	  };
 	  Truck->Body.Traverse(Copy);Truck->Shell.Traverse(Copy);W->Obj(Truck->Path+TEXT(".wheels")).Traverse(Copy);
 	 }
@@ -281,8 +282,14 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 		PresentedPosition = Carrier->Position;
 		Pose(Personal.Get(), PresentedPosition, Carrier->Quat());
 	}
-	else if (bParked) { PresentedPosition = PersonalPark; Pose(Personal.Get(), PresentedPosition, PersonalHeading); }
-	const bool bPersonalShown = (bCommute && Carrier) || (!bCommute && bParked && bSaro);
+	else if (bParked)
+	{
+		PersonalPark=M->World->PersonalPosition();PersonalHeading=M->World->PersonalHeading();
+		PresentedPosition = PersonalPark; Pose(Personal.Get(), PresentedPosition, PersonalHeading);
+	}
+	const FString PersonalAt=M->World->PersonalPlace();
+	const bool bPersonalHere=PersonalAt==Area || (PersonalAt==TEXT("motel")&&bSaro) || (PersonalAt==TEXT("diner")&&(bDiner||Area==TEXT("road")));
+	const bool bPersonalShown = (bCommute && Carrier) || (!bCommute && bParked && bPersonalHere);
 	// A private wagon has one coherent cabin, including the driver's own door and dashboard.
 	// The hidden service-truck controller supplies driving only; none of its meshes are reused.
 	DoorAngle = bPersonalShown && !bDriving ? 1.02 : 0;
@@ -290,10 +297,23 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	WagonDoorPose(PersonalDoor.Get(), PresentedPosition, Rotation, DoorAngle);
 	if (Personal.IsValid()) Personal->SetVisibility(bPersonalShown);
 	if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(bPersonalShown);
-	M->World->SetPersonalPark(PersonalPark, PersonalHeading, bPersonalShown && !bCommute);
-	const bool ServiceShown=bCommute && bSaro && !ServiceParts.IsEmpty();
-	for (auto& Part:ServiceParts)if(Part.IsValid())Part->SetVisibility(ServiceShown);
-	M->World->SetArrivalServiceWaiting(ServiceShown);
+	const bool bPersonalDrive=M->World->PersonalTransport();
+	const FString ServiceAt=bPersonalDrive?M->World->ServicePlace():FString(TEXT("saro"));
+	const bool ServiceHere=ServiceAt==Area || (ServiceAt==TEXT("motel")&&bSaro) || (ServiceAt==TEXT("diner")&&(bDiner||Area==TEXT("road")));
+	const FVector ServicePos=bPersonalDrive?M->World->ServicePosition():SERVICE_PARK;
+	const double ServiceH=bPersonalDrive?M->World->ServiceHeading():UE_DOUBLE_PI;
+	const bool ServiceShown=bCommute && ServiceHere && !ServiceParts.IsEmpty();
+	double E[16];S47Three::Compose(ServicePos,S47Three::Euler(0,ServiceH,0),FVector::OneVector,E);
+	const FTransform ServicePose=S47Three::MatToUE(E);
+	for (int32 I=0;I<ServiceParts.Num();++I)if(ServiceParts[I].IsValid())
+	{
+		ServiceParts[I]->SetVisibility(ServiceShown);
+		if(ServiceShown&&ServiceLocal.IsValidIndex(I))ServiceParts[I]->SetWorldTransform(ServiceLocal[I]*ServicePose);
+	}
+	// Only the inactive vehicle needs a second collider. The active carrier owns TruckBox.
+	M->World->SetPersonalPark(bPersonalDrive?ServicePos:PersonalPark,bPersonalDrive?ServiceH:PersonalHeading,
+		bPersonalDrive?ServiceShown:(!bCommute&&bPersonalShown),Area,bPersonalDrive);
+	M->World->SetArrivalServiceWaiting(ServiceShown&&!bPersonalDrive);
 	// A paid serving has one presentation: in the diner's handoff it is held, then
 	// takeaway owns it. Only dine-in leftovers/water remain on the counter after eating.
 	const bool bHeld = !bDriving && !bFoodEaten && !bFoodTaken && bDiner && bFoodBought;

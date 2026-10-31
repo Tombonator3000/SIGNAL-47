@@ -71,6 +71,9 @@ bool FS47PaleBody::Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix)
  ShinL = Part(TEXT("ShinL"), ShinMesh, TL, ThighLNode, FVector(0, 0, -49), One, Leaf);
  UStaticMeshComponent* TR = Part(TEXT("ThighR"), ThighMesh, R, RootNode, FVector(0, 10, 100), Mirror, ThighRNode); ThighR = TR;
  ShinR = Part(TEXT("ShinR"), ShinMesh, TR, ThighRNode, FVector(0, 0, -49), One, Leaf);
+ if (Creature.Build(W,R,FString(Prefix)+TEXT("TripoSkin")))
+  for (const auto& Old:All) if (auto* C=Old.Get())
+  { C->SetRenderInMainPass(false); C->SetRenderInDepthPass(false); C->SetVisibleInRayTracing(false); C->SetCastShadow(false); }
  bBuilt = true;
  Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, EPose::Walk);
  UE_LOG(LogS47PaleBody, Display, TEXT("S47: pale body %s ready: 10 parts under %s"), Prefix, Group);
@@ -84,6 +87,7 @@ bool FS47PaleBody::Owns(const UPrimitiveComponent* C) const
 
 bool FS47PaleBody::Rendered() const
 {
+ if (Creature.Ready()) return bBuilt && Creature.Rendered();
  const UStaticMeshComponent* T = Torso.Get();
  return bBuilt && T && T->IsVisible() && T->WasRecentlyRendered(.25f);
 }
@@ -93,6 +97,7 @@ void FS47PaleBody::Apply(bool bShow, const FVector& Feet, double BodyYaw, double
  if (!bBuilt) return;
  if (Root) Root.SetVisible(bShow);
  else if (UBoxComponent* R = RootComp.Get()) R->SetVisibility(bShow, true);
+ Creature.Apply(bShow,PaleWrap(HeadYaw-BodyYaw),Gait,Phase,Clock,Pose==EPose::Grab,Pose==EPose::Listen);
  if (bCollide != bShow)
  {
   // Hidden parts never block a sight, floor or pick trace.

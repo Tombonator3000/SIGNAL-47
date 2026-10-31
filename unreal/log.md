@@ -1456,3 +1456,5 @@ Codex på codex/playtest-substation-grounding-20261031: PLAY-31-08 fører Toms m
 
 ### 2026-10-31T09:21+01:00 Retur til SARO blokkert etter deputy
 Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms dokumenterte servicebilavslag kl.02:46; rådet om retur til SARO er avkreftet for denne tilstanden. Original PNG bevart byteidentisk og koblet til PLAY-31-07. Ingen spillkode, bygg, motorprøve, lagringsendring eller installasjon.
+
+2026-10-31 10:22 | codex/playtest-fixes-20261031 | Spilltestrettelser: UE5.8.4-editorbygg og1772 selvtester består; faktisk kopiert SC03-sak består15 gjenopprettingskontroller, sheriffinngang passert6.4m. Motell/Caliche/Tripo/lyd og logikkendringer klargjort; pakking og lokal levering gjenstår.

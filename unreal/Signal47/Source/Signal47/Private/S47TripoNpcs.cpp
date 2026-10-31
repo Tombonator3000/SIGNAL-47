@@ -62,6 +62,9 @@ struct FS47TripoNpcs::FState
  };
  TArray<FSlot> Slots;
  TWeakObjectPtr<UStaticMeshComponent> Radio;
+ struct FCow { int32 Herd=0, Index=0; TWeakObjectPtr<UStaticMeshComponent> Mesh; };
+ TArray<FCow> Cows;
+ bool bCowsBuilt=false;
 };
 
 FS47TripoNpcs::FS47TripoNpcs(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
@@ -155,13 +158,28 @@ void FS47TripoNpcs::Update()
   else if (R == TEXT("attendant"))
   {
    const FS47Obj Window = W->Obj(TEXT("world.town.proxies.gasWindow"));
-   if (Window) Place(Slot, Window.WorldPosition() + FVector(-.50,-.90,0), S47Three::Euler(0,PI/2,0), TownGroup.Shown());
+   const FS47Obj Door = W->Obj(TEXT("world.town.proxies.gasDoor"));
+   if (Window && Door)
+   {
+    // The night-window box starts at the counter, .65m above the floor.
+    // Use the adjacent 2.20m doorway's bottom as the shared interior floor.
+    const FVector At=Window.WorldPosition();
+    Place(Slot,FVector(At.X-.50,Door.WorldPosition().Y-1.10+.02,At.Z),
+     S47Three::Euler(0,PI/2,0),TownGroup.Shown());
+   }
   }
   else if (R == TEXT("earl"))
   {
    const FS47Obj Door = W->Obj(TEXT("world.town.proxies.amDoor"));
-   if (Door) Place(Slot, Door.WorldPosition() + FVector(-.58,-.45,0), S47Three::Euler(0,-PI/2,0),
-    TownGroup.Shown() && M->Story && S47Timeline::EarlOnDuty(M->Story->Clock()));
+   if (Door)
+   {
+    // Authored studio chair: Blender(1.55,2.8,.51), shared origin(0,5,0).
+    // Door is a 2.2m-high proxy centred 1.10m above the real floor, not a feet anchor.
+    // The seated bake's pelvis height comes from its private preparation manifest.
+    const double Floor=Door.WorldPosition().Y-1.10;
+    Place(Slot,FVector(8022.8,Floor+.585-.5741413869501052,2037.55),S47Three::Euler(0,-PI/2,0),
+     TownGroup.Shown() && M->Story && S47Timeline::EarlOnDuty(M->Story->Clock()));
+   }
   }
   else if (R == TEXT("deputy"))
   {
@@ -207,23 +225,47 @@ void FS47TripoNpcs::Update()
   }
   else if (R == TEXT("hereford_25") && M->TownLayer)
   {
-   // Keep the pasture's tag, missing-cow rule, eye sprites and query proxy.
-   // Suppress just #25's old render instances; every other cow stays intact.
+   // Use the user's actual Hereford throughout the herd. The original pools
+   // remain the pose/query source; hiding their draw must never zero transforms.
+   if (!State->bCowsBuilt && !M->TownLayer->Herds.IsEmpty())
+   {
+    State->bCowsBuilt=true;
+    for (int32 H=0; H<M->TownLayer->Herds.Num(); ++H)
+     if (const auto& Herd=M->TownLayer->Herds[H]) for (int32 I=0; I<Herd->Count(); ++I)
+     {
+      auto* Cow=NewObject<UStaticMeshComponent>(W,*FString::Printf(TEXT("TripoHereford_%d_%d"),H,I));
+      W->AddInstanceComponent(Cow); Cow->SetMobility(EComponentMobility::Movable); Cow->SetupAttachment(W->GetRootComponent());
+      Cow->SetStaticMesh(C->GetStaticMesh()); Cow->SetCollisionProfileName(TEXT("NoCollision"));
+      Cow->SetGenerateOverlapEvents(false); Cow->SetCanEverAffectNavigation(false); Cow->SetCastShadow(true);
+      Cow->SetVisibility(false); Cow->RegisterComponent(); State->Cows.Add({H,I,Cow});
+     }
+   }
+   bool bRepresentative=false;
    for (int32 I=0; I<M->TownLayer->Herds.Num(); ++I)
    {
     const auto& H = M->TownLayer->Herds[I]; if (!H) continue;
-    FVector HeadAt; if (!H->CowAt(S47Herd::MISSING,HeadAt)) continue;
     const FString Prefix = FString::Printf(TEXT("world.herds.%d"),I);
-    FQuat Q = S47Three::Euler(0,H->bStill ? PI-26*PI/180 : PI+2.2,0);
+    auto* Bodies=Cast<UInstancedStaticMeshComponent>(NodeComponent(W->Obj(Prefix+TEXT(".bodies"))));
+    if (!Bodies) continue;
     for (const TCHAR* Kind : {TEXT(".bodies"),TEXT(".heads")})
+     Mask(NodeComponent(W->Obj(Prefix+Kind)));
+    for (const auto& Cow:State->Cows) if (Cow.Herd==I) if (auto* Draw=Cow.Mesh.Get())
     {
-     auto* Pool = Cast<UInstancedStaticMeshComponent>(NodeComponent(W->Obj(Prefix+Kind)));
-     if (!Pool || Pool->GetInstanceCount()<=S47Herd::MISSING) continue;
-     FTransform T; if (!Pool->GetInstanceTransform(S47Herd::MISSING,T,false)) continue;
-     T.SetScale3D(FVector::ZeroVector); Pool->UpdateInstanceTransform(S47Herd::MISSING,T,false,true,false);
+     FTransform T;
+     const bool bAlive=Cow.Index!=H->Missing && Bodies->GetInstanceTransform(Cow.Index,T,true);
+     if (bAlive)
+     {
+      // Prepared Tripo faces +Z in game space, the herd matrices face -Z.
+      T.ConcatenateRotation(FQuat(FVector::UpVector,PI)); Draw->SetWorldTransform(T);
+      if (Cow.Index==S47Herd::MISSING && H->Group.Shown()) { C->SetWorldTransform(T); bRepresentative=true; }
+     }
+     Draw->SetVisibility(bPlay && H->Group.Shown() && bAlive);
     }
-    if (H->Group.Shown()) Place(Slot,HeadAt-FVector(0,1.1,0),Q,true);
    }
+   Slot.bBound=bRepresentative;
+   // The registered role component remains the roster/query representative;
+   // its pooled counterpart supplies the visible #25 just like its eight peers.
+   C->SetVisibility(false);
   }
   if (!bPlay) C->SetVisibility(false);
  }

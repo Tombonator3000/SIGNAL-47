@@ -1,4 +1,5 @@
 #include "S47HorrorThreat.h"
+#include "S47TripoCreature.h"
 #include "S47ThreatNavigation.h"
 #include "CollisionShape.h"
 
@@ -80,6 +81,7 @@ struct FS47HorrorThreat::FParts
  TWeakObjectPtr<UBoxComponent> RootComp;
  TWeakObjectPtr<UStaticMeshComponent> Torso, Head, ArmL, ForeL, ArmR, ForeR, ThighL, ShinL, ThighR, ShinR;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> All;
+ FS47TripoCreature Creature;
  bool bCollide = true;
 };
 
@@ -199,6 +201,9 @@ bool FS47HorrorThreat::Build()
  UStaticMeshComponent* ThighR = Part(TEXT("SC02PaleThighR"), ThighMesh, RootComp, RootNode, FVector(0, 10, 100), Mirror, ThighRNode);
  Parts->ThighR = ThighR;
  Parts->ShinR = Part(TEXT("SC02PaleShinR"), ShinMesh, ThighR, ThighRNode, FVector(0, 0, -49), One, Leaf);
+ if (Parts->Creature.Build(W,RootComp,TEXT("SC02TripoSkin")))
+  for (const auto& Old:Parts->All) if (auto* C=Old.Get())
+  { C->SetRenderInMainPass(false); C->SetRenderInDepthPass(false); C->SetVisibleInRayTracing(false); C->SetCastShadow(false); }
  bBuilt = true; Apply(false);
  UE_LOG(LogS47HorrorThreat, Display, TEXT("S47: SC02 pale body ready: 10 parts from six original meshes under the Caliche road group"));
  return true;
@@ -668,7 +673,7 @@ bool FS47HorrorThreat::BodyInView() const
 {
  if (!bAppeared || bGone || !M || !M->Player) return false;
  const UStaticMeshComponent* T = Parts->Torso.Get();
- if (!T || !T->IsRegistered() || !T->IsVisible() || !T->WasRecentlyRendered(.25f)) return false;
+ if (Parts->Creature.Ready() ? !Parts->Creature.Rendered() : (!T || !T->IsRegistered() || !T->IsVisible() || !T->WasRecentlyRendered(.25f))) return false;
  const FS47Cam Cam = FS47Cam::Of(M->Player);
  for (const FVector& P : {Chest3(), Head3()})
  {
@@ -775,6 +780,7 @@ void FS47HorrorThreat::Apply(bool bShow)
 {
  if (!bBuilt) return;
  Parts->Root.SetVisible(bShow);
+ Parts->Creature.Apply(bShow,ThreatWrap(HeadYaw-BodyYaw),Gait,Phase,Clock,S==EState::Capture,S==EState::Warn);
  if (Parts->bCollide != bShow)
  {
   // Hidden parts never block a sight, floor or ground trace.

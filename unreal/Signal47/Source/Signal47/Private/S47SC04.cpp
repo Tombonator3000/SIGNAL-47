@@ -13,6 +13,7 @@
 #include "S47Horror.h"
 #include "S47HorrorSC03.h"
 #include "S47Observing.h"
+#include "S47Substation.h"
 #include "Engine/World.h"
 #include "Components/PrimitiveComponent.h"
 #include "Materials/MaterialInterface.h"
@@ -155,12 +156,14 @@ FS47Doc FS47SC04::ScheduleDoc()
  return D;
 }
 
-FS47Doc FS47SC04::StripDoc(const FString& Taken)
+FS47Doc FS47SC04::StripDoc(const FString& Taken, const FString& Restored, const FString& Torn)
 {
- const FString When = Taken.IsEmpty() ? FString(TEXT("02:31")) : Taken;
- FS47Doc D; D.Id = TEXT("sc04_strip"); D.Title = TEXT("Receiver strip chart, 00:00 to 02:58"); D.Kind = TEXT("typed"); D.Stamp = TEXT("STRIP / RX 3");
- D.Page = FString::Printf(TEXT("RECEIVER STRIP / RX BANK 3 / 13-14 APRIL\n\n00:13  pen to zero. Feeder out, K3 open.\n01:52  pen back. Power restored from T01.\n%s  pen to the stop for forty seconds. No slew, no command, nothing on the log.\n02:58  torn off by R. Reyes for the county.\n\nPencil, in the margin: same minute as the fuel stop."), *When);
- D.Transcript = FString::Printf(TEXT("Tonight's strip off the receiver. The pen drops to zero at the outage, comes back when T01 is restored, and at %s it goes to the stop for forty seconds with nothing on the command log. The same minute Ortiz was taken."), *When);
+ const FString When = Taken.IsEmpty() ? FString(TEXT("Time not recorded")) : Taken;
+ const FString Power = Restored.IsEmpty() ? FString(TEXT("Time not recorded")) : Restored;
+ const FString Tear = Torn.IsEmpty() ? FString(TEXT("Time not recorded")) : Torn;
+ FS47Doc D; D.Id = TEXT("sc04_strip"); D.Title = TEXT("Receiver strip chart, 00:00 to ") + Tear; D.Kind = TEXT("typed"); D.Stamp = TEXT("STRIP / RX 3");
+ D.Page = FString::Printf(TEXT("RECEIVER STRIP / RX BANK 3 / 13-14 APRIL\n\n00:13  pen to zero. Feeder out, K3 open.\n%s  pen back. Power restored from T01.\n%s  pen to the stop for forty seconds. No slew, no command, nothing on the log.\n%s  torn off by R. Reyes for the county.\n\nPencil, in the margin: same minute as the fuel stop."), *Power, *When, *Tear);
+ D.Transcript = FString::Printf(TEXT("Tonight's strip off the receiver. The pen drops to zero at the outage, comes back when T01 is restored (%s), and at %s it goes to the stop for forty seconds with nothing on the command log. The same minute Ortiz was taken. Torn off at %s."), *Power, *When, *Tear);
  return D;
 }
 
@@ -191,10 +194,12 @@ bool FS47SC04::Use(const FString& Id)
  {
   F.bStrip = true;
   const FString Taken = M->Horror && M->Horror->SC03 ? M->Horror->SC03->Facts().TakenStamp : FString();
-  const FS47Doc D = StripDoc(Taken); S.AddDoc(D);
+  // Existing case papers are originals: never rewrite their historical text on Continue.
+  const FS47Doc* Existing = S.Docs().FindByPredicate([](const FS47Doc& Doc){return Doc.Id==TEXT("sc04_strip");});
+  const FS47Doc D = Existing ? *Existing : StripDoc(Taken, M->Substation ? M->Substation->NormalCompletionStamp() : FString(), S.ClockText(true)); S.AddDoc(D);
   if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
   M->UI->Document(D);
-  S.Note(FString::Printf(TEXT("%s. Tore tonight's strip off the receiver. At %s the pen went to the stop for forty seconds. Nothing on the command log."), *S.ClockText(false), Taken.IsEmpty() ? TEXT("02:31") : *Taken));
+  S.Note(FString::Printf(TEXT("%s. Tore tonight's strip off the receiver. At %s the pen went to the stop for forty seconds. Nothing on the command log."), *S.ClockText(false), Taken.IsEmpty() ? TEXT("an unrecorded time") : *Taken));
  }
  else if (Id == TEXT("logbook"))
  {
@@ -710,6 +715,8 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
   TEXT("collected originals and captures round-trip; a saved meeting restarts at the binder"));
  FS47SC04 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Drive && Fresh.Label(TEXT("binder")).IsEmpty() && Fresh.Tasks().Num() == 1, TEXT("a new SC04 starts with the drive and offers nothing in the annex yet"));
- Check(StripDoc(TEXT("02:31")).Page.Contains(TEXT("02:31")) && !ScheduleDoc().Page.IsEmpty(), TEXT("the strip names the minute Ortiz was taken"));
+ const FS47Doc Timed = StripDoc(TEXT("02:27:13"),TEXT("14 APR 1986 / 01:48:09"),TEXT("02:56:04"));
+ Check(Timed.Page.Contains(TEXT("01:48:09")) && Timed.Page.Contains(TEXT("02:27:13")) && Timed.Page.Contains(TEXT("02:56:04")) && Timed.Title.EndsWith(TEXT("02:56:04")) && !Timed.Page.Contains(TEXT("02:58")), TEXT("the strip uses actual restoration, disappearance and tear times instead of the draft schedule"));
+ Check(!StripDoc(FString()).Page.Contains(TEXT("01:52")) && StripDoc(FString()).Page.Contains(TEXT("Time not recorded")) && !ScheduleDoc().Page.IsEmpty(), TEXT("missing legacy timestamps remain unknown rather than becoming invented evidence"));
  return Ok;
 }

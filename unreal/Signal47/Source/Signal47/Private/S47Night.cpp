@@ -1,6 +1,7 @@
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Night.h"
+#include "S47Spine.h"
 #include "S47Horror.h"
 #include "S47MotelV2.h"
 #include "S47Evening.h"
@@ -366,6 +367,7 @@ FString US47Night::SurfaceAt() const
 
 bool US47Night::OneAtATime() const
 {
+	if (M && M->Spine && M->Spine->Protected()) return true;
 	if (M && M->Horror && M->Horror->Busy()) return true;
 	if (M && M->Evening && M->Evening->MealBusy()) return true;
 	if (M && M->AnomalyWorld && M->AnomalyWorld->Busy()) return true;
@@ -401,7 +403,7 @@ void US47Night::CurveStep(double Dt, bool bModal)
 	FS47CurveIn In;
 	In.Chapter = Ph; In.Clock = Clock(); In.bEveningTimeline = M->Story && M->Story->bEveningTimeline;
 	// nothing during a cinematic, a panel, a call, Nora's room, or the diner and its map in chapter five
-	In.bHeld = bModal || Cinematic() || (M->Audio && M->Audio->PhonePlaying()) || Area() == TEXT("room6") || (Ph == TEXT("ch5") && bInDiner);
+	In.bHeld = (M->Spine && M->Spine->Protected()) || bModal || Cinematic() || (M->Audio && M->Audio->PhonePlaying()) || Area() == TEXT("room6") || (Ph == TEXT("ch5") && bInDiner);
 	In.bExposed = Driving() || M->Space == TEXT("yard");
 	In.bBusy = OneAtATime();
 	In.bPeaking = Is(Hooks.AbductionBusy) || Is(Hooks.RoofStepsBusy) || Is(Hooks.RoadsideSilent) || FaceQuiet > 0 || Is(Hooks.ReelTapeBusy) || Is(Hooks.SaroDarkBusy)

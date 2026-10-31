@@ -91,13 +91,15 @@ int32 FS47SC11::Room(const FVector2D& At)
 void FS47SC11::Begin(const S47J::FObj& Saved)
 {
  Stop();
- P = EStep::Drive; F = FFacts();
+ P = EStep::Drive; F = FFacts(); TelexT = 0; TelexLine = 0; bRestart = false;
  if (!Saved) return;
  P = EStep(FMath::Clamp(S47J::Int(Saved, TEXT("step")), 0, int32(EStep::Done)));
  F.bOriginal = S47J::Bool(Saved, TEXT("original")); F.bSheet = S47J::Bool(Saved, TEXT("sheet")); F.bRemote = S47J::Bool(Saved, TEXT("remote"));
  F.bEscaped = S47J::Bool(Saved, TEXT("escaped")); F.bLure = S47J::Bool(Saved, TEXT("lure")); F.Captures = FMath::Max(0, S47J::Int(Saved, TEXT("captures")));
- // The telex and the siege are never saved half run.
- if (P == EStep::Telex) { P = EStep::Collect; F.bSheet = F.bOriginal = true; }
+ // Restart the printing, with both originals kept. Older restores could save Collect
+ // with both flags set, leaving no usable collection action; recover those cases too.
+ if (P == EStep::Telex || (P == EStep::Collect && F.bSheet && F.bOriginal))
+ { P = EStep::Telex; F.bSheet = F.bOriginal = true; }
  if (P == EStep::Siege) bRestart = true;
 }
 
@@ -617,7 +619,19 @@ bool FS47SC11::SelfTest(TArray<FString>& Lines)
  Check(Nodes().Num() == 23 && Edges().Num() == 25 && Short, TEXT("twenty-three nodes, twenty-five short edges"));
  FS47SC11 A(nullptr); A.P = EStep::Telex; A.F.bOriginal = A.F.bSheet = true; A.F.Captures = 1;
  FS47SC11 Bk(nullptr); Bk.Begin(S47J::Read(S47J::Write(A.Save())));
- Check(Bk.P == EStep::Collect && Bk.F.bOriginal && Bk.F.bSheet && !Bk.F.bRemote && Bk.F.Captures == 1, TEXT("a saved telex reloads before it, the originals kept"));
+ Check(Bk.P == EStep::Telex && Bk.F.bOriginal && Bk.F.bSheet && !Bk.F.bRemote && Bk.F.Captures == 1 && Bk.TelexT == 0 && Bk.TelexLine == 0,
+  TEXT("a saved telex restarts printing, with the originals kept"));
+ Check(Bk.Label(TEXT("telex")).IsEmpty(), TEXT("restored printing cannot be torn off before it finishes"));
+ Bk.TelexT = TelexTime;
+ Check(!Bk.Label(TEXT("telex")).IsEmpty(), TEXT("the restarted telex offers the next world action after printing"));
+ A.P = EStep::Collect;
+ Bk.Begin(S47J::Read(S47J::Write(A.Save())));
+ Check(Bk.P == EStep::Telex && Bk.TelexT == 0 && Bk.F.bOriginal && Bk.F.bSheet,
+  TEXT("a legacy stranded collection save recovers without recollecting the originals"));
+ A.F.bSheet = false;
+ Bk.Begin(S47J::Read(S47J::Write(A.Save())));
+ Check(Bk.P == EStep::Collect && !Bk.Label(TEXT("logbook")).IsEmpty() && Bk.Label(TEXT("printer")).IsEmpty(),
+  TEXT("a genuinely incomplete collection keeps its remaining action"));
  FS47SC11 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Drive && Fresh.Label(TEXT("printer")).IsEmpty() && Fresh.Label(TEXT("truck")).IsEmpty(), TEXT("a new SC11 starts with the drive"));
  Check(RemoteDoc().Page.Contains(TEXT("05:29:47")) && RemoteDoc().Page.Contains(TEXT("S-11")), TEXT("the remote sheets name both sources and the first limit"));

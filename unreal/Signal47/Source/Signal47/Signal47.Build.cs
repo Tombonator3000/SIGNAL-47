@@ -22,6 +22,7 @@ public class Signal47 : ModuleRules
 		RuntimeDependencies.Add("$(ProjectDir)/Content/MesaDiner/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/TownBuildings/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/CalicheHomes/*.json", StagedFileType.UFS);
+		RuntimeDependencies.Add("$(ProjectDir)/Content/CalicheAccess/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/MotelV2/*.json", StagedFileType.UFS);
 		RuntimeDependencies.Add("$(ProjectDir)/Content/CalicheStreet/Nature/*.json", StagedFileType.UFS);
 	}

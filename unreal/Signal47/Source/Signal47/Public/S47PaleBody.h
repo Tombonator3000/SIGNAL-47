@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Obj.h"
+#include "S47TripoCreature.h"
 
 class AS47Web;
 class UStaticMeshComponent;
@@ -17,6 +18,7 @@ struct FS47PaleBody
  TWeakObjectPtr<UBoxComponent> RootComp;
  TWeakObjectPtr<UStaticMeshComponent> Torso, Head, ArmL, ForeL, ArmR, ForeR, ThighL, ShinL, ThighR, ShinR;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> All;
+ FS47TripoCreature Creature;
  bool bBuilt = false, bFailed = false, bCollide = true;
  static constexpr int32 JointCount = 10;
  double JointPose[JointCount] = {};
