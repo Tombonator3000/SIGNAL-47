@@ -1440,3 +1440,7 @@ Codex på codex/story-logic-fixes-20261031: Tom vil spille ferdig før retting. 
 
 ### 2026-10-31T08:38+01:00 Lokal diskopprydding
 Codex på codex/disk-cleanup-20261031:37 genererte cachemapper/268886 filer fjernet, netto82.1GB frigjort og86.4GB ledig.570416 bevarte filer og alle arbeidskopiers Git-status uendret; installasjon/Saved/kilder/assets/bevis bevart. Vanlig pakkeprune hadde ingen ekstra gamle payloads; OPS-02 fører gjenværende vedlikeholdsbehov. Lokal manifest/kvittering i scratch-bm/cleanup-20261031; ingen motorjobb, spillrettelse eller installasjon.
+
+
+### 2026-10-31T09:12+01:00 Nye spillerfunn ført i TODO
+Codex på codex/playtest-findings-20261031: Toms seks meldte områder er registrert som PLAY-31-01 til06, med separate Tripo-alien-/kuoppgaver og snap-zoom/lydsting som forslag. Midlertidig fri adgang til Caliche-bygg er eksplisitt ført. Ingen spillkode, bygg, test eller installasjon; retting avventer fortsatt ferdig spilltest.
