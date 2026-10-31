@@ -90,7 +90,7 @@ S47J::FObj FS47FreeformWorld::Save() const
 
 bool FS47FreeformWorld::Near(const FVector& At,double Range) const
 {
- return Ready() && (!M->World||!M->World->bDriving) && FVector2D(M->Player->Pos.X-At.X,M->Player->Pos.Z-At.Z).Size()<=Range && FMath::Abs(M->Player->Pos.Y-At.Y)<3.;
+ return Ready() && (!M->World||!M->World->bDriving) && FVector2D(M->Player->Pos.X-At.X,M->Player->Pos.Z-At.Z).Size()<=Range && FMath::Abs(M->Player->FloorY-At.Y)<3.;
 }
 FVector FS47FreeformWorld::ShopPoint() const
 {
@@ -118,7 +118,7 @@ FVector FS47FreeformWorld::InteractionPoint(const FString& Id) const
   return FVector(11.95,.62,-11);
  }
  if(Id==TEXT("ff:cargo"))return TruckPoint();
- if(Id==TEXT("ff:parcel"))return Payload==1?ShopPoint()+FVector(.55,-.25,.2):Payload==3?TruckPoint():Payload==4?Dropped:M&&M->Player?M->Player->Pos+FVector(0,.8,-.6):FVector::ZeroVector;
+ if(Id==TEXT("ff:parcel"))return Payload==1?ShopPoint()+FVector(.55,-.25,.2):Payload==3?TruckPoint():Payload==4?Dropped:M&&M->Player?FVector(M->Player->Pos.X,M->Player->FloorY+1.,M->Player->Pos.Z):FVector::ZeroVector;
  return FVector::ZeroVector;
 }
 bool FS47FreeformWorld::ShopOpen() const { return Ready() && DayClock(M->Freeform->Clock())>=8*3600 && DayClock(M->Freeform->Clock())<20*3600; }
@@ -233,7 +233,8 @@ void FS47FreeformWorld::Apply()
  FVector Position=InteractionPoint(TEXT("ff:parcel"));
  if(Payload==2&&M&&M->Player)
  {
-  const FVector Eye=M->Player->Pos+FVector(0,1.0,0),Fwd=S47Three::ToThree(M->Player->ForwardUE()*100.);Position=Eye+FVector(Fwd.X,0,Fwd.Z).GetSafeNormal()*.65;
+  // Pos.Y is the planar gameplay coordinate; the actual camera includes terrain, steps and jumping.
+  const FVector Eye=S47Three::ToThree(M->Player->EyeUE())-FVector(0,.60,0),Fwd=S47Three::ToThree(M->Player->ForwardUE()*100.);Position=Eye+FVector(Fwd.X,0,Fwd.Z).GetSafeNormal()*.65;
   // A carried package stops before opaque scenery instead of being pushed through it.
   FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(FreeformCarry),true);
   if(const auto* N=ParcelSaro.W->Node(ParcelSaro.I))if(N->Comp.IsValid())Q.AddIgnoredComponent(Cast<UPrimitiveComponent>(N->Comp.Get()));

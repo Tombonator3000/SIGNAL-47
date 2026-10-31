@@ -447,7 +447,7 @@ bool FS47FreeformSession::NearBinder() const
  if(!bFound&&M->Inter)if(const auto* Item=M->Inter->Get(TEXT("binder"));Item&&Item->Object){At=Item->Object.WorldPosition();bFound=true;}
  if(!bFound||At.ContainsNaN())return false;
  const FVector P=M->Player->Pos;
- return M->Web->Rect(TEXT("annex.zone.records")).Contains(P)&&FVector2D(P.X-At.X,P.Z-At.Z).Size()<=2.4&&FMath::Abs(P.Y-At.Y)<=2.;
+ return M->Web->Rect(TEXT("annex.zone.records")).Contains(P)&&FVector2D(P.X-At.X,P.Z-At.Z).Size()<=2.4&&FMath::Abs(M->Player->FloorY-At.Y)<=2.;
 }
 bool FS47FreeformSession::FilePacket()
 {
