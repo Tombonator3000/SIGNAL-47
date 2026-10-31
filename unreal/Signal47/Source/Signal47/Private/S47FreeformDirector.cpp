@@ -163,6 +163,8 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
  if(M->Web->Area()!=TEXT("saro"))return false;
  if(!Forced)
  {
+  // An instrumental anomaly needs an actually completed normal reference first.
+  if(Instrument(Id)&&!M->Freeform->Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& J){return J.Source==0&&J.Stage==FS47FreeformSession::EJobStage::Filed;}))return false;
   if(Id==TEXT("unsigned_telex")&&M->Freeform->FindingCount()==0)return false;
   if(M->Freeform->Day()<D->Day||(D->bNight&&!Night())||ActiveTime<RestUntil)return false;
   if(const int32* Last=LastDays.Find(Id))if(M->Freeform->Day()-*Last<3)return false;
