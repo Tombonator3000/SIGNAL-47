@@ -23,7 +23,7 @@ Tom prioriterte 31. oktober denne sammenhengende leveransen før resten av liste
 
 ## Nye funn fra spilltesten 31. oktober
 
-Tom har avsluttet spilløkten og bedt Codex fullføre. Lokal pakking og installasjon pågår; målrettede editorprøver består.
+Tom har avsluttet spilløkten og bedt Codex fullføre. Kilde `c8c8fa89` er pakket og installert kl.23:55 CET. 1838 selvtester, pakket TV-film/lyd, installert røykprøve og hele den avgrensede motellruten med disk/Continue består. Personlige Saved er uendret.
 
 - [ ] **PLAY-31-41 / P2, rens og optimaliser modeller:** Fem Tripo-modeller har separate, originalbevarte Blender-kopier, PBR og tre målte LOD-er. Samlet nærgeometri er redusert fra 3 769 015 til 364 631 trekanter. Videre opprydding i øvrige bymodeller og visuell finpuss gjenstår; ingen global reduksjon av verdensmodellen er gjort.
 - [x] **PLAY-31-42 / P2, stort motellskilt forsvinner på nært hold:** Originalt nærskilt var pensjonert. Skiltet er beholdt i nærverdenen og prøvd på nær og lang avstand, med samme plassering.
