@@ -328,7 +328,7 @@ void FS47Observing::Start()
 void FS47Observing::Step(double Dt)
 {
  if (!bEnabled || !M || !M->Story || M->Mode != US47Main::EMode::Play || !FMath::IsFinite(Dt) || Dt <= 0) return;
- if (M->bPausedByMenu) { if (ArrayWork && ArrayWork->Enabled()) ArrayWork->Step(Dt, true); return; }
+ if (M->bPausedByMenu) { if (ArrayWork && ArrayWork->Enabled() && (bWorkActive || Active())) ArrayWork->Step(Dt, true); return; }
  if (Done()) { if (ArrayWork && ArrayWork->Enabled()) ArrayWork->Stop(); StepDoorVoice(); return; }
  if (!Active()) { bAudioPlaying = false; if (bWorkActive && ArrayWork) { ArrayWork->Stop(); bWorkActive = false; } return; }
  bWorkActive = true;
