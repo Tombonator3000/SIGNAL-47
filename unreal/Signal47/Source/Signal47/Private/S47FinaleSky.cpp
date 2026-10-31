@@ -7,6 +7,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture.h"
@@ -40,14 +41,16 @@ namespace
 		TEXT("Finale craft uniform authored-mesh scale (10..5000); default gives roughly 1000m radius."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarCraftFill(TEXT("r.S47.Finale.CraftFill"), 0.065f,
 		TEXT("Very weak original Hull/Ribs material glow (0..0.15); Light and Recess stay authored."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarCabFill(TEXT("r.S47.Finale.CabFill"), .8f,
+		TEXT("Local empty-cab pullout fill, candela (0..20); fades over pullout 0.8..8.2 seconds."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankForward(TEXT("r.S47.Finale.BankForward"), 1100.f,
 		TEXT("Finale cloud-bank distance ahead of C8.15, metres (50..10000); existing 90m advance is subtracted."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankSpread(TEXT("r.S47.Finale.BankSpread"), 280.f,
 		TEXT("Finale cloud-bank base distance to each side of the road tangent, metres (0..5000); BankRevealSpread is added over the reveal."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankRevealSpread(TEXT("r.S47.Finale.BankRevealSpread"), 520.f,
+	TAutoConsoleVariable<float> CVarBankRevealSpread(TEXT("r.S47.Finale.BankRevealSpread"), 1400.f,
 		TEXT("Finale cloud-bank extra distance to each side at full reveal, metres (0..5000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankRevealRise(TEXT("r.S47.Finale.BankRevealRise"), 450.f,
-		TEXT("Finale cloud-bank vertical rise over the existing reveal, metres (0..2000)."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarBankRevealRise(TEXT("r.S47.Finale.BankRevealRise"), 650.f,
+		TEXT("Finale cloud-bank total rise, metres (0..2000); first 150m over the reveal, remainder during phase40..68."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankHeight(TEXT("r.S47.Finale.BankHeight"), 300.f,
 		TEXT("Finale cloud-bank base height above C8.15, metres (10..10000); existing slow roll is added."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankDepth(TEXT("r.S47.Finale.BankDepth"), 950.f,
@@ -105,7 +108,7 @@ bool FS47FinaleSky::WaitFor(const FString& Reason)
 
 bool FS47FinaleSky::Prepare()
 {
-	if (bReady && Craft.IsValid() && Banks[0].IsValid() && Banks[1].IsValid()) return true;
+	if (bReady && Craft.IsValid() && Banks[0].IsValid() && Banks[1].IsValid() && CabFillLight.IsValid()) return true;
 	const double Now = FPlatformTime::Seconds();
 	if (Now < NextPrepareTime) return false;
 	NextPrepareTime = Now + 1.; // Retry asset/shader readiness without a per-frame load or audit.
@@ -218,6 +221,16 @@ bool FS47FinaleSky::Prepare()
 		auto* Mid = UMaterialInstanceDynamic::Create(Cloud, Banks[I].Get());
 		BankMids[I] = Mid; Banks[I]->SetMaterial(0, Mid); Banks[I]->SetTranslucentSortPriority(-2 + I);
 	}
+	auto* Fill = NewObject<UPointLightComponent>(M->Web,
+		MakeUniqueObjectName(M->Web, UPointLightComponent::StaticClass(), FName(TEXT("FinaleCabFill"))));
+	Fill->SetMobility(EComponentMobility::Movable); Fill->SetupAttachment(M->Web->GetRootComponent());
+	Fill->SetIntensityUnits(ELightUnits::Candelas); Fill->bUseInverseSquaredFalloff = true;
+	Fill->SetIntensity(0); Fill->SetLightColor(FLinearColor(.85f, .91f, 1.f));
+	Fill->SetAttenuationRadius(175.f); Fill->SetSourceRadius(15.f); Fill->SetSoftSourceRadius(25.f);
+	Fill->SetCastShadows(false); Fill->SetCastVolumetricShadow(false);
+	Fill->SetIndirectLightingIntensity(0); Fill->SetVolumetricScatteringIntensity(0);
+	Fill->SetSpecularScale(0); Fill->bAffectTranslucentLighting = false;
+	Fill->SetVisibility(false); Fill->RegisterComponent(); CabFillLight = Fill;
 	bReady = true; Failure.Reset();
 	const FVector At = S47Three::ToUE(Crossing);
 	UE_LOG(LogS47FinaleSky, Display, TEXT("S47: FinaleSky ready at C8.15 UE=(%.1f,%.1f,%.1f) forward=(%.4f,%.4f,%.4f)"),
@@ -286,8 +299,95 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 		PlainIndex, RibbonIndex);
 }
 
+void FS47FinaleSky::UpdateCabFill(double PullSeconds, bool bActive)
+{
+	auto* Fill = CabFillLight.Get();
+	if (!Fill) return;
+	double Strength = bActive ? Tuning.CabFill * Smooth(.8, 2.2, PullSeconds) * (1 - Smooth(6, 8.2, PullSeconds)) : 0;
+	if (Strength > 0)
+	{
+		auto* M = Main.Get(); auto* Truck = M && M->World ? M->World->OldTruck() : nullptr;
+		if (Truck) Fill->SetWorldLocation(S47Three::ToUE(Truck->LocalToWorld(Truck->DriverEye + FVector(.45, .12, .1))));
+		else Strength = 0;
+	}
+	Fill->SetIntensity(float(Strength)); Fill->SetVisibility(Strength > 0);
+}
+
+void FS47FinaleSky::UpdateSteeringClones(bool bPullout)
+{
+	auto* M = Main.Get(); auto* W = M ? M->Web.Get() : nullptr;
+	auto* Truck = M && M->World ? M->World->OldTruck() : nullptr;
+	if (bPullout && !bSteeringLookupTried)
+	{
+		bSteeringLookupTried = true;
+		if (W && Truck && Truck->ProductionArtReady() && !Truck->IsPersonalVehicle() && W->GetRootComponent())
+		{
+			const FString CabinName = TEXT("fleet:") + Truck->Path + TEXT(":parked-cabin");
+			UStaticMeshComponent* Cabin = nullptr;
+			int32 CabinCount = 0;
+			for (int32 I = 0; I < W->PartCount(); ++I)
+			{
+				const auto* N = W->Node(I);
+				if (!N || N->Name != CabinName || N->Parent != Truck->Shell.I) continue;
+				++CabinCount; Cabin = Cast<UStaticMeshComponent>(N->Comp.Get());
+			}
+			const FS47Obj Spin = W->Obj(Truck->Path + TEXT(".wheelSpin"));
+			if (CabinCount == 1 && Cabin && Cabin->GetStaticMesh() && Spin)
+			{
+				TArray<TPair<int32, UStaticMeshComponent*>> Sources;
+				bool bSupported = true;
+				Spin.Traverse([&](FS47Obj O)
+				{
+					const auto* N = W->Node(O.I);
+					auto* Source = N ? Cast<UStaticMeshComponent>(N->Comp.Get()) : nullptr;
+					if (!Source) return;
+					if (N->bInstanced || !Source->GetStaticMesh()) { bSupported = false; return; }
+					Sources.Emplace(O.I, Source);
+				});
+				if (bSupported && !Sources.IsEmpty())
+				{
+					ParkedCabin = Cabin;
+					for (const auto& Source : Sources)
+					{
+						auto* C = NewObject<UStaticMeshComponent>(W,
+							MakeUniqueObjectName(W, UStaticMeshComponent::StaticClass(), FName(TEXT("FinaleParkedSteering"))));
+						C->SetMobility(EComponentMobility::Movable); C->SetupAttachment(W->GetRootComponent());
+						C->SetStaticMesh(Source.Value->GetStaticMesh());
+						for (int32 Slot = 0; Slot < Source.Value->GetNumMaterials(); ++Slot) C->SetMaterial(Slot, Source.Value->GetMaterial(Slot));
+						C->SetReverseCulling(Source.Value->IsReverseCulling());
+						C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetGenerateOverlapEvents(false);
+						C->SetCanEverAffectNavigation(false); C->SetCastShadow(false); C->bAffectDistanceFieldLighting = false;
+						C->SetVisibleInRayTracing(false); C->bVisibleInReflectionCaptures = false; C->bVisibleInRealTimeSkyCaptures = false;
+						C->SetVisibility(false); C->RegisterComponent(); C->SetWorldTransform(Source.Value->GetComponentTransform());
+						FSteeringClone Part; Part.Source = Source.Value; Part.Rendered = C; Part.SourceNode = Source.Key;
+						SteeringClones.Add(Part);
+					}
+					UE_LOG(LogS47FinaleSky, Display, TEXT("S47: FinaleSky parked-cabin steering: %d private render clones from %s.wheelSpin"), SteeringClones.Num(), *Truck->Path);
+				}
+			}
+		}
+	}
+	const auto* Shell = W && Truck ? W->Node(Truck->Shell.I) : nullptr;
+	const auto* ShellComponent = Shell ? Shell->Comp.Get() : nullptr;
+	const auto* Cabin = ParkedCabin.Get();
+	const bool bExterior = bPullout && Truck && !Truck->bDriving && !Truck->IsPersonalVehicle() && Truck->Shell.Shown()
+		&& ShellComponent && ShellComponent->IsVisible() && !ShellComponent->bHiddenInGame
+		&& Cabin && Cabin->IsVisible() && !Cabin->bHiddenInGame;
+	for (const FSteeringClone& Part : SteeringClones)
+	{
+		auto* C = Part.Rendered.Get(); auto* Source = Part.Source.Get();
+		if (!C) continue;
+		const auto* N = W ? W->Node(Part.SourceNode) : nullptr;
+		// The live wheel remains in Cab. Its transform still animates while Cab is hidden.
+		if (bPullout && Source) C->SetWorldTransform(Source->GetComponentTransform());
+		C->SetVisibility(bExterior && Source && N && N->bVis);
+	}
+}
+
 void FS47FinaleSky::Hide()
 {
+	UpdateSteeringClones(false);
+	UpdateCabFill(0, false);
 	SetGroundMaterialOverride(false);
 	bShown = false;
 	GroundShade = 0;
@@ -299,6 +399,9 @@ void FS47FinaleSky::Hide()
 void FS47FinaleSky::Drop()
 {
 	Hide();
+	for (const FSteeringClone& Part : SteeringClones) if (Part.Rendered.IsValid()) Part.Rendered->DestroyComponent();
+	SteeringClones.Reset(); ParkedCabin.Reset(); bSteeringLookupTried = false;
+	if (CabFillLight.IsValid()) CabFillLight->DestroyComponent(); CabFillLight.Reset();
 	if (Craft.IsValid()) Craft->DestroyComponent(); Craft.Reset();
 	for (auto& Mid : CraftFillMids) Mid.Reset();
 	for (int32 I = 0; I < 2; ++I)
@@ -316,12 +419,13 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	// No independent clock: a paused or restored C6 supplies exactly the same cloud field.
 	Phase = Stage == TEXT("drive") ? -80 * (1 - Smooth(5.9, 8.15, Mile)) : Stage == TEXT("event") ? E : 47 + P;
 	Growth = Smooth(-80, 6, Phase); Reveal = Smooth(5, 21, Phase);
-	if (!Prepare()) { SetGroundMaterialOverride(false); return; }
+	if (!Prepare()) { SetGroundMaterialOverride(false); UpdateCabFill(0, false); UpdateSteeringClones(false); return; }
 	Tuning.CraftForward = Tune(CVarCraftForward, 100, 10000);
 	Tuning.CraftRight = Tune(CVarCraftRight, -10000, 10000);
 	Tuning.CraftHeight = Tune(CVarCraftHeight, 10, 10000);
 	Tuning.CraftScale = Tune(CVarCraftScale, 10, 5000);
 	Tuning.CraftFill = Tune(CVarCraftFill, 0, .15);
+	Tuning.CabFill = Tune(CVarCabFill, 0, 20);
 	for (auto& Mid : CraftFillMids) if (Mid.IsValid()) Mid->SetScalarParameterValue(TEXT("Glow"), Tuning.CraftFill);
 	Tuning.BankForward = Tune(CVarBankForward, 50, 10000);
 	Tuning.BankSpread = Tune(CVarBankSpread, 0, 5000);
@@ -339,6 +443,8 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	bLow = M->Web->GetGraphicsSettings().Effects == 0;
 	AppliedSamples = bLow ? FMath::Min(Tuning.Samples, 28) : Tuning.Samples;
 	bShown = Growth > .001;
+	UpdateCabFill(P, bShown && Stage == TEXT("pullout"));
+	UpdateSteeringClones(bShown && Stage == TEXT("pullout"));
 	SetGroundMaterialOverride(bShown);
 	const FVector Base = S47Three::ToUE(Crossing), Up = FVector::UpVector;
 	const FVector Eye = M->Player ? M->Player->EyeUE() : Base;
@@ -357,14 +463,19 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	// Establish the foreground clouds during the drive before submitting the opaque hull.
 	// From the stop onward only cloud coverage changes its visibility to the camera.
 	Craft->SetVisibility(bShown && Phase >= 0);
+	// Open sideways before the higher lift: cloud edges still frame the hull during EVENT.
+	// The later quintic lift has zero velocity and acceleration at both ends.
+	const double LiftT = FMath::Clamp((Phase - 40.) / 28., 0., 1.);
+	const double LateLift = LiftT * LiftT * LiftT * (LiftT * (LiftT * 6 - 15) + 10);
+	const double EarlyRise = FMath::Min(150., Tuning.BankRevealRise);
+	const double BankRise = EarlyRise * Reveal + (Tuning.BankRevealRise - EarlyRise) * LateLift;
 	for (int32 I = 0; I < 2; ++I)
 	{
 		const double Side = I ? 1. : -1.;
 		const FVector Extent = FVector(Tuning.BankDepth, Tuning.BankWidth, Tuning.BankThickness) * 100;
 		FVector Center = Base + ForwardUE * (100 * Tuning.BankForward - 9000 * Smooth(-65, 22, Phase))
 			+ RightUE * (Side * 100 * (Tuning.BankSpread + Tuning.BankRevealSpread * Reveal))
-			+ Up * (100 * Tuning.BankHeight + 1800 * FMath::Sin(Phase * .018 + I));
-		Center.Z += 100 * Tuning.BankRevealRise * Reveal;
+			+ Up * (100 * (Tuning.BankHeight + BankRise));
 		auto* B = Banks[I].Get(); auto* D = BankMids[I].Get();
 		if (!B || !D) continue;
 		B->SetWorldLocation(Center); B->SetWorldRotation(FRotationMatrix::MakeFromXZ(ForwardUE, Up).Rotator());
@@ -392,12 +503,21 @@ S47J::FObj FS47FinaleSky::Readback() const
 	auto O = S47J::New();
 	S47J::Set(O, TEXT("ready"), bReady); S47J::Set(O, TEXT("shown"), bShown); S47J::Set(O, TEXT("failure"), Failure);
 	S47J::Set(O, TEXT("groundVertexColorOverride"), GroundMaterials.Num() == 2);
+	int32 SteeringCount = 0, SteeringVisible = 0;
+	for (const FSteeringClone& Part : SteeringClones) if (const auto* C = Part.Rendered.Get())
+	{
+		++SteeringCount; if (C->IsVisible() && !C->bHiddenInGame) ++SteeringVisible;
+	}
+	S47J::Set(O, TEXT("steeringCloneCount"), SteeringCount);
+	S47J::Set(O, TEXT("steeringClonesVisible"), SteeringVisible > 0);
 	S47J::Set(O, TEXT("phase"), Phase); S47J::Set(O, TEXT("growth"), Growth); S47J::Set(O, TEXT("reveal"), Reveal);
 	S47J::Set(O, TEXT("samples"), AppliedSamples); S47J::Set(O, TEXT("craftOpacity"), 1.);
 	auto Applied = S47J::New();
 	S47J::Set(Applied, TEXT("craftForwardM"), Tuning.CraftForward); S47J::Set(Applied, TEXT("craftRightM"), Tuning.CraftRight);
 	S47J::Set(Applied, TEXT("craftHeightM"), Tuning.CraftHeight); S47J::Set(Applied, TEXT("craftScale"), Tuning.CraftScale);
 	S47J::Set(Applied, TEXT("craftFill"), Tuning.CraftFill);
+	S47J::Set(Applied, TEXT("cabFillCandela"), Tuning.CabFill);
+	S47J::Set(Applied, TEXT("cabFillAppliedCandela"), CabFillLight.IsValid() ? double(CabFillLight->Intensity) : 0.);
 	S47J::Set(Applied, TEXT("bankForwardM"), Tuning.BankForward); S47J::Set(Applied, TEXT("bankSpreadM"), Tuning.BankSpread);
 	S47J::Set(Applied, TEXT("bankRevealSpreadM"), Tuning.BankRevealSpread);
 	S47J::Set(Applied, TEXT("bankRevealRiseM"), Tuning.BankRevealRise);

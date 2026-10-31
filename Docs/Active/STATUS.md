@@ -1,6 +1,6 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 30. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 31. oktober 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
@@ -46,7 +46,7 @@ Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon e
 
 ## Pågående arbeid og kjente feil
 
-**UFO-finalen:** Aktiv visuell produksjon i [utkast PR262](https://github.com/Tombonator3000/SIGNAL-47/pull/262) etter Toms bestilling30.okt: bilder og iterering til minst31.okt kl08. Opakt fartøy, to lokale banker, fasekobling og egne simulerte 256³-fluidvolumer er faktisk sett i editor. De tre volumene er bekreftet som PF_R16F på GPU; plassering, lys og naturlig avsløring forbedres videre. EVENT47, uttrekk34 og1947-foto beholdes. Et faktisk gameplay-opptak fra C6-inngang går nå gjennom EVENT, uttrekk og originalfoto. Det avdekket og fikk rettet ustabil bilfjæring ved lange frames; 1750 selvtester består. High 1080p er målrettet målt uten fangst, men Low fikk ett Vulkan device-lost under uttrekk; LowOff fullførte og feilen undersøkes før installasjon. Visuell sluttaksept, ferdig regi og pakking gjenstår. Installert12c1ac3d og personlige Saved er urørt.
+**UFO-finalen:** Aktiv visuell produksjon i [utkast PR262](https://github.com/Tombonator3000/SIGNAL-47/pull/262) etter Toms bestilling30.okt: bilder og iterering til minst31.okt kl08. Opakt fartøy, to lokale banker, fasekobling og egne simulerte 256³-fluidvolumer er faktisk sett i editor. De tre volumene er bekreftet som PF_R16F på GPU; plassering, lys og naturlig avsløring forbedres videre. EVENT47, uttrekk34 og1947-foto beholdes. Et faktisk gameplay-opptak fra C6-inngang går gjennom EVENT, uttrekk og originalfoto med mastermiks. Skyene har nå separat sen løftekurve, og første uttrekk viser den tomme fitted-kabinen; hel innkjøring fra diner prøves videre. Det avdekket og fikk rettet ustabil bilfjæring ved lange frames; 1750 selvtester består. High 1080p er målrettet målt uten fangst, men Low fikk ett Vulkan device-lost under uttrekk; LowOff og en identisk Low-gjentakelse fullførte. Krasjet er ikke reprodusert eller kildebevist; pakket Low-kontroll gjenstår før installasjon. Visuell sluttaksept, ferdig regi og pakking gjenstår. Installert12c1ac3d og personlige Saved er urørt.
 
 **Videreføring etter Claude:** [PR260 er installert](../Evidence/UnrealDeliveries/CLAUDE_CONTINUATION_2026-10-30.md). Den åpne PR-køen er samordnet: PR234 flettet, PR224/235/237 erstattet med beholdte nyttige kilder/rettinger. Samlet ordinær helreise og finalens valg står fortsatt åpne.
 

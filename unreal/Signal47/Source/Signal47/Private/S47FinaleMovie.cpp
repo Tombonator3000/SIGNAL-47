@@ -4,6 +4,7 @@
 #include "S47Flow.h"
 #include "S47Json.h"
 #include "S47Main.h"
+#include "S47OldRoad.h"
 #include "S47Story.h"
 #include "S47Walker.h"
 #include "S47World.h"
@@ -29,12 +30,15 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		bool bInit = false, bOwnsOutput = false, bStarted = false, bDone = false, bEarly = false;
 		bool bSawEvent = false, bSawPullout = false, bSawEnd = false, bSawPhoto = false, bSavedPhoto = false;
 		bool bAudioRequested = false, bAudioStarted = false;
+		bool bWaitForMile = false;
 		double WallStart = FPlatformTime::Seconds(), SimTotal = 0, SimStart = 0, CaptureWallStart = 0;
 		double NextFrame = 0, RequestWall = 0, EndAt = -1, PhotoAt = -1, PhotoCardAt = -1;
 		double TargetFps = 15, Tail = 8, EarlyTail = 8;
+		double StartMile = 5.9;
+		TOptional<double> CaptureStartMile;
 		double AudioStartRequestOffset = -1;
 		Audio::FMixerDevice* AudioMixer = nullptr;
-		FString Dir, Pending, LastStage, AudioError;
+		FString Dir, Pending, LastStage, AudioError, Jump;
 		S47J::FObj PendingRow;
 		TArray<TSharedPtr<FJsonValue>> Frames;
 	};
@@ -109,7 +113,15 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 			auto Manifest = S47J::New();
 			S47J::Set(Manifest, TEXT("schema"), 1);
 			S47J::Set(Manifest, TEXT("kind"), S.bAudioRequested ? TEXT("developer-jump-gameplay-audiovisual-capture") : TEXT("developer-jump-gameplay-visual-capture"));
-			S47J::Set(Manifest, TEXT("source"), TEXT("chapter6:line developer jump; subsequent gameplay timing and camera remain untouched"));
+			const FString StartedAt = S.CaptureStartMile.IsSet() ? FString::Printf(TEXT("%.3f"), *S.CaptureStartMile) : TEXT("not started");
+			const FString RequestedAt = S.bWaitForMile ? FString::Printf(TEXT(" (requested >= %.3f)"), S.StartMile) : FString();
+			S47J::Set(Manifest, TEXT("source"), FString::Printf(TEXT("%s developer jump; capture start mile %s%s; subsequent gameplay timing and camera remain untouched"),
+				*S.Jump, *StartedAt, *RequestedAt));
+			S47J::Set(Manifest, TEXT("jump"), S.Jump);
+			if (S.bWaitForMile) S47J::Set(Manifest, TEXT("startMileThreshold"), S.StartMile);
+			else S47J::SetNull(Manifest, TEXT("startMileThreshold"));
+			if (S.CaptureStartMile.IsSet()) S47J::Set(Manifest, TEXT("captureStartMile"), *S.CaptureStartMile);
+			else S47J::SetNull(Manifest, TEXT("captureStartMile"));
 			S47J::Set(Manifest, TEXT("complete"), bComplete);
 			S47J::Set(Manifest, TEXT("reason"), FinalReason);
 			S47J::Set(Manifest, TEXT("fullEnding"), bComplete && !S.bEarly && S.bSawEvent && S.bSawPullout && S.bSawEnd && S.bSavedPhoto);
@@ -166,7 +178,7 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 	{
 		S.bInit = true;
 		S.bAudioRequested = FParse::Param(FCommandLine::Get(), TEXT("S47FinaleMovieAudio"));
-		FString UserDir, Jump, Other;
+		FString UserDir, Other;
 		double AutoSpeed = 0;
 		const bool bExplicitUserDir = FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
 		if (!bExplicitUserDir || FPaths::IsRelative(UserDir)) { Finish(false, TEXT("explicit isolated /tmp UserDir required")); return; }
@@ -175,12 +187,13 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		FPaths::NormalizeDirectoryName(SavedDir); FPaths::CollapseRelativeDirectories(SavedDir);
 		if (!UserDir.StartsWith(TEXT("/tmp/")) || !FPaths::IsUnderDirectory(SavedDir, UserDir))
 		{ Finish(false, TEXT("Saved must remain inside the explicit /tmp UserDir")); return; }
-		FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), Jump);
+		FParse::Value(FCommandLine::Get(), TEXT("S47Jump="), S.Jump);
 		FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), AutoSpeed);
-		if (Jump != TEXT("chapter6:line") || !FMath::IsNearlyEqual(AutoSpeed, 24.6, .001)
+		const bool bAllowedJump = S.Jump == TEXT("chapter6") || S.Jump == TEXT("chapter6:lastmile") || S.Jump == TEXT("chapter6:line");
+		if (!bAllowedJump || !FMath::IsNearlyEqual(AutoSpeed, 24.6, .001)
 			|| FParse::Value(FCommandLine::Get(), TEXT("S47FinalePreview="), Other)
 			|| FParse::Value(FCommandLine::Get(), TEXT("S47FinaleSweep="), Other))
-		{ Finish(false, TEXT("requires ordinary chapter6:line jump and S47Auto=24.6, without a frame fixture")); return; }
+		{ Finish(false, TEXT("requires chapter6, chapter6:lastmile or chapter6:line and S47Auto=24.6, without a frame fixture")); return; }
 		if (Output.IsEmpty() || FPaths::IsRelative(Output)) { Finish(false, TEXT("absolute output directory required")); return; }
 		S.Dir = Output; FPaths::NormalizeDirectoryName(S.Dir); FPaths::CollapseRelativeDirectories(S.Dir);
 		if (Files.DirectoryExists(*S.Dir) || Files.FileExists(*S.Dir))
@@ -189,19 +202,36 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		S.bOwnsOutput = true;
 		FParse::Value(FCommandLine::Get(), TEXT("S47FinaleMovieFps="), S.TargetFps);
 		FParse::Value(FCommandLine::Get(), TEXT("S47FinaleMovieTail="), S.Tail);
+		S.bWaitForMile = FParse::Value(FCommandLine::Get(), TEXT("S47FinaleMovieStartMile="), S.StartMile);
+		if (S.bWaitForMile && !FMath::IsFinite(S.StartMile)) { Finish(false, TEXT("capture start mile must be finite")); return; }
 		S.bEarly = FParse::Value(FCommandLine::Get(), TEXT("S47FinaleMovieEarlyEnd="), S.EarlyTail);
 		S.TargetFps = FMath::Clamp(S.TargetFps, 12., 15.); S.Tail = FMath::Clamp(S.Tail, .1, 12.);
 		S.EarlyTail = FMath::Clamp(S.EarlyTail, 0., 30.);
 	}
-	if (WallNow - S.WallStart >= 600 || S.SimTotal >= 260)
-	{ Finish(false, TEXT("capture timeout (260 simulation / 600 wall seconds)")); return; }
+	if (!S.bStarted && (WallNow - S.WallStart >= 1500 || S.SimTotal >= 1200))
+	{ Finish(false, TEXT("capture wait timeout (1200 simulation / 1500 wall seconds)")); return; }
+	if (S.bStarted && (WallNow - S.CaptureWallStart >= 600 || SimNow >= 400))
+	{ Finish(false, TEXT("capture timeout after start (400 simulation / 600 wall seconds)")); return; }
+	TOptional<double> Mile;
+	if (M->World)
+	{
+		const auto* Road = M->World->OldRoad(); const auto* Driver = M->World->OldDrive();
+		if (Road && Driver)
+		{
+			const double ActualMile = Road->Where(Driver->Pos.X, Driver->Pos.Z).Mi;
+			if (FMath::IsFinite(ActualMile)) Mile = ActualMile;
+		}
+	}
 	auto* C = M->Story ? Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))) : nullptr;
 	if (!S.bStarted)
 	{
 		if (!C || !C->bActive || M->Mode != US47Main::EMode::Play || !M->World || M->World->Area != TEXT("roswell")) return;
 		if (!M->Flow || !M->Flow->bDevRun || M->Flow->CaseId != 0)
 		{ Finish(false, TEXT("capture requires an isolated developer case")); return; }
+		// Observe the real approach. Neither this filter nor the waiting observer moves gameplay.
+		if (!Mile.IsSet() || (S.bWaitForMile && *Mile < S.StartMile)) return;
 		S.bStarted = true; S.SimStart = M->T; S.CaptureWallStart = WallNow;
+		S.CaptureStartMile = Mile;
 		if (S.bAudioRequested)
 		{
 			S.AudioMixer = FAudioDeviceManager::GetAudioMixerDeviceFromWorldContext(M->Player.Get());
@@ -218,7 +248,8 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 				UE_LOG(LogS47FinaleMovie, Warning, TEXT("S47: finale movie %s; continuing PNG capture"), *S.AudioError);
 			}
 		}
-		UE_LOG(LogS47FinaleMovie, Display, TEXT("S47: finale movie observes normal gameplay at %.1f target fps, UI included; %s"), S.TargetFps, *S.Dir);
+		UE_LOG(LogS47FinaleMovie, Display, TEXT("S47: finale movie observes %s gameplay from actual mile %.3f at %.1f target fps, UI included; %s"),
+			*S.Jump, *Mile, S.TargetFps, *S.Dir);
 	}
 	if (!C) { Finish(false, TEXT("chapter six disappeared")); return; }
 	const FString Stage = C->Stage;
@@ -277,6 +308,8 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 	S47J::Set(S.PendingRow, TEXT("file"), Name); S47J::Set(S.PendingRow, TEXT("simulationSeconds"), SimNow);
 	S47J::Set(S.PendingRow, TEXT("wallSeconds"), WallNow - S.CaptureWallStart);
 	S47J::Set(S.PendingRow, TEXT("stage"), Stage);
+	if (Mile.IsSet()) S47J::Set(S.PendingRow, TEXT("mile"), *Mile);
+	else S47J::SetNull(S.PendingRow, TEXT("mile"));
 	S47J::Set(S.PendingRow, TEXT("clockSeconds"), M->Story ? M->Story->Clock() : 0.);
 	S47J::Set(S.PendingRow, TEXT("eventSeconds"), C->Et); S47J::Set(S.PendingRow, TEXT("pulloutSeconds"), C->Pt);
 	S47J::Set(S.PendingRow, TEXT("endingPhase"), EndingPhase); S47J::Set(S.PendingRow, TEXT("endingCardSeconds"), CardSeconds);

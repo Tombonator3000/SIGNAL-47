@@ -1404,3 +1404,6 @@ PR262 under arbeid: opptak av vanlig C6 avdekket ustabil fjæring ved lange fram
 
 ### 2026-10-31T00:55+01:00 Finale, bilde/lyd og ytelse
 PR262 under arbeid: dypere skydekke og roligere foldlys, faktisk spillopptak med mastermiks og originalfoto. High1080p EVENT ca87.8FPS/GPU10.53ms motOff98.8/GPU9.27; Low fikk ett Vulkan-heng under uttrekk, LowOff består og repro undersøkes. Private bakke-MID-er demper albedotrekantene; ingen ny installasjon.
+
+### 2026-10-31T01:41+01:00 Skyåpning og tom kabin
+PR262: separat sen skystigning, førersidekamera og lokale rattkopier forbedrer reveal/uttrekk; bygg og sju før/etterbilder består. Materiallokal VRS-endring gir jevnere Low-skykanter; kildegjennomgang fant ingen blockers. Full innkjøring med lyd pågår; Low-henget er ikke reprodusert og installert standard er fortsatt PR260.

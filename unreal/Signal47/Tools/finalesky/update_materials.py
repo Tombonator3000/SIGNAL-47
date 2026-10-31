@@ -57,6 +57,9 @@ if use_volume:
     assert len(recipe.M.get_inputs_for_material_expression(cloud, field)) == 18
 # Runtime draws only cube exit faces. Ray integration still terminates at SceneDepth.
 cloud.set_editor_property('disable_depth_test', True)
+# Fine cloud silhouettes must not inherit a coarse image-based shading rate.
+# This is local to the two cloud proxies; their AFTER_DOF ordering is unchanged.
+cloud.set_editor_property('allow_variable_rate_shading', False)
 # Share the stars' pass so the finite clouds can cover them; foreground glass sorts later.
 cloud.set_editor_property('translucency_pass', unreal.MaterialTranslucencyPass.MTP_AFTER_DOF)
 recipe.M.recompile_material(cloud)

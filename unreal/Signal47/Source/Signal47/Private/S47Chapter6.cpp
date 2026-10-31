@@ -129,6 +129,8 @@ void US47Chapter6::Begin(const S47J::FObj& Saved)
 		W->Note(W->Time() + TEXT(". Across the highway from the diner the old road goes off east-north-east, into the grey coming up in the east. C crosses it just past the eight-mile post."));
 		W->BuildCourierSign();
 		W->PlaceJump();
+		float AutoSpeed = 0;
+		if (FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), AutoSpeed) && AutoSpeed > 0) W->M->World->Autopilot = AutoSpeed;
 		if (W->FinaleSky) W->FinaleSky->Prepare();
 	});
 	if (Host) Host->After(3, [W] { if (W.IsValid() && W->bActive && !W->Frames) W->DrawFrames(); });
@@ -566,7 +568,12 @@ US47Chapter6::FKeyframes US47Chapter6::Keyframes() const
 {
 	const FVector& P = TruckAt.Pos; const double H = TruckAt.Heading; const FVector F(-FMath::Sin(H), 0, -FMath::Cos(H));
 	FKeyframes K;
-	K.Front = P + F * 9 + S47_UP * 1.9; K.AtTruck = P + S47_UP * 1.2;
+	const bool bFinaleArt = FinaleSky && FinaleSky->Ready();
+	const FVector Right(FMath::Cos(H), 0, -FMath::Sin(H));
+	// The ready finale looks down into the empty bench from the driver's side, above the dash.
+	// Missing/off art retains the original front view; all timing and later keyframes stay authored.
+	K.Front = bFinaleArt ? P + F * 7 - Right * 3.3 + S47_UP * 2.5 : P + F * 9 + S47_UP * 1.9;
+	K.AtTruck = bFinaleArt ? P - Right * .25 + S47_UP * 1.25 : P + S47_UP * 1.2;
 	K.High = P + Dir(104) * 170 + S47_UP * 140; K.Westward = P + Dir(284) * 160;
 	K.SunSide = P + Dir(259) * 120 + S47_UP * 150; K.Sunward = P + Dir(79) * 3000 + S47_UP * 60;
 	K.Top = P + Dir(259) * 220 + S47_UP * 650;
@@ -687,8 +694,6 @@ void US47Chapter6::PlaceJump()
 	const bool bLast = JumpAt == TEXT("lastmile");
 	const FS47OldRoad::FPose P = R->PoseAt(bLast ? 6.8 : 8.06); D->Place(P.Pos, P.Heading);
 	SetClock(bLast ? 5 * 3600 + 27 * 60 : 5 * 3600 + 28 * 60 + 30); bJumpPlaced = true;
-	float AutoSpeed = 0;
-	if (FParse::Value(FCommandLine::Get(), TEXT("S47Auto="), AutoSpeed) && AutoSpeed > 0) M->World->Autopilot = AutoSpeed;
 	UE_LOG(LogS47Ch6, Display, TEXT("S47: ch6 %s, mile %.2f"), *JumpAt, bLast ? 6.8 : 8.06);
 }
 

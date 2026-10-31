@@ -8,6 +8,7 @@ class US47Main;
 class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
 class UMaterialInterface;
+class UPointLightComponent;
 
 // Original SC13 art. Chapter6 supplies all visual time; this never advances the story
 // or moves its camera. Missing/compiling art leaves the existing ending available.
@@ -28,6 +29,15 @@ private:
 	TWeakObjectPtr<UMaterialInstanceDynamic> CraftFillMids[2];
 	TWeakObjectPtr<UStaticMeshComponent> Banks[2];
 	TWeakObjectPtr<UMaterialInstanceDynamic> BankMids[2];
+	TWeakObjectPtr<UPointLightComponent> CabFillLight;
+	struct FSteeringClone
+	{
+		TWeakObjectPtr<UStaticMeshComponent> Source, Rendered;
+		int32 SourceNode = INDEX_NONE;
+	};
+	TArray<FSteeringClone> SteeringClones;
+	TWeakObjectPtr<UStaticMeshComponent> ParkedCabin;
+	bool bSteeringLookupTried = false;
 	struct FGroundMaterial
 	{
 		TWeakObjectPtr<UStaticMeshComponent> Component;
@@ -45,8 +55,9 @@ private:
 	{
 		double CraftForward = 2100, CraftRight = 100, CraftHeight = 680, CraftScale = 1000;
 		double CraftFill = .065;
-		double BankForward = 1100, BankSpread = 280, BankRevealSpread = 520, BankHeight = 300, Glow = 1.1, Shade = .6;
-		double BankRevealRise = 450;
+		double CabFill = .8;
+		double BankForward = 1100, BankSpread = 280, BankRevealSpread = 1400, BankHeight = 300, Glow = 1.1, Shade = .6;
+		double BankRevealRise = 650;
 		double BankDepth = 950, BankWidth = 1200, BankThickness = 1000, Density = 1.7;
 		int32 Samples = 96;
 	} Tuning; // Applied values: metres, uniform mesh scale, and glow multiplier.
@@ -58,5 +69,7 @@ private:
 	int32 LastPhaseBand = -1;
 	bool WaitFor(const FString& Reason);
 	void SetGroundMaterialOverride(bool bActive);
+	void UpdateCabFill(double PullSeconds, bool bActive);
+	void UpdateSteeringClones(bool bPullout);
 	void Drop();
 };
