@@ -132,3 +132,7 @@ Root eier dokumentoppfølging, SC04-forslaget, radio-/lydbestillingen og to orig
 ## Alienanimasjon fra fortsatt spilltest
 
 Root eier kun dokumentoppfølging og ett originalbilde på `codex/alien-animation-feedback-20261031`. PLAY-31-22 fører senere animasjonspass. Ingen animatør-/importjobb eller motorreservasjon mens Tom spiller.
+
+## Stjernehull og meteorregn fra spilltesten
+
+Root eier dokumentoppfølging, revidert meteorregi og ett originalbilde på `codex/star-hole-meteor-feedback-20261031`. PLAY-31-23 fører senere implementering; FX-01 er gjenåpnet. Ingen kildeendring eller motorreservasjon mens Tom tester.
