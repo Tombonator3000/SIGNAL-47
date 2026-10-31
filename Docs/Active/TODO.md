@@ -146,13 +146,23 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 
 ## Læring fra Voices of the Void
 
-[Gameplay-notatet](../Research/VoicesOfTheVoid/GAMEPLAY_LESSONS.md) samler undersøkte prinsipper, kildegrenser og anbefalt rekkefølge. Dette er nye designforslag etter eksisterende P1-rettinger og pågående spilltest. STORY-05 fører den samlede gameplayvurderingen; T01 og SC08/SC09 skal ikke bygges på nytt som følge av denne listen.
+[Gameplay-notatet](../Research/VoicesOfTheVoid/GAMEPLAY_LESSONS.md) samler undersøkte prinsipper og kildegrenser. Tom har deretter bestilt den første SARO-løkken i Story og en plan for separat Freeform. [Modusplanen](../Design/Story/SARO_STORY_FREEFORM.md) fører omfanget. Åpne P1-feil beholder egen prioritet; STORY-05 fører den samlede gameplayvurderingen. T01 og SC08/SC09 skal ikke bygges på nytt som følge av denne listen.
 
-- [ ] **VOTV-01, første nye prioritet:** Gå gjennom én eksisterende SARO-/feltreise fra normalreferanse via diagnostiserbart avvik og fysisk kontroll til sikret bevis, retur/sammenligning og lokal recovery. Kartlegg manglende ledd mot faktisk kode og vanlig spillerprøve, og rett bare udekket handling, tilbakemelding eller lagring. Samordnes med STORY-05; bevar gjeldende SC-rekkefølge, fullførte kontroller og kanon. Dokumentlesing skal ikke telle som egen utført måling eller lydprøve.
+- [ ] **VOTV-01, under arbeid etter Toms bestilling 31. oktober:** Lag den første spillbare kontrollløkken i Story før 00:00, hovedsakelig på SARO-basen og dens antenne-/tekniske område. Gjenbruk eksisterende Observing-kveld fra normalreferanse via avvik og fysisk kontroll til sikret bevis, sammenligning og forståelig neste handling. Legg til den manglende aktive kontrollen og tilbakemeldingen, med bevart gjennomført arbeid ved avbrudd og lasting. Samordnes med STORY-05; bevar senere SC-rekkefølge, fullførte kontroller og kanon. Gamle lagringer skal ikke få nye retroaktive gater. Dokumentlesing skal ikke telle som egen utført måling eller lydprøve. Kilde, målrettet prøve, pakket og installert status føres i STATUS før oppgaven lukkes.
 - [ ] **VOTV-02, deretter:** Vurder ett eksisterende fysisk medium eller apparat i den samme reisen: tydelig valgt medium, korrekt plassering, forståelig avvisning og synlig/hørbart resultat. Bevar original/kopi, bevis-ID og tilstand ved pause, lasting og avbrudd.
 - [ ] **VOTV-03:** Bruk kjente dører, lys og lyd i en avgrenset urohendelse med forståelig respons og lokal recovery. Knytt vurderingen til STORY-05 og PLAY-31-17/18/19; avklar mangelen før et nytt hendelses- eller trusselsystem foreslås.
 - [ ] **VOTV-04, etter kontrollreisen:** Vurder selektiv løs fysikk i én liten sammenhengende situasjon med eksisterende rekvisitter. Skill fastmontert, styrt bevegelig og løst; kontroller veggstopp, treff, materiallyd og lagring. Kritiske spor og rømningsruter skal tåle uhell.
 - [ ] **VOTV-05, lavere prioritet:** Vurder avgrenset vedlikeholdspress og trinnvis evidenskvalitet bare hvis spillerprøven viser behov for flere valg. En eventuell feil må være diagnostiserbar, ha merkbar konsekvens og en lokal stoppregel. Omfattende butikkøkonomi og behovsmålere er ikke vedtatt.
+
+## Story og Freeform
+
+[Beslutning D-21 til D-23](DECISIONS.md#nye-føringer-fra-spillprøven) og [modusplanen](../Design/Story/SARO_STORY_FREEFORM.md) skiller dagens Story fra senere Freeform. Denne seksjonen er en produksjonsplan; Freeform finnes ikke som ferdig spillmodus nå.
+
+- [ ] **MODE-01, Story:** Viderefør dagens planlagte natt og slutt som Story. Bruk VOTV-01 til aktivt SARO-arbeid før midnatt; la de senere hovedhendelsene få plass og behold historiegrunnene for turer til byen og motellet. Første leveranse er SARO-løkken, ikke en omskriving av hele historien.
+- [ ] **MODE-02, senere Freeform-grunnlag:** Skill modusvalg, klokke, progresjon og lagringsidentitet. Gjenbruk SARO, utstyr, interaksjoner og relevante fysiske systemer. Bevar eksisterende Story-lagringer, og hindre at en Freeform-sak utløser Story-finalen eller blandes inn i Story-progresjon. Et menyvalg skal først kunne starte Freeform når en spillbar løkke finnes.
+- [ ] **MODE-03, første Freeform-døgn:** Lag én fungerende arbeidsdag og natt med oppgaver, måleresultater, vedvarende arbeidssted og overgang til neste dag uten Story-slutt. Hold hovedarbeidet på SARO og det tilhørende uteområdet. Avklar meningsfull fremgang og døgnrytme gjennom spilling før langsiktig økonomi utvides.
+- [ ] **MODE-04, Freeform-hendelser:** Legg til sjeldne avvik, besøk, aliens og farer med sted-/tid-/tilstandsvilkår, rolige perioder og vern mot raske gjentakelser. Hendelser skal gi forståelige spor og responsmuligheter. Bevar aktive hendelser og relevante tilfeldige valg gjennom pause og lasting.
+- [ ] **MODE-05, Freeform-varighet:** Prøv flere døgn med lagring, avbrudd, vedlikehold og hendelsesvariasjon. Vurder balanse og langsiktig fremgang etter at grunnarbeidet er morsomt å utføre. Byen og motellet kan få valgfrie roller senere; hovedsløyfen skal ikke kreve gjentatte reiser dit.
 
 ## Levering og kompatibilitet
 

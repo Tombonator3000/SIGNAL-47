@@ -16,6 +16,8 @@ class FS47Observing
 {
 public:
  enum class EStep : uint8 { Tune, Integrating, Data };
+ // New Story cases inspect the pulsar's extra ticks before proceeding to the archive.
+ enum class ELoopStage : int8 { Off = -1, AwaitPulsar, Rack, ControlRunning, ControlPrint, Compare, Filed };
  struct FRun
  {
   const TCHAR* Id; const TCHAR* Source; const TCHAR* Task; const TCHAR* Data;
@@ -44,6 +46,13 @@ public:
  EStep Phase() const { return StepNow; }
  double Integrated() const { return Elapsed; }
  int32 Hints() const { return HintMask; }
+ ELoopStage LoopStage() const { return PulsarLoop; }
+ double ControlElapsed() const { return ControlT; }
+ const FString& LoopFeedback() const { return CompareFeedback; }
+ bool ComparePulsar(const FString& Choice);
+ static constexpr double ControlSeconds = 8;
+ static FS47Doc PulsarControl();
+ static FS47Doc PulsarComparison();
  // The chores between runs: the weekly generator test before the pulsar (0 none, 1 running,
  // 2 on generator power, 3 logged), the 20:30 filing in the records room before the hydrogen strip
  // (-1 legacy exemption, 0 not filed, 1 filed, 2 the reel turned) and the round to the array gate before Virgo A (0, 1 chained, 2 found open).
@@ -70,6 +79,16 @@ public:
 private:
  US47Main* M = nullptr;
  bool bEnabled = false, bScheduleFiled = false;
+ ELoopStage PulsarLoop = ELoopStage::Off;
+ double ControlT = 0, ControlTick = 0;
+ FString CompareFeedback;
+ bool PulsarCheckActive() const;
+ void SecurePulsarChart();
+ void StartPulsarControl();
+ void StepPulsarControl(double Dt);
+ void CollectPulsarControl();
+ void OpenPulsarComparison();
+ FString PulsarObjective() const;
  int32 Run = 0, HintMask = 0, Ticks = 0, GenStep = 0, Archive = 0, Yard = 0, DoorVoice = 0;
  TSharedPtr<FS47RecordedDialogue> Voice;
  bool bReplay = false; // SC04's fragment owns the voice until it ends

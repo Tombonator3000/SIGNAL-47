@@ -73,6 +73,7 @@ struct FS47HorrorTest::FState
 	float ArcOriginalFov = 0;
 	FS47Substation::FArcSnapshot PausedArc;
 	bool bObservingRestored = false, bObservingResumed = false, bCursorProbe = false;
+	double LoopControlAt = 0;
 	int32 CursorChecks = 0;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
 	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector;
@@ -389,9 +390,9 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		FString UserDir; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
 		UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
-		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("SC03") && T.Mode != TEXT("SC03Resume") && T.Mode != TEXT("Arc") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
+		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SAROLoop") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("SC03") && T.Mode != TEXT("SC03Resume") && T.Mode != TEXT("Arc") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
 			!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
-		{ Fail(TEXT("S47HorrorContract=SC01, SC02, SC02Resume, SC03, SC03Resume, Arc or Navigation and explicit isolated /tmp UserDir required")); return; }
+		{ Fail(TEXT("S47HorrorContract=SC01, SAROLoop, SC02, SC02Resume, SC03, SC03Resume, Arc or Navigation and explicit isolated /tmp UserDir required")); return; }
 		for (const TCHAR* Flag : {TEXT("S47T01Contract"), TEXT("S47T02Contract"), TEXT("S47T02DriveContract"), TEXT("S47DaleDocumentsContract"), TEXT("S47EveningEntrance"), TEXT("S47SmokeTest")})
 			if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live test drivers")); return; }
 		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / T.Mode;
@@ -623,6 +624,141 @@ void FS47HorrorTest::Step(double Dt)
 			Go({FVector(4.2,0,-1.2), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
 		}
 	}
+	// The new Story pulsar check is part of full SC01 too. SAROLoop ends after this
+	// production journey, before the archive chore and the later window event.
+	if (T.Stage >= 650 && T.Stage <= 665)
+	{
+		FS47Observing& O = *M->Observing;
+		using ELoop = FS47Observing::ELoopStage;
+		auto DocCount = [this](const FString& Id)
+		{
+			int32 Count = 0;
+			for (const FS47Doc& Doc : M->Story->Docs()) if (Doc.Id == Id) ++Count;
+			return Count;
+		};
+		if (T.Stage == 650) { Aim(Target(TEXT("rack"))); Stage(651); return; }
+		if (T.Stage == 651)
+		{
+			if (!Pick(TEXT("rack")) || !Check(O.RunIndex() == 1 && O.Phase() == FS47Observing::EStep::Data &&
+				O.LoopStage() == ELoop::ControlRunning && DocCount(TEXT("obs_chart_b1133")) == 1,
+				TEXT("physical receiver-rack use starts the internal-reference control while retaining the original pulsar chart"))) return;
+			Stage(652, .1); return;
+		}
+		if (T.Stage == 652)
+		{
+			if (O.ControlElapsed() < 2) return;
+			if (!Check(O.LoopStage() == ELoop::ControlRunning && !O.ComparePulsar(TEXT("unresolved")) &&
+				O.RunIndex() == 1 && DocCount(TEXT("obs_compare_b1133")) == 0,
+				TEXT("comparison before the measured control cannot advance the run or grant a conclusion"))) return;
+			T.LoopControlAt = O.ControlElapsed();
+			M->UI->Document(FS47Observing::Chart(1));
+			Stage(653, .7); return;
+		}
+		if (T.Stage == 653)
+		{
+			if (!Check(M->ModalOpen() && O.LoopStage() == ELoop::ControlRunning &&
+				FMath::IsNearlyEqual(O.ControlElapsed(), T.LoopControlAt, .001),
+				TEXT("reading the retained chart pauses the unfinished internal-reference control without completing it"))) return;
+			M->UI->Close(true);
+			if (!StoreRestore(TEXT("saro-loop-control-in-progress"), M->Flow->GameState())) return;
+			Stage(654, .4); return;
+		}
+		if (T.Stage == 654)
+		{
+			if (!Check(O.RunIndex() == 1 && O.Phase() == FS47Observing::EStep::Data &&
+				O.LoopStage() == ELoop::ControlRunning && O.ControlElapsed() >= T.LoopControlAt &&
+				DocCount(TEXT("obs_chart_b1133")) == 1 && DocCount(TEXT("obs_control_b1133")) == 0 &&
+				DocCount(TEXT("obs_compare_b1133")) == 0 && (O.Hints() & 1) && H.BaselineChecked(),
+				TEXT("fresh disk/full-Flow restore resumes the same unfinished control and retains its original observation"))) return;
+			Go({FVector(4.2,0,-1.2), FVector(3.8,0,-1.2), FVector(4.5,0,-.4)}, 655); return;
+		}
+		if (T.Stage == 655)
+		{
+			if (O.LoopStage() == ELoop::ControlRunning) return;
+			if (!Check(O.LoopStage() == ELoop::ControlPrint && O.ControlElapsed() >= FS47Observing::ControlSeconds &&
+				O.RunIndex() == 1 && DocCount(TEXT("obs_compare_b1133")) == 0,
+				TEXT("the control finishes independently while walking back to the printer, without inventing a conclusion"))) return;
+			Aim(Target(TEXT("printer"))); Stage(656); return;
+		}
+		if (T.Stage == 656)
+		{
+			if (!Pick(TEXT("printer")) || !Check(O.LoopStage() == ELoop::Compare && O.RunIndex() == 1 &&
+				DocCount(TEXT("obs_chart_b1133")) == 1 && DocCount(TEXT("obs_control_b1133")) == 1 &&
+				DocCount(TEXT("obs_compare_b1133")) == 0,
+				TEXT("the second physical printer use collects the control chart and keeps both distinct source papers"))) return;
+			Shot(TEXT("saro-loop-control-chart")); M->UI->Close(true);
+			Go({FVector(3.8,0,-1.2), FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-4.2,0,1.0), FVector(-4.2,0,2.0)}, 657); return;
+		}
+		if (T.Stage == 657) { Aim(Target(TEXT("opsTerminal"))); Stage(658); return; }
+		if (T.Stage == 658)
+		{
+			if (!Pick(TEXT("opsTerminal")) || !Check(M->ModalOpen() && O.LoopStage() == ELoop::Compare,
+				TEXT("the aimed operations-terminal use opens the actual comparison panel"))) return;
+			Shot(TEXT("saro-loop-comparison")); Stage(659); return;
+		}
+		if (T.Stage == 659)
+		{
+			// OpenPulsarComparison focuses its first (pulsar) answer. Activate it
+			// through the same Slate keyboard path as an ordinary displayed choice.
+			if (!Enter()) return;
+			if (!Check(O.LoopStage() == ELoop::Compare &&
+				O.RunIndex() == 1 && !O.LoopFeedback().IsEmpty() && DocCount(TEXT("obs_compare_b1133")) == 0,
+				TEXT("the wrong pulsar explanation gives specific feedback while preserving both papers and the pending comparison"))) return;
+			if (!Check(!O.ComparePulsar(TEXT("sky")) && O.LoopStage() == ELoop::Compare &&
+				O.RunIndex() == 1 && DocCount(TEXT("obs_compare_b1133")) == 0,
+				TEXT("a short quiet bench check cannot be promoted to proof of a sky source"))) return;
+			M->UI->Close(true); Stage(660); return;
+		}
+		if (T.Stage == 660)
+		{
+			if (!Check(!M->ModalOpen() && O.LoopStage() == ELoop::Compare && O.RunIndex() == 1 &&
+				DocCount(TEXT("obs_chart_b1133")) == 1 && DocCount(TEXT("obs_control_b1133")) == 1,
+				TEXT("closing the comparison without answering preserves the unfinished investigation and both papers"))) return;
+			Aim(Target(TEXT("opsTerminal"))); Stage(661); return;
+		}
+		if (T.Stage == 661)
+		{
+			if (!Pick(TEXT("opsTerminal")) || !Check(M->ModalOpen() && O.LoopStage() == ELoop::Compare,
+				TEXT("the physical terminal can reopen an interrupted comparison"))) return;
+			// The displayed answers are pulsar, sky, unresolved. Start at the
+			// focused first button and navigate to the supported third answer.
+			for (int32 I = 0; I < 2; ++I)
+			{
+				const bool Handled = FSlateApplication::Get().ProcessKeyDownEvent(FKeyEvent(EKeys::Tab, FModifierKeysState(), 0, false, 0, 0));
+				FSlateApplication::Get().ProcessKeyUpEvent(FKeyEvent(EKeys::Tab, FModifierKeysState(), 0, false, 0, 0));
+				if (!Check(Handled, TEXT("actual focused Slate Tab navigates the displayed comparison answers"))) return;
+			}
+			if (!Enter()) return;
+			if (!Check(O.LoopStage() == ELoop::Filed && O.RunIndex() == 2 &&
+				DocCount(TEXT("obs_compare_b1133")) == 1,
+				TEXT("the displayed unresolved answer files the supported conclusion through Slate and its production callback"))) return;
+			Shot(TEXT("saro-loop-filed")); M->UI->Close(true);
+			if (!StoreRestore(TEXT("saro-loop-comparison-filed"), M->Flow->GameState())) return;
+			Stage(662, .6); return;
+		}
+		if (T.Stage == 662)
+		{
+			if (!Check(O.LoopStage() == ELoop::Filed && O.RunIndex() == 2 && O.Phase() == FS47Observing::EStep::Tune &&
+				O.ArchiveStep() == 0 && O.ChorePending() && O.Objective().Contains(TEXT("RECORDS ROOM")) &&
+				DocCount(TEXT("obs_chart_b1133")) == 1 && DocCount(TEXT("obs_control_b1133")) == 1 &&
+				DocCount(TEXT("obs_compare_b1133")) == 1 && O.Hints() == 17 && H.BaselineChecked() && !H.NormalComplete() && !H.Complete(),
+				TEXT("completed comparison survives fresh disk/full-Flow restore once and gives the existing run-binder next action before the later story"))) return;
+			if (T.Mode == TEXT("SAROLoop"))
+			{
+				M->Player->TestMove.Reset(); M->Player->bTestRun = false; T.bDone = true;
+				auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), TEXT("PASS"));
+				S47J::Set(Result, TEXT("scenario"), TEXT("SAROLoop")); S47J::Set(Result, TEXT("checks"), T.Checks);
+				S47J::Set(Result, TEXT("diskFlowRestores"), T.Stores); S47J::Set(Result, TEXT("nativeWalkMetres"), T.WalkMetres);
+				Result->SetArrayField(TEXT("evidence"), T.Evidence);
+				S47J::Set(Result, TEXT("method"), TEXT("Existing SC01 evening fixture, actual console settings and timed observations, physical Walker routes and aimed production uses. Wrong pulsar and correct unresolved answers use focused Slate Enter/Tab; a separate invalid sky-answer check calls the same production callback. Real disk/full-Flow restores occur during the control and after filing."));
+				S47J::Set(Result, TEXT("limits"), TEXT("Focused SARO investigation through the first two observations, generator and comparison only. No later SC01/window scene, human input/listening, full-night pacing, Xbox or whole-story acceptance."));
+				FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(T.Root / TEXT("result.json")));
+				UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror SAROLoop PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"), T.Checks, T.Stores, T.WalkMetres);
+				FPlatformMisc::RequestExit(false); return;
+			}
+			Go({FVector(-4.2,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
+		}
+	}
 	if (T.Stage >= 600 && T.Stage <= 605)
 	{
 		FS47Observing& O = *M->Observing;
@@ -684,6 +820,14 @@ void FS47HorrorTest::Step(double Dt)
 		{
 			const auto& Run = FS47Observing::Runs()[R];
 			if (!Pick(DataId)) return;
+			if (R == 1 && O.LoopStage() != FS47Observing::ELoopStage::Off)
+			{
+				if (!Check(O.RunIndex() == 1 && O.LoopStage() == FS47Observing::ELoopStage::Rack &&
+					M->Story->Docs().ContainsByPredicate([](const FS47Doc& D) { return D.Id == TEXT("obs_chart_b1133"); }),
+					TEXT("securing the pulsar chart starts the SARO check without filing an untested conclusion or advancing the run"))) return;
+				M->UI->Close(true);
+				Go({FVector(3.8,0,-1.2), FVector(4.2,0,-1.2)}, 650); return;
+			}
 			const FString DocId = FS47Observing::Chart(R).Id;
 			static const int32 Expect[] = { 0, 17, 147, 191 };
 			if (!Check(O.RunIndex() == R + 1 && M->Story->Clock() >= Run.Slot + Run.Minutes * 60 &&
@@ -1165,7 +1309,7 @@ void FS47HorrorTest::Step(double Dt)
 		S47J::Set(Result,TEXT("missedHand"),T.bMissHand);
 		S47J::Set(Result,TEXT("dispatchRecordingsRequired"),T.bDispatchRecordings);Result->SetArrayField(TEXT("dispatch_audio"),T.DispatchEvidence);
 		if(T.bDispatchRecordings)S47J::Set(Result,TEXT("dispatch_audio_limits"),TEXT("Exact role/text-ID, real mono48k PCM and natural full source/routed production-phone graph acceptance. Skip/mute controls restore the actual pending call before full playback. No human listening or subjective voice/ASR approval asserted; no Dale-heard flag is fabricated."));
-		S47J::Set(Result,TEXT("fixture"),TEXT("Post-handover evening, one initial room placement and 35 explicitly synthetic film-budget entries. Receiver dials controlled through production console; subsequent movement uses native Walker/Resolve, interactions require aimed camera rays, UI uses focused Slate Enter. The reserved reference is a new actual rendered capture."));
+		S47J::Set(Result,TEXT("fixture"),TEXT("Post-handover evening, one initial room placement and 35 explicitly synthetic film-budget entries. Receiver dials controlled through production console; subsequent movement uses native Walker/Resolve, interactions require aimed camera rays, dialogues use focused Slate Enter and the SARO comparison uses the displayed buttons' production callbacks. The reserved reference is a new actual rendered capture."));
 		S47J::Set(Result,TEXT("limits"),TEXT("Scripted live contract, not human play/listening, full-night pacing, physical Xbox or whole-story acceptance. SC02+ and H01 closure remain separate."));
 		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror SC01 PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"),T.Checks,T.Stores,T.WalkMetres);

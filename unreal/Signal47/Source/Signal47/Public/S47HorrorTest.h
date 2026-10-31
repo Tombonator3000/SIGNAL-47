@@ -7,7 +7,7 @@
 class US47Main;
 struct FS47EveningLine;
 
-// Explicit, isolated live controller: -S47HorrorContract=SC01 -UserDir=/tmp/...
+// Explicit, isolated live controller: -S47HorrorContract=SC01 or SAROLoop -UserDir=/tmp/...
 // Root invokes Step after the production Horror coordinator's update.
 class FS47HorrorTest
 {

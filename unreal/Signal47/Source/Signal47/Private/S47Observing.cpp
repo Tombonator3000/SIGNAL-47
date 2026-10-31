@@ -14,6 +14,8 @@
 #include "S47Three.h"
 #include "S47World.h"
 #include "S47Walker.h"
+#include "S47Kit.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -157,6 +159,7 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
 {
  Stop();
  bReplay = false; bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Archive = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
+ PulsarLoop = ELoopStage::Off; ControlT = ControlTick = 0; CompareFeedback.Empty();
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -173,12 +176,27 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
   Archive = Saved->HasField(TEXT("archive")) ? FMath::Clamp(S47J::Int(Saved, TEXT("archive")), -1, 2) : -1;
   Yard = FMath::Clamp(S47J::Int(Saved, TEXT("yard")), 0, 2);
   DoorVoice = FMath::Clamp(S47J::Int(Saved, TEXT("doorVoice")), 0, 2);
+  // Missing state is an explicit legacy exemption. Never add a new job to a passed run.
+  if (S47J::Int(Saved, TEXT("loopVersion"), 0) == 1)
+  {
+   const int32 Stage = S47J::Int(Saved, TEXT("loopStage"), -1);
+   if (Stage >= int32(ELoopStage::AwaitPulsar) && Stage <= int32(ELoopStage::Filed))
+   {
+    PulsarLoop = ELoopStage(Stage);
+    if (Run > 1 && PulsarLoop != ELoopStage::Filed) PulsarLoop = ELoopStage::Off;
+    else if (Run < 1 || (Run == 1 && StepNow != EStep::Data)) PulsarLoop = ELoopStage::AwaitPulsar;
+    ControlT = FMath::Clamp(S47J::Num(Saved, TEXT("controlElapsed")), 0., ControlSeconds);
+    ControlTick = FMath::Fmod(ControlT, PulsarPeriod);
+    CompareFeedback = S47J::Str(Saved, TEXT("loopFeedback"));
+   }
+  }
   if (GenStep == 1 && M && M->Audio) { FS47Sound S; S.Gain = .3f; S.At = GeneratorAt; S.bLoop = true; M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), S); }
   // The stillness belongs to an unfinished Virgo A run only.
   if (StepNow == EStep::Integrating && Run == 3 && (HintMask & HintStill) && M && M->Audio && M->Audio->Night) M->Audio->Night->Still();
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
+ if (bEnabled) PulsarLoop = ELoopStage::AwaitPulsar;
 }
 
 S47J::FObj FS47Observing::Save() const
@@ -187,6 +205,11 @@ S47J::FObj FS47Observing::Save() const
  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version); S47J::Set(O, TEXT("run"), Run); S47J::Set(O, TEXT("step"), int32(StepNow));
  S47J::Set(O, TEXT("elapsed"), Elapsed); S47J::Set(O, TEXT("hints"), HintMask); S47J::Set(O, TEXT("schedule"), bScheduleFiled); S47J::Set(O, TEXT("status"), HeldStatus);
  S47J::Set(O, TEXT("generator"), GenStep); S47J::Set(O, TEXT("archive"), Archive); S47J::Set(O, TEXT("yard"), Yard); S47J::Set(O, TEXT("doorVoice"), DoorVoice);
+ if (PulsarLoop != ELoopStage::Off)
+ {
+  S47J::Set(O, TEXT("loopVersion"), 1); S47J::Set(O, TEXT("loopStage"), int32(PulsarLoop));
+  S47J::Set(O, TEXT("controlElapsed"), ControlT); S47J::Set(O, TEXT("loopFeedback"), CompareFeedback);
+ }
  return O;
 }
 
@@ -196,14 +219,27 @@ bool FS47Observing::Active() const
   M->Story->Rx.Stage == 1 && M->Story->Phase() == ES47Phase::Shift;
 }
 
-const FS47Profile* FS47Observing::ConsoleProfile() const { return Active() ? &Runs()[Run].P : nullptr; }
+const FS47Profile* FS47Observing::ConsoleProfile() const
+{
+ if (!Active()) return nullptr;
+ if (PulsarCheckActive() && PulsarLoop == ELoopStage::ControlRunning)
+ {
+  static const FS47Profile P = []
+  {
+   FS47Profile Ref = Runs()[1].P; Ref.Stage = TEXT("LOCAL RECEIVER CONTROL"); Ref.Action = TEXT("REFERENCE RUNNING");
+   Ref.Card = TEXT("EXTERNAL INPUT TERMINATED / INTERNAL REFERENCE / 8 SECOND CONTROL / COLLECT THE CHART WHEN COMPLETE"); return Ref;
+  }();
+  return &P;
+ }
+ return &Runs()[Run].P;
+}
 
 bool FS47Observing::ConsoleAction()
 {
  if (!Active()) return false;
  FS47Rx& Rx = M->Story->Rx;
  if (StepNow == EStep::Integrating) { Rx.Status = FString::Printf(TEXT("INTEGRATING %s  /  HOLD"), Runs()[Run].Source).ToUpper(); return true; }
- if (StepNow == EStep::Data) { Rx.Status = TEXT("RUN COMPLETE  /  SEE THE OBJECTIVE"); return true; }
+ if (StepNow == EStep::Data) { Rx.Status = PulsarCheckActive() ? PulsarObjective() : FString(TEXT("RUN COMPLETE  /  SEE THE OBJECTIVE")); return true; }
  if (ChorePending())
  {
   Rx.Status = Run == 1 ? TEXT("GENERATOR TEST DUE  /  REMOTE PANEL BY THE EAST DOOR")
@@ -243,6 +279,7 @@ void FS47Observing::Step(double Dt)
   Changed();
  }
  StepChores(Dt);
+ StepPulsarControl(Dt);
  if (StepNow != EStep::Integrating) return;
  const FRun& R = Runs()[Run];
  const double Was = Elapsed;
@@ -312,6 +349,15 @@ void FS47Observing::Finish()
 
 FString FS47Observing::Label(const FString& Id) const
 {
+ if (PulsarCheckActive())
+ {
+  if (Id == TEXT("rack")) return PulsarLoop == ELoopStage::Rack ? FString(TEXT("Test the receiver on its terminated input and internal reference"))
+   : PulsarLoop == ELoopStage::ControlRunning ? FString(TEXT("Internal reference running: listen to the regular ticks"))
+   : PulsarLoop == ELoopStage::ControlPrint || PulsarLoop == ELoopStage::Compare ? FString(TEXT("Receiver control finished: retain both charts")) : FString();
+  if (Id == TEXT("printer")) return PulsarLoop == ELoopStage::AwaitPulsar ? FString(TEXT("Secure the pulsar strip chart with the extra ticks"))
+   : PulsarLoop == ELoopStage::ControlPrint ? FString(TEXT("Collect the internal-reference control chart")) : FString();
+  if (Id == TEXT("opsTerminal")) return PulsarLoop == ELoopStage::Compare ? FString(TEXT("Compare the pulsar and receiver-control charts")) : FString();
+ }
  if (Id == TEXT("obs:generator"))
  {
   if (!Active() || Run != 1 || StepNow != EStep::Tune || GenStep >= 3) return FString(TEXT("Generator remote panel"));
@@ -328,6 +374,23 @@ FString FS47Observing::Label(const FString& Id) const
 bool FS47Observing::Use(const FString& Id)
 {
  if (Id == TEXT("obs:generator")) { UseGenerator(); return true; }
+ if (PulsarCheckActive())
+ {
+  if (Id == TEXT("rack")) { if (PulsarLoop == ELoopStage::Rack) StartPulsarControl(); else if (M && M->UI) M->UI->Toast(PulsarObjective(), 4); return true; }
+  if (Id == TEXT("printer"))
+  {
+   if (PulsarLoop == ELoopStage::AwaitPulsar) SecurePulsarChart();
+   else if (PulsarLoop == ELoopStage::ControlPrint) CollectPulsarControl();
+   else if (M && M->UI) M->UI->Toast(PulsarObjective(), 4);
+   return true;
+  }
+  if (Id == TEXT("opsTerminal"))
+  {
+   if (PulsarLoop == ELoopStage::Compare) OpenPulsarComparison();
+   else if (M && M->UI) M->UI->Toast(PulsarObjective(), 4);
+   return true;
+  }
+ }
  if (Label(Id).IsEmpty()) return false;
  if (Id == TEXT("binder")) { UseBinder(); return true; }
  File();
@@ -338,9 +401,10 @@ void FS47Observing::File()
 {
  const FRun& R = Runs()[Run];
  AS47Story& S = *M->Story;
- const FS47Doc Doc = Chart(Run);
+ const bool bComparedPulsar = Run == 1 && PulsarLoop == ELoopStage::Filed;
+ const FS47Doc Doc = bComparedPulsar ? PulsarComparison() : Chart(Run);
  S.AddDoc(Doc);
- S.Note(R.P.Note);
+ S.Note(bComparedPulsar ? FString::Printf(TEXT("%s. Pulsar period normal. Extra ticks do not follow its beat. A short terminated-input/internal-reference check was regular, without extra ticks. Source unresolved. Both charts retained; next file them in the records-room binder."), *S.ClockText(false)) : FString(R.P.Note));
  if (M->Audio) M->Audio->Play(R.Data == FString(TEXT("printer")) ? TEXT("paper0") : TEXT("click"), .5f);
  // The run's own length passes on the clock; the next source waits for its slot.
  S.AdvanceClockTo(R.Slot + R.Minutes * 60, TEXT("observation data filed"));
@@ -353,9 +417,151 @@ void FS47Observing::File()
  Changed();
 }
 
+bool FS47Observing::PulsarCheckActive() const
+{
+ return Active() && Run == 1 && StepNow == EStep::Data && PulsarLoop >= ELoopStage::AwaitPulsar && PulsarLoop < ELoopStage::Filed;
+}
+
+FString FS47Observing::PulsarObjective() const
+{
+ switch (PulsarLoop)
+ {
+  case ELoopStage::AwaitPulsar: return TEXT("PRINTER // SECURE THE PULSAR CHART BEFORE CHANGING THE RECEIVER INPUT");
+  case ELoopStage::Rack: return TEXT("RECEIVER RACK // TEST THE TERMINATED INPUT WITH THE INTERNAL REFERENCE");
+  case ELoopStage::ControlRunning: return TEXT("RECEIVER RACK // INTERNAL REFERENCE RUNNING. LISTEN; THE PRINTER WILL RECORD THE CHECK");
+  case ELoopStage::ControlPrint: return TEXT("PRINTER // COLLECT THE INTERNAL-REFERENCE CONTROL CHART");
+  case ELoopStage::Compare: return TEXT("OPERATIONS TERMINAL // COMPARE THE PULSAR AND CONTROL CHARTS, THEN FILE WHAT THEY SUPPORT");
+  default: return FString();
+ }
+}
+
+FS47Doc FS47Observing::PulsarControl()
+{
+ FS47Doc D; D.Id = TEXT("obs_control_b1133"); D.Title = TEXT("Receiver control: terminated input and internal reference");
+ D.Kind = TEXT("printout"); D.Stamp = TEXT("SARO / RX CHECK");
+ D.Page = TEXT("SARO / RECEIVER CONTROL AFTER PSR B1133+16\n\n")
+  TEXT("EXTERNAL INPUT TERMINATED\nINTERNAL TIMING REFERENCE ENABLED\nOBSERVATION WINDOW 8 SECONDS\n\n")
+  TEXT("REFERENCE TRAIN 1.18791 S / REGULAR\nEXTRA TICKS IN THIS CHECK: NONE\n\n")
+  TEXT("The external input was disconnected for this short bench check.\n")
+  TEXT("A quiet check does not identify the source of an intermittent event.\n")
+  TEXT("Retain with the original pulsar chart for comparison.");
+ D.Transcript = TEXT("The receiver was switched to a terminated input and its own internal timing reference for eight seconds. The reference pulses were regular and no extra ticks were recorded in this check. This narrows the observation; it does not prove where the earlier extra ticks came from.");
+ return D;
+}
+
+FS47Doc FS47Observing::PulsarComparison()
+{
+ FS47Doc D; D.Id = TEXT("obs_compare_b1133"); D.Title = TEXT("Pulsar discrepancy: comparison filed");
+ D.Kind = TEXT("typed"); D.Stamp = TEXT("SARO / REYES");
+ D.Page = TEXT("SARO / PULSAR DISCREPANCY COMPARISON\n\n")
+  TEXT("1. The pulsar period agrees with the catalogue.\n")
+  TEXT("2. The extra ticks do not follow that period.\n")
+  TEXT("3. The short terminated-input/internal-reference check was regular.\n")
+  TEXT("   No extra ticks were recorded during that check.\n\n")
+  TEXT("SOURCE UNRESOLVED. A quiet control does not establish a sky source\n")
+  TEXT("and does not exclude an intermittent local cause.\n\n")
+  TEXT("Original pulsar and control charts retained.\nNEXT: file the charts in the records-room run binder, then reduce HI strip 12.");
+ D.Transcript = TEXT("The pulsar itself kept its normal period. The extra ticks were outside that rhythm, and the subsequent short receiver control did not reproduce them. Their source remains unresolved. Both charts are retained. The next task is to file them in the records-room binder before the hydrogen drift scan.");
+ return D;
+}
+
+void FS47Observing::SecurePulsarChart()
+{
+ if (!PulsarCheckActive() || PulsarLoop != ELoopStage::AwaitPulsar) return;
+ AS47Story& S = *M->Story;
+ const FS47Doc D = Chart(1); S.AddDoc(D);
+ S.Note(FString::Printf(TEXT("%s. Secured the B1133+16 strip chart before changing the receiver input. The folded period is normal; the extra ticks fall outside it. Next: a local receiver control."), *S.ClockText(false)));
+ S.AdvanceClockTo(Runs()[1].Slot + Runs()[1].Minutes * 60, TEXT("pulsar source chart secured"));
+ PulsarLoop = ELoopStage::Rack;
+ if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
+ M->UI->Document(D); M->UI->Toast(TEXT("Pulsar chart retained. Check the receiver rack on a terminated input before drawing a conclusion."), 5);
+ UE_LOG(LogTemp, Display, TEXT("S47: SARO loop pulsar chart secured")); Changed();
+}
+
+void FS47Observing::StartPulsarControl()
+{
+ if (!PulsarCheckActive() || PulsarLoop != ELoopStage::Rack) return;
+ PulsarLoop = ELoopStage::ControlRunning; ControlT = ControlTick = 0; CompareFeedback.Empty();
+ M->Story->Rx.Status = TEXT("LOCAL CONTROL / INPUT TERMINATED / INTERNAL REFERENCE");
+ if (M->Audio) M->Audio->Play(TEXT("rack_switch"), .5f, M->Web ? M->Web->PropLocation(TEXT("rack")) : FVector::ZeroVector);
+ M->UI->Toast(TEXT("Input terminated. The internal reference clicks at a steady interval. Eight-second control recording started; collect the chart at the printer."), 5);
+ UE_LOG(LogTemp, Display, TEXT("S47: SARO loop receiver control started")); Changed();
+}
+
+void FS47Observing::StepPulsarControl(double Dt)
+{
+ if (PulsarLoop != ELoopStage::ControlRunning || !PulsarCheckActive() || M->ModalOpen() || M->Story->IsCinematic()) return;
+ const double Was = ControlT;
+ ControlT = FMath::Min(ControlSeconds, ControlT + FMath::Min(Dt, .1));
+ ControlTick += ControlT - Was;
+ while (ControlTick >= PulsarPeriod)
+ {
+  ControlTick -= PulsarPeriod;
+  if (M->Audio) M->Audio->Beep(820, .012f, .16f, 0, TEXT("square"));
+ }
+ M->Story->Rx.Status = FString::Printf(TEXT("INTERNAL REFERENCE / %02d S / REGULAR"), int32(FMath::CeilToDouble(ControlSeconds - ControlT)));
+ if (ControlT < ControlSeconds) return;
+ PulsarLoop = ELoopStage::ControlPrint;
+ M->Story->Rx.Status = TEXT("CONTROL COMPLETE / RESTORED EXTERNAL INPUT / COLLECT CHART");
+ if (M->Audio)
+ {
+  M->Audio->Play(TEXT("rack_switch"), .4f, M->Web ? M->Web->PropLocation(TEXT("rack")) : FVector::ZeroVector);
+  if (!Recorded(M->Audio, TEXT("obsChartPrinter"), .5f, 1, PrinterAt)) M->Audio->Play(TEXT("printer"), .35f, PrinterAt, 1.2f);
+ }
+ M->UI->Toast(TEXT("Receiver control complete. The external input is restored. The printer has the eight-second reference chart."), 4);
+ UE_LOG(LogTemp, Display, TEXT("S47: SARO loop receiver control completed")); Changed();
+}
+
+void FS47Observing::CollectPulsarControl()
+{
+ if (!PulsarCheckActive() || PulsarLoop != ELoopStage::ControlPrint) return;
+ const FS47Doc D = PulsarControl(); M->Story->AddDoc(D);
+ PulsarLoop = ELoopStage::Compare;
+ if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
+ M->UI->Document(D); M->UI->Toast(TEXT("Both charts retained. Use the operations terminal to compare what they support."), 4);
+ UE_LOG(LogTemp, Display, TEXT("S47: SARO loop control chart secured")); Changed();
+}
+
+void FS47Observing::OpenPulsarComparison()
+{
+ if (!PulsarCheckActive() || PulsarLoop != ELoopStage::Compare || !M->UI) return;
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47Kit::Text(TEXT("Compare the pointing check, pulsar chart and receiver control before filing.")));
+ Rows.Add(S47Kit::Paper(TEXT("NORMAL REFERENCE / 3C 286 pointing check: clean cross, in specification.\n\nPULSAR CHART / period 1.18791 s, as catalogued. Extra ticks: four, a gap, seven; not at the pulsar period.\n\nLOCAL CONTROL / external input terminated, internal reference regular. No extra ticks in the eight-second check.")));
+ if (!CompareFeedback.IsEmpty()) Rows.Add(S47Kit::Paper(CompareFeedback));
+ Rows.Add(S47Kit::Question(TEXT("What can these records establish?")));
+ const auto First = S47Kit::Button(TEXT("These are normal pulsar ticks."), [this] { ComparePulsar(TEXT("pulsar")); OpenPulsarComparison(); });
+ Rows.Add(First);
+ Rows.Add(S47Kit::Button(TEXT("The control proves a sky source."), [this] { ComparePulsar(TEXT("sky")); OpenPulsarComparison(); }));
+ Rows.Add(S47Kit::Button(TEXT("Source unresolved. Retain both charts."), [this] { if (!ComparePulsar(TEXT("unresolved"))) OpenPulsarComparison(); }, true));
+ M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / PULSAR CONTROL COMPARISON"), S47Kit::Col(Rows)));
+ if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetKeyboardFocus(First, EFocusCause::SetDirectly);
+}
+
+bool FS47Observing::ComparePulsar(const FString& Choice)
+{
+ if (!bEnabled || Run != 1 || StepNow != EStep::Data || PulsarLoop != ELoopStage::Compare || (M && !Active())) return false;
+ if (Choice != TEXT("unresolved"))
+ {
+  CompareFeedback = Choice == TEXT("pulsar")
+   ? TEXT("The pulsar's folded period agrees with the catalogue. The extra ticks fall outside that rhythm. Compare the separate entries on the original chart; the normal pointing reference does not turn those extra ticks into pulsar pulses.")
+   : TEXT("A short quiet bench check does not prove a sky source. It did not reproduce the extra ticks, but an intermittent local cause is still possible. Keep the conclusion within what both charts establish.");
+  Changed(); return false;
+ }
+ CompareFeedback.Empty(); PulsarLoop = ELoopStage::Filed;
+ if (M && M->UI && M->Story)
+ {
+  M->UI->Close(true);
+  File();
+  UE_LOG(LogTemp, Display, TEXT("S47: SARO loop comparison filed; source unresolved"));
+ }
+ Changed(); return true;
+}
+
 FString FS47Observing::Objective() const
 {
  if (!Active()) return FString();
+ if (PulsarCheckActive()) return PulsarObjective();
  const FRun& R = Runs()[Run];
  if (Run == 1 && StepNow == EStep::Tune && GenStep < 3)
   return GenStep == 0 ? TEXT("CONTROL ROOM // 19:35 WEEKLY GENERATOR TEST ON THE REMOTE PANEL BY THE EAST DOOR")
@@ -382,6 +588,13 @@ TArray<FS47Task> FS47Observing::Tasks() const
   if (I == 2 && Archive >= 0) Out.Add({ TEXT("20:30 file the evening's charts in the records room"), Archive >= 2 });
   if (I == 3) Out.Add({ TEXT("21:40 round to the array gate"), Yard >= 2 });
   Out.Add({ Runs()[I].Task, Run > I });
+  if (I == 1 && PulsarLoop != ELoopStage::Off)
+  {
+   Out.Add({ TEXT("Secure the pulsar chart before testing the receiver"), PulsarLoop >= ELoopStage::Rack });
+   Out.Add({ TEXT("Run the terminated-input/internal-reference control at the receiver rack"), PulsarLoop >= ELoopStage::ControlPrint });
+   Out.Add({ TEXT("Collect the control chart at the printer"), PulsarLoop >= ELoopStage::Compare });
+   Out.Add({ TEXT("Compare both charts on the operations terminal and file their limits"), PulsarLoop == ELoopStage::Filed });
+  }
  }
  return Out;
 }
@@ -650,5 +863,54 @@ bool FS47Observing::SelfTest(TArray<FString>& Lines)
   }
   Check(Preserved, TEXT("legacy v1 Virgo and completed schedules gain no unreachable archive task or invented filing/reel facts after JSON restore"));
  }
+ {
+  auto Old = LegacySchedule(1); S47J::Set(Old, TEXT("step"), int32(EStep::Data));
+  FS47Observing Legacy(nullptr); Legacy.Begin(Old, false);
+  const auto Saved = S47J::Read(S47J::Write(Legacy.Save()));
+  Check(Legacy.LoopStage() == ELoopStage::Off && !Saved->HasField(TEXT("loopVersion")),
+   TEXT("an existing pulsar chart gains no retroactive receiver-control assignment"));
+ }
+ const auto LoopSave = [](ELoopStage Stage, double T)
+ {
+  auto O = S47J::New(); S47J::Set(O, TEXT("v"), Version); S47J::Set(O, TEXT("run"), Stage == ELoopStage::Filed ? 2 : 1);
+  S47J::Set(O, TEXT("step"), int32(Stage == ELoopStage::Filed ? EStep::Tune : EStep::Data));
+  S47J::Set(O, TEXT("archive"), 0); S47J::Set(O, TEXT("generator"), 3);
+  S47J::Set(O, TEXT("loopVersion"), 1); S47J::Set(O, TEXT("loopStage"), int32(Stage));
+  S47J::Set(O, TEXT("controlElapsed"), T); return O;
+ };
+ {
+  bool Preserved = true;
+  for (ELoopStage Stage : { ELoopStage::AwaitPulsar, ELoopStage::Rack, ELoopStage::ControlRunning, ELoopStage::ControlPrint, ELoopStage::Compare, ELoopStage::Filed })
+  {
+   FS47Observing O(nullptr); O.Begin(LoopSave(Stage, 3.25), false);
+   FS47Observing Again(nullptr); Again.Begin(S47J::Read(S47J::Write(O.Save())), false);
+   Preserved &= O.LoopStage() == Stage && Again.LoopStage() == Stage && Again.ControlElapsed() == 3.25 && Again.ArchiveStep() == 0;
+  }
+  Check(Preserved, TEXT("source, timed control, collected chart, comparison and filed stages retain their exact state through JSON restore"));
+ }
+ {
+  FS47Observing O(nullptr); O.Begin(LoopSave(ELoopStage::Compare, ControlSeconds), false);
+  const bool WrongPulsar = O.ComparePulsar(TEXT("pulsar"));
+  FS47Observing Again(nullptr); Again.Begin(S47J::Read(S47J::Write(O.Save())), false);
+  Check(!WrongPulsar && Again.LoopStage() == ELoopStage::Compare && Again.RunIndex() == 1 && Again.ControlElapsed() == ControlSeconds && !Again.LoopFeedback().IsEmpty(),
+   TEXT("a wrong pulsar conclusion retains secured work and its corrective feedback through JSON restore"));
+  const bool WrongSky = Again.ComparePulsar(TEXT("sky"));
+  Check(!WrongSky && Again.LoopStage() == ELoopStage::Compare && Again.LoopFeedback().Contains(TEXT("does not prove a sky source")),
+   TEXT("a quiet short control cannot establish the earlier ticks' source"));
+  Check(Again.ComparePulsar(TEXT("unresolved")) && Again.LoopStage() == ELoopStage::Filed && Again.LoopFeedback().IsEmpty(),
+   TEXT("only the explicit limited conclusion files the comparison"));
+ }
+ {
+  auto Passed = LoopSave(ELoopStage::Rack, 0); S47J::Set(Passed, TEXT("run"), 2); S47J::Set(Passed, TEXT("step"), int32(EStep::Tune));
+  FS47Observing O(nullptr); O.Begin(Passed, false);
+  Check(O.LoopStage() == ELoopStage::Off && O.RunIndex() == 2 && !O.Save()->HasField(TEXT("loopVersion")),
+   TEXT("a passed schedule never receives an unreachable unfinished control"));
+  auto Unsupported = LoopSave(ELoopStage::Compare, ControlSeconds); S47J::Set(Unsupported, TEXT("loopVersion"), 2);
+  O.Begin(Unsupported, false);
+  Check(O.LoopStage() == ELoopStage::Off && !O.ComparePulsar(TEXT("unresolved")),
+   TEXT("unsupported receiver-control state grants no invented comparison"));
+ }
+ Check(PulsarControl().Id != Chart(1).Id && PulsarComparison().Id != PulsarControl().Id && !PulsarComparison().Transcript.IsEmpty(),
+  TEXT("the source chart, actual control and limited comparison remain distinct documents"));
  return bOk;
 }

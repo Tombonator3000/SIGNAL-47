@@ -393,6 +393,8 @@ FString FS47Horror::Objective() const
   return TEXT("CALICHE JUNCTION // KEEP SOLID COVER BETWEEN YOU AND THE BODY. REACH THE SERVICE TRUCK OUTSIDE THE FENCE AND DRIVE");
  }
  if(!M->FieldCamera || !M->FieldCamera->bHave)return TEXT("EVENING ROUND // COLLECT THE CAMERA BESIDE THE EAST DOOR");
+ // The scheduled SARO work precedes the later window/door round.
+ if(M->Observing && M->Observing->Active())return M->Observing->Objective();
  if(!bEast || !bCorridor)
  {
   // A door left open (a save, or opened from outside) gives no inside opening; say what to do (FIX-06).
@@ -403,7 +405,6 @@ FString FS47Horror::Objective() const
   return TEXT("EVENING ROUND // FROM THE CORRIDOR, OPEN THE VISITOR ENTRANCE AT ITS WEST END");
  }
  if(!bBaseline)return TEXT("CONTROL ROOM // CHECK 1419.900 MHz / AZ 042 / GAIN 55 / BW 48");
- if(M->Observing && M->Observing->Active())return M->Observing->Objective();
  if(!Visual->LampChangeChecked())return TEXT("NORTH WINDOW // FROM INSIDE, SWITCH THE MARKED LAMP OFF AND ON WHILE WATCHING IT THROUGH THE GLASS");
  if(ReferencePhoto.IsEmpty())return TEXT("NORTH WINDOW // TAKE AN INSTANT-BACK REFERENCE OF THE MARKED LAMP WHILE IT IS ON");
  if(!Visual->ScreenChecked())return TEXT("NORTH WINDOW // CLOSE THE OPAQUE SHUTTER AND CHECK THAT IT BLOCKS THE LAMP");
