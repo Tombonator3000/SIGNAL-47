@@ -178,17 +178,11 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==40)
  {
   if(M->World->bBusy)return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));
-  // Explicit transport fixture: on-foot area entry does not drive the Jeep.
-  // Road parking uses the existing diner vehicle identity, including at the shop.
-  M->Player->Place(P.X+6.,P.Z+3.,0);Go(401,.8);return;
- }
- if(Stage==401)
- {
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("diner"));
-  S47J::Set(Pose,TEXT("x"),P.X+6.);S47J::Set(Pose,TEXT("y"),M->Player->FloorY);S47J::Set(Pose,TEXT("z"),P.Z+3.);S47J::Set(Pose,TEXT("h"),0.);
-  M->World->PlaceTruck(TEXT("diner"),Pose);M->Player->Place(P.X-1.4,P.Z,0);
-  Go(41,.4);return;
+  // Use the existing road-parking identity and its authored, level diner lot.
+  // Walking between this fixture and the shop remains an explicit placement.
+  M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));M->Player->Place(P.X-1.4,P.Z,0);
+  Go(41,.6);return;
  }
  if(Stage==41)
  {
