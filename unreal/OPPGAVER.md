@@ -140,3 +140,7 @@ Root eier dokumentoppfølging, revidert meteorregi og ett originalbilde på `cod
 ## Tavle og gatelykter fra fortsatt spilltest
 
 Root eier dokumentoppfølging og to originalbilder på `codex/board-grouping-feedback-20261031`. PLAY-31-24/25/26 fører senere tavle- og lyktarbeid. Ingen kildeendring, modell-/motorjobb eller installasjon mens Tom tester.
+
+## Samlet Finding-, meny-, telefon- og lydoppfølging
+
+Root eier dokumentene og ti originale spillbilder på `codex/board-finding-placement-20261031`; bredt Glimpse-skrivebordsbilde er sikret lokalt. PLAY-31-23/24 er presisert, PLAY-31-27 til37 fører nye punkter. Ingen andre filer eies for implementering i denne oppfølgingen; ingen motorreservasjon eller generering mens Tom spiller.

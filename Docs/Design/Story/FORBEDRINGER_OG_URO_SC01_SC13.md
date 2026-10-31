@@ -12,15 +12,29 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 
 **Prioritet A** betyr anbefalt første pass etter feilretting. **B** er senere polering. Liten/middels beskriver omfang, ikke tidsløfte. Følelsen må vurderes med faktisk spilling; dette er regi og designvurderinger fra kode/manus.
 
+## Nye presiseringer fra fortsatt spilltest 31. oktober
+
+**Presentasjon og overganger:** Bruk bare historiedelens tittel, uten Chapter One/Two/Three-prefiks i ordinær UI. La The Amended Record beholde spillerens sted; telefonen ringer i kontrollrommet og spilleren går dit og svarer selv. Gi meny/pause et bevegelig, slitt VHS-uttrykk med korte trackingfeil, flimring og små forskyvninger på UI-tid, med lesbare valg. APPLY må tydelig skille ventende skjermvalg fra valg som brukes og lagres direkte. PLAY-31-27/28/29/35 i [TODO](../../Active/TODO.md).
+
+**Ward og Dale:** Rapportert Ward-/Dale-stemmeavvik føres som feil i PLAY-31-30. Dagens telefonkode mangler egen Ward-gren og kan bruke generell reservebank. Toms forslag om én samlet Dale-rolle føres i PLAY-31-31 som en mulig omskriving, ikke endelig avgjort. Ward gir nå eksternt driftsansvar og kvittering; Dale er lokal kollega med en senere taus/imitert linje. Sammenslåing må bevare en troverdig forklaring på disse funksjonene og samordne alle tekster/opptak. Foreløpig anbefaling er tydelig stemmeskille mens alternativet vurderes.
+
+**Signalprosessor og etterspill:** PITCH, TIME og SPACE finnes allerede som tonehøyde, tidsstrekk og romklang. Gjør effektene tydelige nok til å undersøke 4+7-motivet med RAW/HARMONIZED-sammenligning. Bevar gjeldende løsning og la klang/timing gi forståelig lytting fremfor en ny skjult sliderkode. Tom presiserer at tilfeldig musikk etter dekoding skal bort; prøv stillhet/romlyd, eventuelt en egen lav og skummel cue knyttet til motivet. Nødvendig dekodings-/båndlyd bevares. Et par taklys som gnistrer og forblir ødelagt er et eget sceneforslag med lagret skade per sak, ikke en tilfeldig gjentatt blackout. PLAY-31-32/33/34.
+
+**Små Glimpse-aliens:** Tom ønsker små, nysgjerrige Roswell-figurer som av og til kikker gjennom vinduer, rundt hjørner og lusker i bakgrunnen. Nåværende fjernsilhuett med 40 til 300 m avstand og rask skjuling ved blikk oppfyller ikke dette. Gjenbruk egnet eksisterende modell; ved mangel har Tom bestilt Tripo3D-generering. Figuren trenger korte kikk-/luskebevegelser og faktisk tilbaketrekning bak geometri, med tid til å oppfatte den. Dette erstatter/forbedrer Glimpse-familien og legger ikke til en ny jakt. PLAY-31-37.
+
 ## Etterforskningstavlen: oversikt mens saken vokser
 
 **Ny bestilling fra Tom 31. oktober:** Spor som spilleren kobler sammen skal automatisk danne oversiktlige grupper med tilhørende spørsmål og notater. Organiser lokalt og stabilt etter etablerte koblinger, med luft mellom kort og plass for nye funn. Visuell gruppering skal støtte spillerens arbeid uten å røpe nye bevisforbindelser. Bevar manuell plassering, lesbar tekst og lagring av oppsettet.
+
+**Presisert plassering:** Åpent spørsmål-/Finding-felt skal ligge synlig rett under saken spilleren undersøker. Ferdig Finding blir på samme sted når spilleren har registrert den. Forankringen skal følge saken og fungere ved gjenåpning; spilleren skal slippe å lete i dokumentmengden. Dette presiserer PLAY-31-24.
 
 Ved feil tråd skal bare én vanlig, sammenhengende linje slakke og fade bort. Fjern den stiplede avvisningsvarianten og kontroller at drag-/slipp-overgangen ikke viser to parallelle effekter. PLAY-31-24/25 i [TODO](../../Active/TODO.md) fører gjennomføringen; dette er registrerte forbedringer, ikke levert tavleatferd.
 
 ## Stjernehullet og meteorregnet
 
 **Ny bestilling fra Tom 31. oktober:** Gjør hullet i stjernene større og lettere å oppdage. Signalet klargjør meteorregnet, men utgangen fra bygget starter passasjen. La nok meteorer gå visuelt bak tomrommet til at fraværet blir tydelig: lysstreker forsvinner ved kanten og kan dukke opp igjen på den andre siden, mens feltet selv forblir tom himmel. Timing, tetthet og hullets fremkomst må fungere sammen og gi spilleren tid til å se opp. Bevar antennenes retning og den frie kamerastyringen. [Regi og kildegrunnlag](../Proposals/NIAGARA_VFX_2026-10-28.md); PLAY-31-23 i [TODO](../../Active/TODO.md) fører endringen. Dette er en ny bestilling, ikke levert himmeleffekt.
+
+Tom presiserer også at det trengs vesentlig flere meteorer, inkludert 40-sekundersprøven fra utviklermenyen. UFO-/himmellys stage 2 til 5 skal synes bedre, med bevart diskret stage 1. PLAY-31-23/36 skiller tetthet og synlighet fra bare antall aktiverte noder.
 
 ## Alienbevegelse og fysisk troverdighet
 
