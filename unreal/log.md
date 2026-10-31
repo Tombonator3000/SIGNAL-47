@@ -1458,3 +1458,5 @@ Codex på codex/playtest-substation-grounding-20261031: PLAY-31-08 fører Toms m
 Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms dokumenterte servicebilavslag kl.02:46; rådet om retur til SARO er avkreftet for denne tilstanden. Original PNG bevart byteidentisk og koblet til PLAY-31-07. Ingen spillkode, bygg, motorprøve, lagringsendring eller installasjon.
 
 2026-10-31 10:22 | codex/playtest-fixes-20261031 | Spilltestrettelser: UE5.8.4-editorbygg og1772 selvtester består; faktisk kopiert SC03-sak består15 gjenopprettingskontroller, sheriffinngang passert6.4m. Motell/Caliche/Tripo/lyd og logikkendringer klargjort; pakking og lokal levering gjenstår.
+
+2026-10-31 10:46 | PR272 / f32d4553 | Linux-pakke og1772 selvtester består;15 kontroller av faktisk kopiert sak består i pakke og installert standard. Installert10:39,68 payload-/126 Saved-noder kontrollert, Saved uendret. Én eldre payload pensjonert, sju genererte filer/4.706GB logisk; gjeldende pluss to eldre beholdt. Lytteprøve og hel gjennomspilling er åpne.

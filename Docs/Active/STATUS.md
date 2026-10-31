@@ -4,32 +4,26 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Rettelser etter avsluttet spilltest31. oktober
+## Spilltestrettelser levert 31. oktober
 
-Editorkandidaten på `codex/playtest-fixes-20261031` bygger og består1772 selvtester. En isolert kopi av Toms faktiske gamle SC03-lagring består15 kontroller: SC04 aktiveres uten endrede vitnefakta/tider, servicebilen tilbyr retur og begge bilene har gyldige interaksjonsmål. En native gåprøve passerer sheriffdøren og når resepsjonen etter6.4m. Motellflater, døruttrykk, Caliche-adkomst og Tripo-modeller er kontrollert målrettet; dette er ikke en full gjennomspilling. Ny Linux-pakke og lokal installasjon gjenstår. Tabellen under viser forrige ferdig leverte pakke inntil dette er gjort.
+[PR272](https://github.com/Tombonator3000/SIGNAL-47/pull/272) er flettet og Linux-pakken `f32d4553` er installert kl. 10:39. Motell/Caliche, NPC-plassering, Tripo-modeller, lyd/trafo og logikkrettelser er med. Den faktisk blokkerte SC03-saken består 15 kontroller av vanlig Continue, inkludert SC04 og returlabel, uten nye vitnefakta eller endrede rapporttider.68 payload-noder og 126 Saved-noder er kontrollert; Saved er uendret. [Levering, bilder og grenser](../Evidence/UnrealDeliveries/PLAYTEST_FIXES_2026-10-31.md).
 
-## Logikkgjennomgang 31. oktober
+Pakking, 1772 selvtester, pakket High-gjenoppretting og Low-modellprøve består. Sheriffdøren er passert med native bevegelse. Dette lukker tekniske rettelser, ikke full SC01 til SC13-spilling, manuell bilkjøring eller menneskelig lytting. Radiostøy/trafo er levert til lyttetest. Snapzoom og [forbedringsforslagene for hver historiedel](../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md) er fortsatt forslag.
 
-[Statisk SC01–SC13-pass](Reports/LOGIKKPASS_2026-10-31.md) har funnet to mulige progresjonsstopp i kildekoden, ved usett SC02-avreise og Continue under SC11-telexen, samt mål-, transport- og bevisavvik. LOGIC-01 til09 er åpne i TODO. Tom har avsluttet spilltesten og bedt om retting. Arbeidet pågår på `codex/playtest-fixes-20261031`. [Forbedringsforslag for alle historiedelene](../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md) er klare til vurdering; de er ikke implementert. Ingen ny rettelse er ennå pakket eller installert. Import og målrettet kontroll startet etter at Tom avsluttet spillet.
+## Diskplass og byggevedlikehold
 
-## Lokal diskopprydding31. oktober
-
-37 mapper med regenererbare byggefiler/cache er ryddet: **82.1GB netto frigjort**, **86.4GB ledig**. Kontroll av570416 bevarte filer og uendret Git-arbeidsstatus består. Installert spill, spillagringer, kilder, assets, bevis og kjøpte ressurser er bevart. [OPS-01/02 i TODO](TODO.md) fører resultat og behovet for vedlikehold av avsluttede arbeidskopiers cache. Oppryddingen endret ikke spillpakken. Spillretting er nå startet etter Toms beskjed om avsluttet test.
-
-## Nye spillerfunn31. oktober
-
-Tom har meldt motell-/resepsjonsvegger og åpenbar dørfarge, svevende Caliche-deler, ønsket midlertidig fri adgang, feilplassert radiomann, behov for egne Tripo-aliens/kuer og feil radiostøy. Snap-zoom/lydsting er ført som forslag. Senere i samme spilltest meldte Tom mulig SC03-progresjonsstopp: deputy forsvinner etter samtalen, men målet ber fortsatt om å snakke med ham; figuren ved sherifftrappa gir ingen videre handling. PLAY-31-07/P1 står åpen. Tom har nå også dokumentert at servicebilen avviser retur til SARO kl.02:46 med den tidlige konsollvakten. PLAY-31-09/P1 knytter transportavslaget til samme spillerstopp; retur er ingen bekreftet omvei. Et nytt originalbilde dokumenterer svevende deler ved sheriffkontoret; PLAY-31-02 er utdypet. Manglende animert lys/summing/elektrisk lyd ved trafostasjonen er registrert som PLAY-31-08. [PLAY-31-01 til09 i TODO](TODO.md) samler punktene; rettelser er under arbeid og ingen punkter er ferdigmeldt før kontroll og levering.
+Den første oppryddingen frigjorde 82.1 GB netto fra 37 regenererbare mapper, med 570416 bevarte filer kontrollert. Etter dagens pakking/installasjon er en eldre testpayload pensjonert etter gjeldende regel; gjeldende og to eldre komplette testpayloads beholdes. Kilder, bilder, logg, personlige Saved og tilbakeføringspayload er bevart. OPS-02 i [TODO](TODO.md) følger videre cachevedlikehold.
 
 ## Fire forskjellige leveringsnivåer
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
 | --- | --- | --- |
-| Kildekode på `main` | [PR262](https://github.com/Tombonator3000/SIGNAL-47/pull/262) og [PR263](https://github.com/Tombonator3000/SIGNAL-47/pull/263), spillkode gjennom main `31e153b9`: UFO-finale med fluidvolum og rolig kamera, i tillegg til videreført Claude-flyt, godkjent SARO 1986 ogTripo14. | Vanlig sammenhengende SC01-SC13-gjennomspilling gjenstår. |
-| Teknisk kontrollert kandidat | Finalekandidat `a202d88a`, [installasjon og grenser](../Evidence/UnrealDeliveries/UFO_FINALE_2026-10-31.md). | Editorbygg, Linux-pakke,1750 selvtester og98sekunders pakket High/Low består. Tidligere Claude-/SARO-kilde er med. SC09-reiseendepunkter er uttrykkelige fixtures. |
-| Lokal installasjon | Kandidat `a202d88a` / PR263, installert31. oktober kl.06:56. | 68 payload-noder og134 Saved-noder kontrollert. UFO-finalen og tidligere godkjente SARO-rom, siste armatur ogTripo14 er med. |
+| Kildekode på `main` | [PR272](https://github.com/Tombonator3000/SIGNAL-47/pull/272), main `c2f0b8b0`: spilltestrettelser, i tillegg til UFO-finale, SARO1986 og tidligere historieflyt. | Sammenhengende SC01 til SC13-spilling gjenstår. |
+| Teknisk kontrollert kandidat | `f32d4553`, [kontroll og grenser](../Evidence/UnrealDeliveries/PLAYTEST_FIXES_2026-10-31.md). | Linux-pakking,1772 selvtester,15 kontroller av den gamle saken, High/Low og målrettede bilder består. |
+| Lokal installasjon | `f32d4553` / PR272, installert31. oktober kl. 10:39. | 68 payload-noder og 126 Saved-noder kontrollert; Saved uendret. |
 | Offentlig nedlasting | Uendret, eldre enn lokal installasjon. [Komplett Linux-testutgave 29. oktober](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-10-29), Farm R1 gjennom PR223. [Nedlasting og kvittering](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md). | Eldre enn dagens lokale SARO-installasjon. Én selvstendig startfil henter alle tre kontrollerte Farm R1-arkiver uten Git eller separate Artifacts. Andre maskiner er fortsatt UNVERIFIED. |
 
-Git-fletting endrer ikke installasjonen eller nedlastingen. Lokal installasjon er nå UFO-finalen fra PR262/263, med videreføringen etter Claude, godkjente SARO-rom ogTripo14; den offentlige29. oktober-utgaven er fortsatt eldre Farm R1.
+Git-fletting endrer ikke automatisk installasjonen eller nedlastingen. Den lokale installasjonen er nå spilltestrettelsene fra PR272; den offentlige29. oktober-utgaven er fortsatt eldre Farm R1.
 
 ## Hva som er levert, og hva som fortsatt mangler
 

@@ -110,3 +110,5 @@ PR242/main452e7d9f, pakket kilde5aa3ce12, installert kl10:16. Bygg, selvtest, ko
 ## Spilltestrettelser31. oktober2026
 
 Tom har avsluttet spillet og godkjent retting. Gren `codex/playtest-fixes-20261031`. Root eier progresjonsgjenoppretting, lyd/trafo, bygg og levering. early_logic eier motell og Caliche-adkomst; late_logic eier historiens logikk og egenbil; save_interaction eier Tripo-figurer, kuer og Earl. Alle motorjobber kjøres sekvensielt gjennom eksisterende tungreservasjon. Personlige Saved er kopiert før testing og bevares ved installasjon.
+
+Spilltestrettelser er ferdig levert gjennom PR272, pakke `f32d4553`, kl.10:39. Filansvarene er frigitt; ingen tung jobb er aktiv. Levering og åpne lytte-/helspillpunkter står i STATUS/TODO.
