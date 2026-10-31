@@ -6,6 +6,7 @@
 
 ## Nåværende Unreal-undersøkelser
 
+- [VotV: gameplay, regler og selektiv fysikk for SIGNAL / 47](VoicesOfTheVoid/GAMEPLAY_LESSONS.md), med prioritert oppfølging i gjeldende TODO.
 - [Ferdigheter, Nanite og MetaHuman-mannekenger](Unreal/UNREAL_SKILLS_2026-10-28.md).
 - [Lumen, tåke og skygger](Unreal/RENDERING_RESEARCH_2026-10-26.md).
 - [Greyhill: jakt](Unreal/GREYHILL_RESEARCH.md), [dørkode](Unreal/GREYHILL_DOOR_CODE_ANALYSIS.md) og [videre analyser](Unreal/GREYHILL_NEXT_ANALYSES.md).

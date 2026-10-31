@@ -1,5 +1,9 @@
 # Voices of the Void — lokalt analyseoppsett
 
+**Status:** Referanse. **Gjelder:** Opprinnelig klargjøring av VotV 0.9.0n og inngang til senere undersøkelser. **Sist kontrollert:** 31. oktober 2026.
+
+[Gameplay-notatet](GAMEPLAY_LESSONS.md) samler egne beskrivelser fra den videre lokale analysen 31. oktober, kontrollgrenser og forslag for SIGNAL / 47. Oppfølging føres i [gjeldende TODO](../../Active/TODO.md#læring-fra-voices-of-the-void). De kompilerte spillfilene og den senere dekompileringen beholdes lokalt. Resten av denne siden beskriver det opprinnelige klargjøringssteget, ikke status for den senere analysen.
+
 Voices of the Void **0.9.0n** er klargjort for lokal undersøkelse i SIGNAL / 47-repoet. Spillkopien, Ghidra og et importert prosjekt finnes under `private/`. Oppsettet bruker Ghidra **12.1.4** og Temurin JDK **21.0.12.1+1**. Original Steam-installasjon, kompatibilitetsoppsett og lagringer er bevart.
 
 **Status:** Alle 111 kopierte spillfiler matcher originalen med SHA-256. De tre PAK-indeksene har gyldig SHA-1; 42 941 filnavn er listet. Shipping.exe er importert og lagret i Ghidra uten automatisk analyse. Ingen spillkode er dekompilert eller integrert i SIGNAL / 47 i dette steget. Se [EVIDENCE.json](EVIDENCE.json) for kontroller og begrensninger.
