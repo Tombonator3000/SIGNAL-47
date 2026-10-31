@@ -270,6 +270,13 @@ public:
 
 	// ---------- the array (Exterior.ts, Dish.ts) ----------
 	void PointDishes(double Az, double El, double Slew);
+	// Observing owns these temporary evening service/measurement controls.
+	bool PointDish(int32 I, double Az, double El, double Slew, bool bLocal = false);
+	void SetDishRemoteAvailable(int32 I, bool bAvailable);
+	bool DishRemoteAvailable(int32 I) const { return Dishes.IsValidIndex(I) && Dishes[I].bRemoteAvailable; }
+	double DishTargetAz(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].TgtAz : 0; }
+	double DishTargetEl(int32 I) const { return Dishes.IsValidIndex(I) ? Dishes[I].TgtEl : 0; }
+	void SetWorkMotionPaused(bool bPause) { bWorkMotionPaused = bPause; }
 	void SnapDishes(double Az, double El);
 	bool DishesMoving() const;
 	int32 DishCount() const { return Dishes.Num(); }
@@ -558,8 +565,9 @@ private:
 	void ApplyCoffee();
 
 	// the dishes: pointing and the instanced parts that draw them
-	struct FDish { FString Id; double X = 0, Z = 0, Scale = 1, CurAz = 18, CurEl = 48, TgtAz = 18, TgtEl = 48, Slew = 6; };
+	struct FDish { FString Id; double X = 0, Z = 0, Scale = 1, CurAz = 18, CurEl = 48, TgtAz = 18, TgtEl = 48, Slew = 6; bool bRemoteAvailable = true; };
 	TArray<FDish> Dishes;
+	bool bWorkMotionPaused = false;
 	struct FDishPart { int32 Node = -1; int32 Level = 0; TArray<int32> DishIdx; };
 	TArray<FDishPart> DishParts;
 	void DrawDishes();

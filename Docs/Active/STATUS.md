@@ -4,11 +4,11 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Første SARO-løkke i Story
+## Aktive SARO-arbeidsstasjoner og antenneservice
 
-Toms bestilte SARO-løkke er implementert og lokalt installert fra runtimekilde `e16a9b1f`. En ny natt bruker eksisterende normalreferanse og pulsaravvik, men krever nå sikret pulsarutskrift, fysisk rackkontroll, separat kontrollark og aktiv sammenligning før arkivering. Feil forklaring gir veiledning; avbrudd og lasting bevarer arbeidet. Eldre saker får ikke et nytt tilbakevirkende krav. Prøv med **ny natt** for å få hele løkken. Story-rekkefølgen rundt midnatt og den eksisterende slutten beholdes.
+Toms utvidede SARO-løkke er implementert og lokalt installert fra runtimekilde `3e723bba` kl.18:56 CET. En ny natt bruker venstre PC til antennestatus/diagnose, høyre PC til faktisk antenneretning, mottakeren til opptak, lydutstyret til original-/kontrollsammenligning og operasjonsterminalen til registrering. S-03 krever fysisk kontaktreparasjon og synlig lokal bevegelsestest. Merket papirpakke må hentes fra skriveren og legges i arkivmappen. Alle 27 antenner beveger seg; normalreferansen har fempunktsmåling, og opptak venter på stabil faktisk retning. Den nyeste Roswell-koden fra main inngår.
 
-Editor og pakke består 75 målrettede kontroller, fire disk-/Flow-gjenopprettinger og 1786 selvtester. Installert startfil og Fortsett består med en isolert kopi av saken; personlig Saved er uendret. Dette er en skriptstyrt SARO-prøve, ikke helnatts-/menneskelig spillaksept. [Levering og bevisgrenser](../Evidence/UnrealDeliveries/SARO_LOOP_2026-10-31.md). [Separat Freeform](../Design/Story/SARO_STORY_FREEFORM.md) er ført i TODO som senere arbeid, uten ferdig modusvalg eller døgnsimulering nå.
+Editor og pakke består **163 målrettede kontroller, 9 disk-/Flow-gjenopprettinger og 1819 selvtester**. Installert startfil og Fortsett består med isolert kopi av saken; alle 152 personlige Saved-elementer er uendret. Prøv med **ny natt** for hele arbeidsflyten; eldre saker får ikke nye tilbakevirkende krav. Dette er skriptstyrt SARO-prøve, ikke helnatts-/menneskelig spillaksept. [Levering og bevisgrenser](../Evidence/UnrealDeliveries/SARO_WORKSTATIONS_2026-10-31.md). [Separat Freeform og senere nabobygg](../Design/Story/SARO_STORY_FREEFORM.md) står fortsatt i TODO. Midnattsforløpet og Story-slutten er beholdt.
 
 ## 0.1 levert: liten Roswell-alien
 

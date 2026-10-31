@@ -15,6 +15,7 @@
 #include "S47Inter.h"
 #include "S47Json.h"
 #include "S47Main.h"
+#include "S47Observing.h"
 #include "S47UI.h"
 #include "S47Web.h"
 #include "S47Yard.h"
@@ -87,8 +88,19 @@ FS47DecoderDesk::FS47DecoderDesk(FS47DecoderDeskDeps InD) : D(MoveTemp(InD))
 		const TWeakPtr<bool> Life = Alive;
 		FS47Interactable I;
 		I.Id = TEXT("decoder"); I.Object = KitPtr ? KitPtr->Obj() : Room->Obj(TEXT("room.objs.decoder")); I.Range = 2.4;
-		I.Label = [this, Life] { return Life.IsValid() ? Label() : FString(); };
-		I.Use = [this, Life] { if (Life.IsValid()) Use(); };
+		I.Label = [this, Life]
+		{
+			if (!Life.IsValid()) return FString();
+			if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing)
+				if (const FString L = M->Observing->Label(TEXT("decoder")); !L.IsEmpty()) return L;
+			return Label();
+		};
+		I.Use = [this, Life]
+		{
+			if (!Life.IsValid()) return;
+			if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing && M->Observing->Use(TEXT("decoder"))) return;
+			Use();
+		};
 		// (Unreal: the closer look at the bought unit, not story/looks.ts's deck behind smoked plastic)
 		if (KitPtr) I.Examine = [] { return FString(TEXT("The signal processor: a deck with a small green display, and a meter unit on top of it, two VU meters lit amber. Headphones and a desk microphone in front.")); };
 		Inter->Add(I);
@@ -266,6 +278,9 @@ UTexture* FS47DecoderDesk::CanvasMap() const
 
 void FS47DecoderDesk::Update(double Dt)
 {
+	const auto* Main = US47Main::Get(D.Room.Get());
+	const auto* Obs = Main && Main->Observing ? Main->Observing.Get() : nullptr;
+	const bool bObservingAudio = Obs && !Obs->AudioDisplay().IsEmpty();
 	if (Player.IsValid()) Player->Update();
 	// (Unreal only) the answer's timeline and the developer's run of it; the bought unit's needles, display
 	// and page, whoever has the deck
@@ -284,7 +299,8 @@ void FS47DecoderDesk::Update(double Dt)
 	{
 		const double Mine = Player.IsValid() ? Player->TakeLevel() : 0.0;
 		const double Reel047 = D.ReelLevel ? D.ReelLevel() : 0.0;
-		KitPtr->Update(Dt, FMath::Max(Mine, Reel047), CanvasMap());
+		const double ObservingLevel = bObservingAudio ? Obs->AudioLevel() : 0.0;
+		KitPtr->Update(Dt, FMath::Max3(Mine, Reel047, ObservingLevel), CanvasMap());
 		KitPtr->ShowPage(PageThere());
 		// (the developer's runs: the level and the needles in the log, for the meters' calibration)
 		if ((!ShotPrefix.IsEmpty() || !TestMode.IsEmpty()) && (Mine > 0 || Reel047 > 0) && (LogT -= Dt) <= 0)
@@ -300,11 +316,13 @@ void FS47DecoderDesk::Update(double Dt)
 		for (int32 I = 0; I < Reels.Num(); ++I) Reels[I].SetRotX(Spin * (I ? 0.8 : 1.15));
 	}
 	ScrT -= Dt;
-	if (ScrT <= 0 && (Playing() || ScrT < -1 || (Player.IsValid() && Player->Current >= 0))) { ScrT = 1.0 / 12; DrawScreen(); }
+	if (ScrT <= 0 && (bObservingAudio || Playing() || ScrT < -1 || (Player.IsValid() && Player->Current >= 0))) { ScrT = 1.0 / 12; DrawScreen(); }
 }
 
 FString FS47DecoderDesk::ScreenLine() const
 {
+	if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing)
+		if (const FString Line = M->Observing->AudioDisplay(); !Line.IsEmpty()) return Line;
 	if (!(D.Locked && D.Locked())) return TEXT("NO TAPE");
 	// (Unreal only) the answer as it comes back, then the wire off the end of tape B
 	if (Answering()) return AnswerT < Ans.Wire() ? TEXT("ANSWER") : AnswerT < Ans.Cut() ? TEXT("TAPE A 1947") : TEXT("TAPE A  ----");
@@ -320,6 +338,12 @@ void FS47DecoderDesk::DrawScreen()
 	Pic.Line = ScreenLine();
 	// (Unreal: a key's note lights its bar while nothing plays, S47Decoder.h Key)
 	Pic.Cur = Player.IsValid() && !(Answering() && AnswerT >= Ans.Wire()) ? Player->Current : -1;
+	if (const auto* M = US47Main::Get(D.Room.Get()); M && M->Observing && !M->Observing->AudioDisplay().IsEmpty())
+	{
+		Pic.bLocked = true;
+		const double Level = M->Observing->AudioLevel();
+		Pic.Cur = Level > .01 ? FMath::Clamp(FMath::RoundToInt(Level * 10), 0, 10) : -1;
+	}
 	Widget->P = Pic;
 	Renderer->DrawWidget(Target.Get(), Widget.ToSharedRef(), FVector2D(256, 72), 0.f);
 	// (one canvas in the web version, drawn by whichever draws last: here the screen shows this target

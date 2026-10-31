@@ -34,6 +34,8 @@
 #include "Misc/SecureHash.h"
 #include "UnrealClient.h"
 #include "S47Observing.h"
+#include "S47SaroWork.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "S47Audio.h"
 #include "S47Ambience.h"
 #include "S47Docs.h"
@@ -43,6 +45,33 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HorrorTest, Log, All);
 
 namespace
 {
+	// Read the actual visible Blender assemblies, not hidden legacy export parts or
+	// the command telemetry. All three production assemblies share dish ordering.
+	bool ArrayAssemblyPose(AS47Web* W, int32 Dish, TArray<FTransform>& Out)
+	{
+		Out.Reset();
+		if (!W || Dish < 0 || Dish >= W->DishCount()) return false;
+		for (const TCHAR* Name : { TEXT("SM_Array_Base"), TEXT("SM_Array_Azimuth"), TEXT("SM_Array_Elevation") })
+		{
+			bool Found = false;
+			for (int32 I = 0; I < W->PartCount(); ++I)
+			{
+				const auto* N = W->Node(I);
+				if (!N || N->Name != Name) continue;
+				auto* C = Cast<UInstancedStaticMeshComponent>(N->Comp.Get());
+				FTransform Pose;
+				if (!C || !C->IsVisible() || C->GetInstanceCount() != W->DishCount() || !C->GetInstanceTransform(Dish, Pose, true)) continue;
+				Out.Add(Pose); Found = true; break;
+			}
+			if (!Found) return false;
+		}
+		return Out.Num() == 3;
+	}
+	bool ArrayAssemblyMoved(const TArray<FTransform>& Before, const TArray<FTransform>& After)
+	{
+		return Before.Num() == 3 && After.Num() == 3 && Before[0].Equals(After[0], .001) &&
+			(!Before[1].Equals(After[1], .001) || !Before[2].Equals(After[2], .001));
+	}
 	struct FDispatchTake
 	{
 		FString Id, Text, Voice, WavSha1;
@@ -73,7 +102,13 @@ struct FS47HorrorTest::FState
 	float ArcOriginalFov = 0;
 	FS47Substation::FArcSnapshot PausedArc;
 	bool bObservingRestored = false, bObservingResumed = false, bCursorProbe = false;
-	double LoopControlAt = 0;
+	double LoopControlAt = 0, MotionFrameAt = 0, MotionAz = 0, MotionEl = 0, MotionPeak = 0, PauseTransitionLimit = 0;
+	int32 MotionFrames = 0, MotionRun = -1, ServiceDish = -1, WorkPhase = 0;
+	bool bMotionChecked = false, bSlewRestored = false, bServiceRestored = false;
+	TArray<FTransform> MotionPose;
+	FString PacketReference, MotionPrefix;
+	int32 CrossSeen = 0;
+	bool bCrossVisual = false;
 	int32 CursorChecks = 0;
 	FString Mode, Root, LastLine, NormalPhoto, T01Stamp, Aimed, RestoreSource;
 	FVector FieldTruck = FVector::ZeroVector, FieldEgress = FVector::ZeroVector, Door3 = FVector::ZeroVector;
@@ -256,6 +291,33 @@ void FS47HorrorTest::Shot(const FString& Name)
 	FScreenshotRequest::RequestScreenshot(State->Root / (Name + TEXT(".png")), true, false);
 }
 
+void FS47HorrorTest::CaptureMotion(const FString& Prefix, int32 Dish)
+{
+	auto& T = *State;
+	if (!M->Web || Dish < 0 || Dish >= M->Web->DishCount()) return;
+	if (T.MotionPrefix != Prefix) { T.MotionPrefix = Prefix; T.MotionFrames = 0; T.MotionFrameAt = 0; }
+	Aim(FVector(M->Web->DishX(Dish), 13 * M->Web->DishScale(Dish), M->Web->DishZ(Dish)));
+	if (T.Elapsed < T.MotionFrameAt) return;
+	T.MotionFrameAt = T.Elapsed + .125;
+	Shot(FString::Printf(TEXT("%s-%04d"), *Prefix, T.MotionFrames++));
+}
+
+void FS47HorrorTest::CompleteSaroWork()
+{
+	auto& T = *State;
+	M->Player->TestMove.Reset(); M->Player->bTestRun = false; T.bDone = true;
+	auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), TEXT("PASS"));
+	S47J::Set(Result, TEXT("scenario"), T.Mode); S47J::Set(Result, TEXT("checks"), T.Checks);
+	S47J::Set(Result, TEXT("diskFlowRestores"), T.Stores); S47J::Set(Result, TEXT("nativeWalkMetres"), T.WalkMetres);
+	S47J::Set(Result, TEXT("crossPointsSeen"), T.CrossSeen); S47J::Set(Result, TEXT("nativeCrossMovement"), T.bCrossVisual);
+	S47J::Set(Result, TEXT("reference"), T.PacketReference); Result->SetArrayField(TEXT("evidence"), T.Evidence);
+	S47J::Set(Result, TEXT("method"), TEXT("SC01 evening fixture followed by actual console settings, focused Slate pointing command, visible native array-assembly readbacks, normal timed measurements, physical Walker paths and aimed uses through S-03 multi-step service, decoder, printer, comparison and archive. Audio transport/status selection use labelled production callbacks after opening the physical unit; comparison answers use focused Slate Enter/Tab. Real disk/full-Flow restores cover slew, open service panel, control recording, retained records, registered packet and filed archive. Image sequences array-window-runN, array-cross and array-field show the actual runtime movement."));
+	S47J::Set(Result, TEXT("limits"), TEXT("Focused Story workstations through normal reference, generator, S-03 service, pulsar/control comparison and physical archive, ending at the next HI task. No later window scene, human input/listening, full-night pacing, Xbox, Freeform or whole-story acceptance."));
+	FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(T.Root / TEXT("result.json")));
+	UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror %s PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"), *T.Mode, T.Checks, T.Stores, T.WalkMetres);
+	FPlatformMisc::RequestExit(false);
+}
+
 bool FS47HorrorTest::PrepareDispatchRecordings()
 {
 	auto& T=*State;auto& H=*M->Horror;
@@ -390,9 +452,9 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		FString UserDir; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), UserDir);
 		UserDir = FPaths::ConvertRelativePathToFull(UserDir); FPaths::CollapseRelativeDirectories(UserDir);
-		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SAROLoop") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("SC03") && T.Mode != TEXT("SC03Resume") && T.Mode != TEXT("Arc") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
+		if ((T.Mode != TEXT("SC01") && T.Mode != TEXT("SAROLoop") && T.Mode != TEXT("SAROWorkstations") && T.Mode != TEXT("SC02") && T.Mode != TEXT("SC02Resume") && T.Mode != TEXT("SC03") && T.Mode != TEXT("SC03Resume") && T.Mode != TEXT("Arc") && T.Mode != TEXT("Navigation")) || !(UserDir.StartsWith(TEXT("/tmp/")) || UserDir.StartsWith(TEXT("/var/tmp/"))) ||
 			!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()), UserDir))
-		{ Fail(TEXT("S47HorrorContract=SC01, SAROLoop, SC02, SC02Resume, SC03, SC03Resume, Arc or Navigation and explicit isolated /tmp UserDir required")); return; }
+		{ Fail(TEXT("S47HorrorContract=SC01, SAROLoop, SAROWorkstations, SC02, SC02Resume, SC03, SC03Resume, Arc or Navigation and explicit isolated /tmp UserDir required")); return; }
 		for (const TCHAR* Flag : {TEXT("S47T01Contract"), TEXT("S47T02Contract"), TEXT("S47T02DriveContract"), TEXT("S47DaleDocumentsContract"), TEXT("S47EveningEntrance"), TEXT("S47SmokeTest")})
 			if (FParse::Param(FCommandLine::Get(), Flag)) { Fail(TEXT("do not combine independent live test drivers")); return; }
 		T.Root = FPaths::ProjectSavedDir() / TEXT("HorrorContract") / T.Mode;
@@ -557,7 +619,7 @@ void FS47HorrorTest::Step(double Dt)
 		}
 		if (T.Stage == 613)
 		{
-			if (!Pick(TEXT("obs:generator")) || !Check(O.GeneratorStep() == 3 && M->Web->TubeLit(1) && !O.ChorePending(), TEXT("transfer back restores the room lights and logs the test"))) return;
+			if (!Pick(TEXT("obs:generator")) || !Check(O.GeneratorStep() == 3 && M->Web->TubeLit(1) && (!O.ChorePending() || (O.WorkEnabled() && O.Work()->ServiceRequired())), TEXT("transfer back restores the room lights and logs the test"))) return;
 			Go({FVector(4.2,0,-1.2), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
 		}
 		// 20:30 records-room filing: south door, corridor, records door, the run binder, and the reel on the way out.
@@ -584,6 +646,11 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 639)
 		{
 			if (!Check(M->Observing->ArchiveStep() == 2 && !M->Observing->ChorePending() && M->Observing->RunIndex() == 2, TEXT("fresh disk restore keeps the filed binder"))) return;
+			if (T.Mode == TEXT("SAROLoop") || T.Mode == TEXT("SAROWorkstations"))
+			{
+				if (!Check(O.WorkEnabled() && O.PacketCollected() && O.AudioReviewed() && O.Work()->ServiceComplete() && O.Objective().Contains(TEXT("HI")), TEXT("physical archive survives Continue and gives the next hydrogen observation without repeating service or comparison"))) return;
+				CompleteSaroWork(); return;
+			}
 			Go({FVector(-2.9,0,5.7)}, 640); return;
 		}
 		// The round closes the records door behind it from the corridor.
@@ -624,8 +691,8 @@ void FS47HorrorTest::Step(double Dt)
 			Go({FVector(4.2,0,-1.2), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
 		}
 	}
-	// The new Story pulsar check is part of full SC01 too. SAROLoop ends after this
-	// production journey, before the archive chore and the later window event.
+	// The Story pulsar check is part of full SC01 too. The focused SARO modes
+	// continue through physical packet collection and archive before finishing.
 	if (T.Stage >= 650 && T.Stage <= 665)
 	{
 		FS47Observing& O = *M->Observing;
@@ -689,6 +756,7 @@ void FS47HorrorTest::Step(double Dt)
 				DocCount(TEXT("obs_compare_b1133")) == 0,
 				TEXT("the second physical printer use collects the control chart and keeps both distinct source papers"))) return;
 			Shot(TEXT("saro-loop-control-chart")); M->UI->Close(true);
+			if (O.WorkEnabled()) { Go({FVector(3.8,0,-1.2), FVector(2.95,0,-1.2), FVector(2.95,0,-2.15)}, 729); return; }
 			Go({FVector(3.8,0,-1.2), FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-4.2,0,1.0), FVector(-4.2,0,2.0)}, 657); return;
 		}
 		if (T.Stage == 657) { Aim(Target(TEXT("opsTerminal"))); Stage(658); return; }
@@ -741,24 +809,255 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 662)
 		{
 			if (!Check(O.LoopStage() == ELoop::Filed && O.RunIndex() == 2 && O.Phase() == FS47Observing::EStep::Tune &&
-				O.ArchiveStep() == 0 && O.ChorePending() && O.Objective().Contains(TEXT("RECORDS ROOM")) &&
+				O.ArchiveStep() == 0 && O.ChorePending() && O.Objective().Contains(O.WorkEnabled() ? TEXT("PRINTER") : TEXT("RECORDS ROOM")) &&
 				DocCount(TEXT("obs_chart_b1133")) == 1 && DocCount(TEXT("obs_control_b1133")) == 1 &&
 				DocCount(TEXT("obs_compare_b1133")) == 1 && O.Hints() == 17 && H.BaselineChecked() && !H.NormalComplete() && !H.Complete(),
-				TEXT("completed comparison survives fresh disk/full-Flow restore once and gives the existing run-binder next action before the later story"))) return;
-			if (T.Mode == TEXT("SAROLoop"))
+				TEXT("completed registration survives fresh disk/full-Flow restore and gives the physical collection/archive next action before later Story"))) return;
+			if (O.WorkEnabled())
 			{
-				M->Player->TestMove.Reset(); M->Player->bTestRun = false; T.bDone = true;
-				auto Result = S47J::New(); S47J::Set(Result, TEXT("status"), TEXT("PASS"));
-				S47J::Set(Result, TEXT("scenario"), TEXT("SAROLoop")); S47J::Set(Result, TEXT("checks"), T.Checks);
-				S47J::Set(Result, TEXT("diskFlowRestores"), T.Stores); S47J::Set(Result, TEXT("nativeWalkMetres"), T.WalkMetres);
-				Result->SetArrayField(TEXT("evidence"), T.Evidence);
-				S47J::Set(Result, TEXT("method"), TEXT("Existing SC01 evening fixture, actual console settings and timed observations, physical Walker routes and aimed production uses. Wrong pulsar and correct unresolved answers use focused Slate Enter/Tab; a separate invalid sky-answer check calls the same production callback. Real disk/full-Flow restores occur during the control and after filing."));
-				S47J::Set(Result, TEXT("limits"), TEXT("Focused SARO investigation through the first two observations, generator and comparison only. No later SC01/window scene, human input/listening, full-night pacing, Xbox or whole-story acceptance."));
-				FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(T.Root / TEXT("result.json")));
-				UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror SAROLoop PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"), T.Checks, T.Stores, T.WalkMetres);
-				FPlatformMisc::RequestExit(false); return;
+				if (!Check(!O.PacketCollected(), TEXT("registering the comparison still requires physical collection of its marked packet"))) return;
+				O.Use(TEXT("binder"));
+				if (!Check(O.ArchiveStep() == 0, TEXT("the production binder refuses an uncollected packet"))) return;
+				Go({FVector(-4.2,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.5,0,-.4)}, 742); return;
 			}
 			Go({FVector(-4.2,0,1.0), FVector(0,0,1.0), FVector(0,0,-1.2), FVector(0,0,-2.1)}, 600); return;
+		}
+	}
+	// New Story workstations: the right terminal commands the real array; local
+	// service uses a physical cabinet; the decoder transports precede registration.
+	if (T.Stage >= 700 && T.Stage <= 749)
+	{
+		FS47Observing& O = *M->Observing;
+		FS47SaroWork* W = O.Work();
+		if (!O.WorkEnabled() || !W) { Fail(TEXT("workstation route requires the new versioned Story work state")); return; }
+		using ES = FS47SaroWork::EService;
+		const int32 R = O.RunIndex();
+		if (T.ServiceDish < 0) for (int32 I=0;I<M->Web->DishCount();++I) if (M->Web->DishId(I)==TEXT("S-03")) T.ServiceDish=I;
+		if (T.ServiceDish < 0) { Fail(TEXT("physical S-03 antenna is missing")); return; }
+		if (T.Stage == 700) { Aim(Target(TEXT("crtRight"))); Stage(701); return; }
+		if (T.Stage == 701)
+		{
+			if (!Pick(TEXT("crtRight")) || !Check(M->ModalOpen(), TEXT("physical tracking terminal opens the scheduled source command"))) return;
+			const auto& Run = FS47Observing::Runs()[R]; auto& Rx = M->Story->Rx;
+			Rx.Frequency=Run.P.F; Rx.Gain=(Run.P.Gain[0]+Run.P.Gain[1])/2; Rx.Bandwidth=(Run.P.Bw[0]+Run.P.Bw[1])/2; Rx.Azimuth=(Run.P.Az[0]+Run.P.Az[1])/2;
+			M->Story->ConsoleAction();
+			if (!Check(O.Phase()==FS47Observing::EStep::Tune, TEXT("valid receiver settings cannot acquire before the pointing terminal commands and settles the array"))) return;
+			if (!Check(ArrayAssemblyPose(M->Web,T.ServiceDish,T.MotionPose), TEXT("three visible native array assemblies are available for actual transform readback"))) return;
+			T.MotionAz=M->Web->DishAz(T.ServiceDish); T.MotionEl=M->Web->DishEl(T.ServiceDish); T.bMotionChecked=false; T.MotionRun=R;
+			if (!Enter() || !Check(W->HasCommand() && W->CommandedRun()==R && !W->Ready(), TEXT("focused Slate command starts real slew, not instant ready telemetry"))) return;
+			M->UI->Close(true); Stage(702,.4); return;
+		}
+		if (T.Stage == 702)
+		{
+			CaptureMotion(FString::Printf(TEXT("array-window-run%d"),R),T.ServiceDish);
+			TArray<FTransform> Pose;
+			if (!Check(ArrayAssemblyPose(M->Web,T.ServiceDish,Pose) && ArrayAssemblyMoved(T.MotionPose,Pose) &&
+				(!FMath::IsNearlyEqual(M->Web->DishAz(T.ServiceDish),T.MotionAz,.01) || !FMath::IsNearlyEqual(M->Web->DishEl(T.ServiceDish),T.MotionEl,.01)),
+				TEXT("real azimuth/elevation assemblies move with telemetry while the pedestal remains fixed"))) return;
+			T.bMotionChecked=true;
+			if (R==0 && !T.bSlewRestored)
+			{
+				T.MotionAz=M->Web->DishAz(T.ServiceDish); T.MotionEl=M->Web->DishEl(T.ServiceDish);
+				T.PauseTransitionLimit=9.0*Dt+.001;
+				M->UI->Document(FS47Observing::Schedule()); Stage(723,0); return;
+			}
+			Stage(704,.1); return;
+		}
+		if (T.Stage == 723)
+		{
+			// HUD/Main and Web are independent ticks: the last unpaused Web update can
+			// belong to either the opening frame or this frame, depending on tick order.
+			// A screenshot can lengthen the latter. Bound one tick using both actual deltas.
+			const double TransitionLimit=FMath::Max(T.PauseTransitionLimit,9.0*Dt+.001);
+			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: document pause transition az %.6f -> %.6f el %.6f -> %.6f openingDt %.6f nextDt %.6f bound %.6f modal %d"),
+				T.MotionAz,M->Web->DishAz(T.ServiceDish),T.MotionEl,M->Web->DishEl(T.ServiceDish),(T.PauseTransitionLimit-.001)/9.0,Dt,TransitionLimit,M->ModalOpen()?1:0);
+			if (!Check(M->ModalOpen() && FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)<=TransitionLimit &&
+				FMath::Abs(M->Web->DishEl(T.ServiceDish)-T.MotionEl)<=TransitionLimit,
+				TEXT("document pause propagates within one normal antenna update"))) return;
+			T.MotionAz=M->Web->DishAz(T.ServiceDish); T.MotionEl=M->Web->DishEl(T.ServiceDish);
+			Stage(705,.6); return;
+		}
+		if (T.Stage == 705)
+		{
+			if (!Check(M->ModalOpen() && FMath::IsNearlyEqual(M->Web->DishAz(T.ServiceDish),T.MotionAz,.001) && FMath::IsNearlyEqual(M->Web->DishEl(T.ServiceDish),T.MotionEl,.001),
+				TEXT("opening a document pauses the actual moving dish, not only its progress label"))) return;
+			M->UI->Close(true); T.bSlewRestored=true;
+			if (!StoreRestore(TEXT("workstations-mid-slew"),M->Flow->GameState())) return;
+			Stage(703,.3); return;
+		}
+		if (T.Stage == 703)
+		{
+			if (!Check(W->HasCommand() && W->CommandedRun()==R && !W->Ready() &&
+				FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)<4 && FMath::Abs(M->Web->DishEl(T.ServiceDish)-T.MotionEl)<3,
+				TEXT("fresh Flow restore resumes the saved partial slew instead of snapping to its final target"))) return;
+			Stage(704,.1); return;
+		}
+		if (T.Stage == 704)
+		{
+			CaptureMotion(FString::Printf(TEXT("array-window-run%d"),R),T.ServiceDish);
+			if (!W->Ready()) return;
+			bool All = M->Web->DishCount()==27;
+			const auto& Run=FS47Observing::Runs()[R]; const double Az=(Run.P.Az[0]+Run.P.Az[1])/2;
+			for(int32 I=0;I<M->Web->DishCount();++I) All &= M->Web->DishRemoteAvailable(I) && FMath::Abs(M->Web->DishAz(I)-Az)<=.1 && FMath::Abs(M->Web->DishEl(I)-Run.El)<=.1;
+			if(!Check(All && T.bMotionChecked && W->CanMeasure(), TEXT("27 actual antenna encoders agree with the selected target before acquisition is available")))return;
+			Go({FVector(2.15,0,-1.2),FVector(0,0,-1.2),FVector(0,0,-2.1)},600); return;
+		}
+		if (T.Stage == 710) { Aim(Target(TEXT("crtLeft"))); Stage(711); return; }
+		if (T.Stage == 711)
+		{
+			if (!Pick(TEXT("crtLeft")) || !Check(M->ModalOpen() && W->ServiceStage()==ES::Fault, TEXT("physical status terminal identifies the new S-03 remote-drive fault"))) return;
+			O.SelectStatusDish(T.ServiceDish);
+			if (!Check(O.SelectedStatusDish()==T.ServiceDish && !M->Web->DishRemoteAvailable(T.ServiceDish) && !O.PointScheduledRun(), TEXT("production status selection inspects unavailable S-03 and remote pointing refuses the fault"))) return;
+			Shot(TEXT("workstations-status-s03")); Stage(706,.3); return;
+		}
+		if (T.Stage == 706)
+		{
+			M->UI->Close(true);
+			Go({FVector(-2.15,0,-1.2),FVector(0,0,-1.2),FVector(4.2,0,-1.2),FVector(4.2,0,1.6)},712);return;
+		}
+		if (T.Stage == 712) { Aim(Target(TEXT("doorEast"))); Stage(713); return; }
+		if (T.Stage == 713)
+		{
+			if (!M->Web->IsDoorOpen(TEXT("doorEast")) && !Pick(TEXT("doorEast"))) return;
+			if (!Check(M->Web->IsDoorOpen(TEXT("doorEast")), TEXT("the service route opens the actual east door"))) return;
+			Go({FVector(5.2,0,1.6),FVector(6.1,0,1.6),FVector(9.3,0,1.6),FVector(9.3,0,-8),FVector(10.5,0,-8),FVector(10.5,0,-11)},714);return;
+		}
+		if (T.Stage == 714) { Aim(Target(TEXT("obs:service"))); Stage(715); return; }
+		if (T.Stage == 715)
+		{
+			if (!Pick(TEXT("obs:service")) || !Check(W->ServiceStage()==ES::Local && !M->Web->DishRemoteAvailable(T.ServiceDish), TEXT("physical cabinet selector isolates S-03 in local service"))) return;
+			Aim(Target(TEXT("obs:service"))); Stage(716);return;
+		}
+		if (T.Stage == 716)
+		{
+			if (!Pick(TEXT("obs:service")) || !Check(W->ServiceStage()==ES::OpenLoose, TEXT("opening the physical cabinet exposes the loose feedback connector"))) return;
+			Shot(TEXT("workstations-service-open")); Stage(707,.3); return;
+		}
+		if (T.Stage == 707)
+		{
+			if (!StoreRestore(TEXT("workstations-service-open"),M->Flow->GameState())) return;
+			Stage(717,.4);return;
+		}
+		if (T.Stage == 717)
+		{
+			if (!Check(W->ServiceStage()==ES::OpenLoose && !M->Web->DishRemoteAvailable(T.ServiceDish) && !O.PointScheduledRun(), TEXT("open service panel and remote inhibit survive actual disk/full Flow restore"))) return;
+			Aim(Target(TEXT("obs:service"))); Stage(708);return;
+		}
+		if (T.Stage == 708)
+		{
+			if (!Pick(TEXT("obs:service")) || !Check(W->ServiceStage()==ES::OpenSeated, TEXT("the physical connector is reseated while the panel remains open"))) return;
+			Aim(Target(TEXT("obs:service"))); Stage(718);return;
+		}
+		if (T.Stage == 718)
+		{
+			if (!Pick(TEXT("obs:service")) || !Check(W->ServiceStage()==ES::Closed && !M->Web->DishRemoteAvailable(T.ServiceDish), TEXT("closing the repaired cabinet still requires a local drive test"))) return;
+			Aim(Target(TEXT("obs:service"))); Stage(719);return;
+		}
+		if (T.Stage == 719)
+		{
+			T.MotionAz=M->Web->DishAz(T.ServiceDish);T.MotionEl=M->Web->DishEl(T.ServiceDish);T.MotionPeak=0;T.bMotionChecked=false;
+			if (!Check(ArrayAssemblyPose(M->Web,T.ServiceDish,T.MotionPose),TEXT("local test has the actual S-03 render assembly before movement")) || !Pick(TEXT("obs:service")) ||
+				!Check(W->ServiceStage()==ES::TestingOut && !M->Web->DishRemoteAvailable(T.ServiceDish),TEXT("local five-degree test starts with remote control still inhibited")))return;
+			Stage(720,.1);return;
+		}
+		if (T.Stage == 720)
+		{
+			CaptureMotion(TEXT("array-field-service"),T.ServiceDish);
+			T.MotionPeak=FMath::Max(T.MotionPeak,FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz));
+			if (!T.bMotionChecked && FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)>.5)
+			{
+				TArray<FTransform> Pose;
+				if (!Check(ArrayAssemblyPose(M->Web,T.ServiceDish,Pose) && ArrayAssemblyMoved(T.MotionPose,Pose),TEXT("the local test turns the visible antenna's native assembly while its pedestal stays fixed")))return;
+				T.bMotionChecked=true;
+			}
+			if (W->ServiceStage()!=ES::Tested)return;
+			if(!Check(T.bMotionChecked && T.MotionPeak>=4.9 && FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)<=.1 && FMath::Abs(M->Web->DishEl(T.ServiceDish)-T.MotionEl)<=.1 && !M->Web->DishRemoteAvailable(T.ServiceDish),TEXT("local drive test returns to its original encoder position and waits for explicit REMOTE selection")))return;
+			Aim(Target(TEXT("obs:service")));Stage(709);return;
+		}
+		if (T.Stage == 709)
+		{
+			if(!Pick(TEXT("obs:service")) || !Check(W->ServiceComplete() && M->Web->DishRemoteAvailable(T.ServiceDish),TEXT("final physical selector action restores S-03 remote control")))return;
+			Go({FVector(10.5,0,-8),FVector(9.3,0,-8),FVector(9.3,0,1.6),FVector(6.1,0,1.6),FVector(5.2,0,1.6),FVector(4.2,0,1.6)},721);return;
+		}
+		if (T.Stage == 721) { Aim(Target(TEXT("doorEast"))); Stage(722);return; }
+		if (T.Stage == 722)
+		{
+			if(M->Web->IsDoorOpen(TEXT("doorEast")) && !Pick(TEXT("doorEast")))return;
+			if(!Check(!M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("the operator closes the east door after the service trip")))return;
+			Go({FVector(4.2,0,-1.2),FVector(0,0,-1.2),FVector(0,0,-2.1)},600);return;
+		}
+		if(T.Stage==729)
+		{
+			if(!Check(!O.AudioReviewed() && !O.ComparePulsar(TEXT("unresolved")),TEXT("a correct textual conclusion cannot bypass listening and timed comparison")))return;
+			if(!StoreRestore(TEXT("workstations-recordings-retained"),M->Flow->GameState()))return;
+			Stage(730,.4);return;
+		}
+		if(T.Stage==730){Aim(Target(TEXT("decoder")));Stage(731);return;}
+		if(T.Stage==731)
+		{
+			if(!Pick(TEXT("decoder")) || !Check(M->ModalOpen() && !O.AudioReviewed(),TEXT("the physical signal processor opens the retained original/control transports")))return;
+			if(!Check(O.AudioAction(TEXT("original")) && O.AudioAction(TEXT("rewind")) && O.AudioAction(TEXT("play")) && O.AudioPlaying() && O.AudioSource()==0,TEXT("production decoder transport starts the retained original recording")))return;
+			Stage(732,.1);return;
+		}
+		if(T.Stage==732)
+		{
+			if(O.AudioPosition()<2)return;
+			if(!Check(O.AudioAction(TEXT("pause")) && !O.AudioPlaying(),TEXT("the original transport can be paused during actual playback")))return;
+			T.LoopControlAt=O.AudioPosition();Stage(733,.5);return;
+		}
+		if(T.Stage==733)
+		{
+			if(!Check(FMath::IsNearlyEqual(O.AudioPosition(),T.LoopControlAt,.001),TEXT("paused audio keeps its exact playback position")) || !Check(O.AudioAction(TEXT("play")),TEXT("the original transport resumes without inventing heard coverage")))return;
+			Stage(734,.1);return;
+		}
+		if(T.Stage==734)
+		{
+			if(O.AudioPlaying() || O.AudioPosition()<17.95)return;
+			if(!Check(O.AudioSource()==0 && O.AudioAction(TEXT("control")) && O.AudioAction(TEXT("rewind")) && O.AudioAction(TEXT("play")),TEXT("the entire original plays before switching to the distinct eight-second control")))return;
+			Stage(735,.1);return;
+		}
+		if(T.Stage==735)
+		{
+			if(O.AudioPlaying() || O.AudioPosition()<7.95)return;
+			if(!Check(O.AudioSource()==1 && O.AudioAction(TEXT("original")),TEXT("both actual transports finish before interval comparison")))return;
+			O.SeekAudio(0);O.AudioAction(TEXT("mark_start"));O.SeekAudio(1);O.AudioAction(TEXT("mark_end"));
+			if(!Check(!O.AudioAction(TEXT("confirm")) && !O.AudioReviewed(),TEXT("an interval away from the extra ticks cannot be confirmed")))return;
+			O.SeekAudio(9);O.AudioAction(TEXT("mark_start"));O.SeekAudio(13);O.AudioAction(TEXT("mark_end"));
+			Shot(TEXT("workstations-audio-comparison"));Stage(737,.3);return;
+		}
+		if(T.Stage==737)
+		{
+			if(!Check(O.AudioAction(TEXT("confirm")) && O.AudioReviewed(),TEXT("the original's marked extra-tick interval is accepted after hearing both recordings")))return;
+			Stage(736,.2);return;
+		}
+		if(T.Stage==736)
+		{
+			M->UI->Close(true);
+			Go({FVector(2.95,0,-1.2),FVector(0,0,-1.2),FVector(0,0,1.0),FVector(-4.2,0,1.0),FVector(-4.2,0,2.0)},657);return;
+		}
+		if(T.Stage==742){Aim(Target(TEXT("printer")));Stage(743);return;}
+		if(T.Stage==743)
+		{
+			if(!Pick(TEXT("printer")) || !Check(O.PacketCollected(),TEXT("physical printer collection secures the labelled registered packet")))return;
+			T.PacketReference=O.WorkReference();
+			for(const TCHAR* Id:{TEXT("obs_chart_b1133"),TEXT("obs_control_b1133"),TEXT("obs_compare_b1133"),TEXT("obs_packet_b1133")})
+			{
+				int32 Count=0;bool Referenced=false;
+				for(const FS47Doc& D:M->Story->Docs())if(D.Id==Id){++Count;Referenced=D.Page.Contains(T.PacketReference);}
+				if(!Check(Count==1 && Referenced,TEXT("one stable original/control/registration/packet reference: ")+FString(Id)))return;
+			}
+			Shot(TEXT("workstations-registered-packet"));Stage(744,.3);return;
+		}
+		if(T.Stage==744)
+		{
+			M->UI->Close(true);
+			if(!StoreRestore(TEXT("workstations-packet-before-archive"),M->Flow->GameState()))return;
+			Stage(745,.4);return;
+		}
+		if(T.Stage==745)
+		{
+			if(!Check(O.PacketCollected() && O.AudioReviewed() && O.ArchiveStep()==0 && O.RunIndex()==2,TEXT("registered physical packet survives Continue while archive remains unfinished")))return;
+			Go({FVector(3.8,0,-1.2),FVector(0,0,-1.2),FVector(0,0,1.0),FVector(-2.4,0,1.0),FVector(-2.4,0,3.4)},630);return;
 		}
 	}
 	if (T.Stage >= 600 && T.Stage <= 605)
@@ -776,11 +1075,14 @@ void FS47HorrorTest::Step(double Dt)
 				Rx.Frequency = Run.P.F; Rx.Gain = (Run.P.Gain[0] + Run.P.Gain[1]) / 2; Rx.Bandwidth = (Run.P.Bw[0] + Run.P.Bw[1]) / 2; Rx.Azimuth = (Run.P.Az[0] + Run.P.Az[1]) / 2;
 				M->Story->ConsoleAction();
 				if (!Check(O.Phase() == FS47Observing::EStep::Tune && O.ChorePending(), TEXT("the next run waits for the scheduled chore"))) return;
-				if (R == 1) Go({FVector(0,0,-1.2), FVector(4.2,0,-1.2), FVector(4.6,0,.65)}, 610);
+				if (R == 1 && O.WorkEnabled() && O.GeneratorStep() >= 3 && O.Work()->ServiceRequired()) Go({FVector(0,0,-1.2), FVector(-2.15,0,-1.2), FVector(-2.15,0,-2.0)}, 710);
+				else if (R == 1) Go({FVector(0,0,-1.2), FVector(4.2,0,-1.2), FVector(4.6,0,.65)}, 610);
 				else if (R == 2) Go({FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-2.4,0,1.0), FVector(-2.4,0,3.4)}, 630);
 				else Go({FVector(0,0,-1.2), FVector(4.2,0,-1.2), FVector(4.2,0,1.6)}, 620);
 				return;
 			}
+			if (O.WorkEnabled() && (!O.Work()->HasCommand() || O.Work()->CommandedRun() != R || !O.Work()->Ready()))
+			{ Go({FVector(0,0,-1.2), FVector(2.15,0,-1.2), FVector(2.15,0,-2.0)}, 700); return; }
 			Aim(Target(TEXT("crtCenter"))); Stage(601); return;
 		}
 		if (T.Stage == 601)
@@ -792,12 +1094,27 @@ void FS47HorrorTest::Step(double Dt)
 			M->Story->ConsoleAction();
 			if (!Check(O.Phase() == FS47Observing::EStep::Tune && Rx.Stage == 1 && M->Story->Clock() == Clock, TEXT("off-source settings start no run and keep the clock"))) return;
 			Rx.Azimuth = (Run.P.Az[0] + Run.P.Az[1]) / 2; M->Story->ConsoleAzimuth();
+			if (O.WorkEnabled())
+			{
+				bool KeptPointing = true;
+				for (int32 I=0; I<M->Web->DishCount(); ++I)
+					KeptPointing &= FMath::IsNearlyEqual(M->Web->DishTargetAz(I), Rx.Azimuth, .001) && FMath::IsNearlyEqual(M->Web->DishTargetEl(I), Run.El, .001);
+				if (!Check(KeptPointing, TEXT("receiver tuning preserves the tracking terminal's commanded azimuth and source elevation"))) return;
+			}
 			M->Story->ConsoleAction();
 			if (!Check(O.Phase() == FS47Observing::EStep::Integrating && Rx.Stage == 1 && M->Story->Clock() >= Run.Slot, TEXT("the scheduled settings start the run at its source's time"))) return;
-			M->UI->Close(true); M->Story->ConsoleClosed(); Stage(602, .3); return;
+			M->UI->Close(true); M->Story->ConsoleClosed();
+			if (R == 0 && O.WorkEnabled()) { ArrayAssemblyPose(M->Web, T.ServiceDish, T.MotionPose); T.CrossSeen = 0; T.bCrossVisual = false; }
+			Stage(602, .3); return;
 		}
 		if (T.Stage == 602)
 		{
+			if (R == 0 && O.WorkEnabled() && O.Phase() == FS47Observing::EStep::Integrating)
+			{
+				const int32 Point = O.Work()->CrossPoint(); if (Point >= 0 && Point < 5) T.CrossSeen |= 1 << Point;
+				TArray<FTransform> Pose; if (ArrayAssemblyPose(M->Web, T.ServiceDish, Pose) && ArrayAssemblyMoved(T.MotionPose, Pose)) T.bCrossVisual = true;
+				CaptureMotion(TEXT("array-cross"), T.ServiceDish);
+			}
 			if (R == 1 && !T.bObservingRestored && O.Phase() == FS47Observing::EStep::Integrating && O.Integrated() >= 12.8)
 			{
 				T.bObservingRestored = true;
@@ -812,6 +1129,7 @@ void FS47HorrorTest::Step(double Dt)
 					TEXT("fresh disk restore resumes the same integration and keeps the heard hint"))) return;
 			}
 			if (O.Phase() != FS47Observing::EStep::Data) return;
+			if (R == 0 && O.WorkEnabled() && !Check(T.CrossSeen == 31 && T.bCrossVisual && O.Work()->ScanComplete(), TEXT("all five cross positions were sampled and the visible native antenna moved before the normal chart completed"))) return;
 			if (bTerminal) Go({FVector(0,0,-1.2), FVector(0,0,1.0), FVector(-4.2,0,1.0), FVector(-4.2,0,2.0)}, 603);
 			else if (bStatus) Go({FVector(0,0,-1.2), FVector(-2.15,0,-1.2), FVector(-2.15,0,-2.0)}, 603);
 			else Go({FVector(0,0,-1.2), FVector(3.8,0,-1.2), FVector(4.5,0,-.4)}, 603);
@@ -822,6 +1140,7 @@ void FS47HorrorTest::Step(double Dt)
 		{
 			const auto& Run = FS47Observing::Runs()[R];
 			if (!Pick(DataId)) return;
+			if (R == 3 && O.WorkEnabled() && !Enter()) return; // the status terminal's focused File Virgo A drive log button
 			if (R == 1 && O.LoopStage() != FS47Observing::ELoopStage::Off)
 			{
 				if (!Check(O.RunIndex() == 1 && O.LoopStage() == FS47Observing::ELoopStage::Rack &&

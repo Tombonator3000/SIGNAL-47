@@ -352,7 +352,7 @@ FString AS47Story::Label(const FString& Id) const
 	// SC04 (S47SC04.h) borrows the control room's ordinary things while the spine holds it.
 	if (const auto* M = US47Main::Get(this); M && M->Spine) if (const FString L = M->Spine->Label(Id); !L.IsEmpty()) return L;
 	// SARO evening work borrows the rack and terminals before the ordinary labels return.
-	if (const auto* M = US47Main::Get(this); M && M->Observing && (Id == TEXT("rack") || Id == TEXT("printer") || Id == TEXT("opsTerminal") || Id == TEXT("crtLeft") || Id == TEXT("binder")))
+	if (const auto* M = US47Main::Get(this); M && M->Observing)
 		if (const FString L = M->Observing->Label(Id); !L.IsEmpty()) return L;
 	if (Id == TEXT("logbook")) if (const auto* M=US47Main::Get(this); M && M->Anomaly && M->Evening && M->Evening->Enabled() && M->Evening->Pack.Flag(TEXT("handover_done"))) return TEXT("Shift folder / compare local records");
 	if (Id == TEXT("logbook")) return bLogRead ? TEXT("Read the shift log") : TEXT("Read Dale's shift log");
@@ -605,6 +605,10 @@ void AS47Story::PowerUp(bool bInstant)
 
 void AS47Story::ConsoleAzimuth()
 {
+	// Scheduled workstation observations own physical pointing at the tracking
+	// terminal. Receiver tuning must not overwrite their source elevation.
+	const US47Main* M = US47Main::Get(this);
+	if (M && M->Observing && M->Observing->WorkEnabled() && M->Observing->Active()) return;
 	PointDishes(Rx.Azimuth, SurveyEl, 9);
 }
 

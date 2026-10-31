@@ -7,7 +7,7 @@
 class US47Main;
 struct FS47EveningLine;
 
-// Explicit, isolated live controller: -S47HorrorContract=SC01 or SAROLoop -UserDir=/tmp/...
+// Explicit, isolated live controller: -S47HorrorContract=SC01, SAROLoop or SAROWorkstations -UserDir=/tmp/...
 // Root invokes Step after the production Horror coordinator's update.
 class FS47HorrorTest
 {
@@ -31,6 +31,8 @@ private:
 	bool Walk();
 	bool StoreRestore(const FString& Name, const S47J::FObj& Snapshot, bool bRestore = true);
 	void Shot(const FString& Name);
+	void CaptureMotion(const FString& Prefix, int32 Dish);
+	void CompleteSaroWork();
 	bool PrepareDispatchRecordings();
 	bool DispatchRecordingFinished(const FS47EveningLine& Line);
 };

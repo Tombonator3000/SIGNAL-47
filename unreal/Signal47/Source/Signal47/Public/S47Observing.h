@@ -4,6 +4,7 @@
 #include "S47Rx.h"
 class US47Main;
 class FS47RecordedDialogue;
+class FS47SaroWork;
 struct FS47Task;
 struct FS47Doc;
 
@@ -50,6 +51,27 @@ public:
  double ControlElapsed() const { return ControlT; }
  const FString& LoopFeedback() const { return CompareFeedback; }
  bool ComparePulsar(const FString& Choice);
+ // Unreal addition: the same physical stations now share a saved evening work order.
+ bool WorkEnabled() const { return bWorkEnabled; }
+ bool ArrayMotionHeld() const;
+ FS47SaroWork* Work() const { return ArrayWork.Get(); }
+ bool PointScheduledRun();
+ void OpenTracking();
+ void OpenArrayStatus();
+ void SelectStatusDish(int32 Index);
+ int32 SelectedStatusDish() const { return SelectedDish; }
+ bool AudioAction(const FString& Action);
+ void SeekAudio(double Seconds);
+ bool AudioReviewed() const { return bAudioReviewed; }
+ bool AudioPlaying() const { return bAudioPlaying; }
+ double AudioPosition() const { return AudioCursor[AudioSelected]; }
+ int32 AudioSource() const { return AudioSelected; }
+ double AudioMarkedStart() const { return MarkStart; }
+ double AudioMarkedEnd() const { return MarkEnd; }
+ FString AudioDisplay() const;
+ double AudioLevel() const;
+ bool PacketCollected() const { return bPacketCollected; }
+ static FString WorkReference() { return TEXT("SARO-860413-02"); }
  static constexpr double ControlSeconds = 8;
  static FS47Doc PulsarControl();
  static FS47Doc PulsarComparison();
@@ -82,6 +104,23 @@ private:
  ELoopStage PulsarLoop = ELoopStage::Off;
  double ControlT = 0, ControlTick = 0;
  FString CompareFeedback;
+ bool bWorkEnabled = false, bWorkOrderFiled = false, bAudioPanelOpen = false, bTelemetryPanelOpen = false, bWorkActive = false;
+ bool bAudioPlaying = false, bAudioReviewed = false, bPacketCollected = false, bS03Diagnosed = false;
+ int32 AudioSelected = 0, SelectedDish = 0;
+ double AudioCursor[2] = {0, 0}, MarkStart = -1, MarkEnd = -1;
+ double AudioCovered[2] = {0, 0};
+ uint32 AudioCoverage[2] = {0, 0};
+ FString AudioFeedback;
+ TSharedPtr<FS47SaroWork> ArrayWork;
+ void OpenAudioComparison();
+ void StepAudio(double Dt);
+ void CreditAudioRange(int32 Source, double Was, double Now);
+ FString DishStatus(int32 Index) const;
+ void CollectPacket();
+ bool AudioAvailable() const;
+ bool AudioCoverageComplete() const;
+ void OpenWorkOrder();
+ static FS47Doc WorkOrder();
  bool PulsarCheckActive() const;
  void SecurePulsarChart();
  void StartPulsarControl();
