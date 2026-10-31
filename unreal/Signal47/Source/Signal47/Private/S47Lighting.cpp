@@ -413,7 +413,9 @@ void AS47Web::SetSkyLighting(float Daylight, const FVector& SunDirection, float 
 		// sky. Keep the old calibrated ambient on the ground for the same clock; the cover still
 		// shapes its direction and colour, and night (few clouds) stays as dark as before.
 		static const float Boost = [] { float V = 2.4f; FParse::Value(FCommandLine::Get(), TEXT("S47SkyBoost="), V); return V; }();
-		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) : 1.f;
+		// This compensates visible native cloud bases. The cleared finale needs no
+		// extra fill when its own banks replace that weather, regardless of capability.
+		const float CloudFill = CloudsActive() ? 1.f + (Boost - 1.f) * FMath::Clamp(CloudCover / 0.55f, 0.f, 1.2f) * FMath::Clamp(Daylight * 4.f, 0.f, 1.f) * CloudFinaleWeatherWeight : 1.f;
 		NightSky->SetIntensity(FMath::Lerp(NightSkyIntensity(Daylight), LocalSky, Caliche) * CloudFill * FinaleLight);
 		// A permanently blue tint doubles the blue in the captured dawn sky. Desaturate
 		// only with the existing dawn curve, preserving the cold low-level night fill.

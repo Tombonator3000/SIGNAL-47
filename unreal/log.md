@@ -1416,3 +1416,6 @@ PR262: parret fase68-bilde viser at skyggekasting fra de to grove bakkenodene la
 
 ### 2026-10-31T04:04+01:00 Fartøy v5 og ni fluidstadier
 PR262: åtte brede undersidefelt, ni faktiske256³ PF_R16F-frames og roligere stjerner består bygg/før-etter. JPEG95-arbeidsopptak gir23.8/23.6 fangede bilder/s i EVENT/uttrekk, ingen spill-FPS-påstand. Finere skyjitter og jevn midtpanorering er bygget; nytt helt diner-opptak pågår før pakking/Low-kontroll.
+
+### 2026-10-31T05:55+01:00 Native vær og terreng i finalen
+PR262: valgt skyåpning1250/løft500, lokal vær- og lysfading, native-klare High-bilder og egen normalvariant fjerner terrengsømmen; bygg/før-etter og korrekt kabininngang består. Metallvariasjon og192/256 marsjsteg ga ingen tydelig gevinst og er tatt ut igjen. Ny pakking/levering følger, ingen endring av installert standard ennå.

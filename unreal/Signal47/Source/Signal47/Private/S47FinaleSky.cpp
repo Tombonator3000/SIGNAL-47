@@ -57,9 +57,9 @@ namespace
 		TEXT("Finale cloud-bank distance ahead of C8.15, metres (50..10000); existing 90m advance is subtracted."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankSpread(TEXT("r.S47.Finale.BankSpread"), 280.f,
 		TEXT("Finale cloud-bank base distance to each side of the road tangent, metres (0..5000); BankRevealSpread is added over the reveal."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankRevealSpread(TEXT("r.S47.Finale.BankRevealSpread"), 1400.f,
+	TAutoConsoleVariable<float> CVarBankRevealSpread(TEXT("r.S47.Finale.BankRevealSpread"), 1250.f,
 		TEXT("Finale cloud-bank extra distance to each side at full reveal, metres (0..5000)."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarBankRevealRise(TEXT("r.S47.Finale.BankRevealRise"), 650.f,
+	TAutoConsoleVariable<float> CVarBankRevealRise(TEXT("r.S47.Finale.BankRevealRise"), 500.f,
 		TEXT("Finale cloud-bank total rise, metres (0..2000); first 150m over the reveal, remainder during phase40..68."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankHeight(TEXT("r.S47.Finale.BankHeight"), 300.f,
 		TEXT("Finale cloud-bank base height above C8.15, metres (10..10000); existing slow roll is added."), ECVF_Default);
@@ -79,6 +79,8 @@ namespace
 		TEXT("Maximum view-based native ground-light reduction (0..0.82), faded by finale phase, proximity and pullout height; not a physical cloud shadow."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarGroundCastShadow(TEXT("r.S47.Finale.GroundCastShadow"), 0.f,
 		TEXT("Local finale ground: 0 disables coarse-grid self-shadow casting on the two private ground material overrides; 1 preserves each original flag. Receives shadows normally."), ECVF_Default);
+	TAutoConsoleVariable<float> CVarGroundPlanarNormal(TEXT("r.S47.Finale.GroundPlanarNormal"), 1.f,
+		TEXT("Local finale ground normal blend (0..1): levels shallow mesh-join slopes before unchanged microdetail; slopes above four degrees retain their original normal."), ECVF_Default);
 	double Tune(const TAutoConsoleVariable<float>& Variable, double Min, double Max)
 	{
 		return FMath::Clamp(double(Variable.GetValueOnGameThread()), Min, Max);
@@ -305,20 +307,21 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 				C->SetMaterial(0, Saved.Original.Get());
 				if (C->CastShadow != Saved.bOriginalCastShadow) C->SetCastShadow(Saved.bOriginalCastShadow);
 			}
-		GroundMaterials.Reset(); bGroundMaterialLookupTried = false;
+		GroundMaterials.Reset(); bGroundMaterialLookupTried = false; bGroundShaderRequested = false;
 		return;
 	}
 	const bool bCastEnabled = Tune(CVarGroundCastShadow, 0, 1) >= .5;
-	const auto ApplyCastShadow = [this, bCastEnabled]()
+	const auto ApplyGroundParameters = [this, bCastEnabled]()
 	{
 		for (const FGroundMaterial& Saved : GroundMaterials)
 			if (auto* C = Saved.Component.Get())
 			{
 				const bool bCast = Saved.bOriginalCastShadow && bCastEnabled;
 				if (C->CastShadow != bCast) C->SetCastShadow(bCast);
+				if (Saved.Replacement.IsValid()) Saved.Replacement->SetScalarParameterValue(TEXT("FinalePlanarNormal"), float(Tune(CVarGroundPlanarNormal, 0, 1)));
 			}
 	};
-	if (bGroundMaterialLookupTried) { ApplyCastShadow(); return; }
+	if (bGroundMaterialLookupTried) { ApplyGroundParameters(); return; }
 	bGroundMaterialLookupTried = true;
 	auto* M = Main.Get(); auto* W = M ? M->Web.Get() : nullptr;
 	const auto* Root = W ? W->Node(W->Handle(TEXT("world.oldRoad.group"))) : nullptr;
@@ -343,6 +346,25 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 		Plain = C; PlainIndex = I; ++PlainCount;
 	}
 	if (PlainCount != 1) return; // A changed or ambiguous export keeps its original materials.
+	// Optional owned material copy. Its normal correction is local to these two slots;
+	// the shared web parent and the actual ground vertices/collision are never edited.
+	const TCHAR* GroundPath = TEXT("/Game/FinaleSky/MI_S47_FinalGround.MI_S47_FinalGround");
+	UMaterialInterface* GroundParent = nullptr;
+	if (FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(FString(GroundPath))))
+	{
+		auto* Candidate = LoadObject<UMaterialInterface>(nullptr, GroundPath, nullptr, LOAD_NoWarn);
+		float Planar = 0;
+		if (Candidate && Candidate->GetMaterial() && Candidate->GetMaterial()->MaterialDomain == MD_Surface
+			&& Candidate->GetBlendMode() == BLEND_Opaque
+			&& Candidate->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("FinalePlanarNormal")), Planar) && FMath::IsFinite(Planar))
+		{
+#if WITH_EDITOR
+			if (!bGroundShaderRequested) { Candidate->GetMaterial()->EnsureIsComplete(); bGroundShaderRequested = true; }
+			if (!ShaderReady(Candidate)) { bGroundMaterialLookupTried = false; return; }
+#endif
+			GroundParent = Candidate;
+		}
+	}
 	// OldRoad.ts shares m.ground between the unnamed coarse plain and its desert ribbon.
 	// Their different vertex-colour interpolation is isolated here for the local visual A/B.
 	TArray<FGroundMaterial> Pending;
@@ -356,6 +378,7 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 		// then copy the source hierarchy's actual scalar, vector and texture uniforms.
 		while (auto* DynamicParent = Cast<UMaterialInstanceDynamic>(Parent)) Parent = DynamicParent->Parent.Get();
 		if (!Parent || (!Cast<UMaterial>(Parent) && !Cast<UMaterialInstanceConstant>(Parent))) return;
+		if (GroundParent && Parent->GetFName() == FName(TEXT("MI_W774"))) Parent = GroundParent;
 		FGroundMaterial Saved; Saved.Component = C; Saved.Original.Reset(Original);
 		Saved.Replacement.Reset(UMaterialInstanceDynamic::Create(Parent, C));
 		if (!Saved.Replacement) return;
@@ -370,7 +393,7 @@ void FS47FinaleSky::SetGroundMaterialOverride(bool bActive)
 		Saved.bOriginalCastShadow = Saved.Component->CastShadow;
 		Saved.Component->SetMaterial(0, Saved.Replacement.Get());
 	}
-	ApplyCastShadow();
+	ApplyGroundParameters();
 	UE_LOG(LogS47FinaleSky, Display, TEXT("S47: FinaleSky local ground: plain N%d and desert N%d, private slot0 MIDs UseVertexColor=0; CastShadow originals=(%d,%d) enabled=%d; originals retained"),
 		PlainIndex, RibbonIndex, GroundMaterials[0].bOriginalCastShadow, GroundMaterials[1].bOriginalCastShadow, bCastEnabled);
 }
@@ -389,7 +412,7 @@ void FS47FinaleSky::UpdateCabFill(double PullSeconds, bool bActive)
 	Fill->SetIntensity(float(Strength)); Fill->SetVisibility(Strength > 0);
 }
 
-void FS47FinaleSky::UpdateStarPresentation(double Scale, double MinimumDimming)
+void FS47FinaleSky::UpdateSkyPresentation(double Scale, double MinimumDimming, double WeatherWeight)
 {
 	auto* M = Main.Get();
 	const TSharedPtr<FS47Sky> Sky = M && M->Life ? M->Life->Sky : nullptr;
@@ -397,14 +420,17 @@ void FS47FinaleSky::UpdateStarPresentation(double Scale, double MinimumDimming)
 	{
 		Previous->FinaleStarScale = 1;
 		Previous->FinaleStarDim = 0;
+		Previous->FinaleWeatherWeight = 1;
 	}
 	StarSky = Sky;
 	AppliedStarScale = Sky ? FMath::Clamp(Scale, .2, 1.) : 1;
 	AppliedStarDim = Sky ? FMath::Clamp(MinimumDimming, 0., 1.) : 0;
+	AppliedWeatherWeight = Sky ? FMath::Clamp(WeatherWeight, 0., 1.) : 1;
 	if (Sky)
 	{
 		Sky->FinaleStarScale = AppliedStarScale;
 		Sky->FinaleStarDim = AppliedStarDim;
+		Sky->FinaleWeatherWeight = AppliedWeatherWeight;
 	}
 }
 
@@ -481,7 +507,7 @@ void FS47FinaleSky::UpdateSteeringClones(bool bPullout)
 
 void FS47FinaleSky::Hide()
 {
-	UpdateStarPresentation(1, 0);
+	UpdateSkyPresentation(1, 0, 1);
 	UpdateSteeringClones(false);
 	UpdateCabFill(0, false);
 	SetGroundMaterialOverride(false);
@@ -517,7 +543,7 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	// No independent clock: a paused or restored C6 supplies exactly the same cloud field.
 	Phase = Stage == TEXT("drive") ? -80 * (1 - Smooth(5.9, 8.15, Mile)) : Stage == TEXT("event") ? E : 47 + P;
 	Growth = Smooth(-80, 6, Phase); Reveal = Smooth(5, 21, Phase);
-	if (!Prepare()) { UpdateStarPresentation(1, 0); SetGroundMaterialOverride(false); UpdateCabFill(0, false); UpdateSteeringClones(false); return; }
+	if (!Prepare()) { UpdateSkyPresentation(1, 0, 1); SetGroundMaterialOverride(false); UpdateCabFill(0, false); UpdateSteeringClones(false); return; }
 	Tuning.CraftForward = Tune(CVarCraftForward, 100, 10000);
 	Tuning.CraftRight = Tune(CVarCraftRight, -10000, 10000);
 	Tuning.CraftHeight = Tune(CVarCraftHeight, 10, 10000);
@@ -526,7 +552,10 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	Tuning.CabFill = Tune(CVarCabFill, 0, 20);
 	Tuning.StarScale = Tune(CVarStarScale, .2, 1);
 	Tuning.StarDim = Tune(CVarStarDim, 0, 1);
-	for (auto& Mid : CraftFillMids) if (Mid.IsValid()) Mid->SetScalarParameterValue(TEXT("Glow"), Tuning.CraftFill);
+	for (auto& Mid : CraftFillMids) if (Mid.IsValid())
+	{
+		Mid->SetScalarParameterValue(TEXT("Glow"), Tuning.CraftFill);
+	}
 	Tuning.BankForward = Tune(CVarBankForward, 50, 10000);
 	Tuning.BankSpread = Tune(CVarBankSpread, 0, 5000);
 	Tuning.BankRevealSpread = Tune(CVarBankRevealSpread, 0, 5000);
@@ -545,7 +574,9 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	bShown = Growth > .001;
 	// Private display calibration, independent of the height-based shade through all pullout.
 	const double StarBlend = bShown ? Smooth(-75, -15, Phase) : 0;
-	UpdateStarPresentation(FMath::Lerp(1., Tuning.StarScale, StarBlend), Tuning.StarDim * StarBlend);
+	// The cloud-tank banks take over the ordinary sky during the approach. Keep the
+	// native, cirrus and Low fallback weather on this same reversible visual blend.
+	UpdateSkyPresentation(FMath::Lerp(1., Tuning.StarScale, StarBlend), Tuning.StarDim * StarBlend, 1 - StarBlend);
 	UpdateCabFill(P, bShown && Stage == TEXT("pullout"));
 	UpdateSteeringClones(bShown && Stage == TEXT("pullout"));
 	SetGroundMaterialOverride(bShown);
@@ -620,9 +651,28 @@ S47J::FObj FS47FinaleSky::Readback() const
 	S47J::Set(O, TEXT("ready"), bReady); S47J::Set(O, TEXT("shown"), bShown); S47J::Set(O, TEXT("failure"), Failure);
 	S47J::Set(O, TEXT("groundVertexColorOverride"), GroundMaterials.Num() == 2);
 	bool bGroundCastShadowEnabled = false;
+	double GroundPlanarApplied = 0;
+	int32 GroundNormalVariants = 0;
+	TArray<FString> GroundOriginalParents;
 	for (const FGroundMaterial& Saved : GroundMaterials)
+	{
 		if (const auto* C = Saved.Component.Get()) bGroundCastShadowEnabled |= C->CastShadow;
+		UMaterialInterface* Parent = Saved.Original.Get();
+		while (auto* Dynamic = Cast<UMaterialInstanceDynamic>(Parent)) Parent = Dynamic->Parent.Get();
+		GroundOriginalParents.Add(GetPathNameSafe(Parent));
+		float Value = 0;
+		if (Saved.Replacement.IsValid() && Saved.Replacement->GetMaterial()
+			&& Saved.Replacement->GetMaterial()->GetFName() == FName(TEXT("M_S47_FinalGround"))
+			&& Saved.Replacement->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("FinalePlanarNormal")), Value))
+		{
+			++GroundNormalVariants;
+			GroundPlanarApplied = FMath::Max(GroundPlanarApplied, double(Value));
+		}
+	}
 	S47J::Set(O, TEXT("groundCastShadowEnabled"), bGroundCastShadowEnabled);
+	S47J::Set(O, TEXT("groundNormalVariantCount"), GroundNormalVariants);
+	S47J::Set(O, TEXT("groundPlanarNormalApplied"), GroundPlanarApplied);
+	S47J::Set(O, TEXT("groundOriginalParents"), GroundOriginalParents);
 	int32 SteeringCount = 0, SteeringVisible = 0;
 	for (const FSteeringClone& Part : SteeringClones) if (const auto* C = Part.Rendered.Get())
 	{
@@ -645,6 +695,12 @@ S47J::FObj FS47FinaleSky::Readback() const
 	S47J::Set(Applied, TEXT("starScaleApplied"), AppliedStarScale);
 	S47J::Set(Applied, TEXT("starDim"), Tuning.StarDim);
 	S47J::Set(Applied, TEXT("starDimMinimumApplied"), AppliedStarDim);
+	S47J::Set(Applied, TEXT("weatherWeightApplied"), AppliedWeatherWeight);
+	if (const auto* M = Main.Get(); M && M->Web)
+	{
+		S47J::Set(Applied, TEXT("ordinaryWeatherCapable"), M->Web->CloudsActive());
+		O->SetObjectField(TEXT("graphics"), M->Web->GraphicsReadback());
+	}
 	if (const TSharedPtr<FS47Sky> Sky = StarSky.Pin())
 		S47J::Set(Applied, TEXT("starDimmingApplied"), FMath::Max(Sky->StarDimming(), FMath::Clamp(Sky->FinaleStarDim, 0., 1.)));
 	else S47J::SetNull(Applied, TEXT("starDimmingApplied"));

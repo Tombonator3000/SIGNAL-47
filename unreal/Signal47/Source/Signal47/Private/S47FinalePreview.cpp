@@ -6,6 +6,7 @@
 #include "S47Story.h"
 #include "S47UI.h"
 #include "S47Walker.h"
+#include "S47Web.h"
 #include "S47World.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -96,6 +97,10 @@ void FS47FinalePreview::Step(US47Main* M,double Dt)
   return;
  }
  if(FPlatformTime::Seconds()<S.ReadyAt)return;
+ // High editor cloud maps become render-thread ready later than ordinary art.
+ // Explicit parity captures wait for the same native capability as a cooked game.
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FinaleWaitNativeWeather")) && M->Web
+    && M->Web->GetGraphicsSettings().Clouds>0 && !M->Web->CloudsActive())return;
  if(C->FinaleSky&&!S47J::Bool(C->FinaleSkyReadback(),TEXT("ready")))return;
  S.Pending=S.Dir/FString::Printf(TEXT("phase-%05.1f%s.png"),Phase,Frame.Name.IsEmpty()?TEXT(""):*(TEXT("-")+Frame.Name));
  if(IFileManager::Get().FileExists(*S.Pending)){Fail(TEXT("refusing previous frame overwrite"));return;}

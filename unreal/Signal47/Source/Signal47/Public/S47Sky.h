@@ -57,6 +57,8 @@ public:
 	double FinaleStarScale = 1;
 	/** Local display-only dimming floor on StarsMid; never changes Dawn or StarDimming(). */
 	double FinaleStarDim = 0;
+	/** Rendering only: 1 keeps ordinary weather; ready finale can fade it without changing its clock curves. */
+	double FinaleWeatherWeight = 1;
 	FVector SunDir = FVector(0.98, -0.02, -0.19).GetSafeNormal();
 	double Sun = 0;
 	FVector4 Glow[3] = { FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1), FVector4(1, 0, 0, 1) }; // uGlow (backdrop.ts sets them)

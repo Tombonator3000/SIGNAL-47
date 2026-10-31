@@ -85,7 +85,7 @@ public:
 	void SetFinaleGroundShade(float Shade);
 	/** SKY.md: the volumetric cloud layer. Cover/cirrus 0..1 from the clock; clear directions (three's
 	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
-	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight = 0.f);
+	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight = 0.f, float FinaleWeatherWeight = 1.f);
 	float CloudCoverNow() const { return CloudCover; }
 	bool CloudsActive() const;
 	void SuppressFloodLight(int32 Set, int32 Index);
@@ -491,6 +491,7 @@ private:
 	UPROPERTY() TObjectPtr<class UMaterialInstanceDynamic> CloudMid;
 	UPROPERTY() TObjectPtr<UDirectionalLightComponent> CloudLight;
 	float CloudCover = 0, CloudCirrus = 0;
+	float CloudFinaleWeatherWeight = 1; // Visual extinction/visibility only; CloudsActive remains capability.
 	double CloudTime = -1;
 	FVector CloudWind = FVector::ZeroVector;
 	void BuildClouds();

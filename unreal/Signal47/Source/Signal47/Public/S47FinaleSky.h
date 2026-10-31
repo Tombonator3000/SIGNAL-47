@@ -54,6 +54,7 @@ private:
 	};
 	TArray<FGroundMaterial> GroundMaterials;
 	bool bGroundMaterialLookupTried = false;
+	bool bGroundShaderRequested = false;
 	bool bReady = false, bShown = false, bLow = false;
 #if WITH_EDITOR
 	bool bCloudShaderDiagnosed = false, bFinaleShadersRequested = false;
@@ -66,14 +67,15 @@ private:
 		double CabFill = .8;
 		double StarScale = .3;
 		double StarDim = .96;
-		double BankForward = 1100, BankSpread = 280, BankRevealSpread = 1400, BankHeight = 300, Glow = 4, Shade = .6;
-		double BankRevealRise = 650;
+		double BankForward = 1100, BankSpread = 280, BankRevealSpread = 1250, BankHeight = 300, Glow = 4, Shade = .6;
+		double BankRevealRise = 500;
 		double BankDepth = 950, BankWidth = 1200, BankThickness = 1000, Density = 1.7;
 		int32 Samples = 128;
 	} Tuning; // Applied values: metres, uniform mesh scale, and glow multiplier.
 	double GlowLevel = .12, GroundShade = 0;
 	double AppliedStarScale = 1;
 	double AppliedStarDim = 0;
+	double AppliedWeatherWeight = 1;
 	int32 AppliedSamples = 128;
 	FVector Crossing = FVector::ZeroVector;
 	FVector ForwardUE = FVector::ForwardVector, RightUE = FVector::RightVector;
@@ -82,7 +84,7 @@ private:
 	bool WaitFor(const FString& Reason);
 	void SetGroundMaterialOverride(bool bActive);
 	void UpdateCabFill(double PullSeconds, bool bActive);
-	void UpdateStarPresentation(double Scale, double MinimumDimming);
+	void UpdateSkyPresentation(double Scale, double MinimumDimming, double WeatherWeight);
 	void UpdateSteeringClones(bool bPullout);
 	void Drop();
 };
