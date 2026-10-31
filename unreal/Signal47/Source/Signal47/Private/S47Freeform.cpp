@@ -12,6 +12,8 @@
 #include "S47World.h"
 #include "S47Flow.h"
 #include "S47Observing.h"
+#include "S47Inter.h"
+#include "S47Three.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
@@ -433,9 +435,24 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}J->Stage=EJobStage::Filed;}
  Changed(J->bAnomaly?TEXT("Registered. Collect the labelled packet at the printer, then file its originals in the binder."):TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return true;
 }
+bool FS47FreeformSession::NearBinder() const
+{
+ if(!M||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->World||M->World->Area!=TEXT("saro")||M->Web->Area()!=TEXT("saro")||M->World->bDriving||M->World->bBusy)return false;
+ FVector At;bool bFound=false;
+ if(const auto* Item=M->Web->Item(TEXT("binder")))
+ {
+  // Do not turn a missing prop's fallback zero position into a valid filing site.
+  if(Item->bBox||M->Web->ObjAt(Item->Node)){At=S47Three::ToThree(M->Web->PropLocation(TEXT("binder")));bFound=true;}
+ }
+ if(!bFound&&M->Inter)if(const auto* Item=M->Inter->Get(TEXT("binder"));Item&&Item->Object){At=Item->Object.WorldPosition();bFound=true;}
+ if(!bFound||At.ContainsNaN())return false;
+ const FVector P=M->Player->Pos;
+ return M->Web->Rect(TEXT("annex.zone.records")).Contains(P)&&FVector2D(P.X-At.X,P.Z-At.Z).Size()<=2.4&&FMath::Abs(P.Y-At.Y)<=2.;
+}
 bool FS47FreeformSession::FilePacket()
 {
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Packet)return false;
+ if(!NearBinder()){Feedback=TEXT("Take the registered paper packet to the actual records-room binder. The remote archive is read-only.");Changed(Feedback);return false;}
  J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;Earn(20);}
  RecordEvidence(TEXT("pulse-archive"),TEXT("Original, internal control and registered conclusion physically filed under one reference."));
  if(Director)Director->Use(TEXT("ff:archive"));Changed(TEXT("Originals filed. Work credited; follow-up remains in the case archive."));return true;
@@ -738,7 +755,11 @@ void FS47FreeformSession::OpenArchive()
  TArray<FString> Keys;Findings.GetKeys(Keys);Keys.Sort();
  for(const FString& K:Keys)List->AddSlot()[S47Kit::Paper(FString::Printf(TEXT("D%d / %s\n%s"),FindingDays.FindRef(K),*K,*Findings.FindRef(K)))];
  Rows.Add(SNew(SBox).HeightOverride(260)[List]);
- if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Packet)Rows.Add(S47Kit::Button(TEXT("Place registered originals in this binder"),[this]{FilePacket();OpenArchive();},true));
+ if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Packet)
+ {
+  if(NearBinder())Rows.Add(S47Kit::Button(TEXT("Place registered originals in this binder"),[this]{FilePacket();OpenArchive();},true));
+  else Rows.Add(S47Kit::Small(TEXT("Registered packet awaiting physical filing. Take its originals to the records-room binder; this remote archive is read-only.")));
+ }
  SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / RECORDS"),S47Kit::Col(Rows),1000));
 }
 bool FS47FreeformSession::Use(const FString& Id)
@@ -863,6 +884,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  FS47FreeformSession Unpowered(nullptr);Unpowered.Begin(nullptr);Unpowered.Selected=1;auto* UJ=Unpowered.Job();UJ->Stage=EJobStage::Recorded;UJ->bAnomaly=UJ->bControl=true;UJ->ControlAt=8;UJ->OriginalCovered=18;UJ->ControlCovered=8;UJ->MarkStart=9.1;UJ->MarkEnd=13;
  Unpowered.SetPowerFault(true);Check(!Unpowered.AudioAction(TEXT("confirm"))&&!UJ->bAudioReviewed&&!Unpowered.RegisterComparison(TEXT("unresolved")),TEXT("unpowered instruments cannot grant audio review or computer registration"));
  UJ->Stage=EJobStage::Registered;Check(!Unpowered.CollectChart()&&UJ->Stage==EJobStage::Registered,TEXT("a dead printer cannot create a new registered packet"));
+ UJ->Stage=EJobStage::Packet;const int32 BeforeRemoteFiling=Unpowered.Budget();
+ Check(!Unpowered.FilePacket()&&UJ->Stage==EJobStage::Packet&&Unpowered.Budget()==BeforeRemoteFiling,TEXT("remote archive access cannot file a packet or grant its payment without the actual binder and nearby player"));
  auto Corrupt=S.Save();TArray<double> InvalidAngles;InvalidAngles.Init(20,108);for(int32 A=1;A<108;A+=2)InvalidAngles[A]=30;InvalidAngles[5]=500;S47J::Set(Corrupt,TEXT("angles"),InvalidAngles);
  auto BadDays=S47J::Obj(Corrupt,TEXT("findingDays"));S47J::Set(BadDays,TEXT("extra_pulse"),1e100);FS47FreeformSession Guarded(nullptr);Guarded.Begin(Corrupt);
  Check(!Guarded.bRestoreAngles&&Guarded.SavedAngles.IsEmpty()&&!Guarded.FindingDays.Contains(TEXT("extra_pulse")),TEXT("out-of-range saved encoders and overflowing finding days are discarded before native transforms or integer casts"));

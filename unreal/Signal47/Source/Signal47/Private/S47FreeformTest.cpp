@@ -51,6 +51,12 @@ bool FS47FreeformTest::Restore(const FString& Name)
  const auto State=S47J::Read(Text);if(!Check(State&&S47J::Str(State,TEXT("sessionMode"))==TEXT("freeform"),TEXT("saved mode identity retained: ")+Name))return false;
  US47Flow::FStart S;S.bDev=true;S.State=State;M->Flow->StartGame(S);++Restores;return Check(M->IsFreeform()&&M->Freeform->Active(),TEXT("ordinary Flow restore starts Freeform: ")+Name);
 }
+bool FS47FreeformTest::FileAtBinder()
+{
+ if(!Check(M&&M->Web&&M->Web->Item(TEXT("binder")),TEXT("physical run binder exists in the loaded SARO world")))return false;
+ const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("binder")));M->UI->Close(true);M->Player->Place(P.X,P.Z-.8,0);
+ return Check(M->Freeform->FilePacket(),TEXT("retained packet receives filing credit at the actual physical run binder"));
+}
 void FS47FreeformTest::Step(double Dt)
 {
  if(bDone)return;
@@ -124,7 +130,11 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==9)
  {
   const int32 Before=F.Budget();if(!Check(F.RegisterComparison(JobIndex==1?TEXT("unresolved"):TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
-  if(JobIndex==1){if(!Check(F.CollectChart()&&F.FilePacket(),TEXT("marked packet is collected before physical archive credit")))return;}
+  if(JobIndex==1)
+  {
+   if(!Check(F.CollectChart()&&!F.FilePacket(),TEXT("printed packet cannot be filed remotely from the console")))return;
+   if(!FileAtBinder())return;
+  }
   if(!Check(F.CurrentJob()->bPaid&&F.Budget()==Before+20,TEXT("one completed job receives exactly twenty dollars")))return;
   if(!Check(!F.RegisterComparison(TEXT("normal"))&&F.Budget()==Before+20,TEXT("repeated registration cannot duplicate payment")))return;
   if(!Restore(TEXT("paid-job")))return;F.Director->Stop();
@@ -332,7 +342,8 @@ void FS47FreeformTest::Step(double Dt)
   const FString Id=F.CurrentJob()->Phenomenon;
   if(!Check(F.CompareInstrument(),TEXT("measured distinct instrument comparison survives Continue: ")+Id))return;
   const FString Conclusion=Id==TEXT("wrong_source")?TEXT("off_source"):Id==TEXT("time_disagreement")?TEXT("timing_path"):TEXT("duplicate_mismatch");
-  if(!Check(F.RegisterComparison(Conclusion)&&F.CollectChart()&&F.FilePacket(),TEXT("supported instrument finding is registered, collected and archived: ")+Id))return;
+  if(!Check(F.RegisterComparison(Conclusion)&&F.CollectChart(),TEXT("supported instrument finding is registered and physically collected: ")+Id))return;
+  if(!FileAtBinder())return;
   F.OpenArchive();Shot(TEXT("comparison-")+Id);Go(65,.3);return;
  }
  if(Stage==65)

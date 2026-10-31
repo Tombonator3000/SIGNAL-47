@@ -125,6 +125,7 @@ private:
  FString ControlSummary(const FJob& J) const;
  bool HasPower() const;
  bool RequirePower();
+ bool NearBinder() const;
  double TargetAz() const;
  double TargetEl() const;
  double SourceSeconds() const;

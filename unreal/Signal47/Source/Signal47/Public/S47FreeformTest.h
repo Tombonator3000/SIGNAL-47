@@ -19,6 +19,7 @@ private:
  bool Check(bool Good,const FString& Text);
  void Go(int32 Next,double Delay=0);
  bool Restore(const FString& Name);
+ bool FileAtBinder();
  void Shot(const FString& Name);
  void Finish(bool Good,const FString& Why=FString());
 };
