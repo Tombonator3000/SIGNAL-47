@@ -334,14 +334,16 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==90)
  {
-  if(M->World->bBusy)return;const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X-1.4,P.Z,0);
+  if(M->World->bBusy)return;
+  if(!Check(F.PowerFault()&&!M->Story->Rx.bPowered,TEXT("feeder incident cuts the actual receiver circuit before physical repair")))return;
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X-1.4,P.Z,0);
   F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));
   Go(91);return;
  }
  if(Stage==91)
  {
-  if(F.PowerFault())return;
-  if(!Check(true,TEXT("physical feeder isolation, replacement and timed test restore actual supply")))return;
+  if(F.PowerFault()||!M->Story->Rx.bPowered)return;
+  if(!Check(!F.PowerFault()&&M->Story->Rx.bPowered,TEXT("physical feeder isolation, replacement and timed test restore actual receiver supply")))return;
   if(!Restore(TEXT("feeder-repaired")))return;M->World->Enter(TEXT("saro"));M->Player->Place(0,-1.2,PI);Go(92,.6);return;
  }
  if(Stage==92)
