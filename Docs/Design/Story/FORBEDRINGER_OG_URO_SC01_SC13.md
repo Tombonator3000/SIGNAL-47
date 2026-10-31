@@ -12,6 +12,14 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 
 **Prioritet A** betyr anbefalt første pass etter feilretting. **B** er senere polering. Liten/middels beskriver omfang, ikke tidsløfte. Følelsen må vurderes med faktisk spilling; dette er regi og designvurderinger fra kode/manus.
 
+## Alienbevegelse og fysisk troverdighet
+
+**Ny bestilling fra Tom 31. oktober:** Bedre gange, løping, crab walk og griping, med naturlige overganger mellom tilstandene. PLAY-31-22 i [TODO](../../Active/TODO.md) fører animasjonsarbeidet. Dagens Tripo-skin er et teknisk utgangspunkt, ikke visuell sluttaksept.
+
+**Regi og gameplay:** La rolig gange og lytting ha en tydelig annen rytme enn målrettet løping. Lav kryping/sidegang skal ha overbevisende støtte i hender og føtter, tilpasset figuren. Hode og overkropp kan orientere seg mot en lyd før kroppen følger, men ledd og balanse må fortsatt henge sammen. Overgangen til jakt skal være lesbar og gripingen ha et kort forvarsel og faktisk kontakt. Bevegelse, fottrinn og fangst må følge samme fart og posisjon.
+
+Gjenbruk egne rigger og egnede klipp før ny produksjon. De eldre fellesmodell-klippene er kandidater som må vurderes mot Tripo-riggen. Kontroller animasjon i den faktiske gangen, arkivet, døråpningene og ute, med bøying/senking der høyden krever det. En skummel positur skal ikke skape urettferdig kollisjon, fotglidning eller fastlåsing. Dette forbedrer eksisterende møter og innfører ingen ny jakt.
+
 ## Bærbar feltradio og varsling ved alienmøter
 
 **Ny bestilling fra Tom 31. oktober:** En walkietalkie ligger på skrivebordet ved spillstart og kan plukkes opp og tas med. Først er den et vanlig arbeidsredskap. Når en alien faktisk er nær, brytes den normale mottakingen av rar skurring. Avviket får en hørbar kilde som spilleren allerede kjenner, og kan skape uro før fienden er tydelig synlig. Nærhet bør påvirke klang/intensitet uten et presist avstandstall. La støyen trekke seg tilbake når nærheten opphører; unngå konstant høy støy gjennom hele møtet.
