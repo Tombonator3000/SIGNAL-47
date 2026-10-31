@@ -1,0 +1,19 @@
+{
+  "curious": [
+    "id=7 travel=5.000 contacts=10 sounds=10 pass=1",
+    "id=8 travel=8.397 contacts=14 sounds=14 pass=1",
+    "id=9 travel=2.940 contacts=12 sounds=12 pass=1",
+    "id=10 travel=2.790 contacts=11 sounds=11 pass=1",
+    "id=11 travel=2.952 contacts=12 sounds=12 pass=1",
+    "id=12 travel=2.598 contacts=10 sounds=10 pass=1"
+  ],
+  "hunt": [
+    "id=7 new-travel=4.619 contacts=8 sounds=8 caught=1 pass=1",
+    "id=8 new-travel=6.226 contacts=11 sounds=11 caught=1 pass=1",
+    "id=9 new-travel=4.488 contacts=8 sounds=8 caught=0 pass=1",
+    "id=10 new-travel=3.780 contacts=7 sounds=7 caught=0 pass=1",
+    "id=11 new-travel=7.646 contacts=13 sounds=13 caught=0 pass=1",
+    "id=12 new-travel=3.923 contacts=7 sounds=7 caught=0 pass=1"
+  ],
+  "scope": "Scripted ordinary developer actions in isolated Case0, six ground subjects; not human play acceptance."
+}

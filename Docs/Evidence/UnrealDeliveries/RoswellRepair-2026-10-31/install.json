@@ -1,0 +1,14 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 295,
+  "source": "130f975f8e53c3e7ac7c66f9496b297a0f4f688e",
+  "merge": "5f57510026342c413c0953bd30b30aedc5af96fa",
+  "installed_at": "2026-10-31T20:03:57.382407+01:00",
+  "payload_nodes": 68,
+  "saved_nodes": 155,
+  "saved_files": 126,
+  "saved_unchanged": true,
+  "package_self_checks": 1824,
+  "installed_smoke_exit": 0,
+  "scope": "Installed startup, six standing bodies, pause and six individually moving Curious bodies; complete Hunt/roof exercised in packaged candidate."
+}

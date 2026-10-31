@@ -12,7 +12,7 @@ Editor og pakke består **163 målrettede kontroller, 9 disk-/Flow-gjenopprettin
 
 ## Oppfølging: Roswell armer og bakke-AI
 
-Tom fant armklipping og stillestående Curious/Hunt. Rettingen bruker faktisk native referanserigg for armsidene, roterer rutebudsjettet rettferdig mellom individer og måler gulvhøyde ved hvert fysisk steg. Utvidet dev-plassering finner flere gyldige frontposisjoner uten å omgå kollisjon. Editorbygg, 1824 selvtester og strengere SARO-prøve består: hver av seks bakkeindivider beveger seg med egne fotkontakter og lyder i både Curious og Hunt. Native armprøve dekker fem positurer forfra/fra siden. Lokal pakking/installasjon gjenstår. Naturlig møtefrekvens og menneskelig lyd-/spillaksept står fortsatt åpent.
+Tom fant armklipping og stillestående Curious/Hunt. Rettingen bruker faktisk native referanserigg for armsidene, roterer rutebudsjettet rettferdig mellom individer og måler gulvhøyde ved hvert fysisk steg. Utvidet dev-plassering finner flere gyldige frontposisjoner uten å omgå kollisjon. Editorbygg, 1824 selvtester og strengere SARO-prøve består: hver av seks bakkeindivider beveger seg med egne fotkontakter og lyder i både Curious og Hunt. Native armprøve dekker fem positurer forfra/fra siden. Runtime `130f975f` er pakket og installert kl.20:03 CET; kort installert prøve av ståtid, pause og alle seks Curious-figurer består. Alle 155 personlige Saved-elementer, inkludert 126 filer, er uendret. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/ROSWELL_REPAIR_2026-10-31.md). Naturlig møtefrekvens og menneskelig lyd-/spillaksept står fortsatt åpent.
 
 ## 0.1 levert: liten Roswell-alien
 
