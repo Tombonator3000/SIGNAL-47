@@ -10,7 +10,7 @@ Tom avsluttet spilltesten og ba om fullføring. Fem originale Tripo-modeller er 
 
 Caliche og motellets faktiske LOD-er bruker nå samme FBX-koordinatramme. Store motellskilt finnes også i nærverdenen, og hele bassenget er flyttet bak romrekken med terrasse, gjerde, adkomst og terrengkutt. TV-en oppdaterer filmer og lyd også i åpningsfasen. Terminalens viste 100 % og godkjenning bruker samme avrunding. Solnedgangen har egen varm ravgul horisont og gyllent skylys med kjøligere skygger, uten å endre nattprofilen.
 
-Editorbygg, 1838 selvtester, faktiske filmrammer/lydklokker, inn-/utkobling av de to UFO-ene og målrettede bilder består. Pakking, kort pakket prøve og lokal installasjon pågår. Personlige Saved er ikke endret. [Skript og begrensninger](../../unreal/Signal47/Tools/tripofleet/README.md).
+Editorbygg, 1838 selvtester, faktiske filmrammer/lydklokker, inn-/utkobling av de to UFO-ene og målrettede bilder består. Kilde `c8c8fa89` er pakket og installert kl.23:55 CET via PR298/299. Pakken består 1838 selvtester og faktisk TV-film/lyd; installert startfil, solnedgang og jeep-førerplass består. Motellruten består 60 punkter, 14 interaksjoner og isolert disk/title/Continue. Alle 149 Saved-elementer, inkludert 118 personlige filer, er uendret. To eldre genererte payload er pensjonert; gjeldende bygg og to eldre beholdes. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/TRIPO_MOTEL_2026-10-31.md). [Skript og begrensninger](../../unreal/Signal47/Tools/tripofleet/README.md).
 
 ## Aktive SARO-arbeidsstasjoner og antenneservice
 
