@@ -124,3 +124,7 @@ Root eier kun dokumentoppfølging og seks originalbilder på `codex/playtest-env
 ## SARO-krasj ved AUTO HOLD
 
 Root eier lesende krasjdiagnose og dokumentoppfølging på `codex/saro-render-crash-20261031`. Prosess4100828 har krasjet og er avsluttet. Krasjmappe, SaveGames/DevStarts og originalbilder er sikret lokalt. Ingen tung reservasjon er tatt, ingen repro startet; videre retting føres som første prioritet i PLAY-31-16.
+
+## SC04 dører og jakt under fortsatt spilltest
+
+Root eier dokumentoppfølging, SC04-forslaget og ett originalbilde på `codex/sc04-doors-chase-feedback-20261031`. Tom spiller igjen. PLAY-31-17/18 fører henholdsvis feilretting og sceneforslag; ingen kildeendring, motorjobb eller installasjon.

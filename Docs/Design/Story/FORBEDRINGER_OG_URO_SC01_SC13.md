@@ -58,6 +58,14 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 
 **Skrekk:** Gjenbruk det tidligere Dale-fragmentet med identisk pause, fra feil dør. La spilleren få tid til å kjenne det igjen. Bak en lukket dør kan fottrinnene stanse og lytte før de går videre. Den korte stillheten tvinger spilleren til å velge når døren skal åpnes.
 
+**Nytt spillerfunn 31. oktober, spilltid 03:03:** Tom opplever at dørlukking ikke gir fremdrift, og at alien kommer plutselig fra gangen og inn i et arkiv som er for trangt til å unnslippe. Dette er en gameplayfeil som må undersøkes, ikke en ønsket skrekkeffekt. PLAY-31-17 i [TODO](../../Active/TODO.md) fører dørlukking/progresjon. Logg/kilde viser at trygg dørtilstand og avsluttet fienderunde er forskjellige vakter; HUD må gjøre handlingene forståelige.
+
+**Toms alternative regi, til utprøving gjennom PLAY-31-18:** La møtet starte utenfor ved service yard, med banking og det gjenkjennelige Dale-fragmentet. Spilleren hører hvor stemmen kommer fra, velger å åpne og ser alien stå fysisk utenfor terskelen. En kort oppdagelses-/reaksjonspause gir tid til å rygge før jakten begynner. Dette er et alternativ til anbefalingen om stemmen fra Operations-døren ovenfor, ikke en ekstra alien som dukker opp inne samtidig.
+
+Gi ruten plass til å snu og bryte sikt. Arkivet skal ikke være en uunngåelig felle. Spilleren må kunne trekke fienden bort fra passasjen eller ut i gården, komme seg inn og stenge etter den. En kjent lydkilde kan brukes som lokkemiddel når spilleren har oppdaget sammenhengen. Fienden må gå den faktiske ruten gjennom åpen dør, miste sikt bak lukket dør og reagere hørbart med skritt, banking eller lytting. Møtet skal gi uro gjennom et valg spilleren forstår og konsekvenser som stemmer med rommet.
+
+Kvitter at hver relevant dør er sikret, og vis om spilleren fremdeles er utsatt, må lure fienden ut eller mangler et originaldokument. Hvis låsing tas inn, må låsen fungere fysisk og overleve lagring; en lukkelyd alene er ikke en lås. Å holde ytterdøren lukket skal ha en forståelig videre vei og ikke utløse teleport eller permanent progresjonsstopp. Dette erstatter eventuelt den eksisterende SC04-jakten; antallet jakter økes ikke. Ingen nye stemmeopptak bestilles før eksisterende Dale-materiale er vurdert.
+
 **Virkning:** Kjente rom og kjent stemme blir upålitelige, mens farens regler er pålitelige. **Middels / A.**
 
 ## SC05, samtalen som ligger foran
