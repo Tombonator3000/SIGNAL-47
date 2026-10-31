@@ -1,6 +1,6 @@
 # Gjeldende arbeidsliste
 
-**Status:** Gjeldende. **Gjelder:** Videre arbeid på Unreal-utgaven. **Sist kontrollert:** 30. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Videre arbeid på Unreal-utgaven. **Sist kontrollert:** 31. oktober 2026.
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
@@ -71,6 +71,22 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 - [ ] **SHIP-01:** Verifiser Win64-kompilering, cook, oppstart, lagring/lasting og normal/Low-spilling før en Windows-utgave ferdigmeldes.
 - [ ] **SHIP-02:** Undersøk faktisk kompatibilitet og ytelse på mottakermaskiner. Linux-/Steam Deck-/gamepad-/lytteaksept hevdes bare med egne faktiske prøver.
 - [x] **SHIP-03, lokal levering 29. oktober:** Farm R1 gjennom PR223 er [installert og kontrollert](../Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md), med kandidat/main/installasjon/offentlig nedlasting separat i [STATUS](STATUS.md). 111/111, pakket meteor og installert grafikk/Fortsett PASS; Saved og testbevis bevart. Den identiske pakken er også [komplett offentlig testnedlasting 29. oktober](../Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md), med selvstendig starter uten Git. Gjenta leveringsrutinen ved neste autoriserte pakke.
+
+## Logikkpass 31. oktober, STORY-05
+
+Statisk gjennomgang av hele SC01–SC13 er utført; rettelser og vanlig spillprøve er åpne. [Funn, kildehenvisninger, scenedekning og forslag](Reports/LOGIKKPASS_2026-10-31.md). Ingen spillkode, installasjon eller Saved er endret i dette passet.
+
+- [ ] **LOGIC-01 / P1:** Rett fastlåst Continue fra SC11-telexen; bevar originalene og gjør telex/beleiring nåbar etter lasting.
+- [ ] **LOGIC-02 / P1:** Gi SC02s `Unwitnessed` en sannferdig vei videre til hovedreisen eller en gjenopptakelse av møtet.
+- [ ] **LOGIC-03 / P2:** Koble godkjent egenbilvalg fra SC03 til faktisk innstigning, transport og lagring.
+- [ ] **LOGIC-04 / P2:** Bytt feil samtalemål under Ortiz-løftet til riktig situasjon og oppdagbar blikkhandling.
+- [ ] **LOGIC-05 / P2:** La SC12-HUD peke til Ward når telefonen fortsatt blokkerer avreise etter P13.
+- [ ] **LOGIC-06 / P2:** Samordne avreise- og kjørehint med kureren ved10.4 og passering av C, med bevart legacy-tekst.
+- [ ] **LOGIC-07 / P2:** Bruk faktiske strøm-/avrivningstider i SC04-stripen fremfor faste01:52/02:58.
+- [ ] **LOGIC-08 / P2:** Rett SC08s journalattribusjon eller lag faktisk spolekontroll; dokumentlesing er ikke en egen utført lydprøve.
+- [ ] **LOGIC-09 / P2:** Samordne tilfeldige bortføringsvinduer med ny tidslinje og ingen tidstap; bevar gamle saker og beskytt manussekvenser.
+
+Gameplayforslag og mulig konkurranse med ambientinnslag står separat i rapporten. De er ikke bekreftede runtimefeil. Toms pågående spilling skal ikke overlappes av motor-/bygge-/spilltester.
 
 ## Eldre, uavklart restliste
 

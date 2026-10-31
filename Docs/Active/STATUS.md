@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Logikkgjennomgang 31. oktober
+
+[Statisk SC01–SC13-pass](Reports/LOGIKKPASS_2026-10-31.md) har funnet to mulige progresjonsstopp i kildekoden, ved usett SC02-avreise og Continue under SC11-telexen, samt mål-, transport- og bevisavvik. LOGIC-01 til09 er åpne i TODO. Ingen rettelse er pakket eller installert; ingen motor-/spilltest er kjørt under Toms spilløkt.
+
 ## Fire forskjellige leveringsnivåer
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
