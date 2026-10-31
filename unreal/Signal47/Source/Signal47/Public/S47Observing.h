@@ -104,7 +104,7 @@ private:
  double ControlT = 0, ControlTick = 0;
  FString CompareFeedback;
  bool bWorkEnabled = false, bWorkOrderFiled = false, bAudioPanelOpen = false, bTelemetryPanelOpen = false, bWorkActive = false;
- bool bAudioPlaying = false, bAudioReviewed = false, bPacketCollected = false;
+ bool bAudioPlaying = false, bAudioReviewed = false, bPacketCollected = false, bS03Diagnosed = false;
  int32 AudioSelected = 0, SelectedDish = 0;
  double AudioCursor[2] = {0, 0}, MarkStart = -1, MarkEnd = -1;
  double AudioCovered[2] = {0, 0};

@@ -171,6 +171,7 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
  bWorkEnabled = bWorkOrderFiled = bAudioPanelOpen = bTelemetryPanelOpen = bAudioPlaying = bAudioReviewed = bPacketCollected = bWorkActive = false;
  AudioSelected = SelectedDish = 0; AudioCursor[0] = AudioCursor[1] = AudioCovered[0] = AudioCovered[1] = 0; AudioCoverage[0] = AudioCoverage[1] = 0;
  MarkStart = MarkEnd = -1; AudioFeedback.Empty();
+ bS03Diagnosed = false;
  if (!ArrayWork) ArrayWork = MakeShared<FS47SaroWork>(M);
  ArrayWork->Begin(nullptr, false);
  if (Saved)
@@ -210,6 +211,7 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
    bWorkOrderFiled = S47J::Bool(Saved, TEXT("workOrder"));
    bAudioReviewed = S47J::Bool(Saved, TEXT("audioReviewed"));
    bPacketCollected = S47J::Bool(Saved, TEXT("packetCollected"));
+   bS03Diagnosed = S47J::Bool(Saved, TEXT("s03Diagnosed"));
    AudioSelected = FMath::Clamp(S47J::Int(Saved, TEXT("audioSource")), 0, 1);
    AudioCursor[0] = FMath::Clamp(S47J::Num(Saved, TEXT("audioOriginal")), 0., Runs()[1].Seconds);
    AudioCursor[1] = FMath::Clamp(S47J::Num(Saved, TEXT("audioControl")), 0., ControlSeconds);
@@ -252,6 +254,7 @@ S47J::FObj FS47Observing::Save() const
  {
   S47J::Set(O, TEXT("workVersion"), 1); S47J::Set(O, TEXT("workOrder"), bWorkOrderFiled);
   S47J::Set(O, TEXT("audioReviewed"), bAudioReviewed); S47J::Set(O, TEXT("packetCollected"), bPacketCollected);
+  S47J::Set(O, TEXT("s03Diagnosed"), bS03Diagnosed);
   S47J::Set(O, TEXT("audioSource"), AudioSelected);
   S47J::Set(O, TEXT("audioOriginal"), AudioCursor[0]); S47J::Set(O, TEXT("audioControl"), AudioCursor[1]);
   S47J::Set(O, TEXT("coveredOriginal"), AudioCovered[0]); S47J::Set(O, TEXT("coveredControl"), AudioCovered[1]);
@@ -451,6 +454,10 @@ bool FS47Observing::Use(const FString& Id)
 {
  if (bWorkEnabled && Active())
  {
+  if (Id == TEXT("obs:service") && ArrayWork && ArrayWork->ServiceRequired() && !bS03Diagnosed)
+  {
+   M->UI->Toast(TEXT("Inspect S-03 on the left status terminal before selecting local service."), 5); return true;
+  }
   if (ArrayWork && ArrayWork->Use(Id)) return true;
   if (Id == TEXT("crtLeft")) { OpenArrayStatus(); return true; }
   if (Id == TEXT("crtRight")) { OpenTracking(); return true; }
@@ -693,6 +700,10 @@ FString FS47Observing::DishStatus(int32 Index) const
 void FS47Observing::SelectStatusDish(int32 Index)
 {
  SelectedDish = FMath::Clamp(Index, 0, 26);
+ if (M && M->Web && ArrayWork && ArrayWork->ServiceRequired() && M->Web->DishId(SelectedDish) == TEXT("S-03"))
+ {
+  bS03Diagnosed = true; Changed();
+ }
  if (M && Active()) OpenArrayStatus();
 }
 
@@ -943,7 +954,7 @@ FString FS47Observing::Objective() const
  if (!Active()) return FString();
  if (PulsarCheckActive()) return PulsarObjective();
  const FRun& R = Runs()[Run];
- if (bWorkEnabled && ArrayWork && ArrayWork->ServiceRequired()) return ArrayWork->Objective();
+ if (bWorkEnabled && ArrayWork && ArrayWork->ServiceRequired()) return bS03Diagnosed ? ArrayWork->Objective() : TEXT("STATUS TERMINAL // SELECT S-03 AND INSPECT ITS REMOTE-LINK FAULT BEFORE FIELD SERVICE");
  if (bWorkEnabled && Run == 2 && Archive == 0 && !bPacketCollected) return TEXT("PRINTER // COLLECT THE LABELLED PACKET SARO-860413-02, THEN PLACE IT IN THE RUN BINDER");
  if (Run == 1 && StepNow == EStep::Tune && GenStep < 3)
   return GenStep == 0 ? TEXT("CONTROL ROOM // 19:35 WEEKLY GENERATOR TEST ON THE REMOTE PANEL BY THE EAST DOOR")
