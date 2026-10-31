@@ -26,6 +26,27 @@ Bygg videre på eksisterende Observing-kveld, dens kontrollsteder, instrumenter 
 
 Løkken skal gi spilleren et forståelig normalt resultat, et etterprøvbart avvik og en avgrenset konklusjon som bygger på faktisk utført arbeid. Tekstlesing eller automatisk journalføring alene skal ikke telle som en fysisk kontroll. Et avbrudd skal bevare gjennomførte ledd, og en feilhandling skal gi en forståelig vei til nytt forsøk.
 
+## Aktive arbeidsstasjoner og antenneservice
+
+Tom har godkjent denne utvidelsen 31. oktober. Første leveranse gjelder Story i eksisterende rom og ved antennene. Nabobygget blir senere Freeform-arbeid. Faktisk leveringsstatus står i STATUS og VOTV-02 i TODO.
+
+| Stasjon | Handling og resultat |
+| --- | --- |
+| Midt-PC | Still mottakeren og ta opp observasjonen etter at antennene er på mål. |
+| Venstre PC | Velg antenne, les bestilt/faktisk retning, driftstilstand og kommandologg. Finn S-03-feilen. |
+| Høyre PC | Velg kveldens observasjon, send pointing og følg bevegelse/stabilisering til på mål. |
+| Lydprosessor | Spill pulsar og kontroll separat, sammenlign tidsmerkede utslag og marker ekstratikkene. |
+| Hjørne-PC og telex | Arbeidsordre/referanser, sammenligning og registrering av en begrunnet konklusjon. |
+| Arkivmappe | Legg registrerte original-/kontrollark med samme referanse i kveldens mappe. |
+
+Etter normalreferansen og aggregatprøven oppdages en S-03-feil før pulsaren. Spilleren går til det eksisterende styreskapet i serviceområdet, setter lokal service, åpner panelet, fester en synlig løs signalkontakt og lukker. Lokal kontroll dreier fem grader og tilbake; deretter settes fjernstyring og ny pointing prøves fra kontrollrommet. Den mekaniske feilen og ekstratikkene er separate funn. Ingen generell verktøy-/reservedelsøkonomi inngår i førsteversjonen.
+
+Antennemodeller, avlesning og målekrav bruker samme faktiske azimut/elevasjon. Måling venter på begge akser innen 0,1 grad i ett sammenhengende sekund. 3C 286 utfører et fysisk fempunktskryss med 0,5 grads forskyvning. Pulsar/Virgo A krever omstilling til planlagte mål; hydrogenets driftskann holder valgt retning. Senere historiestyrte antennehendelser overtar etter kveldsløkken.
+
+Måledata fyller tidspunkt og instrumentinnstillinger automatisk. Spilleren vurderer konklusjonen og gjør arkivhandlingen. Én stabil undersøkelsesreferanse følger original, kontroll, maskinregistrering og mappe. Sikrede dokumenter forblir lesbare i notatboken.
+
+Pointing, service, opptak, merket intervall og registrering/arkivering lagres. Pause og lasting bevarer gjennomført arbeid. Eldre saker får ingen nye tilbakevirkende krav. Den samlede prøven skal dekke faktisk gange og interaksjon, synlige modellbevegelser, feilhandlinger og lagring under uferdig arbeid, før pakking og lokal installasjon.
+
 ## Kvelden og overgangen til natt
 
 Arbeidsløkken brukes hovedsakelig frem til 00:00. Historien er til stede allerede i kveldsvakten gjennom overlevering, observasjoner og små uoverensstemmelser. Rundt midnatt eskalerer den avtalte historien; rutinearbeidet skal gi plass til hovedhendelsene.

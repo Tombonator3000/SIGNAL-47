@@ -1,4 +1,12 @@
 #include "S47Observing.h"
+#include "S47SaroWork.h"
+#include "SS47Widgets.h"
+#include "Widgets/SLeafWidget.h"
+#include "Widgets/Layout/SScrollBox.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Text/STextBlock.h"
+#include "Brushes/SlateColorBrush.h"
+#include "Rendering/DrawElements.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47Horror.h"
@@ -114,7 +122,7 @@ FS47Doc FS47Observing::Chart(int32 I)
  else if (I == 1)
  {
   D.Id = TEXT("obs_chart_b1133"); D.Title = TEXT("Strip chart: PSR B1133+16 timing");
-  D.Page = TEXT("SARO / RX CONTROL 03   1419.600 MHz  BW 96 KHZ\n")
+  D.Page = WorkReference() + TEXT("\nSARO / RX CONTROL 03   1419.600 MHz  BW 96 KHZ\n")
    TEXT("PSR B1133+16   AZ 112.0  EL 54.3   19:52-20:28\n\n")
    TEXT("PERIOD   1.18791 S        CATALOGUE 1.187911\n")
    TEXT("DM       4.86              FOLDED 1800 PULSES\n")
@@ -160,6 +168,11 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
  Stop();
  bReplay = false; bEnabled = bScheduleFiled = false; Run = HintMask = Ticks = GenStep = Archive = Yard = DoorVoice = 0; GenT = 0; FlickerT = -1; HeldTubes.Reset(); StepNow = EStep::Tune; Elapsed = Tick = 0; HeldStatus.Empty();
  PulsarLoop = ELoopStage::Off; ControlT = ControlTick = 0; CompareFeedback.Empty();
+ bWorkEnabled = bWorkOrderFiled = bAudioPanelOpen = bTelemetryPanelOpen = bAudioPlaying = bAudioReviewed = bPacketCollected = bWorkActive = false;
+ AudioSelected = SelectedDish = 0; AudioCursor[0] = AudioCursor[1] = AudioCovered[0] = AudioCovered[1] = 0; AudioCoverage[0] = AudioCoverage[1] = 0;
+ MarkStart = MarkEnd = -1; AudioFeedback.Empty();
+ if (!ArrayWork) ArrayWork = MakeShared<FS47SaroWork>(M);
+ ArrayWork->Begin(nullptr, false);
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
@@ -190,13 +203,38 @@ void FS47Observing::Begin(const S47J::FObj& Saved, bool bNewCase)
     CompareFeedback = S47J::Str(Saved, TEXT("loopFeedback"));
    }
   }
+  // Only explicitly versioned workstation cases receive the added service and filing duties.
+  if (S47J::Int(Saved, TEXT("workVersion"), 0) == 1)
+  {
+   bWorkEnabled = true;
+   bWorkOrderFiled = S47J::Bool(Saved, TEXT("workOrder"));
+   bAudioReviewed = S47J::Bool(Saved, TEXT("audioReviewed"));
+   bPacketCollected = S47J::Bool(Saved, TEXT("packetCollected"));
+   AudioSelected = FMath::Clamp(S47J::Int(Saved, TEXT("audioSource")), 0, 1);
+   AudioCursor[0] = FMath::Clamp(S47J::Num(Saved, TEXT("audioOriginal")), 0., Runs()[1].Seconds);
+   AudioCursor[1] = FMath::Clamp(S47J::Num(Saved, TEXT("audioControl")), 0., ControlSeconds);
+   AudioCovered[0] = FMath::Clamp(S47J::Num(Saved, TEXT("coveredOriginal")), 0., Runs()[1].Seconds);
+   AudioCovered[1] = FMath::Clamp(S47J::Num(Saved, TEXT("coveredControl")), 0., ControlSeconds);
+   AudioCoverage[0] = (1u << int32(AudioCovered[0])) - 1; AudioCoverage[1] = (1u << int32(AudioCovered[1])) - 1;
+   MarkStart = FMath::Clamp(S47J::Num(Saved, TEXT("markStart"), -1), -1., Runs()[1].Seconds);
+   MarkEnd = FMath::Clamp(S47J::Num(Saved, TEXT("markEnd"), -1), -1., Runs()[1].Seconds);
+   bAudioReviewed &= AudioCoverageComplete() && MarkStart >= 0 && MarkStart <= StrayTicks[0] && MarkEnd >= StrayTicks[UE_ARRAY_COUNT(StrayTicks) - 1] && MarkEnd - MarkStart <= 6;
+   bPacketCollected &= Run >= 2 && PulsarLoop == ELoopStage::Filed;
+   AudioFeedback = S47J::Str(Saved, TEXT("audioFeedback"));
+   ArrayWork->Begin(S47J::Obj(Saved, TEXT("workArray")), true);
+   if (!ArrayWork->Enabled()) bWorkEnabled = false;
+   if (Run >= Runs().Num()) ArrayWork->Stop(); // preserve completed service history without restoring old pointing
+  }
   if (GenStep == 1 && M && M->Audio) { FS47Sound S; S.Gain = .3f; S.At = GeneratorAt; S.bLoop = true; M->Audio->LoopSfx(TEXT("obsGenerator"), TEXT("engineIdle"), S); }
   // The stillness belongs to an unfinished Virgo A run only.
   if (StepNow == EStep::Integrating && Run == 3 && (HintMask & HintStill) && M && M->Audio && M->Audio->Night) M->Audio->Night->Still();
   return;
  }
  bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
- if (bEnabled) PulsarLoop = ELoopStage::AwaitPulsar;
+ if (bEnabled)
+ {
+  PulsarLoop = ELoopStage::AwaitPulsar; bWorkEnabled = true; ArrayWork->Begin(nullptr, true);
+ }
 }
 
 S47J::FObj FS47Observing::Save() const
@@ -209,6 +247,17 @@ S47J::FObj FS47Observing::Save() const
  {
   S47J::Set(O, TEXT("loopVersion"), 1); S47J::Set(O, TEXT("loopStage"), int32(PulsarLoop));
   S47J::Set(O, TEXT("controlElapsed"), ControlT); S47J::Set(O, TEXT("loopFeedback"), CompareFeedback);
+ }
+ if (bWorkEnabled)
+ {
+  S47J::Set(O, TEXT("workVersion"), 1); S47J::Set(O, TEXT("workOrder"), bWorkOrderFiled);
+  S47J::Set(O, TEXT("audioReviewed"), bAudioReviewed); S47J::Set(O, TEXT("packetCollected"), bPacketCollected);
+  S47J::Set(O, TEXT("audioSource"), AudioSelected);
+  S47J::Set(O, TEXT("audioOriginal"), AudioCursor[0]); S47J::Set(O, TEXT("audioControl"), AudioCursor[1]);
+  S47J::Set(O, TEXT("coveredOriginal"), AudioCovered[0]); S47J::Set(O, TEXT("coveredControl"), AudioCovered[1]);
+  S47J::Set(O, TEXT("markStart"), MarkStart); S47J::Set(O, TEXT("markEnd"), MarkEnd);
+  S47J::Set(O, TEXT("audioFeedback"), AudioFeedback);
+  if (ArrayWork) if (const auto W = ArrayWork->Save()) O->SetObjectField(TEXT("workArray"), W);
  }
  return O;
 }
@@ -242,8 +291,12 @@ bool FS47Observing::ConsoleAction()
  if (StepNow == EStep::Data) { Rx.Status = PulsarCheckActive() ? PulsarObjective() : FString(TEXT("RUN COMPLETE  /  SEE THE OBJECTIVE")); return true; }
  if (ChorePending())
  {
-  Rx.Status = Run == 1 ? TEXT("GENERATOR TEST DUE  /  REMOTE PANEL BY THE EAST DOOR")
-   : Run == 2 ? TEXT("ARCHIVE FILING DUE  /  RUN BINDER IN THE RECORDS ROOM") : TEXT("ROUND DUE  /  ARRAY GATE");
+  Rx.Status = Objective();
+  return true;
+ }
+ if (bWorkEnabled && (!ArrayWork || ArrayWork->CommandedRun() != Run || !ArrayWork->Ready() || !ArrayWork->CanMeasure()))
+ {
+  Rx.Status = ArrayWork && ArrayWork->ServiceRequired() ? ArrayWork->Objective() : TEXT("TRACKING TERMINAL // POINT THE ARRAY AND WAIT FOR ON TARGET");
   return true;
  }
  if (!Rx.Pass(Runs()[Run].P)) { Rx.Status = TEXT("OFF SOURCE  /  CHECK THE SCHEDULE CARD"); return true; }
@@ -258,20 +311,30 @@ void FS47Observing::Start()
  HeldStatus = S.Rx.Status;
  // The source rises on the schedule's time. Earlier work does not wait in real time for it.
  S.AdvanceClockTo(R.Slot, TEXT("scheduled observation start"));
- S.AimArray((R.P.Az[0] + R.P.Az[1]) / 2, R.El, 9);
- if (M->Audio && !Recorded(M->Audio, TEXT("obsArraySlew"), .45f)) M->Audio->Servo(2.4f, TOptional<FVector>());
+ if (bWorkEnabled && ArrayWork) ArrayWork->BeginScan();
+ else S.AimArray((R.P.Az[0] + R.P.Az[1]) / 2, R.El, 9);
+ if (!bWorkEnabled && M->Audio && !Recorded(M->Audio, TEXT("obsArraySlew"), .45f)) M->Audio->Servo(2.4f, TOptional<FVector>());
  S.Rx.Status = FString::Printf(TEXT("INTEGRATING %s"), R.Source).ToUpper();
  StepNow = EStep::Integrating; Elapsed = 0; Tick = 0; Ticks = 0;
- M->UI->Toast(FString::Printf(TEXT("%s. The array swings onto %s. The chart pen starts its line."), *S.ClockText(false), R.Source), 4);
+ M->UI->Toast(bWorkEnabled ? FString::Printf(TEXT("%s. %s on target. Acquisition started; the chart pen records only settled pointing."), *S.ClockText(false), R.Source)
+  : FString::Printf(TEXT("%s. The array swings onto %s. The chart pen starts its line."), *S.ClockText(false), R.Source), 4);
  UE_LOG(LogTemp, Display, TEXT("S47: observing run %d %s started at clock %.0f"), Run + 1, R.Id, S.Clock());
  Changed();
 }
 
 void FS47Observing::Step(double Dt)
 {
- if (!bEnabled || !M || !M->Story || M->Mode != US47Main::EMode::Play || M->bPausedByMenu || !FMath::IsFinite(Dt) || Dt <= 0) return;
- if (Done()) { StepDoorVoice(); return; }
- if (!Active()) return;
+ if (!bEnabled || !M || !M->Story || M->Mode != US47Main::EMode::Play || !FMath::IsFinite(Dt) || Dt <= 0) return;
+ if (M->bPausedByMenu) { if (ArrayWork && ArrayWork->Enabled()) ArrayWork->Step(Dt, true); return; }
+ if (Done()) { if (ArrayWork && ArrayWork->Enabled()) ArrayWork->Stop(); StepDoorVoice(); return; }
+ if (!Active()) { bAudioPlaying = false; if (bWorkActive && ArrayWork) { ArrayWork->Stop(); bWorkActive = false; } return; }
+ bWorkActive = true;
+ if (bWorkEnabled && ArrayWork)
+ {
+  ArrayWork->SetContext(Run, Run == 1 && GenStep >= 3);
+  ArrayWork->Step(Dt, (M->ModalOpen() && !bTelemetryPanelOpen) || M->Story->IsCinematic());
+ }
+ StepAudio(Dt);
  if (!bScheduleFiled)
  {
   bScheduleFiled = true; M->Story->AddDoc(Schedule());
@@ -280,7 +343,8 @@ void FS47Observing::Step(double Dt)
  }
  StepChores(Dt);
  StepPulsarControl(Dt);
- if (StepNow != EStep::Integrating) return;
+ if (StepNow != EStep::Integrating || (M->ModalOpen() && !bTelemetryPanelOpen) || M->Story->IsCinematic()) return;
+ if (bWorkEnabled && ArrayWork && !ArrayWork->CanMeasure()) return;
  const FRun& R = Runs()[Run];
  const double Was = Elapsed;
  Elapsed = FMath::Min(Elapsed + FMath::Min(Dt, .1), R.Seconds);
@@ -298,7 +362,7 @@ void FS47Observing::Step(double Dt)
  if (Run == 2 && Crossed(8)) Hint(HintBroadband);
  if (Run == 3 && Crossed(5)) Hint(HintStill);
  if (Run == 3 && Crossed(9)) Hint(HintDrive);
- if (Elapsed >= R.Seconds) Finish();
+ if (Elapsed >= R.Seconds && (!bWorkEnabled || !ArrayWork || ArrayWork->ScanComplete())) Finish();
 }
 
 void FS47Observing::Hint(int32 Bit)
@@ -349,6 +413,18 @@ void FS47Observing::Finish()
 
 FString FS47Observing::Label(const FString& Id) const
 {
+ if (bWorkEnabled && Active())
+ {
+  if (ArrayWork) if (const FString L = ArrayWork->Label(Id); !L.IsEmpty()) return L;
+  if (Id == TEXT("crtLeft")) return TEXT("Inspect array status and command history");
+  if (Id == TEXT("crtRight")) return TEXT("Point the array for the scheduled observation");
+  if (Id == TEXT("telex")) return TEXT("Read tonight's observing work order");
+  if (Id == TEXT("decoder")) return AudioAvailable() ? FString(TEXT("Compare original and control recordings")) : FString(TEXT("Signal processor / recording inputs"));
+  if (Id == TEXT("printer") && Run == 2 && Archive == 0)
+   return bPacketCollected ? FString(TEXT("Registered packet collected / take it to the run binder")) : FString(TEXT("Collect the labelled observation packet"));
+  if (Id == TEXT("binder") && Run == 2 && Archive == 0)
+   return bPacketCollected ? FString(TEXT("Place the registered packet behind April 13")) : FString(TEXT("Run binder / collect the registered packet first"));
+ }
  if (PulsarCheckActive())
  {
   if (Id == TEXT("rack")) return PulsarLoop == ELoopStage::Rack ? FString(TEXT("Test the receiver on its terminated input and internal reference"))
@@ -373,6 +449,15 @@ FString FS47Observing::Label(const FString& Id) const
 
 bool FS47Observing::Use(const FString& Id)
 {
+ if (bWorkEnabled && Active())
+ {
+  if (ArrayWork && ArrayWork->Use(Id)) return true;
+  if (Id == TEXT("crtLeft")) { OpenArrayStatus(); return true; }
+  if (Id == TEXT("crtRight")) { OpenTracking(); return true; }
+  if (Id == TEXT("telex")) { OpenWorkOrder(); return true; }
+  if (Id == TEXT("decoder")) { OpenAudioComparison(); return true; }
+  if (Id == TEXT("printer") && Run == 2 && Archive == 0) { CollectPacket(); return true; }
+ }
  if (Id == TEXT("obs:generator")) { UseGenerator(); return true; }
  if (PulsarCheckActive())
  {
@@ -391,6 +476,10 @@ bool FS47Observing::Use(const FString& Id)
    return true;
   }
  }
+ if (Id == TEXT("binder") && bWorkEnabled && Active() && Run == 2 && Archive == 0 && !bPacketCollected)
+ {
+  M->UI->Toast(TEXT("The registry entry is ready. Collect the labelled packet at the printer before placing it in this binder."), 5); return true;
+ }
  if (Label(Id).IsEmpty()) return false;
  if (Id == TEXT("binder")) { UseBinder(); return true; }
  File();
@@ -402,16 +491,28 @@ void FS47Observing::File()
  const FRun& R = Runs()[Run];
  AS47Story& S = *M->Story;
  const bool bComparedPulsar = Run == 1 && PulsarLoop == ELoopStage::Filed;
- const FS47Doc Doc = bComparedPulsar ? PulsarComparison() : Chart(Run);
+ FS47Doc Doc = bComparedPulsar ? PulsarComparison() : Chart(Run);
+ if (bComparedPulsar && bWorkEnabled)
+ {
+  Doc.Stamp = WorkReference() + TEXT(" / REGISTERED");
+  Doc.Page.ReplaceInline(TEXT("NEXT: file the charts in the records-room run binder, then reduce HI strip 12."), TEXT("NEXT: collect the labelled packet at the printer and place it in the April 13 run binder, then reduce HI strip 12."));
+  Doc.Page += FString::Printf(TEXT("\n\nMARKED ORIGINAL INTERVAL %.1f TO %.1f SECONDS.\nDIGITAL REGISTRATION COMPLETE. PHYSICAL FILING PENDING."), MarkStart, MarkEnd);
+  Doc.Transcript = Doc.Page;
+ }
  S.AddDoc(Doc);
- S.Note(bComparedPulsar ? FString::Printf(TEXT("%s. Pulsar period normal. Extra ticks do not follow its beat. A short terminated-input/internal-reference check was regular, without extra ticks. Source unresolved. Both charts retained; next file them in the records-room binder."), *S.ClockText(false)) : FString(R.P.Note));
+ if (bComparedPulsar)
+  S.Note(FString::Printf(TEXT("%s. Pulsar period normal. Extra ticks do not follow its beat. A short terminated-input/internal-reference check was regular, without extra ticks. Source unresolved. Both charts retained. %s"), *S.ClockText(false),
+   bWorkEnabled ? TEXT("Registered SARO-860413-02; collect the labelled packet at the printer, then place its originals in the April 13 binder.") : TEXT("Next file them in the records-room binder.")));
+ else S.Note(FString(R.P.Note));
  if (M->Audio) M->Audio->Play(R.Data == FString(TEXT("printer")) ? TEXT("paper0") : TEXT("click"), .5f);
  // The run's own length passes on the clock; the next source waits for its slot.
  S.AdvanceClockTo(R.Slot + R.Minutes * 60, TEXT("observation data filed"));
  ++Run; StepNow = EStep::Tune; Elapsed = 0;
- S.Rx.Status = Run < Runs().Num() ? FString::Printf(TEXT("NEXT  /  %s"), Runs()[Run].Source).ToUpper() : HeldStatus;
+ S.Rx.Status = bComparedPulsar && bWorkEnabled ? FString(TEXT("REGISTERED SARO-860413-02 / PACKET AT PRINTER / PHYSICAL FILING PENDING"))
+  : Run < Runs().Num() ? FString::Printf(TEXT("NEXT  /  %s"), Runs()[Run].Source).ToUpper() : HeldStatus;
  M->UI->Document(Doc);
- M->UI->Toast(Run < Runs().Num() ? FString::Printf(TEXT("%s. Chart filed. Next on the schedule: %s."), *S.ClockText(false), Runs()[Run].Source)
+ M->UI->Toast(bComparedPulsar && bWorkEnabled ? FString(TEXT("Registration complete. Collect SARO-860413-02 at the printer, then place its originals in the records-room binder."))
+  : Run < Runs().Num() ? FString::Printf(TEXT("%s. Chart filed. Next on the schedule: %s."), *S.ClockText(false), Runs()[Run].Source)
   : FString::Printf(TEXT("%s. The evening schedule is done. The north-window lamp round is next."), *S.ClockText(false)), 5);
  UE_LOG(LogTemp, Display, TEXT("S47: observing run %d %s filed at clock %.0f"), Run, R.Id, S.Clock());
  Changed();
@@ -430,7 +531,8 @@ FString FS47Observing::PulsarObjective() const
   case ELoopStage::Rack: return TEXT("RECEIVER RACK // TEST THE TERMINATED INPUT WITH THE INTERNAL REFERENCE");
   case ELoopStage::ControlRunning: return TEXT("RECEIVER RACK // INTERNAL REFERENCE RUNNING. LISTEN; THE PRINTER WILL RECORD THE CHECK");
   case ELoopStage::ControlPrint: return TEXT("PRINTER // COLLECT THE INTERNAL-REFERENCE CONTROL CHART");
-  case ELoopStage::Compare: return TEXT("OPERATIONS TERMINAL // COMPARE THE PULSAR AND CONTROL CHARTS, THEN FILE WHAT THEY SUPPORT");
+  case ELoopStage::Compare: return bWorkEnabled && !bAudioReviewed ? FString(TEXT("SIGNAL PROCESSOR // REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS"))
+   : FString(TEXT("OPERATIONS TERMINAL // COMPARE THE PULSAR AND CONTROL CHARTS, THEN REGISTER WHAT THEY SUPPORT"));
   default: return FString();
  }
 }
@@ -439,7 +541,7 @@ FS47Doc FS47Observing::PulsarControl()
 {
  FS47Doc D; D.Id = TEXT("obs_control_b1133"); D.Title = TEXT("Receiver control: terminated input and internal reference");
  D.Kind = TEXT("printout"); D.Stamp = TEXT("SARO / RX CHECK");
- D.Page = TEXT("SARO / RECEIVER CONTROL AFTER PSR B1133+16\n\n")
+ D.Page = WorkReference() + TEXT("\nSARO / RECEIVER CONTROL AFTER PSR B1133+16\n\n")
   TEXT("EXTERNAL INPUT TERMINATED\nINTERNAL TIMING REFERENCE ENABLED\nOBSERVATION WINDOW 8 SECONDS\n\n")
   TEXT("REFERENCE TRAIN 1.18791 S / REGULAR\nEXTRA TICKS IN THIS CHECK: NONE\n\n")
   TEXT("The external input was disconnected for this short bench check.\n")
@@ -453,7 +555,7 @@ FS47Doc FS47Observing::PulsarComparison()
 {
  FS47Doc D; D.Id = TEXT("obs_compare_b1133"); D.Title = TEXT("Pulsar discrepancy: comparison filed");
  D.Kind = TEXT("typed"); D.Stamp = TEXT("SARO / REYES");
- D.Page = TEXT("SARO / PULSAR DISCREPANCY COMPARISON\n\n")
+ D.Page = WorkReference() + TEXT("\nSARO / PULSAR DISCREPANCY COMPARISON\n\n")
   TEXT("1. The pulsar period agrees with the catalogue.\n")
   TEXT("2. The extra ticks do not follow that period.\n")
   TEXT("3. The short terminated-input/internal-reference check was regular.\n")
@@ -518,14 +620,19 @@ void FS47Observing::CollectPulsarControl()
  const FS47Doc D = PulsarControl(); M->Story->AddDoc(D);
  PulsarLoop = ELoopStage::Compare;
  if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
- M->UI->Document(D); M->UI->Toast(TEXT("Both charts retained. Use the operations terminal to compare what they support."), 4);
+ M->UI->Document(D); M->UI->Toast(bWorkEnabled ? TEXT("Both charts retained. At the signal processor, compare the original and control recordings before registering the result.") : TEXT("Both charts retained. Use the operations terminal to compare what they support."), 5);
  UE_LOG(LogTemp, Display, TEXT("S47: SARO loop control chart secured")); Changed();
 }
 
 void FS47Observing::OpenPulsarComparison()
 {
  if (!PulsarCheckActive() || PulsarLoop != ELoopStage::Compare || !M->UI) return;
+ if (bWorkEnabled && !bAudioReviewed)
+ {
+  M->UI->Toast(TEXT("Review both recordings at the signal processor and mark the extra ticks before registering a conclusion."), 5); return;
+ }
  TArray<S47Kit::FW> Rows;
+ if (bWorkEnabled) Rows.Add(S47Kit::Small(WorkReference() + TEXT(" / ORIGINAL + INTERNAL CONTROL / REGISTRATION PENDING")));
  Rows.Add(S47Kit::Text(TEXT("Compare the pointing check, pulsar chart and receiver control before filing.")));
  Rows.Add(S47Kit::Paper(TEXT("NORMAL REFERENCE / 3C 286 pointing check: clean cross, in specification.\n\nPULSAR CHART / period 1.18791 s, as catalogued. Extra ticks: four, a gap, seven; not at the pulsar period.\n\nLOCAL CONTROL / external input terminated, internal reference regular. No extra ticks in the eight-second check.")));
  if (!CompareFeedback.IsEmpty()) Rows.Add(S47Kit::Paper(CompareFeedback));
@@ -541,6 +648,7 @@ void FS47Observing::OpenPulsarComparison()
 bool FS47Observing::ComparePulsar(const FString& Choice)
 {
  if (!bEnabled || Run != 1 || StepNow != EStep::Data || PulsarLoop != ELoopStage::Compare || (M && !Active())) return false;
+ if (bWorkEnabled && !bAudioReviewed) { CompareFeedback = TEXT("The recordings have not been compared and marked at the signal processor."); Changed(); return false; }
  if (Choice != TEXT("unresolved"))
  {
   CompareFeedback = Choice == TEXT("pulsar")
@@ -558,11 +666,284 @@ bool FS47Observing::ComparePulsar(const FString& Choice)
  Changed(); return true;
 }
 
+// ---------- active workstation order, transport and registry ----------
+
+FS47Doc FS47Observing::WorkOrder()
+{
+ FS47Doc D; D.Id = TEXT("obs_work_order"); D.Title = TEXT("Telex: evening observing work order"); D.Kind = TEXT("telex"); D.Stamp = TEXT("SARO OPS / 13 APR 86");
+ D.Page = TEXT("SARO / EVENING WORK ORDER\n\nSTATUS TERMINAL: inspect individual drives and command history.\nTRACKING TERMINAL: select the scheduled source and command pointing.\nRECEIVER: start acquisition only after the array settles on target.\n\nAfter the generator transfer, verify S-03 remote availability.\nIf feedback fails, use the S-03 local cabinet in the east service yard.\n\nPULSAR REVIEW / SARO-860413-02\nKeep the original chart before changing the receiver input.\nRecord the internal-reference control separately. At the signal processor,\nreview both recordings and mark the extra ticks on the original timeline.\nRegister the supported conclusion at OPS, collect its labelled packet\nand place the original charts behind APRIL 13 in the records-room binder.\n\nThe receiver test is independent of routine drive service.\nA quiet control cannot establish the origin of an intermittent event.");
+ D.Transcript = D.Page; return D;
+}
+
+void FS47Observing::OpenWorkOrder()
+{
+ if (!bWorkEnabled || !Active() || !M->UI) return;
+ const FS47Doc D = WorkOrder(); M->Story->AddDoc(D); bWorkOrderFiled = true;
+ M->UI->Document(D); Changed();
+}
+
+FString FS47Observing::DishStatus(int32 Index) const
+{
+ if (!M || !M->Web || Index < 0 || Index >= M->Web->DishCount()) return TEXT("NO ARRAY FEEDBACK");
+ const AS47Web* W = M->Web;
+ return FString::Printf(TEXT("%s  ACT %05.1f/%04.1f  CMD %05.1f/%04.1f  %s"), *W->DishId(Index), W->DishAz(Index), W->DishEl(Index), W->DishTargetAz(Index), W->DishTargetEl(Index),
+  !W->DishRemoteAvailable(Index) ? TEXT("LOCAL / UNAVAILABLE") : W->DishMoving(Index) ? TEXT("MOVING") : TEXT("HOLD"));
+}
+
+void FS47Observing::SelectStatusDish(int32 Index)
+{
+ SelectedDish = FMath::Clamp(Index, 0, 26);
+ if (M && Active()) OpenArrayStatus();
+}
+
+void FS47Observing::OpenArrayStatus()
+{
+ if (!bWorkEnabled || !Active() || !ArrayWork || !M->UI) return;
+ ArrayWork->SetContext(Run, Run == 1 && GenStep >= 3);
+ const TArray<FString> Lines = ArrayWork->StatusRows();
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47Kit::Small(TEXT("Select an antenna to inspect its actual pointing and local/remote state.")));
+ Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(DishStatus(SelectedDish)); }).Font(S47Style::Mono(18)).ColorAndOpacity(S47Kit::Css(0xe4be79)));
+ Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ArrayWork->StateText()); }).Font(S47Style::Mono(16)).ColorAndOpacity(S47Kit::Css(0xc4bb9b)));
+ TSharedPtr<SWidget> FileButton;
+ if (StepNow == EStep::Data && Run == 3)
+ {
+  FileButton = S47Kit::Button(TEXT("File Virgo A drive log"), [this] { M->UI->Close(); File(); }, true);
+  Rows.Add(FileButton.ToSharedRef());
+ }
+ TSharedRef<SScrollBox> List = SNew(SScrollBox);
+ for (int32 I = 0; I < FMath::Min(27, Lines.Num()); ++I)
+ {
+  const int32 Index = I;
+  List->AddSlot()[S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this, Index] { return DishStatus(Index); }), [this, Index] { SelectStatusDish(Index); }, Index == SelectedDish)];
+ }
+ Rows.Add(SNew(SBox).HeightOverride(235)[List]);
+ if (Lines.Num() > 27)
+ {
+  TArray<FString> History;
+  for (int32 I = FMath::Max(27, Lines.Num() - 3); I < Lines.Num(); ++I) History.Add(Lines[I]);
+  Rows.Add(S47Kit::Small(FString::Join(History, TEXT("\n"))));
+ }
+ M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / ARRAY STATUS AND COMMAND LOG"), S47Kit::Col(Rows), 940), [this] { bTelemetryPanelOpen = false; });
+ bTelemetryPanelOpen = true;
+ if (FileButton && FSlateApplication::IsInitialized()) FSlateApplication::Get().SetKeyboardFocus(FileButton, EFocusCause::SetDirectly);
+}
+
+void FS47Observing::OpenTracking()
+{
+ if (!bWorkEnabled || !Active() || !ArrayWork || !M->UI) return;
+ ArrayWork->SetContext(Run, Run == 1 && GenStep >= 3);
+ const FRun& R = Runs()[Run];
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SCHEDULE %d / %s\nCOMMAND AZ %.1f  EL %.1f"), Run + 1, R.Source, (R.P.Az[0] + R.P.Az[1]) / 2, R.El)));
+ Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ArrayWork->StateText() + TEXT("\n") + DishStatus(SelectedDish)); }).Font(S47Style::Mono(18)).ColorAndOpacity(S47Kit::Css(0xe4be79)));
+ Rows.Add(S47Kit::Small(Run == 0 ? TEXT("The pointing check samples centre, north, south, east and west after acquisition starts.")
+  : Run == 2 ? TEXT("The drift scan holds the commanded direction while the sky crosses the beam.") : TEXT("Pointing is complete only when actual antenna feedback is steady on target.")));
+ const auto Command = S47Kit::Button(TEXT("Point the array to this source"), [this] { PointScheduledRun(); }, true,
+  StepNow == EStep::Tune && !ChorePending());
+ Rows.Add(Command);
+ Rows.Add(S47Kit::Small(TEXT("Live feedback continues here. Close to watch the dishes, then acquire at the receiver.")));
+ M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / TRACKING TERMINAL"), S47Kit::Col(Rows), 900), [this] { bTelemetryPanelOpen = false; });
+ bTelemetryPanelOpen = true;
+ if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetKeyboardFocus(Command, EFocusCause::SetDirectly);
+}
+
+bool FS47Observing::PointScheduledRun()
+{
+ if (!bWorkEnabled || !Active() || !ArrayWork || StepNow != EStep::Tune) return false;
+ ArrayWork->SetContext(Run, Run == 1 && GenStep >= 3);
+ if (ChorePending()) { M->UI->Toast(Objective(), 5); return false; }
+ const FRun& R = Runs()[Run];
+ M->Story->AdvanceClockTo(R.Slot, TEXT("scheduled source selected at tracking terminal"));
+ const bool bOk = ArrayWork->CommandObservation(Run, (R.P.Az[0] + R.P.Az[1]) / 2, R.El, Run == 0);
+ if (bOk)
+ {
+  M->UI->Close(); M->UI->Toast(TEXT("Pointing command sent. Watch the array move; the receiver waits for steady on-target feedback."), 5);
+  Changed();
+ }
+ return bOk;
+}
+
+namespace
+{
+ class SS47ObservationTrace : public SLeafWidget
+ {
+ public:
+  SLATE_BEGIN_ARGS(SS47ObservationTrace) {} SLATE_ARGUMENT(FS47Observing*, Observer) SLATE_END_ARGS()
+  void Construct(const FArguments& A) { Observer = A._Observer; White = MakeUnique<FSlateColorBrush>(FLinearColor::White); }
+  virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(790, 88); }
+  virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
+  {
+   if (!Observer) return Layer;
+   const float W = G.GetLocalSize().X; const double Duration = Observer->AudioSource() == 0 ? 18. : 8.;
+   const auto Box = [&](float X, float Y, float Dx, float Dy, FLinearColor Colour)
+   { FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(FVector2f(Dx, Dy), FSlateLayoutTransform(FVector2f(X, Y))), White.Get(), ESlateDrawEffect::None, Colour); };
+   Box(0, 0, W, 88, S47Kit::Css(0x07120c));
+   const auto X = [&](double T) { return float(12 + FMath::Clamp(T / Duration, 0., 1.) * (W - 24)); };
+   if (Observer->AudioSource() == 0 && Observer->AudioMarkedStart() >= 0 && Observer->AudioMarkedEnd() > Observer->AudioMarkedStart())
+    Box(X(Observer->AudioMarkedStart()), 10, X(Observer->AudioMarkedEnd()) - X(Observer->AudioMarkedStart()), 57, S47Kit::Css(0x66582c, .55f));
+   Box(12, 58, W - 24, 1, S47Kit::Css(0x346c49));
+   for (double T = PulsarPeriod; T <= Duration; T += PulsarPeriod) Box(X(T), 23, 2, 35, S47Kit::Css(0x84c796));
+   if (Observer->AudioSource() == 0) for (double T : StrayTicks) Box(X(T), 41, 2, 17, S47Kit::Css(0xf1b950));
+   for (int32 T = 0; T <= int32(Duration); ++T) Box(X(T), 62, 1, T % 2 == 0 ? 8 : 4, S47Kit::Css(0x59705b));
+   Box(X(Observer->AudioPosition()), 7, 2, 66, S47Kit::Css(0xf3efe1));
+   FSlateDrawElement::MakeText(Out, Layer + 1, G.ToPaintGeometry(FVector2f(W, 15), FSlateLayoutTransform(FVector2f(12, 73))),
+    FString::Printf(TEXT("0 s                                      %.0f s / retained recording timing"), Duration), S47Style::Mono(12), ESlateDrawEffect::None, S47Kit::Css(0xa3c4aa));
+   return Layer + 2;
+  }
+ private:
+  FS47Observing* Observer = nullptr;
+  TUniquePtr<FSlateColorBrush> White;
+ };
+}
+
+bool FS47Observing::AudioAvailable() const
+{
+ return bWorkEnabled && PulsarCheckActive() && PulsarLoop == ELoopStage::Compare;
+}
+
+bool FS47Observing::AudioCoverageComplete() const
+{
+ return AudioCovered[0] >= Runs()[1].Seconds && AudioCovered[1] >= ControlSeconds;
+}
+
+FString FS47Observing::AudioDisplay() const
+{
+ if (!AudioAvailable()) return FString();
+ return FString::Printf(TEXT("%s %04.1f/%02d %s"), AudioSelected == 0 ? TEXT("ORG") : TEXT("REF"), AudioCursor[AudioSelected], AudioSelected == 0 ? 18 : 8,
+  bAudioPlaying ? TEXT("PLAY") : bAudioReviewed ? TEXT("MARKED") : TEXT("PAUSE"));
+}
+
+double FS47Observing::AudioLevel() const
+{
+ if (!AudioAvailable() || !bAudioPlaying) return 0;
+ const double T = AudioCursor[AudioSelected];
+ double Level = FMath::Fmod(T, PulsarPeriod) < .10 ? .8 : .05;
+ if (AudioSelected == 0) for (double At : StrayTicks) if (T >= At && T < At + .08) Level = FMath::Max(Level, .45);
+ return Level;
+}
+
+void FS47Observing::OpenAudioComparison()
+{
+ if (!bWorkEnabled || !Active() || !M->UI) return;
+ if (!AudioAvailable()) { M->UI->Toast(TEXT("Recording inputs: original receiver and internal reference. Retain both charts before comparing the recordings."), 5); return; }
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47Kit::Small(WorkReference() + TEXT(" / TWO SEPARATE RECORDINGS / ORIGINAL RETAINED")));
+ Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(AudioDisplay()); }).Font(S47Style::Mono(19)).ColorAndOpacity(S47Kit::Css(0xe4be79)));
+ Rows.Add(SNew(SS47ObservationTrace).Observer(this));
+ Rows.Add(S47Kit::Row({
+  S47Kit::Choice(TEXT("Original / 18 s"), TAttribute<bool>::CreateLambda([this] { return AudioSelected == 0; }), [this] { AudioAction(TEXT("original")); OpenAudioComparison(); }),
+  S47Kit::Choice(TEXT("Internal control / 8 s"), TAttribute<bool>::CreateLambda([this] { return AudioSelected == 1; }), [this] { AudioAction(TEXT("control")); OpenAudioComparison(); }) }));
+ Rows.Add(S47Kit::Row({ S47Kit::Button(TEXT("Play / pause"), [this] { AudioAction(bAudioPlaying ? TEXT("pause") : TEXT("play")); }, true),
+  S47Kit::Button(TEXT("Rewind"), [this] { AudioAction(TEXT("rewind")); }) }));
+ Rows.Add(S47Kit::Slider(TEXT("Review position / seconds"), 0, AudioSelected == 0 ? 18.f : 8.f, .1f,
+  TAttribute<float>::CreateLambda([this] { return float(AudioCursor[AudioSelected]); }), [this](float At) { SeekAudio(At); }));
+ Rows.Add(S47Kit::Row({ S47Kit::Button(TEXT("Mark interval start"), [this] { AudioAction(TEXT("mark_start")); }),
+  S47Kit::Button(TEXT("Mark interval end"), [this] { AudioAction(TEXT("mark_end")); }) }));
+ Rows.Add(SNew(STextBlock).Text_Lambda([this]
+ {
+  return FText::FromString(FString::Printf(TEXT("ORIGINAL %s / CONTROL %s / MARK %.1f to %.1f s\n%s"),
+   AudioCoverage[0] == ((1u << 18) - 1) ? TEXT("reviewed") : TEXT("pending"), AudioCoverage[1] == ((1u << 8) - 1) ? TEXT("reviewed") : TEXT("pending"), MarkStart, MarkEnd,
+   AudioFeedback.IsEmpty() ? TEXT("Review both traces, then mark the extra ticks on the original timeline.") : *AudioFeedback));
+ }).Font(S47Style::Mono(15)).ColorAndOpacity(S47Kit::Css(0xc4bb9b)).AutoWrapText(true));
+ Rows.Add(S47Kit::Button(TEXT("Retain marked comparison"), [this] { AudioAction(TEXT("confirm")); }));
+ M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / SIGNAL PROCESSOR / RECORDING COMPARISON"), S47Kit::Col(Rows), 920), [this]
+ { bAudioPanelOpen = bAudioPlaying = false; Changed(); });
+ bAudioPanelOpen = true;
+}
+
+void FS47Observing::SeekAudio(double Seconds)
+{
+ if (!AudioAvailable() || !FMath::IsFinite(Seconds)) return;
+ bAudioPlaying = false;
+ AudioCursor[AudioSelected] = FMath::Clamp(Seconds, 0., AudioSelected == 0 ? Runs()[1].Seconds : ControlSeconds);
+ Changed();
+}
+
+bool FS47Observing::AudioAction(const FString& Action)
+{
+ if (!AudioAvailable()) return false;
+ if (Action == TEXT("original") || Action == TEXT("control"))
+ {
+  AudioSelected = Action == TEXT("original") ? 0 : 1; bAudioPlaying = false;
+ }
+ else if (Action == TEXT("play"))
+ {
+  if (!bAudioPanelOpen) return false;
+  if (AudioCursor[AudioSelected] >= (AudioSelected == 0 ? Runs()[1].Seconds : ControlSeconds)) AudioCursor[AudioSelected] = 0;
+  bAudioPlaying = true;
+ }
+ else if (Action == TEXT("pause")) bAudioPlaying = false;
+ else if (Action == TEXT("rewind")) { bAudioPlaying = false; AudioCursor[AudioSelected] = 0; }
+ else if (Action == TEXT("mark_start") || Action == TEXT("mark_end"))
+ {
+  if (AudioSelected != 0) { AudioFeedback = TEXT("Mark the extra ticks on the original recording, not the control."); return false; }
+  if (Action == TEXT("mark_start")) MarkStart = AudioCursor[0]; else MarkEnd = AudioCursor[0];
+  bAudioReviewed = false;
+ }
+ else if (Action == TEXT("confirm"))
+ {
+  if (!AudioCoverageComplete()) { AudioFeedback = TEXT("Play both recordings through. Moving the review cursor does not play the missing interval."); Changed(); return false; }
+  if (MarkStart < 0 || MarkStart > StrayTicks[0] || MarkEnd < StrayTicks[UE_ARRAY_COUNT(StrayTicks) - 1] || MarkEnd - MarkStart > 6)
+  { AudioFeedback = TEXT("Mark the short group of extra ticks: four, a gap, then seven. Include both groups."); Changed(); return false; }
+  bAudioReviewed = true; bAudioPlaying = false;
+  M->Story->Note(FString::Printf(TEXT("%s / %s. Reviewed original and control recordings. Marked %.1f to %.1f s on the original: extra ticks outside the pulsar period; the short internal control has none."), *M->Story->ClockText(false), *WorkReference(), MarkStart, MarkEnd));
+  M->UI->Close(); M->UI->Toast(TEXT("Marked comparison retained. Register what it supports at the operations terminal."), 5);
+ }
+ else return false;
+ AudioFeedback.Empty(); Changed(); return true;
+}
+
+void FS47Observing::CreditAudioRange(int32 Source, double Was, double Now)
+{
+ if (Source < 0 || Source > 1 || !FMath::IsFinite(Was) || !FMath::IsFinite(Now) || Now < Was || Was < 0) return;
+ const double Duration = Source == 0 ? Runs()[1].Seconds : ControlSeconds;
+ // A seek may move the cursor, but only continuous playback can extend the heard prefix.
+ if (Was <= AudioCovered[Source] + 1e-7)
+  AudioCovered[Source] = FMath::Clamp(FMath::Max(AudioCovered[Source], Now), 0., Duration);
+ AudioCoverage[Source] = (1u << int32(AudioCovered[Source])) - 1;
+}
+
+void FS47Observing::StepAudio(double Dt)
+{
+ if (!bAudioPlaying || !bAudioPanelOpen || !AudioAvailable() || !M || !M->UI || !M->UI->Modal() || M->Story->IsCinematic()) return;
+ const double Duration = AudioSelected == 0 ? Runs()[1].Seconds : ControlSeconds;
+ const double Was = AudioCursor[AudioSelected];
+ const double Now = FMath::Min(Duration, Was + FMath::Min(Dt, .1));
+ AudioCursor[AudioSelected] = Now;
+ CreditAudioRange(AudioSelected, Was, Now);
+ if (M->Audio)
+ {
+  for (double At = PulsarPeriod; At <= Duration; At += PulsarPeriod)
+   if (Was < At && Now >= At)
+   {
+    if (AudioSelected == 1 || !Recorded(M->Audio, TEXT("obsPulsarPulse"), .4f)) M->Audio->Beep(820, .012f, .16f, 0, TEXT("square"));
+   }
+  if (AudioSelected == 0) for (double At : StrayTicks)
+   if (Was < At && Now >= At && !Recorded(M->Audio, TEXT("obsPulsarPulse"), .14f, 1.7f)) M->Audio->Beep(1240, .008f, .07f, 0, TEXT("square"));
+ }
+ if (Now >= Duration) { bAudioPlaying = false; Changed(); }
+}
+
+void FS47Observing::CollectPacket()
+{
+ if (!bWorkEnabled || !Active() || Run != 2 || Archive != 0 || PulsarLoop != ELoopStage::Filed) return;
+ if (bPacketCollected) { M->UI->Toast(TEXT("The labelled packet is already collected. Place it behind April 13 in the records-room binder."), 4); return; }
+ FS47Doc D; D.Id = TEXT("obs_packet_b1133"); D.Title = TEXT("Labelled observation packet: ") + WorkReference(); D.Kind = TEXT("printout"); D.Stamp = WorkReference();
+ D.Page = WorkReference() + TEXT("\nREGISTRATION COMPLETE / PHYSICAL FILING PENDING\n\nORIGINAL: PSR B1133+16 timing chart and receiver recording.\nCONTROL: eight-second internal-reference chart and recording.\nMARK: ") + FString::Printf(TEXT("%.1f to %.1f s on the original.\n"), MarkStart, MarkEnd)
+  + TEXT("RESULT: extra ticks unresolved. Both records retained.\n\nPLACE THE ORIGINALS WITH THIS COVER IN THE APRIL 13 RUN BINDER.");
+ D.Transcript = D.Page; M->Story->AddDoc(D); bPacketCollected = true;
+ if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
+ M->UI->Document(D); M->UI->Toast(TEXT("Labelled packet collected. Place it behind April 13 in the records-room run binder."), 5); Changed();
+}
+
 FString FS47Observing::Objective() const
 {
  if (!Active()) return FString();
  if (PulsarCheckActive()) return PulsarObjective();
  const FRun& R = Runs()[Run];
+ if (bWorkEnabled && ArrayWork && ArrayWork->ServiceRequired()) return ArrayWork->Objective();
+ if (bWorkEnabled && Run == 2 && Archive == 0 && !bPacketCollected) return TEXT("PRINTER // COLLECT THE LABELLED PACKET SARO-860413-02, THEN PLACE IT IN THE RUN BINDER");
  if (Run == 1 && StepNow == EStep::Tune && GenStep < 3)
   return GenStep == 0 ? TEXT("CONTROL ROOM // 19:35 WEEKLY GENERATOR TEST ON THE REMOTE PANEL BY THE EAST DOOR")
    : GenStep == 1 ? TEXT("CONTROL ROOM // WHEN THE DIESEL SETTLES, TRANSFER THE LOAD TO THE GENERATOR") : TEXT("CONTROL ROOM // CHECK THE EMERGENCY LIGHTING, THEN TRANSFER BACK TO LINE POWER");
@@ -575,7 +956,10 @@ FString FS47Observing::Objective() const
  if (StepNow == EStep::Integrating) return FString::Printf(TEXT("CONTROL ROOM // %s INTEGRATING. LISTEN TO THE MONITOR AND WATCH THE CHART"), R.Source).ToUpper();
  if (StepNow == EStep::Data) return R.Data == FString(TEXT("printer")) ? FString::Printf(TEXT("PRINTER // TEAR OFF THE %s STRIP CHART"), R.Source).ToUpper()
   : R.Data == FString(TEXT("crtLeft")) ? FString(TEXT("STATUS TERMINAL // READ THE ARRAY DRIVE LOG")) : FString(TEXT("OPERATIONS TERMINAL // REDUCE THE HYDROGEN DRIFT SCAN"));
- return FString::Printf(TEXT("CONTROL ROOM // %s"), *R.P.Card);
+ if (bWorkEnabled && ArrayWork && (!ArrayWork->HasCommand() || ArrayWork->CommandedRun() != Run))
+  return FString::Printf(TEXT("TRACKING TERMINAL // SELECT %s AND POINT THE ARRAY"), R.Source).ToUpper();
+ if (bWorkEnabled && ArrayWork && !ArrayWork->Ready()) return ArrayWork->StateText();
+ return FString::Printf(TEXT("RECEIVER CONSOLE // ARRAY ON TARGET. %s"), *R.P.Card);
 }
 
 TArray<FS47Task> FS47Observing::Tasks() const
@@ -584,7 +968,11 @@ TArray<FS47Task> FS47Observing::Tasks() const
  if (!bEnabled) return Out;
  for (int32 I = 0; I < Runs().Num(); ++I)
  {
-  if (I == 1) Out.Add({ TEXT("19:35 weekly generator test and transfer"), GenStep >= 3 });
+  if (I == 1)
+  {
+   Out.Add({ TEXT("19:35 weekly generator test and transfer"), GenStep >= 3 });
+   if (bWorkEnabled) Out.Add({ TEXT("Inspect S-03, service its local connector and verify remote pointing"), ArrayWork && ArrayWork->ServiceComplete() });
+  }
   if (I == 2 && Archive >= 0) Out.Add({ TEXT("20:30 file the evening's charts in the records room"), Archive >= 2 });
   if (I == 3) Out.Add({ TEXT("21:40 round to the array gate"), Yard >= 2 });
   Out.Add({ Runs()[I].Task, Run > I });
@@ -593,7 +981,9 @@ TArray<FS47Task> FS47Observing::Tasks() const
    Out.Add({ TEXT("Secure the pulsar chart before testing the receiver"), PulsarLoop >= ELoopStage::Rack });
    Out.Add({ TEXT("Run the terminated-input/internal-reference control at the receiver rack"), PulsarLoop >= ELoopStage::ControlPrint });
    Out.Add({ TEXT("Collect the control chart at the printer"), PulsarLoop >= ELoopStage::Compare });
-   Out.Add({ TEXT("Compare both charts on the operations terminal and file their limits"), PulsarLoop == ELoopStage::Filed });
+   if (bWorkEnabled) Out.Add({ TEXT("Review original/control recordings and mark the extra-tick interval"), bAudioReviewed });
+   Out.Add({ TEXT("Compare both charts on the operations terminal and register their limits"), PulsarLoop == ELoopStage::Filed });
+   if (bWorkEnabled) Out.Add({ TEXT("Collect the labelled packet and place its originals in the April 13 binder"), bPacketCollected && Archive >= 1 });
   }
  }
  return Out;
@@ -601,7 +991,7 @@ TArray<FS47Task> FS47Observing::Tasks() const
 
 bool FS47Observing::ChorePending() const
 {
- return StepNow == EStep::Tune && ((Run == 1 && GenStep < 3) || (Run == 2 && Archive >= 0 && Archive < 2) || (Run == 3 && Yard < 2));
+ return StepNow == EStep::Tune && ((Run == 1 && (GenStep < 3 || (bWorkEnabled && ArrayWork && ArrayWork->ServiceRequired()))) || (Run == 2 && Archive >= 0 && Archive < 2) || (Run == 3 && Yard < 2));
 }
 
 void FS47Observing::BuildPanel()
@@ -685,9 +1075,16 @@ FS47Doc FS47Observing::RunBinder()
 
 void FS47Observing::UseBinder()
 {
+ if (bWorkEnabled && !bPacketCollected) return;
  AS47Story& S = *M->Story;
  S.AdvanceClockTo(ArchiveStart, TEXT("evening records filing started"));
- const FS47Doc Doc = RunBinder();
+ FS47Doc Doc = RunBinder();
+ if (bWorkEnabled)
+ {
+  Doc.Page += TEXT("\n\n") + WorkReference() + TEXT(" / APRIL 13 TAB\nORIGINAL + INTERNAL CONTROL + REGISTRATION COVER PHYSICALLY FILED.");
+  Doc.Transcript = Doc.Page;
+  S.Note(S.ClockText(false) + TEXT(". Placed the labelled packet ") + WorkReference() + TEXT(" behind April 13: original pulsar chart, internal-reference chart and registered conclusion. Digital index and physical originals now match."));
+ }
  S.AddDoc(Doc);
  if (M->Audio) M->Audio->Play(TEXT("paper0"), .5f);
  Archive = 1;
@@ -758,11 +1155,12 @@ FS47Observing::FS47Observing(US47Main* InM) : M(InM)
   Out.Channel = Out.At.IsSet() ? TEXT("physical") : TEXT("unpositioned"); return Out;
  });
 }
-FS47Observing::~FS47Observing() { if (Voice) Voice->Stop(); }
+FS47Observing::~FS47Observing() { if (ArrayWork) ArrayWork->Stop(); if (Voice) Voice->Stop(); }
 
 void FS47Observing::Stop()
 {
- bEnabled = false;
+ bEnabled = false; bAudioPlaying = bAudioPanelOpen = bTelemetryPanelOpen = false;
+ if (ArrayWork) ArrayWork->Stop();
  if (Voice) Voice->Stop();
 }
 
@@ -912,5 +1310,45 @@ bool FS47Observing::SelfTest(TArray<FString>& Lines)
  }
  Check(PulsarControl().Id != Chart(1).Id && PulsarComparison().Id != PulsarControl().Id && !PulsarComparison().Transcript.IsEmpty(),
   TEXT("the source chart, actual control and limited comparison remain distinct documents"));
+ {
+  FS47Observing Old(nullptr); Old.Begin(LoopSave(ELoopStage::Compare, ControlSeconds), false);
+  Check(!Old.WorkEnabled() && !Old.Save()->HasField(TEXT("workVersion")),
+   TEXT("already-started SARO loop cases gain no retroactive pointing, audio or packet requirement"));
+  auto Future = LoopSave(ELoopStage::Compare, ControlSeconds); S47J::Set(Future, TEXT("workVersion"), 2);
+  Old.Begin(Future, false);
+  Check(!Old.WorkEnabled(), TEXT("unsupported workstation saves do not create new duties"));
+ }
+ {
+  auto W = LoopSave(ELoopStage::Compare, ControlSeconds);
+  S47J::Set(W, TEXT("workVersion"), 1); S47J::Set(W, TEXT("audioSource"), 1);
+  S47J::Set(W, TEXT("audioOriginal"), 12.7); S47J::Set(W, TEXT("audioControl"), 4.5);
+  S47J::Set(W, TEXT("coveredOriginal"), 12.7); S47J::Set(W, TEXT("coveredControl"), 4.5);
+  S47J::Set(W, TEXT("markStart"), 9.0); S47J::Set(W, TEXT("markEnd"), 13.0);
+  FS47Observing First(nullptr); First.Begin(W, false);
+  FS47Observing Restored(nullptr); Restored.Begin(S47J::Read(S47J::Write(First.Save())), false);
+  Check(Restored.WorkEnabled() && Restored.AudioSource() == 1 && Restored.AudioPosition() == 4.5 && !Restored.AudioPlaying()
+   && Restored.AudioMarkedStart() == 9 && Restored.AudioMarkedEnd() == 13 && Restored.AudioCoverage[0] == ((1u << 12) - 1) && !Restored.AudioReviewed(),
+   TEXT("an interrupted recording review retains each cursor, listened coverage and markers, and resumes paused"));
+  Check(!Restored.ComparePulsar(TEXT("unresolved")) && Restored.LoopStage() == ELoopStage::Compare,
+   TEXT("an unreviewed recording cannot acquire registration credit from the correct written answer"));
+  Restored.AudioCursor[0] = 18; Restored.AudioCursor[1] = 8;
+  Check(!Restored.AudioCoverageComplete(), TEXT("moving transport cursors to the end does not manufacture playback coverage"));
+  Restored.CreditAudioRange(0, 17.99, 18); Restored.CreditAudioRange(1, 7.99, 8);
+  Check(!Restored.AudioCoverageComplete() && Restored.AudioCovered[0] == 12.7 && Restored.AudioCovered[1] == 4.5,
+   TEXT("seeking past an unheard gap and playing a boundary cannot manufacture recording coverage"));
+  Restored.CreditAudioRange(0, 12.7, 18); Restored.CreditAudioRange(1, 4.5, 8);
+  Check(Restored.AudioCoverageComplete(), TEXT("continuous playback completes independent original and control coverage"));
+ }
+ Check(Chart(1).Page.Contains(WorkReference()) && PulsarControl().Page.Contains(WorkReference()) && PulsarComparison().Page.Contains(WorkReference())
+  && WorkOrder().Page.Contains(WorkReference()), TEXT("work order, original, control and registry use the same stable observation reference"));
+ {
+  auto Complete = LoopSave(ELoopStage::Filed, ControlSeconds); S47J::Set(Complete, TEXT("run"), 4); S47J::Set(Complete, TEXT("workVersion"), 1);
+  auto Array = S47J::New(); S47J::Set(Array, TEXT("v"), 1); S47J::Set(Array, TEXT("service"), int32(FS47SaroWork::EService::Complete));
+  Complete->SetObjectField(TEXT("workArray"), Array);
+  FS47Observing DoneWork(nullptr); DoneWork.Begin(Complete, false);
+  Check(DoneWork.Done() && DoneWork.WorkEnabled() && DoneWork.Work()->ServiceComplete() && !DoneWork.Work()->Enabled(),
+   TEXT("a completed evening retains service history without reclaiming array motion from later story"));
+ }
+ bOk &= FS47SaroWork::SelfTest(Lines);
  return bOk;
 }

@@ -1291,7 +1291,25 @@ void AS47Web::SnapDish(int32 I, double Az, double El)
 
 void AS47Web::PointDishes(double Az, double El, double Slew)
 {
-	for (FDish& D : Dishes) { D.TgtAz = Az; D.TgtEl = El; if (Slew > 0) D.Slew = Slew; }
+	for (int32 I = 0; I < Dishes.Num(); ++I) PointDish(I, Az, El, Slew);
+}
+
+bool AS47Web::PointDish(int32 I, double Az, double El, double Slew, bool bLocal)
+{
+ if (!Dishes.IsValidIndex(I) || !FMath::IsFinite(Az) || !FMath::IsFinite(El)) return false;
+ FDish& D = Dishes[I];
+ if (!D.bRemoteAvailable && !bLocal) return false;
+ D.TgtAz = Az; D.TgtEl = FMath::Clamp(El, -5., 90.);
+ if (Slew > 0 && FMath::IsFinite(Slew)) D.Slew = Slew;
+ return true;
+}
+
+void AS47Web::SetDishRemoteAvailable(int32 I, bool bAvailable)
+{
+ if (!Dishes.IsValidIndex(I)) return;
+ FDish& D = Dishes[I];
+ if (D.bRemoteAvailable && !bAvailable) { D.TgtAz = D.CurAz; D.TgtEl = D.CurEl; }
+ D.bRemoteAvailable = bAvailable;
 }
 
 void AS47Web::SnapDishes(double Az, double El)
@@ -1603,6 +1621,7 @@ void AS47Web::Tick(float Dt)
 	bool bMoved = false;
 	for (FDish& D : Dishes)
 	{
+		if (bWorkMotionPaused) break;
 		const double Step = D.Slew * Dt;
 		const double DA = D.TgtAz - D.CurAz, DE = D.TgtEl - D.CurEl;
 		if (FMath::Abs(DA) < 1e-9 && FMath::Abs(DE) < 1e-9) continue;

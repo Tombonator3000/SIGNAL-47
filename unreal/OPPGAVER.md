@@ -4,6 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
+| Aktiv SARO-arbeidsflyt, 31. oktober | Codex root + workstations, array_service og workstations_test; `codex/saro-workstations-20261031` | Root: Story/DecoderDesk-kobling, dokumenter, bygg og levering. workstations: Observing. array_service: SaroWork og Web-antennestyring. workstations_test: HorrorTest. Én samlet prøve og pakke under felles motorreservasjon. |
 | SARO Story-løkke og senere Freeform | Codex, `codex/saro-story-loop-20261031` | Observing cpp/h, Story-merkelapper og avgrenset SAROLoop-driver; plan i TODO/DECISIONS. Første løkke bruker pulsarutskrift, rackkontroll og eksplisitt sammenligning før midnatt. Editor/pakke 75 kontroller og 1786 selvtester består. Lokalt installert med uendret Saved; egne tunge jobber avsluttet og reservasjonen frigitt. Roswell fra main inngår. Freeform står som senere plan. |
 | 0.1 liten Roswell-alien, 31. oktober | Codex root + roswell_runtime, `codex/roswell-glimpse-alien-20261031` | Levert via PR287 og lokal pakke `48ba239e`. Root har avsluttet generering, import, bygg, pakke, installasjon og prune; filansvar og motorvindu er frigitt. Naturlig tempo/flere plasseringer står i PLAY-31-37. |
 | VotV gameplayreferanse, 31. oktober | Codex, `codex/votv-gameplay-lessons-20261031` | Research-notat og VOTV-01 til05 i gjeldende TODO, med egen prioritering etter åpne P1-er. Kun dokumentarbeid, ingen motorreservasjon eller runtimeendring. |

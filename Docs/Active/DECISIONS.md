@@ -51,6 +51,7 @@ Tom bestemte 31. oktober at **0.1, liten Roswell-alien**, kommer først: referan
 | D-21 | Dagens sammenhengende spill videreføres som Story med planlagt natt, personer, oppdrag og fast slutt. | Toms føring 31. oktober etter VotV-gjennomgangen. By- og motellreisene beholder sine begrunnede roller i historien. [Modusplan](../Design/Story/SARO_STORY_FREEFORM.md). |
 | D-22 | Senere Freeform skal ha vedvarende dager og netter, SARO-arbeid og varierte tilfeldige hendelser, aliens og skrekk, uten Story-finalen. | Tom ber nå om planen i TODO. Freeform er planlagt, ikke implementert modus. Del SARO og relevante systemer, men gi modusene egne fremdriftsregler og lagringer. [TODO](TODO.md#story-og-freeform). |
 | D-23 | Undersøkelsesløkken skal hovedsakelig foregå på SARO-basen, ved antennefeltet og i teknisk område. Første implementering styrker Story-kvelden før 00:00. | Toms bestilling 31. oktober: normalreferanse, avvik, fysisk kontroll, sikret bevis, sammenligning og forståelig neste handling. Gjenbruk Observing-kvelden, bevar den senere historieeskaleringen og gamle lagringer. VOTV-01 i [TODO](TODO.md) fører leveringen. |
+| D-24 | SARO-utstyret får faste aktive roller, faktisk antennebevegelse og flere fysiske servicesteg i Story før midnatt. | Tom godkjente gjennomføringsplanen 31. oktober: Story først, S-03-service i flere steg, maskinregistrering og fysisk arkiv. Nabobygget føres til senere Freeform. [Plan](../Design/Story/SARO_STORY_FREEFORM.md#aktive-arbeidsstasjoner-og-antenneservice). |
 
 ## Linux som distribusjonsmål, 31. oktober
 
