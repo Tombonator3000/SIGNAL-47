@@ -12,6 +12,10 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 
 **Prioritet A** betyr anbefalt første pass etter feilretting. **B** er senere polering. Liten/middels beskriver omfang, ikke tidsløfte. Følelsen må vurderes med faktisk spilling; dette er regi og designvurderinger fra kode/manus.
 
+## Stjernehullet og meteorregnet
+
+**Ny bestilling fra Tom 31. oktober:** Gjør hullet i stjernene større og lettere å oppdage. Signalet klargjør meteorregnet, men utgangen fra bygget starter passasjen. La nok meteorer gå visuelt bak tomrommet til at fraværet blir tydelig: lysstreker forsvinner ved kanten og kan dukke opp igjen på den andre siden, mens feltet selv forblir tom himmel. Timing, tetthet og hullets fremkomst må fungere sammen og gi spilleren tid til å se opp. Bevar antennenes retning og den frie kamerastyringen. [Regi og kildegrunnlag](../Proposals/NIAGARA_VFX_2026-10-28.md); PLAY-31-23 i [TODO](../../Active/TODO.md) fører endringen. Dette er en ny bestilling, ikke levert himmeleffekt.
+
 ## Alienbevegelse og fysisk troverdighet
 
 **Ny bestilling fra Tom 31. oktober:** Bedre gange, løping, crab walk og griping, med naturlige overganger mellom tilstandene. PLAY-31-22 i [TODO](../../Active/TODO.md) fører animasjonsarbeidet. Dagens Tripo-skin er et teknisk utgangspunkt, ikke visuell sluttaksept.

@@ -4,7 +4,18 @@
 
 28. oktober 2026. Tom ønsker det tettere meteorregnet ved hendelsen der et punkt på himmelen mangler stjerner. Dette er registrert designretning og kildevurdering for senere produksjon. Ingen ny Niagara-effekt, installasjon eller spilltest inngår i denne leveransen.
 
-## Regi ved stjernehullet
+## Ny bestilling 31. oktober 2026
+
+Tom vil ha et større og tydeligere stjerneløst felt. Etter at signalet er slått på skal meteorregnet vente til spilleren går ut av bygget. Det skal være tett nok og vare lenge nok til at spilleren rekker å oppdage tomrommet. Flere baner skal gå visuelt bak hullet, med meteorhode og hale skjult i den tomme sektoren og egnede baner synlige igjen på andre siden. Dette endrer den gamle regien nedenfor: det holder ikke at meteorene bare går ved siden av feltet eller er ferdige før det synes.
+
+Bruk signal-/historiehendelsen som klargjøring og faktisk innvendig/utvendig overgang som start. En område-ID alene er ikke tilstrekkelig dersom både rom og uteareal tilhører SARO. Lagre ventende, startet og ferdig avspilling; ikke bruk den opp inne og ikke spill den om igjen ved hver dørpassering. Juster fremkomsten av hullet og meteorbanenes tid sammen, slik at skjulingen faktisk kan sees. Pause/paneler skal ikke bruke opp effekten.
+
+Øk hullets vinkelutstrekning og behold retning 026/32 og koblingen til antennene. Tomrommet skal ha himmelens farge og samme maske for stjerner, meteorhode og hale. Unngå at skyer, eksponering eller glød gjør formen uleselig; ingen ny lysring trengs. Kontroller fra vanlig spillerposisjon ved utgang og ute, med nok omkringliggende stjerner og meteorer til at fraværet er tydelig. Høy og lav effektkvalitet må begge formidle hendelsen. Blikk/foto og nye beskrivende tekster skal samsvare med valgt størrelse; eldre observasjonsregistreringer bevares.
+
+Dagens kilde bekrefter at `PassageSchedule` bevisst holder meteorene utenfor hullet, og at `PassageStep` beregner avspillingen fra hendelsesklokka uten utgangsvakt. Materialet har allerede en maske som kan gjenbrukes. Den nye bestillingen føres i PLAY-31-23 og gjenåpnet FX-01 i [TODO](../../Active/TODO.md), og er ikke implementert i spillpakken. De eldre tallene, kontrollene og anbefalingene nedenfor dokumenterer tidligere arbeid; denne bestillingen går foran ved motstrid.
+
+## Tidligere regi ved stjernehullet, 28. oktober
+
 
 Det korte meteorregnet knyttes til den eksisterende hendelsen ved **azimut 026, elevasjon 32**. Resten av natten beholder de sjeldne stjerneskuddene. En kort opptrapping omkring hendelsen etterfulgt av ro skal gjøre det tomme stjernefeltet lettere å oppdage.
 

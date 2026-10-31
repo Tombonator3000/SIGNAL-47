@@ -16,6 +16,8 @@ Tom har også dokumentert alien overlappende med inngangsdøren og meldt fastlå
 
 Tom bestiller også et samlet animasjonspass for aliens, PLAY-31-22: walk/run/crab walk/grab og overganger. Dagens prosedyrestyrte Tripo-skin og eldre klipp for en annen fellesmodell er kartlagt lesende; kompatibilitet/retargeting og visuell forbedring gjenstår. Ett nytt originalbilde fra arkivdøren er bevart. Ingen animasjonsimport eller spillendring i denne oppfølgingen.
 
+Tom bestiller større og tydeligere stjernehull, meteorregn som starter ved utgang etter signalet og meteorbaner bak tomrommet. PLAY-31-23/D-20 fører endringen, og FX-01 er gjenåpnet. Ett originalbilde er bevart. Gammel kilde bruker hendelsesklokka og baner utenfor hullet; den nye regien er ikke implementert eller installert.
+
 ## Ny spillerregresjon i Caliche
 
 Tom har etter installert PR272 meldt feil plassering/orientering på kirken og flere bybygg, samt et løsrevet dørblad ved vaskeriet. PLAY-31-10/P1 er åpen og PLAY-31-02 er gjenåpnet i [TODO](TODO.md). De fire originalbildene er bevart. Importloggen bekrefter at CalicheAccess bruker legacy FBX for LOD0, men Interchange for LOD1/2. Det gir en konkret forklaring på avstandsavhengig feilretning og løsrevne dører. Eksakt geometriavvik og rettelse er ennå ikke bekreftet i en ny motorprøve. Den installerte pakken er fortsatt `f32d4553`, med kjent regresjon. Toms aktive spilløkt er ikke avbrutt; ingen ny spillkode, import, bygg eller installasjon er utført i denne oppfølgingen.

@@ -1472,3 +1472,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 11:57 | codex/sc04-doors-chase-feedback-20261031 | Nytt originalbilde sikret; PLAY-31-19/P1 fører alien fast i dør. PLAY-31-20/21 og D-19 fører bestilt bærbar feltradio og alienvarsling; senere Dale-kontakt beholdt som forslag. Eksisterende walkie-modell/lyd funnet, ingen import, spillkode eller motorjobb under spilltesten.
 
 2026-10-31 12:02 | codex/alien-animation-feedback-20261031 | PLAY-31-22 fører bestilt animasjonspass: walk/run/crab walk/grab og overganger. Originalbilde bevart; dagens prosedyreskin og eldre fellesmodell-klipp kartlagt lesende. Ingen modell-/riggendring, import eller motorjobb under spilltesten.
+
+2026-10-31 12:08 | codex/star-hole-meteor-feedback-20261031 | PLAY-31-23/D-20 og gjenåpnet FX-01: større stjernehull, start ved utgang etter signalet og meteorer bak tomrommet. Originalbilde bevart; gammel timing/baneretning og eksisterende shader-maskering undersøkt lesende. Ingen spillkode, import eller motorjobb under spilltesten.
