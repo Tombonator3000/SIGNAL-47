@@ -4,7 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
-| 0.1 liten Roswell-alien, 31. oktober | Codex root + roswell_runtime, `codex/roswell-glimpse-alien-20261031` | Root: referanser, Tripo, Blender/import, dokumenter, bygg og levering. roswell_runtime: bare Glimpse-/Tripo-binding og tilhørende native kode. Tunge jobber kjøres sekvensielt av root etter guard. |
+| 0.1 liten Roswell-alien, 31. oktober | Codex root + roswell_runtime, `codex/roswell-glimpse-alien-20261031` | Levert via PR287 og lokal pakke `48ba239e`. Root har avsluttet generering, import, bygg, pakke, installasjon og prune; filansvar og motorvindu er frigitt. Naturlig tempo/flere plasseringer står i PLAY-31-37. |
 | VotV gameplayreferanse, 31. oktober | Codex, `codex/votv-gameplay-lessons-20261031` | Research-notat og VOTV-01 til05 i gjeldende TODO, med egen prioritering etter åpne P1-er. Kun dokumentarbeid, ingen motorreservasjon eller runtimeendring. |
 | Logikkpass SC01–SC13, 31. oktober | Codex, `codex/story-logic-fixes-20261031` | Tom ber om å vente med retting til spilltesten er ferdig. Ubygde utkast er lagt separat til side og egne kildeendringer tilbakestilt. Denne leveransen gjelder bare TODO, status og forslag for åpning/SC01–SC13. Ingen motorjobb, installasjon eller Saved-endring. |
 | UFO-finale med cloud tank, natt 30. til 31. oktober | Codex, PR262/263; overlevering PR264 | Installert `a202d88a`. Nattpass og bildegjennomgang avsluttet kl. 08:00. Egne tunge jobber er avsluttet. Videoer og bilder er levert; Toms visuelle sluttvurdering gjenstår. |
