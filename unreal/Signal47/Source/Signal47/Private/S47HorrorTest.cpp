@@ -102,7 +102,7 @@ struct FS47HorrorTest::FState
 	float ArcOriginalFov = 0;
 	FS47Substation::FArcSnapshot PausedArc;
 	bool bObservingRestored = false, bObservingResumed = false, bCursorProbe = false;
-	double LoopControlAt = 0, MotionFrameAt = 0, MotionAz = 0, MotionEl = 0, MotionPeak = 0;
+	double LoopControlAt = 0, MotionFrameAt = 0, MotionAz = 0, MotionEl = 0, MotionPeak = 0, PauseTransitionLimit = 0;
 	int32 MotionFrames = 0, MotionRun = -1, ServiceDish = -1, WorkPhase = 0;
 	bool bMotionChecked = false, bSlewRestored = false, bServiceRestored = false;
 	TArray<FTransform> MotionPose;
@@ -858,9 +858,20 @@ void FS47HorrorTest::Step(double Dt)
 			if (R==0 && !T.bSlewRestored)
 			{
 				T.MotionAz=M->Web->DishAz(T.ServiceDish); T.MotionEl=M->Web->DishEl(T.ServiceDish);
-				M->UI->Document(FS47Observing::Schedule()); Stage(705,.6); return;
+				T.PauseTransitionLimit=9.0*Dt+.001;
+				M->UI->Document(FS47Observing::Schedule()); Stage(723,0); return;
 			}
 			Stage(704,.1); return;
+		}
+		if (T.Stage == 723)
+		{
+			// Observing precedes this driver; the separate Web tick may finish this frame
+			// before the next Observing update propagates the document pause.
+			if (!Check(M->ModalOpen() && FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)<=T.PauseTransitionLimit &&
+				FMath::Abs(M->Web->DishEl(T.ServiceDish)-T.MotionEl)<=T.PauseTransitionLimit,
+				TEXT("document pause propagates within one normal antenna update"))) return;
+			T.MotionAz=M->Web->DishAz(T.ServiceDish); T.MotionEl=M->Web->DishEl(T.ServiceDish);
+			Stage(705,.6); return;
 		}
 		if (T.Stage == 705)
 		{
