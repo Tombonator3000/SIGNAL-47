@@ -324,7 +324,12 @@ void FS47FreeformWorld::RoadsideAssist()
 {
  if(!Ready()||!M->World||Fuel>.001)return;
  if(M->World->bDriving)M->World->GetOutHere(true);
- M->World->Enter(TEXT("saro"));M->World->PlaceTruck(TEXT("saro"));M->Player->Place(16,9,0);Fuel=.25;M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned truck and cargo to SARO. A small reserve permits the next fuel run."));
+ M->World->Enter(TEXT("saro"));M->World->PlaceTruck(TEXT("saro"));M->Player->Place(16,9,0);
+ // Two reserve units cover 24 km at the normal 1/12000-m consumption. SARO
+ // and Caliche use separate scene origins; their 8-km rendering offset is
+ // not a driven segment. This still leaves ample margin for the full return
+ // supply journey and a feeder detour before stock fuel can be unpacked.
+ Fuel=2.;M->Freeform->SpendTime(15*60);Change(TEXT("County roadside service returned truck and cargo to SARO with a 24-km emergency fuel reserve. Collect supplies in Caliche and refuel before the next long trip."));
  M->Freeform->RecordEvidence(TEXT("roadside"),TEXT("Roadside return used; the interrupted trip and cargo were retained."));
 }
 
