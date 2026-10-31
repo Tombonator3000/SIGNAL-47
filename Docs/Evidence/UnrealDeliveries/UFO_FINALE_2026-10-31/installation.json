@@ -1,0 +1,13 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 263,
+  "source": "a202d88a58c418c012951ef93172cfe8fa8f08ed",
+  "merge": "31e153b99fa3cf8b4c66cc990137362829773866",
+  "installed_at": "2026-10-31T06:56:25.667308+01:00",
+  "payload_nodes": 68,
+  "saved_nodes": 134,
+  "image": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/installed-finale-low/phase-024.0.png",
+  "backup": "/home/tom/scratch-bm/Signal47-ufo-finale-20261030/previous-installed",
+  "copy_method": "CoW payload clone, then existing checksum/exclude-Saved sync",
+  "manual_input": false
+}

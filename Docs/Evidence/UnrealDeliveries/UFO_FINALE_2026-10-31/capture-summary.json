@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "kind": "developer-jump-gameplay-audiovisual-capture",
+  "source": "chapter6 developer jump; capture start mile 5.900 (requested >= 5.900); subsequent gameplay timing and camera remain untouched",
+  "jump": "chapter6",
+  "startMileThreshold": 5.9,
+  "captureStartMile": 5.900163778844053,
+  "complete": true,
+  "reason": "original photograph visible for requested tail",
+  "fullEnding": true,
+  "earlyEnd": false,
+  "photoObserved": true,
+  "photoFrameSaved": true,
+  "photoFirstSimulationSeconds": 325.33655957505107,
+  "endSimulationSeconds": 332.18514990247786,
+  "targetFps": 24,
+  "asyncPNG": false,
+  "imageFormat": "jpeg",
+  "jpegQuality": 95,
+  "showUI": true,
+  "eventSeconds": 47,
+  "pulloutSeconds": 34,
+  "audioRequested": true,
+  "audioComplete": true,
+  "audioFile": "master-mix.wav",
+  "audioError": null,
+  "audioChannels": 6,
+  "audioSampleRate": 48000,
+  "audioDurationSeconds": 335.65866666666665,
+  "audioStartRequestOffsetSeconds": 3.997993189841509e-06,
+  "audioPlaybackTimeline": "wallSeconds",
+  "timing": "For playback with live master audio, use wallSeconds and adjacent screenshot request times for variable-frame-rate picture timing. Place the WAV at audioStartRequestOffsetSeconds from CaptureWallStart. This is the start request offset, not a sample-accurate audio-thread timestamp. simulationSeconds records Main's simulation time. Ending cards retain their ordinary Slate clock.",
+  "limits": "Lossy JPEG quality 95 encoding/writes use the same bounded asynchronous queue and UI screenshot readback. Readback still affects pacing; this is not profiling evidence. Incomplete captures retain successful images; audioComplete separately reports any requested master recording.",
+  "selectedFrames": {
+    "event-covered": {
+      "file": "frame-004235.jpg",
+      "simulationSeconds": 176.7188298664987,
+      "wallSeconds": 176.71883098699618,
+      "stage": "event",
+      "mile": 8.149724770728964,
+      "clockSeconds": 19740,
+      "eventSeconds": 0,
+      "pulloutSeconds": 0,
+      "endingPhase": "none",
+      "endingCardSeconds": 0,
+      "photoAlpha": 0,
+      "photoVisible": false,
+      "eyeFinite": true,
+      "eyeUE": [
+        1908086.1223133784,
+        -457431.1445136259,
+        325.7949780320246
+      ],
+      "cameraQuaternionThree": [
+        -0.033711471277999235,
+        -0.30023588345611546,
+        -0.01717612781674975,
+        0.9531143329227724
+      ]
+    },
+    "event-reveal": {
+      "file": "frame-004806.jpg",
+      "simulationSeconds": 200.71014067344368,
+      "wallSeconds": 200.7097690909868,
+      "stage": "event",
+      "mile": 8.20032110965301,
+      "clockSeconds": 19763.991310806945,
+      "eventSeconds": 23.991310806944966,
+      "pulloutSeconds": 0,
+      "endingPhase": "none",
+      "endingCardSeconds": 0,
+      "photoAlpha": 0,
+      "photoVisible": false,
+      "eyeFinite": true,
+      "eyeUE": [
+        1912756.6302553576,
+        -464101.2691297096,
+        371.49894099830004
+      ],
+      "cameraQuaternionThree": [
+        -0.03390399501010213,
+        -0.30023513704059657,
+        -0.017236901866153842,
+        0.9531066418940883
+      ]
+    },
+    "empty-cab": {
+      "file": "frame-005454.jpg",
+      "simulationSeconds": 227.7143775653094,
+      "wallSeconds": 227.7150660789921,
+      "stage": "pullout",
+      "mile": 8.20032110965301,
+      "clockSeconds": 19790.982858754694,
+      "eventSeconds": 47.012688944116235,
+      "pulloutSeconds": 3.982858754694462,
+      "endingPhase": "none",
+      "endingCardSeconds": 0,
+      "photoAlpha": 0,
+      "photoVisible": false,
+      "eyeFinite": true,
+      "eyeUE": [
+        1912873.8659892352,
+        -464605.3866356101,
+        439.18197139232785
+      ],
+      "cameraQuaternionThree": [
+        0.002863876691098441,
+        0.975057586086615,
+        0.08442133440612795,
+        -0.20524994597400126
+      ]
+    },
+    "craft-clouds": {
+      "file": "frame-005911.jpg",
+      "simulationSeconds": 247.70902306586504,
+      "wallSeconds": 247.7085479569505,
+      "stage": "pullout",
+      "mile": 8.20032110965301,
+      "clockSeconds": 19810.97750425525,
+      "eventSeconds": 47.012688944116235,
+      "pulloutSeconds": 23.977504255250096,
+      "endingPhase": "none",
+      "endingCardSeconds": 0,
+      "photoAlpha": 0,
+      "photoVisible": false,
+      "eyeFinite": true,
+      "eyeUE": [
+        1899712.921325686,
+        -461551.0819067179,
+        21890.392032800253
+      ],
+      "cameraQuaternionThree": [
+        0.013178166103213509,
+        -0.6174587579680779,
+        0.010346792250986737,
+        0.7864247974452421
+      ]
+    },
+    "original-photo": {
+      "file": "frame-007837.jpg",
+      "simulationSeconds": 330.34913108870387,
+      "wallSeconds": 330.34765867498936,
+      "stage": "end",
+      "mile": 8.20032110965301,
+      "clockSeconds": 19822.60560967587,
+      "eventSeconds": 47.012688944116235,
+      "pulloutSeconds": 35.605609675869346,
+      "endingPhase": "photo",
+      "endingCardSeconds": 7.591720353579149,
+      "photoAlpha": 1,
+      "photoVisible": true,
+      "eyeFinite": true,
+      "eyeUE": [
+        0,
+        0,
+        2528.5850539771427
+      ],
+      "cameraQuaternionThree": [
+        -0.029995500086352458,
+        -3.0324176050444657e-09,
+        1.821635112900534e-10,
+        0.9995500337524729
+      ]
+    }
+  },
+  "captureFrames": 7872,
+  "allEyeAndCameraFinite": true
+}

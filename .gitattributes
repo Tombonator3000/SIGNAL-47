@@ -39,3 +39,7 @@ unreal/ArtSource/FinaleSky/FinalCraft-v4/exports/*.fbx filter=lfs diff=lfs merge
 
 unreal/ArtSource/FinaleSky/FinalCraft-v5/*.blend filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/FinaleSky/FinalCraft-v5/exports/*.fbx filter=lfs diff=lfs merge=lfs -text
+
+# Review footage and a clean still for the installed UFO finale.
+Docs/Evidence/UnrealDeliveries/UFO_FINALE_2026-10-31/*.mp4 filter=lfs diff=lfs merge=lfs -text
+Docs/Evidence/UnrealDeliveries/UFO_FINALE_2026-10-31/*.png filter=lfs diff=lfs merge=lfs -text
