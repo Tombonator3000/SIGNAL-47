@@ -1371,7 +1371,7 @@ Kanonisk prune er senere utført etter at det fremmede motorvinduet var frigitt.
 Gren codex/dale-visual-pilot-20261030: malingslinjen ligger nå foran gammel blokkvegg, egne overflater er oppdatert og72 native rekvisitter har mer varierte grupper. Editorbygg og før/etter dag/skumring på Low samt dag på High består; vinduslys følger døgnet og elektriske lys følger strøm. Kandidaten er vist til Tom, visuell godkjenning avventes.
 
 ### 2026-10-30T14:26 Kontorpilot installert
-PR251/mainc44739a9, kilde67d308c2 med SC11/Tripo14: Linux-pakke1740 selvtester og kort pakket/installert kontorprøve består.68 payloadnoder og134 Saved-noder kontrollert. High/Low-bilder er vist; ENV-05 avventer Toms visuelle godkjenning. Ingen nye kreditter eller offentlig release.
+PR251/mainc44739a9, kilde67d308c2 med SC11/Tripo14: Linux-pakke1740 selvtester og kort pakket/installert kontorprøve består. 68 payloadnoder og134 Saved-noder kontrollert. High/Low-bilder er vist; ENV-05 avventer Toms visuelle godkjenning. Ingen nye kreditter eller offentlig release.
 
 Kontorpilotens kanoniske prune er utført etter installasjonen: to eldre pakkepayloads pensjonert. Gjeldende kandidat og to eldre komplette bygg beholdes, med kilder/assets/Saved/bilder/logger urørt.
 
@@ -1486,3 +1486,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 13:50 | lookdev-oppfølging | Også native dagkart og eksisterende H31-Tripo-GLB med materialpass/4kart/FBX består. Motorvindu frigitt; dokument-/diffkontroll uten nye feil. Eksportens kopinavn føres eksplisitt i manifestet.
 
 2026-10-31 14:55 CET: `codex/lookdev-live-integration-20261031` kobler 17 native SARO-/motellvarianter til 47 materialslotter og eksisterende dag/natt/tåke; veggarmaturenes optikk er rettet med samme strømstyring. Editorbygg, Vulkan-før/etter, dag/Low/tåke High og faktisk strømkutt/retur består; opprinnelige materialpakker er uendret. Ingen ny spillpakke/installasjon/release.
+
+2026-10-31 15:32 CET | codex/install-lookdev-20261031 | Lokal `09b128e7` installert: 1772 selvtester, 47 native materialslotter og installert Vulkan/Fortsett ved 03:48 på isolert sakskopi består. 68 payload-noder matcher; 148 Saved-noder/121 filer uendret. Forrige payload bevart, ett eldre testpayload pensjonert; ingen offentlig release.
