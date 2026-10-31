@@ -214,7 +214,7 @@ bool FS47FreeformWorld::Build()
   Parts.Add(M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name)));
  };
  LabelPart(TEXT("FreeformGasLabel"),TEXT("SERVICE SUPPLIES\n08:00 - 20:00"),ShopPoint()+FVector(.10,0,0),0,3.1,Road);
- LabelPart(TEXT("FreeformBenchLabel"),TEXT("SARO SERVICE BAY\nTEST / PARTS / STOCK"),BenchAt+FVector(0,.55,.42),90,3.5,Saro);
+ LabelPart(TEXT("FreeformBenchLabel"),TEXT("SARO SERVICE BAY\nTEST / PARTS / STOCK"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
  bBuilt=Bench&&Shop&&Panel&&FeederPanel;Apply();return bBuilt;
 }
 

@@ -231,7 +231,10 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(F.Field->ParcelStage()==0&&F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("physical bench unpacks one purchased part into persistent stock")))return;
   F.Field->Use(TEXT("ff:bench"));M->UI->Close(true);
   if(!Check(F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("repeated bench use does not duplicate delivered supplies")))return;
-  Shot(TEXT("service-bench"));
+  Shot(TEXT("service-bench"));Go(441,.3);return;
+ }
+ if(Stage==441)
+ {
   if(!F.Field->HasArrayFault())F.Field->TriggerServiceFault();
   F.Field->DiagnoseService();const FVector P=F.Field->InteractionPoint(TEXT("ff:service"));M->Player->Place(P.X-1.4,P.Z,0);Go(45,.4);return;
  }
@@ -240,7 +243,15 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(F.Field->HasArrayFault()&&F.Field->ServiceStage()==2,TEXT("diagnosis identifies a real remotely unavailable antenna")))return;
   F.Field->Use(TEXT("ff:service"));F.Field->Use(TEXT("ff:service"));
   if(!Check(F.Field->ServiceStage()==4,TEXT("local isolation and actual hatch opening precede replacement")))return;
-  Shot(TEXT("service-open"));if(!Restore(TEXT("service-open")))return;F.Director->Stop();Go(46,.3);return;
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:service"));
+  const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  Go(451,6.0);return;
+ }
+ if(Stage==451){Shot(TEXT("service-open"));Go(452,.3);return;}
+ if(Stage==452)
+ {
+  if(!Restore(TEXT("service-open")))return;F.Director->Stop();Go(46,.3);return;
  }
  if(Stage==46)
  {
@@ -345,7 +356,9 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==62)
  {
   if(F.CurrentJob()->Stage!=J::Chart)return;
-  if(!Check(F.CollectChart()&&F.StartControl(),TEXT("retained original precedes its distinct measured instrument control")))return;
+  if(!Check(F.CollectChart(),TEXT("specialized observation retains its physical original")))return;
+  M->UI->Close(true);
+  if(!Check(F.StartControl(),TEXT("retained original precedes its distinct measured instrument control")))return;
   Go(63);return;
  }
  if(Stage==63)
