@@ -11,7 +11,7 @@ Tom har valgt at dagens spill videreføres som Story, med en senere separat Free
 | Ramme | Den eksisterende planlagte natten, med personer, oppdrag og fast slutt. | Vedvarende dager og netter uten Story-finalen. |
 | Hovedarbeid | SARO-arbeid lærer normal drift og avdekker spor før nattens større hendelser. | Gjentakbart og variert SARO-arbeid gir fremgang mellom uvanlige hendelser. |
 | Hendelser | Avtalte scener, kontrollerte forvarsler og senere eskalering. | Tilfeldige hendelser med sted, tid, tilstand og tidligere forløp som vilkår; rolige perioder inngår. |
-| Steder | SARO er sentrum for kontrollløkken. Byen og motellet beholder sine roller i historien. | SARO, antennefeltet og teknisk område er hovedsløyfen. Andre steder kan få valgfrie roller senere. |
+| Steder | SARO er sentrum for kontrollløkken. Byen og motellet beholder sine roller i historien. | SARO, antennefeltet og teknisk område er hovedsløyfen. Byen støtter drift gjennom forsyninger, bruktutstyr og reparasjonsdeler. |
 | Lagring | Eksisterende saker og historieprogresjon bevares. | Egen modusidentitet, klokke, progresjon og lagring, med delte tekniske grunnsystemer. |
 
 Freeform er planlagt. Dette arbeidet hevder ikke at et Freeform-valg eller en endeløs modus allerede finnes i spillet.
@@ -52,6 +52,25 @@ Pointing, service, opptak, merket intervall og registrering/arkivering lagres. P
 Arbeidsløkken brukes hovedsakelig frem til 00:00. Historien er til stede allerede i kveldsvakten gjennom overlevering, observasjoner og små uoverensstemmelser. Rundt midnatt eskalerer den avtalte historien; rutinearbeidet skal gi plass til hovedhendelsene.
 
 [Kveldsrekkefølgen](KVELD_PLAN_2026-10-28.md), [SC02 til SC13-revisjonen](HISTORIE_SC02_SC13_REVISJON.md) og nyere [beslutninger](../../Active/DECISIONS.md) styrer hendelsene. Denne planen flytter ikke det avtalte signalet rundt 00:13 eller den senere trafoturen. Den innfører ikke et nytt krav som kan sperre en eldre sak eller hindre et allerede nådd historietrinn.
+
+## Byen som forsynings- og reparasjonssted i Freeform
+
+Tom har 31. oktober bedt om å legge denne retningen inn i planen. SARO-arbeidet skaper konkrete behov som gir byen en praktisk rolle: diagnostiser en feil, velg løsning, skaff det som mangler og ta det tilbake til montering og kontroll.
+
+| Sted | Planlagt rolle |
+| --- | --- |
+| Bensinstasjonen | Drivstoff til aggregat og bil, sikringer, batterier, lyspærer og enkle reservedeler. |
+| Verksted eller bruktlager | Brukt måleutstyr og ødelagte apparater som kan repareres eller gi kompatible deler. Kartlegg eksisterende lokaler før plasseringen velges. |
+| Feeder-anlegget | Feilsøking og vedlikehold av strømforsyningen, med måling og reparasjon av årsaken til strømproblemet. |
+| SARO-nabobygget | Testbenk, delelager og reparasjon av hentet utstyr, knyttet til MODE-03B. |
+
+Eksempel: S-03 mister styring → spilleren måler feilen og finner et defekt relé → velger et nytt relé eller et billig brukt apparat med passende del → henter det i byen → monterer og tester → observasjonen fortsetter. Nytt, brukt og reparasjon skal ha forståelige fordeler og ulemper i pris, arbeid og tilstand. Kompatibilitet skal kunne undersøkes før kjøp eller demontering.
+
+Første forsyningsprøve avgrenses til sikringer, ett utskiftbart relé og aggregatdrivstoff. SARO starter med et lite reservelager. Spilleren kan planlegge og samle innkjøp; hver feil skal ikke kreve en kjøretur. Reserveutstyr eller midlertidig drift med redusert kapasitet skal gi mulige veier videre når det passer feilen. Bevar en vei ut av tomt lager eller budsjett slik at vanlig drift kan gjenopprettes.
+
+Økonomien begynner som et enkelt driftsbudsjett per døgn, med fremgang gjennom utførte observasjoner og levert målearbeid. Priser, forbruk, belønning og tilgang til bruktutstyr balanseres først gjennom den spillbare døgnprøven. Lager, drivstoff, penger og utstyrets tilstand må lagres sammen med Freeform-saken.
+
+Døgnrytmen kan endre turen: et vanlig ærend på dagtid kan få andre vilkår når bensinstasjonen er stengt, strømmen faller ut eller noe beveger seg ved feeder-anlegget. Åpningstider og hendelser skal støtte planlegging og uro, med en forståelig reservevei ved kritiske feil. Hovedarbeidet forblir på SARO.
 
 ## Videre Freeform-arbeid
 
