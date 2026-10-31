@@ -1,10 +1,12 @@
 # Undersøkelser og referanser
 
-**Gjelder:** kategorien beskrevet her. **Sist kontrollert:** 28. oktober 2026.
+**Gjelder:** kategorien beskrevet her. **Sist kontrollert:** 31. oktober 2026.
 
 **Status: Referanse** · Et studert verktøy, spill eller skill er ikke installert eller integrert bare fordi det er beskrevet her. Konkrete neste produksjonsoppgaver føres i [TODO](../Active/TODO.md).
 
 ## Nåværende Unreal-undersøkelser
+
+- [MotionBricks: genererte bevegelsesoverganger, retargeting og bakte klipp](MotionBricks/README.md), festet NVIDIA-kilde; lokal integrasjon UNVERIFIED.
 
 - [VotV: gameplay, regler og selektiv fysikk for SIGNAL / 47](VoicesOfTheVoid/GAMEPLAY_LESSONS.md), med prioritert oppfølging i gjeldende TODO.
 - [Ferdigheter, Nanite og MetaHuman-mannekenger](Unreal/UNREAL_SKILLS_2026-10-28.md).

@@ -135,3 +135,8 @@ Dette endrer ingen av spillpakkenes leveringsnivåer ovenfor.
 Farm R1-installasjonen er dokumentert i [samlet leveringsrapport og hashbundet kvittering](../Evidence/UnrealDeliveries/INSTALL_LAUNCHER_2026-10-29.md): én full 111/111-matrise, pakket meteor Low/High, bildegranskning, checksuminstallasjon og faktisk installert grafikk/Fortsett. Alle 92 personlige Saved-filer (119 noder) og begge launchere er uendret også etter faktisk prune. Reservasjonen er frigitt. Den kjente ikke-kritiske RT-residentadvarselen vises fortsatt ved Fortsett.
 
 Tidligere natt-, krasj- og modellprøver beholder sine avgrensninger; den identiske runtimepakken er nå også offentlig 29. oktober-prerelease. Ingen menneskelig full gjennomspilling hevdes. Fysisk gamepad, subjektiv lytting og FPS/andre PC-er krever egne faktiske bevis.
+
+
+## MotionBricks registrert som animasjonskandidat
+
+[MotionBricks-referansen](../Research/MotionBricks/README.md) har fast NVIDIA-koderevisjon, kilde-/lisensmanifest og konkret Roswell-prøve i ANIM-01. Den er også søkbar i prosjektbiblioteket. Ingen installasjon, modell-/klippnedlasting eller runtimeendring er utført; Blender-retargeting og UE5.8.4-resultat er UNVERIFIED. Dette endrer ikke gjeldende installert spill.
