@@ -31,6 +31,8 @@ private:
  FVector PaleAt = FVector::ZeroVector;
  double PaleYaw = 0;
  FString TestDir, ShotName; double TestT = 0, ShotAt = 0; int32 TestStep = 0; bool bTestInit = false, bTestDone = false;
+ int32 RoswellNumber=1;
+ void SpawnRoswell(int32 Mode,bool bRoof=false);
  void AddBuiltIn();
  void SpawnPale();
 };

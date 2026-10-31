@@ -38,12 +38,22 @@ void FS47DevEvents::AddBuiltIn()
  const auto Say = [this](const FString& What) { if (M && M->UI) M->UI->Toast(TEXT("Developer event: ") + What, 3); UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer event %s"), *What); };
  // ---- aliens ----
  Add(TEXT("Aliens"), TEXT("Pale body, here"), TEXT("stands ahead of you, then goes"), [this, Say] { SpawnPale(); Say(TEXT("pale body")); });
- Add(TEXT("Aliens"), TEXT("Glimpse"), TEXT("a small curious Roswell at a nearby window or corner"), [this, Say]
+ Add(TEXT("Roswell aliens"),TEXT("Number: 1"),TEXT("cycle 1, 2, 3 or 6 individuals"),[this]
  {
-  if (!M->Night || !M->Night->Glimpses) return;
-  const bool bOk = M->Night->Glimpses->Now(M->Night->GlimpseIn(true), FString());
-  Say(bOk ? TEXT("glimpse") : TEXT("glimpse: no place for one here"));
+  RoswellNumber=RoswellNumber==1?2:RoswellNumber==2?3:RoswellNumber==3?6:1;
+  for (auto& E:List) if (E.Group==TEXT("Roswell aliens") && E.Label.StartsWith(TEXT("Number:"))) E.Label=FString::Printf(TEXT("Number: %d"),RoswellNumber);
+  Open();
  });
+ Add(TEXT("Roswell aliens"),TEXT("Stand for 8 seconds"),TEXT("spawn the selected number, then remove them"),[this]{SpawnRoswell(0);});
+ Add(TEXT("Roswell aliens"),TEXT("Curious: stalk and hide"),TEXT("spawn shy observers; listen, peek and flee when noticed"),[this]{SpawnRoswell(1);});
+ Add(TEXT("Roswell aliens"),TEXT("Hunt: chase the player"),TEXT("dev pursuit and grab pose; no story damage"),[this]{SpawnRoswell(2);});
+ Add(TEXT("Roswell aliens"),TEXT("Change active group to curious"),TEXT("keep their positions; stop the test hunt"),[this]
+ { if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevMode(FS47RoswellBrain::EMode::Curious); });
+ Add(TEXT("Roswell aliens"),TEXT("Change active group to hunt"),TEXT("keep their positions; follow sight and heard footsteps"),[this]
+ { if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevMode(FS47RoswellBrain::EMode::Hunt); });
+ Add(TEXT("Roswell aliens"),TEXT("Roof: curious footsteps"),TEXT("actual bodies on the Annex roof, with muffled overhead Foley"),[this]{SpawnRoswell(1,true);});
+ Add(TEXT("Roswell aliens"),TEXT("Clear Roswell group"),TEXT("remove bodies and their sounds; return to natural encounters"),[this]
+ { if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear(); });
  // ---- sky ----
  Add(TEXT("Sky"), TEXT("Meteor"), TEXT("one, now"), [this, Say] { if (M->Life && M->Life->Sky) M->Life->Sky->MeteorNow(); Say(TEXT("meteor")); });
  Add(TEXT("Sky"), TEXT("Meteor shower"), TEXT("40 seconds"), [this, Say] { ShowerLeft = ShowerTime; ShowerNext = 0; Say(TEXT("meteor shower")); });
@@ -74,6 +84,15 @@ void FS47DevEvents::Open()
   .OnBack([this] { if (M && M->UI) M->UI->Close(true); });
  M->UI->Open(El);
  FSlateApplication::Get().SetKeyboardFocus(El);
+}
+
+void FS47DevEvents::SpawnRoswell(int32 Mode,bool bRoof)
+{
+ if (!M || !M->Night || !M->Night->Glimpses) return;
+ const auto Behaviour=Mode==0?FS47RoswellBrain::EMode::Stand:Mode==2?FS47RoswellBrain::EMode::Hunt:FS47RoswellBrain::EMode::Curious;
+ const int32 Made=M->Night->Glimpses->DevSpawn(RoswellNumber,Behaviour,bRoof);
+ if (M->UI) M->UI->Toast(FString::Printf(TEXT("Roswell: %d of %d placed on free %s. Behaviour: %s."),Made,RoswellNumber,bRoof?TEXT("roof"):TEXT("floor"),FS47RoswellBrain::ModeName(Behaviour)),4);
+ UE_LOG(LogS47DevEvents,Display,TEXT("S47: Roswell developer spawn count=%d requested=%d mode=%s roof=%d"),Made,RoswellNumber,FS47RoswellBrain::ModeName(Behaviour),bRoof?1:0);
 }
 
 void FS47DevEvents::SpawnPale()
@@ -113,6 +132,7 @@ void FS47DevEvents::SpawnPale()
 void FS47DevEvents::Step(double Dt)
 {
  if (!M) return;
+ if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevStep(Dt,M->Night->GlimpseIn(true));
  const bool bPlay = M->Mode == US47Main::EMode::Play && !M->bPausedByMenu;
  if (ShowerLeft > 0 && bPlay)
  {
@@ -161,6 +181,7 @@ void FS47DevEvents::ControlTest(double Dt)
 
 void FS47DevEvents::Stop()
 {
+ if (M && M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear();
  ShowerLeft = 0; PaleLeft = 0; GS47DevFogDensity = -1.f;
  Pale.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);
 }
