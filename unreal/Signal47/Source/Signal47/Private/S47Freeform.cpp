@@ -85,10 +85,25 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   Selected=FMath::Clamp(SafeInt(Saved,TEXT("selected")),0,FMath::Max(0,Work.Num()-1));AudioSourceIndex=FMath::Clamp(SafeInt(Saved,TEXT("audioSource")),0,1);
   AudioCursor=FMath::Clamp(SafeNum(Saved,TEXT("audioCursor")),0.,AudioSourceIndex==0?18.:8.);
   const auto F=S47J::Obj(Saved,TEXT("findings"));if(F)for(const auto& P:F->Values){FString T;if(P.Value->TryGetString(T))Findings.Add(P.Key,T);}
-  const auto D=S47J::Obj(Saved,TEXT("findingDays"));if(D)for(const auto& P:D->Values){double N;if(P.Value->TryGetNumber(N))FindingDays.Add(P.Key,FMath::Max(1,int32(N)));}
+  const auto D=S47J::Obj(Saved,TEXT("findingDays"));if(D)for(const auto& P:D->Values){double N;if(P.Value&&P.Value->TryGetNumber(N)&&FMath::IsFinite(N)&&N>=1&&N<=36500&&FMath::FloorToDouble(N)==N)FindingDays.Add(P.Key,int32(N));}
   const auto U=S47J::Nums(Saved,TEXT("upgrades"));for(int32 I=0;I<FMath::Min(3,U.Num());++I)Upgrades[I]=U[I]>0;
   const auto Q=S47J::Nums(Saved,TEXT("mysteries"));for(int32 I=0;I<FMath::Min(3,Q.Num());++I)MysterySteps[I]=FMath::Clamp(int32(Q[I]),0,3);
   SavedAngles=S47J::Nums(Saved,TEXT("angles"));bRestoreAngles=SavedAngles.Num()==108;
+  if(bRestoreAngles)for(int32 I=0;I<108;++I)
+  {
+   const double V=SavedAngles[I];const bool Elevation=I%2==1;
+   if(!FMath::IsFinite(V)||V<(Elevation?-5.:-360.)||V>(Elevation?90.:720.)){bRestoreAngles=false;break;}
+  }
+  if(!SavedAngles.IsEmpty()&&!bRestoreAngles)
+  {
+   SavedAngles.Reset();Settle=0;bCrossRunning=false;
+   if(FJob* Current=Job())
+   {
+    if(Current->Stage==EJobStage::Pointed||Current->Stage==EJobStage::Integrating){Current->Stage=EJobStage::New;Current->Elapsed=0;}
+    if(Current->Phenomenon==TEXT("wrong_source")&&Current->bControl&&Current->ControlAt<8){Current->bControl=false;Current->ControlAt=0;Current->BeamAz.Reset();Current->BeamEl.Reset();Current->BeamAmplitude.Reset();Current->bBeamVerified=false;}
+   }
+   Feedback=TEXT("Invalid saved encoder data was discarded. Retained papers are safe; command fresh pointing before resuming unfinished measurements.");
+  }
  }
  AddDay(DayNumber);
  if(!Director)Director=MakeShared<FS47FreeformDirector>(M);
@@ -114,6 +129,11 @@ bool FS47FreeformSession::ArrayMotionHeld() const
  return !bActive||bDead||bRecovering||!M||M->bPausedByMenu||(M->ModalOpen()&&!bTelemetry)||!HasPower();
 }
 bool FS47FreeformSession::HasPower() const {return !bPowerFault||(Field&&Field->HasBackupPower());}
+bool FS47FreeformSession::RequirePower()
+{
+ if(HasPower())return true;
+ bAudioPlaying=false;Feedback=TEXT("No power to this instrument. Restore the feeder or transfer to the fuelled generator. Retained papers can still be read.");Changed(Feedback);return false;
+}
 void FS47FreeformSession::AddDay(int32 Number)
 {
  if(Work.ContainsByPredicate([&](const FJob& J){return J.Day==Number;}))return;
@@ -303,6 +323,7 @@ void FS47FreeformSession::PrintJob(bool bPacket)
 bool FS47FreeformSession::CollectChart()
 {
  FJob* J=Job();if(!J)return false;
+ if(J->Stage!=EJobStage::Chart&&!RequirePower())return false;
  if(J->Stage==EJobStage::Chart){J->Stage=EJobStage::Recorded;J->bPrinted=true;PrintJob(false);Changed();return true;}
  if(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected){CollectDuplicate();return J->bDuplicateCollected;}
  if(J->Stage==EJobStage::Registered&&J->bAnomaly){J->Stage=EJobStage::Packet;PrintJob(true);Changed();return true;}
@@ -310,6 +331,7 @@ bool FS47FreeformSession::CollectChart()
 }
 void FS47FreeformSession::CollectDuplicate()
 {
+ if(!RequirePower())return;
  FJob* J=Job();if(!J||!J->bPrinted||J->bDuplicateCollected||!M||!M->Story)return;
  if(J->OriginalPage.IsEmpty())if(const FS47Doc* D=M->Story->Docs().FindByPredicate([&](const FS47Doc& X){return X.Id==J->Id+TEXT("-original");})){J->OriginalPage=D->Page;J->OriginalStamp=D->Stamp;}
  if(J->OriginalPage.IsEmpty())return;
@@ -336,6 +358,7 @@ FString FS47FreeformSession::ControlSummary(const FJob& J)const
 }
 bool FS47FreeformSession::CompareInstrument()
 {
+ if(!RequirePower())return false;
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bControl||J->ControlAt<8||!Specialized(J->Phenomenon))return false;
  bool Verified=false;
  if(J->Phenomenon==TEXT("wrong_source"))Verified=J->bBeamVerified&&J->BeamAz.Num()==3&&J->BeamEl.Num()==3&&J->BeamAmplitude.Num()==3&&J->BeamAmplitude[1]>J->BeamAmplitude[0]+.25&&J->BeamAmplitude[1]>J->BeamAmplitude[2]+.25;
@@ -359,6 +382,7 @@ bool FS47FreeformSession::StartControl()
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::AudioAction(const FString& Action)
 {
+ if((Action==TEXT("play")||Action==TEXT("confirm"))&&!RequirePower())return false;
  FJob* J=Job();if(!J||!J->bAnomaly||J->ControlAt<8)return false;
  if(Action==TEXT("original")||Action==TEXT("control")){AudioSourceIndex=Action==TEXT("original")?0:1;AudioCursor=0;bAudioPlaying=false;}
  else if(Action==TEXT("play")){if(!bAudioOpen)return false;if(AudioCursor>=(AudioSourceIndex==0?18.:8.))AudioCursor=0;bAudioPlaying=true;}
@@ -381,6 +405,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
 }
 void FS47FreeformSession::StepAudio(double Dt)
 {
+ if(!HasPower()){bAudioPlaying=false;return;}
  FJob* J=Job();if(!J||!bAudioPlaying||!bAudioOpen||!M||!M->UI||!M->UI->Modal())return;
  const double Was=AudioCursor,Duration=AudioSourceIndex==0?18.:8.;AudioCursor=FMath::Min(Duration,Was+Dt);
  double& Covered=AudioSourceIndex==0?J->OriginalCovered:J->ControlCovered;if(Was<=Covered+1e-7)Covered=FMath::Max(Covered,AudioCursor);
@@ -400,6 +425,7 @@ double FS47FreeformSession::AudioLevel()const
 FString FS47FreeformSession::AudioDisplay()const{return FString::Printf(TEXT("%s %04.1f/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),AudioCursor,AudioSourceIndex==0?18:8,bAudioPlaying?TEXT("PLAY"):TEXT("PAUSE"));}
 bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
+ if(!RequirePower())return false;
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded)return false;
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
@@ -555,6 +581,7 @@ void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bA
 }
 void FS47FreeformSession::OpenOperations()
 {
+ if(!RequirePower())return;
  if(!M||!M->UI)return;
  TArray<S47Kit::FW> Rows;
  Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / FREEFORM / DAY %d\nOPERATING BUDGET $%d / REQUISITION BALANCE $%d\nObserve, verify, retain. An unresolved result is still useful work."),DayNumber,Cash,Loan)));
@@ -600,6 +627,7 @@ void FS47FreeformSession::OpenOperations()
 }
 void FS47FreeformSession::OpenTracking()
 {
+ if(!RequirePower())return;
  if(!M||!M->UI||!CurrentJob())return;
  auto P=Profile(CurrentJob()->Source);
  TArray<S47Kit::FW> Rows;
@@ -616,6 +644,7 @@ void FS47FreeformSession::OpenTracking()
 }
 void FS47FreeformSession::OpenStatus()
 {
+ if(!RequirePower())return;
  if(!M||!M->UI||!M->Web)return;
  TArray<S47Kit::FW> Rows;
  Rows.Add(S47Kit::Small(TEXT("Inspect actual and commanded direction. Select an element before local service.")));
@@ -632,6 +661,7 @@ void FS47FreeformSession::OpenStatus()
 }
 void FS47FreeformSession::OpenReceiver()
 {
+ if(!RequirePower())return;
  if(!M||!M->UI||!M->Story||!CurrentJob())return;
  auto& R=M->Story->Rx;const auto P=Profile(CurrentJob()->Source);TArray<S47Kit::FW> Rows;
  Rows.Add(S47Kit::Paper(JobLine(*CurrentJob())+TEXT("\n")+P.Card));
@@ -670,6 +700,7 @@ namespace
 }
 void FS47FreeformSession::OpenAudio()
 {
+ if(!RequirePower())return;
  if(!M||!M->UI||!CurrentJob())return;
  const FJob* J=CurrentJob();TArray<S47Kit::FW> Rows;
  Rows.Add(S47Kit::Paper(Reference(*J)+TEXT("\nORIGINAL / 18 s   INTERNAL CONTROL / 8 s")));
@@ -719,6 +750,8 @@ bool FS47FreeformSession::Use(const FString& Id)
  if(Id==TEXT("crtRight")){OpenTracking();return true;}
  if(Id==TEXT("opsTerminal")||Id==TEXT("telex")||Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))
  {
+  if(!HasPower()&&(Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))){OpenArchive();return true;}
+  if(!RequirePower())return true;
   if(Id==TEXT("telex")&&Director&&Director->Use(TEXT("ff:telex")))return true;OpenOperations();return true;
  }
  if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")){OpenAudio();return true;}
@@ -734,6 +767,7 @@ bool FS47FreeformSession::Use(const FString& Id)
 FString FS47FreeformSession::Label(const FString& Id)const
 {
  if(!bActive)return FString();
+ if(!HasPower()&&(Id==TEXT("crtCenter")||Id==TEXT("crtLeft")||Id==TEXT("crtRight")||Id==TEXT("opsTerminal")||Id==TEXT("telex")||Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")))return TEXT("Instrument unpowered / restore feeder or generator");
  if(Field){const FString L=Field->Label(Id);if(!L.IsEmpty())return L;}
  if(Id==TEXT("crtCenter"))return TEXT("Use the receiver / selected daily observation");
  if(Id==TEXT("crtLeft"))return TEXT("Inspect array status and individual drives");
@@ -826,6 +860,13 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  I->bAudioReviewed=false;I->Phenomenon=TEXT("duplicate_print");I->bDuplicateCollected=true;I->DuplicatePage=TEXT("different copy");
  Check(!Instrument.CompareInstrument(),TEXT("duplicate metadata cannot grant comparison without two actual retained document originals"));
  Instrument.Stop();Readback.Stop();
+ FS47FreeformSession Unpowered(nullptr);Unpowered.Begin(nullptr);Unpowered.Selected=1;auto* UJ=Unpowered.Job();UJ->Stage=EJobStage::Recorded;UJ->bAnomaly=UJ->bControl=true;UJ->ControlAt=8;UJ->OriginalCovered=18;UJ->ControlCovered=8;UJ->MarkStart=9.1;UJ->MarkEnd=13;
+ Unpowered.SetPowerFault(true);Check(!Unpowered.AudioAction(TEXT("confirm"))&&!UJ->bAudioReviewed&&!Unpowered.RegisterComparison(TEXT("unresolved")),TEXT("unpowered instruments cannot grant audio review or computer registration"));
+ UJ->Stage=EJobStage::Registered;Check(!Unpowered.CollectChart()&&UJ->Stage==EJobStage::Registered,TEXT("a dead printer cannot create a new registered packet"));
+ auto Corrupt=S.Save();TArray<double> InvalidAngles;InvalidAngles.Init(20,108);for(int32 A=1;A<108;A+=2)InvalidAngles[A]=30;InvalidAngles[5]=500;S47J::Set(Corrupt,TEXT("angles"),InvalidAngles);
+ auto BadDays=S47J::Obj(Corrupt,TEXT("findingDays"));S47J::Set(BadDays,TEXT("extra_pulse"),1e100);FS47FreeformSession Guarded(nullptr);Guarded.Begin(Corrupt);
+ Check(!Guarded.bRestoreAngles&&Guarded.SavedAngles.IsEmpty()&&!Guarded.FindingDays.Contains(TEXT("extra_pulse")),TEXT("out-of-range saved encoders and overflowing finding days are discarded before native transforms or integer casts"));
+ Unpowered.Stop();Guarded.Stop();
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
  S.Stop();R.Stop();return OK;
 }

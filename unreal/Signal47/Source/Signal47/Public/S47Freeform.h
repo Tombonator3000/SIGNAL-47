@@ -124,6 +124,7 @@ private:
  void CollectDuplicate();
  FString ControlSummary(const FJob& J) const;
  bool HasPower() const;
+ bool RequirePower();
  double TargetAz() const;
  double TargetEl() const;
  double SourceSeconds() const;
