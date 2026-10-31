@@ -4,6 +4,11 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Diskplass og byggevedlikehold
+
+- [x] **OPS-01, 31. oktober:** Akutt full disk ryddet etter Toms bestilling.37 avgrensede mapper med generert kompilator-/cook-/staging-/shader-/derived-cache er fjernet. Netto **82.1GB frigjort**, **86.4GB ledig** etter synkronisering.570416 bevarte filer kontrollert uten endring eller tap; installert spill, personlige Saved, Content, kildearbeid, modeller, Binaries/debug, bilder/opptak og krasjbevis er bevart. Dette er lokal opprydding, ingen ny spillpakke.
+- [ ] **OPS-02:** Utvid vedlikeholdet etter avsluttet levering til generert cache i ferdige arbeidskopier. Pakkeprune fjerner ferdige payloads, men omfatter ikke Saved/Cooked, Saved/StagedBuilds eller kompilatorcache. Forrige rydderunde beholdt cache i da aktive arbeidskopier; disse ble siden ferdige mens nye arbeidskopier og finaleiterasjoner kom til. Gjenbruk få arbeidskopier og kontroller ledig plass før store bygg/opptak. Rydd bare genererbare filer i inaktive områder; bevar Saved/bevis/kilder og aldri rydd under spill-/motor-/byggejobb.
+
 ## Stabilitet og feil fra spillprøven
 
 Produksjonsverktøy: første versjon av [koordinatoren med Claude](Guides/PRODUCTION_SYSTEM.md)

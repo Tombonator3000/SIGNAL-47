@@ -8,6 +8,10 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 [Statisk SC01–SC13-pass](Reports/LOGIKKPASS_2026-10-31.md) har funnet to mulige progresjonsstopp i kildekoden, ved usett SC02-avreise og Continue under SC11-telexen, samt mål-, transport- og bevisavvik. LOGIC-01 til09 er åpne i TODO. Tom tester spillet og har bedt om å vente med retting til han er ferdig. [Forbedringsforslag for alle historiedelene](../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md) er klare til vurdering; de er ikke implementert. Ingen rettelse er pakket eller installert; ingen motor-/spilltest er kjørt under Toms spilløkt.
 
+## Lokal diskopprydding31. oktober
+
+37 mapper med regenererbare byggefiler/cache er ryddet: **82.1GB netto frigjort**, **86.4GB ledig**. Kontroll av570416 bevarte filer og uendret Git-arbeidsstatus består. Installert spill, spillagringer, kilder, assets, bevis og kjøpte ressurser er bevart. [OPS-01/02 i TODO](TODO.md) fører resultat og behovet for vedlikehold av avsluttede arbeidskopiers cache. Ingen spillrettelse er bygget eller installert; Toms venting på ferdig spilltest gjelder fortsatt.
+
 ## Fire forskjellige leveringsnivåer
 
 | Nivå | Bekreftet utgangspunkt | Hva det betyr |
