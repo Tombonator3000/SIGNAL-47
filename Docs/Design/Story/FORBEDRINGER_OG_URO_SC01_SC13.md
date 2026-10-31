@@ -12,6 +12,12 @@ Prioriter logiske mål og rettferdige fienderegler først. Når spilleren ikke v
 
 **Prioritet A** betyr anbefalt første pass etter feilretting. **B** er senere polering. Liten/middels beskriver omfang, ikke tidsløfte. Følelsen må vurderes med faktisk spilling; dette er regi og designvurderinger fra kode/manus.
 
+## Etterforskningstavlen: oversikt mens saken vokser
+
+**Ny bestilling fra Tom 31. oktober:** Spor som spilleren kobler sammen skal automatisk danne oversiktlige grupper med tilhørende spørsmål og notater. Organiser lokalt og stabilt etter etablerte koblinger, med luft mellom kort og plass for nye funn. Visuell gruppering skal støtte spillerens arbeid uten å røpe nye bevisforbindelser. Bevar manuell plassering, lesbar tekst og lagring av oppsettet.
+
+Ved feil tråd skal bare én vanlig, sammenhengende linje slakke og fade bort. Fjern den stiplede avvisningsvarianten og kontroller at drag-/slipp-overgangen ikke viser to parallelle effekter. PLAY-31-24/25 i [TODO](../../Active/TODO.md) fører gjennomføringen; dette er registrerte forbedringer, ikke levert tavleatferd.
+
 ## Stjernehullet og meteorregnet
 
 **Ny bestilling fra Tom 31. oktober:** Gjør hullet i stjernene større og lettere å oppdage. Signalet klargjør meteorregnet, men utgangen fra bygget starter passasjen. La nok meteorer gå visuelt bak tomrommet til at fraværet blir tydelig: lysstreker forsvinner ved kanten og kan dukke opp igjen på den andre siden, mens feltet selv forblir tom himmel. Timing, tetthet og hullets fremkomst må fungere sammen og gi spilleren tid til å se opp. Bevar antennenes retning og den frie kamerastyringen. [Regi og kildegrunnlag](../Proposals/NIAGARA_VFX_2026-10-28.md); PLAY-31-23 i [TODO](../../Active/TODO.md) fører endringen. Dette er en ny bestilling, ikke levert himmeleffekt.
