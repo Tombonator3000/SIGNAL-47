@@ -201,7 +201,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==42)
  {
   if(!Check(F.Field->ParcelStage()==2,TEXT("physical purchase survives ordinary Continue without duplication")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X+1.4,P.Z,0);
   UE_LOG(LogTemp,Display,TEXT("S47 cargo fixture: player %.3f %.3f floor %.3f, rack %.3f %.3f %.3f, area %s vehicle %s"),M->Player->Pos.X,M->Player->Pos.Z,M->Player->FloorY,P.X,P.Y,P.Z,*M->World->Area,*M->World->ServicePlace());
   F.Field->Use(TEXT("ff:cargo"));
   if(!Check(F.Field->ParcelStage()==3,TEXT("carried purchase is secured as physical truck cargo")))return;
@@ -215,7 +215,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==422)
  {
   if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X+1.4,P.Z,0);
   F.Field->Use(TEXT("ff:cargo"));
   if(!Check(F.Field->ParcelStage()==2,TEXT("truck cargo must be unloaded before physical bench delivery")))return;
   Go(43,.3);return;
