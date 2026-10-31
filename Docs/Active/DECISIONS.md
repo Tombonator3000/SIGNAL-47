@@ -47,6 +47,10 @@ De engelske forfatterkildene i [Narrative/HorrorStory](../../unreal/Narrative/Ho
 | D-19 | Bærbar SARO-walkietalkie på skrivebordet ved start, med pickup og uvanlig skurring nær aktive aliens. Alienmøter skal også ha et tydelig lydsignal eller en musikalsk markering, samordnet med radioen. | Toms bestilling 31. oktober. PLAY-31-20/21 i [TODO](TODO.md) fører implementering. Senere Dale-kontakt er foreløpig et forslag. Bevar eksisterende Rom6-radio og dens historie-/lydrolle. |
 | D-20 | Stjernehullet skal være større og tydeligere; signalet klargjør meteorregnet, utgang fra bygget starter det, og nok meteorbaner skal gå bak og skjules av tomrommet. | Toms bestilling 31. oktober. PLAY-31-23 og gjenåpnet FX-01 i [TODO](TODO.md). Denne regien går foran tidligere hendelsesklokke alene og baner som bare unngår hullet. Bevar retning/antennekobling, lagring og fri kamerastyring. |
 
+## Linux som distribusjonsmål, 31. oktober
+
+Mottakerens Arch/niri/Nvidia-rapport understreker at Linux-distribusjonen skal beskrive faktiske arkitektur-, ABI-, driver- og øktkrav fremfor å kreve Ubuntu. Utviklingsmaskin og støttet spillermaskin holdes atskilt; kompatibilitet krever konkret grafisk prøve. [Linux-veiledningen](Guides/LINUX_RUNTIME.md) fører dagens krav og begrensninger. Bedre oppstartssjekker prioriteres i PLAY-31-38; Flatpak vurderes i SHIP-04 som tillegg, ikke som allerede vedtatt eller verifisert erstatning.
+
 ## Arbeid, testing og levering
 
 - **Én aktiv status og todo:** Oppdater [STATUS](STATUS.md) og [TODO](TODO.md) ved relevante endringer. Nye leveringsnotater skal beskrive én leveranse og lenke hit for dagens status, fremfor å opprette konkurrerende «current»-dokumenter.

@@ -22,6 +22,8 @@ bash Spill-SIGNAL47.sh
 
 Den henter og kontrollerer alle tre spillarkivene automatisk, om lag 4 GB. Beregn minst 12 GB ledig plass. Prøv først vanlig oppstart; `--wayland` tvinger Wayland, mens `--x11` krever XWayland/DISPLAY i en Wayland-økt. Behold gammel `Linux/Signal47/Saved` før oppdatering. [Detaljer og kontrollgrunnlag](Docs/Evidence/UnrealDeliveries/DOWNLOAD_LINUX_2026-10-29.md).
 
+[Linux-krav, riktig startfil og feilsøking på Arch/niri](Docs/Active/Guides/LINUX_RUNTIME.md). `Signal47.sh` ligger inne i spillmappen; vedlegget som lastes ned heter `Spill-SIGNAL47.sh`.
+
 ## Kilder, design og historikk
 
 [Design](Docs/Design/README.md), [undersøkelser](Docs/Research/README.md), [bevis og leveringer](Docs/Evidence/README.md) og [arkiv](Docs/Archive/README.md) er atskilt. Web og Unity bevares som historiske referanser; nye spillendringer gjelder Unreal. Lisensierte assets holdes utenfor offentlig Git. [Kreditering og ressurser](Docs/THIRD_PARTY_NOTICES.md).
