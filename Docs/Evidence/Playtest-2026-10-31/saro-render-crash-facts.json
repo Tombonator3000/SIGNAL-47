@@ -1,0 +1,59 @@
+{
+  "type": "Derived crash facts, not a repaired or reproduced run",
+  "installed_source": "f32d4553",
+  "engine": "5.8.4-58902052",
+  "platform": "Linux Vulkan SM6",
+  "process_id": 4100828,
+  "fatal_at_utc": "2026-10-31 10:42:01",
+  "last_action_utc": "2026-10-31 10:40:58.672",
+  "last_action": "opsTerminal, SC04 AUTO HOLD",
+  "autosave": {
+    "file": "save-1-auto-2.json",
+    "written_at_utc": "2026-10-31 10:40:58.796",
+    "json_valid": true,
+    "place": "Control room",
+    "clock": "03:00",
+    "sc04_schedule": true,
+    "loaded_in_game_after_crash": false
+  },
+  "fatal_error": "GameThread timed out waiting for RenderThread after 60.00 secs",
+  "rhi_breadcrumbs": [
+    "EndDrawingViewport",
+    "Frame 39115"
+  ],
+  "symbolized_frames": {
+    "RHIThread": [
+      "FVulkanViewport::WaitForFrameEventCompletion",
+      "FVulkanViewport::Present"
+    ],
+    "RenderThread": [
+      "FVulkanDynamicRHI::RHIGetRenderQueryResult",
+      "FGPUOcclusionPacket::OcclusionCullPrimitive",
+      "FVisibilityTaskData::ProcessRenderThreadTasks"
+    ]
+  },
+  "ram_available_bytes_in_crash_context": 20316426240,
+  "bIsOOM": false,
+  "gpu": "NVIDIA GeForce RTX 3080, 10240 MiB",
+  "driver_seen_in_thread_stack": "595.99",
+  "kernel_observation": {
+    "first_error_local": "2026-10-31 11:42:02+01:00",
+    "messages": [
+      "GspRmAlloc failed, status=0x00000019",
+      "KernelChannelGroupApi alloc RPC to vGpu Host failed"
+    ],
+    "causality": "These messages follow the Unreal fatal error; they do not establish the original cause."
+  },
+  "root_cause": "Unconfirmed GPU/render stall; the last gameplay interaction is not proven causal. GPU memory at failure is unmeasured.",
+  "private_preservation": {
+    "files": 43,
+    "bytes": 5019681,
+    "includes": [
+      "complete five-file crash directory",
+      "SaveGames",
+      "DevStarts"
+    ],
+    "live_saves_modified": false
+  },
+  "heavy_job_or_install_started": false
+}
