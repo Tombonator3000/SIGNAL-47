@@ -9,6 +9,17 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 - Bygg ikke editor-målet mens editoren er åpen.
 - Test etter risiko, bestemt av Tom 28. oktober 2026, skjerpet 30. oktober: under utvikling er fart og iterasjon viktigere enn bevis. Én tung jobb om gangen og ingen tester samtidig med Toms spilløkt.
 
+## Gjenbruk først, bestemt av Tom 31. oktober 2026
+
+- Før ny modellering: søk i prosjektbiblioteket, eksisterende prosjektassets, Toms Tripo-modeller og eide originalkilder. Søk deretter i relevante eksterne assetbiblioteker når lokale modeller ikke dekker behovet. Bruk gjenbruk og tilpasning når det gir best samlet resultat.
+- Codex koordinerer søk, valg, tilpasning, plassering, lys, rigging, eksport og retting. Tom vurderer uttrykk, spillfølelse og komfort; ordinær feilretting forblir agentens arbeid.
+- Standardrekvisitter bør normalt gjenbrukes. Ny eller prosedyrisk geometri er riktig når spillmekanikk, særpreg, nøyaktig passform eller samlet tidsbruk tilsier det. Ingen absolutt regel om aldri å bygge en stol.
+- Velg modeller som passer New Mexico i 1986, spillets materialuttrykk og ytelsesbudsjett. Kontroller lisens og kilde per asset; gratis nedlasting er ikke automatisk fri offentlig redistribusjon. Eksisterende regel om private/lisensierte assets utenfor offentlig Git gjelder fortsatt.
+- Bruk fungerende Blender-skript/bpy, CLI eller MCP etter behov. Et bestemt modellnavn, high effort, MCP eller BlenderKit er ikke et krav. Ved bruk av en tilkobling eller et bibliotek: bekreft faktisk sceneadgang eller gjør et lite søk før arbeidet bygger på tilgjengeligheten. Ingen ny installasjon eller betaling følger automatisk av denne regelen.
+- Bevar redigerbare kilder og originale rigger. Kontroller skala, akser, pivot, normaler, UV-er, materialer, kollisjon og LOD ved eksport/import. Alle detaljnivåer skal ha samme koordinatramme; kontroller faktisk geometri og plassering også når avstanden endrer LOD. En rigg er først teknisk prøvd når relevante bevegelser og deformasjoner er sett i Unreal.
+- Teknisk utskifting skal bevare eksisterende verdensplassering, rotasjon, terrengkontakt og spillankre. Kontroller bygg, tilhørende dørblad/hengsler, gulv, rekvisitter og interaksjoner samlet. Ved utskifting av flere bygg: sammenlign hele bygningsgruppen mot forrige fungerende plassering og orientering. En prøve av usynlig kollisjon eller like trekanttall beviser ikke at den synlige modellen står riktig.
+- Bruk en rask lavoppløst forhåndsvisning før kostbar rendering. Endelig kontroll for spillet skjer i Unreal, med før/etter som dekker endringen. Dette inngår i den eksisterende raske sjekken, ikke en ny full testmatrise. Ingen tung jobb under Toms spilløkt.
+
 ## Iterer først, test tungt mot slutten (Tom 30. oktober 2026)
 
 Tom: «Alt for mye testing, nå mer iterering, forenkle og ta tunge tester heller mot slutten av ferdig spill.»
