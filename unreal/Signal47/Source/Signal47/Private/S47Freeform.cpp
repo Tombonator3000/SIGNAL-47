@@ -451,17 +451,33 @@ void FS47FreeformSession::UpdateMysteries()
  static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
  for(int32 Line=0;Line<3;++Line)
  {
-  int32 Count=0;int32 First=MAX_int32,Last=0;
-  for(int32 I=0;I<3;++I)if(Findings.Contains(Families[Line][I])){++Count;const int32 D=FindingDays.FindRef(Families[Line][I]);First=FMath::Min(First,D);Last=FMath::Max(Last,D);}
-  // A same-day series remains an initial finding. Independent follow-up must survive a new day.
+  int32 Count=0;int32 First=MAX_int32,Last=0;TArray<FString> Sources;
+  for(int32 I=0;I<3;++I)
+  {
+   const FString Base=Families[Line][I],Prefix=Base+TEXT(".day");bool bFamilySeen=false;
+   for(const auto& Record:Findings)
+   {
+    const bool bOriginal=Record.Key==Base;
+    const FString Suffix=Record.Key.StartsWith(Prefix)?Record.Key.Mid(Prefix.Len()):FString();
+    bool bDigits=!Suffix.IsEmpty();for(TCHAR C:Suffix)bDigits&=C>=TEXT('0')&&C<=TEXT('9');
+    const bool bFollowup=bDigits&&FCString::Atoi(*Suffix)>0;
+    if(!bOriginal&&!bFollowup)continue;
+    const int32 D=FindingDays.FindRef(Record.Key);if(D<1)continue;
+    bFamilySeen=true;Sources.Add(Record.Key);First=FMath::Min(First,D);Last=FMath::Max(Last,D);
+   }
+   Count+=bFamilySeen?1:0;
+  }
+  Sources.Sort([this](const FString& A,const FString& B){const int32 DA=FindingDays.FindRef(A),DB=FindingDays.FindRef(B);return DA==DB?A<B:DA<DB;});
+  // A same-day series remains an initial finding. A later retained follow-up
+  // establishes repetition without changing the first day's immutable source.
   const int32 New=Count>=3&&Last>First?3:Count>=2&&Last>First?2:Count>0?1:0;
   const int32 Before=MysterySteps.IsValidIndex(Line)?MysterySteps[Line]:0;
   if(MysterySteps.IsValidIndex(Line))MysterySteps[Line]=FMath::Max(Before,New);
   if(New==3&&Before<3&&M&&M->Story)
   {
    FS47Doc D;D.Id=FString::Printf(TEXT("freeform-mystery-%d"),Line);D.Title=Names[Line];D.Kind=TEXT("comparison");D.Stamp=TEXT("CROSS-DAY COMPARISON / RETAINED SOURCES");
-   D.Page=FString(Names[Line])+TEXT("\n\nThree independently retained records now span more than one day.\n");
-   for(int32 I=0;I<3;++I)D.Page+=FString(Families[Line][I])+TEXT(": ")+Findings.FindRef(Families[Line][I])+TEXT("\n\n");
+   D.Page=FString(Names[Line])+TEXT("\n\nThe three observation families now have retained records spanning more than one day.\n");
+   for(const FString& Key:Sources)D.Page+=FString::Printf(TEXT("DAY %d / %s\n%s\n\n"),FindingDays.FindRef(Key),*Key,*Findings.FindRef(Key));
    D.Page+=TEXT("The pattern is repeatable across days; its origin remains unresolved. Follow-up may continue without ending the station's work.");D.Transcript=D.Page;M->Story->AddDoc(D);
    if(M->UI)M->UI->Toast(TEXT("Cross-day comparison available in the archive."),5);
   }
@@ -771,6 +787,16 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  S.TestAdvance(86400);Check(S.Day()==2&&S.Jobs().Num()==6,TEXT("Freeform new days retain unfinished work and create distinct daily job identities"));
  auto Saved=S.Save();FS47FreeformSession R(nullptr);R.Begin(S47J::Read(S47J::Write(Saved)));Check(R.Day()==2&&R.Budget()==15&&R.HasFinding(TEXT("extra_pulse"))&&R.Jobs().Num()==6&&!R.AudioPlaying(),TEXT("Freeform disk JSON restore retains economy, days, evidence and paused audio"));
  R.RecordEvidence(TEXT("feeder_fault"),TEXT("control"));R.RecordEvidence(TEXT("wrong_source"),TEXT("adjacent beam"));Check(R.MysterySteps[0]==3,TEXT("Freeform mystery comparison requires independent records across days"));
+ FS47FreeformSession Followup(nullptr);Followup.Begin(nullptr);
+ Followup.RecordEvidence(TEXT("extra_pulse"),TEXT("first-day original pulse"));Followup.RecordEvidence(TEXT("feeder_fault"),TEXT("first-day feeder control"));Followup.RecordEvidence(TEXT("wrong_source"),TEXT("first-day adjacent sample"));
+ Check(Followup.MysterySteps[0]==1,TEXT("all three mystery sources on one day remain an initial finding, not cross-day proof"));
+ Followup.TestAdvance(86400);Followup.RecordEvidence(TEXT("extra_pulse.daylight"),TEXT("unrelated label"));
+ Check(Followup.MysterySteps[0]==1,TEXT("a similarly prefixed label is not mistaken for a dated mystery follow-up"));
+ Followup.RecordEvidence(TEXT("extra_pulse.day2"),TEXT("independent second-day repeat"));
+ Check(Followup.MysterySteps[0]==3&&Followup.Findings.FindRef(TEXT("extra_pulse"))==TEXT("first-day original pulse")&&Followup.FindingDays.FindRef(TEXT("extra_pulse"))==1&&Followup.FindingDays.FindRef(TEXT("extra_pulse.day2"))==2,TEXT("retained later-day follow-up completes a same-day mystery set without rewriting its first source"));
+ auto FollowupSave=S47J::Read(S47J::Write(Followup.Save()));FS47FreeformSession FollowupRead(nullptr);FollowupRead.Begin(FollowupSave);
+ Check(FollowupRead.MysterySteps[0]==3&&FollowupRead.Findings.FindRef(TEXT("extra_pulse.day2"))==TEXT("independent second-day repeat"),TEXT("cross-day follow-up provenance and completed comparison survive JSON restore"));
+ Followup.Stop();FollowupRead.Stop();
  FS47FreeformSession Instrument(nullptr);Instrument.Begin(nullptr);Instrument.Selected=1;
  auto* I=Instrument.Job();I->Stage=EJobStage::Recorded;I->bAnomaly=I->bControl=true;I->ControlAt=8;I->Phenomenon=TEXT("wrong_source");
  Check(!Instrument.CompareInstrument(),TEXT("off-source comparison cannot be granted by elapsed time without three settled beam samples"));
