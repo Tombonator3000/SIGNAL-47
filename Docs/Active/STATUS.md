@@ -20,6 +20,10 @@ Tom bestiller større og tydeligere stjernehull, meteorregn som starter ved utga
 
 Ny spilltestbestilling: PLAY-31-24/25 fører automatisk gruppering av sammenkoblede tavlespor og én fading hel linje ved avvist kobling. PLAY-31-26 fører mer detaljerte gatelykter med faktisk bakkefeste, dokumentert ved SARO-rampen. To originalbilder er bevart og tavlens eksisterende tegnelogikk er undersøkt lesende. Ingen tavle-, modell- eller lysrettelse er installert i denne oppfølgingen.
 
+## Nye presiseringer: tavle, menyer, telefon og signal
+
+PLAY-31-24 presiserer Finding automatisk under aktiv sak; PLAY-31-23 presiserer vesentlig tettere meteorregn også i 40-sekunders utviklerprøve. PLAY-31-27 til 37 i [TODO](TODO.md) fører VHS-meny, titler uten kapittelnummer, telefon uten automatisk forflytning, Ward-stemme/rolleforslag, signalprosessor, musikk etter dekoding, foreslått lysskade, APPLY, tydeligere himmellys stage 2 til 5 og små Roswell-Glimpse-aliens. Ti originale spillbilder er bevart i repoet; det brede Glimpse-skrivebordsbildet er sikret lokalt. Lesende kildeundersøkelse bekrefter telefonforflytningen, Ward-reservebindingen, fungerende kodekoblinger for DSP-knappene, APPLYs avgrensning og Glimpses fjernsilhuettregler. Dette er registrerte funn/bestillinger og navngitte forslag; ingen ny spillkode, modellgenerering, import eller installasjon er utført under Toms aktive spilltest.
+
 ## Ny spillerregresjon i Caliche
 
 Tom har etter installert PR272 meldt feil plassering/orientering på kirken og flere bybygg, samt et løsrevet dørblad ved vaskeriet. PLAY-31-10/P1 er åpen og PLAY-31-02 er gjenåpnet i [TODO](TODO.md). De fire originalbildene er bevart. Importloggen bekrefter at CalicheAccess bruker legacy FBX for LOD0, men Interchange for LOD1/2. Det gir en konkret forklaring på avstandsavhengig feilretning og løsrevne dører. Eksakt geometriavvik og rettelse er ennå ikke bekreftet i en ny motorprøve. Den installerte pakken er fortsatt `f32d4553`, med kjent regresjon. Toms aktive spilløkt er ikke avbrutt; ingen ny spillkode, import, bygg eller installasjon er utført i denne oppfølgingen.
