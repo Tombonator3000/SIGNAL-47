@@ -1,6 +1,6 @@
 # SARO-løkken, Story og Freeform
 
-**Status:** Under arbeid. **Gjelder:** Toms modusretning og første SARO-kontrollsløyfe i Unreal. **Sist kontrollert:** 31. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Toms modusretning og første SARO-kontrollsløyfe i Unreal. **Sist kontrollert:** 31. oktober 2026.
 
 Tom har valgt at dagens spill videreføres som Story, med en senere separat Freeform-modus. Første bestilling er å føre planen i [TODO](../../Active/TODO.md#story-og-freeform) og legge en aktiv SARO-løkke inn i Story-kvelden. Dette dokumentet beskriver design og avgrensning; faktisk levering føres i [STATUS](../../Active/STATUS.md).
 
