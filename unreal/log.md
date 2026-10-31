@@ -1419,3 +1419,6 @@ PR262: åtte brede undersidefelt, ni faktiske256³ PF_R16F-frames og roligere st
 
 ### 2026-10-31T05:55+01:00 Native vær og terreng i finalen
 PR262: valgt skyåpning1250/løft500, lokal vær- og lysfading, native-klare High-bilder og egen normalvariant fjerner terrengsømmen; bygg/før-etter og korrekt kabininngang består. Metallvariasjon og192/256 marsjsteg ga ingen tydelig gevinst og er tatt ut igjen. Ny pakking/levering følger, ingen endring av installert standard ennå.
+
+### 2026-10-31T06:50+01:00 Jevn første heving i finalen
+Et reelt pakket opptak etter PR262 viste116grader/s rundt sju sekunder. Kun orienteringen ved6.5..13s bruker nå eksisterende endepunkter med Slerp; rute, tider og fallback er bevart. Editorbygg og vanlig film fra C6line består: første heving maks21.455grader/s, mellomparti29.063; ny pakke/installasjon følger.
