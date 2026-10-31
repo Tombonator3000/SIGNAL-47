@@ -1490,3 +1490,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 15:32 CET | codex/install-lookdev-20261031 | Lokal `09b128e7` installert: 1772 selvtester, 47 native materialslotter og installert Vulkan/Fortsett ved 03:48 på isolert sakskopi består. 68 payload-noder matcher; 148 Saved-noder/121 filer uendret. Forrige payload bevart, ett eldre testpayload pensjonert; ingen offentlig release.
 
 2026-10-31 15:50 CET | codex/votv-gameplay-lessons-20261031 | Eget VotV-gameplaynotat og VOTV-01 til05 koblet til gjeldende TODO. Første nye forslag er eksisterende kontrollreise med tydelig handling, resultat og lokal recovery, etter åpne P1-er; T01/SC08/SC09 og rettet LOGIC-08 videreføres. Kun dokumentasjon; ingen spillkode, motorjobb, installasjon eller dekompilerte spillfiler i Git.
+
+2026-10-31 16:48 CET | codex/roswell-glimpse-alien-20261031 | Prioritet0.1: to referanser, ekte Tripo H3.1/retopo/rigg og privat Blender/native1.20m Roswell med tre konsistente LOD-er. Editorbygg,1778 selvtester og Vulkan-vinduspeek/plantet retrett består; pakke/installasjon gjenstår. Pale beholdt.

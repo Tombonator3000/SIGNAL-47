@@ -27,6 +27,8 @@ De engelske forfatterkildene i [Narrative/HorrorStory](../../unreal/Narrative/Ho
 
 ## Nye føringer fra spillprøven
 
+Tom bestemte 31. oktober at **0.1, liten Roswell-alien**, kommer først: referansebilder, faktisk Tripo3D-modell, Blender-klargjøring, Unreal-import og bruk i spillets Glimpse-møter. Dette overstyrer arbeidsrekkefølgen, men lukker eller nedgraderer ikke de åpne krasj-/progresjonsfeilene. Den store jakt-alienen beholdes.
+
 | ID | Beslutning | Konsekvens |
 | --- | --- | --- |
 | D-05 | Signalet rundt 00:13 skal utløse strømsvikten; trafoturen skjer senere i mørket, og første egentlige SC02-møte flyttes mot kl. 02. | Kvelds-/strøm-/reisekoordinatoren og relevante tekster må samordnes. Dette er pågående arbeid, ikke ferdig levering. |

@@ -3,10 +3,15 @@
 #include "CoreMinimal.h"
 #include "S47Obj.h"
 #include "S47Seen.h"
+#include "S47TripoCreature.h"
 
 class AS47Web;
 
-// web/src/core/glimpses.ts. Them, in the background (HENDELSER.md, section 7; Tom, 16 October:
+// web/src/core/glimpses.ts. The original distant silhouette remains the asset-missing fallback.
+// Tom, 31 October: the actual small Roswell body now peeks at nearby windows/corners,
+// takes a moment to notice the observer, then ducks or withdraws behind the real cover.
+// The quiet opening, encounter guards and maximum eight appearances are preserved.
+// Historical fallback: Them, in the background (HENDELSER.md, section 7; Tom, 16 October:
 // always there, something that could happen at any time). One figure, about 1.2 m, black with a
 // faint rim, stands still somewhere 40 to 300 m off, at the edge of the view. It is there only
 // while it is more than 25 degrees from the middle of the view: looked at, zoomed at, lit by the
@@ -59,6 +64,7 @@ public:
 	FS47Obj Figure() const { return Fig; }
 	FVector Position() const { return FigPos; }
 	bool Visible() const { return bVisible; }
+	bool HasNativeBody() const { return bRoswell; }
 
 	void Update(double Dt, const FS47GlimpsesIn& S);
 	/** Put it at a named place now if it can stand there (the developer menu, the tests). */
@@ -69,17 +75,33 @@ public:
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
+	friend struct FS47RoswellPreviewDriver;
+	bool bPreviewDriver = false;
 	TWeakObjectPtr<AS47Web> Web;
 	FS47Obj Fig;
 	FVector FigPos = FVector::ZeroVector;
 	bool bVisible = false;
+	bool bRoswell = false;
+	TWeakObjectPtr<USceneComponent> BodyRoot;
+	FS47TripoCreature Body;
+	FString ActiveScene;
+	FVector BasePos = FVector::ZeroVector, Cover = FVector::ZeroVector;
+	double Facing = 0, Noticed = 0, Withdraw = -1, ExposureNow = 1;
+	bool bWindow = false;
 	double Wait = 0;
 	double T = 0;
 
 	struct FSight { double Off = 0, Dist = 0; bool bInView = false; };
-	static FSight Sight(const FS47Cam& Cam, const FVector& At);
-	struct FAt { FString Id; FVector P = FVector::ZeroVector; uint32 Rim = 0; };
+	static FSight Sight(const FS47Cam& Cam, const FVector& At, double HeadY = .6);
+	struct FAt
+	{
+		FString Id; FVector P = FVector::ZeroVector; uint32 Rim = 0;
+		FVector Cover = FVector::ZeroVector; bool bWindow = false; FString Scene;
+	};
 	TOptional<FAt> Pick(const FS47GlimpsesIn& S, const FString& Only = FString()) const;
+	bool ClearLine(const FVector& Eye, const FVector& Head, FString* BlockedBy = nullptr) const;
+	void UpdateRoswell(double Dt, const FS47GlimpsesIn& S);
+	void DrawRoswell(double Exposure, double Clock);
 	void Place(const FAt& At, const FVector& Cam);
 	void Stand(const FAt& At, const FVector& Cam);
 	void SetVisible(bool bOn);
