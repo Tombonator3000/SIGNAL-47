@@ -886,8 +886,9 @@ bool FS47Observing::AudioAction(const FString& Action)
   if (!AudioCoverageComplete()) { AudioFeedback = TEXT("Play both recordings through. Moving the review cursor does not play the missing interval."); Changed(); return false; }
   if (MarkStart < 0 || MarkStart > StrayTicks[0] || MarkEnd < StrayTicks[UE_ARRAY_COUNT(StrayTicks) - 1] || MarkEnd - MarkStart > 6)
   { AudioFeedback = TEXT("Mark the short group of extra ticks: four, a gap, then seven. Include both groups."); Changed(); return false; }
+  const bool bFirstReview = !bAudioReviewed;
   bAudioReviewed = true; bAudioPlaying = false;
-  M->Story->Note(FString::Printf(TEXT("%s / %s. Reviewed original and control recordings. Marked %.1f to %.1f s on the original: extra ticks outside the pulsar period; the short internal control has none."), *M->Story->ClockText(false), *WorkReference(), MarkStart, MarkEnd));
+  if (bFirstReview) M->Story->Note(FString::Printf(TEXT("%s / %s. Reviewed original and control recordings. Marked %.1f to %.1f s on the original: extra ticks outside the pulsar period; the short internal control has none."), *M->Story->ClockText(false), *WorkReference(), MarkStart, MarkEnd));
   M->UI->Close(); M->UI->Toast(TEXT("Marked comparison retained. Register what it supports at the operations terminal."), 5);
  }
  else return false;
