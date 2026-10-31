@@ -23,3 +23,5 @@ Ingen spillinstallasjon, offentlig spillrelease eller gameplay-aksept inngår.
 Systemet planlegger og kontrollerer produksjonsoppgaver. Fortsatt spillets
 [STATUS](../STATUS.md), [TODO](../TODO.md) og [DECISIONS](../DECISIONS.md) avgjør
 hva som faktisk er levert og hvilke spillerregler som gjelder.
+
+Material-/lysarbeid for Blender, Tripo og Unreal har en separat [kjørbar lookdev-pakke](../../../unreal/Signal47/Tools/lookdev/README.md) med kildevern, PBR-baking og egne dag-/nattprofiler. Bruk eksisterende tungjobbvern; en lookdev-prøve er ikke automatisk installert spillinnhold.

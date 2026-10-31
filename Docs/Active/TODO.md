@@ -116,6 +116,7 @@ produksjonsbehov gjør dem aktuelle. Dette lukker ingen spilloppgaver nedenfor.
 
 ## Grafikk, lys, lyd og effekter
 
+- [x] **ART-02, Blender-/Tripo-lookdev-skripter31. oktober:** [Kjørbar pakke og oppskrift](../../unreal/Signal47/Tools/lookdev/README.md) for selektiv materialforbedring, maskert slitasje, glass, scattering/tåke, himmel/sol/eksponering og separate dag-/nattlys. Blender 5.2.2-materialbevaring,36 kontroller, PBR-baking/FBX og før/etter/nattpreview består. Ni importplankontroller og native UE 5.8.4-editoroppretting av materialer/lys/tåke i egne dag-/nattkart består. Dette leverer skriptene, ikke endelig visuell integrasjon av alle spillmodeller eller en ny spillpakke. Bruk oppskriften på konkrete modeller under eksisterende ART-01/GFX-/PLAY-oppgaver, med reelle før/etter i Unreal; bevar himmel, strømstyring og interaksjoner.
 - [ ] **GFX-01:** Prøv Nanite selektivt på faktiske oppgraderte, tette solide miljømodeller. Bevar RT-fallback, lysblokking og gameplay-kollisjon. Behold godkjent terreng/himmel.
 - [ ] **GFX-02:** Forbedre armaturmontering, kildeplassering, rekkevidde og lokal skyggekostnad ved SARO, Caliche, motellet og trafoen. PLAY-31-26 presiserer Toms krav om detaljerte gatelykter og faktisk bakkefeste langs ruten.
 - [ ] **GFX-03:** Forbedre stedlig støv, gnister og vær med riktig feste, bounds, levetid og kvalitetsstyring. Bevar eksisterende trafo-lysbue.

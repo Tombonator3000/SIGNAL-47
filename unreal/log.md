@@ -1480,3 +1480,7 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 12:42 | codex/board-finding-placement-20261031 | PLAY-31-24/23 presisert; PLAY-31-27 til37 fører samlet UI-/telefon-/lyd-/lys-/Glimpse-bestilling med forslag skilt fra feil. Ti originale spillbilder og ett privat skrivebordsbilde bevart. Kun lesende kildekontroll/docs; ingen motorjobb, modellgenerering eller installasjon under spilltesten.
 
 2026-10-31 13:00 | codex/linux-portability-feedback-20261031 | Offentlig starter og intern Signal47.sh verifisert direkte fra releasen; mottakerens Arch/niri/RTX5090-grafikkfeil fortsatt åpen. Linux-krav/feilsøking og Flatpak-vurdering dokumentert; to originale SARO-lys-/insektbilder bevart. Ingen motorjobb, starter-/spillendring, installasjon eller release. Dokumentkontroll403 Markdown/2406lenker/0nye feil, diff- og shellsyntakssjekk består.
+
+2026-10-31 13:45 | codex/blender-lookdev-workflow-20261031 | Kjørbar material-/glass-/slitasje-/volum-/dag/nattpakke. Blender5.2.2:36 materialkontroller,8x512² bakte PBR-kart,FBX,før/etter/natt PASS;9 importplankontroller og UE5.8.4-editor/NullRHI native material-/nattkartoppretting PASS. Bare egne prøver; ingen C++-endring, spillinstallasjon eller release.
+
+2026-10-31 13:50 | lookdev-oppfølging | Også native dagkart og eksisterende H31-Tripo-GLB med materialpass/4kart/FBX består. Motorvindu frigitt; dokument-/diffkontroll uten nye feil. Eksportens kopinavn føres eksplisitt i manifestet.
