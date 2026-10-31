@@ -158,3 +158,7 @@ Lookdev-vinduet er frigitt etter Blender- og native UE-editorprøver. Underagent
 ## Lookdev koblet til SARO og motell
 
 Root eier `codex/lookdev-live-integration-20261031`, med avgrensede bidrag til produksjonsmaterialer, eksisterende miljølys og veggarmaturer. 17 native varianter er laget med kildevern; faktisk runtime binder 47 slotter. Editorbygg, Vulkan-før/etter, dag, Low, tåke High og ekte SARO-strømkutt/gjenoppretting er prøvd sekvensielt. Motorvinduet er frigitt. Ingen ny pakking, standardinstallasjon eller offentlig release. Gjeldende status og gjenstående tester føres i `Docs/Active/STATUS.md` og `TODO.md`.
+
+## Lokal lookdev-installasjon
+
+Root eier `codex/install-lookdev-20261031`. Pakkeintegrasjonen for konfigurasjoner og kontorets CPU-/renderkopier er rettet. `09b128e7` er pakket og installert kl. 15:32 med 1772 selvtester, 47 materialslotter og ordinær Fortsett på isolert kopi. Saved er uendret; ett eldre testpayload er pensjonert, to eldre og beskyttet tilbakeføring beholdes. Motorvinduet er frigitt. Se `Docs/Active/STATUS.md` for bevisgrenser; ingen offentlig release.

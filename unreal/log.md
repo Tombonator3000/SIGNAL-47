@@ -1486,3 +1486,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 13:50 | lookdev-oppfølging | Også native dagkart og eksisterende H31-Tripo-GLB med materialpass/4kart/FBX består. Motorvindu frigitt; dokument-/diffkontroll uten nye feil. Eksportens kopinavn føres eksplisitt i manifestet.
 
 2026-10-31 14:55 CET: `codex/lookdev-live-integration-20261031` kobler 17 native SARO-/motellvarianter til 47 materialslotter og eksisterende dag/natt/tåke; veggarmaturenes optikk er rettet med samme strømstyring. Editorbygg, Vulkan-før/etter, dag/Low/tåke High og faktisk strømkutt/retur består; opprinnelige materialpakker er uendret. Ingen ny spillpakke/installasjon/release.
+
+2026-10-31 15:32 CET | codex/install-lookdev-20261031 | Lokal `09b128e7` installert: 1772 selvtester, 47 native materialslotter og installert Vulkan/Fortsett ved 03:48 på isolert sakskopi består. 68 payload-noder matcher; 148 Saved-noder/121 filer uendret. Forrige payload bevart, ett eldre testpayload pensjonert; ingen offentlig release.

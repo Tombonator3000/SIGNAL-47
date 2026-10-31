@@ -1,0 +1,71 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "source": "09b128e74522cae7cb8e5ddbc95cd1ecb862cfd7",
+  "lookdev_pr": 284,
+  "installed_at": "2026-10-31T15:32:36.582143+01:00",
+  "payload_nodes": 68,
+  "payload_files": 40,
+  "saved_nodes": 148,
+  "saved_files": 121,
+  "saved_unchanged": true,
+  "package_self_checks": 1772,
+  "bound_material_slots": 47,
+  "missing_materials": 0,
+  "installed_continue": {
+    "status": "PASS",
+    "rhi": "Vulkan",
+    "resolution": [
+      1280,
+      720
+    ],
+    "case": 1,
+    "clock": "03:48",
+    "checkpoint": "chapter2",
+    "isolated_saved_copy": true
+  },
+  "rollback_payload_preserved": true,
+  "standard_launcher_unchanged": true,
+  "public_release_unchanged": true,
+  "retired_old_packages": 1,
+  "older_test_payloads_retained": 2,
+  "files": {
+    "Signal47.sh": {
+      "sha256": "d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a",
+      "bytes": 243
+    },
+    "Signal47/Binaries/Linux/Signal47": {
+      "sha256": "08a3edff231b866ad165456bee37d25c132fa5e369de160b4caa6e0ebdbf18ff",
+      "bytes": 315874624
+    },
+    "Signal47/Content/Paks/Signal47-Linux.pak": {
+      "sha256": "be76833dea4efafd538328394e74b9fee3f568c97145b579d50a54f3cf323be3",
+      "bytes": 1269480560
+    },
+    "Signal47/Content/Paks/Signal47-Linux.ucas": {
+      "sha256": "c7979587882a9541a8fe3fdc62dc4919d89967343809779b90f41cf4a931bf50",
+      "bytes": 2952457680
+    },
+    "Signal47/Content/Paks/Signal47-Linux.utoc": {
+      "sha256": "f41e5bd1d8a85eee0c35d0f0c3bf8a8b993097ce3d839bb0b1fce951edc6a8b4",
+      "bytes": 2963442
+    },
+    "Signal47/Content/Paks/global.ucas": {
+      "sha256": "2b2700b847812fdcd2978c5d24d34b02c3c9f8b53f6fcb0f9e77e8bef0d2d777",
+      "bytes": 3329280
+    },
+    "Signal47/Content/Paks/global.utoc": {
+      "sha256": "00ff1cffedfad0ea75171ed5dd80ea886c14543819e5c09fa4c3f8854b25d858",
+      "bytes": 806
+    }
+  },
+  "images": {
+    "installed-continue.png": {
+      "sha256": "c6ac8c506090eadd59bb4b521ccc7d83747f0a50a0865a8a36e952d50f494d66",
+      "bytes": 1310808
+    },
+    "packaged-control.png": {
+      "sha256": "4803f76f6c73fdbe1096a5fa58e164415dc2269878435c417ae6a46d9b86d175",
+      "bytes": 1158216
+    }
+  }
+}

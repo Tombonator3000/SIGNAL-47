@@ -1,6 +1,7 @@
 #include "S47Lookdev.h"
 #include "S47Main.h"
 #include "S47Web.h"
+#include "S47SaroLegacyCleanup.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstance.h"
@@ -89,7 +90,7 @@ void Update(US47Main* Main,double Dt)
  {
   auto* C=*It; UStaticMesh* Mesh=C->GetStaticMesh();
   if (!Mesh || C->GetWorld()!=W->GetWorld() || C->IsTemplate()) continue;
-  const FString MeshPath=Mesh->GetPathName();
+  const FString MeshPath=S47SaroLegacyCleanup::SourceAssetPath(Mesh);
   for (int32 Slot=0;Slot<C->GetNumMaterials();++Slot)
   {
    auto* Current=C->GetMaterial(Slot); if (!Current) continue;
@@ -131,6 +132,7 @@ TSharedPtr<FJsonObject> Readback(const AS47Web* W)
    const auto& R=S->Rules[B.Rule]; auto Row=MakeShared<FJsonObject>();
    Row->SetStringField(TEXT("component"),B.Component->GetPathName());
    Row->SetStringField(TEXT("mesh"),B.Component->GetStaticMesh()->GetPathName());
+   Row->SetStringField(TEXT("sourceMesh"),S47SaroLegacyCleanup::SourceAssetPath(B.Component->GetStaticMesh()));
    Row->SetNumberField(TEXT("slot"),B.Slot); Row->SetStringField(TEXT("scope"),R.Scope);
    Row->SetStringField(TEXT("source"),R.Source); Row->SetStringField(TEXT("replacement"),R.Replacement);
    Bound.Add(MakeShared<FJsonValueObject>(Row));
