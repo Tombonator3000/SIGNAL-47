@@ -14,7 +14,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nye spillerfunn31. oktober
 
-Tom har meldt motell-/resepsjonsvegger og åpenbar dørfarge, svevende Caliche-deler, ønsket midlertidig fri adgang, feilplassert radiomann, behov for egne Tripo-aliens/kuer og feil radiostøy. Snap-zoom/lydsting er ført som forslag. [PLAY-31-01 til06 i TODO](TODO.md) samler punktene; ingen er rettet eller ferdigmeldt. Spillrettinger avventer fortsatt Toms ferdige test.
+Tom har meldt motell-/resepsjonsvegger og åpenbar dørfarge, svevende Caliche-deler, ønsket midlertidig fri adgang, feilplassert radiomann, behov for egne Tripo-aliens/kuer og feil radiostøy. Snap-zoom/lydsting er ført som forslag. Senere i samme spilltest meldte Tom mulig SC03-progresjonsstopp: deputy forsvinner etter samtalen, men målet ber fortsatt om å snakke med ham; figuren ved sherifftrappa gir ingen videre handling. PLAY-31-07/P1 står åpen. [PLAY-31-01 til07 i TODO](TODO.md) samler punktene; ingen er rettet eller ferdigmeldt. Spillrettinger avventer fortsatt Toms ferdige test.
 
 ## Fire forskjellige leveringsnivåer
 
