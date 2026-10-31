@@ -181,7 +181,11 @@ void FS47FreeformTest::Step(double Dt)
   const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));
   // Explicit transport fixture: on-foot area entry does not drive the Jeep.
   // Road parking uses the existing diner vehicle identity, including at the shop.
-  M->Player->Place(P.X+6.,P.Z+3.,0);auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("diner"));
+  M->Player->Place(P.X+6.,P.Z+3.,0);Go(401,.8);return;
+ }
+ if(Stage==401)
+ {
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("diner"));
   S47J::Set(Pose,TEXT("x"),P.X+6.);S47J::Set(Pose,TEXT("y"),M->Player->FloorY);S47J::Set(Pose,TEXT("z"),P.Z+3.);S47J::Set(Pose,TEXT("h"),0.);
   M->World->PlaceTruck(TEXT("diner"),Pose);M->Player->Place(P.X-1.4,P.Z,0);
   Go(41,.4);return;
@@ -377,8 +381,12 @@ void FS47FreeformTest::Step(double Dt)
  {
   if(M->World->bBusy)return;
   if(!Check(F.PowerFault()&&!M->Story->Rx.bPowered,TEXT("feeder incident cuts the actual receiver circuit before physical repair")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X-1.4,P.Z,0);Go(901,.6);return;
+ }
+ if(Stage==901)
+ {
   F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));F.Field->Use(TEXT("ff:feeder"));
+  if(!Check(S47J::Num(F.Field->Save(),TEXT("feeder"))==4,TEXT("physical feeder exchange reaches its enclosed timed test")))return;
   Go(91);return;
  }
  if(Stage==91)
