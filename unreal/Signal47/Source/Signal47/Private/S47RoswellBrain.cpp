@@ -37,7 +37,7 @@ void FS47RoswellBrain::Start(EMode InMode,const FVector& At,double FacingYaw,int
  bHasPlayerMemory=bSeesPlayer=bPlayerSeesMe=bContact=bStandDone=false;
  bTargetCover=bTargetRoof=bTargetWindow=false; bAtGoal=true;
  LastKnownPlayer=Goal=Pos; LastPlayerEye=LookTarget=Eye()+Forward(Yaw)*3.;
- Path.Reset(); NextPoint=0; TargetId.Reset(); Mode=InMode; State=EState::Idle;
+ Path.Reset(); NextPoint=ChoiceCursor=0; bPlanningDeferred=false; TargetId.Reset(); Mode=InMode; State=EState::Idle;
  DecisionAt=Random.FRandRange(1.0f,2.3f); RepathAt=0;
 }
 
@@ -49,7 +49,7 @@ void FS47RoswellBrain::SetMode(EMode InMode)
  bContact=bStandDone=false; bHasPlayerMemory=KeepMemory; if (!KeepMemory) MemoryAge=0; Noticed=0;
  bTargetCover=bTargetRoof=bTargetWindow=false; TargetId.Reset();
  LastListenAt=Age-10.; HeardAge=1e6;
- State=EState::Idle; StateAge=0; DecisionAt=Age+1.; RepathAt=Age;
+ State=EState::Idle; StateAge=0; ChoiceCursor=0; bPlanningDeferred=false; DecisionAt=Age+1.; RepathAt=Age;
 }
 
 void FS47RoswellBrain::Enter(EState NewState)
@@ -59,6 +59,7 @@ void FS47RoswellBrain::Enter(EState NewState)
  if (NewState==EState::Idle) DecisionAt=Age+Random.FRandRange(1.4f,3.2f);
  if (NewState==EState::Listen) LastListenAt=Age;
  if (NewState==EState::Peek) DecisionAt=Age+Random.FRandRange(2.8f,3.6f);
+ if (NewState==EState::Flee) bAtGoal=false;
 }
 
 bool FS47RoswellBrain::Seen(const FInput& In,const FWorld& World) const
@@ -103,11 +104,13 @@ TOptional<FVector> FS47RoswellBrain::Heard(const FInput& In,const FWorld& World)
 
 bool FS47RoswellBrain::Plan(const FVector& To,const FString& Id,const FWorld& World)
 {
+ bPlanningDeferred=false;
+ bAtGoal=false;
  if (!Finite(To) || !World.CanStand || !World.CanMove || !World.CanStand(To)) return false;
  if (Distance(Pos,To)<.08 && FMath::Abs(Pos.Y-To.Y)<.15)
  { Goal=To; TargetId=Id; Path.Reset(); NextPoint=0; bAtGoal=true; return true; }
- bAtGoal=false;
  TArray<FVector> Proposed;
+ if (World.PlanningReady && !World.PlanningReady()) { bPlanningDeferred=true; return false; }
  if (World.FindPath) Proposed=World.FindPath(Pos,To);
  else if (World.CanMove(Pos,To)) Proposed={To};
  if (Proposed.IsEmpty() || Proposed.Num()>96 || FVector::Dist(Proposed.Last(),To)>.15) return false;
@@ -123,6 +126,8 @@ bool FS47RoswellBrain::Plan(const FVector& To,const FString& Id,const FWorld& Wo
 
 bool FS47RoswellBrain::Choose(const FInput&,const FWorld& World,bool bFlee,bool bPreferCover)
 {
+ bPlanningDeferred=false;
+ if (World.PlanningReady && !World.PlanningReady()) { bPlanningDeferred=true; return false; }
  struct FCandidate { FPoint Point; double Score; };
  TArray<FCandidate> Candidates;
  // Only a perceived location affects decisions. Unseen PlayerFeet never leaks
@@ -134,7 +139,7 @@ bool FS47RoswellBrain::Choose(const FInput&,const FWorld& World,bool bFlee,bool 
  {
   const FPoint& P=World.Points[I];
   const double D=Distance(Pos,P.Pos);
-  if (!Finite(P.Pos) || D>28. || FMath::Abs(P.Pos.Y-Pos.Y)>.65 || !World.CanStand || !World.CanStand(P.Pos)) continue;
+  if (!Finite(P.Pos) || D<.6 || D>28. || FMath::Abs(P.Pos.Y-Pos.Y)>.65 || !World.CanStand || !World.CanStand(P.Pos)) continue;
   const double Occupancy=World.Occupancy?FMath::Max(0.,World.Occupancy(P.Pos)):0.;
   if (Occupancy>=1.) continue;
   const bool Concealed=World.Sight && !World.Sight(KnownEye,P.Pos+FVector(0,P.bWindow?.65:.78,0));
@@ -152,15 +157,9 @@ bool FS47RoswellBrain::Choose(const FInput&,const FWorld& World,bool bFlee,bool 
   Candidates.Add({P,Score});
  }
  Candidates.Sort([](const FCandidate& A,const FCandidate& B) { return A.Score>B.Score; });
- for (int32 I=0; I<FMath::Min(Candidates.Num(),10); ++I)
- {
-  const FPoint& P=Candidates[I].Point;
-  if (!Plan(P.Pos,P.Id,World)) continue;
-  bTargetCover=P.bCover; bTargetRoof=P.bRoof; bTargetWindow=P.bWindow;
-  return true;
- }
  // If authored cover is unreachable, try bounded real ground directions away
- // from the last perceived player. Every fallback still needs a complete route.
+ // from the last perceived player. Rotate through these too, rather than using
+ // a whole frame's route budget retrying the same inaccessible top-ranked cover.
  if (bFlee)
  {
   const double Away=Facing(Known,Pos);
@@ -168,11 +167,19 @@ bool FS47RoswellBrain::Choose(const FInput&,const FWorld& World,bool bFlee,bool 
   {
    const FVector P=Pos+Forward(Away+Turn)*5.;
    if (World.Occupancy && World.Occupancy(P)>=1.) continue;
-   if (Plan(P,TEXT("escape"),World))
-   { bTargetCover=bTargetRoof=bTargetWindow=false; return true; }
+   if (!World.CanStand || !World.CanStand(P)) continue;
+   Candidates.Add({FPoint{FString::Printf(TEXT("escape-%d"),Candidates.Num()),P,false,false,false},-100.});
   }
  }
- return false;
+ if (Candidates.IsEmpty()) return false;
+ const FPoint& P=Candidates[ChoiceCursor%Candidates.Num()].Point;
+ const bool bPlanned=Plan(P.Pos,P.Id,World);
+ // An actual rejection advances to another candidate. A budget deferral must
+ // retry this candidate once the group scheduler grants this individual a turn.
+ if (!bPlanningDeferred) ChoiceCursor=(ChoiceCursor+1)%Candidates.Num();
+ if (!bPlanned) return false;
+ bTargetCover=P.bCover; bTargetRoof=P.bRoof; bTargetWindow=P.bWindow;
+ return true;
 }
 
 void FS47RoswellBrain::Move(double Dt,const FWorld& World)
@@ -183,8 +190,15 @@ void FS47RoswellBrain::Move(double Dt,const FWorld& World)
  if (NextPoint>=Path.Num()) { bAtGoal=true; Path.Reset(); NextPoint=0; return; }
  const FVector D=Path[NextPoint]-Pos;
  const double Speed=FMath::Min(DesiredSpeed,OldSpeed+Dt*3.8);
- const FVector To=Pos+D.GetSafeNormal()*FMath::Min(D.Size(),Speed*Dt);
- if (!World.CanMove || !World.CanStand || !World.CanStand(To) || !World.CanMove(Pos,To) ||
+ FVector To=Pos+D.GetSafeNormal()*FMath::Min(D.Size(),Speed*Dt);
+ bool bGrounded=true;
+ if (World.GroundedStep)
+ {
+  const auto Grounded=World.GroundedStep(Pos,To);
+  bGrounded=Grounded.IsSet() && Finite(Grounded.GetValue()) && Distance(To,Grounded.GetValue())<.01;
+  if (bGrounded) To=Grounded.GetValue();
+ }
+ if (!bGrounded || !World.CanMove || !World.CanStand || !World.CanStand(To) || !World.CanMove(Pos,To) ||
   (World.Occupancy && World.Occupancy(To)>=1.))
  {
   // A door can close after planning. Stop here; never snap to the route's end
@@ -211,7 +225,7 @@ void FS47RoswellBrain::Move(double Dt,const FWorld& World)
 
 void FS47RoswellBrain::Tick(double Dt,const FInput& In,const FWorld& World)
 {
- bContact=false;
+ bContact=false; bPlanningDeferred=false;
  if (In.bHeld || !FMath::IsFinite(Dt) || Dt<=0) return;
  // Bounded physical steps prevent long frames from jumping through a doorway.
  double Left=FMath::Min(Dt,.25);
@@ -263,7 +277,7 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
    if (Age>=RepathAt && (Path.IsEmpty() || FVector::Dist(Goal,LastKnownPlayer)>.55))
    {
     const bool Planned=Plan(LastKnownPlayer,TEXT("last-perceived-player"),World);
-    RepathAt=Age+(Planned?.5:1.2);
+    RepathAt=Age+(Planned?.5:(bPlanningDeferred?.05:.35));
    }
    if (!bSeesPlayer && bAtGoal && StateAge>2.5)
    { bHasPlayerMemory=false; Path.Reset(); Enter(EState::Listen); DecisionAt=Age+2.; }
@@ -274,7 +288,7 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
    if (Age>=DecisionAt)
    {
     if (Choose(In,World,false,true)) { Enter(EState::Stalk); DecisionAt=Age+3.; }
-    else { Enter(EState::Listen); DecisionAt=Age+2.; }
+    else { Enter(EState::Listen); DecisionAt=Age+(bPlanningDeferred?.05:.25); }
    }
    if (State==EState::Stalk) DesiredSpeed=.8;
   }
@@ -289,7 +303,7 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
   if (Age>1.4 && (Noticed>.65 || TooNear) && State!=EState::Flee && State!=EState::Hide)
   {
    Enter(EState::Flee); Path.Reset(); NextPoint=0; bAtGoal=false;
-   Choose(In,World,true,true); RepathAt=Age+1.3;
+   Choose(In,World,true,true); RepathAt=Age+(bPlanningDeferred?.05:.25);
   }
   switch (State)
   {
@@ -297,13 +311,13 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
     DesiredSpeed=2.25; DesiredCrouch=.3;
     if (bAtGoal) { Enter(EState::Hide); DesiredSpeed=0; DecisionAt=Age+Random.FRandRange(2.5f,4.5f); }
     else if (Path.IsEmpty() && Age>=RepathAt)
-    { Choose(In,World,true,true); RepathAt=Age+1.3; }
+    { Choose(In,World,true,true); RepathAt=Age+(bPlanningDeferred?.05:.25); }
     break;
    case EState::Hide:
     DesiredCrouch=1.;
     if (Age>=DecisionAt && !bPlayerSeesMe) { Enter(EState::Idle); Noticed=0; }
     else if (bPlayerSeesMe && StateAge>1.2 && Age>=RepathAt)
-    { Enter(EState::Flee); Choose(In,World,true,true); RepathAt=Age+1.3; }
+    { Enter(EState::Flee); Choose(In,World,true,true); RepathAt=Age+(bPlanningDeferred?.05:.25); }
     break;
    case EState::Peek:
     DesiredCrouch=bTargetWindow?FMath::Clamp(1.-StateAge/1.1,0.,1.):.18;
@@ -328,7 +342,7 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
     else if (Age>=DecisionAt)
     {
      if (Choose(In,World,false,bHasPlayerMemory)) Enter(EState::Stalk);
-     else DecisionAt=Age+Random.FRandRange(1.4f,2.8f);
+     else DecisionAt=Age+(bPlanningDeferred?.05:.25);
     }
     break;
   }
@@ -427,5 +441,38 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
  for (int32 I=0; I<10; ++I) Detour.Tick(.1,In,World);
  Check(Detour.Pos.X>.5 && FMath::Abs(Detour.Pos.Z)<.035 && Detour.DistanceTravelled<3.,
   TEXT("a complete detour follows its first waypoint without cutting or teleporting to the player"));
+ int32 Budget=0,Calls=0;
+ World.CanMove=[](const FVector&,const FVector&) { return true; };
+ World.Sight=[](const FVector&,const FVector&) { return false; };
+ World.Points={{TEXT("already-here"),FVector::ZeroVector,true,false,false},
+  {TEXT("blocked-cover"),FVector(-3,0,0),true,false,false},{TEXT("reachable"),FVector(3,0,0),false,false,false}};
+ World.PlanningReady=[&] { return Budget>0; };
+ World.FindPath=[&](const FVector&,const FVector& To)
+ { --Budget; ++Calls; return To.X<0?TArray<FVector>():TArray<FVector>{To}; };
+ FS47RoswellBrain Fair; Fair.Start(EMode::Curious,FVector::ZeroVector,0,91);
+ Check(!Fair.Choose(NoPlayer,World,false,true) && Fair.bPlanningDeferred && Calls==0,
+  TEXT("an exhausted shared budget defers planning without consuming a candidate"));
+ Budget=1;
+ Check(!Fair.Choose(NoPlayer,World,false,true) && !Fair.bPlanningDeferred && Calls==1,
+  TEXT("one rejected cover consumes only one actual route attempt"));
+ Budget=1;
+ Check(Fair.Choose(NoPlayer,World,false,true) && Calls==2 && Fair.TargetId==TEXT("reachable") && !Fair.bAtGoal,
+  TEXT("next granted turn explores reachable ground instead of retrying blocked cover or selecting itself"));
+ World.PlanningReady={};
+ World.FindPath=[](const FVector&,const FVector& To) { return TArray<FVector>{To}; };
+ const auto Height=[](double X) { return X>.4?.12:0.; };
+ World.CanStand=[&](const FVector& P) { return Finite(P) && FMath::Abs(P.Y-Height(P.X))<.001; };
+ World.GroundedStep=[&](const FVector&,const FVector& Desired)->TOptional<FVector>
+ { return FVector(Desired.X,Height(Desired.X),Desired.Z); };
+ FS47RoswellBrain Ramp; Ramp.Start(EMode::Curious,FVector::ZeroVector,0,92);
+ Ramp.Plan(FVector(2,.12,0),TEXT("raised-ground"),World); Ramp.DesiredSpeed=1.;
+ for (int32 I=0; I<20; ++I) Ramp.Move(.05,World);
+ Check(Ramp.Pos.X>.5 && FMath::Abs(Ramp.Pos.Y-.12)<.001 && Ramp.DistanceTravelled>.5,
+  TEXT("short grounded steps follow actual raised terrain instead of an unsupported linear Y interpolation"));
+ const FVector SupportedAt=Ramp.Pos;
+ World.GroundedStep=[](const FVector&,const FVector&)->TOptional<FVector> { return {}; };
+ Ramp.Move(.05,World);
+ Check(Ramp.Pos.Equals(SupportedAt) && Ramp.Velocity.IsNearlyZero() && !Ramp.bAtGoal,
+  TEXT("a rejected grounded step stops movement without snapping across unsupported ground"));
  return bOk;
 }

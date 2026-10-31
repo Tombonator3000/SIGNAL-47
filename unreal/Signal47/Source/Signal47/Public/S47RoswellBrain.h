@@ -32,6 +32,11 @@ public:
   // A complete route, omitting From and ending at To. Empty means no route;
   // no direct fallback is attempted when this callback rejects a route.
   TFunction<TArray<FVector>(const FVector&,const FVector&)> FindPath;
+  // False means deferred by the shared frame budget, not an unreachable goal.
+  TFunction<bool()> PlanningReady;
+  // Return the physically supported foot position for this short movement.
+  // Empty rejects the step; never bypass CanStand/CanMove after grounding it.
+  TFunction<TOptional<FVector>(const FVector&,const FVector&)> GroundedStep;
   TFunction<bool(const FVector&,const FVector&)> CanMove;
   TFunction<bool(const FVector&)> CanStand;
   // Opaque world geometry blocks a ray; glass may be clear. Ignore all the
@@ -53,6 +58,7 @@ public:
  double Age = 0, StateAge = 0, MemoryAge = 0, Noticed = 0;
  bool bHasPlayerMemory = false, bSeesPlayer = false, bPlayerSeesMe = false;
  bool bContact = false, bStandDone = false, bAtGoal = true;
+ bool bPlanningDeferred = false;
  FString TargetId;
 
  FVector Eye() const { return Pos+FVector(0,1.08-.42*Crouch,0); }
@@ -64,7 +70,7 @@ public:
 private:
  FRandomStream Random;
  TArray<FVector> Path;
- int32 NextPoint = 0;
+ int32 NextPoint = 0, ChoiceCursor = 0;
  double DecisionAt = 0, RepathAt = 0, ContactCool = 0, HeardAge = 1e6, LastListenAt = -10.;
  double DesiredCrouch = 0, DesiredSpeed = 0;
  bool bTargetCover = false, bTargetRoof = false, bTargetWindow = false;

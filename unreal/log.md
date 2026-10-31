@@ -1507,3 +1507,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 18:56 CET | codex/saro-workstations-20261031 | Aktive SARO-PC-er, fysisk S-03-service, reell antennebevegelse, lydsammenligning og papirarkiv installert fra 3e723bba. Editor/pakke 163 kontroller, 9 disk-/Flow-restores, 1819 selvtester og installert Fortsett PASS; 152 Saved-elementer uendret. Tre eldre payload pensjonert; current+2older, egne motorvinduer frigitt. Ingen offentlig release.
 
 2026-10-31 19:10 CET | codex/freeform-town-supplies-20261031 | Byens forsyninger, bruktutstyr, reservedeler og feeder-vedlikehold ført i Freeform-planen, D-25 og MODE-03C. Første prøve avgrenset til sikringer/relé/aggregatdrivstoff med reservelager og døgnbudsjett. Kun plan; ingen spillendring eller installasjon.
+
+2026-10-31 19:51 | codex/roswell-arm-clearance-20261031 | Retter native speilede armsider, rutebudsjett og fysiske terrengsteg. Editorbygg, 1824 selvtester og seks individuelt prøvde Curious/Hunt-figurer med kontaktlyd består; lokal pakking/installasjon følger.

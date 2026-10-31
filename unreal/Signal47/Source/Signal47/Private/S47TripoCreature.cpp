@@ -87,8 +87,10 @@ void FS47TripoCreature::Peek(bool bShow, double Exposure, double HeadTurn, doubl
   const int32 Arm=Bone(Side==0?TEXT("upperarm_l"):TEXT("upperarm_r"));
   const int32 Elbow=Bone(Side==0?TEXT("lowerarm_l"):TEXT("lowerarm_r"));
   const int32 Hand=Bone(Side==0?TEXT("hand_l"):TEXT("hand_r"));
-  if (Arm>=0 && Elbow>=0) Aim(Arm,Elbow,Pose[Arm].GetLocation()+FVector(Side==0?-4.:4.,3.,-30.));
-  if (Elbow>=0 && Hand>=0) Aim(Elbow,Hand,Pose[Elbow].GetLocation()+FVector(0,7.+Duck*.35,-20.));
+  const int32 Chest=Bone(TEXT("spine_03"));
+  const double Outward=Arm>=0 && Chest>=0?FMath::Sign(Pose[Arm].GetLocation().X-Pose[Chest].GetLocation().X):1.;
+  if (Arm>=0 && Elbow>=0) Aim(Arm,Elbow,Pose[Arm].GetLocation()+FVector(Outward*12.,3.,-26.));
+  if (Elbow>=0 && Hand>=0) Aim(Elbow,Hand,Pose[Elbow].GetLocation()+FVector(Outward*4.,7.+Duck*.35,-20.));
  }
  Rotate(Bone(TEXT("head")),FQuat(FVector::UpVector,FMath::Clamp(HeadTurn,-.65,.65)));
  Rotate(Bone(TEXT("head")),FQuat(FVector::YAxisVector,FMath::DegreesToRadians(3.*FMath::Sin(Clock*.7))));
