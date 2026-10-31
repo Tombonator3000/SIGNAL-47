@@ -392,7 +392,11 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
  for(const FIntPoint& Sign:{FIntPoint(26,19),FIntPoint(27,20),FIntPoint(28,21)})
  {
   const auto* N=W?W->Node(Sign.X):nullptr;auto* C=W?MeshAt(W,Sign.X):nullptr;
-  Check(N&&N->Parent==25&&N->Geo==Sign.Y&&C&&C->IsVisible()&&!C->bHiddenInGame,
+  // Enter(room6) correctly hides SARO's exterior components. The local
+  // retention flag must survive every area; rendered visibility is required
+  // when the player is actually in the sign's SARO area.
+  Check(N&&N->Parent==25&&N->Geo==Sign.Y&&N->bVis&&C&&!C->bHiddenInGame
+   &&(W->Area()!=TEXT("saro")||C->IsVisible()),
    FString::Printf(TEXT("large roadside sign near-area counterpart missing node%d"),Sign.X));
  }
  Check(PhotoTarget.IsSet(),TEXT("authored sign photo target unavailable"));
