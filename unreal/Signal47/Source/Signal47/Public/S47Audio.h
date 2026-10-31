@@ -135,6 +135,8 @@ public:
 	float RoomToneHeld() const;
 	void SignalFrame(float Clarity, float Level, double T);
 	TSharedPtr<FS47AudioBuffer> NoiseBuffer() const { return Ctx.IsValid() ? Noise : nullptr; }
+	// Unstarted shared noise source for spatial environmental electrical sound.
+	TSharedRef<FS47BufferSourceNode> NoiseSrc(bool bBrown = false, bool bLoop = true);
 	TSharedPtr<FS47AudioNode> Spatial(const FVector& At, float Ref = 1.f, TSharedPtr<FS47AudioNode> Dest = nullptr); // spatial(at, ref, dest)
 	void Spatial(const FString& Name, const FVector& At, float Ref = 1.f); // a recording played there
 
@@ -231,7 +233,6 @@ private:
 	void Unlock(bool bWithSynth, bool bDecode = true); // preload() and unlock(): the context, the buses, the noise, the recordings
 	TSharedPtr<FS47AudioBuffer> MakeNoise(bool bBrown) const;
 	TSharedRef<FS47PannerNode> Panner(const FVector& Pos, double Ref = 1.2, TSharedPtr<FS47AudioNode> Dest = nullptr);
-	TSharedRef<FS47BufferSourceNode> NoiseSrc(bool bBrown = false, bool bLoop = true);
 	TSharedPtr<FS47AudioNode> BusNamed(const FString& Name) const;
 
 	TSharedPtr<FS47AudioBuffer> Noise, Brown;

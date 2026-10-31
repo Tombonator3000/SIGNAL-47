@@ -61,7 +61,20 @@ public:
 	void BeginCommute(const S47J::FObj& SavedCar = nullptr);
 	void FinishCommute();
 	void SetArrivalServiceWaiting(bool bVisible);
-	void SetPersonalPark(const FVector& Position, double Heading, bool bVisible);
+	void SetPersonalPark(const FVector& Position, double Heading, bool bVisible, const FString& WalkArea = TEXT("saro"), bool bService = false);
+	bool PersonalTransport() const { return bPersonalTransport; }
+	bool PersonalUnlocked() const;
+	FString PersonalPlace() const;
+	FVector PersonalPosition() const;
+	double PersonalHeading() const;
+	FString ServicePlace() const;
+	FVector ServicePosition() const;
+	double ServiceHeading() const;
+	S47J::FObj TransportSave() const;
+	void RestoreTransport(const S47J::FObj& Saved);
+	bool SelectTransport(bool bPersonal);
+	/** The final courier journey uses the service truck; fetch it first if it was left elsewhere. */
+	bool PrepareCourierTruck();
 	/** Where the truck stands when nobody drives it ('saro', 'station01', 'motel', 'diner', or
 	 *  'roswell': left on the old road); empty while it is out on a trip. */
 	FString TruckAt = TEXT("saro");
@@ -226,6 +239,11 @@ private:
 	 *  in them (World.parkAt moves them). */
 	int32 SaroCol = -1, StationCol = -1, DinerCol = -1;
 	int32 PersonalCol = -1;
+	bool bPersonalTransport = false;
+	S47J::FObj PersonalVehicle, ServiceVehicle;
+	TWeakObjectPtr<class UBoxComponent> PersonalUseBox, ServiceUseBox;
+	void VehicleChoices();
+	S47J::FObj ParkedVehicle(bool bPersonal) const;
 	int32 ArrivalServiceObstacle = -1;
 	int32 OldCol = -1; // (the old road has no walk of its own in the export: its truck's collider is added here)
 	int32 TownCarObstacle = -1;

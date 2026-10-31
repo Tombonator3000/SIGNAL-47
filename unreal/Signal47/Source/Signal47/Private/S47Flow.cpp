@@ -745,8 +745,9 @@ void US47Flow::StartGame(const FStart& O)
 	if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
  // Before SC01: its normal round counts the evening schedule as part of the work.
  if (M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
- if (M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()));
+ if (M->Spine) M->Spine->Begin(S47J::Obj(O.State,TEXT("spine")),!O.State.IsValid() && (O.Jump.IsEmpty()),O.State.IsValid() && O.State->HasField(TEXT("spine")));
  if (M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
+ if (M->Spine && !(O.State.IsValid() && O.State->HasField(TEXT("spine")))) M->Spine->ResumeAfterSC03();
 
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
@@ -1272,7 +1273,9 @@ S47J::FObj US47Flow::GameState()
 		S47J::Set(State, TEXT("meteorPassage"), P);
 	}
 	if (M->Observing && M->Observing->Enabled()) S47J::Set(State,TEXT("observing"),M->Observing->Save()); else State->RemoveField(TEXT("observing"));
-	if (M->Spine && M->Spine->Enabled()) S47J::Set(State,TEXT("spine"),M->Spine->Save()); else State->RemoveField(TEXT("spine"));
+	if (M->Spine && M->Spine->Enabled()) S47J::Set(State,TEXT("spine"),M->Spine->Save());
+ else if (!M->Spine || !M->Spine->PreserveUnknownSave()) State->RemoveField(TEXT("spine"));
+ // Otherwise retain Carry's exact unknown JSON value; disabling an unsupported version must not erase it.
 	if (M->Horror && M->Horror->Enabled()) S47J::Set(State,TEXT("horror"),M->Horror->Save());
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) S47J::Set(State,TEXT("routine"),M->Story->SaveRoutine()); else State->RemoveField(TEXT("routine"));
 	S47J::Set(State, TEXT("town"), M->TownSeen.Array());

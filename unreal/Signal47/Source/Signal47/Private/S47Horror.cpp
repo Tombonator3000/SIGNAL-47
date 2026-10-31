@@ -376,7 +376,7 @@ void FS47Horror::Step(double Dt)
   else if(bComplete && SC02Live()) TriggerSC02();
  }
  if(!bComplete && !M->World->bDriving && !M->Evening->Opening())M->UI->Objective(Objective());
- else if(SC02Meeting() || SC03Live())M->UI->Objective(Objective());
+ else if(SC02Meeting() || SC02NeedsWitness() || SC03Live())M->UI->Objective(Objective());
 }
 FString FS47Horror::Objective() const
 {
@@ -384,6 +384,8 @@ FString FS47Horror::Objective() const
  if(bComplete)
  {
   if(SC03Live()) return SC03->Objective();
+  if(SC02NeedsWitness() && M->World && M->World->bDriving) return TEXT("CALICHE JUNCTION // PARK AT THE SERVICE FRONT AND CHECK THE ROUTE ON FOOT");
+  if(SC02NeedsWitness() && !AtSite()) return TEXT("CALICHE JUNCTION // RETURN TO THE SERVICE FRONT AND CHECK THE ROUTE BACK TO THE TRUCK");
   if(!SC02Meeting()) return FString();
   if(M->World && M->World->bDriving) return TEXT("CALICHE JUNCTION // DRIVE CLEAR OF THE SERVICE FRONT");
   if(!bThreatSeen) return TEXT("CALICHE JUNCTION // RETURN ON FOOT TO THE SERVICE TRUCK OUTSIDE THE FENCE");
@@ -416,6 +418,7 @@ TArray<FS47Task> FS47Horror::Tasks() const
  if(bComplete)
  {
   if(SC03Live()){TArray<FS47Task> Out;for(const auto& Row:SC03->Tasks())Out.Add({Row.Key,Row.Value});return Out;}
+  if(SC02NeedsWitness() && !AtSite()) return {{TEXT("Return to Caliche Junction and check the service front"),false}};
   if(!SC02Meeting())return {};
   return {{TEXT("Compare the marked lamp with the completed service check"),M->Substation && M->Substation->HasNormalResult()},
   {TEXT("Reach the service truck by a route outside the fence"),M->World && M->World->bDriving},
@@ -465,10 +468,12 @@ bool FS47Horror::SelfTest(TArray<FString>& Lines)
 
 // ---------- SC02: return to the truck, meeting 1 (revision 2 only) ----------
 
-bool FS47Horror::HasTasks() const {return bEnabled && (!bComplete || SC02Meeting() || SC03Live());}
+bool FS47Horror::HasTasks() const {return bEnabled && (!bComplete || SC02Meeting() || SC02NeedsWitness() || SC03Live());}
+bool FS47Horror::SC03Complete() const { return bEnabled && Revision >= 3 && SC03 && SC03->Complete(); }
 bool FS47Horror::SC03Live() const {return bEnabled && Revision>=3 && SC03 && SC03->Live();}
 bool FS47Horror::SC02Meeting() const {return bEnabled && bComplete && SC02==ESC02::Encounter && Threat && AtSite();}
 bool FS47Horror::SC02Escaped() const {return bEnabled && SC02==ESC02::Escaped;}
+bool FS47Horror::SC02NeedsWitness() const {return bEnabled && SC02==ESC02::Encounter && !bThreatSeen;}
 bool FS47Horror::SceneAllowed(const FS47HorrorSceneRegistration* R) const
 {
  if(R && Revision>=3 && SC03 && (SC03->Live() || SC03->Complete()) && R->ScenarioIds.Contains(TEXT("SC03")))return true;
@@ -525,6 +530,8 @@ bool FS47Horror::ReadSC02(const S47J::FObj& O,FSC02Save& Out)
  if(!P || !P->IsValid() || (*P)->Type!=EJson::String || !ParsePhase((*P)->AsString(),Out.Phase))return false;
  if(!SC02Bool(O,TEXT("attempt"),Out.bAttempt) || !SC02Bool(O,TEXT("retry"),Out.bRetry) || !SC02Bool(O,TEXT("threatSeen"),Out.bSeen))return false;
  Out.EscapeStamp=S47J::Str(O,TEXT("escapeStamp"));Out.Checkpoint=S47J::Str(O,TEXT("checkpoint"));
+ // Migrate old dead-end saves to the still-owed encounter, without manufacturing evidence.
+ if(Out.Phase==ESC02::Unwitnessed){Out.Phase=ESC02::Encounter;Out.bSeen=false;Out.EscapeStamp.Empty();}
  return true;
 }
 bool FS47Horror::AtServiceFront() const
@@ -599,6 +606,12 @@ void FS47Horror::StepSC02(double Dt)
    if(!M->World->bDriving && AtSite()){const FVector2D P=Threat->Checkpoint();M->Player->Place(P.X,P.Y,0);M->Player->Pitch=-.06;}
    Threat->Start(bThreatSeen); // ground height and route checks read the restored world, not the pre-restore pose
   }
+  // An unseen departure leaves a replayable meeting. Re-arm only on foot at the site.
+  if(!Threat->Active())
+  {
+   if(M->World->bDriving || !AtServiceFront() || M->ModalOpen() || M->World->bBusy)return;
+   Threat->Start(bThreatSeen);
+  }
   Threat->Step(Dt);
   if(Threat->Seen() && !bThreatSeen){bThreatSeen=true;Changed();}
   if(Threat->ConsumeCapture())LocalRetry(TEXT("capture"));
@@ -613,7 +626,7 @@ void FS47Horror::StepSC02(double Dt)
     if(!Threat->Appeared())Threat->Stop(); // nothing to withdraw; it must not appear behind the departed truck
     M->Story->Note(TEXT("Caliche Junction: a pale body moved at the service front and turned towards sound. Reached the service truck outside the closed yard and drove clear. The completed lamp check remains on its card."));
    }
-   else {SC02=ESC02::Unwitnessed;Threat->Stop();} // no sighting, no encounter paper
+   else {Threat->Stop();} // still Encounter: no sighting or paper, and a return can replay it
    UE_LOG(LogTemp,Display,TEXT("S47: SC02 contact broken from SARO 07; %s"),PhaseName(SC02));
    Changed();
   }
@@ -673,6 +686,9 @@ bool FS47Horror::SC02SelfTest(TArray<FString>& Lines)
  const auto Future=WriteSC02(Saved);S47J::Set(Future,TEXT("v"),2);
  Check(!ReadSC02(TextFlag,Back) && !ReadSC02(Future,Back) && !ReadSC02(nullptr,Back) && Back.Phase==ESC02::Off && !Back.bSeen,
   TEXT("strings, unknown versions and absent fields never manufacture SC02 facts"));
+ FSC02Save Unseen;Unseen.Phase=ESC02::Unwitnessed;Unseen.Checkpoint=TEXT("shed");
+ Check(ReadSC02(WriteSC02(Unseen),Back) && Back.Phase==ESC02::Encounter && !Back.bSeen && Back.EscapeStamp.IsEmpty() && Back.Checkpoint==TEXT("shed"),
+  TEXT("an old unseen departure resumes the owed encounter, retaining its checkpoint without a false sighting or escape"));
  FS47HorrorPack Data;FString Error;
  if(Data.Initialize(Error))
  {

@@ -66,7 +66,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { return (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -83,6 +83,7 @@ void US47Main::Step(double Dt)
 	if (Observing) Observing->Step(Dt);
 	if (Horror) Horror->Step(Dt);
 	if (Spine) Spine->Step(Dt);
+	if (World) World->Update(Dt, T); // Parked native vehicle choices also exist before any road leg is built.
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);

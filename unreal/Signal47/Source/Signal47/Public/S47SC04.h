@@ -48,7 +48,7 @@ public:
  bool HuntLive() const { return P == EStep::Hunt; }
  // Contract fixture for later scenarios' tests: SC04 counted as done without playing it.
  void TestComplete();
- static FS47Doc StripDoc(const FString& Taken);
+ static FS47Doc StripDoc(const FString& Taken, const FString& Restored = FString(), const FString& Torn = FString());
  static FS47Doc ScheduleDoc();
  static bool SelfTest(TArray<FString>& Lines);
  // Graph for tests: three.js x/z.

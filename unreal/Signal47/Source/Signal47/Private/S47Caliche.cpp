@@ -1,5 +1,6 @@
 // story/caliche.ts: Caliche's street, its people and the copies in Reyes's notebook.
 #include "S47Caliche.h"
+#include "S47CalicheAccess.h"
 #include "S47Horror.h"
 #include "S47HorrorSC03.h"
 #include "S47Props.h"
@@ -248,7 +249,29 @@ void FS47Caliche::BindTown()
 	{
 		const FS47Obj Object = Town->Proxy(Id); if (!Object) return;
 		FS47Interactable I; I.Id = FString(TEXT("town:")) + Id; I.Object = Object; I.Range = Range;
-		I.Label = [this, Label] { return Here() ? Label() : FString(); }; I.Use = MoveTemp(Use);
+		const FString AccessId(Id);
+        I.Label = [this, Label, AccessId]
+        {
+         if (!Here()) return FString();
+         if(AccessId==TEXT("amDoor")&&!AS47Props::IsDoorOpen(TEXT("radioLobbyDoor")))return FString(TEXT("Open studio lobby door"));
+         if(S47CalicheAccess::HasDoor(AccessId))
+         {
+          if(!S47CalicheAccess::IsOpen(AccessId))return FString(TEXT("Open door"));
+          if(AccessId==TEXT("sheriffDoor")&&Town->bDeputyIn)return FString(TEXT("Talk to the deputy"));
+          return FString(TEXT("Close door"));
+         }
+         return Label();
+        };
+        I.Use = [this,Use=MoveTemp(Use),AccessId]
+        {
+         if(AccessId==TEXT("amDoor")&&!AS47Props::IsDoorOpen(TEXT("radioLobbyDoor"))&&AS47Props::UseDoor(TEXT("radioLobbyDoor")))return;
+         if(S47CalicheAccess::HasDoor(AccessId))
+         {
+          if(AccessId==TEXT("sheriffDoor")&&S47CalicheAccess::IsOpen(AccessId)&&Town->bDeputyIn){if(Use)Use();return;}
+          S47CalicheAccess::UseDoor(AccessId);return;
+         }
+         if(Use)Use();
+        };
 		if (Examine) I.Examine = [this, Examine] { return Here() ? Examine() : FString(); };
 		I.ExamineRange = FMath::Max(8., Range + 2); M->Inter->Add(I);
 	};

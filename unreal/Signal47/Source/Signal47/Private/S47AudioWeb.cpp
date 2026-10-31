@@ -21,9 +21,6 @@ namespace
 		const float* G = LIC_GAIN.Find(Name);
 		return G ? *G : 1.f;
 	}
-	/** The bought static against white noise, through the radios' band-pass: x5.8 to x6.4 for the same
-	 *  RMS, x5 to x5.5 for the same loudness (it is brighter inside the band). */
-	constexpr double STATIC_MAKEUP = 5.5;
 
 	// What the player walks on, and how a step on it sounds: which recordings, how loud, the
 	// pitch, and a low-pass to take the edge off. Quieter than before and never the same
@@ -128,17 +125,14 @@ TSharedRef<FS47BufferSourceNode> US47Audio::NoiseSrc(bool bBrown, bool bLoop)
 
 TOptional<FS47StaticSrc> US47Audio::StaticSrc()
 {
-	// The static of an AM set at night, looping and already started: the bought hiss with its
-	// random crackle when it is there (from a random point, so two radios are not in step),
-	// otherwise white noise. `out` has the level the white noise had through the radios' band-pass.
+	// Unreal playtest: continuous receiver hiss, not the licensed crackle recording
+	// whose dense transients sounded like frying. Each receiver retains its own
+	// band-pass/tuning envelope, so station strength still controls signal/noise.
 	if (!Ctx.IsValid() || !Noise.IsValid()) return {};
 	FBatch Batch(*Ctx);
-	const TSharedPtr<FS47AudioBuffer> B = Lic(TEXT("radio_static"));
-	auto Src = Ctx->CreateBufferSource(); Src->Buffer = B.IsValid() ? B : Noise; Src->bLoop = true;
-	if (!B.IsValid()) { Src->Start(); return FS47StaticSrc{ Src, Src }; }
-	auto G = Ctx->CreateGain(); G->Gain.SetValue(STATIC_MAKEUP); Src->Connect(G);
-	Src->Start(0, FMath::FRand() * B->Duration());
-	return FS47StaticSrc{ Src, G };
+	auto Src = Ctx->CreateBufferSource(); Src->Buffer = Noise; Src->bLoop = true;
+	Src->Start(0, FMath::FRand() * Noise->Duration());
+	return FS47StaticSrc{ Src, Src };
 }
 
 FS47Pressure US47Audio::Pressure()

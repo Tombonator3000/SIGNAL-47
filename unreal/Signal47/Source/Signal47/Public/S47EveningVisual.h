@@ -43,6 +43,7 @@ private:
 	US47Main* M = nullptr;
 	TWeakObjectPtr<UStaticMeshComponent> Personal, PersonalDoor;
 	TArray<TWeakObjectPtr<UStaticMeshComponent>> ServiceParts;
+	TArray<FTransform> ServiceLocal;
 	TUniquePtr<FS47Group> CounterFood, HeldFood;
 	FS47Node* CounterBurger = nullptr;
 	FS47Node* CounterSandwich = nullptr;

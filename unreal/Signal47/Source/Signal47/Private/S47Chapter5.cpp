@@ -333,8 +333,14 @@ FString US47Chapter5::Objective() const
 		if (!InDiner()) return TEXT("ALL NIGHT // MESA DINER");
 		return TEXT("MESA DINER // WHERE DOES C CROSS THE OLD ROAD? SPREAD THE MAPS ON A TABLE (P13)");
 	}
-	if (S.Stage == TEXT("road")) return TEXT("MESA DINER // C CROSSES JUST PAST THE EIGHT-MILE POST. THE TRUCK IS OUTSIDE");
-	if (S.Stage == TEXT("complete")) return TEXT("ROSWELL ROAD // FOLLOW C TO THE BOLT JUST PAST THE EIGHT-MILE POST");
+	if (S.Stage == TEXT("road"))
+	{
+		if (Spined()) return !S.bWard ? TEXT("MESA DINER // READ THE THREE SOURCES TO WARD FROM THE PAYPHONE")
+			: TEXT("THE OLD ROAD // TAKE THE ORIGINALS TO THE COURIER AT MILE 10.4. PASS C WITHOUT STOPPING");
+		return TEXT("MESA DINER // C CROSSES JUST PAST THE EIGHT-MILE POST. THE TRUCK IS OUTSIDE");
+	}
+	if (S.Stage == TEXT("complete")) return Spined() ? TEXT("THE OLD ROAD // THE COURIER WAITS AT MILE 10.4. PASS C WITHOUT STOPPING")
+		: TEXT("ROSWELL ROAD // FOLLOW C TO THE BOLT JUST PAST THE EIGHT-MILE POST");
 	return FString();
 }
 
@@ -374,6 +380,7 @@ TOptional<US47Chapter5::FTrip> US47Chapter5::TruckTrip(const FString& Place)
 		if (!W.IsValid()) return;
 		// SC12: Ward has the sources before the originals go (PRODUKSJON_SC01_SC13.md).
 		if (W->Spined() && !W->S.bWard) { W->Toast(TEXT("Not yet. Ward has to have the sources before you go."), 3.4f); return; }
+		if (W->Spined() && W->M && W->M->World && !W->M->World->PrepareCourierTruck()) return;
 		W->Finish();
 	} };
 	if (S.Stage == TEXT("to-truck") || (S.Stage == TEXT("road") && Place != TEXT("diner")))
@@ -826,7 +833,8 @@ FS47Result US47Chapter5::Answer(const FString& Id)
 	S.bP13 = true;
 	if (S.Stage == TEXT("diner")) S.Stage = TEXT("road");
 	File(DocFinding());
-	Note(FString::Printf(TEXT("%s. P13: with E09A on STATION 01, C runs due east and crosses the old Roswell road just past the eight-mile post, at a survey bolt in the shoulder. The truck is outside."), *Time()));
+	Note(FString::Printf(TEXT("%s. P13: with E09A on STATION 01, C runs due east and crosses the old Roswell road just past the eight-mile post, at a survey bolt in the shoulder. %s"), *Time(),
+		Spined() ? (S.bWard ? TEXT("The originals go to the courier at mile 10.4. Pass C without stopping.") : TEXT("Read the three sources to Ward from the diner payphone before leaving with the originals.")) : TEXT("The truck is outside.")));
 	if (M && M->Audio) M->Audio->Sfx(TEXT("click"), Snd(0.5f));
 	Milestone();
 	Save();
@@ -1178,6 +1186,29 @@ bool US47Chapter5::SelfTest(TArray<FString>& Out)
 	C->Choose(TEXT("bolt"));
 	Check(C->S.bConfirmed && C->Lines.Last().Text.Contains(TEXT("right where she quit on me")), TEXT("the brass bolt is right where his rig died"));
 	Check(C->TruckTrip(TEXT("diner")) && C->TruckTrip(TEXT("diner"))->Label == TEXT("Drive the old road") && C->TruckTrip(TEXT("saro"))->Label == TEXT("Drive to Mesa Diner"), TEXT("the truck on the lot: the old road; left elsewhere: back to the diner"));
+
+	// The current courier route and its real departure gate must give the same next action.
+	{
+		US47Main* CourierMain = NewObject<US47Main>(GetTransientPackage());
+		CourierMain->Spine = MakeShared<FS47Spine>(CourierMain);
+		CourierMain->Spine->Begin(S47J::Read(TEXT("{\"v\":1}")), false);
+		US47Chapter5* Courier = NewObject<US47Chapter5>(GetTransientPackage());
+		Courier->Bind(CourierMain, nullptr); Courier->bStarted = Courier->bActive = true;
+		Courier->S.Stage = TEXT("road"); Courier->S.bP13 = true;
+		Check(Courier->Objective().Contains(TEXT("WARD")) && Courier->Objective().Contains(TEXT("PAYPHONE")),
+			TEXT("P13 before the required call points to the payphone"));
+		const auto BeforeCall = Courier->TruckTrip(TEXT("diner"));
+		if (BeforeCall) BeforeCall->Use();
+		Check(BeforeCall.IsSet() && !Courier->bLeaving && !Courier->S.bWard,
+			TEXT("departure still waits for Ward when the map is solved first"));
+		Courier->Who = TEXT("ward"); Courier->Choose(TEXT("road"));
+		Check(Courier->S.bWard && Courier->Objective().Contains(TEXT("10.4")) && Courier->Objective().Contains(TEXT("WITHOUT STOPPING")),
+			TEXT("reading the sources to Ward replaces the phone objective with the courier route"));
+		Courier->S.Stage = TEXT("complete");
+		Check(Courier->Objective().Contains(TEXT("10.4")) && Courier->Objective().Contains(TEXT("WITHOUT STOPPING")),
+			TEXT("the current departure never asks the player to stop at the survey bolt"));
+		Courier->MarkAsGarbage(); CourierMain->MarkAsGarbage();
+	}
 
 	// the saved state, with the TypeScript's field names
 	const FString Json = S47J::Write(C->S.Save());

@@ -4,9 +4,11 @@
 #include "S47Evening.h"
 #include "S47EveningVisual.h"
 #include "S47Timeline.h"
+#include "S47CalicheAccess.h"
 #include "S47Keys.h"
 
 #include "Engine/TextureRenderTarget2D.h"
+#include "Components/BoxComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/CommandLine.h"
@@ -144,20 +146,20 @@ void US47World::Init(US47Main* InM)
 			const bool NightTransport = M && M->Mode == US47Main::EMode::Play && M->Story && M->Story->NightSequence()
 				&& M->Story->Phase() == ES47Phase::Residual && M->Horror && M->Substation && M->Substation->HasNormalResult()
 				&& !M->Story->FeederOutage() && !bCommuteVehicle && !bDriving && !bBusy && Parked && !Parked->IsPersonalVehicle();
-			if (NightTransport && Place == TEXT("diner") && Area == TEXT("diner") && TruckAt == TEXT("diner") && M->Horror->SC02Meeting())
+			if (NightTransport && Place == TEXT("diner") && Area == TEXT("diner") && TruckAt == TEXT("diner") && (M->Horror->SC02Meeting() || M->Horror->SC03Complete() || (M->Spine && M->Spine->Gate(FS47Spine::SC04) == 1)))
 			{
 				return { TEXT("Return to SARO"), [this] { DriveBack(); } };
 			}
 			if (NightTransport && Place == TEXT("saro") && Area == TEXT("saro") && TruckAt == TEXT("saro")
-				&& M->Horror->SC02Escaped() && M->Horror->SC03 && M->Horror->SC03->Phase() == FS47HorrorSC03::EPhase::Report
-				&& !M->Horror->SC03->Facts().bDispatch)
+				&& M->Horror->SC02NeedsWitness())
 			{
 				return { TEXT("Drive to Caliche fuel stop"), [this] { DriveToDiner(nullptr); } };
 			}
 			const bool EarlyReferenceTrip = M && M->Story && M->Story->bEveningTimeline && M->Story->Phase() == ES47Phase::Shift && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done"));
 			// the 00:13 feeder trip is ordered whatever phase the signal has moved the night to
 			const bool ServiceTrip = M && M->Evening && M->Evening->ServicePending();
-			if (M && M->Story && !M->Story->At(ES47Phase::Ch1) && !EarlyReferenceTrip && !ServiceTrip)
+			const bool PostSC03 = M && ((M->Horror && M->Horror->SC03Complete()) || (M->Spine && M->Spine->Gate(FS47Spine::SC04) == 1));
+			if (M && M->Story && !M->Story->At(ES47Phase::Ch1) && !EarlyReferenceTrip && !ServiceTrip && !PostSC03)
 			{
 				return { TEXT("Service truck"), [this] { Toast(TEXT("The service truck. Not now: someone has to sit the console tonight."), 3.4f); } };
 			}
@@ -727,7 +729,7 @@ void US47World::Enter(const FString& NewArea)
 	EnsureLegs();
 	if (bLegsMade)
 	{
-		for (FS47Truck* T : {SaroTruckP.Get(), TruckP.Get()}) if (T) T->SetPersonalVehicle(bCommuteVehicle);
+		for (FS47Truck* T : {SaroTruckP.Get(), TruckP.Get(), ParkedP.Get()}) if (T) T->SetPersonalVehicle(bCommuteVehicle);
 		auto Here = [this](const TCHAR* Id) { return Area == Id && (TruckAt == Id || Leg == Id); };
 		// (on the motel's lot it is SARO's truck too, in SARO's area)
 		SaroTruckP->Group.SetVisible(Here(TEXT("saro")) || (Area == TEXT("saro") && TruckAt == TEXT("motel")));
@@ -735,7 +737,7 @@ void US47World::Enter(const FString& NewArea)
 		TruckP->Group.SetVisible(bOnRoad && (Leg == TEXT("road") || TruckAt == TEXT("diner")));
 		ParkedP->Group.SetVisible(Here(TEXT("station01")));
 		OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
-		if (bCommuteVehicle) {SaroTruckP->Group.SetVisible(false);TruckP->Group.SetVisible(false);}
+		if (bCommuteVehicle) {SaroTruckP->Group.SetVisible(false);TruckP->Group.SetVisible(false);ParkedP->Group.SetVisible(false);}
 	}
 	if (OnEnter) OnEnter(NewArea);
 	// on foot on the old road (out of the truck anywhere, Tom 22 October 2026): its ground's height,
@@ -942,7 +944,7 @@ void US47World::ParkAt(FString Id)
 	{
 		const FS47Obj Up = Proxy.Parent();
 		const FVector At = Up.IsValid() ? Up.WorldToLocal(G) : G;
-		Proxy.SetPosition(FVector(At.X, bHere ? At.Y + 0.95 : -500, At.Z));   // the diner's lot is 4 m up
+		Proxy.SetPosition(FVector(At.X, bHere && !bPersonalTransport ? At.Y + 0.95 : -500, At.Z));   // the diner's lot is 4 m up
 		Proxy.SetRotation(FVector(0, H, 0));
 	}
 }
@@ -978,7 +980,7 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 		Trip = Tr;
 		Leg = Leg0;
 		if (!O.bFree) { TruckAt.Reset(); for (const TCHAR* Id : TRUCKS) ParkAt(Id); SetGround(FString()); }
-		if (!O.bFree && From == TEXT("saro")) OdoAtSaro = Odometer();
+		if (!O.bFree && !bCommuteVehicle && From == TEXT("saro")) OdoAtSaro = Odometer();
 		L->Drive->Place(O.AtPos ? *O.AtPos : G->Position, O.AtPos ? O.AtHeading : G->Rotation.Y);
 		LightsOn(*L->Truck);
 		Enter(AreaOf(Leg0));
@@ -1088,6 +1090,8 @@ void US47World::Park(const FString& Place)
 	L.Truck->SetHeadlights(false);
 	TruckAt = Place; Leg.Reset(); Trip.Reset(); Autopilot.Reset();
 	ParkAt(Place);
+	if (bPersonalTransport) PersonalVehicle = TruckSave();
+	else if (PersonalVehicle) ServiceVehicle = TruckSave();
 	Hold(true);
 	Fade(true);
 	// out by the door at once: from this frame the camera is the player's again; where no walk zone
@@ -1353,6 +1357,11 @@ void US47World::MakeLands()
 double US47World::LandY(double X, double Z)
 {
 	const double None = std::numeric_limits<double>::quiet_NaN();
+	if (Area==TEXT("diner") || Area==TEXT("road"))
+	{
+		const double Access=S47CalicheAccess::FloorAt(X,Z);
+		if (FMath::IsFinite(Access)) return Access;
+	}
 	if (!bLegsMade || InZone(X, Z)) return None;
 	if (Lands.IsEmpty()) MakeLands();
 	const FLand* L = Lands.Find(Area);
@@ -1659,7 +1668,7 @@ void US47World::PlaceTruck(const FString& At, const S47J::FObj& Pose)
 		// Canonical lots are level. The commute's last suspension pitch/roll belongs
 		// to that road pose, not to SARO 07 waiting on its original concrete pad.
 		T->SetParkPose(FVector(X, Y, Z), H);
-		T->SetPersonalVehicle(bCommuteVehicle && (T == SaroTruckP.Get() || T == TruckP.Get()));
+		T->SetPersonalVehicle(bCommuteVehicle && (T == SaroTruckP.Get() || T == TruckP.Get() || T == ParkedP.Get()));
 	};
 	// YARD.truck: on its pad by the service yard
 	const S47Geo::FAt& MA = S47Geo::MOTEL_AT();
@@ -1833,7 +1842,7 @@ bool US47World::CabRadio()
 
 // ---------- per frame ----------
 
-void US47World::Update(double Dt, double T) { (void)Dt; (void)T; }
+void US47World::Update(double Dt, double T) { (void)Dt; (void)T; VehicleChoices(); }
 
 bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out)
 {
@@ -1945,7 +1954,7 @@ void US47World::TownCarMoved(const FS47Area& Box)
 // Evening opening: drive the existing continuous highway north through Caliche.
 void US47World::BeginCommute(const S47J::FObj& SavedCar)
 {
- EnsureLegs(); StopDriving(); bCommuteVehicle = true;
+ EnsureLegs(); StopDriving(); bPersonalTransport = false; PersonalVehicle.Reset(); ServiceVehicle.Reset(); bCommuteVehicle = true;
  for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get()}) if (T) T->SetPersonalVehicle(true);
  FS47TripOpts O;
  const bool Saved = SavedCar.IsValid();
@@ -1966,18 +1975,23 @@ void US47World::BeginCommute(const S47J::FObj& SavedCar)
 void US47World::FinishCommute()
 {
  StopDriving(); bCommuteVehicle = false;
- for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get()}) if (T) T->SetPersonalVehicle(false);
+ for (FS47Truck* T : {SaroTruckP.Get(),TruckP.Get(),ParkedP.Get()}) if (T) T->SetPersonalVehicle(false);
  // SARO 07 has stayed at work. The player's car is retained separately by Evening.
  PlaceTruck(TEXT("saro"));
  if (SaroTruckP) { SaroTruckP->Body.SetVisible(true); SaroTruckP->Shell.SetVisible(true); }
  if (TruckP) { TruckP->Body.SetVisible(true); TruckP->Shell.SetVisible(true); }
  Enter(TEXT("saro"));
+ RestoreTransport(nullptr);
 }
 
-void US47World::SetPersonalPark(const FVector& Position, double Heading, bool bVisible)
+void US47World::SetPersonalPark(const FVector& Position, double Heading, bool bVisible, const FString& WalkArea, bool bService)
 {
  if (!M || !M->Web || !M->Player) return;
- auto& Cols=M->Web->CollidersMutable(TEXT("saro"));
+ // A parked second vehicle remains solid in its own area, including the shared road/diner walk.
+ for (const TCHAR* Other : {TEXT("saro"),TEXT("road"),TEXT("diner"),TEXT("station01")})
+  for (FS47Rect& Old : M->Web->CollidersMutable(Other))
+   if (Old.Id == TEXT("personalCar")) { Old.bEnabled=false; Old.MinX=Old.MaxX=Old.MinZ=Old.MaxZ=1e9; }
+ auto& Cols=M->Web->CollidersMutable(WalkArea);
  // Doors append/remove leaves in this same array. Never retain a stale index.
  PersonalCol=Cols.IndexOfByPredicate([](const FS47Rect& R){return R.Id==TEXT("personalCar");});
  if (PersonalCol<0) {FS47Rect R;R.Id=TEXT("personalCar");PersonalCol=Cols.Add(R);}
@@ -1986,8 +2000,8 @@ void US47World::SetPersonalPark(const FVector& Position, double Heading, bool bV
  {
   R.MinX=R.MaxX=R.MinZ=R.MaxZ=1e9;M->Player->PersonalCarBox.Reset();return;
  }
- AS47Walker::FTruckBox B; B.Area=TEXT("saro"); B.X=Position.X; B.Z=Position.Z; B.Heading=Heading;
- B.HalfW=FS47EveningVisual::PersonalHalfWidth();B.HalfL=FS47EveningVisual::PersonalHalfLength();
+ AS47Walker::FTruckBox B; B.Area=WalkArea; B.X=Position.X; B.Z=Position.Z; B.Heading=Heading;
+ B.HalfW=bService?1.05:FS47EveningVisual::PersonalHalfWidth();B.HalfL=bService?2.75:FS47EveningVisual::PersonalHalfLength();
  const double C=FMath::Abs(FMath::Cos(Heading)),S=FMath::Abs(FMath::Sin(Heading));
  const double Hx=B.HalfW*C+B.HalfL*S,Hz=B.HalfW*S+B.HalfL*C;
  R.MinX=B.X-Hx;R.MaxX=B.X+Hx;R.MinZ=B.Z-Hz;R.MaxZ=B.Z+Hz;
@@ -2014,4 +2028,126 @@ void US47World::SetArrivalServiceWaiting(bool bVisible)
   }
   Obstacles[ArrivalServiceObstacle]=FS47Obstacle::Box(R.MinX,R.MaxX,R.MinZ,R.MaxZ);
  }
+}
+
+
+// Two owned vehicles share the proven road controller, but never their parked pose or odometer.
+S47J::FObj US47World::ParkedVehicle(bool bPersonal) const
+{
+ if (bPersonal == bPersonalTransport) { const auto Live=TruckSave();if(Live)return Live; }
+ return bPersonal ? PersonalVehicle : ServiceVehicle;
+}
+FString US47World::PersonalPlace() const { return S47J::Str(ParkedVehicle(true),TEXT("at"),TEXT("saro")); }
+FVector US47World::PersonalPosition() const
+{
+ const auto P=S47J::Obj(ParkedVehicle(true),TEXT("pose"));
+ return P?FVector(S47J::Num(P,TEXT("x")),S47J::Num(P,TEXT("y")),S47J::Num(P,TEXT("z"))):FS47EveningVisual::ArrivalPark();
+}
+double US47World::PersonalHeading() const { return S47J::Num(S47J::Obj(ParkedVehicle(true),TEXT("pose")),TEXT("h")); }
+FString US47World::ServicePlace() const { return S47J::Str(ParkedVehicle(false),TEXT("at"),TEXT("saro")); }
+FVector US47World::ServicePosition() const
+{
+ const auto P=S47J::Obj(ParkedVehicle(false),TEXT("pose"));
+ return P?FVector(S47J::Num(P,TEXT("x")),S47J::Num(P,TEXT("y")),S47J::Num(P,TEXT("z"))):FVector(8.9,0,8);
+}
+double US47World::ServiceHeading() const { return S47J::Num(S47J::Obj(ParkedVehicle(false),TEXT("pose")),TEXT("h"),UE_DOUBLE_PI); }
+bool US47World::PersonalUnlocked() const
+{
+ return M && M->Story && M->Story->NightSequence() && !(M->Evening && M->Evening->Opening())
+  && ((M->Horror && M->Horror->SC03Complete()) || (M->Spine && M->Spine->Enabled() && M->Spine->Current()>=3));
+}
+S47J::FObj US47World::TransportSave() const
+{
+ if (!PersonalVehicle) return nullptr;
+ auto O=S47J::New(); S47J::Set(O,TEXT("v"),1); S47J::Set(O,TEXT("personalSelected"),bPersonalTransport);
+ S47J::Set(O,TEXT("personal"),ParkedVehicle(true)); S47J::Set(O,TEXT("service"),ParkedVehicle(false)); return O;
+}
+void US47World::RestoreTransport(const S47J::FObj& Saved)
+{
+ bPersonalTransport=false; bCommuteVehicle=false; PersonalVehicle.Reset(); ServiceVehicle.Reset();
+ if (Saved && S47J::Int(Saved,TEXT("v"))==1)
+ {
+  PersonalVehicle=S47J::Obj(Saved,TEXT("personal")); ServiceVehicle=S47J::Obj(Saved,TEXT("service"));
+  bPersonalTransport=S47J::Bool(Saved,TEXT("personalSelected")) && PersonalVehicle && ServiceVehicle;
+  bCommuteVehicle=bPersonalTransport;
+  const auto Selected=bPersonalTransport?PersonalVehicle:ServiceVehicle;
+  if (Selected) PlaceTruck(S47J::Str(Selected,TEXT("at"),TEXT("saro")),S47J::Obj(Selected,TEXT("pose")));
+ }
+ if (!PersonalVehicle)
+ {
+  const FVector P=M && M->Evening?M->Evening->PersonalCarPosition():FS47EveningVisual::ArrivalPark();
+  const double H=M && M->Evening?M->Evening->PersonalCarHeading():0;
+  PersonalVehicle=S47J::New(); auto Pose=S47J::New(); S47J::Set(Pose,TEXT("at"),TEXT("saro"));
+  S47J::Set(Pose,TEXT("x"),P.X); S47J::Set(Pose,TEXT("y"),P.Y); S47J::Set(Pose,TEXT("z"),P.Z); S47J::Set(Pose,TEXT("h"),H);
+  S47J::Set(PersonalVehicle,TEXT("at"),TEXT("saro"));S47J::Set(PersonalVehicle,TEXT("pose"),Pose);
+  ServiceVehicle=TruckSave();
+ }
+ Enter(Area);
+}
+bool US47World::SelectTransport(bool bPersonal)
+{
+ if (bDriving || bBusy || !PersonalUnlocked() || M->Mode!=US47Main::EMode::Play || M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic()) return false;
+ if (bPersonal==bPersonalTransport) return true;
+ if (bPersonal) ServiceVehicle=TruckSave(); else PersonalVehicle=TruckSave();
+ const auto Target=bPersonal?PersonalVehicle:ServiceVehicle;
+ if (!Target) return false;
+ const FString Here=Area; bPersonalTransport=bPersonal; bCommuteVehicle=bPersonal;
+ PlaceTruck(S47J::Str(Target,TEXT("at")),S47J::Obj(Target,TEXT("pose"))); Enter(Here);
+ if (M) M->RequestAutosave(false);
+ return true;
+}
+bool US47World::PrepareCourierTruck()
+{
+ if (!bPersonalTransport) return true;
+ const FString At=ServicePlace();
+ Toast(TEXT("The originals go in SARO 07. Fetch the service truck before taking the old road."),5);
+ if (AreaOf(At)==Area && FVector2D::Distance(FVector2D(ServicePosition().X,ServicePosition().Z),FVector2D(PersonalPosition().X,PersonalPosition().Z))<30)
+ { SelectTransport(false); return false; }
+ FS47TripOpts O; O.Hint=TEXT("Park by the service truck, then transfer to SARO 07 for the courier.");
+ O.OnArrive=[this]{Toast(TEXT("Leave your car here and take SARO 07 to Mesa Diner, then the courier."),5);};
+ StartTrip(TruckAt,At,O); return false;
+}
+void US47World::VehicleChoices()
+{
+ if (!M || !M->Web || !M->Inter || !M->Web->IsLoaded()) return;
+ const bool bFree=PersonalUnlocked() && M->Mode==US47Main::EMode::Play && !M->bPausedByMenu && !bDriving && !bBusy && !M->ModalOpen() && !M->Story->IsCinematic();
+ const auto Bind=[&](TWeakObjectPtr<UBoxComponent>& Box,const TCHAR* Id,bool bPersonal)
+ {
+  if (!Box.IsValid())
+  {
+   auto* C=NewObject<UBoxComponent>(M->Web.Get());C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(M->Web->GetRootComponent());
+   C->SetBoxExtent(FVector(100,100,120));C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);
+   C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Overlap);C->SetHiddenInGame(true);C->SetRelativeLocation(FVector(0,0,-50000));C->RegisterComponent();
+   const int32 Node=M->Web->AdoptNode(C,INDEX_NONE,Id);Box=C;
+   FS47Interactable I;I.Id=Id;I.Object=FS47Obj(M->Web.Get(),Node);I.Range=3.4;
+   I.Label=[this,bPersonal]
+   {
+    if (!PersonalUnlocked() || M->Mode!=US47Main::EMode::Play || M->bPausedByMenu || bDriving || bBusy || M->ModalOpen() || M->Story->IsCinematic()) return FString();
+    if (bPersonal==bPersonalTransport)
+    {
+     if(M->Spine){const FString Label=M->Spine->Label(TEXT("truck"));if(!Label.IsEmpty())return Label;}
+     const FChoice Choice=TruckChoice?TruckChoice(TruckAt):FChoice();
+     if(!Choice.Label.IsEmpty())return Choice.Label;
+    }
+    return bPersonal?FString(TEXT("Drive your car")):FString(TEXT("Drive the service truck"));
+   };
+   I.Use=[this,bPersonal]
+   {
+    if (!SelectTransport(bPersonal)) return;
+    if(M->Spine&&M->Spine->Use(TEXT("truck")))return;
+    FChoice Choice=TruckChoice?TruckChoice(TruckAt):FChoice();
+    if (Choice.Use) Choice.Use();
+   };
+   M->Inter->Add(I);
+  }
+  const FString Place=bPersonal?PersonalPlace():ServicePlace();
+  const bool bVisible=bFree && (AreaOf(Place)==Area || (Place==TEXT("diner")&&Area==TEXT("road"))) && (bPersonal || bPersonalTransport);
+  const FVector P=bPersonal?PersonalPosition():ServicePosition(); const double H=bPersonal?PersonalHeading():ServiceHeading();
+  FS47Obj Proxy(M->Web.Get(),M->Web->NodeOf(Box.Get()));
+  const FVector WorldAt=bVisible?P+AboutUp(FVector(-1.2,1,-.3),H):FVector(0,-500,0);
+  const FS47Obj Parent=Proxy.Parent();
+  Proxy.SetPosition(Parent?Parent.WorldToLocal(WorldAt):WorldAt);
+  Proxy.SetRotation(FVector(0,H,0));
+ };
+ Bind(PersonalUseBox,TEXT("personalVehicle"),true); Bind(ServiceUseBox,TEXT("parkedServiceVehicle"),false);
 }

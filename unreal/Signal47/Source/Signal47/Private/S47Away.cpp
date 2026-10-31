@@ -2,6 +2,7 @@
 // flashFrames), in the order main.ts builds and steps them
 #include "S47Away.h"
 #include "S47Timeline.h"
+#include "S47Spine.h"
 #include "S47Keys.h"
 
 #include "Components/SceneCaptureComponent2D.h"
@@ -79,8 +80,16 @@ namespace
 	/** story/stationTaken.ts: the player is this far out of the hut door before it begins; the last clock it may begin at. */
 	const double OUT_OF_DOOR = 2.4, STATION_LAST = 4 * 3600 + 35 * 60 - (17 * 60 + 60 + 47 + 3);
 	/** main.ts FIXED: the story's next fixed point, by chapter. */
-	TOptional<double> Fixed(const FString& Phase, double EventClock)
+	TOptional<double> Fixed(const FString& Phase, double EventClock, bool bEvening = false)
 	{
+		if (bEvening)
+		{
+			if (Phase == TEXT("ch1")) return 3 * 3600. + 40 * 60;
+			if (Phase == TEXT("ch2")) return 4 * 3600.;
+			if (Phase == TEXT("ch3")) return S47Timeline::Chapter4(true);
+			if (Phase == TEXT("ch4")) return 5 * 3600.;
+			return {};
+		}
 		if (Phase == TEXT("ch1")) return EventClock + 40 * 60;
 		if (Phase == TEXT("ch2")) return 3 * 3600 + 40 * 60.0;
 		if (Phase == TEXT("ch3")) return 4 * 3600 + 35 * 60.0;
@@ -506,8 +515,11 @@ FS47AbductIn US47Away::AbductIn(bool bOk) const
 			else S.Along = FVector(On->Along.X, 0, On->Along.Y);
 		}
 	}
-	S.bOk = bOk; S.bEnabled = AbductOn(); S.Clock = Clock();
-	S.NextFixed = Fixed(Phase(), M->Story ? M->Story->EventClockSec() : 0).Get(-1e9);
+	const bool bEvening = M->Story && M->Story->bEveningTimeline;
+	const bool bProtected = bEvening && ((M->Spine && M->Spine->Protected()) || Area() == TEXT("room6") || At(TEXT("ch5")));
+	S.bOk = bOk && !bProtected; S.bEnabled = AbductOn(); S.Clock = Clock();
+	S.bNoTimeLoss = bEvening;
+	S.NextFixed = Fixed(Phase(), M->Story ? M->Story->EventClockSec() : 0, bEvening).Get(-1e9);
 	S.bLate = Phase() == TEXT("ch3") || Phase() == TEXT("ch4");
 	S.bCalm = CalmFlash();
 	// out among the dishes before they have turned: a little sooner there (story/dishesFollow.ts)
@@ -533,7 +545,7 @@ FString US47Away::StationDue() const
 	const FS47Obj Door = M->Web->Obj(TEXT("world.site.proxies.hutDoor"));
 	if (Door) { const FVector D = Door.WorldPosition(); if (FMath::Sqrt(FMath::Square(P.X - D.X) + FMath::Square(P.Z - D.Z)) < OUT_OF_DOOR) return TEXT("door"); }
 	// Evening cases: chapter three is 04:25 and four 04:50 (approved timeline), so the window ends before 04:50.
-	if (Clock() > ((M->Story && M->Story->bEveningTimeline) ? S47Timeline::Chapter4(true) - (17 * 60 + 60 + 47 + 3) : STATION_LAST)) return TEXT("late");
+	if (Clock() > ((M->Story && M->Story->bEveningTimeline) ? S47Timeline::Chapter4(true) - (47 + 60) : STATION_LAST)) return TEXT("late");
 	if (Cinematic() || M->OneAtATime() || (M->Audio && M->Audio->PhonePlaying())) return TEXT("busy");
 	// (stationTaken.begin is its port's: without it, nothing shuts the hut)
 	if (!StationBegin) return TEXT("story");
@@ -1175,5 +1187,8 @@ bool US47Away::SelfTest(TArray<FString>& Lines)
 	// main.ts's ground on SARO's highway and the fixed points
 	Check(OnHighway(FVector(-25, 0, 100)) && !OnHighway(FVector(-30, 0, 680)) && OnRoad(FVector(0, 0, 24.5)), TEXT("the highway and the service road"));
 	Check(Fixed(TEXT("ch2"), 0).Get(0) == 13200 && Fixed(TEXT("ch4"), 0).Get(0) == 18000 && !Fixed(TEXT("ch5"), 0) && Fixed(TEXT("ch1"), 8112).Get(0) == 8112 + 2400, TEXT("the story's next fixed points"));
+	Check(Fixed(TEXT("ch1"), 0, true).Get(0) == 3 * 3600 + 40 * 60 && Fixed(TEXT("ch2"), 0, true).Get(0) == 4 * 3600
+		&& Fixed(TEXT("ch3"), 0, true).Get(0) == S47Timeline::Chapter4(true) && !Fixed(TEXT("ch5"), 0, true),
+		TEXT("the fixed evening timeline uses SC07, SC08 and SC10 deadlines and excludes the finale"));
 	return bOk;
 }

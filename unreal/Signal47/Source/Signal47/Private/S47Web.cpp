@@ -1829,16 +1829,19 @@ int32 AS47Web::AdoptNode(UPrimitiveComponent* C, int32 Parent, const FString& Na
 {
 	// (Unreal only) a node for a part built at run time: where it is in its parent's terms (for its
 	// world position), its component, and its place among the parent's children (its visibility)
-	if (!C || !Nodes.IsValidIndex(Parent)) return -1;
+	if (!C || (Parent != INDEX_NONE && !Nodes.IsValidIndex(Parent))) return -1;
+	// Native actor-root proxies (the two parked vehicles) survive area changes.
+	// Their caller owns visibility; they must not inherit SARO or Caliche's root.
+	const bool bLoose = Parent == INDEX_NONE;
 	FS47WebNode N;
 	N.Parent = Parent;
 	N.Name = Name;
-	N.P = NodeWorldThree(Parent).InverseTransformPosition(ToThree(C->GetComponentLocation()));
+	N.P = bLoose ? ToThree(C->GetComponentLocation()) : NodeWorldThree(Parent).InverseTransformPosition(ToThree(C->GetComponentLocation()));
 	Compose(N.P, N.Q, N.S, N.Local);
 	N.Comp = C;
-	N.Root = Nodes[Parent].Root;
+	N.Root = bLoose ? Nodes.Num() : Nodes[Parent].Root;
 	const int32 I = Nodes.Add(N);
-	Nodes[Parent].Children.Add(I);
+	if (!bLoose) Nodes[Parent].Children.Add(I);
 	CompNode.Add(C, I);
 	bool bParent = true;
 	for (int32 P = Parent; P >= 0; P = Nodes[P].Parent) bParent &= Nodes[P].bVis;

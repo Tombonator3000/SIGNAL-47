@@ -145,7 +145,7 @@ bool FS47SC08::Use(const FString& Id)
   const FS47Doc D = ReelDoc(); S.AddDoc(D);
   if (M->Audio) M->Audio->Play(TEXT("click"), .5f);
   M->UI->Document(D);
-  S.Note(FString::Printf(TEXT("%s. 1420 AM, Earl gone home. His copy of the 1981 reel in the lobby, on isolated tape: the boy says the same words whatever I ask. 1420 AM is not 1420.405 MHz; he says so."), *S.ClockText(false)));
+  S.Note(FString::Printf(TEXT("%s. 1420 AM, Earl gone home. His copy of the 1981 reel and note are in the lobby. Earl writes that on isolated tape the boy repeated the same words when Earl asked it a question. His warning: 1420 AM is not 1420.405 MHz."), *S.ClockText(false)));
   SetStep(EStep::Sheet);
  }
  else if (Id == TEXT("serviceRecord"))

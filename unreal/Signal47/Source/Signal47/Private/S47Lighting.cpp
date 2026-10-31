@@ -15,6 +15,7 @@
 #include "HAL/IConsoleManager.h"
 #include "Misc/CommandLine.h"
 #include "DynamicRHI.h"
+#include "RHIStats.h"
 #include "RenderTimer.h"
 #include "S47Three.h"
 #include "S47Sky.h"
@@ -248,6 +249,7 @@ TSharedPtr<FJsonObject> AS47Web::GraphicsReadback() const
 	auto O = MakeShared<FJsonObject>();
 	for (const TCHAR* Name : { TEXT("r.ScreenPercentage"), TEXT("sg.ShadowQuality"), TEXT("sg.AntiAliasingQuality"),
 		TEXT("sg.GlobalIlluminationQuality"), TEXT("sg.ReflectionQuality"), TEXT("r.Lumen.HardwareRayTracing"),
+		TEXT("r.RayTracing.ResidentGeometryMemoryPoolSizeInMB"),
 		TEXT("r.ShadowQuality"), TEXT("r.ContactShadows"), TEXT("r.Lumen.ScreenProbeGather.ShortRangeAO"),
 		TEXT("r.VolumetricFog"), TEXT("r.VolumetricFog.GridPixelSize"), TEXT("r.VolumetricFog.GridSizeZ"),
 		TEXT("r.Streaming.MipBias"), TEXT("r.MaxAnisotropy"), TEXT("r.Streaming.PoolSize"),
@@ -302,6 +304,16 @@ void AS47Web::ApplyGraphicsSettings(const FS47GraphicsSettings& Settings)
 	Cvar(TEXT("r.ContactShadows"), Shadow >= 2);
 	Cvar(TEXT("r.Lumen.ScreenProbeGather.ShortRangeAO"), GI > 0);
 	Cvar(TEXT("r.Lumen.HardwareRayTracing"), Graphics.bHardwareRayTracing ? 1 : 0);
+	// UE5.8 RayTracingGeometryManager's real retention pool defaults to 400 MiB.
+	// Its unchanged 20% resident warning needs modest headroom for this dense High scene.
+	// Use the existing RHI's memory stats (Vulkan and D3D), never an external GPU probe.
+	FTextureMemoryStats Memory;
+	if (GDynamicRHI) RHIGetTextureMemoryStats(Memory);
+	const bool HighHardware = Graphics.Detail >= 1 && GI > 0 && Graphics.bHardwareRayTracing;
+	const int32 GeometryPool = HighHardware && Memory.DedicatedVideoMemory >= 8ll * 1024 * 1024 * 1024 ? 640 : 400;
+	Cvar(TEXT("r.RayTracing.ResidentGeometryMemoryPoolSizeInMB"), GeometryPool);
+	UE_LOG(LogTemp, Display, TEXT("S47: ray geometry retention pool %d MiB, dedicated VRAM %lld MiB, High HWRT %d; warning threshold unchanged"),
+		GeometryPool, static_cast<long long>(Memory.DedicatedVideoMemory >= 0 ? Memory.DedicatedVideoMemory / (1024 * 1024) : -1), HighHardware ? 1 : 0);
 	Cvar(TEXT("r.VolumetricFog"), Graphics.Fog > 0);
 	Cvar(TEXT("r.VolumetricFog.GridPixelSize"), Graphics.Fog == 2 ? 8 : 16);
 	Cvar(TEXT("r.VolumetricFog.GridSizeZ"), Graphics.Fog == 2 ? 96 : 64);

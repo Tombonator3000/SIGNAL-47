@@ -28,6 +28,11 @@ namespace
 
 	const int32 MAX = 3;
 	const double GAP = 40 * 60, MIN_LOST = 17 * 60;
+	bool HasTime(const FS47AbductIn& S)
+	{
+		// The evening version needs room for the warning and recovery, not seventeen lost minutes.
+		return S.NextFixed - S.Clock >= (S.bNoTimeLoss ? FS47Abduction::WARN + 60 : MIN_LOST + 60);
+	}
 	// Over you on waking, the three times: whether the stars come first (then the blink, the head
 	// lifted behind it); how far off each one stands beyond your feet (metres), how far aside in the
 	// frame (of the half width) and how (the nearest with its head bent down to you); and up, where
@@ -272,7 +277,7 @@ void FS47Abduction::Update(double Dt, const FS47AbductIn& S)
 void FS47Abduction::Calm(double Dt, const FS47AbductIn& S)
 {
 	RecordsStep();
-	const bool bRoom = S.NextFixed - S.Clock >= MIN_LOST + 60;
+	const bool bRoom = HasTime(S);
 	const bool bCan = S.bOk && S.bEnabled && !S.Line.IsEmpty() && Data.Count < MAX && S.Clock - Data.Last >= GAP && bRoom;
 	if (!bCan) { Pressure = FMath::Max(0.0, Pressure - Dt / 90); return; }
 	// about four to eight minutes alone on a line, sooner towards morning, much sooner when the one
@@ -287,7 +292,7 @@ void FS47Abduction::Calm(double Dt, const FS47AbductIn& S)
 void FS47Abduction::Begin(const FS47AbductIn& S)
 {
 	Stage = TEXT("warning"); St = 0; WarnLen = WARN; bSilent = false;
-	Beat = 0; WarnFrom = S.Clock;
+	Beat = 0; WarnFrom = S.Clock; bNoTimeLoss = S.bNoTimeLoss; Lost = 0;
 	PathV.Reset(); PathT = 0; Sample();
 	bHadLight = D.Flashlight && D.Flashlight->bOn;
 	Take = PlayerPos();
@@ -310,7 +315,7 @@ void FS47Abduction::BeginCab(const FS47AbductIn& S)
 
 bool FS47Abduction::MayBegin(const FS47AbductIn& S) const
 {
-	return Stage == TEXT("calm") && S.bEnabled && Data.Count < MAX && S.Clock - Data.Last >= GAP && S.NextFixed - S.Clock >= MIN_LOST + 60;
+	return Stage == TEXT("calm") && S.bEnabled && (!S.bNoTimeLoss || S.bOk) && Data.Count < MAX && S.Clock - Data.Last >= GAP && HasTime(S);
 }
 
 void FS47Abduction::Sample()
@@ -403,7 +408,7 @@ void FS47Abduction::LightStep(const FS47AbductIn& S)
 		MakeFrames();
 		if (D.Audio) D.Audio->Suspend(true);
 		const double Room = S.NextFixed - S.Clock - 60;
-		Lost = JsRound(FMath::Min(Rnd(17, 47) * 60, Room));
+		Lost = bNoTimeLoss ? 0 : JsRound(FMath::Clamp(Rnd(17, 47) * 60, 0.0, FMath::Max(0.0, Room)));
 		UE_LOG(LogS47Abduction, Display, TEXT("S47: the time away: taken, %d frames, %.0f s lost"), Frames.Num(), Lost);
 	}
 }
@@ -430,8 +435,8 @@ void FS47Abduction::Show(UTexture2D* T, double Alpha)
 void FS47Abduction::Wake(const FS47AbductIn& S)
 {
 	AS47Walker* P = D.Player;
-	if (D.SkipClock) D.SkipClock(Lost);
-	const double T1 = From + Lost;
+	if (!bNoTimeLoss && D.SkipClock) D.SkipClock(Lost);
+	const double T1 = bNoTimeLoss ? S.Clock : From + Lost;
 	// the truck's (story/truckTaken.ts): the truck put down further on, the player at its wheel, or (out
 	// of it at the light) on their back on the verge beside it
 	const bool bWasCab = bCab, bInCab = bWasCab && bCabIn;
@@ -481,7 +486,8 @@ void FS47Abduction::Wake(const FS47AbductIn& S)
 	const FString A = Clock(From), B = Clock(T1);
 	if (D.Note)
 	{
-		D.Note(FString::Printf(TEXT("%s to %s. Nothing."), *A, *B));
+		if (bNoTimeLoss) D.Note(FString::Printf(TEXT("%s. White light. Then I was here. No missing minutes on the clock."), *B));
+		else D.Note(FString::Printf(TEXT("%s to %s. Nothing."), *A, *B));
 		D.Note(FString::Printf(TEXT("%s. A line in the notebook in my own hand. I do not remember writing it: %s."), *B, FMath::FRand() < 0.5 ? TEXT("026") : *Clock(S.NextFixed)));
 		D.Note(FString::Printf(TEXT("%s. A nosebleed. It had stopped by itself."), *B));
 	}
@@ -1061,7 +1067,7 @@ void FS47Abduction::Refile() { for (const FS47AbductSpot& Sp : Data.Spots) if (S
 void FS47Abduction::Clear()
 {
 	ToneOff(); Bed.Stop(); Bed = FS47Pressure(); bSilent = false; Stage = TEXT("calm"); St = 0; Beat = 0; Pressure = 0; Top = Rnd(0.85, 1.15); BackAt.Reset();
-	bForced = false; PathV.Reset(); bCab = false; bCabIn = false; bAwakeCab = false;
+	bForced = false; PathV.Reset(); bCab = false; bCabIn = false; bAwakeCab = false; bNoTimeLoss = false; Lost = 0;
 	if (D.Screen.Hide) D.Screen.Hide();
 	if (D.Screen.Light) D.Screen.Light({});
 	if (D.Cab && D.Cab->Light) D.Cab->Light(0);
@@ -1238,6 +1244,28 @@ bool FS47Abduction::SelfTest(TArray<FString>& Lines)
 	Check(A.Stage == TEXT("warning") && A.bForced, TEXT("STATION 01's cannot be got away from"));
 	FS47AbductIn TooLate = In; TooLate.NextFixed = In.Clock + 600;
 	Check(!A.MayBegin(TooLate), TEXT("no room for the lost time before the next fixed point"));
+	FS47Abduction Current(D);
+	FS47AbductIn NoLoss = TooLate; NoLoss.bNoTimeLoss = true;
+	Check(Current.MayBegin(NoLoss), TEXT("the current night can take an encounter in a ten-minute window without losing story minutes"));
+	NoLoss.bOk = false;
+	Check(!Current.MayBegin(NoLoss), TEXT("a protected current-night scene cannot start a truck taking through MayBegin"));
+	NoLoss.bOk = true; NoLoss.NextFixed = NoLoss.Clock + 30;
+	Check(!Current.MayBegin(NoLoss), TEXT("even a no-loss encounter needs room for its warning and recovery"));
+	NoLoss.NextFixed = NoLoss.Clock + 600;
+	Current.Pressure = 2; Current.Update(.1, NoLoss);
+	Check(Current.Stage == TEXT("warning") && Current.bNoTimeLoss, TEXT("ordinary pressure uses the same no-loss eligibility as truck encounters"));
+	// Exercise Wake directly without screen production: no player, scene or audio is needed.
+	double Skipped = -1;
+	FS47AbductDeps WakeDeps; WakeDeps.SkipClock = [&Skipped](double Seconds) { Skipped = Seconds; };
+	TArray<FString> WakeNotes; WakeDeps.Note = [&WakeNotes](const FString& Text) { WakeNotes.Add(Text); };
+	FS47Abduction Waking(WakeDeps); Waking.bNoTimeLoss = true; Waking.From = NoLoss.Clock; Waking.Lost = 0;
+	Waking.Wake(NoLoss);
+	Check(Skipped == -1 && Waking.Data.Last == NoLoss.Clock && WakeNotes.Num() >= 1 && WakeNotes[0].Contains(TEXT("No missing minutes")),
+		TEXT("current-night waking neither calls the clock skipper nor claims missing minutes"));
+	FS47Abduction LegacyWake(WakeDeps); LegacyWake.From = In.Clock; LegacyWake.Lost = 17 * 60;
+	LegacyWake.Wake(In);
+	Check(Skipped == 17 * 60 && LegacyWake.Data.Last == In.Clock + 17 * 60,
+		TEXT("legacy waking keeps its seventeen-minute skip"));
 	// the save keeps every field of a spot
 	FS47AbductSave S;
 	S.Count = 1; S.Last = 9000;

@@ -44,6 +44,8 @@ public:
  bool HasTasks() const; // SC01 until complete, then only SC02's active meeting
  bool SC02Meeting() const;
  bool SC02Escaped() const;
+ bool SC02NeedsWitness() const;
+ bool SC03Complete() const;
  FString Objective() const;
  TArray<FS47Task> Tasks() const;
  static bool SelfTest(TArray<FString>& Lines);

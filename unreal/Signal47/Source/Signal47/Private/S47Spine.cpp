@@ -85,14 +85,17 @@ FS47Doc FS47Spine::Card(EGate G)
  return D;
 }
 
-void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
+void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase, bool bSavedFieldPresent)
 {
  Stop();
  bEnabled = bTestSC03 = false; for (int32& S : State) S = 0;
+ bMissingSavedSpine = !Saved.IsValid() && !bSavedFieldPresent;
+ bUnrecognizedSavedSpine = !bMissingSavedSpine;
  Act04.Begin(nullptr); Act08.Begin(nullptr); Act11.Begin(nullptr);
  if (Saved)
  {
   if (S47J::Int(Saved, TEXT("v")) != Version) return;
+  bUnrecognizedSavedSpine = false;
   bEnabled = true;
   State[SC04] = FMath::Clamp(S47J::Int(Saved, TEXT("sc04")), 0, 2);
   State[SC08] = FMath::Clamp(S47J::Int(Saved, TEXT("sc08")), 0, 2);
@@ -102,7 +105,24 @@ void FS47Spine::Begin(const S47J::FObj& Saved, bool bNewCase)
   Act11.Begin(S47J::Obj(Saved, TEXT("sc11d")));
   return;
  }
- bEnabled = bNewCase && M && M->Story && M->Story->bEveningTimeline;
+ bEnabled = bMissingSavedSpine && bNewCase && M && M->Story && M->Story->bEveningTimeline;
+}
+
+bool FS47Spine::ResumeAfterSC03()
+{
+ // Old route-2 nights reached the deputy before Spine was shipped. Resume only this
+ // proven boundary, never retrofit chapter gates or invent a sighting in other saves.
+ if (bEnabled || !bMissingSavedSpine || !M || !M->Story || !M->Story->NightSequence() || M->Story->ChapterKey != TEXT("prologue") ||
+     M->Story->Phase() != ES47Phase::Residual || !M->Horror || !M->Horror->SC03 || !M->Horror->SC03->Complete()) return false;
+ const auto& F = M->Horror->SC03->Facts();
+ if (!F.bObserved || !F.bMissing || !F.bLocalOrder || F.MissingStamp.IsEmpty() || F.OrderStamp.IsEmpty()) return false;
+ Begin(nullptr, true);
+ if (!bEnabled) return false;
+ State[SC04] = 1;
+ if (M->UI) M->UI->Objective(Act04.Objective());
+ UE_LOG(LogTemp, Display, TEXT("S47: recovered pre-Spine night after completed deputy report; SC04 available, originals retained"));
+ M->RequestAutosave(false);
+ return true;
 }
 
 void FS47Spine::Stop()
@@ -287,6 +307,7 @@ void FS47Spine::ShowPosts()
 
 void FS47Spine::Step(double Dt)
 {
+ if (!bEnabled) ResumeAfterSC03();
  if (!bEnabled || !M || !M->Story) return;
  Build();
  // SC03's end opens SC04: the control room holds until the originals are secured.
@@ -333,9 +354,26 @@ bool FS47Spine::SelfTest(TArray<FString>& Lines)
  const bool Chapters = GateDone(SC08) < S47Timeline::Chapter3(true) && S47Timeline::Chapter3(true) < S47Timeline::Chapter4(true) &&
   S47Timeline::Chapter4(true) < GateDone(SC11) && GateDone(SC11) < S47Timeline::Chapter5(true) && S47Timeline::Chapter5(true) < S47Timeline::Departure;
  bool Cards = true; for (int32 G = 0; G < GateCount; ++G) Cards &= Card(EGate(G)).Page.StartsWith(TEXT("PLACEHOLDER"));
- const bool Ok = Thirteen && Ordered && Chapters && Cards;
+ bool Protects = true;
+ FS47Spine Guard(nullptr);
+ auto Saved = S47J::New(); S47J::Set(Saved, TEXT("v"), Version);
+ for (const TCHAR* Key : {TEXT("sc04"), TEXT("sc08"), TEXT("sc11")})
+ {
+  S47J::Set(Saved, Key, 1); Guard.Begin(Saved, false); Protects &= Guard.Protected();
+  S47J::Set(Saved, Key, 2); Guard.Begin(Saved, false); Protects &= !Guard.Protected();
+ }
+ auto Future=S47J::New();S47J::Set(Future,TEXT("v"),Version+1);Guard.Begin(Future,false,true);
+ const bool FutureKept=!Guard.Enabled() && Guard.PreserveUnknownSave() && !Guard.bMissingSavedSpine;
+ Guard.Begin(nullptr,false,true); // The raw field existed but was not an object (including explicit null).
+ const bool MalformedKept=!Guard.Enabled() && Guard.PreserveUnknownSave() && !Guard.bMissingSavedSpine;
+ Guard.Begin(nullptr,false);
+ const bool MissingRecoverable=Guard.bMissingSavedSpine && !Guard.PreserveUnknownSave();
+ const bool SaveBoundary=FutureKept && MalformedKept && MissingRecoverable;
+ const bool Ok = Thirteen && Ordered && Chapters && Cards && Protects && SaveBoundary;
  Lines.Add(FString::Printf(TEXT("%s spine: 13 scenarios, placeholders ordered SC04 %.0f < SC08 %.0f < ch3 %.0f < ch4 %.0f < SC11 %.0f < ch5 %.0f < departure"),
   Ok ? TEXT("PASS") : TEXT("FAIL"), GateDone(SC04), GateDone(SC08), S47Timeline::Chapter3(true), S47Timeline::Chapter4(true), GateDone(SC11), S47Timeline::Chapter5(true)));
+ Lines.Add(FString::Printf(TEXT("%s spine: every active authored gate is protected until complete"), Protects ? TEXT("PASS") : TEXT("FAIL")));
+ Lines.Add(FString::Printf(TEXT("%s spine: only absent legacy state is recoverable; unknown and malformed present fields are retained"), SaveBoundary ? TEXT("PASS") : TEXT("FAIL")));
  return Ok;
 }
 

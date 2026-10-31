@@ -311,6 +311,7 @@ void FS47Evening::Begin(const S47J::FObj& Saved, bool bPastOpening)
  // A previously rejected stationary save already on the visitor lot now completes
  // the same arrival transaction. Keep its actual car pose; no diner/phone shortcut.
  if(bMigratedArrival || (Saved && Commute() && !M->World->bDriving && M->World->Area==TEXT("saro") && M->World->TruckOnLot())) Parked(TEXT("saro"));
+ if (!Commute()) M->World->RestoreTransport(S47J::Obj(Saved,TEXT("transport")));
  Context(); Refile();
  if (Opening()) M->UI->Objective(Commute() ? TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. STOP AT MESA DINER IF YOU FEEL LIKE SUPPER.") : TEXT("SARO // ANSWER DALE'S CALL IN THE CONTROL ROOM"));
  if (Pack.CurrentScene()) Resume();
@@ -690,7 +691,7 @@ void FS47Evening::Step(double Dt)
    M->UI->Objective(TEXT("SARO // STOP ANYWHERE IN THE VISITOR PARKING AREA, THEN USE THE ENTRANCE BY THE RAMP."));
   else M->UI->Objective(M->World->bDriving?TEXT("EVENING SHIFT // DRIVE NORTH TO SARO. STOP AT MESA DINER IF YOU FEEL LIKE SUPPER."):TEXT("EVENING SHIFT // RETURN TO YOUR CAR, THEN DRIVE NORTH TO SARO"));
  }
- Visual->Tick(Commute(),M->World->bDriving,Carrier,Pack.Flag(TEXT("intro_arrived")),Pack.Flag(TEXT("food_bought")),Pack.Flag(TEXT("food_taken")),Pack.Flag(TEXT("food_eaten")),Pack.CurrentScene() && Pack.CurrentScene()->Id==TEXT("I08_WATER"),Pack.Flag(TEXT("arrival_order_burger")));
+ Visual->Tick(Commute()||M->World->PersonalTransport(),M->World->bDriving,Carrier,Pack.Flag(TEXT("intro_arrived")),Pack.Flag(TEXT("food_bought")),Pack.Flag(TEXT("food_taken")),Pack.Flag(TEXT("food_eaten")),Pack.CurrentScene() && Pack.CurrentScene()->Id==TEXT("I08_WATER"),Pack.Flag(TEXT("arrival_order_burger")));
  if (!TestMode.IsEmpty() && !M->World->bBusy) { const FString Mode=TestMode; TestMode.Empty(); BootstrapTest(Mode); }
  if (bDialogueOpen && !M->ModalOpen()) bDialogueOpen=false;
  ControlTest(Dt);
@@ -703,6 +704,7 @@ S47J::FObj FS47Evening::Save() const
 {
  auto O=S47J::New(); S47J::Set(O,TEXT("takeaway"),Takeaway->Save()); S47J::Set(O,TEXT("pack"),Pack.Save()); S47J::Set(O,TEXT("radioPack"),RadioPack.Save());
  S47J::Set(O,TEXT("arrivalParkingVersion"),2);
+ S47J::Set(O,TEXT("transport"),M->World->TransportSave());
  S47J::Set(O,TEXT("investigationOnly"),bInvestigationOnly);
  S47J::Set(O,TEXT("serviceRouteVersion"),bNightSequence ? 2 : bServiceRoute ? 1 : 0);
  S47J::Set(O,TEXT("feederFailed"),bFeederFailed); S47J::Set(O,TEXT("feederRestored"),bFeederRestored);
@@ -789,6 +791,20 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  Check(V.ParkedPosition().Equals(FVector(-14.3,-.6,18.5)) && FMath::IsNearlyEqual(V.ParkedHeading(),UE_DOUBLE_PI/2),TEXT("cross-line transverse arrival survives current save restore"));
  V.RestorePersonal(FVector(4.5,-.62,14),UE_DOUBLE_PI,0);Check(V.ParkedPosition().Equals(Bay)&&FMath::IsNearlyZero(V.ParkedHeading()),TEXT("legacy fallback save migrates to marked visitor parking"));
  V.RestorePersonal(Moved,.2,2);Check(V.ParkedPosition().Equals(Moved)&&FMath::IsNearlyEqual(V.ParkedHeading(),.2),TEXT("current safe custom pose survives restore"));
+ // A parked second vehicle survives selection and a JSON save/restore independently of its carrier.
+ {
+  const auto Saved=S47J::Read(TEXT("{\"v\":1,\"personalSelected\":true,\"personal\":{\"at\":\"motel\",\"pose\":{\"at\":\"motel\",\"x\":-35,\"y\":-0.6,\"z\":650,\"h\":1.1}},\"service\":{\"at\":\"saro\",\"pose\":{\"at\":\"saro\",\"x\":8.9,\"y\":0,\"z\":8,\"h\":3.141592653589793}}}"));
+  US47World* Vehicles=NewObject<US47World>(GetTransientPackage()); Vehicles->RestoreTransport(Saved);
+  Check(Vehicles->PersonalTransport() && Vehicles->PersonalPlace()==TEXT("motel") && Vehicles->ServicePlace()==TEXT("saro")
+   && Vehicles->PersonalPosition().Equals(FVector(-35,-.6,650)) && Vehicles->ServicePosition().Equals(FVector(8.9,0,8)),
+   TEXT("restoring the personal car at the motel leaves SARO 07 on its own pad"));
+  const auto Again=S47J::Read(S47J::Write(Vehicles->TransportSave()));
+  S47J::Set(Again,TEXT("personalSelected"),false); Vehicles->RestoreTransport(Again);
+  Check(!Vehicles->PersonalTransport() && Vehicles->PersonalPosition().Equals(FVector(-35,-.6,650))
+   && Vehicles->ServicePosition().Equals(FVector(8.9,0,8)),
+   TEXT("selecting the service truck after a round trip preserves the other car's exact parked pose"));
+  Vehicles->MarkAsGarbage();
+ }
  FS47Truck T;T.SetPose(FVector(9,0.2,15),FVector(0.25,0.7,-0.18));T.SetParkPose(FVector(8.9,0,8),UE_DOUBLE_PI);
  Check(T.Position.Equals(FVector(8.9,0,8)) && T.Rotation.Equals(FVector(0,UE_DOUBLE_PI,0)),TEXT("canonical service parking drops inherited ramp pitch and roll"));
  FS47EveningPack Supper;

@@ -6,6 +6,8 @@
 #include "S47T02Photo.h"
 
 class US47Main;
+class FS47GainNode;
+class FS47ScheduledSourceNode;
 class UMaterialInstanceDynamic;
 class UMaterialInterface;
 class UInstancedStaticMeshComponent;
@@ -167,6 +169,10 @@ private:
  TWeakObjectPtr<UStaticMeshComponent> FaultLampMounts[2];
  TWeakObjectPtr<UMaterialInstanceDynamic> FaultArcMid, FaultLampMid;
  TWeakObjectPtr<UPointLightComponent> FaultArcLight, FaultLampLights[2];
+ TSharedPtr<FS47GainNode> SiteHumGain, SiteBuzzGain;
+ TArray<TSharedPtr<FS47ScheduledSourceNode>> SiteAudioSources;
+ void StepSiteAudio(bool bFault, float Arc, bool bHeld);
+ void StopSiteAudio();
  double FaultTime = 0;
  bool bFaultShown = false;
  double ArcT = -1;

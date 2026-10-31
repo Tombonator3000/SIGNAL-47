@@ -106,3 +106,7 @@ Main5dce2c8b har PR236; runtime-inputs er identiske med fryst kandidat95807f4f/b
 
 ### 2026-10-30 Dales modellrevisjon levert
 PR242/main452e7d9f, pakket kilde5aa3ce12, installert kl10:16. Bygg, selvtest, kort OfficeEarly og pakket/installerte bilder bestått;134 Saved-noder bevart. Tripo-chatten har frigitt tungvinduet.95 eksisterende kreditter brukt. Visuelt referansemål står åpent; [før/etter og levering](../Docs/Evidence/UnrealDeliveries/DALE_REALISM_2026-10-30.md).
+
+## Spilltestrettelser31. oktober2026
+
+Tom har avsluttet spillet og godkjent retting. Gren `codex/playtest-fixes-20261031`. Root eier progresjonsgjenoppretting, lyd/trafo, bygg og levering. early_logic eier motell og Caliche-adkomst; late_logic eier historiens logikk og egenbil; save_interaction eier Tripo-figurer, kuer og Earl. Alle motorjobber kjøres sekvensielt gjennom eksisterende tungreservasjon. Personlige Saved er kopiert før testing og bevares ved installasjon.

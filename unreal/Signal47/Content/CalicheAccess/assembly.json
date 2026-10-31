@@ -1,0 +1,3514 @@
+{
+  "version": 1,
+  "status": "NATIVE_READY",
+  "parts": {
+    "SM_Access_Sheriff_Shell": {
+      "name": "SM_Access_Sheriff_Shell",
+      "root": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "family": "Sheriff",
+      "role": "static",
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_Ceramic",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_RoofShingle",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffCoping",
+        "M_Town_SheriffCork",
+        "M_Town_SheriffCrack",
+        "M_Town_SheriffLetters",
+        "M_Town_SheriffRoofing",
+        "M_Town_SheriffStreak",
+        "M_Town_SheriffStucco",
+        "M_Town_SheriffStuccoBase",
+        "M_Town_SheriffStuccoPatch",
+        "M_Town_SheriffWeatheredWood",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        9555,
+        5756,
+        2812
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Sheriff_Shell.SM_Access_Sheriff_Shell"
+    },
+    "SM_Access_Sheriff_Glass": {
+      "name": "SM_Access_Sheriff_Glass",
+      "root": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "family": "Sheriff",
+      "role": "static",
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "lod_triangles": [
+        88,
+        52,
+        16
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Sheriff_Glass.SM_Access_Sheriff_Glass"
+    },
+    "SM_Access_Sheriff_Interior": {
+      "name": "SM_Access_Sheriff_Interior",
+      "root": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "family": "Sheriff",
+      "role": "static",
+      "materials": [
+        "M_Town_BookCloth",
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_CinemaRedGlow",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FloorTile",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_SheriffShadeGlow",
+        "M_Town_SheriffWainscot",
+        "M_Town_Stucco",
+        "M_Town_Timber",
+        "M_Town_Upholstery",
+        "M_Town_WarmGlow",
+        "M_Town_WasherGlass"
+      ],
+      "lod_triangles": [
+        7560,
+        4940,
+        2020
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Sheriff_Interior.SM_Access_Sheriff_Interior"
+    },
+    "SM_Access_Sheriff_Fixtures": {
+      "name": "SM_Access_Sheriff_Fixtures",
+      "root": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "family": "Sheriff",
+      "role": "static",
+      "materials": [
+        "M_Town_CinemaRedGlow",
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_SheriffBrass",
+        "M_Town_SheriffLampGlow",
+        "M_Town_SheriffShadeGlow",
+        "M_Town_SheriffTubeGlow",
+        "M_Town_TubeGlow"
+      ],
+      "lod_triangles": [
+        1444,
+        824,
+        512
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Sheriff_Fixtures.SM_Access_Sheriff_Fixtures"
+    },
+    "SM_Access_Sheriff_Door": {
+      "name": "SM_Access_Sheriff_Door",
+      "root": [
+        7984,
+        7.192696381179047,
+        2102.045
+      ],
+      "family": "Sheriff",
+      "role": "door",
+      "materials": [
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Glass",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_SheriffBrass",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        450,
+        318,
+        178
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Sheriff_Door.SM_Access_Sheriff_Door"
+    },
+    "SM_Access_Laundry_Shell": {
+      "name": "SM_Access_Laundry_Shell",
+      "root": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "family": "Laundry",
+      "role": "static",
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_Concrete",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryBlockPaint",
+        "M_Town_LaundryDirt",
+        "M_Town_LaundryFadedBlue",
+        "M_Town_LaundryGrime",
+        "M_Town_LaundryLint",
+        "M_Town_LaundryMortar",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRawBlock",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryStreak",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_RoofShingle",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_TealPaint"
+      ],
+      "lod_triangles": [
+        9895,
+        5423,
+        2544
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Laundry_Shell.SM_Access_Laundry_Shell"
+    },
+    "SM_Access_Laundry_Glass": {
+      "name": "SM_Access_Laundry_Glass",
+      "root": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "family": "Laundry",
+      "role": "static",
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "lod_triangles": [
+        8,
+        8,
+        8
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Laundry_Glass.SM_Access_Laundry_Glass"
+    },
+    "SM_Access_Laundry_Interior": {
+      "name": "SM_Access_Laundry_Interior",
+      "root": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "family": "Laundry",
+      "role": "static",
+      "materials": [
+        "M_Town_Bedding",
+        "M_Town_BluePaint",
+        "M_Town_BookCloth",
+        "M_Town_Burlap",
+        "M_Town_Ceiling",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_LaundryAluminum",
+        "M_Town_LaundryOrangePlastic",
+        "M_Town_LaundryPaleGreen",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryTileCream",
+        "M_Town_LaundryTileGreen",
+        "M_Town_LaundryWallCream",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_TealPaint",
+        "M_Town_Timber",
+        "M_Town_Upholstery",
+        "M_Town_WasherGlass"
+      ],
+      "lod_triangles": [
+        21526,
+        13882,
+        7340
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Laundry_Interior.SM_Access_Laundry_Interior"
+    },
+    "SM_Access_Laundry_Fixtures": {
+      "name": "SM_Access_Laundry_Fixtures",
+      "root": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "family": "Laundry",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaRedGlow",
+        "M_Town_DarkMetal",
+        "M_Town_LaundryRedEnamel",
+        "M_Town_LaundryTubeLens",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_WarmGlow",
+        "M_Town_WasherGlass"
+      ],
+      "lod_triangles": [
+        2398,
+        1502,
+        812
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Laundry_Fixtures.SM_Access_Laundry_Fixtures"
+    },
+    "SM_Access_Laundry_Door": {
+      "name": "SM_Access_Laundry_Door",
+      "root": [
+        7985,
+        8.013043546669646,
+        2137.895
+      ],
+      "family": "Laundry",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkMetal",
+        "M_Town_Glass",
+        "M_Town_LaundryAluminum",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas"
+      ],
+      "lod_triangles": [
+        242,
+        210,
+        124
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Laundry_Door.SM_Access_Laundry_Door"
+    },
+    "SM_Access_Feed_Shell": {
+      "name": "SM_Access_Feed_Shell",
+      "root": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "family": "Feed",
+      "role": "static",
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FeedAdobe",
+        "M_Town_FeedGalv",
+        "M_Town_FeedGrain",
+        "M_Town_FeedGrime",
+        "M_Town_FeedHay",
+        "M_Town_FeedLetterPaint",
+        "M_Town_FeedMineral",
+        "M_Town_FeedRustTin",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedSalt",
+        "M_Town_FeedStucco",
+        "M_Town_FeedStuccoBase",
+        "M_Town_FeedStuccoPatch",
+        "M_Town_Metal",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_Timber",
+        "M_Town_WhitePaint"
+      ],
+      "lod_triangles": [
+        23392,
+        14664,
+        7003
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Feed_Shell.SM_Access_Feed_Shell"
+    },
+    "SM_Access_Feed_Glass": {
+      "name": "SM_Access_Feed_Glass",
+      "root": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "family": "Feed",
+      "role": "static",
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "lod_triangles": [
+        4,
+        4,
+        4
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Feed_Glass.SM_Access_Feed_Glass"
+    },
+    "SM_Access_Feed_Interior": {
+      "name": "SM_Access_Feed_Interior",
+      "root": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "family": "Feed",
+      "role": "static",
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_Ceramic",
+        "M_Town_Clapboard",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_FeedGalv",
+        "M_Town_FeedGrain",
+        "M_Town_FeedHay",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedSackPrint",
+        "M_Town_FeedWallGlow",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        22442,
+        14282,
+        5886
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Feed_Interior.SM_Access_Feed_Interior"
+    },
+    "SM_Access_Feed_Fixtures": {
+      "name": "SM_Access_Feed_Fixtures",
+      "root": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "family": "Feed",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_FeedBulbGlow",
+        "M_Town_FeedGalv",
+        "M_Town_FeedRedPaint",
+        "M_Town_FeedShadeGlow",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Rubber",
+        "M_Town_WarmGlow"
+      ],
+      "lod_triangles": [
+        5780,
+        3356,
+        1916
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Feed_Fixtures.SM_Access_Feed_Fixtures"
+    },
+    "SM_Access_Feed_Door": {
+      "name": "SM_Access_Feed_Door",
+      "root": [
+        7985,
+        10.375556755065919,
+        2204.045
+      ],
+      "family": "Feed",
+      "role": "door",
+      "materials": [
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Glass",
+        "M_Town_Metal",
+        "M_Town_PrintAtlas",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        838,
+        662,
+        394
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Feed_Door.SM_Access_Feed_Door"
+    },
+    "SM_Access_Cinema_Shell": {
+      "name": "SM_Access_Cinema_Shell",
+      "root": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "family": "Cinema",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaFinRed",
+        "M_Town_CinemaRoofTar",
+        "M_Town_CinemaStain",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_Concrete",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_RustTin",
+        "M_Town_TealPaint",
+        "M_Town_Terrazzo",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        9610,
+        6240,
+        3684
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Cinema_Shell.SM_Access_Cinema_Shell"
+    },
+    "SM_Access_Cinema_Glass": {
+      "name": "SM_Access_Cinema_Glass",
+      "root": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "family": "Cinema",
+      "role": "static",
+      "materials": [
+        "M_Town_Glass"
+      ],
+      "lod_triangles": [
+        46,
+        38,
+        34
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Cinema_Glass.SM_Access_Cinema_Glass"
+    },
+    "SM_Access_Cinema_Interior": {
+      "name": "SM_Access_Cinema_Interior",
+      "root": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "family": "Cinema",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBlackTile",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaEnamelRed",
+        "M_Town_CinemaStucco",
+        "M_Town_CinemaTerrazzoCream",
+        "M_Town_CinemaTerrazzoRed",
+        "M_Town_CinemaVelvet",
+        "M_Town_Concrete",
+        "M_Town_CreamEnamel",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_PrintAtlas",
+        "M_Town_Rubber",
+        "M_Town_TealPaint",
+        "M_Town_Terrazzo",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        3426,
+        1866,
+        934
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Cinema_Interior.SM_Access_Cinema_Interior"
+    },
+    "SM_Access_Cinema_Fixtures": {
+      "name": "SM_Access_Cinema_Fixtures",
+      "root": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "family": "Cinema",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceramic",
+        "M_Town_CinemaAluminium",
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_CinemaBulb",
+        "M_Town_CinemaDeadBulb",
+        "M_Town_CinemaNeonRed",
+        "M_Town_CinemaReaderGlow",
+        "M_Town_DarkMetal",
+        "M_Town_Metal",
+        "M_Town_WarmGlow"
+      ],
+      "lod_triangles": [
+        7398,
+        4298,
+        2294
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Cinema_Fixtures.SM_Access_Cinema_Fixtures"
+    },
+    "SM_Access_Cinema_Door": {
+      "name": "SM_Access_Cinema_Door",
+      "root": [
+        7985,
+        8.987393474578857,
+        2159.995
+      ],
+      "family": "Cinema",
+      "role": "door",
+      "materials": [
+        "M_Town_CinemaBrass",
+        "M_Town_CinemaBronze",
+        "M_Town_Glass"
+      ],
+      "lod_triangles": [
+        450,
+        154,
+        122
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Cinema_Door.SM_Access_Cinema_Door"
+    },
+    "SM_Access_Church_Shell": {
+      "name": "SM_Access_Church_Shell",
+      "root": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "family": "Church",
+      "role": "static",
+      "materials": [
+        "M_Town_ChurchBrick",
+        "M_Town_ChurchOldPaper",
+        "M_Town_ChurchShingleFaded",
+        "M_Town_ChurchStone",
+        "M_Town_ChurchTrim",
+        "M_Town_ChurchWhiteBoard",
+        "M_Town_ChurchWornBoard",
+        "M_Town_Concrete",
+        "M_Town_DarkWood",
+        "M_Town_RoofShingle",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        19984,
+        12376,
+        4930
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Church_Shell.SM_Access_Church_Shell"
+    },
+    "SM_Access_Church_Glass": {
+      "name": "SM_Access_Church_Glass",
+      "root": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "family": "Church",
+      "role": "static",
+      "materials": [
+        "M_Town_ChurchGlass"
+      ],
+      "lod_triangles": [
+        136,
+        88,
+        40
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Church_Glass.SM_Access_Church_Glass"
+    },
+    "SM_Access_Church_Interior": {
+      "name": "SM_Access_Church_Interior",
+      "root": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "family": "Church",
+      "role": "static",
+      "materials": [
+        "M_Town_BookCloth",
+        "M_Town_Burlap",
+        "M_Town_Carpet",
+        "M_Town_Ceramic",
+        "M_Town_Clapboard",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        8552,
+        5428,
+        2428
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Church_Interior.SM_Access_Church_Interior"
+    },
+    "SM_Access_Church_Fixtures": {
+      "name": "SM_Access_Church_Fixtures",
+      "root": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "family": "Church",
+      "role": "static",
+      "materials": [
+        "M_Town_Burlap",
+        "M_Town_ChurchBrass",
+        "M_Town_ChurchBronze",
+        "M_Town_ChurchFlameGlow",
+        "M_Town_ChurchGalv",
+        "M_Town_ChurchLampGlow",
+        "M_Town_ChurchPorchGlow",
+        "M_Town_Concrete",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_LampFabric",
+        "M_Town_Metal",
+        "M_Town_Paper"
+      ],
+      "lod_triangles": [
+        5160,
+        3184,
+        1578
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Church_Fixtures.SM_Access_Church_Fixtures"
+    },
+    "SM_Access_Church_Door": {
+      "name": "SM_Access_Church_Door",
+      "root": [
+        8021,
+        6.315627861022949,
+        2096.545
+      ],
+      "family": "Church",
+      "role": "door",
+      "materials": [
+        "M_Town_ChurchStone",
+        "M_Town_DarkMetal",
+        "M_Town_DarkWood",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        622,
+        558,
+        168
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Church_Door.SM_Access_Church_Door"
+    },
+    "SM_Access_H01_Interior": {
+      "name": "SM_Access_H01_Interior",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "family": "H01",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H01_Interior.SM_Access_H01_Interior"
+    },
+    "SM_Access_H01_Door": {
+      "name": "SM_Access_H01_Door",
+      "root": [
+        8024.0,
+        7.314197063446045,
+        2136.875
+      ],
+      "family": "H01",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H01_Door.SM_Access_H01_Door"
+    },
+    "SM_Access_H02_Interior": {
+      "name": "SM_Access_H02_Interior",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "family": "H02",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H02_Interior.SM_Access_H02_Interior"
+    },
+    "SM_Access_H02_Door": {
+      "name": "SM_Access_H02_Door",
+      "root": [
+        8024.5,
+        8.003066062927246,
+        2159.875
+      ],
+      "family": "H02",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H02_Door.SM_Access_H02_Door"
+    },
+    "SM_Access_H03_Interior": {
+      "name": "SM_Access_H03_Interior",
+      "root": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "family": "H03",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H03_Interior.SM_Access_H03_Interior"
+    },
+    "SM_Access_H03_Door": {
+      "name": "SM_Access_H03_Door",
+      "root": [
+        8025.0,
+        8.81874942779541,
+        2182.075
+      ],
+      "family": "H03",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H03_Door.SM_Access_H03_Door"
+    },
+    "SM_Access_H04_Interior": {
+      "name": "SM_Access_H04_Interior",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "family": "H04",
+      "role": "static",
+      "materials": [
+        "M_Town_Ceiling",
+        "M_Town_DarkWood",
+        "M_Town_Linoleum",
+        "M_Town_Metal",
+        "M_Town_OliveEnamel",
+        "M_Town_Paper",
+        "M_Town_Timber",
+        "M_Town_Upholstery"
+      ],
+      "lod_triangles": [
+        680,
+        616,
+        540
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H04_Interior.SM_Access_H04_Interior"
+    },
+    "SM_Access_H04_Door": {
+      "name": "SM_Access_H04_Door",
+      "root": [
+        7981.0,
+        11.268553733825684,
+        2244.875
+      ],
+      "family": "H04",
+      "role": "door",
+      "materials": [
+        "M_Town_DarkWood",
+        "M_Town_Metal",
+        "M_Town_Timber"
+      ],
+      "lod_triangles": [
+        64,
+        64,
+        64
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_H04_Door.SM_Access_H04_Door"
+    },
+    "SM_Access_Souvenir_Shell": {
+      "name": "SM_Access_Souvenir_Shell",
+      "root": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "family": "Souvenir",
+      "role": "static",
+      "materials": [
+        "M_Souvenir_BaseGrime",
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_Concrete",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_CreamStucco",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_OldBrick",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_OxidizedCanopy",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_WeatheredTimber"
+      ],
+      "lod_triangles": [
+        25313,
+        25313,
+        25313
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Souvenir_Shell.SM_Access_Souvenir_Shell"
+    },
+    "SM_Access_Souvenir_Interior": {
+      "name": "SM_Access_Souvenir_Interior",
+      "root": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "family": "Souvenir",
+      "role": "static",
+      "materials": [
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_CeramicIvory",
+        "M_Souvenir_CeramicTeal",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_CreasedFoil",
+        "M_Souvenir_FadedRed",
+        "M_Souvenir_Galvanized",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_PrintedArtwork",
+        "M_Souvenir_PrintedLabels",
+        "M_Souvenir_SkyPrint",
+        "M_Souvenir_Walnut",
+        "M_Souvenir_WarmLamp",
+        "M_Souvenir_WeatheredTimber",
+        "M_Souvenir_WornBrass",
+        "M_Souvenir_WovenCanvas"
+      ],
+      "lod_triangles": [
+        156462,
+        156462,
+        156462
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Souvenir_Interior.SM_Access_Souvenir_Interior"
+    },
+    "SM_Access_Souvenir_Glass": {
+      "name": "SM_Access_Souvenir_Glass",
+      "root": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "family": "Souvenir",
+      "role": "static",
+      "materials": [
+        "M_Souvenir_ClearGlass"
+      ],
+      "lod_triangles": [
+        12,
+        12,
+        12
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Souvenir_Glass.SM_Access_Souvenir_Glass"
+    },
+    "SM_Access_Souvenir_Door": {
+      "name": "SM_Access_Souvenir_Door",
+      "root": [
+        8020.5,
+        4.952807474136353,
+        2067.245
+      ],
+      "family": "Souvenir",
+      "role": "door",
+      "materials": [
+        "M_Souvenir_BlackIron",
+        "M_Souvenir_CounterWalnut",
+        "M_Souvenir_CreamPaper",
+        "M_Souvenir_ExposedPlaster",
+        "M_Souvenir_OlivePaint",
+        "M_Souvenir_PrintInk",
+        "M_Souvenir_WornBrass"
+      ],
+      "lod_triangles": [
+        1461,
+        1461,
+        1461
+      ],
+      "asset": "/Game/CalicheAccess/SM_Access_Souvenir_Door.SM_Access_Souvenir_Door"
+    }
+  },
+  "buildings": [
+    {
+      "id": "Sheriff",
+      "root": [
+        7984,
+        7.192696381179047,
+        2106
+      ],
+      "footprint": [
+        -10,
+        0,
+        -6,
+        6
+      ],
+      "floor": 0,
+      "door": [
+        0,
+        4.4,
+        1.0,
+        2.15
+      ],
+      "front": 1,
+      "hinge": [
+        0,
+        3.9550000000000005,
+        0
+      ],
+      "old_prefix": "SM_Town_Sheriff_",
+      "interact": "sheriffDoor",
+      "furniture": [
+        [
+          7979.725,
+          7981.375,
+          2106.8,
+          2107.7
+        ],
+        [
+          7979.37,
+          7979.83,
+          2107.025,
+          2107.475
+        ],
+        [
+          7981.57,
+          7982.03,
+          2107.025,
+          2107.475
+        ],
+        [
+          7980.485,
+          7980.915,
+          2107.115,
+          2107.485
+        ],
+        [
+          7980.76,
+          7980.96,
+          2107.12,
+          2107.48
+        ],
+        [
+          7980.225,
+          7980.475,
+          2106.845,
+          2107.075
+        ],
+        [
+          7980.317,
+          7980.463,
+          2106.887,
+          2107.033
+        ],
+        [
+          7976.05,
+          7976.75,
+          2108.59,
+          2109.21
+        ],
+        [
+          7976.05,
+          7976.75,
+          2107.79,
+          2108.41
+        ],
+        [
+          7976.05,
+          7976.75,
+          2102.79,
+          2103.41
+        ],
+        [
+          7976.05,
+          7976.75,
+          2101.99,
+          2102.61
+        ],
+        [
+          7977.585,
+          7977.715,
+          2105.8,
+          2108.8
+        ],
+        [
+          7980.175,
+          7981.225,
+          2101.35,
+          2103.65
+        ],
+        [
+          7980.12,
+          7981.28,
+          2101.285,
+          2103.715
+        ],
+        [
+          7974.41,
+          7974.89,
+          2102.7,
+          2103.7
+        ],
+        [
+          7974.41,
+          7974.89,
+          2100.2,
+          2101.2
+        ],
+        [
+          7976.6,
+          7976.9,
+          2107.95,
+          2108.25
+        ],
+        [
+          7983.36,
+          7983.8,
+          2106.1,
+          2108.5
+        ],
+        [
+          7983.34,
+          7983.82,
+          2106.07,
+          2108.53
+        ],
+        [
+          7983.44,
+          7983.76,
+          2107.35,
+          2107.85
+        ],
+        [
+          7983.48,
+          7983.72,
+          2106.54,
+          2106.86
+        ],
+        [
+          7980.935,
+          7981.065,
+          2106.7881813264407,
+          2106.911818673559
+        ],
+        [
+          7980.1,
+          7981.0,
+          2106.975,
+          2107.525
+        ],
+        [
+          7977.07,
+          7977.69,
+          2109.15,
+          2109.85
+        ],
+        [
+          7977.07,
+          7977.69,
+          2109.9,
+          2110.6
+        ],
+        [
+          7977.24,
+          7977.56,
+          2110.13,
+          2110.37
+        ],
+        [
+          7977.25,
+          7977.57,
+          2110.13,
+          2110.37
+        ],
+        [
+          7977.26,
+          7977.58,
+          2110.13,
+          2110.37
+        ],
+        [
+          7977.18,
+          7977.52,
+          2104.18,
+          2104.52
+        ],
+        [
+          7977.21,
+          7977.49,
+          2104.21,
+          2104.49
+        ],
+        [
+          7983.06,
+          7983.2,
+          2100.47,
+          2100.93
+        ]
+      ]
+    },
+    {
+      "id": "Laundry",
+      "root": [
+        7985,
+        8.013043546669646,
+        2133
+      ],
+      "footprint": [
+        -10,
+        0,
+        -7,
+        7
+      ],
+      "floor": 0,
+      "door": [
+        0,
+        -4.4,
+        1.1,
+        2.2
+      ],
+      "front": 1,
+      "hinge": [
+        0,
+        -4.8950000000000005,
+        0
+      ],
+      "old_prefix": "SM_Town_Laundry_",
+      "interact": "laundromat",
+      "furniture": [
+        [
+          7979.91,
+          7980.61,
+          2138.08,
+          2138.84
+        ],
+        [
+          7979.91,
+          7980.61,
+          2137.3,
+          2138.06
+        ],
+        [
+          7979.91,
+          7980.61,
+          2136.52,
+          2137.28
+        ],
+        [
+          7979.91,
+          7980.61,
+          2135.74,
+          2136.5
+        ],
+        [
+          7979.91,
+          7980.61,
+          2134.96,
+          2135.72
+        ],
+        [
+          7979.91,
+          7980.61,
+          2134.18,
+          2134.94
+        ],
+        [
+          7979.91,
+          7980.61,
+          2133.4,
+          2134.16
+        ],
+        [
+          7979.91,
+          7980.61,
+          2132.62,
+          2133.38
+        ],
+        [
+          7979.91,
+          7980.61,
+          2131.84,
+          2132.6
+        ],
+        [
+          7979.91,
+          7980.61,
+          2131.06,
+          2131.82
+        ],
+        [
+          7979.91,
+          7980.61,
+          2130.28,
+          2131.04
+        ],
+        [
+          7979.91,
+          7980.61,
+          2129.5,
+          2130.26
+        ],
+        [
+          7979.91,
+          7980.61,
+          2128.72,
+          2129.48
+        ],
+        [
+          7979.91,
+          7980.61,
+          2127.94,
+          2128.7
+        ],
+        [
+          7979.91,
+          7980.61,
+          2127.16,
+          2127.92
+        ],
+        [
+          7979.14,
+          7979.8,
+          2136.96,
+          2137.62
+        ],
+        [
+          7979.19,
+          7979.69,
+          2137.01,
+          2137.57
+        ],
+        [
+          7979.18,
+          7979.7,
+          2137.0,
+          2137.58
+        ],
+        [
+          7979.68,
+          7979.8,
+          2136.96,
+          2137.62
+        ],
+        [
+          7979.14,
+          7979.8,
+          2136.18,
+          2136.84
+        ],
+        [
+          7979.19,
+          7979.69,
+          2136.23,
+          2136.79
+        ],
+        [
+          7979.18,
+          7979.7,
+          2136.22,
+          2136.8
+        ],
+        [
+          7979.68,
+          7979.8,
+          2136.18,
+          2136.84
+        ],
+        [
+          7979.14,
+          7979.8,
+          2135.4,
+          2136.06
+        ],
+        [
+          7979.19,
+          7979.69,
+          2135.45,
+          2136.01
+        ],
+        [
+          7979.18,
+          7979.7,
+          2135.44,
+          2136.02
+        ],
+        [
+          7979.68,
+          7979.8,
+          2135.4,
+          2136.06
+        ],
+        [
+          7979.14,
+          7979.8,
+          2134.62,
+          2135.28
+        ],
+        [
+          7979.19,
+          7979.69,
+          2134.67,
+          2135.23
+        ],
+        [
+          7979.18,
+          7979.7,
+          2134.66,
+          2135.24
+        ],
+        [
+          7979.68,
+          7979.8,
+          2134.62,
+          2135.28
+        ],
+        [
+          7979.14,
+          7979.8,
+          2133.84,
+          2134.5
+        ],
+        [
+          7979.19,
+          7979.69,
+          2133.89,
+          2134.45
+        ],
+        [
+          7979.18,
+          7979.7,
+          2133.88,
+          2134.46
+        ],
+        [
+          7979.68,
+          7979.8,
+          2133.84,
+          2134.5
+        ],
+        [
+          7979.14,
+          7979.8,
+          2133.06,
+          2133.72
+        ],
+        [
+          7979.19,
+          7979.69,
+          2133.11,
+          2133.67
+        ],
+        [
+          7979.18,
+          7979.7,
+          2133.1,
+          2133.68
+        ],
+        [
+          7979.68,
+          7979.8,
+          2133.06,
+          2133.72
+        ],
+        [
+          7979.14,
+          7979.8,
+          2132.28,
+          2132.94
+        ],
+        [
+          7979.19,
+          7979.69,
+          2132.33,
+          2132.89
+        ],
+        [
+          7979.18,
+          7979.7,
+          2132.32,
+          2132.9
+        ],
+        [
+          7979.68,
+          7979.8,
+          2132.28,
+          2132.94
+        ],
+        [
+          7979.14,
+          7979.8,
+          2131.5,
+          2132.16
+        ],
+        [
+          7979.19,
+          7979.69,
+          2131.55,
+          2132.11
+        ],
+        [
+          7979.18,
+          7979.7,
+          2131.54,
+          2132.12
+        ],
+        [
+          7979.68,
+          7979.8,
+          2131.5,
+          2132.16
+        ],
+        [
+          7979.14,
+          7979.8,
+          2130.72,
+          2131.38
+        ],
+        [
+          7979.19,
+          7979.69,
+          2130.77,
+          2131.33
+        ],
+        [
+          7979.18,
+          7979.7,
+          2130.76,
+          2131.34
+        ],
+        [
+          7979.68,
+          7979.8,
+          2130.72,
+          2131.38
+        ],
+        [
+          7979.14,
+          7979.8,
+          2129.94,
+          2130.6
+        ],
+        [
+          7979.19,
+          7979.69,
+          2129.99,
+          2130.55
+        ],
+        [
+          7979.18,
+          7979.7,
+          2129.98,
+          2130.56
+        ],
+        [
+          7979.68,
+          7979.8,
+          2129.94,
+          2130.6
+        ],
+        [
+          7979.14,
+          7979.8,
+          2129.16,
+          2129.82
+        ],
+        [
+          7979.19,
+          7979.69,
+          2129.21,
+          2129.77
+        ],
+        [
+          7979.18,
+          7979.7,
+          2129.2,
+          2129.78
+        ],
+        [
+          7979.68,
+          7979.8,
+          2129.16,
+          2129.82
+        ],
+        [
+          7979.14,
+          7979.8,
+          2128.38,
+          2129.04
+        ],
+        [
+          7979.19,
+          7979.69,
+          2128.43,
+          2128.99
+        ],
+        [
+          7979.18,
+          7979.7,
+          2128.42,
+          2129.0
+        ],
+        [
+          7979.68,
+          7979.8,
+          2128.38,
+          2129.04
+        ],
+        [
+          7975.11,
+          7975.91,
+          2131.6,
+          2132.4
+        ],
+        [
+          7975.11,
+          7975.91,
+          2130.74,
+          2131.54
+        ],
+        [
+          7975.11,
+          7975.91,
+          2129.88,
+          2130.68
+        ],
+        [
+          7975.11,
+          7975.91,
+          2129.02,
+          2129.82
+        ],
+        [
+          7975.11,
+          7975.91,
+          2128.16,
+          2128.96
+        ],
+        [
+          7976.9,
+          7977.7,
+          2126.11,
+          2126.91
+        ],
+        [
+          7977.76,
+          7978.56,
+          2126.11,
+          2126.91
+        ],
+        [
+          7978.62,
+          7979.42,
+          2126.11,
+          2126.91
+        ],
+        [
+          7982.25,
+          7983.15,
+          2129.2,
+          2131.6
+        ],
+        [
+          7982.24,
+          7983.16,
+          2129.19,
+          2131.61
+        ],
+        [
+          7980.7,
+          7984.4,
+          2126.11,
+          2126.745
+        ],
+        [
+          7981.02,
+          7981.38,
+          2126.21,
+          2126.56
+        ],
+        [
+          7981.52,
+          7981.88,
+          2126.21,
+          2126.56
+        ],
+        [
+          7983.22,
+          7983.58,
+          2126.21,
+          2126.56
+        ],
+        [
+          7982.45,
+          7982.95,
+          2129.45,
+          2129.95
+        ],
+        [
+          7984.17,
+          7984.59,
+          2133.13,
+          2133.57
+        ],
+        [
+          7984.17,
+          7984.59,
+          2132.53,
+          2132.97
+        ],
+        [
+          7984.17,
+          7984.59,
+          2131.93,
+          2132.37
+        ],
+        [
+          7984.17,
+          7984.59,
+          2131.33,
+          2131.77
+        ],
+        [
+          7984.17,
+          7984.59,
+          2129.68,
+          2130.12
+        ],
+        [
+          7984.17,
+          7984.59,
+          2129.08,
+          2129.52
+        ],
+        [
+          7984.17,
+          7984.59,
+          2128.48,
+          2128.92
+        ],
+        [
+          7981.549687279423,
+          7982.141700612743,
+          2135.0560138478863,
+          2135.1948167779206
+        ],
+        [
+          7981.458299387256,
+          7982.0503127205775,
+          2134.6051832220796,
+          2134.7439861521134
+        ],
+        [
+          7978.031733152205,
+          7978.211503613087,
+          2135.369782286672,
+          2135.953267174495
+        ],
+        [
+          7977.755956277655,
+          7978.204543019519,
+          2135.239772231937,
+          2135.3820928568125
+        ],
+        [
+          7977.588496386912,
+          7977.7682668477955,
+          2135.2467328255048,
+          2135.830217713328
+        ],
+        [
+          7977.595456980481,
+          7978.044043722345,
+          2135.8179071431873,
+          2135.960227768063
+        ],
+        [
+          7975.11,
+          7975.61,
+          2133.84,
+          2134.56
+        ],
+        [
+          7983.02,
+          7983.48,
+          2139.59,
+          2139.89
+        ],
+        [
+          7983.51,
+          7983.99,
+          2135.46,
+          2135.94
+        ],
+        [
+          7983.505,
+          7983.995,
+          2135.455,
+          2135.945
+        ],
+        [
+          7976.12,
+          7976.68,
+          2126.82,
+          2127.38
+        ]
+      ]
+    },
+    {
+      "id": "Feed",
+      "root": [
+        7985,
+        10.375556755065919,
+        2202
+      ],
+      "footprint": [
+        -16,
+        0,
+        -12,
+        12
+      ],
+      "floor": 0.95,
+      "door": [
+        0,
+        0.5,
+        5.2,
+        3.6
+      ],
+      "front": 1,
+      "hinge": [
+        0,
+        -2.045,
+        0
+      ],
+      "old_prefix": "SM_Town_Feed_",
+      "interact": "feed",
+      "furniture": [
+        [
+          7981.6,
+          7982.33,
+          2195.4,
+          2200.1
+        ],
+        [
+          7976.1,
+          7979.1,
+          2213.42,
+          2213.87
+        ],
+        [
+          7976.13,
+          7976.37,
+          2213.48,
+          2213.76
+        ],
+        [
+          7977.065,
+          7977.235,
+          2213.539160196115,
+          2213.700839803885
+        ],
+        [
+          7977.33,
+          7977.57,
+          2213.48,
+          2213.76
+        ],
+        [
+          7978.265,
+          7978.435,
+          2213.539160196115,
+          2213.700839803885
+        ],
+        [
+          7978.53,
+          7978.77,
+          2213.48,
+          2213.76
+        ],
+        [
+          7979.4,
+          7982.4,
+          2213.42,
+          2213.87
+        ],
+        [
+          7979.43,
+          7979.67,
+          2213.48,
+          2213.76
+        ],
+        [
+          7980.365,
+          7980.535,
+          2213.539160196115,
+          2213.700839803885
+        ],
+        [
+          7980.63,
+          7980.87,
+          2213.48,
+          2213.76
+        ],
+        [
+          7981.565,
+          7981.735,
+          2213.539160196115,
+          2213.700839803885
+        ],
+        [
+          7981.83,
+          7982.07,
+          2213.48,
+          2213.76
+        ],
+        [
+          7976.1,
+          7979.1,
+          2190.13,
+          2190.58
+        ],
+        [
+          7976.765,
+          7976.935,
+          2190.299160196115,
+          2190.460839803885
+        ],
+        [
+          7977.03,
+          7977.27,
+          2190.24,
+          2190.52
+        ],
+        [
+          7977.965,
+          7978.135,
+          2190.299160196115,
+          2190.460839803885
+        ],
+        [
+          7978.23,
+          7978.47,
+          2190.24,
+          2190.52
+        ],
+        [
+          7979.4,
+          7982.4,
+          2190.13,
+          2190.58
+        ],
+        [
+          7980.065,
+          7980.235,
+          2190.299160196115,
+          2190.460839803885
+        ],
+        [
+          7980.33,
+          7980.57,
+          2190.24,
+          2190.52
+        ],
+        [
+          7981.265,
+          7981.435,
+          2190.299160196115,
+          2190.460839803885
+        ],
+        [
+          7981.53,
+          7981.77,
+          2190.24,
+          2190.52
+        ],
+        [
+          7982.818857142857,
+          7982.952571428571,
+          2208.4,
+          2209.4
+        ],
+        [
+          7982.990285714286,
+          7983.124,
+          2208.4,
+          2209.4
+        ],
+        [
+          7983.161714285714,
+          7983.295428571429,
+          2208.4,
+          2209.4
+        ],
+        [
+          7983.333142857143,
+          7983.466857142857,
+          2208.4,
+          2209.4
+        ],
+        [
+          7983.504571428572,
+          7983.638285714285,
+          2208.4,
+          2209.4
+        ],
+        [
+          7983.676,
+          7983.809714285714,
+          2208.4,
+          2209.4
+        ],
+        [
+          7983.847428571428,
+          7983.981142857143,
+          2208.4,
+          2209.4
+        ],
+        [
+          7982.7602559658735,
+          7983.399744034132,
+          2208.4573710801055,
+          2209.3426289198947
+        ],
+        [
+          7983.38,
+          7984.02,
+          2208.4483471399544,
+          2209.3216528600456
+        ],
+        [
+          7982.943347139954,
+          7983.816652860046,
+          2208.795,
+          2209.435
+        ],
+        [
+          7982.957371080105,
+          7983.842628919895,
+          2208.3502559658687,
+          2208.9897440341365
+        ],
+        [
+          7982.7602559658635,
+          7983.399744034132,
+          2208.4573710801055,
+          2209.3426289198947
+        ],
+        [
+          7983.380255965873,
+          7984.019744034132,
+          2208.442371080105,
+          2209.327628919895
+        ],
+        [
+          7979.818857142857,
+          7979.952571428571,
+          2209.8,
+          2210.8
+        ],
+        [
+          7979.990285714286,
+          7980.124,
+          2209.8,
+          2210.8
+        ],
+        [
+          7980.161714285714,
+          7980.295428571429,
+          2209.8,
+          2210.8
+        ],
+        [
+          7980.333142857143,
+          7980.466857142857,
+          2209.8,
+          2210.8
+        ],
+        [
+          7980.504571428572,
+          7980.638285714285,
+          2209.8,
+          2210.8
+        ],
+        [
+          7980.676,
+          7980.809714285714,
+          2209.8,
+          2210.8
+        ],
+        [
+          7980.847428571428,
+          7980.981142857143,
+          2209.8,
+          2210.8
+        ],
+        [
+          7979.7602559658735,
+          7980.399744034132,
+          2209.857371080105,
+          2210.7426289198947
+        ],
+        [
+          7980.38,
+          7981.02,
+          2209.848347139954,
+          2210.7216528600457
+        ],
+        [
+          7979.943347139954,
+          7980.816652860046,
+          2210.195,
+          2210.835
+        ],
+        [
+          7979.957371080105,
+          7980.842628919895,
+          2209.7502559658683,
+          2210.3897440341366
+        ],
+        [
+          7979.7602559658635,
+          7980.399744034132,
+          2209.857371080105,
+          2210.7426289198947
+        ],
+        [
+          7980.380255965873,
+          7981.019744034132,
+          2209.8423710801053,
+          2210.727628919895
+        ],
+        [
+          7982.718857142857,
+          7982.8525714285715,
+          2193.1,
+          2194.1
+        ],
+        [
+          7982.890285714286,
+          7983.024,
+          2193.1,
+          2194.1
+        ],
+        [
+          7983.0617142857145,
+          7983.195428571428,
+          2193.1,
+          2194.1
+        ],
+        [
+          7983.233142857142,
+          7983.366857142857,
+          2193.1,
+          2194.1
+        ],
+        [
+          7983.404571428571,
+          7983.538285714286,
+          2193.1,
+          2194.1
+        ],
+        [
+          7983.576,
+          7983.709714285715,
+          2193.1,
+          2194.1
+        ],
+        [
+          7983.747428571429,
+          7983.881142857143,
+          2193.1,
+          2194.1
+        ],
+        [
+          7982.660255965873,
+          7983.299744034131,
+          2193.1573710801053,
+          2194.0426289198945
+        ],
+        [
+          7983.28,
+          7983.92,
+          2193.1483471399542,
+          2194.021652860046
+        ],
+        [
+          7982.843347139954,
+          7983.7166528600455,
+          2193.495,
+          2194.135
+        ],
+        [
+          7982.857371080106,
+          7983.742628919895,
+          2193.0502559658685,
+          2193.6897440341368
+        ],
+        [
+          7982.660255965863,
+          7983.299744034131,
+          2193.1573710801053,
+          2194.0426289198945
+        ],
+        [
+          7983.280255965874,
+          7983.919744034131,
+          2193.1423710801055,
+          2194.0276289198946
+        ],
+        [
+          7977.618857142857,
+          7977.752571428571,
+          2192.6,
+          2193.6
+        ],
+        [
+          7977.790285714285,
+          7977.924,
+          2192.6,
+          2193.6
+        ],
+        [
+          7977.961714285714,
+          7978.095428571429,
+          2192.6,
+          2193.6
+        ],
+        [
+          7978.133142857143,
+          7978.266857142858,
+          2192.6,
+          2193.6
+        ],
+        [
+          7978.304571428572,
+          7978.4382857142855,
+          2192.6,
+          2193.6
+        ],
+        [
+          7978.476,
+          7978.609714285714,
+          2192.6,
+          2193.6
+        ],
+        [
+          7978.6474285714285,
+          7978.781142857143,
+          2192.6,
+          2193.6
+        ],
+        [
+          7977.560255965874,
+          7978.199744034131,
+          2192.6573710801053,
+          2193.5426289198945
+        ],
+        [
+          7978.18,
+          7978.82,
+          2192.6483471399542,
+          2193.521652860046
+        ],
+        [
+          7977.7433471399545,
+          7978.616652860046,
+          2192.995,
+          2193.635
+        ],
+        [
+          7977.757371080105,
+          7978.642628919894,
+          2192.5502559658685,
+          2193.1897440341368
+        ],
+        [
+          7977.560255965864,
+          7978.199744034131,
+          2192.6573710801053,
+          2193.5426289198945
+        ],
+        [
+          7978.180255965874,
+          7978.819744034132,
+          2192.6423710801055,
+          2193.5276289198946
+        ],
+        [
+          7979.4955,
+          7980.1045,
+          2204.2955,
+          2204.9045
+        ],
+        [
+          7979.5303,
+          7980.0697,
+          2204.3303,
+          2204.8697
+        ],
+        [
+          7979.4955,
+          7980.1045,
+          2203.5955,
+          2204.2045
+        ],
+        [
+          7979.5303,
+          7980.0697,
+          2203.6303,
+          2204.1697
+        ],
+        [
+          7979.4955,
+          7980.1045,
+          2202.8955,
+          2203.5045
+        ],
+        [
+          7979.5303,
+          7980.0697,
+          2202.9303,
+          2203.4697
+        ],
+        [
+          7978.7955,
+          7979.4045,
+          2203.9455,
+          2204.5545
+        ],
+        [
+          7978.8303,
+          7979.3697,
+          2203.9803,
+          2204.5197
+        ],
+        [
+          7983.0955,
+          7983.7045,
+          2196.7955,
+          2197.4045
+        ],
+        [
+          7983.1303,
+          7983.6697,
+          2196.8303,
+          2197.3697
+        ],
+        [
+          7983.0955,
+          7983.7045,
+          2196.0955,
+          2196.7045
+        ],
+        [
+          7983.1303,
+          7983.6697,
+          2196.1303,
+          2196.6697
+        ],
+        [
+          7982.25,
+          7982.95,
+          2206.18,
+          2207.02
+        ],
+        [
+          7982.3,
+          7982.9,
+          2206.22,
+          2206.98
+        ],
+        [
+          7982.25,
+          7982.95,
+          2205.28,
+          2206.12
+        ],
+        [
+          7982.3,
+          7982.9,
+          2205.32,
+          2206.08
+        ],
+        [
+          7972.218857142857,
+          7972.3525714285715,
+          2202.0,
+          2203.0
+        ],
+        [
+          7972.390285714286,
+          7972.524,
+          2202.0,
+          2203.0
+        ],
+        [
+          7972.5617142857145,
+          7972.695428571428,
+          2202.0,
+          2203.0
+        ],
+        [
+          7972.733142857142,
+          7972.866857142857,
+          2202.0,
+          2203.0
+        ],
+        [
+          7972.904571428571,
+          7973.038285714286,
+          2202.0,
+          2203.0
+        ],
+        [
+          7973.076,
+          7973.209714285715,
+          2202.0,
+          2203.0
+        ],
+        [
+          7973.247428571429,
+          7973.381142857143,
+          2202.0,
+          2203.0
+        ],
+        [
+          7972.160255965873,
+          7972.799744034131,
+          2202.0573710801054,
+          2202.9426289198946
+        ],
+        [
+          7972.78,
+          7973.42,
+          2202.0483471399543,
+          2202.921652860046
+        ],
+        [
+          7972.343347139954,
+          7973.2166528600455,
+          2202.395,
+          2203.035
+        ],
+        [
+          7972.357371080106,
+          7973.242628919895,
+          2201.9502559658686,
+          2202.5897440341364
+        ],
+        [
+          7972.160255965863,
+          7972.799744034131,
+          2202.0573710801054,
+          2202.9426289198946
+        ],
+        [
+          7972.780255965874,
+          7973.419744034131,
+          2202.0423710801056,
+          2202.9276289198947
+        ],
+        [
+          7972.218857142857,
+          7972.3525714285715,
+          2200.5,
+          2201.5
+        ],
+        [
+          7972.390285714286,
+          7972.524,
+          2200.5,
+          2201.5
+        ],
+        [
+          7972.5617142857145,
+          7972.695428571428,
+          2200.5,
+          2201.5
+        ],
+        [
+          7972.733142857142,
+          7972.866857142857,
+          2200.5,
+          2201.5
+        ],
+        [
+          7972.904571428571,
+          7973.038285714286,
+          2200.5,
+          2201.5
+        ],
+        [
+          7973.076,
+          7973.209714285715,
+          2200.5,
+          2201.5
+        ],
+        [
+          7973.247428571429,
+          7973.381142857143,
+          2200.5,
+          2201.5
+        ],
+        [
+          7972.160255965873,
+          7972.799744034131,
+          2200.5573710801054,
+          2201.4426289198946
+        ],
+        [
+          7972.78,
+          7973.42,
+          2200.5483471399543,
+          2201.421652860046
+        ],
+        [
+          7972.343347139954,
+          7973.2166528600455,
+          2200.895,
+          2201.535
+        ],
+        [
+          7972.357371080106,
+          7973.242628919895,
+          2200.4502559658686,
+          2201.0897440341364
+        ],
+        [
+          7972.160255965863,
+          7972.799744034131,
+          2200.5573710801054,
+          2201.4426289198946
+        ],
+        [
+          7972.780255965874,
+          7973.419744034131,
+          2200.5423710801056,
+          2201.4276289198947
+        ],
+        [
+          7970.075,
+          7970.525,
+          2204.0,
+          2205.0
+        ],
+        [
+          7970.095,
+          7970.545,
+          2204.0,
+          2205.0
+        ],
+        [
+          7970.075,
+          7970.525,
+          2202.95,
+          2203.95
+        ],
+        [
+          7970.095,
+          7970.545,
+          2202.95,
+          2203.95
+        ],
+        [
+          7970.075,
+          7970.525,
+          2201.9,
+          2202.9
+        ],
+        [
+          7970.095,
+          7970.545,
+          2201.9,
+          2202.9
+        ]
+      ]
+    },
+    {
+      "id": "Cinema",
+      "root": [
+        7985,
+        8.987393474578857,
+        2162
+      ],
+      "footprint": [
+        -14,
+        0,
+        -10,
+        10
+      ],
+      "floor": 0,
+      "door": [
+        0,
+        2.6,
+        1.3,
+        2.3
+      ],
+      "front": 1,
+      "hinge": [
+        0,
+        2.0050000000000003,
+        0
+      ],
+      "old_prefix": "SM_Town_Cinema_",
+      "interact": "cinema",
+      "furniture": [
+        [
+          7983.7,
+          7984.81,
+          2162.02,
+          2163.58
+        ],
+        [
+          7980.1,
+          7983.6,
+          2153.65,
+          2154.42
+        ],
+        [
+          7980.05,
+          7983.65,
+          2153.62,
+          2154.46
+        ],
+        [
+          7982.0,
+          7983.4,
+          2153.7,
+          2154.38
+        ],
+        [
+          7982.06,
+          7982.18,
+          2154.08,
+          2154.28
+        ],
+        [
+          7982.215,
+          7982.335,
+          2154.08,
+          2154.28
+        ],
+        [
+          7982.37,
+          7982.49,
+          2154.08,
+          2154.28
+        ],
+        [
+          7982.525,
+          7982.645,
+          2154.08,
+          2154.28
+        ],
+        [
+          7982.68,
+          7982.8,
+          2154.08,
+          2154.28
+        ],
+        [
+          7982.835,
+          7982.955,
+          2154.08,
+          2154.28
+        ],
+        [
+          7982.99,
+          7983.11,
+          2154.08,
+          2154.28
+        ],
+        [
+          7983.145,
+          7983.265,
+          2154.08,
+          2154.28
+        ],
+        [
+          7980.32,
+          7981.08,
+          2153.74,
+          2154.3
+        ],
+        [
+          7980.36,
+          7981.04,
+          2153.68,
+          2154.36
+        ],
+        [
+          7983.05,
+          7983.45,
+          2153.81,
+          2154.19
+        ],
+        [
+          7983.3,
+          7983.48,
+          2153.85,
+          2154.15
+        ],
+        [
+          7980.1,
+          7983.4,
+          2152.17,
+          2152.65
+        ],
+        [
+          7980.05,
+          7983.45,
+          2152.17,
+          2152.7
+        ],
+        [
+          7982.35,
+          7982.85,
+          2152.225,
+          2152.575
+        ],
+        [
+          7983.84,
+          7984.16,
+          2166.14,
+          2166.46
+        ],
+        [
+          7983.82,
+          7984.18,
+          2157.42,
+          2157.78
+        ],
+        [
+          7980.4,
+          7981.8,
+          2171.2,
+          2171.65
+        ]
+      ]
+    },
+    {
+      "id": "Church",
+      "root": [
+        8021,
+        6.315627861022949,
+        2095.5
+      ],
+      "footprint": [
+        0,
+        14,
+        -4.5,
+        4.5
+      ],
+      "floor": 0,
+      "door": [
+        0,
+        0,
+        2.2,
+        2.9
+      ],
+      "front": -1,
+      "hinge": [
+        0,
+        -1.0450000000000002,
+        0
+      ],
+      "old_prefix": "SM_Town_Church_",
+      "interact": "churchDoor",
+      "furniture": [
+        [
+          8023.05,
+          8023.55,
+          2096.58,
+          2098.92
+        ],
+        [
+          8022.86,
+          8022.99,
+          2096.63,
+          2098.87
+        ],
+        [
+          8023.05,
+          8023.55,
+          2092.08,
+          2094.42
+        ],
+        [
+          8022.86,
+          8022.99,
+          2092.13,
+          2094.37
+        ],
+        [
+          8024.25,
+          8024.75,
+          2096.58,
+          2098.92
+        ],
+        [
+          8024.06,
+          8024.19,
+          2096.63,
+          2098.87
+        ],
+        [
+          8024.25,
+          8024.75,
+          2092.08,
+          2094.42
+        ],
+        [
+          8024.06,
+          8024.19,
+          2092.13,
+          2094.37
+        ],
+        [
+          8025.45,
+          8025.95,
+          2096.58,
+          2098.92
+        ],
+        [
+          8025.26,
+          8025.39,
+          2096.63,
+          2098.87
+        ],
+        [
+          8025.45,
+          8025.95,
+          2092.08,
+          2094.42
+        ],
+        [
+          8025.26,
+          8025.39,
+          2092.13,
+          2094.37
+        ],
+        [
+          8026.65,
+          8027.15,
+          2096.58,
+          2098.92
+        ],
+        [
+          8026.46,
+          8026.59,
+          2096.63,
+          2098.87
+        ],
+        [
+          8026.65,
+          8027.15,
+          2092.08,
+          2094.42
+        ],
+        [
+          8026.46,
+          8026.59,
+          2092.13,
+          2094.37
+        ],
+        [
+          8027.85,
+          8028.35,
+          2096.58,
+          2098.92
+        ],
+        [
+          8027.66,
+          8027.79,
+          2096.63,
+          2098.87
+        ],
+        [
+          8027.85,
+          8028.35,
+          2092.08,
+          2094.42
+        ],
+        [
+          8027.66,
+          8027.79,
+          2092.13,
+          2094.37
+        ],
+        [
+          8029.05,
+          8029.55,
+          2096.58,
+          2098.92
+        ],
+        [
+          8028.86,
+          8028.99,
+          2096.63,
+          2098.87
+        ],
+        [
+          8029.05,
+          8029.55,
+          2092.08,
+          2094.42
+        ],
+        [
+          8028.86,
+          8028.99,
+          2092.13,
+          2094.37
+        ],
+        [
+          8030.25,
+          8030.75,
+          2096.58,
+          2098.92
+        ],
+        [
+          8030.06,
+          8030.19,
+          2096.63,
+          2098.87
+        ],
+        [
+          8030.25,
+          8030.75,
+          2092.08,
+          2094.42
+        ],
+        [
+          8030.06,
+          8030.19,
+          2092.13,
+          2094.37
+        ],
+        [
+          8031.45,
+          8031.95,
+          2096.58,
+          2098.92
+        ],
+        [
+          8031.26,
+          8031.39,
+          2096.63,
+          2098.87
+        ],
+        [
+          8031.45,
+          8031.95,
+          2092.08,
+          2094.42
+        ],
+        [
+          8031.26,
+          8031.39,
+          2092.13,
+          2094.37
+        ],
+        [
+          8032.57,
+          8032.73,
+          2096.1,
+          2098.8
+        ],
+        [
+          8032.57,
+          8032.73,
+          2093.1,
+          2094.9
+        ],
+        [
+          8033.95,
+          8034.65,
+          2094.5,
+          2096.5
+        ],
+        [
+          8033.9,
+          8034.7,
+          2094.43,
+          2096.57
+        ],
+        [
+          8033.89,
+          8034.71,
+          2094.5,
+          2096.5
+        ],
+        [
+          8033.0,
+          8033.55,
+          2096.95,
+          2097.55
+        ],
+        [
+          8032.97,
+          8033.58,
+          2096.92,
+          2097.58
+        ],
+        [
+          8033.022180191381,
+          8033.557819808619,
+          2096.91,
+          2097.59
+        ],
+        [
+          8033.158478236618,
+          8033.401521763382,
+          2097.1,
+          2097.4
+        ],
+        [
+          8033.1,
+          8034.5,
+          2099.32,
+          2099.9
+        ],
+        [
+          8033.07,
+          8034.53,
+          2099.28,
+          2099.9
+        ],
+        [
+          8033.15,
+          8034.45,
+          2099.05,
+          2099.32
+        ],
+        [
+          8033.2,
+          8034.4,
+          2099.08,
+          2099.3
+        ],
+        [
+          8033.32,
+          8033.48,
+          2099.5239154786964,
+          2099.6760845213034
+        ],
+        [
+          8033.4,
+          8034.1,
+          2098.6,
+          2098.95
+        ],
+        [
+          8021.73,
+          8022.27,
+          2098.83,
+          2099.37
+        ],
+        [
+          8021.925,
+          8022.075,
+          2099.0286707612777,
+          2099.171329238722
+        ],
+        [
+          8032.52,
+          8032.68,
+          2091.54,
+          2092.46
+        ],
+        [
+          8034.3,
+          8034.8,
+          2091.375,
+          2092.125
+        ],
+        [
+          8033.425,
+          8033.875,
+          2091.67,
+          2092.13
+        ],
+        [
+          8033.2,
+          8034.0,
+          2091.12,
+          2091.5
+        ],
+        [
+          8033.4,
+          8033.7,
+          2091.18,
+          2091.4
+        ],
+        [
+          8021.4,
+          8021.75,
+          2092.4,
+          2092.9
+        ],
+        [
+          8021.45,
+          8021.7,
+          2092.5,
+          2092.8
+        ]
+      ]
+    },
+    {
+      "id": "H01",
+      "root": [
+        8028.5,
+        7.314197063446045,
+        2133.0
+      ],
+      "footprint": [
+        -4.5,
+        4.5,
+        -5.0,
+        5.0
+      ],
+      "floor": 0,
+      "door": [
+        -4.5,
+        -3.4,
+        0.95,
+        2.1
+      ],
+      "front": -1,
+      "hinge": [
+        -4.5,
+        -3.875,
+        0
+      ],
+      "legacy_door_holder": 1436,
+      "furniture": [
+        [
+          8027.9,
+          8029.1,
+          2132.6,
+          2133.4
+        ],
+        [
+          8027.9875,
+          8029.0125,
+          2132.6675,
+          2133.3325
+        ],
+        [
+          8027.47,
+          8027.93,
+          2132.775,
+          2133.225
+        ],
+        [
+          8027.499076756641,
+          8027.900923243358,
+          2132.798,
+          2133.202
+        ],
+        [
+          8024.3,
+          8025.0,
+          2136.25,
+          2136.75
+        ],
+        [
+          8031.0,
+          8032.6,
+          2128.725,
+          2129.475
+        ],
+        [
+          8030.975,
+          8032.625,
+          2128.7,
+          2129.5
+        ],
+        [
+          8030.975,
+          8032.625,
+          2128.655,
+          2128.785
+        ]
+      ]
+    },
+    {
+      "id": "H02",
+      "root": [
+        8028.25,
+        8.003066062927246,
+        2156.5
+      ],
+      "footprint": [
+        -3.75,
+        3.75,
+        -4.5,
+        4.5
+      ],
+      "floor": 0,
+      "door": [
+        -3.75,
+        -2.9,
+        0.95,
+        2.1
+      ],
+      "front": -1,
+      "hinge": [
+        -3.75,
+        -3.375,
+        0
+      ],
+      "legacy_door_holder": 1439,
+      "furniture": [
+        [
+          8027.65,
+          8028.85,
+          2156.1,
+          2156.9
+        ],
+        [
+          8027.7375,
+          8028.7625,
+          2156.1675,
+          2156.8325
+        ],
+        [
+          8027.22,
+          8027.68,
+          2156.275,
+          2156.725
+        ],
+        [
+          8027.249076756641,
+          8027.650923243358,
+          2156.298,
+          2156.702
+        ],
+        [
+          8024.8,
+          8025.5,
+          2159.25,
+          2159.75
+        ],
+        [
+          8030.0,
+          8031.6,
+          2152.725,
+          2153.475
+        ],
+        [
+          8029.975,
+          8031.625,
+          2152.7,
+          2153.5
+        ],
+        [
+          8029.975,
+          8031.625,
+          2152.655,
+          2152.785
+        ]
+      ]
+    },
+    {
+      "id": "H03",
+      "root": [
+        8029.5,
+        8.81874942779541,
+        2185.0
+      ],
+      "footprint": [
+        -4.5,
+        4.5,
+        -5.0,
+        5.0
+      ],
+      "floor": 0,
+      "door": [
+        -4.5,
+        3.4,
+        0.95,
+        2.1
+      ],
+      "front": -1,
+      "hinge": [
+        -4.5,
+        2.925,
+        0
+      ],
+      "legacy_door_holder": 1442,
+      "furniture": [
+        [
+          8028.9,
+          8030.1,
+          2184.6,
+          2185.4
+        ],
+        [
+          8028.9875,
+          8030.0125,
+          2184.6675,
+          2185.3325
+        ],
+        [
+          8028.47,
+          8028.93,
+          2184.775,
+          2185.225
+        ],
+        [
+          8028.499076756641,
+          8028.900923243358,
+          2184.798,
+          2185.202
+        ],
+        [
+          8025.3,
+          8026.0,
+          2188.25,
+          2188.75
+        ],
+        [
+          8032.0,
+          8033.6,
+          2180.725,
+          2181.475
+        ],
+        [
+          8031.975,
+          8033.625,
+          2180.7,
+          2181.5
+        ],
+        [
+          8031.975,
+          8033.625,
+          2180.655,
+          2180.785
+        ]
+      ]
+    },
+    {
+      "id": "H04",
+      "root": [
+        7976.5,
+        11.268553733825684,
+        2241.0
+      ],
+      "footprint": [
+        -4.5,
+        4.5,
+        -5.0,
+        5.0
+      ],
+      "floor": 0,
+      "door": [
+        4.5,
+        -3.4,
+        0.95,
+        2.1
+      ],
+      "front": 1,
+      "hinge": [
+        4.5,
+        -3.875,
+        0
+      ],
+      "legacy_door_holder": 1445,
+      "furniture": [
+        [
+          7975.9,
+          7977.1,
+          2240.6,
+          2241.4
+        ],
+        [
+          7975.9875,
+          7977.0125,
+          2240.6675,
+          2241.3325
+        ],
+        [
+          7975.47,
+          7975.93,
+          2240.775,
+          2241.225
+        ],
+        [
+          7975.499076756641,
+          7975.900923243358,
+          2240.798,
+          2241.202
+        ],
+        [
+          7972.3,
+          7973.0,
+          2244.25,
+          2244.75
+        ],
+        [
+          7979.0,
+          7980.6,
+          2236.725,
+          2237.475
+        ],
+        [
+          7978.975,
+          7980.625,
+          2236.7,
+          2237.5
+        ],
+        [
+          7978.975,
+          7980.625,
+          2236.655,
+          2236.785
+        ]
+      ]
+    },
+    {
+      "id": "Souvenir",
+      "root": [
+        8025,
+        4.952807474136353,
+        2064
+      ],
+      "footprint": [
+        -4.5,
+        4.5,
+        -6,
+        6
+      ],
+      "floor": 0,
+      "door": [
+        -4.5,
+        -2.8,
+        1.0,
+        2.15
+      ],
+      "front": -1,
+      "hinge": [
+        -4.5,
+        -3.2449999999999997,
+        0
+      ],
+      "retire_props": [
+        "prop:souvenirShell",
+        "prop:souvenirInterior",
+        "prop:souvenirGlass"
+      ],
+      "interact": "souvenirDoor",
+      "furniture": []
+    }
+  ]
+}

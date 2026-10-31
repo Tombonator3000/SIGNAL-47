@@ -1,4 +1,5 @@
 #include "S47Substation.h"
+#include "S47Audio.h"
 #include "S47Flow.h"
 #include "S47Fx.h"
 #include "S47Horror.h"
@@ -221,17 +222,78 @@ void FS47Substation::ClearFault()
   if (UPointLightComponent* L = W.Get()) { L->SetIntensity(0); L->SetVisibility(false); }
 }
 
+void FS47Substation::StopSiteAudio()
+{
+ for (const auto& S : SiteAudioSources) if (S) S->Stop();
+ SiteAudioSources.Reset();
+ if (SiteHumGain) SiteHumGain->Disconnect();
+ if (SiteBuzzGain) SiteBuzzGain->Disconnect();
+ SiteHumGain.Reset(); SiteBuzzGain.Reset();
+}
+
+void FS47Substation::StepSiteAudio(bool bFault, float Arc, bool bHeld)
+{
+ if (!M || !M->Audio || !M->Audio->Ctx) return;
+ const auto Ctx = M->Audio->Ctx;
+ FS47AudioContext::FBatch Batch(*Ctx);
+ if (!SiteHumGain)
+ {
+  // Site power is independent of SARO's K3 and room-hum bus. A 60 Hz transformer
+  // with restrained harmonics, plus broadband corona at the actual insulator.
+  const auto Out = M->Audio->Spatial(Site(FVector(0, 1.5, 2)), 14.f);
+  SiteHumGain = Ctx->CreateGain(); SiteHumGain->Gain.SetValue(0); SiteHumGain->Connect(Out);
+  for (int32 I = 1; I <= 3; ++I)
+  {
+   auto Osc = Ctx->CreateOscillator(); Osc->SetType(TEXT("sine")); Osc->Frequency.SetValue(60 * I);
+   auto G = Ctx->CreateGain(); G->Gain.SetValue(I == 1 ? .7 : I == 2 ? .4 : .12);
+   Osc->Connect(G); G->Connect(SiteHumGain); Osc->Start(); SiteAudioSources.Add(Osc);
+  }
+  SiteBuzzGain = Ctx->CreateGain(); SiteBuzzGain->Gain.SetValue(0);
+  auto Noise = M->Audio->NoiseSrc(false, true);
+  auto Hp = Ctx->CreateBiquadFilter(); Hp->SetType(TEXT("highpass")); Hp->Frequency.SetValue(700);
+  auto Lp = Ctx->CreateBiquadFilter(); Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(5200);
+  Noise->Connect(Hp); Hp->Connect(Lp); Lp->Connect(SiteBuzzGain);
+  SiteBuzzGain->Connect(M->Audio->Spatial(Insulator(1), 11.f));
+  Noise->Start(); SiteAudioSources.Add(Noise);
+ }
+ const bool Play = M->Mode == US47Main::EMode::Play && Root.Shown() && !bHeld;
+ const double T = Ctx->CurrentTime();
+ SiteHumGain->Gain.SetTargetAtTime(Play ? .10 : 0, T, .15);
+ SiteBuzzGain->Gain.SetTargetAtTime(Play && bFault ? .012 + .07 * Arc : 0, T, .04);
+}
+
 void FS47Substation::StepFault(double Dt)
 {
  const bool bFaultRequested = M && M->Story && M->Story->FeederFaultVisible();
  const bool bLoading = !M || !M->World || M->World->bBusy || (M->Flow && M->Flow->bStarting);
  const bool bShow = bFaultRequested && bReady && FaultReady() && M->Mode == US47Main::EMode::Play && Root.Shown() && !bLoading;
- if (!bShow) { ClearFault(); return; }
+ if (!bShow) { ClearFault(); StepSiteAudio(false, 0, !M || M->bPausedByMenu || M->ModalOpen()); return; }
  const UWorld* World = M->Web ? M->Web->GetWorld() : nullptr;
  const bool bHeld = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || (World && World->IsPaused());
  if (!bHeld && FMath::IsFinite(Dt) && Dt > 0) FaultTime += FMath::Min(Dt, .1);
  const bool bCalm = M->Flow && M->Flow->bCalmFlash, bLow = M->Flow && M->Flow->Graphics.Effects == 0;
- const float Arc = FaultArcLevel(bLow, bCalm), LampLevel = FaultLampLevel(FaultTime, bCalm);
+ // Slow envelope and short corona swells make a real moving fault, rather than
+ // one permanently blue post. Calm mode retains smooth, steady low-intensity light.
+ const double Phase = FMath::Fmod(FaultTime, 3.7);
+ const float Motion = bCalm ? 1.f : float(.65 + .5 * FMath::Square(FMath::Sin(FaultTime * 2.3)) + (Phase < .22 ? 1.7 * (1 - Phase / .22) : 0));
+ const float Arc = FaultArcLevel(bLow, bCalm) * Motion, LampLevel = FaultLampLevel(FaultTime, bCalm);
+ StepSiteAudio(true, Arc, bHeld);
+ if (!bHeld && !bCalm)
+ {
+  // Fixed endpoints on the porcelain; only the free bow moves, in native centimetres.
+  FVector Previous = FVector::ZeroVector;
+  const int32 Shape = FMath::FloorToInt(FaultTime * 9);
+  FRandomStream R(3911 + Shape);
+  for (int32 I = 1; I <= 12; ++I)
+  {
+   const double U = double(I) / 12, S = FMath::Sin(PI * U);
+   const FVector Next((-32 + R.FRandRange(-5.f, 5.f)) * S, (-25 + R.FRandRange(-4.f, 4.f)) * S, -75 * U);
+   const FVector Delta = Next - Previous;
+   FaultArcMesh->UpdateInstanceTransform(I - 1, FTransform(FQuat::FindBetweenNormals(FVector::UpVector, Delta.GetSafeNormal()),
+    (Previous + Next) * .5, FVector(.7 / 50, .7 / 50, Delta.Size() / 100)), false, I == 12, true);
+   Previous = Next;
+  }
+ }
  FaultArcMesh->SetVisibility(true); FaultLampMesh->SetVisibility(true);
  for (const auto& W : FaultLampMounts) if (UStaticMeshComponent* C = W.Get()) C->SetVisibility(true);
  FaultArcMid->SetScalarParameterValue(TEXT("ArcIntensity"), 18.f * Arc);
@@ -285,7 +347,7 @@ void FS47Substation::CancelArc()
 void FS47Substation::ResetArc()
 {
  CancelArc(); bArcSpent = false; bArcCalm = false; bArcWasAppeared = false;
- ClearFault(); FaultTime = 0;
+ ClearFault(); StopSiteAudio(); FaultTime = 0;
  // Substation Begin precedes Horror Begin. Never inspect the previous case's Threat here.
  // Continue inside a meeting is deliberately quiet, including a pre-witness checkpoint.
  // A save before the meeting still gets its first appearance. No new saved effect field.
