@@ -1444,3 +1444,7 @@ Codex på codex/disk-cleanup-20261031:37 genererte cachemapper/268886 filer fjer
 
 ### 2026-10-31T09:12+01:00 Nye spillerfunn ført i TODO
 Codex på codex/playtest-findings-20261031: Toms seks meldte områder er registrert som PLAY-31-01 til06, med separate Tripo-alien-/kuoppgaver og snap-zoom/lydsting som forslag. Midlertidig fri adgang til Caliche-bygg er eksplisitt ført. Ingen spillkode, bygg, test eller installasjon; retting avventer fortsatt ferdig spilltest.
+
+
+### 2026-10-31T09:18+01:00 Spillerfunn: deputy-mål blir stående etter samtale
+Codex på codex/deputy-playtest-blocker-20261031: PLAY-31-07/P1 fører Toms vanlige SC03-forløp og mulig progresjonsstopp etter deputy-samtalen. Kildepunkter for samtalekvittering, figuridentitet og SC04-overgang er registrert uten å fastslå årsak. Ingen kildeendring, motorjobb, test, Saved-endring eller installasjon.
