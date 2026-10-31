@@ -325,6 +325,14 @@ void FS47Observing::Start()
  Changed();
 }
 
+bool FS47Observing::ArrayMotionHeld() const
+{
+ // Web has its own actor tick: consult current UI state instead of waiting for
+ // the next observing update to propagate a document/menu pause.
+ return bWorkEnabled && Active() && (M->bPausedByMenu ||
+  (M->ModalOpen() && !bTelemetryPanelOpen) || M->Story->IsCinematic() || M->Story->FeederOutage());
+}
+
 void FS47Observing::Step(double Dt)
 {
  if (!bEnabled || !M || !M->Story || M->Mode != US47Main::EMode::Play || !FMath::IsFinite(Dt) || Dt <= 0) return;

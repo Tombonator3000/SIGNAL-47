@@ -53,6 +53,7 @@ public:
  bool ComparePulsar(const FString& Choice);
  // Unreal addition: the same physical stations now share a saved evening work order.
  bool WorkEnabled() const { return bWorkEnabled; }
+ bool ArrayMotionHeld() const;
  FS47SaroWork* Work() const { return ArrayWork.Get(); }
  bool PointScheduledRun();
  void OpenTracking();

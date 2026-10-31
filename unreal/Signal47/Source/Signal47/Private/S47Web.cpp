@@ -1,4 +1,6 @@
 #include "S47Web.h"
+#include "S47Main.h"
+#include "S47Observing.h"
 #include "Components/BoxComponent.h"
 #include "S47RadioWoman.h"
 #include "S47RadioWomanContract.h"
@@ -1617,11 +1619,14 @@ void AS47Web::Tick(float Dt)
 	S47RenderAudit::Tick(this);
 	// the sky follows the eye
 	if (SkySphere) SkySphere->SetWorldLocation(Eye);
-	// dishes slew (Dish.update)
+	// dishes slew (Dish.update). Read the current UI hold as well as the work tick
+	// cache: a document can open later in the gameplay tick, before this actor ticks.
+	const US47Main* Main = US47Main::Get(this);
+	const bool bWorkHold = bWorkMotionPaused || (Main && Main->Observing && Main->Observing->ArrayMotionHeld());
 	bool bMoved = false;
 	for (FDish& D : Dishes)
 	{
-		if (bWorkMotionPaused) break;
+		if (bWorkHold) break;
 		const double Step = D.Slew * Dt;
 		const double DA = D.TgtAz - D.CurAz, DE = D.TgtEl - D.CurEl;
 		if (FMath::Abs(DA) < 1e-9 && FMath::Abs(DE) < 1e-9) continue;

@@ -865,10 +865,14 @@ void FS47HorrorTest::Step(double Dt)
 		}
 		if (T.Stage == 723)
 		{
-			// Observing precedes this driver; the separate Web tick may finish this frame
-			// before the next Observing update propagates the document pause.
-			if (!Check(M->ModalOpen() && FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)<=T.PauseTransitionLimit &&
-				FMath::Abs(M->Web->DishEl(T.ServiceDish)-T.MotionEl)<=T.PauseTransitionLimit,
+			// HUD/Main and Web are independent ticks: the last unpaused Web update can
+			// belong to either the opening frame or this frame, depending on tick order.
+			// A screenshot can lengthen the latter. Bound one tick using both actual deltas.
+			const double TransitionLimit=FMath::Max(T.PauseTransitionLimit,9.0*Dt+.001);
+			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: document pause transition az %.6f -> %.6f el %.6f -> %.6f openingDt %.6f nextDt %.6f bound %.6f modal %d"),
+				T.MotionAz,M->Web->DishAz(T.ServiceDish),T.MotionEl,M->Web->DishEl(T.ServiceDish),(T.PauseTransitionLimit-.001)/9.0,Dt,TransitionLimit,M->ModalOpen()?1:0);
+			if (!Check(M->ModalOpen() && FMath::Abs(M->Web->DishAz(T.ServiceDish)-T.MotionAz)<=TransitionLimit &&
+				FMath::Abs(M->Web->DishEl(T.ServiceDish)-T.MotionEl)<=TransitionLimit,
 				TEXT("document pause propagates within one normal antenna update"))) return;
 			T.MotionAz=M->Web->DishAz(T.ServiceDish); T.MotionEl=M->Web->DishEl(T.ServiceDish);
 			Stage(705,.6); return;
