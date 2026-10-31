@@ -99,6 +99,8 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 }
 void FS47FreeformSession::Stop()
 {
+ if(bPowerApplied&&!bLastPower&&M&&M->Story)M->Story->ApplyFeederPower(false);
+ bPowerApplied=false;
  if(Director)Director->Stop();if(Field)Field->Stop();
  if(M&&M->Web)M->Web->SetWorkMotionPaused(false);
  bActive=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;++RecoveryEpoch;
@@ -153,6 +155,20 @@ void FS47FreeformSession::Step(double Dt)
   bRestoreAngles=false;for(int32 I=0;I<27;++I){M->Web->SnapDish(I,SavedAngles[I*4],SavedAngles[I*4+1]);M->Web->PointDish(I,SavedAngles[I*4+2],SavedAngles[I*4+3],9,true);}
  }
  const double D=FMath::Min(Dt,.1);
+ const bool Powered=HasPower();
+ if(!bPowerApplied||Powered!=bLastPower)
+ {
+  // Keep physical circuits and telemetry in agreement; retained targets resume
+  // only once the feeder or fuelled backup supplies the actual hardware again.
+  TArray<FVector2D> Targets;for(int32 I=0;I<M->Web->DishCount();++I)Targets.Add({M->Web->DishTargetAz(I),M->Web->DishTargetEl(I)});
+  M->Story->ApplyFeederPower(!Powered);
+  for(int32 I=0;I<Targets.Num();++I)
+  {
+   const bool Local=Field&&Field->ServiceStage()>=7&&Field->ServiceStage()<=8&&M->Web->DishId(I)==TEXT("S-03");
+   M->Web->PointDish(I,Targets[I].X,Targets[I].Y,Local||bCrossRunning?2.2:9.,true);
+  }
+  M->Story->Rx.bPowered=Powered;bPowerApplied=true;bLastPower=Powered;
+ }
  M->Web->SetWorkMotionPaused(ArrayMotionHeld());
  if(!Held())
  {

@@ -100,6 +100,7 @@ private:
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
+ bool bPowerApplied=false,bLastPower=true;
  int32 RecoveryEpoch=0;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
