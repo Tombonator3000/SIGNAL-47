@@ -136,3 +136,7 @@ Root eier kun dokumentoppfølging og ett originalbilde på `codex/alien-animatio
 ## Stjernehull og meteorregn fra spilltesten
 
 Root eier dokumentoppfølging, revidert meteorregi og ett originalbilde på `codex/star-hole-meteor-feedback-20261031`. PLAY-31-23 fører senere implementering; FX-01 er gjenåpnet. Ingen kildeendring eller motorreservasjon mens Tom tester.
+
+## Tavle og gatelykter fra fortsatt spilltest
+
+Root eier dokumentoppfølging og to originalbilder på `codex/board-grouping-feedback-20261031`. PLAY-31-24/25/26 fører senere tavle- og lyktarbeid. Ingen kildeendring, modell-/motorjobb eller installasjon mens Tom tester.

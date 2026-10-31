@@ -1474,3 +1474,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 12:02 | codex/alien-animation-feedback-20261031 | PLAY-31-22 fører bestilt animasjonspass: walk/run/crab walk/grab og overganger. Originalbilde bevart; dagens prosedyreskin og eldre fellesmodell-klipp kartlagt lesende. Ingen modell-/riggendring, import eller motorjobb under spilltesten.
 
 2026-10-31 12:08 | codex/star-hole-meteor-feedback-20261031 | PLAY-31-23/D-20 og gjenåpnet FX-01: større stjernehull, start ved utgang etter signalet og meteorer bak tomrommet. Originalbilde bevart; gammel timing/baneretning og eksisterende shader-maskering undersøkt lesende. Ingen spillkode, import eller motorjobb under spilltesten.
+
+2026-10-31 12:18 | codex/board-grouping-feedback-20261031 | PLAY-31-24/25: automatisk tavlegruppering og én fading hel feiltråd; PLAY-31-26/GFX-02: detaljerte, bakkefestede gatelykter. To originalbilder bevart. Kun kilde-/dokumentgjennomgang; ingen spillkode, modellendring eller motorjobb under spilltesten.
