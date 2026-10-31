@@ -74,7 +74,7 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 
 ## Logikkpass 31. oktober, STORY-05
 
-Statisk gjennomgang av hele SC01–SC13 er utført; rettelser og vanlig spillprøve er åpne. [Funn, kildehenvisninger, scenedekning og forslag](Reports/LOGIKKPASS_2026-10-31.md). Ingen spillkode, installasjon eller Saved er endret i dette passet.
+**Avventer Toms ferdige spilltest:** Tom ba 31. oktober om å vente med retting. Ikke bygg, prøv, flett eller installer spillrettelser før denne ventingen er opphevet. Statisk gjennomgang av hele SC01–SC13 er utført; rettelser og vanlig spillprøve er åpne. [Funn, kildehenvisninger, scenedekning og forslag](Reports/LOGIKKPASS_2026-10-31.md). Ingen spillkode, installasjon eller Saved er endret i dette passet.
 
 - [ ] **LOGIC-01 / P1:** Rett fastlåst Continue fra SC11-telexen; bevar originalene og gjør telex/beleiring nåbar etter lasting.
 - [ ] **LOGIC-02 / P1:** Gi SC02s `Unwitnessed` en sannferdig vei videre til hovedreisen eller en gjenopptakelse av møtet.
@@ -85,6 +85,8 @@ Statisk gjennomgang av hele SC01–SC13 er utført; rettelser og vanlig spillpr�
 - [ ] **LOGIC-07 / P2:** Bruk faktiske strøm-/avrivningstider i SC04-stripen fremfor faste01:52/02:58.
 - [ ] **LOGIC-08 / P2:** Rett SC08s journalattribusjon eller lag faktisk spolekontroll; dokumentlesing er ikke en egen utført lydprøve.
 - [ ] **LOGIC-09 / P2:** Samordne tilfeldige bortføringsvinduer med ny tidslinje og ingen tidstap; bevar gamle saker og beskytt manussekvenser.
+
+- [ ] **STORY-06, forslag etter spilltesten:** Vurder [gameplay, skrekk og uro for åpningen og hver SC01–SC13-del](../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md). Prioriter tydelige neste handlinger, normale lyder som senere svikter, gjenkjennelige avtrykk, lesbar fiendesøking og reelle pustepauser. Ideene er forslag, ikke besluttet implementasjon.
 
 Gameplayforslag og mulig konkurranse med ambientinnslag står separat i rapporten. De er ikke bekreftede runtimefeil. Toms pågående spilling skal ikke overlappes av motor-/bygge-/spilltester.
 

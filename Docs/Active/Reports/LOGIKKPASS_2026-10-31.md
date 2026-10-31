@@ -125,6 +125,8 @@ Dette er forslag, ikke ferdig bestilte nye mekanikker eller bevis på at den sub
 
 ## Oppfølging
 
+**31. oktober, senere beskjed fra Tom:** Vent med retting til hans spilltest er ferdig. Feilene står åpne. [Forslag til gameplay, skrekk og uro per del](../../Design/Story/FORBEDRINGER_OG_URO_SC01_SC13.md) er laget separat som designforslag. Påbegynte, ubygde kildeutkast er lagt til side og inngår ikke i denne dokumentleveransen.
+
 Rett først LOGIC-01 og LOGIC-02, deretter LOGIC-04/05/06 og transportvalget. Samordne bevis og tilfeldige tidsvinduer etterpå. En samlet målrettet kontroll av de endrede rutene kan kjøres når Tom ikke spiller. Ny installasjon krever pakking, selvtest og kort kontroll etter prosjektets vanlige regler. En ny fullmatrise per funn trengs ikke.
 
 Prosjektbiblioteket ble søkt med oppgave/teknologi og deretter bredere. Ingen direkte løsning for gameplay-/historielogikk ble funnet. [EngineWire-profilen](https://github.com/Tombonator3000/prosjektbibliotek/blob/main/repoer/prosjekter/ChiR24--Unreal_mcp.md) ble lest som verktøyreferanse: oppgitt UE5.0–5.8, men bibliotekets runtime-status er UNVERIFIED. Ingen ny avhengighet eller kildekode ble gjenbrukt. Gjeldende prosjektkode og godkjent historie er grunnlaget for funnene.
