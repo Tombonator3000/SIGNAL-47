@@ -4,7 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
-| Logikkpass SC01–SC13, 31. oktober | Codex, `codex/game-logic-review-20261031` | Lesende kildepass med tre avgrensede hjelpere avsluttet. Funn i STORY-05/LOGIC-01 til09; bare rapport, TODO, STATUS og logg endres. Ingen motorjobb, installasjon eller Saved-tilgang mens Tom spiller. Spillrettinger er ikke påbegynt. |
+| Logikkpass SC01–SC13, 31. oktober | Codex, `codex/story-logic-fixes-20261031` | Tom ber om å vente med retting til spilltesten er ferdig. Ubygde utkast er lagt separat til side og egne kildeendringer tilbakestilt. Denne leveransen gjelder bare TODO, status og forslag for åpning/SC01–SC13. Ingen motorjobb, installasjon eller Saved-endring. |
 | UFO-finale med cloud tank, natt 30. til 31. oktober | Codex, PR262/263; overlevering PR264 | Installert `a202d88a`. Nattpass og bildegjennomgang avsluttet kl. 08:00. Egne tunge jobber er avsluttet. Videoer og bilder er levert; Toms visuelle sluttvurdering gjenstår. |
 | Videreføring etter Claude og åpne PR-er | Codex, avsluttet via PR260 | SC09/SARO-telefon og avgrensede storyrettinger levert; PR234 flettet, PR224/235/237 erstattet. Alle egne tunge vinduer er frigitt. Det tidligere FinaleSky-arkivet er bevart; ny finale føres i egen rad. Neste åpne hovedarbeid står i TODO. |
 | SARO 1986, gang og kontrollrom | Codex, teknisk avsluttet via PR258 | Root har avsluttet armaturer/import/bygg/levering; office_light RX3, office_materials plakater/rydding og office_dressing telefon/bøtter/jakke er integrert. Tom har godkjent PR258 for nå. Eventuell senere polering koordineres av root. Godkjente Dale er bevart. |

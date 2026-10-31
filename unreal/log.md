@@ -1432,3 +1432,7 @@ Installert a202d88a er beholdt etter siste film-/bildegjennomgang; fulle og kort
 
 ### 2026-10-31T08:19+01:00 Logikkpass SC01 til SC13
 Codex på codex/game-logic-review-20261031: statisk helreisegjennomgang med tre lesende hjelpere. To kildebaserte progresjonsstopp og sju funksjons-/veiledningsavvik ført som LOGIC-01 til09 i TODO og lenket rapport. Ingen motorjobb, spilltest, kode-/installasjonsendring eller personlig Saved-tilgang under Toms spilling.
+
+
+### 2026-10-31T08:27+01:00 Spillrettinger utsatt etter Toms beskjed
+Codex på codex/story-logic-fixes-20261031: Tom vil spille ferdig før retting. Egne ubygde kildeutkast er lagt til side og tilbakestilt; feil står åpne i TODO. Forslag til gameplay/skrekk/uro for åpning og SC01–SC13 er dokumentert. Ingen bygg, spilltest, installasjon eller personlig Saved-endring.
