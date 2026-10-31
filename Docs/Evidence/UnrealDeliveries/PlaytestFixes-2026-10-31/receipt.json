@@ -1,0 +1,17 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 272,
+  "source": "f32d4553edd862d17e41df30e329878fab80c0e2",
+  "merge": "c2f0b8b0d9145f42c7d2864adc25a82b265baeec",
+  "installed_at": "2026-10-31T10:39:26.008536+01:00",
+  "payload_nodes": 68,
+  "saved_nodes": 126,
+  "saved_unchanged": true,
+  "package_self_checks": 1772,
+  "recovery_checks": 15,
+  "saved_files_unchanged": 100,
+  "retired_old_packages": 1,
+  "retired_generated_files": 7,
+  "retired_logical_bytes": 4705620065,
+  "older_test_payloads_retained": 2
+}

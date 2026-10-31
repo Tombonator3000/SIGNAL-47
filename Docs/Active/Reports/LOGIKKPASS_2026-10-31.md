@@ -1,6 +1,6 @@
 # Logikkpass gjennom SC01 til SC13
 
-**Status:** Under arbeid. **Gjelder:** Kildegjennomgang av Unreal-spillet og oppfølging i STORY-05. **Sist kontrollert:** 31. oktober 2026.
+**Status:** Referanse. **Gjelder:** Kildegjennomgang av Unreal-spillet og oppfølging i STORY-05. **Sist kontrollert:** 31. oktober 2026.
 
 ## Konklusjon og avgrensning
 
@@ -130,3 +130,7 @@ Dette er forslag, ikke ferdig bestilte nye mekanikker eller bevis på at den sub
 Rett først LOGIC-01 og LOGIC-02, deretter LOGIC-04/05/06 og transportvalget. Samordne bevis og tilfeldige tidsvinduer etterpå. En samlet målrettet kontroll av de endrede rutene kan kjøres når Tom ikke spiller. Ny installasjon krever pakking, selvtest og kort kontroll etter prosjektets vanlige regler. En ny fullmatrise per funn trengs ikke.
 
 Prosjektbiblioteket ble søkt med oppgave/teknologi og deretter bredere. Ingen direkte løsning for gameplay-/historielogikk ble funnet. [EngineWire-profilen](https://github.com/Tombonator3000/prosjektbibliotek/blob/main/repoer/prosjekter/ChiR24--Unreal_mcp.md) ble lest som verktøyreferanse: oppgitt UE5.0–5.8, men bibliotekets runtime-status er UNVERIFIED. Ingen ny avhengighet eller kildekode ble gjenbrukt. Gjeldende prosjektkode og godkjent historie er grunnlaget for funnene.
+
+## Oppfølging
+
+LOGIC-01 til09 er rettet og lokalt levert gjennom [PR272](https://github.com/Tombonator3000/SIGNAL-47/pull/272). Rapporten over beskriver funnene før retting; [gjeldende TODO](../TODO.md) og [leveringsrapporten](../../Evidence/UnrealDeliveries/PLAYTEST_FIXES_2026-10-31.md) fører status og kontrollgrenser.
