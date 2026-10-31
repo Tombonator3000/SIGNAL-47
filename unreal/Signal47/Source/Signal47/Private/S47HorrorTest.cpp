@@ -639,6 +639,8 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 650) { Aim(Target(TEXT("rack"))); Stage(651); return; }
 		if (T.Stage == 651)
 		{
+			if (!Check(H.Objective() == O.Objective() && H.Objective().Contains(TEXT("RECEIVER RACK")),
+				TEXT("the live evening objective prioritizes this receiver control before the later door round"))) return;
 			if (!Pick(TEXT("rack")) || !Check(O.RunIndex() == 1 && O.Phase() == FS47Observing::EStep::Data &&
 				O.LoopStage() == ELoop::ControlRunning && DocCount(TEXT("obs_chart_b1133")) == 1,
 				TEXT("physical receiver-rack use starts the internal-reference control while retaining the original pulsar chart"))) return;
