@@ -148,3 +148,9 @@ Root eier dokumentene og ti originale spillbilder på `codex/board-finding-place
 ## Linux-mottaker og SARO-utelamper/insekter
 
 Root eier dokumentkartlegging og to originalbilder på `codex/linux-portability-feedback-20261031`. PLAY-31-38/P1 fører ekstern grafisk oppstart; PLAY-31-39/40 fører lys/insektstørrelse, SHIP-04 mulig Flatpak. Ingen motorreservasjon, spill-/starterendring eller publisering mens Tom spiller.
+
+## Blender-/Tripo-lookdev og native shaderoppsett
+
+Root eier `Tools/lookdev/` på `codex/blender-lookdev-workflow-20261031`, med avgrenset material-, lys- og Unreal-adapterarbeid fra underagenter. Bare root kjører Blender/Unreal sekvensielt gjennom eksisterende guard. Ingen spillprosess er aktiv ved start; kun private prøvescener og egne Lookdev-assets, ingen ny standardinstallasjon eller offentlig spillrelease.
+
+Lookdev-vinduet er frigitt etter Blender- og native UE-editorprøver. Underagentene er ferdige; ingen motorprosess eller aktiv installasjonsjobb står igjen. Genererte Lookdev-uassets er lokale prøver og inngår ikke i kilde-PR-en.

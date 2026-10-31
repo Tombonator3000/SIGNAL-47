@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "name": "SaroLookdevDemo",
+  "materials": [
+    {
+      "object": "DemoPaint", "slot": 0, "kind": "surface", "name": "CreamEnamelWear",
+      "refine": {"roughness": 0.42, "metallic": 0.0},
+      "wear": {"amount": 0.34, "scale": 28, "roughness": 0.78, "color": [0.12, 0.095, 0.06, 1], "bump_distance": 0.0007, "bump_strength": 0.2}
+    },
+    {
+      "object": "DemoMetal", "slot": 0, "kind": "surface", "name": "BrushedMetalWear",
+      "refine": {"roughness": 0.3, "metallic": 0.85},
+      "wear": {"amount": 0.2, "scale": 48, "roughness": 0.65, "color": [0.13, 0.12, 0.1, 1], "bump_distance": 0.00015, "bump_strength": 0.12}
+    },
+    {
+      "object": "DemoGlassPane", "slot": 0, "kind": "glass", "name": "WindowGlass",
+      "glass": {"mode": "pane", "tint": [0.92, 0.97, 0.94, 1], "roughness": 0.045, "ior": 1.45, "thickness": 0.006, "absorption": 0}
+    },
+    {
+      "object": "DemoSolidGlass", "slot": 0, "kind": "glass", "name": "SolidInstrumentGlass",
+      "glass": {"mode": "solid", "tint": [0.89, 0.97, 0.92, 1], "roughness": 0.06, "ior": 1.45, "thickness": 0.44, "absorption": 0.3}
+    }
+  ],
+  "lighting": {
+    "day": {
+      "world": {"sky": "nishita", "strength": 0.15, "air_density": 1, "dust_density": 1.2, "ozone_density": 1},
+      "sun": {"azimuth_deg": 135, "elevation_deg": 35, "energy_w_m2": 2, "color": [1, 0.93, 0.82], "angle_deg": 1},
+      "exposure": -1.5,
+      "mute_existing_lights": false,
+      "practicals": [],
+      "fog": {"enabled": true, "center_m": [0, 0, 1.5], "size_m": [6, 6, 4], "density_per_m": 0.012, "anisotropy": 0.25, "color": [0.86, 0.9, 1], "absorption_per_m": 0.001},
+      "unreal": {"sun_lux": 25000, "sky_intensity": 0.5, "exposure_bias": -1, "fog_density": 0.012, "fog_height_falloff": 0.3, "fog_extinction_scale": 0.4}
+    },
+    "night": {
+      "world": {"sky": "constant", "strength": 0.12, "color": [0.025, 0.04, 0.08]},
+      "moon": {"azimuth_deg": 300, "elevation_deg": 25, "energy_w_m2": 0.08, "color": [0.48, 0.62, 1], "angle_deg": 1.5},
+      "exposure": 1.0,
+      "mute_existing_lights": false,
+      "practicals": [
+        {"name": "DeskLamp", "type": "AREA", "location_m": [-1.1, -0.7, 2.0], "target_m": [0, 0.3, 0.8], "energy_w": 75, "color": [1, 0.65, 0.34], "size_m": 0.45},
+        {"name": "InstrumentFill", "type": "AREA", "location_m": [1.5, 0.5, 1.5], "target_m": [0, 0.1, 1.0], "energy_w": 35, "color": [0.32, 0.55, 0.43], "size_m": 0.6}
+      ],
+      "fog": {"enabled": true, "center_m": [0, 0, 1.5], "size_m": [6, 6, 4], "density_per_m": 0.016, "anisotropy": 0.35, "color": [0.75, 0.83, 1], "absorption_per_m": 0.001},
+      "unreal": {"moon_lux": 0.2, "sky_intensity": 0.04, "exposure_bias": 0, "fog_density": 0.012, "fog_height_falloff": 0.3, "fog_extinction_scale": 0.4, "practical_lumens": {"DeskLamp": 600, "InstrumentFill": 150}}
+    }
+  }
+}

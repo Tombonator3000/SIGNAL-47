@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Blender-/Tripo-materialer og separate lysoppsett
+
+[Lookdev-skriptpakken](../../unreal/Signal47/Tools/lookdev/README.md) er laget etter Toms bestilling: selektiv materialforbedring, maskert overflateslitasje/bump, tynn og solid glassvariant, fysisk daghimmel, solretning/eksponering, egen nattrigg og avgrenset scattering/tåke. Original geometri, UV-er, transformasjoner og riggdata bevares. Blender 5.2.2-prøven består med 36 materialkontroller, dag/natt-bytte, åtte 512² PBR-kart, FBX og samme-kamera før/etter samt nattpreview. Ni importplankontroller består. En eksisterende H31-Tripo-GLB er også importert, materialforbedret og eksportert med fire bakte kart og uendret geometri. Native UE 5.8.4-editorprøve med NullRHI har opprettet fire materialgrafer, åtte teksturer og separate dag-/nattkart med native lys/tåke uten editorfeil. NullRHI er editor-/API-kontroll, ikke grafisk spillaksept.
+
+Verktøyene og oppskriften er tilgjengelige i kilde. Genererte prøver er lokale, og faktisk tilkobling til SARO/motell/Tripo-produksjonsmodeller og grafisk High/Low-vurdering gjenstår. Ingen C++-endring, erstatning av spillets godkjente himmel eller ny standardinstallasjon/release inngår. Eksisterende åpne spillerfeil lukkes ikke av denne verktøypakken.
+
 ## Linux-mottaker og nye SARO-lysfeil
 
 PLAY-31-38/P1 fører manglende grafisk oppstart hos mottaker med RTX5090, Arch/niri og DMS. Den publiserte starteren heter `Spill-SIGNAL47.sh`; den er hentet og verifisert, og direkte lesing av hoved-ZIP-en bekrefter intern `Linux/Signal47.sh` med riktig hash. Mottakerens konkrete startfeil er fortsatt uavklart. [Ny Linux-veiledning](Guides/LINUX_RUNTIME.md) fører avhengigheter, korrekt startfil og avgrenset feilsøking. Flatpak er et forslag under SHIP-04, ikke levert distribusjon. Ingen starter-/motorendring, driverinstallasjon eller ny release er utført.
