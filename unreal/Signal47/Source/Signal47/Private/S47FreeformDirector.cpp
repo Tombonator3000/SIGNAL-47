@@ -27,6 +27,10 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
 namespace
 {
+ // The original west staff bay was cleared when the normal sedan moved to
+ // east35 (S47FleetParked). Its paved surface is -0.576 m, matching both native cars.
+ const FVector EmptyCarFoot(27,-.576,9.8);
+ const FVector EmptyCarReference=EmptyCarFoot+FVector(0,.9,0);
  struct FEvent { FString Id,Family,Action,Finding; int32 Day=1; bool bNight=false;double Duration=60; };
  const TArray<FEvent>& Catalog()
  {
@@ -100,13 +104,13 @@ struct FS47FreeformDirector::FEffects
    M->Inter->Add(It);
   };
   Register(Mesh(TEXT("FreeformTrace"),TEXT("/Engine/BasicShapes/Cylinder.Cylinder"),FVector(12,.025,-12),FVector(.34,.035,.34),0x9f9c7b),TEXT("FreeformTrace"),TEXT("ff:event-sample"),Sample);
-  auto* Sedan=Mesh(TEXT("FreeformEmptyCar"),TEXT("/Game/Free/ServiceFleet/SM_SaroPark_Sedan.SM_SaroPark_Sedan"),FVector(15,0,7),FVector(1),0xffffff,true);
+  auto* Sedan=Mesh(TEXT("FreeformEmptyCar"),TEXT("/Game/Free/ServiceFleet/SM_SaroPark_Sedan.SM_SaroPark_Sedan"),EmptyCarFoot,FVector(1),0xffffff,true);
   if(Sedan)
   {
    // Imported dressing may retain an authored mesh offset. Place its actual bounds on the bay.
    const FBoxSphereBounds B=Sedan->GetStaticMesh()->GetBounds();const double Scale=420./FMath::Max(1.,double(FMath::Max(B.BoxExtent.X,B.BoxExtent.Y)*2));
    Sedan->SetWorldScale3D(FVector(Scale));const FVector Offset(B.Origin.X,B.Origin.Y,B.Origin.Z-B.BoxExtent.Z);
-   Sedan->SetWorldLocation(S47Three::ToUE(FVector(15,0,7))-Offset*Scale);
+   Sedan->SetWorldLocation(S47Three::ToUE(EmptyCarFoot)-Offset*Scale);
   }
   Register(Sedan,TEXT("FreeformEmptyCar"),TEXT("ff:event-check"),Car);
   bBuilt=true;
@@ -155,6 +159,10 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   }
   GroupRestore=S47J::Clone(S47J::Obj(O,TEXT("group")));
  }
+ // References follow the corrected authored bay and the actual remote feeder;
+ // these are incident locations, not survey measurements inferred from a log.
+ if(Event==TEXT("empty_car"))Anchor=EmptyCarReference;
+ if(Event==TEXT("feeder_fault")&&M&&M->Freeform&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
  bApplied=false;bChoiceStored=!Event.IsEmpty();
 }
 void FS47FreeformDirector::Stop()
@@ -201,7 +209,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
  if((Id==TEXT("observer")||Id==TEXT("service_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;
  if(Id==TEXT("s03_failure")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||M->Freeform->PowerFault()))return false;
  if(Id==TEXT("feeder_fault")&&M->Freeform->PowerFault())return false;
- if(Id==TEXT("empty_car")&&(!Effects->Car||InView(FVector(15,1,7))))return false;
+ if(Id==TEXT("empty_car")&&(!Effects->Car||InView(EmptyCarReference)))return false;
  if(Id==TEXT("landing_trace")&&InView(FVector(12,.1,-12),40))return false;
  return true;
 }
@@ -209,8 +217,9 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
 {
  Effects->Build(this);if(!Eligible(Id,Forced))return false;
  Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
- Anchor=Id==TEXT("empty_car")?FVector(15,1,7):Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
+ Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
+ if(Id==TEXT("feeder_fault")&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
  LastDays.Add(Id,M->Freeform->Day());if(const auto* D=Definition(Id)){if(D->Family==TEXT("threat"))LastThreatDay=M->Freeform->Day();if(D->Family==TEXT("major"))LastMajorDay=M->Freeform->Day();}
  // Save the random choice and phase before applying any perceptible effect.
  Changed();UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s variant%d day%d"),*Event,Variant,M->Freeform->Day());return true;
@@ -377,7 +386,7 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
  if(Evidence&&M&&M->Freeform&&D)
  {
   FString Record=Text.IsEmpty()?D->Finding:Text;
-  Record+=FString::Printf(TEXT("\nFIELD POSITION: %.2f, %.2f, %.2f m. VARIANT %d."),Anchor.X,Anchor.Y,Anchor.Z,Variant);
+  Record+=FString::Printf(TEXT("\nINCIDENT REFERENCE: %.2f, %.2f, %.2f m."),Anchor.X,Anchor.Y,Anchor.Z);
   if(!PhotoId.IsEmpty())Record+=TEXT("\nRETAINED ORIGINAL PHOTOGRAPH: ")+PhotoId+TEXT(". The photograph remains in this case's album.");
   const FString Key=M->Freeform->HasFinding(Event)?Event+FString::Printf(TEXT(".day%d"),M->Freeform->Day()):Event;
   M->Freeform->RecordEvidence(Key,Record);
@@ -409,7 +418,7 @@ bool FS47FreeformDirector::Use(const FString& Id)
   Doc.Page=TEXT("RECEIVED / NO VERIFIED SENDER\n\nYOUR PREVIOUS REGISTERED INTERVAL IS STILL PRESENT. RECHECK THE LOCAL TIMING PATH.\n\nThe header carries no originating station. Compare against the original observation; this message is a new source, not a correction to it.");
   if(M->Story)M->Story->AddDoc(Doc);if(M->UI)M->UI->Document(Doc);Finish(true);return true;
  }
- if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(FVector(15,0,7),4))
+ if(Id==TEXT("ff:event-check")&&Event==TEXT("empty_car")&&Near(EmptyCarReference,4))
  {Finish(true);if(M->UI)M->UI->Toast(TEXT("Bonnet warm. Ignition off. The dashboard clock is six minutes behind the retained base reference. No driver in sight."),6);return true;}
  if(Id==TEXT("ff:event-sample")&&Event==TEXT("landing_trace")&&Near(Anchor,2.7))
  {if(!bPhoto){if(M->UI)M->UI->Toast(TEXT("Keep its position as evidence first: photograph the marked surface before lifting the fragment."),4);return true;}M->Freeform->AddItem(TEXT("fragment"),1);Finish(true);return true;}

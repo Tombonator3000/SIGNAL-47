@@ -283,15 +283,17 @@ void FS47FreeformTest::Step(double Dt)
   const auto Ids=FS47FreeformDirector::EventIds();
   if(EventIndex>=Ids.Num()){Go(30);return;}
   M->Player->Place(0,-1.2,PI);
+  if(Ids[EventIndex]==TEXT("close_pass"))F.SpendTime(13*3600.); // native night presentation, not a naturally scheduled roll
   if(!Check(F.Director->Force(Ids[EventIndex]),TEXT("explicit native event fixture starts: ")+Ids[EventIndex]))return;
   const FString Id=Ids[EventIndex];
   if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass")||Id==TEXT("empty_car"))
   {
-   const bool Car=Id==TEXT("empty_car");M->Player->Place(Car?12.:9.3,Car?12.:-12.,0);
-   const FVector D=F.Director->EventAnchor()-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+   const bool Car=Id==TEXT("empty_car");const FVector A=F.Director->EventAnchor();
+   M->Player->Place(Car?A.X-4.:A.X,Car?A.Z+5.:A.Z+18.,0);
+   const FVector D=A-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
    M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
   }
-  Go(22,Ids[EventIndex]==TEXT("observer")||Ids[EventIndex]==TEXT("service_presence")?12.:.6);return;
+  Go(22,Ids[EventIndex]==TEXT("observer")||Ids[EventIndex]==TEXT("service_presence")?12.:Ids[EventIndex]==TEXT("close_pass")?3.:.6);return;
  }
  if(Stage==22)
  {
