@@ -162,7 +162,12 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==40)
  {
   if(M->World->bBusy)return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));
+  // Explicit transport fixture: on-foot area entry does not drive the Jeep.
+  // Road parking uses the existing diner vehicle identity, including at the shop.
+  M->Player->Place(P.X+6.,P.Z+3.,0);auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("diner"));
+  S47J::Set(Pose,TEXT("x"),P.X+6.);S47J::Set(Pose,TEXT("y"),M->Player->FloorY);S47J::Set(Pose,TEXT("z"),P.Z+3.);S47J::Set(Pose,TEXT("h"),0.);
+  M->World->PlaceTruck(TEXT("diner"),Pose);M->Player->Place(P.X-1.4,P.Z,0);
   Go(41,.4);return;
  }
  if(Stage==41)
@@ -188,7 +193,8 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==422)
  {
-  if(M->World->bBusy)return;const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
+  if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:cargo"));M->Player->Place(P.X-1.4,P.Z,0);
   F.Field->Use(TEXT("ff:cargo"));
   if(!Check(F.Field->ParcelStage()==2,TEXT("truck cargo must be unloaded before physical bench delivery")))return;
   Go(43,.3);return;
