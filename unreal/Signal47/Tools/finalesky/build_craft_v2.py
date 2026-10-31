@@ -1,4 +1,4 @@
-"""Build a separate original v2/v3/v4 craft source and three authored FBX LODs.
+"""Build a separate original v2/v3/v4/v5 craft source and three authored FBX LODs.
 
 Root runs background Blender through unreal_guard. The output must be fresh.
 No v1 contract/archive is read or written, and no native/runtime acceptance is implied.
@@ -14,7 +14,7 @@ import bpy
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
-REVISIONS = dict(v2='S47-FINALE-SKY-2',v3='S47-FINALE-SKY-3',v4='S47-FINALE-SKY-4')
+REVISIONS = dict(v2='S47-FINALE-SKY-2',v3='S47-FINALE-SKY-3',v4='S47-FINALE-SKY-4',v5='S47-FINALE-SKY-5')
 MESH = 'SM_S47_FinalCraft'
 SLOTS = ['M_S47_Final'+role for role in ('Hull','Ribs','Recess','Light')]
 MATERIALS = {
@@ -69,7 +69,7 @@ def mesh_data(name,vertices,triangles,uv,materials,palette,normals=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--variant',choices=('v2','v3','v4'),default='v2')
+    parser.add_argument('--variant',choices=('v2','v3','v4','v5'),default='v2')
     args = parser.parse_args(sys.argv[sys.argv.index('--')+1:])
     revision = REVISIONS[args.variant]
     geometry_name = 'geometry_'+args.variant
@@ -88,12 +88,12 @@ def main():
     bpy.context.scene.collection.children.link(sources)
     sources.hide_viewport = sources.hide_render = True
     palette = material_palette()
-    runtime_radius = 1000 if args.variant == 'v4' else 680
+    runtime_radius = 1000 if args.variant in ('v4','v5') else 680
     lods = []
     for lod in range(3):
         solids = build(lod)
         vertices,triangles,uv,materials = [],[],[],[]
-        normals = [] if args.variant == 'v4' else None
+        normals = [] if args.variant in ('v4','v5') else None
         for solid in solids:
             offset = len(vertices)
             vertices.extend(solid.vertices)
@@ -132,7 +132,9 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=str(source))
     inputs = []
     source_paths = [Path(__file__).resolve(),HERE/(geometry_name+'.py')]
-    if args.variant in ('v3','v4'):
+    if args.variant == 'v5':
+        source_paths.append(HERE/'geometry_v4.py')  # Unchanged shell/collar/optical source.
+    if args.variant in ('v3','v4','v5'):
         source_paths.append(HERE/'geometry_v2.py')  # Actual read-only shape-helper dependency.
     source_paths.append(HERE/'geometry.py')
     for path in source_paths:
@@ -144,7 +146,7 @@ def main():
         runtime_radius_m=runtime_radius,lod_screen_sizes=[1,.35,.12],lods=lods,
         source_blend=source.name,source_inputs=inputs,
         normals=('Authored analytic radial corner normals; sharp profile ledges, smooth lens profile'
-                 if args.variant == 'v4' else 'Existing source face-smoothing policy'),
+                 if args.variant in ('v4','v5') else 'Existing source face-smoothing policy'),
         source_axis='Blender metres Z-up; FBX -Y/Z and FBX_SCALE_UNITS; native forceFrontX plus yaw90',
         native_mapping='(Bx,-By,Bz)*100cm, clockwise front faces; native UV=(u,1-v)',
         status='SOURCE_SAVED_EXPORTS_CREATED',native_imported=False,runtime_viewed=False)

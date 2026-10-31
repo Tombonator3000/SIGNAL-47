@@ -4,6 +4,7 @@
 #include "S47Flow.h"
 #include "S47Json.h"
 #include "S47Main.h"
+#include "S47Seen.h"
 #include "S47OldRoad.h"
 #include "S47Story.h"
 #include "S47Walker.h"
@@ -45,6 +46,7 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		bool bAudioRequested = false, bAudioStarted = false;
 		bool bWaitForMile = false;
 		bool bAsyncPNG = false, bFinishing = false, bFinishComplete = false;
+		bool bJpeg = false;
 		double WallStart = FPlatformTime::Seconds(), SimTotal = 0, SimStart = 0, CaptureWallStart = 0;
 		double NextFrame = 0, RequestWall = 0, EndAt = -1, PhotoAt = -1, PhotoCardAt = -1;
 		double TargetFps = 15, Tail = 8, EarlyTail = 8;
@@ -194,7 +196,10 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 			S47J::Set(Manifest, TEXT("photoFirstSimulationSeconds"), S.PhotoAt);
 			S47J::Set(Manifest, TEXT("endSimulationSeconds"), SimNow);
 			S47J::Set(Manifest, TEXT("targetFps"), S.TargetFps);
-			S47J::Set(Manifest, TEXT("asyncPNG"), S.bAsyncPNG);
+			S47J::Set(Manifest, TEXT("asyncPNG"), S.bAsyncPNG && !S.bJpeg);
+			S47J::Set(Manifest, TEXT("imageFormat"), S.bJpeg ? TEXT("jpeg") : TEXT("png"));
+			if (S.bJpeg) S47J::Set(Manifest, TEXT("jpegQuality"), 95);
+			else S47J::SetNull(Manifest, TEXT("jpegQuality"));
 			S47J::Set(Manifest, TEXT("showUI"), true);
 			S47J::Set(Manifest, TEXT("eventSeconds"), 47.);
 			S47J::Set(Manifest, TEXT("pulloutSeconds"), 34.);
@@ -229,6 +234,7 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 			if (S.bAsyncPNG) S47J::Set(Manifest, TEXT("limits"), S.bAudioRequested
 				? TEXT("PNG encoding/writes use a bounded asynchronous queue. Screenshot readback still affects frame pacing; this is not profiling evidence. audioComplete reports whether the live master mix was saved; an incomplete capture retains successful PNG files.")
 				: TEXT("Visual motion capture with bounded asynchronous PNG encoding/writes. Screenshot readback still affects frame pacing; this is not profiling evidence. Audio is not recorded."));
+			if (S.bJpeg) S47J::Set(Manifest, TEXT("limits"), TEXT("Lossy JPEG quality 95 encoding/writes use the same bounded asynchronous queue and UI screenshot readback. Readback still affects pacing; this is not profiling evidence. Incomplete captures retain successful images; audioComplete separately reports any requested master recording."));
 			Manifest->SetArrayField(TEXT("frames"), S.Frames);
 			if (!FFileHelper::SaveStringToFile(S47J::Write(Manifest, true), *(S.Dir / TEXT("frames.json")),
 				FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM, &Files, FILEWRITE_NoReplaceExisting))
@@ -245,7 +251,8 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 	{
 		S.bInit = true;
 		S.bAudioRequested = FParse::Param(FCommandLine::Get(), TEXT("S47FinaleMovieAudio"));
-		S.bAsyncPNG = FParse::Param(FCommandLine::Get(), TEXT("S47FinaleMovieAsync"));
+		S.bJpeg = FParse::Param(FCommandLine::Get(), TEXT("S47FinaleMovieJpeg"));
+		S.bAsyncPNG = S.bJpeg || FParse::Param(FCommandLine::Get(), TEXT("S47FinaleMovieAsync"));
 		if (S.bAsyncPNG)
 		{
 			if (!ScreenshotDelegateEnabled()) { Finish(false, TEXT("async PNG requires r.ScreenshotDelegate enabled")); return; }
@@ -298,7 +305,7 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 			auto& Write = S.Writes[0];
 			if (!Write.Result.IsReady())
 			{
-				if (WallNow - Write.QueuedWall > 30 && S.PngError.IsEmpty()) S.PngError = TEXT("async PNG write timed out");
+				if (WallNow - Write.QueuedWall > 30 && S.PngError.IsEmpty()) S.PngError = TEXT("async image write timed out");
 				break;
 			}
 			if (Write.Result.Get() && Files.FileSize(*Write.Filename) > 0)
@@ -306,7 +313,7 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 				S.bSavedPhoto |= S47J::Bool(Write.Row, TEXT("photoVisible"));
 				S.Frames.Add(MakeShared<FJsonValueObject>(Write.Row));
 			}
-			else if (S.PngError.IsEmpty()) S.PngError = TEXT("async PNG write failed or finished file missing");
+			else if (S.PngError.IsEmpty()) S.PngError = TEXT("async image write failed or finished file missing");
 			S.Writes.RemoveAt(0, 1, EAllowShrinking::No);
 		}
 		if (!S.Pending.IsEmpty() && (!ScreenshotDelegateEnabled() || !FScreenshotRequest::IsScreenshotRequested()
@@ -419,7 +426,7 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		if (UGameViewportClient::OnScreenshotCaptured().IsBound())
 		{ Finish(false, TEXT("async PNG refuses an existing foreign screenshot delegate")); return; }
 	}
-	const FString Name = FString::Printf(TEXT("frame-%06d.png"), S.bAsyncPNG ? S.IssuedFrames : S.Frames.Num());
+	const FString Name = FString::Printf(TEXT("frame-%06d.%s"), S.bAsyncPNG ? S.IssuedFrames : S.Frames.Num(), S.bJpeg ? TEXT("jpg") : TEXT("png"));
 	S.Pending = S.Dir / Name;
 	if (Files.FileExists(*S.Pending)) { S.Pending.Reset(); Finish(false, TEXT("refusing a previous frame overwrite")); return; }
 	S.PendingRow = S47J::New();
@@ -439,6 +446,9 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		S47J::Set(S.PendingRow, TEXT("eyeFinite"), bFinite);
 		if (bFinite) S47J::Set(S.PendingRow, TEXT("eyeUE"), TArray<double>{ Eye.X, Eye.Y, Eye.Z });
 		else S47J::SetNull(S.PendingRow, TEXT("eyeUE"));
+		const FQuat View = FS47Cam::Of(M->Player).Quaternion();
+		if (!View.ContainsNaN()) S47J::Set(S.PendingRow, TEXT("cameraQuaternionThree"), TArray<double>{ View.X, View.Y, View.Z, View.W });
+		else S47J::SetNull(S.PendingRow, TEXT("cameraQuaternionThree"));
 	}
 	S.RequestWall = WallNow;
 	// Keep cadence on the simulation grid; a slow PNG skips slots instead of queuing work.
@@ -467,7 +477,8 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 					TArray64<FColor> Pixels;
 					Pixels.Append(Bitmap.GetData(), int64(Bitmap.Num()));
 					auto Task = MakeUnique<FImageWriteTask>();
-					Task->Filename = Capture->Pending; Task->Format = EImageFormat::PNG; Task->bOverwriteFile = false;
+					Task->Filename = Capture->Pending; Task->Format = Capture->bJpeg ? EImageFormat::JPEG : EImageFormat::PNG; Task->bOverwriteFile = false;
+					if (Capture->bJpeg) Task->CompressionQuality = 95;
 					Task->PixelData = MakeUnique<TImagePixelData<FColor>>(FIntPoint(Width, Height), MoveTemp(Pixels));
 					FState::FPngWrite Write;
 					Write.Filename = Capture->Pending; Write.Row = MoveTemp(Capture->PendingRow);
@@ -482,5 +493,6 @@ void FS47FinaleMovie::Step(US47Main* M, double Dt)
 		++S.IssuedFrames; // Filename ownership follows issued requests, not completion order.
 	}
 	// Unique filename and UI retained; at most one viewport request, with bounded async writes behind it.
+	// bAddUniqueSuffix=false preserves an explicit .jpg; the raw delegate bypasses UE's default PNG writer.
 	FScreenshotRequest::RequestScreenshot(S.Pending, true, false, false, FIntRect(), true);
 }

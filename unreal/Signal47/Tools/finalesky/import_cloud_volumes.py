@@ -1,6 +1,7 @@
-"""Import only the owned cloud atlases and three native density volumes.
+"""Import only the owned cloud atlases and native density volumes.
 
-Root runs Unreal through unreal_guard; S47_CLOUD_ATLAS names atlas.json.
+Root runs Unreal through unreal_guard; S47_CLOUD_ATLAS names the original atlas.json.
+S47_CLOUD_SEQUENCE_ATLAS selects nine frames in a separate CloudSequence folder.
 No process is launched here. No material, shared asset or directory-wide save.
 """
 import json
@@ -15,6 +16,8 @@ import unreal
 DEST = '/Game/FinaleSky/Clouds'
 AUTHORSHIP = 'Original SIGNAL / 47 Mantaflow density'
 LETTERS = 'ABC'
+SEQUENCE_DEST = '/Game/FinaleSky/CloudSequence'
+SEQUENCE_FRAMES = tuple(range(48,97,6))
 
 
 def log(message):
@@ -22,7 +25,7 @@ def log(message):
     print('S47 CLOUD VOLUMES ' + message, flush=True)
 
 
-def source_manifest(path):
+def source_manifest(path, sequence=False):
     data = json.loads(path.read_text())
     assert data.get('schema') == 1 and data.get('authorship') == AUTHORSHIP, 'Own schema-1 atlas required'
     dimensions = data.get('dimensions_xyz',[])
@@ -34,7 +37,10 @@ def source_manifest(path):
     scale = float(data['density_scale'])
     assert math.isfinite(scale) and scale > 0
     frames = data['frames']
-    assert 1 <= len(frames) <= 3, 'Expected one to three selected density frames'
+    if sequence:
+        assert [row['frame'] for row in frames] == list(SEQUENCE_FRAMES), 'Expected ordered frames 48..96 in steps of six'
+    else:
+        assert 1 <= len(frames) <= 3, 'Expected one to three selected density frames'
     for row in frames:
         png = (path.parent/row['png']).resolve()
         assert png.parent == path.parent and png.is_file(), 'Expected a PNG beside atlas.json'
@@ -73,8 +79,9 @@ def settings(texture, volume=False, bit_depth=8):
             assert texture.get_editor_property(key) == value
 
 
-def save_and_size(asset, expected, expected_format='G8'):
-    assert asset.get_path_name().startswith(DEST+'/'), 'Refusing unowned save'
+def save_and_size(asset, expected, expected_format='G8', destination=DEST):
+    assert destination in (DEST,SEQUENCE_DEST)
+    assert asset.get_path_name().startswith(destination+'/'), 'Refusing unowned save'
     assert unreal.EditorAssetLibrary.save_loaded_asset(asset,False), 'Asset save failed: '+asset.get_path_name()
     # In editor this reports the configured target build size, not the live GPU resource.
     size = asset.blueprint_get_built_texture_size()
@@ -93,34 +100,41 @@ def save_and_size(asset, expected, expected_format='G8'):
 
 
 def main():
-    path = Path(os.environ['S47_CLOUD_ATLAS']).expanduser().resolve()
-    data = source_manifest(path)
+    sequence_path = os.environ.get('S47_CLOUD_SEQUENCE_ATLAS')
+    sequence = bool(sequence_path)
+    destination = SEQUENCE_DEST if sequence else DEST
+    path = Path(sequence_path or os.environ['S47_CLOUD_ATLAS']).expanduser().resolve()
+    data = source_manifest(path,sequence=sequence)
     size,bit_depth = data['dimensions_xyz'][0],data['bit_depth']
     expected_format = 'R16F' if bit_depth == 16 else 'G8'
     editor,tools = unreal.EditorAssetLibrary,unreal.AssetToolsHelpers.get_asset_tools()
     imported = []
-    for index,letter in enumerate(LETTERS):
+    for index in range(9 if sequence else len(LETTERS)):
         # The one-frame pilot also fills all three shader slots; production has
         # three distinct frames. Two-frame sources hold their last frame in C.
         row = data['frames'][min(index,len(data['frames'])-1)]
-        atlas_name,volume_name = 'T_S47_CloudDensityAtlas'+letter,'V_S47_CloudDensity'+letter
-        atlas_path,volume_path = DEST+'/'+atlas_name,DEST+'/'+volume_name
+        if sequence:
+            atlas_name,volume_name = 'T_S47_CloudFrameAtlas%02d'%index,'V_S47_CloudFrame%02d'%index
+        else:
+            letter = LETTERS[index]
+            atlas_name,volume_name = 'T_S47_CloudDensityAtlas'+letter,'V_S47_CloudDensity'+letter
+        atlas_path,volume_path = destination+'/'+atlas_name,destination+'/'+volume_name
         existing = editor.load_asset(atlas_path) if editor.does_asset_exist(atlas_path) else None
         assert existing is None or isinstance(existing,unreal.Texture2D), 'Wrong class at owned atlas path'
         task = unreal.AssetImportTask()
         task.filename = str(row['_png'])
-        task.destination_path,task.destination_name = DEST,atlas_name
+        task.destination_path,task.destination_name = destination,atlas_name
         task.automated,task.replace_existing,task.replace_existing_settings,task.save = True,True,True,False
         task.factory = unreal.TextureFactory()
         tools.import_asset_tasks([task])
         atlas = editor.load_asset(atlas_path)
         assert isinstance(atlas,unreal.Texture2D), 'PNG did not import as Texture2D'
         settings(atlas,bit_depth=bit_depth)
-        save_and_size(atlas,data['png_size_xy']+[1],expected_format)
+        save_and_size(atlas,data['png_size_xy']+[1],expected_format,destination)
 
         volume = editor.load_asset(volume_path) if editor.does_asset_exist(volume_path) else None
         if volume is None:
-            volume = tools.create_asset(volume_name,DEST,unreal.VolumeTexture,unreal.VolumeTextureFactory())
+            volume = tools.create_asset(volume_name,destination,unreal.VolumeTexture,unreal.VolumeTextureFactory())
         assert isinstance(volume,unreal.VolumeTexture), 'Wrong class at owned volume path'
         settings(volume,volume=True,bit_depth=bit_depth)
         # Setting Source2DTexture invokes SetDefaultSource2DTileSize, whose square
@@ -133,7 +147,10 @@ def main():
         assert volume.get_editor_property('source2d_tile_size_y') == size
         assert volume.get_editor_property('srgb') is False
         editor.set_metadata_tag(volume, 'S47DensityScale', str(data['density_scale']))
-        dims = save_and_size(volume,[size,size,size],expected_format)
+        if sequence:
+            editor.set_metadata_tag(volume, 'S47DensityFrame', str(row['frame']))
+            editor.set_metadata_tag(volume, 'S47SequenceIndex', str(index))
+        dims = save_and_size(volume,[size,size,size],expected_format,destination)
         imported.append(dict(volume=volume.get_path_name(),frame=row['frame'],dimensions=dims))
     log('IMPORT COMPLETE density_scale=%.9g frames=%s; saved source/native assets only, RHI unverified' %
         (data['density_scale'],json.dumps(imported,separators=(',',':'))))

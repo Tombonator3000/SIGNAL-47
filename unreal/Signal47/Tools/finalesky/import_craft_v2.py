@@ -1,7 +1,7 @@
-"""Replace only /Game/FinaleSky/SM_S47_FinalCraft from a separate v2/v3/v4 source.
+"""Replace only /Game/FinaleSky/SM_S47_FinalCraft from a separate v2/v3/v4/v5 source.
 
 Root runs Unreal through unreal_guard with S47_CRAFT_V2_SOURCE set to the new
-output directory or manifest.json (v2/v3/v4). Existing four material instances are read only.
+output directory or manifest.json (v2/v3/v4/v5). Existing four material instances are read only.
 Use the legacy FBX importer, as in this project's proven native recipe.
 """
 import importlib.util
@@ -14,7 +14,7 @@ import unreal
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parents[1]
 DEST,NAME = '/Game/FinaleSky','SM_S47_FinalCraft'
-REVISIONS = {'S47-FINALE-SKY-2':'v2','S47-FINALE-SKY-3':'v3','S47-FINALE-SKY-4':'v4'}
+REVISIONS = {'S47-FINALE-SKY-2':'v2','S47-FINALE-SKY-3':'v3','S47-FINALE-SKY-4':'v4','S47-FINALE-SKY-5':'v5'}
 ROLES = ('Hull','Ribs','Recess','Light')
 SLOTS = ['M_S47_Final'+role for role in ROLES]
 
@@ -90,6 +90,8 @@ def main():
     for lod in range(3):
         sections = mesh.get_num_sections(lod)
         assert sections > 0
+        if variant == 'v5':
+            assert sections == len(ROLES), (lod,sections,'four owned material sections required')
         for section in range(sections):
             subsystem.enable_section_collision(mesh,False,lod,section)
         assert not any(subsystem.is_section_collision_enabled(mesh,lod,i) for i in range(sections))

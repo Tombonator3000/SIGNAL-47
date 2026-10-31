@@ -574,7 +574,10 @@ US47Chapter6::FKeyframes US47Chapter6::Keyframes() const
 	// Missing/off art retains the original front view; all timing and later keyframes stay authored.
 	K.Front = bFinaleArt ? P + F * 7 - Right * 3.3 + S47_UP * 2.5 : P + F * 9 + S47_UP * 1.9;
 	K.AtTruck = bFinaleArt ? P - Right * .25 + S47_UP * 1.25 : P + S47_UP * 1.2;
-	K.High = P + Dir(104) * 170 + S47_UP * 140; K.Westward = P + Dir(284) * 160;
+	K.High = P + Dir(104) * 170 + S47_UP * 140;
+	// Keep the rising wide view on the distant horizon. The old ground-level target
+	// spent the middle of the ready craft reveal looking down at the bare road plane.
+	K.Westward = P + Dir(284) * 160 + S47_UP * (bFinaleArt ? 145. : 0.);
 	K.SunSide = P + Dir(259) * 120 + S47_UP * 150; K.Sunward = P + Dir(79) * 3000 + S47_UP * 60;
 	K.Top = P + Dir(259) * 220 + S47_UP * 650;
 	const double Az = FMath::DegreesToRadians(LAST_LOOK_AZ), El = FMath::DegreesToRadians(LAST_LOOK_EL);
@@ -597,7 +600,15 @@ void US47Chapter6::Shoot(FS47View& Out)
 		Q = FQuat::Slerp(From.Q, LookAt(Pos, K.AtTruck), Sm(0.5, 5.5, V));
 	}
 	else if (V < 13) { const double E = Sm(6.5, 13, V); Pos = FMath::Lerp(K.Front, K.High, E); Q = LookAt(Pos, FMath::Lerp(K.AtTruck, K.Westward, E)); }
-	else if (V < 21) { const double E = Sm(13, 21, V); Pos = FMath::Lerp(K.High, K.SunSide, E); Q = LookAt(Pos, FMath::Lerp(K.Westward, K.Sunward, E)); }
+	else if (V < 21)
+	{
+		const double E = Sm(13, 21, V); Pos = FMath::Lerp(K.High, K.SunSide, E);
+		// The moving aim point passed near the camera and whipped the horizon round.
+		// Ready art keeps the same endpoint views, with a steady eased angular turn.
+		Q = FinaleSky && FinaleSky->Ready()
+			? FQuat::Slerp(LookAt(K.High, K.Westward), LookAt(K.SunSide, K.Sunward), E)
+			: LookAt(Pos, FMath::Lerp(K.Westward, K.Sunward, E));
+	}
 	else { const double E = Sm(21, PULL, V); Pos = FMath::Lerp(K.SunSide, K.Top, E); Q = LookAt(Pos, FMath::Lerp(K.Sunward, K.Stars, Sm(22, PULL, V))); }
 	ViewOf(Pos, Q, Out);
 }

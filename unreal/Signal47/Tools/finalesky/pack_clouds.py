@@ -195,8 +195,9 @@ def main():
     parser.add_argument('--cache-kind', choices=('data','noise'), default='data')
     argv = sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else sys.argv[1:]
     args = parser.parse_args(argv)
-    if not 1 <= len(args.frames) <= 3:
-        parser.error('Select one to three frames')
+    # Nine picks are opt-in through the explicit frame list; existing three-pick callers stay unchanged.
+    if not 1 <= len(args.frames) <= 9:
+        parser.error('Select one to nine frames')
     pack_cache(args.cache,args.output,sorted(set(args.frames)),args.size,args.bit_depth,args.cache_kind)
 
 

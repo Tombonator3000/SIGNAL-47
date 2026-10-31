@@ -1,5 +1,6 @@
 #include "S47SkyVisitors.h"
 
+#include "S47Chapter6.h"
 #include "S47Evening.h"
 #include "S47FieldCamera.h"
 #include "S47Flow.h"
@@ -274,6 +275,10 @@ void FS47SkyVisitors::Step(double Dt)
 {
  ControlTest(Dt);
  if (!M || !M->Story || !M->Player || !M->World || !State.bEnabled || M->Mode != US47Main::EMode::Play)
+ { Hide(); return; }
+ // The authored final journey owns its sky. Keep an earlier visitor track and its
+ // observation clock untouched while C6 is active, including the empty-car pullout.
+ if (const auto* Finale = Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))); Finale && Finale->bActive)
  { Hide(); return; }
  const bool Held = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic();
  if (State.Advance(RequestedStage(), Dt, Held)) M->RequestAutosave();

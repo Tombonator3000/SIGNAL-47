@@ -13,6 +13,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture.h"
+#include "Engine/VolumeTexture.h"
 #include "HAL/IConsoleManager.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
@@ -33,6 +34,9 @@ namespace
 {
 	const TCHAR* CraftPath = TEXT("/Game/FinaleSky/SM_S47_FinalCraft.SM_S47_FinalCraft");
 	const TCHAR* CloudPath = TEXT("/Game/FinaleSky/M_S47_FinalCloud.M_S47_FinalCloud");
+	const TCHAR* SequenceCloudPath = TEXT("/Game/FinaleSky/M_S47_FinalCloudSequence.M_S47_FinalCloudSequence");
+	TAutoConsoleVariable<int32> CVarCloudSequence(TEXT("r.S47.Finale.CloudSequence"), 1,
+		TEXT("Use the nine-frame own fluid sequence when complete; chosen on finale preparation. 0 retains the three-frame field."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarCraftForward(TEXT("r.S47.Finale.CraftForward"), 2100.f,
 		TEXT("Finale craft distance ahead of C8.15, metres (100..10000)."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarCraftRight(TEXT("r.S47.Finale.CraftRight"), 100.f,
@@ -47,7 +51,7 @@ namespace
 		TEXT("Local empty-cab pullout fill, candela (0..20); fades over pullout 0.8..8.2 seconds."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarStarScale(TEXT("r.S47.Finale.StarScale"), .3f,
 		TEXT("Ready finale's private rendered star diameter multiplier (0.2..1); blends during approach and holds through pullout."), ECVF_Default);
-	TAutoConsoleVariable<float> CVarStarDim(TEXT("r.S47.Finale.StarDim"), .7f,
+	TAutoConsoleVariable<float> CVarStarDim(TEXT("r.S47.Finale.StarDim"), .96f,
 		TEXT("Ready finale's local minimum StarsMid display dimming (0..1); never changes the sky/story Dawn."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarBankForward(TEXT("r.S47.Finale.BankForward"), 1100.f,
 		TEXT("Finale cloud-bank distance ahead of C8.15, metres (50..10000); existing 90m advance is subtracted."), ECVF_Default);
@@ -67,7 +71,7 @@ namespace
 		TEXT("Finale cloud-bank vertical half-extent, metres (50..2000)."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarDensity(TEXT("r.S47.Finale.Density"), 1.7f,
 		TEXT("Finale baked cloud-volume density multiplier (0.1..12); analytic material ignores an unbound input."), ECVF_Default);
-	TAutoConsoleVariable<int32> CVarSamples(TEXT("r.S47.Finale.Samples"), 96,
+	TAutoConsoleVariable<int32> CVarSamples(TEXT("r.S47.Finale.Samples"), 128,
 		TEXT("Finale cloud raymarch samples (16..128); Low effects caps the applied value at 28."), ECVF_Default);
 	TAutoConsoleVariable<float> CVarGlow(TEXT("r.S47.Finale.Glow"), 4.f,
 		TEXT("Finale cloud glow multiplier (0..10); scales the authored 0.12..0.34 phase curve."), ECVF_Default);
@@ -128,6 +132,50 @@ bool FS47FinaleSky::Prepare()
 		return WaitFor(TEXT("own /Game/FinaleSky assets"));
 	auto* Mesh = LoadObject<UStaticMesh>(nullptr, CraftPath, nullptr, LOAD_NoWarn);
 	auto* Cloud = LoadObject<UMaterialInterface>(nullptr, CloudPath, nullptr, LOAD_NoWarn);
+	TArray<TStrongObjectPtr<UTexture>> SequenceFrames;
+	if (CVarCloudSequence.GetValueOnGameThread() != 0
+		&& FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(FString(SequenceCloudPath))))
+	{
+		auto* SequenceMaterial = LoadObject<UMaterialInterface>(nullptr, SequenceCloudPath, nullptr, LOAD_NoWarn);
+		float MixDefault = 0, DecodeDefault = 0;
+		UTexture* DeclaredA = nullptr; UTexture* DeclaredB = nullptr;
+		const bool bSequenceRecipe = SequenceMaterial && SequenceMaterial->GetMaterial()
+			&& SequenceMaterial->GetMaterial()->MaterialDomain == MD_Surface
+			&& SequenceMaterial->GetBlendMode() == BLEND_Translucent
+			&& SequenceMaterial->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("FrameMix")), MixDefault)
+			&& FMath::IsFinite(MixDefault)
+			&& SequenceMaterial->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("DecodeScale")), DecodeDefault)
+			&& FMath::IsFinite(DecodeDefault) && DecodeDefault > 0
+			&& SequenceMaterial->GetTextureParameterValue(FHashedMaterialParameterInfo(TEXT("DensityA")), DeclaredA)
+			&& SequenceMaterial->GetTextureParameterValue(FHashedMaterialParameterInfo(TEXT("DensityB")), DeclaredB)
+			&& Cast<UVolumeTexture>(DeclaredA) && Cast<UVolumeTexture>(DeclaredB);
+		FIntVector SequenceSize = FIntVector::ZeroValue;
+		for (int32 I = 0; I < 9; ++I)
+		{
+			if (!bSequenceRecipe) break;
+			const FString Name = FString::Printf(TEXT("V_S47_CloudFrame%02d"), I);
+			const FString Path = TEXT("/Game/FinaleSky/CloudSequence/") + Name + TEXT(".") + Name;
+			if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path))) break;
+			auto* Texture = LoadObject<UVolumeTexture>(nullptr, *Path, nullptr, LOAD_NoWarn);
+			if (!Texture) break;
+			// Use saved CPU dimensions. Pending GPU initialization must not force fallback.
+#if WITH_EDITORONLY_DATA
+			const FIntVector Size = Texture->Source.IsValid()
+				? FIntVector(Texture->Source.GetSizeX(), Texture->Source.GetSizeY(), Texture->Source.GetNumSlices())
+				: FIntVector(Texture->GetSizeX(), Texture->GetSizeY(), Texture->GetSizeZ());
+#else
+			const FIntVector Size(Texture->GetSizeX(), Texture->GetSizeY(), Texture->GetSizeZ());
+#endif
+			if (Size.X <= 0 || Size.Y <= 0 || Size.Z <= 0 || (I && Size != SequenceSize)) break;
+			SequenceSize = Size;
+			SequenceFrames.Emplace(Texture);
+		}
+#if WITH_EDITOR
+		if (SequenceMaterial && SequenceFrames.Num() == 9) SequenceMaterial->EnsureIsComplete();
+#endif
+		if (bSequenceRecipe && SequenceFrames.Num() == 9 && ShaderReady(SequenceMaterial)) Cloud = SequenceMaterial;
+		else SequenceFrames.Reset(); // Incomplete optional art keeps the existing three-frame field.
+	}
 	auto* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
 	if (!Cube || !Mesh || !Mesh->GetRenderData() || !Cloud || !Cloud->GetMaterial())
 		return WaitFor(TEXT("craft/cloud render resources"));
@@ -193,6 +241,7 @@ bool FS47FinaleSky::Prepare()
 			return WaitFor(TEXT("opaque craft shaders"));
 	}
 	Drop();
+	CloudSequence = MoveTemp(SequenceFrames);
 	const auto* Road = M->World->OldRoad();
 	// This is C8.15, never the diner's mile-zero junction. Derive orientation at C itself.
 	const double CrossS = S47OldRoadLayout::SAt(8.15);
@@ -455,7 +504,9 @@ void FS47FinaleSky::Drop()
 	{
 		if (Banks[I].IsValid()) Banks[I]->DestroyComponent();
 		Banks[I].Reset(); BankMids[I].Reset();
+		BankFramePair[I] = INDEX_NONE; BankFrameMix[I] = 0;
 	}
+	CloudSequence.Reset();
 	bReady = false;
 }
 
@@ -530,6 +581,19 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 			+ Up * (100 * (Tuning.BankHeight + BankRise));
 		auto* B = Banks[I].Get(); auto* D = BankMids[I].Get();
 		if (!B || !D) continue;
+		if (CloudSequence.Num() == 9)
+		{
+			const double Frame = 8 * Smooth(-35, 72, Phase + I * 24);
+			const int32 Pair = FMath::Min(7, FMath::FloorToInt(Frame));
+			if (BankFramePair[I] != Pair)
+			{
+				D->SetTextureParameterValue(TEXT("DensityA"), CloudSequence[Pair].Get());
+				D->SetTextureParameterValue(TEXT("DensityB"), CloudSequence[Pair + 1].Get());
+				BankFramePair[I] = Pair;
+			}
+			BankFrameMix[I] = FMath::Clamp(Frame - Pair, 0., 1.);
+			D->SetScalarParameterValue(TEXT("FrameMix"), BankFrameMix[I]);
+		}
 		B->SetWorldLocation(Center); B->SetWorldRotation(FRotationMatrix::MakeFromXZ(ForwardUE, Up).Rotator());
 		B->SetWorldScale3D(Extent / 50.); B->SetVisibility(bShown);
 		D->SetVectorParameterValue(TEXT("BankCenter"), FLinearColor(Center.X, Center.Y, Center.Z, 0));
@@ -567,6 +631,9 @@ S47J::FObj FS47FinaleSky::Readback() const
 	S47J::Set(O, TEXT("steeringCloneCount"), SteeringCount);
 	S47J::Set(O, TEXT("steeringClonesVisible"), SteeringVisible > 0);
 	S47J::Set(O, TEXT("phase"), Phase); S47J::Set(O, TEXT("growth"), Growth); S47J::Set(O, TEXT("reveal"), Reveal);
+	S47J::Set(O, TEXT("cloudFrameCount"), CloudSequence.IsEmpty() ? 3 : CloudSequence.Num());
+	S47J::Set(O, TEXT("cloudFramePairs"), TArray<double>{ double(BankFramePair[0]), double(BankFramePair[1]) });
+	S47J::Set(O, TEXT("cloudFrameMix"), TArray<double>{ BankFrameMix[0], BankFrameMix[1] });
 	S47J::Set(O, TEXT("samples"), AppliedSamples); S47J::Set(O, TEXT("craftOpacity"), 1.);
 	auto Applied = S47J::New();
 	S47J::Set(Applied, TEXT("craftForwardM"), Tuning.CraftForward); S47J::Set(Applied, TEXT("craftRightM"), Tuning.CraftRight);
@@ -593,6 +660,8 @@ S47J::FObj FS47FinaleSky::Readback() const
 	// Inspect only textures already bound to the actual bank material. Never load or wait here.
 	UMaterialInterface* BankMaterial = Banks[0].IsValid() ? Banks[0]->GetMaterial(0)
 		: Banks[1].IsValid() ? Banks[1]->GetMaterial(0) : nullptr;
+	if (BankMaterial && BankMaterial->GetMaterial())
+		S47J::Set(O, TEXT("cloudVariableRateShadingAllowed"), bool(BankMaterial->GetMaterial()->bAllowVariableRateShading));
 	float DecodeScale = 0;
 	if (BankMaterial && BankMaterial->GetScalarParameterValue(FHashedMaterialParameterInfo(TEXT("DecodeScale")), DecodeScale))
 		S47J::Set(O, TEXT("decodeScale"), double(DecodeScale));
@@ -620,6 +689,27 @@ S47J::FObj FS47FinaleSky::Readback() const
 		DensityTextures.Add(MakeShared<FJsonValueObject>(Row));
 	}
 	O->SetArrayField(TEXT("densityTextures"), DensityTextures);
+	TArray<TSharedPtr<FJsonValue>> SequenceTextures;
+	for (const auto& Held : CloudSequence)
+	{
+		const UTexture* Texture = Held.Get();
+		auto Row = S47J::New();
+		S47J::Set(Row, TEXT("texture"), GetPathNameSafe(Texture));
+		const FTextureResource* Resource = Texture ? Texture->GetResource() : nullptr;
+		const FRHITexture* GPU = Resource && Resource->TextureRHI.IsValid() ? Resource->TextureRHI.GetReference() : nullptr;
+		S47J::Set(Row, TEXT("gpuResourceAvailable"), GPU != nullptr);
+		if (GPU)
+		{
+			S47J::Set(Row, TEXT("gpuFormat"), GetPixelFormatString(GPU->GetFormat()));
+			if (GPU->GetDesc().Dimension == ETextureDimension::Texture3D)
+			{
+				const FIntVector Size = GPU->GetSizeXYZ();
+				S47J::Set(Row, TEXT("dimensions3D"), TArray<double>{ double(Size.X), double(Size.Y), double(Size.Z) });
+			}
+		}
+		SequenceTextures.Add(MakeShared<FJsonValueObject>(Row));
+	}
+	O->SetArrayField(TEXT("sequenceTextures"), SequenceTextures);
 	S47J::Set(O, TEXT("crossingMile"), 8.15); S47J::Set(O, TEXT("crossingUE"), XYZ(S47Three::ToUE(Crossing)));
 	S47J::Set(O, TEXT("forwardUE"), XYZ(ForwardUE)); S47J::Set(O, TEXT("rightUE"), XYZ(RightUE));
 	if (Craft.IsValid())

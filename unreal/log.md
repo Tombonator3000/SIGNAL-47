@@ -1413,3 +1413,6 @@ PR262: eget v4-skrog, ulik fluidfase, roligere stjerner og kabin/klokkeregi; byg
 
 ### 2026-10-31T02:58+01:00 Lokal terrengskygge i finale
 PR262: parret fase68-bilde viser at skyggekasting fra de to grove bakkenodene lager midtfeltflaten. Scoped CastShadow av fjerner flaten; originale flagg/materialer gjenopprettes, geometri/collision/øvrige skygger er urørt. Bygg og bildepar består; HD-opptak og pakking følger.
+
+### 2026-10-31T04:04+01:00 Fartøy v5 og ni fluidstadier
+PR262: åtte brede undersidefelt, ni faktiske256³ PF_R16F-frames og roligere stjerner består bygg/før-etter. JPEG95-arbeidsopptak gir23.8/23.6 fangede bilder/s i EVENT/uttrekk, ingen spill-FPS-påstand. Finere skyjitter og jevn midtpanorering er bygget; nytt helt diner-opptak pågår før pakking/Low-kontroll.
