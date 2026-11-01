@@ -197,7 +197,8 @@ void AS47Web::BeginProductionViews()
   {TEXT("interior-phone-detail"),TEXT("saro"),{1.85,0,3.15},{3.02,.85,2.36}},
   {TEXT("interior-jacket-detail"),TEXT("saro"),{4.5,0,3.3},{5.88,1.43,2.42}},
   {TEXT("interior-rx3-detail"),TEXT("saro"),{4.0,0,-2.40},{5.34,1.00,-2.44}},
-  {TEXT("interior-fixture-detail"),TEXT("saro"),{-.70,0,5.70},{.20,2.75,5.70}}
+  {TEXT("interior-fixture-detail"),TEXT("saro"),{-.70,0,5.70},{.20,2.75,5.70}},
+  {TEXT("array-foundation"),TEXT("saro"),{17,-.62,-34},{9.5,.15,-42}}
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);

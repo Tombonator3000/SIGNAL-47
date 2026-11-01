@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Antennefundamenter har bakkekontakt
+
+Runtime `5ea2803d` er installert1. november kl.20:31 CET. Alle27 antenner får betongforlengelser under de fire føttene. Antennestyring, bevegelige pivoter og servicepunkter beholder plasseringen. Bygg/pakke,1957 selvtester,108 fundamentinstanser og gjennomsett pakket dagslysbilde består; installert Fortsett består og158 Saved-elementer er uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/ARRAY_GROUNDING_2026-11-01.md).
+
+Felles Story-/Freeform-betjening, dagstyrt utelys og rombrytere er ført som åpne oppgaver MODE-08/LIGHT-01/02 i TODO. De er ikke implementert i denne leveransen.
+
 ## Freeform-startmeny oppdatert og installert
 
 Runtime `4d38c76f` er installert1. november kl.19:58 CET. Startvalget har egen fokusbar meny, eksplisitt tilbakevalg og ingen avbrytelse ved bakgrunnsklikk. Fulle lagringsplasser beholder Freeform-navnet. QUIT-klikkrettelsen fra PR315 inngår.

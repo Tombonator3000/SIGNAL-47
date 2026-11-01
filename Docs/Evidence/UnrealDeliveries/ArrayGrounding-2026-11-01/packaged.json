@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "scope": "108 foundations and static daylight camera fixture; no human acceptance",
+  "self_checks": 1957,
+  "source_commit": "5ea2803daf70c17f91acb00dc16b9ff1320f546e",
+  "run": {
+    "returncode": 0,
+    "wall_seconds": 26.006909004994668,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 21.826732635498047,
+      "heavy_jobs": [],
+      "pgrep": "1051046 python3 /tmp/s47_diegetic_once.py /home/tom/scratch-bm/Signal47-array-grounding-20261101/packaged-job.json\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 1051046,
+        "start_ticks": "61302216",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "Freeform physical equipment, Tripo pump and Jeep window",
+        "acquired_at": "2026-11-01T19:28:25.239131+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "profile": "/tmp/S47-array-ground-fkz_all4",
+  "shots": "/home/tom/scratch-bm/Signal47-array-grounding-20261101/packaged-shots"
+}
