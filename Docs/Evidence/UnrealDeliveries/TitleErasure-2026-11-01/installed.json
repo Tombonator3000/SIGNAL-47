@@ -1,0 +1,41 @@
+{
+  "status": "INSTALLED",
+  "installed_at": "2026-11-01T16:35:11.751306+01:00",
+  "source_commit": "b98c6fe10bc9111c55625dcc34da9cb6aff51d00",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "freeform_checks": 77,
+  "freeform_restores": 2,
+  "self_checks": 1957,
+  "Saved_unchanged": true,
+  "saved_nodes": 149,
+  "previous_payload": "/home/tom/scratch-bm/Signal47-freeform-diegetic-20261101/previous-installed",
+  "installed_continue": {
+    "returncode": 0,
+    "wall_seconds": 35.130762260989286,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 22.746929168701172,
+      "heavy_jobs": [],
+      "pgrep": "875657 python3 -u /tmp/s47_diegetic_once.py /home/tom/scratch-bm/Signal47-freeform-diegetic-20261101/install-job.json\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 875657,
+        "start_ticks": "59890617",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "Freeform physical equipment, Tripo pump and Jeep window",
+        "acquired_at": "2026-11-01T15:33:09.179220+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "installed_test_profile": "/tmp/S47-freeform-installed-qfuivuub"
+}
