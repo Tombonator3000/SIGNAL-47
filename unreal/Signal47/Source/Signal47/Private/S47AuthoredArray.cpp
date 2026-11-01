@@ -4,6 +4,7 @@
 #include "S47Three.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 
 void AS47Web::BuildAuthoredArray()
@@ -56,13 +57,15 @@ void AS47Web::BuildAuthoredArray()
 	// The authored plinths end at root Y=0, while the graded array ground is
 	// Y=-0.62. Extend only their concrete below grade: the moving assemblies,
 	// feed/beacon coordinates and story sight lines keep their established pivots.
-	if (UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")))
+	UMaterialInterface* Concrete = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/RadioArray/Dish/Materials/M_Array_Concrete.M_Array_Concrete"));
+	UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	if (Cube && Concrete)
 	{
 		UInstancedStaticMeshComponent* Footings = NewObject<UInstancedStaticMeshComponent>(this, TEXT("ArrayGroundFootings"));
 		Footings->SetupAttachment(Nodes[Parent].Comp.Get());
 		Footings->SetMobility(EComponentMobility::Movable);
 		Footings->SetStaticMesh(Cube);
-		Footings->SetMaterial(0, Meshes[0]->GetMaterial(4)); // Original M_Array_Concrete.
+		Footings->SetMaterial(0, Concrete); // FBX compresses unused slots; resolve the original by asset identity.
 		Footings->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		Footings->SetCollisionResponseToAllChannels(ECR_Ignore);
 		Footings->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
