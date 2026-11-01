@@ -1,0 +1,1280 @@
+{
+	"status": "PASS",
+	"reason": "Bounded original-case terminal/pause observation completed; Vulkan root cause remains unconfirmed.",
+	"stage": 31,
+	"checks": 42,
+	"pauseOpens": 4,
+	"pauseResumes": 4,
+	"terminalUses": 3,
+	"playWallSeconds": 131.49136898806319,
+	"afterTerminalWallSeconds": 120.66140396997798,
+	"nativeFramesAfterTerminal": 3615,
+	"RHI": "Vulkan",
+	"rayTracing": 1,
+	"lumenHardwareRayTracing": 1,
+	"residentGeometryPoolMiB": 640,
+	"rendererAtStart":
+	{
+		"r.ScreenPercentage": 60,
+		"sg.ShadowQuality": 2,
+		"sg.AntiAliasingQuality": 2,
+		"sg.GlobalIlluminationQuality": 2,
+		"sg.ReflectionQuality": 2,
+		"r.Lumen.HardwareRayTracing": 1,
+		"r.RayTracing.ResidentGeometryMemoryPoolSizeInMB": 640,
+		"r.ShadowQuality": 5,
+		"r.ContactShadows": 1,
+		"r.Lumen.ScreenProbeGather.ShortRangeAO": 1,
+		"r.VolumetricFog": 1,
+		"r.VolumetricFog.GridPixelSize": 16,
+		"r.VolumetricFog.GridSizeZ": 64,
+		"r.Streaming.MipBias": 0,
+		"r.MaxAnisotropy": 8,
+		"r.Streaming.PoolSize": 1000,
+		"r.Shadow.Virtual.SMRT.RayCountLocal": 4,
+		"r.Shadow.Virtual.SMRT.RayCountDirectional": 4,
+		"r.Shadow.Virtual.SMRT.SamplesPerRayLocal": 2,
+		"r.Shadow.Virtual.SMRT.SamplesPerRayDirectional": 2,
+		"r.Shadow.Virtual.MarkPixelPagesMipModeLocal": 2,
+		"r.Shadow.Virtual.ResolutionLodBiasLocal": 1,
+		"r.SSR.Quality": 2,
+		"r.Lumen.Reflections.Allow": 1,
+		"r.MaterialQualityLevel": 1,
+		"r.PSOPrecache.Components": 0,
+		"r.PSOPrecache.GlobalShaders": 0,
+		"giMethod": 1,
+		"reflectionMethod": 1,
+		"lumenSceneQuality": 0.5,
+		"lumenGatherQuality": 0.5,
+		"lumenReflectionQuality": 0.5,
+		"lumenRayLightingMode": 1,
+		"aoIntensity": 0,
+		"ssrQuality": 50,
+		"requestedReflectionTier": 2,
+		"resolvedReflectionTier": 2,
+		"reflectionFallback": false,
+		"fogTier": 1,
+		"cloudTier": 1,
+		"cloudVisible": false,
+		"cloudSamples": 0.5,
+		"skyRealtimeCapture": false,
+		"lookdevEnvironment":
+		{
+			"enabled": true,
+			"spatialWeight": 1,
+			"dayWeight": 0,
+			"skyGain": 1.0399999618530273,
+			"sunGain": 1,
+			"moonGain": 1.0199999809265137,
+			"indirectGain": 0.98000001907348633,
+			"sceneExposureEV": 0.02500000037252903,
+			"userExposureEV": 0,
+			"actualExposureEV": 0.02500000037252903,
+			"actualSkyIntensity": 0.057199995964765549,
+			"actualSunIntensity": 0,
+			"actualSunDirectionThree": [
+				0.98157336021128638,
+				0.010471783637498532,
+				-0.19079853319921913
+			],
+			"actualFogDensity": 0.0043679997324943542,
+			"actualScatteringDistribution": 0.41999998688697815,
+			"actualFSSS": false,
+			"actualFSSSSceneColor": 0.054999999701976776
+		},
+		"lookdevMaterials":
+		{
+			"enabled": true,
+			"rules": 17,
+			"error": "",
+			"boundSlots": 47,
+			"bindings": [
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.StaticMeshComponent_108",
+					"mesh": "/Game/MotelV2/SM_Sierra_Glass.SM_Sierra_Glass",
+					"sourceMesh": "/Game/MotelV2/SM_Sierra_Glass.SM_Sierra_Glass",
+					"slot": 0,
+					"scope": "motel",
+					"source": "/Game/MotelV2/Materials/M_MotelV2_Glass.M_MotelV2_Glass",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_Glass.M_LDP_M_MotelV2_Glass"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.StaticMeshComponent_113",
+					"mesh": "/Game/MotelV2/SM_Sierra_Office.SM_Sierra_Office",
+					"sourceMesh": "/Game/MotelV2/SM_Sierra_Office.SM_Sierra_Office",
+					"slot": 0,
+					"scope": "motel",
+					"source": "/Game/MotelV2/Materials/M_MotelV2_Office.M_MotelV2_Office",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_Office.M_LDP_M_MotelV2_Office"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.StaticMeshComponent_119",
+					"mesh": "/Game/MotelV2/SM_Sierra_RoofShell.SM_Sierra_RoofShell",
+					"sourceMesh": "/Game/MotelV2/SM_Sierra_RoofShell.SM_Sierra_RoofShell",
+					"slot": 0,
+					"scope": "motel",
+					"source": "/Game/MotelV2/Materials/M_MotelV2_RoofShell.M_MotelV2_RoofShell",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_RoofShell.M_LDP_M_MotelV2_RoofShell"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_FloorLinoleum.M_Office_FloorLinoleum",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_FloorLinoleum.M_LDP_M_Office_FloorLinoleum"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_SageWall.M_Office_SageWall",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_SageWall.M_LDP_M_Office_SageWall"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"slot": 6,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Room.SM_Office_Room",
+					"slot": 7,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 8,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 10,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:doorLeaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:doorLeaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:doorLeaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceCabinet",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceCabinet",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceCabinet",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 5,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:taggedSpare",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:taggedSpare",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:records:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:records:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:records:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:south:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:south:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:south:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:lab:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:lab:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:lab:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_UpperPaint.M_Saro_Corridor_UpperPaint",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_UpperPaint.M_LDP_M_Saro_Corridor_UpperPaint"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCTRepair.M_Saro_Corridor_VCTRepair",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCTRepair.M_LDP_M_Saro_Corridor_VCTRepair"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCT.M_Saro_Corridor_VCT",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCT.M_LDP_M_Saro_Corridor_VCT"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 5,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCTFaded.M_Saro_Corridor_VCTFaded",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCTFaded.M_LDP_M_Saro_Corridor_VCTFaded"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 6,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 7,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 8,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_LowerPaint.M_Saro_Control_LowerPaint",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_LowerPaint.M_LDP_M_Saro_Control_LowerPaint"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_UpperPaint.M_Saro_Control_UpperPaint",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_UpperPaint.M_LDP_M_Saro_Control_UpperPaint"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 5,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_RackSteel.M_Saro_Control_RackSteel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_RackSteel.M_LDP_M_Saro_Control_RackSteel"
+				}
+			],
+			"missing": []
+		}
+	},
+	"rendererAtCheckpoint":
+	{
+		"r.ScreenPercentage": 60,
+		"sg.ShadowQuality": 2,
+		"sg.AntiAliasingQuality": 2,
+		"sg.GlobalIlluminationQuality": 2,
+		"sg.ReflectionQuality": 2,
+		"r.Lumen.HardwareRayTracing": 1,
+		"r.RayTracing.ResidentGeometryMemoryPoolSizeInMB": 640,
+		"r.ShadowQuality": 5,
+		"r.ContactShadows": 1,
+		"r.Lumen.ScreenProbeGather.ShortRangeAO": 1,
+		"r.VolumetricFog": 1,
+		"r.VolumetricFog.GridPixelSize": 16,
+		"r.VolumetricFog.GridSizeZ": 64,
+		"r.Streaming.MipBias": 0,
+		"r.MaxAnisotropy": 8,
+		"r.Streaming.PoolSize": 1000,
+		"r.Shadow.Virtual.SMRT.RayCountLocal": 4,
+		"r.Shadow.Virtual.SMRT.RayCountDirectional": 4,
+		"r.Shadow.Virtual.SMRT.SamplesPerRayLocal": 2,
+		"r.Shadow.Virtual.SMRT.SamplesPerRayDirectional": 2,
+		"r.Shadow.Virtual.MarkPixelPagesMipModeLocal": 2,
+		"r.Shadow.Virtual.ResolutionLodBiasLocal": 1,
+		"r.SSR.Quality": 2,
+		"r.Lumen.Reflections.Allow": 1,
+		"r.MaterialQualityLevel": 1,
+		"r.PSOPrecache.Components": 0,
+		"r.PSOPrecache.GlobalShaders": 0,
+		"giMethod": 1,
+		"reflectionMethod": 1,
+		"lumenSceneQuality": 0.5,
+		"lumenGatherQuality": 0.5,
+		"lumenReflectionQuality": 0.5,
+		"lumenRayLightingMode": 1,
+		"aoIntensity": 0,
+		"ssrQuality": 50,
+		"requestedReflectionTier": 2,
+		"resolvedReflectionTier": 2,
+		"reflectionFallback": false,
+		"fogTier": 1,
+		"cloudTier": 1,
+		"cloudVisible": false,
+		"cloudSamples": 0.5,
+		"skyRealtimeCapture": false,
+		"lookdevEnvironment":
+		{
+			"enabled": true,
+			"spatialWeight": 1,
+			"dayWeight": 0,
+			"skyGain": 1.0399999618530273,
+			"sunGain": 1,
+			"moonGain": 1.0199999809265137,
+			"indirectGain": 0.98000001907348633,
+			"sceneExposureEV": 0.02500000037252903,
+			"userExposureEV": 0,
+			"actualExposureEV": 0.02500000037252903,
+			"actualSkyIntensity": 0.057199995964765549,
+			"actualSunIntensity": 0,
+			"actualSunDirectionThree": [
+				0.98157336021128638,
+				0.010471783637498532,
+				-0.19079853319921913
+			],
+			"actualFogDensity": 0.0043679997324943542,
+			"actualScatteringDistribution": 0.41999998688697815,
+			"actualFSSS": false,
+			"actualFSSSSceneColor": 0.054999999701976776
+		},
+		"lookdevMaterials":
+		{
+			"enabled": true,
+			"rules": 17,
+			"error": "",
+			"boundSlots": 47,
+			"bindings": [
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.StaticMeshComponent_108",
+					"mesh": "/Game/MotelV2/SM_Sierra_Glass.SM_Sierra_Glass",
+					"sourceMesh": "/Game/MotelV2/SM_Sierra_Glass.SM_Sierra_Glass",
+					"slot": 0,
+					"scope": "motel",
+					"source": "/Game/MotelV2/Materials/M_MotelV2_Glass.M_MotelV2_Glass",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_Glass.M_LDP_M_MotelV2_Glass"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.StaticMeshComponent_113",
+					"mesh": "/Game/MotelV2/SM_Sierra_Office.SM_Sierra_Office",
+					"sourceMesh": "/Game/MotelV2/SM_Sierra_Office.SM_Sierra_Office",
+					"slot": 0,
+					"scope": "motel",
+					"source": "/Game/MotelV2/Materials/M_MotelV2_Office.M_MotelV2_Office",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_Office.M_LDP_M_MotelV2_Office"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.StaticMeshComponent_119",
+					"mesh": "/Game/MotelV2/SM_Sierra_RoofShell.SM_Sierra_RoofShell",
+					"sourceMesh": "/Game/MotelV2/SM_Sierra_RoofShell.SM_Sierra_RoofShell",
+					"slot": 0,
+					"scope": "motel",
+					"source": "/Game/MotelV2/Materials/M_MotelV2_RoofShell.M_MotelV2_RoofShell",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_MotelV2_RoofShell.M_LDP_M_MotelV2_RoofShell"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47LegacyCut_5",
+					"sourceMesh": "/Game/Signal47/Art/Saro1986/SM_Saro1986_OfficeRoomCpu.SM_Saro1986_OfficeRoomCpu",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_FloorLinoleum.M_Office_FloorLinoleum",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_FloorLinoleum.M_LDP_M_Office_FloorLinoleum"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47LegacyCut_5",
+					"sourceMesh": "/Game/Signal47/Art/Saro1986/SM_Saro1986_OfficeRoomCpu.SM_Saro1986_OfficeRoomCpu",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_SageWall.M_Office_SageWall",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_SageWall.M_LDP_M_Office_SageWall"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47LegacyCut_5",
+					"sourceMesh": "/Game/Signal47/Art/Saro1986/SM_Saro1986_OfficeRoomCpu.SM_Saro1986_OfficeRoomCpu",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47LegacyCut_5",
+					"sourceMesh": "/Game/Signal47/Art/Saro1986/SM_Saro1986_OfficeRoomCpu.SM_Saro1986_OfficeRoomCpu",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47LegacyCut_5",
+					"sourceMesh": "/Game/Signal47/Art/Saro1986/SM_Saro1986_OfficeRoomCpu.SM_Saro1986_OfficeRoomCpu",
+					"slot": 6,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredRoom",
+					"mesh": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47LegacyCut_5",
+					"sourceMesh": "/Game/Signal47/Art/Saro1986/SM_Saro1986_OfficeRoomCpu.SM_Saro1986_OfficeRoomCpu",
+					"slot": 7,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 8,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:authoredDressing",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Dressing.SM_Office_Dressing",
+					"slot": 10,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:doorLeaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:doorLeaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:doorLeaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceCabinet",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceCabinet",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceCabinet",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceCabinet.SM_Office_ServiceCabinet",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:serviceDrawer",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_ServiceDrawer.SM_Office_ServiceDrawer",
+					"slot": 5,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:taggedSpare",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.office:taggedSpare",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_SpareKey.SM_Office_SpareKey",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:records:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:records:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:records:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:south:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:south:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:south:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:lab:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:lab:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.saroDoorDetail:lab:leaf",
+					"mesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"sourceMesh": "/Game/Signal47/Art/Office/SM_Office_Door.SM_Office_Door",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_UpperPaint.M_Saro_Corridor_UpperPaint",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_UpperPaint.M_LDP_M_Saro_Corridor_UpperPaint"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 2,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_Walnut.M_Office_Walnut",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_Walnut.M_LDP_M_Office_Walnut"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCTRepair.M_Saro_Corridor_VCTRepair",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCTRepair.M_LDP_M_Saro_Corridor_VCTRepair"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCT.M_Saro_Corridor_VCT",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCT.M_LDP_M_Saro_Corridor_VCT"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 5,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Corridor_VCTFaded.M_Saro_Corridor_VCTFaded",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Corridor_VCTFaded.M_LDP_M_Saro_Corridor_VCTFaded"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 6,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 7,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroCorridorFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_CorridorFinishes.SM_Saro_CorridorFinishes",
+					"slot": 8,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CabinetEnamel.M_Office_CabinetEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CabinetEnamel.M_LDP_M_Office_CabinetEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 0,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_LowerPaint.M_Saro_Control_LowerPaint",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_LowerPaint.M_LDP_M_Saro_Control_LowerPaint"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 1,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_UpperPaint.M_Saro_Control_UpperPaint",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_UpperPaint.M_LDP_M_Saro_Control_UpperPaint"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 3,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_CreamEnamel.M_Office_CreamEnamel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_CreamEnamel.M_LDP_M_Office_CreamEnamel"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 4,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/Office/Materials/M_Office_BrushedMetal.M_Office_BrushedMetal",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Office_BrushedMetal.M_LDP_M_Office_BrushedMetal"
+				},
+				{
+					"component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.SaroControlRoomFinishes",
+					"mesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"sourceMesh": "/Game/Signal47/Art/SaroInteriors/SM_Saro_ControlRoomFinishes.SM_Saro_ControlRoomFinishes",
+					"slot": 5,
+					"scope": "saro",
+					"source": "/Game/Signal47/Art/SaroInteriors/Materials/M_Saro_Control_RackSteel.M_Saro_Control_RackSteel",
+					"replacement": "/Game/Signal47/Art/LookdevProduction/Materials/M_LDP_M_Saro_Control_RackSteel.M_LDP_M_Saro_Control_RackSteel"
+				}
+			],
+			"missing": []
+		}
+	},
+	"source": "Ordinary Continue in isolated case1 from the unchanged original 02:57 auto1; source pose and unheld schedule verified from Flow carry.",
+	"fixture": "Player placement only: original road pose is moved to the existing control-room approach (-4.2,2.0). No Story flag reset, replacement state, new case, physical road drive or human input is claimed.",
+	"method": "Four production Flow pause opens and focused Slate Escape resumes; actual Walker camera rays and OnUse production callback at OPS; persisted AUTO HOLD verified; 120 seconds after first terminal use and a real final rendered PNG required.",
+	"limits": "Bounded High/HWRT/Vulkan presentation/terminal diagnostic. Not the original 21-minute session, explicit swapchain resize/focus reproduction, whole-story acceptance, Freeform-night acceptance, or a proven Vulkan fix. A PASS also requires normal process exit verified by the runner.",
+	"evidence": [
+		{
+			"check": "real window presentation required; offscreen/null RHI are rejected",
+			"stage": 0,
+			"frame": 1,
+			"playWallSeconds": 0
+		},
+		{
+			"check": "ordinary case1 Story Continue is active; not a replacement/dev/Freeform state",
+			"stage": 0,
+			"frame": 121,
+			"playWallSeconds": 7.4020354077219963e-06
+		},
+		{
+			"check": "loaded source retains original auto1 road pose and schedule=false without a flag reset",
+			"stage": 0,
+			"frame": 121,
+			"playWallSeconds": 0.0018611360574141145
+		},
+		{
+			"check": "native visible game window is using Vulkan",
+			"stage": 0,
+			"frame": 121,
+			"playWallSeconds": 0.0038866720860823989
+		},
+		{
+			"check": "existing High and hardware ray tracing are active without graphics changes",
+			"stage": 0,
+			"frame": 121,
+			"playWallSeconds": 0.0051436000503599644
+		},
+		{
+			"check": "Continue exposes an on-foot player; the diagnostic never forcibly exits a cab",
+			"stage": 0,
+			"frame": 121,
+			"playWallSeconds": 0.0060773460427299142
+		},
+		{
+			"check": "ordinary world is resumed before the next pause cycle",
+			"stage": 10,
+			"frame": 126,
+			"playWallSeconds": 1.0095791090279818
+		},
+		{
+			"check": "production Flow pause opens the real paused menu",
+			"stage": 10,
+			"frame": 126,
+			"playWallSeconds": 1.0167030540760607
+		},
+		{
+			"check": "Slate is available for ordinary pause-menu Escape",
+			"stage": 11,
+			"frame": 154,
+			"playWallSeconds": 2.0291148410178721
+		},
+		{
+			"check": "focused Slate Escape executes the production pause Resume callback",
+			"stage": 11,
+			"frame": 154,
+			"playWallSeconds": 2.0300109670497477
+		},
+		{
+			"check": "ordinary world is resumed before the next pause cycle",
+			"stage": 10,
+			"frame": 191,
+			"playWallSeconds": 3.2631008040625602
+		},
+		{
+			"check": "production Flow pause opens the real paused menu",
+			"stage": 10,
+			"frame": 191,
+			"playWallSeconds": 3.2651504710083827
+		},
+		{
+			"check": "Slate is available for ordinary pause-menu Escape",
+			"stage": 11,
+			"frame": 222,
+			"playWallSeconds": 4.2958035010378808
+		},
+		{
+			"check": "focused Slate Escape executes the production pause Resume callback",
+			"stage": 11,
+			"frame": 222,
+			"playWallSeconds": 4.296675275079906
+		},
+		{
+			"check": "ordinary world is resumed before the next pause cycle",
+			"stage": 10,
+			"frame": 259,
+			"playWallSeconds": 5.5298546500271186
+		},
+		{
+			"check": "production Flow pause opens the real paused menu",
+			"stage": 10,
+			"frame": 259,
+			"playWallSeconds": 5.5316807620692998
+		},
+		{
+			"check": "Slate is available for ordinary pause-menu Escape",
+			"stage": 11,
+			"frame": 290,
+			"playWallSeconds": 6.5625027160858735
+		},
+		{
+			"check": "focused Slate Escape executes the production pause Resume callback",
+			"stage": 11,
+			"frame": 290,
+			"playWallSeconds": 6.5634074480039999
+		},
+		{
+			"check": "ordinary world is resumed before the next pause cycle",
+			"stage": 10,
+			"frame": 327,
+			"playWallSeconds": 7.7965129720978439
+		},
+		{
+			"check": "production Flow pause opens the real paused menu",
+			"stage": 10,
+			"frame": 327,
+			"playWallSeconds": 7.7984869109932333
+		},
+		{
+			"check": "Slate is available for ordinary pause-menu Escape",
+			"stage": 11,
+			"frame": 358,
+			"playWallSeconds": 8.8291646330617368
+		},
+		{
+			"check": "focused Slate Escape executes the production pause Resume callback",
+			"stage": 11,
+			"frame": 358,
+			"playWallSeconds": 8.8300989620620385
+		},
+		{
+			"check": "control-room fixture rests on an ordinary walkable location",
+			"stage": 20,
+			"frame": 405,
+			"playWallSeconds": 10.396476592053659
+		},
+		{
+			"check": "OPS has a physical exported/native interaction object",
+			"stage": 21,
+			"frame": 418,
+			"playWallSeconds": 10.829970394028351
+		},
+		{
+			"check": "actual aimed camera ray selects OPS in ordinary interaction range",
+			"stage": 21,
+			"frame": 418,
+			"playWallSeconds": 10.83087653608527
+		},
+		{
+			"check": "production OPS use opens its panel or records the first AUTO HOLD action in the live room",
+			"stage": 21,
+			"frame": 418,
+			"playWallSeconds": 10.837954069022089
+		},
+		{
+			"check": "first actual OPS use records AUTO HOLD through production state and its original document",
+			"stage": 21,
+			"frame": 418,
+			"playWallSeconds": 10.844313548062928
+		},
+		{
+			"check": "ordinary terminal/document close returns to the native control-room view",
+			"stage": 22,
+			"frame": 458,
+			"playWallSeconds": 12.254961166065186
+		},
+		{
+			"check": "control-room fixture rests on an ordinary walkable location",
+			"stage": 20,
+			"frame": 513,
+			"playWallSeconds": 14.088255471084267
+		},
+		{
+			"check": "OPS has a physical exported/native interaction object",
+			"stage": 21,
+			"frame": 526,
+			"playWallSeconds": 14.521662009996362
+		},
+		{
+			"check": "actual aimed camera ray selects OPS in ordinary interaction range",
+			"stage": 21,
+			"frame": 526,
+			"playWallSeconds": 14.522565180086531
+		},
+		{
+			"check": "production OPS use opens its panel or records the first AUTO HOLD action in the live room",
+			"stage": 21,
+			"frame": 526,
+			"playWallSeconds": 14.530277537996881
+		},
+		{
+			"check": "ordinary terminal/document close returns to the native control-room view",
+			"stage": 22,
+			"frame": 569,
+			"playWallSeconds": 15.955192678025924
+		},
+		{
+			"check": "control-room fixture rests on an ordinary walkable location",
+			"stage": 20,
+			"frame": 624,
+			"playWallSeconds": 17.788310589035973
+		},
+		{
+			"check": "OPS has a physical exported/native interaction object",
+			"stage": 21,
+			"frame": 637,
+			"playWallSeconds": 18.221697088098153
+		},
+		{
+			"check": "actual aimed camera ray selects OPS in ordinary interaction range",
+			"stage": 21,
+			"frame": 637,
+			"playWallSeconds": 18.222600384033285
+		},
+		{
+			"check": "production OPS use opens its panel or records the first AUTO HOLD action in the live room",
+			"stage": 21,
+			"frame": 637,
+			"playWallSeconds": 18.229983013006859
+		},
+		{
+			"check": "ordinary terminal/document close returns to the native control-room view",
+			"stage": 22,
+			"frame": 680,
+			"playWallSeconds": 19.655156193068251
+		},
+		{
+			"check": "four genuine pause/resume cycles and three production OPS uses completed",
+			"stage": 30,
+			"frame": 4016,
+			"playWallSeconds": 130.85591424605809
+		},
+		{
+			"check": "same ordinary case remains interactive after the bounded observation",
+			"stage": 30,
+			"frame": 4016,
+			"playWallSeconds": 130.85700754704885
+		},
+		{
+			"check": "High/HWRT settings were not reduced during the observation",
+			"stage": 30,
+			"frame": 4016,
+			"playWallSeconds": 130.85778823203873
+		},
+		{
+			"check": "actual final PNG rendered after 120 seconds and subsequent native frames advanced",
+			"stage": 31,
+			"frame": 4033,
+			"playWallSeconds": 131.49054232798517
+		}
+	]
+}

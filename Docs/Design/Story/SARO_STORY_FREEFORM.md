@@ -84,11 +84,11 @@ Kanon gjelder fortsatt: New Mexico i 1986, 1420.405 MHz, 27 antenner, azimut 026
 
 ## Justering av dag og natt, 1. november
 
-Tom ønsker kortere dag og lengre natt fordi natten er mer spennende, med uendret samlet døgnlengde. Første foreslåtte balanse for neste spillprøve er **30 aktive minutter dag og 45 aktive minutter natt**, totalt **75 minutter**. Retningen er bestilt; det konkrete 30/45-forholdet er et utgangspunkt for balansering.
+Tom ønsker kortere dag og lengre natt fordi natten er mer spennende, med uendret samlet døgnlengde. Første implementerte balanse er **30 aktive minutter dag og 45 aktive minutter natt**, totalt **75 minutter**. Retningen er bestilt; det konkrete 30/45-forholdet er et utgangspunkt for balansering.
 
 Behold spillklokkens dag kl.06:00–19:00 og natt kl.19:00–06:00, men la klokken gå raskere om dagen og saktere om natten. Bevar skumring, soloppgang, butikkers klokkeslett og sammenhengende lagring. Klokkesteg må håndtere fasegrenser og døgnskifte presist; pause og menyer skal fortsatt holde tiden. Story beholder sin egen tidsstyring. Kontroller at første dag fortsatt er uten farlig jakt, og at en lengre natt ikke øker antall farlige møter eller fjerner rolige perioder. Prøv tiden til forberedelser/innkjøp og nattlige målinger under MODE-05.
 
-Dette er ført i planen og TODO; den installerte versjonen har fortsatt jevn klokkehastighet gjennom døgnet.
+30/45 er nå teknisk implementert og lokalt installert via PR310. Naturlig balanse står fortsatt i MODE-05. Se [leveringen](../../Evidence/UnrealDeliveries/FREEFORM_JOURNEY_2026-11-01.md).
 
 ## Godkjent gjennomføring: vedvarende døgn og hendelsesregissør
 
