@@ -1,8 +1,14 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 31. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 1. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
+
+## Under arbeid: Jeep-innside og SC04-oppfølging
+
+Tom ba om nattarbeid fram til søndag 1. november kl.09. Jeepens førerplass har nå en egen tilpasset Blender-innside og sju native deler med separat styrt ratt, runde levende instrumenter, radio, pedaler og girspaker. Vulkan-bilder viser korrekt førerutsikt og faktiske instrument-/radioflater; 1840 selvtester og native import består. Eksisterende originale modeller og personlige lagringer er bevart. Endringen er ennå ikke lokalt installert.
+
+SC04 har et smalt rettingsutkast for utilgjengelige jaktruter, kropp i døråpningen, lokking tilbake til faktisk kontor og tydelig dørfeedback. Den eksisterende korte fangst-/lokkings-/tilfluktsprøven består med 17 kontroller. Enkelte konkrete spillerfunn trenger fortsatt egne situasjoner eller menneskelig spillprøve; disse er ikke lukket fra kildearbeidet alene. Se [TODO](TODO.md).
 
 ## Tripo-flåte, motellretting og varm solnedgang
 

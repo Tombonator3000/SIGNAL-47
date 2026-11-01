@@ -1517,3 +1517,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-10-31 23:35 | codex/tripo-ufo-vehicles-20261031 | Fem Tripo/PBR-modeller og tre LOD-er importert, Caliche/motell-LOD rettet, basseng bak romrekken, TV/100-prosentregel og ravgul solnedgang. Editorbygg,1838 selvtester og målrettede Vulkan-bilder består; lokal pakking/installasjon følger.
 
 2026-10-31 23:58 | Tripo/motell c8c8fa89, PR298/299 | Installert kl.23:55 CET: 1838 selvtester, pakket TV-film/lyd, motellrute 60/14/228,68m med disk/Continue og installert solnedgang/cab består; 149 Saved-elementer/118 filer bevart. To gamle payload pensjonert, egne motorjobber avsluttet og reservasjon frigitt.
+
+2026-11-01 01:36 | codex/jeep-interior-20261101 | Sju tilpassede Jeep-innsidedeler og levende instrumenter i native Vulkan; 1840 selvtester og SC04short17 består. Kilder/private originaler bevart, lokal installasjon gjenstår; neste bygg tar med presis fysisk dørbladkontroll.

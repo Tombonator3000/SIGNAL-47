@@ -1,5 +1,8 @@
 #include "S47Web.h"
 #include "S47Main.h"
+#include "S47Spine.h"
+#include "S47UI.h"
+#include "S47Audio.h"
 #include "S47Observing.h"
 #include "Components/BoxComponent.h"
 #include "S47RadioWoman.h"
@@ -1521,8 +1524,19 @@ bool AS47Web::ToggleDoor(const FString& ItemId)
 {
 	FDoor* D = DoorByItem(ItemId);
 	if (!D) return false;
+	auto Refuse = [this](const TCHAR* Text)
+	{
+		if (auto* M=US47Main::Get(this))
+		{
+			if (M->UI) M->UI->Toast(Text, 3);
+			if (M->Audio) M->Audio->Play(TEXT("door_latch"), .25f);
+		}
+		return false;
+	};
 	if (D->bOpen && D->Area == Area())
 	{
+		if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Secure().DoorOccupied(D->Id))
+			return Refuse(TEXT("The doorway is occupied. Get clear of it before closing the door."));
 		// Closing while standing in the threshold disabled the only walk zone
 		// under the player. Resolve then had no old zone to slide back into.
 		const FVector P = S47Three::ToThree(Eye);
@@ -1542,12 +1556,16 @@ bool AS47Web::ToggleDoor(const FString& ItemId)
 			if (P.X + Radius > R.MinX && P.X - Radius < R.MaxX && P.Z + Radius > R.MinZ && P.Z - Radius < R.MaxZ)
 			{
 				UE_LOG(LogTemp, Display, TEXT("S47: door %s close held: player occupies threshold %.3f %.3f"), *D->Id, P.X, P.Z);
-				return false;
+				return Refuse(TEXT("You are in the doorway. Step clear of the threshold to close the door."));
 			}
 		}
 	}
 	SetDoor(*D, !D->bOpen, false);
 	if (OnDoor) OnDoor(D->Id, D->bOpen, D->Proxy >= 0 ? WorldUE(D->Proxy) : PropLocation(ItemId), D->Sound != TEXT("light"));
+	if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Secure().HuntLive() && M->UI &&
+		(D->Id==TEXT("doorSouth") || D->Id==TEXT("doorEast")))
+		M->UI->Toast(D->bOpen ? TEXT("Door open. The control room is not secure.") :
+			D->Id==TEXT("doorSouth") ? TEXT("Corridor door shut.") : TEXT("Service door shut."), 2.5);
 	return true;
 }
 

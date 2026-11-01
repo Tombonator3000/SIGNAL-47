@@ -315,11 +315,23 @@ def import_candidates(plan, report_path):
         requested = unreal.GeometryScriptMeshReadLOD()
         requested.set_editor_property('lod_type', unreal.GeometryScriptLODType.RENDER_DATA)
         requested.set_editor_property('lod_index', row['lod'])
-        target = unreal.DynamicMesh()
-        dynamic, outcome = unreal.GeometryScript_AssetUtils.copy_mesh_from_static_mesh(mesh, target, options, requested)
-        check('Actual render LOD copied', dynamic == target and outcome == unreal.GeometryScriptOutcomePins.SUCCESS, row['lod'])
-        _, values, _ = unreal.GeometryScript_MeshQueries.get_all_vertex_positions(dynamic, True)
-        positions = [(p.x, p.y, p.z) for p in unreal.GeometryScript_List.convert_vector_list_to_array(values)]
+        native_count = mesh.get_num_triangles(row['lod'])
+        # GeometryScript's DynamicMesh conversion drops coincident source faces.
+        # Read the original render section buffers when available, as the motel
+        # ground importer does, without changing triangle/probe tolerances.
+        if hasattr(unreal, 'ProceduralMeshLibrary'):
+            positions, index_count = [], 0
+            for section in range(mesh.get_num_sections(row['lod'])):
+                vertices, indices, _, _, _ = unreal.ProceduralMeshLibrary.get_section_from_static_mesh(mesh, row['lod'], section)
+                positions.extend((p.x, p.y, p.z) for p in vertices)
+                index_count += len(indices)
+            check('Actual render section indices', index_count == native_count*3, row['lod'])
+        else:
+            target = unreal.DynamicMesh()
+            dynamic, outcome = unreal.GeometryScript_AssetUtils.copy_mesh_from_static_mesh(mesh, target, options, requested)
+            check('Actual render LOD copied', dynamic == target and outcome == unreal.GeometryScriptOutcomePins.SUCCESS, row['lod'])
+            _, values, _ = unreal.GeometryScript_MeshQueries.get_all_vertex_positions(dynamic, True)
+            positions = [(p.x, p.y, p.z) for p in unreal.GeometryScript_List.convert_vector_list_to_array(values)]
         check('Actual render LOD finite vertices', positions and all(math.isfinite(v) for p in positions for v in p))
         actual = [[fn(p[axis] for p in positions) for axis in range(3)] for fn in (min, max)]
         low, high = row['bounds_local_m']
@@ -331,9 +343,9 @@ def import_candidates(plan, report_path):
             point = [x*100, -y*100, z*100]
             errors.append(math.sqrt(min(sum((p[k]-point[k])**2 for k in range(3)) for p in positions)))
         check('Actual asymmetric surface probes', max(errors) < .15, {'lod': row['lod'], 'errors_cm': errors})
-        check('Actual render triangle count', dynamic.get_triangle_count() == row['triangles'], row['lod'])
+        check('Actual render triangle count', native_count == row['triangles'], {'lod':row['lod'],'native':native_count,'source':row['triangles']})
         return {'lod': row['lod'], 'bounds_cm': actual, 'maximum_bounds_error_cm': error,
-                'maximum_probe_error_cm': max(errors), 'triangles': dynamic.get_triangle_count()}
+                'maximum_probe_error_cm': max(errors), 'triangles': native_count}
 
     flag = 'Interchange.FeatureFlags.Import.FBX'
     old_flag = unreal.SystemLibrary.get_console_variable_int_value(flag)

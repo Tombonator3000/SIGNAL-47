@@ -1,6 +1,6 @@
 # Eksisterende Tripo-modeller til UFO-/bilprøven
 
-**Status:** Gjeldende. **Gjelder:** UE5.8.4, Linux, private Tripo-kilder. **Sist kontrollert:**31. oktober2026.
+**Status:** Gjeldende. **Gjelder:** UE5.8.4, Linux, private Tripo-kilder. **Sist kontrollert:** 1. november 2026.
 
 Klargjør Toms teksturerte GLB-originaler i Blender og skriver tre målte statiske LOD-er for Unreal. Skriptet lager ingen modell, hjul, kupé, kollisjon eller spillinteraksjon. Sammenbygde hjul blir ikke skåret løs eller erstattet med falske deler. Råmodell, avledede filer og den private konfigurasjonen skal ligge utenfor offentlig Git.
 
@@ -97,3 +97,22 @@ Bruker prosjektets målte FBX-oppsett fra `fieldintegration/import_recipe.py` og
 Fem faktiske Tripo-kilder er eksportert med Blender og importert til UE5.8.4: jeep, trekkvogn, politibil, trekant-UFO og tallerken. Samlet originalgeometri 3 769 015 trekanter er redusert til 364 631 i LOD0, med to ytterligere avstandsnivåer. Native import, tre LOD-er, kilde-PBR og faktiske Vulkan-bilder består. Politidøren er separat geometri med bevart hengsel. Runtime bruker jeep på serviceetappene, original truck i sideparkeringen, trekkvogn ved diner og ny politibil. De to UFO-ene kan vises/fjernes under F10 «Tripo craft preview».
 
 Jeepens originale hjul er sammenbygget med resten av modellen og ruller ennå ikke separat. Ingen feil hjulsett er lagt utenpå. Kjørbar prøve, faktisk førerutsikt og levende instrumenter er sett; naturlig menneskelig kjørefølelse gjenstår å vurdere. Private native assets finnes under `Content/Licensed/TripoFleet`; andre arbeidskopier må få denne lokale mappen før de pakker, ellers bruker runtime eksisterende reservekjøretøy. Råfiler, Blender-kopier og teksturer forblir private.
+
+## Separat Jeep-innside
+
+`interior.py` leser den eksisterende private `prepared/classic_jeep/prepared.blend` og lager en separat `interior-20261101`-derivatmappe. Original GLB, `original.blend` og `prepared.blend` beskyttes med hash. Arbeidskopien får et formet Jeep-dashbord, tre runde målerflater, eget ratt med sentrert rotasjonspivot, rattstamme, pedaler, gir-/4WD-spak, brytere, hanskerom, innvendig trim og et åpent kompasshus. Eksisterende grove ratt-/dash-/spakflater fjernes kun som hele kildetriangler i avgrensede kupéområder, med rutematerialet beskyttet. Første forhåndsvisning må bekrefte at kildeseleksjonen er presis.
+
+Kjør gjennom prosjektets vanlige motorvakt, etter at tungkjøringsvinduet er ledig:
+
+```sh
+blender -b -t 2 --python interior.py -- --source /private/prepared/classic_jeep --output /private/interior-20261101 --preview
+python3 import_interior.py --manifest /private/interior-20261101/manifest.json
+```
+
+Blender-jobben skriver en redigerbar `jeep-interior.blend`, tre forhåndsvisninger, original kilde-PBR under egne `_CabTrim`-materialnavn, egne små PBR-teksturer for den nye innmaten, tre målte FBX-LOD-er per del og `anchors.json`. Det er sju native deler: `SM_TripoJeep_InteriorBody`, `Interior`, `Steering`, `SpeedFace`, `FuelFace`, `TempFace` og `RadioFace` med samme prefiks. Instrumentflatene beholder identisk geometri i de tre LOD-ene for lesbarhet. Bare rattet eksporteres rundt lokal null; øvrige deler bruker hele kjøretøyets målte koordinatramme.
+
+Native import skjer separat med `S47_JEEP_INTERIOR_MANIFEST`, `S47_JEEP_INTERIOR_REPORT` og `S47_JEEP_INTERIOR_APPLY=1` satt før editoren kjører `import_interior.py`. Importeren bruker samme legacy FBX-/PBR-oppsett og kontroller av alle faktiske LOD-er som resten av flåten. Nye navn bevarer tidligere reservekarosseri og dets materialer. Runtime skal først bytte karosseri når alle sju delene er tilgjengelige, og skal overstyre de fire nye instrument-/radioflatene med eksisterende levende `MGauge`/`DashRT`. Forhåndsvisningens lille atlas er kun en original plassholder; det erstatter ikke levende instrumenter. Kompasskort, visere, nøkkelfunksjon og radio styres fortsatt av runtime. Ekstra olje-/voltmålere er foreløpig statiske.
+
+Ankere er oppgitt i runtime Three-meter og gjentas i generert `anchors.json`: førerøye `(-.41,1.70,.65)`, ratthub `(-.41,1.29,.08)` med radius `.185`, speedometersentrum `(-.04,1.26,-.125)` med radius `.095`, bensin `(.16,1.31,-.125)` og temperatur `(.28,1.31,-.125)` med radius `.036`. Målerfront og viserakse er `Three +Z`. Kompasskortets sentrum er `(-.28,1.530,-.20)`, husradius `.047`, yaw `-.151765`; foten møter dash-toppen ved `1.470`. Separate forfatter- og importskript er syntakskontrollert. Første faktiske Blender-eksport består: ryddet kildekarosseri har 82 993 / 41 533 / 16 668 trekanter, ny innmat 26 444 / 15 866 / 8 448 og ratt 2 032 / 1 218 / 650. Alle sju deler består native import med tre faktiske LOD-er og strenge trekanttall/geometriprober. Mikroskopiske forfatterflater under 1e-10 m² fjernes før måling; kildekarosseriet bruker ingen slik opprydding. Faktisk kupé er sett i Unreal. En observert V-vending av levende atlasutsnitt kompenseres bare under FBX-eksport av de fire måler-/radioflatene, med eksakt gjenoppretting av Blender-UV etterpå; nytt bilde i spillet må bekrefte denne siste UV-rettelsen.
+
+Natt 1. november: sju nye interiørdeler er eksportert/importert med korrekt ramme og faktiske render-LOD-er. Vulkan fører-/instrumentbilder består med levende DashRT på de fire flatene. FBX-flatenes V-akse vendes selektivt ved eksport, mens redigerbar Blender-UV beholdes. Egne mikroskopiske falsflater under 10 × 10 µm ryddes før måling; originale Tripo-flater og native geometritoleranser endres ikke. Oppdeling, silhuett og funksjonslesbarhet er også vurdert med [vehicle-artist-referansen](https://github.com/arjun988/blender-skills/blob/8f778d2405a214b508d4c7d80742be8e43acdd52/.claude/skills/vehicle-artist/SKILL.md) fra prosjektbiblioteket. Den generiske referansen er UNVERIFIED for vår stack; prosjektets målte Blender-/UE-løype er brukt. Ingen MCP eller addon er installert.

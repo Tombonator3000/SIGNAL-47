@@ -71,6 +71,9 @@ struct SIGNAL47_API FS47Truck
 	bool IsPersonalVehicle() const { return bPersonalVehicle; }
 	bool ProductionArtReady() const { return Fleet && Fleet->Ready(); }
 	bool TripoJeep()const{return Fleet&&Fleet->IsTripoJeep();}
+	/** Fit the authored Jeep dials to the original live needle/clock/radio signals. */
+	void FitJeepCab();
+	bool JeepCabReady()const{return bJeepCab;}
 	double HalfWidth()const{return TripoJeep()?1.02:1.05;}
 	double HalfLength()const{return TripoJeep()?2.12:2.75;}
 	bool AuditProductionArt(TArray<FString>& Lines)const;
@@ -133,6 +136,7 @@ private:
 	double LightLevel = 1;
 	bool bHeadOn = false, bBrakeOn = false;
 	bool bPersonalVehicle = false;
+	bool bJeepCab = false;
 	FVector ServiceDriverEye;
 	FLinearColor HeadColor;
 	TOptional<double> DashLevel;
