@@ -26,6 +26,8 @@ namespace S47FreeformTerminal
   [SNew(STextBlock).Text_Lambda([Label]{return FText::FromString(Label.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity(Primary?Amber:Green).AutoWrapText(true)];
  }
  FW Button(const FString& Label,TFunction<void()> Action,bool Primary,TAttribute<bool> Enabled){return ButtonLive(TAttribute<FString>(Label),Action,Primary,Enabled);}
+ FW Pair(FW Left,FW Right)
+ {return SNew(SHorizontalBox)+SHorizontalBox::Slot().FillWidth(1).Padding(0,0,12,0)[Left]+SHorizontalBox::Slot().FillWidth(1)[Right];}
  FW Frame(const FString& Title,FW Body)
  {
   static const FSlateColorBrush Black(S47Kit::Css(0x020a05));

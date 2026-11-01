@@ -675,7 +675,7 @@ void FS47FreeformSession::OpenOperations()
     }
     else
     {
-     Rows.Add(S47FreeformTerminal::Small(TEXT("Compare the original with the internal reference at the signal processor before registering.")));
+     Rows.Add(S47FreeformTerminal::Small(TEXT("Compare the original with the internal reference at the reel deck beside the telephone before registering.")));
      Rows.Add(S47FreeformTerminal::Button(TEXT("The quiet control proves a sky source"),[this]{RegisterComparison(TEXT("sky"));OpenOperations();}));
      Rows.Add(S47FreeformTerminal::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
@@ -731,37 +731,11 @@ void FS47FreeformSession::OpenReceiver()
  auto& R=M->Story->Rx;const auto P=EffectiveProfile(*CurrentJob());TArray<S47Kit::FW> Rows;
  Rows.Add(S47FreeformTerminal::Paper(JobLine(*CurrentJob())+TEXT("\n")+P.Card));
  Rows.Add(S47Kit::Knob(TEXT("FREQUENCY MHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;}));
- Rows.Add(S47Kit::Row({S47Kit::Knob(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),S47Kit::Knob(TEXT("BANDWIDTH kHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}));
+ Rows.Add(S47FreeformTerminal::Pair(S47Kit::Knob(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),S47Kit::Knob(TEXT("BANDWIDTH kHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
  Rows.Add(S47Kit::Knob(TEXT("AZIMUTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f"),M->Story->Rx.Azimuth);}),0,359,.1f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Azimuth);}),[this](float V){M->Story->Rx.Azimuth=V;}));
  Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{const FJob* J=CurrentJob();return J?FString::Printf(TEXT("%s / %.1f s / ACTUAL ARRAY QUALITY %.0f %%"),*StageText(J->Stage),J->Elapsed,J->Quality*100):FString();}),TAttribute<int32>(0)));
  Rows.Add(S47FreeformTerminal::Button(TEXT("Start acquisition"),[this]{if(StartAcquisition())M->UI->Close();else{Feedback=TEXT("Check receiver settings and tracking readiness. The array must physically settle before acquisition.");OpenReceiver();}},true,CurrentJob()->Stage==EJobStage::Pointed));
  Rows.Add(S47FreeformTerminal::Small(Feedback));OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
-}
-namespace
-{
- class SS47FreeformTrace:public SLeafWidget
- {
- public:
-  SLATE_BEGIN_ARGS(SS47FreeformTrace){} SLATE_ARGUMENT(FS47FreeformSession*,Session) SLATE_END_ARGS()
-  void Construct(const FArguments& A){Session=A._Session;}
-  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(740,110);}
-  virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 Layer,const FWidgetStyle&,bool)const override
-  {
-   if(!Session)return Layer;
-   const FVector2D Size=G.GetLocalSize();const float W=Size.X,H=Size.Y;
-   const double Duration=Session->AudioSource()==0?18.:8.;
-   auto Line=[&](float X,float Y,float X1,float Y1,FLinearColor C,float Width=1.f){TArray<FVector2D> P={FVector2D(X,Y),FVector2D(X1,Y1)};FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),P,ESlateDrawEffect::None,C,true,Width);};
-   for(int32 I=0;I<=int32(Duration);++I)Line(I/Duration*W,5,I/Duration*W,H-10,FLinearColor(.12,.2,.13,.7));
-   for(double At=PulsarPeriod;At<=Duration;At+=PulsarPeriod)Line(At/Duration*W,H*.65,At/Duration*W,H*.2,FLinearColor(.5,1,.65,1),2);
-   if(Session->AudioSource()==0)for(double At:Ticks)Line(At/Duration*W,H*.65,At/Duration*W,H*.43,FLinearColor(1,.65,.18,1),2);
-   if(const auto* J=Session->CurrentJob())if(Session->AudioSource()==0&&J->MarkStart>=0&&J->MarkEnd>=J->MarkStart)
-   {
-    Line(J->MarkStart/Duration*W,1,J->MarkStart/Duration*W,H,FLinearColor(1,.7,.2,.8),2);Line(J->MarkEnd/Duration*W,1,J->MarkEnd/Duration*W,H,FLinearColor(1,.7,.2,.8),2);
-   }
-   Line(Session->AudioPosition()/Duration*W,0,Session->AudioPosition()/Duration*W,H,FLinearColor::White,2);return Layer+1;
-  }
- private:FS47FreeformSession* Session=nullptr;
- };
 }
 void FS47FreeformSession::OpenAudio()
 {

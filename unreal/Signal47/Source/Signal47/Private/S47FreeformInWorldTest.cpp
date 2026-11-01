@@ -97,7 +97,7 @@ void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
  const FString Reason=(!Good&&Why.IsEmpty())?FString(TEXT("required native screenshot was not captured")):Why;
  if(M){M->bPausedByMenu=false;if(M->UI)M->UI->Close(true);}
  auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Reason);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("flowRestores"),Restores);S47J::Set(O,TEXT("elapsedActiveDriverSeconds"),Age);O->SetArrayField(TEXT("evidence"),Evidence);
- S47J::Set(O,TEXT("method"),TEXT("Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal."));
+ S47J::Set(O,TEXT("method"),TEXT("Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse at the regular pump and on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal."));
  S47J::Set(O,TEXT("limits"),TEXT("Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. No actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."));
  if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -154,12 +154,19 @@ void FS47FreeformInWorldTest::Step(double Dt)
  }
  if(Stage==11)
  {
-  if(M->World->bBusy||Age-At<.5)return;ParkAtPump();CashBefore=F.Budget();FuelBefore=W.VehicleFuel();AimAt(W.InteractionPoint(TEXT("ff:pump")));Go(12);return;
+  if(M->World->bBusy||Age-At<.5)return;ParkAtPump();CashBefore=F.Budget();FuelBefore=W.VehicleFuel();AimAt(W.InteractionPoint(TEXT("ff:pump")));Go(111);return;
+ }
+ if(Stage==111)
+ {
+  if(Age-At<.3)return;AimAt(W.InteractionPoint(TEXT("ff:pump")));Go(12);return;
  }
  if(Stage==12)
  {
   if(Age-At<.9)return;FScreenshotRequest::RequestScreenshot(Root/TEXT("pump-before.png"),true,false);
-  if(!Check(W.StartPump()&&W.PumpActive()&&F.Budget()==CashBefore&&W.VehicleFuel()==FuelBefore,TEXT("physical parked truck starts pump without up-front payment or fuel grant")))return;Go(13);return;
+  const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+  if(!Check(Picked==TEXT("ff:pump")||Picked==TEXT("town:pumps"),TEXT("native eye ray reaches actual regular pump meter: ")+Picked))return;
+  M->Player->OnUse(Picked);
+  if(!Check(W.PumpActive()&&F.Budget()==CashBefore&&W.VehicleFuel()==FuelBefore,TEXT("physical parked truck starts pump without up-front payment or fuel grant")))return;Go(13);return;
  }
  if(Stage==13)
  {
@@ -180,7 +187,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
  if(Stage==16)
  {
   // Validate immediately after normal Flow/startup; no fixture changes the meter.
-  if(F.Director)F.Director->Stop();
+  if(F.Director)F.Director->Stop();AimAt(W.InteractionPoint(TEXT("ff:pump")));
   if(!Check(W.PumpActive()&&W.VehicleFuel()==FuelBefore&&W.PumpDelivered()==VolumeBefore&&W.PumpCharges()==1&&F.Budget()==CashBefore-1,TEXT("Flow resumes paid receipt and tank without replaying a charge")))return;
   if(!Check(W.PumpProgress()+.001>=ProgressBefore&&W.PumpProgress()<.95,TEXT("Flow retains unfinished metering time rather than restarting a paid interval")))return;Go(17);return;
  }
