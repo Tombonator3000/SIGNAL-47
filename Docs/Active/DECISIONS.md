@@ -8,6 +8,10 @@ Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notat
 
 Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Oslo, for å gjennomføre mest mulig av TODO. Prioriter felles fysisk PC-betjening og lysstyring, deretter tydelig utstyrsrespons, etterprøvbare arbeidsrelaterte hendelser og skrekk som reagerer på spillerens handlinger. Se [nattprioriteringene](TODO.md#nattskift-1-november-kl2200-til-2-november-kl0800). Aktiv trådautomasjon er `signal-47-nattskift-22-08`; dette er ett nattskift, ikke en stående daglig bestilling. Vanlige prosjektregler om kildevern, reduserte tester, én tung jobb og samlet opprydding gjelder.
 
+## Freeform-verdensprøve 1. november
+
+Tom bestiller Survey Station01 åpen og tilgjengelig i Freeform, med kontroll av opplevd grafisk regresjon og ruten til/fra stasjonen. Alderete-avkjøringen ved SARO skal brukes som gårdsadkomst og åpnes; kuene knyttes til gården nærmere SARO, på høyre side etter motellet slik Tom angir. Dette overstyrer eldre avgrensning av gården som stengt bakgrunnsdekor. Ved motellet fjernes skiltet nærmest veien og det gjenværende får mer neon. De fortsatt rapporterte kontorveggene og brå verdensovergangene er åpne P1-funn. [Oppgaver og originalbilder](TODO.md#nye-freeform-spillfunn-1-november-survey-station-rute-motell-og-gård).
+
 ## Prosjekt og kanon
 
 | ID | Beslutning | Grunnlag |
