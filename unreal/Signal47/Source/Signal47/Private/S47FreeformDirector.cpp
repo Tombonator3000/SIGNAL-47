@@ -6,7 +6,6 @@
 #include "S47World.h"
 #include "S47Night.h"
 #include "S47Glimpses.h"
-#include "S47RoswellWorld.h"
 #include "S47Audio.h"
 #include "S47UI.h"
 #include "S47Inter.h"
@@ -22,6 +21,9 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Misc/PackageName.h"
+#include "CoreGlobals.h"
+#include "UObject/UObjectGlobals.h"
+#include "UObject/GarbageCollection.h"
 #include "../../../../Narrative/Freeform/generated/FreeformEvents.inl"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
@@ -51,7 +53,6 @@ namespace
 struct FS47FreeformDirector::FEffects
 {
  US47Main* M=nullptr;
- FS47RoswellWorld Query;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
  FS47Obj Sample,Car;
@@ -59,7 +60,22 @@ struct FS47FreeformDirector::FEffects
  bool bBuilt=false;
  FVector HullCentreOffsetUE=FVector::ZeroVector;
  double HullLampDrop=.25;
- ~FEffects(){Life.Reset();for(auto& P:Parts)if(P.IsValid())P->DestroyComponent();for(auto& L:Lights)if(L.IsValid())L->DestroyComponent();}
+ bool CanTouchWorld()const
+ {
+  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))return false;
+  AS47Web* Web=M->Web.Get();
+  return IsValid(Web)&&!Web->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&!Web->IsActorBeingDestroyed()&&IsValid(Web->GetWorld())&&!Web->GetWorld()->bIsTearingDown;
+ }
+ ~FEffects()
+ {
+  Life.Reset();
+  // Native components belong to the actor. During purge its maps and component
+  // ownership may already be gone; Unreal performs their remaining destruction.
+  if(!CanTouchWorld())return;
+  auto Live=[](const UObject* O){return IsValid(O)&&!O->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);};
+  for(auto& P:Parts)if(Live(P.Get()))P->DestroyComponent();
+  for(auto& L:Lights)if(Live(L.Get()))L->DestroyComponent();
+ }
  UStaticMeshComponent* Mesh(const FString& Name,const TCHAR* Asset,const FVector& At,const FVector& Scale,uint32 Color,bool bOriginal=false)
  {
   if(!M||!M->Web)return nullptr;auto* W=M->Web.Get();auto* Mesh=LoadObject<UStaticMesh>(nullptr,Asset);if(!Mesh)return nullptr;
@@ -71,7 +87,7 @@ struct FS47FreeformDirector::FEffects
  }
  void Build(FS47FreeformDirector* Owner)
  {
-  if(bBuilt||!M||!M->Web||!M->Web->IsLoaded()||!M->Inter)return;Query.Init(M);
+  if(bBuilt||!CanTouchWorld()||!M->Web->IsLoaded()||!M->Inter)return;
   // Reuse Tom's imported saucer when locally available. Optional licensed art
   // is never required for compiling or running the public-source fallback.
   const TCHAR* SaucerPath=TEXT("/Game/Licensed/TripoFleet/ufo_saucer/SM_TripoFleet_Saucer.SM_TripoFleet_Saucer");
@@ -97,7 +113,10 @@ struct FS47FreeformDirector::FEffects
   }
   auto Register=[&](UStaticMeshComponent* C,const TCHAR* Name,const TCHAR* Id,FS47Obj& Obj)
   {
-   if(!C)return;const int32 Parent=M->Web->Handle(TEXT("world.grounds.group"));Obj=M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name));M->Web->MarkUsable(Obj.I,Id);
+   if(!C)return;const int32 Parent=M->Web->Handle(TEXT("world.grounds.group"));Obj=M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name));
+   // AdoptNode applies the default visible node flag. Retire the node itself,
+   // not only its component, until this particular incident presents it.
+   Obj.SetVisible(false);C->SetVisibility(false,false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);M->Web->MarkUsable(Obj.I,Id);
    const TWeakPtr<uint8> Guard=Life;FS47Interactable It;It.Id=Id;It.Object=Obj;It.Range=2.4;
    It.Label=[Owner,Guard,Key=FString(Id)]{return Guard.IsValid()?Owner->Label(Key):FString();};
    It.Use=[Owner,Guard,Key=FString(Id)]{if(Guard.IsValid())Owner->Use(Key);};
@@ -116,19 +135,42 @@ struct FS47FreeformDirector::FEffects
   bBuilt=true;
  }
  void Hide()
- {for(auto& P:Parts)if(P.IsValid()){P->SetVisibility(false);P->SetCollisionEnabled(ECollisionEnabled::NoCollision);}for(auto& L:Lights)if(L.IsValid())L->SetIntensity(0);}
+ {
+  if(!CanTouchWorld())return;
+  for(const FS47Obj O:{Sample,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
+  for(auto& P:Parts)if(P.IsValid()){P->SetVisibility(false,false);P->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+  for(auto& L:Lights)if(L.IsValid())L->SetIntensity(0);
+ }
  void Physical(FS47Obj O,bool bVisible)
  {
-  O.SetVisible(bVisible);if(M&&M->Web)if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
-  {C->SetCollisionEnabled(bVisible?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);}
+  if(!CanTouchWorld()||O.W!=M->Web.Get()||!O)return;
+  // Unconditional node update repairs stale presentation too. A hidden scene
+  // or ancestor still wins; component visibility never bypasses its parent.
+  M->Web->SetVisible(O.I,bVisible);
+  const bool Presented=bVisible&&O.Shown()&&M->Web->Area()==TEXT("saro");
+  if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
+  {C->SetVisibility(Presented,false);C->SetCollisionEnabled(Presented?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);}
  }
- bool Visible(const FVector& At)const
+ bool PartPresented(int32 Index)const
  {
-  if(!M||!M->Night||!M->Web||!M->Web->GetWorld())return false;const auto Cam=M->Night->GlimpseIn(true).Cam;const FVector To=At-Cam.Pos;
+  if(!CanTouchWorld()||M->Web->Area()!=TEXT("saro")||!Parts.IsValidIndex(Index))return false;
+  const auto* C=Parts[Index].Get();
+  return IsValid(C)&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&C->GetOwner()&&!C->GetOwner()->IsHidden();
+ }
+ UStaticMeshComponent* PresentedComponent(FS47Obj O)const
+ {
+  if(!CanTouchWorld()||O.W!=M->Web.Get()||!O||!O.Shown()||M->Web->Area()!=TEXT("saro"))return nullptr;
+  if(const auto* N=M->Web->Node(O.I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))
+   if(IsValid(C)&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&C->GetOwner()&&!C->GetOwner()->IsHidden())return C;
+  return nullptr;
+ }
+ bool Visible(const FVector& At,const UPrimitiveComponent* Target=nullptr)const
+ {
+  if(!CanTouchWorld()||!IsValid(M->Night))return false;const auto Cam=M->Night->GlimpseIn(true).Cam;const FVector To=At-Cam.Pos;
   if(To.Size()<.01||FVector::DotProduct(To.GetSafeNormal(),Cam.Forward)<.72)return false;
   FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformEventSight),true);if(M->Player)Params.AddIgnoredActor(M->Player);
   const bool Blocked=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(Cam.Pos),S47Three::ToUE(At),ECC_Visibility,Params);
-  if(!Blocked)return true;for(const auto& P:Parts)if(P.Get()==Hit.Component.Get())return true;return false;
+  if(!Blocked)return true;if(Target)return Hit.Component.Get()==Target;for(const auto& P:Parts)if(P.Get()==Hit.Component.Get()&&P->IsVisible())return true;return false;
  }
 };
 
@@ -167,9 +209,12 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
 }
 void FS47FreeformDirector::Stop()
 {
- if(Effects)Effects->Hide();if(M&&M->Audio){M->Audio->Stop(TEXT("freeformEvent"));M->Audio->HoldRoomTone(1);}
- if(M&&M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
  bEnabled=bApplied=false;GroupRestore.Reset();
+ if(!Effects||!Effects->CanTouchWorld())return;
+ Effects->Hide();
+ auto Live=[](const UObject* O){return IsValid(O)&&!O->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);};
+ if(Live(M->Audio.Get())){M->Audio->Stop(TEXT("freeformEvent"));M->Audio->HoldRoomTone(1);}
+ if(Live(M->Night.Get())&&M->Night->Glimpses)M->Night->Glimpses->DevClear();
 }
 S47J::FObj FS47FreeformDirector::Save()const
 {
@@ -424,11 +469,26 @@ bool FS47FreeformDirector::Use(const FString& Id)
  {if(!bPhoto){if(M->UI)M->UI->Toast(TEXT("Keep its position as evidence first: photograph the marked surface before lifting the fragment."),4);return true;}M->Freeform->AddItem(TEXT("fragment"),1);Finish(true);return true;}
  return false;
 }
+bool FS47FreeformDirector::PhysicalObjectPresented()const
+{
+ if(!bEnabled||!Effects)return false;
+ if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass"))
+  return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
+ const FS47Obj Object=Event==TEXT("landing_trace")?Effects->Sample:Event==TEXT("empty_car")?Effects->Car:FS47Obj();
+ return Effects->PresentedComponent(Object)!=nullptr;
+}
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
 {
  if(!bEnabled||Event.IsEmpty()||Shot.Id.IsEmpty()||Shot.bUnavailable||ActiveTime-LastPhotoAt<.3)return;
  const FVector PhotoAt=(Event==TEXT("flyover")||Event==TEXT("close_pass"))?Anchor+FVector(Age*(Event==TEXT("close_pass")?2.3:5.),0,0):Anchor;
  bool Visible=InView(PhotoAt,180);
+ if(Event==TEXT("landing_trace"))
+ {
+  // A clear ray to an authored point is not photographic proof of an object.
+  // Require its real native component, visible parent scene, and unobstructed view.
+  const auto* Sample=Effects->PresentedComponent(Effects->Sample);
+  Visible=Visible&&Sample&&Effects->Visible(PhotoAt,Sample);
+ }
  if(Event==TEXT("observer")||Event==TEXT("service_presence"))
  {Visible=false;if(M&&M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())Visible|=InView(I.Eye,40);}
  if(!Visible)return;LastPhotoAt=ActiveTime;bSeen=bPhoto=true;PhotoId=Shot.Id;Changed();

@@ -26,6 +26,7 @@ public:
  int32 EventStage() const { return Stage; }
  double EventAge() const { return Age; }
  FVector EventAnchor() const { return Anchor; }
+ bool PhysicalObjectPresented() const; // actual component visibility: physical props/sky, including scene and adopted ancestors
  FString ObservationNote() const;
  FString Status() const;
  static TArray<FString> EventIds();

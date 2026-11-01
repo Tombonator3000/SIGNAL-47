@@ -298,6 +298,9 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==22)
  {
   if(!Check(!F.Director->ActiveEvent().IsEmpty(),TEXT("event owns a persisted running state")))return;
+  const FString Id=F.Director->ActiveEvent();
+  if(Id==TEXT("empty_car")||Id==TEXT("landing_trace")||Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))
+   if(!Check(F.Director->PhysicalObjectPresented(),TEXT("event presents actual visible native render components: ")+Id))return;
   Shot(FString::Printf(TEXT("event-%02d"),EventIndex));
   if(F.Director->ActiveEvent()==TEXT("observer")||F.Director->ActiveEvent()==TEXT("service_presence"))
    if(!Check(M->Night&&M->Night->Glimpses&&!M->Night->Glimpses->Individuals().IsEmpty(),TEXT("controlled encounter has a real native individual after its warning")))return;
@@ -312,6 +315,15 @@ void FS47FreeformTest::Step(double Dt)
    M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
    Go(23,.4);return;
   }
+  Go(221,.4);return; // render the requested image before changing/restoring this event
+ }
+ if(Stage==221)
+ {
+  if(F.Director->ActiveEvent()==TEXT("empty_car"))
+  {
+   const FVector P=F.Director->EventAnchor();M->Player->Place(P.X-2.8,P.Z+1.,0);F.Director->Use(TEXT("ff:event-check"));
+   if(!Check(F.HasFinding(TEXT("empty_car")),TEXT("physical empty-car inspection retains its independent field record")))return;
+  }
   if(EventIndex==0||EventIndex==3||EventIndex==5)
   {
    const FString Id=F.Director->ActiveEvent();if(!Restore(TEXT("active-event")))return;
@@ -321,6 +333,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==23)
  {
+  if(!Check(F.Director->PhysicalObjectPresented(),TEXT("field photograph requires the still-visible native sample")))return;
   M->FieldCamera->Raise(true);M->FieldCamera->Sync();const FS47AlbumShot Photo=M->Night->Album->Expose();M->FieldCamera->Raise(false);
   if(!Check(!Photo.Id.IsEmpty()&&!Photo.Url.IsEmpty(),TEXT("native camera renders and retains the actual physical trace")))return;
   F.Director->Use(TEXT("ff:event-sample"));

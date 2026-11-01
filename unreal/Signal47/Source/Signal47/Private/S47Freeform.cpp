@@ -1,4 +1,5 @@
 #include "S47Freeform.h"
+#include "CoreGlobals.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
@@ -116,10 +117,12 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 }
 void FS47FreeformSession::Stop()
 {
- if(bPowerApplied&&!bLastPower&&M&&M->Story)M->Story->ApplyFeederPower(false);
+ // UObject purge may destroy the scene before this plain C++ session is released.
+ const bool bCanRestore=!IsEngineExitRequested()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Story)&&IsValid(M->Web);
+ if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
  bPowerApplied=false;
  if(Director)Director->Stop();if(Field)Field->Stop();
- if(M&&M->Web)M->Web->SetWorkMotionPaused(false);
+ if(bCanRestore)M->Web->SetWorkMotionPaused(false);
  bActive=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;++RecoveryEpoch;
 }
 bool FS47FreeformSession::Held() const

@@ -18,6 +18,9 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "CoreGlobals.h"
+#include "UObject/UObjectGlobals.h"
+#include "UObject/GarbageCollection.h"
 
 namespace
 {
@@ -71,11 +74,27 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
 void FS47FreeformWorld::Stop()
 {
  bActive=false;
- if(M&&M->Inter)for(auto& Entry:Overrides)if(auto* I=M->Inter->Get(Entry.Key)){I->Label=MoveTemp(Entry.Value.Label);I->Use=MoveTemp(Entry.Value.Use);I->Examine=MoveTemp(Entry.Value.Examine);}Overrides.Reset();
- if(bFuelHeld&&M&&M->World)M->World->HoldTruck(0);bFuelHeld=false;
- if(M&&M->Web)for(auto& C:M->Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench"))C.bEnabled=false;
- if(M&&M->Web&&S03()>=0)M->Web->SetDishRemoteAvailable(S03(),true);
- for(FS47Obj O:Parts)if(O){O.SetVisible(false);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+ // The shared session is also released from US47Main's UObject destructor.
+ // At purge/engine exit its actor-owned maps and callbacks may already be gone.
+ if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))
+ {
+  Overrides.Reset();bFuelHeld=false;return;
+ }
+ auto Live=[](const UObject* O){return IsValid(O)&&!O->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed);};
+ if(Live(M->Inter.Get()))for(auto& Entry:Overrides)if(auto* I=M->Inter->Get(Entry.Key))
+ {I->Label=MoveTemp(Entry.Value.Label);I->Use=MoveTemp(Entry.Value.Use);I->Examine=MoveTemp(Entry.Value.Examine);}
+ Overrides.Reset();
+ if(bFuelHeld&&Live(M->World.Get()))M->World->HoldTruck(0);bFuelHeld=false;
+ AS47Web* Web=M->Web.Get();
+ if(!Live(Web)||Web->IsActorBeingDestroyed())return;
+ for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench"))C.bEnabled=false;
+ if(S03()>=0)Web->SetDishRemoteAvailable(S03(),true);
+ for(FS47Obj O:Parts)if(O.W==Web&&O)
+ {
+  O.SetVisible(false);
+  if(const auto* N=Web->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))
+   if(Live(C))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+ }
 }
 
 S47J::FObj FS47FreeformWorld::Save() const
