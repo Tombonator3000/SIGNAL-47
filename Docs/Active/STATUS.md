@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Bærbar SARO-radio og alienvarsler installert
+
+Runtime `af6cc33c`, PR308, er installert kl.09:41 CET. Feltradioen kan hentes fra kontrollromspulten og lagres med saken. Aktive aliens nær spilleren driver skurring og korte prioriterte nærvær-/oppdagelse-/jaktcues; Rom6-radioen og vanlig Foley beholdes. Gamle saker kan fortsatt hente radioen.
+
+Editorbygg,1924 selvtester, målrettet faktisk pickup/Flow/nærvær utenfor bildet, normal Linux-pakke, før/etter-bilder og installert Fortsett fra isolert eldre SARO-sak består.149 Saved-elementer/118 filer er uendret. Linux-pakken har internstarter-/payloadkontroll og generisk forhåndssjekk, men kameratens grafiske Arch/niri/RTX5090-start er fortsatt uverifisert. SARO-renderstansen er åpen. Gjeldende og to eldre testpakker er beholdt, ferdige cook-/stagingcacher ryddet; omtrent24,3GB er ledig. [Levering og grenser](../Evidence/UnrealDeliveries/FIELD_RADIO_2026-11-01.md).
+
+AnyScene er lagt i prosjektbiblioteket via bibliotek-PR10: [gjennomgang](https://github.com/Tombonator3000/prosjektbibliotek/blob/main/docs/ANYSCENE.md). Brukbar Blender-/lookdev-referanse; Linux/Unreal-runtime er UNVERIFIED, og ingen betalte genereringskall er gjort.
+
 ## Titler og manuell telefonoppfølging installert
 
 Runtime `0460a428`, PR305/306, er installert kl.08:53 CET 1. november. Pause, Fortsett, lagringskort, notatbok og overgangskort bruker fortellingstitler uten kapittelnummer, også for eldre metadata. Ny overgang til The Amended Record beholder spillerens posisjon/blikk; telefonen ringer ved kontrollromspulten og må besvares manuelt. Interne ID-er, Ward-fakta og lagringsformat er bevart.
