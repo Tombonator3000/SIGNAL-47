@@ -1,4 +1,5 @@
 #include "SS47Widgets.h"
+#include "SS47ScreenView.h"
 #include "S47Freeform.h"
 #include "S47Evening.h"
 #include "S47Keys.h"
@@ -258,6 +259,8 @@ void SS47Hud::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
+		SNew(SBox).Visibility_Lambda([]{return SS47ScreenView::AnyWorldScreenActive()?EVisibility::Collapsed:EVisibility::SelfHitTestInvisible;})
+		[
 		SNew(SOverlay)
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(P(40), P(34), 0, 0)[Objective]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0, P(30), P(40), 0)[Watch]
@@ -291,6 +294,7 @@ void SS47Hud::Construct(const FArguments& InArgs)
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, P(26))
 		[
 			SAssignNew(HintRow, SHorizontalBox).Visibility_Lambda([this, Vis] { return Vf.bOn ? EVisibility::Collapsed : Vis(); })
+		]
 		]
 	];
 }

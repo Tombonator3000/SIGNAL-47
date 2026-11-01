@@ -35,6 +35,7 @@ public:
  int32 FaultedDishCount() const { return HasArrayFault() ? 1 : 0; }
  int32 ServiceStage() const { return Service; }
  void DiagnoseService();
+ FString ServiceStatus() const;
  bool GeneratorRunning() const { return bGenerator && GeneratorSeconds > 0; }
  bool HasBackupPower() const { return GeneratorRunning(); }
  double GeneratorHours() const { return GeneratorSeconds / 3600.; }
@@ -76,7 +77,8 @@ private:
  bool bPumping = false;
  double PumpRemaining = 0, PumpElapsed = 0, PumpVolume = 0;
  int32 PumpPaid = 0;
- TWeakObjectPtr<UTextRenderComponent> PumpTextEast, PumpTextWest;
+ TWeakObjectPtr<UTextRenderComponent> PumpTextEast, PumpTextWest, ServiceText;
+ FString LastServiceDisplay;
  FString LastPumpDisplay;
  bool bTripoPump = false;
  FS47Obj PumpModel;

@@ -137,6 +137,8 @@ private:
  void Changed(const FString& Text=FString());
  void UpdateMysteries();
  bool PointReady() const;
+ bool ReceiverReady() const;
+ FString ReceiverNextAction() const;
  bool EncodersAt(double Az,double El) const;
  void PointBeamControl();
  void CollectDuplicate();
