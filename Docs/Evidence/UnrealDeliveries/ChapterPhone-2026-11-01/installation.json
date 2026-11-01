@@ -1,0 +1,16 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 306,
+  "source": "0460a428f7e76102b0e99d258fedccddde41e542",
+  "merge": "d7af8ca8fe2dad8ea41354bfde8a4499ea10adbe",
+  "installed_at": "2026-11-01T08:53:18.612755+01:00",
+  "saved_nodes": 149,
+  "saved_files": 118,
+  "saved_unchanged": true,
+  "package_self_checks": 1910,
+  "feature_pr": 305,
+  "editor_phone_agency": "PASS: position/facing/ringing/legacy lifecycle",
+  "pause_before_after": "PASS: actual ordinary pause UI",
+  "installed_continue": "PASS",
+  "limits": "Scripted API entry and actual pause frames; no human full chapter-card/narrator/listening acceptance"
+}
