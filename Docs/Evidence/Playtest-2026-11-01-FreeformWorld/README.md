@@ -18,3 +18,4 @@ Originalbildene er kopiert uendret fra Toms vedlegg. Kildebygg og tekniske årsa
 - [12. Bæring av pakke blokkerer kjøring; spilleren får ikke lastet den i bilen.](12-parcel-truck-loading-blocked.png)
 - [13. PC-panelets rektangel/tekst går utenfor CRT-glasset; HUD-/ESC-rester ligger utenfor PC-en.](13-crt-ui-outside-glass.png)
 - [14. Acquisition er uforståelig: gain29/AZ26.1 avviker fra kortet, men skjermen viser ARRAY QUALITY100% og generelt avslag.](14-receiver-acquisition-unclear.png)
+- [15. S-03 virker ikke, og spilleren finner ingen forståelig reparasjonshandling ved antennen.](15-s03-no-clear-repair-action.png)
