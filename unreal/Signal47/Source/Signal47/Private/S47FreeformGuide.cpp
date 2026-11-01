@@ -1,4 +1,5 @@
 #include "S47Freeform.h"
+#include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
 #include "S47Web.h"
@@ -73,20 +74,20 @@ void FS47FreeformSession::OpenServiceGuide()
 {
  if(!bActive||!M||!M->UI||!RequirePower())return;
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47Kit::Paper(TEXT("SARO / S-03 SERVICE WORK ORDER\nOptional planned maintenance: diagnose, replace, physically test and retain the result. S-03 is taken out of remote operation when you accept. Other antennas and daily jobs remain available.")));
+ Rows.Add(S47FreeformTerminal::Paper(TEXT("SARO / S-03 SERVICE WORK ORDER\nOptional planned maintenance: diagnose, replace, physically test and retain the result. S-03 is taken out of remote operation when you accept. Other antennas and daily jobs remain available.")));
  if(ServiceGuide==0)
  {
-  Rows.Add(S47Kit::Text(TEXT("Use the relay already held at SARO, or practise the supply route: drive south to Caliche's gas station, buy a relay ($25) or donor ($15), collect and load its parcel, return north and unload at the bench beside the SARO sign. Donors require a bench test. The notebook map retains this route.")));
-  Rows.Add(S47Kit::Button(TEXT("Accept / use SARO stock"),[this]{if(StartServiceGuide(false))M->UI->Close();},true));
-  Rows.Add(S47Kit::Button(TEXT("Accept / collect and transport new supplies"),[this]{if(StartServiceGuide(true))M->UI->Close();}));
+  Rows.Add(S47FreeformTerminal::Text(TEXT("Use the relay already held at SARO, or practise the supply route: drive south to Caliche's gas station, buy a relay ($25) or donor ($15), collect and load its parcel, return north and unload at the bench beside the SARO sign. Donors require a bench test. The notebook map retains this route.")));
+  Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / use SARO stock"),[this]{if(StartServiceGuide(false))M->UI->Close();},true));
+  Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / collect and transport new supplies"),[this]{if(StartServiceGuide(true))M->UI->Close();}));
  }
  else if(ServiceGuide==1)
  {
-  Rows.Add(S47Kit::Paper(ServiceObjective()));
-  Rows.Add(S47Kit::Text(TEXT("Left PC: select S-03. Outside at S-03: LOCAL, cover, relay, cover, local test. Supply hatch opens 08:00–20:00; essential relay requisition remains available after hours. Looking at an existing stock count does not certify a new supply trip.")));
-  Rows.Add(S47Kit::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
-  Rows.Add(S47Kit::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Changed();M->UI->Close();}));
+  Rows.Add(S47FreeformTerminal::Paper(ServiceObjective()));
+  Rows.Add(S47FreeformTerminal::Text(TEXT("Left PC: select S-03. Outside at S-03: LOCAL, cover, relay, cover, local test. Supply hatch opens 08:00–20:00; essential relay requisition remains available after hours. Looking at an existing stock count does not certify a new supply trip.")));
+  Rows.Add(S47FreeformTerminal::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
+  Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Changed();M->UI->Close();}));
  }
- else Rows.Add(S47Kit::Paper(TEXT("WORK ORDER VERIFIED / ORIGINAL RETAINED\nS-03 completed its actual local movement test and returned to REMOTE. The case archive retains the signed service record.")));
- SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / SERVICE ORDER"),S47Kit::Col(Rows),960));
+ else Rows.Add(S47FreeformTerminal::Paper(TEXT("WORK ORDER VERIFIED / ORIGINAL RETAINED\nS-03 completed its actual local movement test and returned to REMOTE. The case archive retains the signed service record.")));
+ OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),S47Kit::Col(Rows));
 }

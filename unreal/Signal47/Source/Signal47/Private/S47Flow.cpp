@@ -386,7 +386,7 @@ void US47Flow::BeginDestroy()
 void US47Flow::Boot()
 {
 	const bool bTitle = FParse::Param(FCommandLine::Get(), TEXT("S47Title"));
- if (FParse::Param(FCommandLine::Get(),TEXT("S47FreeformJourneyTest")) || FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest")) || FParse::Param(FCommandLine::Get(),TEXT("S47Freeform")))
+ if (FParse::Param(FCommandLine::Get(),TEXT("S47FreeformInWorldTest")) || FParse::Param(FCommandLine::Get(),TEXT("S47FreeformJourneyTest")) || FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest")) || FParse::Param(FCommandLine::Get(),TEXT("S47Freeform")))
  {
   FString User; FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
   if (User.StartsWith(TEXT("/tmp/"))) { FStart S; S.bDev=true; S.bFreeform=true; StartGame(S); return; }

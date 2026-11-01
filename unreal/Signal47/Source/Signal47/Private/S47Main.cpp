@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJourneyTest.h"
@@ -96,6 +97,7 @@ void US47Main::Step(double Dt)
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
+	if (FreeformInWorldTest) FreeformInWorldTest->Step(Dt);
 	if (FreeformTest) FreeformTest->Step(Dt);
 	if (FreeformJourneyTest) FreeformJourneyTest->Step(Dt);
 	if (SaroResumeTest) SaroResumeTest->Step(Dt);
