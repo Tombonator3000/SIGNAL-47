@@ -5,6 +5,7 @@
 #include "S47Flow.h"
 #include "S47HighwayPower.h"
 #include "S47Flora.h"
+#include "S47FloraMeshComponent.h"
 #include "S47WorldLife.h"
 #include "S47Json.h"
 #include "S47Legs.h"
@@ -68,7 +69,7 @@ namespace
  }
  struct FFloraSnapshot
  {
-  uint32 Hash=0; int32 Kinds=0,Instances=0;
+  uint32 Hash=0; int32 Kinds=0,Instances=0,ProtectedKinds=0;
   bool operator==(const FFloraSnapshot& B) const { return Hash==B.Hash && Kinds==B.Kinds && Instances==B.Instances; }
  };
  FFloraSnapshot RoadFloraSnapshot(AS47Web* W)
@@ -88,6 +89,7 @@ namespace
      const int32 Count=C->GetInstanceCount();
      if(Count<=0 || !C->IsVisible()) continue;
      ++S.Kinds; S.Instances+=Count;
+     if(C->IsA<US47FloraMeshComponent>()) ++S.ProtectedKinds;
      S.Hash=FCrc::StrCrc32(*C->GetName(),S.Hash); S.Hash=FCrc::MemCrc32(&Count,sizeof(Count),S.Hash);
      for(int32 Instance=0;Instance<Count;++Instance)
      {
@@ -228,13 +230,14 @@ void AS47Web::BeginHighwayAudit()
    const FFloraSnapshot S=RoadFloraSnapshot(W);
    const IConsoleVariable* RT=IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing"));
    const IConsoleVariable* Warnings=IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing.ShowOnScreenWarnings"));
+   const IConsoleVariable* Occlusion=IConsoleManager::Get().FindConsoleVariable(TEXT("r.AllowOcclusionQueries"));
    const FVector ExpectedForward=FRotationMatrix(S47Three::CameraRotation(P->FloraView.Yaw,P->FloraView.Pitch)).GetUnitAxis(EAxis::X);
    if(!S47Three::ToThree(M->Player->EyeUE()).Equals(P->FloraView.Eye,.0001) || !M->Player->ForwardUE().Equals(ExpectedForward,.0001)) {
     Finish(false,TEXT("actual camera did not retain fixed eye and requested yaw")); return;
    }
-   UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: highway flora turn %s actual_kinds=%d actual_instances=%d transform_hash=%08x fixed_eye=%s raytracing=%d screen_warnings=%d"),
-    Names[View],S.Kinds,S.Instances,S.Hash,*P->FloraView.Eye.ToString(),RT?RT->GetInt():-1,Warnings?Warnings->GetInt():-1);
-   if(S.Kinds<4 || S.Instances<=0 || !RT || RT->GetInt()!=1 || !Warnings || Warnings->GetInt()!=0) { Finish(false,TEXT("flora population or native raytracing warning policy")); return; }
+   UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: highway flora turn %s actual_kinds=%d actual_instances=%d transform_hash=%08x fixed_eye=%s raytracing=%d screen_warnings=%d protected_kinds=%d world_occlusion=%d"),
+    Names[View],S.Kinds,S.Instances,S.Hash,*P->FloraView.Eye.ToString(),RT?RT->GetInt():-1,Warnings?Warnings->GetInt():-1,S.ProtectedKinds,Occlusion?Occlusion->GetInt():-1);
+   if(S.Kinds<4 || S.ProtectedKinds!=S.Kinds || !Occlusion || Occlusion->GetInt()!=1 || S.Instances<=0 || !RT || RT->GetInt()!=1 || !Warnings || Warnings->GetInt()!=0) { Finish(false,TEXT("flora population or native raytracing warning policy")); return; }
    if(View==0) P->FloraBase=S;
    else if(!(S==P->FloraBase)) { Finish(false,TEXT("stationary camera turn changed actual flora transforms/counts")); return; }
    if(!Shot(Names[View])) { Finish(false,TEXT("screenshot destination already exists")); return; }

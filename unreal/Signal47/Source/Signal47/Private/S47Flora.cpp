@@ -1,4 +1,5 @@
 #include "S47Flora.h"
+#include "S47FloraMeshComponent.h"
 
 #include "Algo/StableSort.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -592,7 +593,7 @@ bool FS47Flora::Bind(AS47Web* W, int32 GroupNode)
 			// the second of a pair: its own shape (export.js pairGeo) beside the first's, its own reach
 			if (N->GeoB >= 0 && Dw.Value + 1 < NK)
 			{
-				UInstancedStaticMeshComponent* B = NewObject<UInstancedStaticMeshComponent>(W);
+				UInstancedStaticMeshComponent* B = NewObject<US47FloraMeshComponent>(W);
 				B->SetMobility(EComponentMobility::Movable);
 				B->SetupAttachment(A);
 				B->SetStaticMesh(W->GeoMesh(N->GeoB));

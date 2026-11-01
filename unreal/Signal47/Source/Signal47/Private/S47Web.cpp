@@ -1,4 +1,5 @@
 #include "S47Web.h"
+#include "S47FloraMeshComponent.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
@@ -395,7 +396,12 @@ bool AS47Web::Load()
 			UStaticMeshComponent* M = nullptr;
 			if (N.bInstanced)
 			{
-				UInstancedStaticMeshComponent* I = NewObject<UInstancedStaticMeshComponent>(this, *FString::Printf(TEXT("N%d"), i));
+				// The small WPO plant batches opt out of unreliable whole-batch occlusion.
+				// Frustum/distance culling and all solid-world queries retain their normal path.
+				const FName Name(*FString::Printf(TEXT("N%d"), i));
+				UInstancedStaticMeshComponent* I = N.Name.StartsWith(TEXT("flora-"))
+					? NewObject<US47FloraMeshComponent>(this, Name)
+					: NewObject<UInstancedStaticMeshComponent>(this, Name);
 				M = I;
 			}
 			else M = NewObject<UStaticMeshComponent>(this, *FString::Printf(TEXT("N%d"), i));
