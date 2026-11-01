@@ -99,6 +99,7 @@ void FS47FreeformWorld::Stop()
  if(bFuelHeld&&Live(M->World.Get()))M->World->HoldTruck(0);bFuelHeld=false;
  AS47Web* Web=M->Web.Get();
  if(!Live(Web)||Web->IsActorBeingDestroyed())return;
+ RestorePumpModel();
  for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench"))C.bEnabled=false;
  if(S03()>=0)Web->SetDishRemoteAvailable(S03(),true);
  for(FS47Obj O:Parts)if(O.W==Web&&O)
@@ -189,7 +190,7 @@ bool FS47FreeformWorld::StartPump()
 void FS47FreeformWorld::StopPump()
 {
  if(!bPumping)return;bPumping=false;PumpRemaining=PumpElapsed=0;
- Change(FString::Printf(TEXT("Nozzle returned. Delivered %.2f tank units / charged $%d. Tank %.2f / 4."),PumpVolume,PumpPaid,Fuel));
+ ApplyPump();Change(FString::Printf(TEXT("Nozzle returned. Delivered %.2f tank units / charged $%d. Tank %.2f / 4."),PumpVolume,PumpPaid,Fuel));
 }
 void FS47FreeformWorld::StepPump(double Dt)
 {
@@ -212,7 +213,58 @@ FString FS47FreeformWorld::PumpDisplay() const
 void FS47FreeformWorld::ApplyPump()
 {
  const FString Display=PumpDisplay();if(Display==LastPumpDisplay)return;LastPumpDisplay=Display;
- for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
+ if(bTripoPump)
+ {
+  const FString Left=FString::Printf(TEXT("TANK %.2f/4\nSALE $%d\n%.2f UNITS"),Fuel,PumpPaid,PumpVolume);
+  const double Volume=FMath::Min(1.,4.-Fuel);
+  const FString Right=bPumping?FString::Printf(TEXT("REGULAR\nNEXT %.2f/$1\nE STOP %.0f%%"),PumpIncrement(Fuel,PumpRemaining),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.):FString::Printf(TEXT("REGULAR\nUP TO %.2f/$%d\nE START"),Volume,FMath::CeilToInt(Volume/.25-.00001));
+  if(auto* C=PumpTextEast.Get())C->SetText(FText::FromString(Left));if(auto* C=PumpTextWest.Get())C->SetText(FText::FromString(Right));
+ }
+ else for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
+}
+bool FS47FreeformWorld::TripoPumpLoaded() const
+{
+ if(!bTripoPump||!M||!M->Web||!PumpModel||!PumpStation.IsValid())return false;
+ const auto* N=M->Web->Node(PumpModel.I);const auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+ const auto* Station=PumpStation.Get();return C&&C->GetStaticMesh()&&Station->GetStaticMesh()&&
+ C->GetStaticMesh()->GetPathName()==TEXT("/Game/Licensed/TripoPump/caliche_regular_pump/SM_Tripo_CalicheRegularPump.SM_Tripo_CalicheRegularPump")&&
+ Station->GetStaticMesh()->GetPathName()==TEXT("/Game/Licensed/TripoPump/Station/SM_CalicheStation_NoRegularPump.SM_CalicheStation_NoRegularPump");
+}
+bool FS47FreeformWorld::InstallPumpModel(int32 RoadParent)
+{
+ if(!M||!M->Web||RoadParent<0)return false;
+ auto* Trim=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Licensed/TripoPump/Station/SM_CalicheStation_NoRegularPump.SM_CalicheStation_NoRegularPump"));
+ auto* Mesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Licensed/TripoPump/caliche_regular_pump/SM_Tripo_CalicheRegularPump.SM_Tripo_CalicheRegularPump"));
+ if(!Trim||!Mesh)return false;
+ if(!PumpStation.IsValid())for(int32 I=0;;++I)
+ {
+  const auto* N=M->Web->Node(I);if(!N)break;
+  if(N->Name==TEXT("prop:gasStation"))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){PumpStation=C;PreviousStation.Reset(C->GetStaticMesh());PumpOriginalMaterials.Reset();for(int32 Slot=0;Slot<C->GetNumMaterials();++Slot)PumpOriginalMaterials.Emplace(C->GetMaterial(Slot));break;}
+ }
+ auto* Station=PumpStation.Get();if(!Station||!PreviousStation.IsValid())return false;
+ if(!PumpModel)
+ {
+  // Ground pivot, preserved island anchor; normalized front +Y becomes +X
+  // after the measured FBX conversion and a native 90-degree placement yaw.
+  const FVector Base=PumpPoint()-FVector(0,1.59,0);
+  const double Width=Mesh->GetBounds().BoxExtent.X*.02;
+  PumpModel=Model(TEXT("FreeformTripoRegularPump"),TEXT("/Game/Licensed/TripoPump/caliche_regular_pump/SM_Tripo_CalicheRegularPump.SM_Tripo_CalicheRegularPump"),Base,Width,RoadParent);
+  if(!PumpModel)return false;
+  if(const auto* N=M->Web->Node(PumpModel.I))if(auto* C=N->Comp.Get())C->SetWorldRotation(FRotator(0,90,0));
+ }
+ // Removed pump-only slots may be compacted by FBX. Rebind by original
+ // slot name, preserving this component's existing lighting material instances.
+ TArray<int32> Mapping;for(const auto& Slot:Trim->GetStaticMaterials())
+ {
+  const int32 Source=PreviousStation->GetMaterialIndex(Slot.MaterialSlotName);if(!PumpOriginalMaterials.IsValidIndex(Source))return false;Mapping.Add(Source);
+ }
+ Station->SetStaticMesh(Trim);for(int32 I=0;I<Mapping.Num();++I)Station->SetMaterial(I,PumpOriginalMaterials[Mapping[I]].Get());
+ bTripoPump=true;return true;
+}
+void FS47FreeformWorld::RestorePumpModel()
+{
+ if(auto* C=PumpStation.Get())if(auto* Original=PreviousStation.Get()){C->SetStaticMesh(Original);for(int32 I=0;I<PumpOriginalMaterials.Num();++I)C->SetMaterial(I,PumpOriginalMaterials[I].Get());}
+ bTripoPump=false;
 }
 bool FS47FreeformWorld::ShopOpen() const { return Ready() && DayClock(M->Freeform->Clock())>=8*3600 && DayClock(M->Freeform->Clock())<20*3600; }
 void FS47FreeformWorld::Change(const FString& Message)
@@ -261,7 +313,7 @@ void FS47FreeformWorld::OverrideExisting()
 
 bool FS47FreeformWorld::Build()
 {
- if(bBuilt)return true;if(!M||!M->Web||!M->Web->IsLoaded()||!M->Inter)return false;
+ if(bBuilt){if(M&&M->Web)InstallPumpModel(M->Web->Handle(TEXT("world.legs.road.area.group")));return true;}if(!M||!M->Web||!M->Web->IsLoaded()||!M->Inter)return false;
  const int32 Saro=M->Web->Handle(TEXT("ext.group")),Road=M->Web->Handle(TEXT("world.legs.road.area.group"));if(Saro<0||Road<0)return false;
  // Reuse the existing archive-table model, fitted to the accessible facade walk.
  // The sign wing has no authored portal, so its solid walls remain intact.
@@ -313,15 +365,17 @@ bool FS47FreeformWorld::Build()
  // DIESEL body stays authored and is deliberately incompatible with the Jeep.
  if(M->Web->Obj(TEXT("world.town.proxies.pumps")))
  {
-  const FVector At=PumpPoint();
-  Box(TEXT("FreeformRegularMeterEast"),At+FVector(.348,0,0),FVector(.012,.50,.55),0x202821,Road,TEXT("ff:pump"));
-  FS47Obj West=Box(TEXT("FreeformRegularMeterWest"),At+FVector(-.348,0,0),FVector(.012,.50,.55),0x202821,Road);
+  const bool NewPump=InstallPumpModel(Road);
+  const FVector At=PumpPoint()+FVector(0,NewPump?-.10:0,0);const double Face=NewPump?.27:.348,Height=NewPump?.30:.50,Width=NewPump?.21:.55;
+  const FVector Left=At+FVector(Face,0,NewPump?-.19:0),Right=At+FVector(NewPump?Face:-Face,0,NewPump?.19:0);
+  Box(TEXT("FreeformRegularMeterEast"),Left,FVector(.012,Height,Width),0x202821,Road,TEXT("ff:pump"));
+  FS47Obj West=Box(TEXT("FreeformRegularMeterWest"),Right,FVector(.012,Height,Width),0x202821,Road);
   M->Web->MarkUsable(West.I,TEXT("ff:pump"));
   auto Meter=[&](const TCHAR* Name,double Side)
   {
    const auto* P=M->Web->Node(Road);auto* C=NewObject<UTextRenderComponent>(M->Web,Name);C->SetupAttachment(P->Comp.Get());C->SetMobility(EComponentMobility::Movable);
-   C->SetWorldSize(2.6);C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);C->SetTextRenderColor(FColor(229,226,186));C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
-   C->SetWorldLocation(S47Three::ToUE(At+FVector(Side*.36,0,0)));C->SetWorldRotation(FRotator(0,Side>0?0:180,0));Parts.Add(M->Web->ObjAt(M->Web->AdoptNode(C,Road,Name)));return C;
+   C->SetWorldSize(NewPump?1.35:2.6);C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);C->SetTextRenderColor(FColor(229,226,186));C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE((Side>0?Left:Right)+FVector(NewPump?.012:Side*.012,0,0)));C->SetWorldRotation(FRotator(0,NewPump||Side>0?0:180,0));Parts.Add(M->Web->ObjAt(M->Web->AdoptNode(C,Road,Name)));return C;
   };
   PumpTextEast=Meter(TEXT("FreeformRegularTextEast"),1);PumpTextWest=Meter(TEXT("FreeformRegularTextWest"),-1);
  }
@@ -331,6 +385,7 @@ bool FS47FreeformWorld::Build()
 void FS47FreeformWorld::Apply()
 {
  if(!bBuilt)return;ApplyPump();for(FS47Obj O:Parts)if(O&&!(O==ParcelSaro)&&!(O==ParcelRoad)){O.SetVisible(bActive);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(bActive&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
+ if(PumpModel){PumpModel.SetVisible(bActive&&bTripoPump);if(!bTripoPump)if(const auto* N=PumpModel.W->Node(PumpModel.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
  if(BenchSample)BenchSample.SetVisible(bActive&&(InventoryCount(TEXT("fragment"))>0||InventoryCount(TEXT("archived_fragment"))>0||BenchJob==TEXT("fragment")));
  if(BenchLamp){const bool Testing=!BenchJob.IsEmpty();BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float(BenchSeconds/3.)*.8f:.15f);}
  const bool Open=bActive&&Service>=4&&Service<=5;

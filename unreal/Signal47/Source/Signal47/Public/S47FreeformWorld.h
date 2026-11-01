@@ -2,8 +2,11 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Obj.h"
+#include "UObject/StrongObjectPtr.h"
 class US47Main;
 class UStaticMeshComponent;
+class UStaticMesh;
+class UMaterialInterface;
 class UTextRenderComponent;
 class FS47FreeformCarry;
 
@@ -44,6 +47,7 @@ public:
  int32 PumpCharges() const { return PumpPaid; }
  double PumpProgress() const { return PumpElapsed / 2.; }
  FString PumpDisplay() const;
+ bool TripoPumpLoaded() const;
  int32 ParcelStage() const { return Payload; } // 0 empty, 1 shop, 2 carried, 3 loaded, 4 set down
  FString ParcelItem() const { return Item; }
  bool DropParcel(bool bDrop = false);
@@ -74,6 +78,11 @@ private:
  int32 PumpPaid = 0;
  TWeakObjectPtr<UTextRenderComponent> PumpTextEast, PumpTextWest;
  FString LastPumpDisplay;
+ bool bTripoPump = false;
+ FS47Obj PumpModel;
+ TWeakObjectPtr<UStaticMeshComponent> PumpStation;
+ TStrongObjectPtr<UStaticMesh> PreviousStation;
+ TArray<TStrongObjectPtr<UMaterialInterface>> PumpOriginalMaterials;
  TSharedPtr<FS47FreeformCarry> Carry;
  FString Item, BenchJob;
  TMap<FString,int32> Stock;
@@ -100,6 +109,8 @@ private:
  bool AtDiesel() const;
  void StepPump(double Dt);
  void ApplyPump();
+ bool InstallPumpModel(int32 RoadParent);
+ void RestorePumpModel();
  void Change(const FString& Message = FString());
  bool ServiceUse();
  bool FeederUse();
