@@ -229,7 +229,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
    Truck->Body.Traverse([&](FS47Obj O)
    {
     const auto* N=M->Web->Node(O.I);const auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
-    const auto* Mesh=C?C->GetStaticMesh():nullptr;
+    const UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
     if(Mesh&&Mesh->GetName()==Name&&Mesh->GetPathName().StartsWith(TEXT("/Game/Licensed/TripoFleet/"))&&Mesh->GetRenderData()&&Mesh->GetNumLODs()>0&&Mesh->GetNumTriangles(0)>0&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&O.Shown())Found=true;
    });
    if(!Check(Found,FString(TEXT("actual driving Jeep has a valid visible mounted native mesh: "))+Name))return;
