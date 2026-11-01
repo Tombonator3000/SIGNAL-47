@@ -216,7 +216,7 @@ void FS47FreeformWorld::ApplyPump()
  if(bTripoPump)
  {
   const FString Left=FString::Printf(TEXT("TANK\n%.2f OF 4\nSALE $%d"),Fuel,PumpPaid);
-  const FString Right=FString::Printf(TEXT("VOLUME\n%.2f\nE %s"),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
+  const FString Right=FString::Printf(TEXT("FUEL $4/U\n%.2f SOLD\nE %s"),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
   if(auto* C=PumpTextEast.Get())C->SetText(FText::FromString(Left));if(auto* C=PumpTextWest.Get())C->SetText(FText::FromString(Right));
  }
  else for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
@@ -579,6 +579,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
  {
   if(AtDiesel())return TEXT("DIESEL / service truck needs the red REGULAR pump");
+  if(bTripoPump)return bPumping?TEXT("Stop pump"):TEXT("Use pump");
   if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / 4 / delivered %.2f / $%d"),Fuel,PumpVolume,PumpPaid);
   const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
  }
