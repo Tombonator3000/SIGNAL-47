@@ -133,12 +133,12 @@ void FS47FreeformJourneyTest::Step(double Dt)
  if(Stage==405)
  {
   if(Age-At<.4)return;Before=W.ParcelPosition();
-  M->bPausedByMenu=true;Go(5);return;
+  PausedClock=F.Clock();M->bPausedByMenu=true;Go(5);return;
  }
  if(Stage==5)
  {
   if(Age-At<1)return;
-  if(!Check(W.ParcelPosition().Equals(Before,.05),TEXT("pause holds dropped parcel position")))return;
+  if(!Check(W.ParcelPosition().Equals(Before,.05)&&F.Clock()==PausedClock,TEXT("pause holds dropped parcel and the active day/night clock")))return;
   M->bPausedByMenu=false;if(!Restore(TEXT("dropped-parcel")))return;Go(6);return;
  }
  if(Stage==6)

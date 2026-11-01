@@ -13,7 +13,7 @@ private:
  US47Main* M=nullptr;
  bool bInit=false,bDone=false,bSawOutward=false;
  int32 Stage=0,Checks=0,Restores=0,DeliveryBefore=0,ServiceBefore=0;
- double Age=0,At=0,InitialAz=0;
+ double Age=0,At=0,InitialAz=0,PausedClock=0;
  FVector Before=FVector::ZeroVector;
  FString Root;
  TArray<TSharedPtr<FJsonValue>> Evidence;
