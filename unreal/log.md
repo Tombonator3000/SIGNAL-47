@@ -1553,3 +1553,5 @@ Cooked/StagedBuilds fra ferdig arbeidskopi ryddet: 11.80 GiB netto frigjort, øv
 
 2026-11-01 18:07 CET | PR314, runtime867dd44a | Installert18:04: Linux omgår feilaktige occlusion queries, plantebuffer rundt kameraet og avslått RT-overlegg. Editor/pakke/1957 selvtester/fem gjennomsette kameravinkler + installert Fortsett består; 151 Saved-elementer uendret.
 Store installasjonsfiler bruker verifiserte Btrfs-reflinks; 192.7GB fysisk ledig ved lett sluttkontroll. Ingen ny rydderunde; ferdig kopi/cache kan tas i neste samlede kjøring.
+
+2026-11-01 | codex/title-quit-linux-20261101 | Tittelens klikkfangende bunntekst fjernet; bygg/visuell QUIT-prøve samordnes med Freeform-chatten. Linux-starter støtter eksplisitt utpakket pakke og bevarer terminalfeil/exitkode; avgrensede shell-fixtures består. Mottakerens Arch/niri/RTX5090-grafikk er fortsatt uprøvd; ingen offentlig release.

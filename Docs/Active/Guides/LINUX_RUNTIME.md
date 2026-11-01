@@ -17,6 +17,19 @@ Starteren laster ned og kontrollerer alle tre ZIP-arkivene. GitHubs automatiske 
 
 `Signal47.sh` er den interne motorstarteren i `Signal47-Linux/Linux/`, ikke navnet på releasevedlegget man skal lete etter. Dette er kontrollert direkte i den publiserte hoved-ZIP-ens katalog og ukomprimerte filinnhold 31. oktober, uten å hente hele spillpakken: internstarteren har SHA256 `d274178785a20058ba9d8f365096d5406c367eebe81d9458814eda5e8152d04a`, lik `BUILD.json` og `FILES.sha256`. Offentlig `Spill-SIGNAL47.sh` er også hentet og sammenlignet med repokilden, SHA256 `a20dc64ec720a0da35bb7089fd696ec7647038099dc4f6a2a973660cdd759724`. Dette beviser tilstedeværelse, ikke grafisk oppstart på en annen PC.
 
+## Ny starter med eksisterende pakke og terminalfeil
+
+Repokildens starter støtter nå `--pakke` for en allerede utpakket `Signal47-Linux`- eller `Linux`-mappe. Dette laster ikke ned eller pakker ut på nytt og endrer ikke Saved. Den offentlige releasefilen oppdateres ikke automatisk når repokilden endres.
+
+```sh
+bash Spill-SIGNAL47.sh --pakke "/sti/til/Signal47-Linux" --vindu 1280x720
+bash Spill-SIGNAL47.sh --pakke "/sti/til/Signal47-Linux" --rapport
+```
+
+Terminalutdata og prosessens exitkode lagres i `Spill/siste-oppstart.txt` ved siden av starteren og tas med i rapporten. Pakkeplasseringen står i loggen, slik at en feil fra en annen installasjon kan oppdages. Del rapporten og navnet på det nedlastede arkivet; ikke bare skjermkortmodellen. Manglende internstarter avvises med konkret sti, uten å laste ned over en delvis installasjon. Standard skjermbackend beholdes.
+
+Avgrenset shellprøve med testpakker dekker mellomrom i sti, begge pakkeoppsett, videresending av vindusargumenter, manglende internstarter og bevart feiltekst/exitkode37. Dette beviser ikke grafisk start på Arch/niri/RTX5090; mottakerens faktiske feilmelding mangler fortsatt.
+
 ## Krav og avhengigheter
 
 | Del | Krav eller innhold | Kontrollgrense |
