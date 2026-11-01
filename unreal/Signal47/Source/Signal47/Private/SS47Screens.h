@@ -57,6 +57,12 @@ public:
 	bool IsGated() const { return bGated; }
 	void FocusMenu();
 	void FocusStart();
+	struct FErase47Sample { float Opacity=1.f; FVector2f Offset=FVector2f::ZeroVector; FVector2f Scale=FVector2f(1,1); };
+	static FErase47Sample SampleErase47(float Seconds, bool bCalm);
+	float Erase47Elapsed() const { return EraseT; }
+	bool Erase47Started() const { return bEraseStarted; }
+	bool Erase47Done() const { return bEraseDone; }
+	float Number47Opacity() const;
 
 private:
 	struct FItem { FString Label; bool bUsable = true; TFunction<void()> Fn; };
@@ -66,6 +72,8 @@ private:
 	bool bGated = false;
 	float T = 0.f, InT = 1.f;  // the clock and the gate's blink, the menu's coming in
 	bool bFocusPending = true; // the menu is focused once the title is on the screen
+	float EraseT=0.f;
+	bool bEraseStarted=false, bEraseDone=false;
 	void First();
 	void Move(int32 Dir);
 	void Choose();

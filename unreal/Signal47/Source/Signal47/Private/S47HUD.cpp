@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47TitleEraseSound.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJourneyTest.h"
@@ -184,6 +185,7 @@ void AS47HUD::Start()
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
 		bOk &= FS47FieldRadio::SelfTest(Lines);
+		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);

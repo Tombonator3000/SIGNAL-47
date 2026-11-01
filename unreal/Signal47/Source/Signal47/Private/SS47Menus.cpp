@@ -14,6 +14,7 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
+#include "Widgets/SWindow.h"
 #include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Text/STextBlock.h"
 
@@ -37,14 +38,23 @@ namespace S47MenusLocal
 namespace S47MenusLocal
 {
 	// the logo's words: SIGNAL / 47, the slash in neon; Edge: one of the tape's coloured edges
-	TSharedRef<SWidget> Logo(const TOptional<FLinearColor>& Edge)
+	TSharedRef<SWidget> Logo(const TOptional<FLinearColor>& Edge, TFunction<float()> NumberAlpha, TFunction<SS47Title::FErase47Sample()> NumberSample)
 	{
 		const FSlateFontInfo F = S47Theme::Heading(150, 2);
 		const FLinearColor Word = Edge.Get(S47Theme::Head()), Slash = Edge.Get(S47Theme::Neon());
 		return SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT("SIGNAL "))).Font(F).ColorAndOpacity(Word)]
 			+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT("/"))).Font(F).ColorAndOpacity(Slash)]
-			+ SHorizontalBox::Slot().AutoWidth()[SNew(STextBlock).Text(FText::FromString(TEXT(" 47"))).Font(F).ColorAndOpacity(Word)];
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				SNew(STextBlock).Text(FText::FromString(TEXT(" 47"))).Font(F)
+				.ColorAndOpacity_Lambda([NumberAlpha,Word] { auto C=Word;C.A*=NumberAlpha();return C; })
+				.RenderTransform_Lambda([NumberSample]
+				{
+					const auto S=NumberSample();
+					return FSlateRenderTransform(FScale2D(S.Scale.X,S.Scale.Y),FVector2D(S.Offset.X,S.Offset.Y));
+				})
+			];
 	}
 
 	// the night's clock on the title: from 23:41:07, in real seconds
@@ -56,6 +66,11 @@ void SS47Title::Construct(const FArguments& InArgs)
 	S47_USING_THEME
 	O = InArgs._Opts;
 	bGated = O.bGate;
+	EraseT=O.bErase47 ? FMath::Clamp(O.Erase47InitialTime,0.f,2.7f) : 0.f;
+	bEraseStarted=O.bErase47 && EraseT>=1.f;
+	// Even a completed seed may retry Done on its first visible tick when the
+	// persisted flag could not be written. A persisted bHide47 bypasses callbacks.
+	bEraseDone=false;
 	// .menu: Continue (and where it would take you), New night, Load case, Settings, Quit
 	Items.Add({ TEXT("CONTINUE"), !O.Cont.IsEmpty(), [this] { if (O.OnContinue) O.OnContinue(); } });
 	Items.Add({ TEXT("NEW STORY"), true, [this] { if (O.OnStart) O.OnStart(); } });
@@ -89,6 +104,13 @@ void SS47Title::Construct(const FArguments& InArgs)
 	auto FadeIn = [this] { return FLinearColor(1, 1, 1, 1.f - FMath::Square(1.f - FMath::Clamp(InT / 0.5f, 0.f, 1.f))); };
 	// (line-height .86: Oswald's own line is about 1.48 em, so the words sit higher than the box CSS gives them)
 	const float LogoTop = 128 - (150 * 1.482f - 150 * 0.86f) / 2.f;
+	auto NumberAlpha=[this] { return Number47Opacity(); };
+	auto NumberSample=[this]
+	{
+		auto Sample=SampleErase47(EraseT,O.bCalm);
+		Sample.Offset*=S47Theme::U;
+		return Sample;
+	};
 
 	ChildSlot
 	[
@@ -104,9 +126,9 @@ void SS47Title::Construct(const FArguments& InArgs)
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Pad(118, LogoTop, 0, 0))
 		[
 			SNew(SOverlay).Visibility(EVisibility::HitTestInvisible)
-			+ SOverlay::Slot()[SNew(SBox).RenderTransform(FSlateRenderTransform(FVector2f(3 * U, 0)))[S47MenusLocal::Logo(FLinearColor(1.f, 0.06f, 0.045f, 0.35f))]]
-			+ SOverlay::Slot()[SNew(SBox).RenderTransform(FSlateRenderTransform(FVector2f(-3 * U, 0)))[S47MenusLocal::Logo(FLinearColor(0.06f, 0.52f, 1.f, 0.3f))]]
-			+ SOverlay::Slot()[S47MenusLocal::Logo(TOptional<FLinearColor>())]
+			+ SOverlay::Slot()[SNew(SBox).RenderTransform(FSlateRenderTransform(FVector2f(3 * U, 0)))[S47MenusLocal::Logo(FLinearColor(1.f, 0.06f, 0.045f, 0.35f),NumberAlpha,NumberSample)]]
+			+ SOverlay::Slot()[SNew(SBox).RenderTransform(FSlateRenderTransform(FVector2f(-3 * U, 0)))[S47MenusLocal::Logo(FLinearColor(0.06f, 0.52f, 1.f, 0.3f),NumberAlpha,NumberSample)]]
+			+ SOverlay::Slot()[S47MenusLocal::Logo(TOptional<FLinearColor>(),NumberAlpha,NumberSample)]
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Pad(118, 128 + 129 + 18, 0, 0))
 		[
@@ -167,11 +189,46 @@ void SS47Title::Construct(const FArguments& InArgs)
 	];
 }
 
+SS47Title::FErase47Sample SS47Title::SampleErase47(float Seconds, bool bCalm)
+{
+ FErase47Sample S;
+ if(Seconds<1.f)return S;
+ if(Seconds>=2.5f){S.Opacity=0;return S;}
+ const float P=(Seconds-1.f)/1.5f;
+ if(bCalm){S.Opacity=1.f-FMath::SmoothStep(0.f,1.f,P);return S;}
+ // Uneven tape damage, confined to the two digits. No full-screen flashes.
+ const float Shift[]={0,5,-3,0,12,-7,2,-14,4,0,-5,16,-2,7,-11,0,4};
+ const float Alpha[]={1,.72f,.92f,.5f,.82f,.34f,.76f,.46f,.9f,.58f,.7f,.27f,.6f,.4f,.56f,.3f,.48f};
+ const int32 I=FMath::Clamp(FMath::FloorToInt((Seconds-1.f)*11.3f),0,16);
+ const float Envelope=FMath::SmoothStep(0.f,.24f,P);
+ S.Opacity=FMath::Lerp(1.f,Alpha[I],Envelope)*(1.f-FMath::SmoothStep(.7f,1.f,P));
+ S.Offset=FVector2f(Shift[I]*Envelope,((I%3)-1)*2.f*Envelope);
+ S.Scale=FVector2f(1.f+FMath::Abs(Shift[I])*.018f*Envelope,1.f-(I%4)*.045f*Envelope);
+ return S;
+}
+
+float SS47Title::Number47Opacity() const
+{
+ return O.bHide47 || bEraseDone ? 0.f : O.bErase47 ? SampleErase47(EraseT,O.bCalm).Opacity : 1.f;
+}
+
 void SS47Title::Tick(const FGeometry& G, const double InCurrentTime, const float InDeltaTime)
 {
 	SCompoundWidget::Tick(G, InCurrentTime, InDeltaTime);
 	T += InDeltaTime;
 	InT += InDeltaTime;
+	if(O.bErase47 && !O.bHide47 && !bEraseDone && !bGated && GetVisibility().IsVisible() && FSlateApplication::IsInitialized())
+	{
+		auto& App=FSlateApplication::Get(); const auto Window=App.FindWidgetWindow(SharedThis(this));
+		if(App.IsActive() && Window.IsValid() && !Window->IsWindowMinimized())
+		{
+			// Presentation time only: hidden menus, inactive/minimized apps and a
+			// slow frame cannot consume the entire one-time signal loss offscreen.
+			EraseT=FMath::Min(2.7f,EraseT+FMath::Clamp(InDeltaTime,0.f,.1f));
+			if(!bEraseStarted && EraseT>=1.f){bEraseStarted=true;if(O.OnErase47Start)O.OnErase47Start();}
+			if(!bEraseDone && EraseT>=2.7f){bEraseDone=true;if(O.OnErase47Done)O.OnErase47Done();}
+		}
+	}
 	// (focus() as the title is shown: Slate can only focus a widget that is on the screen)
 	if (bFocusPending) { bFocusPending = false; FocusMenu(); }
 }
