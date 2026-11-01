@@ -19,7 +19,7 @@ sys.path.insert(0, str(HERE))
 import prepare as P
 
 DEFAULT_SOURCE = Path.home() / 'Documents/ChatGPT/Signal 47/modeller/tripo-fleet-20261031/prepared/classic_jeep'
-DEFAULT_OUTPUT = DEFAULT_SOURCE.parent.parent / 'interior-20261101'
+DEFAULT_OUTPUT = DEFAULT_SOURCE.parent.parent / 'interior-window-service-20261101'
 DEST = '/Game/Licensed/TripoFleet/classic_jeep'
 PREFIX = 'SM_TripoJeep_'
 EYE = (-.41, 1.70, .65)
@@ -175,6 +175,20 @@ def source_trim(face, material_name):
     return wheel or dash or gear
 
 
+def source_window_trim(face):
+    """Only the inspected forward frame/pane/mirror assembly, in prepared metres.
+
+    Intersecting edge triangles are removed too, so a whole-triangle-inside
+    selection cannot leave narrow remnants of the replaced window assembly.
+    The replacement lower rail covers this local cut boundary. No smoothing,
+    decimation or material change is applied to the rest of the source body.
+    """
+    low, high = (-1.025, -.22, 1.445), (1.025, .62, 2.12)
+    points = [v.co for v in face.verts]
+    return all(max(p[i] for p in points) >= low[i] and
+               min(p[i] for p in points) <= high[i] for i in range(3))
+
+
 def build(source, destination, preview=False):
     import bpy
     import bmesh
@@ -209,13 +223,17 @@ def build(source, destination, preview=False):
         obj.name=body_name+suffix
         for i,m in enumerate(list(obj.data.materials)):obj.data.materials[i]=bpy.data.materials[rename[m.name]]
         before=len(obj.data.polygons);bm=bmesh.new();bm.from_mesh(obj.data)
-        remove=[f for f in bm.faces if source_trim(f,obj.data.materials[f.material_index].name)]
+        window_faces=[f for f in bm.faces if source_window_trim(f)]
+        P.require(20 <= len(window_faces) < before*.18,'Window/mirror selection missed or exceeds local assembly in LOD'+str(lod))
+        remove=[f for f in bm.faces if source_trim(f,obj.data.materials[f.material_index].name) or source_window_trim(f)]
         P.require(5 <= len(remove) < before*.22,'Source interior selection missed or crosses too much body in LOD'+str(lod))
         bmesh.ops.delete(bm,geom=remove,context='FACES');bm.to_mesh(obj.data);bm.free();P.clean_unused(obj)
         measured=P.measurements(obj);relative='exports/'+obj.name+'.fbx';P.export_fbx(obj,model/relative)
         parts.setdefault(body_name,dict(measured,asset_folder=DEST,lods=[]))['lods'].append(dict(measured,lod=lod,fbx=relative))
         trim_rows.append({'lod':lod,'source_triangles':before,'removed_triangles':len(remove),'retained_triangles':measured['triangles'],
-                          'protected':'windscreen glass/frame, seats, body outside exact interior boxes; original files unchanged'})
+                          'window_assembly_triangles':len(window_faces),
+                          'window_bounds_blender_m':[[-1.025,-.22,1.445],[1.025,.62,2.12]],
+                          'protected':'seats, wheels, lamps and body outside exact interior/window boxes; original files unchanged'})
         obj.hide_render=lod>0;obj.hide_set(lod>0)
 
     atlas_path=model/'textures/Jeep_Atlas_Preview.png';atlas(atlas_path)
@@ -354,6 +372,38 @@ def build(source, destination, preview=False):
         rod('gear selector stalk',foot,top,.009,'Steel',16)
         bpy.ops.mesh.primitive_uv_sphere_add(segments=20,ring_count=10,radius=.025,location=top);o=bpy.context.object;o.name='Gear selector knob';o.data.materials.append(mats['Plastic']);objects.append(o)
         label(title,(top[0],top[1]-.022,top[2]+.005),.007)
+    # Replace the locally removed Tripo window assembly with straight members.
+    # Keep every original/previous derivative untouched; the seven-part native
+    # interface, camera, steering and instrument anchors remain identical.
+    mat('MirrorSilver',(.58,.61,.62),.18,.94)
+    pane=mat('CabWindow',(.84,.91,.94),.08)
+    pane.node_tree.nodes.get('Principled BSDF').inputs['Alpha'].default_value=.10
+    pane.diffuse_color=(.84,.91,.94,.10)
+    if hasattr(pane,'surface_render_method'):pane.surface_render_method='DITHERED'
+    materials[-1].update(base_color_linear=[.84,.91,.94,.10],alpha=.10,
+                         alpha_mode='BLEND',two_sided=True,
+                         glass_method='single planar thin-alpha pane; no baked source image, normal map or refraction')
+    bottom_y,bottom_z,top_y,top_z=.32,1.48,-.10,2.025
+    for side in (-1,1):
+        rod('Straight windshield upright',(side*.745,bottom_y,bottom_z),(side*.745,top_y,top_z),.029,'CreamPaint',16)
+        rod('Windshield inner rubber seal',(side*.711,bottom_y,bottom_z+.015),(side*.711,top_y,top_z-.015),.007,'Plastic',12)
+        rod('Mirror lower bracket',(side*.76,.29,1.49),(side*.89,.23,1.51),.012,'Steel',12)
+        rod('Mirror upright bracket',(side*.89,.23,1.51),(side*.89,.17,1.65),.012,'Steel',12)
+        box('Rigid mirror housing',(side*.89,.145,1.665),(.177,.045,.238),'Plastic',.012)
+        box('Flat unwarped mirror face',(side*.89,.120,1.665),(.146,.0015,.205),'MirrorSilver',0)
+    rod('Straight lower windshield rail',(-.745,bottom_y,bottom_z),(.745,bottom_y,bottom_z),.032,'CreamPaint',20)
+    rod('Straight upper windshield rail',(-.745,top_y,top_z),(.745,top_y,top_z),.028,'CreamPaint',20)
+    for y,z in [(bottom_y,bottom_z+.015),(top_y,top_z-.015)]:
+        rod('Windshield horizontal rubber seal',(-.711,y,z),(.711,y,z),.007,'Plastic',12)
+    mesh=bpy.data.meshes.new('Planar windscreen without source atlas')
+    mesh.from_pydata([(-.711,bottom_y,bottom_z+.015),(.711,bottom_y,bottom_z+.015),
+                      (.711,top_y,top_z-.015),(-.711,top_y,top_z-.015)],[],[(0,1,2,3)])
+    mesh.materials.append(pane);window=bpy.data.objects.new('Single flat windshield pane',mesh)
+    bpy.context.collection.objects.link(window);objects.append(window)
+    for x in (-.36,.36):
+        rod('Wiper spindle',(x,.298,1.492),(x,.285,1.507),.012,'Plastic',12)
+        rod('Straight wiper arm',(x,.285,1.507),(x+.10,.176,1.655),.005,'Steel',10)
+        rod('Wiper rubber blade',(x+.035,.158,1.685),(x+.22,.158,1.685),.005,'Plastic',10)
     interior=join(PREFIX+'Interior',objects[:]);objects.clear()
 
     # Separate steering: geometry is baked around local zero and its real axis.
@@ -456,7 +506,12 @@ def build(source, destination, preview=False):
     contract={'version':1,'coordinates':P.COORDINATES,'parts':parts,'status':'PREPARED_NATIVE_UNVERIFIED',
               'source_glb':input_contract['source_glb'],'source_sha256':input_contract['source_sha256'],
               'source_blend':str(input_blend),'source_trim':trim_rows,'anchors':ANCHORS,
-              'scope':'Own fitted Jeep interior plus precise source interior cleanup; no C10 cabin, no source wheel/body redesign.'}
+              'window_service':{'method':'local assembly replacement; no global smoothing',
+                                'frame':'straight sealed upper/lower rails and uprights',
+                                'mirror':'rigid housing and planar metallic face without source atlas/normal',
+                                'glass':'single planar 10-percent alpha pane, no refraction',
+                                'limits':'Mirror uses ordinary environment reflection, not a separate rear-view camera.'},
+              'scope':'Own fitted Jeep interior plus precise source interior/window cleanup; no C10 cabin or source wheel redesign.'}
     P.write_json(model/'model_contract.json',contract)
     P.write_json(destination/'manifest.json',{'version':1,'coordinates':P.COORDINATES,'models':[{
         'id':'classic_jeep','name':body_name,'output_dir':str(model),'contract':'classic_jeep/model_contract.json',

@@ -1,4 +1,5 @@
 #include "S47FreeformTest.h"
+#include "S47FreeformAudioDesk.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
@@ -134,6 +135,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==5)
  {
   if(F.CurrentJob()->ControlAt<8)return;
+  if(F.AudioDesk) { const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original")); M->Player->Place(P.X,P.Z-1.2,0); }
   F.OpenAudio();if(!Check(!F.AudioAction(TEXT("confirm")),TEXT("comparison cannot be granted before actual playback")))return;
   F.AudioAction(TEXT("original"));F.AudioAction(TEXT("play"));Go(6);return;
  }
