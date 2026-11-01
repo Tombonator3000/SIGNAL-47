@@ -260,11 +260,12 @@ void FS47RoswellBrain::Step(double Dt,const FInput& In,const FWorld& World)
   return;
  }
  bStandDone=false;
- // Chase is a developer mode, never an escalation of ordinary curiosity.
+ // Hunt is explicit (developer control or a warned Freeform event), never an escalation of ordinary curiosity.
  if (Mode==EMode::Hunt)
  {
-  const bool Contact=bSeesPlayer && Distance(Pos,In.PlayerFeet)<.92 &&
-   FMath::Abs(Pos.Y-In.PlayerFeet.Y)<.65 && World.Sight && World.Sight(Eye(),In.PlayerEye);
+  const bool Contact=In.bCanContact && bSeesPlayer && Distance(Pos,In.PlayerFeet)<.92 &&
+   FMath::Abs(Pos.Y-In.PlayerFeet.Y)<.65 && World.Sight && World.Sight(Eye(),In.PlayerEye) &&
+   World.CanMove && World.CanMove(Pos,In.PlayerFeet);
   if (Contact)
   {
    Enter(EState::Contact); Path.Reset(); NextPoint=0; bAtGoal=true;
@@ -420,6 +421,16 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
  Check(Touch.bContact && Touch.State==EState::Contact && Touch.Velocity.IsNearlyZero(),TEXT("developer contact requires visible nearby player and stops at the player"));
  Touch.Tick(.1,In,World);
  Check(!Touch.bContact,TEXT("contact cue is a cooldown-protected pulse, not a repeated frame event"));
+ In.bCanContact=false;
+ FS47RoswellBrain Driver;Driver.Start(EMode::Hunt,FVector::ZeroVector,0,6);Driver.Tick(.1,In,World);
+ Check(Driver.bSeesPlayer&&!Driver.bContact&&Driver.State!=EState::Contact,
+  TEXT("visible driver remains observable but cannot be grabbed through a cab"));
+ In.bCanContact=true;
+ World.CanMove=[](const FVector&,const FVector&){return false;};
+ FS47RoswellBrain BehindGlass;BehindGlass.Start(EMode::Hunt,FVector::ZeroVector,0,5);BehindGlass.Tick(.1,In,World);
+ Check(BehindGlass.bSeesPlayer&&!BehindGlass.bContact&&BehindGlass.State!=EState::Contact,
+  TEXT("transparent sight alone cannot grab a nearby player through a physical barrier"));
+ World.CanMove=[](const FVector&,const FVector&){return true;};
  FInput NoPlayer; NoPlayer.bPlayerValid=false;
  World.Occupancy=[](const FVector& P) { return P.X<0?1.:0.; };
  FS47RoswellBrain Reserved; Reserved.Start(EMode::Curious,FVector::ZeroVector,0,57);
@@ -475,4 +486,37 @@ bool FS47RoswellBrain::SelfTest(TArray<FString>& Lines)
  Check(Ramp.Pos.Equals(SupportedAt) && Ramp.Velocity.IsNearlyZero() && !Ramp.bAtGoal,
   TEXT("a rejected grounded step stops movement without snapping across unsupported ground"));
  return bOk;
+}
+
+
+// Freeform owns these facts; Story/dev groups retain their existing ephemeral life.
+S47J::FObj FS47RoswellBrain::Save() const
+{
+ auto O=S47J::New(); S47J::Set(O,TEXT("v"),1);
+ S47J::Set(O,TEXT("mode"),int32(Mode)); S47J::Set(O,TEXT("state"),int32(State));
+ S47J::Set(O,TEXT("random"),Random.GetCurrentSeed());
+ auto V=[&](const TCHAR* K,const FVector& P){S47J::Set(O,K,TArray<double>{P.X,P.Y,P.Z});};
+ V(TEXT("pos"),Pos); V(TEXT("velocity"),Velocity); V(TEXT("lastKnown"),LastKnownPlayer); V(TEXT("look"),LookTarget); V(TEXT("goal"),Goal); V(TEXT("lastEye"),LastPlayerEye);
+ S47J::Set(O,TEXT("values"),TArray<double>{Yaw,HeadYaw,Crouch,DistanceTravelled,Age,StateAge,MemoryAge,Noticed,DecisionAt,RepathAt,ContactCool,HeardAge,LastListenAt,DesiredCrouch,DesiredSpeed});
+ S47J::Set(O,TEXT("memory"),bHasPlayerMemory); S47J::Set(O,TEXT("contact"),bContact); S47J::Set(O,TEXT("standDone"),bStandDone); S47J::Set(O,TEXT("atGoal"),bAtGoal);
+ S47J::Set(O,TEXT("targetCover"),bTargetCover); S47J::Set(O,TEXT("targetRoof"),bTargetRoof); S47J::Set(O,TEXT("targetWindow"),bTargetWindow);
+ S47J::Set(O,TEXT("target"),TargetId); S47J::Set(O,TEXT("next"),NextPoint); S47J::Set(O,TEXT("choice"),ChoiceCursor);
+ TArray<double> R; for(const auto& P:Path)R.Append({P.X,P.Y,P.Z}); S47J::Set(O,TEXT("route"),R);return O;
+}
+bool FS47RoswellBrain::Restore(const S47J::FObj& O)
+{
+ if(!O || S47J::Num(O,TEXT("v"))!=1)return false;
+ const auto Values=S47J::Nums(O,TEXT("values")); const auto R=S47J::Nums(O,TEXT("route"));
+ const int32 Mo=S47J::Int(O,TEXT("mode"),-1),St=S47J::Int(O,TEXT("state"),-1);
+ if(Values.Num()!=15 || R.Num()%3 || R.Num()>3072 || Mo<0 || Mo>2 || St<0 || St>8)return false;
+ for(double X:Values)if(!FMath::IsFinite(X))return false;for(double X:R)if(!FMath::IsFinite(X))return false;
+ auto V=[&](const TCHAR* K,FVector& P){const auto A=S47J::Nums(O,K);if(A.Num()!=3)return false;for(double X:A)if(!FMath::IsFinite(X)||FMath::Abs(X)>1e6)return false;P=FVector(A[0],A[1],A[2]);return true;};
+ if(!V(TEXT("pos"),Pos)||!V(TEXT("velocity"),Velocity)||!V(TEXT("lastKnown"),LastKnownPlayer)||!V(TEXT("look"),LookTarget)||!V(TEXT("goal"),Goal)||!V(TEXT("lastEye"),LastPlayerEye))return false;
+ Mode=EMode(Mo); State=EState(St);Random.Initialize(S47J::Int(O,TEXT("random"),47));
+ double* Targets[]={&Yaw,&HeadYaw,&Crouch,&DistanceTravelled,&Age,&StateAge,&MemoryAge,&Noticed,&DecisionAt,&RepathAt,&ContactCool,&HeardAge,&LastListenAt,&DesiredCrouch,&DesiredSpeed};
+ for(int32 I=0;I<15;++I)*Targets[I]=Values[I];
+ bHasPlayerMemory=S47J::Bool(O,TEXT("memory"));bContact=S47J::Bool(O,TEXT("contact"));bStandDone=S47J::Bool(O,TEXT("standDone"));bAtGoal=S47J::Bool(O,TEXT("atGoal"));
+ bTargetCover=S47J::Bool(O,TEXT("targetCover"));bTargetRoof=S47J::Bool(O,TEXT("targetRoof"));bTargetWindow=S47J::Bool(O,TEXT("targetWindow"));
+ TargetId=S47J::Str(O,TEXT("target"));Path.Reset();for(int32 I=0;I<R.Num();I+=3)Path.Add(FVector(R[I],R[I+1],R[I+2]));NextPoint=FMath::Clamp(S47J::Int(O,TEXT("next")),0,Path.Num());ChoiceCursor=S47J::Int(O,TEXT("choice"));
+ bPlanningDeferred=false;bPlayerSeesMe=bSeesPlayer=false;return true;
 }

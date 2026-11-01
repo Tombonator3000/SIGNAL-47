@@ -348,3 +348,12 @@ bool FS47Glimpses::SelfTest(TArray<FString>& Lines)
 	Check(G.Up.IsEmpty(),TEXT("native Roswell preserves the eight-appearance night limit"));
 	return FS47RoswellBrain::SelfTest(Lines) && bOk;
 }
+
+int32 FS47Glimpses::ControlledSpawn(int32 Number,FS47RoswellBrain::EMode Mode,bool bRoof)
+{ const int32 N=Group?Group->Spawn(Number,Mode,bRoof,false,true):0;if(Group)SyncGroup();return N; }
+void FS47Glimpses::ControlledStep(double Dt,const FS47GlimpsesIn& Input)
+{ if(Group){Group->Update(Dt,Input);SyncGroup();} }
+void FS47Glimpses::ControlledRelease(){if(Group)Group->ReleaseControlled();}
+S47J::FObj FS47Glimpses::SaveControlled()const{return Group?Group->Save():S47J::FObj();}
+bool FS47Glimpses::RestoreControlled(const S47J::FObj& Saved)
+{const bool Good=Group&&Group->Restore(Saved);if(Group)SyncGroup();return Good;}

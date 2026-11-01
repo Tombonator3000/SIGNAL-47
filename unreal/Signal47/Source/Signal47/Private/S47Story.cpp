@@ -1,4 +1,6 @@
 #include "S47Story.h"
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47Horror.h"
@@ -315,6 +317,7 @@ FString AS47Story::SurveyModeText() const
 
 TArray<FS47Task> AS47Story::Tasks() const
 {
+	if (const auto* M=US47Main::Get(this); M && M->IsFreeform() && M->Freeform) return M->Freeform->Tasks();
  if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening())
  {
   const auto& P=M->Evening->Pack;
@@ -349,6 +352,8 @@ TArray<FS47Task> AS47Story::Tasks() const
 
 FString AS47Story::Label(const FString& Id) const
 {
+	if (const auto* Main = US47Main::Get(this); Main && Main->IsFreeform() && Main->Freeform)
+		if (const FString L = Main->Freeform->Label(Id); !L.IsEmpty()) return L;
 	// SC04 (S47SC04.h) borrows the control room's ordinary things while the spine holds it.
 	if (const auto* M = US47Main::Get(this); M && M->Spine) if (const FString L = M->Spine->Label(Id); !L.IsEmpty()) return L;
 	// SARO evening work borrows the rack and terminals before the ordinary labels return.
@@ -398,6 +403,7 @@ FString AS47Story::Label(const FString& Id) const
 
 void AS47Story::Use(const FString& Id)
 {
+	if (const auto* Main = US47Main::Get(this); Main && Main->IsFreeform() && Main->Freeform && Main->Freeform->Use(Id)) return;
 	if (bCinematic && !(Saro.IsValid() && Saro->IsDoor(Id))) return;
 	UE_LOG(LogS47Story, Display, TEXT("S47: used %s in phase %d"), *Id, (int32)CurrentPhase);
 	if (Id == TEXT("anomaly:shiftlog"))
@@ -605,6 +611,7 @@ void AS47Story::PowerUp(bool bInstant)
 
 void AS47Story::ConsoleAzimuth()
 {
+	if (const auto* Main = US47Main::Get(this); Main && Main->IsFreeform()) return;
 	// Scheduled workstation observations own physical pointing at the tracking
 	// terminal. Receiver tuning must not overwrite their source elevation.
 	const US47Main* M = US47Main::Get(this);
@@ -614,6 +621,8 @@ void AS47Story::ConsoleAzimuth()
 
 const FS47Profile& AS47Story::ConsoleProfile() const
 {
+	if (const auto* Main = US47Main::Get(this); Main && Main->IsFreeform() && Main->Freeform)
+		if (const auto* P = Main->Freeform->ConsoleProfile()) return *P;
 	if (const auto* M = US47Main::Get(this); M && M->Observing) if (const FS47Profile* P = M->Observing->ConsoleProfile()) return *P;
 	return Rx.Profile();
 }
@@ -622,6 +631,7 @@ FString AS47Story::LockStamp() const { return NS.LockAt ? S47Text::ClockText(*NS
 
 void AS47Story::ConsoleAction()
 {
+	if (const auto* Main = US47Main::Get(this); Main && Main->IsFreeform() && Main->Freeform) { Main->Freeform->StartAcquisition(); return; }
  if (FeederOutage()) { Rx.Status = TEXT("FEEDER OUT / K3 OPEN / ARRAY DRIVE DEAD"); return; }
  if (const auto* M = US47Main::Get(this); M && M->Spine && M->Spine->HoldsResidual()) { Rx.Status = TEXT("RECEIVER ON PASSIVE. NO SURVEY WORK TONIGHT"); Toast(TEXT("The county has the night now. Nothing to tune until the originals are safe."), 4); return; }
 
@@ -1177,6 +1187,17 @@ void AS47Story::BeginEveningShift()
  Note(TEXT("13 April, 18:00. Dale handed the shift over by phone. The handover folder is on file."));
 }
 
+void AS47Story::BeginFreeform(const S47J::FObj& Routine)
+{
+	ResetAll();
+	if (Routine) RestoreRoutine(Routine);
+	Timers.Empty(); CurrentPhase = ES47Phase::Shift; ChapterKey = TEXT("freeform");
+	bOpeningHeld = false; bCinematic = false; bPaused = false; bLogRead = true; bPowered = true; NS.bK3Open = false;
+	Rx.Stage = 1;
+	if (Saro.IsValid()) { for (int32 I=0; I<3; ++I) Saro->SetCrtPowered(I,true); Saro->SetCrtGlow(.9f); Saro->SetLeds(true); Saro->SetLever(true); Saro->SetTubes(true); }
+	if (Hud.IsValid()) Hud->Place(0,-2.1,0);
+}
+
 void AS47Story::Start()
 {
 	ResetAll();
@@ -1253,13 +1274,15 @@ void AS47Story::Tick(float DeltaSeconds)
 	// main.ts step(): game.update runs only in play (not behind the title, not on the end card)
 	if (const US47Main* Main = US47Main::Get(this); Main && Main->Mode != US47Main::EMode::Play) return;
 	const double Dt = DeltaSeconds;
+	const auto* Session = US47Main::Get(this);
+	const bool bFreeform = Session && Session->IsFreeform();
 	if (!bPaused)
 	{
 		GameTime += Dt;
 		// Activity drives ordinary time; finishing the diner case holds the deadline rather than rewinding it.
         // Chapter six owns a distance-based clock, so waiting/reversing there cannot move it backwards.
         const US47Chapter* C6 = Chapter(TEXT("ch6"));
-        if (!bOpeningHeld && !(bEveningTimeline && C6 && C6->bActive))
+        if (!bFreeform && !bOpeningHeld && !(bEveningTimeline && C6 && C6->bActive))
             ClockSec = bEveningTimeline ? S47Timeline::AdvanceStoryClock(ClockSec, Dt, int32(CurrentPhase) < int32(ES47Phase::Residual)) : ClockSec + Dt;
 		TArray<FTimer> Due;
 		for (int32 i = Timers.Num() - 1; i >= 0; --i)
@@ -1268,6 +1291,13 @@ void AS47Story::Tick(float DeltaSeconds)
 		}
 		Due.Sort([](const FTimer& A, const FTimer& B) { return A.At < B.At; });
 		for (FTimer& T : Due) T.Fn();
+	}
+	if (bFreeform)
+	{
+		if (Decoder.IsValid()) { Decoder->Duck(VoicesDuck()); Decoder->Update(bPaused ? 0 : Dt); }
+		if (auto* C1 = Cast<US47Chapter1>(Chapter(TEXT("ch1")))) C1->Update(bPaused ? 0 : Dt,GameTime);
+		if (Saro.IsValid()) Saro->SetClock(ClockSec);
+		return;
 	}
 	if (bOpeningHeld) return; // travel transitions still use the game-time timers above
 	// Prologue.update: the chapters (ch1 runs in every chapter: the viewfinder, the wet print)

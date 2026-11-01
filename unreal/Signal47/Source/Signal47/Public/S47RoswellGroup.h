@@ -7,7 +7,7 @@ class USceneComponent;
 struct FS47TripoCreature;
 struct FS47GlimpsesIn;
 
-// One native skin, brain, gait and Foley source per individual. No save facts.
+// One native skin, brain, gait and Foley source per individual. Freeform can persist controlled groups.
 class FS47RoswellGroup
 {
 public:
@@ -22,7 +22,10 @@ public:
  FS47RoswellGroup(US47Main* Main,USceneComponent* FirstRoot,FS47TripoCreature* FirstBody);
  ~FS47RoswellGroup();
  void Update(double Dt,const FS47GlimpsesIn& Input);
- int32 Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoof=false,bool bNatural=false);
+ int32 Spawn(int32 Count,FS47RoswellBrain::EMode Mode,bool bRoof=false,bool bNatural=false,bool bControlled=false);
+ S47J::FObj Save() const;
+ bool Restore(const S47J::FObj& Saved);
+ void ReleaseControlled();
  void SetMode(FS47RoswellBrain::EMode Mode);
  bool Developer() const;
  void Clear();

@@ -1,4 +1,8 @@
 #include "S47HUD.h"
+#include "S47FreeformTest.h"
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
+#include "S47FreeformWorld.h"
 #include "S47RecoveryCheck.h"
 #include "S47TripoCreature.h"
 #include "S47RoswellPreview.h"
@@ -168,6 +172,9 @@ void AS47HUD::Start()
 		bOk &= FS47Evening::SelfTest(Lines);
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
+		bOk &= FS47FreeformSession::SelfTest(Lines);
+		bOk &= FS47FreeformDirector::SelfTest(Lines);
+		bOk &= FS47FreeformWorld::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
 		bOk &= FS47SC04::SelfTest(Lines);
 		bOk &= FS47SC08::SelfTest(Lines);
@@ -571,9 +578,11 @@ void AS47HUD::Start()
 		M->T02Test = MakeShared<FS47T02Test>(M);
 		M->GraphicsTest = MakeShared<FS47GraphicsTest>(M);
 		M->DaleDocumentsTest = MakeShared<FS47DaleDocumentsTest>(M);
+		M->Freeform = MakeShared<FS47FreeformSession>(M);
 		M->Observing = MakeShared<FS47Observing>(M);
 		M->Horror = MakeShared<FS47Horror>(M);
 		M->HorrorTest = MakeShared<FS47HorrorTest>(M);
+		M->FreeformTest = MakeShared<FS47FreeformTest>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);
@@ -660,7 +669,7 @@ void AS47HUD::Use(const FString& Id)
 {
 	if (Modal.IsValid()) return;
 	UE_LOG(LogS47HUD, Display, TEXT("S47: used %s"), *Id);
-	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->Spine && M->Spine->Use(Id)) && !(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
+	if (US47Main* M = US47Main::Get(this); M && M->Inter) { if (!(M->IsFreeform() && M->Freeform && M->Freeform->Use(Id)) && !(M->Spine && M->Spine->Use(Id)) && !(M->Observing && M->Observing->Use(Id)) && !(M->Horror && M->Horror->Use(Id)) && !(M->Evening && M->Evening->Use(Id))) M->Inter->UseId(Id); }
 	else if (Story.IsValid()) Story->Use(Id);
 }
 

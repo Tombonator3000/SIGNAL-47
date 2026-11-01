@@ -1,0 +1,41 @@
+{
+  "status": "INSTALLED",
+  "installed_at": "2026-11-01T01:47:15.111564+01:00",
+  "source_commit": "0f8f946ed98444ff6c6397ad6c650c855a167e1d",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "freeform_checks": 248,
+  "freeform_restores": 21,
+  "self_checks": 1902,
+  "Saved_unchanged": true,
+  "saved_nodes": 149,
+  "previous_payload": "/home/tom/scratch-bm/Signal47-freeform-20261031/previous-installed",
+  "installed_continue": {
+    "returncode": 0,
+    "wall_seconds": 34.79961661901325,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 22.995887756347656,
+      "heavy_jobs": [],
+      "pgrep": "",
+      "production_reservation": {
+        "version": 1,
+        "pid": 527756,
+        "start_ticks": "54470655",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "Freeform final verification, package and local install",
+        "acquired_at": "2026-11-01T00:31:30.678133+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "installed_test_profile": "/tmp/S47-freeform-installed-g3gzecz_"
+}

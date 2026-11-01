@@ -83,7 +83,15 @@ void FS47Album::PlaceHalos(const TArray<FVector>& Figs)
 	}
 }
 
-int32 FS47Album::Left() const { return FMath::Max(0, ROLL - Data.Shots.Num() - (D.Extra ? D.Extra() : 0)); }
+int32 FS47Album::Left() const { return FMath::Max(0, Data.FilmCapacity - Data.Shots.Num() - (D.Extra ? D.Extra() : 0)); }
+
+bool FS47Album::AddFilm(int32 Frames)
+{
+ // Only the explicit Freeform stock action calls this; Story retains its original roll.
+ if (Frames <= 0 || Frames > 1000000 - Data.FilmCapacity) return false;
+ Data.FilmCapacity += Frames;
+ return true;
+}
 
 FS47AlbumShot FS47Album::Expose()
 {
@@ -183,6 +191,9 @@ void FS47Album::Restore(const S47J::FObj& V)
 	Data = FS47AlbumSave();
 	if (V.IsValid())
 	{
+		const double Capacity = S47J::Num(V, TEXT("filmCapacity"), ROLL);
+		if (FMath::IsFinite(Capacity) && Capacity >= ROLL && Capacity <= 1000000 && FMath::FloorToDouble(Capacity) == Capacity)
+			Data.FilmCapacity = int32(Capacity);
 		for (const TSharedPtr<FJsonValue>& Sv : S47J::Arr(V, TEXT("shots")))
 		{
 			const TSharedPtr<FJsonObject>* O = nullptr;
@@ -228,6 +239,7 @@ S47J::FObj FS47Album::SaveData() const
 	}
 	O->SetArrayField(TEXT("shots"), Shots);
 	S47J::Set(O, TEXT("ghosts"), Data.Ghosts);
+	if (Data.FilmCapacity != ROLL) S47J::Set(O, TEXT("filmCapacity"), Data.FilmCapacity);
 	if (Data.Face)
 	{
 		const S47J::FObj Fc = S47J::New();
@@ -269,7 +281,7 @@ FS47AlbumView FS47Album::View(double Clock)
 	// face is written once it has come up
 	FS47AlbumView V;
 	const FString Face = Data.Face ? Data.Face->Id : FString();
-	V.Roll = ROLL; V.Left = Left();
+	V.Roll = Data.FilmCapacity; V.Left = Left();
 	for (const FS47AlbumShot& S : Data.Shots)
 	{
 		const double Dv = Dev(S, Clock);
@@ -438,5 +450,15 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 	auto Recovered=Reloaded.SaveData(); S47J::Arr(Recovered,TEXT("shots"))[0]->AsObject()->RemoveField(TEXT("unavailable"));
 	Reloaded.Restore(Recovered);
 	Check(!Reloaded.Shots()[0].bUnavailable, TEXT("successfully recovered original clears missing marker on restore"));
+	FS47Album Extended(Deps); Extended.Restore(V);
+	Check(Extended.FilmCapacity() == ROLL && !Extended.SaveData()->HasField(TEXT("filmCapacity")), TEXT("old Story save keeps its 36-frame roll and unchanged wire shape"));
+	const FString FirstId = Extended.Shots()[0].Id, FirstUrl = Extended.Shots()[0].Url;
+	Check(Extended.AddFilm(ROLL) && Extended.Left() == 70 && Extended.Shots().Num() == 2 && Extended.Shots()[0].Id == FirstId && Extended.Shots()[0].Url == FirstUrl,
+		TEXT("loading a Freeform film pack adds exposures without erasing existing photos"));
+	FS47Album ExtendedRestore(Deps); ExtendedRestore.Restore(S47J::Read(S47J::Write(Extended.SaveData())));
+	Check(ExtendedRestore.FilmCapacity() == 72 && ExtendedRestore.Left() == 70 && ExtendedRestore.Shots()[1].Targets.Num() == 1,
+		TEXT("extra film capacity and original photo targets survive serialized reload"));
+	Check(!ExtendedRestore.AddFilm(0) && !ExtendedRestore.AddFilm(-36) && !ExtendedRestore.AddFilm(MAX_int32) && ExtendedRestore.Left() == 70,
+		TEXT("invalid film additions cannot remove frames or overflow capacity"));
 	return bOk;
 }

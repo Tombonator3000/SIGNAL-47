@@ -174,7 +174,7 @@ TSharedRef<SWidget> SS47SaveMenu::CardWidget(int32 C)
 			{
 				const FS47SaveMeta* M = Shown(C);
 				if (!M) return FText::FromString(TEXT("EMPTY"));
-				const TPair<FString, FString> Ch = ChapterLine(M->Chapter);
+				const TPair<FString, FString> Ch = M->Chapter.StartsWith(TEXT("FREEFORM")) ? TPair<FString,FString>(TEXT("FREEFORM"),M->Chapter) : ChapterLine(M->Chapter);
 				return FText::FromString(Ch.Value.IsEmpty() ? Ch.Key : Ch.Key + TEXT(" · ") + Ch.Value);
 			})
 		]

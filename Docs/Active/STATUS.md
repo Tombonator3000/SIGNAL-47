@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Freeform lokalt installert
+
+Freeform er implementert via PR297, pakket fra runtime `0f8f946e` og installert kl. 01:47 CET 1. november. Velg **NEW FREEFORM** for vedvarende døgn uten Story-slutt: daglige SARO-jobber, aktive arbeidsstasjoner, faktisk antenneservice, fysisk papirarkiv, forsyninger og transport, feeder/aggregat, 16 kontekststyrte hendelser og tre mysterielinjer. Story og eldre lagringer beholder egen identitet.
+
+Pakke og 1902 selvtester, 248 native kontroller, 21 disk-/Flow-gjenopprettinger og installert Continue består; personlig Saved er uendret. Døgn er akselerert og hendelser valgt eksplisitt i prøven. Naturlig flerdøgnsbalanse, menneskelig kjøring/lytting/skrekkaksept og nytt nabobygginteriør gjenstår. Testbenken er tilgjengelig ved fasaden. Se [levering og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_2026-11-01.md). Den eldre SARO-renderstansens utløsende årsak er fortsatt uavklart.
+
 ## Tripo-flåte, motellretting og varm solnedgang
 
 Tom avsluttet spilltesten og ba om fullføring. Fem originale Tripo-modeller er bevart privat og klargjort i Blender med PBR og tre LOD-er. Nærmodellene er redusert fra 3 769 015 til 364 631 trekanter. Jeep erstatter servicekjøretøyet, den gamle SARO-trucken står i sideparkeringen, og dinerens trekkvogn og politibil er erstattet med Toms modeller. Politidøren beholder faktisk hengsel og interaksjon. UFO-ene har egne F10-forhåndsvisninger; historiens finale er bevart. Jeepens sammenbygde kildehjul er ennå ikke separat animert.

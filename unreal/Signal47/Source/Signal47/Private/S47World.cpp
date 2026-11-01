@@ -1,4 +1,6 @@
 #include "S47World.h"
+#include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 #include "S47Spine.h"
 #include "S47Gamepad.h"
 #include "S47Evening.h"
@@ -143,6 +145,7 @@ void US47World::Init(US47Main* InM)
 		{
 			// The two authored transports survive T01's removal of the feeder-trip exception.
 			// Horror still decides the escape; these choices grant no general pre-chapter drive.
+			if (M && M->IsFreeform()) return { TEXT("Drive / SARO service work"), [this,Place] { Roam(Place); } };
 			const FS47Truck* Parked = TruckHere();
 			const bool NightTransport = M && M->Mode == US47Main::EMode::Play && M->Story && M->Story->NightSequence()
 				&& M->Story->Phase() == ES47Phase::Residual && M->Horror && M->Substation && M->Substation->HasNormalResult()
@@ -1045,7 +1048,7 @@ void US47World::TripStep(double Dt)
 	}
 	T.Secs += Dt;
 	T.Metres += FMath::Abs(D.Speed) * Dt;
-	if (T.PerMetre && M && M->Story) M->Story->SetClock(M->Story->bEveningTimeline ? FMath::Min(S47Timeline::Departure, M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre) : M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre);
+	if (T.PerMetre && M && !M->IsFreeform() && M->Story) M->Story->SetClock(M->Story->bEveningTimeline ? FMath::Min(S47Timeline::Departure, M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre) : M->Story->Clock() + FMath::Abs(D.Speed) * Dt * T.PerMetre);
 	const bool bHere = !T.To.IsEmpty() && S47Legs::LegOf(T.To) == Id;
 	const TOptional<FS47Box2> P = !T.To.IsEmpty() ? ParkBox(T.To) : TOptional<FS47Box2>();
 	// where to leave the truck, said once it is in sight
@@ -1911,7 +1914,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	if (DashT <= 0)
 	{
 		DashT = 0.1;
-		N->Truck->SetDash(D.Mph, D.Rpm, M->Story && !bCommuteVehicle ? M->Story->ClockText(false) : FString(), Id == TEXT("roswell") ? 0.55 : 0.62);
+		N->Truck->SetDash(D.Mph, D.Rpm, M->Story && !bCommuteVehicle ? M->Story->ClockText(false) : FString(), M->IsFreeform() && M->Freeform && M->Freeform->Field ? M->Freeform->Field->VehicleFuel()/4. : Id == TEXT("roswell") ? 0.55 : 0.62);
 		N->Truck->SetOdometer(Odometer());
 	}
 	// main.ts: the compass on the dash of the truck being driven reads the sky's north here

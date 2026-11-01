@@ -71,8 +71,9 @@ public:
 	void DevSave();
 	static FString DevDir();
 	void RequestNewNight(int32 InCaseId, bool bReplace = false);
+	void RequestNewFreeform();
 	void OpenSave(const FS47SaveMeta& Meta);
-	struct FStart { int32 CaseId = 0; double Playtime = 0; S47J::FObj State; FString Jump; bool bDev = false; bool bReplaceCase = false; };
+	struct FStart { int32 CaseId = 0; double Playtime = 0; S47J::FObj State; FString Jump; bool bDev = false; bool bReplaceCase = false; bool bFreeform = false; bool bLethal = false; };
 	void StartGame(const FStart& O);
 	void LeavePlay();
 	void ToTitle();
@@ -122,6 +123,7 @@ private:
 	UPROPERTY() TObjectPtr<UTextureRenderTarget2D> ThumbTarget;
 	TSharedPtr<class SWidget> TitleEl;
 	TSharedPtr<FS47Opening> Opening;
+	bool bDeathShown = false;
 	bool bSoundUnlocked = false;    // audio.ctx: the first key or click on the title (or a night) has been
 	S47J::FObj Store;               // main.ts store, kept in Saved/SaveGames/settings.json
 
