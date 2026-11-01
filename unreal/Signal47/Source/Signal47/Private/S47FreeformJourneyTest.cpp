@@ -3,6 +3,8 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "S47Night.h"
+#include "S47Glimpses.h"
 #include "S47Flow.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -49,7 +51,7 @@ void FS47FreeformJourneyTest::Finish(bool Good,const FString& Why)
  if(bDone)return;bDone=true;if(M){M->bPausedByMenu=false;if(M->Player)M->Player->TestMove.Reset();}
  auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("flowRestores"),Restores);O->SetArrayField(TEXT("evidence"),Evidence);
  S47J::Set(O,TEXT("method"),TEXT("Production service/supply/carry callbacks, real Walker movement, physical dropped parcel and actual S-03 encoder test. Explicit world/vehicle/player placement fixtures replace the long-distance drive and workstation approach. No service facts or completion counters are injected."));
- S47J::Set(O,TEXT("limits"),TEXT("Not a natural road journey, human input/route-finding acceptance, visual polish review or full regression. Isolated developer case 0 only; timeout 300 seconds."));
+ S47J::Set(O,TEXT("limits"),TEXT("Not a natural road journey, human input/route-finding acceptance, visual polish review or full regression. Native doorway-body bounds fixture verifies the guard query, not natural door passage or an actual door-close attempt. Isolated developer case 0 only; timeout 300 seconds."));
  if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
 }
@@ -166,6 +168,36 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<.5)return;F.Director->Stop();
   if(!Check(F.ServiceObjective().IsEmpty()&&!F.CompleteServiceGuide()&&F.Budget()==105&&F.HasFinding(TEXT("service-work-order")),TEXT("older v1 without guide fields loads safely and retains original archive")))return;
-  Finish(true);
+  // Explicit yard pose fixture only, after all ordinary journey assertions.
+  // Leave the real encounter spawning/skin and bounds query intact.
+  if(!Check(M->Night&&M->Night->Glimpses,TEXT("native encounter group is available for isolated doorway-bounds fixture")))return;
+  M->Night->Glimpses->DevClear();M->UI->Close(true);
+  M->Player->Place(9.8,17.8,0);M->Player->Pitch=0;Go(12);return;
+ }
+ if(Stage==12)
+ {
+  if(Age-At<.5)return;
+  if(!Check(M->Web->Area()==TEXT("saro")&&M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z),TEXT("explicit native doorway fixture uses a walkable SARO yard pose")))return;
+  if(!Check(F.Director->Force(TEXT("service_presence")),TEXT("explicit native doorway fixture forces service presence without injecting an actor")))return;
+  Go(13);return;
+ }
+ if(Stage==13)
+ {
+  const auto G=M->Night->Glimpses;
+  const auto People=G->Individuals();
+  if(Age-At>15){Finish(false,TEXT("native doorway-bounds encounter did not present a real body within 15 seconds"));return;}
+  if(Age-At<6.2||People.IsEmpty())return;
+  const auto& Person=People[0];
+  FBox BodyFixture(ForceInit);BodyFixture+=S47Three::ToUE(Person.Pos);BodyFixture+=S47Three::ToUE(Person.Eye);
+  BodyFixture=BodyFixture.ExpandBy(100.);
+  // This exercises actual active native mesh AABB/visibility, not a synthetic
+  // radius or FView position-only occupancy implementation.
+  if(!G->DoorOccupied(BodyFixture))return;
+  if(!Check(true,TEXT("actual active native individual occupies a UE bounds fixture around its measured feet and eye")))return;
+  const FBox Remote(BodyFixture.Min+FVector(100000,100000,100000),BodyFixture.Max+FVector(100000,100000,100000));
+  if(!Check(!G->DoorOccupied(Remote),TEXT("same active native body does not occupy a remote doorway bounds fixture")))return;
+  G->DevClear();
+  if(!Check(!G->DoorOccupied(BodyFixture)&&G->Individuals().IsEmpty(),TEXT("cleared native bodies stop occupying the original doorway bounds fixture")))return;
+  F.Director->Stop();Finish(true);return;
  }
 }
