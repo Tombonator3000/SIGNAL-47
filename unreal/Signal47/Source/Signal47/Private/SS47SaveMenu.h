@@ -18,6 +18,7 @@ struct FSlateBrush;
 // hovering and clicking.
 struct FS47SaveMenuOpts
 {
+	bool bNewFreeform = false;
 	FString Mode;                                    // 'load' | 'save' | 'new'
 	TArray<FS47SaveMeta> Metas;
 	int32 ActiveCase = 0;                            // 0: null
