@@ -178,6 +178,7 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<.5)return;
   if(!Check(M->Web->Area()==TEXT("saro")&&M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z),TEXT("explicit native doorway fixture uses a walkable SARO yard pose")))return;
+  F.Director->Begin(nullptr);
   if(!Check(F.Director->Force(TEXT("service_presence")),TEXT("explicit native doorway fixture forces service presence without injecting an actor")))return;
   Go(13);return;
  }
