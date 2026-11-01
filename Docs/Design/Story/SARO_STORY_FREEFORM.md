@@ -14,7 +14,7 @@ Tom har valgt at dagens spill videreføres som Story, med en senere separat Free
 | Steder | SARO er sentrum for kontrollløkken. Byen og motellet beholder sine roller i historien. | SARO, antennefeltet og teknisk område er hovedsløyfen. Byen støtter drift gjennom forsyninger, bruktutstyr og reparasjonsdeler. |
 | Lagring | Eksisterende saker og historieprogresjon bevares. | Egen modusidentitet, klokke, progresjon og lagring, med delte tekniske grunnsystemer. |
 
-Freeform er under gjennomføring i PR297. Modusvalg og vedvarende døgn er kodet; motorprøve og lokal levering gjenstår. Faktisk status føres i STATUS, og planlagt varighet er ikke målt spilletid.
+Første Freeform-leveranse er implementert og lokalt installert via PR297 fra `0f8f946e`. Modusvalg, vedvarende døgn, arbeidsløkken og hendelsesregissøren er motorprøvd; naturlig balansering og utvidet nabobygginteriør gjenstår. Faktisk status føres i STATUS, og planlagt varighet er ikke målt spilletid.
 
 ## Første SARO-løkke i Story
 
