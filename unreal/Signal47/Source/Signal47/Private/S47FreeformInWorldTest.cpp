@@ -13,6 +13,8 @@
 #include "S47Startup.h"
 #include "S47Story.h"
 #include "S47Inter.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Misc/FileHelper.h"
@@ -89,7 +91,7 @@ bool FS47FreeformInWorldTest::Restore(const FString& Name)
 void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;
- if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("fysisk-audio.png")})
+ if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("actual-jeep-driver.png"),TEXT("fysisk-audio.png")})
  {
   TArray<uint8> Bytes;const bool PNG=FFileHelper::LoadFileToArray(Bytes,*(Root/Name))&&Bytes.Num()>1000&&Bytes[0]==137&&Bytes[1]==80&&Bytes[2]==78&&Bytes[3]==71;
   if(!Check(PNG,FString(TEXT("native screenshot exists with PNG signature: "))+Name)){Good=false;}
@@ -98,7 +100,7 @@ void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
  if(M){M->bPausedByMenu=false;if(M->UI)M->UI->Close(true);}
  auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Reason);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("flowRestores"),Restores);S47J::Set(O,TEXT("elapsedActiveDriverSeconds"),Age);O->SetArrayField(TEXT("evidence"),Evidence);
  S47J::Set(O,TEXT("method"),TEXT("Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse at the regular pump and on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal."));
- S47J::Set(O,TEXT("limits"),TEXT("Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. No actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."));
+ S47J::Set(O,TEXT("limits"),TEXT("Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. Mounted Jeep mesh identities and a native driver-seat screenshot are checked, but windshield/mirror visual acceptance still requires review of that image. No natural drive, actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."));
  if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
 }
@@ -154,7 +156,9 @@ void FS47FreeformInWorldTest::Step(double Dt)
  }
  if(Stage==11)
  {
-  if(M->World->bBusy||Age-At<.5)return;ParkAtPump();CashBefore=F.Budget();FuelBefore=W.VehicleFuel();AimAt(W.InteractionPoint(TEXT("ff:pump")));Go(111);return;
+  if(M->World->bBusy||Age-At<.5)return;ParkAtPump();
+  if(!Check(W.TripoPumpLoaded(),TEXT("actual private regular-pump model and trimmed station are mounted with their exact native asset paths; no fallback")))return;
+  CashBefore=F.Budget();FuelBefore=W.VehicleFuel();AimAt(W.InteractionPoint(TEXT("ff:pump")));Go(111);return;
  }
  if(Stage==111)
  {
@@ -195,11 +199,15 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(W.PumpCharges()<3)return;W.StopPump();const double Fuel=W.VehicleFuel(),Volume=W.PumpDelivered();const int32 Cash=F.Budget(),Paid=W.PumpCharges();W.StopPump();W.StopPump();
   if(!Check(!W.PumpActive()&&Paid==3&&Cash==CashBefore-3&&FMath::IsNearlyEqual(Fuel,3.75)&&FMath::IsNearlyEqual(Volume,.75)&&W.VehicleFuel()==Fuel&&W.PumpDelivered()==Volume&&F.Budget()==Cash,TEXT("two further real delivery intervals and repeated stop retain exactly three charges and three quarters")))return;
-  FScreenshotRequest::RequestScreenshot(Root/TEXT("pump-after.png"),true,false);Go(18);return;
+  AimAt(W.InteractionPoint(TEXT("ff:pump")));Go(18);return;
  }
  if(Stage==18)
  {
-  if(Age-At<.3)return;const FVector P=W.InteractionPoint(TEXT("ff:pump"));M->Player->Place(P.X+9.,P.Z,0);
+  if(Age-At<.3)return;FScreenshotRequest::RequestScreenshot(Root/TEXT("pump-after.png"),true,false);Go(181);return;
+ }
+ if(Stage==181)
+ {
+  if(Age-At<.2)return;const FVector P=W.InteractionPoint(TEXT("ff:pump"));M->Player->Place(P.X+9.,P.Z,0);
   if(!Check(!W.StartPump()&&!W.PumpActive()&&F.Budget()==CashBefore-3,TEXT("player outside actual pump reach cannot start delivery or payment")))return;
   ParkAtPump();M->World->Roam(TEXT("diner"));Go(19);return;
  }
@@ -207,6 +215,30 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(!M->World->bDriving){if(Age-At>10)Finish(false,TEXT("production vehicle boarding fixture did not enter driving"));return;}
   if(!Check(!W.StartPump()&&!W.PumpActive()&&F.Budget()==CashBefore-3,TEXT("production boarded vehicle rejects pump use without payment")))return;
+  Go(191);return;
+ }
+ if(Stage==191)
+ {
+  if(Age-At<.5)return;
+  const auto* Truck=M->World->CabTruck();
+  if(!Check(M->World->bDriving&&Truck&&Truck->bDriving&&Truck->TripoJeep()&&Truck->JeepCabReady(),TEXT("production driving fixture uses the real mounted Jeep interior and native driver seat without fallback")))return;
+  const TCHAR* MeshNames[]={TEXT("SM_TripoJeep_InteriorBody"),TEXT("SM_TripoJeep_Interior"),TEXT("SM_TripoJeep_Steering"),TEXT("SM_TripoJeep_SpeedFace"),TEXT("SM_TripoJeep_FuelFace"),TEXT("SM_TripoJeep_TempFace"),TEXT("SM_TripoJeep_RadioFace")};
+  for(const TCHAR* Name:MeshNames)
+  {
+   bool Found=false;
+   Truck->Body.Traverse([&](FS47Obj O)
+   {
+    const auto* N=M->Web->Node(O.I);const auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+    const auto* Mesh=C?C->GetStaticMesh():nullptr;
+    if(Mesh&&Mesh->GetName()==Name&&Mesh->GetPathName().StartsWith(TEXT("/Game/Licensed/TripoFleet/"))&&Mesh->GetRenderData()&&Mesh->GetNumLODs()>0&&Mesh->GetNumTriangles(0)>0&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame&&O.Shown())Found=true;
+   });
+   if(!Check(Found,FString(TEXT("actual driving Jeep has a valid visible mounted native mesh: "))+Name))return;
+  }
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("actual-jeep-driver.png"),true,false);Go(192);return;
+ }
+ if(Stage==192)
+ {
+  if(Age-At<.25)return;
   M->World->StopDriving();M->UI->Close(true);M->World->Enter(TEXT("saro"));Go(20);return;
  }
  if(Stage==20)
