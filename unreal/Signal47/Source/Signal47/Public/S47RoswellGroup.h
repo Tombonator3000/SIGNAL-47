@@ -30,6 +30,8 @@ public:
  bool Developer() const;
  void Clear();
  TArray<FView> Views() const;
+ // UE-space closed doorway bounds against actual active native body bounds.
+ bool DoorOccupied(const FBox& DoorwayUE) const;
  int32 NightCount=0;
 private:
  struct FImpl;

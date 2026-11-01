@@ -80,6 +80,9 @@ void FS47Glimpses::DevStep(double Dt,const FS47GlimpsesIn& Input)
 TArray<FS47RoswellGroup::FView> FS47Glimpses::Individuals() const
 { return Group?Group->Views():TArray<FS47RoswellGroup::FView>(); }
 
+bool FS47Glimpses::DoorOccupied(const FBox& DoorwayUE) const
+{ return Group && Group->DoorOccupied(DoorwayUE); }
+
 TOptional<FVector> FS47Glimpses::Where() const
 {
 	if (Group && !bPreviewDriver) { const auto Views=Group->Views(); return Views.IsEmpty()?TOptional<FVector>():TOptional<FVector>(Views[0].Eye); }

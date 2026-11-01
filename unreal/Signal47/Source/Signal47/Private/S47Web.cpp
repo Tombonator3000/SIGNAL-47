@@ -2,6 +2,8 @@
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
+#include "S47Night.h"
+#include "S47Glimpses.h"
 #include "S47Spine.h"
 #include "S47UI.h"
 #include "S47Audio.h"
@@ -1539,6 +1541,18 @@ bool AS47Web::ToggleDoor(const FString& ItemId)
 	{
 		if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Secure().DoorOccupied(D->Inter))
 			return Refuse(TEXT("The doorway is occupied. Get clear of it before closing the door."));
+		if (const auto* M=US47Main::Get(this); M && M->IsFreeform() && M->Night && M->Night->Glimpses)
+		{
+			// The exported box is the closed leaf/threshold in world coordinates,
+			// also used by DoorwayPick. Match it against actual native mesh bounds;
+			// neither a generic alien radius nor a camera visibility test is used.
+			FBox Threshold(ForceInit);
+			if (const auto* I=Item(D->Inter); I && I->bBox)
+			{ Threshold+=ToUE(I->Min);Threshold+=ToUE(I->Max); }
+			else if (const auto* B=D->Doorway.Get()) Threshold=B->Bounds.GetBox();
+			if (M->Night->Glimpses->DoorOccupied(Threshold))
+				return Refuse(TEXT("The doorway is occupied. Get clear of it before closing the door."));
+		}
 		// Closing while standing in the threshold disabled the only walk zone
 		// under the player. Resolve then had no old zone to slide back into.
 		const FVector P = S47Three::ToThree(Eye);

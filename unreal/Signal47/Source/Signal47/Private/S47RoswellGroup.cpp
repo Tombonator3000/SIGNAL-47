@@ -76,6 +76,22 @@ FS47RoswellGroup::~FS47RoswellGroup()
  for (int32 I=1;I<P->Actors.Num();++I)
  { auto& A=*P->Actors[I]; if (A.Body && A.Body->Mesh.IsValid()) A.Body->Mesh->DestroyComponent(); if (A.Root.IsValid()) A.Root->DestroyComponent(); }
 }
+bool FS47RoswellGroup::DoorOccupied(const FBox& DoorwayUE) const
+{
+ // Off-camera bodies still occupy space; WasRecentlyRendered would make a
+ // door unsafe merely because the player looked away from an individual.
+ if (!DoorwayUE.IsValid || !P->M || !P->M->Web || P->Scene!=P->M->Web->Area()) return false;
+ for (const auto& A:P->Actors)
+ {
+  const auto* Mesh=A->Body?A->Body->Mesh.Get():nullptr;
+  if (!A->bActive || !Mesh || !Mesh->IsRegistered() || !Mesh->IsVisible() || Mesh->bHiddenInGame) continue;
+  bool bShown=true;
+  for (const USceneComponent* C=Mesh->GetAttachParent();C;C=C->GetAttachParent())
+   if (!C->IsVisible() || C->bHiddenInGame) { bShown=false;break; }
+  if (bShown && Mesh->Bounds.GetBox().Intersect(DoorwayUE)) return true;
+ }
+ return false;
+}
 bool FS47RoswellGroup::Developer() const { return P->bDev; }
 void FS47RoswellGroup::Clear()
 {
