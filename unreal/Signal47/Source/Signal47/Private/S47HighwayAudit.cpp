@@ -228,13 +228,14 @@ void AS47Web::BeginHighwayAudit()
    const FFloraSnapshot S=RoadFloraSnapshot(W);
    const IConsoleVariable* RT=IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing"));
    const IConsoleVariable* Warnings=IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing.ShowOnScreenWarnings"));
+   const IConsoleVariable* Occlusion=IConsoleManager::Get().FindConsoleVariable(TEXT("r.AllowOcclusionQueries"));
    const FVector ExpectedForward=FRotationMatrix(S47Three::CameraRotation(P->FloraView.Yaw,P->FloraView.Pitch)).GetUnitAxis(EAxis::X);
    if(!S47Three::ToThree(M->Player->EyeUE()).Equals(P->FloraView.Eye,.0001) || !M->Player->ForwardUE().Equals(ExpectedForward,.0001)) {
     Finish(false,TEXT("actual camera did not retain fixed eye and requested yaw")); return;
    }
-   UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: highway flora turn %s actual_kinds=%d actual_instances=%d transform_hash=%08x fixed_eye=%s raytracing=%d screen_warnings=%d"),
-    Names[View],S.Kinds,S.Instances,S.Hash,*P->FloraView.Eye.ToString(),RT?RT->GetInt():-1,Warnings?Warnings->GetInt():-1);
-   if(S.Kinds<4 || S.Instances<=0 || !RT || RT->GetInt()!=1 || !Warnings || Warnings->GetInt()!=0) { Finish(false,TEXT("flora population or native raytracing warning policy")); return; }
+   UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: highway flora turn %s actual_kinds=%d actual_instances=%d transform_hash=%08x fixed_eye=%s raytracing=%d screen_warnings=%d world_occlusion_queries=%d"),
+    Names[View],S.Kinds,S.Instances,S.Hash,*P->FloraView.Eye.ToString(),RT?RT->GetInt():-1,Warnings?Warnings->GetInt():-1,Occlusion?Occlusion->GetInt():-1);
+   if(S.Kinds!=7 || !Occlusion || (PLATFORM_LINUX && Occlusion->GetInt()!=0) || S.Instances<=0 || !RT || RT->GetInt()!=1 || !Warnings || Warnings->GetInt()!=0) { Finish(false,TEXT("flora population or native raytracing warning policy")); return; }
    if(View==0) P->FloraBase=S;
    else if(!(S==P->FloraBase)) { Finish(false,TEXT("stationary camera turn changed actual flora transforms/counts")); return; }
    if(!Shot(Names[View])) { Finish(false,TEXT("screenshot destination already exists")); return; }
