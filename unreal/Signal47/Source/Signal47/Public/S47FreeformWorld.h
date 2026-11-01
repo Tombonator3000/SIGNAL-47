@@ -4,6 +4,7 @@
 #include "S47Obj.h"
 class US47Main;
 class UStaticMeshComponent;
+class UTextRenderComponent;
 class FS47FreeformCarry;
 
 // Freeform-only physical supply, service and transport layer. No Story facts.
@@ -36,6 +37,13 @@ public:
  double GeneratorHours() const { return GeneratorSeconds / 3600.; }
  double VehicleFuel() const { return Fuel; }
  bool HasVehicleFuel() const { return Fuel > .001; }
+ bool StartPump();
+ void StopPump();
+ bool PumpActive() const { return bPumping; }
+ double PumpDelivered() const { return PumpVolume; }
+ int32 PumpCharges() const { return PumpPaid; }
+ double PumpProgress() const { return PumpElapsed / 2.; }
+ FString PumpDisplay() const;
  int32 ParcelStage() const { return Payload; } // 0 empty, 1 shop, 2 carried, 3 loaded, 4 set down
  FString ParcelItem() const { return Item; }
  bool DropParcel(bool bDrop = false);
@@ -61,6 +69,11 @@ private:
  int32 Payload = 0;
  int32 Delivered = 0, DeliveredByTruck = 0, ServiceDeliveries = 0, DonorTests = 0, ServiceTests = 0;
  bool bParcelWasLoaded = false;
+ bool bPumping = false;
+ double PumpRemaining = 0, PumpElapsed = 0, PumpVolume = 0;
+ int32 PumpPaid = 0;
+ TWeakObjectPtr<UTextRenderComponent> PumpTextEast, PumpTextWest;
+ FString LastPumpDisplay;
  TSharedPtr<FS47FreeformCarry> Carry;
  FString Item, BenchJob;
  TMap<FString,int32> Stock;
@@ -82,6 +95,11 @@ private:
  int32 S03() const;
  FVector ShopPoint() const;
  FVector TruckPoint() const;
+ FVector PumpPoint() const;
+ bool PumpConditions() const;
+ bool AtDiesel() const;
+ void StepPump(double Dt);
+ void ApplyPump();
  void Change(const FString& Message = FString());
  bool ServiceUse();
  bool FeederUse();

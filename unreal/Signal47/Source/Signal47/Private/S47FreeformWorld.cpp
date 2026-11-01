@@ -32,6 +32,9 @@ namespace
  int32 Price(const FString& Id) { return Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:0; }
  FString ItemTitle(const FString& Id) { return Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("instant-film pack / 36 exposures"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
+ // Cash is integer-valued: each completed metering interval delivers up to
+ // one quarter of the shared tank unit and costs exactly one operating dollar.
+ double PumpIncrement(double Tank,double Remaining) { return FMath::Max(0.,FMath::Min(.25,FMath::Min(4.-Tank,Remaining))); }
  double DayClock(double T) { return FMath::Fmod(FMath::Fmod(T,86400.)+86400.,86400.); }
 }
 
@@ -48,6 +51,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
  Stop(); bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();BenchJob.Empty();
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
  Delivered=DeliveredByTruck=ServiceDeliveries=DonorTests=ServiceTests=0;bParcelWasLoaded=false;
+ bPumping=false;PumpRemaining=PumpElapsed=PumpVolume=0;PumpPaid=0;LastPumpDisplay.Empty();
  Stock.Reset();Stock.Add(TEXT("fuse"),3);Stock.Add(TEXT("relay"),1);Stock.Add(TEXT("fuel"),2);Stock.Add(TEXT("donor"),0);Stock.Add(TEXT("battery"),0);Stock.Add(TEXT("film"),0);Stock.Add(TEXT("fragment"),0);Stock.Add(TEXT("archived_fragment"),0);
  if(O && S47J::Int(O,TEXT("v"))==1)
  {
@@ -59,6 +63,9 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
   ServiceDeliveries=FMath::Clamp(S47J::Int(O,TEXT("serviceDelivered")),0,1000000);DonorTests=FMath::Clamp(S47J::Int(O,TEXT("donorTests")),0,1000000);ServiceTests=FMath::Clamp(S47J::Int(O,TEXT("serviceTests")),0,1000000);
   bGenerator=S47J::Bool(O,TEXT("generator"));GeneratorSeconds=FMath::Clamp(S47J::Num(O,TEXT("generatorSeconds")),0.,43200.);
   Fuel=FMath::Clamp(S47J::Num(O,TEXT("fuel"),3),0.,4.);LastClock=S47J::Num(O,TEXT("lastClock"),-1);
+  bPumping=S47J::Bool(O,TEXT("pumping"));PumpRemaining=FMath::Clamp(S47J::Num(O,TEXT("pumpRemaining")),0.,1.);
+  PumpElapsed=FMath::Clamp(S47J::Num(O,TEXT("pumpElapsed")),0.,2.);PumpVolume=FMath::Clamp(S47J::Num(O,TEXT("pumpVolume")),0.,1.);PumpPaid=FMath::Clamp(S47J::Int(O,TEXT("pumpPaid")),0,4);
+  if(PumpRemaining<.00001||Fuel>=3.99999)bPumping=false;
   ServiceAz=S47J::Num(O,TEXT("serviceAz"));ServiceEl=S47J::Num(O,TEXT("serviceEl"));Settle=FMath::Clamp(S47J::Num(O,TEXT("settle")),0.,1.);
   BenchJob=S47J::Str(O,TEXT("benchJob"));if(BenchJob!=TEXT("donor")&&BenchJob!=TEXT("fragment"))BenchJob.Empty();BenchSeconds=FMath::Clamp(S47J::Num(O,TEXT("benchSeconds")),0.,3.);
   FeederSeconds=FMath::Clamp(S47J::Num(O,TEXT("feederSeconds")),0.,3.);
@@ -78,7 +85,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
 
 void FS47FreeformWorld::Stop()
 {
- bActive=false;if(Carry)Carry->Stop();
+ bActive=false;bPumping=false;if(Carry)Carry->Stop();
  // The shared session is also released from US47Main's UObject destructor.
  // At purge/engine exit its actor-owned maps and callbacks may already be gone.
  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))
@@ -109,6 +116,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  S47J::Set(O,TEXT("parcelLoaded"),bParcelWasLoaded);S47J::Set(O,TEXT("delivered"),Delivered);S47J::Set(O,TEXT("cargoDelivered"),DeliveredByTruck);S47J::Set(O,TEXT("serviceDelivered"),ServiceDeliveries);S47J::Set(O,TEXT("donorTests"),DonorTests);S47J::Set(O,TEXT("serviceTests"),ServiceTests);
  if(Carry&&Payload>0)S47J::Set(O,TEXT("carry"),Carry->Save());
  S47J::Set(O,TEXT("generator"),bGenerator);S47J::Set(O,TEXT("generatorSeconds"),GeneratorSeconds);S47J::Set(O,TEXT("fuel"),Fuel);S47J::Set(O,TEXT("lastClock"),LastClock);
+ S47J::Set(O,TEXT("pumping"),bPumping);S47J::Set(O,TEXT("pumpRemaining"),PumpRemaining);S47J::Set(O,TEXT("pumpElapsed"),PumpElapsed);S47J::Set(O,TEXT("pumpVolume"),PumpVolume);S47J::Set(O,TEXT("pumpPaid"),PumpPaid);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
  S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
@@ -134,6 +142,7 @@ FVector FS47FreeformWorld::TruckPoint() const
 }
 FVector FS47FreeformWorld::InteractionPoint(const FString& Id) const
 {
+ if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))return PumpPoint();
  if(Id==TEXT("ff:shop"))return ShopPoint();
  if(Id==TEXT("ff:bench")||Id==TEXT("ff:depot"))return BenchAt+FVector(0,.90,0);
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return GeneratorAt;
@@ -146,6 +155,64 @@ FVector FS47FreeformWorld::InteractionPoint(const FString& Id) const
  if(Id==TEXT("ff:cargo"))return TruckPoint();
  if(Id==TEXT("ff:parcel"))return Payload==1?ShopPoint()+FVector(.55,-.25,.2):Payload==3?TruckPoint():Payload==4?ParcelPosition():M&&M->Player?FVector(M->Player->Pos.X,M->Player->FloorY+1.,M->Player->Pos.Z):FVector::ZeroVector;
  return FVector::ZeroVector;
+}
+FVector FS47FreeformWorld::PumpPoint() const
+{
+ // Original proxy anchors the same two pumps retained by Tom's own station.
+ // The replacement model raises the island top and keeps these x/z centres.
+ const FS47Obj P=M&&M->Web?M->Web->Obj(TEXT("world.town.proxies.pumps")):FS47Obj();
+ return P?P.WorldPosition()+FVector(0,.75,-2.6):FVector(7989.75,6.136,2052.4);
+}
+bool FS47FreeformWorld::AtDiesel() const
+{
+ if(!M||!M->Player)return false;const FVector P=PumpPoint();return M->Player->Pos.Z>P.Z+2.6;
+}
+bool FS47FreeformWorld::PumpConditions() const
+{
+ if(!Ready()||!M->World||M->World->bDriving||M->World->bBusy||Payload==2)return false;
+ if(M->World->Area!=TEXT("diner")&&M->World->Area!=TEXT("road"))return false;
+ if(AtDiesel()||!Near(PumpPoint(),2.8))return false;
+ const FVector Truck=M->World->ServicePosition(),At=PumpPoint();
+ return FVector2D(Truck.X-At.X,Truck.Z-At.Z).Size()<=4.5&&FMath::Abs(Truck.Y-At.Y)<3.;
+}
+bool FS47FreeformWorld::StartPump()
+{
+ if(!Ready()||M->Freeform->Held()||bPumping)return false;
+ if(!M->Web->Obj(TEXT("world.town.proxies.pumps"))||!PumpConditions())
+ {Change(TEXT("Park the SARO service truck beside the red REGULAR pump, get out, and approach with empty hands."));return false;}
+ const double Volume=FMath::Min(1.,4.-Fuel);const int32 Cost=FMath::CeilToInt(Volume/.25-.00001);
+ if(Volume<.00001){Change(TEXT("Service truck tank is full."));return false;}
+ if(M->Freeform->Budget()<Cost){Change(FString::Printf(TEXT("This metered fill needs up to $%d of operating budget. No fuel delivered or charged."),Cost));return false;}
+ bPumping=true;PumpRemaining=Volume;PumpElapsed=PumpVolume=0;PumpPaid=0;
+ Change(TEXT("REGULAR connected to SARO truck. Each completed two-second interval delivers up to 0.25 tank units for $1. E stops; only delivered fuel is charged."));return true;
+}
+void FS47FreeformWorld::StopPump()
+{
+ if(!bPumping)return;bPumping=false;PumpRemaining=PumpElapsed=0;
+ Change(FString::Printf(TEXT("Nozzle returned. Delivered %.2f tank units / charged $%d. Tank %.2f / 4."),PumpVolume,PumpPaid,Fuel));
+}
+void FS47FreeformWorld::StepPump(double Dt)
+{
+ if(!bPumping)return;
+ if(!PumpConditions()){StopPump();return;}
+ PumpElapsed+=FMath::Clamp(Dt,0.,.1);if(PumpElapsed<2.)return;
+ const double Amount=PumpIncrement(Fuel,PumpRemaining);
+ if(Amount<.00001||!M->Freeform->Spend(1)){StopPump();return;}
+ // Spend's autosave request is deferred; fuel and receipt are updated in this
+ // same game-thread transaction before any snapshot can observe the new cash.
+ Fuel=FMath::Min(4.,Fuel+Amount);PumpRemaining=FMath::Max(0.,PumpRemaining-Amount);PumpVolume+=Amount;++PumpPaid;PumpElapsed=0;
+ if(bFuelHeld&&M->World){M->World->HoldTruck(0);bFuelHeld=false;}
+ if(PumpRemaining<.00001||Fuel>=3.99999)StopPump();else{M->RequestAutosave();ApplyPump();}
+}
+FString FS47FreeformWorld::PumpDisplay() const
+{
+ if(bPumping)return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nSALE $%d / %.2f\nNEXT %.2f / $1\n%.0f%% / E STOP"),Fuel,PumpPaid,PumpVolume,PumpIncrement(Fuel,PumpRemaining),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.);
+ const double Volume=FMath::Min(1.,4.-Fuel);return FString::Printf(TEXT("SARO / REGULAR\nTANK %.2f / 4\nUP TO %.2f / $%d\nE START / E STOP\nLAST $%d / %.2f"),Fuel,Volume,FMath::CeilToInt(Volume/.25-.00001),PumpPaid,PumpVolume);
+}
+void FS47FreeformWorld::ApplyPump()
+{
+ const FString Display=PumpDisplay();if(Display==LastPumpDisplay)return;LastPumpDisplay=Display;
+ for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
 }
 bool FS47FreeformWorld::ShopOpen() const { return Ready() && DayClock(M->Freeform->Clock())>=8*3600 && DayClock(M->Freeform->Clock())<20*3600; }
 void FS47FreeformWorld::Change(const FString& Message)
@@ -183,7 +250,7 @@ void FS47FreeformWorld::OverrideExisting()
 {
  if(!M||!M->Inter||!bActive)return;
  const TWeakPtr<uint8> Guard=Life;
- for(const TCHAR* Raw:{TEXT("substation:journal"),TEXT("substation:service"),TEXT("substation:lamp"),TEXT("obs:generator")})
+ for(const TCHAR* Raw:{TEXT("substation:journal"),TEXT("substation:service"),TEXT("substation:lamp"),TEXT("obs:generator"),TEXT("town:pumps")})
  {
   const FString Id(Raw);if(Overrides.Contains(Id))continue;auto* I=M->Inter->Get(Id);if(!I)continue;
   FOverride O;O.Label=I->Label;O.Examine=I->Examine;O.Use=I->Use;Overrides.Add(Id,MoveTemp(O));
@@ -241,12 +308,29 @@ bool FS47FreeformWorld::Build()
  };
  LabelPart(TEXT("FreeformGasLabel"),TEXT("SERVICE SUPPLIES\n08:00 - 20:00"),ShopPoint()+FVector(.10,0,0),0,3.1,Road);
  LabelPart(TEXT("FreeformBenchLabel"),TEXT("SARO SERVICE BAY\nTEST / PARTS / STOCK"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
+ // Existing own-model REGULAR pump at z=2052.4; only its mechanical
+ // counter windows receive small live account-meter plates. The adjacent
+ // DIESEL body stays authored and is deliberately incompatible with the Jeep.
+ if(M->Web->Obj(TEXT("world.town.proxies.pumps")))
+ {
+  const FVector At=PumpPoint();
+  Box(TEXT("FreeformRegularMeterEast"),At+FVector(.348,0,0),FVector(.012,.50,.55),0x202821,Road,TEXT("ff:pump"));
+  FS47Obj West=Box(TEXT("FreeformRegularMeterWest"),At+FVector(-.348,0,0),FVector(.012,.50,.55),0x202821,Road);
+  M->Web->MarkUsable(West.I,TEXT("ff:pump"));
+  auto Meter=[&](const TCHAR* Name,double Side)
+  {
+   const auto* P=M->Web->Node(Road);auto* C=NewObject<UTextRenderComponent>(M->Web,Name);C->SetupAttachment(P->Comp.Get());C->SetMobility(EComponentMobility::Movable);
+   C->SetWorldSize(2.6);C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);C->SetTextRenderColor(FColor(229,226,186));C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
+   C->SetWorldLocation(S47Three::ToUE(At+FVector(Side*.36,0,0)));C->SetWorldRotation(FRotator(0,Side>0?0:180,0));Parts.Add(M->Web->ObjAt(M->Web->AdoptNode(C,Road,Name)));return C;
+  };
+  PumpTextEast=Meter(TEXT("FreeformRegularTextEast"),1);PumpTextWest=Meter(TEXT("FreeformRegularTextWest"),-1);
+ }
  bBuilt=Bench&&Shop&&Panel&&FeederPanel;if(Carry)Carry->Configure(ParcelSaro,ParcelRoad);Apply();return bBuilt;
 }
 
 void FS47FreeformWorld::Apply()
 {
- if(!bBuilt)return;for(FS47Obj O:Parts)if(O&&!(O==ParcelSaro)&&!(O==ParcelRoad)){O.SetVisible(bActive);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(bActive&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
+ if(!bBuilt)return;ApplyPump();for(FS47Obj O:Parts)if(O&&!(O==ParcelSaro)&&!(O==ParcelRoad)){O.SetVisible(bActive);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(bActive&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
  if(BenchSample)BenchSample.SetVisible(bActive&&(InventoryCount(TEXT("fragment"))>0||InventoryCount(TEXT("archived_fragment"))>0||BenchJob==TEXT("fragment")));
  if(BenchLamp){const bool Testing=!BenchJob.IsEmpty();BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float(BenchSeconds/3.)*.8f:.15f);}
  const bool Open=bActive&&Service>=4&&Service<=5;
@@ -420,6 +504,11 @@ bool FS47FreeformWorld::FeederUse()
 bool FS47FreeformWorld::Use(const FString& Id)
 {
  if(!Ready())return false;
+ if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
+ {
+  if(AtDiesel()){Change(TEXT("DIESEL is incompatible with the SARO service truck. Use the red REGULAR pump on the same island."));return true;}
+  if(bPumping)StopPump();else StartPump();return true;
+ }
  if(Id==TEXT("ff:carry")){if(Payload!=2)return false;OpenCarryMenu();return true;}
  if(Id==TEXT("ff:shop")){OpenShop();return true;}
  if(Id==TEXT("ff:bench")||Id==TEXT("ff:depot"))return Deposit();
@@ -433,6 +522,12 @@ bool FS47FreeformWorld::Use(const FString& Id)
 FString FS47FreeformWorld::Label(const FString& Id) const
 {
  if(!Ready())return FString();
+ if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
+ {
+  if(AtDiesel())return TEXT("DIESEL / service truck needs the red REGULAR pump");
+  if(bPumping)return FString::Printf(TEXT("Stop fuel / tank %.2f / 4 / delivered %.2f / $%d"),Fuel,PumpVolume,PumpPaid);
+  const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
+ }
  if(Id==TEXT("ff:carry"))return Payload==2?TEXT("Handle carried parcel / set down or drop"):FString();
  if(Id==TEXT("ff:shop"))return ShopOpen()?TEXT("Buy service supplies / collect a physical parcel"):TEXT("Supply hatch closed / essential requisition");
  if(Id==TEXT("ff:bench")||Id==TEXT("ff:depot"))return Payload==2?(Item==TEXT("service_case")?TEXT("Return reusable SARO service case"):TEXT("Unpack carried parcel into SARO stock")):TEXT("Use service bench and inspect stock");
@@ -454,6 +549,7 @@ void FS47FreeformWorld::Step(double Dt)
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
  const double WorldDelta=FMath::Max(0.,Now-LastClock);LastClock=Now;
  if(M->Freeform->Held()){Apply();return;}
+ StepPump(Dt);
  if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
  if(M->World&&M->World->bDriving)
  {
@@ -514,5 +610,12 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  W.Item=TEXT("service_case");W.Payload=4;W.Dropped=FVector(24,.45,8);
  auto Legacy=W.Save();Legacy->RemoveField(TEXT("carry"));FS47FreeformWorld Case(nullptr);Case.Begin(S47J::Read(S47J::Write(Legacy)));
  C(Case.ParcelItem()==TEXT("service_case")&&Case.ParcelStage()==4&&Case.ParcelPosition().Equals(W.Dropped,.0001)&&Case.InventoryCount(TEXT("service_case"))==0,TEXT("Reusable case keeps one saved identity and old dropped saves retain their position without becoming stock"));
+ C(FMath::IsNearlyEqual(PumpIncrement(3.9,1.),.1)&&PumpIncrement(4.,1.)==0&&FMath::IsNearlyEqual(PumpIncrement(2.,.25),.25),TEXT("Pump metering respects remaining delivery and the actual four-unit tank capacity"));
+ W.Fuel=2.25;W.bPumping=true;W.PumpRemaining=.75;W.PumpElapsed=1.3;W.PumpVolume=.25;W.PumpPaid=1;
+ FS47FreeformWorld Pump(nullptr);Pump.Begin(S47J::Read(S47J::Write(W.Save())));
+ C(Pump.PumpActive()&&Pump.VehicleFuel()==2.25&&Pump.PumpDelivered()==.25&&Pump.PumpCharges()==1&&FMath::IsNearlyEqual(Pump.PumpElapsed,1.3),TEXT("Pump restore preserves delivered/paid fuel and only unfinished metering time; it does not replay a charge"));
+ Pump.StopPump();Pump.StopPump();C(Pump.VehicleFuel()==2.25&&Pump.PumpDelivered()==.25&&Pump.PumpCharges()==1&&!Pump.PumpActive()&&Pump.PumpElapsed==0,TEXT("Stopping pump repeatedly never charges or grants the incomplete delivery interval"));
+ auto OldPump=S47J::New();S47J::Set(OldPump,TEXT("v"),1);S47J::Set(OldPump,TEXT("fuel"),.7);Pump.Begin(OldPump);
+ C(!Pump.PumpActive()&&Pump.VehicleFuel()==.7&&Pump.PumpCharges()==0,TEXT("Old Freeform saves retain their tank and start with no pending pump transaction"));
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }
