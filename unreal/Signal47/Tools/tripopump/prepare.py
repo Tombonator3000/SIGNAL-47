@@ -10,6 +10,17 @@ PUMP_ID='caliche_regular_pump'
 def module(name,path):
  spec=importlib.util.spec_from_file_location(name,path);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
 F=module('s47_pump_fleet_prepare',HERE.parent/'tripofleet/prepare.py')
+def pump_destination(entry,out):
+ # Fleet preparation intentionally owns its original namespace; this bounded
+ # adapter relocates only metadata for our separately-owned pump candidate.
+ contract=(out/entry['contract']).resolve();assert contract.is_relative_to(out.resolve())
+ data=json.loads(contract.read_text());assert data['id']==PUMP_ID and data['source_sha256']==entry['source_sha256']
+ expected='/Game/Licensed/TripoPump/'+PUMP_ID
+ for part in data['parts'].values():
+  assert part['asset_folder'] in (expected,'/Game/Licensed/TripoFleet/'+PUMP_ID)
+  part['asset_folder']=expected
+ F.write_json(contract,data)
+ return entry
 def prepare_station(source,placement,output):
  import bpy,bmesh
  from mathutils import Vector
@@ -38,13 +49,17 @@ def prepare_station(source,placement,output):
  F.write_json(output/'station-contract.json',data);return data
 
 def main():
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--sources',required=True,type=Path);p.add_argument('--stage',choices=['pump','station','all'],default='all');p.add_argument('--validate-only',action='store_true');a=p.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else sys.argv[1:])
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--sources',required=True,type=Path);p.add_argument('--stage',choices=['pump','station','all'],default='all');p.add_argument('--validate-only',action='store_true');p.add_argument('--repair-metadata',action='store_true',help='Only relocate existing pump contract destination; no Blender or geometry writes');a=p.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else sys.argv[1:])
  path=a.sources.expanduser().resolve();config=json.loads(path.read_text());out,rows=F.read_sources(path,{PUMP_ID});assert len(rows)==1
  station=Path(config['station_source']).expanduser();placement=Path(config['station_placement']).expanduser();assert station.is_file() and placement.is_file()
  if a.validate_only:print('S47_PUMP_PREFLIGHT',rows[0]['source_sha256'],out);return
+ if a.repair_metadata:
+  manifest=json.loads((out/'manifest.json').read_text());assert len(manifest['models'])==1 and manifest['models'][0]['id']==PUMP_ID
+  assert manifest['models'][0]['source_sha256']==rows[0]['source_sha256']
+  pump_destination(manifest['models'][0],out);print('S47_PUMP_METADATA_REPAIRED',out,flush=True);return
  assert shutil.disk_usage(out.parent).free>=102*1024**3,'Keep at least100GiB after preparation; reserve2GiB before starting'
  if a.stage in ('pump','all'):
-  entry=F.prepare(rows[0],out/PUMP_ID);F.write_json(out/'manifest.json',{'version':1,'coordinates':F.COORDINATES,'models':[entry]})
+  entry=pump_destination(F.prepare(rows[0],out/PUMP_ID),out);F.write_json(out/'manifest.json',{'version':1,'coordinates':F.COORDINATES,'models':[entry]})
  if a.stage in ('station','all'):prepare_station(station,placement,out/'station')
  assert shutil.disk_usage(out.parent).free>=100*1024**3,'Disk floor below100GiB after preparation'
  print('S47_PUMP_PREPARED',out,flush=True)
