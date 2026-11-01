@@ -1,4 +1,6 @@
 #include "S47Flow.h"
+#include "S47TitleEraseSound.h"
+#include "UnrealClient.h"
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -379,6 +381,7 @@ void US47Flow::Init(US47Main* InM)
 
 void US47Flow::BeginDestroy()
 {
+ if(TitleEraseSound) TitleEraseSound->Stop();
 	if (ActivationHandle.IsValid() && FSlateApplication::IsInitialized()) FSlateApplication::Get().OnApplicationActivationStateChanged().Remove(ActivationHandle);
 	Super::BeginDestroy();
 }
@@ -464,6 +467,7 @@ void US47Flow::Boot()
 
 void US47Flow::Step(double Dt)
 {
+ StoryTitleTest(Dt);
 	if (M->Mode == EMode::Title)
 	{
 		TitleCam(M->T);
@@ -557,8 +561,89 @@ void US47Flow::StopMusic(float Fade)
 	if (M->Audio) M->Audio->Stop(TEXT("music"), Fade);
 }
 
+void US47Flow::StoryTitleTest(double Dt)
+{
+ if(!FParse::Param(FCommandLine::Get(),TEXT("S47StoryTitleContract")) || StoryTitleTestStage<0) return;
+ StoryTitleTestT+=Dt;
+ if(!M || !M->Story || !TitleEl.IsValid() || StoryTitleTestT<1.)return;
+ const auto Title=StaticCastSharedPtr<SS47Title>(TitleEl);
+ auto Check=[&](bool Good,const TCHAR* What)
+ {
+  UE_LOG(LogS47Flow,Display,TEXT("S47: story title %s: %s"),Good?TEXT("PASS"):TEXT("FAIL"),What);
+  if(!Good){StoryTitleTestStage=-1;FPlatformMisc::RequestExitWithStatus(false,1);}return Good;
+ };
+ FString Proof,User;FParse::Value(FCommandLine::Get(),TEXT("S47ProofDir="),Proof);FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+ if(!User.StartsWith(TEXT("/tmp/S47-story-title-")) || !Proof.StartsWith(TEXT("/home/tom/scratch-bm/Signal47-title-erasure-")))
+ {Check(false,TEXT("contract requires an isolated temporary profile and explicit proof directory"));return;}
+ auto Shot=[&](const TCHAR* Name){FScreenshotRequest::RequestScreenshot(Proof/(FString(Name)+TEXT(".png")),true,false);};
+ if(StoryTitleTestStage==0)
+ {
+  if(!Check(!Saves.StoryCompleted() && !Saves.Title47Erased() && Title->Number47Opacity()==1,TEXT("fresh profile keeps all three layers of 47")))return;
+  Shot(TEXT("before"));StoryTitleTestStage=1;StoryTitleTestT=0;return;
+ }
+ if(StoryTitleTestStage==1)
+ {
+  if(StoryTitleTestT<1.2)return;
+  auto* Ch=Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6")));
+  if(!Check(Ch!=nullptr,TEXT("registered story finale exists")))return;
+  const FString Was=Ch->Stage; const auto Mode=M->Mode;const auto Session=M->SessionMode;
+  CaseId=1;bDevRun=false;Ch->Stage=TEXT("end");M->Mode=EMode::End;M->SessionMode=ES47SessionMode::Freeform;
+  if(!Check(!CompleteStoryTitle() && !Saves.StoryCompleted(),TEXT("Freeform cannot unlock the story title reward")))return;
+  M->SessionMode=ES47SessionMode::Story;bDevRun=true;
+  if(!Check(!CompleteStoryTitle(),TEXT("developer finale cannot unlock the reward")))return;
+  bDevRun=false;Ch->Stage=TEXT("drive");
+  if(!Check(!CompleteStoryTitle(),TEXT("entering the last chapter is not completion")))return;
+  Ch->Stage=TEXT("end");
+  if(!Check(CompleteStoryTitle() && Saves.StoryCompleted() && !Saves.Title47Erased(),TEXT("explicit completed-finale fixture records pending presentation")))return;
+  Ch->Stage=Was;M->Mode=Mode;M->SessionMode=Session;CaseId=0;bDevRun=true;bSoundUnlocked=true;
+  ShowTitleAgain();
+  // This opt-in automation supplies a declared Slate activation event. A
+  // Wayland compositor need not focus an unattended preview on creation.
+  FSlateApplication::Get().ProcessApplicationActivationEvent(true);
+  UE_LOG(LogS47Flow,Display,TEXT("S47: story title fixture: synthetic Slate application activation; no human input claimed"));
+  StoryTitleTestStage=2;StoryTitleTestT=0;return;
+ }
+ if(StoryTitleTestStage==2)
+ {
+  if(Title->Erase47Elapsed()<1.45f)
+  {if(StoryTitleTestT>12)Check(false,TEXT("visible active title did not advance its own presentation clock"));return;}
+  if(!Check(Title->Erase47Started() && !Title->Erase47Done() && TitleEraseStarts==1,TEXT("47-only tear starts one synchronized original cue")))return;
+  Shot(TEXT("glitch"));StoryTitleTestStage=3;StoryTitleTestT=0;return;
+ }
+ if(StoryTitleTestStage==3)
+ {
+  if(!Title->Erase47Done()){if(StoryTitleTestT>8)Check(false,TEXT("title erasure did not finish"));return;}
+  if(!Check(Saves.Title47Erased() && Title->Number47Opacity()==0,TEXT("all number layers stay absent and presentation is retained")))return;
+  Shot(TEXT("after"));StoryTitleTestStage=4;StoryTitleTestT=0;return;
+ }
+ if(StoryTitleTestStage==4)
+ {
+  auto Fresh=FS47SaveStore(Saves.Dir);Fresh.Init();
+  if(!Check(Fresh.StoryCompleted() && Fresh.Title47Erased(),TEXT("fresh store reads permanent reward from disk")))return;
+  ShowTitleAgain();const auto Reopened=StaticCastSharedPtr<SS47Title>(TitleEl);
+  if(!Check(Reopened->Number47Opacity()==0 && TitleEraseStarts==1,TEXT("reopening the title keeps 47 absent without replay")))return;
+  if(!Check(FS47TitleEraseSound::RenderTour(Proof/TEXT("title-sound.wav")),TEXT("normal and calm sound preview rendered")))return;
+  UE_LOG(LogS47Flow,Display,TEXT("S47: story title PASS complete"));StoryTitleTestStage=-1;FPlatformMisc::RequestExitWithStatus(false,0);
+ }
+}
+
+void US47Flow::RememberTitleErasure()
+{
+ if(TitleEl.IsValid()) TitleEraseResume=StaticCastSharedPtr<SS47Title>(TitleEl)->Erase47Elapsed();
+ if(TitleEraseSound) TitleEraseSound->Stop();
+}
+bool US47Flow::CompleteStoryTitle()
+{
+ const auto* Chapter=M && M->Story?Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))):nullptr;
+ if(!M || M->IsFreeform() || bDevRun || CaseId<1 || M->Mode!=EMode::End || !Chapter || Chapter->Stage!=TEXT("end")) return false;
+ const bool Saved=Saves.MarkStoryCompleted();
+ UE_LOG(LogS47Flow,Display,TEXT("S47: story completion reward %s"),Saved?TEXT("retained"):TEXT("write failed; will not overwrite unknown profile data"));
+ return Saved;
+}
+
 void US47Flow::ShowTitle()
 {
+ RememberTitleErasure();
 	// The first time the menu waits behind "Click or press any key", so that first key brings in
 	// the music; back from a night the sound is already going and it starts at once. Not for the
 	// tests, which click their way straight in.
@@ -568,6 +653,21 @@ void US47Flow::ShowTitle()
 	FS47TitleOpts O;
 	O.bGate = bGate;
 	O.bTouch = false;
+ O.bHide47=Saves.Title47Erased(); O.bErase47=Saves.StoryCompleted() && !O.bHide47;
+ O.Erase47InitialTime=TitleEraseResume;
+ TWeakObjectPtr<US47Flow> Self=this;
+ O.OnErase47Start=[Self]
+ {
+  if(!Self.IsValid() || !Self->bSoundUnlocked) return;
+  if(!Self->TitleEraseSound)Self->TitleEraseSound=MakeShared<FS47TitleEraseSound>();
+  if(Self->TitleEraseSound->Start(Self->M->Audio,Self->bCalmFlash))++Self->TitleEraseStarts;
+ };
+ O.OnErase47Done=[Self]
+ {
+  if(!Self.IsValid())return;
+  const bool Saved=Self->Saves.MarkTitle47Erased();
+  UE_LOG(LogS47Flow,Display,TEXT("S47: title 47 erasure %s"),Saved?TEXT("retained"):TEXT("not saved"));
+ };
 	// Continue uses the story name, including legacy numbered save metadata.
 	O.Cont = Cont ? FString::Printf(TEXT("CASE %d \u00B7 %s \u00B7 %s \u00B7 %s"), Cont->CaseId, *(Cont->Chapter.StartsWith(TEXT("FREEFORM")) ? Cont->Chapter : S47Theme::ChapterLine(Cont->Chapter).Key), *Cont->Clock, *Cont->Place.ToUpper()) : FString();
 	// Quit: the desktop's way out
@@ -609,6 +709,10 @@ void US47Flow::ShowTitle()
 	O.bCalm = bCalmFlash;
 	O.OnFlashPick = [this](bool bCalm) { bCalmFlash = bCalm; ApplyPicture(Picture, false); StoreSet(TEXT("calmFlash"), bCalm); };
 	O.OnFirstTouch = [this] { bSoundUnlocked = true; MenuMusic(); };
+ auto Leaving=[this](TFunction<void()> Fn)->TFunction<void()>{return [this,Fn=MoveTemp(Fn)]{RememberTitleErasure();if(Fn)Fn();};};
+ O.OnStart=Leaving(MoveTemp(O.OnStart));O.OnContinue=Leaving(MoveTemp(O.OnContinue));
+ O.OnFreeform=Leaving(MoveTemp(O.OnFreeform));O.OnLoad=Leaving(MoveTemp(O.OnLoad));
+ O.OnSettings=Leaving(MoveTemp(O.OnSettings));O.OnDev=Leaving(MoveTemp(O.OnDev));O.OnQuit=Leaving(MoveTemp(O.OnQuit));
 	M->UI->RemoveScreen(TitleEl);
 	TitleEl = M->UI->Title(O);
 	TitleView(true);
@@ -620,6 +724,7 @@ void US47Flow::ShowTitle()
 
 void US47Flow::ShowTitleAgain()
 {
+ RememberTitleErasure();
 	M->UI->RemoveScreen(TitleEl);
 	TitleEl.Reset();
 	ShowTitle();
@@ -683,6 +788,7 @@ void US47Flow::OpenSave(const FS47SaveMeta& Meta)
 
 void US47Flow::StartGame(const FStart& O)
 {
+ RememberTitleErasure();
 	if (bStarting) return;
  const FString Identity = S47J::Str(O.State,TEXT("sessionMode"),TEXT("story"));
  const bool bFreeform = O.State ? Identity==TEXT("freeform") : O.bFreeform;
@@ -1018,6 +1124,7 @@ void US47Flow::Finale()
 			{
 				const TSharedPtr<SS47Ending> PhotoEnd = WeakEnd.Pin();
 				if (!Self.IsValid() || !Self->M || Self->M->Mode != EMode::End || !PhotoEnd.IsValid() || PhotoEnd->Disposed()) return;
+				Self->CompleteStoryTitle();
 				Self->ToTitle();
 			});
 		});
@@ -1832,6 +1939,9 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 	Check(TEXT("kind name"), S47SaveMenu::KindName(Ms) == TEXT("AUTOSAVE 2"));
 	const FString W = S47SaveMenu::When(1792670700000.0); // 22 October 2026, 12:05 UTC (the hour by the local zone)
 	Check(TEXT("when"), W.StartsWith(TEXT("Oct 22, ")) && W.Len() == 13, W);
+ Check(TEXT("fresh title number is intact before the erasure"),SS47Title::SampleErase47(.99f,false).Opacity==1.f);
+ Check(TEXT("calm title effect is a smooth unshifted fade"),FMath::IsNearlyEqual(SS47Title::SampleErase47(1.75f,true).Opacity,.5f) && SS47Title::SampleErase47(1.75f,true).Offset.IsNearlyZero());
+ Check(TEXT("both title presentations leave no number at the end"),SS47Title::SampleErase47(2.7f,false).Opacity==0 && SS47Title::SampleErase47(2.7f,true).Opacity==0);
 	// the opening card's five paragraphs
 	Check(TEXT("opening"), FS47Opening::Paragraphs().Num() == 5 && FS47Opening::Paragraphs()[3] == TEXT("The record calls it interference."));
 	// a finding's line in the notebook

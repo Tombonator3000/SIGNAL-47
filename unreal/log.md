@@ -1542,3 +1542,7 @@ Cooked/StagedBuilds fra ferdig arbeidskopi ryddet: 11.80 GiB netto frigjort, øv
 2026-11-01 13:00 | Freeform natt/service PR310, 35adb849 | Installert kl. 12:59: 30/45-klokke, vedvarende ordre og fysisk pakke/kasse. Pakke/1932 selvtester/45 kontroller/3 restores + isolert installert Continue består; Saved uendret. Original SARO-sak: 4 pause/3 OPS/minst120s High/HWRT PASS, Vulkan-rotårsak fortsatt åpen.
 
 2026-11-01 13:01 | Freeform levering | To eldre genererte payload pensjonert; gjeldende og to eldre beholdt. Egne motorjobber avsluttet og global reservasjon frigitt; Saved, kilder og bevis bevart.
+
+2026-11-01 15:58 CET | Arbeidskopiregel, codex/story-title-erasure-20261101 | 35→3 registrerte kopier etter kontrollert avvikling av32 ferdige: hovedkopien, Freeform og titteloppdrag beholdt. Lokale ref-/indeks-/filarkiver sikrer upublisert arbeid, private kilder og Saved; normal Git-avvikling uten tvang eller historikkpruning.190,6GB fysisk ledig etterpå; Btrfs-arkivenes logiske størrelse er ikke frigjort diskplass.
+
+2026-11-01 16:13 CET | codex/story-title-erasure-20261101 | Fullført Story registreres etter siste fotografi; tittelens47 mister signalet én gang med egen SFX og vedvarende profilflagg. Editorbygg/1950 selvtester/11 native kontroller og faktiske før/under/etter-bilder består, med erklært slutt-/Slate-aktiveringsfixture. Samordnet pakke/installasjon med PR311 følger.

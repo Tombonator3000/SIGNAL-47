@@ -72,6 +72,11 @@ public:
 
 	// the web version opens its store while the title is up (ready); here the files are read at once
 	void Init();
+ // Device-profile story reward, independent of the rotating/deletable case slots.
+ bool StoryCompleted() const { return bStoryCompleted; }
+ bool Title47Erased() const { return bTitle47Erased; }
+ bool MarkStoryCompleted();
+ bool MarkTitle47Erased();
 	bool bFallback = false; // true when the photo store could not be used (the menus say so)
 	FString Dir;
 
@@ -102,6 +107,8 @@ public:
 	int32 FailReads = 0;
 
 private:
+ bool bStoryCompleted=false,bTitle47Erased=false,bCompletionWritable=true;
+ bool WriteCompletion(bool Completed,bool Erased);
 	TMap<FString, FS47SaveMeta> Metas;
 	TSet<FString> Stored;                                  // photograph keys known to be in the store
 	struct FUnread { FString Shown, Ref; };

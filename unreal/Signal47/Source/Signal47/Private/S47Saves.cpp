@@ -192,6 +192,19 @@ bool FS47SaveStore::WriteFile(const FString& Path, const FString& Text) const
 
 void FS47SaveStore::Init()
 {
+ bStoryCompleted=bTitle47Erased=false; bCompletionWritable=true;
+ const FString Progress=Dir/TEXT("story-completion.json"); FString CompletionText;
+ if(IFileManager::Get().FileExists(*Progress))
+ {
+  const auto O=FFileHelper::LoadFileToString(CompletionText,*Progress)?S47J::Read(CompletionText):nullptr;
+  const auto V=O?O->TryGetField(TEXT("v")):nullptr;
+  bCompletionWritable=V && V->Type==EJson::Number && V->AsNumber()==1;
+  if(bCompletionWritable)
+  {
+   bStoryCompleted=S47J::Bool(O,TEXT("storyCompleted"));
+   bTitle47Erased=bStoryCompleted && S47J::Bool(O,TEXT("title47Erased"));
+  }
+ }
 	Metas.Empty();
 	Stored.Empty();
 	IFileManager& F = IFileManager::Get();
@@ -213,6 +226,17 @@ void FS47SaveStore::Init()
 	for (const FString& K : Keys) Stored.Add(FPaths::GetBaseFilename(K));
 	UE_LOG(LogS47Saves, Display, TEXT("S47: saves: %d in %s, %d photographs"), Metas.Num(), *Dir, Stored.Num());
 }
+
+bool FS47SaveStore::WriteCompletion(bool Completed,bool Erased)
+{
+ if(!bCompletionWritable || (!Completed && Erased)) return false;
+ const auto O=S47J::New(); S47J::Set(O,TEXT("v"),1);
+ S47J::Set(O,TEXT("storyCompleted"),Completed); S47J::Set(O,TEXT("title47Erased"),Erased);
+ if(!IFileManager::Get().MakeDirectory(*Dir,true) || !WriteFile(Dir/TEXT("story-completion.json"),S47J::Write(O,true))) return false;
+ bStoryCompleted=Completed;bTitle47Erased=Erased;return true;
+}
+bool FS47SaveStore::MarkStoryCompleted() { return bStoryCompleted || WriteCompletion(true,false); }
+bool FS47SaveStore::MarkTitle47Erased() { return bStoryCompleted && (bTitle47Erased || WriteCompletion(true,true)); }
 
 // ---------- reading ----------
 
@@ -539,6 +563,25 @@ bool S47Saves::SelfTest(TArray<FString>& Out)
 		Third->Save(1, TEXT("manual"), 1, Lost, Card, Err);
 		Check(TEXT("a new print replaces a lost one"), F1Url(Open(D)->Load(TEXT("1:manual:1"))) == SECOND);
 	}
+ // A completion reward survives case rotation/deletion and a fresh process/store.
+ {
+  const FString D=Fresh(); auto S=Open(D);
+  Check(TEXT("fresh profile keeps the complete title"),!S->StoryCompleted() && !S->Title47Erased());
+  Check(TEXT("the number cannot vanish before story completion"),!S->MarkTitle47Erased());
+  Check(TEXT("completed story is atomically retained"),S->MarkStoryCompleted());
+  auto Again=Open(D);
+  Check(TEXT("a completed profile first presents the erasure"),Again->StoryCompleted() && !Again->Title47Erased());
+  FString Error; Again->RemoveCase(1,Error);
+  Check(TEXT("case deletion does not delete the completion reward"),Open(D)->StoryCompleted());
+  Check(TEXT("the finished presentation is persisted"),Again->MarkTitle47Erased());
+  auto Restart=Open(D);
+  Check(TEXT("restart keeps the number absent without replay"),Restart->StoryCompleted() && Restart->Title47Erased());
+  const FString Future=TEXT("{\"v\":99,\"storyCompleted\":true,\"future\":\"preserve\"}");
+  FFileHelper::SaveStringToFile(Future,*(D/TEXT("story-completion.json")));
+  auto Unknown=Open(D); FString Preserved;
+  const bool Accepted=Unknown->MarkStoryCompleted();FFileHelper::LoadFileToString(Preserved,*(D/TEXT("story-completion.json")));
+  Check(TEXT("future profile data is not overwritten or mistaken for an unlock"),!Accepted && !Unknown->StoryCompleted() && Preserved==Future);
+ }
 	IFileManager::Get().DeleteDirectory(*Root, false, true);
 	return bOk;
 }

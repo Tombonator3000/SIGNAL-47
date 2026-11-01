@@ -122,6 +122,15 @@ private:
 	UPROPERTY() TObjectPtr<USceneCaptureComponent2D> ThumbCapture;
 	UPROPERTY() TObjectPtr<UTextureRenderTarget2D> ThumbTarget;
 	TSharedPtr<class SWidget> TitleEl;
+ TSharedPtr<class FS47TitleEraseSound> TitleEraseSound;
+ float TitleEraseResume=0;
+ void RememberTitleErasure();
+ bool CompleteStoryTitle();
+ void StoryTitleTest(double Dt);
+ int32 StoryTitleTestStage=0;
+ double StoryTitleTestT=0;
+ int32 TitleEraseStarts=0;
+
 	TSharedPtr<FS47Opening> Opening;
 	bool bDeathShown = false;
 	bool bSoundUnlocked = false;    // audio.ctx: the first key or click on the title (or a night) has been

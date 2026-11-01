@@ -20,6 +20,9 @@ struct FS47TitleOpts
 	FString Cont;                         // "chapter · place · clock · played"; empty: nothing to continue
 	bool bCanLoad = false;
 	bool bCalm = false;                   // flash: { calm, onPick }
+	bool bHide47 = false, bErase47 = false; // completed Story title: persisted absence / pending first presentation
+	float Erase47InitialTime = 0.f;        // resume a pending presentation after a title rebuild
+	TFunction<void()> OnErase47Start, OnErase47Done;
 	TFunction<void(bool)> OnFlashPick;
 	bool bGate = false, bTouch = false;
 	TFunction<void()> OnFirstTouch;       // main.ts firstTouch: the first key or click on the title (the music)
