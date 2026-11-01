@@ -1,14 +1,20 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 1. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 2. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
+
+## Første nattleveranse: fysiske PC-er, S-03 og billasting
+
+Runtime `b8e1d3fb`, PR325, er installert1. november kl.23:57 CET. Story og Freeform deler fysisk CRT-/båndbetjening. Mottakeren har signalgraf, reell mottaksprosent og tydelig neste handling; hele visningen ligger innenfor glasset. S-03 har nåbar lokal service, og bruk av den parkerte Jeepen med pakke laster den før kjøring. Freeform-kontoret oppdaterer og lagrer dør/skuff korrekt uten Story-avreise. Registrerte ordinære utelys følger dagslyset; noen dekormaterialer og rombrytere gjenstår.
+
+Bygg/pakke,1974 selvtester, Story-arbeidsreisen183/9 restores, Freeform transport/service47/3, utstyr77/2, kontor15 og pakket fire-PC-kontroll22 består. Installert Fortsett består;164 Saved-elementer er uendret. WORLD-04s opprinnelige veggfeil er fortsatt uavklart. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_NIGHTSHIFT_2026-11-01.md).
 
 ## Antennefundamenter har bakkekontakt
 
 Runtime `5ea2803d` er installert1. november kl.20:31 CET. Alle27 antenner får betongforlengelser under de fire føttene. Antennestyring, bevegelige pivoter og servicepunkter beholder plasseringen. Bygg/pakke,1957 selvtester,108 fundamentinstanser og gjennomsett pakket dagslysbilde består; installert Fortsett består og158 Saved-elementer er uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/ARRAY_GROUNDING_2026-11-01.md).
 
-Felles Story-/Freeform-betjening, dagstyrt utelys og rombrytere er ført som åpne oppgaver MODE-08/LIGHT-01/02 i TODO. De er ikke implementert i denne leveransen.
+Denne eldre fundamentleveransen omfattet ikke PC-/lysarbeid; se den nyere nattleveransen ovenfor for MODE-08/LIGHT-01/02.
 
 ## Freeform-startmeny oppdatert og installert
 

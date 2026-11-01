@@ -1,0 +1,39 @@
+{
+  "status": "INSTALLED",
+  "installed_at": "2026-11-01T23:57:20.974532+01:00",
+  "source_commit": "b8e1d3fb11d4fc57fa5f50be8dceacc2fd0cbe5a",
+  "Saved_unchanged": true,
+  "saved_nodes": 164,
+  "self_checks": 1974,
+  "scope": "packaged four-CRT rendering and title smoke",
+  "checks": 22,
+  "development": {
+    "freeform_transport_service": {
+      "status": "PASS",
+      "checks": 47,
+      "flowRestores": 3,
+      "limits": "Not a natural road journey, human input/route-finding acceptance, visual polish review or full regression. Native doorway-body bounds fixture verifies the guard query, not natural door passage or an actual door-close attempt. Isolated developer case 0 only; timeout 300 seconds."
+    },
+    "story_workstations": {
+      "status": "PASS",
+      "checks": 183,
+      "diskFlowRestores": 9,
+      "limits": "Focused Story workstations through normal reference, generator, S-03 service, pulsar/control comparison and physical archive, ending at the next HI task. No later window scene, human input/listening, full-night pacing, Xbox, Freeform or whole-story acceptance."
+    },
+    "office_freeform": {
+      "pass": true,
+      "checks": 15,
+      "scope": "Fresh developer Freeform case0 in isolated /tmp profile. Explicit placement at service cabinet; actual camera ray Inter.Pick and Walker.OnUse for drawer, spare key and office door. Ordinary animation ticks; full GameState written/read as JSON and restored through Flow. No injected completion/key/door facts, natural walking, wall-bug reproduction or story completion claimed."
+    },
+    "equipment": {
+      "status": "PASS",
+      "checks": 77,
+      "flowRestores": 2,
+      "limits": "Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. Mounted Jeep mesh identities and a native driver-seat screenshot are checked, but windshield/mirror visual acceptance still requires review of that image. No natural drive, actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."
+    }
+  },
+  "packaged_screens": {
+    "status": "PASS",
+    "checks": 22
+  }
+}
