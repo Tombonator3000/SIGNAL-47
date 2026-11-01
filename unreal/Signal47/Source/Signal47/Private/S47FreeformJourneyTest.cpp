@@ -112,7 +112,16 @@ void FS47FreeformJourneyTest::Step(double Dt)
   Before=W.ParcelPosition();
   const FVector D=Before-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
-  FScreenshotRequest::RequestScreenshot(Root/TEXT("physical-parcel.png"),true,false);
+  Go(404);return;
+ }
+ if(Stage==404)
+ {
+  if(Age-At<.4)return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("physical-parcel.png"),true,false);Go(405);return;
+ }
+ if(Stage==405)
+ {
+  if(Age-At<.4)return;Before=W.ParcelPosition();
   M->bPausedByMenu=true;Go(5);return;
  }
  if(Stage==5)
