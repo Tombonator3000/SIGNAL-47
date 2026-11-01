@@ -106,7 +106,11 @@ bool FS47SaroResumeTest::UseOps()
  const FString Picked=M->Inter->Pick(Eye,Direction);
  if(!Check(Picked==TEXT("opsTerminal")&&FVector::DotProduct(Direction,M->Player->ForwardUE())>.94&&bool(M->Player->OnUse),TEXT("actual aimed camera ray selects OPS in ordinary interaction range")))return false;
  M->Player->OnUse(Picked);++State->TerminalUses;
- return Check(M->ModalOpen(),TEXT("production OPS use opens its real document or terminal panel"));
+ const auto Current=M->Flow->GameState();
+ const bool AutoHold=State->TerminalUses==1&&S47J::Bool(S47J::Obj(S47J::Obj(Current,TEXT("spine")),TEXT("sc04d")),TEXT("schedule"))&&M->Story->Docs().ContainsByPredicate([](const FS47Doc& D){return D.Id==TEXT("sc04_schedule");});
+ // SC04's first terminal action records AUTO HOLD and a toast in the live
+ // room. Subsequent normal terminal uses open the operations panel.
+ return Check(M->ModalOpen()||AutoHold,TEXT("production OPS use opens its panel or records the first AUTO HOLD action in the live room"));
 }
 void FS47SaroResumeTest::Step(double)
 {
