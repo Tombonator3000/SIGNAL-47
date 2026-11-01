@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47FieldRadio.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Horror.h"
@@ -437,6 +438,7 @@ void US47Flow::Boot()
 		if (M->Evening && !M->Evening->Enabled() && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation();
 		if (M->Office) M->Office->Begin(nullptr, M->Story->bEveningTimeline && M->Evening && M->Evening->Opening());
 		if (M->SkyVisitors) M->SkyVisitors->Begin(nullptr, M->Story->bEveningTimeline);
+		if(M->FieldRadio) M->FieldRadio->Begin(nullptr);
 		if (M->Life) M->Life->PassageReset(false);
 		if (M->Anomaly) M->Anomaly->Begin(nullptr);
 		if (M->AnomalyWorld) M->AnomalyWorld->Begin();
@@ -451,6 +453,7 @@ void US47Flow::Boot()
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
+	if (M->FieldRadio) M->FieldRadio->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -695,6 +698,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
+	if (M->FieldRadio) M->FieldRadio->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	const bool bEveningTimeline = !bFreeform && ((!O.State.IsValid() && O.Jump.IsEmpty()) || S47J::Int(O.State,TEXT("timelineVersion"),1)==2);
@@ -787,6 +791,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (bFreeform) { if(M->Office)M->Office->Begin(nullptr,false); if(M->SkyVisitors)M->SkyVisitors->Begin(nullptr,false); if(M->AnomalyWorld)M->AnomalyWorld->Reset(); }
 	if (!bFreeform && M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (!bFreeform && M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
+	if(M->FieldRadio) M->FieldRadio->Begin(S47J::Obj(O.State,TEXT("fieldRadio")));
 	if (M->Life)
 	{
 		// FX-01: a spent meteor passage stays spent. Without the field (an older save) the clock decides:
@@ -902,6 +907,7 @@ void US47Flow::LeavePlay()
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
+	if (M->FieldRadio) M->FieldRadio->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -935,6 +941,7 @@ void US47Flow::ToTitle()
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
+	if (M->FieldRadio) M->FieldRadio->Stop();
 	if (M->Horror) M->Horror->Stop();
 	if (M->Evening) M->Evening->Stop();
 	if (M->AnomalyWorld) M->AnomalyWorld->Reset();
@@ -1352,6 +1359,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
+	if(M->FieldRadio) S47J::Set(State,TEXT("fieldRadio"),M->FieldRadio->Save());
 	if (M->Life)
 	{
 		const S47J::FObj P = S47J::New(); S47J::Set(P, TEXT("v"), 1); S47J::Set(P, TEXT("done"), M->Life->PassageDone());

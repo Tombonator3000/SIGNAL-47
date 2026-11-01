@@ -1,4 +1,5 @@
 #include "S47HUD.h"
+#include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -180,6 +181,8 @@ void AS47HUD::Start()
 		bOk &= FS47SC08::SelfTest(Lines);
 		bOk &= FS47SC11::SelfTest(Lines);
 		bOk &= FS47SkyVisitors::SelfTest(Lines);
+		bOk &= FS47FieldRadio::SelfTest(Lines);
+		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
@@ -216,6 +219,7 @@ void AS47HUD::Start()
 	// Before the chapters: chapter two's and four's ends route through the spine's placeholders.
 	if (!M->Spine) M->Spine = MakeShared<FS47Spine>(M);
 	if (!M->DevEvents) M->DevEvents = MakeShared<FS47DevEvents>(M);
+	if (!M->FieldRadio) M->FieldRadio = MakeShared<FS47FieldRadio>(M);
 	if (Story.IsValid()) S47RegisterChapters(Story.Get(), M);
 	if (Walker.IsValid() && Saro.IsValid())
 	{

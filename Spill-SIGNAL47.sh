@@ -63,7 +63,9 @@ done
 
 # ---------------------------------------------------------------- systemsjekk
 warnings=0
+problems=0
 note() { printf '  %s\n' "$*"; }
+problem() { printf '  FEIL: %s\n' "$*"; problems=$((problems + 1)); }
 warn() { printf '  ADVARSEL: %s\n' "$*"; warnings=$((warnings + 1)); }
 
 gpu_vendors() {
@@ -114,7 +116,7 @@ system_check() {
     [[ -r /sys/module/nvidia/version ]] && ver="$(cat /sys/module/nvidia/version)"
     if [[ -n $ver ]]; then
       note "Nvidia-driver: $ver"
-      ((${ver%%.*} >= 550)) || warn "Nvidia-driver $ver er gammel. Bruk 550 eller nyere."
+      ((${ver%%.*} >= 570)) || warn "Nvidia-driver $ver er gammel. UE 5.8 oppgir 570 eller nyere; driveren må også støtte ditt konkrete kort."
     else
       warn "Nvidia-kort, men den proprietære/åpne nvidia-driveren er ikke lastet (nouveau støttes ikke)."
     fi
@@ -143,7 +145,16 @@ system_check() {
     local free_kb; free_kb="$(df -Pk "$repo_dir" | awk 'NR==2 {print $4}')"
     ((free_kb >= 10000000)) || warn "Nedlasting og utpakking trenger om lag 10 GB ledig plass, du har $((free_kb / 1024 / 1024)) GB."
   fi
-  ((warnings == 0)) && printf 'Ingen problemer funnet.\n' || printf '%d advarsel(er) over.\n' "$warnings"
+  if [[ -e $download_complete || -f $play ]]; then
+    local internal="$game_dir/Signal47-Linux/Linux/Signal47.sh"
+    local binary="$game_dir/Signal47-Linux/Linux/Signal47/Binaries/Linux/Signal47"
+    [[ -x $play ]] || problem "Startfil mangler eller kan ikke kjøres: $play. Kontroller hovedarkivet og kjørerettighetene."
+    [[ -f $internal ]] || problem "Internstarter mangler: $internal. Pakk ut hovedarkivet, ikke Source code, og alle dataarkiver i samme mappe."
+    [[ -f $binary ]] || problem "Spillbinær mangler: $binary. Installasjonen er ufullstendig."
+  else
+    note "Ferdig spillpakke er ikke lastet ned ennå; internstarteren er Linux/Signal47.sh inne i hovedarkivet."
+  fi
+  printf '%d konkret(e) feil, %d advarsel(er). Dette er en forhåndssjekk, ikke en grafisk Vulkan-test.\n' "$problems" "$warnings"
 }
 
 write_report() {
@@ -153,14 +164,25 @@ write_report() {
     printf 'SIGNAL / 47 feilrapport %s, utgave %s\n\n' "$(date -Is)" "$tag"
     system_check
     printf '\n--- miljø\n'
-    env | grep -E '^(XDG_SESSION_TYPE|XDG_CURRENT_DESKTOP|WAYLAND_DISPLAY|DISPLAY|SDL_|VK_|__GL_|__NV_|LANG)=' || true
+    env | grep -E '^(XDG_SESSION_TYPE|XDG_CURRENT_DESKTOP|WAYLAND_DISPLAY|DISPLAY|LANG|SDL_[[:alnum:]_]*|VK_[[:alnum:]_]*|__GL_[[:alnum:]_]*|__NV_[[:alnum:]_]*)=' || true
     printf '\n--- skjermkort\n'
     command -v lspci >/dev/null && lspci -nnk | grep -A3 -Ei 'vga|3d|display' || printf 'lspci mangler\n'
     printf '\n--- vulkaninfo --summary\n'
-    command -v vulkaninfo >/dev/null && vulkaninfo --summary 2>&1 | head -60 || printf 'vulkaninfo mangler (pakken vulkan-tools)\n'
+    if command -v vulkaninfo >/dev/null && command -v timeout >/dev/null; then
+      local vk_status=0
+      timeout 8s vulkaninfo --summary 2>&1 | awk 'NR<=80 {print}' || vk_status=$?
+      printf 'Vulkan-diagnose exit=%d (124 betyr tidsavbrudd).\n' "$vk_status"
+    else printf 'Valgfri vulkaninfo/timeout mangler; grafikkdriveren er ikke testet.\n'; fi
+    local preflight="$game_dir/Signal47-Linux/Linux/Check-Linux.sh"
+    if [[ -f $preflight ]]; then
+      printf '\n--- pakket Linux-preflight\n'
+      local check_status=0
+      bash "$preflight" || check_status=$?
+      printf 'Pakket preflight exit=%d\n' "$check_status"
+    fi
     printf '\n--- feil og advarsler i spillogg %s\n' "$log_file"
     if [[ -r $log_file ]]; then
-      grep -Ei 'error|fatal|vulkan|swapchain|device lost|sdl|wayland|x11|raytracing|crash' "$log_file" | tail -n 120
+      grep -Ei 'error|fatal|vulkan|swapchain|device lost|sdl|wayland|x11|raytracing|crash' "$log_file" | tail -n 120 || true
       printf '\n--- siste 150 linjer av spilloggen\n'
       tail -n 150 "$log_file"
     else
@@ -172,7 +194,13 @@ write_report() {
 
 if ((report_only)); then write_report; exit 0; fi
 system_check
-((check_only)) && exit 0
+if ((check_only)); then
+  preflight="$game_dir/Signal47-Linux/Linux/Check-Linux.sh"
+  if [[ -f $preflight ]]; then bash "$preflight" || exit $?; fi
+  ((problems==0)) || exit 2
+  exit 0
+fi
+((problems==0)) || { printf 'Start avbrutt: se den konkrete pakkefeilen over. Saved er ikke endret.\n' >&2; exit 2; }
 if [[ ${SDL_VIDEO_DRIVER:-} == x11 && -z ${DISPLAY:-} ]]; then
   printf 'Kan ikke bruke --x11 uten DISPLAY. Start XWayland via skrivebordet, eller prøv uten --x11 / med --wayland.\n' >&2
   exit 2
@@ -206,6 +234,9 @@ if [[ ! -x "$play" || ! -f "$download_complete" ]]; then
     unzip -q -o "$name" -d "$game_dir"
   done
   cd "$game_dir/Signal47-Linux"
+  for required in Play.sh Play-Low.sh Linux/Signal47.sh Linux/Signal47/Binaries/Linux/Signal47; do
+    [[ -s $required ]] || { printf 'Ufullstendig utpakking: %s mangler i %s. Behold arkivene og pakk ut alle tre i samme mappe.\n' "$required" "$PWD" >&2; exit 2; }
+  done
   chmod +x Play.sh Play-Low.sh Linux/Signal47.sh Linux/Signal47/Binaries/Linux/Signal47
   printf '%s\n' "$tag" > "$download_complete"
   rm -rf "$game_dir/nedlasting"

@@ -22,6 +22,7 @@ public:
  void Stop();
  void ControlTest(double Dt);
  const TArray<FEvent>& Events() const { return List; }
+ TOptional<FVector> PalePresence() const { return PaleLeft>0 && Pale.Rendered()?TOptional<FVector>(PaleAt+FVector(0,1.8,0)):TOptional<FVector>(); }
 private:
  US47Main* M = nullptr;
  TArray<FEvent> List;

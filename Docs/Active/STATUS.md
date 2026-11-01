@@ -24,7 +24,7 @@ Jeepens tilpassede Blender-innside og sju native deler er lokalt installert kl.0
 
 SC04 avviser utilgjengelige jaktruter, tar hensyn til synlig kropp ved dørbladet og krever faktisk kontorankomst ved telefonlokking. Fysisk tilbaketrekning etter sikrede kontrollromsdører fra main er samordnet. Lampeinsekter er redusert til 5–10 mm uten lyse avstandsklumper. Freeform inngår fortsatt.
 
-Editorbygg, 1906 selvtester, sju native interiørdeler med tre LOD-er, målrettede Vulkan-bilder, SC04short med 17 kontroller, pakking og kort installert røykprøve består. Alle 149 Saved-elementer, inkludert 118 personlige filer, er uendret. Gjeldende og to eldre testpakker beholdes. Enkelte konkrete dørpasseringer og den eldre SARO-renderstansen er fortsatt åpne; menneskelig kjøre-/lyd-/skrekkaksept er ikke erstattet av bildene. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_INTERIOR_2026-11-01.md). Nattarbeidet fortsetter etter prioritert TODO til søndag 1. november kl.09.
+Editorbygg, 1906 selvtester, sju native interiørdeler med tre LOD-er, målrettede Vulkan-bilder, SC04short med 17 kontroller, pakking og kort installert røykprøve består. Alle 149 Saved-elementer, inkludert 118 personlige filer, er uendret. Gjeldende og to eldre testpakker beholdes. Enkelte konkrete dørpasseringer og den eldre SARO-renderstansen er fortsatt åpne; menneskelig kjøre-/lyd-/skrekkaksept er ikke erstattet av bildene. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_INTERIOR_2026-11-01.md). Nattarbeidet er avsluttet ved søndag 1. november kl.09; automasjonen er slettet. Tom har deretter bedt om ny TODO-fortsettelse.
 
 ## Freeform lokalt installert
 
