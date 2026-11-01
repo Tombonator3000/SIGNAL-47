@@ -63,5 +63,10 @@
     "file": "13-crt-ui-outside-glass.png",
     "sha256": "adab3e1eb3e7221c8422aa7b8f564039ed2a9b59adb3737d7dd1c8e3e71f2a64",
     "caption": "PC-panelets rektangel/tekst går utenfor CRT-glasset; HUD-/ESC-rester ligger utenfor PC-en."
+  },
+  {
+    "file": "14-receiver-acquisition-unclear.png",
+    "sha256": "97f04038ba5417a0aefe94546baf1adb958bbe2170b9087c8a76581cdf9612fc",
+    "caption": "Acquisition er uforståelig: gain29/AZ26.1 avviker fra kortet, men skjermen viser ARRAY QUALITY100% og generelt avslag."
   }
 ]
