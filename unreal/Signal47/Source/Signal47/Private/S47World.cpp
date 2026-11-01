@@ -979,6 +979,8 @@ void US47World::ParkAt(FString Id)
 void US47World::StartTrip(const FString& From, const FString& To, const FS47TripOpts& O)
 {
 	if (bBusy || bDriving || !M || !M->Story) return;
+	if (M->IsFreeform()&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->ParcelStage()==2)
+	{Toast(TEXT("Secure the carried parcel in the cargo rack before driving. Look at the rack beside the jeep."),6);return;}
 	EnsureLegs();
 	bBusy = true;
 	Hold(true);

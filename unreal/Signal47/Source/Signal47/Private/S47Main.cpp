@@ -1,6 +1,8 @@
 #include "S47Main.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
+#include "S47FreeformJourneyTest.h"
+#include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Horror.h"
@@ -95,6 +97,8 @@ void US47Main::Step(double Dt)
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
 	if (FreeformTest) FreeformTest->Step(Dt);
+	if (FreeformJourneyTest) FreeformJourneyTest->Step(Dt);
+	if (SaroResumeTest) SaroResumeTest->Step(Dt);
 	if (!bFree && Substation) Substation->Step(Dt);
  // Opt-in live contract tests must also observe legacy restores with Evening disabled.
  if (Evening) Evening->ControlServiceTest(Dt);

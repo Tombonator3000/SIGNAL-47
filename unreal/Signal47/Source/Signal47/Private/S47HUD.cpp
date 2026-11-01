@@ -1,6 +1,8 @@
 #include "S47HUD.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
+#include "S47FreeformJourneyTest.h"
+#include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
@@ -587,6 +589,8 @@ void AS47HUD::Start()
 		M->Horror = MakeShared<FS47Horror>(M);
 		M->HorrorTest = MakeShared<FS47HorrorTest>(M);
 		M->FreeformTest = MakeShared<FS47FreeformTest>(M);
+		M->FreeformJourneyTest = MakeShared<FS47FreeformJourneyTest>(M);
+		M->SaroResumeTest = MakeShared<FS47SaroResumeTest>(M);
 		M->Flow->Boot();
 		FString FaceAt;
 		if (FParse::Value(FCommandLine::Get(), TEXT("S47Face="), FaceAt)) Face(FaceAt);

@@ -37,6 +37,9 @@ public:
  bool ArrayMotionHeld() const;
  int32 Day() const { return DayNumber; }
  double Clock() const { return WorldClock; }
+ // Daylight 06–19 takes 30 active minutes; night 19–06 takes 45.
+ // Pure conversion also handles a step crossing midnight or either phase boundary.
+ static double AdvanceClock(double Clock,double ActiveSeconds);
  int32 Budget() const { return Cash; }
  int32 Debt() const { return Loan; }
  bool Lethal() const { return bDeadly; }
@@ -51,6 +54,10 @@ public:
  void OpenReceiver();
  void OpenAudio();
  void OpenArchive();
+ void OpenServiceGuide();
+ bool StartServiceGuide(bool bSupplyTrip);
+ bool CompleteServiceGuide();
+ FString ServiceObjective() const;
  bool SelectJob(int32 Index);
  bool ChooseThird(bool bVirgo);
  bool PointSelected();
@@ -102,6 +109,8 @@ private:
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
  bool bPowerApplied=false,bLastPower=true;
  int32 RecoveryEpoch=0;
+ int32 ServiceGuide=0,GuideServiceBaseline=0,GuideSupplyBaseline=0;
+ bool bGuideSupply=false,bGuideFocus=false;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 CrossPoint=0; double CrossSample=0;
