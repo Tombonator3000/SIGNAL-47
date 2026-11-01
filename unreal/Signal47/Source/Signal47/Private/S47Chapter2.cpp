@@ -328,7 +328,7 @@ FVector US47Chapter2::PhonePos() const
 
 FString US47Chapter2::Objective() const
 {
-	if (S.Stage == TEXT("ward-call")) return TEXT("CONTROL ROOM // THE SUPERVISOR LINE IS RINGING");
+	if (S.Stage == TEXT("ward-call")) return TEXT("CONTROL ROOM // THE SUPERVISOR LINE IS RINGING. GO TO THE DESK AND ANSWER THE PHONE");
 	if (S.Stage == TEXT("records"))
 	{
 		if (!S.bEntered) return TEXT("SARO RECORDS // SOUTH CORRIDOR: FIND WHERE THE B-12 REFERENCE CAME FROM");
@@ -349,7 +349,7 @@ FString US47Chapter2::Objective() const
 TArray<FS47Task> US47Chapter2::Tasks() const
 {
 	TArray<FS47Task> T = {
-		{ TEXT("Answer the supervisor's call"), S.bAnswered },
+		{ TEXT("Go to the control room and answer the supervisor's call"), S.bAnswered },
 		{ TEXT("Find the reference record (south corridor)"), S.bEntered },
 	};
 	if (S.bEntered) T.Append({
@@ -926,7 +926,8 @@ void US47Chapter2::BeginChapter2(const S47J::FObj& SavedCase)
 	{
 		// Evening cases: SC07 follows SC06 at about 03:40 (approved timeline); legacy keeps forty minutes.
 		Host->SetClock(Host->bEveningTimeline ? FMath::Max(Host->Clock(), 3 * 3600. + 40 * 60) : FMath::Max(Host->Clock(), Host->EventClockSec() + 40 * 60));
-		if (M && M->Player) M->Player->Place(3.35, 1.45, 2.75); // at the supervisor desk, facing the phone
+		// The supervisor line rings at its physical desk. Keep the player where
+		// the report was filed; walking back and answering is their own action.
 	}
 	if (M && M->UI) M->UI->Fade(false);
 	Host->BeginChapter(TEXT("ch2"), Ch2);

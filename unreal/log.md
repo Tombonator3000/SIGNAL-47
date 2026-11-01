@@ -1527,3 +1527,7 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-11-01 02:20 CET | Jeep/SC04 PR301, runtime e944b8ed | Installert kl.02:18: sju interiørdeler med faktisk ratt/instrumenter, mindre lampeinsekter, 1906 selvtester, SC04short17 og installert Vulkan-røykprøve består; 149 Saved-elementer/118 filer uendret. To eldre payload pensjonert, egne motorjobber avsluttet og reservasjon frigitt. Konkrete dørpasseringer og eldre SARO-renderstans står åpne.
 
 2026-11-01 07:59 CET | codex/saro-sc04-followup-20261101 | Retter målt åpent dørblad, dør-ID, ikke-solid dirt-overlay og for tidlig diagonal jakt; eksisterende nordsti gir fysisk østlig tilbaketrekning. Editorbygg,1909 selvtester/sc04doors14 består; pakking/installasjon følger. Syntetisk AUTO HOLD-replay/High/Vulkan100s består, GPUpeak6197/10240MiB; opprinnelig renderstans fortsatt uavklart.
+
+2026-11-01 08:13 CET | SC04 PR304, runtime2d7e5c1a | Installert08:11:1909 selvtester/sc04doors14 i editor og pakke, isolert installert Fortsett består;149 Saved-elementer/118 filer uendret. To gamle payload pensjonert, egne motorjobber avsluttet og reservasjon frigitt. Syntetisk terminal/GPU-prøve lukker ikke opprinnelig renderstans.
+
+2026-11-01 08:31 CET | codex/chapter-phone-agency-20261101 | Synlige fortellingstitler uten nummer, også eldre metadata; bare automatisk NEW-ch2-telefonplassering fjernet. Editorbygg og målrettet posisjon/blikk/ringing/eldre-sak-kontroll består; normal pakking og UI-etterbilde følger. Interne ID-er og Ward-fakta bevart.

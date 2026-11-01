@@ -146,10 +146,12 @@ void US47UI::ChapterCard(const FS47ChapterCardOpts* O, TFunction<void()> OnSpoke
 	if (OnReadingStart) OnReadingStart(Reader.Get());
 	// (const run = reader.runId, read once play() has stopped what was reading: the next run is this one)
 	const int32 Run = Reader->RunId() + 1;
-	Reader->Play({ O->Closed, O->Recap, O->Next, O->Title, O->Clock }, {}, [Self, Current, WeakEl, WeakReader](int32 Index)
+	// With the numbered heading omitted, narration starts the title at slot 3.
+	const int32 TitleStart = O->Next.IsEmpty() ? 3 : 2;
+	Reader->Play({ O->Closed, O->Recap, O->Next, O->Title, O->Clock }, {}, [Self, Current, WeakEl, WeakReader, TitleStart](int32 Index)
 	{
 		const TSharedPtr<FS47ReadAloud> R = WeakReader.Pin();
-		if (Index == 2 && Current() && R.IsValid() && R->Enabled()) { if (const TSharedPtr<SS47ChapterCard> E = WeakEl.Pin()) E->Voice(TEXT("b")); Self->ChapterStage = TEXT("b"); }
+		if (Index == TitleStart && Current() && R.IsValid() && R->Enabled()) { if (const TSharedPtr<SS47ChapterCard> E = WeakEl.Pin()) E->Voice(TEXT("b")); Self->ChapterStage = TEXT("b"); }
 	}, [Self, Current, WeakEl, WeakReader, Run, OnSpoken]
 	{
 		// await narration: then the stage says how the reading ended, and the card's promise settles

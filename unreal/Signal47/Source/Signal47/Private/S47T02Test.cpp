@@ -384,12 +384,21 @@ void FS47T02Test::Step(double Dt)
    M->Player->Place(.45,5.75,0); Aim(Target(TEXT("office:door")));
    Stage(1,.35); return;
   }
-  C2->BeginChapter2(nullptr); Stage(-2,.5); return;
+  const FVector Before=M->Player->Pos; const double Facing=M->Player->Yaw;
+  C2->BeginChapter2(nullptr);
+  if(!Check(M->Player->Pos.Equals(Before,.001) && FMath::IsNearlyEqual(M->Player->Yaw,Facing,.0001) &&
+   C2->PhoneLabel()==TEXT("Answer the phone"),TEXT("new Ward call rings at the desk while preserving the player's position and facing")))return;
+  Stage(-2,.5); return;
  }
  if (T.Stage == -2)
  {
   if(!Check(M->Story->ChapterKey==TEXT("ch2") && !M->Story->bEveningTimeline && M->Evening->Enabled() &&
    !M->Office->RouteRequired() && !M->Evening->Pack.Flag(TEXT("handover_done")),TEXT("ordinary C2 BeginChapter2 activates investigation from an older chapter-one case without new-night or D01 requirements")))return;
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47ChapterPhoneOnly")))
+  {
+   T.bDone=true;UE_LOG(LogS47T02Test,Display,TEXT("S47: chapter phone agency PASS COMPLETE; position/facing retained, Ward ringing, legacy lifecycle intact"));
+   FPlatformMisc::RequestExit(false);return;
+  }
   // End the isolated legacy-hook fixture before starting the physical contract.
   // The established chapter-two jump supplies the existing completed chapter-one
   // camera kit; never manufacture camera ownership or any new Office/T02 fact.

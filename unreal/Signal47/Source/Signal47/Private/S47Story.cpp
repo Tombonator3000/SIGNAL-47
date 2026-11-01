@@ -298,9 +298,9 @@ FString AS47Story::ChapterTitle() const
 	if (const auto* M=US47Main::Get(this); M && M->Evening && M->Evening->Opening()) return TEXT("Evening Shift");
 	// main.ts chapterTitle()
 	static const TMap<FString, FString> Titles = {
-		{ TEXT("ch1"), TEXT("Chapter 1: The Second Exposure") }, { TEXT("ch2"), TEXT("Chapter 2: The Amended Record") },
-		{ TEXT("ch3"), TEXT("Chapter 3: The Survey Station") }, { TEXT("ch4"), TEXT("Chapter 4: Room 6") },
-		{ TEXT("ch5"), TEXT("Chapter 5: All Night") }, { TEXT("ch6"), TEXT("Chapter 6: Roswell Road") } };
+		{ TEXT("ch1"), TEXT("The Second Exposure") }, { TEXT("ch2"), TEXT("The Amended Record") },
+		{ TEXT("ch3"), TEXT("The Survey Station") }, { TEXT("ch4"), TEXT("Room 6") },
+		{ TEXT("ch5"), TEXT("All Night") }, { TEXT("ch6"), TEXT("Roswell Road") } };
 	if (const FString* T = Titles.Find(ChapterKey)) return *T;
 	return TEXT("Prologue: Night Shift");
 }
@@ -1065,7 +1065,7 @@ void AS47Story::ChapterBreak(const FBreak& B)
 		if (B.Begin) B.Begin();
 		bCinematic = true;
 		if (OnChapterCard) OnChapterCard(B);
-		else if (Hud.IsValid()) Hud->Fade(true, B.Next + TEXT("\n") + B.Title);
+		else if (Hud.IsValid()) Hud->Fade(true, B.Next.StartsWith(TEXT("CHAPTER "), ESearchCase::IgnoreCase) ? B.Title : B.Next + TEXT("\n") + B.Title);
 		// the card stays at least 6.4 s from the break (the narrator may hold it longer: finish)
 		const TSharedRef<TFunction<void()>> Finish = MakeShared<TFunction<void()>>();
 		*Finish = [this, Weak = TWeakPtr<TFunction<void()>>(Finish)]

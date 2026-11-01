@@ -313,7 +313,7 @@ void US47Flow::Init(US47Main* InM)
 		Host->OnChapterCard = [this](const AS47Story::FBreak& B)
 		{
 			FS47ChapterCardOpts C;
-			C.Closed = B.Closed; C.Recap = B.Recap; C.Next = B.Next; C.Title = B.Title;
+			C.Closed = B.Closed; C.Recap = B.Recap; C.Next = B.Next.StartsWith(TEXT("CHAPTER "), ESearchCase::IgnoreCase) ? FString() : B.Next; C.Title = B.Title;
 			C.Clock = S47Text::ClockText(M->Story->Clock(), false);
 			M->UI->Fade(true, FString());
 			struct FCardRun { bool bSpoken = false, bTitleWaiting = false, bTitleReady = false; };
@@ -565,7 +565,7 @@ void US47Flow::ShowTitle()
 	FS47TitleOpts O;
 	O.bGate = bGate;
 	O.bTouch = false;
-	// Continue's line: the case, the chapter, the night's clock and the place ("CASE 1 · CHAPTER TWO · 03:12 · CONTROL ROOM")
+	// Continue uses the story name, including legacy numbered save metadata.
 	O.Cont = Cont ? FString::Printf(TEXT("CASE %d \u00B7 %s \u00B7 %s \u00B7 %s"), Cont->CaseId, *(Cont->Chapter.StartsWith(TEXT("FREEFORM")) ? Cont->Chapter : S47Theme::ChapterLine(Cont->Chapter).Key), *Cont->Clock, *Cont->Place.ToUpper()) : FString();
 	// Quit: the desktop's way out
 	O.OnDev = [this] { OpenDev(); };
@@ -1602,9 +1602,6 @@ void US47Flow::OpenNotebook()
 	// Prologue.openNotebook, with main.ts's map, kit and people; the case board from the journal at any time
 	const AS47Story* S = M->Story;
 	if (!S) return;
-	static const TMap<FString, FString> Heading = { { TEXT("ch1"), TEXT("Chapter one") }, { TEXT("ch2"), TEXT("Chapter two") }, { TEXT("ch3"), TEXT("Chapter three") },
-		{ TEXT("ch4"), TEXT("Chapter four") }, { TEXT("ch5"), TEXT("Chapter five") }, { TEXT("ch6"), TEXT("Chapter six") } };
-	const FString* H = Heading.Find(S->ChapterKey);
 	TWeakObjectPtr<US47UI> UI = M->UI;
 	TFunction<void()> OnBoard;
 	if (M->Board.Open)
@@ -1628,7 +1625,7 @@ void US47Flow::OpenNotebook()
   }
   if (UI.IsValid()) UI->Document(Doc, [] {});
  },
-		H ? *H : FString(TEXT("Tonight")), OnBoard, NotebookExtras());
+		S->ChapterTitle(), OnBoard, NotebookExtras());
 }
 
 FS47NbExtras US47Flow::NotebookExtras() const

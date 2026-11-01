@@ -67,7 +67,7 @@ namespace S47Theme
 	SIGNAL47_API void Shadow(FSlateWindowElementList& Out, int32 Layer, const FGeometry& G, const FVector2f& Pos, const FVector2f& Size, float OffsetY, float Spread, float Alpha);
 
 	// ---------- the night's words ----------
-	// "Chapter 2: The Amended Record" as the menus write it: { "CHAPTER TWO", "THE AMENDED RECORD" }
+	// Old numbered save metadata and new story names both display as { "THE AMENDED RECORD", "" }.
 	SIGNAL47_API TPair<FString, FString> ChapterLine(const FString& ChapterTitle);
 	// the tape's date stamp for the night's clock (seconds after midnight): 13 to 14 April 1986
 	SIGNAL47_API FString DateStamp(double Clock);       // "APR.13 1986" before midnight, "APR.14 1986" after
