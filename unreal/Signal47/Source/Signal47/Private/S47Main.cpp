@@ -1,4 +1,7 @@
 #include "S47Main.h"
+#include "S47FreeformTest.h"
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
@@ -67,7 +70,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { if (IsFreeform()) return Freeform && Freeform->Director && Freeform->Director->Busy(); return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -79,25 +82,29 @@ void US47Main::Step(double Dt)
 	T += Dt;
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
-	if (Evening) Evening->Step(Dt);
-	if (Office) Office->Step(Dt);
-	if (Observing) Observing->Step(Dt);
-	if (Horror) Horror->Step(Dt);
-	if (Spine) Spine->Step(Dt);
+	const bool bFree = IsFreeform();
+	if (Freeform && bFree) Freeform->Step(Dt);
+	if (!bFree && Evening) Evening->Step(Dt);
+	if (!bFree && Office) Office->Step(Dt);
+	if (!bFree && Observing) Observing->Step(Dt);
+	if (!bFree && Horror) Horror->Step(Dt);
+	if (!bFree && Spine) Spine->Step(Dt);
 	if (World) World->Update(Dt, T); // Parked native vehicle choices also exist before any road leg is built.
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);
-	if (Substation) Substation->Step(Dt);
+	if (FreeformTest) FreeformTest->Step(Dt);
+	if (!bFree && Substation) Substation->Step(Dt);
  // Opt-in live contract tests must also observe legacy restores with Evening disabled.
  if (Evening) Evening->ControlServiceTest(Dt);
  if (Evening) Evening->ControlServiceDriveTest(Dt);
-	if (Mode == EMode::Play && Anomaly) Anomaly->Step(Dt);
-	if (Mode == EMode::Play && AnomalyWorld) AnomalyWorld->Step(Dt);
+	if (!bFree && Mode == EMode::Play && Anomaly) Anomaly->Step(Dt);
+	if (!bFree && Mode == EMode::Play && AnomalyWorld) AnomalyWorld->Step(Dt);
 	const bool bOpening = Evening && Evening->Opening();
 	// main.ts, after game.update: the walk gap to STATION 01 from chapter three, the old road's barricades
 	// open from chapter five's road (World.setStoryPlaces)
-	if (Mode == EMode::Play && World && Story)
+	if (bFree && Mode == EMode::Play && World) World->SetStoryPlaces(true, true);
+	if (!bFree && Mode == EMode::Play && World && Story)
 	{
 		const US47Chapter5* C5 = Cast<US47Chapter5>(Story->Chapter(TEXT("ch5")));
 		const bool bRoad = C5 && C5->bActive && (C5->S.Stage == TEXT("road") || C5->S.Stage == TEXT("complete"));
@@ -113,8 +120,8 @@ void US47Main::Step(double Dt)
 	}
 	if (!Player || !Audio) return;
 	const FVector P = Player->Pos;
-	if (Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
-	if (AnomalyWorld) AnomalyWorld->DreadStep(Dt);
+	if (!bFree && Mode == EMode::Play && TownLayer) TownLayer->WorldStep(Dt);
+	if (!bFree && AnomalyWorld) AnomalyWorld->DreadStep(Dt);
 	// main.ts: the closer look, the lens narrowing while right mouse is held (S47Phones.cpp)
 	if (Phones) Phones->LookStep(Dt);
 	// main.ts: the flashlight held from the eyes (core/Flashlight.ts)
@@ -124,11 +131,11 @@ void US47Main::Step(double Dt)
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
 	if (Mode == EMode::Play) Audio->NightLife(float(ModalOpen() ? 0.0 : Dt), P, Story ? Story->Clock() : 0.0);
 	// main.ts: the music by cue (core/score.ts)
-	if (Mode == EMode::Play && Score && !bOpening) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
+	if (!bFree && Mode == EMode::Play && Score && !bOpening) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)
-	if (SaroNight && !bOpening) SaroNight->Frame(Dt);
+	if (!bFree && SaroNight && !bOpening) SaroNight->Frame(Dt);
 	// main.ts: html.at-line during THE EVENT (game.ch6.stage === 'event'): the prompt sits lower
 	{
 		const US47Chapter6* C6 = Story ? Cast<US47Chapter6>(Story->Chapter(TEXT("ch6"))) : nullptr;
@@ -180,7 +187,7 @@ void US47Main::Step(double Dt)
 		S47PeriodFixtures::Update(this, Dt);
 		S47Lookdev::Update(this, Dt);
 	}
-	if (SkyVisitors) SkyVisitors->Step(Dt);
+	if (!bFree && SkyVisitors) SkyVisitors->Step(Dt);
 	if (DaleDocumentsTest) DaleDocumentsTest->Step(Dt);
 	if (AnomalyTest) AnomalyTest->Step(Dt);
 	if (T02Test) T02Test->Step(Dt);

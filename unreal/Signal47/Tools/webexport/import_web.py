@@ -615,7 +615,7 @@ float dist = -m.z;
 float pxs = size * px / max(dist, 0.1);
 // A one-pixel filter footprint is antialiasing, not a minimum physical insect size.
 // Coverage below removes the old distant 1.5 px / 45% alpha clumps.
-float w = max(pxs, 1.0), ps = 1.0;
+float w = max(pxs, (vKind > 0.5 && vKind < 1.5) ? 1.5 : 1.0), ps = 1.0;
 float coverage = saturate(pxs / w);
 coverage *= coverage;
 float3 shift = 0;

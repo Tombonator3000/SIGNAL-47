@@ -1843,7 +1843,7 @@ bool US47Chapter1::SelfTest(TArray<FString>& Lines)
 
 bool US47Chapter1::EarlyCamera() const
 {
- return M && M->Anomaly && M->Anomaly->Data.bEarlyCamera;
+ return M && ((M->IsFreeform() && M->FieldCamera && M->FieldCamera->bHave) || (M->Anomaly && M->Anomaly->Data.bEarlyCamera));
 }
 void US47Chapter1::RestoreEarlyCamera()
 {

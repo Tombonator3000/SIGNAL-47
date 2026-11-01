@@ -4,6 +4,7 @@
 #include "InputCoreTypes.h"
 #include "S47BoardRules.h"
 #include "S47Seen.h"
+#include "S47Session.h"
 #include "UObject/Object.h"
 #include "S47Main.generated.h"
 
@@ -58,10 +59,14 @@ public:
 	TSharedPtr<class FS47TripoNpcs> TripoNpcs; // temporary static Tripo roster, existing story anchors
 	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Horror> Horror;
+	TSharedPtr<class FS47FreeformSession> Freeform;
+	ES47SessionMode SessionMode = ES47SessionMode::Story;
+	bool IsFreeform() const { return SessionMode == ES47SessionMode::Freeform; }
 	TSharedPtr<class FS47Observing> Observing; // evening array work before SC01's window round
 	TSharedPtr<class FS47Spine> Spine; // SC01 to SC13 order and the marked placeholders (S47Spine.h)
 	TSharedPtr<class FS47DevEvents> DevEvents; // F10: developer events in a night (S47DevEvents.h)
 	TSharedPtr<class FS47HorrorTest> HorrorTest;
+	TSharedPtr<class FS47FreeformTest> FreeformTest;
 	TSharedPtr<class FS47Evening> Evening; // authored evening opening and persistent pack gates
 	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)
 

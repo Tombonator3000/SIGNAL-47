@@ -16,7 +16,7 @@ struct FS47Task;
 // UI.title
 struct FS47TitleOpts
 {
-	TFunction<void()> OnStart, OnContinue, OnLoad, OnSettings;
+	TFunction<void()> OnStart, OnContinue, OnLoad, OnSettings, OnFreeform;
 	FString Cont;                         // "chapter · place · clock · played"; empty: nothing to continue
 	bool bCanLoad = false;
 	bool bCalm = false;                   // flash: { calm, onPick }

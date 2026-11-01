@@ -1,0 +1,1251 @@
+{
+	"status": "PASS",
+	"reason": "",
+	"checks": 248,
+	"diskFlowRestores": 21,
+	"scope": "full",
+	"evidence": [
+		{
+			"check": "explicit isolated temporary profile required",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "Freeform starts without authored Story controllers",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "day one has three jobs, starting budget and physical/director adapters",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "selected job supplies real receiver profile",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "receiver cannot acquire before a physical pointing command",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "actual native antenna encoders move while tracking telemetry is open",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "settled actual array permits the timed observation",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "full state written to isolated disk: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "fresh disk state read: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "saved mode identity retained: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "completed measurement retains an original chart",
+			"pass": true,
+			"stage": 4
+		},
+		{
+			"check": "production registration accepts the supported finding",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "one completed job receives exactly twenty dollars",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "repeated registration cannot duplicate payment",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "full state written to isolated disk: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "fresh disk state read: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "saved mode identity retained: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "selected job supplies real receiver profile",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "receiver cannot acquire before a physical pointing command",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "actual native antenna encoders move while tracking telemetry is open",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "settled actual array permits the timed observation",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "full state written to isolated disk: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "fresh disk state read: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "saved mode identity retained: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "completed measurement retains an original chart",
+			"pass": true,
+			"stage": 4
+		},
+		{
+			"check": "physical receiver control starts a separate timed reference",
+			"pass": true,
+			"stage": 4
+		},
+		{
+			"check": "comparison cannot be granted before actual playback",
+			"pass": true,
+			"stage": 5
+		},
+		{
+			"check": "original recording really played through",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "independent control recording really played through",
+			"pass": true,
+			"stage": 7
+		},
+		{
+			"check": "supported interval is retained only after both recordings",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "full state written to isolated disk: reviewed-recordings",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "fresh disk state read: reviewed-recordings",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "saved mode identity retained: reviewed-recordings",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: reviewed-recordings",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: reviewed-recordings",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "production registration accepts the supported finding",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "printed packet cannot be filed remotely from the console",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "physical run binder exists in the loaded SARO world",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "retained packet receives filing credit at the actual physical run binder",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "one completed job receives exactly twenty dollars",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "repeated registration cannot duplicate payment",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "full state written to isolated disk: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "fresh disk state read: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "saved mode identity retained: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "selected job supplies real receiver profile",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "receiver cannot acquire before a physical pointing command",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "actual native antenna encoders move while tracking telemetry is open",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "settled actual array permits the timed observation",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "full state written to isolated disk: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "fresh disk state read: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "saved mode identity retained: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: mid-acquisition",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "completed measurement retains an original chart",
+			"pass": true,
+			"stage": 4
+		},
+		{
+			"check": "production registration accepts the supported finding",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "one completed job receives exactly twenty dollars",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "repeated registration cannot duplicate payment",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "full state written to isolated disk: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "fresh disk state read: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "saved mode identity retained: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: paid-job",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "rest advances a day without farming payments",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "rest advances a day without farming payments",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "third day continues without Story finale or chapter transition",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "loading fresh film preserves all archived photographs",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "full state written to isolated disk: third-day",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "fresh disk state read: third-day",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "saved mode identity retained: third-day",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: third-day",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: third-day",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "physical gas-station purchase creates a paid parcel",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "purchased supplies remain at the shop until collected",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "parcel collected into a single authoritative carried state",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "full state written to isolated disk: carried-purchase",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "fresh disk state read: carried-purchase",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "saved mode identity retained: carried-purchase",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: carried-purchase",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: carried-purchase",
+			"pass": true,
+			"stage": 41
+		},
+		{
+			"check": "physical purchase survives ordinary Continue without duplication",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "carried purchase is secured as physical truck cargo",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "full state written to isolated disk: loaded-cargo",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "fresh disk state read: loaded-cargo",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "saved mode identity retained: loaded-cargo",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: loaded-cargo",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: loaded-cargo",
+			"pass": true,
+			"stage": 42
+		},
+		{
+			"check": "loaded cargo survives ordinary Continue",
+			"pass": true,
+			"stage": 421
+		},
+		{
+			"check": "truck cargo must be unloaded before physical bench delivery",
+			"pass": true,
+			"stage": 422
+		},
+		{
+			"check": "physical bench unpacks one purchased part into persistent stock",
+			"pass": true,
+			"stage": 44
+		},
+		{
+			"check": "repeated bench use does not duplicate delivered supplies",
+			"pass": true,
+			"stage": 44
+		},
+		{
+			"check": "diagnosis identifies a real remotely unavailable antenna",
+			"pass": true,
+			"stage": 45
+		},
+		{
+			"check": "local isolation and actual hatch opening precede replacement",
+			"pass": true,
+			"stage": 45
+		},
+		{
+			"check": "full state written to isolated disk: service-open",
+			"pass": true,
+			"stage": 452
+		},
+		{
+			"check": "fresh disk state read: service-open",
+			"pass": true,
+			"stage": 452
+		},
+		{
+			"check": "saved mode identity retained: service-open",
+			"pass": true,
+			"stage": 452
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: service-open",
+			"pass": true,
+			"stage": 452
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: service-open",
+			"pass": true,
+			"stage": 452
+		},
+		{
+			"check": "open service hatch persists after disk/Flow restore",
+			"pass": true,
+			"stage": 46
+		},
+		{
+			"check": "stock relay is mounted, hatch closed and physical local test started",
+			"pass": true,
+			"stage": 46
+		},
+		{
+			"check": "native local movement returns to its initial encoder angle and restores remote service",
+			"pass": true,
+			"stage": 47
+		},
+		{
+			"check": "full state written to isolated disk: service-complete",
+			"pass": true,
+			"stage": 47
+		},
+		{
+			"check": "fresh disk state read: service-complete",
+			"pass": true,
+			"stage": 47
+		},
+		{
+			"check": "saved mode identity retained: service-complete",
+			"pass": true,
+			"stage": 47
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: service-complete",
+			"pass": true,
+			"stage": 47
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: service-complete",
+			"pass": true,
+			"stage": 47
+		},
+		{
+			"check": "physical supply world remains attached after multi-day Continue",
+			"pass": true,
+			"stage": 49
+		},
+		{
+			"check": "director exposes the sixteen authored event families",
+			"pass": true,
+			"stage": 49
+		},
+		{
+			"check": "explicit native event fixture starts: extra_pulse",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "full state written to isolated disk: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "fresh disk state read: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "saved mode identity retained: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "same event resumes from disk instead of rerolling",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "explicit native event fixture starts: roof_steps",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "explicit native event fixture starts: s03_failure",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "explicit native event fixture starts: observer",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "controlled encounter has a real native individual after its warning",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "full state written to isolated disk: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "fresh disk state read: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "saved mode identity retained: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "same event resumes from disk instead of rerolling",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "explicit native event fixture starts: feeder_fault",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "feeder incident cuts the actual receiver circuit before physical repair",
+			"pass": true,
+			"stage": 90
+		},
+		{
+			"check": "physical feeder exchange reaches its enclosed timed test",
+			"pass": true,
+			"stage": 901
+		},
+		{
+			"check": "physical feeder isolation, replacement and timed test restore actual receiver supply",
+			"pass": true,
+			"stage": 91
+		},
+		{
+			"check": "full state written to isolated disk: feeder-repaired",
+			"pass": true,
+			"stage": 91
+		},
+		{
+			"check": "fresh disk state read: feeder-repaired",
+			"pass": true,
+			"stage": 91
+		},
+		{
+			"check": "saved mode identity retained: feeder-repaired",
+			"pass": true,
+			"stage": 91
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: feeder-repaired",
+			"pass": true,
+			"stage": 91
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: feeder-repaired",
+			"pass": true,
+			"stage": 91
+		},
+		{
+			"check": "repaired feeder remains powered after ordinary Continue",
+			"pass": true,
+			"stage": 92
+		},
+		{
+			"check": "explicit native event fixture starts: service_presence",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "controlled encounter has a real native individual after its warning",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "full state written to isolated disk: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "fresh disk state read: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "saved mode identity retained: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: active-event",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "same event resumes from disk instead of rerolling",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "explicit native event fixture starts: wrong_source",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "investigation selects its available pulsar or incident job through OPS",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "instrument anomaly supplies a retained observation job",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "specialized investigation commands its actual array pointing",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "specialized observation retains its physical original",
+			"pass": true,
+			"stage": 62
+		},
+		{
+			"check": "retained original precedes its distinct measured instrument control",
+			"pass": true,
+			"stage": 62
+		},
+		{
+			"check": "three real settled adjacent-beam samples precede off-source evidence",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "full state written to isolated disk: measured-wrong_source",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "fresh disk state read: measured-wrong_source",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "saved mode identity retained: measured-wrong_source",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: measured-wrong_source",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: measured-wrong_source",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "measured distinct instrument comparison survives Continue: wrong_source",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "supported instrument finding is registered and physically collected: wrong_source",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "physical run binder exists in the loaded SARO world",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "retained packet receives filing credit at the actual physical run binder",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "explicit native event fixture starts: unsigned_telex",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "explicit native event fixture starts: empty_car",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "event presents actual visible native render components: empty_car",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "active physical incident is hidden and unqueryable outside its scene",
+			"pass": true,
+			"stage": 222
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "event presents actual visible native render components: empty_car",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "physical empty-car inspection retains its independent field record",
+			"pass": true,
+			"stage": 221
+		},
+		{
+			"check": "explicit native event fixture starts: response_lights",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "event presents actual visible native render components: response_lights",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "explicit native event fixture starts: landing_trace",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "event presents actual visible native render components: landing_trace",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "field photograph requires the still-visible native sample",
+			"pass": true,
+			"stage": 23
+		},
+		{
+			"check": "native camera renders and retains the actual physical trace",
+			"pass": true,
+			"stage": 23
+		},
+		{
+			"check": "photographed trace becomes one retained physical sample",
+			"pass": true,
+			"stage": 23
+		},
+		{
+			"check": "physical sample analysis starts at the service bench",
+			"pass": true,
+			"stage": 24
+		},
+		{
+			"check": "full state written to isolated disk: sample-analysis-running",
+			"pass": true,
+			"stage": 241
+		},
+		{
+			"check": "fresh disk state read: sample-analysis-running",
+			"pass": true,
+			"stage": 241
+		},
+		{
+			"check": "saved mode identity retained: sample-analysis-running",
+			"pass": true,
+			"stage": 241
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: sample-analysis-running",
+			"pass": true,
+			"stage": 241
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: sample-analysis-running",
+			"pass": true,
+			"stage": 241
+		},
+		{
+			"check": "in-progress sample analysis restores without early completion or a duplicated loose sample",
+			"pass": true,
+			"stage": 241
+		},
+		{
+			"check": "timed analysis seals the original and cannot duplicate evidence",
+			"pass": true,
+			"stage": 25
+		},
+		{
+			"check": "explicit native event fixture starts: time_disagreement",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "investigation selects its available pulsar or incident job through OPS",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "instrument anomaly supplies a retained observation job",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "specialized investigation commands its actual array pointing",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "specialized observation retains its physical original",
+			"pass": true,
+			"stage": 62
+		},
+		{
+			"check": "retained original precedes its distinct measured instrument control",
+			"pass": true,
+			"stage": 62
+		},
+		{
+			"check": "independent clock readbacks establish the actual repeated disagreement",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "full state written to isolated disk: measured-time_disagreement",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "fresh disk state read: measured-time_disagreement",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "saved mode identity retained: measured-time_disagreement",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: measured-time_disagreement",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: measured-time_disagreement",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "measured distinct instrument comparison survives Continue: time_disagreement",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "supported instrument finding is registered and physically collected: time_disagreement",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "physical run binder exists in the loaded SARO world",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "retained packet receives filing credit at the actual physical run binder",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "explicit native event fixture starts: duplicate_print",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "investigation selects its available pulsar or incident job through OPS",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "instrument anomaly supplies a retained observation job",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "specialized investigation commands its actual array pointing",
+			"pass": true,
+			"stage": 60
+		},
+		{
+			"check": "specialized observation retains its physical original",
+			"pass": true,
+			"stage": 62
+		},
+		{
+			"check": "retained original precedes its distinct measured instrument control",
+			"pass": true,
+			"stage": 62
+		},
+		{
+			"check": "a separate collected duplicate differs from the preserved original",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "full state written to isolated disk: measured-duplicate_print",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "fresh disk state read: measured-duplicate_print",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "saved mode identity retained: measured-duplicate_print",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: measured-duplicate_print",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: measured-duplicate_print",
+			"pass": true,
+			"stage": 63
+		},
+		{
+			"check": "measured distinct instrument comparison survives Continue: duplicate_print",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "supported instrument finding is registered and physically collected: duplicate_print",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "physical run binder exists in the loaded SARO world",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "retained packet receives filing credit at the actual physical run binder",
+			"pass": true,
+			"stage": 64
+		},
+		{
+			"check": "explicit native event fixture starts: flyover",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "event presents actual visible native render components: flyover",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "explicit native event fixture starts: quiet_zone",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "explicit native event fixture starts: close_pass",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "event owns a persisted running state",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "event presents actual visible native render components: close_pass",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "standard local recovery retains secured evidence and budget",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "full state written to isolated disk: local-recovery",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "fresh disk state read: local-recovery",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "saved mode identity retained: local-recovery",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "ordinary Flow restore starts Freeform: local-recovery",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "parked service vehicle identity and actual pose survive Continue: local-recovery",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "optional lethal consequence records death instead of local recovery",
+			"pass": true,
+			"stage": 31
+		}
+	],
+	"method": "Isolated native Freeform integration: actual timed encoder settling, acquisition and audio; production workstation callbacks, full disk/Flow restores, accelerated day transitions and explicit event fixtures. Screenshots are native Vulkan. Fixture placement does not establish a natural town drive or human input/listening.",
+	"limits": "No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."
+}

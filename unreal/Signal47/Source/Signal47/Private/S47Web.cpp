@@ -1,4 +1,6 @@
 #include "S47Web.h"
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Main.h"
 #include "S47Spine.h"
 #include "S47UI.h"
@@ -1640,7 +1642,7 @@ void AS47Web::Tick(float Dt)
 	// dishes slew (Dish.update). Read the current UI hold as well as the work tick
 	// cache: a document can open later in the gameplay tick, before this actor ticks.
 	const US47Main* Main = US47Main::Get(this);
-	const bool bWorkHold = bWorkMotionPaused || (Main && Main->Observing && Main->Observing->ArrayMotionHeld());
+	const bool bWorkHold = bWorkMotionPaused || (Main && Main->IsFreeform() && Main->Freeform && Main->Freeform->ArrayMotionHeld()) || (Main && Main->Observing && Main->Observing->ArrayMotionHeld());
 	bool bMoved = false;
 	for (FDish& D : Dishes)
 	{

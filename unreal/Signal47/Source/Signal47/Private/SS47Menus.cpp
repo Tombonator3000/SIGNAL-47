@@ -58,7 +58,8 @@ void SS47Title::Construct(const FArguments& InArgs)
 	bGated = O.bGate;
 	// .menu: Continue (and where it would take you), New night, Load case, Settings, Quit
 	Items.Add({ TEXT("CONTINUE"), !O.Cont.IsEmpty(), [this] { if (O.OnContinue) O.OnContinue(); } });
-	Items.Add({ TEXT("NEW NIGHT"), true, [this] { if (O.OnStart) O.OnStart(); } });
+	Items.Add({ TEXT("NEW STORY"), true, [this] { if (O.OnStart) O.OnStart(); } });
+	if (O.OnFreeform) Items.Add({ TEXT("NEW FREEFORM"), true, [this] { O.OnFreeform(); } });
 	Items.Add({ TEXT("LOAD CASE"), O.bCanLoad, [this] { if (O.OnLoad) O.OnLoad(); } });
 	Items.Add({ TEXT("SETTINGS"), true, [this] { if (O.OnSettings) O.OnSettings(); } });
 	if (O.OnDev) Items.Add({ TEXT("DEVELOPER"), true, [this] { if (O.OnDev) O.OnDev(); } });
