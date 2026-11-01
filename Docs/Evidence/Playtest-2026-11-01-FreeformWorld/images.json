@@ -73,5 +73,10 @@
     "file": "15-s03-no-clear-repair-action.png",
     "sha256": "e963de1fd72eb7a5892493c88a33567811093e9514e8e0d2b829a50eb3452a06",
     "caption": "S-03 virker ikke, og spilleren finner ingen forståelig reparasjonshandling ved antennen."
+  },
+  {
+    "file": "16-saro-wall-missing-before-rest.png",
+    "sha256": "0482d662520d69024bbd5415c2775db27bf6a8be35cd51a4a6cb20ed80796809",
+    "caption": "SARO kl.23:49: deler av innerveggen mangler. Tom bekrefter at veggene kom tilbake straks etter Rest until morning, uten lasting."
   }
 ]

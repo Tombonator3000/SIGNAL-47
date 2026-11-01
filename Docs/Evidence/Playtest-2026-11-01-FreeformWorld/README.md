@@ -19,3 +19,4 @@ Originalbildene er kopiert uendret fra Toms vedlegg. Kildebygg og tekniske årsa
 - [13. PC-panelets rektangel/tekst går utenfor CRT-glasset; HUD-/ESC-rester ligger utenfor PC-en.](13-crt-ui-outside-glass.png)
 - [14. Acquisition er uforståelig: gain29/AZ26.1 avviker fra kortet, men skjermen viser ARRAY QUALITY100% og generelt avslag.](14-receiver-acquisition-unclear.png)
 - [15. S-03 virker ikke, og spilleren finner ingen forståelig reparasjonshandling ved antennen.](15-s03-no-clear-repair-action.png)
+- [16. SARO kl.23:49: veggfelt mangler; veggene kom tilbake straks ved Rest until morning uten lasting.](16-saro-wall-missing-before-rest.png)
