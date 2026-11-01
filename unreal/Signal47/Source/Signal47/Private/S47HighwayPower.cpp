@@ -160,8 +160,10 @@ void AS47Web::BuildHighwayPower()
     const FVector Site=S47Three::ToThree(T.GetLocation());
     if(Site.Y-S47RoadTerrain::SurfaceY(Site.X+24,Site.Z-300)>6)OutsidePower.Add(K);
    }
-   // Fail closed if this optional shared batch no longer has its expected mixed role.
-   if(OutsidePower.Num()<500||OutsidePower.Num()>1000||OutsideWires->GetInstanceCount()-OutsidePower.Num()<500)return;
+   // The obsolete decorative fence rows may be absent. Accept the exact
+   // power-only batch too; never retire arbitrary low wires as overhead cable.
+   const int32 FenceSegments=OutsideWires->GetInstanceCount()-OutsidePower.Num();
+   if(OutsidePower.Num()<500||OutsidePower.Num()>1000||(FenceSegments!=0&&FenceSegments<500))return;
   }
  }
  if(OldMainNodes!=2||Patches.Num()!=2)return;

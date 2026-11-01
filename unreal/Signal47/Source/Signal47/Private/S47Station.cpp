@@ -293,7 +293,7 @@ void US47Station::Tick(float DeltaTime)
 	if (!M || M->Mode != US47Main::EMode::Play || M->bPausedByMenu) return;
 	T += DeltaTime;
 	// world.setStoryPlaces: the walk gap open from chapter three on
-	if (StationOpen) SetWalkGate(StationOpen());
+	SetWalkGate(M->IsFreeform() || (StationOpen && StationOpen()));
 	// World.update: if (this.area === 'station01') this.site?.update(dt, t)
 	if (M->Web && M->Web->Area() == TEXT("station01")) Update(DeltaTime, T);
 }

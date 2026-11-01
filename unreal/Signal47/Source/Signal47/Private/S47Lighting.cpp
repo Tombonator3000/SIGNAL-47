@@ -203,7 +203,7 @@ float AS47Web::ExteriorDaylightMask(int32 Set, int32 Slot) const
  const FString& Key = FloodSets[Set].Key;
  const bool Ordinary = (Key == TEXT("site") && ((Slot >= 0 && Slot <= 9) || (Slot >= 12 && Slot <= 15) || (Slot >= 17 && Slot <= 19)))
   || (Key == TEXT("court") && ((Slot >= 2 && Slot <= 7) || Slot == 10 || Slot == 11))
-  || (Key == TEXT("town") && Slot >= 1 && Slot <= 7)
+  || (Key == TEXT("town") && Slot >= 1 && Slot <= 8) // street, facade and gas canopy/sign; not shop/radio interiors
   || (Key == TEXT("field") && (Slot == 2 || Slot == 3 || Slot == 5));
  if (!Ordinary) return 1.f; // headlights, B12, survey work light, indicators and indoor circuits
  if (Key == TEXT("site") && Slot < 5)

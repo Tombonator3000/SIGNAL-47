@@ -52,6 +52,7 @@ public:
 	TSharedPtr<class FS47Anomaly> Anomaly;
 	TSharedPtr<class FS47AnomalyWorld> AnomalyWorld;
 	TSharedPtr<class FS47Substation> Substation; // local, persistent Caliche Junction inspection circuit
+	TSharedPtr<class FS47RoomLights> RoomLights; // saved room switches; electrical supply remains upstream
 	TSharedPtr<class FS47Office> Office; // physical Operations key, office and field-sheet route
 	TSharedPtr<class FS47GraphicsTest> GraphicsTest; // opt-in isolated settings contract
 	TSharedPtr<class FS47T02Test> T02Test; // explicit isolated live-contract flag only

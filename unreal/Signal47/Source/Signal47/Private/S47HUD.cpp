@@ -26,6 +26,8 @@
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
+#include "S47RoomLights.h"
+#include "S47RoomLightsTest.h"
 #include "S47T02Test.h"
 #include "S47Graphics.h"
 #include "S47GraphicsTest.h"
@@ -194,6 +196,7 @@ void AS47HUD::Start()
 		bOk &= FS47TitleEraseSound::SelfTest(Lines);
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
+		bOk &= FS47RoomLights::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);
@@ -561,6 +564,7 @@ void AS47HUD::Start()
 		M->Evening = MakeShared<FS47Evening>(M);
 		M->SkyVisitors = MakeShared<FS47SkyVisitors>(M);
 		M->Office = MakeShared<FS47Office>(M);
+		M->RoomLights = MakeShared<FS47RoomLights>(M);
 		M->Office->Init();
 		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))))
 		{
@@ -620,6 +624,7 @@ void AS47HUD::StartTests()
 	S47MenuPointerTest::Start(US47Main::Get(this));
 	S47SaroWallTest::Start(US47Main::Get(this));
 	S47OfficeFreeformTest::Start(US47Main::Get(this));
+	S47RoomLightsTest::Start(US47Main::Get(this));
 	S47CreaturePreview::Start(US47Main::Get(this));
 	S47RoswellPreview::Start(US47Main::Get(this));
 	S47RoswellAIProbe::Start(US47Main::Get(this));

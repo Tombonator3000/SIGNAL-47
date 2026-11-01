@@ -1,4 +1,5 @@
 // Unreal-only continuous highway dressing. Story areas and their collision stay separate.
+#include "S47HighwayLandscape.h"
 #include "S47Web.h"
 #include "S47Geo.h"
 #include "S47GroundCover.h"
@@ -16,7 +17,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47HighwayLandscape, Log, All);
 namespace
 {
  const FVector SaroToRoad(8000 + S47Geo::SARO_IN_ROAD.X, 0, S47Geo::SARO_IN_ROAD.Z);
- bool HighwayArea(const FString& A) { return A==TEXT("saro") || A==TEXT("road") || A==TEXT("diner"); }
+
  bool NaturalProp(const FString& N)
  {
   for (const TCHAR* Prefix : {TEXT("props:rocksWest"),TEXT("props:rocksEast"),TEXT("props:rocksSaro"),
@@ -26,9 +27,38 @@ namespace
  }
 }
 
+namespace S47HighwayLandscape
+{
+ bool Exterior(const FString& A){return A==TEXT("saro")||A==TEXT("road")||A==TEXT("diner")||A==TEXT("station01");}
+ FTransform AreaTransform(const FString& Area)
+ {
+  if(Area==TEXT("saro"))return FTransform(S47Three::ToUE(-SaroToRoad));
+  if(Area==TEXT("station01"))
+  {
+   // Canonical origin is road-world (0,0,0), hence road-local X=-8000.
+   const auto P=S47Geo::RoadToStation(-8000,0);
+   return FTransform(FQuat(FVector::UpVector,UE_DOUBLE_HALF_PI),S47Three::ToUE(P.X,S47Geo::STATION_DY(),P.Z+8000));
+  }
+  return FTransform::Identity;
+ }
+ FVector ToCanonical(const FString& Area,const FVector& P)
+ {return S47Three::ToThree(AreaTransform(Area).InverseTransformPosition(S47Three::ToUE(P)));}
+ bool SelfTest(TArray<FString>& Lines)
+ {
+  bool OK=true;
+  for(const FVector P:{FVector(8000,1.2,520),FVector(7394,0,532),FVector(7998.2,2,196)})
+  {
+   const auto S=S47Geo::RoadToStation(P.X-8000,P.Z);const FVector Want(S.X,P.Y+S47Geo::STATION_DY(),S.Z+8000);
+   const FVector Actual=S47Three::ToThree(AreaTransform(TEXT("station01")).TransformPosition(S47Three::ToUE(P)));
+   OK&=Actual.Equals(Want,.000001)&&ToCanonical(TEXT("station01"),Want).Equals(P,.000001);
+  }
+  Lines.Add(FString(OK?TEXT("PASS "):TEXT("FAIL "))+TEXT("Station01 highway rendering and eye mapping preserve the real quarter-turn drive coordinates"));return OK;
+ }
+}
+
 FVector AS47Web::HighwayMapEye(const FVector& ThreeEye) const
 {
- return HighwayLandscapeReady() && CurrentArea==TEXT("saro") ? ThreeEye+SaroToRoad : ThreeEye;
+ return HighwayLandscapeReady()?S47HighwayLandscape::ToCanonical(CurrentArea,ThreeEye):ThreeEye;
 }
 
 void AS47Web::BuildHighwayLandscape()
@@ -119,7 +149,7 @@ void AS47Web::UpdateHighwayLandscape()
 {
  USceneComponent* Root=HighwayLandscapeRoot.Get();if(!Root)return;
  HighwayOffset=CurrentArea==TEXT("saro") ? -SaroToRoad : FVector::ZeroVector;
- Root->SetRelativeLocation(S47Three::ToUE(HighwayOffset));
+ Root->SetRelativeTransform(S47HighwayLandscape::AreaTransform(CurrentArea));
  for(int32 I:HighwaySharedNodes)ApplyVisibility(I,true);
 }
 
@@ -132,10 +162,11 @@ bool AS47Web::AuditHighwayLandscape(TArray<FString>& Lines) const
  for(const auto& Pair:HighwayVisuals)
  {
   const FS47WebNode* N=Node(Pair.Key);const UPrimitiveComponent* C=N?Cast<UPrimitiveComponent>(N->Comp.Get()):nullptr;
-  FTransform Want=Pair.Value;Want.AddToTranslation(S47Three::ToUE(HighwayOffset));
+  FTransform Want=Pair.Value*S47HighwayLandscape::AreaTransform(CurrentArea);
   Check(C && C->GetComponentTransform().Equals(Want,.03),N?N->Name:TEXT("missing shared component"));
-  Check(C && C->IsVisible()==(HighwayArea(CurrentArea)&&N->bVis),TEXT("component visibility follows continuous area"));
+  Check(C && C->IsVisible()==(S47HighwayLandscape::Exterior(CurrentArea)&&N->bVis),TEXT("component visibility follows continuous area"));
  }
+ Ok&=S47HighwayLandscape::SelfTest(Lines);
  if(RouteNature)Ok&=RouteNature->Audit(Lines);
  return Ok;
 }

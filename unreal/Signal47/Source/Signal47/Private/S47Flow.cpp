@@ -17,6 +17,7 @@
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
+#include "S47RoomLights.h"
 #include "S47SkyVisitors.h"
 #include "S47WorldLife.h"
 #include "S47Anomaly.h"
@@ -441,6 +442,7 @@ void US47Flow::Boot()
 		if (M->Night) M->Night->Restored();
 		if (M->Evening && !M->Evening->Enabled() && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation();
 		if (M->Office) M->Office->Begin(nullptr, M->Story->bEveningTimeline && M->Evening && M->Evening->Opening());
+		if (M->RoomLights) M->RoomLights->Begin();
 		if (M->SkyVisitors) M->SkyVisitors->Begin(nullptr, M->Story->bEveningTimeline);
 		if(M->FieldRadio) M->FieldRadio->Begin(nullptr);
 		if (M->Life) M->Life->PassageReset(false);
@@ -454,6 +456,7 @@ void US47Flow::Boot()
 	// the first title: nothing of the night is heard yet (the room tone starts with the night), and
 	// the station behind it is as the night begins (the Prologue's constructor resets it)
 	if (M->Audio) M->Audio->Stop(TEXT("room"), 0.f);
+	if (M->RoomLights) M->RoomLights->Stop();
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
@@ -796,6 +799,7 @@ void US47Flow::StartGame(const FStart& O)
  if (bFreeform && O.State && (!FreeVersion || FreeVersion->Type!=EJson::Number || FreeVersion->AsNumber()!=1))
  { M->UI->Toast(TEXT("This Freeform save version cannot be opened safely."),5); return; }
  if (M->Freeform) M->Freeform->Stop();
+ if (M->RoomLights) M->RoomLights->Stop();
  M->SessionMode = bFreeform ? ES47SessionMode::Freeform : ES47SessionMode::Story;
  bDeathShown=false;
 	bStarting = true;
@@ -894,6 +898,7 @@ void US47Flow::StartGame(const FStart& O)
 	else if (M->Evening && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation(EveningSaved);
 	if (bFreeform) { if(M->Office)M->Office->Begin(S47J::Obj(O.State,TEXT("office")),false); if(M->SkyVisitors)M->SkyVisitors->Begin(nullptr,false); if(M->AnomalyWorld)M->AnomalyWorld->Reset(); }
 	if (!bFreeform && M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
+ if (M->RoomLights) M->RoomLights->Begin(S47J::Obj(O.State,TEXT("roomLights")));
 	if (!bFreeform && M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if(M->FieldRadio) M->FieldRadio->Begin(S47J::Obj(O.State,TEXT("fieldRadio")));
 	if (M->Life)
@@ -990,6 +995,7 @@ void US47Flow::FadeInSoon(float Secs)
 void US47Flow::LeavePlay()
 {
 	if (M->Freeform) M->Freeform->Stop();
+ if (M->RoomLights) M->RoomLights->Stop();
 	M->UI->Fade(true, FString());
 	// (fcam.raise(false): the field camera is chapter one's)
 	M->UI->Viewfinder(false);
@@ -1023,6 +1029,7 @@ void US47Flow::LeavePlay()
 void US47Flow::ToTitle()
 {
 	if (M->Freeform) M->Freeform->Stop();
+ if (M->RoomLights) M->RoomLights->Stop();
 	Opening->Dismiss();
 	if (M->Audio) M->Audio->Silence(false);
 	M->Mode = EMode::Title;
@@ -1463,6 +1470,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Anomaly) S47J::Set(State,TEXT("anomaly"),M->Anomaly->Save());
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
+ if (M->RoomLights) S47J::Set(State,TEXT("roomLights"),M->RoomLights->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
 	if(M->FieldRadio) S47J::Set(State,TEXT("fieldRadio"),M->FieldRadio->Save());
 	if (M->Life)

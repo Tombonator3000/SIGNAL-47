@@ -9,6 +9,7 @@
 #include "S47OfficeWindow.h"
 #include "S47Sky.h"
 #include "S47Main.h"
+#include "S47RoomLights.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -426,7 +427,7 @@ void FS47Office::Init()
  // two opal diffusers, faces down and retains the existing power/area driver.
  URectLightComponent* Light = NewObject<URectLightComponent>(W, TEXT("OperationsCeilingLight")); Light->SetMobility(EComponentMobility::Movable); Light->SetupAttachment(Group);
  Light->SetWorldLocation(S47Three::ToUE(FVector(.47, 2.594, 8.8))); Light->SetWorldRotation(FRotator(-90, 0, 0));
- Light->SetSourceWidth(115); Light->SetSourceHeight(32); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(32); Light->SetLightColor(FLinearColor(1, .94f, .84f)); Light->SetAttenuationRadius(340); Light->SetCastShadows(true); Light->RegisterComponent(); Visual->Light = Light;
+ Light->SetSourceWidth(115); Light->SetSourceHeight(32); Light->SetIntensityUnits(ELightUnits::Lumens); Light->SetIntensity(32); Light->SetLightColor(FLinearColor(1, .94f, .84f)); Light->SetAttenuationRadius(340); Light->SetCastShadows(true); Light->ComponentTags.AddUnique(TEXT("S47RoomCeiling:office")); Light->RegisterComponent(); Visual->Light = Light;
  // The native banker's lamp has a wide shade, 28cm above its foot. Keep its
  // small warm pool under the shade rather than illuminating the entire room.
  URectLightComponent* Task = NewObject<URectLightComponent>(W, TEXT("OperationsDeskLight")); Task->SetMobility(EComponentMobility::Movable); Task->SetupAttachment(Group);
@@ -873,13 +874,14 @@ void FS47Office::Apply()
  const FS47Sky* Sky = M->Life && M->Life->Sky.IsValid() ? M->Life->Sky.Get() : nullptr;
  const float Daylight = Sky ? float(FMath::Clamp(Sky->Daylight(), 0., 1.)) : 0.f;
  const bool Powered = M->Story && !M->Story->bDark;
+ const bool CeilingOn = Powered && (!M->RoomLights || M->RoomLights->RoomEnabled(TEXT("office")));
  if (URectLightComponent* Light = Visual->Light.Get())
- { Light->SetIntensity(FMath::Lerp(46.f, 32.f, Daylight)); Light->SetVisibility(Visible && M->Story && !M->Story->bDark); }
+ { Light->SetIntensity(CeilingOn ? FMath::Lerp(46.f, 32.f, Daylight) : 0.f); Light->SetVisibility(Visible && CeilingOn); }
  if (URectLightComponent* Light = Visual->TaskLight.Get()) Light->SetVisibility(Visible && M->Story && !M->Story->bDark);
  if (URectLightComponent* Light = Visual->DeskBounce.Get())
  {
-  Light->SetIntensity((Powered ? 2.2f : 0.f) + 1.2f * Daylight);
-  Light->SetVisibility(Visible && (Powered || Daylight > .001f) && M->Web->GetGraphicsSettings().IndirectLighting == 0);
+  Light->SetIntensity((CeilingOn ? 2.2f : 0.f) + 1.2f * Daylight);
+  Light->SetVisibility(Visible && (CeilingOn || Daylight > .001f) && M->Web->GetGraphicsSettings().IndirectLighting == 0);
  }
  if (URectLightComponent* Light = Visual->WindowLight.Get())
  {

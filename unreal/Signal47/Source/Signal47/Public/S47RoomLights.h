@@ -5,7 +5,6 @@
 class US47Main;
 
 // Player preference only. Supply, flicker and Story blackouts remain upstream.
-// Intentionally not wired into Main/Flow or the renderers in this preparatory pass.
 class FS47RoomLights
 {
 public:
@@ -19,6 +18,8 @@ public:
  bool Use(const FString& Id);
  FString Label(const FString& Id) const;
  FVector InteractionPoint(const FString& Room) const;
+ FVector ApproachPoint(const FString& Room, double Distance = .85) const;
+ static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M = nullptr;
  TSharedPtr<uint8> Life = MakeShared<uint8>(0);

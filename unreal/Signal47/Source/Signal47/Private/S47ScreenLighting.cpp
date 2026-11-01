@@ -44,6 +44,7 @@ void AS47Web::BuildScreenLighting()
 		if (!M || !M->GetStaticMesh()) return false;
 		if (URectLightComponent* L = SurfaceLight(Node, ScreenFacing(M), Lumens, Reach))
 		{
+			if (Screen >= 0) L->ComponentTags.AddUnique(TEXT("S47CrtSurface"));
 			L->SetLightColor(S47Three::Hex(0x8cffa4));
 			// A CRT's glass gives a broad, local sheen while switches and keys cast crisp
 			// contacts. Short barn doors keep green off the monitor's back and the wall.

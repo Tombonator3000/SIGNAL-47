@@ -37,6 +37,9 @@ public:
  bool Active() const { return bActive; }
  bool Held() const;
  bool ArrayMotionHeld() const;
+ bool MotorFeedbackActive() const { return bMotorFeedback; }
+ int32 CommandFeedbackCount() const { return CommandClicks; }
+ int32 ServiceFeedbackCount() const { return ServiceClicks; }
  int32 Day() const { return DayNumber; }
  double Clock() const { return WorldClock; }
  // Daylight 06–19 takes 30 active minutes; night 19–06 takes 45.
@@ -116,6 +119,12 @@ private:
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
  bool bPowerApplied=false,bLastPower=true;
+ bool bMotorFeedback=false;
+ int32 LastServiceFeedback=0,CommandClicks=0,ServiceClicks=0;
+ TArray<FVector2D> FeedbackEncoders;
+ void StepEquipmentFeedback();
+ void StopEquipmentFeedback();
+ void CommandFeedback();
  int32 RecoveryEpoch=0,JobSeed=470047,ActiveTerminal=-1;
  TWeakPtr<class SS47ScreenView> TerminalView;
  int32 ServiceGuide=0,GuideServiceBaseline=0,GuideSupplyBaseline=0;
