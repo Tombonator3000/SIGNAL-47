@@ -7,6 +7,7 @@
 #include "S47Glimpses.h"
 #include "S47Flow.h"
 #include "S47Web.h"
+#include "S47Inter.h"
 #include "S47World.h"
 #include "S47Walker.h"
 #include "S47UI.h"
@@ -29,7 +30,8 @@ void FS47FreeformJourneyTest::Go(int32 Next){Stage=Next;At=Age;}
 void FS47FreeformJourneyTest::PlaceAt(const FString& Id,double Offset)
 {
  M->UI->Close(true);const FVector P=M->Freeform->Field->InteractionPoint(Id);
- M->Player->Place(P.X-Offset,P.Z,0);
+ const bool RoadFront=Id==TEXT("ff:shop")||(Id==TEXT("ff:parcel")&&M->Web->Area()!=TEXT("saro"));
+ M->Player->Place(P.X+(RoadFront?Offset:-Offset),P.Z,0);
 }
 bool FS47FreeformJourneyTest::Restore(const FString& Name,bool bLegacy)
 {
@@ -96,7 +98,16 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(M->World->bBusy||Age-At<.5)return;
   if(!Check(W.Purchase(TEXT("donor"))&&W.ParcelStage()==1&&F.Budget()==105,TEXT("real donor purchase charges once and leaves a physical parcel")))return;
-  W.Use(TEXT("ff:parcel"));if(!Check(W.ParcelStage()==2,TEXT("parcel picked up before transport")))return;
+  const FVector P=W.InteractionPoint(TEXT("ff:parcel"));
+  const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());Go(200);return;
+ }
+ if(Stage==200)
+ {
+  if(Age-At<.5)return;
+  if(!Check(M->Inter&&M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:parcel"),TEXT("actual camera ray selects the visible supply parcel from the outdoor approach")))return;
+  if(M->Player->OnUse)M->Player->OnUse(TEXT("ff:parcel"));
+  if(!Check(W.ParcelStage()==2,TEXT("production pickup collects the visible parcel before transport")))return;
   Before=M->Player->Pos;M->Player->TestMove=FVector2D(0,-1);Go(3);return;
  }
  if(Stage==3)
