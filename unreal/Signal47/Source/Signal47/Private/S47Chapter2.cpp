@@ -1004,7 +1004,7 @@ bool US47Chapter2::SelfTest(TArray<FString>& Lines)
 	FS47RuleBook& B = *C->Book;
 	auto Thread = [&B](const TCHAR* A, const TCHAR* Bb) { const TOptional<FS47Result> R = B.Connect(A, Bb, false); return R ? R->Text : FString(TEXT("(not this chapter's)")); };
 	C->S.Read.bLineage = true;
-	Check(C->Objective() == TEXT("CONTROL ROOM // THE SUPERVISOR LINE IS RINGING"), TEXT("objective while the phone rings"));
+	Check(C->Objective() == TEXT("CONTROL ROOM // THE SUPERVISOR LINE IS RINGING. GO TO THE DESK AND ANSWER THE PHONE"), TEXT("objective directs the player to the ringing control-room phone"));
 	Check(Thread(TEXT("b12.id"), TEXT("rx.dist")).Contains(TEXT("do not say anything")) && !C->S.bP04, TEXT("lines that say nothing about each other"));
 	Check(!B.Record(TEXT("P04"))->bOk && B.Questions()[0].Slots == 2 && B.Questions()[1].Slots == 3, TEXT("P04 waits with two empty slots, P05 with three"));
 	C->S.Read.bOriginal = C->S.Read.bIndex = C->S.Read.bAmended = true;
