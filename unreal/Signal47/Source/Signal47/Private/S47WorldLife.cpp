@@ -348,7 +348,7 @@ void US47WorldLife::Step(double Dt)
 	{
 		F->SyncVisibility();
 		F->SetWind(Wd.Dir);
-		F->Follow(Cam.Pos, Cam.Forward, Cam.Fov, Cam.Aspect, Quality == TEXT("low"));
+		F->Follow(Cam.Pos, Quality == TEXT("low"));
 	}
 }
 

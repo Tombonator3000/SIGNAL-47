@@ -45,10 +45,7 @@ namespace
 		return K == ES47FloraKind::Grass || K == ES47FloraKind::Stalks ? Shrubs : None;
 	}
 	constexpr double C = 8;             // cell size, metres
-	constexpr double STEP = 8;          // the meshes are filled again when the camera has moved this far,
-	constexpr double TURN = 0.26;       // or turned this far (radians): only what is in front of it is drawn,
-	constexpr double CONE = 0.48;       // out to this much past the sides of the picture,
-	constexpr double NEAR = 16;         // and all round it this close
+	constexpr double STEP = 8;          // refill after moving this far; turning keeps the same local plants
 	constexpr double SYNC = 30;         // cells this near are made when they are needed; further out ahead of time,
 	constexpr double AHEAD_MS = 1.2;    // this long in a picture at the most
 	constexpr double JUMP = 40;         // moved further than this between two pictures: everything at once
@@ -393,27 +390,21 @@ bool FS47Flora::Shown() const
 	return W && Group >= 0 && FS47Obj(W, Group).Shown();
 }
 
-void FS47Flora::Follow(const FVector& CamPos, const FVector& CamDir, double FovDeg, double Aspect, bool bLow)
+void FS47Flora::Follow(const FVector& CamPos, bool bLow)
 {
 	if (!Shown()) return;
 	AS47Web* W = Web.Get();
 	const FS47Obj G(W, Group);
 	const FVector P = G.WorldToLocal(CamPos);
-	// where it looks: what is behind it is not drawn (unless it looks down at its feet)
-	const FVector D = G.WorldQuaternion().Inverse().RotateVector(CamDir);
-	const double NewYaw = FMath::Atan2(D.X, D.Z);
-	const double NewHalf = FMath::Sqrt(D.X * D.X + D.Z * D.Z) < 0.35 ? UE_DOUBLE_PI : FMath::Min(UE_DOUBLE_PI, FMath::Atan(FMath::Tan(FovDeg * UE_DOUBLE_PI / 360) * Aspect) + CONE);
-	const bool bTurned = Half < UE_DOUBLE_PI && (FMath::Abs(FMath::Atan2(FMath::Sin(NewYaw - Yaw), FMath::Cos(NewYaw - Yaw))) > TURN || NewHalf > Half + 1e-3);
 	const int32 NewQ = bLow ? 1 : 0;
 	const double Moved = FMath::Sqrt(FMath::Square(P.X - At.X) + FMath::Square(P.Z - At.Y));
-	if (!bDirty && NewQ == Q && !bTurned && Moved < STEP)
+	if (!bDirty && NewQ == Q && Moved < STEP)
 	{
 		// the cells further out are made a little each picture; the ones a fill had to leave out are
 		// put in once they are all made
 		if (Ahead(At.X, At.Y) && bPending) Fill(At.X, At.Y, Q == 1);
 		return;
 	}
-	Yaw = NewYaw; Half = NewHalf;
 	// after a jump (a new area, a place out of a save, the first picture) all is made at once
 	Fill(P.X, P.Z, bLow, !(Moved <= JUMP));
 	At = FVector2D(P.X, P.Z); Q = NewQ; bDirty = false;
@@ -423,7 +414,7 @@ void FS47Flora::Follow(const FVector& CamPos, const FVector& CamDir, double FovD
 bool FS47Flora::Ahead(double Px, double Pz)
 {
 	// Make the cells all round the camera out past each kind's reach, nearest first, for at most
-	// AHEAD_MS in one picture; whether they are all made. Walking on or turning then only copies.
+	// AHEAD_MS in one picture; whether they are all made. Moving then only copies.
 	if (Next.Kind >= NK) return true;
 	const double T0 = FPlatformTime::Seconds();
 	const int32 Ci = int32(FMath::FloorToDouble(Px / C)), Cj = int32(FMath::FloorToDouble(Pz / C));
@@ -448,7 +439,6 @@ bool FS47Flora::Ahead(double Px, double Pz)
 void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 {
 	const int32 Ci = int32(FMath::FloorToDouble(Px / C)), Cj = int32(FMath::FloorToDouble(Pz / C));
-	const double Cr = C * 0.71;
 	// Unreal-only: do not upload instances already collapsed by FLORA_WPO. Keep one
 	// refill step outside its fade so approaching plants enter while still invisible.
 	// The distance comparison below is valid for the authored, level unit-scale patches.
@@ -459,20 +449,9 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 		GroupComp->GetUpVector().Equals(FVector::UpVector, 1e-5);
 	bPending = false;
 	const TArray<FOff>& OFF = OFFSETS();
-	// a cell is in front when its centre is within the cone, widened by the cell's own size: once
-	// for each place in OFFSETS, for all the kinds (-1 not worked out yet, 0 behind, 1 in front)
-	TArray<int8> Seen;
-	Seen.Init(-1, OFF.Num());
-	auto Front = [&](int32 O, int32 I, int32 J)
-	{
-		if (Half >= UE_DOUBLE_PI) return true;
-		if (Seen[O] < 0)
-		{
-			const double Vx = (I + 0.5) * C - Px, Vz = (J + 0.5) * C - Pz, Dd = FMath::Sqrt(Vx * Vx + Vz * Vz), A = FMath::Atan2(Vx, Vz) - Yaw;
-			Seen[O] = Dd < NEAR + Cr || FMath::Abs(FMath::Atan2(FMath::Sin(A), FMath::Cos(A))) <= Half + FMath::Asin(FMath::Min(1.0, Cr / Dd)) ? 1 : 0;
-		}
-		return Seen[O] == 1;
-	};
+	// Unreal-only: retain a bounded circle around the eye. The renderer handles
+	// frustum/occlusion culling; a head turn must not replace whole plant batches.
+	// Existing per-kind reaches, distance fades and instance caps still bound the work.
 	for (int32 Ki = 0; Ki < NK; ++Ki)
 	{
 		const FKind& K = KINDS[Ki];
@@ -495,7 +474,7 @@ void FS47Flora::Fill(double Px, double Pz, bool bLow, bool bAll)
 				const int32 I = Ci + Of.Dx, J = Cj + Of.Dz;
 				const double Nx = FMath::Max(I * C, FMath::Min(Px, (I + 1) * C)) - Px, Nz = FMath::Max(J * C, FMath::Min(Pz, (J + 1) * C)) - Pz;
 				const double D2 = Nx * Nx + Nz * Nz;
-				if (D2 > R * R || !Front(O, I, J)) continue;
+				if (D2 > R * R) continue;
 				// near ones are made now; further off, one not made yet comes in a picture or two later
 				const FKindCell* Cell0 = nullptr;
 				if (const TArray<TOptional<FKindCell>>* Cs = Cells.Find(Key(I, J)); Cs && (*Cs)[Ki].IsSet()) Cell0 = &*(*Cs)[Ki];

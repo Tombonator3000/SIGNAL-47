@@ -15,9 +15,12 @@
 #include "S47Walker.h"
 #include "S47World.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "CoreGlobals.h"
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
+#include "HAL/IConsoleManager.h"
 #include "Misc/CommandLine.h"
+#include "Misc/Crc.h"
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
@@ -63,6 +66,41 @@ namespace
   }
   return Energy>1e-7 && A->Buf.FindRef(TEXT("engineStart")).IsValid() && A->Buf.FindRef(TEXT("engineOff")).IsValid();
  }
+ struct FFloraSnapshot
+ {
+  uint32 Hash=0; int32 Kinds=0,Instances=0;
+  bool operator==(const FFloraSnapshot& B) const { return Hash==B.Hash && Kinds==B.Kinds && Instances==B.Instances; }
+ };
+ FFloraSnapshot RoadFloraSnapshot(AS47Web* W)
+ {
+  FFloraSnapshot S;
+  for(int32 I=0;I<3;++I) if(const FS47WebNode* G=W->Node(W->Handle(FString::Printf(TEXT("world.flora.patches[%d].group"),I))))
+  {
+   if(G->Name!=TEXT("flora:road")) continue;
+   for(int32 Ch:G->Children) if(const FS47WebNode* N=W->Node(Ch))
+   {
+    auto* A=Cast<UInstancedStaticMeshComponent>(N->Comp.Get());
+    if(!A || !N->Name.StartsWith(TEXT("flora-"))) continue;
+    // The sage and stalks are attached ISMs beside the exported first kind.
+    TArray<USceneComponent*> Draws; A->GetChildrenComponents(true,Draws); Draws.Insert(A,0);
+    for(USceneComponent* Draw:Draws) if(const auto* C=Cast<UInstancedStaticMeshComponent>(Draw))
+    {
+     const int32 Count=C->GetInstanceCount();
+     if(Count<=0 || !C->IsVisible()) continue;
+     ++S.Kinds; S.Instances+=Count;
+     S.Hash=FCrc::StrCrc32(*C->GetName(),S.Hash); S.Hash=FCrc::MemCrc32(&Count,sizeof(Count),S.Hash);
+     for(int32 Instance=0;Instance<Count;++Instance)
+     {
+      FTransform T; if(!C->GetInstanceTransform(Instance,T,true)) { S.Kinds=-1; return S; }
+      const FVector P=T.GetLocation(),Z=T.GetScale3D(); const FQuat Q=T.GetRotation();
+      const double Values[]={P.X,P.Y,P.Z,Q.X,Q.Y,Q.Z,Q.W,Z.X,Z.Y,Z.Z};
+      S.Hash=FCrc::MemCrc32(Values,sizeof(Values),S.Hash);
+     }
+    }
+   }
+  }
+  return S;
+ }
 }
 
 void AS47Web::BeginHighwayAudit()
@@ -73,6 +111,9 @@ void AS47Web::BeginHighwayAudit()
   bool Done=false,HaveEye=false,NorthBefore=false,SouthBefore=false;
   int32 Stage=0,Changes=0; double WallStart=0,At=0,MaxJump=0;
   FVector LastEye=FVector::ZeroVector; FString LastLeg,Shots; S47J::FObj Reentry;
+  FS47View FloraView; FFloraSnapshot FloraBase;
+  TFunction<bool(double,const FVector2D&,const FVector2D&,FS47View&)> OriginalCamera;
+  bool FloraCamera=false,FloraShotPending=false; uint64 FloraShotFrame=0;
  };
  const auto P=MakeShared<FState>(); FParse::Value(FCommandLine::Get(),TEXT("S47HighwayShots="),P->Shots);
  TWeakObjectPtr<AS47Web> Self=this; FTimerHandle Timer;
@@ -83,7 +124,9 @@ void AS47Web::BeginHighwayAudit()
   auto Finish=[&](bool Pass,const FString& Why) {
    P->Done=true;
    if(M && M->World) M->World->TestInput=nullptr;
-   if(M && M->Player) { M->Player->TestMove.Reset(); M->Player->bTestRun=false; }
+   if(M && M->Player) { M->Player->TestMove.Reset(); M->Player->bTestRun=false;
+    if(P->FloraCamera) M->Player->CameraOverride=MoveTemp(P->OriginalCamera);
+   }
    UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: highway audit %s %s: %s; elapsed=%.2f transitions=%d max_canonical_eye_step=%.4f"),*Mode,Pass?TEXT("PASS"):TEXT("FAIL"),*Why,Now-P->WallStart,P->Changes,P->MaxJump);
   };
   if(P->WallStart>0 && Now-P->WallStart>58) { Finish(false,TEXT("bounded ready-state drive/audio timeout")); return; }
@@ -128,9 +171,9 @@ void AS47Web::BeginHighwayAudit()
    if(World->bBusy) return;
    P->WallStart=Now;
    FString UserDir;
-   if((Mode!=TEXT("seam") && Mode!=TEXT("barrier")) || !FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir) || UserDir.IsEmpty()
+   if((Mode!=TEXT("seam") && Mode!=TEXT("barrier") && Mode!=TEXT("flora-turn")) || !FParse::Value(FCommandLine::Get(),TEXT("UserDir="),UserDir) || UserDir.IsEmpty()
     || !M->Flow->bDevRun || !FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(UserDir))) {
-    Finish(false,TEXT("requires seam/barrier, isolated -UserDir and unsaved developer run (no -S47Case)")); return;
+    Finish(false,TEXT("requires seam/barrier/flora-turn, isolated -UserDir and unsaved developer run (no -S47Case)")); return;
    }
    World->BeginCommute(Car(TEXT("road"),FVector(8001.8,0,Mode==TEXT("seam")?S47Legs::ROAD_TO_SARO()+50:1999.95),0));
    World->Autopilot.Reset(); World->TestInput=[] { return FS47DriveIn(); };
@@ -139,6 +182,13 @@ void AS47Web::BeginHighwayAudit()
   if(P->Stage==1) {
    if(!World->bDriving || World->bBusy || !World->CabDrive() || Now-P->At<3) return;
    if(World->Leg!=TEXT("road")) { Finish(false,TEXT("commute did not start on the actual road leg")); return; }
+   if(Mode==TEXT("flora-turn")) {
+    const FS47DriveController* D=World->CabDrive();
+    P->FloraView.Eye=D->CamPos; P->FloraView.Yaw=D->Heading; P->FloraView.Pitch=-.06;
+    P->OriginalCamera=MoveTemp(M->Player->CameraOverride); P->FloraCamera=true;
+    M->Player->CameraOverride=[P](double,const FVector2D&,const FVector2D&,FS47View& Out) { Out=P->FloraView; return true; };
+    P->Stage=10; P->At=Now; return;
+   }
    if(!AudioCheck(World,M->Audio.Get(),TEXT("entry")) || !Landscape()) { Finish(false,TEXT("entry loop/landscape audit")); return; }
    if(Mode==TEXT("barrier")) {
     auto* Road=static_cast<FS47RoadArea*>(World->CabDrive()->Area);
@@ -161,6 +211,35 @@ void AS47Web::BeginHighwayAudit()
    }
    World->TestInput=[] { FS47DriveIn In; In.Throttle=.5; return In; };
    P->Stage=2; P->At=Now; P->LastLeg=World->Leg; P->HaveEye=false; return;
+  }
+  if(Mode==TEXT("flora-turn") && P->Stage>=10) {
+   const int32 View=P->Stage-10;
+   const TCHAR* Names[]={TEXT("flora-front"),TEXT("flora-left"),TEXT("flora-back"),TEXT("flora-right"),TEXT("flora-return")};
+   const double Yaws[]={0,UE_DOUBLE_PI/2,UE_DOUBLE_PI,-UE_DOUBLE_PI/2,0};
+   if(P->FloraShotPending) {
+    // Keep the sampled view until the asynchronous request has been rendered.
+    if(GFrameCounter<P->FloraShotFrame+2 || FScreenshotRequest::IsScreenshotRequested()) return;
+    P->FloraShotPending=false;
+    if(View==4) { Finish(true,TEXT("actual road cab: front/left/back/right/return keep identical populated flora; raytracing retained and its screen warnings disabled")); return; }
+    P->FloraView.Yaw=Yaws[View+1]; ++P->Stage; P->At=Now; return;
+   }
+   const double Wait=P->Stage==10?8:1;
+   if(Now-P->At<Wait) return;
+   const FFloraSnapshot S=RoadFloraSnapshot(W);
+   const IConsoleVariable* RT=IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing"));
+   const IConsoleVariable* Warnings=IConsoleManager::Get().FindConsoleVariable(TEXT("r.RayTracing.ShowOnScreenWarnings"));
+   const IConsoleVariable* Occlusion=IConsoleManager::Get().FindConsoleVariable(TEXT("r.AllowOcclusionQueries"));
+   const FVector ExpectedForward=FRotationMatrix(S47Three::CameraRotation(P->FloraView.Yaw,P->FloraView.Pitch)).GetUnitAxis(EAxis::X);
+   if(!S47Three::ToThree(M->Player->EyeUE()).Equals(P->FloraView.Eye,.0001) || !M->Player->ForwardUE().Equals(ExpectedForward,.0001)) {
+    Finish(false,TEXT("actual camera did not retain fixed eye and requested yaw")); return;
+   }
+   UE_LOG(LogS47HighwayAudit,Display,TEXT("S47: highway flora turn %s actual_kinds=%d actual_instances=%d transform_hash=%08x fixed_eye=%s raytracing=%d screen_warnings=%d world_occlusion_queries=%d"),
+    Names[View],S.Kinds,S.Instances,S.Hash,*P->FloraView.Eye.ToString(),RT?RT->GetInt():-1,Warnings?Warnings->GetInt():-1,Occlusion?Occlusion->GetInt():-1);
+   if(S.Kinds!=7 || !Occlusion || (PLATFORM_LINUX && Occlusion->GetInt()!=0) || S.Instances<=0 || !RT || RT->GetInt()!=1 || !Warnings || Warnings->GetInt()!=0) { Finish(false,TEXT("flora population or native raytracing warning policy")); return; }
+   if(View==0) P->FloraBase=S;
+   else if(!(S==P->FloraBase)) { Finish(false,TEXT("stationary camera turn changed actual flora transforms/counts")); return; }
+   if(!Shot(Names[View])) { Finish(false,TEXT("screenshot destination already exists")); return; }
+   P->FloraShotPending=true; P->FloraShotFrame=GFrameCounter; return;
   }
   FS47DriveController* D=World->CabDrive();
   if(P->Stage>=2 && P->Stage<=5 && D) {

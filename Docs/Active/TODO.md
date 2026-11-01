@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Vegetasjon ved kameravending, 1. november
+
+- [x] **Plantedekke og raytracing-overlegg:** Runtime `867dd44a`, PR314, er installert kl. 18:04 CET. Lokal plantebuffer og Linux-retting for feilaktige occlusion queries beholder vegetasjon ved kameravending; utvikleroverlegget er fjernet. Pakke/1957 selvtester/fem faktiske kameraretninger og installert Fortsett består, med 151 Saved-elementer uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/VEGETATION_2026-11-01.md).
+
 ## Nattarbeid til 1. november kl.09
 
 Nattarbeidet ble avsluttet ved den bekreftede fristen søndag 1. november kl.09, og automasjonen ble slettet. Tom ba deretter om videre TODO-arbeid og vurdering/katalogisering av AnyScene. Ingen uavklarte designforslag regnes som nye vedtak.

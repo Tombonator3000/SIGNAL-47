@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Vegetasjon og raytracing-overlegg rettet
+
+Runtime `867dd44a`, PR314, er installert kl. 18:04 CET. Plantedekket beholdes rundt kameraet; Linux omgår feilaktige occlusion queries, og det røde raytracing-utvikleroverlegget er fjernet. Vanlig kamera-/avstandsculling og eksisterende artsgrenser beholdes.
+
+Editorbygg, pakking, 1957 selvtester, fem faktiske kameraretninger og installert Fortsett består. Alle 151 personlige Saved-elementer er uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/VEGETATION_2026-11-01.md).
+
 ## Tittelen mister47 etter fullført Story
 
 Samordnet runtime `b98c6fe1`, med PR311 og PR312, er installert kl.16:35 CET. Etter siste fotografi i Story-finalen skurrer og forskyves bare47 før tallet forsvinner. Fullføring og vist effekt lagres separat fra sakene og beholdes etter omstart. Freeform eller utviklerhopp låser ikke opp; rolig modus får myk uttoning.
