@@ -19,6 +19,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "Materials/MaterialInterface.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47SC04, Log, All);
 
@@ -29,7 +31,8 @@ namespace
  constexpr double SightRange = 14, SightCos = .342, ListenCos = .7, LureCos = .87, WalkHear = 9, RunHear = 14;
  constexpr double ListenTime = 5, LureTime = 12, FadeTime = 1.2;
  constexpr double BodyRadius = .27, RefugeHold = 1.2;
- enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl };
+ enum : int32 { NOffice, NCorrSouth, NCorrRec, NExit, NStoop, NRamp, NWestMid, NWestNorth, NRecIn, NRecEast, NRecNE, NRecW, NRecSW, NControl, NOfficeBypass,
+  NServiceLanding, NServiceApproach, NEastWalk, NEastMid, NEastNorth, NNorthEast, NNorthTurn, NNorthMid, NNorthWest };
  // Where the binder is read from, and where a capture starts the annex again.
  const FVector2D BinderStand(-2.3, 9.45);
  const FVector OfficePhone(.45, 1.1, 6.6);
@@ -96,19 +99,33 @@ namespace
 const TArray<FS47SC04::FNode>& FS47SC04::Nodes()
 {
  static const TArray<FNode> N = {
-  {TEXT("office"), FVector2D(.4, 5.75)}, {TEXT("corridorSouth"), FVector2D(-2.4, 5.7)}, {TEXT("corridorRecords"), FVector2D(-3.9, 5.7)},
+  {TEXT("office"), FVector2D(.4, 5.75)}, {TEXT("corridorSouth"), FVector2D(-2.4, 6.05)}, {TEXT("corridorRecords"), FVector2D(-3.9, 5.7)},
   {TEXT("exit"), FVector2D(-5.3, 5.7)}, {TEXT("stoop"), FVector2D(-7.0, 5.7)}, {TEXT("rampEnd"), FVector2D(-11.1, 5.7)},
   {TEXT("westMid"), FVector2D(-11.1, 0.0)}, {TEXT("westNorth"), FVector2D(-9.0, -7.5)},
   {TEXT("recordsIn"), FVector2D(-3.9, 7.5)}, {TEXT("recordsEast"), FVector2D(-2.3, 7.6)}, {TEXT("recordsBinder"), FVector2D(-2.2, 9.6)},
-  {TEXT("recordsWest"), FVector2D(-5.0, 7.7)}, {TEXT("recordsBox"), FVector2D(-5.0, 9.2)}, {TEXT("controlDoor"), FVector2D(-2.4, 3.6)}};
+  {TEXT("recordsWest"), FVector2D(-5.0, 7.7)}, {TEXT("recordsBox"), FVector2D(-5.0, 9.2)}, {TEXT("controlDoor"), FVector2D(-2.4, 3.6)}, {TEXT("officeBypass"), FVector2D(.4, 6.05)},
+  // Existing exterior Walker route around the north side (SC04 long route).
+  {TEXT("serviceLanding"),FVector2D(7.6,1.6)}, {TEXT("serviceApproach"),FVector2D(9,1.6)},
+  {TEXT("eastWalk"),FVector2D(9.5,0)}, {TEXT("eastMid"),FVector2D(9.5,-6)},
+  {TEXT("eastNorth"),FVector2D(9.5,-12)}, {TEXT("northEast"),FVector2D(5,-12)},
+  {TEXT("northTurn"),FVector2D(5,-8)}, {TEXT("northMid"),FVector2D(-2,-8)},
+  {TEXT("northWest"),FVector2D(-9,-8)}};
  return N;
 }
 
 const TArray<TPair<int32, int32>>& FS47SC04::Edges()
 {
- // Measured free (walks.saro zones less colliders, 0.27 m clearance); the ramp is left past its rails.
- static const TArray<TPair<int32, int32>> E = {{NOffice, NCorrSouth}, {NCorrSouth, NCorrRec}, {NCorrRec, NExit}, {NExit, NStoop}, {NStoop, NRamp},
-  {NRamp, NWestMid}, {NWestMid, NWestNorth}, {NCorrRec, NRecIn}, {NRecIn, NRecEast}, {NRecEast, NRecNE}, {NRecIn, NRecW}, {NRecW, NRecSW}, {NCorrSouth, NControl}};
+ // Keep the office approach north of the open south-door leaf/handle (N314:
+ // x=-1.99..-1.85, z=4.72..5.66). The 6.05 m lane clears it and the corridor wall
+ // with the existing .27 m capsule; never disable that physical leaf collision.
+ // The ramp is left past its rails.
+ static const TArray<TPair<int32, int32>> E = {{NOffice, NOfficeBypass}, {NOfficeBypass, NCorrSouth}, {NCorrSouth, NCorrRec}, {NCorrRec, NExit}, {NExit, NStoop}, {NStoop, NRamp},
+  {NRamp, NWestMid}, {NWestMid, NWestNorth}, {NCorrRec, NRecIn}, {NRecIn, NRecEast}, {NRecEast, NRecNE}, {NRecIn, NRecW}, {NRecW, NRecSW}, {NCorrSouth, NControl},
+  // An intruder outside the service landing withdraws around real exterior
+  // corners, never diagonally through the control-room wall toward the west.
+  {NServiceLanding,NServiceApproach}, {NServiceApproach,NEastWalk}, {NEastWalk,NEastMid},
+  {NEastMid,NEastNorth}, {NEastNorth,NNorthEast}, {NNorthEast,NNorthTurn},
+  {NNorthTurn,NNorthMid}, {NNorthMid,NNorthWest}, {NNorthWest,NWestNorth}};
  return E;
 }
 
@@ -125,8 +142,8 @@ const TCHAR* FS47SC04::BodyName(EBody In)
 int32 FS47SC04::Room(const FVector2D& At)
 {
  if (At.Y < 4.6 && At.Y > -4.4 && At.X > -5.9 && At.X < 5.9) return 0;
- if (At.Y < 6.6 && At.X > -6.0 && At.X < 2.0) return 1;
- if (At.Y < 10.5 && At.X > -5.9 && At.X < -1.2) return 2;
+ if (At.Y >= 4.6 && At.Y < 6.6 && At.X > -6.0 && At.X < 2.0) return 1;
+ if (At.Y >= 6.6 && At.Y < 10.5 && At.X > -5.9 && At.X < -1.2) return 2;
  return 3;
 }
 
@@ -448,7 +465,14 @@ bool FS47SC04::Walk(double Speed, double Dt)
  const double Dist = D.Size(), StepLen = Speed * Dt;
  const FVector2D Next = Dist > StepLen ? Pos + D / Dist * StepLen : To;
  // A door can close after RouteTo chose the edge. Recheck the actual next step.
- if (ClosedDoorBetween(M->Web.Get(), Pos, Next) || !PhysicalStep(Next))
+ const bool Closed=ClosedDoorBetween(M->Web.Get(), Pos, Next);
+ if(Closed && B!=EBody::Listen)
+ {
+  FString Contract;
+  if(FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Contract) && Contract==TEXT("sc04doors"))
+   UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors blocked centre crossing from=%s to=%s exitOpen=%d recordsOpen=%d southOpen=%d eastOpen=%d"),*Pos.ToString(),*Next.ToString(),M->Web->IsDoorOpen(TEXT("exitDoor")),M->Web->IsDoorOpen(TEXT("recordsDoor")),M->Web->IsDoorOpen(TEXT("doorSouth")),M->Web->IsDoorOpen(TEXT("doorEast")));
+ }
+ if (Closed || !PhysicalStep(Next))
  {
   Gait = FMath::Max(0.0, Gait - Dt * 3); BlockedT += Dt;
   if (B != EBody::Leave) Enter(EBody::Listen);
@@ -472,7 +496,12 @@ bool FS47SC04::ClearOfClosedDoors() const
 bool FS47SC04::PhysicalStep(const FVector2D& To) const
 {
  if(!M||!M->Web||!M->Web->GetWorld()||To.ContainsNaN()||Pos.ContainsNaN())return false;
- for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&OccupiesLeaf(To,BodyExtent(),G)&&!MovingOutOfDoor(Pos,To,G))return false;
+ FString Contract; const bool Trace=B!=EBody::Listen && FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Contract) && Contract==TEXT("sc04doors");
+ for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&OccupiesLeaf(To,BodyExtent(),G)&&!MovingOutOfDoor(Pos,To,G))
+ {
+  if(Trace)UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors blocked analytic leaf=%s from=%s to=%s actualExtent=%s"),G.Door,*Pos.ToString(),*To.ToString(),*BodyExtent().ToString());
+  return false;
+ }
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04BodyStep),true,M->Player);
  for(const auto& C:Pale.All)if(auto* Part=C.Get())Q.AddIgnoredComponent(Part);
  if(auto* Skin=Pale.Creature.Mesh.Get())Q.AddIgnoredComponent(Skin);
@@ -485,6 +514,18 @@ bool FS47SC04::PhysicalStep(const FVector2D& To) const
  {
   FHitResult Hit;
   if(!M->Web->GetWorld()->SweepSingleByChannel(Hit,A,Z,FQuat::Identity,ECC_Visibility,Capsule,Q))return true;
+  const auto* Overlay=Hit.GetComponent();const int32 OverlayId=Overlay?M->Web->NodeOf(Overlay):-1;
+  const auto* OverlayNode=M->Web->Node(OverlayId);const auto* OverlayMat=Overlay?Overlay->GetMaterial(0):nullptr;
+  // R4 measured N558/g377: the exported annex dirt-atlas PlaneGeometry, not
+  // a wall or door. Repeat the full-height sweep past this exact visual overlay;
+  // translucent glass and every other surface retain their physical collision.
+  if(Overlay && OverlayId==558 && OverlayNode && OverlayNode->Name==TEXT("clutter:annex:dirt") &&
+   OverlayNode->Geo==377 && OverlayNode->Mats.Num()==1 && OverlayNode->Mats[0]==255 &&
+   OverlayMat && OverlayMat->GetBlendMode()==BLEND_Translucent)
+  {
+   if(Trace)UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors non-solid dirt overlay N558/g377; full capsule resweep from=%s to=%s impact=%s"),*Pos.ToString(),*To.ToString(),*S47Three::ToThree(Hit.ImpactPoint).ToString());
+   Q.AddIgnoredComponent(Overlay);continue;
+  }
   bool bSeparating=false;
   if(Hit.bStartPenetrating)for(const auto& G:Gaps)
   {
@@ -497,8 +538,15 @@ bool FS47SC04::PhysicalStep(const FVector2D& To) const
   if(bSeparating)continue;
   // Same bounded low-step retry as the existing native threat controller.
   // A full-height wall or door still intersects the lifted capsule.
+  const FString FirstHit=Hit.GetComponent()?Hit.GetComponent()->GetName():FString(TEXT("none"));
   const FVector Lift(0,0,30);
-  return !M->Web->GetWorld()->SweepSingleByChannel(Hit,A+Lift,Z+Lift,FQuat::Identity,ECC_Visibility,Capsule,Q);
+  const bool Clear=!M->Web->GetWorld()->SweepSingleByChannel(Hit,A+Lift,Z+Lift,FQuat::Identity,ECC_Visibility,Capsule,Q);
+  if(!Clear && Trace)
+  {
+   const auto* Part=Hit.GetComponent();const auto* N=Part?M->Web->Node(M->Web->NodeOf(Part)):nullptr;
+   UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors blocked sweep from=%s to=%s first=%s liftedHit=%s node=%s geo=%d penetrating=%d impact=%s normal=%s"),*Pos.ToString(),*To.ToString(),*FirstHit,Part?*Part->GetName():TEXT("none"),N?*N->Name:TEXT("none"),N?N->Geo:-1,Hit.bStartPenetrating,*S47Three::ToThree(Hit.ImpactPoint).ToString(),*Hit.ImpactNormal.ToString());
+  }
+  return Clear;
  }
  return false;
 }
@@ -864,9 +912,11 @@ void FS47SC04::Think(double Dt)
    Enter(EBody::Search); Investigate(LastKnown);
    break;
   }
-  // Straight at the player inside one room; along the graph between rooms.
+  // Finish the doorway route before taking a same-room shortcut. Room() changes
+  // at the wall plane, while the full capsule is still in the narrow door zone:
+  // turning toward the binder there exits that zone before reaching the room.
   const FVector2D Goal = LastKnown;
-  if (Room(Goal) == Room(Pos) && M->Player->Walkable(Pos.X, Pos.Y))
+  if (Path.IsEmpty() && Room(Goal) == Room(Pos) && M->Player->Walkable(Pos.X, Pos.Y))
   {
    const FVector2D D = Goal - Pos; const double Dist = D.Size(), StepLen = ChaseSpeed * Dt;
    BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Min(1.4, Gait + Dt * 4); Stride += StepLen * 2.1;
@@ -895,6 +945,26 @@ void FS47SC04::Think(double Dt)
 
 void FS47SC04::TestComplete() { P = EStep::Done; Stop(); }
 
+void FS47SC04::TestPlaceBody(const FVector2D& At, double Facing)
+{
+ if (!HuntLive() || !Pale.bBuilt) return;
+ Pos=At; BodyYaw=HeadYaw=Facing; bShown=true; SeeAcc=LostT=0;
+ // The spatial fixture starts watching the player in the normal Listen stance.
+ // Production Think still decides pursuit, listening and secured withdrawal.
+ RefugeT=BlockedT=0; bRefugeRetreat=false; Enter(EBody::Listen);
+ // This explicit test placement must move the visible skin before normal Think
+ // compares its world bounds with Pos. Otherwise the previous room's bounds
+ // look like a body spanning both doorways during the very next update.
+ Y=Ground();
+ Pale.Apply(true,FVector(Pos.X,Y,Pos.Y),BodyYaw,HeadYaw,0,Stride,Clock,FS47PaleBody::EPose::Walk);
+ if(auto* Skin=Pale.Creature.Mesh.Get()){Skin->UpdateComponentToWorld();Skin->UpdateBounds();}
+}
+
+bool FS47SC04::TestPlayerReachable() const
+{
+ return M && M->Player && Reachable(Nearest(FVector2D(M->Player->Pos.X,M->Player->Pos.Z)));
+}
+
 bool FS47SC04::SelfTest(TArray<FString>& Lines)
 {
  bool Ok = true;
@@ -917,7 +987,16 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
  Check(Room(FVector2D(-2.4,3.6))==0&&Room(FVector2D(-2.4,5.1))==1,TEXT("a creature already inside the refuge is not treated as safely outside it"));
 
  bool Short = true; for (const auto& E : Edges()) Short &= FVector2D::Distance(Nodes()[E.Key].At, Nodes()[E.Value].At) < 8;
- Check(Edges().Num() == 13 && Short, TEXT("thirteen edges: corridor, records room, the west wall outside, three doors one edge each"));
+ Check(Edges().Num() == 23 && Short, TEXT("twenty-three edges: open-leaf bypass, annex and measured exterior north withdrawal, three doorway crossings"));
+ bool Exterior=true;for(int32 I=NServiceLanding;I<=NNorthWest;++I)Exterior &= Room(Nodes()[I].At)==3;
+ Check(Exterior && Room(FVector2D(-2,-8))==3 && Room(FVector2D(-4,-12))==3,
+  TEXT("northern exterior nodes are outside, never mistaken for unbounded corridor or records rooms"));
+ FS47SC04 East(nullptr);East.Pos=FVector2D(8.6,1.6);East.RouteTo(NWestNorth);
+ bool AroundNorth=!East.Path.IsEmpty();for(int32 N:East.Path)AroundNorth &= Room(Nodes()[N].At)==3;
+ Check(AroundNorth && East.Path.Contains(NEastNorth) && East.Path.Contains(NNorthTurn),
+  TEXT("east landing routes around the northeast corner to the west withdrawal point, using exterior nodes only"));
+ Check(Room(Nodes()[NOfficeBypass].At)==1 && Nodes()[NCorrSouth].At.Y-5.66>BodyRadius &&
+  6.45-Nodes()[NCorrSouth].At.Y>BodyRadius, TEXT("office bypass clears the measured open south leaf and north corridor wall at full controller radius"));
  Check(Room(FVector2D(7.5, 1.6)) == 3 && Room(FVector2D(4.3, 1.6)) == 0, TEXT("the east landing is outside and the service door leads into the control room"));
  FS47SC04 A(nullptr); A.P = EStep::Hunt; A.F.bSchedule = A.F.bBinder = true; A.F.Captures = 2; A.F.bLure = true;
  FS47SC04 Bk(nullptr); Bk.Begin(S47J::Read(S47J::Write(A.Save())));

@@ -1525,3 +1525,5 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-11-01 01:48 | Freeform levering | To eldre genererte payload pensjonert med prune-test-builds, gjeldende kandidat og to eldre beholdt; aktiv Jeep-kandidat beskyttet. Egne motorjobber avsluttet og global reservasjon frigitt. Kilder, Saved, bilder og logger bevart.
 
 2026-11-01 02:20 CET | Jeep/SC04 PR301, runtime e944b8ed | Installert kl.02:18: sju interiørdeler med faktisk ratt/instrumenter, mindre lampeinsekter, 1906 selvtester, SC04short17 og installert Vulkan-røykprøve består; 149 Saved-elementer/118 filer uendret. To eldre payload pensjonert, egne motorjobber avsluttet og reservasjon frigitt. Konkrete dørpasseringer og eldre SARO-renderstans står åpne.
+
+2026-11-01 07:59 CET | codex/saro-sc04-followup-20261101 | Retter målt åpent dørblad, dør-ID, ikke-solid dirt-overlay og for tidlig diagonal jakt; eksisterende nordsti gir fysisk østlig tilbaketrekning. Editorbygg,1909 selvtester/sc04doors14 består; pakking/installasjon følger. Syntetisk AUTO HOLD-replay/High/Vulkan100s består, GPUpeak6197/10240MiB; opprinnelig renderstans fortsatt uavklart.

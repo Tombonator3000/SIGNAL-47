@@ -531,7 +531,7 @@ void FS47Spine::ControlTest(double Dt)
 void FS47Spine::SC04Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFunctionRef<bool(bool, const FString&)> Check)
 {
  const FS47SC04& A = Act04;
- const bool bHide = Test.Mode == TEXT("sc04hide"), bLong = Test.Mode == TEXT("sc04long"), bShort = !bHide && !bLong;
+ const bool bDoors = Test.Mode == TEXT("sc04doors"), bHide = Test.Mode == TEXT("sc04hide"), bLong = Test.Mode == TEXT("sc04long"), bShort = !bHide && !bLong;
  const auto Next = [this](int32 S, double Wait = .3) { Test.Stage = S; Test.Since = Test.T + Wait; Test.Mark = Test.T; Test.Cand = 0; };
  if (Test.T < Test.Since) return;
  if (Test.T > 300) { Fail(FString::Printf(TEXT("timeout; SC04 step %d body %s at %s"), int32(A.Phase()), FS47SC04::BodyName(A.Body()), *A.BodyAt().ToString())); return; }
@@ -623,7 +623,51 @@ void FS47Spine::SC04Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFu
   UE_LOG(LogTemp, Display, TEXT("S47: spine contract FIXTURE: corridor and records doors opened by API before the walk in"));
   M->Web->SetDoorOpen(TEXT("doorSouth"), true, true); M->Web->SetDoorOpen(TEXT("recordsDoor"), true, true);
   Next(17); return;
- case 17: case 18: StandUse(17, TEXT("binder"), FVector2D(-2.3, 9.45), [&] { if (Check(A.Facts().bBinder && A.HuntLive() && A.Body() == FS47SC04::EBody::Away, TEXT("taking the binder starts the annex meeting"))) { Test.ClockMark = M->Story->Clock(); Test.Hop = 0; Next(bHide ? 40 : bLong ? 60 : 20); } }); return;
+ case 17: case 18: StandUse(17, TEXT("binder"), FVector2D(-2.3, 9.45), [&] { if (Check(A.Facts().bBinder && A.HuntLive() && A.Body() == FS47SC04::EBody::Away, TEXT("taking the binder starts the annex meeting"))) { Test.ClockMark = M->Story->Clock(); Test.Hop = 0; Next(bDoors ? 80 : bHide ? 40 : bLong ? 60 : 20); } }); return;
+ // ---- sc04doors: real body crossing, then an explicitly labelled east-landing pose ----
+ case 80:
+ {
+  const FVector2D Body=A.BodyAt(); const double Dx=Body.X-M->Player->Pos.X,Dz=Body.Y-M->Player->Pos.Z;
+  M->Player->Yaw=FMath::Atan2(-Dx,-Dz); M->Player->Pitch=.05;
+  if (!A.DoorOccupied(TEXT("recordsDoor")) || !A.TestNativeBodyRendered())
+  { if(Test.T-Test.Mark>40)Fail(TEXT("native visible Tripo never naturally reached the open records doorway")); return; }
+  if(!Check(M->Web->IsDoorOpen(TEXT("recordsDoor")) && !M->Web->ToggleDoor(TEXT("recordsDoor")) && M->Web->IsDoorOpen(TEXT("recordsDoor")),
+   TEXT("normal ToggleDoor refuses closing through the actually rendered Tripo body at the records leaf")))return;
+  Test.ClockMark=Body.Y; Next(81,0); return;
+ }
+ case 81:
+  if(A.Facts().Captures){Fail(TEXT("captured before the doorway crossing cleared"));return;}
+  if(A.DoorOccupied(TEXT("recordsDoor")))
+  {if(Test.T-Test.Mark>8)Fail(FString::Printf(TEXT("body failed to continue through the door after refused closure: %s at %s"),FS47SC04::BodyName(A.Body()),*A.BodyAt().ToString()));return;}
+  if(!Check(A.BodyAt().Y>Test.ClockMark+.15 && M->Web->ToggleDoor(TEXT("recordsDoor")) && !M->Web->IsDoorOpen(TEXT("recordsDoor")),
+   TEXT("body naturally clears the opening and the same ordinary close now latches")))return;
+  // Independent spatial fixture: the production patrol has no route to this landing.
+  // Do not award escape or force Calm/Finish; all following movement is ordinary AI.
+  UE_LOG(LogTemp,Display,TEXT("S47: SC04 doors explicit pose FIXTURE east landing (8.6,1.6), listening toward player control (4.3,1.6); normal AI, no state completion"));
+  M->Web->SetDoorOpen(TEXT("doorSouth"),false,true);M->Web->SetDoorOpen(TEXT("doorEast"),true,true);
+  M->Player->Place(4.3,1.6,-PI/2);M->Player->Pitch=.05;
+  Act04.TestPlaceBody(FVector2D(8.6,1.6),PI);
+  Next(82,.3);return;
+ case 82:
+  if(!A.TestNativeBodyRendered() || !A.TestSeesPlayer())
+  {if(Test.T-Test.Mark>3)Fail(TEXT("east fixture lacks rendered Tripo or actual sight through open service doorway"));return;}
+  if(!Check(!A.TestPlayerReachable() && !M->Web->IsDoorOpen(TEXT("doorSouth")) && M->Web->IsDoorOpen(TEXT("doorEast")),
+   TEXT("actual service-door sight exists while the closed south door makes the player unreachable")))return;
+  Next(83,.75);return;
+ case 83:
+  if(!Check(A.HuntLive() && A.Body()!=FS47SC04::EBody::Chase && A.Body()!=FS47SC04::EBody::Grab && FS47SC04::Room(A.BodyAt())!=0 && !A.Facts().Captures,
+   TEXT("unreachable visible target does not trap AI in Chase, grab through the wall or enter the refuge")))return;
+  if(A.DoorOccupied(TEXT("doorEast")))
+  {Fail(TEXT("east body reached the leaf before the refuge-close check"));return;}
+  if(!Check(M->Web->ToggleDoor(TEXT("doorEast")) && !M->Web->IsDoorOpen(TEXT("doorEast")),TEXT("ordinary service-door ToggleDoor secures the player behind both doors")))return;
+  Next(84,0);return;
+ case 84:
+  if(A.Facts().Captures || FS47SC04::Room(A.BodyAt())==0){Fail(TEXT("body crossed the secured service door or captured the player"));return;}
+  if(Gate(SC04)!=2)
+  {if(Test.T-Test.Mark>45)Fail(FString::Printf(TEXT("secured east-landing refuge failed physical withdrawal: %s at %s"),FS47SC04::BodyName(A.Body()),*A.BodyAt().ToString()));return;}
+  if(!Check(A.Facts().bEscaped && A.Facts().bSchedule && A.Facts().bStrip && A.Facts().bJournal && A.Facts().bBinder,
+   TEXT("ordinary AI physically withdraws and releases SC04 with all four originals intact")))return;
+  Test.bDone=true;UE_LOG(LogTemp,Display,TEXT("S47: spine contract sc04doors PASS COMPLETE: %d checks"),Test.Checks);FPlatformMisc::RequestExit(false);return;
  // ---- sc04: walk east into the corridor and be taken, then the lure ----
  case 20: Test.Route = {FVector2D(-2.3, 7.7), FVector2D(-3.9, 7.5), FVector2D(-3.9, 5.75), FVector2D(-1.2, 5.75)}; Next(21, 0); return;
  case 21:

@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Under arbeid: konkret SC04-dørpassering
+
+Neste kildepass retter rute gjennom åpent korridordørblad, feil intern dør-ID ved kroppsguard/kvittering, et bestemt ikke-solid smussoverlegg i fysisk kollisjon og for tidlig diagonal jakt i arkivåpningen. En eksisterende utvendig nordsti gir trygg fysisk tilbaketrekning fra øst; romklassifiseringen er avgrenset til faktiske rom.
+
+Editorbygg, 1909 selvtester og den ene målrettede native `sc04doors`-prøven med 14 kontroller består. Faktisk synlig Tripo nekter lukking, passerer videre og tillater senere vanlig lukking. En uttrykkelig merket østlig rom-fixtur bekrefter sikt uten nåbar jaktrute og fysisk tilbaketrekning etter vanlig sikring av kontrollrommet, uten tvunget fullføring. Pakking/installasjon gjenstår. Den separate SARO-renderstansen er fortsatt uavklart: en syntetisk kopi av original auto2 med bare schedule-faktet nullstilt består faktisk terminalhandling og 100 sekunder High/HWRT/Vulkan. 129 GPU-observasjoner topper på 6197 av10240 MiB, uten observerte kernelhendelser. Dette er ikke den opprinnelige lange økten eller bevis for krasjårsak.
+
 ## Jeep-innside og SC04-oppfølging installert
 
 Jeepens tilpassede Blender-innside og sju native deler er lokalt installert kl.02:18 CET 1. november fra runtime `e944b8ed`, PR301. Separat ratt følger styringen; runde instrumenter, kilometerteller og radio bruker levende spillsignaler. Pedaler, gir-/4WD-spak, hanskerom og kompasshus inngår. Originalmodeller og redigerbare kilder er bevart. Olje-/volt-skivene er kosmetiske, og separat hjulrigg står fortsatt åpen.
