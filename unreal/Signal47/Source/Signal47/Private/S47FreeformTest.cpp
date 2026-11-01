@@ -65,6 +65,17 @@ bool FS47FreeformTest::FileAtBinder()
  const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("binder")));M->UI->Close(true);M->Player->Place(P.X,P.Z-.8,0);
  return Check(M->Freeform->FilePacket(),TEXT("retained packet receives filing credit at the actual physical run binder"));
 }
+void FS47FreeformTest::PoseForEvent()
+{
+ const FString Id=M->Freeform->Director->ActiveEvent();
+  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass")||Id==TEXT("empty_car"))
+  {
+   const bool Car=Id==TEXT("empty_car");const FVector A=M->Freeform->Director->EventAnchor();
+   M->Player->Place(Car?A.X-4.:A.X,Car?A.Z+5.:A.Z+18.,0);
+   const FVector D=A-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  }
+}
 void FS47FreeformTest::Step(double Dt)
 {
  if(bDone)return;
@@ -285,14 +296,7 @@ void FS47FreeformTest::Step(double Dt)
   M->Player->Place(0,-1.2,PI);
   if(Ids[EventIndex]==TEXT("close_pass"))F.SpendTime(13*3600.); // native night presentation, not a naturally scheduled roll
   if(!Check(F.Director->Force(Ids[EventIndex]),TEXT("explicit native event fixture starts: ")+Ids[EventIndex]))return;
-  const FString Id=Ids[EventIndex];
-  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass")||Id==TEXT("empty_car"))
-  {
-   const bool Car=Id==TEXT("empty_car");const FVector A=F.Director->EventAnchor();
-   M->Player->Place(Car?A.X-4.:A.X,Car?A.Z+5.:A.Z+18.,0);
-   const FVector D=A-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
-   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
-  }
+  bCarRoundTrip=false;PoseForEvent();
   Go(22,Ids[EventIndex]==TEXT("observer")||Ids[EventIndex]==TEXT("service_presence")?12.:Ids[EventIndex]==TEXT("close_pass")?3.:.6);return;
  }
  if(Stage==22)
@@ -301,6 +305,7 @@ void FS47FreeformTest::Step(double Dt)
   const FString Id=F.Director->ActiveEvent();
   if(Id==TEXT("empty_car")||Id==TEXT("landing_trace")||Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))
    if(!Check(F.Director->PhysicalObjectPresented(),TEXT("event presents actual visible native render components: ")+Id))return;
+  if(Id==TEXT("empty_car")&&!bCarRoundTrip){bCarRoundTrip=true;M->World->Enter(TEXT("diner"));Go(222,.4);return;}
   Shot(FString::Printf(TEXT("event-%02d"),EventIndex));
   if(F.Director->ActiveEvent()==TEXT("observer")||F.Director->ActiveEvent()==TEXT("service_presence"))
    if(!Check(M->Night&&M->Night->Glimpses&&!M->Night->Glimpses->Individuals().IsEmpty(),TEXT("controlled encounter has a real native individual after its warning")))return;
@@ -317,6 +322,12 @@ void FS47FreeformTest::Step(double Dt)
   }
   Go(221,.4);return; // render the requested image before changing/restoring this event
  }
+ if(Stage==222)
+ {
+  if(!Check(!F.Director->PhysicalObjectPresented(),TEXT("active physical incident is hidden and unqueryable outside its scene")))return;
+  M->World->Enter(TEXT("saro"));Go(223,.4);return;
+ }
+ if(Stage==223){PoseForEvent();Go(22,.3);return;}
  if(Stage==221)
  {
   if(F.Director->ActiveEvent()==TEXT("empty_car"))

@@ -314,13 +314,16 @@ void FS47FreeformDirector::Apply()
  }
  // Rehydrate only presentation. Existing encounter brains, field originals,
  // component fault states and the next scheduled sound come from their saves.
- if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
- if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
  Draw();
 }
 void FS47FreeformDirector::Draw()
 {
- if(!Effects->bBuilt)return;
+ if(!Effects->bBuilt||!Effects->CanTouchWorld())return;
+ // Scene visibility can change after the one-shot Apply (including a save
+ // restored on the road). Reconcile both native render and query collision
+ // whenever the active incident is presented; no gameplay effect is replayed.
+ if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
+ if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
  const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass");
  for(int32 I=0;I<4&&I<Effects->Parts.Num();++I)if(auto* C=Effects->Parts[I].Get())
  {
@@ -475,7 +478,8 @@ bool FS47FreeformDirector::PhysicalObjectPresented()const
  if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass"))
   return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
  const FS47Obj Object=Event==TEXT("landing_trace")?Effects->Sample:Event==TEXT("empty_car")?Effects->Car:FS47Obj();
- return Effects->PresentedComponent(Object)!=nullptr;
+ const auto* C=Effects->PresentedComponent(Object);
+ return C&&(C->GetCollisionEnabled()==ECollisionEnabled::QueryOnly||C->GetCollisionEnabled()==ECollisionEnabled::QueryAndPhysics)&&C->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block;
 }
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
 {
