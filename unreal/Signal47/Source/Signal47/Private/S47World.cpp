@@ -873,8 +873,10 @@ void US47World::Roam(const FString& From)
 		// the controls the first time on this device, where the truck can be left the first drive of one's own
 		TArray<FString> Say;
 		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
-		if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
-		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), 5.5f);
+		const bool bFreeform = M && M->IsFreeform();
+		if (bFreeform) Say.Add(TEXT("Supplies: drive south past the motel to Caliche. The gas station is west of the highway, just south of Mesa Diner. Parts and donors 08:00-20:00; essential emergency requisitions after hours. Return north to the service bench by the SARO sign. The notebook map marks both stops."));
+		else if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
+		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bFreeform ? 12.f : 5.5f);
 	};
 	StartTrip(From, FString(), O);
 }
