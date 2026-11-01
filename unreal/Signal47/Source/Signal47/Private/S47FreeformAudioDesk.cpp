@@ -1,6 +1,8 @@
 #include "S47FreeformAudioDesk.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
+#include "S47Observing.h"
+#include "S47Story.h"
 #include "S47Main.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -23,14 +25,26 @@ namespace
  {for(int32 I=0;I<7;++I)if(Id==FString(TEXT("ff:audio:"))+Actions[I])return I;return INDEX_NONE;}
 }
 FS47FreeformAudioDesk::~FS47FreeformAudioDesk(){Stop();}
+TSharedPtr<FS47FreeformAudioDesk> FS47FreeformAudioDesk::Shared(US47Main* Main)
+{
+ static TWeakObjectPtr<US47Main> Owner;static TWeakPtr<FS47FreeformAudioDesk> Desk;
+ if(Owner.Get()==Main)if(const auto Existing=Desk.Pin())return Existing;
+ auto Result=MakeShared<FS47FreeformAudioDesk>(Main);Owner=Main;Desk=Result;return Result;
+}
 bool FS47FreeformAudioDesk::Live()const
 {
  return !IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&Scene.IsValid()&&IsValid(M->Web)&&Scene.Get()==M->Web;
 }
 bool FS47FreeformAudioDesk::Ready()const
-{return bActive&&bBuilt&&Live()&&M->IsFreeform()&&M->Freeform&&M->Freeform->Active();}
+{
+ if(!bActive||!bBuilt||!Live())return false;
+ return M->IsFreeform()?M->Freeform&&M->Freeform->Active():M->Observing&&M->Observing->WorkEnabled()&&M->Observing->Active();
+}
 bool FS47FreeformAudioDesk::Powered()const
-{return Ready()&&(!M->Freeform->PowerFault()||(M->Freeform->Field&&M->Freeform->Field->HasBackupPower()));}
+{
+ if(!Ready())return false;
+ return M->IsFreeform()?(!M->Freeform->PowerFault()||(M->Freeform->Field&&M->Freeform->Field->HasBackupPower())):M->Story&&M->Story->BankIn()&&!M->Story->FeederOutage();
+}
 bool FS47FreeformAudioDesk::ListeningPosition()const
 {
  if(!Powered()||!IsValid(M->Player)||!IsValid(M->World)||M->Web->Area()!=TEXT("saro")||M->World->Area!=TEXT("saro")||M->World->bDriving||M->World->bBusy)return false;
@@ -52,7 +66,7 @@ void FS47FreeformAudioDesk::Begin()
  Stop();if(!IsValid(M)||!IsValid(M->Web))return;
  if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();Readout.Reset();Deck={};}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;LastReadout.Empty();
- if(Build()){BindControls();Show(true);}
+ if(Build()){BindControls();Show(Ready());}
 }
 void FS47FreeformAudioDesk::Stop()
 {
@@ -108,7 +122,7 @@ FString FS47FreeformAudioDesk::Label(const FString& Id)const
 {
  const int32 I=ActionIndex(Id);if(!Ready()||I==INDEX_NONE)return FString();
  if(!Powered())return TEXT("Tape comparator unpowered / restore feeder or generator");
- if(I==2)return M->Freeform->AudioPlaying()?TEXT("Stop tape playback"):TEXT("Play selected recording");
+ if(I==2)return (M->IsFreeform()?M->Freeform->AudioPlaying():M->Observing->AudioPlaying())?TEXT("Stop tape playback"):TEXT("Play selected recording");
  static const TCHAR* Labels[]={TEXT("Select original recording"),TEXT("Select independent control"),TEXT("Play selected recording"),TEXT("Rewind selected tape"),TEXT("Mark start on the original"),TEXT("Mark end on the original"),TEXT("Retain measured comparison / then register at OPS")};
  return Labels[I];
 }
@@ -116,16 +130,17 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
 {
  const int32 I=ActionIndex(Id);if(I==INDEX_NONE||!Ready())return false;
  if(!ListeningPosition()){if(IsValid(M->UI))M->UI->Toast(TEXT("Use the powered tape comparator at the radio table."),3);return true;}
- auto& F=*M->Freeform;F.OpenAudio();
- if(I==3)F.SeekAudio(0);
- else
+ const bool Free=M->IsFreeform();bool Accepted=true;
+ if(Free)M->Freeform->OpenAudio();else M->Observing->OpenAudioComparison();
+ const bool Playing=Free?M->Freeform->AudioPlaying():M->Observing->AudioPlaying();
+ const FString Action=I==2?(Playing?TEXT("pause"):TEXT("play")):I==6?TEXT("confirm"):Actions[I];
+ if(I==3&&Free)M->Freeform->SeekAudio(0);
+ else Accepted=Free?M->Freeform->AudioAction(Action):M->Observing->AudioAction(I==3?TEXT("rewind"):Action);
+ if(IsValid(M->UI))
  {
-  const bool Accepted=F.AudioAction(I==2?(F.AudioPlaying()?TEXT("pause"):TEXT("play")):I==6?TEXT("confirm"):Actions[I]);
-  if(IsValid(M->UI))
-  {
-   if(!Accepted)M->UI->Toast(F.FeedbackText().IsEmpty()?TEXT("Retain an anomalous original and complete its independent control before comparing."):F.FeedbackText(),4);
-   else if(I==6)M->UI->Toast(TEXT("Comparison retained. Register the supported conclusion at OPS."),4);
-  }
+  const FString Feedback=Free?M->Freeform->FeedbackText():M->Observing->AudioFeedbackText();
+  if(!Accepted)M->UI->Toast(Feedback.IsEmpty()?TEXT("Retain an anomalous original and complete its independent control before comparing."):Feedback,4);
+  else if(I==6&&Free)M->UI->Toast(TEXT("Comparison retained. Register the supported conclusion at OPS."),4);
  }
  return true;
 }
@@ -134,14 +149,23 @@ void FS47FreeformAudioDesk::Step(double Dt)
  if(!bActive||!Live())return;
  if(!bBuilt){if(!Build())return;BindControls();}
  const bool Shown=Ready()&&M->Web->Area()==TEXT("saro");Show(Shown);if(!Shown)return;
- auto& F=*M->Freeform;const auto* J=F.CurrentJob();
- FString Line=Powered()?FString::Printf(TEXT("%s / %s / %04.1f s\nHEARD O %.1f/18  C %.1f/8\nMARK %.1f - %.1f / %s"),F.AudioSource()==0?TEXT("ORIGINAL"):TEXT("CONTROL"),F.AudioPlaying()&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),F.AudioPosition(),J?J->OriginalCovered:0,J?J->ControlCovered:0,J?J->MarkStart:-1,J?J->MarkEnd:-1,J&&J->bAudioReviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
- if(Powered()&&(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Recorded))Line=TEXT("NO RETAINED ANOMALOUS ORIGINAL\nCOLLECT ITS CHART AT THE PRINTER\nTHEN RECORD A RACK CONTROL");
- else if(Powered()&&J&&J->ControlAt<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %.1f OF 8 s\nORIGINAL WILL REMAIN INTACT"),J->ControlAt);
+ int32 Source=0;double Cursor=0,HeardO=0,HeardC=0,MarkIn=-1,MarkOut=-1,Control=0;bool Playing=false,Reviewed=false,Original=false;
+ if(M->IsFreeform())
+ {
+  const auto& F=*M->Freeform;const auto* J=F.CurrentJob();Source=F.AudioSource();Cursor=F.AudioPosition();Playing=F.AudioPlaying();
+  if(J){HeardO=J->OriginalCovered;HeardC=J->ControlCovered;MarkIn=J->MarkStart;MarkOut=J->MarkEnd;Control=J->ControlAt;Reviewed=J->bAudioReviewed;Original=J->bAnomaly&&J->Stage>=FS47FreeformSession::EJobStage::Recorded;}
+ }
+ else
+ {
+  const auto& O=*M->Observing;Source=O.AudioSource();Cursor=O.AudioPosition();Playing=O.AudioPlaying();Reviewed=O.AudioReviewed();HeardO=O.AudioHeard(0);HeardC=O.AudioHeard(1);MarkIn=O.AudioMarkedStart();MarkOut=O.AudioMarkedEnd();Control=O.ControlElapsed();Original=O.LoopStage()>=FS47Observing::ELoopStage::Rack;
+ }
+ FString Line=Powered()?FString::Printf(TEXT("%s / %s / %04.1f s\nHEARD O %.1f/18  C %.1f/8\nMARK %.1f - %.1f / %s"),Source==0?TEXT("ORIGINAL"):TEXT("CONTROL"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),Cursor,HeardO,HeardC,MarkIn,MarkOut,Reviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
+ if(Powered()&&!Original)Line=TEXT("NO RETAINED ANOMALOUS ORIGINAL\nCOLLECT ITS CHART AT THE PRINTER\nTHEN RECORD A RACK CONTROL");
+ else if(Powered()&&Control<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %.1f OF 8 s\nORIGINAL WILL REMAIN INTACT"),Control);
  if(Line!=LastReadout&&Readout.IsValid()){Readout->SetText(FText::FromString(Line));LastReadout=Line;}
  for(int32 I=0;I<Controls.Num();++I)if(Controls[I].Material.IsValid())
  {
-  const bool Lit=Powered()&&((I==0&&F.AudioSource()==0)||(I==1&&F.AudioSource()==1)||(I==2&&F.AudioPlaying()&&ListeningPosition())||(I==4&&J&&J->MarkStart>=0)||(I==5&&J&&J->MarkEnd>=0)||(I==6&&J&&J->bAudioReviewed));
+  const bool Lit=Powered()&&((I==0&&Source==0)||(I==1&&Source==1)||(I==2&&Playing&&ListeningPosition())||(I==4&&MarkIn>=0)||(I==5&&MarkOut>=0)||(I==6&&Reviewed));
   Controls[I].Material->SetVectorParameterValue(TEXT("Color"),Lit?FLinearColor(.24,.55,.30):FLinearColor(.12,.15,.13));
  }
 }

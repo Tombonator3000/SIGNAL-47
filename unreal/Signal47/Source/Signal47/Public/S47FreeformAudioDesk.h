@@ -7,11 +7,13 @@ class UTextRenderComponent;
 class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
 
-// Physical transport/mark controls on the existing reel deck. Session owns all audio evidence.
+// Shared physical controls on the existing reel deck. The current mode's
+// Freeform session or authored Story observer owns all audio/evidence state.
 class FS47FreeformAudioDesk
 {
 public:
  explicit FS47FreeformAudioDesk(US47Main* Main):M(Main){}
+ static TSharedPtr<FS47FreeformAudioDesk> Shared(US47Main* Main);
  ~FS47FreeformAudioDesk();
  void Begin();
  void Stop();

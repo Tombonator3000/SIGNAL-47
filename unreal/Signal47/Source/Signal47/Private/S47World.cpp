@@ -145,7 +145,13 @@ void US47World::Init(US47Main* InM)
 		{
 			// The two authored transports survive T01's removal of the feeder-trip exception.
 			// Horror still decides the escape; these choices grant no general pre-chapter drive.
-			if (M && M->IsFreeform()) return { TEXT("Drive / SARO service work"), [this,Place] { Roam(Place); } };
+			if (M && M->IsFreeform())
+			{
+				// The parked service vehicle itself accepts a held parcel before offering a drive.
+				if (!bDriving && !bBusy && M->Freeform && M->Freeform->Field && M->Freeform->Field->ParcelStage() == 2)
+					return { TEXT("Load parcel into vehicle"), [this] { if (M->Freeform && M->Freeform->Field) M->Freeform->Field->Use(TEXT("ff:cargo")); } };
+				return { TEXT("Drive / SARO service work"), [this,Place] { Roam(Place); } };
+			}
 			const FS47Truck* Parked = TruckHere();
 			const bool NightTransport = M && M->Mode == US47Main::EMode::Play && M->Story && M->Story->NightSequence()
 				&& M->Story->Phase() == ES47Phase::Residual && M->Horror && M->Substation && M->Substation->HasNormalResult()
@@ -980,7 +986,7 @@ void US47World::StartTrip(const FString& From, const FString& To, const FS47Trip
 {
 	if (bBusy || bDriving || !M || !M->Story) return;
 	if (M->IsFreeform()&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->ParcelStage()==2)
-	{Toast(TEXT("Secure the carried parcel in the cargo rack before driving. Look at the rack beside the jeep."),6);return;}
+	{Toast(TEXT("Hold the parcel and use the parked jeep to load it before driving."),6);return;}
 	EnsureLegs();
 	bBusy = true;
 	Hold(true);

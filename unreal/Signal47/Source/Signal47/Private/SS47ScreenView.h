@@ -45,6 +45,10 @@ public:
 	void Leave();
 	bool OnGlass() const { return bWorld; }
  uint64 RenderedFrames() const { return DrawFrames; }
+	/** Shared by the physical material mask and pointer hit testing (normalised glass UVs). */
+	static constexpr float ApertureInset = .035f, ApertureRadius = .06f;
+	static bool PictureContains(const FVector2D& Pixel);
+	static bool AnyWorldScreenActive();
 	/** The camera's turn towards the glass, the glass's pixels and the steps' easing. */
 	static bool SelfTest(TArray<FString>& Lines);
 
@@ -71,6 +75,7 @@ private:
 	TWeakObjectPtr<AS47Web> Web;
 	TWeakObjectPtr<AS47Walker> Walker;
 	bool bUseLeaves = true, bWorld = false, bLeaving = false, bLeft = false, bStarted = false, bForwarding = false, bKeysLogged = false;
+	bool bCountedActive = false;
 	TFunction<void()> OnLeft;
 	// the glass: its centre, the way it faces (to the eye), its right and up as the picture runs, its size (cm)
 	FVector Centre = FVector::ZeroVector, Normal = FVector::ForwardVector, Right = FVector::RightVector, Up = FVector::UpVector;
@@ -91,6 +96,7 @@ private:
 	void Finish();
 	bool KeysInside() const;
 	void FocusInside();
+	void FitEyeToViewport();
 	/** The pointer on the glass, in the picture's pixels; false off the glass (or no ray). */
 	bool ToPicture(const FGeometry& G, const FVector2D& ScreenPos, FVector2D& Px) const;
 	FWidgetPath PathAt(const FVector2D& Px) const;

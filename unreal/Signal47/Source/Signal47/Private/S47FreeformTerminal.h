@@ -11,5 +11,6 @@ namespace S47FreeformTerminal
  FW Button(const FString& Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true);
  FW ButtonLive(TAttribute<FString> Label,TFunction<void()> Action,bool Primary=false,TAttribute<bool> Enabled=true);
  FW Pair(FW Left,FW Right);
+ FW Knob(const FString& Label,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange);
  FW Frame(const FString& Title,FW Body);
 }

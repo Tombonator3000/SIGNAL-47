@@ -146,7 +146,10 @@ void FS47FreeformJourneyTest::Step(double Dt)
   if(Age-At<.5)return;F.Director->Stop();
   if(!Check(W.ParcelStage()==4&&W.ParcelPosition().Equals(Before,.15),TEXT("dropped parcel pose survives disk/Flow restore")))return;
   PlaceAt(TEXT("ff:parcel"));W.Use(TEXT("ff:parcel"));if(!Check(W.ParcelStage()==2,TEXT("physical dropped parcel can be retrieved")))return;
-  PlaceAt(TEXT("ff:cargo"));W.Use(TEXT("ff:cargo"));if(!Check(W.ParcelStage()==3,TEXT("retrieved parcel secured in vehicle cargo")))return;
+  PlaceAt(TEXT("ff:cargo"));
+  const auto LoadChoice=M->World->TruckChoice(M->Web->Area());
+  if(!Check(LoadChoice.Label==TEXT("Load parcel into vehicle")&&bool(LoadChoice.Use),TEXT("using the parked jeep while carrying offers loading before driving")))return;
+  LoadChoice.Use();if(!Check(W.ParcelStage()==3&&!M->World->bDriving,TEXT("vehicle use secures the held parcel and does not start driving")))return;
   if(!Restore(TEXT("loaded-parcel")))return;Go(7);return;
  }
  if(Stage==7)
@@ -168,7 +171,24 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<3.5||W.BenchBusy())return;
   if(!Check(W.InventoryCount(TEXT("donor"))==0&&W.InventoryCount(TEXT("relay"))==2&&F.HasFinding(TEXT("donor-relay")),TEXT("actual donor bench test produces one compatible relay")))return;
-  PlaceAt(TEXT("ff:service"));W.Use(TEXT("ff:service"));W.Use(TEXT("ff:service"));W.Use(TEXT("ff:service"));W.Use(TEXT("ff:service"));
+  PlaceAt(TEXT("ff:service"));
+  Go(91);return;
+ }
+ if(Stage==91)
+ {
+  // Place updates walking data before the native camera catches up on its next tick.
+  if(Age-At<.5)return;
+  const FVector D=W.InteractionPoint(TEXT("ff:service"))-S47Three::ToThree(M->Player->EyeUE());
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  Go(92);return;
+ }
+ if(Stage==92)
+ {
+  if(Age-At<.2)return;
+  const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+  if(!Check(Picked==TEXT("ff:service"),TEXT("eye ray reaches the marked S-03 service box from standing ground")))return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("service-reachable.png"),true,false);
+  for(int32 K=0;K<4;++K)M->Player->OnUse(Picked);
   if(!Check(W.ServiceStage()==6&&W.InventoryCount(TEXT("relay"))==1,TEXT("local isolation, cover and relay exchange consume one real spare")))return;
   int32 I=0;for(;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03"))break;
   if(!Check(I<M->Web->DishCount(),TEXT("S-03 actual encoder found")))return;InitialAz=M->Web->DishAz(I);

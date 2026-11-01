@@ -23,7 +23,7 @@ public:
  bool WasUnlocked() const { return bKey && bUnlocked; }
  bool DoorOpen() const { return bReady && DoorK >= .995; }
  bool RouteRequired() const { return bRequired; }
- bool DepartureReleased() const { return bDeparted && HasFieldSheet(); }
+ bool DepartureReleased() const;
  bool WantsDeparture() const;
  bool Contains(const FVector& P) const;
  bool InThreshold(const FVector& P, double Radius = 0) const;

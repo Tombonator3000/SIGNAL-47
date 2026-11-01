@@ -17,10 +17,20 @@ void FS47GlowPoints::Apply(int32 I)
 {
 	if (!Mid.IsValidIndex(I) || !Mid[I].IsValid()) return;
 	if (Brightness.Num() != Num()) Brightness.Init(-1.f, Num());
-	const float K = Factor(Time, Blink.IsValidIndex(I) ? Blink[I] : FVector2D::ZeroVector, Hold, Level);
+	const float K = Factor(Time, Blink.IsValidIndex(I) ? Blink[I] : FVector2D::ZeroVector, Hold, Level) * (OutputScale.IsValidIndex(I) ? OutputScale[I] : 1.f);
 	if (FMath::Abs(Brightness[I] - K) < 1e-4f) return;
 	Brightness[I] = K;
 	Mid[I]->SetScalarParameterValue(TEXT("Brightness"), K);
+}
+
+void FS47GlowPoints::SetOutputScale(int32 I, float Scale)
+{
+ if (!Pos.IsValidIndex(I)) return;
+ Scale = FMath::IsFinite(Scale) ? FMath::Clamp(Scale, 0.f, 1.f) : 1.f;
+ while (OutputScale.Num() < Num()) OutputScale.Add(1.f);
+ if (OutputScale[I] == Scale) return;
+ OutputScale[I] = Scale;
+ Apply(I); // steady points do not normally update their brightness each frame
 }
 
 void FS47GlowPoints::SetPosition(int32 I, const FVector& P)

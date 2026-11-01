@@ -34,6 +34,8 @@
 #include "Misc/SecureHash.h"
 #include "UnrealClient.h"
 #include "S47Observing.h"
+#include "S47Freeform.h"
+#include "S47FreeformAudioDesk.h"
 #include "S47SaroWork.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "S47Audio.h"
@@ -311,7 +313,8 @@ void FS47HorrorTest::CompleteSaroWork()
 	S47J::Set(Result, TEXT("diskFlowRestores"), T.Stores); S47J::Set(Result, TEXT("nativeWalkMetres"), T.WalkMetres);
 	S47J::Set(Result, TEXT("crossPointsSeen"), T.CrossSeen); S47J::Set(Result, TEXT("nativeCrossMovement"), T.bCrossVisual);
 	S47J::Set(Result, TEXT("reference"), T.PacketReference); Result->SetArrayField(TEXT("evidence"), T.Evidence);
-	S47J::Set(Result, TEXT("method"), TEXT("SC01 evening fixture followed by actual console settings, focused Slate pointing command, visible native array-assembly readbacks, normal timed measurements, physical Walker paths and aimed uses through S-03 multi-step service, decoder, printer, comparison and archive. Audio transport/status selection use labelled production callbacks after opening the physical unit; comparison answers use focused Slate Enter/Tab. Real disk/full-Flow restores cover slew, open service panel, control recording, retained records, registered packet and filed archive. Image sequences array-window-runN, array-cross and array-field show the actual runtime movement."));
+	S47J::Set(Result, TEXT("method"), TEXT("SC01 evening fixture followed by actual console settings, focused Slate pointing command, visible native array assemblies, timed measurements and native Walker paths through S-03 service, phone-table reel deck, printer, comparison and archive. Four CRT approach placements are explicit camera/player fixtures; native glass render and Story-only gate checks precede work. ORIGINAL and PLAY are aimed physical key uses; remaining transports/marks use production callbacks with actual heard-prefix guards and no modal. Comparison answers retain focused Slate Enter/Tab. Full disk/Flow restores cover slew, open service, control, recordings, registration and archive."));
+	S47J::Set(Result,TEXT("elapsedDriverSeconds"),T.Elapsed);
 	S47J::Set(Result, TEXT("limits"), TEXT("Focused Story workstations through normal reference, generator, S-03 service, pulsar/control comparison and physical archive, ending at the next HI task. No later window scene, human input/listening, full-night pacing, Xbox, Freeform or whole-story acceptance."));
 	FFileHelper::SaveStringToFile(S47J::Write(Result, true), *(T.Root / TEXT("result.json")));
 	UE_LOG(LogS47HorrorTest, Display, TEXT("S47: Horror %s PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"), *T.Mode, T.Checks, T.Stores, T.WalkMetres);
@@ -384,7 +387,7 @@ void FS47HorrorTest::Step(double Dt)
 	// Story pause also covers the modal panels that this controller must acknowledge.
 	if (M->Story->IsPaused()) M->Player->TestMove.Reset();
 	T.Elapsed += FMath::Clamp(Dt, 0., .2);
-	if (T.Elapsed > (T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 600)) { Fail(TEXT("live horror contract control timeout")); return; }
+	if (T.Elapsed > (T.Mode==TEXT("SAROWorkstations")?360:T.Mode == TEXT("SC03") ? 1800 : T.Mode == TEXT("SC03Resume") ? 900 : (T.Mode == TEXT("SC02") || T.Mode == TEXT("SC02Resume")) ? 900 : 600)) { Fail(TEXT("live horror contract control timeout")); return; }
 	if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("developer case zero required; never write a player case")); return; }
 	if (M->Flow->bStarting || M->World->bBusy)
 	{
@@ -598,6 +601,7 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		if (!Check(H.BaselineChecked(), TEXT("coordinator witnesses the calibrated normal receiver"))) return;
 		if (!Check(M->Observing && M->Observing->Active() && M->Observing->RunIndex() == 0 && !H.NormalComplete(), TEXT("new evening opens the observing schedule after the receiver reference"))) return;
+		if(T.Mode==TEXT("SAROWorkstations")){T.WorkPhase=0;Stage(746,.4);return;}
 		Stage(600, .4); return;
 	}
 	// Evening observing schedule (S47Observing): four real runs on the console, each reduced on paper.
@@ -834,6 +838,27 @@ void FS47HorrorTest::Step(double Dt)
 		const int32 R = O.RunIndex();
 		if (T.ServiceDish < 0) for (int32 I=0;I<M->Web->DishCount();++I) if (M->Web->DishId(I)==TEXT("S-03")) T.ServiceDish=I;
 		if (T.ServiceDish < 0) { Fail(TEXT("physical S-03 antenna is missing")); return; }
+		if(T.Stage==746)
+		{
+			const int32 Screens[]={0,2,1,3};const TCHAR* Ids[]={TEXT("crtLeft"),TEXT("crtRight"),TEXT("crtCenter"),TEXT("opsTerminal")};
+			FVector C,U,A;FVector2D Size;if(!Check(M->Web->CrtGlass(Screens[T.WorkPhase],C,U,A,Size),TEXT("actual Story CRT glass exists for explicit approach fixture")))return;
+			FVector Normal=FVector::CrossProduct(A,U).GetSafeNormal();if(FVector::DotProduct(Normal,M->Player->EyeUE()-C)<0)Normal=-Normal;
+			const FVector P=S47Three::ToThree(C+Normal*90);M->Player->Place(P.X,P.Z,0);Aim(S47Three::ToThree(C));
+			if(!Check(O.Use(Ids[T.WorkPhase]),TEXT("production scheduled Story workstation use is handled")))return;
+			Stage(747,.8);return;
+		}
+		if(T.Stage==747)
+		{
+			const int32 Screens[]={0,2,1,3};
+			if(!Check(!M->IsFreeform()&&(!M->Freeform||!M->Freeform->Active())&&O.Active()&&O.RunIndex()==0&&M->Story->Rx.Stage==1&&H.BaselineChecked()&&O.TerminalOnGlass()&&O.ActiveTerminalScreen()==Screens[T.WorkPhase]&&O.TerminalWindowRendered(),TEXT("actual physical Story CRT renders without starting Freeform or changing authored work gates")))return;
+			Shot(FString::Printf(TEXT("story-physical-pc-%d"),Screens[T.WorkPhase]));M->UI->Close(true);Stage(748,.25);return;
+		}
+		if(T.Stage==748)
+		{
+			if(!Check(!M->ModalOpen()&&!O.TerminalOnGlass(),TEXT("Story physical screen closes without orphan camera/modal")))return;
+			if(++T.WorkPhase<4){Stage(746);return;}
+			M->Player->Place(0,-2.1,0);Stage(600);return;
+		}
 		if (T.Stage == 700) { Aim(Target(TEXT("crtRight"))); Stage(701); return; }
 		if (T.Stage == 701)
 		{
@@ -992,11 +1017,23 @@ void FS47HorrorTest::Step(double Dt)
 			if(!StoreRestore(TEXT("workstations-recordings-retained"),M->Flow->GameState()))return;
 			Stage(730,.4);return;
 		}
-		if(T.Stage==730){Aim(Target(TEXT("decoder")));Stage(731);return;}
+		if(T.Stage==730)
+		{
+			if(!Check(O.AudioDesk&&O.AudioDesk->Ready(),TEXT("Story shares the physical phone-table tape comparator")))return;
+			Go({FVector(2.95,0,-1.2),FVector(0,0,-1.2),FVector(0,0,1),FVector(.42,0,2.6)},738);return;
+		}
+		if(T.Stage==738){Aim(O.AudioDesk->InteractionPoint(TEXT("ff:audio:original")));Stage(731,.3);return;}
 		if(T.Stage==731)
 		{
-			if(!Pick(TEXT("decoder")) || !Check(M->ModalOpen() && !O.AudioReviewed(),TEXT("the physical signal processor opens the retained original/control transports")))return;
-			if(!Check(O.AudioAction(TEXT("original")) && O.AudioAction(TEXT("rewind")) && O.AudioAction(TEXT("play")) && O.AudioPlaying() && O.AudioSource()==0,TEXT("production decoder transport starts the retained original recording")))return;
+			if(!Pick(TEXT("ff:audio:original")) || !Check(!M->ModalOpen()&&!M->IsFreeform()&&!O.AudioReviewed()&&O.AudioSource()==0&&O.AudioDesk->ListeningPosition(),TEXT("aimed ORIGINAL key arms authored Story comparison without overlay or mode change")))return;
+			O.SeekAudio(9);O.AudioAction(TEXT("mark_start"));O.SeekAudio(13);O.AudioAction(TEXT("mark_end"));
+			if(!Check(!O.AudioAction(TEXT("confirm"))&&!O.AudioReviewed()&&O.AudioHeard(0)==0&&O.AudioHeard(1)==0,TEXT("Story seek and plausible marks cannot bypass actual heard-prefix coverage")))return;
+			if(!Check(O.AudioAction(TEXT("rewind")),TEXT("Story physical transport rewinds without granting coverage")))return;
+			Aim(O.AudioDesk->InteractionPoint(TEXT("ff:audio:play")));Stage(740,.3);return;
+		}
+		if(T.Stage==740)
+		{
+			if(!Pick(TEXT("ff:audio:play"))||!Check(O.AudioPlaying()&&!M->ModalOpen()&&O.AudioSource()==0,TEXT("aimed physical PLAY key starts actual Story original recording")))return;
 			Stage(732,.1);return;
 		}
 		if(T.Stage==732)
@@ -1033,7 +1070,7 @@ void FS47HorrorTest::Step(double Dt)
 		if(T.Stage==736)
 		{
 			M->UI->Close(true);
-			Go({FVector(2.95,0,-1.2),FVector(0,0,-1.2),FVector(0,0,1.0),FVector(-4.2,0,1.0),FVector(-4.2,0,2.0)},657);return;
+			Go({FVector(.42,0,1),FVector(-4.2,0,1.0),FVector(-4.2,0,2.0)},657);return;
 		}
 		if(T.Stage==742){Aim(Target(TEXT("printer")));Stage(743);return;}
 		if(T.Stage==743)
@@ -1088,7 +1125,7 @@ void FS47HorrorTest::Step(double Dt)
 		if (T.Stage == 601)
 		{
 			const auto& Run = FS47Observing::Runs()[R];
-			if (!Pick(TEXT("crtCenter")) || !Check(M->Story->bConsoleOpen && M->Story->ConsoleProfile().Card == Run.P.Card, TEXT("the console shows the scheduled run's card"))) return;
+			if (!Pick(TEXT("crtCenter")) || !Check(M->Story->bConsoleOpen && M->Story->ConsoleProfile().Card == Run.P.Card && (!O.WorkEnabled()||(O.TerminalOnGlass()&&O.ActiveTerminalScreen()==1)), TEXT("the physical receiver shows the authored scheduled card"))) return;
 			auto& Rx = M->Story->Rx; const double Clock = M->Story->Clock();
 			Rx.Frequency = Run.P.F; Rx.Gain = (Run.P.Gain[0] + Run.P.Gain[1]) / 2; Rx.Bandwidth = (Run.P.Bw[0] + Run.P.Bw[1]) / 2; Rx.Azimuth = Run.P.Az[1] + 8;
 			M->Story->ConsoleAction();
@@ -1140,6 +1177,7 @@ void FS47HorrorTest::Step(double Dt)
 		{
 			const auto& Run = FS47Observing::Runs()[R];
 			if (!Pick(DataId)) return;
+			if (R == 2 && O.WorkEnabled() && !Enter()) return; // physical OPS drift registration
 			if (R == 3 && O.WorkEnabled() && !Enter()) return; // the status terminal's focused File Virgo A drive log button
 			if (R == 1 && O.LoopStage() != FS47Observing::ELoopStage::Off)
 			{

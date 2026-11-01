@@ -22,6 +22,7 @@ import unreal
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, is_control_crt, write_detail_tile
 from ribbon_geometry import ribbon_asset_paths
+from clip_crt import aperture as crt_aperture
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -746,6 +747,8 @@ def build_master(name, lit, blend, two_sided, flora=None, control_crt=False):
     # creosote, the stalks; 'succulent'; 'stones'; 'stain'), with its vertex shader as a world
     # position offset (FLORA_WPO), the sky less inside a plant, the backlight through the cards'
     # edges, both sides of a card lit as its top, and the stones' faces flat
+    if control_crt:
+        blend = unreal.BlendMode.BLEND_MASKED
     m = fresh('/Game/Web/Base/' + name)
     m.set_editor_property('two_sided', two_sided)
     m.set_editor_property('blend_mode', blend)
@@ -1083,6 +1086,8 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
             mel.connect_material_expressions(boost, '', off, 'C')
             boost = off
         mel.connect_material_property(boost, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    if control_crt:
+        alpha = crt_aperture(m, alpha, uv)
     if blend == unreal.BlendMode.BLEND_MASKED:
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY_MASK)
     elif blend in (unreal.BlendMode.BLEND_TRANSLUCENT, unreal.BlendMode.BLEND_ADDITIVE):
@@ -1108,7 +1113,7 @@ if 'mat' in only:
             for two in (False, True):
                 nm = 'M_Web_%s_%s%s' % ('Lit' if lit else 'Unlit', bk, '_2S' if two else '')
                 masters[(lit, bk, two)] = build_master(nm, lit, bv, two)
-    crt_master = build_master('M_WebCRT', False, BLENDS['Opaque'], False, control_crt=True)
+    crt_master = build_master('M_WebCRT', False, BLENDS['Masked'], False, control_crt=True)
     # world/flora.ts: the ground cover's own (export.js marks its materials with the mesh they are on)
     flora_masters = {
         'card': build_master('M_WebFlora_Card', True, BLENDS['Masked'], True, 'card'),

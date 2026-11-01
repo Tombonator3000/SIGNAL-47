@@ -2,6 +2,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/LocalPlayer.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
@@ -11,6 +12,7 @@
 #include "Layout/ArrangedWidget.h"
 #include "Layout/WidgetPath.h"
 #include "RenderingThread.h"
+#include "SceneView.h"
 #include "S47Keys.h"
 #include "S47Theme.h"
 #include "S47Three.h"
@@ -22,12 +24,15 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/SVirtualWindow.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/Text/STextBlock.h"
 
 namespace
 {
 	constexpr float StepSecs = 0.6f;    // the camera's way to the glass and back
 	constexpr float Fill = 0.86f;       // how much of the view's height the glass takes
 	constexpr int32 VirtualSlot = 4;    // the screens' virtual user (Unreal's widget interaction uses 0)
+	int32 ActiveWorldScreens = 0;
 	enum ERoute { RMove, RDown, RUp, RDouble, RWheel };
 
 	// a direction in Unreal's space as the walker's yaw and pitch (three.js: the camera looks down -z,
@@ -49,6 +54,42 @@ namespace
 	float Ease(float T) { return T * T * (3.f - 2.f * T); }
 }
 
+bool SS47ScreenView::AnyWorldScreenActive(){return ActiveWorldScreens>0;}
+bool SS47ScreenView::PictureContains(const FVector2D& P)
+{
+	if(!FMath::IsFinite(P.X)||!FMath::IsFinite(P.Y))return false;
+	const FVector2D Half(PicW*(.5-ApertureInset),PicH*(.5-ApertureInset));
+	const double Radius=FMath::Min(PicW,PicH)*ApertureRadius;
+	const FVector2D D(FMath::Abs(P.X-PicW*.5)-(Half.X-Radius),FMath::Abs(P.Y-PicH*.5)-(Half.Y-Radius));
+	return FMath::Sqrt(FMath::Square(FMath::Max(0.,D.X))+FMath::Square(FMath::Max(0.,D.Y)))+FMath::Min(FMath::Max(D.X,D.Y),0.)<=Radius;
+}
+void SS47ScreenView::FitEyeToViewport()
+{
+	if(!Walker.IsValid()||!GEngine||!GEngine->GameViewport)return;
+	// Match the projection actually used by this local player's viewport. UE's
+	// axis constraint can change its effective vertical FOV in a wide window;
+	// deriving distance from the walker's nominal FOV then shrinks the CRT.
+	double Dist=0;
+	APlayerController* PC=Walker->GetWorld()?Walker->GetWorld()->GetFirstPlayerController():nullptr;
+	ULocalPlayer* Player=PC?PC->GetLocalPlayer():nullptr;
+	FSceneViewProjectionData Projection;
+	if(Player&&GEngine->GameViewport->Viewport&&Player->GetProjectionData(GEngine->GameViewport->Viewport,Projection)&&Projection.IsPerspectiveProjection()&&Projection.IsValidViewRectangle())
+	{
+		const double ScaleX=FMath::Abs(Projection.ProjectionMatrix.M[0][0]),ScaleY=FMath::Abs(Projection.ProjectionMatrix.M[1][1]);
+		if(FMath::IsFinite(ScaleX)&&FMath::IsFinite(ScaleY)&&ScaleX>1e-4&&ScaleY>1e-4)
+			Dist=FMath::Max(Size.Y*ScaleY/(2*Fill),Size.X*ScaleX/(2*.94));
+	}
+	if(!FMath::IsFinite(Dist)||Dist<=0)
+	{
+		// Initial startup/headless fallback only; normal screen views use the
+		// same native projection as pointer deprojection, refreshed every tick.
+		FVector2D VP(16,9);GEngine->GameViewport->GetViewportSize(VP);
+		const double TanV=FMath::Tan(FMath::DegreesToRadians(FMath::Clamp(double(Walker->Fov),10.,160.)*.5)),Aspect=FMath::Max(.1,VP.X/FMath::Max(1.,VP.Y));
+		Dist=FMath::Max(Size.Y/Fill*.5/TanV,Size.X/.94*.5/(TanV*Aspect));
+	}
+	To.Eye=S47Three::ToThree(Centre+Normal*Dist);Aim(-Normal,To.Yaw,To.Pitch);
+}
+
 void SS47ScreenView::Construct(const FArguments& InArgs)
 {
 	Screen = InArgs._Screen;
@@ -66,12 +107,7 @@ void SS47ScreenView::Construct(const FArguments& InArgs)
 		if (FVector::DotProduct(Normal, Eye - Centre) < 0) Normal = -Normal;
 		Right = FVector::CrossProduct(Normal, Up).GetSafeNormal();
 		// close enough that the glass fills most of the view (the walker's vertical field of view)
-		FVector2D VP(16, 9);
-		GEngine->GameViewport->GetViewportSize(VP);
-		const double TanV = FMath::Tan(FMath::DegreesToRadians(double(Walker->Fov) * 0.5)), Aspect = VP.X / FMath::Max(1.0, VP.Y);
-		const double Dist = FMath::Max(Size.Y / Fill * 0.5 / TanV, Size.X / 0.94 * 0.5 / (TanV * Aspect));
-		To.Eye = S47Three::ToThree(Centre + Normal * Dist);
-		Aim(-Normal, To.Yaw, To.Pitch);
+		FitEyeToViewport();
 		Target.Reset(FWidgetRenderer::CreateTargetFor(FVector2D(PicW, PicH), TF_Bilinear, true));
 		bWorld = Target.IsValid();
 		if (bWorld)
@@ -90,11 +126,13 @@ void SS47ScreenView::Construct(const FArguments& InArgs)
 		Window->SetIsFocusable(true);
 		FSlateApplication::Get().RegisterVirtualWindow(Window.ToSharedRef());
 		User = FSlateApplication::Get().FindOrCreateVirtualUser(VirtualSlot);
+		++ActiveWorldScreens;bCountedActive=true;
 	}
 }
 
 SS47ScreenView::~SS47ScreenView()
 {
+	if(bCountedActive){--ActiveWorldScreens;bCountedActive=false;}
 	if (!bWorld) return;
 	if (bStarted && !bLeft)
 	{
@@ -117,8 +155,15 @@ void SS47ScreenView::SetScreen(const TSharedRef<SWidget>& InContent, const TShar
 	const TSharedRef<SWidget> Hints = KeyHints({ { TEXT("ESC"), TEXT("BACK"), [this] { Leave(); } } });
 	if (bWorld)
 	{
-		Window->SetContent(SNew(SS47CrtGlass)[InContent]);
-		ChildSlot[SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0, 0, 0, Px(26))[Hints]];
+		// Controls and instructions live inside the same physical aperture. The
+		// outer image is masked by the world material, never a second HUD bezel.
+		Window->SetContent(SNew(SS47CrtGlass)
+		 [SNew(SBox).Padding(FMargin(Units*.075f,Units*.75f*.075f))
+		  [SNew(SVerticalBox)
+		   +SVerticalBox::Slot().FillHeight(1)[InContent]
+		   +SVerticalBox::Slot().AutoHeight().Padding(4,8)
+		    [SNew(STextBlock).Text(FText::FromString(TEXT("ESC / RETURN TO ROOM     CLICK / SELECT     SCROLL / PAGE"))).Font(S47Style::Mono(18)).ColorAndOpacity(Css(0x8cffa4,.8f))]]]);
+		ChildSlot[SNew(SBox)];
 		return;
 	}
 	// .overlay { background: rgba(2,3,6,.72) } and the .crt in its bezel, 960 px wide
@@ -149,6 +194,7 @@ void SS47ScreenView::Finish()
 {
 	if (bLeft) return;
 	bLeft = true;
+	if(bCountedActive){--ActiveWorldScreens;bCountedActive=false;}
 	if (bStarted)
 	{
 		if (AS47Walker* W = Walker.Get()) W->CameraOverride = Before;
@@ -175,6 +221,7 @@ void SS47ScreenView::Tick(const FGeometry& G, const double InCurrentTime, const 
 	AS47Walker* W = Walker.Get();
 	AS47Web* Wb = Web.Get();
 	if (!W || !Wb || !Content.IsValid()) { Finish(); return; }
+	FitEyeToViewport();
 	if (!bStarted)
 	{
 		// from where the walker's eye is now; the walker's camera is this view's until it is back
@@ -270,7 +317,7 @@ FReply SS47ScreenView::Route(const FGeometry& G, const FPointerEvent& E, int32 K
 	if (!bWorld || !bStarted || bLeft || !User.IsValid()) return FReply::Unhandled();
 	FVector2D Px(-PicW, -PicH);
 	const bool bRay = ToPicture(G, E.GetScreenSpacePosition(), Px);
-	const bool bOn = bRay && !bLeaving && Px.X >= 0 && Px.Y >= 0 && Px.X < PicW && Px.Y < PicH;
+	const bool bOn = bRay && !bLeaving && PictureContains(Px);
 	// a click off the glass steps back (.overlay: a click on the backdrop closes)
 	if (Kind == RDown && !bOn && Held.IsEmpty())
 	{
@@ -320,7 +367,7 @@ FCursorReply SS47ScreenView::OnCursorQuery(const FGeometry& G, const FPointerEve
 {
 	if (!bWorld || !bStarted || bLeft || !Window.IsValid()) return FCursorReply::Unhandled();
 	FVector2D Px;
-	if (!ToPicture(G, E.GetScreenSpacePosition(), Px) || Px.X < 0 || Px.Y < 0 || Px.X >= PicW || Px.Y >= PicH) return FCursorReply::Cursor(EMouseCursor::Default);
+	if (!ToPicture(G, E.GetScreenSpacePosition(), Px) || !PictureContains(Px)) return FCursorReply::Cursor(EMouseCursor::Default);
 	// what the widget under the pointer on the glass would show
 	const FWidgetPath Path = PathAt(Px);
 	const FPointerEvent V(User.IsValid() ? User->GetUserIndex() : 0, 0, Px, Px, TSet<FKey>(), FKey(), 0.f, E.GetModifierKeys());
@@ -387,6 +434,8 @@ bool SS47ScreenView::SelfTest(TArray<FString>& Lines)
 	const FVector2D S(37, 28);
 	const FVector2D Mid = Pixel(C, C, R, U, S), Corner = Pixel(C + R * S.X / 2 + U * S.Y / 2, C, R, U, S);
 	Check(Mid.Equals(FVector2D(PicW / 2, PicH / 2), 0.01) && Corner.Equals(FVector2D(PicW, 0), 0.01), FString::Printf(TEXT("glass to pixels: middle %s, top right %s"), *Mid.ToString(), *Corner.ToString()));
+	Check(PictureContains(Mid)&&!PictureContains(FVector2D(0,0))&&!PictureContains(FVector2D(PicW*ApertureInset,PicH*ApertureInset)),TEXT("rounded glass accepts centre and rejects the clipped corner/background"));
+	Check(PictureContains(FVector2D(PicW*.08,PicH*.08))&&!PictureContains(FVector2D(PicW*.01,PicH*.5)),TEXT("inner content margin is hittable; outer bezel is never a hidden control"));
 	int32 Left = 0;
 	const TSharedRef<SS47ScreenView> Fallback = SNew(SS47ScreenView).OnLeft([&Left] { ++Left; });
 	const auto Key = [](const FKey& K) { return FKeyEvent(K, FModifierKeysState(), 0, false, 0, 0); };

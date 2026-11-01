@@ -1,6 +1,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47FreeformTerminal.h"
+#include "S47ReceiverReadout.h"
 #include "SS47ScreenView.h"
 #include "CoreGlobals.h"
 #include "S47FreeformDirector.h"
@@ -143,7 +144,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Director)Director=MakeShared<FS47FreeformDirector>(M);
  if(!Field)Field=MakeShared<FS47FreeformWorld>(M);
  Field->Begin(S47J::Obj(Saved,TEXT("field")));
- if(!AudioDesk)AudioDesk=MakeShared<FS47FreeformAudioDesk>(M);AudioDesk->Begin();
+ if(!AudioDesk)AudioDesk=FS47FreeformAudioDesk::Shared(M);AudioDesk->Begin();
  Director->Begin(S47J::Obj(Saved,TEXT("director")));
  if(M&&M->Story){M->Story->SetClock(FMath::Fmod(WorldClock,86400.));M->Story->Rx.bPowered=true;}
  UpdateMysteries();
@@ -326,12 +327,32 @@ bool FS47FreeformSession::PointSelected()
 {
  FJob* J=Job();if(!J||J->Stage>EJobStage::Pointed||!M||!M->Web||!HasPower())return false;
  J->Stage=EJobStage::Pointed;Settle=0;bCrossRunning=false;
+ M->Story->Rx.Azimuth=TargetAz(); // The physical pointing command is the receiver bearing too.
  M->Web->PointDishes(TargetAz(),TargetEl(),9);Changed(TEXT("Tracking command sent. Actual encoder agreement is required before acquisition."));return true;
+}
+bool FS47FreeformSession::ReceiverReady() const
+{
+ const FJob* J=CurrentJob();return J&&J->Stage==EJobStage::Pointed&&HasPower()&&PointReady()&&Settle>=1&&M&&M->Story&&M->Story->Rx.Pass(EffectiveProfile(*J));
+}
+FString FS47FreeformSession::ReceiverNextAction() const
+{
+ const FJob* J=CurrentJob();if(!J)return TEXT("Select an observation at the operations PC.");
+ if(!HasPower())return TEXT("Restore the SARO feeder or start the backup generator.");
+ if(J->Stage==EJobStage::New)return TEXT("Use the right-hand tracking PC to point the array at this source.");
+ if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("Recording %.0f%%. Keep the receiver tuned; the trace shows the live signal."),100*J->Elapsed/SourceSeconds());
+ if(J->Stage!=EJobStage::Pointed)return TEXT("Recording retained. Collect the chart at the printer, then follow the work order.");
+ if(!PointReady())return TEXT("Wait for the dishes to reach the commanded direction. Inspect isolated elements on the left status PC if movement stops.");
+ if(Settle<1)return TEXT("The array is on source. Wait one second for it to settle.");
+ const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
+ if(R.Pass(P))return TEXT("READY. Select START ACQUISITION to record this source.");
+ if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
+ if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
+ if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
+ return TEXT("Fine-tune the receiver until the received carrier reaches 100%.");
 }
 bool FS47FreeformSession::StartAcquisition()
 {
- FJob* J=Job();if(!J||J->Stage!=EJobStage::Pointed||!PointReady()||Settle<1||!M||!M->Story)return false;
- if(!M->Story->Rx.Pass(EffectiveProfile(*J))){Feedback=TEXT("Receiver off source. Check frequency, gain, bandwidth and azimuth against the card.");return false;}
+ FJob* J=Job();if(!ReceiverReady()){Feedback=ReceiverNextAction();return false;}
  J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=J->Slot==1&&bAnomaly;J->Phenomenon=J->bAnomaly?PhenomenonId:FString();
  J->ReferenceClock=WorldClock;J->ReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);
  int32 Available=0;for(int32 I=0;I<27;++I)Available+=M->Web->DishRemoteAvailable(I)?1:0;J->Quality=double(Available)/27;
@@ -684,7 +705,7 @@ void FS47FreeformSession::OpenOperations()
   }
  }
  Rows.Add(S47FreeformTerminal::Small(Feedback));
- Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; comparison locates extra ticks; field kit permits local S-03 diagnosis and includes two fuses and a relay.")));
+ Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; comparison locates extra ticks; field kit includes two fuses and a relay.")));
  Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){const int32 Index=I;U.Add(S47FreeformTerminal::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
@@ -720,7 +741,8 @@ void FS47FreeformSession::OpenStatus()
   List->AddSlot()[S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this,Index]
   {return FString::Printf(TEXT("%s ACT %.1f/%.1f CMD %.1f/%.1f %s"),*M->Web->DishId(Index),M->Web->DishAz(Index),M->Web->DishEl(Index),M->Web->DishTargetAz(Index),M->Web->DishTargetEl(Index),M->Web->DishRemoteAvailable(Index)?TEXT("REMOTE"):TEXT("ISOLATED / SERVICE"));}),[this,Index]{SelectedDish=Index;if(M->Web->DishId(Index)==TEXT("S-03")){if(Field)Field->DiagnoseService();RecordEvidence(TEXT("s03-diagnosed"),TEXT("S-03 command/encoder status inspected at the status terminal."));}OpenStatus();},I==SelectedDish)];
  }
- Rows.Add(SNew(SBox).HeightOverride(280)[List]);
+ Rows.Add(SNew(SBox).HeightOverride(220)[List]);
+ if(Field)Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{return Field?Field->ServiceStatus():FString();}),TAttribute<int32>(0)));
  Rows.Add(S47FreeformTerminal::Small(bPowerFault?TEXT("FEEDER VOLTAGE UNSTABLE / USE FIELD METER OR BACKUP"):TEXT("FEEDER SUPPLY NORMAL")));
  OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col(Rows),true);
 }
@@ -729,13 +751,20 @@ void FS47FreeformSession::OpenReceiver()
  if(!RequirePower())return;
  if(!M||!M->UI||!M->Story||!CurrentJob())return;
  auto& R=M->Story->Rx;const auto P=EffectiveProfile(*CurrentJob());TArray<S47Kit::FW> Rows;
- Rows.Add(S47FreeformTerminal::Paper(JobLine(*CurrentJob())+TEXT("\n")+P.Card));
- Rows.Add(S47Kit::Knob(TEXT("FREQUENCY MHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;}));
- Rows.Add(S47FreeformTerminal::Pair(S47Kit::Knob(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),S47Kit::Knob(TEXT("BANDWIDTH kHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
- Rows.Add(S47Kit::Knob(TEXT("AZIMUTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f"),M->Story->Rx.Azimuth);}),0,359,.1f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Azimuth);}),[this](float V){M->Story->Rx.Azimuth=V;}));
- Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{const FJob* J=CurrentJob();return J?FString::Printf(TEXT("%s / %.1f s / ACTUAL ARRAY QUALITY %.0f %%"),*StageText(J->Stage),J->Elapsed,J->Quality*100):FString();}),TAttribute<int32>(0)));
- Rows.Add(S47FreeformTerminal::Button(TEXT("Start acquisition"),[this]{if(StartAcquisition())M->UI->Close();else{Feedback=TEXT("Check receiver settings and tracking readiness. The array must physically settle before acquisition.");OpenReceiver();}},true,CurrentJob()->Stage==EJobStage::Pointed));
- Rows.Add(S47FreeformTerminal::Small(Feedback));OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
+ if(CurrentJob()->Stage!=EJobStage::New)R.Azimuth=TargetAz(); // No second, contradictory azimuth dial after physical tracking.
+ S47ReceiverReadout::FData D;
+ D.GetReceiver=[this]{return M->Story->Rx;};D.GetProfile=[this]{return EffectiveProfile(*CurrentJob());};
+ D.GetQuality=[this]{return M->Story->Rx.Quality(EffectiveProfile(*CurrentJob()));};
+ D.GetProgress=[this]{return CurrentJob()?CurrentJob()->Elapsed/FMath::Max(1.,SourceSeconds()):0.;};
+ D.GetArrayQuality=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return double(N)/FMath::Max(1,M->Web->DishCount());};
+ D.GetReady=[this]{return ReceiverReady();};D.GetTrackingReady=[this]{return PointReady()&&Settle>=1;};
+ D.GetRecording=[this]{return CurrentJob()&&CurrentJob()->Stage==EJobStage::Integrating;};D.GetNextAction=[this]{return ReceiverNextAction();};
+ Rows.Add(S47ReceiverReadout::Build(D));
+ Rows.Add(S47FreeformTerminal::Small(JobLine(*CurrentJob())+FString::Printf(TEXT("\nF %.3f MHz / GAIN %.0f–%.0f / BW %.0f–%.0f kHz / %.0f seconds"),P.F,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],SourceSeconds())));
+ Rows.Add(S47FreeformTerminal::Knob(TEXT("FREQUENCY MHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;}));
+ Rows.Add(S47FreeformTerminal::Pair(S47FreeformTerminal::Knob(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),S47FreeformTerminal::Knob(TEXT("BANDWIDTH kHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
+ Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return ReceiverReady()?FString(TEXT("READY / START ACQUISITION")):FString(TEXT("NOT READY / FOLLOW NEXT ABOVE"));}),[this]{StartAcquisition();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
+ Rows.Add(S47FreeformTerminal::Small(TEXT("Pointing follows the right-hand tracking PC. Tune the carrier to 100%, then start. The recording advances here.")));OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenAudio()
 {
