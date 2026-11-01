@@ -44,6 +44,15 @@ namespace
  // A door the player moves is a sound at its opening: the heavy outer doors carry, the light inner ones less.
  const double GapReach[] = {14, 7, 7, 14};
  // FS47HorrorThreat's Liang-Barsky test: does segment A-B touch the rectangle?
+ bool OccupiesLeaf(const FVector2D& At,const FVector2D& Ext,const FGap& Gap)
+ {
+  const double Normal=Gap.bX?At.X:At.Y, Across=Gap.bX?At.Y:At.X;
+  const double Depth=Gap.bX?Ext.X:Ext.Y, Width=Gap.bX?Ext.Y:Ext.X;
+  const double Low=Gap.bX?Gap.Z0:Gap.X0, High=Gap.bX?Gap.Z1:Gap.X1;
+  // Walk zones include the approaches on both sides. Only the physical leaf
+  // plane and doorway width decide whether the visible body obstructs closing.
+  return FMath::Abs(Normal-Gap.Plane)<=Depth+.05 && Across+Width+.05>Low && Across-Width-.05<High;
+ }
  bool Through(const FVector2D& A, const FVector2D& B, const FGap& R)
  {
   double T0 = 0, T1 = 1; const FVector2D D = B - A;
@@ -363,6 +372,43 @@ bool FS47SC04::EdgeOpen(int32 A, int32 Bn) const
  return true;
 }
 
+// Use the skin actually drawn, including the current skinned pose, not a point actor.
+FVector2D FS47SC04::BodyExtent() const
+{
+ FBox Box(ForceInit);
+ if (Pale.Creature.Ready()) Box += Pale.Creature.Mesh->Bounds.GetBox();
+ else for (const auto& Part : Pale.All) if (Part.IsValid() && Part->IsVisible()) Box += Part->Bounds.GetBox();
+ if (!Box.IsValid) return FVector2D(.27,.27);
+ const FVector A = S47Three::ToThree(Box.Min), Z = S47Three::ToThree(Box.Max);
+ return FVector2D(FMath::Max3(.27,FMath::Abs(A.X-Pos.X),FMath::Abs(Z.X-Pos.X)),
+  FMath::Max3(.27,FMath::Abs(A.Z-Pos.Y),FMath::Abs(Z.Z-Pos.Y)));
+}
+
+bool FS47SC04::DoorOccupied(const FString& Id) const
+{
+ if (!HuntLive() || !bShown) return false;
+ const FVector2D Ext=BodyExtent();
+ for (const auto& G : Gaps) if (Id == G.Door)
+  return OccupiesLeaf(Pos,Ext,G);
+ return false;
+}
+
+bool FS47SC04::Reachable(int32 Goal) const
+{
+ const int32 Start=Nearest(Pos);
+ TArray<int32> Q{Start};
+ for (int32 H=0;H<Q.Num();++H)
+ {
+  if (Q[H]==Goal) return true;
+  for (const auto& E:Edges())
+  {
+   const int32 Next=E.Key==Q[H]?E.Value:E.Value==Q[H]?E.Key:-1;
+   if (Next>=0 && !Q.Contains(Next) && EdgeOpen(Q[H],Next)) Q.Add(Next);
+  }
+ }
+ return false;
+}
+
 int32 FS47SC04::Nearest(const FVector2D& At) const
 {
  int32 Best = NCorrRec; double D = 1e9;
@@ -419,14 +465,14 @@ bool FS47SC04::Walk(double Speed, double Dt)
 bool FS47SC04::ClearOfClosedDoors() const
 {
  if(!M||!M->Web)return false;
- for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&DoorVolume(Pos,G,BodyRadius))return false;
+ for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&OccupiesLeaf(Pos,BodyExtent(),G))return false;
  return true;
 }
 
 bool FS47SC04::PhysicalStep(const FVector2D& To) const
 {
  if(!M||!M->Web||!M->Web->GetWorld()||To.ContainsNaN()||Pos.ContainsNaN())return false;
- for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&DoorVolume(To,G,BodyRadius)&&!MovingOutOfDoor(Pos,To,G))return false;
+ for(const auto& G:Gaps)if(!M->Web->IsDoorOpen(G.Door)&&OccupiesLeaf(To,BodyExtent(),G)&&!MovingOutOfDoor(Pos,To,G))return false;
  FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC04BodyStep),true,M->Player);
  for(const auto& C:Pale.All)if(auto* Part=C.Get())Q.AddIgnoredComponent(Part);
  if(auto* Skin=Pale.Creature.Mesh.Get())Q.AddIgnoredComponent(Skin);
@@ -442,7 +488,7 @@ bool FS47SC04::PhysicalStep(const FVector2D& To) const
   bool bSeparating=false;
   if(Hit.bStartPenetrating)for(const auto& G:Gaps)
   {
-   if(M->Web->IsDoorOpen(G.Door)||!DoorVolume(Pos,G,BodyRadius+.08)||!MovingOutOfDoor(Pos,To,G))continue;
+   if(M->Web->IsDoorOpen(G.Door)||!OccupiesLeaf(Pos,BodyExtent()+FVector2D(.03,.03),G)||!MovingOutOfDoor(Pos,To,G))continue;
    const auto* Item=M->Web->Item(G.Door);const auto* N=Item?M->Web->Node(Item->Node):nullptr;
    const auto* Root=N?N->Comp.Get():nullptr;const auto* Part=Hit.GetComponent();
    if(Root&&Part&&(Part==Root||Part->IsAttachedTo(Root)))
@@ -619,7 +665,7 @@ void FS47SC04::Think(double Dt)
  {
   bool bOpen = M->Web->IsDoorOpen(Gaps[G].Door);
   const bool* Was = LastDoors.Find(Gaps[G].Door);
-  if(Was && *Was && !bOpen && bShown && DoorVolume(Pos,Gaps[G],BodyRadius+.04))
+  if(Was && *Was && !bOpen && bShown && OccupiesLeaf(Pos,BodyExtent(),Gaps[G]))
   {
    // The player can be clear while the intruder still occupies the opening.
    // The leaf bounces back on that body instead of closing through it.
@@ -633,8 +679,6 @@ void FS47SC04::Think(double Dt)
    if (!bShown) PendingNoise = At;
    else if (FVector2D::Distance(At, Pos) <= GapReach[G]) DoorNoise = At;
   }
-  if (Was && *Was != bOpen && !bOpen && PlayerInControl() && (G==2 || G==3) && M->UI)
-   M->UI->Toast(G==2?TEXT("Corridor door secured. Check the service door, then stay in cover."):TEXT("Service door secured. Check the corridor door, then stay in cover."),4);
   LastDoors.Add(Gaps[G].Door, bOpen);
  }
  const bool bSees = bShown && SeesPlayer();
@@ -694,7 +738,17 @@ void FS47SC04::Think(double Dt)
   // The creature can operate the records-room latch from its own side, as in
   // the existing listening branch. It still has to walk through the real opening.
   if(Room(Pos)==2 && !M->Web->IsDoorOpen(TEXT("recordsDoor")))
-  {M->Web->SetDoorOpen(TEXT("recordsDoor"),true,false);LastDoors.Add(TEXT("recordsDoor"),true);}
+  {
+   const FVector2D Ext=BodyExtent();
+   const bool AtLeaf=FMath::Abs(Pos.Y-Gaps[1].Plane)<=Ext.Y+.4 && Pos.X>=Gaps[1].X0 && Pos.X<=Gaps[1].X1;
+   if(!AtLeaf)
+   {
+    if(Path.IsEmpty())RouteTo(NRecIn);
+    Walk(WalkSpeed,Dt); return;
+   }
+   M->Web->SetDoorOpen(TEXT("recordsDoor"),true,false);LastDoors.Add(TEXT("recordsDoor"),true);
+   RouteTo(RetreatGoal);
+  }
   if(Path.IsEmpty() && FVector2D::Distance(Pos,Nodes()[RetreatGoal].At)>.2)RouteTo(RetreatGoal);
   if(Walk(WalkSpeed*1.2,Dt) && FVector2D::Distance(Pos,Nodes()[RetreatGoal].At)<.3)
   {
@@ -723,7 +777,7 @@ void FS47SC04::Think(double Dt)
  case EBody::Door:
   // Out of the office door and one second quite still, then the head turns down the corridor.
   HeadYaw = StateT > 1.0 ? YawTo(Pl - Pos) : BodyYaw;
-  if (SeeAcc >= SeeTime && StateT > 1.0) { LogSight(); Enter(EBody::Chase); break; }
+  if (SeeAcc >= SeeTime && StateT > 1.0 && Reachable(Nearest(Pl))) { LogSight(); Enter(EBody::Chase); break; }
   if (StateT > 2.0)
   {
    Enter(EBody::Search); Patrol = 0;
@@ -733,7 +787,7 @@ void FS47SC04::Think(double Dt)
  case EBody::Search:
  case EBody::Leave:
  {
-  if (B == EBody::Search && SeeAcc >= SeeTime) { LogSight(); Enter(EBody::Chase); break; }
+  if (B == EBody::Search && SeeAcc >= SeeTime && Reachable(Nearest(Pl))) { LogSight(); Enter(EBody::Chase); break; }
   if (B == EBody::Search && bLureRinging && !bSafe) { Enter(EBody::Lured); RouteTo(NOffice); break; }
   if (B == EBody::Search && Sound) Investigate(*Sound);
   if (Walk(B == EBody::Leave ? WalkSpeed * 1.2 : WalkSpeed, Dt))
@@ -744,13 +798,13 @@ void FS47SC04::Think(double Dt)
    if (B == EBody::Leave || !NextPatrol())
    {
     if (FVector2D::Distance(Pos, Nodes()[NOffice].At) < .3) Vanish();
-    else { Enter(EBody::Leave); RouteTo(NOffice); }
+    else { Enter(Reachable(NOffice) ? EBody::Leave : EBody::Listen); if (B==EBody::Leave) RouteTo(NOffice); }
    }
   }
   break;
  }
  case EBody::Listen:
-  if (SeeAcc >= SeeTime) { Enter(EBody::Chase); break; }
+  if (SeeAcc >= SeeTime && Reachable(Nearest(Pl))) { Enter(EBody::Chase); break; }
   if (bLureRinging && !bSafe) { Enter(EBody::Lured); RouteTo(NOffice); break; }
   if (Sound && Room(*Sound) == 2 && FVector2D::Distance(Pos, Nodes()[NCorrRec].At) < .4)
   {
@@ -759,15 +813,43 @@ void FS47SC04::Think(double Dt)
    Enter(EBody::Search); Investigate(*Sound); break;
   }
   if (Sound && Room(*Sound) == 0 && !bBanged) { bBanged = true; if (M->Audio) M->Audio->Play(TEXT("thud"), .7f, S47Three::ToUE(BangAt)); }
+  // A shut non-refuge door can strand the search on the far side of the graph.
+  // Wait at the real barrier, then push that unlocked door open to return. Never
+  // open either control-room refuge door or disappear from an unreachable room.
+  if (StateT > ListenTime && !Reachable(NOffice) && Room(Pos)!=0)
+  {
+   const TCHAR* ReturnDoor=Room(Pos)==2 ? TEXT("recordsDoor") : Room(Pos)==3 ? TEXT("exitDoor") : nullptr;
+   if (ReturnDoor && !M->Web->IsDoorOpen(ReturnDoor))
+   {
+    const bool Records=Room(Pos)==2; const auto& Gap=Gaps[Records?1:0]; const FVector2D Ext=BodyExtent();
+    const double Normal=FMath::Abs((Gap.bX?Pos.X:Pos.Y)-Gap.Plane);
+    const double Across=Gap.bX?Pos.Y:Pos.X;
+    const bool AtLeaf=Normal<=(Gap.bX?Ext.X:Ext.Y)+.4 && Across>=(Gap.bX?Gap.Z0:Gap.X0) && Across<=(Gap.bX?Gap.Z1:Gap.X1);
+    if (!AtLeaf)
+    {
+     if (Path.IsEmpty()) RouteTo(Records?NRecIn:NStoop);
+     Walk(WalkSpeed,Dt); break;
+    }
+    M->Web->SetDoorOpen(ReturnDoor,true,false); LastDoors.Add(ReturnDoor,true);
+    if (M->Audio) M->Audio->Play(TEXT("door_latch"),.5f,S47Three::ToUE(FVector(Pos.X,Y+1,Pos.Y)));
+    M->UI->Toast(TEXT("A latch moves beyond the door. Something pushes it open and turns back down the annex."),4);
+    Enter(EBody::Leave); RouteTo(NOffice); break;
+   }
+  }
   if (StateT > ListenTime) { Enter(EBody::Search); if (!NextPatrol()) { Enter(EBody::Leave); RouteTo(NOffice); } }
   break;
  case EBody::Lured:
-  if (SeeAcc >= SeeTime) { Enter(EBody::Chase); break; }
+  if (SeeAcc >= SeeTime && Reachable(Nearest(Pl))) { Enter(EBody::Chase); break; }
   if (Walk(WalkSpeed * 1.3, Dt)) BodyYaw = HeadYaw = PI / 2; // facing the ringing office door (+z)
-  if (Path.IsEmpty() && !bLureRinging && StateT > LureTime) Vanish(); // it goes in after the ringing
+  if (Path.IsEmpty() && !bLureRinging && StateT > LureTime)
+  {
+   if (FVector2D::Distance(Pos,Nodes()[NOffice].At)<.3) Vanish();
+   else { Enter(EBody::Search); NextPatrol(); }
+  } // it goes in after the ringing
   break;
  case EBody::Chase:
  {
+  if (!Reachable(Nearest(LastKnown))) { Enter(EBody::Listen); break; }
   if (bSees) LostT = 0; else LostT += Dt;
   if (bSafe && Room(Pos) != 0)
   {
@@ -822,6 +904,14 @@ bool FS47SC04::SelfTest(TArray<FString>& Lines)
  for (int32 I = NStoop; I <= NWestNorth; ++I) Rooms &= Room(Nodes()[I].At) == 3;
  for (int32 I = NRecIn; I <= NRecSW; ++I) Rooms &= Room(Nodes()[I].At) == 2;
  Check(Rooms, TEXT("every graph node lies in the room it names"));
+ Check(OccupiesLeaf(FVector2D(-6.27,5.7),FVector2D(.4,.35),Gaps[0]) &&
+  !OccupiesLeaf(FVector2D(-7,5.7),FVector2D(.25,.25),Gaps[0]), TEXT("fire-exit closing blocks the body at its leaf, not the clear outside approach"));
+ Check(OccupiesLeaf(FVector2D(-3.9,6.85),FVector2D(.3,.3),Gaps[1]) &&
+  !OccupiesLeaf(FVector2D(-3.9,5.75),FVector2D(.3,.3),Gaps[1]), TEXT("records closing distinguishes its physical leaf from the corridor approach"));
+ Check(Through(FVector2D(-7,5.7),FVector2D(-5.3,5.7),Gaps[0]) &&
+  Through(FVector2D(-5.3,5.7),FVector2D(-7,5.7),Gaps[0]), TEXT("fire-exit barrier is crossed in both travel directions"));
+ Check(Through(FVector2D(-2.4,5.7),FVector2D(-2.4,3.6),Gaps[2]) &&
+  !Through(FVector2D(-3.9,5.7),FVector2D(-5.3,5.7),Gaps[2]), TEXT("refuge-door barrier distinguishes the actual crossing from a corridor route"));
  Check(DoorVolume(FVector2D(-2.4,4.6),Gaps[2],BodyRadius)&&!DoorVolume(FVector2D(-2.4,4.4),Gaps[2],BodyRadius),TEXT("the full body stops before the corridor door plane, not after its centre crosses"));
  Check(MovingOutOfDoor(FVector2D(-2.4,4.85),FVector2D(-2.4,4.95),Gaps[2])&&!MovingOutOfDoor(FVector2D(-2.4,4.85),FVector2D(-2.4,4.65),Gaps[2]),TEXT("closed-leaf separation can move outward on its own side but never through the door"));
  Check(Room(FVector2D(-2.4,3.6))==0&&Room(FVector2D(-2.4,5.1))==1,TEXT("a creature already inside the refuge is not treated as safely outside it"));

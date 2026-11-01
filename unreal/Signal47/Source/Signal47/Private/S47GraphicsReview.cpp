@@ -105,6 +105,7 @@ static const FCamera Cameras[] = {
  { TEXT("caliche"), TEXT("diner"), 7998.5, 2040, 3.14159, -0.02 },
  { TEXT("old-road"), TEXT("roswell"), 19080.25, -4575.53, 0.1, -0.02 },
  { TEXT("cab"), TEXT("saro"), 0, 0, 0, 0 },
+ { TEXT("cab-controls"), TEXT("saro"), 0, 0, 0, 0 },
  // Extra state coverage is opt-in; the original twenty cameras retain their baseline views.
  { TEXT("motel-lobby"), TEXT("saro"), -46, 675.7, -0.64, -0.12 },
  // Identical physical lens across the road/SARO area handover:
@@ -258,7 +259,7 @@ void Tick(AS47Web* W, float)
  const FCamera& V = Cameras[Next];
  const bool TerminalFront = FString(V.Name) == TEXT("terminal-online") || FString(V.Name) == TEXT("terminal-dark");
  M->Player->Eye = TerminalFront ? 1.0 : S.InitialEye;
- const bool InCab = FString(V.Name) == TEXT("cab") || V.State == EState::HeadlightsOff || V.State == EState::HeadlightsOn;
+ const bool InCab = FString(V.Name) == TEXT("cab") || FString(V.Name) == TEXT("cab-controls") || V.State == EState::HeadlightsOff || V.State == EState::HeadlightsOn;
  if (Next != S.Step) {
   if (S.Step >= 0 && ExteriorPowerState(Cameras[S.Step].State) && !ExteriorPowerState(V.State)
       && M->SaroNight && M->SaroNight->Power) M->SaroNight->Power->Restore();
@@ -332,9 +333,13 @@ void Tick(AS47Web* W, float)
   M->Story->SetPaused(true);
   // StartTrip turns its lamps on after its transition; hold the requested state throughout.
   M->World->HoldTruck(1);
-  if (FS47Truck* Truck = M->World->CabTruck()) Truck->SetHeadlights(V.State != EState::HeadlightsOff);
+  if (FString(V.Name)==TEXT("cab-controls")) if(auto* Driver=M->World->CabDrive())Driver->SetLook(.12,-.52);
+  if (FS47Truck* Truck = M->World->CabTruck()) {
+   Truck->SetHeadlights(V.State != EState::HeadlightsOff);
+   double CabSteer=0; if(FParse::Value(FCommandLine::Get(),TEXT("S47GraphicsCabSteer="),CabSteer))Truck->SetSteer(CabSteer);
+  }
  }
- if (FString(V.Name) != TEXT("cab") && V.State != EState::HeadlightsOff && V.State != EState::HeadlightsOn) {
+ if (!InCab) {
   double X = V.X, Z = V.Z, Yaw = V.Yaw, Pitch = V.Pitch;
   if (V.State == EState::RackOnline || V.State == EState::RackDark) {
    const FVector Rack = M->Story->RackAt();

@@ -1,8 +1,15 @@
 # Gjeldende arbeidsliste
 
-**Status:** Gjeldende. **Gjelder:** Videre arbeid på Unreal-utgaven. **Sist kontrollert:** 31. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Videre arbeid på Unreal-utgaven. **Sist kontrollert:** 1. november 2026.
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
+
+## Nattarbeid til 1. november kl.09
+
+Tom har bekreftet søndag 1. november kl.09 som frist for nattarbeidet. Jeep-innsiden prioriteres først, deretter kritiske spillfeil. Ingen uavklarte designforslag regnes som nye vedtak.
+
+- [ ] **PLAY-01-48 / P2, Jeep-innside med ratt og instrumenter:** Ny privat Blender-kilde og sju native deler er klargjort: tilpasset dashbord, eget ratt/rattstamme, pedaler, gir-/4WD-spak, runde instrumenter, radio, hanskerom og kompasshus. Original Jeep beholdes. Hastighet, drivstoff, temperatur, kilometerteller, radioklokke og styring bruker eksisterende levende spillsignaler. Olje-/volt-skivene er foreløpig kosmetisk modellering. Native import og faktiske fører-/instrumentbilder i Vulkan består, med 1840 selvtester før siste lille SC04-kontroll. Pakking og installasjon gjenstår. Separat hjulrigg under PLAY-31-47 er fortsatt åpen.
+- [ ] **SC04-oppfølging, PLAY-31-17/19:** Kildeutkast avviser jakt mot utilgjengelig rute, tar hensyn til den synlige kroppen ved dørlukking, viser korrekt dør-/trygghetsstatus og krever faktisk ankomst til kontoret før lokking avsluttes. En strømlinjet test består med 17 kontroller av fangst, nytt forsøk, lukket arkivdør, faktisk kontorankomst, tilflukt og lagrede fakta. Konkret lukking mens kroppen passerer og servicedør-sikt med sørdøren lukket er ennå ikke prøvd som egne runtime-oppsett. Ingen ny service-yard-regi er innført. Pakking/installasjon og denne oppfølgingen gjenstår.
 
 ## Aktiv rettelse: Roswell armer og bakke-AI
 

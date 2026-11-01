@@ -79,7 +79,7 @@ public:
 	virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(512, 256); }
 	FString Clock;
 	double RadioX = 214;
-	bool bRadioOn = false;
+	bool bRadioOn = false, bJeep = false;
 	double Miles = S47_ODOMETER_OUT;
 
 	virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
@@ -92,7 +92,7 @@ public:
 		Dial(G, Out, Layer + 1, 88, 98, 40, -60, 60, 4, TEXT("FUEL"), { { 0, TEXT("E") }, { 0.5, TEXT("1/2") }, { 1, TEXT("F") } }, MARK, Glow);
 		Dial(G, Out, Layer + 1, 424, 98, 40, -60, 60, 4, TEXT("TEMP"), { { 0, TEXT("C") }, { 1, TEXT("H") } }, MARK, Glow);
 		// the gear selector and the dark warning lamps
-		Text(G, Out, Layer + 3, TEXT("P   R   N   D   2   1"), 256, 152, S47Style::Display(11), MARK);
+		if(!bJeep) Text(G, Out, Layer + 3, TEXT("P   R   N   D   2   1"), 256, 152, S47Style::Display(11), MARK);
 		const int32 At[4][2] = { { 157, 30 }, { 355, 30 }, { 157, 46 }, { 355, 46 } };
 		for (int32 i = 0; i < 4; ++i)
 		{
@@ -326,7 +326,7 @@ int32 FS47Truck::CompassReads() const
 	return (A + 360) % 360;
 }
 
-FVector FS47Truck::CompassAt() const { return LocalToWorld(COMPASS+(TripoJeep()?FVector(0,.115,.242):FVector::ZeroVector)); }
+FVector FS47Truck::CompassAt() const { return LocalToWorld(bJeepCab?FVector(-.28,1.530,-.20):COMPASS+(TripoJeep()?FVector(0,.115,.242):FVector::ZeroVector)); }
 
 double FS47Truck::Bearing() const
 {
@@ -354,7 +354,7 @@ void FS47Truck::SetDriving(bool bOn)
 	// (parked, the card stands where the heading is: it is found there the next time, not swinging)
 	if (!bOn) { Compass.bSet = false; CompassPull.Reset(); }
 	bDriving = bOn;
-	Cab.SetVisible(bOn);
+	Cab.SetVisible(bOn||bJeepCab);
 	Shell.SetVisible(!bOn);
 	// from the driver's seat the lamps face away: their glows only poked over the hood
 	GlowPoints.SetVisible(!bOn && !Fleet);
@@ -388,6 +388,23 @@ void FS47Truck::CopyCab(const FS47Truck& O)
 	SetOdometer(O.Odometer() - S47_ODOMETER_OUT);
 	SetFrost(O.Frosted());
 	Update(0, 0, O.WheelAngle);   // the needles drawn where they are now, in this frame
+}
+
+void FS47Truck::FitJeepCab()
+{
+ if(bJeepCab||!Needles||!Keys||!CompassCard)return;
+ bJeepCab=true;
+ // The retained needle parent is a group, not the old rectangular face. Its
+ // transform becomes truck-local so each new circular dial has its own pivot.
+ FS47Obj Parent=Needles.Parent();Parent.SetPosition(FVector::ZeroVector);Parent.SetRotation(FVector::ZeroVector);
+ Needles.SetPosition(FVector::ZeroVector);Needles.SetRotation(FVector::ZeroVector);
+ for(int32 I=0;I<4;++I){Lamps[I].SetPosition(FVector(-.23+.07*I,1.115,-.122));Lamps[I].SetRotation(FVector::ZeroVector);}
+ Keys.SetPosition(FVector(-.30,1.14,-.08));
+ FS47Obj CompassBase=CompassCard.Parent();CompassBase.SetPosition(FVector(-.28,1.530,-.20));
+ const FQuat CompassQ=Euler(0,-.151765,0);CompassBase.SetQuaternion(CompassQ);
+ Needles.SetInstance(3,FVector(-.28,1.530,-.20)+CompassQ.RotateVector(FVector(0,-.42*.0425,.043)),CompassQ,FVector(.7,.0425,.6));
+ if(Dash){Dash->bJeep=true;DrawDash();}
+ Update(0,0);
 }
 
 void FS47Truck::SetDash(double Mph, double Rpm, const FString& Clock, double Fuel)
@@ -450,7 +467,11 @@ void FS47Truck::SetFrost(double K)
 
 void FS47Truck::LightFromAbove(double K) { Above = FMath::Clamp(K, 0.0, 1.0); PlaceFloods(); }
 
-void FS47Truck::SetSteer(double V) { WheelSpin.SetRotation(FVector(0, 0, -FMath::Clamp(V, -1.0, 1.0) * 2.4)); }
+void FS47Truck::SetSteer(double V)
+{
+ WheelSpin.SetRotation(FVector(0, 0, -FMath::Clamp(V, -1.0, 1.0) * 2.4));
+ if(Fleet)Fleet->Steer(V);
+}
 void FS47Truck::SetHeadlights(bool bOn) { bHeadOn = bOn; ApplyLights(); }
 void FS47Truck::SetLightLevel(double Level) { LightLevel = FMath::Clamp(Level, 0.0, 1.0); ApplyLights(); }
 void FS47Truck::SetBrake(bool bOn) { if (bOn != bBrakeOn) { bBrakeOn = bOn; ApplyLights(); } }
@@ -571,9 +592,20 @@ void FS47Truck::Update(double Dt, double Speed, double InWheelAngle)
 		const FQuat Q(FVector(0, 0, 1), -A);
 		Needles.SetInstance(I, FVector((Dx / 512 - 0.5) * W, (0.5 - Dy / 160) * H, 0.003), Q, FVector(1, Len, 1), I == 2);
 	};
-	Needle(0, 256, 88, -120, 120, G.Speed, 0.068);
-	Needle(1, 88, 98, -60, 60, G.Fuel, 0.038);
-	Needle(2, 424, 98, -60, 60, G.Temp, 0.038);
+	if(bJeepCab)
+	{
+		// Authored circular Jeep faces use the same live atlas and signal ranges.
+		const FVector Centres[]={FVector(-.04,1.26,-.122),FVector(.16,1.31,-.122),FVector(.28,1.31,-.122)};
+		const double Angles[]={-120+240*G.Speed,-60+120*G.Fuel,-60+120*G.Temp};
+		const double Lengths[]={.095*(70./74.)*.88,.036*(40./44.)*.88,.036*(40./44.)*.88};
+		for(int32 I=0;I<3;++I)Needles.SetInstance(I,Centres[I],FQuat(FVector(0,0,1),-Angles[I]*UE_DOUBLE_PI/180),FVector(1,Lengths[I],1),I==2);
+	}
+	else
+	{
+		Needle(0, 256, 88, -120, 120, G.Speed, 0.068);
+		Needle(1, 88, 98, -60, 60, G.Fuel, 0.038);
+		Needle(2, 424, 98, -60, 60, G.Temp, 0.038);
+	}
 	CompassStep(Dt);
 	// the keys swing on their ring: pushed by the turns and the road
 	if (Dt > 0)
@@ -598,8 +630,9 @@ void FS47Truck::DrawDash()
 bool FS47Truck::RadioHit(const FVector& From, const FVector& Dir, double Far) const
 {
 	// the faceplate's hit box: 0.46 x 0.14 x 0.09 at (0.14, 1.06, -0.4) in the cab, tipped 0.2 back
-	const FQuat Box = Euler(0.2, 0, 0);
-	const FVector C=FVector(0.14,1.06,-0.4)+(TripoJeep()?FVector(0,.115,.242):FVector::ZeroVector), Half(0.23, 0.07, 0.045);
+	const FQuat Box = bJeepCab?FQuat::Identity:Euler(0.2, 0, 0);
+	const FVector C=bJeepCab?FVector(.20,1.095,-.125):FVector(0.14,1.06,-0.4)+(TripoJeep()?FVector(0,.115,.242):FVector::ZeroVector);
+	const FVector Half=bJeepCab?FVector(.15,.028125,.025):FVector(.23,.07,.045);
 	const FVector O = Box.UnrotateVector(WorldToLocal(From) - C);
 	const FVector D = Box.UnrotateVector(Quat().UnrotateVector(Dir));
 	double T0 = 0, T1 = Far;

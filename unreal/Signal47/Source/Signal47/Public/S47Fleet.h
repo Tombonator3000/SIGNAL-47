@@ -12,13 +12,16 @@ public:
  static TUniquePtr<FS47Fleet> Install(AS47Web* W,FS47Truck& Truck);
  void Wheels(double Travel,double Steer,const double Drops[4]);
  bool Audit(TArray<FString>& Lines) const;
+ void Steer(double Value);
+ bool JeepCabReady()const{return bJeepCab;}
  void Lenses(const FLinearColor& Color,double Head,double Tail);
  bool Ready() const {return bReady;}
  FVector Headlamp(int32 Side)const{return bTripoJeep?JeepHeadlamps[Side==0?0:1]:(Side==0?FVector(-.720,.684,-2.073):FVector(.728,.687,-2.070));}
  bool IsTripoJeep()const{return bTripoJeep;}
 private:
  friend class FS47TripoFleet;
- bool bTripoJeep=false;
+ bool bTripoJeep=false,bJeepCab=false;
+ FS47Obj JeepSteering;
  FVector JeepHeadlamps[2];
  bool bReady=false;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> WheelParts;

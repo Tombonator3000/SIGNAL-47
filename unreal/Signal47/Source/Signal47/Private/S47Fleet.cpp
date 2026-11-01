@@ -171,6 +171,11 @@ void FS47Fleet::Wheels(double Travel,double Steer,const double Drops[4])
   S47Three::Compose(P,S47Three::Euler(Travel/FMath::Max(WheelRadius[I],.05),I<2?-Steer:0,0,TEXT("YXZ")),FVector::OneVector,E);ExpectedWheels[I]=S47Three::MatToUE(E);C->SetRelativeTransform(ExpectedWheels[I]);
  }
 }
+void FS47Fleet::Steer(double Value)
+{
+ if(bJeepCab&&JeepSteering)JeepSteering.SetQuaternion(FQuat(FVector(0,.561,.827).GetSafeNormal(),-FMath::Clamp(Value,-1.,1.)*2.4));
+}
+
 void FS47Fleet::Lenses(const FLinearColor& Color,double Head,double Tail)
 {
  ExpectedHead=Color*float(Head*1.6);ExpectedTail=FLinearColor(1,.025,.01)*float(Tail);
@@ -211,7 +216,8 @@ bool FS47Fleet::Audit(TArray<FString>& Lines)const
  bool Ok=true;auto Check=[&](bool B,const FString& N){Ok&=B;Lines.Add(FString(B?TEXT("PASS fleet: "):TEXT("FAIL fleet: "))+N);};
  if(bTripoJeep)
  {
-  Check(bReady&&NativeParts.Num()==1,TEXT("original textured Tripo Jeep bound atomically"));
+  Check(bReady&&NativeParts.Num()==(bJeepCab?7:1),TEXT("original textured Tripo Jeep and optional complete authored cab bound atomically"));
+  if(bJeepCab)Check(JeepSteering.IsValid(),TEXT("authored Jeep steering hub retained for live steering"));
   for(auto& Part:NativeParts){auto* C=Part.Get();Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetNumLODs()==3&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("three source LODs; transport collision remains explicit"));}
   Check(WheelParts.IsEmpty(),TEXT("no manufactured wheel parts for a source with fused wheels"));
   Check(!HeadMids.IsEmpty(),TEXT("source lens mask has switched head/tail material parameters"));

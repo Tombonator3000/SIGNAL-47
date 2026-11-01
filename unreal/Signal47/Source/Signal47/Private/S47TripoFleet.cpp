@@ -69,7 +69,11 @@ namespace
 TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
 {
  if(!W||T.Path==TEXT("world.oldTruck")||FParse::Param(FCommandLine::Get(),TEXT("S47LegacyFleet")))return {};
- UStaticMesh* Mesh=Asset(TEXT("classic_jeep"),TEXT("SM_TripoFleet_ClassicJeep"));if(!Mesh||!T.Group||!T.Body||!T.Cab)return {};
+ const TCHAR* CabNames[]={TEXT("SM_TripoJeep_InteriorBody"),TEXT("SM_TripoJeep_Interior"),TEXT("SM_TripoJeep_Steering"),TEXT("SM_TripoJeep_SpeedFace"),TEXT("SM_TripoJeep_FuelFace"),TEXT("SM_TripoJeep_TempFace"),TEXT("SM_TripoJeep_RadioFace")};
+ TArray<UStaticMesh*> CabMeshes;for(const TCHAR* Name:CabNames)CabMeshes.Add(Asset(TEXT("classic_jeep"),Name));
+ UMaterialInterface* LiveGauge=W->SharedMid(W->Material(T.Path+TEXT(".m.gauge")).Id);
+ const bool CabReady=LiveGauge&&!CabMeshes.Contains(nullptr);
+ UStaticMesh* Mesh=CabReady?CabMeshes[0]:Asset(TEXT("classic_jeep"),TEXT("SM_TripoFleet_ClassicJeep"));if(!Mesh||!T.Group||!T.Body||!T.Cab)return {};
  // Source has one body atlas. A prepared lens mask is required so switching the
  // headlights can never turn the complete painted Jeep into an emissive object.
  FMaterialParameterInfo Head(TEXT("S47Headlamp"));FLinearColor Value;
@@ -81,7 +85,7 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
   Keep.Add(FString(Key)==TEXT("needles")||FString(Key)==TEXT("compass.card")?O.Parent().I:O.I);
  }
  const int32 Gauge=W->Material(T.Path+TEXT(".m.gauge")).Id;
- T.Cab.Traverse([&](FS47Obj O){const auto* N=W->Node(O.I);if(N&&N->Mats.Contains(Gauge))Keep.Add(O.I);});
+ if(!CabReady)T.Cab.Traverse([&](FS47Obj O){const auto* N=W->Node(O.I);if(N&&N->Mats.Contains(Gauge))Keep.Add(O.I);});
  TArray<int32> Old;
  for(FS47Obj R:{T.Body,T.Shell,T.Cab,W->Obj(T.Path+TEXT(".wheels"))})R.Traverse([&](FS47Obj O)
  {
@@ -90,6 +94,18 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
  });
  auto* C=Part(W,Mesh,T.Body.I,TEXT("tripo:service-jeep:")+T.Path);if(!C)return {};
  auto F=MakeUnique<FS47Fleet>();F->Web=W;F->RetiredNodes=Old;F->NativeParts.Add(C);F->bTripoJeep=true;
+ if(CabReady)
+ {
+  for(int32 I=1;I<CabMeshes.Num();++I)
+  {
+   auto* P=Part(W,CabMeshes[I],T.Body.I,FString::Printf(TEXT("tripo:jeep-cab:%s:%d"),*T.Path,I),I==2?FVector(-.41,1.29,.08):FVector::ZeroVector);
+   if(!P){for(auto& Made:F->NativeParts)if(Made.IsValid())Made->DestroyComponent();return {};}
+   if(I>=3)for(int32 K=0;K<P->GetNumMaterials();++K)P->SetMaterial(K,LiveGauge);
+   if(I==2)F->JeepSteering=W->ObjAt(W->NodeOf(P));
+   F->NativeParts.Add(P);
+  }
+  F->bJeepCab=true;
+ }
  for(int32 I=0;I<C->GetNumMaterials();++I)
  {
   UMaterialInterface* Material=C->GetMaterial(I);FLinearColor MaskDefault;
@@ -100,9 +116,12 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
  // existing Truck controller terms (metres, Y up, nose -Z).
  T.DriverEye=FVector(-.41,1.70,.65);
  F->JeepHeadlamps[0]=FVector(-.31,1.18,-1.86);F->JeepHeadlamps[1]=FVector(.41,1.18,-1.86);
- // Source has its own seat/dash/steering geometry. Fit only the game's live
- // instrument faces/keys/compass to that dash; no C10 cabin or wheel overlay.
- for(int32 K:Keep)
+ if(CabReady)
+ {
+  T.FitJeepCab();F->Steer(0);
+  UE_LOG(LogS47TripoFleet,Display,TEXT("S47: authored Jeep cab installed %s; separate steering, circular live dials, radio, pedals and shifters"),*T.Path);
+ }
+ else for(int32 K:Keep)
  {
   bool Nested=false;for(int32 Other:Keep)if(K!=Other&&Within(W,K,Other)){Nested=true;break;}
   if(!Nested){FS47Obj O=W->ObjAt(K);O.SetPosition(O.Position()+FVector(0,.115,.242));}

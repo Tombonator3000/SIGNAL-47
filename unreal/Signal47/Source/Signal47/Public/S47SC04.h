@@ -46,6 +46,7 @@ public:
  FVector2D BodyAt() const { return Pos; }
  bool BodyShown() const { return bShown; }
  bool HuntLive() const { return P == EStep::Hunt; }
+ bool DoorOccupied(const FString& Id) const;
  // Contract fixture for later scenarios' tests: SC04 counted as done without playing it.
  void TestComplete();
  static FS47Doc StripDoc(const FString& Taken, const FString& Restored = FString(), const FString& Torn = FString());
@@ -84,6 +85,8 @@ private:
  void RouteTo(int32 Node);
  int32 Nearest(const FVector2D& At) const;
  bool EdgeOpen(int32 A, int32 B) const;
+ bool Reachable(int32 Goal) const;
+ FVector2D BodyExtent() const;
  bool SeesPlayer() const;
  void LogSight() const;
  TOptional<FVector2D> Heard(double Dt);
