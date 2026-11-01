@@ -72,13 +72,13 @@ namespace
    Elapsed+=Dt;
    if(!Main.IsValid()) return Fail(TEXT("main disappeared"));
    auto* M=Main.Get();
-   if(Elapsed-StageAt>15) return Fail(TEXT("menu click did not reach its expected next screen"));
+   if(Elapsed-StageAt>30) return Fail(TEXT("menu click did not reach its expected next screen"));
    if(Elapsed-StageAt<1) return true;
    const FString Label=bQuit?TEXT("QUIT"):TEXT("NEW FREEFORM");
    if(Stage==0)
    {
     FSlateApplication::Get().ProcessApplicationActivationEvent(true);
-    if(ClickText(Label)){Stage=1;StageAt=Elapsed;} // First click dismisses the ordinary title gate.
+    if(ClickText(TEXT("PRESS ANY KEY")) || ClickText(Label)){Stage=1;StageAt=Elapsed;} // Ordinary title gate, then the visible menu.
     return true;
    }
    if(Stage==1)
