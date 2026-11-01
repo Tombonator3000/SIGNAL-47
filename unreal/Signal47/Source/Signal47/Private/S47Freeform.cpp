@@ -597,7 +597,14 @@ void FS47FreeformSession::Changed(const FString& Text)
 void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bAudio)
 {
  if(!M||!M->UI)return;
- M->UI->Open(Widget,[this]{bTelemetry=bAudioOpen=bAudioPlaying=false;Changed();});bTelemetry=bLive;bAudioOpen=bAudio;
+ const TWeakObjectPtr<US47Main> Owner=M;
+ M->UI->Open(Widget,[this,Owner]
+ {
+  if(IsEngineExitRequested()||!Owner.IsValid())return;
+  US47Main* Main=Owner.Get();
+  if(Main->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Main->Freeform.Get()!=this)return;
+  bTelemetry=bAudioOpen=bAudioPlaying=false;Changed();
+ });bTelemetry=bLive;bAudioOpen=bAudio;
 }
 void FS47FreeformSession::OpenOperations()
 {
