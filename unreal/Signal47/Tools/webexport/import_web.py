@@ -1087,6 +1087,12 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY_MASK)
     elif blend in (unreal.BlendMode.BLEND_TRANSLUCENT, unreal.BlendMode.BLEND_ADDITIVE):
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY)
+    # Native replacement meshes can retain these web material instances. Persist
+    # compatible Nanite permutations on the owned master before compiling/saving,
+    # so a later material regeneration does not restore editor-only fallbacks.
+    if blend in (unreal.BlendMode.BLEND_OPAQUE, unreal.BlendMode.BLEND_MASKED):
+        mel.set_base_material_usage(m, unreal.MaterialUsage.MATUSAGE_NANITE, True)
+        assert mel.has_material_usage(m, unreal.MaterialUsage.MATUSAGE_NANITE), name
     mel.recompile_material(m)
     eal.save_loaded_asset(m)
     return m
