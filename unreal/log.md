@@ -1558,3 +1558,5 @@ Store installasjonsfiler bruker verifiserte Btrfs-reflinks; 192.7GB fysisk ledig
 
 1. november 2026 kl. 16:35 CET, `codex/freeform-equipment-delivery-20261101`: PR311/312 er samlet installert fra `b98c6fe1`. Fysiske CRT-/båndkontroller, varierte lagrede dagskort, Tripo-pumpe og rettet Jeep-front. 1957 selvtester, 77 Freeform / 2 restores, 11 tittelkontroller og installert Fortsett PASS; 149 Saved-elementer uendret. Se leveringsrapporten i Docs/Evidence.
 1. november 2026: Etter kontrollert tørrplan er to gamle payloads, en SHA-identisk ekstra kopi av forrige pakke og egen Cooked/StagedBuilds fjernet; kilde, modeller, Saved og bevis beholdes. Gjeldende pakke og én eldre versjon beholdes; fysisk diskplass kontrolleres på nytt etter siste arbeidskopiarkivering.
+
+2026-11-01 19:58 CET | Freeform-menu, runtime4d38c76f | Egen fokusbar startmeny/eksplisitt tilbakevalg og tydelig full-lagringsflyt; PR315 QUIT/Linux inkludert. Installert med1957 selvtester,fire automatiserte Slate-menyreiser og Fortsett PASS;155 Saved-elementer bevart. Original returfeil ikke gjenskapt, brukerbekreftelse MODE-07. Ingen ny rydderunde; kopi/cache gjenbrukes.

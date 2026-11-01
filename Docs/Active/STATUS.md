@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Freeform-startmeny oppdatert og installert
+
+Runtime `4d38c76f` er installert1. november kl.19:58 CET. Startvalget har egen fokusbar meny, eksplisitt tilbakevalg og ingen avbrytelse ved bakgrunnsklikk. Fulle lagringsplasser beholder Freeform-navnet. QUIT-klikkrettelsen fra PR315 inngår.
+
+Pakking,1957 selvtester, fire automatiserte Slate-menyreiser og installert Fortsett består;155 Saved-elementer er uendret. Den opprinnelige returfeilen ble ikke gjenskapt, så brukerens bekreftelse på den nye menyen gjenstår. [Prøver og begrensninger](../Evidence/UnrealDeliveries/FREEFORM_MENU_2026-11-01.md).
+
 ## Vegetasjon og raytracing-overlegg rettet
 
 Runtime `867dd44a`, PR314, er installert kl. 18:04 CET. Plantedekket beholdes rundt kameraet; Linux omgår feilaktige occlusion queries, og det røde raytracing-utvikleroverlegget er fjernet. Vanlig kamera-/avstandsculling og eksisterende artsgrenser beholdes.
