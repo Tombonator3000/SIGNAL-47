@@ -202,6 +202,7 @@ void SS47ScreenView::Tick(const FGeometry& G, const double InCurrentTime, const 
 	// opening the modal gave every user (this one too) the modal's focus: the keys go to the screen
 	if (!KeysInside()) FocusInside();
 	Renderer->DrawWindow(Target.Get(), Window->GetHittestGrid(), Window.ToSharedRef(), PicW / Units, FVector2D(PicW, PicH), Dt);
+ ++DrawFrames;
 	if (bLeaving && T <= 0.f) Finish();
 }
 

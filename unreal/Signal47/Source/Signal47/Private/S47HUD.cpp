@@ -1,7 +1,9 @@
 #include "S47HUD.h"
 #include "S47TitleEraseSound.h"
+#include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
+#include "S47FreeformJobs.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
@@ -177,6 +179,7 @@ void AS47HUD::Start()
 		bOk &= FS47Horror::SelfTest(Lines);
 		bOk &= FS47Observing::SelfTest(Lines);
 		bOk &= FS47FreeformSession::SelfTest(Lines);
+		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47FreeformWorld::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
@@ -590,6 +593,7 @@ void AS47HUD::Start()
 		M->Observing = MakeShared<FS47Observing>(M);
 		M->Horror = MakeShared<FS47Horror>(M);
 		M->HorrorTest = MakeShared<FS47HorrorTest>(M);
+		M->FreeformInWorldTest = MakeShared<FS47FreeformInWorldTest>(M);
 		M->FreeformTest = MakeShared<FS47FreeformTest>(M);
 		M->FreeformJourneyTest = MakeShared<FS47FreeformJourneyTest>(M);
 		M->SaroResumeTest = MakeShared<FS47SaroResumeTest>(M);

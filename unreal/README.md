@@ -25,12 +25,16 @@ Den avgrensede utviklerprøven kjøres med `-S47Case=0 -S47Evening=parking -User
 
 **NEW FREEFORM** oppretter en egen sak med lokal recovery eller valgfri død/lasting. Meny og lagringskort viser hvilken modus saken tilhører. Eksisterende saker uten modusfelt åpnes som Story.
 
-Et døgn varer 75 aktive minutter: dag kl.06:00–19:00 tar 30 minutter, natt kl.19:00–06:00 tar 45. Pause og menyer holder tiden.
+Et døgn varer 75 aktive minutter: dag kl.06:00–19:00 tar 30 minutter, natt kl.19:00–06:00 tar 45. Pause og vanlige menyer holder tiden; fysisk PC- og lydbetjening lar verden fortsette.
 
 Arbeidsordren og oppdragene finnes ved hjørne-PC/telex. Høyre PC retter antennene, midt-PC tar opp, venstre PC viser tilstand, og lydutstyret sammenligner original og kontroll. Rutinearbeid registreres digitalt; undersøkelser får merket pakke ved skriveren og originaler i arkivet. Servicebenken står ved den tilgjengelige fasaden til bygget ved SARO-skiltet. Caliches forsyningsluke selger deler og film som hentes, lastes og leveres fysisk. Film fylles på ved benken uten tap av gamle fotografier.
+
+PC-handlingene vises på de faktiske CRT-glassene; ESC går tilbake til rommet. Spolebåndutstyret ved telefonen har fysiske velger-, avspillings- og merkeknapper. Dagskort varierer faktisk innstillingene og bevares ved lasting. REGULAR-pumpen ved bensinstasjonen fyller den parkerte servicebilen i målte kvart-enheter for $1, med hendene fri og bilen nær pumpen.
 
 Utviklerprøven bruker eksplisitt `-S47FreeformTest -UserDir=/tmp/<egen-profil>`. Den starter en isolert utviklersak og skriver `Saved/FreeformTest/result.json` og runtime-bilder. Prøven bruker produksjonscallbacker og navngitte plasserings-/hendelsesfixtures; den er ikke menneskelig input/lytting eller naturlig tre døgn med spillfølelse. Vanlig Freeform startes fra menyen. Se STATUS for faktisk bygget og installert versjon.
 
 OPS har en valgfri **Service work order** med valg mellom SARO-reservedel og en ny forsyningstur. Neste servicehandling følger deg i HUD og notatbok; den kan nedprioriteres uten å miste arbeidet. Den valgte forsyningsruten må ha en ny relé-/donorpakke lastet i bilen og levert ved benken. S-03 må gjennomføre faktisk bevegelsestest før OPS kan signere resultatet.
 
 Med en pakke i hendene: se på ledig gulv og bruk vanlig interaksjon for håndtering, kontrollert nedsetting eller slipp. Se på cargo-racket for å laste; pakken må være sikret før kjøring. En gratis gjenbrukbar servicekasse kan hentes og returneres ved benken. Pose og fysisk tilstand følger lagringen.
+
+Den målrettede `-S47FreeformInWorldTest -UserDir=/tmp/<egen-profil>` prøver fysisk CRT-visning, klokke, dagskort, målt bensinbetaling, pause/Flow og fysisk lydsammenligning. Den bruker eksplisitte plasseringer; menneskelig spillfølelse og naturlig kjøretur erstattes ikke av prøven.

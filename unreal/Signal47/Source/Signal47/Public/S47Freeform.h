@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Rx.h"
+#include "S47FreeformJobs.h"
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
@@ -18,6 +19,7 @@ public:
   int32 Day=1, Slot=0, Source=0;
   EJobStage Stage=EJobStage::New;
   double Elapsed=0, Quality=1, ReceivedLevel=1;
+  bool bGenerated=false;FS47FreeformJobs::FCard Card;
   bool bAnomaly=false,bControl=false,bAudioReviewed=false,bPrinted=false,bPaid=false;
   double ControlAt=0, OriginalCovered=0,ControlCovered=0, MarkStart=-1,MarkEnd=-1;
   double ReceiverClock=0,ReferenceClock=0,ControlReceiverClock=0,ControlReferenceClock=0,DuplicateClock=0,DuplicateInterval=0;
@@ -53,6 +55,11 @@ public:
  void OpenStatus();
  void OpenReceiver();
  void OpenAudio();
+ const FString& FeedbackText() const { return Feedback; }
+ bool TerminalOnGlass() const;
+ bool TerminalWindowRendered() const;
+ int32 ActiveTerminalScreen() const { return ActiveTerminal; }
+ TArray<FString> TerminalLines(int32 Screen) const;
  void OpenArchive();
  void OpenServiceGuide();
  bool StartServiceGuide(bool bSupplyTrip);
@@ -97,6 +104,7 @@ public:
  double AudioLevel() const;
  FString AudioDisplay() const;
  const FS47Profile* ConsoleProfile() const;
+ TSharedPtr<class FS47FreeformAudioDesk> AudioDesk;
  TSharedPtr<FS47FreeformDirector> Director;
  TSharedPtr<FS47FreeformWorld> Field;
  static bool SelfTest(TArray<FString>& Lines);
@@ -108,7 +116,8 @@ private:
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
  bool bPowerApplied=false,bLastPower=true;
- int32 RecoveryEpoch=0;
+ int32 RecoveryEpoch=0,JobSeed=470047,ActiveTerminal=-1;
+ TWeakPtr<class SS47ScreenView> TerminalView;
  int32 ServiceGuide=0,GuideServiceBaseline=0,GuideSupplyBaseline=0;
  bool bGuideSupply=false,bGuideFocus=false;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
@@ -143,6 +152,8 @@ private:
  void StepAudio(double Dt);
  void PrintJob(bool bPacket);
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
+ void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);
+ FS47Profile EffectiveProfile(const FJob& Job) const;
  FString JobLine(const FJob& J) const;
  FString Reference(const FJob& J) const;
  static FS47Profile Profile(int32 Source);

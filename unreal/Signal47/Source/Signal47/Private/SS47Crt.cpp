@@ -8,6 +8,8 @@
 #include "S47Image.h"
 #include "S47Kit.h"
 #include "S47Theme.h"
+#include "S47Main.h"
+#include "S47Freeform.h"
 
 namespace
 {
@@ -184,6 +186,13 @@ int32 SS47Crt::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlateR
 		FSlateDrawElement::MakeBox(Out, Layer, G.ToPaintGeometry(), WhiteBrush.Get(), ESlateDrawEffect::None, CrtCss(0x020a04));
 		return Layer + 1;
 	}
+	if(const auto* M=US47Main::Get(Story);M&&M->IsFreeform()&&M->Freeform)
+ {
+  FSlateDrawElement::MakeBox(Out,Layer,G.ToPaintGeometry(),WhiteBrush.Get(),ESlateDrawEffect::None,CrtCss(0x020a04));
+  const auto Lines=M->Freeform->TerminalLines(int32(Kind));
+  for(int32 I=0;I<Lines.Num();++I)Txt(G,Out,Layer+1,Lines[I],16,38+I*40,I==0?25:20,I==0?Bright:Phosphor);
+  Scanlines(G,Out,Layer+8);return Layer+9;
+ }
 	if (Kind == EKind::Ops)
 	{
 		Ops(G, Out, Layer);

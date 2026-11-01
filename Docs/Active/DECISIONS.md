@@ -1,6 +1,6 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 31. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 1. november 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
@@ -49,7 +49,7 @@ Tom bestemte 31. oktober at **0.1, liten Roswell-alien**, kommer først: referan
 | D-19 | Bærbar SARO-walkietalkie på skrivebordet ved start, med pickup og uvanlig skurring nær aktive aliens. Alienmøter skal også ha et tydelig lydsignal eller en musikalsk markering, samordnet med radioen. | Toms bestilling 31. oktober. PLAY-31-20/21 i [TODO](TODO.md) fører implementering. Senere Dale-kontakt er foreløpig et forslag. Bevar eksisterende Rom6-radio og dens historie-/lydrolle. |
 | D-20 | Stjernehullet skal være større og tydeligere; signalet klargjør meteorregnet, utgang fra bygget starter det, og nok meteorbaner skal gå bak og skjules av tomrommet. | Toms bestilling 31. oktober. PLAY-31-23 og gjenåpnet FX-01 i [TODO](TODO.md). Denne regien går foran tidligere hendelsesklokke alene og baner som bare unngår hullet. Bevar retning/antennekobling, lagring og fri kamerastyring. |
 | D-21 | Dagens sammenhengende spill videreføres som Story med planlagt natt, personer, oppdrag og fast slutt. | Toms føring 31. oktober etter VotV-gjennomgangen. By- og motellreisene beholder sine begrunnede roller i historien. [Modusplan](../Design/Story/SARO_STORY_FREEFORM.md). |
-| D-22 | Senere Freeform skal ha vedvarende dager og netter, SARO-arbeid og varierte tilfeldige hendelser, aliens og skrekk, uten Story-finalen. | Tom ber nå om planen i TODO. Freeform er planlagt, ikke implementert modus. Del SARO og relevante systemer, men gi modusene egne fremdriftsregler og lagringer. [TODO](TODO.md#story-og-freeform). |
+| D-22 | Senere Freeform skal ha vedvarende dager og netter, SARO-arbeid og varierte tilfeldige hendelser, aliens og skrekk, uten Story-finalen. | Tom ba om separat modus. Freeform-grunnlaget er siden levert via PR297. Del SARO og relevante systemer, men gi modusene egne fremdriftsregler og lagringer. [TODO](TODO.md#story-og-freeform). |
 | D-23 | Undersøkelsesløkken skal hovedsakelig foregå på SARO-basen, ved antennefeltet og i teknisk område. Første implementering styrker Story-kvelden før 00:00. | Toms bestilling 31. oktober: normalreferanse, avvik, fysisk kontroll, sikret bevis, sammenligning og forståelig neste handling. Gjenbruk Observing-kvelden, bevar den senere historieeskaleringen og gamle lagringer. VOTV-01 i [TODO](TODO.md) fører leveringen. |
 | D-24 | SARO-utstyret får faste aktive roller, faktisk antennebevegelse og flere fysiske servicesteg i Story før midnatt. | Tom godkjente gjennomføringsplanen 31. oktober: Story først, S-03-service i flere steg, maskinregistrering og fysisk arkiv. Nabobygget føres til senere Freeform. [Plan](../Design/Story/SARO_STORY_FREEFORM.md#aktive-arbeidsstasjoner-og-antenneservice). |
 | D-25 | Byen får en forsynings- og reparasjonsrolle i senere Freeform, med SARO som hovedarbeidssted. | Tom ba 31. oktober om å føre bensinstasjon, brukt/ødelagt utstyr, reservedeler og feeder-vedlikehold inn i planen. Første prøve er liten: sikringer, relé, aggregatdrivstoff, reservelager og enkelt døgnbudsjett. [Plan](../Design/Story/SARO_STORY_FREEFORM.md#byen-som-forsynings--og-reparasjonssted-i-freeform), MODE-03C i TODO. |
@@ -72,3 +72,11 @@ Mottakerens Arch/niri/Nvidia-rapport understreker at Linux-distribusjonen skal b
 - **Lagringsplass:** Behold gjeldende verifiserte testbygg og maksimalt to eldre komplette testbygg. Installerte standardfiler og aktive nødvendige kandidater vernes; kanonisk prune bevarer kilder, assets, Saved, logger og bevis.
 
 Uavklarte eldre notater skal merkes og henvises til gjeldende beslutning. De slettes ikke og blir ikke automatisk gjort til nye oppgaver bare fordi et gammelt avkrysningsfelt står åpent.
+
+## Fysisk betjening og oppgavevariasjon i Freeform, 1. november
+
+Tom ber om at PC-handlinger utføres på selve maskinene i spillverdenen, med arbeidsdeling mellom status, mottaker, tracking og OPS. Lydsammenligning får fysiske kontroller ved telefonens spolebåndutstyr. Dette er aktivt arbeid: klokke, antenner og hendelser fortsetter ved utstyret; pausemenyen holder tiden. Fysiske dokumentoriginaler beholdes ved skriver og arkiv.
+
+Bensin skal kunne kjøpes fra bensinstasjonens faktiske REGULAR-pumpe til den parkerte servicebilen. Levering og betaling følger samme måler; lasting skal ikke gjenta en betaling. Eksisterende aggregatkanne og nødvei beholdes.
+
+Tilfeldig variasjon bygger på eksisterende kontekststyrte hendelsesregissør og en avgrenset dagskortgenerator. Generatoren varierer støttede kilder og faktiske måleinnstillinger, bevarer oppgaven gjennom lagring og lager ingen ubegrensede tekstoppdrag uten tilhørende spillhandling. Vedlikehold følger faktisk utstyrstilstand. Flere hendelsesfamilier og langsiktig balanse føres videre i TODO.

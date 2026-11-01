@@ -44,6 +44,7 @@ public:
 	/** Step back from the screen (the content's own close). */
 	void Leave();
 	bool OnGlass() const { return bWorld; }
+ uint64 RenderedFrames() const { return DrawFrames; }
 	/** The camera's turn towards the glass, the glass's pixels and the steps' easing. */
 	static bool SelfTest(TArray<FString>& Lines);
 
@@ -65,7 +66,8 @@ public:
 
 private:
 	struct FEye { FVector Eye = FVector::ZeroVector; double Yaw = 0, Pitch = 0; };
-	int32 Screen = 1;
+	uint64 DrawFrames=0;
+ int32 Screen = 1;
 	TWeakObjectPtr<AS47Web> Web;
 	TWeakObjectPtr<AS47Walker> Walker;
 	bool bUseLeaves = true, bWorld = false, bLeaving = false, bLeft = false, bStarted = false, bForwarding = false, bKeysLogged = false;
