@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Titler og manuell telefonoppfølging installert
+
+Runtime `0460a428`, PR305/306, er installert kl.08:53 CET 1. november. Pause, Fortsett, lagringskort, notatbok og overgangskort bruker fortellingstitler uten kapittelnummer, også for eldre metadata. Ny overgang til The Amended Record beholder spillerens posisjon/blikk; telefonen ringer ved kontrollromspulten og må besvares manuelt. Interne ID-er, Ward-fakta og lagringsformat er bevart.
+
+Editorbygg, målrettet scenestart/posisjon/ringing og ferdig pakke med1910 selvtester består. Faktisk pause før/etter og installert Fortsett består;149 Saved-elementer/118 filer er uendret. SC04/Jeep/Freeform inngår. Menneskelig lyd-/overgangsaksept og den gamle SARO-renderstansen står fortsatt åpne. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/CHAPTER_PHONE_2026-11-01.md).
+
 ## SC04-dørpassering og fysisk tilbaketrekning installert
 
 Runtime `2d7e5c1a`, PR304, er installert kl.08:11 CET 1. november. Ruten går med klaring rundt åpent korridordørblad; kroppsguarden/kvitteringen bruker riktig dør-ID; et bestemt ikke-solid dirt-overlay blokkerer ikke lenger full kollisjonssveip; jakten fullfører arkivåpningens rute før direkte styring. Eksisterende utvendig nordsti og avgrensede romgrenser gir fysisk tilbaketrekning fra øst uten ny historisk inngang eller teleport.

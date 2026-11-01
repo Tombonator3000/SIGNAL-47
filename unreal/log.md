@@ -1531,3 +1531,6 @@ Codex på codex/playtest-return-blocked-20261031: PLAY-31-09/P1 fører Toms doku
 2026-11-01 08:13 CET | SC04 PR304, runtime2d7e5c1a | Installert08:11:1909 selvtester/sc04doors14 i editor og pakke, isolert installert Fortsett består;149 Saved-elementer/118 filer uendret. To gamle payload pensjonert, egne motorjobber avsluttet og reservasjon frigitt. Syntetisk terminal/GPU-prøve lukker ikke opprinnelig renderstans.
 
 2026-11-01 08:31 CET | codex/chapter-phone-agency-20261101 | Synlige fortellingstitler uten nummer, også eldre metadata; bare automatisk NEW-ch2-telefonplassering fjernet. Editorbygg og målrettet posisjon/blikk/ringing/eldre-sak-kontroll består; normal pakking og UI-etterbilde følger. Interne ID-er og Ward-fakta bevart.
+
+2026-11-01 08:53 CET | Titler/telefon PR305/306, runtime0460a428 | Installert:1910 selvtester, posisjon/blikk/ringing/legacy og pause før/etter består;149 Saved-elementer/118 filer uendret. Normal pakkeprune og avsluttet motorvindu; kilde/private originaler bevart.
+Cooked/StagedBuilds fra ferdig arbeidskopi ryddet: 11.80 GiB netto frigjort, øvrige Source-Saved og installert Saved uendret.
