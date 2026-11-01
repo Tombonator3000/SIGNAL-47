@@ -37,7 +37,7 @@ namespace S47Css
 // The title (the approved mockup, title.png): over the title camera drifting behind it, the shade
 // on the left, the tape's display (PLAY, SP, the date and the night's clock from 23:41:07), the
 // name with its red and cyan edges, the menu (Continue with where it would take you, New night,
-// Load case, Settings, Quit), the note with the flashing images' warning and the keys. Gated the
+// Load case, Settings, Quit) and the keys. Gated the
 // first time: the menu waits behind "Press any key" until the first key or click (main.ts
 // firstTouch, the music).
 class SS47Title : public SCompoundWidget
