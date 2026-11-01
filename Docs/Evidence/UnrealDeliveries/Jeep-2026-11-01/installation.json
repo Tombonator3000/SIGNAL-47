@@ -1,0 +1,19 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 301,
+  "source": "e944b8ed5b3ace4e3cb6b9bfb44d6c6c07dfb109",
+  "merge": "9dfe1000038865890cdfe417625dcbdb96dc0707",
+  "installed_at": "2026-11-01T02:18:05.872881+01:00",
+  "saved_nodes": 149,
+  "saved_files": 118,
+  "saved_unchanged": true,
+  "package_self_checks": 1906,
+  "editor_build": "PASS",
+  "native_parts": 7,
+  "lods_per_part": 3,
+  "sc04_short_checks": 17,
+  "packaged_vulkan": "PASS",
+  "installed_vulkan": "PASS",
+  "moths_material_rebuild": "PASS",
+  "scope": "Targeted fixtures and scripted SC04 checks; no human playtest or full-night/crash reproduction"
+}
