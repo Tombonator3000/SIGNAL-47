@@ -1,4 +1,4 @@
-# Freeform: Survey Station01, rute, motell og gård
+# Freeform: verden, transport og PC-betjening
 
 **Status:** Referanse, åpne spillerfunn. **Gjelder:** Toms Freeform-spillprøve. **Sist kontrollert:** 1. november 2026.
 
@@ -16,3 +16,4 @@ Originalbildene er kopiert uendret fra Toms vedlegg. Kildebygg og tekniske årsa
 - [10. Dobbelt veigjerde: den fremste gjennomtrengelige rekken ønskes fjernet.](10-double-roadside-fence.png)
 - [11. Gammel lavpoly telefonkiosk ved bensinstasjonen og nyere modell på andre siden av gaten.](11-gas-station-payphone-models.png)
 - [12. Bæring av pakke blokkerer kjøring; spilleren får ikke lastet den i bilen.](12-parcel-truck-loading-blocked.png)
+- [13. PC-panelets rektangel/tekst går utenfor CRT-glasset; HUD-/ESC-rester ligger utenfor PC-en.](13-crt-ui-outside-glass.png)

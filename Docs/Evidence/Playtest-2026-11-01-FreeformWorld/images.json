@@ -58,5 +58,10 @@
     "file": "12-parcel-truck-loading-blocked.png",
     "sha256": "88a731f15337ac172b4260126266c9a78c8b376f35152847d495585a8fa46b42",
     "caption": "Bæring av pakke blokkerer kjøring; spilleren får ikke lastet den i bilen."
+  },
+  {
+    "file": "13-crt-ui-outside-glass.png",
+    "sha256": "adab3e1eb3e7221c8422aa7b8f564039ed2a9b59adb3737d7dd1c8e3e71f2a64",
+    "caption": "PC-panelets rektangel/tekst går utenfor CRT-glasset; HUD-/ESC-rester ligger utenfor PC-en."
   }
 ]
