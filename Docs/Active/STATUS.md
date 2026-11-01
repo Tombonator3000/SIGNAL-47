@@ -10,6 +10,12 @@ Runtime `b98c6fe1`, PR311/312, er installert kl. 16:35 CET. Freeform betjenes p�
 
 Pakken består 1957 selvtester, 77 Freeform-kontroller / 2 restores og 11 tittelkontroller. Installert Fortsett består; 149 personlige Saved-elementer er uendret. Naturlig kjøretur, menneskelig lesbarhet/lytting og flerdøgnsbalanse gjenstår. [Levering, bilder og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_EQUIPMENT_2026-11-01.md).
 
+## Tittelen mister47 etter fullført Story
+
+Samordnet runtime `b98c6fe1`, med PR311 og PR312, er installert kl.16:35 CET. Etter siste fotografi i Story-finalen skurrer og forskyves bare47 før tallet forsvinner. Fullføring og vist effekt lagres separat fra sakene og beholdes etter omstart. Freeform eller utviklerhopp låser ikke opp; rolig modus får myk uttoning.
+
+Pakken består1 957 selvtester og11 målrettede tittelsjekker, med faktiske før/under/etter-bilder. Den installerte Fortsett-prøven består, og149 personlige Saved-elementer er uendret. Slutt- og Slate-aktivering er erklærte fixtures; menneskelig full gjennomspilling og lytting hevdes ikke. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/TITLE_ERASURE_2026-11-01.md).
+
 ## Lengre Freeform-natt og fysisk servicearbeid installert
 
 Nyeste lokale oppdatering er runtime `35adb849`, installert kl. 12:59 CET via PR310. Freeform bruker 30 minutter dag og 45 minutter natt innen samme 75-minuttersdøgn. Valgfri serviceordre på OPS beholder neste handling gjennom diagnose, lokal reservedel eller ny forsyningstur, fysisk relé-/donorlevering, reparasjon og signert bevegelsestest. Pakke og gratis servicekasse kan bæres, settes ned/slippes og gjenopptas etter lasting; frihåndsfysikk er avgrenset til disse. Kart/rutehjelp og sperre mot usikret biltransport inngår.

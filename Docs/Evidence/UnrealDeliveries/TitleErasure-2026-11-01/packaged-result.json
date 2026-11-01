@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "scope": "isolated declared Story completion and actual Slate title activation, visible packaged High/Vulkan window; no personal profile unlocked",
+  "run": {
+    "returncode": 0,
+    "wall_seconds": 23.910020807990804,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 22.377384185791016,
+      "heavy_jobs": [],
+      "pgrep": "873070 python3 -u /tmp/s47_diegetic_once.py /home/tom/scratch-bm/Signal47-freeform-diegetic-20261101/title-packaged-job.json\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 873070,
+        "start_ticks": "59845630",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "Freeform physical equipment, Tripo pump and Jeep window",
+        "acquired_at": "2026-11-01T15:25:39.308286+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "self_checks": 1957,
+  "checks": 11,
+  "profile": "/tmp/S47-story-title-package-098u_mxt",
+  "proof": "/home/tom/scratch-bm/Signal47-title-erasure-package-20261101",
+  "source_commit": "b98c6fe10bc9111c55625dcc34da9cb6aff51d00",
+  "checks_method": "Count PASS: assertions; completion line is separately required."
+}
