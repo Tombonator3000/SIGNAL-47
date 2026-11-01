@@ -1,6 +1,6 @@
 # SARO-løkken, Story og Freeform
 
-**Status:** Gjeldende. **Gjelder:** Toms modusretning og første SARO-kontrollsløyfe i Unreal. **Sist kontrollert:** 31. oktober 2026.
+**Status:** Gjeldende. **Gjelder:** Toms modusretning og første SARO-kontrollsløyfe i Unreal. **Sist kontrollert:** 1. november 2026.
 
 Tom har valgt at dagens spill videreføres som Story, med en senere separat Freeform-modus. Første bestilling er å føre planen i [TODO](../../Active/TODO.md#story-og-freeform) og legge en aktiv SARO-løkke inn i Story-kvelden. Dette dokumentet beskriver design og avgrensning; faktisk levering føres i [STATUS](../../Active/STATUS.md).
 
@@ -81,6 +81,14 @@ Hendelser skal knyttes til situasjonen og gi plass til respons. Eksempler på he
 Førsteversjonen krever ikke omfattende butikkøkonomi, behovsmålere eller global fysikksimulering. Viktige medier og instrumenter skal ha pålitelige tilstander; løs fysikk kan utvides avgrenset etter [VotV-notatet](../../Research/VoicesOfTheVoid/GAMEPLAY_LESSONS.md).
 
 Kanon gjelder fortsatt: New Mexico i 1986, 1420.405 MHz, 27 antenner, azimut 026 og Story-hendelsens faste 47 sekunder. Spilltekst skrives på engelsk, dokumentasjon på norsk.
+
+## Justering av dag og natt, 1. november
+
+Tom ønsker kortere dag og lengre natt fordi natten er mer spennende, med uendret samlet døgnlengde. Første foreslåtte balanse for neste spillprøve er **30 aktive minutter dag og 45 aktive minutter natt**, totalt **75 minutter**. Retningen er bestilt; det konkrete 30/45-forholdet er et utgangspunkt for balansering.
+
+Behold spillklokkens dag kl.06:00–19:00 og natt kl.19:00–06:00, men la klokken gå raskere om dagen og saktere om natten. Bevar skumring, soloppgang, butikkers klokkeslett og sammenhengende lagring. Klokkesteg må håndtere fasegrenser og døgnskifte presist; pause og menyer skal fortsatt holde tiden. Story beholder sin egen tidsstyring. Kontroller at første dag fortsatt er uten farlig jakt, og at en lengre natt ikke øker antall farlige møter eller fjerner rolige perioder. Prøv tiden til forberedelser/innkjøp og nattlige målinger under MODE-05.
+
+Dette er ført i planen og TODO; den installerte versjonen har fortsatt jevn klokkehastighet gjennom døgnet.
 
 ## Godkjent gjennomføring: vedvarende døgn og hendelsesregissør
 
