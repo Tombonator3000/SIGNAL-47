@@ -219,7 +219,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
  }
  if(Stage==191)
  {
-  if(Age-At<.5)return;
+  if(Age-At<13.)return; // Let ordinary boarding/pump notices fade before the visual check.
   const auto* Truck=M->World->CabTruck();
   if(!Check(M->World->bDriving&&Truck&&Truck->bDriving&&Truck->TripoJeep()&&Truck->JeepCabReady(),TEXT("production driving fixture uses the real mounted Jeep interior and native driver seat without fallback")))return;
   const TCHAR* MeshNames[]={TEXT("SM_TripoJeep_InteriorBody"),TEXT("SM_TripoJeep_Interior"),TEXT("SM_TripoJeep_Steering"),TEXT("SM_TripoJeep_SpeedFace"),TEXT("SM_TripoJeep_FuelFace"),TEXT("SM_TripoJeep_TempFace"),TEXT("SM_TripoJeep_RadioFace")};
