@@ -17,3 +17,4 @@ Originalbildene er kopiert uendret fra Toms vedlegg. Kildebygg og tekniske årsa
 - [11. Gammel lavpoly telefonkiosk ved bensinstasjonen og nyere modell på andre siden av gaten.](11-gas-station-payphone-models.png)
 - [12. Bæring av pakke blokkerer kjøring; spilleren får ikke lastet den i bilen.](12-parcel-truck-loading-blocked.png)
 - [13. PC-panelets rektangel/tekst går utenfor CRT-glasset; HUD-/ESC-rester ligger utenfor PC-en.](13-crt-ui-outside-glass.png)
+- [14. Acquisition er uforståelig: gain29/AZ26.1 avviker fra kortet, men skjermen viser ARRAY QUALITY100% og generelt avslag.](14-receiver-acquisition-unclear.png)
