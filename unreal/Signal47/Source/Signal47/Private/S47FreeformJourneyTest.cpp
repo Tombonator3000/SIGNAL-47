@@ -15,6 +15,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
+#include "UnrealClient.h"
 
 bool FS47FreeformJourneyTest::Check(bool Good,const FString& Text)
 {
@@ -75,6 +76,11 @@ void FS47FreeformJourneyTest::Step(double Dt)
   F.Use(TEXT("opsTerminal"));if(!Check(F.StartServiceGuide(true),TEXT("optional supply route accepted at physical OPS")))return;M->UI->Close(true);
   ServiceBefore=W.ServiceCompletions();DeliveryBefore=W.ServiceSupplyDeliveries();
   if(!Check(!F.CompleteServiceGuide()&&W.ServiceStage()==1&&!F.ServiceObjective().IsEmpty(),TEXT("unperformed service cannot be archived; diagnosis is the next action")))return;
+  F.OpenServiceGuide();FScreenshotRequest::RequestScreenshot(Root/TEXT("service-guide.png"),true,false);Go(100);return;
+ }
+ if(Stage==100)
+ {
+  if(Age-At<.5)return;M->UI->Close(true);
   F.Use(TEXT("crtLeft"));W.DiagnoseService();M->UI->Close(true);
   if(!Check(W.ServiceStage()==2,TEXT("status-terminal diagnosis precedes field work")))return;
   M->World->Enter(TEXT("road"));Go(1);return;
@@ -101,7 +107,11 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<2)return;
   if(!Check(W.ParcelSimulating()&&W.ParcelImpactCount()>0,TEXT("dropped parcel uses native physics and reports a real physical contact")))return;
-  Before=W.ParcelPosition();M->bPausedByMenu=true;Go(5);return;
+  Before=W.ParcelPosition();
+  const FVector D=Before-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("physical-parcel.png"),true,false);
+  M->bPausedByMenu=true;Go(5);return;
  }
  if(Stage==5)
  {
