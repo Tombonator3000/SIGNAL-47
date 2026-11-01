@@ -13,6 +13,9 @@
 #include "S47Props.h"
 #include "S47SubstationDetail.h"
 #include "S47Startup.h"
+#include "S47Main.h"
+#include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 
 using namespace S47Three;
 
@@ -282,6 +285,9 @@ void AS47Walker::Tick(float DeltaSeconds)
 	// Interaction.update: what the line of sight picks, within its range, with something to offer
 	if (!bInput || !Inter.IsValid()) return;
 	Focused = Inter->Update(Camera->GetComponentLocation(), Camera->GetForwardVector());
+	// A held parcel stays usable when looking at clear ground. Existing object
+	// interactions (cargo rack, bench, doors) continue to take priority.
+	if (Focused.IsEmpty() && !Inter->Holds.ContainsByPredicate([](const TFunction<bool()>& H){return H&&H();})) if (US47Main* M=US47Main::Get(this); M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->ParcelStage()==2) Focused=TEXT("ff:carry");
 	if (!Focused.IsEmpty() && OnUse && PC && (S47Keys::Pressed(PC, TEXT("use")) || PC->WasInputKeyJustPressed(EKeys::LeftMouseButton)))
 	{
 		OnUse(Focused);

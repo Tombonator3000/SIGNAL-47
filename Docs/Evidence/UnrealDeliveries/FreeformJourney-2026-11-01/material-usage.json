@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "usage": [
+    {
+      "material": "/Game/Web/Mat/MI_W323.MI_W323",
+      "usage": "<MaterialUsage.MATUSAGE_NANITE: 18>",
+      "before": false,
+      "after": true
+    },
+    {
+      "material": "/Game/Web/Mat/MI_W325.MI_W325",
+      "usage": "<MaterialUsage.MATUSAGE_NANITE: 18>",
+      "before": false,
+      "after": true
+    },
+    {
+      "material": "/Game/Web/Mat/MI_W327.MI_W327",
+      "usage": "<MaterialUsage.MATUSAGE_NANITE: 18>",
+      "before": false,
+      "after": true
+    }
+  ],
+  "scope": "Only MI_W323, MI_W325, MI_W327 Nanite usage overrides saved. No graph, master, mesh, texture or binding changed."
+}

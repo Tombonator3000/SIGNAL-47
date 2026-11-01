@@ -68,6 +68,8 @@ public:
 	TSharedPtr<class FS47DevEvents> DevEvents; // F10: developer events in a night (S47DevEvents.h)
 	TSharedPtr<class FS47HorrorTest> HorrorTest;
 	TSharedPtr<class FS47FreeformTest> FreeformTest;
+	TSharedPtr<class FS47FreeformJourneyTest> FreeformJourneyTest;
+	TSharedPtr<class FS47SaroResumeTest> SaroResumeTest;
 	TSharedPtr<class FS47Evening> Evening; // authored evening opening and persistent pack gates
 	TSharedPtr<class FS47CB> CB; // core/cb.ts: the CB under the truck's dash (main.ts const cb; made with chapter four)
 

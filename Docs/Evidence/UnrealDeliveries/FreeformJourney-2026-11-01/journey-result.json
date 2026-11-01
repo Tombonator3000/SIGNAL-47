@@ -1,0 +1,235 @@
+{
+	"status": "PASS",
+	"reason": "",
+	"checks": 45,
+	"flowRestores": 3,
+	"evidence": [
+		{
+			"check": "temporary developer case 0 required",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "service order cannot be accepted remotely",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "actual OPS terminal exists",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "optional supply route accepted at physical OPS",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "unperformed service cannot be archived; diagnosis is the next action",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "status-terminal diagnosis precedes field work",
+			"pass": true,
+			"stage": 100
+		},
+		{
+			"check": "real donor purchase charges once and leaves a physical parcel",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "actual camera ray selects the visible supply parcel from the outdoor approach",
+			"pass": true,
+			"stage": 200
+		},
+		{
+			"check": "production pickup collects the visible parcel before transport",
+			"pass": true,
+			"stage": 200
+		},
+		{
+			"check": "actual Walker advances while carrying parcel",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "drop transfers carried parcel to physical world",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "dropped parcel uses native physics and reports a real physical contact",
+			"pass": true,
+			"stage": 4
+		},
+		{
+			"check": "pause holds dropped parcel and the active day/night clock",
+			"pass": true,
+			"stage": 5
+		},
+		{
+			"check": "isolated full save written and freshly read: dropped-parcel",
+			"pass": true,
+			"stage": 5
+		},
+		{
+			"check": "full saved JSON parses: dropped-parcel",
+			"pass": true,
+			"stage": 5
+		},
+		{
+			"check": "normal Flow restores isolated Freeform: dropped-parcel",
+			"pass": true,
+			"stage": 5
+		},
+		{
+			"check": "dropped parcel pose survives disk/Flow restore",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "physical dropped parcel can be retrieved",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "retrieved parcel secured in vehicle cargo",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "isolated full save written and freshly read: loaded-parcel",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "full saved JSON parses: loaded-parcel",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "normal Flow restores isolated Freeform: loaded-parcel",
+			"pass": true,
+			"stage": 6
+		},
+		{
+			"check": "loaded cargo survives disk/Flow restore",
+			"pass": true,
+			"stage": 7
+		},
+		{
+			"check": "cargo unloaded before depot delivery",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "transported donor delivered exactly once to SARO",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "reopening depot does not duplicate supply delivery",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "physical bench starts donor test from delivered stock",
+			"pass": true,
+			"stage": 8
+		},
+		{
+			"check": "actual donor bench test produces one compatible relay",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "local isolation, cover and relay exchange consume one real spare",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "S-03 actual encoder found",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "actual movement starts; unfinished service cannot be archived",
+			"pass": true,
+			"stage": 9
+		},
+		{
+			"check": "real S-03 outward and return movement retains service evidence",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "physical OPS verifies and archives actual service",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "repeat archive cannot duplicate record or payment",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "legacy fixture retains ordinary Freeform state",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "isolated full save written and freshly read: legacy-v1-without-guide",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "full saved JSON parses: legacy-v1-without-guide",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "normal Flow restores isolated Freeform: legacy-v1-without-guide",
+			"pass": true,
+			"stage": 10
+		},
+		{
+			"check": "older v1 without guide fields loads safely and retains original archive",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "native encounter group is available for isolated doorway-bounds fixture",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "explicit native doorway fixture uses a walkable SARO yard pose",
+			"pass": true,
+			"stage": 12
+		},
+		{
+			"check": "explicit native doorway fixture forces service presence without injecting an actor",
+			"pass": true,
+			"stage": 12
+		},
+		{
+			"check": "actual active native individual occupies a UE bounds fixture around its measured feet and eye",
+			"pass": true,
+			"stage": 13
+		},
+		{
+			"check": "same active native body does not occupy a remote doorway bounds fixture",
+			"pass": true,
+			"stage": 13
+		},
+		{
+			"check": "cleared native bodies stop occupying the original doorway bounds fixture",
+			"pass": true,
+			"stage": 13
+		}
+	],
+	"method": "Production service/supply/carry callbacks, real Walker movement, physical dropped parcel and actual S-03 encoder test. Explicit world/vehicle/player placement fixtures replace the long-distance drive and workstation approach. No service facts or completion counters are injected.",
+	"limits": "Not a natural road journey, human input/route-finding acceptance, visual polish review or full regression. Native doorway-body bounds fixture verifies the guard query, not natural door passage or an actual door-close attempt. Isolated developer case 0 only; timeout 300 seconds."
+}

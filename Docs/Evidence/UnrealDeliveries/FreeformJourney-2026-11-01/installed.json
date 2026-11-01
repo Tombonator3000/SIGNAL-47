@@ -1,0 +1,41 @@
+{
+  "status": "INSTALLED",
+  "installed_at": "2026-11-01T12:59:38.342244+01:00",
+  "source_commit": "35adb84979973e90781f68b115795bf8140f74da",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "freeform_checks": 45,
+  "freeform_restores": 3,
+  "self_checks": 1932,
+  "Saved_unchanged": true,
+  "saved_nodes": 149,
+  "previous_payload": "/home/tom/scratch-bm/Signal47-freeform-journey-20261101/previous-installed",
+  "installed_continue": {
+    "returncode": 0,
+    "wall_seconds": 34.12810004502535,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 25.180126190185547,
+      "heavy_jobs": [],
+      "pgrep": "",
+      "production_reservation": {
+        "version": 1,
+        "pid": 709413,
+        "start_ticks": "58365182",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "Freeform night, physical supply and service gameplay",
+        "acquired_at": "2026-11-01T11:18:54.893884+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "installed_test_profile": "/tmp/S47-freeform-installed-6spetvpl"
+}

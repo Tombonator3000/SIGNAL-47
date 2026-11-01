@@ -4,6 +4,7 @@
 #include "S47Obj.h"
 class US47Main;
 class UStaticMeshComponent;
+class FS47FreeformCarry;
 
 // Freeform-only physical supply, service and transport layer. No Story facts.
 class FS47FreeformWorld
@@ -24,6 +25,7 @@ public:
  void OpenShop();
  void OpenWorkbench();
  bool AnalyzeSample();
+ bool StartDonorTest();
  bool TriggerServiceFault();
  bool HasArrayFault() const { return Service >= 1 && Service < 9; }
  int32 FaultedDishCount() const { return HasArrayFault() ? 1 : 0; }
@@ -36,6 +38,18 @@ public:
  bool HasVehicleFuel() const { return Fuel > .001; }
  int32 ParcelStage() const { return Payload; } // 0 empty, 1 shop, 2 carried, 3 loaded, 4 set down
  FString ParcelItem() const { return Item; }
+ bool DropParcel(bool bDrop = false);
+ void OpenCarryMenu();
+ FVector ParcelPosition() const;
+ bool ParcelSimulating() const;
+ bool CarryBlocked() const;
+ int32 ParcelImpactCount() const;
+ int32 DeliveredParcels() const { return Delivered; }
+ int32 CargoDeliveries() const { return DeliveredByTruck; }
+ int32 ServiceSupplyDeliveries() const { return ServiceDeliveries; }
+ int32 DonorTestsCompleted() const { return DonorTests; }
+ int32 ServiceCompletions() const { return ServiceTests; }
+ bool BenchBusy() const { return !BenchJob.IsEmpty(); }
  bool ShopOpen() const;
  FVector InteractionPoint(const FString& Id) const;
  static bool SelfTest(TArray<FString>& Lines);
@@ -45,6 +59,9 @@ private:
  bool bActive = false, bBuilt = false, bGenerator = false, bFuelHeld = false;
  int32 Service = 0, Feeder = 0, LastFaultDay = 0, EmergencyDay = 0;
  int32 Payload = 0;
+ int32 Delivered = 0, DeliveredByTruck = 0, ServiceDeliveries = 0, DonorTests = 0, ServiceTests = 0;
+ bool bParcelWasLoaded = false;
+ TSharedPtr<FS47FreeformCarry> Carry;
  FString Item, BenchJob;
  TMap<FString,int32> Stock;
  double GeneratorSeconds = 0, Fuel = 3, LastClock = -1, BenchSeconds = 0, FeederSeconds = 0, Settle = 0, ServiceAz = 0, ServiceEl = 0;

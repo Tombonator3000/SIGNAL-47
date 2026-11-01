@@ -25,7 +25,7 @@
 
 namespace
 {
- constexpr double SecondsPerDay=86400., ClockRate=86400./4500.;
+ constexpr double SecondsPerDay=86400., RealDay=1800., RealNight=2700.;
  constexpr double PulsarPeriod=1.1879;
  double SafeNum(const S47J::FObj& O,const TCHAR* K,double D=0) { const double V=S47J::Num(O,K,D);return FMath::IsFinite(V)?V:D; }
  int32 SafeInt(const S47J::FObj& O,const TCHAR* K,int32 D=0) { return int32(FMath::Clamp(SafeNum(O,K,D),-100000000.,100000000.)); }
@@ -49,6 +49,22 @@ namespace
   return Names[FMath::Clamp(int32(Stage),0,7)];
  }
 }
+double FS47FreeformSession::AdvanceClock(double Clock,double ActiveSeconds)
+{
+ if(!FMath::IsFinite(Clock)||Clock<0)return 8*3600.;
+ if(!FMath::IsFinite(ActiveSeconds)||ActiveSeconds<=0)return Clock;
+ // Convert through elapsed active time rather than choosing one rate for the
+ // whole frame. This preserves the exact 75-minute cycle across all boundaries.
+ constexpr double Dawn=6*3600., Dusk=19*3600.;
+ constexpr double NightRate=11*3600./RealNight,DayRate=13*3600./RealDay;
+ constexpr double BeforeDawn=Dawn/NightRate;
+ const double Days=FMath::FloorToDouble(Clock/SecondsPerDay),Time=Clock-Days*SecondsPerDay;
+ const double Phase=Time<Dawn?Time/NightRate:Time<Dusk?BeforeDawn+(Time-Dawn)/DayRate:BeforeDawn+RealDay+(Time-Dusk)/NightRate;
+ const double Total=Phase+ActiveSeconds,ExtraDays=FMath::FloorToDouble(Total/(RealDay+RealNight));
+ const double P=Total-ExtraDays*(RealDay+RealNight);
+ const double NewTime=P<BeforeDawn?P*NightRate:P<BeforeDawn+RealDay?Dawn+(P-BeforeDawn)*DayRate:Dusk+(P-BeforeDawn-RealDay)*NightRate;
+ return (Days+ExtraDays)*SecondsPerDay+NewTime;
+}
 FS47FreeformSession::FS47FreeformSession(US47Main* Main):M(Main) {}
 FS47FreeformSession::~FS47FreeformSession() { Stop(); }
 
@@ -56,6 +72,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 {
  Stop();
  bActive=true;bDeadly=bLethal;bDead=bPowerFault=bAnomaly=bTelemetry=bAudioOpen=bAudioPlaying=bRecovering=false;
+ ServiceGuide=GuideServiceBaseline=GuideSupplyBaseline=0;bGuideSupply=bGuideFocus=false;
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;
  Work.Reset();Findings.Reset();FindingDays.Reset();MysterySteps={0,0,0};Upgrades={false,false,false};SavedAngles.Reset();bRestoreAngles=false;Feedback.Empty();PhenomenonId.Empty();
@@ -66,6 +83,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   if(!FMath::IsFinite(WorldClock)) {bActive=false;return;}
   DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);
   Cash=FMath::Clamp(SafeInt(Saved,TEXT("cash"),120),0,1000000);Loan=FMath::Clamp(SafeInt(Saved,TEXT("loan")),0,1000000);
+  ServiceGuide=FMath::Clamp(SafeInt(Saved,TEXT("serviceGuide")),0,2);GuideServiceBaseline=FMath::Max(0,SafeInt(Saved,TEXT("guideServiceBaseline")));GuideSupplyBaseline=FMath::Max(0,SafeInt(Saved,TEXT("guideSupplyBaseline")));bGuideSupply=S47J::Bool(Saved,TEXT("guideSupply"));bGuideFocus=S47J::Bool(Saved,TEXT("guideFocus"),ServiceGuide==1);
   bDeadly=S47J::Bool(Saved,TEXT("lethal"),bLethal);bDead=S47J::Bool(Saved,TEXT("dead"));
   PhenomenonId=S47J::Str(Saved,TEXT("phenomenon"));bPowerFault=S47J::Bool(Saved,TEXT("powerFault"));bAnomaly=S47J::Bool(Saved,TEXT("anomaly"));
   Settle=FMath::Clamp(SafeNum(Saved,TEXT("settle")),0.,1.);CrossPoint=FMath::Clamp(SafeInt(Saved,TEXT("cross")),0,4);
@@ -197,7 +215,7 @@ void FS47FreeformSession::Step(double Dt)
  M->Web->SetWorkMotionPaused(ArrayMotionHeld());
  if(!Held())
  {
-  WorldClock+=D*ClockRate;int32 NowDay=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);
+  WorldClock=AdvanceClock(WorldClock,D);int32 NowDay=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);
   if(NowDay!=DayNumber){DayNumber=NowDay;AddDay(DayNumber);Changed(TEXT("New daily observing jobs are on the operations terminal. Unfinished work remains available."));}
   M->Story->SetClock(FMath::Fmod(WorldClock,86400.));
   AutosaveAt+=D;if(AutosaveAt>=30){AutosaveAt=0;Changed();}
@@ -647,7 +665,7 @@ void FS47FreeformSession::OpenOperations()
  }
  Rows.Add(S47Kit::Small(Feedback));
  Rows.Add(S47Kit::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; comparison locates extra ticks; field kit permits local S-03 diagnosis and includes two fuses and a relay.")));
- Rows.Add(S47Kit::Row({S47Kit::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47Kit::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
+ Rows.Add(S47Kit::Row({S47Kit::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47Kit::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47Kit::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){const int32 Index=I;U.Add(S47Kit::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
  SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / OPERATIONS AND DAILY WORK"),S47Kit::Col(Rows),1000));
@@ -816,6 +834,7 @@ FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("CONTACT // LOAD A SAVED CASE TO CONTINUE");
  if(bPowerFault&&!HasPower())return TEXT("POWER // MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
+ if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
  const FJob* J=CurrentJob();if(!J)return TEXT("OPERATIONS // SELECT DAILY OBSERVING WORK");
  switch(J->Stage)
  {
@@ -838,12 +857,13 @@ FString FS47FreeformSession::Objective()const
 TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
+ if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("S-03 service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
  return Result;
 }
 S47J::FObj FS47FreeformSession::Save()const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
+ auto O=S47J::New();S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
  for(const FJob& J:Work)
@@ -860,6 +880,12 @@ S47J::FObj FS47FreeformSession::Save()const
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
+ auto Close=[](double A,double B){return FMath::Abs(A-B)<.00001;};
+ Check(Close(AdvanceClock(6*3600.,1800),19*3600.),TEXT("Freeform daylight lasts thirty active minutes"));
+ Check(Close(AdvanceClock(19*3600.,2700),30*3600.),TEXT("Freeform night lasts forty-five active minutes across midnight"));
+ Check(Close(AdvanceClock(8*3600.,4500),32*3600.)&&Close(AdvanceClock(23*3600.,9000),71*3600.),TEXT("Freeform cycles retain seventy-five minutes from any starting phase"));
+ Check(Close(AdvanceClock(19*3600.-13,1),19*3600.+11*3600./2700./2),TEXT("Freeform clock frame splits precisely at dusk"));
+ Check(Close(AdvanceClock(8*3600.,0),8*3600.),TEXT("Freeform no active time leaves the clock unchanged"));
  FS47FreeformSession S(nullptr);S.Begin(nullptr,false);
  Check(S.Active()&&S.Day()==1&&S.Clock()==8*3600&&S.Budget()==120&&S.Jobs().Num()==3,TEXT("Freeform starts a separate day with three jobs and operating budget"));
  S.Spend(120);Check(!S.Spend(5)&&S.Spend(5,true)&&S.Debt()==5&&!S.Spend(5,true),TEXT("Freeform emergency requisition is bounded and cannot repeatedly mint stock"));

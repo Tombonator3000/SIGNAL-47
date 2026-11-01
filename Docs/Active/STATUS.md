@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Lengre Freeform-natt og fysisk servicearbeid installert
+
+Nyeste lokale oppdatering er runtime `35adb849`, installert kl. 12:59 CET via PR310. Freeform bruker 30 minutter dag og 45 minutter natt innen samme 75-minuttersdøgn. Valgfri serviceordre på OPS beholder neste handling gjennom diagnose, lokal reservedel eller ny forsyningstur, fysisk relé-/donorlevering, reparasjon og signert bevegelsestest. Pakke og gratis servicekasse kan bæres, settes ned/slippes og gjenopptas etter lasting; frihåndsfysikk er avgrenset til disse. Kart/rutehjelp og sperre mot usikret biltransport inngår.
+
+Pakke med 1932 selvtester, 45 målrettede kontroller/3 restores og installert Continue består. Personlig Saved er uendret. Den isolerte gamle SARO-saken består fire pause-/gjenopptaksrunder, tre faktiske OPS-handlinger og minst 120 sekunder etter AUTO HOLD i synlig High/HWRT/Vulkan-vindu. Vulkan-rotårsaken er fortsatt åpen. Naturlig hel kjøretur, flerdøgnsbalanse og menneskelig fysikk-/skrekkaksept gjenstår; testen bruker erklærte plasseringer. Se [levering og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_JOURNEY_2026-11-01.md). Alle tidligere leverte Jeep-/dør-/radio-/Story-rettelser fra main inngår.
+
 ## Bærbar SARO-radio og alienvarsler installert
 
 Runtime `af6cc33c`, PR308, er installert kl.09:41 CET. Feltradioen kan hentes fra kontrollromspulten og lagres med saken. Aktive aliens nær spilleren driver skurring og korte prioriterte nærvær-/oppdagelse-/jaktcues; Rom6-radioen og vanlig Foley beholdes. Gamle saker kan fortsatt hente radioen.

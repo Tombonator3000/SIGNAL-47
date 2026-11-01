@@ -80,6 +80,7 @@ public:
 	void DevClear();
 	void DevStep(double Dt,const FS47GlimpsesIn& Input);
 	TArray<FS47RoswellGroup::FView> Individuals() const;
+	bool DoorOccupied(const FBox& DoorwayUE) const;
 	void Update(double Dt, const FS47GlimpsesIn& S);
 	/** Put it at a named place now if it can stand there (the developer menu, the tests). */
 	bool Now(const FS47GlimpsesIn& S, const FString& Id);

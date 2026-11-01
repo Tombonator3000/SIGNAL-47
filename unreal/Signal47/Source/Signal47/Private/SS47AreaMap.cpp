@@ -1,4 +1,5 @@
 #include "SS47AreaMap.h"
+#include "S47Main.h"
 
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"
@@ -139,6 +140,12 @@ TArray<FString> S47AreaMap::Description(const FS47MapView& V)
 	// areaMapDescription: the same facts as the pencil labels
 	TArray<FString> T = { TEXT("A pencil sketch of the area round SARO, from memory."), TEXT("The highway."), TEXT("SARO. 27 dishes, azimuth 026."),
 		TEXT("Sierra Motor Court. Nora, room 6."), TEXT("Mesa Diner. Open all night."), TEXT("Caliche, population 412.") };
+	if (US47Main::Get(nullptr)->IsFreeform())
+	{
+		T.Add(TEXT("SARO service bench: outside the building by the SARO sign. Unload supplies and test donor controllers here."));
+		T.Add(TEXT("Caliche gas station: west side of the highway, just south of Mesa Diner. The exterior supply hatch sells parts and donor controllers, 08:00-20:00; essential emergency requisitions are available after hours."));
+		T.Add(TEXT("Drive south from SARO past the motel to Caliche; return north with the parcel secured in the service truck."));
+	}
 	if (V.bStation) T.Add(TEXT("STATION 01. 1947."));
 	T.Add(V.bOldRoad ? TEXT("The old road to Roswell.") : TEXT("The old road is closed."));
 	if (V.Marks.Num()) T.Add(TEXT("Small circles mark events and their times."));
@@ -202,6 +209,19 @@ int32 SS47AreaMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSl
 	// Caliche down the street from it, both sides of the highway (world/Town.ts)
 	for (int32 i = 0; i < 3; ++i) { P.Box(392, 628 + i * 15, 408, 638 + i * 15); P.Box(HX + 10, 632 + i * 15, HX + 24, 641 + i * 15); }
 	P.Text(TEXT("Caliche, pop. 412"), 226, 708, 22);
+	if (US47Main::Get(nullptr)->IsFreeform())
+	{
+		// Use the existing schematic town/building positions, not a second metric scale.
+		P.Stroke1(P.Arc(554, 222, 5), 2.f, PENCIL);
+		P.Line({ { 554, 222 }, { 630, 248 }, { 650, 248 } }, 1.4f);
+		P.Text(TEXT("SARO service bench"), 660, 256, 24);
+		P.Text(TEXT("outside, by the SARO sign"), 660, 282, 20);
+		P.Stroke1(P.Arc(400, 636, 7), 2.f, PENCIL);
+		P.Line({ { 400, 636 }, { 470, 702 }, { 588, 702 } }, 1.4f);
+		P.Text(TEXT("Gas station / supply hatch"), 600, 712, 24);
+		P.Text(TEXT("Parts + donors 08:00-20:00"), 600, 738, 20);
+		P.Text(TEXT("Essential emergency requisitions after hours"), 600, 764, 18);
+	}
 	// the old road east (open: SERVICE_MAP.road and its mileposts, story/drawings.ts, which is not
 	// ported yet; the road is drawn closed until it is)
 	{
