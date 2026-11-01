@@ -1548,3 +1548,5 @@ Cooked/StagedBuilds fra ferdig arbeidskopi ryddet: 11.80 GiB netto frigjort, øv
 2026-11-01 16:13 CET | codex/story-title-erasure-20261101 | Fullført Story registreres etter siste fotografi; tittelens47 mister signalet én gang med egen SFX og vedvarende profilflagg. Editorbygg/1950 selvtester/11 native kontroller og faktiske før/under/etter-bilder består, med erklært slutt-/Slate-aktiveringsfixture. Samordnet pakke/installasjon med PR311 følger.
 
 2026-11-01 16:35 CET | PR312/title, samlet runtime b98c6fe1 | Installert av samordnet Freeform-oppdrag:1957 selvtester,11 pakketittelsjekker og kort installert Fortsett består;149 personlige Saved-elementer bevart. Ingen fullføringsbelønning aktivert i personlig profil; menneskelig helgjennomspilling/lytting står åpent.
+
+2026-11-01 17:19 CET | codex/foliage-camera-warning-20261101 | Lokal 360-graders plantebuffer erstatter kamerakjeglen; artscaps/avstandsfade beholdes. Raytracing-utvikleroverlegg slås av separat; målrettet flora-turn kontrollerer fem faktiske kameravinkler. Kilde-/diffkontroll består; bygg/test/installasjon venter på avsluttet spilløkt.

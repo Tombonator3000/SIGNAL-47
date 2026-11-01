@@ -58,9 +58,9 @@ public:
 
 	/** The patch's group in the export ("flora:<name>") and its meshes, drawn from here. */
 	bool Bind(AS47Web* W, int32 GroupNode);
-	/** follow(cam): fill the meshes round the camera when it has moved or turned far enough (cam in
-	 *  world terms, three's; bLow: the Low tier). */
-	void Follow(const FVector& CamPos, const FVector& CamDir, double FovDeg, double Aspect, bool bLow);
+	/** Keep a bounded circle of plants around the eye; refill after movement or quality changes.
+	 *  CamPos is in world terms, three's; bLow: the Low tier. Camera turns retain the same plants. */
+	void Follow(const FVector& CamPos, bool bLow);
 	/** The wind's way in this patch's terms, on its materials (world/wind.ts, turned with the group). */
 	void SetWind(const FVector2D& Dir);
 	/** The second kind of a pair is drawn when the first is (its mesh is shown and hidden with the area's). */
@@ -82,7 +82,6 @@ private:
 	struct FBucket { TArray<FS47FloraRect> B, W; };
 	TMap<int64, FBucket> Bucket;
 	bool bWalked = false, bSeamed = false, bSpilt = false;
-	double Yaw = 0, Half = UE_DOUBLE_PI;
 	struct FNext { int32 Kind = 0, At = 0; } Next;
 	bool bPending = false;
 

@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Vegetasjon ved kameravending, 1. november
+
+- [ ] **Plantedekke og raytracing-overlegg:** Tom viser at plantedekket forsvinner ved sideblikk fra bilen, samt rødt raytracing-varsel i spill og pause. Kilderettingen beholder et avstandsbegrenset plantedekke rundt hele spilleren med eksisterende artsgrenser, og slår av Unreals eget raytracing-utvikleroverlegg. Bygg, målrettet kamerakontroll og lokal installasjon venter på avsluttet spilløkt.
+
 ## Nattarbeid til 1. november kl.09
 
 Nattarbeidet ble avsluttet ved den bekreftede fristen søndag 1. november kl.09, og automasjonen ble slettet. Tom ba deretter om videre TODO-arbeid og vurdering/katalogisering av AnyScene. Ingen uavklarte designforslag regnes som nye vedtak.
