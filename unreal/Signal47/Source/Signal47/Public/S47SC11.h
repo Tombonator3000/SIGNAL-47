@@ -43,6 +43,7 @@ public:
  EBody Body() const { return B; }
  FVector2D BodyAt() const { return Pos; }
  bool BodyShown() const { return bShown; }
+ FVector BodyHead() const { return FVector(Pos.X,Y+1.8,Pos.Y); }
  bool InLight() const { return bLit; }
  void TestComplete();
  static const TArray<FNode>& Nodes();

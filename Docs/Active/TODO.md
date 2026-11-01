@@ -6,10 +6,16 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Nattarbeid til 1. november kl.09
 
-Tom har bekreftet søndag 1. november kl.09 som frist for nattarbeidet. Jeep-innsiden prioriteres først, deretter kritiske spillfeil. Ingen uavklarte designforslag regnes som nye vedtak.
+Nattarbeidet ble avsluttet ved den bekreftede fristen søndag 1. november kl.09, og automasjonen ble slettet. Tom ba deretter om videre TODO-arbeid og vurdering/katalogisering av AnyScene. Ingen uavklarte designforslag regnes som nye vedtak.
 
 - [x] **PLAY-01-48 / P2, Jeep-innside med ratt og instrumenter:** Tilpasset privat Blender-kilde og sju native deler er pakket og installert kl.02:18 CET via PR301. Ratt, hastighet, drivstoff, temperatur, kilometerteller og radio bruker eksisterende signaler. Faktiske fører-/instrumentbilder og 1906 selvtester består; 149 Saved-elementer er bevart. Olje-/volt-skivene er kosmetiske. Separat hjulrigg under PLAY-31-47 er fortsatt åpen. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_INTERIOR_2026-11-01.md).
 - [x] **SC04-oppfølging, konkret kodepass for PLAY-31-17/19:** Rute rundt åpent dørblad, riktig dør-ID, ikke-solid dirt-overlay, fullført arkivpassering og fysisk utvendig tilbaketrekning er installert via PR304 kl.08:11 CET. 1909 selvtester og sc04doors14 består i editor og pakke; installert Fortsett består og 149 Saved-elementer er bevart. Den merkede øst-fixturen er ikke en ny naturlig scene. Menneskelig input-/animasjonsaksept og det separate sceneforslaget er fortsatt åpne under de opprinnelige punktene. [Levering](../Evidence/UnrealDeliveries/SC04_DOORS_2026-11-01.md).
+
+## Videre arbeid 1. november etter nattvinduet
+
+- [x] **AnyScene i prosjektbiblioteket:** Katalogisert ved festet offentlig kildecommit, med gjennomgåtte prosess-/material-/lys-/kameraskript. [Vurdering](https://github.com/Tombonator3000/prosjektbibliotek/blob/main/docs/ANYSCENE.md), bibliotekets PR10. Referanse for scenebygging og lookdev, ikke installert avhengighet; Linux/Unreal-runtime UNVERIFIED, fal-kostnader og separate assetlisenser avgrenset.
+- [ ] **PLAY-31-20/21, aktiv levering:** SARO-pultens egen separate feltradio, lagret pickup, aktive aliens utenfor bildet og korte prioriterte lydsignaler er implementert. Editorbygg,1924 selvtester og målrettet faktisk pickup/lagring/nærvær-prøve består. Pakking, korrekt etterbilde og lokal Saved-bevarende installasjon gjenstår.
+- [ ] **PLAY-31-38, konkret Linux-start-/diagnosepass:** Kilden forklarer manglende internstarter/ufullstendig arkiv, retter rapportavbrudd og pakker generisk Linux-forhåndssjekk/kravliste. Lett kontroll består. Grafisk start på kameratens RTX5090/Arch/niri er fortsatt UNVERIFIED; ingen offentlig release.
 
 ## Aktiv rettelse: Roswell armer og bakke-AI
 

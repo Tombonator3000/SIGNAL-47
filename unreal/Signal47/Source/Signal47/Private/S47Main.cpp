@@ -1,4 +1,5 @@
 #include "S47Main.h"
+#include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -192,6 +193,7 @@ void US47Main::Step(double Dt)
 	if (AnomalyTest) AnomalyTest->Step(Dt);
 	if (T02Test) T02Test->Step(Dt);
 	if (GraphicsTest) GraphicsTest->Step(Dt);
+	if(FieldRadio) FieldRadio->Step(Dt);
 	FS47FinalePreview::Step(this,Dt);
 	FS47FinaleMovie::Step(this,Dt);
 }

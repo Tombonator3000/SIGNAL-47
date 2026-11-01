@@ -55,6 +55,7 @@ public:
  bool Withdrawn() const { return bActive && S == EState::Withdrawn; }
  bool ConsumeCapture() { const bool B = bCaptureEvent; bCaptureEvent = false; return B; }
  FVector2D Position() const { return Pos; }
+ FVector EyePosition() const { return FVector(Pos.X,Y+1.7,Pos.Y); }
  FVector2D Checkpoint() const;
  FString CheckpointId() const;
  static bool InYard(const FVector2D& P, double Pad = 0);

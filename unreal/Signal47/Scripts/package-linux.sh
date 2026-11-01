@@ -20,3 +20,18 @@ if grep -nE 'Failed to compile Material|Default Material will be used in game' "
 fi
 # The 3D models' credits with their links (CC BY 4.0 asks for them), beside the game (Tools/freemodels/credits.py).
 cp "$(dirname "$P")/CREDITS.txt" "$OUT/Linux/CREDITS.txt"
+
+# Fail at packaging time if the release entry point or split payload was omitted.
+# Keep Unreal's proven launcher unchanged; ship independent, read-only diagnostics.
+LINUX_PACKAGE="$OUT/Linux"
+for required in Signal47.sh Signal47/Binaries/Linux/Signal47; do
+  [[ -s "$LINUX_PACKAGE/$required" ]] || { echo "Package rejected: missing $LINUX_PACKAGE/$required" >&2; exit 1; }
+done
+shopt -s nullglob
+PAKS=("$LINUX_PACKAGE"/Signal47/Content/Paks/*.pak)
+UTOCS=("$LINUX_PACKAGE"/Signal47/Content/Paks/*.utoc)
+UCAS=("$LINUX_PACKAGE"/Signal47/Content/Paks/*.ucas)
+((${#PAKS[@]} && ${#UTOCS[@]} && ${#UCAS[@]})) || { echo "Package rejected: incomplete PAK/UTOC/UCAS payload in $LINUX_PACKAGE" >&2; exit 1; }
+chmod +x "$LINUX_PACKAGE/Signal47.sh" "$LINUX_PACKAGE/Signal47/Binaries/Linux/Signal47"
+install -m 755 "$(dirname "$P")/Build/Linux/launch/Check-Linux.sh" "$LINUX_PACKAGE/Check-Linux.sh"
+install -m 644 "$(dirname "$P")/Build/Linux/launch/README.md" "$LINUX_PACKAGE/LINUX-README.md"

@@ -45,6 +45,7 @@ public:
  EBody Body() const { return B; }
  FVector2D BodyAt() const { return Pos; }
  bool BodyShown() const { return bShown; }
+ FVector BodyHead() const { return FVector(Pos.X,Y+1.8,Pos.Y); }
  bool HuntLive() const { return P == EStep::Hunt; }
  bool DoorOccupied(const FString& Id) const;
  // Contract fixture for later scenarios' tests: SC04 counted as done without playing it.
