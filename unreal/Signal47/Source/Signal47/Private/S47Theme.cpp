@@ -166,14 +166,11 @@ void S47Theme::Shadow(FSlateWindowElementList& Out, int32 Layer, const FGeometry
 
 TPair<FString, FString> S47Theme::ChapterLine(const FString& ChapterTitle)
 {
-	static const TCHAR* Words[] = { TEXT("ZERO"), TEXT("ONE"), TEXT("TWO"), TEXT("THREE"), TEXT("FOUR"), TEXT("FIVE"), TEXT("SIX"), TEXT("SEVEN"), TEXT("EIGHT"), TEXT("NINE"), TEXT("TEN") };
 	FString HeadPart, Title;
 	if (!ChapterTitle.Split(TEXT(": "), &HeadPart, &Title)) return { ChapterTitle.ToUpper(), FString() };
-	if (HeadPart.StartsWith(TEXT("Chapter ")))
-	{
-		const int32 N = FCString::Atoi(*HeadPart.Mid(8));
-		if (N >= 0 && N <= 10) HeadPart = FString(TEXT("Chapter ")) + Words[N];
-	}
+	// Old save metadata retains its original text. Render its story title without
+	// the numbered chapter label, just like newly written saves and pause menus.
+	if (HeadPart.StartsWith(TEXT("Chapter "), ESearchCase::IgnoreCase)) return { Title.ToUpper(), FString() };
 	return { HeadPart.ToUpper(), Title.ToUpper() };
 }
 
@@ -226,7 +223,9 @@ bool S47Theme::SelfTest(TArray<FString>& Out)
 	bool bOk = true;
 	auto Check = [&](bool bPass, const TCHAR* What, const FString& Got = FString()) { Out.Add(FString::Printf(TEXT("%s theme: %s %s"), bPass ? TEXT("ok  ") : TEXT("FAIL"), What, *Got)); bOk &= bPass; };
 	const TPair<FString, FString> L = ChapterLine(TEXT("Chapter 2: The Amended Record"));
-	Check(L.Key == TEXT("CHAPTER TWO") && L.Value == TEXT("THE AMENDED RECORD"), TEXT("chapter line"), L.Key + TEXT(" / ") + L.Value);
+	Check(L.Key == TEXT("THE AMENDED RECORD") && L.Value.IsEmpty(), TEXT("legacy numbered save displays only the story title"), L.Key + TEXT(" / ") + L.Value);
+	const auto Plain = ChapterLine(TEXT("The Amended Record"));
+	Check(Plain.Key == L.Key && Plain.Value == L.Value, TEXT("old and new save titles display identically"));
 	Check(ChapterLine(TEXT("Prologue: Night Shift")).Key == TEXT("PROLOGUE"), TEXT("the prologue's line"));
 	Check(Stamp(23 * 3600 + 41 * 60 + 7) == TEXT("APR.13 1986  23:41:07"), TEXT("before midnight"), Stamp(23 * 3600 + 41 * 60 + 7));
 	Check(Stamp(86400 + 3 * 3600 + 12 * 60 + 44) == TEXT("APR.14 1986  03:12:44") && Stamp(3 * 3600) == TEXT("APR.14 1986  03:00:00"), TEXT("after midnight"));

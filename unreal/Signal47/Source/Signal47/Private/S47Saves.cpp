@@ -127,9 +127,9 @@ FString S47State::CheckpointTitle(const FString& Checkpoint)
 	if (Checkpoint == TEXT("routine")) return TEXT("Evening Shift: Reference Round");
  if (Checkpoint == TEXT("nightService")) return TEXT("Night Shift: Caliche Feeder / Residual");
 	if (Checkpoint == TEXT("residual")) return TEXT("Prologue: Night Shift");
-	if (Checkpoint == TEXT("chapter1")) return TEXT("Chapter 1: The Second Exposure");
-	if (Checkpoint == TEXT("chapter2")) return TEXT("Chapter 2: The Amended Record");
-	if (Checkpoint == TEXT("chapter3")) return TEXT("Chapter 3: The Survey Station");
+	if (Checkpoint == TEXT("chapter1")) return TEXT("The Second Exposure");
+	if (Checkpoint == TEXT("chapter2")) return TEXT("The Amended Record");
+	if (Checkpoint == TEXT("chapter3")) return TEXT("The Survey Station");
 	return FString();
 }
 
@@ -426,7 +426,7 @@ bool S47Saves::SelfTest(TArray<FString>& Out)
 	Check(TEXT("photoKey second"), PhotoKey(TEXT("data:image/jpeg;base64,U0VDT05EX1BIT1RP")) == TEXT("p1r2blb8iidk"));
 	Check(TEXT("photoKey title"), PhotoKey(TEXT("SIGNAL / 47")) == TEXT("p15snohen7th"));
 	Check(TEXT("saveId"), SaveId(2, TEXT("auto"), 1) == TEXT("2:auto:1"));
-	Check(TEXT("checkpoint title"), S47State::CheckpointTitle(TEXT("chapter2")) == TEXT("Chapter 2: The Amended Record") && S47State::CheckpointTitle(TEXT("chapter4")).IsEmpty());
+	Check(TEXT("checkpoint title"), S47State::CheckpointTitle(TEXT("chapter2")) == TEXT("The Amended Record") && S47State::CheckpointTitle(TEXT("chapter4")).IsEmpty());
 
 	const FString Root = FPaths::ProjectSavedDir() / TEXT("SaveGames") / FString::Printf(TEXT("SelfTest-%s"), *FGuid::NewGuid().ToString(EGuidFormats::Digits));
 	const FString ORIGINAL = TEXT("data:image/jpeg;base64,T1JJR0lOQUxfUEhPVE8="), SECOND = TEXT("data:image/jpeg;base64,U0VDT05EX1BIT1RP"), STAND_IN = TEXT("data:image/jpeg;base64,UExBQ0VIT0xERVI=");

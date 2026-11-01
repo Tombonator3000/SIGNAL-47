@@ -1,0 +1,14 @@
+{
+  "method": "SYNTHETIC schedule-only replay of archived auto2 pose; ordinary Continue and focused Use opsTerminal",
+  "schedule_reset_only": true,
+  "terminal_action": "PASS",
+  "persisted_auto_hold": "PASS",
+  "high_vulkan_hwrt": true,
+  "smoke_seconds": 100,
+  "gpu_samples": 129,
+  "gpu_peak_mib": 6197,
+  "gpu_total_mib": 10240,
+  "kernel_events_observed": 0,
+  "root_cause": "UNCONFIRMED: not original long session, no reproduced stall; existing schedule document retained",
+  "personal_saved_modified": false
+}
