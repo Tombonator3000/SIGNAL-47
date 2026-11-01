@@ -201,7 +201,7 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 
 ## Story og Freeform
 
-- [ ] **MODE-06, fysisk betjening og Tripo-oppfølging, under levering:** Fire faktiske CRT-skjermer, spolebåndknapper ved telefonen, lagrede varierte dagskort og bensinstasjonens målte fylling. Toms tidsriktige Tripo-pumpe fra skrivebordet og lokal Jeep-frontrute-/speilretting klargjøres i Blender. Samlet native spillkontroll, pakking og installasjon gjenstår før punktet lukkes. Naturlig kjøretur og menneskelig lesbarhet/skrekkbalanse føres fortsatt i MODE-03C/05.
+- [x] **MODE-06, fysisk betjening og Tripo-oppfølging, installert 1. november via PR311/312:** Fire faktiske CRT-er, spolebåndknapper, lagrede varierte dagskort og målt bensinfylling er levert. Toms Tripo-pumpe og lokal Jeep-frontrute-/speilretting er Blender-klargjort og pakket. 1957 selvtester, 77 Freeform-kontroller/2 restores, 11 tittelkontroller og installert Fortsett består; 149 Saved-elementer bevart. [Levering og bilder](../Evidence/UnrealDeliveries/FREEFORM_EQUIPMENT_2026-11-01.md). Naturlig kjøring og menneskelig lesbarhet/skrekkbalanse er fortsatt åpne i MODE-03C/05.
 
 [Beslutning D-21 til D-23](DECISIONS.md#nye-føringer-fra-spillprøven) og [modusplanen](../Design/Story/SARO_STORY_FREEFORM.md) skiller dagens Story fra senere Freeform. Første Freeform-leveranse er lokalt installert fra `0f8f946e` via PR297. Pakke, 1902 selvtester, 248 native kontroller og 21 disk-/Flow-gjenopprettinger består; Saved er bevart. Se [levering og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_2026-11-01.md). Naturlig spillaksept og planlagte utvidelser er fortsatt åpne.
 

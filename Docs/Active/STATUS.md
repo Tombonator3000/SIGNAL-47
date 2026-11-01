@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Fysisk Freeform-utstyr og nye modeller installert
+
+Runtime `b98c6fe1`, PR311/312, er installert kl. 16:35 CET. Freeform betjenes på fire faktiske CRT-skjermer og spolebåndknapper ved telefonen. Lagrede dagskort varierer de faktiske innstillingene; eksisterende regissør med 16 hendelsesfamilier beholdes. Toms tidsriktige Tripo-pumpe fyller den parkerte servicebilen med målt betaling. Jeepens frontruteramme og speil er rettet i egen Blender-derivat. Den parallelle 47-effekten etter fullført Story inngår.
+
+Pakken består 1957 selvtester, 77 Freeform-kontroller / 2 restores og 11 tittelkontroller. Installert Fortsett består; 149 personlige Saved-elementer er uendret. Naturlig kjøretur, menneskelig lesbarhet/lytting og flerdøgnsbalanse gjenstår. [Levering, bilder og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_EQUIPMENT_2026-11-01.md).
+
 ## Lengre Freeform-natt og fysisk servicearbeid installert
 
 Nyeste lokale oppdatering er runtime `35adb849`, installert kl. 12:59 CET via PR310. Freeform bruker 30 minutter dag og 45 minutter natt innen samme 75-minuttersdøgn. Valgfri serviceordre på OPS beholder neste handling gjennom diagnose, lokal reservedel eller ny forsyningstur, fysisk relé-/donorlevering, reparasjon og signert bevegelsestest. Pakke og gratis servicekasse kan bæres, settes ned/slippes og gjenopptas etter lasting; frihåndsfysikk er avgrenset til disse. Kart/rutehjelp og sperre mot usikret biltransport inngår.

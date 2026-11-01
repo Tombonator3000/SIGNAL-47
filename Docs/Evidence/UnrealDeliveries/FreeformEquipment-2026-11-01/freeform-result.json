@@ -1,0 +1,411 @@
+{
+	"status": "PASS",
+	"reason": "",
+	"checks": 77,
+	"flowRestores": 2,
+	"elapsedActiveDriverSeconds": 96.960458565503359,
+	"evidence": [
+		{
+			"check": "temporary developer Freeform case 0 required",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"phase": "before-save",
+			"day": 1,
+			"sourceParameterCards": "FF-D0001-J1|1|0|0|1|1419.895000000|0.020000000|50.000000000|55.000000000|50.000000000|60.000000000|66.500000000|69.500000000|26.000000000|14.000000000|69000.000000000|0|SARO / D01 OBSERVATION 1 / 3C 286\nSUGGESTED 19:10 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.895 MHz / AZ 68.0 / EL 26.0\nGAIN 50-55 / BW 50-60 kHz\nINTEGRATION 14 s\nFive-point physical pointing cross; preserve its measured chart.\nFF-D0001-J2|1|1|1|1|1419.600000000|0.030000000|73.000000000|80.000000000|90.000000000|95.000000000|108.500000000|111.500000000|53.000000000|18.000000000|71700.000000000|1|SARO / D01 OBSERVATION 2 / PSR B1133+16\nSUGGESTED 19:55 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.600 MHz / AZ 110.0 / EL 53.0\nGAIN 73-80 / BW 90-95 kHz\nINTEGRATION 18 s\nCompare retained timing record to the 1.18791 s reference; if extra ticks occur, use the receiver-rack internal control.\nFF-D0001-J3|1|2|3|1|1419.895000000|0.020000000|53.000000000|60.000000000|40.000000000|50.000000000|144.500000000|147.500000000|65.000000000|18.000000000|79200.000000000|2|SARO / D01 OBSERVATION 3 / Virgo A\nSUGGESTED 22:00 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.895 MHz / AZ 146.0 / EL 65.0\nGAIN 53-60 / BW 40-50 kHz\nINTEGRATION 18 s\nRetain the original measurement; use the receiver-rack internal reference if a discrepancy occurs.\n"
+		},
+		{
+			"check": "daily source parameter cards exist in production session",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "actual CRT glass geometry exists: operations",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "production panel opens on its physical CRT without fallback: operations",
+			"pass": true,
+			"stage": 0
+		},
+		{
+			"check": "actual virtual window rendered on native glass after camera transition: operations",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "active observing clock advances while physical terminal is open: operations",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "actual CRT glass geometry exists: status",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "production panel opens on its physical CRT without fallback: status",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "actual virtual window rendered on native glass after camera transition: status",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "active observing clock advances while physical terminal is open: status",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "actual CRT glass geometry exists: tracking",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "production panel opens on its physical CRT without fallback: tracking",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "actual virtual window rendered on native glass after camera transition: tracking",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "active observing clock advances while physical terminal is open: tracking",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "actual CRT glass geometry exists: receiver",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "production panel opens on its physical CRT without fallback: receiver",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "actual virtual window rendered on native glass after camera transition: receiver",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "active observing clock advances while physical terminal is open: receiver",
+			"pass": true,
+			"stage": 1
+		},
+		{
+			"check": "isolated full save written and freshly read: cards-and-terminals",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "saved JSON parses: cards-and-terminals",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"check": "ordinary Flow restores temporary Freeform case 0: cards-and-terminals",
+			"pass": true,
+			"stage": 2
+		},
+		{
+			"phase": "after-save",
+			"day": 1,
+			"sourceParameterCards": "FF-D0001-J1|1|0|0|1|1419.895000000|0.020000000|50.000000000|55.000000000|50.000000000|60.000000000|66.500000000|69.500000000|26.000000000|14.000000000|69000.000000000|0|SARO / D01 OBSERVATION 1 / 3C 286\nSUGGESTED 19:10 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.895 MHz / AZ 68.0 / EL 26.0\nGAIN 50-55 / BW 50-60 kHz\nINTEGRATION 14 s\nFive-point physical pointing cross; preserve its measured chart.\nFF-D0001-J2|1|1|1|1|1419.600000000|0.030000000|73.000000000|80.000000000|90.000000000|95.000000000|108.500000000|111.500000000|53.000000000|18.000000000|71700.000000000|1|SARO / D01 OBSERVATION 2 / PSR B1133+16\nSUGGESTED 19:55 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.600 MHz / AZ 110.0 / EL 53.0\nGAIN 73-80 / BW 90-95 kHz\nINTEGRATION 18 s\nCompare retained timing record to the 1.18791 s reference; if extra ticks occur, use the receiver-rack internal control.\nFF-D0001-J3|1|2|3|1|1419.895000000|0.020000000|53.000000000|60.000000000|40.000000000|50.000000000|144.500000000|147.500000000|65.000000000|18.000000000|79200.000000000|2|SARO / D01 OBSERVATION 3 / Virgo A\nSUGGESTED 22:00 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.895 MHz / AZ 146.0 / EL 65.0\nGAIN 53-60 / BW 40-50 kHz\nINTEGRATION 18 s\nRetain the original measurement; use the receiver-rack internal reference if a discrepancy occurs.\n"
+		},
+		{
+			"check": "all original source/receiver card parameters survive disk and Flow",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "restored scene has no orphan terminal or modal camera hold",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "explicit one-day fixture generates the next production observing queue",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"phase": "after-day-advance",
+			"day": 2,
+			"sourceParameterCards": "FF-D0002-J1|2|0|0|1|1419.900000000|0.020000000|50.000000000|55.000000000|50.000000000|60.000000000|70.500000000|73.500000000|25.000000000|12.000000000|69000.000000000|0|SARO / D02 OBSERVATION 1 / 3C 286\nSUGGESTED 19:10 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.900 MHz / AZ 72.0 / EL 25.0\nGAIN 50-55 / BW 50-60 kHz\nINTEGRATION 12 s\nFive-point physical pointing cross; preserve its measured chart.\nFF-D0002-J2|2|1|1|1|1419.600000000|0.030000000|73.000000000|80.000000000|95.000000000|100.000000000|112.500000000|115.500000000|54.000000000|18.000000000|70200.000000000|1|SARO / D02 OBSERVATION 2 / PSR B1133+16\nSUGGESTED 19:30 / FLEXIBLE ORDER, NO EXPIRY\nF 1419.600 MHz / AZ 114.0 / EL 54.0\nGAIN 73-80 / BW 95-100 kHz\nINTEGRATION 18 s\nCompare retained timing record to the 1.18791 s reference; if extra ticks occur, use the receiver-rack internal control.\nFF-D0002-J3|2|2|2|1|1420.380000000|0.015000000|58.000000000|65.000000000|10.000000000|17.000000000|90.500000000|93.500000000|49.000000000|18.000000000|76200.000000000|2|SARO / D02 OBSERVATION 3 / HI strip 12\nSUGGESTED 21:10 / FLEXIBLE ORDER, NO EXPIRY\nF 1420.380 MHz / AZ 92.0 / EL 49.0\nGAIN 58-65 / BW 10-17 kHz\nINTEGRATION 18 s\nRetain the original measurement; use the receiver-rack internal reference if a discrepancy occurs.\n"
+		},
+		{
+			"check": "new day's three legal cards preserve unfinished original source parameters",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "pump sequence starts from real default three-unit tank",
+			"pass": true,
+			"stage": 3
+		},
+		{
+			"check": "actual private regular-pump model and trimmed station are mounted with their exact native asset paths; no fallback",
+			"pass": true,
+			"stage": 11
+		},
+		{
+			"check": "native eye ray reaches actual regular pump meter: town:pumps",
+			"pass": true,
+			"stage": 12
+		},
+		{
+			"check": "physical parked truck starts pump without up-front payment or fuel grant",
+			"pass": true,
+			"stage": 12
+		},
+		{
+			"check": "first completed metering interval charges once for actual delivered quarter-unit",
+			"pass": true,
+			"stage": 13
+		},
+		{
+			"check": "pause preserves incomplete pump interval without delivery, charge or clock advance",
+			"pass": true,
+			"stage": 15
+		},
+		{
+			"check": "isolated full save written and freshly read: pump-mid-meter",
+			"pass": true,
+			"stage": 15
+		},
+		{
+			"check": "saved JSON parses: pump-mid-meter",
+			"pass": true,
+			"stage": 15
+		},
+		{
+			"check": "ordinary Flow restores temporary Freeform case 0: pump-mid-meter",
+			"pass": true,
+			"stage": 15
+		},
+		{
+			"check": "Flow resumes paid receipt and tank without replaying a charge",
+			"pass": true,
+			"stage": 16
+		},
+		{
+			"check": "Flow retains unfinished metering time rather than restarting a paid interval",
+			"pass": true,
+			"stage": 16
+		},
+		{
+			"check": "two further real delivery intervals and repeated stop retain exactly three charges and three quarters",
+			"pass": true,
+			"stage": 17
+		},
+		{
+			"check": "player outside actual pump reach cannot start delivery or payment",
+			"pass": true,
+			"stage": 181
+		},
+		{
+			"check": "production boarded vehicle rejects pump use without payment",
+			"pass": true,
+			"stage": 19
+		},
+		{
+			"check": "production driving fixture uses the real mounted Jeep interior and native driver seat without fallback",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_InteriorBody",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_Interior",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_Steering",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_SpeedFace",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_FuelFace",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_TempFace",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "actual driving Jeep has a valid visible mounted native mesh: SM_TripoJeep_RadioFace",
+			"pass": true,
+			"stage": 191
+		},
+		{
+			"check": "physical reel-deck adapter is ready in SARO",
+			"pass": true,
+			"stage": 20
+		},
+		{
+			"check": "existing unfinished pulsar card selected without inserting completed work",
+			"pass": true,
+			"stage": 20
+		},
+		{
+			"check": "selected production card supplies actual receiver profile",
+			"pass": true,
+			"stage": 20
+		},
+		{
+			"check": "actual array receives the selected pulsar pointing command",
+			"pass": true,
+			"stage": 20
+		},
+		{
+			"check": "timed acquisition begins only after actual encoders settle",
+			"pass": true,
+			"stage": 21
+		},
+		{
+			"check": "real eighteen-second pulsar acquisition produces retained original chart",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "independent eight-second control starts after original chart",
+			"pass": true,
+			"stage": 22
+		},
+		{
+			"check": "native equipment approach is inside powered physical listening range",
+			"pass": true,
+			"stage": 24
+		},
+		{
+			"check": "audio arming opens no overlay and leaves the world active",
+			"pass": true,
+			"stage": 24
+		},
+		{
+			"check": "instant seek and valid-looking marks cannot fabricate heard comparison",
+			"pass": true,
+			"stage": 24
+		},
+		{
+			"check": "physical rewind returns transport to zero without granting coverage",
+			"pass": true,
+			"stage": 24
+		},
+		{
+			"check": "native interaction and Walker use callback exist",
+			"pass": true,
+			"stage": 25
+		},
+		{
+			"check": "actual native eye ray picks physical tape key: ff:audio:original",
+			"pass": true,
+			"stage": 25
+		},
+		{
+			"check": "native ORIGINAL key selects production original without modal",
+			"pass": true,
+			"stage": 25
+		},
+		{
+			"check": "native interaction and Walker use callback exist",
+			"pass": true,
+			"stage": 26
+		},
+		{
+			"check": "actual native eye ray picks physical tape key: ff:audio:play",
+			"pass": true,
+			"stage": 26
+		},
+		{
+			"check": "native PLAY key starts actual transport and updates its physical interaction status",
+			"pass": true,
+			"stage": 26
+		},
+		{
+			"check": "actual original playback covers eighteen seconds and physical keys retain measured marks",
+			"pass": true,
+			"stage": 27
+		},
+		{
+			"check": "world time advances throughout physical listening",
+			"pass": true,
+			"stage": 27
+		},
+		{
+			"check": "physical CONTROL and PLAY keys select quiet independent tape",
+			"pass": true,
+			"stage": 27
+		},
+		{
+			"check": "actual independent control is heard for all eight seconds",
+			"pass": true,
+			"stage": 28
+		},
+		{
+			"check": "physical RETAIN accepts actual heard/marked comparison without modal or payment",
+			"pass": true,
+			"stage": 28
+		},
+		{
+			"check": "native screenshot exists with PNG signature: operations.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: status.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: tracking.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: receiver.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: pump-before.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: pump-after.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: actual-jeep-driver.png",
+			"pass": true,
+			"stage": 30
+		},
+		{
+			"check": "native screenshot exists with PNG signature: fysisk-audio.png",
+			"pass": true,
+			"stage": 30
+		}
+	],
+	"method": "Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse at the regular pump and on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal.",
+	"limits": "Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. Mounted Jeep mesh identities and a native driver-seat screenshot are checked, but windshield/mirror visual acceptance still requires review of that image. No natural drive, actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."
+}
