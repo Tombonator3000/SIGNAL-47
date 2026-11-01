@@ -4,6 +4,25 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Nattskift 1. november kl.22:00 til 2. november kl.08:00
+
+Tom har bestilt selvstendig nattarbeid gjennom hele dette vinduet, Europe/Oslo, for å gjennomføre mest mulig av den åpne TODO-listen. Aktiv trådautomasjon: `signal-47-nattskift-22-08`. Gjenopptak hvert20. minutt i arbeidsvinduet; ingen nye nattkjøringer etter fristen. Dette gjelder bare denne natten.
+
+Arbeidsrekkefølge, med akutte krasj-/lagrings-/progresjonsfeil foran:
+
+1. **MODE-08:** felles fysisk PC- og lydbetjening i Story og Freeform, med Storys egne manusstyrte oppgaver og hendelser.
+2. **LIGHT-01 og LIGHT-02:** dagstyrt utelys og fysiske, lagrede rombrytere som lar PC-er og instrumenter virke med taklyset av.
+3. **FEEDBACK-01:** tydelig fysisk og hørbar respons fra utstyret.
+4. **EVIDENCE-01:** arbeidsrelaterte avvik som kan etterprøves og arkiveres.
+5. **REACTIVE-01:** skrekk som reagerer på spillerens faktiske handlinger.
+6. Fortsett med øvrige åpne TODO etter spillerverdi, risiko og avhengigheter. Fullfør sammenhengende oppgaver med lagring og forståelig neste handling.
+
+- [ ] **FEEDBACK-01 / P1, respons fra utstyret:** Knytt motorlyd, reléklikk og instrumentreaksjoner til faktisk bevegelse, kommando, ventetid og feiltilstand. Spilleren skal kunne forstå forskjellen på normal drift, venting og en feil som krever fysisk kontroll. Gjenbruk eksisterende observatorielyder og maskintilstander; kontroller én hel kommandert bevegelse og én konkret feil/reparasjon.
+- [ ] **EVIDENCE-01 / P1, hendelser knyttet til arbeidet:** La merkelige signaler og spor oppstå gjennom den vanlige observasjonsløkken. Bevar originalen, tilby en reell kontroll eller ny måling, og la resultatet arkiveres og gjenfinnes etter Save/Continue. Både bekreftet avvik og et nyttig negativt kontrollresultat skal gi en forståelig neste handling. Gjenbruk dagens bevis-/jobb-/arkivsystemer.
+- [ ] **REACTIVE-01 / P2, skrekk som reagerer på handlinger:** Bruk faktiske tidligere valg som grunnlag for sjeldne hendelser: et romlys spilleren slo av er tent ved retur, eller en antenne har flyttet seg uten registrert kommando. Hendelsen må være bevisst og lagret, med spor som kan undersøkes; vanlige lagringsfeil skal ikke presenteres som skrekk. Bruk kontekst, rolige mellomrom og gjentakelsesvern. Behold Storys manusporter og Freeforms egen regissør.
+
+Før første tunge nattjobb gjennomføres én samlet disk-/arbeidskopikontroll og kontrollert opprydding, ført i OPPGAVER. Gjenbruk resultatet resten av skiftet. Maks fire arbeidskopier og minst100GB reserve; Saved, originaler, private/lisensierte assets og usikret arbeid beskyttes. Én tung jobb om gangen, ingen motorjobb under Toms spilløkt. Følg redusert testregime: bygg og én målrettet sjekk under utvikling; nødvendig pakking, selvtest og kort røyktest ved lokal levering. Fra07:30 prioriteres ferdigstilling og overlevering. Kl.08:00 stoppes nytt utviklingsarbeid; sikre arbeid og skriv kort morgenstatus med faktisk ferdig, åpent og installert versjon.
+
 ## Vegetasjon ved kameravending, 1. november
 
 - [x] **Plantedekke og raytracing-overlegg:** Runtime `867dd44a`, PR314, er installert kl. 18:04 CET. Lokal plantebuffer og Linux-retting for feilaktige occlusion queries beholder vegetasjon ved kameravending; utvikleroverlegget er fjernet. Pakke/1957 selvtester/fem faktiske kameraretninger og installert Fortsett består, med 151 Saved-elementer uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/VEGETATION_2026-11-01.md).
