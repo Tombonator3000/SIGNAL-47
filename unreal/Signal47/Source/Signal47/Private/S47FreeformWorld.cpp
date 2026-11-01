@@ -215,9 +215,8 @@ void FS47FreeformWorld::ApplyPump()
  const FString Display=PumpDisplay();if(Display==LastPumpDisplay)return;LastPumpDisplay=Display;
  if(bTripoPump)
  {
-  const FString Left=FString::Printf(TEXT("TANK %.2f/4\nSALE $%d\n%.2f UNITS"),Fuel,PumpPaid,PumpVolume);
-  const double Volume=FMath::Min(1.,4.-Fuel);
-  const FString Right=bPumping?FString::Printf(TEXT("REGULAR\nNEXT %.2f/$1\nE STOP %.0f%%"),PumpIncrement(Fuel,PumpRemaining),FMath::Clamp(PumpElapsed/2.,0.,1.)*100.):FString::Printf(TEXT("REGULAR\nUP TO %.2f/$%d\nE START"),Volume,FMath::CeilToInt(Volume/.25-.00001));
+  const FString Left=FString::Printf(TEXT("TANK\n%.2f OF 4\nSALE $%d"),Fuel,PumpPaid);
+  const FString Right=FString::Printf(TEXT("VOLUME\n%.2f\nE %s"),PumpVolume,bPumping?TEXT("STOP"):TEXT("START"));
   if(auto* C=PumpTextEast.Get())C->SetText(FText::FromString(Left));if(auto* C=PumpTextWest.Get())C->SetText(FText::FromString(Right));
  }
  else for(const auto& Weak:{PumpTextEast,PumpTextWest})if(auto* C=Weak.Get())C->SetText(FText::FromString(Display));
@@ -366,7 +365,7 @@ bool FS47FreeformWorld::Build()
  if(M->Web->Obj(TEXT("world.town.proxies.pumps")))
  {
   const bool NewPump=InstallPumpModel(Road);
-  const FVector At=PumpPoint()+FVector(0,NewPump?-.10:0,0);const double Face=NewPump?.27:.348,Height=NewPump?.30:.50,Width=NewPump?.21:.55;
+  const FVector At=PumpPoint()+FVector(0,NewPump?-.10:0,0);const double Face=NewPump?.27:.348,Height=NewPump?.18:.50,Width=NewPump?.26:.55;
   const FVector Left=At+FVector(Face,0,NewPump?-.19:0),Right=At+FVector(NewPump?Face:-Face,0,NewPump?.19:0);
   Box(TEXT("FreeformRegularMeterEast"),Left,FVector(.012,Height,Width),0x202821,Road,TEXT("ff:pump"));
   FS47Obj West=Box(TEXT("FreeformRegularMeterWest"),Right,FVector(.012,Height,Width),0x202821,Road);
@@ -374,7 +373,7 @@ bool FS47FreeformWorld::Build()
   auto Meter=[&](const TCHAR* Name,double Side)
   {
    const auto* P=M->Web->Node(Road);auto* C=NewObject<UTextRenderComponent>(M->Web,Name);C->SetupAttachment(P->Comp.Get());C->SetMobility(EComponentMobility::Movable);
-   C->SetWorldSize(NewPump?1.35:2.6);C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);C->SetTextRenderColor(FColor(229,226,186));C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
+   C->SetWorldSize(NewPump?3.0:2.6);C->SetHorizontalAlignment(EHTA_Center);C->SetVerticalAlignment(EVRTA_TextCenter);C->SetTextRenderColor(FColor(229,226,186));C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent();
    C->SetWorldLocation(S47Three::ToUE((Side>0?Left:Right)+FVector(NewPump?.012:Side*.012,0,0)));C->SetWorldRotation(FRotator(0,NewPump||Side>0?0:180,0));Parts.Add(M->Web->ObjAt(M->Web->AdoptNode(C,Road,Name)));return C;
   };
   PumpTextEast=Meter(TEXT("FreeformRegularTextEast"),1);PumpTextWest=Meter(TEXT("FreeformRegularTextWest"),-1);
