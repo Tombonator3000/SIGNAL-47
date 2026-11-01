@@ -12,6 +12,10 @@ Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Os
 
 Tom bestiller Survey Station01 åpen og tilgjengelig i Freeform, med kontroll av opplevd grafisk regresjon og ruten til/fra stasjonen. Alderete-avkjøringen ved SARO skal brukes som gårdsadkomst og åpnes; kuene knyttes til gården nærmere SARO, på høyre side etter motellet slik Tom angir. Dette overstyrer eldre avgrensning av gården som stengt bakgrunnsdekor. Ved motellet fjernes skiltet nærmest veien og det gjenværende får mer neon. De fortsatt rapporterte kontorveggene og brå verdensovergangene er åpne P1-funn. [Oppgaver og originalbilder](TODO.md#nye-freeform-spillfunn-1-november-survey-station-rute-motell-og-gård).
 
+## Pakkehåndtering og gjenbruk, oppfølging 1. november
+
+Tom ønsker enkel billasting: Hold en pakkbar gjenstand og bruk egen parkerte bil for å legge den i lasterommet. Lasting prioriteres foran kjøring når hendene er opptatt, med tydelig kvittering og bevart cargo-tilstand. Den fremste gjennomtrengelige av to gjerderekker langs veien fjernes. Den gamle telefonkioskmodellen ved bensinstasjonen erstattes ved å gjenbruke den nyere modellen på andre siden av gaten. Se TRUCK-01, WORLD-03 og PHONE-01 i [TODO](TODO.md#nye-freeform-spillfunn-1-november-survey-station-rute-motell-og-gård).
+
 ## Prosjekt og kanon
 
 | ID | Beslutning | Grunnlag |

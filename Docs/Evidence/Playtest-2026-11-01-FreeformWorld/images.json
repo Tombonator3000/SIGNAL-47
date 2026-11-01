@@ -43,5 +43,20 @@
     "file": "09-alderete-farm-access.png",
     "sha256": "190435fd25b02b637015954b4231eb6c1f9af847bd3d71e5cfecf35b1ae3f4e0",
     "caption": "Alderete-avkjøringen skal brukes som gårdsadkomst og åpnes."
+  },
+  {
+    "file": "10-double-roadside-fence.png",
+    "sha256": "6e8ba2ef9825b6ce0eec8be7f40c63926b8ce9d60ca65e937d3f90f6cec3729e",
+    "caption": "Dobbelt veigjerde: den fremste gjennomtrengelige rekken ønskes fjernet."
+  },
+  {
+    "file": "11-gas-station-payphone-models.png",
+    "sha256": "647f0b070fd9fcc029c619e56313bc6ca070328eb7b0966866d70b8cc84e4349",
+    "caption": "Gammel lavpoly telefonkiosk ved bensinstasjonen og nyere modell på andre siden av gaten."
+  },
+  {
+    "file": "12-parcel-truck-loading-blocked.png",
+    "sha256": "88a731f15337ac172b4260126266c9a78c8b376f35152847d495585a8fa46b42",
+    "caption": "Bæring av pakke blokkerer kjøring; spilleren får ikke lastet den i bilen."
   }
 ]

@@ -13,3 +13,6 @@ Originalbildene er kopiert uendret fra Toms vedlegg. Kildebygg og tekniske årsa
 - [7. To motellskilt: fjern det nærmest veien, gi det gjenværende mer neon.](07-two-motel-signs.png)
 - [8. Motellkontoret har fortsatt rapporterte inverterte/feil veggflater.](08-motel-office-walls.png)
 - [9. Alderete-avkjøringen skal brukes som gårdsadkomst og åpnes.](09-alderete-farm-access.png)
+- [10. Dobbelt veigjerde: den fremste gjennomtrengelige rekken ønskes fjernet.](10-double-roadside-fence.png)
+- [11. Gammel lavpoly telefonkiosk ved bensinstasjonen og nyere modell på andre siden av gaten.](11-gas-station-payphone-models.png)
+- [12. Bæring av pakke blokkerer kjøring; spilleren får ikke lastet den i bilen.](12-parcel-truck-loading-blocked.png)
