@@ -1,0 +1,40 @@
+{
+  "status": "INSTALLED",
+  "installed_at": "2026-11-01T20:31:18.696635+01:00",
+  "source_commit": "5ea2803daf70c17f91acb00dc16b9ff1320f546e",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "foundation_count": 108,
+  "self_checks": 1957,
+  "Saved_unchanged": true,
+  "saved_nodes": 158,
+  "previous_payload": "/home/tom/scratch-bm/Signal47-array-grounding-20261101/previous-installed",
+  "installed_continue": {
+    "returncode": 0,
+    "wall_seconds": 35.71644594008103,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 21.430316925048828,
+      "heavy_jobs": [],
+      "pgrep": "1051848 python3 /tmp/s47_diegetic_once.py /home/tom/scratch-bm/Signal47-array-grounding-20261101/install-job.json\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 1051848,
+        "start_ticks": "61310927",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "Freeform physical equipment, Tripo pump and Jeep window",
+        "acquired_at": "2026-11-01T19:29:52.509301+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "installed_test_profile": "/tmp/S47-freeform-installed-tkgg17wr"
+}
