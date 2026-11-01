@@ -1553,3 +1553,10 @@ Cooked/StagedBuilds fra ferdig arbeidskopi ryddet: 11.80 GiB netto frigjort, øv
 
 2026-11-01 18:07 CET | PR314, runtime867dd44a | Installert18:04: Linux omgår feilaktige occlusion queries, plantebuffer rundt kameraet og avslått RT-overlegg. Editor/pakke/1957 selvtester/fem gjennomsette kameravinkler + installert Fortsett består; 151 Saved-elementer uendret.
 Store installasjonsfiler bruker verifiserte Btrfs-reflinks; 192.7GB fysisk ledig ved lett sluttkontroll. Ingen ny rydderunde; ferdig kopi/cache kan tas i neste samlede kjøring.
+
+2026-11-01 | codex/title-quit-linux-20261101 | Tittelens klikkfangende bunntekst fjernet; bygg/visuell QUIT-prøve samordnes med Freeform-chatten. Linux-starter støtter eksplisitt utpakket pakke og bevarer terminalfeil/exitkode; avgrensede shell-fixtures består. Mottakerens Arch/niri/RTX5090-grafikk er fortsatt uprøvd; ingen offentlig release.
+
+1. november 2026 kl. 16:35 CET, `codex/freeform-equipment-delivery-20261101`: PR311/312 er samlet installert fra `b98c6fe1`. Fysiske CRT-/båndkontroller, varierte lagrede dagskort, Tripo-pumpe og rettet Jeep-front. 1957 selvtester, 77 Freeform / 2 restores, 11 tittelkontroller og installert Fortsett PASS; 149 Saved-elementer uendret. Se leveringsrapporten i Docs/Evidence.
+1. november 2026: Etter kontrollert tørrplan er to gamle payloads, en SHA-identisk ekstra kopi av forrige pakke og egen Cooked/StagedBuilds fjernet; kilde, modeller, Saved og bevis beholdes. Gjeldende pakke og én eldre versjon beholdes; fysisk diskplass kontrolleres på nytt etter siste arbeidskopiarkivering.
+
+2026-11-01 19:58 CET | Freeform-menu, runtime4d38c76f | Egen fokusbar startmeny/eksplisitt tilbakevalg og tydelig full-lagringsflyt; PR315 QUIT/Linux inkludert. Installert med1957 selvtester,fire automatiserte Slate-menyreiser og Fortsett PASS;155 Saved-elementer bevart. Original returfeil ikke gjenskapt, brukerbekreftelse MODE-07. Ingen ny rydderunde; kopi/cache gjenbrukes.

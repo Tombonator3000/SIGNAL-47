@@ -4,7 +4,6 @@
 #include "SS47Screens.h"
 
 #include "Framework/Application/SlateApplication.h"
-#include "Framework/Text/SlateHyperlinkRun.h"
 #include "S47Docs.h"
 #include "S47Keys.h"
 #include "S47Gamepad.h"
@@ -15,7 +14,6 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/SWindow.h"
-#include "Widgets/Text/SRichTextBlock.h"
 #include "Widgets/Text/STextBlock.h"
 
 namespace S47MenusLocal
@@ -95,11 +93,6 @@ void SS47Title::Construct(const FArguments& InArgs)
 		];
 	}
 
-	// .note: the night in a line, and the flashing images' warning with the way to the setting
-	const FString Note = TEXT("An evening drive, a shift at SARO, and the old Roswell road at dawn. Headphones help. ")
-		TEXT("<Em>Near the end there is a short sequence of flashing images:</> <a id=\"settings\" style=\"Link\">Settings › Accessibility.</>");
-	TFunction<void(const FString&)> At = O.OnSettingsAt;
-	TFunction<void()> Plain = O.OnSettings;
 	auto MenuVis = [this] { return bGated ? EVisibility::Collapsed : EVisibility::Visible; };
 	auto FadeIn = [this] { return FLinearColor(1, 1, 1, 1.f - FMath::Square(1.f - FMath::Clamp(InT / 0.5f, 0.f, 1.f))); };
 	// (line-height .86: Oswald's own line is about 1.48 em, so the words sit higher than the box CSS gives them)
@@ -158,18 +151,6 @@ void SS47Title::Construct(const FArguments& InArgs)
 					})
 					.Visibility_Lambda([this] { return bGated ? EVisibility::HitTestInvisible : EVisibility::Collapsed; })
 				]
-			]
-		]
-		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(Pad(122, 0, 0, 70))
-		[
-			SNew(SBox).WidthOverride(620 * U).Visibility_Lambda(MenuVis)
-			[
-				SNew(SRichTextBlock).Text(FText::FromString(Note)).TextStyle(Styles(), TEXT("Note")).DecoratorStyleSet(&Styles())
-				.AutoWrapText(true).LineHeightPercentage(1.55f)
-				.Decorators({ SRichTextBlock::HyperlinkDecorator(TEXT("settings"), FSlateHyperlinkRun::FOnClick::CreateLambda([At, Plain](const FSlateHyperlinkRun::FMetadata&)
-				{
-					if (At) At(TEXT("accessibility")); else if (Plain) Plain();
-				})) })
 			]
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(Pad(122, 0, 0, 26))

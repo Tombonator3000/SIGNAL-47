@@ -242,7 +242,7 @@ TSharedRef<SWidget> SS47SaveMenu::CardWidget(int32 C)
 void SS47SaveMenu::Render()
 {
 	S47_USING_THEME
-	const FString TitleText = Saving() ? TEXT("SAVE CASE") : O.Mode == TEXT("new") ? TEXT("NEW NIGHT") : TEXT("LOAD CASE");
+	const FString TitleText = Saving() ? TEXT("SAVE CASE") : O.Mode == TEXT("new") ? (O.bNewFreeform ? TEXT("NEW FREEFORM / CHOOSE CASE") : TEXT("NEW NIGHT")) : TEXT("LOAD CASE");
 	const FString Id = Saving() ? FString::Printf(TEXT("CASE %d // MANUAL SAVES"), SaveCase()) : O.Mode == TEXT("new") ? TEXT("EVERY CASE IS IN USE // CHOOSE ONE TO REPLACE") : TEXT("CASE FILES // SARO ARCHIVE");
 	TArray<S47Theme::FHint> Keys;
 	if (Saving()) Keys = { { TEXT("LEFT RIGHT"), TEXT("SLOT"), nullptr }, { TEXT("ENTER"), TEXT("SAVE"), [this] { Activate(); } }, { TEXT("ESC"), TEXT("BACK"), [this] { Close(); } } };
@@ -354,7 +354,7 @@ void SS47SaveMenu::Activate()
 	{
 		const int32 Cs = Card + 1;
 		auto Go = [this, Cs] { TFunction<void(int32)> Fn = O.OnNewCase; Close(true); if (Fn) Fn(Cs); };
-		if (L.Num()) Confirm(FString::Printf(TEXT("Case %d and all its saves will be deleted."), Cs), TEXT("START NEW NIGHT"), Go);
+		if (L.Num()) Confirm(FString::Printf(TEXT("Case %d and all its saves will be deleted."), Cs), O.bNewFreeform ? TEXT("START NEW FREEFORM") : TEXT("START NEW NIGHT"), Go);
 		else Go();
 		return;
 	}

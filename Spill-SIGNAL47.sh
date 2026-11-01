@@ -26,14 +26,15 @@ Bruk: ./Spill-SIGNAL47.sh [valg] [-- ekstra argumenter til spillet]
   --wayland      tving Wayland
   --fullskjerm   start i fullskjerm
   --vindu BxH    start i vindu med gitt størrelse, for eksempel --vindu 1920x1080
+  --pakke MAPPE  bruk en allerede utpakket Signal47-Linux- eller Linux-mappe; ingen nedlasting
   --sjekk        sjekk bare systemet, uten å starte spillet
   --rapport      skriv en feilrapport med systeminfo og siste spillogg, og avslutt
   --hjelp        vis dette
 
-Svart skjerm eller blinking: prøv i denne rekkefølgen
-  ./Spill-SIGNAL47.sh --x11
-  ./Spill-SIGNAL47.sh --x11 --uten-rt
-  ./Spill-SIGNAL47.sh --fullskjerm --uten-rt
+Ved skjermfeil: behold terminalfeilen og prøv én tilgjengelig backend:
+  ./Spill-SIGNAL47.sh --wayland --vindu 1280x720
+  ./Spill-SIGNAL47.sh --x11 --vindu 1280x720
+X11 krever en fungerende DISPLAY/XWayland-økt. Ingen backend tvinges som standard.
 Virker ingenting, kjør ./Spill-SIGNAL47.sh --rapport og send filen den lager.
 EOF
 }
@@ -42,8 +43,10 @@ game_args=()
 check_only=0
 report_only=0
 low=0
+package_override=""
 while (($#)); do
   case "$1" in
+    --pakke) [[ -n ${2:-} ]] || { echo "--pakke trenger en mappe" >&2; exit 2; }; package_override="$2"; shift ;;
     --lav) low=1 ;;
     --uten-rt) game_args+=('-ini:Engine:[/Script/Engine.RendererSettings]:r.RayTracing=False,[/Script/Engine.RendererSettings]:r.Lumen.HardwareRayTracing=False') ;;
     --x11) export SDL_VIDEO_DRIVER=x11 SDL_VIDEODRIVER=x11; game_args+=(-sdlvideodriver=x11) ;;
@@ -60,6 +63,25 @@ while (($#)); do
   esac
   shift
 done
+
+# Resolve only explicit known package layouts. Never search the home directory or
+# redownload over an existing manually extracted game and its Saved folder.
+linux_root="$game_dir/Signal47-Linux/Linux"
+if [[ -n $package_override ]]; then
+  package_override="$(cd -- "$package_override" 2>/dev/null && pwd -P)" || { echo 'Pakkemappen finnes ikke.' >&2; exit 2; }
+  if [[ -f $package_override/Signal47.sh ]]; then linux_root="$package_override"
+  elif [[ -d $package_override/Linux ]]; then linux_root="$package_override/Linux"
+  elif [[ -d $package_override/Signal47-Linux/Linux ]]; then linux_root="$package_override/Signal47-Linux/Linux"
+  else echo 'Fant ikke Linux/Signal47.sh-oppsettet. Velg den utpakkede spillmappen, ikke Source code-arkivet.' >&2; exit 2; fi
+  play="$linux_root/Signal47.sh"
+  # Preserve the supplied low-quality wrapper if this distribution includes it.
+  if ((low)); then
+    [[ -f $linux_root/../Play-Low.sh ]] || { echo 'Denne pakken mangler Play-Low.sh. Start uten --lav og velg kvalitet i Settings.' >&2; exit 2; }
+    play="$linux_root/../Play-Low.sh"
+  fi
+fi
+log_file="$linux_root/Signal47/Saved/Logs/Signal47.log"
+terminal_log="$repo_dir/Spill/siste-oppstart.txt"
 
 # ---------------------------------------------------------------- systemsjekk
 warnings=0
@@ -145,9 +167,9 @@ system_check() {
     local free_kb; free_kb="$(df -Pk "$repo_dir" | awk 'NR==2 {print $4}')"
     ((free_kb >= 10000000)) || warn "Nedlasting og utpakking trenger om lag 10 GB ledig plass, du har $((free_kb / 1024 / 1024)) GB."
   fi
-  if [[ -e $download_complete || -f $play ]]; then
-    local internal="$game_dir/Signal47-Linux/Linux/Signal47.sh"
-    local binary="$game_dir/Signal47-Linux/Linux/Signal47/Binaries/Linux/Signal47"
+  if [[ -n $package_override || -e $download_complete || -f $play ]]; then
+    local internal="$linux_root/Signal47.sh"
+    local binary="$linux_root/Signal47/Binaries/Linux/Signal47"
     [[ -x $play ]] || problem "Startfil mangler eller kan ikke kjøres: $play. Kontroller hovedarkivet og kjørerettighetene."
     [[ -f $internal ]] || problem "Internstarter mangler: $internal. Pakk ut hovedarkivet, ikke Source code, og alle dataarkiver i samme mappe."
     [[ -f $binary ]] || problem "Spillbinær mangler: $binary. Installasjonen er ufullstendig."
@@ -173,14 +195,20 @@ write_report() {
       timeout 8s vulkaninfo --summary 2>&1 | awk 'NR<=80 {print}' || vk_status=$?
       printf 'Vulkan-diagnose exit=%d (124 betyr tidsavbrudd).\n' "$vk_status"
     else printf 'Valgfri vulkaninfo/timeout mangler; grafikkdriveren er ikke testet.\n'; fi
-    local preflight="$game_dir/Signal47-Linux/Linux/Check-Linux.sh"
+    local preflight="$linux_root/Check-Linux.sh"
     if [[ -f $preflight ]]; then
       printf '\n--- pakket Linux-preflight\n'
       local check_status=0
       bash "$preflight" || check_status=$?
       printf 'Pakket preflight exit=%d\n' "$check_status"
     fi
-    printf '\n--- feil og advarsler i spillogg %s\n' "$log_file"
+    printf '\n--- siste terminaloppstart (pakke, første feil og exitkode)\n'
+    if [[ -r $terminal_log ]]; then
+      head -n 80 "$terminal_log"
+      printf '\n--- slutten av terminaloppstarten\n'
+      tail -n 40 "$terminal_log"
+    else printf 'Ingen terminaloppstart er registrert av denne starteren.\n'; fi
+    printf '\n--- feil og advarsler i spillogg %s\n'  "$log_file"
     if [[ -r $log_file ]]; then
       grep -Ei 'error|fatal|vulkan|swapchain|device lost|sdl|wayland|x11|raytracing|crash' "$log_file" | tail -n 120 || true
       printf '\n--- siste 150 linjer av spilloggen\n'
@@ -195,7 +223,7 @@ write_report() {
 if ((report_only)); then write_report; exit 0; fi
 system_check
 if ((check_only)); then
-  preflight="$game_dir/Signal47-Linux/Linux/Check-Linux.sh"
+  preflight="$linux_root/Check-Linux.sh"
   if [[ -f $preflight ]]; then bash "$preflight" || exit $?; fi
   ((problems==0)) || exit 2
   exit 0
@@ -207,7 +235,7 @@ if [[ ${SDL_VIDEO_DRIVER:-} == x11 && -z ${DISPLAY:-} ]]; then
 fi
 
 # ---------------------------------------------------------------- nedlasting
-if [[ ! -x "$play" || ! -f "$download_complete" ]]; then
+if [[ -z $package_override ]] && [[ ! -x "$play" || ! -f "$download_complete" ]]; then
   for tool in curl unzip sha256sum; do
     command -v "$tool" >/dev/null || { printf 'Mangler %s. Installer det og prøv igjen.\n' "$tool" >&2; exit 1; }
   done
@@ -243,6 +271,18 @@ if [[ ! -x "$play" || ! -f "$download_complete" ]]; then
   printf 'Ferdig. Spillet ligger i %s\n' "$game_dir/Signal47-Linux"
 fi
 
-((low)) && play="$game_dir/Signal47-Linux/Play-Low.sh"
+if ((low)) && [[ -z $package_override ]]; then play="$game_dir/Signal47-Linux/Play-Low.sh"; fi
 printf 'Spilloggen skrives til %s\n' "$log_file"
-exec "$play" "${game_args[@]}"
+mkdir -p "$repo_dir/Spill"
+printf 'Oppstart %s\nPakke: %s\nStarter: %s\n' "$(date -Is)" "$linux_root" "$play" > "$terminal_log"
+# Retain early loader/SDL errors even when Unreal never creates its own log.
+# Keep the game's exit status, not tee's, and do not retry another backend silently.
+set +e
+"$play" "${game_args[@]}" 2>&1 | tee -a "$terminal_log"
+launch_status=${PIPESTATUS[0]}
+set -e
+printf 'Spillprosess exit=%d\n' "$launch_status" | tee -a "$terminal_log"
+if ((launch_status)); then
+  printf 'Oppstarten feilet. Terminalfeil er lagret i %s\nKjør samme starter med --rapport (og samme --pakke hvis brukt).\n' "$terminal_log" >&2
+fi
+exit "$launch_status"

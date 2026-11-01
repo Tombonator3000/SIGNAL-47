@@ -1,0 +1,13 @@
+{
+  "status": "INSTALLED",
+  "source_commit": "b98c6fe10bc9111c55625dcc34da9cb6aff51d00",
+  "installed_at": "2026-11-01T16:35:11.751306+01:00",
+  "self_checks": 1957,
+  "freeform_checks": 77,
+  "disk_flow_restores": 2,
+  "title_checks": 11,
+  "personal_saved_unchanged": true,
+  "saved_nodes": 149,
+  "executable_sha256": "f1aa83d08ec0415dd6bc55087eeedce9afbdeac37a067893a2d3f3bf21e05903",
+  "method": "Derived summary of private install/package/title records. freeform-result.json and runtime images are copied byte-identically from original captures; full machine logs retained locally."
+}

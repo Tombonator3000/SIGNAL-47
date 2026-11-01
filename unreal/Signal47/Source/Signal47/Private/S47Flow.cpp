@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "SS47FreeformStart.h"
 #include "S47TitleEraseSound.h"
 #include "UnrealClient.h"
 #include "S47FieldRadio.h"
@@ -735,21 +736,18 @@ void US47Flow::RequestNewFreeform()
  if (bStarting || M->Mode != EMode::Title) return;
  auto Choose = [this](bool bLethal)
  {
+  UE_LOG(LogS47Flow,Display,TEXT("S47: Freeform consequences selected: %s"),bLethal?TEXT("reload"):TEXT("local recovery"));
   M->UI->Close();
   auto Start = [this,bLethal](int32 Id,bool bReplace)
   { FStart S; S.CaseId=Id; S.bReplaceCase=bReplace; S.bFreeform=true; S.bLethal=bLethal; StartGame(S); };
   const int32 Free = Saves.FreeCase();
   if (Free) { Start(Free,false); return; }
-  FS47SaveMenuOpts O; O.Mode=TEXT("new"); O.Metas=Saves.List(); O.ActiveCase=Saves.Active();
+  FS47SaveMenuOpts O; O.Mode=TEXT("new"); O.bNewFreeform=true; O.Metas=Saves.List(); O.ActiveCase=Saves.Active();
   O.OnNewCase=[Start](int32 Id) { Start(Id,true); }; S47SaveMenu::Open(M->UI,O);
  };
- M->UI->Open(S47Kit::Shell(M->UI,TEXT("NEW FREEFORM / CONSEQUENCES"),S47Kit::Col({
-  S47Kit::Text(TEXT("A continuing SARO assignment. Work, investigate and improve the base across days and nights.")),
-  S47Kit::Button(TEXT("Local recovery / recommended"),[Choose] { Choose(false); },true),
-  S47Kit::Small(TEXT("A capture costs time or interrupts field work. Filed evidence and repaired equipment survive.")),
-  S47Kit::Button(TEXT("Death / reload last save"),[Choose] { Choose(true); }),
-  S47Kit::Small(TEXT("Captures end the attempt. Return to the latest saved state. Story cases keep their own rules."))
- }),850));
+ // A start choice stays open until an explicit selection or Back. The generic
+ // document shell dismisses on backdrop clicks and has no menu keyboard focus.
+ M->UI->Open(SNew(SS47FreeformStart).OnChoose(Choose).OnBack([this] { M->UI->Close(); }));
 }
 
 void US47Flow::RequestNewNight(int32 InCaseId, bool bReplace)

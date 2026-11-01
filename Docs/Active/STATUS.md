@@ -4,11 +4,23 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Freeform-startmeny oppdatert og installert
+
+Runtime `4d38c76f` er installert1. november kl.19:58 CET. Startvalget har egen fokusbar meny, eksplisitt tilbakevalg og ingen avbrytelse ved bakgrunnsklikk. Fulle lagringsplasser beholder Freeform-navnet. QUIT-klikkrettelsen fra PR315 inngår.
+
+Pakking,1957 selvtester, fire automatiserte Slate-menyreiser og installert Fortsett består;155 Saved-elementer er uendret. Den opprinnelige returfeilen ble ikke gjenskapt, så brukerens bekreftelse på den nye menyen gjenstår. [Prøver og begrensninger](../Evidence/UnrealDeliveries/FREEFORM_MENU_2026-11-01.md).
+
 ## Vegetasjon og raytracing-overlegg rettet
 
 Runtime `867dd44a`, PR314, er installert kl. 18:04 CET. Plantedekket beholdes rundt kameraet; Linux omgår feilaktige occlusion queries, og det røde raytracing-utvikleroverlegget er fjernet. Vanlig kamera-/avstandsculling og eksisterende artsgrenser beholdes.
 
 Editorbygg, pakking, 1957 selvtester, fem faktiske kameraretninger og installert Fortsett består. Alle 151 personlige Saved-elementer er uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/VEGETATION_2026-11-01.md).
+
+## Fysisk Freeform-utstyr og nye modeller installert
+
+Runtime `b98c6fe1`, PR311/312, er installert kl. 16:35 CET. Freeform betjenes på fire faktiske CRT-skjermer og spolebåndknapper ved telefonen. Lagrede dagskort varierer de faktiske innstillingene; eksisterende regissør med 16 hendelsesfamilier beholdes. Toms tidsriktige Tripo-pumpe fyller den parkerte servicebilen med målt betaling. Jeepens frontruteramme og speil er rettet i egen Blender-derivat. Den parallelle 47-effekten etter fullført Story inngår.
+
+Pakken består 1957 selvtester, 77 Freeform-kontroller / 2 restores og 11 tittelkontroller. Installert Fortsett består; 149 personlige Saved-elementer er uendret. Naturlig kjøretur, menneskelig lesbarhet/lytting og flerdøgnsbalanse gjenstår. [Levering, bilder og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_EQUIPMENT_2026-11-01.md).
 
 ## Tittelen mister47 etter fullført Story
 
