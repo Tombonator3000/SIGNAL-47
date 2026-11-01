@@ -1,5 +1,7 @@
 // Unreal-only original Blender antenna. Existing pointing, stories and beacon positions remain authoritative.
 #include "S47Web.h"
+#include "S47GroundCover.h"
+#include "S47Three.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Misc/CommandLine.h"
@@ -51,6 +53,39 @@ void AS47Web::BuildAuthoredArray()
 		}
 		DishParts.Add(MoveTemp(Part));
 	}
+	// The authored plinths end at root Y=0, while the graded array ground is
+	// Y=-0.62. Extend only their concrete below grade: the moving assemblies,
+	// feed/beacon coordinates and story sight lines keep their established pivots.
+	if (UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")))
+	{
+		UInstancedStaticMeshComponent* Footings = NewObject<UInstancedStaticMeshComponent>(this, TEXT("ArrayGroundFootings"));
+		Footings->SetupAttachment(Nodes[Parent].Comp.Get());
+		Footings->SetMobility(EComponentMobility::Movable);
+		Footings->SetStaticMesh(Cube);
+		Footings->SetMaterial(0, Meshes[0]->GetMaterial(4)); // Original M_Array_Concrete.
+		Footings->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		Footings->SetCollisionResponseToAllChannels(ECR_Ignore);
+		Footings->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+		Footings->SetCastShadow(true);
+		Footings->RegisterComponent();
+		AdoptNode(Footings, Parent, TEXT("ArrayGroundFootings"));
+		for (const FDish& D : Dishes) for (double SideX : {-1., 1.}) for (double SideZ : {-1., 1.})
+		{
+			const double X = D.X + SideX * 2.35 * D.Scale, Z = D.Z + SideZ * 2.35 * D.Scale;
+			const double HalfWidth = .725 * D.Scale;
+			double Bottom = S47GroundCover::SaroLand(X, Z);
+			for (double Dx : {-HalfWidth, HalfWidth}) for (double Dz : {-HalfWidth, HalfWidth})
+				Bottom = FMath::Min(Bottom, S47GroundCover::SaroLand(X + Dx, Z + Dz));
+			Bottom -= .08; // Bury the bottom under the rendered land, including the pad's edge.
+			const double Top = .02 * D.Scale;
+			if (Bottom >= Top) continue;
+			Footings->AddInstance(FTransform(FQuat::Identity,
+				S47Three::ToUE(FVector(X, (Top + Bottom) * .5, Z)),
+				FVector(HalfWidth * 2, HalfWidth * 2, Top - Bottom)));
+		}
+		UE_LOG(LogTemp, Display, TEXT("S47: array foundations seated: %d concrete extensions on terrain"), Footings->GetInstanceCount());
+	}
+
 	DrawDishes();
 	UE_LOG(LogTemp, Display, TEXT("S47: original Blender array: %d antennas, 3 instanced assemblies, existing azimuth/elevation and beacons"), Dishes.Num());
 }
