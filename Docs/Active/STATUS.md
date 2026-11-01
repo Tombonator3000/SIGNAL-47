@@ -4,11 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Under arbeid: Jeep-innside og SC04-oppfølging
+## Jeep-innside og SC04-oppfølging installert
 
-Tom ba om nattarbeid fram til søndag 1. november kl.09. Jeepens førerplass har nå en egen tilpasset Blender-innside og sju native deler med separat styrt ratt, runde levende instrumenter, radio, pedaler og girspaker. Vulkan-bilder viser korrekt førerutsikt og faktiske instrument-/radioflater; 1840 selvtester og native import består. Eksisterende originale modeller og personlige lagringer er bevart. Endringen er ennå ikke lokalt installert.
+Jeepens tilpassede Blender-innside og sju native deler er lokalt installert kl.02:18 CET 1. november fra runtime `e944b8ed`, PR301. Separat ratt følger styringen; runde instrumenter, kilometerteller og radio bruker levende spillsignaler. Pedaler, gir-/4WD-spak, hanskerom og kompasshus inngår. Originalmodeller og redigerbare kilder er bevart. Olje-/volt-skivene er kosmetiske, og separat hjulrigg står fortsatt åpen.
 
-SC04 har et smalt rettingsutkast for utilgjengelige jaktruter, kropp i døråpningen, lokking tilbake til faktisk kontor og tydelig dørfeedback. Den eksisterende korte fangst-/lokkings-/tilfluktsprøven består med 17 kontroller. Enkelte konkrete spillerfunn trenger fortsatt egne situasjoner eller menneskelig spillprøve; disse er ikke lukket fra kildearbeidet alene. Se [TODO](TODO.md).
+SC04 avviser utilgjengelige jaktruter, tar hensyn til synlig kropp ved dørbladet og krever faktisk kontorankomst ved telefonlokking. Fysisk tilbaketrekning etter sikrede kontrollromsdører fra main er samordnet. Lampeinsekter er redusert til 5–10 mm uten lyse avstandsklumper. Freeform inngår fortsatt.
+
+Editorbygg, 1906 selvtester, sju native interiørdeler med tre LOD-er, målrettede Vulkan-bilder, SC04short med 17 kontroller, pakking og kort installert røykprøve består. Alle 149 Saved-elementer, inkludert 118 personlige filer, er uendret. Gjeldende og to eldre testpakker beholdes. Enkelte konkrete dørpasseringer og den eldre SARO-renderstansen er fortsatt åpne; menneskelig kjøre-/lyd-/skrekkaksept er ikke erstattet av bildene. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_INTERIOR_2026-11-01.md). Nattarbeidet fortsetter etter prioritert TODO til søndag 1. november kl.09.
 
 ## Freeform lokalt installert
 
