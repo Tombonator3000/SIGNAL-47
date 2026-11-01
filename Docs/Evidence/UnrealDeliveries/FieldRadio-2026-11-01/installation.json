@@ -1,0 +1,19 @@
+{
+  "status": "INSTALLED_SAVED_PRESERVED",
+  "pr": 308,
+  "source": "af6cc33c7ff239741ffec8ed6226906bac519cde",
+  "merge": "a9a6553843c01efaf0b3006a06ffcb5cb8e605be",
+  "installed_at": "2026-11-01T09:41:09.950410+01:00",
+  "payload_nodes": 70,
+  "saved_nodes": 149,
+  "saved_files": 118,
+  "saved_unchanged": true,
+  "package_self_checks": 1924,
+  "installed_smoke": {
+    "returncode": 0,
+    "wall_seconds": 41.22935054101981,
+    "contention": [],
+    "stop_reason": null,
+    "performance_status": "UNCONTENDED"
+  }
+}

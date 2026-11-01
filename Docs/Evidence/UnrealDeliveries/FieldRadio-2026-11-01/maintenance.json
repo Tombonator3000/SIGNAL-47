@@ -1,0 +1,13 @@
+{
+  "removed_generated_cache": [
+    "Saved/Cooked",
+    "Saved/StagedBuilds"
+  ],
+  "logical_cache_bytes": 13137146227,
+  "source_saved_nodes_preserved": 606,
+  "source_saved_unchanged": true,
+  "installed_saved_unchanged": true,
+  "free_before_bytes": 11605598208,
+  "free_after_bytes": 24271044608,
+  "net_freed_bytes": 12665446400
+}

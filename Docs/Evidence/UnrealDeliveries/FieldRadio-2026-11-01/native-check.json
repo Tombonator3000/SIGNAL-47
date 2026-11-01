@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "checks": [
+    "PASS: three source-mesh copies are on the SARO desk",
+    "PASS: Room 6 original remains separate and complete",
+    "PASS: quiet room does not warn about dormant or future enemies",
+    "PASS: ordinary interaction trace reaches the desk radio",
+    "PASS: normal pickup removes visible body and query collision",
+    "PASS: normal Flow snapshot contains ownership",
+    "PASS: Continue restores ownership without respawning a second radio",
+    "PASS: older case without radio field can still collect the radio",
+    "PASS: explicit fixture creates one actual nearby Roswell",
+    "PASS: active creature behind the player produces carried interference",
+    "PASS: off-screen presence is not mislabelled as visual discovery",
+    "PASS: clearing the actual creature returns radio interference to zero",
+    "PASS: six-second original sound preview written"
+  ],
+  "setup": "Explicit chapter2 SARO fixture, normal interaction trace and pickup; one explicit dev Stand Roswell, camera turned away; no natural encounter-rate claim.",
+  "ownership_restore": "Normal Flow snapshot field serialized and restored with the same Begin adapter; no full title/disk cycle after this pickup. Installed smoke separately continues an untouched copy of the older original SARO auto-2 case.",
+  "audio": "1924 packaged checks include actual offline audio rendering, levels, cooldown, Hold and existing volume/quiet gates. The six-second WAV is an offline original cue/radio mix; not a recording of the human gameplay session."
+}
