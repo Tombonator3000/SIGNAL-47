@@ -6,7 +6,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Vegetasjon ved kameravending, 1. november
 
-- [ ] **Plantedekke og raytracing-overlegg:** Tom viser at plantedekket forsvinner ved sideblikk fra bilen, samt rødt raytracing-varsel i spill og pause. Kilderettingen beholder et avstandsbegrenset plantedekke rundt hele spilleren med eksisterende artsgrenser, og slår av Unreals eget raytracing-utvikleroverlegg. Bygg, målrettet kamerakontroll og lokal installasjon venter på avsluttet spilløkt.
+- [x] **Plantedekke og raytracing-overlegg:** Runtime `867dd44a`, PR314, er installert kl. 18:04 CET. Lokal plantebuffer og Linux-retting for feilaktige occlusion queries beholder vegetasjon ved kameravending; utvikleroverlegget er fjernet. Pakke/1957 selvtester/fem faktiske kameraretninger og installert Fortsett består, med 151 Saved-elementer uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/VEGETATION_2026-11-01.md).
 
 ## Nattarbeid til 1. november kl.09
 

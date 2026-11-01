@@ -1550,3 +1550,6 @@ Cooked/StagedBuilds fra ferdig arbeidskopi ryddet: 11.80 GiB netto frigjort, øv
 2026-11-01 16:35 CET | PR312/title, samlet runtime b98c6fe1 | Installert av samordnet Freeform-oppdrag:1957 selvtester,11 pakketittelsjekker og kort installert Fortsett består;149 personlige Saved-elementer bevart. Ingen fullføringsbelønning aktivert i personlig profil; menneskelig helgjennomspilling/lytting står åpent.
 
 2026-11-01 17:19 CET | codex/foliage-camera-warning-20261101 | Lokal 360-graders plantebuffer erstatter kamerakjeglen; artscaps/avstandsfade beholdes. Raytracing-utvikleroverlegg slås av separat; målrettet flora-turn kontrollerer fem faktiske kameravinkler. Kilde-/diffkontroll består; bygg/test/installasjon venter på avsluttet spilløkt.
+
+2026-11-01 18:07 CET | PR314, runtime867dd44a | Installert18:04: Linux omgår feilaktige occlusion queries, plantebuffer rundt kameraet og avslått RT-overlegg. Editor/pakke/1957 selvtester/fem gjennomsette kameravinkler + installert Fortsett består; 151 Saved-elementer uendret.
+Store installasjonsfiler bruker verifiserte Btrfs-reflinks; 192.7GB fysisk ledig ved lett sluttkontroll. Ingen ny rydderunde; ferdig kopi/cache kan tas i neste samlede kjøring.
