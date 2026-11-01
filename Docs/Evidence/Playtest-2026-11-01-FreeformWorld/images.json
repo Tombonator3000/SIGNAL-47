@@ -1,0 +1,47 @@
+[
+  {
+    "file": "01-survey-station-exterior.png",
+    "sha256": "08ae861a583ac9ffb4822e36a12a7e8bf5ed1da4fc89209a8252fbd1424c4f6c",
+    "caption": "Survey Station01: modelluttrykk, grov vegetasjon/terreng og lukket port."
+  },
+  {
+    "file": "02-survey-road-black-terrain.png",
+    "sha256": "daf5e40f1d0ba98e60c471d46861599a5d39197cc0d6392840af1a9dc01b45d0",
+    "caption": "Veien fra Survey Station01: svært tomt område og svarte terrengfelter."
+  },
+  {
+    "file": "03-return-road-empty.png",
+    "sha256": "56edc9e508f4bab75300e0940be6cacd95af93390150357708f658be0ccefb8e",
+    "caption": "Kjøring tilbake: tomt landskap før synlig innlasting."
+  },
+  {
+    "file": "04-return-road-populated.png",
+    "sha256": "3e6bf50ec656093cbc2a340f1a85fa8965f14711dd2b251712f975f80800631e",
+    "caption": "Samme kjøreretning senere: fjell og vegetasjon er nå synlige."
+  },
+  {
+    "file": "05-current-cow-location.png",
+    "sha256": "fed2331d3d8e481f3d4c283f7ee935230096c19bdb44c9d7e8fed00534c12cac",
+    "caption": "Nåværende kuområde som Tom ønsker flyttet til gården."
+  },
+  {
+    "file": "06-highway-farm-context.png",
+    "sha256": "b81c09927526382184997c0221755faaa2115a42f195c450b4bc94f932bd5d03",
+    "caption": "Veien ved motellet og ønsket gårdsområde."
+  },
+  {
+    "file": "07-two-motel-signs.png",
+    "sha256": "2b55827fa97b774a9e3c824581aa1e3951597beb59c17711824e60bf9446df80",
+    "caption": "To motellskilt: fjern det nærmest veien, gi det gjenværende mer neon."
+  },
+  {
+    "file": "08-motel-office-walls.png",
+    "sha256": "f1ff5a4286c166c3fd8e28fe7786560452b45ec11745585e029f5ccb48545d4f",
+    "caption": "Motellkontoret har fortsatt rapporterte inverterte/feil veggflater."
+  },
+  {
+    "file": "09-alderete-farm-access.png",
+    "sha256": "190435fd25b02b637015954b4231eb6c1f9af847bd3d71e5cfecf35b1ae3f4e0",
+    "caption": "Alderete-avkjøringen skal brukes som gårdsadkomst og åpnes."
+  }
+]
