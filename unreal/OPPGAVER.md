@@ -178,3 +178,6 @@ Root eier `codex/lookdev-live-integration-20261031`, med avgrensede bidrag til p
 ## Lokal lookdev-installasjon
 
 Root eier `codex/install-lookdev-20261031`. Pakkeintegrasjonen for konfigurasjoner og kontorets CPU-/renderkopier er rettet. `09b128e7` er pakket og installert kl. 15:32 med 1772 selvtester, 47 materialslotter og ordinær Fortsett på isolert kopi. Saved er uendret; ett eldre testpayload er pensjonert, to eldre og beskyttet tilbakeføring beholdes. Motorvinduet er frigitt. Se `Docs/Active/STATUS.md` for bevisgrenser; ingen offentlig release.
+
+## Tittel-QUIT og Linux-mottaker, 1. november
+Root eier `codex/title-quit-linux-20261101` i `title-quit-linux-20261101` (kopi3 av maks4): SS47Menus.cpp/hjelpetekst og Linux-starter/diagnostikk. Nabochatten eier aktiv Freeform-menystart i saro-story-loop; motorbygg/installasjon samordnes der. Ingen ny diskaudit eller private assetkopier.
