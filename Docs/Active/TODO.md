@@ -200,6 +200,8 @@ Ferdigheter og avgrensning: [Unreal-kildegjennomgangen](../Research/Unreal/UNREA
 
 ## Story og Freeform
 
+- [ ] **MODE-06, fysisk betjening og Tripo-oppfølging, under levering:** Fire faktiske CRT-skjermer, spolebåndknapper ved telefonen, lagrede varierte dagskort og bensinstasjonens målte fylling. Toms tidsriktige Tripo-pumpe fra skrivebordet og lokal Jeep-frontrute-/speilretting klargjøres i Blender. Samlet native spillkontroll, pakking og installasjon gjenstår før punktet lukkes. Naturlig kjøretur og menneskelig lesbarhet/skrekkbalanse føres fortsatt i MODE-03C/05.
+
 [Beslutning D-21 til D-23](DECISIONS.md#nye-føringer-fra-spillprøven) og [modusplanen](../Design/Story/SARO_STORY_FREEFORM.md) skiller dagens Story fra senere Freeform. Første Freeform-leveranse er lokalt installert fra `0f8f946e` via PR297. Pakke, 1902 selvtester, 248 native kontroller og 21 disk-/Flow-gjenopprettinger består; Saved er bevart. Se [levering og prøvegrenser](../Evidence/UnrealDeliveries/FREEFORM_2026-11-01.md). Naturlig spillaksept og planlagte utvidelser er fortsatt åpne.
 
 - [ ] **MODE-01, Story:** Viderefør dagens planlagte natt og slutt som Story. Bruk VOTV-01 til aktivt SARO-arbeid før midnatt; la de senere hovedhendelsene få plass og behold historiegrunnene for turer til byen og motellet. Første leveranse er SARO-løkken, ikke en omskriving av hele historien.
