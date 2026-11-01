@@ -1537,7 +1537,7 @@ bool AS47Web::ToggleDoor(const FString& ItemId)
 	};
 	if (D->bOpen && D->Area == Area())
 	{
-		if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Secure().DoorOccupied(D->Id))
+		if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Secure().DoorOccupied(D->Inter))
 			return Refuse(TEXT("The doorway is occupied. Get clear of it before closing the door."));
 		// Closing while standing in the threshold disabled the only walk zone
 		// under the player. Resolve then had no old zone to slide back into.
@@ -1565,9 +1565,9 @@ bool AS47Web::ToggleDoor(const FString& ItemId)
 	SetDoor(*D, !D->bOpen, false);
 	if (OnDoor) OnDoor(D->Id, D->bOpen, D->Proxy >= 0 ? WorldUE(D->Proxy) : PropLocation(ItemId), D->Sound != TEXT("light"));
 	if (const auto* M=US47Main::Get(this); M && M->Spine && M->Spine->Secure().HuntLive() && M->UI &&
-		(D->Id==TEXT("doorSouth") || D->Id==TEXT("doorEast")))
+		(D->Inter==TEXT("doorSouth") || D->Inter==TEXT("doorEast")))
 		M->UI->Toast(D->bOpen ? TEXT("Door open. The control room is not secure.") :
-			D->Id==TEXT("doorSouth") ? TEXT("Corridor door shut.") : TEXT("Service door shut."), 2.5);
+			D->Inter==TEXT("doorSouth") ? TEXT("Corridor door shut.") : TEXT("Service door shut."), 2.5);
 	return true;
 }
 

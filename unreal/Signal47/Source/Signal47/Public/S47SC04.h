@@ -49,6 +49,11 @@ public:
  bool DoorOccupied(const FString& Id) const;
  // Contract fixture for later scenarios' tests: SC04 counted as done without playing it.
  void TestComplete();
+ // Explicit spatial fixture and readbacks for the existing opt-in SC04 door contract.
+ void TestPlaceBody(const FVector2D& At, double Facing);
+ bool TestNativeBodyRendered() const { return Pale.Creature.Ready() && Pale.Rendered(); }
+ bool TestSeesPlayer() const { return SeesPlayer(); }
+ bool TestPlayerReachable() const;
  static FS47Doc StripDoc(const FString& Taken, const FString& Restored = FString(), const FString& Torn = FString());
  static FS47Doc ScheduleDoc();
  static bool SelfTest(TArray<FString>& Lines);
