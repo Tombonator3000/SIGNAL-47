@@ -10,6 +10,7 @@
 # S47_ONLY=materials rebuilds Base and Mat only, without touching shared Tex or WebData.
 # S47_ONLY=masters updates Base graphs in place, retaining all material instances and parents.
 # S47_ONLY=picture updates only MPC_Web and M_WebTone; scene materials/assets stay in place.
+# S47_ONLY=moths updates only M_WebMoths in place; no texture, MPC or scene import.
 import json
 import os
 import sys
@@ -28,6 +29,7 @@ tools = unreal.AssetToolsHelpers.get_asset_tools()
 SRC = os.environ.get('S47_WEB', os.path.expanduser('~/scratch-bm/Signal47-web'))
 man = json.load(open(os.path.join(SRC, 'manifest.json')))
 only = os.environ.get('S47_ONLY', 'tex,geo,mat').split(',')
+moths_only = only == ['moths']
 masters_only = only == ['masters']
 materials_only = masters_only or only == ['materials']
 if materials_only:
@@ -63,7 +65,7 @@ def copy_board_art():
     log('board art copied %d' % count)
 
 
-if not materials_only and only != ['picture']:
+if not materials_only and only not in (['picture'], ['moths']):
     copy_board_art()
 
 
@@ -88,7 +90,7 @@ def png(path, rgba, w=4, h=4):
     open(path, 'wb').write(data)
 
 
-if only != ['picture']:
+if only not in (['picture'], ['moths']):
     base_dir = os.path.join(SRC, 'base')
     os.makedirs(base_dir, exist_ok=True)
     png(os.path.join(base_dir, 'T_White.png'), (255, 255, 255, 255))
@@ -113,6 +115,13 @@ if only != ['picture']:
     surface_detail.set_editor_property('address_x', unreal.TextureAddress.TA_WRAP)
     surface_detail.set_editor_property('address_y', unreal.TextureAddress.TA_WRAP)
     eal.save_loaded_asset(surface_detail)
+
+# A moth-only rebuild reuses defaults and preserves every unrelated generated asset.
+if moths_only:
+    white = eal.load_asset('/Game/Web/Base/T_White')
+    white_lin = eal.load_asset('/Game/Web/Base/T_WhiteLinear')
+    if white is None or white_lin is None:
+        raise RuntimeError('S47WEB moths-only requires the existing Web default textures')
 
 # which textures are used how (colour, data, normal)
 use = {}
@@ -196,7 +205,7 @@ UVX = 'return float2(dot(R0, float3(UV, 1.0)), dot(R1, float3(UV, 1.0)));'
 
 def fresh(path):
     if eal.does_asset_exist(path):
-        if masters_only or only == ['picture']:
+        if masters_only or only in (['picture'], ['moths']):
             # Preserve the UMaterial object: deleting it would sever existing MI parents.
             material = eal.load_asset(path)
             if not isinstance(material, unreal.Material):
@@ -576,7 +585,8 @@ if (Kind < 0.5 || Kind > 2.5) {
   float dark = (1.0 - smoothstep(R * 0.5, R, perp)) * smoothstep(0.0, 0.06, m.z - lv.z);
   vFlap = 0.5 + 0.5 * abs(sin(Time * (31.0 + 17.0 * Seed.y) + Seed.w * 6.28));
   vCol = lerp(lerp(Col, float3(1.0, 0.86, 0.66), 0.15) * lit * vFlap, float3(0.03, 0.021, 0.013), dark);
-  size = 0.055;
+  // PLAY-31-40: stable 5-10 mm flies, in metres; trajectory and lamp response stay unchanged.
+  size = 0.005 + 0.005 * Seed.z;
   a = K * step(Seed.x, MothK) * lerp(1.0, 0.75, dark);
   vKind = 0.0;
 } else if (Kind < 1.5) {
@@ -597,16 +607,21 @@ if (Kind < 0.5 || Kind > 2.5) {
   d0 = p - cam; m = float3(dot(d0, right), dot(d0, up), -dot(d0, fwd));
   vFlap = 1.0 + 0.6 * step(frac(ph), 0.012) * abs(sin(Time * 40.0));
   vCol = Col * (0.05 + 0.1 * K) + 0.003;
-  size = 0.042; a = 0.92; vKind = 2.0;
+  size = 0.005 + 0.005 * Seed.z; a = 0.92; vKind = 2.0;
   dir = float2(cos(Seed.x * 6.28), sin(Seed.x * 6.28));
 }
 a *= 1.0 - Low * High;
 float dist = -m.z;
 float pxs = size * px / max(dist, 0.1);
-float w = max(pxs, 1.5), ps = 1.0;
+// A one-pixel filter footprint is antialiasing, not a minimum physical insect size.
+// Coverage below removes the old distant 1.5 px / 45% alpha clumps.
+float w = max(pxs, 1.0), ps = 1.0;
+float coverage = saturate(pxs / w);
+coverage *= coverage;
 float3 shift = 0;
 if (vKind < 0.5) {
-  float L = clamp(len, 2.5, 6.0);
+  float L = min(len, 6.0);
+  coverage = saturate(pxs / w) * saturate((L + pxs) / (L + w));
   ps = L + w + 1.0;
   vS = float3(ps, L, 0.5 * w);
   shift = -(dir.x * right + dir.y * up) * (0.5 * L) / px * dist;
@@ -616,7 +631,7 @@ if (vKind < 0.5) {
   ps = w * 1.4 + 1.0;
   vS = float3(ps, 0.0, 0.5 * w);
 }
-float vA = a * clamp(pxs / 0.9, 0.45, 1.0) * (1.0 - smoothstep(26.0, 48.0, dist)) * smoothstep(0.4, 1.0, dist);
+float vA = a * coverage * (1.0 - smoothstep(26.0, 48.0, dist)) * smoothstep(0.4, 1.0, dist);
 if (vKind > 0.5 && vKind < 1.5) vA = a * min(pxs, 1.0) * (1.0 - smoothstep(32.0, 55.0, dist)) * smoothstep(0.5, 1.5, dist);
 if (Out < 0.5) {
   float s = vA < 0.002 ? 0.0 : ps / px * dist;
@@ -1388,6 +1403,31 @@ class Graph:
         return self.m
 
 
+def build_moths():
+    """Rebuild only the existing lamp-insect material; no world, lights or other assets."""
+    MP = unreal.MaterialProperty
+    B = unreal.BlendMode
+    VP = unreal.MaterialExposedViewProperty
+    TAN = getattr(VP, 'MEVP_TAN_HALF_FIELD_OF_VIEW', None) or getattr(VP, 'TAN_HALF_FIELD_OF_VIEW')
+    WP = lambda g: g.builtin(unreal.MaterialExpressionWorldPosition)
+    CAM = lambda g: g.builtin(unreal.MaterialExpressionCameraPositionWS)
+    # the life in the night: the moths and bats round the lamps (custom data: seed 0-3, lamp 4, kind 5,
+    # colour 6-8, wall 9-12, drawn on High only 13; the lamps' strengths a row of K)
+    view = lambda g: [('Cam', CAM(g)), ('Right', g.view_axis((1, 0, 0))), ('Up', g.view_axis((0, 1, 0))), ('Fwd', g.view_axis((0, 0, 1))),
+                      ('Tan', g.view_prop(TAN, 'g')), ('Lines', g.scalar('Lines', 720)), ('Q', g.uv(0)), ('WP', WP(g))]
+    g = Graph('/Game/Web/Base/M_WebMoths', B.BLEND_TRANSLUCENT, ism=True)
+    lamp = g.cdata(4)
+    k = g.custom('return K.SampleLevel(KSampler, float2((floor(L + 0.5) + 0.5) / max(N, 1.0), 0.5), 0).r;', [('K', g.tex('K', linear=True)), ('L', lamp), ('N', g.scalar('Lamps', 1))], 1)
+    ins = view(g) + [('IO', g.instance_origin()), ('Seed', g.cdata4(0)), ('Kind', g.cdata(5)), ('Col', g.cdata3(6)), ('Wall', g.cdata4(9)), ('High', g.cdata(13)),
+                     ('K', k), ('Time', g.scalar('Time', 0)), ('Shut', g.scalar('Shut', 1 / 30)), ('MothK', g.scalar('MothK', 1)), ('BatK', g.scalar('BatK', 0)), ('Low', g.scalar('Low', 0))]
+    outs = [g.custom(MOTH_VS, ins + [('Out', g.const(o))], 4) for o in range(4)]
+    g.out(g.mask(outs[0], 'rgb'), MP.MP_WORLD_POSITION_OFFSET)
+    fs = g.custom(MOTH_FS, [('Q', g.uv(0)), ('I1', g.interp(outs[1])), ('I2', g.interp(outs[2])), ('I3', g.interp(outs[3])), ('Gain', g.scalar('Gain', 1.2))], 4)
+    g.out(g.mask(fs, 'rgb'), MP.MP_EMISSIVE_COLOR)
+    g.out(g.mask(fs, 'a'), MP.MP_OPACITY)
+    g.save()
+
+
 def build_life():
     """The world's own life (S47WorldLife): the live sky (Sky.ts's dome, its stars, the shooting star),
     the painted horizon (backdrop.ts), the light in the air (airlight.ts) and the windows' light on the
@@ -1462,21 +1502,9 @@ def build_life():
                           ('VCol', g.interp(vcol)), ('Depth', g.builtin(unreal.MaterialExpressionPixelDepth)), ('Dens', g.coll('FogDensity')), ('Native', g.coll('NativeLighting'))])
     g.out(g.defogged(c), MP.MP_EMISSIVE_COLOR)
     g.save()
-    # the life in the night: the moths and bats round the lamps (custom data: seed 0-3, lamp 4, kind 5,
-    # colour 6-8, wall 9-12, drawn on High only 13; the lamps' strengths a row of K)
+    build_moths()
     view = lambda g: [('Cam', CAM(g)), ('Right', g.view_axis((1, 0, 0))), ('Up', g.view_axis((0, 1, 0))), ('Fwd', g.view_axis((0, 0, 1))),
                       ('Tan', g.view_prop(TAN, 'g')), ('Lines', g.scalar('Lines', 720)), ('Q', g.uv(0)), ('WP', WP(g))]
-    g = Graph('/Game/Web/Base/M_WebMoths', B.BLEND_TRANSLUCENT, ism=True)
-    lamp = g.cdata(4)
-    k = g.custom('return K.SampleLevel(KSampler, float2((floor(L + 0.5) + 0.5) / max(N, 1.0), 0.5), 0).r;', [('K', g.tex('K', linear=True)), ('L', lamp), ('N', g.scalar('Lamps', 1))], 1)
-    ins = view(g) + [('IO', g.instance_origin()), ('Seed', g.cdata4(0)), ('Kind', g.cdata(5)), ('Col', g.cdata3(6)), ('Wall', g.cdata4(9)), ('High', g.cdata(13)),
-                     ('K', k), ('Time', g.scalar('Time', 0)), ('Shut', g.scalar('Shut', 1 / 30)), ('MothK', g.scalar('MothK', 1)), ('BatK', g.scalar('BatK', 0)), ('Low', g.scalar('Low', 0))]
-    outs = [g.custom(MOTH_VS, ins + [('Out', g.const(o))], 4) for o in range(4)]
-    g.out(g.mask(outs[0], 'rgb'), MP.MP_WORLD_POSITION_OFFSET)
-    fs = g.custom(MOTH_FS, [('Q', g.uv(0)), ('I1', g.interp(outs[1])), ('I2', g.interp(outs[2])), ('I3', g.interp(outs[3])), ('Gain', g.scalar('Gain', 1.2))], 4)
-    g.out(g.mask(fs, 'rgb'), MP.MP_EMISSIVE_COLOR)
-    g.out(g.mask(fs, 'a'), MP.MP_OPACITY)
-    g.save()
     # the dust in a beam (custom data: the place in its box 0-2, seed 3-6)
     g = Graph('/Game/Web/Base/M_WebMotes', B.BLEND_ADDITIVE, ism=True)
     ins = view(g) + [('P', g.cdata3(0)), ('Seed', g.cdata4(3)), ('Time', g.scalar('Time', 0)), ('Size', g.scalar('Size', 0.01)), ('Density', g.scalar('Density', 1)),
@@ -1530,6 +1558,11 @@ def build_picture():
     mel.connect_material_property(tc, '', unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mel.recompile_material(t); eal.save_loaded_asset(t)
     log('film picture: Clean / VHS / Carpenter 35 mm / Documentary 16 mm / Super 8')
+
+
+if moths_only:
+    build_moths()
+    log('moths only: M_WebMoths updated; all other assets preserved')
 
 
 if only == ['picture']:
