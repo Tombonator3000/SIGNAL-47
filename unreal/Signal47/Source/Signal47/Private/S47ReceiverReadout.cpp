@@ -22,7 +22,7 @@ namespace
  public:
   SLATE_BEGIN_ARGS(SReceiverTrace){} SLATE_ARGUMENT(TSharedPtr<FData>,Data) SLATE_END_ARGS()
   void Construct(const FArguments& A){Data=A._Data;ForceVolatile(true);}
-  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(640,132);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(640,104);}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    if(!Data)return L;const FData& D=*Data;
@@ -63,7 +63,7 @@ namespace
  public:
   SLATE_BEGIN_ARGS(SReceiverMeters){} SLATE_ARGUMENT(TSharedPtr<FData>,Data) SLATE_END_ARGS()
   void Construct(const FArguments& A){Data=A._Data;ForceVolatile(true);}
-  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(640,12);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(640,8);}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    static const FSlateColorBrush White(FLinearColor::White);const FVector2f S(G.GetLocalSize());

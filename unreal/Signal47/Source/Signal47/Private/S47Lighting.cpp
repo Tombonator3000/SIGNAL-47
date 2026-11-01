@@ -197,6 +197,25 @@ void AS47Web::BuildArrayLighting()
 	UE_LOG(LogTemp, Display, TEXT("S47: array lighting %d sources fitted to the exported field lamp heads"), ArrayLights.Num());
 }
 
+float AS47Web::ExteriorDaylightMask(int32 Set, int32 Slot) const
+{
+ if (!FloodSets.IsValidIndex(Set)) return 1.f;
+ const FString& Key = FloodSets[Set].Key;
+ const bool Ordinary = (Key == TEXT("site") && ((Slot >= 0 && Slot <= 9) || (Slot >= 12 && Slot <= 15) || (Slot >= 17 && Slot <= 19)))
+  || (Key == TEXT("court") && ((Slot >= 2 && Slot <= 7) || Slot == 10 || Slot == 11))
+  || (Key == TEXT("town") && Slot >= 1 && Slot <= 7)
+  || (Key == TEXT("field") && (Slot == 2 || Slot == 3 || Slot == 5));
+ if (!Ordinary) return 1.f; // headlights, B12, survey work light, indicators and indoor circuits
+ if (Key == TEXT("site") && Slot < 5)
+ {
+  const FLinearColor C = FloodCol(Set, Slot);
+  if (C.R > C.G * 4.f && C.R > C.B * 8.f) return 1.f; // authored ArrayBack red event
+ }
+ // SkyDawn is assigned the full Daylight() value by SetSkyLighting, including evening.
+ const float T = FMath::Clamp(SkyDawn / .35f, 0.f, 1.f);
+ return 1.f - T * T * (3.f - 2.f * T);
+}
+
 void AS47Web::UpdateArrayLighting()
 {
 	FS47GlowPoints* G = Glow(TEXT("ext.glow.points"));
@@ -207,7 +226,9 @@ void AS47Web::UpdateArrayLighting()
 	const bool bArea = ObjAt(G->Node).Shown();
 	const FLinearColor C = FloodCol(Site, 0);
 	const float ColorGain = FMath::Max(1.f, FMath::Max3(C.R, C.G, C.B));
-	const float K = FMath::Max(0.f, FloodPos(Site, 0).A / 46.f) * FMath::Max(0.f, FloodScaleOf(Site) / 0.07f);
+	const float DayMask = ExteriorDaylightMask(Site, 0);
+	for (int32 I = 0; I < 11; ++I) G->SetOutputScale(I, ExteriorDaylightMask(Site, I < 5 ? I : 0));
+	const float K = FMath::Max(0.f, FloodPos(Site, 0).A / 46.f) * FMath::Max(0.f, FloodScaleOf(Site) / 0.07f) * DayMask;
 	// ArrayBack hides the post glows even during its red flashes. The shared red pool state
 	// overrides that ordinary off switch, while the cached source stays on the actual post.
 	const bool bRed = C.R > C.G * 4.f && C.R > C.B * 8.f;
@@ -607,13 +628,14 @@ void AS47Web::SyncFloodLights()
 		if (!L) continue;
 		const FFloodSet& F = FloodSets[P.Set];
 		const FLinearColor V = F.Pos[P.Slot], C = F.Col[P.Slot];
+		const float DayMask = ExteriorDaylightMask(P.Set, P.Slot);
 		const bool bArray = F.Key == TEXT("site") && P.Slot < UE_ARRAY_COUNT(ArrayDishes) && DishCount() > ArrayDishes[P.Slot];
 		FVector Pos(V.R, V.G, V.B);
 		if (bArray && Pos.Y > -900) Pos.Y = 6.5;
 		const float Dist = FVector::Distance(Pos, Camera);
 		bool bArea = PoolRoots[P.Set].IsEmpty();
 		for (const int32 Root : PoolRoots[P.Set]) if (Nodes.IsValidIndex(Root) && Nodes[Root].bVis) bArea = true;
-		bool bOn = bArea && V.A > 0.001f && F.Scale > 0 && Pos.Y > -900 && Dist < 180 && !SuppressedPools.Contains(PoolId(P.Set, P.Slot));
+		bool bOn = DayMask > .0001f && bArea && V.A > 0.001f && F.Scale > 0 && Pos.Y > -900 && Dist < 180 && !SuppressedPools.Contains(PoolId(P.Set, P.Slot));
 		// Shared pools are copies for materials in the adjacent area, never extra fixtures.
 		for (const FVector& O : Occupied) if (Pos.Equals(O, 0.12)) { bOn = false; break; }
 		if (bOn) Occupied.Add(Pos);
@@ -628,7 +650,7 @@ void AS47Web::SyncFloodLights()
 		const float Gain = F.Key == TEXT("cab") ? 0.3f : bInside ? 12.f : F.Key == TEXT("diner") ? 18.f : 50.f;
 		// Keep the exact story dimming and red pulse state, but calibrate the real field floods
 		// for their 12-25 m throw onto the reflector backs rather than a pool beneath the post.
-		L->SetIntensity(bArray ? ArrayCandelas[P.Slot] * (V.A / ArrayWidths[P.Slot]) * (F.Scale / 0.07f) * ColorGain : V.A * F.Scale * Gain * ColorGain);
+		L->SetIntensity(DayMask * (bArray ? ArrayCandelas[P.Slot] * (V.A / ArrayWidths[P.Slot]) * (F.Scale / 0.07f) * ColorGain : V.A * F.Scale * Gain * ColorGain));
 		const float Limit = F.Key == TEXT("cab") ? 2.f : F.Key == TEXT("hut") ? 5.f : bInside ? 7.f : F.Key == TEXT("diner") ? 8.f : 70.f;
 		L->SetAttenuationRadius((bArray ? ArrayRadii[P.Slot] : FMath::Min(Limit, P.Reach * 1.6f + 8.f)) * 100.f);
 		// A light that reaches the eye retains its occlusion, including walls behind the camera.

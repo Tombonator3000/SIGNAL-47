@@ -1,6 +1,7 @@
 #include "S47HUD.h"
 #include "S47MenuPointerTest.h"
 #include "S47SaroWallTest.h"
+#include "S47OfficeFreeformTest.h"
 #include "S47TitleEraseSound.h"
 #include "S47FreeformInWorldTest.h"
 #include "S47FieldRadio.h"
@@ -618,6 +619,7 @@ void AS47HUD::StartTests()
 {
 	S47MenuPointerTest::Start(US47Main::Get(this));
 	S47SaroWallTest::Start(US47Main::Get(this));
+	S47OfficeFreeformTest::Start(US47Main::Get(this));
 	S47CreaturePreview::Start(US47Main::Get(this));
 	S47RoswellPreview::Start(US47Main::Get(this));
 	S47RoswellAIProbe::Start(US47Main::Get(this));

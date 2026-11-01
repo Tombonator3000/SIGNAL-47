@@ -611,7 +611,10 @@ bool FS47Office::InReach(const FString& Id) const
 }
 
 bool FS47Office::WantsDeparture() const
-{ return !bDeparted && HasFieldSheet() && CanDepart && CanDepart(); }
+{ return (!M || !M->IsFreeform()) && !bDeparted && HasFieldSheet() && CanDepart && CanDepart(); }
+
+bool FS47Office::DepartureReleased() const
+{ return (!M || !M->IsFreeform()) && bDeparted && HasFieldSheet(); }
 
 void FS47Office::RefileReadDocuments()
 {
@@ -702,7 +705,9 @@ bool FS47Office::ReadLibraryDocument(const FString& Id)
 
 void FS47Office::SyncFacts()
 {
- if (!bReady || !M || !M->Evening || (M->Flow && M->Flow->bStarting)) return;
+ // Physical room use and retained papers also work in Freeform. They must never
+ // acknowledge story scenes, even if an evening controller remains allocated.
+ if (!bReady || !M || M->IsFreeform() || !M->Evening || (M->Flow && M->Flow->bStarting)) return;
  auto Commit = [this](bool Fact, const TCHAR* Scene) { if (Fact) M->Evening->CommitWorldScene(Scene); };
  Commit(bDoorInspected, TEXT("D02_LOCKED_OFFICE")); Commit(bKey, TEXT("D02_SERVICE_DRAWER"));
  Commit(bEverOpened && WasUnlocked(), TEXT("D02_OPEN_OFFICE")); Commit(bDeskSeen, TEXT("D02_DESK_FIRST_LOOK"));
@@ -928,6 +933,8 @@ bool FS47Office::MigrateRestoredPose(FVector& P, double Radius)
 
 void FS47Office::Step(double Dt)
 {
+ // Shared room mechanics: Main ticks this in both modes. Story progression is
+ // filtered at SyncFacts/Departure, not by freezing the door, drawer and lights.
  if (!bBuilt) Init(); if (!bReady) return;
  // A case without an incoming pose has nothing to migrate. Flow handles saved
  // poses before its walkability gate, while their original coordinates exist.
@@ -990,5 +997,20 @@ bool FS47Office::SelfTest(TArray<FString>& Lines)
  auto Unknown = S47J::Clone(Actual); S47J::Set(Unknown, TEXT("readDocuments"), TArray<FString>{TEXT("VHS_DALE_FIELD_01")}); B.Begin(Unknown);
  Check(!B.DocumentRead(TEXT("VHS_DALE_FIELD_01")), TEXT("a film ID cannot be acknowledged as an opened paper"));
  Check(LibraryDocumentIds().Num() == 7 && !LibraryDocumentIds().Contains(TEXT("EV_DALE_INDEX")), TEXT("six optional texts and separate service appendix preserve T02 index identity"));
+ // No world/renderer required: the production step still animates the physical
+ // targets in Freeform, while even a permissive chapter callback cannot depart.
+ US47Main* ModeHost=NewObject<US47Main>();ModeHost->SessionMode=ES47SessionMode::Freeform;
+ FS47Office SharedRoom(ModeHost);SharedRoom.bBuilt=SharedRoom.bReady=true;
+ SharedRoom.bDoorTarget=SharedRoom.bDrawerTarget=true;SharedRoom.Step(.1);
+ Check(SharedRoom.DoorK>0 && SharedRoom.DrawerK>0,TEXT("Freeform room step advances door and drawer targets"));
+ SharedRoom.bKey=SharedRoom.bUnlocked=SharedRoom.bEverOpened=SharedRoom.bEntered=SharedRoom.bFieldSheet=true;
+ int32 DepartureQueries=0;SharedRoom.CanDepart=[&DepartureQueries]{++DepartureQueries;return true;};
+ Check(!SharedRoom.WantsDeparture() && DepartureQueries==0 && SharedRoom.HasFieldSheet(),TEXT("Freeform retains the local field sheet without querying story departure"));
+ SharedRoom.bDeparted=true;
+ Check(!SharedRoom.DepartureReleased() && !S47J::Bool(SharedRoom.Save(),TEXT("departed")),TEXT("Freeform cannot restore or publish a story departure"));
+ ModeHost->SessionMode=ES47SessionMode::Story;SharedRoom.bDeparted=false;
+ Check(SharedRoom.WantsDeparture() && DepartureQueries==1,TEXT("Story still queries its existing departure requirements"));
+ SharedRoom.bDeparted=true;
+ Check(SharedRoom.DepartureReleased(),TEXT("Story retains an explicitly released departure"));
  return Ok;
 }

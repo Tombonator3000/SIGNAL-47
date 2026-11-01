@@ -5,6 +5,9 @@
 class US47Main;
 class FS47RecordedDialogue;
 class FS47SaroWork;
+class FS47FreeformAudioDesk;
+class SS47ScreenView;
+class SWidget;
 struct FS47Task;
 struct FS47Doc;
 
@@ -58,6 +61,19 @@ public:
  bool PointScheduledRun();
  void OpenTracking();
  void OpenArrayStatus();
+ void OpenReceiver();
+ void OpenOperations();
+ bool RegisterScheduledData();
+ bool ReceiverReady() const;
+ FString ReceiverNextAction() const;
+ bool TerminalOnGlass() const;
+ int32 ActiveTerminalScreen() const { return ActiveTerminal; }
+ bool TerminalWindowRendered() const;
+ void OpenAudioComparison();
+ bool AudioListeningAvailable() const { return AudioAvailable(); }
+ double AudioHeard(int32 Source) const { return Source>=0&&Source<2?AudioCovered[Source]:0; }
+ const FString& AudioFeedbackText() const { return AudioFeedback; }
+ TSharedPtr<FS47FreeformAudioDesk> AudioDesk;
  void SelectStatusDish(int32 Index);
  int32 SelectedStatusDish() const { return SelectedDish; }
  bool AudioAction(const FString& Action);
@@ -112,7 +128,10 @@ private:
  uint32 AudioCoverage[2] = {0, 0};
  FString AudioFeedback;
  TSharedPtr<FS47SaroWork> ArrayWork;
- void OpenAudioComparison();
+ TWeakPtr<SS47ScreenView> TerminalView;
+ int32 ActiveTerminal=-1,UIEpoch=0;
+ bool bDeskStarted=false;
+ void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,TSharedPtr<SWidget> Focus=nullptr);
  void StepAudio(double Dt);
  void CreditAudioRange(int32 Source, double Was, double Now);
  FString DishStatus(int32 Index) const;

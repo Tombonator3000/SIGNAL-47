@@ -1,5 +1,11 @@
 #include "S47Observing.h"
 #include "S47SaroWork.h"
+#include "S47FreeformAudioDesk.h"
+#include "S47FreeformTerminal.h"
+#include "S47ReceiverReadout.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "SS47ScreenView.h"
+#include "CoreGlobals.h"
 #include "SS47Widgets.h"
 #include "Widgets/SLeafWidget.h"
 #include "Widgets/Layout/SScrollBox.h"
@@ -267,7 +273,7 @@ S47J::FObj FS47Observing::Save() const
 
 bool FS47Observing::Active() const
 {
- return Pending() && M && M->Story && M->Horror && M->Horror->Enabled() && M->Horror->BaselineChecked() &&
+ return Pending() && M && !M->IsFreeform() && M->Story && M->Horror && M->Horror->Enabled() && M->Horror->BaselineChecked() &&
   M->Story->Rx.Stage == 1 && M->Story->Phase() == ES47Phase::Shift;
 }
 
@@ -336,6 +342,12 @@ bool FS47Observing::ArrayMotionHeld() const
 void FS47Observing::Step(double Dt)
 {
  if (!bEnabled || !M || !M->Story || M->Mode != US47Main::EMode::Play || !FMath::IsFinite(Dt) || Dt <= 0) return;
+ if(bWorkEnabled)
+ {
+  if(!AudioDesk)AudioDesk=FS47FreeformAudioDesk::Shared(M);
+  if(!bDeskStarted){AudioDesk->Begin();bDeskStarted=true;}
+  AudioDesk->Step(Dt);
+ }
  if (M->bPausedByMenu) { if (ArrayWork && ArrayWork->Enabled() && (bWorkActive || Active())) ArrayWork->Step(Dt, true); return; }
  if (Done()) { if (ArrayWork && ArrayWork->Enabled()) ArrayWork->Stop(); StepDoorVoice(); return; }
  if (!Active()) { bAudioPlaying = false; if (bWorkActive && ArrayWork) { ArrayWork->Stop(); bWorkActive = false; } return; }
@@ -426,9 +438,11 @@ FString FS47Observing::Label(const FString& Id) const
 {
  if (bWorkEnabled && Active())
  {
+  if(AudioDesk){const FString L=AudioDesk->Label(Id);if(!L.IsEmpty())return L;}
   if (ArrayWork) if (const FString L = ArrayWork->Label(Id); !L.IsEmpty()) return L;
   if (Id == TEXT("crtLeft")) return TEXT("Inspect array status and command history");
   if (Id == TEXT("crtRight")) return TEXT("Point the array for the scheduled observation");
+  if (Id == TEXT("opsTerminal")) return TEXT("Story work order, comparison and data registration");
   if (Id == TEXT("telex")) return TEXT("Read tonight's observing work order");
   if (Id == TEXT("decoder")) return AudioAvailable() ? FString(TEXT("Compare original and control recordings")) : FString(TEXT("Signal processor / recording inputs"));
   if (Id == TEXT("printer") && Run == 2 && Archive == 0)
@@ -462,6 +476,9 @@ bool FS47Observing::Use(const FString& Id)
 {
  if (bWorkEnabled && Active())
  {
+  if(AudioDesk&&AudioDesk->Use(Id))return true;
+  if(Id==TEXT("crtCenter")){OpenReceiver();return true;}
+  if(Id==TEXT("opsTerminal")){OpenOperations();return true;}
   if (Id == TEXT("obs:service") && ArrayWork && ArrayWork->ServiceRequired() && !bS03Diagnosed)
   {
    M->UI->Toast(TEXT("Inspect S-03 on the left status terminal before selecting local service."), 5); return true;
@@ -642,22 +659,23 @@ void FS47Observing::CollectPulsarControl()
 void FS47Observing::OpenPulsarComparison()
 {
  if (!PulsarCheckActive() || PulsarLoop != ELoopStage::Compare || !M->UI) return;
+ TArray<S47Kit::FW> Rows;
+ if (bWorkEnabled) Rows.Add(S47FreeformTerminal::Small(WorkReference() + TEXT(" / ORIGINAL + INTERNAL CONTROL / REGISTRATION PENDING")));
+ Rows.Add(S47FreeformTerminal::Text(TEXT("Compare the pointing check, pulsar chart and receiver control before filing.")));
+ Rows.Add(S47FreeformTerminal::Paper(TEXT("NORMAL REFERENCE / 3C 286 pointing check: clean cross, in specification.\n\nPULSAR CHART / period 1.18791 s, as catalogued. Extra ticks: four, a gap, seven; not at the pulsar period.\n\nLOCAL CONTROL / external input terminated, internal reference regular. No extra ticks in the eight-second check.")));
  if (bWorkEnabled && !bAudioReviewed)
  {
-  M->UI->Toast(TEXT("Review both recordings at the signal processor and mark the extra ticks before registering a conclusion."), 5); return;
+  Rows.Add(S47FreeformTerminal::Text(TEXT("NEXT / Review ORIGINAL and CONTROL on the physical reel deck, mark the extra ticks, then RETAIN."),-1));
+  OpenTerminal(3,TEXT("OPS / STORY COMPARISON"),S47Kit::Col(Rows));return;
  }
- TArray<S47Kit::FW> Rows;
- if (bWorkEnabled) Rows.Add(S47Kit::Small(WorkReference() + TEXT(" / ORIGINAL + INTERNAL CONTROL / REGISTRATION PENDING")));
- Rows.Add(S47Kit::Text(TEXT("Compare the pointing check, pulsar chart and receiver control before filing.")));
- Rows.Add(S47Kit::Paper(TEXT("NORMAL REFERENCE / 3C 286 pointing check: clean cross, in specification.\n\nPULSAR CHART / period 1.18791 s, as catalogued. Extra ticks: four, a gap, seven; not at the pulsar period.\n\nLOCAL CONTROL / external input terminated, internal reference regular. No extra ticks in the eight-second check.")));
- if (!CompareFeedback.IsEmpty()) Rows.Add(S47Kit::Paper(CompareFeedback));
- Rows.Add(S47Kit::Question(TEXT("What can these records establish?")));
- const auto First = S47Kit::Button(TEXT("These are normal pulsar ticks."), [this] { ComparePulsar(TEXT("pulsar")); OpenPulsarComparison(); });
+ if (!CompareFeedback.IsEmpty()) Rows.Add(S47FreeformTerminal::Paper(CompareFeedback));
+ Rows.Add(S47FreeformTerminal::Text(TEXT("What can these records establish?")));
+ const auto First = S47FreeformTerminal::Button(TEXT("These are normal pulsar ticks."), [this] { ComparePulsar(TEXT("pulsar")); OpenPulsarComparison(); });
  Rows.Add(First);
- Rows.Add(S47Kit::Button(TEXT("The control proves a sky source."), [this] { ComparePulsar(TEXT("sky")); OpenPulsarComparison(); }));
- Rows.Add(S47Kit::Button(TEXT("Source unresolved. Retain both charts."), [this] { if (!ComparePulsar(TEXT("unresolved"))) OpenPulsarComparison(); }, true));
- M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / PULSAR CONTROL COMPARISON"), S47Kit::Col(Rows)));
- if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetKeyboardFocus(First, EFocusCause::SetDirectly);
+ Rows.Add(S47FreeformTerminal::Button(TEXT("The control proves a sky source."), [this] { ComparePulsar(TEXT("sky")); OpenPulsarComparison(); }));
+ Rows.Add(S47FreeformTerminal::Button(TEXT("Source unresolved. Retain both charts."), [this] { if (!ComparePulsar(TEXT("unresolved"))) OpenPulsarComparison(); }, true));
+ if(bWorkEnabled)OpenTerminal(3,TEXT("OPS / STORY COMPARISON"),S47Kit::Col(Rows),First);
+ else M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / PULSAR CONTROL COMPARISON"),S47Kit::Col(Rows)));
 }
 
 bool FS47Observing::ComparePulsar(const FString& Choice)
@@ -715,37 +733,121 @@ void FS47Observing::SelectStatusDish(int32 Index)
  if (M && Active()) OpenArrayStatus();
 }
 
+bool FS47Observing::TerminalOnGlass()const
+{const auto V=TerminalView.Pin();return V.IsValid()&&V->OnGlass()&&M&&M->ModalOpen();}
+bool FS47Observing::TerminalWindowRendered()const
+{const auto V=TerminalView.Pin();return TerminalOnGlass()&&V->RenderedFrames()>0;}
+void FS47Observing::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,TSharedPtr<SWidget> Focus)
+{
+ if(!bWorkEnabled||!Active()||!M||!M->UI||!M->Web||!M->Player)return;
+ if(!M->Story->Rx.bPowered||M->Story->FeederOutage()){M->UI->Toast(TEXT("Restore RX bank 3 and the array feeder before using this workstation."),4);return;}
+ const auto Content=S47FreeformTerminal::Frame(Title,Body);
+ if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
+ {Current->SetScreen(Content,Focus.IsValid()?Focus:Content);bTelemetryPanelOpen=true;return;}
+ const TWeakObjectPtr<US47Main> Owner=M;const int32 Epoch=UIEpoch;
+ const auto View=SNew(SS47ScreenView).Screen(Screen).Web(M->Web.Get()).Walker(M->Player.Get()).bUseLeaves(true).OnLeft([Owner,this,Epoch]
+ {if(!IsEngineExitRequested()&&Owner.IsValid()&&Owner->Observing.Get()==this&&UIEpoch==Epoch&&Owner->UI)Owner->UI->Close();});
+ if(!View->OnGlass()){M->UI->Toast(TEXT("The physical workstation display is unavailable."),4);return;}
+ View->SetScreen(Content,Focus.IsValid()?Focus:Content);
+ M->UI->Open(View,[Owner,this,Epoch]
+ {
+  if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Observing.Get()!=this||UIEpoch!=Epoch)return;
+  if(ActiveTerminal==1&&Owner->Story)Owner->Story->ConsoleClosed();
+  TerminalView.Reset();ActiveTerminal=-1;bTelemetryPanelOpen=false;Changed();
+ });
+ TerminalView=View;ActiveTerminal=Screen;bTelemetryPanelOpen=true;
+ if(Screen==1)M->Story->bConsoleOpen=true;
+}
+bool FS47Observing::ReceiverReady()const
+{
+ return Active()&&bWorkEnabled&&M&&M->Story&&M->Story->Rx.bPowered&&!M->Story->FeederOutage()&&!M->Story->IsCinematic()&&StepNow==EStep::Tune&&!ChorePending()&&ArrayWork&&ArrayWork->CommandedRun()==Run&&ArrayWork->Ready()&&ArrayWork->CanMeasure()&&M->Story->Rx.Pass(Runs()[Run].P);
+}
+FString FS47Observing::ReceiverNextAction()const
+{
+ if(!Active()||!M||!M->Story)return TEXT("Follow the current Story work order.");
+ if(!M->Story->Rx.bPowered||M->Story->FeederOutage())return TEXT("Restore RX bank 3 and the array feeder.");
+ if(ChorePending())return Objective();
+ if(StepNow==EStep::Data)return Objective();
+ if(StepNow==EStep::Integrating)return TEXT("Retain steady pointing; collect the original when recording completes.");
+ if(!ArrayWork||ArrayWork->CommandedRun()!=Run)return TEXT("Use the right tracking PC to command this scheduled source.");
+ if(ArrayWork->ServiceRequired())return ArrayWork->Objective();
+ if(!ArrayWork->Ready()||!ArrayWork->CanMeasure())return TEXT("Wait for actual array encoders to settle on target.");
+ const auto& R=M->Story->Rx;const auto& P=Runs()[Run].P;
+ if(R.Pass(P))return TEXT("Ready. Start this scheduled acquisition.");
+ if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("Tune frequency to %.3f MHz (tolerance +/- %.3f)."),P.F,P.FTol);
+ if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("Set gain within %.0f-%.0f."),P.Gain[0],P.Gain[1]);
+ if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("Set bandwidth within %.0f-%.0f kHz."),P.Bw[0],P.Bw[1]);
+ return TEXT("Reissue the source direction from the tracking PC, then wait for lock.");
+}
+void FS47Observing::OpenReceiver()
+{
+ if(!bWorkEnabled||!Active()||!M||!M->UI||!M->Story)return;
+ const auto& P=Runs()[Run].P;
+ S47ReceiverReadout::FData D;
+ D.GetReceiver=[this]{return M->Story->Rx;};D.GetProfile=[this]{return Runs()[Run].P;};
+ D.GetQuality=[this]{return M->Story->Rx.Quality(Runs()[Run].P);};
+ D.GetReady=[this]{return ReceiverReady();};D.GetNextAction=[this]{return ReceiverNextAction();};
+ D.GetProgress=[this]{return Elapsed/FMath::Max(1.,Runs()[Run].Seconds);};D.GetRecording=[this]{return StepNow==EStep::Integrating;};
+ D.GetTrackingReady=[this]{return ArrayWork&&ArrayWork->CommandedRun()==Run&&ArrayWork->Ready();};
+ D.GetArrayQuality=[this]{int32 N=0;if(M&&M->Web){for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return double(N)/FMath::Max(1,M->Web->DishCount());}return 0.;};
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47FreeformTerminal::Small(FString::Printf(TEXT("STORY WORK ORDER / %s / %.0f s / TRACKING AZ %.1f EL %.1f"),Runs()[Run].Source,Runs()[Run].Seconds,(P.Az[0]+P.Az[1])*.5,Runs()[Run].El)));
+ Rows.Add(S47ReceiverReadout::Build(D));
+ Rows.Add(S47FreeformTerminal::Knob(FString::Printf(TEXT("FREQUENCY MHz / TARGET %.3f +/- %.3f"),P.F,P.FTol),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f"),M->Story->Rx.Frequency);}),1419.5,1420.7,.001,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;}));
+ Rows.Add(S47FreeformTerminal::Pair(
+  S47FreeformTerminal::Knob(FString::Printf(TEXT("GAIN / %.0f-%.0f"),P.Gain[0],P.Gain[1]),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),
+  S47FreeformTerminal::Knob(FString::Printf(TEXT("BANDWIDTH kHz / %.0f-%.0f"),P.Bw[0],P.Bw[1]),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
+ Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("RECEIVER BEARING %.1f / SAME COMMAND AS TRACKING PC"),M->Story->Rx.Azimuth);}),TAttribute<int32>(0)));
+ Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return ReceiverReady()?TEXT("READY / START ACQUISITION"):TEXT("START UNAVAILABLE / FOLLOW NEXT ACTION");}),[this]{if(!ReceiverReady()){M->Story->Rx.Status=ReceiverNextAction();return;}ConsoleAction();OpenReceiver();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
+ OpenTerminal(1,TEXT("RECEIVER / STORY ACQUISITION"),S47Kit::Col(Rows));
+}
+bool FS47Observing::RegisterScheduledData()
+{
+ if(!bWorkEnabled||!Active()||StepNow!=EStep::Data||PulsarCheckActive()||FString(Runs()[Run].Data)!=TEXT("opsTerminal"))return false;
+ M->UI->Close();File();return true;
+}
+void FS47Observing::OpenOperations()
+{
+ if(!bWorkEnabled||!Active()||!M||!M->UI)return;
+ if(PulsarCheckActive()&&PulsarLoop==ELoopStage::Compare){OpenPulsarComparison();return;}
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("STORY / EVENING OBSERVING ORDER\nCURRENT SOURCE: %s\n"),Runs()[Run].Source)+Objective()));
+ Rows.Add(S47FreeformTerminal::Small(WorkOrder().Page));
+ TSharedPtr<SWidget> Register;
+ if(StepNow==EStep::Data&&!PulsarCheckActive()&&FString(Runs()[Run].Data)==TEXT("opsTerminal"))
+ {Register=S47FreeformTerminal::Button(TEXT("Reduce and retain the completed drift scan"),[this]{RegisterScheduledData();},true);Rows.Add(Register.ToSharedRef());}
+ OpenTerminal(3,TEXT("OPS / STORY WORK ORDER"),S47Kit::Col(Rows),Register);
+}
+
 void FS47Observing::OpenArrayStatus()
 {
  if (!bWorkEnabled || !Active() || !ArrayWork || !M->UI) return;
  ArrayWork->SetContext(Run, Run == 1 && GenStep >= 3);
  const TArray<FString> Lines = ArrayWork->StatusRows();
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47Kit::Small(TEXT("Select an antenna to inspect its actual pointing and local/remote state.")));
+ Rows.Add(S47FreeformTerminal::Small(TEXT("Select an antenna to inspect its actual pointing and local/remote state.")));
  Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(DishStatus(SelectedDish)); }).Font(S47Style::Mono(18)).ColorAndOpacity(S47Kit::Css(0xe4be79)));
  Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ArrayWork->StateText()); }).Font(S47Style::Mono(16)).ColorAndOpacity(S47Kit::Css(0xc4bb9b)));
  TSharedPtr<SWidget> FileButton;
  if (StepNow == EStep::Data && Run == 3)
  {
-  FileButton = S47Kit::Button(TEXT("File Virgo A drive log"), [this] { M->UI->Close(); File(); }, true);
+  FileButton = S47FreeformTerminal::Button(TEXT("File Virgo A drive log"), [this] { M->UI->Close(); File(); }, true);
   Rows.Add(FileButton.ToSharedRef());
  }
  TSharedRef<SScrollBox> List = SNew(SScrollBox);
  for (int32 I = 0; I < FMath::Min(27, Lines.Num()); ++I)
  {
   const int32 Index = I;
-  List->AddSlot()[S47Kit::ButtonLive(TAttribute<FString>::CreateLambda([this, Index] { return DishStatus(Index); }), [this, Index] { SelectStatusDish(Index); }, Index == SelectedDish)];
+  List->AddSlot()[S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this, Index] { return DishStatus(Index); }), [this, Index] { SelectStatusDish(Index); }, Index == SelectedDish)];
  }
  Rows.Add(SNew(SBox).HeightOverride(235)[List]);
  if (Lines.Num() > 27)
  {
   TArray<FString> History;
   for (int32 I = FMath::Max(27, Lines.Num() - 3); I < Lines.Num(); ++I) History.Add(Lines[I]);
-  Rows.Add(S47Kit::Small(FString::Join(History, TEXT("\n"))));
+  Rows.Add(S47FreeformTerminal::Small(FString::Join(History, TEXT("\n"))));
  }
- M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / ARRAY STATUS AND COMMAND LOG"), S47Kit::Col(Rows), 940), [this] { bTelemetryPanelOpen = false; });
- bTelemetryPanelOpen = true;
- if (FileButton && FSlateApplication::IsInitialized()) FSlateApplication::Get().SetKeyboardFocus(FileButton, EFocusCause::SetDirectly);
+ OpenTerminal(0,TEXT("ARRAY STATUS / STORY COMMAND LOG"),S47Kit::Col(Rows),FileButton);
 }
 
 void FS47Observing::OpenTracking()
@@ -754,17 +856,15 @@ void FS47Observing::OpenTracking()
  ArrayWork->SetContext(Run, Run == 1 && GenStep >= 3);
  const FRun& R = Runs()[Run];
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47Kit::Paper(FString::Printf(TEXT("SCHEDULE %d / %s\nCOMMAND AZ %.1f  EL %.1f"), Run + 1, R.Source, (R.P.Az[0] + R.P.Az[1]) / 2, R.El)));
+ Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("SCHEDULE %d / %s\nCOMMAND AZ %.1f  EL %.1f"), Run + 1, R.Source, (R.P.Az[0] + R.P.Az[1]) / 2, R.El)));
  Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(ArrayWork->StateText() + TEXT("\n") + DishStatus(SelectedDish)); }).Font(S47Style::Mono(18)).ColorAndOpacity(S47Kit::Css(0xe4be79)));
- Rows.Add(S47Kit::Small(Run == 0 ? TEXT("The pointing check samples centre, north, south, east and west after acquisition starts.")
+ Rows.Add(S47FreeformTerminal::Small(Run == 0 ? TEXT("The pointing check samples centre, north, south, east and west after acquisition starts.")
   : Run == 2 ? TEXT("The drift scan holds the commanded direction while the sky crosses the beam.") : TEXT("Pointing is complete only when actual antenna feedback is steady on target.")));
- const auto Command = S47Kit::Button(TEXT("Point the array to this source"), [this] { PointScheduledRun(); }, true,
+ const auto Command = S47FreeformTerminal::Button(TEXT("Point the array to this source"), [this] { PointScheduledRun(); }, true,
   StepNow == EStep::Tune && !ChorePending());
  Rows.Add(Command);
- Rows.Add(S47Kit::Small(TEXT("Live feedback continues here. Close to watch the dishes, then acquire at the receiver.")));
- M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / TRACKING TERMINAL"), S47Kit::Col(Rows), 900), [this] { bTelemetryPanelOpen = false; });
- bTelemetryPanelOpen = true;
- if (FSlateApplication::IsInitialized()) FSlateApplication::Get().SetKeyboardFocus(Command, EFocusCause::SetDirectly);
+ Rows.Add(S47FreeformTerminal::Small(TEXT("Live feedback continues here. Close to watch the dishes, then acquire at the receiver.")));
+ OpenTerminal(2,TEXT("TRACKING / STORY SOURCE"),S47Kit::Col(Rows),Command);
 }
 
 bool FS47Observing::PointScheduledRun()
@@ -777,6 +877,7 @@ bool FS47Observing::PointScheduledRun()
  const bool bOk = ArrayWork->CommandObservation(Run, (R.P.Az[0] + R.P.Az[1]) / 2, R.El, Run == 0);
  if (bOk)
  {
+  M->Story->Rx.Azimuth=(R.P.Az[0]+R.P.Az[1])*.5;
   M->UI->Close(); M->UI->Toast(TEXT("Pointing command sent. Watch the array move; the receiver waits for steady on-target feedback."), 5);
   Changed();
  }
@@ -844,31 +945,10 @@ double FS47Observing::AudioLevel() const
 
 void FS47Observing::OpenAudioComparison()
 {
- if (!bWorkEnabled || !Active() || !M->UI) return;
- if (!AudioAvailable()) { M->UI->Toast(TEXT("Recording inputs: original receiver and internal reference. Retain both charts before comparing the recordings."), 5); return; }
- TArray<S47Kit::FW> Rows;
- Rows.Add(S47Kit::Small(WorkReference() + TEXT(" / TWO SEPARATE RECORDINGS / ORIGINAL RETAINED")));
- Rows.Add(SNew(STextBlock).Text_Lambda([this] { return FText::FromString(AudioDisplay()); }).Font(S47Style::Mono(19)).ColorAndOpacity(S47Kit::Css(0xe4be79)));
- Rows.Add(SNew(SS47ObservationTrace).Observer(this));
- Rows.Add(S47Kit::Row({
-  S47Kit::Choice(TEXT("Original / 18 s"), TAttribute<bool>::CreateLambda([this] { return AudioSelected == 0; }), [this] { AudioAction(TEXT("original")); OpenAudioComparison(); }),
-  S47Kit::Choice(TEXT("Internal control / 8 s"), TAttribute<bool>::CreateLambda([this] { return AudioSelected == 1; }), [this] { AudioAction(TEXT("control")); OpenAudioComparison(); }) }));
- Rows.Add(S47Kit::Row({ S47Kit::Button(TEXT("Play / pause"), [this] { AudioAction(bAudioPlaying ? TEXT("pause") : TEXT("play")); }, true),
-  S47Kit::Button(TEXT("Rewind"), [this] { AudioAction(TEXT("rewind")); }) }));
- Rows.Add(S47Kit::Slider(TEXT("Review position / seconds"), 0, AudioSelected == 0 ? 18.f : 8.f, .1f,
-  TAttribute<float>::CreateLambda([this] { return float(AudioCursor[AudioSelected]); }), [this](float At) { SeekAudio(At); }));
- Rows.Add(S47Kit::Row({ S47Kit::Button(TEXT("Mark interval start"), [this] { AudioAction(TEXT("mark_start")); }),
-  S47Kit::Button(TEXT("Mark interval end"), [this] { AudioAction(TEXT("mark_end")); }) }));
- Rows.Add(SNew(STextBlock).Text_Lambda([this]
- {
-  return FText::FromString(FString::Printf(TEXT("ORIGINAL %s / CONTROL %s / MARK %.1f to %.1f s\n%s"),
-   AudioCoverage[0] == ((1u << 18) - 1) ? TEXT("reviewed") : TEXT("pending"), AudioCoverage[1] == ((1u << 8) - 1) ? TEXT("reviewed") : TEXT("pending"), MarkStart, MarkEnd,
-   AudioFeedback.IsEmpty() ? TEXT("Review both traces, then mark the extra ticks on the original timeline.") : *AudioFeedback));
- }).Font(S47Style::Mono(15)).ColorAndOpacity(S47Kit::Css(0xc4bb9b)).AutoWrapText(true));
- Rows.Add(S47Kit::Button(TEXT("Retain marked comparison"), [this] { AudioAction(TEXT("confirm")); }));
- M->UI->Open(S47Kit::Shell(M->UI, TEXT("SARO / SIGNAL PROCESSOR / RECORDING COMPARISON"), S47Kit::Col(Rows), 920), [this]
- { bAudioPanelOpen = bAudioPlaying = false; Changed(); });
- bAudioPanelOpen = true;
+ if(!bWorkEnabled||!Active()||!M||!M->UI||!AudioDesk||!AudioDesk->Ready())return;
+ if(!AudioAvailable()){M->UI->Toast(PulsarObjective(),5);return;}
+ if(!AudioDesk->ListeningPosition()){M->UI->Toast(TEXT("Use the reel deck beside the telephone: ORIGINAL / CONTROL, PLAY, MARK IN / OUT, RETAIN."),5);return;}
+ bAudioPanelOpen=true;
 }
 
 void FS47Observing::SeekAudio(double Seconds)
@@ -926,7 +1006,7 @@ void FS47Observing::CreditAudioRange(int32 Source, double Was, double Now)
 
 void FS47Observing::StepAudio(double Dt)
 {
- if (!bAudioPlaying || !bAudioPanelOpen || !AudioAvailable() || !M || !M->UI || !M->UI->Modal() || M->Story->IsCinematic()) return;
+ if (!bAudioPlaying || !bAudioPanelOpen || !AudioAvailable() || !M || !M->UI || M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || !AudioDesk || !AudioDesk->ListeningPosition()) return;
  const double Duration = AudioSelected == 0 ? Runs()[1].Seconds : ControlSeconds;
  const double Was = AudioCursor[AudioSelected];
  const double Now = FMath::Min(Duration, Was + FMath::Min(Dt, .1));
@@ -1179,6 +1259,8 @@ FS47Observing::~FS47Observing() { if (ArrayWork) ArrayWork->Stop(); if (Voice) V
 
 void FS47Observing::Stop()
 {
+ ++UIEpoch;TerminalView.Reset();ActiveTerminal=-1;bDeskStarted=false;
+ if(AudioDesk)AudioDesk->Stop();
  bEnabled = false; bAudioPlaying = bAudioPanelOpen = bTelemetryPanelOpen = false;
  if (ArrayWork) ArrayWork->Stop();
  if (Voice) Voice->Stop();

@@ -395,7 +395,14 @@ void FS47FreeformWorld::Apply()
  if(Lid){const FVector At=InteractionPoint(TEXT("ff:service"))+FVector(-.015,0,0);if(const auto* N=Lid.W->Node(Lid.I))if(auto* C=N->Comp.Get())C->SetWorldLocation(S47Three::ToUE(At+FVector(0,0,Open?.38:0)));Lid.SetVisible(bActive);}
  if(ServiceText.IsValid()){const FString Display=FString(TEXT("S-03 / LOCAL SERVICE\n"))+Label(TEXT("ff:service"));if(Display!=LastServiceDisplay){ServiceText->SetText(FText::FromString(Display));LastServiceDisplay=Display;}}
  if(Relay)Relay.SetColor(S47Three::Hex(Service>=5?0x739470:0xb19651));
- if(Selector){Selector.SetColor(S47Three::Hex(HasArrayFault()?0xb54e31:0x4e8d5c));Selector.SetRotX(Service>=3&&Service<=8?.65:0);}
+ if(Selector)
+ {
+  Selector.SetColor(S47Three::Hex(HasArrayFault()?0xb54e31:0x4e8d5c));
+  // AdoptNode retains position, not native scale. Rotate the actual component
+  // so the fitted 4.5 cm selector cannot become a one-metre interaction blocker.
+  if(const auto* N=Selector.W->Node(Selector.I))if(auto* C=N->Comp.Get())
+   C->SetWorldRotation(FRotator(0,0,Service>=3&&Service<=8?FMath::RadiansToDegrees(.65):0));
+ }
  if(FeederLamp)FeederLamp.SetColor(S47Three::Hex(M&&M->Freeform&&M->Freeform->PowerFault()?0xc57d32:0x58a769));
  if(FeederLever)FeederLever.SetRotX(Feeder>=2&&Feeder<5?.55:0);
  const bool Road=M&&M->World&&(M->World->Area==TEXT("road")||M->World->Area==TEXT("diner"));

@@ -1333,7 +1333,7 @@ void AS47Story::Tick(float DeltaSeconds)
 		}
 		else
 		{
-			const double Q = SurveyOnly() ? 0.05 : Rx.Quality();
+			const double Q = SurveyOnly() ? 0.05 : Rx.Quality(ConsoleProfile());
 			Audio->SetCarrier(bConsoleOpen ? float(0.06 * Q * Q) : 0.f, float((Q - 1) * 0.03), bConsoleOpen ? float(0.03 * (1 - Q) + 0.008) : 0.003f);
 		}
 	}

@@ -31,6 +31,8 @@ struct SIGNAL47_API FS47GlowPoints
 	void SetColor(int32 I, const FLinearColor& C);
 	/** the aSize attribute's setX */
 	void SetSize(int32 I, float S);
+	/** Render-only photocell mask; never changes saved/event colour or blink state. */
+	void SetOutputScale(int32 I, float Scale);
 	/** hold(level): every point at one brightness (0 dark, 1 its full colour, more for a flash), or
 	 *  blinking again (unset) */
 	void HoldAt(TOptional<float> InLevel);
@@ -42,6 +44,7 @@ struct SIGNAL47_API FS47GlowPoints
 	static float Factor(double T, const FVector2D& B, float Hold, float Level);
 
 private:
+	TArray<float> OutputScale;
 	TArray<float> Brightness; // what each billboard has now (set only when it changes)
 	void Apply(int32 I);
 };

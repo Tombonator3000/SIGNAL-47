@@ -2,6 +2,7 @@
 
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/LocalPlayer.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
@@ -11,6 +12,7 @@
 #include "Layout/ArrangedWidget.h"
 #include "Layout/WidgetPath.h"
 #include "RenderingThread.h"
+#include "SceneView.h"
 #include "S47Keys.h"
 #include "S47Theme.h"
 #include "S47Three.h"
@@ -64,9 +66,27 @@ bool SS47ScreenView::PictureContains(const FVector2D& P)
 void SS47ScreenView::FitEyeToViewport()
 {
 	if(!Walker.IsValid()||!GEngine||!GEngine->GameViewport)return;
-	FVector2D VP(16,9);GEngine->GameViewport->GetViewportSize(VP);
-	const double TanV=FMath::Tan(FMath::DegreesToRadians(double(Walker->Fov)*.5)),Aspect=FMath::Max(.1,VP.X/FMath::Max(1.,VP.Y));
-	const double Dist=FMath::Max(Size.Y/Fill*.5/TanV,Size.X/.94*.5/(TanV*Aspect));
+	// Match the projection actually used by this local player's viewport. UE's
+	// axis constraint can change its effective vertical FOV in a wide window;
+	// deriving distance from the walker's nominal FOV then shrinks the CRT.
+	double Dist=0;
+	APlayerController* PC=Walker->GetWorld()?Walker->GetWorld()->GetFirstPlayerController():nullptr;
+	ULocalPlayer* Player=PC?PC->GetLocalPlayer():nullptr;
+	FSceneViewProjectionData Projection;
+	if(Player&&GEngine->GameViewport->Viewport&&Player->GetProjectionData(GEngine->GameViewport->Viewport,Projection)&&Projection.IsPerspectiveProjection()&&Projection.IsValidViewRectangle())
+	{
+		const double ScaleX=FMath::Abs(Projection.ProjectionMatrix.M[0][0]),ScaleY=FMath::Abs(Projection.ProjectionMatrix.M[1][1]);
+		if(FMath::IsFinite(ScaleX)&&FMath::IsFinite(ScaleY)&&ScaleX>1e-4&&ScaleY>1e-4)
+			Dist=FMath::Max(Size.Y*ScaleY/(2*Fill),Size.X*ScaleX/(2*.94));
+	}
+	if(!FMath::IsFinite(Dist)||Dist<=0)
+	{
+		// Initial startup/headless fallback only; normal screen views use the
+		// same native projection as pointer deprojection, refreshed every tick.
+		FVector2D VP(16,9);GEngine->GameViewport->GetViewportSize(VP);
+		const double TanV=FMath::Tan(FMath::DegreesToRadians(FMath::Clamp(double(Walker->Fov),10.,160.)*.5)),Aspect=FMath::Max(.1,VP.X/FMath::Max(1.,VP.Y));
+		Dist=FMath::Max(Size.Y/Fill*.5/TanV,Size.X/.94*.5/(TanV*Aspect));
+	}
 	To.Eye=S47Three::ToThree(Centre+Normal*Dist);Aim(-Normal,To.Yaw,To.Pitch);
 }
 

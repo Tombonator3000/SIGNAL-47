@@ -33,18 +33,46 @@ namespace
   FString Fixture,Output;
   int32 Stage=0;
   double Age=0,At=0;
-  double X=-.9,Z=5.15,Yaw=-2.75,Pitch=-.04;
+  double X=-3.,Z=5.5,Yaw=-2.15,Pitch=-.04;
+  FString GeometryIdentity,FirstCaptureIdentity;
+  double GeometryChangedAt=0,GeometryPollAt=-1;
+  int32 GeometryChanges=0;
+  bool bComparisonGeometryStable=true;
   TArray<TSharedPtr<FJsonValue>> Frames;
   bool bRestAccepted=false;
   bool Finish(bool Good,const FString& Why)
   {
    auto O=S47J::New();S47J::Set(O,TEXT("diagnosticComplete"),Good);S47J::Set(O,TEXT("reason"),Why);
    S47J::Set(O,TEXT("fixture"),Fixture);S47J::Set(O,TEXT("restAccepted"),bRestAccepted);
+   S47J::Set(O,TEXT("geometryStableAcrossCaptures"),bComparisonGeometryStable);
    S47J::Set(O,TEXT("scope"),TEXT("Nearby saved state, explicitly staged fixed corridor pose and Low graphics. Clock-only evening/morning and real Rest API; no natural navigation or exact user-error frame claimed. Screenshots and node records require comparison; completion is not a wall-fix PASS."));
    O->SetArrayField(TEXT("frames"),Frames);
    if(!Output.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Output/TEXT("result.json")));
    UE_LOG(LogTemp,Display,TEXT("S47 wall diagnostic %s: %s"),Good?TEXT("COMPLETE"):TEXT("FAILED"),*Why);
    FPlatformMisc::RequestExitWithStatus(false,Good?0:1);return false;
+  }
+  bool GeometrySettled()
+  {
+   if(Age-GeometryPollAt>=.25)
+   {
+    GeometryPollAt=Age;FString Identity;auto* W=Main->Web.Get();
+    const FBox Region(FVector(-7,-.5,4.4),FVector(3,3.6,11));
+    for(int32 I=0;I<W->PartCount();++I)
+    {
+     const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;
+     UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;if(!Mesh)continue;
+     const FBox UB=Mesh->GetBoundingBox().TransformBy(C->GetComponentTransform());
+     const FVector A=S47Three::ToThree(UB.Min),B=S47Three::ToThree(UB.Max);
+     if(!FBox(A.ComponentMin(B),A.ComponentMax(B)).Intersect(Region))continue;
+     Identity+=FString::Printf(TEXT("%d:%s:%s:%d:%d\n"),I,*C->GetPathName(),*Mesh->GetPathName(),Mesh->GetNumLODs(),Mesh->GetNumTriangles(0));
+    }
+    if(Identity!=GeometryIdentity)
+    {
+     GeometryIdentity=MoveTemp(Identity);GeometryChangedAt=Age;++GeometryChanges;
+     UE_LOG(LogTemp,Display,TEXT("S47 wall diagnostic geometry changed at %.2fs (stage %d); awaiting two stable seconds"),Age,Stage);
+    }
+   }
+   return !GeometryIdentity.IsEmpty() && Age-GeometryChangedAt>=2.;
   }
   bool Capture(const FString& Name)
   {
@@ -54,6 +82,12 @@ namespace
    S47J::Set(O,TEXT("yaw"),M->Player->Yaw);S47J::Set(O,TEXT("pitch"),M->Player->Pitch);
    S47J::Set(O,TEXT("annexInteriorShown"),W->Obj(TEXT("annex.interior")).Shown());
    S47J::Set(O,TEXT("graphics"),W->GetGraphicsSettings().PresetId());
+   if(FirstCaptureIdentity.IsEmpty())FirstCaptureIdentity=GeometryIdentity;
+   const bool SameGeometry=GeometryIdentity==FirstCaptureIdentity;
+   bComparisonGeometryStable&=SameGeometry;
+   S47J::Set(O,TEXT("sameGeometryAsFirstCapture"),SameGeometry);
+   S47J::Set(O,TEXT("geometryStableSeconds"),Age-GeometryChangedAt);
+   S47J::Set(O,TEXT("geometryChangesObserved"),GeometryChanges);
    const FBox Region(FVector(-7,-.5,4.4),FVector(3,3.6,11));
    TArray<TSharedPtr<FJsonValue>> Nodes;
    for(int32 I=0;I<W->PartCount();++I)
@@ -111,7 +145,11 @@ namespace
    }
    // Keep only the simulation clock held. WorldLife and visibility still tick normally.
    M->bPausedByMenu=true;M->Player->SetActive(false);
+   const bool Settled=GeometrySettled();
    if(Age-At<3)return true;
+   // Allow the known deferred fixture replacement to complete before the baseline.
+   // Every image also requires two seconds with unchanged nearby component/mesh IDs.
+   if((Stage==2||Stage==4||Stage==6||Stage==8)&&(!Settled||(Stage==2&&Age-At<8)))return true;
    if(Stage==2){if(!Capture(TEXT("01-evening")))return Finish(false,TEXT("snapshot write failed"));Next(3);return true;}
    if(Stage==3){M->Story->SetClock(8*3600);Next(4);return true;}
    if(Stage==4){if(!Capture(TEXT("02-clock-only-morning")))return Finish(false,TEXT("snapshot write failed"));Next(5);return true;}
@@ -128,7 +166,9 @@ namespace
    if(Stage==8){if(!Capture(TEXT("04-production-rest")))return Finish(false,TEXT("snapshot write failed"));Next(9);return true;}
    for(const TCHAR* Name:{TEXT("01-evening"),TEXT("02-clock-only-morning"),TEXT("03-clock-only-evening"),TEXT("04-production-rest")})
     if(!IFileManager::Get().FileExists(*(Output/(FString(Name)+TEXT(".png")))))return Finish(false,TEXT("screenshot missing"));
-   return Finish(true,TEXT("four fixed-pose captures complete; inspect images and mesh differences before diagnosing"));
+   return Finish(true,bComparisonGeometryStable?
+    TEXT("four fixed-pose captures complete with stable geometry identities; inspect images before diagnosing"):
+    TEXT("four captures complete, but geometry changed between captures: clock comparison is confounded by deferred geometry preparation"));
   }
  };
 }

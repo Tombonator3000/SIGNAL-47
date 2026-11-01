@@ -250,15 +250,32 @@ void AS47Web::UpdateExteriorLighting()
 	const bool bLog = FParse::Param(FCommandLine::Get(), TEXT("S47LightLog"));
 	const FVector Camera = S47Three::ToThree(Eye);
 	const int32 Court = FloodSet(TEXT("court"));
+ // These legacy sprites retain their original coordinates for station/town event lookup.
+ // Apply an output mask without rebinding them to the displaced native fixture apertures.
+ if (FS47GlowPoints* G = Glow(TEXT("world.site.glow.points")))
+ {
+  const int32 Field = FloodSet(TEXT("field"));
+  G->SetOutputScale(3, ExteriorDaylightMask(Field, 2));
+  G->SetOutputScale(6, ExteriorDaylightMask(Field, 3));
+  G->SetOutputScale(10, ExteriorDaylightMask(Field, 5));
+ }
+ if (FS47GlowPoints* G = Glow(TEXT("world.town.glow.points")))
+  for (int32 I = 1; I <= 7; ++I)
+  {
+   const float Mask = ExteriorDaylightMask(FloodSet(TEXT("town")), I);
+   G->SetOutputScale(I * 2, Mask); G->SetOutputScale(I * 2 + 1, Mask);
+  }
 	TMap<UMaterialInstanceDynamic*, float> Emission;
 	for (FExteriorLight& P : ExteriorLights)
 	{
 		USpotLightComponent* L = P.Light.Get();
 		if (!L) continue;
+		const float DayMask = ExteriorDaylightMask(P.Set, P.Slot);
 		float K = FMath::Max(0.f, FloodPos(P.Set, P.Slot).A * FloodScaleOf(P.Set) / P.Reference);
 		if (!ObjAt(P.Node).Shown()) K = 0;
 		if (FS47GlowPoints* G = Glow(P.GlowNode); G && G->Pos.IsValidIndex(P.Glow) && G->Col.IsValidIndex(P.Glow))
 		{
+			G->SetOutputScale(P.Glow, DayMask);
 			const FLinearColor C = G->Col[P.Glow];
 			const float GlowK = FMath::Max3(C.R, C.G, C.B) / P.GlowReference;
 			if (NodeWorldThree(G->Node).TransformPosition(G->Pos[P.Glow]).Y < -900) K = 0;
@@ -276,6 +293,8 @@ void AS47Web::UpdateExteriorLighting()
 				K = FMath::Min(K, FMath::Max(0.f, GlowK));
 			}
 		}
+		// Apply after reading/writing power-owned glow colours to avoid feedback or double dimming.
+		K *= DayMask;
 		if (UMaterialInstanceDynamic* D = P.Diffuser.Get(); D && !P.bAuthoredLens) Emission.FindOrAdd(D) = FMath::Max(Emission.FindRef(D), K);
 		const bool bOn = K > 0.0001f && FVector::DistSquared(Camera, P.At) < FMath::Square(200.f);
 		const bool bToggle = P.bWasOn != bOn;

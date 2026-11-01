@@ -172,13 +172,19 @@ void FS47FreeformJourneyTest::Step(double Dt)
   if(Age-At<3.5||W.BenchBusy())return;
   if(!Check(W.InventoryCount(TEXT("donor"))==0&&W.InventoryCount(TEXT("relay"))==2&&F.HasFinding(TEXT("donor-relay")),TEXT("actual donor bench test produces one compatible relay")))return;
   PlaceAt(TEXT("ff:service"));
-  const FVector D=W.InteractionPoint(TEXT("ff:service"))-S47Three::ToThree(M->Player->EyeUE());
-  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
   Go(91);return;
  }
  if(Stage==91)
  {
+  // Place updates walking data before the native camera catches up on its next tick.
   if(Age-At<.5)return;
+  const FVector D=W.InteractionPoint(TEXT("ff:service"))-S47Three::ToThree(M->Player->EyeUE());
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  Go(92);return;
+ }
+ if(Stage==92)
+ {
+  if(Age-At<.2)return;
   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
   if(!Check(Picked==TEXT("ff:service"),TEXT("eye ray reaches the marked S-03 service box from standing ground")))return;
   FScreenshotRequest::RequestScreenshot(Root/TEXT("service-reachable.png"),true,false);

@@ -91,15 +91,18 @@ bool FS47FreeformInWorldTest::Restore(const FString& Name)
 void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;
+ const bool ScreensOnly=FParse::Param(FCommandLine::Get(),TEXT("S47FreeformScreensOnly"));
  if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("actual-jeep-driver.png"),TEXT("fysisk-audio.png")})
  {
+  if(ScreensOnly && FString(Name)!=TEXT("operations.png") && FString(Name)!=TEXT("status.png") && FString(Name)!=TEXT("tracking.png") && FString(Name)!=TEXT("receiver.png"))continue;
   TArray<uint8> Bytes;const bool PNG=FFileHelper::LoadFileToArray(Bytes,*(Root/Name))&&Bytes.Num()>1000&&Bytes[0]==137&&Bytes[1]==80&&Bytes[2]==78&&Bytes[3]==71;
   if(!Check(PNG,FString(TEXT("native screenshot exists with PNG signature: "))+Name)){Good=false;}
  }
  const FString Reason=(!Good&&Why.IsEmpty())?FString(TEXT("required native screenshot was not captured")):Why;
  if(M){M->bPausedByMenu=false;if(M->UI)M->UI->Close(true);}
  auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Reason);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("flowRestores"),Restores);S47J::Set(O,TEXT("elapsedActiveDriverSeconds"),Age);O->SetArrayField(TEXT("evidence"),Evidence);
- S47J::Set(O,TEXT("method"),TEXT("Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse at the regular pump and on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal."));
+ S47J::Set(O,TEXT("scope"),ScreensOnly?TEXT("four physical screens and camera only"):TEXT("full in-world equipment journey"));
+ S47J::Set(O,TEXT("method"),ScreensOnly?TEXT("Production four-screen opening, native camera/window, live clock and four screenshots. Rendering-only follow-up; no repeated pump or audio journey."):FString(TEXT("Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse at the regular pump and on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal.")));
  S47J::Set(O,TEXT("limits"),TEXT("Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. Mounted Jeep mesh identities and a native driver-seat screenshot are checked, but windshield/mirror visual acceptance still requires review of that image. No natural drive, actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."));
  if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -136,6 +139,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(Age-At<.25)return;M->UI->Close(true);
   if(++ScreenIndex<4){if(!OpenScreen(ScreenIndex))return;Go(1);return;}
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformScreensOnly"))){Finish(true,TEXT("four native workstations rendered"));return;}
   if(!Restore(TEXT("cards-and-terminals")))return;Go(3);return;
  }
  if(Stage==3)

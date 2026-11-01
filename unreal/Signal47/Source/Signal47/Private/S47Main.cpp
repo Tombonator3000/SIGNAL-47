@@ -89,7 +89,7 @@ void US47Main::Step(double Dt)
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
 	if (!bFree && Evening) Evening->Step(Dt);
-	if (!bFree && Office) Office->Step(Dt);
+	if (Office) Office->Step(Dt); // Doors, drawers and room visibility also update in Freeform.
 	if (!bFree && Observing) Observing->Step(Dt);
 	if (!bFree && Horror) Horror->Step(Dt);
 	if (!bFree && Spine) Spine->Step(Dt);

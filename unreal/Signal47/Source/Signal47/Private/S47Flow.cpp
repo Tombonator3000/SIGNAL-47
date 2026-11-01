@@ -892,7 +892,7 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	if (bEveningTimeline && M->Evening) M->Evening->Begin(EveningSaved,!bOpening);
 	else if (M->Evening && M->Story->Begun.Contains(TEXT("ch2"))) M->Evening->BeginInvestigation(EveningSaved);
-	if (bFreeform) { if(M->Office)M->Office->Begin(nullptr,false); if(M->SkyVisitors)M->SkyVisitors->Begin(nullptr,false); if(M->AnomalyWorld)M->AnomalyWorld->Reset(); }
+	if (bFreeform) { if(M->Office)M->Office->Begin(S47J::Obj(O.State,TEXT("office")),false); if(M->SkyVisitors)M->SkyVisitors->Begin(nullptr,false); if(M->AnomalyWorld)M->AnomalyWorld->Reset(); }
 	if (!bFreeform && M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if (!bFreeform && M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if(M->FieldRadio) M->FieldRadio->Begin(S47J::Obj(O.State,TEXT("fieldRadio")));

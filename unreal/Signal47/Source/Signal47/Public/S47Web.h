@@ -80,6 +80,7 @@ public:
 	const FS47GraphicsSettings& GetGraphicsSettings() const { return Graphics; }
 	const FPostProcessSettings* GetGraphicsPostProcess() const;
 	TSharedPtr<FJsonObject> GraphicsReadback() const;
+	float ExteriorDaylightMask(int32 Set, int32 Slot) const;
 	void SetSkyLighting(float Daylight, const FVector& SunDirection, float Sun, float Flash, float Evening = 0.f);
 	// View-based finale negative fill, not a physical cloud-shadow footprint. Native ground lights only.
 	void SetFinaleGroundShade(float Shade);
