@@ -290,7 +290,21 @@ void FS47Caliche::BindTown()
 	auto Map = [this] { Once(TEXT("pins"), TEXT("Caliche, the sheriff's substation: a county map on the wall, stuck with pins. Most are scattered. Two rows run straight, one east along the old road, one west into the empty part of the map.")); };
 	Add(TEXT("sheriffWindow"), [] { return TEXT("Window"); }, [this, Map] { M->UI->Toast(Town->bDeputyIn ? TEXT("A county map on the wall, stuck with pins: red, blue, yellow. Most are scattered. Two rows are not. The deputy at the desk looks up at you, and back at the map.") : TEXT("The office is dark. Through the bars you can still make out the map and its pins, and two rows of them running straight."), 5.2); Map(); }, [Map] { Map(); return TEXT("One row of pins runs out east along the old road. The other runs west, off the highway, into country with nothing drawn on it."); });
 	Add(TEXT("sheriffDoor"), [this] { return Town->bDeputyIn ? TEXT("Knock") : TEXT("Door"); }, [this] { if (Town->bDeputyIn) Talk(TEXT("deputy")); else M->UI->Toast(TEXT("Locked. A card in the frame, in ballpoint: BACK SOON."), 3.6); }, [this] { return Town->bDeputyIn ? FString(TEXT("COUNTY SHERIFF, SUBSTATION. A light under the door, and a radio turned low.")) : FString(); });
-	Add(TEXT("patrolCar"), [this] { return Town->bDeputyIn || Town->bCarOut ? FString(TEXT("Patrol car")) : FString(); }, [this] { M->UI->Toast(Town->bCarOut ? TEXT("The engine is running. The driver's door hangs open with the keys in it, his hat on the seat, the radio on the dash turned all the way down. Nobody.") : TEXT("The deputy's car. A clipboard on the passenger seat, a thermos, a county map folded small."), Town->bCarOut ? 5.6 : 3.8); }, [this] { return Town->bCarOut ? FString(TEXT("No footprints going off the shoulder that you can see. The exhaust hangs in the cold, straight up.")) : Town->bDeputyIn ? FString(TEXT("The hood is still warm. Pins in a cigar box on the dash.")) : FString(); });
+	// The empty car's open door is a trace: it stays open until the player, having looked, shuts it
+	// (S47Props swing; the story node, beacon and notes are unchanged). A new event opens it again.
+	struct FPatrolDoor { bool bLooked = false, bShut = false; };
+	const TSharedRef<FPatrolDoor> Patrol = MakeShared<FPatrolDoor>();
+	Add(TEXT("patrolCar"), [this, Patrol]
+	{
+		if (!Town->bCarOut) *Patrol = FPatrolDoor();
+		if (Town->bCarOut && Patrol->bLooked && AS47Props::IsSwingOpen(TEXT("patrolCarDoor"))) return FString(TEXT("Close the door"));
+		return Town->bDeputyIn || Town->bCarOut ? FString(TEXT("Patrol car")) : FString();
+	}, [this, Patrol]
+	{
+		if (Town->bCarOut && Patrol->bLooked && AS47Props::ShutSwing(TEXT("patrolCarDoor"))) { Patrol->bShut = true; M->UI->Toast(TEXT("You push the driver's door shut. The engine keeps running. Nobody comes back for it."), 4.2); return; }
+		M->UI->Toast(Town->bCarOut ? (Patrol->bShut ? TEXT("The engine is running. The driver's door is shut now, the keys in it, his hat on the seat. Nobody.") : TEXT("The engine is running. The driver's door hangs open with the keys in it, his hat on the seat, the radio on the dash turned all the way down. Nobody.")) : TEXT("The deputy's car. A clipboard on the passenger seat, a thermos, a county map folded small."), Town->bCarOut ? 5.6 : 3.8);
+		if (Town->bCarOut) Patrol->bLooked = true;
+	}, [this] { return Town->bCarOut ? FString(TEXT("No footprints going off the shoulder that you can see. The exhaust hangs in the cold, straight up.")) : Town->bDeputyIn ? FString(TEXT("The hood is still warm. Pins in a cigar box on the dash.")) : FString(); });
 	Add(TEXT("laundromat"), [] { return TEXT("Laundromat"); }, Say(TEXT("Six washers, one tube light, nobody. One machine is running.")), [] { return TEXT("The one machine turns, stops, turns. There is no basket on the bench and no one waiting."); });
 	Add(TEXT("bench"), [this] { return Town->bWomanIn ? FString() : FString(TEXT("Bench")); }, Say(TEXT("A bench under the window. The paint is worn through in one place, where somebody sits often.")));
 	Add(TEXT("cinema"), [] { return TEXT("The Plaza"); }, Say(TEXT("Closed. The doors are chained. The posters behind the glass have faded to the same blue."), 3.8), [] { return TEXT("A box office with its blind down, and a card: CLOSED."); });

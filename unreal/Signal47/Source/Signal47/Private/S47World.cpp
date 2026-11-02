@@ -1916,6 +1916,12 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 		if (C && C->Input) In = C->Input(Dt);
 		else if (Autopilot) In = AutoInput(Dt);
 		else if (TestInput) In = TestInput();
+		// the fuller handling only for the player's own hands on the wheel (not in Drive.ts; the
+		// autopilot, tests and chapter input drive as the web version does)
+		const bool bOwnHands = !(C && C->Input) && !Autopilot && !TestInput;
+		L->Drive->bHandling = bOwnHands && S47Drive::HandlingOn();
+		// a stick: finer near the centre, full lock at the end (keys give -1, 0 or 1 and are unchanged)
+		if (L->Drive->bHandling && S47Gamepad::UsingGamepad()) In.Steer = FMath::Sign(In.Steer) * (0.4 * FMath::Abs(In.Steer) + 0.6 * FMath::Square(In.Steer));
 		L->Drive->bCameraMotion = !M->Player || M->Player->bHeadMotion;
 		L->Drive->Update(Dt, In, LookIn);
 		TripStep(Dt);

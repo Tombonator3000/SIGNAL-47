@@ -867,6 +867,32 @@ bool AS47Props::IsDoorOpen(const FString& Use)
 	return false;
 }
 
+AS47Props::FSwing* AS47Props::SwingOf(const FString& PropId)
+{
+	const FPlaced* Pl = Placed.FindByPredicate([&](const FPlaced& V) { return V.Id == PropId; });
+	if (!Pl || !Pl->Comp.IsValid()) return nullptr;
+	return Swings.FindByPredicate([&](const FSwing& S) { return S.Comp.Get() == Pl->Comp.Get(); });
+}
+
+bool AS47Props::IsSwingOpen(const FString& PropId)
+{
+	AS47Props* P = Instance.Get();
+	const FSwing* S = P ? P->SwingOf(PropId) : nullptr;
+	return S && S->Open >= 0 && P->Shown(S->Open) && !S->bShut;
+}
+
+bool AS47Props::ShutSwing(const FString& PropId)
+{
+	// The player shuts a story-opened leaf (the empty patrol car's driver door). The story node
+	// stays shown, so the beacon and every story reading of it are unchanged.
+	if (!IsSwingOpen(PropId)) return false;
+	AS47Props* P = Instance.Get();
+	P->SwingOf(PropId)->bShut = true;
+	if (US47Main* M = US47Main::Get(P)) if (M->Audio) M->Audio->Sfx(M->Audio->Or(TEXT("door_latch"), TEXT("switch")), FS47Sound());
+	UE_LOG(LogS47Props, Display, TEXT("S47: props: swing %s shut by the player"), *PropId);
+	return true;
+}
+
 void AS47Props::ApplyTrim(const FString& Model)
 {
 	// trim_web.py's meshes in place of the exported ones of the same name under the group, where the
@@ -1067,11 +1093,16 @@ void AS47Props::Tick(float DeltaSeconds)
 	{
 		UStaticMeshComponent* C = S.Comp.Get();
 		if (!C) continue;
-		const float K = S.Open >= 0 && Shown(S.Open) ? 1.f : 0.f;
+		const bool bStory = S.Open >= 0 && Shown(S.Open);
+		if (!bStory) S.bShut = false; // the story's next opening is a new scene: open again
+		const float K = bStory && !S.bShut ? 1.f : 0.f;
 		if (K == S.K) continue;
-		S.K = K;
+		// The story's own open/close stays immediate, as before. A leaf the player shuts
+		// (ShutSwing) swings closed in about 0.7 s, eased like the prop doors below.
+		S.K = S.bShut && S.K > 0.f ? FMath::FInterpConstantTo(S.K, 0.f, DeltaSeconds, 1.4f) : K;
+		const float E = S.K * S.K * (3 - 2 * S.K);
 		// about the hinge's upright, in the model's own terms, then where the model stands
-		const FTransform Turn = FTransform(-S.Hinge) * FTransform(FRotator(0, S.Deg * K, 0)) * FTransform(S.Hinge);
+		const FTransform Turn = FTransform(-S.Hinge) * FTransform(FRotator(0, S.Deg * E, 0)) * FTransform(S.Hinge);
 		C->SetRelativeTransform(Turn * S.Rest);
 	}
 	for (FBeacon& B : Beacons) UpdateBeacon(B, DeltaSeconds);

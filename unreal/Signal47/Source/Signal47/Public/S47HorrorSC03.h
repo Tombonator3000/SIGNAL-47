@@ -20,6 +20,8 @@ public:
  {
   bool bDispatch = false, bAssigned = false, bIdentified = false, bTaken = false, bObserved = false, bRetreat = false;
   bool bWagon = false, bThermos = false, bMarks = false, bMissing = false, bLocalOrder = false, bDeputyHere = false;
+  // The player shut wagon 23's open driver door after looking in (saved; absent in older saves: open).
+  bool bWagonDoorShut = false;
   FString DispatchStamp, TakenStamp, MissingStamp, OrderStamp;
  };
 
@@ -73,6 +75,7 @@ private:
  FVector Park = FVector::ZeroVector, Counter = FVector::ZeroVector, Approach = FVector::ZeroVector, DeputyFrom = FVector::ZeroVector, DeputyAt = FVector::ZeroVector;
  double WaitT = 0, ArriveT = 0, LiftDelay = 0, LiftT = 0, LookT = 0, Gone = 0, LightK = 0, FigureK = 0, TurnK = 0, DeputyT = 0, Clock = 0;
  bool bOrtizGone = false;
+ double DoorShutK = 0; // 0: the door as the story left it, 1: swung shut by the player
  int32 Version = 0;
  double GroundRef = 0;
  bool bGrounded = false;
@@ -81,6 +84,8 @@ private:
  void Apply();
  void SetPhase(EPhase Next);
  void FinishLift();
+ void SwingDoor(double Dt);
+ double WagonDoorAngle() const;
  bool Sees(const FVector& Point, double Margin = .9) const;
  bool ClearLine(const FVector& From, const FVector& To) const;
  bool PlayerCovered() const;

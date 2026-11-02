@@ -1,5 +1,6 @@
 // story/albumSubjects.ts
 #include "S47AlbumSubjects.h"
+#include "S47Props.h"
 #include "S47TownLayer.h"
 #include "S47Herd.h"
 #include "S47FarmWorld.h"
@@ -183,7 +184,7 @@ namespace S47AlbumSubjects
 				if (TownState->bWomanIn) More.Add({ TEXT("woman"), TEXT("the woman with the radio"), .5, 25, 2.2, nullptr });
 				if (TownState->bSmokerIn) More.Add({ TEXT("smoker"), TEXT("the man on the stoop"), .5, 30, 2.2, nullptr });
 				if (TownState->bPaperIn) More.Add({ TEXT("paper"), TEXT("the newspapers"), .3, 8, .9, nullptr });
-				if (TownState->bDeputyIn || TownState->bCarOut) More.Add({ TEXT("patrolCar"), TownState->bCarOut ? TEXT("the deputy's car with its door open") : TEXT("the patrol car"), 2.4, 120, TownState->bCarOut ? 2.4 : 1.1, nullptr });
+				if (TownState->bDeputyIn || TownState->bCarOut) More.Add({ TEXT("patrolCar"), TownState->bCarOut ? (AS47Props::IsSwingOpen(TEXT("patrolCarDoor")) ? TEXT("the deputy's car with its door open") : TEXT("the deputy's empty car")) : TEXT("the patrol car"), 2.4, 120, TownState->bCarOut ? 2.4 : 1.1, nullptr });
 				Things(TEXT("world.town.proxies."), More.GetData(), More.Num());
 				if (TownState->bCutoutOut) Add(TEXT("the cardboard alien on the shoulder"), { TownState->Group.LocalToWorld(TownState->CutoutAt) + FVector(0, .6, 0) }, [](FS47Subject& S) { S.R = .6; S.Max = 120; S.W = 2.5; });
 			}

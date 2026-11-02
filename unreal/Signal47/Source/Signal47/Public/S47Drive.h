@@ -114,6 +114,13 @@ public:
 	FVector CamPos = FVector::ZeroVector;
 	FQuat CamQuat = FQuat::Identity;
 	bool bCameraMotion = true; // Comfort: no suspension sway or engine/road vibration in the eye.
+	/** Not in Drive.ts: the fuller handling for the player's own driving (US47World sets it, with
+	 *  s47.Handling): a quicker wheel at low speed, slopes, a little sideways slide that depends on
+	 *  the ground, glancing along walls, softer springs, bumps by the metre and some head inertia.
+	 *  false (the default; the autopilot, tests and chapter input) drives exactly as Drive.ts does. */
+	bool bHandling = false;
+	/** 0..1, how far the truck slides sideways now (0 with bHandling false); for the tyres. */
+	double Slip() const;
 
 	FS47Truck* Truck = nullptr;
 	IS47DriveArea* Area = nullptr;
@@ -141,6 +148,14 @@ private:
 	double T = 0;
 	double Accel = 0;
 	double YawRate = 0;
+	// bHandling only (not in Drive.ts): sideways speed (m/s, right positive), the tyres' sideways
+	// pull (m/s^2, right positive), the yaw rate smoothed for the eye, metres rolled (bumps), the
+	// last metre cell that could knock, seconds since the last scrape along a wall, and the head's lag
+	double Lat = 0, LatG = 0, YawSm = 0, Odo = 0;
+	int64 KnockCell = 0;
+	double ScrapeT = 1;
+	double HeadX = 0, HeadZ = 0, TurnLook = 0;
+	double WheelLock(double InSpeed, double Grip) const;
 	struct FBody { double Y = 0, VY = 0, Pitch = 0, VP = 0, Roll = 0, VR = 0; } Body;
 	struct FGround { double Y = 0, Pitch = 0, Roll = 0; double At[4] = { 0, 0, 0, 0 }; };
 	FGround Ground() const;
@@ -153,4 +168,7 @@ namespace S47Drive
 	// the module's self tests (the -S47SelfTest block in S47HUD.cpp): the drive's maths against
 	// numbers the web version gives for the same questions
 	SIGNAL47_API bool SelfTest(TArray<FString>& Lines);
+	/** The console variable s47.Handling (1, the default: the fuller handling for the player's
+	 *  own driving; 0: as Drive.ts, for comparing the two). */
+	SIGNAL47_API bool HandlingOn();
 }

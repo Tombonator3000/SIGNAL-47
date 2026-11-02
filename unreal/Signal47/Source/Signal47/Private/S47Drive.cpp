@@ -7,6 +7,8 @@
 #include "S47Three.h"
 #include "S47Truck.h"
 
+#include "HAL/IConsoleManager.h"
+
 namespace
 {
 	constexpr double WHEELBASE = 3.3;
@@ -23,7 +25,27 @@ namespace
 		return S.Kind == ES47SurfaceKind::Asphalt ? 0.05 : S.Kind == ES47SurfaceKind::Gravel ? 0.4 : 0.8;
 	}
 	double Sign(double V) { return V > 0 ? 1.0 : V < 0 ? -1.0 : 0.0; }
+
+	// ---------- the fuller handling (bHandling; not in Drive.ts) ----------
+	// Ideas and formulas after SergeyMakeev/ArcadeCarPhysics and Jolt's WheeledVehicleController
+	// (both MIT); no code taken. Per surface kind: asphalt, gravel, dirt.
+	constexpr double TAU[3] = { 0.07, 0.12, 0.16 };   // s, the yaw rate following the wheels
+	constexpr double RELAX[3] = { 9, 4, 2.5 };        // 1/s, how fast a sideways slide is caught
+	constexpr double GRIP_K[3] = { 1.4, 1.05, 0.9 };  // the tyres' sideways limit against LockAt's
+	constexpr double SLIDE = 0.25;                    // sideways speed at most this x forward
+	constexpr double SLIDE_DRAG = 0.35;               // 1/s, speed lost to a slide
+	constexpr double PLAYER_LOCK = 1.25;              // x LockAt for the player: room to slide
+	constexpr double SLOPE_G = 0.55 * 9.81;           // m/s^2 x sin(pitch)
+	constexpr double GLANCE = 0.7;                    // cos of the angle to a wall still glanced along
+	constexpr double BODY_GIVE = 0.05;                // m, the body from its ground (the wheels are in the mesh)
+	constexpr double KNOCK_STEP = 1.5;                // m between chances of a single knock
+	uint32 KnockHash(uint32 X) { X ^= X >> 16; X *= 0x7feb352dU; X ^= X >> 15; X *= 0x846ca68bU; X ^= X >> 16; return X; }
+	double U01(uint32 X) { return double(KnockHash(X) & 0xffffffU) / double(0x1000000); }
+	TAutoConsoleVariable<int32> CVarHandling(TEXT("s47.Handling"), 1,
+		TEXT("1: the fuller handling for the player's own driving (slides, slopes, softer springs). 0: as the web version drives."));
 }
+
+bool S47Drive::HandlingOn() { return CVarHandling.GetValueOnGameThread() != 0; }
 
 const TCHAR* S47SurfaceName(ES47SurfaceKind K)
 {
@@ -32,11 +54,24 @@ const TCHAR* S47SurfaceName(ES47SurfaceKind K)
 
 /** Full lock at a speed on ground of this grip: less as the speed rises, so the truck holds to
  *  about LAT m/s² sideways, and less again on loose ground. Physics, the drawn wheels and the
- *  autopilot (SteerFor) all turn the wheel through this one limit. */
+ *  autopilot (SteerFor) all turn the wheel through this one limit (with bHandling the player's
+ *  wheel goes PLAYER_LOCK past it: WheelLock below). */
 double FS47DriveController::LockAt(double InSpeed, double Grip)
 {
 	const double V = FMath::Max(1.0, FMath::Abs(InSpeed));
 	return FMath::Min(MAX_STEER, FMath::Atan(WHEELBASE * LAT * (0.45 + 0.55 * Grip) / (V * V)));
+}
+
+/** The lock the wheels turn to: LockAt, and with bHandling a little more for the player, so the
+ *  truck can be pushed past its grip on loose ground (not in Drive.ts). SteerFor stays on LockAt. */
+double FS47DriveController::WheelLock(double InSpeed, double Grip) const
+{
+	return bHandling ? FMath::Min(MAX_STEER, PLAYER_LOCK * LockAt(InSpeed, Grip)) : LockAt(InSpeed, Grip);
+}
+
+double FS47DriveController::Slip() const
+{
+	return FMath::Clamp(FMath::Abs(Lat) / (SLIDE * FMath::Max(1.0, FMath::Abs(Speed))), 0.0, 1.0);
 }
 
 FS47DriveController::FS47DriveController(FS47Truck* InTruck, IS47DriveArea* InArea)
@@ -48,7 +83,7 @@ FS47DriveController::FS47DriveController(FS47Truck* InTruck, IS47DriveArea* InAr
 void FS47DriveController::SetLook(double InYaw, double InPitch)
 {
 	Yaw = InYaw; Pitch = InPitch; Idle = 0;
-	Pose(0, Steer * LockAt(Speed, Surface.Grip), false);
+	Pose(0, Steer * WheelLock(Speed, Surface.Grip), false);
 }
 
 double FS47DriveController::SteerFor(double Kappa) const
@@ -63,6 +98,7 @@ void FS47DriveController::Place(const FVector& P, double InHeading)
 	Pos = FVector(P.X, 0, P.Z);
 	Heading = InHeading;
 	Speed = 0; Steer = 0; bReverse = false; Gear = 1; Accel = 0; YawRate = 0;
+	Lat = 0; LatG = 0; YawSm = 0; Odo = 0; KnockCell = 0; ScrapeT = 1; HeadX = 0; HeadZ = 0; TurnLook = 0;
 	Yaw = 0; Pitch = PITCH0; bArrived = false; bEngine = true; Power = 1; Held = 0; LookBox.Reset();
 	const FGround G = Ground();
 	Body = FBody();
@@ -77,6 +113,8 @@ void FS47DriveController::Adopt(const FS47DriveController& O, double X, double Z
 	Place(FVector(X, 0, Z), InHeading);
 	Speed = O.Speed; Steer = O.Steer; bReverse = O.bReverse; Gear = O.Gear; Rpm = O.Rpm; Load = O.Load;
 	Accel = O.Accel; YawRate = O.YawRate; Yaw = O.Yaw; Pitch = O.Pitch; Idle = O.Idle; T = O.T; bEngine = O.bEngine; Power = O.Power;
+	bHandling = O.bHandling; Lat = O.Lat; LatG = O.LatG; YawSm = O.YawSm; Odo = O.Odo; KnockCell = O.KnockCell; ScrapeT = O.ScrapeT;
+	HeadX = O.HeadX; HeadZ = O.HeadZ; TurnLook = O.TurnLook;
 	// the body sits on its springs as it did: the same give over the new ground
 	const FGround Og = O.Ground();
 	FBody& B = Body;
@@ -92,7 +130,9 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 	const double Throttle = FMath::Clamp(Input.Throttle, -1.0, 1.0);
 	// ---------- steering: the wheel turns at a limited rate, less lock at speed ----------
 	const double Want = FMath::Clamp(Input.Steer, -1.0, 1.0);
-	const double Rate = FMath::Abs(Want) > FMath::Abs(Steer) && Sign(Want) == Sign(Steer != 0 ? Steer : Want) ? 2.2 : 3.6;
+	double Rate = FMath::Abs(Want) > FMath::Abs(Steer) && Sign(Want) == Sign(Steer != 0 ? Steer : Want) ? 2.2 : 3.6;
+	// (bHandling, not in Drive.ts: a quicker wheel when slow, a calmer one at speed)
+	if (bHandling) Rate *= 1.35 - 0.6 * FMath::Clamp(FMath::Abs(Speed) / 22, 0.0, 1.0);
 	Steer += FMath::Clamp(Want - Steer, -Rate * Dt, Rate * Dt);
 	// ---------- longitudinal ----------
 	const FS47Surface S = Surface = Area->Surface(Pos.X, Pos.Z);
@@ -123,7 +163,14 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 	double Drag = 0.18 + 0.5 * Rough + 0.0009 * V * V + (!bPulling && bEngine ? 0.25 : 0) + Held;
 	if (FMath::Abs(V) > S.Top) Drag += (FMath::Abs(V) - S.Top) * 0.45;
 	A -= Sign(V) * Drag;
+	// (bHandling, not in Drive.ts: a slope pulls the truck back uphill and on downhill; a truck at
+	// a stop with no throttle stays where it is, as on its brake)
+	if (bHandling && (bPulling || FMath::Abs(V) > 0.5)) A -= SLOPE_G * FMath::Sin(Ground().Pitch);
 	Accel = A;
+	const int32 Ki = FMath::Clamp(int32(S.Kind), 0, 2);
+	const double Tau = TAU[Ki], Relax = RELAX[Ki];
+	const double GripLimit = GRIP_K[Ki] * LAT * (0.45 + 0.55 * S.Grip); // the tyres' sideways limit, m/s^2
+	bool bTouch = false;
 	// ---------- move in small steps, so nothing is skipped at speed ----------
 	const int32 N = FMath::Min(8, FMath::Max(1, int32(FMath::CeilToDouble(FMath::Abs(V) * Dt / 0.25))));
 	const double H = Dt / N;
@@ -133,15 +180,75 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 		Speed += A * H;
 		// brakes and drag stop the truck; they never push it the other way
 		if (!bPulling && Before != 0 && Sign(Speed) != Sign(Before)) { Speed = 0; A = 0; }
-		const double Beta = FMath::Atan(LR / WHEELBASE * FMath::Tan(Steer * LockAt(Speed, S.Grip)));
+		const double Beta = FMath::Atan(LR / WHEELBASE * FMath::Tan(Steer * WheelLock(Speed, S.Grip)));
 		const double Ox = Pos.X, Oz = Pos.Z, Oh = Heading;
-		YawRate = -Speed / LR * FMath::Sin(Beta);
+		if (!bHandling) YawRate = -Speed / LR * FMath::Sin(Beta);
+		else
+		{
+			// (not in Drive.ts) The heading follows the wheels with a little lag (Tau). The tyres pull
+			// sideways up to GripLimit: what the turn asks beyond it becomes a slide outwards (Lat),
+			// caught again at Relax; at SLIDE x speed the heading turns no faster than the path.
+			const double Kin = -Speed / LR * FMath::Sin(Beta);
+			YawRate += (Kin - YawRate) * (1 - FMath::Exp(-H / Tau));
+			const double R = -YawRate, U = Speed;                 // right-turn rate, forward speed
+			const double Ask = U * R - Relax * Lat, Fy = FMath::Clamp(Ask, -GripLimit, GripLimit);
+			// within grip the slide dies away exactly (stable through a long frame); past it the
+			// tyres pull at their limit, and never catch it faster than within grip
+			const double Caught = Lat * FMath::Exp(-Relax * H);
+			double NewLat = Fy == Ask ? Caught : Lat + (Fy - U * R) * H;
+			if (Fy != Ask && Sign(Fy - U * R) == -Sign(Lat) && FMath::Abs(NewLat) < FMath::Abs(Caught)) NewLat = Caught;
+			const double Cap = SLIDE * FMath::Max(1.0, FMath::Abs(U));
+			if (FMath::Abs(NewLat) > Cap)
+			{
+				NewLat = FMath::Clamp(NewLat, -Cap, Cap);
+				if (FMath::Abs(U) > 0.5) YawRate = -FMath::Clamp((Fy - (NewLat - Lat) / H) / U, FMath::Min(0.0, R), FMath::Max(0.0, R));
+			}
+			Lat = NewLat; LatG = Fy;
+			Speed -= Sign(Speed) * FMath::Min(FMath::Abs(Speed), SLIDE_DRAG * FMath::Abs(Lat) * H);
+		}
 		Heading += YawRate * H;
 		// the centre moves a little to the inside of the heading (the slip angle beta)
 		Pos.X -= FMath::Sin(Heading - Beta) * Speed * H;
 		Pos.Z -= FMath::Cos(Heading - Beta) * Speed * H;
+		if (bHandling) { Pos.X += FMath::Cos(Heading) * Lat * H; Pos.Z -= FMath::Sin(Heading) * Lat * H; }
+		if (bHandling && Hit())
+		{
+			// (not in Drive.ts) A glancing knock slides along the wall: the move is kept along
+			// whichever world axis is free (the walls are boxes along the axes), the speed cut by the
+			// angle once and then by the scrape. A head-on knock stops the truck as below.
+			const double Dx = Pos.X - Ox, Dz = Pos.Z - Oz, Len = FMath::Sqrt(Dx * Dx + Dz * Dz);
+			double Along = -1;
+			if (Len > 1e-9)
+			{
+				const double Fx = FMath::Abs(Dx) / Len, Fz = FMath::Abs(Dz) / Len;
+				const bool bXFirst = Fx >= Fz;
+				for (int32 Try = 0; Try < 2 && Along < 0; ++Try)
+				{
+					const bool bX = (Try == 0) == bXFirst;
+					const double F = bX ? Fx : Fz;
+					if (F < GLANCE) continue;
+					Pos.X = bX ? Ox + Dx : Ox; Pos.Z = bX ? Oz : Oz + Dz;
+					if (!Hit()) Along = F;
+				}
+			}
+			if (Along >= 0)
+			{
+				const double Impact = FMath::Abs(Speed) * FMath::Sqrt(FMath::Max(0.0, 1 - Along * Along));
+				if (ScrapeT > 0.3 && !bTouch)
+				{
+					Speed *= 0.3 + 0.7 * Along;
+					if (Impact > 0.8 && BumpT <= 0) { BumpT = 0.6; if (OnBump) OnBump(Impact); }
+				}
+				Speed -= Sign(Speed) * FMath::Min(FMath::Abs(Speed), (2 + 6 * (1 - Along)) * H);
+				Lat *= 0.5;
+				bTouch = true;
+				continue;
+			}
+			Pos.X = Ox + Dx; Pos.Z = Oz + Dz; // back to the blocked move, for the head-on knock below
+		}
 		if (Hit())
 		{
+			Lat = 0;
 			const double Impact = FMath::Abs(Speed);
 			Pos.X = Ox; Pos.Z = Oz; Heading = Oh;
 			Speed = -Sign(Speed) * FMath::Min(1.2, Impact * 0.15);
@@ -150,6 +257,12 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 		}
 	}
 	BumpT -= Dt;
+	ScrapeT = bTouch ? 0 : ScrapeT + Dt;
+	if (bHandling)
+	{
+		Odo += FMath::Abs(Speed) * Dt;
+		YawSm += (YawRate - YawSm) * (1 - FMath::Exp(-Dt * 4));
+	}
 	Mph = FMath::Abs(Speed) * 2.23694;
 	// ---------- a three-speed automatic, for the sound and the dash ----------
 	const double Fwd = FMath::Max(0.0, Speed);
@@ -160,9 +273,9 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 	else if (Gear > 1 && Fwd < Up[Gear - 2] - 3.5) Gear--;
 	const double WheelRpm = FMath::Abs(Speed) * 60 / (2 * UE_DOUBLE_PI * 0.37);
 	const double Coupled = WheelRpm * (bReverse ? 2.08 : RATIOS[Gear - 1]) * FINAL;
-	const double Slip = (IDLE + Pull * 1500) * FMath::Max(0.0, 1 - FMath::Abs(Speed) / 7);
+	const double SlipRpm = (IDLE + Pull * 1500) * FMath::Max(0.0, 1 - FMath::Abs(Speed) / 7); // the converter slipping
 	// a misfire drags the revs down with the pull
-	const double Target = bEngine ? FMath::Max3(IDLE * (0.55 + 0.45 * Power), Coupled, Slip * Power) : 0;
+	const double Target = bEngine ? FMath::Max3(IDLE * (0.55 + 0.45 * Power), Coupled, SlipRpm * Power) : 0;
 	Rpm += (Target - Rpm) * (1 - FMath::Exp(-Dt * (bEngine ? 6 : 1.6)));
 	Load = bEngine ? Pull * Power : 0;
 	// ---------- arrival ----------
@@ -183,7 +296,7 @@ void FS47DriveController::Update(double Dt, const FS47DriveIn& Input, const FVec
 		Yaw += (0 - Yaw) * K; Pitch += (PITCH0 - Pitch) * K;
 	}
 	if (Truck) Truck->SetBrake(bBraking);
-	Pose(Dt, Steer * LockAt(Speed, S.Grip));
+	Pose(Dt, Steer * WheelLock(Speed, S.Grip));
 }
 
 // Heights under the four wheels give the body its height, pitch and roll.
@@ -242,26 +355,69 @@ void FS47DriveController::Pose(double Dt, double WheelAngle, bool bSettle)
 	const double Rough = RoughOf(Surface);
 	const double Fast = FMath::Min(1.0, FMath::Abs(Speed) / 12);
 	const double Tt = T;
-	// bumps: a few unrelated sines, scaled by surface and speed
-	const double Bump = Rough * Fast * 0.025 * (FMath::Sin(Tt * 13.1) * 0.5 + FMath::Sin(Tt * 21.7 + 1.1) * 0.3 + FMath::Sin(Tt * 34.3 + 2.3) * 0.2);
-	const double LatAcc = -Speed * YawRate; // positive in a right turn: the body leans left
-	const double Tp = G.Pitch + FMath::Clamp(Accel * 0.0025, -0.03, 0.015) + Bump * 0.6;
-	const double Tr = G.Roll + FMath::Clamp(LatAcc * 0.005, -0.05, 0.05);
-	const double K = 140, C = 18, Damping = C / 2, W = FMath::Sqrt(K - Damping * Damping);
-	const double H = FMath::Max(0., Dt), Decay = FMath::Exp(-Damping * H);
-	const double Cos = FMath::Cos(W * H), SinOverW = FMath::Sin(W * H) / W;
-	auto Spring = [&](double& X, double& Vx, double Target)
+	// bumps: a few unrelated sines, scaled by surface and speed (bHandling, not in Drive.ts: by the
+	// metres rolled rather than the clock, so a stopped truck is still and the ground sets the beat)
+	const double Bump = !bHandling
+		? Rough * Fast * 0.025 * (FMath::Sin(Tt * 13.1) * 0.5 + FMath::Sin(Tt * 21.7 + 1.1) * 0.3 + FMath::Sin(Tt * 34.3 + 2.3) * 0.2)
+		: Rough * Fast * 0.025 * (FMath::Sin(Odo * 1.7) * 0.5 + FMath::Sin(Odo * 2.9 + 1.1) * 0.3 + FMath::Sin(Odo * 4.6 + 2.3) * 0.2);
+	// positive in a right turn: the body leans left (bHandling: what the tyres actually pull)
+	const double LatAcc = bHandling ? LatG : -Speed * YawRate;
+	// (bHandling, not in Drive.ts: a high CJ-7 squats, dives and leans a little more)
+	const double Tp = !bHandling ? G.Pitch + FMath::Clamp(Accel * 0.0025, -0.03, 0.015) + Bump * 0.6
+		: G.Pitch + FMath::Clamp(Accel * 0.004, -0.05, 0.03) + Bump * 0.6;
+	const double Tr = !bHandling ? G.Roll + FMath::Clamp(LatAcc * 0.005, -0.05, 0.05)
+		: G.Roll + FMath::Clamp(LatAcc * 0.009, -0.075, 0.075);
+	const double H = FMath::Max(0., Dt);
+	auto Spring = [&](double& X, double& Vx, double Target, double K, double C)
 	{
 		if (Dt <= 0) { if (bSettle) { X = Target; Vx = 0; } return; }
 		// Exact damped spring for this frame's target: the same stiffness and damping stay
 		// stable through a hitch, without shortening the driving step or the game clock.
+		// (Underdamped: K > (C/2)^2 on every axis.)
+		const double Damping = C / 2, W = FMath::Sqrt(K - Damping * Damping);
+		const double Decay = FMath::Exp(-Damping * H);
+		const double Cos = FMath::Cos(W * H), SinOverW = FMath::Sin(W * H) / W;
 		const double Offset = X - Target, BeforeV = Vx;
 		X = Target + Decay * (Offset * Cos + (BeforeV + Damping * Offset) * SinOverW);
 		Vx = Decay * (BeforeV * Cos - (Damping * BeforeV + K * Offset) * SinOverW);
 	};
-	Spring(B.Y, B.VY, G.Y + Bump);
-	Spring(B.Pitch, B.VP, Tp);
-	Spring(B.Roll, B.VR, Tr);
+	if (!bHandling)
+	{
+		Spring(B.Y, B.VY, G.Y + Bump, 140, 18);
+		Spring(B.Pitch, B.VP, Tp, 140, 18);
+		Spring(B.Roll, B.VR, Tr, 140, 18);
+	}
+	else
+	{
+		// (not in Drive.ts) single knocks on rough ground: one chance every KNOCK_STEP metres,
+		// the same stones on every drive over the same stretch of the same length
+		if (Dt > 0)
+		{
+			const int64 Cell = int64(FMath::FloorToDouble(Odo / KNOCK_STEP));
+			if (Cell != KnockCell)
+			{
+				KnockCell = Cell;
+				const uint32 Seed = uint32(Cell) * 3u;
+				if (U01(Seed) < Rough * 0.15)
+				{
+					const double J = Rough * (0.3 + 0.7 * Fast);
+					B.VY -= 0.3 * J;
+					B.VP += (U01(Seed + 1) - 0.5) * 0.3 * J;
+					B.VR += (U01(Seed + 2) - 0.5) * 0.4 * J;
+				}
+			}
+		}
+		// softer springs, each axis its own: lift, pitch, roll
+		Spring(B.Y, B.VY, G.Y + Bump, 110, 14);
+		Spring(B.Pitch, B.VP, Tp, 70, 10);
+		Spring(B.Roll, B.VR, Tr, 55, 8);
+		// the wheels are part of the body's mesh: it may not sink into or float off its ground
+		if (Dt > 0)
+		{
+			if (B.Y < G.Y - BODY_GIVE) { B.Y = G.Y - BODY_GIVE; B.VY = FMath::Max(0.0, B.VY); }
+			else if (B.Y > G.Y + BODY_GIVE) { B.Y = G.Y + BODY_GIVE; B.VY = FMath::Min(0.0, B.VY); }
+		}
+	}
 	const FQuat Qb = S47Three::Euler(B.Pitch, Heading, B.Roll, TEXT("YXZ"));
 	if (Truck)
 	{
@@ -282,11 +438,24 @@ void FS47DriveController::Pose(double Dt, double WheelAngle, bool bSettle)
 	FVector V = Truck ? Truck->DriverEye : FVector(-0.42, 1.48, 0.2);
 	V.Y += FMath::Sin(Tt * 47.3) * Eng + FMath::Sin(Tt * 17.9 + 0.7) * Road * 0.5;
 	V.X += FMath::Sin(Tt * 23.1 + 2.1) * Road * 0.3;
+	// (bHandling, not in Drive.ts) the head lags a little: back as the truck pulls, forward as it
+	// brakes, out of a turn; and looks a little into the turn when the player leaves the view be
+	const bool bHead = bHandling && bCameraMotion;
+	if (!bHead) { HeadX = 0; HeadZ = 0; TurnLook = 0; }
+	else if (Dt > 0)
+	{
+		const double Kh = 1 - FMath::Exp(-Dt * 6);
+		HeadZ += (FMath::Clamp(Accel * 0.008, -0.04, 0.04) - HeadZ) * Kh;
+		HeadX += (FMath::Clamp(-LatAcc * 0.005, -0.03, 0.03) - HeadX) * Kh;
+		const double WantLook = Idle > 0.8 && Speed > 2 ? FMath::Clamp(YawSm * 0.3, -0.07, 0.07) : 0;
+		TurnLook += (WantLook - TurnLook) * (1 - FMath::Exp(-Dt * 2.5));
+	}
+	if (bHead) { V.X += HeadX; V.Z += HeadZ; }
 	// Keep the physical truck on its springs; the comfort view follows the ground without sway.
 	const FQuat EyeBody = bCameraMotion ? Qb : S47Three::Euler(0, Heading, 0, TEXT("YXZ"));
 	CamPos = EyeBody.RotateVector(V) + FVector(Pos.X, bCameraMotion ? B.Y : G.Y, Pos.Z);
 	const double Jitter = (FMath::Sin(Tt * 19.3) * 0.6 + FMath::Sin(Tt * 29.9 + 1.7) * 0.4) * Road * 0.5;
-	const FQuat Qh = S47Three::Euler(Pitch + Jitter, Yaw, 0, TEXT("YXZ"));
+	const FQuat Qh = S47Three::Euler(Pitch + Jitter, bHead ? Yaw + TurnLook : Yaw, 0, TEXT("YXZ"));
 	CamQuat = EyeBody * Qh;
 }
 
@@ -314,6 +483,7 @@ bool S47Drive::SelfTest(TArray<FString>& Lines)
 		Check(Near3(Moving.Pos, Calm.Pos, 1e-12) && Near(Moving.Speed, Calm.Speed) && Near(Moving.Heading, Calm.Heading), TEXT("camera comfort preserves the vehicle's motion and handling"));
 		Check(Near3(Calm.CamPos, ExpectedEye, 1e-9) && Calm.CamQuat.Equals(LevelBody * S47Three::Euler(Calm.Look().Y, Calm.Look().X, 0, TEXT("YXZ")), 1e-9), TEXT("comfort camera omits suspension sway, road vibration and engine shake"));
 	}
+	for (const bool bHandling : { false, true })
 	{
 		struct FHitchRoad : IS47DriveArea
 		{
@@ -324,6 +494,7 @@ bool S47Drive::SelfTest(TArray<FString>& Lines)
 		// An unbound truck records the actual body pose without creating scene components.
 		FS47Truck Truck;
 		FS47DriveController D(&Truck, &A);
+		D.bHandling = bHandling;
 		D.Place(FVector::ZeroVector, 0);
 		const double Steps[] = { .016, .2, .33 };
 		bool bBounded = true;
@@ -338,8 +509,76 @@ bool S47Drive::SelfTest(TArray<FString>& Lines)
 				&& !D.CamPos.ContainsNaN() && !D.CamQuat.ContainsNaN() && D.CamQuat.IsNormalized()
 				&& FVector::Dist(D.CamPos, FVector(D.Pos.X, GroundY, D.Pos.Z)) < 3;
 		}
-		Check(bBounded && D.Pos.Size() > 10 && HighGround - LowGround > .1,
-			TEXT("body and driver camera remain finite and bounded over uneven ground with alternating 16/200/330 ms frames"));
+		Check(bBounded && D.Pos.Size() > 10 && HighGround - LowGround > .1 && FMath::IsFinite(D.Slip()),
+			bHandling ? FString(TEXT("with the fuller handling (bHandling): body and driver camera remain finite and bounded over uneven ground with alternating 16/200/330 ms frames"))
+				: FString(TEXT("body and driver camera remain finite and bounded over uneven ground with alternating 16/200/330 ms frames")));
+	}
+	// ---------- the fuller handling (bHandling; not in Drive.ts) ----------
+	{
+		// full lock at 15 m/s: dirt lets the truck slide outwards, asphalt holds it
+		struct FFlat : IS47DriveArea
+		{
+			FS47Surface S;
+			virtual FS47Surface Surface(double, double) const override { return S; }
+		} Dirt, Tar;
+		Dirt.S = { ES47SurfaceKind::Dirt, 0.55, 10, 0.8 };
+		Tar.S = { ES47SurfaceKind::Asphalt, 1, 30, 0.05 };
+		auto PeakSlip = [](IS47DriveArea& A, bool bHandling, double& Turned)
+		{
+			FS47DriveController D(nullptr, &A);
+			D.bHandling = bHandling;
+			D.Place(FVector::ZeroVector, 0);
+			D.Speed = 15;
+			double Peak = 0;
+			for (int32 I = 0; I < 120; ++I) { D.Update(1. / 60., { 1, 0 }, FVector2D::ZeroVector); Peak = FMath::Max(Peak, D.Slip()); }
+			Turned = -D.Heading;
+			return Peak;
+		};
+		double TurnDirt = 0, TurnTar = 0, TurnOff = 0;
+		const double SlipDirt = PeakSlip(Dirt, true, TurnDirt), SlipTar = PeakSlip(Tar, true, TurnTar), SlipOff = PeakSlip(Dirt, false, TurnOff);
+		Lines.Add(FString::Printf(TEXT("     handling: peak slip at full lock from 15 m/s, dirt %.3f, asphalt %.3f (turned %.2f / %.2f rad)"), SlipDirt, SlipTar, TurnDirt, TurnTar));
+		Check(SlipDirt > 0.35 && SlipTar < 0.1 && SlipOff == 0 && TurnDirt > 0.3 && TurnDirt < 3 && TurnTar > 0.3 && TurnTar < 3,
+			TEXT("handling: at full lock from 15 m/s the truck slides on dirt, hardly on asphalt, turns the way it is steered and never spins"));
+	}
+	{
+		// downhill: only the fuller handling lets the slope pull
+		struct FHill : IS47DriveArea
+		{
+			virtual FS47Surface Surface(double, double) const override { return { ES47SurfaceKind::Asphalt, 1, 30, 0.05 }; }
+			virtual bool HasHeight() const override { return true; }
+			virtual double Height(double, double Z) const override { return 0.15 * Z; } // heading 0 (towards -Z) runs downhill
+		} A;
+		FS47DriveController On(nullptr, &A), Off(nullptr, &A);
+		On.bHandling = true;
+		On.Place(FVector::ZeroVector, 0); Off.Place(FVector::ZeroVector, 0);
+		On.Speed = Off.Speed = 8;
+		for (int32 I = 0; I < 120; ++I) { On.Update(1. / 60., { 0, 0 }, FVector2D::ZeroVector); Off.Update(1. / 60., { 0, 0 }, FVector2D::ZeroVector); }
+		FS47DriveController Parked(nullptr, &A);
+		Parked.bHandling = true;
+		Parked.Place(FVector::ZeroVector, 0);
+		for (int32 I = 0; I < 120; ++I) Parked.Update(1. / 60., { 0, 0 }, FVector2D::ZeroVector);
+		Lines.Add(FString::Printf(TEXT("     handling: 2 s coasting down 15%% from 8 m/s, %.3f m/s with it, %.3f m/s without"), On.Speed, Off.Speed));
+		Check(On.Speed > 8 && Off.Speed < 8 && On.Speed > Off.Speed + 0.5 && Parked.Speed == 0 && Parked.Pos.Size() < 1e-9,
+			TEXT("handling: a downhill gains speed only with the fuller handling, and a truck stopped on it stays put"));
+	}
+	{
+		// a wall along the way, met at 20 degrees: the truck glances along it
+		struct FWall : IS47DriveArea
+		{
+			FWall() { Obstacles.Add(FS47Obstacle::Box(3, 4, -1000, 1000)); }
+			virtual FS47Surface Surface(double, double) const override { return { ES47SurfaceKind::Asphalt, 1, 30, 0.05 }; }
+		} A;
+		const double H0 = -20 * UE_DOUBLE_PI / 180; // turned 20 degrees right, towards the wall at x 3
+		FS47DriveController On(nullptr, &A), Off(nullptr, &A);
+		On.bHandling = true;
+		int32 Bumps = 0;
+		On.OnBump = [&Bumps](double) { Bumps++; };
+		On.Place(FVector(0.5, 0, 0), H0); Off.Place(FVector(0.5, 0, 0), H0);
+		On.Speed = Off.Speed = 12;
+		for (int32 I = 0; I < 30; ++I) { On.Update(1. / 60., { 0, 0 }, FVector2D::ZeroVector); Off.Update(1. / 60., { 0, 0 }, FVector2D::ZeroVector); }
+		Lines.Add(FString::Printf(TEXT("     handling: 0.5 s after a 20 degree knock at 12 m/s, %.3f m/s and %.2f m on with it, %.3f m/s without"), On.Speed, -On.Pos.Z, Off.Speed));
+		Check(On.Speed >= 6 && -On.Pos.Z > 3 && On.Pos.X < 3 && Bumps == 1 && Off.Speed <= 1.2,
+			TEXT("handling: a glancing knock slides along the wall and keeps at least half the speed (head-on still stops)"));
 	}
 	{
 		// SteerFor is the inverse of the step: the curvature it asks for is the curvature driven
