@@ -59,6 +59,7 @@ namespace
   S47J::Set(O,TEXT("method"),TEXT("One explicit initial parked service-Jeep pose on the existing main road at road-local (1.8,230), plus a serialized loaded relay parcel fixture. Ordinary Roam/Drive TestInput, GetOutHere, Walker TestMove, actual cargo eye-ray Pick/OnUse, disk/full Flow Continue. Later Story/Freeform comparisons are separate declared camera fixtures outside the measured physical journey."));
   S47J::Set(O,TEXT("limits"),TEXT("Assets-only opt-in is a distinct short render/retention smoke and skips every route/cargo/Continue/mode-switch assertion. Isolated developer case0 only; purchase/source and initial cargo loading excluded. API controls are not human input. No teleport recovery inside the measured route. Story comparison uses a fresh genuine nightService Story start, followed by the retained Freeform state; no conversion of a Freeform save into Story. PNG existence is required; visual acceptance requires review. Bound 360 seconds; no whole-game regression."));
   S47J::Set(O,TEXT("cargoFixtureOnly"),S.CargoProbe);
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47FarmWorldAssetsOnly")))S47J::Set(O,TEXT("method"),TEXT("Fresh isolated Freeform resource/render fixture; native mesh/cow/collision/floor/road-clearance audits and a staged camera capture. Optional S47FarmClearanceCycle starts a genuine Story case, verifies original rock matrices, then restores Freeform and checks the clear road again. No drive/walk journey or cargo claim."));
   if(S.CargoProbe)S47J::Set(O,TEXT("method"),TEXT("Explicit isolated cargo diagnostic fixture: load a previous temporary farm save, replace only its player pose with an approach behind the real parked truck, then actual eye-ray Pick/OnUse. No driving, walking journey or whole-route claim."));
   O->SetArrayField(TEXT("evidence"),S.Evidence);O->SetArrayField(TEXT("route"),S.Trace);
   if(!S.Root.IsEmpty()&&!FFileHelper::SaveStringToFile(S47J::Write(O,true),*(S.Root/TEXT("result.json"))))Good=false;
@@ -176,12 +177,14 @@ namespace
    auto R=S47J::New();S47J::Set(R,TEXT("name"),N->Name);S47J::Set(R,TEXT("mesh"),C->GetStaticMesh()->GetPathName());S47J::Set(R,TEXT("visible"),C->IsVisible()&&M->Web->ObjAt(I).Shown());S47J::Set(R,TEXT("triangles"),C->GetStaticMesh()->GetNumTriangles(0));S47J::Set(R,TEXT("centreUE"),Vec(C->Bounds.Origin));S47J::Set(R,TEXT("extentUE"),Vec(C->Bounds.BoxExtent));Meshes.Add(MakeShared<FJsonValueObject>(R));
   }
   O->SetArrayField(TEXT("actualFarmMeshes"),Meshes);
+  TArray<FString> ClearanceLines;const bool RoadOkay=S47FarmWorld::RoadClearance(M,ClearanceLines);
+  S47J::Set(O,TEXT("roadClearance"),RoadOkay);S47J::Set(O,TEXT("clearanceLines"),ClearanceLines);S47J::Set(O,TEXT("movedRockInstances"),S47FarmWorld::MovedRockCount(M));
   FHitResult Ground;const FVector At=Here(M,FVector(25,S47FarmWorld::FloorRoad(25,196.7),196.7));FCollisionQueryParams Params(SCENE_QUERY_STAT(FarmWorldGround),true);Params.AddIgnoredActor(M->Player.Get());
   const bool Hit=M->Web->GetWorld()->LineTraceSingleByChannel(Ground,S47Three::ToUE(At+FVector(0,6,0)),S47Three::ToUE(At-FVector(0,6,0)),ECC_Visibility,Params);
   S47J::Set(O,TEXT("gateAccessNativeFloorHit"),Hit);if(Hit){S47J::Set(O,TEXT("gateAccessFloorThree"),Vec(S47Three::ToThree(Ground.ImpactPoint)));if(const auto* C=Ground.GetComponent())S47J::Set(O,TEXT("gateAccessFloorComponent"),C->GetName());}
   S.Evidence.Add(MakeShared<FJsonValueObject>(O));
   const bool FloorOkay=!Freeform||(Hit&&FMath::Abs(S47Three::ToThree(Ground.ImpactPoint).Y-At.Y)<.15);
-  return Check(M,House&&Herd&&CollisionCentres&&FloorOkay&&S47FarmWorld::GateReady(M)&&S47FarmWorld::Enabled(M)==Freeform,TEXT("actual house topology, exact gate, visible cows, both drive collision centres and physical floor match selected session mode"));
+  return Check(M,House&&Herd&&CollisionCentres&&FloorOkay&&RoadOkay&&S47FarmWorld::GateReady(M)&&S47FarmWorld::Enabled(M)==Freeform,TEXT("actual house topology, exact gate, visible cows, drive collisions, floor and clear farm road match selected mode"));
  }
  bool SaveReload(US47Main* M,const FString& Name)
  {
@@ -231,6 +234,7 @@ namespace S47FarmWorldTest
    if(FParse::Param(FCommandLine::Get(),TEXT("S47FarmWorldAssetsOnly")))
    {
     if(!Audit(M,true))return;
+    S.RetainedFreeform=M->Flow->GameState();
     const bool Pasture=FParse::Param(FCommandLine::Get(),TEXT("S47FarmPastureView"));
     const FVector P=S47FarmWorld::RoadToArea(TEXT("saro"),Pasture?FVector(86,0,260):FVector(16.5,0,S47RoadTerrain::RanchZ(16.5)));M->Player->Place(P.X,P.Z,0);
     Go(91);return;
@@ -245,7 +249,16 @@ namespace S47FarmWorldTest
    FFileHelper::SaveStringToFile(S47J::Write(Save,true),*(S.Root/TEXT("initial-road-and-loaded-cargo-fixture.json")));
    US47Flow::FStart Start;Start.bDev=true;Start.State=Save;M->Flow->StartGame(Start);Go(1);return;
   }
-  if(S.Stage==90){Finish(M,true,TEXT("cooked native farm/gate/cow asset smoke only; continuous route and cargo/Continue were not executed"));return;}
+  if(S.Stage==90)
+  {
+   if(FParse::Param(FCommandLine::Get(),TEXT("S47FarmClearanceCycle"))){US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("nightService");M->Flow->StartGame(Story);Go(92);return;}
+   Finish(M,true,TEXT("native farm asset smoke only; continuous route and cargo/Continue were not executed"));return;
+  }
+  if(S.Stage==92)
+  {
+   if(!Audit(M,false))return;US47Flow::FStart Free;Free.bDev=true;Free.State=S.RetainedFreeform;M->Flow->StartGame(Free);++S.Restores;Go(93);return;
+  }
+  if(S.Stage==93){if(!Audit(M,true))return;Finish(M,true,TEXT("resource/render and exact rock clearance Story/Freeform cycle complete; full journey excluded"));return;}
   if(S.Stage==91)
   {
    const bool Pasture=FParse::Param(FCommandLine::Get(),TEXT("S47FarmPastureView"));
