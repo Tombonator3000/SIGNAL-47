@@ -1,0 +1,26 @@
+{
+  "status": "INSTALLED",
+  "source_commit": "2e1cef62a718089458d1517c3582e521bf5f03d7",
+  "installed_at": "2026-11-02T05:45:11.813885+01:00",
+  "self_checks": 1995,
+  "saved_nodes": 164,
+  "Saved_unchanged": true,
+  "evidence": {
+    "status": "PASS",
+    "checks": 93,
+    "seconds": 165.34902812202927,
+    "walkMetres": 94.79454810377477,
+    "ordinaryContinues": 1,
+    "crossPointsObserved": 5,
+    "fixtures": "Fresh isolated Freeform case0. One initial OPS approach placement. Initial Director nextAt is delayed beyond this bounded scenario, retaining its seed/history; normal reference is measured before the one named extra_pulse Force fixture. No job completion, chart, audio coverage, marks, encoders, inventory or reward is injected. Final isolated case1/save-store metadata is established solely to exercise the real production save/title/Continue path.",
+    "limits": "Development API controls, not human mouse/keyboard or subjective listening acceptance. The named incident and quiet initial scheduler are declared scenario fixtures, not natural random scheduling coverage. No teleport recovery within the journey. One positive pulsar discrepancy plus normal reference/negative internal control, not a full event matrix. Driver bound540s; runner must also verify normal process exit."
+  },
+  "lights": {
+    "status": "PASS",
+    "checks": 336,
+    "frames": 6,
+    "originalOfficeMaterialProofBefore": "COOKED_RESOURCE_IDENTITY_ONLY",
+    "originalOfficeMaterialProofAfter": "COOKED_RESOURCE_IDENTITY_ONLY"
+  },
+  "source_material_preservation": "0712746cd0f052ce17e190cdf86c5b6062758dc15b72c72d2e87a1c1011d66b1"
+}
