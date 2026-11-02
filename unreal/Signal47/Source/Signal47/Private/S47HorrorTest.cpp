@@ -19,6 +19,7 @@
 #include "S47Story.h"
 #include "S47Props.h"
 #include "S47Substation.h"
+#include "S47SubstationDetail.h"
 #include "S47Three.h"
 #include "S47UI.h"
 #include "S47Walker.h"
@@ -38,6 +39,7 @@
 #include "S47FreeformAudioDesk.h"
 #include "S47SaroWork.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Engine/World.h"
 #include "S47Audio.h"
 #include "S47Ambience.h"
 #include "S47Docs.h"
@@ -99,6 +101,8 @@ struct FS47HorrorTest::FState
 	double Elapsed = 0, Since = 0, Hold = 3, WalkMetres = 0, LastProgress = 0, PausedHandTime = 0;
 	double LineAt = 0, SC02Clock = 0, SC02Seen = 0, SC02RunMetres = 0;
 	bool bCaptured = false, bRunPath = false, bSC02Escape = false, bSC02EscapeRouteDone = false;
+	bool bSC03LiftShot = false, bSC03ContactReadback = false;
+	FVector SC03MeetSpot, SC03SouthWest, SC03SouthEast;
 	int32 ArcBursts = 0;
 	bool bArcCloseup = false;
 	float ArcOriginalFov = 0;
@@ -487,17 +491,26 @@ void FS47HorrorTest::Step(double Dt)
 			T.RestoreSource = FPaths::ConvertRelativePathToFull(T.RestoreSource);
 			FString Text;
 			if (!FFileHelper::LoadFileToString(Text, *T.RestoreSource)) { Fail(TEXT("could not read SC03Resume source snapshot: ") + T.RestoreSource); return; }
-			const auto Saved = S47J::Read(Text);
+			const auto Input = S47J::Read(Text);
+			if (S47J::Has(Input, TEXT("state")))
+			{ Fail(TEXT("SC03Resume requires a hydrated raw snapshot (*.loaded.json or *.disk.json), not a save envelope with unresolved photo references")); return; }
+			const auto Saved = Input;
 			const auto Horror = S47J::Obj(Saved, TEXT("horror")), Meeting = S47J::Obj(Horror, TEXT("sc02"));
+			const auto SC03 = S47J::Obj(Horror, TEXT("sc03")), Pack = S47J::Obj(Horror, TEXT("pack")), Flags = S47J::Obj(Pack, TEXT("flags"));
+			const bool AtMeeting = S47J::Int(Horror, TEXT("contentRevision")) >= 3 && S47J::Str(SC03, TEXT("phase")) == TEXT("meet") &&
+				S47J::Bool(SC03, TEXT("dispatch")) && S47J::Bool(SC03, TEXT("assigned")) && !S47J::Bool(SC03, TEXT("identified")) &&
+				!S47J::Bool(SC03, TEXT("observed")) && !S47J::Bool(SC03, TEXT("taken")) && !S47J::Bool(SC03, TEXT("retreat")) &&
+				S47J::Bool(Flags, TEXT("hr_sc03_relief_contact_presented")) && !S47J::Bool(Flags, TEXT("hr_sc03_ortiz_identify_presented")) &&
+				S47J::Str(Saved, TEXT("area")) == TEXT("diner");
 			if (!Check(Saved && Horror && S47J::Int(Horror, TEXT("contentRevision")) >= 2 && S47J::Str(Meeting, TEXT("phase")) == TEXT("escaped") &&
-				!S47J::Str(Meeting, TEXT("escapeStamp")).IsEmpty() && !S47J::Obj(Horror, TEXT("sc03")),
-				TEXT("source snapshot is an actual escaped SC02 case before SC03"))) return;
+				!S47J::Str(Meeting, TEXT("escapeStamp")).IsEmpty() && (!SC03 || AtMeeting),
+				TEXT("source snapshot is an actual escaped SC02 case before SC03 or a recorded meeting before identification"))) return;
 			// Labelled fixture: the revision 2 escape snapshot is relabelled revision 3 so SC03 can be iterated
 			// without replaying SC01 and SC02. Full SC03 acceptance runs -S47HorrorContract=SC03 from a new case.
 			S47J::Set(Horror, TEXT("contentRevision"), 3);
 			if (!StoreRestore(TEXT("sc03-resume-source"), Saved)) return;
-			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: SC03Resume loaded %s relabelled as revision 3; SC01/SC02 are not rerun"), *T.RestoreSource);
-			Stage(200, 1.0); return;
+			UE_LOG(LogS47HorrorTest, Display, TEXT("S47: SC03Resume loaded %s; SC01/SC02%s are retained source evidence, not rerun"), *T.RestoreSource, AtMeeting ? TEXT("/travel/dispatch") : TEXT(""));
+			Stage(AtMeeting ? 207 : 200, 1.0); return;
 		}
 		if (T.Mode == TEXT("Arc"))
 		{
@@ -2017,6 +2030,8 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage<200 || (T.Stage>=300 && (T.Stage<2000 || T.Stage>=3000)))return;
 	if(!H.SC03){Fail(TEXT("SC03 module missing"));return;}
 	auto& S3=*H.SC03;
+	const bool Unseen3=FParse::Param(FCommandLine::Get(),TEXT("S47SC03LookAway"));
+	const bool UfoOnly3=FParse::Param(FCommandLine::Get(),TEXT("S47SC03UfoOnly"));
 	using EP=FS47HorrorSC03::EPhase;
 	auto Phase3=[&S3](){return FString(FS47HorrorSC03::PhaseName(S3.Phase()));};
 	auto Pick3=[this,&T](const FString& Id,const FVector& At,bool bUse)
@@ -2095,13 +2110,79 @@ void FS47HorrorTest::Step(double Dt)
 	}
 	if(T.Stage==207)
 	{
-		// Ortiz stands at the driver's side; reach her from her own side, around the wagon's solid body.
-		const FVector O=S3.OrtizPoint(),Wg=S3.WagonPoint();FVector Out=O-Wg;Out.Y=0;Out=Out.GetSafeNormal();
-		const FVector Wide(O.X+Out.X*3.2,0,O.Z+Out.Z*3.2),Near(O.X+Out.X*1.5,0,O.Z+Out.Z*1.5);
-		const FVector Mid=(M->Player->Pos+Wide)*.5;FVector Side=Mid-Wg;Side.Y=0;
-		const FVector Around=Wg+Side.GetSafeNormal()*4.5;
-		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 approach Ortiz %.2f %.2f from her side via %.2f %.2f"),O.X,O.Z,Wide.X,Wide.Z);
-		Go({FVector(Around.X,0,Around.Z),Wide,Near},2071);return;
+		// Flow must restore the real SC03 world and its original-photo prerequisite
+		// before any route is derived from its anchors. Never walk towards defaults.
+		if(!S3.Ready() || S3.Phase()!=EP::Meet || !Object(TEXT("horror:ortiz")))
+		{
+			if(T.Elapsed-T.Since>10)Fail(TEXT("SC03 world is not ready at the restored meeting; use a hydrated snapshot with original photographs. Phase: ")+Phase3());
+			return;
+		}
+		if(UfoOnly3)
+		{
+			const auto Staging=S3.PresentationReadback();
+			if(!Check(S47J::Bool(Staging,TEXT("liftColumnClear")),TEXT("actual native sight traces clear the full lift column and surrounding body width to open sky")))return;
+			// Explicit isolated pose fixture, not navigation evidence. Keep every
+			// story fact and require the ordinary physical interaction from this spot.
+			const FVector O=Target(TEXT("horror:ortiz")),Before=M->Player->Pos;
+			const double R=M->Player->Radius+.02;TOptional<FVector> Standing;
+			int32 Tried=0,Outside=0,Blocked=0,NoRay=0;
+			for(double D=1.1;D<=2.55 && !Standing;D+=.15)for(int32 I=0;I<72 && !Standing;++I)
+			{
+				++Tried;const double A=I*2*UE_DOUBLE_PI/72;
+				FVector P(O.X+FMath::Cos(A)*D,0,O.Z+FMath::Sin(A)*D);
+				if(!M->Player->Walkable(P.X,P.Z)){++Outside;continue;}
+				bool Solid=M->Player->InTruck(P.X,P.Z);
+				for(const auto& C:M->Web->Colliders())if(C.bEnabled && P.X+R>C.MinX && P.X-R<C.MaxX && P.Z+R>C.MinZ && P.Z-R<C.MaxZ){Solid=true;break;}
+				if(Solid){++Blocked;continue;}
+				// Use the same public height providers as the Walker; its Place()
+				// independently verifies the chosen height below.
+				if(!S47SubstationDetail::FloorAt(P.X,P.Z,P.Y))
+				{
+					P.Y=AS47Props::FloorAt(P.X,P.Z);
+					if(FMath::IsNaN(P.Y) && M->Player->LandFloor)P.Y=M->Player->LandFloor(P.X,P.Z);
+					if(FMath::IsNaN(P.Y) && M->Player->Floor)P.Y=M->Player->Floor(P.X,P.Z);
+					if(FMath::IsNaN(P.Y))
+					{
+						FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC03FixtureFloor),true,M->Player);
+						if(M->Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(P.X,M->Player->FloorY+.3,P.Z),S47Three::ToUE(P.X,M->Player->FloorY-4,P.Z),ECC_Visibility,Q))P.Y=Hit.ImpactPoint.Z/100.;
+					}
+				}
+				if(!FMath::IsFinite(P.Y) || FMath::Abs(P.Y-O.Y)>3){++Outside;continue;}
+				const FVector E=S47Three::ToUE(P+FVector(0,M->Player->Eye,0));
+				if(M->Inter->Pick(E,(S47Three::ToUE(O)-E).GetSafeNormal())!=TEXT("horror:ortiz")){++NoRay;continue;}
+				Standing=P;
+			}
+			auto Proof=S47J::New();S47J::Set(Proof,TEXT("method"),TEXT("Explicit local pose fixture; native Walkable, radius clearance, FloorAt and ordinary Inter.Pick verified. No navigation claim or story fact assignment."));
+			S47J::Set(Proof,TEXT("openSkyStaging"),Staging);
+			S47J::Set(Proof,TEXT("before"),TArray<double>{Before.X,Before.Y,Before.Z});S47J::Set(Proof,TEXT("ortiz"),TArray<double>{O.X,O.Y,O.Z});
+			S47J::Set(Proof,TEXT("queries"),Tried);S47J::Set(Proof,TEXT("outside"),Outside);S47J::Set(Proof,TEXT("blocked"),Blocked);S47J::Set(Proof,TEXT("noInteractionRay"),NoRay);
+			TArray<TSharedPtr<FJsonValue>> Nearby;
+			for(const auto& C:M->Web->Colliders())if(C.MinX<O.X+7 && C.MaxX>O.X-7 && C.MinZ<O.Z+7 && C.MaxZ>O.Z-7)
+			{auto J=S47J::New();S47J::Set(J,TEXT("id"),C.Id);S47J::Set(J,TEXT("enabled"),C.bEnabled);S47J::Set(J,TEXT("boundsXZ"),TArray<double>{C.MinX,C.MaxX,C.MinZ,C.MaxZ});Nearby.Add(MakeShared<FJsonValueObject>(J));}
+			Proof->SetArrayField(TEXT("nearbyColliders"),Nearby);
+			if(Standing)S47J::Set(Proof,TEXT("selected"),TArray<double>{Standing->X,Standing->Y,Standing->Z});
+			FFileHelper::SaveStringToFile(S47J::Write(Proof,true),*(T.Root/TEXT("sc03-ufo-fixture.json")));T.Evidence.Add(MakeShared<FJsonValueObject>(Proof));
+			if(!Check(Standing.IsSet(),TEXT("local UFO fixture has a walkable clear floor position with actual Ortiz interaction ray")))return;
+			M->Player->Place(Standing->X,Standing->Z,M->Player->Yaw);
+			if(!Check(FMath::IsNearlyEqual(M->Player->FloorY,Standing->Y,.01) && S3.Phase()==EP::Meet && !S3.Facts().bIdentified,
+				TEXT("labelled pose fixture uses native floor and leaves identification/lift facts untouched")))return;
+			UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 UFO-only local pose fixture %.3f %.3f floor %.3f; no approach/navigation claim"),Standing->X,Standing->Z,Standing->Y);
+			Stage(2071,.5);return;
+		}
+		// The pump island separates the counter from Ortiz. Round its actual
+		// south edge, then stop outside the parked wagon's Walker collider.
+		FS47Rect Island,Car;bool HaveIsland=false,HaveCar=false;
+		for(const auto& C:M->Web->Colliders())
+		{
+			if(C.bEnabled && C.Id==TEXT("prop:gasStation:0")){Island=C;HaveIsland=true;}
+			if(C.bEnabled && C.Id==TEXT("sc03:wagon23")){Car=C;HaveCar=true;}
+		}
+		if(!HaveIsland || !HaveCar){Fail(TEXT("SC03 approach requires the actual pump island and parked wagon colliders"));return;}
+		const FVector O=S3.OrtizPoint();const double R=M->Player->Radius,South=FMath::Min(Island.MinZ,Car.MinZ)-R-.8;
+		T.SC03MeetSpot=FVector(FMath::Max(O.X,Island.MaxX+R+.3),0,Car.MinZ-R-.05);
+		T.SC03SouthWest=FVector(Island.MinX-R-.8,0,South);T.SC03SouthEast=FVector(T.SC03MeetSpot.X,0,South);
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 approach Ortiz %.2f %.2f round pump south %.2f to clear standing point %.2f %.2f"),O.X,O.Z,South,T.SC03MeetSpot.X,T.SC03MeetSpot.Z);
+		Go({T.SC03SouthWest,T.SC03SouthEast,T.SC03MeetSpot},2071);return;
 	}
 	if(T.Stage==2071)
 	{
@@ -2124,30 +2205,60 @@ void FS47HorrorTest::Step(double Dt)
 	if(T.Stage==210)
 	{
 		const FVector O=S3.OrtizPoint();const FVector Back(2*M->Player->Pos.X-O.X,O.Y,2*M->Player->Pos.Z-O.Z);Aim(Back);
-		if(T.Elapsed-T.Since<12)return;
-		if(!Check(S3.Phase()==EP::Lift && S3.LightOn() && !S3.Facts().bObserved,TEXT("looking away during the light gives no observed lift; she hangs in the light")))return;
+		if(UfoOnly3 && S3.Phase()==EP::Lift && S3.LightOn() && !T.bSC03ContactReadback)
+		{
+			const auto Presentation=S3.PresentationReadback();
+			if(!Check(S47J::Bool(Presentation,TEXT("presented")) && S47J::Num(Presentation,TEXT("beamCandela"))>0 && S47J::Bool(Presentation,TEXT("liftColumnClear")),TEXT("actual SC03 contact presentation has live physical light and a clear lift column while the camera looks away")))return;
+			FFileHelper::SaveStringToFile(S47J::Write(Presentation,true),*(T.Root/TEXT("sc03-ufo-contact.json")));T.Evidence.Add(MakeShared<FJsonValueObject>(Presentation));T.bSC03ContactReadback=true;
+		}
+		if(T.Elapsed-T.Since<(Unseen3?12.:4.1))return;
+		if(!Check(!S3.Facts().bObserved && (Unseen3?(S3.Phase()==EP::Retreat && S3.Facts().bTaken):(S3.Phase()==EP::Lift && S3.LightOn() && !S3.Facts().bTaken)),
+			Unseen3?TEXT("looking away never stalls the finite disappearance or grants a sighting"):TEXT("an unseen lift can be saved while the physical light is active")))return;
 		Shot(TEXT("sc03-looking-away"));
-		if(!StoreRestore(TEXT("sc03-mid-lift-unseen"),M->Flow->GameState()))return;
-		Stage(211,1.0);return;
+		if(!StoreRestore(Unseen3?TEXT("sc03-taken-unseen"):TEXT("sc03-mid-lift-unseen"),M->Flow->GameState()))return;
+		Stage(211,.3);return;
 	}
 	if(T.Stage==211)
 	{
-		if(!Check(S3.Phase()==EP::Lift && S3.Facts().bIdentified && !S3.Facts().bObserved,TEXT("Continue during an unseen lift resumes the lift, never a fabricated sighting")))return;
+		if(!Check(S3.Phase()==(Unseen3?EP::Retreat:EP::Lift) && S3.Facts().bIdentified && !S3.Facts().bObserved && S3.Facts().bTaken==Unseen3,
+			TEXT("Continue preserves physical disappearance separately from observation")))return;
 		Stage(212,.2);return;
 	}
 	if(T.Stage==212)
 	{
-		Aim(S3.OrtizPoint());
+		if(!Unseen3)Aim(S3.OrtizPoint());
+		if(!Unseen3 && S3.Phase()==EP::Lift && T.Elapsed-T.Since>.4 && !T.bSC03LiftShot)
+		{Shot(TEXT("sc03-ufo-lift"));T.bSC03LiftShot=true;}
 		if(S3.Phase()==EP::Retreat){Shot(TEXT("sc03-taken"));Stage(213,.8);return;}
 		if(T.Elapsed-T.Since>25)Fail(TEXT("the lift was never observed while looking at it"));
 		return;
 	}
 	if(T.Stage==213)
 	{
-		if(!Check(S3.Facts().bObserved && !S3.Facts().bRetreat && !S3.Facts().TakenStamp.IsEmpty(),TEXT("the actual sight gives the observed lift and its stamp")))return;
+		if(!Check(S3.Facts().bTaken && S3.Facts().bObserved==!Unseen3 && !S3.Facts().bRetreat && !S3.Facts().TakenStamp.IsEmpty(),
+			TEXT("the physical departure has a stamp; only actual sight gives observed lift")))return;
+		if(UfoOnly3)
+		{
+			if(!StoreRestore(TEXT("sc03-ufo-departed"),M->Flow->GameState()))return;
+			Stage(228,2.0);return;
+		}
 		const auto Heads=S3.FigureHeads();if(Heads.Num())Aim(Heads[0]);
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 figures at %.2f %.2f / %.2f %.2f / %.2f %.2f"),Heads.Num()>0?Heads[0].X:0.,Heads.Num()>0?Heads[0].Z:0.,Heads.Num()>1?Heads[1].X:0.,Heads.Num()>1?Heads[1].Z:0.,Heads.Num()>2?Heads[2].X:0.,Heads.Num()>2?Heads[2].Z:0.);
 		Stage(214,.6);return;
+	}
+	if(T.Stage==228)
+	{
+		const auto Presentation=S3.PresentationReadback();
+		if(!Check(T.bSC03ContactReadback && S3.Facts().bTaken && S3.Facts().bObserved==!Unseen3 && !S3.LightOn() && !S47J::Bool(Presentation,TEXT("presented")),
+			TEXT("actual disk/Flow Continue preserves taken versus observed and extinguishes the departure presentation")))return;
+		T.bDone=true;M->Player->TestMove.Reset();
+		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),TEXT("SC03UfoOnly"));
+		S47J::Set(Result,TEXT("sourceSnapshot"),T.RestoreSource);S47J::Set(Result,TEXT("lookAway"),Unseen3);S47J::Set(Result,TEXT("checks"),T.Checks);
+		S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("facts"),S3.Save());S47J::Set(Result,TEXT("presentationAfter"),Presentation);Result->SetArrayField(TEXT("evidence"),T.Evidence);
+		S47J::Set(Result,TEXT("limits"),TEXT("Focused UFO contract from an actual hydrated save and one explicitly validated local pose fixture. Real interaction, dialogue, finite seen/unseen lift and disk/Flow Continue run here. Approach navigation, retreat, traces, missing-report journey, human play and listening are not covered."));
+		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
+		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 UFO-only PASS COMPLETE: %d checks, %d disk/Flow restores, observed %s; local pose fixture, no navigation claim"),T.Checks,T.Stores,Unseen3?TEXT("no"):TEXT("yes"));
+		FPlatformMisc::RequestExit(false);return;
 	}
 	if(T.Stage==214)
 	{
@@ -2160,7 +2271,7 @@ void FS47HorrorTest::Step(double Dt)
 		const double DX=(Door.MinX+Door.MaxX)/2,DZ=(Door.MinZ+Door.MaxZ)/2,Out=DX>(Zone.MinX+Zone.MaxX)/2?1:-1;
 		T.Door3=FVector(DX,0,DZ);T.DoorOut=Out;
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: SC03 retreat to the station door %.2f %.2f, outside to %s"),DX,DZ,Out>0?TEXT("east"):TEXT("west"));
-		Go({FVector(DX+Out*2.2,0,Zone.MinZ-1.0),FVector(DX+Out*1.3,0,DZ)},215,true);return;
+		Go({T.SC03SouthEast,T.SC03SouthWest,FVector(DX+Out*2.2,0,Zone.MinZ-1.0),FVector(DX+Out*1.3,0,DZ)},215,true);return;
 	}
 	if(T.Stage==215){if(!AS47Props::IsDoorOpen(TEXT("gasDoor"))){if(!Pick3(TEXT("town:gasDoor"),Target(TEXT("town:gasDoor")),true))return;}Stage(216,.8);return;}
 	if(T.Stage==216)
@@ -2171,27 +2282,28 @@ void FS47HorrorTest::Step(double Dt)
 	{
 		if(!S3.Facts().bRetreat){if(T.Elapsed-T.Since>8)Fail(TEXT("no safe retreat registered inside the station"));return;}
 		if(H.Pack.CurrentScene()){Drain(2161);return;}
-		if(!Check(H.Pack.Flag(TEXT("hr_sc03_helper_taken_presented")) && S3.Phase()==EP::Calm,TEXT("cover inside the station, then the observation text")))return;
+		if(!Check(S3.Phase()==EP::Calm && (Unseen3?(!H.Pack.Flag(TEXT("hr_sc03_helper_taken_presented")) && S3.CallScenes().IsEmpty()):H.Pack.Flag(TEXT("hr_sc03_helper_taken_presented"))),
+			TEXT("cover permits seen aftermath; an unseen departure still needs an actual wagon check")))return;
 		Stage(217,.4);return;
 	}
 	if(T.Stage==217)
 	{
 		// Out the same east door and round the low side, then to the wagon.
-		const FVector Wg=S3.WagonPoint();const double DX=T.Door3.X,DZ=T.Door3.Z,Out=T.DoorOut;
+		const double DX=T.Door3.X,DZ=T.Door3.Z,Out=T.DoorOut;
 		FS47Rect Zone;for(const auto& Z:M->Web->Zones())if(Z.Id==TEXT("prop:gasStation"))Zone=Z;
-		Go({FVector(DX-Out*.6,0,DZ),FVector(DX+Out*1.3,0,DZ),FVector(DX+Out*2.2,0,Zone.MinZ-1.0),Front(Wg,2.6)},218);return;
+		Go({FVector(DX-Out*.6,0,DZ),FVector(DX+Out*1.3,0,DZ),FVector(DX+Out*2.2,0,Zone.MinZ-1.0),T.SC03SouthWest,T.SC03SouthEast,T.SC03MeetSpot},218);return;
 	}
 	if(T.Stage==218){if(!Pick3(TEXT("horror:wagon23"),Target(TEXT("horror:wagon23")),true))return;Stage(219,.3);return;}
-	// The thermos and the marks lie where she stood, several metres from the wagon: walk up to each.
-	if(T.Stage==219){M->UI->Close(true);Go({Front(Target(TEXT("horror:thermos")),1.3)},2191);return;}
+	// These nearby traces are reached from the clear side of the parked wagon.
+	if(T.Stage==219){if(H.Pack.CurrentScene()){Drain(219);return;}M->UI->Close(true);Stage(2191,.2);return;}
 	if(T.Stage==2191){if(!Pick3(TEXT("horror:thermos"),Target(TEXT("horror:thermos")),true))return;Stage(220,.3);return;}
-	if(T.Stage==220){M->UI->Close(true);Go({Front(Target(TEXT("horror:gravelMarks")),1.3)},2201);return;}
+	if(T.Stage==220){M->UI->Close(true);Go({T.SC03MeetSpot+FVector(0,0,.13)},2201);return;}
 	if(T.Stage==2201){if(!Pick3(TEXT("horror:gravelMarks"),Target(TEXT("horror:gravelMarks")),true))return;Stage(221,.6);return;}
 	if(T.Stage==221)
 	{
 		if(H.Pack.CurrentScene()){Drain(221);return;}
 		if(!Check(S3.TracesChecked() && H.Pack.Flag(TEXT("hr_sc03_helper_traces_presented")),TEXT("the wagon, the thermos and the marks examined; the traces note presented")))return;
-		Go({Front(Payphone(),1.1)},222);return;
+		Go({T.SC03SouthEast,T.SC03SouthWest,Front(Payphone(),1.1)},222);return;
 	}
 	if(T.Stage==222){if(!Pick3(TEXT("town:payphone"),Payphone(),true))return;Stage(223,.3);return;}
 	if(T.Stage==223)
@@ -2199,6 +2311,9 @@ void FS47HorrorTest::Step(double Dt)
 		if(CallDrain())return;
 		if(H.Pack.CurrentScene()){Drain(223);return;}
 		if(!Check(S3.Facts().bMissing && S3.Facts().bLocalOrder && S3.Phase()==EP::Deputy,TEXT("the missing-person report and Ward's local hold, then the deputy is coming")))return;
+		const FS47Doc* Missing=M->Story->Docs().FindByPredicate([](const FS47Doc& D){return D.Id==TEXT("HR_MISSING_RECEIPT");});
+		if(!Check(Missing && S3.Facts().bObserved==!Unseen3 && Missing->Page.Contains(Unseen3?TEXT("I did not see where Ortiz went"):TEXT("I saw Ortiz rise clear")),
+			TEXT("the retained missing report contains the actual seen or unseen account")))return;
 		if(!StoreRestore(TEXT("sc03-after-missing"),M->Flow->GameState()))return;
 		Stage(224,1.0);return;
 	}
@@ -2222,8 +2337,12 @@ void FS47HorrorTest::Step(double Dt)
 		if(!Check(S3.Complete() && Docs==4,TEXT("completed SC03 and its four papers survive Continue, each once")))return;
 		T.bDone=true;M->Player->TestMove.Reset();
 		auto Result=S47J::New();S47J::Set(Result,TEXT("status"),TEXT("PASS"));S47J::Set(Result,TEXT("scenario"),T.Mode);
+		S47J::Set(Result,TEXT("lookAway"),Unseen3);S47J::Set(Result,TEXT("liftObserved"),S3.Facts().bObserved);
+		if(T.Mode==TEXT("SC03Resume"))S47J::Set(Result,TEXT("sourceSnapshot"),T.RestoreSource);
 		S47J::Set(Result,TEXT("checks"),T.Checks);S47J::Set(Result,TEXT("diskFlowRestores"),T.Stores);S47J::Set(Result,TEXT("nativeWalkMetres"),T.WalkMetres);Result->SetArrayField(TEXT("evidence"),T.Evidence);
-		S47J::Set(Result,TEXT("limits"),TEXT("Scripted live contract. The drive to Caliche uses the native autopilot API; the cab retreat uses FreeDrive without moving. Retreat inside the station, manual steering, human play, listening and the final Ortiz/deputy assets are UNVERIFIED."));
+		S47J::Set(Result,TEXT("limits"),T.Mode==TEXT("SC03Resume")?
+			TEXT("Focused scripted contract from the named actual snapshot. Its prior events are retained source evidence, not rerun. The physical meeting, finite lift, seen or unseen report, station retreat and disk/Flow Continue run here. Human play, listening and the final Ortiz/deputy assets are UNVERIFIED."):
+			TEXT("Scripted live contract. The drive to Caliche uses the native autopilot API; retreat walks through the real station door. Manual steering, human play, listening and the final Ortiz/deputy assets are UNVERIFIED."));
 		FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(T.Root/TEXT("result.json")));
 		UE_LOG(LogS47HorrorTest,Display,TEXT("S47: Horror %s PASS COMPLETE: %d checks, %d disk/Flow restores, %.2f m native walking"),*T.Mode,T.Checks,T.Stores,T.WalkMetres);
 		FPlatformMisc::RequestExit(false);return;

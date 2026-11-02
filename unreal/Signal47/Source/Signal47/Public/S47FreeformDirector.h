@@ -46,6 +46,8 @@ private:
  US47Main* M=nullptr;
  bool bEnabled=false,bApplied=false,bEffectsApplied=false,bChoiceStored=false,bSeen=false,bPhoto=false,bControlled=false,bCompared=false;
  FString Event,PhotoId,Scene,IncidentId,TaggedShot;
+ FString TaggedIncident,TaggedTitle;
+ bool bTaggedLamps=false;
  int32 IncidentSerial=0;
  FBox2D TaggedRegion = FBox2D(ForceInit); // transient projection of the photographed native component
  double TaggedQuality=0,PhotoSubjectMean=-1;

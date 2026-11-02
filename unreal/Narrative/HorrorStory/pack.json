@@ -286,7 +286,7 @@
       "purpose_nb": "Mara Ortiz har faktisk ankommet med vogn23 og identifisert seg ved avtalt møte Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     "ctx_hr_sc03_lift_observed": {
-      "purpose_nb": "Spilleren har faktisk sett Ortiz bevege seg uten støtte i fremmed lys og forsvinne. I samme siktsekvens står flere bleke skikkelser helt stille i lyskanten, og én vender hodet mot Reyes. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "purpose_nb": "Spilleren har faktisk sett Ortiz uten støtte over bakken i fremmed lys. Dette sier ikke i seg selv at selve forsvinningsøyeblikket eller bleke figurer ble sett."
     },
     "ctx_hr_sc03_safe_retreat": {
       "purpose_nb": "Spilleren har nådd virkelig dekning/kontaktpunkt etter tapet, brutt kontakt og søker er faktisk trukket tilbake. Ingen fortsatt jakt gjenstår Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
@@ -410,6 +410,12 @@
     },
     "ctx_hr_h07_bundle_secured": {
       "purpose_nb": "Etter04:04 er mottakeroriginal, påbegynt/tomt hendelsesark og begge faktisk ferdige Hondo/Site11-ark sikret før beleiring. Dette er innsamling, ikke senere HR_SARO_ORIGINAL-kompositt Eksternt verdensfaktum; dialog/presentasjon kan ikke sette dette."
+    },
+    "ctx_hr_sc03_helper_taken": {
+      "purpose_nb": "Ortiz har faktisk forlatt scenen etter lys/løft. Spilleren trenger ikke å ha sett dette. Verdensfaktum, ikke dialog eller observasjonskreditt."
+    },
+    "ctx_hr_sc03_wagon_checked": {
+      "purpose_nb": "Spilleren har fysisk undersøkt den tomme vogn23 etter trygg retrett. Dette gir grunnlag for savnetmelding selv når løftet ikke ble sett."
     }
   },
   "modules": [

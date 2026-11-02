@@ -2,7 +2,7 @@
 
 Generert fra world_producers.json. Dette er planleggingsdata: ingen rad betyr at scenen er integrert, bygget eller prøvd i spillet.
 
-Flagg: 90 (17 finnes i koden, 45 delvis, 28 må bygges). Scener: 77. Tester: 117.
+Flagg: 92 (20 finnes i koden, 45 delvis, 27 må bygges). Scener: 79. Tester: 117.
 
 ## SC01
 
@@ -290,12 +290,14 @@ Bygg SC03 i Caliche: egne readback-samtaler, vanlig identifisert Ortiz med vogn 
 | `ctx_hr_sc03_dispatch_readback` | partial | FS47Horror verdenssamtale (bWorldCall-mønsteret) startet fra Caliche-betalingstelefonen | Etter SC02-flukt bruker spilleren betalingstelefonen i Caliche og fullfører meldingen med sted, tid og readback. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_ortiz_assigned` | partial | FS47Horror Ward-samtale (samme samtaleport) i Caliche | Ward-samtalen fullføres faktisk i telefonen og Ortiz med vogn 23 avtales ved bensinstasjonen. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_ortiz_identified` | new | Ny FS47HorrorWorld Ortiz-aktør og vogn 23 | Ortiz ankommer synlig med hvit vogn 23 ved bensinstasjonen og spilleren bruker henne fysisk (Talk) innen rekkevidde. | SC03-T02, SC03-T06, SC03-T07 |
-| `ctx_hr_sc03_lift_observed` | new | FS47HorrorWorld løftesekvens (lys, Ortiz uten støtte) med siktprøve | Spilleren ser Ortiz løftes i fremmed lys og forsvinne ved vogn 23, med stillestående bleke skikkelser i lyskanten. | SC03-T02, SC03-T06, SC03-T07 |
+| `ctx_hr_sc03_lift_observed` | existing | FS47HorrorSC03::Step med fysisk siktprøve | Spilleren ser Ortiz uten støtte minst0,3m over bakken i fremmed lys. Ingen kreditt fra møtet før løftet. | SC03-T02, SC03-T06, SC03-T07 |
 | `ctx_hr_sc03_safe_retreat` | new | FS47HorrorWorld nærværstilstand (kontakt tapt) pluss dekningssone ved telefon/bil | Etter tapet når spilleren opak dekning inne på stasjonen eller sin egen bil; nærværet i utkanten trekker seg tilbake uten jakt. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_traces_checked` | new | FS47HorrorWorld rekvisitter (vogn 23, termose og grusmerker) via FS47Interactable | Etter trygg retrett undersøker spilleren den tomme vognen, termosen med Ortiz-navnelapp og merkene i grusen. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_missing_readback` | partial | FS47Horror samtaleport (ny savnetsak) fra telefon | Spilleren melder Ortiz savnet fra fungerende telefon og hører hele readback, adskilt fra første utkalling. | SC03-T02, SC03-T06 |
 | `ctx_hr_sc03_local_order_suspended` | partial | FS47Horror Ward-samtale; ny horror-tilstand localOrderSuspended | Spilleren fullfører Ward-samtalen etter savnetsaken; Ward suspenderer den lokale 06:00-serien. | SC03-T02, SC03-T09 |
 | `ctx_hr_sc03_deputy_at_stop` | partial | Ny SC03-ankomst for eksisterende Caliche-betjent eid av FS47HorrorWorld | Etter savnetmelding kommer den kjente sheriffbetjenten fysisk til bensinstasjonen; spilleren bruker ham på stedet. | SC03-T02, SC03-T05, SC03-T06 |
+| `ctx_hr_sc03_helper_taken` | existing | FS47HorrorSC03::FinishLift | Løft og oppdragning avsluttes på scenens aktive tid; Ortiz forsvinner også når spilleren ser bort. | SC03-T02, SC03-T06, SC03-T07 |
+| `ctx_hr_sc03_wagon_checked` | existing | FS47HorrorSC03::Use | Spilleren undersøker fysisk den tomme vogn23 etter trygg retrett. | SC03-T02, SC03-T06, SC03-T07 |
 
 ### Scener
 
@@ -336,7 +338,18 @@ Bygg SC03 i Caliche: egne readback-samtaler, vanlig identifisert Ortiz med vogn 
 
 - Normalt: Ortiz løftes synlig, henger uten støtte og forsvinner. En termose ruller ut. Flere bleke skikkelser står i lyskanten; én vender hodet.
 - Avbrudd: Vises ikke under aktiv kontakt; utsatt til ro.
-- Alternativ: Spiller som ikke ser: løftet venter på sikt.
+- Alternativ: Ser spilleren bort, fullføres bortføringen uten observasjonsflagg; undersøk tom vogn og bruk SC03_HELPER_UNSEEN.
+- Stemmecues: 0, innspilt 0
+- Modeller: Ortiz og vogn 23; termose med navnelapp; bleke figurer i lyskanten
+- Lyd: Fremmed lys, lav tone
+- Dokumenter: ingen
+- Tester: SC03-T02, SC03-T06
+
+**`SC03_HELPER_UNSEEN`**: Faktisk bortføring, trygg retrett og undersøkt tom vogn; løftet er ikke sett.
+
+- Normalt: Meld bare undersøkt tom vogn og navngitt savnet person. Ingen påstand om sett løft.
+- Avbrudd: Vises ikke under aktiv kontakt; utsatt til ro.
+- Alternativ: Sett løft bruker den separate observerte varianten.
 - Stemmecues: 0, innspilt 0
 - Modeller: Ortiz og vogn 23; termose med navnelapp; bleke figurer i lyskanten
 - Lyd: Fremmed lys, lav tone
@@ -359,6 +372,17 @@ Bygg SC03 i Caliche: egne readback-samtaler, vanlig identifisert Ortiz med vogn 
 - Normalt: Dispatch registrerer savnetsak; HR_MISSING_RECEIPT.
 - Avbrudd: Avbrutt samtale gjenopptas.
 - Alternativ: Ingen.
+- Stemmecues: 2, innspilt 0
+- Modeller: payphone
+- Lyd: Telefonkanal
+- Dokumenter: HR_MISSING_RECEIPT
+- Tester: SC03-T02, SC03-T08
+
+**`SC03_MISSING_UNSEEN_RECEIPT`**: Faktisk bortføring, trygg retrett og undersøkt tom vogn; løftet er ikke sett.
+
+- Normalt: Meld bare undersøkt tom vogn og navngitt savnet person. Ingen påstand om sett løft.
+- Avbrudd: Avbrutt samtale gjenopptas.
+- Alternativ: Sett løft bruker den separate observerte varianten.
 - Stemmecues: 2, innspilt 0
 - Modeller: payphone
 - Lyd: Telefonkanal

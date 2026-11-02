@@ -1,6 +1,7 @@
 #include "S47Night.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47HighwayUfo.h"
 // main.ts: the night's layer (the seen log, the curve, the night's events, the calls, the glimpses,
 // the flashlight, the album), in the order main.ts builds and steps them
 #include "S47Spine.h"
@@ -382,6 +383,7 @@ bool US47Night::OneAtATime() const
 
 bool US47Night::NightGoing() const
 {
+	if (M && M->HighwayUfo && M->HighwayUfo->Busy()) return true;
 	// all of oneAtATime but the quiet round the ninth cow (that quiet is hers)
 	return Is(Hooks.AbductionBusy) || (NightEvents && NightEvents->Running()) || Is(Hooks.RoadsideSilent) || (Hooks.TownEventsNow && Hooks.TownEventsNow() != TEXT("none"))
 		|| Is(Hooks.RoofStepsBusy) || Is(Hooks.MotelTvBusy) || Is(Hooks.LineLightsOn) || FaceQuiet > 0 || Is(Hooks.ReelTapeBusy) || Is(Hooks.SaroDarkBusy)
@@ -733,6 +735,9 @@ void US47Night::Step(double Dt)
 	SeenStep(Dt);
 	// the night's one curve, before the night's things ask it (story/curve.ts)
 	CurveStep(Dt, bModal);
+	// A reserved road passage owns the spectacle. No competing random start is
+	// consumed while it is running; scene lighting and driving still tick in Main.
+	if (M->HighwayUfo && M->HighwayUfo->Busy()) return;
 	if (M->TownLayer) M->TownLayer->RoadsideStep(Dt, bModal);
 	const bool bSilent = Is(Hooks.RoadsideSilent);
 	FS47CallsWhen W;

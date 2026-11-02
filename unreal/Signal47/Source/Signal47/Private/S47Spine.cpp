@@ -115,7 +115,7 @@ bool FS47Spine::ResumeAfterSC03()
  if (bEnabled || !bMissingSavedSpine || !M || !M->Story || !M->Story->NightSequence() || M->Story->ChapterKey != TEXT("prologue") ||
      M->Story->Phase() != ES47Phase::Residual || !M->Horror || !M->Horror->SC03 || !M->Horror->SC03->Complete()) return false;
  const auto& F = M->Horror->SC03->Facts();
- if (!F.bObserved || !F.bMissing || !F.bLocalOrder || F.MissingStamp.IsEmpty() || F.OrderStamp.IsEmpty()) return false;
+ if (!F.bTaken || !(F.bObserved || F.bWagon) || !F.bMissing || !F.bLocalOrder || F.MissingStamp.IsEmpty() || F.OrderStamp.IsEmpty()) return false;
  Begin(nullptr, true);
  if (!bEnabled) return false;
  State[SC04] = 1;

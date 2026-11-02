@@ -216,6 +216,7 @@ public:
 	FString Area() const { return CurrentArea; }
 	const TArray<FS47Rect>& Zones() const;
 	const TArray<FS47Rect>& Colliders() const;
+	bool HasWalkArea(const FString& A) const { return Walks.Contains(A); }
 	TArray<FS47Rect>& ZonesMutable(const FString& A) { return Walks.FindOrAdd(A).Key; }
 	TArray<FS47Rect>& CollidersMutable(const FString& A) { return Walks.FindOrAdd(A).Value; }
 	// Change bounds in place and keep the export's named room rectangles in sync.

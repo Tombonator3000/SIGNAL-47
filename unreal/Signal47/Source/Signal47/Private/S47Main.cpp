@@ -6,6 +6,9 @@
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47HighwayUfo.h"
+#include "S47HighwayUfoTest.h"
+#include "S47UfoVisualTest.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
@@ -75,7 +78,7 @@ US47Main* US47Main::Get(const UObject* WorldContext)
 
 bool US47Main::ModalOpen() const { return UI && UI->Modal(); }
 
-bool US47Main::OneAtATime() const { if (IsFreeform()) return Freeform && Freeform->Director && Freeform->Director->Busy(); return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
+bool US47Main::OneAtATime() const { if (HighwayUfo && HighwayUfo->Busy()) return true; if (IsFreeform()) return Freeform && Freeform->Director && Freeform->Director->Busy(); return (Spine && Spine->Protected()) || (Horror && Horror->Busy()) || (Evening && Evening->MealBusy()) || (Night && Night->OneAtATime()) || (AnomalyWorld && AnomalyWorld->Busy()); }
 
 void US47Main::RequestAutosave(bool bMilestone)
 {
@@ -95,6 +98,9 @@ void US47Main::Step(double Dt)
 	if (!bFree && Horror) Horror->Step(Dt);
 	if (!bFree && Spine) Spine->Step(Dt);
 	if (World) World->Update(Dt, T); // Parked native vehicle choices also exist before any road leg is built.
+	if (HighwayUfo) HighwayUfo->Step(Dt);
+	if (HighwayUfoTest) HighwayUfoTest->Step(Dt);
+	if (UfoVisualTest) UfoVisualTest->Step(Dt);
 	if (DevEvents) { DevEvents->Step(Dt); DevEvents->ControlTest(Dt); }
 	if (Spine) Spine->ControlTest(Dt);
 	if (HorrorTest) HorrorTest->Step(Dt);

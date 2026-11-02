@@ -11,6 +11,9 @@
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47HighwayUfo.h"
+#include "S47HighwayUfoTest.h"
+#include "S47UfoVisualTest.h"
 #include "S47FreeformWorld.h"
 #include "S47RecoveryCheck.h"
 #include "S47TripoCreature.h"
@@ -188,6 +191,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformSession::SelfTest(Lines);
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
+		bOk &= FS47HighwayUfo::SelfTest(Lines);
 		bOk &= FS47FreeformWorld::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);
 		bOk &= FS47SC04::SelfTest(Lines);
@@ -600,6 +604,9 @@ void AS47HUD::Start()
 		M->GraphicsTest = MakeShared<FS47GraphicsTest>(M);
 		M->DaleDocumentsTest = MakeShared<FS47DaleDocumentsTest>(M);
 		M->Freeform = MakeShared<FS47FreeformSession>(M);
+		M->HighwayUfo = MakeShared<FS47HighwayUfo>(M);
+		M->HighwayUfoTest = MakeShared<FS47HighwayUfoTest>(M);
+		M->UfoVisualTest = MakeShared<FS47UfoVisualTest>(M);
 		M->Observing = MakeShared<FS47Observing>(M);
 		M->Horror = MakeShared<FS47Horror>(M);
 		M->HorrorTest = MakeShared<FS47HorrorTest>(M);

@@ -64,22 +64,26 @@
         "SC03_RELIEF_CONTACT",
         "SC03_ORTIZ_IDENTIFY",
         "SC03_HELPER_TAKEN",
+        "SC03_HELPER_UNSEEN",
         "SC03_HELPER_TRACES",
         "SC03_MISSING_RECEIPT",
+        "SC03_MISSING_UNSEEN_RECEIPT",
         "SC03_LOCAL_ORDER_HOLD",
         "SC03_RECEIVER_QUESTION"
       ],
       "result_scene_ids": [
         "SC03_DISPATCH_RECEIPT",
         "SC03_HELPER_TAKEN",
+        "SC03_HELPER_UNSEEN",
         "SC03_MISSING_RECEIPT",
+        "SC03_MISSING_UNSEEN_RECEIPT",
         "SC03_LOCAL_ORDER_HOLD"
       ],
       "existing_evidence_ids": [],
       "shared_owner_contracts": [
         "BY01; no replacement of existing Earl, deputy, waitress or required witnesses. The deputy is the existing Caliche substation character."
       ],
-      "world_contract": "Assignment, visible loss, traces and missing-person readback are different facts. During the lift several pale figures stand still at the edge of the light; there is no separate black-figure rule. Cover in the station or the truck is valid. The deputy's question about the 21:00 receiver log motivates the return.",
+      "world_contract": "Assignment, physical disappearance, witnessed lift, inspected aftermath and missing-person readback are separate facts. The lift finishes even when the player looks away. A witnessed lift or a physically inspected empty wagon enables the appropriate missing-person report. Cover in the station or truck is valid. The deputy requests the receiver log for the same case.",
       "runtime_status": "authored_not_integrated"
     },
     {

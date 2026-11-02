@@ -6,6 +6,7 @@
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
 #include "S47FreeformDirector.h"
+#include "S47HighwayUfo.h"
 #include "S47FarmWorld.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
@@ -810,6 +811,7 @@ void US47Flow::StartGame(const FStart& O)
  S47FarmWorld::Reconcile(M);
  bDeathShown=false;
 	bStarting = true;
+	if (M->HighwayUfo) M->HighwayUfo->Stop();
 	if (M->Observing) M->Observing->Stop();
 	if (M->Spine) M->Spine->Stop();
 	if (M->DevEvents) M->DevEvents->Stop();
@@ -974,6 +976,7 @@ void US47Flow::StartGame(const FStart& O)
 	}
 	// seenSync(); seenQuiet = false: the night's log listens again
 	if (M->Night) M->Night->Restored();
+	if (M->HighwayUfo) M->HighwayUfo->Begin(S47J::Obj(O.State,TEXT("highwayUfo")));
 	if (!bFreeform && !bEveningTimeline && O.State.IsValid()) M->Story->Note(TEXT("Legacy case timeline retained: original 02:13 references and photographs are unchanged. Any unstored printout acquisition time is marked unavailable."));
 	FadeInSoon(0.25f);
 	UE_LOG(LogS47Flow, Display, TEXT("S47: night started, case %d, %s"), CaseId, Checkpoint.IsEmpty() ? TEXT("new") : *Checkpoint);
@@ -1002,6 +1005,7 @@ void US47Flow::FadeInSoon(float Secs)
 // Stop the night that is running, without the title screen (before opening another save).
 void US47Flow::LeavePlay()
 {
+	if (M->HighwayUfo) M->HighwayUfo->Stop();
 	if (M->Freeform) M->Freeform->Stop();
  if (M->RoomLights) M->RoomLights->Stop();
 	M->UI->Fade(true, FString());
@@ -1036,6 +1040,7 @@ void US47Flow::LeavePlay()
 
 void US47Flow::ToTitle()
 {
+	if (M->HighwayUfo) M->HighwayUfo->Stop();
 	if (M->Freeform) M->Freeform->Stop();
  if (M->RoomLights) M->RoomLights->Stop();
 	Opening->Dismiss();
@@ -1473,6 +1478,7 @@ S47J::FObj US47Flow::GameState()
 	const S47J::FObj State = Carry.IsValid() ? S47J::Clone(Carry) : S47J::New();
 	S47J::Set(State, TEXT("v"), 3);
 	S47J::Set(State,TEXT("sessionMode"),M->IsFreeform()?TEXT("freeform"):TEXT("story"));
+	if (M->HighwayUfo) S47J::Set(State,TEXT("highwayUfo"),M->HighwayUfo->Save());
 	if (M->IsFreeform() && M->Freeform) S47J::Set(State,TEXT("freeform"),M->Freeform->Save()); else State->RemoveField(TEXT("freeform"));
 	S47J::Set(State,TEXT("journal"),Journal.Save());
 	S47J::Set(State,TEXT("timelineVersion"),M->Story && M->Story->bEveningTimeline ? 2 : 1);

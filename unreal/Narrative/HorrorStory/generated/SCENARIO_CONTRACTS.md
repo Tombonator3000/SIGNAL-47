@@ -41,13 +41,13 @@ Preserve the completed ordinary test during local retry. Real clear driving is a
 
 ## SC03: The help that came
 
-Assignment, visible loss, traces and missing-person readback are different facts. During the lift several pale figures stand still at the edge of the light; there is no separate black-figure rule. Cover in the station or the truck is valid. The deputy's question about the 21:00 receiver log motivates the return.
+Assignment, physical disappearance, witnessed lift, inspected aftermath and missing-person readback are separate facts. The lift finishes even when the player looks away. A witnessed lift or a physically inspected empty wagon enables the appropriate missing-person report. Cover in the station or truck is valid. The deputy requests the receiver log for the same case.
 
 **Bevarte hovedkort:** H02
 
-**Delsscener:** `SC03_DISPATCH_RECEIPT`, `SC03_RELIEF_CONTACT`, `SC03_ORTIZ_IDENTIFY`, `SC03_HELPER_TAKEN`, `SC03_HELPER_TRACES`, `SC03_MISSING_RECEIPT`, `SC03_LOCAL_ORDER_HOLD`, `SC03_RECEIVER_QUESTION`
+**Delsscener:** `SC03_DISPATCH_RECEIPT`, `SC03_RELIEF_CONTACT`, `SC03_ORTIZ_IDENTIFY`, `SC03_HELPER_TAKEN`, `SC03_HELPER_UNSEEN`, `SC03_HELPER_TRACES`, `SC03_MISSING_RECEIPT`, `SC03_MISSING_UNSEEN_RECEIPT`, `SC03_LOCAL_ORDER_HOLD`, `SC03_RECEIVER_QUESTION`
 
-**Fysiske resultater før presentasjon:** `SC03_DISPATCH_RECEIPT`, `SC03_HELPER_TAKEN`, `SC03_MISSING_RECEIPT`, `SC03_LOCAL_ORDER_HOLD`
+**Fysiske resultater før presentasjon:** `SC03_DISPATCH_RECEIPT`, `SC03_HELPER_TAKEN`, `SC03_HELPER_UNSEEN`, `SC03_MISSING_RECEIPT`, `SC03_MISSING_UNSEEN_RECEIPT`, `SC03_LOCAL_ORDER_HOLD`
 
 **Eierskap:** BY01; no replacement of existing Earl, deputy, waitress or required witnesses. The deputy is the existing Caliche substation character.
 

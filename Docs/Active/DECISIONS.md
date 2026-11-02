@@ -4,6 +4,12 @@
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
+## UFO-regi og motorvei, 2. november 2026
+
+Tom bestilte implementering med flere agenter og agent-harness ut fra fire visuelle referanser. Retningen er små røde/hvite lys over mørkt landskap, lys på fysiske flater, lav jakt langs veien, et avgrenset hvitt nærpass og en mørk finale med varm underside. Eksisterende modeller, vei og lagringer gjenbrukes; referansebildene er visuell veiledning.
+
+Motorveihendelsen lar spilleren følge, stoppe eller kjøre videre. En egen følgevariant gir faktisk flukt. Maras forsvinning og spillerens observasjon av den er separate fakta, slik at bortvendt kamera ikke fryser historien eller gir en oppdiktet vitneforklaring. Spillerens/bilens eksisterende 47-sekundersregler beholdes. Fotodokumentasjon bruker eksisterende originalkrav og engangsregistrering. Dette er lokal spillimplementering; offentlig utgivelse er ikke bestilt.
+
 ## Gameplay og dokumentasjonsfoto, 2. november 2026
 
 Tom har godkjent implementeringsplanen for SARO, Freeform og TAB-dagboken: seks tydelige hovedfaner, frivillige hint i tre nivåer, riktig neste handling på tvers av apparater, konsistente målinger og bevaring av eksisterende saker. Flere agenter implementerer og kryssvurderer; ekte tastatur-/mus-beta skal skilles fra utviklerfixturer.

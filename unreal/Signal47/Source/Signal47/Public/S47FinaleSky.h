@@ -29,6 +29,7 @@ private:
 	TWeakObjectPtr<US47Main> Main;
 	TWeakObjectPtr<UStaticMeshComponent> Craft;
 	TWeakObjectPtr<UMaterialInstanceDynamic> CraftFillMids[2];
+	TWeakObjectPtr<UMaterialInstanceDynamic> CraftLightMid;
 	TWeakObjectPtr<UStaticMeshComponent> Banks[2];
 	TWeakObjectPtr<UMaterialInstanceDynamic> BankMids[2];
 	// Keep every baked frame resident; each bank binds only its current neighbour pair.
@@ -72,7 +73,7 @@ private:
 		double BankDepth = 950, BankWidth = 1200, BankThickness = 1000, Density = 1.7;
 		int32 Samples = 128;
 	} Tuning; // Applied values: metres, uniform mesh scale, and glow multiplier.
-	double GlowLevel = .12, GroundShade = 0;
+	double GlowLevel = .12, GroundShade = 0, AppliedLampGlow = 0;
 	double AppliedStarScale = 1;
 	double AppliedStarDim = 0;
 	double AppliedWeatherWeight = 1;

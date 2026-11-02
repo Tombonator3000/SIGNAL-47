@@ -61,6 +61,9 @@ public:
 	TSharedPtr<class FS47SkyVisitors> SkyVisitors; // optional world-space sky progression, separately saved
 	TSharedPtr<class FS47Horror> Horror;
 	TSharedPtr<class FS47FreeformSession> Freeform;
+	TSharedPtr<class FS47HighwayUfo> HighwayUfo; // shared, saved road encounter; no player driving override
+	TSharedPtr<class FS47HighwayUfoTest> HighwayUfoTest;
+	TSharedPtr<class FS47UfoVisualTest> UfoVisualTest;
 	ES47SessionMode SessionMode = ES47SessionMode::Story;
 	bool IsFreeform() const { return SessionMode == ES47SessionMode::Freeform; }
 	TSharedPtr<class FS47Observing> Observing; // evening array work before SC01's window round

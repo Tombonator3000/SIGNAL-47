@@ -9,6 +9,7 @@
 #include "S47Raster.h"
 #include "S47Three.h"
 #include "S47Truck.h"
+#include "S47UfoPresentation.h"
 #include "S47Walker.h"
 #include "S47Web.h"
 
@@ -19,6 +20,19 @@ namespace
 	double Rnd(double A, double B) { return A + FMath::FRand() * (B - A); }
 	double JsRound(double V) { return FMath::FloorToDouble(V + 0.5); } // Math.round
 	double Smooth(double X, double Lo, double Hi) { if (X <= Lo) return 0; if (X >= Hi) return 1; const double T = (X - Lo) / (Hi - Lo); return T * T * (3 - 2 * T); } // MathUtils.smoothstep
+	FS47UfoPresentation::FFrame AbductionFrame(const FVector& Ground, double WarnT, double LightT, bool bLight, bool bCalm)
+	{
+		FS47UfoPresentation::FFrame V;
+		const double Approach = Smooth(WarnT, 0, 40);
+		V.Position = Ground + FVector((1 - Approach) * -90, 25 + (1 - Approach) * 20, (1 - Approach) * -70);
+		V.GroundTarget = Ground; V.Width = 10; V.Seconds = bLight ? 47 + LightT : WarnT;
+		// The familiar seven dark seconds remain. A distant red craft approaches,
+		// then the actual contact at :47 puts light into the physical surroundings.
+		V.Beam = bLight ? FMath::Clamp(LightT / 1.6, 0., 1.) : .15 * Smooth(WarnT, 31, 39) * (1 - Smooth(WarnT, 39, 40));
+		V.NearWhite = bLight ? FMath::Clamp(LightT / 1.1, 0., 1.) : 0;
+		V.bSlowBeam = true; V.bCalm = bCalm;
+		return V;
+	}
 	double AngleTo(const FVector& A, const FVector& B)
 	{
 		const double D = FMath::Sqrt(A.SizeSquared() * B.SizeSquared());
@@ -192,6 +206,7 @@ FS47Cam FS47ShotCam::Cam() const
 FS47Abduction::FS47Abduction(FS47AbductDeps InD) : D(MoveTemp(InD))
 {
 	Top = 1;
+	if (D.Web) Ufo = MakeUnique<FS47UfoPresentation>(D.Web);
 	Lying = MakeUnique<FS47Group>(D.Web, TEXT(""));
 	{
 		// jacketFigure(true): someone in a SARO jacket, the reflective band across it, lying on their back
@@ -270,7 +285,21 @@ void FS47Abduction::Update(double Dt, const FS47AbductIn& S)
 	else if (Stage == TEXT("taken")) Taken(S);
 	else if (Stage == TEXT("black")) { if (St > 2) Wake(S); }
 	else if (Stage == TEXT("back")) { if (Over) OverStep(Dt, S); else BackStep(Dt); }
+	PresentUfo(S);
 }
+
+void FS47Abduction::PresentUfo(const FS47AbductIn& S)
+{
+	if (!Ufo) return;
+	if (Stage != TEXT("warning") && Stage != TEXT("light")) { Ufo->Hide(); return; }
+	FVector Ground = Stage == TEXT("light") ? Take : PlayerPos();
+	if (Stage == TEXT("warning") && bCab && D.Cab && D.Cab->Group)
+		if (const FS47Truck* Truck = D.Cab->Group()) Ground = Truck->Position;
+	if (D.Ground) Ground.Y = D.Ground(Ground.X, Ground.Z);
+	Ufo->Show(AbductionFrame(Ground, Stage == TEXT("light") ? WARN : St, St, Stage == TEXT("light"), S.bCalm));
+}
+
+S47J::FObj FS47Abduction::PresentationReadback() const { return Ufo ? Ufo->Readback() : S47J::New(); }
 
 // ---------- the pressure ----------
 
@@ -382,6 +411,7 @@ void FS47Abduction::Warning(double Dt, const FS47AbductIn& S)
 
 void FS47Abduction::PassOver()
 {
+	if (Ufo) Ufo->Hide();
 	Stage = TEXT("calm"); St = 0; bSilent = false; Pressure = 0.35; Top = Rnd(0.85, 1.15); Beat = 0; bForced = false; PathV.Reset(); bCab = false;
 	ToneOff();
 	if (D.Flashlight) D.Flashlight->Flicker(0);
@@ -1066,6 +1096,7 @@ void FS47Abduction::Refile() { for (const FS47AbductSpot& Sp : Data.Spots) if (S
 
 void FS47Abduction::Clear()
 {
+	if (Ufo) Ufo->Hide();
 	ToneOff(); Bed.Stop(); Bed = FS47Pressure(); bSilent = false; Stage = TEXT("calm"); St = 0; Beat = 0; Pressure = 0; Top = Rnd(0.85, 1.15); BackAt.Reset();
 	bForced = false; PathV.Reset(); bCab = false; bCabIn = false; bAwakeCab = false; bNoTimeLoss = false; Lost = 0;
 	if (D.Screen.Hide) D.Screen.Hide();
@@ -1221,6 +1252,16 @@ bool FS47Abduction::SelfTest(TArray<FString>& Lines)
 {
 	bool bOk = true;
 	auto Check = [&](bool bCond, const FString& What) { Lines.Add(FString::Printf(TEXT("%s abduction: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), *What)); bOk &= bCond; };
+	const FVector Contact(12, 3, -9);
+	const auto Distant = AbductionFrame(Contact, 0, 0, false, false);
+	const auto Dark = AbductionFrame(Contact, 46, 0, false, false);
+	const auto Light = AbductionFrame(Contact, WARN, 1.6, true, true);
+	Check(FVector::Dist(Distant.Position, Contact) > 100 && Distant.Beam == 0 && Distant.NearWhite == 0,
+		TEXT("warning begins with a distant red source and no premature contact light"));
+	Check(Dark.Beam == 0 && Dark.NearWhite == 0 && FMath::IsNearlyEqual(Dark.Position.Y - Contact.Y, 25),
+		TEXT("the seven dark seconds retain no ground beam before :47"));
+	Check(Light.Beam == 1 && Light.NearWhite == 1 && Light.bCalm && Light.GroundTarget.Equals(Contact),
+		TEXT("contact follows the existing light phase with physical ground target and calm-flash preference"));
 	// the pressure on a line, the warning's beats and the corner clock (no world: no player, no sound)
 	FS47AbductDeps D;
 	TArray<FString> Notes;
