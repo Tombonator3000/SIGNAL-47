@@ -4,6 +4,10 @@
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
+## Nattskift 2. til 3. november 2026
+
+Tom bestiller arbeid med agenter og eksisterende harness frem til 3. november kl. 08:00 Europe/Oslo. Jeep ferdigstilles først; Codex fortsetter nå og samordner med Claude når hans nye tilgjengelighet begynner kl. 02:10. Dette er ikke en ferdigfrist for Claude. Etter Jeep skal Claude også hjelpe med prioriterte TODO-oppgaver og bruke agenter dersom kapasiteten tillater det. Fra kl. 07:30 prioriteres sikring, nødvendige leveringskontroller og morgenstatus. Den samlede ryddingen 2. november kl. 21:32 gjenbrukes gjennom skiftet. Bestillingen gjelder dette nattskiftet; ingen offentlig spillutgave er bestilt.
+
 ## UFO-regi og motorvei, 2. november 2026
 
 Tom bestilte implementering med flere agenter og agent-harness ut fra fire visuelle referanser. Retningen er små røde/hvite lys over mørkt landskap, lys på fysiske flater, lav jakt langs veien, et avgrenset hvitt nærpass og en mørk finale med varm underside. Eksisterende modeller, vei og lagringer gjenbrukes; referansebildene er visuell veiledning.

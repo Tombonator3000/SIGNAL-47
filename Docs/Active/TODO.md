@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Nattskift 2. november til 3. november kl.08:00
+
+Ny bestilling: Jeep først, samordnet med Claude når hans tilgjengelighet begynner kl. 02:10; deretter kritiske og konkrete TODO-rettelser. Bruk agenter med avgrenset filansvar og eksisterende gameplay-/produksjonsharness. Claude hjelper også med TODO og agenter etter Jeep når kapasiteten tillater det. COLLISION-01 prioriteres etter Jeep. Eldre stoppbeskjeder nedenfor beskriver avsluttede bestillinger og stopper ikke dette nattskiftet. Samlet rydding kl. 21:32 gjenbrukes. Fra kl. 07:30 ferdigstilles pågående arbeid og morgenstatus; nytt utviklingsarbeid stopper kl. 08:00. Ingen offentlig spillutgave.
+
 ## UFO-bortføring og motorveijakt, 2. november
 
 - [ ] **UFO-01, samlet spilleraksept:** Referansenes lysuttrykk, sheriffjakt, egen følgevariant, observerbar SC03-bortføring og fysisk lys ved spiller/bil er implementert og lokalt installert kl.20:45 med tre underagenter og seks scenarioer i [gameplay-harnesset](../../unreal/Signal47/Tools/gameplay_audit/README.md). Aktuell bygg-/test-/installasjonsstatus står i [STATUS](STATUS.md). Menneskelig vurdering av styrke, tempo, lyd og komfort gjenstår. Hele Caliche-ruten er fortsatt uverifisert; de beståtte SC03-prøvene bruker en avgrenset posisjonsfixture.
@@ -128,7 +132,7 @@ Tom har avsluttet spilløkten og bedt Codex fullføre. Kilde `c8c8fa89` er pakke
 - [x] **PLAY-31-44 / P2, motell-TV viser ikke filmsnutter:** TV-oppdateringen lå i en klokkegren som står under åpningsfasen. Filmer og lyd oppdateres nå også der; to faktiske skjermrammer og medieklokker viser fremdrift. Eksisterende filmer er bevart.
 - [x] **PLAY-31-45 / P2, vist 100 prosent skal godkjenne frekvensinnstillingen:** Visning og Rx-godkjenning deler samme prosentavrunding. 99 % består ikke. Faktisk antenneretning, stabilisering og servicekrav beholdes. Grenseprøver inngår i 1838 beståtte selvtester.
 - [x] **PLAY-31-46 / P2, varm solnedgang:** Rav-/gullfarget vesthimmel, gyllent skylys og kjøligere skygger er implementert og sett i Vulkan med samme kamera før/etter. Nattprofil og originale nattassets er bevart. Toms visuelle vurdering gjenstår.
-- [ ] **PLAY-31-47 / P2, separat hjulrigg for Tripo-jeep:** Kilden har hjul, aksler og karosseri i samme sammenhengende mesh. Bilen er kjørbar med tilpasset sete, kamera, lys, glass, instrumenter og kollisjon; hjulgeometrien ruller ennå ikke separat. Skill/rigg ekte hjul uten å erstatte dem med feil ekstrageometri.
+- [x] **PLAY-31-47 / P2, separat hjulrigg for Tripo-jeep:** Installert 2. november kl. 23:43 fra `444012cb`, PR355. Fire originale hjul og komplementært karosseri på alle tre LOD-er; målte nav, rulling, styring og fjæring. Kilde-/importkontroller, Vulkan-bilder, ufullstendig hjulsett og faktisk 8,554 m testkjøring består. Vanlig Jeep-input og menneskelig kjørefølelse er uverifisert. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_FINISH_2026-11-02.md).
 
 **LOD-regresjon rettet:** Caliche og motell blandet legacy-FBX og Interchange mellom detaljnivåene. Alle berørte native LOD-er er reimportert i én koordinatramme og sammenlignet mot faktisk kildegeometri. Dagsbilder viser Feed og kirken riktig mot gaten, normale motellvegger og samlet basseng. Mer interiørdetaljering og øvrig terrengtilpasning forblir egne åpne oppgaver.
 

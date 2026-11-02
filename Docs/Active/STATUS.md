@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Jeep ferdigstilt og installert 2. november
+
+Kilde `444012cb`, [PR355](https://github.com/Tombonator3000/SIGNAL-47/pull/355), er installert lokalt kl. 23:43 CET. Kabinen har ryddet gulv/seterygger og tilpassede putesømmer. Fire hjul fra originalmodellen ruller, styrer og følger fjæringen separat på alle tre LOD-er. Levende side-/ryggespeil har et lagret Options-valg; dører lukkes etter bruk og spillerens egen kjøring har den nye kjøredynamikken. Verdensankre, instrumenter, lasting og lagringsformat er beholdt.
+
+Editorbygg, pakking, 2112 selvtester, 691 kabinimport- og 379 hjulimportkontroller består. Native før/etter og pakkede bil-/speilbilder er gjennomsett. Ufullstendig hjulsett beholdt komplett reservekarosseri; faktisk 8,554 m kjøring med automatisk testinput bekreftet komponenter og hjultransformasjoner. Vanlig tastaturmeny, lasting og gange er også prøvd, men Jeep ble ikke nådd uten fungerende mus. Vanlig Jeep-input og menneskelig kjørefølelse er fortsatt uverifisert. Alle 126 personlige Saved-filer er hashidentiske etter installasjonen. [Bilder, levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_FINISH_2026-11-02.md).
+
+Nattskiftet fortsetter med COLLISION-01 og prioriterte TODO-punkter frem til 3. november kl. 08:00. Claude samordnes fra kl. 02:10 og får også TODO-/agentarbeid når kapasiteten tillater det. Ingen offentlig spillutgave er publisert.
+
 ## UFO-bortføring og motorveijakt installert 2. november
 
 UFO-leveransen, kilde `97b58e3c` i [PR354](https://github.com/Tombonator3000/SIGNAL-47/pull/354), er installert lokalt kl.20:45 CET. Tre underagenter har implementert og kryssvurdert felles røde/hvite UFO-lys, lyskontakt på vei og terreng, sheriffjakt og en egen følgevariant som kan unnslippes. Spilleren beholder styringen og kan stoppe eller forlate hendelsen. Synlig UFO kan fotograferes gjennom den eksisterende original-/OPS-økonomien. Freeforms nærpassering har fast verdensrute, sammenfallende lyd og korrekt avslutning ved sceneskifte. Spiller-/bilbortføring beholder 47-sekundersmekanikken med fysisk lys; finalens eksisterende underside har varmere lys.
