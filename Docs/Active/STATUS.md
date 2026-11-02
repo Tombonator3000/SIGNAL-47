@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Fjerde nattleveranse: åpen Alderete-gård og tilgjengelig last
+
+Runtime `19b0ab0b`, [PR331](https://github.com/Tombonator3000/SIGNAL-47/pull/331) og [PR332](https://github.com/Tombonator3000/SIGNAL-47/pull/332), er installert 2. november kl.04:00 CET. Freeform har åpen kjørbar gårdsvei, terrengtilpasset placeholdergård og ni kuer med samordnede foto-/kollisjonsankre. Story beholder sin stengte port og originalplassering. Last kan velges fysisk gjennom Jeepens brede interaksjonsfelt og tas ut/inn etter Fortsett.
+
+Pakke/1 995 selvtester, hel native reise 24 kontroller/249 m bil/124 m gange/3 restores og to pakkede gårdsbilder består. Installert Fortsett består; 164 personlige Saved-elementer er uendret. WORLD01/04 og motellvegger står fortsatt åpne. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_ALDERETE_2026-11-02.md).
+
 ## Tredje nattleveranse: reaktivt lys og ett motellskilt
 
 Runtime `20252b01`, [PR329](https://github.com/Tombonator3000/SIGNAL-47/pull/329), er installert2. november kl.02:12 CET. Ekte OFF-betjening kan gi en sjelden lagret lyshendelse ved retur; original og fysisk kontroll kan undersøkes og arkiveres. Gamle OFF-saves armerer ingenting. Det store doble motellskiltet og fjernkopien er fjernet, med sterkere nattlys på det gjenværende skiltet. Storys manus/fotoankre beholdes.
