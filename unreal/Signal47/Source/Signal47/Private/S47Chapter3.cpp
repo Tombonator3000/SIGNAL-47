@@ -227,7 +227,7 @@ US47Chapter3* US47Chapter3::Register(US47Chapter3* C)
 	C->Station = NewObject<US47Station>(C);
 	C->Station->Init(M);
 	// main.ts every frame: world.setStoryPlaces({ stationOpen: game.at('ch3') }): the walk gap
-	C->Station->StationOpen = [W] { return W.IsValid() && AtChapter(W->Host, 3); };
+	C->Station->StationOpen = [W] { return W.IsValid() && ((W->M && W->M->IsFreeform()) || AtChapter(W->Host, 3)); };
 	// at STATION 01 after N. Vega's call, everyone goes (story/stationTaken.ts): the hut door shut by
 	// itself, the truck without its keys
 	C->StationTaken = NewObject<US47StationTaken>(C);
@@ -252,9 +252,9 @@ US47Chapter3* US47Chapter3::Register(US47Chapter3* C)
 			{
 				FS47Interactable It;
 				It.Id = TEXT("s1walkGate"); It.Object = Gate; It.Range = 2.6;
-				It.Label = [W] { return W.IsValid() && W->Area() == TEXT("station01") && !AtChapter(W->Host, 3) ? FString(TEXT("Walk gate")) : FString(); };
+				It.Label = [W] { return W.IsValid() && W->Area() == TEXT("station01") && !(W->M && W->M->IsFreeform()) && !AtChapter(W->Host, 3) ? FString(TEXT("Walk gate")) : FString(); };
 				It.Use = [W] { if (W.IsValid()) W->Toast(TEXT("Chained, with a padlock. N. Vega holds the keys out here."), 3.4f); };
-				It.Examine = [W] { return W.IsValid() && W->Area() == TEXT("station01") && !AtChapter(W->Host, 3) ? FString(TEXT("A chain through the walk gap, and a padlock a good deal newer than the fence.")) : FString(); };
+				It.Examine = [W] { return W.IsValid() && W->Area() == TEXT("station01") && !(W->M && W->M->IsFreeform()) && !AtChapter(W->Host, 3) ? FString(TEXT("A chain through the walk gap, and a padlock a good deal newer than the fence.")) : FString(); };
 				M->Inter->Add(It);
 			}
 			// (the drawer under the bench, s1drawer: story/fieldBook.ts; the ninth cow, s1ninth:*:

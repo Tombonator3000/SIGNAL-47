@@ -1,4 +1,6 @@
 #include "S47Web.h"
+#include "S47Main.h"
+#include "S47RoomLights.h"
 
 #include "Components/PointLightComponent.h"
 #include "Components/RectLightComponent.h"
@@ -210,6 +212,9 @@ void AS47Web::BuildFixtureLighting()
 
 void AS47Web::UpdateFixtureLighting()
 {
+	const US47Main* Main = US47Main::Get(this);
+	const FS47RoomLights* Rooms = Main && Main->RoomLights ? Main->RoomLights.Get() : nullptr;
+	const int32 Annex = FloodSet(TEXT("annex"));
 	for (FFixtureLight& P : FixtureLights)
 	{
 		URectLightComponent* L = P.Light.Get();
@@ -222,6 +227,20 @@ void AS47Web::UpdateFixtureLighting()
 			const TArray<float>& Base = P.bDesk ? LampBase : CeilingBase;
 			K *= Drivers.IsValidIndex(P.Driver) && Drivers[P.Driver].IsValid() && Drivers[P.Driver]->IsVisible() ? Drivers[P.Driver]->Intensity / FMath::Max(0.001f, Base[P.Driver]) : 0.f;
 			if (P.Tube >= 0 && !TubeLit(P.Tube)) K = 0;
+		}
+		// Mask only the finished ceiling output. The upstream drivers still represent
+		// supply/flicker for CRTs, instruments and Story's power snapshots.
+		if (Rooms)
+		{
+			const TCHAR* Room = nullptr;
+			if (P.Set < 0 && !P.bDesk && P.Tube >= 0) Room = TEXT("control");
+			else if (P.Set == Annex && (P.Slot == 0 || P.Slot == 1)) Room = TEXT("corridor");
+			else if (P.Set == Annex && (P.Slot == 3 || P.Slot == 4)) Room = TEXT("records");
+			if (Room)
+			{
+				L->ComponentTags.AddUnique(FName(*(FString(TEXT("S47RoomCeiling:")) + Room)));
+				if (!Rooms->RoomEnabled(Room)) K = 0.f;
+			}
 		}
 		L->SetVisibility(K > 0.0001f);
 		// Obj.SetColor can replace a diffuser with its private MID during a story flicker.

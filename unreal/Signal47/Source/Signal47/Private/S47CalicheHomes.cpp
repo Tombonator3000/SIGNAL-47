@@ -1,4 +1,5 @@
 #include "S47CalicheHomes.h"
+#include "S47StationPhone.h"
 #include "S47Web.h"
 #include "S47Three.h"
 #include "S47RoadTerrain.h"
@@ -215,7 +216,7 @@ bool FS47CalicheHomes::Audit(TArray<FString>& Lines) const
  for(const auto& R:Installed)
  {
   const auto* N=W?W->Node(R.Node):nullptr;auto* C=R.Comp.Get();
-  Ok&=N&&C&&N->Comp.Get()==C&&C->GetStaticMesh()==R.Mesh.Get()&&Triangles(C->GetStaticMesh())==R.Tris;
+  Ok&=N&&C&&N->Comp.Get()==C&&((C->GetStaticMesh()==R.Mesh.Get()&&Triangles(C->GetStaticMesh())==R.Tris)||S47StationPhone::IsVerifiedRemainder(W,C,R.Mesh.Get()));
  }
  for(const auto& R:Protected)
  {

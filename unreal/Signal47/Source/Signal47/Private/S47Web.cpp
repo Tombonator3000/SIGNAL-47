@@ -820,7 +820,7 @@ void AS47Web::ApplyVisibility(int32 I, bool bParent)
 {
 	FS47WebNode& N = Nodes[I];
 	const bool bHighway = HighwaySharedNodes.Contains(I);
-	const bool bExterior = CurrentArea == TEXT("saro") || CurrentArea == TEXT("road") || CurrentArea == TEXT("diner");
+	const bool bExterior = CurrentArea == TEXT("saro") || CurrentArea == TEXT("road") || CurrentArea == TEXT("diner") || CurrentArea == TEXT("station01");
 	const bool bOn = N.bVis && (bHighway ? bExterior : bParent);
 	if (USceneComponent* C = N.Comp.Get())
 	{

@@ -199,6 +199,7 @@ void FS47FreeformJourneyTest::Step(double Dt)
   for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03"))bSawOutward|=FMath::Abs(FMath::FindDeltaAngleDegrees(InitialAz,M->Web->DishAz(I)))>4.;
   if(W.ServiceStage()!=9)return;
   if(!Check(bSawOutward&&W.ServiceCompletions()==ServiceBefore+1&&F.HasFinding(TEXT("service-s03")),TEXT("real S-03 outward and return movement retains service evidence")))return;
+  if(!Check(F.ServiceFeedbackCount()==1,TEXT("one local relay response follows the actual completed service test")))return;
   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z-.8,0);
   if(!Check(F.CompleteServiceGuide()&&F.HasFinding(TEXT("service-work-order")),TEXT("physical OPS verifies and archives actual service")))return;
   const int32 Count=F.FindingCount();if(!Check(!F.CompleteServiceGuide()&&F.FindingCount()==Count&&F.Budget()==105,TEXT("repeat archive cannot duplicate record or payment")))return;
@@ -208,6 +209,26 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<.5)return;F.Director->Stop();
   if(!Check(F.ServiceObjective().IsEmpty()&&!F.CompleteServiceGuide()&&F.Budget()==105&&F.HasFinding(TEXT("service-work-order")),TEXT("older v1 without guide fields loads safely and retains original archive")))return;
+  if(!Check(F.ServiceFeedbackCount()==0&&F.CommandFeedbackCount()==0&&!F.MotorFeedbackActive(),TEXT("Continue rebaselines equipment feedback without replaying completed service")))return;
+  M->UI->Close(true);
+  if(!Check(F.SelectJob(0)&&F.PointSelected()&&F.CommandFeedbackCount()==1,TEXT("accepted fresh tracking command gives one relay response")))return;Go(110);return;
+ }
+ if(Stage==110)
+ {
+  if(Age-At<.5)return;
+  if(!Check(F.MotorFeedbackActive(),TEXT("actual remote encoder movement starts motor response")))return;
+  M->bPausedByMenu=true;Go(111);return;
+ }
+ if(Stage==111)
+ {
+  if(Age-At<.5)return;
+  if(!Check(!F.MotorFeedbackActive(),TEXT("pause silences moving-array feedback")))return;
+  M->bPausedByMenu=false;Go(112);return;
+ }
+ if(Stage==112)
+ {
+  if(Age-At<.5)return;
+  if(!Check(F.MotorFeedbackActive(),TEXT("resumed physical encoder motion resumes motor response")))return;
   // Explicit yard pose fixture only, after all ordinary journey assertions.
   // Leave the real encounter spawning/skin and bounds query intact.
   if(!Check(M->Night&&M->Night->Glimpses,TEXT("native encounter group is available for isolated doorway-bounds fixture")))return;

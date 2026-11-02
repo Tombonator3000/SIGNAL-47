@@ -4,6 +4,7 @@
 #include "S47ReceiverReadout.h"
 #include "SS47ScreenView.h"
 #include "CoreGlobals.h"
+#include "UObject/GarbageCollection.h"
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
@@ -46,6 +47,11 @@ namespace
  {
   const auto V=O?O->TryGetField(TEXT("v")):nullptr;
   return V && V->Type==EJson::Number && V->AsNumber()==1.;
+ }
+ bool EncoderChanged(const FVector2D& Before,const FVector2D& After)
+ {
+  return !Before.ContainsNaN()&&!After.ContainsNaN()&&
+   (FMath::Abs(FMath::FindDeltaAngleDegrees(Before.X,After.X))>1e-5||FMath::Abs(Before.Y-After.Y)>1e-5);
  }
  FString StageText(FS47FreeformSession::EJobStage Stage)
  {
@@ -144,6 +150,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  if(!Director)Director=MakeShared<FS47FreeformDirector>(M);
  if(!Field)Field=MakeShared<FS47FreeformWorld>(M);
  Field->Begin(S47J::Obj(Saved,TEXT("field")));
+ LastServiceFeedback=Field->ServiceCompletions();CommandClicks=ServiceClicks=0;FeedbackEncoders.Reset();
  if(!AudioDesk)AudioDesk=FS47FreeformAudioDesk::Shared(M);AudioDesk->Begin();
  Director->Begin(S47J::Obj(Saved,TEXT("director")));
  if(M&&M->Story){M->Story->SetClock(FMath::Fmod(WorldClock,86400.));M->Story->Rx.bPowered=true;}
@@ -151,6 +158,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 }
 void FS47FreeformSession::Stop()
 {
+ StopEquipmentFeedback();FeedbackEncoders.Reset();
  // UObject purge may destroy the scene before this plain C++ session is released.
  const bool bCanRestore=!IsEngineExitRequested()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Story)&&IsValid(M->Web);
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
@@ -244,7 +252,44 @@ void FS47FreeformSession::Step(double Dt)
  if(bAudioOpen&&!Held())StepAudio(D);
  if(Field)Field->Step(D);
  if(Director)Director->Step(D);
+ StepEquipmentFeedback();
  if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(Objective());
+}
+void FS47FreeformSession::StopEquipmentFeedback()
+{
+ if(bMotorFeedback&&!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio))M->Audio->StopMotors();
+ bMotorFeedback=false;
+}
+void FS47FreeformSession::CommandFeedback()
+{
+ if(!M||!M->Web||!M->Audio||ArrayMotionHeld()||M->Web->Area()!=TEXT("saro"))return;
+ bool Accepted=false;for(int32 I=0;I<M->Web->DishCount();++I)Accepted|=M->Web->DishRemoteAvailable(I);
+ if(!Accepted)return;
+ M->Audio->RelayClack(M->Story->RackAt(),false);++CommandClicks;
+}
+void FS47FreeformSession::StepEquipmentFeedback()
+{
+ const bool Available=M&&M->Web&&M->Web->IsLoaded()&&M->Web->Area()==TEXT("saro")&&M->World&&M->World->Area==TEXT("saro")&&M->Mode==US47Main::EMode::Play&&!ArrayMotionHeld()&&HasPower();
+ TArray<FVector2D> Current;
+ if(M&&M->Web&&M->Web->IsLoaded())for(int32 I=0;I<M->Web->DishCount();++I)Current.Add({M->Web->DishAz(I),M->Web->DishEl(I)});
+ bool Moved=false;
+ if(Available&&Current.Num()==FeedbackEncoders.Num())for(int32 I=0;I<Current.Num();++I)Moved|=EncoderChanged(FeedbackEncoders[I],Current[I]);
+ // Rebaseline even while held: restoring an encoder pose or returning to SARO
+ // must not sound like a movement that occurred in front of the player.
+ FeedbackEncoders=MoveTemp(Current);
+ if(Moved&&M->Audio&&!bMotorFeedback){M->Audio->StartMotors();bMotorFeedback=true;}
+ else if(!Moved)StopEquipmentFeedback();
+ if(Field)
+ {
+  const int32 Completed=Field->ServiceCompletions();
+  if(Completed>LastServiceFeedback&&Available&&M->Audio)
+  {
+   // The saved World counter changes only after the real out-and-back test.
+   const FVector At=Field->InteractionPoint(TEXT("ff:service"));
+   M->Audio->RelayClack(At,false);++ServiceClicks;
+  }
+  LastServiceFeedback=Completed;
+ }
 }
 void FS47FreeformSession::StepWork(double Dt)
 {
@@ -328,7 +373,7 @@ bool FS47FreeformSession::PointSelected()
  FJob* J=Job();if(!J||J->Stage>EJobStage::Pointed||!M||!M->Web||!HasPower())return false;
  J->Stage=EJobStage::Pointed;Settle=0;bCrossRunning=false;
  M->Story->Rx.Azimuth=TargetAz(); // The physical pointing command is the receiver bearing too.
- M->Web->PointDishes(TargetAz(),TargetEl(),9);Changed(TEXT("Tracking command sent. Actual encoder agreement is required before acquisition."));return true;
+ M->Web->PointDishes(TargetAz(),TargetEl(),9);CommandFeedback();Changed(TEXT("Tracking command sent. Actual encoder agreement is required before acquisition."));return true;
 }
 bool FS47FreeformSession::ReceiverReady() const
 {
@@ -780,6 +825,13 @@ void FS47FreeformSession::OpenArchive()
  static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
  for(int32 I=0;I<3;++I)Rows.Add(S47Kit::Small(FString::Printf(TEXT("%s / %d of 3 / %s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT("CROSS-DAY COMPARISON AVAILABLE"):TEXT("FOLLOW-UP OPEN"))));
  TSharedRef<SScrollBox> List=SNew(SScrollBox);
+ for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
+ {
+  const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):FString(TEXT("CONTROL NOT RECORDED"));
+  const FString Mark=J.MarkStart>=0&&J.MarkEnd>J.MarkStart?FString::Printf(TEXT(" / MARK %.2f–%.2f s"),J.MarkStart,J.MarkEnd):FString();
+  const FString Conclusion=!J.bAnomaly?TEXT("ROUTINE RESULT"):!J.bAudioReviewed?TEXT("COMPARISON PENDING"):J.Phenomenon==TEXT("wrong_source")?TEXT("OFF-SOURCE RESPONSE"):J.Phenomenon==TEXT("time_disagreement")?TEXT("CLOCK DISAGREEMENT"):J.Phenomenon==TEXT("duplicate_print")?TEXT("DUPLICATE DIFFERS"):TEXT("SOURCE UNRESOLVED");
+  List->AddSlot()[Paper(FString::Printf(TEXT("%s / ORIGINAL %s-original\n%s%s / %s / %s"),*J.Id,*J.Id,*Control,*Mark,*Conclusion,*StageText(J.Stage)))];
+ }
  TArray<FString> Keys;Findings.GetKeys(Keys);Keys.Sort();
  for(const FString& K:Keys)List->AddSlot()[Paper(FString::Printf(TEXT("D%d / %s\n%s"),FindingDays.FindRef(K),*K,*Findings.FindRef(K)))];
  Rows.Add(SNew(SBox).HeightOverride(260)[List]);
@@ -889,6 +941,8 @@ S47J::FObj FS47FreeformSession::Save()const
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
+ Check(!EncoderChanged({10,20},{10,20})&&EncoderChanged({10,20},{10.01,20})&&EncoderChanged({10,20},{10,20.01}),TEXT("Equipment sound follows actual azimuth or elevation delta, not a pending command"));
+ Check(!EncoderChanged({0,20},{360,20}),TEXT("Equivalent wrapped encoder bearings do not invent motor movement"));
  auto Close=[](double A,double B){return FMath::Abs(A-B)<.00001;};
  Check(Close(AdvanceClock(6*3600.,1800),19*3600.),TEXT("Freeform daylight lasts thirty active minutes"));
  Check(Close(AdvanceClock(19*3600.,2700),30*3600.),TEXT("Freeform night lasts forty-five active minutes across midnight"));

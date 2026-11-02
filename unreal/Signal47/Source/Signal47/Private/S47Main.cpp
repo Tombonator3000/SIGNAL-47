@@ -14,6 +14,7 @@
 #include "S47Evening.h"
 #include "S47Substation.h"
 #include "S47Office.h"
+#include "S47RoomLights.h"
 #include "S47SaroInterior.h"
 #include "S47T02Test.h"
 #include "S47GraphicsTest.h"
@@ -183,6 +184,7 @@ void US47Main::Step(double Dt)
 	// main.ts: the sky, the lamps, the shared lights, the fog's colour, the painted horizon, the areas'
 	// glows and windows (and World.update's light in the air), the ground cover before the picture
 	if (Life) Life->Step(Dt);
+	if (RoomLights) RoomLights->Step(Dt);
 	if (Web && Web->IsLoaded())
 	{
 		if (!TripoNpcs) TripoNpcs = MakeShared<FS47TripoNpcs>(this);

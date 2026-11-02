@@ -1,5 +1,7 @@
 // Unreal only (departs from the web version): the free models placed in the world, see S47Props.h.
 #include "S47Props.h"
+#include "S47StationPhone.h"
+#include "S47StationWorldRoute.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/RectLightComponent.h"
@@ -285,6 +287,7 @@ void AS47Props::BuildFile(const TSharedPtr<FJsonObject>& File, const FString& Na
 		UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(W, *FString::Printf(TEXT("Prop_%s_%d"), *Id, Placed.Num()));
 		C->SetMobility(EComponentMobility::Movable);
 		C->SetStaticMesh(Mesh);
+		if(Id==TEXT("stationPayphone"))S47StationPhone::Register(W,C);
 		// the floor and sight see it; the use trace only when it stands for a thing to use
 		C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		C->SetCollisionResponseToAllChannels(ECR_Ignore);
@@ -919,7 +922,10 @@ void AS47Props::UpdateLit(FLit& L, float Dt)
 	UStaticMeshComponent* C = L.Comp.Get();
 	if (!W || !C) return;
 	const bool bShown = L.Node >= 0 ? Shown(L.Node) : C->IsVisible();
-	const float K = bShown && (L.Set < 0 || L.Slot < 0 || W->FloodPool(L.Set, L.Slot).A > 0.001f) ? 1.f : 0.f;
+	// The photocell is a render mask, independent of the existing power/event slot.
+	// Constant indoor practicals keep their explicit always-on behaviour.
+	const float DayMask = L.Set < 0 || L.Slot < 0 ? 1.f : W->ExteriorDaylightMask(L.Set, L.Slot);
+	const float K = bShown && (L.Set < 0 || L.Slot < 0 || W->FloodPool(L.Set, L.Slot).A > 0.001f) ? DayMask : 0.f;
 	L.T += Dt;
 	const float Tube = K > 0 ? TubeAt(L.T) : 1.f;
 	const bool bChange = K != L.K;
@@ -934,7 +940,7 @@ void AS47Props::UpdateLit(FLit& L, float Dt)
 		URectLightComponent* R = P.Light.Get();
 		if (!R) continue;
 		if (bChange) R->SetVisibility(K > 0);
-		if (K > 0 && (bChange || P.Flicker > 0)) R->SetIntensity(P.Lumens * (1.f - P.Flicker * (1.f - Tube)));
+		if (bChange || (K > 0 && P.Flicker > 0)) R->SetIntensity(P.Lumens * K * (1.f - P.Flicker * (1.f - Tube)));
 	}
 }
 
@@ -1049,6 +1055,8 @@ void AS47Props::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	AS47Web* W = Web.Get();
 	if (!W) return;
+	S47StationPhone::Update(W);
+	S47StationWorldRoute::Update(W);
 	for (FSwing& S : Swings)
 	{
 		UStaticMeshComponent* C = S.Comp.Get();
