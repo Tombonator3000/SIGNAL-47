@@ -12,6 +12,8 @@ namespace S47FarmWorld
  FVector RoadToArea(const FString& Area,const FVector& RoadLocal);
  bool InRoadAccess(double RoadX,double RoadZ);
  double FloorRoad(double RoadX,double RoadZ);
+ bool RoadClearance(US47Main* Main,TArray<FString>& Lines);
+ int32 MovedRockCount(const US47Main* Main);
  bool Ready(US47Main* Main);
  bool Audit(US47Main* Main,TArray<FString>& Lines);
  bool HouseVisible(const US47Main* Main);

@@ -9,12 +9,57 @@
 #include "S47TownLayer.h"
 #include "S47Herd.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
 namespace
 {
  struct FPart {TWeakObjectPtr<UStaticMeshComponent> C;FVector Road,Size;};
  TWeakObjectPtr<AS47Web> Built,AppliedWorld;FString AppliedArea;bool AppliedOn=false;TArray<FPart> Parts;
+ struct FRock {TWeakObjectPtr<UInstancedStaticMeshComponent> C;int32 Index=INDEX_NONE,Node=INDEX_NONE;FTransform Original,Clear;FBox Before=FBox(ForceInit),After=FBox(ForceInit);};
+ TWeakObjectPtr<AS47Web> RockWorld;TArray<FRock> Rocks;bool RocksScanned=false,RocksOn=false,RocksSafe=false;
+ FBox RoadBounds(AS47Web* W,UInstancedStaticMeshComponent* C,const FTransform& World)
+ {
+  const FBox B=C->GetStaticMesh()->GetBoundingBox();FBox Out(ForceInit);
+  for(int32 I=0;I<8;++I){const FVector V(I&1?B.Max.X:B.Min.X,I&2?B.Max.Y:B.Min.Y,I&4?B.Max.Z:B.Min.Z);FVector P=W->HighwayMapEye(S47Three::ToThree(World.TransformPosition(V)));P.X-=8000;Out+=P;}return Out;
+ }
+ bool OverlapsLane(const FBox& B)
+ {
+  if(!B.IsValid||B.Max.X<6||B.Min.X>116)return false;
+  const double X0=FMath::Max(6.,B.Min.X),X1=FMath::Min(116.,B.Max.X);double Low=1e30,High=-1e30;
+  for(double X=X0;X<X1+.5;X+=.5){const double Z=S47RoadTerrain::RanchZ(FMath::Min(X,X1));Low=FMath::Min(Low,Z-3.4);High=FMath::Max(High,Z+3.4);}return B.Max.Z>=Low&&B.Min.Z<=High;
+ }
+ void ClearRoad(AS47Web* W,bool On)
+ {
+  if(RockWorld!=W){RockWorld=W;Rocks.Reset();RocksScanned=false;RocksOn=false;RocksSafe=false;}
+  if(!RocksScanned)
+  {
+   if(!W->HighwayLandscapeReady())return;RocksSafe=true;int32 Families=0;
+   for(const TCHAR* A:{TEXT("saro"),TEXT("road"),TEXT("diner")})for(const auto& C:W->CollidersMutable(A))
+    if(C.Id.StartsWith(TEXT("props:rocksEast:"))||C.Id.StartsWith(TEXT("props:rocksWest:"))){RocksSafe=false;UE_LOG(LogTemp,Error,TEXT("S47 farm clearance unexpected authored rock collider %s in %s; retaining original instances"),*C.Id,A);}
+   if(!RocksSafe){RocksScanned=true;return;}
+   for(int32 Node=0;;++Node)
+   {
+    const auto* N=W->Node(Node);if(!N)break;if(!N->Name.StartsWith(TEXT("props:rocksEast_"))&&!N->Name.StartsWith(TEXT("props:rocksWest_")))continue;
+    auto* C=Cast<UInstancedStaticMeshComponent>(N->Comp.Get());if(!C||!C->GetStaticMesh())continue;++Families;
+    for(int32 I=0;I<C->GetInstanceCount();++I)
+    {
+     FTransform Local,World;if(!C->GetInstanceTransform(I,Local,false)||!C->GetInstanceTransform(I,World,true))continue;const FBox B=RoadBounds(W,C,World);if(!OverlapsLane(B))continue;
+     FRock R;R.C=C;R.Index=I;R.Node=Node;R.Original=Local;R.Before=B;FVector Origin=W->HighwayMapEye(S47Three::ToThree(World.GetLocation()));Origin.X-=8000;
+     const double DZ=S47RoadTerrain::RanchZ(B.GetCenter().X)-10.-B.GetExtent().Z-B.GetCenter().Z;
+     const double DY=S47RoadTerrain::SurfaceY(Origin.X,Origin.Z+DZ)-S47RoadTerrain::SurfaceY(Origin.X,Origin.Z);
+     const FVector Delta=S47FarmWorld::RoadToArea(W->Area(),Origin+FVector(0,DY,DZ))-S47FarmWorld::RoadToArea(W->Area(),Origin);
+     FTransform ClearWorld=World;ClearWorld.AddToTranslation(S47Three::ToUE(Delta));R.Clear=ClearWorld.GetRelativeTransform(C->GetComponentTransform());R.After=RoadBounds(W,C,ClearWorld);
+     if(OverlapsLane(R.After)){RocksSafe=false;UE_LOG(LogTemp,Error,TEXT("S47 farm clearance computed destination still overlaps node%d instance%d; retaining originals"),Node,I);continue;}
+     UE_LOG(LogTemp,Display,TEXT("S47 farm clearance measured node%d name=%s mesh=%s instance%d collision=%d beforeRoad=%s afterRoad=%s transform=%s"),Node,*N->Name,*GetPathNameSafe(C->GetStaticMesh()),I,int32(C->GetCollisionEnabled()),*R.Before.ToString(),*R.After.ToString(),*Local.ToHumanReadableString());Rocks.Add(R);
+    }
+   }
+   if(Families==0)return;RocksScanned=true;UE_LOG(LogTemp,Display,TEXT("S47 farm clearance measured %d intersecting instances in %d existing rock families; original matrices retained"),Rocks.Num(),Families);
+  }
+  if(!RocksSafe||RocksOn==On)return;
+  for(const auto& R:Rocks)if(auto* C=R.C.Get())C->UpdateInstanceTransform(R.Index,On?R.Clear:R.Original,false,true,true);
+  RocksOn=On;UE_LOG(LogTemp,Display,TEXT("S47 farm clearance mode=%s moved=%d; instance transforms updated; no authored drive/walk rock colliders"),On?TEXT("Freeform"):TEXT("Story"),Rocks.Num());
+ }
  void Build(AS47Web* W)
  {
   if(Built==W)return;Built=W;Parts.Reset();auto* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));if(!Cube)return;
@@ -65,7 +110,7 @@ namespace S47FarmWorld
  }
  void Reconcile(US47Main* M)
  {
-  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);
+  if(!M||!M->Web||!M->World)return;auto* W=M->Web.Get();ReconcileRanch(M);const bool On=Enabled(M)&&GateReady(M);M->World->ReconcileFarm(On);Build(W);ClearRoad(W,On);
   const bool Apply=AppliedWorld!=W||AppliedArea!=W->Area()||AppliedOn!=On;
   if(Apply)for(auto& P:Parts)if(auto* C=P.C.Get())
   {
@@ -75,14 +120,24 @@ namespace S47FarmWorld
   AppliedWorld=W;AppliedArea=W->Area();AppliedOn=On;
   if(M->TownLayer)for(const auto& H:M->TownLayer->Herds)if(H){H->ReconcileMode();if(Enabled(M)){H->Set(false,-1,false);H->Update(M->T);}}
  }
- bool Ready(US47Main* M){return Enabled(M)&&GateReady(M)&&HouseVisible(M)&&Built==M->Web.Get()&&Parts.Num()>30;}
+ int32 MovedRockCount(const US47Main* M){return M&&RockWorld==M->Web.Get()&&RocksOn?Rocks.Num():0;}
+ bool RoadClearance(US47Main* M,TArray<FString>& Lines)
+ {
+  if(!M||!M->Web)return false;auto* W=M->Web.Get();bool Good=RockWorld==W&&RocksScanned&&RocksSafe&&RocksOn==Enabled(M);int32 Checked=0;
+  for(int32 Node=0;;++Node){const auto* N=W->Node(Node);if(!N)break;if(!N->Name.StartsWith(TEXT("props:rocksEast_"))&&!N->Name.StartsWith(TEXT("props:rocksWest_")))continue;if(auto* C=Cast<UInstancedStaticMeshComponent>(N->Comp.Get()))if(C->GetStaticMesh())for(int32 I=0;I<C->GetInstanceCount();++I){FTransform T;if(C->GetInstanceTransform(I,T,true)){++Checked;if(Enabled(M)&&OverlapsLane(RoadBounds(W,C,T)))Good=false;}}}
+  for(const auto& R:Rocks){auto* C=R.C.Get();FTransform T;if(!C||!C->GetInstanceTransform(R.Index,T,false)||!T.Equals(Enabled(M)?R.Clear:R.Original,.00001))Good=false;}
+  Lines.Add(FString::Printf(TEXT("%s farm road clearance actual instance bounds checked=%d relocated=%d mode=%s"),Good?TEXT("PASS"):TEXT("FAIL"),Checked,Rocks.Num(),Enabled(M)?TEXT("Freeform"):TEXT("Story")));return Good;
+ }
+ bool Ready(US47Main* M){TArray<FString> Clearance;return RoadClearance(M,Clearance)&&Enabled(M)&&GateReady(M)&&HouseVisible(M)&&Built==M->Web.Get()&&Parts.Num()>30;}
  bool Audit(US47Main* M,TArray<FString>& Lines)
  {
-  const bool Good=M&&GateReady(M)&&(!Enabled(M)||Ready(M));Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm exact gate partitions, native housegroup and mode-derived physical access"));return Good;
+  const bool Good=M&&GateReady(M)&&RoadClearance(M,Lines)&&(!Enabled(M)||Ready(M));Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("farm exact gate partitions, native housegroup and mode-derived physical access"));return Good;
  }
  bool SelfTest(TArray<FString>& Lines)
  {
-  const bool Good=InRoadAccess(21,S47RoadTerrain::RanchZ(21))&&InRoadAccess(96,196.8)&&InRoadAccess(55,240)&&!InRoadAccess(200,196)&&RoadToArea(TEXT("saro"),{21,0,196}).Equals({-3,0,496},.00001);
+  const FBox Edge(FVector(10,0,S47RoadTerrain::RanchZ(11)+3.3),FVector(12,2,S47RoadTerrain::RanchZ(11)+6));
+  const FBox Verge(FVector(10,0,S47RoadTerrain::RanchZ(11)-20),FVector(12,2,S47RoadTerrain::RanchZ(11)-10));
+  const bool Good=OverlapsLane(Edge)&&!OverlapsLane(Verge)&&InRoadAccess(21,S47RoadTerrain::RanchZ(21))&&InRoadAccess(96,196.8)&&InRoadAccess(55,240)&&!InRoadAccess(200,196)&&RoadToArea(TEXT("saro"),{21,0,196}).Equals({-3,0,496},.00001);
   Lines.Add(FString(Good?TEXT("PASS "):TEXT("FAIL "))+TEXT("Alderete road, yard, pasture and scene coordinates remain bounded"));return Good;
  }
 }
