@@ -102,7 +102,7 @@ void SS47Settings::Construct(const FArguments& InArgs)
 					[
 						SNew(SBox).Visibility_Lambda([this] { return HasButtons() ? EVisibility::Visible : EVisibility::Hidden; })
 						[
-							Button(TEXT("APPLY"), true, [this] { Apply(); }, TAttribute<bool>::CreateLambda([this] { return !(Shown == Applied); }),
+							Button(TEXT("APPLY DISPLAY"), true, [this] { Apply(); }, TAttribute<bool>::CreateLambda([this] { return !(Shown == Applied); }),
 								TAttribute<bool>::CreateLambda([this] { return OnButtons() && BtnSel == 0; }))
 						]
 					]
@@ -595,9 +595,10 @@ TSharedRef<SWidget> SS47Settings::Side()
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0, 18 * U, 0, 0)
 		[
-			SNew(STextBlock).Font(Term(22, 1)).ColorAndOpacity(Amber(0.9f)).AutoWrapText(true)
-			.Text(FText::FromString(TEXT("Not applied yet: APPLY at the foot puts it into force.")))
-			.Visibility_Lambda([this] { const FRow* R = Current(); return R && R->bDisplay && !(Shown == Applied) ? EVisibility::Visible : EVisibility::Collapsed; })
+			SNew(STextBlock).Font(Term(22, 1)).AutoWrapText(true)
+			.ColorAndOpacity_Lambda([this] { return FSlateColor(Shown == Applied ? Sage(.9f) : Amber(.9f)); })
+			.Text_Lambda([this] { return FText::FromString(DisplayStatus()); })
+			.Visibility_Lambda([this] { return ConfirmLeft < 0 ? EVisibility::Visible : EVisibility::Collapsed; })
 		];
 }
 
@@ -823,10 +824,25 @@ void SS47Settings::ReadDisplay()
 	UE_LOG(LogS47Settings, Display, TEXT("S47: display %s %dx%d, %d resolutions offered, frame limit %.0f, v-sync %s"), S47SettingsLocal::ModeNames[Applied.Mode], Applied.Res.X, Applied.Res.Y, Resolutions.Num(), Applied.Fps, Applied.bVSync ? TEXT("on") : TEXT("off"));
 }
 
-void SS47Settings::ApplyDisplay(const FDisplay& D)
+FString SS47Settings::DisplayStatus() const
+{
+ if (!(Shown == Applied)) return HasButtons()
+  ? TEXT("Display changes are waiting. Choose APPLY DISPLAY below.")
+  : TEXT("Display changes are still waiting. Return to PICTURE and choose APPLY DISPLAY.");
+ return HasButtons()
+  ? TEXT("Display settings are up to date. Other changes take effect immediately and are saved automatically.")
+  : TEXT("Changes here take effect immediately and are saved automatically. No APPLY needed.");
+}
+
+bool SS47Settings::ApplyDisplay(const FDisplay& D)
 {
 	UGameUserSettings* GS = GEngine ? GEngine->GetGameUserSettings() : nullptr;
-	if (!GS) return;
+	if (!GS)
+	{
+		Status = TEXT("The display could not be changed. Try again after returning to the game.");
+		UE_LOG(LogS47Settings, Warning, TEXT("S47: display change unavailable: GameUserSettings missing"));
+		return false;
+	}
 	GS->SetFullscreenMode(D.Mode == 0 ? EWindowMode::Fullscreen : D.Mode == 1 ? EWindowMode::WindowedFullscreen : EWindowMode::Windowed);
 	GS->SetScreenResolution(D.Res);
 	GS->SetFrameRateLimit(D.Fps);
@@ -837,23 +853,24 @@ void SS47Settings::ApplyDisplay(const FDisplay& D)
 	// Restore this device's independent graphics choices after both Apply and rollback.
 	if (O->OnReapplyGraphics) O->OnReapplyGraphics();
 	Applied = D;
+	return true;
 }
 
 void SS47Settings::Apply()
 {
-	if (Shown == Applied) return;
+	if (Shown == Applied) { Status = TEXT("No display changes to apply. Other settings are saved automatically."); return; }
 	Before = Applied;
 	const bool bAsk = Shown.Mode != Applied.Mode || Shown.Res != Applied.Res;
-	ApplyDisplay(Shown);
+	if (!ApplyDisplay(Shown)) return;
 	ConfirmLeft = bAsk ? 10.f : -1.f;
-	Status = bAsk ? FString() : TEXT("Applied.");
+	Status = bAsk ? FString() : TEXT("Display settings applied.");
 	UE_LOG(LogS47Settings, Display, TEXT("S47: display applied: %s %dx%d, frame limit %.0f, v-sync %s%s"), S47SettingsLocal::ModeNames[Shown.Mode], Shown.Res.X, Shown.Res.Y, Shown.Fps, Shown.bVSync ? TEXT("on") : TEXT("off"), bAsk ? TEXT(", to keep or go back") : TEXT(""));
 }
 
 void SS47Settings::Keep()
 {
 	ConfirmLeft = -1.f;
-	Status = TEXT("Applied.");
+	Status = TEXT("Display settings applied.");
 }
 
 void SS47Settings::Revert()
@@ -862,7 +879,7 @@ void SS47Settings::Revert()
 	{
 		// the new mode or size was not kept: back to the one before
 		ConfirmLeft = -1.f;
-		ApplyDisplay(Before);
+		if (!ApplyDisplay(Before)) return;
 		Shown = Before;
 		UE_LOG(LogS47Settings, Display, TEXT("S47: display put back: %s %dx%d"), S47SettingsLocal::ModeNames[Before.Mode], Before.Res.X, Before.Res.Y);
 		Status = TEXT("The display is back as it was.");

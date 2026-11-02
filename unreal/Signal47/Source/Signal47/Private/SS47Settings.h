@@ -89,7 +89,8 @@ private:
 	void Back();
 	// the display
 	void ReadDisplay();
-	void ApplyDisplay(const FDisplay& D);
+	bool ApplyDisplay(const FDisplay& D);
+	FString DisplayStatus() const;
 	void Apply();
 	void Revert();
 	void Keep();

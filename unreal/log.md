@@ -1613,3 +1613,5 @@ Engangsautomasjonen signal-47-nattskift-22-08 er slettet via appen etter morgens
 2026-11-02: ARRAY-03 installert fra55990d45/PR345. Pakke1997 selvtester, servicereise58/4 og installert røykprøve består;161 Saved-elementer uendret. Neste arbeid WORLD-01: faktisk Station01-returhandoff, ingen ny statisk kamerafixture.
 
 2026-11-02 11:02 CET: WORLD01 faktisk returdiagnose med1,73km kjøring, hut/disk-Continue og bevegelig kabin/handoff gjenskapte ikke svarte terrengfelt i fem bilder. Ingen årsaksretting eller skyggeendring; privat prøve tas ut, åpne feil beholdes.
+
+2026-11-02: codex/world01-return-strip-20261102: originalt motellskilt får lokal nattglød; APPLY DISPLAY og status forklarer skjermvalg mot direkte lagring. Editorbygg, nattlig før/etter og eksisterende Slate-/diskkontrakt47 består; skjermmodus-rollback er ikke retestet.

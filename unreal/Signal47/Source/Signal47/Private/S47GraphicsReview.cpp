@@ -113,6 +113,7 @@ static const FCamera Cameras[] = {
  // (-32.9,3.7014316154,680.2) / (7991.1,3.7014316154,380.2).
  { TEXT("motel-sign-road"), TEXT("road"), 7998, 410, 0.22753, 0.12 },
  { TEXT("motel-sign-near"), TEXT("saro"), -26, 710, 0.22753, 0.12 },
+ { TEXT("motel-neon-front"), TEXT("saro"), -30, 655, 2.471, 0.10 },
  // Stand on the new pool's north-west deck and look across the water toward
  // the room row's rear wall, keeping the pool/room relationship readable.
  { TEXT("motel-rear"), TEXT("saro"), -63, 692.5, -2.50, -0.12 },

@@ -4,6 +4,7 @@
 #include "S47Glow.h"
 #include "S47Three.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "StaticMeshResources.h"
@@ -37,6 +38,11 @@ namespace
  bool Same(const FS47Rect& A,const FS47Rect& B){return FMath::Abs(A.MinX-B.MinX)<.06&&FMath::Abs(A.MaxX-B.MaxX)<.06&&FMath::Abs(A.MinZ-B.MinZ)<.06&&FMath::Abs(A.MaxZ-B.MaxZ)<.06;}
  bool ValidRect(const FValues& A){return VectorValid(A,4)&&A[0]->AsNumber()<A[1]->AsNumber()&&A[2]->AsNumber()<A[3]->AsNumber();}
  FValues RectValues(const FS47Rect& R){return {MakeShared<FJsonValueNumber>(R.MinX),MakeShared<FJsonValueNumber>(R.MaxX),MakeShared<FJsonValueNumber>(R.MinZ),MakeShared<FJsonValueNumber>(R.MaxZ)};}
+}
+
+FS47MotelV2::~FS47MotelV2()
+{
+ for(const auto& Weak:NeonSpill)if(auto* L=Weak.Get())L->DestroyComponent();
 }
 
 TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
@@ -243,6 +249,27 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
    }
    if(auto* Mid=C->CreateDynamicMaterialInstance(K))F->Glows.Add({Mid,Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor")),Slot,Room06?4.f:Office?6.f:Sign?9.f:1.f,DaySlot,Spatial});
   }
+  if(Sign&&!FParse::Param(FCommandLine::Get(),TEXT("S47MotelNeonSpillOff")))
+  {
+   // Actual source has SIERRA and MOTOR COURT on the +X face only:
+   // Blender X4.645..4.691, Y4.215..7.205, Z3.582..4.876m.
+   // Native import keeps X/Z and reverses Y. Illuminate back toward -X;
+   // never invent a rear neon face or move the existing text/photo geometry.
+   const FBox B=P.Mesh->GetBoundingBox();const FVector Size=B.GetSize(),Centre=B.GetCenter();F->NeonSign=C;
+   FLinearColor Tint(1.f,.65f,.35f);FLinearColor Emission;
+   if(C->GetMaterial(0)&&C->GetMaterial(0)->GetVectorParameterValue(FMaterialParameterInfo(TEXT("EmissiveFactor")),Emission))
+   {const float Peak=FMath::Max3(Emission.R,Emission.G,Emission.B);if(Peak>.001f){Tint=Emission/Peak;Tint.A=1.f;}}
+   for(int32 Row=0;Row<2;++Row)
+   {
+    auto* L=NewObject<URectLightComponent>(W,Row==0?TEXT("S47MotelNeonLower"):TEXT("S47MotelNeonUpper"));
+    L->SetupAttachment(C);L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);
+    L->SetLightColor(Tint);L->SetSourceWidth(Size.Y*(Row==0?.94f:.82f));L->SetSourceHeight(Size.Z*.20f);
+    L->SetAttenuationRadius(180.f);L->SetCastShadows(true);L->SetCastVolumetricShadow(false);L->SetVolumetricScatteringIntensity(0.f);L->SetSpecularScale(0.f);
+    L->SetVisibility(false);L->RegisterComponent();
+    L->SetRelativeLocation(FVector(B.Max.X+25.,Centre.Y,B.Min.Z+Size.Z*(Row==0?.18:.73)));
+    L->SetRelativeRotation(FRotator(0,180,0));F->NeonSpill.Add(L);
+   }
+  }
  }
  // Playtest: natural oiled timber over the seven static painted leaves. Hardware and frames stay.
  // The live Room6 leaf retains its movement/interaction and receives the same restrained brown tint.
@@ -325,7 +352,7 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
 void FS47MotelV2::Update()
 {
  for(const auto& P:Retired)if(auto* C=P.Get())Retire(C);
- AS47Web* W=Web.Get();if(!W)return;const int32 Set=W->FloodSet(TEXT("court"));
+ AS47Web* W=Web.Get();if(!W){for(const auto& Weak:NeonSpill)if(auto* L=Weak.Get()){L->SetIntensity(0);L->SetVisibility(false);}return;}const int32 Set=W->FloodSet(TEXT("court"));
  for(const int32 I:RetiredNamedRoots)W->SetVisible(I,false);
  // Retired sign halos are mirrored in SARO, the road and STATION01. Keep only these six points dark.
  for(const auto& P:RetiredSignGlows)if(auto* G=W->Glow(P.X)){G->SetSize(P.Y,0);G->SetColor(P.Y,FLinearColor::Black);}
@@ -338,6 +365,13 @@ void FS47MotelV2::Update()
   Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*(Driver*(G.Slot==8?2.6f:1.f)*(G.Slot==0?1.f:Day)));
   if(G.SpatialDaylight)Mid->SetScalarParameterValue(TEXT("ExteriorDaylightMask"),Day);
  }
+ // Exact same court8 power/flicker and daylight feed as the retained letters.
+ // Explicit visibility matters: a hidden mesh parent alone does not mute a light.
+ const auto* Sign=NeonSign.Get();
+ const bool Visible=Sign&&Sign->IsVisible()&&!Sign->bHiddenInGame&&!W->IsHidden();
+ const float NeonFeed=Visible?FMath::Clamp(W->FloodPos(Set,8).A/9.f,0.f,1.f)*W->ExteriorDaylightMask(Set,8):0.f;
+ for(const auto& Weak:NeonSpill)if(auto* L=Weak.Get())
+ {L->SetIntensity(22.f*NeonFeed);L->SetVisibility(NeonFeed>.001f);}
 }
 bool FS47MotelV2::Audit(TArray<FString>& Lines) const
 {
