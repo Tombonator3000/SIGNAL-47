@@ -4,6 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
+| WORLD04, avgrenset sammenhengende inngangshistorikk | Codex root, samme SARO-kopi | Avsluttet 07:20 uten repro: faktisk 48,5 m øst-/sørinngang/korridor/OPS/Rest og fem gjennomsette private bilder, stabil geometri. Ingen rotårsak/retting bevist. Privat testdiff fjernet fra kilde; patch/rådata bevart privat. Motorvindu frigitt. Gjeldende installasjon bfa1c26d fra 07:03 beholdes. |
 | PLAY31-11, faktisk rampekant | Codex root, runtime bfa1c26d/PR340 i samme SARO-kopi | Installert 07:03: 1997 selvtester, 15 kontroller/12 m, like før/etter-bilder, Story-inspeksjon/diskrestore og installert Fortsett PASS; 164 Saved-elementer uendret. Filansvar/motorvindu frigitt. Kandidat/forrige payload til neste samlede rydding. Ingen ny kopi/full audit. |
 | PLAY31-08, synlig trafoaktivitet og faktisk feederdriver | Codex root, runtime62b5eaa4/PR338 i samme SARO-kopi | Installert06:39:1997 selvtester,31 kontroller/én ordinær isolert Fortsett og fire pakkede bilder PASS;164 Saved-elementer uendret. Filansvar og motorvindu frigitt. Kandidat/forrige payload til neste samlede rydding, ingen ny kopi/audit. |
 | LIGHT01 resterende presise utelysmaterialer | Codex root, runtime2e1cef62/PR335/336 i samme SARO-kopi | Installert05:45: pakke/1995, helreise93/94.79m/én ordinær Fortsett og lys336/6 dag-nattbilder PASS; 164 Saved-elementer bevart. Filansvar og tungt vindu frigitt. Ferdig kandidat/forrige payload til neste samlede rydding, ingen ny kopi eller full audit. |
