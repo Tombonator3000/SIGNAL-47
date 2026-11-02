@@ -6,11 +6,13 @@ class UStaticMesh;
 class UMaterialInterface;
 class UMaterialInstanceDynamic;
 class USceneComponent;
+class URectLightComponent;
 
 /** Authored motel replacement; live story nodes and existing vehicle assets remain authoritative. */
 class FS47MotelV2
 {
 public:
+ ~FS47MotelV2();
  static TSharedPtr<FS47MotelV2> Build(AS47Web* Web);
  void Update();
  bool Audit(TArray<FString>& Lines) const;
@@ -39,6 +41,8 @@ private:
  int32 ExpectedPartCount=0;
  struct FGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FLinearColor Base; int32 Slot; float Reference; int32 DaySlot=INDEX_NONE; bool SpatialDaylight=false; };
  TArray<FGlow> Glows;
+ TWeakObjectPtr<UStaticMeshComponent> NeonSign;
+ TArray<TWeakObjectPtr<URectLightComponent>> NeonSpill;
  struct FFloor { double MinX,MaxX,MinZ,MaxZ,Y; };
  static TArray<FFloor> Floors;
  static TWeakObjectPtr<UStaticMeshComponent> PhotoSignComponent;

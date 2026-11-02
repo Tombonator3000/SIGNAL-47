@@ -1609,3 +1609,9 @@ Engangsautomasjonen signal-47-nattskift-22-08 er slettet via appen etter morgens
 2026-11-02 10:05 CET: codex/linux-release-20261102, PR344: ny Linux-starter/snarvei og RTX50 descriptor-buffer, 12 testgrupper, 112 pakkescenarioer, editor-natt106/8 og faktisk ZIP-oppstart PASS. Runtime bfa1c26d beholdt; remote nyarkivaksept gjenstår. Ingen Saved-endring eller ny rydderunde; distribusjonsmellomkopi kan ryddes ved neste samlede kjøring.
 
 2026-11-02: codex/s03-existing-cabinet-20261102 flytter Freeform-service inn i originalt S-03-kabelskap med hengslet originaldør, innvendig relé og velger. Ekstra stativ/skilt er fjernet; originalgeometri/materialer og Story-motorbus bevares. Editorbygg og servicereise med fire disk/Flow-returer består; pakket prøve pågår.
+
+2026-11-02: ARRAY-03 installert fra55990d45/PR345. Pakke1997 selvtester, servicereise58/4 og installert røykprøve består;161 Saved-elementer uendret. Neste arbeid WORLD-01: faktisk Station01-returhandoff, ingen ny statisk kamerafixture.
+
+2026-11-02 11:02 CET: WORLD01 faktisk returdiagnose med1,73km kjøring, hut/disk-Continue og bevegelig kabin/handoff gjenskapte ikke svarte terrengfelt i fem bilder. Ingen årsaksretting eller skyggeendring; privat prøve tas ut, åpne feil beholdes.
+
+2026-11-02: codex/world01-return-strip-20261102: originalt motellskilt får lokal nattglød; APPLY DISPLAY og status forklarer skjermvalg mot direkte lagring. Editorbygg, nattlig før/etter og eksisterende Slate-/diskkontrakt47 består; skjermmodus-rollback er ikke retestet.

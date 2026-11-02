@@ -4,6 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
+| ARRAY-03 og videre TODO 2. november | Codex root, samme SARO-kopi | ARRAY-03 installert fra55990d45/PR345; filansvar frigitt. WORLD01 faktisk returprobe uten repro, private data beholdes og prøvekode tas ut. next_todo undersøker Survey-/motellpolering, kun kildearbeid; root eier integrering og motorvindu. |
 | WORLD04, avgrenset sammenhengende inngangshistorikk | Codex root, samme SARO-kopi | Avsluttet 07:20 uten repro: faktisk 48,5 m øst-/sørinngang/korridor/OPS/Rest og fem gjennomsette private bilder, stabil geometri. Ingen rotårsak/retting bevist. Privat testdiff fjernet fra kilde; patch/rådata bevart privat. Motorvindu frigitt. Gjeldende installasjon bfa1c26d fra 07:03 beholdes. |
 | PLAY31-11, faktisk rampekant | Codex root, runtime bfa1c26d/PR340 i samme SARO-kopi | Installert 07:03: 1997 selvtester, 15 kontroller/12 m, like før/etter-bilder, Story-inspeksjon/diskrestore og installert Fortsett PASS; 164 Saved-elementer uendret. Filansvar/motorvindu frigitt. Kandidat/forrige payload til neste samlede rydding. Ingen ny kopi/full audit. |
 | PLAY31-08, synlig trafoaktivitet og faktisk feederdriver | Codex root, runtime62b5eaa4/PR338 i samme SARO-kopi | Installert06:39:1997 selvtester,31 kontroller/én ordinær isolert Fortsett og fire pakkede bilder PASS;164 Saved-elementer uendret. Filansvar og motorvindu frigitt. Kandidat/forrige payload til neste samlede rydding, ingen ny kopi/audit. |
@@ -197,3 +198,5 @@ Root eier `codex/title-quit-linux-20261101` i `title-quit-linux-20261101` (kopi3
 2026-11-02: root eier Linux-release i saro-story-loop-20261031, gren codex/linux-release-20261102. Filansvar: Spill-SIGNAL47.sh, Build/Linux/launch, releasepakking og dokumentasjon. Private untracked-områder bevares. Tom har avsluttet spilltesten og bestilt offentlig nedlasting; én produksjonsreservasjon dekker releasekontroller/pakking.
 
 2026-11-02: Linux-release levert offentlig, PR #344 flettet. Root eier nå codex/s03-existing-cabinet-20261102 i samme kopi: FreeformWorld runtime og målrettet prøve/installasjon. release_audit har levert Tools/arraycabinet; ingen andre kildefiler. Eksisterende Story-motorbus beholdes.
+
+2026-11-02: ARRAY-03 levert PR345. Root eier codex/world01-return-strip-20261102 i samme kopi; next_todo eier kun S47StationWorldRoute.cpp for opt-in returdiagnose. Root eier motorvindu, vurdering og eventuell årsaksretting.
