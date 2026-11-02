@@ -17,6 +17,7 @@
 #include "S47Json.h"
 #include "S47Three.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
@@ -53,6 +54,23 @@ namespace
  bool Landscape(US47Main* M,AS47Web* W)
  {
   TArray<FString> Lines;const bool Good=W->AuditHighwayLandscape(Lines);auto O=S47J::New();S47J::Set(O,TEXT("area"),W->Area());S47J::Set(O,TEXT("landscapeAudit"),Good);S47J::Set(O,TEXT("lines"),FString::Join(Lines,TEXT("\n")));State.Evidence.Add(MakeShared<FJsonValueObject>(O));return Check(M,Good,TEXT("actual shared landscape has the correct transform and visibility in ")+W->Area());
+ }
+ bool StationFlora(US47Main* M,AS47Web* W)
+ {
+  int32 Draws=0,Instances=0;bool Visible=true;
+  for(int32 I=0;;++I)
+  {
+   const auto* G=W->Node(I);if(!G)break;if(G->Name!=TEXT("flora:station01"))continue;
+   for(int32 Ch:G->Children)if(const auto* N=W->Node(Ch);N&&N->Name.StartsWith(TEXT("flora-")))
+   {
+    const auto* C=Cast<UInstancedStaticMeshComponent>(N->Comp.Get());++Draws;
+    Visible&=N->bVis&&C&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame;
+    for(const USceneComponent* P=C?C->GetAttachParent():nullptr;P;P=P->GetAttachParent())Visible&=P->IsVisible()&&!P->bHiddenInGame;
+    Instances+=C?C->GetInstanceCount():0;
+    UE_LOG(LogTemp,Display,TEXT("S47 StationWorld flora node%d %s enabled=%d instances=%d bounds=%s"),Ch,*N->Name,N->bVis,C?C->GetInstanceCount():0,C?*C->Bounds.GetBox().ToString():TEXT("missing"));
+   }
+  }
+  return Check(M,Draws==5&&Visible&&Instances>0,TEXT("all five Station01 runtime ground-cover draws are enabled, visible and populated together"));
  }
  bool Walk(US47Main* M)
  {
@@ -107,6 +125,7 @@ namespace S47StationWorldRoute
    int32 Parts=0;for(int32 I=0;;++I){const auto* N=W->Node(I);if(!N)break;if(N->Name.StartsWith(TEXT("SM_FieldStation_Hut_")))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))if(C->GetStaticMesh()&&C->GetStaticMesh()->GetNumLODs()==3&&C->IsVisible())++Parts;}
    bool Gate=false;for(const auto& Z:W->ZonesMutable(TEXT("station01")))if(Z.Id==TEXT("walkThrough"))Gate=Z.bEnabled;
    if(!Check(M,Parts==5&&Gate,TEXT("all five actual native hut parts and Freeform walk-through gate are available")))return;
+   if(!StationFlora(M,W))return;
    Photo(TEXT("station-yard"));Path({{-22.315,8029.},{-22.315,8023.4},{-22.315,8019.},{-10.05,8006.},{-10.05,8003.8}});Go(2);return;
   }
   if(State.Stage==2)
@@ -121,6 +140,7 @@ namespace S47StationWorldRoute
   {
    if(World->bBusy||Now-State.At<.6)return;bool Gate=false;for(const auto& Z:W->ZonesMutable(TEXT("station01")))if(Z.Id==TEXT("walkThrough"))Gate=Z.bEnabled;
    if(!Check(M,M->IsFreeform()&&World->Area==TEXT("station01")&&Gate&&M->Player->Pos.Z<8004.2,TEXT("disk/Flow continue retains hut position and reopens only the Freeform walk gate")))return;
+   if(!StationFlora(M,W))return;
    if(M->Freeform->Director)M->Freeform->Director->Stop();Path({{-10.05,8006.},{-22.315,8019.},{-22.315,8023.4},{-22.315,8029.},{-19.25,8031.4}});Go(4);return;
   }
   if(State.Stage==4)
