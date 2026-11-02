@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "checks": 24,
+  "driveMetres": 248.98493492484,
+  "walkMetres": 124.08862280839195,
+  "nativeBumps": 0,
+  "diskFlowRestores": 3,
+  "method": "One explicit initial parked service-Jeep pose on the existing main road at road-local (1.8,230), plus a serialized loaded relay parcel fixture. Ordinary Roam/Drive TestInput, GetOutHere, Walker TestMove, actual cargo eye-ray Pick/OnUse, disk/full Flow Continue. Later Story/Freeform comparisons are separate declared camera fixtures outside the measured physical journey.",
+  "limits": "Assets-only opt-in is a distinct short render/retention smoke and skips every route/cargo/Continue/mode-switch assertion. Isolated developer case0 only; purchase/source and initial cargo loading excluded. API controls are not human input. No teleport recovery inside the measured route. Story comparison uses a fresh genuine nightService Story start, followed by the retained Freeform state; no conversion of a Freeform save into Story. PNG existence is required; visual acceptance requires review. Bound 360 seconds; no whole-game regression.",
+  "physicalJourneySource": "7a92120f",
+  "source": "19b0ab0b",
+  "installedAt": "2026-11-02T04:00:10.159013+01:00",
+  "selfChecks": 1995,
+  "SavedUnchanged": true,
+  "savedNodes": 164,
+  "nativeAudits": [
+    {
+      "mode": "freeform",
+      "actualHouseAudit": true,
+      "cowAudit": true,
+      "bothActualDriveHerdCirclesMatch": true,
+      "gateAccessNativeFloorHit": true
+    },
+    {
+      "mode": "freeform",
+      "actualHouseAudit": true,
+      "cowAudit": true,
+      "bothActualDriveHerdCirclesMatch": true,
+      "gateAccessNativeFloorHit": true
+    },
+    {
+      "mode": "story",
+      "actualHouseAudit": true,
+      "cowAudit": true,
+      "bothActualDriveHerdCirclesMatch": true,
+      "gateAccessNativeFloorHit": true
+    },
+    {
+      "mode": "freeform",
+      "actualHouseAudit": true,
+      "cowAudit": true,
+      "bothActualDriveHerdCirclesMatch": true,
+      "gateAccessNativeFloorHit": true
+    }
+  ]
+}
