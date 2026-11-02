@@ -4,9 +4,13 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Ny kritisk spillfeil 2. november
+
+- [ ] **COLLISION-01 / P1, kritisk fastlåsing ved Dales kontorstol:** Tom rapporterer at spilleren havner inni veggen og sitter fast når man hopper ved kontorstolen på Dales kontor. Gjenskap med vanlig gange og hopp rundt stolen mot den tilstøtende veggen. Undersøk spillerkapsel, stol-/veggkollisjon og håndtering av overlapping ved hopp/landing; årsak er ikke fastslått. Spilleren skal bli på gangbar side av veggen og kunne bevege seg videre, uten å ødelegge stol, rom eller interaksjoner. Kontroller også om en allerede fastlåst lagring kan gjenopprettes trygt uten tap av fremdrift. Prioriter sammen med krasj og progresjonsstopp, foran kosmetisk arbeid. Status: brukerobservert, ikke gjenskapt eller rettet. Registreringen starter ikke utviklingsarbeidet igjen.
+
 ## Ny bestilling 2. november: Linux-pakke først, deretter videre TODO
 
-Tom har bestilt fortsatt arbeid til han sier stopp. Fullfør offentlig Linux-nedlasting først. Neste konkrete rettelse er **ARRAY-03**; deretter prioriteres åpne krasj-, progresjons- og verdensfeil etter spillerverdi. Dette er en ny bestilling, ikke gjenåpning av nattens utløpte engangsautomasjon.
+Bestillingen er avsluttet etter Toms stoppbeskjed 2. november. Linux-utgaven og ARRAY-03 er levert, og siste lokale oppgave var meny-VHS. TODO-automasjonen er slettet. Videre feil registreres her uten automatisk oppstart av utviklingsarbeid.
 
 - [x] **ARRAY-03 / P1, reparasjon i eksisterende S-03-skap:** Bruk den eksisterende `S-03 CABLE JUNCTION`-modellen ved antennen. Integrer åpning, innvendige servicedeler, isolering, relébytte og tilbakemelding i dette skapet; fjern det separate nye reparasjonspanelet. Tilpass eksisterende modell, bevar original/kilde, verdensplassering, målestokk, Story-/Freeform-logikk, deler og Save/Continue. Før-/etterbilde og én relevant fysisk serviceprøve. Installert via PR345/runtime `55990d45`. Bygg/pakke, 1997 selvtester og 58 servicekontroller med fire disk/Flow-returer består; 161 Saved-elementer bevart. Ikke med i den frosne offentlige utgivelsen. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/S03_CABINET_2026-11-02.md).
 
