@@ -37,6 +37,7 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
+#include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47MotelRoute,Log,All);
 namespace
@@ -197,8 +198,152 @@ namespace
   UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 pool exterior diagnosis meshes=%d instances=%d rays=%d evidence=%s; unknown candidate retained"),Meshes.Num(),Instances.Num(),Rays.Num(),*(Root/TEXT("pool-exterior.json")));return true;
  }
 }
+namespace
+{
+ struct FOfficeWallBuffers
+ {
+  TArray<FVector> Points;TArray<uint32> Indices;
+ };
+ bool ReadOfficeWallLod(UStaticMesh* Mesh,int32 Lod,FOfficeWallBuffers& Out)
+ {
+  const auto* R=Mesh?Mesh->GetRenderData():nullptr;if(!R||!R->LODResources.IsValidIndex(Lod))return false;
+  const auto& L=R->LODResources[Lod];const uint32 Count=L.VertexBuffers.PositionVertexBuffer.GetNumVertices(),Stride=L.VertexBuffers.PositionVertexBuffer.GetStride(),N=L.IndexBuffer.GetNumIndices(),IS=L.IndexBuffer.Is32Bit()?4:2;
+  if(!Count||Stride<sizeof(FVector3f)||!N)return false;
+  TArray<uint8> V,I;bool Read=false;
+  // Same retained-GPU-buffer method as RenderedPaneHit above; no CPU-access policy changes.
+  ENQUEUE_RENDER_COMMAND(S47OfficeWallReadback)([&](FRHICommandListImmediate& Cmd)
+  {
+   if(!L.VertexBuffers.PositionVertexBuffer.VertexBufferRHI||!L.IndexBuffer.IndexBufferRHI)return;
+   FRHIGPUBufferReadback VP(TEXT("S47OfficeWallPositions")),IP(TEXT("S47OfficeWallIndices"));
+   VP.EnqueueCopy(Cmd,L.VertexBuffers.PositionVertexBuffer.VertexBufferRHI,Count*Stride);IP.EnqueueCopy(Cmd,L.IndexBuffer.IndexBufferRHI,N*IS);Cmd.BlockUntilGPUIdle();
+   if(!VP.IsReady()||!IP.IsReady())return;
+   const void* A=VP.Lock(Count*Stride);const void* B=IP.Lock(N*IS);
+   if(A&&B){V.SetNumUninitialized(Count*Stride);I.SetNumUninitialized(N*IS);FMemory::Memcpy(V.GetData(),A,V.Num());FMemory::Memcpy(I.GetData(),B,I.Num());Read=true;}
+   if(A)VP.Unlock();if(B)IP.Unlock();
+  });FlushRenderingCommands();if(!Read)return false;
+  for(uint32 K=0;K<Count;++K){FVector3f P;FMemory::Memcpy(&P,V.GetData()+K*Stride,sizeof(P));Out.Points.Add(FVector(P));}
+  for(uint32 K=0;K<N;++K){uint32 X;if(IS==4)FMemory::Memcpy(&X,I.GetData()+K*4,4);else{uint16 Y;FMemory::Memcpy(&Y,I.GetData()+K*2,2);X=Y;}if(X>=Count)return false;Out.Indices.Add(X);}return true;
+ }
+ const FVector OfficeSite(-45.9,-2.0985683853163195,674.9);
+ // Blender metres -> Three metres; native vertex positions use UE centimetres.
+ FVector OfficeWorld(const FVector& Blender){return OfficeSite+FVector(Blender.X,Blender.Z,-Blender.Y);}
+ FVector OfficeSource(const FVector& UE){return FVector(UE.X,-UE.Y,UE.Z)/100.;}
+ const FBox OfficeWallBoxes[]={FBox(FVector(-2.4,-2.8,0),FVector(-2.2,2.8,2.8)),FBox(FVector(-2.4,-2.9,0),FVector(2.4,-2.7,2.8)),FBox(FVector(-2.4,2.7,0),FVector(2.4,2.9,2.8))};
+ double OfficeCullRay(const FOfficeWallBuffers& B,const TArray<uint32>& Faces,const FVector& From,const FVector& To)
+ {
+  const FVector D=To-From;double Nearest=2;
+  for(uint32 J:Faces)
+  {
+   const FVector A=B.Points[B.Indices[J]],E1=B.Points[B.Indices[J+1]]-A,E2=B.Points[B.Indices[J+2]]-A,H=FVector::CrossProduct(D,E2);
+   const double Det=FVector::DotProduct(E1,H);if(Det>=-1e-9)continue; // UE Vulkan raster uses CLOCKWISE fronts (VulkanRHI.cpp); not CCW geometry convention.
+   const FVector S=From-A;const double U=FVector::DotProduct(S,H)/Det;if(U<0||U>1)continue;
+   const FVector Q=FVector::CrossProduct(S,E1);const double V=FVector::DotProduct(D,Q)/Det;if(V<0||U+V>1)continue;
+   const double T=FVector::DotProduct(E2,Q)/Det;if(T>=0&&T<=1)Nearest=FMath::Min(Nearest,T);
+  }
+  return Nearest;
+ }
+ void ArmMotelOfficeWalls(AS47Web* Web,TFunction<bool(TArray<FString>&)> Audit)
+ {
+  static bool Armed=false;if(Armed)return;Armed=true;
+  struct FProbe {TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root,Identity,BaselineIdentity;double Began=FPlatformTime::Seconds(),Since=0,StableAt=0;int32 Stage=0,View=0;bool Before=false,Done=false,NativeChecks=true;TArray<TSharedPtr<FJsonValue>> Captures;TFunction<bool(TArray<FString>&)> Audit;};
+  const auto S=MakeShared<FProbe>();S->Web=Web;S->Audit=MoveTemp(Audit);S->Before=FParse::Param(FCommandLine::Get(),TEXT("S47MotelOfficeWallsBefore"));
+  Web->GetWorldTimerManager().SetTimer(S->Timer,[S]
+  {
+   auto* W=S->Web.Get();auto* M=W?US47Main::Get(W):nullptr;if(!M||!M->Player||!M->Flow||!M->World||!M->UI)return;
+   const double Now=FPlatformTime::Seconds();auto End=[&](bool Good,const FString& Why)
+   {
+    if(S->Done)return;S->Done=true;M->Player->TestMove.Reset();auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("DIAGNOSTIC_COMPLETE"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("beforeCaptureOnly"),S->Before);S47J::Set(O,TEXT("nativeAfterChecks"),S->NativeChecks);
+    S47J::Set(O,TEXT("scope"),TEXT("Seven explicit camera/Walker placements: reception entrance, inside/outside each of three measured closed wall boxes. Four actual render LODs read from retained GPU buffers. Before mode records inward geometry without accepting it; after mode checks paired nearest front-face rays on LOD0-2; bounds triangle sets include furniture/decor and are not exact wall islands. LOD3 is measured only. No natural route, human visual acceptance or whole motel regression claimed."));O->SetArrayField(TEXT("captures"),S->Captures);
+    if(!S->Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(S->Root/TEXT("result.json")));
+    W->GetWorldTimerManager().ClearTimer(S->Timer);UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel office walls %s %s at %s"),Good?TEXT("COMPLETE"):TEXT("FAIL"),*Why,*S->Root);FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
+   };
+   if(Now-S->Began>100){End(false,TEXT("bounded100-second office wall probe timeout"));return;}
+   if(M->Flow->bStarting||S47Startup::Blocking()||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
+   if(S->Stage==0)
+   {
+    FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+    if(!M->Flow->bDevRun||M->Flow->CaseId!=0||!User.StartsWith(TEXT("/tmp/"))||!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()),FPaths::ConvertRelativePathToFull(User))){End(false,TEXT("requires explicit isolated /tmp developer case0 profile"));return;}
+    S->Root=FPaths::ProjectSavedDir()/TEXT("MotelOfficeWalls")/(S->Before?TEXT("before"):TEXT("after"));IFileManager::Get().MakeDirectory(*S->Root,true);M->UI->Close(true);M->World->Enter(TEXT("saro"));M->Player->SetActive(false);M->bPausedByMenu=true;S->Stage=1;S->Since=Now;return;
+   }
+   M->bPausedByMenu=true;M->Player->SetActive(false);
+   const int32 Node=ChildNamed(W,W->Handle(TEXT("world.motel.group")),TEXT("motel-v2:SM_Sierra_Office"));const auto* N=W->Node(Node);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;auto* Mesh=C?C->GetStaticMesh().Get():nullptr;
+   if(!Mesh||Mesh->IsCompiling())return;
+   const FString Identity=FString::Printf(TEXT("%d:%s:%s:%d:%d"),Node,*C->GetPathName(),*Mesh->GetPathName(),Mesh->GetNumLODs(),Mesh->GetNumTriangles(0));
+   if(Identity!=S->Identity){S->Identity=Identity;S->StableAt=Now;}
+   if(Now-S->StableAt<2||Now-S->Since<.6)return;
+   if(S->Stage==1)
+   {
+    TArray<FString> Lines;const int32 Expected[]={276989,138493,60937,5539};bool Valid=S->Audit&&S->Audit(Lines)&&Mesh->GetPathName()==TEXT("/Game/MotelV2/SM_Sierra_Office.SM_Sierra_Office")&&Mesh->GetNumLODs()==4&&C->IsVisible()&&W->ObjAt(Node).Shown();
+    for(int32 L=0;L<Mesh->GetNumLODs()&&L<4;++L)Valid&=Mesh->GetNumTriangles(L)==Expected[L];
+    if(!Valid){End(false,TEXT("actual mounted SM_Sierra_Office/4LOD/visible installation identity differs; no fallback capture"));return;}
+    S->BaselineIdentity=Identity;
+    auto O=S47J::New();S47J::Set(O,TEXT("component"),C->GetPathName());S47J::Set(O,TEXT("mesh"),Mesh->GetPathName());S47J::Set(O,TEXT("node"),Node);S47J::Set(O,TEXT("stableIdentity"),S->Identity);
+    S47J::Set(O,TEXT("translationUE"),TArray<double>{C->GetComponentLocation().X,C->GetComponentLocation().Y,C->GetComponentLocation().Z});S47J::Set(O,TEXT("rotationUE"),TArray<double>{C->GetComponentRotation().Pitch,C->GetComponentRotation().Yaw,C->GetComponentRotation().Roll});S47J::Set(O,TEXT("scaleUE"),TArray<double>{C->GetComponentScale().X,C->GetComponentScale().Y,C->GetComponentScale().Z});S47J::Set(O,TEXT("forcedLodModel"),C->GetForcedLodModel());
+    TArray<FString> Mats;for(int32 I=0;I<C->GetNumMaterials();++I)Mats.Add(GetPathNameSafe(C->GetMaterial(I)));S47J::Set(O,TEXT("actualMaterials"),Mats);S47J::Set(O,TEXT("boundsOriginUE"),TArray<double>{C->Bounds.Origin.X,C->Bounds.Origin.Y,C->Bounds.Origin.Z});S47J::Set(O,TEXT("boundsExtentUE"),TArray<double>{C->Bounds.BoxExtent.X,C->Bounds.BoxExtent.Y,C->Bounds.BoxExtent.Z});
+    S47J::Set(O,TEXT("materialOpaqueOneSided"),C->GetNumMaterials()==1&&C->GetMaterial(0)&&C->GetMaterial(0)->GetBlendMode()==BLEND_Opaque&&!C->GetMaterial(0)->IsTwoSided());
+    TArray<TSharedPtr<FJsonValue>> Samples;
+    for(int32 L=0;L<4;++L)
+    {
+     FOfficeWallBuffers B;if(!ReadOfficeWallLod(Mesh,L,B)){End(false,TEXT("actual retained GPU LOD readback failed"));return;}
+     for(int32 K=0;K<3;++K)
+     {
+      TArray<uint32> Faces;double Volume=0;int32 Outward=0,Inward=0;const FBox Box=OfficeWallBoxes[K];const FVector Mid=Box.GetCenter();
+      for(int32 J=0;J+2<B.Indices.Num();J+=3)
+      {
+       const FVector A=OfficeSource(B.Points[B.Indices[J]]),D=OfficeSource(B.Points[B.Indices[J+1]]),E=OfficeSource(B.Points[B.Indices[J+2]]);
+       if(!Box.ExpandBy(.0005).IsInsideOrOn(A)||!Box.ExpandBy(.0005).IsInsideOrOn(D)||!Box.ExpandBy(.0005).IsInsideOrOn(E))continue;
+       Faces.Add(J);const FVector Normal=FVector::CrossProduct(D-A,E-A);const double Side=FVector::DotProduct(Normal,(A+D+E)/3-Mid);if(Side>1e-10)++Outward;else if(Side< -1e-10)++Inward;Volume+=FVector::DotProduct(A-Mid,FVector::CrossProduct(D-Mid,E-Mid))/6.;
+      }
+      auto R=S47J::New();S47J::Set(R,TEXT("lod"),L);S47J::Set(R,TEXT("wall"),K);S47J::Set(R,TEXT("bboxTriangleSuperset"),Faces.Num());S47J::Set(R,TEXT("selectionScope"),TEXT("source bounds also include intersecting furniture/decor; not exact connected wall islands"));S47J::Set(R,TEXT("outwardSourceFaces"),Outward);S47J::Set(R,TEXT("inwardSourceFaces"),Inward);S47J::Set(R,TEXT("signedSourceVolume"),Volume);S47J::Set(R,TEXT("sourceBlenderMin"),TArray<double>{Box.Min.X,Box.Min.Y,Box.Min.Z});S47J::Set(R,TEXT("sourceBlenderMax"),TArray<double>{Box.Max.X,Box.Max.Y,Box.Max.Z});
+      // UE import reflects Blender Y; Vulkan raster front faces are clockwise. Paired native rays use that convention.
+      const FVector Axis=K==0?FVector(1,0,0):FVector(0,1,0);const FVector A=(Mid-Axis*.6),D=(Mid+Axis*.6);
+      auto Native=[](const FVector& P){return FVector(P.X,-P.Y,P.Z)*100.;};
+      const double F=OfficeCullRay(B,Faces,Native(A),Native(D)),Back=OfficeCullRay(B,Faces,Native(D),Native(A));
+      const double ExpectedNear=(.6-.1)/1.2;S47J::Set(R,TEXT("frontRayFraction"),F);S47J::Set(R,TEXT("backRayFraction"),Back);S47J::Set(R,TEXT("expectedNearestFraction"),ExpectedNear);
+      const bool Near=FMath::Abs(F-ExpectedNear)<.02&&FMath::Abs(Back-ExpectedNear)<.02;
+      S47J::Set(R,TEXT("bothSidesHitNearestFaces"),Near);if(L<3)S->NativeChecks&=Near;Samples.Add(MakeShared<FJsonValueObject>(R));
+     }
+    }
+    O->SetArrayField(TEXT("wallGpuLods"),Samples);FFileHelper::SaveStringToFile(S47J::Write(O,true),*(S->Root/TEXT("actual-office-native.json")));S->Stage=2;S->Since=Now;return;
+   }
+   if(S->Stage>=2&&Identity!=S->BaselineIdentity){End(false,TEXT("mesh identity changed after the stable native baseline; comparison is confounded"));return;}
+   if(S->Stage==2)
+   {
+    // Source-space approach eyes; Player floor is the existing native motel floor.
+    const FVector From[]={FVector(4.1,-.6,1.62),FVector(-1,0,1.62),FVector(-3.8,0,1.62),FVector(0,-1.4,1.62),FVector(0,-4.2,1.62),FVector(0,1.4,1.62),FVector(0,4.2,1.62)};
+    const FVector Target[]={FVector(2.3,-.6,1.3),FVector(-2.3,0,1.4),FVector(-2.3,0,1.4),FVector(1.6,-2.8,1.4),FVector(1.6,-2.8,1.4),FVector(1.6,2.8,1.4),FVector(1.6,2.8,1.4)};
+    const FVector P=OfficeWorld(From[S->View]),T=OfficeWorld(Target[S->View]);M->Player->Place(P.X,P.Z,0);M->Player->Eye=1.62;M->Player->bHeadMotion=false;
+    const FVector D=T-FVector(P.X,M->Player->FloorY+1.62,P.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());S->Stage=3;S->Since=Now;return;
+   }
+   if(S->Stage==3)
+   {
+    const TCHAR* Names[]={TEXT("00-user-entrance"),TEXT("01-rear-inside"),TEXT("02-rear-outside"),TEXT("03-sideA-inside"),TEXT("04-sideA-outside"),TEXT("05-sideB-inside"),TEXT("06-sideB-outside")};
+    auto O=S47J::New();const FVector Eye=S47Three::ToThree(M->Player->EyeUE());S47J::Set(O,TEXT("image"),FString(Names[S->View]));S47J::Set(O,TEXT("actualEyeThree"),TArray<double>{Eye.X,Eye.Y,Eye.Z});S47J::Set(O,TEXT("yaw"),M->Player->Yaw);S47J::Set(O,TEXT("pitch"),M->Player->Pitch);S47J::Set(O,TEXT("worldArea"),M->World->Area);S47J::Set(O,TEXT("graphics"),W->GraphicsReadback());S47J::Set(O,TEXT("stableMeshIdentity"),Identity==S->BaselineIdentity);
+    const FVector Targets[]={FVector(2.3,-.6,1.3),FVector(-2.3,0,1.4),FVector(-2.3,0,1.4),FVector(1.6,-2.8,1.4),FVector(1.6,-2.8,1.4),FVector(1.6,2.8,1.4),FVector(1.6,2.8,1.4)};
+    const FVector Target=S47Three::ToUE(OfficeWorld(Targets[S->View]));FHitResult Hit;FCollisionQueryParams Q(SCENE_QUERY_STAT(MotelOfficeWalls),true,M->Player.Get());Q.bReturnFaceIndex=true;
+    const bool Contact=W->GetWorld()->LineTraceSingleByChannel(Hit,M->Player->EyeUE(),Target+(Target-M->Player->EyeUE()).GetSafeNormal()*40.,ECC_Visibility,Q);S47J::Set(O,TEXT("actualComplexVisibilityRayHit"),Contact);
+    if(Contact){S47J::Set(O,TEXT("hitComponent"),GetPathNameSafe(Hit.GetComponent()));S47J::Set(O,TEXT("hitFace"),Hit.FaceIndex);const FVector P=S47Three::ToThree(Hit.ImpactPoint);S47J::Set(O,TEXT("impactThree"),TArray<double>{P.X,P.Y,P.Z});}
+    S47J::Set(O,TEXT("eyeOverlapsBlockingVisibility10cmSphere"),W->GetWorld()->OverlapBlockingTestByChannel(M->Player->EyeUE(),FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(10.f),Q));
+    S47J::Set(O,TEXT("rayOverlapScope"),TEXT("Recorded actual world collision at explicit camera fixture; GPU face rays isolate measured walls independently of furniture occlusion."));
+    FScreenshotRequest::RequestScreenshot(S->Root/(FString(Names[S->View])+TEXT(".png")),true,false);S->Captures.Add(MakeShared<FJsonValueObject>(O));S->Stage=4;S->Since=Now;return;
+   }
+   if(S->Stage==4)
+   {
+    if(++S->View<7){S->Stage=2;S->Since=Now;return;}
+    const TCHAR* Names[]={TEXT("00-user-entrance"),TEXT("01-rear-inside"),TEXT("02-rear-outside"),TEXT("03-sideA-inside"),TEXT("04-sideA-outside"),TEXT("05-sideB-inside"),TEXT("06-sideB-outside")};
+    for(const TCHAR* Name:Names){TArray<uint8> B;if(!FFileHelper::LoadFileToArray(B,*(S->Root/(FString(Name)+TEXT(".png"))))||B.Num()<1024||B[0]!=137||B[1]!=80||B[2]!=78||B[3]!=71){End(false,TEXT("native viewport PNG missing"));return;}}
+    End(S->Before||S->NativeChecks,S->Before?TEXT("before captures complete; existing inward surfaces are recorded, not accepted"):TEXT("after captures complete; nearest-face checks apply only to source-preserved LOD0-2, LOD3 measured separately"));
+   }
+  },.1f,true);
+ }
+}
 void AS47Web::BeginMotelV2Route()
 {
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47MotelOfficeWalls")))
+ {
+  const TWeakObjectPtr<AS47Web> Owner=this;
+  ArmMotelOfficeWalls(this,[Owner](TArray<FString>& Lines){const auto* W=Owner.Get();return W&&W->MotelV2&&W->MotelV2->Audit(Lines);});return;
+ }
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47MotelV2Route")))return;
  // Action: 1=TV hold, 2=physical payphone, 3=newspaper front, 4=guest-door recess, 5=enter room6, 6=pool exterior diagnosis.
  struct FPoint {double X,Z;const TCHAR* Proxy;const TCHAR* Id;int32 Action=0;};
