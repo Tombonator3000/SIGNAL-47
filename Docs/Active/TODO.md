@@ -31,7 +31,7 @@ Tom bestilte et agent-harness, gjennomgang av workflow/gameplay og konkrete forb
 
 ## Ny kritisk spillfeil 2. november
 
-- [ ] **COLLISION-01 / P1, kritisk fastlåsing ved Dales kontorstol:** Tom rapporterer at spilleren havner inni veggen og sitter fast når man hopper ved kontorstolen på Dales kontor. Gjenskap med vanlig gange og hopp rundt stolen mot den tilstøtende veggen. Undersøk spillerkapsel, stol-/veggkollisjon og håndtering av overlapping ved hopp/landing; årsak er ikke fastslått. Spilleren skal bli på gangbar side av veggen og kunne bevege seg videre, uten å ødelegge stol, rom eller interaksjoner. Kontroller også om en allerede fastlåst lagring kan gjenopprettes trygt uten tap av fremdrift. Prioriter sammen med krasj og progresjonsstopp, foran kosmetisk arbeid. Status: brukerobservert, ikke gjenskapt eller rettet. Registreringen starter ikke utviklingsarbeidet igjen.
+- [x] **COLLISION-01 / P1, fastlåsing ved Dales kontorstol:** rettet og installert fra `6706f6e3`/PR356. Sekvensiell utstøting kunne flytte spilleren inn i en tidligere behandlet vegg/skrivebord; samlet bevegelsesklipp og endelig gulvkontroll hindrer dette. Moderne overlappende lagring kan gjenopprettes lokalt i samme rom med fremdrift/synsvinkel bevart; gyldig kontakt flyttes ikke. Editor/pakke: 2112 selvtester, 320 kontroller med faktisk hopp/landing, seks papirinteraksjoner, dør og to disk-/Flow-returer består. Prøvene bruker eksplisitte fixtures og er ikke Toms nøyaktige personlige lagring eller OS-input. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/COLLISION_01_2026-11-03.md).
 
 ## Ny bestilling 2. november: Linux-pakke først, deretter videre TODO
 

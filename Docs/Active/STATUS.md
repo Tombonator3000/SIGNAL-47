@@ -1,8 +1,14 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 2. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 3. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
+
+## Kollisjonsretting installert 3. november
+
+Kilde `6706f6e3`, [PR356](https://github.com/Tombonator3000/SIGNAL-47/pull/356), er installert kl. 00:25 CET. Overlappende stol-/vegg-/skrivebordskollisjoner kan ikke lenger skyve spilleren gjennom en tidligere behandlet flate. En allerede fastlåst moderne lagring ved Dales stol flyttes bare til en nærliggende, ledig plass i samme rom, med fremdrift og synsvinkel bevart. Gyldige lagringer flyttes ikke.
+
+Bygg/pakking, 2112 selvtester, 320 målrettede kontorkontroller og to disk-/Flow-returer består i editor og ferdig pakke. Installert kort oppstart består; alle 126 personlige Saved-filer er uendret. Prøvene bruker eksplisitte fixtures, ikke Toms personlige fastlåste lagring. [Levering og avgrensning](../Evidence/UnrealDeliveries/COLLISION_01_2026-11-03.md). Nattskiftet fortsetter med automatisk gruppering av bevistavlen; Claude samordnes fra 02:10.
 
 ## Jeep ferdigstilt og installert 2. november
 
