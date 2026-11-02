@@ -1607,3 +1607,5 @@ Store installasjonsfiler bruker verifiserte Btrfs-reflinks; 192.7GB fysisk ledig
 Engangsautomasjonen signal-47-nattskift-22-08 er slettet via appen etter morgenstatus; ingen videre nattkjøring er bestilt.
 
 2026-11-02 10:05 CET: codex/linux-release-20261102, PR344: ny Linux-starter/snarvei og RTX50 descriptor-buffer, 12 testgrupper, 112 pakkescenarioer, editor-natt106/8 og faktisk ZIP-oppstart PASS. Runtime bfa1c26d beholdt; remote nyarkivaksept gjenstår. Ingen Saved-endring eller ny rydderunde; distribusjonsmellomkopi kan ryddes ved neste samlede kjøring.
+
+2026-11-02: codex/s03-existing-cabinet-20261102 flytter Freeform-service inn i originalt S-03-kabelskap med hengslet originaldør, innvendig relé og velger. Ekstra stativ/skilt er fjernet; originalgeometri/materialer og Story-motorbus bevares. Editorbygg og servicereise med fire disk/Flow-returer består; pakket prøve pågår.

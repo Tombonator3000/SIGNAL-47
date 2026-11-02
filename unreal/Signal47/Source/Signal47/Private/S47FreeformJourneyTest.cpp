@@ -186,9 +186,23 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(Age-At<.2)return;
   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
-  if(!Check(Picked==TEXT("ff:service"),TEXT("eye ray reaches the marked S-03 service box from standing ground")))return;
+  if(!Check((Picked==TEXT("ff:service")||Picked==TEXT("field:S-03")),FString(TEXT("eye ray reaches the existing S-03 cable cabinet from standing ground; picked="))+Picked))return;
   FScreenshotRequest::RequestScreenshot(Root/TEXT("service-reachable.png"),true,false);
-  for(int32 K=0;K<4;++K)M->Player->OnUse(Picked);
+  M->Player->OnUse(Picked);M->Player->OnUse(Picked);
+  if(!Check(W.ServiceStage()==4,TEXT("existing cabinet isolates and opens before relay exchange")))return;
+  Go(93);return;
+ }
+ if(Stage==93)
+ {
+  if(Age-At<.5)return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("service-open.png"),true,false);
+  if(!Restore(TEXT("cabinet-open")))return;Go(94);return;
+ }
+ if(Stage==94)
+ {
+  if(Age-At<.5)return;F.Director->Stop();PlaceAt(TEXT("ff:service"));
+  if(!Check(W.ServiceStage()==4&&W.InventoryCount(TEXT("relay"))==2,TEXT("Continue keeps cabinet open and spare unconsumed")))return;
+  W.Use(TEXT("ff:service"));W.Use(TEXT("ff:service"));
   if(!Check(W.ServiceStage()==6&&W.InventoryCount(TEXT("relay"))==1,TEXT("local isolation, cover and relay exchange consume one real spare")))return;
   int32 I=0;for(;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03"))break;
   if(!Check(I<M->Web->DishCount(),TEXT("S-03 actual encoder found")))return;InitialAz=M->Web->DishAz(I);

@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "sourceSha256": "149631bbb121e9966b91231ccd8620e35dac14cfae1db0a470d8380f262d3919",
+  "manifestSha256": "69fcf95db3adf8eff76274f59b03f94e662936a147f1ee7389630c1a8a0925c9",
+  "fileSha256": "572e16a26d9a90f9da8f55564be6fb8e0e6f9b928ffc0cb6f219c5f5e6bc376f",
+  "file": "s03_cabinet.glb",
+  "meshes": {
+    "g533": {
+      "node": 802,
+      "parent": 773,
+      "geo": 533,
+      "tris": 960,
+      "removed": 14,
+      "resultTris": 946,
+      "sourceMaterialIds": [
+        6
+      ],
+      "originalMaterialIndices": [
+        0
+      ],
+      "asset": "/Game/ArrayCabinet/StaticMeshes/g533.g533"
+    },
+    "g534": {
+      "node": 803,
+      "parent": 773,
+      "geo": 534,
+      "tris": 648,
+      "removed": 24,
+      "resultTris": 624,
+      "sourceMaterialIds": [
+        354
+      ],
+      "originalMaterialIndices": [
+        0
+      ],
+      "asset": "/Game/ArrayCabinet/StaticMeshes/g534.g534"
+    },
+    "g535": {
+      "node": 804,
+      "parent": 773,
+      "geo": 535,
+      "tris": 54,
+      "removed": 2,
+      "resultTris": 52,
+      "sourceMaterialIds": [
+        355
+      ],
+      "originalMaterialIndices": [
+        0
+      ],
+      "asset": "/Game/ArrayCabinet/StaticMeshes/g535.g535"
+    },
+    "g536": {
+      "node": 805,
+      "parent": 773,
+      "geo": 536,
+      "tris": 1424,
+      "removed": 48,
+      "resultTris": 1376,
+      "sourceMaterialIds": [
+        21
+      ],
+      "originalMaterialIndices": [
+        0
+      ],
+      "asset": "/Game/ArrayCabinet/StaticMeshes/g536.g536"
+    }
+  },
+  "parts": {
+    "SM_S03CabinetBody": {
+      "asset": "/Game/ArrayCabinet/StaticMeshes/SM_S03CabinetBody.SM_S03CabinetBody",
+      "sourceMaterialIds": [
+        6,
+        354,
+        21
+      ],
+      "triangles": 106
+    },
+    "SM_S03CabinetDoor": {
+      "asset": "/Game/ArrayCabinet/StaticMeshes/SM_S03CabinetDoor.SM_S03CabinetDoor",
+      "sourceMaterialIds": [
+        354,
+        355
+      ],
+      "triangles": 12
+    }
+  },
+  "hingeWorld": [
+    4.647,
+    -0.01,
+    -39.72
+  ],
+  "openRotationY": -1.4,
+  "frontWorld": [
+    4.647,
+    -0.01,
+    -39.4
+  ],
+  "scope": "Prepared original geometry; native import and visual runtime check still required"
+}

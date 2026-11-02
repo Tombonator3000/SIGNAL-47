@@ -6,9 +6,9 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Ny Linux-nedlasting 2. november
 
-[PR344](https://github.com/Tombonator3000/SIGNAL-47/pull/344) klargjør det verifiserte bfa1c26d-bygget med Play.sh, programmeny-/skrivebordssnarvei og automatisk descriptor-buffer for RTX 50. Andre GPU-er beholder standardvalget. Tolv startertestgrupper, 112 pakkede scenarioer, nattkontrakt i editor (106 kontroller / åtte restores) og oppstart fra de tre faktiske ZIP-arkivene består. Ny mottakerprøve på RTX 5090 gjenstår; tidligere testpakke ble bekreftet startet. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/LINUX_RELEASE_2026-11-02.md).
+[Linux-utgaven er publisert](https://github.com/Tombonator3000/SIGNAL-47/releases/tag/playtest-linux-2026-11-02) gjennom [PR344](https://github.com/Tombonator3000/SIGNAL-47/pull/344). Den bruker det verifiserte bfa1c26d-bygget med Play.sh, programmeny-/skrivebordssnarvei og automatisk descriptor-buffer for RTX 50. Andre GPU-er beholder standardvalget. Tolv startertestgrupper, 112 pakkede scenarioer, nattkontrakt i editor (106 kontroller / åtte restores) og oppstart fra de tre faktiske ZIP-arkivene består. Ny mottakerprøve på RTX 5090 gjenstår; tidligere testpakke ble bekreftet startet. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/LINUX_RELEASE_2026-11-02.md).
 
-Neste prioritet bestemt av Tom: ARRAY-03 skal bruke det eksisterende S-03-kabelskapet til reparasjon og fjerne den ekstra servicekonstruksjonen. Deretter fortsetter prioritert TODO til Tom stopper arbeidet.
+ARRAY-03 er implementert i eksisterende S-03-kabelskap: original dør åpnes og servicedelene sitter inne i skapet. Den ekstra servicekonstruksjonen er fjernet. Editorbygg og fysisk serviceprøve med åpen luke gjennom Save/Continue består. Pakket kontroll og lokal installasjon pågår. Deretter fortsetter prioritert TODO til Tom stopper arbeidet.
 
 ## Nattskiftet 1. til 2. november er avsluttet
 
