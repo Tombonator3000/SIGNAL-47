@@ -16,8 +16,13 @@
 #include "S47Startup.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47Image.h"
+#include "Misc/Base64.h"
+#include "Engine/World.h"
 #include "S47FieldCamera.h"
 #include "S47Glimpses.h"
+#include "S47Flashlight.h"
+#include "Components/PrimitiveComponent.h"
 #include "S47Inter.h"
 #include "S47Three.h"
 #include "Misc/CommandLine.h"
@@ -38,8 +43,12 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
- S47J::Set(O,TEXT("method"),TEXT("Isolated native Freeform integration: actual timed encoder settling, acquisition and audio; production workstation callbacks, full disk/Flow restores, accelerated day transitions and explicit event fixtures. Screenshots are native Vulkan. Fixture placement does not establish a natural town drive or human input/listening."));
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
+  S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
+ else
+  S47J::Set(O,TEXT("method"),TEXT("Isolated native Freeform integration: actual timed encoder settling, acquisition and audio; production workstation callbacks, full disk/Flow restores, accelerated day transitions and explicit event fixtures. Screenshots are native Vulkan. Fixture placement does not establish a natural town drive or human input/listening."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -77,6 +86,65 @@ void FS47FreeformTest::PoseForEvent()
    M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
   }
 }
+bool FS47FreeformTest::PosePhotoFigure()
+{
+ if(!M||!M->Night||!M->Night->Glimpses)return false;
+ for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered&&M->Night->Glimpses->ControlledPhotoBody(I.Id))
+ {
+  PhotoFigureId=I.Id;const FVector P=I.Eye-FVector(0,.5,0);
+  // Explicit fixture placement only; the body, lighting and camera capture remain production systems.
+  M->Player->Place(I.Pos.X,I.Pos.Z+5.,0);
+  const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());return true;
+ }
+ return false;
+}
+void FS47FreeformTest::LogPhotoFrame(const FString& Label,const FS47AlbumShot& Photo)
+{
+ auto O=S47J::New();S47J::Set(O,TEXT("photoFixtureFrame"),Label);S47J::Set(O,TEXT("event"),PhotoEvent);S47J::Set(O,TEXT("clock"),M->Freeform->Clock());
+ S47J::Set(O,TEXT("fullFrameMean"),M->Night->Album->Last?M->Night->Album->Last->Mean:-1.);
+ S47J::Set(O,TEXT("subjectMean"),M->Freeform->Director->LastPhotoSubjectMean());
+ S47J::Set(O,TEXT("lampOn"),M->Night->Flashlight->bOn);S47J::Set(O,TEXT("lampIntensity"),M->Night->Flashlight->Intensity());
+ S47J::Set(O,TEXT("claims"),M->Freeform->Director->PhotoClaims().Num());S47J::Set(O,TEXT("figureId"),PhotoFigureId);
+ S47J::Set(O,TEXT("activeEvent"),M->Freeform->Director->ActiveEvent());S47J::Set(O,TEXT("area"),M->Web->Area());S47J::Set(O,TEXT("shotId"),Photo.Id);S47J::Set(O,TEXT("targetCount"),Photo.Targets.Num());
+ TArray<FColor> Pixels;int32 W=0,H=0;const bool Decoded=S47Image::DecodePixels(Photo.Url,Pixels,W,H);bool Written=false;
+ const FString ImagePath=Root/(TEXT("photo-original-")+Label+TEXT(".png"));
+ if(Decoded)
+ {
+  const FString Url=S47Image::ToDataUrl(Pixels,W,H,false);int32 Comma=INDEX_NONE;TArray<uint8> Bytes;
+  Written=Url.FindChar(TCHAR(','),Comma)&&FBase64::Decode(Url.Mid(Comma+1),Bytes)&&FFileHelper::SaveArrayToFile(Bytes,*ImagePath);
+ }
+ S47J::Set(O,TEXT("originalDecoded"),Decoded);S47J::Set(O,TEXT("originalPngWritten"),Written);S47J::Set(O,TEXT("originalWidth"),W);S47J::Set(O,TEXT("originalHeight"),H);S47J::Set(O,TEXT("originalPng"),ImagePath);
+
+ bool Rendered=false;
+ for(const auto& I:M->Night->Glimpses->Individuals())if(I.Id==PhotoFigureId)
+ {
+  const auto* Body=M->Night->Glimpses->ControlledPhotoBody(I.Id);Rendered=I.bRendered&&Body&&Body->IsVisible();
+  const auto P=M->FieldCamera->Project(I.Eye-FVector(0,.5,0)),Top=M->FieldCamera->Project(I.Eye+FVector(0,.1,0)),Bottom=M->FieldCamera->Project(I.Eye-FVector(0,1.1,0));
+  const FVector RayFrom=M->FieldCamera->PhotoLoc,RayTo=S47Three::ToUE(I.Eye-FVector(0,.5,0));
+  FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformPhotoFixtureSight),true);Params.AddIgnoredActor(M->Player);
+  const bool Blocked=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,RayFrom,RayTo,ECC_Visibility,Params);
+  S47J::Set(O,TEXT("rayFromUE"),RayFrom.ToString());S47J::Set(O,TEXT("rayToUE"),RayTo.ToString());S47J::Set(O,TEXT("rayBlocked"),Blocked);
+  S47J::Set(O,TEXT("firstHitActor"),Hit.GetActor()?Hit.GetActor()->GetPathName():FString());S47J::Set(O,TEXT("firstHitComponent"),Hit.Component.IsValid()?Hit.Component->GetPathName():FString());
+  S47J::Set(O,TEXT("bodyComponent"),Body?Body->GetPathName():FString());S47J::Set(O,TEXT("firstHitIsBody"),Blocked&&Hit.Component.Get()==Body);
+  S47J::Set(O,TEXT("hitDistance"),Blocked?double(Hit.Distance):-1.);S47J::Set(O,TEXT("startPenetrating"),Hit.bStartPenetrating);S47J::Set(O,TEXT("impactPointUE"),Hit.ImpactPoint.ToString());
+  if(Body)
+  {
+   S47J::Set(O,TEXT("bodyCollision"),int32(Body->GetCollisionEnabled()));S47J::Set(O,TEXT("bodyVisibilityResponse"),int32(Body->GetCollisionResponseToChannel(ECC_Visibility)));
+   const FBox Box=Body->Bounds.GetBox();FBox2D Bounds(ForceInit);bool Front=true;
+   for(int32 C=0;C<8;++C)
+   {
+    const FVector Corner((C&1)?Box.Max.X:Box.Min.X,(C&2)?Box.Max.Y:Box.Min.Y,(C&4)?Box.Max.Z:Box.Min.Z);
+    const auto Q=M->FieldCamera->Project(S47Three::ToThree(Corner));Front&=Q.bFront;Bounds+=FVector2D(Q.U,Q.V);
+   }
+   S47J::Set(O,TEXT("boundsAllInFront"),Front);S47J::Set(O,TEXT("boundsMinUV"),Bounds.Min.ToString());S47J::Set(O,TEXT("boundsMaxUV"),Bounds.Max.ToString());
+  }
+
+  S47J::Set(O,TEXT("u"),P.U);S47J::Set(O,TEXT("v"),P.V);S47J::Set(O,TEXT("inFront"),P.bFront);S47J::Set(O,TEXT("topV"),Top.V);S47J::Set(O,TEXT("bottomV"),Bottom.V);S47J::Set(O,TEXT("frameHeight"),FMath::Abs(Bottom.V-Top.V));break;
+ }
+ S47J::Set(O,TEXT("renderedControlledBody"),Rendered);Evidence.Add(MakeShared<FJsonValueObject>(O));
+ UE_LOG(LogTemp,Display,TEXT("S47 photo fixture: %s"),*S47J::Write(O));
+}
 void FS47FreeformTest::Step(double Dt)
 {
  if(bDone)return;
@@ -90,6 +158,110 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ // Explicit short photographic-economy fixture. This is not a natural encounter or OS-input beta.
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
+ {
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   PhotoEvent=TEXT("landing_trace");FParse::Value(FCommandLine::Get(),TEXT("S47PhotoEconomyEvent="),PhotoEvent);
+   if(!Check(PhotoEvent==TEXT("landing_trace")||PhotoEvent==TEXT("feeder_presence"),TEXT("photographic fixture accepts only landing_trace or opt-in feeder_presence")))return;
+   if(PhotoEvent==TEXT("feeder_presence"))
+   {
+    if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->Night&&M->Night->Flashlight&&M->Night->Glimpses&&M->FieldCamera&&F.Field,TEXT("night figure fixture has isolated native camera, flashlight and body systems")))return;
+    const double Hour=FMath::Fmod(F.Clock(),86400.);if(!Check(F.TestAdvance(FMath::Fmod(22*3600.-Hour+86400.,86400.)),TEXT("explicit fixture advances actual world and Story clock to night")))return;
+    M->UI->Close(true);M->Night->Flashlight->bHave=true;if(M->Night->Flashlight->bOn)M->Night->Flashlight->Toggle();
+    M->World->Enter(TEXT("road"));Go(8090,1);return;
+   }
+   if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&F.Director->Force(TEXT("landing_trace")),TEXT("isolated photographic fixture starts a real native field trace")))return;
+   PhotoBudget=F.Budget();const FVector P=F.Director->EventAnchor();M->Player->Place(P.X-1.5,P.Z,0);
+   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());Go(8001,1);return;
+  }
+  if(Stage==8090)
+  {
+   if(!Check(M->Web->Area()==TEXT("road"),TEXT("night feeder fixture loads the actual road site")))return;
+   const FVector P=F.Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(P.X,P.Z+4.,0);
+   if(!Check(F.Director->Force(PhotoEvent),TEXT("explicit Force starts feeder presence; natural scheduling is not tested")))return;
+   PhotoBudget=F.Budget();Go(8091,.2);return;
+  }
+  if(Stage==8091)
+  {
+   if(!PosePhotoFigure()){if(Age-At>40)Check(false,TEXT("no rendered ControlledPhotoBody within bounded night fixture wait"));return;}
+   Go(8092,.35);return;
+  }
+  if(Stage==8092)
+  {
+   if(!Check(!M->Night->Flashlight->bOn&&M->Night->Flashlight->Intensity()<.01,TEXT("first night exposure uses actual flashlight OFF")))return;
+   M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Dark=M->Night->Album->Expose();LogPhotoFrame(TEXT("lamp-off"),Dark);M->FieldCamera->Raise(false);
+   if(!Check(!Dark.bUnavailable&&!Dark.Url.IsEmpty(),TEXT("lamp-off frame is a real retained native exposure, independent of qualification")))return;
+   Shot(TEXT("photo-night-lamp-off"));Go(80921,.2);return;
+  }
+  if(Stage==80921)
+  {
+   if(!Check(M->Night->Flashlight->Toggle(),TEXT("production flashlight toggle enables lamp for second exposure")))return;
+   Go(8093,.6);return;
+  }
+  if(Stage==8093)
+  {
+   if(!Check(PosePhotoFigure(),TEXT("lamp-on exposure still has a rendered controlled body")))return;
+   Go(8094,.25);return;
+  }
+  if(Stage==8094)
+  {
+   const double Hour=FMath::Fmod(F.Clock(),86400.)/3600.;
+   if(!Check((Hour>=19||Hour<6)&&M->Night->Flashlight->bOn&&M->Night->Flashlight->Intensity()>0,TEXT("qualifying figure exposure occurs at actual night with native lamp ON")))return;
+   M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Lit=M->Night->Album->Expose();LogPhotoFrame(TEXT("lamp-on"),Lit);M->FieldCamera->Raise(false);
+   if(!Check(!Lit.bUnavailable&&!Lit.Url.IsEmpty()&&F.Director->LastPhotoSubjectMean()>=15&&F.Director->PhotoClaims().Num()==1&&Lit.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& Target){return Target.Key==TEXT("freeform:")+F.Director->PhotoClaims()[0].Id;})&&F.Budget()==PhotoBudget,TEXT("lamp-on exposure has actual incident tag and qualifying subject light; incident retains one claim without shutter payment")))return;
+   const auto& Claim=F.Director->PhotoClaims()[0];const auto* Original=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==Claim.PhotoId;});
+   if(!Check(Original&&!Original->bUnavailable&&!Original->Url.IsEmpty(),TEXT("qualifying night claim references an actual retained exposure")))return;
+   PhotoClaimId=Claim.Id;RetainedPhotoId=Original->Id;RetainedPhotoUrl=Original->Url;Shot(TEXT("photo-night-lamp-on"));Go(8002,.25);return;
+  }
+  if(Stage==8001)
+  {
+   if(!Check(F.Director->PhysicalObjectPresented(),TEXT("photographic subject has a real visible native component")))return;
+   M->FieldCamera->Raise(true);M->FieldCamera->Sync();const auto Photo=M->Night->Album->Expose();M->FieldCamera->Raise(false);
+   if(!Check(!Photo.bUnavailable&&!Photo.Url.IsEmpty()&&F.Director->PhotoClaims().Num()==1&&F.Budget()==PhotoBudget,TEXT("rendered photograph queues one documentation claim without shutter payment")))return;
+   PhotoClaimId=F.Director->PhotoClaims()[0].Id;RetainedPhotoId=Photo.Id;RetainedPhotoUrl=Photo.Url;
+   Shot(TEXT("photo-evidence"));Go(8002,.5);return;
+  }
+  if(Stage==8002)
+  {
+   M->FieldCamera->Raise(true);M->FieldCamera->Sync();M->Night->Album->Expose();M->FieldCamera->Raise(false);
+   if(!Check(F.Director->PhotoClaims().Num()==1&&F.Budget()==PhotoBudget&&!F.Director->RegisterPhotoClaim(PhotoClaimId),TEXT("duplicate exposure does not mint another claim and field registration is refused")))return;
+   M->Story->Note(TEXT("Legacy case timeline retained: original 02:13 references and photographs are unchanged. Any unstored printout acquisition time is marked unavailable."));
+   M->Story->Note(TEXT("Retained field-test note."));
+   if(!Restore(TEXT("photo-unpaid")))return;Go(8003,1);return;
+  }
+  if(Stage==8003)
+  {
+   if(!Check(F.Director->PhotoClaims().Num()==1&&!F.Director->PhotoClaims()[0].bPaid,TEXT("unpaid photo claim survives full disk and Flow restore")))return;
+   if(!Check(M->Story->Notes().Contains(TEXT("Retained field-test note."))&&!M->Story->Notes().ContainsByPredicate([](const FString& N){return N.StartsWith(TEXT("Legacy case timeline retained:"));}),TEXT("Freeform Continue removes only the erroneous Story migration notice and preserves field notes")))return;
+   if(PhotoEvent==TEXT("feeder_presence")){M->World->Enter(TEXT("saro"));Go(80031,1);return;}
+   const FVector OpsAt=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(OpsAt.X,OpsAt.Z+1,0);Go(8004,.4);return;
+  }
+  if(Stage==80031)
+  {
+   if(!Check(M->Web->Area()==TEXT("saro"),TEXT("night photo fixture returns to actual SARO OPS after disk restore")))return;
+   const FVector OpsAt=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(OpsAt.X,OpsAt.Z+1,0);Go(8004,.4);return;
+  }
+  if(Stage==8004)
+  {
+   auto& AlbumShots=M->Night->Album->Data.Shots;const auto Retained=AlbumShots;
+   AlbumShots.Reset();const bool MissingRefused=!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget;AlbumShots=Retained;
+   if(!Check(MissingRefused,TEXT("OPS refuses a claim whose retained original is missing without consuming its payment")))return;
+   if(!Check(F.CanRegisterPhotoEvidence()&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("physical powered OPS registers retained photograph and credits exactly $20")))return;
+   if(!Check(!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("repeat registration cannot pay the same incident twice")))return;
+   if(!Restore(TEXT("photo-paid")))return;Go(8005,1);return;
+  }
+  if(Stage==8005)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].bPaid&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20&&Original&&Original->Url==RetainedPhotoUrl,TEXT("paid claim, original image and exactly-once balance survive Continue")))return;
+   Finish(true,TEXT("photographic economy fixture: actual rendered native subject, duplicate guard, physical OPS and paid/unpaid disk Continue"));return;
+  }
+  return;
+ }
  if(Stage==0)
  {
   if(Age<3)return;

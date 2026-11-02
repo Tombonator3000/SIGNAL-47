@@ -20,7 +20,13 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
+ struct FPhotoClaim { FString Id,PhotoId,Title; int32 Reward=20; double Quality=0; bool bPaid=false; };
+ const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
+ bool RegisterPhotoClaim(const FString& Id);
+ void TagPhoto(FS47AlbumShot& Shot); // rendered exposures only, before album persistence
  void Photo(const FS47AlbumShot& Shot);
+ double LastPhotoSubjectMean() const { return PhotoSubjectMean; } // last non-emissive exposure, -1 if no valid region
+
  const FString& ActiveEvent() const { return Event; }
  const FString& EventId() const { return Event; }
  FString StageName() const { return FString::Printf(TEXT("phase%d"),Stage); }
@@ -39,8 +45,13 @@ private:
  TUniquePtr<FEffects> Effects;
  US47Main* M=nullptr;
  bool bEnabled=false,bApplied=false,bEffectsApplied=false,bChoiceStored=false,bSeen=false,bPhoto=false,bControlled=false,bCompared=false;
- FString Event,PhotoId,Scene;
+ FString Event,PhotoId,Scene,IncidentId,TaggedShot;
+ int32 IncidentSerial=0;
+ FBox2D TaggedRegion = FBox2D(ForceInit); // transient projection of the photographed native component
+ double TaggedQuality=0,PhotoSubjectMean=-1;
+ TArray<FPhotoClaim> Claims;
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
+ int32 PendingThreatNight=0,PendingMajorNight=0;
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
  FVector Anchor=FVector::ZeroVector;
  FRandomStream Random;
@@ -55,6 +66,9 @@ private:
  void StepReactive(double Dt);
  bool Start(const FString& Id,bool bForced);
  bool Eligible(const FString& Id,bool bForced) const;
+ bool RollNightChoice(int32 Day,int32 FirstDay,float Chance,int32& RolledDay,int32& PendingNight);
+ bool ExpireNightChoices(int32 Day,bool bNight);
+ bool StartPendingNightChoice(const FString& Id,int32 Day,int32& PendingNight);
  void Apply();
  void Draw();
  void Finish(bool bEvidence,const FString& Text=FString());

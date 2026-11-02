@@ -1,0 +1,20 @@
+{
+  "schema_version": 2,
+  "reviewed": "2026-11-02",
+  "basis": "Static review of stage-specific receiver, printer queue, selection guards and physical Chart/Packet power exceptions. Whole source digest additionally guards local helper/default changes; installed runtime remains unverified. Follow-up review: automatic reference-scan encoder movement waits without asking player to restore pointing; tuning failure still pauses first. Receiver GetStatus lambda agrees.",
+  "source_sha256": "db8b349dc5eb644b34657f4fc0a5fbd79b0de9829b886d993e8dad676d0d87cd",
+  "functions": {
+    "ReceiverNextAction": "0c52a66cae8aa21a96710a853ef01b669eeb3d46b6d4624e63c3bf9ddd09703c",
+    "Objective": "a07b0b564110b6dcbcc61660f8a556c69db9959561242227050ae39dd45f761e",
+    "CollectChart": "4a8cf7a1d58133a935bb661021016ac082ee5b98357694d0075ba7010e873e90",
+    "RegisterComparison": "50bceec65ba22ced76f2844558b088d87be9726a20a9837c9f1ff766f3e3279d",
+    "Begin": "6f205c86a5d6bb8c9007c16e99072e1950e3b24f2da6f93c4cb027a3608a95c8",
+    "NextAction": "babbdc37eaa9e3b137c5fb2d23b18cfb332c659562c976249301faa8014a010e",
+    "JobNextAction": "44307db45c5f8a490c9096dbbf85e556df497584105c4e90d25e7d3ed9ca00f5",
+    "JobLocation": "8edffd83e53989cde3db6b1a704e7e461cb7c16b85955d9d1bb970612e08b6d5",
+    "SelectJob": "ebf17f48e9a7837e9aad6d8ab1e30ec6e744f1a5459e7a23a15e65432c6215a3",
+    "HasPower": "e5d4570d7cee51d2b4227477667a27e7867fe29c16d3c9107b1eb4600628f4fc",
+    "FilePacket": "24c4cbf00e56c8ec129f7c676c5d2a21f9bca4d30af8fb106114854a1d7dbd28",
+    "CollectDuplicate": "04a856e58be9f87ab0e28c0d24b61c4315c4b7934bed29fe0930c6965c69522a"
+  }
+}

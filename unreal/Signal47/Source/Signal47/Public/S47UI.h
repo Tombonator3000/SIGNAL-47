@@ -94,8 +94,21 @@ struct FS47AlbumView
 	TArray<FShot> Shots;
 	TFunction<void(const FString&)> Look;
 };
+struct FS47NbWorkItem
+{
+	FString Id, Title, Status, NextAction, Location;
+	TArray<FString> Hints;
+	bool bDone = false, bCanFollow = false, bEarlier = false, bFollowed = false;
+};
+struct FS47NbGuideEntry { FString Id, Title, Text; };
 struct FS47NbExtras
 {
+	bool bFreeform = false;
+	TArray<FS47NbWorkItem> WorkItems;
+	TArray<FS47NbGuideEntry> GuideEntries;
+	TFunction<int32(const FString&)> HintLevel, RevealHint;
+	TFunction<bool(const FString&)> EntryRead;
+	TFunction<void(const FString&)> MarkRead, OnFollow;
 	TOptional<FS47MapView> Map;          // drawn by the notebook (areaMap)
 	TArray<FString> MapDescription;
 	FString MapNote;                     // a line in pencil under the map

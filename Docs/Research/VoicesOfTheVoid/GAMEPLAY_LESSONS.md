@@ -6,6 +6,8 @@ Tom ba om å bevare analysen i Git og knytte den til arbeidslisten. Dette notate
 
 ## Hovedlærdom og spillerløkke
 
+**Oppfølging 2. november:** [Gameplaygjennomgangen med agent-harness](../Gameplay/WORKFLOW_REVIEW.md) sammenholder dagens implementasjon med disse prinsippene, identifiserer konkrete tilstands-/veiledningsbrister og kontrollerer de offisielle 0.9.0n- og 0.10-preview-kildene på nytt. Det er en ny kilde-/workflowanalyse, ikke en ny gjennomspilling eller dekompilering av VotV. Aktive oppgaver står fortsatt i TODO.
+
 Et troverdig arbeidssted gir spilleren regler å lære. Arbeidet får mening når justeringer, fysisk utstyr, målinger og hendelser påvirker hverandre. Et avvik blir sterkere når spilleren kjenner normaltilstanden og selv kan undersøke hva som har endret seg.
 
 VotVs grunnløkke er å hente inn signaler, analysere og bearbeide dem, selge resultatet og få poeng. Dette er beskrevet av [utvikleren](https://mrdrnose.itch.io/votv). For SIGNAL / 47 anbefales denne løkken:

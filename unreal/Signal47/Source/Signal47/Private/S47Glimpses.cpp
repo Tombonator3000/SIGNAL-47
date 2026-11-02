@@ -53,7 +53,13 @@ FS47Glimpses::FS47Glimpses(AS47Web* InWeb) : Web(InWeb)
 		if (bRoswell) Fig.Traverse([&](FS47Obj O)
 		{
 			if (const auto* N=InWeb->Node(O.I)) if (auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))
-			{ C->SetRenderInMainPass(false); C->SetRenderInDepthPass(false); C->SetVisibleInRayTracing(false); C->SetCastShadow(false); }
+			{
+				C->SetRenderInMainPass(false); C->SetRenderInDepthPass(false); C->SetVisibleInRayTracing(false); C->SetCastShadow(false);
+				// The native body replaces this silhouette visually. SyncGroup still moves
+				// the legacy object for Story/film metadata, but its invisible mesh must
+				// not occlude the replacement in photographic or line-of-sight queries.
+				C->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+			}
 		});
 	}
 	SetVisible(false);
@@ -360,3 +366,6 @@ void FS47Glimpses::ControlledRelease(){if(Group)Group->ReleaseControlled();}
 S47J::FObj FS47Glimpses::SaveControlled()const{return Group?Group->Save():S47J::FObj();}
 bool FS47Glimpses::RestoreControlled(const S47J::FObj& Saved)
 {const bool Good=Group&&Group->Restore(Saved);if(Group)SyncGroup();return Good;}
+
+UPrimitiveComponent* FS47Glimpses::ControlledPhotoBody(int32 Id)const
+{return Group?Group->PhotoBody(Id):nullptr;}

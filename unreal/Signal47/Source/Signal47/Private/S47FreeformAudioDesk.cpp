@@ -162,6 +162,12 @@ void FS47FreeformAudioDesk::Step(double Dt)
  FString Line=Powered()?FString::Printf(TEXT("%s / %s / %04.1f s\nHEARD O %.1f/18  C %.1f/8\nMARK %.1f - %.1f / %s"),Source==0?TEXT("ORIGINAL"):TEXT("CONTROL"),Playing&&ListeningPosition()?TEXT("PLAY"):TEXT("STOP"),Cursor,HeardO,HeardC,MarkIn,MarkOut,Reviewed?TEXT("RETAINED"):TEXT("COMPARE")):TEXT("NO POWER\nRESTORE FEEDER OR GENERATOR");
  if(Powered()&&!Original)Line=TEXT("NO RETAINED ANOMALOUS ORIGINAL\nCOLLECT ITS CHART AT THE PRINTER\nTHEN RECORD A RACK CONTROL");
  else if(Powered()&&Control<8)Line=FString::Printf(TEXT("INDEPENDENT CONTROL REQUIRED\nUSE RECEIVER RACK / %.1f OF 8 s\nORIGINAL WILL REMAIN INTACT"),Control);
+ if(Powered()&&M->IsFreeform()&&M->Freeform)
+ {
+  const auto* J=M->Freeform->CurrentJob();
+  if(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Recorded||J->ControlAt<8||J->Phenomenon==TEXT("wrong_source")||J->Phenomenon==TEXT("time_disagreement")||J->Phenomenon==TEXT("duplicate_print"))Line=M->Freeform->NextAction();
+  else if(J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
+ }
  if(Line!=LastReadout&&Readout.IsValid()){Readout->SetText(FText::FromString(Line));LastReadout=Line;}
  for(int32 I=0;I<Controls.Num();++I)if(Controls[I].Material.IsValid())
  {

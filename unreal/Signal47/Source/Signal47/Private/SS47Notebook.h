@@ -53,14 +53,19 @@ private:
 	FString Heading;
 	TArray<FS47Task> Tasks;
 	TArray<FString> Notes;
-	TArray<FS47Doc> Photos, Findings, Papers;
+	TArray<FS47Doc> Photos, Findings, Papers, AllPapers;
+	TArray<FS47NbWorkItem> AllWorkItems;
+	FString PaperQuery;
+	bool bShowHistory = false;
+	void FilterDocuments(const FString& Query);
+	void FilterWork();
 	FS47NbExtras X;
 	TMap<FString, int32> Sel;    // the chosen entry on each tab
 	uint32 KeysShown = 0;        // S47Keys::Changes() when the CONTROLS page was built
 	uint32 PadShown = 0;         // active input when the control pages were built
 
 	// the spread: the left page, the right page, a sheet across both (the map), the actions at the foot
-	TSharedPtr<SBox> LeftSlot, RightSlot, SpreadSlot, UseSlot;
+	TSharedPtr<SBox> LeftSlot, RightSlot, SpreadSlot, UseSlot, SectionSlot;
 	TSharedPtr<SScrollBox> LeftScroll, RightScroll;
 	TArray<TSharedPtr<SWidget>> Entries;   // the entries that can be chosen, in order (scrolled into view)
 	TSharedPtr<FS47ReadingAction> Reading; // V: what this spread reads aloud
@@ -74,6 +79,9 @@ private:
 	int32 Chosen() const { const int32* S = Sel.Find(Tab); return S ? *S : 0; }
 	void Choose(int32 I);
 	void Activate();             // Enter: what the chosen entry opens
+	FString MainTab() const;
+	void Section(int32 Dir);
+	void RevealHint();
 	void Turn(int32 Dir);        // Q and E: the tab before or after
 	void Press(const FKey& Key); // the notebook closed, the game's own key (C raises the camera, F the light)
 	void Scroll(float By);

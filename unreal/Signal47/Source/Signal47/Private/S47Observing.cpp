@@ -369,6 +369,7 @@ void FS47Observing::Step(double Dt)
  if (StepNow != EStep::Integrating || (M->ModalOpen() && !bTelemetryPanelOpen) || M->Story->IsCinematic()) return;
  if (bWorkEnabled && ArrayWork && !ArrayWork->CanMeasure()) return;
  const FRun& R = Runs()[Run];
+ if(!M->Story->Rx.bPowered||M->Story->FeederOutage()||!M->Story->Rx.Pass(R.P)){M->Story->Rx.Status=TEXT("RECORDING PAUSED / RESTORE TUNING AND POWER");return;}
  const double Was = Elapsed;
  Elapsed = FMath::Min(Elapsed + FMath::Min(Dt, .1), R.Seconds);
  M->Story->Rx.Status = FString::Printf(TEXT("INTEGRATING %s  %02d S"), R.Source, int32(FMath::CeilToDouble(R.Seconds - Elapsed))).ToUpper();

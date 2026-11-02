@@ -86,6 +86,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
+ Journal.Load(S47J::Obj(Saved,TEXT("journal")));
  Work.Reset();Findings.Reset();FindingDays.Reset();MysterySteps={0,0,0};Upgrades={false,false,false};SavedAngles.Reset();bRestoreAngles=false;Feedback.Empty();PhenomenonId.Empty();
  if(Saved)
  {
@@ -94,7 +95,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   WorldClock=FMath::Clamp(SafeNum(Saved,TEXT("clock"),8*3600),0.,3153600000.);
   if(!FMath::IsFinite(WorldClock)) {bActive=false;return;}
   DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);
-  Cash=FMath::Clamp(SafeInt(Saved,TEXT("cash"),120),0,1000000);Loan=FMath::Clamp(SafeInt(Saved,TEXT("loan")),0,1000000);
+  Cash=FMath::Clamp(SafeInt(Saved,TEXT("cash"),120),0,1000080);Loan=FMath::Clamp(SafeInt(Saved,TEXT("loan")),0,1000000);
   ServiceGuide=FMath::Clamp(SafeInt(Saved,TEXT("serviceGuide")),0,2);GuideServiceBaseline=FMath::Max(0,SafeInt(Saved,TEXT("guideServiceBaseline")));GuideSupplyBaseline=FMath::Max(0,SafeInt(Saved,TEXT("guideSupplyBaseline")));bGuideSupply=S47J::Bool(Saved,TEXT("guideSupply"));bGuideFocus=S47J::Bool(Saved,TEXT("guideFocus"),ServiceGuide==1);
   bDeadly=S47J::Bool(Saved,TEXT("lethal"),bLethal);bDead=S47J::Bool(Saved,TEXT("dead"));
   PhenomenonId=S47J::Str(Saved,TEXT("phenomenon"));bPowerFault=S47J::Bool(Saved,TEXT("powerFault"));bAnomaly=S47J::Bool(Saved,TEXT("anomaly"));
@@ -107,6 +108,9 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    J.Stage=EJobStage(FMath::Clamp(SafeInt(O,TEXT("stage")),0,7));J.Elapsed=FMath::Clamp(SafeNum(O,TEXT("elapsed")),0.,40.);J.Quality=FMath::Clamp(SafeNum(O,TEXT("quality"),1),0.,1.);J.ReceivedLevel=FMath::Clamp(SafeNum(O,TEXT("receivedLevel"),1),0.,1.);
    J.bAnomaly=S47J::Bool(O,TEXT("anomaly"));J.bControl=S47J::Bool(O,TEXT("control"));J.bAudioReviewed=S47J::Bool(O,TEXT("reviewed"));J.bPrinted=S47J::Bool(O,TEXT("printed"));J.bPaid=S47J::Bool(O,TEXT("paid"));
    J.ControlAt=FMath::Clamp(SafeNum(O,TEXT("controlAt")),0.,8.);J.OriginalCovered=FMath::Clamp(SafeNum(O,TEXT("originalCovered")),0.,18.);J.ControlCovered=FMath::Clamp(SafeNum(O,TEXT("controlCovered")),0.,8.);
+   J.TraceTicks=S47J::Nums(O,TEXT("traceTicks"));J.bLegacyTrace=S47J::Bool(O,TEXT("legacyTrace"),!O->HasField(TEXT("traceTicks")));
+   if(!O->HasField(TEXT("traceTicks"))&&J.bAnomaly&&!Specialized(J.Phenomenon))for(double At:Ticks)J.TraceTicks.Add(At);
+   J.TraceTicks.RemoveAll([](double At){return !FMath::IsFinite(At)||At<=0||At>18;});if(J.TraceTicks.Num()>64)J.TraceTicks.SetNum(64);J.TraceTicks.Sort();
    J.MarkStart=SafeNum(O,TEXT("markStart"),-1);J.MarkEnd=SafeNum(O,TEXT("markEnd"),-1);
    J.ReceiverClock=SafeNum(O,TEXT("receiverClock"));J.ReferenceClock=SafeNum(O,TEXT("referenceClock"));J.ControlReceiverClock=SafeNum(O,TEXT("controlReceiverClock"));J.ControlReferenceClock=SafeNum(O,TEXT("controlReferenceClock"));J.DuplicateClock=SafeNum(O,TEXT("duplicateClock"));J.DuplicateInterval=SafeNum(O,TEXT("duplicateInterval"));
    J.BeamPoint=FMath::Clamp(SafeInt(O,TEXT("beamPoint")),0,2);J.BeamSettle=FMath::Clamp(SafeNum(O,TEXT("beamSettle")),0.,1.);J.BeamSample=FMath::Clamp(SafeNum(O,TEXT("beamSample")),0.,8./3.);J.BeamAz=S47J::Nums(O,TEXT("beamAz"));J.BeamEl=S47J::Nums(O,TEXT("beamEl"));J.BeamAmplitude=S47J::Nums(O,TEXT("beamAmplitude"));
@@ -128,6 +132,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   const auto F=S47J::Obj(Saved,TEXT("findings"));if(F)for(const auto& P:F->Values){FString T;if(P.Value->TryGetString(T))Findings.Add(FString(*P.Key),T);}
   const auto D=S47J::Obj(Saved,TEXT("findingDays"));if(D)for(const auto& P:D->Values){double N;if(P.Value&&P.Value->TryGetNumber(N)&&FMath::IsFinite(N)&&N>=1&&N<=36500&&FMath::FloorToDouble(N)==N)FindingDays.Add(FString(*P.Key),int32(N));}
   const auto U=S47J::Nums(Saved,TEXT("upgrades"));for(int32 I=0;I<FMath::Min(3,U.Num());++I)Upgrades[I]=U[I]>0;
+  if(SafeInt(Saved,TEXT("economyRevision"))<2&&Upgrades[1])
+  {
+   const int32 Paid=FMath::Min(80,Loan);Loan-=Paid;Cash+=80-Paid;Upgrades[1]=false;
+   Feedback=TEXT("Reference comparison is included. Its former $80 charge has been credited, repaying requisition debt first.");
+  }
   const auto Q=S47J::Nums(Saved,TEXT("mysteries"));for(int32 I=0;I<FMath::Min(3,Q.Num());++I)MysterySteps[I]=FMath::Clamp(int32(Q[I]),0,3);
   SavedAngles=S47J::Nums(Saved,TEXT("angles"));bRestoreAngles=SavedAngles.Num()==108;
   if(bRestoreAngles)for(int32 I=0;I<108;++I)
@@ -297,8 +306,9 @@ void FS47FreeformSession::StepWork(double Dt)
  if(J->Stage==EJobStage::Pointed||J->Stage==EJobStage::Integrating)
  {
   Settle=PointReady()?FMath::Min(1.,Settle+Dt):0;
-  if(J->Stage==EJobStage::Integrating&&Settle>=1)
+  if(J->Stage==EJobStage::Integrating&&Settle>=1&&M&&M->Story&&M->Story->Rx.Pass(EffectiveProfile(*J)))
   {
+   const double Was=J->Elapsed;
    J->Elapsed=FMath::Min(SourceSeconds(),J->Elapsed+Dt);
    if(bCrossRunning)
    {
@@ -306,7 +316,8 @@ void FS47FreeformSession::StepWork(double Dt)
    }
    if(J->Source==1&&M->Audio)
    {
-    IntegrationPulse+=Dt;while(IntegrationPulse>=PulsarPeriod){IntegrationPulse-=PulsarPeriod;M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));}
+    for(double At:J->TraceTicks)if(Was<At&&J->Elapsed>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
+    for(double At=PulsarPeriod;At<=SourceSeconds();At+=PulsarPeriod)if(Was<At&&J->Elapsed>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
    }
    if(J->Elapsed>=SourceSeconds()&&!bCrossRunning)
    {
@@ -361,8 +372,8 @@ void FS47FreeformSession::PointBeamControl()
 bool FS47FreeformSession::SelectJob(int32 Index)
 {
  if(!Work.IsValidIndex(Index))return false;
- const FJob* Current=CurrentJob();if(Current&&(Current->Stage==EJobStage::Integrating||(Current->bControl&&Current->ControlAt<8)))return false;
- Selected=Index;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;Changed();return true;
+ const FJob* Current=CurrentJob();if(Current&&(Current->Stage==EJobStage::Integrating||(Current->bControl&&Current->ControlAt<8))){Changed(TEXT("Finish the active recording or control before selecting another job."));return false;}
+ Selected=Index;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;Changed();return true;
 }
 bool FS47FreeformSession::ChooseThird(bool bVirgo)
 {
@@ -382,10 +393,17 @@ bool FS47FreeformSession::ReceiverReady() const
 FString FS47FreeformSession::ReceiverNextAction() const
 {
  const FJob* J=CurrentJob();if(!J)return TEXT("Select an observation at the operations PC.");
+ if(J->Stage==EJobStage::Chart||J->Stage==EJobStage::Packet||J->Stage==EJobStage::Filed)return JobNextAction(*J);
  if(!HasPower())return TEXT("Restore the SARO feeder or start the backup generator.");
+ if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  if(J->Stage==EJobStage::New)return TEXT("Use the right-hand tracking PC to point the array at this source.");
+ if(J->Stage==EJobStage::Integrating)
+ {
+  if(!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J)))return TEXT("Recording paused. Restore the work card tuning; valid recorded seconds are retained.");
+  if(!PointReady()||Settle<1)return bCrossRunning?TEXT("Automatic reference scan: the array is moving between samples. Wait; recorded seconds are retained."):TEXT("Recording paused. Restore array pointing; valid recorded seconds are retained.");
+ }
  if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("Recording %.0f%%. Keep the receiver tuned; the trace shows the live signal."),100*J->Elapsed/SourceSeconds());
- if(J->Stage!=EJobStage::Pointed)return TEXT("Recording retained. Collect the chart at the printer, then follow the work order.");
+ if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
  if(!PointReady())return TEXT("Wait for the dishes to reach the commanded direction. Inspect isolated elements on the left status PC if movement stops.");
  if(Settle<1)return TEXT("The array is on source. Wait one second for it to settle.");
  const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
@@ -399,12 +417,13 @@ bool FS47FreeformSession::StartAcquisition()
 {
  FJob* J=Job();if(!ReceiverReady()){Feedback=ReceiverNextAction();return false;}
  J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=J->Slot==1&&bAnomaly;J->Phenomenon=J->bAnomaly?PhenomenonId:FString();
+ J->TraceTicks.Reset();J->bLegacyTrace=false;if(J->bAnomaly&&!Specialized(J->Phenomenon))for(double At:Ticks)J->TraceTicks.Add(At);
  J->ReferenceClock=WorldClock;J->ReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);
  int32 Available=0;for(int32 I=0;I<27;++I)Available+=M->Web->DishRemoteAvailable(I)?1:0;J->Quality=double(Available)/27;
  double ActualAz=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))ActualAz+=M->Web->DishAz(I);
  ActualAz/=FMath::Max(1,Available);J->ReceivedLevel=BeamLevel(ActualAz,TargetAz()+(J->Phenomenon==TEXT("wrong_source")?.5:0));
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
- Changed(TEXT("Acquisition started. Only physically settled pointing is integrated."));return true;
+ Changed(TEXT("Acquisition started. Recording pauses if tuning, pointing or power is lost."));return true;
 }
 void FS47FreeformSession::PrintJob(bool bPacket)
 {
@@ -431,6 +450,13 @@ void FS47FreeformSession::PrintJob(bool bPacket)
 bool FS47FreeformSession::CollectChart()
 {
  FJob* J=Job();if(!J)return false;
+ // The physical printer owns a queue, independent of the selected work order.
+ auto Waiting=[](const FJob& X){return X.Stage==EJobStage::Chart||(X.Stage==EJobStage::Registered&&X.bAnomaly)||(X.Stage==EJobStage::Recorded&&X.Phenomenon==TEXT("duplicate_print")&&X.bControl&&X.ControlAt>=8&&!X.bDuplicateCollected);};
+ if(!Waiting(*J))
+ {
+  const int32 Pending=Work.IndexOfByPredicate(Waiting);
+  if(Pending!=INDEX_NONE){if(!SelectJob(Pending)){Feedback=TEXT("Paper is waiting for ")+Work[Pending].Id+TEXT(". Finish the active recording or control, then collect it here.");return false;}J=Job();}
+ }
  if(J->Stage!=EJobStage::Chart&&!RequirePower())return false;
  if(J->Stage==EJobStage::Chart){J->Stage=EJobStage::Recorded;J->bPrinted=true;PrintJob(false);Changed();return true;}
  if(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected){CollectDuplicate();return J->bDuplicateCollected;}
@@ -497,11 +523,14 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
  else if(Action==TEXT("pause"))bAudioPlaying=false;
  else if(Action==TEXT("mark_start")||Action==TEXT("mark_end"))
  {
+  if(J->Stage>=EJobStage::Registered){Feedback=TEXT("Registered comparison is sealed. Playback is available; its marks cannot be changed.");return false;}
+  if(Specialized(J->Phenomenon)){Feedback=TEXT("This is an instrument comparison. Use its measured control at OPS; no extra-tick marks are required.");return false;}
   if(AudioSourceIndex!=0){Feedback=TEXT("Mark the original recording, not the quiet internal control.");return false;}
   if(Action==TEXT("mark_start"))J->MarkStart=AudioCursor;else J->MarkEnd=AudioCursor;J->bAudioReviewed=false;
  }
  else if(Action==TEXT("confirm"))
  {
+  if(J->Stage>=EJobStage::Registered){Feedback=TEXT("This comparison is already registered and retained.");return false;}
   if(Specialized(J->Phenomenon))return CompareInstrument();
   if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
   if(J->MarkStart<0||J->MarkStart>9.30||J->MarkEnd<12.60||J->MarkEnd-J->MarkStart>6){Feedback=TEXT("Mark both short groups of extra ticks, between about 9 and 13 seconds.");return false;}
@@ -515,13 +544,14 @@ void FS47FreeformSession::StepAudio(double Dt)
 {
  if(!HasPower()){bAudioPlaying=false;return;}
  FJob* J=Job();if(!J||!bAudioPlaying||!bAudioOpen||!M||!AudioDesk)return;
+ if(!AudioDesk->ListeningPosition()){bAudioPlaying=false;Changed(TEXT("Playback paused because you left the reel deck. Return and press PLAY to resume."));return;}
  const double Was=AudioCursor,Duration=AudioSourceIndex==0?18.:8.;AudioCursor=FMath::Min(Duration,Was+Dt);
  const bool Listening=AudioDesk->ListeningPosition();
  double& Covered=AudioSourceIndex==0?J->OriginalCovered:J->ControlCovered;if(Listening&&Was<=Covered+1e-7)Covered=FMath::Max(Covered,AudioCursor);
  if(M->Audio&&Listening)
  {
   for(double At=PulsarPeriod;At<=Duration;At+=PulsarPeriod)if(Was<At&&AudioCursor>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
-  if(AudioSourceIndex==0)for(double At:Ticks)if(Was<At&&AudioCursor>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
+  if(AudioSourceIndex==0)for(double At:J->TraceTicks)if(Was<At&&AudioCursor>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
  }
  if(AudioCursor>=Duration){bAudioPlaying=false;Changed();}
 }
@@ -529,9 +559,9 @@ double FS47FreeformSession::AudioLevel()const
 {
  if(!bAudioPlaying)return .05;double L=.08;
  for(double At=PulsarPeriod;At<=18;At+=PulsarPeriod)L=FMath::Max(L,FMath::Max(0.,1-FMath::Abs(AudioCursor-At)/.06));
- if(AudioSourceIndex==0)for(double At:Ticks)L=FMath::Max(L,FMath::Max(0.,.8-FMath::Abs(AudioCursor-At)/.05));return L;
+ if(AudioSourceIndex==0&&CurrentJob())for(double At:CurrentJob()->TraceTicks)L=FMath::Max(L,FMath::Max(0.,.8-FMath::Abs(AudioCursor-At)/.05));return L;
 }
-FString FS47FreeformSession::AudioDisplay()const{return FString::Printf(TEXT("%s %04.1f/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),AudioCursor,AudioSourceIndex==0?18:8,bAudioPlaying?TEXT("PLAY"):TEXT("PAUSE"));}
+FString FS47FreeformSession::AudioDisplay()const{return FString::Printf(TEXT("%s %04.1f/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),AudioCursor,AudioSourceIndex==0?18:8,bAudioPlaying?TEXT("PLAY"):CurrentJob()&&CurrentJob()->bLegacyTrace?TEXT("PAUSE / LEGACY RECONSTRUCTION"):TEXT("PAUSE"));}
 bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  if(!RequirePower())return false;
@@ -576,10 +606,22 @@ bool FS47FreeformSession::Spend(int32 Amount,bool bEmergency)
  else Cash-=Amount;
  Changed();return true;
 }
+bool FS47FreeformSession::CanRegisterPhotoEvidence() const
+{
+ if(!HasPower()||!M||!M->Player||!M->World||!M->Web||!M->Web->IsLoaded()||M->World->Area!=TEXT("saro")||M->Web->Area()!=TEXT("saro")||M->World->bDriving||M->World->bBusy)return false;
+ const auto* Item=M->Web->Item(TEXT("opsTerminal"));if(!Item||(!Item->bBox&&!M->Web->ObjAt(Item->Node)))return false;
+ const FVector At=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal"))),P=M->Player->Pos;
+ return !At.ContainsNaN()&&FVector2D(P.X-At.X,P.Z-At.Z).Size()<=2.8&&FMath::Abs(M->Player->FloorY-At.Y)<=2.;
+}
+bool FS47FreeformSession::ChargeEmergencyFeederFuse()
+{
+ const int32 Missing=FMath::Max(0,5-Cash);if(Loan>1000000-Missing)return false;
+ Cash=FMath::Max(0,Cash-5);Loan+=Missing;Changed();return true;
+}
 void FS47FreeformSession::Earn(int32 Amount)
 {
  if(Amount<=0||Amount>10000)return;
- const int32 Paid=FMath::Min(Amount,Loan);Loan-=Paid;Cash=FMath::Min(1000000,Cash+Amount-Paid);Changed();
+ const int32 Paid=FMath::Min(Amount,Loan);Loan-=Paid;Cash=FMath::Min(1000080,Cash+Amount-Paid);Changed();
 }
 int32 FS47FreeformSession::InventoryCount(const FString& Id)const{return Field?Field->InventoryCount(Id):0;}
 void FS47FreeformSession::AddItem(const FString& Id,int32 Count){if(Field)Field->AddItem(Id,Count);}
@@ -651,6 +693,7 @@ void FS47FreeformSession::UpdateMysteries()
 }
 bool FS47FreeformSession::Upgrade(int32 Index)
 {
+ if(Index==1){Feedback=TEXT("Manual reference comparison is available without an upgrade.");return false;}
  static const int32 Prices[]={60,80,50};if(Index<0||Index>=3||Upgrades[Index]||!Spend(Prices[Index]))return false;
  Upgrades[Index]=true;
  if(Index==0)AddItem(TEXT("relay"),1);
@@ -663,6 +706,7 @@ bool FS47FreeformSession::Rest()
  if((Director&&Director->Busy())||(J&&(J->Stage==EJobStage::Integrating||(J->bControl&&J->ControlAt<8)))){Feedback=TEXT("Finish or safely interrupt the active work before resting.");return false;}
  WorldClock=(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay)+1)*SecondsPerDay+8*3600;
  DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);AddDay(DayNumber);Settle=0;
+ if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Filed){const int32 Today=Work.IndexOfByPredicate([this](const FJob& X){return X.Day==DayNumber&&X.Stage==EJobStage::New;});if(Today!=INDEX_NONE)Selected=Today;}
  if(M&&M->Story)M->Story->SetClock(8*3600);
  if(M&&M->UI)M->UI->Close();Changed(TEXT("Morning. New work is available; retained records and unfinished jobs remain."));return true;
 }
@@ -717,12 +761,22 @@ void FS47FreeformSession::OpenOperations()
  TArray<S47Kit::FW> Rows;
  Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("SARO / FREEFORM / DAY %d\nOPERATING BUDGET $%d / REQUISITION BALANCE $%d\nObserve, verify, retain. An unresolved result is still useful work."),DayNumber,Cash,Loan)));
  TSharedRef<SScrollBox> List=SNew(SScrollBox);
- for(int32 I=0;I<Work.Num();++I)
+ if(!Work.ContainsByPredicate([](const FJob& J){return J.Source==0&&J.Stage==EJobStage::Filed;}))
+  Rows.Add(S47FreeformTerminal::Small(TEXT("OPTIONAL FIRST JOB / Establish a normal reference. Complete a calibration cross and register it at OPS so later discrepancies can be compared against working instruments. Other work remains available.")));
+ for(int32 Group=0;Group<3;++Group)
  {
-  const int32 Index=I;
-  if(Work[I].Day<DayNumber-2&&Work[I].Stage==EJobStage::Filed)continue;
-  List->AddSlot()[S47FreeformTerminal::Button(JobLine(Work[I]),[this,Index]{if(SelectJob(Index))OpenOperations();},Selected==I)];
+  if(Group==2&&!bShowEarlierJobs)continue;
+  bool Heading=false;
+  for(int32 I=0;I<Work.Num();++I)
+  {
+   const auto& J=Work[I];const bool Active=J.Stage>EJobStage::New&&J.Stage<EJobStage::Filed;
+   const int32 InGroup=Active||I==Selected?0:J.Day==DayNumber?1:2;if(InGroup!=Group)continue;
+   if(!Heading){List->AddSlot()[S47FreeformTerminal::Small(Group==0?TEXT("IN PROGRESS / SELECTED"):Group==1?TEXT("TODAY"):TEXT("EARLIER WORK / ORIGINALS RETAINED"))];Heading=true;}
+   const int32 Index=I;List->AddSlot()[S47FreeformTerminal::Button(JobLine(J),[this,Index]{SelectJob(Index);OpenOperations();},Selected==I)];
+  }
  }
+ Rows.Add(S47FreeformTerminal::Button(bShowEarlierJobs?TEXT("Hide earlier work"):TEXT("Show earlier work"),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();}));
+ Rows.Add(S47FreeformTerminal::Paper(TEXT("NEXT / ")+NextAction()));
  Rows.Add(SNew(SBox).HeightOverride(180)[List]);
  if(const FJob* J=CurrentJob())
  {
@@ -749,11 +803,22 @@ void FS47FreeformSession::OpenOperations()
    else Rows.Add(S47FreeformTerminal::Button(TEXT("Register routine result / $20"),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
   }
  }
+ if(Director)
+ {
+  bool Heading=false;
+  for(const auto& Claim:Director->PhotoClaims())if(!Claim.bPaid)
+  {
+   if(!Heading){Rows.Add(S47FreeformTerminal::Paper(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT\nOne retained photograph per incident. Payment recognises documentation, not proof of an origin.")));Heading=true;}
+   const FString Id=Claim.Id;
+   Rows.Add(S47FreeformTerminal::Small(Claim.Title+TEXT(" / ORIGINAL ")+Claim.PhotoId));
+   Rows.Add(S47FreeformTerminal::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
+  }
+ }
  Rows.Add(S47FreeformTerminal::Small(Feedback));
- Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; comparison locates extra ticks; field kit includes two fuses and a relay.")));
+ Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; field kit includes two fuses and a relay. Manual reference comparison is included.")));
  Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
- TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){const int32 Index=I;U.Add(S47FreeformTerminal::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
+ TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(S47FreeformTerminal::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
  OpenTerminal(3,TEXT("OPS / DAILY WORK"),S47Kit::Col(Rows));
 }
 void FS47FreeformSession::OpenTracking()
@@ -803,12 +868,13 @@ void FS47FreeformSession::OpenReceiver()
  D.GetProgress=[this]{return CurrentJob()?CurrentJob()->Elapsed/FMath::Max(1.,SourceSeconds()):0.;};
  D.GetArrayQuality=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return double(N)/FMath::Max(1,M->Web->DishCount());};
  D.GetReady=[this]{return ReceiverReady();};D.GetTrackingReady=[this]{return PointReady()&&Settle>=1;};
+ D.GetStatus=[this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?StageText(J->Stage):J&&J->Stage==EJobStage::Integrating?FString(!M->Story->Rx.Pass(EffectiveProfile(*J))?TEXT("RECORDING PAUSED"):(!PointReady()||Settle<1)?(bCrossRunning?TEXT("REFERENCE SCAN / MOVING"):TEXT("RECORDING PAUSED")):TEXT("RECORDING")):ReceiverReady()?FString(TEXT("READY / START ACQUISITION")):FString(TEXT("SETUP / FOLLOW NEXT"));};
  D.GetRecording=[this]{return CurrentJob()&&CurrentJob()->Stage==EJobStage::Integrating;};D.GetNextAction=[this]{return ReceiverNextAction();};
  Rows.Add(S47ReceiverReadout::Build(D));
  Rows.Add(S47FreeformTerminal::Small(JobLine(*CurrentJob())+FString::Printf(TEXT("\nF %.3f MHz / GAIN %.0f–%.0f / BW %.0f–%.0f kHz / %.0f seconds"),P.F,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],SourceSeconds())));
  Rows.Add(S47FreeformTerminal::Knob(TEXT("FREQUENCY MHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;}));
  Rows.Add(S47FreeformTerminal::Pair(S47FreeformTerminal::Knob(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),S47FreeformTerminal::Knob(TEXT("BANDWIDTH kHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
- Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return ReceiverReady()?FString(TEXT("READY / START ACQUISITION")):FString(TEXT("NOT READY / FOLLOW NEXT ABOVE"));}),[this]{StartAcquisition();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
+ Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return CurrentJob()&&CurrentJob()->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED / FOLLOW NEXT ABOVE")):ReceiverReady()?FString(TEXT("READY / START ACQUISITION")):FString(TEXT("FOLLOW NEXT ABOVE"));}),[this]{StartAcquisition();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
  Rows.Add(S47FreeformTerminal::Small(TEXT("Pointing follows the right-hand tracking PC. Tune the carrier to 100%, then start. The recording advances here.")));OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenAudio()
@@ -823,7 +889,7 @@ void FS47FreeformSession::OpenArchive()
  auto Paper=[Computer](const FString& T){return Computer?S47FreeformTerminal::Paper(T):S47Kit::Paper(T);};
  Rows.Add(Paper(TEXT("SARO / CONTINUING CASE ARCHIVE\nObservations, independent controls and hypotheses are kept separately.")));
  static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
- for(int32 I=0;I<3;++I)Rows.Add(S47Kit::Small(FString::Printf(TEXT("%s / %d of 3 / %s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT("CROSS-DAY COMPARISON AVAILABLE"):TEXT("FOLLOW-UP OPEN"))));
+ for(int32 I=0;I<3;++I)if(MysterySteps[I]>0)Rows.Add(S47Kit::Small(FString::Printf(TEXT("%s / %d of 3 / %s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT("CROSS-DAY COMPARISON AVAILABLE"):TEXT("FOLLOW-UP OPEN"))));
  TSharedRef<SScrollBox> List=SNew(SScrollBox);
  for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
  {
@@ -833,7 +899,13 @@ void FS47FreeformSession::OpenArchive()
   List->AddSlot()[Paper(FString::Printf(TEXT("%s / ORIGINAL %s-original\n%s%s / %s / %s"),*J.Id,*J.Id,*Control,*Mark,*Conclusion,*StageText(J.Stage)))];
  }
  TArray<FString> Keys;Findings.GetKeys(Keys);Keys.Sort();
- for(const FString& K:Keys)List->AddSlot()[Paper(FString::Printf(TEXT("D%d / %s\n%s"),FindingDays.FindRef(K),*K,*Findings.FindRef(K)))];
+ for(const FString& K:Keys)
+ {
+  const bool Investigate=K.StartsWith(TEXT("extra_pulse"))||K.StartsWith(TEXT("feeder_fault"))||K.StartsWith(TEXT("wrong_source"))||K.StartsWith(TEXT("roof_steps"))||K.StartsWith(TEXT("observer"))||K.StartsWith(TEXT("landing_trace"))||K.StartsWith(TEXT("time_disagreement"))||K.StartsWith(TEXT("duplicate_print"))||K.StartsWith(TEXT("unsigned_telex"));
+  FString Entry=FString::Printf(TEXT("D%d / %s\nRETAINED RECORD / %s"),FindingDays.FindRef(K),*K,*Findings.FindRef(K));
+  if(Investigate)Entry+=TEXT("\nSTILL UNKNOWN / Whether this repeats under independent conditions.\nPOSSIBLE NEXT CHECK / Retain a later observation and its independent control; compare with this original.");
+  List->AddSlot()[Paper(Entry)];
+ }
  Rows.Add(SNew(SBox).HeightOverride(260)[List]);
  if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Packet)
  {
@@ -860,9 +932,10 @@ bool FS47FreeformSession::Use(const FString& Id)
  if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")){OpenAudio();return true;}
  if(Id==TEXT("rack"))
  {
-  if(!StartControl())Changed(TEXT("Receiver rack normal. Secure an anomalous original before recording the internal control."));return true;
+  if(CurrentJob()&&CurrentJob()->Phenomenon==TEXT("wrong_source"))Changed(NextAction());
+  else if(!StartControl())Changed(NextAction());return true;
  }
- if(Id==TEXT("printer")){if(!CollectChart())Changed(TEXT("No uncollected chart. Register retained routine results at OPS; anomalous packets need comparison first."));return true;}
+ if(Id==TEXT("printer")){Feedback.Empty();if(!CollectChart())Changed(Feedback.IsEmpty()?TEXT("No paper waiting. ")+NextAction():Feedback);return true;}
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord")){OpenArchive();return true;}
  if(Id==TEXT("phone")||Id==TEXT("recPhone")){if(Director)Director->Use(TEXT("ff:phone"));Changed(TEXT("SARO operations line. No scheduled call. Incoming messages are retained at the telex."));return true;}
  return Director&&Director->Use(Id);
@@ -888,14 +961,20 @@ FString FS47FreeformSession::Label(const FString& Id)const
 FString FS47FreeformSession::Objective()const
 {
  if(bDead)return TEXT("CONTACT // LOAD A SAVED CASE TO CONTINUE");
- if(bPowerFault&&!HasPower())return TEXT("POWER // MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
+ if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))return TEXT("POWER // MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
  const FJob* J=CurrentJob();if(!J)return TEXT("OPERATIONS // SELECT DAILY OBSERVING WORK");
+ return NextAction();
+}
+FString FS47FreeformSession::NextAction()const {return ReceiverNextAction();}
+FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
+{
+ const FJob* J=&JobValue;
  switch(J->Stage)
  {
   case EJobStage::New:return TEXT("TRACKING // POINT THE ARRAY TO THE SELECTED SOURCE");
-  case EJobStage::Pointed:return PointReady()&&Settle>=1?TEXT("RECEIVER // TUNE THE CARD AND START ACQUISITION"):TEXT("ARRAY MOVING // WAIT FOR ACTUAL ENCODER AGREEMENT");
-  case EJobStage::Integrating:return TEXT("OBSERVATION RUNNING // ONLY SETTLED POINTING IS RECORDED");
+  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING // FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER // TUNE THE CARD AND START ACQUISITION"):TEXT("ARRAY MOVING // WAIT FOR ACTUAL ENCODER AGREEMENT");
+  case EJobStage::Integrating:return TEXT("OBSERVATION RUNNING // KEEP TUNING AND POINTING VALID");
   case EJobStage::Chart:return TEXT("PRINTER // RETAIN THE ORIGINAL OBSERVATION CHART");
   case EJobStage::Recorded:
    if(!J->bAnomaly)return TEXT("OPERATIONS // REGISTER THE ROUTINE RESULT");
@@ -909,6 +988,16 @@ FString FS47FreeformSession::Objective()const
   default:return TEXT("OPERATIONS // SELECT MORE WORK OR FOLLOW UP THE CASE ARCHIVE");
  }
 }
+FString FS47FreeformSession::JobLocation(const FJob& J)const
+{
+ if(J.Stage==EJobStage::New)return TEXT("Tracking PC / right-hand screen");
+ if(J.Stage==EJobStage::Pointed||J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
+ if(J.Stage==EJobStage::Chart||J.Stage==EJobStage::Registered||(J.Phenomenon==TEXT("duplicate_print")&&J.bControl&&J.ControlAt>=8&&!J.bDuplicateCollected))return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
+ if(J.Stage==EJobStage::Packet)return TEXT("Binder / records room");
+ if(J.Stage==EJobStage::Recorded&&J.bAnomaly&&!J.bAudioReviewed){if(!J.bControl)return J.Phenomenon==TEXT("wrong_source")?TEXT("Tracking PC"):TEXT("Receiver rack");if(!Specialized(J.Phenomenon))return TEXT("Reel deck / beside telephone");}
+ return TEXT("OPS / corner PC");
+}
+
 TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
@@ -921,11 +1010,13 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 S47J::FObj FS47FreeformSession::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
+ S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
  for(const FJob& J:Work)
  {
   auto A=S47J::New();S47J::Set(A,TEXT("id"),J.Id);S47J::Set(A,TEXT("day"),J.Day);S47J::Set(A,TEXT("slot"),J.Slot);S47J::Set(A,TEXT("source"),J.Source);S47J::Set(A,TEXT("phenomenon"),J.Phenomenon);S47J::Set(A,TEXT("stage"),int32(J.Stage));S47J::Set(A,TEXT("elapsed"),J.Elapsed);S47J::Set(A,TEXT("quality"),J.Quality);S47J::Set(A,TEXT("receivedLevel"),J.ReceivedLevel);S47J::Set(A,TEXT("anomaly"),J.bAnomaly);S47J::Set(A,TEXT("control"),J.bControl);S47J::Set(A,TEXT("reviewed"),J.bAudioReviewed);S47J::Set(A,TEXT("printed"),J.bPrinted);S47J::Set(A,TEXT("paid"),J.bPaid);S47J::Set(A,TEXT("controlAt"),J.ControlAt);S47J::Set(A,TEXT("originalCovered"),J.OriginalCovered);S47J::Set(A,TEXT("controlCovered"),J.ControlCovered);S47J::Set(A,TEXT("markStart"),J.MarkStart);S47J::Set(A,TEXT("markEnd"),J.MarkEnd);S47J::Set(A,TEXT("receiverClock"),J.ReceiverClock);S47J::Set(A,TEXT("referenceClock"),J.ReferenceClock);S47J::Set(A,TEXT("controlReceiverClock"),J.ControlReceiverClock);S47J::Set(A,TEXT("controlReferenceClock"),J.ControlReferenceClock);S47J::Set(A,TEXT("duplicateClock"),J.DuplicateClock);S47J::Set(A,TEXT("duplicateInterval"),J.DuplicateInterval);
+  S47J::Set(A,TEXT("traceTicks"),J.TraceTicks);S47J::Set(A,TEXT("legacyTrace"),J.bLegacyTrace);
   S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);if(J.bGenerated)
   {
    auto C=S47J::New();const auto& P=J.Card.Receiver;S47J::Set(C,TEXT("v"),1);S47J::Set(C,TEXT("f"),P.F);S47J::Set(C,TEXT("ftol"),P.FTol);S47J::Set(C,TEXT("g0"),P.Gain[0]);S47J::Set(C,TEXT("g1"),P.Gain[1]);S47J::Set(C,TEXT("bw0"),P.Bw[0]);S47J::Set(C,TEXT("bw1"),P.Bw[1]);S47J::Set(C,TEXT("az0"),P.Az[0]);S47J::Set(C,TEXT("az1"),P.Az[1]);S47J::Set(C,TEXT("el"),J.Card.El);S47J::Set(C,TEXT("seconds"),J.Card.Seconds);S47J::Set(C,TEXT("suggested"),J.Card.SuggestedClock);S47J::Set(C,TEXT("text"),P.Card);S47J::Set(A,TEXT("card"),C);
@@ -993,6 +1084,38 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  auto BadDays=S47J::Obj(Corrupt,TEXT("findingDays"));S47J::Set(BadDays,TEXT("extra_pulse"),1e100);FS47FreeformSession Guarded(nullptr);Guarded.Begin(Corrupt);
  Check(!Guarded.bRestoreAngles&&Guarded.SavedAngles.IsEmpty()&&!Guarded.FindingDays.Contains(TEXT("extra_pulse")),TEXT("out-of-range saved encoders and overflowing finding days are discarded before native transforms or integer casts"));
  Unpowered.Stop();Guarded.Stop();
+ FS47FreeformSession Workflow(nullptr);Workflow.Begin(nullptr);auto* WJ=Workflow.Job();
+ WJ->Stage=EJobStage::Recorded;WJ->bPrinted=true;
+ Check(Workflow.NextAction().Contains(TEXT("REGISTER THE ROUTINE"))&&!Workflow.NextAction().Contains(TEXT("PRINTER")),TEXT("Collected routine original directs to OPS, never back to printer"));
+ Workflow.bGuideFocus=true;Check(Workflow.SelectJob(1)&&!Workflow.bGuideFocus,TEXT("Explicit job selection returns focus from service to observing"));
+ Workflow.Work[0].Stage=EJobStage::Chart;Workflow.Work[1].Stage=EJobStage::Integrating;
+ Check(!Workflow.CollectChart()&&Workflow.FeedbackText().Contains(TEXT("Paper is waiting")),TEXT("Printer explains its pending queue when another recording prevents job switching"));Workflow.Work[1].Stage=EJobStage::New;
+ Check(Workflow.CollectChart()&&Workflow.Selected==0&&Workflow.Work[0].Stage==EJobStage::Recorded,TEXT("Printer finds a waiting original even when another work order is selected"));
+ WJ=Workflow.Job();WJ->Stage=EJobStage::Chart;Workflow.bPowerFault=true;Check(Workflow.NextAction().Contains(TEXT("PRINTER")),TEXT("An already printed original remains collectible during power loss"));WJ->Stage=EJobStage::Packet;Check(Workflow.NextAction().Contains(TEXT("BINDER")),TEXT("A collected packet can be physically filed without power"));Workflow.bPowerFault=false;
+ WJ->Stage=EJobStage::Registered;WJ->bAnomaly=WJ->bControl=WJ->bAudioReviewed=true;WJ->ControlAt=8;WJ->MarkStart=9.2;WJ->MarkEnd=12.8;Workflow.AudioCursor=2;
+ Check(!Workflow.AudioAction(TEXT("mark_start"))&&WJ->MarkStart==9.2&&WJ->bAudioReviewed,TEXT("Registered comparison marks and review are immutable while playback remains available"));
+ const FString HintKey=WJ->Id+TEXT("/5");const auto BeforeHint=Workflow.Save();
+ Check(Workflow.JournalHintLevel(HintKey)==0&&Workflow.RevealJournalHint(TEXT("unknown"))==0,TEXT("Journal reads and unknown hint keys do not invent hint state"));
+ Check(Workflow.RevealJournalHint(HintKey)==1&&Workflow.RevealJournalHint(HintKey)==2&&Workflow.RevealJournalHint(HintKey)==3&&Workflow.RevealJournalHint(HintKey)==3&&WJ->Stage==EJobStage::Registered,TEXT("Explicit hints reveal at most three levels without completing work"));
+ WJ->TraceTicks={9.3,11.4};WJ->bLegacyTrace=true;auto JournalSave=Workflow.Save();FS47FreeformSession JournalAgain(nullptr);JournalAgain.Begin(JournalSave);
+ Check(JournalAgain.JournalHintLevel(HintKey)==3&&JournalAgain.CurrentJob()->TraceTicks.Num()==2,TEXT("Per-case hints and legacy trace survive Continue without duplicated ticks"));
+ auto Refund=Workflow.Save();Refund->RemoveField(TEXT("economyRevision"));S47J::Set(Refund,TEXT("upgrades"),TArray<double>{0,1,0});S47J::Set(Refund,TEXT("cash"),0);S47J::Set(Refund,TEXT("loan"),30);
+ FS47FreeformSession RefundCase(nullptr);RefundCase.Begin(Refund);Check(RefundCase.Budget()==50&&RefundCase.Debt()==0&&!RefundCase.HasUpgrade(1)&&!RefundCase.Upgrade(1),TEXT("Retired comparison upgrade refunds debt first and cannot be bought again"));
+ FS47FreeformSession RefundAgain(nullptr);RefundAgain.Begin(RefundCase.Save());Check(RefundAgain.Budget()==50&&RefundAgain.Debt()==0,TEXT("Refund is idempotent across save and Continue"));
+ S47J::Set(Refund,TEXT("cash"),1000000);S47J::Set(Refund,TEXT("loan"),0);RefundCase.Begin(Refund);RefundAgain.Begin(RefundCase.Save());Check(RefundAgain.Budget()==1000080,TEXT("Legacy refund is not silently lost at the old cash ceiling"));
+ Workflow.Stop();JournalAgain.Stop();RefundCase.Stop();RefundAgain.Stop();
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
  S.Stop();R.Stop();return OK;
 }
+
+bool FS47FreeformSession::ValidJournalHint(const FString& Id)const
+{
+ for(const auto& J:Work)if(Id==J.Id+FString::Printf(TEXT("/%d"),int32(J.Stage)))return true;
+ return ServiceGuide>0&&Id==FString::Printf(TEXT("service/%d"),ServiceGuide);
+}
+bool FS47FreeformSession::ValidJournalEntry(const FString& Id)const
+{return FS47Journal::Guide(Id)||(M&&M->Story&&M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D){return D.Id==Id;}));}
+int32 FS47FreeformSession::JournalHintLevel(const FString& Id)const{return Journal.Hints.FindRef(Id);}
+int32 FS47FreeformSession::RevealJournalHint(const FString& Id){if(!ValidJournalHint(Id))return 0;int32& L=Journal.Hints.FindOrAdd(Id);L=FMath::Min(3,L+1);if(M&&M->Flow)M->Flow->RequestAutosave(false);return L;}
+bool FS47FreeformSession::JournalEntryRead(const FString& Id)const{return Journal.Read.Contains(Id);}
+void FS47FreeformSession::MarkJournalEntryRead(const FString& Id){if(ValidJournalEntry(Id)&&!Journal.Read.Contains(Id)){Journal.Read.Add(Id);if(M&&M->Flow)M->Flow->RequestAutosave(false);}}

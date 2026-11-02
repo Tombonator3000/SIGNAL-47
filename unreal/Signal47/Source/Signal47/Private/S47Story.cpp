@@ -1191,6 +1191,9 @@ void AS47Story::BeginFreeform(const S47J::FObj& Routine)
 {
 	ResetAll();
 	if (Routine) RestoreRoutine(Routine);
+	// Earlier Freeform restores accidentally added this Story-only migration notice.
+	// Remove only that generated notice; actual field notes and original records remain.
+	NotesList.Remove(TEXT("Legacy case timeline retained: original 02:13 references and photographs are unchanged. Any unstored printout acquisition time is marked unavailable."));
 	Timers.Empty(); CurrentPhase = ES47Phase::Shift; ChapterKey = TEXT("freeform");
 	bOpeningHeld = false; bCinematic = false; bPaused = false; bLogRead = true; bPowered = true; NS.bK3Open = false;
 	Rx.Stage = 1;

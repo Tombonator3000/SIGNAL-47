@@ -52,6 +52,7 @@ int32 FS47FreeformWorld::S03() const { if(M&&M->Web)for(int32 I=0;I<M->Web->Dish
 void FS47FreeformWorld::Begin(const S47J::FObj& O)
 {
  Stop(); bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();BenchJob.Empty();
+ PowerFaultSerial=EmergencyFuseFault=0;bTrackedPowerFault=false;
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
  Delivered=DeliveredByTruck=ServiceDeliveries=DonorTests=ServiceTests=0;bParcelWasLoaded=false;
  bPumping=false;PumpRemaining=PumpElapsed=PumpVolume=0;PumpPaid=0;LastPumpDisplay.Empty();
@@ -60,6 +61,9 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
  {
   Service=FMath::Clamp(S47J::Int(O,TEXT("service")),0,9);Feeder=FMath::Clamp(S47J::Int(O,TEXT("feeder")),0,5);
   LastFaultDay=FMath::Max(0,S47J::Int(O,TEXT("faultDay")));EmergencyDay=FMath::Max(0,S47J::Int(O,TEXT("emergencyDay")));
+  PowerFaultSerial=FMath::Clamp(S47J::Int(O,TEXT("powerFaultSerial")),0,1000000000);
+  EmergencyFuseFault=FMath::Clamp(S47J::Int(O,TEXT("emergencyFuseFault")),0,PowerFaultSerial);
+  bTrackedPowerFault=S47J::Bool(O,TEXT("trackedPowerFault"));
   Payload=FMath::Clamp(S47J::Int(O,TEXT("payload")),0,4);Item=S47J::Str(O,TEXT("item"));if(Price(Item)<=0&&Item!=TEXT("service_case")){Payload=0;Item.Empty();}
   bParcelWasLoaded=S47J::Bool(O,TEXT("parcelLoaded"),Payload==3);
   Delivered=FMath::Clamp(S47J::Int(O,TEXT("delivered")),0,1000000);DeliveredByTruck=FMath::Clamp(S47J::Int(O,TEXT("cargoDelivered")),0,1000000);
@@ -75,6 +79,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
   const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
+ if(M&&M->Freeform)TrackPowerFault(M->Freeform->PowerFault());
  Build();if(Carry)Carry->Restore(S47J::Obj(O,TEXT("carry")),Payload==4?Dropped:FVector::ZeroVector);OverrideExisting();
  if(M&&M->Web)for(auto& C:M->Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:service"))C.bEnabled=true;
  if(M&&M->Web&&S03()>=0)
@@ -118,6 +123,7 @@ S47J::FObj FS47FreeformWorld::Save() const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("service"),Service);S47J::Set(O,TEXT("feeder"),Feeder);
  S47J::Set(O,TEXT("faultDay"),LastFaultDay);S47J::Set(O,TEXT("emergencyDay"),EmergencyDay);S47J::Set(O,TEXT("payload"),Payload);S47J::Set(O,TEXT("item"),Item);
+ S47J::Set(O,TEXT("powerFaultSerial"),PowerFaultSerial);S47J::Set(O,TEXT("emergencyFuseFault"),EmergencyFuseFault);S47J::Set(O,TEXT("trackedPowerFault"),bTrackedPowerFault);
  S47J::Set(O,TEXT("parcelLoaded"),bParcelWasLoaded);S47J::Set(O,TEXT("delivered"),Delivered);S47J::Set(O,TEXT("cargoDelivered"),DeliveredByTruck);S47J::Set(O,TEXT("serviceDelivered"),ServiceDeliveries);S47J::Set(O,TEXT("donorTests"),DonorTests);S47J::Set(O,TEXT("serviceTests"),ServiceTests);
  if(Carry&&Payload>0)S47J::Set(O,TEXT("carry"),Carry->Save());
  S47J::Set(O,TEXT("generator"),bGenerator);S47J::Set(O,TEXT("generatorSeconds"),GeneratorSeconds);S47J::Set(O,TEXT("fuel"),Fuel);S47J::Set(O,TEXT("lastClock"),LastClock);
@@ -468,21 +474,59 @@ void FS47FreeformWorld::Apply()
  }
 }
 
+void FS47FreeformWorld::TrackPowerFault(bool bFault)
+{
+ // A repair loan belongs to one actual outage, not to a calendar day. Older
+ // saves acquire an identity for their current outage without granting stock.
+ if(bFault&&(!bTrackedPowerFault||PowerFaultSerial==0))PowerFaultSerial=FMath::Min(1000000000,PowerFaultSerial+1);
+ bTrackedPowerFault=bFault;
+}
+bool FS47FreeformWorld::CanIssueEmergencyFuse(bool bFault) const
+{
+ return bFault&&PowerFaultSerial>0&&EmergencyFuseFault!=PowerFaultSerial&&
+  Feeder!=4&&InventoryCount(TEXT("fuse"))==0&&Payload==0;
+}
+bool FS47FreeformWorld::EmergencyFuseAvailable() const
+{
+ return M&&M->Freeform&&CanIssueEmergencyFuse(M->Freeform->PowerFault());
+}
+bool FS47FreeformWorld::RequestEmergencyFuse()
+{
+ if(!Ready()||!Near(ShopPoint()))return false;
+ TrackPowerFault(M->Freeform->PowerFault());
+ if(!CanIssueEmergencyFuse(M->Freeform->PowerFault()))
+ {
+  Change(Payload!=0?TEXT("Finish or recover your existing parcel first. The hatch handles one physical parcel at a time."):
+   InventoryCount(TEXT("fuse"))>0||Feeder==4?TEXT("A control fuse is already retained or fitted. Use it to finish the feeder repair."):
+   !M->Freeform->PowerFault()?TEXT("The feeder has no active supply fault."):
+   TEXT("The emergency fuse for this outage has already been issued. Recover its parcel or use the retained fuse."));
+  return false;
+ }
+ if(!M->Freeform->ChargeEmergencyFeederFuse()){Change(TEXT("The requisition balance cannot cover another $5. No parcel was issued or budget charged."));return false;}
+ EmergencyFuseFault=PowerFaultSerial;Item=TEXT("fuse");Payload=1;bParcelWasLoaded=false;
+ Change(TEXT("One feeder-repair fuse labelled / $5 charged to budget or requisition debt. Collect the parcel, deliver it to SARO stock and repair the isolated feeder. Existing debt does not block this repair."));return true;
+}
 bool FS47FreeformWorld::Purchase(const FString& Id,bool Emergency)
 {
  if(!Ready()||!Near(ShopPoint())||Price(Id)<=0||Payload!=0)return false;
  if(!Emergency&&!ShopOpen()){Change(TEXT("The supply window opens 08:00–20:00. The marked emergency hatch handles essential requisitions."));return false;}
  if(Emergency&&((Id==TEXT("donor")||Id==TEXT("film"))||EmergencyDay==M->Freeform->Day())){Change(TEXT("One essential emergency parcel per day; donor equipment is sold during opening hours."));return false;}
- if(!M->Freeform->Spend(Price(Id),Emergency)){Change(TEXT("Not enough operating budget. An essential emergency requisition is available once per day."));return false;}
+ if(!M->Freeform->Spend(Price(Id),Emergency)){Change(M->Freeform->FeedbackText());return false;}
  if(Emergency)EmergencyDay=M->Freeform->Day();Item=Id;Payload=1;bParcelWasLoaded=false;Change(TEXT("Paid and labelled. Collect the physical parcel beside the supply hatch."));return true;
 }
 void FS47FreeformWorld::OpenShop()
 {
  if(!Ready()||!M->UI||!Near(ShopPoint()))return;TArray<S47Kit::FW> Rows;
+ TrackPowerFault(M->Freeform->PowerFault());
  Rows.Add(S47Kit::Paper(FString::Printf(TEXT("CALICHE SERVICE SUPPLIES / 08:00–20:00\nOPERATING BUDGET $%d\nOne physical parcel at a time. Carry it to the truck, load it, and unload at the SARO service bench."),M->Freeform->Budget())));
  for(const TCHAR* Id:Items){const FString Key(Id);Rows.Add(S47Kit::Button(FString::Printf(TEXT("%s / $%d"),*ItemTitle(Key),Price(Key)),[this,Key]{if(Purchase(Key)){M->UI->Close();}},false,Payload==0&&ShopOpen()));}
  Rows.Add(S47Kit::Small(TEXT("Essential after-hours/credit requisition: one per day, charged against future work. Donor controllers require bench testing before harvesting their relay.")));
  for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("fuel")}){const FString Key(Id);Rows.Add(S47Kit::Button(FString(TEXT("Emergency "))+ItemTitle(Key),[this,Key]{if(Purchase(Key,true))M->UI->Close();},false,Payload==0&&EmergencyDay!=M->Freeform->Day()));}
+ if(M->Freeform->PowerFault())
+ {
+  Rows.Add(S47Kit::Small(TEXT("ACTIVE FEEDER FAULT: one repair fuse may be charged to requisition debt even with an older balance or today's essential parcel already used. Use existing stock or a paid parcel first.")));
+  Rows.Add(S47Kit::Button(TEXT("Request feeder-repair fuse / $5 / credit available"),[this]{if(RequestEmergencyFuse())M->UI->Close();},true,EmergencyFuseAvailable()));
+ }
  M->UI->Open(S47Kit::Shell(M->UI,TEXT("CALICHE / SUPPLY HATCH"),S47Kit::Col(Rows),880));
 }
 
@@ -627,7 +671,7 @@ bool FS47FreeformWorld::FeederUse()
  if(!M->Freeform->PowerFault()){Change(TEXT("SARO feeder voltage and local fuse are normal."));return true;}
  if(Feeder<=1){Feeder=2;Change(TEXT("Low supply confirmed at the feeder front. Open the enclosed isolation switch."));}
  else if(Feeder==2){Feeder=3;Change(TEXT("Feeder isolated. Replace the blown control fuse from your service stock."));}
- else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("A control fuse is needed. Use the Caliche emergency supply hatch if necessary."));return true;}Feeder=4;Change(TEXT("Replacement fuse seated. Run the enclosed three-second test."));}
+ else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("A control fuse is needed. Caliche's supply hatch offers a $5 feeder-repair fuse on credit even with existing debt; collect and unpack its parcel at SARO."));return true;}Feeder=4;Change(TEXT("Replacement fuse seated. Run the enclosed three-second test."));}
  else if(Feeder==4){if(FeederSeconds<=0){FeederSeconds=.001;Change(TEXT("Feeder test running. Watch the marked indicator settle before supply is restored."));}}
  return true;
 }
@@ -679,6 +723,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
 void FS47FreeformWorld::Step(double Dt)
 {
  if(!Ready())return;if(!bBuilt)Build();
+ TrackPowerFault(M->Freeform->PowerFault());
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ShopPoint()+FVector(.55,-.25,.2):Payload==3?TruckPoint():Dropped);
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
  const double WorldDelta=FMath::Max(0.,Now-LastClock);LastClock=Now;
@@ -720,7 +765,7 @@ void FS47FreeformWorld::Step(double Dt)
  }
  if(M->Freeform->PowerFault()&&(Feeder==0||Feeder==5))Feeder=1;
  if(!M->Freeform->PowerFault()&&Feeder>0&&Feeder<5){Feeder=0;FeederSeconds=0;}
- if(Feeder==4&&FeederSeconds>0){FeederSeconds+=FMath::Min(Dt,.1);if(FeederSeconds>=3){Feeder=5;FeederSeconds=0;M->Freeform->SetPowerFault(false);M->Freeform->RecordEvidence(TEXT("feeder-repair"),TEXT("Feeder supply measured, isolated, control fuse replaced and enclosed test passed."));Change(TEXT("Feeder indicator steady. SARO mains supply restored."));}}
+ if(Feeder==4&&FeederSeconds>0){FeederSeconds+=FMath::Min(Dt,.1);if(FeederSeconds>=3){Feeder=5;FeederSeconds=0;M->Freeform->SetPowerFault(false);TrackPowerFault(false);M->Freeform->RecordEvidence(TEXT("feeder-repair"),TEXT("Feeder supply measured, isolated, control fuse replaced and enclosed test passed."));Change(TEXT("Feeder indicator steady. SARO mains supply restored."));}}
  // A bounded ordinary service need, not a constant global wear drain.
  if(M->Freeform->Day()>1&&M->Freeform->Day()%(M->Freeform->HasUpgrade(0)?6:3)==2&&LastFaultDay!=M->Freeform->Day()&&DayClock(Now)>=10*3600&&!HasArrayFault()&&!M->Freeform->PowerFault())TriggerServiceFault();
  Apply();
@@ -759,5 +804,33 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
   C(ServiceRestore.ServiceStage()==Stage&&ServiceRestore.InventoryCount(TEXT("relay"))==(Stage<5?1:0)&&ServiceRestore.ServiceAz==358.5&&ServiceRestore.ServiceEl==31.25&&ServiceRestore.Settle==.7,TEXT("S-03 Continue retains repair stage, one-time part consumption and local-test progress"));
  }
  C(W.InteractionPoint(TEXT("ff:service")).Equals(FVector(4.647,-.01,-39.4),.001),TEXT("S-03 service uses the original cable-junction front, not a second stand"));
+ FS47FreeformWorld Rescue(nullptr);Rescue.Begin();Rescue.Stock.FindOrAdd(TEXT("fuse"))=0;Rescue.EmergencyDay=7;Rescue.Feeder=3;
+ Rescue.TrackPowerFault(true);const int32 Fault=Rescue.PowerFaultSerial;
+ C(Fault==1&&Rescue.CanIssueEmergencyFuse(true)&&!Rescue.CanIssueEmergencyFuse(false),TEXT("Feeder rescue is tied to an actual outage and is not consumed by the ordinary daily requisition"));
+ bool ParcelGuard=true;for(int32 Stage=1;Stage<=4;++Stage){Rescue.Payload=Stage;Rescue.Item=TEXT("fuse");ParcelGuard&=!Rescue.CanIssueEmergencyFuse(true);}
+ Rescue.Payload=0;Rescue.Item.Empty();Rescue.Stock.FindOrAdd(TEXT("fuse"))=1;const bool StockGuard=!Rescue.CanIssueEmergencyFuse(true);
+ Rescue.Stock.FindOrAdd(TEXT("fuse"))=0;Rescue.Feeder=4;
+ C(ParcelGuard&&StockGuard&&!Rescue.CanIssueEmergencyFuse(true),TEXT("A shop, carried, loaded or dropped parcel, retained fuse or fitted replacement prevents an extra rescue fuse"));
+ Rescue.Feeder=3;Rescue.EmergencyFuseFault=Fault;Rescue.TrackPowerFault(true);
+ FS47FreeformWorld RescueCopy(nullptr);RescueCopy.Begin(S47J::Read(S47J::Write(Rescue.Save())));RescueCopy.TrackPowerFault(true);
+ C(RescueCopy.PowerFaultSerial==Fault&&RescueCopy.EmergencyFuseFault==Fault&&!RescueCopy.CanIssueEmergencyFuse(true),TEXT("Issued feeder rescue survives Continue and cannot be renewed during the same outage"));
+ RescueCopy.TrackPowerFault(false);RescueCopy.TrackPowerFault(true);RescueCopy.TrackPowerFault(true);
+ C(RescueCopy.PowerFaultSerial==Fault+1&&RescueCopy.CanIssueEmergencyFuse(true),TEXT("Only a restored feeder followed by a new failure creates another bounded repair entitlement"));
+ auto OldRescue=Rescue.Save();OldRescue->RemoveField(TEXT("powerFaultSerial"));OldRescue->RemoveField(TEXT("emergencyFuseFault"));OldRescue->RemoveField(TEXT("trackedPowerFault"));
+ RescueCopy.Begin(S47J::Read(S47J::Write(OldRescue)));RescueCopy.TrackPowerFault(true);
+ C(RescueCopy.PowerFaultSerial==1&&RescueCopy.CanIssueEmergencyFuse(true)&&RescueCopy.InventoryCount(TEXT("fuse"))==0&&RescueCopy.ParcelStage()==0,TEXT("Legacy outage gains a repair identity without inventing stock, a paid parcel or a transaction"));
+ C(!RescueCopy.RequestEmergencyFuse()&&RescueCopy.EmergencyFuseFault==0&&RescueCopy.ParcelStage()==0,TEXT("A rescue request still requires the actual player at the supply hatch"));
+ FS47FreeformSession Credit(nullptr);Credit.Begin(nullptr);auto CreditState=Credit.Save();
+ S47J::Set(CreditState,TEXT("cash"),0);S47J::Set(CreditState,TEXT("loan"),25);Credit.Begin(CreditState);
+ C(!Credit.Spend(5,true)&&Credit.Budget()==0&&Credit.Debt()==25&&Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==0&&Credit.Debt()==30,TEXT("Existing debt still blocks ordinary credit but the bounded feeder transaction adds exactly five dollars without requiring working instruments"));
+ FS47FreeformSession CreditCopy(nullptr);CreditCopy.Begin(S47J::Read(S47J::Write(Credit.Save())));
+ C(CreditCopy.Budget()==0&&CreditCopy.Debt()==30,TEXT("Continue preserves the repair charge and never repeats it"));
+ CreditCopy.Earn(20);const bool FirstPayment=CreditCopy.Debt()==10&&CreditCopy.Budget()==0;CreditCopy.Earn(20);
+ C(FirstPayment&&CreditCopy.Debt()==0&&CreditCopy.Budget()==10,TEXT("Later completed work repays repair and previous debt before paying cash"));
+ S47J::Set(CreditState,TEXT("cash"),2);Credit.Begin(CreditState);
+ C(Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==0&&Credit.Debt()==28,TEXT("Partial cash funds the fuse first; only the missing amount becomes repair debt"));
+ S47J::Set(CreditState,TEXT("cash"),3);S47J::Set(CreditState,TEXT("loan"),999999);Credit.Begin(CreditState);
+ C(!Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==3&&Credit.Debt()==999999,TEXT("Debt-limit rejection is atomic: neither budget nor debt changes"));
+ Credit.Stop();CreditCopy.Stop();
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }

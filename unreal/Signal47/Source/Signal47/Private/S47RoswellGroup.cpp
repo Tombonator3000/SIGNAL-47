@@ -284,3 +284,9 @@ void FS47RoswellGroup::ReleaseControlled()
  P->bControlled=false;
  for(auto& I:P->Actors)if(I->bActive){I->bNatural=true;I->Life=0;I->Brain.SetMode(FS47RoswellBrain::EMode::Curious);}
 }
+
+UPrimitiveComponent* FS47RoswellGroup::PhotoBody(int32 Id)const
+{
+ for(const auto& A:P->Actors)if(A->bActive&&A->Id==Id&&A->Body&&A->Body->Rendered())return A->Body->Mesh.Get();
+ return nullptr;
+}

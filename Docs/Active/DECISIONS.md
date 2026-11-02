@@ -4,6 +4,14 @@
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
+## Gameplay og dokumentasjonsfoto, 2. november 2026
+
+Tom har godkjent implementeringsplanen for SARO, Freeform og TAB-dagboken: seks tydelige hovedfaner, frivillige hint i tre nivåer, riktig neste handling på tvers av apparater, konsistente målinger og bevaring av eksisterende saker. Flere agenter implementerer og kryssvurderer; ekte tastatur-/mus-beta skal skilles fra utviklerfixturer.
+
+Senere samme økt bestilte Tom fotografering av ukjente fenomener som del av inntektsløkken. Spillet handler om å undersøke stjerner, signaler og møter med det ukjente. Standard i denne implementeringen: ett tydelig, faktisk rendret og bevart fotografi kan registreres fysisk på OPS for $20 dokumentasjonskreditt per hendelse; samme hendelse kan ikke betale gjentatte ganger. Betaling beviser ikke objektets opprinnelse. Ordinær signaljobb gir fortsatt $20. Nye fenomener gjenbruker faktiske native aktører; tekst alene skal ikke representere en usett ku-abduksjon eller simulert sabotasje.
+
+Toms eksempler omfatter UFO på himmelen, ku-abduksjon, skikkelser ved trafo og array, samt byobservasjoner varslet av sheriff eller radio. Skillet mellom implementerte hendelser og videre forslag føres i [TODO](TODO.md) og [status](STATUS.md). Ingen gjenstart av tidligere stoppet TODO-automasjon eller offentlig utgivelse følger av bestillingen.
+
 ## Nattskift 1. til 2. november 2026
 
 Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Oslo, for å gjennomføre mest mulig av TODO. Prioriter felles fysisk PC-betjening og lysstyring, deretter tydelig utstyrsrespons, etterprøvbare arbeidsrelaterte hendelser og skrekk som reagerer på spillerens handlinger. Se [nattprioriteringene](TODO.md#nattskift-1-november-kl2200-til-2-november-kl0800). Engangsbestillingen er avsluttet 2. november ved fristen kl. 08:00; trådautomasjonen `signal-47-nattskift-22-08` er slettet. Dette var ett nattskift, ikke en stående daglig bestilling. Vanlige prosjektregler om kildevern, reduserte tester, én tung jobb og samlet opprydding gjelder.

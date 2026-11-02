@@ -193,7 +193,7 @@ void US47Night::Init(US47Main* InM)
 		// (Caliche's own ground by the diner's lot, world/Town.ts floorAt, is the town's: the road's ground here)
 		return G.Ground;
 	};
-	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid()) { if(!Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); if(!Self->M->IsFreeform() && Self->M->Horror)Self->M->Horror->TagPhoto(Shot); } };
+	A.Tag = [Self](FS47AlbumShot& Shot) { if (Self.IsValid()) { if(Self->M->IsFreeform() && Self->M->Freeform && Self->M->Freeform->Director) Self->M->Freeform->Director->TagPhoto(Shot); if(!Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->TagPhoto(Shot); if(!Self->M->IsFreeform() && Self->M->Horror)Self->M->Horror->TagPhoto(Shot); } };
 	A.Small = [Self] { return Self.IsValid() && Self->M->Flow && Self->M->Flow->Saves.bFallback; };
 	A.Done = [Self](const FS47AlbumShot& Shot, bool bFirst, int32 Left)
 	{
