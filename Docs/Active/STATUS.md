@@ -10,6 +10,10 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ARRAY-03 er implementert i eksisterende S-03-kabelskap: original dør åpnes og servicedelene sitter inne i skapet. Den ekstra servicekonstruksjonen er fjernet. Installert via [PR345](https://github.com/Tombonator3000/SIGNAL-47/pull/345), runtime `55990d45`: pakking, 1997 selvtester, 58 servicekontroller/fire diskreturer og installert røykprøve består. 161 Saved-elementer er uendret. [Før/etter og prøvegrenser](../Evidence/UnrealDeliveries/S03_CABINET_2026-11-02.md). Deretter fortsetter prioritert TODO til Tom stopper arbeidet.
 
+## Lokal oppfølging 2. november
+
+Motellskiltets lokale nattglød og tydeligere APPLY DISPLAY/status er installert fra `741db904`, [PR346](https://github.com/Tombonator3000/SIGNAL-47/pull/346). Pakking,1997 selvtester, eksisterende Slate-/lagringsprøve47 og kort installert titteloppstart består;161 Saved-elementer uendret. Nattlig før/etter er gjennomsett. Skjermmodusbekreftelse/rollback og menneskelig neonaksept gjenstår. Offentlig nedlasting er fortsatt det separate verifiserte bfa1c26d-bygget.
+
 ## Nattskiftet 1. til 2. november er avsluttet
 
 Sluttkontroll 2. november kl. 08:01 CET. Sju nattoppdateringer var installert ved morgenkontrollen; nattens siste spillversjon var `bfa1c26d` fra kl. 07:03. Siste pakke består 1997 selvtester og installert Fortsett. Alle 164 personlige Saved-elementer er bevart.

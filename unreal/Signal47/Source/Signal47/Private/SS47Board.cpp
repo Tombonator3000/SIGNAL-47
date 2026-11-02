@@ -1385,7 +1385,7 @@ int32 FS47BoardImpl::Paint(const FGeometry& G, FSlateWindowElementList& Out, int
 		const TArray<FVector2D> Points = Sample(Q);
 		const double W = YarnWidth(2.6, Px, 2.2);
 		Shadow(Points, W, 3, Alpha * 0.6f);
-		Yarn(Points, W, FLook{ 0x8f8577, 0x3b332b, 0xd8cfc0, Alpha, false, false }, W * 2.6, W * 1.6);
+		Yarn(Points, W, FLook{ 0x8f8577, 0x3b332b, 0xd8cfc0, Alpha, false, false });
 	}
 	// the thread in the hand: bright, held up off the cork, a ring on the pin it would go to
 	if (Drag.Kind == FDrag::EKind::Thread && Drag.bMoved)

@@ -200,3 +200,5 @@ Root eier `codex/title-quit-linux-20261101` i `title-quit-linux-20261101` (kopi3
 2026-11-02: Linux-release levert offentlig, PR #344 flettet. Root eier nå codex/s03-existing-cabinet-20261102 i samme kopi: FreeformWorld runtime og målrettet prøve/installasjon. release_audit har levert Tools/arraycabinet; ingen andre kildefiler. Eksisterende Story-motorbus beholdes.
 
 2026-11-02: ARRAY-03 levert PR345. Root eier codex/world01-return-strip-20261102 i samme kopi; next_todo eier kun S47StationWorldRoute.cpp for opt-in returdiagnose. Root eier motorvindu, vurdering og eventuell årsaksretting.
+
+2026-11-02: PR346 neon/Settings levert lokalt. Root eier codex/station01-groundcover-20261102 i samme kopi og motorvindu. next_todo har levert kun S47Flora.cpp/StationWorldRoute.cpp: fem eksisterende Station01-lag aktiveres. Ingen nye modeller eller verdensankre.
