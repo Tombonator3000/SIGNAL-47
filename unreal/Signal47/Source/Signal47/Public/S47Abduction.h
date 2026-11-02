@@ -15,6 +15,7 @@ class FS47Group;
 class FS47JacketWalker;
 class FS47CardSilhouette;
 class FS47Pix;
+class FS47UfoPresentation;
 class UTexture2D;
 struct FS47Truck;
 
@@ -303,11 +304,13 @@ public:
 	void Halt();
 	/** The exposures that were not the player's, back among the papers (after the case is opened). */
 	void Refile();
+	S47J::FObj PresentationReadback() const;
 
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
 	FS47AbductDeps D;
+	TUniquePtr<FS47UfoPresentation> Ufo;
 	double St = 0;
 	int32 Beat = 0;
 	double WarnFrom = 0;
@@ -364,6 +367,7 @@ private:
 	void ToneOn();
 	void ToneOff();
 	void Clear();
+	void PresentUfo(const FS47AbductIn& S);
 	FVector PlayerPos() const;
 	FS47Cam Camera() const;
 };

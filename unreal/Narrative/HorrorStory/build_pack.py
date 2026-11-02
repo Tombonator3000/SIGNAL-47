@@ -135,9 +135,11 @@ def validate_scenarios(pack, modules):
         "SC02_ESCAPE": {"ctx_hr_sc02_t01_complete", "ctx_hr_sc02_escape_complete"},
         "SC03_DISPATCH_RECEIPT": {"ctx_hr_sc02_escape_complete", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_ortiz_assigned"},
         "SC03_ORTIZ_IDENTIFY": {"ctx_hr_sc03_ortiz_assigned", "ctx_hr_sc03_ortiz_identified"},
-        "SC03_HELPER_TAKEN": {"ctx_hr_sc03_lift_observed", "ctx_hr_sc03_safe_retreat"},
+        "SC03_HELPER_TAKEN": {"ctx_hr_sc03_lift_observed", "ctx_hr_sc03_helper_taken", "ctx_hr_sc03_safe_retreat"},
+        "SC03_HELPER_UNSEEN": {"ctx_hr_sc03_helper_taken", "ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_wagon_checked"},
         "SC03_HELPER_TRACES": {"ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_traces_checked"},
         "SC03_MISSING_RECEIPT": {"ctx_hr_sc03_ortiz_identified", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_lift_observed", "ctx_hr_sc03_missing_readback"},
+        "SC03_MISSING_UNSEEN_RECEIPT": {"ctx_hr_sc03_ortiz_identified", "ctx_hr_sc03_dispatch_readback", "ctx_hr_sc03_helper_taken", "ctx_hr_sc03_safe_retreat", "ctx_hr_sc03_wagon_checked", "ctx_hr_sc03_missing_readback"},
         "SC03_LOCAL_ORDER_HOLD": {"ctx_hr_sc03_local_order_suspended"},
         "SC03_RECEIVER_QUESTION": {"ctx_hr_sc03_missing_readback", "ctx_hr_sc03_deputy_at_stop"},
         "SC04_LOCAL_HOLD": {"ctx_hr_sc04_schedule_isolated", "ctx_hr_sc04_shift_originals_secured"},
@@ -163,6 +165,9 @@ def validate_scenarios(pack, modules):
     for sid, required in gates.items():
         if sid not in scenes or not required.issubset(scenes[sid]["requires"]["all"]):
             EV.fail(sid, "unified scenario world-result gate missing")
+    for sid in ("SC03_HELPER_UNSEEN", "SC03_MISSING_UNSEEN_RECEIPT"):
+        if "ctx_hr_sc03_lift_observed" not in scenes[sid]["requires"]["none"]:
+            EV.fail(sid, "unseen aftermath must remain distinct from a witnessed lift")
     removed = {"SC03_SHADOW_RULE", "SC04_CAR_READ", "SC04_CAR_ESCAPE", "SC04_CAR_RETRY"}
     if removed.intersection(scenes):
         EV.fail("scenarios", "the revised route has one creature rule and no SC04 car encounter")
@@ -172,6 +177,7 @@ def validate_scenarios(pack, modules):
         "SC01_FIRST_REPORT": ["HR_INITIAL_REPORT"],
         "SC03_DISPATCH_RECEIPT": ["HR_DISPATCH_RECEIPT"],
         "SC03_MISSING_RECEIPT": ["HR_MISSING_RECEIPT"],
+        "SC03_MISSING_UNSEEN_RECEIPT": ["HR_MISSING_RECEIPT"],
         "SC03_LOCAL_ORDER_HOLD": ["HR_LOCAL_HOLD_RECEIPT"],
         "SC04_LOCAL_HOLD": ["HR_LOCAL_ISOLATION_NOTE"],
         "BY02_SOURCE_COMPARE": ["HR_EARL_SOURCE_CHECK"],

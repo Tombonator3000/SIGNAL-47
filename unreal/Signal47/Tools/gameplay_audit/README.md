@@ -2,7 +2,7 @@
 
 **Status:** Gjeldende verktøy · **Gjelder:** statisk Unreal-/Freeform-gjennomgang · **Sist kontrollert:** 2. november 2026.
 
-`audit.py` er et lite, skrivebeskyttet analyseharness. Det samler Git-revisjon, dirty-flagg, atten spillerreiser, rollefordeling og valgfritt et minimalt sammendrag fra en eksisterende lagring. Det kjører ikke Unreal, klikker ikke i spillet og vurderer ikke automatisk om gameplay er godt. Runtime og menneskelig spilltest står alltid som `NOT_RUN` i denne statiske kjøringen. Den separate, eksplisitt aktiverte native-adapteren nedenfor kan senere kjøre en isolert spilløkt.
+`audit.py` er et lite, skrivebeskyttet analyseharness. Det samler Git-revisjon, dirty-flagg, 24 spillerreiser, rollefordeling og valgfritt et minimalt sammendrag fra en eksisterende lagring. Det kjører ikke Unreal, klikker ikke i spillet og vurderer ikke automatisk om gameplay er godt. Runtime og menneskelig spilltest står alltid som `NOT_RUN` i denne statiske kjøringen. Den separate, eksplisitt aktiverte native-adapteren nedenfor kan senere kjøre en isolert spilløkt.
 
 Kjør fra repoets rot med Python 3, uten ekstra pakker:
 
@@ -121,3 +121,17 @@ Dette er utviklerfixturer med eksplisitt tidspunkt, plassering og `Force`. Av/p�
 Bibliotek og nødvendige symboler kontrolleres før motorstart. Ingen pakker installeres. `session.json`/resultat/plan angir `mouse_backend` og `keyboard_backend`. Velg ny resultatmappe og eventuelt `--profile-source` etter ordinær Save/Quit; en kjørende server endrer ikke backend. Før videre beta må faktisk menyklikk, relativ look, scroll og drag observeres i den nye økten.
 
 Lokale UE5.8.4-kilder bruker SDL3 (`SDL_SetWindowRelativeMouseMode`). Det eldre SDL2-hintet `SDL_MOUSE_RELATIVE_MODE_WARP` finnes ikke i de tilgjengelige SDL3-headerne og settes derfor ikke av adapteren. Ingen globale SDL-/skrivebordsinnstillinger endres.
+
+
+## UFO-scenarioene
+
+Seks scenarioer i `scenarios.json` dekker nærpassering, motorveijakt, forfølgelse av spilleren, vitnebortføring, spillerbortføring og finale. Det delte presentasjonslaget har ingen egen spillklokke. Hendelsenes eksisterende livsløp styrer lys og geometri.
+
+Korte, opt-in Unreal-kontrakter bruker isolert profil og eksisterende spillfunksjoner:
+
+- `-S47UfoVisualTest -S47Case=0 -UserDir=/tmp/s47-ufo-visual`: vanlig Freeform-start, natt-/kamerafixture, nærpassering, faktisk foto, Low/komfort, pause og sceneutgang. Resultat og tre native bilder i profilens `UfoVisualTest`.
+- `-S47Freeform -S47Case=0 -S47HighwayUfoTest=chase -UserDir=/tmp/s47-ufo-chase`: naturlig veitrigger etter en eksplisitt startposisjon, kjøring med bilens input, pause, lagring, fysisk disklesing og avgang. Resultat i `Saved/HighwayUfoTest`.
+- Samme kommando med `=follow`: eksplisitt forfølgelsesstart og reell flukt ved kjøring. `=chase -S47HighwayKeepDriving` følger sheriffen videre for et bilde av nærpasseringen; standardprøven stanser for å kontrollere at spilleren kan velge hendelsen bort.
+- `-S47HorrorContract=SC03Resume -S47HorrorRestore=/absolutt/faktisk-save.json -UserDir=/tmp/s47-ufo-sc03`: hydrert faktisk SC02-escape eller SC03-møtegrense med originalfoto inkludert (`*.loaded.json`); `-S47SC03LookAway` prøver bortvendt kamera og separat savnetrapport. `-S47SC03UfoOnly` avgrenser til reell Ortiz-interaksjon, løft, forsvinning og tre disk-/Flow-returer etter én uttrykkelig posisjonsfixture; dette erstatter ikke den lange Caliche-ruten.
+
+Dette er native utviklerkontrakter med navngitte fixtures, ikke menneskelig spillaksept. Selve `audit.py` starter ingen spillprosess og erklærer ikke disse runtime-prøvene bestått.

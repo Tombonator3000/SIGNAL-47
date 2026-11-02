@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## UFO-bortføring og motorveijakt, 2. november
+
+- [ ] **UFO-01, samlet spilleraksept:** Referansenes lysuttrykk, sheriffjakt, egen følgevariant, observerbar SC03-bortføring og fysisk lys ved spiller/bil er implementert og lokalt installert kl.20:45 med tre underagenter og seks scenarioer i [gameplay-harnesset](../../unreal/Signal47/Tools/gameplay_audit/README.md). Aktuell bygg-/test-/installasjonsstatus står i [STATUS](STATUS.md). Menneskelig vurdering av styrke, tempo, lyd og komfort gjenstår. Hele Caliche-ruten er fortsatt uverifisert; de beståtte SC03-prøvene bruker en avgrenset posisjonsfixture.
+
 ## Gameplaygjennomgang 2. november
 
 Tom bestilte et agent-harness, gjennomgang av workflow/gameplay og konkrete forbedringsforslag med ny VotV-kontroll. [Samlet analyse og akseptscenarioer](../Research/Gameplay/WORKFLOW_REVIEW.md), [maskinlesbare agentfunn](../Research/Gameplay/findings.json) og [kjørbart harness](../../unreal/Signal47/Tools/gameplay_audit/README.md). Kildeanalyse er gjennomført. Tom har deretter godkjent implementering; gameplayretting er installert via PR352, agentbeta er delvis utført og menneskelig aksept er ikke utført. Dette gjenstarter ikke tidligere stoppet TODO-automasjon.

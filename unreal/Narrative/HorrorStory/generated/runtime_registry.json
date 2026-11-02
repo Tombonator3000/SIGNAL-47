@@ -355,9 +355,14 @@
       "provenance_nb": "Dispatch har kvittert konkret Caliche Junction-hendelse og faktisk sendt en regional hjelpekontakt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
     },
     {
+      "id": "ctx_hr_sc03_helper_taken",
+      "owner": "runtime_host",
+      "provenance_nb": "Ortiz har faktisk forlatt scenen etter lys/løft. Spilleren trenger ikke å ha sett dette. Verdensfaktum, ikke dialog eller observasjonskreditt."
+    },
+    {
       "id": "ctx_hr_sc03_lift_observed",
       "owner": "runtime_host",
-      "provenance_nb": "Spilleren har faktisk sett Ortiz bevege seg uten støtte i fremmed lys og forsvinne. I samme siktsekvens står flere bleke skikkelser helt stille i lyskanten, og én vender hodet mot Reyes. Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+      "provenance_nb": "Spilleren har faktisk sett Ortiz uten støtte over bakken i fremmed lys. Dette sier ikke i seg selv at selve forsvinningsøyeblikket eller bleke figurer ble sett."
     },
     {
       "id": "ctx_hr_sc03_local_order_suspended",
@@ -388,6 +393,11 @@
       "id": "ctx_hr_sc03_traces_checked",
       "owner": "runtime_host",
       "provenance_nb": "Etter trygg retrett er forlatt vogn og ordinær personlig navngitt gjenstand faktisk undersøkt Eksternt verdensfaktum; scenen/dialogvalg kan ikke sette dette."
+    },
+    {
+      "id": "ctx_hr_sc03_wagon_checked",
+      "owner": "runtime_host",
+      "provenance_nb": "Spilleren har fysisk undersøkt den tomme vogn23 etter trygg retrett. Dette gir grunnlag for savnetmelding selv når løftet ikke ble sett."
     },
     {
       "id": "ctx_hr_sc04_annex_imprint_playing",
@@ -1092,7 +1102,24 @@
       "external_requirements": [
         "ctx_hr_sc03_ortiz_identified",
         "ctx_hr_sc03_lift_observed",
-        "ctx_hr_sc03_safe_retreat"
+        "ctx_hr_sc03_safe_retreat",
+        "ctx_hr_sc03_helper_taken"
+      ]
+    },
+    {
+      "id": "SC03_HELPER_UNSEEN",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_ortiz_identified",
+        "ctx_hr_sc03_helper_taken",
+        "ctx_hr_sc03_safe_retreat",
+        "ctx_hr_sc03_wagon_checked"
       ]
     },
     {
@@ -1123,7 +1150,26 @@
         "ctx_hr_sc03_safe_retreat",
         "ctx_hr_sc03_missing_readback",
         "ctx_hr_sc03_ortiz_identified",
-        "ctx_hr_sc03_dispatch_readback"
+        "ctx_hr_sc03_dispatch_readback",
+        "ctx_hr_sc03_helper_taken"
+      ]
+    },
+    {
+      "id": "SC03_MISSING_UNSEEN_RECEIPT",
+      "phase": "early_shift",
+      "scenario_ids": [
+        "SC03"
+      ],
+      "mission_ids": [
+        "H02"
+      ],
+      "external_requirements": [
+        "ctx_hr_sc03_ortiz_identified",
+        "ctx_hr_sc03_dispatch_readback",
+        "ctx_hr_sc03_helper_taken",
+        "ctx_hr_sc03_safe_retreat",
+        "ctx_hr_sc03_wagon_checked",
+        "ctx_hr_sc03_missing_readback"
       ]
     },
     {
@@ -1571,5 +1617,5 @@
       ]
     }
   ],
-  "source_sha256": "2a193e449e4b1b7c2ead4933ec3fae1fa4d53ddb0a6ab0158b2c728dc41a288f"
+  "source_sha256": "fdc01463cf2b9a358cd55f7dfb7e850fee0c9f942aa5d682b0cae79fda2b9fed"
 }

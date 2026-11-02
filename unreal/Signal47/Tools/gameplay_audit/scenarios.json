@@ -289,6 +289,72 @@
         "Record active play and pauses separately"
       ],
       "acceptance": "Actual event stimuli, player choices and resulting evidence are timestamped; absence is NOT_OBSERVED; no teleport, forced clock/event, debug callback or hidden solution qualifies as native beta. Quiet pacing and interrupted-work recovery receive an independent clarity review."
+    },
+    {
+      "id": "ufo_close_pass",
+      "owner": "reference",
+      "title": "UFO light and near-pass reference",
+      "steps": [
+        "Observe existing Freeform close_pass from the driver and roadside",
+        "compare native before/after",
+        "photograph the rendered hull/lamps."
+      ],
+      "acceptance": "Red and white light is attached to the actual craft and illuminates the environment; Low and calm-flash remain readable; photo claim still requires rendered unobstructed evidence."
+    },
+    {
+      "id": "ufo_highway_chase",
+      "owner": "workflow",
+      "title": "Sheriff follows a low UFO along the highway",
+      "steps": [
+        "Drive the real road at night into the natural trigger",
+        "follow, stop or leave",
+        "pause and resume",
+        "save, title and Continue."
+      ],
+      "acceptance": "UFO and sheriff move through the world, road collisions remain valid, player control is retained, the scene ends when ignored, and a restore never duplicates cars, lights or observations."
+    },
+    {
+      "id": "ufo_player_pursuit",
+      "owner": "progression",
+      "title": "Player escapes a following UFO",
+      "steps": [
+        "Trigger the separate following variant",
+        "leave the beam behind actual occlusion or leave the encounter area",
+        "continue driving."
+      ],
+      "acceptance": "A signalled escape can succeed, has no hidden forced capture and leaves a usable vehicle; safe route and actual occlusion are checked."
+    },
+    {
+      "id": "ufo_witness_abduction",
+      "owner": "clarity",
+      "title": "SC03 witness loss with and without watching",
+      "steps": [
+        "Meet the technician",
+        "see contact/lift or look away",
+        "investigate retained traces",
+        "report the person missing",
+        "restore old and new saves."
+      ],
+      "acceptance": "The lift completes in bounded active time, notes distinguish witnessed lift from inferred disappearance, and both routes preserve necessary story progression and evidence."
+    },
+    {
+      "id": "ufo_player_abduction",
+      "owner": "workflow",
+      "title": "47-second player and cab abduction presentation",
+      "steps": [
+        "Watch warning and physical light to capture, or escape before the deadline",
+        "exercise pause and local restoration."
+      ],
+      "acceptance": "Existing 47-second timing, cab controls, escape, lost-time budget and evidence survive presentation changes; no lights remain after cancellation."
+    },
+    {
+      "id": "ufo_finale",
+      "owner": "reference",
+      "title": "Large final craft silhouette and warm underside",
+      "steps": [
+        "Compare the same native finale view before/after at the reveal and full approach, including Low."
+      ],
+      "acceptance": "Original ship and story timing remain; warm underside light reveals massive silhouette without obscuring road/cab contours."
     }
   ]
 }

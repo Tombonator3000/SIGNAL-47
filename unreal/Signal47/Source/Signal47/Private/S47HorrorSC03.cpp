@@ -2,6 +2,7 @@
 
 #include "S47Audio.h"
 #include "S47Horror.h"
+#include "S47Flow.h"
 #include "S47Inter.h"
 #include "S47Main.h"
 #include "S47Seen.h"
@@ -11,9 +12,9 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47UfoPresentation.h"
 #include "Components/BoxComponent.h"
 #include "Components/PointLightComponent.h"
-#include "Components/SpotLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
@@ -29,7 +30,14 @@ namespace
  constexpr double WaitFor = 25;      // in view of the counter before wagon 23 pulls in
  constexpr double DriveIn = 7;       // the wagon's last stretch from the road to the pumps
  constexpr double LiftAfter = 3.5;   // after the identification scene closes
- constexpr double Rise = 2.2, Hang = 1.6, SeeFor = .6, FadeLight = 1.8;
+ constexpr double Rise = 2.2, Hang = 1.6, DrawUp = 1.3, SeeFor = .6, FadeLight = 1.8;
+ constexpr double LiftDuration = Rise + Hang + DrawUp;
+ double LiftHeight(double T)
+ {
+  const double Hover = FMath::SmoothStep(0., 1., FMath::Clamp(T / Rise, 0., 1.)) * 1.8;
+  const double Leave = FMath::SmoothStep(0., 1., FMath::Clamp((T - Rise - Hang) / DrawUp, 0., 1.));
+  return Hover + Leave * 5.5;
+ }
  constexpr double DeputyWalk = 9;
  const TCHAR* WAGON = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_body.fairheaven_sw84_body");
  const TCHAR* WAGON_DOOR = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_door_driver.fairheaven_sw84_door_driver");
@@ -49,15 +57,16 @@ struct FS47HorrorSC03::FWorld
  TWeakObjectPtr<UStaticMeshComponent> Wagon, Door, Thermos, OrtizBody, OrtizHead, OrtizLegs, DeputyBody, DeputyHead, DeputyHat;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Marks, Bar;
  TArray<TWeakObjectPtr<UTextRenderComponent>> Labels;
- TWeakObjectPtr<USpotLightComponent> Beam;
- TWeakObjectPtr<UPointLightComponent> Glow, Amber;
- TWeakObjectPtr<UStaticMeshComponent> Disc;
- TWeakObjectPtr<UMaterialInstanceDynamic> DiscMat;
+ TWeakObjectPtr<UPointLightComponent> Amber;
+ TUniquePtr<FS47UfoPresentation> Ufo;
  struct FFigure { TWeakObjectPtr<USceneComponent> Root, Head; FVector At; };
  TArray<FFigure> Figures;
  TArray<TWeakObjectPtr<UPrimitiveComponent>> All;
  TMap<FString, FS47Obj> Objects;
  FVector OrtizAt = FVector::ZeroVector, DeputyPos = FVector::ZeroVector;
+ FBox StationBounds = FBox(ForceInit);
+ FVector OriginalPark = FVector::ZeroVector;
+ double ApronShift = 0;
  double Lift = 0;
 };
 
@@ -89,9 +98,9 @@ bool FS47HorrorSC03::ParsePhase(const FString& Text, EPhase& Out)
 }
 S47J::FObj FS47HorrorSC03::Write(EPhase Phase, const FFacts& Facts)
 {
- auto O = S47J::New(); S47J::Set(O, TEXT("v"), 1); S47J::Set(O, TEXT("phase"), PhaseName(Phase));
+ auto O = S47J::New(); S47J::Set(O, TEXT("v"), 2); S47J::Set(O, TEXT("phase"), PhaseName(Phase));
  S47J::Set(O, TEXT("dispatch"), Facts.bDispatch); S47J::Set(O, TEXT("assigned"), Facts.bAssigned); S47J::Set(O, TEXT("identified"), Facts.bIdentified);
- S47J::Set(O, TEXT("observed"), Facts.bObserved); S47J::Set(O, TEXT("retreat"), Facts.bRetreat);
+ S47J::Set(O, TEXT("taken"), Facts.bTaken); S47J::Set(O, TEXT("observed"), Facts.bObserved); S47J::Set(O, TEXT("retreat"), Facts.bRetreat);
  S47J::Set(O, TEXT("wagon"), Facts.bWagon); S47J::Set(O, TEXT("thermos"), Facts.bThermos); S47J::Set(O, TEXT("marks"), Facts.bMarks);
  S47J::Set(O, TEXT("missing"), Facts.bMissing); S47J::Set(O, TEXT("localOrder"), Facts.bLocalOrder); S47J::Set(O, TEXT("deputyHere"), Facts.bDeputyHere);
  S47J::Set(O, TEXT("dispatchStamp"), Facts.DispatchStamp); S47J::Set(O, TEXT("takenStamp"), Facts.TakenStamp);
@@ -103,7 +112,8 @@ bool FS47HorrorSC03::Read(const S47J::FObj& O, EPhase& Phase, FFacts& Facts)
  Phase = EPhase::Off; Facts = FFacts();
  if (!O) return true; // absent: a case that never reached SC03
  const auto* V = O->Values.Find(TEXT("v"));
- if (!V || !V->IsValid() || (*V)->Type != EJson::Number || (*V)->AsNumber() != 1) return false;
+ if (!V || !V->IsValid() || (*V)->Type != EJson::Number || ((*V)->AsNumber() != 1 && (*V)->AsNumber() != 2)) return false;
+ const bool bLegacy = (*V)->AsNumber() == 1;
  const auto* PV = O->Values.Find(TEXT("phase"));
  if (!PV || !PV->IsValid() || (*PV)->Type != EJson::String || !ParsePhase((*PV)->AsString(), Phase)) return false;
  bool Ok = Flag(O, TEXT("dispatch"), Facts.bDispatch) && Flag(O, TEXT("assigned"), Facts.bAssigned) && Flag(O, TEXT("identified"), Facts.bIdentified) &&
@@ -111,11 +121,16 @@ bool FS47HorrorSC03::Read(const S47J::FObj& O, EPhase& Phase, FFacts& Facts)
   Flag(O, TEXT("thermos"), Facts.bThermos) && Flag(O, TEXT("marks"), Facts.bMarks) && Flag(O, TEXT("missing"), Facts.bMissing) &&
   Flag(O, TEXT("localOrder"), Facts.bLocalOrder) && Flag(O, TEXT("deputyHere"), Facts.bDeputyHere);
  if (!Ok) { Phase = EPhase::Off; Facts = FFacts(); return false; }
+ // Version 1 recorded disappearance and sight as the same fact. Preserve that
+ // history; version 2 also permits a disappearance which the player did not see.
+ if (bLegacy) Facts.bTaken = Facts.bObserved;
+ else if (!Flag(O, TEXT("taken"), Facts.bTaken)) { Phase = EPhase::Off; Facts = FFacts(); return false; }
  Facts.DispatchStamp = S47J::Str(O, TEXT("dispatchStamp")); Facts.TakenStamp = S47J::Str(O, TEXT("takenStamp"));
  Facts.MissingStamp = S47J::Str(O, TEXT("missingStamp")); Facts.OrderStamp = S47J::Str(O, TEXT("orderStamp"));
  // Facts are causal: a later fact without its cause is rejected rather than invented.
  const bool Causal = (!Facts.bAssigned || Facts.bDispatch) && (!Facts.bIdentified || Facts.bAssigned) && (!Facts.bObserved || Facts.bIdentified) &&
-  (!Facts.bRetreat || Facts.bObserved) && (!(Facts.bWagon || Facts.bThermos || Facts.bMarks) || Facts.bRetreat) && (!Facts.bMissing || Facts.bRetreat) &&
+  (!Facts.bTaken || Facts.bIdentified) && (!Facts.bRetreat || Facts.bTaken) && (!(Facts.bWagon || Facts.bThermos || Facts.bMarks) || Facts.bRetreat) &&
+  (!Facts.bMissing || (Facts.bRetreat && (Facts.bObserved || Facts.bWagon))) &&
   (!Facts.bLocalOrder || Facts.bMissing) && (!Facts.bDeputyHere || Facts.bMissing);
  if (!Causal) { Phase = EPhase::Off; Facts = FFacts(); return false; }
  return true;
@@ -130,11 +145,24 @@ void FS47HorrorSC03::Begin(const S47J::FObj& Saved, bool bLive)
  // Re-derive the phase from the facts so a half sequence resumes at its safe point.
  if (P == EPhase::Arrival) P = EPhase::Meet;                       // the wagon is parked on restore
  if (P == EPhase::Meet && F.bIdentified) P = EPhase::Lift;          // the scene was shown; the lift is owed
- if (P == EPhase::Lift && F.bObserved) P = EPhase::Retreat;         // she is gone; cover is owed
+ if (P == EPhase::Lift && F.bTaken) P = EPhase::Retreat;            // she is gone; cover is owed
  if (P == EPhase::Retreat && F.bRetreat) P = EPhase::Calm;
  if (P == EPhase::Calm && F.bMissing && F.bLocalOrder) P = EPhase::Deputy;
- WaitT = ArriveT = LiftT = LookT = HeldT = Gone = DeputyT = 0; LiftDelay = 0; bOrtizGone = F.bObserved;
- LightK = 0; FigureK = (P == EPhase::Retreat) ? 1 : 0; TurnK = FigureK;
+ WaitT = ArriveT = LiftT = LookT = Gone = DeputyT = 0; LiftDelay = 0; bOrtizGone = F.bTaken;
+ if (P == EPhase::Lift && S47J::Int(Saved, TEXT("v")) >= 2)
+ {
+  LiftDelay = FMath::Clamp(S47J::Num(Saved, TEXT("liftDelay")), 0., LiftAfter);
+  LiftT = FMath::Clamp(S47J::Num(Saved, TEXT("liftTime")), 0., LiftDuration);
+ }
+ // A resumed departure must not replay an already extinguished contact light.
+ if (P == EPhase::Retreat)
+ {
+  Gone = FMath::Clamp(S47J::Num(Saved, TEXT("departureTime"), FadeLight), 0., FadeLight);
+  LiftDelay = LiftAfter;
+ }
+ W->Lift = P == EPhase::Lift ? LiftHeight(LiftT) : 0;
+ LightK = P == EPhase::Lift ? FMath::Min(1., LiftT * 2.5) : P == EPhase::Retreat ? FMath::Max(0., 1 - Gone / FadeLight) : 0;
+ FigureK = (P == EPhase::Retreat) ? 1 : 0; TurnK = FigureK;
  if (Live() && !Build()) UE_LOG(LogS47HorrorSC03, Warning, TEXT("S47: SC03 world unavailable; facts kept, world waits"));
  Apply();
 }
@@ -148,14 +176,24 @@ void FS47HorrorSC03::Start()
 void FS47HorrorSC03::Stop()
 {
  if (W && W->Root.IsValid()) W->Root->SetVisibility(false, true);
+ if (W && W->Ufo) W->Ufo->Hide();
+ if (M && M->Web) for (const TCHAR* Area : {TEXT("road"), TEXT("diner")})
+ {
+  if (!M->Web->HasWalkArea(Area)) continue;
+  for (auto& C : M->Web->CollidersMutable(Area)) if (C.Id == TEXT("sc03:wagon23")) C.bEnabled = false;
+ }
 }
 
 S47J::FObj FS47HorrorSC03::Save() const
 {
- // A lift in progress is saved as owed (Meet with the identification done), never as half a lift.
+ // The presentation resumes from the saved phase time; observation remains a
+ // separate fact, never inferred from elapsed time or from the disappearance.
  EPhase S = P;
  if (S == EPhase::Arrival) S = EPhase::Meet;
- return Write(S, F);
+ auto O = Write(S, F);
+ if (S == EPhase::Lift) { S47J::Set(O, TEXT("liftDelay"), LiftDelay); S47J::Set(O, TEXT("liftTime"), LiftT); }
+ if (S == EPhase::Retreat) S47J::Set(O, TEXT("departureTime"), Gone);
+ return O;
 }
 
 FVector FS47HorrorSC03::Eye() const
@@ -221,6 +259,12 @@ bool FS47HorrorSC03::Build()
  if (!Group) Group = Web->Obj(TEXT("world.diner.group"));
  const FS47WebNode* GroupNode = Group ? Web->Node(Group.I) : nullptr;
  USceneComponent* GroupComp = GroupNode ? GroupNode->Comp.Get() : nullptr;
+ // The station mesh's east extent is its canopy edge. Wait for that native
+ // assembly rather than stage a vertical lift through the old exported roof.
+ FBox StationBounds(ForceInit);
+ for (int32 I = 0; I < Web->PartCount(); ++I)
+  if (const auto* N = Web->Node(I); N && N->Name == TEXT("prop:gasStation")) { StationBounds = Web->ObjAt(I).WorldBox(); break; }
+ if (!StationBounds.IsValid || StationBounds.GetSize().X < 5) return false;
  auto Load = [](const TCHAR* Path) { return LoadObject<UStaticMesh>(nullptr, Path); };
  auto LoadPale = [](const TCHAR* Name) { return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Game/Signal47/HorrorSC02/%s.%s"), Name, Name)); };
  UStaticMesh* WagonMesh = Load(WAGON); UStaticMesh* DoorMesh = Load(WAGON_DOOR);
@@ -230,7 +274,6 @@ bool FS47HorrorSC03::Build()
  UStaticMesh* UpperArm = LoadPale(TEXT("SM_SC02_PaleUpperArm")); UStaticMesh* LowerArm = LoadPale(TEXT("SM_SC02_PaleLowerArm"));
  UStaticMesh* Thigh = LoadPale(TEXT("SM_SC02_PaleThigh")); UStaticMesh* Shin = LoadPale(TEXT("SM_SC02_PaleShin"));
  auto* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
- auto* GlowBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Web/Base/M_WebGlow.M_WebGlow"));
  if (!GasWindow || !Pumps || !GroupComp || !WagonMesh || !DoorMesh || !Cube || !Cyl || !Sphere || !Torso || !Head || !UpperArm || !LowerArm || !Thigh || !Shin || !Base)
  {
   bBuildFailed = true;
@@ -245,6 +288,21 @@ bool FS47HorrorSC03::Build()
  // The former pivot was inside the south canopy post. Move the complete scene
  // 2.95 m sideways onto the preserved apron; approach, people and props follow Park.
  Park += FVector(-Away.Z, 0, Away.X) * 2.95;
+ W->StationBounds = StationBounds; W->OriginalPark = Park;
+ const double ParkHeading = FMath::Atan2(-Away.X, -Away.Z);
+ const FVector OrtizOffset = S47Three::Euler(0, ParkHeading, 0).RotateVector(FVector(-1.6, 0, -.4));
+ W->ApronShift = FMath::Max(0., StationBounds.Max.X + 2.0 - (Park.X + OrtizOffset.X));
+ if (W->ApronShift > 12)
+ {
+  bBuildFailed = true;
+  UE_LOG(LogS47HorrorSC03, Error, TEXT("S47: SC03 native canopy cannot be cleared within the local apron"));
+  return false;
+ }
+ // Keep every car-relative anchor together: Mara, the open door, thermos and
+ // later marks all move to the open apron; the vertical trajectory stays clear.
+ Park.X += W->ApronShift;
+ UE_LOG(LogS47HorrorSC03, Display, TEXT("S47: SC03 open-sky staging: native canopy east %.3f, shift %.3fm east, Ortiz x %.3f; original park %.3f %.3f"),
+  StationBounds.Max.X, W->ApronShift, Park.X + OrtizOffset.X, W->OriginalPark.X, W->OriginalPark.Z);
  Approach = Park + Away * 34;
  DeputyFrom = Sheriff ? Sheriff->Object.WorldPosition() : Counter + FVector(0, 0, 25);
  if (true)
@@ -312,23 +370,9 @@ bool FS47HorrorSC03::Build()
  ThermosTape->SetRelativeScale3D(FVector(1.04, 1.04, .22)); ThermosTape->SetRelativeLocation(FVector(0, 0, 8));
  for (int32 I = 0; I < 5; ++I) W->Marks.Add(Mesh(*FString::Printf(TEXT("SC03GravelMark%d"), I), Cube, Root, Dark, I == 0));
 
- // The light: a cold beam from far above, its source a glare disc, and a fill on the ground.
- auto* Beam = NewObject<USpotLightComponent>(Web, TEXT("SC03LiftBeam"));
- Beam->SetMobility(EComponentMobility::Movable); Beam->SetupAttachment(Root); Beam->SetLightColor(FLinearColor(.78f, .9f, 1.f));
- Beam->SetIntensityUnits(ELightUnits::Lumens); Beam->SetIntensity(0); Beam->SetAttenuationRadius(6000); Beam->SetInnerConeAngle(5); Beam->SetOuterConeAngle(9);
- Beam->SetCastShadows(true); Beam->SetVolumetricScatteringIntensity(4.f); Beam->RegisterComponent(); W->Beam = Beam;
- auto* Glow = NewObject<UPointLightComponent>(Web, TEXT("SC03LiftGlow"));
- Glow->SetMobility(EComponentMobility::Movable); Glow->SetupAttachment(Root); Glow->SetLightColor(FLinearColor(.8f, .92f, 1.f));
- Glow->SetIntensityUnits(ELightUnits::Lumens); Glow->SetIntensity(0); Glow->SetAttenuationRadius(1500); Glow->SetCastShadows(false); Glow->RegisterComponent(); W->Glow = Glow;
- if (GlowBase)
- {
-  auto* DiscMat = UMaterialInstanceDynamic::Create(GlowBase, Web);
-  DiscMat->SetVectorParameterValue(TEXT("Color"), FLinearColor(.85f, .95f, 1.f)); DiscMat->SetScalarParameterValue(TEXT("Opacity"), 0);
-  auto* Disc = NewObject<UStaticMeshComponent>(Web, TEXT("SC03LiftSource"));
-  Disc->SetMobility(EComponentMobility::Movable); Disc->SetupAttachment(Root); Disc->SetStaticMesh(Sphere); Disc->SetMaterial(0, DiscMat);
-  Disc->SetCollisionEnabled(ECollisionEnabled::NoCollision); Disc->SetCastShadow(false); Disc->RegisterComponent();
-  W->Disc = Disc; W->DiscMat = DiscMat;
- }
+ // Shared native craft, attached lamps, dust and light on the wagon/apron.
+ // The SC03 phase below supplies every second; presentation owns no story facts.
+ W->Ufo = MakeUnique<FS47UfoPresentation>(Web);
 
  // Pale figures standing still at the edge of the light: the SC02 body, posed rigidly, no rule of its own.
  const FVector Side(-Away.Z, 0, Away.X);
@@ -398,6 +442,19 @@ bool FS47HorrorSC03::Build()
 }
 
 FVector FS47HorrorSC03::OrtizPoint() const { return W->OrtizAt + FVector(0, 1.25 + W->Lift, 0); }
+S47J::FObj FS47HorrorSC03::PresentationReadback() const
+{
+ auto O = W->Ufo ? W->Ufo->Readback() : S47J::New();
+ bool Clear = bBuilt && bGrounded;
+ for (const FVector& Offset : {FVector::ZeroVector, FVector(.7,0,0), FVector(-.7,0,0), FVector(0,0,.7), FVector(0,0,-.7)})
+  Clear = Clear && ClearLine(W->OrtizAt + Offset + FVector(0,27,0), W->OrtizAt + Offset + FVector(0,.2,0));
+ S47J::Set(O, TEXT("liftColumnClear"), Clear); S47J::Set(O, TEXT("apronShiftM"), W->ApronShift);
+ S47J::Set(O, TEXT("originalPark"), TArray<double>{W->OriginalPark.X,W->OriginalPark.Y,W->OriginalPark.Z});
+ S47J::Set(O, TEXT("park"), TArray<double>{Park.X,Park.Y,Park.Z});
+ S47J::Set(O, TEXT("ortizGround"), TArray<double>{W->OrtizAt.X,W->OrtizAt.Y,W->OrtizAt.Z});
+ if (W->StationBounds.IsValid) S47J::Set(O, TEXT("stationBoundsXZ"), TArray<double>{W->StationBounds.Min.X,W->StationBounds.Max.X,W->StationBounds.Min.Z,W->StationBounds.Max.Z});
+ return O;
+}
 TArray<FVector> FS47HorrorSC03::FigureHeads() const
 {
  TArray<FVector> Out; for (const auto& Fig : W->Figures) Out.Add(Fig.At + FVector(0, 1.75, 0)); return Out;
@@ -408,7 +465,7 @@ void FS47HorrorSC03::Apply()
  if (!bBuilt || !W->Root.IsValid()) return;
  const bool bShow = Live() || P == EPhase::Complete;
  W->Root->SetVisibility(bShow, true);
- if (!bShow) return;
+ if (!bShow) { if (W->Ufo) W->Ufo->Hide(); return; }
  if (!bGrounded)
  {
   // Caliche may still be unloaded when SC03 is built at SARO: settle everything once the apron is there.
@@ -442,9 +499,11 @@ void FS47HorrorSC03::Apply()
  }
  if (W->Wagon.IsValid()) W->Wagon->SetVisibility(bWagon); if (W->Door.IsValid()) W->Door->SetVisibility(bWagon);
  // The parked wagon is solid to walk into (its turned body's bounding box on the apron).
- if (M->Web)
+ // Caliche's active walk is "road"; retain "diner" for exports without roadWalk.
+ if (M->Web) for (const TCHAR* Area : {TEXT("road"), TEXT("diner")})
  {
-  auto& Cs = M->Web->CollidersMutable(TEXT("diner"));
+  if (!M->Web->HasWalkArea(Area)) continue;
+  auto& Cs = M->Web->CollidersMutable(Area);
   int32 Index = Cs.IndexOfByPredicate([](const FS47Rect& R) { return R.Id == TEXT("sc03:wagon23"); });
   if (Index == INDEX_NONE) { FS47Rect R; R.Id = TEXT("sc03:wagon23"); Index = Cs.Add(R); }
   const double C = FMath::Abs(FMath::Cos(Heading)), S = FMath::Abs(FMath::Sin(Heading)), HalfW = .95, HalfL = 2.55;
@@ -468,7 +527,9 @@ void FS47HorrorSC03::Apply()
  if (W->Amber.IsValid())
  {
   W->Amber->SetWorldLocation(S47Three::ToUE(WagonAt + Up * 1.7));
-  const bool On = bWagon && !bOrtizGone && P != EPhase::Lift; W->Amber->SetIntensity(On ? 1800.f * (FMath::Fmod(Clock, 1.0) < .5 ? 1.f : .25f) : 0.f);
+  const bool On = bWagon && !bOrtizGone && P != EPhase::Lift;
+  const bool Calm = M->Flow && M->Flow->bCalmFlash;
+  W->Amber->SetIntensity(On ? 1800.f * (Calm ? .65f : (FMath::Fmod(Clock, 1.0) < .5 ? 1.f : .25f)) : 0.f);
  }
  // Ortiz beside the driver's door.
  W->OrtizAt = WagonAt + Right * -1.6 + Fwd * .4; { const double G = Ground(W->OrtizAt.X, W->OrtizAt.Z); W->OrtizAt.Y = G > -1e6 ? G : Park.Y; }
@@ -486,11 +547,22 @@ void FS47HorrorSC03::Apply()
  if (bOrtizGone && W->Thermos.IsValid()) W->Thermos->SetWorldRotation(FRotator(0, Face, 90));
  for (int32 I = 0; I < W->Marks.Num(); ++I) Place(W->Marks[I].Get(), W->OrtizAt + Right * (-.25 + I * .13) + Fwd * (.15 * I) + FVector(0, .01, 0), FVector(.05, .4, .012), Face + I * 7, bOrtizGone);
  // The light.
- const FVector Source = W->OrtizAt + FVector(0, 38, 0);
- if (W->Beam.IsValid()) { W->Beam->SetWorldLocation(S47Three::ToUE(Source)); W->Beam->SetWorldRotation(FRotator(-90, 0, 0)); W->Beam->SetIntensity(LightK * 2.6e6f); }
- if (W->Glow.IsValid()) { W->Glow->SetWorldLocation(S47Three::ToUE(W->OrtizAt + FVector(0, 3, 0))); W->Glow->SetIntensity(LightK * 9000.f); }
- if (W->Disc.IsValid()) { W->Disc->SetWorldLocation(S47Three::ToUE(Source)); W->Disc->SetWorldScale3D(FVector(9, 9, 1.2)); W->Disc->SetVisibility(LightK > .01); }
- if (W->DiscMat.IsValid()) W->DiscMat->SetScalarParameterValue(TEXT("Opacity"), LightK);
+ if (W->Ufo)
+ {
+  const bool bArea = M->World && (M->World->Area == TEXT("diner") || M->World->Area == TEXT("road"));
+  if (bArea && ((P == EPhase::Lift && LiftDelay > 0) || (P == EPhase::Retreat && Gone < FadeLight)))
+  {
+   const double ApproachK = FMath::SmoothStep(0., 1., FMath::Clamp(LiftDelay / LiftAfter, 0., 1.));
+   FS47UfoPresentation::FFrame V;
+   V.Position = W->OrtizAt + Away * ((1 - ApproachK) * 45) + FVector(0, 27 + (1 - ApproachK) * 12 + Gone * Gone * 8, 0);
+   V.GroundTarget = W->OrtizAt; V.Forward = -Away; V.Width = 11;
+   V.Seconds = LiftDelay + LiftT + Gone; V.Beam = LightK; V.NearWhite = LightK;
+   V.Opacity = P == EPhase::Retreat ? LightK : 1.; V.bSlowBeam = true;
+   V.bCalm = M->Flow && M->Flow->bCalmFlash;
+   W->Ufo->Show(V);
+  }
+  else W->Ufo->Hide();
+ }
  // Figures: still, facing the wagon; one turns its head towards Reyes.
  const bool bFigures = FigureK > .01 && P == EPhase::Retreat;
  for (int32 I = 0; I < W->Figures.Num(); ++I)
@@ -576,12 +648,23 @@ void FS47HorrorSC03::SetPhase(EPhase Next)
  P = Next; ++Version;
 }
 
+void FS47HorrorSC03::FinishLift()
+{
+ if (F.bTaken) return;
+ F.bTaken = true; bOrtizGone = true; ++Version;
+ F.TakenStamp = M && M->Story ? M->Story->ClockText(true) : FString();
+ if (M && M->Audio && F.bObserved) M->Audio->Gasp();
+ SetPhase(EPhase::Retreat); Gone = 0;
+ if (M && M->Story && F.bObserved)
+  M->Story->Note(TEXT("Caliche fuel stop: I saw Mara Ortiz rise clear of the ground in a light beside wagon twenty-three. Nothing was supporting her."));
+}
+
 void FS47HorrorSC03::Step(double Dt)
 {
  if (!Live() || !M || !M->World || !M->Player) return;
  if (!bBuilt && !Build()) return;
- Clock += Dt;
  const bool bHeld = M->bPausedByMenu || M->ModalOpen() || M->World->bBusy;
+ if (!bHeld) Clock += Dt;
  if (!bHeld) switch (P)
  {
  case EPhase::Wait:
@@ -599,18 +682,13 @@ void FS47HorrorSC03::Step(double Dt)
   if (LiftDelay < LiftAfter) break;
   LiftT += Dt;
   LightK = FMath::Min(1., LightK + Dt * 2.5);
-  W->Lift = FMath::SmoothStep(0., 1., FMath::Clamp(LiftT / Rise, 0., 1.)) * 2.4;
+  W->Lift = LiftHeight(LiftT);
   FigureK = FMath::Min(1., FigureK + Dt);
-  // She hangs in the light until Reyes has actually seen it; the camera is never turned.
-  if (Sees(OrtizPoint(), .85)) LookT += Dt;
-  if (LiftT >= Rise) HeldT += Dt;
-  if (LookT >= SeeFor && HeldT >= Hang)
-  {
-   F.bObserved = true; bOrtizGone = true; ++Version; F.TakenStamp = M->Story ? M->Story->ClockText(true) : FString();
-   if (M->Audio) M->Audio->Gasp();
-   SetPhase(EPhase::Retreat); Gone = 0;
-   M->Story->Note(TEXT("Caliche fuel stop: a light struck wagon twenty-three. Mara Ortiz rose clear of the ground with nothing under her and was gone. Pale figures stood still at the edge of the light."));
-  }
+  // Seeing the ordinary meeting is not seeing a lift. The event finishes on
+  // its own time even with the camera turned away; no observation is invented.
+  if (!F.bObserved && W->Lift > .3 && Sees(OrtizPoint(), .85)) LookT += Dt;
+  if (!F.bObserved && LookT >= SeeFor) { F.bObserved = true; ++Version; }
+  if (LiftT >= LiftDuration) FinishLift();
   break;
  case EPhase::Retreat:
   Gone += Dt;
@@ -637,9 +715,15 @@ void FS47HorrorSC03::Step(double Dt)
 bool FS47HorrorSC03::Use(const FString& Id)
 {
  if (!Live()) return false;
- if (Id == TEXT("horror:ortiz") && P == EPhase::Meet && !F.bIdentified) { F.bIdentified = true; SetPhase(EPhase::Lift); LiftDelay = LiftT = LookT = HeldT = 0; return true; }
+ if (Id == TEXT("horror:ortiz") && P == EPhase::Meet && !F.bIdentified) { F.bIdentified = true; SetPhase(EPhase::Lift); LiftDelay = LiftT = LookT = 0; return true; }
  if (P != EPhase::Calm && P != EPhase::Deputy) return false;
- if (Id == TEXT("horror:wagon23") && !F.bWagon) { F.bWagon = true; ++Version; M->UI->Toast(TEXT("The driver's door is open. Her clipboard on the seat, the work order for SARO on top. The keys are still in it."), 5); return true; }
+ if (Id == TEXT("horror:wagon23") && !F.bWagon)
+ {
+  F.bWagon = true; ++Version;
+  M->UI->Toast(TEXT("The driver's door is open. Her clipboard on the seat, the work order for SARO on top. The keys are still in it."), 5);
+  if (!F.bObserved && M->Story) M->Story->Note(TEXT("Wagon twenty-three is empty. Mara Ortiz was beside it when we spoke; I did not see where she went. Her clipboard and keys are still here."));
+  return true;
+ }
  if (Id == TEXT("horror:thermos") && !F.bThermos) { F.bThermos = true; ++Version; M->UI->Toast(TEXT("A steel thermos against the kerb, still warm. Tape on it: M. ORTIZ. You leave it where it lies."), 5); return true; }
  if (Id == TEXT("horror:gravelMarks") && !F.bMarks) { F.bMarks = true; ++Version; M->UI->Toast(TEXT("Narrow pressed marks beside the wagon. No footprints lead away from them."), 5); return true; }
  if (Id == TEXT("horror:deputy") && P == EPhase::Deputy && F.bDeputyHere) return true; // FS47Horror presents the question
@@ -649,7 +733,8 @@ bool FS47HorrorSC03::Use(const FString& Id)
 TArray<FString> FS47HorrorSC03::CallScenes() const
 {
  if (P == EPhase::Report && !F.bDispatch) return {TEXT("SC03_DISPATCH_RECEIPT"), TEXT("SC03_RELIEF_CONTACT")};
- if (P == EPhase::Calm && !F.bMissing) return {TEXT("SC03_MISSING_RECEIPT"), TEXT("SC03_LOCAL_ORDER_HOLD")};
+ if (P == EPhase::Calm && !F.bMissing && (F.bObserved || F.bWagon))
+  return {F.bObserved ? TEXT("SC03_MISSING_RECEIPT") : TEXT("SC03_MISSING_UNSEEN_RECEIPT"), TEXT("SC03_LOCAL_ORDER_HOLD")};
  return {};
 }
 
@@ -658,7 +743,9 @@ void FS47HorrorSC03::CallFinished(const FString& SceneId)
  const FString Now = M && M->Story ? M->Story->ClockText(true) : FString(); ++Version;
  if (SceneId == TEXT("SC03_DISPATCH_RECEIPT")) { F.bDispatch = F.bAssigned = true; F.DispatchStamp = Now; }
  else if (SceneId == TEXT("SC03_RELIEF_CONTACT") && F.bDispatch) { SetPhase(EPhase::Wait); WaitT = 0; }
- else if (SceneId == TEXT("SC03_MISSING_RECEIPT") && F.bRetreat) { F.bMissing = true; F.MissingStamp = Now; }
+ else if (((SceneId == TEXT("SC03_MISSING_RECEIPT") && F.bObserved) ||
+           (SceneId == TEXT("SC03_MISSING_UNSEEN_RECEIPT") && !F.bObserved && F.bWagon)) && F.bTaken && F.bRetreat)
+  { F.bMissing = true; F.MissingStamp = Now; }
  else if (SceneId == TEXT("SC03_LOCAL_ORDER_HOLD") && F.bMissing) { F.bLocalOrder = true; F.OrderStamp = Now; SetPhase(EPhase::Deputy); DeputyT = 0; }
 }
 
@@ -680,9 +767,11 @@ FString FS47HorrorSC03::Objective() const
  case EPhase::Wait: return TEXT("FUEL STOP // WAIT IN VIEW OF THE NIGHT WINDOW FOR WAGON TWENTY-THREE");
  case EPhase::Arrival: return TEXT("FUEL STOP // A WAGON IS PULLING IN");
  case EPhase::Meet: return TEXT("FUEL STOP // MEET MARA ORTIZ BY HER WAGON");
- case EPhase::Lift: return TEXT("FUEL STOP // WATCH ORTIZ BY THE WAGON. SOMETHING IS HAPPENING TO HER");
+ case EPhase::Lift: return TEXT("FUEL STOP // A LIGHT IS APPROACHING WAGON TWENTY-THREE");
  case EPhase::Retreat: return TEXT("FUEL STOP // GET BEHIND SOLID COVER: INSIDE THE STATION OR IN YOUR TRUCK");
- case EPhase::Calm: return F.bMissing ? TEXT("FUEL STOP // STAY WITH THE PHONE") : TEXT("FUEL STOP // REPORT ORTIZ MISSING FROM THE PAYPHONE. HER THINGS STAY WHERE THEY LIE");
+ case EPhase::Calm: return F.bMissing ? TEXT("FUEL STOP // STAY WITH THE PHONE") : !F.bObserved && !F.bWagon ?
+  TEXT("FUEL STOP // CHECK WAGON TWENTY-THREE NOW THAT THE LIGHT HAS GONE") :
+  TEXT("FUEL STOP // REPORT ORTIZ MISSING FROM THE PAYPHONE. HER THINGS STAY WHERE THEY LIE");
  case EPhase::Deputy: return F.bDeputyHere ? TEXT("FUEL STOP // TALK TO THE DEPUTY") : TEXT("FUEL STOP // THE DEPUTY IS COMING FROM THE SUBSTATION OFFICE");
  default: return FString();
  }
@@ -702,27 +791,47 @@ bool FS47HorrorSC03::SelfTest(TArray<FString>& Lines)
 {
  bool Good = true;
  auto Check = [&](bool V, const TCHAR* What) { Good &= V; Lines.Add(FString::Printf(TEXT("SC03 %s %s"), V ? TEXT("PASS") : TEXT("FAIL"), What)); };
- FFacts A; A.bDispatch = A.bAssigned = A.bIdentified = A.bObserved = A.bRetreat = A.bThermos = true; A.TakenStamp = TEXT("13 APR 1986 / 20:58:10");
+ FFacts A; A.bDispatch = A.bAssigned = A.bIdentified = A.bTaken = A.bObserved = A.bRetreat = A.bThermos = true; A.TakenStamp = TEXT("13 APR 1986 / 20:58:10");
  EPhase P0; FFacts B;
  Check(Read(Write(EPhase::Calm, A), P0, B) && P0 == EPhase::Calm && B.bRetreat && B.bThermos && !B.bWagon && B.TakenStamp == A.TakenStamp, TEXT("save round trip keeps phase, facts and stamps"));
- FFacts Bad = A; Bad.bObserved = false;
- Check(!Read(Write(EPhase::Calm, Bad), P0, B) && P0 == EPhase::Off && !B.bRetreat, TEXT("a retreat without an observed lift is rejected, not invented"));
+ FFacts Bad = A; Bad.bTaken = false;
+ Check(!Read(Write(EPhase::Calm, Bad), P0, B) && P0 == EPhase::Off && !B.bRetreat, TEXT("a retreat before the disappearance is rejected, not invented"));
+ FFacts Unseen = A; Unseen.bObserved = false;
+ Check(Read(Write(EPhase::Calm, Unseen), P0, B) && B.bTaken && !B.bObserved && B.bRetreat, TEXT("unseen disappearance survives saving without gaining a witnessed lift"));
+ auto Legacy = Write(EPhase::Calm, A); S47J::Set(Legacy, TEXT("v"), 1); Legacy->RemoveField(TEXT("taken"));
+ Check(Read(Legacy, P0, B) && B.bTaken && B.bObserved, TEXT("version one witnessed lift migrates as taken and observed"));
  auto Str = Write(EPhase::Report, FFacts()); S47J::Set(Str, TEXT("dispatch"), TEXT("true"));
  Check(!Read(Str, P0, B) && !B.bDispatch, TEXT("a string is never a fact"));
- auto Future = Write(EPhase::Report, FFacts()); S47J::Set(Future, TEXT("v"), 2);
+ auto Future = Write(EPhase::Report, FFacts()); S47J::Set(Future, TEXT("v"), 3);
  Check(!Read(Future, P0, B), TEXT("unknown save version rejected"));
  Check(Read(nullptr, P0, B) && P0 == EPhase::Off, TEXT("absent field is a case before SC03"));
  FS47HorrorSC03 S(nullptr, nullptr); S.P = EPhase::Lift; S.F.bIdentified=true;
- Check(S.Objective().Contains(TEXT("WATCH ORTIZ")) && !S.Use(TEXT("horror:ortiz")), TEXT("the lift asks for observation instead of an unavailable second conversation"));
+ Check(S.Objective().Contains(TEXT("LIGHT IS APPROACHING")) && !S.Use(TEXT("horror:ortiz")), TEXT("the lift warns without asking for an unavailable second conversation"));
+ S.FinishLift();
+ Check(S.P == EPhase::Retreat && S.F.bTaken && !S.F.bObserved && S.bOrtizGone, TEXT("a completed lift removes Ortiz and permits retreat with no camera observation"));
+ Unseen.bRetreat = false; Unseen.bThermos = false;
+ auto Departed = Write(EPhase::Retreat, Unseen); S47J::Set(Departed, TEXT("departureTime"), FadeLight + 1);
+ FS47HorrorSC03 Resumed(nullptr, nullptr); Resumed.Begin(Departed, true);
+ Check(Resumed.P == EPhase::Retreat && Resumed.F.bTaken && !Resumed.F.bObserved && Resumed.LightK == 0, TEXT("Continue after an unseen departure does not replay the contact light"));
+ Check(FMath::IsNearlyEqual(LiftHeight(Rise), 1.8) && FMath::IsNearlyEqual(LiftHeight(Rise + Hang), 1.8) && LiftHeight(LiftDuration) > 7,
+  TEXT("the lift has a readable unsupported hold and finite upward departure"));
  S.P = EPhase::Report;
  Check(S.CallScenes().Num() == 2 && S.CallScenes()[0] == TEXT("SC03_DISPATCH_RECEIPT"), TEXT("payphone in report places dispatch then Ward"));
  S.CallFinished(TEXT("SC03_RELIEF_CONTACT")); Check(S.P == EPhase::Report, TEXT("Ward's contact without the dispatch readback does not start the wait"));
  S.CallFinished(TEXT("SC03_DISPATCH_RECEIPT")); S.CallFinished(TEXT("SC03_RELIEF_CONTACT"));
  Check(S.F.bDispatch && S.F.bAssigned && S.P == EPhase::Wait, TEXT("completed dispatch and Ward calls start the wait"));
- S.P = EPhase::Calm; Check(S.CallScenes().Num() == 2 && S.CallScenes()[0] == TEXT("SC03_MISSING_RECEIPT"), TEXT("after cover the payphone places the missing report"));
+ S.P = EPhase::Calm; S.F.bObserved = true;
+ Check(S.CallScenes().Num() == 2 && S.CallScenes()[0] == TEXT("SC03_MISSING_RECEIPT"), TEXT("after a seen lift the payphone places the witnessed missing report"));
  S.CallFinished(TEXT("SC03_MISSING_RECEIPT")); Check(!S.F.bMissing, TEXT("no missing report without a real retreat"));
- S.F.bIdentified = S.F.bObserved = S.F.bRetreat = true; S.CallFinished(TEXT("SC03_MISSING_RECEIPT")); S.CallFinished(TEXT("SC03_LOCAL_ORDER_HOLD"));
+ S.F.bIdentified = S.F.bTaken = S.F.bObserved = S.F.bRetreat = true; S.CallFinished(TEXT("SC03_MISSING_RECEIPT")); S.CallFinished(TEXT("SC03_LOCAL_ORDER_HOLD"));
  Check(S.F.bMissing && S.F.bLocalOrder && S.P == EPhase::Deputy, TEXT("missing report and Ward's hold bring the deputy"));
  S.ScenePresented(TEXT("SC03_RECEIVER_QUESTION")); Check(S.P == EPhase::Complete && !S.Live(), TEXT("the deputy's question completes SC03"));
+ FS47HorrorSC03 U(nullptr, nullptr); U.P = EPhase::Calm; U.F.bTaken = U.F.bRetreat = true;
+ Check(U.CallScenes().IsEmpty() && U.Objective().Contains(TEXT("CHECK WAGON")), TEXT("an unseen disappearance first asks for a physical check, not an invented sighting"));
+ U.F.bWagon = true;
+ Check(U.CallScenes().Num() == 2 && U.CallScenes()[0] == TEXT("SC03_MISSING_UNSEEN_RECEIPT"), TEXT("an inspected empty wagon permits a distinct unseen missing report"));
+ U.CallFinished(TEXT("SC03_MISSING_RECEIPT")); Check(!U.F.bMissing, TEXT("the unseen route cannot produce a witnessed readback"));
+ U.CallFinished(TEXT("SC03_MISSING_UNSEEN_RECEIPT")); U.CallFinished(TEXT("SC03_LOCAL_ORDER_HOLD"));
+ Check(U.F.bMissing && U.F.bLocalOrder && U.P == EPhase::Deputy && !U.F.bObserved, TEXT("the unseen route reaches the deputy while preserving no sighting"));
  return Good;
 }

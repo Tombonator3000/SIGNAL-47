@@ -1,4 +1,6 @@
 #include "S47FreeformDirector.h"
+#include "S47UfoPresentation.h"
+#include "S47HighwayUfo.h"
 #include "S47Freeform.h"
 #include "S47RoomLights.h"
 #include "Misc/CommandLine.h"
@@ -37,6 +39,11 @@ namespace
  // east35 (S47FleetParked). Its paved surface is -0.576 m, matching both native cars.
  const FVector EmptyCarFoot(27,-.576,9.8);
  const FVector EmptyCarReference=EmptyCarFoot+FVector(0,.9,0);
+ FVector ClosePassAt(const FVector& Origin,double Age)
+ {
+  const double Near=FMath::Clamp(1.-FMath::Abs(Age-30.)/16.,0.,1.);
+  return Origin+FVector(Age*2.3,-8.*Near+FMath::Max(0.,Age-48.)*2.,0);
+ }
  struct FEvent { FString Id,Family,Action,Finding; int32 Day=1; bool bNight=false;double Duration=60; };
  const TArray<FEvent>& Catalog()
  {
@@ -66,6 +73,7 @@ namespace
 struct FS47FreeformDirector::FEffects
 {
  US47Main* M=nullptr;
+ TUniquePtr<FS47UfoPresentation> Ufo;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
  FS47Obj Sample,Car;
@@ -101,6 +109,7 @@ struct FS47FreeformDirector::FEffects
  void Build(FS47FreeformDirector* Owner)
  {
   if(bBuilt||!CanTouchWorld()||!M->Web->IsLoaded()||!M->Inter)return;
+  Ufo=MakeUnique<FS47UfoPresentation>(M->Web.Get());
   // Reuse Tom's imported saucer when locally available. Optional licensed art
   // is never required for compiling or running the public-source fallback.
   const TCHAR* SaucerPath=TEXT("/Game/Licensed/TripoFleet/ufo_saucer/SM_TripoFleet_Saucer.SM_TripoFleet_Saucer");
@@ -150,6 +159,7 @@ struct FS47FreeformDirector::FEffects
  void Hide()
  {
   if(!CanTouchWorld())return;
+  if(Ufo)Ufo->Hide();
   for(const FS47Obj O:{Sample,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
   for(auto& P:Parts)if(P.IsValid()){P->SetVisibility(false,false);P->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
   for(auto& L:Lights)if(L.IsValid())L->SetIntensity(0);
@@ -285,6 +295,7 @@ void FS47FreeformDirector::Changed(){if(M)M->RequestAutosave();}
 TArray<FString> FS47FreeformDirector::EventIds(){TArray<FString> Out;for(const auto& D:Catalog())Out.Add(D.Id);return Out;}
 bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
 {
+ if(M&&M->HighwayUfo&&M->HighwayUfo->Busy())return false;
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // The initial catalogue is anchored to the actual SARO yard and apparatus.
  if(Id==TEXT("feeder_presence"))
@@ -316,6 +327,8 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
+ // Store one world-space route origin; it never follows the player camera.
+ if(Id==TEXT("close_pass")&&M->Player)Anchor=M->Player->Pos+FVector(-70,24,-38);
  if((Id==TEXT("feeder_fault")||Id==TEXT("feeder_presence"))&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
  if(Id==TEXT("array_presence"))Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:service"));
  if(Id==TEXT("roomlight_return"))Anchor=M->RoomLights->InteractionPoint(ReactiveRoom);
@@ -395,7 +408,21 @@ void FS47FreeformDirector::Draw()
  // whenever the active incident is presented; no gameplay effect is replayed.
  if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
- const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass");
+ const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover");
+ if(Effects->Ufo)
+ {
+  if(Event==TEXT("close_pass")&&M->Web->Area()==Scene)
+  {
+   FS47UfoPresentation::FFrame F;
+   const double Near=FMath::Clamp(1.-FMath::Abs(Age-30.)/16.,0.,1.);
+   F.Position=ClosePassAt(Anchor,Age);
+   F.GroundTarget=FVector(F.Position.X,US47Night::SaroFloorAt(M->Web,F.Position.X,F.Position.Z),F.Position.Z);
+   F.Forward=FVector(1,0,0);F.Seconds=Age;F.Width=8;F.Beam=.4+.55*Near;F.NearWhite=Near*.7;
+   F.Opacity=FMath::Min(FMath::Clamp(Age/2.,0.,1.),FMath::Clamp((65.-Age)/5.,0.,1.));
+   F.bCalm=M->Flow&&M->Flow->bCalmFlash;Effects->Ufo->Show(F);
+  }
+  else Effects->Ufo->Hide();
+ }
  for(int32 I=0;I<4&&I<Effects->Parts.Num();++I)if(auto* C=Effects->Parts[I].Get())
  {
   const bool Hull=I==0;C->SetVisibility(Sky&&(!Hull||Event==TEXT("close_pass")));
@@ -412,10 +439,11 @@ void FS47FreeformDirector::Draw()
   {
    // Slow independent lamps; honour calm-flash preference by keeping a steady output.
    const float On=M&&M->Flow&&M->Flow->bCalmFlash?1.f:float(.65+.35*FMath::Sin(Age*(bControlled?1.1:.6)+I*2.));
+   Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(I==2?0xffe9df:0xff4936));
    Mat->SetScalarParameterValue(TEXT("EmissivePower"),5*On);
   }
   if(!Hull&&Effects->Lights.IsValidIndex(I-1))if(auto* L=Effects->Lights[I-1].Get())
-  {L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(Event==TEXT("close_pass")?80.f:0.f);}
+  {L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(0.f);}
  }
 }
 void FS47FreeformDirector::RoomLightInput(const FString& Room,int32 Serial,bool Off)
@@ -519,7 +547,7 @@ void FS47FreeformDirector::Step(double Dt)
  if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}
  if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if(Scene!=M->Web->Area())
- {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
+ {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
  if(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))
  {
   auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G)return;
@@ -558,7 +586,7 @@ void FS47FreeformDirector::Step(double Dt)
   SoundAt=Age+(Event==TEXT("roof_steps")?Random.FRandRange(2.5,5):Random.FRandRange(5,8));
   if(M->Audio)
   {
-   FS47Sound O;O.At=Event==TEXT("roof_steps")?Anchor+FVector(FMath::Sin(Age)*2,0,0):Anchor+FVector(Age*2,0,0);O.Gain=Event==TEXT("roof_steps")?.45f:.2f;O.Lp=Event==TEXT("roof_steps")?1800:500;
+   FS47Sound O;O.At=Event==TEXT("roof_steps")?Anchor+FVector(FMath::Sin(Age)*2,0,0):Event==TEXT("close_pass")?ClosePassAt(Anchor,Age):Anchor+FVector(Age*2,0,0);O.Gain=Event==TEXT("roof_steps")?.45f:.2f;O.Lp=Event==TEXT("roof_steps")?1800:500;
    M->Audio->Sfx(Event==TEXT("roof_steps")?TEXT("stepConcrete0"):TEXT("thudSoft"),O);
   }
  }
@@ -620,6 +648,7 @@ bool FS47FreeformDirector::Use(const FString& Id)
 bool FS47FreeformDirector::PhysicalObjectPresented()const
 {
  if(!bEnabled||!Effects)return false;
+ if(Event==TEXT("close_pass"))return M&&M->Web&&M->Web->Area()==Scene&&Effects->Ufo&&Effects->Ufo->Presented();
  if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass"))
   return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
  const FS47Obj Object=Event==TEXT("landing_trace")?Effects->Sample:Event==TEXT("empty_car")?Effects->Car:FS47Obj();
@@ -645,8 +674,11 @@ namespace
 }
 void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
 {
- TaggedShot.Empty();TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);PhotoSubjectMean=-1;
- if(!bEnabled||Event.IsEmpty()||IncidentId.IsEmpty()||Shot.Id.IsEmpty()||Shot.bUnavailable||!M||!M->FieldCamera||!M->Web||M->Web->Area()!=Scene)return;
+ TaggedShot.Empty();TaggedIncident.Empty();TaggedTitle.Empty();bTaggedLamps=false;TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);PhotoSubjectMean=-1;
+ if(!bEnabled||Shot.Id.IsEmpty()||Shot.bUnavailable||!M||!M->FieldCamera||!M->Web)return;
+ const FString RoadIncident=M->HighwayUfo?M->HighwayUfo->PhotoIncidentId():FString();
+ const bool RoadPhoto=!RoadIncident.IsEmpty();
+ if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||M->Web->Area()!=Scene))return;
  auto* Camera=M->FieldCamera.Get();
  auto Qualify=[&](const FVector& At,double Height,const UPrimitiveComponent* Target,double Minimum=.025)->double
  {
@@ -654,7 +686,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   if(!P.bFront||!Top.bFront||!Bottom.bFront||P.U<.06||P.U>.94||Top.V<.04||Bottom.V>.96)return 0;
   const double Size=FMath::Abs(Bottom.V-Top.V);if(Size<Minimum)return 0;
   FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformPhotoSight),true);if(M->Player)Params.AddIgnoredActor(M->Player);
-  const bool Blocked=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Camera->PhotoLoc,S47Three::ToUE(At),ECC_Visibility,Params);
+  const bool Blocked=RoadPhoto?!M->HighwayUfo->PhotoLineClear(Camera->PhotoLoc,S47Three::ToUE(At),Target):M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Camera->PhotoLoc,S47Three::ToUE(At),ECC_Visibility,Params);
   if(Blocked&&Hit.Component.Get()!=Target)return 0;
   if(Target&&Size>=TaggedQuality)
   {
@@ -668,21 +700,25 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   }
   return FMath::Clamp(Size,0.,1.);
  };
- if(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))
+ if(!RoadPhoto&&(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")))
  {
   if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered&&M->Night->Glimpses->ControlledPhotoBody(I.Id))
    TaggedQuality=FMath::Max(TaggedQuality,Qualify(I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id)));
  }
- else if(Event==TEXT("landing_trace"))
+ else if(!RoadPhoto&&Event==TEXT("landing_trace"))
  {
   if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
  }
- else if(Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights"))
+ else if(RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights"))
  {
-  if(PhysicalObjectPresented())
+  if(RoadPhoto||PhysicalObjectPresented())
   {
    double Left=1,Right=0,Top=1,Bottom=0;int32 VisibleLights=0;
-   for(int32 Index=0;Index<Effects->Parts.Num();++Index)if(const auto* C=Effects->Parts[Index].Get())if(C->IsVisible())
+   TArray<UStaticMeshComponent*> PhotoParts;
+   if(RoadPhoto)PhotoParts=M->HighwayUfo->PhotoParts();
+   else if(Event==TEXT("close_pass")&&Effects->Ufo)PhotoParts=Effects->Ufo->PhotoParts();
+   else for(int32 I=0;I<4&&I<Effects->Parts.Num();++I)PhotoParts.Add(Effects->Parts[I].Get());
+   for(int32 Index=0;Index<PhotoParts.Num();++Index)if(const auto* C=PhotoParts[Index])if(C->IsVisible())
    {
     const FVector At=S47Three::ToThree(C->Bounds.Origin);const double Q=Qualify(At,FMath::Max(.1,double(C->Bounds.BoxExtent.Z)*.02),C,Index==0?.025:.001);
     if(Q<=0)continue;if(Index==0){TaggedQuality=FMath::Max(TaggedQuality,Q);continue;}
@@ -693,14 +729,17 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   }
  }
  if(TaggedQuality<.025)return;
- TaggedShot=Shot.Id;Shot.Targets.Add({TEXT("freeform:")+IncidentId,FVector2D(.5,.5)});
+ TaggedShot=Shot.Id;TaggedIncident=RoadPhoto?RoadIncident:IncidentId;
+ TaggedTitle=RoadPhoto?TEXT("highway light"):Event.Replace(TEXT("_"),TEXT(" "));
+ bTaggedLamps=RoadPhoto||Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights");
+ Shot.Targets.Add({TEXT("freeform:")+TaggedIncident,FVector2D(.5,.5)});
 }
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
 {
- if(TaggedShot!=Shot.Id||TaggedQuality<.025||Shot.bUnavailable||Shot.Url.IsEmpty()||Event.IsEmpty())return;
+ if(TaggedShot!=Shot.Id||TaggedQuality<.025||Shot.bUnavailable||Shot.Url.IsEmpty()||TaggedIncident.IsEmpty())return;
  // Read the exact retained image, not a later capture or a whole-frame brightness
  // proxy. Emissive airborne lamps retain their existing three-visible-lamp rule.
- const bool Lamps=Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights");
+ const bool Lamps=bTaggedLamps;
  if(!Lamps)
  {
   TArray<FColor> Pixels;int32 W=0,H=0;
@@ -709,9 +748,10 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
   if(Mean<15){TaggedShot.Empty();if(M&&M->UI)M->UI->Toast(TEXT("The photographed subject is too dark or too small to register. Retain it as a lead; seek a clearer, better-lit view."),4);return;}
  }
 
- TaggedShot.Empty();LastPhotoAt=ActiveTime;bSeen=bPhoto=true;PhotoId=Shot.Id;
- auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==IncidentId;});
- if(!Existing){FPhotoClaim C;C.Id=IncidentId;C.PhotoId=Shot.Id;C.Title=Event.Replace(TEXT("_"),TEXT(" "));C.Quality=TaggedQuality;Claims.Add(C);}
+ TaggedShot.Empty();LastPhotoAt=ActiveTime;
+ if(TaggedIncident==IncidentId&&!Event.IsEmpty()){bSeen=bPhoto=true;PhotoId=Shot.Id;}
+ auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==TaggedIncident;});
+ if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;Claims.Add(C);}
  else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;}
  Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("This incident is already registered. The new photograph remains in the album; no additional credit is due."):TEXT("Field photograph retained. Register it at OPS for $20 documentation credit, once per incident. Origin remains unconfirmed."),5);
 }

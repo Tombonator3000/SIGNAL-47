@@ -467,12 +467,13 @@
       "channel": "ui",
       "mode": "live",
       "entry": "trigger",
-      "trigger_nb": "Observasjonstekst først etter virkelig synlig løft/forsvinning, de stille bleke skikkelsene i lyskanten og trygg retrett i stasjonen eller bilen. Lydtekst alene er ingen levert bortføring. Ingen redningsoppgave som later som.",
+      "trigger_nb": "Faktisk sett løft, avsluttet bortføring og trygg retrett. Ingen påstand om en figur eller selve forsvinningsøyeblikket uten eget siktbevis.",
       "requires": {
         "all": [
           "ctx_hr_sc03_ortiz_identified",
           "ctx_hr_sc03_lift_observed",
-          "ctx_hr_sc03_safe_retreat"
+          "ctx_hr_sc03_safe_retreat",
+          "ctx_hr_sc03_helper_taken"
         ],
         "none": [
           "hr_sc03_helper_taken_presented"
@@ -483,13 +484,13 @@
         {
           "id": "SC03_HELPER_TAKEN_001",
           "speaker": "DESCRIPTION",
-          "text": "Light struck wagon twenty-three. Ortiz rose clear of the ground with nothing under her, hung there a moment, and was gone. Her thermos rolled out across the asphalt.",
+          "text": "Light struck wagon twenty-three. You saw Ortiz rise clear of the ground with nothing under her. Her wagon remains at the fuel stop.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
           "id": "SC03_HELPER_TAKEN_002",
           "speaker": "DESCRIPTION",
-          "text": "At the edge of the light, several pale figures stood completely still. One of them turned its head towards you.",
+          "text": "The light has moved away. Keep behind cover until the forecourt is clear.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
         },
         {
@@ -497,6 +498,48 @@
           "speaker": "DESCRIPTION",
           "text": "You are behind cover now. There was nothing you could have reached. Call it in from the working phone.",
           "delivery_nb": "Engelsk undersøkelsestekst. Ingen diegetisk forteller eller Kinski-opplesning i denne pakken."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_sc03_helper_taken_presented": true
+        },
+        "give_documents": []
+      }
+    },
+    {
+      "id": "SC03_HELPER_UNSEEN",
+      "phase": "early_shift",
+      "channel": "ui",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Etter faktisk bortføring, trygg retrett og undersøkelse av tom vogn, når selve løftet ikke ble sett.",
+      "requires": {
+        "all": [
+          "ctx_hr_sc03_ortiz_identified",
+          "ctx_hr_sc03_helper_taken",
+          "ctx_hr_sc03_safe_retreat",
+          "ctx_hr_sc03_wagon_checked"
+        ],
+        "none": [
+          "ctx_hr_sc03_lift_observed",
+          "hr_sc03_helper_taken_presented"
+        ]
+      },
+      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
+      "lines": [
+        {
+          "id": "SC03_HELPER_UNSEEN_001",
+          "speaker": "DESCRIPTION",
+          "text": "Wagon twenty-three is empty. Ortiz was beside it when you spoke. You did not see where she went. Her clipboard and keys are still here.",
+          "delivery_nb": "Beskriver bare faktisk undersøkt tom vogn. Ingen påstand om sett løft, figurer eller fluktretning."
+        },
+        {
+          "id": "SC03_HELPER_UNSEEN_002",
+          "speaker": "DESCRIPTION",
+          "text": "Report what you know from the working phone. Leave her things where they lie.",
+          "delivery_nb": "Engelsk undersøkelsestekst uten fortellerstemme."
         }
       ],
       "choices": [],
@@ -561,7 +604,8 @@
           "ctx_hr_sc03_safe_retreat",
           "ctx_hr_sc03_missing_readback",
           "ctx_hr_sc03_ortiz_identified",
-          "ctx_hr_sc03_dispatch_readback"
+          "ctx_hr_sc03_dispatch_readback",
+          "ctx_hr_sc03_helper_taken"
         ],
         "none": [
           "hr_sc03_missing_receipt_presented"
@@ -572,11 +616,57 @@
         {
           "id": "SC03_MISSING_RECEIPT_001",
           "speaker": "DISPATCH",
-          "text": "Mara Ortiz, district maintenance. Last seen at the Caliche fuel stop beside wagon twenty-three. You saw her lifted in a light and then could no longer see her.",
+          "text": "Mara Ortiz, district maintenance. Last seen at the Caliche fuel stop beside wagon twenty-three. You report seeing her rise clear of the ground in a light.",
           "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
         },
         {
           "id": "SC03_MISSING_RECEIPT_002",
+          "speaker": "DISPATCH",
+          "text": "That is now a missing-person report, linked to your earlier call. The deputy is on his way to you. Stay where you are and leave her things where they lie.",
+          "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
+        }
+      ],
+      "choices": [],
+      "on_complete": {
+        "set_flags": {
+          "hr_sc03_missing_receipt_presented": true
+        },
+        "give_documents": [
+          "HR_MISSING_RECEIPT"
+        ]
+      }
+    },
+    {
+      "id": "SC03_MISSING_UNSEEN_RECEIPT",
+      "phase": "early_shift",
+      "channel": "phone",
+      "mode": "live",
+      "entry": "trigger",
+      "trigger_nb": "Separat savnetmelding etter undersøkelse av tom vogn når løftet ikke ble sett. Samme savnetsak og videre Ward-ordre, uten oppdiktet øyenvitneutsagn.",
+      "requires": {
+        "all": [
+          "ctx_hr_sc03_ortiz_identified",
+          "ctx_hr_sc03_dispatch_readback",
+          "ctx_hr_sc03_helper_taken",
+          "ctx_hr_sc03_safe_retreat",
+          "ctx_hr_sc03_wagon_checked",
+          "ctx_hr_sc03_missing_readback"
+        ],
+        "none": [
+          "ctx_hr_sc03_lift_observed",
+          "hr_sc03_missing_receipt_presented"
+        ]
+      },
+      "direction_nb": "Kort, konkret og begrenset til faktisk kunnskap. Verden/hendelsesadapteren eier kravflagget. Ved pause, panel eller avbrudd gis ingen uopplevd konklusjon.",
+      "lines": [
+        {
+          "id": "SC03_MISSING_UNSEEN_RECEIPT_001",
+          "speaker": "DISPATCH",
+          "text": "Mara Ortiz, district maintenance. You spoke beside wagon twenty-three at the Caliche fuel stop. You found the wagon empty after reaching cover. You did not see where she went.",
+          "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
+        },
+        {
+          "id": "SC03_MISSING_UNSEEN_RECEIPT_002",
           "speaker": "DISPATCH",
           "text": "That is now a missing-person report, linked to your earlier call. The deputy is on his way to you. Stay where you are and leave her things where they lie.",
           "delivery_nb": "Utsendt stedlig meldingsmottaker. Registrerer sted, tidspunkt, observerte forhold og egne faktiske utkallinger; kjenner ingen fremmed fasit."
@@ -654,7 +744,7 @@
         {
           "id": "SC03_RECEIVER_QUESTION_001",
           "speaker": "DEPUTY",
-          "text": "Your outfit up the road runs a receiver all night. Was it on when she went up?",
+          "text": "Your outfit up the road runs a receiver all night. Was it on while Ortiz was at the fuel stop?",
           "delivery_nb": "Eksisterende sheriffbetjent ved Caliche-avdelingen (THE DEPUTY i FS47Caliche), revisjonens «sheriffen». Kort og praktisk; kjenner bare egne patruljer, patruljearket og savnetsaken. Tekst uten ny stemme, som hans eksisterende samtaler."
         },
         {
@@ -1765,7 +1855,7 @@
       "stamp": "SARO / NIGHT SHIFT / 13-14 APR 1986",
       "body": [
         "After reaching cover, Reyes checked the empty district wagon, the thermos on the asphalt and the marks in the gravel beside it. Tape on the thermos names Mara Ortiz.",
-        "The trace note records what remained. The separately witnessed lift and the subsequent missing-person report have their own records."
+        "The trace note records what remained. Any direct sighting and the subsequent missing-person report have their own records; the traces alone do not prove a lift."
       ],
       "production_nb": "Faktiske navngitte rekvisitter (vogn, termos, merker i grusen) må finnes; ikke løft-credit fra bare objekter."
     },
@@ -1776,7 +1866,7 @@
       "stamp": "SARO / NIGHT SHIFT / 13-14 APR 1986",
       "body": [
         "CALICHE DISPATCH / MISSING PERSON. Mara Ortiz, district maintenance, last seen at the public Caliche fuel stop beside wagon 23.",
-        "Reyes reports seeing Ortiz rise clear of support in an external light and then disappear. Dispatch has read back identity, place and actual report time, and linked the relief assignment.",
+        "Dispatch has read back identity, place and actual report time, linked the relief assignment and retained Reyes's account below. A direct sighting and an inspected aftermath are recorded separately.",
         "Search assigned to the sheriff's office; the deputy is sent to the fuel stop. This report does not explain the disappearance."
       ],
       "production_nb": "Dynamisk hendelses-ID/dato/tid fra faktisk savnetmelding, adskilt fra utkallingskvittering."

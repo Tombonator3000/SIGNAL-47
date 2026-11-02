@@ -458,7 +458,7 @@ bool FS47HorrorPack::SelfTest(FString& Error)
 	FS47HorrorPack P;
 	if (!P.Initialize(Error)) return false;
 #define HORROR_CHECK(Condition, Message) do { if (!(Condition)) { Error = TEXT(Message); return false; } } while (false)
-	HORROR_CHECK(P.Scenes.Num() == 77 && P.Registry.Num() == 77 && P.DocumentData.Num() == 16 && P.External.Num() == 90,
+	HORROR_CHECK(P.Scenes.Num() == 79 && P.Registry.Num() == 79 && P.DocumentData.Num() == 16 && P.External.Num() == 92,
 		"Horror source contains every baseline scene, document and external gate");
 	HORROR_CHECK(P.FindRegistration(TEXT("H01_BRIEF"))->ScenarioIds.Contains(TEXT("SC01")) &&
 		P.FindRegistration(TEXT("H02_CHECK"))->ScenarioIds.Contains(TEXT("SC02")), "Original H01/H02 cards retain their scenario mapping");

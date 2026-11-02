@@ -340,19 +340,17 @@
     {
       "flag": "ctx_hr_sc03_lift_observed",
       "scenario": "SC03",
-      "status": "new",
-      "producer": "FS47HorrorWorld løftesekvens (lys, Ortiz uten støtte) med siktprøve",
+      "status": "existing",
+      "producer": "FS47HorrorSC03::Step med fysisk siktprøve",
       "sources": [
-        "unreal/Signal47/Source/Signal47/Private/S47HorrorWorld.cpp (ny)",
-        "unreal/Signal47/Source/Signal47/Private/S47Abduction.cpp",
-        "unreal/Signal47/Source/Signal47/Private/S47Figures.cpp"
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSC03.cpp"
       ],
       "symbols": [
-        "FS47Abduction::LightStep",
-        "FS47JacketWalker::Pose"
+        "FS47HorrorSC03::Step",
+        "FS47HorrorSC03::Sees"
       ],
-      "world_action_nb": "Spilleren ser Ortiz løftes i fremmed lys og forsvinne ved vogn 23, med stillestående bleke skikkelser i lyskanten.",
-      "new_work_nb": "Ny sekvens som armeres når spilleren har faktisk sikt, gjengir løftet med siktdwell og lagrer observert forsvinning. Figurer i kanten har samme bleke utseende; ingen svartfigur eller ny jaktregel. Lyd alene gir ikke flagget.",
+      "world_action_nb": "Spilleren ser Ortiz uten støtte minst0,3m over bakken i fremmed lys. Ingen kreditt fra møtet før løftet.",
+      "new_work_nb": "Endelig løftetid holdes adskilt fra observert løft. Ingen uendelig venting på kameraet.",
       "tests": [
         "SC03-T02",
         "SC03-T06",
@@ -1746,6 +1744,44 @@
         "SC12-T05",
         "SC12-T08"
       ]
+    },
+    {
+      "flag": "ctx_hr_sc03_helper_taken",
+      "scenario": "SC03",
+      "status": "existing",
+      "producer": "FS47HorrorSC03::FinishLift",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSC03.cpp"
+      ],
+      "symbols": [
+        "FS47HorrorSC03::FinishLift"
+      ],
+      "world_action_nb": "Løft og oppdragning avsluttes på scenens aktive tid; Ortiz forsvinner også når spilleren ser bort.",
+      "new_work_nb": "Verdensfaktum bevart separat fra sikt og dialog.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06",
+        "SC03-T07"
+      ]
+    },
+    {
+      "flag": "ctx_hr_sc03_wagon_checked",
+      "scenario": "SC03",
+      "status": "existing",
+      "producer": "FS47HorrorSC03::Use",
+      "sources": [
+        "unreal/Signal47/Source/Signal47/Private/S47HorrorSC03.cpp"
+      ],
+      "symbols": [
+        "FS47HorrorSC03::Use"
+      ],
+      "world_action_nb": "Spilleren undersøker fysisk den tomme vogn23 etter trygg retrett.",
+      "new_work_nb": "Verdensfaktum bevart separat fra sikt og dialog.",
+      "tests": [
+        "SC03-T02",
+        "SC03-T06",
+        "SC03-T07"
+      ]
     }
   ],
   "scenes": [
@@ -2639,7 +2675,28 @@
       "start_nb": "Etter observert løft og trygg retrett.",
       "normal_nb": "Ortiz løftes synlig, henger uten støtte og forsvinner. En termose ruller ut. Flere bleke skikkelser står i lyskanten; én vender hodet.",
       "interrupt_nb": "Vises ikke under aktiv kontakt; utsatt til ro.",
-      "alternative_nb": "Spiller som ikke ser: løftet venter på sikt.",
+      "alternative_nb": "Ser spilleren bort, fullføres bortføringen uten observasjonsflagg; undersøk tom vogn og bruk SC03_HELPER_UNSEEN.",
+      "models": [
+        "Ortiz og vogn 23",
+        "termose med navnelapp",
+        "bleke figurer i lyskanten"
+      ],
+      "audio": [
+        "Fremmed lys, lav tone"
+      ],
+      "documents": [],
+      "tests": [
+        "SC03-T02",
+        "SC03-T06"
+      ]
+    },
+    {
+      "scene": "SC03_HELPER_UNSEEN",
+      "scenario": "SC03",
+      "start_nb": "Faktisk bortføring, trygg retrett og undersøkt tom vogn; løftet er ikke sett.",
+      "normal_nb": "Meld bare undersøkt tom vogn og navngitt savnet person. Ingen påstand om sett løft.",
+      "interrupt_nb": "Vises ikke under aktiv kontakt; utsatt til ro.",
+      "alternative_nb": "Sett løft bruker den separate observerte varianten.",
       "models": [
         "Ortiz og vogn 23",
         "termose med navnelapp",
@@ -2682,6 +2739,27 @@
       "normal_nb": "Dispatch registrerer savnetsak; HR_MISSING_RECEIPT.",
       "interrupt_nb": "Avbrutt samtale gjenopptas.",
       "alternative_nb": "Ingen.",
+      "models": [
+        "payphone"
+      ],
+      "audio": [
+        "Telefonkanal"
+      ],
+      "documents": [
+        "HR_MISSING_RECEIPT"
+      ],
+      "tests": [
+        "SC03-T02",
+        "SC03-T08"
+      ]
+    },
+    {
+      "scene": "SC03_MISSING_UNSEEN_RECEIPT",
+      "scenario": "SC03",
+      "start_nb": "Faktisk bortføring, trygg retrett og undersøkt tom vogn; løftet er ikke sett.",
+      "normal_nb": "Meld bare undersøkt tom vogn og navngitt savnet person. Ingen påstand om sett løft.",
+      "interrupt_nb": "Avbrutt samtale gjenopptas.",
+      "alternative_nb": "Sett løft bruker den separate observerte varianten.",
       "models": [
         "payphone"
       ],

@@ -1,4 +1,5 @@
 #include "S47DevEvents.h"
+#include "S47HighwayUfo.h"
 #include "S47Main.h"
 #include "S47Story.h"
 #include "S47UI.h"
@@ -66,6 +67,12 @@ void FS47DevEvents::AddBuiltIn()
  Add(TEXT("Tripo craft preview"),TEXT("Triangular craft: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(false);});
  Add(TEXT("Tripo craft preview"),TEXT("Flying saucer: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(true);});
  Add(TEXT("Tripo craft preview"),TEXT("Remove craft preview"),TEXT("remove the temporary model completely"),[this]{if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();});
+ for(const bool Follow:{false,true})
+  Add(TEXT("UFO encounters"),Follow?TEXT("Highway: light follows you"):TEXT("Highway: sheriff follows light"),TEXT("live saved encounter; drive south on a clear highway"),[this,Follow]
+  {
+   const bool Started=M&&M->HighwayUfo&&M->HighwayUfo->Force(Follow);
+   if(M&&M->UI)M->UI->Toast(Started?TEXT("Highway encounter started. Your steering and brakes remain in control."):TEXT("Drive south on the open highway, clear of junctions and other encounters, then try again."),5);
+  });
  // ---- weather ----
  Add(TEXT("Weather"), TEXT("Fog: the night's own"), TEXT("as the scene has it"), [this, Say] { GS47DevFogDensity = -1.f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("fog as the night has it")); });
  Add(TEXT("Weather"), TEXT("Fog: light"), TEXT("about 100 m"), [this, Say] { GS47DevFogDensity = .04f; if (M->Web) UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer fog %.4f, native fog now %.4f"), GS47DevFogDensity, M->Web->RefreshFog()); Say(TEXT("light fog")); });
@@ -85,7 +92,7 @@ void FS47DevEvents::Open()
   E.Add({ Ev.Group, Ev.Label, Ev.Note, [this, Fn] { if (M && M->UI) M->UI->Close(true); if (Fn) Fn(); } });
  }
  TSharedRef<SS47Dev> El = SNew(SS47Dev).Entries(E).Title(TEXT("DEVELOPER / EVENTS"))
-  .Note(TEXT("Make something happen here, now. Nothing is saved. Escape: back to the night."))
+  .Note(TEXT("Developer previews and live encounter controls. Check each entry before starting. Escape: back to the night."))
   .OnBack([this] { if (M && M->UI) M->UI->Close(true); });
  M->UI->Open(El);
  FSlateApplication::Get().SetKeyboardFocus(El);

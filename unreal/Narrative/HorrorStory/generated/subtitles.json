@@ -1085,7 +1085,7 @@
         {
           "line_id": "SC03_HELPER_TAKEN_001",
           "speaker": "DESCRIPTION",
-          "text": "Light struck wagon twenty-three. Ortiz rose clear of the ground with nothing under her, hung there a moment, and was gone. Her thermos rolled out across the asphalt.",
+          "text": "Light struck wagon twenty-three. You saw Ortiz rise clear of the ground with nothing under her. Her wagon remains at the fuel stop.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1094,7 +1094,7 @@
         {
           "line_id": "SC03_HELPER_TAKEN_002",
           "speaker": "DESCRIPTION",
-          "text": "At the edge of the light, several pale figures stood completely still. One of them turned its head towards you.",
+          "text": "The light has moved away. Keep behind cover until the forecourt is clear.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1104,6 +1104,30 @@
           "line_id": "SC03_HELPER_TAKEN_003",
           "speaker": "DESCRIPTION",
           "text": "You are behind cover now. There was nothing you could have reached. Call it in from the working phone.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_HELPER_UNSEEN",
+      "channel": "ui",
+      "lines": [
+        {
+          "line_id": "SC03_HELPER_UNSEEN_001",
+          "speaker": "DESCRIPTION",
+          "text": "Wagon twenty-three is empty. Ortiz was beside it when you spoke. You did not see where she went. Her clipboard and keys are still here.",
+          "voiced": false,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "interaction_controlled"
+        },
+        {
+          "line_id": "SC03_HELPER_UNSEEN_002",
+          "speaker": "DESCRIPTION",
+          "text": "Report what you know from the working phone. Leave her things where they lie.",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,
@@ -1142,7 +1166,7 @@
         {
           "line_id": "SC03_MISSING_RECEIPT_001",
           "speaker": "DISPATCH",
-          "text": "Mara Ortiz, district maintenance. Last seen at the Caliche fuel stop beside wagon twenty-three. You saw her lifted in a light and then could no longer see her.",
+          "text": "Mara Ortiz, district maintenance. Last seen at the Caliche fuel stop beside wagon twenty-three. You report seeing her rise clear of the ground in a light.",
           "voiced": true,
           "start_seconds": null,
           "end_seconds": null,
@@ -1150,6 +1174,30 @@
         },
         {
           "line_id": "SC03_MISSING_RECEIPT_002",
+          "speaker": "DISPATCH",
+          "text": "That is now a missing-person report, linked to your earlier call. The deputy is on his way to you. Stay where you are and leave her things where they lie.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        }
+      ]
+    },
+    {
+      "scene_id": "SC03_MISSING_UNSEEN_RECEIPT",
+      "channel": "phone",
+      "lines": [
+        {
+          "line_id": "SC03_MISSING_UNSEEN_RECEIPT_001",
+          "speaker": "DISPATCH",
+          "text": "Mara Ortiz, district maintenance. You spoke beside wagon twenty-three at the Caliche fuel stop. You found the wagon empty after reaching cover. You did not see where she went.",
+          "voiced": true,
+          "start_seconds": null,
+          "end_seconds": null,
+          "timing_status": "pending_audio"
+        },
+        {
+          "line_id": "SC03_MISSING_UNSEEN_RECEIPT_002",
           "speaker": "DISPATCH",
           "text": "That is now a missing-person report, linked to your earlier call. The deputy is on his way to you. Stay where you are and leave her things where they lie.",
           "voiced": true,
@@ -1190,7 +1238,7 @@
         {
           "line_id": "SC03_RECEIVER_QUESTION_001",
           "speaker": "DEPUTY",
-          "text": "Your outfit up the road runs a receiver all night. Was it on when she went up?",
+          "text": "Your outfit up the road runs a receiver all night. Was it on while Ortiz was at the fuel stop?",
           "voiced": false,
           "start_seconds": null,
           "end_seconds": null,

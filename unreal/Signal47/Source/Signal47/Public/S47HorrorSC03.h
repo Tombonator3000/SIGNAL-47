@@ -18,7 +18,7 @@ public:
  enum class EPhase : uint8 { Off, Report, Wait, Arrival, Meet, Lift, Retreat, Calm, Deputy, Complete };
  struct FFacts
  {
-  bool bDispatch = false, bAssigned = false, bIdentified = false, bObserved = false, bRetreat = false;
+  bool bDispatch = false, bAssigned = false, bIdentified = false, bTaken = false, bObserved = false, bRetreat = false;
   bool bWagon = false, bThermos = false, bMarks = false, bMissing = false, bLocalOrder = false, bDeputyHere = false;
   FString DispatchStamp, TakenStamp, MissingStamp, OrderStamp;
  };
@@ -35,6 +35,7 @@ public:
  bool Use(const FString& Id);
 
  EPhase Phase() const { return P; }
+ bool Ready() const { return bBuilt && bGrounded; }
  bool Live() const { return P != EPhase::Off && P != EPhase::Complete; }
  bool Complete() const { return P == EPhase::Complete; }
  const FFacts& Facts() const { return F; }
@@ -53,6 +54,7 @@ public:
  FVector WagonPoint() const { return Park; }
  TArray<FVector> FigureHeads() const;
  bool LightOn() const { return LightK > .05; }
+ S47J::FObj PresentationReadback() const;
 
  static const TCHAR* PhaseName(EPhase In);
  static bool ParsePhase(const FString& Text, EPhase& Out);
@@ -69,7 +71,7 @@ private:
  FFacts F;
  bool bBuilt = false, bBuildFailed = false;
  FVector Park = FVector::ZeroVector, Counter = FVector::ZeroVector, Approach = FVector::ZeroVector, DeputyFrom = FVector::ZeroVector, DeputyAt = FVector::ZeroVector;
- double WaitT = 0, ArriveT = 0, LiftDelay = 0, LiftT = 0, LookT = 0, HeldT = 0, Gone = 0, LightK = 0, FigureK = 0, TurnK = 0, DeputyT = 0, Clock = 0;
+ double WaitT = 0, ArriveT = 0, LiftDelay = 0, LiftT = 0, LookT = 0, Gone = 0, LightK = 0, FigureK = 0, TurnK = 0, DeputyT = 0, Clock = 0;
  bool bOrtizGone = false;
  int32 Version = 0;
  double GroundRef = 0;
@@ -78,6 +80,7 @@ private:
  bool Build();
  void Apply();
  void SetPhase(EPhase Next);
+ void FinishLift();
  bool Sees(const FVector& Point, double Margin = .9) const;
  bool ClearLine(const FVector& From, const FVector& To) const;
  bool PlayerCovered() const;

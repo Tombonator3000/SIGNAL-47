@@ -268,6 +268,14 @@ bool FS47FinaleSky::Prepare()
 		auto* Parent = Mesh->GetStaticMaterials()[I].MaterialInterface.Get();
 		const FName Name = Parent ? Parent->GetFName() : NAME_None;
 		const int32 Fill = Name == FName(TEXT("MI_S47_FinalHull")) ? 0 : Name == FName(TEXT("MI_S47_FinalRibs")) ? 1 : INDEX_NONE;
+		if (Name == FName(TEXT("MI_S47_FinalLight")))
+		{
+			// Tom's November references: warm lights reveal the enormous dark underside.
+			// Only this private instance changes; the authored hull and material assets remain intact.
+			auto* Mid = UMaterialInstanceDynamic::Create(Parent, Craft.Get());
+			Mid->SetVectorParameterValue(TEXT("Color"), FLinearColor(.65f, .095f, .035f));
+			CraftLightMid = Mid; Craft->SetMaterial(I, Mid);
+		}
 		if (Fill == INDEX_NONE) continue;
 		auto* Mid = UMaterialInstanceDynamic::Create(Parent, Craft.Get());
 		CraftFillMids[Fill] = Mid; Craft->SetMaterial(I, Mid);
@@ -526,6 +534,7 @@ void FS47FinaleSky::Drop()
 	if (CabFillLight.IsValid()) CabFillLight->DestroyComponent(); CabFillLight.Reset();
 	if (Craft.IsValid()) Craft->DestroyComponent(); Craft.Reset();
 	for (auto& Mid : CraftFillMids) Mid.Reset();
+	CraftLightMid.Reset(); AppliedLampGlow = 0;
 	for (int32 I = 0; I < 2; ++I)
 	{
 		if (Banks[I].IsValid()) Banks[I]->DestroyComponent();
@@ -556,6 +565,8 @@ void FS47FinaleSky::Step(double Mile, const FString& Stage, double E, double P)
 	{
 		Mid->SetScalarParameterValue(TEXT("Glow"), Tuning.CraftFill);
 	}
+	AppliedLampGlow = .7 + 1.7 * Smooth(-8, 16, Phase);
+	if (CraftLightMid.IsValid()) CraftLightMid->SetScalarParameterValue(TEXT("Glow"), float(AppliedLampGlow));
 	Tuning.BankForward = Tune(CVarBankForward, 50, 10000);
 	Tuning.BankSpread = Tune(CVarBankSpread, 0, 5000);
 	Tuning.BankRevealSpread = Tune(CVarBankRevealSpread, 0, 5000);
@@ -649,6 +660,8 @@ S47J::FObj FS47FinaleSky::Readback() const
 {
 	auto O = S47J::New();
 	S47J::Set(O, TEXT("ready"), bReady); S47J::Set(O, TEXT("shown"), bShown); S47J::Set(O, TEXT("failure"), Failure);
+	S47J::Set(O, TEXT("warmUnderside"), CraftLightMid.IsValid());
+	S47J::Set(O, TEXT("undersideLampGlow"), bShown ? AppliedLampGlow : 0.);
 	S47J::Set(O, TEXT("groundVertexColorOverride"), GroundMaterials.Num() == 2);
 	bool bGroundCastShadowEnabled = false;
 	double GroundPlanarApplied = 0;

@@ -164,6 +164,7 @@ void FS47Horror::Context()
   const auto& F=SC03->Facts();
   Pack.SetExternal(TEXT("ctx_hr_sc03_dispatch_readback"),F.bDispatch);Pack.SetExternal(TEXT("ctx_hr_sc03_ortiz_assigned"),F.bAssigned);
   Pack.SetExternal(TEXT("ctx_hr_sc03_ortiz_identified"),F.bIdentified);Pack.SetExternal(TEXT("ctx_hr_sc03_lift_observed"),F.bObserved);
+  Pack.SetExternal(TEXT("ctx_hr_sc03_helper_taken"),F.bTaken);Pack.SetExternal(TEXT("ctx_hr_sc03_wagon_checked"),F.bWagon);
   Pack.SetExternal(TEXT("ctx_hr_sc03_safe_retreat"),F.bRetreat);Pack.SetExternal(TEXT("ctx_hr_sc03_traces_checked"),SC03->TracesChecked());
   Pack.SetExternal(TEXT("ctx_hr_sc03_missing_readback"),F.bMissing);Pack.SetExternal(TEXT("ctx_hr_sc03_local_order_suspended"),F.bLocalOrder);
   Pack.SetExternal(TEXT("ctx_hr_sc03_deputy_at_stop"),F.bDeputyHere);
@@ -194,7 +195,11 @@ void FS47Horror::Refile()
   const auto* D=Pack.FindDocument(Id);if(!D)continue;
   FS47Doc Doc;Doc.Id=Id;Doc.Title=D->Title;Doc.Kind=D->Kind;Doc.Stamp=Id==TEXT("HR_INITIAL_REPORT")?ReportStamp:Id==TEXT("HR_TRAFO_ENCOUNTER")?EscapeStamp:D->Stamp;
   if(SC03Doc){const auto& F=SC03->Facts();Doc.Stamp=Id==TEXT("HR_DISPATCH_RECEIPT")?F.DispatchStamp:Id==TEXT("HR_HELPER_TRACE_NOTE")?F.TakenStamp:Id==TEXT("HR_MISSING_RECEIPT")?F.MissingStamp:F.OrderStamp;}
-  Doc.Page=FString::Join(D->Body,TEXT("\n\n"));Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);
+  Doc.Page=FString::Join(D->Body,TEXT("\n\n"));
+  if(Id==TEXT("HR_MISSING_RECEIPT") && SC03)
+   Doc.Page += SC03->Facts().bObserved ? TEXT("\n\nREYES'S ACCOUNT: I saw Ortiz rise clear of the ground in an external light. Nothing was supporting her.") :
+    TEXT("\n\nREYES'S ACCOUNT: I did not see where Ortiz went. I checked wagon twenty-three after reaching cover. Her clipboard and keys remained in the empty vehicle.");
+  Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);
  }
 }
 void FS47Horror::Changed(){Context();Refile();if(M)M->RequestAutosave();}
@@ -372,7 +377,13 @@ void FS47Horror::Step(double Dt)
   else if(!bComplete && !Pack.Flag(TEXT("hr_h01_brief_presented")) && M->World->Area==TEXT("saro")) Trigger(TEXT("H01_BRIEF"));
   else if(!bComplete && NormalComplete() && !Pack.Flag(TEXT("hr_h01_recorded"))) Trigger(TEXT("H01_CHECK"));
   else if(!bComplete && Visual->HandSeen() && Visual->MarksChecked() && !Pack.Flag(TEXT("hr_sc01_window_check_presented"))) Trigger(TEXT("SC01_WINDOW_CHECK"));
-  else if(SC03Live() && SC03->Phase()!=FS47HorrorSC03::EPhase::Report){if(SC03->Facts().bRetreat && !Pack.Flag(TEXT("hr_sc03_helper_taken_presented")))Trigger(TEXT("SC03_HELPER_TAKEN"));else if(SC03->TracesChecked() && !Pack.Flag(TEXT("hr_sc03_helper_traces_presented")))Trigger(TEXT("SC03_HELPER_TRACES"));}
+  else if(SC03Live() && SC03->Phase()!=FS47HorrorSC03::EPhase::Report)
+  {
+   const auto& F=SC03->Facts();
+   if(F.bRetreat && (F.bObserved || F.bWagon) && !Pack.Flag(TEXT("hr_sc03_helper_taken_presented")))
+    Trigger(F.bObserved?TEXT("SC03_HELPER_TAKEN"):TEXT("SC03_HELPER_UNSEEN"));
+   else if(SC03->TracesChecked() && !Pack.Flag(TEXT("hr_sc03_helper_traces_presented")))Trigger(TEXT("SC03_HELPER_TRACES"));
+  }
   else if(bComplete && SC02Live()) TriggerSC02();
  }
  if(!bComplete && !M->World->bDriving && !M->Evening->Opening())M->UI->Objective(Objective());

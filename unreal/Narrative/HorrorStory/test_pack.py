@@ -57,6 +57,18 @@ class UnifiedContracts(unittest.TestCase):
         with self.assertRaises(author.EV.PackError):
             author.validate_scenarios(pack, modules)
 
+    def test_unseen_missing_report_needs_inspected_aftermath(self):
+        pack, modules = self.fresh()
+        self.scene(modules, "SC03_MISSING_UNSEEN_RECEIPT")["requires"]["all"].remove("ctx_hr_sc03_wagon_checked")
+        with self.assertRaises(author.EV.PackError):
+            author.validate_scenarios(pack, modules)
+
+    def test_unseen_variant_does_not_replace_witnessed_lift(self):
+        pack, modules = self.fresh()
+        self.scene(modules, "SC03_HELPER_UNSEEN")["requires"]["none"].remove("ctx_hr_sc03_lift_observed")
+        with self.assertRaises(author.EV.PackError):
+            author.validate_scenarios(pack, modules)
+
     def test_schedule_hold_requires_physical_isolation(self):
         pack, modules = self.fresh()
         self.scene(modules, "SC04_LOCAL_HOLD")["requires"]["all"].remove("ctx_hr_sc04_schedule_isolated")
@@ -165,9 +177,9 @@ class UnifiedContracts(unittest.TestCase):
         registry = author.runtime_registry(self.pack, self.modules, scenarios)
         authored = [s["id"] for m in self.modules for s in m["scenes"]]
         self.assertEqual([s["id"] for s in registry["scenes"]], authored)
-        self.assertEqual(len(set(authored)), 77)
+        self.assertEqual(len(set(authored)), 79)
         self.assertEqual({g["id"] for g in registry["external_flags"]}, set(self.pack["external_flags"]))
-        self.assertEqual(len(registry["external_flags"]), 90)
+        self.assertEqual(len(registry["external_flags"]), 92)
         self.assertTrue(all(g["owner"] == "runtime_host" for g in registry["external_flags"]))
         self.assertTrue(all(s["scenario_ids"] and s["mission_ids"] for s in registry["scenes"]))
         self.assertEqual({sc for s in registry["scenes"] for sc in s["scenario_ids"]},
@@ -249,7 +261,7 @@ class WorldProducers(unittest.TestCase):
     def test_all_flags_scenes_and_scenarios_are_covered(self):
         data = self.check(deepcopy(self.data))
         self.assertEqual(len(data["flags"]), len(self.pack["external_flags"]))
-        self.assertEqual(len(data["scenes"]), 77)
+        self.assertEqual(len(data["scenes"]), 79)
         self.assertEqual([p["scenario"] for p in data["work_packages"]], [f"SC{i:02}" for i in range(1, 14)])
 
     def test_unowned_flag_is_rejected(self):

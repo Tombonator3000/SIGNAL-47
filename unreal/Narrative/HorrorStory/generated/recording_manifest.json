@@ -8,8 +8,8 @@
     "sample_format": "PCM16",
     "channels": 1
   },
-  "cue_count": 50,
-  "required_recording_count": 49,
+  "cue_count": 52,
+  "required_recording_count": 51,
   "recorded_count": 5,
   "recordings": [
     {
@@ -447,6 +447,30 @@
     {
       "line_id": "SC03_MISSING_RECEIPT_002",
       "scene_id": "SC03_MISSING_RECEIPT",
+      "actor": "DISPATCH",
+      "channel": "phone",
+      "voice_profile": "caliche_dispatch",
+      "status": "pending",
+      "reuse_of": null,
+      "recording_required": true,
+      "audio_file": null,
+      "duration_seconds": null
+    },
+    {
+      "line_id": "SC03_MISSING_UNSEEN_RECEIPT_001",
+      "scene_id": "SC03_MISSING_UNSEEN_RECEIPT",
+      "actor": "DISPATCH",
+      "channel": "phone",
+      "voice_profile": "caliche_dispatch",
+      "status": "pending",
+      "reuse_of": null,
+      "recording_required": true,
+      "audio_file": null,
+      "duration_seconds": null
+    },
+    {
+      "line_id": "SC03_MISSING_UNSEEN_RECEIPT_002",
+      "scene_id": "SC03_MISSING_UNSEEN_RECEIPT",
       "actor": "DISPATCH",
       "channel": "phone",
       "voice_profile": "caliche_dispatch",
