@@ -23,6 +23,8 @@
 #include "S47CalicheHomes.h"
 #include "S47CinemaPosters.h"
 #include "S47MotelV2.h"
+#include "S47ExteriorLightTest.h"
+#include "S47CalicheAccess.h"
 #include "S47PhotoLabDetail.h"
 #include "S47SubstationDetail.h"
 #include "S47RouteNature.h"
@@ -1633,6 +1635,9 @@ void AS47Web::Tick(float Dt)
 	if (CalicheHomes) CalicheHomes->Update();
 	if (CinemaPosters) CinemaPosters->Update();
 	if (MotelV2) MotelV2->Update();
+	// Story already updates this adapter in TownLayer::WorldStep.
+	if (const auto* Main = US47Main::Get(this); Main && Main->IsFreeform()) S47CalicheAccess::Update();
+	S47ExteriorLightTest::Update(this);
 	if (S47Startup::Blocking())
 	{
 		// The complete world must exist before warmup. Keep its rendering and sky capture alive,

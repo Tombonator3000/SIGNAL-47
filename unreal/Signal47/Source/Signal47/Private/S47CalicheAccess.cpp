@@ -27,6 +27,30 @@ namespace
  TArray<FRoom> Rooms;
  TArray<TWeakObjectPtr<UPrimitiveComponent>> Retired;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lamps;
+ struct FExteriorGlow {TWeakObjectPtr<UMaterialInstanceDynamic> Mid;FLinearColor Base;};
+ TArray<FExteriorGlow> ExteriorGlows;float LastExteriorMask=-1.f;
+ void BindExterior(UStaticMeshComponent* C,const FString& Name)
+ {
+  // Active CalicheAccess replacements, reviewed against the actual 31-Oct imported FBX.
+  // Preserve original constant emission; the retired TB2 family's clock driver does not own these parts.
+  struct FEntry {const TCHAR* Part;int32 Slot;const TCHAR* Material;};
+  const FEntry Entries[]={
+   {TEXT("SM_Access_Laundry_Fixtures"),10,TEXT("M_Town_WarmGlow")},
+   {TEXT("SM_Access_Feed_Fixtures"),10,TEXT("M_Town_WarmGlow")},
+   {TEXT("SM_Access_Church_Fixtures"),6,TEXT("M_Town_ChurchPorchGlow")},
+   {TEXT("SM_Access_Cinema_Fixtures"),4,TEXT("M_Town_CinemaBulb")},
+   {TEXT("SM_Access_Cinema_Fixtures"),7,TEXT("M_Town_CinemaReaderGlow")},
+   {TEXT("SM_Access_Cinema_Fixtures"),6,TEXT("M_Town_CinemaNeonRed")}};
+  if(!C||!C->GetStaticMesh()||C->GetStaticMesh()->GetPathName()!=TEXT("/Game/CalicheAccess/")+Name+TEXT(".")+Name)return;
+  for(const auto& E:Entries)if(Name==E.Part)
+  {
+   const auto& Slots=C->GetStaticMesh()->GetStaticMaterials();auto* Material=C->GetMaterial(E.Slot);FLinearColor Base;
+   if(!Slots.IsValidIndex(E.Slot)||Slots[E.Slot].MaterialSlotName.ToString()!=E.Material||!Material||Material->GetPathName()!=FString(TEXT("/Game/TownBuildings/Materials/"))+E.Material+TEXT(".")+E.Material||!Material->GetVectorParameterValue(FMaterialParameterInfo(TEXT("EmissiveFactor")),Base))
+   {UE_LOG(LogTemp,Error,TEXT("S47 LIGHT01 active Access rejected exact exterior binding %s slot%d %s"),*Name,E.Slot,E.Material);continue;}
+   if(auto* Mid=C->CreateDynamicMaterialInstance(E.Slot))
+   {ExteriorGlows.Add({Mid,Base});UE_LOG(LogTemp,Display,TEXT("S47 LIGHT01 active Access exterior %s slot%d %s: original constant base retained, ordinary town daylight mask"),*Name,E.Slot,E.Material);}
+  }
+ }
  FVector Vec(const TArray<TSharedPtr<FJsonValue>>& A){return FVector(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber());}
  FS47Rect Rect(double X0,double X1,double Z0,double Z1,const FString& Id){FS47Rect R;R.MinX=FMath::Min(X0,X1);R.MaxX=FMath::Max(X0,X1);R.MinZ=FMath::Min(Z0,Z1);R.MaxZ=FMath::Max(Z0,Z1);R.Id=Id;return R;}
  void Retire(UPrimitiveComponent* C){if(C){C->SetHiddenInGame(true,false);C->SetVisibility(false,false);C->SetCastShadow(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}}
@@ -52,7 +76,7 @@ bool UseDoor(const FString& Id)
 }
 void Init(US47Main* M)
 {
- Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();if(!M||!M->Web||!M->Inter)return;
+ Main=M;Rooms.Reset();Retired.Reset();Lamps.Reset();ExteriorGlows.Reset();LastExteriorMask=-1.f;if(!M||!M->Web||!M->Inter)return;
  AS47Web* W=M->Web;FString Text;TSharedPtr<FJsonObject> J;
  if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("CalicheAccess/assembly.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),J)||!J)return;
  if(J->GetStringField(TEXT("status"))!=TEXT("NATIVE_READY"))return;
@@ -82,6 +106,7 @@ void Init(US47Main* M)
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetupAttachment(ParentComp.Get());C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Meshes[Name]);
    const bool Glass=Name.EndsWith(TEXT("Glass"));C->SetCollisionEnabled(Glass?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,Glass?ECR_Ignore:ECR_Block);C->SetCastShadow(!Glass);if(Door)C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();C->SetWorldLocation(S47Three::ToUE(Vec(P->GetArrayField(TEXT("root")))));
    const int32 Node=W->AdoptNode(C,Parent,TEXT("caliche-access:")+Name);
+   BindExterior(C,Name);
    if(Door)
    {
     R.Leaf=C;FS47Interactable It;It.Id=TEXT("access:")+R.Id;It.Object=FS47Obj(W,Node);It.Range=2.7;const FString Id=R.Id;
@@ -131,9 +156,17 @@ void Init(US47Main* M)
   It.Label=[]{return AS47Props::IsDoorOpen(TEXT("radioLobbyDoor"))?FString(TEXT("Close studio lobby door")):FString(TEXT("Open studio lobby door"));};It.Use=[]{AS47Props::UseDoor(TEXT("radioLobbyDoor"));};M->Inter->Add(It);
  }
  for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})if(!AS47Props::IsDoorOpen(Door))AS47Props::UseDoor(Door);
- UE_LOG(LogTemp,Display,TEXT("S47: Caliche playtest access ready, %d physical rooms and movable entry doors"),Rooms.Num());
+ UE_LOG(LogTemp,Display,TEXT("S47: Caliche playtest access ready, %d physical rooms and movable entry doors; %d exact exterior daylight bindings"),Rooms.Num(),ExteriorGlows.Num());
+ Update();
 }
-void Update(){for(const auto& C:Retired)Retire(C.Get());}
+void Update()
+{
+ for(const auto& C:Retired)Retire(C.Get());
+ if(!Main.IsValid()||!Main->Web)return;
+ const float Mask=Main->Web->ExteriorDaylightMask(Main->Web->FloodSet(TEXT("town")),1);
+ if(Mask==LastExteriorMask)return;LastExteriorMask=Mask;
+ for(const auto& G:ExteriorGlows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*Mask);
+}
 void Save(const S47J::FObj& State)
 {
  if(!State)return;auto Doors=S47J::New();for(const FRoom& R:Rooms)S47J::Set(Doors,*R.Id,R.bOpen);for(const TCHAR* Door:{TEXT("gasDoor"),TEXT("radioLobbyDoor")})S47J::Set(Doors,Door,AS47Props::IsDoorOpen(Door));S47J::Set(State,TEXT("calicheAccessDoors"),Doors);

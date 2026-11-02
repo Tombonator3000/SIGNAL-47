@@ -16,7 +16,7 @@ private:
  TWeakObjectPtr<AS47Web> Web;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
  TArray<int32> Nodes,Retired;
- struct FGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FString Family; FLinearColor Base; };
+ struct FGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FString Family; FLinearColor Base; bool Exterior=false; };
  struct FLamp { TWeakObjectPtr<UPointLightComponent> Light; int32 Parent; FString Family; float Lumens=900; };
  TArray<FGlow> Glows;
  TArray<FLamp> Lamps;
