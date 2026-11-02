@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Sjette nattleveranse: synlig trafostrøm gjennom reparasjon
+
+Runtime `62b5eaa4`, [PR338](https://github.com/Tombonator3000/SIGNAL-47/pull/338), er installert2. november kl.06:39 CET. Trafoen har bevegelige buer oppover/mellom støttene og romlig summing/knitring i begge moduser. Freeform-feil og faktisk isolering/reparasjon driver effekten; Low og komfort beholder bevegelsen. Storys manusporter beholdes.
+
+Pakke/1997 selvtester,31 målrettede kontroller/én ordinær isolert Fortsett og fire gjennomsette pakkede bilder består. Installert Fortsett består;164 Saved-elementer er uendret. Toms lytting/spillaksept og rampeskjøten gjenstår. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/SARO_SUBSTATION_LIVE_2026-11-02.md).
+
 ## Femte nattleveranse: fungerende innlevering og presist dagslys
 
 Runtime `2e1cef62`, [PR335](https://github.com/Tombonator3000/SIGNAL-47/pull/335) og [PR336](https://github.com/Tombonator3000/SIGNAL-47/pull/336), er installert 2. november kl. 05:45 CET. En skjult Freeform-brukshandling på Records-permen er rettet. Hele observasjon-/kontroll-/lytte-/papir-/arkivreisen kan gjennomføres og gjenfinnes etter vanlig Fortsett. Aktive Caliche- og motellutelys følger dagslyset; blandet Office-glød beholder taklyset inne.
