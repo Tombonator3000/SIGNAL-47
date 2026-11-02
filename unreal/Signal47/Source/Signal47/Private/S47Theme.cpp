@@ -21,6 +21,7 @@
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SNullWidget.h"
 #include "Widgets/SOverlay.h"
+#include "Widgets/SWindow.h"
 #include "Widgets/Text/STextBlock.h"
 
 // ---------- colours and fonts ----------
@@ -218,10 +219,42 @@ FString S47Theme::Played(double Sec)
 	return FString::Printf(TEXT("%d H %d MIN"), M / 60, M % 60);
 }
 
+namespace
+{
+	float MenuTapeStrength = 1.f;
+	bool bMenuTapeStill = false;
+	struct FMenuTapeWear { float Band, Tear, Dropout, Drift; int32 Frame; };
+	FMenuTapeWear TapeWear(double Time, float Strength, bool bStill)
+	{
+		const float Gain = bStill ? 0.f : FMath::Clamp(Strength, 0.f, 1.f);
+		const float T = float(FMath::Fmod(FMath::Max(0., Time), 3600.));
+		const float P = FMath::Fmod(T, 5.83f);
+		// Uneven, short tracking catches. Only a few scan rows tear, never the whole menu.
+		const float Catch = FMath::Max(0.f, 1.f - FMath::Abs(P - 1.17f) / .15f)
+			+ .65f * FMath::Max(0.f, 1.f - FMath::Abs(P - 4.62f) / .09f);
+		const int32 Frame = FMath::FloorToInt(T * 12.f);
+		const uint32 Noise = uint32(Frame) * 1664525u + 1013904223u;
+		return { FMath::Fmod(.86f + T * .021f, 1.f), Catch * Gain,
+			(Noise % 29u == 0u ? 1.f : 0.f) * Gain, FMath::Sin(T * .71f) * .007f * Gain, Frame };
+	}
+}
+
+void S47Theme::SetTapeComfort(float Strength, bool bStill)
+{
+	MenuTapeStrength = FMath::Clamp(Strength, 0.f, 1.f);
+	bMenuTapeStill = bStill;
+}
+
 bool S47Theme::SelfTest(TArray<FString>& Out)
 {
 	bool bOk = true;
 	auto Check = [&](bool bPass, const TCHAR* What, const FString& Got = FString()) { Out.Add(FString::Printf(TEXT("%s theme: %s %s"), bPass ? TEXT("ok  ") : TEXT("FAIL"), What, *Got)); bOk &= bPass; };
+	const FMenuTapeWear Worn = TapeWear(1.17, 1.f, false), CalmTape = TapeWear(1.17, 1.f, true), OffTape = TapeWear(1.17, 0.f, false);
+	Check(Worn.Tear > .99f && TapeWear(2., 1.f, false).Tear == 0.f && TapeWear(1.25, 1.f, false).Frame != Worn.Frame,
+		TEXT("menu tape wear advances independently with quiet gaps between local tracking catches"));
+	Check(CalmTape.Tear == 0.f && CalmTape.Dropout == 0.f && CalmTape.Drift == 0.f
+		&& OffTape.Tear == 0.f && OffTape.Dropout == 0.f && OffTape.Drift == 0.f,
+		TEXT("still/calm and zero picture strength suppress all new moving menu tape wear"));
 	const TPair<FString, FString> L = ChapterLine(TEXT("Chapter 2: The Amended Record"));
 	Check(L.Key == TEXT("THE AMENDED RECORD") && L.Value.IsEmpty(), TEXT("legacy numbered save displays only the story title"), L.Key + TEXT(" / ") + L.Value);
 	const auto Plain = ChapterLine(TEXT("The Amended Record"));
@@ -316,7 +349,17 @@ namespace S47Theme::Local
 		SLATE_BEGIN_ARGS(SS47Scan) : _Alpha(0.18f) {}
 			SLATE_ARGUMENT(float, Alpha)
 		SLATE_END_ARGS()
-		void Construct(const FArguments& InArgs) { Alpha = InArgs._Alpha; }
+		void Construct(const FArguments& InArgs) { Alpha = InArgs._Alpha; SetCanTick(true); ForceVolatile(true); }
+		virtual void Tick(const FGeometry& G, const double CurrentTime, const float DeltaTime) override
+		{
+			SLeafWidget::Tick(G, CurrentTime, DeltaTime);
+			if (!GetVisibility().IsVisible() || !FSlateApplication::IsInitialized()) return;
+			auto& App = FSlateApplication::Get();
+			const TSharedPtr<SWindow> Window = App.FindWidgetWindow(SharedThis(this));
+			if (!Window.IsValid() || Window->IsWindowMinimized()) return;
+			// Slate keeps ticking while the world is paused. Never use world delta/timers here.
+			TapeTime += FMath::Clamp(DeltaTime, 0.f, .1f);
+		}
 		virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D::ZeroVector; }
 		virtual int32 OnPaint(const FPaintArgs&, const FGeometry& G, const FSlateRect&, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle&, bool) const override
 		{
@@ -324,11 +367,33 @@ namespace S47Theme::Local
 			const FVector2f S = FVector2f(G.GetLocalSize());
 			const float Step = 3.f / Scale, Line = 1.f / Scale;
 			for (float Y = 0; Y < S.Y; Y += Step) Fill(Out, Layer, G, FVector2f(0, Y), FVector2f(S.X, Line), FLinearColor(0, 0, 0, Alpha));
-			return Layer;
+			const FMenuTapeWear Wear = TapeWear(TapeTime, MenuTapeStrength, bMenuTapeStill);
+			if (MenuTapeStrength <= 0.f || bMenuTapeStill) return Layer;
+			const float Y = Wear.Band * FMath::Max(0.f, S.Y - 14.f / Scale);
+			// Stagger only the worn scan rows, not choices or their hit boxes. Fine colour edges
+			// suggest tracking displacement without moving text or obscuring the save status.
+			for (int32 I = 0; I < 5; ++I)
+			{
+				const float Shift = FMath::Sin(float(Wear.Frame * 7 + I * 13)) * 6.f / Scale;
+				const float Row = Y + I * 2.f / Scale;
+				Fill(Out, Layer + 1, G, FVector2f(FMath::Max(0.f, Shift), Row), FVector2f(S.X - FMath::Abs(Shift), Line), Css(0xbdb7a6, .065f * Wear.Tear));
+				Fill(Out, Layer + 1, G, FVector2f(S.X * .12f + Shift, Row + Line), FVector2f(S.X * .71f, Line), Css(I % 2 ? 0x7eb7bc : 0xc38b69, .045f * Wear.Tear));
+			}
+			if (Wear.Dropout > 0.f) for (int32 I = 0; I < 12; ++I)
+			{
+				const uint32 N = uint32(Wear.Frame * 37 + I * 173) * 1664525u + 1013904223u;
+				const float X = float(N % 997u) / 997.f * S.X * .94f;
+				const float Row = float((N / 997u) % 991u) / 991.f * FMath::Max(0.f, S.Y - Line);
+				Fill(Out, Layer + 1, G, FVector2f(X, Row), FVector2f((4 + N % 38u) / Scale, Line), Paper(.095f * Wear.Dropout));
+			}
+			// Very slow, sub-one-percent colour/brightness drift, not a global strobe.
+			Fill(Out, Layer + 1, G, FVector2f::ZeroVector, S, Css(Wear.Drift > 0 ? 0xb7aa82 : 0x6b919d, FMath::Abs(Wear.Drift)));
+			return Layer + 1;
 		}
 
 	private:
 		float Alpha = 0.18f;
+		double TapeTime = 0.;
 	};
 
 	class SS47Vig : public SLeafWidget

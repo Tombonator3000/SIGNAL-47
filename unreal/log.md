@@ -1623,3 +1623,7 @@ Engangsautomasjonen signal-47-nattskift-22-08 er slettet via appen etter morgens
 2026-11-02: PR347 lokalt installert902a8fd9. Pakke1997 selvtester og10s installert tittel består,161 Saved-elementer uendret. Station01 før/etter og16 sjekker/2,88km; avvist tavletråd før/etter. Eldre kandidater kan ryddes ved neste samlede kjøring. Neste gren codex/board-finding-anchors-20261102 gjelder Finding under aktiv sak; ingen ny offentlig utgave.
 
 2026-11-02: codex/board-finding-anchors-20261102 gir eksplisitte visuelle Finding-ankre i fem historiedeler, bevarer manuelle bevis og fokuserer aktiv sak. Bygg/før-etter og2004 selvtester består; ingen automatisk konklusjon. Pakking gjenstår.
+
+2026-11-02: PR348 Finding lokalt installert3b715c3b,2004 pakkeselvtester og10s tittelprøve består;161 Saved-elementer uendret. Neste gren codex/menu-vhs-20261102: early_logic eier Theme/ApplyPicture-bro, root bygg/levering. Bibliotekets ntsc-rs er UNVERIFIED og ikke brukt; eksisterende Slate-scanlines gjenbrukes.
+
+2026-11-02: codex/menu-vhs-20261102 bygger;2006 selvtester og tittel/pausebilde består. Lokal Slate-tid driver tracking/dropouts, bildekomfort demper effekten; isolerte selvtester endrer ikke aktiv menykomfort. Pakking/installasjon gjenstår; ingen ny offentlig release.

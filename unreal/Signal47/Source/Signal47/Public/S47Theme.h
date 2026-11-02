@@ -211,7 +211,9 @@ namespace S47Theme
 	SIGNAL47_API TSharedRef<SWidget> Button(const FString& Label, bool bAmber, TFunction<void()> OnClick, TAttribute<bool> Usable = true, TAttribute<bool> Lit = false);
 	// the screen behind a menu: the game blurred (Blur in mockup pixels, 0 for none), darkened by Tint
 	SIGNAL47_API TSharedRef<SWidget> Backdrop(float Blur, const FLinearColor& Tint, bool bVignette = true, float CenterX = 0.6f);
-	// .scan: the tape's lines over everything (HitTestInvisible)
+	// .scan: the tape's lines and faint UI-time wear over menus (HitTestInvisible)
+	// Shared live picture/accessibility choices; no world clock or audio is touched.
+	SIGNAL47_API void SetTapeComfort(float Strength, bool bStill);
 	SIGNAL47_API TSharedRef<SWidget> Scanlines(float Alpha = 0.18f);
 	// .frame: the terminal's panel, with its shadow; the content inside
 	SIGNAL47_API TSharedRef<SWidget> Frame(TSharedRef<SWidget> Content);
