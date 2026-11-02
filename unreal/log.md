@@ -1602,3 +1602,6 @@ Store installasjonsfiler bruker verifiserte Btrfs-reflinks; 192.7GB fysisk ledig
 2026-11-02 07:03 CET | Sjuende nattbatch PR340, runtime bfa1c26d | Installert lukket ApronGrade-rampeskjøt på tre LOD-er; øvrige modeller/materialer/gulv/T02 bevart. Pakke/1997, gangprøve15/12 m og like før/etter-bilder, Story-inspeksjon/diskrestore og installert Fortsett PASS;164 Saved-elementer uendret. Ingen ny kopi/full rydding; WORLD01/04 og motell fortsatt åpne.
 
 2026-11-02 07:20 CET | Privat WORLD04-inngangsdiagnose | 48,5 m faktisk øst-/sørdør/korridor/OPS/Rest og fem private bilder uten vegghull; geometri stabil. Nærliggende fixture med erklært klokkehold, ikke eksakt feilramme/langøkt. Ingen årsaksretting bevist; privat prøvekode tatt ut og motorvindu frigitt. Installert bfa1c26d beholdes, ingen pakking/ny installasjon.
+
+2026-11-02 08:01 CET | Nattskift 1.–2. november avsluttet | Sju installerte batcher, gjeldende runtime bfa1c26d fra07:03;1997 siste selvtester/installert Fortsett PASS og164 Saved-elementer bevart. WORLD01/04/motellvegger/renderstans og spillaksept står åpne. Kilde sikret på main, privat diagnosekode tatt ut, ingen motorjobb eller ny rydding/installasjon.
+Engangsautomasjonen signal-47-nattskift-22-08 er slettet via appen etter morgenstatus; ingen videre nattkjøring er bestilt.
