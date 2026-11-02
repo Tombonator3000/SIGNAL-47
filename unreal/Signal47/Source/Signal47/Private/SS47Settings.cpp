@@ -464,9 +464,16 @@ void SS47Settings::BuildRows()
 			[P, SetGraphics](int32 I) { FS47GraphicsSettings G = P->Graphics; G.Detail = I; SetGraphics(G); }, 1,
 			Says(TEXT("Scenery detail")),
 			Says(TEXT("Reduced simplifies optional distant vegetation and scenery details. Lower detail can reduce drawing and scene work; it does not remove story objects or change interaction distances.")));
+		AddToggle(TEXT("Vehicle mirrors"), &FS47PauseOpts::bVehicleMirrors, &FS47PauseOpts::OnVehicleMirrors, true,
+			TEXT("Live side and rear-view mirrors in the Jeep: each mirror shows the road behind you as you drive. They draw a few small extra views of the scene, which costs a little performance while you are in the driver's seat. Off shows plain dark mirror glass.\n\nChanges apply immediately and save automatically."));
 		AddSep();
 		FRow R; R.Kind = FRow::EKind::Action; R.Label = TEXT("Restore High defaults");
-		R.Activate = [Defaults, SetGraphics] { SetGraphics(Defaults); }; R.Default = R.Activate;
+		R.Activate = [Defaults, SetGraphics, P]
+		{
+			SetGraphics(Defaults);
+			if (!P->bVehicleMirrors) { P->bVehicleMirrors = true; if (P->OnVehicleMirrors) P->OnVehicleMirrors(true); }
+		};
+		R.Default = R.Activate;
 		R.Title = Says(TEXT("Restore graphics defaults"));
 		R.Text = Says(TEXT("Restore every control on this tab to the High preset. Your display size, frame limit, V-sync, film/tape look and accessibility settings stay as you chose them.\n\nChanges apply immediately and save automatically."));
 		Push(MoveTemp(R));

@@ -18,6 +18,8 @@ public:
  bool Ready() const {return bReady;}
  FVector Headlamp(int32 Side)const{return bTripoJeep?JeepHeadlamps[Side==0?0:1]:(Side==0?FVector(-.720,.684,-2.073):FVector(.728,.687,-2.070));}
  bool IsTripoJeep()const{return bTripoJeep;}
+ /** The installed native parts (S47Mirrors finds the Jeep's glass slots in them). */
+ const TArray<TWeakObjectPtr<UStaticMeshComponent>>& Parts()const{return NativeParts;}
 private:
  friend class FS47TripoFleet;
  bool bTripoJeep=false,bJeepCab=false;

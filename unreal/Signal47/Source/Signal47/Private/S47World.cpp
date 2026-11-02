@@ -1951,6 +1951,8 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);
 	if (bCommuteVehicle) N->Truck->SetPersonalVehicle(true);
+	// Unreal only: the Jeep's live mirrors, from the eye as it is in this frame (S47Mirrors)
+	if (FS47Mirrors* Mirrors = N->Truck->Mirrors()) Mirrors->Step(*N->Truck, bDriving, Out.Eye, S47Three::Euler(Out.Pitch, Out.Yaw, Out.Roll, TEXT("YXZ")));
 	const bool bView = bDriving || bCamera;
 	if (bView) { LastView = Out; bHaveView = true; }
 	// main.ts: in the cab the prompt is the key, the radio or the way out
