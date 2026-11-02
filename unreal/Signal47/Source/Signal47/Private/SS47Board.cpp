@@ -203,7 +203,8 @@ struct FS47BoardImpl
 	bool bInitialFocus = true, bChanged = false, bCoarse = false;
 	FString PendingLook, PendingShow, ActiveFinding;
 	bool bPendingRender = false, bFocusFinding = true;
-	TMap<FString, FString> KnownQuestions;
+	TMap<FString, FString> KnownQuestions, KnownClusters;
+	bool bClustersSeen = false;
 	TArray<FString> PendingFrame;
 	TMap<FString, TSharedPtr<FSlateBrush>> ArtBrushes;
 	float TextScale() const { return UI.IsValid() && UI->bLargeText ? 1.35f : 1.f; }
@@ -222,7 +223,7 @@ struct FS47BoardImpl
 	};
 	struct FBox
 	{
-		FString Id, Region, Node, Anchor;
+		FString Id, Region, Node, Anchor, FromA, FromB;
 		TArray<FString> AnchorCards;
 		FVector2D At = FVector2D::ZeroVector, Size = FVector2D::ZeroVector, Want = FVector2D::ZeroVector;
 		TSharedPtr<SWidget> Widget;
@@ -231,6 +232,7 @@ struct FS47BoardImpl
 		bool bFree = false, bLines = false, bHand = false, bNote = false, bLift = false;
 		bool bQuestion = false, bDone = false, bFinding = false, bPhoto = false;
 		bool bAutomatic = false, bAutoFree = false, bCollected = false;
+		bool bHadPosition = false, bLayoutMovable = false;
 		int32 Z = 2;
 	};
 	TArray<TSharedPtr<FBox>> Boxes;
@@ -266,6 +268,8 @@ struct FS47BoardImpl
 	void PlaceFree();
 	void PlaceLargeText();
 	void PlaceFindings();
+	void PlaceClusters();
+	void SaveAutomatic(const TSharedPtr<FBox>& B);
 	bool FocusFinding(const FString& Region);
 	FVector2D BoardSize() const;
 	void Render();
@@ -436,6 +440,8 @@ TOptional<FVector2D> FS47BoardImpl::Centre(const FString& Id) const
 void FS47BoardImpl::AddBox(const TSharedPtr<FBox>& B, const FString& Region, TOptional<double> X, TOptional<double> Y, double Width)
 {
 	B->Region = Region;
+	B->bHadPosition = O.LayoutGet && O.LayoutGet(B->Id).IsSet();
+	B->bLayoutMovable = !B->bHadPosition || (O.LayoutIsAutomatic && O.LayoutIsAutomatic(B->Id));
 	B->Z = Zs.Contains(B->Id) ? Zs[B->Id] : Open.Contains(B->Id) ? 2000 : 2;
 	// Findings follow their visual case anchor, including saves with an old free position.
 	const TOptional<FS47BoardRegion> R = RegionOf(Region);
@@ -443,7 +449,7 @@ void FS47BoardImpl::AddBox(const TSharedPtr<FBox>& B, const FString& Region, TOp
 		? TOptional<FVector2D>(FVector2D(R->X + *X, R->Y + *Y)) : PlaceOf(B->Id, Region, X, Y);
 	B->bFree = !Place;
 	if (Place) B->At = *Place;
-	B->bAutomatic = B->AnchorCards.IsEmpty() && TextScale() > 1 && !(O.LayoutGet && O.LayoutGet(B->Id).IsSet());
+	B->bAutomatic = B->AnchorCards.IsEmpty() && TextScale() > 1 && B->bLayoutMovable;
 	B->bAutoFree = B->bFree;
 	B->Want = B->At;
 	if (B->bFree)
@@ -467,13 +473,26 @@ FVector2D FS47BoardImpl::BoardSize() const
 	return Size;
 }
 
-// Fixed chapter coordinates assume the ordinary font. Only unsaved large-text cards are
-// repacked, using their measured height; a player's saved arrangement remains authoritative.
+// Fixed chapter coordinates assume the ordinary font. Automatic positions start at
+// their saved location and move only around measured conflicts; manual positions stay fixed.
 void FS47BoardImpl::PlaceLargeText()
 {
 	TArray<TSharedPtr<FBox>> Taken, Automatic;
+	TMap<FString, FVector2D> Sizes;
+	for (const auto& B : Boxes) Sizes.Add(B->Id, B->Size);
+	// Unconnected automatic records must also leave the visible Finding column free.
+	// This uses the same explicit, collected case anchor as PlaceFindings, not rules.
+	for (const auto& Q : Boxes) for (const FString& Id : Q->AnchorCards)
+	{
+		const auto* A = Boxes.FindByPredicate([&](const auto& B) { return B->Id == Id && B->bCollected && B->Region == Q->Region; });
+		if (!A) continue;
+		FVector2D& Size = Sizes[Id]; Size.X = FMath::Max(Size.X, Q->Size.X); Size.Y += Q->Size.Y + 20;
+		break;
+	}
 	for (const TSharedPtr<FBox>& B : Boxes) if (B->AnchorCards.IsEmpty()) (B->bAutomatic ? Automatic : Taken).Add(B);
 	Automatic.StableSort([](const TSharedPtr<FBox>& A, const TSharedPtr<FBox>& B) {
+		// Newly appearing defaults may not displace an existing automatic layout.
+		if (A->bHadPosition != B->bHadPosition) return A->bHadPosition;
 		if (A->bNote != B->bNote) return !A->bNote;
 		return A->Want.Y == B->Want.Y ? A->Want.X < B->Want.X : A->Want.Y < B->Want.Y;
 	});
@@ -485,7 +504,7 @@ void FS47BoardImpl::PlaceLargeText()
 			{
 				double NextY = At.Y;
 				for (const TSharedPtr<FBox>& T : Taken)
-					if (Overlap(At, B->Size, T->At, T->Size, 20)) NextY = FMath::Max(NextY, T->At.Y + T->Size.Y + 20);
+					if (Overlap(At, Sizes[B->Id], T->At, Sizes[T->Id], 20)) NextY = FMath::Max(NextY, T->At.Y + Sizes[T->Id].Y + 20);
 				if (NextY == At.Y) break;
 				At.Y = NextY;
 			}
@@ -501,10 +520,12 @@ void FS47BoardImpl::PlaceLargeText()
 				if (Candidate.Y < At.Y) At = Candidate;
 			}
 		}
-		B->At = At;
+		// Integer save coordinates must retain the full clearance after a measured
+		// fractional card height; rounding down would trigger another move on reopen.
+		B->At = O.LayoutAutoSet ? FVector2D(FMath::CeilToDouble(At.X), FMath::CeilToDouble(At.Y)) : At;
 		B->bFree = false;
 		Taken.Add(B);
-		// Do not persist an automatic arrangement as a user move. End() still saves real drags.
+		if (O.LayoutAutoSet) SaveAutomatic(B); // never turn automatic packing into a manual position
 	}
 }
 
@@ -693,8 +714,161 @@ void FS47BoardImpl::PlaceFree()
 		B->At = At.Get(FVector2D(R.X + R.W - B->Size.X - 14 - (Taken.Num() % 6) * 12, R.Y + 14 + (Taken.Num() % 6) * 22));
 		B->bFree = false;
 		Taken.Add(B);
-		if (O.LayoutSet) O.LayoutSet(B->Id, B->At.X, B->At.Y);
+		SaveAutomatic(B);
 	}
+}
+
+void FS47BoardImpl::SaveAutomatic(const TSharedPtr<FBox>& B)
+{
+	if (O.LayoutAutoSet) O.LayoutAutoSet(B->Id, B->At.X, B->At.Y);
+	else if (O.LayoutSet) O.LayoutSet(B->Id, B->At.X, B->At.Y);
+}
+
+// Arrange only the visible connections the player has already made. Saved manual
+// positions (including ambiguous old saves) are fixed; chapter defaults can move.
+void FS47BoardImpl::PlaceClusters()
+{
+	if (!O.Threads || !O.LayoutAutoSet || !O.LayoutIsAutomatic) return;
+	TMap<FString, TSharedPtr<FBox>> Cards, Pins;
+	for (const TSharedPtr<FBox>& B : Boxes) if (B->bCollected && !B->bQuestion && !B->bNote)
+	{
+		Cards.Add(B->Id, B);
+		for (const FPin& Pin : B->Pins) Pins.Add(Pin.Id, B);
+	}
+	TMap<FString, TArray<FString>> Neighbours;
+	TArray<FString> Edges;
+	for (const FS47BoardThread& T : O.Threads())
+	{
+		const auto* A = Pins.Find(T.A); const auto* B = Pins.Find(T.B);
+		// A cross-chapter thread remains visible without pulling another patch apart.
+		if (T.bAuto || !A || !B || *A == *B || (*A)->Region != (*B)->Region) continue;
+		Neighbours.FindOrAdd((*A)->Id).AddUnique((*B)->Id);
+		Neighbours.FindOrAdd((*B)->Id).AddUnique((*A)->Id);
+		Edges.AddUnique(S47Board::Pair((*A)->Id, (*B)->Id));
+	}
+	Edges.Sort();
+	TArray<FString> Starts; Neighbours.GetKeys(Starts); Starts.Sort();
+	for (auto& N : Neighbours) N.Value.Sort();
+	TSet<FString> Seen;
+	TMap<FString, FString> Next;
+	for (const FString& Start : Starts)
+	{
+		if (Seen.Contains(Start)) continue;
+		TArray<FString> Ids{Start}; Seen.Add(Start);
+		for (int32 I = 0; I < Ids.Num(); ++I) for (const FString& Id : Neighbours[Ids[I]])
+			if (!Seen.Contains(Id)) { Seen.Add(Id); Ids.Add(Id); }
+		Ids.Sort();
+		TArray<TSharedPtr<FBox>> Members;
+		for (const FString& Id : Ids) Members.Add(Cards[Id]);
+		for (const TSharedPtr<FBox>& B : Boxes) if (B->bNote)
+		{
+			const auto* A = Pins.Find(B->FromA); const auto* C = Pins.Find(B->FromB);
+			if (A && C && Ids.Contains((*A)->Id) && Ids.Contains((*C)->Id)) Members.Add(B);
+		}
+		// Reserve the complete column below each case for its already-visible Findings.
+		TMap<FString, FVector2D> Sizes;
+		for (const auto& B : Members) Sizes.Add(B->Id, B->Size);
+		for (const auto& B : Boxes) if (!B->Anchor.IsEmpty() && Sizes.Contains(B->Anchor))
+		{
+			FVector2D& Size = Sizes[B->Anchor];
+			Size.X = FMath::Max(Size.X, B->Size.X); Size.Y += B->Size.Y + 20;
+		}
+		FString Signature;
+		for (const FString& Edge : Edges)
+		{
+			FString A, B; Edge.Split(TEXT("|"), &A, &B);
+			if (Ids.Contains(A)) Signature += Edge + TEXT(";");
+		}
+		for (const auto& B : Members)
+			Signature += FString::Printf(TEXT("%s:%.1f,%.1f;"), *B->Id, Sizes[B->Id].X, Sizes[B->Id].Y);
+		Next.Add(Start, Signature);
+		const FString* Previous = KnownClusters.Find(Start);
+		bool Repack = Previous ? *Previous != Signature : bClustersSeen;
+		for (const auto& B : Members) if (B->bLayoutMovable)
+		{
+			Repack |= !B->bHadPosition;
+			for (const auto& Other : Boxes)
+			{
+				if (Other == B || Other->Anchor == B->Id || Sizes.Contains(Other->Anchor)) continue;
+				const FVector2D OtherSize = Sizes.Contains(Other->Id) ? Sizes[Other->Id] : Other->Size;
+				if (Overlap(B->At, Sizes[B->Id], Other->At, OtherSize, 14)) Repack = true;
+			}
+		}
+		if (!Repack) continue;
+		// Manual anchors win; otherwise retain an existing automatic card before
+		// considering a newly appeared chapter default as the centre of the group.
+		TSharedPtr<FBox> Anchor = Members[0];
+		for (const auto& B : Members) if (!B->bNote && !B->bLayoutMovable) { Anchor = B; break; }
+		if (Anchor->bLayoutMovable)
+			for (const auto& B : Members) if (!B->bNote && B->bHadPosition) { Anchor = B; break; }
+		if (Anchor->bLayoutMovable && !Anchor->bHadPosition)
+			for (const auto& B : Boxes) if (Ids.Contains(B->Anchor)) { Anchor = Cards[B->Anchor]; break; }
+		TArray<TSharedPtr<FBox>> Taken;
+		for (const auto& B : Boxes)
+			if ((!Members.Contains(B) && !Sizes.Contains(B->Anchor)) || (Members.Contains(B) && !B->bLayoutMovable)) Taken.Add(B);
+		TSet<FString> Placed;
+		for (const auto& B : Members) if (!B->bLayoutMovable) Placed.Add(B->Id);
+		TArray<FString> Order{Anchor->Id};
+		for (int32 I = 0; I < Order.Num(); ++I) for (const FString& Id : Neighbours[Order[I]]) Order.AddUnique(Id);
+		for (const auto& B : Members) if (B->bNote) Order.Add(B->Id);
+		for (const FString& Id : Order)
+		{
+			const auto B = *Members.FindByPredicate([&](const auto& M) { return M->Id == Id; });
+			if (!B->bLayoutMovable) continue;
+			TArray<TSharedPtr<FBox>> Near;
+			if (B->bNote)
+			{
+				for (const FString& Pin : {B->FromA, B->FromB}) if (const auto* C = Pins.Find(Pin)) Near.AddUnique(*C);
+			}
+			else for (const FString& N : Neighbours[Id]) if (Placed.Contains(N)) Near.Add(Cards[N]);
+			const FVector2D Size = Sizes[Id];
+			FVector2D Want = B->At;
+			if (!Near.IsEmpty())
+			{
+				Want = FVector2D::ZeroVector;
+				for (const auto& N : Near) Want += N->At + N->Size / 2;
+				Want = Want / Near.Num() - Size / 2;
+			}
+			const auto Region = RegionOf(B->Region);
+			const double MinX = Region ? Region->X + 14 : 4, MinY = Region ? Region->Y + 14 : 4;
+			const double MaxX = FMath::Max(MinX, Region ? Region->X + Region->W - Size.X - 14 : O.Size.X - Size.X - 4);
+			TArray<double> Xs{FMath::Clamp(Want.X, MinX, MaxX), MinX, MaxX};
+			TArray<double> Ys{FMath::Max(Want.Y, MinY), MinY};
+			for (const auto& T : Taken)
+			{
+				const FVector2D TS = Sizes.Contains(T->Id) ? Sizes[T->Id] : T->Size;
+				for (double X : {T->At.X - Size.X - 24, T->At.X + TS.X + 24})
+					if (X >= MinX && X <= MaxX) Xs.AddUnique(X);
+				for (double Y : {T->At.Y - Size.Y - 24, T->At.Y + TS.Y + 24}) if (Y >= MinY) Ys.AddUnique(Y);
+			}
+			Xs.Sort(); Ys.Sort();
+			double Best = TNumericLimits<double>::Max(); FVector2D At = B->At;
+			for (double X : Xs) for (double Y : Ys)
+			{
+				const FVector2D Candidate(FMath::RoundToDouble(X), FMath::RoundToDouble(Y));
+				bool Free = true;
+				for (const auto& T : Taken)
+					if (Overlap(Candidate, Size, T->At, Sizes.Contains(T->Id) ? Sizes[T->Id] : T->Size, 20)) { Free = false; break; }
+				if (!Free) continue;
+				// Prefer short local edges, with a modest penalty for crossing an
+				// established edge whose two cards have already been placed.
+				double Score = (Candidate-Want).SizeSquared() + .02 * (Candidate-B->At).SizeSquared();
+				if (!B->bNote) for (const auto& N : Near) for (const FString& Edge : Edges)
+				{
+					FString EA, EB; Edge.Split(TEXT("|"), &EA, &EB);
+					if (EA == N->Id || EB == N->Id || !Placed.Contains(EA) || !Placed.Contains(EB)) continue;
+					const FVector2D A = Candidate+B->Size/2, C = N->At+N->Size/2;
+					const FVector2D D = Cards[EA]->At+Cards[EA]->Size/2, E = Cards[EB]->At+Cards[EB]->Size/2;
+					auto Side = [](const FVector2D& P, const FVector2D& Q, const FVector2D& R) { return (Q.X-P.X)*(R.Y-P.Y)-(Q.Y-P.Y)*(R.X-P.X); };
+					if (Side(A,C,D)*Side(A,C,E) < -1e-6 && Side(D,E,A)*Side(D,E,C) < -1e-6) Score += 40000;
+				}
+				if (Score < Best) { Best = Score; At = Candidate; }
+			}
+			B->At = At; B->bFree = false; B->bAutomatic = false;
+			SaveAutomatic(B); Taken.Add(B); Placed.Add(Id);
+		}
+	}
+	KnownClusters = MoveTemp(Next); bClustersSeen = true;
 }
 
 // Only visual metadata and already collected cards participate. No rule is solved here.
@@ -796,7 +970,7 @@ void FS47BoardImpl::Render()
 	// ui/Board.ts render(): notes near their two pins, without covering another card or a pin.
 	for (const FS47BoardNote& N : O.Notes ? O.Notes() : TArray<FS47BoardNote>())
 	{
-		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = N.Id; B->bNote = true; B->bHand = N.bHand;
+		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = N.Id; B->bNote = true; B->bHand = N.bHand; B->FromA = N.FromA; B->FromB = N.FromB;
 		const TOptional<FVector2D> Saved = PlaceOf(N.Id);
 		B->Widget = SNew(SBorder).BorderImage(N.bHand ? Box(0, 0, 0, 0) : Box(0xf1dc7c)).Padding(N.bHand ? FMargin(12, 3, 12, 1) : FMargin(10, 14, 10, 8))
 			[SNew(STextBlock).Text(FText::FromString(N.Text)).Font(N.bHand ? S47Style::Hand(34 * TextScale()) : S47Style::Body(12.5f * TextScale()))
@@ -850,9 +1024,11 @@ void FS47BoardImpl::Render()
 			}
 		}
 		B->At = At.Get(FVector2D(FMath::RoundToDouble(FMath::Clamp(Want.X, 4.0, O.Size.X - B->Size.X - 4)), FMath::RoundToDouble(FMath::Clamp(Want.Y, 4.0, O.Size.Y - B->Size.Y - 4))));
-		if (O.LayoutSet) O.LayoutSet(N.Id, B->At.X, B->At.Y);
+		SaveAutomatic(B);
 	}
 	if (TextScale() > 1) PlaceLargeText();
+	PlaceFindings();
+	PlaceClusters();
 	PlaceFindings();
 	for (const FS47BoardRegion& R : Regions())
 	{
@@ -1601,6 +1777,12 @@ void SS47Board::Tick(const FGeometry& G, const double CurrentTime, const float D
 	SCompoundWidget::Tick(G, CurrentTime, DeltaTime);
 	P->ParentScale = G.GetAccumulatedLayoutTransform().GetScale();
 }
+TMap<FString, FVector4> SS47Board::LayoutBounds() const
+{
+	TMap<FString, FVector4> Bounds;
+	for (const auto& B : P->Boxes) Bounds.Add(B->Id, FVector4(B->At.X, B->At.Y, B->Size.X, B->Size.Y));
+	return Bounds;
+}
 void SS47Board::Render() { P->Render(); }
 FS47Result SS47Board::Link(const FString& A, const FString& B) { return P->Link(A, B); }
 void SS47Board::Say(const FString& Text) { P->Say(Text); }
@@ -1805,5 +1987,96 @@ bool SS47Board::SelfTest(TArray<FString>& Lines)
 		TEXT("Finding anchors use measured large-text record heights and retain manual evidence positions"));
 	F.ViewSize = FVector2D(1000, 800);
 	Check(F.FocusFinding(TEXT("test")) && F.ActiveFinding == TEXT("finding"), TEXT("opening can frame the active case and complete Finding together"));
+	// A real visible-thread fixture: legacy manual anchors plus authored defaults,
+	// two independent components, a note and the existing case/Finding column.
+	FS47BoardImpl G;
+	auto InitBoard = [](FS47BoardImpl& V) {
+		V.Canvas = SNew(SCanvas); V.StatusEl = SNew(STextBlock); V.HowEl = SNew(STextBlock); V.SayEl = SNew(STextBlock);
+	};
+	InitBoard(G); G.O.Size = FVector2D(3000, 2400);
+	G.O.Regions = [] { return TArray<FS47BoardRegion>{{TEXT("cluster"), FString(), 40, 60, 2800, 2200}}; };
+	TMap<FString, FVector2D> ClusterLayout{{TEXT("a"), {120, 130}}, {TEXT("other"), {2100, 150}}};
+	TSet<FString> AutoLayout;
+	TArray<FS47BoardThread> ClusterThreads{{TEXT("d"), TEXT("e"), false, false}};
+	bool HaveNote = false, HaveLoose = false;
+	G.O.LayoutGet = [&](const FString& Id) -> TOptional<FVector2D> { const auto* At = ClusterLayout.Find(Id); return At ? TOptional<FVector2D>(*At) : TOptional<FVector2D>(); };
+	G.O.LayoutIsAutomatic = [&](const FString& Id) { return AutoLayout.Contains(Id); };
+	G.O.LayoutAutoSet = [&](const FString& Id, double X, double Y) {
+		if (!ClusterLayout.Contains(Id) || AutoLayout.Contains(Id)) { ClusterLayout.Add(Id, {FMath::FloorToDouble(X+.5), FMath::FloorToDouble(Y+.5)}); AutoLayout.Add(Id); }
+	};
+	G.O.LayoutSet = [&](const FString& Id, double X, double Y) { ClusterLayout.Add(Id, {X, Y}); AutoLayout.Remove(Id); };
+	G.O.Cards = [&] {
+		TArray<FS47BoardCard> Cards;
+		for (const auto& Row : TArray<TPair<FString, FVector2D>>{{TEXT("a"), FVector2D(20,20)}, {TEXT("b"), FVector2D(900,20)}, {TEXT("c"), FVector2D(1400,600)},
+			{TEXT("d"), FVector2D(20,1200)}, {TEXT("e"), FVector2D(900,1200)}, {TEXT("other"), FVector2D(2100,20)}, {TEXT("hidden"), FVector2D(2100,1000)}, {TEXT("loose"), FVector2D(80,270)}})
+		{
+			if (Row.Key == TEXT("loose") && !HaveLoose) continue;
+			FS47BoardCard C; C.Id = Row.Key; C.Stamp = Row.Key; C.Region = TEXT("cluster"); C.bHave = C.Id != TEXT("hidden");
+			C.X = Row.Value.X; C.Y = Row.Value.Y; C.W = 240;
+			C.Text = TEXT("Compare this collected record with the independent control. Keep the marked sight line, observation and date available before recording any conclusion.");
+			if (C.Id == TEXT("b")) C.Lines = {{TEXT("b-line"), TEXT("The collected comparison line."), FString()}};
+			Cards.Add(C);
+		}
+		return Cards;
+	};
+	G.O.Threads = [&] { return ClusterThreads; };
+	G.O.Notes = [&] { return HaveNote ? TArray<FS47BoardNote>{{TEXT("linked-note"), TEXT("An already established comparison."), TEXT("a"), TEXT("b-line"), TEXT("cluster"), false}} : TArray<FS47BoardNote>(); };
+	G.O.Questions = [] {
+		FS47BoardQuestion Q; Q.Id = TEXT("cluster-finding"); Q.Region = TEXT("cluster"); Q.Stamp = TEXT("FINDING"); Q.Text = TEXT("What do these records support?");
+		Q.Slots = 2; Q.AnchorCards = {TEXT("a")}; Q.W = 240; return TArray<FS47BoardQuestion>{Q};
+	};
+	G.O.Connect = [&](const FString& A, const FString& B) {
+		if (A == TEXT("a") && B == TEXT("b-line")) { ClusterThreads.Add({A, B, false, false}); HaveNote = true; return FS47Result{true, TEXT("Established comparison.")}; }
+		return FS47Result{false, TEXT("Those records do not establish a connection.")};
+	};
+	auto BoxAt = [](FS47BoardImpl& V, const FString& Id) { return *V.Boxes.FindByPredicate([&](const auto& B) { return B->Id == Id; }); };
+	G.Render();
+	const FVector2D OtherAt = BoxAt(G, TEXT("other"))->At, HiddenAt = BoxAt(G, TEXT("hidden"))->At;
+	const FVector2D DAt = BoxAt(G, TEXT("d"))->At, EAt = BoxAt(G, TEXT("e"))->At;
+	const double OldSpan = (BoxAt(G, TEXT("a"))->At-BoxAt(G, TEXT("b"))->At).Size();
+	G.S = .8; G.Tx = -123; G.Ty = -72;
+	G.Link(TEXT("a"), TEXT("b-line"));
+	Check((BoxAt(G,TEXT("a"))->At-BoxAt(G,TEXT("b"))->At).Size() < OldSpan && AutoLayout.Contains(TEXT("b"))
+		&& !AutoLayout.Contains(TEXT("a")) && BoxAt(G,TEXT("a"))->At == FVector2D(120,130),
+		TEXT("established line pins group an old authored default around its unchanged legacy manual anchor"));
+	Check(BoxAt(G,TEXT("linked-note"))->At != FVector2D::ZeroVector && AutoLayout.Contains(TEXT("linked-note"))
+		&& BoxAt(G,TEXT("cluster-finding"))->At == BoxAt(G,TEXT("a"))->At + FVector2D(0,BoxAt(G,TEXT("a"))->Size.Y+20)
+		&& G.S == .8 && G.Tx == -123 && G.Ty == -72, TEXT("related note and Finding stay with the group without changing the viewport"));
+	// A manual override remains authoritative when the next related record joins.
+	G.S = 1; G.Tx = G.Ty = 0;
+	const FVector2D GrabAt = BoxAt(G,TEXT("b"))->At + FVector2D(30,25);
+	G.Down(25,GrabAt,false); G.Move(25,GrabAt+FVector2D(100,0)); G.End(25,GrabAt+FVector2D(100,0),false);
+	const FVector2D ManualB = ClusterLayout[TEXT("b")];
+	Check(!AutoLayout.Contains(TEXT("b")), TEXT("dragging an automatically grouped record makes its saved position manual"));
+	const auto Held = BoxAt(G,TEXT("b")); const FVector2D OldC = BoxAt(G,TEXT("c"))->At;
+	G.Drag.Kind = FS47BoardImpl::FDrag::EKind::Card; G.Drag.Box = Held;
+	ClusterThreads.Add({TEXT("b-line"),TEXT("c"),false,false}); G.Render();
+	Check(G.bPendingRender && BoxAt(G,TEXT("b")) == Held && BoxAt(G,TEXT("c"))->At == OldC, TEXT("a new established edge defers cluster placement while a card is held"));
+	G.Drag = {}; G.Render();
+	Check(AutoLayout.Contains(TEXT("c")) && BoxAt(G,TEXT("c"))->At != OldC && BoxAt(G,TEXT("b"))->At == ManualB
+		&& BoxAt(G,TEXT("d"))->At == DAt && BoxAt(G,TEXT("e"))->At == EAt && BoxAt(G,TEXT("other"))->At == OtherAt,
+		TEXT("two records grow to three without moving the manual override, another cluster or unrelated evidence"));
+	const auto StableLayout = ClusterLayout;
+	ClusterThreads.Add({TEXT("a"),TEXT("other"),true,true});
+	ClusterThreads.Add({TEXT("b-line"),TEXT("hidden"),false,false});
+	ClusterThreads.Add({TEXT("unknown"),TEXT("a"),false,false});
+	G.Link(TEXT("a"),TEXT("other")); G.Render();
+	bool Unchanged = true; for (const auto& At : StableLayout) Unchanged &= ClusterLayout.FindRef(At.Key) == At.Value;
+	Check(Unchanged && BoxAt(G,TEXT("hidden"))->At == HiddenAt, TEXT("rejected, story-auto, unknown and uncollected links do not regroup evidence"));
+	HaveLoose = true; G.UI = LargeTextUI; LargeTextUI->bLargeText = true; G.Render();
+	bool ClearAutomatic = true;
+	for (const auto& B : G.Boxes) if (AutoLayout.Contains(B->Id)) for (const auto& Other : G.Boxes)
+		if (B != Other) ClearAutomatic &= !Overlap(B->At,B->Size,Other->At,Other->Size,0);
+	Check(ClearAutomatic && BoxAt(G,TEXT("a"))->At == FVector2D(120,130) && BoxAt(G,TEXT("b"))->At == ManualB,
+		TEXT("large-text cluster packing uses measured cards, notes and Findings while retaining manual positions"));
+	const auto LargePositions = ClusterLayout;
+	TMap<FString, FVector4> LargeBounds;
+	for (const auto& B : G.Boxes) LargeBounds.Add(B->Id, FVector4(B->At.X,B->At.Y,B->Size.X,B->Size.Y));
+	G.Render(); FS47BoardImpl Reopened; InitBoard(Reopened); Reopened.O = G.O; Reopened.UI = LargeTextUI; Reopened.Render();
+	bool StableReopen = true; for (const auto& At : LargePositions) StableReopen &= ClusterLayout.FindRef(At.Key) == At.Value;
+	for (FS47BoardImpl* V : {&G, &Reopened}) for (const auto& B : V->Boxes)
+		StableReopen &= LargeBounds.FindRef(B->Id) == FVector4(B->At.X,B->At.Y,B->Size.X,B->Size.Y);
+	Check(StableReopen && AutoLayout.Contains(TEXT("loose")) && BoxAt(Reopened,TEXT("b"))->At == ManualB,
+		TEXT("fresh reopen preserves actual measured bounds including an unconnected large-text default and Finding, not just saved positions"));
 	return Ok;
 }

@@ -307,6 +307,8 @@ void US47CaseBoard::Open(const FString& Place, const FString& Region)
 	O.Hint = [this](const FString& Q) { return Hint(Q); };
 	O.LayoutGet = [this](const FString& Id) { return GetPosition(Id); };
 	O.LayoutSet = [this](const FString& Id, double X, double Y) { SetPosition(Id, X, Y); };
+	O.LayoutIsAutomatic = [this](const FString& Id) { return IsPositionAutomatic(Id); };
+	O.LayoutAutoSet = [this](const FString& Id, double X, double Y) { SetAutomaticPosition(Id, X, Y); };
 	O.OnClose = [this] { View.Reset(); if (bLayoutMoved && H.Save) H.Save(); };
 	View = SNew(SS47Board).UI(M->UI).Spec(O);
 	M->UI->Open(View.ToSharedRef(), O.OnClose);
@@ -356,18 +358,30 @@ S47J::FObj US47CaseBoard::Save() const
 	S47J::FObj Out = S47J::New(), Positions = S47J::New();
 	for (const auto& P : Pos) S47J::Set(Positions, *P.Key, TArray<double>{ P.Value.X, P.Value.Y });
 	S47J::Set(Out, TEXT("pos"), Positions);
+	if (!AutoPositions.IsEmpty())
+	{
+		TArray<FString> Automatic = AutoPositions.Array();
+		Automatic.Sort();
+		S47J::Set(Out, TEXT("auto"), Automatic);
+	}
 	return Out;
 }
 
 void US47CaseBoard::Load(const S47J::FObj& Saved)
 {
 	Pos.Reset();
+	AutoPositions.Reset();
 	const S47J::FObj Positions = S47J::Obj(Saved, TEXT("pos"));
 	if (Positions) for (const auto& P : Positions->Values)
 	{
 		const TArray<TSharedPtr<FJsonValue>> XY = S47J::Arr(Positions, *P.Key);
 		double X = 0, Y = 0;
-		if (XY.Num() >= 2 && XY[0]->TryGetNumber(X) && XY[1]->TryGetNumber(Y) && FMath::IsFinite(X) && FMath::IsFinite(Y)) Pos.Add(FString(*P.Key), FVector2D(X, Y));
+		if (XY.Num() >= 2 && XY[0].IsValid() && XY[1].IsValid() && XY[0]->TryGetNumber(X) && XY[1]->TryGetNumber(Y) && FMath::IsFinite(X) && FMath::IsFinite(Y)) Pos.Add(FString(*P.Key), FVector2D(X, Y));
+	}
+	for (const TSharedPtr<FJsonValue>& Value : S47J::Arr(Saved, TEXT("auto")))
+	{
+		FString Id;
+		if (Value.IsValid() && Value->Type == EJson::String && Value->TryGetString(Id) && Pos.Contains(Id)) AutoPositions.Add(Id);
 	}
 	bLayoutMoved = false;
 }
@@ -380,8 +394,28 @@ TOptional<FVector2D> US47CaseBoard::GetPosition(const FString& Id) const
 
 void US47CaseBoard::SetPosition(const FString& Id, double X, double Y)
 {
+	if (!FMath::IsFinite(X) || !FMath::IsFinite(Y)) return;
 	// JavaScript Math.round rounds a half towards +infinity, including negative coordinates.
 	Pos.Add(Id, FVector2D(FMath::FloorToDouble(X + 0.5), FMath::FloorToDouble(Y + 0.5)));
+	AutoPositions.Remove(Id);
+	bLayoutMoved = true;
+}
+
+bool US47CaseBoard::IsPositionAutomatic(const FString& Id) const
+{
+	return AutoPositions.Contains(Id);
+}
+
+void US47CaseBoard::SetAutomaticPosition(const FString& Id, double X, double Y)
+{
+	if (!FMath::IsFinite(X) || !FMath::IsFinite(Y)) return;
+	const FVector2D* Previous = Pos.Find(Id);
+	// Existing saves and player moves own their positions; only defaults and auto positions move.
+	if (Previous && !AutoPositions.Contains(Id)) return;
+	const FVector2D Rounded(FMath::FloorToDouble(X + 0.5), FMath::FloorToDouble(Y + 0.5));
+	if (Previous && *Previous == Rounded) return;
+	Pos.Add(Id, Rounded);
+	AutoPositions.Add(Id);
 	bLayoutMoved = true;
 }
 
@@ -484,17 +518,38 @@ bool US47CaseBoard::SelfTest(TArray<FString>& Lines)
 	Board->SetPosition(TEXT("record"), 123.5, 99.4);
 	Board->SetPosition(TEXT("note"), -2.5, -3.6);
 	Check(Board->GetPosition(TEXT("record")) == TOptional<FVector2D>(FVector2D(124, 99)) && Board->GetPosition(TEXT("note")) == TOptional<FVector2D>(FVector2D(-2, -4)) && Board->bLayoutMoved, TEXT("layout rounding matches JavaScript including negative halves"));
+	Board->SetAutomaticPosition(TEXT("cluster"), 300.5, -2.5);
+	Check(Board->IsPositionAutomatic(TEXT("cluster")) && Board->GetPosition(TEXT("cluster")) == TOptional<FVector2D>(FVector2D(301, -2)) && !Board->IsPositionAutomatic(TEXT("record")) && !Board->IsPositionAutomatic(TEXT("absent")), TEXT("automatic defaults use the same rounding without changing manual ownership"));
 	const S47J::FObj Saved = Board->Save();
 	Check(S47J::Nums(S47J::Obj(Saved, TEXT("pos")), TEXT("record")) == TArray<double>{ 124, 99 }, TEXT("save is board.pos id -> [x,y]"));
 	US47CaseBoard* Restored = NewObject<US47CaseBoard>();
 	Restored->Load(S47J::Read(S47J::Write(Saved)));
 	Check(Restored->GetPosition(TEXT("record")) == Board->GetPosition(TEXT("record")) && Restored->GetPosition(TEXT("note")) == Board->GetPosition(TEXT("note")) && !Restored->GetPosition(TEXT("absent")) && !Restored->bLayoutMoved, TEXT("layout JSON round trip"));
+	Check(Restored->IsPositionAutomatic(TEXT("cluster")) && Restored->GetPosition(TEXT("cluster")) == Board->GetPosition(TEXT("cluster")) && S47J::Strs(Saved, TEXT("auto")) == TArray<FString>{ TEXT("cluster") }, TEXT("optional automatic ownership survives JSON round trip"));
+	Restored->SetAutomaticPosition(TEXT("record"), 900, 900);
+	Check(Restored->GetPosition(TEXT("record")) == Board->GetPosition(TEXT("record")) && !Restored->IsPositionAutomatic(TEXT("record")) && !Restored->bLayoutMoved, TEXT("automatic layout refuses a saved manual position"));
+	Restored->SetAutomaticPosition(TEXT("cluster"), 301, -2);
+	Check(!Restored->bLayoutMoved, TEXT("unchanged automatic layout does not request another save"));
+	Restored->SetAutomaticPosition(TEXT("cluster"), 320, 20);
+	Check(Restored->IsPositionAutomatic(TEXT("cluster")) && Restored->GetPosition(TEXT("cluster")) == TOptional<FVector2D>(FVector2D(320, 20)) && Restored->bLayoutMoved, TEXT("automatic position can move and requests a close save"));
+	Restored->bLayoutMoved = false;
+	Restored->SetPosition(TEXT("cluster"), 320, 20);
+	Check(!Restored->IsPositionAutomatic(TEXT("cluster")) && Restored->bLayoutMoved && !S47J::Has(Restored->Save(), TEXT("auto")), TEXT("manual ownership at identical coordinates requests a save and clears automatic status"));
+	Restored->Load(S47J::Read(S47J::Write(Restored->Save())));
+	Restored->SetAutomaticPosition(TEXT("cluster"), 800, 800);
+	Check(!Restored->IsPositionAutomatic(TEXT("cluster")) && Restored->GetPosition(TEXT("cluster")) == TOptional<FVector2D>(FVector2D(320, 20)) && !Restored->bLayoutMoved, TEXT("manual takeover stays fixed after reload"));
 	Restored->SetPosition(TEXT("record"), 7, 8);
 	Check(S47J::Nums(S47J::Obj(Saved, TEXT("pos")), TEXT("record"))[0] == 124, TEXT("save does not alias live layout"));
 	Restored->Load(S47J::Read(TEXT("{\"pos\":{\"short\":[1],\"bad\":[1,\"a\",2],\"ok\":[3,4]}}")));
 	Check(!Restored->GetPosition(TEXT("record")) && !Restored->GetPosition(TEXT("short")) && !Restored->GetPosition(TEXT("bad")) && Restored->GetPosition(TEXT("ok")) == TOptional<FVector2D>(FVector2D(3, 4)), TEXT("load replaces layout and ignores malformed pairs"));
+	Restored->SetAutomaticPosition(TEXT("ok"), 30, 40);
+	Check(Restored->AutoPositions.IsEmpty() && Restored->GetPosition(TEXT("ok")) == TOptional<FVector2D>(FVector2D(3, 4)) && !Restored->bLayoutMoved, TEXT("legacy positions without automatic metadata remain fixed"));
+	Restored->Load(S47J::Read(TEXT("{\"pos\":{\"bad\":[null,2],\"ok\":[3,4],\"12\":[5,6],\"true\":[7,8]},\"auto\":[\"missing\",\"bad\",12,true,null,{},\"ok\",\"ok\"]}")));
+	Check(Restored->AutoPositions.Num() == 1 && Restored->IsPositionAutomatic(TEXT("ok")) && !Restored->IsPositionAutomatic(TEXT("missing")) && !Restored->IsPositionAutomatic(TEXT("bad")) && !Restored->bLayoutMoved, TEXT("automatic metadata accepts only valid saved positions and ignores malformed or duplicate ids"));
+	Restored->Load(S47J::Read(TEXT("{\"pos\":{\"ok\":[3,4]},\"auto\":{\"ok\":true}}")));
+	Check(Restored->AutoPositions.IsEmpty() && Restored->GetPosition(TEXT("ok")).IsSet(), TEXT("malformed automatic list leaves valid positions manual"));
 	Restored->Load(nullptr);
-	Check(S47J::Obj(Restored->Save(), TEXT("pos"))->Values.IsEmpty(), TEXT("old save without board resets layout"));
+	Check(S47J::Obj(Restored->Save(), TEXT("pos"))->Values.IsEmpty() && Restored->AutoPositions.IsEmpty(), TEXT("old save without board resets layout and automatic ownership"));
 	FS47Doc D; D.Id = TEXT("paper"); D.Title = TEXT("ID / A / B"); D.Stamp = TEXT("STAMP"); D.Page = TEXT("typed\n~ pencil"); D.Transcript = TEXT("First  line\ncontinued\n \nSecond");
 	FS47BoardCard Doc = DocCard(D, TEXT("ns"));
 	Check(Doc.Stamp == TEXT("STAMP") && Doc.Title == TEXT("A / B") && Doc.Text == TEXT("First line") && Doc.ReadingText == TEXT("First  line\ncontinued") && Doc.Full == TEXT("typed\npencil\n\nFirst  line\ncontinued\n \nSecond"), TEXT("docCard title, excerpt, paragraph, pencil and full text"));
