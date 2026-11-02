@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Sjuende nattleveranse: lukket skjøt ved traforampen
+
+Runtime `bfa1c26d`, [PR340](https://github.com/Tombonator3000/SIGNAL-47/pull/340), er installert 2. november kl. 07:03 CET. Grusen møter rampens sider og tå på alle tre LOD-er. De øvrige Field-modellene/materialene, gulv og T02-ankre er bevart; kulverten beholdes som fungerende T02-referanse.
+
+Pakke/1997 selvtester, 15 kontroller og omtrent 12 m vanlig gange samt gjennomsette bilder med samme kamera før/etter består. Storys lokale inspeksjons-/diskprøve og installert Fortsett består; 164 Saved-elementer er uendret. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/SARO_SUBSTATION_APRON_2026-11-02.md).
+
 ## Sjette nattleveranse: synlig trafostrøm gjennom reparasjon
 
 Runtime `62b5eaa4`, [PR338](https://github.com/Tombonator3000/SIGNAL-47/pull/338), er installert2. november kl.06:39 CET. Trafoen har bevegelige buer oppover/mellom støttene og romlig summing/knitring i begge moduser. Freeform-feil og faktisk isolering/reparasjon driver effekten; Low og komfort beholder bevegelsen. Storys manusporter beholdes.

@@ -1,0 +1,1820 @@
+{
+  "runtime": "bfa1c26dd913d1b9d46b0db1ce732619eee5fe63",
+  "installed_at": "2026-11-02T07:03:00.082883+01:00",
+  "self_checks": 1997,
+  "before": {
+    "status": "PASS",
+    "reason": "actual apron foot route and two matched forcedLOD2 inspection images completed; visual gap acceptance remains root QA",
+    "expectedFixed": false,
+    "seconds": 12.870978049002588,
+    "walkMetres": 12.076583016120367,
+    "checks": [
+      {
+        "pass": true,
+        "check": "fresh isolated Freeform developer case0"
+      },
+      {
+        "pass": true,
+        "check": "required CLI -S47Quality=low fixes the same actual Low profile in both captures"
+      },
+      {
+        "pass": true,
+        "check": "exact active ApronGrade component resolves without a world scan"
+      },
+      {
+        "pass": true,
+        "check": "all three installed ApronGrade LOD counts match the explicitly requested baseline/fixed contract"
+      },
+      {
+        "pass": true,
+        "check": "existing DINER service-track start passes native Walkable"
+      },
+      {
+        "pass": true,
+        "check": "ordinary Walker reaches apron before the closed fence without intermediate placement"
+      },
+      {
+        "pass": true,
+        "check": "ordinary Walker returns along the same apron route with measured distance"
+      },
+      {
+        "pass": true,
+        "check": "exact adopted ApronGrade is actually rendered in current foot area"
+      },
+      {
+        "pass": true,
+        "check": "native camera reached the exact matched inspection eye"
+      },
+      {
+        "pass": true,
+        "check": "same owned mesh, forced visualLOD2 and decorative NoCollision retained"
+      },
+      {
+        "pass": true,
+        "check": "native matched inspection PNG saved"
+      },
+      {
+        "pass": true,
+        "check": "exact adopted ApronGrade is actually rendered in current foot area"
+      },
+      {
+        "pass": true,
+        "check": "native camera reached the exact matched inspection eye"
+      },
+      {
+        "pass": true,
+        "check": "same owned mesh, forced visualLOD2 and decorative NoCollision retained"
+      },
+      {
+        "pass": true,
+        "check": "native matched inspection PNG saved"
+      }
+    ],
+    "footSamples": [
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 520.8,
+        "nativeFloorY": -1.4082219438001204,
+        "actualWalkable": true,
+        "stepMetres": 0,
+        "walkedMetres": 0
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 521.1746146064252,
+        "nativeFloorY": -1.407516914401124,
+        "actualWalkable": true,
+        "stepMetres": 0.11863537095484844,
+        "walkedMetres": 0.3746146064252116
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 521.5764530766755,
+        "nativeFloorY": -1.406726597856683,
+        "actualWalkable": true,
+        "stepMetres": 0.1260243117809523,
+        "walkedMetres": 0.7764530766755797
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 521.9635242186487,
+        "nativeFloorY": -1.4060275454492712,
+        "actualWalkable": true,
+        "stepMetres": 0.0940936569124915,
+        "walkedMetres": 1.1635242186487176
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 522.4231736660004,
+        "nativeFloorY": -1.3435476936746382,
+        "actualWalkable": true,
+        "stepMetres": 0.07518772110347527,
+        "walkedMetres": 1.6231736660004117
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 522.788270650059,
+        "nativeFloorY": -1.3212861894861612,
+        "actualWalkable": true,
+        "stepMetres": 0.09032074399294743,
+        "walkedMetres": 1.9882706500590075
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 523.2234522994607,
+        "nativeFloorY": -1.297411265983201,
+        "actualWalkable": true,
+        "stepMetres": 0.10983117371802109,
+        "walkedMetres": 2.4234522994607914
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 523.6194398541003,
+        "nativeFloorY": -1.277358231191311,
+        "actualWalkable": true,
+        "stepMetres": 0.08902599141003975,
+        "walkedMetres": 2.819439854100324
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 523.9988781668246,
+        "nativeFloorY": -1.257511107645614,
+        "actualWalkable": true,
+        "stepMetres": 0.09553585946559906,
+        "walkedMetres": 3.19887816682467
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 524.4123146828265,
+        "nativeFloorY": -1.2352848327859063,
+        "actualWalkable": true,
+        "stepMetres": 0.10232737734918373,
+        "walkedMetres": 3.6123146828265362
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 524.856416326389,
+        "nativeFloorY": -1.212672291172367,
+        "actualWalkable": true,
+        "stepMetres": 0.06347920820121544,
+        "walkedMetres": 4.056416326389012
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 525.2406818348918,
+        "nativeFloorY": -1.1931669532631068,
+        "actualWalkable": true,
+        "stepMetres": 0.07559580616657513,
+        "walkedMetres": 4.440681834891848
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 525.6136069811884,
+        "nativeFloorY": -1.1705062032361118,
+        "actualWalkable": true,
+        "stepMetres": 0.132408940792061,
+        "walkedMetres": 4.8136069811884
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.0096293527637,
+        "nativeFloorY": -1.151656932397415,
+        "actualWalkable": true,
+        "stepMetres": 0.09352297484872452,
+        "walkedMetres": 5.209629352763727
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.4009539719674,
+        "nativeFloorY": -1.1296340419025221,
+        "actualWalkable": true,
+        "stepMetres": 0.12468054369094261,
+        "walkedMetres": 5.600953971967442
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.7533872235405,
+        "nativeFloorY": -1.111445285462139,
+        "actualWalkable": true,
+        "stepMetres": 0.06365793207112347,
+        "walkedMetres": 5.953387223540517
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.8922106685519,
+        "nativeFloorY": -1.1035403263180064,
+        "actualWalkable": true,
+        "stepMetres": 0.02984244126446356,
+        "walkedMetres": 6.092210668551957
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 526.5699879626214,
+        "nativeFloorY": -1.117244854070229,
+        "actualWalkable": true,
+        "stepMetres": 0.08195917978878242,
+        "walkedMetres": 6.414433374482428
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 526.1137863049686,
+        "nativeFloorY": -1.1419060200328828,
+        "actualWalkable": true,
+        "stepMetres": 0.09893270842735546,
+        "walkedMetres": 6.870635032135283
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 525.689315432164,
+        "nativeFloorY": -1.163739987274693,
+        "actualWalkable": true,
+        "stepMetres": 0.08225863091649899,
+        "walkedMetres": 7.295105904939874
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 525.2684389638185,
+        "nativeFloorY": -1.1857099930031196,
+        "actualWalkable": true,
+        "stepMetres": 0.06333385333414299,
+        "walkedMetres": 7.715982373285328
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 524.8251010915668,
+        "nativeFloorY": -1.2080397598777723,
+        "actualWalkable": true,
+        "stepMetres": 0.06333388164637199,
+        "walkedMetres": 8.15932024553706
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 524.4450985802741,
+        "nativeFloorY": -1.2280277002497422,
+        "actualWalkable": true,
+        "stepMetres": 0.06333369053902516,
+        "walkedMetres": 8.539322756829733
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 524.0017619820716,
+        "nativeFloorY": -1.2513609273645334,
+        "actualWalkable": true,
+        "stepMetres": 0.06333388164637199,
+        "walkedMetres": 8.982659355032297
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 523.6217592584374,
+        "nativeFloorY": -1.2713610681780265,
+        "actualWalkable": true,
+        "stepMetres": 0.06333392411465866,
+        "walkedMetres": 9.362662078666517
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 523.1784230495276,
+        "nativeFloorY": -1.2946945468850715,
+        "actualWalkable": true,
+        "stepMetres": 0.06333368346099633,
+        "walkedMetres": 9.805998287576244
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 522.7984202338788,
+        "nativeFloorY": -1.314694700216891,
+        "actualWalkable": true,
+        "stepMetres": 0.06333381086585632,
+        "walkedMetres": 10.186001103225067
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 522.3550830128078,
+        "nativeFloorY": -1.3380282416308988,
+        "actualWalkable": true,
+        "stepMetres": 0.06333381086585632,
+        "walkedMetres": 10.6293383242961
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 521.9750803811883,
+        "nativeFloorY": -1.4008820324806697,
+        "actualWalkable": true,
+        "stepMetres": 0.06333388872440082,
+        "walkedMetres": 11.009340955915604
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 521.5317436909711,
+        "nativeFloorY": -1.4065881972227194,
+        "actualWalkable": true,
+        "stepMetres": 0.063333909958601,
+        "walkedMetres": 11.45267764613277
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 521.1186670648516,
+        "nativeFloorY": -1.4074793070721372,
+        "actualWalkable": true,
+        "stepMetres": 0.046219694407682255,
+        "walkedMetres": 11.865754272252275
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 520.9413885178564,
+        "nativeFloorY": -1.4078896571347626,
+        "actualWalkable": true,
+        "stepMetres": 0.02050701886105344,
+        "walkedMetres": 12.043032819247514
+      }
+    ],
+    "frames": [
+      {
+        "image": "/tmp/S47-substation-apron-before/Saved/SubstationApronTest/day-edge-lod2.png",
+        "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47SubstationField_SM_SubstationField_ApronGrade",
+        "node": 2599,
+        "mesh": "/Game/SubstationField/SM_SubstationField_ApronGrade.SM_SubstationField_ApronGrade",
+        "area": "diner",
+        "clock": 29016.322290746866,
+        "quality": "low",
+        "effectsLevel": 0,
+        "forcedLodModel": 3,
+        "NoCollision": true,
+        "actualCameraEyeThree": [
+          7885,
+          0.25,
+          520.8
+        ],
+        "actualCameraForwardThree": [
+          -4.440892098500626e-16,
+          -0.402513032761284,
+          0.9154142551092996
+        ],
+        "componentTranslationUE": [
+          789000,
+          53620,
+          -110
+        ],
+        "componentRotationQuaternionUE": [
+          0,
+          0,
+          1,
+          6.123233995736766e-17
+        ],
+        "componentScaleUE": [
+          1,
+          1,
+          1
+        ],
+        "actualBoundsOriginThree": [
+          7886.215866394043,
+          -0.9794386672973633,
+          525.6060684204101
+        ],
+        "actualLodTriangles": [
+          3522,
+          1166,
+          411
+        ],
+        "actualMaterials": [
+          "/Game/Substation/Materials/M_Substation_Gravel.M_Substation_Gravel"
+        ]
+      },
+      {
+        "image": "/tmp/S47-substation-apron-before/Saved/SubstationApronTest/day-toe-lod2.png",
+        "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_0.S47SubstationField_SM_SubstationField_ApronGrade",
+        "node": 2599,
+        "mesh": "/Game/SubstationField/SM_SubstationField_ApronGrade.SM_SubstationField_ApronGrade",
+        "area": "diner",
+        "clock": 29083.922727574405,
+        "quality": "low",
+        "effectsLevel": 0,
+        "forcedLodModel": 3,
+        "NoCollision": true,
+        "actualCameraEyeThree": [
+          7885,
+          -0.35,
+          520.3
+        ],
+        "actualCameraForwardThree": [
+          2.220446049250313e-16,
+          -0.42614095588409917,
+          0.9046567778545554
+        ],
+        "componentTranslationUE": [
+          789000,
+          53620,
+          -110
+        ],
+        "componentRotationQuaternionUE": [
+          0,
+          0,
+          1,
+          6.123233995736766e-17
+        ],
+        "componentScaleUE": [
+          1,
+          1,
+          1
+        ],
+        "actualBoundsOriginThree": [
+          7886.215866394043,
+          -0.9794386672973633,
+          525.6060684204101
+        ],
+        "actualLodTriangles": [
+          3522,
+          1166,
+          411
+        ],
+        "actualMaterials": [
+          "/Game/Substation/Materials/M_Substation_Gravel.M_Substation_Gravel"
+        ]
+      }
+    ],
+    "method": "Isolated Freeform. One initial real on-foot DINER service-track placement at7885,520.8; ordinary Walker TestMove/Resolve walks to7885,527 and back without intermediate Place. Finite native Walker FloorY and actual step distance/walkability sampled. Only the adopted ApronGrade component is queried; three asset LOD triangle counts, actual visibility/material/transform/NoCollision recorded. Two identical calibrated CameraOverride08 inspection views force existing visual LOD2 in baseline and fixed runs.",
+    "limits": "ApronGrade remains decorative NoCollision. Walker floor samples describe the unchanged analytic/proxy floor, not contact with decorative triangles or proof of rendered gap closure. Root must compare the two matched before/after PNGs. No whole-world/asset scan, GPU readback, Story/service regression, human-input or natural route claim. Expected around20 seconds, hard45-second bound after startup."
+  },
+  "after": {
+    "status": "PASS",
+    "reason": "actual apron foot route and two matched forcedLOD2 inspection images completed; visual gap acceptance remains root QA",
+    "expectedFixed": true,
+    "seconds": 12.850670904037543,
+    "walkMetres": 12.063803761820054,
+    "checks": [
+      {
+        "pass": true,
+        "check": "fresh isolated Freeform developer case0"
+      },
+      {
+        "pass": true,
+        "check": "required CLI -S47Quality=low fixes the same actual Low profile in both captures"
+      },
+      {
+        "pass": true,
+        "check": "exact active ApronGrade component resolves without a world scan"
+      },
+      {
+        "pass": true,
+        "check": "all three installed ApronGrade LOD counts match the explicitly requested baseline/fixed contract"
+      },
+      {
+        "pass": true,
+        "check": "existing DINER service-track start passes native Walkable"
+      },
+      {
+        "pass": true,
+        "check": "ordinary Walker reaches apron before the closed fence without intermediate placement"
+      },
+      {
+        "pass": true,
+        "check": "ordinary Walker returns along the same apron route with measured distance"
+      },
+      {
+        "pass": true,
+        "check": "exact adopted ApronGrade is actually rendered in current foot area"
+      },
+      {
+        "pass": true,
+        "check": "native camera reached the exact matched inspection eye"
+      },
+      {
+        "pass": true,
+        "check": "same owned mesh, forced visualLOD2 and decorative NoCollision retained"
+      },
+      {
+        "pass": true,
+        "check": "native matched inspection PNG saved"
+      },
+      {
+        "pass": true,
+        "check": "exact adopted ApronGrade is actually rendered in current foot area"
+      },
+      {
+        "pass": true,
+        "check": "native camera reached the exact matched inspection eye"
+      },
+      {
+        "pass": true,
+        "check": "same owned mesh, forced visualLOD2 and decorative NoCollision retained"
+      },
+      {
+        "pass": true,
+        "check": "native matched inspection PNG saved"
+      }
+    ],
+    "footSamples": [
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 520.8,
+        "nativeFloorY": -1.4082219438001204,
+        "actualWalkable": true,
+        "stepMetres": 0,
+        "walkedMetres": 0
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 521.19399709329,
+        "nativeFloorY": -1.4075876014831321,
+        "actualWalkable": true,
+        "stepMetres": 0.06333371177311165,
+        "walkedMetres": 0.3939970932900678
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 521.6373337056488,
+        "nativeFloorY": -1.4067247629892818,
+        "actualWalkable": true,
+        "stepMetres": 0.06333391703662983,
+        "walkedMetres": 0.8373337056488026
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 522.0806704524905,
+        "nativeFloorY": -1.4058609764451253,
+        "actualWalkable": true,
+        "stepMetres": 0.063333754241512,
+        "walkedMetres": 1.28067045249054
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 522.4606727443635,
+        "nativeFloorY": -1.3422034289728482,
+        "actualWalkable": true,
+        "stepMetres": 0.06333369053902516,
+        "walkedMetres": 1.6606727443635236
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 522.904008917883,
+        "nativeFloorY": -1.3167823428660173,
+        "actualWalkable": true,
+        "stepMetres": 0.063333754241512,
+        "walkedMetres": 2.104008917882993
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 523.2840119246393,
+        "nativeFloorY": -1.2967568320415122,
+        "actualWalkable": true,
+        "stepMetres": 0.06333383917808533,
+        "walkedMetres": 2.4840119246393897
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 523.7273487493395,
+        "nativeFloorY": -1.2734227289830407,
+        "actualWalkable": true,
+        "stepMetres": 0.06333390288057217,
+        "walkedMetres": 2.927348749339558
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 524.1073510341345,
+        "nativeFloorY": -1.2534226045982735,
+        "actualWalkable": true,
+        "stepMetres": 0.06333376839756966,
+        "walkedMetres": 3.3073510341345127
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 524.4873535878955,
+        "nativeFloorY": -1.2334224715280628,
+        "actualWalkable": true,
+        "stepMetres": 0.06333369053902516,
+        "walkedMetres": 3.6873535878955863
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 524.8673560921101,
+        "nativeFloorY": -1.2134223424383654,
+        "actualWalkable": true,
+        "stepMetres": 0.06333360560233814,
+        "walkedMetres": 4.067356092110117
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 525.24735988453,
+        "nativeFloorY": -1.1934221300188756,
+        "actualWalkable": true,
+        "stepMetres": 0.06333382502202767,
+        "walkedMetres": 4.447359884530101
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 525.6906963624059,
+        "nativeFloorY": -1.1700886437133906,
+        "actualWalkable": true,
+        "stepMetres": 0.06333364807073849,
+        "walkedMetres": 4.890696362405947
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.1340326633303,
+        "nativeFloorY": -1.1467551521247743,
+        "actualWalkable": true,
+        "stepMetres": 0.06333378963176983,
+        "walkedMetres": 5.33403266333039
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.5755914420248,
+        "nativeFloorY": -1.123465310574912,
+        "actualWalkable": true,
+        "stepMetres": 0.061555821484716944,
+        "walkedMetres": 5.775591442024847
+      },
+      {
+        "phase": "outbound",
+        "x": 7885,
+        "z": 526.8355471774607,
+        "nativeFloorY": -1.107735262395906,
+        "actualWalkable": true,
+        "stepMetres": 0.02385205960933945,
+        "walkedMetres": 6.035547177460785
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 526.7637907742745,
+        "nativeFloorY": -1.1072481474935565,
+        "actualWalkable": true,
+        "stepMetres": 0.06333364807073849,
+        "walkedMetres": 6.217125819552734
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 526.3204547706283,
+        "nativeFloorY": -1.1293398904305874,
+        "actualWalkable": true,
+        "stepMetres": 0.06333392411465866,
+        "walkedMetres": 6.660461823198943
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 525.9404464624114,
+        "nativeFloorY": -1.1493253283912528,
+        "actualWalkable": true,
+        "stepMetres": 0.06333387456834316,
+        "walkedMetres": 7.040470131415873
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 525.5604437529332,
+        "nativeFloorY": -1.1693250534473978,
+        "actualWalkable": true,
+        "stepMetres": 0.06333390288057217,
+        "walkedMetres": 7.4204728408940355
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 525.1171075511014,
+        "nativeFloorY": -1.1926585237467187,
+        "actualWalkable": true,
+        "stepMetres": 0.06333379670979866,
+        "walkedMetres": 7.863809042725848
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 524.6737703937328,
+        "nativeFloorY": -1.2159920695164144,
+        "actualWalkable": true,
+        "stepMetres": 0.06333392411465866,
+        "walkedMetres": 8.307146200094508
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 524.2304342909938,
+        "nativeFloorY": -1.2393255361327182,
+        "actualWalkable": true,
+        "stepMetres": 0.06333380378782749,
+        "walkedMetres": 8.750482302833461
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 523.8504316098278,
+        "nativeFloorY": -1.259325675816185,
+        "actualWalkable": true,
+        "stepMetres": 0.06333364807073849,
+        "walkedMetres": 9.130484983999509
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 523.4070950824055,
+        "nativeFloorY": -1.2826591800009166,
+        "actualWalkable": true,
+        "stepMetres": 0.06333382502202767,
+        "walkedMetres": 9.573821511421784
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 522.9637580807539,
+        "nativeFloorY": -1.3059927150039334,
+        "actualWalkable": true,
+        "stepMetres": 0.06333391703662983,
+        "walkedMetres": 10.017158513073355
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 522.520420633185,
+        "nativeFloorY": -1.3293262711934237,
+        "actualWalkable": true,
+        "stepMetres": 0.06333444081246853,
+        "walkedMetres": 10.46049596064222
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 522.1404175344139,
+        "nativeFloorY": -1.3738116556504811,
+        "actualWalkable": true,
+        "stepMetres": 0.06333365514876732,
+        "walkedMetres": 10.840499059413332
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 521.6970796621621,
+        "nativeFloorY": -1.4059375009021455,
+        "actualWalkable": true,
+        "stepMetres": 0.06333389580254334,
+        "walkedMetres": 11.283836931665178
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 521.2537421084226,
+        "nativeFloorY": -1.4071865899798535,
+        "actualWalkable": true,
+        "stepMetres": 0.06333439834418186,
+        "walkedMetres": 11.727174485404703
+      },
+      {
+        "phase": "return",
+        "x": 7885,
+        "z": 520.9758189171944,
+        "nativeFloorY": -1.4078090028139043,
+        "actualWalkable": true,
+        "stepMetres": 0.025500716221358743,
+        "walkedMetres": 12.005097676632886
+      }
+    ],
+    "frames": [
+      {
+        "image": "/tmp/S47-substation-apron-packaged1/Saved/SubstationApronTest/day-edge-lod2.png",
+        "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.S47SubstationField_SM_SubstationField_ApronGrade",
+        "node": 2603,
+        "mesh": "/Game/SubstationField/SM_SubstationField_ApronGrade.SM_SubstationField_ApronGrade",
+        "area": "diner",
+        "clock": 29015.126579903066,
+        "quality": "low",
+        "effectsLevel": 0,
+        "forcedLodModel": 3,
+        "NoCollision": true,
+        "actualCameraEyeThree": [
+          7885,
+          0.25,
+          520.8
+        ],
+        "actualCameraForwardThree": [
+          -4.440892098500626e-16,
+          -0.402513032761284,
+          0.9154142551092996
+        ],
+        "componentTranslationUE": [
+          789000,
+          53620,
+          -110
+        ],
+        "componentRotationQuaternionUE": [
+          0,
+          0,
+          1,
+          6.123233995736766e-17
+        ],
+        "componentScaleUE": [
+          1,
+          1,
+          1
+        ],
+        "actualBoundsOriginThree": [
+          7886.215866394043,
+          -0.9794386672973633,
+          525.6060684204101
+        ],
+        "actualLodTriangles": [
+          3588,
+          1217,
+          454
+        ],
+        "actualMaterials": [
+          "/Game/Substation/Materials/M_Substation_Gravel.M_Substation_Gravel"
+        ]
+      },
+      {
+        "image": "/tmp/S47-substation-apron-packaged1/Saved/SubstationApronTest/day-toe-lod2.png",
+        "component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.S47SubstationField_SM_SubstationField_ApronGrade",
+        "node": 2603,
+        "mesh": "/Game/SubstationField/SM_SubstationField_ApronGrade.SM_SubstationField_ApronGrade",
+        "area": "diner",
+        "clock": 29094.461165098845,
+        "quality": "low",
+        "effectsLevel": 0,
+        "forcedLodModel": 3,
+        "NoCollision": true,
+        "actualCameraEyeThree": [
+          7885,
+          -0.35,
+          520.3
+        ],
+        "actualCameraForwardThree": [
+          2.220446049250313e-16,
+          -0.42614095588409917,
+          0.9046567778545554
+        ],
+        "componentTranslationUE": [
+          789000,
+          53620,
+          -110
+        ],
+        "componentRotationQuaternionUE": [
+          0,
+          0,
+          1,
+          6.123233995736766e-17
+        ],
+        "componentScaleUE": [
+          1,
+          1,
+          1
+        ],
+        "actualBoundsOriginThree": [
+          7886.215866394043,
+          -0.9794386672973633,
+          525.6060684204101
+        ],
+        "actualLodTriangles": [
+          3588,
+          1217,
+          454
+        ],
+        "actualMaterials": [
+          "/Game/Substation/Materials/M_Substation_Gravel.M_Substation_Gravel"
+        ]
+      }
+    ],
+    "method": "Isolated Freeform. One initial real on-foot DINER service-track placement at7885,520.8; ordinary Walker TestMove/Resolve walks to7885,527 and back without intermediate Place. Finite native Walker FloorY and actual step distance/walkability sampled. Only the adopted ApronGrade component is queried; three asset LOD triangle counts, actual visibility/material/transform/NoCollision recorded. Two identical calibrated CameraOverride08 inspection views force existing visual LOD2 in baseline and fixed runs.",
+    "limits": "ApronGrade remains decorative NoCollision. Walker floor samples describe the unchanged analytic/proxy floor, not contact with decorative triangles or proof of rendered gap closure. Root must compare the two matched before/after PNGs. No whole-world/asset scan, GPU readback, Story/service regression, human-input or natural route claim. Expected around20 seconds, hard45-second bound after startup."
+  },
+  "native_import_status": "PASS_NATIVE_APRON_IMPORT_RUNTIME_UNVERIFIED",
+  "native_import_checks": [
+    {
+      "name": "private input/output outside project",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "selective source prep passed",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "prepared exact input hashes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reviewed fixed contract",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "nonApron private contract matches repository",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "original target is native StaticMesh",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reviewed original native LOD triangles",
+      "pass": true,
+      "detail": [
+        3522,
+        1166,
+        411
+      ]
+    },
+    {
+      "name": "existing body metadata",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "original decorative collision profile",
+      "pass": true,
+      "detail": "NoCollision"
+    },
+    {
+      "name": "private backup not overwrite",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "one existing FBX import helper",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "SM_SubstationField_ApronGrade imported",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "exact private LOD1",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "exact private LOD2",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "reuse existing gravel",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "only existing gravel slot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "preserve original three LOD screens",
+      "pass": true,
+      "detail": [
+        2.0,
+        0.75,
+        0.5625
+      ]
+    },
+    {
+      "name": "imported body metadata exists",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "save only target",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native exact three LOD triangles",
+      "pass": true,
+      "detail": [
+        3588,
+        1217,
+        454
+      ]
+    },
+    {
+      "name": "native measured centimetre bounds",
+      "pass": true,
+      "detail": {
+        "actual": [
+          378.4133605957031,
+          1059.3931579589844,
+          12.056133270263672,
+          1316.8265991210938,
+          726.6326293945312,
+          95.88774108886719
+        ],
+        "expected": [
+          378.41330766677856,
+          1059.3931913375854,
+          12.056131660938263,
+          1316.826605796814,
+          726.63254737854,
+          95.88774144649506
+        ]
+      }
+    },
+    {
+      "name": "native material read-only binding",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native render flags preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native LOD screens preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "native collision policy preserved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "all nonApron assets/materials byte-identical",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "private FBX inputs untouched",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "source_edge_result": {
+    "method": "Private in-memory strict-interior substitution; canonical pure Python build all three LODs. Convex grid polygons fan-triangulated for barycentric edge height checks, not Blender/native acceptance.",
+    "source": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/Signal47/Tools/substationfield/geometry.py",
+    "source_sha256": "0fe3bcae68c10b41cd3caf98471783ec536ae07a96c83dcbcae7538d3dc5ca5c",
+    "change": {
+      "before": "and not inside(RAMP, bx, by):",
+      "after": "and not (RAMP[0] < bx < RAMP[1] and RAMP[2] < by < RAMP[3]):"
+    },
+    "lods": [
+      {
+        "lod": 0,
+        "unchanged_other_parts": {
+          "SM_SubstationField_Culvert": true,
+          "SM_SubstationField_Reference": true,
+          "SM_SubstationField_TestFixture": true
+        },
+        "before_triangles": 3522,
+        "after_triangles": 3588,
+        "samples": [
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -14,
+            "before": null,
+            "after": -0.2652726637668451,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -14,
+            "before": null,
+            "after": -0.265,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -14,
+            "before": null,
+            "after": -0.265,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -14,
+            "before": null,
+            "after": -0.2653836279358311,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -13,
+            "before": null,
+            "after": -0.2128232304518494,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -13,
+            "before": null,
+            "after": -0.2123684210526316,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -13,
+            "before": null,
+            "after": -0.2123684210526316,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -13,
+            "before": null,
+            "after": -0.21274902279127508,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -12,
+            "before": null,
+            "after": -0.16006677734837707,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -12,
+            "before": null,
+            "after": -0.15973684210526318,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -12,
+            "before": null,
+            "after": -0.15973684210526318,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -12,
+            "before": null,
+            "after": -0.16014055497134033,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -10,
+            "before": null,
+            "after": -0.05476656708453629,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -10,
+            "before": null,
+            "after": -0.05447368421052633,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -10,
+            "before": null,
+            "after": -0.05447368421052633,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -10,
+            "before": null,
+            "after": -0.05479501815402122,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -9.25,
+            "before": -0.015430483903646465,
+            "after": -0.015430483903646465,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -9.25,
+            "before": -0.015,
+            "after": -0.015,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -9.25,
+            "before": -0.015,
+            "after": -0.015,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -9.25,
+            "before": -0.015405114069158286,
+            "after": -0.015405114069158286,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 3.3,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2652324891349683,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 4,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26534444473803054,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 5,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2653575895752755,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 6,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26526671732351925,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 6.7,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26528266269001605,
+            "target": -0.265,
+            "pass": true
+          }
+        ]
+      },
+      {
+        "lod": 1,
+        "unchanged_other_parts": {
+          "SM_SubstationField_Culvert": true,
+          "SM_SubstationField_Reference": true,
+          "SM_SubstationField_TestFixture": true
+        },
+        "before_triangles": 1166,
+        "after_triangles": 1217,
+        "samples": [
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -14,
+            "before": null,
+            "after": -0.2652753862354069,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -14,
+            "before": null,
+            "after": -0.265,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -14,
+            "before": null,
+            "after": -0.265,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -14,
+            "before": null,
+            "after": -0.2653836279358311,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -13,
+            "before": null,
+            "after": -0.2128035197813321,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -13,
+            "before": null,
+            "after": -0.21236842105263157,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -13,
+            "before": null,
+            "after": -0.21236842105263157,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -13,
+            "before": null,
+            "after": -0.21275209355620428,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -12,
+            "before": null,
+            "after": -0.16004516340085076,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -12,
+            "before": null,
+            "after": -0.15973684210526315,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -12,
+            "before": null,
+            "after": -0.15973684210526315,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -12,
+            "before": null,
+            "after": -0.1601632362133927,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -10,
+            "before": null,
+            "after": -0.05480323635558326,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -10,
+            "before": null,
+            "after": -0.05447368421052631,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -10,
+            "before": null,
+            "after": -0.05447368421052631,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -10,
+            "before": null,
+            "after": -0.05479770178079639,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -9.25,
+            "before": -0.015430483903646468,
+            "after": -0.015430483903646468,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -9.25,
+            "before": -0.015,
+            "after": -0.015,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -9.25,
+            "before": -0.015,
+            "after": -0.015,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -9.25,
+            "before": -0.015405114069158288,
+            "after": -0.015405114069158288,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 3.3,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2652152608685618,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 4,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26534444473803054,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 5,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2653575895752755,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 6,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26526671732351925,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 6.7,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26530244442922113,
+            "target": -0.265,
+            "pass": true
+          }
+        ]
+      },
+      {
+        "lod": 2,
+        "unchanged_other_parts": {
+          "SM_SubstationField_Culvert": true,
+          "SM_SubstationField_Reference": true,
+          "SM_SubstationField_TestFixture": true
+        },
+        "before_triangles": 411,
+        "after_triangles": 454,
+        "samples": [
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -14,
+            "before": null,
+            "after": -0.265275386235407,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -14,
+            "before": null,
+            "after": -0.265,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -14,
+            "before": null,
+            "after": -0.265,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -14,
+            "before": null,
+            "after": -0.2653836212078652,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -13,
+            "before": null,
+            "after": -0.2127951303993284,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -13,
+            "before": null,
+            "after": -0.21236842105263157,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -13,
+            "before": null,
+            "after": -0.21236842105263157,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -13,
+            "before": null,
+            "after": -0.2127520925396496,
+            "target": -0.2123684210526316,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -12,
+            "before": null,
+            "after": -0.1600451634008508,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -12,
+            "before": null,
+            "after": -0.15973684210526315,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -12,
+            "before": null,
+            "after": -0.15973684210526318,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -12,
+            "before": null,
+            "after": -0.16016136438482065,
+            "target": -0.15973684210526318,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -10,
+            "before": null,
+            "after": -0.05480323635558326,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -10,
+            "before": null,
+            "after": -0.054473684210526306,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -10,
+            "before": null,
+            "after": -0.054473684210526306,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -10,
+            "before": null,
+            "after": -0.05486182742647251,
+            "target": -0.05447368421052633,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.199,
+            "y": -9.25,
+            "before": -0.015430483903646468,
+            "after": -0.015430483903646468,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 3.2,
+            "y": -9.25,
+            "before": -0.015,
+            "after": -0.015,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.8,
+            "y": -9.25,
+            "before": -0.015,
+            "after": -0.015,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "side",
+            "x": 6.801,
+            "y": -9.25,
+            "before": -0.015405114069158288,
+            "after": -0.015405114069158288,
+            "target": -0.015,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 3.3,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2652152608685618,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 4,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26534444473803054,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 5,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2653048345248498,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 6,
+            "y": -14.001,
+            "before": null,
+            "after": -0.26526671732351925,
+            "target": -0.265,
+            "pass": true
+          },
+          {
+            "edge": "toe",
+            "x": 6.7,
+            "y": -14.001,
+            "before": null,
+            "after": -0.2653024444292211,
+            "target": -0.265,
+            "pass": true
+          }
+        ]
+      }
+    ],
+    "status": "PURE_SOURCE_EDGE_PASS_NATIVE_UNVERIFIED"
+  },
+  "Saved_unchanged": true,
+  "saved_nodes": 164,
+  "Story_local_inspection_and_disk_restore": "PASS",
+  "images_reviewed": 4
+}
