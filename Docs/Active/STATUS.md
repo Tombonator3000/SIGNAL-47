@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Andre nattleveranse: rombrytere og sammenhengende Station 01-rute
+
+Runtime `f96349fd`, [PR327](https://github.com/Tombonator3000/SIGNAL-47/pull/327), er installert2. november kl.01:10 CET. Fire fysiske SARO-rombrytere lagrer spillerens valg uten å slå av instrumentene. Freeform får faktisk bevegelses-/relérespons; Station 01 beholder det delte landskapet og er tilgjengelig til fots i Freeform. Dobbelt dekorativt gjerde er fjernet, og blå telefonmodell gjenbrukes ved bensinstasjonen. Props-styrte fasade-/canopylys følger dagslys; øvrige dekormaterialer gjenstår.
+
+Pakke/1982 selvtester, fire brytere42, service/lyd53 med3 restores og sammenhengende2,88km stationreise14 med hut-Continue består. Pakket ressurskontroll og installert Fortsett består;164 Saved-elementer er uendret. Svarte terrengstriper WORLD-01 er fortsatt sett; WORLD-04s veggfeil er uavklart. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_LIGHT_WORLD_2026-11-02.md).
+
 ## Første nattleveranse: fysiske PC-er, S-03 og billasting
 
 Runtime `b8e1d3fb`, PR325, er installert1. november kl.23:57 CET. Story og Freeform deler fysisk CRT-/båndbetjening. Mottakeren har signalgraf, reell mottaksprosent og tydelig neste handling; hele visningen ligger innenfor glasset. S-03 har nåbar lokal service, og bruk av den parkerte Jeepen med pakke laster den før kjøring. Freeform-kontoret oppdaterer og lagrer dør/skuff korrekt uten Story-avreise. Registrerte ordinære utelys følger dagslyset; noen dekormaterialer og rombrytere gjenstår.
