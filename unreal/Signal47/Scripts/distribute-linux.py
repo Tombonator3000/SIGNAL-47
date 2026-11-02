@@ -12,7 +12,7 @@ ARCHIVES = WORK / 'archives'
 ARCHIVES.mkdir(exist_ok=True)
 subprocess.run([sys.executable, str(Path(__file__).with_name('unreal_guard.py')), 'require-idle'], check=True)
 # ZIP output plus one extracted verification install. Never spend the disk reserve.
-assert shutil.disk_usage(WORK).free >= 100_000_000_000 + 14_000_000_000, 'Need 114 GB free before distribution' 
+assert shutil.disk_usage(WORK).free >= 100_000_000_000 + 14_000_000_000, 'Need 114 GB free before distribution'
 SOURCE = args.source.resolve()
 ROOT = Path(__file__).resolve().parents[3]
 LAUNCH = Path(__file__).resolve().parents[1] / 'Build/Linux/launch'
@@ -43,7 +43,14 @@ for p in sorted(SOURCE.rglob('*')):
     if rel in EXCLUDE:
         excluded.append(rel)
         continue
-    assert p.suffix.lower() not in {'.uasset', '.umap', '.blend', '.fbx', '.sav', '.log', '.debug', '.sym'}, rel
+    # Allow only the staged Linux runtime, never arbitrary files next to a build.
+    top_level = {'Signal47.sh', 'Check-Linux.sh', 'LINUX-README.md', 'CREDITS.txt', 'NOTICES.txt',
+                 'Manifest_NonUFSFiles_Linux.txt', 'Manifest_UFSFiles_Linux.txt'}
+    engine_types = {'.ini', '.html', '.bat', '.sh', '.so', '.bin', '.tps', '.ttf', '.json'}
+    allowed = (rel in top_level or rel == 'Signal47/Binaries/Linux/Signal47' or
+               (rel.startswith('Signal47/Content/Paks/') and p.suffix in {'.pak', '.ucas', '.utoc'}) or
+               (rel.startswith('Engine/') and (p.suffix in engine_types or '.so.' in p.name)))
+    assert allowed, ('non-runtime file rejected', rel)
     if rel == 'LINUX-README.md':
         p = LAUNCH / 'README.md'
     actual = digest(p)
@@ -69,6 +76,7 @@ mandatory law or the separate licenses of open-license components.
 build = json.loads((WORK / 'BUILD.json').read_text())
 assert build['runtime_source_commit'] and build['release_source_commit']
 assert build['full_matrix']['status'] == 'PASS', 'Release requires the full matrix'
+assert build['night_contract']['status'] == 'PASS', 'Release requires the night sequence contract'
 build['distribution'] = {'archives': NAMES, 'ucas_sha256': ucas_sha}
 build['payload_sha256'] = {name: info['sha256'] for name, info in files.items()}
 save('BUILD.json', build)

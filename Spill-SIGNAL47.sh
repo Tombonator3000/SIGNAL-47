@@ -174,7 +174,7 @@ system_check() {
 
   if [[ ! -x $play ]]; then
     local free_kb; free_kb="$(df -Pk "$repo_dir" | awk 'NR==2 {print $4}')"
-    ((free_kb >= 10000000)) || warn "Nedlasting og utpakking trenger om lag 10 GB ledig plass, du har $((free_kb / 1024 / 1024)) GB."
+    ((free_kb >= 15000000)) || warn "Nedlasting og utpakking trenger om lag 15 GB ledig plass, du har $((free_kb / 1024 / 1024)) GB."
   fi
   if [[ -n $package_override || -e $download_complete || -f $play ]]; then
     local internal="$linux_root/Signal47.sh"
@@ -248,7 +248,7 @@ if [[ -z $package_override ]] && [[ ! -x "$play" || ! -f "$download_complete" ]]
   for tool in curl unzip sha256sum; do
     command -v "$tool" >/dev/null || { printf 'Mangler %s. Installer det og prøv igjen.\n' "$tool" >&2; exit 1; }
   done
-  printf 'Laster ned SIGNAL / 47 (%s), om lag 3,9 GB. Det skjer bare første gang.\n' "$tag"
+  printf 'Laster ned SIGNAL / 47 (%s), flere GB. Det skjer bare første gang.\n' "$tag"
   for old in "$repo_dir"/Spill/playtest-linux-*; do
     [[ -d "$old" && "$old" != "$game_dir" ]] && printf 'Eldre utgave i %s kan slettes. Flytt Linux/Signal47/Saved derfra hvis du vil beholde lagringene.\n' "$old"
   done
