@@ -90,6 +90,15 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   if(!N||!C||N->Parent!=663||N->Geo!=Leaf.Y||N->Mats.Num()!=1||N->Mats[0]!=Leaf.Z){Reject(TEXT("legacy car paint / pool water predecessor"));return {};}
   Retired.AddUnique(C);
  }
+ // PLAY-31-13: these measured Exterior leaves are the still-visible near-road sign.
+ // The optional imported prop signs were already retired; keep the authored V2 entrance sign.
+ for(const FIntVector& Old:{FIntVector(26,19,25),FIntVector(27,20,25),FIntVector(28,21,25),FIntVector(1252,883,1240)})
+ {
+  const auto* N=W->Node(Old.X);auto* C=MeshAt(W,Old.X);
+  if(!N||!C||N->Parent!=Old.Z||N->Geo!=Old.Y||N->Mats.Num()!=1||N->Mats[0]!=(Old.X==26?19:Old.X==27?20:Old.X==28?21:581))
+  {Reject(TEXT("near-road sign predecessor identity"));return {};}
+  Retired.AddUnique(C);RetiredRoots.AddUnique(Old.X);
+ }
  struct FSignGlow {int32 Node,Point;FVector Position;float Size;};
  const FSignGlow SignGlows[]={
   {36,23,{-32.9,3.7014316154,680.2},12},{36,24,{-31.5,1.9014316154,682},5},
@@ -174,7 +183,9 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
  }
  for(const TCHAR* Prop:{TEXT("motelBlade"),TEXT("motelNeon")})
  {
-  if(auto* C=MeshAt(W,FindChild(W,Motel,FString(TEXT("prop:"))+Prop)))Retired.AddUnique(C);
+  const int32 PropNode=FindChild(W,Motel,FString(TEXT("prop:"))+Prop);
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47MotelSignReview")))UE_LOG(LogS47MotelV2,Display,TEXT("S47 sign predecessor %s node=%d component=%s"),Prop,PropNode,*GetPathNameSafe(MeshAt(W,PropNode)));
+  if(auto* C=MeshAt(W,PropNode))Retired.AddUnique(C);
   for(const auto& R:W->CollidersMutable(TEXT("saro")))if(R.Id==FString(TEXT("prop:"))+Prop)Disable.Add(R);
  }
  auto ReadRects=[&](const TCHAR* Field,TArray<FS47Rect>& Out){const FValues* A=nullptr;if(J->TryGetArrayField(Field,A))for(const auto& V:*A){const auto& Q=V->AsArray();if(!ValidRect(Q))return false;Out.Add(ParseMotelRect(Q));}return true;};
@@ -308,7 +319,7 @@ void FS47MotelV2::Update()
  for(const auto& P:RetiredSignGlows)if(auto* G=W->Glow(P.X)){G->SetSize(P.Y,0);G->SetColor(P.Y,FLinearColor::Black);}
  // Keep the historical flicker width as the new sign's emission feed, but remove the old coloured light.
  for(const auto& P:RetiredSignPools)if(!W->FloodCol(P.X,P.Y).Equals(FLinearColor::Black))W->SetFloodColor(P.X,P.Y,FLinearColor::Black);
- for(const auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*FMath::Clamp(W->FloodPos(Set,G.Slot).A/G.Reference,0.f,1.f));
+ for(const auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*(FMath::Clamp(W->FloodPos(Set,G.Slot).A/G.Reference,0.f,1.f)*(G.Slot==8?2.6f*W->ExteriorDaylightMask(Set,8):1.f)));
 }
 bool FS47MotelV2::Audit(TArray<FString>& Lines) const
 {
@@ -387,17 +398,13 @@ bool FS47MotelV2::Audit(TArray<FString>& Lines) const
   for(const auto& P:RetiredSignPools)Check(W->FloodCol(P.X,P.Y).Equals(FLinearColor::Black),FString::Printf(TEXT("legacy sign flood remains set%d slot%d"),P.X,P.Y));
  }
  const auto PhotoTarget=SignPhotoTarget();
- // The road-area distant landmark has a matching original SARO-area face and
- // support. The separate native entrance sign must not retire that counterpart.
- for(const FIntPoint& Sign:{FIntPoint(26,19),FIntPoint(27,20),FIntPoint(28,21)})
+ // The user requested one sign. Verify retirement in both near and road-area copies.
+ for(const FIntVector& Sign:{FIntVector(26,19,25),FIntVector(27,20,25),FIntVector(28,21,25),FIntVector(1252,883,1240)})
  {
   const auto* N=W?W->Node(Sign.X):nullptr;auto* C=W?MeshAt(W,Sign.X):nullptr;
-  // Enter(room6) correctly hides SARO's exterior components. The local
-  // retention flag must survive every area; rendered visibility is required
-  // when the player is actually in the sign's SARO area.
-  Check(N&&N->Parent==25&&N->Geo==Sign.Y&&N->bVis&&C&&!C->bHiddenInGame
-   &&(W->Area()!=TEXT("saro")||C->IsVisible()),
-   FString::Printf(TEXT("large roadside sign near-area counterpart missing node%d"),Sign.X));
+  Check(N&&N->Parent==Sign.Z&&N->Geo==Sign.Y&&!N->bVis&&C&&C->bHiddenInGame&&!C->IsVisible()
+   &&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&RetiredNamedRoots.Contains(Sign.X),
+   FString::Printf(TEXT("obsolete near/road sign not retired node%d"),Sign.X));
  }
  Check(PhotoTarget.IsSet(),TEXT("authored sign photo target unavailable"));
  if(PhotoTarget.IsSet())Check(PhotoTarget->Equals(FVector(-41.2320000172,2.1300242489,669.1897799015),.01),TEXT("authored sign photo target differs from verified sign-face bounds"));

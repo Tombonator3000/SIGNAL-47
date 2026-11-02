@@ -288,12 +288,13 @@ void FS47FreeformTest::Step(double Dt)
  {
   // World transaction/repair fixtures are exercised separately in the same live world.
   if(!Check(F.Field!=nullptr,TEXT("physical supply world remains attached after multi-day Continue")))return;
-  if(!Check(FS47FreeformDirector::EventIds().Num()==16,TEXT("director exposes the sixteen authored event families")))return;
+  if(!Check(FS47FreeformDirector::EventIds().Num()==17,TEXT("director exposes sixteen authored event families and one action-bound room-light incident")))return;
   F.TestAdvance(86400.);F.Director->Begin(nullptr);Go(21);return;
  }
  if(Stage==21)
  {
-  const auto Ids=FS47FreeformDirector::EventIds();
+  auto Ids=FS47FreeformDirector::EventIds();
+  Ids.Remove(TEXT("roomlight_return")); // Requires a real OFF input and departure; S47ReactiveLightTest owns that journey.
   if(EventIndex>=Ids.Num()){Go(30);return;}
   M->Player->Place(0,-1.2,PI);
   if(Ids[EventIndex]==TEXT("close_pass"))F.SpendTime(13*3600.); // native night presentation, not a naturally scheduled roll

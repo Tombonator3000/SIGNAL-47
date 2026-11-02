@@ -1,5 +1,7 @@
 #include "S47FreeformDirector.h"
 #include "S47Freeform.h"
+#include "S47RoomLights.h"
+#include "Misc/CommandLine.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
 #include "S47Web.h"
@@ -41,8 +43,15 @@ namespace
    TArray<FEvent> Out;auto Root=S47J::Read(FreeformEventsJson);
    for(const auto& Value:S47J::Arr(Root,TEXT("events")))
    {const auto O=Value->AsObject();Out.Add({S47J::Str(O,TEXT("id")),S47J::Str(O,TEXT("family")),S47J::Str(O,TEXT("action")),S47J::Str(O,TEXT("finding")),S47J::Int(O,TEXT("day"),1),S47J::Bool(O,TEXT("night")),S47J::Num(O,TEXT("duration"),60)});}
+   Out.Add({TEXT("roomlight_return"),TEXT("minor"),TEXT("roomlight"),TEXT("A previously switched-off room light was on at return. The original switch operation and a physical readback are retained; no operator identified."),1,false,180});
    return Out;
   }();return Data;
+ }
+ FString LightStamp(double Clock)
+ {
+  const int32 Day=FMath::Max(1,int32(FMath::FloorToDouble((Clock-28800.)/86400.))+1);
+  const int32 Seconds=int32(FMath::Fmod(FMath::Max(0.,Clock),86400.));
+  return FString::Printf(TEXT("DAY %d / %02d:%02d:%02d"),Day,Seconds/3600,(Seconds/60)%60,Seconds%60);
  }
  const FEvent* Definition(const FString& Id){return Catalog().FindByPredicate([&](const FEvent& D){return D.Id==Id;});}
  bool Instrument(const FString& Id){const auto* D=Definition(Id);return D && D->Family==TEXT("instrument");}
@@ -178,7 +187,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
@@ -198,6 +207,15 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
    const FString Key(*Pair.Key);double SavedDay=0;
    if(Definition(Key)&&Pair.Value.IsValid()&&Pair.Value->TryGetNumber(SavedDay)&&FMath::IsFinite(SavedDay))
     LastDays.Add(Key,int32(FMath::Clamp(SavedDay,0.,1000000.)));
+  }
+  if(const auto R=S47J::Obj(O,TEXT("reactiveLight")))
+  {
+   ReactiveRoom=S47J::Str(R,TEXT("room"));
+   if(ReactiveRoom!=TEXT("control")&&ReactiveRoom!=TEXT("corridor")&&ReactiveRoom!=TEXT("records")&&ReactiveRoom!=TEXT("office"))ReactiveRoom.Empty();
+   auto Value=[&](const TCHAR* Key,double Max){const double N=S47J::Num(R,Key);return FMath::IsFinite(N)?FMath::Clamp(N,0.,Max):0.;};
+   ReactiveSerial=int32(Value(TEXT("serial"),1000000000.));ReactiveAge=Value(TEXT("age"),1e9);ReactiveOffClock=Value(TEXT("offClock"),3153600000.);ReactiveOnClock=Value(TEXT("onClock"),3153600000.);
+   bReactiveLeft=S47J::Bool(R,TEXT("left"));bReactiveApplied=S47J::Bool(R,TEXT("applied"));bReactiveInspected=S47J::Bool(R,TEXT("inspected"));
+   if(ReactiveSerial<=0)ReactiveRoom.Empty();
   }
   GroupRestore=S47J::Clone(S47J::Obj(O,TEXT("group")));
  }
@@ -224,6 +242,7 @@ S47J::FObj FS47FreeformDirector::Save()const
  S47J::Set(O,TEXT("effectsApplied"),bEffectsApplied);
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
  auto H=S47J::New();for(const auto& Pair:LastDays)S47J::Set(H,*Pair.Key,Pair.Value);S47J::Set(O,TEXT("history"),H);
+ auto R=S47J::New();S47J::Set(R,TEXT("room"),ReactiveRoom);S47J::Set(R,TEXT("serial"),ReactiveSerial);S47J::Set(R,TEXT("age"),ReactiveAge);S47J::Set(R,TEXT("offClock"),ReactiveOffClock);S47J::Set(R,TEXT("onClock"),ReactiveOnClock);S47J::Set(R,TEXT("left"),bReactiveLeft);S47J::Set(R,TEXT("applied"),bReactiveApplied);S47J::Set(R,TEXT("inspected"),bReactiveInspected);S47J::Set(O,TEXT("reactiveLight"),R);
  if(GroupRestore)S47J::Set(O,TEXT("group"),GroupRestore);else if(M&&M->Night&&M->Night->Glimpses)S47J::Set(O,TEXT("group"),M->Night->Glimpses->SaveControlled());
  return O;
 }
@@ -251,6 +270,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
   if(D->Family==TEXT("threat")&&(LastThreatDay==M->Freeform->Day()||M->Freeform->Clock()<86400.+19*3600.))return false;
   if(D->Family==TEXT("major")&&(M->Freeform->Day()-LastMajorDay<3||M->Freeform->Clock()<3*86400.+19*3600.))return false;
  }
+ if(Id==TEXT("roomlight_return")&&!ReactiveReady())return false;
  if((Id==TEXT("observer")||Id==TEXT("service_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;
  if(Id==TEXT("s03_failure")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||M->Freeform->PowerFault()))return false;
  if(Id==TEXT("feeder_fault")&&M->Freeform->PowerFault())return false;
@@ -265,12 +285,24 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  if(Id==TEXT("feeder_fault")&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
+ if(Id==TEXT("roomlight_return"))Anchor=M->RoomLights->InteractionPoint(ReactiveRoom);
  LastDays.Add(Id,M->Freeform->Day());if(const auto* D=Definition(Id)){if(D->Family==TEXT("threat"))LastThreatDay=M->Freeform->Day();if(D->Family==TEXT("major"))LastMajorDay=M->Freeform->Day();}
  // Save the random choice and phase before applying any perceptible effect.
  Changed();UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s variant%d day%d"),*Event,Variant,M->Freeform->Day());return true;
 }
 bool FS47FreeformDirector::Force(const FString& Id)
-{ return M&&M->Flow&&M->Flow->bDevRun&&Start(Id,true); }
+{
+ const bool Good=M&&M->Flow&&M->Flow->bDevRun&&Start(Id,true);
+ if(!Good&&Id==TEXT("roomlight_return")&&FParse::Param(FCommandLine::Get(),TEXT("S47ReactiveLightTest")))
+ {
+  const FVector At=M&&M->RoomLights?M->RoomLights->InteractionPoint(ReactiveRoom):FVector::ZeroVector;
+  const FVector Pos=M&&M->Player?M->Player->Pos:FVector::ZeroVector;
+  const FVector Cam=M&&M->Night?M->Night->GlimpseIn(true).Cam.Pos:FVector::ZeroVector;
+  const FVector Forward=M&&M->Night?M->Night->GlimpseIn(true).Cam.Forward:FVector::ZeroVector;
+  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47 reactive Force rejected: enabled=%d definition=%d valid=%d serial=%d inputSerial=%d room=%s age=%.6f left=%d applied=%d near25=%d distance=%.6f inView120=%d inRoom=%d power=%d held=%d active=%d event=%s area=%s loaded=%d ready=%d eligible=%d player=%s camera=%s forward=%s"),bEnabled,Definition(Id)!=nullptr,ReactiveValid(),ReactiveSerial,M&&M->RoomLights?M->RoomLights->InputSerial():-1,*ReactiveRoom,ReactiveAge,bReactiveLeft,bReactiveApplied,Near(At,25),FVector2D::Distance({Pos.X,Pos.Z},{At.X,At.Z}),InView(At,120),M&&M->RoomLights?M->RoomLights->PlayerInRoom(ReactiveRoom):false,M&&M->Freeform?M->Freeform->HasPowerForReactiveLight():false,M&&M->Freeform?M->Freeform->Held():true,M&&M->Freeform?M->Freeform->Active():false,*Event,M&&M->Web?*M->Web->Area():TEXT("missing"),M&&M->Web?M->Web->IsLoaded():false,ReactiveReady(),Eligible(Id,true),*Pos.ToString(),*Cam.ToString(),*Forward.ToString());
+ }
+ return Good;
+}
 bool FS47FreeformDirector::CancelForTest()
 {if(!M||!M->Flow||!M->Flow->bDevRun)return false;Finish(false);return true;}
 void FS47FreeformDirector::Apply()
@@ -300,6 +332,12 @@ void FS47FreeformDirector::Apply()
   // presentation must never break a repaired feeder/relay, re-arm a cleared
   // anomaly or replay its initial warning/telex sound.
   bEffectsApplied=true;
+  if(Event==TEXT("roomlight_return"))
+  {
+   if(!ReactiveReady()||!M->RoomLights->SetEventLight(ReactiveRoom,ReactiveSerial)){Finish(false);return;}
+   bReactiveApplied=true;ReactiveOnClock=M->Freeform->Clock();
+   M->Freeform->RecordEvidence(FString::Printf(TEXT("roomlight-original-%d"),ReactiveSerial),FString::Printf(TEXT("LOCAL SWITCH ENTRY / %s / %s\nWall switch set to OFF. This is the last manual operation recorded before the later circuit readback."),*ReactiveRoom,*LightStamp(ReactiveOffClock)));
+  }
   if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
   if(Event==TEXT("s03_failure")&&M->Freeform->Field)
   {
@@ -347,6 +385,50 @@ void FS47FreeformDirector::Draw()
   {L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(Event==TEXT("close_pass")?80.f:0.f);}
  }
 }
+void FS47FreeformDirector::RoomLightInput(const FString& Room,int32 Serial,bool Off)
+{
+ if(!bEnabled||!M||!M->IsFreeform()||!M->Freeform||!M->Freeform->Active()||!M->RoomLights||Serial!=M->RoomLights->InputSerial()||M->RoomLights->ManualEnabled(Room)==Off)return;
+ if(Event==TEXT("roomlight_return"))Finish(false);
+ ReactiveRoom=Off?Room:FString();ReactiveSerial=Off?Serial:0;ReactiveAge=0;
+ ReactiveOffClock=M->Freeform->Clock();ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;Changed();
+}
+bool FS47FreeformDirector::ReactiveValid() const
+{
+ return M&&M->IsFreeform()&&M->RoomLights&&!ReactiveRoom.IsEmpty()&&ReactiveSerial>0&&M->RoomLights->InputSerial()==ReactiveSerial&&!M->RoomLights->ManualEnabled(ReactiveRoom);
+}
+bool FS47FreeformDirector::ReactiveReady() const
+{
+ return ReactiveValid()&&!bReactiveApplied&&bReactiveLeft&&ReactiveAge>=60&&M->Night&&!Near(M->RoomLights->InteractionPoint(ReactiveRoom),25)&&M->Freeform&&M->Freeform->HasPowerForReactiveLight()&&!M->RoomLights->PlayerInRoom(ReactiveRoom)&&!InView(M->RoomLights->InteractionPoint(ReactiveRoom),120);
+}
+void FS47FreeformDirector::StepReactive(double Dt)
+{
+ if(ReactiveRoom.IsEmpty())return;
+ if(!ReactiveValid()||(bReactiveApplied&&!M->RoomLights->EventLightMatches(ReactiveRoom,ReactiveSerial)))
+ {
+  if(Event==TEXT("roomlight_return"))Finish(false);
+  ReactiveRoom.Empty();ReactiveSerial=0;Changed();return;
+ }
+ if(!bReactiveApplied)
+ {
+  ReactiveAge+=Dt;
+  // A turn away is insufficient: the player must physically leave the room.
+  if(!bReactiveLeft&&!M->RoomLights->PlayerInRoom(ReactiveRoom)){bReactiveLeft=true;Changed();}
+ }
+}
+FString FS47FreeformDirector::InspectRoomLight(const FString& Room)
+{
+ if(!bEnabled||!ReactiveValid()||Room!=ReactiveRoom||!bReactiveApplied||!M->RoomLights->EventLightMatches(Room,ReactiveSerial)||!M->Freeform||M->Freeform->Held()||!M->Freeform->HasPowerForReactiveLight()||!M->RoomLights->PlayerInRoom(Room)||!M->Player||!M->Inter)return {};
+ const FString Id=TEXT("roomlight:")+Room;
+ if(!Near(M->RoomLights->InteractionPoint(Room),2.2)||M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())!=Id)return {};
+ const FString Text=FString::Printf(TEXT("\nRETAINED CHECK / OFF entry: %s. The wall switch remains OFF, but the ceiling light is ON. Supply is present; no intervening switch operation is recorded. Both entries are in the case archive."),*LightStamp(ReactiveOffClock));
+ if(!bReactiveInspected)
+ {
+  bReactiveInspected=true;
+  M->Freeform->RecordEvidence(FString::Printf(TEXT("roomlight-control-%d"),ReactiveSerial),FString::Printf(TEXT("LOCAL CIRCUIT READBACK / %s / %s\nORIGINAL: roomlight-original-%d\n%s"),*Room,*LightStamp(M->Freeform->Clock()),ReactiveSerial,*Text));
+  if(Event==TEXT("roomlight_return"))Finish(true,Text);else Changed();
+ }
+ return Text;
+}
 void FS47FreeformDirector::StepGroup(double Dt)
 {
  if(!M||!M->Night||!M->Night->Glimpses)return;auto G=M->Night->Glimpses;
@@ -358,7 +440,7 @@ void FS47FreeformDirector::Step(double Dt)
 {
  if(!bEnabled||!M||!M->Freeform||!M->Freeform->Active()||!FMath::IsFinite(Dt)||Dt<=0)return;
  Effects->Build(this);StepGroup(Dt);if(M->Freeform->Held())return;
- Dt=FMath::Min(Dt,.25);ActiveTime+=Dt;
+ Dt=FMath::Min(Dt,.25);ActiveTime+=Dt;StepReactive(Dt);
  const int32 Day=M->Freeform->Day();
  if(SeenDay!=Day){SeenDay=Day;MinorLeft=Random.RandRange(2,4);InvestLeft=Random.RandRange(0,2);NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
  if(Event.IsEmpty())
@@ -511,7 +593,7 @@ FString FS47FreeformDirector::Status()const
 bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
 {
  bool Ok=true;auto Check=[&](bool B,const TCHAR* S){Ok&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+TEXT("freeform director: ")+S);};
- Check(Catalog().Num()==16,TEXT("sixteen authored event definitions are embedded in packaged runtime"));TSet<FString> Ids;
+ Check(Catalog().Num()==17&&Definition(TEXT("roomlight_return")),TEXT("sixteen authored incidents and the action-bound room-light event are embedded in packaged runtime"));TSet<FString> Ids;
  for(const auto& D:Catalog()){Check(!Ids.Contains(D.Id)&&!D.Finding.IsEmpty()&&D.Day>=1&&D.Duration>0,TEXT("event ID, finding and finite duration"));Ids.Add(D.Id);}
  FS47FreeformDirector D(nullptr);D.Begin(nullptr);auto Saved=D.Save();FS47FreeformDirector R(nullptr);R.Begin(Saved);
  Check(S47J::Write(Saved)==S47J::Write(R.Save()),TEXT("idle director seed, budgets and schedule round-trip without reroll"));
@@ -522,6 +604,14 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Applied->RemoveField(TEXT("effectsApplied"));R.Begin(Applied);
  Check(S47J::Bool(R.Save(),TEXT("effectsApplied")),TEXT("older elapsed v1 incident is treated as already applied instead of retriggering hardware"));
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Busy(),TEXT("unknown revision never starts an invented event"));
+ auto Light=S47J::Clone(Saved);auto LightState=S47J::New();
+ S47J::Set(LightState,TEXT("room"),TEXT("control"));S47J::Set(LightState,TEXT("serial"),7);S47J::Set(LightState,TEXT("age"),84.5);S47J::Set(LightState,TEXT("offClock"),40000.);S47J::Set(LightState,TEXT("onClock"),42000.);S47J::Set(LightState,TEXT("left"),true);S47J::Set(LightState,TEXT("applied"),true);S47J::Set(LightState,TEXT("inspected"),false);S47J::Set(Light,TEXT("reactiveLight"),LightState);S47J::Set(Light,TEXT("event"),TEXT("roomlight_return"));S47J::Set(Light,TEXT("effectsApplied"),true);
+ R.Begin(S47J::Read(S47J::Write(Light)));
+ Check(R.ReactiveRoom==TEXT("control")&&R.ReactiveSerial==7&&R.ReactiveAge==84.5&&R.bReactiveLeft&&R.bReactiveApplied&&!R.bReactiveInspected&&R.bEffectsApplied,TEXT("Reactive light candidate, actual input identity, departure, age and applied-once effect survive JSON Continue"));
+ auto RestoredLight=S47J::Read(S47J::Write(R.Save()));FS47FreeformDirector LightCopy(nullptr);LightCopy.Begin(RestoredLight);
+ Check(LightCopy.ReactiveOffClock==40000&&LightCopy.ReactiveOnClock==42000&&LightCopy.bReactiveApplied&&!LightCopy.ReactiveReady(),TEXT("Applied light restore retains original clocks and cannot rearm or fabricate a live player action"));
+ LightCopy.RoomLightInput(TEXT("records"),8,true);Check(LightCopy.ReactiveSerial==7,TEXT("A missing Freeform world cannot manufacture a manual OFF candidate"));
+ R.Begin(Saved);Check(R.ReactiveRoom.IsEmpty()&&!R.bReactiveApplied,TEXT("Legacy Director save does not infer an incident from a room preference"));
  FS47RoswellBrain Brain;Brain.Start(FS47RoswellBrain::EMode::Curious,FVector(2,0,3),.4,77);Brain.bHasPlayerMemory=true;Brain.LastKnownPlayer=FVector(8,0,9);auto B=Brain.Save();FS47RoswellBrain Copy;
  Check(Copy.Restore(B)&&Copy.Pos==Brain.Pos&&Copy.LastKnownPlayer==Brain.LastKnownPlayer&&Copy.bHasPlayerMemory,TEXT("active native observer keeps identity-space position and measured player memory"));
  return Ok;

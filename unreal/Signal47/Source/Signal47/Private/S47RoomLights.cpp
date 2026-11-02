@@ -1,4 +1,7 @@
 #include "S47RoomLights.h"
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
+#include "S47Office.h"
 #include "S47Main.h"
 #include "S47Web.h"
 #include "S47World.h"
@@ -38,20 +41,52 @@ namespace
 FS47RoomLights::~FS47RoomLights(){Stop();Life.Reset();}
 void FS47RoomLights::Begin(const S47J::FObj& Saved)
 {
- bActive=true;Retry=0;
+ bActive=true;Retry=0;ManualSerial=EffectSerial=0;EffectRoom.Empty();
  for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)
   Enabled[I]=!Saved||S47J::Int(Saved,TEXT("v"))!=1?true:S47J::Bool(Saved,Switches[I].Room,true);
+ if(Saved&&S47J::Int(Saved,TEXT("v"))==1)
+ {
+  const double Serial=S47J::Num(Saved,TEXT("inputSerial"));
+  ManualSerial=FMath::IsFinite(Serial)?int32(FMath::Clamp(Serial,0.,1000000000.)):0;
+  const double Effect=S47J::Num(Saved,TEXT("effectSerial"));
+  EffectSerial=FMath::IsFinite(Effect)?int32(FMath::Clamp(Effect,0.,1000000000.)):0;
+  EffectRoom=S47J::Str(Saved,TEXT("effectRoom"));
+  if(IndexOf(EffectRoom)<0||EffectSerial<=0||EffectSerial!=ManualSerial||ManualEnabled(EffectRoom)){EffectRoom.Empty();EffectSerial=0;}
+ }
  Build();Apply();
 }
 S47J::FObj FS47RoomLights::Save() const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("v"),1);
  for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)S47J::Set(O,Switches[I].Room,Enabled[I]);
+ S47J::Set(O,TEXT("inputSerial"),ManualSerial);S47J::Set(O,TEXT("effectSerial"),EffectSerial);S47J::Set(O,TEXT("effectRoom"),EffectRoom);
  return O;
 }
 bool FS47RoomLights::RoomEnabled(const FString& Room) const
 {
- const int32 I=IndexOf(Room);return !bActive||I<0||Enabled[I];
+ const int32 I=IndexOf(Room);return !bActive||I<0||Enabled[I]||EventLightMatches(Room,ManualSerial);
+}
+bool FS47RoomLights::ManualEnabled(const FString& Room) const
+{const int32 I=IndexOf(Room);return I<0||Enabled[I];}
+bool FS47RoomLights::EventLightMatches(const FString& Room,int32 Serial) const
+{return bActive&&(!M||M->IsFreeform())&&Serial>0&&EffectSerial==Serial&&ManualSerial==Serial&&IndexOf(Room)>=0&&IndexOf(EffectRoom)==IndexOf(Room)&&!ManualEnabled(Room);}
+bool FS47RoomLights::SetEventLight(const FString& Room,int32 Serial)
+{
+ if(!bActive||!M||!M->IsFreeform()||!M->Freeform||!M->Freeform->HasPowerForReactiveLight()||IndexOf(Room)<0||Serial<=0||Serial!=ManualSerial||ManualEnabled(Room))return false;
+ EffectRoom=Switches[IndexOf(Room)].Room;EffectSerial=Serial;Apply();M->RequestAutosave();return true;
+}
+void FS47RoomLights::ManualInput(int32 I)
+{
+ const bool Next=!RoomEnabled(Switches[I].Room);
+ EffectRoom.Empty();EffectSerial=0;Enabled[I]=Next;
+ ManualSerial=ManualSerial>=1000000000?1:ManualSerial+1;
+}
+bool FS47RoomLights::PlayerInRoom(const FString& Room) const
+{
+ const int32 I=IndexOf(Room);if(I<0||!M||!M->Player||!M->Web||!M->World||M->World->Area!=TEXT("saro"))return false;
+ if(I==3)return M->Office&&M->Office->Contains(M->Player->Pos);
+ const TCHAR* Zone=I==0?TEXT("room.bounds"):I==1?TEXT("annex.zone.corridor"):TEXT("annex.zone.records");
+ return M->Web->Rect(Zone).Contains(M->Player->Pos);
 }
 FVector FS47RoomLights::InteractionPoint(const FString& Room) const
 {
@@ -68,7 +103,7 @@ bool FS47RoomLights::Available(int32 I) const
 FString FS47RoomLights::Label(const FString& Id) const
 {
  const int32 I=IndexOf(Id);if(!Available(I))return FString();
- return FString::Printf(TEXT("%s ceiling light / switch %s"),Switches[I].Title,Enabled[I]?TEXT("OFF"):TEXT("ON"));
+ return FString::Printf(TEXT("%s ceiling light / switch %s%s"),Switches[I].Title,RoomEnabled(Id)?TEXT("OFF"):TEXT("ON"),EventLightMatches(Id,ManualSerial)?TEXT(" / examine retained OFF setting"):TEXT(""));
 }
 bool FS47RoomLights::Use(const FString& Id)
 {
@@ -77,7 +112,8 @@ bool FS47RoomLights::Use(const FString& Id)
  const FVector Eye=S47Three::ToThree(M->Player->EyeUE());
  // Distance plus actual eye ray prevents remote calls and use through the shared wall.
  if(FVector::DotProduct(Eye-Switches[I].At,Facing(I))<=0||FVector::Dist(Eye,InteractionPoint(Id))>2.2||M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())!=IdOf(I))return false;
- Enabled[I]=!Enabled[I];Apply();
+ ManualInput(I);Apply();
+ if(M->IsFreeform()&&M->Freeform&&M->Freeform->Director)M->Freeform->Director->RoomLightInput(Switches[I].Room,ManualSerial,!Enabled[I]);
  if(M->Audio){FS47Sound S;S.At=InteractionPoint(Id);S.Gain=.45f;M->Audio->Sfx(M->Audio->Or(TEXT("small_switch"),TEXT("switch")),S);}
  if(M->UI)M->UI->Toast(FString::Printf(TEXT("%s ceiling switch %s.%s"),Switches[I].Title,Enabled[I]?TEXT("ON"):TEXT("OFF"),M->Story&&M->Story->bDark?TEXT(" Supply is off; your switch setting is retained."):TEXT(" Equipment power is unchanged.")),3);
  M->RequestAutosave();return true;
@@ -108,7 +144,13 @@ bool FS47RoomLights::Build()
   FS47Interactable Item;Item.Id=IdOf(I);Item.Object=Plates[I];Item.Range=2.2;
   Item.Label=[this,Guard,I]{return Guard.IsValid()?Label(IdOf(I)):FString();};
   Item.Use=[this,Guard,I]{if(Guard.IsValid())Use(IdOf(I));};
-  Item.Examine=[this,Guard,I]{return Guard.IsValid()&&Available(I)?FString::Printf(TEXT("%s ceiling switch is %s. This controls room lighting only; computers and instruments have separate power."),Switches[I].Title,Enabled[I]?TEXT("ON"):TEXT("OFF")):FString();};M->Inter->Add(Item);
+  Item.Examine=[this,Guard,I]
+  {
+   if(!Guard.IsValid()||!Available(I))return FString();
+   FString Text=FString::Printf(TEXT("%s wall switch is %s. This controls room lighting only; computers and instruments have separate power."),Switches[I].Title,ManualEnabled(Switches[I].Room)?TEXT("ON"):TEXT("OFF"));
+   if(M->IsFreeform()&&M->Freeform&&M->Freeform->Director)Text+=M->Freeform->Director->InspectRoomLight(Switches[I].Room);
+   return Text;
+  };M->Inter->Add(Item);
  }
  bBuilt=true;return true;
 }
@@ -124,7 +166,7 @@ void FS47RoomLights::Apply()
    if(const auto* N=M->Web->Node(Parts[K].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(Show&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
   }
   // Adopted Web nodes do not retain the native mesh scale; avoid SetRotX here.
-  if(const auto* N=M->Web->Node(Levers[I].I))if(auto* C=N->Comp.Get())C->SetWorldRotation(Switches[I].bSideWall?FRotator((Enabled[I]?-22.:22.)*Switches[I].Normal,0,0):FRotator(0,0,(Enabled[I]?-22.:22.)*Switches[I].Normal));
+  if(const auto* N=M->Web->Node(Levers[I].I))if(auto* C=N->Comp.Get())C->SetWorldRotation(Switches[I].bSideWall?FRotator((RoomEnabled(Switches[I].Room)?-22.:22.)*Switches[I].Normal,0,0):FRotator(0,0,(RoomEnabled(Switches[I].Room)?-22.:22.)*Switches[I].Normal));
  }
 }
 void FS47RoomLights::Step(double Dt)
@@ -158,6 +200,15 @@ bool FS47RoomLights::SelfTest(TArray<FString>& Lines)
  Check(AllRejected,TEXT("Room switch cannot be operated without an actual reachable world interaction"));
  auto Partial=S47J::New();S47J::Set(Partial,TEXT("v"),1);S47J::Set(Partial,TEXT("control"),false);L.Begin(Partial);
  Check(!L.RoomEnabled(TEXT("control"))&&L.RoomEnabled(TEXT("office")),TEXT("Partial legacy room settings preserve saved off and default absent rooms on"));
+ Check(L.InputSerial()==0&&!L.EventLightMatches(TEXT("control"),0),TEXT("A saved OFF preference has no manual-input provenance and cannot become a reactive event"));
+ L.Begin();L.ManualInput(0);Check(!L.ManualEnabled(TEXT("control"))&&L.InputSerial()==1,TEXT("A real manual state transition records a distinct OFF input without enabling an event"));
+ L.EffectRoom=TEXT("control");L.EffectSerial=L.ManualSerial;
+ const auto EffectSaved=S47J::Read(S47J::Write(L.Save()));FS47RoomLights E(nullptr);E.Begin(EffectSaved);
+ Check(!E.ManualEnabled(TEXT("control"))&&E.RoomEnabled(TEXT("control"))&&E.EventLightMatches(TEXT("control"),1),TEXT("Continue preserves OFF preference separately from an already-applied ON incident"));
+ E.ManualInput(0);Check(!E.RoomEnabled(TEXT("control"))&&E.InputSerial()==2&&!E.EventLightMatches(TEXT("control"),1),TEXT("Next manual switch operation clears incident override and invalidates the old input identity"));
+ auto Stale=S47J::Clone(EffectSaved);S47J::Set(Stale,TEXT("inputSerial"),2);E.Begin(Stale);
+ Check(!E.RoomEnabled(TEXT("control"))&&E.EffectRoom.IsEmpty(),TEXT("Mismatched saved input and incident override are discarded without relighting the room"));
+ Check(!E.SetEventLight(TEXT("control"),2),TEXT("Event setter cannot change a light without an active Freeform owner"));
  L.Stop();Check(L.RoomEnabled(TEXT("control")),TEXT("Stopped room session releases its lighting mask"));
  L.Begin();Check(L.RoomEnabled(TEXT("control")),TEXT("New case resets the previous case's room switches"));
  return OK;

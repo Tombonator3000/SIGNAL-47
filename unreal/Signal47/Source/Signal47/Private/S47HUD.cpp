@@ -28,6 +28,7 @@
 #include "S47Office.h"
 #include "S47RoomLights.h"
 #include "S47RoomLightsTest.h"
+#include "S47ReactiveLightTest.h"
 #include "S47T02Test.h"
 #include "S47Graphics.h"
 #include "S47GraphicsTest.h"
@@ -625,6 +626,7 @@ void AS47HUD::StartTests()
 	S47SaroWallTest::Start(US47Main::Get(this));
 	S47OfficeFreeformTest::Start(US47Main::Get(this));
 	S47RoomLightsTest::Start(US47Main::Get(this));
+	S47ReactiveLightTest::Start(US47Main::Get(this));
 	S47CreaturePreview::Start(US47Main::Get(this));
 	S47RoswellPreview::Start(US47Main::Get(this));
 	S47RoswellAIProbe::Start(US47Main::Get(this));

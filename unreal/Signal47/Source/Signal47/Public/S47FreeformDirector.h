@@ -17,6 +17,8 @@ public:
  bool Busy() const;
  bool Use(const FString& Id);
  FString Label(const FString& Id) const;
+ void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
+ FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
  void Photo(const FS47AlbumShot& Shot);
  const FString& ActiveEvent() const { return Event; }
@@ -44,6 +46,13 @@ private:
  FRandomStream Random;
  TMap<FString,int32> LastDays;
  S47J::FObj GroupRestore;
+ FString ReactiveRoom;
+ int32 ReactiveSerial=0;
+ double ReactiveAge=0,ReactiveOffClock=0,ReactiveOnClock=0;
+ bool bReactiveLeft=false,bReactiveApplied=false,bReactiveInspected=false;
+ bool ReactiveValid() const;
+ bool ReactiveReady() const;
+ void StepReactive(double Dt);
  bool Start(const FString& Id,bool bForced);
  bool Eligible(const FString& Id,bool bForced) const;
  void Apply();
