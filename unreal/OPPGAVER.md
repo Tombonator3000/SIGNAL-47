@@ -193,3 +193,5 @@ Root eier `codex/install-lookdev-20261031`. Pakkeintegrasjonen for konfigurasjon
 
 ## Tittel-QUIT og Linux-mottaker, 1. november
 Root eier `codex/title-quit-linux-20261101` i `title-quit-linux-20261101` (kopi3 av maks4): SS47Menus.cpp/hjelpetekst og Linux-starter/diagnostikk. Nabochatten eier aktiv Freeform-menystart i saro-story-loop; motorbygg/installasjon samordnes der. Ingen ny diskaudit eller private assetkopier.
+
+2026-11-02: root eier Linux-release i saro-story-loop-20261031, gren codex/linux-release-20261102. Filansvar: Spill-SIGNAL47.sh, Build/Linux/launch, releasepakking og dokumentasjon. Private untracked-områder bevares. Tom har avsluttet spilltesten og bestilt offentlig nedlasting; én produksjonsreservasjon dekker releasekontroller/pakking.

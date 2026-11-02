@@ -35,3 +35,9 @@ UCAS=("$LINUX_PACKAGE"/Signal47/Content/Paks/*.ucas)
 chmod +x "$LINUX_PACKAGE/Signal47.sh" "$LINUX_PACKAGE/Signal47/Binaries/Linux/Signal47"
 install -m 755 "$(dirname "$P")/Build/Linux/launch/Check-Linux.sh" "$LINUX_PACKAGE/Check-Linux.sh"
 install -m 644 "$(dirname "$P")/Build/Linux/launch/README.md" "$LINUX_PACKAGE/LINUX-README.md"
+
+# Portable root entry points are shipped with every archive, not just GitHub releases.
+for launcher in Play.sh Play-Low.sh Install-Shortcut.sh; do
+  install -m 755 "$(dirname "$P")/Build/Linux/launch/$launcher" "$OUT/$launcher"
+done
+install -m 644 "$(dirname "$P")/../../web/src/assets/art/brand/icon_512.png" "$OUT/icon.png"
