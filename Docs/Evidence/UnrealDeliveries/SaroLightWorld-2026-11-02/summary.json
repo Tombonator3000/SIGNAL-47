@@ -1,0 +1,17 @@
+{
+  "runtime": "f96349fd66288aee96deedd3aa36a433e53a0a62",
+  "installed_at": "2026-11-02T01:10:33.190537+01:00",
+  "Saved_unchanged": true,
+  "saved_nodes": 164,
+  "checks": {
+    "self": 1982,
+    "room": 42,
+    "service_audio": 53,
+    "station_route": 14,
+    "cooked_assets": 3
+  },
+  "actualDrivenMetres": 2880.7539371157227,
+  "areaTransitions": 4,
+  "maximumCanonicalDriveStep": 5.107803284590375,
+  "limits": "Native ray/Walker/autopilot with explicit room/supply poses. Separate synthetic noon/23h station fixtures. No human listening, full night, Story-switch journey or original intermittent wall reproduction claimed."
+}
