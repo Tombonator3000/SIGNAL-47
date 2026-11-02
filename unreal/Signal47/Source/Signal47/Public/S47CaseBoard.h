@@ -36,6 +36,8 @@ public:
 	void Load(const S47J::FObj& Saved);
 	TOptional<FVector2D> GetPosition(const FString& Id) const;
 	void SetPosition(const FString& Id, double X, double Y);
+	bool IsPositionAutomatic(const FString& Id) const;
+	void SetAutomaticPosition(const FString& Id, double X, double Y);
 
 	static bool SelfTest(TArray<FString>& Lines);
 
@@ -50,6 +52,7 @@ private:
 	} H;
 	TMap<FString, FString> Seen, CardPins;
 	TMap<FString, FVector2D> Pos;
+	TSet<FString> AutoPositions;
 	bool bLayoutMoved = false;
 	TSharedPtr<class IInputProcessor> NotebookKeys;
 

@@ -25,6 +25,8 @@ struct FS47BoardSpec
 	TFunction<FString(const FString&)> Hint;
 	TFunction<TOptional<FVector2D>(const FString&)> LayoutGet;
 	TFunction<void(const FString&, double, double)> LayoutSet;
+	TFunction<bool(const FString&)> LayoutIsAutomatic;
+	TFunction<void(const FString&, double, double)> LayoutAutoSet;
 	TFunction<void()> OnClose;
 };
 
@@ -58,6 +60,8 @@ public:
 	void HideHow();
 	// ui/Board.ts view(): scale and offset, for the same inspection tools as the web board.
 	FVector View() const;
+	// Measured native layout for targeted reopen/restore checks.
+	TMap<FString, FVector4> LayoutBounds() const;
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:
