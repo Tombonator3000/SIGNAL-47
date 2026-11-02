@@ -6,9 +6,9 @@
 # Kjør med --hjelp for valg og feilsøking.
 set -euo pipefail
 
-tag='playtest-linux-2026-10-29'
+tag='playtest-linux-2026-11-02'
 base="https://github.com/Tombonator3000/SIGNAL-47/releases/download/$tag"
-archives=(Signal47-Linux-2026-10-29.zip Signal47-Linux-2026-10-29-Data1.zip Signal47-Linux-2026-10-29-Data2.zip)
+archives=(Signal47-Linux-2026-11-02.zip Signal47-Linux-2026-11-02-Data1.zip Signal47-Linux-2026-11-02-Data2.zip)
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 game_dir="$repo_dir/Spill/$tag"
@@ -21,6 +21,9 @@ usage() {
 Bruk: ./Spill-SIGNAL47.sh [valg] [-- ekstra argumenter til spillet]
 
   --lav          Low-grafikk i et vindu på 1280 x 720 (svakere maskiner)
+  --descriptor-buffer  bruk Vulkan descriptor_buffer (automatisk på RTX 50-serien)
+  --descriptor-heap    bruk tidligere Vulkan descriptor_heap
+  --snarvei      installer snarvei til denne spillpakken uten å starte spillet
   --uten-rt      slår av strålesporing (prøv ved svart skjerm eller blinking)
   --x11          tving X11/XWayland i stedet for Wayland
   --wayland      tving Wayland
@@ -43,10 +46,15 @@ game_args=()
 check_only=0
 report_only=0
 low=0
+shortcut=0
+descriptor=${S47_VULKAN_DESCRIPTORS:-auto}
 package_override=""
 while (($#)); do
   case "$1" in
     --pakke) [[ -n ${2:-} ]] || { echo "--pakke trenger en mappe" >&2; exit 2; }; package_override="$2"; shift ;;
+    --descriptor-buffer) descriptor=buffer ;;
+    --descriptor-heap) descriptor=heap ;;
+    --snarvei) shortcut=1 ;;
     --lav) low=1 ;;
     --uten-rt) game_args+=('-ini:Engine:[/Script/Engine.RendererSettings]:r.RayTracing=False,[/Script/Engine.RendererSettings]:r.Lumen.HardwareRayTracing=False') ;;
     --x11) export SDL_VIDEO_DRIVER=x11 SDL_VIDEODRIVER=x11; game_args+=(-sdlvideodriver=x11) ;;
@@ -74,6 +82,7 @@ if [[ -n $package_override ]]; then
   elif [[ -d $package_override/Signal47-Linux/Linux ]]; then linux_root="$package_override/Signal47-Linux/Linux"
   else echo 'Fant ikke Linux/Signal47.sh-oppsettet. Velg den utpakkede spillmappen, ikke Source code-arkivet.' >&2; exit 2; fi
   play="$linux_root/Signal47.sh"
+  [[ ! -f $linux_root/../Play.sh ]] || play="$linux_root/../Play.sh"
   # Preserve the supplied low-quality wrapper if this distribution includes it.
   if ((low)); then
     [[ -f $linux_root/../Play-Low.sh ]] || { echo 'Denne pakken mangler Play-Low.sh. Start uten --lav og velg kvalitet i Settings.' >&2; exit 2; }
@@ -165,7 +174,7 @@ system_check() {
 
   if [[ ! -x $play ]]; then
     local free_kb; free_kb="$(df -Pk "$repo_dir" | awk 'NR==2 {print $4}')"
-    ((free_kb >= 10000000)) || warn "Nedlasting og utpakking trenger om lag 10 GB ledig plass, du har $((free_kb / 1024 / 1024)) GB."
+    ((free_kb >= 15000000)) || warn "Nedlasting og utpakking trenger om lag 15 GB ledig plass, du har $((free_kb / 1024 / 1024)) GB."
   fi
   if [[ -n $package_override || -e $download_complete || -f $play ]]; then
     local internal="$linux_root/Signal47.sh"
@@ -239,7 +248,7 @@ if [[ -z $package_override ]] && [[ ! -x "$play" || ! -f "$download_complete" ]]
   for tool in curl unzip sha256sum; do
     command -v "$tool" >/dev/null || { printf 'Mangler %s. Installer det og prøv igjen.\n' "$tool" >&2; exit 1; }
   done
-  printf 'Laster ned SIGNAL / 47 (%s), om lag 3,9 GB. Det skjer bare første gang.\n' "$tag"
+  printf 'Laster ned SIGNAL / 47 (%s), flere GB. Det skjer bare første gang.\n' "$tag"
   for old in "$repo_dir"/Spill/playtest-linux-*; do
     [[ -d "$old" && "$old" != "$game_dir" ]] && printf 'Eldre utgave i %s kan slettes. Flytt Linux/Signal47/Saved derfra hvis du vil beholde lagringene.\n' "$old"
   done
@@ -272,6 +281,31 @@ if [[ -z $package_override ]] && [[ ! -x "$play" || ! -f "$download_complete" ]]
 fi
 
 if ((low)) && [[ -z $package_override ]]; then play="$game_dir/Signal47-Linux/Play-Low.sh"; fi
+if ((shortcut)); then
+  installer="$linux_root/../Install-Shortcut.sh"
+  [[ -f $installer ]] || { echo 'Pakken mangler Install-Shortcut.sh.' >&2; exit 2; }
+  exec bash "$installer"
+fi
+# RTX 50 / NVIDIA 615 startup workaround; keep the tested heap path on RTX 30.
+# /proc needs no utility. nvidia-smi is only a bounded fallback.
+is_rtx50() {
+    local info model=""
+    for info in /proc/driver/nvidia/gpus/*/information; do
+        [[ ! -r $info ]] || model+=$(cat "$info")
+    done
+    if [[ -z $model ]] && command -v nvidia-smi >/dev/null && command -v timeout >/dev/null; then
+        model=$(timeout 3s nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null) || model=""
+    fi
+    [[ $model =~ RTX[[:space:]]+50[0-9][0-9] ]]
+}
+if [[ $descriptor == auto ]] && is_rtx50; then descriptor=buffer; fi
+case "$descriptor" in
+  buffer) game_args+=('-ini:Engine:[ConsoleVariables]:r.Vulkan.Bindless.PreferredExtension=0') ;;
+  heap) game_args+=('-ini:Engine:[ConsoleVariables]:r.Vulkan.Bindless.PreferredExtension=1') ;;
+  auto) ;;
+  *) echo 'Ugyldig S47_VULKAN_DESCRIPTORS.' >&2; exit 2 ;;
+esac
+export S47_VULKAN_DESCRIPTORS="$descriptor"
 printf 'Spilloggen skrives til %s\n' "$log_file"
 mkdir -p "$repo_dir/Spill"
 printf 'Oppstart %s\nPakke: %s\nStarter: %s\n' "$(date -Is)" "$linux_root" "$play" > "$terminal_log"

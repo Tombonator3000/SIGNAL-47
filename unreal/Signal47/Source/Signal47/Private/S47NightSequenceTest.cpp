@@ -12,6 +12,10 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Observing.h"
+#include "S47SaroWork.h"
+#include "S47FreeformAudioDesk.h"
+#include "Framework/Application/SlateApplication.h"
+#include "InputCoreTypes.h"
 #include "S47RecordedDialogue.h"
 #include "S47SaroNight.h"
 #include "S47SaroPower.h"
@@ -331,6 +335,17 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
     if (!Check(O.Phase() == FS47Observing::EStep::Tune && O.ChorePending() && M->Story->Rx.Stage == 1,
         TEXT("neste observasjon venter på faktisk aggregattest, arkivrunde eller porterunde"))) return;
     M->UI->Close(true);
+    if (O.RunIndex() == 1 && O.WorkEnabled() && O.GeneratorStep() >= 3 && O.Work()->ServiceRequired())
+    {
+     int32 Dish = INDEX_NONE;
+     for (int32 I = 0; I < M->Web->DishCount(); ++I) if (M->Web->DishId(I) == TEXT("S-03")) Dish = I;
+     if (!Check(Dish != INDEX_NONE, TEXT("S-03 finnes i faktisk statusmodell"))) return;
+     O.SelectStatusDish(Dish); M->UI->Close(true);
+     M->Player->Place(10.5, -11, 0);
+     if (!Check(M->Player->Walkable(10.5, -11), TEXT("S-03 serviceposisjon er navngitt walkable fixture"))) return;
+     UE_LOG(LogTemp, Display, TEXT("S47: night sequence SERVICE POSITION FIXTURE: 10.5/-11; production cabinet actions and natural local movement follow"));
+     Stage(60); return;
+    }
     if (O.RunIndex() == 1)
     {
      M->Player->Place(4.6, .65, UE_DOUBLE_PI / 2); M->Player->Pitch = -.08;
@@ -340,6 +355,11 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
     }
     if (O.RunIndex() == 2)
     {
+     if (O.WorkEnabled() && !O.PacketCollected())
+     {
+      if (!Check(O.Use(TEXT("printer")) && O.PacketCollected(), TEXT("registrert pulsarpacket hentes gjennom produksjonsprinter-API før arkivering"))) return;
+      M->UI->Close(true);
+     }
      if (!Check(O.ArchiveStep() == 0, TEXT("arkivrunden starter uten tilskrevet credit"))) return;
      M->Web->SetDoorById(TEXT("south"), true, true); M->Web->SetDoorById(TEXT("records"), true, true);
      M->Player->Place(-2.4, 9.4, 0); M->Player->Pitch = -.08;
@@ -358,6 +378,17 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
     }
     Fail(TEXT("ukjent ny oppgaveport mellom observasjonene")); return;
    }
+   if (O.WorkEnabled())
+   {
+    auto* W = O.Work();
+    if (!W) { Fail(TEXT("ny Story mangler faktisk arrayarbeid")); return; }
+    if (!W->HasCommand() || W->CommandedRun() != O.RunIndex())
+    {
+     if (!Check(O.PointScheduledRun(), TEXT("tracking-API kommanderer neste faktiske observasjon"))) return;
+     T.Hold = .2; return;
+    }
+    if (!W->Ready() || !W->CanMeasure()) return; // production Step settles the actual dishes
+   }
    Dials(R.P); M->Story->ConsoleAction();
    if (!Check(O.Phase() == FS47Observing::EStep::Integrating && M->Story->Rx.Stage == 1,
        FString::Printf(TEXT("observasjon %d startet via beholdt ConsoleAction-krok"), O.RunIndex() + 1))) return;
@@ -366,9 +397,81 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
    T.Hold = .2; return;
   }
   if (O.Phase() == FS47Observing::EStep::Integrating) return;
-  if (!Check(O.RunIndex() == T.ObserveRun && O.Use(R.Data) && O.RunIndex() == T.ObserveRun + 1,
+  if (!Check(O.RunIndex() == T.ObserveRun, TEXT("fullført observasjon beholder startet run frem til registrering"))) return;
+  if (O.RunIndex() == 1 && O.LoopStage() != FS47Observing::ELoopStage::Off)
+  {
+   if (!Check(O.Use(TEXT("printer")) && O.LoopStage() == FS47Observing::ELoopStage::Rack,
+       TEXT("originalt pulsarark beholdes før uavhengig kontroll"))) return;
+   M->UI->Close(true);
+   if (!Check(O.Use(TEXT("rack")) && O.LoopStage() == FS47Observing::ELoopStage::ControlRunning,
+       TEXT("produksjonsrack starter åttesekunders kontroll uten konklusjonscredit"))) return;
+   Stage(70); return;
+  }
+  if (O.WorkEnabled() && O.RunIndex() == 3)
+  { O.OpenArrayStatus(); Stage(75, .3); return; }
+  const bool Filed = O.WorkEnabled() && O.RunIndex() == 2 ? O.RegisterScheduledData() : O.Use(R.Data);
+  if (!Check(Filed && O.RunIndex() == T.ObserveRun + 1,
       FString::Printf(TEXT("observasjon %d arkivert via faktisk %s-API"), T.ObserveRun + 1, R.Data))) return;
   M->UI->Close(true); T.Hold = .2; return;
+ }
+ // Current Story work order: no saved-state exemptions or synthetic completion flags.
+ if (T.Stage == 60)
+ {
+  auto& O = *M->Observing; auto* W = O.Work();
+  if (!W) { Fail(TEXT("arrayarbeid mangler under service")); return; }
+  using ES = FS47SaroWork::EService;
+  if (W->ServiceStage() == ES::TestingOut || W->ServiceStage() == ES::TestingBack) return;
+  if (W->ServiceComplete())
+  {
+   if (!Check(!O.ChorePending(), TEXT("naturlig S-03 ut/tilbake-test og REMOTE gjenoppretting åpner pulsarobservasjonen"))) return;
+   M->Player->Place(4.2, 1.6, 0); Stage(3); return;
+  }
+  const auto Before = W->ServiceStage();
+  if (!Check(O.Use(TEXT("obs:service")) && W->ServiceStage() != Before,
+      TEXT("produksjonsservice-API gjennomfører neste lokale kabinetthandling"))) return;
+  T.Hold = .2; return;
+ }
+ if (T.Stage == 70)
+ {
+  auto& O = *M->Observing;
+  if (O.LoopStage() == FS47Observing::ELoopStage::ControlRunning) return;
+  if (!Check(O.LoopStage() == FS47Observing::ELoopStage::ControlPrint && O.ControlElapsed() >= FS47Observing::ControlSeconds &&
+      O.Use(TEXT("printer")) && O.LoopStage() == FS47Observing::ELoopStage::Compare,
+      TEXT("faktisk kontrolltimer fullføres og kontrollarket beholdes"))) return;
+  M->UI->Close(true); M->Player->Place(.42, 2.6, 0);
+  if (!Check(M->Player->Walkable(.42, 2.6) && O.AudioDesk && O.AudioDesk->ListeningPosition(),
+      TEXT("lytteplass .42/2.6 er eksplisitt fixture ved den fysiske båndspilleren"))) return;
+  O.OpenAudioComparison();
+  if (!Check(!O.ComparePulsar(TEXT("unresolved")) && O.AudioAction(TEXT("original")) &&
+      O.AudioAction(TEXT("rewind")) && O.AudioAction(TEXT("play")), TEXT("originaltransport starter uten å tilskrive lyttedekning"))) return;
+  Stage(71); return;
+ }
+ if (T.Stage == 71)
+ {
+  auto& O = *M->Observing;
+  if (O.AudioPlaying() || O.AudioHeard(0) < FS47Observing::Runs()[1].Seconds) return;
+  if (!Check(O.AudioAction(TEXT("control")) && O.AudioAction(TEXT("rewind")) && O.AudioAction(TEXT("play")),
+      TEXT("hele originalen er avspilt før den separate kontrolltransporten starter"))) return;
+  Stage(72); return;
+ }
+ if (T.Stage == 72)
+ {
+  auto& O = *M->Observing;
+  if (O.AudioPlaying() || O.AudioHeard(1) < FS47Observing::ControlSeconds) return;
+  if (!Check(O.AudioAction(TEXT("original")), TEXT("begge opptak avspilt før originalintervallet markeres"))) return;
+  O.SeekAudio(9); O.AudioAction(TEXT("mark_start")); O.SeekAudio(13); O.AudioAction(TEXT("mark_end"));
+  if (!Check(O.AudioAction(TEXT("confirm")) && O.AudioReviewed() && O.ComparePulsar(TEXT("unresolved")) && O.RunIndex() == 2,
+      TEXT("målt avspillingsdekning og markert intervall gir faktisk registrert, uavklart sammenligning"))) return;
+  M->UI->Close(true); Stage(3); return;
+ }
+ if (T.Stage == 75)
+ {
+  auto& O = *M->Observing;
+  if (!M->ModalOpen() || !FSlateApplication::IsInitialized()) { Fail(TEXT("Virgo-statusens fokuserte arkiveringsknapp mangler")); return; }
+  const bool Handled = FSlateApplication::Get().ProcessKeyDownEvent(FKeyEvent(EKeys::Enter, FModifierKeysState(), 0, false, 0, 0));
+  FSlateApplication::Get().ProcessKeyUpEvent(FKeyEvent(EKeys::Enter, FModifierKeysState(), 0, false, 0, 0));
+  if (!Check(Handled && O.Done(), TEXT("Virgo-loggen arkiveres via faktisk fokusert statusknapp og Slate Enter"))) return;
+  M->UI->Close(true); Stage(3); return;
  }
  if (T.Stage == 30)
  {
@@ -399,7 +502,8 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
   if (!Pick(TEXT("obs:generator"), FS47Observing::PanelPoint())) return;
   bool Restored = M->Web->TubeCount() == T.GeneratorTubes.Num();
   for (int32 I = 0; I < T.GeneratorTubes.Num(); ++I) Restored &= M->Web->TubeLit(I) == T.GeneratorTubes[I];
-  if (!Check(M->Observing->GeneratorStep() == 3 && Restored && !M->Observing->ChorePending() &&
+  if (!Check(M->Observing->GeneratorStep() == 3 && Restored &&
+      (!M->Observing->ChorePending() || (M->Observing->WorkEnabled() && M->Observing->Work()->ServiceRequired())) &&
       M->Story->Clock() >= -4 * 3600. - 15 * 60,
       TEXT("fysisk tilbakeføring gjenoppretter alle tidligere rør og arkiverer aggregattesten"))) return;
   M->Player->Place(4.2, 1.6, 0); M->Player->Pitch = -.08;
@@ -740,7 +844,7 @@ void FS47Evening::ControlNightSequenceTest(double Dt)
    S47J::Set(R, TEXT("sc02EscapeFixtureSource"), T.EscapeSource); S47J::Set(R, TEXT("sc03BoundaryClock"), T.SC03Clock);
    S47J::Set(R, TEXT("residualLockedClock"), T.LockedClock); S47J::Set(R, TEXT("directionPrintedClock"), T.PrintedClock);
   }
-  S47J::Set(R, TEXT("limits"), TEXT("D01 og observasjoner bruker produksjons-API, ikke menneskelig input. Aggregatpanelets faktiske rays, oppvarming og lastoverføring samt portens lukkede nærhet og returtriggere kjøres uten syntetisk oppgavecredit. Deres posisjoner er uttrykkelige fixtures fra SC01-ruten, uten sammenhengende gangbevis. SC01-fakta og ett originalfoto er uttrykkelig diskfixture. Telefon-/felt-/returposisjoner og DriveOut(true) road-start er fixtures. Faktiske fysiske T01-rays, vanlige ConsoleClosed-timere, telefonens lukketransaksjon, aktiv road-kjørekontroller, gjenopprettet SARO-strøm med vedvarende stedlig feileffekt, modalpause og isolerte disk/full-Flow-restores kjøres. Når sc03RevisionProbe er true, prøves faktisk StepSC03-grense rundt 02:15 og dens diskrestore med navngitt tidligere kvittert flukt som uttrykkelig revisjon3-fixture; deretter kjøres faktisk residualtuning, direction solve/print og Locked-/Printed-diskrestore med bevart klokke og printerark. Helkjøring, fersk ordinær Continue-prosess, ny SC02-flukt, SC03-innhold, lydlytting, fysisk Xbox og fullnatt er ikke prøvd av denne kontrakten."));
+  S47J::Set(R, TEXT("limits"), TEXT("D01 og observasjoner bruker produksjons-API, ikke menneskelig input. Nåværende Story kommanderer og venter på faktisk arraybevegelse; S-03-status og lokal service, pulsarkontroll, full tidsbasert avspillingsdekning av begge opptak, markering og packet-registrering gjennom produksjons-API kjøres uten syntetisk credit. S-03- og lytteposisjoner er eksplisitte fixtures. Virgo arkiveres med fokusert Slate Enter. Avspillingsdekning er ikke menneskelig lydvurdering. Aggregatpanelets faktiske rays, oppvarming og lastoverføring samt portens lukkede nærhet og returtriggere kjøres uten syntetisk oppgavecredit. Deres posisjoner er uttrykkelige fixtures fra SC01-ruten, uten sammenhengende gangbevis. SC01-fakta og ett originalfoto er uttrykkelig diskfixture. Telefon-/felt-/returposisjoner og DriveOut(true) road-start er fixtures. Faktiske fysiske T01-rays, vanlige ConsoleClosed-timere, telefonens lukketransaksjon, aktiv road-kjørekontroller, gjenopprettet SARO-strøm med vedvarende stedlig feileffekt, modalpause og isolerte disk/full-Flow-restores kjøres. Når sc03RevisionProbe er true, prøves faktisk StepSC03-grense rundt 02:15 og dens diskrestore med navngitt tidligere kvittert flukt som uttrykkelig revisjon3-fixture; deretter kjøres faktisk residualtuning, direction solve/print og Locked-/Printed-diskrestore med bevart klokke og printerark. Helkjøring, fersk ordinær Continue-prosess, ny SC02-flukt, SC03-innhold, lydlytting, fysisk Xbox og fullnatt er ikke prøvd av denne kontrakten."));
   if (!FFileHelper::SaveStringToFile(S47J::Write(R, true), *(T.Root / TEXT("result.json")))) { Fail(TEXT("kunne ikke skrive sluttbevis")); return; }
   T.bDone = true;
   UE_LOG(LogTemp, Display, TEXT("S47: night sequence contract PASS COMPLETE: %d checks, %d fresh disk/full-Flow restores; SC01 and travel fixtures explicitly labelled; artifacts %s"), T.Checks, T.Loads, *T.Root);
