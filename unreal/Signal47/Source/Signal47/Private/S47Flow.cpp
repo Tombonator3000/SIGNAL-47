@@ -1329,13 +1329,14 @@ void US47Flow::ApplyPicture(const FString& P, bool bChosen)
 {
 	Picture = S47Picture::Normalize(P);
 	if (bChosen) StoreSet(TEXT("picture"), Picture);
+	float Calm = bCalmFlash || bStillShots ? 1.f : 0.f;
+	FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
+	if (M && M->Flow == this) S47Theme::SetTapeComfort(Picture == TEXT("off") ? 0.f : S47Picture::Strength(PictureStrength), Calm >= .5f);
 	// Preserve the legacy Vhs blend for scene materials. The tone pass has a separate mode enum.
 	UWorld* World = GameWorld();
 	UMaterialParameterCollection* Mpc = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Web/Base/MPC_Web.MPC_Web"));
 	if (UMaterialParameterCollectionInstance* I = World && Mpc ? World->GetParameterCollectionInstance(Mpc) : nullptr)
 	{
-		float Calm = bCalmFlash || bStillShots ? 1.f : 0.f;
-		FParse::Value(FCommandLine::Get(), TEXT("S47PictureCalm="), Calm);
 		const int32 Mode = S47Picture::Mode(Picture);
 		const float Strength = S47Picture::Strength(PictureStrength);
 		I->SetScalarParameterValue(TEXT("PictureMode"), float(Mode));
