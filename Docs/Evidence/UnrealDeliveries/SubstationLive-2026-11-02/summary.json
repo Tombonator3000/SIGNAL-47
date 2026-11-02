@@ -1,0 +1,766 @@
+{
+  "status": "PASS",
+  "runtime": "62b5eaa4d7d1f15bd97d6b887abf882281063349",
+  "executable_sha256": "886c7eae5f8e90e66b2b40a6d35105cf1b3fbcef6e96b8479b62212dd59d5569",
+  "installed_at": "2026-11-02T06:39:03.192428+01:00",
+  "self_checks": 1997,
+  "checks": [
+    {
+      "pass": true,
+      "check": "fresh isolated actual Freeform developer case0"
+    },
+    {
+      "pass": true,
+      "check": "required CLI -S47Quality=low selects actual Low effects profile"
+    },
+    {
+      "pass": true,
+      "check": "initial existing diner service-apron fixture is actually walkable"
+    },
+    {
+      "pass": true,
+      "check": "actual normal energized state has visible live geometry/light/audio on the active road root"
+    },
+    {
+      "pass": true,
+      "check": "actual normal energized state has visible live geometry/light/audio on the active road root"
+    },
+    {
+      "pass": true,
+      "check": "Low normal actual ordinary-tick world instance matrices and age advance"
+    },
+    {
+      "pass": true,
+      "check": "production clock advance selects actual22:00 for fault/isolation/repair captures"
+    },
+    {
+      "pass": true,
+      "check": "actual energized fault state has visible live geometry/light/audio on the active road root"
+    },
+    {
+      "pass": true,
+      "check": "fault actually increases arc intensity and buzz over normal energized corona"
+    },
+    {
+      "pass": true,
+      "check": "Low fault actual ordinary-tick world instance matrices and age advance"
+    },
+    {
+      "pass": true,
+      "check": "actual service eye ray hits feeder: ff:feeder"
+    },
+    {
+      "pass": true,
+      "check": "production feeder step advances to2 through native OnUse"
+    },
+    {
+      "pass": true,
+      "check": "actual service eye ray hits feeder: ff:feeder"
+    },
+    {
+      "pass": true,
+      "check": "production feeder step advances to3 through native OnUse"
+    },
+    {
+      "pass": true,
+      "check": "actual enclosed isolation extinguishes geometry/light and both audio gains while fault is retained"
+    },
+    {
+      "pass": true,
+      "check": "saved isolated service pose passes the ordinary walkability rule"
+    },
+    {
+      "pass": true,
+      "check": "ordinary WriteSave and fresh reader select the same actual isolated Freeform case: "
+    },
+    {
+      "pass": true,
+      "check": "fresh disk reader retains actual isolation and all unspent fuses"
+    },
+    {
+      "pass": true,
+      "check": "ordinary title Continue action selects the saved isolated case"
+    },
+    {
+      "pass": true,
+      "check": "ordinary title Continue restores actual isolated walkable diner-service pose and unspent inventory"
+    },
+    {
+      "pass": true,
+      "check": "ordinary post-Continue Main tick keeps isolated arc/light/audio off"
+    },
+    {
+      "pass": true,
+      "check": "actual service eye ray hits feeder: ff:feeder"
+    },
+    {
+      "pass": true,
+      "check": "production feeder step advances to4 through native OnUse"
+    },
+    {
+      "pass": true,
+      "check": "physical replacement consumes exactly one existing stock fuse"
+    },
+    {
+      "pass": true,
+      "check": "actual service eye ray hits feeder: ff:feeder"
+    },
+    {
+      "pass": true,
+      "check": "production feeder step advances to4 through native OnUse"
+    },
+    {
+      "pass": true,
+      "check": "ordinary timed repair restores supply only after the real enclosed three-second test"
+    },
+    {
+      "pass": true,
+      "check": "actual normal energized state has visible live geometry/light/audio on the active road root"
+    },
+    {
+      "pass": true,
+      "check": "actual normal energized state has visible live geometry/light/audio on the active road root"
+    },
+    {
+      "pass": true,
+      "check": "Low Calm normal actual ordinary-tick world instance matrices and age advance"
+    },
+    {
+      "pass": true,
+      "check": "Freeform live visual driver never fires or replays the Story SC02 strike"
+    }
+  ],
+  "samples": [
+    {
+      "name": "normal-low-3s",
+      "age": 3.0069568753242493,
+      "actualFreeformClock": 28879.047550216317,
+      "requested": false,
+      "ready": true,
+      "active": true,
+      "energized": true,
+      "isolated": false,
+      "fault": false,
+      "held": false,
+      "arcVisible": true,
+      "lampsVisible": false,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "BE8B31EB31C86E789374AFB651CC0D679A63AB80",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.937519569167,
+        6.582807075051545,
+        539.2236848460775
+      ],
+      "geometryMaxThree": [
+        7891.064829174961,
+        6.942674009130176,
+        539.4568691797065
+      ],
+      "arcLumens": 93.27494049072266,
+      "lampLumens": 0,
+      "arcIntensity": 0.9327493906021118,
+      "lampIntensity": 0,
+      "humGain": 0.07500000298023224,
+      "buzzGain": 0.007117767818272114,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7885.5,
+        2.14,
+        526
+      ],
+      "actualForwardThree": [
+        0.30267256002666376,
+        0.29998213727087175,
+        0.9046546516352556
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": false,
+      "feederStage": 0,
+      "stockFuses": 3,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "normal-low-8s",
+      "age": 8.140325492620468,
+      "actualFreeformClock": 29012.515134266017,
+      "requested": false,
+      "ready": true,
+      "active": true,
+      "energized": true,
+      "isolated": false,
+      "fault": false,
+      "held": false,
+      "arcVisible": true,
+      "lampsVisible": false,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "9427B96251C59171C6AF1FC6B67E15153E3472D5",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.938039733364,
+        6.582748510751179,
+        539.2300477021959
+      ],
+      "geometryMaxThree": [
+        7891.064396724033,
+        6.974383823141839,
+        539.456864389445
+      ],
+      "arcLumens": 97.65333557128906,
+      "lampLumens": 0,
+      "arcIntensity": 0.9765333533287048,
+      "lampIntensity": 0,
+      "humGain": 0.07500000298023224,
+      "buzzGain": 0.007252038922160864,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7885.5,
+        2.14,
+        526
+      ],
+      "actualForwardThree": [
+        0.30267256002666376,
+        0.29998213727087175,
+        0.9046546516352556
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": false,
+      "feederStage": 0,
+      "stockFuses": 3,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "fault-low-3s",
+      "age": 11.17368305325508,
+      "actualFreeformClock": 79244.48924422264,
+      "requested": true,
+      "ready": true,
+      "active": true,
+      "energized": true,
+      "isolated": false,
+      "fault": true,
+      "held": false,
+      "arcVisible": true,
+      "lampsVisible": true,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "172BD7C4AE24B89C768296E717BE4FC77B518123",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.915726573646,
+        6.581230463905441,
+        539.1930696529754
+      ],
+      "geometryMaxThree": [
+        7891.106310494939,
+        7.959996453061786,
+        539.4656875050905
+      ],
+      "arcLumens": 575.2175903320312,
+      "lampLumens": 24,
+      "arcIntensity": 10.226090431213379,
+      "lampIntensity": 0.9000000357627869,
+      "humGain": 0.11500000208616257,
+      "buzzGain": 0.07982690632343292,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7885.5,
+        2.14,
+        526
+      ],
+      "actualForwardThree": [
+        0.30267256002666376,
+        0.29998213727087175,
+        0.9046546516352556
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": false,
+      "feederStage": 1,
+      "stockFuses": 3,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "fault-low-8s",
+      "age": 16.307051864266395,
+      "actualFreeformClock": 79319.77865345082,
+      "requested": true,
+      "ready": true,
+      "active": true,
+      "energized": true,
+      "isolated": false,
+      "fault": true,
+      "held": false,
+      "arcVisible": true,
+      "lampsVisible": true,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "7DC9F447F889555D118CAB117FB672D962B76A2D",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.9076025478225,
+        6.581915607233213,
+        539.1745165315194
+      ],
+      "geometryMaxThree": [
+        7891.121395822682,
+        8.012216940964002,
+        539.4665203327364
+      ],
+      "arcLumens": 674.2960815429688,
+      "lampLumens": 95.03353881835938,
+      "arcIntensity": 11.987485885620117,
+      "lampIntensity": 3.56375789642334,
+      "humGain": 0.11500000208616257,
+      "buzzGain": 0.08752089738845825,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7885.5,
+        2.14,
+        526
+      ],
+      "actualForwardThree": [
+        0.30267256002666376,
+        0.29998213727087175,
+        0.9046546516352556
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": false,
+      "feederStage": 1,
+      "stockFuses": 3,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "isolated-low",
+      "age": 17.973729637265205,
+      "actualFreeformClock": 79366.7123094082,
+      "requested": true,
+      "ready": true,
+      "active": false,
+      "energized": false,
+      "isolated": true,
+      "fault": true,
+      "held": false,
+      "arcVisible": false,
+      "lampsVisible": false,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "B6E4BCDC8ABCD575591D4BB186CDDDC25B90BCE4",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.868055942954,
+        6.580122372810705,
+        539.1966484893401
+      ],
+      "geometryMaxThree": [
+        7891.1208019635405,
+        7.985133440843747,
+        539.46648673567
+      ],
+      "arcLumens": 0,
+      "lampLumens": 0,
+      "arcIntensity": 0,
+      "lampIntensity": 0,
+      "humGain": 0,
+      "buzzGain": 0,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7885.5,
+        2.14,
+        526
+      ],
+      "actualForwardThree": [
+        0.30267256002666376,
+        0.29998213727087175,
+        0.9046546516352556
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": false,
+      "feederStage": 3,
+      "stockFuses": 3,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "isolated-after-ordinary-continue",
+      "age": 17.973729637265205,
+      "actualFreeformClock": 79425.35604052545,
+      "requested": true,
+      "ready": true,
+      "active": false,
+      "energized": false,
+      "isolated": true,
+      "fault": true,
+      "held": false,
+      "arcVisible": false,
+      "lampsVisible": false,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "B6E4BCDC8ABCD575591D4BB186CDDDC25B90BCE4",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.868055942954,
+        6.580122372810705,
+        539.1966484893401
+      ],
+      "geometryMaxThree": [
+        7891.1208019635405,
+        7.985133440843747,
+        539.46648673567
+      ],
+      "arcLumens": 0,
+      "lampLumens": 0,
+      "arcIntensity": 0,
+      "lampIntensity": 0,
+      "humGain": 0,
+      "buzzGain": 0,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7885.5,
+        2.14,
+        526
+      ],
+      "actualForwardThree": [
+        0.30267256002666376,
+        0.29998213727087175,
+        0.9046546516352556
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": false,
+      "feederStage": 3,
+      "stockFuses": 3,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "repaired-low-calm-3s",
+      "age": 21.040418636798858,
+      "actualFreeformClock": 79538.2901794245,
+      "requested": false,
+      "ready": true,
+      "active": true,
+      "energized": true,
+      "isolated": false,
+      "fault": false,
+      "held": false,
+      "arcVisible": true,
+      "lampsVisible": false,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "6D3372DDDAA647C2995BFAF41A0F57A38E05A0E9",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.946034647762,
+        6.582732536320114,
+        539.2383601051137
+      ],
+      "geometryMaxThree": [
+        7891.059602720301,
+        6.972425411241772,
+        539.4567479270079
+      ],
+      "arcLumens": 71.15335083007812,
+      "lampLumens": 0,
+      "arcIntensity": 0.7115335464477539,
+      "lampIntensity": 0,
+      "humGain": 0.07500000298023224,
+      "buzzGain": 0.006370526738464832,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7878,
+        0.52,
+        535
+      ],
+      "actualForwardThree": [
+        0.8469017422194457,
+        0.4290968827245193,
+        0.31405939607304784
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": true,
+      "feederStage": 5,
+      "stockFuses": 2,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    },
+    {
+      "name": "repaired-low-calm-8s",
+      "age": 26.07379130348563,
+      "actualFreeformClock": 79612.11297853591,
+      "requested": false,
+      "ready": true,
+      "active": true,
+      "energized": true,
+      "isolated": false,
+      "fault": false,
+      "held": false,
+      "arcVisible": true,
+      "lampsVisible": false,
+      "materialAssigned": true,
+      "safe": true,
+      "actualInstanceMatricesHash": "0209FDC56E628FBB785EDC0B3196AFA4EDBC4916",
+      "geometryBoundsValid": true,
+      "geometryMinThree": [
+        7888.937808871386,
+        6.582750652514476,
+        539.2294782129427
+      ],
+      "geometryMaxThree": [
+        7891.064658781666,
+        6.974166834895956,
+        539.4568641739895
+      ],
+      "arcLumens": 66.92052459716797,
+      "lampLumens": 0,
+      "arcIntensity": 0.6692052483558655,
+      "lampIntensity": 0,
+      "humGain": 0.07500000298023224,
+      "buzzGain": 0.006233153864741325,
+      "arcInstances": 30,
+      "lampInstances": 2,
+      "originThree": [
+        7890,
+        6.59,
+        539.45
+      ],
+      "actualEyeThree": [
+        7878,
+        0.52,
+        535
+      ],
+      "actualForwardThree": [
+        0.8469017422194457,
+        0.4290968827245193,
+        0.31405939607304784
+      ],
+      "area": "diner",
+      "roadRootShown": true,
+      "quality": "low",
+      "calm": true,
+      "feederStage": 5,
+      "stockFuses": 2,
+      "SC02BurstCount": 0,
+      "actualArcComponent": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.SubstationFaultArc",
+      "actualArcRegistered": true,
+      "actualMaterialColor": [
+        0.36000001430511475,
+        0.6399999856948853,
+        1,
+        1
+      ],
+      "actualArcMaterial": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.MID_M_S47_FxArc_2147478914"
+    }
+  ],
+  "ordinaryContinues": 1,
+  "flowStateSnapshots": [
+    {
+      "phase": "initial-existing-walkable-service-apron",
+      "mode": "play",
+      "isFreeform": true,
+      "area": "diner",
+      "webArea": "diner",
+      "caseId": 0,
+      "devRun": true,
+      "starting": false,
+      "restoring": false,
+      "actualPos": [
+        7885,
+        0,
+        525.8
+      ],
+      "savedPos": [
+        0,
+        0,
+        0
+      ],
+      "actualPoseWalkable": true,
+      "savedPoseWalkable": false,
+      "poseDistance": 7902.511666552603,
+      "powerFault": false,
+      "feederStage": 0,
+      "feederIsolated": false,
+      "fuses": 3,
+      "initialFuses": 3
+    },
+    {
+      "phase": "before-isolated-write-save",
+      "mode": "play",
+      "isFreeform": true,
+      "area": "diner",
+      "webArea": "diner",
+      "caseId": 1,
+      "devRun": false,
+      "starting": false,
+      "restoring": false,
+      "actualPos": [
+        7885,
+        0,
+        525.8
+      ],
+      "savedPos": [
+        7885,
+        0,
+        525.8
+      ],
+      "actualPoseWalkable": true,
+      "savedPoseWalkable": true,
+      "poseDistance": 0,
+      "powerFault": true,
+      "feederStage": 3,
+      "feederIsolated": true,
+      "fuses": 3,
+      "initialFuses": 3
+    },
+    {
+      "phase": "after-ordinary-continue-before-assertion",
+      "mode": "play",
+      "isFreeform": true,
+      "area": "diner",
+      "webArea": "diner",
+      "caseId": 1,
+      "devRun": false,
+      "starting": false,
+      "restoring": false,
+      "actualPos": [
+        7885,
+        0,
+        525.8
+      ],
+      "savedPos": [
+        7885,
+        0,
+        525.8
+      ],
+      "actualPoseWalkable": true,
+      "savedPoseWalkable": true,
+      "poseDistance": 0,
+      "powerFault": true,
+      "feederStage": 3,
+      "feederIsolated": true,
+      "fuses": 3,
+      "initialFuses": 3
+    }
+  ],
+  "method": "Isolated Freeform case0. Explicit diner on-foot area/initial existing service-apron placement, calibrated CameraOverride normal08 ramp/fault22 fence fixtures. Production TestAdvance selects22:00 only after the normal08 samples. Ordinary Main tick supplies every Substation update; this driver never calls Substation Step/StepVisuals. Actual live instance-matrix hashes/bounds, material/light/audio gain readback sampled at3 and8 seconds. SetPowerFault(true) is an explicit incident fixture. Actual native eye-ray Pick/Walker OnUse measures/isolates/replaces one stock fuse/starts the real three-second feeder test. Low and Calm visual states measured, SC02 burst count must remain unchanged. While isolated, an explicitly declared case1/save-store metadata fixture enables ordinary WriteSave, a fresh disk reader and title Continue; no feeder state is injected. Four native PNGs require root review. Normal08 ramp eye(7885.5,2.14,526) deliberately differs from the old BEFORE PropsAt7890;526 view to clear its sign; this is not an exact matched-pose image comparison.",
+  "limits": "Automated camera/initial foot fixtures; no natural journey, human input/listening acceptance, full Story fault regression, pixel brightness guarantee or full-game matrix. No private feeder stage, completed finding, age or Substation state injected. Max90 seconds; expected about45 seconds plus one ordinary Continue.",
+  "Saved_unchanged": true,
+  "saved_nodes": 164,
+  "images_reviewed": 4
+}
