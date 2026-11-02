@@ -201,7 +201,9 @@ struct FS47BoardImpl
 	double ParentScale = 1;
 	FVector2D ViewSize = FVector2D::ZeroVector;
 	bool bInitialFocus = true, bChanged = false, bCoarse = false;
-	FString PendingLook, PendingShow;
+	FString PendingLook, PendingShow, ActiveFinding;
+	bool bPendingRender = false, bFocusFinding = true;
+	TMap<FString, FString> KnownQuestions;
 	TArray<FString> PendingFrame;
 	TMap<FString, TSharedPtr<FSlateBrush>> ArtBrushes;
 	float TextScale() const { return UI.IsValid() && UI->bLargeText ? 1.35f : 1.f; }
@@ -220,14 +222,15 @@ struct FS47BoardImpl
 	};
 	struct FBox
 	{
-		FString Id, Region, Node;
+		FString Id, Region, Node, Anchor;
+		TArray<FString> AnchorCards;
 		FVector2D At = FVector2D::ZeroVector, Size = FVector2D::ZeroVector, Want = FVector2D::ZeroVector;
 		TSharedPtr<SWidget> Widget;
 		TSharedPtr<SScrollBox> Full;
 		TArray<FPin> Pins;
 		bool bFree = false, bLines = false, bHand = false, bNote = false, bLift = false;
 		bool bQuestion = false, bDone = false, bFinding = false, bPhoto = false;
-		bool bAutomatic = false, bAutoFree = false;
+		bool bAutomatic = false, bAutoFree = false, bCollected = false;
 		int32 Z = 2;
 	};
 	TArray<TSharedPtr<FBox>> Boxes;
@@ -262,6 +265,8 @@ struct FS47BoardImpl
 	TSharedRef<SWidget> QuestionHtml(const FS47BoardQuestion& Q, const TSharedPtr<FBox>& B);
 	void PlaceFree();
 	void PlaceLargeText();
+	void PlaceFindings();
+	bool FocusFinding(const FString& Region);
 	FVector2D BoardSize() const;
 	void Render();
 	FS47Result Link(const FString& A, const FString& B);
@@ -432,15 +437,17 @@ void FS47BoardImpl::AddBox(const TSharedPtr<FBox>& B, const FString& Region, TOp
 {
 	B->Region = Region;
 	B->Z = Zs.Contains(B->Id) ? Zs[B->Id] : Open.Contains(B->Id) ? 2000 : 2;
-	const TOptional<FVector2D> Place = PlaceOf(B->Id, Region, X, Y);
+	// Findings follow their visual case anchor, including saves with an old free position.
+	const TOptional<FS47BoardRegion> R = RegionOf(Region);
+	const TOptional<FVector2D> Place = !B->AnchorCards.IsEmpty() && R && X && Y
+		? TOptional<FVector2D>(FVector2D(R->X + *X, R->Y + *Y)) : PlaceOf(B->Id, Region, X, Y);
 	B->bFree = !Place;
 	if (Place) B->At = *Place;
-	B->bAutomatic = TextScale() > 1 && !(O.LayoutGet && O.LayoutGet(B->Id).IsSet());
+	B->bAutomatic = B->AnchorCards.IsEmpty() && TextScale() > 1 && !(O.LayoutGet && O.LayoutGet(B->Id).IsSet());
 	B->bAutoFree = B->bFree;
 	B->Want = B->At;
 	if (B->bFree)
 	{
-		const TOptional<FS47BoardRegion> R = RegionOf(Region);
 		B->Want = R ? FVector2D(R->X + 14, R->Y + 14) : FVector2D(34, 34);
 	}
 	B->Widget = SNew(SBox).WidthOverride(Width)[B->Widget.ToSharedRef()];
@@ -465,7 +472,7 @@ FVector2D FS47BoardImpl::BoardSize() const
 void FS47BoardImpl::PlaceLargeText()
 {
 	TArray<TSharedPtr<FBox>> Taken, Automatic;
-	for (const TSharedPtr<FBox>& B : Boxes) (B->bAutomatic ? Automatic : Taken).Add(B);
+	for (const TSharedPtr<FBox>& B : Boxes) if (B->AnchorCards.IsEmpty()) (B->bAutomatic ? Automatic : Taken).Add(B);
 	Automatic.StableSort([](const TSharedPtr<FBox>& A, const TSharedPtr<FBox>& B) {
 		if (A->bNote != B->bNote) return !A->bNote;
 		return A->Want.Y == B->Want.Y ? A->Want.X < B->Want.X : A->Want.Y < B->Want.Y;
@@ -506,6 +513,7 @@ TSharedRef<SWidget> FS47BoardImpl::CardHtml(const FS47BoardCard& C, const TShare
 	const double Width = C.W.Get(C.Kind == TEXT("photo") || C.Kind == TEXT("map") ? 220 : 240);
 	const bool Plain = C.Lines.IsEmpty(), Sealed = C.Kind == TEXT("sealed"), Photo = C.Kind == TEXT("photo"), Map = C.Kind == TEXT("map");
 	const bool bOpen = Open.Contains(C.Id);
+	B->bCollected = C.bHave;
 	B->Node = C.bHave && Plain ? C.Id : FString();
 	B->bLines = C.bHave && !Plain;
 	B->bFinding = C.bHave && C.Kind == TEXT("finding");
@@ -645,7 +653,7 @@ TSharedRef<SWidget> FS47BoardImpl::QuestionHtml(const FS47BoardQuestion& Q, cons
 		}
 		TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
 		if (Ready) Row->AddSlot().AutoWidth().Padding(0, 0, 8, 0)
-			[Button(TEXT("RECORD"), [this, Id = Q.Id] { const FS47Result R = O.Record ? O.Record(Id) : FS47Result(); Say(R.Text, R.bOk ? 1 : -1); if (R.bOk) Render(); }, 19, 0xfff3e2, 44, 36, true)];
+			[Button(TEXT("RECORD"), [this, Id = Q.Id] { const FS47Result R = O.Record ? O.Record(Id) : FS47Result(); Say(R.Text, R.bOk ? 1 : -1); if (R.bOk) { ActiveFinding = Id; bFocusFinding = true; Render(); } }, 19, 0xfff3e2, 44, 36, true)];
 		Row->AddSlot().AutoWidth()[Button(TEXT("Hint"), [this, Id = Q.Id] { ShowHint(Id); }, 16, 0x233a7a, 44, 36)];
 		Body->AddSlot().AutoHeight().Padding(10, 0)[Row];
 	}
@@ -665,7 +673,7 @@ void FS47BoardImpl::PlaceFree()
 {
 	if (TextScale() > 1) { PlaceLargeText(); return; }
 	TArray<TSharedPtr<FBox>> Taken;
-	for (const TSharedPtr<FBox>& B : Boxes) if (!B->bFree) Taken.Add(B);
+	for (const TSharedPtr<FBox>& B : Boxes) if (!B->bFree && B->AnchorCards.IsEmpty()) Taken.Add(B);
 	for (const TSharedPtr<FBox>& B : Boxes)
 	{
 		if (!B->bFree) continue;
@@ -689,8 +697,66 @@ void FS47BoardImpl::PlaceFree()
 	}
 }
 
+// Only visual metadata and already collected cards participate. No rule is solved here.
+void FS47BoardImpl::PlaceFindings()
+{
+	TArray<TSharedPtr<FBox>> Taken;
+	for (const TSharedPtr<FBox>& B : Boxes) if (B->AnchorCards.IsEmpty()) Taken.Add(B);
+	for (const TSharedPtr<FBox>& B : Boxes)
+	{
+		if (B->AnchorCards.IsEmpty()) continue;
+		B->Anchor.Empty();
+		FVector2D At = B->Want;
+		for (const FString& Id : B->AnchorCards)
+		{
+			const TSharedPtr<FBox>* A = Boxes.FindByPredicate([&](const TSharedPtr<FBox>& V) {
+				return V->Id == Id && V->bCollected && V->Region == B->Region;
+			});
+			if (!A) continue;
+			B->Anchor = Id;
+			At = (*A)->At + FVector2D(0, (*A)->Size.Y + 20);
+			break;
+		}
+		// Keep the column under its anchor; leave measured space for existing/manual cards.
+		for (int32 Pass = 0; Pass <= Taken.Num(); ++Pass)
+		{
+			double Y = At.Y;
+			for (const TSharedPtr<FBox>& T : Taken)
+				if (Overlap(At, B->Size, T->At, T->Size, 14)) Y = FMath::Max(Y, T->At.Y + T->Size.Y + 20);
+			if (Y == At.Y) break;
+			At.Y = Y;
+		}
+		B->At = At; B->bFree = false;
+		Taken.Add(B);
+	}
+}
+
+bool FS47BoardImpl::FocusFinding(const FString& Region)
+{
+	const TSharedPtr<FBox>* Active = Boxes.FindByPredicate([&](const TSharedPtr<FBox>& B) {
+		return B->Id == ActiveFinding && B->bQuestion && B->Region == Region && !B->AnchorCards.IsEmpty();
+	});
+	if (!Active)
+	{
+		for (const TSharedPtr<FBox>& B : Boxes)
+		{
+			if (!B->bQuestion || B->Region != Region || B->AnchorCards.IsEmpty()) continue;
+			Active = &B;
+			if (!B->bDone) break;
+		}
+	}
+	if (!Active) return false;
+	ActiveFinding = (*Active)->Id;
+	TArray<FString> Ids{ ActiveFinding };
+	if (!(*Active)->Anchor.IsEmpty()) Ids.Add((*Active)->Anchor);
+	return Frame(Ids);
+}
+
 void FS47BoardImpl::Render()
 {
+	// World refreshes may arrive while a card is being dragged. Keep the grabbed widget intact.
+	if (Drag.Kind != FDrag::EKind::None || Pinch) { bPendingRender = true; return; }
+	bPendingRender = false;
 	if (!bTextToggleRender) TextScrolls.Empty();
 	StatusEl->SetText(FText::FromString(O.Status ? O.Status() : FString()));
 	HowEl->SetText(FText::FromString(bCoarse
@@ -708,7 +774,15 @@ void FS47BoardImpl::Render()
 	}
 	for (const FS47BoardQuestion& Q : O.Questions ? O.Questions() : TArray<FS47BoardQuestion>())
 	{
-		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = Q.Id;
+		TSharedPtr<FBox> B = MakeShared<FBox>(); B->Id = Q.Id; B->AnchorCards = Q.AnchorCards;
+		const FString State = Q.Done + TEXT("|") + FString::Join(Q.Filled, TEXT("|"));
+		const FString* Previous = KnownQuestions.Find(Q.Id);
+		if (Q.Region == O.Focus && (!Previous || *Previous != State))
+		{
+			bFocusFinding = true;
+			if (Previous) ActiveFinding = Q.Id; else ActiveFinding.Empty();
+		}
+		KnownQuestions.Add(Q.Id, State);
 		B->Widget = QuestionHtml(Q, B);
 		AddBox(B, Q.Region, Q.X, Q.Y, Q.W.Get(260));
 	}
@@ -779,6 +853,7 @@ void FS47BoardImpl::Render()
 		if (O.LayoutSet) O.LayoutSet(N.Id, B->At.X, B->At.Y);
 	}
 	if (TextScale() > 1) PlaceLargeText();
+	PlaceFindings();
 	for (const FS47BoardRegion& R : Regions())
 	{
 		if (R.Label.IsEmpty()) continue;
@@ -808,10 +883,16 @@ void FS47BoardImpl::Render()
 FS47Result FS47BoardImpl::Link(const FString& A, const FString& B)
 {
 	Selected.Empty();
+	const TArray<FS47BoardQuestion> Before = O.Questions ? O.Questions() : TArray<FS47BoardQuestion>();
 	const FS47Result R = O.Connect ? O.Connect(A, B) : FS47Result();
 	Say(R.Text, R.bOk ? 1 : -1);
 	if (R.bOk)
 	{
+		if (O.Questions) for (const FS47BoardQuestion& Q : O.Questions())
+		{
+			const FS47BoardQuestion* Was = Before.FindByPredicate([&](const FS47BoardQuestion& V) { return V.Id == Q.Id; });
+			if (!Was || Was->Filled != Q.Filled || Was->Done != Q.Done) { ActiveFinding = Q.Id; bFocusFinding = true; break; }
+		}
 		Render();
 		LastProgress = FPlatformTime::Seconds(); Misses = 0;
 		OfferHint(FString());
@@ -909,6 +990,7 @@ bool FS47BoardImpl::PadView(const FKey& K)
 void FS47BoardImpl::Look(const FS47BoardRegion& R)
 {
 	if (ViewSize.X <= 0 || ViewSize.Y <= 0) return;
+	if (FocusFinding(R.Id)) return;
 	if (TextScale() > 1)
 	{
 		FVector2D Min(TNumericLimits<double>::Max(), TNumericLimits<double>::Max()), Max = -Min;
@@ -940,11 +1022,11 @@ bool FS47BoardImpl::Frame(const TArray<FString>& Ids)
 	TArray<FVector2D> All;
 	for (const FString& Id : Ids)
 	{
-		const TOptional<FVector2D> C = Centre(Id);
-		if (C) { All.Add(*C); continue; }
 		const TSharedPtr<FBox>* B = Boxes.FindByPredicate([&](const TSharedPtr<FBox>& V) { return V->Id == Id && !V->bFree; });
-		if (!B) return false;
-		All.Add((*B)->At); All.Add((*B)->At + (*B)->Size);
+		if (B) { All.Add((*B)->At); All.Add((*B)->At + (*B)->Size); continue; }
+		const TOptional<FVector2D> C = Centre(Id);
+		if (!C) return false;
+		All.Add(*C);
 	}
 	if (ViewSize.X <= 0 || ViewSize.Y <= 0) { PendingFrame = Ids; return true; }
 	FVector2D Min = All[0], Max = All[0];
@@ -1034,6 +1116,7 @@ void FS47BoardImpl::Down(int32 Id, const FVector2D& P, bool bTouch)
 	Drag.Start = Drag.Now = P;
 	const FHit H = Hit(ToBoardXY(P));
 	if (!H.Pull.IsEmpty()) { Drag.Kind = FDrag::EKind::Thread; Drag.From = H.Pull; }
+	else if (H.Box && !H.Box->AnchorCards.IsEmpty()) { Say(TEXT("This finding stays with its case record. Move the record to move both.")); }
 	else if (H.Box) { Drag.Kind = FDrag::EKind::Card; Drag.Box = H.Box; Drag.Grab = ToBoardXY(P) - H.Box->At; }
 	else { Drag.Kind = FDrag::EKind::Pan; Drag.T0 = FVector2D(Tx, Ty); }
 }
@@ -1091,7 +1174,9 @@ void FS47BoardImpl::End(int32 Id, const FVector2D& P, bool bCancel)
 		if (D.bMoved)
 		{
 			if (O.LayoutSet) O.LayoutSet(D.Box->Id, D.Box->At.X, D.Box->At.Y);
-			bChanged = true; return;
+			bChanged = true;
+			for (const TSharedPtr<FBox>& B : Boxes) if (B->Id == ActiveFinding && B->Anchor == D.Box->Id) bFocusFinding = true;
+			Render(); return;
 		}
 		if (!D.Box->Node.IsEmpty()) TapNode(D.Box->Node);
 		else if (D.Box->bLines) Say(TEXT("Each line that matters on this record has its own pin. Tap the line, then what it goes with."));
@@ -1111,13 +1196,21 @@ void FS47BoardImpl::End(int32 Id, const FVector2D& P, bool bCancel)
 void FS47BoardImpl::Tick(const FVector2D& InSize)
 {
 	if (InSize != ViewSize) { ViewSize = InSize; ClampView(); }
+	if (bPendingRender && Drag.Kind == FDrag::EKind::None && !Pinch) Render();
 	if (bInitialFocus && ViewSize.X > 0 && ViewSize.Y > 0)
 	{
 		bInitialFocus = false;
 		TOptional<FS47BoardRegion> Focus = RegionOf(O.Focus);
 		if (!Focus && !Regions().IsEmpty()) Focus = Regions()[0];
-		if (Focus) Look(*Focus); else { S = MinScale(); ClampView(); }
+		if (Focus && !FocusFinding(Focus->Id)) Look(*Focus); else if (!Focus) { S = MinScale(); ClampView(); }
+		bFocusFinding = false;
 		if (Small() && SayEl->GetText().IsEmpty()) Say(HowEl->GetText().ToString());
+	}
+	if (bFocusFinding && !bInitialFocus && Drag.Kind == FDrag::EKind::None && !Pinch)
+	{
+		FString Region = O.Focus;
+		for (const TSharedPtr<FBox>& B : Boxes) if (B->Id == ActiveFinding) { Region = B->Region; break; }
+		FocusFinding(Region); bFocusFinding = false;
 	}
 	if (!PendingLook.IsEmpty())
 	{
@@ -1668,5 +1761,49 @@ bool SS47Board::SelfTest(TArray<FString>& Lines)
 	Check(P.PadView(EKeys::Gamepad_RightShoulder) && P.S > BeforeZoom, TEXT("Xbox RB zooms the same board view"));
 	Check(P.PadView(EKeys::Gamepad_FaceButton_Left) && FMath::IsNearlyEqual(P.S, P.MinScale()), TEXT("Xbox X fits all evidence"));
 	Check(!P.PadView(EKeys::Gamepad_FaceButton_Bottom), TEXT("Xbox A stays on the pointer or focused-button route"));
+	// Old free Finding positions must not detach the current question from its visible case.
+	FS47BoardImpl F;
+	F.Canvas = SNew(SCanvas); F.StatusEl = SNew(STextBlock); F.HowEl = SNew(STextBlock); F.SayEl = SNew(STextBlock);
+	F.O.Size = FVector2D(2400, 1800); F.O.Focus = TEXT("test"); F.O.Regions = P.O.Regions;
+	TMap<FString, FVector2D> FindingLayout{ { TEXT("case"), FVector2D(400, 300) }, { TEXT("finding"), FVector2D(2000, 1600) } };
+	F.O.LayoutGet = [&](const FString& Id) -> TOptional<FVector2D> { const FVector2D* At = FindingLayout.Find(Id); return At ? TOptional<FVector2D>(*At) : TOptional<FVector2D>(); };
+	F.O.LayoutSet = [&](const FString& Id, double X, double Y) { FindingLayout.Add(Id, FVector2D(X, Y)); };
+	F.O.Cards = [] {
+		FS47BoardCard C; C.Id = TEXT("case"); C.Stamp = TEXT("CASE"); C.Title = TEXT("The visible record"); C.bHave = true; C.Region = TEXT("test"); C.X = 20; C.Y = 20; C.W = 220;
+		C.Text = TEXT("An existing collected record, placed by the player.");
+		FS47BoardCard Hidden = C; Hidden.Id = TEXT("unread"); Hidden.bHave = false; Hidden.X = 750;
+		return TArray<FS47BoardCard>{ C, Hidden };
+	};
+	bool RecordedFinding = false;
+	F.O.Questions = [&] {
+		FS47BoardQuestion Q; Q.Id = TEXT("finding"); Q.Region = TEXT("test"); Q.Stamp = TEXT("FINDING"); Q.Text = TEXT("What does the collected record support?"); Q.Slots = 1; Q.W = 220;
+		Q.AnchorCards = { TEXT("unread"), TEXT("case") }; Q.Done = RecordedFinding ? TEXT("The recorded finding.") : TEXT("");
+		return TArray<FS47BoardQuestion>{ Q };
+	};
+	const auto FindingBox = [&](const FString& Id) { return *F.Boxes.FindByPredicate([&](const TSharedPtr<FS47BoardImpl::FBox>& B) { return B->Id == Id; }); };
+	F.Render();
+	const FVector2D OpenFindingAt = FindingBox(TEXT("finding"))->At;
+	Check(FindingBox(TEXT("finding"))->Anchor == TEXT("case") && OpenFindingAt.X == 400
+		&& OpenFindingAt.Y == 300 + FindingBox(TEXT("case"))->Size.Y + 20 && FindingLayout.Num() == 2,
+		TEXT("a Finding ignores an old detached save position and unread anchors, preserving the manual case record"));
+	RecordedFinding = true; F.Render();
+	Check(FindingBox(TEXT("finding"))->At == OpenFindingAt && FindingBox(TEXT("finding"))->bDone && F.Boxes.Num() == 3,
+		TEXT("recording keeps the single Finding on the same anchor"));
+	FindingLayout[TEXT("case")] = FVector2D(600, 450);
+	const TSharedPtr<FS47BoardImpl::FBox> GrabbedCase = FindingBox(TEXT("case"));
+	F.Drag.Kind = FS47BoardImpl::FDrag::EKind::Card; F.Drag.Box = GrabbedCase;
+	F.Render();
+	Check(F.bPendingRender && FindingBox(TEXT("case")) == GrabbedCase && FindingBox(TEXT("finding"))->At == OpenFindingAt,
+		TEXT("refresh during a drag defers Finding placement and keeps the grabbed widget alive"));
+	F.Drag = {}; F.Render();
+	Check(FindingBox(TEXT("case"))->At == FVector2D(600, 450) && FindingBox(TEXT("finding"))->At.X == 600
+		&& FindingBox(TEXT("finding"))->At.Y == 450 + FindingBox(TEXT("case"))->Size.Y + 20,
+		TEXT("after release the Finding follows the saved case position without moving evidence"));
+	F.UI = LargeTextUI; LargeTextUI->bLargeText = true; F.Render();
+	Check(FindingBox(TEXT("case"))->At == FVector2D(600, 450)
+		&& FindingBox(TEXT("finding"))->At.Y == 450 + FindingBox(TEXT("case"))->Size.Y + 20,
+		TEXT("Finding anchors use measured large-text record heights and retain manual evidence positions"));
+	F.ViewSize = FVector2D(1000, 800);
+	Check(F.FocusFinding(TEXT("test")) && F.ActiveFinding == TEXT("finding"), TEXT("opening can frame the active case and complete Finding together"));
 	return Ok;
 }

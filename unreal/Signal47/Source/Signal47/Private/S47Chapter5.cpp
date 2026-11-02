@@ -212,7 +212,7 @@ void US47Chapter5::BuildBook()
 	O.Key = TEXT("ch5");
 	O.Owns = [](const FString& N) { return N == TEXT("P13"); };
 	FS47BookQuestion P13;
-	P13.Id = TEXT("P13"); P13.Stamp = TEXT("P13"); P13.Text = TEXT("Where does C cross the old Roswell road?"); P13.Slots = 0; P13.X = 14; P13.Y = 14; P13.W = 300;
+	P13.Id = TEXT("P13"); P13.AnchorCards = { TEXT("e14"), TEXT("e09a") }; P13.Stamp = TEXT("P13"); P13.Text = TEXT("Where does C cross the old Roswell road?"); P13.Slots = 0; P13.X = 14; P13.Y = 14; P13.W = 300;
 	P13.Hints = { TEXT("C is a direction from the transit, not a place on a map."), TEXT("Lay a tracing of E09A on the service map, transit on STATION 01, north to north."), TEXT("Spread E14 on a table in the diner, lay the tracing on STATION 01 and follow C east to the road.") };
 	P13.Elsewhere = TEXT("Worked out on a table in the diner, with the service map and a tracing of E09A.");
 	P13.Open = [this] { return bStarted && S.bArrived; };

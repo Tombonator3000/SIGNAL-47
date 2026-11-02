@@ -213,13 +213,13 @@ void US47Chapter2::BuildBook()
 	O.Notes = NOTES();
 	O.Rules = RULES();
 	FS47BookQuestion P04;
-	P04.Id = TEXT("P04"); P04.Stamp = TEXT("P04"); P04.Text = TEXT("What changed in the 1947 record after the run?"); P04.Slots = 2; P04.Hints = HINTS_04;
+	P04.Id = TEXT("P04"); P04.AnchorCards = { TEXT("e07"), TEXT("e06"), TEXT("rx") }; P04.Stamp = TEXT("P04"); P04.Text = TEXT("What changed in the 1947 record after the run?"); P04.Slots = 2; P04.Hints = HINTS_04;
 	P04.X = 14; P04.Y = 452; P04.W = 272;
 	P04.Open = [this] { return bStarted; };
 	P04.Done = [this] { return S.bP04 ? FString(SUPPORTED_04) : FString(); };
 	P04.Record = [this] { return Compare(TEXT("omitted-c")); };
 	FS47BookQuestion P05;
-	P05.Id = TEXT("P05"); P05.Stamp = TEXT("P05"); P05.Text = TEXT("Where does the B-12 reference lead in the field?"); P05.Slots = 3; P05.Hints = HINTS_05;
+	P05.Id = TEXT("P05"); P05.AnchorCards = { TEXT("b12"), TEXT("e08"), TEXT("rx") }; P05.Stamp = TEXT("P05"); P05.Text = TEXT("Where does the B-12 reference lead in the field?"); P05.Slots = 3; P05.Hints = HINTS_05;
 	P05.X = 898; P05.Y = 14; P05.W = 266;
 	P05.Open = [this] { return bStarted; };
 	P05.Done = [this] { return S.bP05 ? FString(SUPPORTED_05) : FString(); };

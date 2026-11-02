@@ -126,7 +126,7 @@ TArray<FS47BoardQuestion> FS47RuleBook::Questions() const
 	{
 		if (!Q.Open || !Q.Open()) continue;
 		FS47BoardQuestion B;
-		B.Id = Q.Id; B.Stamp = Q.Stamp; B.Text = Q.Text; B.Slots = Q.Slots; B.Filled = Filled(Q.Id);
+		B.Id = Q.Id; B.Stamp = Q.Stamp; B.Text = Q.Text; B.AnchorCards = Q.AnchorCards; B.Slots = Q.Slots; B.Filled = Filled(Q.Id);
 		B.Done = Q.Done ? Q.Done() : FString(); B.Elsewhere = Q.ElsewhereNow(); B.X = Q.X; B.Y = Q.Y; B.W = Q.W;
 		Out.Add(B);
 	}
@@ -206,7 +206,7 @@ bool FS47RuleBook::SelfTest(TArray<FString>& Lines)
 		{ TEXT("t.a"), TEXT("t.d"), FString(), TEXT("Not so."), TEXT("P01"), FString(), nullptr },
 	};
 	FS47BookQuestion Q;
-	Q.Id = TEXT("P01"); Q.Stamp = TEXT("P01"); Q.Text = TEXT("?"); Q.Slots = 2; Q.Hints = { TEXT("h1"), TEXT("h2"), TEXT("h3"), TEXT("h4") };
+	Q.Id = TEXT("P01"); Q.AnchorCards = { TEXT("visible-record") }; Q.Stamp = TEXT("P01"); Q.Text = TEXT("?"); Q.Slots = 2; Q.Hints = { TEXT("h1"), TEXT("h2"), TEXT("h3"), TEXT("h4") };
 	Q.Open = [] { return true; };
 	Q.Done = [&Recorded] { return Recorded; };
 	Q.Record = [&Recorded] { Recorded = TEXT("Done."); return FS47Result{ true, TEXT("Recorded.") }; };
@@ -216,6 +216,7 @@ bool FS47RuleBook::SelfTest(TArray<FString>& Lines)
 	FS47RuleBook B(S);
 	bool bOk = true;
 	auto Check = [&](bool bCond, const TCHAR* What) { Lines.Add(FString::Printf(TEXT("%s board: %s"), bCond ? TEXT("ok") : TEXT("FAIL"), What)); bOk &= bCond; };
+	Check(B.Questions()[0].AnchorCards == Q.AnchorCards && Links.IsEmpty(), TEXT("visual context is published without creating evidence links"));
 	Check(!B.Connect(TEXT("x.a"), TEXT("x.b"), false).IsSet(), TEXT("not this chapter's pins"));
 	Check(B.Connect(TEXT("t.a"), TEXT("t.b"), true)->Text == S47Board::SAME, TEXT("same card"));
 	Check(B.Connect(TEXT("t.b"), TEXT("t.a"), false)->Text == TEXT("A and B. (P01: 1 of 2)"), TEXT("first note"));
