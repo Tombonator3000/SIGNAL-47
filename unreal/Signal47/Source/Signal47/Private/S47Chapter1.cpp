@@ -288,7 +288,7 @@ void US47Chapter1::BuildBook()
 	B.Rules = Rules;
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P01"); Q.Stamp = TEXT("P01 / REFERENCE"); Q.Text = TEXT("Which installation is the marked foreground detail?"); Q.Slots = 1; Q.X = 590; Q.Y = 230; Q.W = 272;
+		Q.Id = TEXT("P01"); Q.AnchorCards = { TEXT("frame01"), TEXT("refsheet") }; Q.Stamp = TEXT("P01 / REFERENCE"); Q.Text = TEXT("Which installation is the marked foreground detail?"); Q.Slots = 1; Q.X = 590; Q.Y = 230; Q.W = 272;
 		Q.Open = [this] { return S.Dev1 >= 3 || S.bRef; };
 		Q.Done = [this] { return S.bRef ? FString(TEXT("B-12 selected. Its installation sheet specifies ONE ivory stripe on a movable vane.")) : FString(); };
 		Q.Record = [this] { return MatchReference(TEXT("B-12")); };
@@ -301,7 +301,7 @@ void US47Chapter1::BuildBook()
 	}
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P02"); Q.Stamp = TEXT("P02 / HYPOTHESIS"); Q.Text = TEXT("What could put an extra stripe on the film, and how can you test it?"); Q.Slots = 1; Q.X = 888; Q.Y = 300; Q.W = 272;
+		Q.Id = TEXT("P02"); Q.AnchorCards = { TEXT("hypotheses"), TEXT("refsheet") }; Q.Stamp = TEXT("P02 / HYPOTHESIS"); Q.Text = TEXT("What could put an extra stripe on the film, and how can you test it?"); Q.Slots = 1; Q.X = 888; Q.Y = 300; Q.W = 272;
 		Q.Open = [this] { return S.bRef; };
 		Q.Done = [this] { return S.Hyp.IsEmpty() ? FString() : FString::Printf(TEXT("Working hypothesis: %s. The field test is at B-12."), S.Hyp == TEXT("light") ? TEXT("reflected work light") : TEXT("reference/encoder drift")); };
 		Q.Record = [this] { return ChooseHypothesis(S.Links && S.Links->Contains(TEXT("hyp.drift|refsheet.drive")) ? TEXT("drift") : TEXT("light")); };
@@ -314,7 +314,7 @@ void US47Chapter1::BuildBook()
 	}
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P03"); Q.Doc = TEXT("finding"); Q.Stamp = TEXT("P03 / TWO EXPOSURES"); Q.Text = TEXT("What do the two exposures and the direct control observation support?"); Q.Slots = 2; Q.X = 590; Q.Y = 410; Q.W = 272;
+		Q.Id = TEXT("P03"); Q.AnchorCards = { TEXT("observation"), TEXT("frame02"), TEXT("frame01") }; Q.Doc = TEXT("finding"); Q.Stamp = TEXT("P03 / TWO EXPOSURES"); Q.Text = TEXT("What do the two exposures and the direct control observation support?"); Q.Slots = 2; Q.X = 590; Q.Y = 410; Q.W = 272;
 		Q.Open = [this] { return S.Dev2 >= 3 || S.bConcluded; };
 		Q.Done = [this] { return S.bConcluded ? FString(TEXT("The physical reference changed. The film retains a second reference. File both prints at the records desk.")) : FString(); };
 		Q.Record = [this] { return Conclude(TEXT("second")); };

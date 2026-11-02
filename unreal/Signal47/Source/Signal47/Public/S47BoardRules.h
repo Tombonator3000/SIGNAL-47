@@ -30,6 +30,7 @@ struct FS47BoardCard
 struct FS47BoardQuestion
 {
 	FString Id, Stamp, Text;
+	TArray<FString> AnchorCards; // visual context only; first collected card on the board wins
 	int32 Slots = 0;
 	TArray<FString> Filled;
 	FString Done;                 // the supported finding once recorded ('' while open)
@@ -64,6 +65,7 @@ struct FS47BookRule
 struct FS47BookQuestion
 {
 	FString Id, Stamp, Text;
+	TArray<FString> AnchorCards; // explicit visual context, never inferred from unsolved rules
 	FString Doc;
 	int32 Slots = 0;              // 0: a finding made somewhere else
 	TArray<FString> Hints;

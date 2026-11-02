@@ -340,7 +340,7 @@ void US47Chapter3::BuildBook()
 	O.Rules = RULES();
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P06"); Q.Stamp = TEXT("P06"); Q.Text = TEXT("Which fixed point is no longer where E09A puts it?"); Q.Slots = 1; Q.Hints = HINTS_MARKER; Q.X = 14; Q.Y = 470; Q.W = 290;
+		Q.Id = TEXT("P06"); Q.AnchorCards = { TEXT("e09a"), TEXT("frame03") }; Q.Stamp = TEXT("P06"); Q.Text = TEXT("Which fixed point is no longer where E09A puts it?"); Q.Slots = 1; Q.Hints = HINTS_MARKER; Q.X = 14; Q.Y = 470; Q.W = 290;
 		Q.Open = [this] { return bStarted; };
 		Q.Done = [this] { return S.bP06 ? FString(SUPPORTED_MARKER) : FString(); };
 		Q.Record = [this] { return SubmitMarker(TEXT("a")); };
@@ -348,7 +348,7 @@ void US47Chapter3::BuildBook()
 	}
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P07"); Q.Stamp = TEXT("P07"); Q.Text = TEXT("Does the local lamp make the mark?"); Q.Slots = 0; Q.Hints = HINTS_LAMP; Q.X = 600; Q.Y = 14; Q.W = 270;
+		Q.Id = TEXT("P07"); Q.AnchorCards = { TEXT("e09a") }; Q.Stamp = TEXT("P07"); Q.Text = TEXT("Does the local lamp make the mark?"); Q.Slots = 0; Q.Hints = HINTS_LAMP; Q.X = 600; Q.Y = 14; Q.W = 270;
 		Q.Elsewhere = TEXT("Made at the field lamp, not here: cover it, then observe a null test.");
 		Q.Open = [this] { return bStarted; };
 		Q.Done = [this] { return S.bP07 ? FString(SUPPORTED_LAMP) : FString(); };
@@ -356,7 +356,7 @@ void US47Chapter3::BuildBook()
 	}
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P08"); Q.Stamp = TEXT("P08"); Q.Text = TEXT("What does the cable break show?"); Q.Slots = 1; Q.Hints = HINTS_CABLE; Q.X = 600; Q.Y = 222; Q.W = 270;
+		Q.Id = TEXT("P08"); Q.AnchorCards = { TEXT("frame04"), TEXT("e09a") }; Q.Stamp = TEXT("P08"); Q.Text = TEXT("What does the cable break show?"); Q.Slots = 1; Q.Hints = HINTS_CABLE; Q.X = 600; Q.Y = 222; Q.W = 270;
 		Q.Open = [this] { return bStarted; };
 		Q.Done = [this] { return S.bP08 ? FString(SUPPORTED_CABLE) : FString(); };
 		Q.Record = [this] { return SubmitCable(TEXT("deliberate-cut")); };
@@ -364,7 +364,7 @@ void US47Chapter3::BuildBook()
 	}
 	{
 		FS47BookQuestion Q;
-		Q.Id = TEXT("P09"); Q.Stamp = TEXT("P09"); Q.Text = TEXT("Match the receiver fragment to the 1947 log. What does T. Vega's correction lead up to?"); Q.Slots = 1; Q.Hints = HINTS_TIMING; Q.X = 600; Q.Y = 444; Q.W = 270;
+		Q.Id = TEXT("P09"); Q.AnchorCards = { TEXT("e10"), TEXT("hut.rx"), TEXT("e09a") }; Q.Stamp = TEXT("P09"); Q.Text = TEXT("Match the receiver fragment to the 1947 log. What does T. Vega's correction lead up to?"); Q.Slots = 1; Q.Hints = HINTS_TIMING; Q.X = 600; Q.Y = 444; Q.W = 270;
 		Q.Open = [this] { return bStarted; };
 		Q.Done = [this] { return S.bP09 ? FString(SUPPORTED_TIMING) : FString(); };
 		Q.Record = [this] { return SubmitTiming(TEXT("02:17:47")); };

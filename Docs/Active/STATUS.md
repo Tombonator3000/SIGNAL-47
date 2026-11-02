@@ -286,3 +286,5 @@ Tidligere natt-, krasj- og modellprøver beholder sine avgrensninger; den identi
 ## MotionBricks registrert som animasjonskandidat
 
 [MotionBricks-referansen](../Research/MotionBricks/README.md) har fast NVIDIA-koderevisjon, kilde-/lisensmanifest og konkret Roswell-prøve i ANIM-01. Den er også søkbar i prosjektbiblioteket. Ingen installasjon, modell-/klippnedlasting eller runtimeendring er utført; Blender-retargeting og UE5.8.4-resultat er UNVERIFIED. Dette endrer ikke gjeldende installert spill.
+
+2. november: PR347 er lokalt installert fra `902a8fd9`: Station01 bruker sine fem eksisterende bunndekkelag, også etter Fortsett, og avvist tavletråd er sammenhengende før fading. Pakke1997 selvtester, kort installert tittelprøve og161 uendrede Saved-elementer; ruteprøven består16 kontroller over2,88km. Publisert Linux-utgave er fortsatt `bfa1c26d`.
