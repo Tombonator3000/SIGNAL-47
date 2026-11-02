@@ -1,0 +1,101 @@
+{
+  "status": "PASS",
+  "seconds": 108.8760147432331,
+  "flowRestores": 3,
+  "checks": [
+    {
+      "pass": true,
+      "check": "fresh isolated Freeform has no invented manual-input provenance"
+    },
+    {
+      "pass": true,
+      "check": "native eye ray use: roomlight:control hit=roomlight:control"
+    },
+    {
+      "pass": true,
+      "check": "real OFF arms input but cannot trigger before physical departure and age"
+    },
+    {
+      "pass": true,
+      "check": "scheduler fixture targets the actual saved Freeform Director"
+    },
+    {
+      "pass": true,
+      "check": "full JSON write/read: before-effect"
+    },
+    {
+      "pass": true,
+      "check": "valid retained JSON: before-effect"
+    },
+    {
+      "pass": true,
+      "check": "Continue preserves actual OFF candidate without relighting"
+    },
+    {
+      "pass": true,
+      "check": "actual control-room ceiling lights are off"
+    },
+    {
+      "pass": true,
+      "check": "east-door object resolves through dynamic Inter or authored Web fallback"
+    },
+    {
+      "pass": true,
+      "check": "native eye ray use: doorEast hit=doorEast"
+    },
+    {
+      "pass": true,
+      "check": "aged actual departure permits selecting one ordinary-context reactive incident"
+    },
+    {
+      "pass": true,
+      "check": "event turns on physical room while retaining OFF preference and original operation"
+    },
+    {
+      "pass": true,
+      "check": "actual control-room ceiling lights are on"
+    },
+    {
+      "pass": true,
+      "check": "full JSON write/read: after-effect"
+    },
+    {
+      "pass": true,
+      "check": "valid retained JSON: after-effect"
+    },
+    {
+      "pass": true,
+      "check": "Continue keeps already-applied light without replay"
+    },
+    {
+      "pass": true,
+      "check": "physical EXAMINE compares and archives actual ON readback before manual toggle"
+    },
+    {
+      "pass": true,
+      "check": "full JSON write/read: after-inspection"
+    },
+    {
+      "pass": true,
+      "check": "valid retained JSON: after-inspection"
+    },
+    {
+      "pass": true,
+      "check": "archived readback and applied lamp survive third Continue"
+    },
+    {
+      "pass": true,
+      "check": "native eye ray use: roomlight:control hit=roomlight:control"
+    },
+    {
+      "pass": true,
+      "check": "new real switch input clears override without erasing retained evidence"
+    }
+  ],
+  "method": "Isolated developer Freeform case0; initial switch-side placement fixture only. Native eye-ray Pick/Walker OnUse OFF, actual TestMove walking through the production east door to >25m and back, ordinary active 60-second candidate aging. Before the first restore, the sole scheduler fixture delays director.nextAt to actual activeTime+600 to avoid a competing random incident; Force selects only the reactive incident (no candidate-gate bypass). Full disk JSON/Flow restores before effect, after effect and after physical EXAMINE. Final real ray OnUse invalidates the override. No completed findings, actor positions along the route, input serials, candidate age or other Director state injected.",
+  "limits": "Developer camera aim and authored foot-route inputs are automated. Competing random-choice timer is deliberately delayed in the first saved fixture; this does not test natural scheduling frequency. Not human-input acceptance or a full-night regression. Initial approach placement is explicit. Timeout180s.",
+  "runtime": "20252b015b7267d04f0a702bc674fc5858989c65",
+  "installed_at": "2026-11-02T02:12:22.603651+01:00",
+  "saved_nodes": 164,
+  "Saved_unchanged": true
+}

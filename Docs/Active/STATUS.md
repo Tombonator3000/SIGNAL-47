@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Tredje nattleveranse: reaktivt lys og ett motellskilt
+
+Runtime `20252b01`, [PR329](https://github.com/Tombonator3000/SIGNAL-47/pull/329), er installert2. november kl.02:12 CET. Ekte OFF-betjening kan gi en sjelden lagret lyshendelse ved retur; original og fysisk kontroll kan undersøkes og arkiveres. Gamle OFF-saves armerer ingenting. Det store doble motellskiltet og fjernkopien er fjernet, med sterkere nattlys på det gjenværende skiltet. Storys manus/fotoankre beholdes.
+
+Pakke/1993 selvtester, reaktiv spillerreise22/3 restores og to pakkede motellprøver består. Installert Fortsett består;164 Saved-elementer er uendret. WORLD-01/04 ble ikke gjenskapt og står fortsatt åpne. [Bilder og tydelige prøvegrenser](../Evidence/UnrealDeliveries/SARO_REACTIVE_MOTEL_2026-11-02.md).
+
 ## Andre nattleveranse: rombrytere og sammenhengende Station 01-rute
 
 Runtime `f96349fd`, [PR327](https://github.com/Tombonator3000/SIGNAL-47/pull/327), er installert2. november kl.01:10 CET. Fire fysiske SARO-rombrytere lagrer spillerens valg uten å slå av instrumentene. Freeform får faktisk bevegelses-/relérespons; Station 01 beholder det delte landskapet og er tilgjengelig til fots i Freeform. Dobbelt dekorativt gjerde er fjernet, og blå telefonmodell gjenbrukes ved bensinstasjonen. Props-styrte fasade-/canopylys følger dagslys; øvrige dekormaterialer gjenstår.
