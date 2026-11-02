@@ -58,7 +58,7 @@ def grade(bx, by):
         qy = min(max(by, BED[2]), -7.05); d = math.hypot(bx - 10.0, by - qy)
         h = max(h, -0.085 - d * .42 * wobble(by, 1.1))
     # 2. Ramp sides and nose: a 1.5 cm concrete lip stays readable, never a vertical slab edge.
-    if not (by > RAMP[3] and RAMP[0] <= bx <= RAMP[1]) and not inside(RAMP, bx, by):
+    if not (by > RAMP[3] and RAMP[0] <= bx <= RAMP[1]) and not (RAMP[0] < bx < RAMP[1] and RAMP[2] < by < RAMP[3]):
         qx, qy = nearest(RAMP, bx, by); d = math.hypot(bx - qx, by - qy)
         slope = (.30 if by < RAMP[2] else .38) * wobble(qy * 1.4 + qx, 2.0)
         h = max(h, ramp_top(qy) - .015 - d * slope)

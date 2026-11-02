@@ -147,7 +147,7 @@
       ]
     },
     "SM_SubstationField_ApronGrade": {
-      "triangles": 3522,
+      "triangles": 3588,
       "bounds_local_m": [
         [
           -2.799999952316284,
@@ -176,12 +176,12 @@
         0,
         0
       ],
-      "vertices_before_weld": 7032,
-      "vertices_after_weld": 2075,
+      "vertices_before_weld": 7164,
+      "vertices_after_weld": 2128,
       "lod_triangles": [
-        3522,
-        1166,
-        411
+        3588,
+        1217,
+        454
       ]
     }
   },
@@ -322,7 +322,7 @@
         ]
       },
       "SM_SubstationField_ApronGrade": {
-        "triangles": 3522,
+        "triangles": 3588,
         "bounds_local_m": [
           [
             -2.799999952316284,
@@ -351,13 +351,8 @@
           0,
           0
         ],
-        "vertices_before_weld": 7032,
-        "vertices_after_weld": 2075,
-        "lod_triangles": [
-          3522,
-          1166,
-          411
-        ]
+        "vertices_before_weld": 7164,
+        "vertices_after_weld": 2128
       }
     },
     "1": {
@@ -481,7 +476,7 @@
         "vertices_after_weld": 312
       },
       "SM_SubstationField_ApronGrade": {
-        "triangles": 1166,
+        "triangles": 1217,
         "bounds_local_m": [
           [
             -2.799999952316284,
@@ -510,8 +505,8 @@
           0,
           0
         ],
-        "vertices_before_weld": 2336,
-        "vertices_after_weld": 752
+        "vertices_before_weld": 2433,
+        "vertices_after_weld": 794
       }
     },
     "2": {
@@ -635,7 +630,7 @@
         "vertices_after_weld": 292
       },
       "SM_SubstationField_ApronGrade": {
-        "triangles": 411,
+        "triangles": 454,
         "bounds_local_m": [
           [
             -2.799999952316284,
@@ -664,12 +659,12 @@
           0,
           0
         ],
-        "vertices_before_weld": 829,
-        "vertices_after_weld": 293
+        "vertices_before_weld": 910,
+        "vertices_after_weld": 328
       }
     }
   },
-  "total_LOD0_triangles": 7600,
+  "total_LOD0_triangles": 7666,
   "t02_feature_points_b": {
     "culvert": [
       8.0,
