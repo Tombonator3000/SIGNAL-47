@@ -12,6 +12,8 @@ ARRAY-03 er implementert i eksisterende S-03-kabelskap: original dør åpnes og 
 
 ## Lokal oppfølging 2. november
 
+Meny-/pause-VHS er installert fra `50e9aea4`, [PR349](https://github.com/Tombonator3000/SIGNAL-47/pull/349). Tracking-rader, dropouts og svak fargeuro går på Slate-tid og følger bilde-/komfortvalg. Pakking,2006 selvtester, gjennomsett pausebilde og10sekunders installert tittelprøve består;161 Saved-elementer bevart. Menneskelig vurdering av bevegelsens styrke gjenstår.
+
 Motellskiltets lokale nattglød og tydeligere APPLY DISPLAY/status er installert fra `741db904`, [PR346](https://github.com/Tombonator3000/SIGNAL-47/pull/346). Pakking,1997 selvtester, eksisterende Slate-/lagringsprøve47 og kort installert titteloppstart består;161 Saved-elementer uendret. Nattlig før/etter er gjennomsett. Skjermmodusbekreftelse/rollback og menneskelig neonaksept gjenstår. Offentlig nedlasting er fortsatt det separate verifiserte bfa1c26d-bygget.
 
 ## Nattskiftet 1. til 2. november er avsluttet
