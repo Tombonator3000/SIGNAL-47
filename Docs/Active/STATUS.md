@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Femte nattleveranse: fungerende innlevering og presist dagslys
+
+Runtime `2e1cef62`, [PR335](https://github.com/Tombonator3000/SIGNAL-47/pull/335) og [PR336](https://github.com/Tombonator3000/SIGNAL-47/pull/336), er installert 2. november kl. 05:45 CET. En skjult Freeform-brukshandling på Records-permen er rettet. Hele observasjon-/kontroll-/lytte-/papir-/arkivreisen kan gjennomføres og gjenfinnes etter vanlig Fortsett. Aktive Caliche- og motellutelys følger dagslyset; blandet Office-glød beholder taklyset inne.
+
+Pakken består 1 995 selvtester, helreise med 93 kontroller/94,79 m/én Fortsett og 336 lyskontroller med seks pakkede dag-/nattbilder. Installert Fortsett består; 164 personlige Saved-elementer er uendret. Motellvegger og WORLD01/04 er fortsatt åpne. [Bilder, resultat og tydelige prøvegrenser](../Evidence/UnrealDeliveries/SARO_EVIDENCE_LIGHT_2026-11-02.md).
+
 ## Fjerde nattleveranse: åpen Alderete-gård og tilgjengelig last
 
 Runtime `19b0ab0b`, [PR331](https://github.com/Tombonator3000/SIGNAL-47/pull/331) og [PR332](https://github.com/Tombonator3000/SIGNAL-47/pull/332), er installert 2. november kl.04:00 CET. Freeform har åpen kjørbar gårdsvei, terrengtilpasset placeholdergård og ni kuer med samordnede foto-/kollisjonsankre. Story beholder sin stengte port og originalplassering. Last kan velges fysisk gjennom Jeepens brede interaksjonsfelt og tas ut/inn etter Fortsett.
