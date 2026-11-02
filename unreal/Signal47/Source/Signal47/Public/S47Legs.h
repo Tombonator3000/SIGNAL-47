@@ -62,6 +62,7 @@ public:
 	 *  stretch south of the site (road-local circles). */
 	FS47SaroDrive(const TArray<FS47Box2>& Colliders, const TArray<FS47Obstacle>& Road);
 	FS47Box2 MotelPark;
+ bool bFreeformFarm=false;
 	virtual FS47Surface Surface(double X, double Z) const override;
 	virtual bool HasHeight() const override { return true; }
 	virtual double Height(double X, double Z) const override;

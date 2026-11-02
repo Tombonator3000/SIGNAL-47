@@ -3,6 +3,9 @@
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 #include "S47Web.h"
+#include "S47Main.h"
+#include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 
 FS47Interactable& US47Inter::Add(const FS47Interactable& It)
 {
@@ -69,6 +72,26 @@ FString US47Inter::Pick(const FVector& EyeUE, const FVector& DirUE, double MaxDi
 		if (Id.IsEmpty() || IsLook(Id)) continue;
 		const double R = RangeOf(Id);
 		if (H.Distance / 100.0 > (R > 0 ? R : MaxDist)) return FString();
+		// The broad boarding proxy encloses the real cargo. When the player aims
+		// at the parcel/rack, let that smaller physical target win the same ray.
+		// Elsewhere on the jeep the ordinary boarding action is retained.
+		if (Id == TEXT("truck") || Id == TEXT("parkedServiceVehicle"))
+		{
+			US47Main* M = US47Main::Get(Web);
+			if (M && M->IsFreeform() && M->Freeform && M->Freeform->Active() && M->Freeform->Field && M->Freeform->Field->ParcelStage() >= 2)
+			{
+				FCollisionQueryParams CargoQuery(Q); CargoQuery.AddIgnoredComponent(H.GetComponent());
+				TArray<FHitResult> CargoHits;
+				Web->GetWorld()->LineTraceMultiByChannel(CargoHits, EyeUE, EyeUE + DirUE.GetSafeNormal() * 600.0, ECC_GameTraceChannel1, CargoQuery);
+				for (const FHitResult& CargoHit : CargoHits)
+				{
+					const FString CargoId = Web->UsableAt(CargoHit.GetComponent());
+					if (CargoId.IsEmpty() || IsLook(CargoId)) continue;
+					if ((CargoId == TEXT("ff:parcel") || CargoId == TEXT("ff:cargo")) && CargoHit.Distance / 100.0 <= RangeOf(CargoId) && !LabelOf(CargoId).IsEmpty()) return CargoId;
+					break;
+				}
+			}
+		}
 		return LabelOf(Id).IsEmpty() ? FString() : Id;
 	}
 	return FString();

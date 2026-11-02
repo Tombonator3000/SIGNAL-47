@@ -16,6 +16,7 @@
 #include "S47Geo.h"
 #include "S47Glimpses.h"
 #include "S47Herd.h"
+#include "S47FarmWorld.h"
 #include "S47Inter.h"
 #include "S47Image.h"
 #include "S47Lines.h"
@@ -123,7 +124,7 @@ void US47TownLayer::Init(US47Main* InM)
 	for (const auto& H : Herds) for (int32 I = 0; I < H->LookAreas.Num(); ++I)
 	{
 		FS47Interactable It; It.Id = FString::Printf(TEXT("look:cow:%s:%d"), *H->Area, I); It.Object = H->LookAreas[I]; It.bLook = true; It.ExamineRange = 9; It.Label = [] { return FString(); }; It.Use = [] {};
-		It.Examine = [this, I] { const FString Tag = FString::Printf(TEXT("A yellow tag in her left ear: %s %s."), S47Herd::TAG_RANCH, *S47Herd::Tags()[I]); return (Pasture->Stage == TEXT("still") || Pasture->Stage == TEXT("short") ? FString(TEXT("She stands quite still, her head up, facing the way the others face. ")) : FString(TEXT("A Hereford cow, red with a white face. "))) + Tag; }; M->Inter->Add(It);
+		It.Examine = [this, I] { const FString Tag = FString::Printf(TEXT("A yellow tag in her left ear: %s %s."), S47Herd::TAG_RANCH, *S47Herd::Tags()[I]); return (!S47FarmWorld::Enabled(M) && (Pasture->Stage == TEXT("still") || Pasture->Stage == TEXT("short")) ? FString(TEXT("She stands quite still, her head up, facing the way the others face. ")) : FString(TEXT("A Hereford cow, red with a white face. "))) + Tag; }; M->Inter->Add(It);
 	}
 	FS47MotelTvDeps Td; Td.Truck = [this] { const auto* T = M->World ? M->World->SaroTruck() : nullptr; return T ? T->Group : FS47Obj(); };
 	Td.File = [this](const FS47Doc& D) { M->Story->AddDoc(D); }; Td.Document = [this]() -> TOptional<FS47Doc> { for (const FS47Doc& D : M->Story->Docs()) if (D.Id == TEXT("motel-tv-frame")) return D; return {}; };
@@ -241,6 +242,8 @@ void US47TownLayer::MorningStep(double Dt, bool bModal)
 }
 void US47TownLayer::WorldStep(double Dt)
 {
+ bool HerdModeChanged=false;for(const auto& H:Herds)HerdModeChanged|=H->ReconcileMode();
+ if(HerdModeChanged&&!S47FarmWorld::Enabled(M)&&Pasture)Pasture->Reset();
 	S47CalicheAccess::Update();
 	{
 		// The ordinary broadcast also runs through the motel opening, when Main holds

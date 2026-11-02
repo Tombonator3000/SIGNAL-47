@@ -210,7 +210,10 @@ public:
 	 *  view is in Out. */
 	bool Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out);
 	void Update(double Dt, double T);
+ void ReconcileFarm(bool bEnabled);
 	void TownCarMoved(const FS47Area& Box); // Town.ts carCol is also the road drive obstacle
+	void MoveHerdObstacle(const FString& HerdArea, const FVector& Old, const FVector& New, double Radius);
+	bool HasHerdObstacle(const FString& HerdArea, const FVector& At, double Radius) const;
 	bool Indoors(const FVector& P) const; // World.indoors: under a roof in the area the player is in
 	/** Whether a point is on the open land of an area (the current one by default), the player's
 	 *  whole width (AS47Walker::OpenLand). */
@@ -229,6 +232,8 @@ private:
 		FS47Truck* Truck = nullptr;
 	};
 	TMap<FString, FLegRec> Legs;
+ bool bFarmMode=false,bFarmObstaclesReady=false;
+ TMap<FString,TArray<TPair<int32,FS47Obstacle>>> FarmControlledObstacles;
 	TUniquePtr<FS47Truck> SaroTruckP, TruckP, ParkedP, OldTruckP;
 	FS47RoadArea* Road = nullptr;
 	TUniquePtr<FS47EngineSound> Engine;

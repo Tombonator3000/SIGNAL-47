@@ -6,6 +6,7 @@
 
 class US47Main;
 class UMaterialInstanceDynamic;
+class UMaterialBillboardComponent;
 
 // drive/herd.ts: the Herefords. Authored body/head meshes reuse the original instance pools;
 // frost, eye sprites, grazing clock, headlight beam and missing cow remain in step.
@@ -36,6 +37,8 @@ public:
 	int32 Missing = -1;
 	TArray<FS47Obj> LookAreas;
 	void Set(bool bInStill, int32 InMissing, bool bRing);
+ bool ReconcileMode();
+ FVector AppliedOffset() const { return ModeOffset; }
 	FS47Obstacle Obstacle(const FVector2D& Origin);
 	void Update(double T, const TOptional<FS47HerdHeadlights>& Headlights = {});
 	bool CowAt(int32 I, FVector& Out) const;
@@ -51,6 +54,12 @@ private:
 	FVector BeamDir = FVector(0, 0, -1);
 	TArray<FVector> EyeAt;
 	TArray<TWeakObjectPtr<UMaterialInstanceDynamic>> Eyes;
+ TArray<TWeakObjectPtr<UMaterialBillboardComponent>> EyeSprites;
+ TArray<FVector> LookBases;
+ FVector GroupBase=FVector::ZeroVector,RingBase=FVector::ZeroVector,ModeOffset=FVector::ZeroVector;
+ bool bModeKnown=false,bStoryStill=false,bStoryRing=false;
+ int32 StoryMissing=-1;
+ void MoveObstacle(const FVector& Old,const FVector& New,double Radius);
 	bool bEyesLit = false;
 	bool bNativeModels = false;
 	TArray<double> Ys;

@@ -1,5 +1,6 @@
 // drive/herd.ts
 #include "S47Herd.h"
+#include "S47FarmWorld.h"
 
 #include "Components/MaterialBillboardComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -38,6 +39,7 @@ FS47Herd::FS47Herd(US47Main* InM, const FString& InPath, const FString& InArea) 
 	{
 		Group = W->Obj(InPath + TEXT(".group")); Bodies = W->Obj(InPath + TEXT(".bodies"));
 		Heads = W->Obj(InPath + TEXT(".heads")); Ring = W->Obj(InPath + TEXT(".ring"));
+  GroupBase=Group.Position();RingBase=Ring.Position();
 		const auto* BodyNode = W->Node(Bodies.I);
 		const auto* HeadNode = W->Node(Heads.I);
 		auto* BodyComponent = BodyNode ? Cast<UInstancedStaticMeshComponent>(BodyNode->Comp.Get()) : nullptr;
@@ -57,6 +59,7 @@ FS47Herd::FS47Herd(US47Main* InM, const FString& InPath, const FString& InArea) 
 	{
 		Ys.Add(S47RoadTerrain::SurfaceY(COWS[I][0], COWS[I][1]));
 		LookAreas.Add(W ? W->Obj(FString::Printf(TEXT("%s.lookAreas[%d]"), *InPath, I)) : FS47Obj());
+  LookBases.Add(LookAreas.Last().Position());
 	}
 	// The exported points retain their local positions. Private eye indices are not handles, so
 	// match each eye to its own exported sprite rather than depending on other glow points' order.
@@ -81,10 +84,56 @@ FS47Herd::FS47Herd(US47Main* InM, const FString& InPath, const FString& InArea) 
 				if (Dist < BestD) { Best = B; BestD = Dist; }
 			}
 			Eyes.Add(Best && Best->Elements.Num() ? Cast<UMaterialInstanceDynamic>(Best->Elements[0].Material) : nullptr);
+   EyeSprites.Add(Best);
 		}
 	}
 	bStill = false;
+ ReconcileMode();
 	Place(0);
+}
+
+// The exported group is road-local. Keep instance poses local and move this
+// root exactly once per mode edge; all child heads/look areas/ring follow it.
+bool FS47Herd::ReconcileMode()
+{
+ const FVector Offset=S47FarmWorld::HerdOffset(M);
+ if(bModeKnown&&ModeOffset.Equals(Offset,1e-9))return false;
+ const bool WasFreeform=!ModeOffset.IsNearlyZero();
+ TArray<FVector> Old;
+ for(int32 I=0;I<Count();++I){const FVector P(COWS[I][0],Ys[I],COWS[I][1]);Old.Add(Group?Group.LocalToWorld(P):P+ModeOffset);}
+ ModeOffset=Offset;bModeKnown=true;
+ Group.SetPosition(GroupBase+ModeOffset);
+ for(int32 I=0;I<Count();++I)
+ {
+  const double Before=Ys[I];Ys[I]=S47RoadTerrain::SurfaceY(COWS[I][0]+Offset.X,COWS[I][1]+Offset.Z);
+  for(int32 E=0;E<2;++E)
+  {
+   const int32 K=I*2+E;EyeAt[K].Y+=Ys[I]-Before;
+   // Exported eye sprites share the road's glow pool, not the herd root.
+   // Move only the matched 18 cattle sprites, never the other roadside lights.
+   if(EyeSprites[K].IsValid())EyeSprites[K]->SetRelativeLocation(S47Three::ToUE(EyeAt[K]+ModeOffset));
+  }
+  FVector Look=LookBases[I];Look.Y+=Ys[I]-S47RoadTerrain::SurfaceY(COWS[I][0],COWS[I][1]);LookAreas[I].SetPosition(Look);
+ }
+ FVector R=RingBase;R.Y+=Ys[4]-S47RoadTerrain::SurfaceY(COWS[4][0],COWS[4][1]);Ring.SetPosition(R);
+ if(S47FarmWorld::Enabled(M)){bStill=false;Missing=-1;Ring.SetVisible(false);}
+ else if(WasFreeform){bStill=bStoryStill;Missing=StoryMissing;Ring.SetVisible(bStoryRing);}
+ for(int32 I=0;I<LookAreas.Num();++I)LookAreas[I].SetVisible(I!=Missing);
+ bDirty=true;Place(LastT);
+ for(int32 I=0;I<Count();++I)
+ {
+  const FVector P(COWS[I][0],Ys[I],COWS[I][1]);const FVector New=Group?Group.LocalToWorld(P):P+ModeOffset;
+  MoveObstacle(Old[I],New,I==Missing?0:S47Herd::COW_R);
+ }
+ return true;
+}
+void FS47Herd::MoveObstacle(const FVector& Old,const FVector& New,double Radius)
+{
+ if(!M||!M->Web)return;
+ auto Match=[&](double X,double Z){return FMath::Abs(X-Old.X)<.001&&FMath::Abs(Z-Old.Z)<.001;};
+ if(M->World)M->World->MoveHerdObstacle(Area,Old,New,Radius);
+ for(const TCHAR* A:{TEXT("saro"),TEXT("road"),TEXT("diner")})for(auto& C:M->Web->CollidersMutable(A))if(Match((C.MinX+C.MaxX)*.5,(C.MinZ+C.MaxZ)*.5))
+ {const double DX=New.X-Old.X,DZ=New.Z-Old.Z;C.MinX+=DX;C.MaxX+=DX;C.MinZ+=DZ;C.MaxZ+=DZ;C.bEnabled=Radius>0;}
 }
 
 // Herd.pose: body and head matrices in road-local terms.
@@ -124,6 +173,9 @@ void FS47Herd::Place(double T)
 
 void FS47Herd::Set(bool bInStill, int32 InMissing, bool bRing)
 {
+ if(!S47FarmWorld::Enabled(M)){bStoryStill=bInStill;StoryMissing=InMissing;bStoryRing=bRing;}
+ ReconcileMode();
+ if(S47FarmWorld::Enabled(M)){bInStill=false;InMissing=-1;bRing=false;}
 	if (bInStill != bStill || InMissing != Missing) { bStill = bInStill; Missing = InMissing; Place(LastT); }
 	Ring.SetVisible(bRing);
 	for (int32 I = 0; I < LookAreas.Num(); ++I) LookAreas[I].SetVisible(I != Missing);
@@ -132,20 +184,19 @@ void FS47Herd::Set(bool bInStill, int32 InMissing, bool bRing)
 
 FS47Obstacle FS47Herd::Obstacle(const FVector2D& Origin)
 {
-	return FS47Obstacle::Circle(COWS[S47Herd::MISSING][0] + Origin.X, COWS[S47Herd::MISSING][1] + Origin.Y,
+ ReconcileMode();
+	return FS47Obstacle::Circle(COWS[S47Herd::MISSING][0] + ModeOffset.X + Origin.X, COWS[S47Herd::MISSING][1] + ModeOffset.Z + Origin.Y,
 		Missing == S47Herd::MISSING ? 0 : S47Herd::COW_R);
 }
 
 void FS47Herd::UpdateObstacles()
 {
-	if (!M || !M->Web || Area != TEXT("road")) return;
+	if (!M || !M->Web) return;
 	const FVector P = Group.LocalToWorld(FVector(COWS[S47Herd::MISSING][0], Ys[S47Herd::MISSING], COWS[S47Herd::MISSING][1]));
 	// The native drive owns value arrays. Find the exported circle by its unchanged centre each
 	// step, instead of holding a pointer into a TArray which the area's other builders can grow.
-	if (M->World) if (FS47DriveController* D = M->World->CabDrive()) if (D->Area)
-		for (FS47Obstacle& O : D->Area->Obstacles)
-			if (O.bCircle && FMath::Abs(O.X - P.X) < 0.001 && FMath::Abs(O.Z - P.Z) < 0.001) O.R = Missing == S47Herd::MISSING ? 0 : S47Herd::COW_R;
-	for (const TCHAR* A : { TEXT("road"), TEXT("diner") })
+	if (M->World) M->World->MoveHerdObstacle(Area,P,P,Missing==S47Herd::MISSING?0:S47Herd::COW_R);
+	for (const TCHAR* A : { TEXT("saro"), TEXT("road"), TEXT("diner") })
 		for (FS47Rect& C : M->Web->CollidersMutable(A))
 			if (FMath::Abs((C.MinX + C.MaxX) * 0.5 - P.X) < 0.001 && FMath::Abs((C.MinZ + C.MaxZ) * 0.5 - P.Z) < 0.001)
 				C.bEnabled = Missing != S47Herd::MISSING;
@@ -161,6 +212,7 @@ double FS47Herd::BeamAt(const FVector& P) const
 
 void FS47Herd::Update(double T, const TOptional<FS47HerdHeadlights>& Headlights)
 {
+ ReconcileMode();
 	LastT = T;
 	if (!bStill || bDirty) { Place(T); bDirty = false; }
 	if (Headlights)
@@ -202,15 +254,15 @@ bool FS47Herd::CowAt(int32 I, FVector& Out) const
 {
 	if (I < 0 || I >= Count() || I == Missing) return false;
 	Out = FVector(COWS[I][0], Ys[I] + 1.1, COWS[I][1]);
-	if (Group) Out = Group.LocalToWorld(Out);
+	if (Group) Out = Group.LocalToWorld(Out);else Out+=ModeOffset;
 	return true;
 }
 
 double FS47Herd::LitAt(int32 I) const { FVector P; return CowAt(I, P) ? BeamAt(P) : 0; }
 FVector FS47Herd::Middle() const
 {
-	const FVector P(S47RoadShape::HERD.X, S47RoadTerrain::SurfaceY(S47RoadShape::HERD.X, S47RoadShape::HERD.Z) + 1, S47RoadShape::HERD.Z);
-	return Group ? Group.LocalToWorld(P) : P;
+	const FVector P(S47RoadShape::HERD.X, S47RoadTerrain::SurfaceY(S47RoadShape::HERD.X+ModeOffset.X, S47RoadShape::HERD.Z+ModeOffset.Z) + 1, S47RoadShape::HERD.Z);
+	return Group ? Group.LocalToWorld(P) : P+ModeOffset;
 }
 
 bool FS47Herd::SelfTest(TArray<FString>& Lines)
@@ -236,6 +288,15 @@ bool FS47Herd::SelfTest(TArray<FString>& Lines)
 	H.Set(true, S47Herd::MISSING, true); FVector Out;
 	Check(!H.CowAt(S47Herd::MISSING, Out) && H.CowAt(0, Out) && H.LitAt(S47Herd::MISSING) == 0, TEXT("the ninth and its beam sample disappear"));
 	Check(H.Obstacle(FVector2D(8000, 0)).R == 0, TEXT("missing cow does not stop the truck"));
+ // An asset-free relocation sample checks all nine photo/pose coordinates
+ // against the same offset and terrain basis, without altering Story samples.
+ FS47Herd Farm(nullptr,FString(),TEXT("road"));Farm.ModeOffset=FVector(92,0,-316);
+ bool All=true;for(int32 I=0;I<Farm.Count();++I)
+ {
+  Farm.Ys[I]=S47RoadTerrain::SurfaceY(COWS[I][0]+92,COWS[I][1]-316);Farm.Pose(I,7);
+  FVector At;All&=Farm.CowAt(I,At)&&FMath::IsNearlyEqual(At.X,COWS[I][0]+92)&&FMath::IsNearlyEqual(At.Z,COWS[I][1]-316)&&FMath::IsNearlyEqual(At.Y,Farm.BodyP.Y+1.1);
+ }
+ Check(All&&FMath::IsNearlyEqual(Farm.Middle().X,55.)&&FMath::IsNearlyEqual(Farm.Middle().Z,240.),TEXT("all nine relocated cattle/photo centres and pasture middle use the same road offset and local terrain"));
 	H.BeamPos = FVector4(0, 0, 0, 1); H.BeamDir = FVector(0, 0, -1);
 	Check(FMath::Abs(H.BeamAt(FVector(0, 0, -50)) - 0.7) < 1e-12 && H.BeamAt(FVector(0, 0, 50)) == 0, TEXT("exact cone and 2500 metre-squared beam falloff"));
 	return bOk;
