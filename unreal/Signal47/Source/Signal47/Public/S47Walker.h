@@ -32,6 +32,9 @@ public:
 	void SetActive(bool bOn) { bActive = bOn; }
 	bool IsActive() const { return bActive; }
 	void Place(double X, double Z, double InYaw);
+	// Normal on-foot movement and native scenarios share this exact axis-swept
+	// collision path. Deltas are world X/Z metres, not input or teleportation.
+	void MoveBy(double DeltaX, double DeltaZ);
 	void Look(double DX, double DY);
 	FString FocusedId() const { return Focused; }
 	TFunction<void(const FString&)> OnUse;

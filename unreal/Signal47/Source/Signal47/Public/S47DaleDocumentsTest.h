@@ -4,7 +4,8 @@
 class US47Main;
 
 // Explicit opt-in API/Walker/disk driver. Run only with a fresh /tmp UserDir,
-// developer case zero, -S47Jump=chapter2 and -S47DaleDocumentsContract.
+// developer case zero, -S47Jump=chapter2 and -S47DaleDocumentsContract
+// or -S47DaleCollisionContract (entry/papers plus bounded collision/save fixtures).
 class FS47DaleDocumentsTest
 {
 public:
@@ -12,7 +13,7 @@ public:
  void Step(double Dt);
 private:
  US47Main* M = nullptr;
- bool bEnabled = false, bDone = false, bLegacyTyped = false;
+ bool bEnabled = false, bDone = false, bLegacyTyped = false, bCollision = false;
  int32 Stage = 0, Checks = 0, Stores = 0, ReadIndex = 0, WalkIndex = 0, ScrollKeys = 0, TotalScrollKeys = 0;
  int32 DeskPaperIndex = 0, ArtAudits = 0;
  float PreviousScroll = 0;
@@ -24,6 +25,9 @@ private:
  TArray<FBox> PaperBounds;
  TArray<TSharedPtr<FJsonValue>> PhysicalPapers;
  S47J::FObj ActualRead, PaperReceipt, RestoreReceipt;
+ S47J::FObj CollisionSnapshot, CollisionDoorProbe;
+ FVector CollisionRestoredFrom = FVector::ZeroVector;
+ TArray<TSharedPtr<FJsonValue>> CollisionMoves;
  bool Check(bool Good, const FString& Why);
  void Fail(const FString& Why);
  void Next(int32 Value, double Wait = .25);
@@ -31,5 +35,9 @@ private:
  bool AuditArt(const FString& Context);
  bool OfficeFacts(const S47J::FObj& Office, int32 Completed, const FString& Context);
  bool FinishRestore();
+ bool CollisionClear(const FVector& At) const;
+ bool ProbeCollisionMoves(bool Airborne);
+ bool CheckCollisionRestore(bool Recovered);
+ void CollisionStep();
  void Shot(const FString& Name);
 };
