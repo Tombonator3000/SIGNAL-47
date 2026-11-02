@@ -27,6 +27,7 @@ public:
  explicit FS47Substation(US47Main* InM);
  void Begin(const S47J::FObj& Saved = nullptr);
  void Step(double Dt);
+ void StepVisuals(double Dt); // Shared Freeform site rendering/audio only; no T01/T02/Story progression.
  S47J::FObj Save() const;
  static bool SelfTest(TArray<FString>& Lines);
  bool Ready() const { return bReady; }
@@ -80,12 +81,15 @@ public:
  };
  FArcSnapshot ArcSnapshot() const; // measured live component state, not expected envelope values
  // The sustained feeder fault is separate from the short SC02 strike and the inspection lamp.
- // Its state derives from Story's saved outage; it never creates a spark burst on Continue.
+ // State derives from the current mode's saved fault/isolation; visual age is never saved.
  static float FaultLampLevel(double T, bool bCalm);
  struct FFaultSnapshot
  {
   bool bRequested = false, bReady = false, bActive = false, bArcVisible = false, bLampsVisible = false;
   bool bMaterialAssigned = false, bSafe = false;
+  bool bEnergized=false,bIsolated=false,bFault=false,bHeld=false;
+  FString GeometryMotionHash; FBox GeometryBounds=FBox(ForceInit);
+  double HumGain=0,BuzzGain=0;
   int32 ArcInstances = 0, LampInstances = 0;
   double Age = 0;
   float ArcLumens = 0, LampLumens = 0, ArcIntensity = 0, LampIntensity = 0;
@@ -171,10 +175,11 @@ private:
  TWeakObjectPtr<UPointLightComponent> FaultArcLight, FaultLampLights[2];
  TSharedPtr<FS47GainNode> SiteHumGain, SiteBuzzGain;
  TArray<TSharedPtr<FS47ScheduledSourceNode>> SiteAudioSources;
- void StepSiteAudio(bool bFault, float Arc, bool bHeld);
+ void StepSiteAudio(bool bEnergized,bool bFault, float Arc, bool bHeld);
  void StopSiteAudio();
  double FaultTime = 0;
  bool bFaultShown = false;
+ bool bSiteEnergized=false,bSiteIsolated=false,bSiteFault=false,bSiteHeld=false;
  double ArcT = -1;
  bool bArcSpent = false, bArcCalm = false, bArcWasAppeared = false;
  int32 ArcFired = 0, ArcSite = 1, ArcSparkCount = 0, ArcShape = -1;

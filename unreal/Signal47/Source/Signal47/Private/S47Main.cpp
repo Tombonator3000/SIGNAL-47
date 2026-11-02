@@ -102,7 +102,11 @@ void US47Main::Step(double Dt)
 	if (FreeformTest) FreeformTest->Step(Dt);
 	if (FreeformJourneyTest) FreeformJourneyTest->Step(Dt);
 	if (SaroResumeTest) SaroResumeTest->Step(Dt);
-	if (!bFree && Substation) Substation->Step(Dt);
+	if (Substation)
+	{
+		if (bFree) Substation->StepVisuals(Dt); // Shared site feedback, without advancing authored T01/T02.
+		else Substation->Step(Dt);
+	}
  // Opt-in live contract tests must also observe legacy restores with Evening disabled.
  if (Evening) Evening->ControlServiceTest(Dt);
  if (Evening) Evening->ControlServiceDriveTest(Dt);

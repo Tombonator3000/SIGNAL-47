@@ -1,6 +1,9 @@
 #include "S47Substation.h"
 #include "S47Audio.h"
 #include "S47Flow.h"
+#include "S47Freeform.h"
+#include "S47FreeformWorld.h"
+#include "Misc/SecureHash.h"
 #include "S47Fx.h"
 #include "S47Horror.h"
 #include "S47HorrorThreat.h"
@@ -20,7 +23,7 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47SubstationArc, Log, All);
 
-// The quiet site arc and fixed fault beacons persist after T01 restores SARO's supply.
+// Shared energized-site corona and larger feeder-fault arcs are independent of the short SC02 strike.
 // SC02 keeps its separate short strike with sparks when the pale body first appears at the post.
 // Runtime only: Story owns the saved outage, and Horror/T01 own the strike's existing gate.
 namespace
@@ -34,7 +37,36 @@ namespace
  const FLinearColor ArcColor(.36f, .64f, 1.f), SparkColor(1.f, .74f, .42f, 1.f);
  const FLinearColor FaultLampColor(1.f, .24f, .035f);
  FVector Insulator(int32 I) { return FS47Substation::Site(FVector(InsulatorX[FMath::Clamp(I, 0, 2)], InsulatorY, InsulatorZ)); }
- float FaultArcLevel(bool bLow, bool bCalm) { return bCalm ? .065f : bLow ? .08f : .10f; }
+ float FaultArcLevel(bool bLow, bool bCalm) { return bCalm ? .28f : bLow ? .38f : .42f; }
+ float NormalArcLevel(bool bLow,bool bCalm){return bCalm?.040f:bLow?.055f:.065f;}
+ TArray<TPair<FVector,FVector>> SiteSegments(double Time,bool Fault,bool Low,bool Calm)
+ {
+  // Native support tops from the current Buswork source: three porcelain tops at
+  // Blender(-1.04/0/1.04,3.25,7.69). Positions below are cm relative to the middle top.
+  const int32 Steps=Low?6:10;const double Speed=Calm?.42:1.35;
+  const double Phase=Time*Speed,Height=Fault?155.:38.,Bow=Fault?65.:12.,Noise=Fault?8.:2.;
+  TArray<TPair<FVector,FVector>> Segments;Segments.Reserve(Steps*5);
+  for(int32 Path=0;Path<5;++Path)
+  {
+   FVector Prev=FVector::ZeroVector;
+   for(int32 I=0;I<=Steps;++I)
+   {
+    const double U=double(I)/Steps,S=FMath::Sin(PI*U);FVector Next;
+    if(Path<3)
+    {
+     const FVector A=S47Three::ToUE(Insulator(Path))-S47Three::ToUE(Insulator(1));
+     Next=A+FVector(S*(Noise*FMath::Sin(Phase+U*7+Path)),S*(-18.-Noise*FMath::Cos(Phase*.8+U*6+Path)),U*Height*(.88+.12*FMath::Sin(Phase*.7+Path)));
+    }
+    else
+    {
+     const FVector A=S47Three::ToUE(Insulator(Path-3))-S47Three::ToUE(Insulator(1)),B=S47Three::ToUE(Insulator(Path-2))-S47Three::ToUE(Insulator(1));
+     Next=FMath::Lerp(A,B,U)+FVector(0,S*(-20.-Noise*FMath::Sin(Phase+U*8)),S*(Bow+Noise*FMath::Sin(Phase*.9+U*10)));
+    }
+    if(I)Segments.Add({Prev,Next});Prev=Next;
+   }
+  }
+  return Segments;
+ }
  bool SafeMesh(const UStaticMeshComponent* C)
  {
   return !C || (!C->bVisibleInRayTracing && !C->CastShadow && !C->bAffectDistanceFieldLighting &&
@@ -134,10 +166,16 @@ bool FS47Substation::FaultReady() const
 
 FS47Substation::FFaultSnapshot FS47Substation::FaultSnapshot() const
 {
- FFaultSnapshot S; S.bRequested = M && M->Story && M->Story->FeederFaultVisible();
+ FFaultSnapshot S;S.bRequested=bSiteFault;S.bEnergized=bSiteEnergized;S.bIsolated=bSiteIsolated;S.bFault=bSiteFault;S.bHeld=bSiteHeld;
+ if(SiteHumGain)S.HumGain=SiteHumGain->Gain.Value();if(SiteBuzzGain)S.BuzzGain=SiteBuzzGain->Gain.Value();
  S.bReady = FaultReady(); S.bActive = bFaultShown; S.bSafe = ArcSafe(); S.Age = FaultTime;
  if (const UInstancedStaticMeshComponent* C = FaultArcMesh.Get())
- { S.bArcVisible = C->IsVisible(); S.ArcInstances = C->GetInstanceCount(); S.Origin = C->GetComponentLocation(); }
+ {
+  S.bArcVisible = C->IsVisible(); S.ArcInstances = C->GetInstanceCount(); S.Origin = C->GetComponentLocation();FSHA1 Hash;
+  const UStaticMesh* Mesh=C->GetStaticMesh();
+  for(int32 I=0;I<C->GetInstanceCount();++I){FTransform T;if(!C->GetInstanceTransform(I,T,true))continue;const FMatrix Matrix=T.ToMatrixWithScale();Hash.Update(reinterpret_cast<const uint8*>(&Matrix),sizeof(Matrix));if(Mesh)S.GeometryBounds+=Mesh->GetBoundingBox().TransformBy(T);}
+  Hash.Final();FSHAHash Result;Hash.GetHash(Result.Hash);S.GeometryMotionHash=Result.ToString();
+ }
  if (const UInstancedStaticMeshComponent* C = FaultLampMesh.Get())
  { S.bLampsVisible = C->IsVisible(); S.LampInstances = C->GetInstanceCount(); }
  S.bMaterialAssigned = FaultArcMesh.IsValid() && FaultLampMesh.IsValid() &&
@@ -169,15 +207,11 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
  };
  UInstancedStaticMeshComponent* Filament = Mesh(TEXT("SubstationFaultArc"), FaultArcMid.Get()); FaultArcMesh = Filament;
  const FVector At = S47Three::ToUE(Insulator(1)); Filament->SetWorldLocation(At);
- // One stable bow along the porcelain. No timed shape changes, branches, particles or strikes.
- FVector Previous = FVector::ZeroVector;
- for (int32 I = 1; I <= 12; ++I)
+ // Initial normal-corona layout uses the same anchored paths as live animation.
+ for(const auto& Segment:SiteSegments(0,false,false,false))
  {
-  const double T = double(I) / 12, S = FMath::Sin(PI * T);
-  const FVector Next(-32 * S, -25 * S, -75 * T), Delta = Next - Previous;
-  Filament->AddInstance(FTransform(FQuat::FindBetweenNormals(FVector::UpVector, Delta.GetSafeNormal()),
-   (Previous + Next) * .5, FVector(.7 / 50, .7 / 50, Delta.Size() / 100)));
-  Previous = Next;
+  const FVector A=Segment.Key,B=Segment.Value,D=B-A;
+  Filament->AddInstance(FTransform(FQuat::FindBetweenNormals(FVector::UpVector,D.GetSafeNormal()),(A+B)*.5,FVector(.55/50,.55/50,D.Size()/100)));
  }
  UInstancedStaticMeshComponent* Lenses = Mesh(TEXT("SubstationFaultBeacons"), FaultLampMid.Get()); FaultLampMesh = Lenses;
  auto MakeFaultLight = [&](const TCHAR* Name, const FVector& P, const FLinearColor& Color, float Radius, float Source)
@@ -209,7 +243,7 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
    P + FVector(0, -6, 0), FaultLampColor, 900, 10);
  }
  S47Fx::Precache(Filament); S47Fx::Precache(Lenses);
- UE_LOG(LogS47SubstationArc, Display, TEXT("S47: sustained feeder fault ready: stable 12-segment arc, two mounted amber beacons; safe=%d"), ArcSafe());
+ UE_LOG(LogS47SubstationArc, Display, TEXT("S47: site electricity ready: upward and inter-support paths, two mounted fault beacons; safe=%d"), ArcSafe());
 }
 
 void FS47Substation::ClearFault()
@@ -231,7 +265,7 @@ void FS47Substation::StopSiteAudio()
  SiteHumGain.Reset(); SiteBuzzGain.Reset();
 }
 
-void FS47Substation::StepSiteAudio(bool bFault, float Arc, bool bHeld)
+void FS47Substation::StepSiteAudio(bool bEnergized,bool bFault, float Arc, bool bHeld)
 {
  if (!M || !M->Audio || !M->Audio->Ctx) return;
  const auto Ctx = M->Audio->Ctx;
@@ -256,52 +290,53 @@ void FS47Substation::StepSiteAudio(bool bFault, float Arc, bool bHeld)
   SiteBuzzGain->Connect(M->Audio->Spatial(Insulator(1), 11.f));
   Noise->Start(); SiteAudioSources.Add(Noise);
  }
- const bool Play = M->Mode == US47Main::EMode::Play && Root.Shown() && !bHeld;
+ const bool Play = bEnergized&&M->Mode == US47Main::EMode::Play && Root.Shown() && !bHeld;
  const double T = Ctx->CurrentTime();
- SiteHumGain->Gain.SetTargetAtTime(Play ? .10 : 0, T, .15);
- SiteBuzzGain->Gain.SetTargetAtTime(Play && bFault ? .012 + .07 * Arc : 0, T, .04);
+ if(!Play){SiteHumGain->Gain.SetValue(0);SiteBuzzGain->Gain.SetValue(0);}
+ else{SiteHumGain->Gain.SetTargetAtTime(bFault?.115:.075,T,.15);SiteBuzzGain->Gain.SetTargetAtTime((bFault?.035:.004)+(bFault?.14:.06)*Arc,T,.04);}
+}
+
+void FS47Substation::StepVisuals(double Dt)
+{
+ if(!bBuilt)Install();StepArc(Dt);
 }
 
 void FS47Substation::StepFault(double Dt)
 {
- const bool bFaultRequested = M && M->Story && M->Story->FeederFaultVisible();
- const bool bLoading = !M || !M->World || M->World->bBusy || (M->Flow && M->Flow->bStarting);
- const bool bShow = bFaultRequested && bReady && FaultReady() && M->Mode == US47Main::EMode::Play && Root.Shown() && !bLoading;
- if (!bShow) { ClearFault(); StepSiteAudio(false, 0, !M || M->bPausedByMenu || M->ModalOpen()); return; }
- const UWorld* World = M->Web ? M->Web->GetWorld() : nullptr;
- const bool bHeld = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || (World && World->IsPaused());
- if (!bHeld && FMath::IsFinite(Dt) && Dt > 0) FaultTime += FMath::Min(Dt, .1);
- const bool bCalm = M->Flow && M->Flow->bCalmFlash, bLow = M->Flow && M->Flow->Graphics.Effects == 0;
- // Slow envelope and short corona swells make a real moving fault, rather than
- // one permanently blue post. Calm mode retains smooth, steady low-intensity light.
- const double Phase = FMath::Fmod(FaultTime, 3.7);
- const float Motion = bCalm ? 1.f : float(.65 + .5 * FMath::Square(FMath::Sin(FaultTime * 2.3)) + (Phase < .22 ? 1.7 * (1 - Phase / .22) : 0));
- const float Arc = FaultArcLevel(bLow, bCalm) * Motion, LampLevel = FaultLampLevel(FaultTime, bCalm);
- StepSiteAudio(true, Arc, bHeld);
- if (!bHeld && !bCalm)
+ const bool Free=M&&M->IsFreeform();
+ const bool Isolated=Free&&M->Freeform&&M->Freeform->Field&&M->Freeform->Field->FeederIsolated();
+ const bool Fault=Free?(M->Freeform&&M->Freeform->PowerFault()):(M&&M->Story&&M->Story->FeederFaultVisible());
+ const bool Energized=!Isolated;
+ const UWorld* World=M&&M->Web?M->Web->GetWorld():nullptr;
+ const bool Held=!M||M->bPausedByMenu||M->ModalOpen()||(!Free&&M->Story&&M->Story->IsCinematic())||(World&&World->IsPaused());
+ const bool Changed=bSiteEnergized!=Energized||bSiteIsolated!=Isolated||bSiteFault!=Fault;
+ bSiteEnergized=Energized;bSiteIsolated=Isolated;bSiteFault=Fault;bSiteHeld=Held;
+ const bool Loading=!M||!M->World||M->World->bBusy||(M->Flow&&M->Flow->bStarting);
+ const bool Show=Energized&&bReady&&FaultReady()&&M->Mode==US47Main::EMode::Play&&Root.Shown()&&!Loading;
+ if(!Show){ClearFault();StepSiteAudio(false,Fault,0,Held);return;}
+ if(!Held&&FMath::IsFinite(Dt)&&Dt>0)FaultTime+=FMath::Min(Dt,.1);
+ const bool Calm=M->Flow&&M->Flow->bCalmFlash,Low=M->Flow&&M->Flow->Graphics.Effects==0;
+ // Both comfort and Low retain anchored, gently moving geometry; neither substitutes a static blue post.
+ const float Motion=float(.90+.10*FMath::Sin(FaultTime*(Calm?.35:.9)));
+ const float Arc=(Fault?FaultArcLevel(Low,Calm):NormalArcLevel(Low,Calm))*Motion;
+ const float LampLevel=Fault?FaultLampLevel(FaultTime,Calm):0.f;
+ StepSiteAudio(true,Fault,Arc,Held);
+ if(!Held)
  {
-  // Fixed endpoints on the porcelain; only the free bow moves, in native centimetres.
-  FVector Previous = FVector::ZeroVector;
-  const int32 Shape = FMath::FloorToInt(FaultTime * 9);
-  FRandomStream R(3911 + Shape);
-  for (int32 I = 1; I <= 12; ++I)
-  {
-   const double U = double(I) / 12, S = FMath::Sin(PI * U);
-   const FVector Next((-32 + R.FRandRange(-5.f, 5.f)) * S, (-25 + R.FRandRange(-4.f, 4.f)) * S, -75 * U);
-   const FVector Delta = Next - Previous;
-   FaultArcMesh->UpdateInstanceTransform(I - 1, FTransform(FQuat::FindBetweenNormals(FVector::UpVector, Delta.GetSafeNormal()),
-    (Previous + Next) * .5, FVector(.7 / 50, .7 / 50, Delta.Size() / 100)), false, I == 12, true);
-   Previous = Next;
-  }
+  const auto Segments=SiteSegments(FaultTime,Fault,Low,Calm);auto* Mesh=FaultArcMesh.Get();
+  if(Mesh->GetInstanceCount()!=Segments.Num()){Mesh->ClearInstances();for(int32 I=0;I<Segments.Num();++I)Mesh->AddInstance(FTransform::Identity);}
+  const double Radius=Fault?(Calm?1.05:1.20):.55;
+  for(int32 I=0;I<Segments.Num();++I){const FVector A=Segments[I].Key,B=Segments[I].Value,D=B-A;Mesh->UpdateInstanceTransform(I,FTransform(FQuat::FindBetweenNormals(FVector::UpVector,D.GetSafeNormal()),(A+B)*.5,FVector(Radius/50,Radius/50,D.Size()/100)),false,I==Segments.Num()-1,true);}
+  Mesh->UpdateBounds();
  }
- FaultArcMesh->SetVisibility(true); FaultLampMesh->SetVisibility(true);
- for (const auto& W : FaultLampMounts) if (UStaticMeshComponent* C = W.Get()) C->SetVisibility(true);
- FaultArcMid->SetScalarParameterValue(TEXT("ArcIntensity"), 18.f * Arc);
- FaultLampMid->SetScalarParameterValue(TEXT("ArcIntensity"), 9.f * LampLevel);
- FaultArcLight->SetIntensity(ArcPeakLumens * Arc); FaultArcLight->SetVisibility(true);
- for (const auto& W : FaultLampLights) if (UPointLightComponent* L = W.Get()) { L->SetIntensity(FaultLampLumens * LampLevel); L->SetVisibility(true); }
- if (!bFaultShown) UE_LOG(LogS47SubstationArc, Display, TEXT("S47: sustained site fault shown independently of restored SARO supply; %s, arc %.0f lm, no sparks"), bCalm ? TEXT("calm steady beacons") : TEXT("slow 4 s beacons"), ArcPeakLumens * Arc);
- bFaultShown = true;
+ FaultArcMesh->SetVisibility(true);FaultLampMesh->SetVisibility(Fault);
+ for(const auto& W:FaultLampMounts)if(auto* C=W.Get())C->SetVisibility(true);
+ FaultArcMid->SetScalarParameterValue(TEXT("ArcIntensity"),(Fault?32.f:18.f)*Arc);
+ FaultLampMid->SetScalarParameterValue(TEXT("ArcIntensity"),9.f*LampLevel);
+ FaultArcLight->SetWorldLocation(S47Three::ToUE(Insulator(1))+FVector(0,-20,Fault?55:12));FaultArcLight->SetIntensity(ArcPeakLumens*Arc);FaultArcLight->SetVisibility(true);
+ for(const auto& W:FaultLampLights)if(auto* L=W.Get()){L->SetIntensity(FaultLampLumens*LampLevel);L->SetVisibility(Fault);}
+ if(Changed||!bFaultShown)UE_LOG(LogS47SubstationArc,Display,TEXT("S47 site electricity %s: upward+inter-support anchored paths, %d segments, %s motion, %.0flm; no persistent Niagara bursts"),Fault?TEXT("fault"):TEXT("normal"),FaultArcMesh->GetInstanceCount(),Calm?TEXT("smooth comfort"):TEXT("smooth"),ArcPeakLumens*Arc);
+ bFaultShown=true;
 }
 
 void FS47Substation::InstallArc()
@@ -347,7 +382,7 @@ void FS47Substation::CancelArc()
 void FS47Substation::ResetArc()
 {
  CancelArc(); bArcSpent = false; bArcCalm = false; bArcWasAppeared = false;
- ClearFault(); StopSiteAudio(); FaultTime = 0;
+ ClearFault(); StopSiteAudio(); FaultTime = 0;bSiteEnergized=bSiteIsolated=bSiteFault=bSiteHeld=false;
  // Substation Begin precedes Horror Begin. Never inspect the previous case's Threat here.
  // Continue inside a meeting is deliberately quiet, including a pre-witness checkpoint.
  // A save before the meeting still gets its first appearance. No new saved effect field.
@@ -409,7 +444,8 @@ void FS47Substation::FireArc(int32 At, const TCHAR* Why)
 
 void FS47Substation::StepArc(double Dt)
 {
- StepFault(Dt); // Independent of the SC02 meeting: visible before and during the T01 check.
+ StepFault(Dt); // Common site state; the separate SC02 event keeps its Story-only gate.
+ if(M&&M->IsFreeform()){if(ArcT>=0)CancelArc();return;}
  const FS47HorrorThreat* Th = M && M->Horror ? M->Horror->Threat.Get() : nullptr;
  const bool bMeeting = M && M->Horror && M->Horror->SC02Meeting();
  const bool bLoading = !M || !M->World || M->World->bBusy || (M->Flow && M->Flow->bStarting);
@@ -467,9 +503,13 @@ bool FS47Substation::ArcSelfTest(TArray<FString>& Lines)
  Check(ArcLevel(-.01, false) == 0 && ArcLevel(ArcDuration, false) == 0 && ArcLevel(ArcDuration, true) == 0, TEXT("envelope is deterministic and zero outside its 1.2 s"));
  Check(ArcDip(-1, false) == 1.f && ArcDip(ArcDuration + 1, true) == 1.f && ArcDip(0, false) >= .19f && ArcDip(.6, true) < 1.f, TEXT("the lamp dips only during the arc and is exactly normal outside it"));
  Check(ArcSparks(false, false) == MaxSparks && ArcSparks(true, false) == MaxSparks / 2 && ArcSparks(true, true) < ArcSparks(true, false) && ArcSparks(false, true) <= MaxSparks / 2, TEXT("40 sparks, 20 on Low, fewer with calm flash"));
- Check(FaultArcLevel(false, false) > 0 && FaultArcLevel(false, false) <= .1f &&
-  FaultArcLevel(true, false) > 0 && FaultArcLevel(true, false) <= FaultArcLevel(false, false) &&
-  FaultArcLevel(true, true) <= FaultArcLevel(true, false), TEXT("sustained fault stays weak and visible on Low, further reduced by calm flash"));
+ Check(FaultArcLevel(false,false)>.25f&&FaultArcLevel(false,false)<=.5f&&FaultArcLevel(true,false)<=FaultArcLevel(false,false)&&FaultArcLevel(true,true)<=FaultArcLevel(true,false),TEXT("site fault is visibly stronger while Low and comfort stay bounded"));
+ Check(NormalArcLevel(true,true)>0&&FaultArcLevel(true,true)>NormalArcLevel(true,true)*3, TEXT("energized normal corona remains visible but clearly weaker than fault"));
+ const auto Normal=SiteSegments(0,false,true,true),Moved=SiteSegments(3,false,true,true),Fault=SiteSegments(0,true,false,false);
+ bool Moving=false;double NormalTop=0,FaultTop=0,LowX=1e9,HighX=-1e9;
+ for(int32 I=0;I<Normal.Num();++I){Moving|=!Normal[I].Value.Equals(Moved[I].Value,.01);NormalTop=FMath::Max(NormalTop,Normal[I].Value.Z);}
+ for(const auto& Segment:Fault){FaultTop=FMath::Max(FaultTop,Segment.Value.Z);LowX=FMath::Min(LowX,Segment.Key.X);HighX=FMath::Max(HighX,Segment.Key.X);}
+ Check(Normal.Num()==30&&Fault.Num()==50&&Moving&&NormalTop>20&&FaultTop>120&&FaultTop>NormalTop*2&&HighX-LowX>=208.,TEXT("Low comfort paths move, rise from support tops and bridge all three; faults extend farther upward"));
  Check(FaultLampLevel(0, false) == FaultLampLevel(4, false) && FaultLampLevel(1, false) > .99f && FaultLampLevel(3, false) < .11f &&
   FaultLampLevel(.4, false) > FaultLampLevel(.1, false) && FaultLampLevel(1.8, false) > FaultLampLevel(2.1, false),
   TEXT("fixed fault beacons use a slow four-second rise, hold and fade, with no random flicker"));

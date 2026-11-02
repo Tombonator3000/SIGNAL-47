@@ -34,6 +34,8 @@ public:
  bool HasArrayFault() const { return Service >= 1 && Service < 9; }
  int32 FaultedDishCount() const { return HasArrayFault() ? 1 : 0; }
  int32 ServiceStage() const { return Service; }
+ int32 FeederStage() const { return Feeder; }
+ bool FeederIsolated() const { return Feeder == 3 || Feeder == 4; }
  void DiagnoseService();
  FString ServiceStatus() const;
  bool GeneratorRunning() const { return bGenerator && GeneratorSeconds > 0; }
