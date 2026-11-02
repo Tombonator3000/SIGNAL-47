@@ -34,7 +34,7 @@ namespace
   double Began=0,Since=0;
   FVector ServiceEye=FVector::ZeroVector;
   FSnapshot Normal,Fault,Repaired;
-  TArray<TSharedPtr<FJsonValue>> Checks,Samples;
+  TArray<TSharedPtr<FJsonValue>> Checks,Samples,FlowStates;
   TFunction<bool(double,const FVector2D&,const FVector2D&,FS47View&)> PreviousCamera;
   void Next(int32 S){Stage=S;Since=FPlatformTime::Seconds();UE_LOG(LogTemp,Display,TEXT("S47 substation live stage%d"),S);}
   void Finish(bool Good,const FString& Why)
@@ -42,8 +42,8 @@ namespace
    if(Done)return;Done=true;auto* M=Main.Get();
    if(M&&M->Player&&CameraInstalled)M->Player->CameraOverride=MoveTemp(PreviousCamera);
    if(M&&M->Flow)M->Flow->bCalmFlash=OriginalCalm;
-   auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("seconds"),Began>0?FPlatformTime::Seconds()-Began:0.);S47J::Set(O,TEXT("ordinaryContinues"),OrdinaryContinues);S47J::Set(O,TEXT("savedId"),WrittenId);O->SetArrayField(TEXT("checks"),Checks);O->SetArrayField(TEXT("samples"),Samples);
-   S47J::Set(O,TEXT("method"),TEXT("Isolated Freeform case0. Explicit road-area/initial service-foot placement, calibrated CameraOverride normal08 ramp/fault22 fence fixtures. Production TestAdvance selects22:00 only after the normal08 samples. Ordinary Main tick supplies every Substation update; this driver never calls Substation Step/StepVisuals. Actual live instance-matrix hashes/bounds, material/light/audio gain readback sampled at3 and8 seconds. SetPowerFault(true) is an explicit incident fixture. Actual native eye-ray Pick/Walker OnUse measures/isolates/replaces one stock fuse/starts the real three-second feeder test. Low and Calm visual states measured, SC02 burst count must remain unchanged. While isolated, an explicitly declared case1/save-store metadata fixture enables ordinary WriteSave, a fresh disk reader and title Continue; no feeder state is injected. Four native PNGs require root review. Normal08 ramp eye(7885.5,2.14,526) deliberately differs from the old BEFORE PropsAt7890;526 view to clear its sign; this is not an exact matched-pose image comparison."));
+   auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("seconds"),Began>0?FPlatformTime::Seconds()-Began:0.);S47J::Set(O,TEXT("ordinaryContinues"),OrdinaryContinues);S47J::Set(O,TEXT("savedId"),WrittenId);O->SetArrayField(TEXT("checks"),Checks);O->SetArrayField(TEXT("samples"),Samples);O->SetArrayField(TEXT("flowStateSnapshots"),FlowStates);
+   S47J::Set(O,TEXT("method"),TEXT("Isolated Freeform case0. Explicit diner on-foot area/initial existing service-apron placement, calibrated CameraOverride normal08 ramp/fault22 fence fixtures. Production TestAdvance selects22:00 only after the normal08 samples. Ordinary Main tick supplies every Substation update; this driver never calls Substation Step/StepVisuals. Actual live instance-matrix hashes/bounds, material/light/audio gain readback sampled at3 and8 seconds. SetPowerFault(true) is an explicit incident fixture. Actual native eye-ray Pick/Walker OnUse measures/isolates/replaces one stock fuse/starts the real three-second feeder test. Low and Calm visual states measured, SC02 burst count must remain unchanged. While isolated, an explicitly declared case1/save-store metadata fixture enables ordinary WriteSave, a fresh disk reader and title Continue; no feeder state is injected. Four native PNGs require root review. Normal08 ramp eye(7885.5,2.14,526) deliberately differs from the old BEFORE PropsAt7890;526 view to clear its sign; this is not an exact matched-pose image comparison."));
    S47J::Set(O,TEXT("limits"),TEXT("Automated camera/initial foot fixtures; no natural journey, human input/listening acceptance, full Story fault regression, pixel brightness guarantee or full-game matrix. No private feeder stage, completed finding, age or Substation state injected. Max90 seconds; expected about45 seconds plus one ordinary Continue."));
    if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
    UE_LOG(LogTemp,Display,TEXT("S47 substation live %s: %s"),Good?TEXT("PASS"):TEXT("FAIL"),*Why);FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -51,6 +51,15 @@ namespace
   bool Check(bool Good,const FString& Text)
   {
    auto O=S47J::New();S47J::Set(O,TEXT("pass"),Good);S47J::Set(O,TEXT("check"),Text);Checks.Add(MakeShared<FJsonValueObject>(O));if(!Good)Finish(false,Text);return Good;
+  }
+  void StateSnapshot(const FString& Name)
+  {
+   auto* M=Main.Get();auto O=S47J::New();const FVector P=M->Player->Pos;
+   S47J::Set(O,TEXT("phase"),Name);S47J::Set(O,TEXT("mode"),M->Mode==US47Main::EMode::Play?TEXT("play"):M->Mode==US47Main::EMode::Title?TEXT("title"):TEXT("other"));S47J::Set(O,TEXT("isFreeform"),M->IsFreeform());S47J::Set(O,TEXT("area"),M->World->Area);S47J::Set(O,TEXT("webArea"),M->Web->Area());S47J::Set(O,TEXT("caseId"),M->Flow->CaseId);S47J::Set(O,TEXT("devRun"),M->Flow->bDevRun);S47J::Set(O,TEXT("starting"),M->Flow->bStarting);S47J::Set(O,TEXT("restoring"),M->Flow->bRestoringNow);
+   S47J::Set(O,TEXT("actualPos"),TArray<double>{P.X,P.Y,P.Z});S47J::Set(O,TEXT("savedPos"),TArray<double>{SavedFoot.X,SavedFoot.Y,SavedFoot.Z});S47J::Set(O,TEXT("actualPoseWalkable"),M->Player->Walkable(P.X,P.Z));S47J::Set(O,TEXT("savedPoseWalkable"),M->Player->Walkable(SavedFoot.X,SavedFoot.Z));S47J::Set(O,TEXT("poseDistance"),FVector::Dist(P,SavedFoot));
+   S47J::Set(O,TEXT("powerFault"),M->Freeform->PowerFault());S47J::Set(O,TEXT("feederStage"),M->Freeform->Field->FeederStage());S47J::Set(O,TEXT("feederIsolated"),M->Freeform->Field->FeederIsolated());S47J::Set(O,TEXT("fuses"),M->Freeform->InventoryCount(TEXT("fuse")));S47J::Set(O,TEXT("initialFuses"),InitialFuse);
+   FlowStates.Add(MakeShared<FJsonValueObject>(O));
+   FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/(Name+TEXT(".json"))));
   }
   FSnapshot Sample(const FString& Name)
   {
@@ -110,10 +119,13 @@ namespace
    {
     if(!Check(M->IsFreeform()&&M->Flow->CaseId==0&&M->Flow->bDevRun,TEXT("fresh isolated actual Freeform developer case0")))return;
     if(!Check(M->Flow->Quality==TEXT("low")&&M->Flow->Graphics.Effects==0,TEXT("required CLI -S47Quality=low selects actual Low effects profile")))return;
-    M->UI->Close(true);M->World->Enter(TEXT("road"));M->Flow->bCalmFlash=false;
-    const FVector At=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));M->Player->Place(At.X-1.4,At.Z,0);M->Player->SetActive(false);M->Player->bHeadMotion=false;
+    M->UI->Close(true);M->World->Enter(TEXT("diner"));M->Flow->bCalmFlash=false;
+    M->Player->Place(7885,525.8,0);M->Player->SetActive(false);M->Player->bHeadMotion=false;
+    InitialFuse=M->Freeform->InventoryCount(TEXT("fuse"));
+    StateSnapshot(TEXT("initial-existing-walkable-service-apron"));
+    if(!Check(M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z),TEXT("initial existing diner service-apron fixture is actually walkable")))return;
     InstallCamera(M,Self);
-    InitialFuse=M->Freeform->InventoryCount(TEXT("fuse"));ShortBursts=M->Substation->ArcCount();Next(2);return;
+    ShortBursts=M->Substation->ArcCount();Next(2);return;
    }
    if(Stage==90)
    {
@@ -159,7 +171,9 @@ namespace
      M->Flow->Saves=FS47SaveStore(Root/TEXT("SaveGames"));M->Flow->Saves.Init();M->Flow->CaseId=1;M->Flow->bDevRun=false;M->Flow->Saves.SetActive(1);SaveQuarantined=true;
     }
     if(!M->Flow->SaveBlock().IsEmpty()){if(Now-Since>8)Finish(false,TEXT("ordinary isolated save boundary refused: ")+M->Flow->SaveBlock());return;}
-    SavedFoot=M->Player->Pos;FString Error;const auto Written=M->Flow->WriteSave(TEXT("manual"),0,Error);
+    SavedFoot=M->Player->Pos;StateSnapshot(TEXT("before-isolated-write-save"));
+    if(!Check(M->Player->Walkable(SavedFoot.X,SavedFoot.Z),TEXT("saved isolated service pose passes the ordinary walkability rule")))return;
+    FString Error;const auto Written=M->Flow->WriteSave(TEXT("manual"),0,Error);
     FS47SaveStore Reader(M->Flow->Saves.Dir);Reader.Init();const auto Choice=Reader.ContinueSave();const auto Disk=Choice?Reader.Load(Choice->Id):nullptr;
     if(!Check(Written&&Choice&&Disk&&Choice->Id==Written->Id&&S47J::Str(Disk,TEXT("sessionMode"))==TEXT("freeform"),TEXT("ordinary WriteSave and fresh reader select the same actual isolated Freeform case: ")+Error))return;
     const auto Free=S47J::Obj(Disk,TEXT("freeform")),Field=S47J::Obj(Free,TEXT("field"));
@@ -171,7 +185,8 @@ namespace
    if(Stage==92)
    {
     if(Now-Since<1.5)return;
-    if(!Check(M->IsFreeform()&&M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->World->Area==TEXT("road")&&FVector::Dist(M->Player->Pos,SavedFoot)<.03&&M->Freeform->PowerFault()&&M->Freeform->Field->FeederStage()==3&&M->Freeform->Field->FeederIsolated()&&M->Freeform->InventoryCount(TEXT("fuse"))==InitialFuse,TEXT("ordinary title Continue restores actual isolated road pose and unspent inventory")))return;
+    StateSnapshot(TEXT("after-ordinary-continue-before-assertion"));
+    if(!Check(M->IsFreeform()&&M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->World->Area==TEXT("diner")&&M->Player->Walkable(M->Player->Pos.X,M->Player->Pos.Z)&&FVector::Dist(M->Player->Pos,SavedFoot)<.03&&M->Freeform->PowerFault()&&M->Freeform->Field->FeederStage()==3&&M->Freeform->Field->FeederIsolated()&&M->Freeform->InventoryCount(TEXT("fuse"))==InitialFuse,TEXT("ordinary title Continue restores actual isolated walkable diner-service pose and unspent inventory")))return;
     ++OrdinaryContinues;InstallCamera(M,Self);M->Player->SetActive(false);Next(93);return;
    }
    if(Stage==93)
