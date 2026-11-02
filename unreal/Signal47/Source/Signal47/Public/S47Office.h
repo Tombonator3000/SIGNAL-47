@@ -28,6 +28,7 @@ public:
  bool Contains(const FVector& P) const;
  bool InThreshold(const FVector& P, double Radius = 0) const;
  bool RestoreDoorwayAt(const FVector& P, double Radius);
+ // Legacy layout migration, or bounded local recovery of a saved chair overlap.
  bool MigrateRestoredPose(FVector& P, double Radius);
  bool Use(const FString& Id);
  FS47Obj Object(const FString& Id) const;
@@ -55,6 +56,7 @@ private:
  bool Here() const;
  bool InReach(const FString& Id) const;
  bool AccessAvailable() const;
+ bool RecoverRestoredChairPose(FVector& P, double Radius);
  void Apply();
  void SyncFacts();
  bool OpenDocument(const FString& Id);

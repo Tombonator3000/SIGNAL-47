@@ -33,6 +33,43 @@ namespace
 		const double Ox=FMath::Max(0.0,FMath::Abs(Lx)-B.HalfW), Oz=FMath::Max(0.0,FMath::Abs(Lz)-B.HalfL);
 		return Ox*Ox+Oz*Oz < Radius*Radius;
 	}
+	// First interior hit of a segment against the same rounded vehicle box as
+	// InVehicle. Two strips plus the four corner discs are its exact expansion
+	// by the player's radius; an enclosing AABB would block open space at turns.
+	double VehicleEntry(const AS47Walker::FTruckBox& B, double X, double Z, double EndX, double EndZ, double Radius)
+	{
+		if (InVehicle(B,X,Z,Radius)) return 1.; // retain escape from an already overlapping parked car
+		const double C=FMath::Cos(B.Heading), S=FMath::Sin(B.Heading);
+		const double Px=(X-B.X)*C-(Z-B.Z)*S, Pz=(X-B.X)*S+(Z-B.Z)*C;
+		const double Dx=(EndX-X)*C-(EndZ-Z)*S, Dz=(EndX-X)*S+(EndZ-Z)*C;
+		const double Length2=Dx*Dx+Dz*Dz;
+		if (Length2<1e-24) return 1.;
+		double First=1.;
+		auto Strip=[&](double HalfX,double HalfZ)
+		{
+			double Enter=0.,Leave=1.;
+			auto Slab=[&](double P,double D,double Half)
+			{
+				if (FMath::Abs(D)<1e-12) return P>-Half&&P<Half;
+				const double A=(-Half-P)/D, BTime=(Half-P)/D;
+				Enter=FMath::Max(Enter,FMath::Min(A,BTime));
+				Leave=FMath::Min(Leave,FMath::Max(A,BTime));
+				return Enter<Leave;
+			};
+			if (Slab(Px,Dx,HalfX)&&Slab(Pz,Dz,HalfZ)&&Leave>0.&&Enter<1.) First=FMath::Min(First,FMath::Max(0.,Enter));
+		};
+		Strip(B.HalfW,B.HalfL+Radius); Strip(B.HalfW+Radius,B.HalfL);
+		for (int32 SideX : {-1,1}) for (int32 SideZ : {-1,1})
+		{
+			const double Ox=Px-SideX*B.HalfW, Oz=Pz-SideZ*B.HalfL;
+			const double Dot=Ox*Dx+Oz*Dz, Cross=Ox*Dz-Oz*Dx;
+			const double Disc=Length2*Radius*Radius-Cross*Cross;
+			if (Disc<=0.) continue; // touching a rounded corner without entering remains walkable
+			const double Root=FMath::Sqrt(Disc), Enter=(-Dot-Root)/Length2, Leave=(-Dot+Root)/Length2;
+			if (Leave>0.&&Enter<1.) First=FMath::Min(First,FMath::Max(0.,Enter));
+		}
+		return First;
+	}
 }
 
 AS47Walker::AS47Walker()
@@ -97,12 +134,18 @@ bool AS47Walker::Walkable(double X, double Z) const
 
 void AS47Walker::Resolve(bool bX, double Old)
 {
-	// Player.resolve: slide along the edge of the zone stood in, then push out of colliders
+	// Unlike the original web push-out loop, clip only the requested axis segment.
+	// Sequential minimum translations could push through an earlier obstacle and
+	// add movement the player never requested, depending on collider order.
 	if (!Web.IsValid()) return;
-	const double R = Radius;
-	if (!Walkable(Pos.X, Pos.Z))
+	const double R = Radius, E = 1e-8;
+	double& Axis=bX?Pos.X:Pos.Z;
+	const double Requested=Axis;
+	if (Requested==Old) return;
+	auto ClipZone=[&]()
 	{
-		const double Want = bX ? Pos.X : Pos.Z;
+		if (Walkable(Pos.X,Pos.Z)) return;
+		const double Want=Axis;
 		double Best = Old;
 		for (const FS47Rect& B : Web->Zones())
 		{
@@ -112,45 +155,58 @@ void AS47Walker::Resolve(bool bX, double Old)
 			const double V = bX ? FMath::Clamp(Want, B.MinX + R, B.MaxX - R) : FMath::Clamp(Want, B.MinZ + R, B.MaxZ - R);
 			if (FMath::Abs(V - Want) < FMath::Abs(Best - Want)) Best = V;
 		}
-		if (bX) Pos.X = Best; else Pos.Z = Best;
-	}
+		// The zone tolerance must never move farther than this requested segment.
+		Axis=FMath::Clamp(Best,FMath::Min(Old,Want),FMath::Max(Old,Want));
+	};
+	ClipZone();
 	// (the truck here as it is turned, not the box round it)
 	const bool bTruck = TruckBox && TruckBox->Area == Web->Area();
 	const bool bPersonal = PersonalCarBox && PersonalCarBox->Area == Web->Area();
+	const double Want=Axis, Other=bX?Pos.Z:Pos.X;
+	double Limit=Want;
 	for (const FS47Rect& C : Web->Colliders())
 	{
 		if (bTruck && C.Id == TEXT("truck")) continue;
 		if (bPersonal && C.Id == TEXT("personalCar")) continue;
 		if (!C.bEnabled) continue; // (S47Props unblock: a building walked into now)
-		if (Pos.X + R <= C.MinX || Pos.X - R >= C.MaxX || Pos.Z + R <= C.MinZ || Pos.Z - R >= C.MaxZ) continue;
-		if (bX)
+		const double CrossMin=(bX?C.MinZ:C.MinX)-R, CrossMax=(bX?C.MaxZ:C.MaxX)+R;
+		if (Other<=CrossMin+E||Other>=CrossMax-E) continue;
+		const double Low=(bX?C.MinX:C.MinZ)-R, High=(bX?C.MaxX:C.MaxZ)+R;
+		if (Want>Old)
 		{
-			const double Left = Pos.X + R - C.MinX, Right = C.MaxX - (Pos.X - R);
-			Pos.X += Left < Right ? -Left : Right;
+			if (Old<=Low+E&&Want>Low) Limit=FMath::Min(Limit,FMath::Max(Old,Low));
+			else if (Old>Low+E&&Old<High-E&&Old-Low<High-Old-E) Limit=Old;
 		}
-		else
+		else if (Want<Old)
 		{
-			const double Front = Pos.Z + R - C.MinZ, Back = C.MaxZ - (Pos.Z - R);
-			Pos.Z += Front < Back ? -Front : Back;
-		}
-	}
-	// the truck: this axis's step goes back where it would go into it (not when it was in it already)
-	if (bTruck && InTruck(Pos.X, Pos.Z))
-	{
-		double& V = bX ? Pos.X : Pos.Z;
-		const double Was = V;
-		V = Old;
-		if (InTruck(Pos.X, Pos.Z)) V = Was;
-	}
-	if (bPersonal)
-	{
-		if (InVehicle(*PersonalCarBox, Pos.X, Pos.Z, Radius))
-		{
-			double& V = bX ? Pos.X : Pos.Z;
-			const double Was = V; V = Old;
-			if (InVehicle(*PersonalCarBox, Pos.X, Pos.Z, Radius)) V = Was;
+			if (Old>=High-E&&Want<High) Limit=FMath::Max(Limit,FMath::Min(Old,High));
+			else if (Old>Low+E&&Old<High-E&&High-Old<Old-Low-E) Limit=Old;
 		}
 	}
+	// Overlapping starts are never teleported: only a requested step towards
+	// the nearer exit on this axis is admitted. Office save recovery handles old
+	// positions inside furniture; ordinary motion does not rewrite the case.
+	Axis=Limit;
+	const double StartX=bX?Old:Pos.X, StartZ=bX?Pos.Z:Old;
+	double First=1.;
+	if (bTruck) First=FMath::Min(First,VehicleEntry(*TruckBox,StartX,StartZ,Pos.X,Pos.Z,R));
+	if (bPersonal) First=FMath::Min(First,VehicleEntry(*PersonalCarBox,StartX,StartZ,Pos.X,Pos.Z,R));
+	// Keep a contact outside despite the rotated quadratic's final rounding;
+	// otherwise the next frame could mistake it for an old overlapping save.
+	if (First<1.&&Limit!=Old) First=FMath::Max(0.,First-E/FMath::Abs(Limit-Old));
+	Axis=Old+(Limit-Old)*First;
+	// A valid destination beyond a doorway does not make every intermediate
+	// point walkable. A collider can stop us in a gap between enabled zones;
+	// clip back within this already swept segment, never past a cleared obstacle.
+	ClipZone();
+}
+
+void AS47Walker::MoveBy(double DeltaX,double DeltaZ)
+{
+	if (!FMath::IsFinite(DeltaX)||!FMath::IsFinite(DeltaZ)) return;
+	const FVector Before=Pos;
+	Pos.X+=DeltaX; Resolve(true,Before.X);
+	Pos.Z+=DeltaZ; Resolve(false,Before.Z);
 }
 
 bool AS47Walker::InTruck(double X, double Z) const
@@ -238,8 +294,7 @@ void AS47Walker::Tick(float DeltaSeconds)
 		const double S = FMath::Sin(Yaw), C = FMath::Cos(Yaw);
 		const double Vx = (Mx * C + Mz * S) * Sp * Dt, Vz = (-Mx * S + Mz * C) * Sp * Dt;
 		const FVector Before = Pos;
-		Pos.X += Vx; Resolve(true, Before.X);
-		Pos.Z += Vz; Resolve(false, Before.Z);
+		MoveBy(Vx,Vz);
 		const double Moved = FMath::Sqrt(FMath::Square(Pos.X - Before.X) + FMath::Square(Pos.Z - Before.Z));
 		// (no bob and no footsteps in the air)
 		if (Moved > 0.0005 && !bAir)

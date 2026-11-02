@@ -174,7 +174,7 @@ struct FS47Office::FVisual
  TArray<TPair<FS47Obj, FVector>> DrawerParts;
  TArray<FS47Obj> KeyParts;
  TWeakObjectPtr<URectLightComponent> Light, TaskLight, DeskBounce, WindowLight;
- bool bRecoverLegacyPose = false;
+ bool bRecoverLegacyPose = false, bRestoredCurrentLayout = false;
  bool bMigrationFailed = false;
  bool bOwnedPreparing = false, bOwnedFootprint = false;
  double OwnedRetryWait = 0;
@@ -524,6 +524,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
 {
  Visual->bRecoverLegacyPose = Saved.IsValid() && S47J::Num(Saved, TEXT("interiorLayout"), 1) < 2;
  Visual->bMigrationFailed = false;
+ Visual->bRestoredCurrentLayout = false;
  bRequired = bNewNight; bKey = bUnlocked = bEverOpened = bEntered = false;
  bDoorInspected = bDoorTarget = bDrawerTarget = false;
  bDeskSeen = bIndexRead = bClippingsRead = bNoteRead = bContactRead = bFieldSheet = bDeparted = false;
@@ -532,6 +533,7 @@ void FS47Office::Begin(const S47J::FObj& Saved, bool bNewNight)
  double Version = 0;
  if (Saved.IsValid() && Saved->HasTypedField<EJson::Number>(TEXT("v")) && Saved->TryGetNumberField(TEXT("v"), Version) && Version == 1.)
  {
+  Visual->bRestoredCurrentLayout = S47J::Num(Saved, TEXT("interiorLayout"), 1) == 2.;
   // Only explicitly versioned new-night cases acquire this departure requirement.
   // Missing/unknown route versions preserve optional access to the room in old cases.
   double RouteVersion = 0;
@@ -897,9 +899,74 @@ void FS47Office::Apply()
  { Rect.MinX = FMath::Min(HingeX, EndX) - .035; Rect.MaxX = FMath::Max(HingeX, EndX) + .035; Rect.MinZ = FMath::Min(HingeZ, EndZ) - .035; Rect.MaxZ = FMath::Max(HingeZ, EndZ) + .035; }
 }
 
+bool FS47Office::RecoverRestoredChairPose(FVector& P, double Radius)
+{
+ // The same physical key/door/entry facts are used in Story and Freeform.
+ // This is only an incoming current-layout save, never a general unstuck action.
+ if (!Visual->bRestoredCurrentLayout || !bEntered || !bEverOpened || !WasUnlocked() ||
+     M->World->Area != TEXT("saro") || M->Web->Area() != TEXT("saro") ||
+     !FMath::IsFinite(P.X) || !FMath::IsFinite(P.Z) || !FMath::IsFinite(Radius) || Radius <= 0) return false;
+ const FS47Rect* Room = nullptr; const FS47Rect* Chair = nullptr;
+ for (const FS47Rect& Z : M->Web->Zones()) if (Z.bEnabled && Z.Id == TEXT("office:roomZone")) Room = &Z;
+ for (const FS47Rect& C : M->Web->Colliders()) if (C.bEnabled && C.Id == TEXT("office:chairFoot")) Chair = &C;
+ if (!Room || !Chair) return false;
+ auto Overlaps = [Radius](double X, double Z, const FS47Rect& C)
+ {
+  // Match Walker contact tolerance: a saved point on a face remains valid.
+  constexpr double E = 1e-8;
+  return C.bEnabled && X + Radius > C.MinX + E && X - Radius < C.MaxX - E &&
+         Z + Radius > C.MinZ + E && Z - Radius < C.MaxZ - E;
+ };
+ // A capsule caught against the nearest wall can have its centre just outside
+ // the room. It must still touch this room and be within the chair's own vicinity.
+ if (P.X + Radius < Room->MinX || P.X - Radius > Room->MaxX ||
+     P.Z + Radius < Room->MinZ || P.Z - Radius > Room->MaxZ) return false;
+ const double NearX = FMath::Clamp(P.X, Chair->MinX, Chair->MaxX), NearZ = FMath::Clamp(P.Z, Chair->MinZ, Chair->MaxZ);
+ if (FMath::Square(P.X-NearX) + FMath::Square(P.Z-NearZ) > FMath::Square(Radius + .35)) return false;
+ bool bChairObstruction = false;
+ for (const FS47Rect& C : M->Web->Colliders())
+  if ((C.Id == TEXT("office:chairFoot") || C.Id == TEXT("office:deskFoot") ||
+       C.Id == TEXT("office:researchWall") || C.Id == TEXT("office:eastWall")) && Overlaps(P.X, P.Z, C)) bChairObstruction = true;
+ if (!bChairObstruction) return false;
+ constexpr double Clearance = .002, MaxRecovery = 1.25;
+ const double X0 = Room->MinX + Radius + Clearance, X1 = Room->MaxX - Radius - Clearance;
+ const double Z0 = Room->MinZ + Radius + Clearance, Z1 = Room->MaxZ - Radius - Clearance;
+ if (X0 > X1 || Z0 > Z1) return false;
+ auto Clear = [&](double X, double Z)
+ {
+  if (X < X0 || X > X1 || Z < Z0 || Z > Z1 || !M->Player->Walkable(X, Z)) return false;
+  for (const FS47Rect& C : M->Web->Colliders()) if (Overlaps(X, Z, C)) return false;
+  return true;
+ };
+ // For the actual axis-aligned collider union, a nearest free point is on an
+ // expanded face or its intersection with another face. Use those measured
+ // boundaries, not a room-wide grid or an arbitrary fallback spawn.
+ TArray<double> Xs = {FMath::Clamp(P.X, X0, X1), X0, X1};
+ TArray<double> Zs = {FMath::Clamp(P.Z, Z0, Z1), Z0, Z1};
+ for (const FS47Rect& C : M->Web->Colliders())
+ {
+  if (!C.bEnabled || C.MaxX + Radius < P.X-MaxRecovery || C.MinX - Radius > P.X+MaxRecovery ||
+      C.MaxZ + Radius < P.Z-MaxRecovery || C.MinZ - Radius > P.Z+MaxRecovery) continue;
+  for (double X : {C.MinX-Radius-Clearance, C.MaxX+Radius+Clearance}) if (X >= X0 && X <= X1) Xs.AddUnique(X);
+  for (double Z : {C.MinZ-Radius-Clearance, C.MaxZ+Radius+Clearance}) if (Z >= Z0 && Z <= Z1) Zs.AddUnique(Z);
+ }
+ Xs.Sort(); Zs.Sort();
+ double Best = TNumericLimits<double>::Max(); FVector At = P;
+ for (double X : Xs) for (double Z : Zs)
+ {
+  const double Distance = FMath::Square(X-P.X) + FMath::Square(Z-P.Z);
+  if (Distance > MaxRecovery*MaxRecovery || Distance >= Best || !Clear(X, Z)) continue;
+  Best = Distance; At.X = X; At.Z = Z;
+ }
+ if (Best == TNumericLimits<double>::Max()) return false;
+ UE_LOG(LogS47Office, Display, TEXT("S47: restored current-layout chair overlap recovered %.3f %.3f -> %.3f %.3f; office facts and view preserved"), P.X, P.Z, At.X, At.Z);
+ P = At; return true;
+}
+
 bool FS47Office::MigrateRestoredPose(FVector& P, double Radius)
 {
- if (!Visual->bRecoverLegacyPose || !bReady || !M || !M->Player || !M->World || !M->Web) return false;
+ if (!bReady || !M || !M->Player || !M->World || !M->Web) return false;
+ if (!Visual->bRecoverLegacyPose) return RecoverRestoredChairPose(P, Radius);
  Visual->bRecoverLegacyPose = false;
  const FVector Before = P;
  if (M->World->Area != TEXT("saro") || !InBox(Before, -1.1, 2.05, -2, 4, 6.0, 10.31)) return false;
