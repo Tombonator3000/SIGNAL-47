@@ -37,7 +37,7 @@ private:
  TMap<int32,TWeakObjectPtr<USceneComponent>> ProtectedComponents;
  bool bInitialAnchorsPreserved=false;
  int32 ExpectedPartCount=0;
- struct FGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FLinearColor Base; int32 Slot; float Reference; };
+ struct FGlow { TWeakObjectPtr<UMaterialInstanceDynamic> Mid; FLinearColor Base; int32 Slot; float Reference; int32 DaySlot=INDEX_NONE; bool SpatialDaylight=false; };
  TArray<FGlow> Glows;
  struct FFloor { double MinX,MaxX,MinZ,MaxZ,Y; };
  static TArray<FFloor> Floors;

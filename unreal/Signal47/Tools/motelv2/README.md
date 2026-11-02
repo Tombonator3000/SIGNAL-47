@@ -61,3 +61,9 @@ krever faktisk kjøring; det er ikke underforstått av syntakskontroll eller eks
 Første forsøk med egne RT-proxyinnstillinger var utilstrekkelig: Unreal 5.8 bygger disse bare innenfor Nanite-løypen. Disse modellene bruker ikke Nanite. At innstillingen var lagret, beviste derfor ikke at den påvirket den tegnede geometrien. De mislykkede spillprøvene er bevart som diagnostikk.
 
 `repair_water.py` korrigerer bare eksisterende `M_MotelV2_PoolWater`: ensidig gjennomskinnelig overflate med den oppgitte vannfargen som tint på atlaset. Ruhet, normaler, opacity og geometri beholdes. Begge skript bruker `S47_MOTEL_SOURCE` og `S47_MOTEL_REPORT`; LOD-skriptet bruker også `S47_MOTEL_TRIMS`. Etter endringer kjøres `verify_assets.py` i en ny Unreal-prosess og `stage_assembly.py` før pakking. Native PASS erstatter ikke visuell kontroll i det pakkede spillet.
+
+## Presist dagslys på blandet Office-glød
+
+`prepare_office_daylight.py` kloner bare `M_MotelV2_GlowOffice` og omslutter eksisterende emissive-utgang med lokal X-maske. Faktisk 31. oktober-FBX plasserer utvendig lightbox ved X268,85–270,15cm og innvendig takpanel ved X9,50–70,50cm; grensen200cm skiller dem i alle fire native LOD-er. Unreal5.8 bruker `MaterialExpressionLocalPosition`. Mesh, UV, normaler og originalmaterialet endres ikke. Root kjører verktøyet sekvensielt under guard; `S47_LIGHT01_REPORT` får resultatet. Shader-/lagringskontroll erstatter ikke faktisk GPU-bildekontroll.
+
+`-S47ExteriorLightTest -UserDir=/tmp/S47-exterior-light-<navn>` tar seks eksplisitte dag-/nattkamerabilder og kontrollerer materialdrivere. Den bruker CameraOverride og klokkefixtures; den er ikke en spillerreise. Editor kontrollerer originalmaterialets bytehash, mens kokt bygg bare kontrollerer ressursidentitet og viser til kildekvitteringen.

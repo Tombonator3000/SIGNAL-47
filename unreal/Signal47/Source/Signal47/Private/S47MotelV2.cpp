@@ -228,9 +228,21 @@ TSharedPtr<FS47MotelV2> FS47MotelV2::Build(AS47Web* W)
   C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,Glass?ECR_Ignore:ECR_Block);C->SetCastShadow(!Glass);C->RegisterComponent();
   C->SetWorldLocation(S47Three::ToUE(P.At));C->SetWorldRotation(FRotator::ZeroRotator);W->AdoptNode(C,P.Parent,TEXT("motel-v2:")+P.Name);F->Parts.Add(C);
   if(P.Name==TEXT("SM_Sierra_GlowSign"))PhotoSignComponent=C;
-  const int32 Slot=P.Name.Contains(TEXT("GlowRoom06"))?6:P.Name.Contains(TEXT("GlowOffice"))?0:P.Name.Contains(TEXT("GlowSign"))?8:INDEX_NONE;
-  if(Slot!=INDEX_NONE)for(int32 K=0;K<C->GetNumMaterials();++K)if(auto* Mid=C->CreateDynamicMaterialInstance(K))
-   F->Glows.Add({Mid,Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor")),Slot,Slot==6?4.f:Slot==0?6.f:9.f});
+  const bool Office=P.Name==TEXT("SM_Sierra_GlowOffice"),Exterior=P.Name==TEXT("SM_Sierra_GlowExterior"),Room06=P.Name==TEXT("SM_Sierra_GlowRoom06"),Sign=P.Name==TEXT("SM_Sierra_GlowSign");
+  const int32 Slot=Room06?6:Office?0:Sign?8:INDEX_NONE,DaySlot=Room06?6:Sign?8:2;
+  if(Office||Exterior||Room06||Sign)for(int32 K=0;K<C->GetNumMaterials();++K)
+  {
+   bool Spatial=false;
+   // This exact material is mixed: localX>200cm is the exterior sign, not the ceiling.
+   if(Office&&K==0&&C->GetMaterial(K)&&C->GetMaterial(K)->GetName()==TEXT("M_MotelV2_GlowOffice"))
+   {
+    auto* DayMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/MotelV2/Materials/M_MotelV2_GlowOfficeDaylight.M_MotelV2_GlowOfficeDaylight"));float Mask=0;FLinearColor Base;
+    if(DayMaterial&&DayMaterial->GetScalarParameterValue(FMaterialParameterInfo(TEXT("ExteriorDaylightMask")),Mask)&&DayMaterial->GetVectorParameterValue(FMaterialParameterInfo(TEXT("EmissiveFactor")),Base))
+    {C->SetMaterial(K,DayMaterial);Spatial=true;}
+    else UE_LOG(LogS47MotelV2,Warning,TEXT("S47 LIGHT01: verified mixed Office daylight material unavailable; original ceiling/sign material retained"));
+   }
+   if(auto* Mid=C->CreateDynamicMaterialInstance(K))F->Glows.Add({Mid,Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor")),Slot,Room06?4.f:Office?6.f:Sign?9.f:1.f,DaySlot,Spatial});
+  }
  }
  // Playtest: natural oiled timber over the seven static painted leaves. Hardware and frames stay.
  // The live Room6 leaf retains its movement/interaction and receives the same restrained brown tint.
@@ -319,7 +331,13 @@ void FS47MotelV2::Update()
  for(const auto& P:RetiredSignGlows)if(auto* G=W->Glow(P.X)){G->SetSize(P.Y,0);G->SetColor(P.Y,FLinearColor::Black);}
  // Keep the historical flicker width as the new sign's emission feed, but remove the old coloured light.
  for(const auto& P:RetiredSignPools)if(!W->FloodCol(P.X,P.Y).Equals(FLinearColor::Black))W->SetFloodColor(P.X,P.Y,FLinearColor::Black);
- for(const auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*(FMath::Clamp(W->FloodPos(Set,G.Slot).A/G.Reference,0.f,1.f)*(G.Slot==8?2.6f*W->ExteriorDaylightMask(Set,8):1.f)));
+ for(const auto& G:Glows)if(auto* Mid=G.Mid.Get())
+ {
+  const float Driver=G.Slot==INDEX_NONE?1.f:FMath::Clamp(W->FloodPos(Set,G.Slot).A/G.Reference,0.f,1.f);
+  const float Day=W->ExteriorDaylightMask(Set,G.DaySlot);
+  Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*(Driver*(G.Slot==8?2.6f:1.f)*(G.Slot==0?1.f:Day)));
+  if(G.SpatialDaylight)Mid->SetScalarParameterValue(TEXT("ExteriorDaylightMask"),Day);
+ }
 }
 bool FS47MotelV2::Audit(TArray<FString>& Lines) const
 {

@@ -27,6 +27,19 @@ namespace
  FVector Vec(const TArray<TSharedPtr<FJsonValue>>& A){return A.Num()==3?FVector(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber()):FVector::ZeroVector;}
  int32 Tris(UStaticMesh* M){return M&&M->GetRenderData()&&M->GetRenderData()->LODResources.Num()?M->GetNumTriangles(0):-1;}
  void Retire(UStaticMeshComponent* C){C->SetVisibility(false,false);C->SetHiddenInGame(true,false);C->SetCastShadow(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+ // Reviewed active FBX provenance, not a family-wide Glow-name heuristic.
+ bool ExteriorSlot(const FString& Part,int32 Slot,const FString& Material)
+ {
+  struct FEntry{const TCHAR* Part;int32 Slot;const TCHAR* Material;};
+  const FEntry Entries[]={
+   {TEXT("SM_Town_Laundry_Fixtures"),8,TEXT("M_Town_WarmGlow")},
+   {TEXT("SM_Town_Feed_Fixtures"),7,TEXT("M_Town_WarmGlow")},
+   {TEXT("SM_Town_Church_Fixtures"),12,TEXT("M_Town_ChurchPorchGlow")},
+   {TEXT("SM_Town_Cinema_Fixtures"),6,TEXT("M_Town_CinemaBulb")},
+   {TEXT("SM_Town_Cinema_Fixtures"),7,TEXT("M_Town_CinemaReaderGlow")},
+   {TEXT("SM_Town_Cinema_Fixtures"),8,TEXT("M_Town_CinemaNeonRed")}};
+  for(const auto& E:Entries)if(Part==E.Part&&Slot==E.Slot&&Material==E.Material)return true;return false;
+ }
 }
 TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
 {
@@ -98,7 +111,7 @@ TSharedPtr<FS47TownBuildings> FS47TownBuildings::Build(AS47Web* W)
    UMaterialInterface* Mat=Comp->GetMaterial(K);FLinearColor Emissive=FLinearColor::Black;
    const bool Lit=Mat&&Mat->GetVectorParameterValue(FHashedMaterialParameterInfo(TEXT("EmissiveFactor")),Emissive)&&(Emissive.R+Emissive.G+Emissive.B)>0;
    if(!Mat||(!Mat->GetName().EndsWith(TEXT("Glow"))&&!Lit))continue;
-   if(auto* Mid=Comp->CreateDynamicMaterialInstance(K)){const FLinearColor Base=Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor"));F->Glows.Add({Mid,R.Family,Base});}
+   if(auto* Mid=Comp->CreateDynamicMaterialInstance(K)){const FLinearColor Base=Mid->K2_GetVectorParameterValue(TEXT("EmissiveFactor"));F->Glows.Add({Mid,R.Family,Base,ExteriorSlot(R.Name,K,Mat->GetName())});}
   }
  }
  // Commit only after every new part and every predecessor was validated.
@@ -132,7 +145,7 @@ void FS47TownBuildings::Update()
  auto Level=[W](const FString& Family){if(Family==TEXT("Sheriff"))return FMath::Clamp(double(W->FloodPos(W->FloodSet(TEXT("town")),10).A)/4.5,0.,1.);if(Family==TEXT("Laundry"))return FMath::Clamp(double(W->FloodPos(W->FloodSet(TEXT("town")),11).A)/6.,0.,1.);return Family==TEXT("Feed")||Family==TEXT("Cinema")||Family==TEXT("Church")?0.:1.;};
  for(int32 I:Retired)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetHiddenInGame(true,false);C->SetVisibility(false,false);}
  if(Signal)Signal->Update();
- for(auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*float(Level(G.Family)));
+ for(auto& G:Glows)if(auto* Mid=G.Mid.Get())Mid->SetVectorParameterValue(TEXT("EmissiveFactor"),G.Base*float(Level(G.Family))*(G.Exterior?W->ExteriorDaylightMask(W->FloodSet(TEXT("town")),1):1.f));
  for(auto& L:Lamps)if(auto* P=L.Light.Get()){const float V=FS47Obj(W,L.Parent).Shown()?float(Level(L.Family)*L.Lumens):0;P->SetIntensity(V);P->SetVisibility(V>1);}
 }
 bool FS47TownBuildings::Audit(TArray<FString>& Lines) const
