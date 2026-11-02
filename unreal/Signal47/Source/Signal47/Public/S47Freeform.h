@@ -94,6 +94,7 @@ public:
  bool Consume(const FString& Id);
  void SetPowerFault(bool bFault);
  bool PowerFault() const { return bPowerFault; }
+ bool HasPowerForReactiveLight() const { return HasPower(); }
  void SetAnomaly(bool bValue);
  bool Anomaly() const { return bAnomaly; }
  void SetPhenomenon(const FString& Id) { PhenomenonId=Id; Changed(); }
