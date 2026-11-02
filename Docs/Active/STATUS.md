@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Ny Linux-nedlasting 2. november
+
+[PR344](https://github.com/Tombonator3000/SIGNAL-47/pull/344) klargjør det verifiserte bfa1c26d-bygget med Play.sh, programmeny-/skrivebordssnarvei og automatisk descriptor-buffer for RTX 50. Andre GPU-er beholder standardvalget. Tolv startertestgrupper, 112 pakkede scenarioer, nattkontrakt i editor (106 kontroller / åtte restores) og oppstart fra de tre faktiske ZIP-arkivene består. Ny mottakerprøve på RTX 5090 gjenstår; tidligere testpakke ble bekreftet startet. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/LINUX_RELEASE_2026-11-02.md).
+
+Neste prioritet bestemt av Tom: ARRAY-03 skal bruke det eksisterende S-03-kabelskapet til reparasjon og fjerne den ekstra servicekonstruksjonen. Deretter fortsetter prioritert TODO til Tom stopper arbeidet.
+
 ## Nattskiftet 1. til 2. november er avsluttet
 
 Sluttkontroll 2. november kl. 08:01 CET. Sju nattoppdateringer er installert; gjeldende spillversjon er `bfa1c26d` fra kl. 07:03. Siste pakke består 1997 selvtester og installert Fortsett. Alle 164 personlige Saved-elementer er bevart.
