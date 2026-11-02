@@ -25,7 +25,7 @@ def plan(path):
     fleet.require({p['name']for p in model['parts']}==PARTS,
                   'Cabin import must contain exactly the seven new derivative meshes')
     for row in model['materials']:
-        fleet.require(row['name'].startswith('M_JeepInterior_') or row['name'].endswith('_CabTrim'),
+        fleet.require(row['name'].startswith(('M_JeepInterior_','MI_JeepMirrorGlass_')) or row['name'].endswith('_CabTrim'),
                       'Original fallback material must not be overwritten',row['name'])
     anchors_path=Path(model['root'])/'anchors.json'
     fleet.require(anchors_path.is_file(),'Missing measured cabin anchors')

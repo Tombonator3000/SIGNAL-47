@@ -1916,6 +1916,12 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 		if (C && C->Input) In = C->Input(Dt);
 		else if (Autopilot) In = AutoInput(Dt);
 		else if (TestInput) In = TestInput();
+		// the fuller handling only for the player's own hands on the wheel (not in Drive.ts; the
+		// autopilot, tests and chapter input drive as the web version does)
+		const bool bOwnHands = !(C && C->Input) && !Autopilot && !TestInput;
+		L->Drive->bHandling = bOwnHands && S47Drive::HandlingOn();
+		// a stick: finer near the centre, full lock at the end (keys give -1, 0 or 1 and are unchanged)
+		if (L->Drive->bHandling && S47Gamepad::UsingGamepad()) In.Steer = FMath::Sign(In.Steer) * (0.4 * FMath::Abs(In.Steer) + 0.6 * FMath::Square(In.Steer));
 		L->Drive->bCameraMotion = !M->Player || M->Player->bHeadMotion;
 		L->Drive->Update(Dt, In, LookIn);
 		TripStep(Dt);
@@ -1945,6 +1951,8 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	// a camera that has left the cab sees the whole truck in this very frame
 	N->Truck->ViewFrom(Out.Eye);
 	if (bCommuteVehicle) N->Truck->SetPersonalVehicle(true);
+	// Unreal only: the Jeep's live mirrors, from the eye as it is in this frame (S47Mirrors)
+	if (FS47Mirrors* Mirrors = N->Truck->Mirrors()) Mirrors->Step(*N->Truck, bDriving, Out.Eye, S47Three::Euler(Out.Pitch, Out.Yaw, Out.Roll, TEXT("YXZ")));
 	const bool bView = bDriving || bCamera;
 	if (bView) { LastView = Out; bHaveView = true; }
 	// main.ts: in the cab the prompt is the key, the radio or the way out

@@ -80,6 +80,15 @@ FString US47Inter::Pick(const FVector& EyeUE, const FVector& DirUE, double MaxDi
 		if (Id.IsEmpty() || IsLook(Id)) continue;
 		const double R = RangeOf(Id);
 		if (H.Distance / 100.0 > (R > 0 ? R : MaxDist)) return FString();
+		// The personal wagon's boarding proxy encloses its driver door. While that leaf stands
+		// open and the ray actually reaches it, "Close the door" wins; elsewhere boarding stays.
+		if (Id == TEXT("personalVehicle") || Id == TEXT("truck"))
+			for (const FHitResult& DoorHit : Hits)
+				if (Web->UsableAt(DoorHit.GetComponent()) == TEXT("evening:personalDoor"))
+				{
+					if (DoorHit.Distance / 100.0 <= RangeOf(TEXT("evening:personalDoor")) && !LabelOf(TEXT("evening:personalDoor")).IsEmpty()) return TEXT("evening:personalDoor");
+					break;
+				}
 		// The broad boarding proxy encloses the real cargo. When the player aims
 		// at the parcel/rack, let that smaller physical target win the same ray.
 		// Elsewhere on the jeep the ordinary boarding action is retained.

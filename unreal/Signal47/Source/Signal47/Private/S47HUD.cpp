@@ -119,6 +119,7 @@
 #include "Internationalization/Regex.h"
 #include "S47UI.h"
 #include "S47World.h"
+#include "S47Mirrors.h"
 #include "S47WorldLife.h"
 #include "S47Walker.h"
 #include "SS47Crt.h"
@@ -167,6 +168,7 @@ void AS47HUD::Start()
 		bOk &= US47Audio::SelfTest(Lines);
 		bOk &= S47Saves::SelfTest(Lines) & US47Flow::SelfTest(Lines);
 		bOk &= S47Drive::SelfTest(Lines);
+		bOk &= FS47Mirrors::SelfTest(Lines); // (the Jeep's live mirrors: switch, captures in the cab only, their render targets)
 		bOk &= US47Chapter1::SelfTest(Lines); // (with the field camera's and the drawings')
 		bOk &= US47CaseBoard::SelfTest(Lines);
 		bOk &= US47Night::SelfTest(Lines); // (the seen log, the lines, the curve, the night's events, the calls, the glimpses, the flashlight, the film's face, the album)

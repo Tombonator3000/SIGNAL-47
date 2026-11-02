@@ -4,7 +4,10 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/App.h"
+#include "S47Audio.h"
 #include "S47Figures.h"
+#include "S47Inter.h"
 #include "S47Main.h"
 #include "S47Seen.h"
 #include "S47Three.h"
@@ -143,6 +146,19 @@ void FS47EveningVisual::Build()
 	bBuilt = true;
 	Personal = Vehicle(W, WAGON, TEXT("personal station wagon"));
 	PersonalDoor = Vehicle(W, WAGON_DOOR, TEXT("personal station wagon driver door"));
+	// The open leaf answers the use trace only while it is open (Tick), so the boarding proxy keeps
+	// "Drive your car" everywhere else. US47Inter::Pick lets the aimed leaf win inside that proxy.
+	if (UStaticMeshComponent* Leaf = PersonalDoor.Get(); Leaf && M->Inter)
+	{
+		Leaf->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		Leaf->SetCollisionResponseToAllChannels(ECR_Ignore);
+		const int32 Node = W->AdoptNode(Leaf, INDEX_NONE, TEXT("evening:personalDoor"));
+		Leaf->SetVisibility(false);
+		FS47Interactable I; I.Id = TEXT("evening:personalDoor"); I.Object = W->ObjAt(Node); I.Range = 2.6;
+		I.Label = [this] { return bDoorOpen && M && M->World && !M->World->bDriving ? FString(TEXT("Close the door")) : FString(); };
+		I.Use = [this] { ClosePersonalDoor(); };
+		M->Inter->Add(I);
+	}
 	// Snapshot the ACTUAL service body, not a different C10 model that changes at handover.
 	// The hidden arrival carrier can move independently; identical originals take over at work.
 	if (FS47Truck* Truck=M->World->SaroTruck())
@@ -292,9 +308,19 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	const bool bPersonalShown = (bCommute && Carrier) || (!bCommute && bParked && bPersonalHere);
 	// A private wagon has one coherent cabin, including the driver's own door and dashboard.
 	// The hidden service-truck controller supplies driving only; none of its meshes are reused.
-	DoorAngle = bPersonalShown && !bDriving ? 1.02 : 0;
 	const FQuat Rotation = bCommute && Carrier ? Carrier->Quat() : S47Three::Euler(0, PersonalHeading, 0);
+	// Previously the leaf stood open whenever the parked wagon was shown. Now it opens as the
+	// player gets out, then swings shut behind them (StepPersonalDoor).
+	const FVector HingeAt = PresentedPosition + Rotation.RotateVector(FVector(-0.73, 0.72, -0.86));
+	const double FromHinge = FVector2D(M->Player->Pos.X - HingeAt.X, M->Player->Pos.Z - HingeAt.Z).Size();
+	StepPersonalDoor(bPersonalShown, bDriving, bCommute && Carrier, FromHinge, FMath::Min(FApp::GetDeltaTime(), 0.1));
 	WagonDoorPose(PersonalDoor.Get(), PresentedPosition, Rotation, DoorAngle);
+	const bool bPick = bDoorOpen && bPersonalShown && !bDriving;
+	if (PersonalDoor.IsValid() && bPick != bDoorPickable)
+	{
+		bDoorPickable = bPick;
+		PersonalDoor->SetCollisionResponseToChannel(ECC_GameTraceChannel1, bPick ? ECR_Block : ECR_Ignore);
+	}
 	if (Personal.IsValid()) Personal->SetVisibility(bPersonalShown);
 	if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(bPersonalShown);
 	const bool bPersonalDrive=M->World->PersonalTransport();
@@ -346,10 +372,35 @@ void FS47EveningVisual::Tick(bool bCommute, bool bDriving, FS47Truck* Carrier, b
 	HeldFood->Refresh();
 }
 
+void FS47EveningVisual::StepPersonalDoor(bool bShown, bool bDriving, bool bCarrier, double FromHinge, double Dt)
+{
+	if (!bShown || bDriving) { bDoorOpen = false; DoorK = 0; } // shut while driving, as before
+	else if (bWasDriving && bWasCarrier)
+	{
+		// Out by the driver's door: it stands open at once, as before. Its swing room reaches at
+		// least where GetOut put the player (DoorSpot may use the far side or the room beyond).
+		bDoorOpen = true; DoorK = 1; DoorRoom = FMath::Max(PersonalDoorRoom, FromHinge + 0.5);
+	}
+	else if (bDoorOpen && FromHinge > DoorRoom) bDoorOpen = false; // walked clear: it swings to
+	// Closing eases over about 0.7 s, like the prop doors (AS47Props, 1.4 a second).
+	DoorK = bDoorOpen ? 1. : FMath::Max(0., DoorK - Dt * 1.4);
+	DoorAngle = PersonalDoorOpenAngle * DoorK * DoorK * (3 - 2 * DoorK);
+	bWasDriving = bDriving; bWasCarrier = bCarrier;
+}
+
+void FS47EveningVisual::ClosePersonalDoor()
+{
+	if (!bDoorOpen) return;
+	bDoorOpen = false;
+	if (M && M->Audio) M->Audio->Sfx(M->Audio->Or(TEXT("door_latch"), TEXT("switch")), FS47Sound());
+}
+
 void FS47EveningVisual::Hide()
 {
  if (Personal.IsValid()) Personal->SetVisibility(false);
  if (PersonalDoor.IsValid()) PersonalDoor->SetVisibility(false);
+ bDoorOpen = false; DoorK = 0; DoorAngle = 0; bWasDriving = bWasCarrier = false;
+ if (PersonalDoor.IsValid() && bDoorPickable) { bDoorPickable = false; PersonalDoor->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore); }
  for (auto& Part:ServiceParts)if(Part.IsValid())Part->SetVisibility(false);
  if(M&&M->World)M->World->SetArrivalServiceWaiting(false);
  for (FS47Group* G : {CounterFood.Get(), HeldFood.Get()}) if (G) G->SetVisible(false);

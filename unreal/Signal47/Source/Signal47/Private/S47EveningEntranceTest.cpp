@@ -312,24 +312,36 @@ void FS47Evening::ControlEntranceTest(double Dt)
    if (FMath::Abs(M->World->DrivingSpeed()) > 0.05 || !M->World->GetOutHere()) { Fail(TEXT("stationary wagon could not use ordinary GetOutHere")); return; }
    Stage(101, 1); return;
   }
-  if (T.Stage == 101 || T.Stage == 102)
+  if (T.Stage == 101)
   {
    FS47Truck* Car = M->World->TruckHere();
    if (!Commute() || M->World->bDriving || !Car || !Car->IsPersonalVehicle() || Car->Group.Shown() || !Visual->PersonalVisible() || !Visual->PersonalDoorVisible() || Visual->PersonalDoorAngle() < 0.5)
    { Fail(TEXT("parked wagon must keep every SARO carrier part hidden and show its own open driver door")); return; }
-   if (T.Stage == 101) Frame(*Car, FVector(-4.3, 0, -4.6), FVector(0, 0.8, 0));
-   else Frame(*Car, FVector(-2.7, 0, -0.5), FVector(-0.65, 0.85, -0.45));
-   Stage(T.Stage == 101 ? 103 : 104, 1); return;
-  }
-  if (T.Stage == 103)
-  {
-   Shot(TEXT("vehicles-wagon-outside")); Stage(102, 0.5); return;
+   // Still inside the leaf's swing room, looking at the open door.
+   Frame(*Car, FVector(-2.7, 0, -0.5), FVector(-0.65, 0.85, -0.45));
+   Stage(104, 1); return;
   }
   if (T.Stage == 104)
   {
+   if (!Visual->PersonalDoorOpen() || Visual->PersonalDoorAngle() < 0.5 || M->Inter->LabelOf(TEXT("evening:personalDoor")) != TEXT("Close the door"))
+   { Fail(TEXT("open wagon door must stay open in its swing room and offer Close the door")); return; }
    Shot(TEXT("vehicles-wagon-door-open"));
    UE_LOG(LogTemp, Display, TEXT("S47: evening vehicles PASS parked wagon: own open leaf and body visible, complete SARO carrier group hidden; exterior camera setups after actual GetOutHere"));
-   Stage(105, 0.5); return;
+   M->Inter->UseId(TEXT("evening:personalDoor"));
+   Stage(102, 1); return;
+  }
+  if (T.Stage == 102)
+  {
+   FS47Truck* Car = M->World->TruckHere();
+   if (!Car || Visual->PersonalDoorOpen() || Visual->PersonalDoorAngle() != 0 || !M->Inter->LabelOf(TEXT("evening:personalDoor")).IsEmpty() || !Visual->PersonalDoorVisible())
+   { Fail(TEXT("Close the door must swing the wagon's driver door shut and withdraw the prompt")); return; }
+   UE_LOG(LogTemp, Display, TEXT("S47: evening vehicles PASS wagon door open -> Close the door -> shut (eased swing), prompt withdrawn"));
+   Frame(*Car, FVector(-4.3, 0, -4.6), FVector(0, 0.8, 0));
+   Stage(103, 1); return;
+  }
+  if (T.Stage == 103)
+  {
+   Shot(TEXT("vehicles-wagon-outside")); Stage(105, 0.5); return;
   }
   if (T.Stage == 105)
   {
@@ -366,7 +378,7 @@ void FS47Evening::ControlEntranceTest(double Dt)
      if (IFileManager::Get().FileSize(*Path) < 1000) { Fail(TEXT("vehicle screenshot missing/empty: ") + Path); return; }
     }
    T.bDone = true;
-   UE_LOG(LogTemp, Display, TEXT("S47: evening vehicles PASS COMPLETE: coherent personal body, own open door and driver seat, whole SARO carrier hidden while driving/on foot, level service truck on original pad, matching separate colliders, five runtime captures; parking/camera setups use API, human input UNVERIFIED"));
+   UE_LOG(LogTemp, Display, TEXT("S47: evening vehicles PASS COMPLETE: coherent personal body, own door open on exit then closed by use, driver seat, whole SARO carrier hidden while driving/on foot, level service truck on original pad, matching separate colliders, five runtime captures; parking/camera setups use API, human input UNVERIFIED"));
    FPlatformMisc::RequestExit(false); return;
   }
   return;

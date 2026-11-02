@@ -56,6 +56,7 @@
 #include "S47HUD.h"
 #include "S47Image.h"
 #include "S47Keys.h"
+#include "S47Mirrors.h"
 #include "S47Kit.h"
 #include "S47Album.h"
 #include "S47Flashlight.h"
@@ -278,6 +279,12 @@ void US47Flow::Init(US47Main* InM)
 	bCalmFlash = S47J::Bool(Store, TEXT("calmFlash"), false);
 	bStillShots = S47J::Bool(Store, TEXT("stillShots"), false);
 	bHeadMotion = S47J::Bool(Store, TEXT("headMotion"), true);
+	bVehicleMirrors = S47J::Bool(Store, TEXT("vehicleMirrors"), true);
+	{
+		bool bRun = bVehicleMirrors;
+		FParse::Bool(FCommandLine::Get(), TEXT("S47Mirrors="), bRun);
+		S47Mirrors::SetEnabled(bRun);
+	}
 	// An explicit saved look survives quality changes. CLI overrides affect this run only.
 	const FString Chosen = S47J::Str(Store, TEXT("picture"));
 	PictureStrength = S47Picture::Strength(float(S47J::Num(Store, TEXT("pictureStrength"), 1)));
@@ -1306,6 +1313,8 @@ FS47PauseOpts US47Flow::Settings()
 	O.OnStillShots = [this](bool V) { bStillShots = V; ApplyPicture(Picture, false); StoreSet(TEXT("stillShots"), V); };
 	O.bHeadMotion = bHeadMotion;
 	O.OnHeadMotion = [this](bool V) { bHeadMotion = V; ApplyLook(); StoreSet(TEXT("headMotion"), V); };
+	O.bVehicleMirrors = bVehicleMirrors;
+	O.OnVehicleMirrors = [this](bool V) { bVehicleMirrors = V; S47Mirrors::SetEnabled(V); StoreSet(TEXT("vehicleMirrors"), V); };
 	O.bAbduct = bAbductOn;
 	O.OnAbduct = [this](bool V) { bAbductOn = V; StoreSet(TEXT("abductions"), V); };
 	O.Brightness = Brightness;
@@ -2104,6 +2113,16 @@ bool US47Flow::SelfTest(TArray<FString>& Out)
 		const FS47PauseOpts MotionOpts = Flow->Settings();
 		Check(bMotion ? TEXT("head motion on survives settings JSON and pause options") : TEXT("head motion off survives settings JSON and pause options"),
 			Flow->bHeadMotion == bMotion && MotionOpts.bHeadMotion == bMotion && bool(MotionOpts.OnHeadMotion));
+	}
+	Check(TEXT("old settings default to vehicle mirrors on"), S47J::Bool(Flow->Store, TEXT("vehicleMirrors"), true));
+	for (const bool bMirrors : { false, true })
+	{
+		const S47J::FObj MirrorSettings = S47J::New();
+		S47J::Set(MirrorSettings, TEXT("vehicleMirrors"), bMirrors);
+		Flow->bVehicleMirrors = S47J::Bool(S47J::Read(S47J::Write(MirrorSettings)), TEXT("vehicleMirrors"), true);
+		const FS47PauseOpts MirrorOpts = Flow->Settings();
+		Check(bMirrors ? TEXT("vehicle mirrors on survive settings JSON and pause options") : TEXT("vehicle mirrors off survive settings JSON and pause options"),
+			Flow->bVehicleMirrors == bMirrors && MirrorOpts.bVehicleMirrors == bMirrors && bool(MirrorOpts.OnVehicleMirrors));
 	}
 	S47J::Set(Flow->Store, TEXT("picture"), TEXT("off"));
 	const FString SettingsBefore = S47J::Write(Flow->Store);

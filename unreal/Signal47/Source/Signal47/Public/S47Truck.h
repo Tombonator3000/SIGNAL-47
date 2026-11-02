@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47Obj.h"
 #include "S47Fleet.h"
+#include "S47Mirrors.h"
 
 class US47Main;
 class AS47Web;
@@ -123,12 +124,15 @@ struct SIGNAL47_API FS47Truck
 	bool RadioHit(const FVector& From, const FVector& Dir, double Far = 1.6) const;
 	/** The render target its dash is drawn into (US47World keeps it). */
 	UTextureRenderTarget2D* DashTarget() const { return DashRT.Get(); }
+	/** The Jeep's live mirrors (S47Mirrors), null on any other vehicle; US47World::Frame steps them. */
+	FS47Mirrors* Mirrors() const { return MirrorSet.Get(); }
 
 private:
 	US47Main* M = nullptr;
 	AS47Web* Web = nullptr;
 	FS47Obj Wheels, Needles, Keys, WheelSpin, CompassCard, GlowPoints;
 	TUniquePtr<FS47Fleet> Fleet;
+	TUniquePtr<FS47Mirrors> MirrorSet;
 	FS47Obj Lamps[4];
 	FS47Mat MHead, MPark, MTail, MGauge, MNeedle, MCompass;
 	TArray<TWeakObjectPtr<class UMaterialInstanceDynamic>> Glows; // the glow points' sprites, in their order

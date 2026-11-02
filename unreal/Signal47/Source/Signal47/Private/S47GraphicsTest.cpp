@@ -231,7 +231,8 @@ void FS47GraphicsTest::Step(double Dt)
   const auto W = Menu();
   if (!Check(W && W->ActiveTabId() == TEXT("graphics") && W->SelectedRowLabel() == TEXT("Graphics preset"), TEXT("gamepad shoulder key events cycle out and back to the new graphics tab"))) return;
   FString Keys;
-  for (int32 I = 0; I < 12; ++I) Keys += I ? TEXT(",Gamepad_DPad_Down") : TEXT("Gamepad_DPad_Down");
+  // (thirteen rows below the preset: twelve controls, Vehicle mirrors, then Restore)
+  for (int32 I = 0; I < 13; ++I) Keys += I ? TEXT(",Gamepad_DPad_Down") : TEXT("Gamepad_DPad_Down");
   S47Keys::TestPresses(Keys, .08f);
   Stage(9, 1.5); return;
  }

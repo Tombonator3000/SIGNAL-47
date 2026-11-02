@@ -74,10 +74,17 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
  UMaterialInterface* LiveGauge=W->SharedMid(W->Material(T.Path+TEXT(".m.gauge")).Id);
  const bool CabReady=LiveGauge&&!CabMeshes.Contains(nullptr);
  UStaticMesh* Mesh=CabReady?CabMeshes[0]:Asset(TEXT("classic_jeep"),TEXT("SM_TripoFleet_ClassicJeep"));if(!Mesh||!T.Group||!T.Body||!T.Cab)return {};
+ // The wheel-free body and all four hub-relative source wheels form one replacement.
+ // A partial import must keep the complete fused body and its existing authored cab.
+ const TCHAR* WheelNames[]={TEXT("SM_TripoJeep_WheelBody"),TEXT("SM_TripoJeep_WheelFL"),TEXT("SM_TripoJeep_WheelFR"),TEXT("SM_TripoJeep_WheelRL"),TEXT("SM_TripoJeep_WheelRR")};
+ TArray<UStaticMesh*> WheelMeshes;
+ if(CabReady)for(const TCHAR* Name:WheelNames)WheelMeshes.Add(Asset(TEXT("classic_jeep"),Name));
+ bool WheelsReady=WheelMeshes.Num()==5&&!WheelMeshes.Contains(nullptr);
  // Source has one body atlas. A prepared lens mask is required so switching the
  // headlights can never turn the complete painted Jeep into an emissive object.
  FMaterialParameterInfo Head(TEXT("S47Headlamp"));FLinearColor Value;
  if(!Mesh->GetMaterial(0)->GetVectorParameterValue(Head,Value))return {};
+ if(WheelsReady)WheelsReady=WheelMeshes[0]->GetMaterial(0)&&WheelMeshes[0]->GetMaterial(0)->GetVectorParameterValue(Head,Value);
  TSet<int32> Keep;
  for(const TCHAR* Key:{TEXT("needles"),TEXT("keys"),TEXT("compass.card")})
  {
@@ -92,8 +99,28 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
   const auto* N=W->Node(O.I);if(!N||!N->Comp.IsValid()||!N->Comp->IsA<UStaticMeshComponent>())return;
   bool Retain=false;for(int32 K:Keep)Retain|=Within(W,O.I,K);if(!Retain)Old.AddUnique(O.I);
  });
- auto* C=Part(W,Mesh,T.Body.I,TEXT("tripo:service-jeep:")+T.Path);if(!C)return {};
+ auto* C=Part(W,WheelsReady?WheelMeshes[0]:Mesh,T.Body.I,TEXT("tripo:service-jeep:")+T.Path);if(!C)return {};
  auto F=MakeUnique<FS47Fleet>();F->Web=W;F->RetiredNodes=Old;F->NativeParts.Add(C);F->bTripoJeep=true;
+ if(WheelsReady)
+ {
+  // Exact measured source hubs: retain asymmetric heights and the original wheel
+  // orientation. These are not the C10's grounded centres or mirrored wheel copies.
+  const FVector At[]={FVector(-.6956192851066589,.44323502155020833,-1.3639821708202362),FVector(.8012761771678925,.4459287308854982,-1.3623809218406677),FVector(-.6950077712535858,.4376322799362242,1.249414473772049),FVector(.8004297316074371,.4430245810071938,1.2492537796497345)};
+  const double Radii[]={.442296105902642,.44793655641842634,.44882689183577895,.4421187586267479};
+  for(int32 I=0;I<4;++I)
+  {
+   auto* P=Part(W,WheelMeshes[I+1],T.Body.I,FString::Printf(TEXT("tripo:jeep-wheel:%s:%d"),*T.Path,I),At[I]);
+   if(!P)break;
+   F->WheelParts.Add(P);F->WheelAt.Add(At[I]);F->WheelRadius.Add(Radii[I]);F->ExpectedWheels.Add(P->GetRelativeTransform());
+  }
+  F->bJeepWheels=F->WheelParts.Num()==4;
+  if(F->bJeepWheels)F->NativeParts.Append(F->WheelParts);
+  else
+  {
+   for(auto& P:F->WheelParts)if(P.IsValid())P->DestroyComponent();
+   F->WheelParts.Reset();F->WheelAt.Reset();F->WheelRadius.Reset();F->ExpectedWheels.Reset();C->SetStaticMesh(Mesh);
+  }
+ }
  if(CabReady)
  {
   for(int32 I=1;I<CabMeshes.Num();++I)
@@ -128,7 +155,7 @@ TUniquePtr<FS47Fleet> FS47TripoFleet::InstallJeep(AS47Web* W,FS47Truck& T)
  }
  F->bReady=true;
  if(T.Path==TEXT("world.saroTruck"))PreserveSideTruck(W);
- UE_LOG(LogS47TripoFleet,Display,TEXT("S47: source Tripo Jeep bound to %s; original transport/save/entry/exit/instruments retained; source wheels remain one mesh"),*T.Path);
+ UE_LOG(LogS47TripoFleet,Display,TEXT("S47: source Tripo Jeep bound to %s; original transport/save/entry/exit/instruments retained; %s"),*T.Path,F->bJeepWheels?TEXT("four source wheels roll, steer and follow suspension"):TEXT("complete fused source wheel fallback"));
  return F;
 }
 

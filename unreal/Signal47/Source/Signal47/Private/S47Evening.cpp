@@ -791,6 +791,27 @@ bool FS47Evening::SelfTest(TArray<FString>& Lines)
  Check(V.ParkedPosition().Equals(FVector(-14.3,-.6,18.5)) && FMath::IsNearlyEqual(V.ParkedHeading(),UE_DOUBLE_PI/2),TEXT("cross-line transverse arrival survives current save restore"));
  V.RestorePersonal(FVector(4.5,-.62,14),UE_DOUBLE_PI,0);Check(V.ParkedPosition().Equals(Bay)&&FMath::IsNearlyZero(V.ParkedHeading()),TEXT("legacy fallback save migrates to marked visitor parking"));
  V.RestorePersonal(Moved,.2,2);Check(V.ParkedPosition().Equals(Moved)&&FMath::IsNearlyEqual(V.ParkedHeading(),.2),TEXT("current safe custom pose survives restore"));
+ // Car doors close after use (Tom, 2 November 2026): open on getting out, shut by hand or behind the player.
+ {
+  FS47EveningVisual D(nullptr);
+  D.StepPersonalDoor(true,true,true,1.8,.1);
+  Check(!D.PersonalDoorOpen() && D.PersonalDoorAngle()==0,TEXT("driven wagon's door is shut"));
+  D.StepPersonalDoor(true,false,true,1.8,.1);
+  Check(D.PersonalDoorOpen() && FMath::IsNearlyEqual(D.PersonalDoorAngle(),FS47EveningVisual::PersonalDoorOpenAngle),TEXT("getting out leaves the driver door open"));
+  for(int32 I=0;I<30;++I)D.StepPersonalDoor(true,false,true,2.0,.1);
+  Check(D.PersonalDoorOpen(),TEXT("the door stays open while the player is in its swing room"));
+  D.ClosePersonalDoor();D.StepPersonalDoor(true,false,true,2.0,.35);const double Half=D.PersonalDoorAngle();
+  for(int32 I=0;I<10;++I)D.StepPersonalDoor(true,false,true,2.0,.1);
+  Check(!D.PersonalDoorOpen() && Half>.05 && Half<FS47EveningVisual::PersonalDoorOpenAngle-.05 && D.PersonalDoorAngle()==0,TEXT("Close the door swings it shut over a short tween"));
+  D.StepPersonalDoor(true,true,true,0,.1);D.StepPersonalDoor(true,false,true,3.4,.1);
+  Check(D.PersonalDoorOpen(),TEXT("getting out on the far side keeps the door open where the player stands"));
+  D.StepPersonalDoor(true,false,true,3.6,.1);
+  Check(D.PersonalDoorOpen(),TEXT("a small step stays inside the swing room"));
+  D.StepPersonalDoor(true,false,true,6,.1);for(int32 I=0;I<10;++I)D.StepPersonalDoor(true,false,true,6,.1);
+  Check(!D.PersonalDoorOpen() && D.PersonalDoorAngle()==0,TEXT("walking clear of the wagon swings its door shut"));
+  D.StepPersonalDoor(true,false,false,1,.1);
+  Check(!D.PersonalDoorOpen(),TEXT("a parked wagon (Continue, or after the service truck) is shown with its door shut"));
+ }
  // A parked second vehicle survives selection and a JSON save/restore independently of its carrier.
  {
   const auto Saved=S47J::Read(TEXT("{\"v\":1,\"personalSelected\":true,\"personal\":{\"at\":\"motel\",\"pose\":{\"at\":\"motel\",\"x\":-35,\"y\":-0.6,\"z\":650,\"h\":1.1}},\"service\":{\"at\":\"saro\",\"pose\":{\"at\":\"saro\",\"x\":8.9,\"y\":0,\"z\":8,\"h\":3.141592653589793}}}"));

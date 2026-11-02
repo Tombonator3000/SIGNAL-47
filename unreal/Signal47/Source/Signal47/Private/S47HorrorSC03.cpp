@@ -39,6 +39,7 @@ namespace
   return Hover + Leave * 5.5;
  }
  constexpr double DeputyWalk = 9;
+ constexpr double DoorSwing = .7;    // the player's push on the open driver door, as the prop doors
  const TCHAR* WAGON = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_body.fairheaven_sw84_body");
  const TCHAR* WAGON_DOOR = TEXT("/Game/Free/Vehicles/fairheaven_sw84/StaticMeshes/fairheaven_sw84_door_driver.fairheaven_sw84_door_driver");
  double Yaw(const FVector& From, const FVector& To) { return FMath::RadiansToDegrees(FMath::Atan2(To.Z - From.Z, To.X - From.X)); } // UE yaw, three x/z
@@ -103,6 +104,7 @@ S47J::FObj FS47HorrorSC03::Write(EPhase Phase, const FFacts& Facts)
  S47J::Set(O, TEXT("taken"), Facts.bTaken); S47J::Set(O, TEXT("observed"), Facts.bObserved); S47J::Set(O, TEXT("retreat"), Facts.bRetreat);
  S47J::Set(O, TEXT("wagon"), Facts.bWagon); S47J::Set(O, TEXT("thermos"), Facts.bThermos); S47J::Set(O, TEXT("marks"), Facts.bMarks);
  S47J::Set(O, TEXT("missing"), Facts.bMissing); S47J::Set(O, TEXT("localOrder"), Facts.bLocalOrder); S47J::Set(O, TEXT("deputyHere"), Facts.bDeputyHere);
+ S47J::Set(O, TEXT("wagonDoorShut"), Facts.bWagonDoorShut); // additive: older readers ignore it, older saves lack it
  S47J::Set(O, TEXT("dispatchStamp"), Facts.DispatchStamp); S47J::Set(O, TEXT("takenStamp"), Facts.TakenStamp);
  S47J::Set(O, TEXT("missingStamp"), Facts.MissingStamp); S47J::Set(O, TEXT("orderStamp"), Facts.OrderStamp);
  return O;
@@ -119,7 +121,8 @@ bool FS47HorrorSC03::Read(const S47J::FObj& O, EPhase& Phase, FFacts& Facts)
  bool Ok = Flag(O, TEXT("dispatch"), Facts.bDispatch) && Flag(O, TEXT("assigned"), Facts.bAssigned) && Flag(O, TEXT("identified"), Facts.bIdentified) &&
   Flag(O, TEXT("observed"), Facts.bObserved) && Flag(O, TEXT("retreat"), Facts.bRetreat) && Flag(O, TEXT("wagon"), Facts.bWagon) &&
   Flag(O, TEXT("thermos"), Facts.bThermos) && Flag(O, TEXT("marks"), Facts.bMarks) && Flag(O, TEXT("missing"), Facts.bMissing) &&
-  Flag(O, TEXT("localOrder"), Facts.bLocalOrder) && Flag(O, TEXT("deputyHere"), Facts.bDeputyHere);
+  Flag(O, TEXT("localOrder"), Facts.bLocalOrder) && Flag(O, TEXT("deputyHere"), Facts.bDeputyHere) &&
+  Flag(O, TEXT("wagonDoorShut"), Facts.bWagonDoorShut);
  if (!Ok) { Phase = EPhase::Off; Facts = FFacts(); return false; }
  // Version 1 recorded disappearance and sight as the same fact. Preserve that
  // history; version 2 also permits a disappearance which the player did not see.
@@ -133,6 +136,8 @@ bool FS47HorrorSC03::Read(const S47J::FObj& O, EPhase& Phase, FFacts& Facts)
   (!Facts.bMissing || (Facts.bRetreat && (Facts.bObserved || Facts.bWagon))) &&
   (!Facts.bLocalOrder || Facts.bMissing) && (!Facts.bDeputyHere || Facts.bMissing);
  if (!Causal) { Phase = EPhase::Off; Facts = FFacts(); return false; }
+ // Only a looked-into wagon has a door the player shut. A stray flag is dropped, not the save.
+ if (!Facts.bWagon) Facts.bWagonDoorShut = false;
  return true;
 }
 
@@ -149,6 +154,7 @@ void FS47HorrorSC03::Begin(const S47J::FObj& Saved, bool bLive)
  if (P == EPhase::Retreat && F.bRetreat) P = EPhase::Calm;
  if (P == EPhase::Calm && F.bMissing && F.bLocalOrder) P = EPhase::Deputy;
  WaitT = ArriveT = LiftT = LookT = Gone = DeputyT = 0; LiftDelay = 0; bOrtizGone = F.bTaken;
+ DoorShutK = F.bWagonDoorShut ? 1 : 0; // Continue: a shut door stays shut, an open one stays open
  if (P == EPhase::Lift && S47J::Int(Saved, TEXT("v")) >= 2)
  {
   LiftDelay = FMath::Clamp(S47J::Num(Saved, TEXT("liftDelay")), 0., LiftAfter);
@@ -415,7 +421,7 @@ bool FS47HorrorSC03::Build()
    if (!Live()) return FString();
    if (Id == TEXT("horror:ortiz")) return P == EPhase::Meet && !F.bIdentified ? FString(TEXT("Meet Mara Ortiz")) : FString();
    if (P != EPhase::Calm && P != EPhase::Deputy) return FString();
-   if (Id == TEXT("horror:wagon23")) return F.bWagon ? FString() : FString(TEXT("Look into wagon twenty-three"));
+   if (Id == TEXT("horror:wagon23")) return !F.bWagon ? FString(TEXT("Look into wagon twenty-three")) : bOrtizGone && !F.bWagonDoorShut ? FString(TEXT("Close the door")) : FString();
    if (Id == TEXT("horror:thermos")) return F.bThermos ? FString() : FString(TEXT("Look at the thermos"));
    if (Id == TEXT("horror:gravelMarks")) return F.bMarks ? FString() : FString(TEXT("Look at the marks in the gravel"));
    if (Id == TEXT("horror:deputy")) return P == EPhase::Deputy && F.bDeputyHere ? FString(TEXT("Talk to the deputy")) : FString();
@@ -424,7 +430,7 @@ bool FS47HorrorSC03::Build()
   It.Use = [this, Id] { if (Host) Host->Use(Id); };
   It.Examine = [this, Id]() -> FString
   {
-   if (Id == TEXT("horror:wagon23")) return bOrtizGone ? TEXT("DISTRICT MAINTENANCE 23. The driver's door stands open. Her clipboard is on the seat.") : TEXT("A white district wagon, number twenty-three, amber bar on the roof.");
+   if (Id == TEXT("horror:wagon23")) return bOrtizGone ? (F.bWagonDoorShut ? TEXT("DISTRICT MAINTENANCE 23. You shut the driver's door. Her clipboard is still on the seat.") : TEXT("DISTRICT MAINTENANCE 23. The driver's door stands open. Her clipboard is on the seat.")) : TEXT("A white district wagon, number twenty-three, amber bar on the roof.");
    if (Id == TEXT("horror:thermos")) return TEXT("A steel thermos. A strip of tape on it: M. ORTIZ.");
    if (Id == TEXT("horror:gravelMarks")) return TEXT("Narrow pressed marks in the gravel. They start beside the wagon and do not go anywhere.");
    if (Id == TEXT("horror:ortiz")) return TEXT("A woman in a district work coat, card clipped to the pocket.");
@@ -492,7 +498,7 @@ void FS47HorrorSC03::Apply()
   C->SetWorldTransform(S47Three::MatToUE(E)); C->AddLocalRotation(FRotator(0, -90, 0));
  };
  PoseCar(W->Wagon.Get(), WagonAt, Car);
- const double DoorAngle = bOrtizGone ? 1.0 : (P == EPhase::Meet || P == EPhase::Lift) ? .35 : 0;
+ const double DoorAngle = WagonDoorAngle();
  {
   const FVector Hinge(-0.73, 0.72, -0.86); const FQuat Leaf = S47Three::Euler(0, -DoorAngle, 0);
   PoseCar(W->Door.Get(), WagonAt + Car.RotateVector(Hinge - Leaf.RotateVector(Hinge)), Car * Leaf);
@@ -665,6 +671,7 @@ void FS47HorrorSC03::Step(double Dt)
  if (!bBuilt && !Build()) return;
  const bool bHeld = M->bPausedByMenu || M->ModalOpen() || M->World->bBusy;
  if (!bHeld) Clock += Dt;
+ if (!bHeld) SwingDoor(Dt);
  if (!bHeld) switch (P)
  {
  case EPhase::Wait:
@@ -712,6 +719,18 @@ void FS47HorrorSC03::Step(double Dt)
  Apply();
 }
 
+// Ortiz gone, the open driver's door is a trace and stays open (1 rad) until the player shuts it.
+double FS47HorrorSC03::WagonDoorAngle() const
+{
+ if (!bOrtizGone) return (P == EPhase::Meet || P == EPhase::Lift) ? .35 : 0;
+ const double K = FMath::Clamp(DoorShutK, 0., 1.);
+ return 1.0 * (1 - K * K * (3 - 2 * K));
+}
+void FS47HorrorSC03::SwingDoor(double Dt)
+{
+ if (F.bWagonDoorShut && DoorShutK < 1) DoorShutK = FMath::Min(1., DoorShutK + Dt / DoorSwing);
+}
+
 bool FS47HorrorSC03::Use(const FString& Id)
 {
  if (!Live()) return false;
@@ -722,6 +741,13 @@ bool FS47HorrorSC03::Use(const FString& Id)
   F.bWagon = true; ++Version;
   M->UI->Toast(TEXT("The driver's door is open. Her clipboard on the seat, the work order for SARO on top. The keys are still in it."), 5);
   if (!F.bObserved && M->Story) M->Story->Note(TEXT("Wagon twenty-three is empty. Mara Ortiz was beside it when we spoke; I did not see where she went. Her clipboard and keys are still here."));
+  return true;
+ }
+ if (Id == TEXT("horror:wagon23") && F.bWagon && bOrtizGone && !F.bWagonDoorShut)
+ {
+  F.bWagonDoorShut = true; ++Version;
+  if (M && M->Audio) M->Audio->Sfx(M->Audio->Or(TEXT("door_latch"), TEXT("switch")), FS47Sound());
+  if (M && M->UI) M->UI->Toast(TEXT("You push the driver's door shut. Her clipboard stays on the seat, the keys in the ignition."), 4);
   return true;
  }
  if (Id == TEXT("horror:thermos") && !F.bThermos) { F.bThermos = true; ++Version; M->UI->Toast(TEXT("A steel thermos against the kerb, still warm. Tape on it: M. ORTIZ. You leave it where it lies."), 5); return true; }
@@ -833,5 +859,20 @@ bool FS47HorrorSC03::SelfTest(TArray<FString>& Lines)
  U.CallFinished(TEXT("SC03_MISSING_RECEIPT")); Check(!U.F.bMissing, TEXT("the unseen route cannot produce a witnessed readback"));
  U.CallFinished(TEXT("SC03_MISSING_UNSEEN_RECEIPT")); U.CallFinished(TEXT("SC03_LOCAL_ORDER_HOLD"));
  Check(U.F.bMissing && U.F.bLocalOrder && U.P == EPhase::Deputy && !U.F.bObserved, TEXT("the unseen route reaches the deputy while preserving no sighting"));
+ // Car doors close after use (Tom, 2 November 2026): the open door stays a trace until the player shuts it.
+ FS47HorrorSC03 D(nullptr, nullptr); D.P = EPhase::Calm; D.F.bDispatch = D.F.bAssigned = D.F.bIdentified = D.F.bTaken = D.F.bRetreat = true; D.bOrtizGone = true;
+ D.F.bWagon = true; D.SwingDoor(5); // looked in (that branch toasts through the live UI), time passes
+ Check(FMath::IsNearlyEqual(D.WagonDoorAngle(), 1.0) && !D.F.bWagonDoorShut, TEXT("the empty wagon's driver door stays open after looking in, as the story leaves it"));
+ const int32 Before = D.Version;
+ Check(D.Use(TEXT("horror:wagon23")) && D.F.bWagonDoorShut && D.Version > Before && !D.Use(TEXT("horror:wagon23")), TEXT("using the wagon again shuts its door once"));
+ D.SwingDoor(DoorSwing * .5); const double Half = D.WagonDoorAngle(); D.SwingDoor(DoorSwing);
+ Check(Half > .05 && Half < .95 && FMath::IsNearlyZero(D.WagonDoorAngle()), TEXT("the shut door swings closed over a short tween, not a snap"));
+ FS47HorrorSC03 Cont(nullptr, nullptr); Cont.Begin(D.Save(), true);
+ Check(Cont.F.bWagonDoorShut && FMath::IsNearlyZero(Cont.WagonDoorAngle()), TEXT("Continue keeps the shut wagon door shut"));
+ auto Older = D.Save(); Older->RemoveField(TEXT("wagonDoorShut"));
+ FS47HorrorSC03 Old(nullptr, nullptr); Old.Begin(Older, true);
+ Check(Old.F.bWagon && !Old.F.bWagonDoorShut && FMath::IsNearlyEqual(Old.WagonDoorAngle(), 1.0), TEXT("an older save without the field keeps the door open"));
+ FFacts Stray = A; Stray.bWagonDoorShut = true; // not looked into
+ Check(Read(Write(EPhase::Calm, Stray), P0, B) && !B.bWagonDoorShut && B.bRetreat, TEXT("a shut door without a look into the wagon is dropped, not the save"));
  return Good;
 }

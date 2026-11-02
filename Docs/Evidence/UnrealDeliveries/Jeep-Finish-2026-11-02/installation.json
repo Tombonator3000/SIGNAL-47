@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "saved_nodes": 156,
+  "saved_files": 126,
+  "Saved_unchanged": true,
+  "binary_sha256": "a7f14fd3b5feb2993f1af695fd0dbd32bcd7809da2ca0dc53450513dd453e6fb",
+  "free_bytes": 192757022720,
+  "at": "2026-11-02T23:43:57.047729+01:00",
+  "runtime_source": "444012cb",
+  "pr": 355,
+  "selftest_checks": 2112,
+  "cabin_import_checks": 691,
+  "wheel_import_checks": 379,
+  "drive_fixture_distance_m": 8.554,
+  "native_keyboard": "Menu, LOAD CASE and walking confirmed; Jeep entry/driving not reached",
+  "human_playtest": "NOT_RUN"
+}

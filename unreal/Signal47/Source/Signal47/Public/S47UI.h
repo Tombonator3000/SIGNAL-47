@@ -62,6 +62,7 @@ struct FS47PauseOpts
 	bool bCalmFlash = false; TFunction<void(bool)> OnCalmFlash;
 	bool bStillShots = false; TFunction<void(bool)> OnStillShots;
 	bool bHeadMotion = true; TFunction<void(bool)> OnHeadMotion;
+	bool bVehicleMirrors = true; TFunction<void(bool)> OnVehicleMirrors; // Graphics: the Jeep's live mirrors (S47Mirrors)
 	bool bAbduct = true; TFunction<void(bool)> OnAbduct; // unset: not offered
 	// the Unreal version's own: the brightness before the tone curve (0..1, .5 as made), and the keys
 	// bound in Settings > Controls (S47Keys; the store keeps them)

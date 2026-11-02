@@ -86,6 +86,10 @@ public:
 	 *  prop has that door (the exported thing answers as before). */
 	static bool UseDoor(const FString& Use);
 	static bool IsDoorOpen(const FString& Use);
+	/** A story-opened swing (a prop's "swing", by prop id: patrolCarDoor) shut by the player with
+	 *  the use key. It eases closed and stays shut until the story hides its open node again. */
+	static bool ShutSwing(const FString& PropId);
+	static bool IsSwingOpen(const FString& PropId);
 	/** Retarget the existing deputy car, story swing and beacon to inspected source parts. */
 	static bool RetargetPatrolCar(UStaticMesh* Body,UStaticMesh* Door,const FVector& HingeThree);
 
@@ -110,9 +114,11 @@ private:
 		int32 Open = -1;
 		FVector Hinge = FVector::ZeroVector; // in the model's own Unreal terms (cm)
 		float Deg = 55.f, K = 0.f;
+		bool bShut = false; // shut by the player while its open node is still shown
 		FTransform Rest;
 	};
 	TArray<FSwing> Swings;
+	FSwing* SwingOf(const FString& PropId);
 	struct FBeacon
 	{
 		TWeakObjectPtr<UStaticMeshComponent> Car;

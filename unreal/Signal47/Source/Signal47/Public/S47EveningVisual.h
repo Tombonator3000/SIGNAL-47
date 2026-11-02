@@ -33,6 +33,13 @@ public:
 	bool PersonalVisible() const;
 	bool PersonalDoorVisible() const;
 	double PersonalDoorAngle() const { return DoorAngle; }
+	/** Car doors close after use (Tom, 2 November 2026). Out of the wagon, its driver door stands
+	 *  open; it swings shut when the player leaves its swing room, uses "Close the door", or drives. */
+	bool PersonalDoorOpen() const { return bDoorOpen; }
+	void ClosePersonalDoor();
+	/** The door's state step (Tick and SelfTest): FromHinge in metres on the ground, Dt seconds. */
+	void StepPersonalDoor(bool bShown, bool bDriving, bool bCarrier, double FromHinge, double Dt);
+	static constexpr double PersonalDoorOpenAngle = 1.02, PersonalDoorRoom = 2.6;
 	FVector PersonalPosition() const { return PresentedPosition; }
 	static FVector PersonalDriverEye() { return FVector(-0.35, 1.08, -0.05); }
 	/** Credited model bounds after preparation; pivot is exactly at the footprint centre. */
@@ -58,6 +65,8 @@ private:
 	FVector PersonalPark = ArrivalPark();
 	double PersonalHeading = 0;
 	double DoorAngle = 0;
+	double DoorK = 0, DoorRoom = PersonalDoorRoom; // DoorK: 0 shut, 1 open (eased into DoorAngle)
+	bool bDoorOpen = false, bWasDriving = false, bWasCarrier = false, bDoorPickable = false;
 	FVector PresentedPosition = FVector::ZeroVector;
 	void Build();
 };

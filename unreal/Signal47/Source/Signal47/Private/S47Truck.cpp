@@ -291,6 +291,7 @@ void FS47Truck::Bind(US47Main* InM, const FString& InPath, int32 InCabSet, UObje
 	}
 	Fleet=FS47Fleet::Install(Web,*this);
 	ServiceDriverEye=DriverEye;
+	MirrorSet.Reset();if(Fleet&&Fleet->IsTripoJeep())MirrorSet=FS47Mirrors::Install(Web,*this,Fleet->Parts());
 	SetDriving(false);
 	Update(0, 0);
 	ApplyLights();
