@@ -110,6 +110,8 @@ static const FCamera Cameras[] = {
  { TEXT("jeep-exterior"), TEXT("saro"), 12.5, 13.5, 0.58, -0.05 },
  // Opt-in: the driver's seat, looking between the left door mirror and the inside mirror (S47Mirrors).
  { TEXT("cab-mirrors"), TEXT("saro"), 0, 0, 0, 0 },
+ { TEXT("cab-right"), TEXT("saro"), 0, 0, 0, 0 },
+ { TEXT("cab-seat"), TEXT("saro"), 0, 0, 0, 0 },
  // Extra state coverage is opt-in; the original twenty cameras retain their baseline views.
  { TEXT("motel-lobby"), TEXT("saro"), -46, 675.7, -0.64, -0.12 },
  // Identical physical lens across the road/SARO area handover:
@@ -264,7 +266,7 @@ void Tick(AS47Web* W, float)
  const FCamera& V = Cameras[Next];
  const bool TerminalFront = FString(V.Name) == TEXT("terminal-online") || FString(V.Name) == TEXT("terminal-dark");
  M->Player->Eye = TerminalFront ? 1.0 : S.InitialEye;
- const bool InCab = FString(V.Name) == TEXT("cab") || FString(V.Name) == TEXT("cab-controls") || FString(V.Name) == TEXT("cab-mirrors") || V.State == EState::HeadlightsOff || V.State == EState::HeadlightsOn;
+ const bool InCab = FString(V.Name) == TEXT("cab") || FString(V.Name) == TEXT("cab-controls") || FString(V.Name) == TEXT("cab-mirrors") || FString(V.Name) == TEXT("cab-right") || FString(V.Name) == TEXT("cab-seat") || V.State == EState::HeadlightsOff || V.State == EState::HeadlightsOn;
  if (Next != S.Step) {
   if (S.Step >= 0 && ExteriorPowerState(Cameras[S.Step].State) && !ExteriorPowerState(V.State)
       && M->SaroNight && M->SaroNight->Power) M->SaroNight->Power->Restore();
@@ -342,6 +344,8 @@ void Tick(AS47Web* W, float)
   if (FString(V.Name)==TEXT("cab-controls")) if(auto* Driver=M->World->CabDrive())Driver->SetLook(.12,-.52);
   // Left door mirror ~32 degrees left, inside mirror ~39 degrees right and above: both in one frame.
   if (FString(V.Name)==TEXT("cab-mirrors")) if(auto* Driver=M->World->CabDrive())Driver->SetLook(.05,.08);
+  if (FString(V.Name)==TEXT("cab-right")) if(auto* Driver=M->World->CabDrive())Driver->SetLook(-.95,0);
+  if (FString(V.Name)==TEXT("cab-seat")) if(auto* Driver=M->World->CabDrive())Driver->SetLook(-.95,-.85);
   if (FS47Truck* Truck = M->World->CabTruck()) {
    Truck->SetHeadlights(V.State != EState::HeadlightsOff);
    double CabSteer=0; if(FParse::Value(FCommandLine::Get(),TEXT("S47GraphicsCabSteer="),CabSteer))Truck->SetSteer(CabSteer);

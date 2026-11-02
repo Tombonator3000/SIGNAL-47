@@ -26,14 +26,14 @@ namespace
 	// truck's Body, so a native UEcm point (X, Y, Z) in the part's frame is three (X, Z, Y) / 100
 	// (S47Three::ToThree; the driver's eye UEcm (-41, 65, 170) is three (-.41, 1.70, .65)).
 	//
-	// Centre, Normal, Up  the model's glass (jeep_model, candidate-r14 anchors.json mirrors.glass,
+	// Centre, Normal, Up  the model's glass (jeep_model, candidate-r16a anchors.json mirrors.glass,
 	//          converted): where the capture stands and the plane it reflects in. The normal faces
 	//          the driver and the rear. Used whether the glass is the model's or the fallback's.
 	// FallbackCentre, FallbackNormal  our own thin plane when the Jeep has no MI_JeepMirrorGlass_*
 	//          slot (an older import): over interior.py's straight door-mirror faces (Blender
 	//          (+-.89, .120, 1.665)); zero normal: the model's normal (the inside mirror, which
 	//          then also gets a black back and a stalk to the windshield rail).
-	// Size     the fallback glass, width and height (the model's glass is 14.6 x 20.5 / 21.5 x 5.8 cm).
+	// Size     the fallback glass, width and height (the model's glass is 14.6 x 20.5 / 16.1 x 4.35 cm).
 	// Pixels   the render target (its aspect matches the glass: the door mirrors stand upright).
 	// Fov      horizontal degrees of the capture (a flat mirror's true field is narrower; this
 	//          is a little wider, as a driver gets by moving the head).
@@ -56,7 +56,7 @@ namespace
 		{ TEXT("R"), FVector(.864905, 1.665, -.125946), FVector(-.495, 0, .8689), FVector(0, 1, 0),
 		  FVector(.89, 1.665, -.117), FVector(0, 0, 1), FVector2D(.140, .198), FIntPoint(160, 224), 30.f, false },
 		{ TEXT("Rear"), FVector(-.0004, 1.91479, .176112), FVector(-.3337, -.175, .9263), FVector(-.0593, .9846, .1646),
-		  FVector(0, 1.915, .150), FVector::ZeroVector, FVector2D(.215, .058), FIntPoint(384, 104), 40.f, true },
+		  FVector(0, 1.915, .150), FVector::ZeroVector, FVector2D(.161, .0435), FIntPoint(384, 104), 40.f, true },
 	};
 	/** The inside mirror's stalk goes up to here (the windshield's upper rail, truck-local). */
 	const FVector REAR_STALK_TOP(0, 1.995, .095);

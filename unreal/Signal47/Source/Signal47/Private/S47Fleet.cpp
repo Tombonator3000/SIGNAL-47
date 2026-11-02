@@ -216,10 +216,25 @@ bool FS47Fleet::Audit(TArray<FString>& Lines)const
  bool Ok=true;auto Check=[&](bool B,const FString& N){Ok&=B;Lines.Add(FString(B?TEXT("PASS fleet: "):TEXT("FAIL fleet: "))+N);};
  if(bTripoJeep)
  {
-  Check(bReady&&NativeParts.Num()==(bJeepCab?7:1),TEXT("original textured Tripo Jeep and optional complete authored cab bound atomically"));
+  Check(bReady&&NativeParts.Num()==(bJeepCab?(bJeepWheels?11:7):1),TEXT("original textured Tripo Jeep and optional complete authored cab/wheel rig bound atomically"));
   if(bJeepCab)Check(JeepSteering.IsValid(),TEXT("authored Jeep steering hub retained for live steering"));
   for(auto& Part:NativeParts){auto* C=Part.Get();Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetNumLODs()==3&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("three source LODs; transport collision remains explicit"));}
-  Check(WheelParts.IsEmpty(),TEXT("no manufactured wheel parts for a source with fused wheels"));
+  const auto* Body=NativeParts.Num()?NativeParts[0].Get():nullptr;
+  Check(Body&&Body->GetStaticMesh()&&Body->GetStaticMesh()->GetName()==(bJeepWheels?TEXT("SM_TripoJeep_WheelBody"):(bJeepCab?TEXT("SM_TripoJeep_InteriorBody"):TEXT("SM_TripoFleet_ClassicJeep"))),TEXT("actual body matches complete wheel rig or fused fallback; no duplicate tyres"));
+  const bool CompleteWheels=WheelParts.Num()==4&&WheelAt.Num()==4&&WheelRadius.Num()==4&&ExpectedWheels.Num()==4;
+  Check(bJeepWheels?(bJeepCab&&CompleteWheels):(WheelParts.IsEmpty()&&WheelAt.IsEmpty()&&WheelRadius.IsEmpty()&&ExpectedWheels.IsEmpty()),TEXT("all four native wheels installed together or absent with complete fused fallback"));
+  if(bJeepWheels&&CompleteWheels)
+  {
+   const TCHAR* Names[]={TEXT("SM_TripoJeep_WheelFL"),TEXT("SM_TripoJeep_WheelFR"),TEXT("SM_TripoJeep_WheelRL"),TEXT("SM_TripoJeep_WheelRR")};
+   for(int32 I=0;I<4;++I)
+   {
+    auto* C=WheelParts[I].Get();UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
+    Check(C&&Mesh&&Mesh->GetName()==Names[I]&&NativeParts.Contains(WheelParts[I])&&Body&&C->GetAttachParent()==Body->GetAttachParent(),FString::Printf(TEXT("Jeep wheel%d actual source mesh, shared body frame and native ownership"),I));
+    Check(C&&C->GetRelativeTransform().Equals(ExpectedWheels[I],.001),FString::Printf(TEXT("Jeep wheel%d actual rolling/steering/suspension transform"),I));
+    Check(Mesh&&Body&&Body->GetStaticMesh()&&Mesh->GetNumLODs()==Body->GetStaticMesh()->GetNumLODs()&&WheelRadius[I]>.4&&WheelRadius[I]<.5&&WheelAt[I].Y>.4&&WheelAt[I].Y<.5,FString::Printf(TEXT("Jeep wheel%d same three source LODs, measured hub height and tyre radius"),I));
+   }
+  }
+  if(auto* W=Web.Get())for(int32 I:RetiredNodes)Check(!W->ObjAt(I).Visible(),FString::Printf(TEXT("legacy Jeep body/cab/wheel node%d retired"),I));else Check(false,TEXT("live Web reference"));
   Check(!HeadMids.IsEmpty(),TEXT("source lens mask has switched head/tail material parameters"));
   for(auto& P:HeadMids)Check(P.IsValid()&&P->K2_GetVectorParameterValue(TEXT("S47Headlamp")).Equals(ExpectedHead,.0001f)&&P->K2_GetVectorParameterValue(TEXT("S47Taillamp")).Equals(ExpectedTail,.0001f),TEXT("actual inspected source lenses follow both switches"));
   return Ok;

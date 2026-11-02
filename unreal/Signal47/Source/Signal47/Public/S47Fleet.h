@@ -22,7 +22,7 @@ public:
  const TArray<TWeakObjectPtr<UStaticMeshComponent>>& Parts()const{return NativeParts;}
 private:
  friend class FS47TripoFleet;
- bool bTripoJeep=false,bJeepCab=false;
+ bool bTripoJeep=false,bJeepCab=false,bJeepWheels=false;
  FS47Obj JeepSteering;
  FVector JeepHeadlamps[2];
  bool bReady=false;
