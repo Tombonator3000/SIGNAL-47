@@ -8,7 +8,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 Tom har bestilt fortsatt arbeid til han sier stopp. Fullfør offentlig Linux-nedlasting først. Neste konkrete rettelse er **ARRAY-03**; deretter prioriteres åpne krasj-, progresjons- og verdensfeil etter spillerverdi. Dette er en ny bestilling, ikke gjenåpning av nattens utløpte engangsautomasjon.
 
-- [ ] **ARRAY-03 / P1, reparasjon i eksisterende S-03-skap:** Bruk den eksisterende `S-03 CABLE JUNCTION`-modellen ved antennen. Integrer åpning, innvendige servicedeler, isolering, relébytte og tilbakemelding i dette skapet; fjern det separate nye reparasjonspanelet. Tilpass eksisterende modell, bevar original/kilde, verdensplassering, målestokk, Story-/Freeform-logikk, deler og Save/Continue. Før-/etterbilde og én relevant fysisk serviceprøve. Bestilt etter Linux-pakken; ikke med i den frosne utgivelsen.
+- [ ] **ARRAY-03 / P1, reparasjon i eksisterende S-03-skap:** Bruk den eksisterende `S-03 CABLE JUNCTION`-modellen ved antennen. Integrer åpning, innvendige servicedeler, isolering, relébytte og tilbakemelding i dette skapet; fjern det separate nye reparasjonspanelet. Tilpass eksisterende modell, bevar original/kilde, verdensplassering, målestokk, Story-/Freeform-logikk, deler og Save/Continue. Før-/etterbilde og én relevant fysisk serviceprøve. Implementert etter Linux-pakken; ikke med i den frosne utgivelsen. Editorbygg og målrettet servicereise med fire disk/Flow-returer består. Pakket kontroll og installasjon pågår.
 
 ## Nattskift 1. november kl.22:00 til 2. november kl.08:00
 

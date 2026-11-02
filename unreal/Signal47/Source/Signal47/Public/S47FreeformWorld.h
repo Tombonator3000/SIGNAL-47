@@ -95,7 +95,7 @@ private:
  FS47Obj Bench, Depot, BenchMeter, BenchLamp, BenchSample, Shop, Panel, Lid, Relay, Selector, Generator, FeederPanel, FeederLever, FeederLamp;
  FS47Obj ParcelSaro, ParcelRoad, CargoSaro, CargoRoad;
  TArray<FS47Obj> Parts;
- struct FOverride { TFunction<FString()> Label, Examine; TFunction<void()> Use; };
+ struct FOverride { bool bLook = false; TFunction<FString()> Label, Examine; TFunction<void()> Use; };
  TMap<FString,FOverride> Overrides;
  void OverrideExisting();
  bool Build();
@@ -115,6 +115,16 @@ private:
  void ApplyPump();
  bool InstallPumpModel(int32 RoadParent);
  void RestorePumpModel();
+ bool InstallServiceCabinet();
+ void RestoreServiceCabinet();
+ struct FCabinetOriginal {
+  TWeakObjectPtr<UStaticMeshComponent> Component;
+  TStrongObjectPtr<UStaticMesh> Mesh;
+  TArray<TStrongObjectPtr<UMaterialInterface>> Materials;
+ };
+ TArray<FCabinetOriginal> CabinetOriginals;
+ FS47Obj CabinetBody;
+ bool bServiceCabinet = false;
  void Change(const FString& Message = FString());
  bool ServiceUse();
  bool FeederUse();
