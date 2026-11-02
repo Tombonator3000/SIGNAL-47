@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Automatisk tavlegruppering installert 3. november
+
+Kilde `7b8a2a00`, [PR357](https://github.com/Tombonator3000/SIGNAL-47/pull/357), er installert kl. 00:55 CET. Kort og notater samles lokalt langs etablerte spillertråder, med plass til forankrede Findings. Manuelle og eldre lagrede posisjoner bevares. Automatisk plassering har eget lagret eierskap; stor tekst og gjenåpning beholder oppsettet. Ingen kobling eller konklusjon opprettes av sorteringen.
+
+Bygg/pakking, 2130 selvtester og 17 native kontroller med én disk-/Flow-retur består. Alle målte kort-/Finding-grenser er uendret etter Continue; faktisk trådvekst, avvist kobling, manuell overstyring og pan/zoom er kontrollert. Dette er en eksplisitt avgrenset Slate/API-prøve. Installert kort oppstart består, og alle 126 personlige Saved-filer er uendret. [Bilder og prøvegrenser](../Evidence/UnrealDeliveries/BOARD_CLUSTERS_2026-11-03.md).
+
 ## Kollisjonsretting installert 3. november
 
 Kilde `6706f6e3`, [PR356](https://github.com/Tombonator3000/SIGNAL-47/pull/356), er installert kl. 00:25 CET. Overlappende stol-/vegg-/skrivebordskollisjoner kan ikke lenger skyve spilleren gjennom en tidligere behandlet flate. En allerede fastlåst moderne lagring ved Dales stol flyttes bare til en nærliggende, ledig plass i samme rom, med fremdrift og synsvinkel bevart. Gyldige lagringer flyttes ikke.
