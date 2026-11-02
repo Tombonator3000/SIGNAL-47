@@ -1,4 +1,5 @@
 #include "S47Legs.h"
+#include "S47FarmWorld.h"
 
 #include "S47Geo.h"
 #include "S47RoadTerrain.h"
@@ -361,6 +362,7 @@ double FS47SaroDrive::Height(double X, double Z) const
 
 bool FS47SaroDrive::Blocked(double X, double Z)
 {
+	if(bFreeformFarm&&S47FarmWorld::InRoadAccess(X+SARO_IN_ROAD.X,Z+SARO_IN_ROAD.Z))return false;
 	return !SARO_WAY().ContainsByPredicate([&](const FS47Box2& W) { return InBox(W, X, Z); });
 }
 

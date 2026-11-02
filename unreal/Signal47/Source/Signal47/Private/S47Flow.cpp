@@ -5,6 +5,7 @@
 #include "S47FieldRadio.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47FarmWorld.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
@@ -801,6 +802,9 @@ void US47Flow::StartGame(const FStart& O)
  if (M->Freeform) M->Freeform->Stop();
  if (M->RoomLights) M->RoomLights->Stop();
  M->SessionMode = bFreeform ? ES47SessionMode::Freeform : ES47SessionMode::Story;
+ // The shared world is built before mode selection. Apply its farm layout before
+ // any restored truck/player pose is tested against the area's ground.
+ S47FarmWorld::Reconcile(M);
  bDeathShown=false;
 	bStarting = true;
 	if (M->Observing) M->Observing->Stop();
@@ -936,6 +940,7 @@ void US47Flow::StartGame(const FStart& O)
  if (!bFreeform && M->Horror) M->Horror->Begin(S47J::Obj(O.State,TEXT("horror")),!O.State.IsValid() && O.Jump.IsEmpty());
  if (!bFreeform && M->Spine && !(O.State.IsValid() && O.State->HasField(TEXT("spine")))) M->Spine->ResumeAfterSC03();
 
+ S47FarmWorld::Reconcile(M);
 	// put the player back where they stood, if the restored world lets them stand there
 	const S47J::FObj Pose = S47J::Obj(O.State, TEXT("pose"));
 	if (Pose.IsValid() && Checkpoint != TEXT("residual") && M->Player)
@@ -1585,6 +1590,11 @@ FString US47Flow::PlaceName(const FVector& P) const
 {
 	// main.ts placeName: the place on a save's card
 	const FString Area = M->Web ? M->Web->Area() : FString(TEXT("saro"));
+	if (M->IsFreeform() && (Area == TEXT("saro") || Area == TEXT("road") || Area == TEXT("diner")))
+	{
+		const FVector Farm = P - S47FarmWorld::RoadToArea(Area, FVector::ZeroVector);
+		if (S47FarmWorld::InRoadAccess(Farm.X, Farm.Z)) return TEXT("Alderete farm");
+	}
 	if (Area == TEXT("saro") && M->Office && M->Office->Contains(P)) return TEXT("SARO Operations office");
 	if (M->Substation && M->Substation->Ready() && (Area == TEXT("road") || Area == TEXT("diner")) && P.X >= 7878 && P.X <= 7902 && P.Z >= 519 && P.Z <= 546) return TEXT("Caliche Junction Substation");
 	auto In = [&](const TCHAR* Path) { return M->Web && M->Web->Rect(Path).Contains(P.X, P.Z); };

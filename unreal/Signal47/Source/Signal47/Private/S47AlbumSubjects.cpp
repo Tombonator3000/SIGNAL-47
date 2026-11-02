@@ -1,6 +1,8 @@
 // story/albumSubjects.ts
 #include "S47AlbumSubjects.h"
 #include "S47TownLayer.h"
+#include "S47Herd.h"
+#include "S47FarmWorld.h"
 #include "S47Town.h"
 #include "S47Cutouts.h"
 #include "S47NinthModel.h"
@@ -88,6 +90,26 @@ namespace S47AlbumSubjects
 		const bool bOpen = D.Outdoors && D.Outdoors(), bNight = D.Night && D.Night();
 		US47World* World = M->World;
 		const FString Area = World ? World->Area : Web->Area();
+
+  // Ordinary Freeform cattle: subjects follow the actual shown herd and its
+  // mode-reconciled root, never the Story ninth-cow photo/event identities.
+  if(S47FarmWorld::Enabled(M)&&S47FarmWorld::HouseVisible(M))
+   Add(TEXT("Alderete farm"),{S47FarmWorld::HousePhotoPoint(M)},[](FS47Subject& S){S.R=8;S.Max=220;S.W=1.3;S.Group=TEXT("alderete-farm");});
+  if(S47FarmWorld::Enabled(M)&&M->TownLayer)
+  {
+   const FString HerdArea=Area==TEXT("saro")?TEXT("saro"):Area==TEXT("road")||Area==TEXT("diner")?TEXT("road"):FString();
+   for(const auto& H:M->TownLayer->Herds)if(H&&H->Area==HerdArea)
+   {
+    H->ReconcileMode();if(!H->Group.Shown())continue;
+    TArray<TOptional<FVector>> Cattle;
+    for(int32 I=0;I<H->Count();++I)
+    {
+     FVector At;if(!H->CowAt(I,At))continue;Cattle.Add(At);
+     Add(FString(TEXT("Alderete Hereford "))+S47Herd::Tags()[I],{At},[](FS47Subject& S){S.R=1.2;S.Max=55;S.W=1.6;S.Group=TEXT("alderete-cattle");});
+    }
+    Add(TEXT("the Alderete pasture"),Cattle,[](FS47Subject& S){S.R=1.6;S.Max=130;S.W=1.15;S.Group=TEXT("alderete-cattle");});
+   }
+  }
 
 		// anywhere: the truck where it stands
 		if (FS47Truck* Tr = World ? World->TruckHere() : nullptr) Add(TEXT("the truck"), { P(Tr->Group, 1.1) }, [](FS47Subject& S) { S.R = 2.6; S.Max = 140; S.W = 1.2; });

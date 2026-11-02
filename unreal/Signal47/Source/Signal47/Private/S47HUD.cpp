@@ -29,6 +29,7 @@
 #include "S47RoomLights.h"
 #include "S47RoomLightsTest.h"
 #include "S47ReactiveLightTest.h"
+#include "S47FarmWorld.h"
 #include "S47T02Test.h"
 #include "S47Graphics.h"
 #include "S47GraphicsTest.h"
@@ -198,6 +199,7 @@ void AS47HUD::Start()
 		bOk &= FS47EncounterSound::SelfTest(Lines);
 		bOk &= FS47Office::SelfTest(Lines);
 		bOk &= FS47RoomLights::SelfTest(Lines);
+		bOk &= S47FarmWorld::SelfTest(Lines);
 		bOk &= FS47Substation::SelfTest(Lines);
 		bOk &= FS47Anomaly::SelfTest(Lines);
 		bOk &= FS47AnomalyWorld::SelfTest(Lines);

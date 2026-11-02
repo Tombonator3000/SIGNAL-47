@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47FarmWorld.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
 #include "S47Spine.h"
@@ -770,6 +771,7 @@ void US47World::Enter(const FString& NewArea)
 		OldTruckP->Group.SetVisible(Area == TEXT("roswell"));
 		if (bCommuteVehicle) {SaroTruckP->Group.SetVisible(false);TruckP->Group.SetVisible(false);ParkedP->Group.SetVisible(false);}
 	}
+	S47FarmWorld::Reconcile(M);
 	if (OnEnter) OnEnter(NewArea);
 	// on foot on the old road (out of the truck anywhere, Tom 22 October 2026): its ground's height,
 	// as the truck has it (the web version is never on foot there)
@@ -1392,6 +1394,7 @@ void US47World::MakeLands()
 double US47World::LandY(double X, double Z)
 {
 	const double None = std::numeric_limits<double>::quiet_NaN();
+ if(bFarmMode){const FVector O=Area==TEXT("saro")?FVector(-24,0,300):FVector(8000,0,0);if((Area==TEXT("saro")||Area==TEXT("road")||Area==TEXT("diner"))&&S47FarmWorld::InRoadAccess(X-O.X,Z-O.Z))return S47FarmWorld::FloorRoad(X-O.X,Z-O.Z);}
 	if (Area==TEXT("diner") || Area==TEXT("road"))
 	{
 		const double Access=S47CalicheAccess::FloorAt(X,Z);
@@ -1423,12 +1426,14 @@ bool US47World::OnLand(double X, double Z, const FString& InArea)
 	const FLand* L = Lands.Find(A);
 	if (!L || !L->In) return false;
 	const double R = M->Player->Radius;
+ const FVector FarmOrigin=A==TEXT("saro")?FVector(-24,0,300):FVector(8000,0,0);
+ const bool Farm=bFarmMode&&(A==TEXT("saro")||A==TEXT("road")||A==TEXT("diner"))&&S47FarmWorld::InRoadAccess(X-FarmOrigin.X,Z-FarmOrigin.Z);
 	for (const FVector2D& D : { FVector2D(0, 0), FVector2D(-R, -R), FVector2D(R, -R), FVector2D(-R, R), FVector2D(R, R) })
 	{
-		if (!L->In(X + D.X, Z + D.Y)) return false;
+		if (!(Farm&&S47FarmWorld::InRoadAccess(X+D.X-FarmOrigin.X,Z+D.Y-FarmOrigin.Z))&&!L->In(X + D.X, Z + D.Y)) return false;
 	}
 	const double K = R + LAND_KEEP;
-	for (const FS47Box2& B : L->Out) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return false;
+	for (const FS47Box2& B : L->Out) if (!(Farm&&A==TEXT("saro")&&B.MinX==-3&&B.MaxX==-3&&FMath::Abs(Z-(S47RoadTerrain::RanchZ(21)+300))<3.0)) if (X > B.MinX - K && X < B.MaxX + K && Z > B.MinZ - K && Z < B.MaxZ + K) return false;
 	if (L->Closed && L->Closed(X, Z)) return false;
 	if (const FLegRec* G = Legs.Find(L->Leg))
 	{
@@ -1453,7 +1458,10 @@ bool US47World::GroundUnder(const FString& InArea, const FLand& L, double X, dou
 	{
 		const FIntPoint C(FMath::FloorToInt((X + D.X) * 2), FMath::FloorToInt((Z + D.Y) * 2));
 		if (const bool* Have = Cells.Find(C)) { if (!*Have) return false; continue; }
-		const double Cx = (C.X + 0.5) / 2, Cz = (C.Y + 0.5) / 2, H = L.Y ? L.Y(Cx, Cz) : G->Area->Height(Cx, Cz);
+		const double Cx = (C.X + 0.5) / 2, Cz = (C.Y + 0.5) / 2;
+  const FVector O=InArea==TEXT("saro")?FVector(-24,0,300):FVector(8000,0,0);
+  const bool Farm=bFarmMode&&(InArea==TEXT("saro")||InArea==TEXT("road")||InArea==TEXT("diner"))&&S47FarmWorld::InRoadAccess(Cx-O.X,Cz-O.Z);
+  const double H=Farm?S47FarmWorld::FloorRoad(Cx-O.X,Cz-O.Z):L.Y?L.Y(Cx,Cz):G->Area->Height(Cx,Cz);
 		FHitResult Hit;
 		const FCollisionQueryParams Q(SCENE_QUERY_STAT(S47Land), true);
 		const bool bHit = W->LineTraceSingleByChannel(Hit, S47Three::ToUE(FVector(Cx, H + 3, Cz)), S47Three::ToUE(FVector(Cx, H - 6, Cz)), ECC_Visibility, Q);
@@ -1877,7 +1885,7 @@ bool US47World::CabRadio()
 
 // ---------- per frame ----------
 
-void US47World::Update(double Dt, double T) { (void)Dt; (void)T; VehicleChoices(); }
+void US47World::Update(double Dt, double T) { (void)Dt; (void)T; S47FarmWorld::Reconcile(M);VehicleChoices(); }
 
 bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn, FS47View& Out)
 {
@@ -2185,4 +2193,56 @@ void US47World::VehicleChoices()
   Proxy.SetRotation(FVector(0,H,0));
  };
  Bind(PersonalUseBox,TEXT("personalVehicle"),true); Bind(ServiceUseBox,TEXT("parkedServiceVehicle"),false);
+}
+
+void US47World::MoveHerdObstacle(const FString& HerdArea,const FVector& Old,const FVector& New,double Radius)
+{
+ if(auto* L=Legs.Find(HerdArea==TEXT("diner")?TEXT("road"):HerdArea))
+ {
+  bool Found=false;
+  for(auto& O:L->Area->Obstacles)if(O.bCircle&&FMath::Abs(O.X-Old.X)<.001&&FMath::Abs(O.Z-Old.Z)<.001)
+  {O.X=New.X;O.Z=New.Z;O.R=Radius;Found=true;}
+  // The exported SARO copy omits the optional ninth circle. Restore a visible
+  // cow's own footprint if the selected mode includes it.
+  if(!Found&&Radius>0&&!HasHerdObstacle(HerdArea,New,Radius))L->Area->Obstacles.Add(FS47Obstacle::Circle(New.X,New.Z,Radius));
+ }
+}
+bool US47World::HasHerdObstacle(const FString& HerdArea,const FVector& At,double Radius) const
+{
+ const auto* L=Legs.Find(HerdArea==TEXT("diner")?TEXT("road"):HerdArea);if(!L)return false;
+ if(Radius<=0)return !L->Area->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-At.X)<.001&&FMath::Abs(O.Z-At.Z)<.001&&O.R>0;});
+ return L->Area->Obstacles.ContainsByPredicate([&](const FS47Obstacle& O){return O.bCircle&&FMath::Abs(O.X-At.X)<.001&&FMath::Abs(O.Z-At.Z)<.001&&FMath::Abs(O.R-Radius)<.001;});
+}
+
+void US47World::ReconcileFarm(bool bEnabled)
+{
+ EnsureLegs();if(!bLegsMade)return;
+ if(auto* L=Legs.Find(TEXT("saro")))static_cast<FS47SaroDrive*>(L->Area.Get())->bFreeformFarm=bEnabled;
+ if(!bFarmObstaclesReady)
+ {
+  for(const FString& Id:{FString(TEXT("saro")),FString(TEXT("road"))})if(auto* L=Legs.Find(Id))
+  {
+   const FVector O=Id==TEXT("saro")?FVector(-24,0,300):FVector(8000,0,0);auto& Obs=L->Area->Obstacles;auto& Controlled=FarmControlledObstacles.FindOrAdd(Id);
+   const double GateZ=S47RoadTerrain::RanchZ(21)+O.Z,G0=GateZ-3.4,G1=GateZ+3.4;const int32 Num=Obs.Num();
+   auto Add=[&](FS47Obstacle B){const int32 Index=Obs.Add(B);Controlled.Add({-Index-1,B});};
+   for(int32 I=0;I<Num;++I)
+   {
+    const auto B=Obs[I];if(B.bCircle||FMath::Abs((B.MinX+B.MaxX)*.5-(21+O.X))>.2||B.MaxX-B.MinX>.5||B.MinZ>=G1||B.MaxZ<=G0)continue;
+    Controlled.Add({I,B}); // Retire only this exact gate/fence span in Freeform; preserve its outside spans.
+    if(B.MinZ<G0)Add(FS47Obstacle::Box(B.MinX,B.MaxX,B.MinZ,G0));
+    if(B.MaxZ>G1)Add(FS47Obstacle::Box(B.MinX,B.MaxX,G1,B.MaxZ));
+   }
+   auto Box=[&](double X0,double X1,double Z0,double Z1){Add(FS47Obstacle::Box(X0+O.X,X1+O.X,Z0+O.Z,Z1+O.Z));};
+   // Solid exteriors stay solid. This delivery opens the farm grounds, not the background shed interiors.
+   Box(101,115,187,197);Box(126,146,164,177);Box(148,156,196,204);Box(30,30,215,265);Box(80,80,215,265);Box(30,80,265,265);Box(30,66,215,215);Box(75,80,215,215);
+  }
+  bFarmObstaclesReady=true;
+ }
+ const bool Changed=bFarmMode!=bEnabled;bFarmMode=bEnabled;
+ for(const auto& Pair:FarmControlledObstacles)if(auto* L=Legs.Find(Pair.Key))for(const auto& Entry:Pair.Value)
+ {
+  const bool Added=Entry.Key<0;const int32 I=Added?-Entry.Key-1:Entry.Key;if(!L->Area->Obstacles.IsValidIndex(I))continue;
+  auto B=Entry.Value;if((Added&&!bEnabled)||(!Added&&bEnabled)){B.MinX+=1000000;B.MaxX+=1000000;}L->Area->Obstacles[I]=B;
+ }
+ if(Changed)Under.Reset();
 }

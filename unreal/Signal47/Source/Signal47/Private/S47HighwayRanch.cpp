@@ -1,5 +1,9 @@
 // Share only the existing ranch triangles across the ordinary road/SARO handoff.
 #include "S47Web.h"
+#include "S47FarmWorld.h"
+#include "S47Main.h"
+#include "S47RoadTerrain.h"
+#include "S47HighwayLandscape.h"
 #include "S47Geo.h"
 #include "S47Three.h"
 #include "Components/StaticMeshComponent.h"
@@ -27,8 +31,10 @@ namespace
  struct FPart
  {
   FExpected Source{};
-  TStrongObjectPtr<UStaticMesh> Original;
-  TWeakObjectPtr<UStaticMesh> RestMesh,FarmMesh;
+  // Both mode variants must outlive a mesh swap; an unbound weak reference
+  // would be collected before returning from Freeform to Story.
+  TStrongObjectPtr<UStaticMesh> Original,GroundedFarm,RestMesh,FarmMesh;
+ FString GroundedHash;
   TWeakObjectPtr<UStaticMeshComponent> Rest,Farm;
   int32 FarmNode=INDEX_NONE;
   FTransform OriginalTransform;
@@ -287,7 +293,7 @@ void AS47Web::BuildHighwayRanch()
    UE_LOG(LogS47HighwayRanch,Warning,TEXT("S47: highway ranch reject g%d branch=original-mutated beforeSHA1=%s afterSHA1=%s verticesBeforeSHA1=%s verticesAfterSHA1=%s"),E.Geo,*Part.OriginalHash,*AfterOriginal,*Part.VertexHash,*VertexHash(Mesh->GetRenderData()->LODResources[0]));
    Reject(*FString::Printf(TEXT("g%d original source fingerprint changed"),E.Geo));return;
   }
-  Part.RestMesh=Rest;Part.FarmMesh=Farm;Part.RestHash=MeshHash(Rest);Part.FarmHash=MeshHash(Farm);Ready->Parts.Add(MoveTemp(Part));
+  Part.RestMesh.Reset(Rest);Part.FarmMesh.Reset(Farm);Part.RestHash=MeshHash(Rest);Part.FarmHash=MeshHash(Farm);Ready->Parts.Add(MoveTemp(Part));
  }
  // All six clones and their exact buffer/index/slot checks are complete. UE5.8
  // SetStaticMesh requires initialized render data even on an unregistered component.
@@ -343,21 +349,119 @@ bool AS47Web::AuditHighwayRanch(TArray<FString>& Lines) const
   Check(R&&F&&MeshHash(R)==Part.RestHash&&MeshHash(F)==Part.FarmHash&&ExactIndices(R,Part.RestSelection)&&ExactIndices(F,Part.FarmSelection),Label+TEXT(" exact partition fingerprints/index order retained"));
   Check(R&&F&&Original&&R->GetStaticMaterials()==Original->GetStaticMaterials()&&F->GetStaticMaterials()==Original->GetStaticMaterials(),Label+TEXT(" original static material slots retained"));
   Check(R&&F&&R->bSupportRayTracing&&F->bSupportRayTracing,Label+TEXT(" solid native ray tracing policy retained"));
-  Check(Rest&&R&&Rest->GetStaticMesh()==R&&Original&&R->GetBodySetup()==Original->GetBodySetup()&&Rest->GetCollisionEnabled()==Part.Collision&&Rest->GetCollisionResponseToChannels()==Part.Responses
+  Check(Rest&&R&&(Rest->GetStaticMesh()==R||S47FarmWorld::IsGateRemainder(this,Rest,R))&&Original&&R->GetBodySetup()==Original->GetBodySetup()&&Rest->GetCollisionEnabled()==Part.Collision&&Rest->GetCollisionResponseToChannels()==Part.Responses
    &&Rest->bHiddenInGame==Part.Hidden&&Rest->CastShadow==Part.Shadow&&Rest->bVisibleInRayTracing==Part.RayVisible&&Rest->GetComponentTransform().Equals(Part.OriginalTransform,.03),Label+TEXT(" original remainder component transform/collision/render flags retained"));
   Check(Source&&Source->Parent==1289&&Source->Geo==Part.Source.Geo&&Source->Mats==TArray<int32>{Part.Source.Material}&&Source->bVis==Part.AuthoredVisible,Label+TEXT(" source metadata/visibility producer retained"));
-  Check(Farm&&F&&Farm->GetStaticMesh()==F&&Farm->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&!Farm->bHiddenInGame&&Farm->IsRegistered()
+  Check(Farm&&F&&(Farm->GetStaticMesh()==F||(S47FarmWorld::Enabled(US47Main::Get(this))&&Part.GroundedFarm.Get()&&Farm->GetStaticMesh()==Part.GroundedFarm.Get()&&MeshHash(Part.GroundedFarm.Get())==Part.GroundedHash&&ExactIndices(Part.GroundedFarm.Get(),Part.FarmSelection)))&&Farm->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&!Farm->bHiddenInGame&&Farm->IsRegistered()
    &&Shared&&Shared->Name==FString::Printf(TEXT("highway:ranch:g%d"),Part.Source.Geo)&&Shared->Parent==1240&&Shared->Mats==TArray<int32>{Part.Source.Material}&&HighwaySharedNodes.Contains(Part.FarmNode),Label+TEXT(" exactly the shared ranch is NoCollision in canonical landscape"));
   bool Materials=Rest&&Farm&&Rest->GetNumMaterials()==Farm->GetNumMaterials();
   if(Materials)for(int32 Slot=0;Slot<Rest->GetNumMaterials();++Slot)Materials&=Rest->GetMaterial(Slot)&&Rest->GetMaterial(Slot)==Farm->GetMaterial(Slot);
   Check(Materials,Label+TEXT(" actual original material producer bindings agree"));
   Check(RenderFlags(Rest)==Part.RenderFlags&&RenderFlags(Farm)==Part.RenderFlags&&Rest&&Farm&&Rest->MinDrawDistance==Farm->MinDrawDistance&&Rest->LDMaxDrawDistance==Farm->LDMaxDrawDistance&&Rest->BoundsScale==Farm->BoundsScale,Label+TEXT(" original occluder/depth/capture/decal/shadow/emissive/stencil and culling flags retained"));
-  FTransform Want=Part.OriginalTransform;Want.AddToTranslation(S47Three::ToUE(CurrentArea==TEXT("saro")?-SaroToRoad:FVector::ZeroVector));
-  const bool Visible=CurrentArea==TEXT("saro")||CurrentArea==TEXT("road")||CurrentArea==TEXT("diner");
+  FTransform Want=Part.OriginalTransform;Want.AddToTranslation(S47Three::ToUE(S47FarmWorld::HouseOffset(US47Main::Get(this))));Want=Want*S47HighwayLandscape::AreaTransform(CurrentArea);
+  const bool Visible=S47HighwayLandscape::Exterior(CurrentArea);
   Check(Farm&&Farm->GetComponentTransform().Equals(Want,.03)&&Farm->IsVisible()==Visible,Label+TEXT(" canonical offset and active-area visibility retained"));
   Check(F&&F->GetBounds().GetBox().Equals(Part.FarmSelection.Bounds,.03),Label+TEXT(" selected ranch bounds, local coordinates unchanged"));
   if(F&&F->GetRenderData())FarmTriangles+=F->GetRenderData()->LODResources[0].GetNumTriangles();
   if(R&&R->GetRenderData())RestTriangles+=R->GetRenderData()->LODResources[0].GetNumTriangles();
  }
  Check(FarmTriangles==300&&RestTriangles==3972,TEXT("exactly 300 ranch +3972 remainder =4272 original triangles"));return Good;
+}
+
+namespace
+{
+ struct FFarmGate
+ {
+  TWeakObjectPtr<UStaticMeshComponent> Source,Gate;
+  TStrongObjectPtr<UStaticMesh> Original,Remainder,Leaf;
+  FTransform Rest;int32 Node=INDEX_NONE;
+ };
+ TWeakObjectPtr<AS47Web> FarmGateWorld;TArray<FFarmGate> FarmGates;
+ bool GateSelection(UStaticMesh* Mesh,int32 ExpectedTriangles,FSelection& Gate,FSelection& Rest)
+ {
+  if(!Mesh||!Mesh->bAllowCPUAccess||!Mesh->GetRenderData()||Mesh->GetNumLODs()!=1)return false;
+  const auto& L=Mesh->GetRenderData()->LODResources[0];const auto& P=L.VertexBuffers.PositionVertexBuffer;
+  if(L.GetNumTriangles()!=ExpectedTriangles||!P.GetVertexData()||!L.IndexBuffer.GetIndexDataSize())return false;
+  TArray<uint32> All;L.IndexBuffer.GetCopy(All);if(All.Num()!=ExpectedTriangles*3)return false;
+  for(const auto& Section:L.Sections)
+  {
+   auto G=Section,R=Section;G.FirstIndex=Gate.Indices.Num();R.FirstIndex=Rest.Indices.Num();G.NumTriangles=R.NumTriangles=0;
+   for(uint32 K=Section.FirstIndex;K<Section.FirstIndex+Section.NumTriangles*3;K+=3)
+   {
+    if(K+2>=uint32(All.Num()))return false;bool Inside=true;
+    for(int32 C=0;C<3;++C){if(All[K+C]>=P.GetNumVertices())return false;const FVector V=S47Three::ToThree(FVector(P.VertexPosition(All[K+C])));Inside&=V.X>=20.969&&V.X<=21.031&&V.Z>=193.30&&V.Z<=199.82;}
+    auto& Out=Inside?Gate:Rest;auto& S=Inside?G:R;Out.Indices.Append({All[K],All[K+1],All[K+2]});++S.NumTriangles;
+    for(int32 C=0;C<3;++C)Out.Bounds+=FVector(P.VertexPosition(All[K+C]));
+   }
+   if(G.NumTriangles)Gate.Sections.Add(G);if(R.NumTriangles)Rest.Sections.Add(R);
+  }
+  return Gate.Indices.Num()==192*3&&Rest.Indices.Num()==(ExpectedTriangles-192)*3;
+ }
+}
+void AS47Web::ReconcileFarmRanch(bool bFreeform)
+{
+ if(!HighwayRanch.IsValid()||!HighwayLandscapeReady())return;
+ const FVector Offset=bFreeform?FVector(-310,0,0):FVector::ZeroVector;
+ for(auto& Part:HighwayRanch->Parts)if(auto* C=Part.Farm.Get())
+ {
+  if(bFreeform&&!Part.GroundedFarm.Get())
+  {
+   auto* Copy=Clone(this,Part.Original.Get(),Part.FarmSelection,true,Part.Source.Geo);if(!Copy)return;
+   auto& Data=*Copy->GetRenderData();auto& Positions=Data.LODResources[0].VertexBuffers.PositionVertexBuffer;TSet<uint32> Used;
+   // Each existing structure stays rigid. Translate vertical position by the terrain change at
+   // that structure's authored anchor; never drape a roof or change original source buffers.
+   const FVector2D Anchors[]={{418,192},{446,170},{462,200},{456,214},{432,204}};
+   FBox NewBounds(ForceInit);
+   for(uint32 I:Part.FarmSelection.Indices)if(!Used.Contains(I))
+   {
+    Used.Add(I);FVector V=S47Three::ToThree(FVector(Positions.VertexPosition(I)));int32 Best=0;double Distance=1e30;
+    for(int32 K=0;K<UE_ARRAY_COUNT(Anchors);++K){const double D=FVector2D::DistSquared({V.X,V.Z},Anchors[K]);if(D<Distance){Distance=D;Best=K;}}
+    const auto A=Anchors[Best];V.Y+=S47RoadTerrain::SurfaceY(A.X-310,A.Y)-S47RoadTerrain::SurfaceY(A.X,A.Y);Positions.VertexPosition(I)=FVector3f(S47Three::ToUE(V));NewBounds+=FVector(Positions.VertexPosition(I));
+   }
+   Data.Bounds=FBoxSphereBounds(NewBounds);Data.LODResources[0].SourceMeshBounds=Data.Bounds;Copy->SetExtendedBounds(Data.Bounds);Copy->InitResources();Part.GroundedFarm.Reset(Copy);Part.GroundedHash=MeshHash(Copy);
+  }
+  UStaticMesh* Wanted=bFreeform?Part.GroundedFarm.Get():Part.FarmMesh.Get();if(C->GetStaticMesh()!=Wanted){auto Materials=C->GetMaterials();C->SetStaticMesh(Wanted);for(int32 I=0;I<Materials.Num();++I)C->SetMaterial(I,Materials[I]);}
+  FTransform Canon=Part.OriginalTransform;Canon.AddToTranslation(S47Three::ToUE(Offset));
+  if(!C->GetRelativeTransform().Equals(Canon,.0001)){HighwayVisuals.FindOrAdd(Part.FarmNode)=Canon;C->SetRelativeTransform(Canon);}
+ }
+ if(FarmGateWorld!=this){FarmGates.Reset();FarmGateWorld=this;}
+ if(FarmGates.IsEmpty())
+ {
+  TArray<FFarmGate> Pending;
+  for(int32 NodeId:{984,1302})
+  {
+   const auto* N=Node(NodeId);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
+   FSelection Gate,Rest;if(!GateSelection(Mesh,NodeId==984?1064:3460,Gate,Rest))return;
+   UStaticMesh* G=Clone(this,Mesh,Gate,true,NodeId==984?678:911),*R=Clone(this,Mesh,Rest,false,NodeId==984?678:911);if(!G||!R)return;
+   G->InitResources();R->InitResources();FFarmGate E;E.Source=C;E.Original.Reset(Mesh);E.Remainder.Reset(R);E.Leaf.Reset(G);E.Rest=C->GetRelativeTransform();E.Node=NodeId;Pending.Add(MoveTemp(E));
+  }
+  for(auto& E:Pending)
+  {
+   auto* C=NewObject<UStaticMeshComponent>(this);C->SetupAttachment(E.Source->GetAttachParent());C->SetMobility(E.Source->Mobility);C->SetStaticMesh(E.Leaf.Get());CopyRenderFlags(E.Source.Get(),C);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+   for(int32 I=0;I<E.Source->GetNumMaterials();++I)C->SetMaterial(I,E.Source->GetMaterial(I));C->RegisterComponent();E.Gate=C;AdoptNode(C,Node(E.Node)->Parent,E.Node==984?TEXT("farm:gate:saro"):TEXT("farm:gate:road"));
+  }
+  FarmGates=MoveTemp(Pending);UE_LOG(LogS47HighwayRanch,Display,TEXT("S47 farm gates: exact192 triangles per area isolated; original source assets retained"));
+ }
+ for(auto& E:FarmGates)if(auto* Source=E.Source.Get())if(auto* Gate=E.Gate.Get())
+ {
+  UStaticMesh* Wanted=bFreeform?E.Remainder.Get():E.Original.Get();if(Source->GetStaticMesh()!=Wanted){auto Materials=Source->GetMaterials();Source->SetStaticMesh(Wanted);for(int32 I=0;I<Materials.Num();++I)Source->SetMaterial(I,Materials[I]);}
+  const FVector Pivot=S47Three::ToUE(21,0,193.334213);const FTransform Turn=FTransform(-Pivot)*FTransform(FQuat(FVector::UpVector,-UE_DOUBLE_HALF_PI))*FTransform(Pivot);
+  const FTransform GateAt=Turn*E.Rest;if(!Gate->GetRelativeTransform().Equals(GateAt,.0001))Gate->SetRelativeTransform(GateAt);Gate->SetHiddenInGame(!bFreeform);Gate->SetVisibility(bFreeform&&Source->IsVisible());
+ }
+}
+namespace S47FarmWorld
+{
+ bool IsGateRemainder(const AS47Web* W,const UStaticMeshComponent* C,const UStaticMesh* Source)
+ {
+  if(FarmGateWorld!=W)return false;
+  for(const auto& E:FarmGates)if(E.Node==1302&&E.Source.Get()==C&&E.Original.Get()==Source&&C->GetStaticMesh()==E.Remainder.Get()&&E.Remainder.Get()!=nullptr&&Source->GetNumTriangles(0)==3460&&E.Remainder->GetNumTriangles(0)==3268&&E.Leaf.Get()!=nullptr&&E.Leaf->GetNumTriangles(0)==192&&E.Remainder->GetStaticMaterials()==Source->GetStaticMaterials())return true;
+  return false;
+ }
+ void ReconcileRanch(US47Main* M){if(M&&M->Web)M->Web->ReconcileFarmRanch(Enabled(M));}
+ bool GateReady(const US47Main* M)
+ {
+  if(!M||FarmGateWorld!=M->Web.Get()||FarmGates.Num()!=2)return false;
+  for(const auto& E:FarmGates)if(!E.Source.IsValid()||!E.Gate.IsValid()||!E.Original.Get()||!E.Leaf.Get()||E.Leaf->GetNumTriangles(0)!=192||E.Source->GetStaticMesh()!=(Enabled(M)?E.Remainder.Get():E.Original.Get()))return false;
+  return true;
+ }
 }

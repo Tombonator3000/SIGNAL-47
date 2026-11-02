@@ -2,6 +2,7 @@
 #include "S47Props.h"
 #include "S47StationPhone.h"
 #include "S47StationWorldRoute.h"
+#include "S47FarmWorldTest.h"
 #include "S47TerrainStripTest.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
@@ -1058,6 +1059,7 @@ void AS47Props::Tick(float DeltaSeconds)
 	if (!W) return;
 	S47StationPhone::Update(W);
 	S47StationWorldRoute::Update(W);
+	S47FarmWorldTest::Update(W);
 	S47TerrainStripTest::Update(W);
 	for (FSwing& S : Swings)
 	{

@@ -109,6 +109,7 @@ public:
 	FVector HighwayMapEye(const FVector& ThreeEye) const;
 	bool AuditHighwayLandscape(TArray<FString>& Lines) const;
 	bool AuditHighwayRanch(TArray<FString>& Lines) const;
+	void ReconcileFarmRanch(bool bFreeform);
 	bool AuditSaroArrival(TArray<FString>& Lines) const;
 	bool AuditCalicheHomes(TArray<FString>& Lines) const;
 	void RadioWomanAfterTownStep();
