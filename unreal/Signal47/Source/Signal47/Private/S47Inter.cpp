@@ -43,6 +43,14 @@ bool US47Inter::IsLook(const FString& Id) const
 
 FString US47Inter::LabelOf(const FString& Id) const
 {
+	// Mode-owned actions already win in HUD::Use. Give their visible prompts
+	// the same priority: inactive Story bindings otherwise hide the run binder.
+	US47Main* M = US47Main::Get(Web);
+	if (M && M->IsFreeform() && M->Freeform && M->Freeform->Active())
+	{
+		const FString Label = M->Freeform->Label(Id);
+		if (!Label.IsEmpty()) return Label;
+	}
 	if (const int32* I = ById.Find(Id)) return Items[*I].Label ? Items[*I].Label() : FString();
 	return FallbackLabel ? FallbackLabel(Id) : FString();
 }
