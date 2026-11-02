@@ -4,6 +4,16 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Nattskiftet 1. til 2. november er avsluttet
+
+Sluttkontroll 2. november kl. 08:01 CET. Sju nattoppdateringer er installert; gjeldende spillversjon er `bfa1c26d` fra kl. 07:03. Siste pakke består 1997 selvtester og installert Fortsett. Alle 164 personlige Saved-elementer er bevart.
+
+Natten leverte felles fysisk Story-/Freeform-PC og signalveiledning, lokal S-03-service og Jeep-last, lagrede rombrytere og dagsstyrte utelys, utstyrsrespons og en reaktiv lyshendelse, fungerende bevisinnlevering, sammenhengende Station01-adgang, telefon-/gjerde-/motellskiltrettelser, åpen Alderete-gård og synlig trafostrøm med tett rampeskjøt. De sju leveringsavsnittene nedenfor beskriver faktisk prøving og begrensninger.
+
+Fortsatt åpent: WORLD01s svarte terrengstriper, WORLD04s SARO-veggfeil, motellkontorets rapporterte veggfeil og den eldre SARO-renderstansen. Survey-polering, finere motellneon og menneskelig lytte-/spillaksept gjenstår. Den siste 48,5 m inngangs-/OPS-/Rest-prøven gjenskapte ikke veggfeilen; ingen årsaksretting er påstått. [Åpne oppgaver](TODO.md).
+
+Alle ferdige endringer er sikret gjennom PR-er til main. Egne motorjobber er avsluttet, og den private diagnosekoden er tatt ut igjen. Engangsautomasjonen `signal-47-nattskift-22-08` er slettet. De tre tidligere beskyttede untracked-områdene er urørt. Ingen ny rydding eller spillinstallasjon inngår i morgenkontrollen.
+
 ## Sjuende nattleveranse: lukket skjøt ved traforampen
 
 Runtime `bfa1c26d`, [PR340](https://github.com/Tombonator3000/SIGNAL-47/pull/340), er installert 2. november kl. 07:03 CET. Grusen møter rampens sider og tå på alle tre LOD-er. De øvrige Field-modellene/materialene, gulv og T02-ankre er bevart; kulverten beholdes som fungerende T02-referanse.

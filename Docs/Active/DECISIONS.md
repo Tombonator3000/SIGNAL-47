@@ -1,12 +1,12 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 1. november 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 2. november 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
 ## Nattskift 1. til 2. november 2026
 
-Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Oslo, for å gjennomføre mest mulig av TODO. Prioriter felles fysisk PC-betjening og lysstyring, deretter tydelig utstyrsrespons, etterprøvbare arbeidsrelaterte hendelser og skrekk som reagerer på spillerens handlinger. Se [nattprioriteringene](TODO.md#nattskift-1-november-kl2200-til-2-november-kl0800). Aktiv trådautomasjon er `signal-47-nattskift-22-08`; dette er ett nattskift, ikke en stående daglig bestilling. Vanlige prosjektregler om kildevern, reduserte tester, én tung jobb og samlet opprydding gjelder.
+Tom bestilte1. november arbeid fra kl.22:00 til kl.08:00 neste morgen, Europe/Oslo, for å gjennomføre mest mulig av TODO. Prioriter felles fysisk PC-betjening og lysstyring, deretter tydelig utstyrsrespons, etterprøvbare arbeidsrelaterte hendelser og skrekk som reagerer på spillerens handlinger. Se [nattprioriteringene](TODO.md#nattskift-1-november-kl2200-til-2-november-kl0800). Engangsbestillingen er avsluttet 2. november ved fristen kl. 08:00; trådautomasjonen `signal-47-nattskift-22-08` er slettet. Dette var ett nattskift, ikke en stående daglig bestilling. Vanlige prosjektregler om kildevern, reduserte tester, én tung jobb og samlet opprydding gjelder.
 
 ## Freeform-verdensprøve 1. november
 

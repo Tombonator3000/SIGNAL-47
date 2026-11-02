@@ -6,9 +6,9 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Nattskift 1. november kl.22:00 til 2. november kl.08:00
 
-Tom har bestilt selvstendig nattarbeid gjennom hele dette vinduet, Europe/Oslo, for å gjennomføre mest mulig av den åpne TODO-listen. Aktiv trådautomasjon: `signal-47-nattskift-22-08`. Gjenopptak hvert20. minutt i arbeidsvinduet; ingen nye nattkjøringer etter fristen. Dette gjelder bare denne natten.
+Nattskiftet er avsluttet 2. november ved fristen kl. 08:00 Europe/Oslo, med sluttkontroll kl. 08:01. Sju oppdateringer er installert; siste versjon er `bfa1c26d` fra kl. 07:03. Engangsautomasjonen `signal-47-nattskift-22-08` er slettet. Åpne oppgaver nedenfor beholdes til videre arbeid; dette var ingen fast nattlig bestilling. [Morgenstatus](STATUS.md#nattskiftet-1-til-2-november-er-avsluttet).
 
-Arbeidsrekkefølge, med akutte krasj-/lagrings-/progresjonsfeil foran:
+Nattens arbeidsrekkefølge, med akutte krasj-/lagrings-/progresjonsfeil foran:
 
 1. **WORLD-04:** fortsett den konkrete veggundersøkelsen. TRUCK-01 og ARRAY-02 er installert og målrettet kontrollert i første nattleveranse.
 2. **MODE-08 og UI-01-51/52 er installert:** følg bare opp konkrete nye feil; fortsett med romlys og åpne P1-oppgaver.
