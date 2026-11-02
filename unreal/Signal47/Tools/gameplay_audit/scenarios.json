@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "agent_roles": {
+    "workflow": "Trace actual callbacks, gates and persistence in Story and Freeform. Cite production source, not only tests.",
+    "clarity": "Read the same journey as a new player. Compare objective, terminal, interaction label, notebook and failure feedback at each transition.",
+    "progression": "Review economy, service, timing, events and meaningful decisions across multiple days. Distinguish tuning proposals from defects.",
+    "reference": "Check current primary reference-game sources. Map each lesson to existing SIGNAL47 mechanics and cost; no asset copying.",
+    "coordinator": "Dispatch parallel read-only reviews, reconcile conflicting findings, deduplicate against TODO and choose one minimal verification per claimed defect. Own all shared edits.",
+    "native_driver": "Only agent permitted to send OS input during the reserved session. Uses visible prompts and images, records uncertainty, never reads hidden solutions or calls game methods.",
+    "beta_critic": "Read captured native-session images independently. Judge task/TAB clarity and backtracking; distinguish native input evidence from fixtures and human acceptance."
+  },
+  "finding_schema": {
+    "required": [
+      "id",
+      "priority",
+      "owner",
+      "scenario",
+      "confidence",
+      "trigger",
+      "consequence",
+      "fix",
+      "acceptance",
+      "evidence"
+    ],
+    "priority": [
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "confidence": [
+      "source_confirmed",
+      "save_observed",
+      "risk",
+      "proposal",
+      "runtime_observed",
+      "human_observed"
+    ],
+    "evidence": "Nonempty array of file:line, existing test artifact or primary URL references. Human/runtime claims must cite the actual session; source inspection alone cannot grant them."
+  },
+  "scenarios": [
+    {
+      "id": "routine",
+      "owner": "workflow",
+      "title": "Routine observation to payment",
+      "steps": [
+        "Select at OPS",
+        "Point at tracking PC",
+        "Wait for real encoders",
+        "Tune and acquire",
+        "Collect original",
+        "Return to OPS",
+        "Register routine result",
+        "Reopen receiver/printer and confirm next action"
+      ],
+      "acceptance": "One clear next action per station; original preserved; payment exactly once; no printer loop."
+    },
+    {
+      "id": "anomaly",
+      "owner": "workflow",
+      "title": "Anomalous observation to physical archive",
+      "steps": [
+        "Acquire and retain original",
+        "Choose independent control",
+        "Complete control",
+        "Review both records or measured instrument evidence",
+        "Register supported conclusion",
+        "Collect labelled packet",
+        "File at actual binder"
+      ],
+      "acceptance": "Original is immutable; no unsupported certainty; failed prerequisite names the exact missing action; progression survives interruption."
+    },
+    {
+      "id": "service",
+      "owner": "progression",
+      "title": "S-03 diagnosis, supply and verified restoration",
+      "steps": [
+        "Diagnose on status PC",
+        "Choose local stock or supply trip",
+        "Buy and physically load correct part",
+        "Deliver to bench",
+        "Open/isolate actual S-03 cabinet",
+        "Replace relay",
+        "Run movement test",
+        "Sign off at OPS",
+        "Resume prior observation"
+      ],
+      "acceptance": "Guide follows actual inventory and diagnosis, respects route choice and yields focus when deferred; restored state and cost persist."
+    },
+    {
+      "id": "power",
+      "owner": "progression",
+      "title": "Power failure without economic dead end",
+      "steps": [
+        "Interrupt work with diagnosed power loss",
+        "Inspect feeder and stock",
+        "Try normal repair and backup",
+        "Try empty wallet/stock/fuel recovery route",
+        "Restore power",
+        "Resume retained work"
+      ],
+      "acceptance": "Each blocked action explains cause and an attainable recovery; no fabricated acquisition, loss of originals or hidden mandatory purchase."
+    },
+    {
+      "id": "continue",
+      "owner": "workflow",
+      "title": "Interruption, selection and Continue",
+      "steps": [
+        "Save at chart/recorded/packet stages",
+        "Switch job and return",
+        "Restart with Continue in an isolated profile",
+        "Inspect objective and physical equipment",
+        "Complete remaining action"
+      ],
+      "acceptance": "Selected job, measurements, documents, cargo and money agree; no duplicate reward or lost prerequisite; live encoder restoration is explicit."
+    },
+    {
+      "id": "day_loop",
+      "owner": "progression",
+      "title": "Several days of work, rest and backlog",
+      "steps": [
+        "Complete one routine and one investigation",
+        "Leave one job unfinished",
+        "Rest or cross daylight/night boundary",
+        "Inspect new and old work",
+        "Choose a meaningful follow-up",
+        "Return after travel and spend income"
+      ],
+      "acceptance": "Backlog and priorities remain readable; unfinished work stays reachable; quiet periods, rewards and upgrades provide observable choices."
+    },
+    {
+      "id": "story",
+      "owner": "workflow",
+      "title": "Story work loop into scheduled night events",
+      "steps": [
+        "Begin new Story",
+        "Complete guided SARO routine",
+        "Encounter first deviation",
+        "Perform control and retain evidence",
+        "Advance through power/travel gates",
+        "Continue after interruption"
+      ],
+      "acceptance": "Story and Freeform gates do not leak; scheduled events allow current action to resolve; next location and cause are understandable."
+    },
+    {
+      "id": "reference_lessons",
+      "owner": "reference",
+      "title": "Reference-game lessons checked against existing systems",
+      "steps": [
+        "Read official current game description and devlogs",
+        "Extract player decisions and feedback loops",
+        "Compare existing SIGNAL47 implementation",
+        "Suggest one small adaptation per gap"
+      ],
+      "acceptance": "Every lesson has source, adaptation, expected player benefit, cost and a bounded acceptance trial; inspiration is not proof of equivalent behavior."
+    },
+    {
+      "id": "live_capture",
+      "owner": "workflow",
+      "title": "Detuning during a live acquisition",
+      "steps": [
+        "Start a physically settled acquisition",
+        "Move frequency or gain out of tolerance mid-recording",
+        "Restore valid tuning",
+        "Finish and inspect retained data and quality"
+      ],
+      "acceptance": "Only valid signal intervals contribute, or an explicitly degraded/invalid result explains the disturbance; completion cannot imply a clean acquisition."
+    },
+    {
+      "id": "audio_identity",
+      "owner": "clarity",
+      "title": "Heard original agrees with captured observation",
+      "steps": [
+        "Select a recorded observation",
+        "Play its original on the reel deck",
+        "Play control",
+        "Switch job and return",
+        "Compare audible ticks against timestamps and printed observation"
+      ],
+      "acceptance": "Playback identity, waveform, ticks and retained measurement refer to the same selected job; no default demonstration audio presented as evidence."
+    },
+    {
+      "id": "upgrade_effect",
+      "owner": "progression",
+      "title": "Paid upgrade has a measurable consumer",
+      "steps": [
+        "Read upgrade promise",
+        "Compare baseline relevant behavior",
+        "Purchase upgrade once",
+        "Repeat relevant condition",
+        "Continue and inspect effect and price"
+      ],
+      "acceptance": "Purchase survives Continue, avoids duplicate charge and changes the advertised mechanic; unused flags or already-free capabilities are not sold as improvements."
+    },
+    {
+      "id": "native_input_smoke",
+      "owner": "native_driver",
+      "title": "Guarded native keyboard, mouse and capture smoke test",
+      "steps": [
+        "Check idle reservation, unlocked desktop and isolated profile",
+        "Launch ordinary title menu",
+        "Activate only PID-bound window",
+        "Move mouse and select a visible menu item",
+        "Open/close TAB through native keyboard",
+        "Capture and independently inspect the result"
+      ],
+      "acceptance": "Actual displayed response follows OS input; loss of focus/lock sends no further input and releases held keys; no callbacks or test flags are substituted."
+    },
+    {
+      "id": "notebook_beta",
+      "owner": "native_driver",
+      "title": "Fresh-player TAB comprehension and retrieval",
+      "steps": [
+        "Read Tasks before choosing the first work order",
+        "Use Q/E and visible tabs to find notes and papers",
+        "Collect original through ordinary printer interaction",
+        "Use TAB to identify completed work and next destination",
+        "Retrieve the correct original with keyboard and mouse",
+        "Continue the isolated case and repeat retrieval"
+      ],
+      "acceptance": "Player can state done/remaining/next location from visible information; original remains findable; focus, scrolling and dismissal work; hidden-code assistance is logged as a comprehension failure."
+    },
+    {
+      "id": "photo_economy",
+      "owner": "native_driver",
+      "title": "Photographs, film cost and retained originals",
+      "steps": [
+        "Read visible cash, film availability and camera instructions",
+        "Take one ordinary photograph using normal camera controls",
+        "Open its actual print from TAB Photos and identify caption/time",
+        "Compare film and budget before/after with the stated price policy",
+        "Buy, transport and load film through visible supplies and bench controls if needed",
+        "Confirm old photographs remain accessible after refill and Continue"
+      ],
+      "acceptance": "Player can explain what the exposure and refill cost; each successful action consumes only the stated resources once; technical capture failure follows its stated refund policy; originals remain distinct and reachable; no hidden save edits or free film fixtures."
+    },
+    {
+      "id": "economy_beta",
+      "owner": "native_driver",
+      "title": "Visible income, spending and bounded emergency recovery",
+      "steps": [
+        "Record visible initial cash/debt and accepted job",
+        "Complete one routine job and register once",
+        "Repeat registration/opening and inspect balance",
+        "Buy an offered useful supply and verify price, physical receipt and effect",
+        "If a genuine shortage occurs, follow the shown emergency repair option",
+        "Inspect cash/debt after Continue and next earned payment"
+      ],
+      "acceptance": "Visible accounts reconcile with actual actions; duplicate clicks/Continue do not duplicate income or purchases; paid upgrades have a visible consumer; recovery is attainable at actual low budget; if shortage does not occur naturally the scenario stays NOT_OBSERVED rather than being silently manufactured."
+    },
+    {
+      "id": "printer_queue",
+      "owner": "workflow",
+      "title": "Physical printer serves pending work across selection",
+      "steps": [
+        "Retain a completed chart",
+        "Select another idle job",
+        "Use the physical printer",
+        "Check selected work, original and next action",
+        "Repeat with an active recording/control and pending other job",
+        "Repeat original pickup and packet filing during actual outage"
+      ],
+      "acceptance": "Queue picks current waiting job or first pending job; active capture/control blocks switching with explicit feedback; original pickup and existing packet filing remain possible without power; printing a new packet/duplicate still needs power."
+    },
+    {
+      "id": "photo_registration",
+      "owner": "progression",
+      "title": "Event photograph to one documentation payment",
+      "steps": [
+        "Encounter an actual event without forced spawning",
+        "Read visible camera and registration guidance",
+        "Take a framed unobstructed usable exposure",
+        "Retain original and register at powered OPS",
+        "Inspect cash/debt and receipt",
+        "Repeat registration and another exposure of same incident",
+        "Continue and retry registration"
+      ],
+      "acceptance": "Qualifying observation receives one $20 documentation credit per incident, debt first; repeated image or Continue cannot duplicate payout; rejected dark/obstructed/ordinary image explains missing prerequisite; original remains retained and origin unconfirmed. No actual event means NOT_OBSERVED, never PASS."
+    },
+    {
+      "id": "natural_event_beta",
+      "owner": "native_driver",
+      "title": "Natural event discoverability during ordinary work",
+      "steps": [
+        "Play ordinary work/travel/rest across the agreed active-time window",
+        "Record visible or audible unusual activity without hidden-state lookup",
+        "Follow visible leads when chosen",
+        "Use TAB to recover event notes and photos",
+        "Return to interrupted work",
+        "Record active play and pauses separately"
+      ],
+      "acceptance": "Actual event stimuli, player choices and resulting evidence are timestamped; absence is NOT_OBSERVED; no teleport, forced clock/event, debug callback or hidden solution qualifies as native beta. Quiet pacing and interrupted-work recovery receive an independent clarity review."
+    }
+  ]
+}

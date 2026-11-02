@@ -6,6 +6,8 @@
 
 ## Nåværende Unreal-undersøkelser
 
+- [Gameplay: agent-harness, logiske brister og konkrete forbedringsforslag](Gameplay/WORKFLOW_REVIEW.md), med kildeanalyse, avgrenset lagringslesing og oppdatert VotV-kontroll 2. november.
+
 - [MotionBricks: genererte bevegelsesoverganger, retargeting og bakte klipp](MotionBricks/README.md), festet NVIDIA-kilde; lokal integrasjon UNVERIFIED.
 
 - [VotV: gameplay, regler og selektiv fysikk for SIGNAL / 47](VoicesOfTheVoid/GAMEPLAY_LESSONS.md), med prioritert oppfølging i gjeldende TODO.

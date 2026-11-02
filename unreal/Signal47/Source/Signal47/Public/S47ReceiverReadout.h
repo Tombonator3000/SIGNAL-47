@@ -13,7 +13,7 @@ namespace S47ReceiverReadout
   TFunction<FS47Profile()> GetProfile;
   TFunction<double()> GetQuality,GetProgress,GetArrayQuality;
   TFunction<bool()> GetReady,GetTrackingReady,GetRecording;
-  TFunction<FString()> GetNextAction;
+  TFunction<FString()> GetNextAction,GetStatus;
  };
  TSharedRef<SWidget> Build(const FData& Data);
 }

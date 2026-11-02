@@ -4,6 +4,7 @@
 
 class US47Main;
 class USceneComponent;
+class UPrimitiveComponent;
 struct FS47TripoCreature;
 struct FS47GlimpsesIn;
 
@@ -30,6 +31,7 @@ public:
  bool Developer() const;
  void Clear();
  TArray<FView> Views() const;
+ UPrimitiveComponent* PhotoBody(int32 Id) const;
  // UE-space closed doorway bounds against actual active native body bounds.
  bool DoorOccupied(const FBox& DoorwayUE) const;
  int32 NightCount=0;

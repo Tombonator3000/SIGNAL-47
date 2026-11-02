@@ -52,7 +52,9 @@ namespace S47FreeformTerminal
      +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Label)).Font(S47Style::Mono(22)).ColorAndOpacity(Green)]
      +SHorizontalBox::Slot().AutoWidth().Padding(10,0)[SNew(STextBlock).Text_Lambda([Shown]{return FText::FromString(Shown.Get());}).Font(S47Style::Mono(24)).ColorAndOpacity(Amber)]]
    +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,4)
-    [SNew(SBox).HeightOverride(28).VAlign(VAlign_Center)
+    // Fill the complete control row. Center alignment shrank SSlider to its 16px thumb,
+    // leaving most of the visible row unable to accept a click on the physical CRT.
+    [SNew(SBox).HeightOverride(44).VAlign(VAlign_Fill)
      [SNew(SSlider).Style(&KnobStyle()).MinValue(Min).MaxValue(Max).StepSize(Step).MouseUsesStep(true).Value(Value)
       .SliderBarColor(Green*.45f).SliderHandleColor(Amber).OnValueChanged_Lambda([OnChange](float V){if(OnChange)OnChange(V);})]];
  }

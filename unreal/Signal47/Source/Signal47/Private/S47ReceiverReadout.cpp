@@ -82,7 +82,7 @@ TSharedRef<SWidget> S47ReceiverReadout::Build(const FData& Input)
  {return SNew(STextBlock).Text_Lambda([Value]{return FText::FromString(Value());}).Font(S47Style::Mono(Size)).ColorAndOpacity(C).AutoWrapText(true);};
  return SNew(SVerticalBox)
   +SVerticalBox::Slot().AutoHeight().Padding(0,3)
-   [Text([D]{return FString::Printf(TEXT("RECEPTION %d %%  /  %s"),S47Signal::CarrierPercent(Quality(*D)),D->GetRecording&&D->GetRecording()?TEXT("RECORDING"):D->GetReady&&D->GetReady()?TEXT("READY / START ACQUISITION"):TEXT("NOT READY"));},26,Green)]
+   [Text([D]{return FString::Printf(TEXT("RECEPTION %d %%  /  %s"),S47Signal::CarrierPercent(Quality(*D)),D->GetStatus?*D->GetStatus():D->GetRecording&&D->GetRecording()?TEXT("RECORDING"):D->GetReady&&D->GetReady()?TEXT("READY / START ACQUISITION"):TEXT("NOT READY"));},26,Green)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SReceiverMeters).Data(D)]
   +SVerticalBox::Slot().AutoHeight().Padding(0,4)[SNew(SReceiverTrace).Data(D)]
   +SVerticalBox::Slot().AutoHeight()

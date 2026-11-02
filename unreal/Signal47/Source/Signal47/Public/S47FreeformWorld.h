@@ -26,6 +26,8 @@ public:
  void AddItem(const FString& Item, int32 Count = 1);
  bool Consume(const FString& Item);
  bool Purchase(const FString& Item, bool bEmergency = false);
+ bool RequestEmergencyFuse();
+ bool EmergencyFuseAvailable() const;
  void OpenShop();
  void OpenWorkbench();
  bool AnalyzeSample();
@@ -73,6 +75,8 @@ private:
  TSharedPtr<uint8> Life = MakeShared<uint8>(0);
  bool bActive = false, bBuilt = false, bGenerator = false, bFuelHeld = false;
  int32 Service = 0, Feeder = 0, LastFaultDay = 0, EmergencyDay = 0;
+ int32 PowerFaultSerial = 0, EmergencyFuseFault = 0;
+ bool bTrackedPowerFault = false;
  int32 Payload = 0;
  int32 Delivered = 0, DeliveredByTruck = 0, ServiceDeliveries = 0, DonorTests = 0, ServiceTests = 0;
  bool bParcelWasLoaded = false;
@@ -105,6 +109,8 @@ private:
  void Apply();
  bool Near(const FVector& At, double Range = 3.0) const;
  bool Ready() const;
+ void TrackPowerFault(bool bFault);
+ bool CanIssueEmergencyFuse(bool bFault) const;
  int32 S03() const;
  FVector ShopPoint() const;
  FVector TruckPoint() const;

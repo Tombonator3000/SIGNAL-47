@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47Journal.h"
 #include "S47Saves.h"
 #include "S47Graphics.h"
 #include "S47UI.h"
@@ -60,6 +61,10 @@ public:
 	S47J::FObj SnapshotCase() const;           // null in the prologue, which keeps no case
 	FString CheckpointName() const;            // 'start' | 'residual' | 'chapter1' ...
 	FString GameSaveBlock() const;             // Prologue.saveBlock
+ int32 JournalHintLevel(const FString& Id) const;
+ int32 RevealJournalHint(const FString& Id);
+ bool JournalEntryRead(const FString& Id) const;
+ void MarkJournalEntryRead(const FString& Id);
 	void OpenNotebook();                       // Prologue.openNotebook with main.ts's extras
 
 	// ---------- the flow ----------
@@ -116,6 +121,9 @@ public:
 	virtual void BeginDestroy() override;
 
 private:
+ FS47Journal Journal;
+ bool ValidJournalHint(const FString& Id) const;
+ bool ValidJournalEntry(const FString& Id) const;
 	UPROPERTY() TObjectPtr<US47Main> M;
 	UPROPERTY() TObjectPtr<ACameraActor> TitleCamera;
 	UPROPERTY() TObjectPtr<UAudioComponent> Music;

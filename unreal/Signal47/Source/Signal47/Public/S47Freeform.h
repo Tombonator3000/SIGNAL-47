@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47Journal.h"
 #include "S47Rx.h"
 #include "S47FreeformJobs.h"
 class US47Main;
@@ -19,6 +20,8 @@ public:
   int32 Day=1, Slot=0, Source=0;
   EJobStage Stage=EJobStage::New;
   double Elapsed=0, Quality=1, ReceivedLevel=1;
+  TArray<double> TraceTicks;
+  bool bLegacyTrace=false;
   bool bGenerated=false;FS47FreeformJobs::FCard Card;
   bool bAnomaly=false,bControl=false,bAudioReviewed=false,bPrinted=false,bPaid=false;
   double ControlAt=0, OriginalCovered=0,ControlCovered=0, MarkStart=-1,MarkEnd=-1;
@@ -40,6 +43,7 @@ public:
  bool MotorFeedbackActive() const { return bMotorFeedback; }
  int32 CommandFeedbackCount() const { return CommandClicks; }
  int32 ServiceFeedbackCount() const { return ServiceClicks; }
+ int32 ActiveServiceGuide() const { return ServiceGuide; }
  int32 Day() const { return DayNumber; }
  double Clock() const { return WorldClock; }
  // Daylight 06–19 takes 30 active minutes; night 19–06 takes 45.
@@ -52,6 +56,15 @@ public:
  bool Use(const FString& Id);
  FString Label(const FString& Id) const;
  FString Objective() const;
+ int32 JournalHintLevel(const FString& Id) const;
+ int32 RevealJournalHint(const FString& Id);
+ bool JournalEntryRead(const FString& Id) const;
+ void MarkJournalEntryRead(const FString& Id);
+ FString NextAction() const;
+ FString JobNextAction(const FJob& J) const;
+ FString JobLocation(const FJob& J) const;
+ bool ChargeEmergencyFeederFuse();
+ bool CanRegisterPhotoEvidence() const;
  TArray<FS47Task> Tasks() const;
  void OpenOperations();
  void OpenTracking();
@@ -116,6 +129,9 @@ public:
  bool TestAdvance(double WorldSeconds);
  bool SpendTime(double WorldSeconds) { return TestAdvance(WorldSeconds); }
 private:
+ FS47Journal Journal;
+ bool ValidJournalHint(const FString& Id) const;
+ bool ValidJournalEntry(const FString& Id) const;
  US47Main* M=nullptr;
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
@@ -133,7 +149,7 @@ private:
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;
  int32 CrossPoint=0; double CrossSample=0;
- bool bCrossRunning=false;
+ bool bCrossRunning=false,bShowEarlierJobs=false;
  TArray<FJob> Work;
  TMap<FString,FString> Findings;
  TMap<FString,int32> FindingDays;

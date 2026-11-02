@@ -14,6 +14,8 @@
 #include "S47Walker.h"
 #include "S47Story.h"
 #include "S47Album.h"
+#include "S47FieldCamera.h"
+#include "S47Image.h"
 #include "S47Three.h"
 #include "S47Docs.h"
 #include "S47Flow.h"
@@ -44,6 +46,8 @@ namespace
    for(const auto& Value:S47J::Arr(Root,TEXT("events")))
    {const auto O=Value->AsObject();Out.Add({S47J::Str(O,TEXT("id")),S47J::Str(O,TEXT("family")),S47J::Str(O,TEXT("action")),S47J::Str(O,TEXT("finding")),S47J::Int(O,TEXT("day"),1),S47J::Bool(O,TEXT("night")),S47J::Num(O,TEXT("duration"),60)});}
    Out.Add({TEXT("roomlight_return"),TEXT("minor"),TEXT("roomlight"),TEXT("A previously switched-off room light was on at return. The original switch operation and a physical readback are retained; no operator identified."),1,false,180});
+   Out.Add({TEXT("feeder_presence"),TEXT("investigation"),TEXT("photo"),TEXT("A figure was photographed near the remote feeder. Its activity and any connection to equipment faults remain unconfirmed."),2,true,85});
+   Out.Add({TEXT("array_presence"),TEXT("investigation"),TEXT("photo"),TEXT("A figure was photographed near the array service area. Check the physical cabinet and retained service log; the photograph alone does not establish interference."),3,true,85});
    return Out;
   }();return Data;
  }
@@ -188,13 +192,30 @@ FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ PendingThreatNight=PendingMajorNight=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
   if(S47J::Num(O,TEXT("v"))!=1){bEnabled=false;return;}
   Event=S47J::Str(O,TEXT("event"));if(!Event.IsEmpty()&&!Definition(Event)){bEnabled=false;return;}
+  IncidentSerial=FMath::Clamp(S47J::Int(O,TEXT("incidentSerial")),0,1000000000);
+  IncidentId=S47J::Str(O,TEXT("incidentId"));
+  for(const auto& V:S47J::Arr(O,TEXT("photoClaims")))
+  {
+   const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
+   FPhotoClaim P;P.Id=S47J::Str(*C,TEXT("id"));P.PhotoId=S47J::Str(*C,TEXT("photo"));P.Title=S47J::Str(*C,TEXT("title"));P.bPaid=S47J::Bool(*C,TEXT("paid"));
+   P.Quality=S47J::Num(*C,TEXT("quality"));
+   if(P.Id.IsEmpty()||P.PhotoId.IsEmpty()||!FMath::IsFinite(P.Quality)||P.Quality<.025||P.Quality>1||Claims.ContainsByPredicate([&](const FPhotoClaim& Q){return Q.Id==P.Id;}))continue;
+   Claims.Add(P);
+  }
   PhotoId=S47J::Str(O,TEXT("photo"));Scene=S47J::Str(O,TEXT("scene"),TEXT("saro"));Stage=FMath::Clamp(S47J::Int(O,TEXT("stage")),0,3);Variant=FMath::Clamp(S47J::Int(O,TEXT("variant")),0,2);
   SeenDay=S47J::Int(O,TEXT("seenDay"));MinorLeft=FMath::Clamp(S47J::Int(O,TEXT("minorLeft")),0,4);InvestLeft=FMath::Clamp(S47J::Int(O,TEXT("investLeft")),0,2);ThreatRollDay=S47J::Int(O,TEXT("threatRollDay"));MajorRollDay=S47J::Int(O,TEXT("majorRollDay"));LastThreatDay=S47J::Int(O,TEXT("lastThreatDay"));LastMajorDay=S47J::Int(O,TEXT("lastMajorDay"),-3);
+  // Old saves know that a roll was spent, but not whether an unavailable
+  // event was chosen. Never reroll it or invent a pending event on migration.
+  PendingThreatNight=FMath::Max(0,S47J::Int(O,TEXT("pendingThreatNight")));
+  PendingMajorNight=FMath::Max(0,S47J::Int(O,TEXT("pendingMajorNight")));
+  if(PendingThreatNight!=ThreatRollDay||Event==TEXT("service_presence"))PendingThreatNight=0;
+  if(PendingMajorNight!=MajorRollDay||Event==TEXT("close_pass"))PendingMajorNight=0;
   auto Time=[&](const TCHAR* K,double Max=1e9){const double V=S47J::Num(O,K);return FMath::IsFinite(V)?FMath::Clamp(V,0.,Max):0.;};
   Age=Time(TEXT("age"),1000);ActiveTime=Time(TEXT("activeTime"));NextAt=Time(TEXT("nextAt"));RestUntil=Time(TEXT("restUntil"));SoundAt=Time(TEXT("soundAt"));
   // Logical event effects and native presentation have different lifetimes.
@@ -223,7 +244,9 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
  // these are incident locations, not survey measurements inferred from a log.
  if(Event==TEXT("empty_car"))Anchor=EmptyCarReference;
  if(Event==TEXT("feeder_fault")&&M&&M->Freeform&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
+ if(!Event.IsEmpty()&&IncidentId.IsEmpty()){IncidentSerial=FMath::Max(1,IncidentSerial);IncidentId=FString::Printf(TEXT("%s.legacy.%d"),*Event,IncidentSerial);}
  bApplied=false;bChoiceStored=!Event.IsEmpty();
+ if(M&&M->Freeform)ExpireNightChoices(M->Freeform->Day(),Night());
 }
 void FS47FreeformDirector::Stop()
 {
@@ -238,9 +261,14 @@ S47J::FObj FS47FreeformDirector::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
+ S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  S47J::Set(O,TEXT("age"),Age);S47J::Set(O,TEXT("activeTime"),ActiveTime);S47J::Set(O,TEXT("nextAt"),NextAt);S47J::Set(O,TEXT("restUntil"),RestUntil);S47J::Set(O,TEXT("soundAt"),SoundAt);S47J::Set(O,TEXT("random"),Random.GetCurrentSeed());
  S47J::Set(O,TEXT("effectsApplied"),bEffectsApplied);
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
+ S47J::Set(O,TEXT("incidentSerial"),IncidentSerial);S47J::Set(O,TEXT("incidentId"),IncidentId);
+ TArray<TSharedPtr<FJsonValue>> PaidPhotos;
+ for(const auto& P:Claims){auto C=S47J::New();S47J::Set(C,TEXT("id"),P.Id);S47J::Set(C,TEXT("photo"),P.PhotoId);S47J::Set(C,TEXT("title"),P.Title);S47J::Set(C,TEXT("quality"),P.Quality);S47J::Set(C,TEXT("paid"),P.bPaid);PaidPhotos.Add(MakeShared<FJsonValueObject>(C));}
+ O->SetArrayField(TEXT("photoClaims"),PaidPhotos);
  auto H=S47J::New();for(const auto& Pair:LastDays)S47J::Set(H,*Pair.Key,Pair.Value);S47J::Set(O,TEXT("history"),H);
  auto R=S47J::New();S47J::Set(R,TEXT("room"),ReactiveRoom);S47J::Set(R,TEXT("serial"),ReactiveSerial);S47J::Set(R,TEXT("age"),ReactiveAge);S47J::Set(R,TEXT("offClock"),ReactiveOffClock);S47J::Set(R,TEXT("onClock"),ReactiveOnClock);S47J::Set(R,TEXT("left"),bReactiveLeft);S47J::Set(R,TEXT("applied"),bReactiveApplied);S47J::Set(R,TEXT("inspected"),bReactiveInspected);S47J::Set(O,TEXT("reactiveLight"),R);
  if(GroupRestore)S47J::Set(O,TEXT("group"),GroupRestore);else if(M&&M->Night&&M->Night->Glimpses)S47J::Set(O,TEXT("group"),M->Night->Glimpses->SaveControlled());
@@ -259,7 +287,9 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
 {
  const auto* D=Definition(Id);if(!bEnabled||!D||!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!Event.IsEmpty()||M->Freeform->Held())return false;
  // The initial catalogue is anchored to the actual SARO yard and apparatus.
- if(M->Web->Area()!=TEXT("saro"))return false;
+ if(Id==TEXT("feeder_presence"))
+ {if(M->Web->Area()!=TEXT("road")||!M->Freeform->Field||!Near(M->Freeform->Field->InteractionPoint(TEXT("ff:feeder")),12))return false;}
+ else if(M->Web->Area()!=TEXT("saro"))return false;
  if(!Forced)
  {
   // An instrumental anomaly needs an actually completed normal reference first.
@@ -270,8 +300,9 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
   if(D->Family==TEXT("threat")&&(LastThreatDay==M->Freeform->Day()||M->Freeform->Clock()<86400.+19*3600.))return false;
   if(D->Family==TEXT("major")&&(M->Freeform->Day()-LastMajorDay<3||M->Freeform->Clock()<3*86400.+19*3600.))return false;
  }
+ if(Id==TEXT("array_presence")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||!Near(M->Freeform->Field->InteractionPoint(TEXT("ff:service")),12)))return false;
  if(Id==TEXT("roomlight_return")&&!ReactiveReady())return false;
- if((Id==TEXT("observer")||Id==TEXT("service_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;
+ if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;
  if(Id==TEXT("s03_failure")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||M->Freeform->PowerFault()))return false;
  if(Id==TEXT("feeder_fault")&&M->Freeform->PowerFault())return false;
  if(Id==TEXT("empty_car")&&(!Effects->Car||InView(EmptyCarReference)))return false;
@@ -281,10 +312,12 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
 bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
 {
  Effects->Build(this);if(!Eligible(Id,Forced))return false;
+ IncidentSerial=FMath::Min(1000000000,IncidentSerial+1);IncidentId=FString::Printf(TEXT("%s.day%d.%d"),*Id,M->Freeform->Day(),IncidentSerial);TaggedShot.Empty();TaggedQuality=0;
  Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
- if(Id==TEXT("feeder_fault")&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
+ if((Id==TEXT("feeder_fault")||Id==TEXT("feeder_presence"))&&M->Freeform->Field)Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:feeder"));
+ if(Id==TEXT("array_presence"))Anchor=M->Freeform->Field->InteractionPoint(TEXT("ff:service"));
  if(Id==TEXT("roomlight_return"))Anchor=M->RoomLights->InteractionPoint(ReactiveRoom);
  LastDays.Add(Id,M->Freeform->Day());if(const auto* D=Definition(Id)){if(D->Family==TEXT("threat"))LastThreatDay=M->Freeform->Day();if(D->Family==TEXT("major"))LastMajorDay=M->Freeform->Day();}
  // Save the random choice and phase before applying any perceptible effect.
@@ -436,20 +469,43 @@ void FS47FreeformDirector::StepGroup(double Dt)
  auto Input=M->Night->GlimpseIn(true);Input.bOk=true;Input.bHeld=!M->Freeform||M->Freeform->Held();Input.May=false;Input.Scene=M->Web?M->Web->Area():FString();
  G->ControlledStep(Dt,Input);
 }
+bool FS47FreeformDirector::RollNightChoice(int32 Day,int32 FirstDay,float Chance,int32& RolledDay,int32& PendingNight)
+{
+ if(Day<FirstDay||RolledDay>=Day)return false;
+ RolledDay=Day;PendingNight=Random.FRand()<Chance?Day:0;return true;
+}
+bool FS47FreeformDirector::ExpireNightChoices(int32 Day,bool bNight)
+{
+ bool ChangedChoice=false;
+ for(int32* Pending:{&PendingThreatNight,&PendingMajorNight})
+  if(*Pending>0&&(!bNight||*Pending!=Day)){*Pending=0;ChangedChoice=true;}
+ return ChangedChoice;
+}
+bool FS47FreeformDirector::StartPendingNightChoice(const FString& Id,int32 Day,int32& PendingNight)
+{
+ // Selection survives a trip away, a busy native actor or a cooldown. All
+ // normal gates still apply, and retries only happen at scheduler intervals.
+ if(PendingNight!=Day||!Eligible(Id,false)||!Start(Id,false))return false;
+ PendingNight=0;Changed();return true;
+}
 void FS47FreeformDirector::Step(double Dt)
 {
  if(!bEnabled||!M||!M->Freeform||!M->Freeform->Active()||!FMath::IsFinite(Dt)||Dt<=0)return;
  Effects->Build(this);StepGroup(Dt);if(M->Freeform->Held())return;
  Dt=FMath::Min(Dt,.25);ActiveTime+=Dt;StepReactive(Dt);
  const int32 Day=M->Freeform->Day();
+ const bool bNight=Night();if(ExpireNightChoices(Day,bNight))Changed();
  if(SeenDay!=Day){SeenDay=Day;MinorLeft=Random.RandRange(2,4);InvestLeft=Random.RandRange(0,2);NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
  if(Event.IsEmpty())
  {
   if(ActiveTime<NextAt||ActiveTime<RestUntil)return;NextAt=ActiveTime+Random.FRandRange(240,420);
-  if(Night()&&Day>=2&&ThreatRollDay!=Day)
-  {ThreatRollDay=Day;const bool Chosen=Random.FRand()<.35;Changed();if(Chosen&&Start(TEXT("service_presence"),false))return;}
-  if(Night()&&Day>=4&&MajorRollDay!=Day)
-  {MajorRollDay=Day;const bool Chosen=Random.FRand()<.10;Changed();if(Chosen&&Start(TEXT("close_pass"),false))return;}
+  if(bNight)
+  {
+   if(RollNightChoice(Day,2,.35f,ThreatRollDay,PendingThreatNight))Changed();
+   if(StartPendingNightChoice(TEXT("service_presence"),Day,PendingThreatNight))return;
+   if(RollNightChoice(Day,4,.10f,MajorRollDay,PendingMajorNight))Changed();
+   if(StartPendingNightChoice(TEXT("close_pass"),Day,PendingMajorNight))return;
+  }
   TArray<FString> Choices;
   for(const auto& D:Catalog())if(D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&Eligible(D.Id,false))
   {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");if((Minor&&MinorLeft>0)||(!Minor&&InvestLeft>0))Choices.Add(D.Id);}
@@ -463,12 +519,13 @@ void FS47FreeformDirector::Step(double Dt)
  if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}
  if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if(Scene!=M->Web->Area())
- {if(Event==TEXT("service_presence"))Finish(true,TEXT("The encounter ended when the player left the site."));return;}
- if(Event==TEXT("observer")||Event==TEXT("service_presence"))
+ {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
+ if(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))
  {
   auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G)return;
   if(Stage==0&&Age>=6)
   {
+   if((Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))&&!Near(Anchor,12)){Finish(false);return;}
    const auto Mode=Event==TEXT("service_presence")?FS47RoswellBrain::EMode::Hunt:FS47RoswellBrain::EMode::Curious;
    if(G->ControlledSpawn(1,Mode,false)>0){Stage=1;Changed();}
    else if(Age>35)Finish(false);return;
@@ -477,6 +534,12 @@ void FS47FreeformDirector::Step(double Dt)
   for(const auto& I:Views)
   {
    bSeen|=InView(I.Eye,35);
+   if(Event==TEXT("array_presence")&&Stage==1&&!bControlled&&I.bRendered&&FVector::Dist(I.Pos,Anchor)<2.5&&M->Freeform->Field)
+   {
+    // A fault is only applied after a real native actor reaches the physical cabinet.
+    // Presence plus a fault is a lead, not proof of intent or origin.
+    bControlled=true;M->Freeform->Field->TriggerServiceFault();Changed();
+   }
    if(Event==TEXT("service_presence")&&Stage==1&&I.State==FS47RoswellBrain::EState::Contact&&!(M->World&&M->World->bDriving))
    {const FString Why=TEXT("The service-yard presence reached you. The secured work survives; the encounter is over.");Finish(false);if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();M->Freeform->Recover(Why);return;}
   }
@@ -503,7 +566,7 @@ void FS47FreeformDirector::Step(double Dt)
  {const bool Inside=Near(Anchor,5);M->Audio->HoldRoomTone(Inside?.15f:1.f);if(Stage==0&&Inside){Stage=1;Changed();}else if(Stage==1&&!Inside){Stage=2;Changed();}}
  if(Event==TEXT("roof_steps")&&Age>=6&&Near(FVector(9,0,0),8)&&!M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos))
  {bSeen=true;Stage=1;}
- if(Age>Def->Duration&&Event!=TEXT("observer")&&Event!=TEXT("service_presence"))
+ if(Age>Def->Duration&&Event!=TEXT("observer")&&Event!=TEXT("service_presence")&&Event!=TEXT("feeder_presence")&&Event!=TEXT("array_presence"))
  {
   if(Def->Action==TEXT("service")||Def->Action==TEXT("feeder")){Finish(false);return;} // leave actual unresolved hardware state intact
   if(Event==TEXT("roof_steps")){Finish(bSeen);return;}
@@ -521,7 +584,7 @@ void FS47FreeformDirector::Finish(bool Evidence,const FString& Text)
   const FString Key=M->Freeform->HasFinding(Event)?Event+FString::Printf(TEXT(".day%d"),M->Freeform->Day()):Event;
   M->Freeform->RecordEvidence(Key,Record);
  }
- if(M&&M->Night&&M->Night->Glimpses&&(Event==TEXT("observer")||Threat))M->Night->Glimpses->ControlledRelease();
+ if(M&&M->Night&&M->Night->Glimpses&&(Event==TEXT("observer")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Threat))M->Night->Glimpses->ControlledRelease();
  if(Instrument(Event)&&M&&M->Freeform){M->Freeform->SetAnomaly(false);M->Freeform->SetPhenomenon(FString());}
  Effects->Hide();if(M&&M->Audio){M->Audio->Stop(TEXT("freeformEvent"));M->Audio->HoldRoomTone(1);}
  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform event %s ended evidence=%d"),*Event,Evidence);
@@ -563,22 +626,105 @@ bool FS47FreeformDirector::PhysicalObjectPresented()const
  const auto* C=Effects->PresentedComponent(Object);
  return C&&(C->GetCollisionEnabled()==ECollisionEnabled::QueryOnly||C->GetCollisionEnabled()==ECollisionEnabled::QueryAndPhysics)&&C->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block;
 }
+namespace
+{
+ // Sample the central half of the native component's projected bounds. The outer
+ // rectangle includes background around the silhouette; it must not decide exposure.
+ double SubjectMean(const TArray<FColor>& Pixels,int32 W,int32 H,const FBox2D& Region)
+ {
+  if(!Region.bIsValid||W<=0||H<=0||Pixels.Num()!=W*H)return -1;
+  const FVector2D Margin=(Region.Max-Region.Min)*.25;
+  const FVector2D A=Region.Min+Margin,B=Region.Max-Margin;
+  if(!FMath::IsFinite(A.X)||!FMath::IsFinite(A.Y)||!FMath::IsFinite(B.X)||!FMath::IsFinite(B.Y))return -1;
+  const int32 X0=FMath::Clamp(FMath::CeilToInt(A.X*W),0,W),X1=FMath::Clamp(FMath::FloorToInt(B.X*W),0,W);
+  const int32 Y0=FMath::Clamp(FMath::CeilToInt(A.Y*H),0,H),Y1=FMath::Clamp(FMath::FloorToInt(B.Y*H),0,H);
+  if(X1-X0<2||Y1-Y0<2)return -1;
+  double Sum=0;for(int32 Y=Y0;Y<Y1;++Y)for(int32 X=X0;X<X1;++X){const auto& C=Pixels[Y*W+X];Sum+=.3*C.R+.59*C.G+.11*C.B;}
+  return Sum/((X1-X0)*(Y1-Y0));
+ }
+}
+void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
+{
+ TaggedShot.Empty();TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);PhotoSubjectMean=-1;
+ if(!bEnabled||Event.IsEmpty()||IncidentId.IsEmpty()||Shot.Id.IsEmpty()||Shot.bUnavailable||!M||!M->FieldCamera||!M->Web||M->Web->Area()!=Scene)return;
+ auto* Camera=M->FieldCamera.Get();
+ auto Qualify=[&](const FVector& At,double Height,const UPrimitiveComponent* Target,double Minimum=.025)->double
+ {
+  const auto P=Camera->Project(At),Top=Camera->Project(At+FVector(0,Height*.5,0)),Bottom=Camera->Project(At-FVector(0,Height*.5,0));
+  if(!P.bFront||!Top.bFront||!Bottom.bFront||P.U<.06||P.U>.94||Top.V<.04||Bottom.V>.96)return 0;
+  const double Size=FMath::Abs(Bottom.V-Top.V);if(Size<Minimum)return 0;
+  FHitResult Hit;FCollisionQueryParams Params(SCENE_QUERY_STAT(FreeformPhotoSight),true);if(M->Player)Params.AddIgnoredActor(M->Player);
+  const bool Blocked=M->Web->GetWorld()->LineTraceSingleByChannel(Hit,Camera->PhotoLoc,S47Three::ToUE(At),ECC_Visibility,Params);
+  if(Blocked&&Hit.Component.Get()!=Target)return 0;
+  if(Target&&Size>=TaggedQuality)
+  {
+   FBox2D Bounds(ForceInit);const FBox Box=Target->Bounds.GetBox();bool Front=true;
+   for(int32 I=0;I<8;++I)
+   {
+    const FVector Corner((I&1)?Box.Max.X:Box.Min.X,(I&2)?Box.Max.Y:Box.Min.Y,(I&4)?Box.Max.Z:Box.Min.Z);
+    const auto Q=Camera->Project(S47Three::ToThree(Corner));Front&=Q.bFront;Bounds+=FVector2D(Q.U,Q.V);
+   }
+   TaggedRegion=Front?Bounds:FBox2D(ForceInit);
+  }
+  return FMath::Clamp(Size,0.,1.);
+ };
+ if(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))
+ {
+  if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered&&M->Night->Glimpses->ControlledPhotoBody(I.Id))
+   TaggedQuality=FMath::Max(TaggedQuality,Qualify(I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id)));
+ }
+ else if(Event==TEXT("landing_trace"))
+ {
+  if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
+ }
+ else if(Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights"))
+ {
+  if(PhysicalObjectPresented())
+  {
+   double Left=1,Right=0,Top=1,Bottom=0;int32 VisibleLights=0;
+   for(int32 Index=0;Index<Effects->Parts.Num();++Index)if(const auto* C=Effects->Parts[Index].Get())if(C->IsVisible())
+   {
+    const FVector At=S47Three::ToThree(C->Bounds.Origin);const double Q=Qualify(At,FMath::Max(.1,double(C->Bounds.BoxExtent.Z)*.02),C,Index==0?.025:.001);
+    if(Q<=0)continue;if(Index==0){TaggedQuality=FMath::Max(TaggedQuality,Q);continue;}
+    const auto P=Camera->Project(At);Left=FMath::Min(Left,P.U);Right=FMath::Max(Right,P.U);Top=FMath::Min(Top,P.V);Bottom=FMath::Max(Bottom,P.V);++VisibleLights;
+   }
+   // Three actual lamps must be in the captured frame and individually unobstructed.
+   if(VisibleLights==3)TaggedQuality=FMath::Max(TaggedQuality,FMath::Clamp(FVector2D(Right-Left,Bottom-Top).Size(),0.,1.));
+  }
+ }
+ if(TaggedQuality<.025)return;
+ TaggedShot=Shot.Id;Shot.Targets.Add({TEXT("freeform:")+IncidentId,FVector2D(.5,.5)});
+}
 void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
 {
- if(!bEnabled||Event.IsEmpty()||Shot.Id.IsEmpty()||Shot.bUnavailable||ActiveTime-LastPhotoAt<.3)return;
- const FVector PhotoAt=(Event==TEXT("flyover")||Event==TEXT("close_pass"))?Anchor+FVector(Age*(Event==TEXT("close_pass")?2.3:5.),0,0):Anchor;
- bool Visible=InView(PhotoAt,180);
- if(Event==TEXT("landing_trace"))
+ if(TaggedShot!=Shot.Id||TaggedQuality<.025||Shot.bUnavailable||Shot.Url.IsEmpty()||Event.IsEmpty())return;
+ // Read the exact retained image, not a later capture or a whole-frame brightness
+ // proxy. Emissive airborne lamps retain their existing three-visible-lamp rule.
+ const bool Lamps=Event==TEXT("flyover")||Event==TEXT("close_pass")||Event==TEXT("response_lights");
+ if(!Lamps)
  {
-  // A clear ray to an authored point is not photographic proof of an object.
-  // Require its real native component, visible parent scene, and unobstructed view.
-  const auto* Sample=Effects->PresentedComponent(Effects->Sample);
-  Visible=Visible&&Sample&&Effects->Visible(PhotoAt,Sample);
+  TArray<FColor> Pixels;int32 W=0,H=0;
+  const double Mean=S47Image::DecodePixels(Shot.Url,Pixels,W,H)?SubjectMean(Pixels,W,H,TaggedRegion):-1;
+  PhotoSubjectMean=Mean;
+  if(Mean<15){TaggedShot.Empty();if(M&&M->UI)M->UI->Toast(TEXT("The photographed subject is too dark or too small to register. Retain it as a lead; seek a clearer, better-lit view."),4);return;}
  }
- if(Event==TEXT("observer")||Event==TEXT("service_presence"))
- {Visible=false;if(M&&M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())Visible|=InView(I.Eye,40);}
- if(!Visible)return;LastPhotoAt=ActiveTime;bSeen=bPhoto=true;PhotoId=Shot.Id;Changed();
- if(M&&M->UI)M->UI->Toast(TEXT("The photograph is retained with this field observation. It documents what was visible, not its origin."),4);
+
+ TaggedShot.Empty();LastPhotoAt=ActiveTime;bSeen=bPhoto=true;PhotoId=Shot.Id;
+ auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==IncidentId;});
+ if(!Existing){FPhotoClaim C;C.Id=IncidentId;C.PhotoId=Shot.Id;C.Title=Event.Replace(TEXT("_"),TEXT(" "));C.Quality=TaggedQuality;Claims.Add(C);}
+ else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;}
+ Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("This incident is already registered. The new photograph remains in the album; no additional credit is due."):TEXT("Field photograph retained. Register it at OPS for $20 documentation credit, once per incident. Origin remains unconfirmed."),5);
+}
+bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
+{
+ if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album)return false;
+ auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->bPaid)return false;
+ const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C->PhotoId;});
+ if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& P){return P.Key==TEXT("freeform:")+C->Id;}))return false;
+ C->bPaid=true;M->Freeform->Earn(C->Reward);
+ M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe captured subject met framing and visibility checks. Registration documents the observation; its origin and intent remain unconfirmed. This incident cannot be paid twice."),*C->Title,*C->PhotoId,C->Reward));Changed();
+ if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit. This records an observation, not a confirmed origin."),5);
+ return true;
 }
 FString FS47FreeformDirector::ObservationNote()const
 {
@@ -593,7 +739,18 @@ FString FS47FreeformDirector::Status()const
 bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
 {
  bool Ok=true;auto Check=[&](bool B,const TCHAR* S){Ok&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+TEXT("freeform director: ")+S);};
- Check(Catalog().Num()==17&&Definition(TEXT("roomlight_return")),TEXT("sixteen authored incidents and the action-bound room-light event are embedded in packaged runtime"));TSet<FString> Ids;
+ {
+  constexpr int32 W=100,H=100;const FBox2D Region(FVector2D(.4,.4),FVector2D(.6,.6));
+  TArray<FColor> P;P.Init(FColor(3,3,3),W*H);
+  for(int32 Y=40;Y<60;++Y)for(int32 X=40;X<60;++X)P[Y*W+X]=FColor(100,100,100);
+  Check(SubjectMean(P,W,H,Region)>=15,TEXT("illuminated subject qualifies against dark night background"));
+  P.Init(FColor(180,180,180),W*H);for(int32 Y=40;Y<60;++Y)for(int32 X=40;X<60;++X)P[Y*W+X]=FColor(3,3,3);
+  Check(SubjectMean(P,W,H,Region)<15,TEXT("bright surroundings do not qualify an unlit subject"));
+  P.Init(FColor(180,180,180),W*H);for(int32 Y=45;Y<55;++Y)for(int32 X=45;X<55;++X)P[Y*W+X]=FColor(3,3,3);
+  Check(SubjectMean(P,W,H,Region)<15,TEXT("bright margins inside component bounds cannot mask a dark subject centre"));
+  Check(SubjectMean(P,W,H,FBox2D(ForceInit))<0&&SubjectMean(P,W,H,FBox2D(FVector2D(.5,.5),FVector2D(.501,.501)))<0,TEXT("missing or subpixel subject region cannot qualify"));
+ }
+ Check(Catalog().Num()==19&&Definition(TEXT("roomlight_return")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
  for(const auto& D:Catalog()){Check(!Ids.Contains(D.Id)&&!D.Finding.IsEmpty()&&D.Day>=1&&D.Duration>0,TEXT("event ID, finding and finite duration"));Ids.Add(D.Id);}
  FS47FreeformDirector D(nullptr);D.Begin(nullptr);auto Saved=D.Save();FS47FreeformDirector R(nullptr);R.Begin(Saved);
  Check(S47J::Write(Saved)==S47J::Write(R.Save()),TEXT("idle director seed, budgets and schedule round-trip without reroll"));
@@ -612,6 +769,31 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Check(LightCopy.ReactiveOffClock==40000&&LightCopy.ReactiveOnClock==42000&&LightCopy.bReactiveApplied&&!LightCopy.ReactiveReady(),TEXT("Applied light restore retains original clocks and cannot rearm or fabricate a live player action"));
  LightCopy.RoomLightInput(TEXT("records"),8,true);Check(LightCopy.ReactiveSerial==7,TEXT("A missing Freeform world cannot manufacture a manual OFF candidate"));
  R.Begin(Saved);Check(R.ReactiveRoom.IsEmpty()&&!R.bReactiveApplied,TEXT("Legacy Director save does not infer an incident from a room preference"));
+ FS47FreeformDirector Schedule(nullptr);Schedule.Begin(nullptr);
+ Check(!Schedule.RollNightChoice(1,2,1.f,Schedule.ThreatRollDay,Schedule.PendingThreatNight)&&Schedule.ThreatRollDay==0,TEXT("The first night cannot consume a future threat roll"));
+ Schedule.RollNightChoice(2,2,1.f,Schedule.ThreatRollDay,Schedule.PendingThreatNight);const int32 ChosenSeed=Schedule.Random.GetCurrentSeed();
+ Check(Schedule.PendingThreatNight==2&&!Schedule.StartPendingNightChoice(TEXT("service_presence"),2,Schedule.PendingThreatNight)&&Schedule.PendingThreatNight==2,TEXT("A chosen threat waits when a live eligible location is unavailable instead of losing its outcome"));
+ FS47FreeformDirector PendingCopy(nullptr);PendingCopy.Begin(S47J::Read(S47J::Write(Schedule.Save())));
+ Check(PendingCopy.PendingThreatNight==2&&!PendingCopy.RollNightChoice(2,2,0.f,PendingCopy.ThreatRollDay,PendingCopy.PendingThreatNight)&&PendingCopy.Random.GetCurrentSeed()==ChosenSeed&&PendingCopy.PendingThreatNight==2,TEXT("Continue and repeated scheduler attempts preserve the selected night outcome without another random draw"));
+ Check(PendingCopy.ExpireNightChoices(2,false)&&PendingCopy.PendingThreatNight==0&&!PendingCopy.RollNightChoice(2,2,1.f,PendingCopy.ThreatRollDay,PendingCopy.PendingThreatNight)&&PendingCopy.Random.GetCurrentSeed()==ChosenSeed,TEXT("Sunrise discards an unstarted threat without rerolling the spent night"));
+ Schedule.RollNightChoice(3,2,0.f,Schedule.ThreatRollDay,Schedule.PendingThreatNight);const int32 QuietSeed=Schedule.Random.GetCurrentSeed();
+ Check(Schedule.PendingThreatNight==0&&!Schedule.RollNightChoice(3,2,1.f,Schedule.ThreatRollDay,Schedule.PendingThreatNight)&&Schedule.Random.GetCurrentSeed()==QuietSeed,TEXT("A quiet-night result stays quiet across retries rather than becoming a guaranteed encounter"));
+ Schedule.RollNightChoice(4,4,1.f,Schedule.MajorRollDay,Schedule.PendingMajorNight);
+ PendingCopy.Begin(S47J::Read(S47J::Write(Schedule.Save())));
+ Check(PendingCopy.PendingMajorNight==4&&PendingCopy.ExpireNightChoices(5,true)&&PendingCopy.PendingMajorNight==0,TEXT("Major-event choices serialize independently and never accumulate across later nights"));
+ auto OldSchedule=Schedule.Save();OldSchedule->RemoveField(TEXT("pendingThreatNight"));OldSchedule->RemoveField(TEXT("pendingMajorNight"));
+ PendingCopy.Begin(OldSchedule);const int32 LegacySeed=PendingCopy.Random.GetCurrentSeed();
+ Check(PendingCopy.PendingThreatNight==0&&PendingCopy.PendingMajorNight==0&&!PendingCopy.RollNightChoice(4,4,1.f,PendingCopy.MajorRollDay,PendingCopy.PendingMajorNight)&&PendingCopy.Random.GetCurrentSeed()==LegacySeed,TEXT("A spent legacy roll is retained without inventing or rerolling its unknown outcome"));
+ FS47FreeformDirector Photos(nullptr);Photos.Begin(nullptr);Photos.IncidentSerial=7;Photos.IncidentId=TEXT("observer.day3.7");
+ FPhotoClaim Claim;Claim.Id=Photos.IncidentId;Claim.PhotoId=TEXT("album7");Claim.Title=TEXT("observer");Claim.Quality=.18;Photos.Claims.Add(Claim);
+ FS47FreeformDirector PhotoCopy(nullptr);PhotoCopy.Begin(S47J::Read(S47J::Write(Photos.Save())));
+ Check(PhotoCopy.Claims.Num()==1&&!PhotoCopy.Claims[0].bPaid&&PhotoCopy.Claims[0].Reward==20&&PhotoCopy.IncidentSerial==7,TEXT("Unregistered photo evidence retains identity, quality and fixed credit after incident and Continue"));
+ PhotoCopy.Claims[0].bPaid=true;Photos.Begin(PhotoCopy.Save());
+ Check(Photos.Claims.Num()==1&&Photos.Claims[0].bPaid&&!Photos.RegisterPhotoClaim(Claim.Id),TEXT("Paid photographic incident persists and cannot be registered without physical powered OPS"));
+ auto Duplicate=PhotoCopy.Save();auto Entries=S47J::Arr(Duplicate,TEXT("photoClaims"));const auto DuplicateEntry=Entries[0];Entries.Add(DuplicateEntry);Duplicate->SetArrayField(TEXT("photoClaims"),Entries);Photos.Begin(Duplicate);
+ Check(Photos.Claims.Num()==1&&Photos.Claims[0].bPaid,TEXT("Duplicate serialized photo incident cannot create a second claim"));
+ auto LegacyPhoto=S47J::Clone(Active);LegacyPhoto->RemoveField(TEXT("incidentId"));LegacyPhoto->RemoveField(TEXT("photoClaims"));Photos.Begin(LegacyPhoto);const FString LegacyIncident=Photos.IncidentId;Photos.Begin(Photos.Save());
+ Check(Photos.Claims.IsEmpty()&&!LegacyIncident.IsEmpty()&&Photos.IncidentId==LegacyIncident,TEXT("Legacy active incident gets stable identity without inventing paid photographs"));
  FS47RoswellBrain Brain;Brain.Start(FS47RoswellBrain::EMode::Curious,FVector(2,0,3),.4,77);Brain.bHasPlayerMemory=true;Brain.LastKnownPlayer=FVector(8,0,9);auto B=Brain.Save();FS47RoswellBrain Copy;
  Check(Copy.Restore(B)&&Copy.Pos==Brain.Pos&&Copy.LastKnownPlayer==Brain.LastKnownPlayer&&Copy.bHasPlayerMemory,TEXT("active native observer keeps identity-space position and measured player memory"));
  return Ok;

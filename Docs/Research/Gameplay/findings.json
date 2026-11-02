@@ -1,0 +1,224 @@
+[
+  {
+    "id": "GP-01",
+    "priority": "P1",
+    "owner": "workflow_audit",
+    "scenario": "routine",
+    "confidence": "source_confirmed",
+    "trigger": "Original hentet eller jobb ferdig; mottakeren åpnes på nytt.",
+    "consequence": "Receiver sender spilleren til printeren selv om riktig steg er OPS/kontroll eller ferdig.",
+    "fix": "Felles neste-handling fra jobbsteg på receiver, printer, OPS og HUD.",
+    "acceptance": "Alle åtte stadier og Continue gir riktig neste handling uten ny betaling.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:388",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:435",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:900"
+    ]
+  },
+  {
+    "id": "GP-03",
+    "priority": "P2",
+    "owner": "workflow_audit",
+    "scenario": "live_capture",
+    "confidence": "source_confirmed",
+    "trigger": "Start gyldig opptak og flytt en aktiv receiver-skyver utenfor toleransen.",
+    "consequence": "Integrasjon fortsetter og målfrekvens skrives på arket selv om tuning er feil.",
+    "fix": "Pause gyldig integrasjon ved tapt mottak, eller lås innstillinger med tydelig forklaring.",
+    "acceptance": "Prøv frekvens/gain/båndbredde midt i opptaket og gjenoppretting i Story/Freeform.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:299",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:808",
+      "unreal/Signal47/Source/Signal47/Private/S47Observing.cpp:369"
+    ]
+  },
+  {
+    "id": "GP-04",
+    "priority": "P1",
+    "owner": "workflow_audit",
+    "scenario": "audio_identity",
+    "confidence": "source_confirmed",
+    "trigger": "Lytt under Freeform-opptak, deretter på original; prøv også spesialavvik.",
+    "consequence": "Ekstra ticks oppstår bare i avspillingen, og samme pulslyd kan brukes på andre anomalifamilier.",
+    "fix": "Ett lagret jobbspor for live lyd, avspilling, nivå og dokument; fenomenriktig kontroll.",
+    "acceptance": "Sammenlign pulstider for normal, ekstra puls, retning, timing og duplikat før/etter Continue.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:307",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:494",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:523"
+    ]
+  },
+  {
+    "id": "GP-08",
+    "priority": "P2",
+    "owner": "workflow_audit",
+    "scenario": "routine",
+    "confidence": "source_confirmed",
+    "trigger": "Jobb A har utskrift; velg B og bruk printeren.",
+    "consequence": "Printeren sier at ingen utskrift finnes fordi den bare sjekker valgt jobb.",
+    "fix": "Vis faktisk kø eller navnet på ventende jobb og hvordan den velges; forklar låst jobbskifte.",
+    "acceptance": "A til printer, velg B, hent A; forsøk også jobbskifte mens opptak/kontroll kjører.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:361",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:431",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:865"
+    ]
+  },
+  {
+    "id": "GP-09",
+    "priority": "P2",
+    "owner": "workflow_audit",
+    "scenario": "audio_identity",
+    "confidence": "source_confirmed",
+    "trigger": "Start avspilling og forlat lytteområdet.",
+    "consequence": "Displayet sier STOP mens cursor går videre og lyttedekning stanser.",
+    "fix": "Pause konsistent ved avstand, eller vis faktisk fortsatt avspilling og manglende review.",
+    "acceptance": "Forlat/returner midt i begge opptak; status, cursor og heard coverage er konsistente.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:518",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformAudioDesk.cpp:162"
+    ]
+  },
+  {
+    "id": "GP-10",
+    "priority": "P1",
+    "owner": "workflow_audit",
+    "scenario": "anomaly",
+    "confidence": "source_confirmed",
+    "trigger": "Bruk MARK IN/OUT etter registrering eller fysisk arkivering.",
+    "consequence": "Reviewed nullstilles og markører endres mens innlevert pakke beholder gamle data.",
+    "fix": "Lås registrert sammenligning; eventuell ny markering blir eksplisitt revisjon.",
+    "acceptance": "Recorded/Registered/Packet/Filed og Continue bevarer konsistent registrert bevis.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:494",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:501",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:830"
+    ]
+  },
+  {
+    "id": "GP-11",
+    "priority": "P2",
+    "owner": "workflow_audit",
+    "scenario": "anomaly",
+    "confidence": "source_confirmed",
+    "trigger": "Bruk bånd/rack med rutine, spesialavvik eller allerede utført kontroll.",
+    "consequence": "Generell veiledning peker til feil apparat eller påstår at original/kontroll mangler.",
+    "fix": "Gi spesifikt svar fra jobbens fenomen og stadium.",
+    "acceptance": "Rutine og hver anomalifamilie før/under/etter kontroll peker riktig.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformAudioDesk.cpp:163",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:863",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:904"
+    ]
+  },
+  {
+    "id": "GP-02",
+    "priority": "P2",
+    "owner": "progression_audit",
+    "scenario": "service",
+    "confidence": "source_confirmed",
+    "trigger": "Aksepter serviceguide og velg deretter observasjon på OPS.",
+    "consequence": "Serviceordren beholder HUD-fokus og skjuler observasjonens neste steg.",
+    "fix": "La eksplisitt jobbvalg følge valgt jobb eller tilby tydelig primærfokus på OPS.",
+    "acceptance": "Bytt mellom service og observasjon, fullfør chart og Continue uten feil primærmål.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:361",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:892",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformGuide.cpp:89"
+    ]
+  },
+  {
+    "id": "GP-05",
+    "priority": "P2",
+    "owner": "progression_audit",
+    "scenario": "upgrade_effect",
+    "confidence": "source_confirmed",
+    "trigger": "Kjøp Reference comparison for $80.",
+    "consequence": "Penger trekkes og flagg settes uten gameplayforbruker som oppfyller løftet.",
+    "fix": "Deaktiver tilbud eller gi synlig valgfri sammenligningshjelp; vurder tidligere kjøp.",
+    "acceptance": "Før/etter på samme spor viser den lovede funksjonen og ingen dobbeltbetaling ved Continue.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:652",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:753",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformWorld.cpp:725"
+    ]
+  },
+  {
+    "id": "GP-06",
+    "priority": "P1",
+    "owner": "progression_audit",
+    "scenario": "power",
+    "confidence": "risk",
+    "trigger": "Cash=0, Loan>0, feederfeil før montert sikring, ingen sikring/drivstoff i lager eller betalt pakke/cargo, tom aggregattank og ingen ubetalt ferdigpakke.",
+    "consequence": "Nødkjøp kan avvises mens ny observasjonsinntekt krever strøm; sammensatt softlock er ikke runtime-gjenskapt.",
+    "fix": "Isolert reproduksjon og avgrenset nødvei knyttet til aktiv feil uten pengemaskin.",
+    "acceptance": "Vis en fysisk og forklart vei fra tilstanden til én betalt observasjon; prøv også gjeld etter døgnskifte.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:568",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:538",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformWorld.cpp:471",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformWorld.cpp:617",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformWorld.cpp:630"
+    ]
+  },
+  {
+    "id": "GP-07",
+    "priority": "P2",
+    "owner": "progression_audit",
+    "scenario": "day_loop",
+    "confidence": "source_confirmed",
+    "trigger": "Første threat/major-nattsjekk skjer mens spilleren er utenfor SARO.",
+    "consequence": "Døgnets threat/major-kast forbrukes før områdekrav avviser Start; minor/invest er fortsatt mulige.",
+    "fix": "Trekk først ved grunnleggende gyldighet eller lagre valgt hendelse som venter, uten rerolls.",
+    "acceptance": "Samme seed med SARO/Caliche og retur; lagring og områdespam gir ikke nye trekk.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:262",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:449"
+    ]
+  },
+  {
+    "id": "GP-12",
+    "priority": "P2",
+    "owner": "progression_audit",
+    "scenario": "routine",
+    "confidence": "risk",
+    "trigger": "Ny spiller velger bare pulsar/HI/Virgo og fullfører aldri normalreferanse Source0.",
+    "consequence": "Instrumentelle mysterier er gated uten tydelig forklaring av hvorfor første referanse er viktig.",
+    "fix": "Frivillig veiledet normaljobb og forklaring av referansens faglige nytte.",
+    "acceptance": "Ny spiller kan forklare referansen og finne registreringen uten ekstern hjelp.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:265",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformJobs.cpp:66"
+    ]
+  },
+  {
+    "id": "GP-13",
+    "priority": "P2",
+    "owner": "progression_audit",
+    "scenario": "day_loop",
+    "confidence": "risk",
+    "trigger": "Flere døgn med delvis arbeid og Rest.",
+    "consequence": "Gamle uferdige står først i liten liste; tre jobber per døgn øker letearbeidet.",
+    "fix": "Grupper pågående, dagens og tidligere tilbud med bevart historikk og ingen utløpsstraff.",
+    "acceptance": "Etter ti døgn er både dagens og eldre uferdig jobb lette å finne.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:185",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:660",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:720"
+    ]
+  },
+  {
+    "id": "GP-14",
+    "priority": "P2",
+    "owner": "progression_audit",
+    "scenario": "day_loop",
+    "confidence": "proposal",
+    "trigger": "Ett eller to funn i kryssdagsarkivet.",
+    "consequence": "Tellere og tekniske ID-er gir svak retning for neste undersøkelse.",
+    "fix": "Vis kjent observasjon, usikkerhet og én mulig kontroll per spor.",
+    "acceptance": "Spilleren kan beskrive hva som er kjent, usikkert og et meningsfullt neste grep.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:614",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:825"
+    ]
+  }
+]

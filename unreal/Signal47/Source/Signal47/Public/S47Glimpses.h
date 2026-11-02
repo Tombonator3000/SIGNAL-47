@@ -80,6 +80,7 @@ public:
 	void DevClear();
 	void DevStep(double Dt,const FS47GlimpsesIn& Input);
 	TArray<FS47RoswellGroup::FView> Individuals() const;
+ UPrimitiveComponent* ControlledPhotoBody(int32 Id) const;
 	bool DoorOccupied(const FBox& DoorwayUE) const;
 	void Update(double Dt, const FS47GlimpsesIn& S);
 	/** Put it at a named place now if it can stand there (the developer menu, the tests). */
