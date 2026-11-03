@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## CRT-respons installert 3. november
+
+Kilde `3efa4bd2` er installert kl. 01:21 CET. De fire fysiske CRT-bildene får oppdaterte tall uten å vente på den temporale bildehistorikken; global AA beholdes. Før/etter på High og Low viser korrekt tidlig tekst og skjuling bak rammen fra begge sider. Små bokstaver får noe grovere pikselkanter.
+
+Bygg, pakking, 2130 selvtester, pakket fire-skjerm-prøve og installert oppstart består. Alle 126 personlige Saved-filer er uendret. [Bilder og avgrensninger](../Evidence/UnrealDeliveries/CRT_RESPONSE_2026-11-03.md).
+
 ## Automatisk tavlegruppering installert 3. november
 
 Kilde `7b8a2a00`, [PR357](https://github.com/Tombonator3000/SIGNAL-47/pull/357), er installert kl. 00:55 CET. Kort og notater samles lokalt langs etablerte spillertråder, med plass til forankrede Findings. Manuelle og eldre lagrede posisjoner bevares. Automatisk plassering har eget lagret eierskap; stor tekst og gjenåpning beholder oppsettet. Ingen kobling eller konklusjon opprettes av sorteringen.

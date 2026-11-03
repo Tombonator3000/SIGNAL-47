@@ -22,7 +22,7 @@ import unreal
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from surface_profiles import PROFILES, material_labels, texture_labels, profile_for, glass_parameters, is_control_crt, write_detail_tile
 from ribbon_geometry import ribbon_asset_paths
-from clip_crt import aperture as crt_aperture
+from clip_crt import aperture as crt_aperture, response as crt_response
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -1092,6 +1092,11 @@ return B * Level * bCone * bNdl * 1.4 / (1.0 + bD * bD / 2500.0);''',
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY_MASK)
     elif blend in (unreal.BlendMode.BLEND_TRANSLUCENT, unreal.BlendMode.BLEND_ADDITIVE):
         mel.connect_material_property(alpha, '', unreal.MaterialProperty.MP_OPACITY)
+    if control_crt:
+        # Preserve this generator's DefaultLit glass; the shared helper supplies
+        # the same history-free image and explicit occlusion as the installed CRTs.
+        crt_response(m, alpha)
+        blend = unreal.BlendMode.BLEND_TRANSLUCENT
     # Native replacement meshes can retain these web material instances. Persist
     # compatible Nanite permutations on the owned master before compiling/saving,
     # so a later material regeneration does not restore editor-only fallbacks.

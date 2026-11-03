@@ -1,0 +1,218 @@
+{
+  "baseline": {
+    "status": "PASS",
+    "checks": 137,
+    "pairs": [
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-before",
+        "rawCompletedFrame": 30,
+        "frequency": 1419.695,
+        "gain": 17,
+        "bandwidth": 12,
+        "aa": 4,
+        "sampleRequestedAfterChange": 0,
+        "rawReadyAfterChange": 0,
+        "changedAge": 0
+      },
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-changed-150ms",
+        "rawCompletedFrame": 40,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 0.16664333804510534,
+        "rawReadyAfterChange": 0.17334737395867705,
+        "changedAge": 0.19639432802796364
+      },
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-changed-one-second",
+        "rawCompletedFrame": 63,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 1.0133000409696251,
+        "rawReadyAfterChange": 1.0178605599794537,
+        "changedAge": 1.0412444559624419
+      },
+      {
+        "cameraLateralMetres": -0.4,
+        "cameraEstablishedSeconds": 0.43155321199446917,
+        "pair": "crt-response-oblique-left",
+        "rawCompletedFrame": 82,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 1.722552087972872,
+        "rawReadyAfterChange": 1.7277461419580504,
+        "changedAge": 1.7540756280068308
+      },
+      {
+        "cameraLateralMetres": 0.4,
+        "cameraEstablishedSeconds": 0.4271768470061943,
+        "pair": "crt-response-oblique-right",
+        "rawCompletedFrame": 101,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 2.4421707820147276,
+        "rawReadyAfterChange": 2.4460582860046998,
+        "changedAge": 2.4692925779381767
+      }
+    ],
+    "reason": "response and oblique captures complete; inspect images, not a rendering or occlusion PASS"
+  },
+  "production": {
+    "status": "PASS",
+    "checks": 140,
+    "pairs": [
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-before",
+        "rawCompletedFrame": 30,
+        "frequency": 1419.695,
+        "gain": 17,
+        "bandwidth": 12,
+        "aa": 4,
+        "sampleRequestedAfterChange": 0,
+        "rawReadyAfterChange": 0,
+        "changedAge": 0
+      },
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-changed-150ms",
+        "rawCompletedFrame": 40,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 0.16649850201793015,
+        "rawReadyAfterChange": 0.17084952699951828,
+        "changedAge": 0.19405469100456685
+      },
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-changed-one-second",
+        "rawCompletedFrame": 64,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 1.0183098430279642,
+        "rawReadyAfterChange": 1.0229361960664392,
+        "changedAge": 1.0467834169976413
+      },
+      {
+        "cameraLateralMetres": -0.4,
+        "cameraEstablishedSeconds": 0.4284534640610218,
+        "pair": "crt-response-oblique-left",
+        "rawCompletedFrame": 84,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 1.7364039400126785,
+        "rawReadyAfterChange": 1.7410714130382985,
+        "changedAge": 1.7645578170195222
+      },
+      {
+        "cameraLateralMetres": 0.4,
+        "cameraEstablishedSeconds": 0.4617840430000797,
+        "pair": "crt-response-oblique-right",
+        "rawCompletedFrame": 104,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 2.4858017259975895,
+        "rawReadyAfterChange": 2.4903918369673193,
+        "changedAge": 2.514398197992705
+      }
+    ],
+    "reason": "response and oblique captures complete; inspect images, not a rendering or occlusion PASS"
+  },
+  "production-low": {
+    "status": "PASS",
+    "checks": 139,
+    "pairs": [
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-before",
+        "rawCompletedFrame": 30,
+        "frequency": 1419.695,
+        "gain": 17,
+        "bandwidth": 12,
+        "aa": 4,
+        "sampleRequestedAfterChange": 0,
+        "rawReadyAfterChange": 0,
+        "changedAge": 0
+      },
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-changed-150ms",
+        "rawCompletedFrame": 40,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 0.16647518810350448,
+        "rawReadyAfterChange": 0.1732959640212357,
+        "changedAge": 0.19732349505648017
+      },
+      {
+        "cameraLateralMetres": 0,
+        "cameraEstablishedSeconds": 0,
+        "pair": "crt-response-changed-one-second",
+        "rawCompletedFrame": 64,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 1.0279457370052114,
+        "rawReadyAfterChange": 1.0328030550153926,
+        "changedAge": 1.056618886999786
+      },
+      {
+        "cameraLateralMetres": -0.4,
+        "cameraEstablishedSeconds": 0.42749059305060655,
+        "pair": "crt-response-oblique-left",
+        "rawCompletedFrame": 84,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 1.7462713851127774,
+        "rawReadyAfterChange": 1.7505094250664115,
+        "changedAge": 1.7737072710879147
+      },
+      {
+        "cameraLateralMetres": 0.4,
+        "cameraEstablishedSeconds": 0.4283626991091296,
+        "pair": "crt-response-oblique-right",
+        "rawCompletedFrame": 103,
+        "frequency": 1419.895,
+        "gain": 52.5,
+        "bandwidth": 55,
+        "aa": 4,
+        "sampleRequestedAfterChange": 2.457295152009465,
+        "rawReadyAfterChange": 2.462168855010532,
+        "changedAge": 2.4856345880543813
+      }
+    ],
+    "reason": "response and oblique captures complete; inspect images, not a rendering or occlusion PASS"
+  }
+}

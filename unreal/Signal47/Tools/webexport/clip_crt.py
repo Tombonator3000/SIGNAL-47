@@ -1,8 +1,8 @@
-"""Discover the four actual CRT instances and clip a dedicated copy of their parent.
+"""Discover the four CRT instances and preserve their clipped image without TAA history.
 
 UnrealEditor-Cmd <project> -ExecutePythonScript=<this> -unattended -nullrhi
 S47_CRT_CLIP_REPORT optionally selects the small JSON report.
-The exporter imports the same SDF builder for regeneration stability.
+The exporter imports the same aperture and response builders for regeneration stability.
 """
 import json
 import os
@@ -48,6 +48,69 @@ def aperture(material, alpha, uv):
     return output
 
 
+def response(material, aperture_alpha):
+    """Keep the actual shading model; route only this CRT through AfterMotionBlur."""
+    import unreal
+    M = unreal.MaterialEditingLibrary
+    shading = material.get_editor_property('shading_model')
+    assert shading in (unreal.MaterialShadingModel.MSM_UNLIT, unreal.MaterialShadingModel.MSM_DEFAULT_LIT), (
+        'Unsupported CRT shading model', str(shading))
+    assert str(aperture_alpha.get_editor_property('desc')) == OUTPUT_TAG, 'Expected original CRT aperture-alpha'
+    nodes = list(M.get_material_expressions(material))
+
+    def node(cls, suffix, x, y):
+        tag = 'S47_CRT_RESPONSE_' + suffix
+        found = [n for n in nodes if str(n.get_editor_property('desc')) == tag]
+        assert len(found) <= 1, ('Duplicate CRT response node', tag)
+        result = found[0] if found else M.create_material_expression(material, cls, x, y)
+        assert isinstance(result, cls), ('Unexpected CRT response node type', tag)
+        result.set_editor_property('desc', tag)
+        return result
+
+    # This pass is composed after TAA/TSR and has no hardware depth attachment.
+    # Explicit scene-depth rejection keeps the picture behind the bezel/occluders.
+    # No bias: equal depth remains visible; closer opaque geometry rejects the pixel.
+    scene = node(unreal.MaterialExpressionSceneDepth, 'SCENE_DEPTH', -900, 1700)
+    scene.set_editor_property('input_mode', unreal.MaterialSceneAttributeInputMode.OFFSET_FRACTION)
+    scene.set_editor_property('const_input', unreal.Vector2D(0, 0))
+    pixel = node(unreal.MaterialExpressionPixelDepth, 'PIXEL_DEPTH', -900, 1850)
+    one = node(unreal.MaterialExpressionConstant, 'ONE', -900, 2000)
+    one.set_editor_property('r', 1.0)
+    zero = node(unreal.MaterialExpressionConstant, 'ZERO', -900, 2100)
+    zero.set_editor_property('r', 0.0)
+    gate = node(unreal.MaterialExpressionIf, 'DEPTH_GATE', -600, 1750)
+    gate.set_editor_property('equals_threshold', 0.0)
+    opacity = node(unreal.MaterialExpressionMultiply, 'OPACITY', -250, 1550)
+    pins = list(M.get_material_expression_input_names(gate))
+
+    def gate_pin(*aliases):
+        matches = [name for name in pins if name.replace(' ', '') in aliases]
+        assert len(matches) == 1, ('Unrecognized native If pin', aliases, pins)
+        return matches[0]
+
+    for expression, pin in ((scene, gate_pin('A')), (pixel, gate_pin('B')),
+                            (one, gate_pin('AGreaterThanB', 'A>B')),
+                            (one, gate_pin('AEqualsB', 'A==B', 'A=B')),
+                            (zero, gate_pin('ALessThanB', 'A<B'))):
+        assert M.connect_material_expressions(expression, '', gate, pin), pin
+    assert M.connect_material_expressions(aperture_alpha, '', opacity, 'A')
+    assert M.connect_material_expressions(gate, '', opacity, 'B')
+    assert M.connect_material_property(opacity, '', unreal.MaterialProperty.MP_OPACITY)
+    material.set_editor_property('blend_mode', unreal.BlendMode.BLEND_TRANSLUCENT)
+    material.set_editor_property('translucency_pass', unreal.MaterialTranslucencyPass.MTP_AFTER_MOTION_BLUR)
+    lighting = (unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING
+                if shading == unreal.MaterialShadingModel.MSM_DEFAULT_LIT
+                else unreal.TranslucencyLightingMode.TLM_VOLUMETRIC_NON_DIRECTIONAL)
+    material.set_editor_property('translucency_lighting_mode', lighting)
+    assert material.get_editor_property('shading_model') == shading
+    # Installed Unlit CRTs have native response/occlusion evidence. A regenerated
+    # DefaultLit variant retains its glass graph but needs its own visual review:
+    # this pass cannot use front-layer translucency lighting/reflections.
+    return {'pass': 'AfterMotionBlur', 'shading_model_preserved': str(shading),
+            'lighting_mode': str(lighting), 'depth_gate': 'SceneDepth >= PixelDepth',
+            'depth_bias': 0, 'response_nodes': 6}
+
+
 def main():
     import unreal
     E, M = unreal.EditorAssetLibrary, unreal.MaterialEditingLibrary
@@ -86,6 +149,7 @@ def main():
             result[prop] = rows
         overrides = instance.get_editor_property('base_property_overrides')
         assert not overrides.get_editor_property('override_blend_mode'), 'Explicit instance blend override needs review'
+        assert not overrides.get_editor_property('override_shading_model'), 'Explicit instance shading override needs review'
         return result
     saved_parameters = {m.get_path_name(): parameters(m) for m in instances}
     created = False
@@ -143,14 +207,14 @@ def main():
                 and n.get_editor_property('u_tiling') == 1 and n.get_editor_property('v_tiling') == 1]
     assert uv_nodes, 'Existing unmodified UV0 coordinate required'
     output = aperture(material, alpha, uv_nodes[0])
-    material.set_editor_property('blend_mode', unreal.BlendMode.BLEND_MASKED)
     assert M.connect_material_property(output, '', unreal.MaterialProperty.MP_OPACITY_MASK)
+    response_info = response(material, output)
     errors = list(M.recompile_material(material))
     assert not errors, errors
     after = {k: str(material.get_editor_property(k)) for k in properties}
     assert before == after, ('CRT glass properties changed', before, after)
     assert before_wires == wires(), 'CRT lighting, normal or phosphor graph connection changed'
-    assert E.save_loaded_asset(material, False), 'Could not persist CRT aperture'
+    assert E.save_loaded_asset(material, False), 'Could not persist CRT aperture and response'
     instance_rows = []
     for instance in instances:
         instance.set_editor_property('parent', material)
@@ -167,8 +231,9 @@ def main():
               'shared_source_parent_bytes_preserved': source_path.split('.')[0] != destination,
               'crt_instances': instance_rows,
               'mask': {'width': WIDTH, 'height': HEIGHT, 'inset': INSET, 'radius_of_short_side': RADIUS},
+              'response': response_info,
               'preserved_properties': after, 'preserved_surface_connections': before_wires,
-              'limits': 'Saved material graph only. Native four-screen render and pointer alignment remain required.'}
+              'limits': 'Saved material graph only. Native four-screen response, occlusion, glass and pointer alignment remain required; regenerated DefaultLit glass needs separate visual review.'}
     return report
 
 
