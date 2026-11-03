@@ -12,12 +12,14 @@ namespace S47EngineSound
 	SIGNAL47_API double SolenoidClicks(const TSharedRef<FS47AudioContext>& Ctx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, const TArray<double>& At, double K = 1);
 }
 
-// drive/engineSound.ts: the truck's V8, heard from the cab. Two recordings (a carburetted V8 at
-// idle, and an old truck at a steady cruise from inside), each looped, pitched up and down with the
+// drive/engineSound.ts: the truck's engine, heard from the cab. Two recordings (an old CJ Jeep at
+// idle, and a Jeep's engine from inside on a rough track), each looped, pitched up and down with the
 // rpm, crossing over between 900 and 1500 rpm, under a low-pass that opens with load and a fixed
 // "cab" low-pass. Getting in, the engine starts with its own recording; arriving, it shuts off.
+// Unreal only (not in the web version): a third loop, engineRough (the rocks and rattles of the
+// same onboard Jeep recording), under the tyres on gravel and dirt and when the truck slides there.
 //
-// The recordings (engineIdle, engineDrive, engineStart, engineOff) play through US47Audio by
+// The recordings (engineIdle, engineDrive, engineStart, engineOff, engineRough) play through US47Audio by
 // name; their gains, rates and the filter follow the web version's Web Audio automation exactly
 // (FS47EngineParam below: setValueAtTime, linear and exponential ramps, setTargetAtTime,
 // cancelScheduledValues), evaluated each frame. The parts made of Web Audio nodes (the band-passed
@@ -82,8 +84,9 @@ public:
 	void Solenoid(const TArray<double>& Secs, double K = 1);
 	/** It catches after a stall: the engine note comes back with a little surge. */
 	void Restart();
-	/** Every frame: rolling noise for the surface under the truck and the speed in m/s. */
-	void Tyres(ES47SurfaceKind Surface, double Speed);
+	/** Every frame: rolling noise for the surface under the truck, the speed in m/s and the
+	 *  sideways slide 0..1 (FS47DriveController::Slip). */
+	void Tyres(ES47SurfaceKind Surface, double Speed, double Slip = 0);
 	/** A cattle guard: both axles over a dozen steel pipes. Speed in m/s. */
 	void Rattle(double Speed);
 	/** A knock against a post or a fence, strength from the impact speed in m/s. */
@@ -97,9 +100,11 @@ private:
 	// the Web Audio graph's params (out, the engine bus, the two recordings' gains and rates, the
 	// engine's low-pass, the rumble's band and gain)
 	FS47EngineParam Out, Bus, Gi, Gd, IdleRate, DriveRate, Lp, Band, Noise;
+	FS47EngineParam Gr, RoughRate; // the rough-ground loop's gain and rate (Tyres)
 	TSharedPtr<FS47GainNode> SolenoidOut; // native counterpart of out for solenoidClicks, also after the engine stops
 	bool bEng = false;        // eng !== null
 	bool bLoops = false;      // the loops are playing (until they are stopped after a Stop's fade)
+	bool bRough = false;      // the rough-ground loop is playing (optional: the engine runs without it)
 	double StopAt = -1;
 	double Rpm = 650, Load = 0;
 	bool bRunning = false, bStalled = false, bHushed = false, bTyres = false;

@@ -6,8 +6,11 @@
 namespace
 {
 	constexpr double MASTER = 0.33;
-	/** The rpm each recording was made at (measured from their spectra, then by ear in the game). */
-	constexpr double IDLE_RPM = 600, DRIVE_RPM = 1800;
+	/** The rpm each recording was made at (measured from their spectra). The Jeep recordings (November
+	 *  2026, web/THIRD_PARTY_NOTICES.md): the CJ-5's warm idle fires at 36 Hz and the onboard Jeep at
+	 *  67 Hz, as a straight six (three a turn) some 720 and 1340 rpm. The idle is played as recorded
+	 *  at the truck's own idle (650), so it is not pitched down there. */
+	constexpr double IDLE_RPM = 650, DRIVE_RPM = 1340;
 	/** The recordings' level against the old engine's (they are quieter as files). */
 	constexpr double REC = 3.7;
 	/** The fixed "cab" low-pass after the engine's own (Hz). */
@@ -16,6 +19,11 @@ namespace
 	// the loops' keys in US47Audio
 	const TCHAR* IDLE_KEY = TEXT("truck:idle");
 	const TCHAR* DRIVE_KEY = TEXT("truck:drive");
+	// Unreal only: the rough ground under the tyres (engineRough), not muffled by the cab as much as
+	// the engine is. ROUGH is its gain on dirt at speed, under the engine's.
+	const TCHAR* ROUGH_KEY = TEXT("truck:rough");
+	constexpr double ROUGH = 0.34;
+	constexpr float ROUGH_LP = 3200;
 }
 
 // engineSound.ts solenoidClicks: the relay behind the firewall and the starter plunger below it.
@@ -106,6 +114,7 @@ FS47EngineSound::~FS47EngineSound()
 	// The native node owns its context, so teardown does not reach through a destroyed Audio.
 	if (SolenoidOut.IsValid()) { SolenoidOut->Disconnect(); SolenoidOut.Reset(); }
 	if (Audio && bLoops) { Audio->Stop(IDLE_KEY, 0.1f); Audio->Stop(DRIVE_KEY, 0.1f); }
+	if (Audio && bRough) Audio->Stop(ROUGH_KEY, 0.1f);
 }
 
 double FS47EngineSound::Master() const { return bHushed ? 0 : MASTER; }
@@ -124,6 +133,8 @@ void FS47EngineSound::EngineNodes()
 	DriveRate = FS47EngineParam(1);
 	Band = FS47EngineParam(120);
 	Noise = FS47EngineParam(0.03);
+	Gr = FS47EngineParam(0);
+	RoughRate = FS47EngineParam(1);
 	if (Audio && !bLoops)
 	{
 		// (started just audible, so the mixer keeps them playing until their level comes up)
@@ -132,6 +143,9 @@ void FS47EngineSound::EngineNodes()
 		const bool bDrive = bool(Audio->LoopSfx(DRIVE_KEY, TEXT("engineDrive"), S));
 		bLoops = bIdle && bDrive;
 		if (!bLoops) { Audio->Stop(IDLE_KEY); Audio->Stop(DRIVE_KEY); }
+		// the rough ground: optional, the engine runs without it (an older import has no engineRough)
+		FS47Sound R = S; R.Lp = ROUGH_LP;
+		bRough = bLoops && bool(Audio->LoopSfx(ROUGH_KEY, TEXT("engineRough"), R));
 	}
 	StopAt = -1;
 	bEng = true;
@@ -193,7 +207,7 @@ void FS47EngineSound::Set(double InRpm, double InLoad)
 	if (!bEng || !bRunning || bStalled) return;
 	const double T = Now();
 	Rpm = InRpm; Load = InLoad;
-	const double F = FMath::Max(InRpm, 300.0) / 60 * 4; // a V8 fires four times a turn
+	const double F = FMath::Max(InRpm, 300.0) / 60 * 3; // the Jeep's straight six fires three times a turn (the web version's V8: four)
 	const double L = FMath::Min(1.0, FMath::Max(0.0, InLoad));
 	const double R = FMath::Max(InRpm, 300.0), X = Smooth(R, 900, 1500);
 	IdleRate.SetTargetAtTime(FMath::Min(1.9, FMath::Max(0.6, R / IDLE_RPM)), T, 0.05);
@@ -240,6 +254,7 @@ void FS47EngineSound::Still()
 	const double T = Now();
 	Bus.CancelScheduledValues(T); Bus.SetValueAtTime(0, T);
 	Noise.CancelScheduledValues(T); Noise.SetValueAtTime(0, T);
+	Gr.CancelScheduledValues(T); Gr.SetValueAtTime(0, T);
 	if (Audio && bTyres) Audio->EngineTyres(TEXT(""), 0.f);
 }
 
@@ -299,10 +314,17 @@ void FS47EngineSound::Restart()
 	Set(1400, 0.4);
 }
 
-void FS47EngineSound::Tyres(ES47SurfaceKind Surface, double Speed)
+void FS47EngineSound::Tyres(ES47SurfaceKind Surface, double Speed, double Slip)
 {
 	if (!bTyres || !bRunning) return;
-	if (Audio) Audio->EngineTyres(S47SurfaceName(Surface), float(FMath::Abs(Speed)));
+	// Unreal only: the onboard Jeep's rocks and rattles on gravel and dirt, up with the speed (full
+	// from about 9 m/s, as engineSound.ts's crunch), louder and quicker when the truck slides there
+	const double T = Now(), V = FMath::Abs(Speed);
+	const double Slow = FMath::Min(1.0, V / 9), K = FMath::Min(1.0, V / 20), S = FMath::Clamp(Slip, 0.0, 1.0);
+	const double Ground = Surface == ES47SurfaceKind::Dirt ? 1.0 : Surface == ES47SurfaceKind::Gravel ? 0.7 : 0.0;
+	Gr.SetTargetAtTime(ROUGH * Ground * Slow * (0.6 + 0.4 * K + 0.6 * S), T, 0.15);
+	RoughRate.SetTargetAtTime(0.8 + 0.3 * K + 0.15 * S, T, 0.2);
+	if (Audio) Audio->EngineTyres(S47SurfaceName(Surface), float(V));
 }
 
 void FS47EngineSound::Rattle(double Speed) { if (Audio) Audio->EngineRattle(float(Speed)); }
@@ -315,7 +337,7 @@ void FS47EngineSound::Tick()
 
 void FS47EngineSound::TickAt(double T)
 {
-	for (FS47EngineParam* P : { &Out, &Bus, &Gi, &Gd, &IdleRate, &DriveRate, &Lp, &Band, &Noise }) P->Prune(T);
+	for (FS47EngineParam* P : { &Out, &Bus, &Gi, &Gd, &IdleRate, &DriveRate, &Lp, &Band, &Noise, &Gr, &RoughRate }) P->Prune(T);
 	// solenoidClicks uses the same out as the engine: Master, Hush and Stop still apply when
 	// the recordings have stopped and bLoops is false. The existing port evaluates out per frame.
 	if (SolenoidOut.IsValid()) SolenoidOut->Gain.SetValue(Out.Value(T));
@@ -324,7 +346,8 @@ void FS47EngineSound::TickAt(double T)
 	{
 		Audio->Stop(IDLE_KEY, 0.05f);
 		Audio->Stop(DRIVE_KEY, 0.05f);
-		bLoops = false; StopAt = -1;
+		if (bRough) Audio->Stop(ROUGH_KEY, 0.05f);
+		bLoops = false; bRough = false; StopAt = -1;
 		return;
 	}
 	const double O = Out.Value(T), B = Bus.Value(T);
@@ -332,6 +355,8 @@ void FS47EngineSound::TickAt(double T)
 	const float Cut = float(FMath::Min(Lp.Value(T), CAB_LP));
 	Audio->LoopLevel(IDLE_KEY, float(O * B * Gi.Value(T)), float(IdleRate.Value(T)), Cut);
 	Audio->LoopLevel(DRIVE_KEY, float(O * B * Gd.Value(T)), float(DriveRate.Value(T)), Cut);
+	// the ground under the tyres follows out (Hush, Stop), not the engine's bus
+	if (bRough) Audio->LoopLevel(ROUGH_KEY, float(O * Gr.Value(T)), float(RoughRate.Value(T)), ROUGH_LP);
 	// the band-passed rumble under the engine, at the bus's level
 	Audio->EngineBus(float(O * B), float(Noise.Value(T)), float(Band.Value(T)));
 }
@@ -462,6 +487,23 @@ bool FS47EngineSound::SelfTest(TArray<FString>& Lines)
 				TEXT("completed shutdown removes both actual recording loops"));
 			E.Start();
 			Check(E.LoopsReady() && E.On(), TEXT("entry after a completed shutdown creates both recording loops again"));
+		}
+		{
+			// the rough-ground loop: absent above (an older import still runs); here on dirt, then asphalt
+			A->Buf.Add(TEXT("engineRough"), Clip(1, .2f));
+			FS47EngineSound E(A);
+			E.Start();
+			E.Tyres(ES47SurfaceKind::Dirt, 15, .5);
+			E.TickAt(E.Now() + 3);
+			auto Rough = A->InspectLoop(ROUGH_KEY);
+			Check(Rough.IsSet() && Rough->bPlaying && Rough->bLoop && Rough->Buffer.Get() == A->Buf[TEXT("engineRough")].Get() && Rough->Gain > .01,
+				TEXT("rough ground loop is audible on dirt at speed"));
+			E.Tyres(ES47SurfaceKind::Asphalt, 15, .5);
+			E.TickAt(E.Now() + 6);
+			Rough = A->InspectLoop(ROUGH_KEY);
+			Check(Rough.IsSet() && Rough->Gain < 1e-3, TEXT("rough ground loop is silent on asphalt"));
+			E.Stop(); E.TickAt(E.StopAt + .01);
+			Check(!A->InspectLoop(ROUGH_KEY).IsSet(), TEXT("completed shutdown removes the rough ground loop"));
 		}
 		A->Ctx->Close();
 	}
