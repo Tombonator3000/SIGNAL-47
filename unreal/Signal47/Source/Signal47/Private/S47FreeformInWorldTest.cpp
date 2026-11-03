@@ -347,6 +347,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(!Check(M->Score.IsValid()&&!M->Score->MusicHeld()&&M->Score->MusicWant()==TEXT("dawn"),TEXT("Freeform morning chooses its own music and is not held by Story state")))return;
   if(!Check(M->Score->Playing==TEXT("dawn")&&M->Score->ActiveDecks()>0,TEXT("ordinary Freeform update starts the imported music stream")))return;
   if(!Check(M->Audio&&M->Audio->SoundMixPlaying(TEXT("equipment:room_fluorescent")),TEXT("occupied Freeform room plays the staged fluorescent effect")))return;
+  AimAt(F.AudioDesk->InteractionPoint(TEXT("ff:audio:ref_play")));
   FScreenshotRequest::RequestScreenshot(Root/TEXT("space-reference-desk.png"),true,false);
   Go(40);return;
  }
