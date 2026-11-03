@@ -27,7 +27,9 @@
 
 namespace
 {
- const FVector BenchAt(24.0,-.57,6.2);
+ // EASTWING-01: the service bench stands inside the east wing's calibration / repair room,
+ // against the partition to parts storage (S47EastWing; the outdoor bench was retired).
+ const FVector BenchAt(27.0,0.0,1.25);
  const FVector GeneratorAt(5.93,1.35,.65);
  // Original S-03 CABLE JUNCTION front, unchanged ground placement and atlas.
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
@@ -423,7 +425,7 @@ bool FS47FreeformWorld::Build()
  Bind(Panel,TEXT("ff:service"));
  LabelPart(TEXT("FreeformS03Text"),TEXT("LOCAL / RELAY / TEST"),ServiceAt()+FVector(.30,.30,0),180,1.5,Saro);
  LabelPart(TEXT("FreeformGasLabel"),TEXT("SERVICE SUPPLIES\n08:00 - 20:00"),ShopPoint()+FVector(.10,0,0),0,3.1,Road);
- LabelPart(TEXT("FreeformBenchLabel"),TEXT("SARO SERVICE BAY\nTEST / PARTS / STOCK"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
+ LabelPart(TEXT("FreeformBenchLabel"),TEXT("CALIBRATION / REPAIR\nTEST / PARTS / STOCK"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
  // Existing own-model REGULAR pump at z=2052.4; only its mechanical
  // counter windows receive small live account-meter plates. The adjacent
  // DIESEL body stays authored and is deliberately incompatible with the Jeep.
@@ -605,7 +607,7 @@ bool FS47FreeformWorld::AnalyzeSample()
 void FS47FreeformWorld::OpenWorkbench()
 {
  if(!Ready()||!Near(BenchAt)||!M->UI)return;
- TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EXTERIOR SERVICE BAY\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EAST WING / CALIBRATION BENCH\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
  R.Add(S47Kit::Small(LoggerAccess()?TEXT("FIELD LOGGER AUTHORIZED / loan kit, two field sites, six-hour battery. Measures local electrical noise only."):TEXT("FIELD LOGGER LOCKED / complete a supported conclusion in The repeated interval.")));
  if(LoggerAccess())
  {
@@ -672,7 +674,7 @@ bool FS47FreeformWorld::ServiceUse()
   case 1:DiagnoseService();return true;
   case 2:Service=3;Change(TEXT("S-03 set to LOCAL. Remote movement is isolated. Open the cover."));break;
   case 3:Service=4;Change(TEXT("Hatch open. The command relay is not closing; seat a compatible replacement from your stock."));break;
-  case 4:if(!Consume(TEXT("relay"))){Change(TEXT("No drive relay in your stock pouch. Buy a relay at Caliche service supplies; carry/unload its parcel at the SARO SERVICE BAY bench by the sign building and unpack it. A donor must also be tested there."));return true;}Service=5;Change(TEXT("Replacement relay seated. Close the cover before the movement test."));break;
+  case 4:if(!Consume(TEXT("relay"))){Change(TEXT("No drive relay in your stock pouch. Buy a relay at Caliche service supplies; carry/unload its parcel at the calibration bench inside the east wing (door by the SARO sign) building and unpack it. A donor must also be tested there."));return true;}Service=5;Change(TEXT("Replacement relay seated. Close the cover before the movement test."));break;
   case 5:Service=6;Change(TEXT("Cover secured. Use the local control to test five degrees out and back."));break;
   case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(S03()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(S03());ServiceEl=M->Web->DishEl(S03());Service=7;Settle=0;M->Web->PointDish(S03(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("Local test running: watch S-03 turn five degrees and return."));break;
   case 7:case 8:Change(ServiceStatus());break;

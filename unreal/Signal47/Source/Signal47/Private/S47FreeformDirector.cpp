@@ -36,9 +36,9 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
 namespace
 {
- // Spare paved space west of the staff sedan: clear of the personnel steps,
- // both permanent cars, the garage ramp and the southern service-road access.
- const FVector EmptyCarFoot(23.5,-.576,11.0);
+ // The previous staff bay stays clear after the sedan moves west to x24.6.
+ // Retain this existing event anchor, outside the new east-wing garage approach.
+ const FVector EmptyCarFoot(27,-.576,9.8);
  const FVector EmptyCarReference=EmptyCarFoot+FVector(0,.9,0);
  FVector ClosePassAt(const FVector& Origin,double Age)
  {

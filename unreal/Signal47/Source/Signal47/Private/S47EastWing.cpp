@@ -178,8 +178,8 @@ void FS47EastWing::Build()
  for(const double X:{33.6,37.2})Block(FString::Printf(TEXT("Line%.0f"),X*10),FVector(X-.05,0,Z0+1.0),FVector(X+.05,.005,Z1-T),Yellow,false);
  // Blockout light per room (fluorescent white); replaced by fixtures in the detail pass.
  const FLinearColor Tube(1.f,.95f,.86f);
- Light(TEXT("Lab"),FVector(23.3,3.0,0),3200,Tube);Light(TEXT("Store"),FVector(28.8,3.0,-2.5),2200,Tube);
- Light(TEXT("Cal"),FVector(28.8,3.0,3.0),2200,Tube);Light(TEXT("Garage"),FVector(35.1,3.0,0),4200,Tube);
+ Light(TEXT("Lab"),FVector(23.3,3.0,0),800,Tube);Light(TEXT("Store"),FVector(28.8,3.0,-2.5),550,Tube);
+ Light(TEXT("Cal"),FVector(28.8,3.0,3.0),550,Tube);Light(TEXT("Garage"),FVector(35.1,3.0,0),1000,Tube);
  Walls();
 }
 
