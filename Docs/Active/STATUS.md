@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Jeep-lyd og ryddet politibil installert 3. november
+
+Kilde `e7a4cfe3` (PR365) er installert kl. 08:07 CET. Jeepen har motorlyd fra tre CC0-opptak av Jeeper og en ny løkke for grus og jord som stiger med fart og skrens. Politibilen har dreide hjul, tonet glass og egne lakk-, krom- og lyktmaterialer; atlas og merking er bevart.
+
+Bygg/pakke, 2150 selvtester, motorvei-UFO-jakten (14 kontroller, patruljebil synlig) og installert røyktest består. Alle 126 personlige Saved-filer er uendret. Ingen har lyttet ennå, og politibilen er ikke vurdert visuelt i spillets lys.
+
 ## Kinoplakater, dørklaring og arbeidspause installert 3. november
 
 Kilde `501cbe81` er installert kl. 07:45 CET. To Plaza-plakater følger dagens åpne kinobygning. Caliche-dører avviser lukking rundt spilleren, og Freeform holder internkontroll og antenner under bilovergangen, sammen med spillklokken.
