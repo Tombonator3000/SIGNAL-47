@@ -4,6 +4,11 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Lydverksted, 3. november
+
+- [x] SOUND-MIX-01: gjenbrukbar motor for opptakslag, filtrering, hastighet, løkker og fire/sju-puls; lokal bank, fire oppskrifter og WAV-forhåndslytt fra Unreal. Bygg og målrettet grafkontroll består. Modem er reservert for PC/dataoverføring.
+- [ ] Lytt til de fire startoppskriftene og juster uttrykk/nivå. Velg godkjente kilder før ordinær pakking; koble senere VHS og faktiske PC-overføringer til riktig oppskrift når de aktuelle handlingene bearbeides. Installerte apparatlyder er ikke byttet av SOUND-MIX-01.
+
 ## Nattskift 2. november til 3. november kl.08:00
 
 Ny bestilling: Jeep først, samordnet med Claude når hans tilgjengelighet begynner kl. 02:10; deretter kritiske og konkrete TODO-rettelser. Bruk agenter med avgrenset filansvar og eksisterende gameplay-/produksjonsharness. Claude hjelper også med TODO og agenter etter Jeep når kapasiteten tillater det. COLLISION-01 prioriteres etter Jeep. Eldre stoppbeskjeder nedenfor beskriver avsluttede bestillinger og stopper ikke dette nattskiftet. Samlet rydding kl. 21:32 gjenbrukes. Fra kl. 07:30 ferdigstilles pågående arbeid og morgenstatus; nytt utviklingsarbeid stopper kl. 08:00. Ingen offentlig spillutgave.

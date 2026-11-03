@@ -207,6 +207,20 @@ void US47Audio::StartCarrier()
 void US47Audio::SignalFrame(float Clarity, float Level, double T)
 {
 	if (!Ctx.IsValid() || !Noise.IsValid()) return;
+	// Optional private recording bank, explicitly loaded with -S47SoundBank.
+	// The default game retains its procedural signal until a bank is selected.
+	if (SoundRecipes.Contains(TEXT("array_locked")))
+	{
+		const FString Key = TEXT("array_receiver");
+		TArray<FString> Errors;
+		if (SoundMixes.Contains(Key) || PlaySoundMix(Key, TEXT("array_locked"), ES47SoundUse::Receiver, Errors))
+		{
+			if (Signal.IsValid()) { Signal->Stop(); Signal.Reset(); }
+			SoundMixes[Key]->SetLevel(Level);
+			SoundMixFrame(Key, Clarity, 1 - Clarity, 1, T);
+			return;
+		}
+	}
 	FBatch Batch(*Ctx);
 	if (!Signal.IsValid())
 	{
@@ -218,6 +232,7 @@ void US47Audio::SignalFrame(float Clarity, float Level, double T)
 
 void US47Audio::SignalOff()
 {
+	StopSoundMix(TEXT("array_receiver"));
 	if (Signal.IsValid()) Signal->Stop();
 	Signal.Reset();
 }
