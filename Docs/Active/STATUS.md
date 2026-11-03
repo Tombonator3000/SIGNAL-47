@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Pale-bevegelser installert 3. november
+
+Kilde `b0535f89` er installert kl. 05:29 CET. Den originale store Pale-riggen får egne bevegelser for lytting, gange, løp, vending og grep mot faktisk spillermål. Fotfeste og skritt følger forflytningen; modell, rigg, AI og lagringsformat beholdes.
+
+Bygg/pakke, 2147 selvtester, High/Low-opptak og SC04 med fangst, nytt forsøk og lokking består. Alle 126 personlige Saved-filer er uendret. Kryping, høyde-/passasjetilpasning, full sluttanimasjon og menneskelig bevegelses-/lydvurdering står åpne. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/PALE_MOTION_2026-11-03.md).
+
 ## SARO-vei og lampefundamenter installert 3. november
 
 Kilde `7b81ddd2` er installert kl. 04:55 CET. SARO-innkjøringen får en gradvis 32-meters overgang med sammenfallende synlig vei, kollisjon og gulvhøyde. Tre stasjonslamper og åtte veilamper får terrengtilpassede fundamenter og beslag; originale stolper og lysankre beholdes.

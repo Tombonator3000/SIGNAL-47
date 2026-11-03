@@ -1,0 +1,147 @@
+{
+  "scope": "five selected PNGs, seven source JSON files, two existing MP4 videos; no PNG series copy",
+  "full_frame_series_retained_privately": true,
+  "total_copy_bytes": 19882452,
+  "selected_frames": [
+    {
+      "set": "baseline",
+      "destination": "before-front.png",
+      "source_frame": "frame-0017-t0002.054.png",
+      "previewSeconds": 2.0544448772445327,
+      "stage": 0
+    },
+    {
+      "set": "side105",
+      "destination": "side-run-r3.png",
+      "source_frame": "frame-0079-t0009.482.png",
+      "previewSeconds": 9.481590597517775,
+      "stage": 3
+    },
+    {
+      "set": "side105",
+      "destination": "side-grab-105-r3.png",
+      "source_frame": "frame-0122-t0014.644.png",
+      "previewSeconds": 14.643956227973074,
+      "stage": 5
+    },
+    {
+      "set": "package",
+      "destination": "package-low-run.png",
+      "source_frame": "frame-0080-t0009.601.png",
+      "previewSeconds": 9.601141581078977,
+      "stage": 3
+    },
+    {
+      "set": "package",
+      "destination": "package-low-grab.png",
+      "source_frame": "frame-0122-t0014.642.png",
+      "previewSeconds": 14.641759211476863,
+      "stage": 5
+    }
+  ],
+  "copies": [
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/frames/s47-pale-baseline-frames-r1-20261103/frame-0017-t0002.054.png",
+      "destination": "Pale-Motion-2026-11-03/before-front.png",
+      "kind": "selected-native-frame",
+      "bytes": 2063524,
+      "sha256": "2982cc490a26bc89f7475b86c05769c54835908cae0223257b347b8a95fda5d7"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/after-105-side-r3/frame-0079-t0009.482.png",
+      "destination": "Pale-Motion-2026-11-03/side-run-r3.png",
+      "kind": "selected-native-frame",
+      "bytes": 2006157,
+      "sha256": "bfd39702f9b5c852ff497857f3c45d8a1bef7a67ba7bfcffda102a486241e2ac"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/after-105-side-r3/frame-0122-t0014.644.png",
+      "destination": "Pale-Motion-2026-11-03/side-grab-105-r3.png",
+      "kind": "selected-native-frame",
+      "bytes": 2137442,
+      "sha256": "6e0bafea81675646f932aabea08741f78452323b72da61c695510dc7f43a26cf"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/package-front/frame-0080-t0009.601.png",
+      "destination": "Pale-Motion-2026-11-03/package-low-run.png",
+      "kind": "selected-native-frame",
+      "bytes": 2075713,
+      "sha256": "56e8bd801122acad4e24a595e5964bf1095d48e2a9d9af3013333c37c6934ca4"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/package-front/frame-0122-t0014.642.png",
+      "destination": "Pale-Motion-2026-11-03/package-low-grab.png",
+      "kind": "selected-native-frame",
+      "bytes": 2172750,
+      "sha256": "63649694a118e4239a8073fc897b32ebf5843f80a8820876ae836cf8f72b7467"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/frames/s47-pale-baseline-frames-r1-20261103/frames.json",
+      "destination": "Pale-Motion-2026-11-03/baseline-frames.json",
+      "kind": "full-capture-metadata-only",
+      "bytes": 50159,
+      "sha256": "9a1e56efc249c748d3b88622680ae6e9c4c27d1ffd0b39641222dd783dd54afc"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/after-105-side-r3/frames.json",
+      "destination": "Pale-Motion-2026-11-03/side-105-frames.json",
+      "kind": "full-capture-metadata-only",
+      "bytes": 104895,
+      "sha256": "d6c0cf757852748f15663a7caa18645065d8858788f9bc226c10970965e132f3"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/package-front/frames.json",
+      "destination": "Pale-Motion-2026-11-03/package-front-frames.json",
+      "kind": "full-capture-metadata-only",
+      "bytes": 104843,
+      "sha256": "c2d8a8c608056627b3b4ccdb94601582c030e1172f08b62b35371eb16e95a69e"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/source-verification.json",
+      "destination": "Pale-Motion-2026-11-03/source-verification.json",
+      "kind": "verification",
+      "bytes": 5685,
+      "sha256": "7736cb40dd0566706ee4206ebaa039925b8bfad787f35508483e4527c25998a8"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/installed.json",
+      "destination": "Pale-Motion-2026-11-03/installed.json",
+      "kind": "verification",
+      "bytes": 1625,
+      "sha256": "8818b05f2bf2517c25ade6c90daa19453ddb38b98fe5d2515101050d97c9ffb4"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/frames/s47-pale-sc04-grab-evidence-r1-20261103/grab-00.json",
+      "destination": "Pale-Motion-2026-11-03/actual-sc04-grab.json",
+      "kind": "instrumented-real-ai-precommit",
+      "bytes": 2541,
+      "sha256": "944347c136ca9f272146b60444d4c3f2f8849debfa29b8c30c273b04f9c34e64"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/capture-output/grab-105-r3/grab-00.json",
+      "destination": "Pale-Motion-2026-11-03/model-105-grab-r3.json",
+      "kind": "instrumented-model-fixture",
+      "bytes": 2625,
+      "sha256": "07814931f7095a86b09e4091d49d1899d352ac3a379bf3e896881e26cfaf1b71"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/baseline.mp4",
+      "destination": "Pale-Motion-2026-11-03/baseline.mp4",
+      "kind": "existing-vfr-video-no-audio",
+      "bytes": 2507941,
+      "sha256": "a94f116cfa981ff7739ef44287c841ceb605eb19d7d3d1b563b2d42256603c55"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/after-side-105.mp4",
+      "destination": "Pale-Motion-2026-11-03/after-side-105.mp4",
+      "kind": "existing-vfr-video-no-audio",
+      "bytes": 6646552,
+      "sha256": "f5c90a8a37b1f45ed5cb34fb77047f0331679e75d366730027121d9a947910ce"
+    }
+  ],
+  "package_metrics_cm_and_deg": {
+    "maxAnkle": 1.7392,
+    "maxSoleProbe": 1.7392,
+    "maxAngle": 2e-06
+  }
+}

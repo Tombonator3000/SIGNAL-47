@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "source_branch": "codex/pale-motion-20261103",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "previous_verified_candidate": "/home/tom/scratch-bm/Signal47-saro-road-20261103/candidate/Linux",
+  "saved_nodes": 156,
+  "saved_files": 126,
+  "smoke": {
+    "returncode": 0,
+    "wall_seconds": 27.864941237028688,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 26.352691650390625,
+      "heavy_jobs": [],
+      "pgrep": "2311552 /bin/bash -c python3 /home/tom/scratch-bm/Signal47-alien-motion-20261103/install.py > /home/tom/scratch-bm/Signal47-alien-motion-20261103/install-result.txt 2>&1\n2311553 python3 /home/tom/scratch-bm/Signal47-alien-motion-20261103/install.py\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 2311553,
+        "start_ticks": "73186986",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "root original Pale motion verified local installation",
+        "acquired_at": "2026-11-03T04:29:12.864296+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "Saved_unchanged": true,
+  "binary_sha256": "a4cbfdf66dbc2f21d020fa1c9c61ec52a3f25da367ac14721fb3cbaad3996cbc",
+  "free_bytes": 150157160448,
+  "at": "2026-11-03T05:29:52.321492+01:00"
+}

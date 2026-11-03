@@ -1,0 +1,110 @@
+{
+	"status": "OBSERVED",
+	"scope": "actual refreshed hand bones versus intended/blended targets; no skin-surface or successful-contact claim",
+	"skin": "TripoCreaturePreviewTripoSkin",
+	"progress": 0.90539191024639876,
+	"reachBlend": 0.99961448683013909,
+	"controllerClock": 14.633774337172479,
+	"requestWallSeconds": 731158.37914769899,
+	"skinRecentlyRendered": true,
+	"rootUE": [
+		787410,
+		52200,
+		-129.74047134324243
+	],
+	"chestTargetUE": [
+		787336.84580210352,
+		52124.677604060205,
+		7.9595286567575751
+	],
+	"cameraEyeUE": [
+		787410,
+		51850,
+		31.545776575547933
+	],
+	"cameraForwardUE": [
+		8.726546616407603e-08,
+		0.99820053993520041,
+		-0.059964006479444623
+	],
+	"hands": [
+		{
+			"bone": "hand_l",
+			"solved": true,
+			"actualUE": [
+				787328.72496386338,
+				52132.60381842497,
+				7.9354337249105242
+			],
+			"shoulderUE": [
+				787378.38036106562,
+				52197.698154888349,
+				37.830231323985373
+			],
+			"intendedContactUE": [
+				787328.71075373399,
+				52132.578480431679,
+				7.959528656757584
+			],
+			"blendedTargetUE": [
+				787328.72496386338,
+				52132.60381842497,
+				7.9354337249104958
+			],
+			"intendedResidualCm": 0.037742647257423413,
+			"blendedResidualCm": 2.8421709430404007e-14,
+			"fullContactDistanceCm": 87.177409755396184,
+			"requestedSolveDistanceCm": 87.158648649505793,
+			"minimumSolveCm": 2.3056363442391703,
+			"maximumSolveCm": 93.70884769582301,
+			"clampedSolveCm": 87.158648649505793,
+			"solveClamped": false,
+			"screenPixels": [
+				972.9501953125,
+				450.09097290039062
+			],
+			"projectsInsideViewport": true,
+			"cameraForwardDistanceCm": 283.5110477987281
+		},
+		{
+			"bone": "hand_r",
+			"solved": true,
+			"actualUE": [
+				787345.00476227887,
+				52116.792082204862,
+				7.9380903240782459
+			],
+			"shoulderUE": [
+				787405.64473657473,
+				52168.301721545213,
+				37.993705285721092
+			],
+			"intendedContactUE": [
+				787344.98085047305,
+				52116.776727688732,
+				7.959528656757584
+			],
+			"blendedTargetUE": [
+				787345.00476227887,
+				52116.792082204862,
+				7.938090324078189
+			],
+			"intendedResidualCm": 0.035596878113113968,
+			"blendedResidualCm": 5.6843418860808015e-14,
+			"fullContactDistanceCm": 85.070463938103998,
+			"requestedSolveDistanceCm": 85.05168674572144,
+			"minimumSolveCm": 2.7296119096805231,
+			"maximumSolveCm": 86.867231746784398,
+			"clampedSolveCm": 85.05168674572144,
+			"solveClamped": false,
+			"screenPixels": [
+				946.46112060546875,
+				453.05218505859375
+			],
+			"projectsInsideViewport": true,
+			"cameraForwardDistanceCm": 267.7276062868375
+		}
+	],
+	"screenshotRequested": true,
+	"screenshot": "grab-00.png"
+}
