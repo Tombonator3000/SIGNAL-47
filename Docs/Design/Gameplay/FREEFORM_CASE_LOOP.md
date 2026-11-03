@@ -46,9 +46,21 @@ To forsøk er alltid nok til å skille de tre forklaringene, men spilleren må v
 
 Ugyldige forsøk er tydelige: stopper aggregatet under opptaket, eller er spilleren utenfor tidsvinduet, sier originalen det, og forsøket kan tas på nytt.
 
+## Sak 2: «Disagreeing records» (implementert)
+
+Åpnes når et tids-, duplikat- eller telexavvik er beholdt. Det målbare er mottakerens egen teller mot den uavhengige telleren (DELTA +3,2 s eller 0) på originalen.
+
+| Forsøk | Spilleren gjør | Feil i tidsreléet | Nettspenningsstyrt klokke | Noen bruker stasjonen om natta |
+| --- | --- | --- | --- | --- |
+| **Bytt tidsreléet** | Ett relé fra depotet settes inn når opptaket starter og brukes opp | Avviket forsvinner | Avviket blir | Avviket blir |
+| **Aggregatstrøm** | Hele opptaket på aggregatstrøm, frakoblet nettet | Avviket blir | Avviket forsvinner | Avviket blir |
+| **Stengt stasjon** | Begge dørene stengt og spilleren i kontrollrommet under hele opptaket | Avviket blir | Avviket blir | Avviket forsvinner |
+
+Svarene kommer fra et verksted, kraftlaget eller sheriffens nattlogg. Den siste forklaringen er menneskelig, ikke utenomjordisk, og gir saken uro uten å gjøre alle avvik til samme gåte. Motoren er datadrevet: hver sak definerer forklaringer, forsøk, forutsigelser, målbar størrelse og svar, slik at sak 3 kan legges til uten ny motorlogikk.
+
 ## Belønning og progresjon
 
-- **Første gyldige forsøk:** SARO-ledelsen godkjenner et servicetillegg: ett relé legges i depotet. Forskning hjelper driften.
+- **Første gyldige forsøk (én gang på tvers av sakene):** SARO-ledelsen godkjenner et servicetillegg: ett relé legges i depotet. Forskning hjelper driften.
 - **Støttet konklusjon:** et telex fra regionarkivet med en eldre, relevant observasjon (fortellerbelønning), saken lukkes med konklusjonen bevart, og adgangsflagget `access.fieldlogger` settes. Flagget er kroken for feltloggeren (FF-RESEARCH-04), som da kan lånes ut som neste nivå.
 - **Neste spørsmål:** en himmelkilde-konklusjon åpner nivå 2 (sideriske 3 min 56 s per døgn som test mot jordisk tid); en jordisk konklusjon åpner peiling av senderen med feltloggeren. Nivå 2 er beskrevet her, ikke implementert i første leveranse.
 
@@ -61,7 +73,7 @@ OPS viser øverst **TONIGHT'S PLAN**: planlagt forsøk, tidsvindu og hva som man
 | Sak | Kilder | Eier |
 | --- | --- | --- |
 | The repeated interval | extra_pulse, feeder_fault, wrong_source | Claude, første leveranse |
-| Disagreeing records | time_disagreement, duplicate_print, unsigned_telex | Claude, neste leveranse med samme motor |
+| Disagreeing records | time_disagreement, duplicate_print, unsigned_telex | Claude, implementert 3. november (se under) |
 | Visitors around the base | roof_steps, observer, landing_trace, fotografier, sheriff-/radiotips | Foreslått Codex: hendelsesspor fra Director inn i saksmotoren, himmelbaner (FF-RESEARCH-01) og etterspor (FF-RESEARCH-07) |
 | Feltlogger som andre målested | FF-RESEARCH-04/05 bak `access.fieldlogger` | Foreslått Codex etter første leveranse |
 

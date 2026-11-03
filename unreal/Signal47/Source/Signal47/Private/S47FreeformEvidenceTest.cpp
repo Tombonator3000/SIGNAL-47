@@ -169,7 +169,7 @@ namespace
  bool Click(US47Main* M,const FString& Label,bool Exact=true)
  {
   TArray<TSharedRef<SButton>> Found;for(const auto& W:Roots(M))Buttons(W,Label,Exact,Found);
-  if(!Check(M,Found.Num()==1&&Found[0]->IsEnabled(),TEXT("actual unique enabled native Slate button: ")+Label))return false;
+  if(!Check(M,Found.Num()==1&&Found[0]->IsEnabled(),TEXT("actual unique enabled native Slate button: ")+Label+FString::Printf(TEXT(" (found %d)"),Found.Num())))return false;
 #if !UE_BUILD_SHIPPING
   Found[0]->SimulateClick();return true;
 #else
@@ -437,12 +437,12 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==74){Close(M);M->UI->NotebookAt(TEXT("papers"));M->Flow->OpenNotebook();Go(75,.6);return;}
   if(S.Stage==75)
   {
-   const FString Title=TEXT("Original observation: ")+S.Ids[1];if(!Click(M,Title))return;Go(76);return;
+   const FString Title=TEXT("Original observation: ")+S.Ids[1];if(!Click(M,Title,false))return;Go(76);return; // unread papers carry a NEW / prefix
   }
   if(S.Stage==76)
   {
    // Notebook entry's first click selects; its second click opens the actual retained paper.
-   if(const auto Modal=M->Hud->ModalWidget();Modal&&Modal->GetTypeAsString()==TEXT("SS47Notebook")){if(!Click(M,TEXT("Original observation: ")+S.Ids[1]))return;}
+   if(const auto Modal=M->Hud->ModalWidget();Modal&&Modal->GetTypeAsString()==TEXT("SS47Notebook")){if(!Click(M,TEXT("Original observation: ")+S.Ids[1],false))return;}
    Go(77);return;
   }
   if(S.Stage==77)

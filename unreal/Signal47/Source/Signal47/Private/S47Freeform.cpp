@@ -53,6 +53,9 @@ namespace
   return !Before.ContainsNaN()&&!After.ContainsNaN()&&
    (FMath::Abs(FMath::FindDeltaAngleDegrees(Before.X,After.X))>1e-5||FMath::Abs(Before.Y-After.Y)>1e-5);
  }
+ using ECaseCondition=FS47FreeformCases::ECondition;
+ ECaseCondition CaseCondition(int32 Line,int32 Test){return FS47FreeformCases::Def(Line).Tests[FMath::Clamp(Test,0,FS47FreeformCases::TestCount-1)].Condition;}
+ FString CaseTestName(int32 Line,int32 Test){return FS47FreeformCases::Def(Line).Tests[FMath::Clamp(Test,0,FS47FreeformCases::TestCount-1)].Name;}
  FString StageText(FS47FreeformSession::EJobStage Stage)
  {
   static const TCHAR* Names[]={TEXT("UNSTARTED"),TEXT("POINTED"),TEXT("ACQUIRING"),TEXT("AT PRINTER"),TEXT("RECORDED"),TEXT("REGISTERED"),TEXT("PACKET COLLECTED"),TEXT("FILED")};
@@ -158,9 +161,9 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   }
  }
  Cases.Load(S47J::Obj(Saved,TEXT("cases")),JobSeed);
- // Older saves: an already reviewed extra-pulse original opens its case retroactively.
- for(const TCHAR* K:{TEXT("pulse-review"),TEXT("extra_pulse")})if(Findings.Contains(K)){Cases.Open(0,FMath::Max(1,FindingDays.FindRef(K)),20*3600.);break;}
- if(const auto* C=Cases.Get(0);C&&C->Planned>=0&&!Work.ContainsByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseTest==C->Planned&&!J.bCaseRecorded;}))Cases.CancelPlan(0);
+ // Older saves: an already retained discrepancy opens its case retroactively.
+ for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0)Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);}
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->Planned>=0&&!Work.ContainsByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseLine==Line&&J.CaseTest==C->Planned&&!J.bCaseRecorded;}))Cases.CancelPlan(Line);
  AddDay(DayNumber);
  if(!Director)Director=MakeShared<FS47FreeformDirector>(M);
  if(!Field)Field=MakeShared<FS47FreeformWorld>(M);
@@ -211,13 +214,13 @@ const FS47Profile* FS47FreeformSession::ConsoleProfile()const
  if(!Active()||!CurrentJob())return nullptr;
  static FS47Profile P;P=EffectiveProfile(*CurrentJob());return &P;
 }
-double FS47FreeformSession::TargetAz()const{if(const FJob* J=CurrentJob()){auto P=EffectiveProfile(*J);return(P.Az[0]+P.Az[1])/2+(J->CaseTest==int32(FS47FreeformCases::ETest::OffSource)?FS47FreeformCases::OffSourceDegrees:0);}return 0;}
+double FS47FreeformSession::TargetAz()const{if(const FJob* J=CurrentJob()){auto P=EffectiveProfile(*J);return(P.Az[0]+P.Az[1])/2+(J->CaseTest>=0&&CaseCondition(J->CaseLine,J->CaseTest)==ECaseCondition::OffSource?FS47FreeformCases::OffSourceDegrees:0);}return 0;}
 double FS47FreeformSession::TargetEl()const{return CurrentJob()?(CurrentJob()->bGenerated?CurrentJob()->Card.El:FS47Observing::Runs()[CurrentJob()->Source].El):25;}
 double FS47FreeformSession::SourceSeconds()const{return CurrentJob()?(CurrentJob()->bGenerated?CurrentJob()->Card.Seconds:FS47Observing::Runs()[CurrentJob()->Source].Seconds):18;}
 FString FS47FreeformSession::Reference(const FJob& J)const{return TEXT("SARO / ")+J.Id;}
 FString FS47FreeformSession::JobLine(const FJob& J)const
 {
- return FString::Printf(TEXT("D%02d / %s / %s / %s%s%s"),J.Day,*J.Id,FS47Observing::Runs()[J.Source].Source,*StageText(J.Stage),J.bAnomaly?TEXT(" / INVESTIGATE"):TEXT(""),J.CaseTest>=0?*(TEXT(" / CASE TEST: ")+FS47FreeformCases::TestName(FS47FreeformCases::ETest(J.CaseTest)).ToUpper()):TEXT(""));
+ return FString::Printf(TEXT("D%02d / %s / %s / %s%s%s"),J.Day,*J.Id,FS47Observing::Runs()[J.Source].Source,*StageText(J.Stage),J.bAnomaly?TEXT(" / INVESTIGATE"):TEXT(""),J.CaseTest>=0?*(TEXT(" / CASE TEST: ")+CaseTestName(J.CaseLine,J.CaseTest).ToUpper()):TEXT(""));
 }
 bool FS47FreeformSession::PointReady()const
 {
@@ -312,8 +315,12 @@ void FS47FreeformSession::StepWork(double Dt)
  if(J->Stage==EJobStage::Pointed||J->Stage==EJobStage::Integrating)
  {
   Settle=PointReady()?FMath::Min(1.,Settle+Dt):0;
-  if(J->Stage==EJobStage::Integrating&&J->CaseTest==int32(FS47FreeformCases::ETest::Generator)&&J->bCaseValid&&!(Field&&Field->GeneratorRunning()))
-  {J->bCaseValid=false;Changed(TEXT("Generator stopped during the case test. The recording continues, but it no longer isolates the feeder; plan the test again."));}
+  if(J->Stage==EJobStage::Integrating&&J->CaseTest>=0&&J->bCaseValid)
+  {
+   const auto Cond=CaseCondition(J->CaseLine,J->CaseTest);
+   if(Cond==ECaseCondition::Generator&&!(Field&&Field->GeneratorRunning())){J->bCaseValid=false;Changed(TEXT("Generator stopped during the case test. The recording continues, but it no longer runs off the mains; plan the test again."));}
+   if(Cond==ECaseCondition::DoorsSealed&&!StationSealed()){J->bCaseValid=false;Changed(TEXT("The station was opened during the sealed-station test. The recording continues, but the test is spoiled; plan it again."));}
+  }
   if(J->Stage==EJobStage::Integrating&&Settle>=1&&M&&M->Story&&M->Story->Rx.Pass(EffectiveProfile(*J)))
   {
    const double Was=J->Elapsed;
@@ -405,7 +412,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(!HasPower())return TEXT("Restore the SARO feeder or start the backup generator.");
  if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  // A case test states its physical precondition before the player commits the array.
- if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Case=JobNextAction(*J);if(Case.StartsWith(TEXT("SERVICE BAY"))||Case.StartsWith(TEXT("CASE TEST")))return Case;}
+ if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Case=JobNextAction(*J);if(Case.StartsWith(TEXT("CASE TEST")))return Case;}
  if(J->Stage==EJobStage::New)return TEXT("Use the right-hand tracking PC to point the array at this source.");
  if(J->Stage==EJobStage::Integrating)
  {
@@ -428,17 +435,20 @@ bool FS47FreeformSession::StartAcquisition()
  FJob* J=Job();if(!ReceiverReady()){Feedback=ReceiverNextAction();return false;}
  if(J->CaseTest>=0)
  {
-  const auto Test=FS47FreeformCases::ETest(J->CaseTest);const auto* C=Cases.Get(J->CaseLine);
-  if(!C){Feedback=TEXT("This case test no longer belongs to an open case.");return false;}
-  if(Test==FS47FreeformCases::ETest::Generator&&!(Field&&Field->GeneratorRunning())){Feedback=TEXT("Case test: start the fuelled backup generator by the service bay first. The whole recording must run on generator power.");Changed(Feedback);return false;}
-  if(Test==FS47FreeformCases::ETest::Repeat&&!Cases.InRepeatWindow(J->CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.)))
-  {Feedback=FString::Printf(TEXT("Case test: the repeat must be recorded on a later day than day %d, between %s and %s."),C->OpenDay,*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow));Changed(Feedback);return false;}
+  if(!Cases.Get(J->CaseLine)||!Cases.Get(J->CaseLine)->bOpen){Feedback=TEXT("This case test no longer belongs to an open case.");return false;}
+  const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty()){Feedback=Missing;Changed(Feedback);return false;}
+  if(CaseCondition(J->CaseLine,J->CaseTest)==ECaseCondition::RelaySwap&&!Consume(TEXT("relay"))){Feedback=TEXT("Case test: no spare relay in the depot. Buy one at Caliche.");Changed(Feedback);return false;}
  }
  J->Stage=EJobStage::Integrating;J->Elapsed=0;J->bAnomaly=J->Slot==1&&bAnomaly&&J->CaseTest<0;J->Phenomenon=J->bAnomaly?PhenomenonId:FString();
  J->TraceTicks.Reset();J->bLegacyTrace=false;if(J->bAnomaly&&!Specialized(J->Phenomenon))for(double At:Ticks)J->TraceTicks.Add(At);
- // The hidden cause decides what the physical test actually records; the player hears it live.
- if(J->CaseTest>=0){J->bCaseValid=true;if(const auto* C=Cases.Get(J->CaseLine);C&&FS47FreeformCases::TicksFor(C->Truth,FS47FreeformCases::ETest(J->CaseTest)))for(double At:Ticks)J->TraceTicks.Add(At);}
  J->ReferenceClock=WorldClock;J->ReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);
+ // The hidden cause decides what the physical test actually records; the player hears or reads it.
+ if(J->CaseTest>=0)
+ {
+  J->bCaseValid=true;const auto* C=Cases.Get(J->CaseLine);const bool bPresent=C&&FS47FreeformCases::PresentFor(J->CaseLine,C->Truth,J->CaseTest);
+  if(FS47FreeformCases::Def(J->CaseLine).Observable==FS47FreeformCases::EObservable::ExtraTicks){if(bPresent)for(double At:Ticks)J->TraceTicks.Add(At);}
+  else J->ReceiverClock=WorldClock+(bPresent?FS47FreeformCases::ClockOffset:0);
+ }
  int32 Available=0;for(int32 I=0;I<27;++I)Available+=M->Web->DishRemoteAvailable(I)?1:0;J->Quality=double(Available)/27;
  double ActualAz=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))ActualAz+=M->Web->DishAz(I);
  ActualAz/=FMath::Max(1,Available);J->ReceivedLevel=BeamLevel(ActualAz,TargetAz()+(J->Phenomenon==TEXT("wrong_source")?.5:0));
@@ -456,10 +466,10 @@ void FS47FreeformSession::PrintJob(bool bPacket)
  else if(J->bAnomaly)D.Page+=TEXT("Extra ticks outside the reference period. Original retained.\n");
  else if(J->CaseTest>=0)
  {
-  const auto Test=FS47FreeformCases::ETest(J->CaseTest);
-  D.Page+=TEXT("CASE TEST / ")+FS47FreeformCases::TestName(Test).ToUpper()+TEXT("\nPREDICTION / ")+FS47FreeformCases::Prediction(Test)+TEXT("\n");
-  if(!J->bCaseValid)D.Page+=TEXT("TEST INVALID / the generator stopped during the recording. This original does not isolate the feeder.\n");
-  else D.Page+=J->TraceTicks.IsEmpty()?TEXT("RESULT / NO EXTRA TICKS between 9 and 13 seconds. Only the reference pulses are present.\n"):TEXT("RESULT / EXTRA TICKS PRESENT between 9 and 13 seconds, as in the first original.\n");
+  D.Page+=TEXT("CASE TEST / ")+CaseTestName(J->CaseLine,J->CaseTest).ToUpper()+TEXT("\nPREDICTION / ")+FS47FreeformCases::Prediction(J->CaseLine,J->CaseTest)+TEXT("\n");
+  if(FS47FreeformCases::Def(J->CaseLine).Observable==FS47FreeformCases::EObservable::ClockDelta)D.Page+=FString::Printf(TEXT("SIMULTANEOUS CLOCK READBACK / RX COUNTER %.3f s / INDEPENDENT COUNTER %.3f s / DELTA %+.3f s\n"),J->ReceiverClock,J->ReferenceClock,J->ReceiverClock-J->ReferenceClock);
+  if(!J->bCaseValid)D.Page+=TEXT("TEST INVALID / its condition was broken during the recording. Plan the test again.\n");
+  else D.Page+=TEXT("RESULT / ")+FS47FreeformCases::ResultText(J->CaseLine,CaseObserved(*J))+TEXT("\n");
  }
  else D.Page+=TEXT("Result consistent with the current reference; no anomalous origin established.\n");
  D.Page+=FString::Printf(TEXT("CAPTURE CLOCK %.3f SECONDS / OBSERVED INTERVAL %.3f SECONDS\n"),J->ReferenceClock,J->Elapsed);
@@ -847,7 +857,7 @@ void FS47FreeformSession::OpenOperations()
  }
  Rows.Add(S47FreeformTerminal::Small(Feedback));
  Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; field kit includes two fuses and a relay. Manual reference comparison is included.")));
- Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case board"),[this]{Feedback.Empty();OpenCaseBoard();},Cases.Get(0)&&Cases.Get(0)->bOpen&&!Cases.Get(0)->bConcluded&&Cases.Get(0)->Planned<0),S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
+ Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case board"),[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseAwaitingChoice()>=0),S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(S47FreeformTerminal::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
  OpenTerminal(3,TEXT("OPS / DAILY WORK"),S47Kit::Col(Rows));
@@ -946,121 +956,149 @@ void FS47FreeformSession::OpenArchive()
  if(Computer)OpenTerminal(3,TEXT("OPS / CASE ARCHIVE"),S47Kit::Col(Rows));
  else SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / RECORDS"),S47Kit::Col(Rows),1000));
 }
-namespace
+bool FS47FreeformSession::StationSealed()const
 {
- using ECaseTest=FS47FreeformCases::ETest;
- using ECaseCause=FS47FreeformCases::ECause;
- const TCHAR* CaseTestKey(int32 T){return T==0?TEXT("generator"):T==1?TEXT("offsource"):TEXT("repeat");}
- bool OpensIntervalCase(const FString& Id)
+ if(!M||!M->Web||!M->Web->IsLoaded()||!M->Player||!M->World||M->World->Area!=TEXT("saro"))return false;
+ return !M->Web->IsDoorOpen(TEXT("doorSouth"))&&!M->Web->IsDoorOpen(TEXT("doorEast"))&&M->Web->Rect(TEXT("room.bounds")).Contains(M->Player->Pos);
+}
+bool FS47FreeformSession::CaseObserved(const FJob& J)const
+{
+ if(FS47FreeformCases::Def(J.CaseLine).Observable==FS47FreeformCases::EObservable::ExtraTicks)return !J.TraceTicks.IsEmpty();
+ return FMath::Abs(J.ReceiverClock-J.ReferenceClock)>1.;
+}
+FString FS47FreeformSession::CasePrecondition(const FJob& J)const
+{
+ if(J.CaseTest<0)return FString();const auto* C=Cases.Get(J.CaseLine);if(!C)return FString();
+ switch(CaseCondition(J.CaseLine,J.CaseTest))
  {
-  if(Id==TEXT("pulse-review")||Id==TEXT("extra_pulse"))return true;
-  if(!Id.StartsWith(TEXT("extra_pulse.day")))return false;
-  const FString Suffix=Id.Mid(15);bool Digits=!Suffix.IsEmpty();for(TCHAR C:Suffix)Digits&=C>=TEXT('0')&&C<=TEXT('9');return Digits;
+  case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("CASE TEST // START THE FUELLED BACKUP GENERATOR AT THE SERVICE BAY; THE WHOLE RECORDING MUST RUN OFF THE MAINS"));
+  case ECaseCondition::Repeat:return Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.))?FString():FString::Printf(TEXT("CASE TEST // WAIT FOR THE REPEAT WINDOW %s TO %s AFTER DAY %d"),*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow),C->OpenDay);
+  case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("CASE TEST // CLOSE BOTH SARO DOORS AND STAY IN THE CONTROL ROOM FOR THE WHOLE RECORDING"));
+  case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CASE TEST // NO SPARE RELAY IN THE DEPOT; BUY ONE AT CALICHE FOR THE TIMING SWAP"));
+  default:return FString();
  }
+}
+int32 FS47FreeformSession::CaseAwaitingChoice()const
+{
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded&&C->Planned<0)return Line;
+ return -1;
 }
 void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
 {
- if(!OpensIntervalCase(FindingId)||!Cases.Open(0,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
- Changed(TEXT("New case opened: THE REPEATED INTERVAL. Three explanations fit. Choose a test on the OPS case board."));
+ const int32 Line=FS47FreeformCases::LineForFinding(FindingId);
+ if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
+ Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(". Three explanations fit. Choose a test on the OPS case board."));
 }
-bool FS47FreeformSession::PlanCaseTest(int32 Test)
+bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
 {
- const auto* C=Cases.Get(0);
+ const auto* C=Cases.Get(Line);
  if(!C||!C->bOpen||C->bConcluded||Test<0||Test>=FS47FreeformCases::TestCount){Feedback=TEXT("No open case can take that test.");return false;}
- if(C->Planned>=0){Feedback=TEXT("A case test is already planned: ")+C->PlannedJob+TEXT(". Run it before planning another.");return false;}
+ if(C->Planned>=0){Feedback=TEXT("A test for this case is already planned: ")+C->PlannedJob+TEXT(". Run it before planning another.");return false;}
  if(C->Results[Test].bDone){Feedback=TEXT("That test is already retained. Its result does not change by repeating it.");return false;}
- static const TCHAR Letters[]={TEXT('G'),TEXT('O'),TEXT('R')};
- FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-CASE1-%c%d"),DayNumber,Letters[Test],Work.Num());J.Day=DayNumber;J.Slot=1;J.Source=1;
- J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,1,1);J.bGenerated=true;J.CaseLine=0;J.CaseTest=Test;
- const auto T=ECaseTest(Test);
- J.Card.Receiver.Card=TEXT("CASE TEST / ")+FS47FreeformCases::TestName(T).ToUpper()+TEXT("\n")+FS47FreeformCases::Instruction(T)+TEXT("\n\n")+J.Card.Receiver.Card;
- if(!Cases.Plan(0,T,J.Id))return false;
+ FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-CASE%d-T%d-%d"),DayNumber,Line+1,Test+1,Work.Num());J.Day=DayNumber;J.Slot=1;J.Source=1;
+ J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,1,1);J.bGenerated=true;J.CaseLine=Line;J.CaseTest=Test;
+ const auto& T=FS47FreeformCases::Def(Line).Tests[Test];
+ J.Card.Receiver.Card=TEXT("CASE TEST / ")+FString(T.Name).ToUpper()+TEXT("\n")+T.Instruction+TEXT("\n\n")+J.Card.Receiver.Card;
+ if(!Cases.Plan(Line,Test,J.Id))return false;
  Work.Add(J);
  const FJob* Current=CurrentJob();if(!Current||Current->Stage==EJobStage::New||Current->Stage==EJobStage::Filed)Selected=Work.Num()-1;
- Feedback=TEXT("Case test planned: ")+FS47FreeformCases::TestName(T)+TEXT(". Job ")+J.Id+TEXT(" is on the OPS list.");Changed(Feedback);return true;
+ Feedback=TEXT("Case test planned: ")+FString(T.Name)+TEXT(". Job ")+J.Id+TEXT(" is on the OPS list.");Changed(Feedback);return true;
 }
 void FS47FreeformSession::RecordCaseResult(FJob& J)
 {
- J.bCaseRecorded=true;const auto Test=ECaseTest(J.CaseTest);const bool bHeard=!J.TraceTicks.IsEmpty();bool First=false;
- if(!Cases.Record(J.CaseLine,Test,DayNumber,J.bCaseValid,bHeard,First)){Changed(TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return;}
- if(!J.bCaseValid){Changed(TEXT("Observation registered, $20 credited. The case test is INVALID because the generator stopped; plan it again on the case board."));return;}
- TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::TicksFor(ECaseCause(I),Test)!=bHeard)Out.Add(FS47FreeformCases::CauseName(ECaseCause(I)));
- const FString Result=bHeard?TEXT("EXTRA TICKS PRESENT"):TEXT("NO EXTRA TICKS");
- RecordEvidence(FString::Printf(TEXT("case1-%s"),CaseTestKey(J.CaseTest)),FString::Printf(TEXT("CASE TEST / %s / DAY %d / ORIGINAL %s-original\nRESULT / %s\nPREDICTION / %s\nRULES OUT / %s"),*FS47FreeformCases::TestName(Test).ToUpper(),DayNumber,*J.Id,*Result,*FS47FreeformCases::Prediction(Test),*FString::Join(Out,TEXT(", "))));
+ J.bCaseRecorded=true;const int32 Line=J.CaseLine,Test=J.CaseTest;const bool bPresent=CaseObserved(J);bool First=false;
+ if(!Cases.Record(Line,Test,DayNumber,J.bCaseValid,bPresent,First)){Changed(TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return;}
+ if(!J.bCaseValid){Changed(TEXT("Observation registered, $20 credited. The case test is INVALID because its condition was broken; plan it again on the case board."));return;}
+ const auto& D=FS47FreeformCases::Def(Line);
+ TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent)Out.Add(D.Causes[I]);
+ const FString Result=FS47FreeformCases::ResultText(Line,bPresent);
+ RecordEvidence(FString::Printf(TEXT("case%d-test%d"),Line+1,Test+1),FString::Printf(TEXT("CASE / %s\nTEST / %s / DAY %d / ORIGINAL %s-original\nRESULT / %s\nPREDICTION / %s\nRULES OUT / %s"),D.Title,*FString(D.Tests[Test].Name).ToUpper(),DayNumber,*J.Id,*Result,*FS47FreeformCases::Prediction(Line,Test),*FString::Join(Out,TEXT(", "))));
  FString Text=FString::Printf(TEXT("Case test registered, $20 credited. %s: rules out %s."),*Result,*FString::Join(Out,TEXT(" and ")));
  if(First){AddItem(TEXT("relay"),1);Text+=TEXT(" Station management credits one service relay to the depot for documented test work.");}
- if(Cases.Remaining(0)==1)Text+=TEXT(" Only one explanation survives: register the conclusion on the case board.");
+ if(Cases.Remaining(Line)==1)Text+=TEXT(" Only one explanation survives: register the conclusion on the case board.");
  Changed(Text);
 }
-bool FS47FreeformSession::ConcludeCase(int32 Cause)
+bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
 {
- if(Cause<0||Cause>=FS47FreeformCases::CauseCount)return false;
- FString Why;if(!Cases.Conclude(0,ECaseCause(Cause),Why)){Feedback=Why;Changed(Why);return false;}
- const FString Name=FS47FreeformCases::CauseName(ECaseCause(Cause));
- RecordEvidence(TEXT("case1-conclusion"),TEXT("CASE CONCLUDED / THE REPEATED INTERVAL\nSUPPORTED EXPLANATION / ")+Name+TEXT("\nThe retained tests exclude the other explanations. Interpretation beyond this remains open."));
+ FString Why;if(!Cases.Conclude(Line,Cause,Why)){Feedback=Why;Changed(Why);return false;}
+ const auto& D=FS47FreeformCases::Def(Line);const FString Name=D.Causes[Cause];
+ RecordEvidence(FString::Printf(TEXT("case%d-conclusion"),Line+1),FString::Printf(TEXT("CASE CONCLUDED / %s\nSUPPORTED EXPLANATION / %s\nThe retained tests exclude the other explanations. Interpretation beyond this remains open."),D.Title,*Name));
  if(M&&M->Story)
  {
-  FS47Doc D;D.Id=TEXT("freeform-case1-records");D.Title=TEXT("Records reply: the repeated interval");D.Kind=TEXT("telex");D.Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
-  D.Page=FS47FreeformCases::RecordsTelex(ECaseCause(Cause));D.Transcript=D.Page;M->Story->AddDoc(D);if(M->UI)M->UI->Document(D);
+  FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-records"),Line+1);Doc.Title=D.TelexTitle;Doc.Kind=TEXT("telex");Doc.Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
+  Doc.Page=D.Telex[Cause];Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);if(M->UI)M->UI->Document(Doc);
  }
  Feedback=TEXT("Case concluded: ")+Name+TEXT(". A records reply has arrived at the telex.");Changed(Feedback);return true;
 }
 FString FS47FreeformSession::TonightPlan()const
 {
- const auto* C=Cases.Get(0);if(!C||!C->bOpen||C->bConcluded)return FString();
- if(C->Planned<0)return FString::Printf(TEXT("CASE / THE REPEATED INTERVAL / NO TEST PLANNED\n%d of 3 explanations still possible. Open the case board and choose the next test."),Cases.Remaining(0));
- const auto T=ECaseTest(C->Planned);
- FString Plan=TEXT("TONIGHT'S PLAN / CASE TEST: ")+FS47FreeformCases::TestName(T).ToUpper()+TEXT(" / JOB ")+C->PlannedJob+TEXT("\n")+FS47FreeformCases::Instruction(T);
- if(T==ECaseTest::Generator)
+ TArray<FString> Out;
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)
  {
-  const bool Running=Field&&Field->GeneratorRunning();const double Tank=Field?Field->GeneratorHours():0;const int32 Cans=InventoryCount(TEXT("fuel"));
-  Plan+=FString::Printf(TEXT("\nREADINESS / generator %s / tank %.1f h / fuel cans in depot %d"),Running?TEXT("RUNNING"):TEXT("STOPPED"),Tank,Cans);
-  if(!Running&&Tank<=0&&Cans<=0)Plan+=TEXT("\nMISSING / one fuel can. Buy it at Caliche and carry it back.");
+  const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded)continue;const auto& D=FS47FreeformCases::Def(Line);
+  if(C->Planned<0){Out.Add(FString::Printf(TEXT("CASE / %s / NO TEST PLANNED\n%d of 3 explanations still possible. Open the case board and choose the next test."),D.Title,Cases.Remaining(Line)));continue;}
+  const auto& T=D.Tests[C->Planned];
+  FString Plan=TEXT("TONIGHT'S PLAN / ")+FString(D.Title)+TEXT(" / CASE TEST: ")+FString(T.Name).ToUpper()+TEXT(" / JOB ")+C->PlannedJob+TEXT("\n")+T.Instruction;
+  switch(T.Condition)
+  {
+   case ECaseCondition::Generator:
+   {
+    const bool Running=Field&&Field->GeneratorRunning();const double Tank=Field?Field->GeneratorHours():0;const int32 Cans=InventoryCount(TEXT("fuel"));
+    Plan+=FString::Printf(TEXT("\nREADINESS / generator %s / tank %.1f h / fuel cans in depot %d"),Running?TEXT("RUNNING"):TEXT("STOPPED"),Tank,Cans);
+    if(!Running&&Tank<=0&&Cans<=0)Plan+=TEXT("\nMISSING / one fuel can. Buy it at Caliche and carry it back.");break;
+   }
+   case ECaseCondition::Repeat:
+    Plan+=FString::Printf(TEXT("\nWINDOW / %s to %s, on a day after day %d"),*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow),C->OpenDay);
+    Plan+=Cases.InRepeatWindow(Line,DayNumber,FMath::Fmod(WorldClock,86400.))?TEXT(" / OPEN NOW"):TEXT(" / NOT OPEN NOW");break;
+   case ECaseCondition::RelaySwap:
+    Plan+=FString::Printf(TEXT("\nREADINESS / spare relays in depot %d"),InventoryCount(TEXT("relay")));if(InventoryCount(TEXT("relay"))<=0)Plan+=TEXT("\nMISSING / one relay. Buy it at Caliche.");break;
+   case ECaseCondition::DoorsSealed:Plan+=TEXT("\nREADINESS / shut the south and east doors before you start; do not open them until the original prints.");break;
+   default:Plan+=TEXT("\nREADINESS / no extra equipment. The tracking PC applies the offset.");break;
+  }
+  Out.Add(Plan);
  }
- else if(T==ECaseTest::Repeat)
- {
-  Plan+=FString::Printf(TEXT("\nWINDOW / %s to %s, on a day after day %d"),*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow),C->OpenDay);
-  Plan+=Cases.InRepeatWindow(0,DayNumber,FMath::Fmod(WorldClock,86400.))?TEXT(" / OPEN NOW"):TEXT(" / NOT OPEN NOW");
- }
- else Plan+=TEXT("\nREADINESS / no extra equipment. The tracking PC applies the offset.");
- return Plan;
+ return FString::Join(Out,TEXT("\n\n"));
 }
-void FS47FreeformSession::OpenCaseBoard()
+void FS47FreeformSession::OpenCaseBoard(int32 Line)
 {
  if(!RequirePower()||!M||!M->UI)return;
- TArray<S47Kit::FW> Rows;const auto* C=Cases.Get(0);
+ if(Line<0){Line=CaseAwaitingChoice();if(Line<0)for(int32 I=0;I<FS47FreeformCases::CaseCount;++I)if(Cases.Get(I)&&Cases.Get(I)->bOpen&&!Cases.Get(I)->bConcluded){Line=I;break;}if(Line<0)Line=0;}
+ TArray<S47Kit::FW> Rows;const auto* C=Cases.Get(Line);const auto& D=FS47FreeformCases::Def(Line);
+ TArray<S47Kit::FW> Tabs;
+ for(int32 I=0;I<FS47FreeformCases::CaseCount;++I)if(const auto* X=Cases.Get(I);X&&X->bOpen&&I!=Line)Tabs.Add(S47FreeformTerminal::Button(FString::Printf(TEXT("Case %d: %s"),I+1,*FString(FS47FreeformCases::Def(I).Title).ToLower()),[this,I]{Feedback.Empty();OpenCaseBoard(I);},X->Planned<0&&!X->bConcluded));
+ if(!Tabs.IsEmpty())Rows.Add(S47Kit::Row(Tabs));
  if(!C||!C->bOpen)
  {
-  Rows.Add(S47FreeformTerminal::Paper(TEXT("OPS / CASE BOARD\nNo open case. Review an anomalous original against its internal control at the reel deck; a reviewed discrepancy opens a case here.")));
+  Rows.Add(S47FreeformTerminal::Paper(TEXT("OPS / CASE BOARD\nNo open case. Review a discrepancy against its independent control; a retained comparison opens a case here.")));
  }
  else
  {
-  Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("CASE 1 / %s\nOPENED DAY %d FROM THE RETAINED ORIGINAL AT %s\n%s"),*FS47FreeformCases::Title(0),C->OpenDay,*FS47FreeformCases::Clock(C->OpenClock),*FS47FreeformCases::Question(0))));
+  Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("CASE %d / %s\nOPENED DAY %d FROM THE RETAINED ORIGINAL AT %s\n%s"),Line+1,D.Title,C->OpenDay,*FS47FreeformCases::Clock(C->OpenClock),D.Question)));
   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)
   {
-   const bool Out=Cases.Excluded(0,ECaseCause(I));
+   const bool Out=Cases.Excluded(Line,I);
    const FString State=C->bConcluded?(C->Conclusion==I?TEXT("CONCLUDED / SUPPORTED BY YOUR TESTS"):TEXT("RULED OUT")):Out?TEXT("RULED OUT"):TEXT("STILL POSSIBLE");
-   Rows.Add(S47FreeformTerminal::Small(TEXT("EXPLANATION / ")+FS47FreeformCases::CauseName(ECaseCause(I))+TEXT(" / ")+State));
+   Rows.Add(S47FreeformTerminal::Small(TEXT("EXPLANATION / ")+FString(D.Causes[I])+TEXT(" / ")+State));
   }
   TSharedRef<SScrollBox> List=SNew(SScrollBox);
   for(int32 T=0;T<FS47FreeformCases::TestCount;++T)
   {
-   const auto& Res=C->Results[T];const auto Test=ECaseTest(T);
-   FString Card=TEXT("TEST / ")+FS47FreeformCases::TestName(Test).ToUpper()+TEXT("\n")+FS47FreeformCases::Instruction(Test)+TEXT("\nPREDICTION / ")+FS47FreeformCases::Prediction(Test);
-   if(Res.bDone)Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s"),Res.Day,Res.bTicks?TEXT("EXTRA TICKS PRESENT"):TEXT("NO EXTRA TICKS"));
+   const auto& Res=C->Results[T];
+   FString Card=TEXT("TEST / ")+FString(D.Tests[T].Name).ToUpper()+TEXT("\n")+D.Tests[T].Instruction+TEXT("\nPREDICTION / ")+FS47FreeformCases::Prediction(Line,T);
+   if(Res.bDone)Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s"),Res.Day,*FS47FreeformCases::ResultText(Line,Res.bPresent));
    else if(C->Planned==T)Card+=TEXT("\nPLANNED / job ")+C->PlannedJob;
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];
-   if(!Res.bDone&&!C->bConcluded&&C->Planned<0)List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FS47FreeformCases::TestName(Test),[this,T]{PlanCaseTest(T);OpenCaseBoard();},true)];
+   if(!Res.bDone&&!C->bConcluded&&C->Planned<0)List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
   }
   Rows.Add(SNew(SBox).HeightOverride(240)[List]);
   if(!C->bConcluded)
   {
    Rows.Add(S47FreeformTerminal::Small(TEXT("CONCLUDE / A conclusion is accepted only when your retained tests exclude the other explanations. Guessing right is not enough.")));
    TArray<S47Kit::FW> Choices;
-   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(0,ECaseCause(I)))Choices.Add(S47FreeformTerminal::Button(FS47FreeformCases::CauseName(ECaseCause(I)),[this,I]{ConcludeCase(I);OpenCaseBoard();},false));
+   for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(!Cases.Excluded(Line,I))Choices.Add(S47FreeformTerminal::Button(D.Causes[I],[this,Line,I]{ConcludeCase(Line,I);OpenCaseBoard(Line);},false));
    if(!Choices.IsEmpty())Rows.Add(S47Kit::Row(Choices));
   }
-  else Rows.Add(S47FreeformTerminal::Small(TEXT("CASE CLOSED / The records reply is in your documents. A field logger is approved on loan for an independent second site.")));
+  else Rows.Add(S47FreeformTerminal::Small(TEXT("CASE CLOSED / The records reply is in your documents.")));
  }
  Rows.Add(S47FreeformTerminal::Small(Feedback));
  Rows.Add(S47FreeformTerminal::Button(TEXT("Back to daily work"),[this]{Feedback.Empty();OpenOperations();}));
@@ -1121,13 +1159,7 @@ FString FS47FreeformSession::NextAction()const {return ReceiverNextAction();}
 FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
 {
  const FJob* J=&JobValue;
- if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed)
- {
-  const auto Test=FS47FreeformCases::ETest(J->CaseTest);const auto* C=Cases.Get(J->CaseLine);
-  if(Test==FS47FreeformCases::ETest::Generator&&!(Field&&Field->GeneratorRunning()))return TEXT("SERVICE BAY // START THE FUELLED BACKUP GENERATOR BEFORE THIS CASE TEST");
-  if(C&&Test==FS47FreeformCases::ETest::Repeat&&!Cases.InRepeatWindow(J->CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.)))
-   return FString::Printf(TEXT("CASE TEST // WAIT FOR THE REPEAT WINDOW %s TO %s AFTER DAY %d"),*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow),C->OpenDay);
- }
+ if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
  switch(J->Stage)
  {
   case EJobStage::New:return TEXT("TRACKING // POINT THE ARRAY TO THE SELECTED SOURCE");
@@ -1161,7 +1193,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
  TArray<FS47Task> Result;
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({TEXT("S-03 / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
- if(const auto* C=Cases.Get(0);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?TEXT("CASE / ")+FS47FreeformCases::TestName(FS47FreeformCases::ETest(C->Planned))+TEXT(": run job ")+C->PlannedJob:FString(TEXT("CASE / The repeated interval: choose a test on the OPS case board")),false});
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob:TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": choose a test on the OPS case board"),false});
  if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("S-03 service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
  return Result;
@@ -1265,20 +1297,30 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  S47J::Set(Refund,TEXT("cash"),1000000);S47J::Set(Refund,TEXT("loan"),0);RefundCase.Begin(Refund);RefundAgain.Begin(RefundCase.Save());Check(RefundAgain.Budget()==1000080,TEXT("Legacy refund is not silently lost at the old cash ceiling"));
  Workflow.Stop();JournalAgain.Stop();RefundCase.Stop();RefundAgain.Stop();
  FS47FreeformSession Case(nullptr);Case.Begin(nullptr);
- Check(!Case.PlanCaseTest(0)&&Case.TonightPlan().IsEmpty(),TEXT("No case test can be planned before a reviewed discrepancy opens a case"));
+ Check(!Case.PlanCaseTest(0,0)&&Case.TonightPlan().IsEmpty(),TEXT("No case test can be planned before a reviewed discrepancy opens a case"));
  Case.RecordEvidence(TEXT("pulse-review"),TEXT("reviewed"));
  Check(Case.CaseFile().Get(0)->bOpen&&Case.TonightPlan().Contains(TEXT("NO TEST PLANNED")),TEXT("A reviewed extra-pulse discrepancy opens the interval case and shows tonight's plan"));
  const int32 JobsBefore=Case.Jobs().Num();
- Check(Case.PlanCaseTest(1)&&Case.Jobs().Num()==JobsBefore+1&&Case.Jobs().Last().CaseTest==1&&!Case.PlanCaseTest(0)&&Case.TonightPlan().Contains(TEXT("OFF-SOURCE")),TEXT("Planning a case test adds one dedicated job, shows it as tonight's plan and blocks a parallel plan"));
+ Check(Case.PlanCaseTest(0,1)&&Case.Jobs().Num()==JobsBefore+1&&Case.Jobs().Last().CaseTest==1&&!Case.PlanCaseTest(0,0)&&Case.TonightPlan().Contains(TEXT("OFF-SOURCE")),TEXT("Planning a case test adds one dedicated job, shows it as tonight's plan and blocks a parallel plan"));
  Case.Selected=Case.Work.Num()-1;{const auto P=Case.EffectiveProfile(*Case.CurrentJob());Check(FMath::IsNearlyEqual(Case.TargetAz()-(P.Az[0]+P.Az[1])/2,FS47FreeformCases::OffSourceDegrees,1e-9),TEXT("The off-source case test points the array beside the pulsar"));}
  {
-  auto& CJ=Case.Work.Last();const auto Truth=Case.CaseFile().Get(0)->Truth;const bool bHeard=FS47FreeformCases::TicksFor(Truth,FS47FreeformCases::ETest::OffSource);
+  auto& CJ=Case.Work.Last();const auto Truth=Case.CaseFile().Get(0)->Truth;const bool bHeard=FS47FreeformCases::PresentFor(0,Truth,1);
   if(bHeard)CJ.TraceTicks={9.3,11.4};CJ.Stage=EJobStage::Recorded;CJ.bPrinted=true;const int32 CashBefore=Case.Budget(),RelaysBefore=Case.InventoryCount(TEXT("relay"));
-  Check(Case.RegisterComparison(TEXT("normal"))&&Case.Budget()==CashBefore+20&&Case.Work.Last().bCaseRecorded&&Case.CaseFile().Get(0)->Results[1].bDone&&Case.CaseFile().Get(0)->Results[1].bTicks==bHeard&&Case.InventoryCount(TEXT("relay"))==RelaysBefore+1,TEXT("A registered case test pays as routine work, retains its physical result and credits one service relay the first time"));
+  Check(Case.RegisterComparison(TEXT("normal"))&&Case.Budget()==CashBefore+20&&Case.Work.Last().bCaseRecorded&&Case.CaseFile().Get(0)->Results[1].bDone&&Case.CaseFile().Get(0)->Results[1].bPresent==bHeard&&Case.InventoryCount(TEXT("relay"))==RelaysBefore+1,TEXT("A registered case test pays as routine work, retains its physical result and credits one service relay the first time"));
   FS47FreeformSession CaseAgain(nullptr);CaseAgain.Begin(S47J::Read(S47J::Write(Case.Save())));
   Check(CaseAgain.CaseFile().Get(0)->ValidTests==1&&CaseAgain.CaseFile().Get(0)->Planned<0&&CaseAgain.Jobs().Last().CaseTest==1&&CaseAgain.Jobs().Last().bCaseRecorded,TEXT("Case progress and the case job survive JSON save/Continue"));
-  Check(!CaseAgain.ConcludeCase(int32(Truth))&&CaseAgain.FeedbackText().Contains(TEXT("not excluded")),TEXT("One test cannot support a conclusion, even a correct guess"));
+  Check(!CaseAgain.ConcludeCase(0,Truth)&&CaseAgain.FeedbackText().Contains(TEXT("not excluded")),TEXT("One test cannot support a conclusion, even a correct guess"));
   CaseAgain.Stop();
+ }
+ {
+  // Case 2 reads the receiver clock offset instead of the extra ticks.
+  Case.RecordEvidence(TEXT("time_disagreement"),TEXT("timing path retained"));
+  Check(Case.CaseFile().Get(1)&&Case.CaseFile().Get(1)->bOpen&&Case.CaseAwaitingChoice()>=0&&Case.TonightPlan().Contains(TEXT("DISAGREEING RECORDS")),TEXT("A retained timing discrepancy opens the disagreeing-records case alongside the first"));
+  Check(Case.PlanCaseTest(1,1)&&Case.Jobs().Last().CaseLine==1,TEXT("The second case plans its own generator test job"));
+  auto& DJ=Case.Work.Last();const int32 Truth=Case.CaseFile().Get(1)->Truth;const bool bOff=FS47FreeformCases::PresentFor(1,Truth,1);
+  DJ.ReferenceClock=1000;DJ.ReceiverClock=1000+(bOff?FS47FreeformCases::ClockOffset:0);DJ.Stage=EJobStage::Recorded;DJ.bPrinted=true;
+  Case.Selected=Case.Work.Num()-1;const int32 RelaysBefore=Case.InventoryCount(TEXT("relay"));
+  Check(Case.RegisterComparison(TEXT("normal"))&&Case.CaseFile().Get(1)->Results[1].bDone&&Case.CaseFile().Get(1)->Results[1].bPresent==bOff&&Case.InventoryCount(TEXT("relay"))==RelaysBefore,TEXT("The clock-delta result is retained from the original counters; the first-test relay is not granted twice"));
  }
  Case.Stop();
  auto Future=S47J::New();S47J::Set(Future,TEXT("v"),2);R.Begin(Future);Check(!R.Active(),TEXT("Unknown Freeform save revisions do not restart a fresh session"));
