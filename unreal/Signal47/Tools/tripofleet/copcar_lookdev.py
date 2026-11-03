@@ -215,6 +215,8 @@ VIEWS = {
     'wheel': ((-3.2, 2.9, .75), (-1.0, 1.55, .38)),
     'panel': ((-4.2, -1.6, 1.05), (-.9, .2, .78)),
     'glass': ((-3.6, 1.8, 2.5), (-.2, -.1, 1.25)),
+    'windshield': ((-1.6, 4.2, 2.3), (0, .65, 1.22)),
+    'rearglass': ((1.6, -4.4, 2.3), (0, -1.3, 1.25)),
 }
 
 
@@ -426,9 +428,19 @@ def classify(obj, colors):
     tail = rear & (n[:, 1] < -.3) & (ax > .42) & (z > .7) & (z < .96) & red
     bar = z > 1.60
     key[head | tail | bar] = ORDER.index('Lens')
-    rn = np.asarray([0, -.634, .773])
-    rearglass = (n @ rn > .80) & (y > -1.66) & (y < -1.02) & (z > 1.06) & (ax < .70) & (lum > .25)
-    key[rearglass] = ORDER.index('Window')
+    # Tripo's painted windshield and rear glass (a grey texture with a cut-out hole in the middle).
+    # Tom, 3 November: the whole old pane goes; build() deletes these faces and fills each full
+    # opening with one new tinted pane. Bright roof edge is kept (lum < .88).
+    rn = np.asarray([0, -.634, .773]); wn = np.asarray([0, .634, .773])
+    # Both sides of Tripo's thick painted pane: the outer face and the inner one facing the cabin.
+    # Core box at .80; its trapezoid corners and lower edge only where the face is square to the
+    # glass (> .92): hood and trunk lid meet the glass at about .77 and must stay.
+    ar, aw = np.abs(n @ rn), np.abs(n @ wn)
+    rearglass = ((ar > .80) & (y > -1.66) & (y < -1.02) & (z > 1.02) & (z < 1.52) & (ax < .74)) | \
+                ((ar > .92) & (y > -1.80) & (y < -.98) & (z > .98) & (z < 1.54) & (ax < .92))
+    windshield = ((aw > .80) & (y > .28) & (y < 1.02) & (z > 1.0) & (z < 1.50) & (ax < .74)) | \
+                 ((aw > .92) & (y > .22) & (y < 1.10) & (z > .96) & (z < 1.54) & (ax < .92))
+    key[rearglass | windshield] = ORDER.index('Window')
     return key
 
 
@@ -511,10 +523,10 @@ WINDOWS = [
     # name, ray origin, ray direction (into car), u, v, u range, v range
     ('side_left_', (-3, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (-1.75, 1.25), (.95, 1.62)),
     ('side_right_', (3, 0, 0), (-1, 0, 0), (0, 1, 0), (0, 0, 1), (-1.75, 1.25), (.95, 1.62)),
-    ('windshield_', (0, 2.37, 2.01), (0, -.923, -.385), (1, 0, 0), (0, -.385, .923), (-.80, .80), (-.42, .42)),
-    # The rear opening is a hole in Tripo's painted rear glass: fill it flush,
-    # 3 mm proud of that surface and without overlap, so nothing z-fights.
-    ('rear_', (0, -2.62, 2.85), (0, .634, -.773), (1, 0, 0), (0, .773, .634), (-.80, .80), (-.45, .45), dict(inset=-.003, dilate=.0)),
+    # Windshield and rear glass: Tripo's painted panes are deleted first (classify -> Window), so
+    # each ray grid sees the whole opening inside its frame and gets one full pane, square to the glass.
+    ('windshield_', (0, 2.55, 3.57), (0, -.634, -.773), (1, 0, 0), (0, -.773, .634), (-1.05, 1.05), (-.66, .66), dict(dilate=.06)),
+    ('rear_', (0, -2.62, 2.85), (0, .634, -.773), (1, 0, 0), (0, .773, .634), (-1.05, 1.05), (-.66, .66), dict(dilate=.09)),
 ]
 
 
@@ -543,7 +555,44 @@ def pane_objects(tree, scene, mats):
             (door_panes if on_door else body_panes).append(obj)
             report.append(dict({k: v for k, v in pane.items() if k not in ('verts', 'faces')}, faces=len(pane['faces']), door=on_door,
                                centroid_yz=[cy, cz]))
+            if pane['name'].startswith('rear_') and pane['area_m2'] > .3:
+                body_panes.append(seal_object(tree, scene, mats, pane, spec))
     return body_panes, door_panes, report
+
+
+def seal_object(tree, scene, mats, pane, spec, up=.035, over=.05, lift=.004, cell=.025):
+    """Black rubber seal over the rear pane's lower edge, where Tripo's trunk-lid seam is jagged."""
+    import bpy
+    import numpy as np
+    from mathutils import Vector
+    origin, d, u, v = Vector(spec[1]), Vector(spec[2]).normalized(), Vector(spec[3]).normalized(), Vector(spec[4]).normalized()
+    out = -d
+    pts = np.asarray(pane['verts'])
+    a = (pts - np.asarray(origin)) @ np.asarray(u); b = (pts - np.asarray(origin)) @ np.asarray(v)
+    cols = {}
+    for k, key in enumerate(np.round(a / cell).astype(int)):
+        if key not in cols or b[k] < b[cols[key]]: cols[key] = k
+    verts, faces, ring = [], [], []
+    for key in sorted(cols):
+        p0 = Vector(pts[cols[key]])
+        top = p0 + v * (up + .022) + out * lift          # onto the glass, past the pane's tuck under the lid
+        probe = p0 - v * over + Vector((0, 0, .4))
+        hit = tree.ray_cast(probe, Vector((0, 0, -1)), 1.)
+        low = (hit[0] + Vector((0, 0, lift))) if hit[0] is not None else p0 - v * over + out * lift
+        ring.append((len(verts), len(verts) + 1)); verts += [tuple(top), tuple(low)]
+    for (t0, l0), (t1, l1) in zip(ring, ring[1:]):
+        faces.append((t0, l0, l1, t1))
+    mesh = bpy.data.meshes.new('pane rear seal'); mesh.from_pydata(verts, [], faces)
+    for poly in mesh.polygons:
+        if poly.normal.z < 0: poly.flip()
+        poly.use_smooth = False
+    mesh.update(); mesh.materials.append(mats[ORDER.index('Tire')])
+    uv = mesh.uv_layers.new(name='UVMap')
+    for poly in mesh.polygons:
+        for li in poly.loop_indices:
+            co = mesh.vertices[mesh.loops[li].vertex_index].co; uv.data[li].uv = (co.x, co.y + co.z)
+    obj = bpy.data.objects.new(mesh.name, mesh); scene.collection.objects.link(obj)
+    return obj
 
 
 def wheel_object(scene, mats, wheel, segments, name):
@@ -841,6 +890,14 @@ def build(source, output, rest):
     for m in mats: mesh.materials.append(m)
     mesh.polygons.foreach_set('material_index', keys.astype(np.int32))
     mesh.update()
+    # Delete Tripo's painted windshield/rear glass (old texture with its cut-out); panes replace it whole.
+    bm = bmesh.new(); bm.from_mesh(mesh); bm.faces.ensure_lookup_table()
+    window = ORDER.index('Window')
+    old_glass = [f for f in bm.faces if f.material_index == window]
+    report['painted_glass_faces_removed'] = len(old_glass)
+    bmesh.ops.delete(bm, geom=old_glass, context='FACES')
+    bm.to_mesh(mesh); bm.free(); mesh.update()
+    keys = np.empty(len(mesh.polygons), dtype=np.int32); mesh.polygons.foreach_get('material_index', keys); keys = keys.astype(np.int64)
     if opt.smooth_panels: smooth_panels(work, keys, report=report)
     report['source_slot_faces'] = {ORDER[k]: int((keys == k).sum()) for k in range(len(ORDER))}
     # Panes are measured against the cleaned source shell (wheels gone, no glass).
@@ -932,7 +989,7 @@ def build(source, output, rest):
     print('S47_COPCAR_BUILT', json.dumps(summary), flush=True)
     if opt.preview:
         setup_render(scene)
-        render_views(scene, output / 'preview', 'after-', ['front', 'side', 'rear', 'threequarter', 'wheel', 'glass', 'panel'])
+        render_views(scene, output / 'preview', 'after-', ['front', 'side', 'rear', 'threequarter', 'wheel', 'glass', 'panel', 'windshield', 'rearglass'])
         for lod in (1, 2):
             for o in built[0]: o.hide_render = True
             for o in built[lod]: o.hide_render = False

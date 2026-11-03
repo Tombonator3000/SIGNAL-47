@@ -6,7 +6,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Jeep-lyd og ryddet politibil installert 3. november
 
-Kilde `e7a4cfe3` (PR365) er installert kl. 08:07 CET. Jeepen har motorlyd fra tre CC0-opptak av Jeeper og en ny løkke for grus og jord som stiger med fart og skrens. Politibilen har dreide hjul, tonet glass og egne lakk-, krom- og lyktmaterialer; atlas og merking er bevart.
+Kilde `e7a4cfe3` (PR365) er installert kl. 08:07 CET. Jeepen har motorlyd fra tre CC0-opptak av Jeeper og en ny løkke for grus og jord som stiger med fart og skrens. Politibilen har dreide hjul, egne lakk-, krom- og lyktmaterialer og helt nye tonede front- og bakruter (Tripos malte ruter med utkutt er fjernet, r5 kl. 09:20); atlas og merking er bevart.
 
 Bygg/pakke, 2150 selvtester, motorvei-UFO-jakten (14 kontroller, patruljebil synlig) og installert røyktest består. Alle 126 personlige Saved-filer er uendret. Ingen har lyttet ennå, og politibilen er ikke vurdert visuelt i spillets lys.
 
