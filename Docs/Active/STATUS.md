@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Freeform feltforskning, bygget 3. november
+
+På `codex/freeform-field-research-20261103`: Director beholder faktisk hørte taklyder, sette skikkelser og undersøkte markeringer som daterte observasjoner med grov retning, sted og eventuell foto-ID. Høye himmelbaner har egen sjelden, lagret tidsplan; bortvendt kamera og søvn skaper ingen observasjoner eller ny sjanse. Ingen levende UFO-markør.
+
+Feltloggeren åpnes av sak 1s `access.fieldlogger`, med lånemodul, benk, kalibrering, to feltposter og fysisk transport/henting. Første målemodell gjelder lokal elektrisk støy og faktisk overlapp med SARO-opptak ved samme frekvens. Uavhengig måling av himmelsignal og Visitors-sakens import/forsøk krever Claudes nye saksmotorkall; kontrakt og tre forsøksforutsigelser står i [OPPGAVER](../../unreal/OPPGAVER.md). Hele FF-RESEARCH-04 og den naturlige reisen over to netter er ikke ferdigmeldt. Felles editorbygg med Claudes pågående sak 2-kilde, 2186 selvtester og kort Vulkan-røyktest består. Dette verifiserer logikk og integrasjon, ikke naturlig observasjon, fysisk loggerreise over to netter eller menneskelig lyd-/spillaksept. Ingen pakking eller installasjon.
+
 ## Jeep-lyd og ryddet politibil installert 3. november
 
 Kilde `e7a4cfe3` (PR365) er installert kl. 08:07 CET. Jeepen har motorlyd fra tre CC0-opptak av Jeeper og en ny løkke for grus og jord som stiger med fart og skrens. Politibilen har dreide hjul, egne lakk-, krom- og lyktmaterialer og helt nye tonede front- og bakruter (Tripos malte ruter med utkutt er fjernet, r5 kl. 09:20); atlas og merking er bevart.
