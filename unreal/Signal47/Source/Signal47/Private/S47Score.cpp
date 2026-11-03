@@ -2,6 +2,7 @@
 
 #include "S47Ambience.h"
 #include "S47Audio.h"
+#include "S47DecoderDesk.h"
 #include "S47Main.h"
 #include "S47Media.h"
 #include "S47Story.h"
@@ -180,7 +181,14 @@ bool FS47Score::MusicHeld() const
 		const ES47Phase P = Game->Phase();
 		bPhaseHeld = P == ES47Phase::Ringing || P == ES47Phase::Call || P == ES47Phase::Countdown || P == ES47Phase::Event || P == ES47Phase::Turning || P == ES47Phase::End;
 	}
-	return (Game && Game->IsCinematic()) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
+	// The processor owns this listening space. TAPE A keeps SARO quiet after its answer,
+	// including Continue; its canonical night fact is already saved by Story/Flow.
+	// The motel shares the SARO area, and driving has its own score: neither is held here.
+	const bool bSaroListening = M->World && M->World->Area == TEXT("saro") && !M->World->bDriving
+		&& !(M->Player && M->World->AtMotel(M->Player->Pos));
+	const bool bDecoderHeld = Game && bSaroListening && (Game->Night().bTapeA
+		|| (Game->Decoder && (Game->Decoder->Playing() || Game->Decoder->Answering())));
+	return bDecoderHeld || (Game && Game->IsCinematic()) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
 		|| M->bRadioHeard || On(Held.RoadsideSilent) || On(Held.MotelTvHeard) || On(Held.AbductionBusy) || On(Held.RecWalkBusy)
 		|| Value(Held.FaceQuiet) > 0 || Value(Held.NinthQuiet) > 0 || On(Held.RoofStepsBusy) || On(Held.ReelTapeBusy)
 		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy) || On(Held.TruckBRacing)

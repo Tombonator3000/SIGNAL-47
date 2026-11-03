@@ -17,6 +17,12 @@
 #include "S47Inter.h"
 #include "S47Json.h"
 #include "S47Main.h"
+#include "S47Score.h"
+#include "S47Story.h"
+#include "S47World.h"
+#include "S47Walker.h"
+#include "S47Geo.h"
+#include "Containers/Ticker.h"
 #include "S47Observing.h"
 #include "S47UI.h"
 #include "S47Web.h"
@@ -496,6 +502,17 @@ void FS47DecoderDesk::AbortAnswer()
 
 void FS47DecoderDesk::TestAnswer(double Dt)
 {
+	// Optional integration check of the real answer above, not a replacement answer fixture.
+	const bool bScoreContract = FParse::Param(FCommandLine::Get(), TEXT("S47DecoderScoreContract"));
+	static bool bScoreFollowup = false;
+	if (bScoreContract)
+	{
+		FString User; FParse::Value(FCommandLine::Get(), TEXT("UserDir="), User);
+		if (!User.StartsWith(TEXT("/tmp/s47-audio-score-")) || User.Contains(TEXT("..")))
+		{ UE_LOG(LogS47Desk, Error, TEXT("S47 decoder score FAIL: requires isolated /tmp/s47-audio-score-* UserDir")); FPlatformMisc::RequestExitWithStatus(false, 1); bTestAnswer=false; return; }
+		if (bScoreFollowup) { bTestAnswer=false; return; }
+	}
+
 	// -S47Answer: three seconds after the lock (and the power) the panel is opened, and his seven keyed
 	// one by one, seven tenths of a second apart
 	if (!(D.Locked && D.Locked()) || !(D.Power && D.Power())) return;
@@ -531,6 +548,13 @@ void FS47DecoderDesk::TestAnswer(double Dt)
 		const int32 K = ANSWER()[TestK - 1];
 		OnKey(K);
 		UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer: key %d (%d of 7)%s"), K, TestK, Answering() ? TEXT(": the answer") : TEXT(""));
+		if (bScoreContract && Answering())
+		{
+			auto* M=US47Main::Get(D.Room.Get());
+			if (!M || !M->Score || !M->Score->MusicHeld())
+			{ UE_LOG(LogS47Desk,Error,TEXT("S47 decoder score FAIL: actual answer does not hold score")); FPlatformMisc::RequestExitWithStatus(false,1); bTestAnswer=false; return; }
+			UE_LOG(LogS47Desk,Display,TEXT("S47 decoder score PASS: actual seven-key answer holds score"));
+		}
 		++TestK;
 	}
 	// =tape, =notebook: once TAPE A is filed, it is opened, or the notebook at its papers
@@ -540,6 +564,65 @@ void FS47DecoderDesk::TestAnswer(double Dt)
 		if (TestMode == TEXT("tape")) { if (US47UI* UI = D.UI.Get()) UI->Document(TapeDoc()); }
 		else if (TestMode == TEXT("notebook")) { if (US47Main* M = US47Main::Get(D.Room.Get()); M && M->Flow) M->Flow->OpenTestView(TEXT("notebook:papers")); }
 		UE_LOG(LogS47Desk, Display, TEXT("S47: -S47Answer: done, TAPE A %s"), D.Answered && D.Answered() ? TEXT("filed") : TEXT("not filed"));
+		if (bScoreContract)
+		{
+			bScoreFollowup=true;
+			struct FProbe { TWeakObjectPtr<US47Main> Main; int32 Stage=0,Checks=0; double Age=0,At=0; S47J::FObj Saved; };
+			auto R=MakeShared<FProbe>(); R->Main=US47Main::Get(D.Room.Get());
+			FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([R](float Dt)
+			{
+				R->Age+=Dt; auto* M=R->Main.Get();
+				auto Fail=[R](const TCHAR* Why){UE_LOG(LogS47Desk,Error,TEXT("S47 decoder score FAIL stage=%d checks=%d: %s"),R->Stage,R->Checks,Why);FPlatformMisc::RequestExitWithStatus(false,1);return false;};
+				auto Check=[R](bool Good){++R->Checks;return Good;};
+				if(!M||!M->Flow||!M->Score||!M->Story||!M->World||!M->Player||R->Age>50)return Fail(TEXT("missing runtime or 50s followup timeout"));
+				if(R->Age-R->At<(R->Stage==1?.5:5.0)||M->Flow->bStarting)return true;
+				if(R->Stage<4&&!Check(M->Story->Night().bTapeA&&M->Score->MusicHeld()&&M->Score->Playing.IsEmpty()))return Fail(TEXT("postanswer/restore must retain TAPE A and held empty score"));
+				if(R->Stage==0)
+				{
+					if(!Check(M->Story->Decoder&&!M->Story->Decoder->Answering()&&!M->Story->Decoder->Playing()))return Fail(TEXT("authored answer has not completed naturally"));
+					// Exercise the same Score pause methods used by Flow's menu, without claiming menu input.
+					M->Score->Pause(true);R->Stage=1;R->At=R->Age;return true;
+				}
+				if(R->Stage==1){M->Score->Pause(false);M->Score->Stop();R->Stage=2;R->At=R->Age;return true;}
+				if(R->Stage==2)
+				{
+					// Isolated query host has no audio/radio/Held hooks; retain the actual answered Story.
+					if(!Check(!M->Story->IsCinematic()&&M->Story->ChapterKey!=TEXT("prologue")))return Fail(TEXT("scope fixtures require ordinary chapter play"));
+					auto* Q=NewObject<US47Main>();Q->World=NewObject<US47World>();Q->Story=M->Story;Q->Player=M->Player;Q->World->Area=TEXT("saro");
+					const auto Context=FS47AudioContext::Make();FS47Score Query(Q,Context,Context->Destination);
+					const FVector Pos=M->Player->Pos;const bool SaroHeld=Query.MusicHeld();
+					Q->World->bDriving=true;const bool DriveFree=!Query.MusicHeld()&&Query.MusicWant()==TEXT("drive");Q->World->bDriving=false;
+					const auto& Motel=S47Geo::MOTEL_RECT();M->Player->Pos=FVector((Motel.MinX+Motel.MaxX)*.5,Pos.Y,(Motel.MinZ+Motel.MaxZ)*.5);
+					const bool MotelFree=!Query.MusicHeld()&&Query.MusicWant()==TEXT("motel");M->Player->Pos=Pos;
+					Q->World->Area=TEXT("station01");const bool StationFree=!Query.MusicHeld();Context->Close();
+					if(!Check(SaroHeld&&DriveFree&&MotelFree&&StationFree))return Fail(TEXT("isolated decoder policy leaked into driving/motel/another area"));
+					R->Saved=S47J::Clone(M->Flow->GameState());
+					if(!Check(R->Saved.IsValid()))return Fail(TEXT("ordinary Flow export did not JSON roundtrip"));
+					US47Flow::FStart O;O.CaseId=M->Flow->CaseId;O.Playtime=M->Playtime;O.bDev=M->Flow->bDevRun;O.State=R->Saved;
+					M->Flow->LeavePlay();M->Flow->StartGame(O);R->Stage=3;R->At=R->Age;return true;
+				}
+				if(R->Stage==3)
+				{
+				const auto Now=M->Flow->GameState();
+				const auto BeforeNs=S47J::Obj(S47J::Obj(R->Saved,TEXT("case")),TEXT("ns"));
+				const auto AfterNs=S47J::Obj(S47J::Obj(Now,TEXT("case")),TEXT("ns"));
+				bool Facts=BeforeNs&&AfterNs;
+				for(const TCHAR* Key:{TEXT("tapeA"),TEXT("papers"),TEXT("log")}){const auto A=BeforeNs?BeforeNs->TryGetField(Key):nullptr;const auto B=AfterNs?AfterNs->TryGetField(Key):nullptr;Facts&=A&&B&&FJsonValue::CompareEqual(*A,*B);}
+				if(!Check(Facts))return Fail(TEXT("serialized TAPE A, papers or night log changed through full Flow return"));
+					US47Flow::FStart Fresh;Fresh.CaseId=0;Fresh.Jump=TEXT("chapter2");Fresh.bDev=true;
+					M->Flow->LeavePlay();M->Flow->StartGame(Fresh);R->Stage=4;R->At=R->Age;return true;
+				}
+				if(!Check(!M->Story->Night().bTapeA&&M->Story->Decoder&&!M->Story->Decoder->Answering()&&!M->Story->Decoder->Playing()))return Fail(TEXT("new developer night retained prior answer"));
+				if(!Check(!M->Story->IsCinematic()&&M->Story->ChapterKey!=TEXT("prologue")))return Fail(TEXT("new-night fixture requires ordinary chapter play"));
+				auto* FreshQ=NewObject<US47Main>();FreshQ->World=M->World;FreshQ->Player=M->Player;FreshQ->Story=M->Story;
+				const auto FreshContext=FS47AudioContext::Make();FS47Score FreshScore(FreshQ,FreshContext,FreshContext->Destination);
+				const bool NewNightFree=!FreshScore.MusicHeld();FreshContext->Close();
+				if(!Check(NewNightFree))return Fail(TEXT("new ordinary chapter2 fixture retained decoder score hold"));
+				UE_LOG(LogS47Desk,Display,TEXT("S47 decoder score PASS checks=%d: real answer; Score pause/resume/stop; JSON export/full Flow memory return; fresh chapter2 night; isolated scope query fixtures. No disk/process/menu-input/listening acceptance claimed."),R->Checks);
+				FPlatformMisc::RequestExitWithStatus(false,0);return false;
+			}));
+		}
+
 	}
 }
 

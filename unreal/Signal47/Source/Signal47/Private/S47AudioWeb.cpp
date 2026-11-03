@@ -549,10 +549,13 @@ TOptional<FS47CallTimeline> US47Audio::PhoneCall(const TArray<FS47PhoneCue>& Lin
 	return TL;
 }
 
-/** The recording phoneCall() plays for a line on the telephone: the character's voice, else
- *  Kinski's when his calls are on; unset when the line has none (then it is the caption). */
+/** The recording phoneCall() plays: Ward uses only her own cast slot; the other legacy
+ *  lines retain their existing fallback. An unrecorded call uses its captions. */
 TSharedPtr<FS47AudioBuffer> US47Audio::LineBuffer(const FString& By, const FString& Text) const
 {
+	// Ward has her own unrecorded cast slot (HorrorStory/pack.json): captions until
+	// the agreed final voice session. Never substitute Dale's general telephone bank.
+	if (By == TEXT("WARD")) return CharacterBuffer(TEXT("ward"), Text);
 	const TSharedPtr<FS47AudioBuffer> Actor = By == TEXT("N. VEGA") ? CharacterBuffer(TEXT("bacall"), Text)
 		: By == TEXT("THE LINE") ? CharacterBuffer(TEXT("price"), Text) : nullptr;
 	if (Actor.IsValid()) return Actor;

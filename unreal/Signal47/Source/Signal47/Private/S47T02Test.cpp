@@ -14,6 +14,7 @@
 #include "S47Office.h"
 #include "S47OfficeOwned.h"
 #include "S47Phones.h"
+#include "S47PhoneScripts.h"
 #include "S47SaroInterior.h"
 #include "S47SaroNight.h"
 #include "S47Saves.h"
@@ -41,9 +42,10 @@ struct FS47T02Test::FState
 {
  bool bEnabled = false, bDone = false, bNative = false, bNativeStarted = false, bReturn = false, bUnresolved = false, bEarlyOffice = false, bArrivalOffice = false;
  bool bOutSaro = false, bOutRoad = false, bBackRoad = false, bBackSaro = false;
- bool bSaroInterior = false;
+ bool bSaroInterior = false, bWardCaption = false;
  int32 Stage = 0, Checks = 0, Loads = 0, StoreReads = 0, WalkIndex = 0, InteriorContinues = 0;
  double Elapsed = 0, Since = 0, Hold = 3, WalkDistance = 0, LastProgress = 0;
+ double WardCallAt = 0;
  double LastClock = 0, OdoStart = 0, OutMetres = 0, BackMetres = 0, NativeWalkMetres = 0;
  FVector LastFoot = FVector::ZeroVector;
  FVector LastTruck = FVector::ZeroVector, LastNativeFoot = FVector::ZeroVector;
@@ -59,6 +61,7 @@ struct FS47T02Test::FState
 
 FS47T02Test::FS47T02Test(US47Main* InM) : State(MakeUnique<FState>()), M(InM)
 {
+ State->bWardCaption = FParse::Param(FCommandLine::Get(), TEXT("S47WardCaptionContract"));
  State->bArrivalOffice = FParse::Param(FCommandLine::Get(), TEXT("S47OfficeArrival"));
  State->bSaroInterior = FParse::Param(FCommandLine::Get(), TEXT("S47SaroInteriorContract"));
  State->bEarlyOffice = State->bArrivalOffice || FParse::Param(FCommandLine::Get(), TEXT("S47OfficeEarly"));
@@ -318,6 +321,9 @@ void FS47T02Test::Step(double Dt)
  if (!M->Flow->bDevRun || M->Flow->CaseId != 0) { Fail(TEXT("requires developer case zero; never operate on a player case")); return; }
  if (!AuditNative(Dt)) return;
  if (M->Flow->bStarting || M->World->bBusy) return;
+ // Sample every frame, including caption waits: no prerecorded phone session may appear.
+ if (T.bWardCaption && T.Stage >= -23 && T.Stage <= -20 && (!M->Audio || M->Audio->PhonePlaying()))
+ { Fail(TEXT("Ward text fallback unexpectedly started a recorded phone session")); return; }
  if (T.Hold > 0) { T.Hold -= Dt; return; }
  auto* C1 = Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));
  auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2")));
@@ -341,6 +347,8 @@ void FS47T02Test::Step(double Dt)
 
  if (T.Stage == 0)
  {
+  if (T.bWardCaption && (!FParse::Param(FCommandLine::Get(),TEXT("S47ChapterPhoneOnly")) || !FParse::Param(FCommandLine::Get(),TEXT("S47T02Contract"))))
+  { Fail(TEXT("Ward caption check requires the existing T02 + ChapterPhoneOnly route")); return; }
   if (T.bSaroInterior && !T.bEarlyOffice) { Fail(TEXT("S47SaroInteriorContract is an opt-in addition to OfficeEarly or OfficeArrival only")); return; }
   const int32 DriverCount=int32(T.bEarlyOffice)+int32(T.bNative)+int32(T.bUnresolved)+int32(FParse::Param(FCommandLine::Get(),TEXT("S47T02Contract")));
   if (DriverCount!=1) { Fail(TEXT("choose exactly one API/disk, unresolved or native T02 driver")); return; }
@@ -361,6 +369,39 @@ void FS47T02Test::Step(double Dt)
   M->Flow->StartGame(Legacy);
   UE_LOG(LogS47T02Test,Display,TEXT("S47: T02 contract fixture: isolated legacy chapter-one StartGame before physical Office/native START; no Office/T02 facts assigned"));
   Stage(-3,.5); return;
+ }
+ // Opt-in continuation of the existing Ward ringing check; old PhoneOnly keeps its original immediate exit.
+ if (T.bWardCaption && (T.Stage==-20 || T.Stage==-21))
+ {
+  const double SinceCall=T.Elapsed-T.WardCallAt;
+  if (!Check(M->Story->IsCinematic() && !C2->S.bAnswered && C2->S.Stage==TEXT("ward-call") && !M->Audio->PhonePlaying(),
+   TEXT("Ward caption interval retains the live call without premature chapter progress or borrowed voice"))) return;
+  if (T.Stage==-20)
+  {
+   if (!Check(SinceCall>=.3 && SinceCall<4.8,TEXT("first screenshot falls inside the real first Ward caption interval"))) return;
+   Shot(TEXT("ward-caption-1")); Stage(-21,4.8); return;
+  }
+  if (!Check(SinceCall>=5.0 && SinceCall<9.9,TEXT("second screenshot falls inside the real second Ward caption interval"))) return;
+  Shot(TEXT("ward-caption-2")); Stage(-22,5.2); return;
+ }
+ if (T.bWardCaption && T.Stage==-22)
+ {
+  if (!Check(T.Elapsed-T.WardCallAt>=10.3 && T.Elapsed-T.WardCallAt<13.0 && C2->S.bAnswered && C2->S.Stage==TEXT("records") &&
+   !M->Story->IsCinematic() && M->Web->Obj(TEXT("room.handset")).Visible() && !M->Audio->PhonePlaying() &&
+   M->Story->Notes().ContainsByPredicate([](const FString& N) { return N.Contains(TEXT("Dr. Ward read the B-12 report")); }),
+   TEXT("Ward caption call hangs up normally, restores handset and control, files the note and advances to records"))) return;
+  Shot(TEXT("ward-hangup")); Stage(-23,.5); return;
+ }
+ if (T.bWardCaption && T.Stage==-23)
+ {
+  for (const TCHAR* Name : {TEXT("ward-caption-1"),TEXT("ward-caption-2"),TEXT("ward-hangup")})
+   if (!Check(IFileManager::Get().FileSize(*(T.Root/(FString(Name)+TEXT(".png"))))>1000,FString(TEXT("native Ward screenshot exists: "))+Name)) return;
+  auto O=S47J::New(); S47J::Set(O,TEXT("status"),TEXT("PASS")); S47J::Set(O,TEXT("checks"),T.Checks);
+  S47J::Set(O,TEXT("scope"),TEXT("Native Chapter2 Ward answer, caption intervals, no recorded PhoneSession, normal hangup and records progression. Caption PNGs require visual review; no human audio listening or callback-call claim."));
+  if (!Check(FFileHelper::SaveStringToFile(S47J::Write(O,true),*(T.Root/TEXT("result.json"))),TEXT("Ward caption result written"))) return;
+  T.bDone=true;
+  UE_LOG(LogS47T02Test,Display,TEXT("S47: Ward caption contract PASS COMPLETE; two native caption images, no borrowed voice, records and hangup intact"));
+  FPlatformMisc::RequestExitWithStatus(false,0); return;
  }
  if (T.Stage == -4)
  {
@@ -396,6 +437,23 @@ void FS47T02Test::Step(double Dt)
    !M->Office->RouteRequired() && !M->Evening->Pack.Flag(TEXT("handover_done")),TEXT("ordinary C2 BeginChapter2 activates investigation from an older chapter-one case without new-night or D01 requirements")))return;
   if(FParse::Param(FCommandLine::Get(),TEXT("S47ChapterPhoneOnly")))
   {
+   if (T.bWardCaption)
+   {
+    if (!M->Audio || !M->Audio->bReady || !M->Audio->Ctx.IsValid() || M->Audio->Ctx->State()!=TEXT("running"))
+    { if (T.Elapsed-T.Since>15) Fail(TEXT("Ward caption fixture requires a ready running native audio context")); return; }
+    if (!Check(M->Audio->bKinskiCalls && M->Audio->bCharacterVoices && !M->Audio->PhonePlaying(),
+     TEXT("Ward routing tested with native audio ready and both voice options enabled"))) return;
+    const auto& Lines=S47PhoneScripts::Ward();
+    if (!Check(Lines.Num()==2 && !M->Audio->LineBuffer(Lines[0].By,Lines[0].Text) && !M->Audio->LineBuffer(Lines[1].By,Lines[1].Text),
+     TEXT("both actual Ward lines have no recording instead of borrowing generic Kinski audio"))) return;
+    if (!Check(C2->PhoneLabel()==TEXT("Answer the phone") && !C2->S.bAnswered && C2->S.Stage==TEXT("ward-call"),
+     TEXT("Ward caption fixture starts on the real unanswered ringing call"))) return;
+    T.WardCallAt=T.Elapsed;
+    C2->UsePhone(); // existing Chapter2 conversation entry; no injected timeline or story facts
+    if (!Check(M->Story->IsCinematic() && !C2->S.bAnswered && !M->Audio->PhonePlaying() && !M->Web->Obj(TEXT("room.handset")).Visible(),
+     TEXT("answering Ward takes the handset and enters the existing caption fallback"))) return;
+    Stage(-20,.7); return;
+   }
    T.bDone=true;UE_LOG(LogS47T02Test,Display,TEXT("S47: chapter phone agency PASS COMPLETE; position/facing retained, Ward ringing, legacy lifecycle intact"));
    FPlatformMisc::RequestExit(false);return;
   }

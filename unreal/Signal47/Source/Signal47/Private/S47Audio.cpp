@@ -380,6 +380,22 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 		A->bKinskiCalls = true; A->bCharacterVoices = true;
 		A->StopPhoneCalls();
 	}
+	{
+		A->OnPhoneCall = {}; // the previous timeline fixture captured a scoped counter
+		// The actual Ward text also exists in the legacy Dale/Kinski phone bank.
+		const FString Ward = TEXT("That is enough to hold the morning series. It is not enough to tell us why it happened.");
+		A->PhoneKeys.Add(Ward, TEXT("phone:a"));
+		Check(A->LineBuffer(TEXT("DALE"), Ward) == A->Buf[TEXT("phone:a")], TEXT("phone routing: legacy Dale recording remains available"));
+		Check(!A->LineBuffer(TEXT("WARD"), Ward), TEXT("phone routing: unrecorded Ward never borrows Dale's matching text"));
+		Check(!A->PhoneCall({ { Ward, TEXT("WARD") } }).IsSet() && !A->PhonePlaying(), TEXT("phone routing: unrecorded Ward leaves the complete call to captions"));
+		A->CharacterKeys.FindOrAdd(TEXT("ward")).Add(Ward, TEXT("character:c"));
+		Check(A->LineBuffer(TEXT("WARD"), Ward) == A->Buf[TEXT("character:c")], TEXT("phone routing: an explicitly recorded Ward bank wins over the legacy duplicate"));
+		A->bCharacterVoices = false;
+		Check(!A->LineBuffer(TEXT("WARD"), Ward), TEXT("phone routing: Ward voice off does not fall back to Dale"));
+		A->bCharacterVoices = true; A->bKinskiCalls = false;
+		Check(A->PhoneCall({ { Ward, TEXT("WARD") } }).IsSet(), TEXT("phone routing: Ward's own future recording is independent of Dale calls"));
+		A->StopPhoneCalls(); A->CharacterKeys.Remove(TEXT("ward")); A->bKinskiCalls = true;
+	}
 	Check(A->StepPick(TEXT("dirt")).Name.StartsWith(TEXT("stepGravel")) && FMath::IsNearlyEqual(A->StepPick(TEXT("dirt")).Gain, 0.16f), TEXT("stepPick: dirt is the gravel steps at 0.16"));
 	{
 		// render: a beep scheduled 50 ms ahead, then the room tone held down
