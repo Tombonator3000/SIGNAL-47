@@ -68,6 +68,12 @@ Nattens leverte rettelser er ferdigstilt etter Toms bestilling om commit og PR 3
 
 - [ ] **GAMEPLAY-LOOP-01 / P1, saksløkken i Freeform:** Tom satte gameplay foran grafikk 3. november. Første sak «The repeated interval» med tre forklaringer (matespenning, lokal sender, himmelkilde), tre fysiske forsøk (aggregatstrøm, ved siden av kilden, gjentakelse i samme tidsvindu), skjult frøbasert årsak, støttet konklusjon, relé som første forskningsbelønning, records-telex og adgangsflagget `access.fieldlogger`. OPS får saksbrett og kveldens plan. [Design](../Design/Gameplay/FREEFORM_CASE_LOOP.md). Implementeres på `claude/gameplay-cases-20261103`; bygg, selvtest og spillerprøve gjenstår til de er kjørt. Neste: sak 2 «Disagreeing records» med samme motor (Claude), hendelsesspor til sak 3 og feltlogger bak adgangsflagget (foreslått Codex). Dekker GP-15/16/17 og kjernen i FF-RESEARCH-02/03.
 
+## SARO østfløy, bestilt 3. november
+
+- [ ] **EASTWING-01 / P1, ny østfløy med testlab, lager, kalibrering og garasje:** Detaljert Blender-modell etter Toms seks konseptbilder, Freeform-benken flyttes inn (relé/donor i kalibrering, prøveanalyse i testlab, depot i delelager, utlån av feltlogger ved EQUIPMENT CHECKOUT), Jeepen kan kjøres inn og losses i garasjen, låst i Story. [Plan](../Design/EastWing/EAST_WING_PLAN.md). Claude eier bygg og integrasjon; Codex teksturer og rekvisitter.
+- [ ] **EASTWING-02 / P2, bilreparasjon i garasjen:** Senere utvidelse etter Toms ønske: diagnostiser og reparer Jeepen (dekk, batteri, drivstoffsystem) med deler fra delelageret og Caliche, synlig resultat og ingen tvungen overlevelsesøkonomi.
+- [ ] **EASTWING-03 / P3, videre utbygging og egne konstruksjoner:** Vurder utvidelse av østfløyen og at spilleren kan bygge egne innretninger fra verkstedet (måleposter, mast, skjermet observasjonspost; samordnes med FF-RESEARCH-06). Blokkmodell og nytteprøve før fri bygging.
+
 ## Freeform: UFO-er, etterforskning, materialer og bygging
 
 Tom ba 2. november om å føre hele brainstormen fra tre agenter og gameplay-harnesset inn i TODO. Punktene nedenfor er nye, åpne design-/implementeringsoppgaver; kildegjennomgang og statisk harness er gjennomført, nye runtime-/spillertester er ikke kjørt. Registreringen endrer ikke gjeldende prioritering av Jeep og kritiske feil. UFO-01 over gjelder den allerede installerte leveransen. PHOTO-04 og GAMEPLAY-05/06 samordnes med denne reisen, uten parallelle systemer for saksfakta eller dobbel betaling.

@@ -2258,3 +2258,10 @@ void US47World::ReconcileFarm(bool bEnabled)
  }
  if(Changed)Under.Reset();
 }
+
+int32 US47World::RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ)
+{
+	if (Lands.IsEmpty()) MakeLands();
+	FLand* L = Lands.Find(InArea); if (!L) return 0;
+	return L->Out.RemoveAll([&](const FS47Box2& B) { return FMath::IsNearlyEqual(B.MinX, MinX) && FMath::IsNearlyEqual(B.MaxX, MaxX) && FMath::IsNearlyEqual(B.MinZ, MinZ) && FMath::IsNearlyEqual(B.MaxZ, MaxZ); });
+}

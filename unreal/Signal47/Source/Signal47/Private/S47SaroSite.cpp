@@ -212,7 +212,7 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
 void FS47SaroSite::Update()
 {
  auto* W=Web.Get();if(!W)return;const bool Shown=W->Area()==TEXT("saro");
- for(int32 I:PartNodes)W->SetVisible(I,Shown);
+ for(int32 K=0;K<PartNodes.Num();++K)W->SetVisible(PartNodes[K],Shown&&!(bWingReplaced&&K<2)); // facade and glass yield to the native east wing
  // Area changes can reapply the original hierarchy visibility; suppress only retired draws.
  for(int32 I:RetiredNodes)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetVisibility(false,false);C->SetHiddenInGame(true,false);}
  const float Power=Shown?SignPower(W):0.f;
@@ -225,7 +225,7 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  auto* W=Web.Get();if(!W)return false;bool OK=Parts.Num()==3&&RemovedWalkFeet==6&&RemovedDriveFeet==6;
  for(int32 I=0;I<Parts.Num();++I)
  {
-  auto* C=Parts[I].Get();const bool Good=C&&GoodMesh(C->GetStaticMesh(),Spec[I])&&C->GetComponentLocation().Equals(S47Three::ToUE(Spec[I].Root),.01)&&C->IsVisible()==bShown;
+  auto* C=Parts[I].Get();const bool Good=C&&GoodMesh(C->GetStaticMesh(),Spec[I])&&C->GetComponentLocation().Equals(S47Three::ToUE(Spec[I].Root),.01)&&C->IsVisible()==(bShown&&!(bWingReplaced&&I<2));
   OK&=Good;Lines.Add(FString::Printf(TEXT("SARO_SITE part=%s mesh/root/visibility=%s"),Spec[I].Name,Good?TEXT("PASS"):TEXT("FAIL")));
  }
  for(int32 I:RetiredNodes){const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;OK&=C&&!C->IsVisible()&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision;}

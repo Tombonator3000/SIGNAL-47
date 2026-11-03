@@ -219,6 +219,8 @@ public:
 	 *  whole width (AS47Walker::OpenLand). */
 	bool OnLand(double X, double Z, const FString& InArea = FString());
 
+	/** A native building that replaces an exported one opens its footprint to walking (S47EastWing). Returns how many exclusion boxes were removed. */
+	int32 RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ);
 private:
 	UPROPERTY() TObjectPtr<US47Main> M;
 	UPROPERTY() TArray<TObjectPtr<UObject>> Keep;
