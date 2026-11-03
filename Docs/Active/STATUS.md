@@ -28,6 +28,12 @@ På `codex/freeform-field-research-20261103`: Director beholder faktisk hørte t
 
 Feltloggeren åpnes av sak 1s `access.fieldlogger`, med lånemodul, benk, kalibrering, to feltposter og fysisk transport/henting. Første målemodell gjelder lokal elektrisk støy og faktisk overlapp med SARO-opptak ved samme frekvens. Uavhengig måling av himmelsignal og Visitors-sakens import/forsøk krever Claudes nye saksmotorkall; kontrakt og tre forsøksforutsigelser står i [OPPGAVER](../../unreal/OPPGAVER.md). Hele FF-RESEARCH-04 og den naturlige reisen over to netter er ikke ferdigmeldt. Felles editorbygg med Claudes pågående sak 2-kilde, 2186 selvtester og kort Vulkan-røyktest består. Dette verifiserer logikk og integrasjon, ikke naturlig observasjon, fysisk loggerreise over to netter eller menneskelig lyd-/spillaksept. Ingen pakking eller installasjon.
 
+## Ny SARO-PC-design og saksløkken installert 3. november
+
+Kilde `0a206d64` (PR378, med PR372/374 og Codex' lyd til og med PR377) er installert kl. 17:40 CET. SARO-PC-ene følger Toms fem skjermmaler: enlinjes topptekst med klokke, OPS-meny, animert spekter, AZ/EL-himmelplot, kalibreringskors og 27-elementers antennegitter; mottakeren følger vedlegg 2 og får plass uten rulling. Freeform-saksløkken med tre saker (gjentatt intervall, uenige registreringer, besøk rundt basen) er med.
+
+Pakke og installert versjon består 2262 selvtester og Vulkan-røyktest; hele evidensreisen består i editor (PASS, 104 kontroller). Alle 120 personlige Saved-filer er byte-identiske før og etter. Reflink-backup av forrige installasjon ligger i `~/scratch-bm/Signal47-ui-20261103/rollback`. Ingen menneskelig spilltest av lesbarhet, saksløkkens forståelighet eller sak 3s feltforsøk (verdensdelen gjenstår hos Codex).
+
 ## Jeep-lyd og ryddet politibil installert 3. november
 
 Kilde `e7a4cfe3` (PR365) er installert kl. 08:07 CET. Jeepen har motorlyd fra tre CC0-opptak av Jeeper og en ny løkke for grus og jord som stiger med fart og skrens. Politibilen har dreide hjul, egne lakk-, krom- og lyktmaterialer og helt nye tonede front- og bakruter (Tripos malte ruter med utkutt er fjernet, r5 kl. 09:20); atlas og merking er bevart.
