@@ -274,3 +274,47 @@ void AS47Web::UpdateCloudLight(const FVector& SunDirection, float Daylight)
 	CloudLight->SetLightColor((GlowColor * GlowI + FLinearColor(.62f, .72f, 1.f) * MoonI) / Total);
 	CloudLight->SetIntensity(Total * CloudFinaleWeatherWeight);
 }
+
+namespace
+{
+ // Tools/sky/clouds.hlsl weather field, evaluated using floats like the shader.
+ // A conservative rejection deliberately ignores the cinematic clear holes and
+ // density erosion: uncertain cloud-edge sight never grants observation credit.
+ float SkyFrac(float V){return V-FMath::FloorToFloat(V);}
+ float SkyHash(FVector3f P)
+ {
+  P=FVector3f(SkyFrac(P.X*.1031f),SkyFrac(P.Y*.1030f),SkyFrac(P.Z*.0973f));
+  const float D=FVector3f::DotProduct(P,FVector3f(P.Y,P.X,P.Z)+FVector3f(33.33f));P+=FVector3f(D);
+  return SkyFrac((P.X+P.Y)*P.Z);
+ }
+ float SkyNoise(FVector2f P)
+ {
+  const FVector2f I(FMath::FloorToFloat(P.X),FMath::FloorToFloat(P.Y));FVector2f F=P-I;
+  F=F*F*(FVector2f(3)-2.f*F);
+  auto H=[&](float X,float Y){return SkyHash(FVector3f(I.X+X,I.Y+Y,7));};
+  return FMath::Lerp(FMath::Lerp(H(0,0),H(1,0),F.X),FMath::Lerp(H(0,1),H(1,1),F.X),F.Y);
+ }
+ float SkyBank(FVector2f P)
+ {
+  float A=0,W=.5f;for(int32 I=0;I<4;++I){A+=W*SkyNoise(P);P=P*2.03f+FVector2f(17.1f,9.7f);W*=.5f;}return A/.9375f;
+ }
+}
+bool AS47Web::CloudSightClear(const FVector& EyeUE,const FVector& TargetUE)const
+{
+ if(!CloudsActive()||!CloudMid||CloudFinaleWeatherWeight<=0)return true;
+ if(TargetUE.Z<=LayerBottomKm*100000.)return true;
+ const FVector Delta=TargetUE-EyeUE;if(Delta.Z<=0)return false;
+ float Cover=CloudCover;FLinearColor Wind;
+ CloudMid->GetScalarParameterValue(TEXT("Cover"),Cover);CloudMid->GetVectorParameterValue(TEXT("Wind"),Wind);
+ const float Threshold=.55f+.30f*(.5f-FMath::Clamp(Cover,0.f,1.f));
+ for(int32 I=0;I<=16;++I)
+ {
+  const double Z=(LayerBottomKm+LayerHeightKm*I/16.)*100000.;
+  const double T=(Z-EyeUE.Z)/Delta.Z;if(T<0||T>1)continue;
+  const FVector At=EyeUE+Delta*T;
+  const FVector2f P(float(At.X*1e-5)+Wind.R,float(At.Y*1e-5)+Wind.G);
+  const float Weather=SkyBank(P*.10f+FVector2f(3.7f,1.9f))*.55f+SkyBank(P*.62f+FVector2f(.3f,8.1f))*.45f;
+  if(Weather>Threshold-.09f)return false;
+ }
+ return true;
+}
