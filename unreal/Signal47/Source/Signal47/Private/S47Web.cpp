@@ -1,4 +1,5 @@
 #include "S47Web.h"
+#include "S47SaroSeam.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47Main.h"
@@ -18,6 +19,8 @@
 #include "S47Props.h"
 #include "S47SaroArrival.h"
 #include "S47SaroSite.h"
+#include "S47SaroLampFeet.h"
+#include "S47RouteLampFeet.h"
 #include "S47Fleet.h"
 #include "S47TownBuildings.h"
 #include "S47CalicheHomes.h"
@@ -711,6 +714,7 @@ void AS47Web::BeginPlay()
 	SaroArrival = FS47SaroArrival::Build(this);
 	BuildHighwayPower();
 	SaroSite = FS47SaroSite::Build(this);
+	S47SaroLampFeet::Build(this);
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
@@ -722,6 +726,8 @@ void AS47Web::BeginPlay()
 	S47SubstationDetail::Build(this);
 	BuildFieldModels();
 	RouteNature = FS47RouteNature::Build(this);
+	S47SaroSeam::Build(this);
+	S47RouteLampFeet::Build(this);
 	BuildHighwayRanch();
 	BuildHighwayLandscape();
 	// the sky picture on a big sphere round the eye, beyond the farthest land (S47Sky draws the sky's

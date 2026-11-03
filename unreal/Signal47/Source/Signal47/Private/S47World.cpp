@@ -1,4 +1,5 @@
 #include "S47World.h"
+#include "S47SaroSeam.h"
 #include "S47FarmWorld.h"
 #include "S47Freeform.h"
 #include "S47FreeformWorld.h"
@@ -629,7 +630,7 @@ void US47World::EnsureLegs()
 	// SARO's own ground (ensureSaroLeg): its colliders without the truck's own, and the posts of
 	// the road's stretch (the export's list has both)
 	{
-		TUniquePtr<FArrivalSaroDrive> A = MakeUnique<FArrivalSaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>());
+		TUniquePtr<FArrivalSaroDrive> A = MakeUnique<FArrivalSaroDrive>(Boxes(W->CollidersMutable(TEXT("saro")), SaroCol), TArray<FS47Obstacle>(), W);
 		TArray<FString> ArrivalChecks;
 		A->bVisitorLot = W->AuditSaroArrival(ArrivalChecks);
 		UE_LOG(LogS47World,Display,TEXT("S47: SARO visitor driving corridor ready=%d; original service corridors retained"),A->bVisitorLot);
@@ -1393,6 +1394,9 @@ void US47World::MakeLands()
 
 double US47World::LandY(double X, double Z)
 {
+ // Open-land walking precedes the legacy zone floor. Use the same activated native seam.
+ double SeamY=0;
+ if(Area==TEXT("saro")&&M&&S47SaroSeam::Height(M->Web,X,Z,SeamY))return SeamY;
 	const double None = std::numeric_limits<double>::quiet_NaN();
  if(bFarmMode){const FVector O=Area==TEXT("saro")?FVector(-24,0,300):FVector(8000,0,0);if((Area==TEXT("saro")||Area==TEXT("road")||Area==TEXT("diner"))&&S47FarmWorld::InRoadAccess(X-O.X,Z-O.Z))return S47FarmWorld::FloorRoad(X-O.X,Z-O.Z);}
 	if (Area==TEXT("diner") || Area==TEXT("road"))

@@ -1,4 +1,6 @@
 #include "S47Legs.h"
+#include "S47SaroSeam.h"
+#include "S47Web.h"
 #include "S47FarmWorld.h"
 
 #include "S47Geo.h"
@@ -285,7 +287,8 @@ FString BoundOn(const FString& Leg, double X, double Z, double Heading, bool bRe
 
 // ---------- SaroDrive ----------
 
-FS47SaroDrive::FS47SaroDrive(const TArray<FS47Box2>& Colliders, const TArray<FS47Obstacle>& Road)
+FS47SaroDrive::FS47SaroDrive(const TArray<FS47Box2>& Colliders, const TArray<FS47Obstacle>& Road, AS47Web* Web)
+ : SeamWorld(Web)
 {
 	using namespace S47Legs;
 	EndZone = Box(0, 0, 0, 0);    // arrivals are the trip's business (World.ts), not the controller's
@@ -340,6 +343,9 @@ FS47SaroDrive::FS47SaroDrive(const TArray<FS47Box2>& Colliders, const TArray<FS4
 
 FS47Surface FS47SaroDrive::Surface(double X, double Z) const
 {
+ double SeamY=0;bool Road=false;
+ if(S47SaroSeam::Height(SeamWorld.Get(),X,Z,SeamY,&Road))
+  return Road?(FMath::Abs(X+24)<=4.8?SURF().Asphalt:SURF().Shoulder):SURF().Dirt;
 	using namespace S47Legs;
 	if (MOTEL_LOT().ContainsByPredicate([&](const FS47Box2& B) { return InBox(B, X, Z); }) && X < MOTEL_RECT().MaxX) return SURF().Yard;
 	const double Ax = FMath::Abs(X - SARO_HWY.X);
@@ -351,6 +357,7 @@ FS47Surface FS47SaroDrive::Surface(double X, double Z) const
 
 double FS47SaroDrive::Height(double X, double Z) const
 {
+ double SeamY=0;if(S47SaroSeam::Height(SeamWorld.Get(),X,Z,SeamY))return SeamY;
 	using namespace S47Legs;
 	if (InBox(SARO_PAD, X, Z) || (X >= SARO_RAMP.MinX && X <= SARO_RAMP.MaxX && Z >= SARO_RAMP.Top && Z <= SARO_RAMP.Foot)) return SaroFloorAt(X, Z);
 	if (InRect(MOTEL_RECT(), X, Z)) return MOTEL_AT().Y;
