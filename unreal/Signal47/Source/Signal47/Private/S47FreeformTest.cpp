@@ -43,12 +43,17 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
  else
   S47J::Set(O,TEXT("method"),TEXT("Isolated native Freeform integration: actual timed encoder settling, acquisition and audio; production workstation callbacks, full disk/Flow restores, accelerated day transitions and explicit event fixtures. Screenshots are native Vulkan. Fixture placement does not establish a natural town drive or human input/listening."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest")))
+ {
+  S47J::Set(O,TEXT("method"),TEXT("Explicit receiver tuning and one array target command; real generated pulsar job, timed acquisition, retained original, internal control, Roam/StartTrip busy callback and ordinary stationary exit. Frame samples compare native encoders, control progress and world clock through the actual transition; no bBusy write, natural commute or OS-input claim."));
+  S47J::Set(O,TEXT("busy_frame_samples"),TripHoldSamples);S47J::Set(O,TEXT("trip_hold_baseline"),Snapshot);
+ }
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -158,6 +163,69 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ // One real trip transition, not a second test framework or a simulated bBusy flag.
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest")))
+ {
+  if(Age>120){Finish(false,TEXT("trip-hold subset timeout"));return;}
+  auto Angles=[&](){TArray<double> V;for(int32 I=0;I<M->Web->DishCount();++I)V.Append({M->Web->DishAz(I),M->Web->DishEl(I)});return V;};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->IsFreeform()&&M->World&&M->World->Area==TEXT("saro")&&!M->World->bDriving&&!M->World->bBusy&&F.Director&&F.Field&&F.Field->ParcelStage()==0,TEXT("isolated fresh SARO Freeform case, no cargo or competing trip")))return;
+   M->UI->Close(true);F.Director->Stop();
+   if(!Check(F.SelectJob(1)&&F.CurrentJob()&&F.CurrentJob()->Source==1,TEXT("existing generated pulsar work order selected")))return;
+   F.SetAnomaly(true);const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("actual selected work card supplies explicit tuning fixture")))return;
+   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+   if(!Check(F.PointSelected(),TEXT("production pointing command accepted; no encoder snap or job-stage injection")))return;Go(9001);return;
+  }
+  if(Stage==9001)
+  {
+   if(!F.StartAcquisition())return;
+   if(!Check(F.CurrentJob()->Stage==J::Integrating,TEXT("settled actual array starts the real timed recording")))return;Go(9002);return;
+  }
+  if(Stage==9002)
+  {
+   if(F.CurrentJob()->Stage!=J::Chart)return;
+   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&!F.CurrentJob()->OriginalPage.IsEmpty(),TEXT("actual completed recording and printer original retained")))return;
+   M->UI->Close(true);if(!Check(F.StartControl()&&F.CurrentJob()->bControl&&F.CurrentJob()->ControlAt==0,TEXT("real eight-second internal reference starts before the trip")))return;
+   Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("clock"),F.Clock());S47J::Set(Snapshot,TEXT("control"),F.CurrentJob()->ControlAt);S47J::Set(Snapshot,TEXT("job"),F.CurrentJob()->Id);S47J::Set(Snapshot,TEXT("original"),F.CurrentJob()->OriginalPage);S47J::Set(Snapshot,TEXT("angles"),Angles());
+   // Explicit diagnostic command during an INTERNAL reference; not a physical pointing lesson.
+   const double Az=M->Web->DishAz(2)+6,El=M->Web->DishEl(2);M->Web->PointDishes(Az,El,2.2);
+   S47J::Set(Snapshot,TEXT("fixture_target"),TArray<double>{Az,El});
+   M->World->Roam(TEXT("saro"));
+   if(!Check(M->World->bBusy&&!M->World->bDriving&&F.CurrentJob()->bControl,TEXT("ordinary Roam entered actual StartTrip busy transition without stopping the job")))return;
+   Go(9003);return;
+  }
+  if(Stage==9003)
+  {
+   const auto* Work=F.CurrentJob();const auto ActualAngles=Angles(),BeforeAngles=S47J::Nums(Snapshot,TEXT("angles"));
+   bool SameAngles=ActualAngles.Num()==BeforeAngles.Num()&&ActualAngles.Num()>=6;
+   for(int32 I=0;I<ActualAngles.Num()&&I<BeforeAngles.Num();++I)SameAngles&=FMath::Abs(ActualAngles[I]-BeforeAngles[I])<1e-8;
+   auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("actual StartTrip frame"));S47J::Set(Row,TEXT("busy"),M->World->bBusy);S47J::Set(Row,TEXT("driving"),M->World->bDriving);S47J::Set(Row,TEXT("clock"),F.Clock());S47J::Set(Row,TEXT("control"),Work?Work->ControlAt:-1);S47J::Set(Row,TEXT("native_angles"),ActualAngles);Evidence.Add(MakeShared<FJsonValueObject>(Row));
+   if(M->World->bBusy)
+   {
+    ++TripHoldSamples;
+    if(!Check(Work&&Work->Id==S47J::Str(Snapshot,TEXT("job"))&&Work->Stage==J::Recorded&&Work->bControl&&Work->OriginalPage==S47J::Str(Snapshot,TEXT("original"))&&FMath::Abs(Work->ControlAt-S47J::Num(Snapshot,TEXT("control")))<1e-9&&FMath::Abs(F.Clock()-S47J::Num(Snapshot,TEXT("clock")))<1e-9&&SameAngles,TEXT("actual busy frame preserves original, control progress, clock and every native encoder")))return;
+    return;
+   }
+   if(!Check(TripHoldSamples>0&&M->World->bDriving&&Work&&Work->Id==S47J::Str(Snapshot,TEXT("job"))&&Work->bControl,TEXT("real scheduled StartTrip callback ended busy, entered driving and retained the same active job")))return;
+   Go(9004,.6);return;
+  }
+  if(Stage==9004)
+  {
+   const auto* Work=F.CurrentJob();const auto A=Angles(),B=S47J::Nums(Snapshot,TEXT("angles"));double Moved=0;for(int32 I=0;I<A.Num()&&I<B.Num();++I)Moved=FMath::Max(Moved,FMath::Abs(A[I]-B[I]));
+   if(!Check(Work&&Work->Id==S47J::Str(Snapshot,TEXT("job"))&&Work->ControlAt>S47J::Num(Snapshot,TEXT("control"))+.1&&Work->OriginalPage==S47J::Str(Snapshot,TEXT("original"))&&F.Clock()>S47J::Num(Snapshot,TEXT("clock"))&&Moved>.05&&!F.Held()&&!F.ArrayMotionHeld(),TEXT("same control, world clock and actual native motors resume after the real transition")))return;
+   auto Row=S47J::New();S47J::Set(Row,TEXT("kind"),TEXT("resumed"));S47J::Set(Row,TEXT("clock"),F.Clock());S47J::Set(Row,TEXT("control"),Work->ControlAt);S47J::Set(Row,TEXT("native_angles"),A);Evidence.Add(MakeShared<FJsonValueObject>(Row));
+   if(!Check(M->World->GetOutHere(),TEXT("ordinary stationary exit ends the test trip")))return;Go(9005,.6);return;
+  }
+  if(Stage==9005)
+  {
+   if(M->World->bBusy||M->Story->IsCinematic()||F.CurrentJob()->ControlAt<8)return;
+   if(!Check(!M->World->bDriving&&F.CurrentJob()->Id==S47J::Str(Snapshot,TEXT("job"))&&F.CurrentJob()->ControlAt==8&&F.CurrentJob()->OriginalPage==S47J::Str(Snapshot,TEXT("original")),TEXT("real internal reference completes after resumption; retained original and ordinary on-foot state remain")))return;
+   Finish(true);return;
+  }
+  return;
+ }
  // Explicit short photographic-economy fixture. This is not a natural encounter or OS-input beta.
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
  {

@@ -3,6 +3,7 @@
 #include "S47Main.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47Walker.h"
 #include "S47Inter.h"
 #include "S47Three.h"
 #include "S47Audio.h"
@@ -70,7 +71,22 @@ bool HasDoor(const FString& Id){return Find(Id)!=nullptr;}
 bool IsOpen(const FString& Id){const auto* R=Find(Id);return R&&R->bOpen;}
 bool UseDoor(const FString& Id)
 {
- FRoom* R=Find(Id);if(!R)return false;R->bOpen=!R->bOpen;Sync(*R);if(Main.IsValid())Main->RequestAutosave(false);
+ FRoom* R=Find(Id);if(!R)return false;
+ // Ordinary close only: do not enable the closed blocker around its on-foot user.
+ // Use the same inflated rectangle/contact tolerance as Walker; Restore/Sync stay authoritative.
+ if(R->bOpen&&Main.IsValid()&&Main->Player&&Main->World&&Main->Web&&!Main->World->bDriving
+    &&(Main->World->Area==TEXT("road")||Main->World->Area==TEXT("diner")))
+ {
+  const auto* P=Main->Player.Get();const double Radius=P->Radius,E=1e-8;
+  for(const auto& C:Main->Web->CollidersMutable(Main->World->Area))if(C.Id==TEXT("access:door:")+R->Id
+     &&P->Pos.X+Radius>C.MinX+E&&P->Pos.X-Radius<C.MaxX-E
+     &&P->Pos.Z+Radius>C.MinZ+E&&P->Pos.Z-Radius<C.MaxZ-E)
+  {
+   if(Main->UI)Main->UI->Toast(TEXT("Step clear of the doorway before closing it."),3);
+   return true;
+  }
+ }
+ R->bOpen=!R->bOpen;Sync(*R);if(Main.IsValid())Main->RequestAutosave(false);
  if(Main.IsValid()&&Main->Audio)Main->Audio->Sfx(Main->Audio->Or(TEXT("door_latch"),TEXT("switch")),FS47Sound());
  return true;
 }

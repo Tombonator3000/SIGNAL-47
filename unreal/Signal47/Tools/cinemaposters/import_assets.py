@@ -22,6 +22,15 @@ DEST = '/Game/Signal47/Art/CinemaPosters'
 BINDING = CONTENT / 'WebData/cinema-posters-binding.json'
 REPORT = Path(os.environ['S47_CINEMA_REPORT']).resolve()
 MODE = os.environ.get('S47_CINEMA_MODE', 'verify')
+# Art provenance remains the immutable surfaces.json used by the five saved assets.
+# Geometry now follows the later playtest-access building, with its ordinary door.
+GEOMETRY_PROFILE = 'CalicheAccessCinema-20261031'
+ACTIVE = {
+    'shell': dict(SPEC['tb2']['shell'], asset='/Game/CalicheAccess/SM_Access_Cinema_Shell.SM_Access_Cinema_Shell',
+                  node_name='caliche-access:SM_Access_Cinema_Shell', lod_triangles=[9610, 6240, 3684]),
+    'glass': dict(SPEC['tb2']['glass'], asset='/Game/CalicheAccess/SM_Access_Cinema_Glass.SM_Access_Cinema_Glass',
+                  node_name='caliche-access:SM_Access_Cinema_Glass', lod_triangles=[46, 38, 34]),
+}
 E = unreal.EditorAssetLibrary
 T = unreal.AssetToolsHelpers.get_asset_tools()
 M = unreal.MaterialEditingLibrary
@@ -64,6 +73,7 @@ def native_file(asset):
 
 def protected_inventory():
     paths = list((CONTENT / 'TownBuildings').rglob('*'))
+    paths += list((CONTENT / 'CalicheAccess').rglob('*'))
     paths += [native_file(SPEC['master']), native_file(SPEC['plane']['source'])]
     engine = Path(unreal.Paths.engine_content_dir()).resolve()
     return {('Content/' + p.relative_to(CONTENT).as_posix() if p.is_relative_to(CONTENT)
@@ -163,7 +173,7 @@ def originals():
     result = {}
     report['saved_originals'] = result
     for kind in ('shell', 'glass'):
-        spec = SPEC['tb2'][kind]
+        spec = ACTIVE[kind]
         mesh = E.load_asset(spec['asset'])
         check(kind + ' exact native predecessor', isinstance(mesh, unreal.StaticMesh)
               and mesh.get_path_name() == spec['asset'] and S.get_lod_count(mesh) == 3)
@@ -301,8 +311,14 @@ def texture(row):
     check(row['id'] + ' actual saved texture policy', all(tex.get_editor_property(k) == v for k, v in texture_settings().items()))
     data = tex.get_editor_property('asset_import_data')
     imported = Path(data.get_first_filename()).resolve() if data else None
-    check(row['id'] + ' saved source path/hash', imported == source.resolve() and imported.is_file()
-          and sha(imported) == row['source_sha256'] and E.get_metadata_tag(tex, 'S47_CINEMA_SOURCE_SHA256') == row['source_sha256']
+    # Retired worktrees do not invalidate byte-identical authored textures.
+    reference = Path(row['source'])
+    portable = (imported is not None and tuple(imported.parts[-len(reference.parts):]) == reference.parts
+                and len(data.extract_filenames()) == 1)
+    check(row['id'] + ' saved source filename/hash', portable and source.is_file()
+          and sha(source) == row['source_sha256']
+          and (not imported.exists() or (imported.is_file() and sha(imported) == row['source_sha256']))
+          and E.get_metadata_tag(tex, 'S47_CINEMA_SOURCE_SHA256') == row['source_sha256']
           and E.get_metadata_tag(tex, 'S47_CINEMA_SPEC_SHA256') == SPEC_SHA)
     check(row['id'] + ' actual texture size', 1024 <= tex.blueprint_get_size_x() <= 2048 and 1024 <= tex.blueprint_get_size_y() <= 2048)
     report['textures'].append({'asset': path, 'source': row['source'], 'source_sha256': sha(source),
@@ -362,7 +378,7 @@ def main():
     report['binding_before_sha256'] = sha(BINDING) if BINDING.is_file() else None
     report['binding_before_bytes'] = BINDING.stat().st_size if BINDING.is_file() else None
     atomic_json(REPORT, report)
-    check('protected native inventory is present', len(before) >= 30 and all(native_file(SPEC['tb2'][k]['asset']).is_file() for k in ('shell', 'glass')))
+    check('protected native inventory is present', len(before) >= 30 and all(native_file(ACTIVE[k]['asset']).is_file() for k in ('shell', 'glass')))
     previous = json.loads(BINDING.read_text()) if BINDING.is_file() else None
     if previous is not None and previous.get('status') == 'PASS':
         intact = (previous.get('spec_sha256') == SPEC_SHA and len(previous.get('native_assets', {})) == 5
@@ -374,6 +390,9 @@ def main():
     # Incomplete native work cannot leave a previous PASS activation in place.
     if MODE == 'import' and (previous is None or previous.get('status') != 'PASS'):
         atomic_json(BINDING, {'status': 'RUNNING', 'spec_sha256': SPEC_SHA})
+    paths = [asset_path(SPEC['plane']['asset'])] + [asset_path(r[k]) for r in SPEC['surfaces'] for k in ('texture', 'material')]
+    check('completion requires all five existing native assets; no new import', all(native_file(p).is_file() and E.does_asset_exist(p) for p in paths))
+    owned_before = {p: sha(native_file(p)) for p in paths}
     measured = originals()
     report['saved_originals'] = measured
     mesh = plane()
@@ -381,10 +400,12 @@ def main():
         material(row, texture(row))
     paths = [asset_path(SPEC['plane']['asset'])] + [asset_path(r[k]) for r in SPEC['surfaces'] for k in ('texture', 'material')]
     native = {p: {'bytes': native_file(p).stat().st_size, 'sha256': sha(native_file(p))} for p in paths}
-    check('all original TB2/shared/Engine bytes unchanged', protected_inventory() == before)
+    check('all five existing native assets unchanged', all(v['sha256'] == owned_before[p] for p, v in native.items()))
+    check('all original TB2/CalicheAccess/shared/Engine bytes unchanged', protected_inventory() == before)
     for row in SPEC['surfaces']:
         check(row['id'] + ' source JPG remains unchanged', sha(UNREAL_DIR / row['source']) == row['source_sha256'])
-    binding = {'version': 1, 'status': 'PASS', 'scope': SPEC['scope'], 'spec_sha256': SPEC_SHA,
+    binding = {'version': 2, 'status': 'PASS', 'scope': 'ART01_Plaza_active_access', 'spec_sha256': SPEC_SHA,
+               'geometry_profile': GEOMETRY_PROFILE,
                'master': SPEC['master'], 'plane_asset': mesh.get_path_name(), 'plane_saved_triangles': plane_payload(mesh),
                'original_measurement': 'fresh saved StaticMeshDescription, all three authored LODs; not live CPU triangle proof',
                'originals': measured, 'native_assets': native, 'surfaces': SPEC['surfaces'],

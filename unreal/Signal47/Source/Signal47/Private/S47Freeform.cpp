@@ -183,7 +183,7 @@ bool FS47FreeformSession::Held() const
 }
 bool FS47FreeformSession::ArrayMotionHeld() const
 {
- return !bActive||bDead||bRecovering||!M||M->bPausedByMenu||(M->ModalOpen()&&!bTelemetry&&!TerminalOnGlass())||!HasPower();
+ return !bActive||bDead||bRecovering||!M||M->bPausedByMenu||(M->World&&M->World->bBusy)||(M->ModalOpen()&&!bTelemetry&&!TerminalOnGlass())||!HasPower();
 }
 bool FS47FreeformSession::HasPower() const {return !bPowerFault||(Field&&Field->HasBackupPower());}
 bool FS47FreeformSession::RequirePower()

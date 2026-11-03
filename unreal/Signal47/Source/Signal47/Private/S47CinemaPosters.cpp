@@ -251,8 +251,8 @@ namespace
   {UE_LOG(LogS47CinemaPosters,Error,TEXT("S47.Cinema.ReadSavedMaterials requires exact mesh object path and fresh absolute report path"));return;}
   FString Output=FPaths::ConvertRelativePathToFull(Args[1]);FPaths::NormalizeFilename(Output);FPaths::CollapseRelativeDirectories(Output);
   const FString Temporary=Output+TEXT(".tmp");
-  const bool Owned=Args[0]==TEXT("/Game/TownBuildings/SM_Town_Cinema_Shell.SM_Town_Cinema_Shell")
-   ||Args[0]==TEXT("/Game/TownBuildings/SM_Town_Cinema_Glass.SM_Town_Cinema_Glass");
+  const bool Owned=Args[0]==TEXT("/Game/CalicheAccess/SM_Access_Cinema_Shell.SM_Access_Cinema_Shell")
+   ||Args[0]==TEXT("/Game/CalicheAccess/SM_Access_Cinema_Glass.SM_Access_Cinema_Glass");
   if(!Owned||FPaths::IsRelative(Args[1])||FPaths::IsUnderDirectory(Output,FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir()))
    ||FPaths::IsUnderDirectory(Output,FPaths::ConvertRelativePathToFull(FPaths::EngineContentDir()))
    ||IFileManager::Get().FileExists(*Output)||IFileManager::Get().FileExists(*Temporary))
@@ -332,10 +332,16 @@ namespace
 }
 #endif
 
+void FS47CinemaPosters::Install(AS47Web* W)
+{
+ // Called once after CalicheAccess has installed the current visible Shell/Glass.
+ if(W&&!W->CinemaPosters)W->CinemaPosters=Build(W,W->TownBuildings.IsValid());
+}
+
 TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownReady)
 {
  if(!W||FParse::Param(FCommandLine::Get(),TEXT("S47CinemaPostersOff"))||FParse::Param(FCommandLine::Get(),TEXT("S47PropsOff")))return {};
- auto Reject=[](const FString& Why){UE_LOG(LogS47CinemaPosters,Warning,TEXT("S47: cinema posters inactive: %s; all original prints/glass/materials/Closed proxy retained"),*Why);};
+ auto Reject=[](const FString& Why){UE_LOG(LogS47CinemaPosters,Warning,TEXT("S47: cinema posters inactive: %s; all current prints/glass/materials/door interactions retained"),*Why);};
  if(!bTownReady){Reject(TEXT("complete TB2 required"));return {};}
  const auto BindingData=Json();const auto Originals=Obj(BindingData,TEXT("originals"));const FA* Surfaces=Arr(BindingData,TEXT("surfaces"));
  double Version=-1;FVector BoundSite;
@@ -344,7 +350,7 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
   ||!BindingData->TryGetBoolField(TEXT("fresh_saved_reader"),FreshReader)||!FreshReader
   ||Str(BindingData,TEXT("import_report_sha256")).Len()!=64||Str(BindingData,TEXT("protected_native_inventory_sha256")).Len()!=64
   ||!NativeAssets||NativeAssets->Values.Num()!=5
-  ||!Number(BindingData,TEXT("version"),Version)||Version!=1||Str(BindingData,TEXT("master"))!=MasterPath
+  ||!Number(BindingData,TEXT("version"),Version)||Version!=2||Str(BindingData,TEXT("geometry_profile"))!=TEXT("CalicheAccessCinema-20261031")||Str(BindingData,TEXT("master"))!=MasterPath
   ||Str(BindingData,TEXT("plane_asset"))!=Asset(TEXT("SM_CinemaPosterPlane"))
   ||!Vector(BindingData,TEXT("site_world_three_m"),BoundSite)||!BoundSite.Equals(Site,Tolerance)
   ||!Originals||!Surfaces||Surfaces->Num()!=2){Reject(TEXT("complete matching saved import/verify binding required"));return {};}
@@ -360,9 +366,9 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
  F->ProxyComp=ProxyNode->Comp;F->ProxyTransform=ProxyNode->Comp->GetComponentTransform();
  auto Original=[&](FOriginal& Out,const TCHAR* Kind,const TCHAR* MeshName,const TCHAR* MatName)
  {
-  Out.Node=UniqueNode(W,*(FString(TEXT("town-production:"))+MeshName));const auto* N=W->Node(Out.Node);
+  Out.Node=UniqueNode(W,*(FString(TEXT("caliche-access:"))+MeshName));const auto* N=W->Node(Out.Node);
   auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;UStaticMesh* Mesh=C?C->GetStaticMesh().Get():nullptr;
-  const auto Record=Obj(Originals,Kind);const FString Path=FString(TEXT("/Game/TownBuildings/"))+MeshName+TEXT(".")+MeshName;
+  const auto Record=Obj(Originals,Kind);const FString Path=FString(TEXT("/Game/CalicheAccess/"))+MeshName+TEXT(".")+MeshName;
   Out.MaterialSlot=NamedSlot(Mesh,MatName);double RecordedSlot=-1;
   const FString MaterialPath=FString(TEXT("/Game/TownBuildings/Materials/"))+MatName+TEXT(".")+MatName;
   const FA* SlotNames=Arr(Record,TEXT("all_material_slot_names"));
@@ -387,9 +393,9 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
   for(int32 I=0;I<C->GetNumMaterials();++I)Out.Materials.Add(C->GetMaterial(I));
   return true;
  };
- if(!Original(F->Shell,TEXT("shell"),TEXT("SM_Town_Cinema_Shell"),TEXT("M_Town_PrintAtlas"))
-  ||!Original(F->Glass,TEXT("glass"),TEXT("SM_Town_Cinema_Glass"),TEXT("M_Town_Glass")))
- {Reject(TEXT("actual TB2 mesh/slots/LODs/transform or saved original-plane measurements"));return {};}
+ if(!Original(F->Shell,TEXT("shell"),TEXT("SM_Access_Cinema_Shell"),TEXT("M_Town_PrintAtlas"))
+  ||!Original(F->Glass,TEXT("glass"),TEXT("SM_Access_Cinema_Glass"),TEXT("M_Town_Glass")))
+ {Reject(TEXT("actual CalicheAccess mesh/slots/LODs/transform or saved original-plane measurements"));return {};}
  auto* PlaneMesh=LoadObject<UStaticMesh>(nullptr,*Asset(TEXT("SM_CinemaPosterPlane")));
  UMaterialInterface* Materials[2]={};UTexture2D* Textures[2]={};
  for(int32 I=0;I<2;++I)
@@ -468,7 +474,7 @@ TSharedPtr<FS47CinemaPosters> FS47CinemaPosters::Build(AS47Web* W,bool bTownRead
   const int32 Node=W->AdoptNode(Pending[I],F->Shell.Node,FString(TEXT("cinema-poster:"))+Expected[I].Id);
   F->Prints.Add({Node,Pending[I]});
  }
- F->Update();UE_LOG(LogS47CinemaPosters,Display,TEXT("S47: cinema posters ready: two additive 2:3 exterior prints; all originals and Closed proxy retained"));
+ F->Update();UE_LOG(LogS47CinemaPosters,Display,TEXT("S47: cinema posters ready: two additive 2:3 exterior prints; current CalicheAccess geometry and ordinary door retained"));
  return F;
 }
 
@@ -589,7 +595,7 @@ TSharedPtr<FJsonObject> FS47CinemaPosters::Readback() const
    const FBox Box=C->Bounds.GetBox();Row->SetArrayField(TEXT("actual_bounds_min_three_m"),VectorJson(S47Three::ToThree(Box.Min)));
    Row->SetArrayField(TEXT("actual_bounds_max_three_m"),VectorJson(S47Three::ToThree(Box.Max)));
    Row->SetArrayField(TEXT("saved_original_frame_size_m"),Values({Frame.X,Frame.Y}));Row->SetArrayField(TEXT("saved_original_glass_size_m"),Values({Glazing.X,Glazing.Y}));
-   Row->SetArrayField(TEXT("original_centre_transformed_by_actual_TB2_three_m"),VectorJson(OriginalWorld));
+   Row->SetArrayField(TEXT("original_centre_transformed_by_actual_CalicheAccess_three_m"),VectorJson(OriginalWorld));
    Row->SetArrayField(TEXT("actual_offset_from_original_three_m"),VectorJson(Offset));
    Row->SetArrayField(TEXT("actual_right_three"),VectorJson(Right));Row->SetArrayField(TEXT("actual_down_three"),VectorJson(Down));Row->SetArrayField(TEXT("actual_normal_three"),VectorJson(Normal));
    Row->SetBoolField(TEXT("component_visible"),C->IsVisible());Row->SetBoolField(TEXT("hidden_in_game"),C->bHiddenInGame);
@@ -603,7 +609,7 @@ TSharedPtr<FJsonObject> FS47CinemaPosters::Readback() const
 bool FS47CinemaPosters::Audit(TArray<FString>& Lines) const
 {
  const auto J=Readback();const bool Ok=Str(J,TEXT("status"))==TEXT("PASS");
- Lines.Add(FString::Printf(TEXT("cinema posters %s: two live component/material/UV/metric/parent/visibility audits; original TB2 frames use fresh saved-native import measurements; Closed proxy %d retained"),Ok?TEXT("PASS"):TEXT("FAIL"),Proxy));
+ Lines.Add(FString::Printf(TEXT("cinema posters %s: two live component/material/UV/metric/parent/visibility audits; current CalicheAccess frames use fresh saved-native import measurements; original proxy %d retained"),Ok?TEXT("PASS"):TEXT("FAIL"),Proxy));
  if(const FA* Rows=Arr(J,TEXT("prints")))for(const auto& Value:*Rows)
  {
   const auto Row=Value->AsObject();

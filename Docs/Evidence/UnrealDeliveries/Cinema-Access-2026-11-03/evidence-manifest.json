@@ -1,0 +1,34 @@
+{
+  "copies": [
+    {
+      "source": "/home/tom/scratch-bm/Signal47-cinema-followup-20261103/revised/before.png",
+      "destination": "Cinema-Access-2026-11-03/before.png",
+      "bytes": 1315615,
+      "sha256": "02920603adce53c0637d764f7679d7dcd7224cddb8e55acc3912c136b993075b"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-cinema-followup-20261103/revised/after.png",
+      "destination": "Cinema-Access-2026-11-03/after.png",
+      "bytes": 1329802,
+      "sha256": "9611bef9fcf583319bb3d17edca8f7f59ded390d8574b419fcfbe62fc60de3d3"
+    },
+    {
+      "source": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/desert-sky.png",
+      "destination": "Cinema-Access-2026-11-03/desert-sky.png",
+      "bytes": 676986,
+      "sha256": "70a0456bf1d1573a9786ac516bf119bbba82fc64966fbebf3bc79ce04ea5a1ad"
+    },
+    {
+      "source": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/friday-matinee.png",
+      "destination": "Cinema-Access-2026-11-03/friday-matinee.png",
+      "bytes": 775784,
+      "sha256": "6512e8aed7b426316b013c92e905676a730d7bfdedf38c71403cf46bb79cac88"
+    },
+    {
+      "source": "/home/tom/scratch-bm/Signal47-cinema-followup-20261103/installed.json",
+      "destination": "Cinema-Access-2026-11-03/installed.json",
+      "bytes": 2901,
+      "sha256": "5b2479379af2169e0a85e7241f993e32d6ba99d852d7145760457d903ea4bc97"
+    }
+  ]
+}

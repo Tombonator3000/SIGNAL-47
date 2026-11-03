@@ -8,13 +8,14 @@ class USceneComponent;
 class UStaticMesh;
 class UStaticMeshComponent;
 
-/** ART01: two exterior prints behind the existing closed Plaza's glass.
- * Build after the complete TB2 set. No predecessor or interaction is mutated.
+/** ART01: two exterior prints behind the active CalicheAccess Plaza glass.
+ * Install after CalicheAccess. No geometry or door interaction is mutated.
  * Update is called by the existing web owner, with no independent tick/timer.
  */
 class FS47CinemaPosters
 {
 public:
+ static void Install(AS47Web* W);
  static TSharedPtr<FS47CinemaPosters> Build(AS47Web* W, bool bTownReady);
  void Update();
  bool Audit(TArray<FString>& Lines) const;

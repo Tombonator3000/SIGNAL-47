@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Kinoplakater, dørklaring og arbeidspause installert 3. november
+
+Kilde `501cbe81` er installert kl. 07:45 CET. To Plaza-plakater følger dagens åpne kinobygning. Caliche-dører avviser lukking rundt spilleren, og Freeform holder internkontroll og antenner under bilovergangen, sammen med spillklokken.
+
+Bygg/pakke, 2147 selvtester, kinoens fysiske dør-/diskprøve og Freeforms faktiske overgang består. Begge feilene ble gjenskapt før retting. Alle 126 personlige Saved-filer er uendret. [Bilder og prøvegrenser](../Evidence/UnrealDeliveries/CINEMA_ACCESS_2026-11-03.md).
+
 ## Pale-bevegelser installert 3. november
 
 Kilde `b0535f89` er installert kl. 05:29 CET. Den originale store Pale-riggen får egne bevegelser for lytting, gange, løp, vending og grep mot faktisk spillermål. Fotfeste og skritt følger forflytningen; modell, rigg, AI og lagringsformat beholdes.
@@ -58,7 +64,7 @@ Kilde `444012cb`, [PR355](https://github.com/Tombonator3000/SIGNAL-47/pull/355),
 
 Editorbygg, pakking, 2112 selvtester, 691 kabinimport- og 379 hjulimportkontroller består. Native før/etter og pakkede bil-/speilbilder er gjennomsett. Ufullstendig hjulsett beholdt komplett reservekarosseri; faktisk 8,554 m kjøring med automatisk testinput bekreftet komponenter og hjultransformasjoner. Vanlig tastaturmeny, lasting og gange er også prøvd, men Jeep ble ikke nådd uten fungerende mus. Vanlig Jeep-input og menneskelig kjørefølelse er fortsatt uverifisert. Alle 126 personlige Saved-filer er hashidentiske etter installasjonen. [Bilder, levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_FINISH_2026-11-02.md).
 
-Nattskiftet fortsetter med prioriterte TODO-punkter frem til 3. november kl. 08:00. Claude samordnes fra kl. 02:10 og får også TODO-/agentarbeid når kapasiteten tillater det. Ingen offentlig spillutgave er publisert.
+Nattens leverte rettelser er ferdigstilt etter Toms bestilling om commit og PR 3. november. Siste lokale installasjon er `501cbe81` fra kl. 07:45. Videre åpne oppgaver står i TODO; Claudes separate Jeep-lyd-/politibilarbeid føres i OPPGAVER. Ingen offentlig spillutgave er publisert.
 
 ## UFO-bortføring og motorveijakt installert 2. november
 
