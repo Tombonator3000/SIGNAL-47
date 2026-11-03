@@ -36,9 +36,9 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
 namespace
 {
- // The original west staff bay was cleared when the normal sedan moved to
- // east35 (S47FleetParked). Its paved surface is -0.576 m, matching both native cars.
- const FVector EmptyCarFoot(27,-.576,9.8);
+ // Spare paved space west of the staff sedan: clear of the personnel steps,
+ // both permanent cars, the garage ramp and the southern service-road access.
+ const FVector EmptyCarFoot(23.5,-.576,11.0);
  const FVector EmptyCarReference=EmptyCarFoot+FVector(0,.9,0);
  FVector ClosePassAt(const FVector& Origin,double Age)
  {

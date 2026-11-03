@@ -1,5 +1,7 @@
 #include "S47EastWing.h"
 #include "S47Main.h"
+#include "S47Freeform.h"
+#include "S47Story.h"
 #include "S47Web.h"
 #include "S47Obj.h"
 #include "S47Three.h"
@@ -163,7 +165,10 @@ void FS47EastWing::Build()
  Block(TEXT("StoreWallHead"),FVector(28.3,2.15,StoreZ-P*.5),FVector(29.3,Ceil,StoreZ+P*.5),Masonry);
  // South facade: the retained SARO sign as a dark green board, personnel door, roll-up door, apron and ramps.
  Block(TEXT("SignBoard"),FVector(23.4,1.05,Z1),FVector(30.4,2.75,Z1+.08),Sign);
- Block(TEXT("Door"),FVector(21.35,0,Z1-.06),FVector(22.35,2.12,Z1-.02),Door);
+ // Keep an open leaf in Freeform and a visibly closed leaf in Story; custom wall locks follow mode.
+ Block(TEXT("DoorClosed"),FVector(21.35,0,Z1-.06),FVector(22.35,2.12,Z1-.02),Door);
+ Block(TEXT("DoorOpen"),FVector(21.30,0,Z1-1.02),FVector(21.35,2.12,Z1-.02),Door);
+ Block(TEXT("GarageClosed"),FVector(33.2,0,Z1-.06),FVector(37.6,3.0,Z1-.02),Door);
  Block(TEXT("Awning"),FVector(21.0,2.35,Z1),FVector(22.7,2.42,Z1+.9),Door);
  Block(TEXT("RollUpHead"),FVector(33.1,3.0,Z1-.02),FVector(37.7,3.35,Z1+.25),Plinth);
  Block(TEXT("Apron"),FVector(32.6,-.6,Z1),FVector(38.2,-.02,Z1+5.0),Garage,false);
@@ -195,6 +200,8 @@ void FS47EastWing::Walls()
  R(LabX-.08,LabX+.08,Z0,2.4,TEXT("lab0"));R(LabX-.08,LabX+.08,3.4,Z1,TEXT("lab1"));
  R(GarageX-.08,GarageX+.08,Z0,-3.0,TEXT("g0"));R(GarageX-.08,GarageX+.08,-2.0,2.9,TEXT("g1"));R(GarageX-.08,GarageX+.08,3.9,Z1,TEXT("g2"));
  R(LabX,28.3,StoreZ-.08,StoreZ+.08,TEXT("st0"));R(29.3,GarageX,StoreZ-.08,StoreZ+.08,TEXT("st1"));
+ R(21.3,22.4,Z1-T,Z1,TEXT("lock-personnel"));R(33.2,37.6,Z1-T,Z1,TEXT("lock-garage"));
+ for(auto& Rect:C)if(Rect.Id.StartsWith(TEXT("eastwing:lock-")))Rect.bEnabled=!M->IsFreeform();
 }
 
 bool FS47EastWing::Step(float Dt)
@@ -205,6 +212,20 @@ bool FS47EastWing::Step(float Dt)
   // Not adopted into the exported hierarchy: shown only while SARO is the loaded area.
   const bool Shown=M->Web->Area()==TEXT("saro");
   if(Shown!=bShown){bShown=Shown;for(const auto& P:Parts)if(USceneComponent* C=P.Get())C->SetVisibility(Shown,true);}
+  const bool Free=M->IsFreeform();
+  const bool Powered=Free?(M->Freeform&&M->Freeform->HasPowerForReactiveLight()):(M->Story&&M->Story->bPowered);
+  for(const auto& P:Parts)if(USceneComponent* C=P.Get())
+  {
+   if(UPointLightComponent* L=Cast<UPointLightComponent>(C)){L->SetVisibility(Shown&&Powered);continue;}
+   const FString Name=C->GetName();
+   const bool Open=Name==TEXT("EastWing_DoorOpen"),Closed=Name==TEXT("EastWing_DoorClosed")||Name==TEXT("EastWing_GarageClosed");
+   if(Open||Closed)
+   {
+    const bool Visible=Shown&&(Open?Free:!Free);C->SetVisibility(Visible);
+    if(UStaticMeshComponent* Mesh=Cast<UStaticMeshComponent>(C)){Mesh->SetCollisionEnabled(Visible?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);Mesh->SetCastShadow(Visible);}
+   }
+  }
+  for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id.StartsWith(TEXT("eastwing:lock-")))R.bEnabled=!Free;
  }
  // Developer views (-S47EastWingShots): exterior and each room, then exit.
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47EastWingShots"))||!M||!M->Player||!bBuilt||M->Mode!=US47Main::EMode::Play||!M->World||M->World->Area!=TEXT("saro"))return true;

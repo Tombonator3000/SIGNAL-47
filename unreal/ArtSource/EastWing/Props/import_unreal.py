@@ -146,6 +146,16 @@ def make_plan():
 
 
 def import_plan(plan, report_path):
+    counts_path = HERE / 'native-triangle-counts.json'
+    require(counts_path.is_file(), 'Run native_triangle_counts.py in Blender before native import')
+    counts = {(r['asset'], r['lod']): r for r in read(counts_path)['lods']}
+    for model in plan['models']:
+        for lod, item in enumerate(model['lods']):
+            prediction = counts.get((model['row']['asset'], lod))
+            require(prediction is not None, 'Missing native triangle prediction', item['file'])
+            require(prediction['sha256'] == digest(Path(model['source']).parent / item['file'])
+                    and prediction['source_triangles'] == item['triangles'],
+                    'Native prediction does not match the delivered FBX', item['file'])
     import unreal
     require(all(hasattr(unreal, name) for name in ('GeometryScript_AssetUtils',
                 'GeometryScript_MeshQueries', 'GeometryScript_List')),
@@ -300,8 +310,6 @@ def import_plan(plan, report_path):
                 build.set_editor_property('use_full_precision_u_vs', True)
                 build.set_editor_property('remove_degenerates', False)
                 S.set_lod_build_settings(mesh, lod, build)
-                require(mesh.get_num_triangles(lod) == model['lods'][lod]['triangles'],
-                        'LOD triangle count changed', [row['asset'], lod, mesh.get_num_triangles(lod), model['lods'][lod]['triangles']])
                 for section in range(mesh.get_num_sections(lod)):
                     index = S.get_lod_material_slot(mesh, lod, section)
                     require(0 <= index < len(slots), 'LOD material section is unbound',
@@ -316,6 +324,10 @@ def import_plan(plan, report_path):
             lo, hi = row['bounds_m']
             expected = [[lo[0]*100, -hi[1]*100, lo[2]*100], [hi[0]*100, -lo[1]*100, hi[2]*100]]
             for lod in range(3):
+                prediction = counts[(row['asset'], lod)]
+                require(mesh.get_num_triangles(lod) == prediction['render_triangles'],
+                        'Native geometry differs beyond repeated-corner removal',
+                        [row['asset'], lod, mesh.get_num_triangles(lod), prediction])
                 options = unreal.GeometryScriptCopyMeshFromAssetOptions()
                 requested = unreal.GeometryScriptMeshReadLOD()
                 requested.set_editor_property('lod_type', unreal.GeometryScriptLODType.RENDER_DATA)
@@ -328,7 +340,7 @@ def import_plan(plan, report_path):
                 actual = [[fn(p[k] for p in points) for k in range(3)] for fn in (min, max)]
                 error = max(abs(a-b) for aa, bb in zip(actual, expected) for a, b in zip(aa, bb))
                 require(error < 1.5, 'Native LOD axes, scale or frame changed', [row['asset'], lod, actual, expected])
-                lod_report.append({'lod': lod, 'triangles': mesh.get_num_triangles(lod), 'bounds_cm': actual, 'bounds_error_cm': error})
+                lod_report.append({'lod': lod, 'triangles': mesh.get_num_triangles(lod), 'source_triangles': prediction['source_triangles'], 'repeated_corner_triangles': prediction['repeated_corner_triangles'], 'bounds_cm': actual, 'bounds_error_cm': error})
             report['meshes'].append({'asset': mesh.get_path_name(), 'private': model['private'], 'slots': slots, 'lods': lod_report})
             flush()
         report['status'] = 'PASS_NATIVE_IMPORT'

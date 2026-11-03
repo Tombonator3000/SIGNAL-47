@@ -192,8 +192,8 @@ TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W,bool bSiteReady)
  const int32 Parent=W->Handle(TEXT("world.grounds.group"));UStaticMeshComponent* Old=nullptr;
  for(int32 I=0;I<W->PartCount();++I){const auto* N=W->Node(I);if(N&&N->Geo==454&&Within(W,I,Parent))Old=Cast<UStaticMeshComponent>(N->Comp.Get());}
  if(!Sedan||!Pickup||!Trim||!Old||Parent<0){UE_LOG(LogS47Fleet,Warning,TEXT("S47: parked fleet unavailable; complete legacy staff corner retained"));return {};}
- // Move the red sedan to the east staff bay, keeping every west visitor bay free.
- // Only its exact original walking footprint moves with it; no stale invisible car remains.
+ // Keep the red sedan in the west staff bay, clear of the EastWing roll-up door.
+ // Only its exact original walking footprint follows the shared bay position.
  int32 SedanFeet=0;
  for(const auto& R:W->CollidersMutable(TEXT("saro")))
   if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++SedanFeet;
@@ -208,7 +208,7 @@ TSharedPtr<FS47FleetParked> FS47FleetParked::Build(AS47Web* W,bool bSiteReady)
  // This composed trim removes only the two old vehicle bodies and the sixteen replaced wing windows.
  // Reuse the exact original atlas; unrelated footprint colliders stay byte-for-byte in place.
  auto* OriginalMaterial=Old->GetMaterial(0);Old->SetStaticMesh(PavedTrim);Old->SetMaterial(0,OriginalMaterial);
- F->Components={A,B};F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;UE_LOG(LogS47Fleet,Display,TEXT("S47: staff fleet ready: two period vehicles on paved staff bays, sedan east35 and matching foot moved, visitors free"));return F;
+ F->Components={A,B};F->TrimmedDressing=Old;F->DressingMaterial=OriginalMaterial;F->bReady=true;UE_LOG(LogS47Fleet,Display,TEXT("S47: staff fleet ready: two period vehicles on paved staff bays, sedan west27 and matching foot, east garage approach clear"));return F;
 }
 
 bool FS47Fleet::Audit(TArray<FString>& Lines)const
@@ -271,9 +271,9 @@ bool FS47FleetParked::Audit(TArray<FString>& Lines)const
  int32 NewFeet=0,OldFeet=0;
  if(auto* W=Web.Get())for(const auto& R:W->CollidersMutable(TEXT("saro")))
  {
-  if(FMath::IsNearlyEqual(R.MinX,34.,.0001)&&FMath::IsNearlyEqual(R.MaxX,36.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++NewFeet;
-  if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
+  if(FMath::IsNearlyEqual(R.MinX,S47SaroForecourt::SedanX-1.,.0001)&&FMath::IsNearlyEqual(R.MaxX,S47SaroForecourt::SedanX+1.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++NewFeet;
+  if(FMath::IsNearlyEqual(R.MinX,34.,.0001)&&FMath::IsNearlyEqual(R.MaxX,36.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
  }
- Check(NewFeet==1&&OldFeet==0,TEXT("sedan actual foot follows east staff bay, old position clear; all visitor bays free"));
+ Check(NewFeet==1&&OldFeet==0,TEXT("sedan actual foot follows west staff bay; old east bay and garage approach clear"));
  auto* D=TrimmedDressing.Get();Check(D&&D->GetStaticMesh()&&D->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")&&D->GetStaticMesh()->GetNumTriangles(0)==10328&&D->GetMaterial(0)==DressingMaterial.Get(),TEXT("exact old-car/window trim plus230 front brush+144 old wheel triangles removed,10328 unrelated triangles retain original dressing atlas"));return Ok;
 }

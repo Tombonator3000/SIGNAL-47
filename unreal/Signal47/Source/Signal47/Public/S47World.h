@@ -52,6 +52,8 @@ public:
 	/** The deps (main.ts); also wires the truck into the game: its keys in the cab, the yard's
 	 *  'truck' and the station's 's1truck', the walker's camera and the test flags. */
 	void Init(US47Main* InM);
+	/** Native garage corridor/floor/footprint check; does not move the player or owned vehicles. */
+	bool AuditEastWingDrive(TArray<FString>& Lines);
 	virtual void BeginDestroy() override;
 
 	FString Area = TEXT("saro");
