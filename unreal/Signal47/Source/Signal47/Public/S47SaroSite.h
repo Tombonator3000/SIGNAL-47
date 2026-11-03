@@ -21,8 +21,12 @@ public:
  static TSharedPtr<FS47SaroSite> Build(AS47Web* W);
  void Update();
  bool Audit(TArray<FString>& Lines) const;
+ // The native east wing (S47EastWing) owns the wing: its facade and glass stay hidden.
+ void ReplaceWing(){bWingReplaced=true;Update();}
+ bool WingReplaced() const { return bWingReplaced; }
 private:
  TWeakObjectPtr<AS47Web> Web;
+ bool bWingReplaced=false;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts,Forecourt;
  TArray<FTransform> ForecourtPoses;
  TWeakObjectPtr<UStaticMeshComponent> Stains;

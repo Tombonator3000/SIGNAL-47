@@ -96,6 +96,8 @@ public:
 	/** The floor a prop lays down there (its "floors": a building one walks into, its steps), NaN
 	 *  where it has none (AS47Walker::FloorAt asks first). Three's world terms. */
 	static double FloorAt(double X, double Z);
+	/** A native building's own floor or ramp (S47EastWing); bFirst takes precedence over existing floors. */
+	static void AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst);
 
 private:
 	struct FPlaced

@@ -201,6 +201,7 @@ public:
 
 	// ---------- nodes ----------
 	int32 Handle(const FString& Key) const; // "room.objs.mug" and the like, -1 when unknown
+	class FS47SaroSite* Site() const { return SaroSite.Get(); } // the native SARO site facade (S47EastWing replaces its wing)
 	int32 HandleMat(const FString& Key) const;
 	int32 HandleTex(const FString& Key) const;
 	void SetVisible(int32 Node, bool bOn);
