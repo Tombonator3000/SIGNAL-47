@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Adaptiv musikk og VHS-/signaluttrykk, 3. november
+
+Morbidiums lydklokke og overgangsprinsipper er tilpasset SIGNALs opptak: to faktiske musikkstrømmer overlapper, fare reagerer raskt, og seks sekunders hold samt åtte sekunders etterspill hindrer hakkete nedtrapping. Story og Freeform leser synlig nær fare; skjulte fiender eller fremtidige hendelser gir ikke musikkvarsel. Rolig utforskning og action har egne førstevalg. Mottakerkonsoll, decoder, radio, film og forfatterstyrt stillhet beholder lytteplass. Pause, antirepetisjon og gamle callbacks håndteres.
+
+Startmenyen har svak VHS-tekstur etter første tast/klikk og stopper den ved utgang/åpningskort. Uten lokal referansebank lages teksturen som originalt sus, brum og båndustabilitet; med bank kan `title_vhs` velges. Det prosedyriske arraysignalet får et svakt ustabilt basslag mellom de uendrede fire/sju-gruppene. Modem er fortsatt kun for PC/dataoverføring. [Bruk, kilder og lydprøver](../../unreal/Signal47/Tools/sound-workshop/README.md).
+
+Editorbygg og én målrettet offline lydgrafkjøring består: 60 kontroller, seks oppskrifter, 45 sekunders adaptiv musikk og to prosedyriske lydprøver. Ingen ny pakking eller installasjon. Dagens ferdige musikkspor bruker frie crossfades; støtte for kontrollert slag-/taktplanlegging er klar, mens harmoniske broer og separate instrumentlag krever egnet musikalsk innhold. Menneskelig lytting og godkjenning av klang/komfort gjenstår.
+
 ## Lydmotor med opptakslag, bygget 3. november
 
 Lydverkstedet mikser eksisterende opptak med nivå, hastighet, høypass/lavpass, utsnitt, løkker og mottaks-/aktivitetsstyrte kurver. Fire/sju-signaturen beholdes. Modemkilder avvises i radio- og VHS-oppskrifter. Seks lokale referanser og fire startoppskrifter er klargjort; motoren kan også bruke eksisterende dekodede spillopptak. [Bruk og grensesnitt](../../unreal/Signal47/Tools/sound-workshop/README.md).

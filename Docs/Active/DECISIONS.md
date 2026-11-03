@@ -4,6 +4,10 @@
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
+## Adaptiv musikk og tydelig lyddesign, 3. november 2026
+
+Tom ønsker VHS-lyd på startskjermen, mer urovekkende klang for skumle signaler og et iMUSE-lignende musikksystem som følger ro, uro og action. Morbidiums eksisterende musikkdirigent er gjenbruksgrunnlag for lydklokke og overgangsprinsipper, tilpasset Unreal og SIGNALs opptak. Viktige lytteøyeblikk og stillhet beholdes. Modem er fortsatt forbeholdt PC/dataoverføringer. Kontrollerte musikkfraser, tempo og separate instrumentlag må skilles fra frie overganger mellom dagens ferdige spor.
+
 ## Lydmotor og modem, 3. november 2026
 
 Tom bestiller en lydmotor som kombinerer eksisterende lydopptak i lag og bearbeider dem til nye lyder. Modemlyder er reservert for PC-overføringer og lignende datakommunikasjon. De brukes ikke som array-, radio- eller VHS-forstyrrelser. Arrayets etablerte fire/sju-mønster beholdes. Oppskrifter og motor kan være offentlige; lokale referanseopptak holdes utenfor Git og automatisk pakking. Se [lydverkstedet](../../unreal/Signal47/Tools/sound-workshop/README.md).

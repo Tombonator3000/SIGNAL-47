@@ -74,6 +74,20 @@ FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, cons
 	ThumpBus = C.CreateGain(); ThumpBus->Gain.SetValue(1);
 	ThumpBus->Connect(Shaper); Shaper->Connect(Comp);
 
+	// A quiet, unstable low body between the groups. Menace comes from beating
+	// and the gaps, while the countable 4/7 strikes keep their exact timing.
+	Undertow = C.CreateGain(); Undertow->Gain.SetValue(0); Undertow->Connect(Comp);
+	auto Low1 = C.CreateOscillator(); Low1->Frequency.SetValue(49);
+	auto Low2 = C.CreateOscillator(); Low2->Frequency.SetValue(51.7);
+	auto LowMix = C.CreateGain(); LowMix->Gain.SetValue(0.5);
+	Low1->Connect(LowMix); Low2->Connect(LowMix); LowMix->Connect(Undertow);
+	auto Unease = C.CreateOscillator(); Unease->Frequency.SetValue(0.17);
+	auto Drift = C.CreateGain(); Drift->Gain.SetValue(1.3);
+	Unease->Connect(Drift); Drift->Connect(Low2->Frequency);
+	Rates(Low1, Low1->Frequency, 49); Rates(Low2, Low2->Frequency, 51.7);
+	Rates(Unease, Unease->Frequency, 0.17); Rates(Drift, Drift->Gain, 1.3);
+	for (const auto& S : {Low1, Low2, Unease}) { S->Start(); Nodes.Add(S); }
+
 	for (const TSharedPtr<FS47ScheduledSourceNode>& S : TArray<TSharedPtr<FS47ScheduledSourceNode>>{ N, Trem, RingOsc, O1, O2, Pitch, Sweep, Sn, Cd }) { S->Start(); Nodes.Add(S); }
 }
 
@@ -105,6 +119,7 @@ void FS47SignalVoice::Frame(double InClarity, double InLevel, double T)
 	TremDepth->Gain.SetTargetAtTime(0.75 * Clarity, Now, 0.2);
 	// the whine grows with clarity and swells inside a pulse group
 	Whine->Gain.SetTargetAtTime(0.05 * FMath::Pow(Clarity, 1.6) * (P.bGroup ? 1 : 0.55), Now, 0.08);
+	Undertow->Gain.SetTargetAtTime(0.012 * FMath::Pow(Clarity, 1.8) * (P.bGroup ? 0.35 : 1), Now, 0.16);
 	if (P.bOn && !bLast && Clarity > 0.12) Thump(0.85 * Clarity * Clarity);
 	bLast = P.bOn;
 }
