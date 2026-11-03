@@ -1,0 +1,39 @@
+{
+	"status": "PASS",
+	"reason": "complete",
+	"phase": 35,
+	"checks": 100,
+	"tier": "High",
+	"maxHeads": 10,
+	"restores": 17,
+	"screenshots": [
+		"00-High-natural-standing-05.3s-8heads.png",
+		"01-High-aimed-fixture-hidden-09.3s-4heads-1hidden.png",
+		"02-High-natural-standing-10.4s-4heads.png",
+		"03-High-after-done.png"
+	],
+	"testOnlyFixtures": [
+		"pending save's pose edited to the open yard (9.3, -9) so the load itself starts outdoors",
+		"story held (what an open panel does) while the last steps through the door are taken with the Walker's own MoveBy collision path",
+		"natural view: standing eye height, view yaw turned towards azimuth 026 (as a mouse turn would), pitch 0; no look-up",
+		"aimed fixture: view yaw/pitch set straight at the star hole (026 / 32) for the occlusion image; not natural play",
+		"story held at passage 9.272 s (scheduled hidden moment 9.354 s) for the aimed occlusion image",
+		"World::Enter(road) without travel, standing still, to put the player in another area; then Enter(saro) and Place at the same spot",
+		"story clock set back to event + 7 s (inside the old clock window) after the done restore",
+		"load case 'v2 pending with a real saved exit': meteorPassage {\"p\":{\"v\":2,\"phase\":\"pending\",\"elapsed\":0,\"exitReady\":true}}",
+		"load case 'v1 done:true': meteorPassage {\"p\":{\"v\":1,\"done\":true}}",
+		"load case 'missing field after the signal, spent by its clock (event + 94.2 s)': meteorPassage <missing>",
+		"load case 'v1 done:false after the signal, spent by its clock': meteorPassage {\"p\":{\"v\":1,\"done\":false}}",
+		"missing field after the signal, inside the old 11.2 s window (case.clock = event + 8 s): saved case.clock set to 8069.00 (event + 8.00 s)",
+		"load case 'missing field after the signal, inside the old 11.2 s window (case.clock = event + 8 s)': meteorPassage <missing>",
+		"load case 'malformed JSON null': meteorPassage {\"p\":null}",
+		"load case 'malformed number': meteorPassage {\"p\":7}",
+		"load case 'malformed array': meteorPassage {\"p\":[1,\"x\"]}",
+		"load case 'v2 with a string elapsed (no coercion)': meteorPassage {\"p\":{\"v\":2,\"phase\":\"running\",\"elapsed\":\"5\",\"exitReady\":true}}",
+		"load case 'v2 with an unknown phase': meteorPassage {\"p\":{\"v\":2,\"phase\":\"flying\",\"elapsed\":1,\"exitReady\":false}}",
+		"load case 'future v3 object': meteorPassage {\"p\":{\"v\":3,\"phase\":\"running\",\"elapsed\":5,\"exitReady\":true,\"keep\":\"future data\"}}",
+		"load case 'real pre-signal save as written (v2 idle)': meteorPassage {\"p\":{\"v\":2,\"phase\":\"idle\",\"elapsed\":0,\"exitReady\":false}}",
+		"load case 'pre-signal save, missing field': meteorPassage <missing>",
+		"load case 'pre-signal save, v1 done:false': meteorPassage {\"p\":{\"v\":1,\"done\":false}}"
+	]
+}

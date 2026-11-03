@@ -1,4 +1,4 @@
-> **Status: Under arbeid** · Klassifisert 28.10.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../Active/STATUS.md).
+> **Status: Referanse** · Sist kontrollert 3.11.2026. Gjelder det dokumenterte omfanget; [gjeldende leveringsstatus](../../Active/STATUS.md).
 
 # Niagara: meteorregn ved det stjerneløse feltet
 
@@ -12,7 +12,7 @@ Bruk signal-/historiehendelsen som klargjøring og faktisk innvendig/utvendig ov
 
 Øk hullets vinkelutstrekning og behold retning 026/32 og koblingen til antennene. Tomrommet skal ha himmelens farge og samme maske for stjerner, meteorhode og hale. Unngå at skyer, eksponering eller glød gjør formen uleselig; ingen ny lysring trengs. Kontroller fra vanlig spillerposisjon ved utgang og ute, med nok omkringliggende stjerner og meteorer til at fraværet er tydelig. Høy og lav effektkvalitet må begge formidle hendelsen. Blikk/foto og nye beskrivende tekster skal samsvare med valgt størrelse; eldre observasjonsregistreringer bevares.
 
-Dagens kilde bekrefter at `PassageSchedule` bevisst holder meteorene utenfor hullet, og at `PassageStep` beregner avspillingen fra hendelsesklokka uten utgangsvakt. Materialet har allerede en maske som kan gjenbrukes. Den nye bestillingen føres i PLAY-31-23 og gjenåpnet FX-01 i [TODO](../../Active/TODO.md), og er ikke implementert i spillpakken. De eldre tallene, kontrollene og anbefalingene nedenfor dokumenterer tidligere arbeid; denne bestillingen går foran ved motstrid.
+Kildeundersøkelsen 31. oktober fant at den gamle planen holdt meteorene utenfor hullet og brukte hendelsesklokka uten utgangsvakt. Dette er erstattet i installert `765409cc` 3. november: større felt, utgangsstyrt 36 s passasje og High/Low-kontroll, se [levering og prøvegrenser](../../Evidence/UnrealDeliveries/METEOR_2026-11-03.md). De eldre tallene, kontrollene og anbefalingene nedenfor dokumenterer tidligere arbeid; denne bestillingen går foran ved motstrid.
 
 ## Tidligere regi ved stjernehullet, 28. oktober
 

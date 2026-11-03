@@ -1,0 +1,42 @@
+{
+  "source": "765409ccfc29068b4eb25539021fdbdf48bc1d16",
+  "before_source": "8e56365b",
+  "hole_comparison": {
+    "tier": "High",
+    "resolution": [
+      1600,
+      872
+    ],
+    "pose_three": [
+      -18,
+      1.62,
+      -15
+    ],
+    "azimuth": 26,
+    "elevation": 32,
+    "clock": "02:18",
+    "mode": "explicit standing camera fixture; no forced production camera"
+  },
+  "high_contract": "Editor -game, 1600x900",
+  "low_contract": "Packaged Development, 1600x872",
+  "passage_plan": {
+    "duration": 36,
+    "tail": 0.2,
+    "high": 148,
+    "low": 69,
+    "max_heads_high": 10,
+    "max_heads_low": 5,
+    "crossers_each_tier": 11
+  },
+  "f10_shower": {
+    "actual_peak_simultaneous_components": 5,
+    "measurement_seconds": 1.5,
+    "pixels_or_human_input_verified": false
+  },
+  "limits": [
+    "Walker TestMove/MoveBy and direct door UseId, not OS input",
+    "17 same-process Flow restores per tier; explicit saved JSON disk reads, not autosave-slot/Continue menu testing",
+    "Empty Seen/photo collections in the lifecycle fixture; old observation wording checked separately by StarHole selftest",
+    "No full-night or human comfort/performance acceptance"
+  ]
+}

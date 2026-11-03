@@ -4,11 +4,17 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Stjernehull og meteorpassasje installert 3. november
+
+Kilde `765409cc` er installert kl. 03:01 CET. Større tomrom og en tett 36-sekunders passasje starter ved faktisk SARO-utgang etter signalet. Meny, inne og andre områder holder tiden; lagring fortsetter uten replay. High/Low har opptil ti/fem samtidige meteorer, med baner bak felles maske. F10-regnet har egen pool.
+
+Bygg/pakke, 2141 selvtester, High/Low 100+100 kontroller med 17+17 Flow-returer, faktisk F10-komponentmåling og gjennomsette bilder består. Alle 126 personlige Saved-filer er uendret. [Bilder og prøvegrenser](../Evidence/UnrealDeliveries/METEOR_2026-11-03.md). Nattskiftet fortsetter med Ward og musikken etter dekoding.
+
 ## Himmellys og skjermvalg installert 3. november
 
 Kilde `8e56365b` er installert kl. 02:17 CET. UFO-lys trinn 2–5 er tydeligere, og F10-forhåndsvisning kan gjentas uten å endre naturlig progresjon eller observasjoner. Trinn 1 er uendret. Lagret Linux-vindusstørrelse bevares nå gjennom oppstartens native vinduskonfigurasjon.
 
-Bygg/pakke, 2130 selvtester, pakket preview-prøve, fire gjennomsette trinnbilder og 89/19 display-write/read-kontroller består. Faktisk vindu, FPS/VSync, Keep, ti sekunders rollback og ny prosess er kontrollert; alle 126 personlige Saved-filer er uendret. [Bilder og avgrensninger](../Evidence/UnrealDeliveries/SKY_DISPLAY_2026-11-03.md). Nattskiftet fortsetter med meteorpassasjen og Claude-teamet.
+Bygg/pakke, 2130 selvtester, pakket preview-prøve, fire gjennomsette trinnbilder og 89/19 display-write/read-kontroller består. Faktisk vindu, FPS/VSync, Keep, ti sekunders rollback og ny prosess er kontrollert; alle 126 personlige Saved-filer er uendret. [Bilder og avgrensninger](../Evidence/UnrealDeliveries/SKY_DISPLAY_2026-11-03.md).
 
 ## CRT-respons installert 3. november
 
@@ -34,7 +40,7 @@ Kilde `444012cb`, [PR355](https://github.com/Tombonator3000/SIGNAL-47/pull/355),
 
 Editorbygg, pakking, 2112 selvtester, 691 kabinimport- og 379 hjulimportkontroller består. Native før/etter og pakkede bil-/speilbilder er gjennomsett. Ufullstendig hjulsett beholdt komplett reservekarosseri; faktisk 8,554 m kjøring med automatisk testinput bekreftet komponenter og hjultransformasjoner. Vanlig tastaturmeny, lasting og gange er også prøvd, men Jeep ble ikke nådd uten fungerende mus. Vanlig Jeep-input og menneskelig kjørefølelse er fortsatt uverifisert. Alle 126 personlige Saved-filer er hashidentiske etter installasjonen. [Bilder, levering og prøvegrenser](../Evidence/UnrealDeliveries/JEEP_FINISH_2026-11-02.md).
 
-Nattskiftet fortsetter med COLLISION-01 og prioriterte TODO-punkter frem til 3. november kl. 08:00. Claude samordnes fra kl. 02:10 og får også TODO-/agentarbeid når kapasiteten tillater det. Ingen offentlig spillutgave er publisert.
+Nattskiftet fortsetter med prioriterte TODO-punkter frem til 3. november kl. 08:00. Claude samordnes fra kl. 02:10 og får også TODO-/agentarbeid når kapasiteten tillater det. Ingen offentlig spillutgave er publisert.
 
 ## UFO-bortføring og motorveijakt installert 2. november
 
