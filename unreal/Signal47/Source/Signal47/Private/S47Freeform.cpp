@@ -347,7 +347,7 @@ void FS47FreeformSession::StepWork(double Dt)
    }
    if(J->Elapsed>=SourceSeconds()&&!bCrossRunning)
    {
-    J->Stage=EJobStage::Chart;Changed(TEXT("Observation retained. Collect its original chart from the printer."));
+    J->Stage=EJobStage::Chart;Changed(TEXT("PRINTER: Collect the original observation chart; recording is complete."));
    }
   }
  }
@@ -368,7 +368,7 @@ void FS47FreeformSession::StepWork(double Dt)
      ActualAz/=FMath::Max(1,Count);ActualEl/=FMath::Max(1,Count);
      J->BeamAz.Add(ActualAz);J->BeamEl.Add(ActualEl);J->BeamAmplitude.Add(BeamLevel(ActualAz,TargetAz()+.5));
      if(J->BeamPoint<2){++J->BeamPoint;PointBeamControl();}
-     else {J->bBeamVerified=true;J->ControlAt=8;Changed(TEXT("Three real beam samples retained; the array has returned to centre. Compare their signal levels at OPS."));if(Director)Director->Use(TEXT("ff:control"));}
+     else {J->bBeamVerified=true;J->ControlAt=8;Changed(TEXT("OPS (corner PC): Compare the retained west, east and centre measurements. Automatic tracking is complete; the array is back at centre."));if(Director)Director->Use(TEXT("ff:control"));}
     }
    }
   }
@@ -378,9 +378,9 @@ void FS47FreeformSession::StepWork(double Dt)
    if(J->ControlAt>=8)
    {
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
-    if(J->bClockMeasured)Changed(TEXT("Both device counters read at the same internal-reference pulse. Compare original and control clock offsets at OPS."));
-    else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("Master acquisition register checked. Collect the separate duplicate at the printer, then compare its stamp with the retained original."));
-    else Changed(TEXT("Internal control complete. Review original and control at the signal processor."));
+    if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): Compare original and control clock offsets; both device counters have now read the same internal-reference pulse."));
+    else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("PRINTER: Collect the separate duplicate, then compare it with the retained original at OPS (corner PC). The register check is complete."));
+    else Changed(TEXT("REEL DECK (beside telephone): Review the original and control recordings; the internal control is complete."));
     if(Director)Director->Use(TEXT("ff:control"));
    }
   }
@@ -410,7 +410,7 @@ bool FS47FreeformSession::PointSelected()
  FJob* J=Job();if(!J||J->Stage>EJobStage::Pointed||!M||!M->Web||!HasPower())return false;
  J->Stage=EJobStage::Pointed;Settle=0;bCrossRunning=false;
  M->Story->Rx.Azimuth=TargetAz(); // The physical pointing command is the receiver bearing too.
- M->Web->PointDishes(TargetAz(),TargetEl(),9);CommandFeedback();Changed(TEXT("Tracking command sent. Actual encoder agreement is required before acquisition."));return true;
+ M->Web->PointDishes(TargetAz(),TargetEl(),9);CommandFeedback();Changed(TEXT("TRACKING (right-hand PC): Command sent. Wait for encoder agreement, then tune and start recording at RECEIVER (centre PC)."));return true;
 }
 bool FS47FreeformSession::ReceiverReady() const
 {
@@ -418,28 +418,28 @@ bool FS47FreeformSession::ReceiverReady() const
 }
 FString FS47FreeformSession::ReceiverNextAction() const
 {
- const FJob* J=CurrentJob();if(!J)return TEXT("Select an observation at the operations PC.");
+ const FJob* J=CurrentJob();if(!J)return TEXT("OPS (corner PC): Select an observation in DAILY WORK.");
  if(J->Stage==EJobStage::Chart||J->Stage==EJobStage::Packet||J->Stage==EJobStage::Filed)return JobNextAction(*J);
- if(!HasPower())return TEXT("Restore the SARO feeder or start the backup generator.");
+ if(!HasPower())return TEXT("SERVICE BAY: Restore the SARO feeder or start the fuelled backup generator.");
  if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  // A case test states its physical precondition before the player commits the array.
- if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Case=JobNextAction(*J);if(Case.StartsWith(TEXT("CASE TEST")))return Case;}
- if(J->Stage==EJobStage::New)return TEXT("Use the right-hand tracking PC to point the array at this source.");
+ if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
+ if(J->Stage==EJobStage::New)return TEXT("TRACKING (right-hand PC): Point the array at the selected source.");
  if(J->Stage==EJobStage::Integrating)
  {
-  if(!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J)))return TEXT("Recording paused. Restore the work card tuning; valid recorded seconds are retained.");
-  if(!PointReady()||Settle<1)return bCrossRunning?TEXT("Automatic reference scan: the array is moving between samples. Wait; recorded seconds are retained."):TEXT("Recording paused. Restore array pointing; valid recorded seconds are retained.");
+  if(!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J)))return TEXT("RECEIVER (centre PC): Restore the work card tuning to resume recording; valid seconds are retained.");
+  if(!PointReady()||Settle<1)return bCrossRunning?TEXT("TRACKING (right-hand PC): Automatic reference scan in progress. Wait for the samples; collect the original at the PRINTER when recording finishes."):TEXT("TRACKING (right-hand PC): Restore array pointing to resume recording; valid seconds are retained.");
  }
- if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("Recording %.0f%%. Keep the receiver tuned; the trace shows the live signal."),100*J->Elapsed/SourceSeconds());
+ if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording %.0f%%. Keep tuning valid; collect the original at the PRINTER when complete."),100*J->Elapsed/SourceSeconds());
  if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
- if(!PointReady())return TEXT("Wait for the dishes to reach the commanded direction. Inspect isolated elements on the left status PC if movement stops.");
- if(Settle<1)return TEXT("The array is on source. Wait one second for it to settle.");
+ if(!PointReady())return TEXT("TRACKING (right-hand PC): Wait for the commanded direction. If movement stops, inspect isolated elements at ARRAY STATUS (left-hand PC).");
+ if(Settle<1)return TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then tune the work card.");
  const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
- if(R.Pass(P))return TEXT("READY. Press START RECORDING to record this source.");
- if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
- if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
- if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
- return TEXT("Fine-tune the receiver until the received carrier reaches 100%.");
+ if(R.Pass(P))return TEXT("RECEIVER (centre PC): Press START RECORDING to record this source.");
+ if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("RECEIVER (centre PC): Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
+ if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
+ if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("RECEIVER (centre PC): Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
+ return TEXT("RECEIVER (centre PC): Fine-tune until the received carrier reaches 100%.");
 }
 bool FS47FreeformSession::StartAcquisition()
 {
@@ -464,7 +464,7 @@ bool FS47FreeformSession::StartAcquisition()
  double ActualAz=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))ActualAz+=M->Web->DishAz(I);
  ActualAz/=FMath::Max(1,Available);J->ReceivedLevel=BeamLevel(ActualAz,TargetAz()+(J->Phenomenon==TEXT("wrong_source")?.5:0));
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
- Changed(TEXT("Acquisition started. Recording pauses if tuning, pointing or power is lost."));return true;
+ Changed(TEXT("RECEIVER (centre PC): Recording started. Keep tuning, pointing and power valid; collect the original at the PRINTER when complete."));return true;
 }
 void FS47FreeformSession::PrintJob(bool bPacket)
 {
@@ -553,14 +553,14 @@ bool FS47FreeformSession::CompareInstrument()
   Verified=Original&&Copy&&Original->Page==J->OriginalPage&&Original->Stamp==J->OriginalStamp&&Copy->Page==J->DuplicatePage&&Copy->Stamp==J->DuplicateStamp&&J->DuplicatePage!=J->OriginalPage&&FMath::IsNearlyEqual(J->DuplicateClock-J->ReferenceClock,2.4,.001)&&FMath::IsNearlyEqual(J->Elapsed-J->DuplicateInterval,1.,.001);
  }
  if(!Verified){Feedback=TEXT("The required independent measurements or retained originals are incomplete. Do the physical control before comparing.");return false;}
- J->bAudioReviewed=true;RecordEvidence(J->Phenomenon,ControlSummary(*J));if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("Measured comparison retained. Register the supported instrumental conclusion at OPS."));return true;
+ J->bAudioReviewed=true;RecordEvidence(J->Phenomenon,ControlSummary(*J));if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("OPS (corner PC): Register the supported instrumental conclusion; the measured comparison is retained."));return true;
 }
 bool FS47FreeformSession::StartControl()
 {
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bAnomaly||J->bControl||!HasPower())return false;
  J->bControl=true;J->ControlAt=0;
- if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("Adjacent-beam control commanded: west, east, then centre. Each sample waits for real encoder settling."));}
- else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("Checking the independent master acquisition register; original paper retained."):TEXT("External input terminated. Eight-second internal reference running; original retained."));return true;
+ if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then compare the retained measurements at OPS (corner PC)."));}
+ else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. Follow the completion hint for comparison."));return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::AudioAction(const FString& Action)
@@ -584,7 +584,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
   if(J->MarkStart<0||J->MarkStart>9.30||J->MarkEnd<12.60||J->MarkEnd-J->MarkStart>6){Feedback=TEXT("Mark both short groups of extra ticks, between about 9 and 13 seconds.");return false;}
   J->bAudioReviewed=true;RecordEvidence(TEXT("pulse-review"),TEXT("Original and internal reference reviewed. Extra ticks are absent from the short control; source remains unresolved."));
-  if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("Marked comparison retained. Register a supported conclusion at OPS."));
+  if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("OPS (corner PC): Register a supported conclusion; the marked comparison is retained."));
  }
  else return false;
  Changed();return true;
@@ -644,7 +644,7 @@ bool FS47FreeformSession::FilePacket()
  if(!NearBinder()){Feedback=TEXT("Take the registered paper packet to the actual records-room binder. The remote archive is read-only.");Changed(Feedback);return false;}
  J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;Earn(20);}
  RecordEvidence(TEXT("pulse-archive"),TEXT("Original, internal control and registered conclusion physically filed under one reference."));
- if(Director)Director->Use(TEXT("ff:archive"));Changed(TEXT("Originals filed. Work credited; follow-up remains in the case archive."));return true;
+ if(Director)Director->Use(TEXT("ff:archive"));Changed(TEXT("OPS (corner PC): Select DAILY WORK or CASE ARCHIVE for follow-up. Originals filed; work credited."));return true;
 }
 
 bool FS47FreeformSession::Spend(int32 Amount,bool bEmergency)
@@ -1110,10 +1110,10 @@ FString FS47FreeformSession::CasePrecondition(const FJob& J)const
  if(J.CaseTest<0)return FString();const auto* C=Cases.Get(J.CaseLine);if(!C)return FString();
  switch(CaseCondition(J.CaseLine,J.CaseTest))
  {
-  case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("CASE TEST // START THE FUELLED BACKUP GENERATOR AT THE SERVICE BAY; THE WHOLE RECORDING MUST RUN OFF THE MAINS"));
-  case ECaseCondition::Repeat:return Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.))?FString():FString::Printf(TEXT("CASE TEST // WAIT FOR THE REPEAT WINDOW %s TO %s AFTER DAY %d"),*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow),C->OpenDay);
-  case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("CASE TEST // CLOSE BOTH SARO DOORS AND STAY IN THE CONTROL ROOM FOR THE WHOLE RECORDING"));
-  case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CASE TEST // NO SPARE RELAY IN THE DEPOT; BUY ONE AT CALICHE FOR THE TIMING SWAP"));
+  case ECaseCondition::Generator:return Field&&Field->GeneratorRunning()?FString():FString(TEXT("SERVICE BAY: START THE FUELLED BACKUP GENERATOR; KEEP THE WHOLE CASE TEST RECORDING ON GENERATOR POWER, OFF THE MAINS"));
+  case ECaseCondition::Repeat:return Cases.InRepeatWindow(J.CaseLine,DayNumber,FMath::Fmod(WorldClock,86400.))?FString():FString::Printf(TEXT("OPS (corner PC): CHECK THE CASE BOARD; WAIT FOR THE REPEAT WINDOW %s TO %s AFTER DAY %d"),*FS47FreeformCases::Clock(C->OpenClock-FS47FreeformCases::RepeatWindow),*FS47FreeformCases::Clock(C->OpenClock+FS47FreeformCases::RepeatWindow),C->OpenDay);
+  case ECaseCondition::DoorsSealed:return StationSealed()?FString():FString(TEXT("SARO CONTROL ROOM: CLOSE BOTH OUTSIDE DOORS AND STAY INSIDE THROUGH THE WHOLE CASE TEST RECORDING"));
+  case ECaseCondition::RelaySwap:return InventoryCount(TEXT("relay"))>0||J.Stage>EJobStage::Pointed?FString():FString(TEXT("CALICHE GAS STATION: BUY A RELAY FOR THE TIMING SWAP; THE SARO DEPOT HAS NONE"));
   default:return FString();
  }
 }
@@ -1344,10 +1344,10 @@ FString FS47FreeformSession::Label(const FString& Id)const
 }
 FString FS47FreeformSession::Objective()const
 {
- if(bDead)return TEXT("CONTACT // LOAD A SAVED CASE TO CONTINUE");
- if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))return TEXT("POWER // MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
+ if(bDead)return TEXT("PAUSE MENU: LOAD A SAVED CASE TO CONTINUE AFTER CONTACT");
+ if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
- const FJob* J=CurrentJob();if(!J)return TEXT("OPERATIONS // SELECT DAILY OBSERVING WORK");
+ const FJob* J=CurrentJob();if(!J)return TEXT("OPS (corner PC): SELECT DAILY WORK");
  return NextAction();
 }
 FString FS47FreeformSession::NextAction()const {return ReceiverNextAction();}
@@ -1357,20 +1357,20 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
  switch(J->Stage)
  {
-  case EJobStage::New:return TEXT("TRACKING // POINT THE ARRAY TO THE SELECTED SOURCE");
-  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING // FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER // TUNE THE CARD AND START ACQUISITION"):TEXT("ARRAY MOVING // WAIT FOR ACTUAL ENCODER AGREEMENT");
-  case EJobStage::Integrating:return TEXT("OBSERVATION RUNNING // KEEP TUNING AND POINTING VALID");
-  case EJobStage::Chart:return TEXT("PRINTER // RETAIN THE ORIGINAL OBSERVATION CHART");
+  case EJobStage::New:return TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE");
+  case EJobStage::Pointed:if(&JobValue!=CurrentJob())return TEXT("TRACKING (right-hand PC): FOLLOW THIS JOB AND VERIFY ITS ACTUAL POINTING BEFORE RECORDING");return PointReady()&&Settle>=1?TEXT("RECEIVER (centre PC): TUNE THE CARD AND PRESS START RECORDING"):TEXT("TRACKING (right-hand PC): WAIT FOR ENCODER AGREEMENT, THEN USE RECEIVER (centre PC)");
+  case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP TUNING VALID; COLLECT THE ORIGINAL AT THE PRINTER WHEN RECORDING FINISHES");
+  case EJobStage::Chart:return TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART");
   case EJobStage::Recorded:
-   if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPERATIONS // REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPERATIONS // REGISTER THE ROUTINE RESULT");
-   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING // MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER RACK // RECORD AN INDEPENDENT INTERNAL CONTROL");
-   if(J->ControlAt<8)return J->Phenomenon==TEXT("wrong_source")?TEXT("ADJACENT-BEAM CONTROL // REAL ENCODERS SETTLE BEFORE EACH SAMPLE"):TEXT("INTERNAL CONTROL RUNNING // ORIGINAL RETAINED");
-   if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return TEXT("PRINTER // COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL");
-   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPERATIONS // REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPERATIONS // COMPARE THE RETAINED INSTRUMENT MEASUREMENTS");
-   return J->bAudioReviewed?TEXT("OPERATIONS // REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK BY TELEPHONE // REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
-  case EJobStage::Registered:return TEXT("PRINTER // COLLECT THE LABELLED REGISTERED PACKET");
-  case EJobStage::Packet:return TEXT("RECORDS // PLACE THE ORIGINAL PACKET IN THE BINDER");
-  default:return TEXT("OPERATIONS // SELECT MORE WORK OR FOLLOW UP THE CASE ARCHIVE");
+   if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
+   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER RACK: RECORD AN INDEPENDENT INTERNAL CONTROL");
+   if(J->ControlAt<8)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE SAMPLES; THEN COMPARE AT OPS (corner PC)"):TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; FOLLOW ITS COMPLETION HINT");
+   if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL");
+   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): COMPARE THE RETAINED INSTRUMENT MEASUREMENTS");
+   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (beside telephone): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
+  case EJobStage::Registered:return TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET");
+  case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
+  default:return TEXT("OPS (corner PC): SELECT DAILY WORK OR CASE ARCHIVE");
  }
 }
 FString FS47FreeformSession::JobLocation(const FJob& J)const
@@ -1471,6 +1471,19 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  auto BadDays=S47J::Obj(Corrupt,TEXT("findingDays"));S47J::Set(BadDays,TEXT("extra_pulse"),1e100);FS47FreeformSession Guarded(nullptr);Guarded.Begin(Corrupt);
  Check(!Guarded.bRestoreAngles&&Guarded.SavedAngles.IsEmpty()&&!Guarded.FindingDays.Contains(TEXT("extra_pulse")),TEXT("out-of-range saved encoders and overflowing finding days are discarded before native transforms or integer casts"));
  Unpowered.Stop();Guarded.Stop();
+ // Guidance follows the retained workflow state, including a resumed automatic control.
+ FS47FreeformSession Guidance(nullptr);Guidance.Begin(nullptr);auto* GJ=Guidance.Job();
+ Check(Guidance.NextAction().StartsWith(TEXT("TRACKING (right-hand PC):")),TEXT("New observing job names the actual tracking workstation"));
+ GJ->Stage=EJobStage::Recorded;GJ->bAnomaly=true;GJ->Phenomenon=TEXT("wrong_source");
+ Check(Guidance.NextAction().StartsWith(TEXT("TRACKING (right-hand PC):"))&&Guidance.NextAction().Contains(TEXT("WEST, EAST AND CENTRE")),TEXT("Off-source discrepancy directs the player to physical tracking controls"));
+ GJ->bControl=true;GJ->ControlAt=3;
+ FS47FreeformSession GuidanceRestored(nullptr);GuidanceRestored.Begin(Guidance.Save());
+ Check(GuidanceRestored.NextAction().Contains(TEXT("WAIT FOR AUTOMATIC"))&&GuidanceRestored.NextAction().Contains(TEXT("THEN COMPARE AT OPS")),TEXT("Continue during beam control preserves the automatic-wait and next-workstation instruction"));
+ GJ=GuidanceRestored.Job();GJ->ControlAt=8;
+ Check(GuidanceRestored.NextAction().StartsWith(TEXT("OPS (corner PC):"))&&GuidanceRestored.NextAction().Contains(TEXT("COMPARE")),TEXT("Completed beam control directs comparison to OPS without repeating the measurement"));
+ GJ->bAudioReviewed=true;
+ Check(GuidanceRestored.NextAction().StartsWith(TEXT("OPS (corner PC):"))&&GuidanceRestored.NextAction().Contains(TEXT("REGISTER")),TEXT("Reviewed beam measurements direct registration to the same OPS workstation"));
+ Guidance.Stop();GuidanceRestored.Stop();
  FS47FreeformSession Workflow(nullptr);Workflow.Begin(nullptr);auto* WJ=Workflow.Job();
  WJ->Stage=EJobStage::Recorded;WJ->bPrinted=true;
  Check(Workflow.NextAction().Contains(TEXT("REGISTER THE ROUTINE"))&&!Workflow.NextAction().Contains(TEXT("PRINTER")),TEXT("Collected routine original directs to OPS, never back to printer"));

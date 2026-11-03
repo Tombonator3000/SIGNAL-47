@@ -34,3 +34,16 @@ python3 unreal/ArtSource/EastWing/Props/run_guarded.py unreal/ArtSource/EastWing
 `fbx-validation.json` dokumenterer fersk gjenimport av alle leverte FBX/LOD-er, dimensjoner, UV, endelige koordinater og materialslotter. `Textures/validation.json` dokumenterer 2K-kanaler og normalvektorer. Previewbildene er Blender-studiobilder, ikke Unreal-resultater. Native materialer, plassering, lys, gameplay og ytelse kontrolleres i Claudes integrasjon.
 
 Prosjektbibliotekets AnyScene-profil er lest som metodegrunnlag for assetmanifest og PBR-kontroll, men er UNVERIFIED for Unreal. Ingen AnyScene-kode eller tredjeparts eksempelassets er brukt. Prosjektets egne PhotoLab-overflatefelt og eksportkonvensjon er konkret gjenbruksgrunnlag.
+
+
+## Native import til Unreal
+
+`python3 unreal/ArtSource/EastWing/Props/import_unreal.py` kontrollerer kildefilene uten å starte motoren. Importøren gjenbruker prosjektets målte FBX-/PBR-oppskrift i `Signal47/Tools/fieldintegration/import_recipe.py`. Native kjøring tas i samordnet motorvindu:
+
+```sh
+python3 unreal/ArtSource/EastWing/Props/run_unreal_import.py --apply --output /absolutt/privat/importmappe
+```
+
+Wrapperen tar `production_lease`, krever ledig motor og beholder minst100GB diskreserve med10GB importmargin. Bruk en ny resultatmappe per forsøk. Kjøringen lager bare native assets i `/Game/EastWing/Props` og privat RM565 i `/Game/Licensed/EastWing/Props`. Eksisterende assets uten importørens eierskapsmerke overskrives ikke. `S47_EASTWING_PRIVATE_ROOT` kan flytte den private kildeplasseringen. Importerte RM565-filer skal fortsatt holdes utenfor offentlig Git.
+
+Tre authored LOD-er, materialslotter, målte akser/bounds, native glass, gulstripe-opasitet og RM565s pakkede metall/roughness-kanaler inngår. Høydekartene beholdes som kilder; automatisk displacement aktiveres ikke. Rapportstatus `PASS_NATIVE_IMPORT` gjelder faktisk importkontroll, ikke plassering, lys, gameplay eller visuell aksept i bygget. Importøren plasserer ingen aktører. Kildeplan og syntaks er kontrollert; native resultat føres etter fullført kjøring.

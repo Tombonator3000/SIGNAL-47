@@ -10,6 +10,9 @@
 #include "S47Spine.h"
 #include "S47Story.h"
 #include "S47UI.h"
+#include "S47HUD.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Walker.h"
@@ -31,6 +34,25 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "UnrealClient.h"
+
+namespace
+{
+ bool PhotoButtonText(const TSharedRef<SWidget>& W, const FString& Label)
+ {
+  if (!W->GetVisibility().IsVisible()) return false;
+  if (W->GetTypeAsString() == TEXT("STextBlock") && StaticCastSharedRef<STextBlock>(W)->GetText().ToString() == Label) return true;
+  auto* Children = W->GetChildren();
+  for (int32 I = 0; Children && I < Children->Num(); ++I) if (PhotoButtonText(Children->GetChildAt(I), Label)) return true;
+  return false;
+ }
+ void PhotoButtons(const TSharedRef<SWidget>& W, const FString& Label, TArray<TSharedRef<SButton>>& Out)
+ {
+  if (!W->GetVisibility().IsVisible()) return;
+  if (W->GetTypeAsString() == TEXT("SButton") && PhotoButtonText(W, Label)) Out.AddUnique(StaticCastSharedRef<SButton>(W));
+  auto* Children = W->GetChildren();
+  for (int32 I = 0; Children && I < Children->Num(); ++I) PhotoButtons(Children->GetChildAt(I), Label, Out);
+ }
+}
 
 bool FS47FreeformTest::Check(bool Good,const FString& Text)
 {
@@ -318,7 +340,60 @@ void FS47FreeformTest::Step(double Dt)
    auto& AlbumShots=M->Night->Album->Data.Shots;const auto Retained=AlbumShots;
    AlbumShots.Reset();const bool MissingRefused=!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget;AlbumShots=Retained;
    if(!Check(MissingRefused,TEXT("OPS refuses a claim whose retained original is missing without consuming its payment")))return;
-   if(!Check(F.CanRegisterPhotoEvidence()&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("physical powered OPS registers retained photograph and credits exactly $20")))return;
+   if(!Check(F.CanRegisterPhotoEvidence()&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("physical powered OPS refuses the undeveloped original without consuming payment")))return;
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->LabStage==0,TEXT("exposed photograph remains undeveloped through full disk Continue")))return;
+   Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("photoClock"),Original->Clock);S47J::Set(Snapshot,TEXT("photoTargets"),Original->Targets.Num());
+   M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);
+   const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("photo lab uses the existing physical wet-bench object")))return;
+   const FVector BenchAt=Bench->Object.WorldPosition();M->Player->Place(BenchAt.X,BenchAt.Z+1,0);Go(80040,.4);return;
+  }
+  if(Stage==80040)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->Url==RetainedPhotoUrl&&Original->Clock==S47J::Num(Snapshot,TEXT("photoClock"))&&Original->Targets.Num()==S47J::Int(Snapshot,TEXT("photoTargets")),TEXT("physical processing retains original identity, image, timestamp and incident targets")))return;
+   if(Original->IsDeveloped())
+   {
+    if(!Restore(TEXT("photo-developed")))return;Go(80044,.5);return;
+   }
+   if(!Check(!M->Inter->LabelOf(TEXT("wetBench")).IsEmpty(),TEXT("physical Freeform wet bench exposes an actionable label")))return;
+   M->Inter->UseId(TEXT("wetBench"));Go(80041,.2);return;
+  }
+  if(Stage==80041)
+  {
+   const auto* Pending=M->Night->Album->PendingLabPhoto();if(!Check(Pending!=nullptr,TEXT("wet bench retains a pending exposed original")))return;
+   const FString PendingId=Pending->Id;const int32 Before=Pending->LabStage;
+   const FString Label=Before==0?TEXT("LOAD SEALED FILM INTO TANK"):Before==1?TEXT("TRANSFER CONTACT PRINT TO FIXER"):TEXT("COLLECT AND EXAMINE PRINT");
+   TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;if(Modal)PhotoButtons(Modal.ToSharedRef(),Label,Buttons);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("unique enabled native wet-bench action: ")+Label))return;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();
+#else
+   Finish(false,TEXT("physical photo test requires development build"));return;
+#endif
+   const auto* Processed=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==PendingId;});
+   if(!Check(Processed&&Processed->LabStage==Before+1&&F.Budget()==PhotoBudget,TEXT("native wet-bench action advances one stage without crediting OPS payment")))return;
+   if(PendingId==RetainedPhotoId&&Before==0)
+   {
+    if(!Restore(TEXT("photo-in-tank")))return;Go(80042,.5);return;
+   }
+   Go(80040,.2);return;
+  }
+  if(Stage==80042)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->LabStage==1&&!Original->IsDeveloped(),TEXT("tank-processing state survives full disk Continue without becoming a finished print")))return;
+   Go(80040,.2);return;
+  }
+  if(Stage==80044)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->LabStage==3&&Original->Url==RetainedPhotoUrl,TEXT("collected original remains developed after full disk Continue")))return;
+   const FVector OpsAt=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(OpsAt.X,OpsAt.Z+1,0);Go(80045,.4);return;
+  }
+  if(Stage==80045)
+  {
+   if(!Check(F.CanRegisterPhotoEvidence()&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("physical powered OPS registers developed original and credits exactly $20")))return;
    if(!Check(!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("repeat registration cannot pay the same incident twice")))return;
    if(!Restore(TEXT("photo-paid")))return;Go(8005,1);return;
   }
@@ -326,7 +401,7 @@ void FS47FreeformTest::Step(double Dt)
   {
    const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
    if(!Check(F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].bPaid&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20&&Original&&Original->Url==RetainedPhotoUrl,TEXT("paid claim, original image and exactly-once balance survive Continue")))return;
-   Finish(true,TEXT("photographic economy fixture: actual rendered native subject, duplicate guard, physical OPS and paid/unpaid disk Continue"));return;
+   Finish(true,TEXT("photographic economy fixture: actual rendered native subject, duplicate guard, physical wet-bench tank/fixer/collection, OPS and exposed/processing/developed/paid disk Continue"));return;
   }
   return;
  }

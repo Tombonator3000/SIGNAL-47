@@ -23,52 +23,52 @@ bool FS47FreeformSession::StartServiceGuide(bool bSupplyTrip)
  if(!Field->HasArrayFault()&&!Field->TriggerServiceFault())return false;
  GuideServiceBaseline=Field->ServiceCompletions();GuideSupplyBaseline=Field->ServiceSupplyDeliveries();
  ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;
- Changed(TEXT("Planned S-03 service accepted. Remote operation is suspended until relay replacement and the actual movement test. Read the left status PC first."));
+ Changed(TEXT("ARRAY STATUS (left-hand PC): Select S-03 to start the accepted service order. Remote operation stays suspended until relay replacement and the movement test."));
  return true;
 }
 FString FS47FreeformSession::ServiceObjective()const
 {
  if(ServiceGuide!=1||!Field)return FString();
  const int32 S=Field->ServiceStage();
- if(S==1)return TEXT("SERVICE ORDER // SELECT S-03 ON THE LEFT STATUS PC");
+ if(S==1)return TEXT("ARRAY STATUS (left-hand PC): SELECT S-03");
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
  {
   switch(Field->ParcelStage())
   {
-   case 1:return TEXT("SUPPLIES // COLLECT THE PAID PARCEL AT CALICHE'S GAS STATION");
-   case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("SERVICE BAY // DELIVER THE PARCEL TO THE BENCH BY THE SARO SIGN"):TEXT("SUPPLIES // HOLD THE PARCEL AND USE THE PARKED JEEP TO LOAD IT");
-   case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("SERVICE BAY // UNLOAD THE JEEP, THEN CARRY THE PARCEL TO THE BENCH"):TEXT("RETURN TO SARO // DRIVE NORTH AND UNLOAD AT THE SERVICE BAY");
-   case 4:return TEXT("SUPPLIES // RETRIEVE THE PARCEL WHERE YOU SET IT DOWN");
-   default:return TEXT("CALICHE GAS STATION // DRIVE SOUTH; BUY A RELAY OR DONOR AT THE SUPPLY HATCH");
+   case 1:return TEXT("CALICHE GAS STATION: COLLECT THE PAID PARCEL");
+   case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("SERVICE BAY: DELIVER THE PARCEL TO THE BENCH BY THE SARO SIGN"):TEXT("JEEP CARGO: HOLD THE PARCEL AND USE THE PARKED JEEP TO LOAD IT");
+   case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("SERVICE BAY: UNLOAD THE JEEP, THEN CARRY THE PARCEL TO THE BENCH"):TEXT("JEEP: DRIVE NORTH TO SARO AND UNLOAD AT THE SERVICE BAY");
+   case 4:return TEXT("PARCEL DROP SITE: RETRIEVE THE PARCEL WHERE YOU SET IT DOWN");
+   default:return TEXT("CALICHE GAS STATION: DRIVE SOUTH; BUY A RELAY OR DONOR AT THE SUPPLY HATCH");
   }
  }
- if(Field->BenchBusy())return TEXT("SERVICE BENCH // WAIT FOR THE PHYSICAL CONTROLLER TEST");
+ if(Field->BenchBusy())return TEXT("SERVICE BENCH: WAIT FOR THE AUTOMATIC CONTROLLER TEST; THE RESULT AND HARVESTED RELAY ARE RETAINED");
  if(S>=2&&S<=4&&Field->InventoryCount(TEXT("relay"))<=0)
-  return Field->InventoryCount(TEXT("donor"))>0?TEXT("SERVICE BENCH // TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("REPLACEMENT RELAY // CHECK SARO STOCK OR CALICHE'S SUPPLY HATCH");
+  return Field->InventoryCount(TEXT("donor"))>0?TEXT("SERVICE BENCH: TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("SARO DEPOT: CHECK RELAY STOCK; BUY A REPLACEMENT AT CALICHE'S SUPPLY HATCH IF EMPTY");
  switch(S)
  {
-  case 2:return TEXT("S-03 WEST FOOT / LOCAL BOX // SELECT LOCAL TO ISOLATE REMOTE MOVEMENT");
-  case 3:return TEXT("S-03 WEST FOOT / LOCAL BOX // OPEN THE RELAY COVER");
-  case 4:return TEXT("S-03 WEST FOOT / LOCAL BOX // SEAT THE COMPATIBLE REPLACEMENT RELAY");
-  case 5:return TEXT("S-03 WEST FOOT / LOCAL BOX // SECURE THE RELAY COVER");
-  case 6:return TEXT("S-03 WEST FOOT / LOCAL BOX // START THE FIVE-DEGREE OUT-AND-BACK TEST");
-  case 7:case 8:return TEXT("S-03 LOCAL TEST // WATCH THE DISH MOVE AND RETURN TO ITS STARTING ANGLE");
-  case 9:return TEXT("OPS SERVICE ORDER // VERIFY REMOTE RESTORATION AND ARCHIVE THE TEST");
-  default:return TEXT("OPS SERVICE ORDER // INSPECT THE OPEN WORK ORDER");
+  case 2:return TEXT("S-03 WEST FOOT / LOCAL BOX: SELECT LOCAL TO ISOLATE REMOTE MOVEMENT");
+  case 3:return TEXT("S-03 WEST FOOT / LOCAL BOX: OPEN THE RELAY COVER");
+  case 4:return TEXT("S-03 WEST FOOT / LOCAL BOX: SEAT THE COMPATIBLE REPLACEMENT RELAY");
+  case 5:return TEXT("S-03 WEST FOOT / LOCAL BOX: SECURE THE RELAY COVER");
+  case 6:return TEXT("S-03 WEST FOOT / LOCAL BOX: START THE FIVE-DEGREE OUT-AND-BACK TEST");
+  case 7:case 8:return TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN THE SERVICE ORDER AT OPS");
+  case 9:return TEXT("OPS (corner PC), SERVICE ORDER: VERIFY REMOTE RESTORATION AND ARCHIVE THE TEST");
+  default:return TEXT("OPS (corner PC), SERVICE ORDER: INSPECT THE OPEN WORK ORDER");
  }
 }
 bool FS47FreeformSession::CompleteServiceGuide()
 {
  if(ServiceGuide!=1||!Field||!AtOperations(M)||!RequirePower())return false;
  if(Field->ServiceStage()!=9||Field->ServiceCompletions()<=GuideServiceBaseline)
- {Changed(TEXT("Complete the actual local movement test before signing this work order."));return false;}
+ {Changed(TEXT("S-03 LOCAL BOX: Complete the out-and-back movement test, then return to OPS to sign this work order."));return false;}
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
  {Changed(TEXT("This route includes a new relay or donor transported in the jeep and delivered at SARO. Existing stock alone does not complete that optional route."));return false;}
  int32 Dish=INDEX_NONE;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03")){Dish=I;break;}
  if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish))return false;
  const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the service vehicle and delivered to the SARO bench during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
  RecordEvidence(TEXT("service-work-order"),FString::Printf(TEXT("S-03 planned relay service / signed at OPS.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
- ServiceGuide=2;bGuideFocus=false;Changed(TEXT("Service work order verified and archived. S-03 is back in REMOTE. Continue daily observing or inspect the case archive."));return true;
+ ServiceGuide=2;bGuideFocus=false;Changed(TEXT("OPS (corner PC): Select DAILY WORK or CASE ARCHIVE. The service order is verified and archived; S-03 is back in REMOTE."));return true;
 }
 void FS47FreeformSession::OpenServiceGuide()
 {

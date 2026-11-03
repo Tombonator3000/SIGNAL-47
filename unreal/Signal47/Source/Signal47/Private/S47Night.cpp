@@ -182,6 +182,7 @@ void US47Night::Init(US47Main* InM)
 	};
 	A.Place = [Self] { return Self.IsValid() ? (Self->M->IsFreeform() && Self->M->Freeform ? FString::Printf(TEXT("DAY %d / %s"),Self->M->Freeform->Day(),*Self->PlaceName()) : Self->PlaceName()) : FString(); };
 	A.Clock = [Self] { return Self.IsValid() ? Self->Clock() : 0.0; };
+	A.RequiresLab = [Self] { return Self.IsValid() && Self->M->IsFreeform(); };
 	A.Extra = [Self] { return Self.IsValid() && !Self->M->IsFreeform() && Self->Hooks.AbductionExtra ? Self->Hooks.AbductionExtra() : 0; };
 	// (ext.dishArray.cull(photoCam): Unreal culls the instances per view by itself)
 	A.Before = [Self] { if (Self.IsValid() && !Self->M->IsFreeform() && Self->M->AnomalyWorld) Self->M->AnomalyWorld->BeforePhoto(); };
@@ -218,7 +219,8 @@ void US47Night::Init(US47Main* InM)
 			Self->Saw(TEXT("face"), TEXT("on film"), O);
 		}
 		else if (L && L->bGhost && L->Odd.Num()) { FS47SawOpts O; O.bLookingSet = true; Self->Saw(TEXT("glimpse"), TEXT("on film"), O); }
-		if (bFirst) Mn->UI->Toast(FString::Printf(TEXT("A free frame, out of the instant back. The print goes in the album in the notebook. %d left."), Left), 4.4f);
+		if (Mn->IsFreeform()) Mn->UI->Toast(FString::Printf(TEXT("PHOTO LAB: Develop this exposure at the wet bench before submitting it at OPS. %d frames left."), Left), 4.4f);
+		else if (bFirst) Mn->UI->Toast(FString::Printf(TEXT("A free frame, out of the instant back. The print goes in the album in the notebook. %d left."), Left), 4.4f);
 		else if (Left == 5 || Left == 0) Mn->UI->Toast(Left ? TEXT("5 free frames left on the roll.") : TEXT("That was the last free frame on the roll."), 3.f);
 		UE_LOG(LogS47Night, Display, TEXT("S47: free frame %s: %s (%d left)"), *Shot.Id, *Shot.Text, Left);
 		Self->RequestAutosave();

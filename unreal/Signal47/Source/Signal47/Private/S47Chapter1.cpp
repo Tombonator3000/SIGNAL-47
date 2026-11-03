@@ -1,6 +1,9 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
 #include "S47T02Photo.h"
+#include "S47Album.h"
+#include "S47Night.h"
+#include "S47Freeform.h"
 #include "S47Keys.h"
 #include "S47Anomaly.h"
 #include "S47Evening.h"
@@ -701,6 +704,28 @@ TOptional<US47Chapter1::FDevFrame> US47Chapter1::DevFrame() const
 
 void US47Chapter1::UseWetBench()
 {
+	if (M && M->IsFreeform())
+	{
+		if (!M->Night || !M->Night->Album || !M->Freeform || !Yard || !M->Player) return;
+		if (!M->Freeform->HasPowerForReactiveLight()) { Toast(TEXT("PHOTO LAB: Restore power before processing the photograph.")); return; }
+		const FS47AlbumShot* Shot = M->Night->Album->PendingLabPhoto();
+		if (!Shot) { S47Panels::WetBench(Ui(), FString(), 0, TEXT("No exposed photographs are waiting. Completed originals remain in the notebook album; submit field evidence at OPS."), [] {}); return; }
+		const FString Id = Shot->Id;
+		const int32 Stage = Shot->LabStage;
+		if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door before processing the photograph.")); return; }
+		S47Panels::WetBench(Ui(), Id + TEXT(" / ") + Shot->Place, Stage == 0 ? 0 : Stage == 1 ? 2 : 3, FString(), [this, Id, Stage]
+		{
+			if (!M || !M->IsFreeform() || !M->Night || !M->Night->Album || !M->Freeform || !M->Player || !Yard) return;
+			if (FVector::Distance(M->Player->Pos, Yard->Obj(TEXT("wetBench")).WorldPosition()) > 2.6) { Toast(TEXT("PHOTO LAB: Return to the wet bench to continue processing.")); return; }
+			if (!M->Freeform->HasPowerForReactiveLight()) { Toast(TEXT("PHOTO LAB: Restore power; your original is retained.")); return; }
+			if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door; your original is retained.")); return; }
+			if (!M->Night->Album->AdvanceLabPhoto(Id, Stage)) return;
+			if (US47Audio* A = Au()) A->PourThree(Yard->WetPrint.WorldPosition());
+			Toast(Stage == 0 ? TEXT("PHOTO LAB: Contact print ready. Use the wet bench to transfer it to the fixer.") : Stage == 1 ? TEXT("PHOTO LAB: Print fixed. Collect the original at the wet bench.") : TEXT("OPS: Submit the developed field photograph. The original is retained in your album."), 4.5f);
+			M->RequestAutosave();
+		});
+		return;
+	}
 	if (Lab && Lab()) return;
 	const TOptional<FDevFrame> F = DevFrame();
 	if (!F)
@@ -765,6 +790,11 @@ void US47Chapter1::SetDev(int32 Which, int32 V) { if (Which == 1) S.Dev1 = V; el
 
 FString US47Chapter1::BenchLabel() const
 {
+	if (M && M->IsFreeform() && M->Night && M->Night->Album)
+	{
+		const FS47AlbumShot* Shot = M->Night->Album->PendingLabPhoto();
+		return !Shot ? FString(TEXT("Photo lab wet bench")) : Shot->LabStage == 0 ? FString(TEXT("Develop exposed photograph")) : Shot->LabStage == 1 ? FString(TEXT("Transfer photograph to fixer")) : FString(TEXT("Collect developed photograph"));
+	}
 	if (!Active) return FString();
 	const TOptional<FDevFrame> F = DevFrame();
 	if (!F) return FString(TEXT("Wet bench"));
