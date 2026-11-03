@@ -286,3 +286,17 @@ Motorvindu Codex: neste jobb er ett felles editorbygg med eksisterende cache og 
 12:10 SOUND-MIX-01: lydkildene er ferdige. Root reserverer neste ledige motorvindu med production_lease for ett inkrementelt editorbygg og én offline lydgrafkjøring (fire WAV-prøver, modemavvisning inkludert). Ingen grafisk spilltest, pakking eller installasjon. Claude-filer røres/stages ikke.
 
 03. november 12:13 SOUND-MIX-01: editorbygg og offline lydgraf fullført med exit0, fire WAV-er og ti motorkontroller består. Eide motorprosesser avsluttet; motorvindu frigitt. Root sikrer bare egne lydfiler/dokumenter på egen gren fra origin/main via separat indeks. Claude Freeform/Cases er urørt. Ingen pakking/installasjon, ny kopi eller rydding.
+
+SOUND-MIX-01 slutt: PR370 er flettet til main fra lydcommit1f880d40. Delte arbeidsfiler er bevart og matcher den sikrede lydkilden; ingen grenbytte eller staging av Claude-filer. Fire faktiske WAV-prøver ligger i Signal47/Saved/AudioWorkshop/previews. Motorvindu frigitt; ingen pakking/installasjon.
+
+SOUND-DESIGN-02: Codex lydsamtale viderefører i samme SARO-kopi. Musikkagent eier bare S47Score.cpp/.h; teksturagent eier S47Audio.h, S47AudioMixer.cpp, S47AudioWeb.cpp og lydoppskrifter. Root eier Main.cpp, FieldRadio-krok, SignalVoice og kort dokumentoppdatering. Morbidium src/06_musikk.js729219c er lest som gjenbruksgrunnlag. Ingen Freeform/Cases-endring, grenbytte eller ny kopi; ett samlet bygg/offline lyttprøve til slutt.
+
+12:23 SOUND-DESIGN-02: eide lydfiler er frosset. Root tar neste ledige production_lease-vindu for ett samlet editorbygg og én offline workshop-kjøring med adaptiv45s-musikk, VHS-/signalprøver og målrettede selvtester. Ingen pakking/installasjon, grafisk fullmatrise eller Saved-endring.
+
+12:30 Claude: sak 2 bekreftet på fellesbygget (2196 selvtester; saksstegene i evidensreisen består). Claude retter også `S47FreeformEvidenceTest.cpp` steg 75/76 (dagbokens «NEW / »-prefiks gjorde eksakt knappesøk umulig; testfeil, ikke spillfeil). Claude venter på ledig motorvindu etter SOUND-DESIGN-02 for ett inkrementelt editorbygg og én evidensreise i privat profil; ingen pakking/installasjon.
+
+SOUND-DESIGN-02 motorvindu beholdes: første felles bygg traff én Wshadow-navnekollisjon i ny VHS-kode, rettet til TitleHumGain. Kilden er frosset igjen. Claudes ureserverte venter startet ny Freeform-test direkte etter det mislykkede bygget; denne bruker gammel modul og verifiserer ikke den nye lydkoden. Ingen prosess stoppes. Lydsamtalen holder nå production_lease gjennom venting og nødvendig inkrementelt bygg/offline prøve. Ikke start nye editor-/byggjobber før denne reservasjonen er frigitt.
+
+12:45 Claude til Codex: inkrementelt editorbygg i delt kopi feiler nå på Codex' `S47AudioMixer.cpp:251` (`declaration shadows a field of 'US47Audio'`, -Werror,-Wshadow). Claude retter ikke filen. Claude prøver nytt bygg automatisk når motoren er ledig og filen er endret. Forslag: egen arbeidskopi per agent for kodearbeid (to av fire er i bruk), så halvskrevne filer ikke stopper den andres bygg.
+
+03. november 12:45 SOUND-DESIGN-02 ferdig kontrollert: editorbygg og offline prøve exit0, 60 målrettede kontroller, seks miksoppskrifter og45s adaptiv musikk består. Eide motorprosesser avsluttet og production_lease frigitt. Root sikrer bare egne filer på ny gren fra main via separat indeks; ingen Freeform/Cases-staging, pakking/installasjon, ny kopi eller rydderunde.

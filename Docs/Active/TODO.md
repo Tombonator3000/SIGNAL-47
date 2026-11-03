@@ -4,6 +4,11 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Adaptiv musikk og signaluttrykk, 3. november
+
+- [x] SOUND-DESIGN-02: VHS-tekstur på startmenyen, mørkere signaltekstur og Morbidium-inspirert adaptiv musikk i Story og Freeform. Editorbygg og målrettet lydgrafprøve består; lokal installasjon og menneskelig lytting er ikke utført.
+- [ ] Musikalsk innhold: lytt til overgangene og kurater ro/uro/action. Merk kontrollerte tempo- og frasepunkter eller lag kompatible separate instrumentlag for harmoniske broer og ekte musikalsk lagdeling. Dagens ferdige spor er ikke antatt å dele tempo eller toneart.
+
 ## Lydverksted, 3. november
 
 - [x] SOUND-MIX-01: gjenbrukbar motor for opptakslag, filtrering, hastighet, løkker og fire/sju-puls; lokal bank, fire oppskrifter og WAV-forhåndslytt fra Unreal. Bygg og målrettet grafkontroll består. Modem er reservert for PC/dataoverføring.

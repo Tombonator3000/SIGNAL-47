@@ -2,7 +2,7 @@
 
 **Status:** Gjeldende verktøy. **Gjelder:** Lokal lydutvikling med S47SoundMixer. **Sist kontrollert:** 3. november 2026.
 
-Motoren kombinerer opptak i lag med individuelle nivåer, hastigheter, høypass/lavpass, utsnitt og mottaksstyrte lydkurver. `recipes.json` inneholder startpunkter for arraysøk, låst arraysignal, VHS-sporing og PC-overføring. Fire/sju-puls styres av motorens felles signalklokke.
+Motoren kombinerer opptak i lag med individuelle nivåer, hastigheter, høypass/lavpass, utsnitt og mottaksstyrte lydkurver. `recipes.json` inneholder startpunkter for arraysøk, låst arraysignal, truende arraysignal, VHS-sporing, svak menystøy og PC-overføring. Fire/sju-puls styres av motorens felles signalklokke.
 
 Fra `unreal/Signal47`:
 
@@ -23,3 +23,21 @@ Andre apparater bruker `US47Audio::PlaySoundMix(Key, Recipe, Use, Errors, Destin
 Oppskriftene velger opptak, nivå i dB, avspillingshastighet, høypass/lavpass, utsnitt, løkke og kontrollkurve per lag. `pulse` bruker fire/sju-signaturen, `signal` vokser med klarhet, `static` følger forstyrrelse og lav klarhet, `activity` følger apparatets aktivitet, og `constant` er kontinuerlig. Motoren glatter nivåendringer og løkkeskjøter og begrenser utgangens amplitude. Endre `recipes.json` og kjør forberedelsen igjen for å lage nye varianter.
 
 Nivåer i oppskriftene er forsiktige utgangspunkter. Referanseopptakene har ikke dokumentert distribusjonsklarering og forblir utenfor Git og automatisk pakking. Godkjente originaler kan senere erstatte filene uten at oppskriftenes grensesnitt endres.
+
+Startskjermens `title_vhs` ligger betydelig lavere enn VHS-effekten i verdenen. Menyen starter én tekstur, lar den få et kort sporingspust omtrent hvert 19. sekund og fader den ut når spilleren forlater startskjermen. Teksturen følger SFX/menuvolum og bruker egen av/på-tilstand uavhengig av musikk. Uten eksplisitt lokal lydfilbank brukes et originalt syntetisk sus, svak nettbrum og langsom wow. Derfor fungerer menystøy også i standardspillet uten de lokale referanseopptakene.
+
+`array_ominous` er et mørkere klangtrinn: langsommere opptak, et svakt lavt trykklag og smalere, ustabil radiotekstur. Det beholder fire/sju-portingen og prøver å skape uro gjennom klang fremfor bare høyere volum. Hendelsen velger hvilket trinn som passer; vanlige radiosignaler bruker ikke automatisk dette trinnet. Modem er fortsatt bare tilgjengelig i `pc_transfer`.
+
+
+## Adaptiv musikk og lyddesign
+
+Startmenyen får en svak VHS-tekstur etter første tast/klikk, sammen med den eksisterende tittellyden. Den stoppes når menyen forlates eller åpningens stillhet tar over. En eksplisitt lokal bank bruker `title_vhs`; uten banken lages sus, svakt brum og langsom båndustabilitet i lydgrafen. Arrayets prosedyriske anomali har et svakt ustabilt basslag mellom fire/sju-gruppene. `array_ominous` er en separat mørkere opptaksoppskrift for videre klangarbeid. Modemreservasjonen gjelder fortsatt.
+
+Musikkens dirigent bygger på prinsippene i [Morbidiums musikkmotor ved 729219c](https://github.com/Tombonator3000/morbidium/blob/729219ceb3e77119179deadb9fbfcd25bd8b2a4a/src/06_musikk.js): felles lydklokke, rask opptrapping og langsommere nedtrapping. SIGNAL bruker to overlappende mediestrømmer med 2 til 4 sekunders overgang. Rolig utforskning, uro, action og etterspill kan styres gjennom `RequestMood`; faktisk synlig nær fare kobles inn fra spillet i både Story og Freeform. Skjult hendelsesplan eller usett fiende gir ikke automatisk farevarsel. Viktige lytteøyeblikk og radio/film beholder musikkens hold-funksjon. Etter action holdes tilstanden i seks sekunder og etterspillet i åtte; vanlige områdeskifter har to sekunders stabilisering.
+
+De 17 eksisterende musikksporene har ikke kontrollerte tempo, toneart eller separate instrumentlag. Dagens overganger er derfor frie crossfades. `SetTrackTiming(track,bpm,beatsPerBar,phraseBars)` aktiverer slag-/taktplanlegging for et kontrollert spor; det gjør ikke ukjente filer automatisk musikalsk kompatible. Morbidiums harmoniske broer og instrumentlag er ikke portert som nye musikalske assets. Slike overganger trenger komponerte eller klippede fraser eller kompatible separate stemmer.
+
+Workshop-kjøringen skriver også `adaptive_music.wav` (45 sekunder fra ro via uro/action til etterspill og stillhet), `title_synthetic.wav` og `array_synthetic.wav`. Dette er faktiske lydgrafopptak til lytting, ikke dokumentasjon på menneskelig godkjent klang eller en installert spillutgave.
+
+
+Første kuratering holder roligere `solitude`/`cylTwo` adskilt fra actionens `phantom`; områdets eksisterende drone-/urospor brukes fortsatt til spenning. Dette er et startvalg for lytting. Komponistens [In Search of Solitude](https://www.scottbuckley.com.au/library/in-search-of-solitude/) beskrives som langsomt og mystisk; [The Old Ones](https://www.scottbuckley.com.au/library/the-old-ones/) og [Decoherence](https://www.scottbuckley.com.au/library/decoherence/) er ambient uro. [Phantom from Space](https://remote.incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1500038) har perkusjon og oppgitt tempo 109 BPM. Publisert tempo alene brukes ikke som bevis på hvor første taktslag ligger i vår importerte fil. Ingen nye spor er lastet ned eller lisensierte stemmer lagt i Git.

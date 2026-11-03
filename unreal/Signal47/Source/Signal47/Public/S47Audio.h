@@ -206,6 +206,11 @@ public:
 	void SoundMixFrame(const FString& Key, double Clarity, double Interference, double Activity, double T);
 	void StopSoundMix(const FString& Key, float Fade = 0.1f);
 	static bool RenderSoundWorkshop(const FString& BankPath);
+	// Menu tape texture is independent of music and follows the SFX/menu level.
+	void TitleTexture(bool bOn);
+	void TitleTextureFrame(double T);
+	bool TitleTextureOn() const { return bTitleTexture; }
+	static bool TitleTextureSelfTest(TArray<FString>& Lines);
 
 	// ---------- drive/engineSound.ts (FS47EngineSound) ----------
 	// A loop's level now (the engine's recordings, mixed by rpm each frame): volume, playback rate,
@@ -225,6 +230,12 @@ public:
 	void EngineStop(float After);                                // the truck's own layers fade and stop (stop)
 
 private:
+	bool bTitleTexture = false, bTitlePrivateMix = false;
+	struct FTitleTexture
+	{
+		TSharedPtr<FS47GainNode> Out, Gate, Hiss;
+		TArray<TSharedPtr<FS47ScheduledSourceNode>> Sources;
+	} TitleTape;
 	TMap<FString, FS47MixAsset> SoundBank;
 	TMap<FString, FS47MixRecipe> SoundRecipes;
 	TMap<FString, TSharedPtr<FS47SoundMixer>> SoundMixes;

@@ -90,6 +90,11 @@ void US47Main::Step(double Dt)
 	T += Dt;
 	if (Mode == EMode::Play) Playtime += Dt;
 	if (Flow) Flow->Step(Dt);
+	if (Audio && Audio->TitleTextureOn())
+	{
+		if (Mode != EMode::Title) Audio->TitleTexture(false);
+		else if (Audio->Ctx) Audio->TitleTextureFrame(Audio->Ctx->CurrentTime());
+	}
 	const bool bFree = IsFreeform();
 	if (Freeform && bFree) Freeform->Step(Dt);
 	if (!bFree && Evening) Evening->Step(Dt);
@@ -149,7 +154,12 @@ void US47Main::Step(double Dt)
 	// main.ts: the night outside (core/ambience.ts) heard from where the player stands
 	if (Mode == EMode::Play) Audio->NightLife(float(ModalOpen() ? 0.0 : Dt), P, Story ? Story->Clock() : 0.0);
 	// main.ts: the music by cue (core/score.ts)
-	if (!bFree && Mode == EMode::Play && Score && !bOpening) Score->Update(Dt, Score->MusicWant(), Score->MusicHeld());
+	if (Mode == EMode::Play && Score && !bOpening)
+	{
+		const double Danger = FieldRadio ? FieldRadio->ObservedThreat() : 0;
+		Score->RequestMood(Danger >= 1 ? TEXT("action") : Danger > 0 ? TEXT("tension") : FString(), Danger);
+		Score->Update(bPausedByMenu ? 0 : Dt, Score->MusicWant(), Score->MusicHeld());
+	}
 	// main.ts: the face's print come up, seenStep, curveStep, then the night's things (S47Night.cpp)
 	if (Night && !bOpening) Night->Step(Dt);
 	// main.ts: every frame, the dishes' lamps, the sky light, the reel's own timer (S47SaroNight.cpp)

@@ -22,6 +22,9 @@ public:
  void Take();
  struct FPresence { FVector At=FVector::ZeroVector; bool bActive=false,bVisible=false,bHunting=false; };
  static double Proximity(const FVector& Eye,const FPresence& In);
+ // Music reads only a nearby visible body, never a hidden encounter schedule.
+ double ObservedThreat() const;
+ static double ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible);
  static bool SelfTest(TArray<FString>& Lines);
 private:
  US47Main* M=nullptr;

@@ -40,7 +40,7 @@ public:
 
 private:
 	TSharedRef<FS47AudioContext> Ctx;
-	TSharedPtr<FS47GainNode> Out, Stat, StatGate, Whine, TremDepth, ThumpBus;
+	TSharedPtr<FS47GainNode> Out, Stat, StatGate, Whine, TremDepth, ThumpBus, Undertow;
 	TSharedPtr<FS47BiquadFilterNode> WhineBand;
 	TArray<TSharedPtr<FS47ScheduledSourceNode>> Nodes;
 	bool bLast = false;
