@@ -140,3 +140,86 @@ Eksisterende kollisjons-/krasjfeil beholder prioritet i TODO. Forslagene her er 
 Koordinator kjørte verktøyet mot den samme kilde-revisjonen og den eksisterende lagringen etter agentsammenstillingen. Kildekontrakten ble gjenkjent; 14 strukturerte funn fra workflow- og progresjonsagenten ble validert og samlet mot 11 scenarioer. Den konkrete lagringen bekrefter original hentet, ubetalt rutinejobb, aktivt servicefokus og motstridende printerhint. Lagringsfilen var identisk før/etter lesingen; den er ikke endret av harnesset.
 
 Seks lette parser-/skjemakontroller består, inkludert eldre lagring uten guideFocus og avvisning av ukjent kildekontrakt. Dokumentkontrollen rapporterte null nye lenkefeil, og diffkontrollen består. Dette verifiserer analyseverktøy og dokumentasjon, ikke de elleve spillerreisene i motoren. Runtime og menneskelig spilltest er NOT_RUN. Det maskinlesbare resultatet med minimalt lagringssammendrag er beholdt lokalt utenfor offentlig Git.
+
+## Tillegg 3. november: Signal Simulator, Greyhill, VotV og egenarten til SIGNAL / 47
+
+**Status:** Referanse og designforslag, dokumentert av Codex på Toms bestilling. **Gjelder:** Sammenligning av gameplay-løkker og videre retning for Story og Freeform. **Sist kontrollert:** 3. november 2026.
+
+Tom viste Signal Simulators funksjonsliste og et skjermbilde av oppgraderingssiden, og spurte om SIGNAL / 47 kan få en tydeligere egen identitet. Han ba også om analysen av løkkene i Greyhill Incident og Voices of the Void, som tidligere er undersøkt lokalt. Tillegget bevarer vurderingen fra samtalen og sammenholder den med Claudes allerede innlagte GP-15 til GP-20. Disse funnene og den opprinnelige gjennomgangen over er bevart. Faktisk leveringsstatus og aktiv oppfølging føres fortsatt i [STATUS](../../Active/STATUS.md) og [TODO](../../Active/TODO.md).
+
+### Sammenligning av de tre referansespillene
+
+| Spill | Hovedløkke | Hva fremdriften gir spilleren | Grunnlag |
+| --- | --- | --- | --- |
+| Signal Simulator | Finn signal, still antenner og mottaker, last ned og dekod, tjen kreditter, oppgrader og gjenta. Drift og vedlikehold understøtter innsamlingen. | Bedre kapasitet og mer effektiv observatoriedrift, flere signaler og fortellende funn. | [Utviklerens Steam-beskrivelse](https://store.steampowered.com/app/839310/Signal_Simulator/), kontrollert 3. november, og Toms vedlagte oppgraderingsbilde. Ingen lokal dekompilering av dette spillet er utført i denne sammenligningen. |
+| Voices of the Void | Samle og bearbeid signaler, selg, håndter utstyr og driftsproblemer, utforsk og opplev hendelser, og fortsett arbeidet. | Et vedvarende arbeidssted med økonomi, fysisk aktivitet og nye oppdagelser. | [Utviklerens beskrivelse](https://mrdrnose.itch.io/votv) og [vår lokale analyse av 0.9.0n](../VoicesOfTheVoid/GAMEPLAY_LESSONS.md). Løkken er en designsammenfatning, ikke en ny måling av spillbalansen. |
+| Greyhill Incident | Undersøk et område, finn gjenstander eller løs et praktisk hinder, møt en trussel, snik/flykt/kjemp og nå neste historiesituasjon. | Fremdrift gjennom en forfattet alieninvasjon med utforsking, oppgaver og farer. | [Utviklerens Steam-beskrivelse](https://store.steampowered.com/app/1905020/Greyhill_Incident/) og [vår lokale jakt-/gameplayanalyse](../Unreal/GREYHILL_RESEARCH.md). |
+
+Likheten med Signal Simulator er reell. Steam-siden oppgir utgivelse 29. april 2018 og beskriver signalinnsamling, antennebetjening, dekoding, kreditter, oppgraderinger, strøm, kalibrering, vær, servervedlikehold og mysterier. Toms bilde viser blant annet rotasjon, tracking, buffer og nedlasting som oppgraderingsområder, med en konkret økning i antennens rotasjonshastighet. Dette illustrerer en progresjon gjennom bedre driftskapasitet. Vår vurdering gjelder den dokumenterte beskrivelsen og bildet; de gir ikke en full oversikt over alle spillets undersøkelser eller hendelser.
+
+Designvurderingen er at dagens Freeform-arbeid i SIGNAL / 47 ligger nærmest de to signalspillene, mens Story og jaktsekvensene trekker mot Greyhill. Aliens og mystiske hendelser inngår allerede i denne sjangeren. Egenarten bør derfor ligge i hva spilleren undersøker, hvilke valg funnene begrunner og hva en fullført undersøkelse åpner videre.
+
+### Hva de lokale analysene faktisk viser
+
+**Greyhill:** Den bevarte undersøkelsen gjelder Steam-build 12751524 og cooked Unreal 4.27-Blueprints. 110 Blueprint-filer og hovedkartet, til sammen 111 filer med 963 funksjonsoppføringer, bestod byteidentisk rekonstruksjon. Dette er ikke en full native C++-dekompilering eller en ny gjennomspilling. [Kontrollsammendrag](../../../unreal/Research/Greyhill/analysis-summary.json).
+
+Den nyttigste gameplay-lærdommen er hvordan en praktisk oppgave får spenning gjennom varsling, oppdagelse, jakt, brutt sikt, søk og unnslippelse. Koden har minne om sist observerte spillerposisjon og egne dør-/skjulestedshandlinger. Samtidig kan en undersøkt hørselsbane sette samme kontaktflagg som syn, og en dørbruddbane leser spillerens faktiske posisjon ved ett tidspunkt. Dette fastslår ikke løpende allvitende sporing eller at alle møter oppleves urettferdige. For SIGNAL / 47 begrunner det tydelige regler: lyd gir et undersøkelsessted, syn gir bekreftet kontakt, og mistet kontakt skal gjøre dekning, lokking og rutevalg meningsfulle. Døren kan kjøpe tid med et lesbart varsel og en fysisk konsistent sperre. Se også [den detaljerte døranalysen](../Unreal/GREYHILL_DOOR_CODE_ANALYSIS.md).
+
+**VotV:** Den senere lokale analysen gjelder 0.9.0n, Unreal 4.27.2, og verifisert KisMetScript/dekodede Blueprint-instruksjoner. Utvalgte ticker-, pris-, kaste- og lyshendelsesfunksjoner bestod tilbakekompilering og pakke-bytekontroll. Andre undersøkte klasser bestod pakke-bytekontrollen uten verifisert KisMetScript-utgave. `mainPlayer`, `mainGamemode` og `lib` bestod ikke pakke-bytekontrollen; eksakte bæregrenser, utholdenhetsrater og globale effektivitetsformler er derfor ikke sikre fasiter. Den opprinnelige klargjøringsrapporten fra oktober og den senere logikkanalysen har forskjellig omfang. [Funn og kontrollgrenser](../VoicesOfTheVoid/GAMEPLAY_LESSONS.md).
+
+De konkrete lærdommene fra VotV er:
+
+- En antennefeil har en vedvarende tilstand som kan undersøkes mot en normalreferanse.
+- Reparasjon påvirker faktisk drift og varsler andre systemer; spilleren bør kunne merke resultatet av arbeidet.
+- Fysiske medier har regler for objekttype, plassering, opptatt utstyr og innsetting/uttak.
+- Kjente dører og lys brukes i hendelser, slik at en innlært normaltilstand kan gi grunnlag for å oppdage et avvik.
+- Objektplasseringer og øktinformasjon lagres, uten at dette beviser feilfri gjenoppretting av alle objektklasser.
+
+Funnene støtter en troverdig arbeidsplass der handling, lyd, utslag, kontrollresultat og journal stemmer overens. De dokumenterer statisk logikk og skal ikke presenteres som ny spilleraksept, full dekning av VotV eller direkte overførbare parametre til vårt UE 5.8.4-prosjekt. Ingen spillkode eller assets fra referansespillene er innlemmet gjennom denne dokumentasjonen. Prosjektbiblioteksøket ga ingen direkte relevant gjenbrukskilde i denne runden; de bevarte prosjektanalysene og de offisielle spillsidene er grunnlaget.
+
+### Dagens arbeidsløkke og den foreslåtte forskningsløkken
+
+Den leverte arbeidsløkken, med nærmere prøvegrenser i STATUS, er:
+
+**Velg jobb → still antenner og mottaker → ta opptak → hent original → kontroller ved behov → registrer/arkiver → få betaling → vedlikehold og utforsk → neste døgn.**
+
+Rutinearbeid og registrerte avvik gir i den undersøkte Freeform-kilden begge $20, mens et gyldig fenomenfoto kan gi $20 én gang per hendelse. Vedlikehold, forsyninger, fysisk håndtering og møter utfyller arbeidet. I Story knyttes utstyret og bevisene til forfattede mål og hendelser. Dette betyr ikke at hele den naturlige reisen eller flerdøgnsbalansen er ferdig spillerprøvd.
+
+Den foreslåtte hovedprogresjonen er:
+
+**Observer → formuler en mulig forklaring → velg kontroll → undersøk i felt → sammenlign kilder → trekk en avgrenset konklusjon → velg neste forsøk.**
+
+Den viktigste manglende forbindelsen er at spillerens egne funn styrer neste undersøkelse. Et arbeidsskift skal kunne gi bedre begrunnet kunnskap, et avkreftet spor eller et nytt spørsmål. En ny natt kan brukes til å prøve noe spilleren har en grunn til å velge. Arbeidsinntekt og apparatdrift understøtter denne reisen.
+
+### Fem foreslåtte særtrekk
+
+1. **Saker som utvikler seg gjennom spillerens undersøkelser.** Et signal innleder et spørsmål. Spilleren kan undersøke apparatfeil, lokal interferens, et vitneutsagn eller en mulig forbindelse til en hendelse ute. Resultatet påvirker hvilke oppfølginger som er relevante. Samordnes med GP-16 og FF-RESEARCH-02/03.
+2. **Bevis som kan bekrefte eller motsi hverandre.** Originalbånd, fotografier, klokkeslett, serviceprotokoller og vitneutsagn sammenlignes med kilde og usikkerhet bevart. Et lydavvik og en lysobservasjon trenger ulike kontroller. Bevistavlen viser forbindelser spilleren har grunnlag for, uten automatisk å konkludere med alien-opphav. Samordnes med GP-18/20, PHOTO-04 og eksisterende originalvern.
+3. **Utstyr som åpner forskjellige forsøk.** En feltlogger kan gi en uavhengig måling; skjerming kan hjelpe mot en bestemt lokal støykilde; et senere retningshode kan gi bedre lokalisering med smalere dekning og mer oppsett. Plassering, driftstid og kontrollmåling gjør at oppsett kan være nyttige under forskjellige forhold. Material- og utstyrsvalget må påvirke den faktiske målingen. Samordnes med GP-19 og FF-RESEARCH-04/05. Feltloggeren er ny funksjonalitet; dagens feltradio er ikke allerede en logger eller fjernpeiler.
+4. **Alienmøter med undersøkelige etterspor.** Et faktisk besøk kan gi et flyttet objekt, en registrert berøring eller et avvik i et bevart opptak. Spilleren kan undersøke hendelsen senere og planlegge et kontrollforsøk. Enkelte møter kan fortsatt være korte glimt eller rene farer. Et planlagt apparatoppsett garanterer ikke besøk, og manglende besøk gir ikke oppdiktede observasjoner. Samordnes med GP-18 og FF-RESEARCH-07/08.
+5. **New Mexico 1986 gjennom handlingene.** SARO, Caliche, motellet, telefoner, papirarkiv, fotografier og fysiske bånd knytter målingene til mennesker og steder. Samtaler, reiser og dokumenter bør få konkrete funksjoner i undersøkelsen. Bevar eksisterende Story, rollefordeling og kanon, inkludert den faste 47-sekundershendelsen, uten å gjøre alle avvik til samme gåte.
+
+Forslaget er at rutinearbeid fortsatt finansierer driften, mens bedre dokumentasjon åpner et nytt spørsmål, en avgrenset adgang eller et nytt forsøk. Et godt dokumentert negativt resultat kan gi undersøkelsesfremgang. Dette følger Claudes GP-15: kunnskapsprogresjon skal ha en verdi spilleren ikke får bare ved å gjenta flere rutinejobber. Nye tilgangs- og belønningsregler er forslag som må implementeres og prøves.
+
+### Eksempel på en ny Freeform-sak over to netter
+
+Dette er et foreslått forløp, ikke en allerede levert hendelse eller en omskriving av Story:
+
+1. Første natt registrerer spilleren et måleavvik og observerer et lys over et område. Tidspunkt, grov retning, beholdt original og eventuell fotografi-ID er underlaget.
+2. Neste dag velger spilleren en oppfølging: kontroller en mulig lokal støykilde, gjenta observasjonen eller planlegg en uavhengig feltmåling. Dagens innkjøp og oppsett begrunnes av planen.
+3. Når feltloggeren er innført, kalibreres den ved benken og plasseres på ett av to mulige steder. Loggeren og SARO må ha sammenlignbar innstilling og overlappende opptakstid; klokkeavvik beholdes med opptaket.
+4. Neste natt utføres planen. Spilleren kan arbeide ved stasjonen mens loggeren registrerer ute. Fysiske bånd/opptak hentes og sammenlignes etterpå.
+5. Resultatet kan avkrefte en forklaring, vise lokal støy eller feil i oppsettet, eller beholde et uforklart avvik som begrunner en ny kontroll. Ingen av utfallene gir automatisk bevis for utenomjordisk opphav.
+6. Neste tur, målested og utstyrsvalg følger av det som faktisk ble funnet. En natt uten hendelse kan være et gyldig negativt resultat når instrumentet virket og de relevante målevilkårene var oppfylt.
+
+### Samordning med Claudes GP-15 til GP-20 og eksisterende TODO
+
+Codex foreslo i samtalen feltloggerreisen som første sammenhengende utvidelse og pekte på FF-RESEARCH-00/02/04. Claude har i tillegget over anbefalt å prøve oppfølgingsvalget med eksisterende utstyr før loggeren innføres. Retningene støtter samme hovedprogresjon, men har forskjellig foreslått første omfang. En samlet anbefaling er:
+
+1. **Avgrenset kontroll av grunnlaget, GP-20:** kontroller særlig at lagret målespor, live lyd, original, graf og relevante hendelsesvalg er konsistente. Bruk eksisterende prøver og den nødvendige spillerreisen; dette er ikke en bestilling om en ny fullmatrise.
+2. **Første spillerstyrte oppfølging, GP-16:** gjenbruk OPS, jobber, originaler og arkiv til et lagret valg mellom et lite antall relevante forsøk. Prøv to netter og forskjellige forståelige utfall med eksisterende utstyr.
+3. **Én konkret undersøkelsesbelønning, GP-15:** et dokumentert resultat åpner én relevant oppfølging eller avgrenset adgang. Vanlig inntekt og nødveier bevares.
+4. **Tydelig dag-/nattplan og spor, GP-17/18:** la forberedelser, innkjøp, vitneutsagn og faktiske hendelser begrunne neste natts plan.
+5. **Feltlogger som andre målested, GP-19:** fullfør deretter FF-RESEARCH-00/04 med montering, kalibrering, fysisk transport, opptak, henting og sammenligning. Materialvalgene i FF-RESEARCH-05 får nytte i et allerede forståelig forsøk.
+
+Fri bygging og større nærmøter står fortsatt som senere alternativer i FF-RESEARCH-06/08. Dette tillegget registrerer analysen og rekkefølgeforslaget; det endrer ikke TODO-prioriteter, ferdigmelder ingen funksjoner og bestiller ingen ny implementering eller nattkjøring. Eksisterende krasj-, verdens- og progresjonsfeil beholder sin avtalte prioritet. Ingen ny motorjobb, dekompilering eller menneskelig spilltest er utført for denne dokumentoppdateringen.
