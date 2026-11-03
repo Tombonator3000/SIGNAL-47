@@ -1,0 +1,6 @@
+{
+  "source_commit": "8e56365bd48e081a75f91509c44e7c40edbeeb0f",
+  "base_cooked_source": "21d0e5d16ff00f7427e2d5df5c8ffc16ed0137e9",
+  "scope": "Startup.cpp code only; preserved packaged cooked assets; replaced matching Development binary/debug/sym after guarded game build; final display and installed selftest PASS",
+  "validation_status": "PASS"
+}

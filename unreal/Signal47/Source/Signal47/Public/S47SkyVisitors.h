@@ -42,11 +42,14 @@ public:
  // area copies do not conceal a light; an opaque roof, wall or mesa does.
  bool ClearLine(const FVector& Eye, const FVector& At) const;
  static bool SelfTest(TArray<FString>& Lines);
- // Developer events (S47DevEvents.h): show a stage now as -S47SkyVisit=N does; 0 returns to the schedule.
- void DevStage(int32 Stage) { TestStage = FMath::Clamp(Stage, 0, 5); if (TestStage && !State.bEnabled) State.Begin(nullptr, true); }
+ // F10 is an ephemeral visual preview, separate from the CLI natural-state contract.
+ // Repeating a stage restarts only the preview; zero returns to the natural sky.
+ void DevStage(int32 Stage);
 private:
  US47Main* M = nullptr;
  FS47SkyVisitorState State;
+ FS47SkyVisitorState Preview;
+ FString PreviewArea;
  TArray<TWeakObjectPtr<UMaterialBillboardComponent>> Points;
  bool bBuilt = false;
  double ObservationStep = 0;
@@ -56,6 +59,9 @@ private:
  double ContractTime = 0, ContractSince = 0, HeldTime = 0;
  FString ContractRoot;
  void Build();
+ const FS47SkyVisitorState& ActiveState() const { return Preview.bEnabled ? Preview : State; }
+ void HidePoints();
+ void ClearPreview();
  void Hide();
  int32 RequestedStage() const;
  void RecordObservation(int32 Visible);

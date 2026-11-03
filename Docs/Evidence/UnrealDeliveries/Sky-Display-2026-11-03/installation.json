@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "source_branch": "codex/sky-display-20261103",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "previous_verified_candidate": "/home/tom/scratch-bm/Signal47-crt-response-20261103/candidate/Linux",
+  "saved_nodes": 156,
+  "saved_files": 126,
+  "smoke": {
+    "returncode": 0,
+    "wall_seconds": 28.85421007697005,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 26.013294219970703,
+      "heavy_jobs": [],
+      "pgrep": "2219531 /bin/bash -c python3 /home/tom/scratch-bm/Signal47-sky-visibility-20261103/install.py > /home/tom/scratch-bm/Signal47-sky-visibility-20261103/install-result.txt 2>&1\n2219532 python3 /home/tom/scratch-bm/Signal47-sky-visibility-20261103/install.py\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 2219532,
+        "start_ticks": "72031195",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "root sky visibility and display verified local installation",
+        "acquired_at": "2026-11-03T01:16:34.951525+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "Saved_unchanged": true,
+  "binary_sha256": "8d8d3769ecd5ae88b3b6c9bef1d18c6a9f28b250054d5eda30e69203bb4f0bc8",
+  "free_bytes": 171371945984,
+  "at": "2026-11-03T02:17:15.838496+01:00"
+}

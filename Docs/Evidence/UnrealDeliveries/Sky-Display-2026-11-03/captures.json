@@ -1,0 +1,25 @@
+{
+  "before_source": "3efa4bd2",
+  "after_source": "45e4b6d2",
+  "camera": "Explicit standing-height SARO chapter1 fixture, fixed view toward each group; player eye1.62m; no menu overlay",
+  "sky02_quality": "high",
+  "sky02_requested_window": [
+    1600,
+    900
+  ],
+  "sky02_actual_image": [
+    1600,
+    872
+  ],
+  "sky05_quality": "low",
+  "sky05_requested_window": [
+    1280,
+    720
+  ],
+  "sky05_actual_image": [
+    1280,
+    692
+  ],
+  "natural_full_night": "NOT_RUN",
+  "sky_preview_package_contract": "PASS; repeat stage2, stage5 tostage2, menu hold, stop, saved natural state and existing notes preserved"
+}

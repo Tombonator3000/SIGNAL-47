@@ -6,11 +6,13 @@
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/GameUserSettings.h"
 #include "HAL/FileManager.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
+#include "Misc/ConfigCacheIni.h"
 #include "Misc/Paths.h"
 #include "MoviePlayer.h"
 #include "PipelineStateCache.h"
@@ -30,6 +32,7 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
+#include "Widgets/SWindow.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Startup, Log, All);
 
@@ -56,6 +59,54 @@ namespace
 	};
 	FStartupState GStartup;
 	FDelegateHandle GPreLoadMap;
+	TOptional<FIntPoint> GRequestedWindowSize;
+
+	void PreserveWindowedStartupSize()
+	{
+#if PLATFORM_LINUX
+		if (GIsEditor || !FApp::CanEverRender()) return;
+		const TCHAR* Cmd = FCommandLine::Get();
+		for (const TCHAR* Flag : { TEXT("windowed"), TEXT("fullscreen"), TEXT("borderless"), TEXT("windowedfullscreen"), TEXT("forceres"), TEXT("simmobile"), TEXT("RenderOffscreen"), TEXT("S47NoStartup") })
+			if (FParse::Param(Cmd, Flag)) return;
+		FString Override;
+		for (const TCHAR* Key : { TEXT("Res="), TEXT("ResX="), TEXT("ResY="), TEXT("WinX="), TEXT("WinY="), TEXT("Monitor="), TEXT("MonitorIndex="), TEXT("Display="), TEXT("DisplayIndex="), TEXT("SaveWinPos=") })
+			if (FParse::Value(Cmd, Key, Override)) return;
+		// Default-phase modules load after config/path setup but before UGameEngine::Init.
+		// Capture the physical saved client size before the initial native configure can
+		// call OnViewportResized and replace GameUserSettings with the decorated size.
+		FConfigFile Saved;
+		const FString Path = FConfigCacheIni::GetDestIniFilename(TEXT("GameUserSettings"), nullptr, *FPaths::GeneratedConfigDir());
+		Saved.Read(Path);
+		const TCHAR* Section = TEXT("/Script/Engine.GameUserSettings");
+		FIntPoint Requested = FIntPoint::ZeroValue; int32 Mode = -1;
+		const bool Valid = Saved.GetInt(Section, TEXT("FullscreenMode"), Mode)
+			&& Saved.GetInt(Section, TEXT("ResolutionSizeX"), Requested.X) && Saved.GetInt(Section, TEXT("ResolutionSizeY"), Requested.Y);
+		if (!Valid || Mode != int32(EWindowMode::Windowed) || Requested.X <= 0 || Requested.Y <= 0) return;
+		GRequestedWindowSize = Requested;
+
+#endif
+	}
+
+	void RestoreWindowedStartupSize()
+	{
+		if (!GRequestedWindowSize.IsSet()) return;
+		const FIntPoint Requested = GRequestedWindowSize.GetValue();
+		GRequestedWindowSize.Reset(); // one attempt before gameplay; never fight subsequent user resizing
+		if (!GEngine || !GEngine->GameViewport || !FSlateApplication::IsInitialized()) return;
+		const auto Window = GEngine->GameViewport->GetWindow();
+		auto* GS = GEngine->GetGameUserSettings();
+		if (!Window || !GS) return;
+		const FVector2D Client = Window->GetClientSizeInScreen();
+
+		if (Window->GetWindowMode() != EWindowMode::Windowed || GS->GetFullscreenMode() != EWindowMode::Windowed) return;
+		if (FMath::IsNearlyEqual(Client.X, double(Requested.X), .5) && FMath::IsNearlyEqual(Client.Y, double(Requested.Y), .5)) return;
+		const FSlateRect Work = FSlateApplication::Get().GetWorkArea(Window->GetRectInScreen());
+		if (Requested.X > Work.GetSize().X || Requested.Y > Work.GetSize().Y) return;
+		UE_LOG(LogS47Startup, Display, TEXT("S47: restoring saved window client %dx%d after initial native configure %.0fx%.0f"), Requested.X, Requested.Y, Client.X, Client.Y);
+		GS->SetScreenResolution(Requested);
+		// Resolution only: no ApplySettings/scalability reset, frame cap or V-sync mutation.
+		GS->ApplyResolutionSettings(false);
+	}
 
 	void WriteTrace(const FString& Line)
 	{
@@ -203,6 +254,7 @@ namespace
 void S47Startup::Initialize()
 {
 	if (IsRunningCommandlet() || IsRunningDedicatedServer()) return;
+	PreserveWindowedStartupSize();
 	// MoviePlayer keeps the same terminal visible during synchronous world construction. The
 	// viewport copy then covers the rendered warmup, so no unfinished world frame is exposed.
 	GPreLoadMap = FCoreUObjectDelegates::PreLoadMap.AddLambda([](const FString&)
@@ -218,6 +270,7 @@ void S47Startup::Initialize()
 
 void S47Startup::Shutdown()
 {
+	GRequestedWindowSize.Reset();
 	if (GPreLoadMap.IsValid()) FCoreUObjectDelegates::PreLoadMap.Remove(GPreLoadMap);
 	GPreLoadMap.Reset();
 	if (GStartup.Screen.IsValid() && GEngine && GEngine->GameViewport) GEngine->GameViewport->RemoveViewportWidgetContent(GStartup.Screen.ToSharedRef());
@@ -307,6 +360,9 @@ void S47Startup::Tick()
 {
 	if (!GStartup.bStarted) return;
 	const double Now = FPlatformTime::Seconds();
+	// The standalone viewport can appear after OnPostEngineInit; Wayland configures it asynchronously.
+	// Resolve the captured size only after the prepared window has rendered warmup frames.
+	if (GStartup.bPrepared && !GStartup.bReady && Now - GStartup.PreparedAt >= .5) RestoreWindowedStartupSize();
 	const bool bWasReady = GStartup.bReady;
 	const double FrameSeconds = Now - GStartup.LastFrameAt;
 	GStartup.LastFrameAt = Now;

@@ -208,6 +208,7 @@ FS47SkyVisitors::~FS47SkyVisitors()
 }
 void FS47SkyVisitors::Begin(const S47J::FObj& Saved, bool bNewNight)
 {
+ ClearPreview();
  State.Begin(Saved, bNewNight); ObservationStep = 0; Hide();
  if (TestStage && !Saved.IsValid()) State.Begin(nullptr, true);
  if (State.bEnabled) Build();
@@ -229,10 +230,32 @@ void FS47SkyVisitors::Build()
  }
  bBuilt = true;
 }
+void FS47SkyVisitors::HidePoints()
+{
+ for (auto& B : Points) if (B.IsValid()) B->SetVisibility(false);
+}
 void FS47SkyVisitors::Hide()
 {
  State.Looking = 0; ObservationStep = 0;
- for (auto& B : Points) if (B.IsValid()) B->SetVisibility(false);
+ HidePoints();
+}
+void FS47SkyVisitors::ClearPreview()
+{
+ if (!Preview.bEnabled) return;
+ Preview = {}; PreviewArea.Reset();
+ HidePoints();
+}
+void FS47SkyVisitors::DevStage(int32 Stage)
+{
+ ClearPreview();
+ Stage = FMath::Clamp(Stage, 0, 5);
+ if (!Stage || !M || !M->World || M->Mode != US47Main::EMode::Play) return;
+ Preview.Begin(nullptr, true);
+ Preview.Stage = Stage; Preview.Occurred[Stage - 1] = true;
+ PreviewArea = M->World->Area;
+ // The natural light is no longer on screen: a partial gaze cannot bridge a preview.
+ State.Looking = 0; ObservationStep = 0;
+ HidePoints();
 }
 
 FVector FS47SkyVisitors::WorldPosition(const FVector& P, const FString& Area)
@@ -274,42 +297,57 @@ void FS47SkyVisitors::RecordObservation(int32 Visible)
 void FS47SkyVisitors::Step(double Dt)
 {
  ControlTest(Dt);
- if (!M || !M->Story || !M->Player || !M->World || !State.bEnabled || M->Mode != US47Main::EMode::Play)
- { Hide(); return; }
+ if (!M || !M->Story || !M->Player || !M->World || M->Mode != US47Main::EMode::Play)
+ { ClearPreview(); Hide(); return; }
+ if (Preview.bEnabled && (M->World->Area != PreviewArea || M->World->Area == TEXT("room6"))) ClearPreview();
+ if (!State.bEnabled && !Preview.bEnabled) { Hide(); return; }
  // The authored final journey owns its sky. Keep an earlier visitor track and its
  // observation clock untouched while C6 is active, including the empty-car pullout.
  if (const auto* Finale = Cast<US47Chapter6>(M->Story->Chapter(TEXT("ch6"))); Finale && Finale->bActive)
- { Hide(); return; }
+ { ClearPreview(); Hide(); return; }
  const bool Held = M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic();
  if (State.Advance(RequestedStage(), Dt, Held)) M->RequestAutosave();
  // An early miss gets one further natural opportunity on the first field trip.
  // Loading, opening a door and simply walking outside never restart a track.
  if (!Held && M->Evening && M->Evening->ServicePending() && M->World->bDriving &&
   M->World->Area == TEXT("road") && State.OfferEarlyPass()) M->RequestAutosave();
- if (!State.Stage || State.Completed[State.Stage - 1] || M->World->Area == TEXT("room6")) { Hide(); return; }
+ // Natural time follows its existing rules even while an F10 preview is drawn.
+ // Preview time has the same holds, but cannot autosave or grant observation credit.
+ if (Preview.bEnabled)
+ {
+  Preview.Advance(Preview.Stage, Dt, Held);
+  if (Preview.Completed[Preview.Stage - 1]) ClearPreview();
+ }
+ const FS47SkyVisitorState& VisibleState = ActiveState();
+ if (!VisibleState.Stage || VisibleState.Completed[VisibleState.Stage - 1] || M->World->Area == TEXT("room6")) { Hide(); return; }
  Build();
  if (!bBuilt || Points.Num() != 9) { Hide(); return; }
  const FS47Cam Cam = FS47Cam::Of(M->Player, 12000);
  FVector2D Size(1600, 900);
  if (M->Web && M->Web->GetWorld() && M->Web->GetWorld()->GetGameViewport()) M->Web->GetWorld()->GetGameViewport()->GetViewportSize(Size);
- const double Fade = FMath::Clamp(State.Elapsed / 3, 0., 1.) * FMath::Clamp((FS47SkyVisitorState::Duration(State.Stage) - State.Elapsed) / 8, 0., 1.);
- const int32 Count = FS47SkyVisitorState::Count(State.Stage);
+ const double Fade = FMath::Clamp(VisibleState.Elapsed / 3, 0., 1.) * FMath::Clamp((FS47SkyVisitorState::Duration(VisibleState.Stage) - VisibleState.Elapsed) / 8, 0., 1.);
+ const int32 Count = FS47SkyVisitorState::Count(VisibleState.Stage);
+ // Keep SKY01's original six-pixel introduction. Later groups get a larger
+ // angular footprint, referenced to 900p so higher resolutions do not hide them.
+ // Only the sprite changes: the world paths, sight and observation rules remain.
+ static const double LaterDiscPixels[] = {10., 11., 12., 14.};
+ const double DiscPixels = VisibleState.Stage == 1 ? 6.4
+  : LaterDiscPixels[FMath::Clamp(VisibleState.Stage - 2, 0, 3)] * FMath::Max(1., Size.Y) / 900.;
  for (int32 I = 0; I < Points.Num(); ++I)
  {
   auto* B = Points[I].Get(); if (!B) continue;
   B->SetVisibility(I < Count && Fade > 0);
   if (I >= Count || B->Elements.IsEmpty()) continue;
-  const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(State.Stage, I, State.Elapsed), M->World->Area);
+  const FVector At = WorldPosition(FS47SkyVisitorState::MapPosition(VisibleState.Stage, I, VisibleState.Elapsed), M->World->Area);
   B->SetWorldLocation(S47Three::ToUE(At));
-  // A soft six-pixel disc stays distinct from the existing star points. Its
-  // world location and depth remain physical; only the distant glow keeps size.
-  const float Half = float(6.4 * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
+  // World location and depth remain physical; only the distant glow keeps size.
+  const float Half = float(DiscPixels * FMath::Tan(FMath::DegreesToRadians(Cam.Fov) / 2) * FVector::Dist(Cam.Pos, At) / FMath::Max(1., Size.Y) * 100);
   B->Elements[0].BaseSizeX = B->Elements[0].BaseSizeY = Half;
   if (auto* D = Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))
    D->SetVectorParameterValue(TEXT("Color"), S47Three::Hex(I % 3 == 2 ? 0xffdfb4 : 0xe3f2ff) * float(Fade * 4.0));
   B->MarkRenderStateDirty();
  }
- if (Held || Dt <= 0) { State.Looking = 0; ObservationStep = 0; return; }
+ if (Preview.bEnabled || Held || Dt <= 0) { State.Looking = 0; ObservationStep = 0; return; }
  ObservationStep += Dt;
  if (ObservationStep < .12) return;
  const double Sample = FMath::Min(ObservationStep, .2); ObservationStep = 0;
