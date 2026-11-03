@@ -98,7 +98,7 @@ bool FS47FreeformAudioDesk::Build()
  for(int32 I=0;I<UE_ARRAY_COUNT(Actions);++I)
  {
   const int32 Col=I<4?I:I<7?I-4:I-7,Count=I<4?4:3;
-  const FVector At(X+Width*((Col+.5)/Count-.5),Y+(I<4?.065:I<7?0:-.065),Z);
+  const FVector At(X+Width*((Col+.5)/Count-.5),Y+(I<4?.065:I<7?0:.13),Z);
   auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.12,.15,.13));Mat->SetScalarParameterValue(TEXT("Roughness"),.65);Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
   auto* C=NewObject<UStaticMeshComponent>(M->Web,*FString::Printf(TEXT("FreeformTapeKey%d"),I));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(N->Comp.Get());C->SetStaticMesh(Cube);C->SetMaterial(0,Mat);
   C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldScale3D(S47Three::DirToUE(FVector(Width/Count*.91,.048,.027)));C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->SetCastShadow(false);C->RegisterComponent();
