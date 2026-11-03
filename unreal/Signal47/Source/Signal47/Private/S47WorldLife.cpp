@@ -20,6 +20,8 @@
 #include "S47RoadTerrain.h"
 #include "S47Seen.h"
 #include "S47Sky.h"
+#include "S47SkyEventSpec.h"
+#include "S47Startup.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47Ultra.h"
@@ -35,6 +37,12 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Life, Log, All);
 
 namespace
 {
+	TSharedPtr<FJsonValue> ClonePassageJson(const TSharedPtr<FJsonValue>& Value)
+	{
+		if (!Value) return nullptr;
+		const auto Box = S47J::New(); Box->SetField(TEXT("passage"), Value);
+		const auto Copy = S47J::Clone(Box); return Copy ? Copy->TryGetField(TEXT("passage")) : Value;
+	}
 	// World.ts: the areas' origins, the light in the air, the lit places on the sky, the shared lights
 	const FVector ROAD_ORIGIN(8000, 0, 0), STATION_ORIGIN(0, 0, 8000);
 	constexpr double AIR_CONES = 0.065, AIR_HAZE = 1;
@@ -296,19 +304,13 @@ void US47WorldLife::Step(double Dt)
 	// the dawn follows the clock; the night areas are lit for the night, so they show less of it
 	const TOptional<double> Lift = Hooks.SkyLift ? Hooks.SkyLift() : TOptional<double>();
 	Sky->SetDawnLift(Lift.IsSet() ? *Lift : Area == TEXT("roswell") ? 1 : 0.7);
-	// no stars where the dishes point from the moment they have come round to 026 / 32 (world/Sky.ts)
-	if (M->Story && M->Story->At(ES47Phase::Turning))
-	{
-		double Ev = 0;
-		if (M->Story->At(ES47Phase::Ch1)) if (const US47Chapter1* C1 = Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) Ev = C1->S.EventClock;
-		Sky->HoleFrom = (Ev ? Ev : M->Story->EventClockSec()) + STAR_HOLE.After;
-	}
-	else Sky->HoleFrom = TNumericLimits<double>::Max(); // (Infinity: not tonight yet)
+	// A default EventClock alone cannot arm the hole: actual signal/Turning history is required.
+	Sky->HoleFrom = SignalHoleFrom().Get(TNumericLimits<double>::Max());
 	const TOptional<double> SunElev = !bTitle && Hooks.SunElev ? Hooks.SunElev() : TOptional<double>();
 	// FX-01: the meteor passage follows the graphics menu's Effects (Low: fewer streaks), as the arc does
 	Sky->bPassageLow = M->Flow && M->Flow->Graphics.Effects == 0;
 	Sky->SetClock(bTitle ? 0 : Clock, SunElev);
-	if (PassageTest) PassageTest(Dt);
+	PassageStep(Dt); // presentation time is independent of story-clock jumps
 	W->SetSkyLighting(float(Sky->Daylight()), Sky->SunDir, float(Sky->Sun), float(Sky->Flash), float(Sky->Evening));
 	// out in the night areas the haze over the far land stays darker than the dawn sky behind the mesas
 	const double DawnK = Smoothstep(Sky->Daylight(), 0, 0.35);
@@ -350,6 +352,9 @@ void US47WorldLife::Step(double Dt)
 		F->SetWind(Wd.Dir);
 		F->Follow(Cam.Pos, Quality == TEXT("low"));
 	}
+	// The opt-in contract observes this frame's applied component visibility, not the
+	// previous Draw. Its next-frame fixtures must not interrupt the production update.
+	if (PassageTest) PassageTest(Dt);
 }
 
 void US47WorldLife::AirStep(double Dt, double T)
@@ -587,8 +592,139 @@ void US47WorldLife::TestFlags(double Dt)
 
 // ---------- the self test ----------
 
-bool US47WorldLife::PassageDone() const { return Sky.IsValid() && Sky->bPassageDone; }
-void US47WorldLife::PassageReset(bool bDone) { if (Sky.IsValid()) Sky->PassageReset(bDone); }
+TOptional<double> US47WorldLife::SignalHoleFrom() const
+{
+	if (!M || !M->Story || M->IsFreeform() || !M->Story->At(ES47Phase::Turning)) return {};
+	double Event = M->Story->EventClockSec();
+	if (M->Story->At(ES47Phase::Ch1))
+		if (const auto* C = Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1"))); C && C->S.EventClock > 0) Event = C->S.EventClock;
+	return FMath::IsFinite(Event) && Event >= 0 && Event < 86400 ? TOptional<double>(Event + STAR_HOLE.After) : TOptional<double>();
+}
+
+bool US47WorldLife::PassageDone() const { return PassageState == EPassage::Done; }
+double US47WorldLife::HoleNow() const { return Sky.IsValid() ? Sky->HoleK : 0; }
+FString US47WorldLife::PassagePhase() const
+{
+	switch (PassageState)
+	{
+	case EPassage::Pending: return TEXT("pending");
+	case EPassage::Running: return TEXT("running");
+	case EPassage::Done: return TEXT("done");
+	default: return TEXT("idle");
+	}
+}
+void US47WorldLife::PassageReset(bool bDone)
+{
+	PassageState = bDone ? EPassage::Done : EPassage::Idle;
+	PassageSeconds = bDone ? S47SkyEvent::PassageLength + S47SkyEvent::PassageTail : 0;
+	bPassageExitReady = bPassageZoneSeeded = bPassageWasInside = false; PassageArea.Empty(); PassageUnknown.Reset();
+	if (Sky.IsValid()) { Sky->PassageReset(bDone); Sky->SetPassageTime(-1, bDone); Sky->HoleK = 0; }
+}
+void US47WorldLife::SetPassagePhase(EPassage Next)
+{
+	if (PassageState == Next) return;
+	PassageState = Next;
+	if (Next != EPassage::Pending) bPassageExitReady = false;
+	if (M) M->RequestAutosave(false);
+	UE_LOG(LogS47Life, Display, TEXT("S47: meteor passage %s at %.3f s"), *PassagePhase(), PassageSeconds);
+}
+TSharedPtr<FJsonValue> US47WorldLife::PassageSave() const
+{
+	if (PassageUnknown) return ClonePassageJson(PassageUnknown);
+	const auto O = S47J::New(); S47J::Set(O, TEXT("v"), 2); S47J::Set(O, TEXT("phase"), PassagePhase());
+	S47J::Set(O, TEXT("elapsed"), PassageSeconds); S47J::Set(O, TEXT("exitReady"), bPassageExitReady);
+	return MakeShared<FJsonValueObject>(O);
+}
+void US47WorldLife::PassageLoad(const TSharedPtr<FJsonValue>& Raw)
+{
+	PassageReset(false);
+	const auto Saved = Raw && Raw->Type == EJson::Object ? Raw->AsObject() : S47J::FObj();
+	// Missing is legacy; a present null/scalar/array is malformed and must not become a fresh event.
+	if (Raw && !Saved) { PassageReset(true); PassageUnknown = ClonePassageJson(Raw); return; }
+	const auto Version = Saved ? Saved->TryGetField(TEXT("v")) : nullptr;
+	const bool V1 = Version && Version->Type == EJson::Number && Version->AsNumber() == 1;
+	if (!Saved || V1)
+	{
+		const auto Done = Saved ? Saved->TryGetField(TEXT("done")) : nullptr;
+		if (Done && Done->Type == EJson::Boolean && Done->AsBool()) { PassageReset(true); return; }
+		if (!Saved || (Done && Done->Type == EJson::Boolean))
+		{
+			// Flow has restored the story before calling us. Seed geography only on its first free frame.
+			// Retain the old spent-window rule; never infer an event from the default clock alone.
+			if (const auto From = SignalHoleFrom())
+			{
+				const double Clock = FMath::Fmod(FMath::Fmod(M->Story->Clock(), 86400.) + 86400., 86400.);
+				const double OldAge = Clock - (*From - STAR_HOLE.After + S47SkyEvent::LegacyPassageStartAfter);
+				if (OldAge > S47SkyEvent::LegacyPassageWindow) PassageReset(true);
+				else PassageState = EPassage::Pending;
+			}
+			return;
+		}
+	}
+	if (Version && Version->Type == EJson::Number && Version->AsNumber() == 2)
+	{
+		FString Phase; double Elapsed = 0; bool Exit = false;
+		const auto PhaseValue = Saved->TryGetField(TEXT("phase")), TimeValue = Saved->TryGetField(TEXT("elapsed")), ExitValue = Saved->TryGetField(TEXT("exitReady"));
+		bool Valid = PhaseValue && PhaseValue->Type == EJson::String && TimeValue && TimeValue->Type == EJson::Number && ExitValue && ExitValue->Type == EJson::Boolean;
+		if (Valid)
+		{
+			Phase = PhaseValue->AsString(); Elapsed = TimeValue->AsNumber(); Exit = ExitValue->AsBool();
+			Valid = FMath::IsFinite(Elapsed) && Elapsed >= 0;
+		}
+		if (Valid && (Phase == TEXT("idle") || Phase == TEXT("pending") || Phase == TEXT("running") || Phase == TEXT("done")))
+		{
+			const double End = S47SkyEvent::PassageLength + S47SkyEvent::PassageTail;
+			PassageState = Phase == TEXT("running") ? EPassage::Running : Phase == TEXT("pending") ? EPassage::Pending : Phase == TEXT("done") ? EPassage::Done : EPassage::Idle;
+			PassageSeconds = FMath::Clamp(Elapsed, 0., End);
+			if (PassageState == EPassage::Running && PassageSeconds >= End) PassageState = EPassage::Done;
+			if (PassageState == EPassage::Idle || PassageState == EPassage::Pending) PassageSeconds = 0;
+			if (PassageState == EPassage::Done) PassageSeconds = End;
+			bPassageExitReady = PassageState == EPassage::Pending && Exit;
+			if (Sky.IsValid()) Sky->SetPassageTime(-1, PassageDone()); // wait for restored spatial eligibility
+			return;
+		}
+	}
+	// Unsupported/malformed state is retained verbatim, with playback disabled rather than replayed.
+	PassageReset(true); PassageUnknown = ClonePassageJson(Raw);
+}
+void US47WorldLife::PassageStep(double Dt)
+{
+	if (!M || !Sky.IsValid()) return;
+	const bool Play = M->Mode == US47Main::EMode::Play && !M->IsFreeform();
+	const bool Starting = (M->Flow && M->Flow->bStarting) || S47Startup::Blocking();
+	const bool Cinematic = M->Story && M->Story->IsCinematic();
+	const bool Spatial = Play && !Starting && !Cinematic && M->World && !M->World->bBusy && !M->World->bDriving;
+	const FString Area = M->World ? M->World->Area : FString();
+	const bool Inside = M->Space == TEXT("room") || M->Space == TEXT("lab");
+	const bool Outside = M->Space == TEXT("yard");
+	const bool Signal = SignalHoleFrom().IsSet();
+	const bool WasRunning = PassageState == EPassage::Running;
+	if (Play && !Starting && Signal && PassageState == EPassage::Idle) SetPassagePhase(EPassage::Pending);
+	if (Spatial && Area == TEXT("saro") && (Inside || Outside))
+	{
+		if (PassageState == EPassage::Pending && Signal && bPassageZoneSeeded && PassageArea == Area && bPassageWasInside && Outside)
+		{
+			bPassageExitReady = true; M->RequestAutosave(false);
+		}
+		// A restored pose or an area/cab/cinematic transition is a seed, never a fabricated door crossing.
+		bPassageZoneSeeded = true; bPassageWasInside = Inside; PassageArea = Area;
+	}
+	else { bPassageZoneSeeded = false; PassageArea.Empty(); }
+	const bool Free = Spatial && Area == TEXT("saro") && Outside && !M->ModalOpen() && !M->bPausedByMenu && M->Story && !M->Story->IsPaused();
+	if (PassageState == EPassage::Pending && bPassageExitReady && Signal && Free && HoleNow() >= .9)
+	{
+		PassageSeconds = 0; SetPassagePhase(EPassage::Running);
+	}
+	if (WasRunning && PassageState == EPassage::Running && Signal && Free && FMath::IsFinite(Dt) && Dt > 0)
+	{
+		const double End = S47SkyEvent::PassageLength + S47SkyEvent::PassageTail;
+		PassageSeconds = FMath::Min(End, PassageSeconds + Dt);
+		if (PassageSeconds >= End) SetPassagePhase(EPassage::Done);
+	}
+	// Hide indoors, away or during travel without resetting time. An outdoor menu holds the image.
+	const bool Visible = Play && Signal && PassageState == EPassage::Running && Spatial && Area == TEXT("saro") && Outside;
+	Sky->SetPassageTime(Visible ? PassageSeconds : -1, PassageDone());
+}
 
 bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 {
@@ -607,7 +743,7 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 	Check(FMath::IsNearlyEqual(S47Wind::Wind().Strength, 0.07 * (0.75 + 0.2 * FMath::Sin(11.0) + 0.15 * FMath::Sin(37.0 + 1.3)), 1e-12) && FMath::IsNearlyEqual(S47Wind::Wind().Dir.X, FMath::Cos(0.64 + 0.18 * FMath::Sin(2.3)), 1e-12), TEXT("wind at t 100"));
 	// world/backdrop.ts horizonDip; Sky.ts starHoleAt
 	Check(FMath::IsNearlyEqual(S47Backdrop::HorizonDip(100), FMath::Atan(100.0 / 20000) * 180 / UE_DOUBLE_PI, 1e-12) && S47Backdrop::HorizonDip(-5) == 0, TEXT("backdrop: the horizon's dip"));
-	Check(S47StarHoleAt(2 * 3600, 8122) == 0 && S47StarHoleAt(8122 + 100, 8122) == 1 && FMath::IsNearlyEqual(S47StarHoleAt(8122 + 50, 8122), 0.5, 1e-12) && S47StarHoleAt(23 * 3600, 8122) == 0, TEXT("sky: the star hole comes in over 100 s, none in the evening"));
+	Check(STAR_HOLE.Fade == 8 && S47StarHoleAt(2 * 3600, 8122) == 0 && S47StarHoleAt(8122 + STAR_HOLE.Fade, 8122) == 1 && FMath::IsNearlyEqual(S47StarHoleAt(8122 + 2, 8122), 0.15625, 1e-12) && FMath::IsNearlyEqual(S47StarHoleAt(8122 + 4, 8122), 0.5, 1e-12) && FMath::IsNearlyEqual(S47StarHoleAt(8122 + 6, 8122), 0.84375, 1e-12) && S47StarHoleAt(23 * 3600, 8122) == 0, TEXT("sky: the authored eight-second star-hole fade has quarter/mid/three-quarter samples, none in the evening"));
 	// EveningShift's sky is continuous across sunset and midnight without changing morning story gates.
 	FS47Sky EveningSky;
 	EveningSky.SetClock(17 * 3600 + 20 * 60);
@@ -691,14 +827,19 @@ bool US47WorldLife::SelfTest(TArray<FString>& Lines)
 		for (const TSharedPtr<FJsonValue>& V : Arr(Sk, TEXT("at")))
 		{
 			const TSharedPtr<FJsonObject> O = V->AsObject();
-			S.SetClock(Num(O, TEXT("clock")));
+			const double Clock = Num(O, TEXT("clock"));
+			S.SetClock(Clock);
+			// The legacy export used a 100 s fade. These six fixtures now lie outside
+			// the authored 8 s transition; intermediate samples are checked above.
+			const bool OutsideFade = Clock <= S.HoleFrom || Clock >= S.HoleFrom + STAR_HOLE.Fade;
+			const double ExpectedHole = Clock < S.HoleFrom ? 0. : 1.;
 			const FVector Sd = V3(Arr(O, TEXT("sunDir"))), Fg = V3(Arr(O, TEXT("fog")));
 			const bool bSame = FMath::IsNearlyEqual(S.Dawn, Num(O, TEXT("dawn")), 1e-9) && FMath::IsNearlyEqual(S.Sun, Num(O, TEXT("sun")), 1e-9) && S.SunDir.Equals(Sd, 1e-9)
-				&& FMath::IsNearlyEqual(S.HoleK, Num(O, TEXT("hole")), 1e-9) && FVector(S.FogColor.R, S.FogColor.G, S.FogColor.B).Equals(Fg, 1e-6);
+				&& OutsideFade && Clock <= 12 * 3600 && FMath::IsNearlyEqual(S.HoleK, ExpectedHole, 1e-9) && FVector(S.FogColor.R, S.FogColor.G, S.FogColor.B).Equals(Fg, 1e-6);
 			Good += bSame ? 1 : 0; ++All;
-			if (!bSame) Lines.Add(FString::Printf(TEXT("     sky at %.0f: dawn %.6f/%.6f sun %.6f/%.6f hole %.6f/%.6f"), Num(O, TEXT("clock")), S.Dawn, Num(O, TEXT("dawn")), S.Sun, Num(O, TEXT("sun")), S.HoleK, Num(O, TEXT("hole"))));
+			if (!bSame) Lines.Add(FString::Printf(TEXT("     sky at %.0f: dawn %.6f/%.6f sun %.6f/%.6f hole %.6f/%.6f"), Num(O, TEXT("clock")), S.Dawn, Num(O, TEXT("dawn")), S.Sun, Num(O, TEXT("sun")), S.HoleK, ExpectedHole));
 		}
-		Check(All > 0 && Good == All, FString::Printf(TEXT("sky: setClock as the web version at %d of %d clocks (the dawn, the sun, the hole, the haze)"), Good, All));
+		Check(All > 0 && Good == All, FString::Printf(TEXT("sky: %d of %d legacy clocks retain dawn/sun/haze with the revised hole fade"), Good, All));
 	}
 	// Flora.make: cells of each patch, drawn from the same seeds and cover rules (the specs built as Init builds them)
 	US47Main* Mn = NewObject<US47Main>();

@@ -206,10 +206,14 @@ namespace S47AlbumSubjects
 			}
 			const FVector F = Camera.Forward;
 			if (F.Y > 0.45) Add(TEXT("the Milky Way"), { Cam + F * 900 }, [](FS47Subject& Sj) { Sj.Ang = 18; Sj.W = 0.35; Sj.Max = 1e6; Sj.bSky = true; });
-			// no stars at 026 where the dishes point (story/starHole.ts: the sky's own, turned with the area's sky)
+			// no stars at 026 where the dishes point (story/starHole.ts: the sky's own, turned with the area's sky).
+			// FX-01: HoleNow is the sky's own strength (Life.HoleNow); Ang is its angular size across in degrees
+			// (the web version's 8 for its eight-degree field), now the larger shared field's EXTENT_DEG. The
+			// album scores min(1, Ang / 8), so its weight is unchanged; a kept print keeps its own text and
+			// targets (they are written when it is taken and never worked out again).
 			if (const US47Away* Aw = M->Away; Aw && Aw->HoleNow() > 0.5)
 			{
-				Add(TEXT("no stars at 026"), { Cam + Aw->HoleDir() * 1400 }, [](FS47Subject& Sj) { Sj.Ang = 8; Sj.Max = 1e6; Sj.bSky = true; Sj.Odd = FS47StarHole::HOLE_PRINT; Sj.Target = TEXT("starhole"); });
+				Add(TEXT("no stars at 026"), { Cam + Aw->HoleDir() * 1400 }, [](FS47Subject& Sj) { Sj.Ang = FS47StarHole::EXTENT_DEG; Sj.Max = 1e6; Sj.bSky = true; Sj.Odd = FS47StarHole::HOLE_PRINT; Sj.Target = TEXT("starhole"); });
 			}
 		}
 

@@ -919,11 +919,9 @@ void US47Flow::StartGame(const FStart& O)
 	if(M->FieldRadio) M->FieldRadio->Begin(S47J::Obj(O.State,TEXT("fieldRadio")));
 	if (M->Life)
 	{
-		// FX-01: a spent meteor passage stays spent. Without the field (an older save) the clock decides:
-		// past the passage it is marked spent on the first frame, unseen; nothing is queued.
-		const S47J::FObj P = S47J::Obj(O.State, TEXT("meteorPassage"));
-		const TSharedPtr<FJsonValue> Done = P.IsValid() ? P->TryGetField(TEXT("done")) : nullptr;
-		M->Life->PassageReset(Done.IsValid() && Done->Type == EJson::Boolean && Done->AsBool() && S47J::Num(P, TEXT("v")) == 1);
+		// Restore playback only after genuine story state; geography is seeded on the first live frame.
+		if (O.State.IsValid()) M->Life->PassageLoad(O.State->TryGetField(TEXT("meteorPassage")));
+		else M->Life->PassageReset(false);
 	}
 	if (!bFreeform && M->Substation) M->Substation->Begin(S47J::Obj(O.State, TEXT("substation")));
 	if (Checkpoint == TEXT("routine") || Checkpoint == TEXT("nightService")) M->Story->RestoreRoutine(S47J::Obj(O.State,TEXT("routine")));
@@ -1500,8 +1498,7 @@ S47J::FObj US47Flow::GameState()
 	if(M->FieldRadio) S47J::Set(State,TEXT("fieldRadio"),M->FieldRadio->Save());
 	if (M->Life)
 	{
-		const S47J::FObj P = S47J::New(); S47J::Set(P, TEXT("v"), 1); S47J::Set(P, TEXT("done"), M->Life->PassageDone());
-		S47J::Set(State, TEXT("meteorPassage"), P);
+		State->SetField(TEXT("meteorPassage"), M->Life->PassageSave());
 	}
 	if (M->Observing && M->Observing->Enabled()) S47J::Set(State,TEXT("observing"),M->Observing->Save()); else State->RemoveField(TEXT("observing"));
 	if (M->Spine && M->Spine->Enabled()) S47J::Set(State,TEXT("spine"),M->Spine->Save());

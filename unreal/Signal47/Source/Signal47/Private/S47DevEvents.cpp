@@ -62,7 +62,13 @@ void FS47DevEvents::AddBuiltIn()
  { if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear(); });
  // ---- sky ----
  Add(TEXT("Sky"), TEXT("Meteor"), TEXT("one, now"), [this, Say] { if (M->Life && M->Life->Sky) M->Life->Sky->MeteorNow(); Say(TEXT("meteor")); });
- Add(TEXT("Sky"), TEXT("Meteor shower"), TEXT("40 seconds"), [this, Say] { ShowerLeft = ShowerTime; ShowerNext = 0; Say(TEXT("meteor shower")); });
+ Add(TEXT("Sky"), TEXT("Meteor shower"), TEXT("40 seconds, several at once"), [this, Say]
+ {
+  ShowerLeft = ShowerTime; ShowerNext = FS47Sky::SHOWER_GAP_MIN;
+  // a fresh radiant, and the first few already on their way so it begins as a shower
+  if (M->Life && M->Life->Sky) { FS47Sky& Sky = *M->Life->Sky; Sky.ShowerBegin(); Sky.ShowerMeteor(.3); Sky.ShowerMeteor(.15); Sky.ShowerMeteor(0); }
+  Say(TEXT("meteor shower"));
+ });
  for (int32 S = 1; S <= 5; ++S)
   Add(TEXT("Sky"), FString::Printf(TEXT("Preview sky lights, stage %d"), S), TEXT("visual preview; no natural observation credit"),
    [this, Say, S] { if (M->SkyVisitors) M->SkyVisitors->DevStage(S); Say(FString::Printf(TEXT("sky preview stage %d"), S)); });
@@ -167,10 +173,19 @@ void FS47DevEvents::Step(double Dt)
  if (!M) return;
  if (M->Night && M->Night->Glimpses) M->Night->Glimpses->DevStep(Dt,M->Night->GlimpseIn(true));
  const bool bPlay = M->Mode == US47Main::EMode::Play && !M->bPausedByMenu;
- if (ShowerLeft > 0 && bPlay)
+ // The shower's own free-play guard: a menu, an open panel or a held story freezes it (time and image).
+ const bool bShowerFree = bPlay && !M->ModalOpen() && !(M->Story && M->Story->IsPaused());
+ if (M->Life && M->Life->Sky) M->Life->Sky->bShowerHeld = !bShowerFree;
+ if (ShowerLeft > 0 && bShowerFree && Dt > 0)
  {
   ShowerLeft -= Dt; ShowerNext -= Dt;
-  if (ShowerNext <= 0 && M->Life && M->Life->Sky) { M->Life->Sky->MeteorNow(); ShowerNext = .35 + FMath::FRand() * .9; }
+  // each on a free strip of its own (FS47Sky::ShowerMeteor), so several cross at once; a long frame adds no backlog
+  for (int32 N = 0; ShowerNext <= 0 && N < 3; ++N)
+  {
+   if (M->Life && M->Life->Sky) M->Life->Sky->ShowerMeteor(FMath::Max(0.0, -ShowerNext));
+   ShowerNext += FS47Sky::SHOWER_GAP_MIN + FMath::FRand() * (FS47Sky::SHOWER_GAP_MAX - FS47Sky::SHOWER_GAP_MIN);
+  }
+  if (ShowerNext <= 0) ShowerNext = FS47Sky::SHOWER_GAP_MIN;
  }
  if (PaleLeft > 0)
  {
@@ -311,8 +326,27 @@ void FS47DevEvents::ControlTest(double Dt)
  TArray<const FEvent*> Events;
  for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() || Event.Group==OnlyGroup) Events.Add(&Event);
  TestT += Dt;
+ // Measure simultaneous actual components over the short random shower window rather
+ // than demand a particular density on one arbitrarily selected frame.
+ static int32 ShowerPeak = 0;
+ if (OnlyGroup == TEXT("Sky") && ShotName == TEXT("meteor-shower") && M->Life && M->Life->Sky)
+  ShowerPeak = FMath::Max(ShowerPeak, FMath::Min(M->Life->Sky->ShowerLive(), M->Life->Sky->ShowerSlotsVisible()));
+ else ShowerPeak = 0;
  // a picture a moment after its event, once the scene has taken it
- if (!ShotName.IsEmpty() && TestT >= ShotAt) { FScreenshotRequest::RequestScreenshot(TestDir / (ShotName + TEXT(".png")), false, false); ShotName.Reset(); }
+ if (!ShotName.IsEmpty() && TestT >= ShotAt)
+ {
+  if (OnlyGroup == TEXT("Sky") && ShotName == TEXT("meteor-shower"))
+  {
+   // Read the actual pool after ordinary world ticks from the real F10 action.
+   const FS47Sky* Sky = M->Life && M->Life->Sky ? M->Life->Sky.Get() : nullptr;
+   const int32 Live = Sky ? Sky->ShowerLive() : 0, Visible = Sky ? Sky->ShowerSlotsVisible() : 0;
+   const bool Concurrent = ShowerPeak >= 3;
+   UE_LOG(LogS47DevEvents, Display, TEXT("S47: developer meteor shower contract %s: first 1.5 s peak simultaneous components %d (>= 3); now live %d, visible %d"),
+    Concurrent ? TEXT("PASS") : TEXT("FAIL"), ShowerPeak, Live, Visible);
+   if (!Concurrent) { bTestDone = true; FPlatformMisc::RequestExitWithStatus(false, 1); return; }
+  }
+  FScreenshotRequest::RequestScreenshot(TestDir / (ShotName + TEXT(".png")), false, false); ShotName.Reset();
+ }
  if (TestT < 4 + TestStep * 2.5) return;
  if (TestStep < Events.Num())
  {
@@ -351,6 +385,7 @@ void FS47DevEvents::Stop()
  if (M && M->SkyVisitors) M->SkyVisitors->DevStage(0);
  if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();
  if (M && M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear();
+ if (M && M->Life && M->Life->Sky) { M->Life->Sky->ShowerClear(); M->Life->Sky->bShowerHeld = false; }
  ShowerLeft = 0; PaleLeft = 0; GS47DevFogDensity = -1.f;
  Pale.Apply(false, FVector::ZeroVector, 0, 0, 0, 0, 0, FS47PaleBody::EPose::Walk);
 }

@@ -43,6 +43,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47World.h"
+#include "S47WorldLife.h"
 #include "SS47AwayOverlay.h"
 #include "SS47Widgets.h"
 #include "TextureResource.h"
@@ -614,6 +615,15 @@ TOptional<double> US47Away::HoleFrom() const
 	return Ev + FS47StarHole::STAR_HOLE.After;
 }
 
+double US47Away::HoleNow() const
+{
+	// FX-01: never a second fade. In the game the sky's own strength (Life gates it by the real signal
+	// and the day); the shared curve only where there is no Life (selftests).
+	if (!M) return 0;
+	if (M->Life) return M->Life->HoleNow();
+	return FS47StarHole::At(Clock(), HoleFrom());
+}
+
 FVector US47Away::HoleDir() const
 {
 	// sky.holeDir turned about the up axis by world.skyYaw
@@ -631,7 +641,7 @@ FS47StarHoleIn US47Away::HoleIn(bool bModal)
 	S.bFree = !M->OneAtATime() && !(M->Audio && M->Audio->PhonePlaying()) && !(M->Phones && Is(M->Phones->CbBusy));
 	S.bOutdoors = M->Space == TEXT("yard") && !Driving();
 	S.bNight = M->Night->Dawn() < 0.3;
-	S.Hole = FS47StarHole::At(Clock(), HoleFrom());
+	S.Hole = HoleNow();
 	S.Dir = Dir;
 	S.Cam = Camera();
 	S.bZoom = M->ZoomK > 0.6;
