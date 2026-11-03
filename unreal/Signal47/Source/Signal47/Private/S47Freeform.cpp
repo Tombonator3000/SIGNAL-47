@@ -609,6 +609,8 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
  J->Stage=EJobStage::Registered;
+ // The OPS computer has accepted an actual result; opening its screen alone is silent.
+ if(M&&M->Audio)M->Audio->PcTransfer();
  if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}J->Stage=EJobStage::Filed;}
  if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);return true;}
  Changed(J->bAnomaly?TEXT("Registered. Collect the labelled packet at the printer, then file its originals in the binder."):TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return true;

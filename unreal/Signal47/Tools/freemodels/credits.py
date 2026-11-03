@@ -78,6 +78,9 @@ def main():
 	txt += ['', 'MetaHuman character and hair assets: Epic Games, https://www.metahuman.com/',
 		'Original waitress uniform and native integration: SIGNAL / 47.',
 		'', 'Music, sound and fonts are credited in the game\'s end credits.', '']
+	# Keep recording links when model imports regenerate the combined credits.
+	with open(os.path.join(PROJECT, 'Tools', 'sound-workshop', 'space-radio-credits.txt'), encoding='utf-8') as audio:
+		txt += [audio.read().strip(), '']
 	open(os.path.join(PROJECT, 'CREDITS.txt'), 'w', encoding='utf-8').write('\n'.join(txt))
 	print('S47FREE credits: %d CC BY, %d CC0' % (len(by), len(cc0)))
 

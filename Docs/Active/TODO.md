@@ -6,17 +6,17 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Lokal lydinstallasjon, 3. november
 
-- [ ] SOUND-INSTALL-01 / PR375: sluttbygg med NASA/Nebula og apparatlyd, målrettet graf- og fysisk referanseprøve, pakking og lokal installasjon med uendrede Saved. Avventer at det aktive installerte spillet lukkes; installasjonen er ikke levert ennå.
+- [x] SOUND-INSTALL-01 / PR375/376: NASA/Nebula og apparatlyd integrert og installert lokalt, også musikk og effekter i Freeform. 15 lydoppskrifter, 51 native Freeform-kontroller, 2240 installerte selvtester og Vulkan-oppstart består; 111 Saved-filer uendret.
 
 ## Adaptiv musikk og signaluttrykk, 3. november
 
-- [x] SOUND-DESIGN-02: VHS-tekstur på startmenyen, mørkere signaltekstur og Morbidium-inspirert adaptiv musikk i Story og Freeform. Editorbygg og målrettet lydgrafprøve består; lokal installasjon og menneskelig lytting er ikke utført.
+- [x] SOUND-DESIGN-02: VHS-tekstur på startmenyen, mørkere signaltekstur og Morbidium-inspirert adaptiv musikk i Story og Freeform. Bygg, lydgraf og lokal installasjon består; menneskelig lytting gjenstår.
 - [ ] Musikalsk innhold: lytt til overgangene og kurater ro/uro/action. Merk kontrollerte tempo- og frasepunkter eller lag kompatible separate instrumentlag for harmoniske broer og ekte musikalsk lagdeling. Dagens ferdige spor er ikke antatt å dele tempo eller toneart.
 
 ## Lydverksted, 3. november
 
 - [x] SOUND-MIX-01: gjenbrukbar motor for opptakslag, filtrering, hastighet, løkker og fire/sju-puls; lokal bank, fire oppskrifter og WAV-forhåndslytt fra Unreal. Bygg og målrettet grafkontroll består. Modem er reservert for PC/dataoverføring.
-- [ ] Lytt til de fire startoppskriftene og juster uttrykk/nivå. Velg godkjente kilder før ordinær pakking; koble senere VHS og faktiske PC-overføringer til riktig oppskrift når de aktuelle handlingene bearbeides. Installerte apparatlyder er ikke byttet av SOUND-MIX-01.
+- [ ] Lytt til de 15 lokale oppskriftene og juster uttrykk, nivå og komfort. VHS, mottaker/RAW, apparat-/lysstoffrørlyd, NASA/Nebula og faktiske PC-overføringer er integrert lokalt via SOUND-INSTALL-01.
 
 ## Nattskift 2. november til 3. november kl.08:00
 

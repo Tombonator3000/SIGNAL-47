@@ -13,6 +13,8 @@
 #include "S47Startup.h"
 #include "S47Story.h"
 #include "S47Inter.h"
+#include "S47Audio.h"
+#include "S47Score.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Misc/CommandLine.h"
@@ -43,7 +45,7 @@ bool FS47FreeformInWorldTest::UseAimedAudio(const FString& Id)
 {
  if(!Check(M->Inter&&bool(M->Player->OnUse),TEXT("native interaction and Walker use callback exist")))return false;
  const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
- if(!Check(Picked==Id,TEXT("actual native eye ray picks physical tape key: ")+Id))return false;
+ if(!Check(Picked==Id,TEXT("actual native eye ray picks physical tape key: ")+Id+TEXT("; picked ")+Picked))return false;
  M->Player->OnUse(Picked);return true;
 }
 bool FS47FreeformInWorldTest::OpenScreen(int32 Index)
@@ -138,7 +140,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
   {
    if(!Check(F.AudioDesk.IsValid(),TEXT("production reference desk exists")))return;
    const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:ref_play"));
-   M->Player->Place(P.X,P.Z-1.2,0);AimAt(P);ScreenIndex=0;Go(40);return;
+   M->Player->Place(P.X,P.Z-1.2,0);AimAt(P);ScreenIndex=0;Go(38);return;
   }
   if(!OpenScreen(0))return;Go(1);return;
  }
@@ -338,12 +340,24 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(Age-At<.35)return;
   Finish(true);return;
  }
+ if(Stage==38)
+ {
+  if(Age-At<2)return;
+  if(M->Score&&M->Score->Playing.IsEmpty()&&Age-At<20)return;
+  if(!Check(M->Score.IsValid()&&!M->Score->MusicHeld()&&M->Score->MusicWant()==TEXT("dawn"),TEXT("Freeform morning chooses its own music and is not held by Story state")))return;
+  if(!Check(M->Score->Playing==TEXT("dawn")&&M->Score->ActiveDecks()>0,TEXT("ordinary Freeform update starts the imported music stream")))return;
+  if(!Check(M->Audio&&M->Audio->SoundMixPlaying(TEXT("equipment:room_fluorescent")),TEXT("occupied Freeform room plays the staged fluorescent effect")))return;
+  AimAt(F.AudioDesk->InteractionPoint(TEXT("ff:audio:ref_play")));
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("space-reference-desk.png"),true,false);
+  Go(40);return;
+ }
  if(Stage==40)
  {
   if(Age-At<.5)return;
   if(!Check(F.AudioDesk->ListeningPosition(),TEXT("powered reference desk reachable in actual SARO scene")))return;
   if(!UseAimedAudio(TEXT("ff:audio:ref_play")))return;
   if(!Check(F.AudioDesk->Label(TEXT("ff:audio:ref_play")).Contains(TEXT("Stop")),TEXT("native reference key starts staged recording")))return;
+  if(!Check(M->Score&&M->Score->MusicHeld(),TEXT("Freeform reference listening holds the music")))return;
   Go(41);return;
  }
  if(Stage==41)
@@ -364,6 +378,7 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(Age-At<.5)return;
   if(!Check(!F.AudioDesk->ListeningPosition()&&F.AudioDesk->Label(TEXT("ff:audio:ref_play")).Contains(TEXT("Play")),TEXT("walking away stops reference transport")))return;
+  if(!Check(M->Score&&!M->Score->MusicHeld(),TEXT("Freeform music is released after reference listening")))return;
   Finish(true,TEXT("six staged space references exercised through native SARO controls; no human listening acceptance"));return;
  }
 }
