@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Lokal lydintegrasjon venter på ledig spill, 3. november
+
+[PR375](https://github.com/Tombonator3000/SIGNAL-47/pull/375) kobler den private banken på 15 kilder/15 oppskrifter til automatisk innlasting, seks NASA-/Nebula-referanser ved SARO-pulten, Contact/Nebula i mottaker og RAW, apparat-/lysstoffrørlyd og modem ved faktisk OPS-overføring. PCM-, proveniens- og Python-kontroller består. Editorbygget bestod før siste grafprøveutvidelse. Spillet ble startet under pakking; egen pakkeprosess ble stoppet av konkurransekontrollen. Nytt sluttbygg, lydgraf, fysisk referanseprøve og installert selvtest/røykprøve gjenstår. Installert spill er foreløpig uendret. En lokal venter i `~/scratch-bm/Signal47-audio-install-20261103` fortsetter bygg og kontrollert installasjon først når spillet er lukket; Saved verifiseres før/etter og tidligere payload sikres med reflink. Ingen offentlig lyddistribusjon eller ny arbeidskopi.
+
 ## NASA- og Nebula-kilder funnet og med i mikserbanken, 3. november
 
 Alle fem NASA-kandidatene fra 28. oktober er bevart med uendrede dokumenterte WAV-hasher; Nebula finnes fortsatt i den lokale kjøpte lydbanken. Den nye bankforberedelsen tok opprinnelig bare med de nye YouTube-referansene og utelot disse. Dette er rettet: lokal bank har nå 12 kilder og 9 oppskrifter, med separate metadata for vitenskapelige opptak og designet atmosfære. NASA-avspilling bruker hastighet 1 uten løkke. Originaler og kreditering bevares, og bank-/Python-kontroll består. De fem eksisterende observatorieopptakene er fortsatt importert og koblet i S47Observing. Ingen ny Unreal-kjøring, pakking eller installasjon er utført for denne bankrettelsen. [Bruk](../../unreal/Signal47/Tools/sound-workshop/README.md#bevarte-nasa--og-nebula-kilder).
