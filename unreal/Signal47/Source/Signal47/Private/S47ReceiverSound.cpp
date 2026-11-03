@@ -1,5 +1,6 @@
 #include "S47ReceiverSound.h"
 #include "S47Audio.h"
+#include "S47SignalVoice.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
@@ -151,6 +152,28 @@ bool FS47ReceiverSound::SelfTest(TArray<FString>& Lines)
   Ref.Step(false, A->Ctx->CurrentTime());
   A->Ctx->Render(Samples.GetData(), Frames); Quiet = true; for (float V : Samples) Quiet &= V == 0;
   Check(Quiet && !Ref.Playing(), TEXT("leaving the listening position stops reference playback"));
+ }
+ // Exercise the actual receiver/RAW voice with the staged recordings at both
+ // normal and slowed tape speed, including releasing its looping sources.
+ const auto Contact=A->SoundSource(TEXT("contact")), Nebula=A->SoundSource(TEXT("space_nebula"));
+ Check(Contact.IsValid()&&Nebula.IsValid(),TEXT("receiver and RAW recording textures are available"));
+ for(double Rate:{1.,.5})
+ {
+  auto C=FS47AudioContext::Make(48000);
+  auto Noise=C->CreateBuffer(1,48000,48000);
+  FS47SignalVoice Voice(C,C->Destination,Noise,Rate,Contact,Nebula);
+  float Samples[256];double Energy=0;bool Finite=true;
+  for(int32 Frame=0;Frame<96000;Frame+=128)
+  {
+   Voice.Frame(.9,.6,Frame/48000.*Rate);C->Render(Samples,128);
+   for(float V:Samples){Finite&=FMath::IsFinite(V)&&FMath::Abs(V)<=1;Energy+=V*V;}
+   C->Tick(128./48000);
+  }
+  Voice.Stop();
+  for(int32 Frame=0;Frame<96000;Frame+=128){C->Render(Samples,128);C->Tick(128./48000);}
+  bool Quiet=true;for(float V:Samples)Quiet&=FMath::Abs(V)<1.e-7;
+  Check(Finite&&Energy>0&&Quiet,Rate==1?TEXT("recorded receiver voice renders finite samples and releases loops"):TEXT("recorded RAW voice at half speed renders finite samples and releases loops"));
+  C->Close();
  }
  A->Ctx->Close(); A->Ctx.Reset();
  return Ok;
