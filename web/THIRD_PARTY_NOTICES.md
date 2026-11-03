@@ -71,12 +71,15 @@ Tom ba om stille musikk i bakgrunnen hele tiden, skummel og meditativ, i ånden 
 
 Tom syntes de få taktene som ble laget i koden og gikk i ring, var for irriterende. De er byttet ut med fire stykker av Kevin MacLeod, CC BY 4.0 (https://incompetech.com/music/royalty-free/licenses/), hentet fra incompetech.com 18. oktober 2026: «Drankin Song», «Bama Country», «Cattails» og «Anamalie». Lydnivåjustert (loudnorm, -20 LUFS), smalnet til AM (90 til 5500 Hz), mikset til mono og kodet som MP3 40 kbps, 22 kHz, uten metadata, i `public/radio/` (`drankin_song.mp3`, `bama_country.mp3`, `cattails.mp3`, `anamalie.mp3`). De strømmes når en radio spiller dem (`core/radio.ts`), en del av en låt om gangen, og er ikke med i enkeltfilbygget, der taktene fra koden står igjen. Kreditert i rulleteksten og tittelskjermens info.
 
-## Motoren i lastebilen (18. oktober 2026)
+## Motoren i Jeepen (3. november 2026)
 
-Tom ba om ny og bedre motorlyd. Motoren var laget bare av oscillatorer; nå er den to opptak fra Freesound, delt i fire filer, begge CC0 1.0 (lest på hver lyds egen side 18. oktober 2026). Fra Freesounds forhåndsvisning (128 kbps), klippet og mikset til mono. Løkkene er kryssfadet i skjøten, nivåjustert til samme styrke, og lagret som WAV 11 kHz så skjøten ikke får stillheten MP3 legger til; start og stopp er MP3 64 kbps. Alle i `src/assets/audio/` og med i begge byggene (`drive/engineSound.ts`).
+Tom ba om Jeep-lyd. Motoren er nå tre opptak av Jeeper fra Freesound, alle CC0 1.0 (lest på hver lyds egen side 3. november 2026). Fra Freesounds forhåndsvisning (HQ mp3), klippet og mikset til mono. Løkkene er kryssfadet i skjøten, nivåjustert til samme styrke som filene de erstatter (EBU R128), og lagret som WAV så skjøten ikke får stillheten MP3 legger til; start og stopp er MP3 64 kbps, 22 kHz. Alle i `src/assets/audio/`. Unreal leser dem herfra (`unreal/Signal47/Scripts/import-audio.sh`); nettversjonen er historisk og bruker bare de fire første.
 
-- 1978 Cadillac Eldorado Biarritz - Engine Start, Exhaust Idle, Revving and Shutdown, inspire153, Freesound 873856: tomgangen 20,5 til 30,0 s (`engine_idle.wav`), starten 5,6 til 10,0 s (`engine_start.mp3`) og stoppen 46,45 til 48,8 s (`engine_off.mp3`)
-- G13-19-Car Steady 30 MPH.wav, craigsmith, Freesound 438001: jevn kjøring sett innenfra, 5,0 til 15,0 s (`engine_drive.wav`)
+- Jeep-CJ5-1965-final.mp3, deleted_user_1995570, Freesound 234902, https://freesound.org/s/234902/: tomgangen 4,6 til 7,4 s (`engine_idle.wav`, WAV 11 kHz) og starten 2,5 til 5,4 s (`engine_start.mp3`)
+- auto truck jeep onboard driving rough terrain dirt rock various speeds slow to stop and pull up MS.wav, kyles, Freesound 451044, https://freesound.org/people/kyles/sounds/451044/: motoren innenfra ved jevn fart, 20,5 til 31,5 s under 900 Hz (`engine_drive.wav`, WAV 11 kHz), og stein, grus og skrangel under hjulene, 44,0 til 56,0 s over 400 Hz (`engine_rough.wav`, WAV 22 kHz, bare i Unreal, på grus og jord)
+- G15-15-Army Jeep with Brake Squeak.wav, craigsmith, Freesound 438110, https://freesound.org/s/438110/: stoppen 15,0 til 17,0 s (`engine_off.mp3`)
+
+Før 3. november 2026 var motoren to CC0-opptak fra Freesound: 1978 Cadillac Eldorado Biarritz, inspire153, Freesound 873856 (tomgang, start og stopp), og G13-19-Car Steady 30 MPH.wav, craigsmith, Freesound 438001 (kjøring). De er ikke lenger i repoet.
 
 ## Nasjonalsangen på radioen, allemannseie
 

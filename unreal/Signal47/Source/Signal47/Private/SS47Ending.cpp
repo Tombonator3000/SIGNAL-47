@@ -77,7 +77,7 @@ TArray<TPair<FString, FString>> SS47Ending::CreditsRows(bool bBoughtSfx)
 		{ TEXT("National anthem on the radio"), TEXT("The United States Air Force Band, \"The Star Spangled Banner\" (choral), public domain") },
 		{ TEXT("Radio observatory sounds"), TEXT("PSR B0329+54 data: Joseph W. Kania (WVU), Greenburst / Green Bank Telescope, doi:10.5281/zenodo.5570222 (CC BY 4.0), made audible for SIGNAL / 47. Felix Blume, satellite dish motor, New Mexico (CC0). awg, natural VLF radio reception (CC BY 4.0). Priwo, Star LC-10 printer (public domain)") },
 		{ TEXT("Out in the dark"), TEXT("Freesound: resourcemoon (CC BY 3.0), InSintesi (CC BY 4.0), superhalo, szegvari and JarredGibb (CC0)") },
-		{ TEXT("Sound effects, CC0"), TEXT("Freesound: inspire153 and craigsmith (the truck engine), viertelnachvier, transitking, geraldfiebig, DarkShroom, FreethinkerAnon, Gamba_Studio, rvandemark, qubodup, sqeeeek, Yoyodaman234, matth3wc04, BlondPanda, GiocoSound, Notarget, cabled_mess, CastIronCarousel, JarredGibb, Lunardrive, wjtaylor, yatoimtop, LilMati. Kenney.") },
+		{ TEXT("Sound effects, CC0"), TEXT("Freesound: deleted_user_1995570, kyles and craigsmith (the Jeep's engine and the rough ground), viertelnachvier, transitking, geraldfiebig, DarkShroom, FreethinkerAnon, Gamba_Studio, rvandemark, qubodup, sqeeeek, Yoyodaman234, matth3wc04, BlondPanda, GiocoSound, Notarget, cabled_mess, CastIronCarousel, JarredGibb, Lunardrive, wjtaylor, yatoimtop, LilMati. Kenney.") },
 	};
 	// Not asked for by their licence; named because the others are.
 	if (bBoughtSfx) Rows.Emplace(TEXT("Sound effects"), TEXT("Ultimate SFX for Games, Function Loops"));

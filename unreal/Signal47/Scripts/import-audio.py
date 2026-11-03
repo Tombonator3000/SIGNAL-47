@@ -1,13 +1,13 @@
 # Imports the WAV files staged by import-audio.sh (S47_AUDIO_STAGE) into /Game/Audio/<group> (a group may
 # be a folder of folders: Voice/Kinski goes to /Game/Audio/Voice/Kinski) and /Game/Licensed/Sfx. Loops
-# (names the web version loops) are marked looping.
+# (names the web version loops, and engine_rough, which only Unreal plays) are marked looping.
 import os
 import unreal
 
 eal = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 stage = os.environ.get('S47_AUDIO_STAGE', '')
-LOOPS = {'engine_idle', 'engine_drive', 'crickets', 'wind', 'radio_static', 'tv_hum', 'pressure', 'line_hush', 'printer', 'phone_ring',
+LOOPS = {'engine_idle', 'engine_drive', 'engine_rough', 'crickets', 'wind', 'radio_static', 'tv_hum', 'pressure', 'line_hush', 'printer', 'phone_ring',
          'carrier_hum', 'room_tone', 'motors', 'static_noise'}
 BATCH = 200  # (the voice banks have some 1500 files a folder)
 total = 0

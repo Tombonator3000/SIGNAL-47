@@ -1935,7 +1935,7 @@ bool US47World::Frame(double Dt, const FVector2D& Move, const FVector2D& LookIn,
 	FS47DriveController& D = *N->Drive;
 	// trouble with the truck, on the story's trips and the player's own (not chapter six's road)
 	if (bDriving && Trip && Id != TEXT("roswell")) Trouble.Step(Dt, D, *N->Truck, Engine.Get(), !bCommuteVehicle && TroubleOk ? TroubleOk() : false);
-	if (Engine) { Engine->Set(D.Rpm, D.Load); Engine->Tyres(D.Surface.Kind, FMath::Abs(D.Speed)); }
+	if (Engine) { Engine->Set(D.Rpm, D.Load); Engine->Tyres(D.Surface.Kind, FMath::Abs(D.Speed), D.Slip()); }
 	// the odometer turns with the miles driven (not on a free drive)
 	if (bDriving && !bCommuteVehicle && !(Trip && Trip->bFree) && Free.IsEmpty()) OdoM += FMath::Abs(D.Speed) * Dt;
 	DashT -= Dt;
