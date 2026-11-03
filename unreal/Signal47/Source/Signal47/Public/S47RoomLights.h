@@ -3,6 +3,8 @@
 #include "S47Json.h"
 #include "S47Obj.h"
 class US47Main;
+class US47Audio;
+class URectLightComponent;
 
 // Manual preferences and a separately saved Freeform incident override. Supply remains upstream.
 class FS47RoomLights
@@ -39,4 +41,12 @@ private:
  bool Build();
  bool Available(int32 Index) const;
  void Apply();
+ void UpdateAudio(double Dt);
+ void StopAudio();
+ TWeakObjectPtr<US47Audio> AudioOwner;
+ TArray<TWeakObjectPtr<URectLightComponent>> AudioFixtures[4];
+ double AudioScan = 0, AudioRetry = 0, AudioOffAge[4] = {0,0,0,0};
+ float AudioReference[4] = {32,32,32,32};
+ int32 AudioRoom = INDEX_NONE;
+ bool bAudioBed = false, bAudioPowerObserved[4] = {false,false,false,false};
 };

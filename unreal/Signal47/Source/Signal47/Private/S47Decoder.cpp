@@ -136,7 +136,7 @@ void FS47DecoderPlayer::Start(const FS47DecoderSet& P)
 	ApplySpace();
 	if (Params.Mode == TEXT("raw"))
 	{
-		Raw = MakeShared<FS47SignalVoice>(Ctx, Dry, Noise, RawRate());
+		Raw = MakeShared<FS47SignalVoice>(Ctx, Dry, Noise, RawRate(), ContactTexture, NebulaTexture);
 		Raw->Frame(1, RawLevel(), 0);
 	}
 	else StartPad();

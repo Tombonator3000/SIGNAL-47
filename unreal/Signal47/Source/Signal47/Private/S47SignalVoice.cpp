@@ -22,7 +22,8 @@ TArray<float> S47SignalVoice::Drive(double K)
 	return Curve;
 }
 
-FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, double InRate)
+FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, double InRate,
+	const TSharedPtr<FS47AudioBuffer>& Contact, const TSharedPtr<FS47AudioBuffer>& Nebula)
 	: Ctx(InCtx), Rate(FMath::Clamp(InRate, 0.1, 4.0))
 {
 	FS47AudioContext::FBatch Batch(*Ctx);
@@ -31,6 +32,32 @@ FS47SignalVoice::FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, cons
 	// a soft limiter so the thumps can be heavy without clipping the mix
 	auto Comp = C.CreateDynamicsCompressor(); Comp->Threshold.SetValue(-16); Comp->Ratio.SetValue(5); Comp->Attack.SetValue(0.003); Comp->Release.SetValue(0.2);
 	Comp->Connect(Out);
+	// The received anomaly and its RAW tape use the same quiet recording palette.
+	// These are designed textures, never mixed into genuine reference observations.
+	auto Texture = [&](const TSharedPtr<FS47AudioBuffer>& Buffer, double Speed, double Hp, double Lp)
+		-> TSharedPtr<FS47GainNode>
+	{
+		if (!Buffer || Buffer->Length() < 32) return nullptr;
+		const int32 K = FMath::Min(int32(Buffer->SampleRate() * 0.005), Buffer->Length() / 8);
+		const int32 N = Buffer->Length() - K;
+		auto Loop = C.CreateBuffer(Buffer->NumberOfChannels(), N, Buffer->SampleRate());
+		for (int32 Ch=0; Ch<Buffer->NumberOfChannels(); ++Ch) for (int32 I=0; I<N; ++I)
+		{
+			const float* D = Buffer->GetChannelData(Ch);
+			const int32 J = I - (N-K);
+			const double A = (J+1.0) / K;
+			Loop->GetChannelData(Ch)[I] = J < 0 ? D[I+K] : float(D[N+J]*(1-A)+D[J]*A);
+		}
+		auto Src = C.CreateBufferSource(); Src->Buffer=Loop; Src->bLoop=true;
+		auto High = C.CreateBiquadFilter(); High->SetType(TEXT("highpass")); High->Frequency.SetValue(Hp);
+		auto Low = C.CreateBiquadFilter(); Low->SetType(TEXT("lowpass")); Low->Frequency.SetValue(Lp);
+		auto G = C.CreateGain(); G->Gain.SetValue(0);
+		Src->Connect(High); High->Connect(Low); Low->Connect(G); G->Connect(Comp);
+		Rates(Src,Src->PlaybackRate,Speed); Rates(High,High->Frequency,Hp); Rates(Low,Low->Frequency,Lp);
+		Src->Start(); Nodes.Add(Src); return G;
+	};
+	ContactGrain = Texture(Contact, 1, 140, 2500);
+	NebulaBed = Texture(Nebula, 0.5, 35, 900);
 	Shaper = C.CreateWaveShaper(); Shaper->Curve = S47SignalVoice::Drive(2.6); Shaper->Oversample = TEXT("2x");
 
 	// the array's hiss, which a slow tremolo turns into a pulsing interference as clarity rises
@@ -120,6 +147,8 @@ void FS47SignalVoice::Frame(double InClarity, double InLevel, double T)
 	// the whine grows with clarity and swells inside a pulse group
 	Whine->Gain.SetTargetAtTime(0.05 * FMath::Pow(Clarity, 1.6) * (P.bGroup ? 1 : 0.55), Now, 0.08);
 	Undertow->Gain.SetTargetAtTime(0.012 * FMath::Pow(Clarity, 1.8) * (P.bGroup ? 0.35 : 1), Now, 0.16);
+	if (ContactGrain) ContactGrain->Gain.SetTargetAtTime(0.05 * Clarity * Clarity * (P.bOn ? 1 : 0), Now, 0.008);
+	if (NebulaBed) NebulaBed->Gain.SetTargetAtTime(0.018 * Clarity * Clarity * (P.bGroup ? 0.3 : 1), Now, 0.14);
 	if (P.bOn && !bLast && Clarity > 0.12) Thump(0.85 * Clarity * Clarity);
 	bLast = P.bOn;
 }

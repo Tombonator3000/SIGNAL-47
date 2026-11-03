@@ -10,6 +10,8 @@
 #include "S47Inter.h"
 #include "S47UI.h"
 #include "S47Three.h"
+#include "S47Audio.h"
+#include "S47ReceiverSound.h"
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 #include "Components/StaticMeshComponent.h"
@@ -19,10 +21,10 @@
 
 namespace
 {
- const TCHAR* Actions[]={TEXT("original"),TEXT("control"),TEXT("play"),TEXT("rewind"),TEXT("mark_start"),TEXT("mark_end"),TEXT("retain")};
- const TCHAR* Captions[]={TEXT("ORIGINAL"),TEXT("CONTROL"),TEXT("PLAY / STOP"),TEXT("REWIND"),TEXT("MARK IN"),TEXT("MARK OUT"),TEXT("RETAIN")};
+ const TCHAR* Actions[]={TEXT("original"),TEXT("control"),TEXT("play"),TEXT("rewind"),TEXT("mark_start"),TEXT("mark_end"),TEXT("retain"),TEXT("ref_next"),TEXT("ref_play"),TEXT("ref_stop")};
+ const TCHAR* Captions[]={TEXT("ORIGINAL"),TEXT("CONTROL"),TEXT("PLAY / STOP"),TEXT("REWIND"),TEXT("MARK IN"),TEXT("MARK OUT"),TEXT("RETAIN"),TEXT("REF NEXT"),TEXT("REF PLAY"),TEXT("REF STOP")};
  int32 ActionIndex(const FString& Id)
- {for(int32 I=0;I<7;++I)if(Id==FString(TEXT("ff:audio:"))+Actions[I])return I;return INDEX_NONE;}
+ {for(int32 I=0;I<UE_ARRAY_COUNT(Actions);++I)if(Id==FString(TEXT("ff:audio:"))+Actions[I])return I;return INDEX_NONE;}
 }
 FS47FreeformAudioDesk::~FS47FreeformAudioDesk(){Stop();}
 TSharedPtr<FS47FreeformAudioDesk> FS47FreeformAudioDesk::Shared(US47Main* Main)
@@ -70,6 +72,7 @@ void FS47FreeformAudioDesk::Begin()
 }
 void FS47FreeformAudioDesk::Stop()
 {
+ if(Reference)Reference->Stop();Reference.Reset();bReferenceView=false;
  bActive=false;Life.Reset();Show(false);
 }
 bool FS47FreeformAudioDesk::Build()
@@ -92,10 +95,10 @@ bool FS47FreeformAudioDesk::Build()
   T->SetHorizontalAlignment(EHTA_Center);T->SetVerticalAlignment(EVRTA_TextCenter);T->SetWorldSize(Size);T->SetTextRenderColor(FColor(212,214,176));T->SetCollisionEnabled(ECollisionEnabled::NoCollision);T->RegisterComponent();
   T->SetWorldLocation(S47Three::ToUE(At));T->SetWorldRotation(FRotator(0,-90,0));Texts.Add(T);return T;
  };
- for(int32 I=0;I<7;++I)
+ for(int32 I=0;I<UE_ARRAY_COUNT(Actions);++I)
  {
-  const int32 Col=I<4?I:I-4,Count=I<4?4:3;
-  const FVector At(X+Width*((Col+.5)/Count-.5),Y+(I<4?.065:0),Z);
+  const int32 Col=I<4?I:I<7?I-4:I-7,Count=I<4?4:3;
+  const FVector At(X+Width*((Col+.5)/Count-.5),Y+(I<4?.065:I<7?0:-.065),Z);
   auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Mat->SetVectorParameterValue(TEXT("Color"),FLinearColor(.12,.15,.13));Mat->SetScalarParameterValue(TEXT("Roughness"),.65);Mat->SetScalarParameterValue(TEXT("NativeLighting"),1);
   auto* C=NewObject<UStaticMeshComponent>(M->Web,*FString::Printf(TEXT("FreeformTapeKey%d"),I));C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(N->Comp.Get());C->SetStaticMesh(Cube);C->SetMaterial(0,Mat);
   C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldScale3D(S47Three::DirToUE(FVector(Width/Count*.91,.048,.027)));C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->SetCastShadow(false);C->RegisterComponent();
@@ -122,6 +125,9 @@ FString FS47FreeformAudioDesk::Label(const FString& Id)const
 {
  const int32 I=ActionIndex(Id);if(!Ready()||I==INDEX_NONE)return FString();
  if(!Powered())return TEXT("Tape comparator unpowered / restore feeder or generator");
+ if(I==7)return TEXT("Select next listening reference");
+ if(I==8)return Reference&&Reference->Playing()?TEXT("Stop reference playback"):TEXT("Play selected listening reference");
+ if(I==9)return TEXT("Stop reference playback");
  if(I==2)return (M->IsFreeform()?M->Freeform->AudioPlaying():M->Observing->AudioPlaying())?TEXT("Stop tape playback"):TEXT("Play selected recording");
  static const TCHAR* Labels[]={TEXT("Select original recording"),TEXT("Select independent control"),TEXT("Play selected recording"),TEXT("Rewind selected tape"),TEXT("Mark start on the original"),TEXT("Mark end on the original"),TEXT("Retain measured comparison / then register at OPS")};
  return Labels[I];
@@ -131,6 +137,22 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
  const int32 I=ActionIndex(Id);if(I==INDEX_NONE||!Ready())return false;
  if(!ListeningPosition()){if(IsValid(M->UI))M->UI->Toast(TEXT("Use the powered tape comparator at the radio table."),3);return true;}
  const bool Free=M->IsFreeform();bool Accepted=true;
+ if(I>=7)
+ {
+  // Reference playback has its own transport; comparison cursors, marks, heard
+  // coverage and retained conclusions remain owned by the original/control deck.
+  if(Free){if(M->Freeform->AudioPlaying())M->Freeform->AudioAction(TEXT("pause"));}
+  else if(M->Observing->AudioPlaying())M->Observing->AudioAction(TEXT("pause"));
+  if(!Reference&&M->Audio)Reference=MakeShared<FS47ReceiverSound>(M->Audio,M->Audio->Spatial(Anchor+FVector(0,.12,0),.65));
+  bReferenceView=true;
+  if(Reference)
+  {
+   if(I==7)Reference->Next();else if(I==9)Reference->Stop();else Accepted=Reference->Toggle();
+   if(IsValid(M->UI))M->UI->Toast(Reference->Label(),4);
+  }
+  return true;
+ }
+ if(Reference)Reference->Stop();bReferenceView=false;
  if(Free)M->Freeform->OpenAudio();else M->Observing->OpenAudioComparison();
  const bool Playing=Free?M->Freeform->AudioPlaying():M->Observing->AudioPlaying();
  const FString Action=I==2?(Playing?TEXT("pause"):TEXT("play")):I==6?TEXT("confirm"):Actions[I];
@@ -146,8 +168,10 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
 }
 void FS47FreeformAudioDesk::Step(double Dt)
 {
- if(!bActive||!Live())return;
+ if(!bActive||!Live()){if(Reference)Reference->Stop();return;}
  if(!bBuilt){if(!Build())return;BindControls();}
+ const bool EvidencePlaying=M->IsFreeform()?M->Freeform&&M->Freeform->AudioPlaying():M->Observing&&M->Observing->AudioPlaying();
+ if(Reference)Reference->Step(ListeningPosition()&&!EvidencePlaying&&!M->bPausedByMenu&&!M->ModalOpen()&&M->Story&&!M->Story->IsCinematic(),M->Audio&&M->Audio->Ctx?M->Audio->Ctx->CurrentTime():0);
  const bool Shown=Ready()&&M->Web->Area()==TEXT("saro");Show(Shown);if(!Shown)return;
  int32 Source=0;double Cursor=0,HeardO=0,HeardC=0,MarkIn=-1,MarkOut=-1,Control=0;bool Playing=false,Reviewed=false,Original=false;
  if(M->IsFreeform())
@@ -168,10 +192,11 @@ void FS47FreeformAudioDesk::Step(double Dt)
   if(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Recorded||J->ControlAt<8||J->Phenomenon==TEXT("wrong_source")||J->Phenomenon==TEXT("time_disagreement")||J->Phenomenon==TEXT("duplicate_print"))Line=M->Freeform->NextAction();
   else if(J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
  }
+ if(Powered()&&bReferenceView&&Reference)Line=Reference->Label();
  if(Line!=LastReadout&&Readout.IsValid()){Readout->SetText(FText::FromString(Line));LastReadout=Line;}
  for(int32 I=0;I<Controls.Num();++I)if(Controls[I].Material.IsValid())
  {
-  const bool Lit=Powered()&&((I==0&&Source==0)||(I==1&&Source==1)||(I==2&&Playing&&ListeningPosition())||(I==4&&MarkIn>=0)||(I==5&&MarkOut>=0)||(I==6&&Reviewed));
+  const bool Lit=Powered()&&((I==0&&Source==0)||(I==1&&Source==1)||(I==2&&Playing&&ListeningPosition())||(I==4&&MarkIn>=0)||(I==5&&MarkOut>=0)||(I==6&&Reviewed)||(I==8&&Reference&&Reference->Playing()));
   Controls[I].Material->SetVectorParameterValue(TEXT("Color"),Lit?FLinearColor(.24,.55,.30):FLinearColor(.12,.15,.13));
  }
 }

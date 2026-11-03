@@ -805,6 +805,8 @@ void FS47Observing::OpenReceiver()
 bool FS47Observing::RegisterScheduledData()
 {
  if(!bWorkEnabled||!Active()||StepNow!=EStep::Data||PulsarCheckActive()||FString(Runs()[Run].Data)!=TEXT("opsTerminal"))return false;
+ // A successful receiver-to-OPS data handoff, never a radio/alien cue.
+ if(M->Audio) M->Audio->PcTransfer();
  M->UI->Close();File();return true;
 }
 void FS47Observing::OpenOperations()

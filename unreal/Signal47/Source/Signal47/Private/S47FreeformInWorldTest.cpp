@@ -92,8 +92,10 @@ void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;
  const bool ScreensOnly=FParse::Param(FCommandLine::Get(),TEXT("S47FreeformScreensOnly"));
- if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("actual-jeep-driver.png"),TEXT("fysisk-audio.png")})
+ const bool SoundOnly=FParse::Param(FCommandLine::Get(),TEXT("S47SoundReferencesOnly"));
+ if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("actual-jeep-driver.png"),TEXT("fysisk-audio.png"),TEXT("space-reference-desk.png")})
  {
+  if(SoundOnly!=(FString(Name)==TEXT("space-reference-desk.png")))continue;
   if(ScreensOnly && FString(Name)!=TEXT("operations.png") && FString(Name)!=TEXT("status.png") && FString(Name)!=TEXT("tracking.png") && FString(Name)!=TEXT("receiver.png"))continue;
   TArray<uint8> Bytes;const bool PNG=FFileHelper::LoadFileToArray(Bytes,*(Root/Name))&&Bytes.Num()>1000&&Bytes[0]==137&&Bytes[1]==80&&Bytes[2]==78&&Bytes[3]==71;
   if(!Check(PNG,FString(TEXT("native screenshot exists with PNG signature: "))+Name)){Good=false;}
@@ -104,6 +106,12 @@ void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
  S47J::Set(O,TEXT("scope"),ScreensOnly?TEXT("four physical screens and camera only"):TEXT("full in-world equipment journey"));
  S47J::Set(O,TEXT("method"),ScreensOnly?TEXT("Production four-screen opening, native camera/window, live clock and four screenshots. Rendering-only follow-up; no repeated pump or audio journey."):FString(TEXT("Production terminal and pump callbacks, actual CRT geometry/camera/window, clock, pause and disk/Flow restore. Explicit one-day queue fixture. Physical tape comparison uses real profile tuning, settled encoders, timed acquisition/control, actual native eye-ray Pick and Walker OnUse at the regular pump and on ORIGINAL/PLAY, timed original/control listening, mark and retain callbacks without a modal.")));
  S47J::Set(O,TEXT("limits"),TEXT("Isolated /tmp developer case 0 only. Explicit camera/player/vehicle/equipment placements replace natural navigation/driving. SetAnomaly(true) is an explicit developer fixture; no completed measurement, coverage, finding or reward is injected. Mounted Jeep mesh identities and a native driver-seat screenshot are checked, but windshield/mirror visual acceptance still requires review of that image. No natural drive, actual mouse navigation, human listening/readability acceptance, full-night or whole-game regression. Bounded below 240 seconds."));
+ if(SoundOnly)
+ {
+  S47J::Set(O,TEXT("scope"),TEXT("six staged NASA/Nebula references at the physical SARO desk"));
+  S47J::Set(O,TEXT("method"),TEXT("Explicit isolated player placement, native eye-ray Pick/OnUse for REF PLAY, production next/stop callbacks, no comparison coverage, leaving range stops playback, native screenshot."));
+  S47J::Set(O,TEXT("limits"),TEXT("No human listening acceptance, natural navigation, full equipment journey or whole-game regression. Audio sample validity is checked separately by the offline runtime graph."));
+ }
  if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
 }
@@ -126,6 +134,12 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->IsFreeform(),TEXT("temporary developer Freeform case 0 required")))return;
   if(F.Director)F.Director->Stop();DayBefore=F.Day();CardsBefore=Cards(DayBefore);CaptureCards(TEXT("before-save"));
   if(!Check(F.Jobs().Num()>=3&&!CardsBefore.IsEmpty(),TEXT("daily source parameter cards exist in production session")))return;
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47SoundReferencesOnly")))
+  {
+   if(!Check(F.AudioDesk.IsValid(),TEXT("production reference desk exists")))return;
+   const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:ref_play"));
+   M->Player->Place(P.X,P.Z-1.2,0);AimAt(P);ScreenIndex=0;Go(40);return;
+  }
   if(!OpenScreen(0))return;Go(1);return;
  }
  if(Stage==1)
@@ -323,5 +337,33 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(Age-At<.35)return;
   Finish(true);return;
+ }
+ if(Stage==40)
+ {
+  if(Age-At<.5)return;
+  if(!Check(F.AudioDesk->ListeningPosition(),TEXT("powered reference desk reachable in actual SARO scene")))return;
+  if(!UseAimedAudio(TEXT("ff:audio:ref_play")))return;
+  if(!Check(F.AudioDesk->Label(TEXT("ff:audio:ref_play")).Contains(TEXT("Stop")),TEXT("native reference key starts staged recording")))return;
+  Go(41);return;
+ }
+ if(Stage==41)
+ {
+  if(Age-At<.8)return;
+  if(!Check(!F.AudioPlaying()&&F.CurrentJob()&&F.CurrentJob()->OriginalCovered==0&&F.CurrentJob()->ControlCovered==0&&!F.CurrentJob()->bAudioReviewed,TEXT("listening reference grants no acquisition or comparison coverage")))return;
+  if(ScreenIndex==0)FScreenshotRequest::RequestScreenshot(Root/TEXT("space-reference-desk.png"),true,false);
+  F.AudioDesk->Use(TEXT("ff:audio:ref_stop"));
+  if(!Check(F.AudioDesk->Label(TEXT("ff:audio:ref_play")).Contains(TEXT("Play")),TEXT("reference stop returns physical transport to stopped state")))return;
+  if(++ScreenIndex<6)
+  {
+   F.AudioDesk->Use(TEXT("ff:audio:ref_next"));AimAt(F.AudioDesk->InteractionPoint(TEXT("ff:audio:ref_play")));Go(40);return;
+  }
+  F.AudioDesk->Use(TEXT("ff:audio:ref_play"));
+  const FVector P=F.AudioDesk->InteractionPoint(TEXT("ff:audio:ref_play"));M->Player->Place(P.X,P.Z-4,0);Go(42);return;
+ }
+ if(Stage==42)
+ {
+  if(Age-At<.5)return;
+  if(!Check(!F.AudioDesk->ListeningPosition()&&F.AudioDesk->Label(TEXT("ff:audio:ref_play")).Contains(TEXT("Play")),TEXT("walking away stops reference transport")))return;
+  Finish(true,TEXT("six staged space references exercised through native SARO controls; no human listening acceptance"));return;
  }
 }

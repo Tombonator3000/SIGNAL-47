@@ -5,6 +5,8 @@
 
 #include "Camera/PlayerCameraManager.h"
 #include "Components/AudioComponent.h"
+#include "HAL/FileManager.h"
+#include "S47ReceiverSound.h"
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
@@ -39,11 +41,16 @@ void US47Audio::Init(UWorld* InWorld)
 	}
 	Unlock(true);
 	FString SoundBankPath;
-	if (FParse::Value(FCommandLine::Get(), TEXT("S47SoundBank="), SoundBankPath))
+	const bool bExplicitBank = FParse::Value(FCommandLine::Get(), TEXT("S47SoundBank="), SoundBankPath);
+	if (!bExplicitBank) SoundBankPath = FPaths::ProjectContentDir() / TEXT("Audio/Raw/sound_design/bank.json");
+	if (bExplicitBank || IFileManager::Get().FileExists(*SoundBankPath))
 	{
 		TArray<FString> Errors;
 		if (!LoadSoundBank(SoundBankPath, Errors))
-			for (const FString& Error : Errors) UE_LOG(LogS47Audio, Warning, TEXT("S47: sound bank: %s"), *Error);
+		{
+			for (const FString& Error : Errors) { UE_LOG(LogS47Audio, Warning, TEXT("S47: sound bank: %s"), *Error); }
+		}
+		else { UE_LOG(LogS47Audio, Display, TEXT("S47: runtime sound design loaded: %d recipes, staged recordings"), SoundRecipes.Num()); }
 	}
 	FString TourPath;
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47AudioTour="), TourPath)) Tour(TourPath);
@@ -329,6 +336,7 @@ bool US47Audio::SelfTest(TArray<FString>& Out)
 	bool bAll = S47Wa::SelfTest(Out);
 	bAll &= FS47SoundMixer::SelfTest(Out);
 	bAll &= TitleTextureSelfTest(Out);
+	bAll &= FS47ReceiverSound::SelfTest(Out);
 	bAll &= FS47Ambience::SelfTest(Out);
 	auto Check = [&](bool bOk, const FString& What)
 	{

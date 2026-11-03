@@ -10,7 +10,7 @@ Tom ønsker VHS-lyd på startskjermen, mer urovekkende klang for skumle signaler
 
 ## Lydmotor og modem, 3. november 2026
 
-Tom bestiller en lydmotor som kombinerer eksisterende lydopptak i lag og bearbeider dem til nye lyder. Modemlyder er reservert for PC-overføringer og lignende datakommunikasjon. De brukes ikke som array-, radio- eller VHS-forstyrrelser. Arrayets etablerte fire/sju-mønster beholdes. Oppskrifter og motor kan være offentlige; lokale referanseopptak holdes utenfor Git og automatisk pakking. Se [lydverkstedet](../../unreal/Signal47/Tools/sound-workshop/README.md).
+Tom bestiller en lydmotor som kombinerer eksisterende lydopptak i lag og bearbeider dem til nye lyder. Modemlyder er reservert for PC-overføringer og lignende datakommunikasjon. De brukes ikke som array-, radio- eller VHS-forstyrrelser. Arrayets etablerte fire/sju-mønster beholdes. Oppskrifter og motor kan være offentlige; lokale referanseopptak holdes utenfor Git og offentlig distribusjon. Toms oppfølgende bestilling 3. november autoriserer eksplisitt klargjøring, pakking og installasjon lokalt med NASA, Nebula og de øvrige lydkildene; `--stage-runtime` er den bevisste inngangen. Se [lydverkstedet](../../unreal/Signal47/Tools/sound-workshop/README.md).
 
 ## Gameplay-løkken er førsteprioritet, 3. november 2026
 

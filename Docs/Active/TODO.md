@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Lokal lydinstallasjon, 3. november
+
+- [ ] SOUND-INSTALL-01 / PR375: sluttbygg med NASA/Nebula og apparatlyd, målrettet graf- og fysisk referanseprøve, pakking og lokal installasjon med uendrede Saved. Avventer at det aktive installerte spillet lukkes; installasjonen er ikke levert ennå.
+
 ## Adaptiv musikk og signaluttrykk, 3. november
 
 - [x] SOUND-DESIGN-02: VHS-tekstur på startmenyen, mørkere signaltekstur og Morbidium-inspirert adaptiv musikk i Story og Freeform. Editorbygg og målrettet lydgrafprøve består; lokal installasjon og menneskelig lytting er ikke utført.

@@ -201,10 +201,14 @@ public:
 	// Unreal sound workshop: reusable recording layers on the existing audio graph.
 	// Banks can be prepared privately in Saved/AudioWorkshop; no automatic asset import.
 	bool LoadSoundBank(const FString& Path, TArray<FString>& Errors);
+	bool HasSoundRecipe(const FString& Name) const { return SoundRecipes.Contains(Name); }
+	TSharedPtr<FS47AudioBuffer> SoundSource(const FString& Name) const
+	{ const FS47MixAsset* A = SoundBank.Find(Name); return A ? A->Buffer : nullptr; }
 	bool PlaySoundMix(const FString& Key, const FString& Recipe, ES47SoundUse Use,
 		TArray<FString>& Errors, TSharedPtr<FS47AudioNode> Destination = nullptr);
 	void SoundMixFrame(const FString& Key, double Clarity, double Interference, double Activity, double T);
 	void StopSoundMix(const FString& Key, float Fade = 0.1f);
+	void PcTransfer(double Seconds = 2.2);
 	static bool RenderSoundWorkshop(const FString& BankPath);
 	// Menu tape texture is independent of music and follows the SFX/menu level.
 	void TitleTexture(bool bOn);
@@ -239,6 +243,7 @@ private:
 	TMap<FString, FS47MixAsset> SoundBank;
 	TMap<FString, FS47MixRecipe> SoundRecipes;
 	TMap<FString, TSharedPtr<FS47SoundMixer>> SoundMixes;
+	uint64 TransferSerial = 0;
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;
@@ -269,6 +274,7 @@ private:
 	TSharedPtr<FPhoneSession> PhoneSession;
 	TMap<FString, TSharedPtr<FS47GainNode>> Hums;
 	TMap<FString, float> HumGain;
+	TMap<FString, TArray<TSharedPtr<FS47OscillatorNode>>> HumSources;
 	float HumK = 1.f;
 	struct FTelex { TSharedPtr<FS47GainNode> G; TFunction<void()> Stop; } TelexRun;
 	struct FRadioNodes { TSharedPtr<FS47GainNode> Out, Voice; TFunction<void()> Stop; } RadioNodes;

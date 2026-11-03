@@ -97,6 +97,8 @@ public:
 	void Stop();
 	/** Every frame: schedule what is due, and say which pulse is sounding (for the displays). */
 	void Update();
+	void SetSignalTextures(const TSharedPtr<FS47AudioBuffer>& Contact, const TSharedPtr<FS47AudioBuffer>& Nebula)
+	{ ContactTexture = Contact; NebulaTexture = Nebula; }
 	/** (Unreal) Steps the playback back under a phone or a voice: 1 as set, 0.25 under them. */
 	void Duck(double K);
 	/** (Unreal) The level going out of the processor since the last call (RMS), for the VU meters. */
@@ -113,6 +115,7 @@ public:
 private:
 	TSharedRef<FS47AudioContext> Ctx;
 	TSharedPtr<FS47AudioBuffer> Noise;
+	TSharedPtr<FS47AudioBuffer> ContactTexture, NebulaTexture;
 	TSharedPtr<FS47GainNode> Out, Dry, Wet;
 	TSharedPtr<FS47LevelMeter> Meter;
 	double PhraseEnd = 0, PhraseK = 3;
