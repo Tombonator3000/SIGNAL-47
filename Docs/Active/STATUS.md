@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
+
+Codex viderefører Claudes østfløy på `codex/night-support-20261103` frem til kl. 08:00. Arbeidskopien har detaljert Blender-skall, tre LOD-er, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Story beholder samme utside med låste innganger. Dette er foreløpig en editorleveranse, ikke en ny installasjon.
+
+Native import av 26 rekvisittmodeller / 78 LOD-er og åtte materialsett består. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Faktisk Jeep-innkjøring over rampen, parkering, utstigning med bevart pose og rygging ut består. Første bilder avdekket lysnivå, manglende striper, skjult sluk og gamle tønner ved inngangen; rettingene kontrolleres videre i spillet.
+
+Bygg og 2 281 selvtester består. Fotofremkalling består 53 native kontroller med fire disk-/Continue-runder gjennom eksponering, fremkalling og betaling. Full Freeform-prøve stoppet med krasj i sesjonsopprydding etter disk-/Flow-retur. En manglende GC-vakt i Stop er rettet og editorbygget består; ny runtime-prøve av rettelsen og feltloggerutlånet gjenstår. Faktisk adgang gjennom personaldørene, Story-låsing og endelig visuell kontroll gjenstår. [Oppgavelogg](../../unreal/OPPGAVER.md).
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.

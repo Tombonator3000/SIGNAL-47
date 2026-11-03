@@ -36,15 +36,15 @@ FString FS47FreeformSession::ServiceObjective()const
   switch(Field->ParcelStage())
   {
    case 1:return TEXT("CALICHE GAS STATION: COLLECT THE PAID PARCEL");
-   case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("EAST WING CALIBRATION: DELIVER THE PARCEL TO THE BENCH; ENTER BY THE SARO SIGN"):TEXT("JEEP CARGO: HOLD THE PARCEL AND USE THE PARKED JEEP TO LOAD IT");
-   case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("EAST WING CALIBRATION: UNLOAD THE JEEP, THEN CARRY THE PARCEL TO THE BENCH"):TEXT("JEEP: DRIVE NORTH TO SARO AND UNLOAD AT THE SERVICE BAY");
+   case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: CARRY THE PARCEL TO THE LABELLED TABLE INSIDE THE EAST-WING GARAGE"):TEXT("JEEP CARGO: HOLD THE PARCEL AND USE THE PARKED JEEP TO LOAD IT");
+   case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: UNLOAD THE JEEP, THEN CARRY THE PARCEL TO THE RECEIVING TABLE"):TEXT("JEEP: DRIVE NORTH TO SARO AND UNLOAD AT THE EAST-WING GARAGE");
    case 4:return TEXT("PARCEL DROP SITE: RETRIEVE THE PARCEL WHERE YOU SET IT DOWN");
    default:return TEXT("CALICHE GAS STATION: DRIVE SOUTH; BUY A RELAY OR DONOR AT THE SUPPLY HATCH");
   }
  }
  if(Field->BenchBusy())return TEXT("EAST WING CALIBRATION BENCH: WAIT FOR THE AUTOMATIC CONTROLLER TEST; THE RESULT AND HARVESTED RELAY ARE RETAINED");
  if(S>=2&&S<=4&&Field->InventoryCount(TEXT("relay"))<=0)
-  return Field->InventoryCount(TEXT("donor"))>0?TEXT("EAST WING CALIBRATION BENCH: TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("SARO DEPOT: CHECK RELAY STOCK; BUY A REPLACEMENT AT CALICHE'S SUPPLY HATCH IF EMPTY");
+  return Field->InventoryCount(TEXT("donor"))>0?TEXT("EAST WING CALIBRATION BENCH: TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("PARTS STORAGE: CHECK RELAY STOCK; BUY A REPLACEMENT AT CALICHE'S SUPPLY HATCH IF EMPTY");
  switch(S)
  {
   case 2:return TEXT("S-03 WEST FOOT / LOCAL BOX: SELECT LOCAL TO ISOLATE REMOTE MOVEMENT");
@@ -66,7 +66,7 @@ bool FS47FreeformSession::CompleteServiceGuide()
  {Changed(TEXT("This route includes a new relay or donor transported in the jeep and delivered at SARO. Existing stock alone does not complete that optional route."));return false;}
  int32 Dish=INDEX_NONE;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03")){Dish=I;break;}
  if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish))return false;
- const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the service vehicle and delivered to the SARO bench during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
+ const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the service vehicle and unpacked at SARO garage receiving during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
  RecordEvidence(TEXT("service-work-order"),FString::Printf(TEXT("S-03 planned relay service / signed at OPS.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
  ServiceGuide=2;bGuideFocus=false;Changed(TEXT("OPS (corner PC): Select DAILY WORK or CASE ARCHIVE. The service order is verified and archived; S-03 is back in REMOTE."));return true;
 }
@@ -77,7 +77,7 @@ void FS47FreeformSession::OpenServiceGuide()
  Rows.Add(S47FreeformTerminal::Paper(TEXT("SARO / S-03 SERVICE WORK ORDER\nOptional planned maintenance: diagnose, replace, physically test and retain the result. S-03 is taken out of remote operation when you accept. Other antennas and daily jobs remain available.")));
  if(ServiceGuide==0)
  {
-  Rows.Add(S47FreeformTerminal::Text(TEXT("Use the relay already held at SARO, or practise the supply route: drive south to Caliche's gas station, buy a relay ($25) or donor ($15), collect and load its parcel, return north and unload at the bench beside the SARO sign. Donors require a bench test. The notebook map retains this route.")));
+  Rows.Add(S47FreeformTerminal::Text(TEXT("Use the relay already held at SARO, or practise the supply route: drive south to Caliche's gas station, buy a relay ($25) or donor ($15), collect and load its parcel, return north to the east-wing garage. GARAGE RECEIVING: Unload and carry the parcel to the receiving table. CALIBRATION / REPAIR: Test donors after delivery. The notebook map retains this route.")));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / use SARO stock"),[this]{if(StartServiceGuide(false))M->UI->Close();},true));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / collect and transport new supplies"),[this]{if(StartServiceGuide(true))M->UI->Close();}));
  }

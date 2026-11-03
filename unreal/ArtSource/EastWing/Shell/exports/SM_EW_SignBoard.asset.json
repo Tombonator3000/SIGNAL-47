@@ -1,0 +1,221 @@
+{
+  "asset": "SM_EW_SignBoard",
+  "fbx": "SM_EW_SignBoard.fbx",
+  "fbx_sha256": "f50f74e8ad8c4e729838b61c0be9168c9998b97270d76dc08f86589d36c722ac",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_SignBoard_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_Galvanized",
+    "EW_Shell_GreenTrim",
+    "EW_Shell_SignFace"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.46000000834465027,
+        0.49000000953674316,
+        0.47999998927116394,
+        1.0
+      ],
+      "Roughness": 0.3700000047683716,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_GreenTrim",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.08500000089406967,
+        0.13500000536441803,
+        0.10499999672174454,
+        1.0
+      ],
+      "Roughness": 0.49000000953674316,
+      "Metallic": 0.11999999731779099,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_SignFace",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.054999999701976776,
+        0.08500000089406967,
+        0.06499999761581421,
+        1.0
+      ],
+      "Roughness": 0.5699999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_SignBoard_LOD1.fbx",
+      "sha256": "61e006c1a226d2b6e7e9ac4d0633c3b36f8d29cd4889358e54207a2ea7c6bfda",
+      "triangles": 232,
+      "expected_native_triangles": 232,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          23.399999618530273,
+          -5.594999313354492,
+          1.0499999523162842
+        ],
+        [
+          30.399999618530273,
+          -5.5,
+          2.75
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          23.399999618530273,
+          1.0499999523162842,
+          5.5
+        ],
+        [
+          30.399999618530273,
+          2.75,
+          5.594999313354492
+        ]
+      ],
+      "dimensions_m": [
+        7.0,
+        0.09499931335449219,
+        1.7000000476837158
+      ]
+    },
+    {
+      "file": "SM_EW_SignBoard_LOD2.fbx",
+      "sha256": "5e089959842783ecf7db370d1bbf92699cfa37e2c1d798f68060fb2fd6ed525f",
+      "triangles": 72,
+      "expected_native_triangles": 72,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          23.399999618530273,
+          -5.594999313354492,
+          1.0499999523162842
+        ],
+        [
+          30.399999618530273,
+          -5.5,
+          2.75
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          23.399999618530273,
+          1.0499999523162842,
+          5.5
+        ],
+        [
+          30.399999618530273,
+          2.75,
+          5.594999313354492
+        ]
+      ],
+      "dimensions_m": [
+        7.0,
+        0.09499931335449219,
+        1.7000000476837158
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 0,
+  "collision_source_parts": [],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 952,
+  "expected_native_triangles": 952,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      23.399999618530273,
+      -5.594999313354492,
+      1.0499999523162842
+    ],
+    [
+      30.399999618530273,
+      -5.5,
+      2.75
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      23.399999618530273,
+      1.0499999523162842,
+      5.5
+    ],
+    [
+      30.399999618530273,
+      2.75,
+      5.594999313354492
+    ]
+  ],
+  "dimensions_m": [
+    7.0,
+    0.09499931335449219,
+    1.7000000476837158
+  ]
+}

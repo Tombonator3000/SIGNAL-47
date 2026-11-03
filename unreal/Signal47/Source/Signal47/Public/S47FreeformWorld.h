@@ -107,7 +107,7 @@ private:
  TMap<FString,int32> Stock;
  double GeneratorSeconds = 0, Fuel = 3, LastClock = -1, BenchSeconds = 0, FeederSeconds = 0, Settle = 0, ServiceAz = 0, ServiceEl = 0;
  FVector Dropped = FVector::ZeroVector;
- FS47Obj Bench, Depot, BenchMeter, BenchLamp, BenchSample, Shop, Panel, Lid, Relay, Selector, Generator, FeederPanel, FeederLever, FeederLamp;
+ FS47Obj Bench, SampleBench, Delivery, Depot, BenchMeter, BenchLamp, BenchSample, Shop, Panel, Lid, Relay, Selector, Generator, FeederPanel, FeederLever, FeederLamp;
  FS47Obj ParcelSaro, ParcelRoad, CargoSaro, CargoRoad;
  TArray<FS47Obj> Parts;
  struct FOverride { bool bLook = false; TFunction<FString()> Label, Examine; TFunction<void()> Use; };
@@ -148,7 +148,9 @@ private:
  bool GeneratorUse();
  bool ParcelUse();
  bool CargoUse();
- bool Deposit();
+ bool Deposit(const FString& Station);
+ void OpenDepot();
+ void OpenSampleLab();
  void DonorTest();
  void RefuelTruck();
  void RoadsideAssist();

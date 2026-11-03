@@ -556,10 +556,51 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==44)
  {
   const int32 Before=F.InventoryCount(TEXT("fuse"));F.Field->Use(TEXT("ff:bench"));
-  if(!Check(F.Field->ParcelStage()==0&&F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("physical bench unpacks one purchased part into persistent stock")))return;
-  F.Field->Use(TEXT("ff:bench"));M->UI->Close(true);
-  if(!Check(F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("repeated bench use does not duplicate delivered supplies")))return;
-  Shot(TEXT("service-bench"));Go(441,.3);return;
+  if(!Check(F.Field->ParcelStage()==2&&F.InventoryCount(TEXT("fuse"))==Before,TEXT("calibration bench cannot unpack a supply parcel remotely from garage receiving")))return;
+  const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));M->Player->Place(Receiving.X,Receiving.Z+1.5,0);F.Field->Use(TEXT("ff:delivery"));
+  if(!Check(F.Field->ParcelStage()==0&&F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("physical garage receiving unpacks one purchased part into persistent stock")))return;
+  F.Field->Use(TEXT("ff:delivery"));M->UI->Close(true);
+  if(!Check(F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("repeated garage receiving use does not duplicate delivered supplies")))return;
+  Shot(TEXT("service-bench"));Go(440,.3);return;
+ }
+ if(Stage==440)
+ {
+  // Explicit authorization/prepared-device fixture, not a naturally concluded case or field recording.
+  // Exercise production station callbacks and the native checkout button, then restore the session.
+  const auto Before=S47J::Read(S47J::Write(F.Save()));
+  const auto Fixture=S47J::Read(S47J::Write(Before));
+  auto Cases=S47J::Obj(Fixture,TEXT("cases"));auto Access=S47J::Strs(Cases,TEXT("access"));
+  Access.AddUnique(TEXT("access.fieldlogger"));S47J::Set(Cases,TEXT("access"),Access);
+  FS47FieldLogger Device;Device.Assembly=3;Device.Calibration=3;Device.bCalibrated=true;Device.Battery=FS47FieldLogger::Capacity;
+  FS47FieldLogger::FTape Tape;Tape.Id=TEXT("fieldlogger01.tape1");Tape.Day=1;Tape.Start=100;Tape.End=220;Tape.Seconds=120;Tape.Offset=2.4;Tape.Levels={.2,.4};Tape.bRetrieved=true;
+  Device.Tapes.Add(Tape);Device.Serial=1;
+  S47J::Set(S47J::Obj(Fixture,TEXT("field")),TEXT("fieldlogger"),Device.Save());F.Begin(Fixture,F.Lethal());
+  auto Place=[&](const TCHAR* Id){const FVector P=F.Field->InteractionPoint(Id);M->Player->Place(P.X,P.Z+1.5,0);M->UI->Close(true);};
+  auto OriginalIntact=[&](){const auto& L=F.Field->FieldLogger();return L.Serial==1&&L.Tapes.Num()==1&&L.Tapes[0].Id==Tape.Id&&L.Tapes[0].Levels==Tape.Levels&&L.Tapes[0].Start==Tape.Start&&L.Tapes[0].End==Tape.End&&L.Tapes[0].Seconds==Tape.Seconds&&L.Tapes[0].Offset==Tape.Offset&&L.Tapes[0].bRetrieved&&!L.Tapes[0].bCompared;};
+  Place(TEXT("ff:bench"));
+  if(!Check(F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0,TEXT("explicit authorized logger fixture cannot check out at calibration bench")))return;
+  Place(TEXT("ff:depot"));
+  if(!Check(!F.Field->LoggerAction(TEXT("calibrate"))&&!F.Field->LoggerAction(TEXT("tune"))&&!F.Field->LoggerAction(TEXT("compare")),TEXT("depot cannot calibrate, tune or compare field originals")))return;
+  F.Field->Use(TEXT("ff:depot"));
+  TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;
+  if(Modal)PhotoButtons(Modal.ToSharedRef(),TEXT("Check out calibrated field logger"),Buttons);
+  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("parts storage exposes one enabled native equipment checkout button")))return;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();
+#else
+  Finish(false,TEXT("native logger checkout test requires development build"));return;
+#endif
+  if(!Check(F.Field->ParcelStage()==2&&F.Field->ParcelItem()==TEXT("fieldlogger")&&!F.Field->LoggerAction(TEXT("take"))&&OriginalIntact(),TEXT("native checkout carries one logger; duplicate checkout preserves retained tape")))return;
+  Place(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));
+  if(!Check(F.Field->ParcelStage()==2&&OriginalIntact(),TEXT("wrong-station bench return is rejected without losing logger or original")))return;
+  Place(TEXT("ff:depot"));F.Field->Use(TEXT("ff:depot"));
+  if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelItem().IsEmpty()&&OriginalIntact(),TEXT("equipment checkout accepts return with original tape identity and samples intact")))return;
+  F.Field->Use(TEXT("ff:depot"));M->UI->Close(true);
+  const auto Returned=S47J::Read(S47J::Write(F.Field->Save()));F.Field->Begin(Returned);
+  if(!Check(F.Field->ParcelStage()==0&&OriginalIntact(),TEXT("repeat depot use and JSON restore do not duplicate logger or alter original tape")))return;
+  Place(TEXT("ff:bench"));
+  if(!Check(F.Field->LoggerAction(TEXT("compare"))&&OriginalIntact(),TEXT("bench comparison opens but incomplete fixture tape cannot establish a valid comparison")))return;
+  M->UI->Close(true);F.Begin(Before,F.Lethal());Go(441,.3);return;
  }
  if(Stage==441)
  {
@@ -668,11 +709,13 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(!Photo.Id.IsEmpty()&&!Photo.Url.IsEmpty(),TEXT("native camera renders and retains the actual physical trace")))return;
   F.Director->Use(TEXT("ff:event-sample"));
   if(!Check(F.InventoryCount(TEXT("fragment"))==1&&F.HasFinding(TEXT("landing_trace")),TEXT("photographed trace becomes one retained physical sample")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
+  const FVector WrongBench=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(WrongBench.X,WrongBench.Z+1.5,0);
+  if(!Check(!F.Field->AnalyzeSample(),TEXT("calibration bench cannot start analysis at the separate test lab")))return;
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:sample"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
  }
  if(Stage==24)
  {
-  if(!Check(F.Field->AnalyzeSample(),TEXT("physical sample analysis starts at the service bench")))return;
+  if(!Check(F.Field->AnalyzeSample(),TEXT("physical sample analysis starts at the test-lab sample station")))return;
   Go(241,.7);return;
  }
  if(Stage==241)

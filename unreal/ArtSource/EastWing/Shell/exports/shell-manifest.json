@@ -1,0 +1,157 @@
+{
+  "order": "EASTWING-01",
+  "status": "GENERATED_NOT_NATIVE_VERIFIED",
+  "coordinate_contract": "Blender=(three.x,-three.z,three.y), metres; native recipe maps to UE=(100x,-100y,100z)",
+  "static_origin_three_m": [
+    0,
+    0,
+    0
+  ],
+  "blockout_contract": {
+    "assets": 8,
+    "editable_parts": 332,
+    "clear_aperture_probes": 7,
+    "clear_aperture_volumes": 7,
+    "footprint_three_m": [
+      20.6,
+      38.6,
+      -5.5,
+      5.5
+    ],
+    "ceiling_y_m": 3.32
+  },
+  "editable": "EastWing_Shell.blend",
+  "editable_sha256": "26145d8ec45165dcbaa86fa0eea17033f3146c89c12ea16b15dfa39a046132e7",
+  "assets": [
+    {
+      "id": "SM_EW_Shell",
+      "manifest": "SM_EW_Shell.asset.json",
+      "anchor_three_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_Shell",
+      "lod_triangles": [
+        8368,
+        2032,
+        624
+      ]
+    },
+    {
+      "id": "SM_EW_Ceiling",
+      "manifest": "SM_EW_Ceiling.asset.json",
+      "anchor_three_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_Ceiling",
+      "lod_triangles": [
+        1692,
+        396,
+        108
+      ]
+    },
+    {
+      "id": "SM_EW_Trim",
+      "manifest": "SM_EW_Trim.asset.json",
+      "anchor_three_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_Trim",
+      "lod_triangles": [
+        37144,
+        8024,
+        2292
+      ]
+    },
+    {
+      "id": "SM_EW_WindowGlass",
+      "manifest": "SM_EW_WindowGlass.asset.json",
+      "anchor_three_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_WindowGlass",
+      "lod_triangles": [
+        144,
+        144,
+        144
+      ]
+    },
+    {
+      "id": "SM_EW_SignBoard",
+      "manifest": "SM_EW_SignBoard.asset.json",
+      "anchor_three_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_SignBoard",
+      "lod_triangles": [
+        952,
+        232,
+        72
+      ]
+    },
+    {
+      "id": "SM_EW_PersonnelDoor",
+      "manifest": "SM_EW_PersonnelDoor.asset.json",
+      "anchor_three_m": [
+        21.3,
+        0.0,
+        5.5
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_PersonnelDoor",
+      "lod_triangles": [
+        3596,
+        932,
+        252
+      ]
+    },
+    {
+      "id": "SM_EW_RollUpDoor",
+      "manifest": "SM_EW_RollUpDoor.asset.json",
+      "anchor_three_m": [
+        35.4,
+        3.0,
+        5.5
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_RollUpDoor",
+      "lod_triangles": [
+        7708,
+        1804,
+        492
+      ]
+    },
+    {
+      "id": "SM_EW_ServiceDoor",
+      "manifest": "SM_EW_ServiceDoor.asset.json",
+      "anchor_three_m": [
+        38.6,
+        0.0,
+        1.2
+      ],
+      "native_path": "/Game/EastWing/Shell/SM_EW_ServiceDoor",
+      "lod_triangles": [
+        3596,
+        932,
+        252
+      ]
+    }
+  ],
+  "retained_world_geometry": [
+    "Shared house:roof geo17",
+    "Shared roof/site dressing geo18/454/455"
+  ],
+  "open_questions": [
+    "New east service door requires matching walking/Story-lock integration; old exterior only had meter/conduit.",
+    "SignFace has 0..1 UV for the retained sign art; texture hookup remains runtime work.",
+    "Roll-up source is a closed slatted curtain with separate source slats; animation remains runtime work.",
+    "Existing Props surfaces are procedural, not a new claim of photo-sourced material or photoreal runtime quality."
+  ]
+}

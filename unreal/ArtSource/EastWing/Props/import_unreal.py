@@ -147,14 +147,14 @@ def make_plan():
 
 def import_plan(plan, report_path):
     counts_path = HERE / 'native-triangle-counts.json'
-    require(counts_path.is_file(), 'Run native_triangle_counts.py in Blender before native import')
+    require(counts_path.is_file(), 'Run native_triangle_counts.py with Python before native import')
     counts = {(r['asset'], r['lod']): r for r in read(counts_path)['lods']}
     for model in plan['models']:
         for lod, item in enumerate(model['lods']):
             prediction = counts.get((model['row']['asset'], lod))
             require(prediction is not None, 'Missing native triangle prediction', item['file'])
             require(prediction['sha256'] == digest(Path(model['source']).parent / item['file'])
-                    and prediction['source_triangles'] == item['triangles'],
+                    and prediction['manifest_triangles'] == item['triangles'],
                     'Native prediction does not match the delivered FBX', item['file'])
     import unreal
     require(all(hasattr(unreal, name) for name in ('GeometryScript_AssetUtils',

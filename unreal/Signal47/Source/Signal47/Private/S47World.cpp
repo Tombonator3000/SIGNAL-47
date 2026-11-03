@@ -936,7 +936,7 @@ void US47World::Roam(const FString& From)
 		TArray<FString> Say;
 		if (FirstTime(TEXT("drive"))) Say.Add(FString::Printf(TEXT("%s, %s, %s and %s: drive. %s: radio. Stop and press %s to get out."), *S47Keys::Said(TEXT("forward")), *S47Keys::Said(TEXT("back")), *S47Keys::Said(TEXT("left")), *S47Keys::Said(TEXT("right")), *S47Keys::Said(TEXT("radio")), *S47Keys::Said(TEXT("use"))));
 		const bool bFreeform = M && M->IsFreeform();
-		if (bFreeform) Say.Add(TEXT("Supplies: drive south past the motel to Caliche. The gas station is west of the highway, just south of Mesa Diner. Parts and donors 08:00-20:00; essential emergency requisitions after hours. Return north to the service bench by the SARO sign. The notebook map marks both stops."));
+		if (bFreeform) Say.Add(TEXT("CALICHE GAS STATION: Drive south past the motel; the station is west of the highway, just south of Mesa Diner. Parts and donors 08:00-20:00; essential requisitions after hours. GARAGE RECEIVING: Return north to SARO, unload the Jeep and carry supplies to the labelled table inside the east-wing garage. The notebook map marks both stops."));
 		else if (FirstTime(TEXT("roam"))) Say.Add(TEXT("On the highway, stop at the motel or the diner."));
 		if (Say.Num()) Toast(FString::Join(Say, TEXT(" ")), bFreeform ? 12.f : 5.5f);
 	};

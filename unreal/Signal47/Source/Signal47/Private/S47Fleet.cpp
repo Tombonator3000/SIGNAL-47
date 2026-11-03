@@ -276,5 +276,5 @@ bool FS47FleetParked::Audit(TArray<FString>& Lines)const
   if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
  }
  Check(NewFeet==1&&OldFeet==0,TEXT("sedan actual foot follows west staff bay; old east bay and garage approach clear"));
- auto* D=TrimmedDressing.Get();Check(D&&D->GetStaticMesh()&&D->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")&&D->GetStaticMesh()->GetNumTriangles(0)==10328&&D->GetMaterial(0)==DressingMaterial.Get(),TEXT("exact old-car/window trim plus230 front brush+144 old wheel triangles removed,10328 unrelated triangles retain original dressing atlas"));return Ok;
+ auto* D=TrimmedDressing.Get();Check(D&&D->GetStaticMesh()&&(D->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")||D->GetStaticMesh()->GetPathName()==TEXT("/Game/EastWing/Access/SM_EW_AccessDressing.SM_EW_AccessDressing"))&&D->GetStaticMesh()->GetNumTriangles(0)==10328&&D->GetMaterial(0)==DressingMaterial.Get(),TEXT("exact old-car/window trim plus230 front brush+144 old wheel triangles removed,10328 unrelated triangles retain original dressing atlas"));return Ok;
 }

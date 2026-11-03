@@ -30,8 +30,15 @@ private:
  void Dump() const;
  bool Retire();
  void Build();
+ bool BuildDetailed();
+ bool RelocateAccessDressing();
+ TArray<TWeakObjectPtr<class UStaticMeshComponent>> NativeDoors;
+ TUniquePtr<class FS47EastWingProps> PropsHelper;
  void Block(const FString& Name,const FVector& Min,const FVector& Max,UMaterialInterface* Mat,bool bShadow=true);
  void Light(const FString& Name,const FVector& At,float Lumens,const FLinearColor& Colour);
  void Walls();
  bool Step(float Dt);
+ void DriveTest();
+ int32 DriveStage=0; double DriveStarted=0; bool bDriveRampSeen=false;
+ TArray<FString> DriveChecks;
 };

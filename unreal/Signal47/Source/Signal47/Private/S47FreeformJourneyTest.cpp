@@ -161,10 +161,11 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(M->World->bBusy||Age-At<.5)return;M->World->PlaceTruck(TEXT("saro"));PlaceAt(TEXT("ff:cargo"));W.Use(TEXT("ff:cargo"));
   if(!Check(W.ParcelStage()==2,TEXT("cargo unloaded before depot delivery")))return;
-  PlaceAt(TEXT("ff:bench"));W.Use(TEXT("ff:bench"));
+  PlaceAt(TEXT("ff:delivery"));W.Use(TEXT("ff:delivery"));
   if(!Check(W.ParcelStage()==0&&W.InventoryCount(TEXT("donor"))==1&&W.ServiceSupplyDeliveries()==DeliveryBefore+1,TEXT("transported donor delivered exactly once to SARO")))return;
-  W.Use(TEXT("ff:bench"));M->UI->Close(true);
+  W.Use(TEXT("ff:delivery"));M->UI->Close(true);
   if(!Check(W.ServiceSupplyDeliveries()==DeliveryBefore+1,TEXT("reopening depot does not duplicate supply delivery")))return;
+  PlaceAt(TEXT("ff:bench"));
   if(!Check(W.StartDonorTest(),TEXT("physical bench starts donor test from delivered stock")))return;Go(9);return;
  }
  if(Stage==9)

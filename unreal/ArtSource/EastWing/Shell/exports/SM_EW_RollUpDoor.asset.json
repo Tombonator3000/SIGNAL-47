@@ -1,0 +1,219 @@
+{
+  "asset": "SM_EW_RollUpDoor",
+  "fbx": "SM_EW_RollUpDoor.fbx",
+  "fbx_sha256": "2b46f2285d6133589cba83df6688cfac9b5009a9126e3fb927d352dbef7b61f3",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_RollUpDoor_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    35.4,
+    3.0,
+    5.5
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_Galvanized",
+    "EW_Shell_Scuff"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.46000000834465027,
+        0.49000000953674316,
+        0.47999998927116394,
+        1.0
+      ],
+      "Roughness": 0.3700000047683716,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Scuff",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.03500000014901161,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_RollUpDoor_LOD1.fbx",
+      "sha256": "afc2bda1d10b841e6f9900f5042f34f1d7c378b9f368d7689b175c2d6b014e1a",
+      "triangles": 1804,
+      "expected_native_triangles": 1804,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          -2.18499755859375,
+          0.008999824523925781,
+          -2.997999906539917
+        ],
+        [
+          2.18499755859375,
+          0.09499979019165039,
+          -0.02050018310546875
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          33.215003967285156,
+          0.002000093460083008,
+          5.40500020980835
+        ],
+        [
+          37.584999084472656,
+          2.9794998168945312,
+          5.491000175476074
+        ]
+      ],
+      "dimensions_m": [
+        4.3699951171875,
+        0.08599996566772461,
+        2.9774997234344482
+      ]
+    },
+    {
+      "file": "SM_EW_RollUpDoor_LOD2.fbx",
+      "sha256": "6fd0f50b4b0701b230f9630635854e4f31f5907b834fdba363be5b655c4b441c",
+      "triangles": 492,
+      "expected_native_triangles": 492,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          -2.18499755859375,
+          0.008999824523925781,
+          -2.997999906539917
+        ],
+        [
+          2.18499755859375,
+          0.09499979019165039,
+          -0.02050018310546875
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          33.215003967285156,
+          0.002000093460083008,
+          5.40500020980835
+        ],
+        [
+          37.584999084472656,
+          2.9794998168945312,
+          5.491000175476074
+        ]
+      ],
+      "dimensions_m": [
+        4.3699951171875,
+        0.08599996566772461,
+        2.9774997234344482
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 20,
+  "collision_source_parts": [
+    "RollSlat00",
+    "RollSlat01",
+    "RollSlat02",
+    "RollSlat03",
+    "RollSlat04",
+    "RollSlat05",
+    "RollSlat06",
+    "RollSlat07",
+    "RollSlat08",
+    "RollSlat09",
+    "RollSlat10",
+    "RollSlat11",
+    "RollSlat12",
+    "RollSlat13",
+    "RollSlat14",
+    "RollSlat15",
+    "RollSlat16",
+    "RollSlat17",
+    "RollSlat18",
+    "RollSlat19"
+  ],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 7708,
+  "expected_native_triangles": 7708,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      -2.18499755859375,
+      0.008999824523925781,
+      -2.997999906539917
+    ],
+    [
+      2.18499755859375,
+      0.09499979019165039,
+      -0.02050018310546875
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      33.215003967285156,
+      0.002000093460083008,
+      5.40500020980835
+    ],
+    [
+      37.584999084472656,
+      2.9794998168945312,
+      5.491000175476074
+    ]
+  ],
+  "dimensions_m": [
+    4.3699951171875,
+    0.08599996566772461,
+    2.9774997234344482
+  ]
+}
