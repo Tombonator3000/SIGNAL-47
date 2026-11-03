@@ -6,6 +6,7 @@ class AS47Web;
 class UTextRenderComponent;
 class UStaticMeshComponent;
 class UMaterialInstanceDynamic;
+class FS47ReceiverSound;
 
 // Shared physical controls on the existing reel deck. The current mode's
 // Freeform session or authored Story observer owns all audio/evidence state.
@@ -31,6 +32,8 @@ private:
  bool bActive=false,bBuilt=false;
  FVector Anchor=FVector::ZeroVector;
  FString LastReadout;
+ TSharedPtr<FS47ReceiverSound> Reference;
+ bool bReferenceView=false;
  TWeakObjectPtr<UTextRenderComponent> Readout;
  struct FControl
  {

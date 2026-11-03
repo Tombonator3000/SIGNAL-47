@@ -7,7 +7,8 @@
 // after the signal in "Contact" (1997): the hiss of the array gives way to a pulsing, structured
 // interference, then heavy low thumps like machinery cycling, with a metallic whine that rises
 // and falls over them. The thumps keep this game's own rhythm, the 4/7 pulse group every 5.2 s
-// (Signal.ts), not the film's prime numbers. All synthesis, no samples.
+// (Signal.ts), not the film's prime numbers. Optional staged Contact/Nebula textures
+// complement the synth and are shared with RAW tape playback at its actual speed.
 //
 // clarity 0 is plain static; 1 is the locked signal. The receiver drives it every frame.
 
@@ -24,7 +25,8 @@ class SIGNAL47_API FS47SignalVoice
 {
 public:
 	/** Rate: (Unreal only) the speed of a tape it plays from, 1 as received (S47Decoder.h). */
-	FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, double InRate = 1);
+	FS47SignalVoice(const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& Dest, const TSharedPtr<FS47AudioBuffer>& Noise, double InRate = 1,
+		const TSharedPtr<FS47AudioBuffer>& Contact = nullptr, const TSharedPtr<FS47AudioBuffer>& Nebula = nullptr);
 	/** (Unreal only, on Tom's request: departs from the web version) The tape's speed: 0.5 plays it at
 	 *  half speed, an octave down and twice as slow in every sweep, wobble and thump, as a slowed deck
 	 *  does (the signal processor's RAW playback at TIME k plays at 1/k). It glides there. */
@@ -40,7 +42,7 @@ public:
 
 private:
 	TSharedRef<FS47AudioContext> Ctx;
-	TSharedPtr<FS47GainNode> Out, Stat, StatGate, Whine, TremDepth, ThumpBus, Undertow;
+	TSharedPtr<FS47GainNode> Out, Stat, StatGate, Whine, TremDepth, ThumpBus, Undertow, ContactGrain, NebulaBed;
 	TSharedPtr<FS47BiquadFilterNode> WhineBand;
 	TArray<TSharedPtr<FS47ScheduledSourceNode>> Nodes;
 	bool bLast = false;

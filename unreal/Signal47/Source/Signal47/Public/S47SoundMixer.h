@@ -6,7 +6,7 @@
 class FJsonObject;
 
 // Unreal-only sound workshop: recordings and the existing synth share one audio graph.
-enum class ES47SoundUse : uint8 { Receiver, Vhs, PcTransfer };
+enum class ES47SoundUse : uint8 { Receiver, Vhs, PcTransfer, Equipment };
 
 struct FS47MixAsset
 {
