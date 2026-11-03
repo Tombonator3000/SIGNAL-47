@@ -4,7 +4,21 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Funn fra Toms Freeform-spilltest, 3. november
+
+Disse punktene er meldt av Tom etter praktisk spilling. De er åpne spillerkrav; eksisterende funksjoner må kontrolleres i Freeform før de kan regnes som levert.
+
+- [ ] **FF-SHOP-01: handletur og henting i byen.** Gjør kjøreturen, innkjøpet og hentingen sammenhengende. Spilleren skal kunne kjøpe flere varer i samme besøk uten å måtte avslutte handelen mellom hver vare. Kjøp skjer inne i selve butikken, ikke på trappa. Bevar penger, lagerbeholdning og faktisk transport/henting.
+- [ ] **FF-OPS-NAV-01: navigasjon inne i OPS-PC-en.** Kunne gå mellom undermenyer og tilbake til hovedmenyen uten å forlate PC-en og åpne den igjen. Ha tydelig intern tilbake-/hjemnavigasjon; fysisk utgang fra PC-en er en separat handling.
+- [ ] **FF-ARRAY-CONSEQUENCES-01: konsekvenser av utilgjengelige antenner.** Når ikke alle array-antenner er tilgjengelige eller virker, skal det påvirke arbeidet merkbart, for eksempel tregere tracking. Vis årsak og virkning i instrumentene, og la reparasjon/gjenopprettet kapasitet gi tilsvarende forbedring. Avklar balanse mot eksisterende minimumskrav og mottakskvalitet.
+- [ ] **FF-CAMERA-01: kamera i fotolaben.** Tom finner ikke kameraet i Freeform. Kontroller tilgjengelighet ved nytt spill og Continue; plasser et tydelig, fungerende kamera i fotolaben som spilleren kan hente og bruke. Bevar allerede eid kamera ved lagring/lasting.
+- [ ] **FF-WORK-ARCHIVE-01: «More work» og «Case Archive».** Tom finner ingen slike valg. Kontroller om de mangler, er skjult eller ikke er koblet til Freeform. Gjør tilgang til flere oppdrag og arkiverte saker synlig fra passende OPS-menyer, med tydelig forklaring når ingen nye oppdrag eller arkiverte saker finnes.
+- [ ] **FF-PRINTER-01: printerlyd og synlig utskrift.** Freeform-utskrifter skal utløse printerlyd og utskriftseffekter, som i den fungerende spillflyten. Knytt lyd/effekt til faktisk utskriftsjobb og papir, med korrekt stopp ved ferdig jobb eller strømbrudd.
+- [ ] **TITLE-UFO-VHS-01: levende hovedmeny.** La UFO-lys passere over himmelen med jevne mellomrom. Menyen skal også ha den tidligere etterspurte VHS-/glitchlyden på lavt volum. VHS-tekstur finnes i lydkoden fra SOUND-DESIGN-02; kontroller faktisk hørbarhet, nivå og kobling i installert hovedmeny. Unngå at løkker og passeringer overlapper eller hoper seg opp ved gjentatt retur til menyen.
+
 ## Lokal lydinstallasjon, 3. november
+
+- [x] RECEIVER-SEARCH-01: kontinuerlig frekvens/gain/båndbredde-lyd i Freeform-mottakeren og oppfølging av utendørsmusikk, byprioritet og inaktive Story-stillhetsflagg. Installert kl.15:20; bygg, fysisk CRT-/uteprøve, 2262 selvtester og Vulkan-oppstart består. 115 Saved-filer uendret. Menneskelig lytting og videre bekreftelse av Toms utendørsopplevelse gjenstår.
 
 - [x] SOUND-INSTALL-01 / PR375/376: NASA/Nebula og apparatlyd integrert og installert lokalt, også musikk og effekter i Freeform. 15 lydoppskrifter, 51 native Freeform-kontroller, 2240 installerte selvtester og Vulkan-oppstart består; 111 Saved-filer uendret.
 

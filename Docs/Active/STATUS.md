@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
+
+Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.
+
+Freeform ignorerer stillhetsflagg fra Story-lag som ikke oppdateres der. Bymusikk får prioritet over morgenstemning; kjøring beholder sitt musikkvalg, mens hørbar radio fortsatt får lytteplass. Native prøve bekrefter kontinuerlig mottakersøk, skjerm-/strømlivssyklus og at importert musikk starter ute. Hele den tidligere rapporterte utendørsstillheten er ikke rekonstruert fra Toms økt; menneskelig lytting under videre spilling gjenstår.
+
+Editorbygg, Linux-pakke, målrettet fysisk CRT-/uteprøve og installert Vulkan-oppstart består. 2262 installerte selvtester inkluderer faktisk renderte PCM-prøver for mottakeren og valg/hold for Freeform-by/kjøring/radio. Alle 115 personlige Saved-filer er uendret. Privat kandidat og reflink-rollback er bevart; 114,75 GB ledig etter installasjon. Bevis ligger i `~/scratch-bm/Signal47-receiver-search-20261103/`. De sju nye funnene fra Toms spilltest er åpne i [TODO](TODO.md), ikke implementert som del av lydleveransen.
+
 ## Lydmotor, NASA/Nebula og Freeform installert lokalt, 3. november
 
 [PR375](https://github.com/Tombonator3000/SIGNAL-47/pull/375) og [PR376](https://github.com/Tombonator3000/SIGNAL-47/pull/376), runtime-kilde `cc7d3179`, er installert kl.14:11 CET. Banken laster automatisk fra pakket Content: 15 kilder og 15 oppskrifter. De fem bevarte NASA-opptakene og den kjøpte Nebula-atmosfæren finnes ved SARO-pultens REF NEXT / REF PLAY / REF STOP. NASA-referansene beholder hastighet 1 og avspilles uten løkke; referanselytting gir ingen måling, sammenligningsdekning eller funn. Originaler, proveniens og kreditering er bevart; de fem eksisterende observatorieopptakene er fortsatt i bruk. NASA-kildene er radio-/plasmamålinger gjort hørbare, mens Nebula er designet atmosfære.

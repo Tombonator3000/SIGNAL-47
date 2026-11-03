@@ -310,3 +310,9 @@ SOUND-INSTALL-01: kilde i PR375 (inkludert publisert main/PR374). Installert spi
 14:11 SOUND-INSTALL-01 ferdig: runtime cc7d3179 installert, 15 lydoppskrifter og 51 faktiske Freeform-kontroller består, 2240 installerte selvtester/Vulkan-oppstart består. 111 Saved-filer uendret. HeavyReservation frigitt; SARO-kopien er ferdig og kan vurderes ved neste samlede rydding. Kandidat og rollback beholdes, stash ab8c01cb er intakt; faktisk ledig plass119,2GB, ingen ny full diskaudit eller rydderunde.
 
 SOUND-INSTALL-01 kildeleveranse: PR375 var allerede flettet før Freeform-oppfølgingen; PR376 fører resten på ny gren fra siste main, med identisk verifisert runtime-kilde. Ingen ny bygg-/pakkerunde for identiske kildefiler.
+
+RECEIVER-SEARCH-01: Codex eier kontinuerlig Freeform-mottakerlyd, avgrenset musikkhold og målrettet PCM/native prøve på codex/receiver-search-audio-20261103 fra main f907e882. Eksisterende SARO-kopi gjenbrukes; signal_audio_mapping har fullført skrivebeskyttet kartlegging. Kildearbeid pågår mens Toms spill kjører; bygg/installasjon venter på lukket spill. Ingen ny arbeidskopi eller rydderunde.
+
+RECEIVER-SEARCH-01 utvidet etter Toms uteprøve: root retter byprioritet og avgrenser inaktive Story-stillhetsflagg i S47Score.cpp; samme kandidat får kort uteprøve. Bare egen ventende worker ble pauset under kildeendring; Toms spill er urørt.
+
+15:20 RECEIVER-SEARCH-01: runtime c424ac39 installert; bygg, native mottaker/utemusikk og 2262 installerte selvtester/Vulkan består, 115 Saved-filer uendret. HeavyReservation frigitt. Kandidat/rollback beholdes til neste samlede rydding, 114,75GB ledig; ingen ny rydderunde. Root fullfører kilde-PR og TODO-funn.

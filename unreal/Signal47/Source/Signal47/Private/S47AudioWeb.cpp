@@ -200,7 +200,7 @@ void US47Audio::StartCarrier()
 	Osc->Connect(Gain); Gain->Connect(SfxBus); Osc->Start();
 	auto N = NoiseSrc(false); auto Bp = Ctx->CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(1800); Bp->Q.SetValue(0.6);
 	auto Stat = Ctx->CreateGain(); Stat->Gain.SetValue(0); N->Connect(Bp); Bp->Connect(Stat); Stat->Connect(SfxBus); N->Start();
-	Carrier = { Osc, Gain, Stat };
+	Carrier = { Osc, Gain, Stat, Bp };
 }
 
 /** The anomaly near 1420.405 as the receiver hears it: clarity 0 (static) to 1 (locked). */
