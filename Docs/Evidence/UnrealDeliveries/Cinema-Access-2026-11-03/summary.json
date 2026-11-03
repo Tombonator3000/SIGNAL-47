@@ -1,0 +1,375 @@
+{
+  "status": "PASS",
+  "runtime_commit": "501cbe81",
+  "import_verify": [
+    {
+      "mode": "import",
+      "status": "PASS",
+      "checks": 170,
+      "engine": "5.8.4-58902052+++UE5+Release-5.8",
+      "spec_sha256": "27fd6475b28a984464ea3f9db358268dd790ee9f37d891515fed25f9594efece",
+      "activation_status": "RUNNING",
+      "private_full_report": "/home/tom/scratch-bm/Signal47-cinema-followup-20261103/revised/import-report.json",
+      "full_report_sha256": "7b52257edae063d83380fcc4b5a0b04a02d3bd8d8ab74847a7c1cba4036a3a19"
+    },
+    {
+      "mode": "verify",
+      "status": "PASS",
+      "checks": 171,
+      "engine": "5.8.4-58902052+++UE5+Release-5.8",
+      "spec_sha256": "27fd6475b28a984464ea3f9db358268dd790ee9f37d891515fed25f9594efece",
+      "activation_status": "PASS",
+      "private_full_report": "/home/tom/scratch-bm/Signal47-cinema-followup-20261103/revised/verify-report.json",
+      "full_report_sha256": "045ab719a85f5c2cd2d98e72cfd8799051034a143c6f256005a7f0d84096fd4a"
+    }
+  ],
+  "owned_assets": {
+    "status": "PASS",
+    "unchanged_files": [
+      "Content/Signal47/Art/CinemaPosters/MI_Cinema_DesertSky.uasset",
+      "Content/Signal47/Art/CinemaPosters/MI_Cinema_FridayMatinee.uasset",
+      "Content/Signal47/Art/CinemaPosters/SM_CinemaPosterPlane.uasset",
+      "Content/Signal47/Art/CinemaPosters/T_Cinema_DesertSky.uasset",
+      "Content/Signal47/Art/CinemaPosters/T_Cinema_FridayMatinee.uasset"
+    ]
+  },
+  "before_reproduction": {
+    "stage": 62,
+    "walk_metres": 30.03085488169293,
+    "before_open": true,
+    "after_open": false,
+    "claim": "ordinary OnUse closed around the player; no permanent-stuck claim",
+    "private_result": "/tmp/s47-cinema-before-guard-r2-20261103/Saved/CinemaPostersContract/01A19FB2256970D4A7E46F3C18D3912C/result.json",
+    "sha256": "4b39e7a6ba983dd379f4a936a46db4fd0ecc12203f486aaea8381320a7853b6d"
+  },
+  "packaged_contract": {
+    "status": "PASS",
+    "checks": 109,
+    "seconds": 42.884190274984576,
+    "walk_metres": 42.41091055988689,
+    "walk_samples": 514,
+    "ordinary_door_uses": 4,
+    "refused_door_uses": 1,
+    "scope": "Isolated chapter2/case0 and one declared legal exterior foot start; continuous ordinary Walker including one measured open-threshold out-and-back, actual camera ray/focus and Player.OnUse; explicit World.Enter visibility roundtrip; entire actual case0 snapshot copied unchanged to isolated case1, ordinary title/Continue, fresh disk readers and normal post-Continue save. No car or commute claim.",
+    "limits": "API input, not human or visual/FPS acceptance. Static day/dusk/night suites are separate. No cinema interior, new quest, full matrix, installation or release."
+  },
+  "refused_close": {
+    "eye_ue_cm": [
+      798506.8624984546,
+      215939.9788949552,
+      1060.7468728080767
+    ],
+    "forward_ue": [
+      -0.6175773176701946,
+      0.6347717393743293,
+      -0.4643954086669853
+    ],
+    "picked": "access:Cinema",
+    "focused": "access:Cinema",
+    "walk_metres": 30.028524381360143,
+    "first_usable_component": "/Engine/Maps/Entry.Entry:PersistentLevel.S47Web_2147482398.StaticMeshComponent_2147479103",
+    "first_usable_node": 2431,
+    "hit_distance_m": 1.0745027160644531,
+    "actual_range_m": 2.7,
+    "refused_close": true,
+    "player_before_three_m": [
+      7985.068624984547,
+      0,
+      2159.3997889495517
+    ],
+    "player_after_three_m": [
+      7985.068624984547,
+      0,
+      2159.3997889495517
+    ],
+    "last_description": "Step clear of the doorway before closing it.",
+    "before_open": true,
+    "after_open": true,
+    "physical_leaf_and_both_colliders_pass": true
+  },
+  "photos": [
+    {
+      "name": "desert-sky",
+      "player_three_m": [
+        7988.000827763877,
+        0,
+        2169.0703253062384
+      ],
+      "eye_ue_cm": [
+        798800.0827763877,
+        216907.03253062384,
+        1015.2038579606401
+      ],
+      "forward_ue": [
+        -0.9924057642110169,
+        -0.0245931906683184,
+        0.1205237492509227
+      ],
+      "target_three_m": [
+        7985.1630000000005,
+        10.497393474578857,
+        2169
+      ],
+      "frame": 859,
+      "camera_manager_ue_cm": [
+        798800.0827763877,
+        216907.03253062384,
+        1015.2152817235542
+      ],
+      "fov_degrees": 104.65707397460938,
+      "projected_bounds_px": [
+        547.3087768554688,
+        216.6951141357422,
+        731.775146484375,
+        483.648681640625
+      ],
+      "viewport_px": [
+        1280,
+        692
+      ],
+      "new_art_audit_claimed": true,
+      "png": {
+        "file": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/desert-sky.png",
+        "sha1": "C4052AB0D10FE713C699E2427BD290EA66103C53",
+        "bytes": 676986,
+        "width": 1280,
+        "height": 692,
+        "chunks": 85,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      }
+    },
+    {
+      "name": "friday-matinee",
+      "player_three_m": [
+        7988.000004469674,
+        0,
+        2155.0759754887954
+      ],
+      "eye_ue_cm": [
+        798800.0004469674,
+        215507.59754887954,
+        973.0971934801604
+      ],
+      "forward_ue": [
+        -0.9651466693865813,
+        -0.02584680100074577,
+        0.2604301239296583
+      ],
+      "target_three_m": [
+        7985.1630000000005,
+        10.497393474578857,
+        2155
+      ],
+      "frame": 1363,
+      "camera_manager_ue_cm": [
+        798800.0004469674,
+        215507.59754887954,
+        973.1085430613497
+      ],
+      "fov_degrees": 104.65707397460938,
+      "projected_bounds_px": [
+        546.1793823242188,
+        227.5827178955078,
+        732.8381958007812,
+        481.10003662109375
+      ],
+      "viewport_px": [
+        1280,
+        692
+      ],
+      "new_art_audit_claimed": true,
+      "png": {
+        "file": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/friday-matinee.png",
+        "sha1": "8FBAD33B5A939176B479F6028F9E8F75CCE2E090",
+        "bytes": 775784,
+        "width": 1280,
+        "height": 692,
+        "chunks": 97,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      }
+    },
+    {
+      "name": "plaza-open",
+      "player_three_m": [
+        7986.724992033173,
+        0,
+        2159.399990856709
+      ],
+      "eye_ue_cm": [
+        798672.4992033173,
+        215939.9990856709,
+        1030.8105818772187
+      ],
+      "forward_ue": [
+        -0.9566961537314249,
+        0.2796244304260713,
+        -0.08088663266815851
+      ],
+      "target_three_m": [
+        7984.410178600952,
+        10.112393474578857,
+        2160.0765676204
+      ],
+      "frame": 2239,
+      "camera_manager_ue_cm": [
+        798672.4992033173,
+        215939.9990856709,
+        1030.8105818772187
+      ],
+      "fov_degrees": 104.65707397460938,
+      "cinema_open": true,
+      "png": {
+        "file": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/plaza-open.png",
+        "sha1": "CDC6B2F749F729B91CEDE2EAC497D849B49BF1A3",
+        "bytes": 547785,
+        "width": 1280,
+        "height": 692,
+        "chunks": 69,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      }
+    },
+    {
+      "name": "after-continue-poster",
+      "player_three_m": [
+        7987.999420108229,
+        0,
+        2168.9276602010864
+      ],
+      "eye_ue_cm": [
+        798799.9420108229,
+        216892.76602010863,
+        1014.7017212640733
+      ],
+      "forward_ue": [
+        -0.9921509785531772,
+        0.025303727777233134,
+        0.12245879762822122
+      ],
+      "target_three_m": [
+        7985.1630000000005,
+        10.497393474578857,
+        2169
+      ],
+      "frame": 3296,
+      "camera_manager_ue_cm": [
+        798799.9420108229,
+        216892.76602010863,
+        1014.7052981767517
+      ],
+      "fov_degrees": 104.65707397460938,
+      "projected_bounds_px": [
+        548.1407470703125,
+        216.80429077148438,
+        732.7564697265625,
+        483.8121337890625
+      ],
+      "viewport_px": [
+        1280,
+        692
+      ],
+      "new_art_audit_claimed": true,
+      "png": {
+        "file": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/after-continue-poster.png",
+        "sha1": "A447606ECFD30FD4F1E917710E5A63A6DBF716EF",
+        "bytes": 729294,
+        "width": 1280,
+        "height": 692,
+        "chunks": 91,
+        "all_chunk_crc_verified": true,
+        "iend_at_eof": true
+      }
+    }
+  ],
+  "editor_contract": {
+    "status": "PASS",
+    "checks": 109,
+    "walk_metres": 42.385659488632825,
+    "ordinary_door_uses": 4,
+    "refused_door_uses": 1
+  },
+  "editor_result": "/tmp/s47-cinema-clearance-r2-20261103/Saved/CinemaPostersContract/01A19FBBACDA7F2BBB2F7A2A55050DC8/result.json",
+  "editor_sha256": "7c496f74da56fc547cfa270586930861e75a0d6cb0978e8356ae8375cd8c21e8",
+  "freeform": {
+    "before": {
+      "status": "FAIL",
+      "checks": 10,
+      "diskFlowRestores": 0,
+      "busy_frame_samples": 1,
+      "scope": "actual-trip-work-hold",
+      "method": "Explicit receiver tuning and one array target command; real generated pulsar job, timed acquisition, retained original, internal control, Roam/StartTrip busy callback and ordinary stationary exit. Frame samples compare native encoders, control progress and world clock through the actual transition; no bBusy write, natural commute or OS-input claim.",
+      "limits": "No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance.",
+      "max_busy_clock_delta": 0.0,
+      "max_busy_control_delta": 0.014085836708545685,
+      "max_busy_native_encoder_delta_deg": 0.030988840758794822,
+      "private_full_result": "/tmp/s47-freeform-trip-hold-before-20261103/Saved/FreeformTest/result.json",
+      "sha256": "5c2d91cb5a075c90defc79c71ba06b7ec7c7d1725fd0fd299ce567abb3634e10",
+      "failed_check": {
+        "check": "actual busy frame preserves original, control progress, clock and every native encoder",
+        "pass": false,
+        "stage": 9003
+      }
+    },
+    "editor": {
+      "status": "PASS",
+      "checks": 43,
+      "diskFlowRestores": 0,
+      "busy_frame_samples": 30,
+      "scope": "actual-trip-work-hold",
+      "method": "Explicit receiver tuning and one array target command; real generated pulsar job, timed acquisition, retained original, internal control, Roam/StartTrip busy callback and ordinary stationary exit. Frame samples compare native encoders, control progress and world clock through the actual transition; no bBusy write, natural commute or OS-input claim.",
+      "limits": "No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance.",
+      "max_busy_clock_delta": 0.0,
+      "max_busy_control_delta": 0,
+      "max_busy_native_encoder_delta_deg": 0,
+      "private_full_result": "/tmp/s47-freeform-trip-hold-editor-20261103/Saved/FreeformTest/result.json",
+      "sha256": "1247f7fabff72f9484732d710eaa8e25cef952e8bf45900557ef3a664c748e8a",
+      "completion_checks": [
+        "actual completed recording and printer original retained",
+        "real eight-second internal reference starts before the trip",
+        "real scheduled StartTrip callback ended busy, entered driving and retained the same active job",
+        "same control, world clock and actual native motors resume after the real transition",
+        "ordinary stationary exit ends the test trip",
+        "real internal reference completes after resumption; retained original and ordinary on-foot state remain"
+      ]
+    },
+    "packaged": {
+      "status": "PASS",
+      "checks": 45,
+      "diskFlowRestores": 0,
+      "busy_frame_samples": 32,
+      "scope": "actual-trip-work-hold",
+      "method": "Explicit receiver tuning and one array target command; real generated pulsar job, timed acquisition, retained original, internal control, Roam/StartTrip busy callback and ordinary stationary exit. Frame samples compare native encoders, control progress and world clock through the actual transition; no bBusy write, natural commute or OS-input claim.",
+      "limits": "No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance.",
+      "max_busy_clock_delta": 0.0,
+      "max_busy_control_delta": 0,
+      "max_busy_native_encoder_delta_deg": 0,
+      "private_full_result": "/tmp/s47-freeform-trip-hold-package-20261103/Saved/FreeformTest/result.json",
+      "sha256": "a31b915d15c0f32268b906f97c3da20dee5c31473926ca51b42ca333b2781923",
+      "completion_checks": [
+        "actual completed recording and printer original retained",
+        "real eight-second internal reference starts before the trip",
+        "real scheduled StartTrip callback ended busy, entered driving and retained the same active job",
+        "same control, world clock and actual native motors resume after the real transition",
+        "ordinary stationary exit ends the test trip",
+        "real internal reference completes after resumption; retained original and ordinary on-foot state remain"
+      ]
+    },
+    "production_change": "one World.bBusy term in the Freeform work-hold predicate"
+  },
+  "image_scenarios": {
+    "before.png": "static noon exterior fixture, inactive binding",
+    "after.png": "same requested noon camera, final package",
+    "desert-sky.png": "separate ordinary Walker contract camera",
+    "friday-matinee.png": "separate ordinary Walker contract camera"
+  },
+  "private_full_contract": "/tmp/s47-cinema-contract-clearance-20261103/Saved/CinemaPostersContract/01A19FC1C3B1797EA191AEE26AC59C5C/result.json",
+  "contract_sha256": "b0c2ae440ae5db93fda2b77600b4afb2111e03045188a1e0173f7c1a885e344e",
+  "limits": [
+    "No human-input or natural commute claim",
+    "No full cinema interior route",
+    "ART-01 remains broader than two posters",
+    "Freeform trip test performs no disk restores or natural commute"
+  ]
+}

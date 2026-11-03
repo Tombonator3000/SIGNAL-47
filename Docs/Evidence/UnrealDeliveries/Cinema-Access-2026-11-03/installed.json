@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "source_branch": "codex/cinema-access-20261103",
+  "target": "/home/tom/Games/Signal47/Linux",
+  "previous_verified_candidate": "/home/tom/scratch-bm/Signal47-alien-motion-20261103/candidate/Linux",
+  "saved_nodes": 156,
+  "saved_files": 126,
+  "smoke": {
+    "returncode": 0,
+    "wall_seconds": 29.405336789088324,
+    "contention": [],
+    "stop_reason": null,
+    "preflight": {
+      "available_gib": 25.008575439453125,
+      "heavy_jobs": [],
+      "pgrep": "2353695 /bin/bash -c source /home/tom/.claude/shell-snapshots/snapshot-bash-1793687862984-tpw6wn.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && { \\builtin unalias -- 'which'; \\builtin unset -f -- 'which'; } >/dev/null 2>&1 || true && { \\builtin unalias -- 'unsetenv'; \\builtin unset -f -- 'unsetenv'; } >/dev/null 2>&1 || true && eval 'cd /home/tom/scratch-bm/wt/saro-story-loop-20261031 prev=\"\" while true; do   br=$(git branch --show-current)   dirty=$(git status --porcelain -- Docs unreal/OPPGAVER.md unreal/log.md unreal/Signal47/Source unreal/Signal47/Tools | wc -l)   head=$(git rev-parse --short HEAD)   lease=$(python3 -c \" import json,os try:   d=json.load(open(os.path.expanduser('\"'\"'~/.local/state/signal47-production/heavy.lock'\"'\"')))   print(d['\"'\"'label'\"'\"'].replace('\"'\"' '\"'\"','\"'\"'_'\"'\"') if os.path.exists('\"'\"'/proc/%d'\"'\"'%d['\"'\"'pid'\"'\"']) else '\"'\"'free'\"'\"') except Exception: print('\"'\"'free'\"'\"')\" 2>/dev/null)   eng=$(ps -eo comm= | grep -cE '\"'\"'^(UnrealEditor|UnrealEditor-Cm|UnrealBuildTool|blender|dotnet)'\"'\"' || true)   cur=\"branch=$br head=$head dirtydocs=$dirty lease=$lease engines=$eng\"   [ \"$cur\" != \"$prev\" ] && echo \"$(date +%H:%M) $cur\"   prev=$cur   if [ \"$dirty\" = 0 ] && [ \"$lease\" = free ] && [ \"$eng\" = 0 ]; then echo \"LEDIG\"; exit 0; fi   sleep 30 done' < /dev/null && pwd -P >| /tmp/claude-7b3f-cwd\n2356387 python3 /home/tom/scratch-bm/Signal47-cinema-followup-20261103/install.py\n",
+      "production_reservation": {
+        "version": 1,
+        "pid": 2356387,
+        "start_ticks": "74002342",
+        "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+        "label": "root active Cinema and access door verified local installation",
+        "acquired_at": "2026-11-03T06:45:06.497618+00:00",
+        "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+      },
+      "exempted_installed_game": [],
+      "grace_policy": {
+        "enabled": false,
+        "eligible": false,
+        "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "performance_status": "UNCONTENDED"
+  },
+  "Saved_unchanged": true,
+  "binary_sha256": "161948ce397d188dea4f15720bfb2cbbceb35fa59e8be14ae4c862da5416b987",
+  "free_bytes": 144567238656,
+  "at": "2026-11-03T07:45:47.775691+01:00"
+}
