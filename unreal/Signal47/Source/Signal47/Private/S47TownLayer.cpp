@@ -6,6 +6,7 @@
 #include "S47Ambience.h"
 #include "S47Caliche.h"
 #include "S47CalicheAccess.h"
+#include "S47CinemaPosters.h"
 #include "S47Chapter.h"
 #include "S47Curve.h"
 #include "S47Cutouts.h"
@@ -164,6 +165,7 @@ void US47TownLayer::Init(US47Main* InM)
 	}
 
 	S47CalicheAccess::Init(M);
+	FS47CinemaPosters::Install(M->Web);
 	TestFlags();
 }
 

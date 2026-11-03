@@ -1,6 +1,7 @@
 // ART01: isolert kapittel-2-fotfixture, deretter vanlig Walker og HUD OnUse.
-// Ingen bilreise, kinoåpning, menneskelig input eller visuell aksept hevdes.
+// Eksisterende åpne CalicheAccess-kino beholdes; ingen bilreise eller menneskelig input hevdes.
 #include "S47Web.h"
+#include "S47CalicheAccess.h"
 #include "S47Main.h"
 #include "S47Evening.h"
 #include "S47Flow.h"
@@ -13,7 +14,6 @@
 #include "S47UI.h"
 #include "S47Walker.h"
 #include "S47World.h"
-#include "SS47Widgets.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/Engine.h"
@@ -33,13 +33,11 @@
 #include "Misc/SecureHash.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
-#include "Widgets/Text/STextBlock.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47CinemaContract,Log,All);
 namespace S47CinemaContract
 {
  using FJ=S47J::FObj;
- const TCHAR* Closed=TEXT("Closed. The doors are chained. The posters behind the glass have faded to the same blue.");
  const TCHAR* PrintIds[]={TEXT("desert-sky"),TEXT("friday-matinee")};
  void Vec(const FJ& O,const TCHAR* Key,const FVector& V){S47J::Set(O,Key,TArray<double>{V.X,V.Y,V.Z});}
  bool Write(const FString& File,const FJ& O){return FFileHelper::SaveStringToFile(S47J::Write(O,true),*File);}
@@ -56,13 +54,6 @@ namespace S47CinemaContract
  {
   const auto Original=S47J::Obj(State,TEXT("case"));if(!Original)return {};
   const auto Out=S47J::Clone(Original);Out->RemoveField(TEXT("clock"));Out->RemoveField(TEXT("notes"));return Out;
- }
- void SlateText(const TSharedRef<SWidget>& Widget,TArray<FString>& Out)
- {
-  if(!Widget->GetVisibility().IsVisible())return;
-  if(Widget->GetTypeAsString()==TEXT("STextBlock"))Out.Add(StaticCastSharedRef<STextBlock>(Widget)->GetText().ToString());
-  FChildren* Children=Widget->GetChildren();
-  for(int32 I=0;Children&&I<Children->Num();++I)SlateText(Children->GetChildAt(I),Out);
  }
  bool Png(const FString& File,FJ& Receipt)
  {
@@ -96,7 +87,8 @@ namespace S47CinemaContract
  struct FControl:TSharedFromThis<FControl>
  {
   TWeakObjectPtr<AS47Web> Web;FTimerHandle Timer;FString Root,PhotoName,SaveId;
-  bool Done=false,Started=false,Off=false,Requested=false,PhotoClosed=false;int32 Stage=0,Checks=0,Waypoint=0,ClosedUses=0,WalkSamples=0;
+  bool Done=false,Started=false,Off=false,Requested=false,PhotoDoor=false;int32 Stage=0,Checks=0,Waypoint=0,DoorUses=0,RefusedDoorUses=0,WalkSamples=0;
+  bool DoorwayLeg=false;double FootSettledAt=-1;FVector Threshold=FVector::ZeroVector;
   double Began=FPlatformTime::Seconds(),Since=Began,Ready=0,Last=Began,ProgressAt=Began,PhotoAt=0,ContinueAt=0,WalkMetres=0;
   FVector LastFoot=FVector::ZeroVector,ProgressFoot=FVector::ZeroVector,Aim=FVector::ZeroVector,SavedFoot=FVector::ZeroVector;
   double SavedYaw=0,SavedPitch=0,SavedClock=0,SavedFloor=0,RestoredGt=0;
@@ -116,7 +108,14 @@ namespace S47CinemaContract
    // Off observes only the original frame's measured location, never claims new artwork.
    return S47Three::ToThree(Originals[0].Component->GetComponentTransform().TransformPosition(S47Three::ToUE(FVector(.162,1.51,Index==0?7:-7))));
   }
-  FVector Proxy()const{return Web->Obj(TEXT("world.town.proxies.cinema")).WorldPosition();}
+  FVector DoorTarget()const
+  {
+   const auto* N=Web->Node(Unique(TEXT("caliche-access:SM_Access_Cinema_Door")));
+   const auto* C=N?Cast<UPrimitiveComponent>(N->Comp.Get()):nullptr;
+   return C?S47Three::ToThree(C->Bounds.Origin):FVector::ZeroVector;
+  }
+  bool AccessOpen(const FJ& State)const
+  {return S47J::Bool(S47J::Obj(State,TEXT("calicheAccessDoors")),TEXT("Cinema"));}
   void Look()const
   {
    auto* Player=Main()->Player.Get();const FVector D=Aim-S47Three::ToThree(Player->EyeUE());
@@ -129,14 +128,14 @@ namespace S47CinemaContract
    if(Requested&&FScreenshotRequest::IsScreenshotRequested()&&FScreenshotRequest::GetFilename()==Root/(PhotoName+TEXT(".png")))FScreenshotRequest::Reset();
    auto O=S47J::New();S47J::Set(O,TEXT("status"),Pass?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);
    S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("seconds"),FPlatformTime::Seconds()-Began);
-   S47J::Set(O,TEXT("explicit_off"),Off);S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("walk_samples"),WalkSamples);S47J::Set(O,TEXT("ordinary_closed_uses"),ClosedUses);
+   S47J::Set(O,TEXT("explicit_off"),Off);S47J::Set(O,TEXT("walk_metres"),WalkMetres);S47J::Set(O,TEXT("walk_samples"),WalkSamples);S47J::Set(O,TEXT("ordinary_door_uses"),DoorUses);S47J::Set(O,TEXT("refused_door_uses"),RefusedDoorUses);
    S47J::Set(O,TEXT("pending_capture"),PhotoMeta);S47J::Set(O,TEXT("pending_capture_name"),PhotoName);
    if(M&&M->Player){Vec(O,TEXT("final_player_three_m"),M->Player->Pos);S47J::Set(O,TEXT("final_clock_seconds"),M->Story?M->Story->Clock():0.);}
    S47J::Set(O,TEXT("last_native_readback"),Web.IsValid()?Web->CinemaPostersReadback():FJ());
    O->SetArrayField(TEXT("executed_checks"),Executed);O->SetArrayField(TEXT("events"),Events);O->SetArrayField(TEXT("snapshots"),Snapshots);
    O->SetArrayField(TEXT("photos"),Photos);O->SetArrayField(TEXT("interaction_rays"),Rays);O->SetArrayField(TEXT("physical_route_samples"),Route);
-   S47J::Set(O,TEXT("scope"),TEXT("Isolated chapter2/case0 and one declared legal exterior foot start; continuous ordinary Walker, actual camera ray/focus and Player.OnUse; explicit World.Enter visibility roundtrip; entire actual case0 snapshot copied unchanged to isolated case1, ordinary title/Continue, fresh disk readers and normal post-Continue save. No car or commute claim."));
-   S47J::Set(O,TEXT("limits"),Off?TEXT("Explicit Off: zero new prints, original/proxy/Closed and disk journey only; new artwork audit NOT CLAIMED. API input, not human/visual/FPS acceptance. No cinema interior, quest completion, full matrix, installation or release."):TEXT("API input, not human or visual/FPS acceptance. Static day/dusk/night suites are separate. No cinema interior, new quest, full matrix, installation or release."));
+   S47J::Set(O,TEXT("scope"),TEXT("Isolated chapter2/case0 and one declared legal exterior foot start; continuous ordinary Walker including one measured open-threshold out-and-back, actual camera ray/focus and Player.OnUse; explicit World.Enter visibility roundtrip; entire actual case0 snapshot copied unchanged to isolated case1, ordinary title/Continue, fresh disk readers and normal post-Continue save. No car or commute claim."));
+   S47J::Set(O,TEXT("limits"),Off?TEXT("Explicit Off: zero new prints, current geometry/ordinary door and disk journey only; new artwork audit NOT CLAIMED. API input, not human/visual/FPS acceptance. No cinema interior, quest completion, full matrix, installation or release."):TEXT("API input, not human or visual/FPS acceptance. Static day/dusk/night suites are separate. No cinema interior, new quest, full matrix, installation or release."));
    const bool Written=Write(Root/TEXT("result.json"),O);if(Web.IsValid())Web->GetWorldTimerManager().ClearTimer(Timer);
    if(Pass&&Written){UE_LOG(LogS47CinemaContract,Display,TEXT("S47: CinemaPosters contract PASS checks=%d walk=%.3fm evidence=%s"),Checks,WalkMetres,*Root);FPlatformMisc::RequestExitWithStatus(false,0);}
    else{UE_LOG(LogS47CinemaContract,Error,TEXT("S47: CinemaPosters contract FAIL stage=%d: %s evidence=%s"),Stage,Written?*Why:TEXT("final result write failed"),*Root);FPlatformMisc::RequestExitWithStatus(false,1);}
@@ -153,8 +152,8 @@ namespace S47CinemaContract
   }
   bool CaptureOriginals()
   {
-   const int32 Nodes[]={Unique(TEXT("town-production:SM_Town_Cinema_Shell")),Unique(TEXT("town-production:SM_Town_Cinema_Glass")),1514,1515};
-   for(int32 Index=0;Index<4;++Index)
+   const int32 Nodes[]={Unique(TEXT("caliche-access:SM_Access_Cinema_Shell")),Unique(TEXT("caliche-access:SM_Access_Cinema_Glass")),1514,1515,Unique(TEXT("caliche-access:SM_Access_Cinema_Interior")),Unique(TEXT("town-production:SM_Town_Cinema_Shell")),Unique(TEXT("town-production:SM_Town_Cinema_Glass"))};
+   for(int32 Index=0;Index<UE_ARRAY_COUNT(Nodes);++Index)
    {
     const auto* Node=Web->Node(Nodes[Index]);auto* Component=Node?Node->Comp.Get():nullptr;
     if(!Check(Node&&Component,TEXT("complete original Shell/Glass/proxy/hit leaf before fixture")))return false;
@@ -165,8 +164,8 @@ namespace S47CinemaContract
     }
     if(Index<2)
     {
-     const FString Name=Index==0?TEXT("SM_Town_Cinema_Shell"):TEXT("SM_Town_Cinema_Glass");
-     if(!Check(Saved.Mesh.IsValid()&&Saved.Mesh->GetPathName()==TEXT("/Game/TownBuildings/")+Name+TEXT(".")+Name&&Saved.Mesh->GetNumLODs()==3&&Node->Parent==Web->Handle(TEXT("world.town.group")),TEXT("actual three-LOD TB2 cinema predecessor and parent")))return false;
+     const FString Name=Index==0?TEXT("SM_Access_Cinema_Shell"):TEXT("SM_Access_Cinema_Glass");
+     if(!Check(Saved.Mesh.IsValid()&&Saved.Mesh->GetPathName()==TEXT("/Game/CalicheAccess/")+Name+TEXT(".")+Name&&Saved.Mesh->GetNumLODs()==3&&Node->Parent==Web->Handle(TEXT("world.town.group")),TEXT("actual three-LOD current CalicheAccess cinema and parent")))return false;
     }
     Originals.Add(Saved);
    }
@@ -180,7 +179,7 @@ namespace S47CinemaContract
    S47J::Set(O,TEXT("clock_seconds"),M->Story->Clock());Vec(O,TEXT("player_three_m"),M->Player->Pos);
    const auto Readback=Web->CinemaPostersReadback();S47J::Set(O,TEXT("native_readback"),Readback);
    TArray<FString> Lines;const bool Audit=Web->AuditCinemaPosters(Lines);S47J::Set(O,TEXT("art_audit_pass"),Audit);S47J::Set(O,TEXT("art_audit_lines"),Lines);S47J::Set(O,TEXT("new_art_audit_claimed"),!Off);
-   TArray<TSharedPtr<FJsonValue>> ProtectedRows;bool Intact=Originals.Num()==4;
+   TArray<TSharedPtr<FJsonValue>> ProtectedRows;bool Intact=Originals.Num()==7;
    for(const auto& Saved:Originals)
    {
     const auto* Node=Web->Node(Saved.Node);auto* Component=Node?Node->Comp.Get():nullptr;auto Row=S47J::New();
@@ -193,7 +192,8 @@ namespace S47CinemaContract
      Good&=Static->GetStaticMesh()==Saved.Mesh.Get()&&Static->GetNumMaterials()==Saved.Materials.Num()&&Static->GetCollisionEnabled()==Saved.Collision;
      TArray<FString> MaterialPaths;for(int32 Slot=0;Slot<Static->GetNumMaterials();++Slot){Good&=Saved.Materials.IsValidIndex(Slot)&&Static->GetMaterial(Slot)==Saved.Materials[Slot].Get();MaterialPaths.Add(GetPathNameSafe(Static->GetMaterial(Slot)));}
      S47J::Set(Row,TEXT("actual_materials"),MaterialPaths);S47J::Set(Row,TEXT("actual_mesh"),GetPathNameSafe(Static->GetStaticMesh().Get()));
-     if(Saved.Node==Originals[0].Node||Saved.Node==Originals[1].Node)Good&=Static->IsVisible()==Visible&&Web->ObjAt(Saved.Node).Shown()==Visible;
+     if(Saved.Node==Originals[0].Node||Saved.Node==Originals[1].Node||Saved.Node==Originals[4].Node)Good&=Static->IsVisible()==Visible&&Web->ObjAt(Saved.Node).Shown()==Visible;
+     if(Saved.Node==Originals[5].Node||Saved.Node==Originals[6].Node)Good&=!Static->IsVisible()&&Static->bHiddenInGame&&Static->GetCollisionEnabled()==ECollisionEnabled::NoCollision;
     }
     if(Saved.Node==1514)Good&=Web->ObjAt(1514).Shown()==Visible;
     S47J::Set(Row,TEXT("bindings_unchanged"),Good);ProtectedRows.Add(MakeShared<FJsonValueObject>(Row));Intact&=Good;
@@ -211,51 +211,89 @@ namespace S47CinemaContract
    for(int32 I=0;I<2;++I)if(!Check(Print(I)&&Web->Node(PrintNodes[I])->Name==FString(TEXT("cinema-poster:"))+PrintIds[I]&&Print(I)->IsVisible()==Visible&&Print(I)->bHiddenInGame==!Visible&&Web->ObjAt(PrintNodes[I]).Shown()==Visible,TEXT("same unique native poster component follows actual area visibility")))return false;
    return true;
   }
+  bool RouteFoot()const
+  {
+   const auto* P=Main()->Player.Get();if(P->Pos.X-P->Radius>7985.25)return true;
+   // The sole extra leg reaches the measured OPEN doorway centre, never the interior.
+   return DoorwayLeg&&S47CalicheAccess::IsOpen(TEXT("cinema"))
+    &&P->Pos.X>=Threshold.X-.09&&P->Pos.X<=7986.9&&FMath::Abs(P->Pos.Z-Threshold.Z)<.1;
+  }
   bool Floor()
   {
    auto* Player=Main()->Player.Get();FHitResult Hit;FCollisionQueryParams Query(SCENE_QUERY_STAT(S47CinemaFloor),true,Player);
    const bool HitGround=Web->GetWorld()->LineTraceSingleByChannel(Hit,S47Three::ToUE(Player->Pos.X,Player->FloorY+.12,Player->Pos.Z),S47Three::ToUE(Player->Pos.X,Player->FloorY-.35,Player->Pos.Z),ECC_Visibility,Query);
-   return Check(Player->Walkable(Player->Pos.X,Player->Pos.Z)&&Player->Pos.X-Player->Radius>7985.25&&HitGround&&Hit.ImpactNormal.Z>.7&&FMath::Abs(S47Three::ToThree(Hit.ImpactPoint).Y-Player->FloorY)<.08,TEXT("ordinary Walker and rendered ground remain outside the original closed cinema"));
+   return Check(Player->Walkable(Player->Pos.X,Player->Pos.Z)&&RouteFoot()&&HitGround&&Hit.ImpactNormal.Z>.7&&FMath::Abs(S47Three::ToThree(Hit.ImpactPoint).Y-Player->FloorY)<.08,TEXT("ordinary Walker and rendered ground remain on the exterior or declared open threshold leg"));
   }
   void WalkTo(const TArray<FVector>& Points)
-  {Path=Points;Waypoint=0;LastFoot=ProgressFoot=Main()->Player->Pos;Last=ProgressAt=FPlatformTime::Seconds();}
+  {Path=Points;Waypoint=0;FootSettledAt=-1;LastFoot=ProgressFoot=Main()->Player->Pos;Last=ProgressAt=FPlatformTime::Seconds();}
   bool Walk(double Now)
   {
    auto* Player=Main()->Player.Get();const double Moved=FVector2D(Player->Pos.X-LastFoot.X,Player->Pos.Z-LastFoot.Z).Size();
    if(Moved>FMath::Max(.5,(Now-Last)*4+.1)){Result(false,TEXT("nonphysical Walker discontinuity; no placement recovery"));return false;}
    WalkMetres+=Moved;LastFoot=Player->Pos;Last=Now;++WalkSamples;
    auto Sample=S47J::New();Vec(Sample,TEXT("player_three_m"),Player->Pos);S47J::Set(Sample,TEXT("walk_metres"),WalkMetres);S47J::Set(Sample,TEXT("at_seconds"),Now-Began);Route.Add(MakeShared<FJsonValueObject>(Sample));
-   if(Player->Pos.X-Player->Radius<=7985.25){Result(false,TEXT("physical route crossed the existing facade/glass plane"));return false;}
+   if(!RouteFoot()){Result(false,TEXT("physical route left the exterior or declared open threshold leg"));return false;}
    if(FVector2D(Player->Pos.X-ProgressFoot.X,Player->Pos.Z-ProgressFoot.Z).Size()>.15){ProgressFoot=Player->Pos;ProgressAt=Now;}
    if(Waypoint>=Path.Num()){Player->TestMove.Reset();return true;}
    const FVector Delta=Path[Waypoint]-Player->Pos;const double Distance=FVector2D(Delta.X,Delta.Z).Size();
-   if(Distance<.085){Player->TestMove.Reset();if(!Floor())return false;++Waypoint;return false;}
+   if(Distance<.085)
+   {
+    Player->TestMove.Reset();
+    // The return ends just beyond a stair edge; allow normal Walker height smoothing to settle.
+    // Keep the existing 8 cm rendered-ground requirement and the actual foot position.
+    if(DoorwayLeg){if(FootSettledAt<0)FootSettledAt=Now;if(Now-FootSettledAt<.25)return false;}
+    if(!Floor())return false;++Waypoint;FootSettledAt=-1;return false;
+   }
+   FootSettledAt=-1;
    if(Now-ProgressAt>12){Result(false,TEXT("ordinary exterior Walker stalled; no collision or tolerance fallback"));return false;}
    Player->Yaw=FMath::Atan2(-Delta.X,-Delta.Z);Player->Pitch=-.08;Player->TestMove=FVector2D(0,-FMath::Min(1.,Distance/.5));Player->bTestRun=false;return false;
   }
-  bool ClosedSlate(TArray<FString>& Text)const
+  bool UseDoor(bool WantOpen,bool ExpectRefusal=false)
   {
-   auto* M=Main();if(M->Hud&&M->Hud->HudWidget())SlateText(M->Hud->HudWidget()->AsShared(),Text);
-   return Text.Contains(FString(Closed))&&M->UI->LastDescription()==Closed&&!M->UI->Modal();
-  }
-  bool UseClosed()
-  {
-   auto* M=Main();auto* Player=M->Player.Get();const auto* Interaction=M->Inter->Get(TEXT("town:cinema"));
+   auto* M=Main();auto* Player=M->Player.Get();
+   const bool WasOpen=S47CalicheAccess::IsOpen(TEXT("cinema"));
+   const int32 DoorNode=Unique(TEXT("caliche-access:SM_Access_Cinema_Door"));
+   const auto* Node=Web->Node(DoorNode);const auto* Door=Node?Cast<UStaticMeshComponent>(Node->Comp.Get()):nullptr;
+   if(!Check(Door&&WasOpen!=WantOpen,TEXT("actual installed door exists and requested normal toggle changes its state")))return false;
+   const FTransform Before=Door->GetComponentTransform();const FVector BeforeFoot=Player->Pos;
+   if(ExpectRefusal)
+   {
+    // A real open, walkable threshold strictly inside the soon-to-be closed footprint.
+    // This centre test is independent of the production radius-inflation predicate.
+    bool Inside=false,Clear=true;int32 DoorsFound=0;
+    for(const auto& C:Web->CollidersMutable(M->World->Area))
+    {
+     if(C.Id==TEXT("access:door:Cinema")){++DoorsFound;Inside=!C.bEnabled&&BeforeFoot.X>C.MinX&&BeforeFoot.X<C.MaxX&&BeforeFoot.Z>C.MinZ&&BeforeFoot.Z<C.MaxZ;}
+     if(C.bEnabled&&BeforeFoot.X+Player->Radius>C.MinX+1e-8&&BeforeFoot.X-Player->Radius<C.MaxX-1e-8&&BeforeFoot.Z+Player->Radius>C.MinZ+1e-8&&BeforeFoot.Z-Player->Radius<C.MaxZ-1e-8)Clear=false;
+    }
+    if(!Check(WasOpen&&!WantOpen&&DoorsFound==1&&Inside&&Clear&&Player->Walkable(BeforeFoot.X,BeforeFoot.Z),TEXT("ordinary Walker reached collision-free open threshold inside the actual closed leaf footprint")))return false;
+   }
    const FVector Eye=Player->EyeUE(),Forward=Player->ForwardUE();const FString Pick=M->Inter->Update(Eye,Forward);
+   const auto* Interaction=M->Inter->Get(Pick);
    auto Ray=S47J::New();Vec(Ray,TEXT("eye_ue_cm"),Eye);Vec(Ray,TEXT("forward_ue"),Forward);S47J::Set(Ray,TEXT("picked"),Pick);S47J::Set(Ray,TEXT("focused"),Player->FocusedId());S47J::Set(Ray,TEXT("walk_metres"),WalkMetres);
    TArray<FHitResult> Hits;FCollisionQueryParams Query(SCENE_QUERY_STAT(S47CinemaUse),true);
    Web->GetWorld()->LineTraceMultiByChannel(Hits,Eye,Eye+Forward.GetSafeNormal()*600,ECC_GameTraceChannel1,Query);
    bool ActualHit=false;for(const auto& Hit:Hits)if(!Web->UsableAt(Hit.GetComponent()).IsEmpty())
    {
     S47J::Set(Ray,TEXT("first_usable_component"),GetPathNameSafe(Hit.GetComponent()));S47J::Set(Ray,TEXT("first_usable_node"),Web->NodeOf(Hit.GetComponent()));S47J::Set(Ray,TEXT("hit_distance_m"),Hit.Distance/100.);S47J::Set(Ray,TEXT("actual_range_m"),Interaction?Interaction->Range:-1.);
-    ActualHit=Interaction&&Web->UsableAt(Hit.GetComponent())==TEXT("town:cinema")&&Web->NodeOf(Hit.GetComponent())==1515&&Hit.Distance>0&&Hit.Distance/100.<=Interaction->Range;break;
+    ActualHit=Interaction&&Web->UsableAt(Hit.GetComponent())==Pick&&Hit.Distance>0&&Hit.Distance/100.<=Interaction->Range;break;
    }
-   Rays.Add(MakeShared<FJsonValueObject>(Ray));
-   if(!Check(ActualHit&&Pick==TEXT("town:cinema")&&Player->FocusedId()==Pick&&bool(Player->OnUse)&&!M->UI->Modal()&&M->Inter->LabelOf(Pick)==TEXT("The Plaza"),TEXT("actual settled player camera/focus hits original cinema leaf inside actual range2.6 before normal HUD OnUse")))return false;
-   M->UI->ClearToasts();Player->OnUse(Pick);++ClosedUses;return true;
+   const FString Label=WantOpen?TEXT("Open door"):TEXT("Close door");
+   if(!Check(ActualHit&&(Pick==TEXT("access:Cinema")||Pick==TEXT("town:cinema"))&&Player->FocusedId()==Pick&&bool(Player->OnUse)&&!M->UI->Modal()&&M->Inter->LabelOf(Pick)==Label,TEXT("settled physical camera/ray and ordinary HUD door action within actual range")))return false;
+   M->UI->ClearToasts();Player->OnUse(Pick);if(ExpectRefusal)++RefusedDoorUses;else ++DoorUses;
+   const bool ExpectedOpen=ExpectRefusal?WasOpen:WantOpen;
+   bool Colliders=true;for(const TCHAR* Area:{TEXT("road"),TEXT("diner")})
+   {int32 Count=0;for(const auto& C:Web->CollidersMutable(Area))if(C.Id==TEXT("access:door:Cinema")){++Count;Colliders&=C.bEnabled==!ExpectedOpen;}Colliders&=Count==1;}
+   const bool SameLeaf=Door->GetComponentTransform().Equals(Before,.0001);
+   const bool Good=S47CalicheAccess::IsOpen(TEXT("cinema"))==ExpectedOpen&&AccessOpen(M->Flow->GameState())==ExpectedOpen&&Colliders
+    &&(ExpectRefusal?SameLeaf:!SameLeaf)&&Player->Pos.Equals(BeforeFoot,1e-9)
+    &&(!ExpectRefusal||M->UI->LastDescription()==TEXT("Step clear of the doorway before closing it."));
+   S47J::Set(Ray,TEXT("refused_close"),ExpectRefusal);Vec(Ray,TEXT("player_before_three_m"),BeforeFoot);Vec(Ray,TEXT("player_after_three_m"),Player->Pos);S47J::Set(Ray,TEXT("last_description"),M->UI->LastDescription());
+   S47J::Set(Ray,TEXT("before_open"),WasOpen);S47J::Set(Ray,TEXT("after_open"),S47CalicheAccess::IsOpen(TEXT("cinema")));S47J::Set(Ray,TEXT("physical_leaf_and_both_colliders_pass"),Good);Rays.Add(MakeShared<FJsonValueObject>(Ray));
+   return Check(Good,ExpectRefusal?TEXT("ordinary close refused at open threshold: step-clear message, unchanged leaf/player/both colliders/exported open state"):TEXT("normal OnUse moved actual leaf, changed both area colliders and exported correct saved door state"));
   }
-  void QueuePhoto(const FString& Name,const FVector& Target,bool NeedClosed=false)
-  {PhotoName=Name;Aim=Target;PhotoClosed=NeedClosed;Requested=false;PhotoAt=FPlatformTime::Seconds();PhotoMeta.Reset();Look();}
+  void QueuePhoto(const FString& Name,const FVector& Target,bool NeedDoor=false)
+  {PhotoName=Name;Aim=Target;PhotoDoor=NeedDoor;Requested=false;PhotoAt=FPlatformTime::Seconds();PhotoMeta.Reset();Look();}
   bool Photo(int32 PosterIndex=-1)
   {
    Look();const double Now=FPlatformTime::Seconds();const FString File=Root/(PhotoName+TEXT(".png"));auto* M=Main();
@@ -280,7 +318,7 @@ namespace S47CinemaContract
      S47J::Set(PhotoMeta,TEXT("projected_bounds_px"),TArray<double>{LowX,LowY,HighX,HighY});S47J::Set(PhotoMeta,TEXT("viewport_px"),TArray<double>{Size.X,Size.Y});S47J::Set(PhotoMeta,TEXT("new_art_audit_claimed"),!Off);
      if(!Check(Inside&&HighX-LowX>=80&&HighY-LowY>=120&&S47Three::ToThree(M->Player->EyeUE()).X>Aim.X+.1,TEXT("entire actual poster/frame projects from its legal exterior front at meaningful pixel size")))return false;
     }
-    if(PhotoClosed){TArray<FString> Text;if(!Check(ClosedSlate(Text),TEXT("original Closed/doors-chained toast actually exists in visible Slate at capture request")))return false;S47J::Set(PhotoMeta,TEXT("visible_slate_text"),Text);}
+    if(PhotoDoor){if(!Check(S47CalicheAccess::IsOpen(TEXT("cinema"))&&AccessOpen(M->Flow->GameState()),TEXT("actual open Cinema door and saved state at capture")))return false;S47J::Set(PhotoMeta,TEXT("cinema_open"),true);}
     FScreenshotRequest::RequestScreenshot(File,true,false);Requested=true;return false;
    }
    FJ Receipt;if(!Png(File,Receipt)){if(Now-PhotoAt>15)Result(false,TEXT("complete viewport PNG/CRC/IEND missing: ")+PhotoName);return false;}
@@ -301,7 +339,7 @@ namespace S47CinemaContract
    {
     if(M->Flow->bStarting||M->World->bBusy){Ready=0;return;}if(Ready==0){Ready=Now;return;}if(Now-Ready<2)return;
     if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->Flow->Saves.List().IsEmpty()&&FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir()))&&M->Story->ChapterKey==TEXT("ch2")&&!M->Story->bEveningTimeline&&!M->Evening->Opening()&&!M->World->bDriving&&!M->UI->Modal()&&!M->Story->IsCinematic(),TEXT("fresh isolated chapter2/case0, real profile-local save store, no saved case/commute/modal/cinematic before sole foot fixture")))return;
-    if(!CaptureOriginals())return;InitialQuest=Quest(M->Flow->GameState());if(!Check(InitialQuest.IsValid(),TEXT("actual complete chapter2 case exists")))return;
+    if(!CaptureOriginals()||!Check(S47CalicheAccess::HasDoor(TEXT("cinema"))&&S47CalicheAccess::IsOpen(TEXT("cinema")),TEXT("current playtest Cinema starts physically open")))return;InitialQuest=Quest(M->Flow->GameState());if(!Check(InitialQuest.IsValid(),TEXT("actual complete chapter2 case exists")))return;
     auto Fixture=S47J::New();S47J::Set(Fixture,TEXT("kind"),TEXT("EXPLICIT legal exterior FOOT START; no car, egress, original spawn or prior traversal acceptance"));Vec(Fixture,TEXT("foot_three_x_y_z"),FVector(7991,0,2175));S47J::Set(Fixture,TEXT("clock_before"),M->Story->Clock());
     if(!Write(Root/TEXT("explicit-foot-fixture.json"),Fixture)){Result(false,TEXT("foot fixture provenance write failed"));return;}
     Started=true;M->World->Enter(TEXT("diner"));M->Player->Place(7991,2175,0);Next(1,TEXT("sole explicit exterior foot start; all subsequent approaches use ordinary Walker; native clock unchanged"));return;
@@ -316,21 +354,39 @@ namespace S47CinemaContract
    if(Stage==2){if(!Walk(Now))return;QueuePhoto(TEXT("desert-sky"),Poster(0));Next(3,TEXT("settle actual walking camera on first poster"));return;}
    if(Stage==3)
    {
-    if(!Photo(0)||!Snapshot(TEXT("first-poster"),true))return;WalkTo({FVector(7988,0,2155)});Next(4,TEXT("continuous Walker along closed facade to friday-matinee frame"));return;
+    if(!Photo(0)||!Snapshot(TEXT("first-poster"),true))return;WalkTo({FVector(7988,0,2155)});Next(4,TEXT("continuous Walker along active facade to friday-matinee frame"));return;
    }
    if(Stage==4){if(!Walk(Now))return;QueuePhoto(TEXT("friday-matinee"),Poster(1));Next(5,TEXT("settle actual camera on second poster"));return;}
    if(Stage==5)
    {
-    if(!Photo(1)||!Snapshot(TEXT("second-poster"),true))return;WalkTo({FVector(7988,0,2162),FVector(7987.5,0,2162)});Next(6,TEXT("physical return to the unchanged closed entrance proxy, still outside glass"));return;
+    if(!Photo(1)||!Snapshot(TEXT("second-poster"),true))return;WalkTo({FVector(7988,0,2159.4),FVector(7986.8,0,2159.4)});Next(6,TEXT("physical return to the unchanged open-access entrance proxy, from the legal exterior approach"));return;
    }
-   if(Stage==6){if(!Walk(Now))return;Aim=Proxy();Look();Next(7,TEXT("settle actual ray/focus before ordinary Player.OnUse"));return;}
+   if(Stage==6)
+   {
+    if(!Walk(Now))return;int32 Count=0;
+    for(const auto& C:Web->CollidersMutable(M->World->Area))if(C.Id==TEXT("access:door:Cinema")){Threshold=FVector((C.MinX+C.MaxX)/2,0,(C.MinZ+C.MaxZ)/2);++Count;}
+    if(!Check(Count==1&&S47CalicheAccess::IsOpen(TEXT("cinema")),TEXT("single actual open threshold for focused close-clearance regression")))return;
+    DoorwayLeg=true;WalkTo({Threshold});Next(61,TEXT("ordinary Walker to measured open threshold; no extra placement or interior tour"));return;
+   }
+   if(Stage==61){if(!Walk(Now))return;Aim=DoorTarget();Look();Next(62,TEXT("settle actual ray/focus inside the still-open threshold"));return;}
+   if(Stage==62)
+   {
+    Aim=DoorTarget();Look();if(Now-Since<.35)return;if(!UseDoor(false,true))return;
+    WalkTo({FVector(7986.8,0,Threshold.Z)});Next(63,TEXT("ordinary Walker moves clear after refused close; no teleport or forced toggle"));return;
+   }
+   if(Stage==63){if(!Walk(Now))return;DoorwayLeg=false;Aim=DoorTarget();Look();Next(7,TEXT("settle ray after moving clear; ordinary close must now succeed"));return;}
    if(Stage==7)
    {
-    Look();if(Now-Since<.35)return;if(!UseClosed())return;QueuePhoto(TEXT("plaza-closed"),Proxy(),true);Next(8,TEXT("actual original Closed response, no interaction bypass or new quest"));return;
+    Look();if(Now-Since<.35)return;if(!UseDoor(false))return;Aim=DoorTarget();Look();Next(70,TEXT("normal close completed; settle ray on physical closed leaf"));return;
+   }
+   if(Stage==70)
+   {
+    Aim=DoorTarget();Look();if(Now-Since<.35)return;if(!UseDoor(true))return;
+    QueuePhoto(TEXT("plaza-open"),DoorTarget(),true);Next(8,TEXT("normal close/open pair; open-access state retained"));return;
    }
    if(Stage==8)
    {
-    if(!Photo()||!Snapshot(TEXT("original-closed"),true))return;if(!Check(Same(InitialQuest,Quest(M->Flow->GameState())),TEXT("poster approach and normal Closed interaction changed no chapter/quest/board state")))return;
+    if(!Photo()||!Snapshot(TEXT("current-open-door"),true)||!UseDoor(false))return;if(!Check(Same(InitialQuest,Quest(M->Flow->GameState())),TEXT("poster approach and normal door interactions changed no chapter/quest/board state")))return;
     M->Player->TestMove.Reset();M->World->Enter(TEXT("saro"));Next(9,TEXT("EXPLICIT World.Enter visibility control, not a physically traversed area journey"));return;
    }
    if(Stage==9)
@@ -340,9 +396,9 @@ namespace S47CinemaContract
    }
    if(Stage==10)
    {
-    Aim=Proxy();Look();if(Now-Since<.8)return;if(!Floor()||!Snapshot(TEXT("area-return"),true))return;
-    if(!Check(WalkMetres>25&&WalkSamples>100&&M->Flow->GameSaveBlock().IsEmpty()&&!M->UI->Modal(),TEXT("both physical poster approaches and ordinary closed entrance completed at legal gameplay save boundary")))return;
-    BeforeSave=M->Flow->GameState();SavedFoot=M->Player->Pos;SavedFloor=M->Player->FloorY;SavedYaw=M->Player->Yaw;SavedPitch=M->Player->Pitch;SavedClock=M->Story->Clock();Doors=Web->DoorStates();
+    Aim=DoorTarget();Look();if(Now-Since<.8)return;if(!Floor()||!Snapshot(TEXT("area-return"),true))return;
+    if(!Check(WalkMetres>25&&WalkSamples>100&&M->Flow->GameSaveBlock().IsEmpty()&&!M->UI->Modal(),TEXT("both physical poster approaches and ordinary open-access entrance completed at legal gameplay save boundary")))return;
+    BeforeSave=M->Flow->GameState();if(!Check(!AccessOpen(BeforeSave)&&!S47CalicheAccess::IsOpen(TEXT("cinema")),TEXT("actual CLOSED non-default Cinema state exported before disk/title/Continue")))return;SavedFoot=M->Player->Pos;SavedFloor=M->Player->FloorY;SavedYaw=M->Player->Yaw;SavedPitch=M->Player->Pitch;SavedClock=M->Story->Clock();Doors=Web->DoorStates();
     if(!Check(S47J::Str(BeforeSave,TEXT("checkpoint"))==TEXT("chapter2")&&Same(InitialQuest,Quest(BeforeSave)),TEXT("real chapter2 checkpoint retained, no quest fabrication before full disk fixture")))return;
     FS47SaveStore Writer(Root/TEXT("isolated-case1"));Writer.Init();FS47SaveCard Card;Card.Chapter=M->Story->ChapterTitle();Card.Place=M->Flow->PlaceName();Card.Clock=M->Story->ClockText(false);Card.Playtime=M->Playtime;FString Error;
     const auto Meta=Writer.Save(1,TEXT("manual"),0,BeforeSave,Card,Error);if(!Check(Meta.IsSet(),TEXT("EXPLICIT DISK FIXTURE: unchanged full actual case0 snapshot saved as isolated case1: ")+Error))return;
@@ -367,18 +423,18 @@ namespace S47CinemaContract
     const double ClockDelta=M->Story->Clock()-SavedClock,GameDelta=M->Story->Gt()-RestoredGt;
     bool Restored=M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->Story->ChapterKey==TEXT("ch2")&&M->World->Area==TEXT("diner")&&!M->World->bDriving&&M->Player->Pos.Equals(SavedFoot,.015)
      &&FMath::Abs(Angle(M->Player->Yaw-SavedYaw))<.001&&FMath::Abs(M->Player->Pitch-SavedPitch)<.001&&FMath::Abs(M->Player->FloorY-SavedFloor)<.08
-     &&ClockDelta>=0&&FMath::Abs(ClockDelta-GameDelta)<.025&&SameDoors(Doors,Web->DoorStates())&&Same(Quest(BeforeSave),Quest(Actual))&&DialogSame(BeforeSave,Actual)&&!M->UI->Modal();
+     &&ClockDelta>=0&&FMath::Abs(ClockDelta-GameDelta)<.025&&SameDoors(Doors,Web->DoorStates())&&Same(Quest(BeforeSave),Quest(Actual))&&DialogSame(BeforeSave,Actual)&&!AccessOpen(Actual)&&Same(S47J::Obj(BeforeSave,TEXT("calicheAccessDoors")),S47J::Obj(Actual,TEXT("calicheAccessDoors")))&&!S47CalicheAccess::IsOpen(TEXT("cinema"))&&!M->UI->Modal();
     for(const auto& Key:S47J::Strs(BeforeSave,TEXT("town")))Restored&=M->TownSeen.Contains(Key);
     auto Receipt=S47J::New();S47J::Set(Receipt,TEXT("expected"),BeforeSave);S47J::Set(Receipt,TEXT("actual"),Actual);S47J::Set(Receipt,TEXT("clock_delta_seconds"),ClockDelta);S47J::Set(Receipt,TEXT("actual_native_game_time_since_continue_seconds"),GameDelta);S47J::Set(Receipt,TEXT("wall_seconds_since_continue"),Now-ContinueAt);S47J::Set(Receipt,TEXT("pass"),Restored);
     if(!Write(Root/TEXT("continue-readback.json"),Receipt)){Result(false,TEXT("Continue readback write failed"));return;}
     if(!Check(Restored,TEXT("ordinary chapter2 Continue retained actual area/player/view/native floor/clock/doors/whole quest case and saved dialogue packs, without clock rewriting"))||!Snapshot(TEXT("after-continue"),true))return;
-    Aim=Proxy();Look();Next(13,TEXT("fresh restored camera must still reach original Closed via ordinary HUD OnUse"));return;
+    Aim=DoorTarget();Look();Next(13,TEXT("fresh restored camera must still reach current Cinema door via ordinary HUD OnUse"));return;
    }
-   if(Stage==13){Look();if(Now-Since<.35)return;if(!UseClosed())return;Next(14,TEXT("same original Closed action after full Continue"));return;}
+   if(Stage==13){Look();if(Now-Since<.35)return;if(!UseDoor(true))return;Aim=DoorTarget();Look();Next(14,TEXT("actual restored CLOSED Cinema door opens normally"));return;}
    if(Stage==14)
    {
-    if(Now-Since<.2)return;TArray<FString> Text;if(!Check(ClosedSlate(Text),TEXT("ordinary post-Continue OnUse still opens original visible Closed response")))return;
-    WalkTo({FVector(7988,0,2162),FVector(7988,0,2169)});Next(15,TEXT("physical restored Walker returns to first poster for final viewport proof"));return;
+    Aim=DoorTarget();Look();if(Now-Since<.35)return;if(!Check(S47CalicheAccess::IsOpen(TEXT("cinema"))&&AccessOpen(M->Flow->GameState()),TEXT("normal post-Continue action restores intended open access")))return;
+    WalkTo({FVector(7988,0,2159.4),FVector(7988,0,2169)});Next(15,TEXT("physical restored Walker returns to first poster for final viewport proof"));return;
    }
    if(Stage==15){if(!Walk(Now))return;QueuePhoto(TEXT("after-continue-poster"),Poster(0));Next(16,TEXT("actual post-Continue walking camera and native art"));return;}
    if(Stage==16)
@@ -390,9 +446,9 @@ namespace S47CinemaContract
    }
    if(Stage==17)
    {
-    if(!Check(Photos.Num()==4&&ClosedUses==2&&WalkMetres>30,TEXT("both poster views, original Closed UI, after-Continue view and both ordinary OnUse actions actually completed")))return;
+    if(!Check(Photos.Num()==4&&DoorUses==4&&RefusedDoorUses==1&&WalkMetres>30,TEXT("both poster views, actual open-door view, after-Continue view and four accepted ordinary OnUse actions plus one refused threshold close actually completed")))return;
     for(const auto& Value:Photos){const auto Old=S47J::Obj(Value->AsObject(),TEXT("png"));FJ Fresh;if(!Check(Png(S47J::Str(Old,TEXT("file")),Fresh)&&Same(Old,Fresh),TEXT("final unchanged complete viewport PNG signature/chunk CRC/IEND/hash receipt")))return;}
-    Result(true,Off?TEXT("explicit Off preserves original closed Plaza/proxy and complete physical/disk journey; no new-art audit claimed"):TEXT("two native exterior posters, legal physical approach, original Closed HUD interaction, area lifecycle and full chapter2 disk/title/Continue"));
+    Result(true,Off?TEXT("explicit Off preserves original open-access Plaza/proxy and complete physical/disk journey; no new-art audit claimed"):TEXT("two native exterior posters, legal physical approach, current Cinema door HUD interaction, area lifecycle and full chapter2 disk/title/Continue"));
    }
   }
  };
@@ -414,5 +470,5 @@ void AS47Web::StartCinemaPostersContract()
  for(const TCHAR* Flag:{TEXT("NullRHI"),TEXT("S47Title"),TEXT("S47Evening"),TEXT("S47SmokeTest"),TEXT("S47ProductionViews"),TEXT("S47ProductionCab"),TEXT("S47FarmAccessContract"),TEXT("S47CalicheHomesContract"),TEXT("S47CalicheHomesContractFallback"),TEXT("S47RadioWomanContract"),TEXT("S47RadioWomanConversation"),TEXT("S47DaleDocumentsContract"),TEXT("S47MotelV2Route"),TEXT("S47NightSequenceContract"),TEXT("S47T01DriveContract"),TEXT("S47T01Contract"),TEXT("S47T02Contract"),TEXT("S47T02DriveContract"),TEXT("S47HorrorArrival"),TEXT("S47HorrorContract"),TEXT("S47GetOut"),TEXT("S47EveningEntrance"),TEXT("S47TownBuildingsOff"),TEXT("S47PropsOff"),TEXT("S47LegacyCalicheStreet"),TEXT("S47EveningTimeline")})Conflict|=FParse::Param(FCommandLine::Get(),Flag);
  if(!State->Check(Fresh&&!Conflict&&FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump)&&Jump==TEXT("chapter2"),TEXT("fresh empty contract profile, -S47Jump=chapter2, normal assets/RHI and no competing pose/route/clock driver")))return;
  GetWorldTimerManager().SetTimer(State->Timer,[State]{State->Tick();},.05f,true);
- UE_LOG(LogS47CinemaContract,Display,TEXT("S47: CinemaPosters contract armed off=%d; explicit chapter2 foot fixture, ordinary Walker/HUD OnUse and disk Continue; no car/human/visual claim; evidence=%s"),State->Off,*State->Root);
+ UE_LOG(LogS47CinemaContract,Display,TEXT("S47: CinemaPosters contract armed off=%d; explicit chapter2 foot fixture, ordinary Walker/HUD open-close actions and disk Continue; no car/human/visual claim; evidence=%s"),State->Off,*State->Root);
 }

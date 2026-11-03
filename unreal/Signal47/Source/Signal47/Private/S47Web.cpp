@@ -718,7 +718,7 @@ void AS47Web::BeginPlay()
 	FleetParked = FS47FleetParked::Build(this,SaroSite.IsValid());
 	TownBuildings = FS47TownBuildings::Build(this);
 	CalicheHomes = FS47CalicheHomes::Build(this,TownBuildings.IsValid());
-	CinemaPosters = FS47CinemaPosters::Build(this,TownBuildings.IsValid());
+	// Cinema overlays install after the current CalicheAccess geometry in TownLayer.
 	MotelV2 = FS47MotelV2::Build(this);
 	RadioWoman = FS47RadioWoman::Build(this);
 	// Original lab detail meshes preserve all live prints, doors and existing light drivers.
