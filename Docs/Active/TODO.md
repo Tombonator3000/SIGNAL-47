@@ -6,6 +6,8 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Lokal lydinstallasjon, 3. november
 
+- [ ] RECEIVER-SEARCH-01: kontinuerlig lyd ved frekvens/gain/båndbredde i Freeform-mottakeren. Kilde og målrettede kontroller klargjort; bygg, native kjøring og lokal installasjon venter på lukket spill.
+
 - [x] SOUND-INSTALL-01 / PR375/376: NASA/Nebula og apparatlyd integrert og installert lokalt, også musikk og effekter i Freeform. 15 lydoppskrifter, 51 native Freeform-kontroller, 2240 installerte selvtester og Vulkan-oppstart består; 111 Saved-filer uendret.
 
 ## Adaptiv musikk og signaluttrykk, 3. november

@@ -94,10 +94,12 @@ void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;
  const bool ScreensOnly=FParse::Param(FCommandLine::Get(),TEXT("S47FreeformScreensOnly"));
+ const bool SearchOnly=FParse::Param(FCommandLine::Get(),TEXT("S47ReceiverSearchOnly"));
  const bool SoundOnly=FParse::Param(FCommandLine::Get(),TEXT("S47SoundReferencesOnly"));
- if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("actual-jeep-driver.png"),TEXT("fysisk-audio.png"),TEXT("space-reference-desk.png")})
+ if(Good)for(const TCHAR* Name:{TEXT("operations.png"),TEXT("status.png"),TEXT("tracking.png"),TEXT("receiver.png"),TEXT("pump-before.png"),TEXT("pump-after.png"),TEXT("actual-jeep-driver.png"),TEXT("fysisk-audio.png"),TEXT("space-reference-desk.png"),TEXT("receiver-search.png")})
  {
-  if(SoundOnly!=(FString(Name)==TEXT("space-reference-desk.png")))continue;
+  if(SearchOnly!=(FString(Name)==TEXT("receiver-search.png")))continue;
+  if(!SearchOnly&&SoundOnly!=(FString(Name)==TEXT("space-reference-desk.png")))continue;
   if(ScreensOnly && FString(Name)!=TEXT("operations.png") && FString(Name)!=TEXT("status.png") && FString(Name)!=TEXT("tracking.png") && FString(Name)!=TEXT("receiver.png"))continue;
   TArray<uint8> Bytes;const bool PNG=FFileHelper::LoadFileToArray(Bytes,*(Root/Name))&&Bytes.Num()>1000&&Bytes[0]==137&&Bytes[1]==80&&Bytes[2]==78&&Bytes[3]==71;
   if(!Check(PNG,FString(TEXT("native screenshot exists with PNG signature: "))+Name)){Good=false;}
@@ -113,6 +115,12 @@ void FS47FreeformInWorldTest::Finish(bool Good,const FString& Why)
   S47J::Set(O,TEXT("scope"),TEXT("six staged NASA/Nebula references at the physical SARO desk"));
   S47J::Set(O,TEXT("method"),TEXT("Explicit isolated player placement, native eye-ray Pick/OnUse for REF PLAY, production next/stop callbacks, no comparison coverage, leaving range stops playback, native screenshot."));
   S47J::Set(O,TEXT("limits"),TEXT("No human listening acceptance, natural navigation, full equipment journey or whole-game regression. Audio sample validity is checked separately by the offline runtime graph."));
+ }
+ if(SearchOnly)
+ {
+  S47J::Set(O,TEXT("scope"),TEXT("continuous search monitor on the physical Freeform receiver"));
+  S47J::Set(O,TEXT("method"),TEXT("Production CRT opening and live session update, explicit receiver dial values, carrier graph response, music hold, screen switch, power loss and native screenshot."));
+  S47J::Set(O,TEXT("limits"),TEXT("Isolated developer profile and explicit dial/camera fixtures; no actual mouse navigation or human listening acceptance. PCM is tested separately by ReceiverMonitorSelfTest."));
  }
  if(!Root.IsEmpty())FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -136,6 +144,8 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(!Check(M->Flow->bDevRun&&M->Flow->CaseId==0&&M->IsFreeform(),TEXT("temporary developer Freeform case 0 required")))return;
   if(F.Director)F.Director->Stop();DayBefore=F.Day();CardsBefore=Cards(DayBefore);CaptureCards(TEXT("before-save"));
   if(!Check(F.Jobs().Num()>=3&&!CardsBefore.IsEmpty(),TEXT("daily source parameter cards exist in production session")))return;
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47ReceiverSearchOnly")))
+  {if(!OpenScreen(3))return;Go(50);return;}
   if(FParse::Param(FCommandLine::Get(),TEXT("S47SoundReferencesOnly")))
   {
    if(!Check(F.AudioDesk.IsValid(),TEXT("production reference desk exists")))return;
@@ -381,4 +391,45 @@ void FS47FreeformInWorldTest::Step(double Dt)
   if(!Check(M->Score&&!M->Score->MusicHeld(),TEXT("Freeform music is released after reference listening")))return;
   Finish(true,TEXT("six staged space references exercised through native SARO controls; no human listening acceptance"));return;
  }
+ if(Stage==50)
+ {
+  if(Age-At<1)return;
+  if(!Check(F.TerminalWindowRendered()&&M->Audio&&M->Audio->ReceiverMonitorOn(),TEXT("physical receiver starts continuous monitor through production Step")))return;
+  if(!Check(M->Score&&M->Score->MusicHeld(),TEXT("search listening holds adaptive music")))return;
+  const auto* P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("receiver uses the current observing profile")))return;
+  auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Gain=P->Gain[0];Rx.Bandwidth=P->Bw[0];Rx.Azimuth=(P->Az[0]+P->Az[1])*.5;
+  Go(51);return;
+ }
+ if(Stage==51)
+ {
+  if(Age-At<.7)return;
+  if(!Check(M->Story->Rx.Quality(*F.ConsoleProfile())>.99&&M->Audio->Carrier.Gain->Gain.Value()>.02,TEXT("meter lock produces strong carrier through live receiver update")))return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("receiver-search.png"),true,false);
+  M->Story->Rx.Frequency=F.ConsoleProfile()->F+.4;Go(52);return;
+ }
+ if(Stage==52)
+ {
+  if(Age-At<.7)return;
+  if(!Check(M->Audio->Carrier.Gain->Gain.Value()<.001&&M->Audio->Carrier.Stat->Gain.Value()>.005,TEXT("detuning replaces locked carrier with audible search static")))return;
+  if(!OpenScreen(0))return;Go(53);return;
+ }
+ if(Stage==53)
+ {
+  if(Age-At<.7)return;
+  if(!Check(!M->Audio->ReceiverMonitorOn()&&M->Audio->Carrier.Stat->Gain.Value()<.0001&&!M->Score->MusicHeld(),TEXT("switching workstations silences search and releases music")))return;
+  if(!OpenScreen(3))return;Go(54);return;
+ }
+ if(Stage==54)
+ {
+  if(Age-At<.7)return;
+  if(!Check(M->Audio->ReceiverMonitorOn(),TEXT("reopening receiver resumes continuous monitor")))return;
+  F.SetPowerFault(true);Go(55);return;
+ }
+ if(Stage==55)
+ {
+  if(Age-At<.7)return;
+  if(!Check(!M->Audio->ReceiverMonitorOn()&&M->Audio->Carrier.Stat->Gain.Value()<.0001,TEXT("feeder power loss silences receiver monitor")))return;
+  F.SetPowerFault(false);Finish(true,TEXT("live receiver search, music hold and lifecycle passed; human listening remains unverified"));return;
+ }
+
 }

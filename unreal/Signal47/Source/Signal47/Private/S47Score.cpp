@@ -343,7 +343,7 @@ bool FS47Score::MusicHeld() const
 		|| (Game->Decoder && (Game->Decoder->Playing() || Game->Decoder->Answering())));
 	const bool bFreeformListening = Free && M->Freeform && M->Freeform->AudioPlaying();
 	const bool bReferenceListening = M->Audio && M->Audio->SoundMixPlaying(TEXT("receiver_reference"));
-	return bDecoderHeld || bFreeformListening || bReferenceListening || (Game && (Game->bConsoleOpen || (!Free && Game->IsCinematic()))) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
+	return bDecoderHeld || bFreeformListening || bReferenceListening || (M->Audio && M->Audio->ReceiverMonitorOn()) || (Game && (Game->bConsoleOpen || (!Free && Game->IsCinematic()))) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
 		|| M->bRadioHeard || On(Held.RoadsideSilent) || On(Held.MotelTvHeard) || On(Held.AbductionBusy) || On(Held.RecWalkBusy)
 		|| Value(Held.FaceQuiet) > 0 || Value(Held.NinthQuiet) > 0 || On(Held.RoofStepsBusy) || On(Held.ReelTapeBusy)
 		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy) || On(Held.TruckBRacing)

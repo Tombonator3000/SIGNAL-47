@@ -12,6 +12,8 @@ class USoundBase;
 class US47Synth;
 class FS47SignalVoice;
 class FS47Ambience;
+class FS47Rx;
+struct FS47Profile;
 
 // audio.play's options (core/Audio.ts), positions in the web version's terms (three.js metres)
 struct FS47Sound
@@ -91,6 +93,10 @@ public:
 	void Stop(const FString& Key, float Fade = 0.05f); // stop(key, fade)
 	void Pour(const FVector& At);
 	void StartCarrier();
+	void MonitorReceiver(const FS47Rx& Rx, const FS47Profile& Profile);
+	void ReceiverMonitorOff();
+	bool ReceiverMonitorOn() const { return bReceiverMonitor; }
+	static bool ReceiverMonitorSelfTest(TArray<FString>& Lines);
 	void SetCarrier(float Level, float PitchOffset, float StaticLevel);
 	void SignalFrame(float Clarity, float Level); // the time is main.ts's t (US47Main::T)
 	void SignalOff();
@@ -115,7 +121,7 @@ public:
 	/** The bought sounds are in this build (the credits name them only then): BOUGHT_SFX. */
 	bool BoughtSfx() const;
 	// carrier: the receiver's tone once startCarrier() made it (the prologue's update asks for it)
-	struct FCarrier { TSharedPtr<FS47OscillatorNode> Osc; TSharedPtr<FS47GainNode> Gain, Stat; } Carrier;
+	struct FCarrier { TSharedPtr<FS47OscillatorNode> Osc; TSharedPtr<FS47GainNode> Gain, Stat; TSharedPtr<FS47BiquadFilterNode> Filter; } Carrier;
 	TSharedPtr<FS47AudioBuffer> CharacterBuffer(const FString& Voice, const FString& Text) const;
 	bool PhonePlaying() const { return PhoneSession.IsValid(); }
 	void SetVolume(float V);
@@ -235,6 +241,7 @@ public:
 	void EngineStop(float After);                                // the truck's own layers fade and stop (stop)
 
 private:
+	bool bReceiverMonitor = false;
 	bool bTitleTexture = false, bTitlePrivateMix = false;
 	struct FTitleTexture
 	{

@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Mottakersøk i Freeform, under arbeid 3. november
+
+Tom fant at RECEIVER / ACQUISITION mangler kontinuerlig søkelyd selv om måleren oppdateres. Referanseavspillingen ved båndpulten dekker ikke denne funksjonen. `codex/receiver-search-audio-20261103` kobler eksisterende bæretone og radiostøy til gjeldende mottakerprofil, frekvens, gain og båndbredde, med musikkhold under lytting og stopp ved lukking eller strømbrudd. Kilden og målrettede PCM-/native kontroller er klargjort; bygg, kjøring og lokal installasjon venter på avsluttet spilløkt. Dette er ikke med i installasjonen fra kl.14:11.
+
 ## Lydmotor, NASA/Nebula og Freeform installert lokalt, 3. november
 
 [PR375](https://github.com/Tombonator3000/SIGNAL-47/pull/375) og [PR376](https://github.com/Tombonator3000/SIGNAL-47/pull/376), runtime-kilde `cc7d3179`, er installert kl.14:11 CET. Banken laster automatisk fra pakket Content: 15 kilder og 15 oppskrifter. De fem bevarte NASA-opptakene og den kjøpte Nebula-atmosfæren finnes ved SARO-pultens REF NEXT / REF PLAY / REF STOP. NASA-referansene beholder hastighet 1 og avspilles uten løkke; referanselytting gir ingen måling, sammenligningsdekning eller funn. Originaler, proveniens og kreditering er bevart; de fem eksisterende observatorieopptakene er fortsatt i bruk. NASA-kildene er radio-/plasmamålinger gjort hørbare, mens Nebula er designet atmosfære.
