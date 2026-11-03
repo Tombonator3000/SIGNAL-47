@@ -1,0 +1,195 @@
+{
+  "status": "PASS",
+  "runtime_commit": "b0535f89df1479657526256d126c2b0d33c34578",
+  "original_rig": {
+    "asset": "/Game/Licensed/TripoNPC/Animated/SK_Tripo_Pale.SK_Tripo_Pale",
+    "authored_bones": 61,
+    "native_bones": 62,
+    "extra_native_root": "TripoPaleRig",
+    "assets_modified": false
+  },
+  "baseline": {
+    "complete": true,
+    "frames": 68,
+    "first_preview_s": 0.01103150937706232,
+    "last_preview_s": 8.030540069844564,
+    "stages": [
+      0,
+      1,
+      2
+    ],
+    "viewport": [
+      1600,
+      872
+    ]
+  },
+  "model_side_105cm": {
+    "complete": true,
+    "frames": 143,
+    "first_preview_s": 0.01312756072729826,
+    "last_preview_s": 17.034198530204574,
+    "stages": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "viewport": [
+      1600,
+      872
+    ],
+    "actual_root_travel_m": 10.9,
+    "measured_metrics_cm_and_deg": {
+      "maxError": 1.4797,
+      "maxAngle": 2e-06,
+      "maxSoleProbe": 1.4797
+    },
+    "grip": {
+      "progress": 0.9053919102463988,
+      "reach_blend": 0.9996144868301391,
+      "skin_rendered": true,
+      "root_ue_cm": [
+        787410,
+        52200,
+        -129.74047134324243
+      ],
+      "target_ue_cm": [
+        787336.8458021035,
+        52124.677604060205,
+        7.959528656757575
+      ],
+      "hands": [
+        {
+          "bone": "hand_l",
+          "intendedResidualCm": 0.03774264725742341,
+          "blendedResidualCm": 2.842170943040401e-14,
+          "solveClamped": false,
+          "projectsInsideViewport": true
+        },
+        {
+          "bone": "hand_r",
+          "intendedResidualCm": 0.03559687811311397,
+          "blendedResidualCm": 5.684341886080802e-14,
+          "solveClamped": false,
+          "projectsInsideViewport": true
+        }
+      ]
+    },
+    "instrumented_fixture": true
+  },
+  "actual_sc04": {
+    "checks": 17,
+    "captures": 1,
+    "state_restore": "serialized Spine roundtrip in memory, not full disk Continue",
+    "grip": {
+      "progress": 0.8519518335482904,
+      "reach_blend": 0.9982076564305671,
+      "skin_rendered": true,
+      "root_ue_cm": [
+        -30.469533978030082,
+        575,
+        0
+      ],
+      "target_ue_cm": [
+        -120,
+        575,
+        137.7
+      ],
+      "hands": [
+        {
+          "bone": "hand_l",
+          "intendedResidualCm": 0.16271740869359866,
+          "blendedResidualCm": 1.632702903446565e-13,
+          "solveClamped": false,
+          "projectsInsideViewport": false
+        },
+        {
+          "bone": "hand_r",
+          "intendedResidualCm": 0.15218664102963889,
+          "blendedResidualCm": 5.684341886080802e-14,
+          "solveClamped": false,
+          "projectsInsideViewport": false
+        }
+      ]
+    },
+    "instrumented_precommit": true
+  },
+  "production": {
+    "private_grab_probe_removed": true,
+    "temporary_105cm_side_fixture_removed": true,
+    "default_preview_target_m": 0.9,
+    "bounded_visual_lean_preserved": true
+  },
+  "limitations": [
+    "No human animation/comfort acceptance",
+    "AI hand telemetry measures intended wrist goals, not skin-surface collision; hands outside first-person screenshot",
+    "1.05m contact is a labeled model fixture, not a natural SC02 encounter",
+    "No new crab/crawl or passage-height AI",
+    "Successful capture retains existing hide/fade; no new full ending",
+    "Frame readback changes wall pacing; clips use actual preview timestamps, no FPS or audio claim"
+  ],
+  "installed": {
+    "status": "PASS",
+    "source_branch": "codex/pale-motion-20261103",
+    "target": "/home/tom/Games/Signal47/Linux",
+    "previous_verified_candidate": "/home/tom/scratch-bm/Signal47-saro-road-20261103/candidate/Linux",
+    "saved_nodes": 156,
+    "saved_files": 126,
+    "smoke": {
+      "returncode": 0,
+      "wall_seconds": 27.864941237028688,
+      "contention": [],
+      "stop_reason": null,
+      "preflight": {
+        "available_gib": 26.352691650390625,
+        "heavy_jobs": [],
+        "pgrep": "2311552 /bin/bash -c python3 /home/tom/scratch-bm/Signal47-alien-motion-20261103/install.py > /home/tom/scratch-bm/Signal47-alien-motion-20261103/install-result.txt 2>&1\n2311553 python3 /home/tom/scratch-bm/Signal47-alien-motion-20261103/install.py\n",
+        "production_reservation": {
+          "version": 1,
+          "pid": 2311553,
+          "start_ticks": "73186986",
+          "boot_id": "75288722-b9bb-4172-90d8-e2b037fd3140",
+          "label": "root original Pale motion verified local installation",
+          "acquired_at": "2026-11-03T04:29:12.864296+00:00",
+          "lock_path": "/home/tom/.local/state/signal47-production/heavy.lock"
+        },
+        "exempted_installed_game": [],
+        "grace_policy": {
+          "enabled": false,
+          "eligible": false,
+          "executable": "/home/tom/Games/Signal47/Linux/Signal47/Binaries/Linux/Signal47"
+        },
+        "performance_status": "UNCONTENDED"
+      },
+      "performance_status": "UNCONTENDED"
+    },
+    "Saved_unchanged": true,
+    "binary_sha256": "a4cbfdf66dbc2f21d020fa1c9c61ec52a3f25da367ac14721fb3cbaad3996cbc",
+    "free_bytes": 150157160448,
+    "at": "2026-11-03T05:29:52.321492+01:00"
+  },
+  "package_capture": {
+    "status": "PASS",
+    "frames": 143,
+    "size": [
+      1600,
+      872
+    ],
+    "seconds": 17.02571249641476,
+    "pelvis_planar_travel_cm": 1089.999999991851,
+    "all_7_stages_rendered": true,
+    "root_viewed": [
+      "frame-0080-t0009.601.png",
+      "frame-0122-t0014.642.png"
+    ]
+  },
+  "package_sc04": {
+    "status": "PASS",
+    "checks": 17,
+    "captures": 1,
+    "restore": "same-process serialized Spine; not full disk/Flow Continue"
+  }
+}

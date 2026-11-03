@@ -27,7 +27,7 @@ struct FS47PaleBody
  // Group: a web handle such as room.group. Prefix names the components and adopted nodes.
  bool Build(AS47Web* W, const TCHAR* Group, const TCHAR* Prefix);
  // Gait 0 standing to 1.4 striding, Phase the stride angle, Clock the held-pose clock.
- void Apply(bool bShow, const FVector& Feet, double BodyYaw, double HeadYaw, double Gait, double Phase, double Clock, EPose Pose);
+ void Apply(bool bShow, const FVector& Feet, double BodyYaw, double HeadYaw, double Gait, double Phase, double Clock, EPose Pose, double GrabProgress = -1, const TOptional<FVector>& GrabTargetUE = TOptional<FVector>());
  bool Owns(const class UPrimitiveComponent* C) const;
  bool Rendered() const;
 };

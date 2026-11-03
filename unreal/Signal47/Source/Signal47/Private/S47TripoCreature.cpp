@@ -148,3 +148,11 @@ void FS47TripoCreature::Apply(bool bShow, double HeadTurn, double Gait, double P
  for (int32 I=0; I<Pose.Num(); ++I) C->BoneSpaceTransforms[I]=Parents[I]<0?Pose[I]:Pose[I].GetRelativeTransform(Pose[Parents[I]]);
  C->MarkRefreshTransformDirty(); C->RefreshBoneTransforms();
 }
+
+void FS47TripoCreature::ApplyPale(const FS47PalePose& Pose)
+{
+ if(!PaleMotion)PaleMotion=MakeShared<FS47PaleMotion>();
+ Contacts=PaleMotion->Apply(*this,Pose);
+ if(!Contacts.bValid)Apply(Pose.bVisible,Pose.HeadYaw,Pose.LegacyGait,Pose.LegacyPhase,Pose.Clock,
+  Pose.Mode==ES47PaleMotion::Grab,Pose.Mode==ES47PaleMotion::Listen);
+}

@@ -1664,3 +1664,7 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 `codex/audio-focus-20261103`, kilde40b2fc92: WARD egen stemme eller tekst, ingen Dale-reserve; Score holdes under decoder/etter TAPE A ved SARO. Bygg/pakke,2147 installerte selvtester,Ward15 og før/etter+12 består; graf/API/Flow-minne, ikke menneskelig lytting eller nyprosess-Continue.126 Saved-filer uendret; ingen ny kopi/rydding, meteor-kandidat/cache beholdes til neste samlede kjøring.
 
 3. november 04:55: PLAY-31-15/26 installert `7b81ddd2`, codex/saro-grounding-20261103.32m gradvis veisøm og11 fundamenter; bygg/pakke2147,gange79m,autokjøring begge veier ogHigh/Low-bilder består.126 Saved-filer bevart,156.51GB ledig. Motellføtter/videre armaturpass åpne; ingen ny kopi/rydding/offentlig release.
+
+3. november05:16: konkret ENOSPC på16,69GB/tmp under Pale-opptak. Bare fire egne ferdige/avbrutte bildeutdata flyttet hashidentisk til Pale-arbeidsmappen, gamle stier beholdt som lenker; 509.4MB frigjort på/tmp og 156.41GB igjen på spilldisken. Nye opptak går direkte til beholdt arbeidsmappe via egen/tmp-alias. Ingen prosjektkopi, kilde, lagring eller andre midlertidige data ryddet.
+
+3. november 05:29: PLAY-31-22 delvis installert `b0535f89`, codex/pale-motion-20261103. Original Pale-rigg får forflytningsstyrt gange/løp/fotkontakt og grep mot faktisk mål; bygg/pakke2147, High/Low-opptak og SC04 17 består. Kryp/passasje/avslutning åpne. 126 Saved-filer bevart,150.16GB ledig. Ingen ny kopi eller generell rydderunde; SARO-kandidat/cache beholdes.

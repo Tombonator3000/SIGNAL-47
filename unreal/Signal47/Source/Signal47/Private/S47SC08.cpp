@@ -435,24 +435,25 @@ void FS47SC08::StepHunt(double Dt)
   // Without the body the meeting cannot be played honestly: the dishes go home and the step goes on.
   F.bEscaped = true; Finish(); return;
  }
+ const double Before=Stride;
  if (!bHeld)
  {
   T += Dt; Clock += Dt;
-  const double Before = Stride;
   Think(Dt);
-  if (bShown)
-  {
-   Y = Ground(Pos);
-   if (M->Audio && FMath::FloorToDouble(Stride / PI) != FMath::FloorToDouble(Before / PI))
-   {
-    const auto Pick = M->Audio->StepPick(TEXT("dirt"));
-    FS47Sound O; O.Gain = Pick.Gain * (B == EBody::Chase ? 1.f : .75f); O.At = FVector(Pos.X, Y + .05, Pos.Y);
-    M->Audio->Sfx(Pick.Name, O);
-   }
-  }
+  if (bShown) Y = Ground(Pos);
  }
  Pale.Apply(bShown, FVector(Pos.X, Y, Pos.Y), BodyYaw, HeadYaw, Gait, Stride, Clock,
-  B == EBody::Chase ? FS47PaleBody::EPose::Chase : B == EBody::Grab ? FS47PaleBody::EPose::Grab : B == EBody::Still || B == EBody::Fence ? FS47PaleBody::EPose::Listen : FS47PaleBody::EPose::Walk);
+  B == EBody::Chase ? FS47PaleBody::EPose::Chase : B == EBody::Grab ? FS47PaleBody::EPose::Grab : B == EBody::Still || B == EBody::Fence ? FS47PaleBody::EPose::Listen : FS47PaleBody::EPose::Walk,
+  B==EBody::Grab?StateT/GrabHold:-1,
+  M->Player?TOptional<FVector>(S47Three::ToUE(FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Lift+M->Player->Eye*.85,M->Player->Pos.Z))):TOptional<FVector>());
+ const auto& Contact=Pale.Creature.Contacts;
+ if (!bHeld && bShown && M->Audio && (Contact.bValid ? Contact.bLeft||Contact.bRight : FMath::FloorToDouble(Stride / PI)!=FMath::FloorToDouble(Before / PI)))
+ {
+  const auto Pick=M->Audio->StepPick(TEXT("dirt"));
+  FS47Sound O;O.Gain=Pick.Gain*(B==EBody::Chase?1.f:.75f);
+  O.At=Contact.bValid?S47Three::ToThree(Contact.AtUE[Contact.bLeft?0:1]):FVector(Pos.X,Y+.05,Pos.Y);
+  M->Audio->Sfx(Pick.Name,O);
+ }
 }
 
 void FS47SC08::Think(double Dt)

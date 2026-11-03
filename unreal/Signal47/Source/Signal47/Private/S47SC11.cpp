@@ -494,25 +494,26 @@ void FS47SC11::StepSiege(double Dt)
  const bool bHeld = !M->Player || M->Mode != US47Main::EMode::Play || M->bPausedByMenu || M->ModalOpen() || M->Story->IsCinematic() || FadeT >= 0 ||
   M->World->Area != TEXT("saro") || (M->Flow && M->Flow->bStarting);
  if (!Pale.bBuilt && !Pale.Build(M->Web.Get(), TEXT("#root"), TEXT("SC11Pale"))) return; // the light still searches; the truck still drives
+ const double Before=Stride;
  if (!bHeld)
  {
   T += Dt; Clock += Dt;
   StepLight(Dt);
-  const double Before = Stride;
   Think(Dt);
-  if (bShown)
-  {
-   Y = Ground(Pos);
-   if (M->Audio && FMath::FloorToDouble(Stride / PI) != FMath::FloorToDouble(Before / PI))
-   {
-    const auto Pick = M->Audio->StepPick(Room(Pos) == 3 ? TEXT("concrete") : TEXT("tile"));
-    FS47Sound O; O.Gain = Pick.Gain * (B == EBody::Chase ? 1.f : .75f); O.At = FVector(Pos.X, Y + .05, Pos.Y);
-    M->Audio->Sfx(Pick.Name, O);
-   }
-  }
+  if (bShown) Y = Ground(Pos);
  }
  Pale.Apply(bShown, FVector(Pos.X, Y, Pos.Y), BodyYaw, HeadYaw, Gait, Stride, Clock,
-  B == EBody::Chase ? FS47PaleBody::EPose::Chase : B == EBody::Grab ? FS47PaleBody::EPose::Grab : B == EBody::Listen || B == EBody::Lured ? FS47PaleBody::EPose::Listen : FS47PaleBody::EPose::Walk);
+  B == EBody::Chase ? FS47PaleBody::EPose::Chase : B == EBody::Grab ? FS47PaleBody::EPose::Grab : B == EBody::Listen || B == EBody::Lured ? FS47PaleBody::EPose::Listen : FS47PaleBody::EPose::Walk,
+  B==EBody::Grab?StateT/GrabHold:-1,
+  M->Player?TOptional<FVector>(S47Three::ToUE(FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Lift+M->Player->Eye*.85,M->Player->Pos.Z))):TOptional<FVector>());
+ const auto& Contact=Pale.Creature.Contacts;
+ if (!bHeld && bShown && M->Audio && (Contact.bValid ? Contact.bLeft||Contact.bRight : FMath::FloorToDouble(Stride / PI)!=FMath::FloorToDouble(Before / PI)))
+ {
+  const auto Pick=M->Audio->StepPick(Room(Pos) == 3 ? TEXT("concrete") : TEXT("tile"));
+  FS47Sound O;O.Gain=Pick.Gain*(B==EBody::Chase?1.f:.75f);
+  O.At=Contact.bValid?S47Three::ToThree(Contact.AtUE[Contact.bLeft?0:1]):FVector(Pos.X,Y+.05,Pos.Y);
+  M->Audio->Sfx(Pick.Name,O);
+ }
 }
 
 void FS47SC11::Think(double Dt)
