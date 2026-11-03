@@ -202,6 +202,7 @@ public:
 	// Banks can be prepared privately in Saved/AudioWorkshop; no automatic asset import.
 	bool LoadSoundBank(const FString& Path, TArray<FString>& Errors);
 	bool HasSoundRecipe(const FString& Name) const { return SoundRecipes.Contains(Name); }
+	bool SoundMixPlaying(const FString& Key) const { return SoundMixes.Contains(Key); }
 	TSharedPtr<FS47AudioBuffer> SoundSource(const FString& Name) const
 	{ const FS47MixAsset* A = SoundBank.Find(Name); return A ? A->Buffer : nullptr; }
 	bool PlaySoundMix(const FString& Key, const FString& Recipe, ES47SoundUse Use,
