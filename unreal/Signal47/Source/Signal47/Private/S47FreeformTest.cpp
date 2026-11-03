@@ -652,10 +652,23 @@ void FS47FreeformTest::Step(double Dt)
  {
   auto Ids=FS47FreeformDirector::EventIds();
   Ids.Remove(TEXT("roomlight_return")); // Requires a real OFF input and departure; S47ReactiveLightTest owns that journey.
+  // array_presence needs a healthy array; s03_failure leaves a fault, so stage the encounter first.
+  Ids.Remove(TEXT("array_presence"));Ids.Insert(TEXT("array_presence"),FMath::Max(0,Ids.IndexOfByKey(FString(TEXT("s03_failure")))));
   if(EventIndex>=Ids.Num()){Go(30);return;}
-  M->Player->Place(0,-1.2,PI);
+  // Site encounters are anchored to their real apparatus: the remote feeder is on the road site,
+  // every other event on the SARO yard. Load the correct site first, then stand at its anchor.
+  const FString Site=Ids[EventIndex]==TEXT("feeder_presence")?TEXT("road"):TEXT("saro");
+  if(M->Web->Area()!=Site){M->World->Enter(Site);Go(21,.6);return;}
+  if(Ids[EventIndex]==TEXT("feeder_presence")||Ids[EventIndex]==TEXT("array_presence"))
+  {const FVector P=F.Field->InteractionPoint(Ids[EventIndex]==TEXT("feeder_presence")?TEXT("ff:feeder"):TEXT("ff:service"));M->Player->Place(P.X,P.Z+4.,0);}
+  else M->Player->Place(0,-1.2,PI);
   if(Ids[EventIndex]==TEXT("close_pass"))F.SpendTime(13*3600.); // native night presentation, not a naturally scheduled roll
-  if(!Check(F.Director->Force(Ids[EventIndex]),TEXT("explicit native event fixture starts: ")+Ids[EventIndex]))return;
+  if(!F.Director->Force(Ids[EventIndex]))
+  {
+   UE_LOG(LogTemp,Warning,TEXT("S47 Freeform event fixture %s refused: area=%s arrayFault=%d individuals=%d nativeBody=%d active=%s"),*Ids[EventIndex],*M->Web->Area(),F.Field&&F.Field->HasArrayFault(),
+    M->Night&&M->Night->Glimpses?M->Night->Glimpses->Individuals().Num():-1,M->Night&&M->Night->Glimpses&&M->Night->Glimpses->HasNativeBody(),*F.Director->ActiveEvent());
+   Check(false,TEXT("explicit native event fixture starts: ")+Ids[EventIndex]);return;
+  }
   bCarRoundTrip=false;PoseForEvent();
   Go(22,Ids[EventIndex]==TEXT("observer")||Ids[EventIndex]==TEXT("service_presence")?12.:Ids[EventIndex]==TEXT("close_pass")?3.:.6);return;
  }
@@ -695,7 +708,7 @@ void FS47FreeformTest::Step(double Dt)
    const FVector P=F.Director->EventAnchor();M->Player->Place(P.X-2.8,P.Z+1.,0);F.Director->Use(TEXT("ff:event-check"));
    if(!Check(F.HasFinding(TEXT("empty_car")),TEXT("physical empty-car inspection retains its independent field record")))return;
   }
-  if(EventIndex==0||EventIndex==3||EventIndex==5)
+  if(F.Director->ActiveEvent()==TEXT("extra_pulse")||F.Director->ActiveEvent()==TEXT("observer")||F.Director->ActiveEvent()==TEXT("service_presence"))
   {
    const FString Id=F.Director->ActiveEvent();if(!Restore(TEXT("active-event")))return;
    if(!Check(F.Director->ActiveEvent()==Id,TEXT("same event resumes from disk instead of rerolling")))return;

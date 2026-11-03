@@ -414,10 +414,14 @@ bool FS47FreeformWorld::Build()
  SampleBench=Model(TEXT("FreeformSampleBench"),TEXT("/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable"),SampleAt,1.8,Saro);
  if(!SampleBench)SampleBench=Box(TEXT("FreeformSampleBenchTop"),SampleAt+FVector(0,.78,0),FVector(1.8,.12,.75),0x514638,Saro);
  Bind(SampleBench,TEXT("ff:sample"));
- Depot=Box(TEXT("FreeformDepotBin"),DepotAt+FVector(0,.48,0),FVector(1.2,.96,.65),0x687260,Saro,TEXT("ff:depot"));
- Delivery=Box(TEXT("FreeformReceivingTable"),DeliveryAt+FVector(0,.78,0),FVector(1.2,.12,.75),0x514638,Saro,TEXT("ff:delivery"));
+ // EASTWING-01: the stock counter is two real drawer cabinets; the receiving table is a green steel bench.
+ Depot=Model(TEXT("FreeformDepotCabinetA"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_DrawerCabinet.SM_EW_DrawerCabinet"),DepotAt+FVector(-.36,0,0),.72,Saro);
+ if(Depot){Bind(Depot,TEXT("ff:depot"));if(FS47Obj B=Model(TEXT("FreeformDepotCabinetB"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_DrawerCabinet.SM_EW_DrawerCabinet"),DepotAt+FVector(.36,0,0),.72,Saro))Bind(B,TEXT("ff:depot"));}
+ else Depot=Box(TEXT("FreeformDepotBin"),DepotAt+FVector(0,.48,0),FVector(1.2,.96,.65),0x687260,Saro,TEXT("ff:depot"));
+ Delivery=Model(TEXT("FreeformReceivingBench"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_GreenBench.SM_EW_GreenBench"),DeliveryAt,1.2,Saro);
+ if(Delivery)Bind(Delivery,TEXT("ff:delivery"));else Delivery=Box(TEXT("FreeformReceivingTable"),DeliveryAt+FVector(0,.78,0),FVector(1.2,.12,.75),0x514638,Saro,TEXT("ff:delivery"));
  M->Web->CollidersMutable(TEXT("saro")).Add({SampleAt.X-.92,SampleAt.X+.92,SampleAt.Z-.4,SampleAt.Z+.4,TEXT("ff:sample"),true});
- M->Web->CollidersMutable(TEXT("saro")).Add({DepotAt.X-.6,DepotAt.X+.6,DepotAt.Z-.33,DepotAt.Z+.33,TEXT("ff:depot"),true});
+ M->Web->CollidersMutable(TEXT("saro")).Add({DepotAt.X-.74,DepotAt.X+.74,DepotAt.Z-.34,DepotAt.Z+.31,TEXT("ff:depot"),true});
  M->Web->CollidersMutable(TEXT("saro")).Add({DeliveryAt.X-.6,DeliveryAt.X+.6,DeliveryAt.Z-.4,DeliveryAt.Z+.4,TEXT("ff:delivery"),true});
  BenchMeter=Box(TEXT("FreeformBenchMeter"),BenchAt+FVector(-.44,1.02,-.10),FVector(.42,.28,.27),0x555b4c,Saro,TEXT("ff:bench"));
  BenchLamp=Box(TEXT("FreeformBenchTestIndicator"),BenchAt+FVector(-.44,1.04,.05),FVector(.28,.11,.015),0x5e8b61,Saro);
