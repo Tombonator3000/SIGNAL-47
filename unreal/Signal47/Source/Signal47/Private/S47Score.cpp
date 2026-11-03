@@ -48,6 +48,20 @@ namespace
 	double Rnd(double A, double B) { return A + FMath::FRand() * (B - A); }
 	bool On(const TFunction<bool()>& Fn) { return Fn && Fn(); }
 	double Value(const TFunction<double()>& Fn) { return Fn ? Fn() : 0; }
+	FString PoolFor(const FString& Cue)
+	{
+		if (Cue == TEXT("calm")) return TEXT("night");
+		if (Cue == TEXT("action")) return TEXT("tension");
+		if (Cue == TEXT("recovery")) return TEXT("motel");
+		return Cue;
+	}
+	bool KnownCue(const FString& Cue) { return S47Score::CUES.Contains(PoolFor(Cue)); }
+	void SilenceDeck(TSharedPtr<FS47MediaSource>& Source, TSharedPtr<FS47GainNode>& Gain)
+	{
+		if (Source) { Source->OnEnded = nullptr; Source->OnError = nullptr; Source->Pause(); Source->Stop(); Source->Disconnect(); }
+		if (Gain) Gain->Disconnect();
+		Source.Reset(); Gain.Reset();
+	}
 }
 
 FS47Score::FS47Score(US47Main* InM, const TSharedRef<FS47AudioContext>& InCtx, const TSharedPtr<FS47AudioNode>& InDest)
@@ -59,26 +73,106 @@ FS47Score::~FS47Score()
 	Stop();
 }
 
-// Score.update: every frame while a night runs.
-void FS47Score::Update(double Dt, const FString& Want, bool bHeld)
+// The current imported tracks have no verified BPM/key/stems. Their transitions use a
+// shared audio clock and real two-deck fades; quantization is opt-in per verified track.
+void FS47Score::RequestMood(const FString& Cue, double Severity)
 {
-	T += Dt;
-	if (!Playing.IsEmpty())
+	RequestedMood = KnownCue(Cue) ? Cue : FString();
+	RequestedSeverity = FMath::IsFinite(Severity) ? FMath::Clamp(Severity, 0.0, 1.0) : 0;
+}
+
+bool FS47Score::SetTrackTiming(const FString& InTrack, double Bpm, int32 BeatsPerBar, int32 PhraseBars)
+{
+	if (!S47Score::TRACKS.Contains(InTrack) || !FMath::IsFinite(Bpm) || Bpm < 20 || Bpm > 300 || BeatsPerBar < 1 || BeatsPerBar > 16 || PhraseBars < 1 || PhraseBars > 16) return false;
+	Timings.Add(InTrack, { Bpm, BeatsPerBar, PhraseBars }); return true;
+}
+
+double FS47Score::TransitionAt(bool bUrgent) const
+{
+	const double Now = Ctx->CurrentTime();
+	const FTrackTiming* Timing = Timings.Find(Track);
+	if (!El || !Timing) return Now;
+	const double Beat = 60.0 / Timing->Bpm;
+	const double Unit = bUrgent ? Beat : Beat * Timing->BeatsPerBar;
+	const double Position = El->CurrentTime();
+	double Wait = FMath::CeilToDouble((Position + 0.00001) / Unit) * Unit - Position;
+	if (!bUrgent && Timing->PhraseBars > 1)
 	{
-		if (bHeld) Fade(2.5, 6);
-		else if (Want != Playing && !bFading) Fade(5, Rnd(3, 8));
+		const double Phrase = Unit * Timing->PhraseBars;
+		const double PhraseWait = FMath::CeilToDouble((Position + 0.00001) / Phrase) * Phrase - Position;
+		if (PhraseWait <= 5) Wait = PhraseWait;
+	}
+	// A real threat cannot wait through a long musical bar. This cap deliberately releases
+	// quantization when necessary; no bar alignment is claimed for that urgent fallback.
+	return Now + (bUrgent ? FMath::Min(0.35, Wait) : Wait);
+}
+
+void FS47Score::Update(double Dt, const FString& InWant, bool bHeld)
+{
+	if (bPaused) { RequestedMood.Empty(); RequestedSeverity = 0; return; }
+	Dt = FMath::IsFinite(Dt) ? FMath::Max(0.0, Dt) : 0;
+	T += Dt;
+	const double Severity = RequestedSeverity;
+	RequestedMood.Empty(); RequestedSeverity = 0;
+	if (Outgoing && Ctx->CurrentTime() >= OutgoingUntil) RetireOutgoing();
+	const bool bNewHold = bHeld && !bHeldNow;
+	bHeldNow = bHeld;
+	if (bHeld)
+	{
+		Pending.Empty(); Candidate.Empty(); bRecovering = false; ActionUntil = RecoveryUntil = 0;
+		if (bNewHold) bFading = false; // A listening hold preempts even an existing slow fade.
+		if (!Playing.IsEmpty()) Fade(0.35, 4);
+		else Rest = FMath::Max(Rest, 4.0);
 		return;
 	}
-	if (bHeld || Want.IsEmpty()) { Rest = FMath::Max(Rest, 4.0); return; }
-	Rest -= Dt;
-	if (Rest > 0) return;
-	Start(Want);
+	FString Want = KnownCue(InWant) ? InWant : FString();
+	if (Want.IsEmpty())
+	{
+		Pending.Empty(); Candidate.Empty(); bRecovering = false; ActionUntil = RecoveryUntil = 0;
+		if (!Playing.IsEmpty()) Fade(2, 4); else Rest = FMath::Max(Rest, 4.0);
+		return;
+	}
+	const bool bUrgent = Want == TEXT("action") || Severity >= 0.75;
+	if (Want == TEXT("action")) { ActionUntil = T + 6; bRecovering = false; }
+	else if (Playing == TEXT("action") || bRecovering)
+	{
+		if (T < ActionUntil) Want = TEXT("action");
+		else
+		{
+			if (!bRecovering) { bRecovering = true; RecoveryUntil = T + 8; }
+			if (T < RecoveryUntil) Want = TEXT("recovery"); else bRecovering = false;
+		}
+	}
+	if (bFading) return; // Listening holds and explicit developer fades own their whole fade.
+	if (Want == Playing) { Pending.Empty(); Candidate.Empty(); return; }
+	if (Playing.IsEmpty())
+	{
+		if (!bUrgent) { Rest -= Dt; if (Rest > 0) return; }
+		Start(Want); return;
+	}
+	if (Want != Candidate)
+	{
+		Candidate = Want; CandidateSince = T; Pending.Empty();
+	}
+	const double StableFor = bUrgent ? 0 : Want == TEXT("recovery") ? 0.1 : 2.0;
+	if (T - CandidateSince < StableFor) return;
+	if (Pending != Want) { Pending = Want; PendingAt = TransitionAt(bUrgent); }
+	if (Ctx->CurrentTime() < PendingAt) return;
+	const FString Next = Pending; Pending.Empty(); Candidate.Empty();
+	Begin(Next, Pick(Next), bUrgent ? 2.0 : 4.0);
 }
 
 // Score.pick: not the one just played, and the one heard longest ago.
 FString FS47Score::Pick(const FString& Cue) const
 {
-	const TArray<FString>& List = S47Score::CUES.FindChecked(Cue);
+	// Keep slow ambient beds for unease. The percussion-led sci-fi cue gives
+	// pursuit its own identity instead of choosing another ambient drone.
+	static const TArray<FString> Action = { TEXT("phantom") };
+	static const TArray<FString> Calm = { TEXT("solitude"), TEXT("cylTwo") };
+	const TArray<FString>* Found = Cue == TEXT("action") ? &Action
+		: Cue == TEXT("calm") ? &Calm : S47Score::CUES.Find(PoolFor(Cue));
+	if (!Found || Found->IsEmpty()) return FString();
+	const TArray<FString>& List = *Found;
 	TArray<FString> Fresh;
 	for (const FString& K : List) if (K != Track) Fresh.Add(K);
 	const TArray<FString>& Pool = Fresh.IsEmpty() ? List : Fresh;
@@ -93,64 +187,119 @@ FString FS47Score::Pick(const FString& Cue) const
 	return Pool[Best];
 }
 
-// Score.start: a place's music, or one piece by name (the developer menu).
+// Start remains the named developer entry point; normal state changes use the same two decks.
 void FS47Score::Start(const FString& Cue, const FString& InTrack)
 {
 	if (!S47Score::bScoreOn) return;
 	const FString Next = InTrack.IsEmpty() ? Pick(Cue) : InTrack;
-	Stop();
-	const FS47ScoreTrack& C = S47Score::TRACKS.FindChecked(Next);
-	// HTMLMediaElementSource is the same graph input, backed here by bounded PCM chunks.
-	const TSharedPtr<FS47MediaSource> NewEl = FS47MediaSource::Open(Ctx, TEXT("music/") + C.File);
-	if (!NewEl)
-	{
-		// A missing file is HTMLAudioElement's asynchronous error event in the web version.
-		Playing = Cue; Track = Next; bFading = false; Last.Add(Next, T);
-		Done(120); return;
-	}
+	if (!S47Score::TRACKS.Contains(Next) || !KnownCue(Cue)) return;
+	if (El && Track == Next) Stop(); // Explicit named replay; adaptive Begin keeps its position.
+	Pending.Empty(); Candidate.Empty();
+	Begin(Cue, Next, El ? 3.0 : 6.0);
+}
+
+void FS47Score::RetireOutgoing()
+{
 	FS47AudioContext::FBatch B(*Ctx);
-	const TSharedPtr<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(0);
-	NewEl->Connect(G);
-	G->Connect(Dest);
+	SilenceDeck(Outgoing, OutgoingGain); OutgoingUntil = 0;
+}
+
+void FS47Score::Begin(const FString& Cue, const FString& InTrack, double FadeSeconds)
+{
+	const FS47ScoreTrack* C = S47Score::TRACKS.Find(InTrack);
+	if (!C || !Dest) return;
+	// A piece may suit two moods. Recategorize it without replaying its intro.
+	// Explicit developer Start still restarts because it calls Stop first.
+	if (El && Track == InTrack) { Playing = Cue; return; }
+	const TSharedPtr<FS47MediaSource> NewEl = FS47MediaSource::Open(Ctx, TEXT("music/") + C->File);
+	if (!NewEl) { if (!El) Rest = 120; return; }
+	FS47AudioContext::FBatch B(*Ctx);
+	// An interrupted transition keeps the louder deck under the incoming music, instead of
+	// abruptly dropping the old bed while its replacement is still near zero. Never three streams.
 	const double Now = Ctx->CurrentTime();
-	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(C.Gain, Now + 6);
+	if (Outgoing && OutgoingGain && Gain && OutgoingGain->Gain.ValueAt(Now) > Gain->Gain.ValueAt(Now))
+	{
+		Swap(El, Outgoing); Swap(Gain, OutgoingGain);
+	}
+	RetireOutgoing(); ++Generation; bFading = false;
+	if (El)
+	{
+		Outgoing = El; OutgoingGain = Gain;
+		Outgoing->OnEnded = nullptr; Outgoing->OnError = nullptr;
+		OutgoingGain->Gain.CancelAndHoldAtTime(Now);
+		OutgoingGain->Gain.LinearRampToValueAtTime(0, Now + FadeSeconds);
+		OutgoingUntil = Now + FadeSeconds;
+	}
+	const TSharedPtr<FS47GainNode> G = Ctx->CreateGain(); G->Gain.SetValue(0);
+	NewEl->Connect(G); G->Connect(Dest);
+	G->Gain.SetValueAtTime(0, Now); G->Gain.LinearRampToValueAtTime(C->Gain, Now + FadeSeconds);
+	RampUntil = Now + FadeSeconds; TargetGain = C->Gain;
 	const TWeakPtr<FS47MediaSource> WeakEl = NewEl;
 	NewEl->OnEnded = [this, Alive = bAlive, WeakEl] { if (*Alive && El == WeakEl.Pin()) Done(Rnd(4, 15)); };
 	NewEl->OnError = [this, Alive = bAlive, WeakEl] { if (*Alive && El == WeakEl.Pin()) Done(120); };
-	El = NewEl; Gain = G; Playing = Cue; Track = Next; bFading = false;
-	Last.Add(Next, T);
+	El = NewEl; Gain = G; Playing = Cue; Track = InTrack; Last.Add(InTrack, T);
 	if (!NewEl->Play() && El == NewEl) Done(30);
+	else if (bPaused) NewEl->Pause();
 }
 
-// Score.fade: fade out over secs, then quiet seconds before the next.
+// Explicit fades and listening holds fade both decks. The generation protects replacements.
 void FS47Score::Fade(double Secs, double Quiet)
 {
 	if (!El || !Gain || bFading) return;
-	bFading = true;
+	Secs = FMath::IsFinite(Secs) ? FMath::Clamp(Secs, 0.01, 30.0) : 0.35;
+	bFading = true; FadeQuiet = Quiet; Pending.Empty(); Candidate.Empty();
+	const uint64 Token = ++Generation;
 	const TSharedPtr<FS47MediaSource> OldEl = El;
-	const TSharedPtr<FS47GainNode> G = Gain;
 	FS47AudioContext::FBatch B(*Ctx);
 	const double Now = Ctx->CurrentTime();
-	G->Gain.CancelScheduledValues(Now); G->Gain.SetValueAtTime(G->Gain.Value(), Now); G->Gain.LinearRampToValueAtTime(0, Now + Secs);
-	Ctx->SetTimeout(Secs + 0.1, [this, Alive = bAlive, OldEl, Quiet] { if (*Alive && El == OldEl) Done(Quiet); });
+	Gain->Gain.CancelAndHoldAtTime(Now); Gain->Gain.LinearRampToValueAtTime(0, Now + Secs);
+	if (OutgoingGain) { OutgoingGain->Gain.CancelAndHoldAtTime(Now); OutgoingGain->Gain.LinearRampToValueAtTime(0, Now + Secs); OutgoingUntil = Now + Secs; }
+	RampUntil = Now + Secs; TargetGain = 0;
+	Ctx->SetTimeout(Secs + 0.1, [this, Alive = bAlive, OldEl, Token, Quiet]
+	{
+		if (*Alive && Generation == Token && El == OldEl && !bPaused) Done(Quiet);
+	});
 }
 
-// Score.stop: at once, leaving the night, the title, the end.
 void FS47Score::Stop()
 {
 	FS47AudioContext::FBatch B(*Ctx);
-	if (El) { El->OnEnded = nullptr; El->OnError = nullptr; El->Pause(); El->Stop(); El->Disconnect(); }
-	if (Gain) Gain->Disconnect();
-	El.Reset(); Gain.Reset(); Playing.Empty(); bFading = false;
+	++Generation;
+	SilenceDeck(El, Gain); RetireOutgoing();
+	Playing.Empty(); Pending.Empty(); Candidate.Empty(); RequestedMood.Empty(); RequestedSeverity = 0;
+	bFading = false; bPaused = false; bRecovering = false; ActionUntil = RecoveryUntil = 0;
 }
 
-// Score.pause: the pause menu, stop where it is and go on after.
-void FS47Score::Pause(bool bOn) { if (El) { if (bOn) El->Pause(); else El->Play(); } }
+// Freeze both stream positions and their gain ramps, even when the context itself keeps running.
+void FS47Score::Pause(bool bOn)
+{
+	if (bOn == bPaused) return;
+	FS47AudioContext::FBatch B(*Ctx);
+	const double Now = Ctx->CurrentTime();
+	bPaused = bOn;
+	if (bOn)
+	{
+		PauseAt = Now; PausedRampLeft = FMath::Max(0.0, RampUntil - Now); PausedOutgoingLeft = FMath::Max(0.0, OutgoingUntil - Now);
+		if (El) El->Pause(); if (Outgoing) Outgoing->Pause();
+		if (Gain) Gain->Gain.CancelAndHoldAtTime(Now); if (OutgoingGain) OutgoingGain->Gain.CancelAndHoldAtTime(Now);
+	}
+	else
+	{
+		PendingAt += Now - PauseAt; RampUntil = Now + PausedRampLeft; OutgoingUntil = Now + PausedOutgoingLeft;
+		if (Gain) Gain->Gain.LinearRampToValueAtTime(TargetGain, Now + FMath::Max(0.001, PausedRampLeft));
+		if (OutgoingGain) OutgoingGain->Gain.LinearRampToValueAtTime(0, Now + FMath::Max(0.001, PausedOutgoingLeft));
+		if (El) El->Play(); if (Outgoing) Outgoing->Play();
+		if (bFading)
+		{
+			const uint64 Token = ++Generation; const auto Current = El;
+			Ctx->SetTimeout(PausedRampLeft + 0.1, [this, Alive = bAlive, Token, Current] { if (*Alive && Generation == Token && El == Current && !bPaused) Done(FadeQuiet); });
+		}
+	}
+}
 
 void FS47Score::Done(double Quiet)
 {
-	Stop();
-	Rest = Quiet;
+	Stop(); Rest = Quiet;
 }
 
 // main.ts musicWant: keep these tests in the same order as the original.
@@ -158,6 +307,7 @@ FString FS47Score::MusicWant() const
 {
 	if (!M || !M->World) return FString();
 	if (M->Story && M->Story->ChapterKey == TEXT("ch6")) return FString();
+	if (!RequestedMood.IsEmpty()) return RequestedMood;
 	if (M->World->bDriving) return TEXT("drive");
 	if (M->World->Area == TEXT("station01")) return TEXT("tension");
 	if (M->World->Area == TEXT("room6")) return TEXT("motel");
@@ -188,7 +338,7 @@ bool FS47Score::MusicHeld() const
 		&& !(M->Player && M->World->AtMotel(M->Player->Pos));
 	const bool bDecoderHeld = Game && bSaroListening && (Game->Night().bTapeA
 		|| (Game->Decoder && (Game->Decoder->Playing() || Game->Decoder->Answering())));
-	return bDecoderHeld || (Game && Game->IsCinematic()) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
+	return bDecoderHeld || (Game && (Game->bConsoleOpen || Game->IsCinematic())) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
 		|| M->bRadioHeard || On(Held.RoadsideSilent) || On(Held.MotelTvHeard) || On(Held.AbductionBusy) || On(Held.RecWalkBusy)
 		|| Value(Held.FaceQuiet) > 0 || Value(Held.NinthQuiet) > 0 || On(Held.RoofStepsBusy) || On(Held.ReelTapeBusy)
 		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy) || On(Held.TruckBRacing)
@@ -219,6 +369,9 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	bool bAllTracks = true;
 	for (const auto& Cue : S47Score::CUES) for (const FString& K : Cue.Value) bAllTracks &= S47Score::TRACKS.Contains(K);
 	Check(bAllTracks, TEXT("every cue references an existing track"));
+	Check(!S.Pick(TEXT("calm")).IsEmpty() && !S.Pick(TEXT("action")).IsEmpty() && !S.Pick(TEXT("recovery")).IsEmpty(), TEXT("adaptive aliases reuse existing credited tracks"));
+	Check(S.Pick(TEXT("unknown")).IsEmpty(), TEXT("unknown cues are rejected without a checked lookup"));
+	Check(S.Timings.IsEmpty() && !S.SetTrackTiming(TEXT("neon"), 0) && !S.SetTrackTiming(TEXT("unknown"), 120), TEXT("timing defaults unknown and rejects fabricated invalid metadata"));
 	US47Main* Main = NewObject<US47Main>(); Main->World = NewObject<US47World>(); Main->Space = TEXT("yard");
 	FS47Score State(Main, C, C->Destination);
 	Check(State.MusicWant() == TEXT("night"), TEXT("SARO yard chooses night"));
@@ -233,6 +386,10 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	Main->World->bDriving = false; Main->World->Area = TEXT("diner");
 	Check(State.MusicWant() == TEXT("town"), TEXT("diner chooses town away from a road stop"));
 	Check(!State.MusicHeld(), TEXT("ordinary play leaves the music free"));
+	State.RequestMood(TEXT("action"), 1);
+	Check(State.MusicWant() == TEXT("action"), TEXT("observable requested danger overrides the location cue"));
+	State.Update(0, FString(), true);
+	Check(State.MusicWant() == TEXT("town"), TEXT("mood requests expire after one update"));
 	Main->bRadioHeard = true;
 	Check(State.MusicHeld(), TEXT("an audible receiver holds the score"));
 	Main->bRadioHeard = false; State.Held.FaceQuiet = [] { return 2.0; };
@@ -275,6 +432,50 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 			MediaCtx->Tick(0.31);
 			Check(Replacement.IsValid() && Replacement != Old && Recorded.El == Replacement && Recorded.Playing == TEXT("drive") && !Recorded.bFading && Recorded.Rest == 6, TEXT("a stale fade cannot stop the replacement piece or replace its quiet"));
 		}
+		// Actual two-deck streaming, not just a gain estimate. Optional when music is imported.
+		const FString ActionPath = FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/music/the_old_ones.wav");
+		if (IFileManager::Get().FileExists(*ActionPath) && Recorded.El && Recorded.Gain)
+		{
+			Recorded.Gain->Gain.CancelScheduledValues(MediaCtx->CurrentTime()); Recorded.Gain->Gain.SetValue(0.36);
+			Recorded.Start(TEXT("action"), TEXT("oldOnes"));
+			const double At = MediaCtx->CurrentTime();
+			Check(Recorded.ActiveDecks() == 2 && Recorded.Outgoing && Recorded.Gain && Recorded.OutgoingGain
+				&& Recorded.Gain->Gain.ValueAt(At + 1.5) > 0 && Recorded.OutgoingGain->Gain.ValueAt(At + 1.5) > 0,
+				TEXT("crossfade overlaps two actual recording decks with both gains positive"));
+			Recorded.Pause(true);
+			const double InAt = Recorded.El->CurrentTime(), OutAt = Recorded.Outgoing->CurrentTime();
+			TArray<float> Samples; Samples.SetNumZeroed(12032);
+			MediaCtx->Render(Samples.GetData(), 6016);
+			Check(Recorded.El->Paused() && Recorded.Outgoing->Paused() && Recorded.El->CurrentTime() == InAt && Recorded.Outgoing->CurrentTime() == OutAt,
+				TEXT("pause freezes both overlapping media positions"));
+			Recorded.Pause(false); MediaCtx->Render(Samples.GetData(), 6016);
+			bool bFinite = true; double Energy = 0;
+			for (float V : Samples) { bFinite &= FMath::IsFinite(V); Energy += V * V; }
+			Check(bFinite && Energy > 0, TEXT("overlapping imported media produces actual finite nonzero samples"));
+			const auto SamePiece = Recorded.El;
+			Recorded.Begin(TEXT("eerie"), TEXT("oldOnes"), 2);
+			Check(Recorded.El == SamePiece && Recorded.Playing == TEXT("eerie"), TEXT("same recording changes mood without restarting its intro"));
+			Check(Recorded.TransitionAt(false) == MediaCtx->CurrentTime(), TEXT("unverified tracks transition in free time"));
+			Recorded.SetTrackTiming(TEXT("oldOnes"), 120, 4, 4); Recorded.El->Seek(0.25);
+			Check(FMath::Abs(Recorded.TransitionAt(false) - MediaCtx->CurrentTime() - 1.75) < 1e-9
+				&& FMath::Abs(Recorded.TransitionAt(true) - MediaCtx->CurrentTime() - 0.25) < 1e-9,
+				TEXT("isolated verified-timing fixture schedules next bar or urgent beat"));
+			Recorded.Timings.Empty(); // Fixture values are not claimed as this recording's BPM.
+			Recorded.Update(0.1, TEXT("action"), false); const auto ActionDeck = Recorded.El;
+			Recorded.Update(5.9, TEXT("calm"), false);
+			Check(Recorded.El == ActionDeck && Recorded.Playing == TEXT("action"), TEXT("danger exit is held for six quiet seconds"));
+			Recorded.Update(0.2, TEXT("calm"), false); Recorded.Update(0.11, TEXT("calm"), false);
+			Check(Recorded.Playing == TEXT("recovery") && Recorded.ActiveDecks() == 2, TEXT("sustained safety crossfades action into recovery"));
+			const auto RecoveryDeck = Recorded.El; Recorded.Update(7, TEXT("calm"), false);
+			Check(Recorded.El == RecoveryDeck && Recorded.Playing == TEXT("recovery"), TEXT("recovery holds eight seconds instead of chattering between states"));
+			Recorded.RequestMood(TEXT("action"), 1); Recorded.Update(0.01, TEXT("action"), true);
+			const double HeldAt = MediaCtx->CurrentTime();
+			Check(Recorded.Pending.IsEmpty() && Recorded.bFading && Recorded.Gain->Gain.ValueAt(HeldAt + 0.35) == 0
+				&& (!Recorded.OutgoingGain || Recorded.OutgoingGain->Gain.ValueAt(HeldAt + 0.35) == 0), TEXT("listening hold cancels pending danger and rapidly fades both decks"));
+			MediaCtx->Tick(0.46);
+			Check(Recorded.ActiveDecks() == 0 && Recorded.Playing.IsEmpty(), TEXT("held score cannot resurrect a scheduled incoming cue"));
+		}
+
 		Recorded.Stop(); MediaCtx->Close();
 	}
 	C->Close();

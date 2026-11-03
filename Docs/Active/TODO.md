@@ -4,6 +4,16 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Adaptiv musikk og signaluttrykk, 3. november
+
+- [x] SOUND-DESIGN-02: VHS-tekstur på startmenyen, mørkere signaltekstur og Morbidium-inspirert adaptiv musikk i Story og Freeform. Editorbygg og målrettet lydgrafprøve består; lokal installasjon og menneskelig lytting er ikke utført.
+- [ ] Musikalsk innhold: lytt til overgangene og kurater ro/uro/action. Merk kontrollerte tempo- og frasepunkter eller lag kompatible separate instrumentlag for harmoniske broer og ekte musikalsk lagdeling. Dagens ferdige spor er ikke antatt å dele tempo eller toneart.
+
+## Lydverksted, 3. november
+
+- [x] SOUND-MIX-01: gjenbrukbar motor for opptakslag, filtrering, hastighet, løkker og fire/sju-puls; lokal bank, fire oppskrifter og WAV-forhåndslytt fra Unreal. Bygg og målrettet grafkontroll består. Modem er reservert for PC/dataoverføring.
+- [ ] Lytt til de fire startoppskriftene og juster uttrykk/nivå. Velg godkjente kilder før ordinær pakking; koble senere VHS og faktiske PC-overføringer til riktig oppskrift når de aktuelle handlingene bearbeides. Installerte apparatlyder er ikke byttet av SOUND-MIX-01.
+
 ## Nattskift 2. november til 3. november kl.08:00
 
 Ny bestilling: Jeep først, samordnet med Claude når hans tilgjengelighet begynner kl. 02:10; deretter kritiske og konkrete TODO-rettelser. Bruk agenter med avgrenset filansvar og eksisterende gameplay-/produksjonsharness. Claude hjelper også med TODO og agenter etter Jeep når kapasiteten tillater det. COLLISION-01 prioriteres etter Jeep. Eldre stoppbeskjeder nedenfor beskriver avsluttede bestillinger og stopper ikke dette nattskiftet. Samlet rydding kl. 21:32 gjenbrukes. Fra kl. 07:30 ferdigstilles pågående arbeid og morgenstatus; nytt utviklingsarbeid stopper kl. 08:00. Ingen offentlig spillutgave.
@@ -31,6 +41,8 @@ Kjernen er: **oppdag et avvik → velg et forsøk → tilpass utstyret → dra u
 - [ ] **FF-RESEARCH-02 / P2, spillerens egne kontrollforsøk på PC og bånd:** Utvid de eksisterende sakssporene med et lagret valg av hypotese og neste måling på tvers av netter. Tracking sammenligner retninger med faktisk antennebevegelse, receiver tar original/kontroll, spolebåndet brukes til lytting og markering, og OPS sammenstiller beholdte kilder. Saksarket viser hva spilleren observerte, hva forsøket støtter og hva som fortsatt er uklart. Sammenlign også foto, originalutskrift og klokkeavvik uten å omskrive originalen. En rimelig feil kontroll gir et forståelig negativt resultat og et mulig neste forsøk. Samtidighet alene beviser ikke opphav; saksfakta skal ligge i eksisterende fag-/saksmodell, ikke i dagbokens lesestatus. Samordnes med GAMEPLAY-05/06 og PHOTO-04.
 
 - [ ] **FF-RESEARCH-03 / P2, etterprøvbare lokale og ytre signalkilder:** La faktiske brytere, strømforsyning og utstyrstilstand påvirke et kontrollopptak. Spilleren kan undersøke lokal interferens, intern referanse eller måling utenfor SARO. Dokumentert utstyrsfeil, ytre forstyrrelse og fortsatt uforklart avvik skal være forskjellige gyldige utfall. Et godt negativt resultat gir arbeidsprogresjon; alle avvik skal ikke løses med samme sikring eller automatisk bety alien. Aksept: to meningsfulle kontrollvalg og tre ulike årsaksforløp gir forståelige måleforskjeller. Bevar original lydidentitet og eksisterende betaling; ingen belønning for å gjette alien-opphav.
+
+> Kildearbeid 3. november: datert hendelsesgrunnlag, sjeldne høye baner og en lånt lokalstøylogger på to feltposter implementeres av Codex. Visitors-forsøk og uavhengige feltmålinger av himmelsignalet avhenger av avtalte kall fra Claude. Se [status](STATUS.md) og [samordning](../../unreal/OPPGAVER.md); behold akseptpunktene nedenfor åpne til faktisk prøving.
 
 - [ ] **FF-RESEARCH-04 / P2, byggbar og kalibrerbar feltlogger:** Gjenbruk benk og fysisk bæring; første logger har lydopptak, to tillatte feltsteder, batteri og et originalbånd som hentes fysisk. Montering bruker to–tre tydelige koblinger og faktisk målerrespons. Gi apparat, opptak og materialer egne vedvarende identiteter. Mål loggerens klokkeavvik ved benken og behold det på tapekortet. Samtidighetskontroll krever samme frekvens og overlappende opptakstid ved SARO; eldre bånd kan bare være bakgrunn. Skill ingen hendelse fra tomt batteri, vindstøy eller defekt oppsett. Ny opptaksplanlegging, batteribruk og materialfunksjon må implementeres reelt; dagens feltradio er ikke allerede en fjernpeiler eller logger. Aksept: monter, test, frakt, plasser, registrer, hent, sammenlign og gjenoppta etter Continue uten tap eller duplisering.
 

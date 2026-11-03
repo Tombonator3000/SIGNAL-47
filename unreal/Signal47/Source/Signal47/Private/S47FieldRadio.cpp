@@ -129,12 +129,12 @@ bool FS47FieldRadio::InView(const FVector& At) const
 TArray<FS47FieldRadio::FPresence> FS47FieldRadio::Nearby() const
 {
  TArray<FPresence> Out;
- auto Add=[&](const FVector& At,bool Hunt){Out.Add({At,true,InView(At),Hunt});};
+ auto Add=[&](const FVector& At,bool Hunt,bool Shown=true){Out.Add({At,true,Shown && InView(At),Hunt});};
  if(M->Night && M->Night->Glimpses)
  {
   const auto G=M->Night->Glimpses;
   for(const auto& A:G->Individuals())
-   Add(A.Eye,A.State==FS47RoswellBrain::EState::Hunt || A.State==FS47RoswellBrain::EState::Contact);
+   Add(A.Eye,A.State==FS47RoswellBrain::EState::Hunt || A.State==FS47RoswellBrain::EState::Contact,A.bRendered);
   if(G->Visible() && G->Individuals().IsEmpty()) Add(G->Position()+FVector(0,.85,0),false);
  }
  if(M->Spine)
@@ -154,6 +154,18 @@ TArray<FS47FieldRadio::FPresence> FS47FieldRadio::Nearby() const
  }
  if(M->DevEvents) if(auto At=M->DevEvents->PalePresence()) Add(*At,false);
  return Out;
+}
+double FS47FieldRadio::ObservedThreat(const FVector& Eye,const TArray<FPresence>& Visible)
+{
+ double Level=0;
+ for(const auto& A:Visible)
+  if(A.bActive && A.bVisible && !A.At.ContainsNaN() && FVector::Distance(Eye,A.At)<35)
+   Level=FMath::Max(Level,A.bHunting?1.:.55);
+ return Level;
+}
+double FS47FieldRadio::ObservedThreat() const
+{
+ return M && M->Player?ObservedThreat(S47Three::ToThree(M->Player->EyeUE()),Nearby()):0;
 }
 void FS47FieldRadio::Step(double Dt)
 {
@@ -248,6 +260,12 @@ bool FS47FieldRadio::SelfTest(TArray<FString>& Lines)
  const double Near=Proximity(FVector::ZeroVector,A); A.At.Z=12;
  C(Near>Proximity(FVector::ZeroVector,A) && Near<1,TEXT("smooth proximity strengthens towards a real creature"));
  A.At.Z=19; C(Proximity(FVector::ZeroVector,A)==0,TEXT("distant presence is silent"));
+ A.At.Z=4; A.bHunting=true;
+ C(ObservedThreat(FVector::ZeroVector,{A})==0,TEXT("off-screen threat does not reveal itself through music"));
+ A.bVisible=true;
+ C(ObservedThreat(FVector::ZeroVector,{A})==1,TEXT("observed nearby chase requests action music"));
+ A.bHunting=false;
+ C(ObservedThreat(FVector::ZeroVector,{A})==.55,TEXT("observed presence requests tension rather than action"));
  FS47FieldRadio R(nullptr); R.Begin(nullptr); C(!R.Owned(),TEXT("old and new cases leave pickup available"));
  auto S=R.Save();S47J::Set(S,TEXT("owned"),true);R.Begin(S);C(R.Owned(),TEXT("ownership survives serialize/restore"));
  S47J::Set(S,TEXT("v"),99); R.Begin(S); C(!R.Owned() && S47J::Write(R.Save())==S47J::Write(S),TEXT("unknown future version is preserved and inactive"));

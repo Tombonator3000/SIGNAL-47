@@ -566,13 +566,13 @@ void US47Flow::MenuMusic()
 	if (M->Mode != EMode::Title || (Opening && Opening->Active())) return;
 	// audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }): the one before stops
 	StopMusic(0.05f);
-	if (M->Audio) { FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.6f; M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O); }
+	if (M->Audio) { FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.6f; M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O); M->Audio->TitleTexture(true); }
 }
 
 void US47Flow::StopMusic(float Fade)
 {
 	// audio.stop('music', fade): setTargetAtTime(0, t, fade), gone after six of it
-	if (M->Audio) M->Audio->Stop(TEXT("music"), Fade);
+	if (M->Audio) { M->Audio->Stop(TEXT("music"), Fade); M->Audio->TitleTexture(false); }
 }
 
 void US47Flow::StoryTitleTest(double Dt)

@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "S47Json.h"
 #include "S47Obj.h"
+#include "S47FieldLogger.h"
 #include "UObject/StrongObjectPtr.h"
 class US47Main;
 class UStaticMeshComponent;
@@ -30,6 +31,9 @@ public:
  bool EmergencyFuseAvailable() const;
  void OpenShop();
  void OpenWorkbench();
+ bool LoggerAccess() const;
+ bool LoggerAction(const FString& Action);
+ const FS47FieldLogger& FieldLogger() const { return Logger; }
  bool AnalyzeSample();
  bool StartDonorTest();
  bool TriggerServiceFault();
@@ -71,6 +75,13 @@ public:
  FVector InteractionPoint(const FString& Id) const;
  static bool SelfTest(TArray<FString>& Lines);
 private:
+ FS47FieldLogger Logger;
+ FS47Obj LoggerPosts[2],LoggerBody;
+ bool bLoggerCalibrating=false;
+ FString LoggerJob;
+ double LoggerJobElapsed=0;
+ FVector LoggerPoint(int32 Site) const;
+ void StepLogger(double Dt,double WorldDelta);
  US47Main* M = nullptr;
  TSharedPtr<uint8> Life = MakeShared<uint8>(0);
  bool bActive = false, bBuilt = false, bGenerator = false, bFuelHeld = false;

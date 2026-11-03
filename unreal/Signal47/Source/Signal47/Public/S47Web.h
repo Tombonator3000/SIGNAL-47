@@ -88,6 +88,8 @@ public:
 	 *  world terms, w = strength) keep story beats in open sky; Flash/FlashDir light them from inside. */
 	void SetClouds(float Cover, float Cirrus, const FVector4& Clear0, const FVector4& Clear1, float Flash, const FVector& FlashDir, double Time, float PureSkyWeight = 0.f, float FinaleWeatherWeight = 1.f);
 	float CloudCoverNow() const { return CloudCover; }
+	// Conservative CPU weather check for actually seen distant Freeform lights.
+	bool CloudSightClear(const FVector& EyeUE, const FVector& TargetUE) const;
 	bool CloudsActive() const;
 	void SuppressFloodLight(int32 Set, int32 Index);
 	float LightIntensity(const FString& Uuid) const;

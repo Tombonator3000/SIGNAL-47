@@ -1,6 +1,9 @@
 #include "S47SkyVisitors.h"
 
 #include "S47Chapter6.h"
+#include "S47Freeform.h"
+#include "S47FreeformDirector.h"
+#include "S47FreeformObservation.h"
 #include "S47Evening.h"
 #include "S47FieldCamera.h"
 #include "S47Flow.h"
@@ -26,6 +29,8 @@
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "UnrealClient.h"
+#include "CoreGlobals.h"
+#include "UObject/GarbageCollection.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47SkyVisitors, Log, All);
 
@@ -195,6 +200,103 @@ FVector FS47SkyVisitorState::MapPosition(int32 S, int32 I, double Seconds)
   750 + Group * 80 + Member * 22, -850 - Member * 130 - 800 * P);
 }
 
+void FS47FreeformSkyState::Begin(const S47J::FObj& O,int32 NewSeed)
+{
+ *this={};Seed=NewSeed;
+ if(!O||S47J::Int(O,TEXT("v"))!=1)return;
+ const double SavedStart=S47J::Num(O,TEXT("start")),SavedElapsed=S47J::Num(O,TEXT("elapsed"));
+ const int32 SavedDay=S47J::Int(O,TEXT("day")),SavedPattern=S47J::Int(O,TEXT("pattern"));
+ if(!FMath::IsFinite(SavedStart)||!FMath::IsFinite(SavedElapsed)||SavedStart<0||SavedDay<0||SavedDay>1000000||SavedPattern<0||SavedPattern>3)return;
+ Day=SavedDay;Pattern=SavedPattern;Start=SavedStart;Elapsed=FMath::Clamp(SavedElapsed,-86400.,Duration);
+ Seed=S47J::Int(O,TEXT("seed"),NewSeed);bChosen=S47J::Bool(O,TEXT("chosen"));
+ for(const auto& Place:S47J::Strs(O,TEXT("observedPlaces")))
+  if(Place==TEXT("saro")||Place==TEXT("road")||Place==TEXT("station01")||Place==TEXT("diner")||Place==TEXT("roswell"))ObservedPlaces.AddUnique(Place);
+}
+bool FS47FreeformSkyState::Advance(int32 CurrentDay,double Clock)
+{
+ if(CurrentDay<1||!FMath::IsFinite(Clock)||Clock<0)return false;
+ bool Changed=false;
+ if(CurrentDay>Day)
+ {
+  Day=CurrentDay;FRandomStream R(Seed);
+  bChosen=Day>=2&&R.FRand()<.22f;
+  Pattern=R.RandRange(0,3);Start=(Day-1)*86400.+21*3600.+R.FRand()*6*3600.;Seed=R.GetCurrentSeed();
+  ObservedPlaces.Reset();Looking=0;Changed=true;
+ }
+ const bool Was=Active();
+ // At night 11 in-world hours take 45 active minutes. No camera-relative time.
+ Elapsed=FMath::Clamp((Clock-Start)/(11.*3600./2700.),-86400.,Duration);
+ return Changed||Was!=Active();
+}
+FVector FS47FreeformSkyState::Position(int32 Light)const
+{
+ double P=FMath::Clamp(Elapsed/Duration,0.,1.);
+ // Four restrained tracks: crossing, a pause, separating points, return arc.
+ if(Pattern==1)P=P<.35?P:P<.65?.35:.35+(P-.65)*(.65/.35);
+ if(Pattern==3)P=.5-.5*FMath::Cos(P*2*PI);
+ const double Split=Pattern==2&&Light==1?FMath::Max(0.,Elapsed-100)*9.:0;
+ return FVector(-5800.+11600.*P,5600.+400.*FMath::Sin(P*PI)+Split,-6500.+700.*P+Split);
+}
+S47J::FObj FS47FreeformSkyState::Save()const
+{
+ auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("day"),Day);S47J::Set(O,TEXT("pattern"),Pattern);
+ S47J::Set(O,TEXT("seed"),Seed);S47J::Set(O,TEXT("start"),Start);S47J::Set(O,TEXT("elapsed"),Elapsed);
+ S47J::Set(O,TEXT("chosen"),bChosen);S47J::Set(O,TEXT("observedPlaces"),ObservedPlaces);return O;
+}
+void FS47SkyVisitors::BeginFreeform(const S47J::FObj& Saved)
+{
+ bFreeform=true;ClearPreview();Hide();
+ FreeformState.Begin(Saved,M&&M->Flow&&M->Flow->bDevRun?4701986:int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()));
+}
+void FS47SkyVisitors::StopFreeform()
+{
+ bFreeform=false;FreeformState.Looking=0;
+ if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))Hide();
+}
+void FS47SkyVisitors::StepFreeform(double Dt)
+{
+ auto* Session=M?M->Freeform.Get():nullptr;
+ if(!bFreeform||!Session||!Session->Active()||!M->World||!M->Player||!M->Web||M->Mode!=US47Main::EMode::Play){Hide();return;}
+ if(Session->Held()){FreeformState.Looking=0;return;}
+ if(FreeformState.Advance(Session->Day(),Session->Clock()))M->RequestAutosave();
+ const FString Area=M->World->Area;
+ const bool Outdoor=Area==TEXT("saro")||Area==TEXT("road")||Area==TEXT("station01")||Area==TEXT("diner")||Area==TEXT("roswell");
+ if(!FreeformState.Active()||!Outdoor){Hide();FreeformState.Looking=0;return;}
+ Build();if(!bBuilt){FreeformState.Looking=0;return;}
+ const auto Cam=FS47Cam::Of(M->Player,30000);
+ const double Fade=FMath::Clamp(FreeformState.Elapsed/4.,0.,1.)*FMath::Clamp((FS47FreeformSkyState::Duration-FreeformState.Elapsed)/8.,0.,1.);
+ int32 Seen=0;FVector SeenAt=FVector::ZeroVector;
+ for(int32 I=0;I<Points.Num();++I)
+ {
+  auto* B=Points[I].Get();if(!B)continue;
+  const bool Live=I<FreeformState.Count()&&Fade>0;
+  B->SetVisibility(Live);if(!Live||B->Elements.IsEmpty())continue;
+  const FVector At=WorldPosition(FreeformState.Position(I),Area);
+  const bool ClearWeather=M->Web->CloudSightClear(S47Three::ToUE(Cam.Pos),S47Three::ToUE(At));
+  B->SetVisibility(ClearWeather);
+  B->SetWorldLocation(S47Three::ToUE(At));
+  const float Half=float(5.*FMath::Tan(FMath::DegreesToRadians(Cam.Fov)/2)*FVector::Dist(Cam.Pos,At)/900.*100.);
+  B->Elements[0].BaseSizeX=B->Elements[0].BaseSizeY=Half;
+  if(auto* D=Cast<UMaterialInstanceDynamic>(B->Elements[0].Material))D->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(0xe3eeed)*float(Fade*3.));
+  B->MarkRenderStateDirty();
+  const FVector P=Cam.Project(At);
+  if(ClearWeather&&Fade>=.6&&P.Z<1&&FMath::Abs(P.X)<.94&&FMath::Abs(P.Y)<.94&&ClearLine(Cam.Pos,At))
+  {++Seen;SeenAt=At;}
+ }
+ if(FreeformState.ObservedPlaces.Contains(Area)||!FMath::IsFinite(Dt)||Dt<=0)return;
+ FreeformState.Looking=Seen>0?FreeformState.Looking+FMath::Min(Dt,.2):0;
+ if(FreeformState.Looking<.8||!Session->Director)return;
+ FreeformState.ObservedPlaces.Add(Area);FreeformState.Looking=0;
+ FS47FreeformObservation O;
+ O.Id=FString::Printf(TEXT("high-sky.%d.%s"),FreeformState.Day,*Area);O.Event=TEXT("high_sky_track");O.Day=Session->Day();
+ O.Clock=Session->Clock();
+ FVector CompassDelta=SeenAt-Cam.Pos;
+ if(Area==TEXT("station01"))CompassDelta=FVector(CompassDelta.Z,CompassDelta.Y,-CompassDelta.X);
+ O.Bearing=FS47FreeformObservation::Direction(FVector::ZeroVector,CompassDelta);
+ O.Place=Area==TEXT("saro")?TEXT("SARO / above the distant mesa"):Area==TEXT("road")?TEXT("Highway / distant horizon"):Area==TEXT("station01")?TEXT("Station 01 / distant horizon"):TEXT("Caliche / distant horizon");
+ Session->Director->RetainObservation(O);M->RequestAutosave();
+}
+
 FS47SkyVisitors::FS47SkyVisitors(US47Main* InM) : M(InM)
 {
  FParse::Value(FCommandLine::Get(), TEXT("S47SkyVisit="), TestStage);
@@ -296,6 +398,7 @@ void FS47SkyVisitors::RecordObservation(int32 Visible)
 }
 void FS47SkyVisitors::Step(double Dt)
 {
+ if(bFreeform&&M&&M->Freeform&&M->Freeform->Active()){StepFreeform(Dt);return;}
  ControlTest(Dt);
  if (!M || !M->Story || !M->Player || !M->World || M->Mode != US47Main::EMode::Play)
  { ClearPreview(); Hide(); return; }
@@ -581,5 +684,22 @@ bool FS47SkyVisitors::SelfTest(TArray<FString>& Lines)
  const FVector GateLight = WorldPosition(FS47SkyVisitorState::MapPosition(1,0,FS47SkyVisitorState::Duration(1)/2),TEXT("saro"));
  Check(FMath::Abs(GateLight.X+1) < 1e-9 && GateLight.Y > 300 && GateLight.Z < -600,
   TEXT("single world light crosses the northern sky above the SARO gate sector"));
+ FS47FreeformSkyState F;F.Begin(nullptr,4701986);F.Advance(1,8*3600.);
+ Check(!F.bChosen&&!F.Active(),TEXT("Freeform first workday has no forced sky encounter"));
+ const int32 SpentSeed=F.Seed;F.Advance(1,22*3600.);
+ Check(F.Seed==SpentSeed&&!F.bChosen,TEXT("a quiet night cannot reroll while waiting or looking away"));
+ F.Day=2;F.bChosen=true;F.Start=86400.+22*3600.;F.Pattern=2;
+ F.Advance(2,F.Start+30.*(11.*3600./2700.));const FVector First=F.Position(0);
+ FS47FreeformSkyState Copy;Copy.Begin(S47J::Read(S47J::Write(F.Save())),0);
+ Check(Copy.Active()&&Copy.Position(0).Equals(First,1e-6)&&Copy.Seed==F.Seed,TEXT("Freeform midpass JSON restores exact world position and spent random draw"));
+ Copy.Advance(2,Copy.Start+120.*(11.*3600./2700.));
+ Check(!Copy.Position(0).Equals(First,.1)&&Copy.Count()==2&&!Copy.Position(1).Equals(Copy.Position(0),.1)&&Copy.ObservedPlaces.IsEmpty(),TEXT("unseen tracks continue and separate without inventing observations"));
+ Copy.ObservedPlaces.Add(TEXT("saro"));F.Begin(Copy.Save(),0);
+ Check(F.ObservedPlaces.Contains(TEXT("saro")),TEXT("a retained location cannot grant duplicate observation on Continue"));
+ F.Advance(2,F.Start+6*3600.);
+ Check(!F.Active(),TEXT("sleep or missed time expires a passage without a catch-up replay"));
+ FS47FreeformSkyState Quiet;Quiet.Begin(nullptr,4701986);int32 Chosen=0;
+ for(int32 Day=2;Day<102;++Day){Quiet.Advance(Day,(Day-1)*86400.+8*3600.);Chosen+=Quiet.bChosen;}
+ Check(Chosen>0&&Chosen<40,TEXT("seeded Freeform opportunities remain sparse with many quiet nights"));
  return Good;
 }

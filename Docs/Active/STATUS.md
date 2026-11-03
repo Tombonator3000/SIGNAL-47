@@ -4,6 +4,26 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Adaptiv musikk og VHS-/signaluttrykk, 3. november
+
+Morbidiums lydklokke og overgangsprinsipper er tilpasset SIGNALs opptak: to faktiske musikkstrømmer overlapper, fare reagerer raskt, og seks sekunders hold samt åtte sekunders etterspill hindrer hakkete nedtrapping. Story og Freeform leser synlig nær fare; skjulte fiender eller fremtidige hendelser gir ikke musikkvarsel. Rolig utforskning og action har egne førstevalg. Mottakerkonsoll, decoder, radio, film og forfatterstyrt stillhet beholder lytteplass. Pause, antirepetisjon og gamle callbacks håndteres.
+
+Startmenyen har svak VHS-tekstur etter første tast/klikk og stopper den ved utgang/åpningskort. Uten lokal referansebank lages teksturen som originalt sus, brum og båndustabilitet; med bank kan `title_vhs` velges. Det prosedyriske arraysignalet får et svakt ustabilt basslag mellom de uendrede fire/sju-gruppene. Modem er fortsatt kun for PC/dataoverføring. [Bruk, kilder og lydprøver](../../unreal/Signal47/Tools/sound-workshop/README.md).
+
+Editorbygg og én målrettet offline lydgrafkjøring består: 60 kontroller, seks oppskrifter, 45 sekunders adaptiv musikk og to prosedyriske lydprøver. Ingen ny pakking eller installasjon. Dagens ferdige musikkspor bruker frie crossfades; støtte for kontrollert slag-/taktplanlegging er klar, mens harmoniske broer og separate instrumentlag krever egnet musikalsk innhold. Menneskelig lytting og godkjenning av klang/komfort gjenstår.
+
+## Lydmotor med opptakslag, bygget 3. november
+
+Lydverkstedet mikser eksisterende opptak med nivå, hastighet, høypass/lavpass, utsnitt, løkker og mottaks-/aktivitetsstyrte kurver. Fire/sju-signaturen beholdes. Modemkilder avvises i radio- og VHS-oppskrifter. Seks lokale referanser og fire startoppskrifter er klargjort; motoren kan også bruke eksisterende dekodede spillopptak. [Bruk og grensesnitt](../../unreal/Signal47/Tools/sound-workshop/README.md).
+
+Editorbygg og én offline kjøring gjennom den faktiske lydgrafen består: fire 12-sekunders WAV-er uten klipping, ti motorkontroller og Python-bankens seks avvisningstilfeller. Dette er rendering og kodekontroll, ikke menneskelig lytting. SARO-mottakeren kan velge lokal bank eksplisitt med `-S47SoundBank`; standardlyden er fortsatt prosedyrisk. PC-/VHS-handlinger og båndprosessoren er ikke automatisk koblet om. Ingen pakking, installasjon eller offentlig distribusjon av referanselyd.
+
+## Freeform feltforskning, bygget 3. november
+
+På `codex/freeform-field-research-20261103`: Director beholder faktisk hørte taklyder, sette skikkelser og undersøkte markeringer som daterte observasjoner med grov retning, sted og eventuell foto-ID. Høye himmelbaner har egen sjelden, lagret tidsplan; bortvendt kamera og søvn skaper ingen observasjoner eller ny sjanse. Ingen levende UFO-markør.
+
+Feltloggeren åpnes av sak 1s `access.fieldlogger`, med lånemodul, benk, kalibrering, to feltposter og fysisk transport/henting. Første målemodell gjelder lokal elektrisk støy og faktisk overlapp med SARO-opptak ved samme frekvens. Uavhengig måling av himmelsignal og Visitors-sakens import/forsøk krever Claudes nye saksmotorkall; kontrakt og tre forsøksforutsigelser står i [OPPGAVER](../../unreal/OPPGAVER.md). Hele FF-RESEARCH-04 og den naturlige reisen over to netter er ikke ferdigmeldt. Felles editorbygg med Claudes pågående sak 2-kilde, 2186 selvtester og kort Vulkan-røyktest består. Dette verifiserer logikk og integrasjon, ikke naturlig observasjon, fysisk loggerreise over to netter eller menneskelig lyd-/spillaksept. Ingen pakking eller installasjon.
+
 ## Jeep-lyd og ryddet politibil installert 3. november
 
 Kilde `e7a4cfe3` (PR365) er installert kl. 08:07 CET. Jeepen har motorlyd fra tre CC0-opptak av Jeeper og en ny løkke for grus og jord som stiger med fart og skrens. Politibilen har dreide hjul, egne lakk-, krom- og lyktmaterialer og helt nye tonede front- og bakruter (Tripos malte ruter med utkutt er fjernet, r5 kl. 09:20); atlas og merking er bevart.
