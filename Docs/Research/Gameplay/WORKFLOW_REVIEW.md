@@ -1,6 +1,6 @@
 # Gameplaygjennomgang og agent-harness
 
-**Status:** Referanse. **Gjelder:** SARO-arbeidsflyt i Story og Freeform, forståelighet, progresjon og forslag. **Sist kontrollert:** 2. november 2026.
+**Status:** Referanse. **Gjelder:** SARO-arbeidsflyt i Story og Freeform, forståelighet, progresjon og forslag. **Sist kontrollert:** 3. november 2026.
 
 Denne rapporten bevarer funnene fra grunnrevisjonen før retting. Senere implementering og faktisk teststatus føres i [gjeldende status](../../Active/STATUS.md); gamle kildelinjer nedenfor er referanser til grunnrevisjonen.
 
@@ -60,6 +60,19 @@ GP-08: Freeform.cpp 361–365, 431–438, 724 og 865. GP-09: Freeform.cpp 518–
 - GP-05: [Upgrade og salgstekst](../../../unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp), linje 652–658 og 753–756; eneste gameplaybruk av `HasUpgrade` er indeks 0 i [FreeformWorld](../../../unreal/Signal47/Source/Signal47/Private/S47FreeformWorld.cpp), linje 725.
 - GP-06: [Spend/Earn](../../../unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp), linje 568–583; [Purchase, GeneratorUse og FeederUse](../../../unreal/Signal47/Source/Signal47/Private/S47FreeformWorld.cpp), linje 471–477 og 617–632. En allerede registrert pakke kan gi en annen vei via arkivering; risikoens scenario utelukker derfor denne ressursen eksplisitt.
 - GP-07: [Eligible og nattkast](../../../unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp), linje 258–280 og 449–452. Start avvises utenfor SARO, mens dagens kast allerede er markert.
+
+### Tillegg 3. november: forskningsløkken i Freeform
+
+Tom ba om en vurdering av hvordan Freeform-løkken kan forbedres mot reisen «jeg observerte noe i natt, velger et forsøk i morgen, setter ut utstyr og sammenligner neste natt». Grunnlaget er TODO (FF-RESEARCH-00–10, GAMEPLAY-01–06, PHOTO-04), denne rapporten og lest kilde på `3194bd16`. Dette er statisk analyse og designforslag; ingen runtime- eller menneskelig spilltest er kjørt. Hovedvurderingen: arbeidsløkken er solid som jobb, men mysteriet skjer *med* spilleren. Spilleren formulerer ikke et eget spørsmål og har ingen grunn til å velge avviket fremfor rutinen.
+
+| ID | Prioritet og grunnlag | Funn og konsekvens | Forslag og aksept |
+| --- | --- | --- | --- |
+| GP-15 | P1, kodebevist | Rutine og registrert avvik betaler begge $20 (`S47Freeform.cpp` 572 og 593). Avviket krever ekstra kontroll, sammenligning og arkivering for samme betaling; en rasjonell spiller kan velge bort mysteriet. | Skill belønningene: rutinen gir fortsatt penger; et undersøkt avvik, også et godt dokumentert negativt resultat, gir kunnskap og avgrenset adgang (lånt modul, nytt feltsted, nytt oppsett). Kunnskap kan ikke kjøpes med flere rutinejobber. Aksept: spilleren opplever et reelt valg mellom deler/penger og undersøkelse. |
+| GP-16 | P1, kodebevist struktur / designforslag | Funn med dagnummer og `MysterySteps` finnes (`S47Freeform.cpp` 646–647 og 682–683), men neste kontroll kommer som tildelt jobb, ikke som spillerens valg. | Etter registrert avvik: OPS-valget «Planlegg oppfølging» med to–tre forsøk: gjenta samme kilde og tidsvindu neste natt, lokal støykontroll (FF-RESEARCH-03) eller retningsmåling med annen antenne. Valget lagres som neste natts jobb med henvisning til originalkilden og sammenlignes på bånd/OPS. Gjenbruk jobbløpet, funnene og arkivet; ingen ny maskinvare. Dette er kjernen i FF-RESEARCH-02 og bør komme før FF-RESEARCH-00. Aksept: to netter, tre utfall (gjentatt avvik, påvist lokal støy, ingen funn); spilleren kan begrunne valget. |
+| GP-17 | P2, designforslag | Dag (30 min) og natt (45 min) fylles med samme type arbeid; dagen mangler en egen rolle. | Gi dagen en planleggingsfase: OPS viser kommende natts plan (rutine, forsøk, nødvendige deler/film/drivstoff). Caliche-turen blir en tur for planen, ikke bare vedlikehold. Aksept: spilleren kan si hvorfor dagens innkjøp trengs i natt. |
+| GP-18 | P2, designforslag | Hendelser (UFO, skikkelser, foto) gir observasjon og eventuelt $20-foto, men sjelden et nytt spørsmål eller valg. | La høye UFO-baner (FF-RESEARCH-01), PHOTO-04, etterspor (FF-RESEARCH-07) og sheriff-/radiotips legge dato, grov retning og tidsvindu i saksarket, slik at de begrunner et oppfølgingsvalg i GP-16. Et tips foreslår en kilde, ikke en ferdig sannhet. |
+| GP-19 | P2, rekkefølgeforslag | Feltloggeren (FF-RESEARCH-04) er planlagt som grunnlag for den første forskningsreisen, men gir mest verdi som andre målested når oppfølgingsvalget allerede finnes. | Innfør loggeren som oppgradering/adgang fra GP-15: to samtidige målesteder skiller lokal støy fra ytre kilde. Materialene (FF-RESEARCH-05) får dermed konkret nytte i neste forsøk. Utsett fri bygging (FF-RESEARCH-06) og nærmøter (FF-RESEARCH-08) til GP-15/16 er prøvd. |
+| GP-20 | P1, forutsetning | Sammenligning over flere netter er bare troverdig hvis lagret måling er konsistent. GAMEPLAY-01/02/04 er levert i PR352, men ikke samlet spillerprøvd. | Prøv særlig GP-04 (ett lagret målespor for live lyd, original og graf) og GP-07 før forskningsløkken bygges på dem. Første avgrensede leveranse: GP-20-prøve, GP-16 og en minimal GP-15 med én adgangsbelønning. |
 
 ## Bevar fungerende kontrakter
 

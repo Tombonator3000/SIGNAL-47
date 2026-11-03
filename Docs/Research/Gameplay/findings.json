@@ -220,5 +220,92 @@
       "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:614",
       "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:825"
     ]
+  },
+  {
+    "id": "GP-15",
+    "priority": "P1",
+    "owner": "coordinator",
+    "scenario": "day_loop",
+    "confidence": "source_confirmed",
+    "trigger": "Registrering av rutine eller undersøkt avvik.",
+    "consequence": "Begge betaler $20; avviket krever mer arbeid for samme belønning, så mysteriet kan velges bort.",
+    "fix": "Rutine gir penger; undersøkt avvik og godt negativt resultat gir kunnskap og avgrenset adgang som ikke kan kjøpes med rutinejobber.",
+    "acceptance": "Spilleren opplever et reelt valg mellom penger/deler og undersøkelse.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:572",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:593"
+    ]
+  },
+  {
+    "id": "GP-16",
+    "priority": "P1",
+    "owner": "coordinator",
+    "scenario": "day_loop",
+    "confidence": "proposal",
+    "trigger": "Et avvik er registrert med funn og dagnummer.",
+    "consequence": "Neste kontroll tildeles av systemet; spilleren velger ikke eget forsøk.",
+    "fix": "OPS-valg «Planlegg oppfølging»: gjenta kilde/tidsvindu, lokal støykontroll eller retningsmåling; lagres som neste natts jobb med henvisning til originalen.",
+    "acceptance": "To netter og tre utfall (gjentatt avvik, lokal støy, ingen funn); spilleren kan begrunne valget.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:646",
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:682"
+    ]
+  },
+  {
+    "id": "GP-17",
+    "priority": "P2",
+    "owner": "coordinator",
+    "scenario": "day_loop",
+    "confidence": "proposal",
+    "trigger": "Freeform-døgn med 30 min dag og 45 min natt.",
+    "consequence": "Dagen og natten fylles med samme type arbeid; dagen mangler egen rolle.",
+    "fix": "Planleggingsfase på OPS om dagen: kommende natts rutine, forsøk og nødvendige forsyninger.",
+    "acceptance": "Spilleren kan forklare hvorfor dagens innkjøp trengs i natt.",
+    "evidence": [
+      "Docs/Active/TODO.md"
+    ]
+  },
+  {
+    "id": "GP-18",
+    "priority": "P2",
+    "owner": "coordinator",
+    "scenario": "day_loop",
+    "confidence": "proposal",
+    "trigger": "UFO-, foto-, etterspor- eller tipshendelse.",
+    "consequence": "Hendelsen gir observasjon eller fotobetaling, sjelden et nytt spørsmål eller valg.",
+    "fix": "Legg dato, grov retning og tidsvindu i saksarket som grunnlag for oppfølgingsvalg (GP-16).",
+    "acceptance": "En hendelse fører til minst ett begrunnet oppfølgingsvalg.",
+    "evidence": [
+      "Docs/Active/TODO.md"
+    ]
+  },
+  {
+    "id": "GP-19",
+    "priority": "P2",
+    "owner": "coordinator",
+    "scenario": "day_loop",
+    "confidence": "proposal",
+    "trigger": "Planlegging av FF-RESEARCH-00/04.",
+    "consequence": "Feltloggeren bærer hele første forskningsreise selv om verdien ligger i et andre målested.",
+    "fix": "Innfør loggeren som adgang/oppgradering etter GP-15/16; utsett fri bygging og nærmøter.",
+    "acceptance": "To samtidige målesteder skiller lokal støy fra ytre kilde.",
+    "evidence": [
+      "Docs/Active/TODO.md"
+    ]
+  },
+  {
+    "id": "GP-20",
+    "priority": "P1",
+    "owner": "coordinator",
+    "scenario": "day_loop",
+    "confidence": "risk",
+    "trigger": "Sammenligning av opptak over flere netter.",
+    "consequence": "Inkonsistent lagret måling gjør sammenligningen utroverdig; PR352-rettingene er ikke samlet spillerprøvd.",
+    "fix": "Prøv GP-04 og GP-07 samlet før forskningsløkken bygges på dem.",
+    "acceptance": "Live lyd, original og graf stemmer etter Continue; nattkast forbrukes ikke uten gyldig sted.",
+    "evidence": [
+      "unreal/Signal47/Source/Signal47/Private/S47Freeform.cpp:515",
+      "unreal/Signal47/Source/Signal47/Private/S47FreeformDirector.cpp:500"
+    ]
   }
 ]
