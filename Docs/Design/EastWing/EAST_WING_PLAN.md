@@ -51,3 +51,7 @@ Spillsystemer som må endres for å kunne gå og kjøre inn:
 - Personalbilene sør for fløyen (x 27 og 31) og benken ved x 24 flyttes.
 
 Modulen `S47EastWing` er opprettet (eies av `US47Main`, initialiseres etter kontoret i `S47HUD`). Neste steg er blokkmodellen: pensjonere de tre nodene, bygge vegger med åpninger, gulv, rampe og kollisjon, og ta før/etter-bilder.
+
+## Fotorealisme i Unreal
+
+Etter Toms lenke 3. november (MCP for Blender-artikkel om fotorealistiske renders): arbeidsrekkefølgen referanse, blokkmodell, form, modeller, materialer og nærkritikk følges. Artikkelens prosedyrale shader-slitasje følger ikke med FBX til Unreal og må derfor bakes til teksturer (lookdev-pakken) eller lages som Unreal-decals. Krav for østfløyen: fotobaserte CC0 PBR-teksturer (puss, lettbetong, betong), avfasede kanter på benker, skap, karmer og hjørner, slitasjelag (avskallet maling, støv, renner, oljeflekker, falmede og flassende etiketter), variasjon mellom like objekter, ekte lyskilder med riktig fargetemperatur, og kontroll med før/etter-bilder i spillet. Ingen kjøp av MCP Premium; Tripo finnes allerede.
