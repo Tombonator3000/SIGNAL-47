@@ -14,6 +14,23 @@ import wave
 PROJECT = Path(__file__).resolve().parents[1]
 RECIPES = PROJECT / 'Tools/sound-workshop/recipes.json'
 DEFAULT_SOURCES = Path.home() / 'Documents/ChatGPT/Signal 47/lydreferanser'
+DEFAULT_OBSERVATORY = Path.home() / 'scratch-bm/Signal47-array-sounds-20261028'
+DEFAULT_NEBULA = Path.home() / 'Assets/ultimate-sfx/Ultimate SFX for Games - $25 Content/bt25_ultimatesfxforgames_softwarebundle/Ambience & SFX/Ambience SciFi/FL_GFX_Ambience_SciFi_Space_Nebula_Cm.wav'
+# Preserved observatory recordings, with provenance from that collection's SOURCES.md.
+SCIENTIFIC = {
+    'nasa_cassini_jupiter': ('noise_cassini_jupiter_2001.wav',
+        'https://www.jpl.nasa.gov/jupiterflyby/news/detected_sounds.html',
+        'NASA/JPL/University of Iowa, Cassini RPWS'),
+    'nasa_saturn_eerie': ('noise_saturn_pia07966.wav',
+        'https://photojournal.jpl.nasa.gov/catalog/PIA07966', 'NASA/JPL/University of Iowa'),
+    'nasa_saturn_bizarre': ('noise_saturn_pia07967.wav',
+        'https://photojournal.jpl.nasa.gov/catalog/PIA07967', 'NASA/JPL/University of Iowa'),
+    'nasa_saturn_lightning': ('noise_saturn_lightning_pia14310.wav',
+        'https://photojournal.jpl.nasa.gov/catalog/PIA14310', 'NASA/JPL-Caltech/University of Iowa'),
+    'nasa_earth_chorus': ('noise_emfisis_chorus.wav',
+        'https://www.nasa.gov/mp3/693857main_emfisis_chorus_1.mp3',
+        'NASA/Van Allen Probes EMFISIS (University of Iowa)'),
+}
 MARKER = '.sound-workshop'
 # Source start/duration, deliberately retaining only short useful textures except the handshake.
 SOURCES = {
@@ -78,6 +95,10 @@ def validate(bank, root):
             raise ValueError(f'{key}: source must remain inside bank directory')
         if 'modem' in key.lower() and not source['modem_only']:
             raise ValueError(f'{key}: modem sources cannot be unreserved')
+        if key in SCIENTIFIC and source.get('role') != 'scientific_recording':
+            raise ValueError(f'{key}: scientific provenance role is required')
+        if key == 'space_nebula' and source.get('role') != 'designed_ambience':
+            raise ValueError('space_nebula: designed ambience must not be labelled a scientific recording')
         durations[key] = pcm_info(path)
     recipes = bank.get('recipes')
     if not isinstance(recipes, list) or not recipes:
@@ -129,42 +150,108 @@ def locate(root, video_id):
     return matches[0]
 
 
-def prepare(sources_root, output, recipe_path):
+def optional_sources(observatory_root=None, nebula_file=None):
+    """Discover preserved sources; missing defaults are optional, explicit invalid paths are errors."""
+    observatory = (observatory_root or DEFAULT_OBSERVATORY).resolve()
+    nebula = (nebula_file or DEFAULT_NEBULA).resolve()
+    if observatory_root is not None and not observatory.is_dir():
+        raise ValueError(f'--observatory-root is not a directory: {observatory}')
+    if nebula_file is not None and not nebula.is_file():
+        raise ValueError(f'--nebula-file is not a file: {nebula}')
+    found = {}
+    for key, (filename, url, credit) in SCIENTIFIC.items():
+        candidates = (observatory / 'wav' / filename, observatory / filename)
+        source = next((path for path in candidates if path.is_file()), None)
+        if source is None:
+            print(f'Warning: optional source unavailable: {key} ({candidates[0]})', file=sys.stderr)
+            continue
+        found[key] = {'path': source, 'start': 0, 'duration': 12, 'modem_only': False,
+                      'source_url': url, 'credit': credit, 'role': 'scientific_recording',
+                      'source_evidence': str(observatory / 'SOURCES.md')}
+    if nebula.is_file():
+        found['space_nebula'] = {'path': nebula, 'start': 0, 'duration': 16, 'modem_only': False,
+                                'source_url': None, 'role': 'designed_ambience',
+                                'credit': 'Ultimate SFX for Games, FL_GFX_Ambience_SciFi_Space_Nebula_Cm.wav (local sound library; author not independently confirmed)'}
+    else:
+        print(f'Warning: optional source unavailable: space_nebula ({nebula})', file=sys.stderr)
+    return found
+
+
+def optional_recipes(keys):
+    """Scans retain a single source's timing, rather than turning a mix into a claimed recording."""
+    recipes = []
+    saturn = next((key for key in ('nasa_saturn_eerie', 'nasa_saturn_bizarre', 'nasa_saturn_lightning') if key in keys), None)
+    for name, key, loop, gain in (('nasa_saturn_scan', saturn, False, -21),
+                                 ('nasa_jupiter_scan', 'nasa_cassini_jupiter', False, -21),
+                                 ('nebula_ambience', 'space_nebula', True, -25)):
+        if key and key in keys:
+            recipes.append({'name': name, 'use': 'receiver', 'layers': [
+                {'source': key, 'gain_db': gain, 'rate': 1, 'start_s': 0,
+                 'length_s': 0, 'loop': loop, 'envelope': 'constant'}]})
+    return recipes
+
+
+def source_duration(path):
+    result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                             '-of', 'json', str(path)], capture_output=True, text=True, check=True)
+    duration = float(json.loads(result.stdout)['format']['duration'])
+    if not math.isfinite(duration) or duration <= 0:
+        raise ValueError(f'{path}: invalid source duration')
+    return duration
+
+
+def prepare(sources_root, output, recipe_path, observatory_root=None, nebula_file=None):
     sources_root = sources_root.resolve()
     output = output.resolve()
     if output == sources_root or output.is_relative_to(sources_root) or sources_root.is_relative_to(output):
         raise ValueError('generated bank and original recordings must use separate directories')
     if output.exists() and any(output.iterdir()) and not (output / MARKER).is_file():
         raise ValueError(f'{output}: nonempty directory is not an owned sound workshop')
-    originals = {key: locate(sources_root, config[0]) for key, config in SOURCES.items()}
+    inputs = {}
+    for key, (video_id, start, duration, reserved) in SOURCES.items():
+        inputs[key] = {'path': locate(sources_root, video_id), 'start': start,
+                       'duration': duration, 'modem_only': reserved,
+                       'source_url': f'https://www.youtube.com/watch?v={video_id}',
+                       'credit': 'User-selected YouTube reference; distribution rights unverified',
+                       'role': 'reference_recording'}
+    inputs.update(optional_sources(observatory_root, nebula_file))
+    originals = {key: spec['path'] for key, spec in inputs.items()}
+    for key, spec in inputs.items():
+        source = spec['path'].resolve()
+        if source == output or source.is_relative_to(output):
+            raise ValueError(f'{key}: original recording must remain outside generated bank directory')
+        available = source_duration(source) - spec['start']
+        if available <= 0:
+            raise ValueError(f'{key}: selection starts beyond source')
+        spec['duration'] = min(spec['duration'], available)
     hashes = {key: digest(path) for key, path in originals.items()}
-    recipes = read_json(recipe_path)
+    recipes = read_json(recipe_path) + optional_recipes(inputs.keys())
     # Validate all recipe/category controls before touching existing prepared files.
     with tempfile.TemporaryDirectory(prefix='s47-sound-preflight-') as scratch:
         temp_root = Path(scratch)
         temp_bank = {'version': 1, 'sources': {}, 'recipes': recipes}
-        for key, (_, _, duration, reserved) in SOURCES.items():
+        for key, spec in inputs.items():
             path = temp_root / f'{key}.wav'
             with wave.open(str(path), 'wb') as wav:
                 wav.setparams((1, 2, 48000, 0, 'NONE', 'not compressed'))
-                wav.writeframes(b'\0\0' * int(duration * 48000))
-            temp_bank['sources'][key] = {'file': path.name, 'modem_only': reserved}
+                wav.writeframes(b'\0\0' * int(spec['duration'] * 48000))
+            temp_bank['sources'][key] = {'file': path.name, 'modem_only': spec['modem_only'],
+                                        'role': spec['role']}
         validate(temp_bank, temp_root)
     output.mkdir(parents=True, exist_ok=True)
     (output / MARKER).write_text('S47 local audio workshop v1\n', encoding='utf-8')
     bank = {'version': 1, 'sources': {}, 'recipes': recipes}
-    for key, (video_id, start, duration, reserved) in SOURCES.items():
+    for key, spec in inputs.items():
         source = originals[key]
         target = output / f'{key}.wav'
         temp = output / f'{key}.preparing.wav'
-        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-ss', str(start), '-i', str(source),
-                        '-t', str(duration), '-vn', '-ac', '1', '-ar', '48000', '-c:a', 'pcm_s16le', str(temp)], check=True)
-        pcm_info(temp)
+        subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-ss', str(spec['start']), '-i', str(source),
+                        '-t', str(spec['duration']), '-vn', '-ac', '1', '-ar', '48000', '-c:a', 'pcm_s16le', str(temp)], check=True)
+        duration = pcm_info(temp)
         temp.replace(target)
-        bank['sources'][key] = {'file': target.name, 'modem_only': reserved,
-                               'source_url': f'https://www.youtube.com/watch?v={video_id}',
-                               'source_file': str(source), 'source_start_s': start,
-                               'source_sha256': hashes[key]}
+        bank['sources'][key] = {field: value for field, value in spec.items() if field not in ('path', 'start', 'duration')}
+        bank['sources'][key].update(file=target.name, source_file=str(source), source_start_s=spec['start'],
+                                    source_sha256=hashes[key], prepared_duration_s=duration)
     counts = validate(bank, output)
     if any(digest(originals[key]) != sha for key, sha in hashes.items()):
         raise ValueError('original recording changed during preparation')
@@ -200,7 +287,33 @@ def self_test():
                 rejected += 1
         assert rejected == 6
         assert wav.is_file() and pcm_info(wav) == 1
-    print('Sound workshop self-test: valid bank and 6 invalid banks checked; source preserved.')
+        optional = optional_recipes({'nasa_cassini_jupiter', 'nasa_saturn_eerie', 'space_nebula'})
+        assert len(optional) == 3
+        assert all(r['use'] == 'receiver' and r['layers'][0]['rate'] == 1 for r in optional)
+        assert all(not r['layers'][0]['loop'] for r in optional if r['name'].startswith('nasa_'))
+        assert optional_recipes(set()) == []
+        try:
+            optional_sources(root / 'missing-observatory', None)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('explicit invalid observatory path was accepted')
+        try:
+            optional_sources(root, root / 'missing-nebula.wav')
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('explicit invalid Nebula file was accepted')
+        for key, role in (('nasa_cassini_jupiter', 'designed_ambience'), ('space_nebula', 'scientific_recording')):
+            wrong = copy.deepcopy(bank)
+            wrong['sources'][key] = {'file': 'test.wav', 'modem_only': False, 'role': role}
+            try:
+                validate(wrong, root)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError('scientific/designed provenance was confused')
+    print('Sound workshop self-test: valid bank, 6 invalid mixes, optional timing/provenance/path checks; source preserved.')
 
 
 def main():
@@ -208,6 +321,8 @@ def main():
     parser.add_argument('--sources-root', type=Path, default=DEFAULT_SOURCES)
     parser.add_argument('--output', type=Path, default=PROJECT / 'Saved/AudioWorkshop')
     parser.add_argument('--recipes', type=Path, default=RECIPES)
+    parser.add_argument('--observatory-root', type=Path, help='optional preserved observatory collection (contains wav/ and SOURCES.md)')
+    parser.add_argument('--nebula-file', type=Path, help='optional designed Nebula ambience recording')
     parser.add_argument('--check', action='store_true', help='validate prepared bank without conversion')
     parser.add_argument('--self-test', action='store_true')
     args = parser.parse_args()
@@ -217,7 +332,7 @@ def main():
         counts = validate(read_json(args.output / 'bank.json'), args.output)
         print(f'Valid PCM bank: {counts[0]} sources, {counts[1]} recipes; modem limited to pc_transfer.')
     else:
-        prepare(args.sources_root, args.output, args.recipes)
+        prepare(args.sources_root, args.output, args.recipes, args.observatory_root, args.nebula_file)
 
 
 if __name__ == '__main__':
