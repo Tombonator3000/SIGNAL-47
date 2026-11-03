@@ -177,6 +177,8 @@ private:
  int32 CaseAwaitingChoice() const;
  void IngestObservations();
  int32 IngestedObservations=0;
+ int32 OpsSection=0,ReceiverTab=0;
+ TSharedRef<class SWidget> OpsShell(int32 Section,TSharedRef<class SWidget> Content);
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;
  FString Feedback, PhenomenonId;

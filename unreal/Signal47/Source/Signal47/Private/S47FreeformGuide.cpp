@@ -89,5 +89,5 @@ void FS47FreeformSession::OpenServiceGuide()
   Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Changed();M->UI->Close();}));
  }
  else Rows.Add(S47FreeformTerminal::Paper(TEXT("WORK ORDER VERIFIED / ORIGINAL RETAINED\nS-03 completed its actual local movement test and returned to REMOTE. The case archive retains the signed service record.")));
- OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),S47Kit::Col(Rows));
+ OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),OpsShell(4,S47Kit::Col(Rows)));
 }

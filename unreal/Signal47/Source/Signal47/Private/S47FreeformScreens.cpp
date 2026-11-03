@@ -17,7 +17,9 @@ bool FS47FreeformSession::TerminalWindowRendered()const
 void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool Live)
 {
  if(!M||!M->UI||!M->Web||!M->Player||!RequirePower())return;
+ S47FreeformTerminal::SetClock([this]{return FString::Printf(TEXT("DAY %02d  |  %s"),DayNumber,*FS47FreeformCases::Clock(FMath::Fmod(WorldClock,86400.)));});
  auto Content=S47FreeformTerminal::Frame(Title,Body);
+ S47FreeformTerminal::SetClock(nullptr); // the frame keeps its own copy; Story screens show no stale Freeform clock
  if(const auto Current=TerminalView.Pin();Current.IsValid()&&ActiveTerminal==Screen&&M->ModalOpen())
  {Current->SetScreen(Content,Content);bTelemetry=Live;return;}
  const TWeakObjectPtr<US47Main> Owner=M;
