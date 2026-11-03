@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "runtime_commit": "40b2fc920146ee0dcca995a2b27ebae9bf77c2e6",
+  "ward": {
+    "checks": 15,
+    "viewed_images": 3,
+    "both_voice_options": true,
+    "profile": "/tmp/s47-ward-caption-editor-r2-20261103",
+    "selftests": 2147
+  },
+  "music": {
+    "before_after_trace": true,
+    "followup_checks": 12,
+    "flow_memory_returns": 1,
+    "fresh_night": true,
+    "other_contexts": [
+      "motel",
+      "driving",
+      "station01"
+    ],
+    "private_trace_removed": true,
+    "packaged_followup_checks": 12,
+    "packaged_run": {
+      "ok": true,
+      "returncode": 0,
+      "seconds": 78.5281151070958,
+      "stop_reason": null,
+      "error_marker": null,
+      "log": "/home/tom/scratch-bm/Signal47-audio-followup-20261103/score-package.log"
+    }
+  },
+  "limitations": [
+    "No human audio listening",
+    "No physical menu/telephone input",
+    "Followup uses JSON clone and full Flow memory restore, not disk or new process",
+    "Ward callback timing not separately tested"
+  ],
+  "package": {
+    "status": "PASS",
+    "seconds": 219.82
+  }
+}

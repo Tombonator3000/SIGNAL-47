@@ -4,11 +4,17 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Ward og dekodermusikk installert 3. november
+
+Kilde `40b2fc92` er installert kl. 03:36 CET. Ward bruker egen stemmebank eller tekst uten Dale-/fortellerreserve. Tilfeldig bakgrunnsmusikk holdes under dekodersvaret og etter TAPE A ved SARO; motellet, kjøring og andre områder beholder egne regler.
+
+Bygg/pakke, 2147 installerte selvtester, Ward15 med gjennomsette bilder og musikkens før/etter samt 12 oppfølgingskontroller i både editor og pakke består. Alle 126 personlige Saved-filer er uendret. Native lydgraf og Flow-minneretur er prøvd; menneskelig lytting og nyprosess-Continue er ikke påstått. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/AUDIO_2026-11-03.md).
+
 ## Stjernehull og meteorpassasje installert 3. november
 
 Kilde `765409cc` er installert kl. 03:01 CET. Større tomrom og en tett 36-sekunders passasje starter ved faktisk SARO-utgang etter signalet. Meny, inne og andre områder holder tiden; lagring fortsetter uten replay. High/Low har opptil ti/fem samtidige meteorer, med baner bak felles maske. F10-regnet har egen pool.
 
-Bygg/pakke, 2141 selvtester, High/Low 100+100 kontroller med 17+17 Flow-returer, faktisk F10-komponentmåling og gjennomsette bilder består. Alle 126 personlige Saved-filer er uendret. [Bilder og prøvegrenser](../Evidence/UnrealDeliveries/METEOR_2026-11-03.md). Nattskiftet fortsetter med Ward og musikken etter dekoding.
+Bygg/pakke, 2141 selvtester, High/Low 100+100 kontroller med 17+17 Flow-returer, faktisk F10-komponentmåling og gjennomsette bilder består. Alle 126 personlige Saved-filer er uendret. [Bilder og prøvegrenser](../Evidence/UnrealDeliveries/METEOR_2026-11-03.md).
 
 ## Himmellys og skjermvalg installert 3. november
 
