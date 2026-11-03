@@ -40,4 +40,6 @@ namespace S47FreeformTerminal
  // State per element: 0 ready, 1 selected, 2 isolated/fault, 3 moving
  FW AntennaGrid(int32 Count,TFunction<FString(int32)> Label,TFunction<int32(int32)> State,TFunction<void(int32)> Pick);
  FW Columns(const TArray<TPair<float,FW>>& Columns,float Gap=14);
+ FW Split(const TArray<TPair<float,FW>>& Columns);   // one outlined strip, vertical rules between columns
+ FW TitleRow(const FString& Left,TAttribute<FString> Right);
 }

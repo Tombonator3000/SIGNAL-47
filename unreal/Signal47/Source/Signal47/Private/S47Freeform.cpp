@@ -895,9 +895,9 @@ void FS47FreeformSession::OpenOperations()
    T::Columns({{.6f,T::Big(FString(TEXT("OPEN SELECTED JOB")),[this]{OpsSection=1;OpenOperations();},1)},{.4f,T::Big(FString(TEXT("EARLIER WORK")),[this]{bShowEarlierJobs=true;OpsSection=1;OpenOperations();})}},10)}));
   Rows.Add(T::Columns({{.64f,Today},{.36f,Account}},12));
   Rows.Add(Actions());
-  if(const FString Plan=TonightPlan();!Plan.IsEmpty())Rows.Add(T::Panel(TEXT("TONIGHT'S PLAN"),T::Paper(Plan)));
+  if(const FString Plan=TonightPlan();!Plan.IsEmpty())Rows.Add(T::Panel(FString(),T::Small(Plan)));
   if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
-  Rows.Add(T::Panel(TEXT("SHIFT ACTIONS"),S47Kit::Row({T::Big(FString(TEXT("REST UNTIL MORNING")),[this]{if(!Rest())OpenOperations();}),T::Big(FString(TEXT("SERVICE ORDER")),[this]{OpenServiceGuide();})})));
+  Rows.Add(T::Columns({{.5f,T::Big(FString(TEXT("REST UNTIL MORNING")),[this]{if(!Rest())OpenOperations();})},{.5f,T::Big(FString(TEXT("SERVICE ORDER")),[this]{OpenServiceGuide();})}},10));
   OpenTerminal(3,TEXT("OPS / MAIN MENU"),OpsShell(0,S47Kit::Col(Rows)));
   return;
  }
@@ -993,7 +993,6 @@ void FS47FreeformSession::OpenStatus()
  Service.Add(T::Big(FString(TEXT("INSPECT SERVICE RECORD")),[this]{OpenArchive();},2));
  TArray<S47Kit::FW> Rows;
  Rows.Add(T::Columns({{.6f,Grid},{.4f,S47Kit::Col({Detail,T::Panel(TEXT("MAINTENANCE"),S47Kit::Col(Service),true)})}},12));
- Rows.Add(T::Small(TEXT("Select an element to inspect it. S-03 is serviced locally at its cable junction, ground level.")));
  OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenReceiver()
@@ -1002,28 +1001,60 @@ void FS47FreeformSession::OpenReceiver()
  auto& R=M->Story->Rx;const auto P=EffectiveProfile(*CurrentJob());
  if(CurrentJob()->Stage!=EJobStage::New)R.Azimuth=TargetAz(); // No second, contradictory azimuth dial after physical tracking.
  const FString Name=FS47Observing::Runs()[CurrentJob()->Source].Source;
- TArray<S47Kit::FW> Rows;
- Rows.Add(T::Tabs({{TEXT("ACQUIRE"),ReceiverTab==0,[this]{ReceiverTab=0;OpenReceiver();}},{TEXT("WORK CARD"),ReceiverTab==1,[this]{ReceiverTab=1;OpenReceiver();}}}));
- if(ReceiverTab==1)
- {
-  Rows.Add(T::Panel(TEXT("WORK CARD"),S47Kit::Col({T::Paper(JobLine(*CurrentJob())),T::Paper(P.Card),
-   T::Small(FString::Printf(TEXT("REQUIRED / F %.3f MHz +/- %.3f / GAIN %.0f-%.0f / BW %.0f-%.0f kHz / %.0f s"),P.F,P.FTol,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],SourceSeconds()))})));
-  OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);return;
- }
+ static const TCHAR* TabNames[]={TEXT("ACQUIRE"),TEXT("TUNE"),TEXT("ARRAY"),TEXT("RECORD"),TEXT("DATA")};
+ TArray<T::FNav> TabItems;for(int32 I=0;I<5;++I)TabItems.Add({TabNames[I],ReceiverTab==I,[this,I]{ReceiverTab=I;OpenReceiver();}});
+ TArray<S47Kit::FW> Rows;Rows.Add(T::Tabs(TabItems));
  auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
- Rows.Add(T::Panel(FString(),S47Kit::Col({
-  T::Value(TEXT("FREQUENCY SPECTRUM (MHz)"),FString::Printf(TEXT("SOURCE: %s | GAIN %.0f-%.0f | BW %.0f-%.0f kHz"),*Name,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1]),true),
-  T::Spectrum([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality)})));
- Rows.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return ReceiverNextAction().ToUpper();}),TAttribute<bool>::CreateLambda([this]{return !ReceiverReady();})));
- Rows.Add(T::Columns({
+ auto Controls=[this]{return T::Columns({
   {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
   {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
-  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f kHz"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10));
- auto Start=T::Big(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):J&&J->Stage==EJobStage::Integrating?FString(TEXT("RECORDING...")):FString(TEXT("START RECORDING"));}),[this]{StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();}));
- Rows.Add(T::Columns({
-  {1.f,T::Panel(FString(),T::Readout(TEXT("RECEPTION"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}),TAttribute<float>::CreateLambda([Quality]{return float(Quality());})))},
-  {1.f,T::Panel(FString(),T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(J->Elapsed/FMath::Max(1.,SourceSeconds())):0.f;})))},
-  {1.f,SNew(SBox).VAlign(VAlign_Center)[Start]}},10));
+  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f kHz"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10);};
+ auto Banner=[this]{return T::Banner(TAttribute<FString>::CreateLambda([this]{return ReceiverNextAction().ToUpper();}),TAttribute<bool>::CreateLambda([this]{return !ReceiverReady();}));};
+ if(ReceiverTab==0)
+ {
+  Rows.Add(T::Panel(FString(),S47Kit::Col({T::TitleRow(TEXT("FREQUENCY SPECTRUM (MHz)"),FString::Printf(TEXT("SOURCE: %s  |  REQ GAIN: %.0f-%.0f  |  REQ BW: %.0f-%.0f kHz"),*Name,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1])),
+   T::Spectrum([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality)})));
+  Rows.Add(Banner());
+  Rows.Add(Controls());
+  auto Start=T::Big(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):J&&J->Stage==EJobStage::Integrating?FString(TEXT("RECORDING...")):FString(TEXT("START RECORDING"));}),[this]{StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();}));
+  Rows.Add(T::Split({
+   {1.f,T::Readout(TEXT("RECEPTION"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}))},
+   {1.f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}))},
+   {1.1f,Start}}));
+ }
+ else if(ReceiverTab==1)
+ {
+  Rows.Add(T::Panel(TEXT("TUNE / WORK CARD WINDOW"),S47Kit::Col({
+   T::Value(TEXT("TARGET FREQUENCY"),FString::Printf(TEXT("%.3f MHz +/- %.3f"),P.F,P.FTol),true),
+   T::Value(TEXT("GAIN WINDOW"),FString::Printf(TEXT("%.0f - %.0f"),P.Gain[0],P.Gain[1]),true),
+   T::Value(TEXT("BANDWIDTH WINDOW"),FString::Printf(TEXT("%.0f - %.0f kHz"),P.Bw[0],P.Bw[1]),true),
+   T::Value(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}),true)})));
+  Rows.Add(Banner());Rows.Add(Controls());
+ }
+ else if(ReceiverTab==2)
+ {
+  auto Available=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return N;};
+  Rows.Add(T::Panel(TEXT("ARRAY / POINTING"),S47Kit::Col({
+   T::Value(TEXT("TARGET"),FString::Printf(TEXT("%s / AZ %.1f EL %.1f"),*Name,TargetAz(),TargetEl()),true),
+   T::Value(TEXT("ANTENNAS AVAILABLE"),TAttribute<FString>::CreateLambda([this,Available]{return FString::Printf(TEXT("%d / %d"),Available(),M->Web->DishCount());}),true),
+   T::Value(TEXT("ENCODERS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?Settle>=1?FString(TEXT("ON TARGET / STEADY")):FString(TEXT("ON TARGET / SETTLING")):FString(TEXT("NOT ON TARGET"));}),true),
+   T::Small(TEXT("The array is commanded from the right-hand tracking PC. This receiver records only while pointing, tuning and power are all valid."))})));
+  Rows.Add(Banner());
+ }
+ else if(ReceiverTab==3)
+ {
+  const FJob* J=CurrentJob();
+  Rows.Add(T::Panel(TEXT("RECORD / THIS JOB"),S47Kit::Col({
+   T::Value(TEXT("JOB"),J->Id,true),T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true),
+   T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.1f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),true),
+   T::Value(TEXT("ORIGINAL"),J->bPrinted?FString(TEXT("COLLECTED / IN NOTEBOOK")):J->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED")),true),
+   T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost."))})));
+  Rows.Add(Banner());
+ }
+ else
+ {
+  Rows.Add(T::Panel(TEXT("DATA / WORK CARD"),S47Kit::Col({T::Paper(JobLine(*CurrentJob())),T::Paper(P.Card)})));
+ }
  OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenAudio()

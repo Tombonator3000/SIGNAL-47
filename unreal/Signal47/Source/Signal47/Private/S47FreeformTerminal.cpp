@@ -90,42 +90,43 @@ namespace S47FreeformTerminal
   auto Key=[](const TCHAR* Glyph){return SNew(STextBlock).Text(FText::FromString(Glyph)).Font(S47Style::Mono(30)).ColorAndOpacity(Green).Justification(ETextJustify::Center);};
   // One SVerticalBox per control holding its name and one slider: the evidence journey
   // locates the real receiver controls by exactly this structure.
-  return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(FMargin(14,8))
+  return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(FMargin(12,5))
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight()
     [SNew(SHorizontalBox)
      +SHorizontalBox::Slot().FillWidth(1)[SNew(STextBlock).Text(FText::FromString(Name)).Font(S47Style::Mono(26)).ColorAndOpacity(Green)]
      +SHorizontalBox::Slot().AutoWidth().Padding(10,0,0,0)[SNew(STextBlock).Text_Lambda([Shown]{return FText::FromString(Shown.Get());}).Font(S47Style::Mono(28)).ColorAndOpacity(Amber)]]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,6,0,2)
+   +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,1)
     [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(48).HeightOverride(44)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(-Step);})[Key(TEXT("-"))]]]
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(44).HeightOverride(40)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(-Step);})[Key(TEXT("-"))]]]
      +SHorizontalBox::Slot().FillWidth(1).Padding(10,0)
-      [SNew(SBox).HeightOverride(44).VAlign(VAlign_Fill)
+      [SNew(SBox).HeightOverride(40).VAlign(VAlign_Fill)
        [SNew(SSlider).Style(&KnobStyle()).MinValue(Min).MaxValue(Max).StepSize(Step).MouseUsesStep(true).Value(Value)
         .SliderBarColor(Line).SliderHandleColor(Amber).OnValueChanged_Lambda([OnChange](float V){if(OnChange)OnChange(V);})]]
-     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(48).HeightOverride(44)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(Step);})[Key(TEXT("+"))]]]]];
+     +SHorizontalBox::Slot().AutoWidth()[SNew(SBox).WidthOverride(44).HeightOverride(40)[SNew(SButton).ButtonStyle(&OutlineStyle()).ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center).OnClicked_Lambda([Nudge,Step]{return Nudge(Step);})[Key(TEXT("+"))]]]]];
  }
  FW Knob(const FString& Name,TAttribute<FString> Shown,float Min,float Max,float Step,TAttribute<float> Value,TFunction<void(float)> OnChange)
  {return Control(Name,Shown,Min,Max,Step,Value,OnChange);}
  void SetClock(TFunction<FString()> Clock){ClockSource=MoveTemp(Clock);}
  FW Frame(const FString& Title,FW Body)
  {
+  // One header row as in the mockups: station | screen title | day and clock.
   const TFunction<FString()> Clock=ClockSource;
-  return SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(22,16))
+  auto Bar=[]{return SNew(STextBlock).Text(FText::FromString(TEXT("|"))).Font(S47Style::Mono(26)).ColorAndOpacity(Green);};
+  return SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Black).Padding(FMargin(12,6))
   [SNew(SVerticalBox)
    +SVerticalBox::Slot().AutoHeight()
     [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().FillWidth(1).VAlign(VAlign_Center)[Label(FString(TEXT("SARO / LOCAL WORKSTATION")),22,Green)]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(FString(TEXT("SARO / LOCAL WORKSTATION")),22,Green)]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14,0)[Bar()]
+     +SHorizontalBox::Slot().FillWidth(1).HAlign(HAlign_Center).VAlign(VAlign_Center)
+      [SNew(SHorizontalBox)
+       +SHorizontalBox::Slot().AutoWidth()[Label(Title,30,Amber)]
+       // A slow block cursor: the station is live even while nothing is selected.
+       +SHorizontalBox::Slot().AutoWidth().Padding(4,0,0,0)[SNew(STextBlock).Text(FText::FromString(TEXT("_"))).Font(S47Style::Mono(30)).ColorAndOpacity_Lambda([]{return FSlateColor(Amber*(FMath::Fmod(Now(),1.1)<.6?1.f:0.f));})]]
+     +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14,0)[Bar()]
      +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(TAttribute<FString>::CreateLambda([Clock]{return Clock?Clock():FString(TEXT("SIGNAL / 47"));}),24,Green)]]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,6)[Rule(Green)]
-   +SVerticalBox::Slot().AutoHeight()
-    [SNew(SHorizontalBox)
-     +SHorizontalBox::Slot().AutoWidth()[Label(Title,36,Amber)]
-     // A slow block cursor: the station is live even while nothing is selected.
-     +SHorizontalBox::Slot().AutoWidth().Padding(6,0,0,0).VAlign(VAlign_Bottom)[SNew(STextBlock).Text(FText::FromString(TEXT("_"))).Font(S47Style::Mono(36)).ColorAndOpacity_Lambda([]{return FSlateColor(Amber*(FMath::Fmod(Now(),1.1)<.6?1.f:0.f));})]
-     +SHorizontalBox::Slot().FillWidth(1)]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,0,0,4)[Label(FString(TEXT("RADIO OBSERVATORY - NEW MEXICO - 1986")),16,Green*.7f)]
-   +SVerticalBox::Slot().AutoHeight().Padding(0,2,0,10)[Rule()]
+   +SVerticalBox::Slot().AutoHeight().Padding(0,4,0,8)[Rule(Green)]
    +SVerticalBox::Slot().FillHeight(1)[SNew(SScrollBox)+SScrollBox::Slot()[Body]]];
  }
  FW Nav(const TArray<FNav>& Items)
@@ -150,10 +151,10 @@ namespace S47FreeformTerminal
   {
    const bool Sel=I.bSelected;const TFunction<void()> Act=I.Action;
    Box->AddSlot().AutoWidth().Padding(0,0,10,0)
-    [SNew(SButton).ButtonStyle(Sel?&FilledStyle():&PlainStyle()).ContentPadding(FMargin(18,5)).OnClicked_Lambda([Act]{if(Act)Act();return FReply::Handled();})
+    [SNew(SButton).ButtonStyle(Sel?&FilledStyle():&PlainStyle()).ContentPadding(FMargin(16,2)).OnClicked_Lambda([Act]{if(Act)Act();return FReply::Handled();})
      [SNew(STextBlock).Text(FText::FromString(I.Label)).Font(S47Style::Mono(26)).ColorAndOpacity(Sel?Ink:Green)]];
   }
-  return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Box]+SVerticalBox::Slot().AutoHeight().Padding(0,4,0,8)[Rule()];
+  return SNew(SVerticalBox)+SVerticalBox::Slot().AutoHeight()[Box]+SVerticalBox::Slot().AutoHeight().Padding(0,3,0,6)[Rule()];
  }
  FW Panel(const FString& Title,FW Body,bool bFilledHeader)
  {
@@ -237,6 +238,23 @@ namespace S47FreeformTerminal
   return H;
  }
 
+ FW Split(const TArray<TPair<float,FW>>& Cols)
+ {
+  TSharedRef<SHorizontalBox> H=SNew(SHorizontalBox);
+  for(int32 I=0;I<Cols.Num();++I)
+  {
+   if(I)H->AddSlot().AutoWidth()[SNew(SBox).WidthOverride(2)[SNew(SBorder).BorderImage(Fill()).BorderBackgroundColor(Line)]];
+   H->AddSlot().FillWidth(Cols[I].Key).Padding(14,6).VAlign(VAlign_Center)[Cols[I].Value];
+  }
+  return SNew(SBorder).BorderImage(Outline()).BorderBackgroundColor(Line).Padding(2)[H];
+ }
+ FW TitleRow(const FString& Left,TAttribute<FString> Right)
+ {
+  return SNew(SHorizontalBox)
+   +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Left)).Font(S47Style::Mono(26)).ColorAndOpacity(Green)]
+   +SHorizontalBox::Slot().FillWidth(1)
+   +SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(STextBlock).Text_Lambda([Right]{return FText::FromString(Right.Get());}).Font(S47Style::Mono(20)).ColorAndOpacity(Green)];
+ }
  // --- Live plots ---
  class SSpectrum:public SLeafWidget
  {
@@ -256,7 +274,7 @@ namespace S47FreeformTerminal
    for(int32 I=0;I<=12;++I)
    {
     const float X=X0+W*I/12;Lines(Out,L,G,{{X,Y0},{X,Y0+H}},Dim,1);
-    if(I%2==0)Text2(Out,L,G,FString::Printf(TEXT("%.3f"),S47Signal::FMin+.1*I),X-34,Y0+H+6,18,Green*.85f);
+    if(I%2==0)Text2(Out,L,G,FString::Printf(TEXT("%.3f"),S47Signal::FMin+.1*I),X-(I==12?62:30),Y0+H+5,16,Green*.85f);
    }
    Lines(Out,L,G,{{X0,Y0},{X0,Y0+H},{X0+W,Y0+H}},Line,1.5f);
    if(!R.bPowered){Text2(Out,L+2,G,TEXT("NO POWER / RECEIVER OFF"),X0+W*.36f,Y0+H*.4f,28,Amber);return L+3;}
@@ -290,7 +308,7 @@ namespace S47FreeformTerminal
   }
  };
  FW Spectrum(TFunction<FS47Rx()> Receiver,TFunction<FS47Profile()> Card,TFunction<double()> Quality)
- {const auto W=SNew(SSpectrum);W->Rx=Receiver;W->Card=Card;W->Q=Quality;return SNew(SBox).HeightOverride(178)[W];}
+ {const auto W=SNew(SSpectrum);W->Rx=Receiver;W->Card=Card;W->Q=Quality;return SNew(SBox).HeightOverride(170)[W];}
 
  class SSkyPlot:public SLeafWidget
  {
@@ -369,9 +387,10 @@ namespace S47FreeformTerminal
  {
  public:
   SLATE_BEGIN_ARGS(SAntennaCell){} SLATE_END_ARGS()
-  TFunction<FString()> Label;TFunction<int32()> State;
+  TFunction<FString()> Label;TFunction<int32()> State;TFunction<void()> Click;
   void Construct(const FArguments&){ForceVolatile(true);}
-  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(62,60);}
+  virtual FVector2D ComputeDesiredSize(float)const override{return FVector2D(64,64);}
+  virtual FReply OnMouseButtonDown(const FGeometry&,const FPointerEvent& E)override{if(E.GetEffectingButton()==EKeys::LeftMouseButton&&Click){Click();return FReply::Handled();}return FReply::Unhandled();}
   virtual int32 OnPaint(const FPaintArgs&,const FGeometry& G,const FSlateRect&,FSlateWindowElementList& Out,int32 L,const FWidgetStyle&,bool)const override
   {
    const FVector2f S(G.GetLocalSize());const int32 St=State?State():0;
@@ -388,7 +407,8 @@ namespace S47FreeformTerminal
   for(int32 I=0;I<Count;++I)
   {
    const auto Cell=SNew(SAntennaCell);Cell->Label=[LabelOf,I]{return LabelOf?LabelOf(I):FString::Printf(TEXT("S%02d"),I+1);};Cell->State=[State,I]{return State?State(I):0;};
-   Grid->AddSlot(I%9,I/9)[SNew(SBox).HeightOverride(70)[SNew(SButton).ButtonStyle(&PlainStyle()).ContentPadding(0).OnClicked_Lambda([Pick,I]{if(Pick)Pick(I);return FReply::Handled();})[Cell]]];
+   Cell->Click=[Pick,I]{if(Pick)Pick(I);};
+   Grid->AddSlot(I%9,I/9).HAlign(HAlign_Fill).VAlign(VAlign_Fill)[SNew(SBox).MinDesiredWidth(64).HeightOverride(66)[Cell]];
   }
   return Grid;
  }
