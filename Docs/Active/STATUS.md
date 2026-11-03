@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## NASA- og Nebula-kilder funnet og med i mikserbanken, 3. november
+
+Alle fem NASA-kandidatene fra 28. oktober er bevart med uendrede dokumenterte WAV-hasher; Nebula finnes fortsatt i den lokale kjøpte lydbanken. Den nye bankforberedelsen tok opprinnelig bare med de nye YouTube-referansene og utelot disse. Dette er rettet: lokal bank har nå 12 kilder og 9 oppskrifter, med separate metadata for vitenskapelige opptak og designet atmosfære. NASA-avspilling bruker hastighet 1 uten løkke. Originaler og kreditering bevares, og bank-/Python-kontroll består. De fem eksisterende observatorieopptakene er fortsatt importert og koblet i S47Observing. Ingen ny Unreal-kjøring, pakking eller installasjon er utført for denne bankrettelsen. [Bruk](../../unreal/Signal47/Tools/sound-workshop/README.md#bevarte-nasa--og-nebula-kilder).
+
 ## Adaptiv musikk og VHS-/signaluttrykk, 3. november
 
 Morbidiums lydklokke og overgangsprinsipper er tilpasset SIGNALs opptak: to faktiske musikkstrømmer overlapper, fare reagerer raskt, og seks sekunders hold samt åtte sekunders etterspill hindrer hakkete nedtrapping. Story og Freeform leser synlig nær fare; skjulte fiender eller fremtidige hendelser gir ikke musikkvarsel. Rolig utforskning og action har egne førstevalg. Mottakerkonsoll, decoder, radio, film og forfatterstyrt stillhet beholder lytteplass. Pause, antirepetisjon og gamle callbacks håndteres.

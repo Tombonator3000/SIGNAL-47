@@ -41,3 +41,12 @@ Workshop-kjøringen skriver også `adaptive_music.wav` (45 sekunder fra ro via u
 
 
 Første kuratering holder roligere `solitude`/`cylTwo` adskilt fra actionens `phantom`; områdets eksisterende drone-/urospor brukes fortsatt til spenning. Dette er et startvalg for lytting. Komponistens [In Search of Solitude](https://www.scottbuckley.com.au/library/in-search-of-solitude/) beskrives som langsomt og mystisk; [The Old Ones](https://www.scottbuckley.com.au/library/the-old-ones/) og [Decoherence](https://www.scottbuckley.com.au/library/decoherence/) er ambient uro. [Phantom from Space](https://remote.incompetech.com/music/royalty-free/index.html?Search=Search&isrc=USUAN1500038) har perkusjon og oppgitt tempo 109 BPM. Publisert tempo alene brukes ikke som bevis på hvor første taktslag ligger i vår importerte fil. Ingen nye spor er lastet ned eller lisensierte stemmer lagt i Git.
+
+
+## Bevarte NASA- og Nebula-kilder
+
+Forberedelsen tar også med de fem NASA-kandidatene fra `~/scratch-bm/Signal47-array-sounds-20261028/wav` og Nebula-opptaket fra den lokale Ultimate SFX-pakken når de finnes. `--observatory-root` og `--nebula-file` velger andre plasseringer. Manglende valgfrie standardkilder varsles og hoppes over; en eksplisitt ugyldig sti avvises.
+
+NASA-banknøklene er `nasa_cassini_jupiter`, `nasa_saturn_eerie`, `nasa_saturn_bizarre`, `nasa_saturn_lightning` og `nasa_earth_chorus`. Kildefiler og opphav/kreditering fra kandidatbankens SOURCES.md bevares i metadata. Disse er radiomålinger/plasmabølger gjort hørbare; presetene `nasa_saturn_scan` og `nasa_jupiter_scan` spiller hvert sitt utsnitt med hastighet 1 uten løkke. Nebula er `space_nebula`, en kjøpt designet atmosfære fra Ultimate SFX, og har ikke NASA-proveniens. Den får oppskriften `nebula_ambience`.
+
+Med alle lokale kilder tilgjengelige blir banken 12 kilder og 9 oppskrifter. Originalene røres ikke, og de lokale klippene følger ikke offentlig Git. Den eksisterende spillbanken har fortsatt `obsPulsarPulse`, `obsArraySlew`, `obsArrayDrive`, `obsBroadband` og `obsChartPrinter` i S47Observing. Disse fem er egne observatorieopptak; de fem NASA-kandidatene var ikke automatisk importert som erstatninger for dem. Endringen gjør kildene tilgjengelige for mikseren, uten å bytte installerte spillhendelser.
