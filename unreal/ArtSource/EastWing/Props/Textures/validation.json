@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "scope": "2K image dimensions, decoded normals and file channel inventory; not engine visual acceptance",
+  "checks": [
+    {
+      "key": "EW_CinderblockCream",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 0.005969345569610596
+    },
+    {
+      "key": "EW_Stucco",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 0.005169272422790527
+    },
+    {
+      "key": "EW_Concrete",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 0.00436168909072876
+    },
+    {
+      "key": "EW_GreenSteel",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 1.537799835205078e-05
+    },
+    {
+      "key": "EW_Pegboard",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 0.006331443786621094
+    },
+    {
+      "key": "EW_Galvanized",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 7.68899917602539e-05
+    },
+    {
+      "key": "EW_YellowLine",
+      "maps": 7,
+      "resolution_pass": true,
+      "normal_max_length_error": 0.00529170036315918
+    },
+    {
+      "key": "EW_DrainGrate",
+      "maps": 6,
+      "resolution_pass": true,
+      "normal_max_length_error": 0.001736283302307129
+    }
+  ]
+}

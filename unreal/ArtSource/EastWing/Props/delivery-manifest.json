@@ -1,0 +1,317 @@
+{
+  "order": "EASTWING-01",
+  "assets": [
+    {
+      "id": "SM_EW_Centrifuge",
+      "manifest": "Lab/SM_EW_Centrifuge.asset.json",
+      "fbx": "Lab/SM_EW_Centrifuge.fbx",
+      "dimensions_m": [
+        0.3017500042915344,
+        0.36847999691963196,
+        0.19050000607967377
+      ],
+      "triangles": 36988,
+      "license": "Lab/SM_EW_Centrifuge.license.json"
+    },
+    {
+      "id": "SM_EW_ErlenmeyerFlask",
+      "manifest": "Lab/SM_EW_ErlenmeyerFlask.asset.json",
+      "fbx": "Lab/SM_EW_ErlenmeyerFlask.fbx",
+      "dimensions_m": [
+        0.11999999731779099,
+        0.11999999731779099,
+        0.18200000026263297
+      ],
+      "triangles": 2216,
+      "license": "Lab/SM_EW_ErlenmeyerFlask.license.json"
+    },
+    {
+      "id": "SM_EW_LabFridge",
+      "manifest": "Lab/SM_EW_LabFridge.asset.json",
+      "fbx": "Lab/SM_EW_LabFridge.fbx",
+      "dimensions_m": [
+        0.6200000047683716,
+        0.7429999709129333,
+        1.6399999856948853
+      ],
+      "triangles": 15876,
+      "license": "Lab/SM_EW_LabFridge.license.json"
+    },
+    {
+      "id": "SM_EW_LabScale",
+      "manifest": "Lab/SM_EW_LabScale.asset.json",
+      "fbx": "Lab/SM_EW_LabScale.fbx",
+      "dimensions_m": [
+        0.23000001162290573,
+        0.29670998454093933,
+        0.13085317611694336
+      ],
+      "triangles": 20428,
+      "license": "Lab/SM_EW_LabScale.license.json"
+    },
+    {
+      "id": "SM_EW_Microscope",
+      "manifest": "Lab/SM_EW_Microscope.asset.json",
+      "fbx": "Lab/SM_EW_Microscope.fbx",
+      "dimensions_m": [
+        0.20999998599290848,
+        0.29533883929252625,
+        0.4437083601951599
+      ],
+      "triangles": 18972,
+      "license": "Lab/SM_EW_Microscope.license.json"
+    },
+    {
+      "id": "SM_EW_Multimeter",
+      "manifest": "Lab/SM_EW_Multimeter.asset.json",
+      "fbx": "Lab/SM_EW_Multimeter.fbx",
+      "dimensions_m": [
+        0.23319999873638153,
+        0.19177000224590302,
+        0.09000000357627869
+      ],
+      "triangles": 32252,
+      "license": "Lab/SM_EW_Multimeter.license.json"
+    },
+    {
+      "id": "SM_EW_SampleJar",
+      "manifest": "Lab/SM_EW_SampleJar.asset.json",
+      "fbx": "Lab/SM_EW_SampleJar.fbx",
+      "dimensions_m": [
+        0.0820000022649765,
+        0.08279999345541,
+        0.15449999668635428
+      ],
+      "triangles": 21544,
+      "license": "Lab/SM_EW_SampleJar.license.json"
+    },
+    {
+      "id": "SM_EW_SolderingIron",
+      "manifest": "Lab/SM_EW_SolderingIron.asset.json",
+      "fbx": "Lab/SM_EW_SolderingIron.fbx",
+      "dimensions_m": [
+        0.21299999952316284,
+        0.2451070100069046,
+        0.23044507205486298
+      ],
+      "triangles": 10524,
+      "license": "Lab/SM_EW_SolderingIron.license.json"
+    },
+    {
+      "id": "SM_EW_CableDrum",
+      "manifest": "Workshop/SM_EW_CableDrum.asset.json",
+      "fbx": "Workshop/SM_EW_CableDrum.fbx",
+      "dimensions_m": [
+        0.6800000071525574,
+        0.49900002777576447,
+        0.6800000811202018
+      ],
+      "triangles": 26604,
+      "license": "Workshop/SM_EW_CableDrum.license.json"
+    },
+    {
+      "id": "SM_EW_ChemicalCabinet",
+      "manifest": "Workshop/SM_EW_ChemicalCabinet.asset.json",
+      "fbx": "Workshop/SM_EW_ChemicalCabinet.fbx",
+      "dimensions_m": [
+        0.8799999952316284,
+        0.5624999850988388,
+        1.840000033378601
+      ],
+      "triangles": 7844,
+      "license": "Workshop/SM_EW_ChemicalCabinet.license.json"
+    },
+    {
+      "id": "SM_EW_CrateFuses",
+      "manifest": "Workshop/SM_EW_CrateFuses.asset.json",
+      "fbx": "Workshop/SM_EW_CrateFuses.fbx",
+      "dimensions_m": [
+        0.6600000560283661,
+        0.4851499944925308,
+        0.33500000834465027
+      ],
+      "triangles": 5656,
+      "license": "Workshop/SM_EW_CrateFuses.license.json"
+    },
+    {
+      "id": "SM_EW_CrateRelays",
+      "manifest": "Workshop/SM_EW_CrateRelays.asset.json",
+      "fbx": "Workshop/SM_EW_CrateRelays.fbx",
+      "dimensions_m": [
+        0.6600000560283661,
+        0.4851499944925308,
+        0.33500000834465027
+      ],
+      "triangles": 5624,
+      "license": "Workshop/SM_EW_CrateRelays.license.json"
+    },
+    {
+      "id": "SM_EW_DrainGrate",
+      "manifest": "Workshop/SM_EW_DrainGrate.asset.json",
+      "fbx": "Workshop/SM_EW_DrainGrate.fbx",
+      "dimensions_m": [
+        0.5,
+        0.30000001192092896,
+        0.05350000038743019
+      ],
+      "triangles": 5072,
+      "license": "Workshop/SM_EW_DrainGrate.license.json"
+    },
+    {
+      "id": "SM_EW_DrawerCabinet",
+      "manifest": "Workshop/SM_EW_DrawerCabinet.asset.json",
+      "fbx": "Workshop/SM_EW_DrawerCabinet.fbx",
+      "dimensions_m": [
+        0.7200000286102295,
+        0.613999992609024,
+        0.9244999885559082
+      ],
+      "triangles": 13628,
+      "license": "Workshop/SM_EW_DrawerCabinet.license.json"
+    },
+    {
+      "id": "SM_EW_FireExtinguisher",
+      "manifest": "Workshop/SM_EW_FireExtinguisher.asset.json",
+      "fbx": "Workshop/SM_EW_FireExtinguisher.fbx",
+      "dimensions_m": [
+        0.21894697844982147,
+        0.18565000593662262,
+        0.5764999389648438
+      ],
+      "triangles": 8540,
+      "license": "Workshop/SM_EW_FireExtinguisher.license.json"
+    },
+    {
+      "id": "SM_EW_FluorescentFixture",
+      "manifest": "Workshop/SM_EW_FluorescentFixture.asset.json",
+      "fbx": "Workshop/SM_EW_FluorescentFixture.fbx",
+      "dimensions_m": [
+        0.25037509202957153,
+        0.949999988079071,
+        0.10000003129243851
+      ],
+      "triangles": 6000,
+      "license": "Workshop/SM_EW_FluorescentFixture.license.json"
+    },
+    {
+      "id": "SM_EW_GalvanizedShelving",
+      "manifest": "Workshop/SM_EW_GalvanizedShelving.asset.json",
+      "fbx": "Workshop/SM_EW_GalvanizedShelving.fbx",
+      "dimensions_m": [
+        1.2499999403953552,
+        0.5699999630451202,
+        2.0
+      ],
+      "triangles": 8508,
+      "license": "Workshop/SM_EW_GalvanizedShelving.license.json"
+    },
+    {
+      "id": "SM_EW_GreenBench",
+      "manifest": "Workshop/SM_EW_GreenBench.asset.json",
+      "fbx": "Workshop/SM_EW_GreenBench.fbx",
+      "dimensions_m": [
+        1.7999999523162842,
+        0.7215000092983246,
+        1.0199999809265137
+      ],
+      "triangles": 6252,
+      "license": "Workshop/SM_EW_GreenBench.license.json"
+    },
+    {
+      "id": "SM_EW_PartsCart",
+      "manifest": "Workshop/SM_EW_PartsCart.asset.json",
+      "fbx": "Workshop/SM_EW_PartsCart.fbx",
+      "dimensions_m": [
+        0.75,
+        0.5611500293016434,
+        1.1240000873804092
+      ],
+      "triangles": 10908,
+      "license": "Workshop/SM_EW_PartsCart.license.json"
+    },
+    {
+      "id": "SM_EW_Pegboard",
+      "manifest": "Workshop/SM_EW_Pegboard.asset.json",
+      "fbx": "Workshop/SM_EW_Pegboard.fbx",
+      "dimensions_m": [
+        1.2200000286102295,
+        0.04149999842047691,
+        1.2200000286102295
+      ],
+      "triangles": 940,
+      "license": "Workshop/SM_EW_Pegboard.license.json"
+    },
+    {
+      "id": "SM_EW_RedToolChest",
+      "manifest": "Workshop/SM_EW_RedToolChest.asset.json",
+      "fbx": "Workshop/SM_EW_RedToolChest.fbx",
+      "dimensions_m": [
+        1.0870000422000885,
+        0.5740000009536743,
+        1.004499912261963
+      ],
+      "triangles": 22696,
+      "license": "Workshop/SM_EW_RedToolChest.license.json"
+    },
+    {
+      "id": "SM_EW_RollUpDoorSegment",
+      "manifest": "Workshop/SM_EW_RollUpDoorSegment.asset.json",
+      "fbx": "Workshop/SM_EW_RollUpDoorSegment.fbx",
+      "dimensions_m": [
+        3.5,
+        0.12200000137090683,
+        0.25
+      ],
+      "triangles": 2680,
+      "license": "Workshop/SM_EW_RollUpDoorSegment.license.json"
+    },
+    {
+      "id": "SM_EW_ShelvingStocked",
+      "manifest": "Workshop/SM_EW_ShelvingStocked.asset.json",
+      "fbx": "Workshop/SM_EW_ShelvingStocked.fbx",
+      "dimensions_m": [
+        3.0999999046325684,
+        0.5140005946159363,
+        2.299999952316284
+      ],
+      "triangles": 5688,
+      "license": "Workshop/SM_EW_ShelvingStocked.license.json"
+    },
+    {
+      "id": "SM_EW_TyreStack",
+      "manifest": "Workshop/SM_EW_TyreStack.asset.json",
+      "fbx": "Workshop/SM_EW_TyreStack.fbx",
+      "dimensions_m": [
+        0.7440000176429749,
+        0.7440000176429749,
+        0.7152000069618225
+      ],
+      "triangles": 61824,
+      "license": "Workshop/SM_EW_TyreStack.license.json"
+    },
+    {
+      "id": "SM_EW_WallTools",
+      "manifest": "Workshop/SM_EW_WallTools.asset.json",
+      "fbx": "Workshop/SM_EW_WallTools.fbx",
+      "dimensions_m": [
+        1.1200000047683716,
+        0.04349999874830246,
+        0.3564999997615814
+      ],
+      "triangles": 15408,
+      "license": "Workshop/SM_EW_WallTools.license.json"
+    },
+    {
+      "id": "SM_EW_Oscilloscope_RM565",
+      "manifest": "Lab/SM_EW_Oscilloscope_RM565.license.json",
+      "private_directory": "/home/tom/Assets/signal47-private/EastWing/Props/Lab",
+      "license": "CC-BY-4.0",
+      "public_binary": false
+    }
+  ],
+  "asset_count": 26,
+  "material_manifest": "Textures/materials.json",
+  "native_integration_owner": "Claude",
+  "native_status": "NOT_IMPORTED",
+  "private_generated_tripo_used": false
+}

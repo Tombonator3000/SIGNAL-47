@@ -1,0 +1,65 @@
+{
+  "asset": "EW_YellowLine",
+  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "copyright": "SIGNAL / 47 project",
+  "redistribution": "May accompany the project; no external purchased/Tripo content",
+  "source": "build_textures.py",
+  "method": "Deterministic metric height, albedo, roughness and metallic fields; no baked lighting",
+  "reused_project_source": {
+    "path": "unreal/ArtSource/PhotoLab/surface_fields.py",
+    "sha256": "a474277807b64254c94eee33aa5b228d24ece5e16ae8553b3eba58a4d4da3b50",
+    "use": "metric periodic normal-map convention; implementation adapted for physical tile span"
+  },
+  "external_reference": {
+    "name": "apekshik/anyscene",
+    "status": "UNVERIFIED workflow-only reference, no code or assets reused"
+  },
+  "files": {
+    "BaseColor": {
+      "file": "EW_YellowLine_BaseColor.png",
+      "sha256": "1bbfe2d8f0b6fc51e51bf49fea079702b821b95e7d95a77b4371dec04e04ff13",
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "Roughness": {
+      "file": "EW_YellowLine_Roughness.png",
+      "sha256": "cd9a8f26367bbbbaa20a9d5fa80bd8d94a5da158ca202226e20131dbb140bc42",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Metallic": {
+      "file": "EW_YellowLine_Metallic.png",
+      "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalDX": {
+      "file": "EW_YellowLine_NormalDX.png",
+      "sha256": "c85e12cd12506448077a46494e979a1a3b18f50b7b16b4040a21e0593bfe692d",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalGL": {
+      "file": "EW_YellowLine_NormalGL.png",
+      "sha256": "1286beff2da8921ac2242008c7a53c404c31de9605d8af3c0ca6f91cc655e287",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Opacity": {
+      "file": "EW_YellowLine_Opacity.png",
+      "sha256": "5f26cbfc76e6c710490d44008a659dd960cf40542d112b3bdf109ff2753a4da6",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Height": {
+      "file": "EW_YellowLine_Height.png",
+      "sha256": "c6e093d5a79f4609bc38bb13f7d94e877c6777c8b7e513aac71ad81d7c54d134",
+      "color_space": "linear",
+      "bit_depth": 16,
+      "decode_metres": {
+        "offset": 1.1999997695966158e-05,
+        "scale": 6.800000028306386e-05
+      }
+    }
+  }
+}

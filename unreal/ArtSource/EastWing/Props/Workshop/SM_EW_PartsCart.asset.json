@@ -1,0 +1,191 @@
+{
+  "asset": "SM_EW_PartsCart",
+  "description": "Three-lipped-tray steel service cart, four swivel casters and bent tubular push handle.",
+  "fbx": "SM_EW_PartsCart.fbx",
+  "editable": "SM_EW_PartsCart.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.375,
+      -0.23714999854564667,
+      -1.4901161193847656e-08
+    ],
+    [
+      0.375,
+      0.3240000307559967,
+      1.124000072479248
+    ]
+  ],
+  "dimensions_m": [
+    0.75,
+    0.5611500293016434,
+    1.1240000873804092
+  ],
+  "triangles": 10908,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_GreenSteel",
+    "M_EW_Galvanized",
+    "M_EW_Rubber",
+    "M_EW_LabelPaper",
+    "M_EW_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_GreenSteel",
+      "texture_key": "EW_GreenSteel",
+      "maps": {
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+      },
+      "Base Color": [
+        0.17000000178813934,
+        0.25,
+        0.20000000298023224,
+        1.0
+      ],
+      "Roughness": 0.41999998688697815,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017999999225139618,
+        0.02199999988079071,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.7599999904632568,
+        0.7200000286102295,
+        0.5699999928474426,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.00800000037997961,
+        0.009999999776482582,
+        0.008999999612569809,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_PartsCart_LOD1.fbx",
+      "triangles": 5454
+    },
+    {
+      "file": "SM_EW_PartsCart_LOD2.fbx",
+      "triangles": 2727
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "1b73c98941b2ddcbe1f88283fc11cbcf9100cb06acdbe0b03b11fbb6dfedcfd2",
+  "blend_sha256": "3050c771e51a063d3c97a788b52401674014b95ae5d024cd26e28d098143616e"
+}

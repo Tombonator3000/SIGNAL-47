@@ -1,0 +1,182 @@
+{
+  "asset": "SM_EW_ChemicalCabinet",
+  "description": "Lockable chemical cupboard with double doors, ventilation louvres, hinge barrels, padlock and labels.",
+  "fbx": "SM_EW_ChemicalCabinet.fbx",
+  "editable": "SM_EW_ChemicalCabinet.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.4399999976158142,
+      -0.32249999046325684,
+      0.0
+    ],
+    [
+      0.4399999976158142,
+      0.23999999463558197,
+      1.840000033378601
+    ]
+  ],
+  "dimensions_m": [
+    0.8799999952316284,
+    0.5624999850988388,
+    1.840000033378601
+  ],
+  "triangles": 7844,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_CreamEnamel",
+    "M_EW_DarkSteel",
+    "M_EW_Galvanized",
+    "M_EW_LabelPaper",
+    "M_EW_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_CreamEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6499999761581421,
+        0.6200000047683716,
+        0.49000000953674316,
+        1.0
+      ],
+      "Roughness": 0.44999998807907104,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_DarkSteel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.04500000178813934,
+        0.05000000074505806,
+        0.04800000041723251,
+        1.0
+      ],
+      "Roughness": 0.44999998807907104,
+      "Metallic": 0.699999988079071,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.7599999904632568,
+        0.7200000286102295,
+        0.5699999928474426,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.00800000037997961,
+        0.009999999776482582,
+        0.008999999612569809,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_ChemicalCabinet_LOD1.fbx",
+      "triangles": 3922
+    },
+    {
+      "file": "SM_EW_ChemicalCabinet_LOD2.fbx",
+      "triangles": 1960
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "a21e6dedc6719bfcc467c2acd9bd0fed25b24e439fa6ef069dbfbf892ee923b9",
+  "blend_sha256": "0e61334701b7d1a6203f4a90c1fd32186a96f9b9b058b0880889ad9569d76c26"
+}

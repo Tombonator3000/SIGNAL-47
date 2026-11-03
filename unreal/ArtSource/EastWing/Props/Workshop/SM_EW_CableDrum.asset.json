@@ -1,0 +1,136 @@
+{
+  "asset": "SM_EW_CableDrum",
+  "description": "Wood cable reel with paired flanges, hubs, bolts and individually modeled wound cable loops.",
+  "fbx": "SM_EW_CableDrum.fbx",
+  "editable": "SM_EW_CableDrum.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.3400000035762787,
+      -0.24950002133846283,
+      -1.4362999678496635e-08
+    ],
+    [
+      0.3400000035762787,
+      0.24950000643730164,
+      0.6800000667572021
+    ]
+  ],
+  "dimensions_m": [
+    0.6800000071525574,
+    0.49900002777576447,
+    0.6800000811202018
+  ],
+  "triangles": 26604,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_CrateWood",
+    "M_EW_Galvanized",
+    "M_EW_Rubber"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_CrateWood",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.30000001192092896,
+        0.20999999344348907,
+        0.11999999731779099,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017999999225139618,
+        0.02199999988079071,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_CableDrum_LOD1.fbx",
+      "triangles": 13302
+    },
+    {
+      "file": "SM_EW_CableDrum_LOD2.fbx",
+      "triangles": 6650
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "b1286aeee21f235a6a3bc76a81b913e3e211ad37aaf58683b5a9dcdee35199bf",
+  "blend_sha256": "48b31363130ab84379768f1171a760e2b93838c94d3743e7d7d3a2f5e1502a7f"
+}

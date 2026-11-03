@@ -1,0 +1,8 @@
+{
+  "asset": "SM_EW_FluorescentFixture",
+  "id": "LicenseRef-ProjectOwned",
+  "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+  "sources": [
+    "Unity/Blender/Source/visual10_lab_details.py V10_TwinFluorescent block, owned original geometry"
+  ]
+}

@@ -1,0 +1,306 @@
+{
+  "asset": "SM_EW_ShelvingStocked",
+  "description": "Reused five-tier original SARO shelving with carton dressing, braces and bolts. Original material UVs retained; rotated from source +X front to -Y front. Own prior assets, no third-party models.",
+  "fbx": "SM_EW_ShelvingStocked.fbx",
+  "editable": "SM_EW_ShelvingStocked.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -1.5499999523162842,
+      -0.25700029730796814,
+      0.0
+    ],
+    [
+      1.5499999523162842,
+      0.25700029730796814,
+      2.299999952316284
+    ]
+  ],
+  "dimensions_m": [
+    3.0999999046325684,
+    0.5140005946159363,
+    2.299999952316284
+  ],
+  "triangles": 5688,
+  "uv_layers": 1,
+  "materials": [
+    "M_ArchiveProps_SteelGreen",
+    "M_ArchiveProps_Kraft",
+    "M_ArchiveProps_PrintAtlas",
+    "M_ArchiveProps_DarkSteel",
+    "M_ArchiveProps_Metal",
+    "M_ArchiveProps_Rubber",
+    "M_ArchiveProps_Paper",
+    "M_ArchiveProps_KraftEdge",
+    "M_ArchiveProps_BookBlue",
+    "M_ArchiveProps_BookBrown"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_ArchiveProps_SteelGreen",
+      "texture_key": null,
+      "maps": {
+        "SteelGreen_base_color.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/SteelGreen_base_color.png",
+        "SteelGreen_roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/SteelGreen_roughness.png"
+      },
+      "Base Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Roughness": 0.7200000286102295,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_Kraft",
+      "texture_key": null,
+      "maps": {
+        "Kraft_base_color.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/Kraft_base_color.png",
+        "Kraft_roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/Kraft_roughness.png"
+      },
+      "Base Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Roughness": 0.8799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_PrintAtlas",
+      "texture_key": null,
+      "maps": {
+        "PrintAtlas_base_color.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/PrintAtlas_base_color.png",
+        "PrintAtlas_roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/PrintAtlas_roughness.png"
+      },
+      "Base Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Roughness": 0.8600000143051147,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_DarkSteel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.04500000178813934,
+        0.054999999701976776,
+        0.05000000074505806,
+        1.0
+      ],
+      "Roughness": 0.7099999785423279,
+      "Metallic": 0.6399999856948853,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_Metal",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3400000035762787,
+        0.3799999952316284,
+        0.36000001430511475,
+        1.0
+      ],
+      "Roughness": 0.4000000059604645,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.012000000104308128,
+        0.014999999664723873,
+        0.013000000268220901,
+        1.0
+      ],
+      "Roughness": 0.9200000166893005,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_Paper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6600000262260437,
+        0.6200000047683716,
+        0.49000000953674316,
+        1.0
+      ],
+      "Roughness": 0.9399999976158142,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_KraftEdge",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3199999928474426,
+        0.25,
+        0.15000000596046448,
+        1.0
+      ],
+      "Roughness": 0.9100000262260437,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_BookBlue",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.026000000536441803,
+        0.061000000685453415,
+        0.08399999886751175,
+        1.0
+      ],
+      "Roughness": 0.8399999737739563,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_ArchiveProps_BookBrown",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.10000000149011612,
+        0.03999999910593033,
+        0.020999999716877937,
+        1.0
+      ],
+      "Roughness": 0.8799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/Kraft_base_color.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/Kraft_roughness.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/PrintAtlas_base_color.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/PrintAtlas_roughness.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/SteelGreen_base_color.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Workshop/ReusedTextures/SteelGreen_roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_ShelvingStocked_LOD1.fbx",
+      "triangles": 2844
+    },
+    {
+      "file": "SM_EW_ShelvingStocked_LOD2.fbx",
+      "triangles": 1422
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/Signal47/Tools/archiveprops/exports/SM_ArchiveProps_ShelvingStorage.fbx",
+      "unreal/Signal47/Tools/archiveprops/geometry.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "eccc413399d724e44f398a7cddce722c35ea231190f7150ab307f7fcdd0b2cb5",
+  "blend_sha256": "2b8e2e3a51b88d8aa8062c29873aabbeb0d9b88b6d04d98617f63f4a811eb61a"
+}

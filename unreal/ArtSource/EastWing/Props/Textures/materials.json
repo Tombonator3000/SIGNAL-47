@@ -1,0 +1,489 @@
+{
+  "resolution": [
+    2048,
+    2048
+  ],
+  "normal_convention": "DirectX in Unreal; OpenGL in Blender",
+  "height_import": "16-bit linear; decode metric range from maps.Height.decode_metres; displacement off by default",
+  "runtime_status": "NOT IMPORTED / NOT RUNTIME VERIFIED",
+  "materials": [
+    {
+      "key": "EW_CinderblockCream",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        2.4,
+        2.4
+      ],
+      "tileable": true,
+      "description": "Cream painted cinderblock; 400x200mm running bond. Mortar shares paint with slightly rougher recessed joints.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_CinderblockCream_BaseColor.png",
+          "sha256": "6d082eb07700900b62a13ed18be0df6a714746a087f6fef2b1f21a47dff6ed52",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_CinderblockCream_Roughness.png",
+          "sha256": "f110814f93976f8263dca57343fb0f67a958d1aef6bad05db9c04c4d38ddcc3b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_CinderblockCream_Metallic.png",
+          "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_CinderblockCream_NormalDX.png",
+          "sha256": "0949d439d8541e8a90b84a5a0de0b7061e7d007580d04b8552fa6885b089b768",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_CinderblockCream_NormalGL.png",
+          "sha256": "0d54380d0ae3151fcca5c3b40e82a46d545c1c307f3d9f61ba0249ac610ca0fc",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_CinderblockCream_Height.png",
+          "sha256": "0a5b628ccf8530830f981f9d4d9595cec17eeb1513522f3bf6275dffd7e11ad9",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -0.0030687409453094006,
+            "scale": 0.0033504477760288864
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_CinderblockCream.license.json"
+    },
+    {
+      "key": "EW_Stucco",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        2,
+        2
+      ],
+      "tileable": true,
+      "description": "Warm sand-cream stucco facade, 2m continuous tile, small plaster aggregate relief.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_Stucco_BaseColor.png",
+          "sha256": "930ba9b8f315213a1efdd2bbf37d3cd69eef13aefe4a5a9923173924d9671a82",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_Stucco_Roughness.png",
+          "sha256": "6ac31feeffff17c0e1f5471ca98608e170142230fa57d383862b1da31442f528",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_Stucco_Metallic.png",
+          "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_Stucco_NormalDX.png",
+          "sha256": "d253a9c90eb4699cb4ad4e78d8f20d8c76275ae1f9756e72968c8e6b2f7dc29d",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_Stucco_NormalGL.png",
+          "sha256": "31e7dec2965ea1a9eb9fdee259ddbb3c252d7dfb79745e0de76bdc805f640b61",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_Stucco_Height.png",
+          "sha256": "567a1d6b8d1b27bac21c7ab98b4c72f6e88cf7387e396f4f1612c1d52500a4e8",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -0.0013392469845712185,
+            "scale": 0.0027547269128262997
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_Stucco.license.json"
+    },
+    {
+      "key": "EW_Concrete",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        4,
+        4
+      ],
+      "tileable": true,
+      "description": "Stained concrete floor; no painted markings/drains baked into repeating material.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_Concrete_BaseColor.png",
+          "sha256": "e0f90bd08d8ab85b2e983729aeac2f3b37689530e112d86719360267b53f6a4a",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_Concrete_Roughness.png",
+          "sha256": "bd8bdbdc377793a70d2e6cb708294e9322e2be583bd5e6c819c3a236b5cb859a",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_Concrete_Metallic.png",
+          "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_Concrete_NormalDX.png",
+          "sha256": "fb34f060a59ea66f0747fb88f219c9f4d28db908cf7491bda1c1db880f9c9d1c",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_Concrete_NormalGL.png",
+          "sha256": "eee0d7f1164dc367d6478ed42d9121546a0889750caf0037ba7b3d05de5ef938",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_Concrete_Height.png",
+          "sha256": "c83cfec81c1d7777681377508edd47132badf5325a208479d46cd00e2e6fee73",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -0.0005765921087004244,
+            "scale": 0.000847458781208843
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_Concrete.license.json"
+    },
+    {
+      "key": "EW_GreenSteel",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        1,
+        1
+      ],
+      "tileable": true,
+      "description": "Green lacquer on steel, dielectric paint; wear principally in roughness, no fake metallic green paint.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_GreenSteel_BaseColor.png",
+          "sha256": "051a7828719ec8180c95692470581f4022c99a26f405fe877bc09b347f05a6c2",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_GreenSteel_Roughness.png",
+          "sha256": "8b8368398e1e808b7c8cfef282915ee646bdc36e869ad2808a6a470185eb5070",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_GreenSteel_Metallic.png",
+          "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_GreenSteel_NormalDX.png",
+          "sha256": "6c5b002fa2bc6ec29989b4a58b2fe784a24060ba7208e27ac2eaa41098e3ace4",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_GreenSteel_NormalGL.png",
+          "sha256": "4a4ea7ed85d976c5f6ad65bec30a24bf9fcad6440dad6743a718b012ba9b4f4c",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_GreenSteel_Height.png",
+          "sha256": "991f977c5ec1b6599219991e61b285aa58d7aed9bcfbca809d34716625333782",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -4.691736648965161e-06,
+            "scale": 9.429898909729673e-06
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_GreenSteel.license.json"
+    },
+    {
+      "key": "EW_Pegboard",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        0.6096,
+        0.6096
+      ],
+      "tileable": true,
+      "description": "Brown hardboard pegboard; 25.4mm hole pitch, 6.35mm holes. Hole bottoms represented in height; mesh perforation for silhouette.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_Pegboard_BaseColor.png",
+          "sha256": "3c03fbf2da510cb52fafe73c07af3f2c8dc789e2f4f47c9303bdce4d8b6a2af4",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_Pegboard_Roughness.png",
+          "sha256": "d2f9e38003bdd65a3134391c398749f057f1103149c61366dc7116b65175a873",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_Pegboard_Metallic.png",
+          "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_Pegboard_NormalDX.png",
+          "sha256": "07613ec69aeeabb9ac8f12d27e05600b4dcf3211978f9e618821195d97debda2",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_Pegboard_NormalGL.png",
+          "sha256": "befaf7e0256e1e6abe0e28777b84daf60bfaf9fa0a2c620e5c5fb8a3a400a143",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_Pegboard_Height.png",
+          "sha256": "9c1acd3a4a1060ceec4ec865c6818a7c927dd5fd7da72a6fbd3c97eb5155caad",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -0.0030149996746331453,
+            "scale": 0.0030299996742542135
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_Pegboard.license.json",
+      "hole_pitch_m": 0.0254,
+      "hole_diameter_m": 0.00635,
+      "hole_relief_m": 0.003
+    },
+    {
+      "key": "EW_Galvanized",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        1,
+        1
+      ],
+      "tileable": true,
+      "description": "Galvanized zinc-coated steel; ~18mm spangles primarily roughness variation, metallic=0.98.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_Galvanized_BaseColor.png",
+          "sha256": "5303fffed6ca8501a94cf64cbc3cd4a80135d2ed5719d99b8d786f95f3223194",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_Galvanized_Roughness.png",
+          "sha256": "a7cd7eea1a984977b65b8c3264ef2b68a6cef7979505e111dd42a0f43a1b30c4",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_Galvanized_Metallic.png",
+          "sha256": "5a8a140d6c0b51516d18da702cb412958e88c8d298e326a57678a95d655882da",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_Galvanized_NormalDX.png",
+          "sha256": "d08ccba937ff34e32e06c2d07ba88b4b8957bcd974b76dffbac58c6b805fc36b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_Galvanized_NormalGL.png",
+          "sha256": "b7a7cfc3826c8941daf51207ef89c08046c6cd4b7b991f00eaf00425408ac67e",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_Galvanized_Height.png",
+          "sha256": "1e23e9e585294699e24d2e1494609ae2ecb14d8df9c4eaedbc296e217ff2376a",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -3.9971655496628955e-06,
+            "scale": 7.99472036305815e-06
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_Galvanized.license.json"
+    },
+    {
+      "key": "EW_YellowLine",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        0.1,
+        2.0
+      ],
+      "tileable": true,
+      "description": "Separate 100mm painted line strip. Use dedicated plane/mesh or decal with opacity; never repeat across concrete.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_YellowLine_BaseColor.png",
+          "sha256": "1bbfe2d8f0b6fc51e51bf49fea079702b821b95e7d95a77b4371dec04e04ff13",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_YellowLine_Roughness.png",
+          "sha256": "cd9a8f26367bbbbaa20a9d5fa80bd8d94a5da158ca202226e20131dbb140bc42",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_YellowLine_Metallic.png",
+          "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_YellowLine_NormalDX.png",
+          "sha256": "c85e12cd12506448077a46494e979a1a3b18f50b7b16b4040a21e0593bfe692d",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_YellowLine_NormalGL.png",
+          "sha256": "1286beff2da8921ac2242008c7a53c404c31de9605d8af3c0ca6f91cc655e287",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Opacity": {
+          "file": "EW_YellowLine_Opacity.png",
+          "sha256": "5f26cbfc76e6c710490d44008a659dd960cf40542d112b3bdf109ff2753a4da6",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_YellowLine_Height.png",
+          "sha256": "c6e093d5a79f4609bc38bb13f7d94e877c6777c8b7e513aac71ad81d7c54d134",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": 1.1999997695966158e-05,
+            "scale": 6.800000028306386e-05
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_YellowLine.license.json",
+      "use": "modular_overlay",
+      "recommended_mesh_width_m": 0.1,
+      "offset_above_floor_m": 0.001
+    },
+    {
+      "key": "EW_DrainGrate",
+      "size": [
+        2048,
+        2048
+      ],
+      "physical_tile_metres": [
+        0.5,
+        0.3
+      ],
+      "tileable": false,
+      "description": "Dedicated 500x300mm drain grate surface. Apply to separate grate prop, slots should be geometric for closeups; no tiling on concrete.",
+      "maps": {
+        "BaseColor": {
+          "file": "EW_DrainGrate_BaseColor.png",
+          "sha256": "0f50ce96d6d16ca9d1628dba0b3f8b5e8400720b0135312b1ae78d035cfa16e7",
+          "color_space": "sRGB",
+          "bit_depth": 8
+        },
+        "Roughness": {
+          "file": "EW_DrainGrate_Roughness.png",
+          "sha256": "82edfa6b2f3af79fa4f002c997205c0ff1ce6d46693ed292b79df530b1ce79cd",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Metallic": {
+          "file": "EW_DrainGrate_Metallic.png",
+          "sha256": "f61b82e18798eda7abe00770d3a5d41393ae2f370712a707db0ac19c89ff24cb",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalDX": {
+          "file": "EW_DrainGrate_NormalDX.png",
+          "sha256": "ba7c4033b10278237790de1988e732720f6e7c985f2be261a5980f80d841bbb7",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "NormalGL": {
+          "file": "EW_DrainGrate_NormalGL.png",
+          "sha256": "73b6dc59951373ba09ff35df821fed01ac985cc7e7879a85a07f04f45ff61544",
+          "color_space": "linear",
+          "bit_depth": 8
+        },
+        "Height": {
+          "file": "EW_DrainGrate_Height.png",
+          "sha256": "e967be89082f3d3b11e4209eed12764d9418c6029ed7ca612f3ec892a888e33b",
+          "color_space": "linear",
+          "bit_depth": 16,
+          "decode_metres": {
+            "offset": -0.008005000650882721,
+            "scale": 0.008010000650301663
+          }
+        }
+      },
+      "normal_strength": 1.0,
+      "height_displacement_enabled_by_default": false,
+      "license_manifest": "EW_DrainGrate.license.json",
+      "use": "dedicated_prop",
+      "silhouette_requires_geometry": true
+    }
+  ]
+}

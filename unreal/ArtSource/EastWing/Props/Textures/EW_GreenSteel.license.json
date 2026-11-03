@@ -1,0 +1,59 @@
+{
+  "asset": "EW_GreenSteel",
+  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "copyright": "SIGNAL / 47 project",
+  "redistribution": "May accompany the project; no external purchased/Tripo content",
+  "source": "build_textures.py",
+  "method": "Deterministic metric height, albedo, roughness and metallic fields; no baked lighting",
+  "reused_project_source": {
+    "path": "unreal/ArtSource/PhotoLab/surface_fields.py",
+    "sha256": "a474277807b64254c94eee33aa5b228d24ece5e16ae8553b3eba58a4d4da3b50",
+    "use": "surface_channels paint response"
+  },
+  "external_reference": {
+    "name": "apekshik/anyscene",
+    "status": "UNVERIFIED workflow-only reference, no code or assets reused"
+  },
+  "files": {
+    "BaseColor": {
+      "file": "EW_GreenSteel_BaseColor.png",
+      "sha256": "051a7828719ec8180c95692470581f4022c99a26f405fe877bc09b347f05a6c2",
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "Roughness": {
+      "file": "EW_GreenSteel_Roughness.png",
+      "sha256": "8b8368398e1e808b7c8cfef282915ee646bdc36e869ad2808a6a470185eb5070",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Metallic": {
+      "file": "EW_GreenSteel_Metallic.png",
+      "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalDX": {
+      "file": "EW_GreenSteel_NormalDX.png",
+      "sha256": "6c5b002fa2bc6ec29989b4a58b2fe784a24060ba7208e27ac2eaa41098e3ace4",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalGL": {
+      "file": "EW_GreenSteel_NormalGL.png",
+      "sha256": "4a4ea7ed85d976c5f6ad65bec30a24bf9fcad6440dad6743a718b012ba9b4f4c",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Height": {
+      "file": "EW_GreenSteel_Height.png",
+      "sha256": "991f977c5ec1b6599219991e61b285aa58d7aed9bcfbca809d34716625333782",
+      "color_space": "linear",
+      "bit_depth": 16,
+      "decode_metres": {
+        "offset": -4.691736648965161e-06,
+        "scale": 9.429898909729673e-06
+      }
+    }
+  }
+}

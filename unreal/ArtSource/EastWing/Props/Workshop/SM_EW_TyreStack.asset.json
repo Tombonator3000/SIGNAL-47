@@ -1,0 +1,80 @@
+{
+  "asset": "SM_EW_TyreStack",
+  "description": "Three hollow tyres with rounded carcasses and physical staggered tread blocks.",
+  "fbx": "SM_EW_TyreStack.fbx",
+  "editable": "SM_EW_TyreStack.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.3720000088214874,
+      -0.3720000088214874,
+      0.0
+    ],
+    [
+      0.3720000088214874,
+      0.3720000088214874,
+      0.7152000069618225
+    ]
+  ],
+  "dimensions_m": [
+    0.7440000176429749,
+    0.7440000176429749,
+    0.7152000069618225
+  ],
+  "triangles": 61824,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_Rubber"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017999999225139618,
+        0.02199999988079071,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [],
+  "lods": [
+    {
+      "file": "SM_EW_TyreStack_LOD1.fbx",
+      "triangles": 30912
+    },
+    {
+      "file": "SM_EW_TyreStack_LOD2.fbx",
+      "triangles": 15456
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "0bac722185ff8f37370ae705c02fc8b0324d86ab0b6592b6d7f4438d23c2ec64",
+  "blend_sha256": "995dccdd04fae0bc054534059df2c9a34f53a68a10dfb015488d02d464a20f12"
+}

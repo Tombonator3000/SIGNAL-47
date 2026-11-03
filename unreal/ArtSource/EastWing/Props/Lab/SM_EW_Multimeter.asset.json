@@ -1,0 +1,197 @@
+{
+  "asset": "SM_EW_Multimeter",
+  "description": "Analog portable multimeter with scale ticks, real needle/range selector, sockets, two coiled leads and probe tips.",
+  "fbx": "SM_EW_Multimeter.fbx",
+  "editable": "SM_EW_Multimeter.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.11659999936819077,
+      -0.10677000135183334,
+      0.0
+    ],
+    [
+      0.11659999936819077,
+      0.08500000089406967,
+      0.09000000357627869
+    ]
+  ],
+  "dimensions_m": [
+    0.23319999873638153,
+    0.19177000224590302,
+    0.09000000357627869
+  ],
+  "triangles": 32252,
+  "uv_layers": 1,
+  "materials": [
+    "EW_Lab_Bakelite",
+    "EW_Lab_CreamEnamel",
+    "EW_Lab_LabelPaper",
+    "EW_Lab_LabelInk",
+    "EW_Lab_Red",
+    "EW_Lab_Chrome"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Lab_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_CreamEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6899999976158142,
+        0.6600000262260437,
+        0.5299999713897705,
+        1.0
+      ],
+      "Roughness": 0.30000001192092896,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Red",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3799999952316284,
+        0.02500000037252903,
+        0.012000000104308128,
+        1.0
+      ],
+      "Roughness": 0.3799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [],
+  "lods": [
+    {
+      "file": "SM_EW_Multimeter_LOD1.fbx",
+      "triangles": 16126
+    },
+    {
+      "file": "SM_EW_Multimeter_LOD2.fbx",
+      "triangles": 8062
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/ArtSource/EastWing/Props/Lab/build_lab.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "6f02d48974ca04bbbbfcca92337641adf771416209d0af351d3606854cdbbcd2",
+  "blend_sha256": "4a8195520a6aedb2c0528b843d733d13a1015a3b0b7fdda978928b2cadc599d7"
+}

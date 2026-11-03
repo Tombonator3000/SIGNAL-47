@@ -1,0 +1,230 @@
+{
+  "asset": "SM_EW_LabFridge",
+  "description": "1980s separate freezer/lower-door laboratory refrigerator with seals, chrome handles, rear condenser and sample-only label.",
+  "fbx": "SM_EW_LabFridge.fbx",
+  "editable": "SM_EW_LabFridge.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.3100000023841858,
+      -0.41899996995925903,
+      0.0
+    ],
+    [
+      0.3100000023841858,
+      0.3240000009536743,
+      1.6399999856948853
+    ]
+  ],
+  "dimensions_m": [
+    0.6200000047683716,
+    0.7429999709129333,
+    1.6399999856948853
+  ],
+  "triangles": 15876,
+  "uv_layers": 1,
+  "materials": [
+    "EW_Lab_Bakelite",
+    "EW_Lab_CreamEnamel",
+    "EW_Lab_Rubber",
+    "EW_Lab_Chrome",
+    "EW_Lab_Stainless",
+    "EW_Lab_LabelPaper",
+    "EW_Lab_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Lab_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_CreamEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6899999976158142,
+        0.6600000262260437,
+        0.5299999713897705,
+        1.0
+      ],
+      "Roughness": 0.30000001192092896,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02199999988079071,
+        0.02500000037252903,
+        0.023000000044703484,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Stainless",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.47999998927116394,
+        0.5099999904632568,
+        0.5,
+        1.0
+      ],
+      "Roughness": 0.23999999463558197,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_LabFridge_LOD1.fbx",
+      "triangles": 7937
+    },
+    {
+      "file": "SM_EW_LabFridge_LOD2.fbx",
+      "triangles": 3968
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/ArtSource/EastWing/Props/Lab/build_lab.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "304f6ff9d07110ee48c53735400df8d6eba0ad19fd4e04b47f6695cc7f3a596f",
+  "blend_sha256": "6d67540808747ddd93c406ee22fbfe33750923206efb40ee4febcbaeb10817eb"
+}

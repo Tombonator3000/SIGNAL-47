@@ -1,0 +1,8 @@
+{
+  "asset": "SM_EW_GreenBench",
+  "id": "LicenseRef-ProjectOwned",
+  "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+  "sources": [
+    "unreal/Signal47/Tools/archiveprops/geometry.py worktable concept, independently dimensioned"
+  ]
+}
