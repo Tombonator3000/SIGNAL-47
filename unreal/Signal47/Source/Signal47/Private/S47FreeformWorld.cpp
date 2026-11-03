@@ -411,7 +411,17 @@ bool FS47FreeformWorld::Build()
  for(int32 I=0;I<2;++I)LoggerPosts[I]=Box(FString::Printf(TEXT("FreeformLoggerPost%d"),I),LoggerPoint(I)-FVector(0,.4,0),FVector(.14,.8,.14),0x777e68,Saro,I==0?TEXT("ff:logger-a"):TEXT("ff:logger-b"));
  LoggerBody=Box(TEXT("FreeformDeployedLogger"),LoggerPoint(0),FVector(.46,.32,.38),0x59635d,Saro,TEXT("ff:logger-device"));
  M->Web->CollidersMutable(TEXT("saro")).Add({BenchAt.X-.92,BenchAt.X+.92,BenchAt.Z-.4,BenchAt.Z+.4,TEXT("ff:bench"),true});
- SampleBench=Model(TEXT("FreeformSampleBench"),TEXT("/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable"),SampleAt,1.8,Saro);
+ // EASTWING-01: field samples are analysed at a green steel lab bench with its own scope and jars.
+ SampleBench=Model(TEXT("FreeformSampleBench"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_GreenBench.SM_EW_GreenBench"),SampleAt,1.8,Saro);
+ if(SampleBench)
+ {
+  const double Top=.9325;
+  Model(TEXT("FreeformSampleScope"),TEXT("/Game/EastWing/Props/Lab/SM_EW_Microscope.SM_EW_Microscope"),SampleAt+FVector(-.55,Top,.05),.21,Saro);
+  Model(TEXT("FreeformSampleJarA"),TEXT("/Game/EastWing/Props/Lab/SM_EW_SampleJar.SM_EW_SampleJar"),SampleAt+FVector(.42,Top,-.12),.082,Saro);
+  Model(TEXT("FreeformSampleJarB"),TEXT("/Game/EastWing/Props/Lab/SM_EW_SampleJar.SM_EW_SampleJar"),SampleAt+FVector(.56,Top,-.05),.082,Saro);
+  Model(TEXT("FreeformSampleScale"),TEXT("/Game/EastWing/Props/Lab/SM_EW_LabScale.SM_EW_LabScale"),SampleAt+FVector(.62,Top,.12),.23,Saro);
+ }
+ else SampleBench=Model(TEXT("FreeformSampleBench"),TEXT("/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable"),SampleAt,1.8,Saro);
  if(!SampleBench)SampleBench=Box(TEXT("FreeformSampleBenchTop"),SampleAt+FVector(0,.78,0),FVector(1.8,.12,.75),0x514638,Saro);
  Bind(SampleBench,TEXT("ff:sample"));
  // EASTWING-01: the stock counter is two real drawer cabinets; the receiving table is a green steel bench.
@@ -425,7 +435,7 @@ bool FS47FreeformWorld::Build()
  M->Web->CollidersMutable(TEXT("saro")).Add({DeliveryAt.X-.6,DeliveryAt.X+.6,DeliveryAt.Z-.4,DeliveryAt.Z+.4,TEXT("ff:delivery"),true});
  BenchMeter=Box(TEXT("FreeformBenchMeter"),BenchAt+FVector(-.44,1.02,-.10),FVector(.42,.28,.27),0x555b4c,Saro,TEXT("ff:bench"));
  BenchLamp=Box(TEXT("FreeformBenchTestIndicator"),BenchAt+FVector(-.44,1.04,.05),FVector(.28,.11,.015),0x5e8b61,Saro);
- BenchSample=Box(TEXT("FreeformBenchSampleHolder"),SampleAt+FVector(.03,.90,.05),FVector(.15,.045,.12),0x9f9b89,Saro);
+ BenchSample=Box(TEXT("FreeformBenchSampleHolder"),SampleAt+FVector(.03,.995,.05),FVector(.15,.045,.12),0x9f9b89,Saro);
  M->Web->MarkUsable(BenchLamp.I,TEXT("ff:bench"));M->Web->MarkUsable(BenchSample.I,TEXT("ff:sample"));
  Shop=Box(TEXT("FreeformGasSupplyHatch"),ShopPoint(),FVector(.18,.50,.72),0x807146,Road,TEXT("ff:shop"));
  Box(TEXT("FreeformGasSupplySupport"),ShopPoint()+FVector(0,-.40,0),FVector(.12,.30,.45),0x534f43,Road);
