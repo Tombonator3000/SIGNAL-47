@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/BitArray.h"
+#include "S47SkyEventSpec.h"
 #include "UObject/StrongObjectPtr.h"
 
 class AS47Web;
@@ -18,9 +20,8 @@ class UMaterialInstanceDynamic;
 // the farthest land, as three draws it at the far plane. Without the new materials (an older
 // import) the export's picture of the sky stays (AS47Web's sky sphere) and only the numbers run.
 
-/** No stars where the antennas point: from 02:15 every dish stands at az 026, el 32 (canon). */
-struct FS47StarHole { double Az, El, Inner, Outer, After, Fade; };
-inline constexpr FS47StarHole STAR_HOLE = { 26, 32, 3.4, 4.6, 10, 100 };
+// No stars where the antennas point: from 02:15 every dish stands at az 026, el 32 (canon).
+// The field's place, rims and fade are the shared STAR_HOLE (S47SkyEventSpec.h).
 /** skyDir: a direction in the sky's own terms (azimuth clockwise from north, -Z; east +X; elevation). */
 SIGNAL47_API FVector S47SkyDir(double Az, double El);
 /** starHoleAt: how much of the hole there is at a clock, when it begins at `from` (Infinity: not tonight yet). */
@@ -101,35 +102,56 @@ public:
 	bool MeteorVisible() const { return bMetVisible; }
 	double MeteorI() const { return MetI; }
 
-	// ---------- FX-01: the short meteor passage by the star hole (Unreal only) ----------
-	// NIAGARA_VFX_2026-10-28.md: a few streaks become a short, denser passage in the sector next to
-	// 026 / 32 and die away as the hole begins; then the sky goes back to its rare shooting stars.
-	// An extension of the material-drawn shooting star (M_WebMeteor, same strip and shader, a small
-	// fixed pool), not a Niagara system: the sky is drawn in its own terms round the eye. The phase is
-	// the night's clock against the real event (HoleFrom = EventClock + STAR_HOLE.After), so pause
-	// and open panels freeze it, a load restores it, and a spent passage (saved) never plays again.
-	struct FPassMet { double At = 0, Dur = .6, Len = .15, Bright = 1; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; bool bLow = true; };
-	/** Seconds: from HoleFrom - LEAD (the event + 4 s, one second after the dishes begin to turn) for LEN, each streak's tail TAIL. */
-	static constexpr double PASSAGE_LEAD = 6, PASSAGE_LEN = 11, PASSAGE_TAIL = .2, PASSAGE_QUIET = 60;
-	static constexpr int32 PASSAGE_SLOTS = 6;
+	// ---------- FX-01: the meteor passage by the star hole (Unreal only) ----------
+	// PLAY-31-23: once the signal has turned the dishes and the player steps out of the SARO building,
+	// a dense 36 s passage of streaks round 026 / 32; several cross BEHIND the empty field (its mask
+	// hides head and tail alike, then they come out beyond it). Then the rare shooting stars return.
+	// An extension of the material-drawn shooting star (M_WebMeteor, same strip, shader and hole mask,
+	// a bounded pool), not a Niagara system. The renderer owns no lifecycle: US47WorldLife decides
+	// pending/running/done, saves it, and hands the presentation time here (SetPassageTime).
+	struct FPassMet
+	{
+		double At = 0, Dur = .6, Len = .15, Bright = 1;
+		/** How much of the way the drawn trail spans in flight (meteorStep: .65). Crossers draw a shorter one. */
+		double Trail = .65;
+		FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector;
+		bool bLow = true;
+		/** Crosses behind the field: enters and is wholly hidden inside the inner rim, then emerges beyond the outer one. */
+		bool bCross = false;
+		/** Its strip in the pool, assigned once so no two streaks drawn at the same time share one. */
+		int32 Slot = 0;
+	};
+	/** Seconds: the passage's length (each streak inside it) and every streak's lingering tail. */
+	static constexpr double PASSAGE_LEN = S47SkyEvent::PassageLength, PASSAGE_TAIL = S47SkyEvent::PassageTail, PASSAGE_QUIET = 60;
+	/** The pool of strips (High's concurrency cap) and Low's own cap on streaks drawn at once. */
+	static constexpr int32 PASSAGE_SLOTS = 12, PASSAGE_LOW_HEADS = 5;
 	static const TArray<FPassMet>& PassageSchedule();
-	/** Seconds since the passage began at this clock (night hours only); -1e9 when there is none tonight. */
-	static double PassagePhaseAt(double Clock, double HoleFrom);
 	/** One streak's strip at T seconds into it (as meteorStep lays the shooting star out): false outside it. */
 	static bool PassageLayout(const FPassMet& P, double T, double& OutHead, double& OutBack, double& OutFade);
 	static int32 PassageCount(bool bLow);
-	/** The most streaks crossing at once on that tier (sampled every 10 ms). */
+	/** The most streaks drawn at once on that tier (sampled every 10 ms). */
 	static int32 PassageMaxHeads(bool bLow);
-	/** Low (graphics menu Effects Low): fewer streaks, at most three at once. */
+	/** How many streaks on that tier cross behind the field. */
+	static int32 PassageCrossers(bool bLow);
+	/** A streak against STAR_HOLE (seconds into it): its head first inside the inner rim, its whole drawn
+	 *  segment first inside it, its head first out beyond the outer rim again while still in flight. */
+	static bool PassageMaskProfile(const FPassMet& P, double& OutEnter, double& OutHidden, double& OutEmerge);
+	/** Tests: passage times at which a crossing streak of that tier is wholly hidden behind the field. */
+	static TArray<double> PassageHiddenMoments(bool bLow);
+	/** Low (graphics menu Effects Low): fewer streaks, at most PASSAGE_LOW_HEADS at once. */
 	bool bPassageLow = false;
-	/** Spent: saved with the case (Flow: meteorPassage). Set once the clock is past its end. */
+	/** Life's terminal state, mirrored for drawing and tests; the renderer never decides it. */
 	bool bPassageDone = false;
-	/** Phase now (seconds, negative before), the streaks crossing now and those begun this playback. */
-	double PassageT = -1e9;
-	int32 PassageHeads = 0, PassageStarted = 0;
+	/** Presentation time now (-1: hidden), the streaks drawn by it, those begun since the last reset;
+	 *  of those drawn, how many reach into the field's outer rim and how many lie wholly in its inner one. */
+	double PassageT = -1;
+	int32 PassageHeads = 0, PassageStarted = 0, PassageMasked = 0, PassageHidden = 0;
 	bool PassageActive() const { return !bPassageDone && PassageT >= 0 && PassageT <= PASSAGE_LEN + PASSAGE_TAIL; }
+	/** Life's presentation time. Negative (or done) hides the strips only: counters and progress stay.
+	 *  The same value holds the same image; time never runs back, so nothing replays before a reset. */
+	void SetPassageTime(double Elapsed, bool bDone = false);
 	/** A new night or a load: spent or not, and nothing of a previous playback counted. */
-	void PassageReset(bool bDone) { bPassageDone = bDone; PassageT = -1e9; PassageHeads = PassageStarted = 0; PassageBits = 0; }
+	void PassageReset(bool bDone);
 	int32 PassageSlotsBuilt() const { return PassComps.Num(); }
 	int32 PassageSlotsVisible() const;
 	/** Tests: the first drawn strip's bounds and whether the renderer drew it lately. */
@@ -142,6 +164,23 @@ public:
 	static constexpr double PASSAGE_GAIN = 2.0;
 	static bool PassageSelfTest(TArray<FString>& Lines);
 
+	// ---------- the developer menu's meteor shower (S47DevEvents) ----------
+	/** Its own bounded pool: several streaks drawn at once, each on a free strip of its own. */
+	static constexpr int32 SHOWER_SLOTS = 10;
+	/** Seconds between its streaks (each lasts .65 to 1.15 s, so three to five are usually crossing at once). */
+	static constexpr double SHOWER_GAP_MIN = .12, SHOWER_GAP_MAX = .42;
+	/** A new shower: a fresh radiant high in the sky, and none of the last one left. */
+	void ShowerBegin();
+	/** A streak from the radiant now (Ahead: seconds already flown); false when every strip is in use. */
+	bool ShowerMeteor(double Ahead = 0);
+	void ShowerClear();
+	/** Held by the developer events' free-play guard (menu, modal, story pause): the image freezes. */
+	bool bShowerHeld = false;
+	int32 ShowerStarted = 0;
+	int32 ShowerLive() const;
+	int32 ShowerSlotsBuilt() const { return ShowerComps.Num(); }
+	int32 ShowerSlotsVisible() const;
+
 private:
 	double DawnLift = 1;
 	struct FMet { double T = -1, Dur = 0.6, Len = 0.15, Bright = 1, Next = 10; FVector Start = FVector::ZeroVector, Tan = FVector::ZeroVector; };
@@ -151,10 +190,20 @@ private:
 	bool bMetVisible = false;
 	double MetI = 0, Head = 0, Back = 0;
 	void MeteorStep(double Dt);
-	uint64 PassageBits = 0;
-	void PassageStep(double Clock);
+	/** Which scheduled streaks have begun since the last reset (any number of them, not a 64-bit word). */
+	TBitArray<> PassageSeen;
+	/** The furthest presentation time since the last reset: a smaller one cannot replay. */
+	double PassageHigh = -1;
+	/** The rare shooting stars wait this long after a passage that was seen. */
+	double QuietLeft = 0;
 	TArray<TWeakObjectPtr<UStaticMeshComponent>> PassComps;
 	TArray<TWeakObjectPtr<UMaterialInstanceDynamic>> PassMids;
+	struct FShowerMet { FPassMet P; double T = -1; bool bFresh = false; };
+	FShowerMet Shower[SHOWER_SLOTS];
+	FVector ShowerRadiant = FVector(0, 1, 0);
+	void ShowerStep(double Dt);
+	TArray<TWeakObjectPtr<UStaticMeshComponent>> ShowerComps;
+	TArray<TWeakObjectPtr<UMaterialInstanceDynamic>> ShowerMids;
 
 	bool bLive = false;
 	TWeakObjectPtr<AS47Web> Web;

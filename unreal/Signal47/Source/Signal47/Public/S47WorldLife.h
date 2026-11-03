@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47Airlight.h"
 #include "S47Backdrop.h"
+#include "S47Json.h"
 #include "UObject/Object.h"
 #include "S47WorldLife.generated.h"
 
@@ -35,6 +36,12 @@ public:
 	/** FX-01: the meteor passage's saved state (Flow: meteorPassage), without the sky's header. */
 	bool PassageDone() const;
 	void PassageReset(bool bDone);
+	void PassageLoad(const TSharedPtr<FJsonValue>& Saved);
+	TSharedPtr<FJsonValue> PassageSave() const;
+	FString PassagePhase() const;
+	double PassageElapsed() const { return PassageSeconds; }
+	/** Same strength the sky computed this frame; Away/album must not duplicate the fade. */
+	double HoleNow() const;
 
 	TSharedPtr<FS47Sky> Sky;
 	TSharedPtr<FS47Backdrop> Backdrop;
@@ -77,6 +84,15 @@ private:
 	UPROPERTY() TObjectPtr<US47Main> M;
 	TArray<FS47HazeLamp> HazeSaro, HazeRoad;
 	int32 TownCones = -1;
+	enum class EPassage : uint8 { Idle, Pending, Running, Done };
+	EPassage PassageState = EPassage::Idle;
+	double PassageSeconds = 0;
+	bool bPassageExitReady = false, bPassageZoneSeeded = false, bPassageWasInside = false;
+	FString PassageArea;
+	TSharedPtr<FJsonValue> PassageUnknown; // preserve unsupported/malformed data without replaying it
+	TOptional<double> SignalHoleFrom() const;
+	void PassageStep(double Dt);
+	void SetPassagePhase(EPassage Next);
 	double FlashReady = 0;
 	FString ClockTest;
 	bool bClockSet = false;

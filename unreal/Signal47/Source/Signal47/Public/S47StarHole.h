@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "S47BoardRules.h"
 #include "S47Seen.h"
+#include "S47SkyEventSpec.h"
 
 // web/src/story/starHole.ts. No stars where the antennas point (FORSLAG.md, 20 October, "Valg for Tom"
 // 6; Tom: "Spenning og skummelt slår faste regler"). From 02:15, when every dish has gone to az 026, el
@@ -24,6 +25,10 @@
 //   - A closer look at it (the zoom) says what there is to see (Examine).
 // Kept with the town's part of the case: 'sky:hole', 'sky:hole@<clock>', 'sky:hole/<chapter>' (the patch
 // of cork it goes on), 'sky:hole:print@<shot id>', the board's threads as 'sh:<a|b>'.
+// FX-01 (Unreal only, not in the web version): the field is larger now (S47SkyEventSpec.h STAR_HOLE,
+// rims 6/8 degrees, about fourteen across) and comes in over 8 s. A notice made with the larger field
+// also keeps 'sky:hole:extent14'; an observation without it was made under the old, eight-degree field
+// and keeps its eight-degree wording. Stored notes, photographs and Seen entries are never rewritten.
 
 struct FS47StarHoleDeps
 {
@@ -66,17 +71,24 @@ class SIGNAL47_API FS47StarHole
 public:
 	explicit FS47StarHole(FS47StarHoleDeps InD);
 
-	/** The look that notices it: degrees off the middle of the view, seconds (and with the zoom). */
+	/** The shared STAR_HOLE (S47SkyEventSpec.h): where it is (az, el), its rims (degrees), how long after
+	 *  the impact it begins, how long it takes to come in (seconds). A compile-time copy of the one spec,
+	 *  so FS47StarHole::STAR_HOLE.X and the sky's ::STAR_HOLE.X can never differ. */
+	using FHoleSpec = FS47StarHoleSpec;
+	static constexpr FS47StarHoleSpec STAR_HOLE = ::STAR_HOLE;
+	/** The look that notices it: degrees off the middle of the view, seconds (and with the zoom). The
+	 *  web version's 4 / 2.5 degrees sat just outside / inside its 3.4-degree inner rim; FX-01 keeps the
+	 *  same proportions for the larger field: the middle of the view inside the starless part (Inner),
+	 *  and the zoom's closer look three quarters of the way in. */
 	struct FNotice { double Deg, Secs, ZoomDeg, ZoomSecs; };
-	static constexpr FNotice NOTICE = { 4, 3, 2.5, 1.2 };
+	static constexpr FNotice NOTICE = { ::STAR_HOLE.Inner, 3, ::STAR_HOLE.Inner * 0.75, 1.2 };
+	/** About how many degrees across it is, as a new notice and its card describe it (between the rims). */
+	static constexpr double EXTENT_DEG = ::STAR_HOLE.Inner + ::STAR_HOLE.Outer;
 	/** Under a free frame with it in it (core/album.ts). */
 	static const TCHAR* HOLE_PRINT;
 	static const TCHAR* HOLE_TOAST;
-	/** world/Sky.ts STAR_HOLE: where it is (az, el), its rims (degrees), how long after the impact it
-	 *  begins, how long it takes to come in (seconds). */
-	struct FHoleSpec { double Az, El, Inner, Outer, After, Fade; };
-	static constexpr FHoleSpec STAR_HOLE = { 26, 32, 3.4, 4.6, 10, 100 };
-	/** Sky.ts starHoleAt: how much of the hole there is at a clock, when it begins at From. */
+	/** Sky.ts starHoleAt with the shared fade (S47StarHoleAt): how much of the hole there is at a clock,
+	 *  when it begins at From. Only a fallback: in the game, Life.HoleNow() is the one strength. */
 	static double At(double Clock, TOptional<double> From);
 	/** Sky.ts skyDir(az, el): its direction in the sky's own terms (before the area's turn). */
 	static FVector SkyDir(double Az, double El);
@@ -90,6 +102,8 @@ public:
 	bool Noticed() const;
 	/** When it was noticed (seconds since midnight), or unset. */
 	TOptional<double> When() const;
+	/** Noticed under the larger FX-01 field ('sky:hole:extent14'); false for older observations. */
+	bool Wide() const;
 	/** The first free frame that has it, by its id (empty when none). */
 	FString PrintId() const;
 	/** Its card on the board, once noticed. */

@@ -94,8 +94,10 @@ public:
 	 *  menu, the tests; chapter six shows them with its own timing). */
 	void PlayFlash();
 	/** How much of the patch with no stars there is now (Sky.hole), and where it is (the sky's own
-	 *  direction turned with the area's sky): the album names it. */
-	double HoleNow() const { return FS47StarHole::At(Clock(), HoleFrom()); }
+	 *  direction turned with the area's sky): the album names it. FX-01: the one strength the sky drew
+	 *  with, Life.HoleNow() (Sky.HoleK of the last Life.Step); only without Life (a selftest) the
+	 *  shared curve from HoleFrom. HoleIn and the album both read this. */
+	double HoleNow() const;
 	FVector HoleDir() const;
 	/** main.ts mapMarks: the times away where they happened, each on the line its place is on. */
 	TArray<FS47MapMark> MapMarks() const;
