@@ -20,5 +20,6 @@ private:
  void Finish(bool bSuccess, const FString& Reason = FString());
  void Stage(int32 Next, double Hold = .5);
  bool VerifyRenderer(bool bVeryLow);
+ void StepDisplay();
  void Shot(const TCHAR* Name);
 };

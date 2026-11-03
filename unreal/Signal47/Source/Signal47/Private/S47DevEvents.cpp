@@ -11,6 +11,7 @@
 #include "S47Glimpses.h"
 #include "S47Sky.h"
 #include "S47SkyVisitors.h"
+#include "S47Flow.h"
 #include "S47WorldLife.h"
 #include "S47Three.h"
 #include "SS47Dev.h"
@@ -18,7 +19,9 @@
 #include "Misc/CommandLine.h"
 #include "UnrealClient.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/MaterialBillboardComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47DevEvents, Log, All);
 
@@ -61,9 +64,9 @@ void FS47DevEvents::AddBuiltIn()
  Add(TEXT("Sky"), TEXT("Meteor"), TEXT("one, now"), [this, Say] { if (M->Life && M->Life->Sky) M->Life->Sky->MeteorNow(); Say(TEXT("meteor")); });
  Add(TEXT("Sky"), TEXT("Meteor shower"), TEXT("40 seconds"), [this, Say] { ShowerLeft = ShowerTime; ShowerNext = 0; Say(TEXT("meteor shower")); });
  for (int32 S = 1; S <= 5; ++S)
-  Add(TEXT("Sky"), FString::Printf(TEXT("Sky lights, stage %d"), S), S == 1 ? TEXT("one pale light") : S == 5 ? TEXT("the last") : TEXT("more of them"),
-   [this, Say, S] { if (M->SkyVisitors) M->SkyVisitors->DevStage(S); Say(FString::Printf(TEXT("sky lights stage %d"), S)); });
- Add(TEXT("Sky"), TEXT("Sky lights, by the clock"), TEXT("back to the schedule"), [this, Say] { if (M->SkyVisitors) M->SkyVisitors->DevStage(0); Say(TEXT("sky lights by the clock")); });
+  Add(TEXT("Sky"), FString::Printf(TEXT("Preview sky lights, stage %d"), S), TEXT("visual preview; no natural observation credit"),
+   [this, Say, S] { if (M->SkyVisitors) M->SkyVisitors->DevStage(S); Say(FString::Printf(TEXT("sky preview stage %d"), S)); });
+ Add(TEXT("Sky"), TEXT("Stop sky preview"), TEXT("return to the natural sky"), [this, Say] { if (M->SkyVisitors) M->SkyVisitors->DevStage(0); Say(TEXT("sky preview stopped")); });
  Add(TEXT("Tripo craft preview"),TEXT("Triangular craft: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(false);});
  Add(TEXT("Tripo craft preview"),TEXT("Flying saucer: source model"),TEXT("outdoor model preview ahead; story/finale unchanged"),[this]{SpawnCraft(true);});
  Add(TEXT("Tripo craft preview"),TEXT("Remove craft preview"),TEXT("remove the temporary model completely"),[this]{if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();});
@@ -186,6 +189,125 @@ void FS47DevEvents::ControlTest(double Dt)
  if (!bTestInit) { bTestInit = true; FParse::Value(FCommandLine::Get(), TEXT("S47DevEventsContract="), TestDir); }
  if (TestDir.IsEmpty() || bTestDone || !M || M->Mode != US47Main::EMode::Play) return;
  FString OnlyGroup; FParse::Value(FCommandLine::Get(),TEXT("S47DevEventsGroup="),OnlyGroup);
+ // Opt-in extension of this contract: real menu actions and registered billboard
+ // readback across ordinary world ticks, independent of the natural Data() getter.
+ if (OnlyGroup == TEXT("Sky preview"))
+ {
+  if (!M->SkyVisitors || !M->World || !M->Player || !M->Story || !M->Web || !M->Flow) return;
+  static S47J::FObj Original;
+  static FString Natural;
+  static TArray<FString> Notes;
+  static TArray<FVector> HeldPositions;
+  static bool OldPaused = false, OldStoryPaused = false;
+  auto Finish = [&](bool Good)
+  {
+   if (Original)
+   {
+    M->SkyVisitors->Begin(Original, false);
+    M->bPausedByMenu = OldPaused; M->Story->SetPaused(OldStoryPaused);
+    Original.Reset();
+   }
+   bTestDone = true;
+   UE_LOG(LogS47DevEvents, Display, TEXT("S47: sky preview contract %s COMPLETE"), Good ? TEXT("PASS") : TEXT("FAIL"));
+   FPlatformMisc::RequestExitWithStatus(false, Good ? 0 : 1);
+  };
+  auto Check = [&](bool Good, const TCHAR* What)
+  {
+   UE_LOG(LogS47DevEvents, Display, TEXT("S47: sky preview contract %s: %s"), Good ? TEXT("PASS") : TEXT("FAIL"), What);
+   if (!Good) Finish(false);
+   return Good;
+  };
+  auto Select = [&](int32 Stage)
+  {
+   const FString Label = FString::Printf(TEXT("Preview sky lights, stage %d"), Stage);
+   const FEvent* Event = List.FindByPredicate([&](const FEvent& E) { return E.Label == Label; });
+   if (!Event || !Event->Fn) return false;
+   Event->Fn();
+   return true;
+  };
+  auto Rendered = [&](int32 Stage, TArray<FVector>* Positions = nullptr)
+  {
+   TArray<UMaterialBillboardComponent*> All; M->Web->GetComponents(All);
+   int32 Visible = 0;
+   for (int32 I = 0; I < 9; ++I)
+   {
+    const FString Name = FString::Printf(TEXT("SkyVisitor%d"), I);
+    const auto* Found = All.FindByPredicate([&](const auto* B) { return B->GetName() == Name; });
+    if (!Found || !(*Found)->IsRegistered()) return false;
+    const auto* B = *Found;
+    const bool Expected = I < FS47SkyVisitorState::Count(Stage);
+    if (B->IsVisible() != Expected) return false;
+    if (!Expected) continue;
+    ++Visible;
+    if (B->Elements.IsEmpty() || B->Elements[0].BaseSizeX <= 0 || !B->Elements[0].Material) return false;
+    FLinearColor Color;
+    if (!B->Elements[0].Material->GetVectorParameterValue(FMaterialParameterInfo(TEXT("Color")), Color) || FMath::Max3(Color.R, Color.G, Color.B) <= 0) return false;
+    const FVector At = S47Three::ToThree(B->GetComponentLocation());
+    // These tested stages have straight tracks. Actual components must be on
+    // the selected stage's first six seconds, not the natural completed SKY04.
+    const FVector A = FS47SkyVisitors::WorldPosition(FS47SkyVisitorState::MapPosition(Stage, I, 0), M->World->Area);
+    const FVector Z = FS47SkyVisitors::WorldPosition(FS47SkyVisitorState::MapPosition(Stage, I, 6), M->World->Area);
+    if (FMath::PointDistToSegment(At, A, Z) > .01) return false;
+    if (Positions) Positions->Add(B->GetComponentLocation());
+   }
+   return Visible == FS47SkyVisitorState::Count(Stage);
+  };
+  TestT += Dt;
+  if (TestT < 4 + TestStep * 2.5) return;
+  if (TestStep == 0)
+  {
+   FString User; int32 Override = 0;
+   FParse::Value(FCommandLine::Get(), TEXT("UserDir="), User);
+   if (!Check(TestDir.StartsWith(TEXT("/tmp/")) && User.StartsWith(TEXT("/tmp/")) && M->Flow->CaseId == 0 && !M->IsFreeform() && M->Story->ChapterKey == TEXT("ch1")
+    && !FParse::Value(FCommandLine::Get(), TEXT("S47SkyVisit="), Override)
+    && !FParse::Param(FCommandLine::Get(), TEXT("S47SkyVisitContract")), TEXT("isolated chapter-one Story case zero without conflicting sky contract"))) return;
+   Original = S47J::Clone(M->SkyVisitors->Save()); Notes = M->Story->Notes();
+   OldPaused = M->bPausedByMenu; OldStoryPaused = M->Story->IsPaused();
+   M->bPausedByMenu = false; M->Story->SetPaused(true);
+   FS47SkyVisitorState Fixture; Fixture.Begin(nullptr, true);
+   Fixture.Advance(4, 2, false); Fixture.Observe(3, 1); Fixture.Advance(4, FS47SkyVisitorState::Duration(4), false);
+   M->SkyVisitors->Begin(Fixture.Save(), false); Natural = S47J::Write(M->SkyVisitors->Save());
+   if (!Check(Select(2), TEXT("actual F10 stage-two preview action exists"))) return;
+  }
+  else
+  {
+   if (!Check(S47J::Write(M->SkyVisitors->Save()) == Natural && M->Story->Notes() == Notes,
+    TEXT("preview preserves completed natural stage, observation flags and existing notes"))) return;
+   if (TestStep == 1)
+   {
+    HeldPositions.Reset();
+    if (!Check(Rendered(2, &HeldPositions) && M->SkyVisitors->Data().Stage == 4,
+     TEXT("two registered luminous billboards use preview tracks while natural Data remains SKY04"))) return;
+    M->bPausedByMenu = true;
+   }
+   else if (TestStep == 2)
+   {
+    TArray<FVector> Actual;
+    if (!Check(Rendered(2, &Actual) && Actual == HeldPositions, TEXT("menu hold freezes actual preview positions and saved natural time"))) return;
+    if (!Check(Select(2), TEXT("same F10 stage can be selected again"))) return;
+    M->SkyVisitors->Step(0);
+    if (!Check(Rendered(0), TEXT("repeated stage restarts its own zero-time fade rather than continuing the old pass"))) return;
+    M->bPausedByMenu = false;
+   }
+   else if (TestStep == 3)
+   {
+    if (!Check(Rendered(2) && Select(5), TEXT("repeated stage two renders before switching to stage five"))) return;
+   }
+   else if (TestStep == 4)
+   {
+    if (!Check(Rendered(5) && Select(2), TEXT("nine actual stage-five billboards can be replaced by lower-stage preview"))) return;
+   }
+   else if (TestStep == 5)
+   {
+    if (!Check(Rendered(2), TEXT("five-to-two selection renders only the two correct preview tracks"))) return;
+    Stop(); M->SkyVisitors->Step(0);
+    if (!Check(Rendered(0) && S47J::Write(M->SkyVisitors->Save()) == Natural,
+     TEXT("Stop removes preview components from view without replaying or regressing completed natural sky"))) return;
+    Finish(true); return;
+   }
+  }
+  ++TestStep; return;
+ }
  TArray<const FEvent*> Events;
  for (const FEvent& Event:List) if (OnlyGroup.IsEmpty() || Event.Group==OnlyGroup) Events.Add(&Event);
  TestT += Dt;
@@ -226,6 +348,7 @@ void FS47DevEvents::ControlTest(double Dt)
 
 void FS47DevEvents::Stop()
 {
+ if (M && M->SkyVisitors) M->SkyVisitors->DevStage(0);
  if(auto* C=CraftPreview.Get())C->DestroyComponent();CraftPreview.Reset();
  if (M && M->Night && M->Night->Glimpses) M->Night->Glimpses->DevClear();
  ShowerLeft = 0; PaleLeft = 0; GS47DevFogDensity = -1.f;
