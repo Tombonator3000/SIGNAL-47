@@ -1,0 +1,54 @@
+{
+  "write": {
+    "status": "PASS",
+    "checks": 89,
+    "reason": "native display apply/keep/timeout/reopen contract completed",
+    "display": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "windowClient": [
+        1280,
+        720
+      ],
+      "settingsResolution": [
+        1280,
+        720
+      ],
+      "windowMode": 2,
+      "settingsMode": 2,
+      "fps": 30,
+      "vsync": true,
+      "t.MaxFPS": 30,
+      "r.VSync": 1
+    },
+    "limits": "Isolated title profile; actual Slate mouse/key/gamepad-key routing, native window/client/viewport and GameUserSettings readback, ten-second UI timeout, and separate-process restart. Windowed resolutions only; no exclusive fullscreen, physical controller transport, monitor mode matrix or crash-during-confirmation claim."
+  },
+  "read": {
+    "status": "PASS",
+    "checks": 19,
+    "reason": "native display apply/keep/timeout/reopen contract completed",
+    "display": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "windowClient": [
+        1280,
+        720
+      ],
+      "settingsResolution": [
+        1280,
+        720
+      ],
+      "windowMode": 2,
+      "settingsMode": 2,
+      "fps": 30,
+      "vsync": true,
+      "t.MaxFPS": 30,
+      "r.VSync": 1
+    },
+    "limits": "Isolated title profile; actual Slate mouse/key/gamepad-key routing, native window/client/viewport and GameUserSettings readback, ten-second UI timeout, and separate-process restart. Windowed resolutions only; no exclusive fullscreen, physical controller transport, monitor mode matrix or crash-during-confirmation claim."
+  }
+}
