@@ -4,9 +4,13 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Mottakersøk i Freeform, under arbeid 3. november
+## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
-Tom fant at RECEIVER / ACQUISITION mangler kontinuerlig søkelyd selv om måleren oppdateres. Referanseavspillingen ved båndpulten dekker ikke denne funksjonen. `codex/receiver-search-audio-20261103` kobler eksisterende bæretone og radiostøy til gjeldende mottakerprofil, frekvens, gain og båndbredde, med musikkhold under lytting og stopp ved lukking eller strømbrudd. Kilden og målrettede PCM-/native kontroller er klargjort; bygg, kjøring og lokal installasjon venter på avsluttet spilløkt. Dette er ikke med i installasjonen fra kl.14:11. Oppfølging: bymusikk får prioritet over morgenstemning, og Freeform ignorerer stillhetsflagg fra Story-lag som ikke oppdateres der. Målrettet uteprøve og kontroller for by/kjøring/radio er lagt til; årsaken til hele den rapporterte utendørsstillheten er ikke runtime-bekreftet.
+Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.
+
+Freeform ignorerer stillhetsflagg fra Story-lag som ikke oppdateres der. Bymusikk får prioritet over morgenstemning; kjøring beholder sitt musikkvalg, mens hørbar radio fortsatt får lytteplass. Native prøve bekrefter kontinuerlig mottakersøk, skjerm-/strømlivssyklus og at importert musikk starter ute. Hele den tidligere rapporterte utendørsstillheten er ikke rekonstruert fra Toms økt; menneskelig lytting under videre spilling gjenstår.
+
+Editorbygg, Linux-pakke, målrettet fysisk CRT-/uteprøve og installert Vulkan-oppstart består. 2262 installerte selvtester inkluderer faktisk renderte PCM-prøver for mottakeren og valg/hold for Freeform-by/kjøring/radio. Alle 115 personlige Saved-filer er uendret. Privat kandidat og reflink-rollback er bevart; 114,75 GB ledig etter installasjon. Bevis ligger i `~/scratch-bm/Signal47-receiver-search-20261103/`. De sju nye funnene fra Toms spilltest er åpne i [TODO](TODO.md), ikke implementert som del av lydleveransen.
 
 ## Lydmotor, NASA/Nebula og Freeform installert lokalt, 3. november
 

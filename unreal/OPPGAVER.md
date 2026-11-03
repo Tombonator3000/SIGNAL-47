@@ -314,3 +314,5 @@ SOUND-INSTALL-01 kildeleveranse: PR375 var allerede flettet før Freeform-oppfø
 RECEIVER-SEARCH-01: Codex eier kontinuerlig Freeform-mottakerlyd, avgrenset musikkhold og målrettet PCM/native prøve på codex/receiver-search-audio-20261103 fra main f907e882. Eksisterende SARO-kopi gjenbrukes; signal_audio_mapping har fullført skrivebeskyttet kartlegging. Kildearbeid pågår mens Toms spill kjører; bygg/installasjon venter på lukket spill. Ingen ny arbeidskopi eller rydderunde.
 
 RECEIVER-SEARCH-01 utvidet etter Toms uteprøve: root retter byprioritet og avgrenser inaktive Story-stillhetsflagg i S47Score.cpp; samme kandidat får kort uteprøve. Bare egen ventende worker ble pauset under kildeendring; Toms spill er urørt.
+
+15:20 RECEIVER-SEARCH-01: runtime c424ac39 installert; bygg, native mottaker/utemusikk og 2262 installerte selvtester/Vulkan består, 115 Saved-filer uendret. HeavyReservation frigitt. Kandidat/rollback beholdes til neste samlede rydding, 114,75GB ledig; ingen ny rydderunde. Root fullfører kilde-PR og TODO-funn.
