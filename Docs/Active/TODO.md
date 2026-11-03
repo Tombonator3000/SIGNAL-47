@@ -6,7 +6,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Lokal lydinstallasjon, 3. november
 
-- [x] SOUND-INSTALL-01 / PR375: NASA/Nebula og apparatlyd integrert og installert lokalt, også musikk og effekter i Freeform. 15 lydoppskrifter, 51 native Freeform-kontroller, 2240 installerte selvtester og Vulkan-oppstart består; 111 Saved-filer uendret.
+- [x] SOUND-INSTALL-01 / PR375/376: NASA/Nebula og apparatlyd integrert og installert lokalt, også musikk og effekter i Freeform. 15 lydoppskrifter, 51 native Freeform-kontroller, 2240 installerte selvtester og Vulkan-oppstart består; 111 Saved-filer uendret.
 
 ## Adaptiv musikk og signaluttrykk, 3. november
 
