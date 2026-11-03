@@ -33,7 +33,7 @@ namespace
  FVector ServiceAt() { return FVector(4.647,-.01,-39.4); }
  const TCHAR* Items[] = { TEXT("fuse"), TEXT("relay"), TEXT("donor"), TEXT("fuel"), TEXT("film") };
  int32 Price(const FString& Id) { return Id==TEXT("fuse")?5:Id==TEXT("relay")?25:Id==TEXT("donor")?15:(Id==TEXT("fuel")||Id==TEXT("film"))?10:0; }
- FString ItemTitle(const FString& Id) { return Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("instant-film pack / 36 exposures"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
+ FString ItemTitle(const FString& Id) { return Id==TEXT("fuse")?TEXT("control fuse"):Id==TEXT("relay")?TEXT("drive relay"):Id==TEXT("donor")?TEXT("used controller / relay donor"):Id==TEXT("film")?TEXT("instant-film pack / 36 exposures"):Id==TEXT("fieldlogger")?TEXT("SARO loan field logger / fieldlogger01"):Id==TEXT("service_case")?TEXT("reusable SARO service case"):TEXT("six-hour fuel can"); }
  bool ValidItem(const FString& Id) { return Price(Id)>0 || Id==TEXT("battery") || Id==TEXT("fragment") || Id==TEXT("archived_fragment"); }
  // Cash is integer-valued: each completed metering interval delivers up to
  // one quarter of the shared tank unit and costs exactly one operating dollar.
@@ -51,7 +51,7 @@ int32 FS47FreeformWorld::S03() const { if(M&&M->Web)for(int32 I=0;I<M->Web->Dish
 
 void FS47FreeformWorld::Begin(const S47J::FObj& O)
 {
- Stop(); bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();BenchJob.Empty();
+ Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();BenchJob.Empty();
  PowerFaultSerial=EmergencyFuseFault=0;bTrackedPowerFault=false;
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
  Delivered=DeliveredByTruck=ServiceDeliveries=DonorTests=ServiceTests=0;bParcelWasLoaded=false;
@@ -64,7 +64,7 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
   PowerFaultSerial=FMath::Clamp(S47J::Int(O,TEXT("powerFaultSerial")),0,1000000000);
   EmergencyFuseFault=FMath::Clamp(S47J::Int(O,TEXT("emergencyFuseFault")),0,PowerFaultSerial);
   bTrackedPowerFault=S47J::Bool(O,TEXT("trackedPowerFault"));
-  Payload=FMath::Clamp(S47J::Int(O,TEXT("payload")),0,4);Item=S47J::Str(O,TEXT("item"));if(Price(Item)<=0&&Item!=TEXT("service_case")){Payload=0;Item.Empty();}
+  Payload=FMath::Clamp(S47J::Int(O,TEXT("payload")),0,4);Item=S47J::Str(O,TEXT("item"));if(Price(Item)<=0&&Item!=TEXT("service_case")&&Item!=TEXT("fieldlogger")){Payload=0;Item.Empty();}
   bParcelWasLoaded=S47J::Bool(O,TEXT("parcelLoaded"),Payload==3);
   Delivered=FMath::Clamp(S47J::Int(O,TEXT("delivered")),0,1000000);DeliveredByTruck=FMath::Clamp(S47J::Int(O,TEXT("cargoDelivered")),0,1000000);
   ServiceDeliveries=FMath::Clamp(S47J::Int(O,TEXT("serviceDelivered")),0,1000000);DonorTests=FMath::Clamp(S47J::Int(O,TEXT("donorTests")),0,1000000);ServiceTests=FMath::Clamp(S47J::Int(O,TEXT("serviceTests")),0,1000000);
@@ -79,6 +79,8 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
   const auto P=S47J::Nums(O,TEXT("dropped"));if(P.Num()==3 && FMath::IsFinite(P[0])&&FMath::IsFinite(P[1])&&FMath::IsFinite(P[2]))Dropped=FVector(P[0],P[1],P[2]);else if(Payload==4){Payload=1;}
   const auto S=S47J::Obj(O,TEXT("stock"));if(S)for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment")})Stock.FindOrAdd(Id)=FMath::Clamp(S47J::Int(S,Id),0,99);
  }
+ if(Logger.Site>=0&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
+ if(Logger.Assembly!=3&&Item==TEXT("fieldlogger")){Item.Empty();Payload=0;}
  if(M&&M->Freeform)TrackPowerFault(M->Freeform->PowerFault());
  Build();if(Carry)Carry->Restore(S47J::Obj(O,TEXT("carry")),Payload==4?Dropped:FVector::ZeroVector);OverrideExisting();
  if(M&&M->Web)for(auto& C:M->Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:service"))C.bEnabled=true;
@@ -121,7 +123,7 @@ void FS47FreeformWorld::Stop()
 
 S47J::FObj FS47FreeformWorld::Save() const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("service"),Service);S47J::Set(O,TEXT("feeder"),Feeder);
+ auto O=S47J::New();S47J::Set(O,TEXT("fieldlogger"),Logger.Save());S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("service"),Service);S47J::Set(O,TEXT("feeder"),Feeder);
  S47J::Set(O,TEXT("faultDay"),LastFaultDay);S47J::Set(O,TEXT("emergencyDay"),EmergencyDay);S47J::Set(O,TEXT("payload"),Payload);S47J::Set(O,TEXT("item"),Item);
  S47J::Set(O,TEXT("powerFaultSerial"),PowerFaultSerial);S47J::Set(O,TEXT("emergencyFuseFault"),EmergencyFuseFault);S47J::Set(O,TEXT("trackedPowerFault"),bTrackedPowerFault);
  S47J::Set(O,TEXT("parcelLoaded"),bParcelWasLoaded);S47J::Set(O,TEXT("delivered"),Delivered);S47J::Set(O,TEXT("cargoDelivered"),DeliveredByTruck);S47J::Set(O,TEXT("serviceDelivered"),ServiceDeliveries);S47J::Set(O,TEXT("donorTests"),DonorTests);S47J::Set(O,TEXT("serviceTests"),ServiceTests);
@@ -153,6 +155,9 @@ FVector FS47FreeformWorld::TruckPoint() const
 }
 FVector FS47FreeformWorld::InteractionPoint(const FString& Id) const
 {
+ if(Id==TEXT("ff:logger-device"))return LoggerPoint(Logger.Site);
+ if(Id==TEXT("ff:logger-a"))return LoggerPoint(0);
+ if(Id==TEXT("ff:logger-b"))return LoggerPoint(1);
  if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))return PumpPoint();
  if(Id==TEXT("ff:shop"))return ShopPoint();
  if(Id==TEXT("ff:bench")||Id==TEXT("ff:depot"))return BenchAt+FVector(0,.90,0);
@@ -374,6 +379,8 @@ bool FS47FreeformWorld::Build()
  Bench=Model(TEXT("FreeformServiceBench"),TEXT("/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable"),BenchAt,1.8,Saro);
  if(!Bench)Bench=Box(TEXT("FreeformServiceBenchTop"),BenchAt+FVector(0,.78,0),FVector(1.8,.12,.75),0x514638,Saro);
  Bind(Bench,TEXT("ff:bench"));
+ for(int32 I=0;I<2;++I)LoggerPosts[I]=Box(FString::Printf(TEXT("FreeformLoggerPost%d"),I),LoggerPoint(I)-FVector(0,.4,0),FVector(.14,.8,.14),0x777e68,Saro,I==0?TEXT("ff:logger-a"):TEXT("ff:logger-b"));
+ LoggerBody=Box(TEXT("FreeformDeployedLogger"),LoggerPoint(0),FVector(.46,.32,.38),0x59635d,Saro,TEXT("ff:logger-device"));
  M->Web->CollidersMutable(TEXT("saro")).Add({BenchAt.X-.92,BenchAt.X+.92,BenchAt.Z-.4,BenchAt.Z+.4,TEXT("ff:bench"),true});
  Depot=Box(TEXT("FreeformDepotBin"),BenchAt+FVector(.55,.95,0),FVector(.52,.24,.38),0x687260,Saro,TEXT("ff:depot"));
  BenchMeter=Box(TEXT("FreeformBenchMeter"),BenchAt+FVector(-.44,1.02,-.10),FVector(.42,.28,.27),0x555b4c,Saro,TEXT("ff:bench"));
@@ -443,8 +450,10 @@ void FS47FreeformWorld::Apply()
 {
  if(!bBuilt)return;ApplyPump();for(FS47Obj O:Parts)if(O&&!(O==ParcelSaro)&&!(O==ParcelRoad)){O.SetVisible(bActive);if(const auto* N=O.W->Node(O.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(bActive&&C->IsA<UStaticMeshComponent>()?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
  if(PumpModel){PumpModel.SetVisible(bActive&&bTripoPump);if(!bTripoPump)if(const auto* N=PumpModel.W->Node(PumpModel.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
+ for(int32 I=0;I<2;++I)if(LoggerPosts[I]){const bool Show=bActive&&LoggerAccess();LoggerPosts[I].SetVisible(Show);if(const auto* N=M->Web->Node(LoggerPosts[I].I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get()))C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}
+ if(LoggerBody){const bool Show=bActive&&Logger.Site>=0;LoggerBody.SetVisible(Show);if(const auto* N=M->Web->Node(LoggerBody.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);if(Show)C->SetWorldLocation(S47Three::ToUE(LoggerPoint(Logger.Site)));}}
  if(BenchSample)BenchSample.SetVisible(bActive&&(InventoryCount(TEXT("fragment"))>0||InventoryCount(TEXT("archived_fragment"))>0||BenchJob==TEXT("fragment")));
- if(BenchLamp){const bool Testing=!BenchJob.IsEmpty();BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float(BenchSeconds/3.)*.8f:.15f);}
+ if(BenchLamp){const bool Testing=!BenchJob.IsEmpty()||bLoggerCalibrating;BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float((bLoggerCalibrating?Logger.Calibration:BenchSeconds)/3.)*.8f:.15f);}
  const bool Open=bActive&&Service>=4&&Service<=5;
  if(Lid){Lid.SetRotY(Open?-1.4:0);Lid.SetVisible(bActive&&bServiceCabinet);}
  if(bServiceCabinet)
@@ -572,6 +581,7 @@ bool FS47FreeformWorld::CargoUse()
 bool FS47FreeformWorld::Deposit()
 {
  if(!Near(BenchAt,3.0))return true;
+ if(Payload==2&&Item==TEXT("fieldlogger")){Payload=0;Item.Empty();bParcelWasLoaded=false;Change(TEXT("Loan logger and its original tape returned to the service bench. Open the bench to compare and prepare another deployment."));return true;}
  if(Payload==2&&Item==TEXT("service_case")){Payload=0;Item.Empty();bParcelWasLoaded=false;Change(TEXT("Reusable service case returned to the bench. Stock and budget are unchanged."));return true;}
  if(Payload==2){const FString Part=Item;Delivered=FMath::Min(1000000,Delivered+1);if(bParcelWasLoaded){DeliveredByTruck=FMath::Min(1000000,DeliveredByTruck+1);if(Part==TEXT("relay")||Part==TEXT("donor"))ServiceDeliveries=FMath::Min(1000000,ServiceDeliveries+1);}bParcelWasLoaded=false;Payload=0;Item.Empty();AddItem(Part,1);Change(FString(TEXT("Delivered to SARO stock: "))+ItemTitle(Part)+TEXT(". The labelled parcel is unpacked once."));return true;}
  OpenWorkbench();return true;
@@ -596,6 +606,17 @@ void FS47FreeformWorld::OpenWorkbench()
 {
  if(!Ready()||!Near(BenchAt)||!M->UI)return;
  TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO / EXTERIOR SERVICE BAY\nFUSES %d / RELAYS %d / DONORS %d / FUEL CANS %d / FILM %d\nGENERATOR %.1f h / TRUCK %.1f / 4\n%s"),InventoryCount(TEXT("fuse")),InventoryCount(TEXT("relay")),InventoryCount(TEXT("donor")),InventoryCount(TEXT("fuel")),InventoryCount(TEXT("film")),GeneratorHours(),Fuel,BenchJob.IsEmpty()?TEXT("Bench ready"):BenchJob==TEXT("fragment")?TEXT("Field sample comparison running"):TEXT("Controller relay test running"))));
+ R.Add(S47Kit::Small(LoggerAccess()?TEXT("FIELD LOGGER AUTHORIZED / loan kit, two field sites, six-hour battery. Measures local electrical noise only."):TEXT("FIELD LOGGER LOCKED / complete a supported conclusion in The repeated interval.")));
+ if(LoggerAccess())
+ {
+  R.Add(S47Kit::Paper(FString::Printf(TEXT("fieldlogger01 / connections %d/3 / battery %.1f h / %.3f MHz / calibration %s\nSITE A: generator service path (8, 5). SITE B: east array edge (34, -28).\nTwo-hour recording starts on placement. Return to SARO and acquire a matching-frequency original while it runs; collect the logger and bring it back here."),Logger.Assembly,Logger.Battery/3600.,Logger.Frequency,Logger.bCalibrated?TEXT("+2.4 s offset retained"):TEXT("required"))));
+  const TCHAR* Connections[]={TEXT("Seat loan receiver in case"),TEXT("Connect shielded antenna lead"),TEXT("Connect charged loan battery")};
+  if(Logger.Assembly<3)R.Add(S47Kit::Button(Connections[Logger.Assembly],[this]{LoggerAction(TEXT("connect"));},true));
+  R.Add(S47Kit::Button(TEXT("Calibrate against bench clock / recharge battery"),[this]{LoggerAction(TEXT("calibrate"));},false,Logger.Assembly==3&&Logger.Site<0&&Payload==0&&!bLoggerCalibrating));
+  R.Add(S47Kit::Button(TEXT("Tune logger to selected SARO work card"),[this]{LoggerAction(TEXT("tune"));},false,Logger.Site<0&&Payload==0));
+  R.Add(S47Kit::Button(TEXT("Carry calibrated field logger"),[this]{LoggerAction(TEXT("take"));},false,Logger.bCalibrated&&Logger.Site<0&&Payload==0&&!bLoggerCalibrating));
+  R.Add(S47Kit::Button(TEXT("Read and compare retained field originals"),[this]{LoggerAction(TEXT("compare"));},false,Payload==0));
+ }
  R.Add(S47Kit::Button(TEXT("Take reusable SARO service case"),[this]
  {
   if(!Ready()||!Near(BenchAt)||Payload!=0)return;Item=TEXT("service_case");Payload=2;bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,BenchAt+FVector(0,1.05,0));M->UI->Close();Change(TEXT("SARO service case in hand. Set it down, carry it in the truck, or return it to this bench. It imposes no repair requirement."));
@@ -679,6 +700,8 @@ bool FS47FreeformWorld::FeederUse()
 bool FS47FreeformWorld::Use(const FString& Id)
 {
  if(!Ready())return false;
+ if(Id==TEXT("ff:logger-device"))return Logger.Site>=0&&LoggerAction(Logger.Site==0?TEXT("site0"):TEXT("site1"));
+ if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return LoggerAction(Id==TEXT("ff:logger-a")?TEXT("site0"):TEXT("site1"));
  if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
  {
   if(AtDiesel()){Change(TEXT("DIESEL is incompatible with the SARO service truck. Use the red REGULAR pump on the same island."));return true;}
@@ -697,6 +720,8 @@ bool FS47FreeformWorld::Use(const FString& Id)
 FString FS47FreeformWorld::Label(const FString& Id) const
 {
  if(!Ready())return FString();
+ if(Id==TEXT("ff:logger-device"))return Logger.Site>=0?TEXT("Retrieve field logger and original tape"):FString();
+ if(Id==TEXT("ff:logger-a")||Id==TEXT("ff:logger-b"))return !LoggerAccess()?FString():FString(Id==TEXT("ff:logger-a")?TEXT("FIELD SITE A / generator path / "):TEXT("FIELD SITE B / array east / "))+(Logger.Site==(Id==TEXT("ff:logger-a")?0:1)?TEXT("retrieve logger and original tape"):TEXT("place carried logger and start two-hour record"));
  if(Id==TEXT("ff:pump")||Id==TEXT("town:pumps"))
  {
   if(AtDiesel())return TEXT("DIESEL / service truck needs the red REGULAR pump");
@@ -728,6 +753,7 @@ void FS47FreeformWorld::Step(double Dt)
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
  const double WorldDelta=FMath::Max(0.,Now-LastClock);LastClock=Now;
  if(M->Freeform->Held()){Apply();return;}
+ StepLogger(Dt,WorldDelta);
  StepPump(Dt);
  if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
  if(M->World&&M->World->bDriving)
@@ -832,5 +858,112 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  S47J::Set(CreditState,TEXT("cash"),3);S47J::Set(CreditState,TEXT("loan"),999999);Credit.Begin(CreditState);
  C(!Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==3&&Credit.Debt()==999999,TEXT("Debt-limit rejection is atomic: neither budget nor debt changes"));
  Credit.Stop();CreditCopy.Stop();
+ OK &= FS47FieldLogger::SelfTest(Lines);
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
+}
+
+bool FS47FreeformWorld::LoggerAccess()const
+{
+ const auto* Session=M?M->Freeform.Get():nullptr;
+ return Session&&Session->CaseFile().HasAccess(TEXT("access.fieldlogger"));
+}
+FVector FS47FreeformWorld::LoggerPoint(int32 Site)const
+{
+ // Both posts use the existing SARO grounds, separate from the service cabinet.
+ FVector At=Site==0?FVector(8,0,5):FVector(34,0,-28);
+ At.Y=US47Night::SaroFloorAt(M?M->Web.Get():nullptr,At.X,At.Z)+.8;return At;
+}
+bool FS47FreeformWorld::LoggerAction(const FString& Action)
+{
+ if(!Ready()||!LoggerAccess())return false;
+ if(Action==TEXT("site0")||Action==TEXT("site1"))
+ {
+  const int32 Site=Action==TEXT("site0")?0:1;
+  if(M->Web->Area()!=TEXT("saro")||!Near(LoggerPoint(Site)))return false;
+  if(Logger.Site==Site)
+  {
+   if(Payload!=0){Change(TEXT("Free both hands before retrieving the logger and its original tape."));return false;}
+   Logger.Finish(M->Freeform->Clock());if(!Logger.Retrieve())return false;
+   Payload=2;Item=TEXT("fieldlogger");bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,LoggerPoint(Site));
+   Change(TEXT("Logger and sealed original tape retrieved. Carry or transport them back to the SARO bench for comparison."));return true;
+  }
+  if(Payload!=2||Item!=TEXT("fieldlogger")){Change(TEXT("Bring the calibrated loan logger here in your hands. Prepare it at the SARO service bench."));return false;}
+  if(!Logger.Start(Site,M->Freeform->Day(),M->Freeform->Clock())){Change(TEXT("Logger cannot start: check calibration, battery and retained-tape capacity at the bench."));return false;}
+  Payload=0;Item.Empty();bParcelWasLoaded=false;LoggerJob.Empty();LoggerJobElapsed=0;
+  Change(TEXT("Field logger recording for two hours. Its battery and clock run independently of the SARO receiver. Return to SARO for a simultaneous recording, then retrieve this original."));return true;
+ }
+ if(!Near(BenchAt)||M->Web->Area()!=TEXT("saro")||Payload!=0||Logger.Site>=0)return false;
+ if(Action==TEXT("connect"))
+ {
+  if(!BenchJob.IsEmpty()||!Logger.Connect())return false;
+  Change(Logger.Assembly==3?TEXT("Battery connected: bench meter responds. Run the clock calibration before carrying the logger."):TEXT("Loan-kit connection seated. Continue with the next labelled connection."));
+ }
+ else if(Action==TEXT("calibrate"))
+ {
+  if(Logger.Assembly!=3||!BenchJob.IsEmpty())return false;
+  bLoggerCalibrating=true;Logger.Calibration=0;Logger.bCalibrated=false;if(M->UI)M->UI->Close();
+  Change(TEXT("Bench reference running for three seconds. Logger clock reads 2.4 seconds ahead; the correction will travel with every original."));
+ }
+ else if(Action==TEXT("tune"))
+ {
+  const auto* P=M->Freeform->ConsoleProfile();if(!P)return false;Logger.Frequency=P->F;
+  Change(FString::Printf(TEXT("Logger tuned to %.3f MHz from the selected SARO work card. This setting is retained when you change the station receiver."),Logger.Frequency));
+ }
+ else if(Action==TEXT("take"))
+ {
+  if(!Logger.bCalibrated||bLoggerCalibrating||Logger.Battery<=0||Logger.Tapes.Num()>=256)return false;
+  Payload=2;Item=TEXT("fieldlogger");bParcelWasLoaded=false;if(Carry)Carry->Restore(nullptr,BenchAt+FVector(0,1.05,0));if(M->UI)M->UI->Close();
+  Change(TEXT("Loan logger carried. Site A is on the generator service path; site B is at the east array edge. Cargo transport and setting down work as for the service case."));return true;
+ }
+ else if(Action==TEXT("compare"))
+ {
+  if(!M->UI)return false;TArray<S47Kit::FW> Rows;
+  for(auto& T:Logger.Tapes)if(T.bRetrieved)
+  {
+   const auto* J=M->Freeform->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& Job){return Job.Id==T.Job&&Job.Stage>=FS47FreeformSession::EJobStage::Recorded;});
+   const bool Valid=J&&FS47FieldLogger::CompleteWindow(T);
+   const FString Text=Logger.Report(T)+(Valid?TEXT("\nCOMPARISON: contemporaneous SARO original retained. Local noise and station signal remain separate measurements."):TEXT("\nCOMPARISON NOT ESTABLISHED: requires a full two-hour field window without gaps and at least five seconds of matching SARO acquisition. Early retrieval, sleep gaps, empty battery or different frequency cannot substitute."));
+   Rows.Add(S47Kit::Paper(Text));
+   if(!T.Levels.IsEmpty())Rows.Add(S47Kit::Button(TEXT("Listen to retained local noise / six-second compressed monitor"),[this,Levels=T.Levels]
+   {
+    if(!M||!M->Audio||!M->Audio->Ctx||!M->Audio->SfxBus)return;
+    auto Ctx=M->Audio->Ctx;FS47AudioContext::FBatch Batch(*Ctx);auto Buffer=Ctx->CreateBuffer(1,48000,8000);float* Samples=Buffer->GetChannelData(0);FRandomStream Noise(4701986);
+    for(int32 I=0;I<48000;++I){const double Envelope=Levels[FMath::Min(Levels.Num()-1,I*Levels.Num()/48000)];const double Fade=FMath::Min3(1.,I/160.,(48000-I)/160.);Samples[I]=float(Fade*(.18*Envelope*FMath::Sin(2*PI*60*I/8000.)+.025*Noise.FRandRange(-1.f,1.f)));}
+    auto Source=Ctx->CreateBufferSource();Source->Buffer=Buffer;Source->Connect(M->Audio->SfxBus);Source->Start();
+   }));
+   if(!T.bCompared&&Valid){T.bCompared=true;M->Freeform->RecordEvidence(T.Id,Text);}
+  }
+  if(Rows.IsEmpty())Rows.Add(S47Kit::Paper(TEXT("No physically returned field original. Deploy the logger, let it record, retrieve it and return it to this bench.")));
+  M->UI->Open(S47Kit::Shell(M->UI,TEXT("FIELD ORIGINALS / LOCAL NOISE COMPARISON"),S47Kit::Col(Rows),880));Change();return true;
+ }
+ else return false;
+ if(M->UI)M->UI->Close();return true;
+}
+void FS47FreeformWorld::StepLogger(double Dt,double WorldDelta)
+{
+ if(bLoggerCalibrating)
+ {
+  if(!Near(BenchAt)||M->Web->Area()!=TEXT("saro")||!BenchJob.IsEmpty()||(M->Freeform->PowerFault()&&!GeneratorRunning()))
+  {bLoggerCalibrating=false;Logger.Calibration=0;Logger.bCalibrated=false;Change(TEXT("Clock calibration interrupted. Stay at the powered, available SARO bench for the full reference test."));}
+  else if(Logger.Calibrate(FMath::Min(Dt,.1)))
+  {
+   bLoggerCalibrating=false;Change(TEXT("Bench reference passed. Clock offset +2.4 s retained; loan battery charged for six hours. Tune from a work card, then carry to either field post."));
+  }
+  if(BenchLamp){BenchLamp.SetColor(S47Three::Hex(0xc8a046));BenchLamp.SetEmissive(S47Three::Hex(0xc8a046),float(.2+Logger.Calibration/3.));}
+ }
+ const auto* J=M->Freeform->CurrentJob();const FString Id=J?J->Id:FString();
+ // Persisting the previous observed elapsed value is unnecessary: after Continue
+ // the first frame rebaselines rather than claiming historical acquisition.
+ const double Acquired=J&&Id==LoggerJob?FMath::Max(0.,J->Elapsed-LoggerJobElapsed):0;
+ LoggerJob=Id;LoggerJobElapsed=J?J->Elapsed:0;
+ const bool Was=Logger.bRecording;const auto* P=M->Freeform->ConsoleProfile();
+ const double Now=M->Freeform->Clock();
+ if(WorldDelta>0&&WorldDelta<=3&&GeneratorRunning()&&GeneratorSeconds<WorldDelta)
+ {
+  const double Fraction=GeneratorSeconds/WorldDelta;
+  Logger.Sample(Now-WorldDelta+GeneratorSeconds,GeneratorSeconds,true,M->Freeform->PowerFault(),Id,Acquired*Fraction,P?P->F:0);
+  Logger.Sample(Now,WorldDelta-GeneratorSeconds,false,M->Freeform->PowerFault(),Id,Acquired*(1-Fraction),P?P->F:0);
+ }
+ else Logger.Sample(Now,WorldDelta,GeneratorRunning(),M->Freeform->PowerFault(),Id,Acquired,P?P->F:0);
+ if(Was&&!Logger.bRecording)Change(TEXT("Field logger recording window ended. The original remains at its field post until physically retrieved."));
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47FreeformObservation.h"
 class US47Main;
 struct FS47AlbumShot;
 
@@ -27,6 +28,9 @@ public:
  void Photo(const FS47AlbumShot& Shot);
  double LastPhotoSubjectMean() const { return PhotoSubjectMean; } // last non-emissive exposure, -1 if no valid region
 
+ const TArray<FS47FreeformObservation>& Observations() const { return FieldObservations; }
+ void RetainObservation(const FS47FreeformObservation& Observation);
+
  const FString& ActiveEvent() const { return Event; }
  const FString& EventId() const { return Event; }
  FString StageName() const { return FString::Printf(TEXT("phase%d"),Stage); }
@@ -52,6 +56,8 @@ private:
  FBox2D TaggedRegion = FBox2D(ForceInit); // transient projection of the photographed native component
  double TaggedQuality=0,PhotoSubjectMean=-1;
  TArray<FPhotoClaim> Claims;
+ TArray<FS47FreeformObservation> FieldObservations;
+ void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0;
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;

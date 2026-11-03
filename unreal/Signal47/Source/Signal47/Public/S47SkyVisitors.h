@@ -28,6 +28,23 @@ struct FS47SkyVisitorState
  static FVector MapPosition(int32 Stage, int32 Light, double Seconds);
 };
 
+// A separate Freeform opportunity: one seeded draw per workday, never a replay
+// queue. Absolute session time makes unseen passages and sleep expire naturally.
+struct FS47FreeformSkyState
+{
+ int32 Day=0,Pattern=0,Seed=4701986;
+ double Start=0,Elapsed=0,Looking=0;
+ bool bChosen=false;
+ TArray<FString> ObservedPlaces;
+ static constexpr double Duration=240.;
+ void Begin(const S47J::FObj& Saved,int32 NewSeed);
+ bool Advance(int32 CurrentDay,double Clock);
+ bool Active() const { return bChosen&&Elapsed>=0&&Elapsed<Duration; }
+ int32 Count() const { return Pattern==2&&Elapsed>100?2:1; }
+ FVector Position(int32 Light) const;
+ S47J::FObj Save() const;
+};
+
 class FS47SkyVisitors
 {
 public:
@@ -35,6 +52,9 @@ public:
  ~FS47SkyVisitors();
  void Begin(const S47J::FObj& Saved = nullptr, bool bNewNight = false);
  void Step(double Dt);
+ void BeginFreeform(const S47J::FObj& Saved);
+ void StopFreeform();
+ S47J::FObj SaveFreeform() const { return FreeformState.Save(); }
  S47J::FObj Save() const { return State.Save(); }
  const FS47SkyVisitorState& Data() const { return State; }
  static FVector WorldPosition(const FVector& MapPoint, const FString& Area);
@@ -48,6 +68,9 @@ public:
 private:
  US47Main* M = nullptr;
  FS47SkyVisitorState State;
+ FS47FreeformSkyState FreeformState;
+ bool bFreeform=false;
+ void StepFreeform(double Dt);
  FS47SkyVisitorState Preview;
  FString PreviewArea;
  TArray<TWeakObjectPtr<UMaterialBillboardComponent>> Points;
