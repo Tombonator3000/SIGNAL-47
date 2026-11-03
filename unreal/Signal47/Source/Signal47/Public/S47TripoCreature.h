@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "S47PaleMotion.h"
 
 class AS47Web;
 class USceneComponent;
@@ -21,6 +22,9 @@ struct FS47TripoCreature
  TArray<FTransform> Rest;
  TArray<int32> Parents;
  TArray<FName> Names;
+ TSharedPtr<FS47PaleMotion> PaleMotion;
+ FS47PaleContacts Contacts;
+ void ApplyPale(const FS47PalePose& Pose);
  bool Build(AS47Web* W, USceneComponent* Parent, const FString& Name,
   const TCHAR* AssetPath = TEXT("/Game/Licensed/TripoNPC/Animated/SK_Tripo_Pale.SK_Tripo_Pale"));
  void Apply(bool bShow, double HeadTurn, double Gait, double Phase, double Clock, bool bGrab, bool bListen);

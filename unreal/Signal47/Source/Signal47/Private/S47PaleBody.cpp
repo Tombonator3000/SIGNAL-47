@@ -92,20 +92,24 @@ bool FS47PaleBody::Rendered() const
  return bBuilt && T && T->IsVisible() && T->WasRecentlyRendered(.25f);
 }
 
-void FS47PaleBody::Apply(bool bShow, const FVector& Feet, double BodyYaw, double HeadYaw, double Gait, double Phase, double Clock, EPose Pose)
+void FS47PaleBody::Apply(bool bShow, const FVector& Feet, double BodyYaw, double HeadYaw, double Gait, double Phase, double Clock, EPose Pose, double GrabProgress, const TOptional<FVector>& GrabTargetUE)
 {
  if (!bBuilt) return;
  if (Root) Root.SetVisible(bShow);
  else if (UBoxComponent* R = RootComp.Get()) R->SetVisibility(bShow, true);
- Creature.Apply(bShow,PaleWrap(HeadYaw-BodyYaw),Gait,Phase,Clock,Pose==EPose::Grab,Pose==EPose::Listen);
+ FS47PalePose Visual;Visual.bVisible=bShow;Visual.HeadYaw=PaleWrap(HeadYaw-BodyYaw);Visual.Clock=Clock;
+ Visual.Mode=Pose==EPose::Grab?ES47PaleMotion::Grab:Pose==EPose::Chase?ES47PaleMotion::Run:
+  Pose==EPose::Listen?ES47PaleMotion::Listen:Gait>.03?ES47PaleMotion::Walk:ES47PaleMotion::Idle;
+ Visual.GrabProgress=GrabProgress;Visual.GrabTargetUE=GrabTargetUE;Visual.LegacyGait=Gait;Visual.LegacyPhase=Phase;
  if (bCollide != bShow)
  {
   // Hidden parts never block a sight, floor or pick trace.
   bCollide = bShow;
   for (const auto& C : All) if (UStaticMeshComponent* P = C.Get()) P->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
  }
- if (!bShow) return;
+ if (!bShow) { Creature.ApplyPale(Visual); return; }
  if (UBoxComponent* R = RootComp.Get()) R->SetWorldLocationAndRotation(S47Three::ToUE(Feet.X, Feet.Y, Feet.Z), FRotator(0, FMath::RadiansToDegrees(BodyYaw), 0));
+ Creature.ApplyPale(Visual); // parent root must be current before world-space foot planting
  // FS47HorrorThreat::Apply's stiff joints: positive pitch swings a hanging limb forward (+X).
  const double A = FMath::Clamp(Gait, 0.0, 1.4), Sw = FMath::Sin(Phase), Cw = FMath::Cos(Phase);
  double AL = -22 * A * Sw, AR = 22 * A * Sw, Elbow = 10 + 12 * A, Lean = -(2 + 7 * A) + 1.2 * FMath::Sin(Clock * 1.3);

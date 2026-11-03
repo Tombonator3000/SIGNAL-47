@@ -759,18 +759,20 @@ void FS47HorrorThreat::Step(double Dt)
   UE_LOG(LogS47HorrorThreat, Display, TEXT("S47: SC02 pale body appeared unseen at %s (%.2f %.2f %.2f)"), Nodes()[PostNode].Id, Pos.X, Y, Pos.Y);
  }
  if (S != Was) UE_LOG(LogS47HorrorThreat, Display, TEXT("S47: SC02 body %s -> %s at %.2f %.2f; witnessed %d"), StateName(Was), StateName(S), Pos.X, Pos.Y, bSeen ? 1 : 0);
- if (!In.bHeld && bAppeared && !bGone) { Y = Ground(Pos, false); PlaySounds(PhaseBefore); }
+ if (!In.bHeld && bAppeared && !bGone) Y = Ground(Pos, false);
  Apply(bAppeared && !bGone);
+ if (!In.bHeld && bAppeared && !bGone) PlaySounds(PhaseBefore);
 }
 
 void FS47HorrorThreat::PlaySounds(double PhaseBefore)
 {
  if (!M || !M->Audio) return;
  // Gravel steps and breath are placed at the body (existing step bank and breath synthesis).
- if (FMath::FloorToDouble(Phase / PI) != FMath::FloorToDouble(PhaseBefore / PI))
+ const auto& Contact=Parts->Creature.Contacts;
+ if (Contact.bValid ? Contact.bLeft||Contact.bRight : FMath::FloorToDouble(Phase / PI) != FMath::FloorToDouble(PhaseBefore / PI))
  {
   const auto Pick = M->Audio->StepPick(TEXT("dirt"));
-  FS47Sound O; O.Gain = Pick.Gain * (S == EState::Chase ? 1.f : .7f); O.At = FVector(Pos.X, Y + .05, Pos.Y);
+  FS47Sound O; O.Gain = Pick.Gain * (S == EState::Chase ? 1.f : .7f); O.At = Contact.bValid ? S47Three::ToThree(Contact.AtUE[Contact.bLeft?0:1]) : FVector(Pos.X, Y + .05, Pos.Y);
   M->Audio->Sfx(Pick.Name, O);
  }
  if (bBreath) { bBreath = false; M->Audio->Gasp(M->Audio->Spatial(Head3(), 2.f)); }
@@ -780,15 +782,21 @@ void FS47HorrorThreat::Apply(bool bShow)
 {
  if (!bBuilt) return;
  Parts->Root.SetVisible(bShow);
- Parts->Creature.Apply(bShow,ThreatWrap(HeadYaw-BodyYaw),Gait,Phase,Clock,S==EState::Capture,S==EState::Warn);
+ FS47PalePose Visual;Visual.bVisible=bShow;Visual.Clock=Clock;Visual.HeadYaw=ThreatWrap(HeadYaw-BodyYaw);
+ Visual.Mode=S==EState::Capture?ES47PaleMotion::Grab:S==EState::Chase?ES47PaleMotion::Run:
+  S==EState::Warn?ES47PaleMotion::Listen:Gait>.03?ES47PaleMotion::Walk:ES47PaleMotion::Idle;
+ Visual.GrabProgress=S==EState::Capture?StateT/CaptureHold:-1;
+ if(M&&M->Player)Visual.GrabTargetUE=S47Three::ToUE(FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Lift+M->Player->Eye*.85,M->Player->Pos.Z));
+ Visual.LegacyGait=Gait;Visual.LegacyPhase=Phase;
  if (Parts->bCollide != bShow)
  {
   // Hidden parts never block a sight, floor or ground trace.
   Parts->bCollide = bShow;
   for (const auto& C : Parts->All) if (UStaticMeshComponent* P = C.Get()) P->SetCollisionEnabled(bShow ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
  }
- if (!bShow) return;
+ if (!bShow) { Parts->Creature.ApplyPale(Visual); return; }
  if (UBoxComponent* R = Parts->RootComp.Get()) R->SetWorldLocationAndRotation(S47Three::ToUE(Pos.X, Y, Pos.Y), FRotator(0, FMath::RadiansToDegrees(BodyYaw), 0));
+ Parts->Creature.ApplyPale(Visual); // after the actual collision-resolved root placement
  // Stiff joints with a procedural gait. Positive pitch swings a hanging limb forward (+X).
  const double A = FMath::Clamp(Gait, 0.0, 1.4), Sw = FMath::Sin(Phase), Cw = FMath::Cos(Phase);
  double ArmL = -22 * A * Sw, ArmR = 22 * A * Sw, Elbow = 10 + 12 * A, Lean = -(2 + 7 * A) + 1.2 * FMath::Sin(Clock * 1.3);
