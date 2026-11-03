@@ -9,6 +9,7 @@
 #include "S47FreeformTest.h"
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
+#include "S47EastWing.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
@@ -578,6 +579,8 @@ void AS47HUD::Start()
 		M->Office = MakeShared<FS47Office>(M);
 		M->RoomLights = MakeShared<FS47RoomLights>(M);
 		M->Office->Init();
+		M->EastWing = MakeShared<FS47EastWing>(M);
+		M->EastWing->Init();
 		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))))
 		{
 			const auto PreviousEnd = C2->OnEnd; // includes the existing roof-step/phone quiet wrapper
