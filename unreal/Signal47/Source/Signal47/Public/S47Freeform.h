@@ -86,6 +86,12 @@ public:
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
+ // Field-work case tests (FS47FreeformCases::ECondition::FieldWork) are carried out in the world.
+ // The world asks which test is planned and what the hidden cause makes it show, enacts that
+ // physically, then reports what the player actually secured. -1 when no field test is planned.
+ int32 PlannedFieldTest(int32 Line) const;
+ bool FieldTestExpectsPresent(int32 Line,int32 Test) const;
+ bool ReportFieldTest(int32 Line,int32 Test,bool bValid,bool bPresent,const FString& Evidence);
  void OpenServiceGuide();
  bool StartServiceGuide(bool bSupplyTrip);
  bool CompleteServiceGuide();
@@ -169,6 +175,8 @@ private:
  bool CaseObserved(const FJob& J) const;
  FString CasePrecondition(const FJob& J) const;
  int32 CaseAwaitingChoice() const;
+ void IngestObservations();
+ int32 IngestedObservations=0;
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;
  FString Feedback, PhenomenonId;

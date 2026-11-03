@@ -11,12 +11,14 @@ class FS47FreeformCases
 {
 public:
  // Physical precondition the session checks for a case test recording.
- enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap };
+ // FieldWork is carried out and reported by the Freeform world (S47FreeformWorld/Director).
+ enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap, FieldWork };
  // What the recording shows: the extra pulse group, or the receiver clock offset.
- enum class EObservable : uint8 { ExtraTicks, ClockDelta };
- static constexpr int32 TestCount=3, CauseCount=3, CaseCount=2;
+ enum class EObservable : uint8 { ExtraTicks, ClockDelta, FieldTrace };
+ static constexpr int32 TestCount=3, CauseCount=3, CaseCount=3, MaxLeads=32;
  static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
- struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; };
+ // Yes/No name what this test shows when the observable is present/absent; Access gates planning.
+ struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; const TCHAR* Yes=nullptr; const TCHAR* No=nullptr; const TCHAR* Access=nullptr; };
  struct FCaseDef
  {
   const TCHAR* Title; const TCHAR* Question; EObservable Observable;
@@ -33,6 +35,7 @@ public:
   double OpenClock=0; // seconds into the day of the retained original
   FString PlannedJob;
   FResult Results[TestCount];
+  TArray<FString> Leads; // retained observation ids, first-hand facts only
  };
  static const FCaseDef& Def(int32 Line);
  static int32 LineForFinding(const FString& FindingId);
@@ -40,6 +43,9 @@ public:
  void Load(const S47J::FObj& Saved,int32 Seed);
  S47J::FObj Save() const;
  bool Open(int32 Line,int32 Day,double DayClock);
+ // Adds a retained observation as a lead; opens the case on its first lead. Idempotent.
+ bool AddLead(int32 Line,const FString& ObservationId,int32 Day,double DayClock);
+ static int32 LineForObservation(const FString& Event);
  const FCase* Get(int32 Line) const { return Cases.IsValidIndex(Line)?&Cases[Line]:nullptr; }
  bool HasAccess(const FString& Id) const { return Access.Contains(Id); }
  bool Plan(int32 Line,int32 Test,const FString& JobId);
@@ -54,6 +60,7 @@ public:
  static bool PresentFor(int32 Line,int32 Cause,int32 Test);
  static FString Prediction(int32 Line,int32 Test);
  static FString ResultText(int32 Line,bool bPresent);
+ static FString TestResultText(int32 Line,int32 Test,bool bPresent);
  static FString Clock(double DayClock);
  static bool SelfTest(TArray<FString>& Lines);
 private:
