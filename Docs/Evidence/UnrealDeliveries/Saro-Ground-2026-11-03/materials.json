@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "materials": [
+    {
+      "path": "/Game/SaroSite/Materials/M_SaroSite_Concrete",
+      "before": false,
+      "after": true,
+      "graph_nodes_unchanged": 12
+    },
+    {
+      "path": "/Game/SubstationDetail/Materials/M_SubstationDetail_GalvanizedSteel",
+      "before": false,
+      "after": true,
+      "graph_nodes_unchanged": 12
+    }
+  ]
+}

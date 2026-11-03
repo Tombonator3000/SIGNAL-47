@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "verify_only": false,
+  "source_full_precision_uvs": [
+    false,
+    true,
+    true
+  ],
+  "native": {
+    "road_filled_leaf_tangent_corners": 0,
+    "road_filled_leaf_normal_corners": 0,
+    "road_triangles": 1290,
+    "ground_filled_leaf_tangent_corners": 22880,
+    "ground_filled_leaf_normal_corners": 2322,
+    "ground_triangles": 12806,
+    "cached_underlay_triangles": 197,
+    "status": "PASS",
+    "error": ""
+  },
+  "limits": "Native derivative/collision cook prepared. Runtime atomic activation and before/after driving images remain to be checked."
+}
