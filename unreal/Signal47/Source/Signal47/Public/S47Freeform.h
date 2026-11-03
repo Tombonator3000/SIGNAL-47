@@ -81,9 +81,9 @@ public:
  int32 ActiveTerminalScreen() const { return ActiveTerminal; }
  TArray<FString> TerminalLines(int32 Screen) const;
  void OpenArchive();
- void OpenCaseBoard();
- bool PlanCaseTest(int32 Test);
- bool ConcludeCase(int32 Cause);
+ void OpenCaseBoard(int32 Line=-1);
+ bool PlanCaseTest(int32 Line,int32 Test);
+ bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
  void OpenServiceGuide();
@@ -165,6 +165,10 @@ private:
  FS47FreeformCases Cases;
  void OpenCaseFor(const FString& FindingId);
  void RecordCaseResult(FJob& J);
+ bool StationSealed() const;
+ bool CaseObserved(const FJob& J) const;
+ FString CasePrecondition(const FJob& J) const;
+ int32 CaseAwaitingChoice() const;
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;
  FString Feedback, PhenomenonId;

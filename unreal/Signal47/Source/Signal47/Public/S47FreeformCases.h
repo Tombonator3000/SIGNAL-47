@@ -3,53 +3,61 @@
 #include "S47Json.h"
 
 // Pure Freeform case logic (Docs/Design/Gameplay/FREEFORM_CASE_LOOP.md).
-// Each case has one hidden, seeded cause. Player-chosen physical tests exclude
-// explanations; a conclusion is accepted only when the tests support it.
+// Each case is data: three explanations, three physical tests and what each
+// explanation predicts for each test. One hidden, seeded cause per case; a
+// conclusion is accepted only when the player's own tests support it.
 // No world access, global RNG or deadlines.
 class FS47FreeformCases
 {
 public:
- enum class ETest : uint8 { Generator, OffSource, Repeat };
- enum class ECause : uint8 { Feeder, LocalTransmitter, Sky };
- static constexpr int32 TestCount=3, CauseCount=3, CaseCount=1;
- static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60.;
- struct FResult { bool bDone=false,bTicks=false; int32 Day=0; };
+ // Physical precondition the session checks for a case test recording.
+ enum class ECondition : uint8 { Generator, OffSource, Repeat, DoorsSealed, RelaySwap };
+ // What the recording shows: the extra pulse group, or the receiver clock offset.
+ enum class EObservable : uint8 { ExtraTicks, ClockDelta };
+ static constexpr int32 TestCount=3, CauseCount=3, CaseCount=2;
+ static constexpr double OffSourceDegrees=.6, RepeatWindow=90*60., ClockOffset=3.2;
+ struct FTestDef { const TCHAR* Name; ECondition Condition; const TCHAR* Instruction; };
+ struct FCaseDef
+ {
+  const TCHAR* Title; const TCHAR* Question; EObservable Observable;
+  const TCHAR* Causes[CauseCount]; const TCHAR* Short[CauseCount];
+  FTestDef Tests[TestCount];
+  bool Present[CauseCount][TestCount]; // observable still present for [cause][test]
+  const TCHAR* Telex[CauseCount]; const TCHAR* TelexTitle; const TCHAR* Access;
+ };
+ struct FResult { bool bDone=false,bPresent=false; int32 Day=0; };
  struct FCase
  {
   bool bOpen=false,bConcluded=false;
-  int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0;
+  int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0,Truth=0;
   double OpenClock=0; // seconds into the day of the retained original
-  ECause Truth=ECause::Feeder;
   FString PlannedJob;
   FResult Results[TestCount];
  };
+ static const FCaseDef& Def(int32 Line);
+ static int32 LineForFinding(const FString& FindingId);
  void Reset(int32 Seed);
  void Load(const S47J::FObj& Saved,int32 Seed);
  S47J::FObj Save() const;
  bool Open(int32 Line,int32 Day,double DayClock);
  const FCase* Get(int32 Line) const { return Cases.IsValidIndex(Line)?&Cases[Line]:nullptr; }
  bool HasAccess(const FString& Id) const { return Access.Contains(Id); }
- bool Plan(int32 Line,ETest Test,const FString& JobId);
+ bool Plan(int32 Line,int32 Test,const FString& JobId);
  void CancelPlan(int32 Line);
  // Records a finished test. Returns false if it was not the planned test.
- bool Record(int32 Line,ETest Test,int32 Day,bool bValid,bool bTicks,bool& bFirstValid);
- bool Excluded(int32 Line,ECause Cause) const;
+ bool Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid);
+ bool Excluded(int32 Line,int32 Cause) const;
  int32 Remaining(int32 Line) const;
- bool Conclude(int32 Line,ECause Cause,FString& Why);
+ int32 ValidTestsTotal() const;
+ bool Conclude(int32 Line,int32 Cause,FString& Why);
  bool InRepeatWindow(int32 Line,int32 Day,double DayClock) const;
- static bool TicksFor(ECause Cause,ETest Test);
- static FString Title(int32 Line);
- static FString Question(int32 Line);
- static FString CauseName(ECause Cause);
- static FString TestName(ETest Test);
- static FString Prediction(ETest Test);
- static FString Instruction(ETest Test);
- static FString RecordsTelex(ECause Cause);
+ static bool PresentFor(int32 Line,int32 Cause,int32 Test);
+ static FString Prediction(int32 Line,int32 Test);
+ static FString ResultText(int32 Line,bool bPresent);
  static FString Clock(double DayClock);
  static bool SelfTest(TArray<FString>& Lines);
 private:
  TArray<FCase> Cases;
  TSet<FString> Access;
- int32 SeedValue=0;
- static ECause Seeded(int32 Seed,int32 Line);
+ static int32 Seeded(int32 Seed,int32 Line);
 };
