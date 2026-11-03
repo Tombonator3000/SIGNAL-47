@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "S47WebAudio.h"
+#include "S47SoundMixer.h"
 #include "S47Audio.generated.h"
 
 class AActor;
@@ -197,6 +198,14 @@ public:
 	static void Tour(const FString& Path);
 	// -S47AudioCompare=<dir>: graphs with known input rendered offline, to hold against a browser's (S47AudioTour.cpp)
 	static void Compare(const FString& Dir);
+	// Unreal sound workshop: reusable recording layers on the existing audio graph.
+	// Banks can be prepared privately in Saved/AudioWorkshop; no automatic asset import.
+	bool LoadSoundBank(const FString& Path, TArray<FString>& Errors);
+	bool PlaySoundMix(const FString& Key, const FString& Recipe, ES47SoundUse Use,
+		TArray<FString>& Errors, TSharedPtr<FS47AudioNode> Destination = nullptr);
+	void SoundMixFrame(const FString& Key, double Clarity, double Interference, double Activity, double T);
+	void StopSoundMix(const FString& Key, float Fade = 0.1f);
+	static bool RenderSoundWorkshop(const FString& BankPath);
 
 	// ---------- drive/engineSound.ts (FS47EngineSound) ----------
 	// A loop's level now (the engine's recordings, mixed by rpm each frame): volume, playback rate,
@@ -216,6 +225,9 @@ public:
 	void EngineStop(float After);                                // the truck's own layers fade and stop (stop)
 
 private:
+	TMap<FString, FS47MixAsset> SoundBank;
+	TMap<FString, FS47MixRecipe> SoundRecipes;
+	TMap<FString, TSharedPtr<FS47SoundMixer>> SoundMixes;
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;

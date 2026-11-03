@@ -1,0 +1,36 @@
+[
+  {
+    "name": "array_search",
+    "use": "receiver",
+    "layers": [
+      {"source": "radio_noise", "gain_db": -22, "highpass_hz": 450, "lowpass_hz": 4200, "start_s": 0, "length_s": 8, "loop": true, "envelope": "static"},
+      {"source": "contact", "gain_db": -25, "rate": 0.92, "highpass_hz": 100, "lowpass_hz": 2600, "start_s": 1, "length_s": 8, "loop": true, "envelope": "pulse"},
+      {"source": "broken_radio", "gain_db": -36, "highpass_hz": 650, "lowpass_hz": 3200, "start_s": 2, "length_s": 6, "loop": true, "envelope": "static"}
+    ]
+  },
+  {
+    "name": "array_locked",
+    "use": "receiver",
+    "layers": [
+      {"source": "contact", "gain_db": -18, "rate": 0.85, "highpass_hz": 30, "lowpass_hz": 2800, "start_s": 1, "length_s": 8, "loop": true, "envelope": "pulse"},
+      {"source": "radio_noise", "gain_db": -30, "highpass_hz": 500, "lowpass_hz": 4000, "start_s": 0, "length_s": 8, "loop": true, "envelope": "static"},
+      {"source": "old_vhs", "gain_db": -35, "highpass_hz": 500, "lowpass_hz": 2200, "start_s": 1, "length_s": 6, "loop": true, "envelope": "signal"}
+    ]
+  },
+  {
+    "name": "vhs_tracking",
+    "use": "vhs",
+    "layers": [
+      {"source": "vhs_noise", "gain_db": -24, "highpass_hz": 90, "lowpass_hz": 9000, "start_s": 1, "length_s": 8, "loop": true, "envelope": "constant"},
+      {"source": "old_vhs", "gain_db": -28, "rate": 0.97, "highpass_hz": 180, "lowpass_hz": 6000, "start_s": 1, "length_s": 8, "loop": true, "envelope": "activity"}
+    ]
+  },
+  {
+    "name": "pc_transfer",
+    "use": "pc_transfer",
+    "layers": [
+      {"source": "modem", "gain_db": -18, "rate": 1, "highpass_hz": 300, "lowpass_hz": 3400, "start_s": 0, "length_s": 27, "loop": false, "envelope": "activity"},
+      {"source": "radio_noise", "gain_db": -40, "highpass_hz": 800, "lowpass_hz": 3400, "start_s": 0, "length_s": 8, "loop": true, "envelope": "activity"}
+    ]
+  }
+]

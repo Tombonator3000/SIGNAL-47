@@ -4,6 +4,10 @@
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
 
+## Lydmotor og modem, 3. november 2026
+
+Tom bestiller en lydmotor som kombinerer eksisterende lydopptak i lag og bearbeider dem til nye lyder. Modemlyder er reservert for PC-overføringer og lignende datakommunikasjon. De brukes ikke som array-, radio- eller VHS-forstyrrelser. Arrayets etablerte fire/sju-mønster beholdes. Oppskrifter og motor kan være offentlige; lokale referanseopptak holdes utenfor Git og automatisk pakking. Se [lydverkstedet](../../unreal/Signal47/Tools/sound-workshop/README.md).
+
 ## Gameplay-løkken er førsteprioritet, 3. november 2026
 
 Tom bestemte kl. 10 at gameplay og gameplay-løkken går foran grafikk og annet arbeid. Claude og Codex samarbeider om en engasjerende løkke bygget på gameplaygjennomgangen (GP-01 til GP-20) og sammenligningen med Signal Simulator, Voices of the Void og Greyhill Incident. Retningen er [saksløkken i Freeform](../Design/Gameplay/FREEFORM_CASE_LOOP.md): rutine betaler driften, mens spilleren tester forklaringer på avvik med fysiske forsøk; en konklusjon godtas bare når forsøkene støtter den. Arbeidsdeling føres i [OPPGAVER](../../unreal/OPPGAVER.md). Kritiske krasj- og verdensfeil beholder sin plass når de blokkerer spilling.

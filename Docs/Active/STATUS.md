@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Lydmotor med opptakslag, bygget 3. november
+
+Lydverkstedet mikser eksisterende opptak med nivå, hastighet, høypass/lavpass, utsnitt, løkker og mottaks-/aktivitetsstyrte kurver. Fire/sju-signaturen beholdes. Modemkilder avvises i radio- og VHS-oppskrifter. Seks lokale referanser og fire startoppskrifter er klargjort; motoren kan også bruke eksisterende dekodede spillopptak. [Bruk og grensesnitt](../../unreal/Signal47/Tools/sound-workshop/README.md).
+
+Editorbygg og én offline kjøring gjennom den faktiske lydgrafen består: fire 12-sekunders WAV-er uten klipping, ti motorkontroller og Python-bankens seks avvisningstilfeller. Dette er rendering og kodekontroll, ikke menneskelig lytting. SARO-mottakeren kan velge lokal bank eksplisitt med `-S47SoundBank`; standardlyden er fortsatt prosedyrisk. PC-/VHS-handlinger og båndprosessoren er ikke automatisk koblet om. Ingen pakking, installasjon eller offentlig distribusjon av referanselyd.
+
 ## Freeform feltforskning, bygget 3. november
 
 På `codex/freeform-field-research-20261103`: Director beholder faktisk hørte taklyder, sette skikkelser og undersøkte markeringer som daterte observasjoner med grov retning, sted og eventuell foto-ID. Høye himmelbaner har egen sjelden, lagret tidsplan; bortvendt kamera og søvn skaper ingen observasjoner eller ny sjanse. Ingen levende UFO-markør.

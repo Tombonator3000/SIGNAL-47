@@ -29,7 +29,22 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47Audio, Log, All);
 void US47Audio::Init(UWorld* InWorld)
 {
 	World = InWorld;
+	FString WorkshopPath;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47SoundWorkshop="), WorkshopPath))
+	{
+		Unlock(false, false);
+		const bool bOk = RenderSoundWorkshop(WorkshopPath);
+		FPlatformMisc::RequestExitWithStatus(false, bOk ? 0 : 1);
+		return;
+	}
 	Unlock(true);
+	FString SoundBankPath;
+	if (FParse::Value(FCommandLine::Get(), TEXT("S47SoundBank="), SoundBankPath))
+	{
+		TArray<FString> Errors;
+		if (!LoadSoundBank(SoundBankPath, Errors))
+			for (const FString& Error : Errors) UE_LOG(LogS47Audio, Warning, TEXT("S47: sound bank: %s"), *Error);
+	}
 	FString TourPath;
 	if (FParse::Value(FCommandLine::Get(), TEXT("S47AudioTour="), TourPath)) Tour(TourPath);
 	FString CompareDir;
@@ -130,6 +145,8 @@ void US47Audio::DecodeAll()
 
 void US47Audio::BeginDestroy()
 {
+	for (auto& Mix : SoundMixes) Mix.Value->Stop(0);
+	SoundMixes.Empty();
 	if (Ctx.IsValid()) Ctx->Close();
 	Super::BeginDestroy();
 }
@@ -310,6 +327,7 @@ FString US47Audio::NormalizeReadingText(const FString& Text)
 bool US47Audio::SelfTest(TArray<FString>& Out)
 {
 	bool bAll = S47Wa::SelfTest(Out);
+	bAll &= FS47SoundMixer::SelfTest(Out);
 	bAll &= FS47Ambience::SelfTest(Out);
 	auto Check = [&](bool bOk, const FString& What)
 	{
