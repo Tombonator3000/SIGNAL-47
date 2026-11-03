@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "reviewed": "2026-11-03",
-  "basis": "Static review of stage-specific receiver, printer queue, selection guards and physical Chart/Packet power exceptions. Whole source digest additionally guards local helper/default changes; installed runtime remains unverified. Follow-up review: automatic reference-scan encoder movement waits without asking player to restore pointing; tuning failure still pauses first. Receiver GetStatus lambda agrees. 2026-11-03 review (Claude, GAMEPLAY-LOOP-01): Begin loads the case file; RegisterComparison records a case test after the unchanged routine payment/Filed transition; ReceiverNextAction and JobNextAction state case-test preconditions (generator, repeat window) before New/Pointed guidance. Case jobs use the ordinary routine stage sequence, so the Python next-action interpretation is unchanged for non-case jobs. 2026-11-03 case 2 review (Claude): RegisterComparison, JobNextAction and ReceiverNextAction now read case preconditions through the data-driven case definitions; ordinary job stages are unchanged.",
-  "source_sha256": "577de27eb225bd51937c3b1464cbbf95f34aac4e28839a0193774bb432e33e9e",
+  "basis": "Static review of stage-specific receiver, printer queue, selection guards and physical Chart/Packet power exceptions. Whole source digest additionally guards local helper/default changes; installed runtime remains unverified. Follow-up review: automatic reference-scan encoder movement waits without asking player to restore pointing; tuning failure still pauses first. Receiver GetStatus lambda agrees. 2026-11-03 review (Claude, GAMEPLAY-LOOP-01): Begin loads the case file; RegisterComparison records a case test after the unchanged routine payment/Filed transition; ReceiverNextAction and JobNextAction state case-test preconditions (generator, repeat window) before New/Pointed guidance. Case jobs use the ordinary routine stage sequence, so the Python next-action interpretation is unchanged for non-case jobs. 2026-11-03 case 2 review (Claude): RegisterComparison, JobNextAction and ReceiverNextAction now read case preconditions through the data-driven case definitions; ordinary job stages are unchanged. 2026-11-03 case 3 review (Claude): Begin ingests Director observations as case leads; field-work case tests create no receiver job. Contracted functions keep ordinary job behaviour.",
+  "source_sha256": "93b9ee59be0d0b810931b161f81f6fa6ccee24236f5f39c7a12721fe5b34bc73",
   "functions": {
     "ReceiverNextAction": "b30ef8b934275c58dfb128920ef8defd62c9c036b11ca7c509a125d3b1ffde5d",
     "Objective": "a07b0b564110b6dcbcc61660f8a556c69db9959561242227050ae39dd45f761e",
     "CollectChart": "4a8cf7a1d58133a935bb661021016ac082ee5b98357694d0075ba7010e873e90",
     "RegisterComparison": "f9fd88101d45e4301a101b313430ff19cedf05a0a54b2040ef16e96b73e7e9bc",
-    "Begin": "3e5385494171ffb527b23829fbb6ad02f1db98c9cd83ce6386353344746948cd",
+    "Begin": "e83907d35fdd7dbdef76f317e7de65a4a5615426b9c8db9c6c3308e30bdb8482",
     "NextAction": "babbdc37eaa9e3b137c5fb2d23b18cfb332c659562c976249301faa8014a010e",
     "JobNextAction": "90467429c3d7a01e058b93701cd44df135f4a06371ec3a05a821ed229fe67f3c",
     "JobLocation": "8edffd83e53989cde3db6b1a704e7e461cb7c16b85955d9d1bb970612e08b6d5",

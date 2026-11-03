@@ -46,6 +46,24 @@ namespace
    TEXT("SOCORRO ELECTRIC CO-OP / FREQUENCY LOG\nRE: SARO CLOCK COMPLAINT\n\nThe feeder frequency sagged on the nights you list. Any clock driven from the mains loses time while the line is loaded.\n\nYour generator records show the offset vanish off the mains. Use the generator for timing-critical work until the station clock is replaced."),
    TEXT("SOCORRO COUNTY SHERIFF / NIGHT LOG\nRE: SARO ANNEX\n\nA deputy on the night patrol noted lights in the SARO annex at 02:40 on two nights when the operator was off shift. No forced entry was found and nothing was reported missing.\n\nYour sealed-station recording shows the receiver keeps time when nobody else can reach it. Keep the doors shut at night. Report anyone you see.")},
   TEXT("Records reply: disagreeing records"),TEXT("access.nightwatch")
+ },
+ {
+  TEXT("VISITORS AROUND THE BASE"),
+  TEXT("What is moving around SARO at night? Roof impacts, a figure near the array and marks on the ground are retained as separate observations; they are not yet one cause. Each test below predicts a different result for each explanation."),
+  FS47FreeformCases::EObservable::FieldTrace,
+  {TEXT("Wind and loose fittings"),TEXT("Local human activity"),TEXT("Unexplained visit")},
+  {TEXT("Wind"),TEXT("People"),TEXT("Unexplained")},
+  {{TEXT("Secure the roof fitting"),EC::FieldWork,TEXT("Mark and fasten the loose roof plate, then listen from the same reference point on a comparably windy night."),TEXT("impacts continue"),TEXT("impacts stop")},
+   {TEXT("Controlled access"),EC::FieldWork,TEXT("Seal the service gate and lay tracking strips before the same observation window; inspect both afterwards."),TEXT("seal broken and a continuous track"),TEXT("seal intact, no continuous track")},
+   {TEXT("Two simultaneous sites"),EC::FieldWork,TEXT("Calibrate the loan field logger, keep simultaneous originals from the roof reference and a field post, then compare time and direction."),TEXT("simultaneous disturbance at both sites"),TEXT("no simultaneous disturbance"),TEXT("access.fieldlogger")}},
+  // Roof, Access, TwoSites (present = Yes)
+  {{false,false,false},  // wind: the fastened plate stops it, nobody crosses, only the roof reference moves
+   {true,true,false},    // people: impacts continue, the seal is broken, the sequence follows one path
+   {true,false,true}},   // unexplained: impacts continue, no crossing, both sites at once
+  {TEXT("COUNTY BUILDING INSPECTOR / SOCORRO\nRE: SARO ANNEX ROOF\n\nThe roof plate you fastened was the last unsecured sheet on the 1962 annex. Wind loading on that roof is noted in the 1979 inspection.\n\nNo further action. Your sealed-gate and two-site records show nothing crossing to the station."),
+   TEXT("SOCORRO COUNTY SHERIFF\nRE: SARO SERVICE GATE\n\nYour broken seal and the track along the service road match reports of people taking copper and scrap from remote sites this autumn.\n\nA deputy will drive past SARO on night patrol. Keep the gate sealed and photograph any vehicle."),
+   TEXT("SARO OPERATIONS / FILE NOTE\nRE: VISITORS AROUND THE BASE\n\nThe fastened plate did not stop the impacts, the sealed gate stayed intact, and two separate sites recorded the same disturbance at the same minute.\n\nNo person, vehicle or animal accounts for it. The observation is retained without an identity. Do not approach it alone.")},
+  TEXT("Records reply: visitors around the base"),TEXT("access.visitors")
  }};
 }
 
@@ -54,7 +72,21 @@ int32 FS47FreeformCases::LineForFinding(const FString& Id)
 {
  if(Id==TEXT("pulse-review")||DatedKey(Id,TEXT("extra_pulse")))return 0;
  if(DatedKey(Id,TEXT("time_disagreement"))||DatedKey(Id,TEXT("duplicate_print"))||DatedKey(Id,TEXT("unsigned_telex")))return 1;
+ if(DatedKey(Id,TEXT("roof_steps"))||DatedKey(Id,TEXT("observer"))||DatedKey(Id,TEXT("landing_trace")))return 2;
  return -1;
+}
+int32 FS47FreeformCases::LineForObservation(const FString& Event)
+{
+ return Event==TEXT("roof_steps")||Event==TEXT("observer")||Event==TEXT("landing_trace")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")?2:-1;
+}
+bool FS47FreeformCases::AddLead(int32 Line,const FString& ObservationId,int32 Day,double DayClock)
+{
+ if(!Cases.IsValidIndex(Line)||ObservationId.IsEmpty()||ObservationId.Len()>160)return false;
+ FCase& C=Cases[Line];if(C.Leads.Contains(ObservationId))return false;
+ const bool Opened=Open(Line,Day,DayClock);
+ if(!C.bOpen)return false;
+ if(C.Leads.Num()<MaxLeads)C.Leads.Add(ObservationId);
+ (void)Opened;return true;
 }
 int32 FS47FreeformCases::Seeded(int32 Seed,int32 Line){return int32(Mix(uint32(Seed)^Mix(0x43415345u+uint32(Line)))%uint32(CauseCount));}
 bool FS47FreeformCases::PresentFor(int32 Line,int32 Cause,int32 Test)
@@ -89,6 +121,7 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
    const auto X=R[T]->AsObject();auto& Out=C.Results[T];Out.bDone=S47J::Bool(X,TEXT("done"));
    Out.Day=FMath::Clamp(S47J::Int(X,TEXT("day")),0,36500);Out.bPresent=Out.bDone&&PresentFor(I,C.Truth,T);
   }
+  for(const FString& L:S47J::Strs(O,TEXT("leads")))if(!L.IsEmpty()&&L.Len()<=160&&!C.Leads.Contains(L)&&C.Leads.Num()<MaxLeads)C.Leads.Add(L);
   if(C.bConcluded&&C.Conclusion<0)C.bConcluded=false;
  }
  // A saved conclusion must still be supported by its retained tests.
@@ -105,6 +138,7 @@ S47J::FObj FS47FreeformCases::Save() const
   S47J::Set(X,TEXT("planned"),C.Planned);S47J::Set(X,TEXT("plannedJob"),C.PlannedJob);S47J::Set(X,TEXT("conclusion"),C.Conclusion);S47J::Set(X,TEXT("validTests"),C.ValidTests);
   TArray<TSharedPtr<FJsonValue>> R;
   for(const FResult& Res:C.Results){auto Y=S47J::New();S47J::Set(Y,TEXT("done"),Res.bDone);S47J::Set(Y,TEXT("present"),Res.bPresent);S47J::Set(Y,TEXT("day"),Res.Day);R.Add(MakeShared<FJsonValueObject>(Y));}
+  S47J::Set(X,TEXT("leads"),C.Leads);
   X->SetArrayField(TEXT("results"),R);List.Add(MakeShared<FJsonValueObject>(X));
  }
  O->SetArrayField(TEXT("cases"),List);return O;
@@ -156,8 +190,19 @@ bool FS47FreeformCases::InRepeatWindow(int32 Line,int32 Day,double DayClock) con
 FString FS47FreeformCases::Prediction(int32 Line,int32 Test)
 {
  const FCaseDef& D=Def(Line);const bool Ticks=D.Observable==EObservable::ExtraTicks;TArray<FString> Out;
- for(int32 C=0;C<CauseCount;++C)Out.Add(FString(D.Short[C])+TEXT(": ")+(PresentFor(Line,C,Test)?(Ticks?TEXT("ticks remain"):TEXT("records still disagree")):(Ticks?TEXT("ticks vanish"):TEXT("records agree"))));
+ const FTestDef& T=D.Tests[FMath::Clamp(Test,0,TestCount-1)];
+ for(int32 C=0;C<CauseCount;++C)
+ {
+  const bool P=PresentFor(Line,C,Test);
+  const FString Word=T.Yes&&T.No?FString(P?T.Yes:T.No):FString(P?(Ticks?TEXT("ticks remain"):TEXT("records still disagree")):(Ticks?TEXT("ticks vanish"):TEXT("records agree")));
+  Out.Add(FString(D.Short[C])+TEXT(": ")+Word);
+ }
  return FString::Join(Out,TEXT(". "))+TEXT(".");
+}
+FString FS47FreeformCases::TestResultText(int32 Line,int32 Test,bool bPresent)
+{
+ const FTestDef& T=Def(Line).Tests[FMath::Clamp(Test,0,TestCount-1)];
+ return T.Yes&&T.No?FString(bPresent?T.Yes:T.No).ToUpper():ResultText(Line,bPresent);
 }
 FString FS47FreeformCases::ResultText(int32 Line,bool bPresent)
 {
@@ -197,14 +242,22 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    FS47FreeformCases Again;Again.Load(S47J::Read(S47J::Write(R.Save())),Seed);Good&=Again.Get(Line)->bConcluded&&Again.Get(Line)->Conclusion==Truth&&Again.HasAccess(Def(Line).Access);
   }
  }
+ // Observation leads open the visitors case once, deduplicate and survive Continue.
+ {
+  FS47FreeformCases L;L.Reset(9);
+  Good&=LineForObservation(TEXT("observer"))==2&&LineForObservation(TEXT("close_pass"))==-1;
+  Good&=L.AddLead(2,TEXT("obs-1"),2,22*3600.)&&L.Get(2)->bOpen&&L.Get(2)->OpenDay==2&&!L.AddLead(2,TEXT("obs-1"),3,0)&&L.AddLead(2,TEXT("obs-2"),3,1*3600.);
+  FS47FreeformCases LR;LR.Load(S47J::Read(S47J::Write(L.Save())),9);Good&=LR.Get(2)->Leads.Num()==2&&LR.Get(2)->OpenDay==2&&Def(2).Tests[2].Access!=nullptr;
+  Good&=TestResultText(2,1,true).Contains(TEXT("SEAL BROKEN"))&&Prediction(2,0).Contains(TEXT("impacts stop"));
+ }
  // The first-test reward is granted once across all cases.
  FS47FreeformCases Both;Both.Reset(3);bool First=false;Both.Open(0,1,0);Both.Open(1,1,0);
  Both.Plan(0,1,TEXT("A"));Both.Record(0,1,1,true,true,First);Good&=First;Both.Plan(1,1,TEXT("B"));Both.Record(1,1,1,true,true,First);Good&=!First;
- Good&=LineForFinding(TEXT("pulse-review"))==0&&LineForFinding(TEXT("extra_pulse.day4"))==0&&LineForFinding(TEXT("extra_pulse.daylight"))==-1&&LineForFinding(TEXT("duplicate_print"))==1&&LineForFinding(TEXT("unsigned_telex.day3"))==1&&LineForFinding(TEXT("observer"))==-1;
+ Good&=LineForFinding(TEXT("pulse-review"))==0&&LineForFinding(TEXT("extra_pulse.day4"))==0&&LineForFinding(TEXT("extra_pulse.daylight"))==-1&&LineForFinding(TEXT("duplicate_print"))==1&&LineForFinding(TEXT("unsigned_telex.day3"))==1&&LineForFinding(TEXT("observer"))==2&&LineForFinding(TEXT("close_pass"))==-1;
  FS47FreeformCases W;W.Reset(1);W.Open(0,3,23.5*3600);
  Good&=!W.InRepeatWindow(0,3,23.5*3600)&&W.InRepeatWindow(0,4,.5*3600)&&!W.InRepeatWindow(0,4,2*3600)&&W.InRepeatWindow(0,5,22.1*3600)&&Clock(-1800)==TEXT("23:30");
  FS47FreeformCases Bad;Bad.Load(S47J::Read(TEXT("{\"v\":1,\"cases\":[{\"open\":true,\"planned\":99,\"openClock\":1e99,\"concluded\":true,\"conclusion\":7}]}")),5);
  Good&=Bad.Get(0)->Planned==-1&&Bad.Get(0)->OpenClock<=86399&&!Bad.Get(0)->bConcluded&&Bad.Get(0)->Conclusion==-1;
- Lines.Add(FString::Printf(TEXT("%s / Freeform cases: two data-driven cases, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress"),Good?TEXT("PASS"):TEXT("FAIL")));
+ Lines.Add(FString::Printf(TEXT("%s / Freeform cases: three data-driven cases, observation leads, seeded hidden cause, any two tests separate three explanations, guesses refused until supported, invalid tests release the plan, one first-test reward, repeat window across midnight, Save/Continue keeps progress"),Good?TEXT("PASS"):TEXT("FAIL")));
  return Good;
 }

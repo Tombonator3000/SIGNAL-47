@@ -58,6 +58,23 @@ Ugyldige forsøk er tydelige: stopper aggregatet under opptaket, eller er spille
 
 Svarene kommer fra et verksted, kraftlaget eller sheriffens nattlogg. Den siste forklaringen er menneskelig, ikke utenomjordisk, og gir saken uro uten å gjøre alle avvik til samme gåte. Motoren er datadrevet: hver sak definerer forklaringer, forsøk, forutsigelser, målbar størrelse og svar, slik at sak 3 kan legges til uten ny motorlogikk.
 
+## Sak 3: «Visitors around the base» (saksmotor implementert, feltforsøk gjenstår)
+
+Codex' beholdte feltobservasjoner (`FS47FreeformObservation`) blir spor på saksbrettet med dag, klokkeslett, sted, retning, hørt/sett og fotografi. Første spor åpner saken. Sporene er observasjoner, ikke støtte for én forklaring. Forklaringer og forsøk følger Codex' forslag:
+
+| Forsøk | Spilleren gjør | Vind og løse beslag | Folk fra området | Uforklart besøk |
+| --- | --- | --- | --- | --- |
+| **Sikre takbeslaget** | Merk og fest platen, lytt fra samme punkt en lignende vindnatt | Impaktene stopper | Impaktene fortsetter | Impaktene fortsetter |
+| **Kontrollert adkomst** | Forsegl serviceporten og legg sporstriper før samme vindu | Forsegling hel, ingen spor | Forsegling brutt, sammenhengende spor | Forsegling hel, ingen spor |
+| **To samtidige målesteder** | Feltloggeren og takreferansen tar samtidige originaler | Ingen samtidig forstyrrelse | Ingen samtidig forstyrrelse | Samtidig forstyrrelse begge steder |
+
+Det tredje forsøket krever feltloggeren, som lånes ut når sak 1 er konkludert. Slik binder sakene seg sammen.
+
+**Kontrakt mellom saksmotor og verden (FieldWork):** forsøkene utføres i verden, ikke ved mottakeren.
+- `Session->PlannedFieldTest(Line)` gir planlagt feltforsøk eller -1.
+- `Session->FieldTestExpectsPresent(Line,Test)` gir hva den skjulte årsaken lar forsøket vise. Kallet svarer bare for det planlagte forsøket. Verden skal iscenesette svaret fysisk (lyd, spor, forsegling, loggerutslag), ikke bare som tekst.
+- `Session->ReportFieldTest(Line,Test,bValid,bPresent,Evidence)` registrerer det spilleren faktisk sikret. Uteblitt vindnatt, batteritap, manglende original eller brutt oppsett rapporteres som `bValid=false` og gir ikke utelukkelse.
+
 ## Belønning og progresjon
 
 - **Første gyldige forsøk (én gang på tvers av sakene):** SARO-ledelsen godkjenner et servicetillegg: ett relé legges i depotet. Forskning hjelper driften.
@@ -74,7 +91,7 @@ OPS viser øverst **TONIGHT'S PLAN**: planlagt forsøk, tidsvindu og hva som man
 | --- | --- | --- |
 | The repeated interval | extra_pulse, feeder_fault, wrong_source | Claude, første leveranse |
 | Disagreeing records | time_disagreement, duplicate_print, unsigned_telex | Claude, implementert 3. november (se under) |
-| Visitors around the base | roof_steps, observer, landing_trace, fotografier, sheriff-/radiotips | Foreslått Codex: hendelsesspor fra Director inn i saksmotoren, himmelbaner (FF-RESEARCH-01) og etterspor (FF-RESEARCH-07) |
+| Visitors around the base | roof_steps, observer, landing_trace, feeder_presence, array_presence (observasjoner fra Director) | Saksmotor og saksbrett: Claude, implementert 3. november. Fysiske feltforsøk i verden: Codex |
 | Feltlogger som andre målested | FF-RESEARCH-04/05 bak `access.fieldlogger` | Foreslått Codex etter første leveranse |
 
 Saksmotoren (`S47FreeformCases`) er ren logikk uten verdenstilgang, lagres under `cases` i Freeform-lagringen og kan testes isolert. Eksisterende funn, originaler, arkiv, betaling og `MysterySteps` beholdes uendret; saksbrettet bygger oppå dem.
