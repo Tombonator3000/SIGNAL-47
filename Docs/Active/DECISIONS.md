@@ -1,8 +1,12 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 2. november 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 3. november 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
+
+## Gameplay-løkken er førsteprioritet, 3. november 2026
+
+Tom bestemte kl. 10 at gameplay og gameplay-løkken går foran grafikk og annet arbeid. Claude og Codex samarbeider om en engasjerende løkke bygget på gameplaygjennomgangen (GP-01 til GP-20) og sammenligningen med Signal Simulator, Voices of the Void og Greyhill Incident. Retningen er [saksløkken i Freeform](../Design/Gameplay/FREEFORM_CASE_LOOP.md): rutine betaler driften, mens spilleren tester forklaringer på avvik med fysiske forsøk; en konklusjon godtas bare når forsøkene støtter den. Arbeidsdeling føres i [OPPGAVER](../../unreal/OPPGAVER.md). Kritiske krasj- og verdensfeil beholder sin plass når de blokkerer spilling.
 
 ## Nattskift 2. til 3. november 2026
 
