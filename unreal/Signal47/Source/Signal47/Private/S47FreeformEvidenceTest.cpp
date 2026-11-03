@@ -363,7 +363,37 @@ namespace S47FreeformEvidenceTest
    if(!Click(M,TEXT("The quiet control proves a sky source"))||!Check(M,J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation is refused without credit or stage advance")))return;Go(33);return;
   }
   if(S.Stage==33)
-  {if(!Click(M,TEXT("Source unresolved; retain both measurements"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Close(M);WalkTo(M,{{-4.2,1.2},{3.8,1.2},{4.8,-.4}},34);return;}
+  {if(!Click(M,TEXT("Source unresolved; retain both measurements"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Go(330,.6);return;}
+  if(S.Stage==330)
+  {
+   const auto* C=F.CaseFile().Get(0);
+   if(!Click(M,TEXT("Case board")))return;
+   if(!Check(M,C&&C->bOpen&&!C->bConcluded&&C->Planned<0,TEXT("the reviewed extra-pulse original opens the interval case")))return;Go(331,.8);return;
+  }
+  if(S.Stage==331)
+  {
+   bool Board=false;for(const auto& Root:Roots(M))Board|=Text(Root,TEXT("THE REPEATED INTERVAL"),false)&&Text(Root,TEXT("STILL POSSIBLE"),false)&&Text(Root,TEXT("PREDICTION"),false);
+   if(!Check(M,Board,TEXT("actual case board shows the question, three open explanations and test predictions")))return;Photo(TEXT("03b-case-board"));Go(332,1.2);return;
+  }
+  if(S.Stage==332)
+  {
+   const int32 Before=F.Jobs().Num();
+   if(!Click(M,TEXT("Plan this test: Generator power")))return;
+   const auto* C=F.CaseFile().Get(0);
+   if(!Check(M,C&&C->Planned==0&&F.Jobs().Num()==Before+1&&F.Jobs().Last().CaseTest==0&&F.CurrentJob()&&F.CurrentJob()->Id==S.Ids[1],TEXT("planning a case test adds its own job without stealing the registered packet's selection")))return;Go(333,.8);return;
+  }
+  if(S.Stage==333)
+  {
+   bool Planned=false;for(const auto& Root:Roots(M))Planned|=Text(Root,TEXT("PLANNED"),false);
+   if(!Check(M,Planned,TEXT("actual case board marks the generator test as planned")))return;Photo(TEXT("03c-case-test-planned"));Go(334,1.2);return;
+  }
+  if(S.Stage==334){if(!Click(M,TEXT("Back to daily work")))return;Go(335,.8);return;}
+  if(S.Stage==335)
+  {
+   bool Plan=false;for(const auto& Root:Roots(M))Plan|=Text(Root,TEXT("TONIGHT'S PLAN"),false)&&Text(Root,TEXT("GENERATOR"),false);
+   if(!Check(M,Plan,TEXT("OPS daily work shows tonight's plan with generator readiness")))return;Photo(TEXT("03d-tonights-plan"));Go(336,1.2);return;
+  }
+  if(S.Stage==336){Close(M);WalkTo(M,{{-4.2,1.2},{3.8,1.2},{4.8,-.4}},34);return;}
   if(S.Stage==34){Aim(M,Target(M,TEXT("printer")));Go(35);return;}
   if(S.Stage==35)
   {if(!Use(M,TEXT("printer"))||!Check(M,J->Stage==EJob::Packet,TEXT("actual printer use collects the registered paper packet"))||!Document(M,J->Id+TEXT("-packet"),true)||!Document(M,J->Id+TEXT("-original"),false))return;Photo(TEXT("04-registered-packet"));Go(36);return;}
@@ -394,6 +424,7 @@ namespace S47FreeformEvidenceTest
   {
    if(!Check(M,M->Flow->CaseId==1&&!M->Flow->bDevRun&&M->World->Area==TEXT("saro")&&FVector::Dist(M->Player->Pos,S.SavedFoot)<.03&&!M->ModalOpen()&&!F.TerminalOnGlass(),TEXT("ordinary title/disk Continue restores actual records-room pose, Freeform mode and no orphan modal")))return;
    if(!Check(M,J&&J->Id==S.Ids[1]&&J->Stage==EJob::Filed&&J->bPaid&&J->bAudioReviewed&&J->OriginalCovered==18&&J->ControlCovered==8&&J->MarkStart<=9.3&&J->MarkEnd>=12.6&&F.Budget()==S.InitialCash+40&&F.Debt()==S.InitialDebt,TEXT("disk Continue preserves measured comparison, original marks and exactly-once filing credit")))return;
+   if(!Check(M,F.CaseFile().Get(0)&&F.CaseFile().Get(0)->bOpen&&F.CaseFile().Get(0)->Planned==0&&F.Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& X){return X.CaseTest==0&&!X.bCaseRecorded;}),TEXT("disk Continue keeps the open case and its planned generator test job")))return;
    for(const auto& Doc:S.Originals)if(!Document(M,Doc.Id,false))return;++S.Restores;Aim(M,Target(M,TEXT("binder")));Go(72);return;
   }
   if(S.Stage==72){if(!Use(M,TEXT("binder")))return;Go(73,.5);return;}

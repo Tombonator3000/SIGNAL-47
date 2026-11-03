@@ -847,7 +847,7 @@ void FS47FreeformSession::OpenOperations()
  }
  Rows.Add(S47FreeformTerminal::Small(Feedback));
  Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; field kit includes two fuses and a relay. Manual reference comparison is included.")));
- Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case board"),[this]{OpenCaseBoard();},Cases.Get(0)&&Cases.Get(0)->bOpen&&!Cases.Get(0)->bConcluded&&Cases.Get(0)->Planned<0),S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
+ Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case board"),[this]{Feedback.Empty();OpenCaseBoard();},Cases.Get(0)&&Cases.Get(0)->bOpen&&!Cases.Get(0)->bConcluded&&Cases.Get(0)->Planned<0),S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
  static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
  TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(S47FreeformTerminal::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
  OpenTerminal(3,TEXT("OPS / DAILY WORK"),S47Kit::Col(Rows));
@@ -1050,7 +1050,7 @@ void FS47FreeformSession::OpenCaseBoard()
    if(Res.bDone)Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s"),Res.Day,Res.bTicks?TEXT("EXTRA TICKS PRESENT"):TEXT("NO EXTRA TICKS"));
    else if(C->Planned==T)Card+=TEXT("\nPLANNED / job ")+C->PlannedJob;
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];
-   if(!Res.bDone&&!C->bConcluded&&C->Planned<0)List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test as the next observation"),[this,T]{PlanCaseTest(T);OpenCaseBoard();},true)];
+   if(!Res.bDone&&!C->bConcluded&&C->Planned<0)List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FS47FreeformCases::TestName(Test),[this,T]{PlanCaseTest(T);OpenCaseBoard();},true)];
   }
   Rows.Add(SNew(SBox).HeightOverride(240)[List]);
   if(!C->bConcluded)
@@ -1063,7 +1063,7 @@ void FS47FreeformSession::OpenCaseBoard()
   else Rows.Add(S47FreeformTerminal::Small(TEXT("CASE CLOSED / The records reply is in your documents. A field logger is approved on loan for an independent second site.")));
  }
  Rows.Add(S47FreeformTerminal::Small(Feedback));
- Rows.Add(S47FreeformTerminal::Button(TEXT("Back to daily work"),[this]{OpenOperations();}));
+ Rows.Add(S47FreeformTerminal::Button(TEXT("Back to daily work"),[this]{Feedback.Empty();OpenOperations();}));
  OpenTerminal(3,TEXT("OPS / CASE BOARD"),S47Kit::Col(Rows));
 }
 bool FS47FreeformSession::Use(const FString& Id)
