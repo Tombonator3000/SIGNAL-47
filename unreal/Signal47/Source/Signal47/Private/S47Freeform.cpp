@@ -426,7 +426,7 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(!PointReady())return TEXT("Wait for the dishes to reach the commanded direction. Inspect isolated elements on the left status PC if movement stops.");
  if(Settle<1)return TEXT("The array is on source. Wait one second for it to settle.");
  const auto P=EffectiveProfile(*J);const auto& R=M->Story->Rx;
- if(R.Pass(P))return TEXT("READY. Select START ACQUISITION to record this source.");
+ if(R.Pass(P))return TEXT("READY. Press START RECORDING to record this source.");
  if(FMath::Abs(R.Frequency-P.F)>P.FTol)return FString::Printf(TEXT("Tune FREQUENCY to %.3f MHz (now %.3f). Watch the carrier peak and received percentage."),P.F,R.Frequency);
  if(R.Gain<P.Gain[0]||R.Gain>P.Gain[1])return FString::Printf(TEXT("Set GAIN between %.0f and %.0f (now %.0f)."),P.Gain[0],P.Gain[1],R.Gain);
  if(R.Bandwidth<P.Bw[0]||R.Bandwidth>P.Bw[1])return FString::Printf(TEXT("Set BANDWIDTH between %.0f and %.0f kHz (now %.0f)."),P.Bw[0],P.Bw[1],R.Bandwidth);
@@ -796,129 +796,223 @@ void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bA
   bTelemetry=false;TerminalView.Reset();ActiveTerminal=-1;Changed();
  });bTelemetry=bLive;bAudioOpen=bAudio;
 }
+namespace
+{
+ namespace T=S47FreeformTerminal;
+ FString StatusWord(const FS47FreeformSession::FJob& J,bool bSelected)
+ {
+  using E=FS47FreeformSession::EJobStage;
+  if(J.Stage==E::New)return bSelected?TEXT("READY"):J.Slot==2?TEXT("OPTIONAL"):TEXT("QUEUED");
+  if(J.Stage==E::Pointed)return TEXT("POINTED");if(J.Stage==E::Integrating)return TEXT("RECORDING");if(J.Stage==E::Chart)return TEXT("AT PRINTER");
+  if(J.Stage==E::Recorded)return J.bAnomaly?TEXT("INVESTIGATE"):TEXT("REGISTER");if(J.Stage==E::Registered)return TEXT("PACKET");if(J.Stage==E::Packet)return TEXT("FILE");return TEXT("FILED");
+ }
+}
+TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidget> Content)
+{
+ OpsSection=Section;
+ const bool CaseWaiting=CaseAwaitingChoice()>=0,Service=ServiceGuide==1||(Field&&Field->HasArrayFault());
+ bool Photos=false;if(Director)for(const auto& C:Director->PhotoClaims())Photos|=!C.bPaid;
+ TArray<T::FNav> Items;
+ Items.Add({TEXT("OVERVIEW"),Section==0,[this]{Feedback.Empty();OpsSection=0;OpenOperations();}});
+ Items.Add({TEXT("DAILY WORK"),Section==1,[this]{Feedback.Empty();OpsSection=1;OpenOperations();}});
+ Items.Add({TEXT("CASE BOARD"),Section==2,[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseWaiting});
+ Items.Add({TEXT("CASE ARCHIVE"),Section==3,[this]{Feedback.Empty();OpenArchive();}});
+ Items.Add({TEXT("SERVICE"),Section==4,[this]{Feedback.Empty();OpenServiceGuide();},Service});
+ Items.Add({TEXT("SUPPLIES"),Section==5,[this]{Feedback.Empty();OpsSection=5;OpenOperations();},Photos});
+ return T::Columns({{.21f,T::Nav(Items)},{.79f,Content}},16);
+}
 void FS47FreeformSession::OpenOperations()
 {
- if(!RequirePower())return;
- if(!M||!M->UI)return;
+ if(!RequirePower()||!M||!M->UI)return;
+ const int32 Section=OpsSection==1||OpsSection==5?OpsSection:0;
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47FreeformTerminal::Paper(FString::Printf(TEXT("SARO / FREEFORM / DAY %d\nOPERATING BUDGET $%d / REQUISITION BALANCE $%d\nObserve, verify, retain. An unresolved result is still useful work."),DayNumber,Cash,Loan)));
- TSharedRef<SScrollBox> List=SNew(SScrollBox);
- if(!Work.ContainsByPredicate([](const FJob& J){return J.Source==0&&J.Stage==EJobStage::Filed;}))
-  Rows.Add(S47FreeformTerminal::Small(TEXT("OPTIONAL FIRST JOB / Establish a normal reference. Complete a calibration cross and register it at OPS so later discrepancies can be compared against working instruments. Other work remains available.")));
- for(int32 Group=0;Group<3;++Group)
+ auto Rows4=[this](bool bAll)
  {
-  if(Group==2&&!bShowEarlierJobs)continue;
-  bool Heading=false;
-  for(int32 I=0;I<Work.Num();++I)
+  TArray<T::FRow> Out;
+  for(int32 Group=0;Group<3;++Group)
   {
-   const auto& J=Work[I];const bool Active=J.Stage>EJobStage::New&&J.Stage<EJobStage::Filed;
-   const int32 InGroup=Active||I==Selected?0:J.Day==DayNumber?1:2;if(InGroup!=Group)continue;
-   if(!Heading){List->AddSlot()[S47FreeformTerminal::Small(Group==0?TEXT("IN PROGRESS / SELECTED"):Group==1?TEXT("TODAY"):TEXT("EARLIER WORK / ORIGINALS RETAINED"))];Heading=true;}
-   const int32 Index=I;List->AddSlot()[S47FreeformTerminal::Button(JobLine(J),[this,Index]{SelectJob(Index);OpenOperations();},Selected==I)];
+   if(Group==2&&!(bAll&&bShowEarlierJobs))continue;
+   for(int32 I=0;I<Work.Num();++I)
+   {
+    const auto& J=Work[I];const bool Active=J.Stage>EJobStage::New&&J.Stage<EJobStage::Filed;
+    const int32 InGroup=Active||I==Selected?0:J.Day==DayNumber?1:2;if(InGroup!=Group)continue;
+    const int32 Index=I;T::FRow R;R.Cells={J.Id,FS47Observing::Runs()[J.Source].Source,StatusWord(J,I==Selected)};R.bSelected=I==Selected;
+    R.Badge=J.CaseTest>=0?TEXT("CASE"):J.bAnomaly?TEXT("ANOM"):FString::Printf(TEXT("P%d"),J.Slot+1);
+    R.Action=[this,Index]{SelectJob(Index);OpenOperations();};Out.Add(R);
+   }
   }
- }
- Rows.Add(S47FreeformTerminal::Button(bShowEarlierJobs?TEXT("Hide earlier work"):TEXT("Show earlier work"),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();}));
- if(const FString Plan=TonightPlan();!Plan.IsEmpty())Rows.Add(S47FreeformTerminal::Paper(Plan));
- Rows.Add(S47FreeformTerminal::Paper(TEXT("NEXT / ")+NextAction()));
- Rows.Add(SNew(SBox).HeightOverride(180)[List]);
- if(const FJob* J=CurrentJob())
+  return Out;
+ };
+ auto Actions=[this]()->TSharedRef<SWidget>
  {
-  if(J->Slot==2&&J->Stage==EJobStage::New)Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Third job: hydrogen drift"),[this]{ChooseThird(false);OpenOperations();}),S47FreeformTerminal::Button(TEXT("Third job: Virgo A"),[this]{ChooseThird(true);OpenOperations();})}));
+  TArray<S47Kit::FW> A;const FJob* J=CurrentJob();if(!J)return S47Kit::Col(A);
+  if(J->Slot==2&&J->Stage==EJobStage::New)A.Add(S47Kit::Row({T::Button(TEXT("Third job: hydrogen drift"),[this]{ChooseThird(false);OpenOperations();}),T::Button(TEXT("Third job: Virgo A"),[this]{ChooseThird(true);OpenOperations();})}));
   if(J->Stage==EJobStage::Recorded)
   {
    if(J->bAnomaly)
    {
     if(Specialized(J->Phenomenon))
     {
-     Rows.Add(S47FreeformTerminal::Small(ControlSummary(*J)));
-     Rows.Add(S47FreeformTerminal::Button(TEXT("Compare the retained instrument measurements"),[this]{CompareInstrument();OpenOperations();}));
+     A.Add(T::Small(ControlSummary(*J)));
+     A.Add(T::Button(TEXT("Compare the retained instrument measurements"),[this]{CompareInstrument();OpenOperations();}));
      const FString Conclusion=InstrumentConclusion(J->Phenomenon);
-     const FString Label=J->Phenomenon==TEXT("wrong_source")?TEXT("Register an off-centre maximum; origin unresolved"):J->Phenomenon==TEXT("time_disagreement")?TEXT("Register disagreement in the receiver timing path"):TEXT("Register mismatched duplicate; preserve original");
-     Rows.Add(S47FreeformTerminal::Button(Label,[this,Conclusion]{RegisterComparison(Conclusion);OpenOperations();},true));
+     const FString Name=J->Phenomenon==TEXT("wrong_source")?TEXT("Register an off-centre maximum; origin unresolved"):J->Phenomenon==TEXT("time_disagreement")?TEXT("Register disagreement in the receiver timing path"):TEXT("Register mismatched duplicate; preserve original");
+     A.Add(T::Button(Name,[this,Conclusion]{RegisterComparison(Conclusion);OpenOperations();},true));
     }
     else
     {
-     Rows.Add(S47FreeformTerminal::Small(TEXT("Compare the original with the internal reference at the reel deck beside the telephone before registering.")));
-     Rows.Add(S47FreeformTerminal::Button(TEXT("The quiet control proves a sky source"),[this]{RegisterComparison(TEXT("sky"));OpenOperations();}));
-     Rows.Add(S47FreeformTerminal::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
+     A.Add(T::Small(TEXT("Compare the original with the internal reference at the reel deck beside the telephone before registering.")));
+     A.Add(T::Button(TEXT("The quiet control proves a sky source"),[this]{RegisterComparison(TEXT("sky"));OpenOperations();}));
+     A.Add(T::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
    }
-   else Rows.Add(S47FreeformTerminal::Button(J->CaseTest>=0&&!J->bCaseRecorded?TEXT("Register observation and case test result / $20"):TEXT("Register routine result / $20"),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
+   else A.Add(T::Button(J->CaseTest>=0&&!J->bCaseRecorded?TEXT("Register observation and case test result / $20"):TEXT("Register routine result / $20"),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
   }
+  return S47Kit::Col(A);
+ };
+ const FJob* J=CurrentJob();
+ auto Account=T::Panel(TEXT("STATION ACCOUNT"),S47Kit::Col({
+  T::Value(TEXT("OPERATING BUDGET"),FString::Printf(TEXT("$%d"),Cash)),T::Value(TEXT("REQUISITION"),FString::Printf(TEXT("$%d"),Loan)),
+  T::Value(TEXT("SELECTED JOB"),J?FString(FS47Observing::Runs()[J->Source].Source):FString(TEXT("NONE")),true),
+  T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return NextAction().ToUpper();}),true)}));
+ if(Section==0)
+ {
+  if(!Work.ContainsByPredicate([](const FJob& X){return X.Source==0&&X.Stage==EJobStage::Filed;}))
+   Rows.Add(T::Small(TEXT("OPTIONAL FIRST JOB / Establish a normal reference: complete the 3C 286 calibration cross and register it here, so later discrepancies can be compared against working instruments.")));
+  auto Today=T::Panel(TEXT("TODAY'S WORK"),S47Kit::Col({T::Table({TEXT("JOB"),TEXT("SOURCE"),TEXT("STATUS")},{1.25f,1.35f,1.f},Rows4(false)),
+   T::Columns({{.6f,T::Big(FString(TEXT("OPEN SELECTED JOB")),[this]{OpsSection=1;OpenOperations();},1)},{.4f,T::Big(FString(TEXT("EARLIER WORK")),[this]{bShowEarlierJobs=true;OpsSection=1;OpenOperations();})}},10)}));
+  Rows.Add(T::Columns({{.64f,Today},{.36f,Account}},12));
+  Rows.Add(Actions());
+  if(const FString Plan=TonightPlan();!Plan.IsEmpty())Rows.Add(T::Panel(TEXT("TONIGHT'S PLAN"),T::Paper(Plan)));
+  if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
+  Rows.Add(T::Panel(TEXT("SHIFT ACTIONS"),S47Kit::Row({T::Big(FString(TEXT("REST UNTIL MORNING")),[this]{if(!Rest())OpenOperations();}),T::Big(FString(TEXT("SERVICE ORDER")),[this]{OpenServiceGuide();})})));
+  OpenTerminal(3,TEXT("OPS / MAIN MENU"),OpsShell(0,S47Kit::Col(Rows)));
+  return;
  }
+ if(Section==1)
+ {
+  auto Queue=T::Panel(FString::Printf(TEXT("WORK QUEUE (DAY %02d)"),DayNumber),S47Kit::Col({T::Table({TEXT("ID"),TEXT("SOURCE"),TEXT("STATE")},{1.4f,1.3f,1.f},Rows4(true)),
+   T::Big(FString(bShowEarlierJobs?TEXT("HIDE EARLIER WORK"):TEXT("SHOW EARLIER WORK")),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();})}));
+  TArray<S47Kit::FW> D;
+  if(J)
+  {
+   const auto P=EffectiveProfile(*J);
+   D.Add(T::Heading(FS47Observing::Runs()[J->Source].Source,44));
+   D.Add(T::Value(TEXT("AZ"),FString::Printf(TEXT("%.1f°"),TargetAz())));D.Add(T::Value(TEXT("EL"),FString::Printf(TEXT("%.1f°"),TargetEl())));
+   D.Add(T::Value(TEXT("FREQUENCY"),FString::Printf(TEXT("%.3f MHz"),P.F)));D.Add(T::Value(TEXT("INTEGRATION"),FString::Printf(TEXT("%.0f s"),SourceSeconds())));
+   D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return NextAction().ToUpper();}),true));
+  }
+  else D.Add(T::Small(TEXT("Select a job in the queue.")));
+  Rows.Add(T::Columns({{.55f,Queue},{.45f,T::Panel(TEXT("SELECTED JOB"),S47Kit::Col(D))}}));
+  Rows.Add(Actions());
+  if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
+  OpenTerminal(3,TEXT("OPS / DAILY WORK"),OpsShell(1,S47Kit::Col(Rows)));
+  return;
+ }
+ // SUPPLIES: stock, purchases and documentation credits.
+ TArray<S47Kit::FW> Stock;
+ for(const TCHAR* Item:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("film")})Stock.Add(T::Value(FString(Item).ToUpper(),FString::Printf(TEXT("%d"),InventoryCount(Item))));
+ if(Field)Stock.Add(T::Value(TEXT("GENERATOR TANK"),FString::Printf(TEXT("%.1f h"),Field->GeneratorHours())));
+ Rows.Add(T::Columns({{.5f,T::Panel(TEXT("DEPOT STOCK"),S47Kit::Col(Stock))},{.5f,Account}}));
+ static const TCHAR* Names[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
+ TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(T::Button(Upgrades[I]?FString(Names[I])+TEXT(" / INSTALLED"):FString(Names[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}
+ Rows.Add(T::Panel(TEXT("UPGRADES"),S47Kit::Col({T::Small(TEXT("Relay reserve reduces recurrent failures; the field kit includes two fuses and a relay. Manual reference comparison is included.")),S47Kit::Row(U)})));
  if(Director)
  {
-  bool Heading=false;
+  TArray<S47Kit::FW> Claims;
   for(const auto& Claim:Director->PhotoClaims())if(!Claim.bPaid)
   {
-   if(!Heading){Rows.Add(S47FreeformTerminal::Paper(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT\nOne retained photograph per incident. Payment recognises documentation, not proof of an origin.")));Heading=true;}
-   const FString Id=Claim.Id;
-   Rows.Add(S47FreeformTerminal::Small(Claim.Title+TEXT(" / ORIGINAL ")+Claim.PhotoId));
-   Rows.Add(S47FreeformTerminal::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
+   const FString Id=Claim.Id;Claims.Add(T::Small(Claim.Title+TEXT(" / ORIGINAL ")+Claim.PhotoId));
+   Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
   }
+  if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT"),S47Kit::Col(Claims)));
  }
- Rows.Add(S47FreeformTerminal::Small(Feedback));
- Rows.Add(S47FreeformTerminal::Small(TEXT("UPGRADES: relay reserve reduces recurrent failures; field kit includes two fuses and a relay. Manual reference comparison is included.")));
- Rows.Add(S47Kit::Row({S47FreeformTerminal::Button(TEXT("Case board"),[this]{Feedback.Empty();OpenCaseBoard(-1);},CaseAwaitingChoice()>=0),S47FreeformTerminal::Button(TEXT("Case archive"),[this]{OpenArchive();}),S47FreeformTerminal::Button(TEXT("Service work order"),[this]{OpenServiceGuide();}),S47FreeformTerminal::Button(TEXT("Rest until morning"),[this]{if(!Rest())OpenOperations();})}));
- static const TCHAR* Labels[]={TEXT("Relay reserve / $60"),TEXT("Reference comparison / $80"),TEXT("Field service kit / $50")};
- TArray<S47Kit::FW> U;for(int32 I=0;I<3;++I){if(I==1)continue;const int32 Index=I;U.Add(S47FreeformTerminal::Button(Upgrades[I]?FString(Labels[I])+TEXT(" / INSTALLED"):FString(Labels[I]),[this,Index]{Upgrade(Index);OpenOperations();},false,!Upgrades[I]));}Rows.Add(S47Kit::Row(U));
- OpenTerminal(3,TEXT("OPS / DAILY WORK"),S47Kit::Col(Rows));
+ if(!Feedback.IsEmpty())Rows.Add(T::Small(Feedback));
+ OpenTerminal(3,TEXT("OPS / SUPPLIES"),OpsShell(5,S47Kit::Col(Rows)));
 }
 void FS47FreeformSession::OpenTracking()
 {
- if(!RequirePower())return;
- if(!M||!M->UI||!CurrentJob())return;
- auto P=EffectiveProfile(*CurrentJob());
- TArray<S47Kit::FW> Rows;
- Rows.Add(S47FreeformTerminal::Paper(JobLine(*CurrentJob())+FString::Printf(TEXT("\nCOMMAND AZ %.1f / EL %.1f\n"),TargetAz(),TargetEl())+P.Card));
- Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{return PointReady()?Settle>=1?TEXT("ACTUAL ENCODERS STEADY / READY"):TEXT("ON TARGET / SETTLING"):TEXT("ARRAY MOVING OR DEGRADED / WAIT FOR ENCODERS");}),TAttribute<int32>(0)));
- Rows.Add(S47FreeformTerminal::Button(TEXT("Point array to selected source"),[this]{if(PointSelected())M->UI->Close();},true,CurrentJob()->Stage<=EJobStage::Pointed));
- Rows.Add(S47FreeformTerminal::Small(TEXT("Watch the actual dishes through the window. Up to three isolated antennas permit degraded acquisition. Fewer than 24 require service.")));
+ if(!RequirePower()||!M||!M->UI||!M->Web||!CurrentJob())return;
+ const auto P=EffectiveProfile(*CurrentJob());const FString Name=FS47Observing::Runs()[CurrentJob()->Source].Source;
+ auto ArrayAzEl=[this]{double Az=0,El=0;int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){Az+=M->Web->DishAz(I);El+=M->Web->DishEl(I);++N;}return N?FVector2D(Az/N,El/N):FVector2D(0,0);};
+ auto Available=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return N;};
+ auto Source=T::Panel(TEXT("SOURCE"),S47Kit::Col({T::Value(TEXT("TARGET"),Name,true),T::Value(TEXT("FREQ"),FString::Printf(TEXT("%.3f MHz"),P.F)),
+  T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetAz());})),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetEl());}))}),true);
+ auto Done=[this]{const FJob* J=CurrentJob();if(!J||J->Source!=0)return 0;return J->Stage>=EJobStage::Chart?5:bCrossRunning?CrossPoint:0;};
+ auto Cal=T::Panel(TEXT("CALIBRATION / 5-POINT"),S47Kit::Col({T::FivePoint(Done,[this]{return bCrossRunning;},[this]{return CurrentJob()&&CurrentJob()->Source==0;}),
+  T::Value(TEXT("PROGRESS"),TAttribute<FString>::CreateLambda([Done]{return FString::Printf(TEXT("%d / 5"),Done());}))}),true);
+ auto Plot=T::Panel(FString::Printf(TEXT("AZ / EL PLOT (TARGET %s)"),*Name),T::SkyPlot([this]{return FVector2D(TargetAz(),TargetEl());},ArrayAzEl,Name),true);
+ auto Current=T::Panel(TEXT("CURRENT (ARRAY)"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().X);}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().Y);}),true)}),true);
+ auto Target=T::Panel(TEXT("TARGET"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetAz());}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetEl());}),true)}),true);
+ TArray<S47Kit::FW> Right={Current,Target,
+  T::Banner(TAttribute<FString>::CreateLambda([this,Available]{const FString State=PointReady()?Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING"):CurrentJob()&&CurrentJob()->Stage==EJobStage::Pointed?TEXT("ARRAY MOVING"):TEXT("READY TO POINT");return State+FString::Printf(TEXT("\n%d / %d ANTENNAS AVAILABLE"),Available(),M->Web->DishCount());}),TAttribute<bool>::CreateLambda([this]{return !PointReady();})),
+  T::Big(FString(TEXT("POINT ARRAY")),[this]{if(PointSelected())M->UI->Close();},1,CurrentJob()->Stage<=EJobStage::Pointed)};
  if(CurrentJob()->Phenomenon==TEXT("wrong_source")&&CurrentJob()->Stage==EJobStage::Recorded)
  {
-  Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ADJACENT CONTROL %d/3 / SETTLE %.1f s / SAMPLE %.1f s\n%s"),J->BeamPoint+1,J->BeamSettle,J->BeamSample,*ControlSummary(*J)):FString();}),TAttribute<int32>(0)));
-  Rows.Add(S47FreeformTerminal::Button(TEXT("Measure west, east and centre beams"),[this]{if(StartControl())M->UI->Close();},true,!CurrentJob()->bControl));
+  Right.Add(T::Text(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ADJACENT CONTROL %d/3 / SETTLE %.1f s / SAMPLE %.1f s"),J->BeamPoint+1,J->BeamSettle,J->BeamSample):FString();}),TAttribute<int32>(0)));
+  Right.Add(T::Button(TEXT("Measure west, east and centre beams"),[this]{if(StartControl())M->UI->Close();},true,!CurrentJob()->bControl));
  }
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(T::Columns({{.28f,S47Kit::Col({Source,Cal})},{.46f,Plot},{.26f,S47Kit::Col(Right)}},12));
+ Rows.Add(T::Small(TEXT("Watch the actual dishes through the window. Up to three isolated antennas permit degraded acquisition; fewer than 24 require service.")));
  OpenTerminal(2,TEXT("TRACKING / ARRAY CONTROL"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenStatus()
 {
- if(!RequirePower())return;
- if(!M||!M->UI||!M->Web)return;
+ if(!RequirePower()||!M||!M->UI||!M->Web)return;
+ const int32 Count=M->Web->DishCount();SelectedDish=FMath::Clamp(SelectedDish,0,FMath::Max(0,Count-1));
+ auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
+ auto State=[this](int32 I){if(I==SelectedDish)return 1;if(!M->Web->DishRemoteAvailable(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1?3:0;};
+ auto Pick=[this](int32 I){SelectedDish=I;if(M->Web->DishId(I)==TEXT("S-03")){if(Field)Field->DiagnoseService();RecordEvidence(TEXT("s03-diagnosed"),TEXT("S-03 command/encoder status inspected at the status terminal."));}OpenStatus();};
+ auto Available=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return N;};
+ auto Grid=T::Panel(FString::Printf(TEXT("ARRAY STATUS / %d ANTENNAS"),Count),S47Kit::Col({T::AntennaGrid(Count,Short,State,Pick),
+  T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([Available,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),Available(),Count);}),TAttribute<bool>::CreateLambda([Available,Count]{return Available()<Count;}))},
+              {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault;}))}}),
+  T::Small(TEXT("KEY / outline READY / amber SELECTED / red ISOLATED OR FAULT / blinking MOVING"))}));
+ const int32 Dish=SelectedDish;
+ auto Detail=T::Panel(Short(Dish)+TEXT(" / ANTENNA DETAIL"),S47Kit::Col({
+  T::Value(TEXT("MODE"),TAttribute<FString>::CreateLambda([this,Dish]{return M->Web->DishRemoteAvailable(Dish)?FString(TEXT("REMOTE")):FString(TEXT("ISOLATED / LOCAL"));}),true),
+  T::Value(TEXT("ACTUAL"),TAttribute<FString>::CreateLambda([this,Dish]{return FString::Printf(TEXT("AZ %.1f° EL %.1f°"),M->Web->DishAz(Dish),M->Web->DishEl(Dish));})),
+  T::Value(TEXT("TARGET"),TAttribute<FString>::CreateLambda([this,Dish]{return FString::Printf(TEXT("AZ %.1f° EL %.1f°"),M->Web->DishTargetAz(Dish),M->Web->DishTargetEl(Dish));})),
+  T::Value(TEXT("DRIVE"),TAttribute<FString>::CreateLambda([this,Dish]{return !M->Web->DishRemoteAvailable(Dish)?FString(TEXT("SERVICE")):FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(Dish),M->Web->DishTargetAz(Dish)))>.1||FMath::Abs(M->Web->DishEl(Dish)-M->Web->DishTargetEl(Dish))>.1?FString(TEXT("MOVING")):FString(TEXT("READY"));}),true),
+  T::Value(TEXT("RELAY"),TAttribute<FString>::CreateLambda([this,Dish]{return M->Web->DishId(Dish)==TEXT("S-03")&&Field&&Field->HasArrayFault()?FString(TEXT("FAULT")):FString(TEXT("OK"));}),true)}),true);
+ TArray<S47Kit::FW> Service;
+ if(Field)Service.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return Field?Field->ServiceStatus():FString();}),TAttribute<int32>(0)));
+ Service.Add(T::Big(FString(TEXT("INSPECT SERVICE RECORD")),[this]{OpenArchive();},2));
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47FreeformTerminal::Small(TEXT("Inspect actual and commanded direction. Select an element before local service.")));
- TSharedRef<SScrollBox> List=SNew(SScrollBox);
- for(int32 I=0;I<M->Web->DishCount();++I)
- {
-  const int32 Index=I;
-  List->AddSlot()[S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this,Index]
-  {return FString::Printf(TEXT("%s ACT %.1f/%.1f CMD %.1f/%.1f %s"),*M->Web->DishId(Index),M->Web->DishAz(Index),M->Web->DishEl(Index),M->Web->DishTargetAz(Index),M->Web->DishTargetEl(Index),M->Web->DishRemoteAvailable(Index)?TEXT("REMOTE"):TEXT("ISOLATED / SERVICE"));}),[this,Index]{SelectedDish=Index;if(M->Web->DishId(Index)==TEXT("S-03")){if(Field)Field->DiagnoseService();RecordEvidence(TEXT("s03-diagnosed"),TEXT("S-03 command/encoder status inspected at the status terminal."));}OpenStatus();},I==SelectedDish)];
- }
- Rows.Add(SNew(SBox).HeightOverride(220)[List]);
- if(Field)Rows.Add(S47FreeformTerminal::Text(TAttribute<FString>::CreateLambda([this]{return Field?Field->ServiceStatus():FString();}),TAttribute<int32>(0)));
- Rows.Add(S47FreeformTerminal::Small(bPowerFault?TEXT("FEEDER VOLTAGE UNSTABLE / USE FIELD METER OR BACKUP"):TEXT("FEEDER SUPPLY NORMAL")));
+ Rows.Add(T::Columns({{.6f,Grid},{.4f,S47Kit::Col({Detail,T::Panel(TEXT("MAINTENANCE"),S47Kit::Col(Service),true)})}},12));
+ Rows.Add(T::Small(TEXT("Select an element to inspect it. S-03 is serviced locally at its cable junction, ground level.")));
  OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenReceiver()
 {
- if(!RequirePower())return;
- if(!M||!M->UI||!M->Story||!CurrentJob())return;
- auto& R=M->Story->Rx;const auto P=EffectiveProfile(*CurrentJob());TArray<S47Kit::FW> Rows;
+ if(!RequirePower()||!M||!M->UI||!M->Story||!CurrentJob())return;
+ auto& R=M->Story->Rx;const auto P=EffectiveProfile(*CurrentJob());
  if(CurrentJob()->Stage!=EJobStage::New)R.Azimuth=TargetAz(); // No second, contradictory azimuth dial after physical tracking.
- S47ReceiverReadout::FData D;
- D.GetReceiver=[this]{return M->Story->Rx;};D.GetProfile=[this]{return EffectiveProfile(*CurrentJob());};
- D.GetQuality=[this]{return M->Story->Rx.Quality(EffectiveProfile(*CurrentJob()));};
- D.GetProgress=[this]{return CurrentJob()?CurrentJob()->Elapsed/FMath::Max(1.,SourceSeconds()):0.;};
- D.GetArrayQuality=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return double(N)/FMath::Max(1,M->Web->DishCount());};
- D.GetReady=[this]{return ReceiverReady();};D.GetTrackingReady=[this]{return PointReady()&&Settle>=1;};
- D.GetStatus=[this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?StageText(J->Stage):J&&J->Stage==EJobStage::Integrating?FString(!M->Story->Rx.Pass(EffectiveProfile(*J))?TEXT("RECORDING PAUSED"):(!PointReady()||Settle<1)?(bCrossRunning?TEXT("REFERENCE SCAN / MOVING"):TEXT("RECORDING PAUSED")):TEXT("RECORDING")):ReceiverReady()?FString(TEXT("READY / START ACQUISITION")):FString(TEXT("SETUP / FOLLOW NEXT"));};
- D.GetRecording=[this]{return CurrentJob()&&CurrentJob()->Stage==EJobStage::Integrating;};D.GetNextAction=[this]{return ReceiverNextAction();};
- Rows.Add(S47ReceiverReadout::Build(D));
- Rows.Add(S47FreeformTerminal::Small(JobLine(*CurrentJob())+FString::Printf(TEXT("\nF %.3f MHz / GAIN %.0f–%.0f / BW %.0f–%.0f kHz / %.0f seconds"),P.F,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],SourceSeconds())));
- Rows.Add(S47FreeformTerminal::Knob(TEXT("FREQUENCY MHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;}));
- Rows.Add(S47FreeformTerminal::Pair(S47FreeformTerminal::Knob(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;}),S47FreeformTerminal::Knob(TEXT("BANDWIDTH kHz"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})));
- Rows.Add(S47FreeformTerminal::ButtonLive(TAttribute<FString>::CreateLambda([this]{return CurrentJob()&&CurrentJob()->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED / FOLLOW NEXT ABOVE")):ReceiverReady()?FString(TEXT("READY / START ACQUISITION")):FString(TEXT("FOLLOW NEXT ABOVE"));}),[this]{StartAcquisition();},true,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();})));
- Rows.Add(S47FreeformTerminal::Small(TEXT("Pointing follows the right-hand tracking PC. Tune the carrier to 100%, then start. The recording advances here.")));OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
+ const FString Name=FS47Observing::Runs()[CurrentJob()->Source].Source;
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(T::Tabs({{TEXT("ACQUIRE"),ReceiverTab==0,[this]{ReceiverTab=0;OpenReceiver();}},{TEXT("WORK CARD"),ReceiverTab==1,[this]{ReceiverTab=1;OpenReceiver();}}}));
+ if(ReceiverTab==1)
+ {
+  Rows.Add(T::Panel(TEXT("WORK CARD"),S47Kit::Col({T::Paper(JobLine(*CurrentJob())),T::Paper(P.Card),
+   T::Small(FString::Printf(TEXT("REQUIRED / F %.3f MHz +/- %.3f / GAIN %.0f-%.0f / BW %.0f-%.0f kHz / %.0f s"),P.F,P.FTol,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1],SourceSeconds()))})));
+  OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);return;
+ }
+ auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
+ Rows.Add(T::Panel(FString(),S47Kit::Col({
+  T::Value(TEXT("FREQUENCY SPECTRUM (MHz)"),FString::Printf(TEXT("SOURCE: %s | GAIN %.0f-%.0f | BW %.0f-%.0f kHz"),*Name,P.Gain[0],P.Gain[1],P.Bw[0],P.Bw[1]),true),
+  T::Spectrum([this]{return M->Story->Rx;},[this]{return EffectiveProfile(*CurrentJob());},Quality)})));
+ Rows.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return ReceiverNextAction().ToUpper();}),TAttribute<bool>::CreateLambda([this]{return !ReceiverReady();})));
+ Rows.Add(T::Columns({
+  {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
+  {1.f,T::Control(TEXT("GAIN"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f"),M->Story->Rx.Gain);}),0,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Gain);}),[this](float V){M->Story->Rx.Gain=V;})},
+  {1.f,T::Control(TEXT("BANDWIDTH"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.0f kHz"),M->Story->Rx.Bandwidth);}),1,100,1,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Bandwidth);}),[this](float V){M->Story->Rx.Bandwidth=V;})}},10));
+ auto Start=T::Big(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):J&&J->Stage==EJobStage::Integrating?FString(TEXT("RECORDING...")):FString(TEXT("START RECORDING"));}),[this]{StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();}));
+ Rows.Add(T::Columns({
+  {1.f,T::Panel(FString(),T::Readout(TEXT("RECEPTION"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}),TAttribute<float>::CreateLambda([Quality]{return float(Quality());})))},
+  {1.f,T::Panel(FString(),T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}),TAttribute<float>::CreateLambda([this]{const auto* J=CurrentJob();return J?float(J->Elapsed/FMath::Max(1.,SourceSeconds())):0.f;})))},
+  {1.f,SNew(SBox).VAlign(VAlign_Center)[Start]}},10));
+ OpenTerminal(1,TEXT("RECEIVER / ACQUISITION"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenAudio()
 {
@@ -955,7 +1049,7 @@ void FS47FreeformSession::OpenArchive()
   if(NearBinder())Rows.Add(S47Kit::Button(TEXT("Place registered originals in this binder"),[this]{FilePacket();OpenArchive();},true));
   else Rows.Add(S47Kit::Small(TEXT("Registered packet awaiting physical filing. Take its originals to the records-room binder; this remote archive is read-only.")));
  }
- if(Computer)OpenTerminal(3,TEXT("OPS / CASE ARCHIVE"),S47Kit::Col(Rows));
+ if(Computer)OpenTerminal(3,TEXT("OPS / CASE ARCHIVE"),OpsShell(3,S47Kit::Col(Rows)));
  else SetPanel(S47Kit::Shell(M->UI,TEXT("SARO / RECORDS"),S47Kit::Col(Rows),1000));
 }
 bool FS47FreeformSession::StationSealed()const
@@ -1159,9 +1253,8 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   }
   else Rows.Add(S47FreeformTerminal::Small(TEXT("CASE CLOSED / The records reply is in your documents.")));
  }
- Rows.Add(S47FreeformTerminal::Small(Feedback));
- Rows.Add(S47FreeformTerminal::Button(TEXT("Back to daily work"),[this]{Feedback.Empty();OpenOperations();}));
- OpenTerminal(3,TEXT("OPS / CASE BOARD"),S47Kit::Col(Rows));
+ if(!Feedback.IsEmpty())Rows.Add(S47FreeformTerminal::Small(Feedback));
+ OpenTerminal(3,TEXT("OPS / CASE BOARD"),OpsShell(2,S47Kit::Col(Rows)));
 }
 bool FS47FreeformSession::Use(const FString& Id)
 {
@@ -1175,7 +1268,7 @@ bool FS47FreeformSession::Use(const FString& Id)
  {
   if(!HasPower()&&(Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))){OpenArchive();return true;}
   if(!RequirePower())return true;
-  if(Id==TEXT("telex")&&Director&&Director->Use(TEXT("ff:telex")))return true;OpenOperations();return true;
+  if(Id==TEXT("telex")&&Director&&Director->Use(TEXT("ff:telex")))return true;OpsSection=0;OpenOperations();return true;
  }
  if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")){OpenAudio();return true;}
  if(Id==TEXT("rack"))

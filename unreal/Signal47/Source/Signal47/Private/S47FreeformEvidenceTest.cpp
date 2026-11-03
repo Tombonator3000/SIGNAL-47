@@ -36,7 +36,7 @@ namespace
  struct FOriginal {FString Id,Page,Stamp;};
  struct FRun
  {
-  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false;
+  bool Started=false,Done=false,Walking=false,HaveFoot=false,Quarantined=false,TrackShot=false,RxShot=false;
   int32 Stage=0,Job=0,Cursor=0,Cross=0,Knob=0,Checks=0,InitialCash=0,InitialDebt=0,Restores=0;
   double Began=0,At=0,Delay=.25,ProgressAt=0,WalkMetres=0,SampleAt=0,PhotoAt=0,BaseAz=0,BaseEl=0;
   FString Root,Ids[2],PendingPhoto,PickFailure;
@@ -187,7 +187,7 @@ namespace
  bool Tune(US47Main* M)
  {
   const auto* P=M->Freeform->ConsoleProfile();if(!P){Finish(M,false,TEXT("selected actual receiver card is unavailable"));return false;}
-  const TCHAR* Names[]={TEXT("FREQUENCY MHz"),TEXT("GAIN"),TEXT("BANDWIDTH kHz")};
+  const TCHAR* Names[]={TEXT("FREQUENCY"),TEXT("GAIN"),TEXT("BANDWIDTH")};
   const double Targets[]={FMath::RoundToDouble(P->F*1000.)/1000.,FMath::RoundToDouble((P->Gain[0]+P->Gain[1])*.5),FMath::RoundToDouble((P->Bw[0]+P->Bw[1])*.5)};
   const double Values[]={M->Story->Rx.Frequency,M->Story->Rx.Gain,M->Story->Rx.Bandwidth},Steps[]={.001,1,1};
   if(S.Knob>=3)return true;
@@ -264,7 +264,8 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==100){Aim(M,Target(M,TEXT("opsTerminal")));Go(1);return;}
   if(S.Stage==1){if(!Use(M,TEXT("opsTerminal")))return;Go(2,.6);return;}
   if(S.Stage==2)
-  {if(!Check(M,F.TerminalOnGlass()&&F.TerminalWindowRendered(),TEXT("real OPS window renders on its native glass"))||!Click(M,S.Ids[S.Job],false))return;Go(3);return;}
+  {if(!Check(M,F.TerminalOnGlass()&&F.TerminalWindowRendered(),TEXT("real OPS window renders on its native glass")))return;if(S.Job==0){Photo(TEXT("ui-01-ops-overview"));Go(200,1.2);return;}if(!Click(M,S.Ids[S.Job],false))return;Go(3);return;}
+  if(S.Stage==200){if(!Click(M,S.Ids[S.Job],false))return;Go(3);return;}
   if(S.Stage==3)
   {
    if(!Check(M,J&&J->Id==S.Ids[S.Job]&&J->Stage==EJob::New,TEXT("real daily-work Slate action selects the intended unfinished source")))return;
@@ -279,14 +280,17 @@ namespace S47FreeformEvidenceTest
   }
   if(S.Stage==4){Aim(M,Target(M,TEXT("crtLeft")));Go(5);return;}
   if(S.Stage==5)
-  {if(!Use(M,TEXT("crtLeft")))return;Close(M);WalkTo(M,{{-2.14,-1.7},{2.16,-1.7},{2.16,-2.15}},6);return;}
+  {if(!Use(M,TEXT("crtLeft")))return;Go(50,1.2);return;}
+  if(S.Stage==50){Photo(TEXT("ui-02-array-status"));Go(51,1.2);return;}
+  if(S.Stage==51){Close(M);WalkTo(M,{{-2.14,-1.7},{2.16,-1.7},{2.16,-2.15}},6);return;}
   if(S.Stage==6){Aim(M,Target(M,TEXT("crtRight")));Go(7);return;}
   if(S.Stage==7){if(!Use(M,TEXT("crtRight")))return;Go(8,.6);return;}
   if(S.Stage==8)
   {
    const auto* P=F.ConsoleProfile();if(!Check(M,P&&F.TerminalWindowRendered(),TEXT("actual tracking terminal/card is ready")))return;
+   if(!S.TrackShot){S.TrackShot=true;Photo(S.Job==0?TEXT("ui-03-tracking"):TEXT("ui-03b-tracking-pulsar"));Go(8,1.2);return;}S.TrackShot=false;
    S.BaseAz=(P->Az[0]+P->Az[1])*.5;S.BaseEl=J->bGenerated?J->Card.El:FS47Observing::Runs()[J->Source].El;
-   if(!Click(M,TEXT("Point array to selected source")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
+   if(!Click(M,TEXT("POINT ARRAY")))return;Close(M);WalkTo(M,{{2.16,-2.15},{0,-2.15}},9);return;
   }
   if(S.Stage==9){Aim(M,Target(M,TEXT("crtCenter")));Go(10);return;}
   if(S.Stage==10){if(!Use(M,TEXT("crtCenter")))return;S.Knob=0;Go(11,.6);return;}
@@ -298,9 +302,10 @@ namespace S47FreeformEvidenceTest
   }
   if(S.Stage==12)
   {
-   TArray<TSharedRef<SButton>> Ready;for(const auto& RootWidget:Roots(M))Buttons(RootWidget,TEXT("READY / START ACQUISITION"),true,Ready);
+   TArray<TSharedRef<SButton>> Ready;for(const auto& RootWidget:Roots(M))Buttons(RootWidget,TEXT("START RECORDING"),true,Ready);
    if(Ready.Num()!=1||!Ready[0]->IsEnabled())return;
-   if(!Click(M,TEXT("READY / START ACQUISITION")))return;
+   if(!S.RxShot){S.RxShot=true;Photo(S.Job==0?TEXT("ui-04-receiver-ready"):TEXT("ui-04b-receiver-pulsar"));Go(12,1.2);return;}S.RxShot=false;
+   if(!Click(M,TEXT("START RECORDING")))return;
    if(!Check(M,J->Stage==EJob::Integrating&&(!S.Job||(J->bAnomaly&&J->Phenomenon==TEXT("extra_pulse"))),TEXT("production acquisition starts only on settled array and captures the established incident identity")))return;Go(13,0);return;
   }
   if(S.Stage==13)
@@ -367,7 +372,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==330)
   {
    const auto* C=F.CaseFile().Get(0);
-   if(!Click(M,TEXT("Case board")))return;
+   if(!Click(M,TEXT("CASE BOARD")))return;
    if(!Check(M,C&&C->bOpen&&!C->bConcluded&&C->Planned<0,TEXT("the reviewed extra-pulse original opens the interval case")))return;Go(331,.8);return;
   }
   if(S.Stage==331)
@@ -387,7 +392,7 @@ namespace S47FreeformEvidenceTest
    bool Planned=false;for(const auto& Root:Roots(M))Planned|=Text(Root,TEXT("PLANNED"),false);
    if(!Check(M,Planned,TEXT("actual case board marks the generator test as planned")))return;Photo(TEXT("03c-case-test-planned"));Go(334,1.2);return;
   }
-  if(S.Stage==334){if(!Click(M,TEXT("Back to daily work")))return;Go(335,.8);return;}
+  if(S.Stage==334){if(!Click(M,TEXT("OVERVIEW")))return;Go(335,.8);return;}
   if(S.Stage==335)
   {
    bool Plan=false;for(const auto& Root:Roots(M))Plan|=Text(Root,TEXT("TONIGHT'S PLAN"),false)&&Text(Root,TEXT("GENERATOR"),false);
