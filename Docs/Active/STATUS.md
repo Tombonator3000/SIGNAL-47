@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## SARO-vei og lampefundamenter installert 3. november
+
+Kilde `7b81ddd2` er installert kl. 04:55 CET. SARO-innkjøringen får en gradvis 32-meters overgang med sammenfallende synlig vei, kollisjon og gulvhøyde. Tre stasjonslamper og åtte veilamper får terrengtilpassede fundamenter og beslag; originale stolper og lysankre beholdes.
+
+Bygg/pakke, 2147 selvtester, 79 meter gange, automatisk kjøring begge veier og gjennomsette High/Low-bilder består. Alle 126 personlige Saved-filer er uendret. Motellfundamenter og videre armaturdetaljering står åpne. [Levering og prøvegrenser](../Evidence/UnrealDeliveries/SARO_GROUND_2026-11-03.md).
+
 ## Ward og dekodermusikk installert 3. november
 
 Kilde `40b2fc92` er installert kl. 03:36 CET. Ward bruker egen stemmebank eller tekst uten Dale-/fortellerreserve. Tilfeldig bakgrunnsmusikk holdes under dekodersvaret og etter TAPE A ved SARO; motellet, kjøring og andre områder beholder egne regler.

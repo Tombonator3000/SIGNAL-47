@@ -1,0 +1,185 @@
+{
+  "status": "PASS",
+  "runtime_commit": "7b81ddd2dab0f5b80fabf1b2fd24fc488462b020",
+  "road": {
+    "changed_site_z_m": [
+      36,
+      68
+    ],
+    "actual_floor_cache_z_m": [
+      36,
+      100
+    ],
+    "native_triangle_cache": 319,
+    "before_after_viewed": [
+      "north",
+      "south"
+    ],
+    "walk_m": 79,
+    "walk_start": [
+      -24,
+      105
+    ],
+    "walk_end": [
+      -24,
+      26
+    ],
+    "ground_under_every_step": true,
+    "whole_walk_worst_floor_offset_m": 0.02,
+    "outbound_trip_samples": [
+      {
+        "seconds": 15,
+        "x": -25.8,
+        "z": 52.3,
+        "speed_m_s": 9.7
+      },
+      {
+        "seconds": 20,
+        "x": -25.8,
+        "z": 101.2,
+        "speed_m_s": 9.8
+      }
+    ],
+    "return_packaged_low_samples": [
+      {
+        "seconds": 5.0,
+        "x": -41.7,
+        "z": 666.1,
+        "speed_m_s": 1.9
+      },
+      {
+        "seconds": 10.0,
+        "x": -42.4,
+        "z": 661.3,
+        "speed_m_s": -1.8
+      },
+      {
+        "seconds": 15.0,
+        "x": -26.7,
+        "z": 657.8,
+        "speed_m_s": 3.3
+      },
+      {
+        "seconds": 20.0,
+        "x": -22.0,
+        "z": 622.1,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 25.0,
+        "x": -22.2,
+        "z": 572.9,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 30.0,
+        "x": -22.2,
+        "z": 524.0,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 35.0,
+        "x": -22.2,
+        "z": 474.9,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 40.0,
+        "x": -22.2,
+        "z": 425.6,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 45.0,
+        "x": -22.2,
+        "z": 376.6,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 50.0,
+        "x": -22.2,
+        "z": 327.6,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 55.0,
+        "x": -22.2,
+        "z": 278.4,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 60.0,
+        "x": -22.2,
+        "z": 229.4,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 65.0,
+        "x": -22.2,
+        "z": 180.3,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 70.0,
+        "x": -22.2,
+        "z": 131.2,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 75.0,
+        "x": -22.2,
+        "z": 82.0,
+        "speed_m_s": 9.8
+      },
+      {
+        "seconds": 80.0,
+        "x": -22.1,
+        "z": 35.0,
+        "speed_m_s": 7.5
+      },
+      {
+        "seconds": 85.0,
+        "x": -8.6,
+        "z": 24.9,
+        "speed_m_s": 7.5
+      },
+      {
+        "seconds": 90.0,
+        "x": 9.5,
+        "z": 17.2,
+        "speed_m_s": 2.7
+      }
+    ],
+    "return_packaged_low_run": {
+      "ok": true,
+      "returncode": 0,
+      "seconds": 110.42083814996295,
+      "stop_reason": null,
+      "error_marker": null,
+      "log": "/home/tom/scratch-bm/Signal47-saro-road-20261103/drive-back-package-r2.log"
+    }
+  },
+  "lamps": {
+    "station": 3,
+    "road": 8,
+    "instances": 121,
+    "native_ground_queries": 663,
+    "original_cap_queries": 11,
+    "near_and_middle_viewed": true,
+    "motel_deferred": "Original north pole cap extends 26.1mm beyond court surface; fully supported surrounding foundation needs a separate design.",
+    "packaged_low_images_viewed": [
+      "road70",
+      "yard-medium"
+    ]
+  },
+  "limits": [
+    "Automated Walker and route autopilot, not human input or driving feel",
+    "No complete streetlamp arm/head/reflector/LOD replacement",
+    "No motel or Caliche foundation changes",
+    "No performance acceptance"
+  ],
+  "package": {
+    "status": "PASS",
+    "seconds": 259
+  }
+}

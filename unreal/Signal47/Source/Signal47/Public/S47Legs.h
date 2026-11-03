@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "S47Drive.h"
 
+class AS47Web;
+
 // drive/legs.ts: the drives are driven the whole way (Tom, 5 October: no cuts when the truck goes
 // from one place to another). Each place is still its own area far from the others in the scene;
 // where two of them meet on a road, the truck is handed from one to the next between two frames,
@@ -60,7 +62,8 @@ class SIGNAL47_API FS47SaroDrive : public IS47DriveArea
 public:
 	/** colliders: SARO's, without the truck's own; road: the posts, poles and rocks of the road's
 	 *  stretch south of the site (road-local circles). */
-	FS47SaroDrive(const TArray<FS47Box2>& Colliders, const TArray<FS47Obstacle>& Road);
+	FS47SaroDrive(const TArray<FS47Box2>& Colliders, const TArray<FS47Obstacle>& Road, AS47Web* Web = nullptr);
+ TWeakObjectPtr<AS47Web> SeamWorld;
 	FS47Box2 MotelPark;
  bool bFreeformFarm=false;
 	virtual FS47Surface Surface(double X, double Z) const override;

@@ -30,6 +30,8 @@ def material(row, dest, src):
         M.delete_material_expression(mat, previous)
     check(name+' previous graph fully removed',M.get_num_material_expressions(mat)==0)
     mat.set_editor_property('blend_mode', unreal.BlendMode.BLEND_OPAQUE)
+    if name == 'M_SubstationDetail_GalvanizedSteel':
+        mat.set_editor_property('used_with_instanced_static_meshes', True)  # Shared SARO lamp hardware.
     mat.set_editor_property('two_sided', bool(row.get('two_sided', False)))
     col = row.get('base_color_linear', row.get('base_color', [.5, .5, .5, 1]))
     color = expression(mat, unreal.MaterialExpressionVectorParameter, parameter_name='Color', default_value=unreal.LinearColor(*col[:3], 1))

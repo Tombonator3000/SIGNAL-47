@@ -1,4 +1,5 @@
 #include "S47Night.h"
+#include "S47SaroSeam.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
 #include "S47HighwayUfo.h"
@@ -303,6 +304,7 @@ double US47Night::Dawn() const
 
 double US47Night::SaroFloorAt(const AS47Web* Web, double X, double Z)
 {
+ double SeamY=0;if(S47SaroSeam::Height(Web,X,Z,SeamY))return SeamY;
 	// Native motel slabs, asphalt and pool approaches supply their measured visible top heights.
 	// This comes before the legacy flat court fallback; water has no walking floor override.
 	const double MotelFloor = FS47MotelV2::FloorAt(X, Z);
