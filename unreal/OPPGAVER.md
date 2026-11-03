@@ -312,3 +312,5 @@ SOUND-INSTALL-01: kilde i PR375 (inkludert publisert main/PR374). Installert spi
 SOUND-INSTALL-01 kildeleveranse: PR375 var allerede flettet før Freeform-oppfølgingen; PR376 fører resten på ny gren fra siste main, med identisk verifisert runtime-kilde. Ingen ny bygg-/pakkerunde for identiske kildefiler.
 
 RECEIVER-SEARCH-01: Codex eier kontinuerlig Freeform-mottakerlyd, avgrenset musikkhold og målrettet PCM/native prøve på codex/receiver-search-audio-20261103 fra main f907e882. Eksisterende SARO-kopi gjenbrukes; signal_audio_mapping har fullført skrivebeskyttet kartlegging. Kildearbeid pågår mens Toms spill kjører; bygg/installasjon venter på lukket spill. Ingen ny arbeidskopi eller rydderunde.
+
+RECEIVER-SEARCH-01 utvidet etter Toms uteprøve: root retter byprioritet og avgrenser inaktive Story-stillhetsflagg i S47Score.cpp; samme kandidat får kort uteprøve. Bare egen ventende worker ble pauset under kildeendring; Toms spill er urørt.

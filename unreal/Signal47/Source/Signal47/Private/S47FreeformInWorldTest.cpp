@@ -429,7 +429,17 @@ void FS47FreeformInWorldTest::Step(double Dt)
  {
   if(Age-At<.7)return;
   if(!Check(!M->Audio->ReceiverMonitorOn()&&M->Audio->Carrier.Stat->Gain.Value()<.0001,TEXT("feeder power loss silences receiver monitor")))return;
-  F.SetPowerFault(false);Finish(true,TEXT("live receiver search, music hold and lifecycle passed; human listening remains unverified"));return;
+  F.SetPowerFault(false);M->UI->Close(true);
+  M->Player->Place(60,60,0);M->Score->Held.FaceQuiet=[] { return 47.; };
+  Go(56);return;
+ }
+ if(Stage==56)
+ {
+  if(Age-At<1)return;
+  if(M->Score->Playing.IsEmpty()&&Age-At<20)return;
+  if(!Check(M->Space==TEXT("yard")&&!M->Score->MusicHeld(),TEXT("outdoor Freeform music is released despite an inactive Story silence timer")))return;
+  if(!Check(M->Score->Playing==M->Score->MusicWant()&&M->Score->ActiveDecks()>0,TEXT("ordinary outdoor update starts the imported score stream")))return;
+  Finish(true,TEXT("receiver search and outdoor music stream passed; human listening remains unverified"));return;
  }
 
 }

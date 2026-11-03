@@ -6,7 +6,7 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Mottakersøk i Freeform, under arbeid 3. november
 
-Tom fant at RECEIVER / ACQUISITION mangler kontinuerlig søkelyd selv om måleren oppdateres. Referanseavspillingen ved båndpulten dekker ikke denne funksjonen. `codex/receiver-search-audio-20261103` kobler eksisterende bæretone og radiostøy til gjeldende mottakerprofil, frekvens, gain og båndbredde, med musikkhold under lytting og stopp ved lukking eller strømbrudd. Kilden og målrettede PCM-/native kontroller er klargjort; bygg, kjøring og lokal installasjon venter på avsluttet spilløkt. Dette er ikke med i installasjonen fra kl.14:11.
+Tom fant at RECEIVER / ACQUISITION mangler kontinuerlig søkelyd selv om måleren oppdateres. Referanseavspillingen ved båndpulten dekker ikke denne funksjonen. `codex/receiver-search-audio-20261103` kobler eksisterende bæretone og radiostøy til gjeldende mottakerprofil, frekvens, gain og båndbredde, med musikkhold under lytting og stopp ved lukking eller strømbrudd. Kilden og målrettede PCM-/native kontroller er klargjort; bygg, kjøring og lokal installasjon venter på avsluttet spilløkt. Dette er ikke med i installasjonen fra kl.14:11. Oppfølging: bymusikk får prioritet over morgenstemning, og Freeform ignorerer stillhetsflagg fra Story-lag som ikke oppdateres der. Målrettet uteprøve og kontroller for by/kjøring/radio er lagt til; årsaken til hele den rapporterte utendørsstillheten er ikke runtime-bekreftet.
 
 ## Lydmotor, NASA/Nebula og Freeform installert lokalt, 3. november
 
