@@ -8,6 +8,7 @@
 #include "S47FieldRadio.h"
 #include "S47FreeformTest.h"
 #include "S47FreeformJobs.h"
+#include "S47FreeformCases.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
@@ -193,6 +194,7 @@ void AS47HUD::Start()
 		bOk &= FS47Observing::SelfTest(Lines);
 		bOk &= FS47FreeformSession::SelfTest(Lines);
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
+		bOk &= FS47FreeformCases::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47HighwayUfo::SelfTest(Lines);
 		bOk &= FS47FreeformWorld::SelfTest(Lines);

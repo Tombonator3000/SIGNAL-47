@@ -4,6 +4,7 @@
 #include "S47Journal.h"
 #include "S47Rx.h"
 #include "S47FreeformJobs.h"
+#include "S47FreeformCases.h"
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
@@ -30,6 +31,9 @@ public:
   TArray<double> BeamAz,BeamEl,BeamAmplitude;
   bool bBeamVerified=false,bClockMeasured=false,bDuplicateCollected=false;
   FString OriginalPage,OriginalStamp,DuplicatePage,DuplicateStamp;
+  // Case test job (FS47FreeformCases); -1 for ordinary work.
+  int32 CaseLine=-1,CaseTest=-1;
+  bool bCaseValid=true,bCaseRecorded=false;
  };
  explicit FS47FreeformSession(US47Main* Main);
  ~FS47FreeformSession();
@@ -77,6 +81,11 @@ public:
  int32 ActiveTerminalScreen() const { return ActiveTerminal; }
  TArray<FString> TerminalLines(int32 Screen) const;
  void OpenArchive();
+ void OpenCaseBoard();
+ bool PlanCaseTest(int32 Test);
+ bool ConcludeCase(int32 Cause);
+ FString TonightPlan() const;
+ const FS47FreeformCases& CaseFile() const { return Cases; }
  void OpenServiceGuide();
  bool StartServiceGuide(bool bSupplyTrip);
  bool CompleteServiceGuide();
@@ -153,6 +162,9 @@ private:
  TArray<FJob> Work;
  TMap<FString,FString> Findings;
  TMap<FString,int32> FindingDays;
+ FS47FreeformCases Cases;
+ void OpenCaseFor(const FString& FindingId);
+ void RecordCaseResult(FJob& J);
  TArray<int32> MysterySteps;
  TArray<bool> Upgrades;
  FString Feedback, PhenomenonId;

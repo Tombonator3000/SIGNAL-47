@@ -14,6 +14,10 @@ Nattens leverte rettelser er ferdigstilt etter Toms bestilling om commit og PR 3
 
 - [ ] **UFO-01, samlet spilleraksept:** Referansenes lysuttrykk, sheriffjakt, egen følgevariant, observerbar SC03-bortføring og fysisk lys ved spiller/bil er implementert og lokalt installert kl.20:45 med tre underagenter og seks scenarioer i [gameplay-harnesset](../../unreal/Signal47/Tools/gameplay_audit/README.md). Aktuell bygg-/test-/installasjonsstatus står i [STATUS](STATUS.md). Menneskelig vurdering av styrke, tempo, lyd og komfort gjenstår. Hele Caliche-ruten er fortsatt uverifisert; de beståtte SC03-prøvene bruker en avgrenset posisjonsfixture.
 
+## Gameplay-løkken, førsteprioritet fra 3. november
+
+- [ ] **GAMEPLAY-LOOP-01 / P1, saksløkken i Freeform:** Tom satte gameplay foran grafikk 3. november. Første sak «The repeated interval» med tre forklaringer (matespenning, lokal sender, himmelkilde), tre fysiske forsøk (aggregatstrøm, ved siden av kilden, gjentakelse i samme tidsvindu), skjult frøbasert årsak, støttet konklusjon, relé som første forskningsbelønning, records-telex og adgangsflagget `access.fieldlogger`. OPS får saksbrett og kveldens plan. [Design](../Design/Gameplay/FREEFORM_CASE_LOOP.md). Implementeres på `claude/gameplay-cases-20261103`; bygg, selvtest og spillerprøve gjenstår til de er kjørt. Neste: sak 2 «Disagreeing records» med samme motor (Claude), hendelsesspor til sak 3 og feltlogger bak adgangsflagget (foreslått Codex). Dekker GP-15/16/17 og kjernen i FF-RESEARCH-02/03.
+
 ## Freeform: UFO-er, etterforskning, materialer og bygging
 
 Tom ba 2. november om å føre hele brainstormen fra tre agenter og gameplay-harnesset inn i TODO. Punktene nedenfor er nye, åpne design-/implementeringsoppgaver; kildegjennomgang og statisk harness er gjennomført, nye runtime-/spillertester er ikke kjørt. Registreringen endrer ikke gjeldende prioritering av Jeep og kritiske feil. UFO-01 over gjelder den allerede installerte leveransen. PHOTO-04 og GAMEPLAY-05/06 samordnes med denne reisen, uten parallelle systemer for saksfakta eller dobbel betaling.
