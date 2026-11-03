@@ -200,32 +200,19 @@ void US47Audio::StartCarrier()
 	Osc->Connect(Gain); Gain->Connect(SfxBus); Osc->Start();
 	auto N = NoiseSrc(false); auto Bp = Ctx->CreateBiquadFilter(); Bp->SetType(TEXT("bandpass")); Bp->Frequency.SetValue(1800); Bp->Q.SetValue(0.6);
 	auto Stat = Ctx->CreateGain(); Stat->Gain.SetValue(0); N->Connect(Bp); Bp->Connect(Stat); Stat->Connect(SfxBus); N->Start();
-	Carrier = { Osc, Gain, Stat };
+	Carrier = { Osc, Gain, Stat, Bp };
 }
 
 /** The anomaly near 1420.405 as the receiver hears it: clarity 0 (static) to 1 (locked). */
 void US47Audio::SignalFrame(float Clarity, float Level, double T)
 {
 	if (!Ctx.IsValid() || !Noise.IsValid()) return;
-	// Optional private recording bank, explicitly loaded with -S47SoundBank.
-	// The default game retains its procedural signal until a bank is selected.
-	if (SoundRecipes.Contains(TEXT("array_locked")))
-	{
-		const FString Key = TEXT("array_receiver");
-		TArray<FString> Errors;
-		if (SoundMixes.Contains(Key) || PlaySoundMix(Key, TEXT("array_locked"), ES47SoundUse::Receiver, Errors))
-		{
-			if (Signal.IsValid()) { Signal->Stop(); Signal.Reset(); }
-			SoundMixes[Key]->SetLevel(Level);
-			SoundMixFrame(Key, Clarity, 1 - Clarity, 1, T);
-			return;
-		}
-	}
 	FBatch Batch(*Ctx);
 	if (!Signal.IsValid())
 	{
 		if (Clarity <= 0 || Level <= 0) return;
-		Signal = MakeShared<FS47SignalVoice>(Ctx.ToSharedRef(), SfxBus, Noise);
+		Signal = MakeShared<FS47SignalVoice>(Ctx.ToSharedRef(), SfxBus, Noise, 1,
+			SoundSource(TEXT("contact")), SoundSource(TEXT("space_nebula")));
 	}
 	Signal->Frame(Clarity, Level, T);
 }
@@ -640,20 +627,33 @@ float US47Audio::Ringback(int32 Times, float Start)
 	return Start + Times * 3.2f;
 }
 
-// Positional electrical hum (a transformer cabinet, a lamp ballast): mains and two harmonics.
+// Positional electrical hum: the equipment recording shares each cabinet's existing level,
+// power envelope and panner. Missing banks keep the original mains/harmonic synthesis.
 void US47Audio::Hum(const FString& Key, const FVector& At, float Gain, float Base)
 {
 	if (!Ctx.IsValid() || Hums.Contains(Key)) return;
 	FBatch Batch(*Ctx);
+	Gain = FMath::IsFinite(Gain) ? FMath::Clamp(Gain, 0.f, 1.f) : 0;
 	HumGain.Add(Key, Gain);
 	auto Out = Ctx->CreateGain(); Out->Gain.SetValue(0);
 	auto Lp = Ctx->CreateBiquadFilter(); Lp->SetType(TEXT("lowpass")); Lp->Frequency.SetValue(900);
 	Out->Connect(Lp); Lp->Connect(Panner(At, 1.0));
-	struct FPart { double Mul, G; const TCHAR* Type; };
-	for (const FPart& P : { FPart{ 1, 1, TEXT("sine") }, FPart{ 2, 0.5, TEXT("sine") }, FPart{ 3, 0.12, TEXT("square") } })
+	const FString MixKey = TEXT("equipment:hum:") + Key;
+	TArray<FString> Errors;
+	if (PlaySoundMix(MixKey, TEXT("electrical_hum"), ES47SoundUse::Equipment, Errors, Out))
 	{
-		auto O = Ctx->CreateOscillator(); O->SetType(P.Type); O->Frequency.SetValue(Base * P.Mul);
-		auto Og = Ctx->CreateGain(); Og->Gain.SetValue(P.G); O->Connect(Og); Og->Connect(Out); O->Start();
+		SoundMixFrame(MixKey, 0, 0, 1, Ctx->CurrentTime());
+	}
+	else
+	{
+		Base = FMath::IsFinite(Base) ? FMath::Clamp(Base, 20.f, 1000.f) : 60.f;
+		struct FPart { double Mul, G; const TCHAR* Type; };
+		for (const FPart& P : { FPart{ 1, 1, TEXT("sine") }, FPart{ 2, 0.5, TEXT("sine") }, FPart{ 3, 0.12, TEXT("square") } })
+		{
+			auto O = Ctx->CreateOscillator(); O->SetType(P.Type); O->Frequency.SetValue(Base * P.Mul);
+			auto Og = Ctx->CreateGain(); Og->Gain.SetValue(P.G); O->Connect(Og); Og->Connect(Out); O->Start();
+			HumSources.FindOrAdd(Key).Add(O);
+		}
 	}
 	Out->Gain.SetTargetAtTime(Gain * HumK, Ctx->CurrentTime(), 1.0);
 	Hums.Add(Key, Out);
@@ -663,20 +663,28 @@ void US47Audio::StopHums()
 {
 	if (!Ctx.IsValid()) return;
 	FBatch Batch(*Ctx);
-	for (const TPair<FString, TSharedPtr<FS47GainNode>>& H : Hums) H.Value->Gain.SetTargetAtTime(0, Ctx->CurrentTime(), 0.3);
-	Hums.Empty(); HumGain.Empty();
+	for (const TPair<FString, TSharedPtr<FS47GainNode>>& H : Hums)
+	{
+		H.Value->Gain.SetTargetAtTime(0, Ctx->CurrentTime(), 0.3);
+		StopSoundMix(TEXT("equipment:hum:") + H.Key, 0.3f);
+		const auto Out = H.Value;
+		const auto Sources = HumSources.FindRef(H.Key);
+		Ctx->SetTimeout(1.8, [Out, Sources] { for (const auto& O : Sources) { O->Stop(); O->Disconnect(); } Out->Disconnect(); });
+	}
+	Hums.Empty(); HumGain.Empty(); HumSources.Empty();
 }
 
 /** Every hum at k of its level (story/saroDark.ts: they die with the power and come back). */
 void US47Audio::HumLevel(float K, float Tau)
 {
-	HumK = K;
+	HumK = FMath::IsFinite(K) ? FMath::Clamp(K, 0.f, 1.f) : 0;
 	if (!Ctx.IsValid()) return;
+	Tau = FMath::IsFinite(Tau) ? FMath::Clamp(Tau, 0.001f, 5.f) : 0.08f;
 	FBatch Batch(*Ctx);
 	for (const TPair<FString, TSharedPtr<FS47GainNode>>& H : Hums)
 	{
 		const float* G = HumGain.Find(H.Key);
-		H.Value->Gain.SetTargetAtTime((G ? *G : 0.05f) * K, Ctx->CurrentTime(), Tau);
+		H.Value->Gain.SetTargetAtTime((G ? *G : 0.05f) * HumK, Ctx->CurrentTime(), Tau);
 	}
 }
 

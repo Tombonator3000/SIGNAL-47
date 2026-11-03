@@ -10,7 +10,7 @@ namespace
 		return E == TEXT("constant") || E == TEXT("static") || E == TEXT("signal") || E == TEXT("pulse") || E == TEXT("activity");
 	}
 	double Unit(double V) { return FMath::IsFinite(V) ? FMath::Clamp(V, 0.0, 1.0) : 0; }
-	bool ValidUse(ES47SoundUse Use) { return Use == ES47SoundUse::Receiver || Use == ES47SoundUse::Vhs || Use == ES47SoundUse::PcTransfer; }
+	bool ValidUse(ES47SoundUse Use) { return Use == ES47SoundUse::Receiver || Use == ES47SoundUse::Vhs || Use == ES47SoundUse::PcTransfer || Use == ES47SoundUse::Equipment; }
 	bool CheckFields(const FJsonObject& J, const TSet<FString>& Allowed, TArray<FString>& Errors)
 	{
 		bool bOk = true;
@@ -61,7 +61,8 @@ bool FS47SoundMixer::ParseRecipe(const TSharedPtr<FJsonObject>& Json, FS47MixRec
 	else if (Use == TEXT("receiver")) Parsed.Use = ES47SoundUse::Receiver;
 	else if (Use == TEXT("vhs")) Parsed.Use = ES47SoundUse::Vhs;
 	else if (Use == TEXT("pc_transfer")) Parsed.Use = ES47SoundUse::PcTransfer;
-	else Errors.Add(TEXT("sound mixer: use must be receiver, vhs or pc_transfer"));
+	else if (Use == TEXT("equipment")) Parsed.Use = ES47SoundUse::Equipment;
+	else Errors.Add(TEXT("sound mixer: use must be receiver, vhs, pc_transfer or equipment"));
 	const TArray<TSharedPtr<FJsonValue>>* JsLayers = nullptr;
 	if (!Json->TryGetArrayField(TEXT("layers"), JsLayers) || JsLayers->Num() < 1 || JsLayers->Num() > 16) Errors.Add(TEXT("sound mixer: recipe needs 1..16 layers"));
 	else for (const auto& Value : *JsLayers)
@@ -201,7 +202,12 @@ bool FS47SoundMixer::SelfTest(TArray<FString>& Lines)
 	Check(!Make(C, C->Destination, Recipe, Bank, Errors) && !Errors.IsEmpty(), TEXT("receiver cannot use modem"));
 	Recipe.Use = ES47SoundUse::Vhs; Errors.Reset();
 	Check(!Make(C, C->Destination, Recipe, Bank, Errors), TEXT("VHS cannot use modem"));
-	Recipe.Use = ES47SoundUse::PcTransfer; Errors.Reset();
+	Recipe.Use = ES47SoundUse::Equipment; Errors.Reset();
+	Check(!Make(C, C->Destination, Recipe, Bank, Errors), TEXT("equipment cannot use modem"));
+	Recipe.Layers[0].Source = TEXT("hiss"); Errors.Reset();
+	auto Equipment = Make(C, C->Destination, Recipe, Bank, Errors);
+	Check(Equipment.IsValid(), TEXT("equipment accepts an ordinary recording")); if (Equipment) Equipment->Stop(0);
+	Recipe.Layers[0].Source = TEXT("modem"); Recipe.Use = ES47SoundUse::PcTransfer; Errors.Reset();
 	auto Pc = Make(C, C->Destination, Recipe, Bank, Errors);
 	Check(Pc.IsValid(), TEXT("PC transfer accepts modem")); if (Pc) Pc->Stop(0);
 	Recipe.Use = ES47SoundUse::Receiver; Recipe.Layers[0].Source = TEXT("hiss"); L.Source = TEXT("missing"); Recipe.Layers.Add(L); Errors.Reset();

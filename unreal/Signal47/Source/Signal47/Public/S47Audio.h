@@ -12,6 +12,8 @@ class USoundBase;
 class US47Synth;
 class FS47SignalVoice;
 class FS47Ambience;
+class FS47Rx;
+struct FS47Profile;
 
 // audio.play's options (core/Audio.ts), positions in the web version's terms (three.js metres)
 struct FS47Sound
@@ -91,6 +93,10 @@ public:
 	void Stop(const FString& Key, float Fade = 0.05f); // stop(key, fade)
 	void Pour(const FVector& At);
 	void StartCarrier();
+	void MonitorReceiver(const FS47Rx& Rx, const FS47Profile& Profile);
+	void ReceiverMonitorOff();
+	bool ReceiverMonitorOn() const { return bReceiverMonitor; }
+	static bool ReceiverMonitorSelfTest(TArray<FString>& Lines);
 	void SetCarrier(float Level, float PitchOffset, float StaticLevel);
 	void SignalFrame(float Clarity, float Level); // the time is main.ts's t (US47Main::T)
 	void SignalOff();
@@ -115,7 +121,7 @@ public:
 	/** The bought sounds are in this build (the credits name them only then): BOUGHT_SFX. */
 	bool BoughtSfx() const;
 	// carrier: the receiver's tone once startCarrier() made it (the prologue's update asks for it)
-	struct FCarrier { TSharedPtr<FS47OscillatorNode> Osc; TSharedPtr<FS47GainNode> Gain, Stat; } Carrier;
+	struct FCarrier { TSharedPtr<FS47OscillatorNode> Osc; TSharedPtr<FS47GainNode> Gain, Stat; TSharedPtr<FS47BiquadFilterNode> Filter; } Carrier;
 	TSharedPtr<FS47AudioBuffer> CharacterBuffer(const FString& Voice, const FString& Text) const;
 	bool PhonePlaying() const { return PhoneSession.IsValid(); }
 	void SetVolume(float V);
@@ -201,10 +207,15 @@ public:
 	// Unreal sound workshop: reusable recording layers on the existing audio graph.
 	// Banks can be prepared privately in Saved/AudioWorkshop; no automatic asset import.
 	bool LoadSoundBank(const FString& Path, TArray<FString>& Errors);
+	bool HasSoundRecipe(const FString& Name) const { return SoundRecipes.Contains(Name); }
+	bool SoundMixPlaying(const FString& Key) const { return SoundMixes.Contains(Key); }
+	TSharedPtr<FS47AudioBuffer> SoundSource(const FString& Name) const
+	{ const FS47MixAsset* A = SoundBank.Find(Name); return A ? A->Buffer : nullptr; }
 	bool PlaySoundMix(const FString& Key, const FString& Recipe, ES47SoundUse Use,
 		TArray<FString>& Errors, TSharedPtr<FS47AudioNode> Destination = nullptr);
 	void SoundMixFrame(const FString& Key, double Clarity, double Interference, double Activity, double T);
 	void StopSoundMix(const FString& Key, float Fade = 0.1f);
+	void PcTransfer(double Seconds = 2.2);
 	static bool RenderSoundWorkshop(const FString& BankPath);
 	// Menu tape texture is independent of music and follows the SFX/menu level.
 	void TitleTexture(bool bOn);
@@ -230,6 +241,7 @@ public:
 	void EngineStop(float After);                                // the truck's own layers fade and stop (stop)
 
 private:
+	bool bReceiverMonitor = false;
 	bool bTitleTexture = false, bTitlePrivateMix = false;
 	struct FTitleTexture
 	{
@@ -239,6 +251,7 @@ private:
 	TMap<FString, FS47MixAsset> SoundBank;
 	TMap<FString, FS47MixRecipe> SoundRecipes;
 	TMap<FString, TSharedPtr<FS47SoundMixer>> SoundMixes;
+	uint64 TransferSerial = 0;
 	TWeakObjectPtr<UWorld> World;
 	UPROPERTY() TObjectPtr<US47Synth> Synth;
 	UPROPERTY() TObjectPtr<AActor> SynthHost;
@@ -269,6 +282,7 @@ private:
 	TSharedPtr<FPhoneSession> PhoneSession;
 	TMap<FString, TSharedPtr<FS47GainNode>> Hums;
 	TMap<FString, float> HumGain;
+	TMap<FString, TArray<TSharedPtr<FS47OscillatorNode>>> HumSources;
 	float HumK = 1.f;
 	struct FTelex { TSharedPtr<FS47GainNode> G; TFunction<void()> Stop; } TelexRun;
 	struct FRadioNodes { TSharedPtr<FS47GainNode> Out, Voice; TFunction<void()> Stop; } RadioNodes;

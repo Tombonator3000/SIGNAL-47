@@ -12,6 +12,7 @@
 #include "S47Audio.h"
 #include "S47Three.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -41,6 +42,7 @@ namespace
 FS47RoomLights::~FS47RoomLights(){Stop();Life.Reset();}
 void FS47RoomLights::Begin(const S47J::FObj& Saved)
 {
+ StopAudio();
  bActive=true;Retry=0;ManualSerial=EffectSerial=0;EffectRoom.Empty();
  for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)
   Enabled[I]=!Saved||S47J::Int(Saved,TEXT("v"))!=1?true:S47J::Bool(Saved,Switches[I].Room,true);
@@ -173,13 +175,90 @@ void FS47RoomLights::Step(double Dt)
 {
  if(!bActive)return;
  if(!bBuilt){Retry-=FMath::Max(0.,Dt);if(Retry<=0){Build();Retry=1.;}}
- Apply();
+ Apply();UpdateAudio(Dt);
 }
 void FS47RoomLights::Stop()
 {
- bActive=false;
+ bActive=false;StopAudio();
  if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||!IsValid(M->Web.Get()))return;
  Apply();
+}
+
+
+// One quiet source for the occupied room, positioned at its actual ceiling fittings.
+// Reading the final native light output also follows power cuts, dimming and tube flicker.
+void FS47RoomLights::UpdateAudio(double Dt)
+{
+ if(!IsValid(M)||!IsValid(M->Audio.Get())||!M->Audio->Ctx.IsValid()||!IsValid(M->Web.Get()))return;
+ US47Audio* A=M->Audio.Get();
+ if(AudioOwner.Get()!=A){StopAudio();AudioOwner=A;}
+ if(M->bPausedByMenu||A->Ctx->State()==TEXT("suspended"))return; // The shared context freezes playback itself.
+ Dt=FMath::IsFinite(Dt)?FMath::Clamp(Dt,0.,1.):0;
+ AudioScan-=Dt;AudioRetry-=Dt;
+ if(AudioScan<=0)
+ {
+  for(auto& Fixtures:AudioFixtures)Fixtures.Reset();
+  TArray<URectLightComponent*> Lights;M->Web->GetComponents(Lights);
+  for(URectLightComponent* L:Lights)if(IsValid(L))for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)
+   if(L->ComponentTags.Contains(FName(*(FString(TEXT("S47RoomCeiling:"))+Switches[I].Room))))AudioFixtures[I].Add(L);
+  AudioScan=2;
+ }
+ int32 Room=INDEX_NONE;
+ if(bActive&&bBuilt&&M->Mode==US47Main::EMode::Play&&M->World&&M->World->Area==TEXT("saro")&&!M->World->bDriving)
+  for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)if(PlayerInRoom(Switches[I].Room)){Room=I;break;}
+ double Power[4]={0,0,0,0};FVector Centre[4];bool Start[4]={false,false,false,false};
+ for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I)
+ {
+  Centre[I]=FVector::ZeroVector;int32 Count=0;
+  for(const auto& Fixture:AudioFixtures[I])if(const auto* L=Fixture.Get())
+  {
+   AudioReference[I]=FMath::Max(AudioReference[I],L->Intensity);
+   Power[I]+=L->IsVisible()?FMath::Clamp(double(L->Intensity/AudioReference[I]),0.,1.):0;
+   Centre[I]+=S47Three::ToThree(L->GetComponentLocation());++Count;
+  }
+  if(Count>0){Power[I]/=Count;Centre[I]/=Count;}
+  if(!RoomEnabled(Switches[I].Room)||(M->Story&&M->Story->bDark))Power[I]=0;
+  if(Count==0){AudioOffAge[I]=0;bAudioPowerObserved[I]=false;continue;}
+  if(!bAudioPowerObserved[I]){bAudioPowerObserved[I]=true;AudioOffAge[I]=0;continue;}
+  if(Power[I]>.001){Start[I]=AudioOffAge[I]>=.25;AudioOffAge[I]=0;}else AudioOffAge[I]+=Dt;
+ }
+ if(Room!=AudioRoom)
+ {
+  A->StopSoundMix(TEXT("equipment:room_fluorescent"),.12f);A->StopSoundMix(TEXT("equipment:room_fluorescent_start"),.02f);
+  AudioRoom=Room;bAudioBed=false;AudioRetry=0;
+  if(Room>=0)Start[Room]=false; // Walking into a lit room is not the tube striking.
+ }
+ if(Room<0)return;
+ const bool Supplied=RoomEnabled(Switches[Room].Room)&&!(M->Story&&M->Story->bDark);
+ if(!Supplied)
+ {
+  A->StopSoundMix(TEXT("equipment:room_fluorescent"),.04f);A->StopSoundMix(TEXT("equipment:room_fluorescent_start"),.02f);bAudioBed=false;return;
+ }
+ if(!bAudioBed&&Power[Room]>.001&&AudioRetry<=0)
+ {
+  TArray<FString> Errors;
+  bAudioBed=A->PlaySoundMix(TEXT("equipment:room_fluorescent"),TEXT("fluorescent_hum"),ES47SoundUse::Equipment,Errors,A->Spatial(Centre[Room],.8f));
+  AudioRetry=1;
+ }
+ const double Now=A->Ctx->CurrentTime();
+ if(bAudioBed)A->SoundMixFrame(TEXT("equipment:room_fluorescent"),0,0,.35*Power[Room],Now);
+ if(Start[Room]&&bAudioBed)
+ {
+  TArray<FString> Errors;
+  if(A->PlaySoundMix(TEXT("equipment:room_fluorescent_start"),TEXT("fluorescent_start"),ES47SoundUse::Equipment,Errors,A->Spatial(Centre[Room],.8f)))
+   A->SoundMixFrame(TEXT("equipment:room_fluorescent_start"),0,0,.35,Now);
+ }
+ if(Power[Room]<=.001)A->StopSoundMix(TEXT("equipment:room_fluorescent_start"),.02f);
+}
+
+void FS47RoomLights::StopAudio()
+{
+ if(!IsEngineExitRequested()&&!IsGarbageCollecting())if(US47Audio* A=AudioOwner.Get())
+ {
+  A->StopSoundMix(TEXT("equipment:room_fluorescent"),.08f);A->StopSoundMix(TEXT("equipment:room_fluorescent_start"),.02f);
+ }
+ AudioOwner.Reset();AudioRoom=INDEX_NONE;bAudioBed=false;AudioScan=AudioRetry=0;
+ for(int32 I=0;I<UE_ARRAY_COUNT(Switches);++I){AudioFixtures[I].Reset();AudioOffAge[I]=0;AudioReference[I]=32;bAudioPowerObserved[I]=false;}
 }
 
 

@@ -3,6 +3,7 @@
 #include "S47Score.h"
 #include "S47FieldRadio.h"
 #include "S47SignalVoice.h"
+#include "S47ReceiverSound.h"
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -119,6 +120,20 @@ void US47Audio::StopSoundMix(const FString& Key, float Fade)
 	if (auto* Mix = SoundMixes.Find(Key)) { (*Mix)->Stop(Fade); SoundMixes.Remove(Key); }
 }
 
+void US47Audio::PcTransfer(double Seconds)
+{
+	if (!Ctx || !FMath::IsFinite(Seconds) || Seconds <= 0) return;
+	TArray<FString> Errors;
+	if (!PlaySoundMix(TEXT("pc_transfer"),TEXT("pc_transfer"),ES47SoundUse::PcTransfer,Errors)) return;
+	SoundMixFrame(TEXT("pc_transfer"),1,0,1,Ctx->CurrentTime());
+	const uint64 Token = ++TransferSerial;
+	TWeakObjectPtr<US47Audio> Self(this);
+	Ctx->SetTimeout(FMath::Clamp(Seconds,0.2,27.0),[Self,Token]
+	{
+		if (Self.IsValid() && Self->TransferSerial == Token) Self->StopSoundMix(TEXT("pc_transfer"),0.08f);
+	});
+}
+
 bool US47Audio::RenderSoundWorkshop(const FString& BankPath)
 {
 	US47Audio* A = NewObject<US47Audio>(GetTransientPackage());
@@ -128,6 +143,7 @@ bool US47Audio::RenderSoundWorkshop(const FString& BankPath)
 	bool bOk = A->LoadSoundBank(BankPath, Errors);
 	bOk &= FS47SoundMixer::SelfTest(Errors);
 	bOk &= TitleTextureSelfTest(Errors);
+	bOk &= FS47ReceiverSound::SelfTest(Errors);
 	bOk &= FS47Score::SelfTest(Errors);
 	bOk &= FS47FieldRadio::SelfTest(Errors);
 	const FString Output = FPaths::GetPath(FPaths::ConvertRelativePathToFull(BankPath)) / TEXT("previews");

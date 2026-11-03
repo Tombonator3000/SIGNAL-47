@@ -203,5 +203,56 @@
         "envelope": "static"
       }
     ]
+  },
+  {
+    "name": "fluorescent_hum",
+    "use": "equipment",
+    "layers": [
+      {
+        "source": "fluorescent_hum",
+        "gain_db": -9,
+        "rate": 1,
+        "highpass_hz": 30,
+        "lowpass_hz": 1800,
+        "start_s": 0,
+        "length_s": 16,
+        "loop": true,
+        "envelope": "activity"
+      }
+    ]
+  },
+  {
+    "name": "electrical_hum",
+    "use": "equipment",
+    "layers": [
+      {
+        "source": "electrical_hum",
+        "gain_db": -12,
+        "rate": 1,
+        "highpass_hz": 35,
+        "lowpass_hz": 900,
+        "start_s": 0,
+        "length_s": 16,
+        "loop": true,
+        "envelope": "activity"
+      }
+    ]
+  },
+  {
+    "name": "fluorescent_start",
+    "use": "equipment",
+    "layers": [
+      {
+        "source": "fluorescent_flicker",
+        "gain_db": -14,
+        "rate": 1,
+        "highpass_hz": 200,
+        "lowpass_hz": 3400,
+        "start_s": 0.2,
+        "length_s": 0.8,
+        "loop": false,
+        "envelope": "activity"
+      }
+    ]
   }
 ]

@@ -268,6 +268,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
 void FS47FreeformDirector::Stop()
 {
  bEnabled=bApplied=false;GroupRestore.Reset();
+ if(IsEngineExitRequested()||IsGarbageCollecting()||!IsValid(M)||M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed))return;
  if(IsValid(M)&&M->SkyVisitors)M->SkyVisitors->StopFreeform();
  if(!Effects||!Effects->CanTouchWorld())return;
  Effects->Hide();

@@ -255,6 +255,7 @@ bool FS47DecoderDesk::EnsurePlayer()
 	const TSharedPtr<FS47AudioBuffer> Noise = A ? A->NoiseBuffer() : nullptr;
 	if (!A || !A->Ctx.IsValid() || !Noise.IsValid()) return false;
 	if (!Player.IsValid()) Player = MakeShared<FS47DecoderPlayer>(A->Ctx.ToSharedRef(), A->SfxBus, SoundAt(), Noise);
+	Player->SetSignalTextures(A->SoundSource(TEXT("contact")), A->SoundSource(TEXT("space_nebula")));
 	return true;
 }
 

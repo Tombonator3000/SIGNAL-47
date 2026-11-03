@@ -178,6 +178,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 void FS47FreeformSession::Stop()
 {
  StopEquipmentFeedback();FeedbackEncoders.Reset();
+ if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio))M->Audio->ReceiverMonitorOff();
  // UObject purge may destroy the scene before this plain C++ session is released.
  const bool bCanRestore=!IsEngineExitRequested()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Story)&&IsValid(M->Web);
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
@@ -273,6 +274,14 @@ void FS47FreeformSession::Step(double Dt)
  if(Director)Director->Step(D);
  IngestObservations();
  StepEquipmentFeedback();
+ // Unlike the original Story console, the physical Freeform receiver owns its monitor here.
+ if(M->Audio)
+ {
+  const FJob* Job=CurrentJob();
+  const bool Listen=Job&&Powered&&M->Story->Rx.bPowered&&!Held()&&TerminalOnGlass()&&ActiveTerminal==1&&M->World&&M->World->Area==TEXT("saro");
+  if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job));
+  else M->Audio->ReceiverMonitorOff();
+ }
  if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(Objective());
 }
 void FS47FreeformSession::StopEquipmentFeedback()
@@ -609,6 +618,8 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
  J->Stage=EJobStage::Registered;
+ // The OPS computer has accepted an actual result; opening its screen alone is silent.
+ if(M&&M->Audio)M->Audio->PcTransfer();
  if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}J->Stage=EJobStage::Filed;}
  if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);return true;}
  Changed(J->bAnomaly?TEXT("Registered. Collect the labelled packet at the printer, then file its originals in the binder."):TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return true;
@@ -793,6 +804,7 @@ void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bA
   if(IsEngineExitRequested()||!Owner.IsValid())return;
   US47Main* Main=Owner.Get();
   if(Main->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Main->Freeform.Get()!=this)return;
+  if(Main->Audio)Main->Audio->ReceiverMonitorOff();
   bTelemetry=false;TerminalView.Reset();ActiveTerminal=-1;Changed();
  });bTelemetry=bLive;bAudioOpen=bAudio;
 }

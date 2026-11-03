@@ -3,6 +3,7 @@
 #include "S47Ambience.h"
 #include "S47Audio.h"
 #include "S47DecoderDesk.h"
+#include "S47Freeform.h"
 #include "S47Main.h"
 #include "S47Media.h"
 #include "S47Story.h"
@@ -306,17 +307,19 @@ void FS47Score::Done(double Quiet)
 FString FS47Score::MusicWant() const
 {
 	if (!M || !M->World) return FString();
-	if (M->Story && M->Story->ChapterKey == TEXT("ch6")) return FString();
+	const bool Free = M->IsFreeform();
+	if (!Free && M->Story && M->Story->ChapterKey == TEXT("ch6")) return FString();
 	if (!RequestedMood.IsEmpty()) return RequestedMood;
 	if (M->World->bDriving) return TEXT("drive");
 	if (M->World->Area == TEXT("station01")) return TEXT("tension");
 	if (M->World->Area == TEXT("room6")) return TEXT("motel");
 	const FVector P = M->Player ? M->Player->Pos : FVector::ZeroVector;
 	if (M->World->Area == TEXT("saro") && M->World->AtMotel(P)) return TEXT("motel");
-	const double Clock = M->Story ? M->Story->Clock() : 0;
+	// The town keeps its own musical identity, also during Freeform mornings.
+	if (M->World->Area == TEXT("diner")) return M->World->RoadStopAt(P) ? TEXT("eerie") : TEXT("town");
+	const double Clock = Free && M->Freeform ? M->Freeform->Clock() : M->Story ? M->Story->Clock() : 0;
 	const double Hour = FMath::Fmod(FMath::Fmod(Clock, 86400.0) + 86400, 86400.0) / 3600;
 	if (Hour >= 5 && Hour < 12) return TEXT("dawn");
-	if (M->World->Area == TEXT("diner")) return M->World->RoadStopAt(P) ? TEXT("eerie") : TEXT("town");
 	return M->Space == TEXT("yard") ? TEXT("night") : TEXT("eerie");
 }
 
@@ -325,8 +328,9 @@ bool FS47Score::MusicHeld() const
 {
 	if (!M) return false;
 	const AS47Story* Game = M->Story;
+	const bool Free = M->IsFreeform();
 	bool bPhaseHeld = false;
-	if (Game && Game->ChapterKey == TEXT("prologue"))
+	if (!Free && Game && Game->ChapterKey == TEXT("prologue"))
 	{
 		const ES47Phase P = Game->Phase();
 		bPhaseHeld = P == ES47Phase::Ringing || P == ES47Phase::Call || P == ES47Phase::Countdown || P == ES47Phase::Event || P == ES47Phase::Turning || P == ES47Phase::End;
@@ -336,13 +340,21 @@ bool FS47Score::MusicHeld() const
 	// The motel shares the SARO area, and driving has its own score: neither is held here.
 	const bool bSaroListening = M->World && M->World->Area == TEXT("saro") && !M->World->bDriving
 		&& !(M->Player && M->World->AtMotel(M->Player->Pos));
-	const bool bDecoderHeld = Game && bSaroListening && (Game->Night().bTapeA
+	const bool bDecoderHeld = Game && bSaroListening && ((!Free && Game->Night().bTapeA)
 		|| (Game->Decoder && (Game->Decoder->Playing() || Game->Decoder->Answering())));
-	return bDecoderHeld || (Game && (Game->bConsoleOpen || Game->IsCinematic())) || bPhaseHeld || (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard"))
-		|| M->bRadioHeard || On(Held.RoadsideSilent) || On(Held.MotelTvHeard) || On(Held.AbductionBusy) || On(Held.RecWalkBusy)
+	const bool bFreeformListening = Free && M->Freeform && M->Freeform->AudioPlaying();
+	const bool bReferenceListening = M->Audio && M->Audio->SoundMixPlaying(TEXT("receiver_reference"));
+	// These Story layers do not advance in Freeform. Their saved quiet timers must
+	// not suppress its outdoor score indefinitely. Audible sources still own holds.
+	const bool bStoryHeld = !Free && ((Game && (Game->bConsoleOpen || Game->IsCinematic())) || bPhaseHeld
+		|| On(Held.RoadsideSilent) || On(Held.MotelTvHeard) || On(Held.AbductionBusy) || On(Held.RecWalkBusy)
 		|| Value(Held.FaceQuiet) > 0 || Value(Held.NinthQuiet) > 0 || On(Held.RoofStepsBusy) || On(Held.ReelTapeBusy)
-		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy) || On(Held.TruckBRacing)
-		|| (M->Audio && M->Audio->Night && M->Audio->Night->Breathing().IsSet()) || On(Held.MorningBusy);
+		|| On(Held.SaroDarkBusy) || On(Held.OfficePhoneBusy) || On(Held.ArchiveBusy) || On(Held.ArrayBackBusy)
+		|| On(Held.TruckBRacing) || On(Held.MorningBusy));
+	return bDecoderHeld || bFreeformListening || bReferenceListening || bStoryHeld
+		|| (M->Audio && M->Audio->ReceiverMonitorOn())
+		|| (M->Audio && M->Audio->RadioOn() && M->Space != TEXT("yard")) || M->bRadioHeard
+		|| (M->Audio && M->Audio->Night && M->Audio->Night->Breathing().IsSet());
 }
 
 bool FS47Score::SelfTest(TArray<FString>& Lines)
@@ -396,6 +408,23 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 	Check(State.MusicHeld(), TEXT("the album's face quiet hook holds the score"));
 	State.Held.FaceQuiet = [] { return 0.0; }; State.Held.MorningBusy = [] { return true; };
 	Check(State.MusicHeld(), TEXT("the morning's quiet hook holds the score"));
+	State.Held.MorningBusy = [] { return false; };
+	Main->SessionMode=ES47SessionMode::Freeform;Main->Freeform=MakeShared<FS47FreeformSession>(Main);
+	Main->World->Area=TEXT("saro");Main->Space=TEXT("room");
+	Check(State.MusicWant()==TEXT("dawn")&&!State.MusicHeld(),TEXT("Freeform uses its own morning clock and keeps ambient music enabled"));
+	State.Held.FaceQuiet=[] { return 47.; };State.Held.RoadsideSilent=[] { return true; };State.Held.MorningBusy=[] { return true; };
+	Main->Space=TEXT("yard");
+	Check(State.MusicWant()==TEXT("dawn")&&!State.MusicHeld(),TEXT("Freeform outdoors ignores inactive Story silence timers"));
+	Main->World->Area=TEXT("diner");
+	Check(State.MusicWant()==TEXT("town")&&!State.MusicHeld(),TEXT("Freeform town music takes precedence over morning ambience"));
+	Main->World->bDriving=true;
+	Check(State.MusicWant()==TEXT("drive")&&!State.MusicHeld(),TEXT("Freeform driving without audible radio keeps its score"));
+	Main->bRadioHeard=true;
+	Check(State.MusicHeld(),TEXT("Freeform audible car radio still holds the score"));
+	Main->bRadioHeard=false;
+	Check(!State.MusicHeld(),TEXT("Freeform radio off releases the driving score"));
+	Main->SessionMode=ES47SessionMode::Story;
+	Check(State.MusicHeld(),TEXT("Story retains its narrative silence hooks"));
 	// Optional content-backed checks use the real imported recording through the context, with
 	// half a second rendered in total. Import-free self tests keep the checks above unchanged.
 	const FString MediaPath = FPaths::ProjectContentDir() / TEXT("Audio/Raw/media/music/neon.wav");

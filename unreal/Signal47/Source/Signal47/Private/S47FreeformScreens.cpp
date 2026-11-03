@@ -1,3 +1,4 @@
+#include "S47Audio.h"
 #include "S47Freeform.h"
 #include "S47FreeformTerminal.h"
 #include "S47FreeformWorld.h"
@@ -29,6 +30,7 @@ void FS47FreeformSession::OpenTerminal(int32 Screen,const FString& Title,TShared
  M->UI->Open(View,[Owner,this]
  {
   if(IsEngineExitRequested()||!Owner.IsValid()||Owner->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Owner->Freeform.Get()!=this)return;
+  if(Owner->Audio)Owner->Audio->ReceiverMonitorOff();
   TerminalView.Reset();ActiveTerminal=-1;bTelemetry=false;Changed();
  });
  TerminalView=View;ActiveTerminal=Screen;bTelemetry=Live;
