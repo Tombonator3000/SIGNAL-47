@@ -1,0 +1,5 @@
+{
+	"status": "PASS",
+	"checks": 15,
+	"scope": "Native Chapter2 Ward answer, caption intervals, no recorded PhoneSession, normal hangup and records progression. Caption PNGs require visual review; no human audio listening or callback-call claim."
+}

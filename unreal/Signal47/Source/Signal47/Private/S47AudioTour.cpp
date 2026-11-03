@@ -60,11 +60,12 @@ void US47Audio::Tour(const FString& Path)
 			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: phone call %s"), TL ? *FString::Printf(TEXT("%.2f s, %d cues"), TL->Duration, TL->Cues.Num()) : TEXT("unset (no recordings: captions)"));
 			Run(TL ? TL->Duration + 0.5 : 1.0, false);
 		}
-		Part(TEXT("phone call (Ward, Kinski)"));
+		Part(TEXT("phone call (Ward, own voice or captions)"));
 		{
 			TArray<FS47PhoneCue> Lines;
 			Lines.Add({ TEXT("That is enough to hold the morning series. It is not enough to tell us why it happened."), TEXT("WARD") });
 			const TOptional<FS47CallTimeline> TL = A->PhoneCall(Lines);
+			UE_LOG(LogS47AudioTour, Display, TEXT("S47: tour: Ward %s"), TL ? TEXT("own recording") : TEXT("unrecorded; caption call, no borrowed voice"));
 			Run(TL ? TL->Duration + 0.5 : 1.0, false);
 		}
 		Part(TEXT("the call from the future")); Run(A->FutureCall() + 0.6, false);
