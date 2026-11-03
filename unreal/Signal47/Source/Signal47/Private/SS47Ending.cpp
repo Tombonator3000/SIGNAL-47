@@ -424,7 +424,9 @@ bool SS47Ending::SelfTest(TArray<FString>& Lines)
 	E->Advance(100);
 	Check(E->Disposed() && Done == 4 && !E->Skip(), TEXT("dispose cancels pending callbacks and the overlay"));
 	const TArray<TPair<FString, FString>> Free = CreditsRows(false), Bought = CreditsRows(true);
-	Check(Free.Num() == 19 && Bought.Num() == 20 && Bought[12].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and in the original order"));
+	Check(Free.Num() == 20 && Bought.Num() == 21 && Bought[13].Value == TEXT("Ultimate SFX for Games, Function Loops"), TEXT("bought SFX credit is conditional and follows the recording credits"));
+ const auto* Space = Free.FindByPredicate([](const TPair<FString,FString>& Row) { return Row.Key == TEXT("Space radio references"); });
+ Check(Space && Space->Value.Contains(TEXT("NASA/JPL")) && Space->Value.Contains(TEXT("University of Iowa")) && Space->Value.Contains(TEXT("EMFISIS")), TEXT("space radio references retain their scientific source credits"));
  const auto* Observatory = Free.FindByPredicate([](const TPair<FString,FString>& Row) { return Row.Key == TEXT("Radio observatory sounds"); });
  Check(Observatory && Observatory->Value.Contains(TEXT("5570222")) && Observatory->Value.Contains(TEXT("CC BY 4.0")) &&
   Observatory->Value.Contains(TEXT("Felix Blume")) && Observatory->Value.Contains(TEXT("awg")) && Observatory->Value.Contains(TEXT("Priwo")),
