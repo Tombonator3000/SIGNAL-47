@@ -271,7 +271,7 @@ bool FS47FleetParked::Audit(TArray<FString>& Lines)const
  int32 NewFeet=0,OldFeet=0;
  if(auto* W=Web.Get())for(const auto& R:W->CollidersMutable(TEXT("saro")))
  {
-  if(FMath::IsNearlyEqual(R.MinX,34.,.0001)&&FMath::IsNearlyEqual(R.MaxX,36.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++NewFeet;
+  if(FMath::IsNearlyEqual(R.MinX,S47SaroForecourt::SedanX-1.,.0001)&&FMath::IsNearlyEqual(R.MaxX,S47SaroForecourt::SedanX+1.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++NewFeet;
   if(FMath::IsNearlyEqual(R.MinX,26.,.0001)&&FMath::IsNearlyEqual(R.MaxX,28.,.0001)&&FMath::IsNearlyEqual(R.MinZ,6.85,.0001)&&FMath::IsNearlyEqual(R.MaxZ,12.35,.0001))++OldFeet;
  }
  Check(NewFeet==1&&OldFeet==0,TEXT("sedan actual foot follows east staff bay, old position clear; all visitor bays free"));
