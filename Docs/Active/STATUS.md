@@ -6,7 +6,9 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
-Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. Pakking/installasjon venter til PR379 er flettet.
+[Oppdatert regresjonsgjennomgang](Reports/PR379_REGRESSION_REVIEW_2026-11-04.md) finner en statisk printerkøfeil for eldre originaler uten tellerlinje og avgrenser hull i ordinær Continue, samlet økonomireise og Story-modusbytte. To målrettede testkandidater er lagt til på nattgrenen, men er ikke bygget eller kjørt. Tidligere grønne deltester lukker ikke disse funnene.
+
+Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. PR379 ble flettet 4. november kl.06:59 CET med head `cc071f46` og merge `0d9c5815`; pakking/installasjon er ikke gjennomført i denne kontrollen.
 
 Opprinnelig rekvisittimport består for 26 modeller / 78 LOD-er og åtte materialsett. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Claude har lagt til 22 egne Extras-modeller og møblert lab, lager og garasje. Codex har deretter lagt til prøveholder og fire fysiske bordskilt: samlet Extras-import består for 27 modeller / 81 LOD-er. Gammel skittgeometri er klippet ved den nye servicedøren, og gulvjekken er flyttet ut av dørpassasjen. Nye runtime-bilder viser frie åpninger og kontakt mellom de nye detaljene og benkeplatene.
 
