@@ -1,6 +1,6 @@
 # Undersøkelser og referanser
 
-**Gjelder:** kategorien beskrevet her. **Sist kontrollert:** 31. oktober 2026.
+**Gjelder:** kategorien beskrevet her. **Sist kontrollert:** 4. november 2026.
 
 **Status: Referanse** · Et studert verktøy, spill eller skill er ikke installert eller integrert bare fordi det er beskrevet her. Konkrete neste produksjonsoppgaver føres i [TODO](../Active/TODO.md).
 
@@ -14,6 +14,7 @@
 - [Ferdigheter, Nanite og MetaHuman-mannekenger](Unreal/UNREAL_SKILLS_2026-10-28.md).
 - [Lumen, tåke og skygger](Unreal/RENDERING_RESEARCH_2026-10-26.md).
 - [Greyhill: jakt](Unreal/GREYHILL_RESEARCH.md), [dørkode](Unreal/GREYHILL_DOOR_CODE_ANALYSIS.md) og [videre analyser](Unreal/GREYHILL_NEXT_ANALYSES.md).
+- [Greyhill: konkrete kodefunn og gjenbruk i SIGNAL 47](Unreal/GREYHILL_FUNN_2026-11-04.md), med GH01 til GH10, kodehenvisninger og akseptkrav. Referanseforslag, ikke en ny produksjonsrekkefølge.
 - [Niagara-forslag](Unreal/NIAGARA_FORSLAG.md) og [modellkilder](Unreal/MODELLER.md).
 - [Tidligere gratisasset-katalog](FREE_ASSET_CATALOG.md), referanse med kilde-/lisenskrav.
 
