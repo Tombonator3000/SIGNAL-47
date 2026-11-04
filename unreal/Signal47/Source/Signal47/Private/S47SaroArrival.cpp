@@ -1,5 +1,6 @@
 // Native SARO visitor lot, small Blender-authored signs and the ramp entrance.
 #include "S47SaroArrival.h"
+#include "S47SaroSurfaces.h"
 #include "S47Web.h"
 #include "S47Obj.h"
 #include "S47Three.h"
@@ -29,8 +30,7 @@ namespace
  bool OldFoot(double X0,double X1,double Z0,double Z1)
  {return FMath::Abs(X0+14.8)<.025&&FMath::Abs(X1+14.2)<.025&&FMath::Abs(Z0-19.05)<.025&&FMath::Abs(Z1-22.55)<.025;}
  const FVector NewSign(-7.3,-.6,15.5),SignDelta(7.2,0,-5.3);
- // Original g432 road draws at -.588; the floor contract stays -.600.
- // A 24mm visual finish clears that road by12mm without moving any query/walk floor.
+ // One consistent finish above the desert, with the original gameplay floor retained.
  constexpr double FinishOffset=.024;
  struct FBounds {double X0,X1,Y0,Y1,Z0,Z1;};
  // Exact remaining 19 original axis-aligned concrete boxes from immutable g435.
@@ -123,9 +123,9 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  USceneComponent* ParentComp=G->Comp.Get();
  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
- UTexture* AsphaltRGB=LoadObject<UTexture>(nullptr,TEXT("/Game/MesaDiner/Materials/Textures/T_M_Mesa_Asphalt_base_color.T_M_Mesa_Asphalt_base_color"));
+ UMaterialInterface* Asphalt=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Backdrop/M_S47_ParkingAsphalt.M_S47_ParkingAsphalt"));
  UMaterialInterface* GlassBase=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/MesaDiner/Materials/M_Mesa_FacadeGlass.M_Mesa_FacadeGlass"));
- if(!Cube||!Base||Base->GetBlendMode()!=BLEND_Opaque||!AsphaltRGB||!GlassBase)return {};
+ if(!Cube||!Base||Base->GetBlendMode()!=BLEND_Opaque||!Asphalt||!GlassBase)return {};
  UStaticMesh* EntranceMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/ArrivalEntrance/SM_Arrival_Entrance.SM_Arrival_Entrance"));
  UStaticMesh* DoorMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/ArrivalEntrance/SM_Arrival_DoorDetails.SM_Arrival_DoorDetails"));
  UStaticMesh* VisitorMesh=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/Signal47/Art/ArrivalEntrance/SM_Arrival_VisitorSign.SM_Arrival_VisitorSign"));
@@ -134,16 +134,18 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  {UE_LOG(LogS47SaroArrival,Error,TEXT("S47: arrival entrance authored assets or original hinge missing"));return {};}
  auto Under=[W](int32 I,int32 P){for(;I>=0;I=W->Node(I)->Parent)if(I==P)return true;return false;};
  UStaticMeshComponent* Concrete=nullptr,*Face=nullptr,*Pane=nullptr;int32 FaceNode=-1;
+ TArray<int32> RetiredSurfaces;
  for(int32 I=0;I<W->PartCount();++I)
  {
   const FS47WebNode* N=W->Node(I);if(!N)continue;
   UStaticMeshComponent* C=Cast<UStaticMeshComponent>(N->Comp.Get());
+  if(C&&C->GetStaticMesh()&&((Under(I,Parent)&&N->Geo>=431&&N->Geo<=434)||N->Geo==428))RetiredSurfaces.Add(I);
   if(Under(I,Parent)&&N->Geo==435)Concrete=C;
   if(Under(I,Parent)&&N->Geo==443){Face=C;FaceNode=I;}
   if(N->Parent==Room&&N->Geo==78)Pane=C;
  }
  FSignPatch Patch;
- if(!Concrete||!Face||!Face->GetStaticMesh()||!Face->GetMaterial(0)||!Pane||!MakeSignPatch(W,Concrete,Patch))
+ if(RetiredSurfaces.Num()!=5||!Concrete||!Face||!Face->GetStaticMesh()||!Face->GetMaterial(0)||!Pane||!MakeSignPatch(W,Concrete,Patch))
  {UE_LOG(LogS47SaroArrival,Error,TEXT("S47: SARO arrival rejected: exact g435/g443/window or CPU render data unavailable; complete original retained"));return {};}
  int32 WalkCount=0,DriveCount=0;
  for(const FS47Rect& R:W->CollidersMutable(TEXT("saro")))if(OldFoot(R.MinX,R.MaxX,R.MinZ,R.MaxZ))++WalkCount;
@@ -159,29 +161,34 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
   UMaterialInstanceDynamic* M=UMaterialInstanceDynamic::Create(Base,W);M->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(Color));M->SetScalarParameterValue(TEXT("NativeLighting"),1);
   M->SetScalarParameterValue(TEXT("Roughness"),Rough);M->SetScalarParameterValue(TEXT("Metalness"),Metal);M->SetScalarParameterValue(TEXT("EmissivePower"),0);return M;
  };
- UMaterialInstanceDynamic* Kerb=Mat(0x8c8776,.92),*Paint=Mat(0xb6ad8a,.95),*Metal=Mat(0x777f79,.48,.7),*Cream=Mat(0xb4ac96,.91),*Gravel=Mat(0x8f8065,.98);
- // Reuse only the authored asphalt RGB. Its diner-specific RGBA edge mask must
- // never perforate a visitor bay; this private opaque MID ignores texture alpha.
- UMaterialInstanceDynamic* Asphalt=Mat(0xffffff,.96);
- Asphalt->SetTextureParameterValue(TEXT("Map"),AsphaltRGB);Asphalt->SetScalarParameterValue(TEXT("UseMap"),1);
- Asphalt->SetVectorParameterValue(TEXT("MapU"),FLinearColor(.84,0,.08,0));
- Asphalt->SetVectorParameterValue(TEXT("MapV"),FLinearColor(0,.84,.08,0));
+ UMaterialInstanceDynamic* Kerb=Mat(0x8c8776,.92),*Paint=Mat(0xb6ad8a,.95),*Metal=Mat(0x777f79,.48,.7),*Cream=Mat(0xb4ac96,.91);
+ // Both parking areas and the full curved approach share one physical-scale material.
+ UStaticMesh* PavedMesh=S47SaroSurfaces::Mesh(W,Asphalt,false);
+ UStaticMesh* WalkMesh=S47SaroSurfaces::Mesh(W,Kerb,true);
+ if(!PavedMesh||!WalkMesh)return {};
  auto Box=[&](const TCHAR* Name,const FVector& At,const FVector& Size,UMaterialInterface* Material,bool Floor=false)
  {
   UStaticMeshComponent* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,Material);C->SetupAttachment(ParentComp);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCastShadow(!Floor);C->SetHiddenInGame(true);C->RegisterComponent();
   C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldScale3D(S47Three::DirToUE(Size));
   const int32 I=W->AdoptNode(C,Parent,FString(TEXT("arrival:"))+Name);W->ObjAt(I).SetScale(Size);S->Parts.Add(C);if(Floor)Floors.Add(C);return C;
  };
- auto Surface=[&](const TCHAR* Name,const FVector& At,const FVector& Size,UMaterialInterface* Material)
+ auto Query=[&](const FVector& At,const FVector& Size)
  {
-  UStaticMeshComponent* C=Box(Name,At+FVector(0,FinishOffset,0),Size,Material);C->SetCastShadow(false);
-  // Keep the original physical plane: render offset is not a raised driving floor.
   UBoxComponent* Q=NewObject<UBoxComponent>(W);Q->SetMobility(EComponentMobility::Movable);Q->SetupAttachment(ParentComp);
   Q->SetBoxExtent(S47Three::DirToUE(Size*50));Q->SetCollisionEnabled(ECollisionEnabled::NoCollision);Q->SetCollisionResponseToAllChannels(ECR_Ignore);
-  Q->SetHiddenInGame(true);Q->RegisterComponent();Q->SetWorldLocation(S47Three::ToUE(At));Floors.Add(Q);return C;
+  Q->SetHiddenInGame(true);Q->RegisterComponent();Q->SetWorldLocation(S47Three::ToUE(At));Floors.Add(Q);
  };
- S->Parking=Surface(TEXT("visitorLot"),FVector(-13,-.66,15.5),FVector(10.4,.12,10),Asphalt);
- Surface(TEXT("entryApron"),FVector(-13,-.66,22.0),FVector(7,.12,3),Asphalt);
+ auto Paving=[&](const TCHAR* Name,UStaticMesh* Mesh,UMaterialInterface* Material)
+ {
+  auto* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Mesh);C->SetMaterial(0,Material);
+  C->SetupAttachment(ParentComp);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetCastShadow(false);C->SetHiddenInGame(true);C->RegisterComponent();
+  C->SetWorldTransform(FTransform::Identity);W->AdoptNode(C,Parent,FString(TEXT("arrival:"))+Name);S->Parts.Add(C);return C;
+ };
+ S->Parking=Paving(TEXT("continuousAsphalt"),PavedMesh,Asphalt);
+ S->WalkPaving=Paving(TEXT("continuousConcreteWalk"),WalkMesh,Kerb);
+ Query(FVector(-13,-.66,15.5),FVector(10.4,.12,10));
+ Query(FVector(-13,-.66,21.25),FVector(7,.12,1.5));
+ Box(TEXT("serviceStopLine"),FVector(-18.6,-.573,23.15),FVector(.4,.004,2.2),Paint);
  for(double X:{-17.3,-14.3,-11.3,-8.3})Box(TEXT("bayLine"),FVector(X,-.597+FinishOffset,14.3),FVector(.065,.004,5.5),Paint);
  for(double X:{-15.8,-12.8,-9.8})
  {
@@ -208,13 +215,14 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
   Box(TEXT("northKerb"),FVector((Span.X+Span.Y)*.5,-.57,10.45),FVector(Span.Y-Span.X,.18,.10),Kerb);
  for(const FVector& Span:{FVector(10.5,11.6,0),FVector(12.8,20.5,0)})Box(TEXT("eastKerb"),FVector(-7.75,-.57,(Span.X+Span.Y)*.5),FVector(.10,.18,Span.Y-Span.X),Kerb);
  for(const FVector& Span:{FVector(-18.2,-16.5,0),FVector(-9.5,-7.8,0)})Box(TEXT("entryKerb"),FVector((Span.X+Span.Y)*.5,-.57,20.55),FVector(Span.Y-Span.X,.18,.10),Kerb);
- // Clear pedestrian strip, then skirt the annex and join the original truck ramp at its foot.
- Surface(TEXT("pedestrianStrip"),FVector(-8.3,-.619,15.5),FVector(.85,.046,10),Gravel);
- Surface(TEXT("entranceWalk"),FVector(-11.6,-.619,8.1),FVector(1.2,.046,4.8),Kerb);
- Surface(TEXT("entranceRampApproach"),FVector(-10.8,-.619,5.7),FVector(2.8,.046,1.2),Kerb);
- Surface(TEXT("annexApproach"),FVector(-1.2,-.619,12.2),FVector(14.2,.046,1.1),Kerb);
- Surface(TEXT("rampApproachNorth"),FVector(5.4,-.619,14.75),FVector(1.1,.046,5.1),Kerb);
- Surface(TEXT("rampApproachEast"),FVector(8.45,-.619,17.3),FVector(6.1,.046,1.1),Kerb);
+ // Concrete routes are part of one disjoint mesh, with no hidden crossing slabs.
+ // Query-only floor boxes keep the existing flat gameplay authority at -.600m.
+ Query(FVector(-14.7,-.66,5.7),FVector(10.6,.12,1.2));
+ Query(FVector(-11.6,-.66,8.4),FVector(1.2,.12,4.2));
+ Query(FVector(-8.2625,-.66,15.5),FVector(.925,.12,10));
+ Query(FVector(-1.175,-.66,12.2),FVector(14.25,.12,1.1));
+ Query(FVector(5.4,-.66,15.225),FVector(1.1,.12,4.95));
+ Query(FVector(6.625,-.66,17.15),FVector(1.35,.12,1.1));
  // Low shouldered monument stays wholly outside both driving and pedestrian corridors.
  Box(TEXT("signFoundation"),FVector(-7.3,-.59,15.5),FVector(.50,.18,3.50),Kerb);
  Box(TEXT("signMonument"),FVector(-7.3,.06,15.5),FVector(.40,1.32,3.40),Cream);
@@ -274,6 +282,8 @@ TSharedPtr<FS47SaroArrival> FS47SaroArrival::Build(AS47Web* W)
  TArray<TSharedPtr<FJsonValue>> NewObs=*Obs;
  for(TSharedPtr<FJsonValue>& V:NewObs){const auto& A=V->AsArray();if(A.Num()==4&&OldFoot(A[0]->AsNumber(),A[1]->AsNumber(),A[2]->AsNumber(),A[3]->AsNumber())){TArray<TSharedPtr<FJsonValue>> NewBox;for(double D:{-7.55,-7.05,13.75,17.25})NewBox.Add(MakeShared<FJsonValueNumber>(D));V=MakeShared<FJsonValueArray>(NewBox);++S->DriveMoved;}}
  (*Leg)->SetArrayField(TEXT("obstacles"),NewObs);
+ S->RetiredSurfaces=RetiredSurfaces;
+ for(int32 I:RetiredSurfaces){auto* C=Cast<UStaticMeshComponent>(W->Node(I)->Comp.Get());C->SetVisibility(false,false);C->SetHiddenInGame(true,false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
  S->FloorQueries=Floors;
  for(const auto& Weak:Floors)if(UPrimitiveComponent* Q=Weak.Get()){Q->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Q->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);}
  for(const auto& Weak:S->Parts)if(UPrimitiveComponent* C=Weak.Get())C->SetHiddenInGame(false);
@@ -284,6 +294,7 @@ void FS47SaroArrival::Update()
 {
  AS47Web* W=Web.Get();if(!W)return;const bool Shown=W->Area()==TEXT("saro");
  bLastShown=Shown;
+ for(int32 I:RetiredSurfaces)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetVisibility(false,false);C->SetHiddenInGame(true,false);}
  for(const auto& Weak:FloorQueries)if(UPrimitiveComponent* C=Weak.Get())C->SetCollisionEnabled(Shown?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
  for(const auto& Weak:Parts)if(UPrimitiveComponent* C=Weak.Get())C->SetVisibility(Shown,false);
  const US47Main* M=US47Main::Get(W);
@@ -308,11 +319,16 @@ bool FS47SaroArrival::Audit(TArray<FString>& Lines)const
  bool Ok=true;auto Check=[&](bool Pass,const FString& Why){Lines.Add(FString::Printf(TEXT("%s SARO arrival %s"),Pass?TEXT("OK"):TEXT("FAIL"),*Why));Ok&=Pass;};
  Check(WalkMoved==1&&DriveMoved==1,TEXT("monument moved in walk and drive data atomically"));Check(RemovedTriangles==12,TEXT("exact old sign cube removed,228 concrete triangles preserved"));
  const UStaticMeshComponent* C=Parking.Get();Check(C&&FMath::Abs(C->Bounds.GetBox().Max.Z/100+.576)<.0001,TEXT("actual lot visual top -0.576 metres,24mm over unchanged floor"));
- Check(C&&C->GetMaterial(0)&&C->GetMaterial(0)->GetBlendMode()==BLEND_Opaque&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("asphalt RGB uses opaque material; visual finish does not change query floor"));
+ Check(C&&C->GetMaterial(0)&&C->GetMaterial(0)->GetBlendMode()==BLEND_Opaque&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision,TEXT("one world-projected opaque asphalt material; visual finish does not change query floor"));
  bool QueryAtFloor=false;for(const auto& Weak:FloorQueries)if(const UBoxComponent* Q=Cast<UBoxComponent>(Weak.Get()))
   if(FMath::Abs(Q->GetComponentLocation().X/100+13)<.0001&&FMath::Abs(Q->GetComponentLocation().Y/100-15.5)<.0001&&FMath::Abs(Q->Bounds.GetBox().Max.Z/100+.6)<.0001)QueryAtFloor=true;
  Check(QueryAtFloor,TEXT("separate actual visitor query box top remains -0.600 metres"));
  if(const AS47Web* W=Web.Get())for(double X:{-18.2,-12.8,-7.8})for(double Z:{10.5,14.3,20.5})Check(FMath::Abs(US47Night::SaroFloorAt(W,X,Z)+.6)<1e-8,TEXT("existing SARO floor equals new parking plane"));
+ Check(RetiredSurfaces.Num()==5,TEXT("original crossing path, shoulder/turn gravel, road, stop stripe and gravel path retired"));
+ if(const AS47Web* W=Web.Get())for(int32 I:RetiredSurfaces)
+  if(const auto* N=W->Node(I))if(const auto* Old=Cast<UStaticMeshComponent>(N->Comp.Get()))Check(!Old->IsVisible()&&Old->bHiddenInGame,TEXT("retired ground ribbon stays hidden"));
+ Check(C&&C->GetStaticMesh()&&C->GetStaticMesh()->GetNumTriangles(0)==191,TEXT("single 191-triangle asphalt union: no lot/road/forecourt overlap"));
+ const auto* Walk=WalkPaving.Get();Check(Walk&&Walk->GetStaticMesh()&&Walk->GetStaticMesh()->GetNumTriangles(0)==16,TEXT("single 16-triangle concrete route, including highway connection"));
  Check(WindowGlass.IsValid(),TEXT("restrained lit transparent window, no opaque/emissive backing"));
  Check(Entrance.IsValid()&&EntranceDoor.IsValid(),TEXT("Blender entrance canopy, surround and live door hardware present"));
  Check(VisitorSigns.Num()==2,TEXT("two natural sized visitor signs replace three oversized boards"));

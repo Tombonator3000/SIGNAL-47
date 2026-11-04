@@ -4,6 +4,11 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Tutorial og SARO-uteområde, 4. november
+
+- [x] **FF-FIRST-SHIFT-01:** fullfør Claudes seksstegs opplæring med faktisk arkivering, lagring/Continue og skjermet første jobb. Pakket og installert; 40 målrettede kontroller består.
+- [x] **SARO-SURFACES-03:** samle innkjøring/parkering og én gangveitype, fjern gamle overlapp og usynlig sperre langs kjøretøyrampen. Fem spillbilder og 34 gang-/kjørekontroller består; installert lokalt.
+
 ## Nye spillerkrav: mysterier og fotofremkalling, 3. november
 
 - [ ] **FF-MYSTERY-SYSTEM-01: generelt system for tilfeldige mysterier og løsninger.** Tom ønsker en gjenbrukbar motor som både lager undersøkbare hendelser og lar spilleren finne en dokumentert løsning: mystiske fotspor, mystiske lys i ørkenen, rare hendelser og flere varianter. Koble hendelse, skjult årsak, fysiske spor, alternative forklaringer, tilgjengelige kontrollforsøk og konklusjon i samme system. Tilfeldighet skal gi variasjon, mens spor og testresultater følger hendelsens faktiske årsak. Hver generert sak må kunne undersøkes og løses gjennom implementerte spillerhandlinger; «unexplained» kan være en støttet konklusjon uten at opphavet identifiseres. Vis konkret sted, utstyr og neste handling. Gjenbruk og utvid saksmotoren og Director fremfor separate engangsløsninger. Første konkrete mangel: «Visitors around the base» beskriver feltforsøk, men verdenshandlingene må kobles til registreringen av saksresultater. Aksept: flere hendelsestyper og årsaksvarianter kan følges fra funn gjennom fysiske tester til støttet konklusjon, også etter lagring/Continue; ingen sak skal kreve handlinger som bare finnes i menyteksten. Samordnes med GAMEPLAY-LOOP-01 og FF-RESEARCH-02/03.

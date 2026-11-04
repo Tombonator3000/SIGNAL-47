@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Første skift og sammenhengende SARO-adkomst, 4. november
+
+Første nye Freeform-spill har nå seks steg gjennom én virkelig jobb: aksept på OPS, antennepeking, opptak, original, registrering/betaling og fysisk arkivering. Jobbidentitet og steg overlever lagring/Continue. Andre jobber og vanlige hendelser venter til opplæringen er ferdig; eldre lagringer får ingen ny tutorial.
+
+Innkjøring og begge parkeringsområder er én plan asfaltflate med felles teksturskala. Fem gamle vei-/grusflater og de separate parkeringsplatene er erstattet; gangforbindelsene bruker én betongtype. Rampens usynlige sperre er fjernet, med høydekontroll for lave kanter og hopp. Bygninger, rekkverk og bilkollisjon beholdes.
+
+Levert lokalt med editorbygg, materialimport, fem runtime-bilder, 34 gang-/kjørekontroller og pakket tutorialkontroll med 40 sjekker og tre disk-/Continue-runder. Pakket selvtest og installert vindusoppstart består. Personlige Saved-filer er uendret. Kameraplassering og hopphøyde i de fokuserte prøvene er kontrollerte fixtures, ikke en menneskelig spilløkt eller ytelsesbenchmark.
+
 ## SARO og østfløy, lokal installasjon 4. november kl.14:57
 
 [PR380](https://github.com/Tombonator3000/SIGNAL-47/pull/380) er flettet i `main` via `f62b1c73` og installert lokalt. Leveransen inkluderer østfløyens oppdaterte innredning/arbeidsbenker, kjørbar parkering, bakketeksturer og Nanite-/parallax-relieff beskrevet nedenfor.

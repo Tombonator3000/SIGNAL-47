@@ -157,7 +157,7 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
   L->SetVolumetricScatteringIntensity(0.f);L->SetIndirectLightingIntensity(1.f);
   L->SetVisibility(false);L->RegisterComponent();S->SignWash.Add(L);S->SignFixtures.Add(Fixture);
  }
- // Unreal: a continuous paved east forecourt connects to the original service road.
+ // Markings on the unified paving installed by S47SaroArrival.
  // The physical drive surface uses the same shared footprint; top remains -.576m.
  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
@@ -185,11 +185,8 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
    S->PartNodes.Add(I);S->Forecourt.Add(C);S->ForecourtPoses.Add(C->GetComponentTransform());
   };
   using namespace S47SaroForecourt;
-  // Top -.576m clears the old road drawing by 12mm, same as the visitor-lot finish.
-  Box(TEXT("eastApron"),FVector((X0+X1)/2,-.636,(Z0+Z1)/2),FVector(X1-X0,.12,Z1-Z0),Asphalt);
-  Box(TEXT("serviceRoadAccess"),FVector((AccessX0+AccessX1)/2,-.636,(AccessZ0+AccessZ1)/2),FVector(AccessX1-AccessX0,.12,AccessZ1-AccessZ0),Asphalt);
-  // Three 3.2m staff bays end west of the roll-up. Keep the entire garage approach unmarked.
-  Box(TEXT("facadeWalk"),FVector(29.95,-.574,6.2),FVector(19.7,.004,.6),Concrete);
+  // Arrival owns the single road/parking union and concrete facade strip. Only
+  // markings and wheel stops live here; no second slab crosses the service bend.
   for(double X:{23.,26.2,29.4,32.6})Box(TEXT("staffBayLine"),FVector(X,-.572,9.65),FVector(.065,.004,6.1),Paint);
   Box(TEXT("staffBayEnds"),FVector(27.8,-.572,6.6),FVector(9.6,.004,.065),Paint);
   Box(TEXT("staffEastStop"),FVector(SedanX,-.54,6.45),FVector(1.8,.12,.2),Concrete);
@@ -232,7 +229,7 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
   OK&=Good;Lines.Add(FString::Printf(TEXT("SARO_SITE part=%s mesh/root/visibility=%s"),Spec[I].Name,Good?TEXT("PASS"):TEXT("FAIL")));
  }
  for(int32 I:RetiredNodes){const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;OK&=C&&!C->IsVisible()&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision;}
- bool ForecourtOK=Forecourt.Num()==9&&ForecourtPoses.Num()==9;
+ bool ForecourtOK=Forecourt.Num()==6&&ForecourtPoses.Num()==6;
  for(int32 I=0;I<Forecourt.Num();++I)
  {
   const auto* C=Forecourt[I].Get();ForecourtOK&=C&&C->GetComponentTransform().Equals(ForecourtPoses[I],.001)&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&C->IsVisible()==bShown;

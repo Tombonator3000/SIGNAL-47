@@ -33,6 +33,7 @@
 #include "S47Inter.h"
 #include "S47Legs.h"
 #include "S47Main.h"
+#include "S47Night.h"
 #include "S47Obj.h"
 #include "S47OldRoad.h"
 #include "S47RoadArea.h"
@@ -1396,7 +1397,9 @@ void US47World::MakeLands()
 			{ -6.7, 6.7, -5.9, 5.9 }, { -6.6, 2.6, 5.8, 11.1 }, { -7.75, -6.0, 4.75, 6.65 }, { 12.6, 19.2, -6.0, 1.0 }, { 20.2, 39.0, -5.9, 5.9 },
 			// the slabs at floor level, 0.6 m over the ground, their edges and rails held by the zones
 			// (ServiceYard.ts): the landing, the east walk, the S-03 apron, the lab path, the pad and its ramp
-			{ 6.3, 11.0, -0.6, 3.4 }, { 8.0, 11.0, -19.6, -0.6 }, { 11.0, 12.6, -13.4, -8.6 }, { 11.0, 12.6, -1.9, -0.6 }, { 6.6, 13.0, 3.4, 12.4 }, { 6.6, 13.0, 12.4, 16.6 },
+			// The unrailed truck ramp is entered from its sides too. Its old excluded
+			// rectangle left an impassable gap between gRamp and the surrounding ground.
+			{ 6.3, 11.0, -0.6, 3.4 }, { 8.0, 11.0, -19.6, -0.6 }, { 11.0, 12.6, -13.4, -8.6 }, { 11.0, 12.6, -1.9, -0.6 }, { 6.6, 13.0, 3.4, 12.4 },
 			// the array's chain-link fence at z -20 (Exterior.ts), its gate shut unless the gate's own zone
 			// is open (Field.ts); the highway's opening through it as it is drawn
 			{ -80, -28.6, -20, -20 }, { -19.4, 60, -20, -20 },
@@ -1482,6 +1485,9 @@ void US47World::MakeLands()
 
 double US47World::LandY(double X, double Z)
 {
+ // The whole exposed ramp uses its slope, including the side strips outside gRamp.
+ if(Area==TEXT("saro")&&X>=6.6&&X<=13.0&&Z>=12.4&&Z<=16.7)
+  return US47Night::SaroFloorAt(M?M->Web:nullptr,X,Z);
  // Open-land walking precedes the legacy zone floor. Use the same activated native seam.
  double SeamY=0;
  if(Area==TEXT("saro")&&M&&S47SaroSeam::Height(M->Web,X,Z,SeamY))return SeamY;
@@ -2363,6 +2369,27 @@ bool US47World::AuditEastWingDrive(TArray<FString>& Lines)
  if(!Saro){Check(false,TEXT("SARO driving leg exists"));return false;}
  auto* DriveArea=static_cast<FArrivalSaroDrive*>(Saro->Area.Get());
  Check(DriveArea->ForecourtEnabled(),TEXT("native exterior parking surface exists"));if(!Good)return false;
+ if(M&&M->Player&&Area==TEXT("saro"))
+ {
+  auto* P=M->Player.Get();const FVector SavedPos=P->Pos;const double SavedFloor=P->FloorY,SavedLift=P->Lift;
+  for(bool West:{true,false})
+  {
+   const double StartX=West?6.0:13.6,Direction=West?1.:-1.;
+   P->Pos=FVector(StartX,0,14.);P->FloorY=-.6;P->Lift=0;
+   for(int32 I=0;I<30;++I)P->MoveBy(Direction*.02,0);
+   Check(West?P->Pos.X<=6.6-P->Radius+.001:P->Pos.X>=13.+P->Radius-.001,TEXT("raised ramp side stops grounded feet at the visible edge"));
+   P->Lift=.45; // jump-apex fixture; movement and edge clearance use production code
+   for(int32 I=0;I<45;++I)P->MoveBy(Direction*.02,0);
+   Check(West?P->Pos.X>6.65:P->Pos.X<12.95,TEXT("jump clearance admits exposed ramp side"));
+   Check(FMath::IsNearlyEqual(LandY(West?6.7:12.9,14.),US47Night::SaroFloorAt(M->Web,9.8,14.),.001),TEXT("ramp side uses the same slope as its centre"));
+   P->Pos=FVector(StartX,0,14.);P->FloorY=-.6;P->Lift=0;
+   for(int32 I=0;I<100;++I)P->MoveBy(0,.02);
+   Check(P->Pos.Z>15.95,TEXT("ground beside ramp remains walkable"));
+   for(int32 I=0;I<60;++I)P->MoveBy(Direction*.02,0);
+   Check(West?P->Pos.X>6.65:P->Pos.X<12.95,TEXT("low ramp side admits an ordinary step"));
+  }
+  P->Pos=SavedPos;P->FloorY=SavedFloor;P->Lift=SavedLift;
+ }
  // Traverse the actual area with the production controller, including full-body obstacle
  // collision. These paths used to stop on the invisible x=32.6 garage-corridor boundary.
  auto Traverse=[&](const FVector& Start,double Heading,double Target,bool AlongX,const TCHAR* Label)
