@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## SARO-bakketeksturer, editorleveranse 4. november
+
+Tre egne ImageGen-materialsett for sand, caliche-skorpe og grus erstatter T4-plassholderne i bakkens fargelag. Ni PNG-er og native teksturer inkluderer BaseColor, NormalGL og Roughness; normal/ruhet følger lagmaskene. Sandens skalablanding og nøytrale fargetoning er justert etter før-/etterbilder. Originalene er 1254 kvadrat, resamplet til 2048; normalene er genererte estimater. [Kilder, prompter og import](../../unreal/ArtSource/Backdrop/GROUND_TEXTURES.md).
+
+Native import/materialbygg består uten rapporterte kompileringsfeil. Vulkan-bilder fra like kameravinkler og klokkeslett viser materialet på SARO-bakken; dette er editorarbeid på `claude/east-wing-20261103`, ikke en ny installasjon. Resten av [bakkeoverleveringen](../Design/Environment/SARO_GROUND_HANDOVER.md) står fortsatt åpen.
+
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
 Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. Pakking/installasjon venter til PR379 er flettet.

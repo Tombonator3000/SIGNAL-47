@@ -1,4 +1,4 @@
-"""Run the decal importer under the shared production lease and idle guard (EASTWING photo pass)."""
+"""Import SARO ground textures and material under the shared production lease and idle guard."""
 from pathlib import Path
 import argparse
 import json
@@ -16,8 +16,8 @@ from unreal_guard import run_owned
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apply',action='store_true')
-    parser.add_argument('--source',type=Path,default=HERE/'exports')
-    parser.add_argument('--output',type=Path,default=Path.home()/'scratch-bm/Signal47-eastwing-props-20261103/shell-native-import')
+    parser.add_argument('--source',type=Path,default=HERE/'exports'/'ground')
+    parser.add_argument('--output',type=Path,default=Path.home()/'scratch-bm/Signal47-ground-20261104/ground-native-import')
     args=parser.parse_args()
     source=args.source.expanduser().resolve()
     output=args.output.expanduser().resolve()
@@ -30,9 +30,9 @@ def main():
     print(json.dumps({'command':command,'source':str(source),'report':str(output/'import.json'),'apply':args.apply},indent=2))
     if not args.apply:return 0
     if not editor.is_file():
-        raise RuntimeError('Editor or generated shell manifest is missing')
+        raise RuntimeError('Unreal commandlet editor is missing')
     if shutil.disk_usage(PROJECT).free<110_000_000_000:
-        raise RuntimeError('Shell import must leave the 100 GB disk reserve plus its 10 GB allowance')
+        raise RuntimeError('Ground import must leave the 100 GB disk reserve plus its 10 GB allowance')
     report=output/'import.json'
     if report.exists():raise RuntimeError('Use a fresh output directory; do not overwrite an earlier import result')
     output.mkdir(parents=True,exist_ok=True)
@@ -41,7 +41,7 @@ def main():
         env=os.environ.copy()
         env.update(lease.environment())
         os.environ.update(lease.environment())
-        env.update(S47_GROUND_APPLY='1',S47_GROUND_REPORT=str(report))
+        env.update(S47_GROUND_APPLY='1',S47_GROUND_REPORT=str(report),S47_GROUND_SOURCE=str(source))
         result=run_owned(command,output/'editor.log',timeout=1800,env=env,cwd=PROJECT)
         (output/'process.json').write_text(json.dumps(result,indent=2)+'\n')
     if result['returncode']!=0 or result['stop_reason']:return 1
