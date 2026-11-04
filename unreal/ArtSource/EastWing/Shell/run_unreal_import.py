@@ -23,7 +23,8 @@ def main():
     output=args.output.expanduser().resolve()
     engine=Path(os.environ.get('UE_ROOT',str(Path.home()/'.local/opt/UnrealEngine-5.8.4')))
     editor=engine/'Engine/Binaries/Linux/UnrealEditor-Cmd'
-    command=[str(editor),str(PROJECT/'Signal47.uproject'),'-run=pythonscript',
+    # Reimport replaces render data; drain builds synchronously before authored LOD imports.
+    command=[str(editor),str(PROJECT/'Signal47.uproject'),'-run=pythonscript','-AsyncStaticMeshCompilation=0',
              '-script='+str(HERE/'import_unreal.py'),'-unattended','-nop4','-nosplash','-NullRHI','-NoSound',
              '-UserDir='+str(output/'profile'),'-EnablePlugins=GeometryScripting,ProceduralMeshComponent',
              '-ini:Engine:[ConsoleVariables]:Interchange.FeatureFlags.Import.FBX=0']

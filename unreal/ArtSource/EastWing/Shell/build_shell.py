@@ -99,7 +99,9 @@ def link_only(obj,collection):
 def make_part(row,lod,collection,mats,collision=False):
     kind=row['kind']
     if kind=='box':
-        lo,hi=Vector(row['lo']),Vector(row['hi'])
+        # Render masonry behind the frames without changing the original UCX.
+        lo=Vector(row['lo'] if collision else row.get('visual_lo',row['lo']))
+        hi=Vector(row['hi'] if collision else row.get('visual_hi',row['hi']))
         center=(lo+hi)*.5
         size=hi-lo
         bpy.ops.mesh.primitive_cube_add(size=1,location=three_to_blender(center))
