@@ -150,8 +150,11 @@ def build(lod=0):
                 box('SM_EW_Trim',f'Blind{i}_{slat}',(a+.015,y-.005,Z0+.29),(b-.015,y+.005,Z0+.34),'BlindWood',.001 if lod==0 else 0)
             for x in (a+.18,b-.18):
                 tube(f'BlindCord{i}_{x}',(x,y1-.6,Z0+.335),(x,y1-.04,Z0+.335),.002,'BlindCord')
-    frame('PersonnelFrame','x',Z1-.10,21.3,22.4,0,2.15,depth=.30,sill=False)
-    frame('GarageFrame','x',Z1-.10,33.2,37.6,0,3.,depth=.30,width=.075,sill=False)
+    # Keep the outer face at z=5.55; project the inner face 1 cm past the
+    # masonry at z=5.25 so the rear jamb/head faces cannot be coplanar.
+    # Only visible trim changes: apertures, UCX and moving leaves stay fixed.
+    frame('PersonnelFrame','x',Z1-.105,21.3,22.4,0,2.15,depth=.31,sill=False)
+    frame('GarageFrame','x',Z1-.105,33.2,37.6,0,3.,depth=.31,width=.075,sill=False)
     frame('ServiceFrame','z',X1-.10,1.2,2.3,0,2.15,depth=.30,sill=False)
     for name,axis,fixed,a,b in INTERIOR_GAPS:
         frame(name+'Frame',axis,fixed,a,b,0,2.15,depth=.20,sill=False)
