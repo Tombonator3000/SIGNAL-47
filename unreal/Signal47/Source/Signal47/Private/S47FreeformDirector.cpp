@@ -204,7 +204,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
  Stop();ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  PendingThreatNight=PendingMajorNight=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();FieldObservations.Reset();
- Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
+ Plan=ENightPlan::Ordinary;Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
  {
   if(S47J::Num(O,TEXT("v"))!=1){bEnabled=false;return;}
@@ -230,6 +230,7 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
   // event was chosen. Never reroll it or invent a pending event on migration.
   PendingThreatNight=FMath::Max(0,S47J::Int(O,TEXT("pendingThreatNight")));
   PendingMajorNight=FMath::Max(0,S47J::Int(O,TEXT("pendingMajorNight")));
+  Plan=ENightPlan(FMath::Clamp(S47J::Int(O,TEXT("nightPlan")),0,2));
   if(PendingThreatNight!=ThreatRollDay||Event==TEXT("service_presence"))PendingThreatNight=0;
   if(PendingMajorNight!=MajorRollDay||Event==TEXT("close_pass"))PendingMajorNight=0;
   auto Time=[&](const TCHAR* K,double Max=1e9){const double V=S47J::Num(O,K);return FMath::IsFinite(V)?FMath::Clamp(V,0.,Max):0.;};
@@ -280,7 +281,7 @@ S47J::FObj FS47FreeformDirector::Save()const
 {
  auto O=S47J::New();if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
- S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
+ S47J::Set(O,TEXT("nightPlan"),int32(Plan));S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  S47J::Set(O,TEXT("age"),Age);S47J::Set(O,TEXT("activeTime"),ActiveTime);S47J::Set(O,TEXT("nextAt"),NextAt);S47J::Set(O,TEXT("restUntil"),RestUntil);S47J::Set(O,TEXT("soundAt"),SoundAt);S47J::Set(O,TEXT("random"),Random.GetCurrentSeed());
  S47J::Set(O,TEXT("effectsApplied"),bEffectsApplied);
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
@@ -297,6 +298,40 @@ S47J::FObj FS47FreeformDirector::Save()const
  return O;
 }
 bool FS47FreeformDirector::Busy()const{return bEnabled&&!Event.IsEmpty();}
+// ---- Night tension curve ---------------------------------------------------------------------
+// Evening (19:00-01:30) is the ordinary job with small deniable hints; the peak (01:30-04:30) is
+// the only window for presences, threats and the major event; dawn (04:30-06:00) leaves traces.
+// A quiet night keeps only instrument and maintenance work; a building night allows a second peak event.
+FS47FreeformDirector::EPhase FS47FreeformDirector::PhaseAt(double H)
+{
+ if(H>=19.||H<1.5)return EPhase::Evening;
+ if(H<4.5)return EPhase::Peak;
+ if(H<6.)return EPhase::Dawn;
+ return EPhase::Day;
+}
+bool FS47FreeformDirector::PhaseAllows(const FString& Id,const FString& Family,EPhase Phase,ENightPlan Plan)
+{
+ static const TSet<FString> Uncanny={TEXT("observer"),TEXT("service_presence"),TEXT("response_lights"),TEXT("flyover"),TEXT("close_pass"),
+  TEXT("quiet_zone"),TEXT("feeder_presence"),TEXT("array_presence")};
+ static const TSet<FString> Traces={TEXT("landing_trace"),TEXT("empty_car"),TEXT("roomlight_return")};
+ const bool Mundane=Family==TEXT("instrument")||Family==TEXT("maintenance");
+ if(Phase==EPhase::Day)return !Uncanny.Contains(Id);
+ if(Plan==ENightPlan::Quiet)return Mundane;
+ if(Phase==EPhase::Evening)return !Uncanny.Contains(Id)&&!Traces.Contains(Id);
+ if(Phase==EPhase::Dawn)return Mundane||Traces.Contains(Id);
+ return true; // Peak
+}
+double FS47FreeformDirector::IntervalFor(EPhase Phase,ENightPlan Plan,double Unit)
+{
+ // Unit is 0..1 from the director's seeded stream.
+ double Lo=240,Hi=420;
+ if(Plan==ENightPlan::Quiet&&Phase!=EPhase::Day){Lo=420;Hi=620;}
+ else if(Phase==EPhase::Evening){Lo=300;Hi=480;}
+ else if(Phase==EPhase::Peak){Lo=Plan==ENightPlan::Building?150:200;Hi=Plan==ENightPlan::Building?260:330;}
+ else if(Phase==EPhase::Dawn){Lo=320;Hi=520;}
+ return Lo+(Hi-Lo)*FMath::Clamp(Unit,0.,1.);
+}
+
 bool FS47FreeformDirector::Night()const
  {if(!M||!M->Freeform)return false;const double H=FMath::Fmod(M->Freeform->Clock(),86400.)/3600.;return H>=19||H<6;}
 bool FS47FreeformDirector::Near(const FVector& At,double Range)const
@@ -536,11 +571,20 @@ void FS47FreeformDirector::Step(double Dt)
  if(M->SkyVisitors)M->SkyVisitors->Step(Dt);
  const int32 Day=M->Freeform->Day();
  const bool bNight=Night();if(ExpireNightChoices(Day,bNight))Changed();
- if(SeenDay!=Day){SeenDay=Day;MinorLeft=Random.RandRange(2,4);InvestLeft=Random.RandRange(0,2);NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
+ if(SeenDay!=Day)
+ {
+  SeenDay=Day;MinorLeft=Random.RandRange(2,4);InvestLeft=Random.RandRange(0,2);NextAt=FMath::Max(ActiveTime+60,RestUntil);
+  // Night plan: day 1 is always ordinary; afterwards ~25 % quiet, ~25 % building.
+  const float R=Random.FRand();Plan=Day<=1?ENightPlan::Ordinary:R<.25f?ENightPlan::Quiet:R<.5f?ENightPlan::Building:ENightPlan::Ordinary;
+  if(Plan==ENightPlan::Quiet)InvestLeft=0;else if(Plan==ENightPlan::Building)InvestLeft=FMath::Max(InvestLeft,2);
+  UE_LOG(LogS47FreeformDirector,Display,TEXT("S47: Freeform night plan day %d: %s"),Day,Plan==ENightPlan::Quiet?TEXT("quiet"):Plan==ENightPlan::Building?TEXT("building"):TEXT("ordinary"));
+  Changed();
+ }
+ const EPhase Phase=PhaseAt(FMath::Fmod(M->Freeform->Clock(),86400.)/3600.);
  if(Event.IsEmpty())
  {
-  if(ActiveTime<NextAt||ActiveTime<RestUntil)return;NextAt=ActiveTime+Random.FRandRange(240,420);
-  if(bNight)
+  if(ActiveTime<NextAt||ActiveTime<RestUntil)return;NextAt=ActiveTime+IntervalFor(Phase,Plan,Random.FRand());
+  if(bNight&&Phase==EPhase::Peak&&Plan!=ENightPlan::Quiet)
   {
    if(RollNightChoice(Day,2,.35f,ThreatRollDay,PendingThreatNight))Changed();
    if(StartPendingNightChoice(TEXT("service_presence"),Day,PendingThreatNight))return;
@@ -548,7 +592,7 @@ void FS47FreeformDirector::Step(double Dt)
    if(StartPendingNightChoice(TEXT("close_pass"),Day,PendingMajorNight))return;
   }
   TArray<FString> Choices;
-  for(const auto& D:Catalog())if(D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&Eligible(D.Id,false))
+  for(const auto& D:Catalog())if(D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&PhaseAllows(D.Id,D.Family,Phase,Plan)&&Eligible(D.Id,false))
   {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");if((Minor&&MinorLeft>0)||(!Minor&&InvestLeft>0))Choices.Add(D.Id);}
   if(Choices.IsEmpty()){Changed();return;}
   const FString Id=Choices[Random.RandRange(0,Choices.Num()-1)];
@@ -841,6 +885,15 @@ FString FS47FreeformDirector::Status()const
 bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
 {
  bool Ok=true;auto Check=[&](bool B,const TCHAR* S){Ok&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+TEXT("freeform director: ")+S);};
+ {
+  using P=EPhase;using N=ENightPlan;
+  Check(PhaseAt(20)==P::Evening&&PhaseAt(.5)==P::Evening&&PhaseAt(2)==P::Peak&&PhaseAt(5)==P::Dawn&&PhaseAt(12)==P::Day,TEXT("night curve phases: evening 19-01:30, peak 01:30-04:30, dawn to 06"));
+  Check(!PhaseAllows(TEXT("observer"),TEXT("investigation"),P::Evening,N::Ordinary)&&PhaseAllows(TEXT("observer"),TEXT("investigation"),P::Peak,N::Ordinary),TEXT("presences only in the peak window"));
+  Check(PhaseAllows(TEXT("extra_pulse"),TEXT("instrument"),P::Evening,N::Ordinary)&&PhaseAllows(TEXT("roof_steps"),TEXT("minor"),P::Evening,N::Ordinary),TEXT("evening keeps the ordinary job with deniable hints"));
+  Check(!PhaseAllows(TEXT("observer"),TEXT("investigation"),P::Peak,N::Quiet)&&PhaseAllows(TEXT("s03_failure"),TEXT("maintenance"),P::Peak,N::Quiet),TEXT("quiet night keeps only instrument and maintenance work"));
+  Check(PhaseAllows(TEXT("landing_trace"),TEXT("investigation"),P::Dawn,N::Ordinary)&&!PhaseAllows(TEXT("flyover"),TEXT("minor"),P::Dawn,N::Ordinary),TEXT("dawn leaves traces, no new presences"));
+  Check(IntervalFor(P::Peak,N::Building,1)<IntervalFor(P::Evening,N::Ordinary,0)&&IntervalFor(P::Peak,N::Quiet,0)>=420,TEXT("peak is denser on building nights, sparse on quiet nights"));
+ }
  {
   constexpr int32 W=100,H=100;const FBox2D Region(FVector2D(.4,.4),FVector2D(.6,.6));
   TArray<FColor> P;P.Init(FColor(3,3,3),W*H);

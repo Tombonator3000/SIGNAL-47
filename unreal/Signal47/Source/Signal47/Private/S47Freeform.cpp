@@ -1,3 +1,4 @@
+#include "UnrealClient.h"
 #include "S47Freeform.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47FreeformTerminal.h"
@@ -266,6 +267,22 @@ void FS47FreeformSession::Step(double Dt)
   bRestoreAngles=false;for(int32 I=0;I<27;++I){M->Web->SnapDish(I,SavedAngles[I*4],SavedAngles[I*4+1]);M->Web->PointDish(I,SavedAngles[I*4+2],SavedAngles[I*4+3],9,true);}
  }
  const double D=FMath::Min(Dt,.1);
+ // -S47CaseBoardShot (temp profile only): open case 1, plan its first test with a hunch, record it,
+ // and capture the OPS case board before and after (Docs/Design/Gameplay/FREEFORM_NIGHT_CURVE.md).
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseBoardShot"))&&M->Web->IsLoaded())
+ {
+  static int32 Stage=0;static double At=0;const double Now=FPlatformTime::Seconds();FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+  const FString Dir=FPaths::ProjectSavedDir()/TEXT("CaseBoardShots");
+  if(User.StartsWith(TEXT("/tmp/"))&&Now>=At)
+  {
+   if(Stage==0){At=Now+8;Stage=1;}
+   else if(Stage==1){Cases.Open(0,DayNumber,FMath::Fmod(WorldClock,86400.));OpenCaseBoard(0);At=Now+2;Stage=2;}
+   else if(Stage==2){FScreenshotRequest::RequestScreenshot(Dir/TEXT("01-plan-with-hunch.png"),true,false);At=Now+1.5;Stage=3;}
+   else if(Stage==3){Cases.Plan(0,1,TEXT("SHOT"),0);bool F=false;Cases.Record(0,1,DayNumber,true,FS47FreeformCases::PresentFor(0,Cases.Get(0)->Truth,1),F);OpenCaseBoard(0);At=Now+2;Stage=4;}
+   else if(Stage==4){FScreenshotRequest::RequestScreenshot(Dir/TEXT("02-result-vs-hunch.png"),true,false);At=Now+1.5;Stage=5;}
+   else if(Stage==5){FPlatformMisc::RequestExit(false);Stage=6;}
+  }
+ }
  const bool Powered=HasPower();
  if(!bPowerApplied||Powered!=bLastPower)
  {
@@ -1245,6 +1262,7 @@ bool FS47FreeformSession::ReportFieldTest(int32 Line,int32 Test,bool bValid,bool
  const FString Result=FS47FreeformCases::TestResultText(Line,Test,bPresent);
  RecordEvidence(FString::Printf(TEXT("case%d-test%d"),Line+1,Test+1),FString::Printf(TEXT("CASE / %s\nFIELD TEST / %s / DAY %d\nRESULT / %s\nPREDICTION / %s\nRULES OUT / %s\nRECORD / %s"),D.Title,*FString(D.Tests[Test].Name).ToUpper(),DayNumber,*Result,*FS47FreeformCases::Prediction(Line,Test),*FString::Join(Out,TEXT(", ")),*Evidence.Left(400)));
  FString Text=FString::Printf(TEXT("Field test retained. %s: rules out %s."),*Result,*FString::Join(Out,TEXT(" and ")));
+ if(const auto* After=Cases.Get(Line)){const FString H=FS47FreeformCases::HunchText(Line,Test,After->Results[Test].Hunch,bPresent);if(!H.IsEmpty())Text+=TEXT(" ")+H;}
  if(First){AddItem(TEXT("relay"),1);Text+=TEXT(" Station management credits one service relay to the depot for documented test work.");}
  if(Cases.Remaining(Line)==1)Text+=TEXT(" Only one explanation survives: register the conclusion on the case board.");
  Changed(Text);return true;
@@ -1255,7 +1273,7 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
  if(Line<0||!Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.)))return;
  Changed(TEXT("New case opened: ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(". Three explanations fit. Choose a test on the OPS case board."));
 }
-bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
+bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test,int32 Hunch)
 {
  const auto* C=Cases.Get(Line);
  if(!C||!C->bOpen||C->bConcluded||Test<0||Test>=FS47FreeformCases::TestCount){Feedback=TEXT("No open case can take that test.");return false;}
@@ -1267,7 +1285,7 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
   if(Def.Condition==ECaseCondition::FieldWork)
   {
    const FString Id=FString::Printf(TEXT("FIELD-D%04d-CASE%d-T%d"),DayNumber,Line+1,Test+1);
-   if(!Cases.Plan(Line,Test,Id))return false;
+   if(!Cases.Plan(Line,Test,Id,Hunch))return false;
    Feedback=TEXT("Field test planned: ")+FString(Def.Name)+TEXT(". Carry it out at the site; the result is recorded there.");Changed(Feedback);return true;
   }
  }
@@ -1275,7 +1293,7 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
  J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,1,1);J.bGenerated=true;J.CaseLine=Line;J.CaseTest=Test;
  const auto& T=FS47FreeformCases::Def(Line).Tests[Test];
  J.Card.Receiver.Card=TEXT("CASE TEST / ")+FString(T.Name).ToUpper()+TEXT("\n")+T.Instruction+TEXT("\n\n")+J.Card.Receiver.Card;
- if(!Cases.Plan(Line,Test,J.Id))return false;
+ if(!Cases.Plan(Line,Test,J.Id,Hunch))return false;
  Work.Add(J);
  const FJob* Current=CurrentJob();if(!Current||Current->Stage==EJobStage::New||Current->Stage==EJobStage::Filed)Selected=Work.Num()-1;
  Feedback=TEXT("Case test planned: ")+FString(T.Name)+TEXT(". Job ")+J.Id+TEXT(" is on the OPS list.");Changed(Feedback);return true;
@@ -1290,6 +1308,7 @@ void FS47FreeformSession::RecordCaseResult(FJob& J)
  const FString Result=FS47FreeformCases::ResultText(Line,bPresent);
  RecordEvidence(FString::Printf(TEXT("case%d-test%d"),Line+1,Test+1),FString::Printf(TEXT("CASE / %s\nTEST / %s / DAY %d / ORIGINAL %s-original\nRESULT / %s\nPREDICTION / %s\nRULES OUT / %s"),D.Title,*FString(D.Tests[Test].Name).ToUpper(),DayNumber,*J.Id,*Result,*FS47FreeformCases::Prediction(Line,Test),*FString::Join(Out,TEXT(", "))));
  FString Text=FString::Printf(TEXT("Case test registered, $20 credited. %s: rules out %s."),*Result,*FString::Join(Out,TEXT(" and ")));
+ if(const auto* After=Cases.Get(Line)){const FString H=FS47FreeformCases::HunchText(Line,Test,After->Results[Test].Hunch,bPresent);if(!H.IsEmpty())Text+=TEXT(" ")+H;}
  if(First){AddItem(TEXT("relay"),1);Text+=TEXT(" Station management credits one service relay to the depot for documented test work.");}
  if(Cases.Remaining(Line)==1)Text+=TEXT(" Only one explanation survives: register the conclusion on the case board.");
  Changed(Text);
@@ -1368,11 +1387,17 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   {
    const auto& Res=C->Results[T];
    FString Card=TEXT("TEST / ")+FString(D.Tests[T].Name).ToUpper()+TEXT("\n")+D.Tests[T].Instruction+TEXT("\nPREDICTION / ")+FS47FreeformCases::Prediction(Line,T);
-   if(Res.bDone)Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s"),Res.Day,*FS47FreeformCases::TestResultText(Line,T,Res.bPresent));
+   if(Res.bDone){Card+=FString::Printf(TEXT("\nRESULT DAY %d / %s"),Res.Day,*FS47FreeformCases::TestResultText(Line,T,Res.bPresent));const FString H=FS47FreeformCases::HunchText(Line,T,Res.Hunch,Res.bPresent);if(!H.IsEmpty())Card+=TEXT("\n")+H;}
    else if(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access))Card+=TEXT("\nNEEDS / the loan field logger (conclude THE REPEATED INTERVAL)");
-   else if(C->Planned==T)Card+=TEXT("\nPLANNED / job ")+C->PlannedJob;
+   else if(C->Planned==T)Card+=TEXT("\nPLANNED / job ")+C->PlannedJob+(C->PlannedHunch>=0?FString(TEXT(" / you suspect "))+D.Short[C->PlannedHunch]:FString());
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];
-   if(!Res.bDone&&!C->bConcluded&&C->Planned<0&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
+   if(!Res.bDone&&!C->bConcluded&&C->Planned<0&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))
+   {
+    // Commit to a hunch before testing: one button per explanation still in play.
+    List->AddSlot()[S47FreeformTerminal::Small(TEXT("PLAN / which explanation do you suspect? The result will keep or rule out your hunch."))];
+    for(int32 Cause=0;Cause<FS47FreeformCases::CauseCount;++Cause)if(!Cases.Excluded(Line,Cause))
+     List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan: ")+FString(D.Tests[T].Name)+TEXT(" / I suspect ")+D.Short[Cause],[this,Line,T,Cause]{PlanCaseTest(Line,T,Cause);OpenCaseBoard(Line);},Cause==0)];
+   }
   }
   Rows.Add(SNew(SBox).HeightOverride(240)[List]);
   if(!C->bConcluded)

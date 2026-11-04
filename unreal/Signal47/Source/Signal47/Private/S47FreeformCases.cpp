@@ -109,6 +109,7 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
   C.bOpen=S47J::Bool(O,TEXT("open"));C.bConcluded=C.bOpen&&S47J::Bool(O,TEXT("concluded"));
   C.OpenDay=FMath::Clamp(S47J::Int(O,TEXT("openDay")),0,36500);
   const double Clock=S47J::Num(O,TEXT("openClock"));C.OpenClock=FMath::IsFinite(Clock)?FMath::Clamp(Clock,0.,86399.):0;
+  C.PlannedHunch=FMath::Clamp(S47J::Int(O,TEXT("plannedHunch"),-1),-1,CauseCount-1);
   C.Planned=FMath::Clamp(S47J::Int(O,TEXT("planned"),-1),-1,TestCount-1);C.PlannedJob=C.Planned>=0?S47J::Str(O,TEXT("plannedJob")):FString();
   if(C.PlannedJob.IsEmpty())C.Planned=-1;
   C.Conclusion=C.bConcluded?FMath::Clamp(S47J::Int(O,TEXT("conclusion"),-1),-1,CauseCount-1):-1;
@@ -120,6 +121,7 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
   {
    const auto X=R[T]->AsObject();auto& Out=C.Results[T];Out.bDone=S47J::Bool(X,TEXT("done"));
    Out.Day=FMath::Clamp(S47J::Int(X,TEXT("day")),0,36500);Out.bPresent=Out.bDone&&PresentFor(I,C.Truth,T);
+   Out.Hunch=FMath::Clamp(S47J::Int(X,TEXT("hunch"),-1),-1,CauseCount-1);
   }
   for(const FString& L:S47J::Strs(O,TEXT("leads")))if(!L.IsEmpty()&&L.Len()<=160&&!C.Leads.Contains(L)&&C.Leads.Num()<MaxLeads)C.Leads.Add(L);
   if(C.bConcluded&&C.Conclusion<0)C.bConcluded=false;
@@ -135,9 +137,9 @@ S47J::FObj FS47FreeformCases::Save() const
  for(const FCase& C:Cases)
  {
   auto X=S47J::New();S47J::Set(X,TEXT("open"),C.bOpen);S47J::Set(X,TEXT("concluded"),C.bConcluded);S47J::Set(X,TEXT("openDay"),C.OpenDay);S47J::Set(X,TEXT("openClock"),C.OpenClock);
-  S47J::Set(X,TEXT("planned"),C.Planned);S47J::Set(X,TEXT("plannedJob"),C.PlannedJob);S47J::Set(X,TEXT("conclusion"),C.Conclusion);S47J::Set(X,TEXT("validTests"),C.ValidTests);
+  S47J::Set(X,TEXT("plannedHunch"),C.PlannedHunch);S47J::Set(X,TEXT("planned"),C.Planned);S47J::Set(X,TEXT("plannedJob"),C.PlannedJob);S47J::Set(X,TEXT("conclusion"),C.Conclusion);S47J::Set(X,TEXT("validTests"),C.ValidTests);
   TArray<TSharedPtr<FJsonValue>> R;
-  for(const FResult& Res:C.Results){auto Y=S47J::New();S47J::Set(Y,TEXT("done"),Res.bDone);S47J::Set(Y,TEXT("present"),Res.bPresent);S47J::Set(Y,TEXT("day"),Res.Day);R.Add(MakeShared<FJsonValueObject>(Y));}
+  for(const FResult& Res:C.Results){auto Y=S47J::New();S47J::Set(Y,TEXT("done"),Res.bDone);S47J::Set(Y,TEXT("present"),Res.bPresent);S47J::Set(Y,TEXT("day"),Res.Day);S47J::Set(Y,TEXT("hunch"),Res.Hunch);R.Add(MakeShared<FJsonValueObject>(Y));}
   S47J::Set(X,TEXT("leads"),C.Leads);
   X->SetArrayField(TEXT("results"),R);List.Add(MakeShared<FJsonValueObject>(X));
  }
@@ -148,21 +150,28 @@ bool FS47FreeformCases::Open(int32 Line,int32 Day,double DayClock)
  if(!Cases.IsValidIndex(Line)||Cases[Line].bOpen||Day<1||!FMath::IsFinite(DayClock))return false;
  FCase& C=Cases[Line];C.bOpen=true;C.OpenDay=Day;C.OpenClock=FMath::Clamp(FMath::Fmod(FMath::Max(0.,DayClock),86400.),0.,86399.);return true;
 }
-bool FS47FreeformCases::Plan(int32 Line,int32 Test,const FString& JobId)
+bool FS47FreeformCases::Plan(int32 Line,int32 Test,const FString& JobId,int32 Hunch)
 {
  if(!Cases.IsValidIndex(Line)||JobId.IsEmpty()||Test<0||Test>=TestCount)return false;FCase& C=Cases[Line];
  if(!C.bOpen||C.bConcluded||C.Planned>=0||C.Results[Test].bDone)return false;
- C.Planned=Test;C.PlannedJob=JobId;return true;
+ C.Planned=Test;C.PlannedJob=JobId;C.PlannedHunch=Hunch>=0&&Hunch<CauseCount?Hunch:-1;return true;
 }
-void FS47FreeformCases::CancelPlan(int32 Line){if(Cases.IsValidIndex(Line)){Cases[Line].Planned=-1;Cases[Line].PlannedJob.Empty();}}
+void FS47FreeformCases::CancelPlan(int32 Line){if(Cases.IsValidIndex(Line)){Cases[Line].Planned=-1;Cases[Line].PlannedJob.Empty();Cases[Line].PlannedHunch=-1;}}
 bool FS47FreeformCases::Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid)
 {
  bFirstValid=false;if(!Cases.IsValidIndex(Line))return false;FCase& C=Cases[Line];
  if(!C.bOpen||C.Planned!=Test||Test<0)return false;
- C.Planned=-1;C.PlannedJob.Empty();
+ const int32 Hunch=C.PlannedHunch;C.Planned=-1;C.PlannedJob.Empty();if(bValid)C.PlannedHunch=-1;
  if(!bValid)return true; // the plan is released so the test can be repeated properly
- C.Results[Test].bDone=true;C.Results[Test].bPresent=bPresent;C.Results[Test].Day=Day;
+ C.Results[Test].bDone=true;C.Results[Test].bPresent=bPresent;C.Results[Test].Day=Day;C.Results[Test].Hunch=Hunch;
  bFirstValid=ValidTestsTotal()==0;++C.ValidTests;return true;
+}
+FString FS47FreeformCases::HunchText(int32 Line,int32 Test,int32 Hunch,bool bPresent)
+{
+ if(Hunch<0||Hunch>=CauseCount||Test<0||Test>=TestCount)return FString();
+ const FCaseDef& D=Def(Line);const bool Expect=PresentFor(Line,Hunch,Test);
+ const TCHAR* Exp=Expect?(D.Tests[Test].Yes?D.Tests[Test].Yes:TEXT("present")):(D.Tests[Test].No?D.Tests[Test].No:TEXT("absent"));
+ return FString::Printf(TEXT("YOUR HUNCH / %s: expected %s. %s"),D.Short[Hunch],Exp,Expect==bPresent?TEXT("The result KEPT your hunch in play."):TEXT("The result RULED OUT your hunch."));
 }
 int32 FS47FreeformCases::ValidTestsTotal() const{int32 N=0;for(const FCase& C:Cases)N+=C.ValidTests;return N;}
 bool FS47FreeformCases::Excluded(int32 Line,int32 Cause) const
@@ -229,7 +238,8 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    Good&=!K.Plan(Line,0,TEXT("J"));
    Good&=K.Open(Line,1,20*3600.)&&!K.Open(Line,2,0);
    Good&=!K.Conclude(Line,Truth,Why);                       // a correct guess alone is not supported
-   Good&=K.Plan(Line,0,TEXT("J1"))&&!K.Plan(Line,1,TEXT("J2"));
+   Good&=K.Plan(Line,0,TEXT("J1"))&&!K.Plan(Line,1,TEXT("J2"));K.CancelPlan(Line);Good&=K.Plan(Line,0,TEXT("J1"),1)&&K.Get(Line)->PlannedHunch==1;
+   Good&=HunchText(Line,0,1,PresentFor(Line,1,0)).Contains(TEXT("KEPT"))&&HunchText(Line,0,1,!PresentFor(Line,1,0)).Contains(TEXT("RULED OUT"))&&HunchText(Line,0,-1,true).IsEmpty();
    Good&=K.Record(Line,0,2,false,false,First)&&!First&&!K.Get(Line)->Results[0].bDone&&K.Get(Line)->Planned<0;
    Good&=K.Plan(Line,0,TEXT("J1"))&&K.Record(Line,0,2,true,PresentFor(Line,Truth,0),First)&&First;
    Good&=!K.Plan(Line,0,TEXT("J3"));

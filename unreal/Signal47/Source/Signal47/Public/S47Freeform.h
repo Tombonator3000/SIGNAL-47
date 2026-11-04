@@ -88,7 +88,7 @@ public:
  TArray<FString> TerminalLines(int32 Screen) const;
  void OpenArchive();
  void OpenCaseBoard(int32 Line=-1);
- bool PlanCaseTest(int32 Line,int32 Test);
+ bool PlanCaseTest(int32 Line,int32 Test,int32 Hunch=-1);
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
  const FS47FreeformCases& CaseFile() const { return Cases; }

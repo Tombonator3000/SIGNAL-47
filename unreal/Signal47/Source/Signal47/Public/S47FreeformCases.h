@@ -27,10 +27,11 @@ public:
   bool Present[CauseCount][TestCount]; // observable still present for [cause][test]
   const TCHAR* Telex[CauseCount]; const TCHAR* TelexTitle; const TCHAR* Access;
  };
- struct FResult { bool bDone=false,bPresent=false; int32 Day=0; };
+ struct FResult { bool bDone=false,bPresent=false; int32 Day=0; int32 Hunch=-1; }; // Hunch: cause the player suspected when planning
  struct FCase
  {
   bool bOpen=false,bConcluded=false;
+  int32 PlannedHunch=-1;
   int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0,Truth=0;
   double OpenClock=0; // seconds into the day of the retained original
   FString PlannedJob;
@@ -48,7 +49,9 @@ public:
  static int32 LineForObservation(const FString& Event);
  const FCase* Get(int32 Line) const { return Cases.IsValidIndex(Line)?&Cases[Line]:nullptr; }
  bool HasAccess(const FString& Id) const { return Access.Contains(Id); }
- bool Plan(int32 Line,int32 Test,const FString& JobId);
+ bool Plan(int32 Line,int32 Test,const FString& JobId,int32 Hunch=-1);
+ // "You suspected X; it predicted Y; the result Z kept / ruled out your hunch." Empty without a hunch.
+ static FString HunchText(int32 Line,int32 Test,int32 Hunch,bool bPresent);
  void CancelPlan(int32 Line);
  // Records a finished test. Returns false if it was not the planned test.
  bool Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid);

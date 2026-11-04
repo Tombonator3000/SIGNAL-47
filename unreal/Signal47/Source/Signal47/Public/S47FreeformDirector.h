@@ -44,6 +44,13 @@ public:
  static TArray<FString> EventIds();
  static TArray<FString> CatalogIds() { return EventIds(); }
  static bool SelfTest(TArray<FString>& Lines);
+ // Night tension curve (Docs/Design/Gameplay/FREEFORM_NIGHT_CURVE.md): one plan per day.
+ enum class ENightPlan : uint8 { Ordinary, Quiet, Building };
+ enum class EPhase : uint8 { Day, Evening, Peak, Dawn };
+ static EPhase PhaseAt(double HourOfDay);
+ static bool PhaseAllows(const FString& Id,const FString& Family,EPhase Phase,ENightPlan Plan);
+ static double IntervalFor(EPhase Phase,ENightPlan Plan,double Unit);
+ ENightPlan NightPlan() const { return Plan; }
 private:
  struct FEffects;
  TUniquePtr<FEffects> Effects;
@@ -58,6 +65,7 @@ private:
  TArray<FPhotoClaim> Claims;
  TArray<FS47FreeformObservation> FieldObservations;
  void ObserveVisitor(const FVector& At,bool bHeard=false);
+ ENightPlan Plan=ENightPlan::Ordinary;
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0;
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
