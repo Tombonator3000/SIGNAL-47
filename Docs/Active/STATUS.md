@@ -50,9 +50,9 @@ Alle tre endelige testkjøringer og bygget var uten motoroverlapp under producti
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
-Tittel-sluttkontroll forsøkt på Toms ordre etter08: title-r5 ble avbrutt av ny samtidig Claude-editor før UFO-sluttbilde/resultat; neste oppstart ble avvist av aktive jobber. Sluttkontrollen er fortsatt UNVERIFIED. Ingen tittelinstallasjon eller ny testgodkjenning.
+PR382 er konfliktløst mot main etter tutorial-/SARO-leveransen. Editorbygg og målrettet sluttkontroll består 4. november: tittel 12 kontroller, feltplan 12 kontroller med én disk-/Continue-runde og tutorial 40 kontroller med tre disk-/Continue-runder. Tittellys og VHS-livssyklus er editorverifisert; denne PR-en er ikke pakket eller installert lokalt.
 
-[Oppdatert regresjonsgjennomgang](Reports/PR379_REGRESSION_REVIEW_2026-11-04.md) finner en statisk printerkøfeil for eldre originaler uten tellerlinje og avgrenser hull i ordinær Continue, samlet økonomireise og Story-modusbytte. To målrettede testkandidater er lagt til på nattgrenen, men er ikke bygget eller kjørt. Tidligere grønne deltester lukker ikke disse funnene.
+[Oppdatert regresjonsgjennomgang](Reports/PR379_REGRESSION_REVIEW_2026-11-04.md) finner en statisk printerkøfeil for eldre originaler uten tellerlinje og avgrenser hull i ordinær Continue, samlet økonomireise og Story-modusbytte. Testkandidatene på nattgrenen er nå bygget; printer-/butikkprøvene er ikke kjørt på nytt i den avgrensede konfliktkontrollen. Tidligere grønne deltester lukker ikke disse funnene.
 
 Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. PR379 ble flettet 4. november kl.06:59 CET med head `cc071f46` og merge `0d9c5815`; pakking/installasjon er ikke gjennomført i denne kontrollen.
 
@@ -72,9 +72,9 @@ Oppgavehint og stedvisning er samordnet for opptak, automatiske kontroller, samm
 
 Utilgjengelige antenner reduserer nå Freeforms målerate etter tilgjengelige antennepar: 27 gir 100 %, 26 omtrent 93 % og 24 omtrent 79 %. Eksisterende minimum 24 og kvalitetsfaktor beholdes. Kapasitet og reparasjonsbehov vises separat fra receiverens tuning. Bygg og 21 kontroller består, med målte Step-vinduer ved redusert/gjenopprettet kapasitet og én disk-/Continue-runde av faktisk S-03-feil. Receiver/tracking-bilder gjennomgått. Dette er kontrollert spillbalanse i editor, ikke menneskelig balanseaksept eller installasjon.
 
-Tittelarbeid på `codex/night-support-20261103` er foreløpig under kontroll, ikke levert til PR379: periodiske stiliserte UFO-lys og ryddet VHS-lifecycle. Bygg og tidligere 12 meny-/timingkontroller samt PCM-prøve består. Siste endring oppfrisker Slates tegnede lys; build-r30 består, men title-r4 ble merket UNVERIFIED av motorvakten ved overlappende Claude-jobb. Endelig kort kontroll venter på avtalt motorvindu. Installert lydnivå og menneskelig komfortvurdering gjenstår.
+Tittelarbeidet i PR382 gir periodiske stiliserte UFO-lys og ryddet VHS-livssyklus. Editorbygg, 12 meny-/timingkontroller og den innebygde PCM-prøven består uten motoroverlapp. Tre native tittelbilder er tatt. Installert lydnivå og menneskelig komfortvurdering gjenstår.
 
-Separat Visitors-gjennomgang bekrefter at de tre feltforsøkene mangler produksjonskobling til verden; saken er ikke spillbart ferdig. En avgrenset rettelse bevarer planlagte feltprøver ved Continue og lar spilleren avbryte dem uten resultat eller belønning. Kilden og kort disk-/Continue-test er klargjort på nattgrenen, men bygg/native kontroll venter på avtalt motorvindu. Dette er ikke levert i PR379.
+Separat Visitors-gjennomgang bekrefter at de tre feltforsøkene mangler produksjonskobling til verden; saken er ikke spillbart ferdig. En avgrenset rettelse bevarer planlagte feltprøver ved Continue og lar spilleren avbryte dem uten resultat eller belønning. Rettelsen i PR382 er bygget og består 12 native kontroller med én disk-/Continue-runde. Testen registrerer et eksplisitt funn gjennom det offentlige API-et; den påstår ikke fysisk gjennomføring av feltforsøket.
 
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 

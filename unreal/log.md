@@ -1745,3 +1745,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 16:44 Codex EASTWING-FLICKER-01: Murens synlige åpninger trekkes 10 mm tilbake fra karmflatene; opprinnelige UCX og dørankre beholdes i alle tre LOD. Blender/FBX, synkron native import, editorbilder og pakket prøve med 2314 selvtester består. Kun SM_EW_Shell er endret som native asset; pakket spillbinær er byteidentisk med installert PR380. Lokal installasjon venter på ledig motorvindu.
 
 4. november 2026, Codex: første Freeform-skift fullført og SARO-vei/parkering/stier samlet; rampekollisjon rettet. Bygg, fem runtime-bilder, 34 gang-/kjørekontroller, pakket tutorial 40 sjekker/3 Continue-runder, selvtest og installert vindusoppstart består. Saved bevart. Kilder og bevis beholdes; ferdig kandidat kan inngå i neste samlede opprydding.
+
+2026-11-04 18:15 Codex, PR382: konflikter mot main løst med begge tutorial-/feltplantestene bevart. Testens private funksjonskall erstattet med offentlig funnregistrering. Editorbygg, feltplan 12/12 (1 disk-Continue), tutorial 40/40 (3 disk-Continue) og tittel 12/12 består uten motoroverlapp. Ingen ny pakking/installasjon.
