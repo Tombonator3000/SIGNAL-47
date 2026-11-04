@@ -21,6 +21,9 @@ public:
   int32 Day=1, Slot=0, Source=0;
   EJobStage Stage=EJobStage::New;
   double Elapsed=0, Quality=1, ReceivedLevel=1;
+  // Background timbre captured at accepted acquisition; evidence ticks stay independent.
+  int32 RecordingSoundVersion=0;
+  double RecordingGain=0,RecordingBandwidth=0,RecordingQuality=0;
   double ChartFeed=0, PacketFeed=0, DuplicateFeed=0; // Physical printer seconds; retained across Continue.
   TArray<double> TraceTicks;
   bool bLegacyTrace=false;
@@ -226,6 +229,7 @@ private:
  void PointCross();
  void StepWork(double Dt);
  void StepAudio(double Dt);
+ double ReceiverReception() const;
  void PrintJob(bool bPacket);
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
  void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);

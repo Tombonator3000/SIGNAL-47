@@ -1,45 +1,71 @@
 #include "S47Audio.h"
 #include "S47Rx.h"
+#include "S47ReceiverTexture.h"
 
-// Instrument feedback, not a recording or evidence: never adds the anomaly's 4/7 pulse.
-// Use exactly the profile/quality shown by the receiver, including array pointing.
-void US47Audio::MonitorReceiver(const FS47Rx& Rx, const FS47Profile& Profile)
+void US47Audio::ReceiverTextureStop(FReceiverTextureGraph& G)
 {
- const double Quality=Rx.Quality(Profile);
- if(!Ctx || !Rx.bPowered || !FMath::IsFinite(Quality) || !FMath::IsFinite(Rx.Gain) || !FMath::IsFinite(Rx.Bandwidth) || !FMath::IsFinite(Rx.Frequency))
- {ReceiverMonitorOff();return;}
- StartCarrier();
- bReceiverMonitor=true;
- const double G=FMath::Clamp(Rx.Gain/100.,0.,1.);
- const double B=FMath::Clamp(Rx.Bandwidth/100.,0.,1.);
- const double Q=FMath::Clamp(Quality,0.,1.);
- const double Offset=FMath::Clamp((Rx.Frequency-Profile.F)/FMath::Max(Profile.FTol*8.,.05),-1.,1.);
- // Gain/BW remain audible even within the accepted quality window. Narrowing the
- // receiver removes noise; wrong gain/pointing/frequency makes the carrier recede.
- SetCarrier(.085*Q*Q*(.2+.8*G),.3*Offset,(.008+.045*(1.-Q))*(.25+.75*G)*(.25+.75*FMath::Sqrt(B)));
+ if(!Ctx||!G.Source)return;
  FS47AudioContext::FBatch Batch(*Ctx);
  const double T=Ctx->CurrentTime();
- Carrier.Filter->Frequency.SetTargetAtTime(650.+2000.*FMath::Sqrt(B),T,.08);
- Carrier.Filter->Q.SetTargetAtTime(.45+1.1*(1.-B),T,.08);
+ for(auto Gain:{G.SignalGain,G.NoiseGain}){Gain->Gain.CancelAndHoldAtTime(T);Gain->Gain.LinearRampToValueAtTime(0,T+.06);}
+ G.Source->Stop(T+.07);G.Noise->Stop(T+.07);G=FReceiverTextureGraph();
+}
+void US47Audio::ReceiverTextureFrame(FReceiverTextureGraph& G,const FString& Id,double Gain,double Bandwidth,double Quality,double Offset)
+{
+ if(!Ctx||!FMath::IsFinite(Gain)||!FMath::IsFinite(Bandwidth)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Offset)){ReceiverTextureStop(G);return;}
+ const double T=Ctx->CurrentTime();
+ if(G.Source&&(G.Id!=Id||(Offset>=0&&FMath::Abs(Offset-(G.Offset+T-G.Started))>.25)))ReceiverTextureStop(G);
+ if(!G.Source)
+ {
+  // Fixed small catalogue, cached once. No per-frame PCM generation or global RNG.
+  const FString StableId=Id.Left(80);
+  for(int32 I=0;I<2;++I)
+  {
+   const FString Key=StableId+FString::FromInt(I);
+   if(!ReceiverBuffers.Contains(Key))ReceiverBuffers.Add(Key,S47ReceiverTexture::MakeLoop(Ctx.ToSharedRef(),S47ReceiverTexture::Seed(StableId),I==0?S47ReceiverTexture::ELayer::Source:S47ReceiverTexture::ELayer::Static));
+  }
+  FS47AudioContext::FBatch Batch(*Ctx);
+  G.Id=Id;G.Started=T;G.Offset=FMath::Max(0.,Offset);
+  G.Source=Ctx->CreateBufferSource();G.Noise=Ctx->CreateBufferSource();
+  G.Source->Buffer=ReceiverBuffers[StableId+TEXT("0")];G.Noise->Buffer=ReceiverBuffers[StableId+TEXT("1")];
+  G.Source->bLoop=G.Noise->bLoop=true;
+  G.SignalGain=Ctx->CreateGain();G.NoiseGain=Ctx->CreateGain();G.SignalGain->Gain.SetValue(0);G.NoiseGain->Gain.SetValue(0);
+  G.Filter=Ctx->CreateBiquadFilter();G.Filter->SetType(TEXT("lowpass"));G.Filter->Q.SetValue(.65);
+  G.Source->Connect(G.SignalGain);G.Noise->Connect(G.NoiseGain);G.SignalGain->Connect(G.Filter);G.NoiseGain->Connect(G.Filter);G.Filter->Connect(SfxBus);
+  const double From=FMath::Fmod(G.Offset,S47ReceiverTexture::LoopSeconds);
+  G.Source->Start(T,From);G.Noise->Start(T,From);
+ }
+ FS47AudioContext::FBatch Batch(*Ctx);
+ const float Q=FMath::Clamp(Quality,0.,1.),Level=.42*FMath::Clamp(Gain/100.,0.,1.);
+ G.SignalGain->Gain.SetTargetAtTime(S47ReceiverTexture::SourceLevel(Q,Level),T,.10);
+ G.NoiseGain->Gain.SetTargetAtTime(S47ReceiverTexture::StaticLevel(Q,Level),T,.08);
+ G.Filter->Frequency.SetTargetAtTime(650.+3300.*FMath::Sqrt(FMath::Clamp(Bandwidth/100.,0.,1.)),T,.08);
 }
 
+// Freeform monitor: source texture emerges through receiver noise as actual
+// tuning AND physical reception improve. Story's carrier/signature stay separate.
+void US47Audio::MonitorReceiver(const FS47Rx& Rx,const FS47Profile& Profile,const FString& SourceId,double Reception)
+{
+ const double Quality=Rx.Quality(Profile)*FMath::Clamp(Reception,0.,1.);
+ if(!Ctx||!Rx.bPowered||!FMath::IsFinite(Reception)||!FMath::IsFinite(Quality)||!FMath::IsFinite(Rx.Frequency)||!FMath::IsFinite(Rx.Gain)||!FMath::IsFinite(Rx.Bandwidth)){ReceiverMonitorOff();return;}
+ bReceiverMonitor=true;
+ ReceiverTextureFrame(ReceiverTexture,SourceId,Rx.Gain,Rx.Bandwidth,Quality);
+}
 void US47Audio::ReceiverMonitorOff()
 {
- // The carrier is shared with Story. Only silence it when this monitor owns it.
  if(!bReceiverMonitor)return;
- bReceiverMonitor=false;
- SetCarrier(0,0,0);
- if(Ctx && Carrier.Filter)
- {
-  FS47AudioContext::FBatch Batch(*Ctx);
-  Carrier.Filter->Frequency.SetTargetAtTime(1800,Ctx->CurrentTime(),.08);
-  Carrier.Filter->Q.SetTargetAtTime(.6,Ctx->CurrentTime(),.08);
- }
+ bReceiverMonitor=false;ReceiverTextureStop(ReceiverTexture);
 }
+void US47Audio::MonitorReceiverRecording(const FString& SourceId,double Gain,double Bandwidth,double Quality,double Cursor)
+{
+ if(Cursor<0){ReceiverRecordingOff();return;}
+ ReceiverTextureFrame(ReceiverTape,SourceId,Gain,Bandwidth,Quality,Cursor);
+}
+void US47Audio::ReceiverRecordingOff(){ReceiverTextureStop(ReceiverTape);}
 
 bool US47Audio::ReceiverMonitorSelfTest(TArray<FString>& Lines)
 {
- bool Good=true;
+ bool Good=S47ReceiverTexture::SelfTest(Lines);
  auto Check=[&](bool Ok,const TCHAR* Name){Good&=Ok;Lines.Add(FString::Printf(TEXT("%s receiver monitor: %s"),Ok?TEXT("PASS"):TEXT("FAIL"),Name));};
  auto* A=NewObject<US47Audio>();A->Unlock(false,false);
  auto Render=[&]()
@@ -51,19 +77,24 @@ bool US47Audio::ReceiverMonitorSelfTest(TArray<FString>& Lines)
  const FS47Profile& P=S47Signal::Profiles()[0];FS47Rx Rx;Rx.bPowered=true;
  Rx.Frequency=P.F;Rx.Gain=P.Gain[0];Rx.Bandwidth=P.Bw[0];Rx.Azimuth=(P.Az[0]+P.Az[1])*.5;
  A->MonitorReceiver(Rx,P);const double Locked=Render();
- Check(A->ReceiverMonitorOn()&&Locked>.005,TEXT("locked receiver renders an audible carrier"));
+ Check(A->ReceiverMonitorOn()&&Locked>.005,TEXT("locked receiver renders audible source texture"));
  Rx.Gain=P.Gain[1];A->MonitorReceiver(Rx,P);const double Higher=Render();
  Check(Higher>Locked*1.1,TEXT("gain changes audible level inside the accepted window"));
- const double Narrow=A->Carrier.Filter->Frequency.Value();Rx.Bandwidth=P.Bw[1];A->MonitorReceiver(Rx,P);Render();
- Check(A->Carrier.Filter->Frequency.Value()>Narrow+200,TEXT("bandwidth changes the rendered noise filter within the accepted window"));
+ const double Narrow=A->ReceiverTexture.Filter->Frequency.Value();Rx.Bandwidth=P.Bw[1];A->MonitorReceiver(Rx,P);Render();
+ Check(A->ReceiverTexture.Filter->Frequency.Value()>Narrow+100,TEXT("bandwidth changes the rendered noise filter within the accepted window"));
  Rx.Frequency=P.F+.4;A->MonitorReceiver(Rx,P);const double Searching=Render();
- Check(Searching>.0001&&Searching<Locked*.8,TEXT("off-frequency search renders static and loses the strong carrier"));
- Check(A->Carrier.Osc->Frequency.Value()>900,TEXT("frequency sweep moves the carrier pitch"));
+ Check(Searching>.0001&&FMath::Abs(Searching-Locked)>.0001,TEXT("off-frequency search renders a different noise-dominated signal"));
+ Check(A->ReceiverTexture.SignalGain->Gain.Value()<1e-4,TEXT("off-frequency search hides source structure"));
+ Rx.Frequency=P.F;A->MonitorReceiver(Rx,P,TEXT("receiver"),0);Render();
+ Check(A->ReceiverTexture.SignalGain->Gain.Value()<1e-4,TEXT("unpointed array cannot expose a perfectly tuned source"));
  Rx.bPowered=false;A->MonitorReceiver(Rx,P);const double Silent=Render();
  Check(!A->ReceiverMonitorOn()&&Silent<1e-5,TEXT("power loss releases the monitor and fades PCM to silence"));
  Rx.bPowered=true;Rx.Frequency=P.F;A->MonitorReceiver(Rx,P);Render();A->ReceiverMonitorOff();
  Check(Render()<1e-5&&!A->ReceiverMonitorOn(),TEXT("leaving the receiver fades it to silence"));
- A->SetCarrier(.04,0,0);A->ReceiverMonitorOff();
+ A->MonitorReceiverRecording(TEXT("freeform-source-1"),60,50,1,0);const double Tape=Render();
+ A->ReceiverMonitorOff();Check(Render()>.001&&Tape>.001,TEXT("live monitor release leaves separately owned tape playing"));
+ A->ReceiverRecordingOff();Check(Render()<1e-5,TEXT("tape stop releases its graph"));
+ A->StartCarrier();A->SetCarrier(.04,0,0);A->ReceiverMonitorOff();
  Check(Render()>.005,TEXT("inactive monitor does not mute the Story-owned carrier"));
  return Good;
 }

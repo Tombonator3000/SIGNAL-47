@@ -4,6 +4,8 @@
 #include "S47FieldRadio.h"
 #include "S47SignalVoice.h"
 #include "S47ReceiverSound.h"
+#include "S47Rx.h"
+#include "S47Observing.h"
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"
@@ -207,6 +209,51 @@ bool US47Audio::RenderSoundWorkshop(const FString& BankPath)
 		}
 		bOk &= SaveWave(Output / TEXT("array_synthetic.wav"), Samples);
 		Voice.Stop(); C->Close();
+	}
+	// Actual Freeform receiver graph, independent of the private recording bank.
+	// Each source gets a fresh context: 0-2s search, 2-7s tuning/reception ramp,
+	// 7-10s locked, then power off with two seconds to hear and check the release.
+	for (int32 Source=0; Source<FS47Observing::Runs().Num(); ++Source)
+	{
+		US47Audio* Receiver=NewObject<US47Audio>(GetTransientPackage());
+		Receiver->AddToRoot();Receiver->Unlock(false,false);
+		const FS47Profile& Profile=FS47Observing::Runs()[Source].P;
+		const FString Id=FString::Printf(TEXT("freeform-source-%d"),Source);
+		FS47Rx Rx;Rx.bPowered=true;Rx.Gain=(Profile.Gain[0]+Profile.Gain[1])*.5;
+		Rx.Bandwidth=(Profile.Bw[0]+Profile.Bw[1])*.5;Rx.Azimuth=(Profile.Az[0]+Profile.Az[1])*.5;
+		TArray<float> Samples;Samples.SetNumZeroed(48000*12*2);
+		for (int32 F=0; F<48000*12; F+=800)
+		{
+			const double T=F/48000.;
+			const double Tune=FMath::Clamp((T-2.)/5.,0.,1.);
+			Rx.Frequency=Profile.F+Profile.FTol*4.*(1.-Tune);
+			if(T<10)Receiver->MonitorReceiver(Rx,Profile,Id,.08+.92*Tune);
+			else if(F==48000*10)
+			{
+				Rx.bPowered=false;Receiver->MonitorReceiver(Rx,Profile,Id,1.);
+				Receiver->ReceiverMonitorOff(); // Repeated off must remain harmless.
+			}
+			Receiver->Ctx->Render(Samples.GetData()+F*2,800,2);Receiver->Ctx->Tick(1./60.);
+		}
+		bool Finite=true;double Peak=0,Energy=0,TailPeak=0;
+		for(int32 I=0;I<Samples.Num();++I)
+		{
+			const double V=Samples[I];Finite&=FMath::IsFinite(V);Energy+=V*V;
+			Peak=FMath::Max(Peak,FMath::Abs(V));
+			if(I>=48000*23)TailPeak=FMath::Max(TailPeak,FMath::Abs(V)); // Last half second.
+		}
+		const double Rms=FMath::Sqrt(Energy/Samples.Num());
+		const FString File=FString::Printf(TEXT("receiver_source_%d_search_tuned_off.wav"),Source);
+		const bool Valid=Finite&&Rms>1e-6&&Peak<.25&&TailPeak<1e-7;
+		const bool Saved=Valid&&SaveWave(Output/File,Samples);bOk&=Saved;
+		auto Result=MakeShared<FJsonObject>();Result->SetStringField(TEXT("name"),Id);
+		Result->SetStringField(TEXT("source"),FS47Observing::Runs()[Source].Source);
+		Result->SetStringField(TEXT("file"),File);Result->SetStringField(TEXT("graph"),TEXT("MonitorReceiver: search 0-2, tuning 2-7, locked 7-10, powered off 10-12 seconds"));
+		Result->SetNumberField(TEXT("peak"),Peak);Result->SetNumberField(TEXT("rms"),Rms);
+		Result->SetNumberField(TEXT("off_tail_peak"),TailPeak);Result->SetBoolField(TEXT("ok"),Saved);
+		Results.Add(MakeShared<FJsonValueObject>(Result));
+		UE_LOG(LogS47SoundWorkshop,Display,TEXT("S47: receiver workshop %s peak %.5f rms %.5f off %.9f %s"),*Id,Peak,Rms,TailPeak,Saved?TEXT("PASS"):TEXT("FAIL"));
+		Receiver->Ctx->Close();Receiver->RemoveFromRoot();
 	}
 	for (const FString& Error : Errors) UE_LOG(LogS47SoundWorkshop, Display, TEXT("S47: sound workshop: %s"), *Error);
 	auto Report = MakeShared<FJsonObject>();
