@@ -46,6 +46,10 @@ public:
  bool Held() const;
  bool ArrayMotionHeld() const;
  bool MotorFeedbackActive() const { return bMotorFeedback; }
+ int32 AvailableDishCount() const;
+ static double MeasurementRateForCount(int32 Count);
+ double ArrayMeasurementRate() const;
+ FString ArrayMeasurementStatus() const;
  int32 CommandFeedbackCount() const { return CommandClicks; }
  int32 ServiceFeedbackCount() const { return ServiceClicks; }
  int32 ActiveServiceGuide() const { return ServiceGuide; }

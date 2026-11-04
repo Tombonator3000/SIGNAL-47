@@ -229,6 +229,23 @@ FString FS47FreeformSession::JobLine(const FJob& J)const
 {
  return FString::Printf(TEXT("D%02d / %s / %s / %s%s%s"),J.Day,*J.Id,FS47Observing::Runs()[J.Source].Source,*StageText(J.Stage),J.bAnomaly?TEXT(" / INVESTIGATE"):TEXT(""),J.CaseTest>=0?*(TEXT(" / CASE TEST: ")+CaseTestName(J.CaseLine,J.CaseTest).ToUpper()):TEXT(""));
 }
+int32 FS47FreeformSession::AvailableDishCount()const
+{
+ int32 Count=0;if(M&&M->Web)for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))++Count;
+ return Count;
+}
+double FS47FreeformSession::MeasurementRateForCount(int32 Count)
+{
+ // Gameplay balance from available antenna pairs, not a full radiometer simulation.
+ const int32 N=FMath::Clamp(Count,0,27);
+ return N<24?0.:double(N*(N-1))/(27.*26.);
+}
+double FS47FreeformSession::ArrayMeasurementRate()const{return MeasurementRateForCount(AvailableDishCount());}
+FString FS47FreeformSession::ArrayMeasurementStatus()const
+{
+ const int32 N=AvailableDishCount();
+ return FString::Printf(TEXT("ARRAY %d/27 / MEASUREMENT RATE %.0f%% / %s"),N,100*MeasurementRateForCount(N),N<24?TEXT("BLOCKED: inspect ARRAY STATUS (left-hand PC); need 24"):N<27?TEXT("DEGRADED: repair restores rate"):TEXT("FULL RATE"));
+}
 bool FS47FreeformSession::PointReady()const
 {
  const FVector2D Off=bCrossRunning?Cross[CrossPoint]:FVector2D::ZeroVector;
@@ -392,10 +409,10 @@ void FS47FreeformSession::StepWork(double Dt)
   if(J->Stage==EJobStage::Integrating&&Settle>=1&&M&&M->Story&&M->Story->Rx.Pass(EffectiveProfile(*J)))
   {
    const double Was=J->Elapsed;
-   J->Elapsed=FMath::Min(SourceSeconds(),J->Elapsed+Dt);
+   J->Elapsed=FMath::Min(SourceSeconds(),J->Elapsed+Dt*ArrayMeasurementRate());
    if(bCrossRunning)
    {
-    CrossSample+=Dt;if(CrossSample>=2){if(CrossPoint<4){++CrossPoint;PointCross();}else bCrossRunning=false;}
+    CrossSample+=Dt*ArrayMeasurementRate();if(CrossSample>=2){if(CrossPoint<4){++CrossPoint;PointCross();}else bCrossRunning=false;}
    }
    if(J->Source==1&&M->Audio)
    {
@@ -416,7 +433,7 @@ void FS47FreeformSession::StepWork(double Dt)
    J->BeamSettle=EncodersAt(Az,TargetEl())?FMath::Min(1.,J->BeamSettle+Dt):0;
    if(J->BeamSettle>=1)
    {
-    const double Sample=FMath::Min(Dt,8./3.-J->BeamSample);
+    const double Sample=FMath::Min(Dt*ArrayMeasurementRate(),8./3.-J->BeamSample);
     J->BeamSample+=Sample;J->ControlAt=FMath::Min(8.,J->ControlAt+Sample);
     if(J->BeamSample>=8./3.-1e-6)
     {
@@ -481,13 +498,14 @@ FString FS47FreeformSession::ReceiverNextAction() const
  if(J->Stage>=EJobStage::Chart)return JobNextAction(*J);
  // A case test states its physical precondition before the player commits the array.
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
+ if(M&&M->Web&&J->Stage<=EJobStage::Integrating&&AvailableDishCount()<24)return ArrayMeasurementStatus();
  if(J->Stage==EJobStage::New)return TEXT("TRACKING (right-hand PC): Point the array at the selected source.");
  if(J->Stage==EJobStage::Integrating)
  {
   if(!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J)))return TEXT("RECEIVER (centre PC): Restore the work card tuning to resume recording; valid seconds are retained.");
   if(!PointReady()||Settle<1)return bCrossRunning?TEXT("TRACKING (right-hand PC): Automatic reference scan in progress. Wait for the samples; collect the original at the PRINTER when recording finishes."):TEXT("TRACKING (right-hand PC): Restore array pointing to resume recording; valid seconds are retained.");
  }
- if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording %.0f%%. Keep tuning valid; collect the original at the PRINTER when complete."),100*J->Elapsed/SourceSeconds());
+ if(J->Stage==EJobStage::Integrating)return FString::Printf(TEXT("RECEIVER (centre PC): Recording %.0f%% at %.0f%% measurement rate (%d/27 antennas). Keep tuning valid; collect the original at the PRINTER when complete."),100*J->Elapsed/SourceSeconds(),100*ArrayMeasurementRate(),AvailableDishCount());
  if(J->Stage!=EJobStage::Pointed)return JobNextAction(*J);
  if(!PointReady())return TEXT("TRACKING (right-hand PC): Wait for the commanded direction. If movement stops, inspect isolated elements at ARRAY STATUS (left-hand PC).");
  if(Settle<1)return TEXT("RECEIVER (centre PC): Wait one second for the array to settle, then tune the work card.");
@@ -1014,7 +1032,6 @@ void FS47FreeformSession::OpenTracking()
  if(!RequirePower()||!M||!M->UI||!M->Web||!CurrentJob())return;
  const auto P=EffectiveProfile(*CurrentJob());const FString Name=FS47Observing::Runs()[CurrentJob()->Source].Source;
  auto ArrayAzEl=[this]{double Az=0,El=0;int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){Az+=M->Web->DishAz(I);El+=M->Web->DishEl(I);++N;}return N?FVector2D(Az/N,El/N):FVector2D(0,0);};
- auto Available=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return N;};
  auto Source=T::Panel(TEXT("SOURCE"),S47Kit::Col({T::Value(TEXT("TARGET"),Name,true),T::Value(TEXT("FREQ"),FString::Printf(TEXT("%.3f MHz"),P.F)),
   T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetAz());})),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetEl());}))}),true);
  auto Done=[this]{const FJob* J=CurrentJob();if(!J||J->Source!=0)return 0;return J->Stage>=EJobStage::Chart?5:bCrossRunning?CrossPoint:0;};
@@ -1024,7 +1041,7 @@ void FS47FreeformSession::OpenTracking()
  auto Current=T::Panel(TEXT("CURRENT (ARRAY)"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().X);}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([ArrayAzEl]{return FString::Printf(TEXT("%.1f°"),ArrayAzEl().Y);}),true)}),true);
  auto Target=T::Panel(TEXT("TARGET"),S47Kit::Col({T::Value(TEXT("AZ"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetAz());}),true),T::Value(TEXT("EL"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.1f°"),TargetEl());}),true)}),true);
  TArray<S47Kit::FW> Right={Current,Target,
-  T::Banner(TAttribute<FString>::CreateLambda([this,Available]{const FString State=PointReady()?Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING"):CurrentJob()&&CurrentJob()->Stage==EJobStage::Pointed?TEXT("ARRAY MOVING"):TEXT("READY TO POINT");return State+FString::Printf(TEXT("\n%d / %d ANTENNAS AVAILABLE"),Available(),M->Web->DishCount());}),TAttribute<bool>::CreateLambda([this]{return !PointReady();})),
+  T::Banner(TAttribute<FString>::CreateLambda([this]{const FString State=PointReady()?Settle>=1?TEXT("ON TARGET / STEADY"):TEXT("ON TARGET / SETTLING"):CurrentJob()&&CurrentJob()->Stage==EJobStage::Pointed?TEXT("ARRAY MOVING"):TEXT("READY TO POINT");return State+TEXT("\n")+ArrayMeasurementStatus();}),TAttribute<bool>::CreateLambda([this]{return !PointReady();})),
   T::Big(FString(TEXT("POINT ARRAY")),[this]{if(PointSelected())M->UI->Close();},1,CurrentJob()->Stage<=EJobStage::Pointed)};
  if(CurrentJob()->Phenomenon==TEXT("wrong_source")&&CurrentJob()->Stage==EJobStage::Recorded)
  {
@@ -1033,7 +1050,7 @@ void FS47FreeformSession::OpenTracking()
  }
  TArray<S47Kit::FW> Rows;
  Rows.Add(T::Columns({{.28f,S47Kit::Col({Source,Cal})},{.46f,Plot},{.26f,S47Kit::Col(Right)}},12));
- Rows.Add(T::Small(TEXT("Watch the actual dishes through the window. Up to three isolated antennas permit degraded acquisition; fewer than 24 require service.")));
+ Rows.Add(T::Small(TEXT("Watch the actual dishes through the window. Up to three isolated antennas permit slower acquisition (24/27: 79% rate); fewer than 24 block array measurements until repaired.")));
  OpenTerminal(2,TEXT("TRACKING / ARRAY CONTROL"),S47Kit::Col(Rows),true);
 }
 void FS47FreeformSession::OpenStatus()
@@ -1043,9 +1060,8 @@ void FS47FreeformSession::OpenStatus()
  auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
  auto State=[this](int32 I){if(I==SelectedDish)return 1;if(!M->Web->DishRemoteAvailable(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1?3:0;};
  auto Pick=[this](int32 I){SelectedDish=I;if(M->Web->DishId(I)==TEXT("S-03")){if(Field)Field->DiagnoseService();RecordEvidence(TEXT("s03-diagnosed"),TEXT("S-03 command/encoder status inspected at the status terminal."));}OpenStatus();};
- auto Available=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return N;};
  auto Grid=T::Panel(FString::Printf(TEXT("ARRAY STATUS / %d ANTENNAS"),Count),S47Kit::Col({T::AntennaGrid(Count,Short,State,Pick),
-  T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([Available,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),Available(),Count);}),TAttribute<bool>::CreateLambda([Available,Count]{return Available()<Count;}))},
+  T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([this,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),AvailableDishCount(),Count);}),TAttribute<bool>::CreateLambda([this,Count]{return AvailableDishCount()<Count;}))},
               {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault;}))}}),
   T::Small(TEXT("KEY / outline READY / amber SELECTED / red ISOLATED OR FAULT / blinking MOVING"))}));
  const int32 Dish=SelectedDish;
@@ -1059,6 +1075,7 @@ void FS47FreeformSession::OpenStatus()
  if(Field)Service.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return Field?Field->ServiceStatus():FString();}),TAttribute<int32>(0)));
  Service.Add(T::Big(FString(TEXT("INSPECT SERVICE RECORD")),[this]{OpenArchive();},2));
  TArray<S47Kit::FW> Rows;
+ Rows.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0)));
  Rows.Add(T::Columns({{.6f,Grid},{.4f,S47Kit::Col({Detail,T::Panel(TEXT("MAINTENANCE"),S47Kit::Col(Service),true)})}},12));
  OpenTerminal(0,TEXT("ARRAY STATUS / MAINTENANCE"),S47Kit::Col(Rows),true);
 }
@@ -1071,6 +1088,8 @@ void FS47FreeformSession::OpenReceiver()
  static const TCHAR* TabNames[]={TEXT("ACQUIRE"),TEXT("TUNE"),TEXT("ARRAY"),TEXT("RECORD"),TEXT("DATA")};
  TArray<T::FNav> TabItems;for(int32 I=0;I<5;++I)TabItems.Add({TabNames[I],ReceiverTab==I,[this,I]{ReceiverTab=I;OpenReceiver();}});
  TArray<S47Kit::FW> Rows;Rows.Add(T::Tabs(TabItems));
+ Rows.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return ArrayMeasurementStatus();}),TAttribute<int32>(0)));
+ Rows.Add(T::Small(TEXT("Carrier lock = tuning. Measurement rate = observing seconds.")));
  auto Quality=[this]{const auto* J=CurrentJob();return J?M->Story->Rx.Quality(EffectiveProfile(*J)):0.;};
  auto Controls=[this]{return T::Columns({
   {1.f,T::Control(TEXT("FREQUENCY"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%.3f MHz"),M->Story->Rx.Frequency);}),1419.5f,1420.7f,.001f,TAttribute<float>::CreateLambda([this]{return float(M->Story->Rx.Frequency);}),[this](float V){M->Story->Rx.Frequency=V;})},
@@ -1085,7 +1104,7 @@ void FS47FreeformSession::OpenReceiver()
   Rows.Add(Controls());
   auto Start=T::Big(TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->Stage>=EJobStage::Chart?FString(TEXT("RECORDING RETAINED")):J&&J->Stage==EJobStage::Integrating?FString(TEXT("RECORDING...")):FString(TEXT("START RECORDING"));}),[this]{StartAcquisition();},1,TAttribute<bool>::CreateLambda([this]{return ReceiverReady();}));
   Rows.Add(T::Split({
-   {1.f,T::Readout(TEXT("RECEPTION"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}))},
+   {1.f,T::Readout(TEXT("CARRIER LOCK"),TAttribute<FString>::CreateLambda([Quality]{return FString::Printf(TEXT("%d %%"),S47Signal::CarrierPercent(Quality()));}))},
    {1.f,T::Readout(TEXT("RECORDING"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return FString::Printf(TEXT("%.0f / %.0f s"),J?J->Elapsed:0.,SourceSeconds());}))},
    {1.1f,Start}}));
  }
@@ -1100,10 +1119,9 @@ void FS47FreeformSession::OpenReceiver()
  }
  else if(ReceiverTab==2)
  {
-  auto Available=[this]{int32 N=0;for(int32 I=0;I<M->Web->DishCount();++I)N+=M->Web->DishRemoteAvailable(I)?1:0;return N;};
-  Rows.Add(T::Panel(TEXT("ARRAY / POINTING"),S47Kit::Col({
+   Rows.Add(T::Panel(TEXT("ARRAY / POINTING"),S47Kit::Col({
    T::Value(TEXT("TARGET"),FString::Printf(TEXT("%s / AZ %.1f EL %.1f"),*Name,TargetAz(),TargetEl()),true),
-   T::Value(TEXT("ANTENNAS AVAILABLE"),TAttribute<FString>::CreateLambda([this,Available]{return FString::Printf(TEXT("%d / %d"),Available(),M->Web->DishCount());}),true),
+   T::Value(TEXT("ANTENNAS AVAILABLE"),TAttribute<FString>::CreateLambda([this]{return FString::Printf(TEXT("%d / %d"),AvailableDishCount(),M->Web->DishCount());}),true),
    T::Value(TEXT("ENCODERS"),TAttribute<FString>::CreateLambda([this]{return PointReady()?Settle>=1?FString(TEXT("ON TARGET / STEADY")):FString(TEXT("ON TARGET / SETTLING")):FString(TEXT("NOT ON TARGET"));}),true),
    T::Small(TEXT("The array is commanded from the right-hand tracking PC. This receiver records only while pointing, tuning and power are all valid."))})));
   Rows.Add(Banner());
@@ -1426,6 +1444,7 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
 {
  const FJob* J=&JobValue;
  if(J->CaseTest>=0&&J->Stage<=EJobStage::Pointed){const FString Missing=CasePrecondition(*J);if(!Missing.IsEmpty())return Missing;}
+ if(M&&M->Web&&AvailableDishCount()<24&&(J->Stage<=EJobStage::Integrating||(J->Stage==EJobStage::Recorded&&J->Phenomenon==TEXT("wrong_source")&&(!J->bControl||J->ControlAt<8))))return ArrayMeasurementStatus();
  switch(J->Stage)
  {
   case EJobStage::New:return TEXT("TRACKING (right-hand PC): POINT THE ARRAY TO THE SELECTED SOURCE");
@@ -1452,6 +1471,7 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
 }
 FString FS47FreeformSession::JobLocation(const FJob& J)const
 {
+ if(M&&M->Web&&AvailableDishCount()<24&&(J.Stage<=EJobStage::Integrating||(J.Stage==EJobStage::Recorded&&J.Phenomenon==TEXT("wrong_source")&&(!J.bControl||J.ControlAt<8))))return TEXT("ARRAY STATUS / left-hand PC / inspect isolated antennas");
  if(J.Stage==EJobStage::New)return TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Pointed)return &J==CurrentJob()&&PointReady()&&Settle>=1?TEXT("Receiver / centre screen"):TEXT("Tracking PC / right-hand screen");
  if(J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
@@ -1545,6 +1565,8 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  I->bAudioReviewed=false;I->Phenomenon=TEXT("duplicate_print");I->bDuplicateCollected=true;I->DuplicatePage=TEXT("different copy");
  Check(!Instrument.CompareInstrument(),TEXT("duplicate metadata cannot grant comparison without two actual retained document originals"));
  Instrument.Stop();Readback.Stop();
+ Check(MeasurementRateForCount(27)==1.&&FMath::IsNearlyEqual(MeasurementRateForCount(26),650./702.,1e-12)&&FMath::IsNearlyEqual(MeasurementRateForCount(24),552./702.,1e-12),TEXT("Array measurement rate follows available-pair gameplay balance at 27, 26 and 24 antennas"));
+ Check(MeasurementRateForCount(23)==0.&&MeasurementRateForCount(0)==0.&&MeasurementRateForCount(-1)==0.&&MeasurementRateForCount(99)==1.,TEXT("Array measurement rate blocks fewer than 24 and cannot exceed full capacity"));
  // Printer state is separate from receiver selection and from already retained documents.
  FS47FreeformSession Printer(nullptr);Printer.Begin(nullptr);
  Check(Printer.PrinterProgress()<0&&!Printer.PrinterFeedbackActive(),TEXT("Idle Freeform has no printer paper or loop"));

@@ -71,7 +71,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -86,6 +86,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
@@ -203,6 +204,57 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))
+ {
+  if(Age>45){Finish(false,TEXT("bounded array-capacity fixture timeout"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Field&&F.Director&&M->Web->DishCount()==27&&F.HasPowerForReactiveLight(),TEXT("isolated powered 27-dish fixture, without natural observing journey claim")))return;
+   M->UI->Close(true);F.Director->Stop();
+   if(!Check(F.SelectJob(2)&&F.ChooseThird(false),TEXT("explicit third-job hydrogen-drift choice selects source 2 before fixture snapshot")))return;
+   Snapshot=S47J::Read(S47J::Write(F.Save()));int32 SourceIndex=INDEX_NONE;
+   const auto Jobs=S47J::Arr(Snapshot,TEXT("jobs"));for(int32 I=0;I<Jobs.Num();++I)if(S47J::Int(Jobs[I]->AsObject(),TEXT("source"))==2){SourceIndex=I;break;}
+   if(!Check(SourceIndex!=INDEX_NONE,TEXT("existing source-2 card available for controlled capacity fixture")))return;
+   S47J::Set(Snapshot,TEXT("selected"),SourceIndex);S47J::Set(Snapshot,TEXT("settle"),1.);S47J::Set(Snapshot,TEXT("crossRunning"),false);Snapshot->RemoveField(TEXT("angles"));
+   auto Job=Jobs[SourceIndex]->AsObject();S47J::Set(Job,TEXT("stage"),int32(J::Integrating));S47J::Set(Job,TEXT("elapsed"),0.);
+   // Each case starts with the same retained card, settled encoders and tuning.
+   // Ten production Step(.1) calls measure one controlled second, without oversize Dt.
+   for(const int32 Count:{27,24,23,27})
+   {
+    F.Begin(S47J::Read(S47J::Write(Snapshot)));F.Director->Stop();
+    const auto P=F.ConsoleProfile();if(!Check(P!=nullptr&&F.CurrentJob()->bGenerated,TEXT("capacity fixture retains actual receiver card")))return;
+    const double Az=(P->Az[0]+P->Az[1])/2,El=F.CurrentJob()->Card.El;
+    for(int32 I=0;I<27;++I){M->Web->SetDishRemoteAvailable(I,I<Count);M->Web->SnapDish(I,Az,El);M->Web->PointDish(I,Az,El,0,true);}
+    auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+    for(int32 Tick=0;Tick<11;++Tick)F.Step(.1); // production one-second settling before the equal measurement windows
+    const double Before=F.CurrentJob()->Elapsed;for(int32 Tick=0;Tick<10;++Tick)F.Step(.1);
+    const double Expected=Count<24?0.:double(Count*(Count-1))/(27.*26.);
+    if(!Check(F.AvailableDishCount()==Count&&FMath::IsNearlyEqual(F.ArrayMeasurementRate(),Expected,1e-8)&&FMath::IsNearlyEqual(F.CurrentJob()->Elapsed-Before,Expected,1e-6),FString::Printf(TEXT("controlled one-second source-2 sampling at %d dishes: measured %.6f expected %.6f"),Count,F.CurrentJob()->Elapsed-Before,Expected)))return;
+    if(Count==23&&!Check(F.NextAction().Contains(TEXT("BLOCKED"))&&F.NextAction().Contains(TEXT("ARRAY STATUS"))&&F.JobLocation(*F.CurrentJob()).Contains(TEXT("ARRAY STATUS")),TEXT("blocked acquisition directs to physical array-status repair workstation")))return;
+   }
+   for(int32 I=0;I<27;++I)M->Web->SetDishRemoteAvailable(I,I<24);
+   F.OpenReceiver();Go(8951,1.2);return;
+  }
+  if(Stage==8951)
+  {
+   if(!Check(F.TerminalOnGlass()&&F.TerminalWindowRendered(),TEXT("degraded receiver renders on the physical CRT")))return;Shot(TEXT("array-24-degraded-receiver"));Go(89511,.2);return;
+  }
+  if(Stage==89511){F.OpenTracking();Go(89512,1.2);return;}
+  if(Stage==89512){Shot(TEXT("array-24-degraded-tracking"));Go(8952,.2);return;}
+  if(Stage==8952)
+  {
+   M->UI->Close(true);for(int32 I=0;I<27;++I)M->Web->SetDishRemoteAvailable(I,true);
+   if(!Check(F.Field->TriggerServiceFault()&&F.AvailableDishCount()==26,TEXT("actual S-03 service fault isolates one antenna before disk save")))return;
+   if(!Restore(TEXT("array-s03-service-fault")))return;Go(8953,.3);return;
+  }
+  if(Stage==8953)
+  {
+   if(!Check(F.Field->HasArrayFault()&&F.AvailableDishCount()==26&&FMath::IsNearlyEqual(F.ArrayMeasurementRate(),25./27.,1e-8),TEXT("disk Continue derives 26-dish capacity from persisted S-03 service state, without saving rate or generic test isolation")))return;
+   Finish(true,TEXT("Controlled 27/24/23/repaired sampling and actual S-03 disk Continue passed."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))
  {
   if(Age>45){Finish(false,TEXT("bounded guidance fixture timeout"));return;}
