@@ -220,6 +220,8 @@ void FS47FreeformDirector::Begin(const S47J::FObj& O)
    const S47J::FObj* C=nullptr;if(!V.IsValid()||!V->TryGetObject(C)||!C)continue;
    FPhotoClaim P;P.Id=S47J::Str(*C,TEXT("id"));P.PhotoId=S47J::Str(*C,TEXT("photo"));P.Title=S47J::Str(*C,TEXT("title"));P.bPaid=S47J::Bool(*C,TEXT("paid"));
    P.Quality=S47J::Num(*C,TEXT("quality"));
+   P.ControlOriginalId=S47J::Str(*C,TEXT("controlOriginal"));P.ControlPhotoId=S47J::Str(*C,TEXT("controlPhoto"));P.ControlPlannedAt=S47J::Num(*C,TEXT("controlPlannedAt"),-1);
+   if(!FMath::IsFinite(P.ControlPlannedAt)||P.ControlPlannedAt<0||P.ControlOriginalId.IsEmpty()){P.ControlPlannedAt=-1;P.ControlOriginalId.Empty();P.ControlPhotoId.Empty();}
    if(P.Id.IsEmpty()||P.PhotoId.IsEmpty()||!FMath::IsFinite(P.Quality)||P.Quality<.025||P.Quality>1||Claims.ContainsByPredicate([&](const FPhotoClaim& Q){return Q.Id==P.Id;}))continue;
    Claims.Add(P);
   }
@@ -290,7 +292,7 @@ S47J::FObj FS47FreeformDirector::Save()const
  S47J::Set(O,TEXT("seen"),bSeen);S47J::Set(O,TEXT("photographed"),bPhoto);S47J::Set(O,TEXT("controlled"),bControlled);S47J::Set(O,TEXT("compared"),bCompared);S47J::Set(O,TEXT("anchor"),TArray<double>{Anchor.X,Anchor.Y,Anchor.Z});
  S47J::Set(O,TEXT("incidentSerial"),IncidentSerial);S47J::Set(O,TEXT("incidentId"),IncidentId);
  TArray<TSharedPtr<FJsonValue>> PaidPhotos;
- for(const auto& P:Claims){auto C=S47J::New();S47J::Set(C,TEXT("id"),P.Id);S47J::Set(C,TEXT("photo"),P.PhotoId);S47J::Set(C,TEXT("title"),P.Title);S47J::Set(C,TEXT("quality"),P.Quality);S47J::Set(C,TEXT("paid"),P.bPaid);PaidPhotos.Add(MakeShared<FJsonValueObject>(C));}
+ for(const auto& P:Claims){auto C=S47J::New();S47J::Set(C,TEXT("id"),P.Id);S47J::Set(C,TEXT("photo"),P.PhotoId);S47J::Set(C,TEXT("title"),P.Title);S47J::Set(C,TEXT("quality"),P.Quality);S47J::Set(C,TEXT("paid"),P.bPaid);if(P.ControlPlannedAt>=0&&!P.ControlOriginalId.IsEmpty()){S47J::Set(C,TEXT("controlOriginal"),P.ControlOriginalId);S47J::Set(C,TEXT("controlPlannedAt"),P.ControlPlannedAt);if(!P.ControlPhotoId.IsEmpty())S47J::Set(C,TEXT("controlPhoto"),P.ControlPhotoId);}PaidPhotos.Add(MakeShared<FJsonValueObject>(C));}
  O->SetArrayField(TEXT("photoClaims"),PaidPhotos);
  TArray<TSharedPtr<FJsonValue>> Observed;
  for(const auto& P:FieldObservations)Observed.Add(MakeShared<FJsonValueObject>(P.Save()));
@@ -749,6 +751,14 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
 {
  TaggedShot.Empty();TaggedIncident.Empty();TaggedTitle.Empty();bTaggedLamps=false;TaggedQuality=0;TaggedRegion=FBox2D(ForceInit);PhotoSubjectMean=-1;
  if(!bEnabled||Shot.Id.IsEmpty()||Shot.bUnavailable||!M||!M->FieldCamera||!M->Web)return;
+ // This hook is invoked only after a real scene capture. Controls work after
+ // the encounter ends, independently of new-incident photographic claims.
+ if(Shot.Pose.IsSet()&&M->Night&&M->Night->Album&&FMath::IsFinite(Shot.Clock))for(const auto& C:Claims)
+ {
+  if(C.ControlPlannedAt<0||!C.ControlPhotoId.IsEmpty()||Shot.Id==C.ControlOriginalId||Shot.Clock<=C.ControlPlannedAt||Event==TEXT("dusk_orb"))continue;
+  const auto* Original=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C.ControlOriginalId;});
+  if(Original&&Original->Pose.IsSet()&&Original->Pose->Matches(Shot.Pose.GetValue()))Shot.Targets.Add({TEXT("freeform-control:")+C.Id,FVector2D(.5,.5)});
+ }
  const FString RoadIncident=M->HighwayUfo?M->HighwayUfo->PhotoIncidentId():FString();
  const bool RoadPhoto=!RoadIncident.IsEmpty();
  if(!RoadPhoto&&(Event.IsEmpty()||IncidentId.IsEmpty()||M->Web->Area()!=Scene))return;
@@ -858,13 +868,68 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
 bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
 {
  if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album||!Id.StartsWith(TEXT("dusk_orb.")))return false;
- const auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C)return false;
+ auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->ControlPlannedAt>=0)return false;
  const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C->PhotoId;});
- if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->IsDeveloped()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& P){return P.Key==TEXT("freeform:")+Id;}))return false;
- const FString Key=TEXT("orb-control-plan.")+Id;if(M->Freeform->HasFinding(Key))return false;
- M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("PLANNED FIELD CONTROL / LOW ARRAY LIGHT\nIncident: %s\nRetained developed original: %s\nOriginal exposure clock: %.3f s\nReference: S-03 CABLE JUNCTION, facing the gap between S-02 and S-03. Return to this marked location and retain a separate control photograph showing both antenna references. Compare the original light position against fixed lamps and silhouettes; record any difference in viewpoint or lighting.\nThis is a plan, not a completed comparison. No simultaneous receiver measurement, identity or common cause has been established. No additional payment is due for planning."),*Id,*Shot->Id,Shot->Clock));
- Changed();if(M->UI)M->UI->Toast(TEXT("Control plan retained: return to S-03 CABLE JUNCTION and take a separate reference photograph toward S-02 / S-03."),5);
- return true;
+ if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->IsDeveloped()||!Shot->Pose.IsSet()||!Shot->Pose->Valid()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& P){return P.Key==TEXT("freeform:")+Id;}))return false;
+ C->ControlOriginalId=Shot->Id;C->ControlPlannedAt=M->Freeform->Clock();
+ M->Freeform->RecordEvidence(TEXT("orb-return-plan.")+Id,FString::Printf(TEXT("PLANNED SAME-PLACE PHOTOGRAPH / %s\nFrozen original: %s / exposure clock %.3f s\n%s\nTake a separate photograph after this passage ends, then develop it and compare both originals at OPS. This plan is not a completed control or an additional paid observation."),*Id,*Shot->Id,Shot->Clock,*PhotoControlHint(Id)));
+ Changed();return true;
+}
+FString FS47FreeformDirector::PhotoControlHint(const FString& Id) const
+{
+ if(!M||!M->Night||!M->Night->Album)return {};
+ const auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C)return {};
+ const FString OriginalId=C->ControlOriginalId.IsEmpty()?C->PhotoId:C->ControlOriginalId;
+ const auto* S=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==OriginalId;});
+ if(!S||!S->Pose.IsSet()||!S->Pose->Valid())return TEXT("Original camera position was not retained. The image can still be viewed and registered; a same-place comparison cannot be verified.");
+ const auto& P=S->Pose.GetValue();const FVector Reference(4.647,0,-39.4);
+ const double Metres=FVector2D::Distance({Reference.X,Reference.Z},{P.Eye.X,P.Eye.Z});
+ const FString Direction=FS47FreeformObservation::Direction(Reference,P.Eye),Facing=FS47FreeformObservation::Direction(FVector::ZeroVector,P.Forward*10.);
+ const double Pitch=FMath::RadiansToDegrees(FMath::Asin(FMath::Clamp(P.Forward.Y,-1.,1.)));
+ FString Hint=FString::Printf(TEXT("RETURN / From S-03 CABLE JUNCTION, walk about %.0f m %s. Face %s, camera %.0f degrees %s. Match the original antenna silhouettes; a new frame must be within 1.5 m and 5 degrees of the original view."),Metres,*Direction,*Facing,FMath::Abs(Pitch),Pitch<0?TEXT("down"):TEXT("up"));
+ if(M->Player&&M->Web&&M->Web->Area()==P.Scene)Hint+=FString::Printf(TEXT(" Your current distance from the original viewpoint: %.0f m."),FVector2D::Distance({M->Player->Pos.X,M->Player->Pos.Z},{P.Eye.X,P.Eye.Z}));
+ return Hint;
+}
+FString FS47FreeformDirector::PhotoControlFieldHint(bool& bReady) const
+{
+ bReady=false;
+ if(!M||!M->Freeform||!M->Freeform->Active()||!M->Night||!M->Night->Album||!M->Web||!M->Player)return {};
+ const auto* C=Claims.FindByPredicate([](const FPhotoClaim& P){return P.ControlPlannedAt>=0&&P.ControlPhotoId.IsEmpty();});if(!C)return {};
+ const auto& Shots=M->Night->Album->Shots();const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->ControlOriginalId;});
+ if(!Original||Original->bUnavailable||!Original->Pose.IsSet()||!Original->Pose->Valid())return TEXT("CONTROL / ORIGINAL VIEW UNAVAILABLE");
+ auto ControlFor=[&](const FS47AlbumShot& S){return !S.bUnavailable&&!S.Url.IsEmpty()&&S.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+C->Id;});};
+ if(Shots.ContainsByPredicate([&](const FS47AlbumShot& S){return ControlFor(S)&&S.IsDeveloped();}))return TEXT("OPS / COMPARE DEVELOPED ORIGINALS");
+ if(Shots.ContainsByPredicate(ControlFor))return TEXT("PHOTO LAB / DEVELOP CONTROL ORIGINAL");
+ const auto& Target=Original->Pose.GetValue();
+ if(M->Web->Area()!=Target.Scene)return TEXT("RETURN TO SARO / ORIGINAL VIEWPOINT");
+ const bool Raised=M->FieldCamera&&M->FieldCamera->bRaised;
+ FS47PhotoPose Live;Live.Scene=M->Web->Area();Live.Fov=US47FieldCamera::PHOTO_FOV;
+ // The viewfinder calls this immediately after Sync. A lowered-camera notebook
+ // hint uses the current walker, never the last cached photograph-camera pose.
+ Live.Eye=S47Three::ToThree(Raised?M->FieldCamera->PhotoLoc:M->Player->EyeUE());
+ Live.Forward=S47Three::ToThree(Raised?M->FieldCamera->PhotoRot.Vector():M->Player->GetActorRotation().Vector()).GetSafeNormal();
+ if(Event==TEXT("dusk_orb"))return TEXT("CONTROL / WAIT FOR PASSAGE TO END");
+ const double Distance=FVector::Dist(Live.Eye,Target.Eye);
+ if(Distance>1.5)return FString::Printf(TEXT("CONTROL POSITION / %.1f m %s"),Distance,*FS47FreeformObservation::Direction(Live.Eye,Target.Eye));
+ if(!Raised)return TEXT("POSITION REACHED / RAISE CAMERA TO ALIGN");
+ bReady=Target.Matches(Live);
+ if(bReady)return TEXT("CONTROL VIEW MATCHED / TAKE NEW FRAME");
+ const double A=FMath::Atan2(-Target.Forward.X,-Target.Forward.Z)-FMath::Atan2(-Live.Forward.X,-Live.Forward.Z);
+ const double Yaw=FMath::RadiansToDegrees(FMath::Atan2(FMath::Sin(A),FMath::Cos(A)));
+ const double Pitch=FMath::RadiansToDegrees(FMath::Asin(FMath::Clamp(Target.Forward.Y,-1.,1.))-FMath::Asin(FMath::Clamp(Live.Forward.Y,-1.,1.)));
+ if(FMath::Abs(Live.Fov-Target.Fov)>1)return TEXT("CONTROL / MATCH THE ORIGINAL LENS");
+ return FString::Printf(TEXT("MATCH VIEW / %s %.0f DEG / %s %.0f DEG"),Yaw>=0?TEXT("LEFT"):TEXT("RIGHT"),FMath::Abs(Yaw),Pitch>=0?TEXT("UP"):TEXT("DOWN"),FMath::Abs(Pitch));
+}
+bool FS47FreeformDirector::RegisterPhotoControl(const FString& Id,const FString& ControlPhotoId)
+{
+ if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album)return false;
+ auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->ControlPlannedAt<0||!C->ControlPhotoId.IsEmpty()||ControlPhotoId==C->ControlOriginalId)return false;
+ const auto& Shots=M->Night->Album->Shots();const auto* Original=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==C->ControlOriginalId;});const auto* Control=Shots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==ControlPhotoId;});
+ auto Usable=[](const FS47AlbumShot* S){return S&&!S->bUnavailable&&!S->Url.IsEmpty()&&S->IsDeveloped()&&S->Pose.IsSet()&&S->Pose->Valid();};
+ if(!Usable(Original)||!Usable(Control)||!FMath::IsFinite(Control->Clock)||Control->Clock<=C->ControlPlannedAt||!Original->Pose->Matches(Control->Pose.GetValue())||!Control->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+Id;}))return false;
+ C->ControlPhotoId=Control->Id;
+ M->Freeform->RecordEvidence(TEXT("orb-photo-comparison.")+Id,FString::Printf(TEXT("RETAINED PHOTOGRAPHIC COMPARISON / %s\nFirst original: %s / exposure clock %.3f s\nLater control: %s / exposure clock %.3f s\nBoth developed originals are retained. The later view matches the original scene, position (within 1.5 m), direction (within 5 degrees) and lens. Lighting and elapsed time can differ. This records a paired visual control, not an automated image interpretation, confirmed identity or shared signal source. No additional payment."),*Id,*Original->Id,Original->Clock,*Control->Id,Control->Clock));
+ Changed();return true;
 }
 
 FString FS47FreeformDirector::ObservationNote()const

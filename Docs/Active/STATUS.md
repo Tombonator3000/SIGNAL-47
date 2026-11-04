@@ -1,12 +1,14 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 4. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 5. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
-Vedlikehold er samlet til undersøk/isoler/åpne, monter én del og lukk/start funksjonstest. Eldre lagrede mellomstadier virker fortsatt. Bygg og målprøve består med 185 kontroller og seks disk-/Continue-runder: S-03 og tre ordinære antenner, feil skap, montert del, strømbrudd og faktisk ut-og-tilbake-bevegelse før REMOTE. Spillerplassering, lager og feilvalg er eksplisitte testforutsetninger; dette måler ikke en naturlig forsyningsreise. Installasjon gjenstår.
+Fotoplanen har nå en faktisk returkontroll: ekte kamerastilling følger nye eksponeringer, planen fryser første original, og søker/Now gir levende avstands- og retningshjelp. Et separat senere bilde må matche sted, retning og objektiv, fremkalles og registreres på OPS. Begge originaler og tider beholdes, uten automatisk motivtolkning eller ny betaling. Eldre bilder får ingen oppdiktet kamerastilling. 2373 selvtester og den native reisen med 69 kontroller/tre disk-Continue består; Både CRT-teksturen og den fysiske monitoren er visuelt kontrollert med to originaler, tider og sammenligningsknapp; bildeformat er bevart. Feltforflytning og avslutning av den påtvungne passasjen er testfiksturer. Kobling mot samtidige signalmålinger, naturlig feltreise og bred PHOTO-04 er fortsatt åpent. Installasjon gjenstår.
+
+[PR396](https://github.com/Tombonator3000/SIGNAL-47/pull/396), flettet som `67e13fa7`, samler vedlikehold til undersøk/isoler/åpne, monter én del og lukk/start funksjonstest. Eldre lagrede mellomstadier virker fortsatt. Bygg og målprøve består med 185 kontroller og seks disk-/Continue-runder: S-03 og tre ordinære antenner, feil skap, montert del, strømbrudd og faktisk ut-og-tilbake-bevegelse før REMOTE. Spillerplassering, lager og feilvalg er eksplisitte testforutsetninger; dette måler ikke en naturlig forsyningsreise. Installasjon gjenstår.
 
 [PR395](https://github.com/Tombonator3000/SIGNAL-47/pull/395), flettet som `75aa6b2b`, retter østfløyens personell- og garasjeportkarmer i editorgrunnlaget: seks bakflater lå i murens innerplan og har nå én centimeter klaring i alle tre LOD-er. Native import og 12 før-/12 etterbilder består; begge sider er kontrollert lukket, under faktisk åpning og helt åpne. Ujevn overlapp på innsidene er borte. Bare trimmeshen og den redigerbare generatoren er endret; dørblad, åpninger, UCX og ankre er bevart. Bildeserien er en styrt visuell kontroll, ikke en kontinuerlig menneskelig spilltest. Installasjon gjenstår.
 

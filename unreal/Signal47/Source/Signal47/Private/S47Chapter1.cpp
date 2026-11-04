@@ -4,6 +4,7 @@
 #include "S47Album.h"
 #include "S47Night.h"
 #include "S47Freeform.h"
+#include "S47FreeformDirector.h"
 #include "S47Keys.h"
 #include "S47Anomaly.h"
 #include "S47Evening.h"
@@ -1595,7 +1596,13 @@ void US47Chapter1::Update(double Dt, double T)
 	{
 		auto* F=Fcam(); auto* U=Ui();
 		if (F && F->bRaised && U && U->Modal()) { F->Raise(false); U->Viewfinder(false); }
-		if (F && F->bRaised && U && !U->Modal()) { F->Sync(); Status=Check(); const auto R=F->FrameRect(); FS47Viewfinder V; V.X=R.X; V.Y=R.Y; V.W=R.W; V.H=R.H; V.Frame=TEXT("REFERENCE"); V.Status=Status.Text; FreeLine(V); U->Viewfinder(true,V); }
+		if (F && F->bRaised && U && !U->Modal()) { F->Sync(); Status=Check(); const auto R=F->FrameRect(); FS47Viewfinder V; V.X=R.X; V.Y=R.Y; V.W=R.W; V.H=R.H; V.Frame=TEXT("REFERENCE"); V.Status=Status.Text; FreeLine(V);
+   if(M&&M->IsFreeform()&&M->Freeform&&M->Freeform->Director)
+   {
+    bool Ready=false;const FString Hint=M->Freeform->Director->PhotoControlFieldHint(Ready);
+    if(!Hint.IsEmpty()){V.Frame=TEXT("CONTROL");V.Status=Hint;V.bOk=Ready;}
+   }
+   U->Viewfinder(true,V); }
 		return;
 	}
 	const double G = Gt();

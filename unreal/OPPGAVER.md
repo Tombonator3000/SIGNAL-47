@@ -4,12 +4,12 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-service-loop-20261104`, fra main `75aa6b2b` etter flettet PR395. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-photo-control-20261104`, fra main `67e13fa7` etter flettet PR396. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: NIGHT08 i FreeformWorld, FreeformGuide og FreeformTest; dokumentasjon og alle tunge jobber under production_lease.
-- todo_triage: privat printerkøretting for PR379-REGRESSION-01 klar; ingen aktive kildefiler eller motorjobb.
-- night_preflight: NIGHT08 overlevert til root; privat sokkelretting klar, ingen aktive kildefiler eller motorjobb.
-- photo_loop: privat utkast til faktisk fotografisk returkontroll klart, ikke anvendt; ingen aktive kildefiler eller motorjobb.
+- root: PHOTO04 i Album, Director, Freeform, Chapter1 og DuskOrbTest; dokumentasjon og alle tunge jobber under production_lease.
+- todo_triage: private printer- og CONTINUE TODAY-patcher klare; ingen aktive kildefiler eller motorjobb.
+- night_preflight: sokkelgeometri, fire kameraer og kort kameraglidning klare som separate private patcher; pakke/installasjonsløype avklart, ingen aktive kildefiler eller motorjobb.
+- photo_loop: fotografisk returkontroll overlevert til root; privat versjonert SIGNAL-EXT-09-lydutkast under arbeid, ingen aktive kildefiler eller motorjobb.
 
 Samlet nattstartkontroll er utført én gang: tre arbeidskopier, ingen ekstra komplett manuell kopi eller aktive motorprosesser funnet. Sju verifisert erstattede pakkepayloads pensjonert; installert standard, service-array, receiver-texture og saro-doors-flicker beholdt. Kilder, private assets, Saved og bevis bevares. 36,16 GB logisk pensjonert, ikke lovet fysisk gevinst; faktisk ledig 177.43 GB. Planlagt toppvekst 20 GB; raske df-kontroller før pakking, ingen ny full audit gjennom skiftet.
 

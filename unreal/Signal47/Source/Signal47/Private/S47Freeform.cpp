@@ -1,4 +1,5 @@
 #include "S47Freeform.h"
+#include "S47Image.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47FreeformTerminal.h"
 #include "S47ReceiverReadout.h"
@@ -1099,9 +1100,32 @@ void FS47FreeformSession::OpenOperations()
     else Claims.Add(T::Small(TEXT("ORIGINAL REGISTERED / Documentation credit already received.")));
     if(Orb)
     {
-     const bool Planned=HasFinding(TEXT("orb-control-plan.")+Id);
-     Claims.Add(T::Small(Planned?TEXT("CONTROL PLANNED / S-03 CABLE JUNCTION: Take a separate reference photograph toward the S-02 / S-03 gap. Plan retained in CASE ARCHIVE; comparison is not yet completed."):TEXT("NEXT CONTROL / Return to S-03 CABLE JUNCTION. A separate photograph toward the S-02 / S-03 gap can compare fixed lamps and antenna silhouettes with this original. It does not establish a shared signal source.")));
-     if(!Planned)Claims.Add(T::Button(TEXT("Plan S-03 reference photograph / no payment"),[this,Id]{if(Director)Director->PlanPhotoControl(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
+     const bool Planned=Claim.ControlPlannedAt>=0;
+     const auto& AlbumShots=M->Night->Album->Shots();
+     const auto* Baseline=Planned?AlbumShots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==Claim.ControlOriginalId;}):Shot;
+     const auto* Control=Planned?AlbumShots.FindByPredicate([&](const FS47AlbumShot& S){return !S.bUnavailable&&!S.Url.IsEmpty()&&S.IsDeveloped()&&(Claim.ControlPhotoId.IsEmpty()?S.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+Id;}):S.Id==Claim.ControlPhotoId);}):nullptr;
+     auto PhotoCard=[](const FS47AlbumShot* S,const FString& Label)->S47Kit::FW
+     {
+      if(!S||S->bUnavailable||!S->IsDeveloped()||S->Url.IsEmpty())return T::Small(Label+TEXT(" / ORIGINAL UNAVAILABLE"));
+      const int32 Seconds=int32(FMath::Fmod(FMath::Max(0.,S->Clock),86400.)),Day=FMath::Max(1,int32(FMath::FloorToDouble((S->Clock-28800.)/86400.))+1);
+      return S47Kit::Col({T::Small(Label),
+       SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(S->Url),240.f)],
+       T::Small(FString::Printf(TEXT("%s / D%d %02d:%02d:%02d"),*S->Id,Day,Seconds/3600,(Seconds/60)%60,Seconds%60))});
+     };
+     if(Control)
+     {
+      Claims.Add(T::Columns({{.5f,PhotoCard(Baseline,TEXT("FIRST ORIGINAL"))},{.5f,PhotoCard(Control,TEXT("LATER CONTROL"))}},10));
+      const FString ControlId=Control->Id;
+      if(Claim.ControlPhotoId.IsEmpty())Claims.Add(T::Button(TEXT("Retain comparison / no payment"),[this,Id,ControlId]{if(Director)Director->RegisterPhotoControl(Id,ControlId);OpenOperations();},false,CanRegisterPhotoEvidence()));
+      else Claims.Add(T::Small(TEXT("COMPARISON RETAINED / Both originals unchanged. Identity and shared cause unresolved.")));
+     }
+     else
+     {
+      Claims.Add(PhotoCard(Baseline,TEXT("FIRST ORIGINAL")));
+      Claims.Add(T::Small(Director->PhotoControlHint(Id)));
+      if(!Planned&&Shot->Pose.IsSet())Claims.Add(T::Button(TEXT("Plan return to original viewpoint / no payment"),[this,Id]{if(Director)Director->PlanPhotoControl(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
+      if(Planned)Claims.Add(T::Small(TEXT("NEXT / After the passage ends, take the matching view and develop the separate original at PHOTO LAB. Compare both here.")));
+     }
     }
    }
   }
@@ -1793,6 +1817,7 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
 TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
+ if(Director){bool Ready=false;const FString Hint=Director->PhotoControlFieldHint(Ready);if(!Hint.IsEmpty())Result.Add({Hint,false});}
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
  if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?(PlannedFieldTest(Line)>=0?FieldNextAction(Line):TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob):TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": choose a test on the OPS case board"),false});

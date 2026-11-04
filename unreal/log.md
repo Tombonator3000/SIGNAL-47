@@ -1769,3 +1769,7 @@ Codex, `codex/night-frame-clearance-20261104`: seks bakre karmflater lå i murpl
 ### 4. november 2026 kl.23:42, FF-LOOP-NIGHT-08
 
 Codex, `codex/night-service-loop-20261104`: tre fysiske servicehandlinger, én relébruk og faktisk antennetest; eldre mellomstadier og strømavbrudd beholder montert del. Bygg og `service-r1` består med 185 kontroller/seks disk-/Continue-runder på fire antenner. Testens resultattekst er oppdatert til seks returer, inkludert montert del og strømbrudd. Installasjon og menneskelig flyt gjenstår.
+
+### 5. november 2026 kl.00:06, avgrenset PHOTO-04
+
+Codex, `codex/night-photo-control-20261104`: faktisk lagret opptaksstilling, frosset original, søker/Now-returveiledning og separat fremkalt kontrollfoto med native OPS-sammenligning uten ny betaling. Bygg, 2373 selvtester og `photocontrol-r8` med 69 kontroller/tre disk-Continue består; både monitor og direkte CRT-tekstur er visuelt kontrollert. Harnesset bruker eksplisitt tilbakeplassering og avsluttet passasje; OPS-front er +X fra vestveggen, ikke Z-forskyvning. Gamle foto får ingen oppdiktet stilling; bred signal-/feltkobling og menneskelig reise gjenstår.

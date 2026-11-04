@@ -57,8 +57,18 @@ struct FS47Subject
 	FString Target;
 };
 
+// Optional real scene-capture pose; absent on legacy/unrendered originals.
+struct FS47PhotoPose
+{
+ FString Scene;
+ FVector Eye=FVector::ZeroVector,Forward=FVector::ZeroVector;
+ double Fov=0;
+ bool Valid() const { return !Scene.IsEmpty()&&Scene.Len()<64&&!Eye.ContainsNaN()&&!Forward.ContainsNaN()&&Eye.Size()<1e6&&FMath::IsNearlyEqual(Forward.SizeSquared(),1.,.001)&&FMath::IsFinite(Fov)&&Fov>1&&Fov<179; }
+ bool Matches(const FS47PhotoPose& Other) const { return Valid()&&Other.Valid()&&Scene==Other.Scene&&FVector::Dist(Eye,Other.Eye)<=1.5&&FVector::DotProduct(Forward,Other.Forward)>=FMath::Cos(FMath::DegreesToRadians(5.))&&FMath::Abs(Fov-Other.Fov)<=1; }
+};
 struct FS47AlbumShot
 {
+ TOptional<FS47PhotoPose> Pose;
 	FString Id, Url;
 	double Clock = 0;
 	FString Place, Text;

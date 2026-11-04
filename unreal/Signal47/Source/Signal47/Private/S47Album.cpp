@@ -138,6 +138,8 @@ FS47AlbumShot FS47Album::Expose()
 	O.Seed = Seed;
 	O.W = bSmall ? 320 : 640;
 	if (bFace) O.Post = [Seed, Side](TArray<FColor>& Raw, int32 W, int32 H) { S47FilmFace::FilmFace(Raw, W, H, Seed, Side); };
+ FS47PhotoPose Pose;
+ if(F&&D.Web){Pose.Scene=D.Web->Area();Pose.Eye=S47Three::ToThree(F->PhotoLoc);Pose.Forward=S47Three::ToThree(F->PhotoRot.Vector()).GetSafeNormal();Pose.Fov=US47FieldCamera::PHOTO_FOV;}
 	FS47Snap Snap;
 	if (F) Snap = F->Snap(O);
 	else { Snap.W = O.W; Snap.H = O.W * 400 / 640; Snap.Px.Init(FColor(0, 0, 0, 255), Snap.W * Snap.H); }
@@ -156,6 +158,7 @@ FS47AlbumShot FS47Album::Expose()
 	FS47AlbumShot Shot;
 	Shot.Id = FString::Printf(TEXT("free%d@%d"), N + 1, int32(FMath::FloorToDouble(Clock + 0.5)));
 	Shot.Url = Url; Shot.Clock = Clock; Shot.Place = Place;
+ if(Snap.bRendered&&Pose.Valid())Shot.Pose=Pose;
 	Shot.LabStage = D.RequiresLab && D.RequiresLab() ? 0 : -1;
 	Shot.Text = bFace ? FString(FACE_LINE) : FString::Join(Parts, TEXT(" "));
 	if (Odd.Num() || bFace) Shot.bOdd = true;
@@ -203,6 +206,11 @@ void FS47Album::Restore(const S47J::FObj& V)
 			S.Id = S47J::Str(*O, TEXT("id")); S.Url = S47J::Str(*O, TEXT("url")); S.Clock = S47J::Num(*O, TEXT("clock"));
 			S.Place = S47J::Str(*O, TEXT("place")); S.Text = S47J::Str(*O, TEXT("text")); S.bOdd = S47J::Bool(*O, TEXT("odd"));
 			S.bUnavailable = S47J::Bool(*O, TEXT("unavailable"));
+   if(const auto P=S47J::Obj(*O,TEXT("shutterPose")))
+   {
+    FS47PhotoPose Pose;Pose.Scene=S47J::Str(P,TEXT("scene"));const auto Eye=S47J::Nums(P,TEXT("eye")),Forward=S47J::Nums(P,TEXT("forward"));Pose.Fov=S47J::Num(P,TEXT("fov"));
+    if(Eye.Num()==3&&Forward.Num()==3){Pose.Eye=FVector(Eye[0],Eye[1],Eye[2]);Pose.Forward=FVector(Forward[0],Forward[1],Forward[2]);if(Pose.Valid())S.Pose=Pose;}
+   }
 			if ((*O)->HasField(TEXT("labStage"))) S.LabStage = FMath::Clamp(S47J::Int(*O, TEXT("labStage")), 0, 3);
 			if (const S47J::FObj T = S47J::Obj(*O, TEXT("targets")))
 			{
@@ -229,6 +237,10 @@ S47J::FObj FS47Album::SaveData() const
 		const S47J::FObj J = S47J::New();
 		S47J::Set(J, TEXT("id"), S.Id); S47J::Set(J, TEXT("url"), S.Url); S47J::Set(J, TEXT("clock"), S.Clock);
 		S47J::Set(J, TEXT("place"), S.Place); S47J::Set(J, TEXT("text"), S.Text);
+  if(S.Pose.IsSet()&&S.Pose->Valid())
+  {
+   const auto& P=S.Pose.GetValue();auto V=S47J::New();S47J::Set(V,TEXT("scene"),P.Scene);S47J::Set(V,TEXT("eye"),TArray<double>{P.Eye.X,P.Eye.Y,P.Eye.Z});S47J::Set(V,TEXT("forward"),TArray<double>{P.Forward.X,P.Forward.Y,P.Forward.Z});S47J::Set(V,TEXT("fov"),P.Fov);S47J::Set(J,TEXT("shutterPose"),V);
+  }
 		if (S.bOdd) S47J::Set(J, TEXT("odd"), true);
 		if (S.bUnavailable) S47J::Set(J, TEXT("unavailable"), true);
 		if (S.LabStage >= 0) S47J::Set(J, TEXT("labStage"), S.LabStage);
@@ -498,5 +510,14 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 	FS47Album Finished(Deps); Finished.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));
 	Check(Finished.Shots()[0].LabStage == 3 && Finished.Shots()[0].Id == OriginalId && Finished.Shots()[0].Url == OriginalUrl && Finished.Shots()[0].Clock == OriginalClock && Finished.Shots()[1].Targets.Num() == 1, TEXT("developed original identity, image, timestamp and other photo targets survive Continue"));
 	Check(Finished.Shots()[1].LabStage == -1 && !S47J::Arr(Finished.SaveData(), TEXT("shots"))[1]->AsObject()->HasField(TEXT("labStage")), TEXT("legacy and Story instant photographs retain their previous serialized shape"));
+ Check(!Extended.Shots()[0].Pose.IsSet(),TEXT("legacy image has no invented capture pose"));
+ FS47PhotoPose Pose;Pose.Scene=TEXT("saro");Pose.Eye=FVector(1,1.62,-40);Pose.Forward=FVector(0,0,-1);Pose.Fov=44.6;
+ Lab.Data.Shots[0].Pose=Pose;FS47Album PoseCopy(Deps);PoseCopy.Restore(S47J::Read(S47J::Write(Lab.SaveData())));
+ Check(PoseCopy.Shots()[0].Pose.IsSet()&&PoseCopy.Shots()[0].Pose->Matches(Pose),TEXT("actual shutter pose round-trips with original"));
+ FS47PhotoPose Wrong=Pose;Wrong.Eye.X+=2;Check(!Pose.Matches(Wrong),TEXT("control from another position is rejected"));
+ Wrong=Pose;Wrong.Forward=FVector(1,0,0);Check(!Pose.Matches(Wrong),TEXT("control facing another direction is rejected"));
+ Wrong=Pose;Wrong.Scene=TEXT("road");Check(!Pose.Matches(Wrong),TEXT("matching coordinates in another scene are not a same-place control"));
+ Wrong=Pose;Wrong.Forward=FVector::ZeroVector;Check(!Wrong.Valid(),TEXT("malformed capture direction is not accepted"));
+
 	return bOk;
 }
