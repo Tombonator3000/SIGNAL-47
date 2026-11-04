@@ -158,6 +158,39 @@ void FS47EastWing::UseDoor()
  if(M->Audio){M->Audio->Play(TEXT("door_metal"),.55f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.7f);M->Audio->Loop(TEXT("eastwing-door-motor"),TEXT("engine_idle"),.16f,S47Three::ToUE(FVector(35.4,3.1,5.3)));}
 }
 
+void FS47EastWing::Begin(const S47J::FObj& Saved)
+{
+ for(int32 I=0;I<2;++I){LeafOpen[I]=!Saved||S47J::Bool(Saved,I==0?TEXT("personnel"):TEXT("service"),true);LeafAmount[I]=LeafOpen[I]?1.:0.;}
+ DoorOpen=Saved?FMath::Clamp(S47J::Num(Saved,TEXT("garage"),1.),0.,1.):1.;
+ bDoorUp=Saved?S47J::Bool(Saved,TEXT("garageUp"),DoorOpen>.5):true;bDoorMoving=false;
+}
+S47J::FObj FS47EastWing::Save() const
+{
+ auto O=S47J::New();S47J::Set(O,TEXT("personnel"),LeafOpen[0]);S47J::Set(O,TEXT("service"),LeafOpen[1]);
+ S47J::Set(O,TEXT("garage"),DoorOpen);S47J::Set(O,TEXT("garageUp"),bDoorUp);return O;
+}
+void FS47EastWing::UseLeaf(int32 Index)
+{
+ if(!M||!M->IsFreeform()||Index<0||Index>1)return;
+ LeafOpen[Index]=!LeafOpen[Index];
+ if(M->Audio)M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(Index==0?FVector(21.3,1,5.5):FVector(38.6,1,1.2)));
+}
+bool FS47EastWing::LeafControls()
+{
+ if(bLeafControls)return true;
+ if(!M||!M->Web||!M->Inter||NativeDoors.Num()!=3)return false;
+ const int32 Group=M->Web->Handle(TEXT("ext.group"));if(Group<0)return false;
+ for(int32 I=0;I<2;++I)
+ {
+  auto* C=NativeDoors[I==0?0:2].Get();if(!C)return false;
+  const FString Id=I==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door");
+  FS47Interactable It;It.Id=Id;It.Object=M->Web->ObjAt(M->Web->AdoptNode(C,Group,Id));It.Range=2.4;
+  It.Label=[this,I]{return M&&M->IsFreeform()?FString(LeafOpen[I]?TEXT("Close "):TEXT("Open "))+(I==0?TEXT("lab door"):TEXT("service door")):FString(TEXT("East wing door (locked)"));};
+  It.Use=[this,I]{UseLeaf(I);};M->Inter->Add(It);
+ }
+ bLeafControls=true;return true;
+}
+
 bool FS47EastWing::DoorControls()
 {
  if(bDoorControls)return true;
@@ -181,12 +214,12 @@ bool FS47EastWing::DoorControls()
  {
   const double Face=S.Z+S.Out*.035;const double X=S.Out>0?38.1:38.0;
   FS47Obj Housing=Part(FString::Printf(TEXT("EastWingDoorControl_%s"),S.Id),FVector(X,1.3,Face),FVector(.13,.22,.07),0x7d7a6e,.55f);
-  Part(FString::Printf(TEXT("EastWingDoorControlUp_%s"),S.Id),FVector(X,1.35,Face+S.Out*.04),FVector(.045,.045,.02),0x2f7d3a,.4f);
-  Part(FString::Printf(TEXT("EastWingDoorControlDown_%s"),S.Id),FVector(X,1.26,Face+S.Out*.04),FVector(.045,.045,.02),0xa3271c,.4f);
+  FS47Obj Up=Part(FString::Printf(TEXT("EastWingDoorControlUp_%s"),S.Id),FVector(X,1.35,Face+S.Out*.04),FVector(.045,.045,.02),0x2f7d3a,.4f);
+  FS47Obj Down=Part(FString::Printf(TEXT("EastWingDoorControlDown_%s"),S.Id),FVector(X,1.26,Face+S.Out*.04),FVector(.045,.045,.02),0xa3271c,.4f);
   Part(FString::Printf(TEXT("EastWingDoorConduit_%s"),S.Id),FVector(X,2.25,S.Z+S.Out*.015),FVector(.025,1.7,.025),0x8c8f8c,.35f);
   FS47Interactable It;It.Id=FString::Printf(TEXT("eastwing:garage-door-%s"),S.Id);It.Object=Housing;It.Label=[this]{return DoorLabel();};It.Use=[this]{UseDoor();};It.Range=2.2;
   It.Examine=[]{return FString(TEXT("A push-button station for the roll-up door opener: UP in green, DOWN in red."));};
-  M->Inter->Add(It);
+  M->Inter->Add(It);M->Web->MarkUsable(Up.I,It.Id);M->Web->MarkUsable(Down.I,It.Id);
  }
  bDoorControls=true;
  // -S47EastWingDoor=0..1: developer start position for screenshots of a part-open door.
@@ -443,7 +476,8 @@ bool FS47EastWing::Step(float Dt)
   if(Shown!=bShown){bShown=Shown;for(const auto& P:Parts)if(USceneComponent* C=P.Get())C->SetVisibility(Shown,true);}
   const bool Free=M->IsFreeform();
   const bool Powered=Free?(M->Freeform&&M->Freeform->HasPowerForReactiveLight()):(M->Story&&M->Story->bPowered);
-  DoorControls();StepDoor(Dt,Free,Powered);
+  DoorControls();LeafControls();StepDoor(Dt,Free,Powered);
+  for(int32 I=0;I<2;++I)LeafAmount[I]=FMath::FInterpConstantTo(LeafAmount[I],Free&&LeafOpen[I]?1.:0.,double(Dt),2.5);
   // Tubes strike on / die off individually (S47TubeFlicker); the diffuser glow follows their mean.
   {
    const double Now=M->Web->GetWorld()?M->Web->GetWorld()->GetTimeSeconds():0.;
@@ -467,14 +501,17 @@ bool FS47EastWing::Step(float Dt)
   {
    const FVector At=I==0?FVector(21.3,0,5.5):I==1?FVector(35.4,3,5.5):FVector(38.6,0,1.2);
    // The roll-up curtain (I==1) shrinks toward its top pivot as it rolls into the head drum.
-   const FQuat Q=Free&&I!=1?S47Three::Euler(0,I==0?PI/2:-PI/2,0):FQuat::Identity;
+   const FQuat Q=I!=1?S47Three::Euler(0,(I==0?PI/2:-PI/2)*LeafAmount[I==0?0:1],0):FQuat::Identity;
    const FVector Scale=I==1?FVector(1,FMath::Max(.04,1.-.96*DoorOpen),1):FVector::OneVector;
    double Matrix[16];S47Three::Compose(At,Q,Scale,Matrix);C->SetWorldTransform(S47Three::MatToUE(Matrix));
-   const bool Blocks=I==1?(!Free||DoorOpen<.9):!Free;
-   C->SetVisibility(Shown&&(I!=1||DoorOpen<.995));C->SetCollisionEnabled(Shown&&Blocks?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
+   const bool Blocks=I==1?(!Free||DoorOpen<.9):(!Free||LeafAmount[I==0?0:1]<.85);
+   C->SetVisibility(Shown&&(I!=1||DoorOpen<.995));
+   // Open leaves remain traceable so either side can close them. Walking uses the doorway rectangles.
+   C->SetCollisionEnabled(Shown&&(I!=1||Blocks)?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
   }
   for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id.StartsWith(TEXT("eastwing:lock-")))
-   R.bEnabled=R.Id==TEXT("eastwing:lock-garage")?(!Free||DoorOpen<.85):!Free;
+   R.bEnabled=R.Id==TEXT("eastwing:lock-garage")?(!Free||DoorOpen<.85):(!Free||LeafAmount[R.Id==TEXT("eastwing:lock-personnel")?0:1]<.85);
+  DoorTest();
  }
  DriveTest();
  // Developer views (-S47EastWingShots): exterior and each room, then exit.
@@ -737,4 +774,49 @@ bool FS47EastWing::RelocateAccessDressing()
  OldDressing->SetStaticMesh(Dressing);OldDressing->SetMaterial(0,DressingAtlas);OldStains->SetStaticMesh(Stains);OldStains->SetMaterial(0,StainAtlas);
  for(int32 I:Matches){All[I].MinX-=2.6;All[I].MaxX-=2.6;}
  UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing access: three drums and contact shadows moved west2.6m with exact walking feet; 10256/1233-triangle dressing retained (old east rain leader removed; grime clipped at service aperture)"));return true;
+}
+
+void FS47EastWing::DoorTest()
+{
+ if(!FParse::Param(FCommandLine::Get(),TEXT("S47EastWingLeafTest"))||DoorTestStage<0||!M||!M->Web||!M->Flow||M->Flow->bStarting||!M->IsFreeform()||!bLeafControls)return;
+ const double Now=FPlatformTime::Seconds();if(DoorTestAt==0){DoorTestAt=Now;return;}if(Now-DoorTestAt<1.)return;
+ const FString Dir=FPaths::ProjectSavedDir()/TEXT("EastWingLeafTest");IFileManager::Get().MakeDirectory(*Dir,true);
+ auto Finish=[&](bool Good,const FString& Why){FFileHelper::SaveStringToFile((Good?TEXT("PASS: "):TEXT("FAIL: "))+Why,*(Dir/TEXT("result.txt")));UE_LOG(LogS47EastWing,Display,TEXT("Door interaction %s: %s"),Good?TEXT("PASS"):TEXT("FAIL"),*Why);DoorTestStage=-1;FPlatformMisc::RequestExitWithStatus(false,Good?0:1);};
+ auto Blocked=[&](int32 I){const FString Id=I==0?TEXT("eastwing:lock-personnel"):TEXT("eastwing:lock-service");for(const auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id==Id)return R.bEnabled;return false;};
+ auto PickBoth=[&](int32 I){auto* C=NativeDoors[I==0?0:2].Get();const FString Id=I==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door");FVector Target=C->Bounds.Origin;Target.Z-=C->Bounds.BoxExtent.Z*.6;const FVector N=C->GetComponentTransform().TransformVectorNoScale(S47Three::ToUE(I==0?FVector(0,0,1):FVector(1,0,0))).GetSafeNormal();for(double Side:{-1.,1.}){const FString Pick=M->Inter->Pick(Target+N*Side*25.,-N*Side);if(Pick!=Id){UE_LOG(LogS47EastWing,Warning,TEXT("Leaf %d side %.0f target %s normal %s pick %s collision %d visible %d"),I,Side,*Target.ToString(),*N.ToString(),*Pick,int32(C->GetCollisionEnabled()),C->IsVisible());return false;}}return true;};
+ if(DoorTestStage==0){Begin(nullptr);DoorTestStage=1;DoorTestAt=Now;return;}
+ if(DoorTestStage==1)
+ {
+  for(int32 I=0;I<2;++I){if(Blocked(I)||!PickBoth(I)){Finish(false,TEXT("open leaf must be selectable from both sides and doorway passable"));return;}M->Inter->UseId(I==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door"));}
+  DoorTestStage=2;DoorTestAt=Now;return;
+ }
+ if(DoorTestStage==2)
+ {
+  for(int32 I=0;I<2;++I)if(!Blocked(I)||!PickBoth(I)||LeafAmount[I]>.001){Finish(false,TEXT("closed leaf must block passage and remain selectable from both sides"));return;}
+  FFileHelper::SaveStringToFile(S47J::Write(Save()),*(Dir/TEXT("doors.json")));Begin(nullptr);FString Data;FFileHelper::LoadFileToString(Data,*(Dir/TEXT("doors.json")));Begin(S47J::Read(Data));
+  if(LeafOpen[0]||LeafOpen[1]){Finish(false,TEXT("closed state did not survive disk reload"));return;}
+  for(int32 I=0;I<2;++I)M->Inter->UseId(I==0?TEXT("eastwing:personnel-door"):TEXT("eastwing:service-door"));DoorTestStage=3;DoorTestAt=Now;return;
+ }
+ if(DoorTestStage==3)
+ {
+  for(int32 I=0;I<2;++I)if(Blocked(I)||!PickBoth(I)||LeafAmount[I]<.999){Finish(false,TEXT("reopened leaves must release both doorways"));return;}
+  for(int32 I=0;I<2;++I)
+  {
+   const double Side=I==0?1.:-1.,Face=(I==0?Z1:Z1-T)+Side*.035,X=I==0?38.1:38.;const FString Id=I==0?TEXT("eastwing:garage-door-out"):TEXT("eastwing:garage-door-in");
+   for(double Y:{1.35,1.26})if(M->Inter->Pick(S47Three::ToUE(FVector(X,Y,Face+Side*.8)),S47Three::ToUE(FVector(0,0,-Side)))!=Id){Finish(false,TEXT("Both physical opener buttons must select their control station"));return;}
+  }
+  M->Inter->UseId(TEXT("eastwing:garage-door-out"));DoorTestStage=4;DoorTestAt=Now;return;
+ }
+ if(DoorTestStage==4)
+ {
+  if(Now-DoorTestAt<5)return;
+  if(DoorOpen>.001){Finish(false,TEXT("Exterior opener must close garage curtain"));return;}
+  M->Inter->UseId(TEXT("eastwing:garage-door-in"));DoorTestStage=5;DoorTestAt=Now;return;
+ }
+ if(DoorTestStage==5)
+ {
+  if(Now-DoorTestAt<5)return;
+  if(DoorOpen<.999){Finish(false,TEXT("Interior opener must reopen garage curtain"));return;}
+  Finish(true,TEXT("Both leaves picked from both sides, close/open interaction, closed doorway collision, disk state; both garage buttons selectable and curtain closes/reopens."));
+ }
 }

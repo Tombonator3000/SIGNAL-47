@@ -1,4 +1,5 @@
 #include "S47Flow.h"
+#include "S47EastWing.h"
 #include "SS47FreeformStart.h"
 #include "S47TitleEraseSound.h"
 #include "UnrealClient.h"
@@ -982,6 +983,7 @@ void US47Flow::StartGame(const FStart& O)
 	if (bFreeform) { if(M->Office)M->Office->Begin(S47J::Obj(O.State,TEXT("office")),false); if(M->SkyVisitors)M->SkyVisitors->Begin(nullptr,false); if(M->AnomalyWorld)M->AnomalyWorld->Reset(); }
 	if (!bFreeform && M->Office) M->Office->Begin(S47J::Obj(O.State, TEXT("office")), !O.State.IsValid() && O.Jump.IsEmpty());
  if (M->RoomLights) M->RoomLights->Begin(S47J::Obj(O.State,TEXT("roomLights")));
+ if (M->EastWing) M->EastWing->Begin(S47J::Obj(O.State,TEXT("eastWingDoors")));
 	if (!bFreeform && M->SkyVisitors) M->SkyVisitors->Begin(S47J::Obj(O.State, TEXT("skyVisitors")), !O.State.IsValid() && O.Jump.IsEmpty());
 	if(M->FieldRadio) M->FieldRadio->Begin(S47J::Obj(O.State,TEXT("fieldRadio")));
 	if (M->Life)
@@ -1569,6 +1571,7 @@ S47J::FObj US47Flow::GameState()
 	if (M->Substation) S47J::Set(State,TEXT("substation"),M->Substation->Save());
 	if (M->Office) S47J::Set(State,TEXT("office"),M->Office->Save());
  if (M->RoomLights) S47J::Set(State,TEXT("roomLights"),M->RoomLights->Save());
+ if (M->EastWing) S47J::Set(State,TEXT("eastWingDoors"),M->EastWing->Save());
 	if (M->SkyVisitors) S47J::Set(State,TEXT("skyVisitors"),M->SkyVisitors->Save());
 	if(M->FieldRadio) S47J::Set(State,TEXT("fieldRadio"),M->FieldRadio->Save());
 	if (M->Life)

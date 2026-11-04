@@ -1,4 +1,5 @@
 #include "S47SaroRooms.h"
+#include "S47SaroOverlays.h"
 
 #include "S47Main.h"
 #include "S47Sky.h"
@@ -73,6 +74,7 @@ void FS47SaroRooms::Update(US47Main* Main, double Dt)
  static TMap<TWeakObjectPtr<US47Main>, TSharedPtr<FS47SaroRooms>> Rooms;
  for (auto It = Rooms.CreateIterator(); It; ++It) if (!It.Key().IsValid()) It.RemoveCurrent();
  if (!Main) return;
+ S47SaroOverlays::Update(Main->Web.Get());
  TSharedPtr<FS47SaroRooms>& Room = Rooms.FindOrAdd(TWeakObjectPtr<US47Main>(Main));
  if (!Room) Room = MakeShared<FS47SaroRooms>(Main);
  Room->Step(Dt);
