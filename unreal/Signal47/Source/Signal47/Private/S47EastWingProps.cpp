@@ -60,6 +60,9 @@ namespace
   {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
   {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{26.078,1.22,-3.00},-90},
   {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,1.00},-90},
+  // Exterior: rooftop evaporative cooler over the garage; hose reel north of the east service door.
+  {TEXT("SM_EW_SwampCooler"),TEXT("Extras"),{35.40,3.60,3.70},0},
+  {TEXT("SM_EW_HoseReel"),TEXT("Extras"),{38.632,0,-.80},-90},
  };
  // SM_EW_RollUpDoorSegment is deliberately not a decorative duplicate of the shell's actual door.
 }

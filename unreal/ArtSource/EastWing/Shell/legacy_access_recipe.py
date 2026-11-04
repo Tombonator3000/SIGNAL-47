@@ -21,7 +21,17 @@ def moved(name,points):
     assert len(hits)<=1
     return hits[0] if hits else None
 
+# EASTWING-01 (Claude): the old east-wall rain leader at z2.2 crossed the new east service door
+# (z1.2..2.3); remove it and the streak stain it left on the wall.
+def downpipe(points):
+    return all(38.55<=x<=38.80 and 0.<=y<=3.62 and 2.08<=z<=2.32 for x,y,z in points)
+
+def downpipe_stain(points):
+    return all(38.58<=x<=38.64 and 0.<=y<=3.62 and 1.75<=z<=2.65 for x,y,z in points)
+
 def removed(name,points,uvs):
+    if name=='g455' and downpipe_stain(points):return 'downpipe_stain'
+    if name=='g454' and downpipe(points):return 'downpipe'
     if name=='g455':
         return 'grime' if all(20.1<=x<=39.1 and -.7<=y<=3.7 and abs(abs(z)-5.512)<.0001 for x,y,z in points) and (all(p[2]>0 for p in points) or all(p[2]<0 for p in points)) else None
     def car(p):

@@ -268,6 +268,83 @@ def first_aid():
     return finish_asset(asset, OUT, 'Wall-mounted white enamel steel first-aid cabinet with red cross.')
 
 
+# 8. Rooftop evaporative cooler: galvanized cabinet, louvered pad sides, down-duct and stand.
+def swamp_cooler():
+    asset = 'SM_EW_SwampCooler'; start_asset(asset)
+    W, D, H, z0 = 1.0, .95, .85, .25
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box(f'leg{sx}{sy}', (sx * (W / 2 - .05), sy * (D / 2 - .05), z0 / 2), (.05, .05, z0), steel, .003)
+    box('base_pan', (0, 0, z0 + .03), (W, D, .06), steel, .004)
+    box('lid', (0, 0, z0 + H - .02), (W + .04, D + .04, .05), steel, .006)
+    box('lid_ridge', (0, 0, z0 + H + .015), (W - .2, D - .2, .02), steel, .004)
+    for side, (ax, length) in enumerate([('x', W), ('y', D), ('x', W), ('y', D)]):
+        sgn = -1 if side < 2 else 1
+        for k in range(14):
+            z = z0 + .12 + k * (H - .2) / 14
+            if ax == 'x':
+                o = box(f'louver{side}_{k}', (0, sgn * D / 2, z), (length - .08, .045, .012), steel, .001)
+                o.rotation_euler = (math.radians(35 * sgn), 0, 0)
+            else:
+                o = box(f'louver{side}_{k}', (sgn * W / 2, 0, z), (.045, length - .08, .012), steel, .001)
+                o.rotation_euler = (0, math.radians(-35 * sgn), 0)
+        if ax == 'x':
+            box(f'pad{side}', (0, sgn * (D / 2 - .03), z0 + H / 2), (length - .1, .03, H - .14), material('EW_X_AspenPad', (.42, .33, .2), .95), 0)
+        else:
+            box(f'pad{side}', (sgn * (W / 2 - .03), 0, z0 + H / 2), (.03, length - .1, H - .14), material('EW_X_AspenPad', (.42, .33, .2), .95), 0)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box(f'corner{sx}{sy}', (sx * W / 2, sy * D / 2, z0 + H / 2), (.04, .04, H), steel, .003)
+    box('duct', (0, D / 2 + .25, .18), (.5, .5, .36), steel, .004)
+    box('duct_flange', (0, D / 2 + .25, .02), (.6, .6, .04), steel, .003)
+    box('rust_streak', (.2, -D / 2 - .024, z0 + .2), (.12, .002, .3), material('EW_X_Rust', (.28, .12, .05), .9), 0)
+    label('plate', 'SARO B-2\nAIR COOLER', -.3, -D / 2 - .03, z0 + .08, .14, .05, .011)
+    return finish_asset(asset, OUT, 'Rooftop evaporative (swamp) cooler, galvanized, louvered aspen-pad sides, curb duct and stand.')
+
+
+# 9. (Not built: the east wall already carries the retained meter and disconnect.)
+# Exterior electrical service: meter base with glass dome, fused disconnect, conduit to the roof.
+def electrical_service():
+    asset = 'SM_EW_ElectricalService'; start_asset(asset)
+    grey = material('EW_X_GreyEnamel', (.32, .34, .33), .45)
+    box('backboard', (0, .02, 1.25), (.75, .025, .9), material('EW_X_Plywood', (.38, .3, .2), .8), .003)
+    box('meter_base', (-.18, -.03, 1.35), (.28, .09, .38), grey, .006)
+    cyl('meter_ring', (-.18, -.08, 1.38), .095, .02, chrome, rotation=(math.pi / 2, 0, 0))
+    cyl('meter_dome', (-.18, -.13, 1.38), .085, .09, glass, rotation=(math.pi / 2, 0, 0))
+    cyl('meter_face', (-.18, -.095, 1.38), .075, .004, white, rotation=(math.pi / 2, 0, 0))
+    for i in range(5):
+        cyl(f'dial{i}', (-.24 + i * .03, -.098, 1.40), .011, .002, ink, vertices=16, rotation=(math.pi / 2, 0, 0))
+    box('disconnect', (.17, -.04, 1.2), (.26, .1, .42), grey, .006)
+    box('handle', (.31, -.07, 1.22), (.03, .04, .14), red, .003)
+    label('warn', 'DANGER\n480V', .17, -.091, 1.28, .14, .07, .014)
+    rod('conduit_up', (-.18, -.03, 1.54), (-.18, -.03, 3.3), .02, steel)
+    rod('conduit_dc', (.17, -.04, 1.41), (.17, -.04, 1.6), .016, steel)
+    rod('conduit_link', (.17, -.04, 1.6), (-.16, -.04, 1.6), .016, steel)
+    cyl('weatherhead', (-.18, -.03, 3.34), .035, .08, grey)
+    rod('ground', (.17, -.04, .99), (.17, -.04, .05), .009, material('EW_X_Copper', (.55, .25, .12), .35, 1))
+    cyl('ground_rod', (.17, -.04, .03), .012, .06, material('EW_X_Copper', (.55, .25, .12), .35, 1))
+    for z in (.4, 2.1, 2.9):
+        box(f'strap{z}', (-.18, -.05, z if z > 1 else 2.5), (.06, .012, .02), steel, .001)
+    return finish_asset(asset, OUT, 'Wall-mounted electrical service: meter with glass dome, fused 480 V disconnect, conduit to roof weatherhead, copper ground.')
+
+
+# 10. Wall hose reel with hose bib.
+def hose_reel():
+    asset = 'SM_EW_HoseReel'; start_asset(asset)
+    hose = material('EW_X_GreenHose', (.08, .22, .1), .55)
+    box('bracket', (0, .01, .8), (.3, .02, .32), steel, .003)
+    cyl('drum', (0, -.12, .8), .17, .14, steel, rotation=(math.pi / 2, 0, 0))
+    for i in range(7):
+        cyl(f'coil{i}', (0, -.12, .8), .19 - i * .002, .018, hose, rotation=(math.pi / 2, 0, 0)).location.y = -.07 - i * .018
+    rod('crank', (.14, -.21, .8), (.14, -.27, .8), .008, steel)
+    cyl('bib', (-.24, -.04, .55), .02, .07, brass, rotation=(math.pi / 2, 0, 0))
+    cyl('bib_wheel', (-.24, -.08, .58), .025, .01, red, rotation=(math.pi / 2, 0, 0))
+    rod('hose_drop', (0, -.12, .61), (.05, -.2, .02), .014, hose)
+    rod('hose_ground', (.05, -.2, .02), (.45, -.32, .02), .014, hose)
+    cyl('nozzle', (.48, -.33, .02), .016, .08, brass, rotation=(0, math.pi / 2, 0))
+    return finish_asset(asset, OUT, 'Wall hose reel with brass hose bib and a run of green garden hose on the ground.')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -275,5 +352,7 @@ poster('SM_EW_PosterGlasses', 'EW_Print_PosterGlasses', .56, .79, chrome)
 calendar_1986()
 wall_clock()
 first_aid()
+swamp_cooler()
+hose_reel()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

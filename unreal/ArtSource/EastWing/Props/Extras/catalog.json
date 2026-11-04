@@ -7,7 +7,9 @@
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_PosterGlasses_preview.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_Calendar1986_preview.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_WallClock_preview.png",
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_FirstAidBox_preview.png"
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_FirstAidBox_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_SwampCooler_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_HoseReel_preview.png"
   ],
   "assets": [
     {
@@ -290,8 +292,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "badc9ee8e6e735900a80f06ff67040aeacd60651bbe3c5b185704cfb9c0265cc",
-      "blend_sha256": "2b810b3f3dfccea3f6249bbd902d0863fef27d50f43c939cf89a723b8ab7f1a3"
+      "fbx_sha256": "72951018f4d90b3a1fb909dba8d3e9928dcf4b3bcc2ce347ab3f2bd32d30d3bf",
+      "blend_sha256": "64107fcbffb84114f74a3c8c6f5b348d5e7a26ce4ef6654fb69ab35f955cd44e"
     },
     {
       "asset": "SM_EW_GlassCabinet",
@@ -619,8 +621,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "c3fa245c3a34f721a9eeb63ae076e45ae86b877ce148f4d49f5f63b6682b0601",
-      "blend_sha256": "eeadbcaa985c38ea37b4ddd9d6409065cc319928de97c2033e40f7a10ea5df20"
+      "fbx_sha256": "2f4d7931d3413afce9d7491e088f32a4feb06a713aa9264e6365c6d8e9e4b800",
+      "blend_sha256": "823f687c9a81bc9c0c833cfd32c5a8ff7cd9ed2af05fc8a1a7a72ba66da74dbb"
     },
     {
       "asset": "SM_EW_PosterRF",
@@ -749,8 +751,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "13f55c3b3436484df212c8ff4ca7f98fe7bc01e9e184be5bd7ef3984fe9486bf",
-      "blend_sha256": "e26c4c8af2a928fc42fa0187138702b5302aacfa0db42dcdc24896bc8a98a128"
+      "fbx_sha256": "0761a2373902f381d3b43037f1d4a6ca6c92f252419bb1c0fa8efc2fa762c898",
+      "blend_sha256": "2ebd2a5e3adbf10beaeeb5fa5e9b3a4cfb316ac1610023b321b15a7f2cab516a"
     },
     {
       "asset": "SM_EW_PosterGlasses",
@@ -879,8 +881,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "41098c78fbbf85b76e760f83f8e3b2ec24eb3dc2cabe01f1e452619f01c072b7",
-      "blend_sha256": "23062a28f45ac2d94e8192db8d370ed05254685216ecdaef5272a68ede2788df"
+      "fbx_sha256": "32fb5dc469a0bad9d51b0581af4e27cf666d9843f25639a40ce4e68f3eeff175",
+      "blend_sha256": "f99b44bc8d0e2fc55e9d263205205052d04433ca1eb75caf21de43663a435e42"
     },
     {
       "asset": "SM_EW_Calendar1986",
@@ -1087,8 +1089,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "4e704db592164804f0a4b284d74526686ad2f02dcf2c732f2afbee347db97606",
-      "blend_sha256": "dbba5c694b956af561f7586a9bac63c4ae77638ea88aa5e0dc29d5aa05e0678c"
+      "fbx_sha256": "4680b1a0a30c754e54484ef839c477d98c8d45d5850b660862b07016d6db5f73",
+      "blend_sha256": "79ffe08fbc2ebfac6b200a3f788dc690f8dc8628b18cd5c4ec981b0b97da7536"
     },
     {
       "asset": "SM_EW_WallClock",
@@ -1263,8 +1265,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "14adec69664a930993bf19fe0d67eb161f0df4f7db01c9af4e0d31d73d9caf18",
-      "blend_sha256": "da4c287adf06757e97819b963c0c880c105e1c3e88eec134871d2dbe33ad1970"
+      "fbx_sha256": "b2cdb897931c2fc23105632b2dd438425baa2824638c0452dcd57980b182555b",
+      "blend_sha256": "0ad005d8a255ad03717ff80301076567557d7deb3b86e318e4ea6e2df53d3228"
     },
     {
       "asset": "SM_EW_FirstAidBox",
@@ -1458,8 +1460,349 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "cbfaf3333294858a1c75cfcd0c143637f59a8d1f023740176041f42b9209d6ca",
-      "blend_sha256": "b33f0e661ef64844ba852f97bdbe83be3e80e088379c3f7661affa2e4a7f0ae9"
+      "fbx_sha256": "ef33b6a9b1df0b49761c1e687433c2b2b81092505af29873b1547a269ae5614a",
+      "blend_sha256": "5b4c1d5d0637f62cc9931d10038bdb55f421cf53dc802eb6885d8ac0c06a23fc"
+    },
+    {
+      "asset": "SM_EW_SwampCooler",
+      "description": "Rooftop evaporative (swamp) cooler, galvanized, louvered aspen-pad sides, curb duct and stand.",
+      "fbx": "SM_EW_SwampCooler.fbx",
+      "editable": "SM_EW_SwampCooler.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -0.5214757919311523,
+          -0.5062500238418579,
+          0.0
+        ],
+        [
+          0.5214757919311523,
+          1.0250000953674316,
+          1.125
+        ]
+      ],
+      "dimensions_m": [
+        1.0429515838623047,
+        1.5312501192092896,
+        1.125
+      ],
+      "triangles": 14520,
+      "uv_layers": 1,
+      "materials": [
+        "EW_X_Stainless",
+        "EW_X_AspenPad",
+        "EW_X_Rust",
+        "EW_X_LabelPaper",
+        "EW_X_LabelInk"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_X_Stainless",
+          "texture_key": "EW_Galvanized",
+          "maps": {
+            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+          },
+          "Base Color": [
+            0.47999998927116394,
+            0.5099999904632568,
+            0.5,
+            1.0
+          ],
+          "Roughness": 0.23999999463558197,
+          "Metallic": 0.8500000238418579,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_AspenPad",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.41999998688697815,
+            0.33000001311302185,
+            0.20000000298023224,
+            1.0
+          ],
+          "Roughness": 0.949999988079071,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Rust",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.2800000011920929,
+            0.11999999731779099,
+            0.05000000074505806,
+            1.0
+          ],
+          "Roughness": 0.8999999761581421,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelPaper",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.8100000023841858,
+            0.7799999713897705,
+            0.6299999952316284,
+            1.0
+          ],
+          "Roughness": 0.800000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelInk",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.02500000037252903,
+            0.03200000151991844,
+            0.02800000086426735,
+            1.0
+          ],
+          "Roughness": 0.699999988079071,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_SwampCooler_LOD1.fbx",
+          "triangles": 7259
+        },
+        {
+          "file": "SM_EW_SwampCooler_LOD2.fbx",
+          "triangles": 3630
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "6e0abb36c806854098b5afbd9e8c8517bdd45852ea6f2f03cfc424f5c356a4af",
+      "blend_sha256": "417d8d3ccd995a9f52784b24d12ad7e4778cdafc6b94278286fca6b208614403"
+    },
+    {
+      "asset": "SM_EW_HoseReel",
+      "description": "Wall hose reel with brass hose bib and a run of green garden hose on the ground.",
+      "fbx": "SM_EW_HoseReel.fbx",
+      "editable": "SM_EW_HoseReel.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -0.26499998569488525,
+          -0.3460000157356262,
+          0.003999948501586914
+        ],
+        [
+          0.5199999809265137,
+          0.019999999552965164,
+          0.9900000095367432
+        ]
+      ],
+      "dimensions_m": [
+        0.7849999666213989,
+        0.3660000152885914,
+        0.9860000610351562
+      ],
+      "triangles": 8196,
+      "uv_layers": 1,
+      "materials": [
+        "EW_X_Stainless",
+        "EW_X_GreenHose",
+        "EW_X_Brass",
+        "EW_X_Red"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_X_Stainless",
+          "texture_key": "EW_Galvanized",
+          "maps": {
+            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+          },
+          "Base Color": [
+            0.47999998927116394,
+            0.5099999904632568,
+            0.5,
+            1.0
+          ],
+          "Roughness": 0.23999999463558197,
+          "Metallic": 0.8500000238418579,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_GreenHose",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.07999999821186066,
+            0.2199999988079071,
+            0.10000000149011612,
+            1.0
+          ],
+          "Roughness": 0.550000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Brass",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.550000011920929,
+            0.41999998688697815,
+            0.17000000178813934,
+            1.0
+          ],
+          "Roughness": 0.30000001192092896,
+          "Metallic": 1.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Red",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.3799999952316284,
+            0.02500000037252903,
+            0.012000000104308128,
+            1.0
+          ],
+          "Roughness": 0.3799999952316284,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_HoseReel_LOD1.fbx",
+          "triangles": 4098
+        },
+        {
+          "file": "SM_EW_HoseReel_LOD2.fbx",
+          "triangles": 2048
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "bc528c4492399721682004c97bd77fef55203538715192036af4342c3429b6dd",
+      "blend_sha256": "78d9234dc5b6137f9e0145cdf8e318258e93c73b7e0f2f5ffde03d3ce135fceb"
     }
   ]
 }

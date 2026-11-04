@@ -1,0 +1,159 @@
+{
+  "asset": "SM_EW_HoseReel",
+  "description": "Wall hose reel with brass hose bib and a run of green garden hose on the ground.",
+  "fbx": "SM_EW_HoseReel.fbx",
+  "editable": "SM_EW_HoseReel.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.26499998569488525,
+      -0.3460000157356262,
+      0.003999948501586914
+    ],
+    [
+      0.5199999809265137,
+      0.019999999552965164,
+      0.9900000095367432
+    ]
+  ],
+  "dimensions_m": [
+    0.7849999666213989,
+    0.3660000152885914,
+    0.9860000610351562
+  ],
+  "triangles": 8196,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_Stainless",
+    "EW_X_GreenHose",
+    "EW_X_Brass",
+    "EW_X_Red"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_Stainless",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.47999998927116394,
+        0.5099999904632568,
+        0.5,
+        1.0
+      ],
+      "Roughness": 0.23999999463558197,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_GreenHose",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.07999999821186066,
+        0.2199999988079071,
+        0.10000000149011612,
+        1.0
+      ],
+      "Roughness": 0.550000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Brass",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.550000011920929,
+        0.41999998688697815,
+        0.17000000178813934,
+        1.0
+      ],
+      "Roughness": 0.30000001192092896,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Red",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3799999952316284,
+        0.02500000037252903,
+        0.012000000104308128,
+        1.0
+      ],
+      "Roughness": 0.3799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_HoseReel_LOD1.fbx",
+      "triangles": 4098
+    },
+    {
+      "file": "SM_EW_HoseReel_LOD2.fbx",
+      "triangles": 2048
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "bc528c4492399721682004c97bd77fef55203538715192036af4342c3429b6dd",
+  "blend_sha256": "78d9234dc5b6137f9e0145cdf8e318258e93c73b7e0f2f5ffde03d3ce135fceb"
+}

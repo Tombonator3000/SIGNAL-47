@@ -14,7 +14,7 @@ def plan():
     root=Path(os.environ['S47_EASTWING_ACCESS_OUT']).resolve()
     data=json.loads((root/'access-manifest.json').read_text())
     require(data['source_sha256']=='fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9' and data['delta_three_m']==[-2.6,0,0],'Unexpected original source or translation')
-    require({p['name']:p['triangles'] for p in data['parts']}=={'SM_EW_AccessDressing':10328,'SM_EW_AccessStains':1224},'Unexpected derivative assets')
+    require({p['name']:p['triangles'] for p in data['parts']}=={'SM_EW_AccessDressing':10256,'SM_EW_AccessStains':1220},'Unexpected derivative assets')
     for p in data['parts']:
         require(len(p['lods'])==3,'Need three authored LODs')
         require(p['moved_triangles']==([216]*3 if p['name']=='SM_EW_AccessDressing' else [2]*3),'Unexpected moved geometry')

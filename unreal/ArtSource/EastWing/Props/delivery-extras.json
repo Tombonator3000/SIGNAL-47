@@ -39,6 +39,18 @@
       "license": "Extras/SM_EW_GlassCabinet.license.json"
     },
     {
+      "id": "SM_EW_HoseReel",
+      "manifest": "Extras/SM_EW_HoseReel.asset.json",
+      "fbx": "Extras/SM_EW_HoseReel.fbx",
+      "dimensions_m": [
+        0.7849999666213989,
+        0.3660000152885914,
+        0.9860000610351562
+      ],
+      "triangles": 8196,
+      "license": "Extras/SM_EW_HoseReel.license.json"
+    },
+    {
       "id": "SM_EW_LabSink",
       "manifest": "Extras/SM_EW_LabSink.asset.json",
       "fbx": "Extras/SM_EW_LabSink.fbx",
@@ -75,6 +87,18 @@
       "license": "Extras/SM_EW_PosterRF.license.json"
     },
     {
+      "id": "SM_EW_SwampCooler",
+      "manifest": "Extras/SM_EW_SwampCooler.asset.json",
+      "fbx": "Extras/SM_EW_SwampCooler.fbx",
+      "dimensions_m": [
+        1.0429515838623047,
+        1.5312501192092896,
+        1.125
+      ],
+      "triangles": 14520,
+      "license": "Extras/SM_EW_SwampCooler.license.json"
+    },
+    {
       "id": "SM_EW_WallClock",
       "manifest": "Extras/SM_EW_WallClock.asset.json",
       "fbx": "Extras/SM_EW_WallClock.fbx",
@@ -87,7 +111,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 7,
+  "asset_count": 9,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude",
   "prints": "Extras/make_prints.py"

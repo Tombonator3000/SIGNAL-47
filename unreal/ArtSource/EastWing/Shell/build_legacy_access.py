@@ -17,7 +17,8 @@ bpy.ops.import_scene.gltf(filepath=str(SOURCE))
 contract={'source_sha256':R.SOURCE_SHA,'delta_three_m':[R.DX,0,0],
           'old_walking_feet':R.FEET,'new_walking_feet':[[r[0]+R.DX,r[1]+R.DX,r[2],r[3]] for r in R.FEET],
           'parts':[]}
-for original,name,total,expected in [('g454','SM_EW_AccessDressing',13550,10328),('g455','SM_EW_AccessStains',1712,1224)]:
+DOWNPIPE,DOWNPIPE_STAIN=72,4  # east-wall rain leader and its streak (legacy_access_recipe.downpipe*)
+for original,name,total,expected in [('g454','SM_EW_AccessDressing',13550,10328-DOWNPIPE),('g455','SM_EW_AccessStains',1712,1224-DOWNPIPE_STAIN)]:
     obj=bpy.data.objects[original]
     world=obj.matrix_world.copy();obj.parent=None;obj.matrix_world=Matrix.Identity(4);obj.data.transform(world)
     bm=bmesh.new();bm.from_mesh(obj.data);uv=bm.loops.layers.uv.active
@@ -37,7 +38,7 @@ for original,name,total,expected in [('g454','SM_EW_AccessDressing',13550,10328)
         if reason:counts[reason]=counts.get(reason,0)+1;deleted.append(face)
         elif selected is not None:moving[selected].append(face)
         else:unchanged.append(face)
-    assert counts==({'cars':976,'windows':1872,'plants':230,'wheel_remnants':144} if original=='g454' else {'grime':488}),counts
+    assert counts==({'cars':976,'windows':1872,'plants':230,'wheel_remnants':144,'downpipe':DOWNPIPE} if original=='g454' else {'grime':488,'downpipe_stain':DOWNPIPE_STAIN}),counts
     assert [len(g) for g in moving]==([216]*3 if original=='g454' else [2]*3)
     vertices={v for group in moving for f in group for v in f.verts}
     assert not any(v in vertices for f in unchanged for v in f.verts),'Moved vertices shared with unrelated triangles'

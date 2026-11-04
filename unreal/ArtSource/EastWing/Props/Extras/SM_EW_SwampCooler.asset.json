@@ -1,0 +1,182 @@
+{
+  "asset": "SM_EW_SwampCooler",
+  "description": "Rooftop evaporative (swamp) cooler, galvanized, louvered aspen-pad sides, curb duct and stand.",
+  "fbx": "SM_EW_SwampCooler.fbx",
+  "editable": "SM_EW_SwampCooler.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.5214757919311523,
+      -0.5062500238418579,
+      0.0
+    ],
+    [
+      0.5214757919311523,
+      1.0250000953674316,
+      1.125
+    ]
+  ],
+  "dimensions_m": [
+    1.0429515838623047,
+    1.5312501192092896,
+    1.125
+  ],
+  "triangles": 14520,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_Stainless",
+    "EW_X_AspenPad",
+    "EW_X_Rust",
+    "EW_X_LabelPaper",
+    "EW_X_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_Stainless",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.47999998927116394,
+        0.5099999904632568,
+        0.5,
+        1.0
+      ],
+      "Roughness": 0.23999999463558197,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_AspenPad",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.41999998688697815,
+        0.33000001311302185,
+        0.20000000298023224,
+        1.0
+      ],
+      "Roughness": 0.949999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Rust",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.2800000011920929,
+        0.11999999731779099,
+        0.05000000074505806,
+        1.0
+      ],
+      "Roughness": 0.8999999761581421,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_SwampCooler_LOD1.fbx",
+      "triangles": 7259
+    },
+    {
+      "file": "SM_EW_SwampCooler_LOD2.fbx",
+      "triangles": 3630
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "6e0abb36c806854098b5afbd9e8c8517bdd45852ea6f2f03cfc424f5c356a4af",
+  "blend_sha256": "417d8d3ccd995a9f52784b24d12ad7e4778cdafc6b94278286fca6b208614403"
+}
