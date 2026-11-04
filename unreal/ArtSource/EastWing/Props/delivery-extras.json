@@ -315,6 +315,18 @@
       "license": "Extras/SM_EW_SwampCooler.license.json"
     },
     {
+      "id": "SM_EW_VinylFloor",
+      "manifest": "Extras/SM_EW_VinylFloor.asset.json",
+      "fbx": "Extras/SM_EW_VinylFloor.fbx",
+      "dimensions_m": [
+        10.675000190734863,
+        10.5,
+        0.0
+      ],
+      "triangles": 2,
+      "license": "Extras/SM_EW_VinylFloor.license.json"
+    },
+    {
       "id": "SM_EW_WallClock",
       "manifest": "Extras/SM_EW_WallClock.asset.json",
       "fbx": "Extras/SM_EW_WallClock.fbx",
@@ -327,7 +339,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 27,
+  "asset_count": 28,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude and Codex",
   "prints": "Extras/make_prints.py",

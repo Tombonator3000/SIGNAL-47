@@ -51,6 +51,12 @@ namespace
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.75,3.22,-2.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.85,3.22,3.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,.10},0,false,true},
+  // Photo pass: the 7 x 10 m garage and the lab get extra fixtures (each has a rect light in S47EastWing).
+  {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,-3.20},0,false,true},
+  {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,3.40},0,false,true},
+  {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{23.40,3.22,2.60},0,false,true},
+  // Photo pass: waxed VCT over lab, storage and calibration (garage keeps bare concrete).
+  {TEXT("SM_EW_VinylFloor"),TEXT("Extras"),{26.1875,0,0},0},
   // Claude extras (Props/Extras): wall items keep their back on the inner wall face
   // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
   {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},

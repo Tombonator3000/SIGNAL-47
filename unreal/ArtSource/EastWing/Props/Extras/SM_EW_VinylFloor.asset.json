@@ -1,0 +1,88 @@
+{
+  "asset": "SM_EW_VinylFloor",
+  "description": "Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).",
+  "fbx": "SM_EW_VinylFloor.fbx",
+  "editable": "SM_EW_VinylFloor.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -5.337500095367432,
+      -5.25,
+      0.004000000189989805
+    ],
+    [
+      5.337500095367432,
+      5.25,
+      0.004000000189989805
+    ]
+  ],
+  "dimensions_m": [
+    10.675000190734863,
+    10.5,
+    0.0
+  ],
+  "triangles": 2,
+  "uv_layers": 1,
+  "materials": [
+    "EW_VCT"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_VCT",
+      "texture_key": null,
+      "maps": {
+        "EW_VCT_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_BaseColor.png",
+        "EW_VCT_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_Roughness.png",
+        "EW_VCT_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_NormalGL.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.5,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_VinylFloor_LOD1.fbx",
+      "triangles": 2
+    },
+    {
+      "file": "SM_EW_VinylFloor_LOD2.fbx",
+      "triangles": 2
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "9d68e164c8dea4ef8da59315286a3a18e62d678cbb7a8eeb80dcc24722dc4463",
+  "blend_sha256": "16539ca21a081cb40c8e27ff8ff84e147d201023712098a15a4dbbfcdc233e77"
+}

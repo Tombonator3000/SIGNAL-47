@@ -550,6 +550,41 @@ def relay_tester():
     return finish_asset(asset, OUT, 'SARO RT-12 relay test set for the Freeform calibration bench; status window for the live lamp.')
 
 
+def pbr(name, maps):
+    """Material from authored PBR images in Extras/textures (BaseColor sRGB; Roughness, NormalGL linear)."""
+    m = bpy.data.materials.get(name)
+    if m:
+        return m
+    m = bpy.data.materials.new(name); m.use_nodes = True
+    bs = m.node_tree.nodes.get('Principled BSDF'); bs.inputs['Metallic'].default_value = 0
+    for suffix, socket in maps:
+        im = bpy.data.images.load(str(PRINTS / (name + '_' + suffix + '.png')), check_existing=True)
+        im.colorspace_settings.name = 'sRGB' if suffix == 'BaseColor' else 'Non-Color'
+        n = m.node_tree.nodes.new('ShaderNodeTexImage'); n.image = im
+        if suffix == 'NormalGL':
+            nm = m.node_tree.nodes.new('ShaderNodeNormalMap'); m.node_tree.links.new(n.outputs['Color'], nm.inputs['Color'])
+            m.node_tree.links.new(nm.outputs['Normal'], bs.inputs['Normal'])
+        else:
+            m.node_tree.links.new(n.outputs['Color'], bs.inputs[socket])
+    return m
+
+
+def vinyl_floor():
+    """Photo pass: 12-inch VCT over the lab, storage and calibration rooms (x20.85..31.525, z+-5.25).
+    Origin at the area centre; UVs in world metres / 1.2192 (one texture = 4 x 4 tiles)."""
+    asset = 'SM_EW_VinylFloor'; start_asset(asset)
+    W, D, tile = 10.675, 10.5, 1.2192
+    verts = [(-W / 2, -D / 2, .004), (W / 2, -D / 2, .004), (W / 2, D / 2, .004), (-W / 2, D / 2, .004)]
+    me = bpy.data.meshes.new('vct'); me.from_pydata(verts, [], [(0, 1, 2, 3)]); me.update()
+    uv = me.uv_layers.new(name='UVMap')
+    for li, loop in enumerate(me.loops):
+        x, y, _ = me.vertices[loop.vertex_index].co
+        uv.data[li].uv = (x / tile, y / tile)
+    ob = bpy.data.objects.new('vct', me); bpy.context.collection.objects.link(ob)
+    me.materials.append(pbr('EW_VCT', (('BaseColor', 'Base Color'), ('Roughness', 'Roughness'), ('NormalGL', 'Normal'))))
+    return finish_asset(asset, OUT, 'Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -570,5 +605,6 @@ notice_board()
 lab_stool()
 wall_shelf()
 relay_tester()
+vinyl_floor()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)
