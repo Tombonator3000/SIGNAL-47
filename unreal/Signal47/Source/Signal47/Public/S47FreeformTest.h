@@ -9,11 +9,13 @@ class FS47FreeformTest
 public:
  explicit FS47FreeformTest(US47Main* Main):M(Main){}
  void Step(double Dt);
+ bool StoryAccessReady() const { return bStoryAccessReady; }
 private:
  friend class FS47CaseFieldTest;
  TSharedPtr<class FS47CaseFieldTest> CaseFieldTest;
  void StepDuskOrb(double Dt);
  US47Main* M=nullptr;
+ bool bStoryAccessReady=false;
  bool bInit=false,bDone=false,bAudioMarked=false,bFieldResume=false,bCarRoundTrip=false;
  int32 Stage=0,Checks=0,Restores=0,JobIndex=0,EventIndex=0,DayRuns=0,TripHoldSamples=0;
  double Age=0,At=0,Hold=0,InitialAz=0,InitialEl=0,PausedAz=0,PausedEl=0;
@@ -29,6 +31,10 @@ private:
  double PrinterHeld=0;
  FString PrinterId,PrinterOriginal,PrinterStamp,GuidanceExpected,TutorialId;
  S47J::FObj Snapshot;
+ void StepStoryCamera(double Dt);
+ S47J::FObj StoryCameraSnapshot;
+ int32 StoryCameraResume=0;
+ double StoryCameraClock=0;
  TArray<TSharedPtr<FJsonValue>> Evidence;
  bool Check(bool Good,const FString& Text);
  void Go(int32 Next,double Delay=0);

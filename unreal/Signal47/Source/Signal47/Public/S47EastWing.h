@@ -52,6 +52,7 @@ private:
  TArray<TWeakObjectPtr<class URectLightComponent>> Tubes; TArray<float> TubeLumens; TArray<FS47TubeFlicker> TubeFlicker; // photo pass: deferred-decal dirt bands, floor dust, jamb scuffs, run-off streaks
  bool Step(float Dt);
  void DriveTest();
- int32 DriveStage=0; double DriveStarted=0; bool bDriveRampSeen=false;
+ FString DriveStoryState;
+ int32 DriveStage=0; double DriveStarted=0,DriveWaitStarted=0; bool bDriveRampSeen=false;
  TArray<FString> DriveChecks;
 };

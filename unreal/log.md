@@ -1789,3 +1789,7 @@ Bygg og utvidet ShopBasketTest består58 kontroller/fire disk-Continue. Produksj
 ### 5. november 2026 kl.00:33: nedre veggoverlegg
 
 20 hele g220-trekanter/60posisjoner flyttes12mm langs normal, minst11mm fra ny veggflate; øvrige kanaler/trekanter beholdes. Generator kjørt mot opprinnelig eksport gir byteidentisk inl. Editorbygg og fire faste/fem glidende før- og etterbilder består. Undersøkte merker/kanter er visuelt kontrollert; bord skjuler deler av sørveggen, og kamera-fixturen er ikke en full menneskelig bevegelsesprøve. Installasjon gjenstår.
+
+### 5. november 2026 kl.00:53: Story etter Freeform og Continue
+
+Story-start og disk-Continue fra hentet/uhentet Freeform-kamera beholder låsene: tre faktiske Walker-forsøk og owned Jeep stopper utenfor, med uendret progresjon. Kamerareisene består60/seks og47/fem diskreturer (fire Story i hver): fysisk henting, motorlogg, ekte bilde, faktiske lukkede tank-/fiksertimere, henting og fremkalt original etter Continue. Original/benkbilde er visuelt kontrollert. Teststyring ble avgrenset mot den eksisterende Freeform-underfasen86021; gjentatt pollvakt telles ikke som nye kontroller. Ingen produktgate/progresjon er omgått. Tilnærminger og Story-start er fixtures; Save bruker API/title-callback, ikke vanlig meny eller prosessrestart.
