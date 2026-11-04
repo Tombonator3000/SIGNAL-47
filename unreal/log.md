@@ -1714,8 +1714,14 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 
 4. november 2026 06:51: codex/night-support-20261103: FF-ARRAY-CONSEQUENCES-01 gir redusert målerate ved antenneutfall og synlig kapasitet/reparasjonsbehov. build-r25/array-r2 består 21 kontroller og én disk-/Continue-runde; receiver/tracking-bilder gjennomgått. Minimum24 og kvalitetsfaktor beholdt; ingen installasjon.
 
+4. november 2026 kl.08:58: codex/greyhill-hunt-linux-20261104, fra main 0d9c5815: SC02 undersøker syns-/lydspor og SC08/SC11 avbryter ugyldig grep. Kilde og målrettet automation skrevet, diffkontroll består; Linux-bygg/spilltest gjenstår. Windows-bygg stoppet og portabilitetsendringer skilt ut etter Toms korrigering; ingen installasjon eller Saved-endring.
+
+4. november 09:18 Codex: PR381 Linuxferdigstilling: editorbygg består; Hunt74 kontroller/null feil/advarsler/exit0, sc08caught12 og sc11caught11 med faktisk fangst/restart/flukt og lagret progresjon består uten motoroverlapp. Rettet testinnpakningens falske feil fra «fail closed»; ingen ny jaktlogikkfeil funnet. Logger ~/scratch-bm/Signal47-pr381-20261104/. Motor/production_lease frigitt; Claude kan fortsette. PR oppdateres til review-ready, ingen installasjon.
+
 04. november 12:44 Codex: SARO-GROUND-TEX punkt 1 levert på claude/east-wing-20261103: tre ImageGen D/N/R-sett, ni 2048 PNG/native teksturer, materialbygg og før/etter-kl16 består (import-r3/after-r3). Kilder er 1254 resamplet. Egne motorjobber/lease frigitt; ingen installasjon eller ny kopi. Mellomliggende import-/bildeforsøk kan ryddes ved neste samlede kjøring; originaler og siste før/etter bevares.
 
 04. november 13:04 Codex: Toms Blender-referanse tilpasset til fast bygningsmal i Docs/Active/Guides/BLENDER_BUILDING_WORKFLOW.md, lenket fra guideoversikt og unreal/AGENTS.md. Gjenbruk, spillankre, redigerbare kilder og Unreal-kontroll inngår. Dokument-/diffkontroll består; ingen modell- eller motorjobb.
 
 04. november 13:25 Codex: SARO-PARKING-02 levert på claude/east-wing-20261103: full asfaltert forplass/innkjøring kjørbar med ekte hindringer; sammenhengende asfalt uten ruteskjøter og oppmerking vest for port. Editorbygg, import-r2, Freeform24/Story9 og etterbilder after-r2 består i ~/scratch-bm/Signal47-parking-20261104/. Egne motorjobber/lease frigitt; ingen installasjon, ny kopi eller rydderunde. Førbildene fra ground-textures/after-r3 beholdes; mellomforsøk kan ryddes ved neste samlede kjøring.
+
+4. november 13:32 Codex: På Toms bestilling hentet alle origin-oppdateringer og flettet main c4d65488 inn i claude/east-wing-20261103. Konflikter i STATUS/OPPGAVER/log løst med begge leveranser bevart; C++ flettet rent. Editorbygg, S47.Gameplay.Hunt (Success/exit0) og dokumentkontroll uten nye avvik består. Eksisterende lokale samordningsnotater bevares separat. Ingen installasjon eller ny arbeidskopi; motor/lease frigitt.
