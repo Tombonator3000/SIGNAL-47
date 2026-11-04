@@ -4,9 +4,9 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-shop-continue-20261105`, fra main `b6592fa1` etter flettet PR399. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-wall-base-20261105`, fra main `ab82ac4c` etter flettet PR400. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: ShopBasketTest for betalt og droppet pakke, dokumentasjon og alle tunge jobber under production_lease.
+- root: ProductionViews-kameraer og nedre veggoverlegg med generator, før/etter-kontroll, dokumentasjon og alle tunge jobber under production_lease.
 - todo_triage: butikkprøve overlevert, privat avgrensning av fysisk tostedersforsøk; ingen aktive kildefiler eller motorjobb.
 - night_preflight: privat harness for samlet normal lagringsreise gjennom tre prosesser; sokkelpatcher og pakke/installasjonsløype klare, ingen aktive kildefiler eller motorjobb.
 - photo_loop: Story-dør/kamera-patcher overlevert til root; privat kontroll av versjonert SIGNAL-EXT-09-lydutkast, ingen aktive kildefiler eller motorjobb.

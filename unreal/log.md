@@ -1785,3 +1785,7 @@ CONTINUE TODAY gir konkret neste jobb og tilstandsbasert fotoutstyrshjelp. Edito
 ### 5. november 2026 kl.00:26: betalt og droppet butikkpakke ved Continue
 
 Bygg og utvidet ShopBasketTest består58 kontroller/fire disk-Continue. Produksjonskjøp, fysisk henting, Walker-bæring, slipp/bakkekontakt og gjenhenting bevarer innhold/posisjon/saldo ved begge nye avbrudd. Levering og lagergrenser består fortsatt uten duplisering. Testen bruker eksplisitte tilnærmings-/transportfixtures; vanlig meny-/prosessrestart og full kjøretur står separat.
+
+### 5. november 2026 kl.00:33: nedre veggoverlegg
+
+20 hele g220-trekanter/60posisjoner flyttes12mm langs normal, minst11mm fra ny veggflate; øvrige kanaler/trekanter beholdes. Generator kjørt mot opprinnelig eksport gir byteidentisk inl. Editorbygg og fire faste/fem glidende før- og etterbilder består. Undersøkte merker/kanter er visuelt kontrollert; bord skjuler deler av sørveggen, og kamera-fixturen er ikke en full menneskelig bevegelsesprøve. Installasjon gjenstår.
