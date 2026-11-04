@@ -75,6 +75,8 @@ public:
  bool BenchBusy() const { return !BenchJob.IsEmpty(); }
  bool ShopOpen() const;
  FVector InteractionPoint(const FString& Id) const;
+ // Where a player stands to use a station (the casework fronts face different ways).
+ FVector StandPoint(const FString& Id) const;
  static bool SelfTest(TArray<FString>& Lines);
 private:
  FS47FieldLogger Logger;
@@ -119,7 +121,7 @@ private:
  void OverrideExisting();
  bool Build();
  FS47Obj Box(const FString& Name, const FVector& At, const FVector& Size, uint32 Colour, int32 Parent, const FString& Id = FString());
- FS47Obj Model(const FString& Name, const TCHAR* Asset, const FVector& At, double Width, int32 Parent);
+ FS47Obj Model(const FString& Name, const TCHAR* Asset, const FVector& At, double Width, int32 Parent, double Yaw = 0);
  void Bind(FS47Obj Object, const FString& Id, double Range = 2.6);
  void Apply();
  bool Near(const FVector& At, double Range = 3.0) const;

@@ -11,6 +11,8 @@ Denne fila gjelder alt under `unreal/`. For denne mappa erstatter den Unity-regl
 
 ## Gjenbruk først, bestemt av Tom 31. oktober 2026
 
+Ved nye bygninger eller ombygging: bruk [arbeidsmalen for Blender og Unreal](../Docs/Active/Guides/BLENDER_BUILDING_WORKFLOW.md), vedtatt av Tom 4. november. Fyll inn oppdragets omfang; malen starter ikke modellarbeid på egen hånd.
+
 - Før ny modellering: søk i prosjektbiblioteket, eksisterende prosjektassets, Toms Tripo-modeller og eide originalkilder. Søk deretter i relevante eksterne assetbiblioteker når lokale modeller ikke dekker behovet. Bruk gjenbruk og tilpasning når det gir best samlet resultat.
 - Codex koordinerer søk, valg, tilpasning, plassering, lys, rigging, eksport og retting. Tom vurderer uttrykk, spillfølelse og komfort; ordinær feilretting forblir agentens arbeid.
 - Standardrekvisitter bør normalt gjenbrukes. Ny eller prosedyrisk geometri er riktig når spillmekanikk, særpreg, nøyaktig passform eller samlet tidsbruk tilsier det. Ingen absolutt regel om aldri å bygge en stol.

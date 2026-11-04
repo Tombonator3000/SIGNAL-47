@@ -1,0 +1,87 @@
+{
+  "tool": "built-in image_gen",
+  "generated_resolution": [
+    1254,
+    1254
+  ],
+  "export_resolution": [
+    2048,
+    2048
+  ],
+  "resampling": "ffmpeg lanczos; no new detail implied",
+  "normal_convention": "OpenGL Y+, import flips green for Unreal; generated estimated relief, not measured scan",
+  "assets": [
+    {
+      "name": "T_GroundSand_D",
+      "layer": "Sand",
+      "role": "D",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-af2238f4-c2b2-4c9f-b14a-c7013b6118d2.png",
+      "source": "photo_sources/T_GroundSand_D.png",
+      "export": "exports/ground/T_GroundSand_D.png"
+    },
+    {
+      "name": "T_GroundCrust_D",
+      "layer": "Crust",
+      "role": "D",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-303c8f3a-e817-447c-b7fb-c2e44c0aa4b0.png",
+      "source": "photo_sources/T_GroundCrust_D.png",
+      "export": "exports/ground/T_GroundCrust_D.png"
+    },
+    {
+      "name": "T_GroundGravel_D",
+      "layer": "Gravel",
+      "role": "D",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-963f53a5-40f9-43d7-9741-eebfcf817a5a.png",
+      "source": "photo_sources/T_GroundGravel_D.png",
+      "export": "exports/ground/T_GroundGravel_D.png"
+    },
+    {
+      "name": "T_GroundSand_N",
+      "layer": "Sand",
+      "role": "N",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-02b41adf-9a8c-4a37-91a7-e5483a6bbccf.png",
+      "source": "photo_sources/T_GroundSand_N.png",
+      "export": "exports/ground/T_GroundSand_N.png"
+    },
+    {
+      "name": "T_GroundSand_R",
+      "layer": "Sand",
+      "role": "R",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-46ab5a10-9588-4d96-956e-e3a6fcc4cde3.png",
+      "source": "photo_sources/T_GroundSand_R.png",
+      "export": "exports/ground/T_GroundSand_R.png"
+    },
+    {
+      "name": "T_GroundCrust_N",
+      "layer": "Crust",
+      "role": "N",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-b8b4e18c-bd25-4049-ad14-1520418af98b.png",
+      "source": "photo_sources/T_GroundCrust_N.png",
+      "export": "exports/ground/T_GroundCrust_N.png"
+    },
+    {
+      "name": "T_GroundCrust_R",
+      "layer": "Crust",
+      "role": "R",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-b30d0d57-d4f4-4600-b01e-df1492d32872.png",
+      "source": "photo_sources/T_GroundCrust_R.png",
+      "export": "exports/ground/T_GroundCrust_R.png"
+    },
+    {
+      "name": "T_GroundGravel_N",
+      "layer": "Gravel",
+      "role": "N",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-2309610b-dbf2-409c-8765-b6146e99e9fd.png",
+      "source": "photo_sources/T_GroundGravel_N.png",
+      "export": "exports/ground/T_GroundGravel_N.png"
+    },
+    {
+      "name": "T_GroundGravel_R",
+      "layer": "Gravel",
+      "role": "R",
+      "original_generation_path": "/home/tom/.codex/generated_images/01a1a634-01e8-7b73-82f9-0f9c111c082d/exec-0c40a91d-7936-4d70-833a-ca8e8173bbc0.png",
+      "source": "photo_sources/T_GroundGravel_R.png",
+      "export": "exports/ground/T_GroundGravel_R.png"
+    }
+  ]
+}

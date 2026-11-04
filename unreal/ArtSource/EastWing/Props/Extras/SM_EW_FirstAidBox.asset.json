@@ -31,7 +31,7 @@
   "triangles": 2060,
   "uv_layers": 1,
   "materials": [
-    "EW_X_WhiteEnamel",
+    "EW_XEnamelWhite",
     "EW_X_Bakelite",
     "EW_X_Red",
     "EW_X_LabelPaper",
@@ -40,16 +40,20 @@
   ],
   "material_parameters": [
     {
-      "name": "EW_X_WhiteEnamel",
+      "name": "EW_XEnamelWhite",
       "texture_key": null,
-      "maps": {},
+      "maps": {
+        "EW_XEnamelWhite_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+        "EW_XEnamelWhite_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png",
+        "EW_XEnamelWhite_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png"
+      },
       "Base Color": [
-        0.7400000095367432,
-        0.7300000190734863,
-        0.6800000071525574,
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
         1.0
       ],
-      "Roughness": 0.2800000011920929,
+      "Roughness": 0.5,
       "Metallic": 0.0,
       "Transmission Weight": 0.0,
       "IOR": 1.5,
@@ -172,7 +176,11 @@
       "Emission Strength": 0.0
     }
   ],
-  "textures": [],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png"
+  ],
   "lods": [
     {
       "file": "SM_EW_FirstAidBox_LOD1.fbx",
@@ -190,6 +198,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "f5aed56e95533deb307bdcd0071bf27654df56ef33226c9a1bfd72252fe73691",
-  "blend_sha256": "ec0991ef99c433306da8da2a95103050a7d15f5aa9816301b1d23558c142374b"
+  "fbx_sha256": "724f10e624dacbb832dd1e062f842465d863c2122c5b2c836b2383938b9c9a44",
+  "blend_sha256": "909a9a903d1a1030d1040590982d08fbc803eea37196f47f75de838304118dc2"
 }

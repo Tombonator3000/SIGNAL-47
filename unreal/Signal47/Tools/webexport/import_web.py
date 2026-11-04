@@ -17,6 +17,7 @@ import sys
 import shutil
 import struct
 import zlib
+from pathlib import Path
 import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -198,6 +199,10 @@ if 'geo' in only:
         eal.save_loaded_asset(sm)
         count += 1
     log('meshes %d' % count)
+    # Preserve the dedicated desert relief setup after regenerating /Game/Web.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'ArtSource/Backdrop'))
+    from ground_nanite import configure_ground_nanite
+    log('Nanite desert meshes %d' % len(configure_ground_nanite(man)))
 
 # ---------- master materials ----------
 # The UV transform is three's texture matrix as two rows (a b c / d e f): uv' = (a u + b v + c, d u + e v + f).

@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_Ceiling",
   "fbx": "SM_EW_Ceiling.fbx",
-  "fbx_sha256": "7261c7e26d7362d902e1cb5da205468288bb8c7af880237c48e40ea484109162",
+  "fbx_sha256": "9e7a7fe3b6addb20ab14808171962b83f6963dae21e5859f774babc74b1338e0",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_Ceiling_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -76,7 +76,7 @@
   "lods": [
     {
       "file": "SM_EW_Ceiling_LOD1.fbx",
-      "sha256": "ac6fed157f9c40de2335a43a5d7a6e0657f92ddce54caab0fbdff69f8acf816a",
+      "sha256": "1c2e789730c71d16c5639a587e8784efbe30cf435cdd4a8d2bfe473f33476bae",
       "triangles": 396,
       "expected_native_triangles": 396,
       "exact_degenerate_triangles": 0,
@@ -112,7 +112,7 @@
     },
     {
       "file": "SM_EW_Ceiling_LOD2.fbx",
-      "sha256": "dab954ed5ef99dad463bd5a0ac39bde0cd33945ba3c97f8b10ff959cd4fedb90",
+      "sha256": "4db5edbe8d769f33d04cc96c6dde88fee0de14321266039bcfe88f741182c6f6",
       "triangles": 108,
       "expected_native_triangles": 108,
       "exact_degenerate_triangles": 0,

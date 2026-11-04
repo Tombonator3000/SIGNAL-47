@@ -31,22 +31,26 @@
   "triangles": 10936,
   "uv_layers": 1,
   "materials": [
-    "EW_X_OliveDrab",
+    "EW_XOliveDrab",
     "EW_X_LabelPaper",
     "EW_X_LabelInk"
   ],
   "material_parameters": [
     {
-      "name": "EW_X_OliveDrab",
+      "name": "EW_XOliveDrab",
       "texture_key": null,
-      "maps": {},
+      "maps": {
+        "EW_XOliveDrab_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_BaseColor.png",
+        "EW_XOliveDrab_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_Roughness.png",
+        "EW_XOliveDrab_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_NormalGL.png"
+      },
       "Base Color": [
-        0.15000000596046448,
-        0.1599999964237213,
-        0.07999999821186066,
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
         1.0
       ],
-      "Roughness": 0.550000011920929,
+      "Roughness": 0.5,
       "Metallic": 0.0,
       "Transmission Weight": 0.0,
       "IOR": 1.5,
@@ -103,7 +107,11 @@
       "Emission Strength": 0.0
     }
   ],
-  "textures": [],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_Roughness.png"
+  ],
   "lods": [
     {
       "file": "SM_EW_JerryCans_LOD1.fbx",
@@ -121,6 +129,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "d22a8b9438f1142b6e828e55159071e6a8598bf0efa686603ec7bc1675dda6ae",
-  "blend_sha256": "fab1b04af7d74515289172074b0c74923e839e300391bc91e0c9ec45f7d3ba88"
+  "fbx_sha256": "a5d319e5e5391133f1dd1f79eca9f1ea4815b1f5392964f6394f1164c02d3b85",
+  "blend_sha256": "0d4ef76badf0cac12a8fcbb596eb062c38c66c4c0606cab08499e9cef3695db1"
 }

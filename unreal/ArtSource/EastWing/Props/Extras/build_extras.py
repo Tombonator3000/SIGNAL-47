@@ -16,13 +16,65 @@ OUT = HERE
 PRINTS = HERE / 'textures'
 SOURCE = 'unreal/ArtSource/EastWing/Props/Extras/build_extras.py'
 
-green = material('EW_X_GreenEnamel', (.16, .24, .20), .33, texture='EW_GreenSteel')
-steel = material('EW_X_Stainless', (.48, .51, .5), .24, .85, texture='EW_Galvanized')
+def pbr(name, maps=(('BaseColor', 'Base Color'), ('Roughness', 'Roughness'), ('NormalGL', 'Normal')), span=None):
+    """Material from authored PBR images in Extras/textures (BaseColor sRGB; Roughness, NormalGL linear)."""
+    m = bpy.data.materials.get(name)
+    if m:
+        return m
+    m = bpy.data.materials.new(name); m.use_nodes = True
+    if span: m['x_span'] = span  # world-planar UVs, metres per texture (see world_uv)
+    bs = m.node_tree.nodes.get('Principled BSDF'); bs.inputs['Metallic'].default_value = 0
+    for suffix, socket in maps:
+        im = bpy.data.images.load(str(PRINTS / (name + '_' + suffix + '.png')), check_existing=True)
+        im.colorspace_settings.name = 'sRGB' if suffix == 'BaseColor' else 'Non-Color'
+        n = m.node_tree.nodes.new('ShaderNodeTexImage'); n.image = im
+        if suffix == 'NormalGL':
+            nm = m.node_tree.nodes.new('ShaderNodeNormalMap'); m.node_tree.links.new(n.outputs['Color'], nm.inputs['Color'])
+            m.node_tree.links.new(nm.outputs['Normal'], bs.inputs['Normal'])
+        else:
+            m.node_tree.links.new(n.outputs['Color'], bs.inputs[socket])
+    return m
+
+
+import prop_common as PC
+_authored_finish = finish_asset
+
+
+def world_uv():
+    """Photo pass: polygons whose material carries x_span get box-projected world-metre UVs,
+    so wood grain and paint wear keep physical scale on every scaled primitive."""
+    for o in bpy.context.scene.objects:
+        if o.as_pointer() in PC.BEFORE or o.type != 'MESH':
+            continue
+        spans = [m.get('x_span') if m else None for m in o.data.materials]
+        if not any(spans):
+            continue
+        if not o.data.uv_layers:
+            o.data.uv_layers.new(name='UVMap')
+        uv = o.data.uv_layers.active.data; mw = o.matrix_world; rot = mw.to_3x3()
+        for poly in o.data.polygons:
+            span = spans[poly.material_index] if poly.material_index < len(spans) else None
+            if not span:
+                continue
+            n = rot @ poly.normal; axis = max(range(3), key=lambda k: abs(n[k])); a, b = [k for k in range(3) if k != axis]
+            for li in poly.loop_indices:
+                co = mw @ o.data.vertices[o.data.loops[li].vertex_index].co
+                uv[li].uv = (co[a] / span, co[b] / span)
+
+
+def finish_asset(name, outdir, description, *args, **kw):
+    world_uv()
+    return _authored_finish(name, outdir, description, *args, **kw)
+
+
+green = pbr('EW_XEnamelGreen', span=.5)  # Codex ImageGen grey-green enamel (reference casework)
+steel = pbr('EW_XStainless', span=.5)
+steel.node_tree.nodes.get('Principled BSDF').inputs['Metallic'].default_value = .9
 chrome = material('EW_X_Chrome', (.7, .73, .74), .17, 1)
 dark = material('EW_X_Bakelite', (.017, .02, .019), .39)
-rubber = material('EW_X_Rubber', (.022, .025, .023), .7)
+rubber = pbr('EW_XRubber', span=.5)
 cream = material('EW_X_CreamEnamel', (.69, .66, .53), .3)
-white = material('EW_X_WhiteEnamel', (.74, .73, .68), .28)
+white = pbr('EW_XEnamelWhite', span=.5)
 red = material('EW_X_Red', (.38, .025, .012), .38)
 paper = material('EW_X_LabelPaper', (.81, .78, .63), .8)
 ink = material('EW_X_LabelInk', (.025, .032, .028), .7)
@@ -345,10 +397,10 @@ def hose_reel():
     return finish_asset(asset, OUT, 'Wall hose reel with brass hose bib and a run of green garden hose on the ground.')
 
 
-wood = material('EW_X_BenchTimber', (.36, .24, .13), .62)
+wood = pbr('EW_XWood', span=.5)
 iron = material('EW_X_CastIron', (.11, .16, .2), .5, .55)
-redenamel = material('EW_X_RedEnamel', (.42, .03, .02), .35, .1)
-olive = material('EW_X_OliveDrab', (.15, .16, .08), .55)
+redenamel = pbr('EW_XEnamelRed', span=.5)
+olive = pbr('EW_XOliveDrab', span=.5)
 oil = material('EW_X_OilFilm', (.035, .031, .025), .5)  # soaked-in, not a wet puddle
 
 
@@ -524,7 +576,7 @@ def relay_tester():
     0.28 x 0.11 m) sits in the bezel window at 0.20 m; keep that window and height."""
     asset = 'SM_EW_RelayTester'; start_asset(asset)
     W, D, H = .42, .28, .27
-    grey = material('EW_X_InstrumentGrey', (.3, .31, .29), .45, .1)
+    grey = pbr('EW_XInstrumentGrey', span=.5)
     box('case', (0, 0, H / 2), (W, D, H), grey, .008)
     box('panel', (0, -D / 2 - .002, H / 2), (W - .02, .004, H - .02), material('EW_X_PanelAlu', (.55, .56, .54), .35, .8), .002)
     for z, hgt in ((.255, .01), (.145, .01)):
@@ -550,6 +602,108 @@ def relay_tester():
     return finish_asset(asset, OUT, 'SARO RT-12 relay test set for the Freeform calibration bench; status window for the live lamp.')
 
 
+def vinyl_floor():
+    """Photo pass: 12-inch VCT over the lab, storage and calibration rooms (x20.85..31.525, z+-5.25).
+    Origin at the area centre; UVs in world metres / 1.2192 (one texture = 4 x 4 tiles)."""
+    asset = 'SM_EW_VinylFloor'; start_asset(asset)
+    W, D, tile = 10.675, 10.5, 2.0  # reference pass: polished concrete, one texture = 2 m
+    verts = [(-W / 2, -D / 2, .004), (W / 2, -D / 2, .004), (W / 2, D / 2, .004), (-W / 2, D / 2, .004)]
+    me = bpy.data.meshes.new('vct'); me.from_pydata(verts, [], [(0, 1, 2, 3)]); me.update()
+    uv = me.uv_layers.new(name='UVMap')
+    for li, loop in enumerate(me.loops):
+        x, y, _ = me.vertices[loop.vertex_index].co
+        uv.data[li].uv = (x / tile, y / tile)
+    ob = bpy.data.objects.new('vct', me); bpy.context.collection.objects.link(ob)
+    me.materials.append(pbr('EW_PolishedConcrete'))
+    return finish_asset(asset, OUT, 'Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).')
+
+
+
+def garage_floor():
+    """Photo pass 3: unique garage slab over x31.675..38.35, z-5.25..5.25 (make_garage_floor.py).
+    Origin at the area centre; four quads leave the drain grate (x35.15..35.65, z.05..35) open.
+    UV u = (x-31.675)/6.675, v = (z+5.25)/10.5 so the painted lane lines land on site positions."""
+    asset = 'SM_EW_GarageSlab'; start_asset(asset)
+    X0, X1, Z0, Z1, cx = 31.675, 38.35, -5.25, 5.25, 35.0125
+    rects = [(X0, X1, Z0, .05), (X0, X1, .35, Z1), (X0, 35.15, .05, .35), (35.65, X1, .05, .35)]
+    verts, faces, uvs = [], [], []
+    G = 8  # grid per rectangle: LOD decimation collapses interior edges first and keeps the outline
+    for xa, xb, za, zb in rects:
+        k = len(verts)
+        for j in range(G + 1):
+            for i in range(G + 1):
+                x, z = xa + (xb - xa) * i / G, za + (zb - za) * j / G
+                verts.append((x - cx, -z, .004)); uvs.append(((x - X0) / (X1 - X0), (z - Z0) / (Z1 - Z0)))
+        for j in range(G):
+            for i in range(G):
+                q = k + j * (G + 1) + i
+                faces.append((q, q + G + 1, q + G + 2, q + 1))   # winding so the face normal points up (+Z)
+    me = bpy.data.meshes.new('slab'); me.from_pydata(verts, [], faces); me.update()
+    uv = me.uv_layers.new(name='UVMap')
+    for li, loop in enumerate(me.loops):
+        uv.data[li].uv = uvs[loop.vertex_index]
+    ob = bpy.data.objects.new('slab', me); bpy.context.collection.objects.link(ob)
+    me.materials.append(pbr('EW_GarageSlab'))
+    return finish_asset(asset, OUT, 'Unique 6.7 x 10.5 m garage slab: concrete, saw cuts, worn lane lines, tyre tracks, oil, blown sand.')
+
+
+def steel_joist():
+    """Reference pass: exposed W-shape steel joist under the deck, 10.4 m along X, 0.20 m deep.
+    Origin at the bottom centre; place with yaw 90 to span north-south."""
+    asset = 'SM_EW_SteelJoist'; start_asset(asset)
+    L, Hd, Fw, Tf, Tw = 10.4, .20, .10, .012, .007
+    paint = pbr('EW_XInstrumentGrey', span=.5)
+    box('bottom_flange', (0, 0, Tf / 2), (L, Fw, Tf), paint, .002)
+    box('top_flange', (0, 0, Hd - Tf / 2), (L, Fw, Tf), paint, .002)
+    box('web', (0, 0, Hd / 2), (L, Tw, Hd - 2 * Tf), paint, .001)
+    for x in [-L / 2 + .6 + i * 1.2 for i in range(9)]:
+        box(f'stiffener{x:.1f}', (x, 0, Hd / 2), (.008, Fw - .01, Hd - 2 * Tf), paint, .001)
+    return finish_asset(asset, OUT, 'Exposed painted W-shape steel joist, 10.4 m, under the east wing roof deck.')
+
+
+def ceiling_conduit():
+    """Reference pass: pair of 1-inch EMT runs with strut hangers, 5 m along X (repeat end to end)."""
+    asset = 'SM_EW_CeilingConduit'; start_asset(asset)
+    L = 5.0
+    for y in (-.06, .06):
+        rod(f'emt{y}', (-L / 2, y, .05), (L / 2, y, .05), .0125, steel)
+    for x in (-L / 2 + .4, 0., L / 2 - .4):
+        box(f'strut{x}', (x, 0, .09), (.04, .22, .02), steel, .002)
+        for y in (-.06, .06):
+            rod(f'clamp{x}{y}', (x, y, .05), (x, y, .09), .004, steel)
+    box(f'jbox', (1.2, .06, .05), (.10, .10, .06), steel, .003)
+    return finish_asset(asset, OUT, 'Two exposed EMT conduit runs on strut hangers with a junction box, 5 m.')
+
+
+def casework(asset, length, depth=.65, island=False):
+    """Reference pass: 1980s lab casework run. Green enamel steel base cabinets (drawer banks and
+    door pairs, recessed toe kick), brushed stainless top with rolled front edge and, against a wall,
+    a 10 cm backsplash. Front faces -Y; origin at the floor, centre of the run."""
+    start_asset(asset)
+    H, top, kick = .90, .035, .10
+    box('toe_kick', (0, 0 if island else .03, kick / 2), (length - .02, depth - .1, kick), rubber, .002)
+    box('carcass', (0, 0, kick + (H - top - kick) / 2), (length, depth - .03, H - top - kick), green, .004)
+    box('top', (0, -.012, H - top / 2), (length + .03, depth + .03, top), steel, .006)
+    rod('top_nose', (-length / 2 - .015, -depth / 2 - .027, H - top / 2), (length / 2 + .015, -depth / 2 - .027, H - top / 2), .017, steel)
+    if not island:
+        box('backsplash', (0, depth / 2 - .005, H + .05), (length + .03, .012, .10), steel, .003)
+    bays = max(1, round(length / .6)); bw = length / bays
+    for side in ((-1, 1) if island else (-1,)):
+        face_y = side * (depth / 2 - .01)
+        for b in range(bays):
+            cx = -length / 2 + bw * (b + .5)
+            if b % 3 == 1:  # door pair
+                for k in (-1, 1):
+                    box(f'door{side}_{b}_{k}', (cx + k * bw / 4, face_y + side * .006, kick + (H - top - kick) / 2), (bw / 2 - .012, .014, H - top - kick - .03), green, .003)
+                    rod(f'dpull{side}_{b}_{k}', (cx + k * .04, face_y + side * .03, .55), (cx + k * .04, face_y + side * .03, .68), .006, chrome)
+            else:            # drawer bank: one shallow, two deep
+                for i, (z, hh) in enumerate([(.73, .14), (.52, .24), (.25, .26)]):
+                    box(f'drw{side}_{b}_{i}', (cx, face_y + side * .006, z), (bw - .02, .014, hh - .015), green, .003)
+                    box(f'pull{side}_{b}_{i}', (cx, face_y + side * .022, z + hh * .25), (.12, .016, .02), chrome, .002)
+                    box(f'lbl{side}_{b}_{i}', (cx, face_y + side * .0145, z + hh * .25 + .03), (.06, .002, .022), paper, 0)
+    return finish_asset(asset, OUT, f'Green enamel steel lab casework run {length:.1f} m with stainless top' + (' (island, two-sided)' if island else ', backsplash') + '.')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -570,5 +724,12 @@ notice_board()
 lab_stool()
 wall_shelf()
 relay_tester()
+vinyl_floor()
+steel_joist()
+ceiling_conduit()
+garage_floor()
+casework('SM_EW_CaseworkRun24', 2.4)
+casework('SM_EW_CaseworkRun12', 1.2)
+casework('SM_EW_CaseworkIsland', 2.4, .90, True)
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

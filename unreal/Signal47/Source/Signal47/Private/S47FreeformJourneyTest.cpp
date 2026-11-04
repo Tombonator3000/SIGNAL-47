@@ -35,6 +35,7 @@ void FS47FreeformJourneyTest::PlaceAt(const FString& Id,double Offset)
   // Explicit workstation approach fixture: customer side of the real indoor counter.
   M->Player->Place(7981.8,2068.8,0);return;
  }
+ if(Id==TEXT("ff:bench")||Id==TEXT("ff:sample")){const FVector S=M->Freeform->Field->StandPoint(Id);M->Player->Place(S.X,S.Z,0);return;}
  const bool RoadFront=Id==TEXT("ff:shop")||(Id==TEXT("ff:parcel")&&M->Web->Area()!=TEXT("saro"));
  M->Player->Place(P.X+(RoadFront?Offset:-Offset),P.Z,0);
 }

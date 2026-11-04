@@ -242,6 +242,8 @@ void AS47Web::UpdateFixtureLighting()
 				if (!Rooms->RoomEnabled(Room)) K = 0.f;
 			}
 		}
+		// Fluorescent tubes strike on and die off on real switch events (S47TubeFlicker).
+		if (!P.bDesk) K = P.Flicker.Apply(GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0, K, uint32(P.Node));
 		L->SetVisibility(K > 0.0001f);
 		// Obj.SetColor can replace a diffuser with its private MID during a story flicker.
 		// Follow the material actually on the mesh, including a replacement at unchanged power.

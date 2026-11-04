@@ -9,7 +9,8 @@ class FS47EastWingProps
 {
 public:
  bool Build(US47Main* Main, TArray<TWeakObjectPtr<USceneComponent>>& Parts);
- void SetPowered(bool bPowered);
+ void SetPowered(bool bPowered){SetLevel(bPowered?1.f:0.f);}
+ void SetLevel(float Level); // 0..1 tube output, follows the fixtures' strike/die-off flicker
 private:
  struct FEmission { TWeakObjectPtr<UMaterialInstanceDynamic> Material; FLinearColor Powered; };
  TArray<FEmission> Emission;
