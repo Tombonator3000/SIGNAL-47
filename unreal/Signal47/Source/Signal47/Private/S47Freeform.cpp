@@ -312,7 +312,7 @@ void FS47FreeformSession::Step(double Dt)
   M->Story->ApplyFeederPower(!Powered);
   for(int32 I=0;I<Targets.Num();++I)
   {
-   const bool Local=Field&&Field->ServiceStage()>=7&&Field->ServiceStage()<=8&&M->Web->DishId(I)==TEXT("S-03");
+   const bool Local=Field&&Field->ServiceStage()>=7&&Field->ServiceStage()<=8&&M->Web->DishId(I)==Field->ServiceDishId();
    M->Web->PointDish(I,Targets[I].X,Targets[I].Y,Local||bCrossRunning?2.2:9.,true);
   }
   M->Story->Rx.bPowered=Powered;bPowerApplied=true;bLastPower=Powered;
@@ -1112,7 +1112,7 @@ void FS47FreeformSession::OpenStatus()
  const int32 Count=M->Web->DishCount();SelectedDish=FMath::Clamp(SelectedDish,0,FMath::Max(0,Count-1));
  auto Short=[this](int32 I){return M->Web->DishId(I).Replace(TEXT("-"),TEXT(""));};
  auto State=[this](int32 I){if(I==SelectedDish)return 1;if(!M->Web->DishRemoteAvailable(I))return 2;return FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1?3:0;};
- auto Pick=[this](int32 I){SelectedDish=I;if(M->Web->DishId(I)==TEXT("S-03")){if(Field)Field->DiagnoseService();RecordEvidence(TEXT("s03-diagnosed"),TEXT("S-03 command/encoder status inspected at the status terminal."));}OpenStatus();};
+ auto Pick=[this](int32 I){SelectedDish=I;if(Field&&M->Web->DishId(I)==Field->ServiceDishId()){Field->DiagnoseService();RecordEvidence(TEXT("service-diagnosed-")+Field->ServiceDishId(),Field->ServiceDishId()+TEXT(" command/encoder status inspected at the status terminal."));}OpenStatus();};
  auto Grid=T::Panel(FString::Printf(TEXT("ARRAY STATUS / %d ANTENNAS"),Count),S47Kit::Col({T::AntennaGrid(Count,Short,State,Pick),
   T::Columns({{.5f,T::Banner(TAttribute<FString>::CreateLambda([this,Count]{return FString::Printf(TEXT("%d / %d AVAILABLE"),AvailableDishCount(),Count);}),TAttribute<bool>::CreateLambda([this,Count]{return AvailableDishCount()<Count;}))},
               {.5f,T::Banner(TAttribute<FString>::CreateLambda([this]{return bPowerFault?FString(HasPower()?TEXT("FEEDER FAULT / ON GENERATOR"):TEXT("FEEDER VOLTAGE UNSTABLE")):FString(TEXT("FEEDER NORMAL"));}),TAttribute<bool>::CreateLambda([this]{return bPowerFault;}))}}),
@@ -1123,7 +1123,7 @@ void FS47FreeformSession::OpenStatus()
   T::Value(TEXT("ACTUAL"),TAttribute<FString>::CreateLambda([this,Dish]{return FString::Printf(TEXT("AZ %.1f° EL %.1f°"),M->Web->DishAz(Dish),M->Web->DishEl(Dish));})),
   T::Value(TEXT("TARGET"),TAttribute<FString>::CreateLambda([this,Dish]{return FString::Printf(TEXT("AZ %.1f° EL %.1f°"),M->Web->DishTargetAz(Dish),M->Web->DishTargetEl(Dish));})),
   T::Value(TEXT("DRIVE"),TAttribute<FString>::CreateLambda([this,Dish]{return !M->Web->DishRemoteAvailable(Dish)?FString(TEXT("SERVICE")):FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(Dish),M->Web->DishTargetAz(Dish)))>.1||FMath::Abs(M->Web->DishEl(Dish)-M->Web->DishTargetEl(Dish))>.1?FString(TEXT("MOVING")):FString(TEXT("READY"));}),true),
-  T::Value(TEXT("RELAY"),TAttribute<FString>::CreateLambda([this,Dish]{return M->Web->DishId(Dish)==TEXT("S-03")&&Field&&Field->HasArrayFault()?FString(TEXT("FAULT")):FString(TEXT("OK"));}),true)}),true);
+  T::Value(TEXT("RELAY"),TAttribute<FString>::CreateLambda([this,Dish]{return Field&&M->Web->DishId(Dish)==Field->ServiceDishId()&&Field->HasArrayFault()?FString(TEXT("FAULT")):FString(TEXT("OK"));}),true)}),true);
  TArray<S47Kit::FW> Service;
  if(Field)Service.Add(T::Text(TAttribute<FString>::CreateLambda([this]{return Field?Field->ServiceStatus():FString();}),TAttribute<int32>(0)));
  Service.Add(T::Big(FString(TEXT("INSPECT SERVICE RECORD")),[this]{OpenArchive();},2));
@@ -1594,9 +1594,9 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 {
  TArray<FS47Task> Result;
  if(bPowerFault)Result.Add({TEXT("FEEDER / Measure, isolate and replace the control fuse; restore SARO power."),false});
- if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({TEXT("S-03 / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
+ if(Field&&Field->HasArrayFault()&&ServiceGuide!=1)Result.Add({Field->ServiceDishId()+TEXT(" / Diagnose at the status PC, replace the relay and run the local out-and-back test."),false});
  for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)Result.Add({C->Planned>=0?TEXT("CASE / ")+CaseTestName(Line,C->Planned)+TEXT(": run job ")+C->PlannedJob:TEXT("CASE / ")+FString(FS47FreeformCases::Def(Line).Title)+TEXT(": choose a test on the OPS case board"),false});
- if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("S-03 service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
+ if(ServiceGuide>0)Result.Add({ServiceGuide==2?FString(TEXT("Service work order / verified and archived")):ServiceObjective(),ServiceGuide==2});
  for(const FJob& J:Work)if(J.Day==DayNumber||J.Stage!=EJobStage::Filed)Result.Add({JobLine(J),J.Stage==EJobStage::Filed});
  return Result;
 }

@@ -36,7 +36,10 @@ public:
  const FS47FieldLogger& FieldLogger() const { return Logger; }
  bool AnalyzeSample();
  bool StartDonorTest();
- bool TriggerServiceFault();
+ bool TriggerServiceFault(bool bTraining=false,const FString& RequestedDish=FString());
+ const FString& ServiceDishId() const { return ServiceTarget; }
+ int32 ServiceDishIndex() const;
+ FVector ServicePosition() const;
  bool HasArrayFault() const { return Service >= 1 && Service < 9; }
  int32 FaultedDishCount() const { return HasArrayFault() ? 1 : 0; }
  int32 ServiceStage() const { return Service; }
@@ -89,6 +92,8 @@ private:
  US47Main* M = nullptr;
  TSharedPtr<uint8> Life = MakeShared<uint8>(0);
  bool bActive = false, bBuilt = false, bGenerator = false, bFuelHeld = false;
+ FString ServiceTarget=TEXT("S-03");
+ int32 OrdinaryServiceSerial=0;
  int32 Service = 0, Feeder = 0, LastFaultDay = 0, EmergencyDay = 0;
  int32 PowerFaultSerial = 0, EmergencyFuseFault = 0;
  bool bTrackedPowerFault = false;
@@ -128,7 +133,7 @@ private:
  bool Ready() const;
  void TrackPowerFault(bool bFault);
  bool CanIssueEmergencyFuse(bool bFault) const;
- int32 S03() const;
+ FString ServiceWords(const FString& Text) const;
  FVector ShopPoint() const;
  FVector ParcelShopPoint() const;
  bool AtShopCounter() const;

@@ -105,6 +105,7 @@ public:
  void OpenServiceGuide();
  bool StartServiceGuide(bool bSupplyTrip);
  bool CompleteServiceGuide();
+ bool CanCompleteServiceGuide() const;
  FString ServiceObjective() const;
  bool SelectJob(int32 Index);
  bool ChooseThird(bool bVirgo);

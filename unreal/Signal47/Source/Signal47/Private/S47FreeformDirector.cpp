@@ -582,7 +582,7 @@ void FS47FreeformDirector::Step(double Dt)
    {
     // A fault is only applied after a real native actor reaches the physical cabinet.
     // Presence plus a fault is a lead, not proof of intent or origin.
-    bControlled=true;M->Freeform->Field->TriggerServiceFault();Changed();
+    bControlled=true;M->Freeform->Field->TriggerServiceFault(false,M->Freeform->Field->ServiceDishId());Changed();
    }
    if(Event==TEXT("service_presence")&&Stage==1&&I.State==FS47RoswellBrain::EState::Contact&&!(M->World&&M->World->bDriving))
    {const FString Why=TEXT("The service-yard presence reached you. The secured work survives; the encounter is over.");Finish(false);if(M->Night&&M->Night->Glimpses)M->Night->Glimpses->DevClear();M->Freeform->Recover(Why);return;}

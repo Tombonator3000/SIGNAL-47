@@ -71,7 +71,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract"))?TEXT("first-shift-six-step-tutorial"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest"))?TEXT("all-array-service-native"):FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract"))?TEXT("first-shift-six-step-tutorial"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("scope"),TEXT("field-plan-disk-continue"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("scope"),TEXT("legacy-printer-queue-regression"));
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
@@ -93,6 +93,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Expected FAIL until queue migration is fixed; no natural acquisition claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, physical binder callback and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early OPS SERVICE/accept clicks, initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -194,7 +195,7 @@ void FS47FreeformTest::Step(double Dt)
  if(bDone)return;
  if(!bInit)
  {
-  bInit=true;if(!FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest"))){bDone=true;return;}
+  bInit=true;if(!FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest"))&&!FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest"))){bDone=true;return;}
   FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
   Root=FPaths::ProjectSavedDir()/TEXT("FreeformTest");IFileManager::Get().MakeDirectory(*Root,true);
   if(!Check(User.StartsWith(TEXT("/tmp/")),TEXT("explicit isolated temporary profile required")))return;
@@ -209,6 +210,79 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))
+ {
+  if(Age>120){Finish(false,TEXT("bounded four-antenna service timeout"));return;}
+  if(!F.Field||!M->Player||!M->World)return;auto& W=*F.Field;
+  auto Click=[&](const FString& Label)
+  {
+   TArray<TSharedRef<SButton>> Buttons;TSet<const SWidget*> Seen;
+   if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& User)
+   {auto Widget=User.GetFocusedWidget();if(!Widget)return;while(auto Parent=Widget->GetParentWidget())Widget=Parent;
+    if(!Seen.Contains(Widget.Get())){Seen.Add(Widget.Get());PhotoButtons(Widget.ToSharedRef(),Label,Buttons);}},true);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("unique enabled service button: ")+Label))return false;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();return true;
+#else
+   Finish(false,TEXT("native button test requires development build"));return false;
+#endif
+  };
+  auto Approach=[&](const FString& Id){M->UI->Close(true);const FVector P=W.InteractionPoint(Id);M->Player->Place(P.X-1.4,P.Z,0);};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&M->World->Area==TEXT("saro"),TEXT("isolated SARO service fixture")))return;
+   F.Director->Stop();W.AddItem(TEXT("relay"),4);ServiceTrial=0;
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z+1.1,0);F.Use(TEXT("opsTerminal"));Go(9200,.5);return;
+  }
+  if(Stage==9200){if(!Click(TEXT("SERVICE")))return;Go(9201,.3);return;}
+  if(Stage==9201){if(!Click(TEXT("Accept / use SARO stock")))return;Go(9202,.3);return;}
+  if(Stage==9202)
+  {
+   if(!Check(F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&F.OperationsSection()==4&&W.ServiceStage()==1&&W.ServiceDishId()==TEXT("S-03"),FString::Printf(TEXT("service acceptance: glass=%d screen=%d ops=%d stage=%d target=%s guide=%d"),F.TerminalOnGlass(),F.ActiveTerminalScreen(),F.OperationsSection(),W.ServiceStage(),*W.ServiceDishId(),F.ActiveServiceGuide())))return;
+   if(!Check(!F.CanCompleteServiceGuide(),TEXT("unfinished service cannot be archived")))return;
+   Shot(TEXT("service-accepted"));if(!Click(TEXT("Continue service / return to room")))return;Go(9205,.2);return;
+  }
+  if(Stage==9205)
+  {
+   static const TCHAR* Targets[]={TEXT("S-03"),TEXT("S-01"),TEXT("S-16"),TEXT("S-22")};
+   if(ServiceTrial>0&&!Check(W.TriggerServiceFault(false,Targets[ServiceTrial]),FString(TEXT("ordinary fault starts on requested arm: "))+Targets[ServiceTrial]))return;
+   ServiceTarget=Targets[ServiceTrial];ServiceBefore=W.ServiceCompletions();ServiceRelays=W.InventoryCount(TEXT("relay"));ServiceMoved=false;
+   if(!Check(W.ServiceDishId()==ServiceTarget&&W.ServiceDishIndex()!=INDEX_NONE&&F.AvailableDishCount()==26,TEXT("only selected antenna is unavailable: ")+ServiceTarget))return;
+   for(int32 I=0;I<M->Web->DishCount();++I)if(!Check(M->Web->DishRemoteAvailable(I)==(M->Web->DishId(I)!=ServiceTarget),TEXT("per-dish remote isolation: ")+M->Web->DishId(I)))return;
+   W.DiagnoseService();if(!Check(W.ServiceStage()==2,TEXT("selected service diagnosed without completion")))return;
+   const FString Wrong=ServiceTarget==TEXT("S-01")?TEXT("field:S-19"):TEXT("field:S-01");Approach(Wrong);
+   W.Use(Wrong);W.Use(TEXT("field:")+ServiceTarget);
+   if(!Check(W.ServiceStage()==2&&W.InventoryCount(TEXT("relay"))==ServiceRelays,TEXT("wrong cabinet and remote target use neither advance nor consume")))return;
+   Approach(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);
+   if(!Check(W.ServiceStage()==4,TEXT("correct cabinet isolates and opens hatch")))return;
+   if(!Restore(TEXT("service-array-open-")+ServiceTarget))return;Go(9206,.3);return;
+  }
+  if(Stage==9206)
+  {
+   F.Director->Stop();
+   if(!Check(W.ServiceDishId()==ServiceTarget&&W.ServiceStage()==4&&W.InventoryCount(TEXT("relay"))==ServiceRelays&&F.AvailableDishCount()==26,TEXT("mid-repair Continue keeps exact target, open hatch, spare and isolation")))return;
+   Approach(TEXT("field:")+ServiceTarget);InitialAz=M->Web->DishAz(W.ServiceDishIndex());InitialEl=M->Web->DishEl(W.ServiceDishIndex());
+   W.Use(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);
+   if(!Check(W.ServiceStage()==7&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1,TEXT("one relay fitted before physical local test starts")))return;
+   Go(9207);return;
+  }
+  if(Stage==9207)
+  {
+   const int32 I=W.ServiceDishIndex();if(I==INDEX_NONE){Check(false,TEXT("local test lost target identity"));return;}
+   ServiceMoved|=FMath::Abs(FMath::FindDeltaAngleDegrees(InitialAz,M->Web->DishAz(I)))>4.;
+   if(W.ServiceStage()!=9)return;
+   if(!Check(ServiceMoved&&M->Web->DishRemoteAvailable(I)&&F.AvailableDishCount()==27&&W.ServiceCompletions()==ServiceBefore+1&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1&&FMath::Abs(FMath::FindDeltaAngleDegrees(InitialAz,M->Web->DishAz(I)))<=.1&&FMath::Abs(InitialEl-M->Web->DishEl(I))<=.1,TEXT("actual outward/return test restores selected antenna once: ")+ServiceTarget))return;
+   if(ServiceTrial==0)
+   {
+    const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X,P.Z+1.1,0);
+    if(!Check(F.CompleteServiceGuide(),TEXT("initial S-03 tutorial archives only after actual repair")))return;
+   }
+   if(++ServiceTrial<4){Go(9205,.2);return;}
+   Finish(true,TEXT("Initial tutorial and three ordinary arm repairs, wrong cabinet guards and four mid-repair Continue restores passed."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))
  {
   if(Age>40){Finish(false,TEXT("bounded field-plan fixture timeout"));return;}
@@ -400,7 +474,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8952)
   {
    M->UI->Close(true);for(int32 I=0;I<27;++I)M->Web->SetDishRemoteAvailable(I,true);
-   if(!Check(F.Field->TriggerServiceFault()&&F.AvailableDishCount()==26,TEXT("actual S-03 service fault isolates one antenna before disk save")))return;
+   if(!Check(F.Field->TriggerServiceFault(true)&&F.AvailableDishCount()==26,TEXT("actual S-03 service fault isolates one antenna before disk save")))return;
    if(!Restore(TEXT("array-s03-service-fault")))return;Go(8953,.3);return;
   }
   if(Stage==8953)
@@ -1307,7 +1381,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==441)
  {
-  if(!F.Field->HasArrayFault())F.Field->TriggerServiceFault();
+  if(!F.Field->HasArrayFault())F.Field->TriggerServiceFault(true);
   F.Field->DiagnoseService();const FVector P=F.Field->InteractionPoint(TEXT("ff:service"));M->Player->Place(P.X-1.4,P.Z,0);Go(45,.4);return;
  }
  if(Stage==45)
