@@ -78,6 +78,8 @@ private:
  int32 Nearest(const FVector2D& At) const;
  bool EdgeOpen(int32 A, int32 Bn) const;
  bool SeesPlayer() const;
+ bool ContactClear(const FVector2D& To) const;
+ bool HoldGrab(bool bSees, bool bDriving, double Distance, bool bClear);
  TOptional<FVector2D> Heard(double Dt);
  double Ground(const FVector2D& At) const;
  void Capture();
