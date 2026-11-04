@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## SARO-blafring og østfløyens dører, installert 4. november
+
+Gamle slitasjeflater ved gulv og tak er skilt fra de nye overflatene; seks nedløpsflekker ligger nå mot muren i stedet for gjennom rørene. Eksisterende atlas, UV-er og materialer beholdes. Personell- og servicedøren i østfløyen kan åpnes/lukkes fra begge sider i Freeform og lagres ved Fortsett. De synlige knappene på begge garasjeportpanelene treffer nå riktig interaksjon. Story-låsingen beholdes.
+
+Editorbygg, tre før-/etterutsnitt og målrettet dørprøve består. Linux-pakken består 2326 selvtester og samme dørprøve, inkludert lukket passasje, gjenåpning og lagret dørtilstand. Installert oppstart består; 121 personlige Saved-filer er uendret. Dette er native kamera-/interaksjonsprøver, ikke en menneskelig spilløkt.
+
 ## PR382 installert lokalt, 4. november
 
 PR382s tittellys, VHS-livssyklus og lagring/avbryting av feltplaner er installert i den vanlige Linux-spillmappen. Linux-pakken består 2326 selvtester og 12 tittelkontroller i vanlig vindu; installert selvtest og kort oppstart består. Alle 121 personlige Saved-filer er uendret, og forrige installasjon er beholdt for tilbakeføring. En feil i selvtestens oppsett for ufullført mottakerjobb ble rettet i oppfølgings-PR387. Den skjulte Vulkan-prøven fikk device-lost; den ordinære vinduskjøringen består uten renderer-overstyring.

@@ -1,0 +1,12 @@
+{
+  "220": {
+    "triangles": 176,
+    "moved_vertices": 342,
+    "source_sha256": "3863f08f6d212aaf74bd953f2da7209b3d7ad8d1ceda8207d0f789ca348a497d"
+  },
+  "377": {
+    "triangles": 284,
+    "moved_vertices": 582,
+    "source_sha256": "fd60fa957655d289cd05909020f2f39f85e8a8e9692f3c402d9418f9b3d1a5f9"
+  }
+}
