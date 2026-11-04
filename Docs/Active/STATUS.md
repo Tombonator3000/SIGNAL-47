@@ -50,7 +50,11 @@ Alle tre endelige testkjøringer og bygget var uten motoroverlapp under producti
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
-Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. Pakking/installasjon venter til PR379 er flettet.
+PR382 er konfliktløst mot main etter tutorial-/SARO-leveransen. Editorbygg og målrettet sluttkontroll består 4. november: tittel 12 kontroller, feltplan 12 kontroller med én disk-/Continue-runde og tutorial 40 kontroller med tre disk-/Continue-runder. Tittellys og VHS-livssyklus er editorverifisert; denne PR-en er ikke pakket eller installert lokalt.
+
+[Oppdatert regresjonsgjennomgang](Reports/PR379_REGRESSION_REVIEW_2026-11-04.md) finner en statisk printerkøfeil for eldre originaler uten tellerlinje og avgrenser hull i ordinær Continue, samlet økonomireise og Story-modusbytte. Testkandidatene på nattgrenen er nå bygget; printer-/butikkprøvene er ikke kjørt på nytt i den avgrensede konfliktkontrollen. Tidligere grønne deltester lukker ikke disse funnene.
+
+Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. PR379 ble flettet 4. november kl.06:59 CET med head `cc071f46` og merge `0d9c5815`; pakking/installasjon er ikke gjennomført i denne kontrollen.
 
 Opprinnelig rekvisittimport består for 26 modeller / 78 LOD-er og åtte materialsett. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Claude har lagt til 22 egne Extras-modeller og møblert lab, lager og garasje. Codex har deretter lagt til prøveholder og fire fysiske bordskilt: samlet Extras-import består for 27 modeller / 81 LOD-er. Gammel skittgeometri er klippet ved den nye servicedøren, og gulvjekken er flyttet ut av dørpassasjen. Nye runtime-bilder viser frie åpninger og kontakt mellom de nye detaljene og benkeplatene.
 
@@ -67,6 +71,10 @@ OPS-navigasjonen er kontrollert gjennom alle seks sider med samme PC-visning. Se
 Oppgavehint og stedvisning er samordnet for opptak, automatiske kontroller, sammenligning og arkivering. Pågående kontroller peker til måleutstyret; ferdige instrumentmålinger peker til OPS / DAILY WORK og riktig knapp. Service-/feeder-/benkoverganger og kartets butikkhenvisning er oppdatert. Bygg og 28 representative tilstandskontroller består, inkludert én disk-/Continue-runde med bevart valgt steg og nøyaktig hint. Ingen ny full spillerreise eller installasjon.
 
 Utilgjengelige antenner reduserer nå Freeforms målerate etter tilgjengelige antennepar: 27 gir 100 %, 26 omtrent 93 % og 24 omtrent 79 %. Eksisterende minimum 24 og kvalitetsfaktor beholdes. Kapasitet og reparasjonsbehov vises separat fra receiverens tuning. Bygg og 21 kontroller består, med målte Step-vinduer ved redusert/gjenopprettet kapasitet og én disk-/Continue-runde av faktisk S-03-feil. Receiver/tracking-bilder gjennomgått. Dette er kontrollert spillbalanse i editor, ikke menneskelig balanseaksept eller installasjon.
+
+Tittelarbeidet i PR382 gir periodiske stiliserte UFO-lys og ryddet VHS-livssyklus. Editorbygg, 12 meny-/timingkontroller og den innebygde PCM-prøven består uten motoroverlapp. Tre native tittelbilder er tatt. Installert lydnivå og menneskelig komfortvurdering gjenstår.
+
+Separat Visitors-gjennomgang bekrefter at de tre feltforsøkene mangler produksjonskobling til verden; saken er ikke spillbart ferdig. En avgrenset rettelse bevarer planlagte feltprøver ved Continue og lar spilleren avbryte dem uten resultat eller belønning. Rettelsen i PR382 er bygget og består 12 native kontroller med én disk-/Continue-runde. Testen registrerer et eksplisitt funn gjennom det offentlige API-et; den påstår ikke fysisk gjennomføring av feltforsøket.
 
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 

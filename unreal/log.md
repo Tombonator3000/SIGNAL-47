@@ -1714,6 +1714,18 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 
 4. november 2026 06:51: codex/night-support-20261103: FF-ARRAY-CONSEQUENCES-01 gir redusert målerate ved antenneutfall og synlig kapasitet/reparasjonsbehov. build-r25/array-r2 består 21 kontroller og én disk-/Continue-runde; receiver/tracking-bilder gjennomgått. Minimum24 og kvalitetsfaktor beholdt; ingen installasjon.
 
+4. november 2026 07:09: codex/night-support-20261103: TITLE-UFO-VHS-01 kilde og build-r30 ferdig; tidligere title-r3 består12 lifecycle-/timingkontroller og PCM-prøve. Siste title-r4 er UNVERIFIED etter overlappende Claude-jobb. Sikrer kilden på nattgrenen; ingen PR379-oppdatering/installasjon før sluttkontroll.
+
+4. november 2026 07:17: codex/night-support-20261103: rettelse for feltplan-Continue og avbrytelse kildeklar, med avgrenset native test. Bygg/kjøring avventer avtalt motorvindu; ingen PR379-oppdatering. Visitors-forsøkenes verdenshandlinger mangler fortsatt og gir ingen konstruerte resultater.
+
+4. november 07:28 Codex: Konkretisert første Visitors-takforsøk i eksisterende FREEFORM_CASE_LOOP-design etter kildeaudit. Lydanker finnes, fysisk beslag/adkomst mangler; dagens vind er vegetasjonsproxy og feltloggeren måler RF-støy. Plan beskriver fysisk før/festing/etter, dekning, original og Continue uten oppdiktet observasjonstid. Ingen runtimefunksjon ferdigmeldt; Claude kjører fortsatt EastWing-bilder, motorvinduer avventes.
+
+4. november 07:41 Codex: Toms eksplisitte PR379-regresjonsreview: GitHub bekrefter merged cc071f46 (06:59 CET). Statisk legacy-printerkøblokk funnet; separat forventet-feiltest og shop-cap/atomisk leveringstest er kildeklar, ingen produksjonsfix eller motorjobb. Rapport i Docs/Active/Reports/PR379_REGRESSION_REVIEW_2026-11-04.md skiller tidligere kjørte deltester fra nye ukjørte tester og faktisk meny-Continue/Story-hull.
+
+4. november 08:04 Codex: Nattoppfølging til08 avsluttet, automasjonen slettet. PR379/cc071f46 er flettet; senere nattgren-kilder og review er pushet (e6758c45 før denne avslutningslinjen). Tittelens rene sluttkontroll, feltplanbygg/test og nye legacy-printer/shop-regresjonstester gjenstår; ingen test startet i siste vindu grunnet aktive Claude-jobber. Legacy-printerkøfeilen er ikke produksjonsrettet. Ingen pakking/installasjon. Fem sample-station-originalsett er gjenopprettet av Claude. Ingen ny nattjobb startes.
+
+4. november 08:28 Codex: Toms tittel-sluttkontroll forsøkt med build-r30/c901ac7d. title-r5 startet under lease og bestod meny-/PCM-delsjekkene, men ble avbrutt av guard ved ny Claude-editor PID512055 etter52s; ingen result.json/UFO-sluttbilde, derfor UNVERIFIED. Neste oppstart title-r6 ble avvist før kjøring av aktive PID513060 og DotNet513184. Ingen fremmed prosess stoppet; Codex holder ingen lease nå. Ren sluttkontroll krever faktisk motorpause på to minutter.
+
 4. november 2026 kl.08:58: codex/greyhill-hunt-linux-20261104, fra main 0d9c5815: SC02 undersøker syns-/lydspor og SC08/SC11 avbryter ugyldig grep. Kilde og målrettet automation skrevet, diffkontroll består; Linux-bygg/spilltest gjenstår. Windows-bygg stoppet og portabilitetsendringer skilt ut etter Toms korrigering; ingen installasjon eller Saved-endring.
 
 4. november 09:18 Codex: PR381 Linuxferdigstilling: editorbygg består; Hunt74 kontroller/null feil/advarsler/exit0, sc08caught12 og sc11caught11 med faktisk fangst/restart/flukt og lagret progresjon består uten motoroverlapp. Rettet testinnpakningens falske feil fra «fail closed»; ingen ny jaktlogikkfeil funnet. Logger ~/scratch-bm/Signal47-pr381-20261104/. Motor/production_lease frigitt; Claude kan fortsette. PR oppdateres til review-ready, ingen installasjon.
@@ -1733,3 +1745,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 16:44 Codex EASTWING-FLICKER-01: Murens synlige åpninger trekkes 10 mm tilbake fra karmflatene; opprinnelige UCX og dørankre beholdes i alle tre LOD. Blender/FBX, synkron native import, editorbilder og pakket prøve med 2314 selvtester består. Kun SM_EW_Shell er endret som native asset; pakket spillbinær er byteidentisk med installert PR380. Lokal installasjon venter på ledig motorvindu.
 
 4. november 2026, Codex: første Freeform-skift fullført og SARO-vei/parkering/stier samlet; rampekollisjon rettet. Bygg, fem runtime-bilder, 34 gang-/kjørekontroller, pakket tutorial 40 sjekker/3 Continue-runder, selvtest og installert vindusoppstart består. Saved bevart. Kilder og bevis beholdes; ferdig kandidat kan inngå i neste samlede opprydding.
+
+2026-11-04 18:15 Codex, PR382: konflikter mot main løst med begge tutorial-/feltplantestene bevart. Testens private funksjonskall erstattet med offentlig funnregistrering. Editorbygg, feltplan 12/12 (1 disk-Continue), tutorial 40/40 (3 disk-Continue) og tittel 12/12 består uten motoroverlapp. Ingen ny pakking/installasjon.

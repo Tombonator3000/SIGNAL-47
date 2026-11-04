@@ -72,6 +72,8 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
  auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract"))?TEXT("first-shift-six-step-tutorial"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("scope"),TEXT("field-plan-disk-continue"));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("scope"),TEXT("legacy-printer-queue-regression"));
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -86,8 +88,10 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit roof_steps case lead and production PlanCaseTest(2,1), followed by real disk/Flow Continue. Tests retained pending plan only; no enacted world test, field evidence or reward claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Expected FAIL until queue migration is fixed; no natural acquisition claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, physical binder callback and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
@@ -205,6 +209,31 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))
+ {
+  if(Age>40){Finish(false,TEXT("bounded field-plan fixture timeout"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Director,TEXT("isolated explicit field-plan fixture")))return;
+   M->UI->Close(true);F.Director->Stop();WorkBudget=F.Budget();JobIndex=F.Jobs().Num();
+   F.RegisterFinding(TEXT("roof_steps"),TEXT("Explicit field-plan fixture: footsteps above the station."));
+   if(!Check(F.PlanCaseTest(2,1)&&F.PlannedFieldTest(2)==1,TEXT("production API opens roof-steps case and plans physical test without enacting it")))return;
+   const auto* C=F.CaseFile().Get(2);GuidanceExpected=C?C->PlannedJob:FString();
+   if(!Check(C&&!GuidanceExpected.IsEmpty()&&!C->Results[1].bDone&&C->ValidTests==0&&!C->bConcluded&&F.Jobs().Num()==JobIndex&&F.Budget()==WorkBudget,TEXT("pending field plan has its own ID with no receiver job, result or payment")))return;
+   if(!Restore(TEXT("pending-field-plan")))return;Go(8961,.3);return;
+  }
+  if(Stage==8961)
+  {
+   const auto* C=F.CaseFile().Get(2);
+   if(!Check(C&&F.PlannedFieldTest(2)==1&&C->PlannedJob==GuidanceExpected&&!C->Results[0].bDone&&!C->Results[1].bDone&&!C->Results[2].bDone&&C->ValidTests==0&&!C->bConcluded&&F.Jobs().Num()==JobIndex&&F.Budget()==WorkBudget,TEXT("disk Continue preserves exact pending field plan independently of receiver jobs, without results or rewards")))return;
+   if(!Check(F.CancelFieldTest(2)&&F.PlannedFieldTest(2)==-1&&!F.CancelFieldTest(2),TEXT("pending field plan can be cancelled once after Continue without stranding the player")))return;
+   C=F.CaseFile().Get(2);
+   if(!Check(C&&C->PlannedJob.IsEmpty()&&!C->Results[0].bDone&&!C->Results[1].bDone&&!C->Results[2].bDone&&C->ValidTests==0&&!C->bConcluded&&F.Jobs().Num()==JobIndex&&F.Budget()==WorkBudget,TEXT("field-plan cancellation grants no result, receiver job or payment")))return;
+   Finish(true,TEXT("Pending field-plan disk Continue and cancellation passed; physical field-test enactment remains outside this fixture."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))
  {
   if(Age>240){Finish(false,TEXT("bounded first-shift tutorial timeout"));return;}
@@ -633,7 +662,36 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Budget()==ShopCash-35,TEXT("delivered disk Continue retains stock once with no paid parcel remaining")))return;
    const auto Legacy=S47J::Read(S47J::Write(F.Field->Save()));Legacy->RemoveField(TEXT("contents"));S47J::Set(Legacy,TEXT("item"),TEXT("fuse"));S47J::Set(Legacy,TEXT("payload"),1);F.Field->Begin(Legacy);
    if(!Check(F.Field->ParcelStage()==1&&F.Field->ParcelItem()==TEXT("fuse")&&F.Field->ParcelContents().Num()==1&&F.Field->ParcelContents().FindRef(TEXT("fuse"))==1&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.Budget()==ShopCash-35,TEXT("explicit legacy singleton fixture becomes one paid fuse without charging or delivering it again")))return;
-   Finish(true,TEXT("Store menu/basket, exact payment, physical cargo/receiving, Continue and legacy singleton passed."));return;
+   // Isolated boundary fixture: replace the completed journey's stock/legacy parcel.
+   Snapshot=S47J::Read(S47J::Write(F.Field->Save()));S47J::Set(Snapshot,TEXT("payload"),0);S47J::Set(Snapshot,TEXT("item"),TEXT(""));S47J::Set(Snapshot,TEXT("contents"),S47J::New());
+   S47J::Set(S47J::Obj(Snapshot,TEXT("stock")),TEXT("fuse"),98);F.Field->Begin(Snapshot);
+   F.Director->Stop();M->World->Enter(TEXT("diner"));Go(87081,.4);return;
+  }
+  if(Stage==87081)
+  {
+   if(M->World->bBusy)return;Place(FVector(7981.8,0,2068.8));Go(87082,.3);return;
+  }
+  if(Stage==87082)
+  {
+   ShopCash=F.Budget();ShopRelays=F.InventoryCount(TEXT("relay"));
+   if(!Check(F.Field->Purchase(TEXT("fuse"))&&F.InventoryCount(TEXT("fuse"))==98&&F.Field->ParcelContents().FindRef(TEXT("fuse"))==1&&F.Budget()==ShopCash-5,TEXT("explicit stock-98 fixture buys one paid fuse up to combined cap99")))return;
+   if(!Check(!F.Field->Purchase(TEXT("fuse"))&&F.Budget()==ShopCash-5&&F.Field->ParcelContents().FindRef(TEXT("fuse"))==1&&F.InventoryCount(TEXT("fuse"))==98,TEXT("purchase above combined cap99 is rejected without charge or content change")))return;
+   if(!Check(F.Field->Purchase(TEXT("relay"))&&F.Budget()==ShopCash-30,TEXT("second supply remains purchasable when only fuse reaches cap")))return;
+   F.Field->Use(TEXT("ff:parcel"));if(!Check(F.Field->ParcelStage()==2,TEXT("boundary fixture picks up its paid two-item parcel")))return;
+   // Simulate an independent stock increase after purchase, retaining paid contents.
+   Snapshot=S47J::Read(S47J::Write(F.Field->Save()));S47J::Set(S47J::Obj(Snapshot,TEXT("stock")),TEXT("fuse"),99);F.Field->Begin(Snapshot);
+   ShopDelivered=F.Field->DeliveredParcels();ShopCargo=F.Field->CargoDeliveries();WorkBudget=F.Field->ServiceSupplyDeliveries();
+   M->World->Enter(TEXT("saro"));Go(87083,.4);return;
+  }
+  if(Stage==87083)
+  {
+   if(M->World->bBusy)return;const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));Place(Receiving+FVector(0,0,1.5));F.Field->Use(TEXT("ff:delivery"));
+   const auto& C=F.Field->ParcelContents();
+   if(!Check(F.Field->ParcelStage()==2&&C.Num()==2&&C.FindRef(TEXT("fuse"))==1&&C.FindRef(TEXT("relay"))==1&&F.InventoryCount(TEXT("fuse"))==99&&F.InventoryCount(TEXT("relay"))==ShopRelays&&F.Budget()==ShopCash-30&&F.Field->DeliveredParcels()==ShopDelivered&&F.Field->CargoDeliveries()==ShopCargo&&F.Field->ServiceSupplyDeliveries()==WorkBudget,TEXT("one full stock item blocks the entire delivery without partial credit, parcel loss, charge or counters")))return;
+   if(!Check(F.Field->Consume(TEXT("fuse")),TEXT("explicit boundary fixture frees one stock slot")))return;
+   F.Field->Use(TEXT("ff:delivery"));
+   if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==99&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Budget()==ShopCash-30&&F.Field->DeliveredParcels()==ShopDelivered+1,TEXT("same blocked paid parcel delivers atomically once capacity is available")))return;
+   Finish(true,TEXT("Store basket, Continue, legacy singleton, stock cap and atomic blocked delivery passed."));return;
   }
   return;
  }
@@ -698,6 +756,50 @@ void FS47FreeformTest::Step(double Dt)
   {
    if(!Check(M->FieldCamera->bHave&&S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("explicit legacy Freeform fixture missing ownership field preserves formerly auto-granted camera")))return;
    US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(8690);return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))
+ {
+  if(Age>60){Finish(false,TEXT("bounded legacy printer queue timeout"));return;}
+  auto Original=[&]()->const FS47Doc* {return M->Story->Docs().FindByPredicate([&](const FS47Doc& D){return D.Id==PrinterId+TEXT("-original");});};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Jobs().Num()>=2&&M->World->Area==TEXT("saro"),TEXT("legacy queue uses explicit isolated SARO fixture")))return;
+   M->UI->Close(true);auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
+   for(int32 I=0;I<Jobs.Num();++I){auto O=Jobs[I]->AsObject();S47J::Set(O,TEXT("stage"),int32(J::New));S47J::Set(O,TEXT("control"),false);S47J::Set(O,TEXT("anomaly"),false);}
+   auto Old=Jobs[0]->AsObject();PrinterId=S47J::Str(Old,TEXT("id"));
+   S47J::Set(Old,TEXT("stage"),int32(J::Recorded));S47J::Set(Old,TEXT("phenomenon"),TEXT("duplicate_print"));S47J::Set(Old,TEXT("printed"),true);S47J::Set(Old,TEXT("anomaly"),true);S47J::Set(Old,TEXT("control"),true);S47J::Set(Old,TEXT("controlAt"),8.);S47J::Set(Old,TEXT("elapsed"),18.);
+   // Actual pre-3b6a6c1c schema: the original was a Story document, with no
+   // capture-counter line or per-job original/duplicate snapshots or feed fields.
+   for(const TCHAR* Key:{TEXT("originalPage"),TEXT("originalStamp"),TEXT("duplicatePage"),TEXT("duplicateStamp"),TEXT("duplicateCollected"),TEXT("duplicateClock"),TEXT("duplicateInterval"),TEXT("chartFeed"),TEXT("packetFeed"),TEXT("duplicateFeed"),TEXT("referenceClock"),TEXT("receiverClock")})Old->RemoveField(Key);
+   const int32 Source=F.Jobs()[0].Source;PrinterStamp=TEXT("SARO / ")+PrinterId;
+   PrinterOriginal=PrinterStamp+TEXT("\n")+FS47Observing::Runs()[Source].Source+FString::Printf(TEXT("\nACTUAL ARRAY / QUALITY %.0f %%\nF %.3f MHz / AZ %.1f / EL %.1f\nINTEGRATION %.1f SECONDS\n"),F.Jobs()[0].Quality*100,FS47Observing::Runs()[Source].P.F,(FS47Observing::Runs()[Source].P.Az[0]+FS47Observing::Runs()[Source].P.Az[1])/2,FS47Observing::Runs()[Source].El,18.)+TEXT("PROVENANCE: ORIGINAL RX RECORD. A separate duplicate was received with an inconsistent timestamp; this original is retained unchanged.\n");
+   FS47Doc D;D.Id=PrinterId+TEXT("-original");D.Title=TEXT("Original observation: ")+PrinterId;D.Kind=TEXT("printout");D.Stamp=PrinterStamp;D.Page=PrinterOriginal;D.Transcript=D.Page;M->Story->AddDoc(D);
+   auto Later=Jobs[1]->AsObject();S47J::Set(Later,TEXT("stage"),int32(J::Chart));S47J::Set(Later,TEXT("chartFeed"),0.);S47J::Set(Later,TEXT("printed"),false);S47J::Set(Later,TEXT("elapsed"),18.);
+   S47J::Set(Save,TEXT("selected"),0);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();PrinterBudget=F.Budget();
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));M->Player->Place(P.X,P.Z+1.1,0);
+   if(!Restore(TEXT("legacy-duplicate-with-later-chart")))return;Go(8550,.3);return;
+  }
+  if(Stage==8550)
+  {
+   const auto* D=Original();if(!Check(D&&D->Page==PrinterOriginal&&D->Stamp==PrinterStamp&&!D->Page.Contains(TEXT("CAPTURE CLOCK")),TEXT("real legacy original format survives disk Continue unchanged")))return;
+   F.Use(TEXT("printer"));M->UI->Close(true);
+   if(!Check(F.SelectJob(1),TEXT("later observation can be selected after legacy duplicate collection attempt")))return;
+   Go(8551,6.5);return;
+  }
+  if(Stage==8551)
+  {
+   F.Use(TEXT("printer"));
+   const auto* D=Original();if(!Check(D&&D->Page==PrinterOriginal&&D->Stamp==PrinterStamp&&F.Budget()==PrinterBudget,TEXT("legacy collection attempt neither rewrites original nor pays again")))return;
+   if(!Check(M->Story->Docs().ContainsByPredicate([&](const FS47Doc& X){return X.Id==F.Jobs()[1].Id+TEXT("-original");})&&F.Jobs()[1].Stage==J::Recorded,TEXT("legacy duplicate without counters must not block the later valid printer sheet")))return;
+   M->UI->Close(true);if(!Restore(TEXT("legacy-queue-after-later-collection")))return;Go(8552,.3);return;
+  }
+  if(Stage==8552)
+  {
+   const auto* D=Original();if(!Check(D&&D->Page==PrinterOriginal&&D->Stamp==PrinterStamp&&F.Jobs()[1].Stage==J::Recorded&&F.Budget()==PrinterBudget,TEXT("later collection and unchanged legacy original survive another Continue")))return;
+   Finish(true,TEXT("Legacy duplicate queue regression passed."));return;
   }
   return;
  }

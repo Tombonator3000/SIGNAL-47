@@ -96,6 +96,7 @@ public:
  // The world asks which test is planned and what the hidden cause makes it show, enacts that
  // physically, then reports what the player actually secured. -1 when no field test is planned.
  int32 PlannedFieldTest(int32 Line) const;
+ bool CancelFieldTest(int32 Line);
  bool FieldTestExpectsPresent(int32 Line,int32 Test) const;
  bool ReportFieldTest(int32 Line,int32 Test,bool bValid,bool bPresent,const FString& Evidence);
  void OpenServiceGuide();

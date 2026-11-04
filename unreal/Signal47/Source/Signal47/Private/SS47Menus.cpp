@@ -9,6 +9,7 @@
 #include "S47Gamepad.h"
 #include "S47Theme.h"
 #include "Styling/CoreStyle.h"
+#include "Rendering/DrawElements.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -64,6 +65,7 @@ void SS47Title::Construct(const FArguments& InArgs)
 	S47_USING_THEME
 	O = InArgs._Opts;
 	bGated = O.bGate;
+ PassT=0.f;
 	EraseT=O.bErase47 ? FMath::Clamp(O.Erase47InitialTime,0.f,2.7f) : 0.f;
 	bEraseStarted=O.bErase47 && EraseT>=1.f;
 	// Even a completed seed may retry Done on its first visible tick when the
@@ -193,11 +195,36 @@ float SS47Title::Number47Opacity() const
  return O.bHide47 || bEraseDone ? 0.f : O.bErase47 ? SampleErase47(EraseT,O.bCalm).Opacity : 1.f;
 }
 
+// Stylised distant menu lights, not a world-space craft or story encounter.
+SS47Title::FTitlePassSample SS47Title::SampleTitlePass(float Seconds)
+{
+ FTitlePassSample S;
+ if(!FMath::IsFinite(Seconds) || Seconds<8.f)return S;
+ const float Phase=FMath::Fmod(Seconds-8.f,35.f);
+ if(Phase>=5.f)return S;
+ const float P=Phase/5.f;
+ S.Opacity=.65f*FMath::SmoothStep(0.f,.2f,P)*(1.f-FMath::SmoothStep(.8f,1.f,P));
+ S.bVisible=S.Opacity>0.f;
+ S.Position=FVector2f(FMath::Lerp(.96f,.64f,P),.19f-.035f*FMath::Sin(P*PI));
+ return S;
+}
+
 void SS47Title::Tick(const FGeometry& G, const double InCurrentTime, const float InDeltaTime)
 {
 	SCompoundWidget::Tick(G, InCurrentTime, InDeltaTime);
 	T += InDeltaTime;
 	InT += InDeltaTime;
+ if(!bGated && GetVisibility().IsVisible() && FSlateApplication::IsInitialized())
+ {
+  auto& App=FSlateApplication::Get();const auto Window=App.FindWidgetWindow(SharedThis(this));
+  if(App.IsActive() && Window.IsValid() && !Window->IsWindowMinimized())
+  {
+   const bool WasVisible=SampleTitlePass(PassT).bVisible;
+   PassT+=FMath::Clamp(InDeltaTime,0.f,.1f);
+   // Custom OnPaint geometry must invalidate Slate's otherwise-static title cache.
+   if(WasVisible || SampleTitlePass(PassT).bVisible)Invalidate(EInvalidateWidgetReason::Paint);
+  }
+ }
 	if(O.bErase47 && !O.bHide47 && !bEraseDone && !bGated && GetVisibility().IsVisible() && FSlateApplication::IsInitialized())
 	{
 		auto& App=FSlateApplication::Get(); const auto Window=App.FindWidgetWindow(SharedThis(this));
@@ -222,6 +249,20 @@ int32 SS47Title::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSlat
 	Gradient(Out, Layer, G, FVector2f::ZeroVector, S, { { 0.f, Night(0.94f) }, { 0.34f, Night(0.82f) }, { 0.58f, Night(0.35f) }, { 0.75f, Night(0.f) }, { 1.f, Night(0.f) } }, true);
 	Gradient(Out, Layer, G, FVector2f::ZeroVector, S, { { 0.f, Night(0.f) }, { 0.7f, Night(0.f) }, { 1.f, Night(0.85f) } }, false);
 	Vignette(Out, Layer, G, 0.6f);
+ const auto Pass=SampleTitlePass(PassT);
+ if(Pass.bVisible)
+ {
+  const FVector2f At(Pass.Position.X*S.X,Pass.Position.Y*S.Y);
+  const float Scale=FMath::Clamp(S.X/1920.f,.65f,1.5f);
+  for(int32 I=0;I<3;++I)
+  {
+   const FVector2f P=At+FVector2f(I*10.f*Scale,I==1?1.f*Scale:0.f);
+   const float A=Pass.Opacity*(I==0?1.f:.55f);
+   const TArray<FVector2f> Dot={P,P+FVector2f(3.f*Scale,0.f)};
+   FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),Dot,ESlateDrawEffect::None,FLinearColor(1.f,.63f,.29f,A*.22f),true,11.f*Scale);
+   FSlateDrawElement::MakeLines(Out,Layer,G.ToPaintGeometry(),Dot,ESlateDrawEffect::None,FLinearColor(1.f,.58f,.16f,A),true,3.2f*Scale);
+  }
+ }
 	return SCompoundWidget::OnPaint(Args, G, Cull, Out, Layer + 1, Style, bParentEnabled);
 }
 
