@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_PersonnelDoor",
   "fbx": "SM_EW_PersonnelDoor.fbx",
-  "fbx_sha256": "d4d40c87801d06374ddbc66ee94f75b94c055e8baab92df28e0bb1689dbf3c44",
+  "fbx_sha256": "f487476c59d7c840995b3452145c6ef3e69ece972c9bc640f419796b1f159c64",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_PersonnelDoor_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -32,10 +32,10 @@
       "name": "EW_Shell_Galvanized",
       "texture_key": "EW_Galvanized",
       "maps": {
-        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
-        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
-        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
-        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
       },
       "Base Color": [
         0.46000000834465027,
@@ -81,10 +81,10 @@
       "name": "EW_Shell_GreenSteel",
       "texture_key": "EW_GreenSteel",
       "maps": {
-        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_BaseColor.png",
-        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Roughness.png",
-        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Metallic.png",
-        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_NormalGL.png"
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_NormalGL.png"
       },
       "Base Color": [
         0.12999999523162842,
@@ -109,7 +109,7 @@
   "lods": [
     {
       "file": "SM_EW_PersonnelDoor_LOD1.fbx",
-      "sha256": "398c6de84541e9d15a7572e7dc33cdd3f019c460b1329c509553c698d48840fd",
+      "sha256": "0fa5d8b5b517d0937799728a8a19fa500f6b67f73ded352edb32f703a4bef89d",
       "triangles": 932,
       "expected_native_triangles": 932,
       "exact_degenerate_triangles": 0,
@@ -145,7 +145,7 @@
     },
     {
       "file": "SM_EW_PersonnelDoor_LOD2.fbx",
-      "sha256": "78d29bb067800a809d9d12d9fb0949c31aca7a8b91272d9290ef6150a7b51397",
+      "sha256": "366df2c73acd55c4677839f9bf50be22757bad37291746547df65b82a2fe3ef2",
       "triangles": 252,
       "expected_native_triangles": 252,
       "exact_degenerate_triangles": 0,

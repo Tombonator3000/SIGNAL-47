@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_Trim",
   "fbx": "SM_EW_Trim.fbx",
-  "fbx_sha256": "5fda0030da896d861914dc100ff4dcbfcdd45d58859c0da533442d86fd6b25e7",
+  "fbx_sha256": "8649224805891d2f36524fa53af2e9a1c3cd8e7c752962c12e1f0c0ef8b74132",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_Trim_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -104,10 +104,10 @@
       "name": "EW_Shell_Galvanized",
       "texture_key": "EW_Galvanized",
       "maps": {
-        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
-        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
-        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
-        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
       },
       "Base Color": [
         0.46000000834465027,
@@ -131,10 +131,10 @@
       "name": "EW_Shell_GreenSteel",
       "texture_key": "EW_GreenSteel",
       "maps": {
-        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_BaseColor.png",
-        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Roughness.png",
-        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Metallic.png",
-        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_NormalGL.png"
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_NormalGL.png"
       },
       "Base Color": [
         0.12999999523162842,
@@ -180,10 +180,10 @@
       "name": "EW_Shell_Plinth",
       "texture_key": "EW_Concrete",
       "maps": {
-        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
-        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
-        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
-        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
+        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
+        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
+        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
+        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
       },
       "Base Color": [
         0.28999999165534973,
@@ -252,7 +252,7 @@
   "lods": [
     {
       "file": "SM_EW_Trim_LOD1.fbx",
-      "sha256": "48d708724fa28ba3e81f05229948c834c2d06c43c093e95242f339551e56cd9d",
+      "sha256": "5b3538f87936fb8b20bcd0eb9fabaf14a790a8731e5d2fb4695ff8a15499997c",
       "triangles": 8024,
       "expected_native_triangles": 8024,
       "exact_degenerate_triangles": 0,
@@ -288,7 +288,7 @@
     },
     {
       "file": "SM_EW_Trim_LOD2.fbx",
-      "sha256": "e31c7866628dc3f170e941365817bdff4deb19edaf3cdbc370f86eed071c7531",
+      "sha256": "49d3fc7f2adf7d8a748442755cb6887805846aa0fc76e91637d586aaa784f388",
       "triangles": 2292,
       "expected_native_triangles": 2292,
       "exact_degenerate_triangles": 0,

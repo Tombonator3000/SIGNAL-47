@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_RollUpDoor",
   "fbx": "SM_EW_RollUpDoor.fbx",
-  "fbx_sha256": "2b46f2285d6133589cba83df6688cfac9b5009a9126e3fb927d352dbef7b61f3",
+  "fbx_sha256": "b4341e2fbcbfe81c7f38566c969dea9ce78450c381879f35196de2686f6db1cc",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_RollUpDoor_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -31,10 +31,10 @@
       "name": "EW_Shell_Galvanized",
       "texture_key": "EW_Galvanized",
       "maps": {
-        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
-        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
-        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
-        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
       },
       "Base Color": [
         0.46000000834465027,
@@ -81,7 +81,7 @@
   "lods": [
     {
       "file": "SM_EW_RollUpDoor_LOD1.fbx",
-      "sha256": "afc2bda1d10b841e6f9900f5042f34f1d7c378b9f368d7689b175c2d6b014e1a",
+      "sha256": "89d69da2f940e0da3f87a71897b322683bd3ac5b718cc671c11836f588ad49a3",
       "triangles": 1804,
       "expected_native_triangles": 1804,
       "exact_degenerate_triangles": 0,
@@ -117,7 +117,7 @@
     },
     {
       "file": "SM_EW_RollUpDoor_LOD2.fbx",
-      "sha256": "6fd0f50b4b0701b230f9630635854e4f31f5907b834fdba363be5b655c4b441c",
+      "sha256": "422ec0ade4ed1c7b6ea8cd9253f26729bc7b2297cd58b11f4c4f8903df43b5f4",
       "triangles": 492,
       "expected_native_triangles": 492,
       "exact_degenerate_triangles": 0,

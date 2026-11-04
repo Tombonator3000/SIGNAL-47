@@ -147,7 +147,7 @@ bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneCompone
  return true;
 }
 
-void FS47EastWingProps::SetPowered(bool bPowered)
+void FS47EastWingProps::SetLevel(float Level)
 {
- for(const FEmission& E:Emission)if(UMaterialInstanceDynamic* M=E.Material.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),bPowered?E.Powered:FLinearColor::Black);
+ for(const FEmission& E:Emission)if(UMaterialInstanceDynamic* M=E.Material.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),E.Powered*Level);
 }

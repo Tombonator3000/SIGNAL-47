@@ -91,12 +91,26 @@ def build(lod=0):
             (x+.05,.002,5.25),'Yellow',0)
 
     # Visible ramps follow AS47Props::AddFloor's exact interpolation, not a raised flat slab.
-    for name, xa, xb, length in [('GarageRamp',33.2,37.6,4.),('PersonnelRamp',21.,22.7,1.6)]:
+    for name, xa, xb, length in [('GarageRamp',33.2,37.6,4.)]:
         rows.append(dict(asset='SM_EW_Shell',name=name,kind='ramp',x0=xa,x1=xb,z0=Z1,z1=Z1+length,
                          y0=0.,y1=-.576,bottom=-.65,material='Concrete',collide=True))
-    rows.append(dict(asset='SM_EW_Shell',name='ServiceRamp',kind='ramp',axis='x',
-                     x0=X1,x1=X1+1.6,z0=1.,z1=2.5,y0=0.,y1=-.576,bottom=-.65,
-                     material='Concrete',collide=True))
+    # Claude (Tom 4 Nov): poured concrete steps instead of ramps at the personnel and service doors.
+    # 0.45 m landing at floor level, then three 0.192 m risers with 0.30 m treads down to the apron
+    # (-0.576). AS47Props walking floors in S47EastWing::Walls follow the same landing + flight.
+    STEP_LANDING, STEP_TREAD, STEP_RISE = .45, .30, .192
+    def steps(name, axis, edge, a, b):
+        # axis 'z': flight runs from z=edge toward +z (south door); axis 'x': from x=edge toward +x (east door).
+        tops = [0., -STEP_RISE, -2 * STEP_RISE]
+        ends = [STEP_LANDING, STEP_LANDING + STEP_TREAD, STEP_LANDING + 2 * STEP_TREAD]
+        start = 0.
+        for k, (top, end) in enumerate(zip(tops, ends)):
+            if axis == 'z':
+                box('SM_EW_Shell', f'{name}{k}', (a, -.65, edge + start), (b, top, edge + end), 'Concrete', .012, True)
+            else:
+                box('SM_EW_Shell', f'{name}{k}', (edge + start, -.65, a), (edge + end, top, b), 'Concrete', .012, True)
+            start = end
+    steps('PersonnelSteps', 'z', Z1, 21., 22.7)
+    steps('ServiceSteps', 'x', X1, 1., 2.5)
     box('SM_EW_Ceiling','Ceiling',(X0+T,CEILING,Z0+T),(X1-T,CEILING+.06,Z1-T),'Ceiling',.002)
     for index, x in enumerate([21.,23.5,26.,28.5,31.6,34.,36.4,38.2]):
         box('SM_EW_Ceiling',f'RoofRib{index}',(x-.035,3.19,Z0+T),(x+.035,CEILING,Z1-T),'CeilingSteel',.003)

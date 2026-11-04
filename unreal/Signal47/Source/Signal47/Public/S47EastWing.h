@@ -1,4 +1,5 @@
 #pragma once
+#include "S47TubeFlicker.h"
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 class US47Main;
@@ -37,7 +38,13 @@ private:
  void Block(const FString& Name,const FVector& Min,const FVector& Max,UMaterialInterface* Mat,bool bShadow=true);
  void Light(const FString& Name,const FVector& At,float Lumens,const FLinearColor& Colour,double YawDegrees=0);
  void Walls();
- void Grime(); // photo pass: deferred-decal dirt bands, floor dust, jamb scuffs, run-off streaks
+ void Grime();
+ // Motorised roll-up door (Tom 4 Nov): two control stations (inside / outside), 4.5 s travel.
+ double DriveSince=0;
+ double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorControls=false;
+ bool DoorControls();void StepDoor(float Dt,bool bFree,bool bPowered);
+ FString DoorLabel() const;void UseDoor();
+ TArray<TWeakObjectPtr<class URectLightComponent>> Tubes; TArray<float> TubeLumens; TArray<FS47TubeFlicker> TubeFlicker; // photo pass: deferred-decal dirt bands, floor dust, jamb scuffs, run-off streaks
  bool Step(float Dt);
  void DriveTest();
  int32 DriveStage=0; double DriveStarted=0; bool bDriveRampSeen=false;

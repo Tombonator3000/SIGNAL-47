@@ -20,6 +20,9 @@
 #include "Components/PointLightComponent.h"
 #include "Components/RectLightComponent.h"
 #include "Components/DecalComponent.h"
+#include "S47Inter.h"
+#include "S47Audio.h"
+#include "S47UI.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/StaticMesh.h"
 #include "HAL/FileManager.h"
@@ -125,6 +128,87 @@ void FS47EastWing::Light(const FString& Name,const FVector& At,float Lumens,cons
  // Rect lights emit along +X; pitch down. Source width runs along local Y: yaw 0 = tube along site z
  // (the fixture mesh's long axis at its yaw 0), yaw 90 = along site x.
  L->SetWorldLocationAndRotation(S47Three::ToUE(At),FRotator(-90,YawDegrees,0));Parts.Add(L);
+ Tubes.Add(L);TubeLumens.Add(Lumens);TubeFlicker.AddDefaulted();
+}
+
+// ---- Motorised roll-up door -------------------------------------------------------------------
+// Freeform: the shell's curtain (NativeDoors[1]) rolls into the head drum by shrinking its height
+// from the top pivot; walking lock and vehicle collision follow its position. Story: closed, inert.
+namespace { const FVector DoorPivot(35.4,3,5.5); constexpr double DoorTravel=4.5; }
+
+FString FS47EastWing::DoorLabel() const
+{
+ if(!M||!M->IsFreeform())return FString();
+ const bool Powered=M->Freeform&&M->Freeform->HasPowerForReactiveLight();
+ if(!Powered)return TEXT("Garage door opener (no power)");
+ if(bDoorMoving)return TEXT("Stop garage door");
+ return bDoorUp?TEXT("Lower garage door"):TEXT("Raise garage door");
+}
+
+void FS47EastWing::UseDoor()
+{
+ if(!M||!M->IsFreeform())return;
+ const FVector At=S47Three::ToUE(FVector(38.,1.3,5.3));
+ if(M->Audio)M->Audio->Play(TEXT("rack_switch"),.7f,At);
+ if(!(M->Freeform&&M->Freeform->HasPowerForReactiveLight())){if(M->UI)M->UI->Toast(TEXT("The door opener is dead: no power to the garage."));return;}
+ if(bDoorMoving){bDoorMoving=false;if(M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.15f);M->Audio->Play(TEXT("door_metal"),.45f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.8f);}return;}
+ bDoorUp=!bDoorUp;bDoorMoving=true;
+ if(M->Audio){M->Audio->Play(TEXT("door_metal"),.55f,S47Three::ToUE(FVector(35.4,2.6,5.5)),.7f);M->Audio->Loop(TEXT("eastwing-door-motor"),TEXT("engine_idle"),.16f,S47Three::ToUE(FVector(35.4,3.1,5.3)));}
+}
+
+bool FS47EastWing::DoorControls()
+{
+ if(bDoorControls)return true;
+ if(!M||!M->Web||!M->Inter)return false;
+ const int32 Group=M->Web->Handle(TEXT("ext.group"));const auto* P=M->Web->Node(Group);if(!P||!P->Comp.IsValid())return false;
+ UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
+ UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
+ if(!Cube||!Base)return false;
+ auto Part=[&](const FString& Name,const FVector& Centre,const FVector& Size,uint32 Colour,float Rough)->FS47Obj
+ {
+  auto* Mat=UMaterialInstanceDynamic::Create(Base,M->Web);Mat->SetVectorParameterValue(TEXT("Color"),S47Three::Hex(Colour));Mat->SetScalarParameterValue(TEXT("Roughness"),Rough);
+  auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(P->Comp.Get());C->SetStaticMesh(Cube);C->SetMaterial(0,Mat);
+  C->SetWorldLocation(S47Three::ToUE(Centre));C->SetWorldScale3D(FVector(Size.X,Size.Z,Size.Y));
+  C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);
+  C->RegisterComponent();return M->Web->ObjAt(M->Web->AdoptNode(C,Group,Name));
+ };
+ // Inside on the garage's south wall east of the opening; outside on the facade by the east bollard.
+ struct FStation{const TCHAR* Id;double Z,Out;};
+ const FStation Stations[]={{TEXT("in"),Z1-T,-1},{TEXT("out"),Z1,1}};
+ for(const FStation& S:Stations)
+ {
+  const double Face=S.Z+S.Out*.035;const double X=S.Out>0?38.1:38.0;
+  FS47Obj Housing=Part(FString::Printf(TEXT("EastWingDoorControl_%s"),S.Id),FVector(X,1.3,Face),FVector(.13,.22,.07),0x7d7a6e,.55f);
+  Part(FString::Printf(TEXT("EastWingDoorControlUp_%s"),S.Id),FVector(X,1.35,Face+S.Out*.04),FVector(.045,.045,.02),0x2f7d3a,.4f);
+  Part(FString::Printf(TEXT("EastWingDoorControlDown_%s"),S.Id),FVector(X,1.26,Face+S.Out*.04),FVector(.045,.045,.02),0xa3271c,.4f);
+  Part(FString::Printf(TEXT("EastWingDoorConduit_%s"),S.Id),FVector(X,2.25,S.Z+S.Out*.015),FVector(.025,1.7,.025),0x8c8f8c,.35f);
+  FS47Interactable It;It.Id=FString::Printf(TEXT("eastwing:garage-door-%s"),S.Id);It.Object=Housing;It.Label=[this]{return DoorLabel();};It.Use=[this]{UseDoor();};It.Range=2.2;
+  It.Examine=[]{return FString(TEXT("A push-button station for the roll-up door opener: UP in green, DOWN in red."));};
+  M->Inter->Add(It);
+ }
+ bDoorControls=true;
+ // -S47EastWingDoor=0..1: developer start position for screenshots of a part-open door.
+ float Start=1.f;if(FParse::Value(FCommandLine::Get(),TEXT("S47EastWingDoor="),Start)){DoorOpen=FMath::Clamp(Start,0.f,1.f);bDoorUp=DoorOpen>.5;}
+ return true;
+}
+
+void FS47EastWing::StepDoor(float Dt,bool bFree,bool bPowered)
+{
+ if(!bFree){DoorOpen=0;bDoorMoving=false;return;} // Story: the opener is locked out
+ if(!bDoorMoving)return;
+ if(!bPowered)
+ {
+  bDoorMoving=false;
+  if(M&&M->Audio)M->Audio->Stop(TEXT("eastwing-door-motor"),.3f);
+  return;
+ }
+ const double Target=bDoorUp?1.:0.;
+ DoorOpen=FMath::Clamp(DoorOpen+(bDoorUp?1.:-1.)*Dt/DoorTravel,0.,1.);
+ if(FMath::IsNearlyEqual(DoorOpen,Target))
+ {
+  bDoorMoving=false;
+  if(M&&M->Audio){M->Audio->Stop(TEXT("eastwing-door-motor"),.2f);M->Audio->Play(bDoorUp?TEXT("door_metal"):TEXT("door_heavy"),.6f,S47Three::ToUE(FVector(35.4,bDoorUp?2.9:.3,5.5)));}
+ }
 }
 
 // EASTWING photo pass. Decal X projects into the surface; size is half-extent (depth, width, height) in cm.
@@ -288,7 +372,10 @@ void FS47EastWing::Walls()
  const int32 Removed=M->World->RemoveLandOut(TEXT("saro"),20.2,39.0,-5.9,5.9);
  UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing opened to walking (%d exclusion zone removed)"),Removed);
  AS47Props::AddFloor(33.2,37.6,Z1,Z1+4.0,0,-.576,TEXT("z"),true); // garage ramp to the apron
- AS47Props::AddFloor(21.0,22.7,Z1,Z1+1.6,0,-.576,TEXT("z"),true); // personnel door ramp
+ // Personnel and service doors have concrete steps (Shell/layout.py steps()): 0.45 m landing at floor
+ // level, then a 0.60 m flight of three 0.192 m risers; the walk plane slopes over the flight.
+ AS47Props::AddFloor(21.0,22.7,Z1,Z1+.45,0,0,TEXT("z"),true);
+ AS47Props::AddFloor(21.0,22.7,Z1+.45,Z1+1.05,0,-.576,TEXT("z"),true);
  AS47Props::AddFloor(X0,X1,Z0,Z1,0,0,TEXT("x"),false);             // floor inside
  TArray<FS47Rect>& C=M->Web->CollidersMutable(TEXT("saro"));
  auto R=[&C](double A,double B,double D,double E,const TCHAR* Id){C.Add({A,B,D,E,FString(TEXT("eastwing:"))+Id,true});};
@@ -298,7 +385,8 @@ void FS47EastWing::Walls()
  if(NativeDoors.Num()==3)
  {
   R(X1-T,X1,Z0,1.2,TEXT("e0"));R(X1-T,X1,2.3,Z1,TEXT("e1"));R(X1-T,X1,1.2,2.3,TEXT("lock-service"));
-  AS47Props::AddFloor(X1,X1+1.6,1.,2.5,0,-.576,TEXT("x"),true);
+  AS47Props::AddFloor(X1,X1+.45,1.,2.5,0,0,TEXT("x"),true);
+  AS47Props::AddFloor(X1+.45,X1+1.05,1.,2.5,0,-.576,TEXT("x"),true);
  }
  else R(X1-T,X1,Z0,Z1,TEXT("e"));
  R(LabX-.08,LabX+.08,Z0,2.4,TEXT("lab0"));R(LabX-.08,LabX+.08,3.4,Z1,TEXT("lab1"));
@@ -318,10 +406,18 @@ bool FS47EastWing::Step(float Dt)
   if(Shown!=bShown){bShown=Shown;for(const auto& P:Parts)if(USceneComponent* C=P.Get())C->SetVisibility(Shown,true);}
   const bool Free=M->IsFreeform();
   const bool Powered=Free?(M->Freeform&&M->Freeform->HasPowerForReactiveLight()):(M->Story&&M->Story->bPowered);
-  if(PropsHelper)PropsHelper->SetPowered(Shown&&Powered);
+  DoorControls();StepDoor(Dt,Free,Powered);
+  // Tubes strike on / die off individually (S47TubeFlicker); the diffuser glow follows their mean.
+  {
+   const double Now=M->Web->GetWorld()?M->Web->GetWorld()->GetTimeSeconds():0.;
+   const float Target=Shown&&Powered?1.f:0.f;float Sum=0;int32 N=0;
+   for(int32 I=0;I<Tubes.Num();++I)if(URectLightComponent* L=Tubes[I].Get())
+   {const float K=TubeFlicker[I].Apply(Now,Target,uint32(I+11));L->SetIntensity(TubeLumens[I]*K);L->SetVisibility(Shown&&K>1e-4f);Sum+=K;++N;}
+   if(PropsHelper)PropsHelper->SetLevel(N?Sum/N:Target);
+  }
   for(const auto& P:Parts)if(USceneComponent* C=P.Get())
   {
-   if(ULocalLightComponent* L=Cast<ULocalLightComponent>(C)){L->SetVisibility(Shown&&Powered);continue;}
+   if(Cast<ULocalLightComponent>(C))continue; // tubes handled above
    const FString Name=C->GetName();
    const bool Open=Name==TEXT("EastWing_DoorOpen"),Closed=Name==TEXT("EastWing_DoorClosed")||Name==TEXT("EastWing_GarageClosed");
    if(Open||Closed)
@@ -333,11 +429,15 @@ bool FS47EastWing::Step(float Dt)
   for(int32 I=0;I<NativeDoors.Num();++I)if(UStaticMeshComponent* C=NativeDoors[I].Get())
   {
    const FVector At=I==0?FVector(21.3,0,5.5):I==1?FVector(35.4,3,5.5):FVector(38.6,0,1.2);
-   const FQuat Q=Free?(I==1?S47Three::Euler(PI/2,0,0):S47Three::Euler(0,I==0?PI/2:-PI/2,0)):FQuat::Identity;
-   double Matrix[16];S47Three::Compose(At,Q,FVector::OneVector,Matrix);C->SetWorldTransform(S47Three::MatToUE(Matrix));
-   C->SetVisibility(Shown);C->SetCollisionEnabled(Shown&&!Free?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
+   // The roll-up curtain (I==1) shrinks toward its top pivot as it rolls into the head drum.
+   const FQuat Q=Free&&I!=1?S47Three::Euler(0,I==0?PI/2:-PI/2,0):FQuat::Identity;
+   const FVector Scale=I==1?FVector(1,FMath::Max(.04,1.-.96*DoorOpen),1):FVector::OneVector;
+   double Matrix[16];S47Three::Compose(At,Q,Scale,Matrix);C->SetWorldTransform(S47Three::MatToUE(Matrix));
+   const bool Blocks=I==1?(!Free||DoorOpen<.9):!Free;
+   C->SetVisibility(Shown&&(I!=1||DoorOpen<.995));C->SetCollisionEnabled(Shown&&Blocks?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);
   }
-  for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id.StartsWith(TEXT("eastwing:lock-")))R.bEnabled=!Free;
+  for(auto& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id.StartsWith(TEXT("eastwing:lock-")))
+   R.bEnabled=R.Id==TEXT("eastwing:lock-garage")?(!Free||DoorOpen<.85):!Free;
  }
  DriveTest();
  // Developer views (-S47EastWingShots): exterior and each room, then exit.
@@ -391,6 +491,18 @@ bool FS47EastWing::SelfTest(TArray<FString>& Lines)
  bool Good=true;double Area=0;for(int32 I=0;I<4;++I){const FBox2D R=Room(I);Good&=R.bIsValid&&R.GetArea()>15;Area+=R.GetArea();}
  Good&=Area>150&&Area<200&&Room(3).GetSize().X>6.5&&Room(3).GetSize().Y>10;
  Lines.Add(FString::Printf(TEXT("%s / East wing: four rooms on the exported footprint, garage wide and deep enough for the Jeep"),Good?TEXT("PASS"):TEXT("FAIL")));
+ // Shared fluorescent tube behaviour: first frame steady, switch-on strikes then holds, switch-off dies off,
+ // and fast authored flicker (< 0.6 s dark) passes straight through.
+ {
+  FS47TubeFlicker F;bool Ok=FMath::IsNearlyEqual(F.Apply(0,1),1.f);
+  for(double t=.1;t<=2.;t+=.1)Ok&=FMath::IsNearlyEqual(F.Apply(t,1),1.f);
+  bool Glow=false;for(double t=2.;t<=3.;t+=.005){const float K=F.Apply(t,0);if(t<2.04)Glow|=K>0.f;if(t>2.2)Ok&=K==0.f;}
+  bool Dark=false,Lit=false;for(double t=3.;t<=5.;t+=.005){const float K=F.Apply(t,1);if(t<3.04)Dark|=K==0.f;if(t<3.8&&K>0&&K<1)Lit=true;}
+  Ok&=Glow&&Dark&&Lit&&FMath::IsNearlyEqual(F.Apply(5.,1),1.f);
+  F.Apply(5.2,0);Ok&=FMath::IsNearlyEqual(F.Apply(5.25,1),1.f); // 50 ms story blip: no restrike
+  Lines.Add(FString::Printf(TEXT("%s / Fluorescent tubes: steady on load, strike on switch-on, die-off on switch-off, story flicker untouched"),Ok?TEXT("PASS"):TEXT("FAIL")));
+  Good&=Ok;
+ }
  return Good;
 }
 
@@ -409,7 +521,7 @@ void FS47EastWing::DriveTest()
   FPlatformMisc::RequestExit(false);
  };
  if(DriveStarted==0){DriveStarted=Now;return;}
- if(Now-DriveStarted>100){Finish(false,TEXT("bounded actual Jeep integration timeout"));return;}
+ if(Now-DriveStarted>160){DriveChecks.Add(FString::Printf(TEXT("MEASURE / timeout at stage %d busy=%d driving=%d door=%.2f moving=%d"),DriveStage,W&&W->bBusy,W&&W->bDriving,DoorOpen,bDoorMoving));Finish(false,TEXT("bounded actual Jeep integration timeout"));return;}
  if(S47Startup::Blocking()||!bBuilt||!M||!W||!M->Player||M->Mode!=US47Main::EMode::Play||W->Area!=TEXT("saro"))return;
  if(DriveStage==0)
  {
@@ -472,7 +584,38 @@ void FS47EastWing::DriveTest()
  }
  else if(DriveStage==6&&D&&Jeep&&D->Pos.Z>13)
  {
-  Finish(Jeep->Position.Y<-.5,TEXT("actual Jeep reverses out through garage opening to apron"));
+  if(Jeep->Position.Y>=-.5){Finish(false,TEXT("actual Jeep reverses out through garage opening to apron"));return;}
+  DriveChecks.Add(TEXT("PASS / actual Jeep reverses out through garage opening to apron"));
+  W->TestInput=[W]{FS47DriveIn A;const auto* C=W->CabDrive();A.Throttle=C&&C->Speed<-.08?1.:0.;return A;};DriveStage=70;return;
+ }
+ else if(DriveStage==70&&D&&FMath::Abs(D->Speed)<.1)
+ {
+  W->TestInput=nullptr;if(!W->GetOutHere()){Finish(false,TEXT("actual Jeep allows exit on the apron"));return;}DriveStage=7;return;
+ }
+ // Motorised roll-up door through the production interaction (both control stations exist).
+ else if(DriveStage==7&&!W->bBusy&&!W->bDriving)
+ {
+  FS47Interactable* Out=M->Inter?M->Inter->Get(TEXT("eastwing:garage-door-out")):nullptr;FS47Interactable* In=M->Inter?M->Inter->Get(TEXT("eastwing:garage-door-in")):nullptr;
+  if(!Out||!In||!Out->Use||!Out->Label){Finish(false,TEXT("garage door control stations registered inside and outside"));return;}
+  if(Out->Label()!=TEXT("Lower garage door")){Finish(false,TEXT("open powered door offers Lower"));return;}
+  DriveChecks.Add(TEXT("PASS / garage door control stations registered inside and outside"));
+  Out->Use();DriveSince=Now;DriveStage=8;return;
+ }
+ else if(DriveStage==8)
+ {
+  if(bDoorMoving&&Now-DriveSince<12)return;
+  bool Lock=false;for(const FS47Rect& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id==TEXT("eastwing:lock-garage"))Lock=R.bEnabled;
+  const bool Blocks=NativeDoors.IsValidIndex(1)&&NativeDoors[1].IsValid()&&NativeDoors[1]->GetCollisionEnabled()==ECollisionEnabled::QueryOnly;
+  if(!(DoorOpen<.001&&Lock&&Blocks)){Finish(false,TEXT("lowered door closes walking lock and vehicle collision"));return;}
+  DriveChecks.Add(TEXT("PASS / motor lowers the roll-up door; walking lock and vehicle collision close"));
+  M->Inter->Get(TEXT("eastwing:garage-door-in"))->Use();DriveSince=Now;DriveStage=9;return;
+ }
+ else if(DriveStage==9)
+ {
+  if(bDoorMoving&&Now-DriveSince<12)return;
+  bool Lock=true;for(const FS47Rect& R:M->Web->CollidersMutable(TEXT("saro")))if(R.Id==TEXT("eastwing:lock-garage"))Lock=R.bEnabled;
+  const bool Blocks=NativeDoors.IsValidIndex(1)&&NativeDoors[1].IsValid()&&NativeDoors[1]->GetCollisionEnabled()==ECollisionEnabled::QueryOnly;
+  Finish(DoorOpen>.999&&!Lock&&!Blocks,TEXT("inside station raises the door; lock and collision open again"));
  }
 }
 
