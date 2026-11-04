@@ -1,0 +1,22 @@
+{
+  "material": "EW_CinderblockPainted",
+  "dimensions": [
+    2048,
+    2048
+  ],
+  "span_m": [
+    1.6,
+    1.6
+  ],
+  "tileable": true,
+  "height_offset_m": -0.0017287704395130277,
+  "height_scale_m": 0.001989119977224618,
+  "height_source": "artist-estimated material relief; not measured geometry",
+  "normal_convention": "OpenGL Y+, image row down; n=(-dh/dU,+dh/drow,1)",
+  "data_color_space": "linear, no sRGB chunk",
+  "base_color_untouched": true,
+  "roughness_range": [
+    0.3522507846355438,
+    0.5840380787849426
+  ]
+}
