@@ -2,8 +2,10 @@
 #include "S47EastWingProps.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
+#include "S47FreeformTest.h"
 #include "S47FreeformWorld.h"
 #include "S47Story.h"
+#include "S47Chapter1.h"
 #include "S47Web.h"
 #include "S47Obj.h"
 #include "S47Three.h"
@@ -646,8 +648,27 @@ void FS47EastWing::DriveTest()
   const FString Dir=FPaths::ProjectSavedDir()/TEXT("EastWingDriveTest");IFileManager::Get().MakeDirectory(*Dir,true);
   FFileHelper::SaveStringToFile(FString::Join(DriveChecks,TEXT("\n")),*(Dir/TEXT("result.txt")));
   for(const FString& Line:DriveChecks)UE_LOG(LogS47EastWing,Display,TEXT("%s"),*Line);
-  FPlatformMisc::RequestExit(false);
+  auto Result=S47J::New();S47J::Set(Result,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(Result,TEXT("reason"),Why);
+  S47J::Set(Result,TEXT("method"),TEXT("Explicit approach fixtures; production Walker movement and owned Jeep input; Story chapter1 fixture only, no progression injection. Not normal menu input."));
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryAccessAfterFreeform")))
+  {
+   S47J::Set(Result,TEXT("method"),TEXT("Freeform source, explicit chapter1 transition, verified Story disk/title Continue, then unchanged three Walker entrance attempts and owned Jeep driving sequence. Explicit approach/Jeep fixtures; no ordinary save-menu or process-restart claim."));
+   S47J::Set(Result,TEXT("storyContinueHandoff"),M&&M->FreeformTest&&M->FreeformTest->StoryAccessReady());
+   S47J::Set(Result,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));
+  }
+  S47J::Set(Result,TEXT("story"),M&&!M->IsFreeform());S47J::Set(Result,TEXT("checks"),FString::Join(DriveChecks,TEXT("\n")));
+  FFileHelper::SaveStringToFile(S47J::Write(Result,true),*(Dir/TEXT("result.json")));
+  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
  };
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryAccessAfterFreeform")))
+ {
+  if(!FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))||!FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression"))||!FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTest")))
+  {Finish(false,TEXT("Story-after-Freeform access requires camera pickup/regression and Freeform harness flags"));return;}
+  if(DriveWaitStarted==0)DriveWaitStarted=Now;
+  if(!M||!M->FreeformTest||!M->FreeformTest->StoryAccessReady())
+  {if(Now-DriveWaitStarted>240)Finish(false,TEXT("bounded wait for verified Story disk Continue handoff"));return;}
+  if(M->IsFreeform()){Finish(false,TEXT("verified Story handoff must not return to Freeform"));return;}
+ }
  if(DriveStarted==0){DriveStarted=Now;return;}
  if(Now-DriveStarted>160){DriveChecks.Add(FString::Printf(TEXT("MEASURE / timeout at stage %d busy=%d driving=%d door=%.2f moving=%d"),DriveStage,W&&W->bBusy,W&&W->bDriving,DoorOpen,bDoorMoving));Finish(false,TEXT("bounded actual Jeep integration timeout"));return;}
  if(S47Startup::Blocking()||!bBuilt||!M||!W||!M->Player||M->Mode!=US47Main::EMode::Play||W->Area!=TEXT("saro"))return;
@@ -661,7 +682,10 @@ void FS47EastWing::DriveTest()
   {
    int32 Locks=0;for(const FS47Rect& R:M->Web->CollidersMutable(TEXT("saro")))if(R.bEnabled&&R.Id.StartsWith(TEXT("eastwing:lock-")))++Locks;
    bool Closed=NativeDoors.Num()==3;for(const auto& Door:NativeDoors)Closed&=Door.IsValid()&&Door->GetCollisionEnabled()==ECollisionEnabled::QueryOnly;
-   Finish(Locks==3&&Closed,TEXT("Story enables three walking entrance locks and closes garage driving"));return;
+   if(!(Locks==3&&Closed)){Finish(false,TEXT("Story enables three walking entrance locks and closes garage driving"));return;}
+   auto* C=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));if(!C){Finish(false,TEXT("Story chapter controller exists"));return;}
+   DriveStoryState=S47J::Write(C->SaveState());
+   M->Player->Place(21.85,9,0);M->Player->TestMove=FVector2D(0,-1);DriveSince=Now;DriveStage=100;return;
   }
   M->Player->Place(21.85,9,0);M->Player->TestMove=FVector2D(0,-1);DriveStage=10;return;
  }
@@ -681,6 +705,43 @@ void FS47EastWing::DriveTest()
   DriveChecks.Add(TEXT("PASS / Actual walking input crosses east service ramp and door into garage"));
   auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),-.576);S47J::Set(Pose,TEXT("z"),15.);S47J::Set(Pose,TEXT("h"),0.);
   W->PlaceTruck(TEXT("saro"),Pose);W->Roam(TEXT("saro"));DriveStage=1;return;
+ }
+ if(DriveStage>=100)
+ {
+  if(M->IsFreeform()||DoorOpen>.001){Finish(false,TEXT("Story mode and closed garage gate must survive access attempts"));return;}
+  auto* C=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));
+  auto Current=C?C->SaveState():nullptr;auto Before=S47J::Read(DriveStoryState);
+  if(Current)Current->RemoveField(TEXT("eventClock"));if(Before)Before->RemoveField(TEXT("eventClock"));
+  if(!Current||!Before||!FJsonValue::CompareEqual(FJsonValueObject(Current),FJsonValueObject(Before))){Finish(false,TEXT("access attempts must not mutate Story progression"));return;}
+  if(DriveStage<=102)
+  {
+   if(Now-DriveSince<4)return;
+   M->Player->TestMove.Reset();const auto P=M->Player->Pos;
+   const bool Blocked=DriveStage==101?P.X>=38.6:P.Z>=5.5;
+   const bool Approached=DriveStage==101?P.X<41.:P.Z<8.;
+   DriveChecks.Add(FString::Printf(TEXT("MEASURE / Story walking stage %d pose %s"),DriveStage,*P.ToString()));
+   if(!Blocked||!Approached){Finish(false,TEXT("actual walking approaches but cannot cross locked entrance"));return;}
+   const FString Pick=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+   if(Pick.StartsWith(TEXT("eastwing:"))&&M->Player->OnUse)M->Player->OnUse(Pick);
+   DriveChecks.Add(TEXT("PASS / actual walking stopped outside Story entrance; offered native ray use attempted"));
+   if(DriveStage==100){M->Player->Place(42,1.75,PI/2);M->Player->TestMove=FVector2D(0,-1);DriveStage=101;DriveSince=Now;return;}
+   if(DriveStage==101){M->Player->Place(35.4,9,0);M->Player->TestMove=FVector2D(0,-1);DriveStage=102;DriveSince=Now;return;}
+   auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),-.576);S47J::Set(Pose,TEXT("z"),15.);S47J::Set(Pose,TEXT("h"),0.);
+   W->PlaceTruck(TEXT("saro"),Pose);W->Roam(TEXT("saro"));DriveStage=103;return;
+  }
+  if(DriveStage==103)
+  {
+   if(W->bBusy||!W->bDriving||!W->CabDrive()||!W->CabTruck())return;
+   W->TestInput=[] {FS47DriveIn I;I.Throttle=.28;return I;};DriveStage=104;DriveSince=Now;return;
+  }
+  if(DriveStage==104)
+  {
+   if(!W->CabDrive()||!W->CabTruck()||!W->bDriving){Finish(false,TEXT("owned Story Jeep remains active during approach"));return;}
+   if(Now-DriveSince<8)return;
+   const auto P=W->CabDrive()->Pos;DriveChecks.Add(FString::Printf(TEXT("MEASURE / owned Story Jeep pose %s"),*P.ToString()));
+   Finish(P.Z>7.5&&P.Z<14,TEXT("actual owned Jeep advances then stops outside locked Story garage; Story progression unchanged"));return;
+  }
+  return;
  }
  FS47DriveController* D=W->CabDrive();FS47Truck* Jeep=W->CabTruck();
  if(DriveStage==1)

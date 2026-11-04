@@ -101,6 +101,8 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-native-controls"));S47J::Set(O,TEXT("method"),TEXT("Explicit session-seed/open-case/player-placement fixtures. Actual native planning/wait buttons, interaction rays, physical preparation/inspection, natural active clock ticks through the entire gate window and timed roof listening, paused/absent listening checks and disk/Flow Continue. Time jumps occur before valid windows or deliberately invalidate the skipped window. No human input, natural lead discovery or subjective listening acceptance."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldPreview"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-roof-visual-preview"));S47J::Set(O,TEXT("method"),TEXT("Explicit seed, clock and player-placement fixture. Native roof plan button and actual preparation ray, before/after screenshots with cleared toasts and separate rendering delays, then explicitly injected gate disturbance geometry. No control-window, listening or gate-result claim."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){S47J::Set(O,TEXT("scope"),TEXT("dusk-orb-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit dusk clock, forced event and player placement. Actual native component, retained camera exposure, wet-bench Slate actions, powered OPS guards, unique control plan and once-only payment, with two full disk/Flow restores. Natural scheduling is checked separately in pure tests; no natural discovery, OS-input journey or completed field comparison is claimed."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression")))
+ {S47J::Set(O,TEXT("scope"),TEXT("story-camera-after-freeform"));S47J::Set(O,TEXT("method"),TEXT("Explicit chapter1 start and approach fixtures; physical pickup ray/OnUse, native Story shutter. Quarantined case metadata enables WriteSave API then title Continue callback; not a native save-menu/button test. No Story progress injection."));S47J::Set(O,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));}
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -207,6 +209,7 @@ void FS47FreeformTest::Step(double Dt)
   Root=FPaths::ProjectSavedDir()/TEXT("FreeformTest");IFileManager::Get().MakeDirectory(*Root,true);
   if(!Check(User.StartsWith(TEXT("/tmp/")),TEXT("explicit isolated temporary profile required")))return;
  }
+ if(((Stage>=8690&&Stage<=8701)||(Stage>=86970&&Stage<=86979))&&FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression"))){StepStoryCamera(Dt);return;}
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
   if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
@@ -1042,6 +1045,8 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8601)
   {
    if(!Check(!M->FieldCamera->bHave&&!S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("disk Continue preserves explicit unowned camera")))return;
+   if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression"))&&FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned")))
+   {M->Flow->ToTitle();US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(8690);return;}
    M->UI->Close(true);F.Director->Stop();const auto* It=M->Inter->Get(TEXT("fieldCamera"));
    if(!Check(It&&It->Object,TEXT("physical camera has the production registered interaction object")))return;
    const FVector Target=It->Object.WorldBox().GetCenter();M->Player->Place(17.25,-1.9,0);
@@ -1085,7 +1090,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==8606)
   {
    if(!Check(M->FieldCamera->bHave&&S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("explicit legacy Freeform fixture missing ownership field preserves formerly auto-granted camera")))return;
-   US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(8690);return;
+   if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression")))M->Flow->ToTitle();US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(8690);return;
   }
   return;
  }
