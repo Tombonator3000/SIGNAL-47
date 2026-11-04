@@ -77,6 +77,8 @@ public:
  FVector InteractionPoint(const FString& Id) const;
  // Where a player stands to use a station (the casework fronts face different ways).
  FVector StandPoint(const FString& Id) const;
+ // Simple painted box parented to an area group (used by FS47CaseFieldTests for staged field-test props).
+ FS47Obj StageBox(const FString& Name,const FVector& At,const FVector& Size,uint32 Colour,int32 Parent){FS47Obj O=Box(Name,At,Size,Colour,Parent);Parts.RemoveAll([&](const FS47Obj& P){return P==O;});return O;} // caller owns visibility
  static bool SelfTest(TArray<FString>& Lines);
 private:
  FS47FieldLogger Logger;

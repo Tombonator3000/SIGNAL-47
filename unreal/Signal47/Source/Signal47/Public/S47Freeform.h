@@ -123,6 +123,11 @@ public:
  void RecordEvidence(const FString& Id,const FString& Text);
  void RegisterFinding(const FString& Id,const FString& Text) { RecordEvidence(Id,Text); }
  bool HasFinding(const FString& Id) const { return Findings.Contains(Id); }
+ // First retained finding id starting with Prefix (empty if none); used for prepared field tests.
+ FString FindingWithPrefix(const FString& Prefix) const { for(const auto& KV:Findings)if(KV.Key.StartsWith(Prefix))return KV.Key; return FString(); }
+ const FS47FreeformCases::FCase* CaseState(int32 Line) const { return Cases.Get(Line); }
+ bool DevOpenCase(int32 Line){return Cases.Open(Line,DayNumber,FMath::Fmod(WorldClock,86400.));}
+ FString PlannedCaseJob(int32 Line) const { const auto* C=Cases.Get(Line); return C&&C->Planned>=0?C->PlannedJob:FString(); }
  int32 FindingCount() const { return Findings.Num(); }
  void Recover(const FString& Why);
  bool Spend(int32 Amount,bool bEmergency=false);

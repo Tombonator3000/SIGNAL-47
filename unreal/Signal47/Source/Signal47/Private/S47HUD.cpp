@@ -10,6 +10,7 @@
 #include "S47FreeformJobs.h"
 #include "S47FreeformCases.h"
 #include "S47EastWing.h"
+#include "S47CaseFieldTests.h"
 #include "S47FreeformJourneyTest.h"
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
@@ -197,6 +198,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformJobs::SelfTest(Lines);
 		bOk &= FS47FreeformCases::SelfTest(Lines);
 		bOk &= FS47EastWing::SelfTest(Lines);
+		bOk &= FS47CaseFieldTests::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
 		bOk &= FS47HighwayUfo::SelfTest(Lines);
 		bOk &= FS47FreeformWorld::SelfTest(Lines);
@@ -580,7 +582,7 @@ void AS47HUD::Start()
 		M->Office = MakeShared<FS47Office>(M);
 		M->RoomLights = MakeShared<FS47RoomLights>(M);
 		M->Office->Init();
-		M->EastWing = MakeShared<FS47EastWing>(M);
+		M->EastWing = MakeShared<FS47EastWing>(M); M->CaseFieldTests = MakeShared<FS47CaseFieldTests>(M);
 		M->EastWing->Init();
 		if (auto* C2 = Cast<US47Chapter2>(M->Story->Chapter(TEXT("ch2"))))
 		{
