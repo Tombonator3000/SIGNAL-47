@@ -291,6 +291,8 @@ void FS47FreeformInWorldTest::Step(double Dt)
  if(Stage==22)
  {
   if(F.CurrentJob()->Stage!=FS47FreeformSession::EJobStage::Chart)return;
+  M->UI->Close(true); // A modal document would pause the physical paper feed.
+  if(F.PrinterJobId()!=F.CurrentJob()->Id||F.PrinterProgress()<1.)return;
   if(!Check(F.CurrentJob()->Elapsed==18&&F.CollectChart(),TEXT("real eighteen-second pulsar acquisition produces retained original chart")))return;
   M->UI->Close(true);if(!Check(F.StartControl(),TEXT("independent eight-second control starts after original chart")))return;
   Go(23);return;

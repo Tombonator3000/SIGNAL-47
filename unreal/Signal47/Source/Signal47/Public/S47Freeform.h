@@ -21,6 +21,7 @@ public:
   int32 Day=1, Slot=0, Source=0;
   EJobStage Stage=EJobStage::New;
   double Elapsed=0, Quality=1, ReceivedLevel=1;
+  double ChartFeed=0, PacketFeed=0, DuplicateFeed=0; // Physical printer seconds; retained across Continue.
   TArray<double> TraceTicks;
   bool bLegacyTrace=false;
   bool bGenerated=false;FS47FreeformJobs::FCard Card;
@@ -101,6 +102,10 @@ public:
  bool PointSelected();
  bool StartAcquisition();
  bool CollectChart();
+ static constexpr double PrinterSeconds=5.2;
+ FString PrinterJobId() const;
+ double PrinterProgress() const; // -1 empty, otherwise paper fraction 0..1
+ bool PrinterFeedbackActive() const { return bPrinterFeedback; }
  bool StartControl();
  bool AudioAction(const FString& Action);
  void SeekAudio(double At);
@@ -151,7 +156,14 @@ private:
  bool bActive=false,bDeadly=false,bDead=false,bPowerFault=false,bAnomaly=false;
  bool bTelemetry=false,bAudioOpen=false,bAudioPlaying=false,bRecovering=false;
  bool bPowerApplied=false,bLastPower=true;
- bool bMotorFeedback=false;
+ bool bMotorFeedback=false,bPrinterFeedback=false;
+ int32 PrinterIndex() const;
+ static int32 PendingPrint(const FJob& J); // 0 original, 1 packet, 2 duplicate; -1 none
+ static double& PrintFeed(FJob& J,int32 Kind);
+ static double PrintFeed(const FJob& J,int32 Kind);
+ FString PrinterHint() const;
+ void StepPrinter(double Dt);
+ void StopPrinterFeedback();
  int32 LastServiceFeedback=0,CommandClicks=0,ServiceClicks=0;
  TArray<FVector2D> FeedbackEncoders;
  void StepEquipmentFeedback();

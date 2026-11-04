@@ -4,6 +4,7 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "S47Audio.h"
 #include "S47Flow.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
@@ -65,7 +66,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -76,6 +77,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
   S47J::Set(O,TEXT("method"),TEXT("Explicit receiver tuning and one array target command; real generated pulsar job, timed acquisition, retained original, internal control, Roam/StartTrip busy callback and ordinary stationary exit. Frame samples compare native encoders, control progress and world clock through the actual transition; no bBusy write, natural commute or OS-input claim."));
   S47J::Set(O,TEXT("busy_frame_samples"),TripHoldSamples);S47J::Set(O,TEXT("trip_hold_baseline"),Snapshot);
  }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -185,6 +187,80 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))
+ {
+  if(Age>100){Finish(false,TEXT("bounded printer fixture timeout"));return;}
+  auto Doc=[&](const FString& Suffix){return M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D){return D.Id==PrinterId+Suffix;});};
+  auto Power=[&](bool On){auto Save=S47J::Read(S47J::Write(F.Save()));S47J::Set(Save,TEXT("powerFault"),!On);F.Begin(Save);F.Director->Stop();M->UI->Close(true);};
+  auto Paper=[&](){const auto O=M->Web->Obj(TEXT("room.printerPaper"));const auto* N=O?M->Web->Node(O.I):nullptr;return N&&N->bVis&&FMath::Abs(N->S.Y-FMath::Max(.001,F.PrinterProgress()))<.005;};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Jobs().Num()>=2&&M->World->Area==TEXT("saro"),TEXT("printer test uses isolated SARO prepared-job fixture")))return;
+   M->UI->Close(true);auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
+   for(int32 I=0;I<Jobs.Num();++I){auto O=Jobs[I]->AsObject();S47J::Set(O,TEXT("stage"),int32(I<2?J::Chart:J::New));S47J::Set(O,TEXT("chartFeed"),0.);S47J::Set(O,TEXT("anomaly"),false);S47J::Set(O,TEXT("paid"),false);S47J::Set(O,TEXT("elapsed"),18.);S47J::Set(O,TEXT("referenceClock"),1234.5);}
+   S47J::Set(Save,TEXT("selected"),0);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();PrinterId=F.Jobs()[0].Id;PrinterBudget=F.Budget();
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));M->Player->Place(P.X,P.Z+1.1,0);const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   if(!Check(!F.CollectChart()&&!Doc(TEXT("-original")),TEXT("unfinished paper cannot create an original document")))return;
+   Go(8501);return;
+  }
+  if(Stage==8501)
+  {
+   if(F.PrinterProgress()<.25)return;
+   if(!Check(F.PrinterProgress()<1&&F.PrinterFeedbackActive()&&Paper()&&!Doc(TEXT("-original")),TEXT("native paper advances with active printer audio loop and no premature original")))return;
+   const auto Loop=M->Audio->InspectLoop(TEXT("ffPrinter"));
+   if(!Check(Loop.IsSet()&&Loop->bPlaying&&Loop->bLoop&&Loop->Gain>0&&Loop->Buffer.IsValid(),TEXT("printer recipe has an actual playing loop with gain and a decoded audio buffer")))return;
+   Shot(TEXT("printer-partial"));PrinterHeld=F.PrinterProgress();
+   if(!Check(F.SelectJob(1)&&F.PrinterJobId()==PrinterId,TEXT("changing selected job preserves the started printer sheet")))return;
+   Power(false);if(!Restore(TEXT("printer-mid-feed-power-off")))return;Go(8502,.8);return;
+  }
+  if(Stage==8502)
+  {
+   if(!Check(!F.HasPowerForReactiveLight()&&!F.PrinterFeedbackActive()&&FMath::Abs(F.PrinterProgress()-PrinterHeld)<.001&&Paper()&&!F.CollectChart()&&!Doc(TEXT("-original")),TEXT("disk Continue preserves partial paper; outage stops feed and audio without creating document")))return;
+   const auto Loop=M->Audio->InspectLoop(TEXT("ffPrinter"));
+   if(!Check(!Loop.IsSet()||!Loop->bPlaying||Loop->Gain<=0,TEXT("power interruption leaves no playing recorded printer loop")))return;
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));M->Player->Place(P.X,P.Z+1.1,0);const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   Power(true);Go(8503);return;
+  }
+  if(Stage==8503)
+  {
+   if(F.PrinterProgress()<1)return;
+   if(!Check(!F.PrinterFeedbackActive()&&Paper()&&!Doc(TEXT("-original")),TEXT("completed native sheet stops printer loop and waits for collection")))return;
+   Shot(TEXT("printer-ready"));Go(85031,.3);return;
+  }
+  if(Stage==85031)
+  {
+   Power(false);
+   if(!Check(F.CollectChart()&&Doc(TEXT("-original"))&&F.CurrentJob()->Id==PrinterId&&F.Budget()==PrinterBudget,TEXT("ready original can be collected without power; queue identity and budget are retained")))return;
+   PrinterOriginal=F.CurrentJob()->OriginalPage;PrinterStamp=F.CurrentJob()->OriginalStamp;M->UI->Close(true);
+   if(!Check(!PrinterOriginal.IsEmpty()&&F.PrinterJobId()==F.Jobs()[1].Id&&!F.CollectChart(),TEXT("collection reveals next unpaid sheet without duplicating first original")))return;
+   auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));S47J::Set(Jobs[1]->AsObject(),TEXT("stage"),int32(J::New));auto O=Jobs[0]->AsObject();S47J::Set(O,TEXT("stage"),int32(J::Registered));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("packetFeed"),0.);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();
+   if(!Check(!F.CollectChart()&&!Doc(TEXT("-packet")),TEXT("registered packet must finish its own physical feed")))return;
+   Go(8504);return;
+  }
+  if(Stage==8504)
+  {
+   if(F.PrinterProgress()<1)return;
+   Power(false);
+   if(!Check(F.CollectChart()&&Doc(TEXT("-packet"))&&F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp&&F.Budget()==PrinterBudget,TEXT("packet collection without power preserves original provenance and grants no extra reward")))return;
+   M->UI->Close(true);auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("phenomenon"),TEXT("duplicate_print"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("duplicateFeed"),0.);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();
+   if(!Check(!F.CollectChart()&&!Doc(TEXT("-duplicate")),TEXT("separate duplicate cannot be collected before its own feed")))return;
+   Go(8505);return;
+  }
+  if(Stage==8505)
+  {
+   if(F.PrinterProgress()<1)return;
+   Power(false);
+   if(!Check(F.CollectChart()&&Doc(TEXT("-duplicate"))&&F.CurrentJob()->bDuplicateCollected&&F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp&&F.CurrentJob()->DuplicatePage!=PrinterOriginal&&F.Budget()==PrinterBudget&&!F.CollectChart(),TEXT("finished duplicate is separately retained without power, original mutation or repeat reward")))return;
+   M->UI->Close(true);if(!Restore(TEXT("printer-all-collected")))return;Go(8506,.3);return;
+  }
+  if(Stage==8506)
+  {
+   if(!Check(F.PrinterProgress()<0&&!F.PrinterFeedbackActive()&&F.Jobs()[0].OriginalPage==PrinterOriginal&&F.Jobs()[0].OriginalStamp==PrinterStamp&&Doc(TEXT("-original"))&&Doc(TEXT("-packet"))&&Doc(TEXT("-duplicate"))&&F.Budget()==PrinterBudget,TEXT("disk Continue retains three distinct papers and original provenance with empty stopped printer")))return;
+   Finish(true,TEXT("Native printer fixture passed: feed/audio state, outage, Continue, queue, original/packet/duplicate identity; no listening acceptance."));return;
+  }
+  return;
+ }
  // One real trip transition, not a second test framework or a simulated bBusy flag.
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest")))
  {
@@ -207,7 +283,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==9002)
   {
-   if(F.CurrentJob()->Stage!=J::Chart)return;
+   if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
    if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&!F.CurrentJob()->OriginalPage.IsEmpty(),TEXT("actual completed recording and printer original retained")))return;
    M->UI->Close(true);if(!Check(F.StartControl()&&F.CurrentJob()->bControl&&F.CurrentJob()->ControlAt==0,TEXT("real eight-second internal reference starts before the trip")))return;
    Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("clock"),F.Clock());S47J::Set(Snapshot,TEXT("control"),F.CurrentJob()->ControlAt);S47J::Set(Snapshot,TEXT("job"),F.CurrentJob()->Id);S47J::Set(Snapshot,TEXT("original"),F.CurrentJob()->OriginalPage);S47J::Set(Snapshot,TEXT("angles"),Angles());
@@ -441,7 +517,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==4)
  {
-  if(F.CurrentJob()->Stage!=J::Chart)return;
+  if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded,TEXT("completed measurement retains an original chart")))return;
   M->UI->Close(true);
   if(JobIndex==1){if(!Check(F.StartControl(),TEXT("physical receiver control starts a separate timed reference")))return;Go(5);return;}
@@ -473,7 +549,13 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==9)
  {
-  const int32 Before=F.Budget();if(!Check(F.RegisterComparison(JobIndex==1?TEXT("unresolved"):TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
+  WorkBudget=F.Budget();if(!Check(F.RegisterComparison(JobIndex==1?TEXT("unresolved"):TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
+  Go(9011);return;
+ }
+ if(Stage==9011)
+ {
+  const int32 Before=WorkBudget;
+  if(JobIndex==1&&F.PrinterProgress()<1)return;
   if(JobIndex==1)
   {
    if(!Check(F.CollectChart()&&!F.FilePacket(),TEXT("printed packet cannot be filed remotely from the console")))return;
@@ -756,7 +838,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==61){if(!F.StartAcquisition())return;Go(62);return;}
  if(Stage==62)
  {
-  if(F.CurrentJob()->Stage!=J::Chart)return;
+  if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart(),TEXT("specialized observation retains its physical original")))return;
   M->UI->Close(true);
   if(!Check(F.StartControl(),TEXT("retained original precedes its distinct measured instrument control")))return;
@@ -770,6 +852,7 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(Job->bBeamVerified&&Job->BeamAz.Num()==3&&Job->BeamAmplitude.Num()==3,TEXT("three real settled adjacent-beam samples precede off-source evidence")))return;
   if(Id==TEXT("time_disagreement"))
    if(!Check(Job->bClockMeasured&&FMath::Abs(Job->ReceiverClock-Job->ReferenceClock)>1&&FMath::Abs(Job->ControlReceiverClock-Job->ControlReferenceClock)>1,TEXT("independent clock readbacks establish the actual repeated disagreement")))return;
+  if(Id==TEXT("duplicate_print")&&F.PrinterProgress()<1)return;
   if(Id==TEXT("duplicate_print"))
    if(!Check(F.CollectChart()&&F.CurrentJob()->bDuplicateCollected&&F.CurrentJob()->OriginalPage!=F.CurrentJob()->DuplicatePage,TEXT("a separate collected duplicate differs from the preserved original")))return;
   if(!Restore(TEXT("measured-")+Id))return;
@@ -780,7 +863,14 @@ void FS47FreeformTest::Step(double Dt)
   const FString Id=F.CurrentJob()->Phenomenon;
   if(!Check(F.CompareInstrument(),TEXT("measured distinct instrument comparison survives Continue: ")+Id))return;
   const FString Conclusion=Id==TEXT("wrong_source")?TEXT("off_source"):Id==TEXT("time_disagreement")?TEXT("timing_path"):TEXT("duplicate_mismatch");
-  if(!Check(F.RegisterComparison(Conclusion)&&F.CollectChart(),TEXT("supported instrument finding is registered and physically collected: ")+Id))return;
+  if(!Check(F.RegisterComparison(Conclusion),TEXT("supported instrument finding is registered: ")+Id))return;
+  Go(641);return;
+ }
+ if(Stage==641)
+ {
+  const FString Id=F.CurrentJob()->Phenomenon;
+  if(F.PrinterProgress()<1)return;
+  if(!Check(F.CollectChart(),TEXT("registered instrument packet finishes physical feed: ")+Id))return;
   if(!FileAtBinder())return;
   F.OpenArchive();Shot(TEXT("comparison-")+Id);Go(65,.3);return;
  }

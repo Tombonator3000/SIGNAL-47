@@ -1,6 +1,6 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 3. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 4. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
@@ -11,6 +11,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 Opprinnelig rekvisittimport består for 26 modeller / 78 LOD-er og åtte materialsett. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Claude har lagt til 22 egne Extras-modeller og møblert lab, lager og garasje. Codex har deretter lagt til prøveholder og fire fysiske bordskilt: samlet Extras-import består for 27 modeller / 81 LOD-er. Gammel skittgeometri er klippet ved den nye servicedøren, og gulvjekken er flyttet ut av dørpassasjen. Nye runtime-bilder viser frie åpninger og kontakt mellom de nye detaljene og benkeplatene.
 
 Claudes siste samlede kontroll på a6acc316: 2281 selvtester, FreeformTest 244/0, EvidenceTest 108/0 og DriveTest 15/0. Full Freeform-kjøring består etter GC-rettelsen. Codex har tidligere kontrollert fotofremkalling med 53 native kontroller og fire disk-/Continue-runder. Etter de siste modell-/plasseringstilpasningene består editorbygg og native import; 17 nye rombilder er tatt og berørte vinkler er gjennomgått. Story-prøven består: garasjekjøring er stengt, og alle tre innganger har aktive ganglåser og lukkede dørkollisjoner. Ingen menneskelig vurdering av spillfølelse eller lyskomfort er påstått. [Oppgavelogg](../../unreal/OPPGAVER.md).
+
+Freeform-printeren har nå fysisk papirmating og printerlyd for original, registrert pakke og separat kopi. Utskriftskøen følger jobben gjennom jobbvalg, strømbrudd og Continue; ferdige ark kan hentes uten strøm. Editorbygg og en målrettet native prøve består 26 kontroller med to disk-/Continue-runder, aktiv lydgraf og bevart original/betaling. Dette er en editorleveranse i PR379, ikke installert eller subjektivt lyttet til.
 
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
