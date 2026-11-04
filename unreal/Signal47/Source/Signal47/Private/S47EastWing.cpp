@@ -259,7 +259,11 @@ bool FS47EastWing::Step(float Dt)
  static const FView Views[]={
   {TEXT("01-exterior-south"),29.5,19.0,0.,-.04},{TEXT("02-exterior-southwest"),17.5,15.0,-.75,-.03},{TEXT("03-garage-door"),35.4,12.5,0.,-.02},
   {TEXT("04-test-lab"),25.0,1.0,2.87,-.12},{TEXT("05-parts-storage"),27.6,-1.5,-.4,-.08},{TEXT("06-calibration"),28.5,2.0,-2.56,-.12},
-  {TEXT("07-garage-in"),35.4,-4.2,PI,-.05},{TEXT("08-garage-out"),35.4,4.6,0.,-.05},{TEXT("09-sample-analysis"),23.5,-1.4,-.12,-.12},{TEXT("10-service-entry"),42.0,1.8,PI/2,-.04}};
+  {TEXT("07-garage-in"),35.4,-4.2,PI,-.05},{TEXT("08-garage-out"),35.4,4.6,0.,-.05},{TEXT("09-sample-analysis"),23.5,-1.4,-.12,-.12},{TEXT("10-service-entry"),42.0,1.8,PI/2,-.04},
+  {TEXT("11-lab-west"),24.9,.1,PI/2,-.10},{TEXT("12-lab-east"),22.4,-.4,-PI/2,-.02},{TEXT("13-calibration-north"),29.6,4.2,0.,-.04},
+  {TEXT("14-storage-west"),29.8,-2.4,PI/2,-.04},{TEXT("15-garage-west"),36.6,1.1,PI/2,-.04},
+  {TEXT("16-roof-northeast"),48.0,-14.0,2.23,.04},
+  {TEXT("17-garage-receiving"),34.4,-1.6,.9,-.10}};
  const double Now=FPlatformTime::Seconds();
  if(ShotStage==0)
  {
@@ -415,7 +419,8 @@ bool FS47EastWing::RelocateAccessDressing()
  UStaticMesh* Dressing=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/EastWing/Access/SM_EW_AccessDressing.SM_EW_AccessDressing"));
  UStaticMesh* Stains=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/EastWing/Access/SM_EW_AccessStains.SM_EW_AccessStains"));
  auto Valid=[](UStaticMesh* Mesh,int32 Count){if(!Mesh||Mesh->GetNumLODs()!=3||Mesh->GetStaticMaterials().Num()!=1)return false;for(int32 I=0;I<3;++I)if(Mesh->GetNumTriangles(I)!=Count)return false;return true;};
- if(!Valid(Dressing,10328)||!Valid(Stains,1224))return false;
+ // EASTWING-01: derivatives also drop the old east rain leader (72) and its streak (4) at the service door.
+ if(!Valid(Dressing,10256)||!Valid(Stains,1220))return false;
  UStaticMeshComponent *OldDressing=nullptr,*OldStains=nullptr;int32 FoundDressing=0,FoundStains=0;
  for(int32 I=0;I<M->Web->PartCount();++I)if(const FS47WebNode* Node=M->Web->Node(I))
  {
@@ -436,5 +441,5 @@ bool FS47EastWing::RelocateAccessDressing()
  UMaterialInterface* DressingAtlas=OldDressing->GetMaterial(0);UMaterialInterface* StainAtlas=OldStains->GetMaterial(0);
  OldDressing->SetStaticMesh(Dressing);OldDressing->SetMaterial(0,DressingAtlas);OldStains->SetStaticMesh(Stains);OldStains->SetMaterial(0,StainAtlas);
  for(int32 I:Matches){All[I].MinX-=2.6;All[I].MaxX-=2.6;}
- UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing access: three drums and contact shadows moved west2.6m with exact walking feet; unrelated10328/1224-triangle dressing retained"));return true;
+ UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing access: three drums and contact shadows moved west2.6m with exact walking feet; unrelated10256/1220-triangle dressing retained (old east rain leader removed)"));return true;
 }

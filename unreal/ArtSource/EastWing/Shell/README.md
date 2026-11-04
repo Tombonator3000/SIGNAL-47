@@ -94,10 +94,12 @@ kontaktflater. `build_legacy_access.py` leser den hashfestede originale
 anvender de etablerte bil-/vindus-/forplasskuttene før flytting på −2,6 m i spill-X.
 Dette gir sentre x18,7 / 19,35 / 19,7, med uendret høyde og z.
 
-- `SM_EW_AccessDressing`: 13 550 opprinnelige triangler → 10 328 etter eksisterende
-  kutt (976 bil, 1 872 vindu, 230 vegetasjon, 144 hjulrester). Akkurat 648 beholdte
-  triangler flyttes, 216 per tønne. Øvrige 9 680 beholdte triangler er uendret.
-- `SM_EW_AccessStains`: 1 712 → 1 224 etter eksisterende 488 veggskittkutt.
+- `SM_EW_AccessDressing`: 13 550 opprinnelige triangler → 10 256 etter eksisterende
+  kutt (976 bil, 1 872 vindu, 230 vegetasjon, 144 hjulrester) og 72 for det gamle
+  nedløpsrøret på østveggen, som krysset den nye servicedøren (Claude 4. november). Akkurat 648 beholdte
+  triangler flyttes, 216 per tønne. Øvrige 9 608 beholdte triangler er uendret.
+- `SM_EW_AccessStains`: 1 712 → 1 220 etter eksisterende 488 veggskittkutt og fire
+  triangler med rennestripe under det fjernede røret.
   Bare seks kontaktflatetriangler flyttes; øvrige 1 218 beholdes uendret.
 - Begge får tre identiske authored LOD-er. Ingen ekstra forenkling eller ny UV.
   Kilden krever uendret hjørneposisjon, UV, winding og materialindeks for alle

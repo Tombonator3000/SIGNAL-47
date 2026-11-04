@@ -1,0 +1,274 @@
+{
+  "order": "EASTWING-01 extras",
+  "author": "Claude",
+  "assets": [
+    {
+      "id": "SM_EW_AirCompressor",
+      "manifest": "Extras/SM_EW_AirCompressor.asset.json",
+      "fbx": "Extras/SM_EW_AirCompressor.fbx",
+      "dimensions_m": [
+        0.4260000139474869,
+        0.5227921009063721,
+        1.2549998760223389
+      ],
+      "triangles": 11168,
+      "license": "Extras/SM_EW_AirCompressor.license.json"
+    },
+    {
+      "id": "SM_EW_Calendar1986",
+      "manifest": "Extras/SM_EW_Calendar1986.asset.json",
+      "fbx": "Extras/SM_EW_Calendar1986.fbx",
+      "dimensions_m": [
+        0.30399999022483826,
+        0.015100001124665141,
+        0.5160000324249268
+      ],
+      "triangles": 3190,
+      "license": "Extras/SM_EW_Calendar1986.license.json"
+    },
+    {
+      "id": "SM_EW_FirstAidBox",
+      "manifest": "Extras/SM_EW_FirstAidBox.asset.json",
+      "fbx": "Extras/SM_EW_FirstAidBox.fbx",
+      "dimensions_m": [
+        0.36000001430511475,
+        0.14399999380111694,
+        0.30000001192092896
+      ],
+      "triangles": 2060,
+      "license": "Extras/SM_EW_FirstAidBox.license.json"
+    },
+    {
+      "id": "SM_EW_FloorJack",
+      "manifest": "Extras/SM_EW_FloorJack.asset.json",
+      "fbx": "Extras/SM_EW_FloorJack.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        1.3199999928474426,
+        0.7199999690055847
+      ],
+      "triangles": 4952,
+      "license": "Extras/SM_EW_FloorJack.license.json"
+    },
+    {
+      "id": "SM_EW_GlassCabinet",
+      "manifest": "Extras/SM_EW_GlassCabinet.asset.json",
+      "fbx": "Extras/SM_EW_GlassCabinet.fbx",
+      "dimensions_m": [
+        0.9200000166893005,
+        0.4740000069141388,
+        1.9499999284744263
+      ],
+      "triangles": 34288,
+      "license": "Extras/SM_EW_GlassCabinet.license.json"
+    },
+    {
+      "id": "SM_EW_HoseReel",
+      "manifest": "Extras/SM_EW_HoseReel.asset.json",
+      "fbx": "Extras/SM_EW_HoseReel.fbx",
+      "dimensions_m": [
+        0.7849999666213989,
+        0.3660000152885914,
+        0.9860000610351562
+      ],
+      "triangles": 8196,
+      "license": "Extras/SM_EW_HoseReel.license.json"
+    },
+    {
+      "id": "SM_EW_JerryCans",
+      "manifest": "Extras/SM_EW_JerryCans.asset.json",
+      "fbx": "Extras/SM_EW_JerryCans.fbx",
+      "dimensions_m": [
+        0.57445228099823,
+        0.4680541455745697,
+        0.6691110730171204
+      ],
+      "triangles": 10936,
+      "license": "Extras/SM_EW_JerryCans.license.json"
+    },
+    {
+      "id": "SM_EW_LabSink",
+      "manifest": "Extras/SM_EW_LabSink.asset.json",
+      "fbx": "Extras/SM_EW_LabSink.fbx",
+      "dimensions_m": [
+        1.2200000286102295,
+        0.6790000200271606,
+        1.3206168413162231
+      ],
+      "triangles": 20128,
+      "license": "Extras/SM_EW_LabSink.license.json"
+    },
+    {
+      "id": "SM_EW_LabStool",
+      "manifest": "Extras/SM_EW_LabStool.asset.json",
+      "fbx": "Extras/SM_EW_LabStool.fbx",
+      "dimensions_m": [
+        0.37102311849594116,
+        0.37102311849594116,
+        0.6449999809265137
+      ],
+      "triangles": 4836,
+      "license": "Extras/SM_EW_LabStool.license.json"
+    },
+    {
+      "id": "SM_EW_MechanicBench",
+      "manifest": "Extras/SM_EW_MechanicBench.asset.json",
+      "fbx": "Extras/SM_EW_MechanicBench.fbx",
+      "dimensions_m": [
+        2.0,
+        0.9089999198913574,
+        1.090000033378601
+      ],
+      "triangles": 8836,
+      "license": "Extras/SM_EW_MechanicBench.license.json"
+    },
+    {
+      "id": "SM_EW_NoticeBoard",
+      "manifest": "Extras/SM_EW_NoticeBoard.asset.json",
+      "fbx": "Extras/SM_EW_NoticeBoard.fbx",
+      "dimensions_m": [
+        1.209999918937683,
+        0.02599999960511923,
+        0.9099999666213989
+      ],
+      "triangles": 942,
+      "license": "Extras/SM_EW_NoticeBoard.license.json"
+    },
+    {
+      "id": "SM_EW_OilStains",
+      "manifest": "Extras/SM_EW_OilStains.asset.json",
+      "fbx": "Extras/SM_EW_OilStains.fbx",
+      "dimensions_m": [
+        0.9647167921066284,
+        2.0414299368858337,
+        0.0
+      ],
+      "triangles": 980,
+      "license": "Extras/SM_EW_OilStains.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueCalibration",
+      "manifest": "Extras/SM_EW_PlaqueCalibration.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueCalibration.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueCalibration.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueGarage",
+      "manifest": "Extras/SM_EW_PlaqueGarage.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueGarage.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueGarage.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueLab",
+      "manifest": "Extras/SM_EW_PlaqueLab.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueLab.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueLab.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueStorage",
+      "manifest": "Extras/SM_EW_PlaqueStorage.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueStorage.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueStorage.license.json"
+    },
+    {
+      "id": "SM_EW_PosterGlasses",
+      "manifest": "Extras/SM_EW_PosterGlasses.asset.json",
+      "fbx": "Extras/SM_EW_PosterGlasses.fbx",
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500000160187483,
+        0.7959999740123749
+      ],
+      "triangles": 766,
+      "license": "Extras/SM_EW_PosterGlasses.license.json"
+    },
+    {
+      "id": "SM_EW_PosterRF",
+      "manifest": "Extras/SM_EW_PosterRF.asset.json",
+      "fbx": "Extras/SM_EW_PosterRF.fbx",
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500000160187483,
+        0.7959999740123749
+      ],
+      "triangles": 766,
+      "license": "Extras/SM_EW_PosterRF.license.json"
+    },
+    {
+      "id": "SM_EW_ReagentShelf",
+      "manifest": "Extras/SM_EW_ReagentShelf.asset.json",
+      "fbx": "Extras/SM_EW_ReagentShelf.fbx",
+      "dimensions_m": [
+        0.8999999761581421,
+        0.2200000062584877,
+        0.3630000054836273
+      ],
+      "triangles": 8372,
+      "license": "Extras/SM_EW_ReagentShelf.license.json"
+    },
+    {
+      "id": "SM_EW_RelayTester",
+      "manifest": "Extras/SM_EW_RelayTester.asset.json",
+      "fbx": "Extras/SM_EW_RelayTester.fbx",
+      "dimensions_m": [
+        0.41999998688697815,
+        0.4017758220434189,
+        0.3525969684123993
+      ],
+      "triangles": 8316,
+      "license": "Extras/SM_EW_RelayTester.license.json"
+    },
+    {
+      "id": "SM_EW_SwampCooler",
+      "manifest": "Extras/SM_EW_SwampCooler.asset.json",
+      "fbx": "Extras/SM_EW_SwampCooler.fbx",
+      "dimensions_m": [
+        1.0429515838623047,
+        1.5312501192092896,
+        1.125
+      ],
+      "triangles": 14520,
+      "license": "Extras/SM_EW_SwampCooler.license.json"
+    },
+    {
+      "id": "SM_EW_WallClock",
+      "manifest": "Extras/SM_EW_WallClock.asset.json",
+      "fbx": "Extras/SM_EW_WallClock.fbx",
+      "dimensions_m": [
+        0.33400002121925354,
+        0.05550002679228783,
+        0.33400002028793097
+      ],
+      "triangles": 2652,
+      "license": "Extras/SM_EW_WallClock.license.json"
+    }
+  ],
+  "asset_count": 22,
+  "material_manifest": "Textures/materials.json",
+  "native_integration_owner": "Claude",
+  "prints": "Extras/make_prints.py"
+}

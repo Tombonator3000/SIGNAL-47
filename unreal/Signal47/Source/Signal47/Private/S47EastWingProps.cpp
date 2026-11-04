@@ -40,7 +40,7 @@ namespace
   {TEXT("SM_EW_GalvanizedShelving"),TEXT("Workshop"),{30.86,0,-.98},90,true},
   {TEXT("SM_EW_CrateFuses"),TEXT("Workshop"),{30.86,.5725,-.98},90},
   {TEXT("SM_EW_CrateRelays"),TEXT("Workshop"),{30.86,1.0125,-.98},90},
-  {TEXT("SM_EW_CableDrum"),TEXT("Workshop"),{26.60,0,-1.10},0,true},
+  {TEXT("SM_EW_CableDrum"),TEXT("Workshop"),{27.35,0,-1.35},0,true},
   // Garage perimeter only: delivery32.6/-4.15, central Jeep bay and doors are unobstructed.
   {TEXT("SM_EW_ChemicalCabinet"),TEXT("Workshop"),{37.82,0,-4.79},0,true},
   {TEXT("SM_EW_PartsCart"),TEXT("Workshop"),{37.87,0,-2.64},90,true},
@@ -51,6 +51,38 @@ namespace
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.75,3.22,-2.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.85,3.22,3.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,.10},0,false,true},
+  // Claude extras (Props/Extras): wall items keep their back on the inner wall face
+  // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
+  {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},
+  {TEXT("SM_EW_GlassCabinet"),TEXT("Extras"),{21.075,0,1.30},-90,true},
+  {TEXT("SM_EW_ReagentShelf"),TEXT("Extras"),{20.862,1.55,-1.20},-90},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.35,0,-3.15},0},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.95,0,4.05},0},
+  {TEXT("SM_EW_PosterGlasses"),TEXT("Extras"),{24.20,1.32,5.246},180},
+  {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},
+  {TEXT("SM_EW_NoticeBoard"),TEXT("Extras"),{25.909,1.00,.45},90},
+  {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
+  {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{27.30,1.22,.422},180},
+  // Second stocked rack along the storage west wall.
+  {TEXT("SM_EW_ShelvingStocked"),TEXT("Workshop"),{26.34,0,-2.60},-90,true},
+  {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,2.45},-90},
+  // Garage working side (west wall between the two doors, clear of the Jeep lane x33.6..37.2).
+  {TEXT("SM_EW_MechanicBench"),TEXT("Extras"),{32.05,0,.45},-90,true},
+  {TEXT("SM_EW_AirCompressor"),TEXT("Extras"),{31.98,0,4.93},-90,true},
+  {TEXT("SM_EW_JerryCans"),TEXT("Extras"),{32.95,0,-4.98},0,true},
+  {TEXT("SM_EW_FloorJack"),TEXT("Extras"),{32.85,0,-1.35},-60},
+  {TEXT("SM_EW_OilStains"),TEXT("Extras"),{35.30,0,-.60},20},
+  // Room plaques beside each interior door, on the side of the room they name (bottom edge at 1.5 m).
+  {TEXT("SM_EW_PlaqueLab"),TEXT("Extras"),{26.081,1.50,3.75},-90},
+  {TEXT("SM_EW_PlaqueCalibration"),TEXT("Extras"),{25.919,1.50,2.05},90},
+  {TEXT("SM_EW_PlaqueCalibration"),TEXT("Extras"),{31.681,1.50,4.30},-90},
+  {TEXT("SM_EW_PlaqueStorage"),TEXT("Extras"),{29.75,1.50,.581},0},
+  {TEXT("SM_EW_PlaqueStorage"),TEXT("Extras"),{31.681,1.50,-1.75},-90},
+  {TEXT("SM_EW_PlaqueGarage"),TEXT("Extras"),{31.519,1.50,2.55},90},
+  {TEXT("SM_EW_PlaqueGarage"),TEXT("Extras"),{31.519,1.50,-3.35},90},
+  // Exterior: rooftop evaporative cooler over the garage; hose reel north of the east service door.
+  {TEXT("SM_EW_SwampCooler"),TEXT("Extras"),{35.40,3.60,3.70},0},
+  {TEXT("SM_EW_HoseReel"),TEXT("Extras"),{38.632,0,-.80},-90},
  };
  // SM_EW_RollUpDoorSegment is deliberately not a decorative duplicate of the shell's actual door.
 }
