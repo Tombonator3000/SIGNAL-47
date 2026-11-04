@@ -972,14 +972,26 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  return FString();
 }
 
+void FS47FreeformWorld::AdvanceUnobservedTo(double Clock)
+{
+ if(!bActive||!FMath::IsFinite(Clock)||Clock<0)return;
+ if(LastClock<0){LastClock=Clock;return;}
+ const double Delta=FMath::Max(0.,Clock-LastClock);if(Delta<=0)return;LastClock=Clock;
+ Logger.Skip(Clock,Delta);LoggerJob.Empty();LoggerJobElapsed=0;
+ if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-Delta);if(GeneratorSeconds<=0)bGenerator=false;}
+ if(bLoggerCalibrating){bLoggerCalibrating=false;Logger.Calibration=0;Logger.bCalibrated=false;}
+ bPumping=false; // no held dispenser input or driven distance occurs during a time jump
+ Apply(); // caller requests one save after every system has accounted for the same jump
+}
 void FS47FreeformWorld::Step(double Dt)
 {
  if(!Ready())return;if(!bBuilt)Build();
  TrackPowerFault(M->Freeform->PowerFault());
  if(Carry)Carry->Step(Dt,Payload,Item,Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Dropped);
  const double Now=M->Freeform->Clock();if(LastClock<0)LastClock=Now;
- const double WorldDelta=FMath::Max(0.,Now-LastClock);LastClock=Now;
- if(M->Freeform->Held()){Apply();return;}
+ const double WorldDelta=FMath::Max(0.,Now-LastClock);
+ if(M->Freeform->Held()||WorldDelta>3.){AdvanceUnobservedTo(Now);Apply();return;}
+ LastClock=Now;
  StepLogger(Dt,WorldDelta);
  StepPump(Dt);
  if(bGenerator){GeneratorSeconds=FMath::Max(0.,GeneratorSeconds-WorldDelta);if(GeneratorSeconds<=0){bGenerator=false;Change(TEXT("Backup generator tank empty. Array work needs restored mains or another fuel can."));}}
@@ -1140,6 +1152,12 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  S47J::Set(CreditState,TEXT("cash"),3);S47J::Set(CreditState,TEXT("loan"),999999);Credit.Begin(CreditState);
  C(!Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==3&&Credit.Debt()==999999,TEXT("Debt-limit rejection is atomic: neither budget nor debt changes"));
  Credit.Stop();CreditCopy.Stop();
+ FS47FreeformWorld Jump(nullptr);Jump.Begin();Jump.LastClock=100;Jump.bGenerator=true;Jump.GeneratorSeconds=3600;
+ Jump.Logger.Connect();Jump.Logger.Connect();Jump.Logger.Connect();Jump.Logger.Calibrate(3);Jump.Logger.Start(0,1,100);
+ Jump.AdvanceUnobservedTo(3700);
+ C(!Jump.GeneratorRunning()&&Jump.GeneratorSeconds==0&&Jump.Logger.Tapes.Last().GapSeconds==3600&&Jump.Logger.Tapes.Last().Seconds==0&&Jump.LastClock==3700,TEXT("Rest settles generator fuel and logger gaps before save without generating measurements"));
+ FS47FreeformWorld JumpCopy(nullptr);JumpCopy.Begin(S47J::Read(S47J::Write(Jump.Save())));JumpCopy.AdvanceUnobservedTo(3700);
+ C(JumpCopy.Logger.Battery==FS47FieldLogger::Capacity-3600&&JumpCopy.Logger.Tapes.Last().GapSeconds==3600&&!JumpCopy.GeneratorRunning(),TEXT("Continue after wait preserves consumed fuel and battery without a second charge"));Jump.Stop();JumpCopy.Stop();
  OK &= FS47FieldLogger::SelfTest(Lines);
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }

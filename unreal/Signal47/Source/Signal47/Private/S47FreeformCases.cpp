@@ -93,6 +93,10 @@ bool FS47FreeformCases::PresentFor(int32 Line,int32 Cause,int32 Test)
 {
  if(Line<0||Line>=CaseCount||Cause<0||Cause>=CauseCount||Test<0||Test>=TestCount)return true;return Defs[Line].Present[Cause][Test];
 }
+FString FS47FreeformCases::UnavailableReason(int32 Line,int32 Test)
+{
+ return Line==2&&Test==2?TEXT("Two-site contact recording is unavailable: the loan field logger measures local RF interference, not roof sounds. A paired contact recorder is not available. Choose the roof or gate control on CASE BOARD."):FString();
+}
 void FS47FreeformCases::Reset(int32 Seed)
 {
  Cases.SetNum(CaseCount);Access.Reset();
@@ -107,6 +111,7 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
  {
   if(!List[I]||List[I]->Type!=EJson::Object)continue;const auto O=List[I]->AsObject();FCase& C=Cases[I];
   C.bOpen=S47J::Bool(O,TEXT("open"));C.bConcluded=C.bOpen&&S47J::Bool(O,TEXT("concluded"));
+  C.Hunch=FMath::Clamp(S47J::Int(O,TEXT("hunch"),-1),-1,CauseCount-1);
   C.OpenDay=FMath::Clamp(S47J::Int(O,TEXT("openDay")),0,36500);
   const double Clock=S47J::Num(O,TEXT("openClock"));C.OpenClock=FMath::IsFinite(Clock)?FMath::Clamp(Clock,0.,86399.):0;
   C.Planned=FMath::Clamp(S47J::Int(O,TEXT("planned"),-1),-1,TestCount-1);C.PlannedJob=C.Planned>=0?S47J::Str(O,TEXT("plannedJob")):FString();
@@ -135,7 +140,7 @@ S47J::FObj FS47FreeformCases::Save() const
  for(const FCase& C:Cases)
  {
   auto X=S47J::New();S47J::Set(X,TEXT("open"),C.bOpen);S47J::Set(X,TEXT("concluded"),C.bConcluded);S47J::Set(X,TEXT("openDay"),C.OpenDay);S47J::Set(X,TEXT("openClock"),C.OpenClock);
-  S47J::Set(X,TEXT("planned"),C.Planned);S47J::Set(X,TEXT("plannedJob"),C.PlannedJob);S47J::Set(X,TEXT("conclusion"),C.Conclusion);S47J::Set(X,TEXT("validTests"),C.ValidTests);
+  S47J::Set(X,TEXT("hunch"),C.Hunch);S47J::Set(X,TEXT("planned"),C.Planned);S47J::Set(X,TEXT("plannedJob"),C.PlannedJob);S47J::Set(X,TEXT("conclusion"),C.Conclusion);S47J::Set(X,TEXT("validTests"),C.ValidTests);
   TArray<TSharedPtr<FJsonValue>> R;
   for(const FResult& Res:C.Results){auto Y=S47J::New();S47J::Set(Y,TEXT("done"),Res.bDone);S47J::Set(Y,TEXT("present"),Res.bPresent);S47J::Set(Y,TEXT("day"),Res.Day);R.Add(MakeShared<FJsonValueObject>(Y));}
   S47J::Set(X,TEXT("leads"),C.Leads);
@@ -147,6 +152,11 @@ bool FS47FreeformCases::Open(int32 Line,int32 Day,double DayClock)
 {
  if(!Cases.IsValidIndex(Line)||Cases[Line].bOpen||Day<1||!FMath::IsFinite(DayClock))return false;
  FCase& C=Cases[Line];C.bOpen=true;C.OpenDay=Day;C.OpenClock=FMath::Clamp(FMath::Fmod(FMath::Max(0.,DayClock),86400.),0.,86399.);return true;
+}
+bool FS47FreeformCases::SetHunch(int32 Line,int32 Cause)
+{
+ if(!Cases.IsValidIndex(Line)||!Cases[Line].bOpen||Cases[Line].bConcluded||Cause < -1||Cause>=CauseCount)return false;
+ Cases[Line].Hunch=Cause;return true;
 }
 bool FS47FreeformCases::Plan(int32 Line,int32 Test,const FString& JobId)
 {
@@ -249,6 +259,7 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    FS47FreeformCases K;K.Reset(Seed);FString Why;bool First=false;
    Good&=!K.Plan(Line,0,TEXT("J"));
    Good&=K.Open(Line,1,20*3600.)&&!K.Open(Line,2,0);
+   Good&=K.SetHunch(Line,Truth)&&K.Get(Line)->Hunch==Truth;
    Good&=!K.Conclude(Line,Truth,Why);                       // a correct guess alone is not supported
    Good&=K.Plan(Line,0,TEXT("J1"))&&!K.Plan(Line,1,TEXT("J2"));
    Good&=K.Record(Line,0,2,false,false,First)&&!First&&!K.Get(Line)->Results[0].bDone&&K.Get(Line)->Planned<0;
@@ -258,6 +269,7 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    Good&=K.Remaining(Line)==1&&!K.Excluded(Line,Truth);
    for(int32 Wrong=0;Wrong<CauseCount;++Wrong)if(Wrong!=Truth)Good&=!K.Conclude(Line,Wrong,Why);
    FS47FreeformCases R;R.Load(S47J::Read(S47J::Write(K.Save())),Seed);
+   Good&=R.Get(Line)->Hunch==Truth;
    Good&=R.Get(Line)->bOpen&&R.Get(Line)->ValidTests==2&&R.Remaining(Line)==1&&R.Get(Line)->Truth==Truth;
    Good&=R.Conclude(Line,Truth,Why)&&R.HasAccess(Def(Line).Access)&&!R.Conclude(Line,Truth,Why);
    FS47FreeformCases Again;Again.Load(S47J::Read(S47J::Write(R.Save())),Seed);Good&=Again.Get(Line)->bConcluded&&Again.Get(Line)->Conclusion==Truth&&Again.HasAccess(Def(Line).Access);

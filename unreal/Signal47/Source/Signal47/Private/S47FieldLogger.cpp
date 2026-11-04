@@ -21,15 +21,7 @@ void FS47FieldLogger::Sample(double Clock,double Delta,bool Generator,bool Feede
 {
  if(!bRecording||Tapes.IsEmpty()||!FMath::IsFinite(Clock)||!FMath::IsFinite(Delta)||Delta<=0)return;
  auto& T=Tapes.Last();const double D=FMath::Max(0.,FMath::Min3(Delta,Battery,Window-(T.End-T.Start)));
- if(Delta>3.)
- {
-  // Normal Freeform ticks advance at most 2.6 world seconds. Rest or a
-  // clock jump supplies no historical equipment samples: drain elapsed
-  // battery, retain the gap, and never manufacture quiet/noise/overlap.
-  T.GapSeconds+=D;T.End=FMath::Min(Clock,T.End+D);Battery=FMath::Max(0.,Battery-D);
-  if(Battery<=0){T.bBatteryEmpty=true;bRecording=false;}
-  if(T.End-T.Start>=Window-.001)bRecording=false;return;
- }
+ if(Delta>3.){Skip(Clock,Delta);return;}
  // Local oscillator band at 1420.110 MHz. Site A is beside SARO's
  // generator, site B is the quiet array edge. Hardware state drives noise.
  const double Band=FMath::Exp(-FMath::Square((Frequency-1420.11)/.025));
@@ -43,6 +35,15 @@ void FS47FieldLogger::Sample(double Clock,double Delta,bool Generator,bool Feede
   if(T.Job.IsEmpty())T.Job=Job;
   if(T.Job==Job)T.Overlap+=AcquiredDelta;
  }
+ if(Battery<=0){T.bBatteryEmpty=true;bRecording=false;}
+ if(T.End-T.Start>=Window-.001)bRecording=false;
+}
+void FS47FieldLogger::Skip(double Clock,double Delta)
+{
+ if(!bRecording||Tapes.IsEmpty()||!FMath::IsFinite(Clock)||!FMath::IsFinite(Delta)||Delta<=0)return;
+ auto& T=Tapes.Last();const double D=FMath::Max(0.,FMath::Min3(Delta,Battery,Window-(T.End-T.Start)));
+ // Clock movement is battery usage, not a historical measurement or a negative observation.
+ T.GapSeconds+=D;T.End=FMath::Min(Clock,T.End+D);Battery=FMath::Max(0.,Battery-D);
  if(Battery<=0){T.bBatteryEmpty=true;bRecording=false;}
  if(T.End-T.Start>=Window-.001)bRecording=false;
 }
@@ -92,5 +93,7 @@ bool FS47FieldLogger::SelfTest(TArray<FString>& Lines)
  FS47FreeformCases Access;Access.Reset(47);C(!Access.HasAccess(TEXT("access.fieldlogger")),TEXT("new case does not authorize the loan"));auto Granted=Access.Save();S47J::Set(Granted,TEXT("access"),TArray<FString>{TEXT("access.fieldlogger")});Access.Load(Granted,47);C(Access.HasAccess(TEXT("access.fieldlogger")),TEXT("supported-case access survives restore for the world gate"));
  FS47FieldLogger Gap;Gap.Connect();Gap.Connect();Gap.Connect();Gap.Calibrate(3);Gap.Start(0,1,100);Gap.Sample(100+8*3600.,8*3600.,true,true,TEXT("old-job"),18,1420.11);C(!Gap.bRecording&&Gap.Tapes.Last().GapSeconds==Window&&Gap.Tapes.Last().Seconds==0&&Gap.Tapes.Last().NoiseSum==0&&Gap.Tapes.Last().Overlap==0&&Gap.Tapes.Last().Levels.IsEmpty()&&Gap.Battery==Capacity-Window,TEXT("sleep jump drains the planned window without invented historical samples or overlap"));FS47FieldLogger GapCopy;GapCopy.Load(S47J::Read(S47J::Write(Gap.Save())));C(GapCopy.Tapes.Last().GapSeconds==Window&&!GapCopy.bRecording,TEXT("unsampled gaps survive Continue"));
  FS47FieldLogger Full;Full.Connect();Full.Connect();Full.Connect();Full.Calibrate(3);Full.Start(1,1,100);Full.Sample(101,1,false,false,TEXT("job"),6,1420.11);Full.Retrieve();C(!CompleteWindow(Full.Tapes.Last()),TEXT("brief retrieval with overlap is an incomplete field window"));Full.Start(1,1,200);for(int32 I=1;I<=7200;++I)Full.Sample(200+I,1,false,false,TEXT("job"),I<11?.6:0,1420.11);Full.Retrieve();C(CompleteWindow(Full.Tapes.Last()),TEXT("full sampled window and substantial actual overlap qualify after retrieval"));
+ FS47FieldLogger ShortGap;ShortGap.Connect();ShortGap.Connect();ShortGap.Connect();ShortGap.Calibrate(3);ShortGap.Start(0,1,100);ShortGap.Skip(102,2);
+ C(ShortGap.Tapes.Last().GapSeconds==2&&ShortGap.Tapes.Last().Seconds==0&&ShortGap.Tapes.Last().Overlap==0&&ShortGap.Battery==Capacity-2,TEXT("explicit short unobserved skip never masquerades as a normal sampled tick"));
  FS47FieldLogger Legacy;Legacy.Load(nullptr);C(Legacy.Assembly==0&&Legacy.Tapes.IsEmpty(),TEXT("old saves invent no equipment or originals"));return OK;
 }

@@ -2,6 +2,7 @@
 #include "S47UfoPresentation.h"
 #include "S47HighwayUfo.h"
 #include "S47Freeform.h"
+#include "S47CaseFieldTests.h"
 #include "S47RoomLights.h"
 #include "Misc/CommandLine.h"
 #include "S47FreeformWorld.h"
@@ -78,6 +79,7 @@ struct FS47FreeformDirector::FEffects
  TArray<TWeakObjectPtr<UStaticMeshComponent>> Parts;
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
  FS47Obj Sample,Car;
+ TWeakObjectPtr<UStaticMeshComponent> Orb;
  TSharedPtr<uint8> Life=MakeShared<uint8>(0);
  bool bBuilt=false;
  FVector HullCentreOffsetUE=FVector::ZeroVector;
@@ -134,6 +136,8 @@ struct FS47FreeformDirector::FEffects
    if(C)if(auto* Mat=Cast<UMaterialInstanceDynamic>(C->GetMaterial(0)))Mat->SetScalarParameterValue(TEXT("EmissivePower"),6.f);
    auto* L=NewObject<UPointLightComponent>(M->Web.Get());L->SetupAttachment(M->Web->GetRootComponent());L->SetMobility(EComponentMobility::Movable);L->SetIntensity(0);L->SetAttenuationRadius(900);L->SetCastShadows(false);L->SetLightColor(FLinearColor(.65,.85,.72));L->RegisterComponent();Lights.Add(L);
   }
+  Orb=Mesh(TEXT("FreeformDuskOrb"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(-3.25,2,-47),FVector(.85),0xffe7bd);
+  if(Orb.IsValid())if(auto* Mat=Cast<UMaterialInstanceDynamic>(Orb->GetMaterial(0))){Mat->SetVectorParameterValue(TEXT("Emissive"),S47Three::Hex(0xffe7bd));Mat->SetScalarParameterValue(TEXT("EmissivePower"),4.f);}
   auto Register=[&](UStaticMeshComponent* C,const TCHAR* Name,const TCHAR* Id,FS47Obj& Obj)
   {
    if(!C)return;const int32 Parent=M->Web->Handle(TEXT("world.grounds.group"));Obj=M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name));
@@ -202,7 +206,7 @@ FS47FreeformDirector::FS47FreeformDirector(US47Main* Main):Effects(MakeUnique<FE
 FS47FreeformDirector::~FS47FreeformDirector(){Stop();}
 void FS47FreeformDirector::Begin(const S47J::FObj& O)
 {
- Stop();ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
+ Stop();DuskOrb.Begin(S47J::Obj(O,TEXT("duskOrb")));ReactiveRoom.Empty();ReactiveSerial=0;ReactiveAge=ReactiveOffClock=ReactiveOnClock=0;bReactiveLeft=bReactiveApplied=bReactiveInspected=false;bEnabled=true;bEffectsApplied=false;Event.Empty();PhotoId.Empty();Scene=TEXT("saro");Stage=Variant=SeenDay=MinorLeft=InvestLeft=ThreatRollDay=MajorRollDay=LastThreatDay=0;LastMajorDay=-3;
  PendingThreatNight=PendingMajorNight=0;IncidentSerial=0;IncidentId.Empty();TaggedShot.Empty();TaggedQuality=0;Claims.Reset();FieldObservations.Reset();
  Age=ActiveTime=0;NextAt=90;RestUntil=SoundAt=0;LastPhotoAt=-10;LastDays.Reset();bSeen=bPhoto=bControlled=bCompared=false;Anchor=FVector::ZeroVector;Random.Initialize(M && M->Flow && !M->Flow->bDevRun ? int32(FDateTime::UtcNow().GetTicks() ^ FPlatformTime::Cycles64()) : 4701986);
  if(O)
@@ -278,7 +282,7 @@ void FS47FreeformDirector::Stop()
 }
 S47J::FObj FS47FreeformDirector::Save()const
 {
- auto O=S47J::New();if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
+ auto O=S47J::New();S47J::Set(O,TEXT("duskOrb"),DuskOrb.Save());if(M&&M->SkyVisitors)S47J::Set(O,TEXT("highSky"),M->SkyVisitors->SaveFreeform());S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("event"),Event);S47J::Set(O,TEXT("photo"),PhotoId);S47J::Set(O,TEXT("scene"),Scene);S47J::Set(O,TEXT("stage"),Stage);S47J::Set(O,TEXT("variant"),Variant);
  S47J::Set(O,TEXT("seenDay"),SeenDay);S47J::Set(O,TEXT("minorLeft"),MinorLeft);S47J::Set(O,TEXT("investLeft"),InvestLeft);S47J::Set(O,TEXT("threatRollDay"),ThreatRollDay);S47J::Set(O,TEXT("majorRollDay"),MajorRollDay);S47J::Set(O,TEXT("lastThreatDay"),LastThreatDay);S47J::Set(O,TEXT("lastMajorDay"),LastMajorDay);
  S47J::Set(O,TEXT("pendingThreatNight"),PendingThreatNight);S47J::Set(O,TEXT("pendingMajorNight"),PendingMajorNight);
  S47J::Set(O,TEXT("age"),Age);S47J::Set(O,TEXT("activeTime"),ActiveTime);S47J::Set(O,TEXT("nextAt"),NextAt);S47J::Set(O,TEXT("restUntil"),RestUntil);S47J::Set(O,TEXT("soundAt"),SoundAt);S47J::Set(O,TEXT("random"),Random.GetCurrentSeed());
@@ -320,10 +324,11 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
   if(Instrument(Id)&&!M->Freeform->Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& J){return J.Source==0&&J.Stage==FS47FreeformSession::EJobStage::Filed;}))return false;
   if(Id==TEXT("unsigned_telex")&&M->Freeform->FindingCount()==0)return false;
   if(M->Freeform->Day()<D->Day||(D->bNight&&!Night())||ActiveTime<RestUntil)return false;
-  if(const int32* Last=LastDays.Find(Id))if(M->Freeform->Day()-*Last<3)return false;
+  if(Id!=TEXT("dusk_orb"))if(const int32* Last=LastDays.Find(Id))if(M->Freeform->Day()-*Last<3)return false;
   if(D->Family==TEXT("threat")&&(LastThreatDay==M->Freeform->Day()||M->Freeform->Clock()<86400.+19*3600.))return false;
   if(D->Family==TEXT("major")&&(M->Freeform->Day()-LastMajorDay<3||M->Freeform->Clock()<3*86400.+19*3600.))return false;
  }
+ if(Id==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow())return false;
  if(Id==TEXT("array_presence")&&(!M->Freeform->Field||M->Freeform->Field->HasArrayFault()||!Near(M->Freeform->Field->InteractionPoint(TEXT("ff:service")),12)))return false;
  if(Id==TEXT("roomlight_return")&&!ReactiveReady())return false;
  if((Id==TEXT("observer")||Id==TEXT("service_presence")||Id==TEXT("feeder_presence")||Id==TEXT("array_presence"))&&(!M->Night||!M->Night->Glimpses||!M->Night->Glimpses->HasNativeBody()||!M->Night->Glimpses->Individuals().IsEmpty()))return false;
@@ -339,6 +344,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
  IncidentSerial=FMath::Min(1000000000,IncidentSerial+1);IncidentId=FString::Printf(TEXT("%s.day%d.%d"),*Id,M->Freeform->Day(),IncidentSerial);TaggedShot.Empty();TaggedQuality=0;
  Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
+ if(Id==TEXT("dusk_orb")){Anchor=FVector(-3.25,US47Night::SaroFloorAt(M->Web,-3.25,-47)+2.2,-47);DuskOrb.Started(M->Freeform->Clock());}
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
  // Store one world-space route origin; it never follows the player camera.
  if(Id==TEXT("close_pass")&&M->Player)Anchor=M->Player->Pos+FVector(-70,24,-38);
@@ -397,6 +403,11 @@ void FS47FreeformDirector::Apply()
    bReactiveApplied=true;ReactiveOnClock=M->Freeform->Clock();
    M->Freeform->RecordEvidence(FString::Printf(TEXT("roomlight-original-%d"),ReactiveSerial),FString::Printf(TEXT("LOCAL SWITCH ENTRY / %s / %s\nWall switch set to OFF. This is the last manual operation recorded before the later circuit readback."),*ReactiveRoom,*LightStamp(ReactiveOffClock)));
   }
+  if(Event==TEXT("dusk_orb"))
+  {
+   if(M->Audio&&Near(FVector(-3,1,1),18)){FS47Sound O;O.Gain=.12f;O.At=FVector(-3,1,1);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+1.2);}
+   if(M->UI)M->UI->Toast(TEXT("A low light moves between S-02 and S-03. The PHOTO LAB camera can retain a field observation."),6);
+  }
   if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
   if(Event==TEXT("s03_failure")&&M->Freeform->Field)
   {
@@ -421,6 +432,12 @@ void FS47FreeformDirector::Draw()
  // whenever the active incident is presented; no gameplay effect is replayed.
  if(Event==TEXT("landing_trace"))Effects->Physical(Effects->Sample,true);
  if(Event==TEXT("empty_car"))Effects->Physical(Effects->Car,true);
+ if(auto* Orb=Effects->Orb.Get())
+ {
+  const double V=Event==TEXT("dusk_orb")?FS47DuskOrb::Visibility(Age):0;
+  Orb->SetVisibility(V>0&&M->Web->Area()==Scene);Orb->SetWorldScale3D(FVector(.85*V));
+  if(V>0)Orb->SetWorldLocation(S47Three::ToUE(FS47DuskOrb::Position(Anchor,Age)));
+ }
  const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover");
  if(Effects->Ufo)
  {
@@ -538,8 +555,11 @@ void FS47FreeformDirector::Step(double Dt)
  const int32 Day=M->Freeform->Day();
  const bool bNight=Night();if(ExpireNightChoices(Day,bNight))Changed();
  if(SeenDay!=Day){SeenDay=Day;MinorLeft=Random.RandRange(2,4);InvestLeft=Random.RandRange(0,2);NextAt=FMath::Max(ActiveTime+60,RestUntil);Changed();}
+ if(DuskOrb.Update(M->Freeform->Clock(),M->Freeform->InTutorial()))Changed();
+ if(Event==TEXT("roof_steps")&&M->Freeform->CaseField&&M->Freeform->CaseField->OwnsRoofWindow()){Finish(false);return;}
  if(Event.IsEmpty())
  {
+  if(!M->Freeform->InTutorial()&&DuskOrb.Ready(M->Freeform->Clock())&&Start(TEXT("dusk_orb"),false))return;
   if(ActiveTime<NextAt||ActiveTime<RestUntil)return;NextAt=ActiveTime+Random.FRandRange(240,420);
   if(bNight)
   {
@@ -549,7 +569,7 @@ void FS47FreeformDirector::Step(double Dt)
    if(StartPendingNightChoice(TEXT("close_pass"),Day,PendingMajorNight))return;
   }
   TArray<FString> Choices;
-  for(const auto& D:Catalog())if(D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&Eligible(D.Id,false))
+  for(const auto& D:Catalog())if(D.Id!=TEXT("dusk_orb")&&D.Family!=TEXT("threat")&&D.Family!=TEXT("major")&&Eligible(D.Id,false))
   {const bool Minor=D.Family==TEXT("minor")||D.Family==TEXT("maintenance");if((Minor&&MinorLeft>0)||(!Minor&&InvestLeft>0))Choices.Add(D.Id);}
   if(Choices.IsEmpty()){Changed();return;}
   const FString Id=Choices[Random.RandRange(0,Choices.Num()-1)];
@@ -561,7 +581,7 @@ void FS47FreeformDirector::Step(double Dt)
  if(Event==TEXT("s03_failure")&&M->Freeform->Field&&!M->Freeform->Field->HasArrayFault()){Finish(true);return;}
  if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if(Scene!=M->Web->Area())
- {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
+ {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover")||Event==TEXT("dusk_orb"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
  if(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))
  {
   auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G)return;
@@ -700,6 +720,7 @@ bool FS47FreeformDirector::Use(const FString& Id)
 bool FS47FreeformDirector::PhysicalObjectPresented()const
 {
  if(!bEnabled||!Effects)return false;
+ if(Event==TEXT("dusk_orb")){const auto* C=Effects->Orb.Get();return M&&M->Web&&M->Web->Area()==Scene&&IsValid(C)&&C->IsRegistered()&&C->IsVisible()&&!C->bHiddenInGame;}
  if(Event==TEXT("close_pass"))return M&&M->Web&&M->Web->Area()==Scene&&Effects->Ufo&&Effects->Ufo->Presented();
  if(Event==TEXT("response_lights")||Event==TEXT("flyover")||Event==TEXT("close_pass"))
   return Effects->PartPresented(1)&&Effects->PartPresented(2)&&Effects->PartPresented(3)&&(Event!=TEXT("close_pass")||Effects->PartPresented(0));
@@ -757,6 +778,10 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered&&M->Night->Glimpses->ControlledPhotoBody(I.Id))
    TaggedQuality=FMath::Max(TaggedQuality,Qualify(I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id)));
  }
+ else if(!RoadPhoto&&Event==TEXT("dusk_orb")&&PhysicalObjectPresented())
+ {
+  if(const auto* C=Effects->Orb.Get())TaggedQuality=Qualify(S47Three::ToThree(C->Bounds.Origin),double(C->Bounds.BoxExtent.Z)*.02,C);
+ }
  else if(!RoadPhoto&&Event==TEXT("landing_trace"))
  {
   if(const auto* C=Effects->PresentedComponent(Effects->Sample))TaggedQuality=Qualify(Anchor,.35,C);
@@ -803,7 +828,7 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
  TaggedShot.Empty();LastPhotoAt=ActiveTime;
  if(TaggedIncident==IncidentId&&!Event.IsEmpty())
  {
-  bSeen=bPhoto=true;PhotoId=Shot.Id;FVector ObservedAt=Anchor;
+  bSeen=bPhoto=true;PhotoId=Shot.Id;if(Event==TEXT("dusk_orb"))DuskOrb.Photographed();FVector ObservedAt=Anchor;
   if(Event==TEXT("observer")&&M&&M->Night&&M->Night->Glimpses)
    for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered){ObservedAt=I.Eye;break;}
   ObserveVisitor(ObservedAt);
@@ -829,6 +854,19 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
  if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit. This records an observation, not a confirmed origin."),5);
  return true;
 }
+// Public declaration: bool PlanPhotoControl(const FString& Id);
+bool FS47FreeformDirector::PlanPhotoControl(const FString& Id)
+{
+ if(!M||!M->Freeform||!M->Freeform->CanRegisterPhotoEvidence()||!M->Night||!M->Night->Album||!Id.StartsWith(TEXT("dusk_orb.")))return false;
+ const auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C)return false;
+ const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C->PhotoId;});
+ if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->IsDeveloped()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& P){return P.Key==TEXT("freeform:")+Id;}))return false;
+ const FString Key=TEXT("orb-control-plan.")+Id;if(M->Freeform->HasFinding(Key))return false;
+ M->Freeform->RecordEvidence(Key,FString::Printf(TEXT("PLANNED FIELD CONTROL / LOW ARRAY LIGHT\nIncident: %s\nRetained developed original: %s\nOriginal exposure clock: %.3f s\nReference: S-03 CABLE JUNCTION, facing the gap between S-02 and S-03. Return to this marked location and retain a separate control photograph showing both antenna references. Compare the original light position against fixed lamps and silhouettes; record any difference in viewpoint or lighting.\nThis is a plan, not a completed comparison. No simultaneous receiver measurement, identity or common cause has been established. No additional payment is due for planning."),*Id,*Shot->Id,Shot->Clock));
+ Changed();if(M->UI)M->UI->Toast(TEXT("Control plan retained: return to S-03 CABLE JUNCTION and take a separate reference photograph toward S-02 / S-03."),5);
+ return true;
+}
+
 FString FS47FreeformDirector::ObservationNote()const
 {
  if(Event==TEXT("wrong_source"))return TEXT("CONTROL NOTE: extra component persists off the expected source centre. Compare independent antenna groups.");
@@ -853,7 +891,7 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
   Check(SubjectMean(P,W,H,Region)<15,TEXT("bright margins inside component bounds cannot mask a dark subject centre"));
   Check(SubjectMean(P,W,H,FBox2D(ForceInit))<0&&SubjectMean(P,W,H,FBox2D(FVector2D(.5,.5),FVector2D(.501,.501)))<0,TEXT("missing or subpixel subject region cannot qualify"));
  }
- Check(Catalog().Num()==19&&Definition(TEXT("roomlight_return")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
+ Check(Catalog().Num()==20&&Definition(TEXT("roomlight_return")),TEXT("authored catalogue, action-bound room light and two physical service-site encounters are embedded in runtime"));TSet<FString> Ids;
  for(const auto& D:Catalog()){Check(!Ids.Contains(D.Id)&&!D.Finding.IsEmpty()&&D.Day>=1&&D.Duration>0,TEXT("event ID, finding and finite duration"));Ids.Add(D.Id);}
  FS47FreeformDirector D(nullptr);D.Begin(nullptr);auto Saved=D.Save();FS47FreeformDirector R(nullptr);R.Begin(Saved);
  Check(S47J::Write(Saved)==S47J::Write(R.Save()),TEXT("idle director seed, budgets and schedule round-trip without reroll"));
@@ -908,5 +946,6 @@ bool FS47FreeformDirector::SelfTest(TArray<FString>& Lines)
  Check(FS47FreeformObservation::Direction(FVector::ZeroVector,FVector(0,0,-10))==TEXT("N")&&FS47FreeformObservation::Direction(FVector::ZeroVector,FVector(10,0,0))==TEXT("E")&&FS47FreeformObservation::Direction(FVector::ZeroVector,FVector(-10,0,-10))==TEXT("NW"),TEXT("Coarse bearings follow world north and are observer-relative"));
  FS47RoswellBrain Brain;Brain.Start(FS47RoswellBrain::EMode::Curious,FVector(2,0,3),.4,77);Brain.bHasPlayerMemory=true;Brain.LastKnownPlayer=FVector(8,0,9);auto B=Brain.Save();FS47RoswellBrain Copy;
  Check(Copy.Restore(B)&&Copy.Pos==Brain.Pos&&Copy.LastKnownPlayer==Brain.LastKnownPlayer&&Copy.bHasPlayerMemory,TEXT("active native observer keeps identity-space position and measured player memory"));
+ Ok=FS47DuskOrb::SelfTest(Lines)&&Ok;
  return Ok;
 }
