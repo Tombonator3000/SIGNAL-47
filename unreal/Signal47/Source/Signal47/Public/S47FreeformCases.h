@@ -56,6 +56,7 @@ public:
  int32 Remaining(int32 Line) const;
  int32 ValidTestsTotal() const;
  bool Conclude(int32 Line,int32 Cause,FString& Why);
+ FString ConclusionText(int32 Line) const;
  bool InRepeatWindow(int32 Line,int32 Day,double DayClock) const;
  static bool PresentFor(int32 Line,int32 Cause,int32 Test);
  static FString Prediction(int32 Line,int32 Test);

@@ -17,6 +17,9 @@ public:
  };
  int32 Assembly=0,Site=-1,Serial=0;
  bool bCalibrated=false,bRecording=false;
+ // First issue is at parts storage; all subsequent handling is at the bench.
+ bool bLoanIssued=false,bCheckedOut=false;
+ int32 Checkouts=0,Returns=0;
  double Battery=0,Offset=2.4,Frequency=1420.11,Calibration=0;
  TArray<FTape> Tapes;
  static constexpr double Capacity=6*3600., Window=2*3600.;

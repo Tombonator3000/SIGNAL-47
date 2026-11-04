@@ -24,6 +24,8 @@
 #include "S47Inter.h"
 #include "S47Main.h"
 #include "S47Panels.h"
+#include "S47Kit.h"
+#include "Widgets/Layout/SBox.h"
 #include "S47Story.h"
 #include "S47Three.h"
 #include "S47UI.h"
@@ -463,8 +465,8 @@ void US47Chapter1::PlaceFieldCamera()
  // Both room.fieldCamera and room.objs.fieldCamera resolve to this same node.
  Cam.SetPosition(M->IsFreeform()?FVector(18.55,.89,-1.9):StoryCameraPosition.GetValue());
  // This invisible Story interaction box encloses the archive bench and the small
- // camera. Suppress only that proxy until pickup, otherwise its empty Freeform
- // label consumes the ray before the camera. The physical bench is untouched.
+ // camera and reserve film. Its Story-only label must not consume Freeform
+ // rays, including after camera pickup. The physical bench is untouched.
  const FS47Obj Archive=M->Web->Obj(TEXT("yard.objs.archive"));
  const FS47WebNode* Node=Archive?M->Web->Node(Archive.I):nullptr;
  if(UPrimitiveComponent* Proxy=Node?Cast<UPrimitiveComponent>(Node->Comp.Get()):nullptr)
@@ -474,8 +476,8 @@ void US47Chapter1::PlaceFieldCamera()
    ArchivePickupProxy=Proxy;
    ArchivePickupCollision=uint8(Proxy->GetCollisionEnabled());
   }
-  const bool Waiting=M->IsFreeform()&&Fcam()&&!Fcam()->bHave;
-  Proxy->SetCollisionEnabled(Waiting?ECollisionEnabled::NoCollision:ECollisionEnabled::Type(ArchivePickupCollision));
+  const bool Freeform=M->IsFreeform();
+  Proxy->SetCollisionEnabled(Freeform?ECollisionEnabled::NoCollision:ECollisionEnabled::Type(ArchivePickupCollision));
  }
 }
 void US47Chapter1::ShowCamera(bool bOn)
@@ -751,7 +753,17 @@ void US47Chapter1::UseWetBench()
 		const FString Id = Shot->Id;
 		const int32 Stage = Shot->LabStage;
 		if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door before processing the photograph.")); return; }
-		S47Panels::WetBench(Ui(), Id + TEXT(" / ") + Shot->Place, Stage == 0 ? 0 : Stage == 1 ? 2 : 3, FString(), [this, Id, Stage]
+		// Refresh this same bench session after each action; Story keeps its timed panel.
+		TArray<S47Kit::FW> Rows;
+		Rows.Add(S47Kit::Sub(Id + TEXT(" / ") + Shot->Place));
+		Rows.Add(S47Kit::Steps({
+			{ TEXT("1 / DEVELOP EXPOSED FILM"), TEXT("Keep the door closed. The original negative is retained.") },
+			{ TEXT("2 / TRANSFER PRINT TO FIXER"), TEXT("Stabilize the contact print in the adjacent tray.") },
+			{ TEXT("3 / COLLECT THE ORIGINAL"), TEXT("Take the finished photograph to OPS for registration.") }
+		}, Stage));
+		if (Stage == 2) Rows.Add(SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(Shot->Url), 480.f)]);
+		const FString Label = Stage == 0 ? TEXT("LOAD SEALED FILM INTO TANK") : Stage == 1 ? TEXT("TRANSFER CONTACT PRINT TO FIXER") : TEXT("COLLECT AND EXAMINE PRINT");
+		Rows.Add(S47Kit::Button(Label, [this, Id, Stage]
 		{
 			if (!M || !M->IsFreeform() || !M->Night || !M->Night->Album || !M->Freeform || !M->Player || !Yard) return;
 			if (FVector::Distance(M->Player->Pos, Yard->Obj(TEXT("wetBench")).WorldPosition()) > 2.6) { Toast(TEXT("PHOTO LAB: Return to the wet bench to continue processing.")); return; }
@@ -759,9 +771,18 @@ void US47Chapter1::UseWetBench()
 			if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door; your original is retained.")); return; }
 			if (!M->Night->Album->AdvanceLabPhoto(Id, Stage)) return;
 			if (US47Audio* A = Au()) A->PourThree(Yard->WetPrint.WorldPosition());
-			Toast(Stage == 0 ? TEXT("PHOTO LAB: Contact print ready. Use the wet bench to transfer it to the fixer.") : Stage == 1 ? TEXT("PHOTO LAB: Print fixed. Collect the original at the wet bench.") : TEXT("OPS: Submit the developed field photograph. The original is retained in your album."), 4.5f);
+			Toast(Stage == 0 ? TEXT("PHOTO LAB: Contact print ready. Transfer it to the fixer.") : Stage == 1 ? TEXT("PHOTO LAB: Print fixed. Collect the original.") : TEXT("OPS: Submit the developed field photograph. The original is retained in your album."), 4.5f);
 			M->RequestAutosave();
-		});
+			if (Stage < 2) { UseWetBench(); return; }
+			const FS47AlbumShot* Finished = M->Night->Album->Shots().FindByPredicate([&Id](const FS47AlbumShot& S) { return S.Id == Id; });
+			TArray<S47Kit::FW> Done;
+			Done.Add(S47Kit::Sub(Id + TEXT(" / DEVELOPED ORIGINAL")));
+			if (Finished) Done.Add(SNew(SBox).HAlign(HAlign_Center)[S47Kit::Image(S47Image::FromDataUrl(Finished->Url), 480.f)]);
+			Done.Add(S47Kit::Text(TEXT("Original collected. Register eligible evidence at OPS; the original stays in your album.")));
+			if (M->Night->Album->PendingLabPhoto()) Done.Add(S47Kit::Button(TEXT("DEVELOP NEXT EXPOSED PHOTOGRAPH"), [this] { UseWetBench(); }, true));
+			if (Ui()) Ui()->Open(S47Kit::Shell(Ui(), TEXT("WET BENCH"), S47Kit::Col(Done)));
+		}, true));
+		if (Ui()) Ui()->Open(S47Kit::Shell(Ui(), TEXT("WET BENCH"), S47Kit::Col(Rows)));
 		return;
 	}
 	if (Lab && Lab()) return;

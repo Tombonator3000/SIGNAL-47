@@ -62,7 +62,7 @@ FString FS47FieldLogger::Report(const FTape& T)const
 }
 S47J::FObj FS47FieldLogger::Save()const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("assembly"),Assembly);S47J::Set(O,TEXT("site"),Site);S47J::Set(O,TEXT("serial"),Serial);S47J::Set(O,TEXT("calibrated"),bCalibrated);S47J::Set(O,TEXT("recording"),bRecording);S47J::Set(O,TEXT("battery"),Battery);S47J::Set(O,TEXT("frequency"),Frequency);S47J::Set(O,TEXT("calibration"),Calibration);
+ auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("loanIssued"),bLoanIssued);S47J::Set(O,TEXT("checkedOut"),bCheckedOut);S47J::Set(O,TEXT("checkouts"),Checkouts);S47J::Set(O,TEXT("returns"),Returns);S47J::Set(O,TEXT("assembly"),Assembly);S47J::Set(O,TEXT("site"),Site);S47J::Set(O,TEXT("serial"),Serial);S47J::Set(O,TEXT("calibrated"),bCalibrated);S47J::Set(O,TEXT("recording"),bRecording);S47J::Set(O,TEXT("battery"),Battery);S47J::Set(O,TEXT("frequency"),Frequency);S47J::Set(O,TEXT("calibration"),Calibration);
  TArray<TSharedPtr<FJsonValue>> A;for(const auto& T:Tapes){auto V=S47J::New();S47J::Set(V,TEXT("id"),T.Id);S47J::Set(V,TEXT("levels"),T.Levels);S47J::Set(V,TEXT("job"),T.Job);S47J::Set(V,TEXT("site"),T.Site);S47J::Set(V,TEXT("day"),T.Day);S47J::Set(V,TEXT("start"),T.Start);S47J::Set(V,TEXT("end"),T.End);S47J::Set(V,TEXT("frequency"),T.Frequency);S47J::Set(V,TEXT("offset"),T.Offset);S47J::Set(V,TEXT("battery"),T.Battery);S47J::Set(V,TEXT("overlap"),T.Overlap);S47J::Set(V,TEXT("noise"),T.NoiseSum);S47J::Set(V,TEXT("seconds"),T.Seconds);S47J::Set(V,TEXT("gapSeconds"),T.GapSeconds);S47J::Set(V,TEXT("retrieved"),T.bRetrieved);S47J::Set(V,TEXT("compared"),T.bCompared);S47J::Set(V,TEXT("empty"),T.bBatteryEmpty);A.Add(MakeShared<FJsonValueObject>(V));}O->SetArrayField(TEXT("tapes"),A);return O;
 }
 void FS47FieldLogger::Load(const S47J::FObj& O)
@@ -77,6 +77,9 @@ void FS47FieldLogger::Load(const S47J::FObj& O)
   if(T.Id.StartsWith(TEXT("fieldlogger01.tape")))Serial=FMath::Max(Serial,FMath::Clamp(FCString::Atoi(*T.Id.Mid(18)),0,1000000));
   T.Job=S47J::Str(Q,TEXT("job"));T.Site=int32(N(Q,TEXT("site"),0,1));T.Day=int32(N(Q,TEXT("day"),1,1000000,1));T.Start=N(Q,TEXT("start"),0,1e12);T.End=N(Q,TEXT("end"),T.Start,T.Start+Window,T.Start);T.Frequency=N(Q,TEXT("frequency"),1419.5,1420.7,1420.11);T.Offset=N(Q,TEXT("offset"),-60,60);T.Battery=N(Q,TEXT("battery"),0,Capacity);T.Overlap=N(Q,TEXT("overlap"),0,Window);T.Seconds=N(Q,TEXT("seconds"),0,Window);T.GapSeconds=N(Q,TEXT("gapSeconds"),0,Window);T.NoiseSum=N(Q,TEXT("noise"),0,Window*2);T.bRetrieved=S47J::Bool(Q,TEXT("retrieved"));T.bCompared=T.bRetrieved&&S47J::Bool(Q,TEXT("compared"));T.bBatteryEmpty=S47J::Bool(Q,TEXT("empty"));Tapes.Add(T);
  }
+ bLoanIssued=S47J::Bool(O,TEXT("loanIssued"),Assembly>0||!Tapes.IsEmpty());
+ bCheckedOut=bLoanIssued&&S47J::Bool(O,TEXT("checkedOut"),Site>=0);
+ Checkouts=int32(N(O,TEXT("checkouts"),0,1000000,bLoanIssued?1:0));Returns=int32(N(O,TEXT("returns"),0,Checkouts));
  Serial=FMath::Max(Serial,Tapes.Num());if(Tapes.IsEmpty()||Tapes.Last().bRetrieved){Site=-1;bRecording=false;}else if(Tapes.Last().End-Tapes.Last().Start>=Window-.001)bRecording=false;
 }
 bool FS47FieldLogger::SelfTest(TArray<FString>& Lines)

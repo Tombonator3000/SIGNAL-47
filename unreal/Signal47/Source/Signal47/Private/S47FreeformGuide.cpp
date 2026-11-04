@@ -24,7 +24,7 @@ bool FS47FreeformSession::StartServiceGuide(bool bSupplyTrip)
  if(!RequirePower())return false;
  if(!Field->HasArrayFault()&&!Field->TriggerServiceFault(ServiceGuide==0)){Feedback=TEXT("Service target unavailable. Restore station power and try again.");Changed(Feedback);return false;}
  GuideServiceBaseline=Field->ServiceCompletions();GuideSupplyBaseline=Field->ServiceSupplyDeliveries();
- ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;
+ ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;FieldFocus=-1;
  Feedback=FString::Printf(TEXT("SERVICE ACCEPTED / %s. ARRAY STATUS (left-hand PC): Select this antenna, then use its local cabinet outside. Remote operation stays suspended until relay replacement and the movement test."),*Field->ServiceDishId());Changed(Feedback);
  return true;
 }
@@ -99,8 +99,8 @@ void FS47FreeformSession::OpenServiceGuide()
   Rows.Add(S47FreeformTerminal::Paper(ServiceObjective()));
   Rows.Add(S47FreeformTerminal::Text(FString::Printf(TEXT("REPAIR TARGET: %s. At its outside cabinet: LOCAL, cover, relay, cover, local movement test. Return here only after REMOTE is restored."),*Dish)));
   if(CanCompleteServiceGuide())Rows.Add(S47FreeformTerminal::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
-  else Rows.Add(S47FreeformTerminal::Button(TEXT("Continue service / return to room"),[this]{bGuideFocus=true;Feedback=ServiceObjective();Changed(Feedback);M->UI->Close(true);},true));
-  Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Feedback=bGuideFocus?ServiceObjective():TEXT("OBSERVING FOCUS / unfinished service retained.");Changed(Feedback);OpenServiceGuide();}));
+  else Rows.Add(S47FreeformTerminal::Button(TEXT("Continue service / return to room"),[this]{bGuideFocus=true;FieldFocus=-1;Feedback=ServiceObjective();Changed(Feedback);M->UI->Close(true);},true));
+  Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;if(bGuideFocus)FieldFocus=-1;Feedback=bGuideFocus?ServiceObjective():TEXT("OBSERVING FOCUS / unfinished service retained.");Changed(Feedback);OpenServiceGuide();}));
  }
  OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),OpsShell(4,S47Kit::Col(Rows)));
 }

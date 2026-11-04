@@ -31,6 +31,7 @@ public:
  bool EmergencyFuseAvailable() const;
  void OpenShop();
  void OpenWorkbench();
+ bool LoadFilmAtPhotoLab();
  bool LoggerAccess() const;
  bool LoggerAction(const FString& Action);
  const FS47FieldLogger& FieldLogger() const { return Logger; }

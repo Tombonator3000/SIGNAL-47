@@ -71,9 +71,10 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest"))?TEXT("all-array-service-native"):FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract"))?TEXT("first-shift-six-step-tutorial"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest"))?TEXT("all-array-service-native"):FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract"))?TEXT("first-shift-normal-routine"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("scope"),TEXT("field-plan-disk-continue"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("scope"),TEXT("legacy-printer-queue-regression"));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("scope"),TEXT("night-work-state-fixtures"));
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -92,8 +93,10 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Expected FAIL until queue migration is fixed; no natural acquisition claimed."));
- if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, physical binder callback and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, normal digital completion and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early OPS SERVICE/accept clicks, initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("method"),TEXT("Prepared routine/legacy packet and completed-day fixtures; production registration, case planning/focus and optional-reference callbacks; disk/Flow Continue. No natural acquisition or human input asserted."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest"))){S47J::Set(O,TEXT("scope"),TEXT("night-logger-film-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit case-access and player-placement fixtures, actual timed bench calibration, production custody callbacks, native camera and film ray, three disk/Flow Continue rounds. No full field recording or natural travel claimed."));}
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -210,6 +213,155 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+// Insert after auto& F=*M->Freeform; in Step. Run with -S47FreeformTest -S47NightLoggerTest.
+// Explicit access/player-placement fixtures; no natural travel or two-hour measurement claim.
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest")))
+ {
+  if(Age>120){Finish(false,TEXT("bounded logger/photolab supply test timeout"));return;}
+  if(!F.Field||!M->Night||!M->Night->Album||!M->Player||!M->UI||!M->Inter)return;
+  auto AtStation=[&](const FString& Id)
+  {
+   M->UI->Close(true);const FVector P=F.Field->StandPoint(Id);M->Player->Place(P.X,P.Z,0);
+  };
+  auto Aim=[&](const FVector& Target)
+  {
+   const FVector D=Target-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+  };
+  if(Stage==0)
+  {
+   if(Age<3)return;M->UI->Close(true);F.Director->Stop();AtStation(TEXT("ff:depot"));
+   if(!Check(F.InventoryCount(TEXT("film"))==1,TEXT("fresh Freeform starts with exactly one reserve film pack")))return;
+   if(!Check(!F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("issue"))&&!F.Field->FieldLogger().bLoanIssued&&F.Field->ParcelStage()==0,TEXT("unearned logger access rejects physical first issue without changing custody")))return;
+   // Explicit prerequisite fixture only: test the world handling without replaying case 1.
+   auto State=S47J::Read(S47J::Write(F.Save()));auto Cases=S47J::Obj(State,TEXT("cases"));
+   if(!Check(Cases.IsValid(),TEXT("session has a serializable case-access record")))return;
+   TArray<FString> Access=S47J::Strs(Cases,TEXT("access"));Access.AddUnique(TEXT("access.fieldlogger"));S47J::Set(Cases,TEXT("access"),Access);
+   F.Begin(State);F.Director->Stop();Go(9400,.4);return;
+  }
+  if(Stage==9400)
+  {
+   AtStation(TEXT("ff:depot"));
+   if(!Check(F.Field->LoggerAccess()&&F.Field->LoggerAction(TEXT("issue")),TEXT("access fixture unlocks first physical issue at PARTS STORAGE")))return;
+   const auto& L=F.Field->FieldLogger();
+   if(!Check(L.bLoanIssued&&L.bCheckedOut&&L.Checkouts==1&&L.Returns==0&&L.Assembly==0&&F.Field->ParcelStage()==2&&F.Field->ParcelItem()==TEXT("fieldlogger"),TEXT("first issue creates one carried unassembled fieldlogger01 kit")))return;
+   if(!Check(!F.Field->LoggerAction(TEXT("issue"))&&L.Checkouts==1,TEXT("first-issue action cannot duplicate a carried logger")))return;
+   if(!Restore(TEXT("nightlogger-unassembled-carried")))return;Go(9401,.4);return;
+  }
+  if(Stage==9401)
+  {
+   F.Director->Stop();const auto& L=F.Field->FieldLogger();
+   if(!Check(L.bLoanIssued&&L.bCheckedOut&&L.Checkouts==1&&L.Returns==0&&L.Assembly==0&&F.Field->ParcelStage()==2&&F.Field->ParcelItem()==TEXT("fieldlogger"),TEXT("disk Continue retains unassembled logger identity and first checkout")))return;
+   AtStation(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));
+   if(!Check(!L.bCheckedOut&&L.Returns==1&&F.Field->ParcelStage()==0&&F.Field->ParcelItem().IsEmpty(),TEXT("physical calibration-bench use returns unassembled kit and updates the loan record once")))return;
+   M->UI->Close(true);
+   if(!Check(F.Field->LoggerAction(TEXT("connect"))&&F.Field->LoggerAction(TEXT("connect"))&&F.Field->LoggerAction(TEXT("connect"))&&L.Assembly==3&&!F.Field->LoggerAction(TEXT("connect")),TEXT("three production connections assemble one logger and reject a fourth")))return;
+   if(!Check(F.Field->LoggerAction(TEXT("calibrate"))&&!L.bCalibrated,TEXT("bench starts real timed clock calibration without granting immediate completion")))return;
+   Go(9402);return;
+  }
+  if(Stage==9402)
+  {
+   const auto& L=F.Field->FieldLogger();
+   if(!L.bCalibrated){if(Age-At>20)Check(false,TEXT("powered bench calibration completes within bounded active time"));return;}
+   if(!Check(L.Calibration==3&&L.Battery==FS47FieldLogger::Capacity&&L.Checkouts==1&&L.Returns==1,TEXT("actual three-second bench reference retains calibration and charges the same device")))return;
+   if(!Check(F.Field->LoggerAction(TEXT("take"))&&L.bCheckedOut&&L.Checkouts==2&&F.Field->ParcelStage()==2,TEXT("subsequent collection occurs at the calibration bench")))return;
+   AtStation(TEXT("ff:depot"));F.Field->Use(TEXT("ff:depot"));
+   if(!Check(L.bCheckedOut&&L.Checkouts==2&&L.Returns==1&&F.Field->ParcelStage()==2,TEXT("old depot return cannot consume the carried logger or alter its loan record")))return;
+   AtStation(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));M->UI->Close(true);
+   if(!Check(!L.bCheckedOut&&L.Checkouts==2&&L.Returns==2&&L.bCalibrated&&F.Field->ParcelStage()==0,TEXT("same-bench return retains prepared device and records one return")))return;
+   if(!Restore(TEXT("nightlogger-prepared-at-bench")))return;Go(9403,.4);return;
+  }
+  if(Stage==9403)
+  {
+   F.Director->Stop();const auto& L=F.Field->FieldLogger();
+   if(!Check(L.bLoanIssued&&!L.bCheckedOut&&L.Checkouts==2&&L.Returns==2&&L.Assembly==3&&L.bCalibrated&&L.Site==-1&&L.Tapes.IsEmpty()&&F.Field->ParcelStage()==0,TEXT("Continue retains one prepared logger at bench without invented deployment or original tape")))return;
+   AtStation(TEXT("ff:depot"));
+   if(!Check(!F.Field->LoggerAction(TEXT("issue"))&&!F.Field->LoggerAction(TEXT("take"))&&L.Checkouts==2,TEXT("depot neither reissues nor collects an already issued prepared logger")))return;
+   if(!Check(F.InventoryCount(TEXT("film"))==1,TEXT("logger Continue rounds do not grant additional reserve film")))return;
+   // Collect the actual existing camera, then expose a native frame before loading reserve film.
+   M->Player->Place(17.25,-1.9,0);const auto* Camera=M->Inter->Get(TEXT("fieldCamera"));
+   if(!Check(Camera&&bool(Camera->Use)&&M->FieldCamera,TEXT("photolab camera production interaction exists")))return;
+   if(!M->FieldCamera->bHave)Camera->Use();
+   if(!Check(M->FieldCamera->bHave,TEXT("existing photolab camera is collected through its production callback")))return;
+   auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));
+   if(!Check(C1!=nullptr,TEXT("production field-camera controller exists")))return;
+   CameraShots=M->Night->Album->Shots().Num();CameraFilm=M->Night->Album->Left();C1->ToggleCamera();
+   if(!Check(M->FieldCamera->bRaised,TEXT("owned camera raises through the normal camera controller")))return;
+   C1->Shutter();
+   if(!Check(M->Night->Album->Shots().Num()==CameraShots+1&&M->Night->Album->Left()==CameraFilm-1,TEXT("native exposure consumes exactly one loaded frame before reserve-film loading")))return;
+   const auto& Photo=M->Night->Album->Shots().Last();RetainedPhotoId=Photo.Id;RetainedPhotoUrl=Photo.Url;
+   if(!Check(!Photo.bUnavailable&&!Photo.Url.IsEmpty()&&!Photo.IsDeveloped(),TEXT("pre-existing exposed original retains its actual native image")))return;
+   M->FieldCamera->Raise(false);M->UI->Viewfinder(false);M->UI->Close(true);
+   const FVector Film=F.Field->InteractionPoint(TEXT("ff:film"));M->Player->Place(Film.X-1.15,Film.Z,0);Aim(Film);
+   Go(9404,.4);return;
+  }
+  if(Stage==9404)
+  {
+   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+   UE_LOG(LogTemp,Display,TEXT("S47 night film ray picked=%s eye=%s target=%s"),*Picked,*S47Three::ToThree(M->Player->EyeUE()).ToString(),*F.Field->InteractionPoint(TEXT("ff:film")).ToString());
+   if(!Check(Picked==TEXT("ff:film")&&!M->Inter->LabelOf(Picked).IsEmpty()&&bool(M->Player->OnUse),TEXT("actual native ray reaches the reserve film carton after camera pickup")))return;
+   Shot(TEXT("nightlogger-film-before"));Go(9405,.3);return;
+  }
+  if(Stage==9405)
+  {
+   M->Player->OnUse(TEXT("ff:film"));
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(F.InventoryCount(TEXT("film"))==0&&M->Night->Album->Left()==CameraFilm-1+FS47Album::ROLL&&Original&&Original->Url==RetainedPhotoUrl&&!Original->IsDeveloped()&&M->Night->Album->Shots().Num()==CameraShots+1,TEXT("physical film loading atomically spends one pack and adds 36 exposures without changing existing original")))return;
+   if(!Check(!F.Field->LoadFilmAtPhotoLab()&&F.InventoryCount(TEXT("film"))==0&&M->Night->Album->Left()==CameraFilm-1+FS47Album::ROLL,TEXT("empty reserve stock rejects repeated loading without extra frames")))return;
+   if(!Restore(TEXT("nightlogger-film-loaded")))return;Go(9406,.4);return;
+  }
+  if(Stage==9406)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});const auto& L=F.Field->FieldLogger();
+   if(!Check(F.InventoryCount(TEXT("film"))==0&&M->Night->Album->Left()==CameraFilm-1+FS47Album::ROLL&&Original&&Original->Url==RetainedPhotoUrl&&!Original->IsDeveloped()&&M->FieldCamera->bHave,TEXT("disk Continue keeps spent stock, loaded film, camera ownership and exposed original without a free pack")))return;
+   if(!Check(L.bLoanIssued&&!L.bCheckedOut&&L.Checkouts==2&&L.Returns==2&&L.bCalibrated&&L.Tapes.IsEmpty(),TEXT("photolab work does not duplicate or change the prepared logger")))return;
+   Shot(TEXT("nightlogger-film-after"));Go(9407,.3);return;
+  }
+  if(Stage==9407){Finish(true,TEXT("Physical logger issue/bench handling and photolab reserve-film ray/load/Continue passed; explicit access and position fixtures, no full field measurement."));return;}
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))
+ {
+  if(Age>60){Finish(false,TEXT("bounded night-work test timeout"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;F.Director->Stop();Snapshot=F.Save();
+   auto Fixture=S47J::Read(S47J::Write(Snapshot));auto Jobs=S47J::Arr(Fixture,TEXT("jobs"));
+   if(!Check(Jobs.Num()>=2,TEXT("ordinary generated session supplies multiple work cards")))return;
+   auto First=Jobs[0]->AsObject();S47J::Set(First,TEXT("stage"),int32(J::Recorded));S47J::Set(First,TEXT("anomaly"),false);S47J::Set(First,TEXT("paid"),false);
+   S47J::Set(Fixture,TEXT("selected"),0);F.Begin(Fixture,false);F.Director->Stop();WorkBudget=F.Budget();TutorialId=F.Jobs()[0].Id;
+   if(!Check(F.CurrentJob()&&F.RegisterComparison(TEXT("normal")),TEXT("production registration accepts prepared routine original")))return;
+   if(!Check(F.Jobs()[0].Stage==J::Filed&&!F.CurrentJob()&&F.SelectedJob()==-1&&F.Budget()==WorkBudget+20,TEXT("routine completion immediately clears active selection and pays once")))return;
+   if(!Check(!F.RegisterComparison(TEXT("normal"))&&F.Budget()==WorkBudget+20,TEXT("empty active selection cannot repeat payment")))return;
+   if(!Restore(TEXT("nightwork-complete")))return;Go(9301,.3);return;
+  }
+  if(Stage==9301)
+  {
+   if(!Check(!F.CurrentJob()&&F.SelectedJob()==-1&&F.Jobs()[0].Id==TutorialId&&F.Jobs()[0].Stage==J::Filed&&F.Budget()==WorkBudget+20,TEXT("Continue preserves completed job history without reviving selection")))return;
+   F.RegisterFinding(TEXT("roof_steps"),TEXT("Explicit roof-observation fixture for active field-plan guidance."));
+   if(!Check(F.PlanCaseTest(2,0)&&F.FocusedFieldCase()==2&&F.NextAction().Contains(TEXT("roof"),ESearchCase::IgnoreCase)&&!F.NextAction().StartsWith(TEXT("RECEIVER")),TEXT("planning a roof control focuses its actual field instruction")))return;
+   if(!Check(F.SelectJob(1)&&F.FocusedFieldCase()<0&&F.PlannedFieldTest(2)==0,TEXT("routine focus leaves the waiting field plan intact")))return;
+   if(!Check(F.FocusFieldTest(2)&&F.FocusedFieldCase()==2,TEXT("existing field plan can regain active focus")))return;
+   GuidanceExpected=F.NextAction();if(!Restore(TEXT("nightwork-field-focus")))return;Go(9302,.3);return;
+  }
+  if(Stage==9302)
+  {
+   if(!Check(F.FocusedFieldCase()==2&&F.PlannedFieldTest(2)==0&&F.NextAction()==GuidanceExpected,TEXT("Continue restores the same field focus and next action")))return;
+   auto Fixture=S47J::Read(S47J::Write(Snapshot));auto Jobs=S47J::Arr(Fixture,TEXT("jobs"));
+   for(const auto& V:Jobs){S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));S47J::Set(V->AsObject(),TEXT("paid"),true);}
+   S47J::Set(Fixture,TEXT("selected"),0);F.Begin(Fixture,false);F.Director->Stop();WorkBudget=F.Budget();
+   if(!Check(!F.CurrentJob()&&F.StartReferenceCheck()&&F.CurrentJob()&&F.CurrentJob()->bPaid,TEXT("completed daily work offers an optional unpaid instrument baseline immediately")))return;
+   const int32 Ref=F.SelectedJob();auto Prepared=F.Save();auto RefJobs=S47J::Arr(Prepared,TEXT("jobs"));S47J::Set(RefJobs[Ref]->AsObject(),TEXT("stage"),int32(J::Recorded));F.Begin(Prepared,false);F.Director->Stop();
+   if(!Check(F.RegisterComparison(TEXT("normal"))&&F.Budget()==WorkBudget&&!F.CurrentJob(),TEXT("optional baseline registration retains its result without repeatable income")))return;
+   // An older in-progress training packet remains active and still needs physical filing.
+   auto Legacy=S47J::Read(S47J::Write(Snapshot));auto LegacyJobs=S47J::Arr(Legacy,TEXT("jobs"));auto L=LegacyJobs[0]->AsObject();
+   S47J::Set(L,TEXT("stage"),int32(J::Packet));S47J::Set(L,TEXT("paid"),true);S47J::Set(L,TEXT("anomaly"),false);
+   S47J::Set(Legacy,TEXT("selected"),0);S47J::Set(Legacy,TEXT("tutorial"),6);S47J::Set(Legacy,TEXT("tutorialJobId"),S47J::Str(L,TEXT("id")));F.Begin(Legacy,false);F.Director->Stop();
+   if(!Check(F.InTutorial()&&F.CurrentJob()&&F.CurrentJob()->Stage==J::Packet,TEXT("legacy tutorial packet remains actionable instead of silently losing its filing step")))return;
+   Finish(true,TEXT("Routine/history, retained field focus, optional baseline and legacy packet fixtures passed; natural acquisition tested separately."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))
  {
   if(Age>120){Finish(false,TEXT("bounded four-antenna service timeout"));return;}
@@ -346,13 +498,13 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==9101){if(!Click(TEXT("DAILY WORK")))return;Go(9102,.8);return;}
   if(Stage==9102)
   {
-   if(!Check(F.TerminalOnGlass()&&F.OperationsSection()==1&&F.Objective().StartsWith(TEXT("FIRST SHIFT 1/6")),TEXT("physical DAILY WORK shows the first-shift acceptance instruction")))return;
+   if(!Check(F.TerminalOnGlass()&&F.OperationsSection()==1&&F.Objective().StartsWith(TEXT("FIRST SHIFT 1/5")),TEXT("physical DAILY WORK shows the first-shift acceptance instruction")))return;
    Shot(TEXT("tutorial-01-accept"));Go(9103,.3);return;
   }
   if(Stage==9103){if(!Click(TEXT("Accept this job and start the shift")))return;Go(9104,.3);return;}
   if(Stage==9104)
   {
-   if(!Check(TutorialStep()==2&&F.Objective().StartsWith(TEXT("FIRST SHIFT 2/6"))&&F.Objective().Contains(TEXT("TRACKING")),TEXT("native acceptance advances to physical tracking")))return;
+   if(!Check(TutorialStep()==2&&F.Objective().StartsWith(TEXT("FIRST SHIFT 2/5"))&&F.Objective().Contains(TEXT("TRACKING")),TEXT("native acceptance advances to physical tracking")))return;
    if(!Check(!F.SelectJob(1)&&F.CurrentJob()->Id==TutorialId&&S47J::Str(F.Save(),TEXT("tutorialJobId"))==TutorialId,TEXT("accepted tutorial keeps its stable work-card identity")))return;
    AtProp(TEXT("crtRight"));const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("tutorial uses the real first-job receiver profile")))return;
    auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
@@ -360,7 +512,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==9105)
   {
-   if(!Check(TutorialStep()==3&&F.Objective().StartsWith(TEXT("FIRST SHIFT 3/6")),TEXT("pointing advances tutorial to the receiver")))return;
+   if(!Check(TutorialStep()==3&&F.Objective().StartsWith(TEXT("FIRST SHIFT 3/5")),TEXT("pointing advances tutorial to the receiver")))return;
    AtProp(TEXT("crtCenter"));F.OpenReceiver();Shot(TEXT("tutorial-03-receiver"));Go(9106,.3);return;
   }
   if(Stage==9106)
@@ -388,7 +540,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==9110)
   {
-   if(!Check(TutorialStep()==5&&F.Objective().StartsWith(TEXT("FIRST SHIFT 5/6")),TEXT("collecting the original advances to OPS registration")))return;
+   if(!Check(TutorialStep()==5&&F.Objective().StartsWith(TEXT("FIRST SHIFT 5/5")),TEXT("collecting the original advances to OPS registration")))return;
    AtProp(TEXT("opsTerminal"));F.OpenOperations();Go(9111,.7);return;
   }
   if(Stage==9111)
@@ -397,23 +549,12 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==9112)
   {
-   if(!Check(TutorialStep()==6&&F.CurrentJob()->Stage==J::Registered&&F.Budget()==WorkBudget+20&&F.InTutorial(),TEXT("native registration pays once but keeps tutorial open for physical filing")))return;
+   const auto* Done=F.Jobs().FindByPredicate([this](const FS47FreeformSession::FJob& X){return X.Id==TutorialId;});
+   if(!Check(!F.InTutorial()&&TutorialStep()==0&&Done&&Done->Stage==J::Filed&&!F.CurrentJob()&&F.Budget()==WorkBudget+20,TEXT("native routine registration completes the normal first shift and clears active selection immediately")))return;
    if(!Check(!F.RegisterComparison(TEXT("normal"))&&F.Budget()==WorkBudget+20,TEXT("repeat registration cannot duplicate the first-shift payment")))return;
-   Shot(TEXT("tutorial-06-packet"));M->UI->Close(true);Go(9113,.3);return;
-  }
-  if(Stage==9113)
-  {
-   if(F.PrinterProgress()<1)return;
-   AtProp(TEXT("printer"));if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Packet,TEXT("registered tutorial packet finishes its real print feed and is collected")))return;
-   M->UI->Close(true);
-   if(!Check(!F.FilePacket()&&F.InTutorial(),TEXT("tutorial packet cannot be filed remotely beside the printer")))return;
-   if(!FileAtBinder())return;Go(9114,.3);return;
-  }
-  if(Stage==9114)
-  {
-   if(!Check(!F.InTutorial()&&TutorialStep()==0&&F.CurrentJob()->Stage==J::Filed&&F.HasFinding(TEXT("first-shift"))&&F.Budget()==WorkBudget+20,TEXT("physical binder completes all six steps without a second payment")))return;
-   if(!Check(F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp,TEXT("tutorial printing and filing retain the original provenance")))return;
-   Shot(TEXT("tutorial-complete"));if(!Restore(TEXT("tutorial-complete")))return;Go(9115,.3);return;
+   if(!Check(Done->OriginalPage==PrinterOriginal&&Done->OriginalStamp==PrinterStamp&&F.HasFinding(TEXT("first-shift")),TEXT("normal completion preserves the original and records first shift without an extra training packet")))return;
+   if(!Check(F.AvailableActivities().Contains(TEXT("OPS"))&&!F.AvailableActivities().IsEmpty(),TEXT("first-shift completion offers immediate follow-up work")))return;
+   Shot(TEXT("tutorial-complete"));M->UI->Close(true);if(!Restore(TEXT("tutorial-complete")))return;Go(9115,.3);return;
   }
   if(Stage==9115)
   {
@@ -429,7 +570,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==9116)
   {
    if(!Check(!F.InTutorial()&&TutorialStep()==0&&F.SelectJob(1)&&F.Budget()==WorkBudget,TEXT("older saves never receive tutorial or its restrictions, even with explicit test opt-in")))return;
-   Finish(true,TEXT("Six-step first shift: native acceptance/registration, actual acquisition/printing, physical filing, exact-once pay, normal event gate and three disk/Flow restores."));return;
+   Finish(true,TEXT("Normal first shift: native acceptance/registration, actual acquisition/printing, immediate completion, exact-once pay, follow-up and three disk/Flow restores."));return;
   }
   return;
  }
@@ -1123,12 +1264,13 @@ void FS47FreeformTest::Step(double Dt)
   {
    const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
    if(!Check(Original&&Original->Url==RetainedPhotoUrl&&Original->Clock==S47J::Num(Snapshot,TEXT("photoClock"))&&Original->Targets.Num()==S47J::Int(Snapshot,TEXT("photoTargets")),TEXT("physical processing retains original identity, image, timestamp and incident targets")))return;
+   if(Original->LabStage==2&&M->Hud&&M->Hud->ModalWidget()){M->UI->ClearToasts();Shot(TEXT("photo-lab-fixed"));}
    if(Original->IsDeveloped())
    {
     if(!Restore(TEXT("photo-developed")))return;Go(80044,.5);return;
    }
    if(!Check(!M->Inter->LabelOf(TEXT("wetBench")).IsEmpty(),TEXT("physical Freeform wet bench exposes an actionable label")))return;
-   M->Inter->UseId(TEXT("wetBench"));Go(80041,.2);return;
+   if(!M->Hud||!M->Hud->ModalWidget())M->Inter->UseId(TEXT("wetBench"));Go(80041,.2);return;
   }
   if(Stage==80041)
   {
@@ -1144,6 +1286,14 @@ void FS47FreeformTest::Step(double Dt)
 #endif
    const auto* Processed=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==PendingId;});
    if(!Check(Processed&&Processed->LabStage==Before+1&&F.Budget()==PhotoBudget,TEXT("native wet-bench action advances one stage without crediting OPS payment")))return;
+   if(!Check(M->Hud&&M->Hud->ModalWidget().IsValid(),TEXT("wet-bench processing keeps the physical bench session open")))return;
+   if(Before<2)
+   {
+    const FString NextLabel=Before==0?TEXT("TRANSFER CONTACT PRINT TO FIXER"):TEXT("COLLECT AND EXAMINE PRINT");
+    TArray<TSharedRef<SButton>> NextButtons;PhotoButtons(M->Hud->ModalWidget().ToSharedRef(),NextLabel,NextButtons);
+    if(!Check(NextButtons.Num()==1&&NextButtons[0]->IsEnabled(),TEXT("next processing action is available without reopening the wet bench")))return;
+   }
+   if(Before==2){M->UI->ClearToasts();Shot(TEXT("photo-lab-collected"));}
    if(PendingId==RetainedPhotoId&&Before==0)
    {
     if(!Restore(TEXT("photo-in-tank")))return;Go(80042,.5);return;
@@ -1256,7 +1406,7 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(F.CollectChart()&&!F.FilePacket(),TEXT("printed packet cannot be filed remotely from the console")))return;
    if(!FileAtBinder())return;
   }
-  if(!Check(F.CurrentJob()->bPaid&&F.Budget()==Before+20,TEXT("one completed job receives exactly twenty dollars")))return;
+  if(!Check(F.Jobs().IsValidIndex(JobIndex)&&F.Jobs()[JobIndex].bPaid&&F.Budget()==Before+20,TEXT("one completed job receives exactly twenty dollars")))return;
   if(!Check(!F.RegisterComparison(TEXT("normal"))&&F.Budget()==Before+20,TEXT("repeated registration cannot duplicate payment")))return;
   if(!Restore(TEXT("paid-job")))return;F.Director->Stop();
   if(JobIndex<2){if(JobIndex==1)F.SetAnomaly(false);++JobIndex;Go(1);return;}Go(10);return;
@@ -1348,33 +1498,33 @@ void FS47FreeformTest::Step(double Dt)
   const auto Fixture=S47J::Read(S47J::Write(Before));
   auto Cases=S47J::Obj(Fixture,TEXT("cases"));auto Access=S47J::Strs(Cases,TEXT("access"));
   Access.AddUnique(TEXT("access.fieldlogger"));S47J::Set(Cases,TEXT("access"),Access);
-  FS47FieldLogger Device;Device.Assembly=3;Device.Calibration=3;Device.bCalibrated=true;Device.Battery=FS47FieldLogger::Capacity;
+  FS47FieldLogger Device;Device.bLoanIssued=true;Device.Checkouts=1;Device.Returns=1;Device.Assembly=3;Device.Calibration=3;Device.bCalibrated=true;Device.Battery=FS47FieldLogger::Capacity;
   FS47FieldLogger::FTape Tape;Tape.Id=TEXT("fieldlogger01.tape1");Tape.Day=1;Tape.Start=100;Tape.End=220;Tape.Seconds=120;Tape.Offset=2.4;Tape.Levels={.2,.4};Tape.bRetrieved=true;
   Device.Tapes.Add(Tape);Device.Serial=1;
   S47J::Set(S47J::Obj(Fixture,TEXT("field")),TEXT("fieldlogger"),Device.Save());F.Begin(Fixture,F.Lethal());
   auto Place=[&](const TCHAR* Id){const FVector P=F.Field->StandPoint(Id);M->Player->Place(P.X,P.Z,0);M->UI->Close(true);};
   auto OriginalIntact=[&](){const auto& L=F.Field->FieldLogger();return L.Serial==1&&L.Tapes.Num()==1&&L.Tapes[0].Id==Tape.Id&&L.Tapes[0].Levels==Tape.Levels&&L.Tapes[0].Start==Tape.Start&&L.Tapes[0].End==Tape.End&&L.Tapes[0].Seconds==Tape.Seconds&&L.Tapes[0].Offset==Tape.Offset&&L.Tapes[0].bRetrieved&&!L.Tapes[0].bCompared;};
-  Place(TEXT("ff:bench"));
-  if(!Check(F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0,TEXT("explicit authorized logger fixture cannot check out at calibration bench")))return;
+  Place(TEXT("ff:depot"));
+  if(!Check(F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0,TEXT("issued logger is not collected again from the depot")))return;
   Place(TEXT("ff:depot"));
   if(!Check(!F.Field->LoggerAction(TEXT("calibrate"))&&!F.Field->LoggerAction(TEXT("tune"))&&!F.Field->LoggerAction(TEXT("compare")),TEXT("depot cannot calibrate, tune or compare field originals")))return;
-  F.Field->Use(TEXT("ff:depot"));
+  Place(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));
   TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;
-  if(Modal)PhotoButtons(Modal.ToSharedRef(),TEXT("Check out calibrated field logger"),Buttons);
-  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("parts storage exposes one enabled native equipment checkout button")))return;
+  if(Modal)PhotoButtons(Modal.ToSharedRef(),TEXT("Collect prepared field logger from bench"),Buttons);
+  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("calibration bench exposes one enabled native logger collection button")))return;
 #if !UE_BUILD_SHIPPING
   Buttons[0]->SimulateClick();
 #else
   Finish(false,TEXT("native logger checkout test requires development build"));return;
 #endif
   if(!Check(F.Field->ParcelStage()==2&&F.Field->ParcelItem()==TEXT("fieldlogger")&&!F.Field->LoggerAction(TEXT("take"))&&OriginalIntact(),TEXT("native checkout carries one logger; duplicate checkout preserves retained tape")))return;
-  Place(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));
-  if(!Check(F.Field->ParcelStage()==2&&OriginalIntact(),TEXT("wrong-station bench return is rejected without losing logger or original")))return;
   Place(TEXT("ff:depot"));F.Field->Use(TEXT("ff:depot"));
-  if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelItem().IsEmpty()&&OriginalIntact(),TEXT("equipment checkout accepts return with original tape identity and samples intact")))return;
-  F.Field->Use(TEXT("ff:depot"));M->UI->Close(true);
+  if(!Check(F.Field->ParcelStage()==2&&OriginalIntact(),TEXT("wrong-station depot return is rejected without losing logger or original")))return;
+  Place(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));
+  if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelItem().IsEmpty()&&OriginalIntact(),TEXT("calibration bench accepts return with original tape identity and samples intact")))return;
+  F.Field->Use(TEXT("ff:bench"));M->UI->Close(true);
   const auto Returned=S47J::Read(S47J::Write(F.Field->Save()));F.Field->Begin(Returned);
-  if(!Check(F.Field->ParcelStage()==0&&OriginalIntact(),TEXT("repeat depot use and JSON restore do not duplicate logger or alter original tape")))return;
+  if(!Check(F.Field->ParcelStage()==0&&OriginalIntact(),TEXT("repeat bench use and JSON restore do not duplicate logger or alter original tape")))return;
   Place(TEXT("ff:bench"));
   if(!Check(F.Field->LoggerAction(TEXT("compare"))&&OriginalIntact(),TEXT("bench comparison opens but incomplete fixture tape cannot establish a valid comparison")))return;
   M->UI->Close(true);F.Begin(Before,F.Lethal());Go(441,.3);return;
