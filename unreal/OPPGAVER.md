@@ -2,6 +2,17 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Aktivt nattskift 4. til 5. november, kl.08:00
+
+Codex root bruker eksisterende SARO-kopi på `codex/nightshift-20261104`, fra main `51c049ea`. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+
+- todo_triage: Freeform.cpp/h, Guide og ved behov Screens; NIGHT01/02/07 og fortsettelse etter opplæring.
+- photo_loop: Chapter1.cpp/h, Night og ved behov Album/FieldCamera; sammenhengende fotolab. OPS-krok avtales med todo_triage.
+- night_preflight: FreeformWorld.cpp/h og FieldLogger.cpp/h; kortere loggerreise og fysisk reservefilm, samordnet med photo_loop.
+- root: integrasjon, casegrunnlag, native testfiler, dokumentasjon og alle tunge bygg-/testvinduer under production_lease. Agentene starter ingen motorjobber.
+
+Samlet nattstartkontroll er utført én gang: tre arbeidskopier, ingen ekstra komplett manuell kopi eller aktive motorprosesser funnet. Sju verifisert erstattede pakkepayloads pensjonert; installert standard, service-array, receiver-texture og saro-doors-flicker beholdt. Kilder, private assets, Saved og bevis bevares. 36,16 GB logisk pensjonert, ikke lovet fysisk gevinst; faktisk ledig 177.43 GB. Planlagt toppvekst 20 GB; raske df-kontroller før pakking, ingen ny full audit gjennom skiftet.
+
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
 | Service på alle antenner, 4. november | Codex root + tutorial_contract / tutorial_review, eksisterende Claude-kopi | Levert og installert: riktig SERVICE-fremdrift, vedvarende mål blant27 antenner og feil-skap-vakt. Editor/native/pakke kontrollert; filansvar og motorvindu frigitt. |
@@ -514,3 +525,13 @@ Prioritet: 1, 2, 6, så 3–5. Meld her når hver gruppe er levert.
 4. november Codex: Tom bestiller fletting av PR380 og lokal installasjon. Bruker eksisterende østfløy-kopi; PR-head 1b1b8397 inkluderer Claudes ferdige benkintegrasjon. Reserverer pakking/test/installasjon med production_lease. Ikke endre runtimekilder i denne kopien under pakking. Personlige Saved bevares; ingen ny arbeidskopi.
 
 4. november 14:57 Codex: PR380 flettet til main f62b1c73 og installert på Toms bestilling. Editor/Linux-pakke, 2314 pakkeselvtester, SARO-nærbilder og installert tittel/selvtest/røyktest består; 128 Saved-filer uendret. Logger/kandidat/tilbakeføring i ~/scratch-bm/Signal47-saro-install-20261104/. 176,5 GiB ledig; ingen ny arbeidskopi/rydderunde. Egne motorjobber og lease frigitt. Erstattede mellomkandidater kan vurderes ved neste samlede rydding; behold installert kilde, siste kandidat/cache og nødvendig tilbakeføring.
+
+10:18 Claude: cee2ec94 pushet (PR #380): elektrisk rulleport (to trykknappstasjoner, motor 4,5 s, lyd; lås/kollisjon følger porten), blafring ved av/på for alle lysrør i spillet (S47TubeFlicker i Fixture/Lab/EastWing), betongtrapp ved personal- og servicedør. 2295 selvtester; DriveTest 18/0; FreeformTest 247/0; ReactiveLightTest 26/0. Kjent, eldre feil (ikke fra denne runden, finnes også på 58f2ae3e): EvidenceTest stage15 'actual camera ray failed for physical printer' etter Codex 59fd46de. Codex: kan du se på printer-strålen?
+10:29 Claude: Tom vil ha Codex-teksturer inn nå, så nær referansebildene (calibration/storage/lab/garage-konseptene) som mulig. Bestillingen fra 09:14 står fortsatt. Endring etter referansene: gulv i lab/lager/kalibrering er POLERT BETONG, ikke vinyl. Lever `EW_PolishedConcrete_{BaseColor,Roughness,NormalGL}` (tileable 2 m, lys grå-beige, flekkete, svak glans) som punkt 1. Claude bygger nå åpent tak med stålbjelker, lysstråler (volumetrisk tåke) og benkerekker etter referansene.
+10:38 Claude: referansepass 1 pushet dd48e776 (PR #380): polert betong, åpent tak med stålbjelker og EMT, haze-volum. Venter på Codex-teksturer (bestilling gitt Tom til innliming).
+11:09 Claude: Codex-teksturer integrert (566cc815). Fjell: 06b8518c legger foto-sandstein (lisensiert 8K, /Game/Licensed, utenfor Git) med NM-palett på Caliche CN5-bakgrunnen (prop:streetGroundMesas) i runtime; CN5-kildene urørt. Codex: hvis du vil ha egne ImageGen-fjellteksturer (rød/oker sandstein, lys kappe, talus) i stedet for den lisensierte, si fra.
+11:41 Claude til Codex: OVERLEVERING SARO-BAKKE. Plan: Docs/Design/Environment/SARO_GROUND_HANDOVER.md på claude/east-wing-20261103 (955ed4ae). Codex overtar punkt 1-8 (bakketeksturer først). Motor ledig.
+13:21 Claude: Ser at Codex har levert bakketeksturer (3db87745) og jobber i claude-gameplay-20261103. For å unngå kollisjon: Codex eier bakkematerialet M_S47_DesertGround/import_ground.py og bakke-punktene 1-8 i SARO_GROUND_HANDOVER.md. Toms nye ønske: prosedurale bakkeujevnheter. Forslag til Codex (eier bakken): (a) mikro-relieff via normal/POM fra høydekartene, null spillpåvirkning; (b) Nanite-displacement maks ~5-8 cm nær gang-/kjøreflater; (c) større bølger kun utenfor gjerdet/kjøresoner via maske, ellers må S47Walker/Legs Height sample samme støy. Claude tar videre østfløyens benkerekker etter referansebildene (eget område).
+14:46 Claude: 1b1b8397 pushet: Freeform kalibrering/prøve bygd inn i benkerekkene (StandPoint() for tester). Bevistesten feiler fortsatt på skriverstrålen stage15 (Codex 59fd46de) — Codex, ta den.
+15:11 Claude: 9b4e7e26 pushet: nattkurve i Director + gjetning før saksforsøk (Docs/Design/Gameplay/FREEFORM_NIGHT_CURVE.md). Punkt 5 (verden reagerer på spilleren) foreslått til Codex.
+15:59 Claude: 84b26214 pushet: sak 3 feltforsøk 1-2 i verden (stige/takplate, portforsegling/sporstriper). Forsøk 3 (feltlogger) gjenstår.

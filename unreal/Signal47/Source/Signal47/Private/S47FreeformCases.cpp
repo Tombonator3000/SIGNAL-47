@@ -114,12 +114,12 @@ void FS47FreeformCases::Load(const S47J::FObj& Saved,int32 Seed)
   C.Conclusion=C.bConcluded?FMath::Clamp(S47J::Int(O,TEXT("conclusion"),-1),-1,CauseCount-1):-1;
   C.ValidTests=FMath::Clamp(S47J::Int(O,TEXT("validTests")),0,1000);
   // The cause is never trusted from disk: it is a pure function of the session seed,
-  // and a retained result always agrees with the physical rule for that cause.
+  // but retained observations are evidence, not recomputed answers from the hidden cause.
   const auto R=S47J::Arr(O,TEXT("results"));
   for(int32 T=0;T<FMath::Min(TestCount,R.Num());++T)if(R[T]&&R[T]->Type==EJson::Object)
   {
    const auto X=R[T]->AsObject();auto& Out=C.Results[T];Out.bDone=S47J::Bool(X,TEXT("done"));
-   Out.Day=FMath::Clamp(S47J::Int(X,TEXT("day")),0,36500);Out.bPresent=Out.bDone&&PresentFor(I,C.Truth,T);
+   Out.Day=FMath::Clamp(S47J::Int(X,TEXT("day")),0,36500);Out.bPresent=Out.bDone&&S47J::Bool(X,TEXT("present"),PresentFor(I,C.Truth,T));
   }
   for(const FString& L:S47J::Strs(O,TEXT("leads")))if(!L.IsEmpty()&&L.Len()<=160&&!C.Leads.Contains(L)&&C.Leads.Num()<MaxLeads)C.Leads.Add(L);
   if(C.bConcluded&&C.Conclusion<0)C.bConcluded=false;
@@ -183,6 +183,27 @@ bool FS47FreeformCases::Conclude(int32 Line,int32 Cause,FString& Why)
  C.bConcluded=true;C.Conclusion=Cause;Access.Add(D.Access);
  Why=TEXT("Conclusion supported by your retained tests.");return true;
 }
+FString FS47FreeformCases::ConclusionText(int32 Line) const
+{
+ const FCase* C=Get(Line);
+ if(!C||!C->bConcluded||C->Conclusion<0||C->Conclusion>=CauseCount)return TEXT("No supported conclusion is retained.");
+ const FCaseDef& D=Def(Line);
+ FString Text=FString::Printf(TEXT("SARO OPERATIONS / RECORDS REVIEW\nRE: %s\n\nRETAINED VALID TESTS\n"),D.Title);
+ for(int32 T=0;T<TestCount;++T)
+ {
+  const FResult& R=C->Results[T];
+  if(R.bDone)Text+=FString::Printf(TEXT("DAY %d / %s: %s\n"),R.Day,D.Tests[T].Name,*TestResultText(Line,T,R.bPresent));
+  else Text+=FString::Printf(TEXT("%s: NOT ESTABLISHED BY A RETAINED VALID TEST\n"),D.Tests[T].Name);
+ }
+ Text+=TEXT("\nINTERPRETATION\n");
+ if(Line==2&&C->Conclusion==2)
+  Text+=TEXT("The retained controls do not support the tested loose-fitting or service-gate explanations. The cause remains unexplained. This does not establish a visitor, an alien, or an identity. An intact gate excludes only a crossing through that gate during the valid control.");
+ else
+  Text+=FString::Printf(TEXT("%s is supported among the explanations tested. This is limited to the controls listed above; it does not identify an unobserved source or person."),D.Causes[C->Conclusion]);
+ Text+=TEXT("\n\nKeep the original observations and test records. Tests without a retained valid result establish neither presence nor absence.");
+ if(Line==0)Text+=TEXT(" A field logger is approved on loan for an independent comparison; collect it at EQUIPMENT CHECKOUT in the parts store.");
+ return Text;
+}
 bool FS47FreeformCases::InRepeatWindow(int32 Line,int32 Day,double DayClock) const
 {
  const FCase* C=Get(Line);return C&&C->bOpen&&Day>C->OpenDay&&FMath::IsFinite(DayClock)&&DayDelta(DayClock,C->OpenClock)<=RepeatWindow;
@@ -240,6 +261,10 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
    Good&=R.Get(Line)->bOpen&&R.Get(Line)->ValidTests==2&&R.Remaining(Line)==1&&R.Get(Line)->Truth==Truth;
    Good&=R.Conclude(Line,Truth,Why)&&R.HasAccess(Def(Line).Access)&&!R.Conclude(Line,Truth,Why);
    FS47FreeformCases Again;Again.Load(S47J::Read(S47J::Write(R.Save())),Seed);Good&=Again.Get(Line)->bConcluded&&Again.Get(Line)->Conclusion==Truth&&Again.HasAccess(Def(Line).Access);
+   const FString Report=Again.ConclusionText(Line);
+   Good&=Report.Contains(TEXT("DAY 2 / "))&&Report.Contains(TEXT("DAY 3 / "))&&Report.Contains(FString(Def(Line).Tests[2].Name)+TEXT(": NOT ESTABLISHED"));
+   Good&=Report==R.ConclusionText(Line)&&!Report.Contains(TEXT("two separate sites recorded"));
+   if(Line==2&&Truth==2)Good&=Report.Contains(TEXT("cause remains unexplained"));
   }
  }
  // Observation leads open the visitors case once, deduplicate and survive Continue.
@@ -249,6 +274,14 @@ bool FS47FreeformCases::SelfTest(TArray<FString>& Lines)
   Good&=L.AddLead(2,TEXT("obs-1"),2,22*3600.)&&L.Get(2)->bOpen&&L.Get(2)->OpenDay==2&&!L.AddLead(2,TEXT("obs-1"),3,0)&&L.AddLead(2,TEXT("obs-2"),3,1*3600.);
   FS47FreeformCases LR;LR.Load(S47J::Read(S47J::Write(L.Save())),9);Good&=LR.Get(2)->Leads.Num()==2&&LR.Get(2)->OpenDay==2&&Def(2).Tests[2].Access!=nullptr;
   Good&=TestResultText(2,1,true).Contains(TEXT("SEAL BROKEN"))&&Prediction(2,0).Contains(TEXT("impacts stop"));
+ }
+ // A retained measurement is not silently rewritten to agree with the hidden cause.
+ {
+  FS47FreeformCases Evidence;Evidence.Reset(7);Evidence.Open(2,1,0);bool FirstResult=false;
+  const bool Observed=!PresentFor(2,Evidence.Get(2)->Truth,0);
+  Evidence.Plan(2,0,TEXT("retained-original"));Evidence.Record(2,0,2,true,Observed,FirstResult);
+  FS47FreeformCases Restored;Restored.Load(S47J::Read(S47J::Write(Evidence.Save())),7);
+  Good&=Restored.Get(2)->Results[0].bDone&&Restored.Get(2)->Results[0].bPresent==Observed;
  }
  // The first-test reward is granted once across all cases.
  FS47FreeformCases Both;Both.Reset(3);bool First=false;Both.Open(0,1,0);Both.Open(1,1,0);

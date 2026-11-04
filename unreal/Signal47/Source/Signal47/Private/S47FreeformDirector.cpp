@@ -811,7 +811,7 @@ void FS47FreeformDirector::Photo(const FS47AlbumShot& Shot)
  auto* Existing=Claims.FindByPredicate([&](const FPhotoClaim& C){return C.Id==TaggedIncident;});
  if(!Existing){FPhotoClaim C;C.Id=TaggedIncident;C.PhotoId=Shot.Id;C.Title=TaggedTitle;C.Quality=TaggedQuality;Claims.Add(C);}
  else if(!Existing->bPaid&&TaggedQuality>Existing->Quality){Existing->PhotoId=Shot.Id;Existing->Quality=TaggedQuality;}
- Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("This incident is already registered. The new photograph remains in the album; no additional credit is due."):TEXT("Field photograph retained. Register it at OPS for $20 documentation credit, once per incident. Origin remains unconfirmed."),5);
+ Changed();if(M&&M->UI)M->UI->Toast(Existing&&Existing->bPaid?TEXT("This incident is already registered. The new photograph remains in the album; no additional credit is due."):TEXT("Field photograph retained. PHOTO LAB: Develop, fix and collect this original, then register it at OPS for $20 once per incident. Origin remains unconfirmed."),5);
 }
 bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
 {

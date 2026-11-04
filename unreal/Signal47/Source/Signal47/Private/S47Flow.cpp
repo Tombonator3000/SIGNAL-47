@@ -1879,10 +1879,10 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const auto& J = F->Jobs()[I];
 			FS47NbWorkItem W;
 			W.Id = J.Id + TEXT("/") + FString::FromInt(int32(J.Stage));
-			W.Title = J.Id + TEXT(" / ") + FS47Observing::Runs()[FMath::Clamp(J.Source, 0, 3)].Source; W.bCanFollow = true; W.bEarlier = J.Day < F->Day(); W.bFollowed = I == F->SelectedJob();
+			W.Title = J.Id + TEXT(" / ") + FS47Observing::Runs()[FMath::Clamp(J.Source, 0, 3)].Source; W.bCanFollow = true; W.bEarlier = J.Day < F->Day() || J.Stage == FS47FreeformSession::EJobStage::Filed; W.bFollowed = I == F->SelectedJob();
 			W.Status = FString(I == F->SelectedJob() ? TEXT("Following / ") : TEXT("")) + Stages[FMath::Clamp(int32(J.Stage), 0, 7)];
 			W.NextAction = I == F->SelectedJob() ? F->NextAction() : F->JobNextAction(J); W.Location = F->JobLocation(J);
-			W.bDone = J.Stage == FS47FreeformSession::EJobStage::Filed || (!J.bAnomaly && J.bPaid);
+			W.bDone = J.Stage == FS47FreeformSession::EJobStage::Filed;
 			if (W.bDone) { W.Status = TEXT("Complete / retained"); W.NextAction = TEXT("Result already registered. Select open work at OPS."); }
 			if (!W.bDone)
 			{
@@ -1909,6 +1909,16 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			for (int32 I = 1; I < X.WorkItems.Num(); ++I) if (X.WorkItems[I].bDone) Ordered.Add(X.WorkItems[I]);
 			X.WorkItems = MoveTemp(Ordered);
 		}
+		for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
+		{
+			const int32 Test = F->PlannedFieldTest(Line); if (Test < 0) continue;
+			FS47NbWorkItem W; W.Id = FString::Printf(TEXT("field-plan/%d"), Line);
+			W.Title = FString(TEXT("Field test / ")) + FS47FreeformCases::Def(Line).Tests[Test].Name; W.bCanFollow = true; W.bFollowed = F->FocusedFieldCase() == Line;
+			W.Status = W.bFollowed ? TEXT("Following / field plan retained") : TEXT("Field plan retained");
+			W.NextAction = F->FieldNextAction(Line); W.Location = TEXT("SARO / field control");
+			W.Hints = { TEXT("A field plan remains available while you work on a normal observation."), W.NextAction };
+			if (W.bFollowed) X.WorkItems.Insert(W, 0); else X.WorkItems.Add(W);
+		}
 		if (F->ActiveServiceGuide() > 0)
 		{
 			FS47NbWorkItem W; W.Id = TEXT("service/") + FString::FromInt(F->ActiveServiceGuide()); W.Title = TEXT("S-03 service work order");
@@ -1921,14 +1931,17 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		{
 			if (Claim.bPaid) continue;
 			FS47NbWorkItem W; W.Id = TEXT("photo/") + Claim.Id; W.Title = TEXT("Photo documentation / ") + Claim.Title;
-			W.Status = TEXT("Retained photograph / awaiting registration");
-			W.NextAction = FString::Printf(TEXT("Return to the physical OPS terminal and register the retained photograph for $%d documentation credit. The image remains in Documents / Photos."), Claim.Reward);
-			W.Location = TEXT("OPS / corner PC"); X.WorkItems.Add(W);
+			const FS47AlbumShot* Photo = M->Night && M->Night->Album ? M->Night->Album->Shots().FindByPredicate([&Claim](const FS47AlbumShot& P) { return P.Id == Claim.PhotoId; }) : nullptr;
+			const bool Developed = Photo && Photo->IsDeveloped();
+			W.Status = Developed ? TEXT("Developed original / awaiting registration") : TEXT("Exposed original / needs developing");
+			W.NextAction = Developed ? FString::Printf(TEXT("OPS: Register the developed original for $%d documentation credit. The image remains in Documents / Photos."), Claim.Reward) : TEXT("PHOTO LAB: Develop, fix and collect the original at the wet bench before registering it at OPS.");
+			W.Location = Developed ? TEXT("OPS / corner PC") : TEXT("PHOTO LAB / wet bench"); X.WorkItems.Add(W);
 		}
 		X.OnFollow = [Self](const FString& Id)
 		{
 			if (!Self->M || !Self->M->Freeform) return;
 			const auto F = Self->M->Freeform;
+			if (Id.StartsWith(TEXT("field-plan/"))) { F->FocusFieldTest(FCString::Atoi(*Id.Mid(11))); Self->OpenNotebook(); return; }
 			for (int32 I = 0; I < F->Jobs().Num(); ++I) if (Id.StartsWith(F->Jobs()[I].Id + TEXT("/"))) { F->SelectJob(I); break; }
 			Self->OpenNotebook();
 		};

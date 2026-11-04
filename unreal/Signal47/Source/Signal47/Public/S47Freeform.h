@@ -92,6 +92,11 @@ public:
  void OpenArchive();
  void OpenCaseBoard(int32 Line=-1);
  bool PlanCaseTest(int32 Line,int32 Test);
+ bool FocusFieldTest(int32 Line);
+ int32 FocusedFieldCase() const { return FieldFocus; }
+ FString FieldNextAction(int32 Line) const;
+ FString AvailableActivities() const;
+ bool StartReferenceCheck();
  bool ConcludeCase(int32 Line,int32 Cause);
  FString TonightPlan() const;
  const FS47FreeformCases& CaseFile() const { return Cases; }
@@ -144,7 +149,7 @@ public:
  bool Anomaly() const { return bAnomaly; }
  void SetPhenomenon(const FString& Id) { PhenomenonId=Id; Changed(); }
  const FString& Phenomenon() const { return PhenomenonId; }
- int32 SelectedJob() const { return Selected; }
+ int32 SelectedJob() const { return FieldFocus>=0?-1:Selected; }
  const TArray<FJob>& Jobs() const { return Work; }
  const FJob* CurrentJob() const;
  double AudioPosition() const { return AudioCursor; }
@@ -186,6 +191,8 @@ private:
  int32 ServiceGuide=0,GuideServiceBaseline=0,GuideSupplyBaseline=0;
  // First shift tutorial (0 done/off, 1 accept a job at OPS, 2.. follows the job to filing).
  int32 Tutorial=0;FString TutorialJobId;void StepTutorial();FString TutorialObjective()const;
+ int32 FieldFocus=-1;
+ void ClearCompletedSelection();
  bool bGuideSupply=false,bGuideFocus=false;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;

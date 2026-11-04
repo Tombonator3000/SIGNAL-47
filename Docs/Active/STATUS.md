@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Nattskift 4. til 5. november: første gameplayforenkling under levering
+
+`codex/nightshift-20261104` bygger på main `51c049ea`. Ferdige rutinejobber flyttes straks til EARLIER WORK og mister aktivt fokus; første skift bruker den samme registreringen som senere rutinearbeid. Eldre treningspakker beholder fysisk arkivering. Når betalt dagsarbeid er ferdig, finnes en frivillig referansemåling uten ny betaling. Feltplanen har eget lagret fokus og egen Now-oppføring; kobling til fysisk forsøksvindu ferdigstilles i neste nattpakke.
+
+Fotolabens tank, fiksering og henting følger én benkeøkt. OPS og Now peker ufremkalte originaler til laben. En fysisk filmkartong ved kamerabenken bruker eksisterende lager, med én reservepakke kun i nye spill. Loggeren lånes først i delelageret; senere klargjøring, henting, retur og sammenligning skjer ved kalibreringsbenken, med lagret utlånsføring. Saksbrev lister bare faktisk registrerte forsøk; uforklart resultat identifiserer ingen besøkende eller alien, og Continue omskriver ikke måleresultatet til skjult fasit.
+
+Editorbygg og 2346 selvtester består. Fotopanelet er visuelt kontrollert med bevart bildeformat og uten avkuttet instruksjonslinje. Native målprøver: arbeid/fokus 23 kontroller og to disk-/Continue-runder; foto 59/fire runder; logger/film 44/tre runder; første skift 36/tre runder. Foto- og loggerprøvene bruker reelle objekter, knapper og originalbilder, men eksplisitt tilgang/plassering; dette er ikke en naturlig feltreise eller menneskelig flytvurdering. Opplæringen bruker faktisk antennebevegelse, opptak og printer. Lokal testmappe: `~/scratch-bm/Signal47-nightshift-20261104/`. Ingen ny installasjon eller offentlig spillutgave fra denne pakken ennå.
+
 ## Service på alle antenner, installert 4. november
 
 OPS SERVICE viser nå faktisk reparasjonstrinn og en fortsett-knapp; sluttkontroll tilbys først etter bestått lokal bevegelsestest. S-03 er første planlagte opplæringsordre. Vanlig service kan ramme alle 27 antenner, med vedvarende mål og kontroll mot feil skap. Gamle S-03-lagringer videreføres.

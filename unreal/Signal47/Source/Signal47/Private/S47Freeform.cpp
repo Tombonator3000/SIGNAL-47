@@ -8,6 +8,8 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "S47Night.h"
+#include "S47Album.h"
 #include "S47Story.h"
 #include "S47Web.h"
 #include "S47UI.h"
@@ -88,7 +90,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  ServiceGuide=GuideServiceBaseline=GuideSupplyBaseline=0;bGuideSupply=bGuideFocus=false;
  // A new Freeform game opens with the first-shift tutorial; dev/test runs opt in with -S47FreeformTutorial.
  Tutorial=!Saved&&M&&M->Flow&&(!M->Flow->bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTutorial")))?1:0;
- TutorialJobId.Empty();
+ TutorialJobId.Empty();FieldFocus=-1;
  DayNumber=1;WorldClock=8*3600;Cash=120;Loan=0;Selected=AudioSourceIndex=SelectedDish=0;
  Settle=CrossSample=AudioCursor=AutosaveAt=IntegrationPulse=0;CrossPoint=0;bCrossRunning=false;
  JobSeed=M&&M->Flow&&!M->Flow->bDevRun?int32(FDateTime::UtcNow().GetTicks()^FPlatformTime::Cycles64()):470047;
@@ -99,6 +101,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   if(!JsonVersion(Saved)) { bActive=false;return; }
   Tutorial=FMath::Clamp(SafeInt(Saved,TEXT("tutorial")),0,6);
   TutorialJobId=S47J::Str(Saved,TEXT("tutorialJobId"));
+  FieldFocus=FMath::Clamp(SafeInt(Saved,TEXT("fieldFocus"),-1),-1,FS47FreeformCases::CaseCount-1);
   JobSeed=int32(FMath::Clamp(SafeNum(Saved,TEXT("jobSeed"),JobSeed),double(MIN_int32),double(MAX_int32)));
   WorldClock=FMath::Clamp(SafeNum(Saved,TEXT("clock"),8*3600),0.,3153600000.);
   if(!FMath::IsFinite(WorldClock)) {bActive=false;return;}
@@ -147,7 +150,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    }
    if(!J.Id.IsEmpty()&&!Work.ContainsByPredicate([&](const FJob& X){return X.Id==J.Id;}))Work.Add(J);
   }
-  Selected=FMath::Clamp(SafeInt(Saved,TEXT("selected")),0,FMath::Max(0,Work.Num()-1));AudioSourceIndex=FMath::Clamp(SafeInt(Saved,TEXT("audioSource")),0,1);
+  Selected=FMath::Clamp(SafeInt(Saved,TEXT("selected")),-1,FMath::Max(-1,Work.Num()-1));AudioSourceIndex=FMath::Clamp(SafeInt(Saved,TEXT("audioSource")),0,1);
   AudioCursor=FMath::Clamp(SafeNum(Saved,TEXT("audioCursor")),0.,AudioSourceIndex==0?18.:8.);
   const auto F=S47J::Obj(Saved,TEXT("findings"));if(F)for(const auto& P:F->Values){FString T;if(P.Value->TryGetString(T))Findings.Add(FString(*P.Key),T);}
   const auto D=S47J::Obj(Saved,TEXT("findingDays"));if(D)for(const auto& P:D->Values){double N;if(P.Value&&P.Value->TryGetNumber(N)&&FMath::IsFinite(N)&&N>=1&&N<=36500&&FMath::FloorToDouble(N)==N)FindingDays.Add(FString(*P.Key),int32(N));}
@@ -184,6 +187,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
   const bool FieldPlan=C->bOpen&&!C->bConcluded&&!C->Results[C->Planned].bDone&&CaseCondition(Line,C->Planned)==ECaseCondition::FieldWork;
   if(!FieldPlan&&!Work.ContainsByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseLine==Line&&J.CaseTest==C->Planned&&!J.bCaseRecorded;}))Cases.CancelPlan(Line);
  }
+ if(FieldFocus>=0&&PlannedFieldTest(FieldFocus)<0)FieldFocus=-1;
  AddDay(DayNumber);
  if(Tutorial>0)
  {
@@ -200,6 +204,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  Director->Begin(S47J::Obj(Saved,TEXT("director")));
  IngestedObservations=0;IngestObservations();
  if(M&&M->Story){M->Story->SetClock(FMath::Fmod(WorldClock,86400.));M->Story->Rx.bPowered=true;}
+ StepTutorial();ClearCompletedSelection();
  UpdateMysteries();
 }
 void FS47FreeformSession::Stop()
@@ -513,7 +518,7 @@ bool FS47FreeformSession::SelectJob(int32 Index)
  if(!Work.IsValidIndex(Index))return false;
  if(Tutorial>0&&Work[Index].Id!=TutorialJobId){Changed(TEXT("Finish your FIRST SHIFT job before switching work orders. The other jobs will still be waiting in DAILY WORK."));return false;}
  const FJob* Current=CurrentJob();if(Current&&(Current->Stage==EJobStage::Integrating||(Current->bControl&&Current->ControlAt<8))){Changed(TEXT("Finish the active recording or control before selecting another job."));return false;}
- Selected=Index;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;Changed();return true;
+ Selected=Index;FieldFocus=-1;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;Changed();return true;
 }
 bool FS47FreeformSession::ChooseThird(bool bVirgo)
 {
@@ -741,12 +746,15 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded)return false;
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
+ const bool AlreadyPaid=J->bPaid;
  J->Stage=EJobStage::Registered;
  // The OPS computer has accepted an actual result; opening its screen alone is silent.
  if(M&&M->Audio)M->Audio->PcTransfer();
- if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}if(!(Tutorial>0&&J->Id==TutorialJobId))J->Stage=EJobStage::Filed;}
- if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);return true;}
- Changed(J->Stage==EJobStage::Registered?TEXT("Registered. Packet feed queued; wait for the printer to finish, collect the labelled packet, then file its originals in the binder."):TEXT("Routine result registered. $20 credited; the original remains in the notebook."));return true;
+ if(!J->bAnomaly){if(!J->bPaid){J->bPaid=true;Earn(20);}J->Stage=EJobStage::Filed;}
+ if(J->CaseTest>=0&&!J->bCaseRecorded){RecordCaseResult(*J);ClearCompletedSelection();return true;}
+ const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
+ if(WasTutorial&&!InTutorial())return true;
+ Feedback=J->Stage==EJobStage::Registered?TEXT("Registered. Packet feed queued; wait for the printer to finish, collect the labelled packet, then file its originals in the binder."):AlreadyPaid?TEXT("Reference check registered. Original retained; no additional payment is due."):TEXT("Routine result registered. $20 credited; the original remains in EARLIER WORK and the notebook.");Changed(Feedback);return true;
 }
 bool FS47FreeformSession::NearBinder() const
 {
@@ -772,7 +780,7 @@ bool FS47FreeformSession::FilePacket()
   RecordEvidence(TEXT("pulse-archive"),TEXT("Original, internal control and registered conclusion physically filed under one reference."));
   if(Director)Director->Use(TEXT("ff:archive"));
  }
- const bool WasTutorial=InTutorial();StepTutorial();
+ const bool WasTutorial=InTutorial();StepTutorial();ClearCompletedSelection();
  if(!(WasTutorial&&!InTutorial()))Changed(TEXT("OPS (corner PC): Select DAILY WORK or CASE ARCHIVE for follow-up. Originals filed; work credited."));return true;
 }
 
@@ -888,7 +896,7 @@ bool FS47FreeformSession::Rest()
  if((Director&&Director->Busy())||(J&&(J->Stage==EJobStage::Integrating||(J->bControl&&J->ControlAt<8)))){Feedback=TEXT("Finish or safely interrupt the active work before resting.");return false;}
  WorldClock=(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay)+1)*SecondsPerDay+8*3600;
  DayNumber=FMath::Max(1,int32(FMath::FloorToDouble((WorldClock-8*3600)/SecondsPerDay))+1);AddDay(DayNumber);Settle=0;
- if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Filed){const int32 Today=Work.IndexOfByPredicate([this](const FJob& X){return X.Day==DayNumber&&X.Stage==EJobStage::New;});if(Today!=INDEX_NONE)Selected=Today;}
+ if(!CurrentJob()||CurrentJob()->Stage==EJobStage::Filed){const int32 Today=Work.IndexOfByPredicate([this](const FJob& X){return X.Day==DayNumber&&X.Stage==EJobStage::New;});if(Today!=INDEX_NONE)Selected=Today;}
  if(M&&M->Story)M->Story->SetClock(8*3600);
  if(M&&M->UI)M->UI->Close();Changed(TEXT("Morning. New work is available; retained records and unfinished jobs remain."));return true;
 }
@@ -976,8 +984,8 @@ void FS47FreeformSession::OpenOperations()
    for(int32 I=0;I<Work.Num();++I)
    {
     const auto& J=Work[I];const bool Active=J.Stage>EJobStage::New&&J.Stage<EJobStage::Filed;
-    const int32 InGroup=Active||I==Selected?0:J.Day==DayNumber?1:2;if(InGroup!=Group)continue;
-    const int32 Index=I;T::FRow R;R.Cells={J.Id,FS47Observing::Runs()[J.Source].Source,StatusWord(J,I==Selected)};R.bSelected=I==Selected;
+    const int32 InGroup=J.Stage==EJobStage::Filed?2:Active||I==Selected?0:J.Day==DayNumber?1:2;if(InGroup!=Group)continue;
+    const int32 Index=I;T::FRow R;R.Cells={J.Id,FS47Observing::Runs()[J.Source].Source,StatusWord(J,I==Selected)};R.bSelected=I==Selected&&FieldFocus<0;
     R.Badge=J.CaseTest>=0?TEXT("CASE"):J.bAnomaly?TEXT("ANOM"):FString::Printf(TEXT("P%d"),J.Slot+1);
     R.Action=[this,Index]{SelectJob(Index);OpenOperations();};Out.Add(R);
    }
@@ -1009,23 +1017,24 @@ void FS47FreeformSession::OpenOperations()
      A.Add(T::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
    }
-   else A.Add(T::Button(J->CaseTest>=0&&!J->bCaseRecorded?TEXT("Register observation and case test result / $20"):TEXT("Register routine result / $20"),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
+   else A.Add(T::Button(J->CaseTest>=0&&!J->bCaseRecorded?TEXT("Register observation and case test result / $20"):J->bPaid?TEXT("Register retained reference / no additional payment"):TEXT("Register routine result / $20"),[this]{RegisterComparison(TEXT("normal"));OpenOperations();},true));
   }
   return S47Kit::Col(A);
  };
  int32 Remaining=0,TodayRemaining=0,EarlierRemaining=0;
  for(const auto& X:Work)if(X.Stage!=EJobStage::Filed){++Remaining;if(X.Day==DayNumber)++TodayRemaining;else if(X.Day<DayNumber)++EarlierRemaining;}
  const FString QueueExplanation=Remaining==0
-  ?FString(TEXT("ALL AVAILABLE WORK COMPLETE / No further observing jobs are waiting. Retained results remain in CASE ARCHIVE. Review open cases on CASE BOARD, or use REST UNTIL MORNING on OVERVIEW for the next day's jobs."))
-  :FString::Printf(TEXT("MORE WORK / %d unfinished today, %d carried over. Each morning at 08:00 brings three observing jobs, including a choice for the third. Select another row in DAILY WORK; SHOW EARLIER WORK reveals previous days. Finish any active recording or control before switching. Unfinished jobs remain available."),TodayRemaining,EarlierRemaining);
+  ?FString(TEXT("ALL OBSERVING WORK COMPLETE / Results are retained in EARLIER WORK and CASE ARCHIVE. "))+AvailableActivities()
+  :FString::Printf(TEXT("MORE WORK / %d unfinished today, %d carried over. Each morning at 08:00 brings three observing jobs, including a choice for the third. Select another row in DAILY WORK; SHOW EARLIER WORK includes completed results immediately and untouched older jobs. Finish any active recording or control before switching. Unfinished jobs remain available."),TodayRemaining,EarlierRemaining);
  const FJob* J=CurrentJob();
  auto Account=T::Panel(TEXT("STATION ACCOUNT"),S47Kit::Col({
   T::Value(TEXT("OPERATING BUDGET"),FString::Printf(TEXT("$%d"),Cash)),T::Value(TEXT("REQUISITION"),FString::Printf(TEXT("$%d"),Loan)),
-  T::Value(TEXT("SELECTED JOB"),J?FString(FS47Observing::Runs()[J->Source].Source):FString(TEXT("NONE")),true),
-  T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return (Tutorial>0?TutorialObjective():NextAction()).ToUpper();}),true)}));
+  T::Value(TEXT("SELECTED JOB"),FieldFocus>=0?FString(TEXT("FIELD TEST: "))+CaseTestName(FieldFocus,PlannedFieldTest(FieldFocus)):J?FString(FS47Observing::Runs()[J->Source].Source):FString(TEXT("NONE")),true),
+  T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true)}));
  if(Section==0)
  {
   Rows.Add(T::Small(QueueExplanation));
+  if(Remaining==0)Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpsSection=1;OpenOperations();},true));
   if(!Work.ContainsByPredicate([](const FJob& X){return X.Source==0&&X.Stage==EJobStage::Filed;}))
    Rows.Add(T::Small(TEXT("OPTIONAL FIRST JOB / Establish a normal reference: complete the 3C 286 calibration cross and register it here, so later discrepancies can be compared against working instruments.")));
   auto Today=T::Panel(TEXT("TODAY'S WORK"),S47Kit::Col({T::Table({TEXT("JOB"),TEXT("SOURCE"),TEXT("STATUS")},{1.25f,1.35f,1.f},Rows4(false)),
@@ -1041,6 +1050,8 @@ void FS47FreeformSession::OpenOperations()
  if(Section==1)
  {
   Rows.Add(T::Small(QueueExplanation));
+  if(Remaining==0)Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpenOperations();},true));
+  if(FieldFocus>=0)Rows.Add(T::Panel(TEXT("ACTIVE FIELD TEST"),T::Banner(TAttribute<FString>::CreateLambda([this]{return FieldNextAction(FieldFocus).ToUpper();}),true)));
   auto Queue=T::Panel(FString::Printf(TEXT("WORK QUEUE (DAY %02d)"),DayNumber),S47Kit::Col({T::Table({TEXT("ID"),TEXT("SOURCE"),TEXT("STATE")},{1.4f,1.3f,1.f},Rows4(true)),
    T::Big(FString(bShowEarlierJobs?TEXT("HIDE EARLIER WORK"):TEXT("SHOW EARLIER WORK")),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();})}));
   TArray<S47Kit::FW> D;
@@ -1050,7 +1061,7 @@ void FS47FreeformSession::OpenOperations()
    D.Add(T::Heading(FS47Observing::Runs()[J->Source].Source,44));
    D.Add(T::Value(TEXT("AZ"),FString::Printf(TEXT("%.1f°"),TargetAz())));D.Add(T::Value(TEXT("EL"),FString::Printf(TEXT("%.1f°"),TargetEl())));
    D.Add(T::Value(TEXT("FREQUENCY"),FString::Printf(TEXT("%.3f MHz"),P.F)));D.Add(T::Value(TEXT("INTEGRATION"),FString::Printf(TEXT("%.0f s"),SourceSeconds())));
-   D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return (Tutorial>0?TutorialObjective():NextAction()).ToUpper();}),true));
+   D.Add(T::Small(TEXT("NEXT STEP")));D.Add(T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true));
   }
   else D.Add(T::Small(TEXT("Select a job in the queue.")));
   Rows.Add(T::Columns({{.55f,Queue},{.45f,T::Panel(TEXT("SELECTED JOB"),S47Kit::Col(D))}}));
@@ -1073,7 +1084,10 @@ void FS47FreeformSession::OpenOperations()
   for(const auto& Claim:Director->PhotoClaims())if(!Claim.bPaid)
   {
    const FString Id=Claim.Id;Claims.Add(T::Small(Claim.Title+TEXT(" / ORIGINAL ")+Claim.PhotoId));
-   Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
+   const auto* Shot=M->Night&&M->Night->Album?M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==Claim.PhotoId;}):nullptr;
+   if(Shot&&!Shot->IsDeveloped())Claims.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect this photograph at the wet bench before submitting it.")));
+   else if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty())Claims.Add(T::Small(TEXT("ORIGINAL UNAVAILABLE / This photograph cannot be submitted. Existing incident records are retained.")));
+   else Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
   }
   if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT"),S47Kit::Col(Claims)));
  }
@@ -1283,11 +1297,50 @@ int32 FS47FreeformSession::PlannedFieldTest(int32 Line)const
  const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded||C->Planned<0)return -1;
  return CaseCondition(Line,C->Planned)==ECaseCondition::FieldWork?C->Planned:-1;
 }
+bool FS47FreeformSession::FocusFieldTest(int32 Line)
+{
+ if(PlannedFieldTest(Line)<0||Tutorial>0)return false;
+ const FJob* J=CurrentJob();
+ if(J&&(J->Stage==EJobStage::Integrating||(J->bControl&&J->ControlAt<8)))
+ {Changed(TEXT("Finish the active recording or control before following the field plan. The plan is retained."));return false;}
+ FieldFocus=Line;bGuideFocus=false;bAudioPlaying=false;
+ Changed(FieldNextAction(Line));return true;
+}
+FString FS47FreeformSession::FieldNextAction(int32 Line)const
+{
+ const int32 Test=PlannedFieldTest(Line);if(Test<0)return TEXT("OPS / CASE BOARD: CHOOSE THE NEXT FIELD TEST");
+ const auto& T=FS47FreeformCases::Def(Line).Tests[Test];
+ return TEXT("FIELD TEST / ")+FString(T.Name).ToUpper()+TEXT(": ")+T.Instruction;
+}
+void FS47FreeformSession::ClearCompletedSelection()
+{
+ if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Filed){Selected=-1;bAudioPlaying=false;AudioCursor=0;}
+}
+FString FS47FreeformSession::AvailableActivities()const
+{
+ int32 Pending=0;for(const FJob& J:Work)if(J.Stage!=EJobStage::Filed)++Pending;
+ if(Pending>0)return FString::Printf(TEXT("OPS (corner PC), DAILY WORK: SELECT ONE OF %d UNFINISHED OBSERVATIONS; TRACK, TUNE AND REGISTER THE NEXT RESULT. COMPLETED RESULTS ARE IN EARLIER WORK."),Pending);
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->bOpen&&!C->bConcluded)
+  return C->Planned>=0?TEXT("OPS / CASE BOARD: FOLLOW THE RETAINED PLAN FOR ")+FString(FS47FreeformCases::Def(Line).Title):TEXT("OPS / CASE BOARD: CHOOSE A CONTROL FOR ")+FString(FS47FreeformCases::Def(Line).Title);
+ if(M&&M->Night&&M->Night->Album&&M->Night->Album->PendingLabPhoto())return TEXT("PHOTO LAB: DEVELOP, FIX AND COLLECT YOUR EXPOSED PHOTOGRAPH AT THE WET BENCH");
+ if(ServiceGuide==1)return ServiceObjective();
+ if(Field&&Field->LoggerAccess())return TEXT("EAST WING / CALIBRATION BENCH: PREPARE THE LOAN LOGGER FOR A TWO-HOUR LOCAL-NOISE COMPARISON; KEEP A MATCHING SARO ORIGINAL");
+ return TEXT("OPS / DAILY WORK: START AN OPTIONAL REFERENCE CHECK TO RETAIN A FRESH INSTRUMENT BASELINE (NO PAYMENT). PHOTO LAB AND ARRAY SERVICE ARE ALSO AVAILABLE; REST IS OPTIONAL.");
+}
+bool FS47FreeformSession::StartReferenceCheck()
+{
+ if(!bActive||Tutorial>0||!RequirePower()||Work.ContainsByPredicate([](const FJob& J){return J.Stage!=EJobStage::Filed;}))return false;
+ FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-REFERENCE-%04d"),DayNumber,Work.Num());J.Day=DayNumber;J.Slot=0;J.Source=0;
+ J.Card=FS47FreeformJobs::Make(JobSeed,DayNumber,0,0);J.bGenerated=true;J.bPaid=true;
+ J.Card.Receiver.Card=TEXT("OPTIONAL REFERENCE CHECK / NO PAYMENT\nRetain a fresh instrument baseline using the usual tracking cross and receiver. This check creates no incident or cause by itself.\n\n")+J.Card.Receiver.Card;
+ Work.Add(J);Selected=Work.Num()-1;FieldFocus=-1;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;
+ Changed(TEXT("TRACKING (right-hand PC): POINT TO 3C 286 FOR YOUR OPTIONAL REFERENCE CHECK. KEEP THE ORIGINAL AS AN INSTRUMENT BASELINE; NO EXTRA PAYMENT IS DUE."));return true;
+}
 bool FS47FreeformSession::CancelFieldTest(int32 Line)
 {
  const int32 Test=PlannedFieldTest(Line);const auto* C=Cases.Get(Line);
  if(Test<0||!C||C->PlannedJob.IsEmpty()||C->Results[Test].bDone)return false;
- Cases.CancelPlan(Line);
+ Cases.CancelPlan(Line);if(FieldFocus==Line)FieldFocus=-1;
  Changed(TEXT("OPS / CASE BOARD: Field plan cleared, no result recorded. You may plan another field test."));return true;
 }
 bool FS47FreeformSession::FieldTestExpectsPresent(int32 Line,int32 Test)const
@@ -1299,6 +1352,7 @@ bool FS47FreeformSession::ReportFieldTest(int32 Line,int32 Test,bool bValid,bool
 {
  if(PlannedFieldTest(Line)!=Test)return false;bool First=false;
  if(!Cases.Record(Line,Test,DayNumber,bValid,bPresent,First))return false;
+ if(FieldFocus==Line)FieldFocus=-1;
  const auto& D=FS47FreeformCases::Def(Line);
  if(!bValid){Changed(TEXT("Field test INVALID: ")+Evidence.Left(160)+TEXT(" Plan it again on the case board."));return true;}
  TArray<FString> Out;for(int32 I=0;I<FS47FreeformCases::CauseCount;++I)if(FS47FreeformCases::PresentFor(Line,I,Test)!=bPresent)Out.Add(D.Causes[I]);
@@ -1317,7 +1371,7 @@ void FS47FreeformSession::OpenCaseFor(const FString& FindingId)
 }
 bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
 {
- if(Tutorial>0){Feedback=TEXT("Finish the FIRST SHIFT training packet before planning a separate case test.");Changed(Feedback);return false;}
+ if(Tutorial>0){Feedback=TEXT("Finish the FIRST SHIFT observation before planning a separate case test.");Changed(Feedback);return false;}
  const auto* C=Cases.Get(Line);
  if(!C||!C->bOpen||C->bConcluded||Test<0||Test>=FS47FreeformCases::TestCount){Feedback=TEXT("No open case can take that test.");return false;}
  if(C->Planned>=0){Feedback=TEXT("A test for this case is already planned: ")+C->PlannedJob+TEXT(". Run it before planning another.");return false;}
@@ -1329,7 +1383,8 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
   {
    const FString Id=FString::Printf(TEXT("FIELD-D%04d-CASE%d-T%d"),DayNumber,Line+1,Test+1);
    if(!Cases.Plan(Line,Test,Id))return false;
-   Feedback=TEXT("Field test planned: ")+FString(Def.Name)+TEXT(". Carry it out at the site; the result is recorded there.");Changed(Feedback);return true;
+   const bool Focused=FocusFieldTest(Line);
+   Feedback=Focused?TEXT("Field test planned. ")+FieldNextAction(Line):TEXT("Field plan retained. Finish the active recording or control, then choose Follow this field test on CASE BOARD.");Changed(Feedback);return true;
   }
  }
  FJob J;J.Id=FString::Printf(TEXT("FF-D%04d-CASE%d-T%d-%d"),DayNumber,Line+1,Test+1,Work.Num());J.Day=DayNumber;J.Slot=1;J.Source=1;
@@ -1337,6 +1392,7 @@ bool FS47FreeformSession::PlanCaseTest(int32 Line,int32 Test)
  const auto& T=FS47FreeformCases::Def(Line).Tests[Test];
  J.Card.Receiver.Card=TEXT("CASE TEST / ")+FString(T.Name).ToUpper()+TEXT("\n")+T.Instruction+TEXT("\n\n")+J.Card.Receiver.Card;
  if(!Cases.Plan(Line,Test,J.Id))return false;
+ FieldFocus=-1;bGuideFocus=false;
  Work.Add(J);
  const FJob* Current=CurrentJob();if(!Current||Current->Stage==EJobStage::New||Current->Stage==EJobStage::Filed)Selected=Work.Num()-1;
  Feedback=TEXT("Case test planned: ")+FString(T.Name)+TEXT(". Job ")+J.Id+TEXT(" is on the OPS list.");Changed(Feedback);return true;
@@ -1363,7 +1419,7 @@ bool FS47FreeformSession::ConcludeCase(int32 Line,int32 Cause)
  if(M&&M->Story)
  {
   FS47Doc Doc;Doc.Id=FString::Printf(TEXT("freeform-case%d-records"),Line+1);Doc.Title=D.TelexTitle;Doc.Kind=TEXT("telex");Doc.Stamp=FString::Printf(TEXT("SARO TELEX / DAY %d"),DayNumber);
-  Doc.Page=D.Telex[Cause];Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);if(M->UI)M->UI->Document(Doc);
+  Doc.Page=Cases.ConclusionText(Line);Doc.Transcript=Doc.Page;M->Story->AddDoc(Doc);if(M->UI)M->UI->Document(Doc);
  }
  Feedback=TEXT("Case concluded: ")+Name+TEXT(". A records reply has arrived at the telex.");Changed(Feedback);return true;
 }
@@ -1437,6 +1493,7 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
   }
   if(PlannedFieldTest(Line)>=0)
   {
+   List->AddSlot()[S47FreeformTerminal::Button(FieldFocus==Line?TEXT("FOLLOWING THIS FIELD TEST"):TEXT("Follow this field test / retain observing job"),[this,Line]{FocusFieldTest(Line);OpenCaseBoard(Line);},FieldFocus==Line)];
    List->AddSlot()[S47FreeformTerminal::Small(TEXT("Cancel clears only this field plan. No result or reward is recorded; retained evidence stays unchanged."))];
    List->AddSlot()[S47FreeformTerminal::Button(TEXT("Cancel this field plan"),[this,Line]{CancelFieldTest(Line);OpenCaseBoard(Line);},false)];
   }
@@ -1498,12 +1555,12 @@ FString FS47FreeformSession::Label(const FString& Id)const
 }
 // ---- First shift tutorial ----------------------------------------------------------------------
 // One real routine job end to end, at the real stations: accept at OPS, point, record, collect the
-// original, register (paid), print the packet and file it. Director holds its events meanwhile.
+// original and register (paid), exactly like later routine work. Older training packets remain fileable.
 void FS47FreeformSession::AcceptTutorialJob()
 {
  if(Tutorial!=1||!CurrentJob()||CurrentJob()->Id!=TutorialJobId)return;
  Tutorial=2;
- Changed(FString::Printf(TEXT("FIRST SHIFT / Job %s accepted. For this training job: point, record, keep the original, register it for $20 and file the training packet. Later routine results register digitally; discrepancies need the paper trail."),*CurrentJob()->Id));
+ Changed(FString::Printf(TEXT("FIRST SHIFT / Job %s accepted. Point, record, keep the original and register it at OPS for $20. This is the normal daily workflow; unusual results later require controls and a physically filed packet."),*CurrentJob()->Id));
 }
 void FS47FreeformSession::StepTutorial()
 {
@@ -1513,9 +1570,9 @@ void FS47FreeformSession::StepTutorial()
  if(Step==Tutorial)return;
  if(Step==7)
  {
-  Tutorial=0;RecordEvidence(TEXT("first-shift"),TEXT("FIRST SHIFT / one routine observation taken from job card to binder: pointed, recorded, original retained, registered and filed."));
+  Tutorial=0;RecordEvidence(TEXT("first-shift"),J->PacketFeed>0?TEXT("FIRST SHIFT / legacy training observation: pointed, recorded, original retained, registered and its training packet filed."):TEXT("FIRST SHIFT / one normal routine observation: pointed, recorded, original retained and registered for payment at OPS. Physical case filing is introduced when an unusual result needs controls."));
   if(M&&M->UI)M->UI->ClearToasts();
-  Changed(TEXT("FIRST SHIFT COMPLETE / Your first observation is filed. Find your next job in DAILY WORK. Keep unusual results for the CASE BOARD."));
+  Feedback=TEXT("FIRST SHIFT COMPLETE / Your normal observation is registered and paid. ")+AvailableActivities();Changed(Feedback);
   return;
  }
  static const TCHAR* Why[]={nullptr,nullptr,nullptr,
@@ -1528,9 +1585,9 @@ void FS47FreeformSession::StepTutorial()
 }
 FString FS47FreeformSession::TutorialObjective()const
 {
- if(Tutorial==1)return TEXT("FIRST SHIFT 1/6 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB");
+ if(Tutorial==1)return TEXT("FIRST SHIFT 1/5 / OPS (corner PC): OPEN DAILY WORK, READ THE JOB CARD AND ACCEPT YOUR FIRST JOB");
  const FJob* J=CurrentJob();if(!J)return FString();
- return FString::Printf(TEXT("FIRST SHIFT %d/6 / %s"),FMath::Clamp(Tutorial,2,6),*JobNextAction(*J));
+ return FString::Printf(TEXT("FIRST SHIFT %d/%d / %s"),FMath::Clamp(Tutorial,2,6),J->Stage>=EJobStage::Registered?6:5,*JobNextAction(*J));
 }
 
 FString FS47FreeformSession::Objective()const
@@ -1540,10 +1597,16 @@ FString FS47FreeformSession::Objective()const
  if(bPowerFault&&!HasPower()&&(!CurrentJob()||(CurrentJob()->Stage!=EJobStage::Chart&&CurrentJob()->Stage!=EJobStage::Packet)))return TEXT("SERVICE BAY: MEASURE THE FEEDER OR TRANSFER TO THE FUELLED GENERATOR");
  if(ServiceGuide==1&&bGuideFocus){const FString Guide=ServiceObjective();if(!Guide.IsEmpty())return Guide;}
  if(Tutorial>0){const FString T=TutorialObjective();if(!T.IsEmpty())return T;}
- const FJob* J=CurrentJob();if(!J)return TEXT("OPS (corner PC): SELECT DAILY WORK");
  return NextAction();
 }
-FString FS47FreeformSession::NextAction()const {return ReceiverNextAction();}
+FString FS47FreeformSession::NextAction()const
+{
+ if(ServiceGuide==1&&bGuideFocus)return ServiceObjective();
+ if(Tutorial>0)return TutorialObjective();
+ if(FieldFocus>=0&&PlannedFieldTest(FieldFocus)>=0)return FieldNextAction(FieldFocus);
+ if(!CurrentJob()||CurrentJob()->Stage==EJobStage::Filed)return AvailableActivities();
+ return ReceiverNextAction();
+}
 FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
 {
  const FJob* J=&JobValue;
@@ -1602,7 +1665,7 @@ TArray<FS47Task> FS47FreeformSession::Tasks()const
 }
 S47J::FObj FS47FreeformSession::Save()const
 {
- auto O=S47J::New();S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
+ auto O=S47J::New();S47J::Set(O,TEXT("fieldFocus"),FieldFocus);S47J::Set(O,TEXT("tutorial"),Tutorial);S47J::Set(O,TEXT("tutorialJobId"),TutorialJobId);S47J::Set(O,TEXT("jobSeed"),JobSeed);S47J::Set(O,TEXT("serviceGuide"),ServiceGuide);S47J::Set(O,TEXT("guideServiceBaseline"),GuideServiceBaseline);S47J::Set(O,TEXT("guideSupplyBaseline"),GuideSupplyBaseline);S47J::Set(O,TEXT("guideSupply"),bGuideSupply);S47J::Set(O,TEXT("guideFocus"),bGuideFocus);S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("clock"),WorldClock);S47J::Set(O,TEXT("cash"),Cash);S47J::Set(O,TEXT("loan"),Loan);S47J::Set(O,TEXT("lethal"),bDeadly);S47J::Set(O,TEXT("dead"),bDead);S47J::Set(O,TEXT("powerFault"),bPowerFault);S47J::Set(O,TEXT("anomaly"),bAnomaly);S47J::Set(O,TEXT("phenomenon"),PhenomenonId);
  S47J::Set(O,TEXT("journal"),Journal.Save());S47J::Set(O,TEXT("economyRevision"),2);
  S47J::Set(O,TEXT("selected"),Selected);S47J::Set(O,TEXT("audioSource"),AudioSourceIndex);S47J::Set(O,TEXT("audioCursor"),AudioCursor);S47J::Set(O,TEXT("settle"),Settle);S47J::Set(O,TEXT("cross"),CrossPoint);S47J::Set(O,TEXT("crossSample"),CrossSample);S47J::Set(O,TEXT("crossRunning"),bCrossRunning);
  TArray<TSharedPtr<FJsonValue>> Jobs;
