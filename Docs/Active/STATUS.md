@@ -6,6 +6,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
+Tittel-sluttkontroll forsøkt på Toms ordre etter08: title-r5 ble avbrutt av ny samtidig Claude-editor før UFO-sluttbilde/resultat; neste oppstart ble avvist av aktive jobber. Sluttkontrollen er fortsatt UNVERIFIED. Ingen tittelinstallasjon eller ny testgodkjenning.
+
 [Oppdatert regresjonsgjennomgang](Reports/PR379_REGRESSION_REVIEW_2026-11-04.md) finner en statisk printerkøfeil for eldre originaler uten tellerlinje og avgrenser hull i ordinær Continue, samlet økonomireise og Story-modusbytte. To målrettede testkandidater er lagt til på nattgrenen, men er ikke bygget eller kjørt. Tidligere grønne deltester lukker ikke disse funnene.
 
 Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. PR379 ble flettet 4. november kl.06:59 CET med head `cc071f46` og merge `0d9c5815`; pakking/installasjon er ikke gjennomført i denne kontrollen.
