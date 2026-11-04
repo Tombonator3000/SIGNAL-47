@@ -209,8 +209,8 @@ void FS47EastWing::Build()
   // Cool-white 4500 K tubes, one rect light per fixture (fixtures listed in S47EastWingProps Layout).
   const FLinearColor Tube=FLinearColor::MakeFromColorTemperature(4500.f);
   struct FFix{const TCHAR* Name;double X,Z,Yaw;float Lumens;};
-  static const FFix Fixtures[]={{TEXT("Lab"),23.4,-.7,0,90},{TEXT("Lab2"),23.4,2.6,0,90},{TEXT("Store"),28.75,-2.1,90,75},
-   {TEXT("Cal"),28.85,3.1,90,75},{TEXT("Garage"),35.4,.1,0,100},{TEXT("Garage2"),35.4,-3.2,0,100},{TEXT("Garage3"),35.4,3.4,0,100}};
+  static const FFix Fixtures[]={{TEXT("Lab"),23.4,-.7,0,68},{TEXT("Lab2"),23.4,2.6,0,68},{TEXT("Store"),28.75,-2.1,90,56},
+   {TEXT("Cal"),28.85,3.1,90,56},{TEXT("Garage"),35.4,.1,0,75},{TEXT("Garage2"),35.4,-3.2,0,75},{TEXT("Garage3"),35.4,3.4,0,75}};
   for(const FFix& F:Fixtures)Light(F.Name,FVector(F.X,3.16,F.Z),F.Lumens,Tube,F.Yaw);
   Grime();Walls();return;
  }
