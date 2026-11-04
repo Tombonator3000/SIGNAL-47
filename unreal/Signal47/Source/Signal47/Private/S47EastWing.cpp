@@ -515,7 +515,8 @@ bool FS47EastWing::Step(float Dt)
  }
  DriveTest();
  // Developer views (-S47EastWingShots): exterior and each room, then exit.
- if(!FParse::Param(FCommandLine::Get(),TEXT("S47EastWingShots"))||!M||!M->Player||!bBuilt||S47Startup::Blocking()||M->Mode!=US47Main::EMode::Play||!M->World||M->World->Area!=TEXT("saro"))return true;
+ const bool bFrameShots=FParse::Param(FCommandLine::Get(),TEXT("S47FrameFlickerShots"));
+ if((!bFrameShots&&!FParse::Param(FCommandLine::Get(),TEXT("S47EastWingShots")))||!M||!M->Player||!bBuilt||S47Startup::Blocking()||M->Mode!=US47Main::EMode::Play||!M->World||M->World->Area!=TEXT("saro"))return true;
  struct FView{const TCHAR* Name;double X,Z,Yaw,Pitch;};
  static const FView Views[]={
   {TEXT("01-exterior-south"),29.5,19.0,0.,-.04},{TEXT("02-exterior-southwest"),17.5,15.0,-.75,-.03},{TEXT("03-garage-door"),35.4,12.5,0.,-.02},
@@ -535,6 +536,8 @@ bool FS47EastWing::Step(float Dt)
  if(ShotStage==0)
  {
   int32 Hour=0;FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+  if(bFrameShots&&(!User.StartsWith(TEXT("/tmp/"))||!M->IsFreeform()||!M->Freeform||!bLeafControls||!bDoorControls||NativeDoors.Num()!=3))
+  {UE_LOG(LogS47EastWing,Error,TEXT("S47: frame flicker series requires isolated /tmp profile, Freeform and native doors"));FPlatformMisc::RequestExitWithStatus(false,1);return false;}
   if(FParse::Value(FCommandLine::Get(),TEXT("S47EastWingHour="),Hour)&&Hour>=0&&Hour<24&&User.StartsWith(TEXT("/tmp/")))
   {
    if(M->IsFreeform()&&M->Freeform)
@@ -550,9 +553,55 @@ bool FS47EastWing::Step(float Dt)
    M->Freeform->Field->AddItem(TEXT("fragment"));
    UE_LOG(LogS47EastWing,Display,TEXT("S47: explicit isolated sample-holder visual fixture"));
   }
-  ShotAt=Now+6;ShotStage=FParse::Param(FCommandLine::Get(),TEXT("S47GroundReliefShots"))?43:1;return true;
+  ShotAt=Now+6;ShotStage=!bFrameShots&&FParse::Param(FCommandLine::Get(),TEXT("S47GroundReliefShots"))?43:1;return true;
  }
  if(Now<ShotAt)return true;
+ if(bFrameShots)
+ {
+  // One short, isolated before/after series. Interaction callbacks drive all motion.
+  static const FView FrameViews[]={
+   {TEXT("personnel-out"),21.85,7.6,0.,.30},
+   {TEXT("personnel-in"),21.85,3.5,PI,.13},
+   {TEXT("garage-out"),35.4,9.3,0.,.28},
+   {TEXT("garage-in"),35.4,1.8,PI,.18}};
+  const int32 Camera=(ShotStage-1)/6,Phase=(ShotStage-1)%6;
+  auto Fail=[&](const TCHAR* Why){UE_LOG(LogS47EastWing,Error,TEXT("S47: frame flicker series failed: %s"),Why);FPlatformMisc::RequestExitWithStatus(false,1);return false;};
+  if(Camera>=int32(UE_ARRAY_COUNT(FrameViews)))
+  {UE_LOG(LogS47EastWing,Display,TEXT("S47: frame flicker series complete; inspect PNGs, no automatic visual PASS"));FPlatformMisc::RequestExit(false);return false;}
+  const FView& V=FrameViews[Camera];const bool Garage=Camera>=2;
+  const double Amount=Garage?DoorOpen:LeafAmount[0];
+  auto Toggle=[&]{if(Garage)UseDoor();else UseLeaf(0);};
+  auto Shot=[&](const TCHAR* State)
+  {
+   const FString Dir=FPaths::ProjectSavedDir()/TEXT("FrameFlickerShots");IFileManager::Get().MakeDirectory(*Dir,true);
+   FScreenshotRequest::RequestScreenshot(Dir/(FString(V.Name)+TEXT("-")+State+TEXT(".png")),false,false);
+   UE_LOG(LogS47EastWing,Display,TEXT("S47: frame flicker request %s %s amount=%.4f floor=%.3f clock=%.3f camera=(%.2f,%.2f,%.5f,%.3f)"),V.Name,State,Amount,M->Player->FloorY,M->Freeform->Clock(),V.X,V.Z,V.Yaw,V.Pitch);
+  };
+  if(Phase==0)
+  {
+   M->Player->Place(V.X,V.Z,V.Yaw);M->Player->Pitch=V.Pitch;M->Player->bHeadMotion=false;
+   if(Garage?bDoorUp:LeafOpen[0])Toggle();
+   ShotAt=Now+1.6;++ShotStage;return true;
+  }
+  if(Phase==1)
+  {
+   if(Amount>.001){if(Now-ShotAt>12)return Fail(TEXT("door did not close"));return true;}
+   Shot(TEXT("closed"));ShotAt=Now+1.;++ShotStage;return true;
+  }
+  if(Phase==2){Toggle();ShotAt=Now;++ShotStage;return true;}
+  if(Phase==3)
+  {
+   if(Amount<.45){if(Now-ShotAt>12)return Fail(TEXT("door did not begin opening"));return true;}
+   if(Amount>=.95)return Fail(TEXT("opening frame missed; reduce frame stalls and retake"));
+   Shot(TEXT("opening"));ShotAt=Now+1.;++ShotStage;return true;
+  }
+  if(Phase==4)
+  {
+   if(Amount<.999){if(Now-ShotAt>12)return Fail(TEXT("door did not finish opening"));return true;}
+   ShotAt=Now+.4;++ShotStage;return true;
+  }
+  Shot(TEXT("open"));ShotAt=Now+1.;++ShotStage;return true;
+ }
  const int32 I=(ShotStage-1)/2;
  if(I>=int32(UE_ARRAY_COUNT(Views))){UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing shots done"));FPlatformMisc::RequestExit(false);return false;}
  if((ShotStage-1)%2==0){const FView& V=Views[I];M->Player->Place(V.X,V.Z,V.Yaw);M->Player->Pitch=V.Pitch;M->Player->bHeadMotion=false;ShotAt=Now+1.6;}

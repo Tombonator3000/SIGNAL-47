@@ -1761,3 +1761,7 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 22:51 Codex: første nattpakke på codex/nightshift-20261104: rutinejobber direkte til historikk, vanlig opplæringsfullføring, lagret feltfokus, sammenhengende fotolab/reservefilm og kortere loggerreise. Editorbygg,2346 selvtester og native arbeid23/foto59/logger44/tutorial36 består;12 disk-/Continue-runder samlet. Fotopanelets bevarte format og ferdige layout visuelt kontrollert, fysisk filmplassering/ray består. Ingen installasjon; neste er faktiske feltvinduer og trygg venting.
 
 4. november 23:28 Codex, `codex/night-field-controls-20261104`: fysiske tak-/portkontroller, datert venting, sannferdig saksbrett og skumringsfoto. Editorbygg/2367 selvtester; native felt67/fem Continue og foto36/to Continue består, samt kort visuell markørprøve11. Referansefotoplan er ikke utført sammenligning; ingen ny installasjon eller offentlig release.
+
+### 4. november 2026 kl.23:38, SARO-FRAME-FLICKER-04
+
+Codex, `codex/night-frame-clearance-20261104`: seks bakre karmflater lå i murplanet; én centimeter klaring i tre LOD-er, øvrig geometri/UCX/ankre uendret. Editorbygg, Blender/native import og 12 før-/12 etterbilder fra begge sider gjennom dørbevegelse består; synlig overlapp borte. Bare trimmeshen beholdes fra importen; øvrige native filer er tilbakeført fra verifisert reflink-kopi. Privat kontroll i nattmappens `frame-before`, `frame-after` og `frame-shell`; installasjon gjenstår.
