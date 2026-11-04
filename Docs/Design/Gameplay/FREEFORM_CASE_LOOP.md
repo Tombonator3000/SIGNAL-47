@@ -103,6 +103,10 @@ Aksepten må dekke alle tre årsaker, tilstrekkelig/for svak vind, brutt observa
 
 OPS viser øverst **TONIGHT'S PLAN**: planlagt forsøk, tidsvindu og hva som mangler (for eksempel «Generator fuel can: 0 in depot. Buy at Caliche»). Planen er et hjelpemiddel, ikke en tvang; rutinejobbene står som før.
 
+**Oppfølging bestilt 4. november, for natt til 5. november:** Det aktive valget skal gi samme neste sted og handling i OPS og dagboken. Et forsøksvindu viser konkret dag, start og slutt, og spilleren kan velge annet arbeid mens forsøket venter. Utført og avsluttet oppdrag skal straks forsvinne fra OPS-PC-ens aktive liste. Rutinejobber avsluttes ved registrering/betaling; oppdrag med nødvendig fysisk arkivering blir stående til siste påkrevde handling er utført. Resultater og originaler beholdes i historikk/arkiv, også etter Continue, uten ny betaling.
+
+Den prioriterte oppfølgingen av foto, saksbrett, logger, første skift, vedlikehold og bevislogikk føres én gang i [nattens gameplay-oppgaver](../../Active/TODO.md#forenkling-av-gameplay-natt-til-5-november-2026), FF-LOOP-NIGHT-01 til 09. Dette er planlagt forbedring, ikke ferdig implementasjon.
+
 ## Sakene videre og arbeidsdeling
 
 | Sak | Kilder | Eier |
