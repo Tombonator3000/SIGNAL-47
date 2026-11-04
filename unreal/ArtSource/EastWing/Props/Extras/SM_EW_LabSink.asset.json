@@ -31,7 +31,7 @@
   "triangles": 20128,
   "uv_layers": 1,
   "materials": [
-    "EW_X_Rubber",
+    "EW_XRubber",
     "EW_X_GreenEnamel",
     "EW_X_Bakelite",
     "EW_X_Chrome",
@@ -43,16 +43,20 @@
   ],
   "material_parameters": [
     {
-      "name": "EW_X_Rubber",
+      "name": "EW_XRubber",
       "texture_key": null,
-      "maps": {},
+      "maps": {
+        "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+      },
       "Base Color": [
-        0.02199999988079071,
-        0.02500000037252903,
-        0.023000000044703484,
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
         1.0
       ],
-      "Roughness": 0.699999988079071,
+      "Roughness": 0.5,
       "Metallic": 0.0,
       "Transmission Weight": 0.0,
       "IOR": 1.5,
@@ -252,6 +256,9 @@
     }
   ],
   "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
@@ -278,6 +285,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "c74db613afc8ea26922e75b931571b298b75614c1459de5dbf6e65ee1d23ca25",
-  "blend_sha256": "848fdb261f8d58bd20de55e4dec308e677cf16eeeb37a29a10425f1a01d02aaf"
+  "fbx_sha256": "12b2adff7323b06ccab4242d1dc68b21478443f436b568a9d5c2e21b2ba0c1f6",
+  "blend_sha256": "1d4147393d4aa7e57eb84650c51426ccc3d706d69fae01cc1c1063a7d1db316f"
 }

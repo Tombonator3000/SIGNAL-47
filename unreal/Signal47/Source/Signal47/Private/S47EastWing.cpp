@@ -155,10 +155,11 @@ void FS47EastWing::Grime()
   {false,5.25,31.675,33.2,1},{false,5.25,37.6,38.35,1}};
  for(const FWall& Wl:Walls_)
  {
-  const double Mid=(Wl.A+Wl.B)*.5,Half=(Wl.B-Wl.A)*.5*100;
+  // Shallow boxes stopping short of corners: deeper boxes smear onto perpendicular returns and jambs.
+  const double Mid=(Wl.A+Wl.B)*.5,Half=(Wl.B-Wl.A)*.5*100-6;
   const double Yaw=Wl.bX?(Wl.Dir<0?180.:0.):(Wl.Dir<0?-90.:90.);
   const FVector WallAt=Wl.bX?FVector(Wl.C,.28,Mid):FVector(Mid,.28,Wl.C);
-  Decal(Base,WallAt,FRotator(0,Yaw,0),FVector(10,Half,28),.85f);
+  Decal(Base,WallAt,FRotator(0,Yaw,0),FVector(4,Half,28),.85f);
   // Floor dust strip, 0.22 m into the room, projected straight down.
   const FVector FloorAt=Wl.bX?FVector(Wl.C-Wl.Dir*.22,0,Mid):FVector(Mid,0,Wl.C-Wl.Dir*.22);
   Decal(Dust,FloorAt,FRotator(-90,Yaw,0),FVector(6,Half,22),.8f);
@@ -175,7 +176,7 @@ void FS47EastWing::Grime()
  for(const FJamb& J:Jambs)
  {
   const double Yaw=J.bX?(J.Dir<0?180.:0.):(J.Dir<0?-90.:90.);
-  Decal(Scuff,J.bX?FVector(J.C,1.05,J.Edge):FVector(J.Edge,1.05,J.C),FRotator(0,Yaw,0),FVector(10,32,48),.7f);
+  Decal(Scuff,J.bX?FVector(J.C,1.05,J.Edge):FVector(J.Edge,1.05,J.C),FRotator(0,Yaw,0),FVector(4,32,48),.7f);
  }
  // Outside: run-off streaks under each north window sill and under the south sign board.
  for(const FGap& G:NorthGaps)Decal(Streak,FVector((G.A+G.B)*.5,G.Y0-.5,Z0),FRotator(0,90,0),FVector(12,(G.B-G.A)*50+8,50),.75f);

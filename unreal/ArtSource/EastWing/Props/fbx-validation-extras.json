@@ -3,6 +3,231 @@
   "scope": "Fresh Blender FBX import: dimensions, UVs, materials, finite geometry for every delivered LOD. Unreal runtime integration remains Claude task.",
   "checks": [
     {
+      "asset": "SM_EW_CalibrationSign",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1898
+    },
+    {
+      "asset": "SM_EW_CalibrationSign",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 948
+    },
+    {
+      "asset": "SM_EW_CalibrationSign",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00022679567337036133,
+      "dimensions_m": [
+        0.4197731912136078,
+        0.0997905507683754,
+        0.16046987121808343
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 474
+    },
+    {
+      "asset": "SM_EW_DepotCheckoutSign",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1898
+    },
+    {
+      "asset": "SM_EW_DepotCheckoutSign",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 948
+    },
+    {
+      "asset": "SM_EW_DepotCheckoutSign",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00022679567337036133,
+      "dimensions_m": [
+        0.4197731912136078,
+        0.0997905507683754,
+        0.16046987121808343
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 474
+    },
+    {
+      "asset": "SM_EW_ReceivingSign",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1898
+    },
+    {
+      "asset": "SM_EW_ReceivingSign",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 948
+    },
+    {
+      "asset": "SM_EW_ReceivingSign",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00022679567337036133,
+      "dimensions_m": [
+        0.4197731912136078,
+        0.0997905507683754,
+        0.16046987121808343
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 474
+    },
+    {
+      "asset": "SM_EW_SampleAnalysisSign",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1898
+    },
+    {
+      "asset": "SM_EW_SampleAnalysisSign",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 3.725290298461914e-08,
+      "dimensions_m": [
+        0.41999998688697815,
+        0.1000000387430191,
+        0.16062115132808685
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 948
+    },
+    {
+      "asset": "SM_EW_SampleAnalysisSign",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00022679567337036133,
+      "dimensions_m": [
+        0.4197731912136078,
+        0.0997905507683754,
+        0.16046987121808343
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 474
+    },
+    {
+      "asset": "SM_EW_SampleHolder",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-08,
+      "dimensions_m": [
+        0.15000002086162567,
+        0.12000001221895218,
+        0.04500000178813934
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3864
+    },
+    {
+      "asset": "SM_EW_SampleHolder",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00010473281145095825,
+      "dimensions_m": [
+        0.14990560710430145,
+        0.11989526450634003,
+        0.044952793046832085
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1932
+    },
+    {
+      "asset": "SM_EW_SampleHolder",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00022046267986297607,
+      "dimensions_m": [
+        0.1497795432806015,
+        0.1198187842965126,
+        0.04489738494157791
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 963
+    },
+    {
       "asset": "SM_EW_LabSink",
       "lod": 0,
       "pass": true,
@@ -1036,231 +1261,6 @@
       "finite": true,
       "materials": true,
       "triangles": 2
-    },
-    {
-      "asset": "SM_EW_CalibrationSign",
-      "lod": 0,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 1898
-    },
-    {
-      "asset": "SM_EW_CalibrationSign",
-      "lod": 1,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 948
-    },
-    {
-      "asset": "SM_EW_CalibrationSign",
-      "lod": 2,
-      "pass": true,
-      "dimension_error_m": 0.00022679567337036133,
-      "dimensions_m": [
-        0.4197731912136078,
-        0.0997905507683754,
-        0.16046987121808343
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 474
-    },
-    {
-      "asset": "SM_EW_DepotCheckoutSign",
-      "lod": 0,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 1898
-    },
-    {
-      "asset": "SM_EW_DepotCheckoutSign",
-      "lod": 1,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 948
-    },
-    {
-      "asset": "SM_EW_DepotCheckoutSign",
-      "lod": 2,
-      "pass": true,
-      "dimension_error_m": 0.00022679567337036133,
-      "dimensions_m": [
-        0.4197731912136078,
-        0.0997905507683754,
-        0.16046987121808343
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 474
-    },
-    {
-      "asset": "SM_EW_ReceivingSign",
-      "lod": 0,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 1898
-    },
-    {
-      "asset": "SM_EW_ReceivingSign",
-      "lod": 1,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 948
-    },
-    {
-      "asset": "SM_EW_ReceivingSign",
-      "lod": 2,
-      "pass": true,
-      "dimension_error_m": 0.00022679567337036133,
-      "dimensions_m": [
-        0.4197731912136078,
-        0.0997905507683754,
-        0.16046987121808343
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 474
-    },
-    {
-      "asset": "SM_EW_SampleAnalysisSign",
-      "lod": 0,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 1898
-    },
-    {
-      "asset": "SM_EW_SampleAnalysisSign",
-      "lod": 1,
-      "pass": true,
-      "dimension_error_m": 3.725290298461914e-08,
-      "dimensions_m": [
-        0.41999998688697815,
-        0.1000000387430191,
-        0.16062115132808685
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 948
-    },
-    {
-      "asset": "SM_EW_SampleAnalysisSign",
-      "lod": 2,
-      "pass": true,
-      "dimension_error_m": 0.00022679567337036133,
-      "dimensions_m": [
-        0.4197731912136078,
-        0.0997905507683754,
-        0.16046987121808343
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 474
-    },
-    {
-      "asset": "SM_EW_SampleHolder",
-      "lod": 0,
-      "pass": true,
-      "dimension_error_m": 1.4901161193847656e-08,
-      "dimensions_m": [
-        0.15000002086162567,
-        0.12000001221895218,
-        0.04500000178813934
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 3864
-    },
-    {
-      "asset": "SM_EW_SampleHolder",
-      "lod": 1,
-      "pass": true,
-      "dimension_error_m": 0.00010473281145095825,
-      "dimensions_m": [
-        0.14990560710430145,
-        0.11989526450634003,
-        0.044952793046832085
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 1932
-    },
-    {
-      "asset": "SM_EW_SampleHolder",
-      "lod": 2,
-      "pass": true,
-      "dimension_error_m": 0.00022046267986297607,
-      "dimensions_m": [
-        0.1497795432806015,
-        0.1198187842965126,
-        0.04489738494157791
-      ],
-      "uv": true,
-      "finite": true,
-      "materials": true,
-      "triangles": 963
     }
   ]
 }

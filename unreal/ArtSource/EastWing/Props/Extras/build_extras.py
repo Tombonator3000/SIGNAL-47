@@ -16,13 +16,64 @@ OUT = HERE
 PRINTS = HERE / 'textures'
 SOURCE = 'unreal/ArtSource/EastWing/Props/Extras/build_extras.py'
 
+def pbr(name, maps=(('BaseColor', 'Base Color'), ('Roughness', 'Roughness'), ('NormalGL', 'Normal')), span=None):
+    """Material from authored PBR images in Extras/textures (BaseColor sRGB; Roughness, NormalGL linear)."""
+    m = bpy.data.materials.get(name)
+    if m:
+        return m
+    m = bpy.data.materials.new(name); m.use_nodes = True
+    if span: m['x_span'] = span  # world-planar UVs, metres per texture (see world_uv)
+    bs = m.node_tree.nodes.get('Principled BSDF'); bs.inputs['Metallic'].default_value = 0
+    for suffix, socket in maps:
+        im = bpy.data.images.load(str(PRINTS / (name + '_' + suffix + '.png')), check_existing=True)
+        im.colorspace_settings.name = 'sRGB' if suffix == 'BaseColor' else 'Non-Color'
+        n = m.node_tree.nodes.new('ShaderNodeTexImage'); n.image = im
+        if suffix == 'NormalGL':
+            nm = m.node_tree.nodes.new('ShaderNodeNormalMap'); m.node_tree.links.new(n.outputs['Color'], nm.inputs['Color'])
+            m.node_tree.links.new(nm.outputs['Normal'], bs.inputs['Normal'])
+        else:
+            m.node_tree.links.new(n.outputs['Color'], bs.inputs[socket])
+    return m
+
+
+import prop_common as PC
+_authored_finish = finish_asset
+
+
+def world_uv():
+    """Photo pass: polygons whose material carries x_span get box-projected world-metre UVs,
+    so wood grain and paint wear keep physical scale on every scaled primitive."""
+    for o in bpy.context.scene.objects:
+        if o.as_pointer() in PC.BEFORE or o.type != 'MESH':
+            continue
+        spans = [m.get('x_span') if m else None for m in o.data.materials]
+        if not any(spans):
+            continue
+        if not o.data.uv_layers:
+            o.data.uv_layers.new(name='UVMap')
+        uv = o.data.uv_layers.active.data; mw = o.matrix_world; rot = mw.to_3x3()
+        for poly in o.data.polygons:
+            span = spans[poly.material_index] if poly.material_index < len(spans) else None
+            if not span:
+                continue
+            n = rot @ poly.normal; axis = max(range(3), key=lambda k: abs(n[k])); a, b = [k for k in range(3) if k != axis]
+            for li in poly.loop_indices:
+                co = mw @ o.data.vertices[o.data.loops[li].vertex_index].co
+                uv[li].uv = (co[a] / span, co[b] / span)
+
+
+def finish_asset(name, outdir, description, *args, **kw):
+    world_uv()
+    return _authored_finish(name, outdir, description, *args, **kw)
+
+
 green = material('EW_X_GreenEnamel', (.16, .24, .20), .33, texture='EW_GreenSteel')
 steel = material('EW_X_Stainless', (.48, .51, .5), .24, .85, texture='EW_Galvanized')
 chrome = material('EW_X_Chrome', (.7, .73, .74), .17, 1)
 dark = material('EW_X_Bakelite', (.017, .02, .019), .39)
-rubber = material('EW_X_Rubber', (.022, .025, .023), .7)
+rubber = pbr('EW_XRubber', span=.5)
 cream = material('EW_X_CreamEnamel', (.69, .66, .53), .3)
-white = material('EW_X_WhiteEnamel', (.74, .73, .68), .28)
+white = pbr('EW_XEnamelWhite', span=.5)
 red = material('EW_X_Red', (.38, .025, .012), .38)
 paper = material('EW_X_LabelPaper', (.81, .78, .63), .8)
 ink = material('EW_X_LabelInk', (.025, .032, .028), .7)
@@ -345,10 +396,10 @@ def hose_reel():
     return finish_asset(asset, OUT, 'Wall hose reel with brass hose bib and a run of green garden hose on the ground.')
 
 
-wood = material('EW_X_BenchTimber', (.36, .24, .13), .62)
+wood = pbr('EW_XWood', span=.5)
 iron = material('EW_X_CastIron', (.11, .16, .2), .5, .55)
-redenamel = material('EW_X_RedEnamel', (.42, .03, .02), .35, .1)
-olive = material('EW_X_OliveDrab', (.15, .16, .08), .55)
+redenamel = pbr('EW_XEnamelRed', span=.5)
+olive = pbr('EW_XOliveDrab', span=.5)
 oil = material('EW_X_OilFilm', (.035, .031, .025), .5)  # soaked-in, not a wet puddle
 
 
@@ -524,7 +575,7 @@ def relay_tester():
     0.28 x 0.11 m) sits in the bezel window at 0.20 m; keep that window and height."""
     asset = 'SM_EW_RelayTester'; start_asset(asset)
     W, D, H = .42, .28, .27
-    grey = material('EW_X_InstrumentGrey', (.3, .31, .29), .45, .1)
+    grey = pbr('EW_XInstrumentGrey', span=.5)
     box('case', (0, 0, H / 2), (W, D, H), grey, .008)
     box('panel', (0, -D / 2 - .002, H / 2), (W - .02, .004, H - .02), material('EW_X_PanelAlu', (.55, .56, .54), .35, .8), .002)
     for z, hgt in ((.255, .01), (.145, .01)):
@@ -550,25 +601,6 @@ def relay_tester():
     return finish_asset(asset, OUT, 'SARO RT-12 relay test set for the Freeform calibration bench; status window for the live lamp.')
 
 
-def pbr(name, maps):
-    """Material from authored PBR images in Extras/textures (BaseColor sRGB; Roughness, NormalGL linear)."""
-    m = bpy.data.materials.get(name)
-    if m:
-        return m
-    m = bpy.data.materials.new(name); m.use_nodes = True
-    bs = m.node_tree.nodes.get('Principled BSDF'); bs.inputs['Metallic'].default_value = 0
-    for suffix, socket in maps:
-        im = bpy.data.images.load(str(PRINTS / (name + '_' + suffix + '.png')), check_existing=True)
-        im.colorspace_settings.name = 'sRGB' if suffix == 'BaseColor' else 'Non-Color'
-        n = m.node_tree.nodes.new('ShaderNodeTexImage'); n.image = im
-        if suffix == 'NormalGL':
-            nm = m.node_tree.nodes.new('ShaderNodeNormalMap'); m.node_tree.links.new(n.outputs['Color'], nm.inputs['Color'])
-            m.node_tree.links.new(nm.outputs['Normal'], bs.inputs['Normal'])
-        else:
-            m.node_tree.links.new(n.outputs['Color'], bs.inputs[socket])
-    return m
-
-
 def vinyl_floor():
     """Photo pass: 12-inch VCT over the lab, storage and calibration rooms (x20.85..31.525, z+-5.25).
     Origin at the area centre; UVs in world metres / 1.2192 (one texture = 4 x 4 tiles)."""
@@ -581,7 +613,7 @@ def vinyl_floor():
         x, y, _ = me.vertices[loop.vertex_index].co
         uv.data[li].uv = (x / tile, y / tile)
     ob = bpy.data.objects.new('vct', me); bpy.context.collection.objects.link(ob)
-    me.materials.append(pbr('EW_VCT', (('BaseColor', 'Base Color'), ('Roughness', 'Roughness'), ('NormalGL', 'Normal'))))
+    me.materials.append(pbr('EW_VCT'))
     return finish_asset(asset, OUT, 'Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).')
 
 

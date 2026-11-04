@@ -31,21 +31,25 @@
   "triangles": 942,
   "uv_layers": 1,
   "materials": [
-    "EW_X_BenchTimber",
+    "EW_XWood",
     "EW_Print_NoticeBoard"
   ],
   "material_parameters": [
     {
-      "name": "EW_X_BenchTimber",
+      "name": "EW_XWood",
       "texture_key": null,
-      "maps": {},
+      "maps": {
+        "EW_XWood_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+        "EW_XWood_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png",
+        "EW_XWood_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png"
+      },
       "Base Color": [
-        0.36000001430511475,
-        0.23999999463558197,
-        0.12999999523162842,
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
         1.0
       ],
-      "Roughness": 0.6200000047683716,
+      "Roughness": 0.5,
       "Metallic": 0.0,
       "Transmission Weight": 0.0,
       "IOR": 1.5,
@@ -83,7 +87,10 @@
     }
   ],
   "textures": [
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_NoticeBoard_BaseColor.png"
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_NoticeBoard_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png"
   ],
   "lods": [
     {
@@ -102,6 +109,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "a91d9e2c7ca853b225c80ea60002849d21de8c557fa13482d132c70fc4321c18",
-  "blend_sha256": "9a52cdb12a19d375267f40d0921a564d56805d03187eeaa6e8cbfad776c04e88"
+  "fbx_sha256": "90ffcc3667068abb289d0ababaf9bdeab8518cc7a9bc53088febdad93ac2c1f1",
+  "blend_sha256": "82ff4ef4bb90185fba87627551ed13c65eadc5303ccfe696a6b778a1709bc477"
 }

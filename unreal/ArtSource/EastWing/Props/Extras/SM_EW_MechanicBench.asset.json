@@ -32,12 +32,12 @@
   "uv_layers": 1,
   "materials": [
     "EW_X_GreenEnamel",
-    "EW_X_BenchTimber",
+    "EW_XWood",
     "EW_X_Chrome",
     "EW_X_CastIron",
     "EW_X_Stainless",
     "EW_X_CanYellow",
-    "EW_X_RedEnamel",
+    "EW_XEnamelRed",
     "EW_X_Rag"
   ],
   "material_parameters": [
@@ -69,16 +69,20 @@
       "Emission Strength": 0.0
     },
     {
-      "name": "EW_X_BenchTimber",
+      "name": "EW_XWood",
       "texture_key": null,
-      "maps": {},
+      "maps": {
+        "EW_XWood_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+        "EW_XWood_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png",
+        "EW_XWood_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png"
+      },
       "Base Color": [
-        0.36000001430511475,
-        0.23999999463558197,
-        0.12999999523162842,
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
         1.0
       ],
-      "Roughness": 0.6200000047683716,
+      "Roughness": 0.5,
       "Metallic": 0.0,
       "Transmission Weight": 0.0,
       "IOR": 1.5,
@@ -184,17 +188,21 @@
       "Emission Strength": 0.0
     },
     {
-      "name": "EW_X_RedEnamel",
+      "name": "EW_XEnamelRed",
       "texture_key": null,
-      "maps": {},
+      "maps": {
+        "EW_XEnamelRed_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+        "EW_XEnamelRed_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+        "EW_XEnamelRed_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png"
+      },
       "Base Color": [
-        0.41999998688697815,
-        0.029999999329447746,
-        0.019999999552965164,
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
         1.0
       ],
-      "Roughness": 0.3499999940395355,
-      "Metallic": 0.10000000149011612,
+      "Roughness": 0.5,
+      "Metallic": 0.0,
       "Transmission Weight": 0.0,
       "IOR": 1.5,
       "Emission Color": [
@@ -229,6 +237,12 @@
     }
   ],
   "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
@@ -255,6 +269,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "280b6397215b9fdb320b0c279369b297355c51cd5ad78d033e3c88e3b7540920",
-  "blend_sha256": "4dee9c1a0a9fbf6b2f6d781a7e556e9777d72e5f41f1d2d4a865db3d4742ba6c"
+  "fbx_sha256": "e7e861846c685fec17545f4e20e8529458d4b5fe4904154dc475414637336910",
+  "blend_sha256": "47b02f469809478d61a824c4b4b68a74bb04219ca89f0a4dba75c81bca42b997"
 }
