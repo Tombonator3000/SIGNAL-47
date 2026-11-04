@@ -262,7 +262,8 @@ bool FS47EastWing::Step(float Dt)
   {TEXT("07-garage-in"),35.4,-4.2,PI,-.05},{TEXT("08-garage-out"),35.4,4.6,0.,-.05},{TEXT("09-sample-analysis"),23.5,-1.4,-.12,-.12},{TEXT("10-service-entry"),42.0,1.8,PI/2,-.04},
   {TEXT("11-lab-west"),24.9,.1,PI/2,-.10},{TEXT("12-lab-east"),22.4,-.4,-PI/2,-.02},{TEXT("13-calibration-north"),29.6,4.2,0.,-.04},
   {TEXT("14-storage-west"),29.8,-2.4,PI/2,-.04},{TEXT("15-garage-west"),36.6,1.1,PI/2,-.04},
-  {TEXT("16-roof-northeast"),48.0,-14.0,2.23,.04}};
+  {TEXT("16-roof-northeast"),48.0,-14.0,2.23,.04},
+  {TEXT("17-garage-receiving"),34.4,-1.6,.9,-.10}};
  const double Now=FPlatformTime::Seconds();
  if(ShotStage==0)
  {
