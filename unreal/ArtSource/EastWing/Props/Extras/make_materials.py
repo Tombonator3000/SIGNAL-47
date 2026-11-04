@@ -1,6 +1,12 @@
 """EASTWING photo pass: tileable PBR sets for Claude's Extras props (Blender Python: numpy + bpy IO).
   blender -b --python-exit-code 1 --python make_materials.py
 Each set: <name>_BaseColor (sRGB), _Roughness, _NormalGL. One texture spans 0.5 m (see build_extras SPAN)."""
+# Codex ImageGen photo textures (Props/Extras/photo_sources) replace these procedural fallbacks.
+# Regenerating would overwrite them, so this script refuses unless explicitly asked.
+import os as _os
+if _os.environ.get('S47_EASTWING_PROCEDURAL') != '1':
+    raise SystemExit('Refusing to overwrite Codex photo textures; set S47_EASTWING_PROCEDURAL=1 to regenerate the procedural fallback.')
+
 from pathlib import Path
 import numpy as np
 import bpy

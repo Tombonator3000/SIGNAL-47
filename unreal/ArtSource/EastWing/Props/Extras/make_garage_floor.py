@@ -3,6 +3,12 @@ Blender Python (numpy + bpy IO):  blender -b --python-exit-code 1 --python make_
 Array row 0 = south (roll-up door, z+5.25), column 0 = west wall (x31.675); save() flips rows so UV v=0 is south.
 Paints: trowelled concrete, saw-cut joints, hairline cracks, the two worn yellow lane lines (x33.6, x37.2 from
 z-4.25), Jeep tyre tracks, soaked oil under the parked engine, sand blown in at the door, dirt along walls."""
+# Codex ImageGen photo textures (Props/Extras/photo_sources) replace these procedural fallbacks.
+# Regenerating would overwrite them, so this script refuses unless explicitly asked.
+import os as _os
+if _os.environ.get('S47_EASTWING_PROCEDURAL') != '1':
+    raise SystemExit('Refusing to overwrite Codex photo textures; set S47_EASTWING_PROCEDURAL=1 to regenerate the procedural fallback.')
+
 from pathlib import Path
 import numpy as np
 import bpy

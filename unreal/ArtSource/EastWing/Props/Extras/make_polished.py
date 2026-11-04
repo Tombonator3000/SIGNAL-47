@@ -1,6 +1,12 @@
 """EASTWING reference pass: tileable polished concrete (lab/storage/calibration), one texture = 2 m.
 Matches the concept boards: light grey-beige, cloudy trowel mottling, fine aggregate, low gloss with
 duller worn paths. Blender Python:  blender -b --python-exit-code 1 --python make_polished.py"""
+# Codex ImageGen photo textures (Props/Extras/photo_sources) replace these procedural fallbacks.
+# Regenerating would overwrite them, so this script refuses unless explicitly asked.
+import os as _os
+if _os.environ.get('S47_EASTWING_PROCEDURAL') != '1':
+    raise SystemExit('Refusing to overwrite Codex photo textures; set S47_EASTWING_PROCEDURAL=1 to regenerate the procedural fallback.')
+
 from pathlib import Path
 import numpy as np
 import bpy

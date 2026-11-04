@@ -1,6 +1,12 @@
 """EASTWING photo pass: RGBA grime textures for deferred decals (Blender Python: numpy + bpy image IO).
   blender -b --python-exit-code 1 --python make_grime.py
 Each map: RGB = dirt colour (sRGB), A = coverage. Horizontal maps tile along U."""
+# Codex ImageGen photo textures (Props/Extras/photo_sources) replace these procedural fallbacks.
+# Regenerating would overwrite them, so this script refuses unless explicitly asked.
+import os as _os
+if _os.environ.get('S47_EASTWING_PROCEDURAL') != '1':
+    raise SystemExit('Refusing to overwrite Codex photo textures; set S47_EASTWING_PROCEDURAL=1 to regenerate the procedural fallback.')
+
 from pathlib import Path
 import numpy as np
 import bpy

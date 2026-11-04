@@ -67,8 +67,9 @@ def finish_asset(name, outdir, description, *args, **kw):
     return _authored_finish(name, outdir, description, *args, **kw)
 
 
-green = material('EW_X_GreenEnamel', (.16, .24, .20), .33, texture='EW_GreenSteel')
-steel = material('EW_X_Stainless', (.48, .51, .5), .24, .85, texture='EW_Galvanized')
+green = pbr('EW_XEnamelGreen', span=.5)  # Codex ImageGen grey-green enamel (reference casework)
+steel = pbr('EW_XStainless', span=.5)
+steel.node_tree.nodes.get('Principled BSDF').inputs['Metallic'].default_value = .9
 chrome = material('EW_X_Chrome', (.7, .73, .74), .17, 1)
 dark = material('EW_X_Bakelite', (.017, .02, .019), .39)
 rubber = pbr('EW_XRubber', span=.5)
