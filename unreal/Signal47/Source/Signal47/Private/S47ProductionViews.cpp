@@ -198,7 +198,10 @@ void AS47Web::BeginProductionViews()
   {TEXT("interior-jacket-detail"),TEXT("saro"),{4.5,0,3.3},{5.88,1.43,2.42}},
   {TEXT("interior-rx3-detail"),TEXT("saro"),{4.0,0,-2.40},{5.34,1.00,-2.44}},
   {TEXT("interior-fixture-detail"),TEXT("saro"),{-.70,0,5.70},{.20,2.75,5.70}},
-  {TEXT("array-foundation"),TEXT("saro"),{17,-.62,-34},{9.5,.15,-42}}
+  {TEXT("array-foundation"),TEXT("saro"),{17,-.62,-34},{9.5,.15,-42}},
+  {TEXT("saro-overlay-ceiling"),TEXT("saro"),{0,0,1.5},{2.6,2.9,4.3}},
+  {TEXT("saro-overlay-floor"),TEXT("saro"),{0,0,1.5},{2,.01,3.8}},
+  {TEXT("saro-overlay-pipe"),TEXT("saro"),{30.5,-.576,7.3},{31.85,.4,5.6}},
  };
  struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
  const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
@@ -241,6 +244,7 @@ void AS47Web::BeginProductionViews()
     ||(State->Suite==TEXT("saro")&&!Saro)||(State->Suite==TEXT("town")&&(I<4||I>8))
     ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))||(State->Suite==TEXT("photolab")&&!PhotoLab)
+    ||(State->Suite==TEXT("saro-overlays")&&!Name.StartsWith(TEXT("saro-overlay-")))
     ||(State->Suite==TEXT("triponpcs")&&!Name.StartsWith(TEXT("tripo-")))||(State->Suite==TEXT("interiors")&&!Interiors)
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
@@ -319,6 +323,7 @@ void AS47Web::BeginProductionViews()
    Lines.Add(FString::Printf(TEXT("photolab fixture light baseline %s: normal=%.3f safe=%.3f enlarger=%.3f; five original typed sources, no driver/power writes"),Baseline?TEXT("PASS"):TEXT("FAIL"),Normal.Intensity(),Safe.Intensity(),Enlarger.Intensity()));
   }
   else if(State->Suite==TEXT("cinema-posters")){Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines)&&W->AuditCinemaPosters(Lines);}
+  else if(FString(V.Name).StartsWith(TEXT("saro-overlay-"))){Ok=W->Area()==TEXT("saro");}
   else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }
   else if(I<13||I>=19) Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines);

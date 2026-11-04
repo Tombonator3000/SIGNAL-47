@@ -1,5 +1,6 @@
 #pragma once
 #include "S47TubeFlicker.h"
+#include "S47Json.h"
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 class US47Main;
@@ -16,6 +17,8 @@ public:
  explicit FS47EastWing(US47Main* InM);
  ~FS47EastWing();
  void Init();
+ void Begin(const S47J::FObj& Saved);
+ S47J::FObj Save() const;
  bool Built() const { return bBuilt; }
  static FBox Footprint() { return FBox(FVector(20.2,-.7,-5.9),FVector(39.0,4.6,5.9)); }
  // Rooms (three.js x,z): test lab, parts storage, calibration/repair, garage.
@@ -42,6 +45,8 @@ private:
  // Motorised roll-up door (Tom 4 Nov): two control stations (inside / outside), 4.5 s travel.
  double DriveSince=0;
  double DoorOpen=1;bool bDoorUp=true,bDoorMoving=false,bDoorControls=false;
+ bool bLeafControls=false; bool LeafOpen[2]={true,true}; double LeafAmount[2]={1.,1.};
+ bool LeafControls(); void UseLeaf(int32 Index); void DoorTest(); int32 DoorTestStage=0; double DoorTestAt=0;
  bool DoorControls();void StepDoor(float Dt,bool bFree,bool bPowered);
  FString DoorLabel() const;void UseDoor();
  TArray<TWeakObjectPtr<class URectLightComponent>> Tubes; TArray<float> TubeLumens; TArray<FS47TubeFlicker> TubeFlicker; // photo pass: deferred-decal dirt bands, floor dust, jamb scuffs, run-off streaks
