@@ -50,8 +50,8 @@ for _ in range(26):
 fade = np.linspace(0, 1, H)[:, None] ** .8               # top of the texture strongest (rows from top)
 length = periodic_noise(W, 1, 30, 1, 4)[0] * .35 + .65
 streak = np.clip(cols[None, :], 0, 1) * np.clip(1 - fade / length[None, :], 0, 1)
-alpha = np.clip(streak * (.7 + .3 * periodic_noise(W, H, 3, 40, 5)), 0, 1) * .6
-save('T_EW_GrimeStreaks', np.array([.18, .15, .12]), alpha.astype(np.float32))
+alpha = np.clip(streak * (.7 + .3 * periodic_noise(W, H, 3, 40, 5)) * .85, 0, .85)
+save('T_EW_GrimeStreaks', np.array([.13, .11, .085]), alpha.astype(np.float32))
 
 # 3. Scuffs and hand smudges for door jambs and switch plates: 1 m x 1 m blotches.
 n = periodic_noise(W, H, 30, 30, 6); m = periodic_noise(W, H, 5, 5, 7)

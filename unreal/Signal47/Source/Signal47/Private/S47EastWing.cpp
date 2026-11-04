@@ -141,7 +141,7 @@ void FS47EastWing::Grime()
   UDecalComponent* D=NewObject<UDecalComponent>(W,*FString::Printf(TEXT("EastWingGrime_%03d"),Count++));
   UMaterialInstanceDynamic* I=UMaterialInstanceDynamic::Create(Mt,D);I->SetScalarParameterValue(TEXT("Opacity"),Opacity);
   // -S47EastWingDecalProbe: paint wall/floor bands saturated red to verify texture orientation in screenshots.
-  if(FParse::Param(FCommandLine::Get(),TEXT("S47EastWingDecalProbe"))&&(Mt==Base||Mt==Dust)){I->SetVectorParameterValue(TEXT("Tint"),FLinearColor(30,0,0));I->SetScalarParameterValue(TEXT("Opacity"),1.f);}
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47EastWingDecalProbe"))&&(Mt==Base||Mt==Dust)){I->SetVectorParameterValue(TEXT("Tint"),FLinearColor(3,0,0));}
   D->SetDecalMaterial(I);D->DecalSize=HalfCm;D->SetFadeScreenSize(0.f);
   D->SetupAttachment(W->GetRootComponent());D->RegisterComponent();D->SetWorldLocationAndRotation(S47Three::ToUE(At),Rot);Parts.Add(D);
  };
@@ -159,10 +159,11 @@ void FS47EastWing::Grime()
   const double Mid=(Wl.A+Wl.B)*.5,Half=(Wl.B-Wl.A)*.5*100-6;
   const double Yaw=Wl.bX?(Wl.Dir<0?180.:0.):(Wl.Dir<0?-90.:90.);
   const FVector WallAt=Wl.bX?FVector(Wl.C,.28,Mid):FVector(Mid,.28,Wl.C);
-  Decal(Base,WallAt,FRotator(0,Yaw,0),FVector(4,Half,28),.85f);
+  // Roll 90: Unreal maps decal texture U/V to local Z/Y, so rolled decals put texture-up on world-up.
+  Decal(Base,WallAt,FRotator(0,Yaw,90),FVector(4,28,Half),.85f);
   // Floor dust strip, 0.22 m into the room, projected straight down.
   const FVector FloorAt=Wl.bX?FVector(Wl.C-Wl.Dir*.22,0,Mid):FVector(Mid,0,Wl.C-Wl.Dir*.22);
-  Decal(Dust,FloorAt,FRotator(-90,Yaw,0),FVector(6,Half,22),.8f);
+  Decal(Dust,FloorAt,FRotator(-90,Yaw,90),FVector(6,22,Half),.8f);
  }
  // Hand and hip scuffs on both jambs of every door (centre of jamb, room side and far side).
  struct FJamb{bool bX;double C,Edge;int Dir;};
@@ -176,11 +177,28 @@ void FS47EastWing::Grime()
  for(const FJamb& J:Jambs)
  {
   const double Yaw=J.bX?(J.Dir<0?180.:0.):(J.Dir<0?-90.:90.);
-  Decal(Scuff,J.bX?FVector(J.C,1.05,J.Edge):FVector(J.Edge,1.05,J.C),FRotator(0,Yaw,0),FVector(4,32,48),.7f);
+  Decal(Scuff,J.bX?FVector(J.C,1.05,J.Edge):FVector(J.Edge,1.05,J.C),FRotator(0,Yaw,90),FVector(4,48,32),.7f);
  }
  // Outside: run-off streaks under each north window sill and under the south sign board.
- for(const FGap& G:NorthGaps)Decal(Streak,FVector((G.A+G.B)*.5,G.Y0-.5,Z0),FRotator(0,90,0),FVector(12,(G.B-G.A)*50+8,50),.75f);
- Decal(Streak,FVector(26.9,.62,Z1),FRotator(0,-90,0),FVector(12,350,45),.55f);
+ // Streak decals roll 90 deg: with roll 0 Unreal laid the vertical run-off texture along the wall.
+ // Rolled, local Y is vertical and local Z horizontal, so extents are (depth, half-height, half-width).
+ for(const FGap& G:NorthGaps)Decal(Streak,FVector((G.A+G.B)*.5,G.Y0-.5,Z0),FRotator(0,90,90),FVector(12,50,(G.B-G.A)*50+8),.75f);
+ Decal(Streak,FVector(26.9,.62,Z1),FRotator(0,-90,90),FVector(12,45,350),.55f);
+ // Roof-edge run-off: flat-roof water stains hanging below the parapet on all four facades.
+ // Many narrow decals (1.0-1.6 m) so the 1 m streak texture keeps its scale; deterministic spread.
+ {
+  FRandomStream R(1986);
+  struct FFacade{bool bX;double C,A,B;double Yaw;};
+  const FFacade Facades[]={{false,Z0,X0,X1,90.},{false,Z1,X0,X1,-90.},{true,X1,Z0,Z1,180.},{true,X0,Z0,Z1,0.}};
+  for(const FFacade& F:Facades)
+   for(double At=F.A+.4;At<F.B-.4;)
+   {
+    const double Wd=R.FRandRange(1.f,1.6f);const double Mid=FMath::Min(At+Wd*.5,F.B-.5);
+    const FVector Pos=F.bX?FVector(F.C,3.0,Mid):FVector(Mid,3.0,F.C);
+    Decal(Streak,Pos,FRotator(0,F.Yaw,90),FVector(6,R.FRandRange(45.f,70.f),Wd*50),R.FRandRange(.55f,1.f));
+    At+=Wd*R.FRandRange(.75f,1.05f);
+   }
+ }
  UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing grime: %d deferred decals (wall bases, floor dust, jamb scuffs, run-off)"),Count);
 }
 
