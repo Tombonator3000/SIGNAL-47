@@ -4,11 +4,11 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-continue-today-20261105`, fra main `549e0475` etter flettet PR398. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-shop-continue-20261105`, fra main `b6592fa1` etter flettet PR399. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: CONTINUE TODAY i Freeform.cpp og TutorialContract, vanlig meny-/prosessrestart, dokumentasjon og alle tunge jobber under production_lease.
-- todo_triage: privat butikkprøve for betalt og droppet pakke; ingen aktive kildefiler eller motorjobb.
-- night_preflight: privat samlet lagringsreise for arbeid/foto/butikk; sokkelpatcher og pakke/installasjonsløype klare, ingen aktive kildefiler eller motorjobb.
+- root: ShopBasketTest for betalt og droppet pakke, dokumentasjon og alle tunge jobber under production_lease.
+- todo_triage: butikkprøve overlevert, privat avgrensning av fysisk tostedersforsøk; ingen aktive kildefiler eller motorjobb.
+- night_preflight: privat harness for samlet normal lagringsreise gjennom tre prosesser; sokkelpatcher og pakke/installasjonsløype klare, ingen aktive kildefiler eller motorjobb.
 - photo_loop: Story-dør/kamera-patcher overlevert til root; privat kontroll av versjonert SIGNAL-EXT-09-lydutkast, ingen aktive kildefiler eller motorjobb.
 
 Samlet nattstartkontroll er utført én gang: tre arbeidskopier, ingen ekstra komplett manuell kopi eller aktive motorprosesser funnet. Sju verifisert erstattede pakkepayloads pensjonert; installert standard, service-array, receiver-texture og saro-doors-flicker beholdt. Kilder, private assets, Saved og bevis bevares. 36,16 GB logisk pensjonert, ikke lovet fysisk gevinst; faktisk ledig 177.43 GB. Planlagt toppvekst 20 GB; raske df-kontroller før pakking, ingen ny full audit gjennom skiftet.
