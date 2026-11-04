@@ -288,7 +288,7 @@ void FS47HorrorThreat::Reset()
 {
  bAppeared = bGone = bCaptureEvent = bChaseAfter = bBreath = bGrounded = bHavePlayer = false;
  S = EState::Idle; StateT = SeeAcc = SeenAcc = LostT = DriveLostT = Replan = Phase = Gait = NoiseCool = ChaseBreath = BlockedFor = 0;
- SinceSeen = SinceWarn = 1e9; SearchStep = 0; Path.Reset();
+ SinceWarn = 1e9; SearchStep = 0; Path.Reset();
  Pos = Goal = LastKnown = Look = PathGoal = SearchAt = Nodes()[PostNode].At;
  BodyYaw = HeadYaw = -.5 * PI; // facing the track and SARO 07, away from the front
  Apply(false);
@@ -527,7 +527,7 @@ void FS47HorrorThreat::Think(const FSense& In, double Dt)
  const FVector2D Before = Pos;
  // Both sight facts are measured by the adapter; nothing here infers a view.
  SeeAcc = In.bSeesPlayer ? SeeAcc + Dt : 0;
- if (In.bSeesPlayer) { LastKnown = In.Player; SinceSeen = 0; } else SinceSeen += Dt;
+ if (In.bSeesPlayer) LastKnown = In.Player;
  SeenAcc = S == EState::Warn && In.bPlayerSeesBody ? SeenAcc + Dt : 0;
  if (SeenAcc >= SeenDwell) bSeen = true;
  // The cab cannot be taken. Distance from the driven truck decides contact.
@@ -558,7 +558,7 @@ void FS47HorrorThreat::Think(const FSense& In, double Dt)
   if (bSeen && !In.bDriving && SeeAcc >= SeeTime && StateT >= WarnMin) { Enter(EState::Chase); break; }
   if (StateT >= WarnTime)
   {
-   if (bSeen && (SinceSeen < 1 || In.bDriving)) { Enter(EState::Chase); break; }
+   if (bSeen && (SeeAcc >= SeeTime || In.bDriving)) { Enter(EState::Chase); break; }
    Goal = Look; Enter(EState::Investigate);
   }
   break;
@@ -592,7 +592,13 @@ void FS47HorrorThreat::Think(const FSense& In, double Dt)
  case EState::Chase:
   if (In.bDriving) { HeadGoal = ThreatYaw(In.Player - Pos); Move(In.Player, ChaseSpeed, Dt, 2.2, true); break; }
   LostT = In.bSeesPlayer ? 0 : LostT + Dt;
-  if (LostT >= LoseTime) { SearchAt = LastKnown; Enter(EState::Search); break; } // contact lost
+  // Unreal improvement informed by Greyhill: a sound is a place to investigate,
+  // never visual confirmation. Finish the trail before starting the local search.
+  if (!In.bSeesPlayer && In.Sound)
+  {
+   Goal = *In.Sound; Enter(EState::Investigate); break;
+  }
+  if (LostT >= LoseTime) { Goal = LastKnown; Enter(EState::Investigate); break; }
   HeadGoal = ThreatYaw(LastKnown - Pos);
   Move(LastKnown, ChaseSpeed, Dt, .2);
   if (bSeen && In.bSeesPlayer && FVector2D::Distance(Pos, In.Player) <= CaptureReach && ContactClear(In.Player)) { Enter(EState::Capture); break; }
@@ -1017,11 +1023,41 @@ bool FS47HorrorThreat::SelfTest(TArray<FString>& Lines)
  In.bHeld = true; for (int32 I = 0; I < 50; ++I) T.Think(In, Dt); In.bHeld = false;
  Check(T.Seen() && T.State() == EState::Warn && T.StateT == HeldT && T.HeadYaw == HeldHead && T.Position() == HeldPos,
   TEXT("pause or a modal panel freezes the body with no saved-up approach; a retry keeps the witnessed fact"));
- T.Enter(EState::Chase); In.Player = T.Position() + FVector2D(8, 0);
+ T.Enter(EState::Chase); T.LastKnown = T.Position() + FVector2D(8, 0); In.Player = T.Position() + FVector2D(-8, 0);
  for (int32 I = 0; I < 30 && T.State() == EState::Chase; ++I) T.Think(In, Dt);
- Check(T.State() == EState::Search, TEXT("broken sight for the measured time loses contact and starts a search"));
+ Check(T.State() == EState::Investigate && T.Goal.Equals(T.LastKnown, .001), TEXT("broken sight investigates the last seen point, not the hidden player's current position"));
+ for (int32 I = 0; I < 150 && T.State() == EState::Investigate; ++I) T.Think(In, Dt);
+ Check(T.State() == EState::Search, TEXT("finishing the lost trail starts a bounded local search"));
  for (int32 I = 0; I < 120 && T.State() == EState::Search; ++I) T.Think(In, Dt);
  Check(T.State() == EState::Idle, TEXT("a finished search returns the body to its post"));
+ FS47HorrorThreat Hearing(nullptr); Hearing.Start(true); Hearing.bAppeared = true;
+ Hearing.Pos = FVector2D(0, 0); Hearing.LastKnown = FVector2D(6, 0); Hearing.Enter(EState::Chase);
+ FSense Hidden; Hidden.Player = FVector2D(-20, -20); Hidden.Sound = FVector2D(0, 6);
+ Hearing.Think(Hidden, Dt);
+ Check(Hearing.State() == EState::Investigate && Hearing.Goal.Equals(*Hidden.Sound, .001) &&
+  Hearing.LastKnown.Equals(FVector2D(6, 0), .001), TEXT("unseen footsteps redirect investigation without overwriting visual memory or confirming a chase"));
+ Hidden.Sound.Reset();
+ const FVector2D SoundGoal = Hearing.Goal;
+ Hidden.bHeld = true; for (int32 I = 0; I < 40; ++I) Hearing.Think(Hidden, Dt); Hidden.bHeld = false;
+ Check(Hearing.Pos.Equals(FVector2D(0, 0), .001) && Hearing.Goal == SoundGoal,
+  TEXT("pause freezes an acoustic investigation and preserves its source"));
+ for (int32 I = 0; I < 100 && Hearing.State() == EState::Investigate; ++I) Hearing.Think(Hidden, Dt);
+ Check(Hearing.State() == EState::Search && Hearing.SearchAt.Equals(SoundGoal, .001),
+  TEXT("silence leaves the body searching at the sound source instead of following the hidden player"));
+ Hearing.Enter(EState::Investigate); Hearing.Goal = FVector2D(7890, 536);
+ for (int32 I = 0; I < 30 && Hearing.State() == EState::Investigate; ++I) Hearing.Think(Hidden, Dt);
+ Check(Hearing.State() == EState::Search, TEXT("an unreachable trail gives way to local search instead of an endless pursuit"));
+ Hearing.Reset(); Hearing.bAppeared = true; Hearing.Pos = FVector2D(0, 0);
+ Hidden = FSense(); Hidden.Player = FVector2D(6, 0); Hidden.Sound = Hidden.Player;
+ Hearing.Think(Hidden, Dt); Hidden.Sound.Reset();
+ for (int32 I = 0; I < 14; ++I) Hearing.Think(Hidden, Dt);
+ Hidden.bSeesPlayer = true; Hearing.Think(Hidden, Dt); Hidden.bSeesPlayer = false;
+ Hearing.Think(Hidden, Dt); Hearing.Think(Hidden, Dt);
+ Check(Hearing.State() == EState::Investigate, TEXT("a fleeting unconfirmed glimpse at the end of a sound warning does not promote it to chase"));
+ Hidden.bSeesPlayer = true; Hidden.Sound = FVector2D(-6, 0);
+ for (int32 I = 0; I < 20 && Hearing.State() != EState::Chase; ++I) Hearing.Think(Hidden, Dt);
+ Check(Hearing.State() == EState::Chase && Hearing.LastKnown.Equals(Hidden.Player, .001),
+  TEXT("sustained visual reacquisition takes priority over a different sound and resumes chase after warning"));
  T.Enter(EState::Chase); In.bDriving = true; In.Player = T.Position() + FVector2D(3, 0); In.TruckDistance = 3;
  bool Cab = true;
  for (int32 I = 0; I < 50; ++I) { T.Think(In, Dt); Cab &= !T.bCaptureEvent && T.State() != EState::Capture && !T.Withdrawn(); }

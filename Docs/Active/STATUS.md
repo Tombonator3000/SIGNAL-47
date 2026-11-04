@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Greyhill-basert jakt, under arbeid 4. november
+
+Kandidaten `codex/greyhill-hunt-linux-20261104` bygger på main `0d9c5815` etter PR379. SC02 undersøker siste synspunkt før lokalt søk, følger ferske lydpunkter uten å gi dem status som bekreftet syn og krever vedvarende syn før ny jakt. SC08/SC11 avbryter griping når syn, nærhet eller fysisk kontakt brytes, eller spilleren kommer inn i kabinen. Eksisterende Freeform-AI og SC04 beholdes.
+
+Kodegjennomgang og `git diff --check` er utført. Produksjonens selvtester er utvidet og samlet i `S47.Gameplay.Hunt`, men er ennå ikke kjørt. Linux-bygg og kjøring i oppdatert spillmiljø gjenstår. Et lokalt Windows-bygg ble avbrutt etter Toms korrigering av testplattform; Windows-portabilitetsendringer inngår ikke i jaktkandidaten. Ikke flettet eller installert.
+
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
 Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. Pakking/installasjon venter til PR379 er flettet.

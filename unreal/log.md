@@ -1713,3 +1713,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 2026 06:36: codex/night-support-20261103: FF-GUIDANCE-01 samordner sted/handling og automatisk venting; retter pågående kontrollsted og gamle utvendige butikkhenvisninger. build-r22 og guidance-r1 består28 representative kontroller og én disk-/Continue-runde. Ingen ny fullregresjon eller installasjon.
 
 4. november 2026 06:51: codex/night-support-20261103: FF-ARRAY-CONSEQUENCES-01 gir redusert målerate ved antenneutfall og synlig kapasitet/reparasjonsbehov. build-r25/array-r2 består 21 kontroller og én disk-/Continue-runde; receiver/tracking-bilder gjennomgått. Minimum24 og kvalitetsfaktor beholdt; ingen installasjon.
+
+4. november 2026 kl.09:04: codex/greyhill-hunt-linux-20261104, fra main 0d9c5815: SC02 undersøker syns-/lydspor og SC08/SC11 avbryter ugyldig grep. Kilde og målrettet automation skrevet, diffkontroll består; Linux-bygg/spilltest gjenstår. Windows-bygg stoppet og portabilitetsendringer skilt ut etter Toms korrigering; ingen installasjon eller Saved-endring.

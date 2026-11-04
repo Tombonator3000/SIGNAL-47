@@ -11,7 +11,9 @@
 #include "S47Seen.h"
 #include "S47Flow.h"
 #include "Engine/World.h"
+#include "CollisionShape.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Materials/MaterialInterface.h"
 
@@ -373,6 +375,28 @@ bool FS47SC11::Walk(double Speed, double Dt)
  return false;
 }
 
+bool FS47SC11::ContactClear(const FVector2D& To) const
+{
+ if (!M || !M->Player || !M->Web || !M->Web->GetWorld()) return false;
+ // Sight can pass glass; a grab still needs a physical hand/chest corridor.
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC11Contact), true, M->Player);
+ for (const auto& Part : Pale.All) if (const UPrimitiveComponent* C = Part.Get()) Q.AddIgnoredComponent(C);
+ FHitResult Hit;
+ const FVector From = S47Three::ToUE(Pos.X, Y + 1.15, Pos.Y);
+ const FVector Target = S47Three::ToUE(To.X, M->Player->FloorY + 1.15, To.Y);
+ return !M->Web->GetWorld()->SweepSingleByChannel(Hit, From, Target, FQuat::Identity,
+  ECC_Visibility, FCollisionShape::MakeSphere(10.f), Q);
+}
+
+bool FS47SC11::HoldGrab(bool bSees, bool bDriving, double Distance, bool bClear)
+{
+ if (B != EBody::Grab) return false;
+ // Greyhill study: a timed animation must not turn lost contact into a remote capture.
+ if (!bSees || bDriving || !FMath::IsFinite(Distance) || Distance >= Reach || !bClear)
+ { Enter(EBody::Chase); return false; }
+ return StateT >= GrabHold;
+}
+
 bool FS47SC11::SeesPlayer() const
 {
  if (!M || !M->Player || !M->Web || !M->Web->GetWorld() || !bShown) return false;
@@ -598,11 +622,11 @@ void FS47SC11::Think(double Dt)
    Path.Reset();
   }
   else { if (Path.IsEmpty() || StateT > .5) { RouteTo(Nearest(Goal)); StateT = 0; } Walk(ChaseSpeed, Dt); }
-  if (FVector2D::Distance(Pos, Pl) < Reach && bSees) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
+  if (!M->World->bDriving && FVector2D::Distance(Pos, Pl) < Reach && bSees && ContactClear(Pl)) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
   break;
  }
  case EBody::Grab:
-  if (StateT >= GrabHold) { bShown = false; Capture(); }
+  if (HoldGrab(bSees, M->World->bDriving, FVector2D::Distance(Pos, Pl), bSees && ContactClear(Pl))) { bShown = false; Capture(); }
   break;
  }
 }
@@ -636,5 +660,22 @@ bool FS47SC11::SelfTest(TArray<FString>& Lines)
  FS47SC11 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Drive && Fresh.Label(TEXT("printer")).IsEmpty() && Fresh.Label(TEXT("truck")).IsEmpty(), TEXT("a new SC11 starts with the drive"));
  Check(RemoteDoc().Page.Contains(TEXT("05:29:47")) && RemoteDoc().Page.Contains(TEXT("S-11")), TEXT("the remote sheets name both sources and the first limit"));
+ FS47SC11 Grab(nullptr); Grab.Enter(EBody::Grab); Grab.StateT = GrabHold - .1;
+ Check(!Grab.HoldGrab(true, false, Reach * .5, true) && Grab.B == EBody::Grab,
+  TEXT("valid contact cannot capture before the full hold"));
+ Grab.StateT = GrabHold;
+ Check(Grab.HoldGrab(true, false, Reach * .5, true), TEXT("continuous visible physical contact completes the hold"));
+ const auto BreakGrab = [&](bool Sees, bool Driving, double Distance, bool Clear)
+ {
+  Grab.Enter(EBody::Grab); Grab.StateT = GrabHold;
+  const bool Captured = Grab.HoldGrab(Sees, Driving, Distance, Clear);
+  const bool Cancelled = !Captured && Grab.B == EBody::Chase && Grab.StateT == 0;
+  Grab.Enter(EBody::Grab);
+  return Cancelled && !Grab.HoldGrab(true, false, Reach * .5, true);
+ };
+ Check(BreakGrab(false, false, Reach * .5, true), TEXT("lost sight cancels even a completed hold; renewed contact starts over"));
+ Check(BreakGrab(true, false, Reach, true), TEXT("stepping out of reach cancels the grab before capture"));
+ Check(BreakGrab(true, true, Reach * .5, true), TEXT("entering the cab cancels the grab even while the driver remains visible"));
+ Check(BreakGrab(true, false, Reach * .5, false), TEXT("closing a physical barrier cancels contact even when sight passes glass"));
  return Ok;
 }
