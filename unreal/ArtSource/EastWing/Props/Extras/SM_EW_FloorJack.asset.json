@@ -1,0 +1,182 @@
+{
+  "asset": "SM_EW_FloorJack",
+  "description": "Red hydraulic trolley floor jack with long handle.",
+  "fbx": "SM_EW_FloorJack.fbx",
+  "editable": "SM_EW_FloorJack.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.1599999964237213,
+      -0.3500000238418579,
+      0.0
+    ],
+    [
+      0.1599999964237213,
+      0.9699999690055847,
+      0.7199999690055847
+    ]
+  ],
+  "dimensions_m": [
+    0.3199999928474426,
+    1.3199999928474426,
+    0.7199999690055847
+  ],
+  "triangles": 4952,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_RedEnamel",
+    "EW_X_Stainless",
+    "EW_X_CastIron",
+    "EW_X_Chrome",
+    "EW_X_Rubber"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_RedEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.41999998688697815,
+        0.029999999329447746,
+        0.019999999552965164,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.10000000149011612,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Stainless",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.47999998927116394,
+        0.5099999904632568,
+        0.5,
+        1.0
+      ],
+      "Roughness": 0.23999999463558197,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_CastIron",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.10999999940395355,
+        0.1599999964237213,
+        0.20000000298023224,
+        1.0
+      ],
+      "Roughness": 0.5,
+      "Metallic": 0.550000011920929,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02199999988079071,
+        0.02500000037252903,
+        0.023000000044703484,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_FloorJack_LOD1.fbx",
+      "triangles": 2476
+    },
+    {
+      "file": "SM_EW_FloorJack_LOD2.fbx",
+      "triangles": 1238
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "758bb41134e509b2bae5444a4ec52debb7ee81d7ebee5373b8fcbaf1e62cc0f9",
+  "blend_sha256": "8b806bc4260b7623a229959eb2ed22d4cf94a58348e061f282864f6ef4910a29"
+}

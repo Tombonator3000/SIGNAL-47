@@ -1,0 +1,126 @@
+{
+  "asset": "SM_EW_JerryCans",
+  "description": "Three olive steel jerry cans for the backup generator, one fitted with a pouring spout.",
+  "fbx": "SM_EW_JerryCans.fbx",
+  "editable": "SM_EW_JerryCans.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.2854999899864197,
+      -0.2897493243217468,
+      0.0
+    ],
+    [
+      0.2889522910118103,
+      0.17830482125282288,
+      0.6691110730171204
+    ]
+  ],
+  "dimensions_m": [
+    0.57445228099823,
+    0.4680541455745697,
+    0.6691110730171204
+  ],
+  "triangles": 10936,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_OliveDrab",
+    "EW_X_LabelPaper",
+    "EW_X_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_OliveDrab",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.15000000596046448,
+        0.1599999964237213,
+        0.07999999821186066,
+        1.0
+      ],
+      "Roughness": 0.550000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [],
+  "lods": [
+    {
+      "file": "SM_EW_JerryCans_LOD1.fbx",
+      "triangles": 5467
+    },
+    {
+      "file": "SM_EW_JerryCans_LOD2.fbx",
+      "triangles": 2734
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "ad91b8589926bb968556f0b140399e31bf864420873eaffb47f2ebe47d1578cd",
+  "blend_sha256": "966a0961a88b35bbd3a7193eda1314d06b845d0722a9b0abc51c5ddaa5fd8523"
+}

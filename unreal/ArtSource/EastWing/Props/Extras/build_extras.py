@@ -345,6 +345,127 @@ def hose_reel():
     return finish_asset(asset, OUT, 'Wall hose reel with brass hose bib and a run of green garden hose on the ground.')
 
 
+wood = material('EW_X_BenchTimber', (.36, .24, .13), .62)
+iron = material('EW_X_CastIron', (.11, .16, .2), .5, .55)
+redenamel = material('EW_X_RedEnamel', (.42, .03, .02), .35, .1)
+olive = material('EW_X_OliveDrab', (.15, .16, .08), .55)
+oil = material('EW_X_OilFilm', (.035, .031, .025), .5)  # soaked-in, not a wet puddle
+
+
+# 11. Mechanic's bench: steel frame, laminated timber top, bench vise, drawer and shelf of cans.
+def mechanic_bench():
+    asset = 'SM_EW_MechanicBench'; start_asset(asset)
+    W, D, H = 2.0, .75, .88
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box(f'leg{sx}{sy}', (sx * (W / 2 - .05), sy * (D / 2 - .05), (H - .06) / 2), (.06, .06, H - .06), green, .004)
+        box(f'side_rail{sx}', (sx * (W / 2 - .05), 0, .18), (.04, D - .1, .04), green, .003)
+    box('shelf', (0, .02, .18), (W - .1, D - .12, .025), green, .003)
+    for k in range(9):
+        box(f'top_lam{k}', (0, -D / 2 + D * (k + .5) / 9, H - .03), (W, D / 9 - .002, .06), wood, .003)
+    box('apron', (0, -D / 2 + .03, H - .1), (W - .1, .02, .08), green, .003)
+    box('drawer', (.55, -D / 2 + .02, H - .14), (.5, .03, .12), green, .003)
+    rod('drawer_pull', (.45, -D / 2 - .01, H - .14), (.65, -D / 2 - .01, H - .14), .008, chrome)
+    # Bench vise near the left front corner.
+    vx, vy, vz = -.72, -D / 2 + .1, H
+    box('vise_base', (vx, vy + .05, vz + .02), (.16, .2, .04), iron, .006)
+    box('vise_body', (vx, vy + .02, vz + .09), (.12, .26, .1), iron, .008)
+    box('vise_fixed_jaw', (vx, vy + .1, vz + .17), (.16, .05, .08), iron, .004)
+    box('vise_moving_jaw', (vx, vy - .07, vz + .17), (.16, .05, .08), iron, .004)
+    for y in (vy + .075, vy - .045):
+        box(f'jaw_plate{y}', (vx, y, vz + .19), (.155, .006, .04), steel, .001)
+    cyl('vise_screw', (vx, vy - .16, vz + .12), .012, .2, steel, rotation=(math.pi / 2, 0, 0))
+    rod('vise_handle', (vx - .12, vy - .23, vz + .12), (vx + .12, vy - .23, vz + .12), .008, steel)
+    cyl('vise_anvil', (vx, vy + .15, vz + .15), .03, .04, iron)
+    # Shelf contents: oil cans, a grease gun and a rag.
+    for i, x in enumerate((-.75, -.6, -.45)):
+        cyl(f'oilcan{i}', (x, .05, .25), .05, .12, material('EW_X_CanYellow', (.55, .4, .06), .4, .3), vertices=24)
+    cyl('grease_gun', (.1, .05, .25), .025, .32, redenamel, vertices=20, rotation=(0, math.pi / 2, 0))
+    box('rag', (.5, .02, .2), (.3, .22, .03), material('EW_X_Rag', (.42, .36, .3), .95), .01)
+    box('top_toolbox', (.55, .12, H + .09), (.46, .2, .18), redenamel, .006)
+    rod('toolbox_handle', (.4, .12, H + .2), (.7, .12, H + .2), .008, chrome)
+    return finish_asset(asset, OUT, 'Mechanic\'s 2.0 m steel bench with laminated timber top, cast-iron vise, tool box, oil cans and rag.')
+
+
+# 12. Upright air compressor on wheels.
+def air_compressor():
+    asset = 'SM_EW_AirCompressor'; start_asset(asset)
+    cyl('tank', (0, 0, .55), .2, .9, redenamel, rotation=(0, 0, 0))
+    for z in (.1, 1.0):
+        cyl(f'tank_cap{z}', (0, 0, z), .19, .02, redenamel)
+    box('motor_plate', (0, 0, 1.06), (.36, .36, .03), iron, .003)
+    cyl('motor', (-.06, -.03, 1.17), .085, .2, iron, rotation=(0, math.pi / 2, 0))
+    cyl('pump', (.1, .06, 1.17), .06, .16, iron)
+    box('belt_guard', (.02, .14, 1.17), (.32, .04, .16), redenamel, .01)
+    cyl('gauge', (.12, -.19, .9), .03, .02, chrome, rotation=(math.pi / 2, 0, 0))
+    cyl('gauge_face', (.12, -.201, .9), .025, .002, white, rotation=(math.pi / 2, 0, 0))
+    for sx in (-1, 1):
+        cyl(f'wheel{sx}', (sx * .17, .1, .07), .07, .04, rubber, rotation=(0, math.pi / 2, 0))
+    rod('foot', (0, -.18, .1), (0, -.25, .02), .015, iron)
+    rod('handle_l', (-.12, .2, .6), (-.12, .25, 1.05), .012, steel)
+    rod('handle_r', (.12, .2, .6), (.12, .25, 1.05), .012, steel)
+    rod('handle_bar', (-.12, .25, 1.05), (.12, .25, 1.05), .012, steel)
+    for i in range(6):
+        cyl(f'hose_coil{i}', (-.22, 0, .55 + i * .012), .13, .012, material('EW_X_YellowHose', (.6, .45, .05), .5), vertices=32).rotation_euler = (0, math.pi / 2, 0)
+    label('rating', '125 PSI\nDRAIN DAILY', 0, -.205, .45, .14, .07, .016)
+    return finish_asset(asset, OUT, 'Upright 1.2 m air compressor: red tank, cast motor and pump, belt guard, gauge, wheels, coiled air hose.')
+
+
+# 13. Hydraulic floor jack.
+def floor_jack():
+    asset = 'SM_EW_FloorJack'; start_asset(asset)
+    box('frame', (0, 0, .07), (.32, .62, .1), redenamel, .01)
+    for sx in (-1, 1):
+        cyl(f'front_wheel{sx}', (sx * .13, -.25, .04), .04, .03, steel, rotation=(0, math.pi / 2, 0))
+        cyl(f'rear_caster{sx}', (sx * .14, .26, .035), .035, .03, steel, rotation=(0, math.pi / 2, 0))
+    box('lift_arm', (0, -.12, .16), (.12, .4, .05), redenamel, .006)
+    cyl('saddle', (0, -.3, .2), .05, .03, iron)
+    cyl('ram', (0, .1, .16), .035, .14, chrome, rotation=(math.pi / 3, 0, 0))
+    rod('handle', (0, .3, .1), (0, .95, .7), .016, redenamel)
+    cyl('grip', (0, .95, .7), .02, .16, rubber, rotation=(0, math.pi / 2, 0))
+    return finish_asset(asset, OUT, 'Red hydraulic trolley floor jack with long handle.')
+
+
+# 14. Three steel jerry cans, one with a spout.
+def jerry_cans():
+    asset = 'SM_EW_JerryCans'; start_asset(asset)
+    for i, (x, rz) in enumerate(((-.2, 0), (.0, .05), (.2, -.04))):
+        o = box(f'can{i}', (x, 0, .235), (.165, .35, .47), olive, .012)
+        o.rotation_euler = (0, 0, rz)
+        for k in (-1, 1):
+            box(f'can{i}_rib{k}', (x - .0835, k * .09, .2), (.004, .1, .3), olive, .002)
+            box(f'can{i}_ribR{k}', (x + .0835, k * .09, .2), (.004, .1, .3), olive, .002)
+        for h in (-.07, 0, .07):
+            rod(f'can{i}_handle{h}', (x, h - .02, .47), (x, h + .02, .5), .01, olive)
+        cyl(f'can{i}_cap', (x, -.13, .48), .025, .03, olive, rotation=(math.pi / 5, 0, 0))
+    rod('spout', (.2, -.13, .5), (.2, -.28, .66), .014, olive)
+    label('fuel', 'GASOLINE', -.2, -.176, .28, .1, .04, .01)
+    return finish_asset(asset, OUT, 'Three olive steel jerry cans for the backup generator, one fitted with a pouring spout.')
+
+
+# 15. Irregular oil stains: flat glossy polygons, no alpha; lay on the garage floor.
+def oil_stains():
+    asset = 'SM_EW_OilStains'; start_asset(asset)
+    import random
+    rnd = random.Random(1986)
+    for k, (cx, cy, r) in enumerate(((0, 0, .26), (-.3, .7, .13), (.3, -.6, .17), (.1, 1.2, .07), (-.36, -.22, .06))):
+        n = 28
+        rad = [r * (1 + .28 * math.sin(3 * i * 2 * math.pi / n + k) + .16 * rnd.uniform(-1, 1)) for i in range(n)]
+        # Concentric rings: decimation collapses the flat interior first and keeps the outline (LOD bounds).
+        rings = (.25, .5, .75, 1.)
+        verts = [(cx, cy, .0015)]
+        for f in rings:
+            verts += [(cx + f * rad[i] * math.cos(2 * math.pi * i / n), cy + f * rad[i] * .8 * math.sin(2 * math.pi * i / n), .0015) for i in range(n)]
+        faces = [(0, 1 + i, 1 + (i + 1) % n) for i in range(n)]
+        for r_ in range(len(rings) - 1):
+            a0, b0 = 1 + r_ * n, 1 + (r_ + 1) * n
+            faces += [(a0 + i, b0 + i, b0 + (i + 1) % n, a0 + (i + 1) % n) for i in range(n)]
+        me = bpy.data.meshes.new(f'stain{k}'); me.from_pydata(verts, [], faces); me.update()
+        me.uv_layers.new(name='UVMap')
+        ob = bpy.data.objects.new(f'stain{k}', me); bpy.context.collection.objects.link(ob); me.materials.append(oil)
+    return finish_asset(asset, OUT, 'Old engine-oil stains for the garage floor; flat glossy polygons, 1.5 mm above the slab.')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -354,5 +475,10 @@ wall_clock()
 first_aid()
 swamp_cooler()
 hose_reel()
+mechanic_bench()
+air_compressor()
+floor_jack()
+jerry_cans()
+oil_stains()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

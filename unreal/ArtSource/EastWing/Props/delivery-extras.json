@@ -3,6 +3,18 @@
   "author": "Claude",
   "assets": [
     {
+      "id": "SM_EW_AirCompressor",
+      "manifest": "Extras/SM_EW_AirCompressor.asset.json",
+      "fbx": "Extras/SM_EW_AirCompressor.fbx",
+      "dimensions_m": [
+        0.4260000139474869,
+        0.5227921009063721,
+        1.2549998760223389
+      ],
+      "triangles": 11168,
+      "license": "Extras/SM_EW_AirCompressor.license.json"
+    },
+    {
       "id": "SM_EW_Calendar1986",
       "manifest": "Extras/SM_EW_Calendar1986.asset.json",
       "fbx": "Extras/SM_EW_Calendar1986.fbx",
@@ -25,6 +37,18 @@
       ],
       "triangles": 2060,
       "license": "Extras/SM_EW_FirstAidBox.license.json"
+    },
+    {
+      "id": "SM_EW_FloorJack",
+      "manifest": "Extras/SM_EW_FloorJack.asset.json",
+      "fbx": "Extras/SM_EW_FloorJack.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        1.3199999928474426,
+        0.7199999690055847
+      ],
+      "triangles": 4952,
+      "license": "Extras/SM_EW_FloorJack.license.json"
     },
     {
       "id": "SM_EW_GlassCabinet",
@@ -51,6 +75,18 @@
       "license": "Extras/SM_EW_HoseReel.license.json"
     },
     {
+      "id": "SM_EW_JerryCans",
+      "manifest": "Extras/SM_EW_JerryCans.asset.json",
+      "fbx": "Extras/SM_EW_JerryCans.fbx",
+      "dimensions_m": [
+        0.57445228099823,
+        0.4680541455745697,
+        0.6691110730171204
+      ],
+      "triangles": 10936,
+      "license": "Extras/SM_EW_JerryCans.license.json"
+    },
+    {
       "id": "SM_EW_LabSink",
       "manifest": "Extras/SM_EW_LabSink.asset.json",
       "fbx": "Extras/SM_EW_LabSink.fbx",
@@ -61,6 +97,30 @@
       ],
       "triangles": 20128,
       "license": "Extras/SM_EW_LabSink.license.json"
+    },
+    {
+      "id": "SM_EW_MechanicBench",
+      "manifest": "Extras/SM_EW_MechanicBench.asset.json",
+      "fbx": "Extras/SM_EW_MechanicBench.fbx",
+      "dimensions_m": [
+        2.0,
+        0.9089999198913574,
+        1.090000033378601
+      ],
+      "triangles": 8836,
+      "license": "Extras/SM_EW_MechanicBench.license.json"
+    },
+    {
+      "id": "SM_EW_OilStains",
+      "manifest": "Extras/SM_EW_OilStains.asset.json",
+      "fbx": "Extras/SM_EW_OilStains.fbx",
+      "dimensions_m": [
+        0.9647167921066284,
+        2.0414299368858337,
+        0.0
+      ],
+      "triangles": 980,
+      "license": "Extras/SM_EW_OilStains.license.json"
     },
     {
       "id": "SM_EW_PosterGlasses",
@@ -111,7 +171,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 9,
+  "asset_count": 14,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude",
   "prints": "Extras/make_prints.py"

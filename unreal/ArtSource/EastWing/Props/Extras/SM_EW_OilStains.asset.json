@@ -1,0 +1,80 @@
+{
+  "asset": "SM_EW_OilStains",
+  "description": "Old engine-oil stains for the garage floor; flat glossy polygons, 1.5 mm above the slab.",
+  "fbx": "SM_EW_OilStains.fbx",
+  "editable": "SM_EW_OilStains.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.44137394428253174,
+      -0.7681251168251038,
+      0.001500000013038516
+    ],
+    [
+      0.5233428478240967,
+      1.27330482006073,
+      0.001500000013038516
+    ]
+  ],
+  "dimensions_m": [
+    0.9647167921066284,
+    2.0414299368858337,
+    0.0
+  ],
+  "triangles": 980,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_OilFilm"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_OilFilm",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.03500000014901161,
+        0.03099999949336052,
+        0.02500000037252903,
+        1.0
+      ],
+      "Roughness": 0.5,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [],
+  "lods": [
+    {
+      "file": "SM_EW_OilStains_LOD1.fbx",
+      "triangles": 490
+    },
+    {
+      "file": "SM_EW_OilStains_LOD2.fbx",
+      "triangles": 244
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "37418bdc01e57272aaa84fe2e0e592385aaa36f4f6cfbdba27ea3eeae62b166e",
+  "blend_sha256": "f6617a65f0182b390d90cde48e2caf0b9b31a0975e793b7967477793b5f13b2f"
+}

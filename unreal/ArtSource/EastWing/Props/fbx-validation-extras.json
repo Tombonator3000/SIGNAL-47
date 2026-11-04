@@ -406,6 +406,231 @@
       "finite": true,
       "materials": true,
       "triangles": 2048
+    },
+    {
+      "asset": "SM_EW_MechanicBench",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-07,
+      "dimensions_m": [
+        2.0,
+        0.9090000689029694,
+        1.090000033378601
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8836
+    },
+    {
+      "asset": "SM_EW_MechanicBench",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00029134647047612816,
+      "dimensions_m": [
+        1.999716877937317,
+        0.9088316261768341,
+        1.089708686908125
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4418
+    },
+    {
+      "asset": "SM_EW_MechanicBench",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.000615537166595459,
+      "dimensions_m": [
+        1.9993844628334045,
+        0.9087371230125427,
+        1.0894196097215172
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2208
+    },
+    {
+      "asset": "SM_EW_AirCompressor",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-08,
+      "dimensions_m": [
+        0.42600002884864807,
+        0.5227921009063721,
+        1.2549998760223389
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 11168
+    },
+    {
+      "asset": "SM_EW_AirCompressor",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00028884410858154297,
+      "dimensions_m": [
+        0.4260000139474869,
+        0.522703617811203,
+        1.2547110319137573
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5583
+    },
+    {
+      "asset": "SM_EW_AirCompressor",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006170486158225685,
+      "dimensions_m": [
+        0.4253833740949631,
+        0.5226650834083557,
+        1.2543828274065163
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2791
+    },
+    {
+      "asset": "SM_EW_FloorJack",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.3200000524520874,
+        1.3199999928474426,
+        0.7199999690055847
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4952
+    },
+    {
+      "asset": "SM_EW_FloorJack",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.02414321899414e-05,
+      "dimensions_m": [
+        0.3200000524520874,
+        1.3199097514152527,
+        0.7199212142586475
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2476
+    },
+    {
+      "asset": "SM_EW_FloorJack",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.001134037971496582,
+      "dimensions_m": [
+        0.31886595487594604,
+        1.3197060525417328,
+        0.7199212142586475
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1238
+    },
+    {
+      "asset": "SM_EW_JerryCans",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.57445228099823,
+        0.4680541157722473,
+        0.6691110730171204
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 10936
+    },
+    {
+      "asset": "SM_EW_JerryCans",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00011339783668518066,
+      "dimensions_m": [
+        0.5743388831615448,
+        0.46804776787757874,
+        0.6690688133239746
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5467
+    },
+    {
+      "asset": "SM_EW_JerryCans",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00044736266136169434,
+      "dimensions_m": [
+        0.5740049183368683,
+        0.46818700432777405,
+        0.6692070364952087
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2734
+    },
+    {
+      "asset": "SM_EW_OilStains",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.9647168219089508,
+        2.0414299368858337,
+        0.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 980
+    },
+    {
+      "asset": "SM_EW_OilStains",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.9647168219089508,
+        2.0414299368858337,
+        0.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 490
+    },
+    {
+      "asset": "SM_EW_OilStains",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.9647168219089508,
+        2.0414299368858337,
+        0.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 244
     }
   ]
 }

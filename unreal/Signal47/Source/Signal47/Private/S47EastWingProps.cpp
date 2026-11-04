@@ -59,7 +59,13 @@ namespace
   {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},
   {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
   {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{26.078,1.22,-3.00},-90},
-  {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,1.00},-90},
+  {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,2.45},-90},
+  // Garage working side (west wall between the two doors, clear of the Jeep lane x33.6..37.2).
+  {TEXT("SM_EW_MechanicBench"),TEXT("Extras"),{32.05,0,.45},-90,true},
+  {TEXT("SM_EW_AirCompressor"),TEXT("Extras"),{32.10,0,-4.70},-90,true},
+  {TEXT("SM_EW_JerryCans"),TEXT("Extras"),{32.95,0,-4.98},0,true},
+  {TEXT("SM_EW_FloorJack"),TEXT("Extras"),{32.85,0,-1.35},-60},
+  {TEXT("SM_EW_OilStains"),TEXT("Extras"),{35.30,0,-.60},20},
   // Exterior: rooftop evaporative cooler over the garage; hose reel north of the east service door.
   {TEXT("SM_EW_SwampCooler"),TEXT("Extras"),{35.40,3.60,3.70},0},
   {TEXT("SM_EW_HoseReel"),TEXT("Extras"),{38.632,0,-.80},-90},
