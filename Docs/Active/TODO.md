@@ -46,6 +46,8 @@ Disse punktene er meldt av Tom etter praktisk spilling. De er åpne spillerkrav;
 
 ## Utvidelse av signalsystemet: oppdagelse gjennom instrumentarbeid, 3. november
 
+**Delinnføring 4. november:** Rikere Freeform-kildetekstur og fysisk antennerespons er installert, med lagret startinnstilling for nye opptak. Bygg, fire faktiske lydgrafprøver, selvtester og pakket oppstart består. Dette lukker ikke SIGNAL-EXT-02–08: komplett tidsserie av mottaksinnstillinger, felles spektralgrunnlag og menneskelig lytting/spilleraksept gjenstår.
+
 **SIGNAL-EXT-01, åpen utvidelse bestilt av Tom.** Målet er gjenkjennelige signaler som oppdages, forbedres og undersøkes gjennom dagens SARO-PC-er og gameplay-loop, ikke bare en bæretone som blir høyere ved riktig tuning. Bevar reisen **OPS → tracking → receiver → opptak → kontroll/sammenligning → utskrift/arkiv**. Dette er planlagt arbeid, ikke en ferdig funksjon eller ny motor.
 
 Referanse: [Contact: A Signal From Outer Space](https://www.youtube.com/watch?v=K8SeB2EgBrE). Utvalgte stillbilder og publisert beskrivelse er undersøkt: hodetelefonlytting, antenneanlegg, «Candidate Signal Detected», frekvens-/pulsvisning og kontakt med et annet observatorium. Selve lydsporet ble ikke tilgjengelig for lytting; forslag om miks, klang og musikalsk tilbakehold er designforslag, ikke bekreftede funn om filmens lyd. Følelsen som skal overføres er mistanke → instrumentarbeid → kontroll → dokumenterbart funn. Tilpass uttrykket til SARO i 1986; ikke kopier filmens opptak eller senere teknologi inn i spillet.

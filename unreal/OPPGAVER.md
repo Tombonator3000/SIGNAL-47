@@ -4,6 +4,7 @@
 
 | Arbeid | Eier / arbeidskopi ved ryddestart | Avgrensning |
 | --- | --- | --- |
+| SIGNAL-EXT mottaker, 4. november | Codex root + tutorial_contract / tutorial_review, eksisterende Claude-kopi | Kildetekstur, fysisk mottak og lagret startinnstilling levert. Editor/pakke/installasjon kontrollert; full signalutvidelse og menneskelig lytting gjenstår. Filansvar og motorvindu frigitt. |
 | SARO dører og blafring, 4. november | Codex root + saro_flicker, eksisterende Claude-kopi uten grenbytte | Levert: gulv/tak og nedløpsflater separert; dørinteraksjon/lagring og garasjeknapper rettet. Editor/pakke/installasjon kontrollert. Tunge jobber og filansvar frigitt. |
 | Greyhill-basert jakt, 4. november | Codex root og hunt_review, `codex/greyhill-hunt-linux-20261104`, fra main 0d9c5815 | SC02-spor/lyd/syn og SC08/SC11-kontakt er skrevet med målrettet automation. Linux-bygg og kjøring gjenstår: denne chatten har bare lokal Windows-tilgang. Windows-forsøket er stoppet etter Toms korrigering, og portabilitetsendringene er skilt ut fra jaktgrenen. Ingen installasjon eller endring av Saved. |
 | SOUND-MIX-01, 3. november | Codex lydsamtale, eksisterende SARO-kopi; runtime-mikser og bank/forhåndslytt-agenter | Root eier S47Audio-kroker, dokumentasjon og samlet bygg. Nye S47SoundMixer-filer og egne Scripts/sound-workshop-filer; Freeform/Cases røres ikke. Modem er bare for PC/dataoverføring. Ingen grenbytte, ny kopi eller pakking/installasjon. Motorvindu tas først etter require-idle og samordning. |
