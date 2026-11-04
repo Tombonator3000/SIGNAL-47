@@ -605,7 +605,7 @@ def vinyl_floor():
     """Photo pass: 12-inch VCT over the lab, storage and calibration rooms (x20.85..31.525, z+-5.25).
     Origin at the area centre; UVs in world metres / 1.2192 (one texture = 4 x 4 tiles)."""
     asset = 'SM_EW_VinylFloor'; start_asset(asset)
-    W, D, tile = 10.675, 10.5, 1.2192
+    W, D, tile = 10.675, 10.5, 2.0  # reference pass: polished concrete, one texture = 2 m
     verts = [(-W / 2, -D / 2, .004), (W / 2, -D / 2, .004), (W / 2, D / 2, .004), (-W / 2, D / 2, .004)]
     me = bpy.data.meshes.new('vct'); me.from_pydata(verts, [], [(0, 1, 2, 3)]); me.update()
     uv = me.uv_layers.new(name='UVMap')
@@ -613,7 +613,7 @@ def vinyl_floor():
         x, y, _ = me.vertices[loop.vertex_index].co
         uv.data[li].uv = (x / tile, y / tile)
     ob = bpy.data.objects.new('vct', me); bpy.context.collection.objects.link(ob)
-    me.materials.append(pbr('EW_VCT'))
+    me.materials.append(pbr('EW_PolishedConcrete'))
     return finish_asset(asset, OUT, 'Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).')
 
 
@@ -645,6 +645,34 @@ def garage_floor():
     me.materials.append(pbr('EW_GarageSlab'))
     return finish_asset(asset, OUT, 'Unique 6.7 x 10.5 m garage slab: concrete, saw cuts, worn lane lines, tyre tracks, oil, blown sand.')
 
+
+def steel_joist():
+    """Reference pass: exposed W-shape steel joist under the deck, 10.4 m along X, 0.20 m deep.
+    Origin at the bottom centre; place with yaw 90 to span north-south."""
+    asset = 'SM_EW_SteelJoist'; start_asset(asset)
+    L, Hd, Fw, Tf, Tw = 10.4, .20, .10, .012, .007
+    paint = pbr('EW_XInstrumentGrey', span=.5)
+    box('bottom_flange', (0, 0, Tf / 2), (L, Fw, Tf), paint, .002)
+    box('top_flange', (0, 0, Hd - Tf / 2), (L, Fw, Tf), paint, .002)
+    box('web', (0, 0, Hd / 2), (L, Tw, Hd - 2 * Tf), paint, .001)
+    for x in [-L / 2 + .6 + i * 1.2 for i in range(9)]:
+        box(f'stiffener{x:.1f}', (x, 0, Hd / 2), (.008, Fw - .01, Hd - 2 * Tf), paint, .001)
+    return finish_asset(asset, OUT, 'Exposed painted W-shape steel joist, 10.4 m, under the east wing roof deck.')
+
+
+def ceiling_conduit():
+    """Reference pass: pair of 1-inch EMT runs with strut hangers, 5 m along X (repeat end to end)."""
+    asset = 'SM_EW_CeilingConduit'; start_asset(asset)
+    L = 5.0
+    for y in (-.06, .06):
+        rod(f'emt{y}', (-L / 2, y, .05), (L / 2, y, .05), .0125, steel)
+    for x in (-L / 2 + .4, 0., L / 2 - .4):
+        box(f'strut{x}', (x, 0, .09), (.04, .22, .02), steel, .002)
+        for y in (-.06, .06):
+            rod(f'clamp{x}{y}', (x, y, .05), (x, y, .09), .004, steel)
+    box(f'jbox', (1.2, .06, .05), (.10, .10, .06), steel, .003)
+    return finish_asset(asset, OUT, 'Two exposed EMT conduit runs on strut hangers with a junction box, 5 m.')
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -666,6 +694,8 @@ lab_stool()
 wall_shelf()
 relay_tester()
 vinyl_floor()
+steel_joist()
+ceiling_conduit()
 garage_floor()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

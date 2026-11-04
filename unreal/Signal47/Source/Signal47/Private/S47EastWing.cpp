@@ -20,6 +20,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/RectLightComponent.h"
 #include "Components/DecalComponent.h"
+#include "Components/LocalFogVolumeComponent.h"
 #include "S47Inter.h"
 #include "S47Audio.h"
 #include "S47UI.h"
@@ -296,7 +297,26 @@ void FS47EastWing::Build()
   static const FFix Fixtures[]={{TEXT("Lab"),23.4,-.7,0,68},{TEXT("Lab2"),23.4,2.6,0,68},{TEXT("Store"),28.75,-2.1,90,56},
    {TEXT("Cal"),28.85,3.1,90,56},{TEXT("Garage"),35.4,.1,0,75},{TEXT("Garage2"),35.4,-3.2,0,75},{TEXT("Garage3"),35.4,3.4,0,75}};
   for(const FFix& F:Fixtures)Light(F.Name,FVector(F.X,3.16,F.Z),F.Lumens,Tube,F.Yaw);
-  Grime();Walls();return;
+  Grime();
+  // Reference pass: faint interior haze so sun through blinds/doors and the tubes read as shafts
+  // (the global height fog already renders volumetric fog). One volume per room, scaled ellipsoid.
+  {
+   struct FHaze{const TCHAR* Name;double X0,X1,Z0,Z1;};
+   const FHaze Haze[]={{TEXT("Lab"),20.85,25.925,-5.25,5.25},{TEXT("Store"),26.075,31.525,-5.25,.425},
+    {TEXT("Cal"),26.075,31.525,.575,5.25},{TEXT("Garage"),31.675,38.35,-5.25,5.25}};
+   for(const FHaze& Hz:Haze)
+   {
+    ULocalFogVolumeComponent* F=NewObject<ULocalFogVolumeComponent>(M->Web,*FString::Printf(TEXT("EastWingHaze_%s"),Hz.Name));
+    F->SetupAttachment(M->Web->GetRootComponent());F->RegisterComponent();
+    F->SetWorldLocation(S47Three::ToUE(FVector((Hz.X0+Hz.X1)*.5,1.6,(Hz.Z0+Hz.Z1)*.5)));
+    // Unit volume radius is 500 cm; oversize a little so corners keep some haze.
+    F->SetWorldScale3D(FVector((Hz.X1-Hz.X0)*.12,(Hz.Z1-Hz.Z0)*.12,.42));
+    F->SetRadialFogExtinction(.35f);F->SetHeightFogExtinction(.15f);F->SetHeightFogFalloff(400.f);
+    F->SetFogAlbedo(FLinearColor(.85f,.8f,.7f));F->SetFogPhaseG(.55f);
+    Parts.Add(F);
+   }
+  }
+  Walls();return;
  }
  AS47Web* W=M->Web;
  UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));

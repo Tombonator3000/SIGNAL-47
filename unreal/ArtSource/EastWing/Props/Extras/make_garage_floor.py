@@ -25,7 +25,7 @@ def blur(a, s):
 big = noise(160, 1); mid = noise(30, 2); fine = noise(1.2, 3); swirl = noise(8, 4, ax=.35)
 base = np.array([.40, .39, .36], np.float32) * (1 + .05 * big + .04 * mid + .05 * fine + .03 * swirl)[..., None]
 agg = np.clip((noise(.9, 5) - .55) * 6, 0, 1); base = base * (1 - .12 * agg)[..., None] + .05 * np.clip((noise(.9, 6) - .6) * 6, 0, 1)[..., None]
-rough = .78 + .06 * mid + .05 * fine
+rough = .45 + .08 * mid + .05 * fine  # reference: sealed, slightly glossy garage slab
 height = .02 * fine + .03 * swirl
 # Saw-cut control joints every ~3.3 m along z and at mid-width in x.
 cut = np.zeros((H, W), np.float32)

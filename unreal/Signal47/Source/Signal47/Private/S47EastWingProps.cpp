@@ -57,6 +57,26 @@ namespace
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{23.40,3.22,2.60},0,false,true},
   // Photo pass: waxed VCT over lab, storage and calibration (garage keeps bare concrete).
   {TEXT("SM_EW_VinylFloor"),TEXT("Extras"),{26.1875,0,0},0},
+  // Reference pass: exposed steel joists under the deck (clear of fixtures and partitions) and ceiling EMT.
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{21.70,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{22.80,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{24.10,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{25.30,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{26.80,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{27.90,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{29.60,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{30.70,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{32.40,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{33.60,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{34.60,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{36.30,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{37.40,3.12,0},90},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{23.85,3.0,-1.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{23.85,3.0,4.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{28.85,3.0,-1.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{28.85,3.0,4.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,-1.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,4.40},0},
   // Claude extras (Props/Extras): wall items keep their back on the inner wall face
   // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
   {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},

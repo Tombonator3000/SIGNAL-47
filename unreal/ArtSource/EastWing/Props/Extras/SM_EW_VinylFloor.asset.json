@@ -31,16 +31,16 @@
   "triangles": 2,
   "uv_layers": 1,
   "materials": [
-    "EW_VCT"
+    "EW_PolishedConcrete"
   ],
   "material_parameters": [
     {
-      "name": "EW_VCT",
+      "name": "EW_PolishedConcrete",
       "texture_key": null,
       "maps": {
-        "EW_VCT_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_BaseColor.png",
-        "EW_VCT_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_Roughness.png",
-        "EW_VCT_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_NormalGL.png"
+        "EW_PolishedConcrete_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_BaseColor.png",
+        "EW_PolishedConcrete_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_Roughness.png",
+        "EW_PolishedConcrete_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_NormalGL.png"
       },
       "Base Color": [
         0.800000011920929,
@@ -62,9 +62,9 @@
     }
   ],
   "textures": [
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_BaseColor.png",
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_NormalGL.png",
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_VCT_Roughness.png"
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_Roughness.png"
   ],
   "lods": [
     {
@@ -83,6 +83,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "aaafba74de236bc868dbf365e42cb46218a8f833e715273ef251501dbded3e13",
-  "blend_sha256": "df9684db36a568a069fd304de723859132f36aec534aab9e911eacaa10081a3e"
+  "fbx_sha256": "a2e4f7698f3e41089fcb2c4210a3adb4d369ee8e60d9627a5c9b0b364c0fa474",
+  "blend_sha256": "ce6744fb95ba5fbe63aa0096ec151eece9b7395f3e4a85304bc6c2e760784f8c"
 }

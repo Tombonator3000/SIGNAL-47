@@ -1263,6 +1263,96 @@
       "triangles": 2
     },
     {
+      "asset": "SM_EW_SteelJoist",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 9.08970832824707e-07,
+      "dimensions_m": [
+        10.399999618530273,
+        0.10000091046094894,
+        0.20000000298023224
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2256
+    },
+    {
+      "asset": "SM_EW_SteelJoist",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.08970832824707e-07,
+      "dimensions_m": [
+        10.399999618530273,
+        0.10000091046094894,
+        0.20000000298023224
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1128
+    },
+    {
+      "asset": "SM_EW_SteelJoist",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00035457346530165523,
+      "dimensions_m": [
+        10.399818420410156,
+        0.09981033205986023,
+        0.19964542951493058
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 564
+    },
+    {
+      "asset": "SM_EW_CeilingConduit",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 3.501772880554199e-07,
+      "dimensions_m": [
+        5.0,
+        0.22000035643577576,
+        0.0800000075250864
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5328
+    },
+    {
+      "asset": "SM_EW_CeilingConduit",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.5367431640625e-07,
+      "dimensions_m": [
+        5.000000953674316,
+        0.22000035643577576,
+        0.0800000075250864
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2664
+    },
+    {
+      "asset": "SM_EW_CeilingConduit",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 9.440630674362183e-05,
+      "dimensions_m": [
+        5.00000524520874,
+        0.21990589052438736,
+        0.07990560121834278
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1332
+    },
+    {
       "asset": "SM_EW_GarageSlab",
       "lod": 0,
       "pass": true,

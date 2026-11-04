@@ -1,0 +1,88 @@
+{
+  "asset": "SM_EW_SteelJoist",
+  "description": "Exposed painted W-shape steel joist, 10.4 m, under the east wing roof deck.",
+  "fbx": "SM_EW_SteelJoist.fbx",
+  "editable": "SM_EW_SteelJoist.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -5.199999809265137,
+      -0.05000000074505806,
+      0.0
+    ],
+    [
+      5.199999809265137,
+      0.05000000074505806,
+      0.20000000298023224
+    ]
+  ],
+  "dimensions_m": [
+    10.399999618530273,
+    0.10000000149011612,
+    0.20000000298023224
+  ],
+  "triangles": 2256,
+  "uv_layers": 1,
+  "materials": [
+    "EW_XInstrumentGrey"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_XInstrumentGrey",
+      "texture_key": null,
+      "maps": {
+        "EW_XInstrumentGrey_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+        "EW_XInstrumentGrey_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_Roughness.png",
+        "EW_XInstrumentGrey_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_NormalGL.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.5,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_SteelJoist_LOD1.fbx",
+      "triangles": 1128
+    },
+    {
+      "file": "SM_EW_SteelJoist_LOD2.fbx",
+      "triangles": 564
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "5631fc6ceda06fa606b9b1b4c4bff0c3e20e98e8eca7c00dafbfb30860f2508c",
+  "blend_sha256": "6098496edeac01638de5bd540ab5056b46ae2fc828e2f4a40a4fc58855b44e3e"
+}
