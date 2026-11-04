@@ -15,11 +15,11 @@ bool FS47HuntAutomation::RunTest(const FString& Parameters)
  const bool Threat = FS47HorrorThreat::SelfTest(Lines);
  const bool Array = FS47SC08::SelfTest(Lines);
  const bool Saro = FS47SC11::SelfTest(Lines);
- for (const FString& Line : Lines)
- {
-  if (Line.Contains(TEXT("FAIL"))) AddError(Line);
-  else AddInfo(Line);
- }
+ // Descriptions can legitimately say "fail closed"; never infer status from prose.
+ for (const FString& Line : Lines) AddInfo(Line);
+ TestTrue(TEXT("SC02 production threat state machine and navigation"), Threat);
+ TestTrue(TEXT("SC08 production array hunt and continuous grab"), Array);
+ TestTrue(TEXT("SC11 production SARO hunt and continuous grab"), Saro);
  return Threat && Array && Saro;
 }
 #endif

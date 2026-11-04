@@ -4,11 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Greyhill-basert jakt, under arbeid 4. november
+## Jaktspor og avbrutte grep, Linux-verifisert 4. november
 
 Kandidaten `codex/greyhill-hunt-linux-20261104` bygger på main `0d9c5815` etter PR379. SC02 undersøker siste synspunkt før lokalt søk, følger ferske lydpunkter uten å gi dem status som bekreftet syn og krever vedvarende syn før ny jakt. SC08/SC11 avbryter griping når syn, nærhet eller fysisk kontakt brytes, eller spilleren kommer inn i kabinen. Eksisterende Freeform-AI og SC04 beholdes.
 
-Kodegjennomgang og `git diff --check` er utført. Produksjonens selvtester er utvidet og samlet i `S47.Gameplay.Hunt`, men er ennå ikke kjørt. Linux-bygg og kjøring i oppdatert spillmiljø gjenstår. Et lokalt Windows-bygg ble avbrutt etter Toms korrigering av testplattform; Windows-portabilitetsendringer inngår ikke i jaktkandidaten. Ikke flettet eller installert.
+Linux-editorbygget på UE5.8.4 består. `S47.Gameplay.Hunt` består med 74 loggførte produksjonskontroller, null feil/advarsler og exit0. En feil i testinnpakningen er rettet: ordet «fail» i en bestått beskrivelse («fail closed») skal ikke markere testen som mislykket; testenes faktiske returverdier avgjør resultatet.
+
+Native Vulkan-scenarier består: `sc08caught` 12 kontroller og `sc11caught` 11 kontroller. Begge prøver faktisk fangst/restart, flukt, bevart progresjon gjennom JSON-gjenoppretting og overgang til neste kapittel. SC11 bevarer originalene og lar spilleren flykte i bilen. Kjøringene bruker eksisterende navngitte posisjons-/rute- og API-fixtures; dette er ikke menneskelig input eller full naturlig gjennomspilling. Brudd på sikt, rekkevidde, fysisk kontakt og kabinstatus er prøvd i produksjonens tilstandstester; alle slike brudd er ikke separat fremprovosert med ekte glass/dører i verden. SC02s nye syns-/lydvalg er prøvd i tilstandsmaskinen, ikke en ny full SC02-spillerreise.
+
+Alle tre endelige testkjøringer og bygget var uten motoroverlapp under production_lease/unreal_guard. Lokale logger: `~/scratch-bm/Signal47-pr381-20261104/` (`build-r2`, `hunt-r4`, `automation-r4`, `sc08-r1`, `sc11-r1`). Kommando for Hunt etter bygg: `-ExecCmds="Automation RunTests S47.Gameplay.Hunt; SoftQuit"`, med separat `/tmp`-UserDir og ReportExportPath. SoftQuit lar automation avslutte med korrekt exitkode; `-TestExit`-loggmatch brukte tvungen avslutning. [PR381](https://github.com/Tombonator3000/SIGNAL-47/pull/381) er klargjort for gjennomgang; ikke flettet, pakket eller installert. Ingen Windows-portabilitetsendringer eller kopierte Greyhill-assets inngår.
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
