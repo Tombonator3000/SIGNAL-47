@@ -466,6 +466,28 @@ def oil_stains():
     return finish_asset(asset, OUT, 'Old engine-oil stains for the garage floor; flat glossy polygons, 1.5 mm above the slab.')
 
 
+def plaque(asset, print_name):
+    start_asset(asset)
+    w, h = .32, .10
+    box('plate', (0, .003, h / 2), (w, .006, h), dark, .0015)
+    sheet('face', (0, -.0002, h / 2), w - .004, h - .004, printed(print_name))
+    for sx in (-1, 1):
+        cyl(f'screw{sx}', (sx * (w / 2 - .012), -.001, h / 2), .004, .003, chrome, vertices=12, rotation=(math.pi / 2, 0, 0))
+    return finish_asset(asset, OUT, f'Engraved black phenolic door plaque {print_name}, 0.32 x 0.10 m.')
+
+
+def notice_board():
+    asset = 'SM_EW_NoticeBoard'; start_asset(asset)
+    w, h = 1.20, .90
+    box('backing', (0, .008, h / 2), (w, .016, h), wood, .003)
+    sheet('cork', (0, -.0002, h / 2), w - .04, h - .04, printed('EW_Print_NoticeBoard'))
+    for z in (.01, h - .01):
+        box(f'frame_h{z}', (0, -.004, z), (w, .012, .03), wood, .002)
+    for x in (-w / 2 + .01, w / 2 - .01):
+        box(f'frame_v{x}', (x, -.004, h / 2), (.03, .012, h), wood, .002)
+    return finish_asset(asset, OUT, 'Lab cork notice board, 1.2 x 0.9 m, with pinned memos (custody rule, generator fuel, room guide, night log).')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -480,5 +502,8 @@ air_compressor()
 floor_jack()
 jerry_cans()
 oil_stains()
+for key in ('Lab', 'Storage', 'Calibration', 'Garage'):
+    plaque('SM_EW_Plaque' + key, 'EW_Print_Plaque' + key)
+notice_board()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

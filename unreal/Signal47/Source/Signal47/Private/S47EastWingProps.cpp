@@ -57,6 +57,7 @@ namespace
   {TEXT("SM_EW_GlassCabinet"),TEXT("Extras"),{21.075,0,1.30},-90,true},
   {TEXT("SM_EW_PosterGlasses"),TEXT("Extras"),{24.20,1.32,5.246},180},
   {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},
+  {TEXT("SM_EW_NoticeBoard"),TEXT("Extras"),{25.909,1.00,.45},90},
   {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
   {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{26.078,1.22,-3.00},-90},
   {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,2.45},-90},
@@ -66,6 +67,14 @@ namespace
   {TEXT("SM_EW_JerryCans"),TEXT("Extras"),{32.95,0,-4.98},0,true},
   {TEXT("SM_EW_FloorJack"),TEXT("Extras"),{32.85,0,-1.35},-60},
   {TEXT("SM_EW_OilStains"),TEXT("Extras"),{35.30,0,-.60},20},
+  // Room plaques beside each interior door, on the side of the room they name (bottom edge at 1.5 m).
+  {TEXT("SM_EW_PlaqueLab"),TEXT("Extras"),{26.081,1.50,3.75},-90},
+  {TEXT("SM_EW_PlaqueCalibration"),TEXT("Extras"),{25.919,1.50,2.05},90},
+  {TEXT("SM_EW_PlaqueCalibration"),TEXT("Extras"),{31.681,1.50,4.30},-90},
+  {TEXT("SM_EW_PlaqueStorage"),TEXT("Extras"),{29.75,1.50,.581},0},
+  {TEXT("SM_EW_PlaqueStorage"),TEXT("Extras"),{31.681,1.50,-1.75},-90},
+  {TEXT("SM_EW_PlaqueGarage"),TEXT("Extras"),{31.519,1.50,2.55},90},
+  {TEXT("SM_EW_PlaqueGarage"),TEXT("Extras"),{31.519,1.50,-3.35},90},
   // Exterior: rooftop evaporative cooler over the garage; hose reel north of the east service door.
   {TEXT("SM_EW_SwampCooler"),TEXT("Extras"),{35.40,3.60,3.70},0},
   {TEXT("SM_EW_HoseReel"),TEXT("Extras"),{38.632,0,-.80},-90},

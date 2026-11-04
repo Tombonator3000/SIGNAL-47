@@ -631,6 +631,231 @@
       "finite": true,
       "materials": true,
       "triangles": 244
+    },
+    {
+      "asset": "SM_EW_PlaqueLab",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.7241185307502747e-08,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500027703121305,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 470
+    },
+    {
+      "asset": "SM_EW_PlaqueLab",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.621664993464947e-05,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008453783812001348,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 234
+    },
+    {
+      "asset": "SM_EW_PlaqueLab",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003286004066467285,
+      "dimensions_m": [
+        0.3196713924407959,
+        0.008299836190417409,
+        0.09971029522421304
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 116
+    },
+    {
+      "asset": "SM_EW_PlaqueStorage",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.7241185307502747e-08,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500027703121305,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 470
+    },
+    {
+      "asset": "SM_EW_PlaqueStorage",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.621664993464947e-05,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008453783812001348,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 234
+    },
+    {
+      "asset": "SM_EW_PlaqueStorage",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003286004066467285,
+      "dimensions_m": [
+        0.3196713924407959,
+        0.008299836190417409,
+        0.09971029522421304
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 116
+    },
+    {
+      "asset": "SM_EW_PlaqueCalibration",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.7241185307502747e-08,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500027703121305,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 470
+    },
+    {
+      "asset": "SM_EW_PlaqueCalibration",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.621664993464947e-05,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008453783812001348,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 234
+    },
+    {
+      "asset": "SM_EW_PlaqueCalibration",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003286004066467285,
+      "dimensions_m": [
+        0.3196713924407959,
+        0.008299836190417409,
+        0.09971029522421304
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 116
+    },
+    {
+      "asset": "SM_EW_PlaqueGarage",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.7241185307502747e-08,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500027703121305,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 470
+    },
+    {
+      "asset": "SM_EW_PlaqueGarage",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.621664993464947e-05,
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008453783812001348,
+        0.10000000149011612
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 234
+    },
+    {
+      "asset": "SM_EW_PlaqueGarage",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003286004066467285,
+      "dimensions_m": [
+        0.3196713924407959,
+        0.008299836190417409,
+        0.09971029522421304
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 116
+    },
+    {
+      "asset": "SM_EW_NoticeBoard",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.0523945093154907e-07,
+      "dimensions_m": [
+        1.209999918937683,
+        0.02600010484457016,
+        0.9099999666213989
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 942
+    },
+    {
+      "asset": "SM_EW_NoticeBoard",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00025203265249729156,
+      "dimensions_m": [
+        1.209789752960205,
+        0.025747966952621937,
+        0.9098004093393683
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 470
+    },
+    {
+      "asset": "SM_EW_NoticeBoard",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003862646408379078,
+      "dimensions_m": [
+        1.2096378803253174,
+        0.025637156330049038,
+        0.909613701980561
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 234
     }
   ]
 }

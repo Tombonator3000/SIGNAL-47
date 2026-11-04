@@ -163,11 +163,75 @@ def clock_face():
     return age(im, 41, .08, crease=False)
 
 
+def plaque(title, sub):
+    def make():
+        w, h = 1280, 400
+        im = Image.new('RGB', (w, h), (22, 24, 22)); d = ImageDraw.Draw(im)
+        d.rectangle((14, 14, w - 15, h - 15), outline=(196, 194, 180), width=6)
+        size = 138
+        while size > 60 and d.textbbox((0, 0), title, font=font(size, cond=True))[2] > w - 140:
+            size -= 4
+        y = centre(d, 200 - size * .9 if sub else 200 - size * .6, title, font(size, cond=True), (226, 224, 210), w)
+        if sub:
+            centre(d, y + 22, sub, font(58, cond=True), (170, 168, 156), w)
+        return age(im, hash(title) % 97, .03, crease=False)
+    return make
+
+
+def notice_board():
+    w, h = 2048, 1536
+    rnd = random.Random(47)
+    im = Image.new('RGB', (w, h), (150, 104, 62)); d = ImageDraw.Draw(im)
+    for _ in range(26000):  # cork granules
+        x, y = rnd.randint(0, w - 1), rnd.randint(0, h - 1); c = rnd.randint(-36, 30)
+        d.point((x, y), fill=(150 + c, 104 + c, 62 + c // 2))
+    im = im.filter(ImageFilter.GaussianBlur(.8)); d = ImageDraw.Draw(im)
+    memos = [
+        (90, 80, 600, 760, -1.5, 'SAMPLE CHAIN OF CUSTODY', ['1. Field fragments come to the', '   GENERAL TEST LAB bench.', '2. Analyse a split; RETAIN the', '   sealed original in the bag.', '3. Log result + seal no. on', '   form L-7 before filing.', '', '   - R. Okafor, lab lead']),
+        (760, 120, 600, 620, 1.2, 'BACKUP GENERATOR', ['One fuel can = six hours.', 'Cans: Caliche supply, Rt 47.', 'Carry from the Jeep to', 'PARTS STORAGE; never store', 'fuel in the lab.', '', 'The generator stands by', 'the old service bay.']),
+        (1420, 90, 540, 520, -2.4, 'ROOM GUIDE', ['LAB - field samples', 'STORAGE - stock, checkout', 'CALIBRATION - relay and', '   donor bench tests', 'GARAGE - unload the Jeep', '   at the receiving bench']),
+        (1440, 700, 520, 560, 2.0, 'NIGHT SHIFT', ['Doors stay CLOSED for', 'record checks. Note any', 'one on site after 22:00', 'in the night log with', 'time and direction.', '', 'Do not investigate', 'alone.']),
+        (120, 900, 560, 540, 1.8, 'TELEX 11/02', ['TO SARO OPS', 'S-03 COMMAND RELAY', 'REPLACED. SPARES AT', 'STORAGE SHELF B.', 'REGION ARCHIVE WANTS', 'ALL ORIGINALS.']),
+        (760, 830, 600, 600, -1.0, '', []),
+    ]
+    for x, y, mw, mh, rot, title, lines in memos:
+        sheet = Image.new('RGBA', (mw, mh), (236, 232, 214, 255)); sd = ImageDraw.Draw(sheet)
+        if title:
+            sd.text((34, 30), title, font=font(46, cond=True), fill=(28, 30, 28))
+            sd.line((34, 92, mw - 34, 92), fill=(60, 60, 56), width=3)
+            for i, line in enumerate(lines):
+                sd.text((34, 116 + i * 52), line, font=font(36, bold=False), fill=(36, 38, 40))
+        else:  # a polaroid of the array at night
+            sd.rectangle((30, 30, mw - 30, mh - 130), fill=(20, 24, 40))
+            for i in range(60):
+                r2 = random.Random(i); sd.point((r2.randint(30, mw - 30), r2.randint(30, mh - 200)), fill=(230, 230, 220))
+            for k in range(3):
+                cx = 140 + k * 160; sd.chord((cx - 70, mh - 300, cx + 70, mh - 160), 200, 340, fill=(180, 176, 166))
+            sd.text((40, mh - 110), 'ARRAY, 11/01 NIGHT', font=font(38, bold=False), fill=(40, 46, 120))
+        sheet = sheet.rotate(rot, expand=True, resample=Image.BICUBIC)
+        shadow = Image.new('RGBA', sheet.size, (0, 0, 0, 0)); shadow.putalpha(sheet.split()[3].point(lambda a: a // 3))
+        im.paste((40, 26, 14), (x + 10, y + 12), shadow.split()[3]); im.paste(sheet, (x, y), sheet)
+        d = ImageDraw.Draw(im)
+        d.ellipse((x + mw // 2 - 14, y + 8, x + mw // 2 + 14, y + 36), fill=(170, 30, 26))
+    d.rectangle((0, 0, w - 1, h - 1), outline=(92, 66, 40), width=28)
+    return age(im, 53, .04, crease=False)
+
+
+PLAQUES = [('EW_Print_PlaqueLab', 'GENERAL TEST LAB', 'FIELD SAMPLE ANALYSIS'),
+           ('EW_Print_PlaqueStorage', 'PARTS STORAGE', 'EQUIPMENT CHECKOUT'),
+           ('EW_Print_PlaqueCalibration', 'CALIBRATION / REPAIR', 'RELAY AND DONOR TESTS'),
+           ('EW_Print_PlaqueGarage', 'GARAGE / WORKSHOP', 'SERVICE VEHICLE')]
+for name, title, sub in PLAQUES:
+    random.seed(name)
+    plaque(title, sub)().resize((1024, 256), Image.LANCZOS).save(OUT / (name + '_BaseColor.png'), optimize=True)
+    print('print', name)
+
 for name, make in [('EW_Print_PosterRF', rf_poster), ('EW_Print_PosterGlasses', glasses_poster),
-                   ('EW_Print_Calendar1986', calendar_1986), ('EW_Print_ClockFace', clock_face)]:
+                   ('EW_Print_Calendar1986', calendar_1986), ('EW_Print_ClockFace', clock_face),
+                   ('EW_Print_NoticeBoard', notice_board)]:
     random.seed(name)
     im = make()
     # Store power-of-two (mipmapped in Unreal); the mesh UV restores the printed aspect.
-    pot = (1024, 2048) if im.height > im.width else (1024, 1024)
+    pot = (1024, 2048) if im.height > im.width else (2048, 1024) if im.width > im.height else (1024, 1024)
     im.resize(pot, Image.LANCZOS).save(OUT / (name + '_BaseColor.png'), optimize=True)
     print('print', name)

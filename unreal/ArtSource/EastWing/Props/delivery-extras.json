@@ -111,6 +111,18 @@
       "license": "Extras/SM_EW_MechanicBench.license.json"
     },
     {
+      "id": "SM_EW_NoticeBoard",
+      "manifest": "Extras/SM_EW_NoticeBoard.asset.json",
+      "fbx": "Extras/SM_EW_NoticeBoard.fbx",
+      "dimensions_m": [
+        1.209999918937683,
+        0.02599999960511923,
+        0.9099999666213989
+      ],
+      "triangles": 942,
+      "license": "Extras/SM_EW_NoticeBoard.license.json"
+    },
+    {
       "id": "SM_EW_OilStains",
       "manifest": "Extras/SM_EW_OilStains.asset.json",
       "fbx": "Extras/SM_EW_OilStains.fbx",
@@ -121,6 +133,54 @@
       ],
       "triangles": 980,
       "license": "Extras/SM_EW_OilStains.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueCalibration",
+      "manifest": "Extras/SM_EW_PlaqueCalibration.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueCalibration.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueCalibration.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueGarage",
+      "manifest": "Extras/SM_EW_PlaqueGarage.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueGarage.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueGarage.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueLab",
+      "manifest": "Extras/SM_EW_PlaqueLab.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueLab.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueLab.license.json"
+    },
+    {
+      "id": "SM_EW_PlaqueStorage",
+      "manifest": "Extras/SM_EW_PlaqueStorage.asset.json",
+      "fbx": "Extras/SM_EW_PlaqueStorage.fbx",
+      "dimensions_m": [
+        0.3199999928474426,
+        0.008500000461935997,
+        0.10000000149011612
+      ],
+      "triangles": 470,
+      "license": "Extras/SM_EW_PlaqueStorage.license.json"
     },
     {
       "id": "SM_EW_PosterGlasses",
@@ -171,7 +231,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 14,
+  "asset_count": 19,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude",
   "prints": "Extras/make_prints.py"

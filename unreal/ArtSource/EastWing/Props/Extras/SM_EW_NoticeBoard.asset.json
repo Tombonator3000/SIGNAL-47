@@ -1,0 +1,107 @@
+{
+  "asset": "SM_EW_NoticeBoard",
+  "description": "Lab cork notice board, 1.2 x 0.9 m, with pinned memos (custody rule, generator fuel, room guide, night log).",
+  "fbx": "SM_EW_NoticeBoard.fbx",
+  "editable": "SM_EW_NoticeBoard.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.6049999594688416,
+      -0.009999998845160007,
+      -0.004999995231628418
+    ],
+    [
+      0.6049999594688416,
+      0.01600000075995922,
+      0.9049999713897705
+    ]
+  ],
+  "dimensions_m": [
+    1.209999918937683,
+    0.02599999960511923,
+    0.9099999666213989
+  ],
+  "triangles": 942,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_BenchTimber",
+    "EW_Print_NoticeBoard"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_BenchTimber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.36000001430511475,
+        0.23999999463558197,
+        0.12999999523162842,
+        1.0
+      ],
+      "Roughness": 0.6200000047683716,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Print_NoticeBoard",
+      "texture_key": null,
+      "maps": {
+        "EW_Print_NoticeBoard_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_NoticeBoard_BaseColor.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_NoticeBoard_BaseColor.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_NoticeBoard_LOD1.fbx",
+      "triangles": 470
+    },
+    {
+      "file": "SM_EW_NoticeBoard_LOD2.fbx",
+      "triangles": 234
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "b892b5e2db3fbaeb59dad30d1d56999ecf70fccbd75459b845fbe7723129c9b0",
+  "blend_sha256": "5d8793a2f31cc97b1329cef6c359b96d3b47dea21444ed5c05418f53be63c4f4"
+}
