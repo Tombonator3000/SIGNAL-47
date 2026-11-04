@@ -14,6 +14,8 @@ Claudes siste samlede kontroll på a6acc316: 2281 selvtester, FreeformTest 244/0
 
 Freeform-printeren har nå fysisk papirmating og printerlyd for original, registrert pakke og separat kopi. Utskriftskøen følger jobben gjennom jobbvalg, strømbrudd og Continue; ferdige ark kan hentes uten strøm. Editorbygg og en målrettet native prøve består 26 kontroller med to disk-/Continue-runder, aktiv lydgraf og bevart original/betaling. Dette er en editorleveranse i PR379, ikke installert eller subjektivt lyttet til.
 
+Nye Freeform-spill henter kameraet fysisk fra fotolabens arkivbenk. Eierskap lagres eksplisitt; eldre lagringer beholder sitt tidligere tildelte kamera. Bygg og 23 målrettede kontroller består: faktisk sikting/henting, eksponering, to disk-/Continue-runder, legacy-migrering og tilbakeføring til Storys opprinnelige plassering. Før-/etterbilder viser kameraet på benken og fjernet etter henting. Også dette inngår i PR379 uten installasjon.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.

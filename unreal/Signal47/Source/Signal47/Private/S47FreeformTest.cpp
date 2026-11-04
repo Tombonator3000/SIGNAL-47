@@ -4,6 +4,7 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "S47Chapter1.h"
 #include "S47Audio.h"
 #include "S47Flow.h"
 #include "S47Horror.h"
@@ -66,7 +67,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -78,6 +79,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
   S47J::Set(O,TEXT("busy_frame_samples"),TripHoldSamples);S47J::Set(O,TEXT("trip_hold_baseline"),Snapshot);
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -184,9 +186,80 @@ void FS47FreeformTest::Step(double Dt)
   Root=FPaths::ProjectSavedDir()/TEXT("FreeformTest");IFileManager::Get().MakeDirectory(*Root,true);
   if(!Check(User.StartsWith(TEXT("/tmp/")),TEXT("explicit isolated temporary profile required")))return;
  }
+ if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
+ {
+  if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
+  const auto Camera=M->Web->Obj(TEXT("room.fieldCamera"));
+  if(!Check(!M->IsFreeform()&&Camera&&Camera.WorldPosition().Equals(FVector(5.8,.97,.66),.001),TEXT("Story start restores immutable original camera placement after Freeform relocation")))return;
+  Finish(true,TEXT("Physical camera pickup, shutter, ownership Continue, legacy migration and Story placement passed."));return;
+ }
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
+ {
+  if(Age>90){Finish(false,TEXT("bounded physical camera test timeout"));return;}
+  auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));
+  if(!C1||!M->FieldCamera||!M->Night||!M->Night->Album){Check(false,TEXT("production camera and album controllers available"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   M->UI->Close(true);F.Director->Stop();const auto Camera=M->Web->Obj(TEXT("room.fieldCamera"));
+   if(!Check(!M->FieldCamera->bHave&&Camera&&Camera.WorldPosition().Equals(FVector(18.55,.89,-1.9),.001)&&!M->Inter->LabelOf(TEXT("fieldCamera")).IsEmpty(),TEXT("fresh Freeform has an unowned, labelled camera on the physical photolab archive bench")))return;
+   C1->ToggleCamera();if(!Check(!M->FieldCamera->bRaised,TEXT("camera toggle cannot bypass physical collection")))return;
+   Snapshot=S47J::Read(S47J::Write(M->Flow->GameState()));
+   if(!Restore(TEXT("camera-unowned")))return;Go(8601,.3);return;
+  }
+  if(Stage==8601)
+  {
+   if(!Check(!M->FieldCamera->bHave&&!S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("disk Continue preserves explicit unowned camera")))return;
+   M->UI->Close(true);F.Director->Stop();const auto* It=M->Inter->Get(TEXT("fieldCamera"));
+   if(!Check(It&&It->Object,TEXT("physical camera has the production registered interaction object")))return;
+   const FVector Target=It->Object.WorldBox().GetCenter();M->Player->Place(17.25,-1.9,0);
+   const FVector D=Target-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   Go(8602,.3);return;
+  }
+  if(Stage==8602)
+  {
+   const auto Camera=M->Web->Obj(TEXT("room.fieldCamera"));
+   UE_LOG(LogTemp,Display,TEXT("S47 camera ray: picked=%s eye=%s target=%s box=%s visible=%d"),*M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE()),*S47Three::ToThree(M->Player->EyeUE()).ToString(),*Camera.WorldPosition().ToString(),*Camera.WorldBox().ToString(),Camera.Visible());
+   Shot(TEXT("camera-before-pickup"));Go(86021,.3);return;
+  }
+  if(Stage==86021)
+  {
+   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+   if(!Check(Picked==TEXT("fieldCamera")&&!M->Inter->LabelOf(Picked).IsEmpty()&&bool(M->Player->OnUse),TEXT("actual native ray selects the labelled photolab camera at pickup range")))return;
+   Go(8603);return;
+  }
+  if(Stage==8603)
+  {
+   M->Player->OnUse(TEXT("fieldCamera"));
+   if(!Check(M->FieldCamera->bHave&&M->Inter->LabelOf(TEXT("fieldCamera")).IsEmpty()&&M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())!=TEXT("fieldCamera"),TEXT("production use collects camera once and removes its pickup prompt/ray target")))return;
+   Shot(TEXT("camera-after-pickup"));Go(8604,.3);return;
+  }
+  if(Stage==8604)
+  {
+   M->UI->Close(true);C1->ToggleCamera();
+   if(!Check(M->FieldCamera->bRaised,TEXT("owned camera raises through production toggle route")))return;
+   CameraShots=M->Night->Album->Shots().Num();CameraFilm=M->Night->Album->Left();C1->Shutter();
+   if(!Check(M->Night->Album->Shots().Num()==CameraShots+1&&M->Night->Album->Left()==CameraFilm-1,TEXT("production shutter captures one native exposure and consumes one film frame")))return;
+   const auto& Photo=M->Night->Album->Shots().Last();RetainedPhotoId=Photo.Id;RetainedPhotoUrl=Photo.Url;
+   if(!Check(!Photo.bUnavailable&&!Photo.Url.IsEmpty()&&!Photo.IsDeveloped(),TEXT("new exposure retains native image and remains undeveloped")))return;
+   M->FieldCamera->Raise(false);M->UI->Close(true);if(!Restore(TEXT("camera-owned")))return;Go(8605,.3);return;
+  }
+  if(Stage==8605)
+  {
+   const auto* Photo=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(M->FieldCamera->bHave&&S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned"))&&M->Inter->LabelOf(TEXT("fieldCamera")).IsEmpty()&&Photo&&Photo->Url==RetainedPhotoUrl&&M->Night->Album->Left()==CameraFilm-1,TEXT("owned disk Continue retains camera, exact exposure and film without duplicate pickup")))return;
+   auto Legacy=S47J::Read(S47J::Write(Snapshot));Legacy->RemoveField(TEXT("freeformCameraOwned"));US47Flow::FStart Start;Start.bDev=true;Start.State=Legacy;M->Flow->StartGame(Start);Go(8606,.3);return;
+  }
+  if(Stage==8606)
+  {
+   if(!Check(M->FieldCamera->bHave&&S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("explicit legacy Freeform fixture missing ownership field preserves formerly auto-granted camera")))return;
+   US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(8690);return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))
  {
   if(Age>100){Finish(false,TEXT("bounded printer fixture timeout"));return;}
@@ -330,6 +403,11 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==0)
   {
    if(Age<3)return;
+   if(!M->FieldCamera->bHave)
+   {
+    M->UI->Close(true);M->Player->Place(17.25,-1.9,0);M->Inter->UseId(TEXT("fieldCamera"));
+    if(!Check(M->FieldCamera->bHave,TEXT("photo-economy fixture explicitly collects its camera prerequisite at the lab")))return;
+   }
    PhotoEvent=TEXT("landing_trace");FParse::Value(FCommandLine::Get(),TEXT("S47PhotoEconomyEvent="),PhotoEvent);
    if(!Check(PhotoEvent==TEXT("landing_trace")||PhotoEvent==TEXT("feeder_presence"),TEXT("photographic fixture accepts only landing_trace or opt-in feeder_presence")))return;
    if(PhotoEvent==TEXT("feeder_presence"))

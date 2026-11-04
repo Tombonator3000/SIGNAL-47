@@ -85,7 +85,7 @@ void FS47UfoVisualTest::Finish(bool Good, const FString& Why)
 	if (M && M->bPausedByMenu && M->UI) M->UI->Close();
 	auto O = S47J::New(); S47J::Set(O, TEXT("status"), Good ? TEXT("PASS") : TEXT("FAIL"));
 	S47J::Set(O, TEXT("reason"), Why); S47J::Set(O, TEXT("checks"), Checks);
-	S47J::Set(O, TEXT("method"), TEXT("Isolated /tmp developer case 0. Ordinary Flow starts Freeform; explicit night, outdoor camera placement and Director Force(close_pass). Native screenshots, one actual album exposure, normal pause/resume and scene exit. No synthetic photo, claim, reward or event-time advancement."));
+	S47J::Set(O, TEXT("method"), TEXT("Isolated /tmp developer case 0. Ordinary Flow starts Freeform; explicit owned-camera fixture, night, outdoor camera placement and Director Force(close_pass). Camera pickup is outside this presentation test's scope. Native screenshots, one actual album exposure, normal pause/resume and scene exit. No synthetic photo, claim, reward or event-time advancement."));
 	S47J::Set(O, TEXT("limits"), TEXT("This is a short presentation and lifecycle smoke test, not natural scheduling, driving input, full abduction/finale regression or human visual acceptance."));
 	O->SetArrayField(TEXT("evidence"), Evidence);
 	if (!Root.IsEmpty()) FFileHelper::SaveStringToFile(S47J::Write(O, true), *(Root / TEXT("result.json")));
@@ -120,6 +120,10 @@ void FS47UfoVisualTest::Step(double Dt)
 	{
 		if (Now - StageAt < 2 || M->World->bBusy) return;
 		if (!Check(M->Flow->bDevRun && M->Flow->CaseId == 0, TEXT("ordinary Flow created an isolated Freeform developer case"))) return;
+		if (!Check(M->FieldCamera != nullptr, TEXT("production field camera exists for explicit ownership fixture"))) return;
+		// This isolated presentation test does not exercise the photo-lab pickup route.
+		M->FieldCamera->bHave = true;
+		if (!Check(M->FieldCamera->bHave, TEXT("explicit owned-camera fixture; physical pickup is outside this test's scope"))) return;
 		const double Hour = FMath::Fmod(F.Clock(), 86400.);
 		if (!Check(F.TestAdvance(FMath::Fmod(22 * 3600. - Hour + 86400., 86400.)), TEXT("explicit world-clock fixture reaches 22:00 without advancing encounter time"))) return;
 		M->UI->Close(true); M->Player->Place(32, 28, 0);

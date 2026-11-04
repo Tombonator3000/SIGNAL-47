@@ -1703,3 +1703,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november2026 kl.05:40: Codex viderefører a6acc316 med prøveholder/fysiske benkeskilt og fri service-/lagerpassasje. Bygg/native import og gjennomsette før/etter-bilder består; Story-lås kontrollert. Ingen installasjon, offentlig release eller ny rydderunde.
 
 4. november 2026 kl.05:53: Codex leverer FF-PRINTER-01 med fysisk mating/lyd, lagret kø og strømpause. Editorbygg og målrettet printerprøve består 26 kontroller og to disk-/Continue-runder; delvis/ferdig papir visuelt kontrollert. Originaler og betaling bevares. Ingen installasjon eller fullregresjon.
+
+4. november 2026 kl.06:07: Codex leverer FF-CAMERA-01: fysisk kamera på fotolabens arkivbenk, lagret eierskap og bevarte eldre lagringer. Editorbygg og 23 målrettede kontroller med to disk-/Continue-runder består; faktisk henting/eksponering og Story-plassering kontrollert. Ingen installasjon eller fullregresjon.

@@ -10,6 +10,7 @@ class US47Yard;
 class US47UI;
 class US47Audio;
 class UTexture2D;
+class UPrimitiveComponent;
 struct FS47Viewfinder;
 
 // story/Chapter1.ts CaseState: the saved case of chapter one, field for field (SaveState writes
@@ -164,6 +165,10 @@ private:
 	void Interactables();
 	void ApplyWorld();
 	void ShowCamera(bool bOn);
+	void PlaceFieldCamera();
+	TOptional<FVector> StoryCameraPosition;
+	TWeakObjectPtr<UPrimitiveComponent> ArchivePickupProxy;
+	uint8 ArchivePickupCollision=0;
 	void Save();
 	bool File(const FS47Doc& Doc);
 	void StageTo(const FString& St);
