@@ -408,11 +408,13 @@ void FS47FreeformTest::Step(double Dt)
    ServiceTarget=Targets[ServiceTrial];ServiceBefore=W.ServiceCompletions();ServiceRelays=W.InventoryCount(TEXT("relay"));ServiceMoved=false;
    if(!Check(W.ServiceDishId()==ServiceTarget&&W.ServiceDishIndex()!=INDEX_NONE&&F.AvailableDishCount()==26,TEXT("only selected antenna is unavailable: ")+ServiceTarget))return;
    for(int32 I=0;I<M->Web->DishCount();++I)if(!Check(M->Web->DishRemoteAvailable(I)==(M->Web->DishId(I)!=ServiceTarget),TEXT("per-dish remote isolation: ")+M->Web->DishId(I)))return;
-   W.DiagnoseService();if(!Check(W.ServiceStage()==2,TEXT("selected service diagnosed without completion")))return;
+   if(ServiceTrial>0)W.DiagnoseService();
+   const int32 BeforeOpen=ServiceTrial==0?1:2;
+   if(!Check(W.ServiceStage()==BeforeOpen,TEXT("direct cabinet route or optional diagnosis remains unfinished")))return;
    const FString Wrong=ServiceTarget==TEXT("S-01")?TEXT("field:S-19"):TEXT("field:S-01");Approach(Wrong);
    W.Use(Wrong);W.Use(TEXT("field:")+ServiceTarget);
-   if(!Check(W.ServiceStage()==2&&W.InventoryCount(TEXT("relay"))==ServiceRelays,TEXT("wrong cabinet and remote target use neither advance nor consume")))return;
-   Approach(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);
+   if(!Check(W.ServiceStage()==BeforeOpen&&W.InventoryCount(TEXT("relay"))==ServiceRelays,TEXT("wrong cabinet and remote target use neither advance nor consume")))return;
+   Approach(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);
    if(!Check(W.ServiceStage()==4,TEXT("correct cabinet isolates and opens hatch")))return;
    if(!Restore(TEXT("service-array-open-")+ServiceTarget))return;Go(9206,.3);return;
   }
@@ -421,8 +423,30 @@ void FS47FreeformTest::Step(double Dt)
    F.Director->Stop();
    if(!Check(W.ServiceDishId()==ServiceTarget&&W.ServiceStage()==4&&W.InventoryCount(TEXT("relay"))==ServiceRelays&&F.AvailableDishCount()==26,TEXT("mid-repair Continue keeps exact target, open hatch, spare and isolation")))return;
    Approach(TEXT("field:")+ServiceTarget);InitialAz=M->Web->DishAz(W.ServiceDishIndex());InitialEl=M->Web->DishEl(W.ServiceDishIndex());
-   W.Use(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);
+   W.Use(TEXT("field:")+ServiceTarget);
+   if(!Check(W.ServiceStage()==5&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1,TEXT("one relay fitted while the hatch stays open")))return;
+   if(ServiceTrial==1){if(!Restore(TEXT("service-array-fitted-continue")))return;Go(92061,.3);return;}
+   if(ServiceTrial==2)
+   {
+    F.SetPowerFault(true);W.Use(TEXT("field:")+ServiceTarget);
+    if(!Check(W.ServiceStage()==6&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1,TEXT("closing without power retains fitted relay and pending test")))return;
+    if(!Restore(TEXT("service-array-powerless-continue")))return;Go(92062,.3);return;
+   }
+   W.Use(TEXT("field:")+ServiceTarget);
    if(!Check(W.ServiceStage()==7&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1,TEXT("one relay fitted before physical local test starts")))return;
+   Go(9207);return;
+  }
+  if(Stage==92061||Stage==92062)
+  {
+   F.Director->Stop();const bool Powerless=Stage==92062;
+   if(!Check(W.ServiceDishId()==ServiceTarget&&W.ServiceStage()==(Powerless?6:5)&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1&&F.AvailableDishCount()==26,TEXT("Continue preserves fitted part, exact pending control and isolation")))return;
+   if(Powerless)
+   {
+    if(!Check(F.PowerFault(),TEXT("Continue preserves the interrupted power supply")))return;
+    F.SetPowerFault(false); // Explicit supply fixture; service still requires the physical test action.
+   }
+   Approach(TEXT("field:")+ServiceTarget);W.Use(TEXT("field:")+ServiceTarget);
+   if(!Check(W.ServiceStage()==7&&W.InventoryCount(TEXT("relay"))==ServiceRelays-1,TEXT("resumed physical test never consumes a second relay")))return;
    Go(9207);return;
   }
   if(Stage==9207)
@@ -437,7 +461,7 @@ void FS47FreeformTest::Step(double Dt)
     if(!Check(F.CompleteServiceGuide(),TEXT("initial S-03 tutorial archives only after actual repair")))return;
    }
    if(++ServiceTrial<4){Go(9205,.2);return;}
-   Finish(true,TEXT("Initial tutorial and three ordinary arm repairs, wrong cabinet guards and four mid-repair Continue restores passed."));return;
+   Finish(true,TEXT("Initial tutorial and three ordinary arm repairs, wrong cabinet guards, fitted-part and power-loss recovery, and six disk Continue restores passed."));return;
   }
   return;
  }
@@ -1543,7 +1567,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==45)
  {
   if(!Check(F.Field->HasArrayFault()&&F.Field->ServiceStage()==2,TEXT("diagnosis identifies a real remotely unavailable antenna")))return;
-  F.Field->Use(TEXT("ff:service"));F.Field->Use(TEXT("ff:service"));
+  F.Field->Use(TEXT("ff:service"));
   if(!Check(F.Field->ServiceStage()==4,TEXT("local isolation and actual hatch opening precede replacement")))return;
   const FVector P=F.Field->InteractionPoint(TEXT("ff:service"));
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
@@ -1559,7 +1583,7 @@ void FS47FreeformTest::Step(double Dt)
  {
   const FVector P=F.Field->InteractionPoint(TEXT("ff:service"));M->Player->Place(P.X-1.4,P.Z,0);
   if(!Check(F.Field->ServiceStage()==4,TEXT("open service hatch persists after disk/Flow restore")))return;
-  F.Field->Use(TEXT("ff:service"));F.Field->Use(TEXT("ff:service"));F.Field->Use(TEXT("ff:service"));
+  F.Field->Use(TEXT("ff:service"));F.Field->Use(TEXT("ff:service"));
   if(!Check(F.Field->ServiceStage()==7,TEXT("stock relay is mounted, hatch closed and physical local test started")))return;
   InitialAz=M->Web->DishAz(2);Go(47);return;
  }

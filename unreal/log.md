@@ -1765,3 +1765,7 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 ### 4. november 2026 kl.23:38, SARO-FRAME-FLICKER-04
 
 Codex, `codex/night-frame-clearance-20261104`: seks bakre karmflater lå i murplanet; én centimeter klaring i tre LOD-er, øvrig geometri/UCX/ankre uendret. Editorbygg, Blender/native import og 12 før-/12 etterbilder fra begge sider gjennom dørbevegelse består; synlig overlapp borte. Bare trimmeshen beholdes fra importen; øvrige native filer er tilbakeført fra verifisert reflink-kopi. Privat kontroll i nattmappens `frame-before`, `frame-after` og `frame-shell`; installasjon gjenstår.
+
+### 4. november 2026 kl.23:42, FF-LOOP-NIGHT-08
+
+Codex, `codex/night-service-loop-20261104`: tre fysiske servicehandlinger, én relébruk og faktisk antennetest; eldre mellomstadier og strømavbrudd beholder montert del. Bygg og `service-r1` består med 185 kontroller/seks disk-/Continue-runder på fire antenner. Testens resultattekst er oppdatert til seks returer, inkludert montert del og strømbrudd. Installasjon og menneskelig flyt gjenstår.

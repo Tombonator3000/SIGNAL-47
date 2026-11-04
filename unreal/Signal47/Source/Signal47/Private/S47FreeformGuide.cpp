@@ -25,7 +25,7 @@ bool FS47FreeformSession::StartServiceGuide(bool bSupplyTrip)
  if(!Field->HasArrayFault()&&!Field->TriggerServiceFault(ServiceGuide==0)){Feedback=TEXT("Service target unavailable. Restore station power and try again.");Changed(Feedback);return false;}
  GuideServiceBaseline=Field->ServiceCompletions();GuideSupplyBaseline=Field->ServiceSupplyDeliveries();
  ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;FieldFocus=-1;
- Feedback=FString::Printf(TEXT("SERVICE ACCEPTED / %s. ARRAY STATUS (left-hand PC): Select this antenna, then use its local cabinet outside. Remote operation stays suspended until relay replacement and the movement test."),*Field->ServiceDishId());Changed(Feedback);
+ Feedback=FString::Printf(TEXT("SERVICE ACCEPTED / %s. Go to its local cabinet outside: inspect / isolate, fit one relay, then close and test. ARRAY STATUS (left-hand PC) offers an optional diagnosis. Remote operation stays suspended until relay replacement and the movement test."),*Field->ServiceDishId());Changed(Feedback);
  return true;
 }
 FString FS47FreeformSession::ServiceObjective()const
@@ -33,7 +33,7 @@ FString FS47FreeformSession::ServiceObjective()const
  if(ServiceGuide!=1||!Field)return FString();
  const int32 S=Field->ServiceStage();
  const auto At=[this](const TCHAR* Text){FString Result=FString(Text).Replace(TEXT("S-03"),*Field->ServiceDishId());return Field->ServiceDishId()==TEXT("S-03")?Result:Result.Replace(TEXT("CABLE JUNCTION"),TEXT("AZ / EL DRIVE"));};
- if(S==1)return At(TEXT("ARRAY STATUS (left-hand PC): SELECT S-03"));
+ if(S==1)return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: INSPECT, ISOLATE AND OPEN THE RELAY HATCH"));
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
  {
   switch(Field->ParcelStage())
@@ -50,10 +50,10 @@ FString FS47FreeformSession::ServiceObjective()const
   return Field->InventoryCount(TEXT("donor"))>0?TEXT("EAST WING CALIBRATION BENCH: TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("PARTS STORAGE: CHECK RELAY STOCK; ENTER CALICHE'S STORE AND BUY A REPLACEMENT AT THE COUNTER IF EMPTY");
  switch(S)
  {
-  case 2:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SELECT LOCAL TO ISOLATE REMOTE MOVEMENT"));
+  case 2:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: ISOLATE REMOTE MOVEMENT AND OPEN THE RELAY HATCH"));
   case 3:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: OPEN THE RELAY COVER"));
   case 4:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SEAT THE COMPATIBLE REPLACEMENT RELAY"));
-  case 5:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SECURE THE RELAY COVER"));
+  case 5:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: CLOSE THE RELAY COVER AND RUN THE MOVEMENT TEST"));
   case 6:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: START THE FIVE-DEGREE OUT-AND-BACK TEST"));
   case 7:case 8:return At(TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN THE SERVICE ORDER AT OPS"));
   case 9:return TEXT("OPS (corner PC), SERVICE ORDER: VERIFY REMOTE RESTORATION AND ARCHIVE THE TEST");
