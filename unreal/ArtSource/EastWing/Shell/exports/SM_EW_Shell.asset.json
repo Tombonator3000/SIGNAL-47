@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_Shell",
   "fbx": "SM_EW_Shell.fbx",
-  "fbx_sha256": "13f52a7c05f742961766d70b0321f00290d31524ca76b5b43523dd5b66b3ed1e",
+  "fbx_sha256": "bddb719dc334adffa407a4db4b9a989653fbc1bec1fe9637b103e06562b139d9",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_Shell_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -165,7 +165,7 @@
   "lods": [
     {
       "file": "SM_EW_Shell_LOD1.fbx",
-      "sha256": "4eca7eae2d2f3814bc7f3822c358d192fddc8d9589afd2153dcf853b150d6c90",
+      "sha256": "dd1e43af2dff1c8942c6f51bd8cb273ac424eb039fe7e811c3a77e16809771a4",
       "triangles": 2272,
       "expected_native_triangles": 2272,
       "exact_degenerate_triangles": 0,
@@ -201,7 +201,7 @@
     },
     {
       "file": "SM_EW_Shell_LOD2.fbx",
-      "sha256": "7f55b74c6d24ae7758036915bb4a4a964b6550cb1583611a8eb6cc47bf0097be",
+      "sha256": "690777e282a2640d955ff71a1c939a3abac0211401692419f79379ae7645db81",
       "triangles": 672,
       "expected_native_triangles": 672,
       "exact_degenerate_triangles": 0,

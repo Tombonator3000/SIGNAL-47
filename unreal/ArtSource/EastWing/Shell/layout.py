@@ -43,20 +43,28 @@ def build(lod=0):
              inward=1, exterior=False):
         f0, f1 = sorted((fixed, fixed+inward*thickness))
 
-        def piece(s0, s1, y0, y1, suffix):
+        def piece(s0, s1, y0, y1, suffix, visual=None):
             if s1-s0 < .001 or y1-y0 < .001:
                 return
             lo, hi = ((s0, y0, f0), (s1, y1, f1)) if axis == 'x' else ((f0, y0, s0), (f1, y1, s1))
             box('SM_EW_Shell', name+suffix, lo, hi, 'Masonry', .003, True,
                 exterior_axis=(2 if axis == 'x' else 0) if exterior else None,
                 exterior_sign=-inward if exterior else None)
-        current = a
+            if visual is not None:
+                vs0, vs1, vy0, vy1 = visual
+                vlo, vhi = ((vs0, vy0, f0), (vs1, vy1, f1)) if axis == 'x' else ((f0, vy0, vs0), (f1, vy1, vs1))
+                rows[-1].update(visual_lo=list(vlo), visual_hi=list(vhi))
+        # Recess masonry behind the frame's reveal faces. Keep original lo/hi
+        # for UCX: visible trim, clear openings and gameplay anchors do not move.
+        reveal_clearance = .01
+        current = visual_current = a
         for index, (ga, gb, gy0, gy1) in enumerate(gaps):
-            piece(current, ga, bottom, top, f'_solid{index}')
-            piece(ga, gb, bottom, gy0, f'_below{index}')
-            piece(ga, gb, gy1, top, f'_above{index}')
-            current = gb
-        piece(current, b, bottom, top, '_end')
+            va, vb = ga-reveal_clearance, gb+reveal_clearance
+            piece(current, ga, bottom, top, f'_solid{index}', (visual_current, va, bottom, top))
+            piece(ga, gb, bottom, gy0, f'_below{index}', (va, vb, bottom, gy0-reveal_clearance))
+            piece(ga, gb, gy1, top, f'_above{index}', (va, vb, gy1+reveal_clearance, top))
+            current, visual_current = gb, vb
+        piece(current, b, bottom, top, '_end', (visual_current, b, bottom, top))
 
     wall('South', 'x', Z1, X0, X1, 0, H, SOUTH_GAPS, inward=-1, exterior=True)
     wall('North', 'x', Z0, X0, X1, 0, H, NORTH_GAPS, exterior=True)
