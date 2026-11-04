@@ -51,3 +51,21 @@ Tre authored LOD-er, materialslotter, målte akser/bounds, native glass, gulstri
 Unreal forkaster trekanter med identiske hjørneposisjoner også når `remove_degenerates` er av. `native-triangle-counts.json` fører kildehash, rå FBX-antall og forventet renderantall per LOD. Beregn med `python3 unreal/ArtSource/EastWing/Props/native_triangle_counts.py` etter endrede FBX-filer. Skriptet bruker Blenders medfølgende, frittstående FBX-parser uten å starte Blender eller Unreal; `S47_FBX_PARSER_DIR` kan angi parsermappen. Modellkoblinger identifiserer UCX; de rå `Vertices`/`PolygonVertexIndex`-feltene telles etter målt rotasjon, centimeterskala og float32. Ukjente transformkontrakter avvises.
 
 Alle78 rå kildeantall må stemme nøyaktig med authored manifest og kildehash.4896 nullkanttrekanter og39 ytterligere nullarealtrekanter trekkes fra. FBX-importen forkaster null/ugyldig float32-arealnormal med terskel0 før MeshDescription (`FbxStaticMeshImport.cpp:853–886`); renderbyggeren forkaster også identiske hjørner, som allerede inngår i nullarealsettet for disse kildene. De to årsakene føres separat, uten dobbelttelling. Blenders `mesh.validate()` fjerner i tillegg89 dobbeltflater, også ved motsatt winding, som Unreal beholder; dette avviket telles separat og må forklare hele forskjellen mot den tidligere FBX-gjenimportkontrollen. Eksempel: kolbens LOD2 har554 rå trekanter,4 dobbeltflater og20 nullkanttrekanter; bpy rapporterer550, mens forventet Unreal-renderantall er534. Ingen toleranse eller vilkårlig slakking av importkontrollen brukes.
+
+## Extras (Claude, 4. november)
+
+`Extras/` fyller hullene fra første leveranse: laboratorievask (`SM_EW_LabSink`), glasskap med reagenser (`SM_EW_GlassCabinet`), to sikkerhetsplakater (`SM_EW_PosterRF`, `SM_EW_PosterGlasses`), veggkalender november 1986 (`SM_EW_Calendar1986`), veggur (`SM_EW_WallClock`) og førstehjelpsskap (`SM_EW_FirstAidBox`). Alt er egen geometri og egne trykk, uten tredjepartskilder.
+
+- `Extras/make_prints.py` (vanlig Python med Pillow) lager trykkene i `Extras/textures/`. De lagres i potens-av-to-størrelse; mesh-UV gir riktig format.
+- `Extras/build_extras.py` bruker `prop_common.py` og samme eksportløype (LOD0/1/2, UCX, asset/license-JSON).
+- Eget leveransesett: `S47_EASTWING_SET=extras` gjør at `validate_fbx.py`, `native_triangle_counts.py` og `import_unreal.py` bruker `delivery-extras.json`, `fbx-validation-extras.json` og `native-triangle-counts-extras.json`. Importen legger bare `Extras` i `/Game/EastWing/Props/Extras` og rører verken de 26 første modellene eller overflatematerialene.
+
+```sh
+export S47_EASTWING_SET=extras
+python3 unreal/ArtSource/EastWing/Props/run_guarded.py unreal/ArtSource/EastWing/Props/Extras/build_extras.py
+python3 unreal/ArtSource/EastWing/Props/run_guarded.py unreal/ArtSource/EastWing/Props/validate_fbx.py
+(cd unreal/ArtSource/EastWing/Props && python3 native_triangle_counts.py)
+python3 unreal/ArtSource/EastWing/Props/run_unreal_import.py --apply --output <ny privat mappe>
+```
+
+Plassering står i `S47EastWingProps.cpp` (`Layout`). Veggting har baksiden mot innerveggen.

@@ -259,7 +259,9 @@ bool FS47EastWing::Step(float Dt)
  static const FView Views[]={
   {TEXT("01-exterior-south"),29.5,19.0,0.,-.04},{TEXT("02-exterior-southwest"),17.5,15.0,-.75,-.03},{TEXT("03-garage-door"),35.4,12.5,0.,-.02},
   {TEXT("04-test-lab"),25.0,1.0,2.87,-.12},{TEXT("05-parts-storage"),27.6,-1.5,-.4,-.08},{TEXT("06-calibration"),28.5,2.0,-2.56,-.12},
-  {TEXT("07-garage-in"),35.4,-4.2,PI,-.05},{TEXT("08-garage-out"),35.4,4.6,0.,-.05},{TEXT("09-sample-analysis"),23.5,-1.4,-.12,-.12},{TEXT("10-service-entry"),42.0,1.8,PI/2,-.04}};
+  {TEXT("07-garage-in"),35.4,-4.2,PI,-.05},{TEXT("08-garage-out"),35.4,4.6,0.,-.05},{TEXT("09-sample-analysis"),23.5,-1.4,-.12,-.12},{TEXT("10-service-entry"),42.0,1.8,PI/2,-.04},
+  {TEXT("11-lab-west"),24.9,.1,PI/2,-.10},{TEXT("12-lab-east"),22.4,-.4,-PI/2,-.02},{TEXT("13-calibration-north"),29.6,4.2,0.,-.04},
+  {TEXT("14-storage-west"),29.8,-2.4,PI/2,-.04},{TEXT("15-garage-west"),36.6,1.1,PI/2,-.04}};
  const double Now=FPlatformTime::Seconds();
  if(ShotStage==0)
  {

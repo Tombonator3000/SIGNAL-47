@@ -1,0 +1,321 @@
+{
+  "status": "PASS",
+  "scope": "Fresh Blender FBX import: dimensions, UVs, materials, finite geometry for every delivered LOD. Unreal runtime integration remains Claude task.",
+  "checks": [
+    {
+      "asset": "SM_EW_LabSink",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        1.2200000286102295,
+        0.6790000796318054,
+        1.3206168413162231
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 20128
+    },
+    {
+      "asset": "SM_EW_LabSink",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 7.748603820800781e-07,
+      "dimensions_m": [
+        1.2200000286102295,
+        0.6789992451667786,
+        1.3206168413162231
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 10064
+    },
+    {
+      "asset": "SM_EW_LabSink",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00041544437408447266,
+      "dimensions_m": [
+        1.219584584236145,
+        0.6786837577819824,
+        1.3204123867471935
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5032
+    },
+    {
+      "asset": "SM_EW_GlassCabinet",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.9200000762939453,
+        0.4740000516176224,
+        1.9499999284744263
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 34288
+    },
+    {
+      "asset": "SM_EW_GlassCabinet",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0001577248185640201,
+      "dimensions_m": [
+        0.9200000762939453,
+        0.47395990788936615,
+        1.9498422036558622
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 17144
+    },
+    {
+      "asset": "SM_EW_GlassCabinet",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0015131920808926225,
+      "dimensions_m": [
+        0.918913722038269,
+        0.4733511507511139,
+        1.9484867363935336
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8572
+    },
+    {
+      "asset": "SM_EW_PosterRF",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 4.7963112592697144e-08,
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500048123300076,
+        0.7959999740123749
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 766
+    },
+    {
+      "asset": "SM_EW_PosterRF",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.7963112592697144e-08,
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500048123300076,
+        0.7959999740123749
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 382
+    },
+    {
+      "asset": "SM_EW_PosterRF",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 6.853975355625153e-05,
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009431460406631231,
+        0.7959999740123749
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 190
+    },
+    {
+      "asset": "SM_EW_PosterGlasses",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 4.7963112592697144e-08,
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500048123300076,
+        0.7959999740123749
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 766
+    },
+    {
+      "asset": "SM_EW_PosterGlasses",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.7963112592697144e-08,
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500048123300076,
+        0.7959999740123749
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 382
+    },
+    {
+      "asset": "SM_EW_PosterGlasses",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 6.853975355625153e-05,
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009431460406631231,
+        0.7959999740123749
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 190
+    },
+    {
+      "asset": "SM_EW_Calendar1986",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.280568540096283e-08,
+      "dimensions_m": [
+        0.30399999022483826,
+        0.015100013930350542,
+        0.5160000324249268
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3190
+    },
+    {
+      "asset": "SM_EW_Calendar1986",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.280568540096283e-08,
+      "dimensions_m": [
+        0.30399999022483826,
+        0.015100013930350542,
+        0.5160000324249268
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1594
+    },
+    {
+      "asset": "SM_EW_Calendar1986",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00022682547569274902,
+      "dimensions_m": [
+        0.3037731647491455,
+        0.015053770039230585,
+        0.5159380435943604
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 796
+    },
+    {
+      "asset": "SM_EW_WallClock",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.30385160446167e-08,
+      "dimensions_m": [
+        0.33400002121925354,
+        0.05550003983080387,
+        0.33400002028793097
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2652
+    },
+    {
+      "asset": "SM_EW_WallClock",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.594764560461044e-05,
+      "dimensions_m": [
+        0.33390407264232635,
+        0.055533697828650475,
+        0.3339100470766425
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1326
+    },
+    {
+      "asset": "SM_EW_WallClock",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0005866857245564461,
+      "dimensions_m": [
+        0.3334712088108063,
+        0.055284783244132996,
+        0.3334133345633745
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 661
+    },
+    {
+      "asset": "SM_EW_FirstAidBox",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        0.36000001430511475,
+        0.14399999380111694,
+        0.30000001192092896
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2060
+    },
+    {
+      "asset": "SM_EW_FirstAidBox",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.427964687347412e-05,
+      "dimensions_m": [
+        0.36000001430511475,
+        0.14390571415424347,
+        0.30000001192092896
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1030
+    },
+    {
+      "asset": "SM_EW_FirstAidBox",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.005171785829588771,
+      "dimensions_m": [
+        0.35493962466716766,
+        0.14142609387636185,
+        0.2948282260913402
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 515
+    }
+  ]
+}

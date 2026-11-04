@@ -1,0 +1,94 @@
+{
+  "order": "EASTWING-01 extras",
+  "author": "Claude",
+  "assets": [
+    {
+      "id": "SM_EW_Calendar1986",
+      "manifest": "Extras/SM_EW_Calendar1986.asset.json",
+      "fbx": "Extras/SM_EW_Calendar1986.fbx",
+      "dimensions_m": [
+        0.30399999022483826,
+        0.015100001124665141,
+        0.5160000324249268
+      ],
+      "triangles": 3190,
+      "license": "Extras/SM_EW_Calendar1986.license.json"
+    },
+    {
+      "id": "SM_EW_FirstAidBox",
+      "manifest": "Extras/SM_EW_FirstAidBox.asset.json",
+      "fbx": "Extras/SM_EW_FirstAidBox.fbx",
+      "dimensions_m": [
+        0.36000001430511475,
+        0.14399999380111694,
+        0.30000001192092896
+      ],
+      "triangles": 2060,
+      "license": "Extras/SM_EW_FirstAidBox.license.json"
+    },
+    {
+      "id": "SM_EW_GlassCabinet",
+      "manifest": "Extras/SM_EW_GlassCabinet.asset.json",
+      "fbx": "Extras/SM_EW_GlassCabinet.fbx",
+      "dimensions_m": [
+        0.9200000166893005,
+        0.4740000069141388,
+        1.9499999284744263
+      ],
+      "triangles": 34288,
+      "license": "Extras/SM_EW_GlassCabinet.license.json"
+    },
+    {
+      "id": "SM_EW_LabSink",
+      "manifest": "Extras/SM_EW_LabSink.asset.json",
+      "fbx": "Extras/SM_EW_LabSink.fbx",
+      "dimensions_m": [
+        1.2200000286102295,
+        0.6790000200271606,
+        1.3206168413162231
+      ],
+      "triangles": 20128,
+      "license": "Extras/SM_EW_LabSink.license.json"
+    },
+    {
+      "id": "SM_EW_PosterGlasses",
+      "manifest": "Extras/SM_EW_PosterGlasses.asset.json",
+      "fbx": "Extras/SM_EW_PosterGlasses.fbx",
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500000160187483,
+        0.7959999740123749
+      ],
+      "triangles": 766,
+      "license": "Extras/SM_EW_PosterGlasses.license.json"
+    },
+    {
+      "id": "SM_EW_PosterRF",
+      "manifest": "Extras/SM_EW_PosterRF.asset.json",
+      "fbx": "Extras/SM_EW_PosterRF.fbx",
+      "dimensions_m": [
+        0.5659999847412109,
+        0.009500000160187483,
+        0.7959999740123749
+      ],
+      "triangles": 766,
+      "license": "Extras/SM_EW_PosterRF.license.json"
+    },
+    {
+      "id": "SM_EW_WallClock",
+      "manifest": "Extras/SM_EW_WallClock.asset.json",
+      "fbx": "Extras/SM_EW_WallClock.fbx",
+      "dimensions_m": [
+        0.33400002121925354,
+        0.05550002679228783,
+        0.33400002028793097
+      ],
+      "triangles": 2652,
+      "license": "Extras/SM_EW_WallClock.license.json"
+    }
+  ],
+  "asset_count": 7,
+  "material_manifest": "Textures/materials.json",
+  "native_integration_owner": "Claude",
+  "prints": "Extras/make_prints.py"
+}

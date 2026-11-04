@@ -2,9 +2,13 @@
 from pathlib import Path
 import bpy,json,math
 ROOT=Path(__file__).resolve().parent
-sources=list(ROOT.glob('Lab/*.asset.json'))+list(ROOT.glob('Workshop/*.asset.json'))
-private=Path.home()/'Assets/signal47-private/EastWing/Props/Lab'
-if private.exists():sources+=list(private.glob('*.asset.json'))
+import os
+EXTRAS=os.environ.get('S47_EASTWING_SET')=='extras'
+if EXTRAS:sources=list(ROOT.glob('Extras/*.asset.json'))
+else:
+ sources=list(ROOT.glob('Lab/*.asset.json'))+list(ROOT.glob('Workshop/*.asset.json'))
+ private=Path.home()/'Assets/signal47-private/EastWing/Props/Lab'
+ if private.exists():sources+=list(private.glob('*.asset.json'))
 checks=[]
 for source in sources:
  row=json.loads(source.read_text()); name=row['asset']
@@ -25,6 +29,6 @@ for source in sources:
   passed=dimension_error<.015 and uv and finite and mats
   checks.append({'asset':name,'lod':spec['lod'],'pass':passed,'dimension_error_m':dimension_error,'dimensions_m':dims,'uv':uv,'finite':finite,'materials':mats,'triangles':sum(len(o.data.polygons) for o in meshes)})
 report={'status':'PASS' if checks and all(c['pass'] for c in checks) else 'FAIL','scope':'Fresh Blender FBX import: dimensions, UVs, materials, finite geometry for every delivered LOD. Unreal runtime integration remains Claude task.','checks':checks}
-(ROOT/'fbx-validation.json').write_text(json.dumps(report,indent=2)+'\n')
+(ROOT/('fbx-validation-extras.json' if EXTRAS else 'fbx-validation.json')).write_text(json.dumps(report,indent=2)+'\n')
 assert report['status']=='PASS',report
 print('EASTWING FBX PASS',len(checks))

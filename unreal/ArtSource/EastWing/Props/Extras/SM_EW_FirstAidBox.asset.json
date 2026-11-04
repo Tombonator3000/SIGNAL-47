@@ -1,0 +1,195 @@
+{
+  "asset": "SM_EW_FirstAidBox",
+  "description": "Wall-mounted white enamel steel first-aid cabinet with red cross.",
+  "fbx": "SM_EW_FirstAidBox.fbx",
+  "editable": "SM_EW_FirstAidBox.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.18000000715255737,
+      -0.07899999618530273,
+      0.0
+    ],
+    [
+      0.18000000715255737,
+      0.06499999761581421,
+      0.30000001192092896
+    ]
+  ],
+  "dimensions_m": [
+    0.36000001430511475,
+    0.14399999380111694,
+    0.30000001192092896
+  ],
+  "triangles": 2060,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_WhiteEnamel",
+    "EW_X_Bakelite",
+    "EW_X_Red",
+    "EW_X_LabelPaper",
+    "EW_X_LabelInk",
+    "EW_X_Chrome"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_WhiteEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.7400000095367432,
+        0.7300000190734863,
+        0.6800000071525574,
+        1.0
+      ],
+      "Roughness": 0.2800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Red",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3799999952316284,
+        0.02500000037252903,
+        0.012000000104308128,
+        1.0
+      ],
+      "Roughness": 0.3799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [],
+  "lods": [
+    {
+      "file": "SM_EW_FirstAidBox_LOD1.fbx",
+      "triangles": 1030
+    },
+    {
+      "file": "SM_EW_FirstAidBox_LOD2.fbx",
+      "triangles": 515
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "cbfaf3333294858a1c75cfcd0c143637f59a8d1f023740176041f42b9209d6ca",
+  "blend_sha256": "b33f0e661ef64844ba852f97bdbe83be3e80e088379c3f7661affa2e4a7f0ae9"
+}

@@ -130,7 +130,7 @@ def main():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     plan = module.make_plan()
-    validated = {(r['asset'], r['lod']): r for r in json.loads((ROOT / 'fbx-validation.json').read_text())['checks']}
+    validated = {(r['asset'], r['lod']): r for r in json.loads((ROOT / ('fbx-validation' + module.SUFFIX + '.json')).read_text())['checks']}
     rows = []
     for model in plan['models']:
         for lod, item in enumerate(model['lods']):
@@ -146,13 +146,14 @@ def main():
                          'bpy_validated_triangles': bpy_total, 'duplicate_index_polygons': duplicate_polygons,
                          'repeated_corner_triangles': removed, 'zero_area_triangles': zero_area,
                          'distinct_collinear_triangles': zero_area - removed, 'render_triangles': total - zero_area})
-    assert len(rows) == 78 and len({(r['asset'], r['lod']) for r in rows}) == 78
+    expected = 3 * len(plan['models']) if module.EXTRAS else 78
+    assert len(rows) == expected and len({(r['asset'], r['lod']) for r in rows}) == expected
     output = {'engine_rule': 'UE5.8.4 FbxStaticMeshImport: zero/NaN float32 area normal discarded with threshold0 before MeshDescription; StaticMeshBuilder additionally rejects repeated corner positions (already within zero-area set here)'
               ,'removal_stages': {'import': 'FbxStaticMeshImport.cpp853-886; GetTriangleAreaThreshold()==0; FVector3f cross product squared length zero/nonfinite', 'render': 'StaticMeshBuilder.cpp1644,1667-1675; repeated float32 positions with threshold0; subset of import removal for these sources'},
               'source_method': 'Raw binary FBX PolygonVertexIndex/Vertices via Blender standalone parser; UCX excluded through connected Model; no bpy mesh.validate()',
               'blender_difference': 'mesh.validate removes duplicate-index polygons regardless of winding; raw source minus those duplicates must exactly match previous bpy validation',
               'source_files_unchanged': True, 'lods': rows}
-    (ROOT / 'native-triangle-counts.json').write_text(json.dumps(output, indent=2) + '\n')
+    (ROOT / ('native-triangle-counts' + module.SUFFIX + '.json')).write_text(json.dumps(output, indent=2) + '\n')
     print('EASTWING RAW FBX PREDICTION', len(rows), 'FBX files', sum(r['repeated_corner_triangles'] for r in rows),
           'zero-edge triangles;', sum(r['distinct_collinear_triangles'] for r in rows), 'additional null-area triangles;', sum(r['duplicate_index_polygons'] for r in rows), 'bpy-only duplicate polygon removals')
 

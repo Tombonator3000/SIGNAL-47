@@ -51,6 +51,15 @@ namespace
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.75,3.22,-2.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.85,3.22,3.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,.10},0,false,true},
+  // Claude extras (Props/Extras): wall items keep their back on the inner wall face
+  // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
+  {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},
+  {TEXT("SM_EW_GlassCabinet"),TEXT("Extras"),{21.075,0,1.30},-90,true},
+  {TEXT("SM_EW_PosterGlasses"),TEXT("Extras"),{24.20,1.32,5.246},180},
+  {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},
+  {TEXT("SM_EW_PosterRF"),TEXT("Extras"),{30.30,1.25,.579},0},
+  {TEXT("SM_EW_Calendar1986"),TEXT("Extras"),{26.078,1.22,-3.00},-90},
+  {TEXT("SM_EW_FirstAidBox"),TEXT("Extras"),{31.74,1.35,1.00},-90},
  };
  // SM_EW_RollUpDoorSegment is deliberately not a decorative duplicate of the shell's actual door.
 }

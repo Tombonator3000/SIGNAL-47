@@ -17,6 +17,10 @@ UNREAL_ROOT = HERE.parents[2]
 DEST = '/Game/EastWing/Props'
 PRIVATE_DEST = '/Game/Licensed/EastWing/Props'
 OWNER = 'S47EastWingProps_v1'
+# S47_EASTWING_SET=extras imports only Claude's Extras group (Extras/), leaving the first 26-model
+# delivery and its shared surface materials untouched.
+EXTRAS = os.environ.get('S47_EASTWING_SET') == 'extras'
+SUFFIX = '-extras' if EXTRAS else ''
 
 
 def require(condition, message, detail=None):
@@ -93,7 +97,7 @@ def material_recipe(row, source, surfaces):
 
 
 def make_plan():
-    delivery = read(HERE / 'delivery-manifest.json')
+    delivery = read(HERE / ('delivery-extras.json' if EXTRAS else 'delivery-manifest.json'))
     surface_manifest = read(HERE / 'Textures/materials.json')
     surfaces = {row['key']: row for row in surface_manifest['materials']}
     require(len(surfaces) == 8, 'Expected eight surface materials')
@@ -133,7 +137,7 @@ def make_plan():
         models.append({'row': row, 'source': str(source), 'private': private,
                        'destination': (PRIVATE_DEST if private else DEST) + '/' + group,
                        'lods': lods, 'materials': materials})
-    require(len(models) == delivery['asset_count'] == 26, 'Expected 26 models')
+    require(len(models) == delivery['asset_count'] == (len(delivery['assets']) if EXTRAS else 26), 'Unexpected model count')
     shared = {}
     for model in models:
         for material in model['materials']:
@@ -146,7 +150,7 @@ def make_plan():
 
 
 def import_plan(plan, report_path):
-    counts_path = HERE / 'native-triangle-counts.json'
+    counts_path = HERE / ('native-triangle-counts' + SUFFIX + '.json')
     require(counts_path.is_file(), 'Run native_triangle_counts.py with Python before native import')
     counts = {(r['asset'], r['lod']): r for r in read(counts_path)['lods']}
     for model in plan['models']:
@@ -270,7 +274,7 @@ def import_plan(plan, report_path):
     try:
         unreal.SystemLibrary.execute_console_command(None, flag + ' 0')
         require(unreal.SystemLibrary.get_console_variable_int_value(flag) == 0, 'Legacy FBX translator required')
-        for surface in plan['surfaces']:
+        for surface in ([] if EXTRAS else plan['surfaces']):
             roles = {'BaseColor': 'base_color', 'Roughness': 'roughness', 'Metallic': 'metallic', 'NormalDX': 'normal'}
             recipe = {'name': 'M_' + surface['key'], 'base_color_linear': [1, 1, 1, 1],
                       'roughness': .5, 'metallic': 0., 'specular': .5, 'normal_strength': 1.,

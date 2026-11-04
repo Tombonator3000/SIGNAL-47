@@ -1,0 +1,130 @@
+{
+  "asset": "SM_EW_PosterGlasses",
+  "description": "Wall print EW_Print_PosterGlasses (0.56 x 0.79 m) on grey card with four push pins.",
+  "fbx": "SM_EW_PosterGlasses.fbx",
+  "editable": "SM_EW_PosterGlasses.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.28299999237060547,
+      -0.007000000216066837,
+      -0.0029999911785125732
+    ],
+    [
+      0.28299999237060547,
+      0.0024999999441206455,
+      0.7929999828338623
+    ]
+  ],
+  "dimensions_m": [
+    0.5659999847412109,
+    0.009500000160187483,
+    0.7959999740123749
+  ],
+  "triangles": 766,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_GreyCard",
+    "EW_Print_PosterGlasses",
+    "EW_X_Chrome"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_GreyCard",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.36000001430511475,
+        0.3400000035762787,
+        0.30000001192092896,
+        1.0
+      ],
+      "Roughness": 0.8500000238418579,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Print_PosterGlasses",
+      "texture_key": null,
+      "maps": {
+        "EW_Print_PosterGlasses_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_PosterGlasses_BaseColor.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_PosterGlasses_BaseColor.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_PosterGlasses_LOD1.fbx",
+      "triangles": 382
+    },
+    {
+      "file": "SM_EW_PosterGlasses_LOD2.fbx",
+      "triangles": 190
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "41098c78fbbf85b76e760f83f8e3b2ec24eb3dc2cabe01f1e452619f01c072b7",
+  "blend_sha256": "23062a28f45ac2d94e8192db8d370ed05254685216ecdaef5272a68ede2788df"
+}
