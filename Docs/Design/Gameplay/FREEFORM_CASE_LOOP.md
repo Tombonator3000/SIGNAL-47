@@ -1,6 +1,6 @@
 # Freeform: saksløkken
 
-**Status:** Under arbeid. **Gjelder:** Freeform-modusens hovedprogresjon ved SARO. **Sist kontrollert:** 3. november 2026.
+**Status:** Under arbeid. **Gjelder:** Freeform-modusens hovedprogresjon ved SARO. **Sist kontrollert:** 4. november 2026.
 
 Tom bestemte 3. november at gameplay-løkken er førsteprioritet foran grafikk og annet arbeid. Dette dokumentet er designet som Claude implementerer først, bygget på [gameplaygjennomgangen](../../Research/Gameplay/WORKFLOW_REVIEW.md) (GP-01 til GP-20 og Codex' sammenligning med Signal Simulator, Voices of the Void og Greyhill Incident) og FF-RESEARCH-00 til 10 i [TODO](../../Active/TODO.md). Implementert status føres i [STATUS](../../Active/STATUS.md); dette er et design, ikke bevis på ferdig funksjon.
 
@@ -74,6 +74,24 @@ Det tredje forsøket krever feltloggeren, som lånes ut når sak 1 er konkludert
 - `Session->PlannedFieldTest(Line)` gir planlagt feltforsøk eller -1.
 - `Session->FieldTestExpectsPresent(Line,Test)` gir hva den skjulte årsaken lar forsøket vise. Kallet svarer bare for det planlagte forsøket. Verden skal iscenesette svaret fysisk (lyd, spor, forsegling, loggerutslag), ikke bare som tekst.
 - `Session->ReportFieldTest(Line,Test,bValid,bPresent,Evidence)` registrerer det spilleren faktisk sikret. Uteblitt vindnatt, batteritap, manglende original eller brutt oppsett rapporteres som `bValid=false` og gir ikke utelukkelse.
+
+### Første fysiske feltforsøk: sikre takbeslaget
+
+**Implementeringsgrunnlag kontrollert 4. november; forsøket er fortsatt ikke implementert.** `S47FreeformDirector.cpp` har lydankeret `roof_steps` ved (-1,5; 3,5; -1), spiller betongsteg og beholder en observasjon når spilleren er nær. Dette er ikke et eksisterende løst beslag eller bekreftet takadkomst. Et fysisk festepunkt må først modelleres/plasseres ved en tilgjengelig serviceadkomst eller takkant og kontrolleres i motoren. Dagens feltlogger måler elektrisk støy; opptaket er ikke automatisk bevis på samtidige taklyder.
+
+Den eksisterende `FWind.Strength` i `S47Wind.h` er vegetasjonsutslag, ikke vindhastighet i m/s. Den følger prosessklokken via `S47WorldLife.cpp`, og vindfasen overlever ikke Fortsett. Dersom verdien brukes, må den beskrives som en spillintern vindindikator. Forsøket leser den eksisterende verdien; det skal ikke endre verdens vind for å få et gyldig resultat. Terskler og observasjonstid må balanseres og kontrolleres i motoren før levering.
+
+Planlagt gjennomføring:
+
+1. Spilleren velger takforsøket i OPS og finner et synlig beslag med referansemerke. Handling krever faktisk nærhet og fri sikt.
+2. Før festing registreres et fullstendig observasjonsvindu ved referansen: varighet, presenterte/hørte slag og vindindikatorens middel og minimum. Manglende lyd er ikke negativt bevis uten full dekning.
+3. Spilleren merker og fester beslaget fysisk. Modellen viser tilstandsendringen. Et nytt vindu ved samme referanse må ha sammenlignbare vindforhold.
+4. Den skjulte årsaken styrer hendelsen i verden: festing stanser vindslag, mens de andre årsakene fortsatt kan gi observerbare slag. `FieldTestExpectsPresent` brukes til iscenesettelsen, aldri som direkte svar fra en resultatknapp.
+5. Inspeksjon sikrer en original med plan-ID, dag/tid, referanse, før-/etterdekning, slag og vindgrunnlag. Først da kalles `ReportFieldTest(2,0,...)` én gang med det faktisk sikrede resultatet. Utilstrekkelig vind, fravær, søvn/tidsgap eller brutt oppsett gir ugyldig forsøk og ingen utelukkelse.
+
+Lagre forsøksfasen, plan-ID, oppsettets integritet, dekningsvarighet, slag og vindstatistikk som egen struktur etter Directors eksisterende lagringsmønster. Fortsett skal ikke konstruere lyd eller observasjonstid i ettertid; et avbrutt sammenligningsgrunnlag krever ny referansemåling. Avbrytelse eller endret plan-ID rydder bare det uferdige forsøket og beholder allerede sikrede spor.
+
+Aksepten må dekke alle tre årsaker, tilstrekkelig/for svak vind, brutt observasjonsvindu, avbrytelse, Fortsett før og etter festing og gjentatt inspeksjon uten dobbel belønning. Et rent kall til saksmotoren beviser ikke det fysiske forsøket; minst én faktisk spillerreise må vise oppsett, hørbart signal og sikret original.
 
 ## Belønning og progresjon
 
