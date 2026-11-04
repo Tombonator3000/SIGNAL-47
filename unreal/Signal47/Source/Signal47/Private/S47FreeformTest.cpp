@@ -93,7 +93,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit roof_steps case lead and production PlanCaseTest(2,1), followed by real disk/Flow Continue. Tests retained pending plan only; no enacted world test, field evidence or reward claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
- if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Expected FAIL until queue migration is fixed; no natural acquisition claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Rejected legacy copy must release the queue without evidence or reward; no natural acquisition claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, normal digital completion and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early OPS SERVICE/accept clicks, initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("method"),TEXT("Prepared routine/legacy packet and completed-day fixtures; production registration, case planning/focus and optional-reference callbacks; disk/Flow Continue. No natural acquisition or human input asserted."));
@@ -1018,7 +1018,7 @@ void FS47FreeformTest::Step(double Dt)
    S47J::Set(Old,TEXT("stage"),int32(J::Recorded));S47J::Set(Old,TEXT("phenomenon"),TEXT("duplicate_print"));S47J::Set(Old,TEXT("printed"),true);S47J::Set(Old,TEXT("anomaly"),true);S47J::Set(Old,TEXT("control"),true);S47J::Set(Old,TEXT("controlAt"),8.);S47J::Set(Old,TEXT("elapsed"),18.);
    // Actual pre-3b6a6c1c schema: the original was a Story document, with no
    // capture-counter line or per-job original/duplicate snapshots or feed fields.
-   for(const TCHAR* Key:{TEXT("originalPage"),TEXT("originalStamp"),TEXT("duplicatePage"),TEXT("duplicateStamp"),TEXT("duplicateCollected"),TEXT("duplicateClock"),TEXT("duplicateInterval"),TEXT("chartFeed"),TEXT("packetFeed"),TEXT("duplicateFeed"),TEXT("referenceClock"),TEXT("receiverClock")})Old->RemoveField(Key);
+   for(const TCHAR* Key:{TEXT("originalPage"),TEXT("originalStamp"),TEXT("duplicatePage"),TEXT("duplicateStamp"),TEXT("duplicateCollected"),TEXT("duplicateRejected"),TEXT("duplicateClock"),TEXT("duplicateInterval"),TEXT("chartFeed"),TEXT("packetFeed"),TEXT("duplicateFeed"),TEXT("referenceClock"),TEXT("receiverClock")})Old->RemoveField(Key);
    const int32 Source=F.Jobs()[0].Source;PrinterStamp=TEXT("SARO / ")+PrinterId;
    PrinterOriginal=PrinterStamp+TEXT("\n")+FS47Observing::Runs()[Source].Source+FString::Printf(TEXT("\nACTUAL ARRAY / QUALITY %.0f %%\nF %.3f MHz / AZ %.1f / EL %.1f\nINTEGRATION %.1f SECONDS\n"),F.Jobs()[0].Quality*100,FS47Observing::Runs()[Source].P.F,(FS47Observing::Runs()[Source].P.Az[0]+FS47Observing::Runs()[Source].P.Az[1])/2,FS47Observing::Runs()[Source].El,18.)+TEXT("PROVENANCE: ORIGINAL RX RECORD. A separate duplicate was received with an inconsistent timestamp; this original is retained unchanged.\n");
    FS47Doc D;D.Id=PrinterId+TEXT("-original");D.Title=TEXT("Original observation: ")+PrinterId;D.Kind=TEXT("printout");D.Stamp=PrinterStamp;D.Page=PrinterOriginal;D.Transcript=D.Page;M->Story->AddDoc(D);
@@ -1031,6 +1031,11 @@ void FS47FreeformTest::Step(double Dt)
   {
    const auto* D=Original();if(!Check(D&&D->Page==PrinterOriginal&&D->Stamp==PrinterStamp&&!D->Page.Contains(TEXT("CAPTURE CLOCK")),TEXT("real legacy original format survives disk Continue unchanged")))return;
    F.Use(TEXT("printer"));M->UI->Close(true);
+   const auto& Rejected=F.Jobs()[0];
+   if(!Check(Rejected.bDuplicateRejected&&!Rejected.bDuplicateCollected&&Rejected.Stage==J::Recorded&&!Rejected.bPaid&&Rejected.DuplicatePage.IsEmpty()&&Rejected.DuplicateClock==0&&Rejected.DuplicateInterval==0&&!M->Story->Docs().ContainsByPredicate([&](const FS47Doc& X){return X.Id==PrinterId+TEXT("-duplicate");}),TEXT("legacy rejection retains unfinished job, creates no copy or invented counters and grants no payment")))return;
+   if(!Check(F.PrinterJobId()==F.Jobs()[1].Id&&!F.RegisterComparison(TEXT("duplicate_mismatch"))&&F.Budget()==PrinterBudget,TEXT("rejected legacy copy releases later printer work and cannot register a finding")))return;
+   if(!Restore(TEXT("legacy-rejected-before-later-collection")))return;
+   if(!Check(F.Jobs()[0].bDuplicateRejected&&F.PrinterJobId()==F.Jobs()[1].Id,TEXT("rejection survives disk Continue before collecting the next sheet")))return;
    if(!Check(F.SelectJob(1),TEXT("later observation can be selected after legacy duplicate collection attempt")))return;
    Go(8551,6.5);return;
   }
@@ -1043,7 +1048,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==8552)
   {
-   const auto* D=Original();if(!Check(D&&D->Page==PrinterOriginal&&D->Stamp==PrinterStamp&&F.Jobs()[1].Stage==J::Recorded&&F.Budget()==PrinterBudget,TEXT("later collection and unchanged legacy original survive another Continue")))return;
+   const auto* D=Original();if(!Check(D&&D->Page==PrinterOriginal&&D->Stamp==PrinterStamp&&F.Jobs()[1].Stage==J::Recorded&&F.Jobs()[0].bDuplicateRejected&&!F.Jobs()[0].bDuplicateCollected&&F.Jobs()[0].Stage==J::Recorded&&F.PrinterJobId()!=PrinterId&&F.Budget()==PrinterBudget,TEXT("later collection and unchanged legacy original survive another Continue without requeuing the rejected copy")))return;
    Finish(true,TEXT("Legacy duplicate queue regression passed."));return;
   }
   return;
@@ -1112,7 +1117,7 @@ void FS47FreeformTest::Step(double Dt)
   {
    if(F.PrinterProgress()<1)return;
    Power(false);
-   if(!Check(F.CollectChart()&&Doc(TEXT("-duplicate"))&&F.CurrentJob()->bDuplicateCollected&&F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp&&F.CurrentJob()->DuplicatePage!=PrinterOriginal&&F.Budget()==PrinterBudget&&!F.CollectChart(),TEXT("finished duplicate is separately retained without power, original mutation or repeat reward")))return;
+   if(!Check(F.CollectChart()&&Doc(TEXT("-duplicate"))&&F.CurrentJob()->bDuplicateCollected&&!F.CurrentJob()->bDuplicateRejected&&F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp&&F.CurrentJob()->DuplicatePage!=PrinterOriginal&&F.Budget()==PrinterBudget&&!F.CollectChart(),TEXT("finished duplicate is separately retained without power, original mutation or repeat reward")))return;
    M->UI->Close(true);if(!Restore(TEXT("printer-all-collected")))return;Go(8506,.3);return;
   }
   if(Stage==8506)

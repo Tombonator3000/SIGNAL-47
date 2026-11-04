@@ -132,7 +132,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    J.MarkStart=SafeNum(O,TEXT("markStart"),-1);J.MarkEnd=SafeNum(O,TEXT("markEnd"),-1);
    J.ReceiverClock=SafeNum(O,TEXT("receiverClock"));J.ReferenceClock=SafeNum(O,TEXT("referenceClock"));J.ControlReceiverClock=SafeNum(O,TEXT("controlReceiverClock"));J.ControlReferenceClock=SafeNum(O,TEXT("controlReferenceClock"));J.DuplicateClock=SafeNum(O,TEXT("duplicateClock"));J.DuplicateInterval=SafeNum(O,TEXT("duplicateInterval"));
    J.BeamPoint=FMath::Clamp(SafeInt(O,TEXT("beamPoint")),0,2);J.BeamSettle=FMath::Clamp(SafeNum(O,TEXT("beamSettle")),0.,1.);J.BeamSample=FMath::Clamp(SafeNum(O,TEXT("beamSample")),0.,8./3.);J.BeamAz=S47J::Nums(O,TEXT("beamAz"));J.BeamEl=S47J::Nums(O,TEXT("beamEl"));J.BeamAmplitude=S47J::Nums(O,TEXT("beamAmplitude"));
-   J.bBeamVerified=S47J::Bool(O,TEXT("beamVerified"));J.bClockMeasured=S47J::Bool(O,TEXT("clockMeasured"));J.bDuplicateCollected=S47J::Bool(O,TEXT("duplicateCollected"));J.OriginalPage=S47J::Str(O,TEXT("originalPage"));J.OriginalStamp=S47J::Str(O,TEXT("originalStamp"));J.DuplicatePage=S47J::Str(O,TEXT("duplicatePage"));J.DuplicateStamp=S47J::Str(O,TEXT("duplicateStamp"));
+   J.bBeamVerified=S47J::Bool(O,TEXT("beamVerified"));J.bClockMeasured=S47J::Bool(O,TEXT("clockMeasured"));J.bDuplicateCollected=S47J::Bool(O,TEXT("duplicateCollected"));J.bDuplicateRejected=J.Phenomenon==TEXT("duplicate_print")&&!J.bDuplicateCollected&&S47J::Bool(O,TEXT("duplicateRejected"));J.OriginalPage=S47J::Str(O,TEXT("originalPage"));J.OriginalStamp=S47J::Str(O,TEXT("originalStamp"));J.DuplicatePage=S47J::Str(O,TEXT("duplicatePage"));J.DuplicateStamp=S47J::Str(O,TEXT("duplicateStamp"));
    // Legacy queued work was already immediately collectible; never reprint it.
    const int32 LegacyKind=PendingPrint(J);
    J.ChartFeed=FMath::Clamp(SafeNum(O,TEXT("chartFeed"),LegacyKind==0?PrinterSeconds:0),0.,PrinterSeconds);
@@ -360,7 +360,7 @@ int32 FS47FreeformSession::PendingPrint(const FJob& J)
 {
  if(J.Stage==EJobStage::Chart)return 0;
  if(J.Stage==EJobStage::Registered)return 1;
- if(J.Stage==EJobStage::Recorded&&J.Phenomenon==TEXT("duplicate_print")&&J.bControl&&J.ControlAt>=8&&!J.bDuplicateCollected)return 2;
+ if(J.Stage==EJobStage::Recorded&&J.Phenomenon==TEXT("duplicate_print")&&J.bControl&&J.ControlAt>=8&&!J.bDuplicateCollected&&!J.bDuplicateRejected)return 2;
  return -1;
 }
 double& FS47FreeformSession::PrintFeed(FJob& J,int32 Kind){return Kind==0?J.ChartFeed:Kind==1?J.PacketFeed:J.DuplicateFeed;}
@@ -644,13 +644,20 @@ bool FS47FreeformSession::CollectChart()
 
 void FS47FreeformSession::CollectDuplicate()
 {
- FJob* J=Job();if(!J||!J->bPrinted||J->bDuplicateCollected||!M||!M->Story)return;
+ FJob* J=Job();if(!J||!J->bPrinted||J->bDuplicateCollected||J->bDuplicateRejected||!M||!M->Story)return;
  if(J->OriginalPage.IsEmpty())if(const FS47Doc* D=M->Story->Docs().FindByPredicate([&](const FS47Doc& X){return X.Id==J->Id+TEXT("-original");})){J->OriginalPage=D->Page;J->OriginalStamp=D->Stamp;}
  if(J->OriginalPage.IsEmpty())return;
- J->DuplicateClock=J->ReferenceClock+2.4;J->DuplicateInterval=FMath::Max(0.,J->Elapsed-1.);
  const FString OriginalLine=FString::Printf(TEXT("CAPTURE CLOCK %.3f SECONDS / OBSERVED INTERVAL %.3f SECONDS"),J->ReferenceClock,J->Elapsed);
+ if(!J->OriginalPage.Contains(OriginalLine,ESearchCase::CaseSensitive))
+ {
+  // Reject only this unprovable copy, not the retained observation. Persist the
+  // disposition so this ready legacy sheet cannot monopolise the printer again.
+  J->bDuplicateRejected=true;
+  Feedback=TEXT("Legacy duplicate rejected: this original has no independent capture-counter record. Original retained unchanged; no finding or payment. The printer is available for other observations. Select another job on OPS / DAILY WORK.");
+  StopPrinterFeedback();StepPrinter(0);Changed(Feedback);return;
+ }
+ J->DuplicateClock=J->ReferenceClock+2.4;J->DuplicateInterval=FMath::Max(0.,J->Elapsed-1.);
  const FString DuplicateLine=FString::Printf(TEXT("CAPTURE CLOCK %.3f SECONDS / OBSERVED INTERVAL %.3f SECONDS"),J->DuplicateClock,J->DuplicateInterval);
- if(!J->OriginalPage.Contains(OriginalLine,ESearchCase::CaseSensitive)){Feedback=TEXT("This retained legacy original has no independent capture-counter record. Keep it intact and make a new incident observation.");return;}
  J->DuplicatePage=TEXT("SEPARATE PRINTER COPY / ORIGIN UNVERIFIED\n\n")+J->OriginalPage.Replace(*OriginalLine,*DuplicateLine,ESearchCase::CaseSensitive);
  J->DuplicateStamp=Reference(*J)+FString::Printf(TEXT(" / COPY COUNTER %.3f"),J->DuplicateClock);
  FS47Doc D;D.Id=J->Id+TEXT("-duplicate");D.Title=TEXT("Separate printer duplicate: ")+J->Id;D.Kind=TEXT("printout");D.Stamp=J->DuplicateStamp;D.Page=J->DuplicatePage;D.Transcript=D.Page;
@@ -658,6 +665,7 @@ void FS47FreeformSession::CollectDuplicate()
 }
 FString FS47FreeformSession::ControlSummary(const FJob& J)const
 {
+ if(J.bDuplicateRejected)return TEXT("LEGACY DUPLICATE REJECTED / The retained original has no independent capture-counter record. No comparison or finding can be established. Original unchanged; select another observation on OPS / DAILY WORK.");
  if(J.Phenomenon==TEXT("wrong_source"))
  {
   FString Text=TEXT("ADJACENT-BEAM CONTROL / ACTUAL ENCODERS AND SAMPLED AMPLITUDE\n");
@@ -672,6 +680,7 @@ bool FS47FreeformSession::CompareInstrument()
 {
  if(!RequirePower())return false;
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bControl||J->ControlAt<8||!Specialized(J->Phenomenon)){Feedback=J?JobNextAction(*J):FString(TEXT("OPS (corner PC): Select the retained observation in DAILY WORK before comparing."));return false;}
+ if(J->bDuplicateRejected){Feedback=ControlSummary(*J);return false;}
  bool Verified=false;
  if(J->Phenomenon==TEXT("wrong_source"))Verified=J->bBeamVerified&&J->BeamAz.Num()==3&&J->BeamEl.Num()==3&&J->BeamAmplitude.Num()==3&&J->BeamAmplitude[1]>J->BeamAmplitude[0]+.25&&J->BeamAmplitude[1]>J->BeamAmplitude[2]+.25;
  else if(J->Phenomenon==TEXT("time_disagreement"))Verified=J->bClockMeasured&&FMath::IsNearlyEqual(J->ReceiverClock-J->ReferenceClock,3.2,.001)&&FMath::IsNearlyEqual(J->ControlReceiverClock-J->ControlReferenceClock,3.2,.001);
@@ -751,6 +760,7 @@ bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  if(!RequirePower())return false;
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded)return false;
+ if(J->bDuplicateRejected){Feedback=ControlSummary(*J);return false;}
  if(J->bAnomaly&&Specialized(J->Phenomenon)&&!CompareInstrument())return false;
  if(J->bAnomaly&&(!J->bAudioReviewed||Conclusion!=(Specialized(J->Phenomenon)?InstrumentConclusion(J->Phenomenon):FString(TEXT("unresolved"))))){Feedback=Specialized(J->Phenomenon)?TEXT("Complete the measured comparison and register its instrumental finding. The controls do not prove an alien origin."):TEXT("A quiet short control does not establish a sky source. Review both recordings and retain the unresolved conclusion.");return false;}
  const bool AlreadyPaid=J->bPaid;
@@ -1005,10 +1015,10 @@ void FS47FreeformSession::OpenOperations()
     if(Specialized(J->Phenomenon))
     {
      A.Add(T::Small(ControlSummary(*J)));
-     A.Add(T::Small(TEXT("COMPARE HERE / OPS, DAILY WORK. Finish the physical control first; for a duplicate check, collect the original and separate duplicate. One registration compares the retained measurements without changing them, then retains the supported finding.")));
+     if(!J->bDuplicateRejected)A.Add(T::Small(TEXT("COMPARE HERE / OPS, DAILY WORK. Finish the physical control first; for a duplicate check, collect the original and separate duplicate. One registration compares the retained measurements without changing them, then retains the supported finding.")));
      const FString Conclusion=InstrumentConclusion(J->Phenomenon);
      const FString Name=J->Phenomenon==TEXT("wrong_source")?TEXT("Compare and register an off-centre maximum; origin unresolved"):J->Phenomenon==TEXT("time_disagreement")?TEXT("Compare and register disagreement in the receiver timing path"):TEXT("Compare and register mismatched duplicate; preserve original");
-     A.Add(T::Button(Name,[this,Conclusion]{RegisterComparison(Conclusion);OpenOperations();},true));
+     if(!J->bDuplicateRejected)A.Add(T::Button(Name,[this,Conclusion]{RegisterComparison(Conclusion);OpenOperations();},true));
     }
     else
     {
@@ -1768,6 +1778,7 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
   case EJobStage::Integrating:return TEXT("RECEIVER (centre PC): KEEP TUNING VALID; COLLECT THE ORIGINAL AT THE PRINTER WHEN RECORDING FINISHES");
   case EJobStage::Chart:return J->ChartFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: RETAIN THE ORIGINAL OBSERVATION CHART"));
   case EJobStage::Recorded:
+   if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. LEGACY ORIGINAL RETAINED; UNVERIFIABLE DUPLICATE REMOVED FROM PRINTER QUEUE WITHOUT A FINDING OR PAYMENT.");
    if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
    if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER RACK: RECORD AN INDEPENDENT INTERNAL CONTROL");
    if(J->ControlAt<8)
@@ -1805,6 +1816,7 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  if(J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
  if(J.Stage==EJobStage::Chart||J.Stage==EJobStage::Registered)return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
  if(J.Stage==EJobStage::Packet)return TEXT("Binder / records room");
+ if(J.bDuplicateRejected)return TEXT("OPS / DAILY WORK: retained legacy observation; select another job");
  if(J.Stage==EJobStage::Recorded&&J.bAnomaly&&!J.bAudioReviewed)
  {
   if(!J.bControl||J.ControlAt<8)return J.Phenomenon==TEXT("wrong_source")?TEXT("Tracking PC / right-hand screen"):TEXT("Receiver rack / internal reference controls");
@@ -1840,7 +1852,7 @@ S47J::FObj FS47FreeformSession::Save()const
    auto Sound=S47J::New();S47J::Set(Sound,TEXT("v"),1);S47J::Set(Sound,TEXT("gain"),J.RecordingGain);
    S47J::Set(Sound,TEXT("bandwidth"),J.RecordingBandwidth);S47J::Set(Sound,TEXT("quality"),J.RecordingQuality);S47J::Set(A,TEXT("recordingSound"),Sound);
   }
-  S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);S47J::Set(A,TEXT("caseLine"),J.CaseLine);S47J::Set(A,TEXT("caseTest"),J.CaseTest);S47J::Set(A,TEXT("caseValid"),J.bCaseValid);S47J::Set(A,TEXT("caseRecorded"),J.bCaseRecorded);if(J.bGenerated)
+  S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("duplicateRejected"),J.bDuplicateRejected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);S47J::Set(A,TEXT("caseLine"),J.CaseLine);S47J::Set(A,TEXT("caseTest"),J.CaseTest);S47J::Set(A,TEXT("caseValid"),J.bCaseValid);S47J::Set(A,TEXT("caseRecorded"),J.bCaseRecorded);if(J.bGenerated)
   {
    auto C=S47J::New();const auto& P=J.Card.Receiver;S47J::Set(C,TEXT("v"),1);S47J::Set(C,TEXT("f"),P.F);S47J::Set(C,TEXT("ftol"),P.FTol);S47J::Set(C,TEXT("g0"),P.Gain[0]);S47J::Set(C,TEXT("g1"),P.Gain[1]);S47J::Set(C,TEXT("bw0"),P.Bw[0]);S47J::Set(C,TEXT("bw1"),P.Bw[1]);S47J::Set(C,TEXT("az0"),P.Az[0]);S47J::Set(C,TEXT("az1"),P.Az[1]);S47J::Set(C,TEXT("el"),J.Card.El);S47J::Set(C,TEXT("seconds"),J.Card.Seconds);S47J::Set(C,TEXT("suggested"),J.Card.SuggestedClock);S47J::Set(C,TEXT("text"),P.Card);S47J::Set(A,TEXT("card"),C);
   }

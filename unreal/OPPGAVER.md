@@ -4,9 +4,9 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-photo-control-20261104`, fra main `67e13fa7` etter flettet PR396. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-printer-queue-20261105`, fra main `c77de2b9` etter flettet PR397. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: PHOTO04 i Album, Director, Freeform, Chapter1 og DuskOrbTest; dokumentasjon og alle tunge jobber under production_lease.
+- root: legacy-printer i Freeform.h/cpp og FreeformTest, avgrenset butikkprøve, dokumentasjon og alle tunge jobber under production_lease.
 - todo_triage: private printer- og CONTINUE TODAY-patcher klare; ingen aktive kildefiler eller motorjobb.
 - night_preflight: sokkelgeometri, fire kameraer og kort kameraglidning klare som separate private patcher; pakke/installasjonsløype avklart, ingen aktive kildefiler eller motorjobb.
 - photo_loop: fotografisk returkontroll overlevert til root; privat versjonert SIGNAL-EXT-09-lydutkast under arbeid, ingen aktive kildefiler eller motorjobb.
