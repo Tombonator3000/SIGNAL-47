@@ -114,6 +114,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    if(!V||V->Type!=EJson::Object)continue;const auto O=V->AsObject();if(!O)continue;FJob J;
    J.Phenomenon=S47J::Str(O,TEXT("phenomenon"));J.Id=S47J::Str(O,TEXT("id"));J.Day=FMath::Max(1,SafeInt(O,TEXT("day"),1));J.Slot=FMath::Clamp(SafeInt(O,TEXT("slot")),0,2);J.Source=FMath::Clamp(SafeInt(O,TEXT("source")),0,3);
    J.Stage=EJobStage(FMath::Clamp(SafeInt(O,TEXT("stage")),0,7));J.Elapsed=FMath::Clamp(SafeNum(O,TEXT("elapsed")),0.,40.);J.Quality=FMath::Clamp(SafeNum(O,TEXT("quality"),1),0.,1.);J.ReceivedLevel=FMath::Clamp(SafeNum(O,TEXT("receivedLevel"),1),0.,1.);
+   if(const auto Sound=S47J::Obj(O,TEXT("recordingSound"));Sound&&SafeInt(Sound,TEXT("v"))==1)
+   {
+    J.RecordingSoundVersion=1;J.RecordingGain=FMath::Clamp(SafeNum(Sound,TEXT("gain")),0.,100.);
+    J.RecordingBandwidth=FMath::Clamp(SafeNum(Sound,TEXT("bandwidth")),0.,100.);J.RecordingQuality=FMath::Clamp(SafeNum(Sound,TEXT("quality")),0.,1.);
+   }
    J.bAnomaly=S47J::Bool(O,TEXT("anomaly"));J.bControl=S47J::Bool(O,TEXT("control"));J.bAudioReviewed=S47J::Bool(O,TEXT("reviewed"));J.bPrinted=S47J::Bool(O,TEXT("printed"));J.bPaid=S47J::Bool(O,TEXT("paid"));
    J.ControlAt=FMath::Clamp(SafeNum(O,TEXT("controlAt")),0.,8.);J.OriginalCovered=FMath::Clamp(SafeNum(O,TEXT("originalCovered")),0.,18.);J.ControlCovered=FMath::Clamp(SafeNum(O,TEXT("controlCovered")),0.,8.);
    J.TraceTicks=S47J::Nums(O,TEXT("traceTicks"));J.bLegacyTrace=S47J::Bool(O,TEXT("legacyTrace"),!O->HasField(TEXT("traceTicks")));
@@ -200,7 +205,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 void FS47FreeformSession::Stop()
 {
  StopEquipmentFeedback();StopPrinterFeedback();FeedbackEncoders.Reset();
- if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio))M->Audio->ReceiverMonitorOff();
+ if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio)){M->Audio->ReceiverMonitorOff();M->Audio->ReceiverRecordingOff();}
  // UObject purge may destroy the scene before this plain C++ session is released.
  const bool bCanRestore=!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Story)&&IsValid(M->Web);
  if(bCanRestore&&bPowerApplied&&!bLastPower)M->Story->ApplyFeederPower(false);
@@ -258,6 +263,21 @@ double FS47FreeformSession::MeasurementRateForCount(int32 Count)
  return N<24?0.:double(N*(N-1))/(27.*26.);
 }
 double FS47FreeformSession::ArrayMeasurementRate()const{return MeasurementRateForCount(AvailableDishCount());}
+double FS47FreeformSession::ReceiverReception()const
+{
+ if(!CurrentJob()||!M||!M->Web||!HasPower())return 0;
+ double Sum=0;const double Az=TargetAz(),El=TargetEl();
+ for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))
+ {
+  const double AzError=FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Az);
+  const double ElError=M->Web->DishEl(I)-El;
+  Sum+=FMath::Exp(-FMath::Square(AzError/.35)-FMath::Square(ElError/.5));
+ }
+ // A commanded bearing is not an encoder measurement. Let a moving/settling
+ // array reveal the source gradually, without changing acquisition requirements.
+ const double Reception=FMath::Clamp(Sum/27.,0.,1.);
+ return PointReady()?Reception*(.25+.75*FMath::Clamp(Settle,0.,1.)):FMath::Min(.6,Reception);
+}
 FString FS47FreeformSession::ArrayMeasurementStatus()const
 {
  const int32 N=AvailableDishCount();
@@ -309,6 +329,7 @@ void FS47FreeformSession::Step(double Dt)
  if(!ArrayMotionHeld())StepWork(D);
  if(AudioDesk)AudioDesk->Step(D);
  if(bAudioOpen&&!Held())StepAudio(D);
+ if(M->Audio&&(!bAudioPlaying||!bAudioOpen||Held()||!HasPower()||!AudioDesk||!AudioDesk->ListeningPosition()))M->Audio->ReceiverRecordingOff();
  if(Field)Field->Step(D);
  if(Director)Director->Step(D);
  StepPrinter(D);
@@ -320,7 +341,7 @@ void FS47FreeformSession::Step(double Dt)
  {
   const FJob* Job=CurrentJob();
   const bool Listen=Job&&Powered&&M->Story->Rx.bPowered&&!Held()&&TerminalOnGlass()&&ActiveTerminal==1&&M->World&&M->World->Area==TEXT("saro");
-  if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job));
+  if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),ReceiverReception());
   else M->Audio->ReceiverMonitorOff();
  }
  if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(Objective());
@@ -559,6 +580,8 @@ bool FS47FreeformSession::StartAcquisition()
  int32 Available=0;for(int32 I=0;I<27;++I)Available+=M->Web->DishRemoteAvailable(I)?1:0;J->Quality=double(Available)/27;
  double ActualAz=0;for(int32 I=0;I<27;++I)if(M->Web->DishRemoteAvailable(I))ActualAz+=M->Web->DishAz(I);
  ActualAz/=FMath::Max(1,Available);J->ReceivedLevel=BeamLevel(ActualAz,TargetAz()+(J->Phenomenon==TEXT("wrong_source")?.5:0));
+ J->RecordingSoundVersion=1;J->RecordingGain=FMath::Clamp(M->Story->Rx.Gain,0.,100.);J->RecordingBandwidth=FMath::Clamp(M->Story->Rx.Bandwidth,0.,100.);
+ J->RecordingQuality=FMath::Clamp(M->Story->Rx.Quality(EffectiveProfile(*J))*ReceiverReception(),0.,1.);
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
  Changed(TEXT("RECEIVER (centre PC): Recording started. Keep tuning, pointing and power valid; collect the original at the PRINTER when complete."));return true;
 }
@@ -698,6 +721,8 @@ void FS47FreeformSession::StepAudio(double Dt)
  double& Covered=AudioSourceIndex==0?J->OriginalCovered:J->ControlCovered;if(Listening&&Was<=Covered+1e-7)Covered=FMath::Max(Covered,AudioCursor);
  if(M->Audio&&Listening)
  {
+  if(J->RecordingSoundVersion==1)M->Audio->MonitorReceiverRecording(FString::Printf(TEXT("freeform-source-%d"),J->Source),J->RecordingGain,J->RecordingBandwidth,J->RecordingQuality,AudioCursor);
+  else M->Audio->ReceiverRecordingOff(); // Legacy evidence keeps its original beep-only reconstruction.
   for(double At=PulsarPeriod;At<=Duration;At+=PulsarPeriod)if(Was<At&&AudioCursor>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
   if(AudioSourceIndex==0)for(double At:J->TraceTicks)if(Was<At&&AudioCursor>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
  }
@@ -1585,6 +1610,11 @@ S47J::FObj FS47FreeformSession::Save()const
  {
   auto A=S47J::New();S47J::Set(A,TEXT("chartFeed"),J.ChartFeed);S47J::Set(A,TEXT("packetFeed"),J.PacketFeed);S47J::Set(A,TEXT("duplicateFeed"),J.DuplicateFeed);S47J::Set(A,TEXT("id"),J.Id);S47J::Set(A,TEXT("day"),J.Day);S47J::Set(A,TEXT("slot"),J.Slot);S47J::Set(A,TEXT("source"),J.Source);S47J::Set(A,TEXT("phenomenon"),J.Phenomenon);S47J::Set(A,TEXT("stage"),int32(J.Stage));S47J::Set(A,TEXT("elapsed"),J.Elapsed);S47J::Set(A,TEXT("quality"),J.Quality);S47J::Set(A,TEXT("receivedLevel"),J.ReceivedLevel);S47J::Set(A,TEXT("anomaly"),J.bAnomaly);S47J::Set(A,TEXT("control"),J.bControl);S47J::Set(A,TEXT("reviewed"),J.bAudioReviewed);S47J::Set(A,TEXT("printed"),J.bPrinted);S47J::Set(A,TEXT("paid"),J.bPaid);S47J::Set(A,TEXT("controlAt"),J.ControlAt);S47J::Set(A,TEXT("originalCovered"),J.OriginalCovered);S47J::Set(A,TEXT("controlCovered"),J.ControlCovered);S47J::Set(A,TEXT("markStart"),J.MarkStart);S47J::Set(A,TEXT("markEnd"),J.MarkEnd);S47J::Set(A,TEXT("receiverClock"),J.ReceiverClock);S47J::Set(A,TEXT("referenceClock"),J.ReferenceClock);S47J::Set(A,TEXT("controlReceiverClock"),J.ControlReceiverClock);S47J::Set(A,TEXT("controlReferenceClock"),J.ControlReferenceClock);S47J::Set(A,TEXT("duplicateClock"),J.DuplicateClock);S47J::Set(A,TEXT("duplicateInterval"),J.DuplicateInterval);
   S47J::Set(A,TEXT("traceTicks"),J.TraceTicks);S47J::Set(A,TEXT("legacyTrace"),J.bLegacyTrace);
+  if(J.RecordingSoundVersion==1)
+  {
+   auto Sound=S47J::New();S47J::Set(Sound,TEXT("v"),1);S47J::Set(Sound,TEXT("gain"),J.RecordingGain);
+   S47J::Set(Sound,TEXT("bandwidth"),J.RecordingBandwidth);S47J::Set(Sound,TEXT("quality"),J.RecordingQuality);S47J::Set(A,TEXT("recordingSound"),Sound);
+  }
   S47J::Set(A,TEXT("beamPoint"),J.BeamPoint);S47J::Set(A,TEXT("beamSettle"),J.BeamSettle);S47J::Set(A,TEXT("beamSample"),J.BeamSample);S47J::Set(A,TEXT("beamAz"),J.BeamAz);S47J::Set(A,TEXT("beamEl"),J.BeamEl);S47J::Set(A,TEXT("beamAmplitude"),J.BeamAmplitude);S47J::Set(A,TEXT("beamVerified"),J.bBeamVerified);S47J::Set(A,TEXT("clockMeasured"),J.bClockMeasured);S47J::Set(A,TEXT("duplicateCollected"),J.bDuplicateCollected);S47J::Set(A,TEXT("originalPage"),J.OriginalPage);S47J::Set(A,TEXT("originalStamp"),J.OriginalStamp);S47J::Set(A,TEXT("duplicatePage"),J.DuplicatePage);S47J::Set(A,TEXT("duplicateStamp"),J.DuplicateStamp);S47J::Set(A,TEXT("caseLine"),J.CaseLine);S47J::Set(A,TEXT("caseTest"),J.CaseTest);S47J::Set(A,TEXT("caseValid"),J.bCaseValid);S47J::Set(A,TEXT("caseRecorded"),J.bCaseRecorded);if(J.bGenerated)
   {
    auto C=S47J::New();const auto& P=J.Card.Receiver;S47J::Set(C,TEXT("v"),1);S47J::Set(C,TEXT("f"),P.F);S47J::Set(C,TEXT("ftol"),P.FTol);S47J::Set(C,TEXT("g0"),P.Gain[0]);S47J::Set(C,TEXT("g1"),P.Gain[1]);S47J::Set(C,TEXT("bw0"),P.Bw[0]);S47J::Set(C,TEXT("bw1"),P.Bw[1]);S47J::Set(C,TEXT("az0"),P.Az[0]);S47J::Set(C,TEXT("az1"),P.Az[1]);S47J::Set(C,TEXT("el"),J.Card.El);S47J::Set(C,TEXT("seconds"),J.Card.Seconds);S47J::Set(C,TEXT("suggested"),J.Card.SuggestedClock);S47J::Set(C,TEXT("text"),P.Card);S47J::Set(A,TEXT("card"),C);
@@ -1699,6 +1729,10 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  Check(Workflow.RevealJournalHint(HintKey)==1&&Workflow.RevealJournalHint(HintKey)==2&&Workflow.RevealJournalHint(HintKey)==3&&Workflow.RevealJournalHint(HintKey)==3&&WJ->Stage==EJobStage::Registered,TEXT("Explicit hints reveal at most three levels without completing work"));
  WJ->TraceTicks={9.3,11.4};WJ->bLegacyTrace=true;auto JournalSave=Workflow.Save();FS47FreeformSession JournalAgain(nullptr);JournalAgain.Begin(JournalSave);
  Check(JournalAgain.JournalHintLevel(HintKey)==3&&JournalAgain.CurrentJob()->TraceTicks.Num()==2,TEXT("Per-case hints and legacy trace survive Continue without duplicated ticks"));
+ Check(JournalAgain.CurrentJob()->RecordingSoundVersion==0,TEXT("Legacy recordings remain beep-only without invented capture settings"));
+ WJ->RecordingSoundVersion=1;WJ->RecordingGain=63;WJ->RecordingBandwidth=24;WJ->RecordingQuality=.85;
+ FS47FreeformSession SoundAgain(nullptr);SoundAgain.Begin(Workflow.Save());const auto* Captured=SoundAgain.CurrentJob();
+ Check(Captured&&Captured->RecordingSoundVersion==1&&Captured->RecordingGain==63&&Captured->RecordingBandwidth==24&&Captured->RecordingQuality==.85&&Captured->TraceTicks==WJ->TraceTicks,TEXT("Captured background settings and authoritative ticks survive Continue independently of current tuning"));SoundAgain.Stop();
  auto Refund=Workflow.Save();Refund->RemoveField(TEXT("economyRevision"));S47J::Set(Refund,TEXT("upgrades"),TArray<double>{0,1,0});S47J::Set(Refund,TEXT("cash"),0);S47J::Set(Refund,TEXT("loan"),30);
  FS47FreeformSession RefundCase(nullptr);RefundCase.Begin(Refund);Check(RefundCase.Budget()==50&&RefundCase.Debt()==0&&!RefundCase.HasUpgrade(1)&&!RefundCase.Upgrade(1),TEXT("Retired comparison upgrade refunds debt first and cannot be bought again"));
  FS47FreeformSession RefundAgain(nullptr);RefundAgain.Begin(RefundCase.Save());Check(RefundAgain.Budget()==50&&RefundAgain.Debt()==0,TEXT("Refund is idempotent across save and Continue"));

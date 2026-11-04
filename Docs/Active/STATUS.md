@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Rikere Freeform-mottaker, installert 4. november
+
+Kontinuerlig pip er erstattet av to deterministiske radiolag per kilde: støy og kildetekstur med sveipende modulasjon. Frekvens, gain, båndbredde og faktisk antennepeking/stabilisering avgjør hva som blir hørbart. Storys bæretone og fire/sju-signatur er uendret. Nye opptak beholder startens lydinnstilling ved Save/Continue; gamle opptak beholder tidligere rekonstruksjon. Eksisterende pulsrytme og TraceTicks er fortsatt bevisgrunnlaget.
+
+Editorbygg, selvtester og fire lydprøver gjennom faktisk mottakergraf består, inkludert søk, innstilling, klart signal og avslått mottaker. Linux-pakke, pakkeselvtest og installert oppstart består; 124 personlige Saved-filer er uendret. Menneskelig vurdering av klang og komfort gjenstår. SIGNAL-EXT er fortsatt åpen: fullstendige tuningsegmenter i opptak, felles spektralgrunnlag og samlet spilleraksept er ikke ferdigmeldt.
+
 ## SARO-blafring og østfløyens dører, installert 4. november
 
 Gamle slitasjeflater ved gulv og tak er skilt fra de nye overflatene; seks nedløpsflekker ligger nå mot muren i stedet for gjennom rørene. Eksisterende atlas, UV-er og materialer beholdes. Personell- og servicedøren i østfløyen kan åpnes/lukkes fra begge sider i Freeform og lagres ved Fortsett. De synlige knappene på begge garasjeportpanelene treffer nå riktig interaksjon. Story-låsingen beholdes.
