@@ -34,7 +34,7 @@ public:
   double ReceiverClock=0,ReferenceClock=0,ControlReceiverClock=0,ControlReferenceClock=0,DuplicateClock=0,DuplicateInterval=0;
   int32 BeamPoint=0;double BeamSettle=0,BeamSample=0;
   TArray<double> BeamAz,BeamEl,BeamAmplitude;
-  bool bBeamVerified=false,bClockMeasured=false,bDuplicateCollected=false;
+  bool bBeamVerified=false,bClockMeasured=false,bDuplicateCollected=false,bDuplicateRejected=false; // rejected legacy copy never becomes evidence
   FString OriginalPage,OriginalStamp,DuplicatePage,DuplicateStamp;
   // Case test job (FS47FreeformCases); -1 for ordinary work.
   int32 CaseLine=-1,CaseTest=-1;

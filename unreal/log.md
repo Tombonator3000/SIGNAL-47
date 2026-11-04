@@ -1773,3 +1773,7 @@ Codex, `codex/night-service-loop-20261104`: tre fysiske servicehandlinger, én r
 ### 5. november 2026 kl.00:06, avgrenset PHOTO-04
 
 Codex, `codex/night-photo-control-20261104`: faktisk lagret opptaksstilling, frosset original, søker/Now-returveiledning og separat fremkalt kontrollfoto med native OPS-sammenligning uten ny betaling. Bygg, 2373 selvtester og `photocontrol-r8` med 69 kontroller/tre disk-Continue består; både monitor og direkte CRT-tekstur er visuelt kontrollert. Harnesset bruker eksplisitt tilbakeplassering og avsluttet passasje; OPS-front er +X fra vestveggen, ikke Z-forskyvning. Gamle foto får ingen oppdiktet stilling; bred signal-/feltkobling og menneskelig reise gjenstår.
+
+### 5. november 2026 kl.00:15, legacy-printer og butikkgrenser
+
+Codex, `codex/night-printer-queue-20261105`: avvist legacy-duplikat lagres og frigjør printerkøen uten å endre original, fullføre jobben eller betale. Bygg, legacy25/tre disk-Continue og moderne printer26/to returer består; butikkgrense41/to returer bekrefter 98/99 og atomisk avvisning. Eldre TODO-blokkeringer for PR382-tittel/feltplan er avstemt mot eksisterende leveringsbevis; normal meny-/prosessreise og Story gjenstår.
