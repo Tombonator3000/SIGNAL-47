@@ -1781,3 +1781,7 @@ Codex, `codex/night-printer-queue-20261105`: avvist legacy-duplikat lagres og fr
 ### 5. november 2026 kl.00:23: videre arbeid samme dag og normal lagringsbane
 
 CONTINUE TODAY gir konkret neste jobb og tilstandsbasert fotoutstyrshjelp. Editorbygg og 56 native kontroller/fem disk-Continue består; faktisk ny måling/utskrift/registrering kl.23:00 bevarer første original og én betaling. CRT-bildet er kontrollert. Separat vanlig tittel-/lagringsmenyprøve i to prosesser bevarer Case 1, økonomi, jobber og tutorial mellom Save 1 og Save 2; første manuelle fil er byteidentisk. Denne grunnprøven har ingen utført arbeid/foto/handel. Samlet innholdsreise og installasjon gjenstår.
+
+### 5. november 2026 kl.00:26: betalt og droppet butikkpakke ved Continue
+
+Bygg og utvidet ShopBasketTest består58 kontroller/fire disk-Continue. Produksjonskjøp, fysisk henting, Walker-bæring, slipp/bakkekontakt og gjenhenting bevarer innhold/posisjon/saldo ved begge nye avbrudd. Levering og lagergrenser består fortsatt uten duplisering. Testen bruker eksplisitte tilnærmings-/transportfixtures; vanlig meny-/prosessrestart og full kjøretur står separat.

@@ -921,17 +921,53 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==87041)
   {
-   Shot(TEXT("shop-three-items-menu"));Go(8705,.3);return;
+   Shot(TEXT("shop-three-items-menu"));Go(87042,.3);return;
+  }
+  if(Stage==87042)
+  {
+   M->UI->Close(true);if(!Restore(TEXT("shop-paid-before-pickup")))return;Go(8705,.4);return;
   }
   if(Stage==8705)
   {
-   M->UI->Close(true);const FVector Parcel=F.Field->InteractionPoint(TEXT("ff:parcel"));Place(FVector(7981.8,0,2068.8));Aim(Parcel);Go(87051,.3);return;
+   if(M->World->bBusy)return;
+   if(!Check(F.Field->ParcelStage()==1&&Contents()&&StockUnchanged()&&F.Budget()==ShopCash-35&&F.Field->DeliveredParcels()==ShopDelivered&&F.Field->CargoDeliveries()==ShopCargo,TEXT("disk Continue before pickup retains the complete paid counter basket without charge, stock or delivery credit")))return;
+   F.Director->Stop();M->UI->Close(true);const FVector Parcel=F.Field->InteractionPoint(TEXT("ff:parcel"));Place(FVector(7981.8,0,2068.8));Aim(Parcel);Go(87051,.3);return;
   }
   if(Stage==87051)
   {
    if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:parcel"),TEXT("native interaction ray reaches the paid counter parcel")))return;
    M->Player->OnUse(TEXT("ff:parcel"));
    if(!Check(F.Field->ParcelStage()==2&&Contents()&&!F.Field->Purchase(TEXT("fuse"))&&F.Budget()==ShopCash-35,TEXT("pickup carries the complete paid basket and locks further remote purchases")))return;
+   // Back away from the counter with real Walker input before releasing the parcel.
+   Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("startX"),M->Player->Pos.X);S47J::Set(Snapshot,TEXT("startZ"),M->Player->Pos.Z);
+   M->Player->TestMove=FVector2D(0,-1);Go(87052,.6);return;
+  }
+  if(Stage==87052)
+  {
+   M->Player->TestMove.Reset();
+   const FVector2D Before(S47J::Num(Snapshot,TEXT("startX")),S47J::Num(Snapshot,TEXT("startZ")));
+   if(!Check(FVector2D(M->Player->Pos.X-Before.X,M->Player->Pos.Z-Before.Y).Size()>.15,TEXT("actual Walker movement transports the paid basket away from the counter")))return;
+   if(!Check(F.Field->DropParcel(true)&&F.Field->ParcelStage()==4&&Contents()&&StockUnchanged()&&F.Budget()==ShopCash-35,TEXT("production drop releases the paid basket without inventory or money mutation")))return;
+   Go(87053,2.5);return;
+  }
+  if(Stage==87053)
+  {
+   if(!Check(F.Field->ParcelStage()==4&&F.Field->ParcelSimulating()&&F.Field->ParcelImpactCount()>0,TEXT("dropped paid basket has actual native physics and a physical ground contact")))return;
+   Snapshot=S47J::Read(S47J::Write(F.Field->Save()));
+   if(!Restore(TEXT("shop-dropped-paid-basket")))return;Go(87054,.4);return;
+  }
+  if(Stage==87054)
+  {
+   if(M->World->bBusy)return;
+   const auto Position=S47J::Nums(S47J::Obj(Snapshot,TEXT("carry")),TEXT("position"));
+   if(!Check(Position.Num()==3&&F.Field->ParcelStage()==4&&F.Field->ParcelPosition().Equals(FVector(Position[0],Position[1],Position[2]),.15)&&Contents()&&StockUnchanged()&&F.Budget()==ShopCash-35&&F.Field->DeliveredParcels()==ShopDelivered&&F.Field->CargoDeliveries()==ShopCargo,TEXT("disk Continue preserves the grounded paid basket pose, contents and budget without moving it back to the counter or crediting delivery")))return;
+   F.Director->Stop();Aim(F.Field->InteractionPoint(TEXT("ff:parcel")));Go(87055,.3);return;
+  }
+  if(Stage==87055)
+  {
+   if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:parcel")&&bool(M->Player->OnUse),TEXT("actual interaction ray reaches the restored dropped basket")))return;
+   M->Player->OnUse(TEXT("ff:parcel"));
+   if(!Check(F.Field->ParcelStage()==2&&Contents()&&StockUnchanged()&&F.Budget()==ShopCash-35,TEXT("physical re-pickup returns the same paid contents to hand without recharging or crediting stock")))return;
    const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
    if(!Check(F.Field->ParcelStage()==3&&Contents()&&StockUnchanged(),TEXT("actual cargo callback loads the entire parcel without crediting stock")))return;
    if(!Restore(TEXT("shop-loaded-basket")))return;Go(8706,.4);return;
