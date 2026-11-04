@@ -202,9 +202,15 @@ void AS47Web::BeginProductionViews()
   {TEXT("saro-overlay-ceiling"),TEXT("saro"),{0,0,1.5},{2.6,2.9,4.3}},
   {TEXT("saro-overlay-floor"),TEXT("saro"),{0,0,1.5},{2,.01,3.8}},
   {TEXT("saro-overlay-pipe"),TEXT("saro"),{30.5,-.576,7.3},{31.85,.4,5.6}},
+  // Independent lower-wall diagnosis: ordinary eye height, close and oblique
+  // views of measured coplanar g220/ControlRoomFinishes surfaces. Static poses.
+  {TEXT("saro-wall-base-south-front"),TEXT("saro"),{.2,0,2.5},{.2,.16,4.477}},
+  {TEXT("saro-wall-base-south-oblique"),TEXT("saro"),{.9,0,3.2},{-1.,.16,4.477}},
+  {TEXT("saro-wall-base-east"),TEXT("saro"),{4.1,0,2.6},{5.977,.16,3.2}},
+  {TEXT("saro-wall-base-west"),TEXT("saro"),{-3.4,0,1.2},{-5.977,.16,.95}},
  };
- struct FState {int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
- const auto State=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
+ struct FState {int32 MotionFrame=0;double MotionElapsed=0,MotionAt=0;bool bWallMotion=false;int32 Index=0,LastLight=INDEX_NONE,OnlyLight=INDEX_NONE;bool Placed=false,Done=false,bFloorOverride=false,bExit=false,bHadCinematic=false,bPreviousCinematic=false;double Since=0,Hold=2.5,RequestedAt=0;float PrevFov=-1;FString Dir,Suite,OnlyView,PendingFile;TFunction<double(double,double)> PreviousFloor;FTimerHandle Timer;};
+ const auto State=MakeShared<FState>();State->bWallMotion=FParse::Param(FCommandLine::Get(),TEXT("S47WallBaseMotion"));FParse::Value(FCommandLine::Get(),TEXT("S47ProductionShots="),State->Dir);FParse::Value(FCommandLine::Get(),TEXT("S47ProductionSuite="),State->Suite);
  State->bExit=FParse::Param(FCommandLine::Get(),TEXT("S47ProductionExit"));
  // Fast art iteration: request one existing camera/time without rerunning a suite.
  FParse::Value(FCommandLine::Get(),TEXT("S47ProductionView="),State->OnlyView);
@@ -218,7 +224,7 @@ void AS47Web::BeginProductionViews()
   {
    RestoreFixtureFloor();if(State->bHadCinematic)M->Story->SetCinematic(State->bPreviousCinematic);
    State->Done=true;W->GetWorldTimerManager().ClearTimer(State->Timer);
-   if(Pass){UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; static camera fixtures, input and interactions separate"));}
+   if(Pass){UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production views PASS; camera fixtures only, input and interactions separate"));}
    else {UE_LOG(LogS47ProductionViews,Error,TEXT("S47: production views FAIL %s"),Why);}
    if(State->bExit){if(Pass)FPlatformMisc::RequestExit(false);else FPlatformMisc::RequestExitWithStatus(false,1);}
   };
@@ -228,7 +234,10 @@ void AS47Web::BeginProductionViews()
    if(ProductionPngWritten(State->PendingFile))
    {
     UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production screenshot written %s"),*State->PendingFile);
-    State->PendingFile.Empty();++State->Index;State->Placed=false;
+    State->PendingFile.Empty();
+    if(State->bWallMotion&&FString(Views[State->Index%UE_ARRAY_COUNT(Views)].Name)==TEXT("saro-overlay-floor")&&State->MotionFrame<4)
+    {++State->MotionFrame;State->MotionAt=FPlatformTime::Seconds();return;} // Hold the pose while its PNG is written.
+    ++State->Index;State->Placed=false;State->MotionFrame=0;State->MotionElapsed=0;State->MotionAt=0;
    }
    else if(FPlatformTime::Seconds()-State->RequestedAt>15.)Fail(TEXT("requested PNG was not completely written within 15 seconds"));
    return;
@@ -245,6 +254,7 @@ void AS47Web::BeginProductionViews()
     ||(State->Suite==TEXT("motel")&&!Motel)||(State->Suite==TEXT("signal")&&!Signal)||(State->Suite==TEXT("homes")&&!Homes)||(State->Suite==TEXT("documents")&&!Office)||(State->Suite==TEXT("cinema-posters")&&!Cinema)||(State->Suite==TEXT("room6")&&(I<11||I>12))
     ||(State->Suite==TEXT("field")&&(I<13||I>16))||(State->Suite==TEXT("archive")&&(I<17||I>18))||(State->Suite==TEXT("photolab")&&!PhotoLab)
     ||(State->Suite==TEXT("saro-overlays")&&!Name.StartsWith(TEXT("saro-overlay-")))
+    ||(State->Suite==TEXT("saro-wall-base")&&!Name.StartsWith(TEXT("saro-wall-base-")))
     ||(State->Suite==TEXT("triponpcs")&&!Name.StartsWith(TEXT("tripo-")))||(State->Suite==TEXT("interiors")&&!Interiors)
     ||(State->Suite.IsEmpty()&&I>12)){++State->Index;continue;}break;
   }
@@ -277,6 +287,7 @@ void AS47Web::BeginProductionViews()
    {State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("office-research-wall")?74.f:ViewName==TEXT("office-passing-bay")?80.f:78.f;}
    else if(ViewName.StartsWith(TEXT("photolab-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("photolab-overview")?82.f:ViewName==TEXT("photolab-records-storage")?78.f:72.f;}
    else if(ViewName.StartsWith(TEXT("interior-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName==TEXT("interior-control-rack")?60.f:ViewName.EndsWith(TEXT("-detail"))?50.f:ViewName==TEXT("interior-control-console")?68.f:78.f;}
+   else if(ViewName.StartsWith(TEXT("saro-wall-base-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=60.f;}
    else if(ViewName==TEXT("tripo-dale")){State->PrevFov=M->Player->Fov;M->Player->Fov=100.f;}
    else if(ViewName.StartsWith(TEXT("homes-"))){State->PrevFov=M->Player->Fov;M->Player->Fov=ViewName.StartsWith(TEXT("homes-sign-"))?40.f:55.f;}
    if(ViewName.StartsWith(TEXT("photolab-")))
@@ -292,6 +303,25 @@ void AS47Web::BeginProductionViews()
    State->Hold=AreaChanged||LightChanged?5.:2.5;State->Since=Now;State->Placed=true;return;
   }
   if(Now-State->Since<State->Hold)return;
+  const bool WallMotion=State->bWallMotion&&FString(V.Name)==TEXT("saro-overlay-floor");
+  if(WallMotion)
+  {
+   // Explicit 0.8m camera slide over three active seconds; five serial raster
+   // frames. This is a pose fixture, not walking input or a collision-route test.
+   const bool First=State->MotionAt==0;
+   if(!First&&Now<State->MotionAt)return;
+   if(State->MotionFrame>0)State->MotionElapsed=FMath::Min(3.,State->MotionElapsed+FMath::Clamp(Now-State->MotionAt,0.,.15));
+   State->MotionAt=Now;
+   const double X=.2+.8*State->MotionElapsed/3.;
+   if(!M->Player->Walkable(X,2.5)){Fail(TEXT("wall slide pose outside control-room walk area"));return;}
+   M->Player->Place(X,2.5,0);
+   if(FMath::Abs(M->Player->FloorY)>.001){Fail(TEXT("wall slide fixture requires control-room floor zero"));return;}
+   const FVector D=FVector(X,.16,4.477)-FVector(X,M->Player->FloorY+M->Player->Eye,2.5);
+   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   if(First){State->MotionAt=Now+.5;return;} // Render the new start pose before frame zero.
+   if(State->MotionElapsed+1.e-5<State->MotionFrame*.75)return;
+   UE_LOG(LogS47ProductionViews,Display,TEXT("S47 wall camera slide frame=%d active-seconds=%.3f x=%.3f; explicit camera interpolation, no walking-input claim"),State->MotionFrame,State->MotionElapsed,X);
+  }
   if(FString(V.Area)==TEXT("room6")&&FMath::Abs(M->Player->FloorY)>.0001){Fail(TEXT("Room6 fixture floor drift"));return;}
   TArray<FString> Lines;bool Ok=true;
   if(FString(V.Name).StartsWith(TEXT("office-"))){Ok=M->Office&&M->Office->AuditDocumentArt(Lines);Ok&=S47SaroInterior::Audit(W,Lines);Ok&=S47SaroDoorDetail::Audit(W,Lines);Ok&=S47OfficeOwned::Audit(W,Lines);}
@@ -324,6 +354,11 @@ void AS47Web::BeginProductionViews()
   }
   else if(State->Suite==TEXT("cinema-posters")){Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines)&&W->AuditCinemaPosters(Lines);}
   else if(FString(V.Name).StartsWith(TEXT("saro-overlay-"))){Ok=W->Area()==TEXT("saro");}
+  else if(FString(V.Name).StartsWith(TEXT("saro-wall-base-")))
+  {
+   Ok=W->Area()==TEXT("saro")&&M->Player->Walkable(V.Foot.X,V.Foot.Z)&&FMath::Abs(M->Player->FloorY)<.001;
+   Lines.Add(TEXT("lower-wall fixed camera: authored eye height and 60-degree FOV; close/oblique raster comparison only, no keyboard walking or temporal-flicker PASS"));
+  }
   else if(I<4){Ok=W->SaroSite&&W->SaroSite->Audit(Lines)&&W->FleetParked&&W->FleetParked->Audit(Lines);const auto P=S47HighwayPower::Status(W);Ok&=P.bReady&&P.SaroTotalWithin100m==3;
    if(I==3)Ok&=M->World->SaroTruck()&&M->World->SaroTruck()->AuditProductionArt(Lines); }
   else if(I<13||I>=19) Ok=W->TownBuildings&&W->TownBuildings->Audit(Lines);
@@ -335,7 +370,7 @@ void AS47Web::BeginProductionViews()
   if(FString(V.Name).StartsWith(TEXT("homes-")))Ok&=W->AuditCalicheHomes(Lines);
   for(const auto& Line:Lines)UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production %s"),*Line);
   if(!Ok){Fail(TEXT("native installation audit"));return;}
-  static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};const FString Name=FString(Lights[Light])+TEXT("-")+V.Name,File=State->Dir/(Name+TEXT(".png"));
+  static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};const FString Name=FString(Lights[Light])+TEXT("-")+V.Name+(WallMotion?FString::Printf(TEXT("-camera-slide-%02d"),State->MotionFrame):FString()),File=State->Dir/(Name+TEXT(".png"));
   IFileManager::Get().MakeDirectory(*State->Dir,true);if(IFileManager::Get().FileExists(*File)){Fail(TEXT("refusing evidence overwrite"));return;}
   if(M->UI)M->UI->ClearToasts();FScreenshotRequest::RequestScreenshot(File,true,false);
   UE_LOG(LogS47ProductionViews,Display,TEXT("S47: production view %s foot=%.3f,%.3f,%.3f eye=%.3f"),*Name,M->Player->Pos.X,M->Player->FloorY,M->Player->Pos.Z,M->Player->FloorY+M->Player->Eye);

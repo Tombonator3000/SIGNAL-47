@@ -6,7 +6,9 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
-Butikkprøven er utvidet til 58 kontroller/fire disk-Continue. Et faktisk betalt varekurvinnhold beholdes før henting og etter bæring/slipp med bakkekontakt. Posisjon, saldo og varer overlever Continue; faktisk gjenhenting og senere levering gir lagerkreditt én gang. Lagergrenser og atomisk avvisning består fortsatt. Dette er styrte tilnærminger og transportfixtures, ikke en full kjøretur eller vanlig lagringsmeny.
+Nedre veggoverlegg er separert fra kontrollrommets nye veggflater: 20 hele smusstrekanter flyttes12mm, med minst11mm klaring og uendret UV/normal/farge. Generatorresultatet er byteidentisk med runtimegrunnlaget. Bygg og fire faste samt fem glidende kamerabilder før/etter består; undersøkte kanter og merker er visuelt kontrollert. Bord skjuler deler av sørveggen; dette erstatter ikke en full spillerprøve. Installasjon gjenstår.
+
+[PR400](https://github.com/Tombonator3000/SIGNAL-47/pull/400), flettet som `ab82ac4c`, utvider butikkprøven til 58 kontroller/fire disk-Continue. Et faktisk betalt varekurvinnhold beholdes før henting og etter bæring/slipp med bakkekontakt. Posisjon, saldo og varer overlever Continue; faktisk gjenhenting og senere levering gir lagerkreditt én gang. Lagergrenser og atomisk avvisning består fortsatt. Dette er styrte tilnærminger og transportfixtures, ikke en full kjøretur eller vanlig lagringsmeny.
 
 [PR399](https://github.com/Tombonator3000/SIGNAL-47/pull/399), flettet som `b6592fa1`, gjør at OPS viser CONTINUE TODAY øverst etter første skift, med navngitt neste observasjon og konkret kamera-/film-/labhjelp. Bygg og 56 native kontroller/fem disk-Continue består: kl.23:00-fixturen fullfører neste jobb gjennom ekte antennebevegelse, opptak, utskrift og registrering. Første original bevares og betaling skjer én gang. Den fysiske CRT-en er visuelt kontrollert; naturlig spillerflyt og installasjon gjenstår.
 
