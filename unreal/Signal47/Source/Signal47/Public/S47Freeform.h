@@ -8,6 +8,7 @@
 class US47Main;
 class FS47FreeformDirector;
 class FS47FreeformWorld;
+class FS47CaseFieldTests;
 struct FS47Task;
 
 // Separate, persistent SARO working life. Story progression never grants its jobs or facts.
@@ -93,6 +94,13 @@ public:
  void OpenCaseBoard(int32 Line=-1);
  bool PlanCaseTest(int32 Line,int32 Test);
  bool FocusFieldTest(int32 Line);
+ bool FocusFieldCase(int32 Line);
+ bool SetCaseHunch(int32 Line,int32 Cause);
+ bool CaseTestWindow(int32 Line,double& Start,double& End) const;
+ FString CaseWindowText(int32 Line) const;
+ bool CaseWaitTarget(int32 Line,double& Target) const;
+ FString WaitConsequences(double Target) const;
+ bool WaitUntil(double Target);
  int32 FocusedFieldCase() const { return FieldFocus; }
  FString FieldNextAction(int32 Line) const;
  FString AvailableActivities() const;
@@ -161,6 +169,7 @@ public:
  TSharedPtr<class FS47FreeformAudioDesk> AudioDesk;
  TSharedPtr<FS47FreeformDirector> Director;
  TSharedPtr<FS47FreeformWorld> Field;
+ TSharedPtr<FS47CaseFieldTests> CaseField;
  static bool SelfTest(TArray<FString>& Lines);
  // Isolated developer controls, no player-state mutation outside this session.
  bool TestAdvance(double WorldSeconds);
@@ -241,6 +250,7 @@ private:
  void PrintJob(bool bPacket);
  void SetPanel(TSharedRef<class SWidget> Widget,bool bLive=false,bool bAudio=false);
  void OpenTerminal(int32 Screen,const FString& Title,TSharedRef<SWidget> Body,bool bLive=false);
+ void OpenWaitConfirmation(double Target);
  FS47Profile EffectiveProfile(const FJob& Job) const;
  FString JobLine(const FJob& J) const;
  FString Reference(const FJob& J) const;

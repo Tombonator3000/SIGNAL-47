@@ -366,7 +366,7 @@ namespace S47FreeformEvidenceTest
     if(!Click(M,TEXT("Register routine result / $20"))||!Check(M,J->Stage==EJob::Filed&&!J->bAnomaly&&F.Budget()==S.InitialCash+20&&!F.HasFinding(TEXT("pulse-review")),TEXT("normal reference files once, pays20 and creates no false discrepancy")))return;
     S.Job=1;Go(2);return;
    }
-   if(!Click(M,TEXT("The quiet control proves a sky source"))||!Check(M,J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation is refused without credit or stage advance")))return;Go(33);return;
+   if(!Check(M,!F.RegisterComparison(TEXT("sky"))&&J->Stage==EJob::Recorded&&F.Budget()==S.InitialCash+20,TEXT("unsupported sky-origin interpretation remains refused without a misleading menu choice, credit or stage advance")))return;Go(33);return;
   }
   if(S.Stage==33)
   {if(!Click(M,TEXT("Source unresolved; retain both measurements"))||!Check(M,J->Stage==EJob::Registered&&F.Budget()==S.InitialCash+20,TEXT("supported unresolved registration retains original and awaits physical filing")))return;Go(330,.6);return;}

@@ -14,6 +14,7 @@
 #include "S47SaroResumeTest.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
+#include "S47CaseFieldTests.h"
 #include "S47HighwayUfo.h"
 #include "S47HighwayUfoTest.h"
 #include "S47UfoVisualTest.h"
@@ -198,6 +199,7 @@ void AS47HUD::Start()
 		bOk &= FS47FreeformCases::SelfTest(Lines);
 		bOk &= FS47EastWing::SelfTest(Lines);
 		bOk &= FS47FreeformDirector::SelfTest(Lines);
+		bOk &= FS47CaseFieldTests::SelfTest(Lines);
 		bOk &= FS47HighwayUfo::SelfTest(Lines);
 		bOk &= FS47FreeformWorld::SelfTest(Lines);
 		bOk &= FS47Spine::SelfTest(Lines);

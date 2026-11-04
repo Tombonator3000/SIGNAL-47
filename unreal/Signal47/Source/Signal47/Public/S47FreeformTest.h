@@ -10,6 +10,9 @@ public:
  explicit FS47FreeformTest(US47Main* Main):M(Main){}
  void Step(double Dt);
 private:
+ friend class FS47CaseFieldTest;
+ TSharedPtr<class FS47CaseFieldTest> CaseFieldTest;
+ void StepDuskOrb(double Dt);
  US47Main* M=nullptr;
  bool bInit=false,bDone=false,bAudioMarked=false,bFieldResume=false,bCarRoundTrip=false;
  int32 Stage=0,Checks=0,Restores=0,JobIndex=0,EventIndex=0,DayRuns=0,TripHoldSamples=0;

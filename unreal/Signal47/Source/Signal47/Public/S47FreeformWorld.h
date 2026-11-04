@@ -20,6 +20,7 @@ public:
  void Begin(const S47J::FObj& Saved = nullptr);
  void Stop();
  void Step(double Dt);
+ void AdvanceUnobservedTo(double Clock); // settle battery/power before saving a rest or wait jump
  S47J::FObj Save() const;
  bool Use(const FString& Id);
  FString Label(const FString& Id) const;
@@ -81,6 +82,10 @@ public:
  FVector InteractionPoint(const FString& Id) const;
  // Where a player stands to use a station (the casework fronts face different ways).
  FVector StandPoint(const FString& Id) const;
+ // Field-control staging owns these objects, including visibility and rebuild identity.
+ // AdoptNode defaults its transform scale; retain dimensions for later native rotations.
+ FS47Obj StageBox(const FString& Name,const FVector& At,const FVector& Size,uint32 Colour,int32 Parent)
+ {FS47Obj O=Box(Name,At,Size,Colour,Parent);if(O)O.SetScale(Size);Parts.RemoveAll([&](const FS47Obj& P){return P==O;});return O;}
  static bool SelfTest(TArray<FString>& Lines);
 private:
  FS47FieldLogger Logger;

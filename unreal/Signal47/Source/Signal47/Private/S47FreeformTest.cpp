@@ -1,4 +1,5 @@
 #include "S47FreeformTest.h"
+#include "S47CaseFieldTest.h"
 #include "S47FreeformAudioDesk.h"
 #include "S47Freeform.h"
 #include "S47FreeformDirector.h"
@@ -97,6 +98,9 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ServiceArrayTest")))S47J::Set(O,TEXT("method"),TEXT("Native early OPS SERVICE/accept clicks, initial S-03 plus three explicit ordinary fault targets, wrong-cabinet rejection, actual out-and-back encoders, one relay per repair and mid-repair disk/Flow Continue. Player approaches, spare stock and fault targets are explicit fixtures; no service stage or completion injection."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightWorkTest")))S47J::Set(O,TEXT("method"),TEXT("Prepared routine/legacy packet and completed-day fixtures; production registration, case planning/focus and optional-reference callbacks; disk/Flow Continue. No natural acquisition or human input asserted."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest"))){S47J::Set(O,TEXT("scope"),TEXT("night-logger-film-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit case-access and player-placement fixtures, actual timed bench calibration, production custody callbacks, native camera and film ray, three disk/Flow Continue rounds. No full field recording or natural travel claimed."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-native-controls"));S47J::Set(O,TEXT("method"),TEXT("Explicit session-seed/open-case/player-placement fixtures. Actual native planning/wait buttons, interaction rays, physical preparation/inspection, natural active clock ticks through the entire gate window and timed roof listening, paused/absent listening checks and disk/Flow Continue. Time jumps occur before valid windows or deliberately invalidate the skipped window. No human input, natural lead discovery or subjective listening acceptance."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldPreview"))){S47J::Set(O,TEXT("scope"),TEXT("case-field-roof-visual-preview"));S47J::Set(O,TEXT("method"),TEXT("Explicit seed, clock and player-placement fixture. Native roof plan button and actual preparation ray, before/after screenshots with cleared toasts and separate rendering delays, then explicitly injected gate disturbance geometry. No control-window, listening or gate-result claim."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){S47J::Set(O,TEXT("scope"),TEXT("dusk-orb-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit dusk clock, forced event and player placement. Actual native component, retained camera exposure, wet-bench Slate actions, powered OPS guards, unique control plan and once-only payment, with two full disk/Flow restores. Natural scheduling is checked separately in pure tests; no natural discovery, OS-input journey or completed field comparison is claimed."));}
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -211,8 +215,10 @@ void FS47FreeformTest::Step(double Dt)
   Finish(true,TEXT("Physical camera pickup, shutter, ownership Continue, legacy migration and Story placement passed."));return;
  }
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
- Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
+ Age+=FMath::Min(Dt,.2);if(Age>(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))?1200:900)){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldTest"))||FParse::Param(FCommandLine::Get(),TEXT("S47CaseFieldPreview"))){if(!CaseFieldTest)CaseFieldTest=MakeShared<FS47CaseFieldTest>(*this,M);CaseFieldTest->Step(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){StepDuskOrb(Dt);return;}
 // Insert after auto& F=*M->Freeform; in Step. Run with -S47FreeformTest -S47NightLoggerTest.
 // Explicit access/player-placement fixtures; no natural travel or two-hour measurement claim.
  if(FParse::Param(FCommandLine::Get(),TEXT("S47NightLoggerTest")))
@@ -1572,12 +1578,13 @@ void FS47FreeformTest::Step(double Dt)
   // World transaction/repair fixtures are exercised separately in the same live world.
   if(!Check(F.Field!=nullptr,TEXT("physical supply world remains attached after multi-day Continue")))return;
   const auto Events=FS47FreeformDirector::EventIds();
-  if(!Check(Events.Num()==19&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes sixteen authored events, the room-light incident and both physical service-site encounters")))return;
+  if(!Check(Events.Num()==20&&Events.Contains(TEXT("dusk_orb"))&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes seventeen authored events, the room-light incident and both physical service-site encounters")))return;
   F.TestAdvance(86400.);F.Director->Begin(nullptr);Go(21);return;
  }
  if(Stage==21)
  {
   auto Ids=FS47FreeformDirector::EventIds();
+  Ids.Remove(TEXT("dusk_orb")); // S47DuskOrbTest owns the native photographic journey.
   Ids.Remove(TEXT("roomlight_return")); // Requires a real OFF input and departure; S47ReactiveLightTest owns that journey.
   // array_presence needs a healthy array; s03_failure leaves a fault, so stage the encounter first.
   Ids.Remove(TEXT("array_presence"));Ids.Insert(TEXT("array_presence"),FMath::Max(0,Ids.IndexOfByKey(FString(TEXT("s03_failure")))));

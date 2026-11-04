@@ -31,7 +31,7 @@ public:
  struct FCase
  {
   bool bOpen=false,bConcluded=false;
-  int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0,Truth=0;
+  int32 OpenDay=0,Planned=-1,Conclusion=-1,ValidTests=0,Truth=0,Hunch=-1; // optional player note, never evidence
   double OpenClock=0; // seconds into the day of the retained original
   FString PlannedJob;
   FResult Results[TestCount];
@@ -49,6 +49,7 @@ public:
  const FCase* Get(int32 Line) const { return Cases.IsValidIndex(Line)?&Cases[Line]:nullptr; }
  bool HasAccess(const FString& Id) const { return Access.Contains(Id); }
  bool Plan(int32 Line,int32 Test,const FString& JobId);
+ bool SetHunch(int32 Line,int32 Cause);
  void CancelPlan(int32 Line);
  // Records a finished test. Returns false if it was not the planned test.
  bool Record(int32 Line,int32 Test,int32 Day,bool bValid,bool bPresent,bool& bFirstValid);
@@ -59,6 +60,8 @@ public:
  FString ConclusionText(int32 Line) const;
  bool InRepeatWindow(int32 Line,int32 Day,double DayClock) const;
  static bool PresentFor(int32 Line,int32 Cause,int32 Test);
+ // Empty when the current world implements this test; saved legacy results remain valid.
+ static FString UnavailableReason(int32 Line,int32 Test);
  static FString Prediction(int32 Line,int32 Test);
  static FString ResultText(int32 Line,bool bPresent);
  static FString TestResultText(int32 Line,int32 Test,bool bPresent);

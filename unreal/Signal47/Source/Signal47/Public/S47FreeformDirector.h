@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47DuskOrb.h"
 #include "S47FreeformObservation.h"
 class US47Main;
 struct FS47AlbumShot;
@@ -24,6 +25,7 @@ public:
  struct FPhotoClaim { FString Id,PhotoId,Title; int32 Reward=20; double Quality=0; bool bPaid=false; };
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
+ bool PlanPhotoControl(const FString& Id);
  void TagPhoto(FS47AlbumShot& Shot); // rendered exposures only, before album persistence
  void Photo(const FS47AlbumShot& Shot);
  double LastPhotoSubjectMean() const { return PhotoSubjectMean; } // last non-emissive exposure, -1 if no valid region
@@ -46,6 +48,7 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  struct FEffects;
+ FS47DuskOrb DuskOrb;
  TUniquePtr<FEffects> Effects;
  US47Main* M=nullptr;
  bool bEnabled=false,bApplied=false,bEffectsApplied=false,bChoiceStored=false,bSeen=false,bPhoto=false,bControlled=false,bCompared=false;

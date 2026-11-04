@@ -27,6 +27,7 @@ public:
  bool Calibrate(double Seconds);
  bool Start(int32 At,int32 Day,double Clock);
  void Sample(double Clock,double Delta,bool Generator,bool FeederFault,const FString& Job,double AcquiredDelta,double JobFrequency);
+ void Skip(double Clock,double Delta); // explicit unobserved time, even shorter than a normal tick
  void Finish(double Clock);
  bool Retrieve();
  FString Report(const FTape& T) const;

@@ -4,13 +4,15 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
-## Nattskift 4. til 5. november: første gameplayforenkling under levering
+## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
-`codex/nightshift-20261104` bygger på main `51c049ea`. Ferdige rutinejobber flyttes straks til EARLIER WORK og mister aktivt fokus; første skift bruker den samme registreringen som senere rutinearbeid. Eldre treningspakker beholder fysisk arkivering. Når betalt dagsarbeid er ferdig, finnes en frivillig referansemåling uten ny betaling. Feltplanen har eget lagret fokus og egen Now-oppføring; kobling til fysisk forsøksvindu ferdigstilles i neste nattpakke.
+[PR393](https://github.com/Tombonator3000/SIGNAL-47/pull/393) er flettet i main som `aeb66909`. Ferdige rutinejobber flyttes straks til EARLIER WORK og mister aktivt fokus; første skift bruker den samme registreringen som senere rutinearbeid. Eldre treningspakker beholder fysisk arkivering. Når betalt dagsarbeid er ferdig, finnes en frivillig referansemåling uten ny betaling. Feltplanen har eget lagret fokus og egen Now-oppføring; fysisk forsøksvindu følger i feltpakken nedenfor.
 
 Fotolabens tank, fiksering og henting følger én benkeøkt. OPS og Now peker ufremkalte originaler til laben. En fysisk filmkartong ved kamerabenken bruker eksisterende lager, med én reservepakke kun i nye spill. Loggeren lånes først i delelageret; senere klargjøring, henting, retur og sammenligning skjer ved kalibreringsbenken, med lagret utlånsføring. Saksbrev lister bare faktisk registrerte forsøk; uforklart resultat identifiserer ingen besøkende eller alien, og Continue omskriver ikke måleresultatet til skjult fasit.
 
 Editorbygg og 2346 selvtester består. Fotopanelet er visuelt kontrollert med bevart bildeformat og uten avkuttet instruksjonslinje. Native målprøver: arbeid/fokus 23 kontroller og to disk-/Continue-runder; foto 59/fire runder; logger/film 44/tre runder; første skift 36/tre runder. Foto- og loggerprøvene bruker reelle objekter, knapper og originalbilder, men eksplisitt tilgang/plassering; dette er ikke en naturlig feltreise eller menneskelig flytvurdering. Opplæringen bruker faktisk antennebevegelse, opptak og printer. Lokal testmappe: `~/scratch-bm/Signal47-nightshift-20261104/`. Ingen ny installasjon eller offentlig spillutgave fra denne pakken ennå.
+
+Neste pakke på `codex/night-field-controls-20261104` kobler feltfokus til fysisk takklargjøring og portforsegling, konkrete skiftdager og trygg venting. Søvn avregner drivstoff og loggerbatteri, men gir ingen observasjonsdekning. 2367 selvtester og en native prøve med 67 kontroller og fem disk-/Continue-runder består, inkludert faktisk taklytting og et helt tre timers portvindu gjennom vanlig spilltid. En separat kort prøve med 11 kontroller bekrefter fysisk takklargjøring og rettet skala; portbildet bruker en uttrykkelig merket geometrifikstur. To striper og kryssende merker følger den faktiske gangflaten. Lysfenomenet består 36 native kontroller/to disk-Continue, og bilder fra kontrollrom, felt og fotolab er visuelt kontrollert. Dette er styrte prøver, ikke naturlig oppdagelse eller menneskelig lytting. Ingen ny installasjon fra nattpakken ennå. Tostedersforsøket er tydelig utilgjengelig med dagens RF-logger; eldre planer og resultater beholdes.
 
 ## Service på alle antenner, installert 4. november
 

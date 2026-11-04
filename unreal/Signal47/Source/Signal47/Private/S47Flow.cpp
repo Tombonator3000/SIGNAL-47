@@ -1911,9 +1911,9 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		}
 		for (int32 Line = 0; Line < FS47FreeformCases::CaseCount; ++Line)
 		{
-			const int32 Test = F->PlannedFieldTest(Line); if (Test < 0) continue;
+			const int32 Test = F->PlannedFieldTest(Line); if (Test < 0 && F->FocusedFieldCase() != Line) continue;
 			FS47NbWorkItem W; W.Id = FString::Printf(TEXT("field-plan/%d"), Line);
-			W.Title = FString(TEXT("Field test / ")) + FS47FreeformCases::Def(Line).Tests[Test].Name; W.bCanFollow = true; W.bFollowed = F->FocusedFieldCase() == Line;
+			W.Title = Test >= 0 ? FString(TEXT("Field test / ")) + FS47FreeformCases::Def(Line).Tests[Test].Name : FString(TEXT("Review / ")) + FS47FreeformCases::Def(Line).Title; W.bCanFollow = true; W.bFollowed = F->FocusedFieldCase() == Line;
 			W.Status = W.bFollowed ? TEXT("Following / field plan retained") : TEXT("Field plan retained");
 			W.NextAction = F->FieldNextAction(Line); W.Location = TEXT("SARO / field control");
 			W.Hints = { TEXT("A field plan remains available while you work on a normal observation."), W.NextAction };
@@ -1941,7 +1941,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		{
 			if (!Self->M || !Self->M->Freeform) return;
 			const auto F = Self->M->Freeform;
-			if (Id.StartsWith(TEXT("field-plan/"))) { F->FocusFieldTest(FCString::Atoi(*Id.Mid(11))); Self->OpenNotebook(); return; }
+			if (Id.StartsWith(TEXT("field-plan/"))) { F->FocusFieldCase(FCString::Atoi(*Id.Mid(11))); Self->OpenNotebook(); return; }
 			for (int32 I = 0; I < F->Jobs().Num(); ++I) if (Id.StartsWith(F->Jobs()[I].Id + TEXT("/"))) { F->SelectJob(I); break; }
 			Self->OpenNotebook();
 		};
