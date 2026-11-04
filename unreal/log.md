@@ -1793,3 +1793,7 @@ Bygg og utvidet ShopBasketTest består58 kontroller/fire disk-Continue. Produksj
 ### 5. november 2026 kl.00:53: Story etter Freeform og Continue
 
 Story-start og disk-Continue fra hentet/uhentet Freeform-kamera beholder låsene: tre faktiske Walker-forsøk og owned Jeep stopper utenfor, med uendret progresjon. Kamerareisene består60/seks og47/fem diskreturer (fire Story i hver): fysisk henting, motorlogg, ekte bilde, faktiske lukkede tank-/fiksertimere, henting og fremkalt original etter Continue. Original/benkbilde er visuelt kontrollert. Teststyring ble avgrenset mot den eksisterende Freeform-underfasen86021; gjentatt pollvakt telles ikke som nye kontroller. Ingen produktgate/progresjon er omgått. Tilnærminger og Story-start er fixtures; Save bruker API/title-callback, ikke vanlig meny eller prosessrestart.
+
+### 5. november 2026 kl.00:55: vedvarende Nanite-bruksflagg for mesa-materiale
+
+Målrettet UE5.8.4-audit bekreftet manglende flagg på M_S47_MesaRock og faktisk Nanite-mottaker. Original25829bytes er sikret og hashverifisert før kun MATUSAGE_NANITE ble lagret. Ny prosess bekrefter flagg; GPU-dagsbilde viser materialet og ingen tidligere usage/default-advarsel. Førhash b2dc898c1d186c4eb24ff7ec45c95f592ebbc3b004d8dfa9b6c7780e68ed82d3, etterhash91da08bfd6168f7c7a4fa957b28dff42eaf4860266bb70934ca6deff0beefd11. Generatoren får samme bruksflagg; graf/teksturer er ikke regenerert. Asset og backup forblir private, installasjon følger nattkandidaten.

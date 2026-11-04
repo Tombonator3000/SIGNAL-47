@@ -73,6 +73,9 @@ def main():
             L.connect_material_property(nm, 'XYZ Texture', unreal.MaterialProperty.MP_NORMAL)
         r = node(mat, unreal.MaterialExpressionConstant, -200, 500, r=.92)
         L.connect_material_property(r, '', unreal.MaterialProperty.MP_ROUGHNESS)
+        # S47MesaRock installs this material dynamically on the Nanite mesa meshes.
+        L.set_base_material_usage(mat, unreal.MaterialUsage.MATUSAGE_NANITE, True)
+        assert L.has_material_usage(mat, unreal.MaterialUsage.MATUSAGE_NANITE)
         L.recompile_material(mat); E.set_metadata_tag(mat, 'S47Owner', OWNER); E.save_loaded_asset(mat)
         out['status'] = 'PASS_MESA_MATERIAL'; out['material'] = mat.get_path_name()
     except Exception:

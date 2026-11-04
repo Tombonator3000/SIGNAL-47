@@ -4,9 +4,9 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-story-regression-20261105`, fra main `e0e949f2` etter flettet PR401. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-mesa-usage-20261105`, fra main etter flettet PR402. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: Story-dør og kamera-regresjon i EastWing/FreeformTest og ny StoryCameraTest, dokumentasjon og alle tunge jobber under production_lease.
+- root: avgrenset Nanite-bruksflagg for mesa-materialet og generator, dokumentasjon og alle tunge jobber under production_lease.
 - todo_triage: private aktivitets-/referanse- og loggerguidepatcher, ingen aktive kildefiler eller motorjobb.
 - night_preflight: privat harness for samlet normal lagringsreise gjennom tre prosesser; sokkelpatcher og pakke/installasjonsløype klare, ingen aktive kildefiler eller motorjobb.
 - photo_loop: Story-dør/kamera- og versjonert SIGNAL-EXT-09-utkast overlevert, ingen aktive kildefiler eller motorjobb.
