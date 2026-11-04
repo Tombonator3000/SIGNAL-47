@@ -865,7 +865,7 @@ bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& Reques
  Service=1;Settle=0;LastFaultDay=M->Freeform->Day();M->Web->SetDishRemoteAvailable(Index,false);
  Change(TEXT("ARRAY STATUS (left-hand PC): Select S-03 to diagnose its failed remote link, or inspect the S-03 CABLE JUNCTION cabinet beside the antenna. Other antennas remain available."));return true;
 }
-void FS47FreeformWorld::DiagnoseService(){if(Ready()&&Service==1){Service=2;Change(TEXT("S-03 command relay failed. At the S-03 CABLE JUNCTION cabinet: select LOCAL, open the hatch and replace one drive relay. Stock parts are carried in your service pouch; no upgrade is needed."));}}
+void FS47FreeformWorld::DiagnoseService(){if(Ready()&&Service==1){Service=2;Change(TEXT("S-03 command relay failed. At the S-03 CABLE JUNCTION cabinet: inspect / isolate and open the hatch, fit one drive relay, then close and run the movement test. Stock parts are carried in your service pouch; no upgrade is needed."));}}
 FString FS47FreeformWorld::ServiceStatus() const
 {
  const int32 I=ServiceDishIndex();
@@ -882,11 +882,12 @@ bool FS47FreeformWorld::ServiceUse()
  switch(Service)
  {
   case 0:case 9:Change(ServiceStatus());return true;
-  case 1:DiagnoseService();return true;
-  case 2:Service=3;Change(TEXT("S-03 CABLE JUNCTION: LOCAL selected; remote movement is isolated. Open the cover."));break;
+  case 1:case 2:Service=4;Change(TEXT("S-03 CABLE JUNCTION: Failed command relay identified. LOCAL selected, remote movement isolated and hatch opened. Seat one replacement relay."));break;
   case 3:Service=4;Change(TEXT("S-03 CABLE JUNCTION: Hatch open. Seat a compatible replacement relay from your stock."));break;
-  case 4:if(!Consume(TEXT("relay"))){Change(TEXT("CALICHE GAS STATION: Buy a relay; your pouch is empty. GARAGE RECEIVING: Unpack its parcel. CALIBRATION / REPAIR: Test a donor before using its relay."));return true;}Service=5;Change(TEXT("S-03 CABLE JUNCTION: Replacement relay seated. Close the cover before the movement test."));break;
-  case 5:Service=6;Change(TEXT("S-03 CABLE JUNCTION: Cover secured. Start the local five-degree out-and-back test."));break;
+  case 4:if(!Consume(TEXT("relay"))){Change(TEXT("CALICHE GAS STATION: Buy a relay; your pouch is empty. GARAGE RECEIVING: Unpack its parcel. CALIBRATION / REPAIR: Test a donor before using its relay."));return true;}Service=5;Change(TEXT("S-03 CABLE JUNCTION: Replacement relay seated. Close the cover and run the movement test."));break;
+  case 5:Service=6; // Closing the hatch and requesting the test are one physical action.
+   // Retain legacy stage 6 if power or the encoder prevents movement.
+   [[fallthrough]];
   case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(ServiceDishIndex()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(ServiceDishIndex());ServiceEl=M->Web->DishEl(ServiceDishIndex());Service=7;Settle=0;M->Web->PointDish(ServiceDishIndex(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("S-03 CABLE JUNCTION: Wait for the automatic five-degree out-and-back test. REMOTE returns after the test passes."));break;
   case 7:case 8:Change(ServiceStatus());break;
  }
@@ -967,7 +968,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  {
   if(Service>=6&&Service<=8&&M->Freeform->PowerFault()&&!HasBackupPower())return ServiceWords(TEXT("S-03 NO POWER / restore feeder or generator"));
   if(Service==4&&InventoryCount(TEXT("relay"))<=0)return ServiceWords(TEXT("GARAGE RECEIVING: Unpack a drive relay for S-03"));
-  static const TCHAR* Labels[]={TEXT("Inspect healthy S-03 control"),TEXT("Diagnose S-03 failed relay / no kit required"),TEXT("Select S-03 LOCAL service"),TEXT("Open S-03 relay hatch"),TEXT("Seat compatible replacement relay"),TEXT("Close S-03 relay hatch"),TEXT("Run S-03 local movement test"),TEXT("Local test: outward movement"),TEXT("Local test: return movement"),TEXT("S-03 verified / REMOTE restored")};return ServiceWords(Labels[FMath::Clamp(Service,0,9)]);
+  static const TCHAR* Labels[]={TEXT("Inspect healthy S-03 control"),TEXT("Inspect, isolate and open S-03 relay hatch"),TEXT("Isolate and open S-03 relay hatch"),TEXT("Open S-03 relay hatch"),TEXT("Seat compatible replacement relay"),TEXT("Close S-03 hatch and run movement test"),TEXT("Run S-03 local movement test"),TEXT("Local test: outward movement"),TEXT("Local test: return movement"),TEXT("S-03 verified / REMOTE restored")};return ServiceWords(Labels[FMath::Clamp(Service,0,9)]);
  }
  return FString();
 }
