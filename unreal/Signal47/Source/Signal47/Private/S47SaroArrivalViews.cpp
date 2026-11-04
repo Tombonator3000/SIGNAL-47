@@ -24,11 +24,12 @@ bool AS47Web::AuditSaroArrival(TArray<FString>& Lines) const
 
 void AS47Web::BeginSaroArrivalViews()
 {
- if(!FParse::Param(FCommandLine::Get(),TEXT("S47SaroViews")))return;
+ const bool SurfaceViews=FParse::Param(FCommandLine::Get(),TEXT("S47SaroSurfaceViews"));
+ if(!SurfaceViews&&!FParse::Param(FCommandLine::Get(),TEXT("S47SaroViews")))return;
  struct FState { bool Done=false,Placed=false;int32 Index=0;double Since=0;FString Shots; };
  const auto P=MakeShared<FState>();FParse::Value(FCommandLine::Get(),TEXT("S47SaroShots="),P->Shots);
  const TWeakObjectPtr<AS47Web> Self=this;FTimerHandle Timer;
- GetWorldTimerManager().SetTimer(Timer,[Self,P] {
+ GetWorldTimerManager().SetTimer(Timer,[Self,P,SurfaceViews] {
   if(P->Done)return;
   AS47Web* W=Self.Get();US47Main* M=W?US47Main::Get(W):nullptr;
   if(!M||!M->Flow||!M->Story||!M->World||!M->Player||S47Startup::Blocking()||M->Flow->bStarting||M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
@@ -38,7 +39,7 @@ void AS47Web::BeginSaroArrivalViews()
    !FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),FPaths::ConvertRelativePathToFull(UserDir))||P->Shots.IsEmpty())
   {Fail(TEXT("requires isolated unsaved developer profile and S47SaroShots"));return;}
   struct FView {const TCHAR* Name;FVector Foot,Target;};
-  static const FView Views[]={
+  static const FView ArrivalViews[]={
    {TEXT("arrival"),FVector(-22.8,0,27),FVector(-11,1,14.8)},
    {TEXT("sign"),FVector(-11.3,0,20.8),FVector(-7.3,.9,15.5)},
    {TEXT("visitor-sign"),FVector(-15.8,0,13.8),FVector(-15.8,.85,10.85)},
@@ -46,9 +47,17 @@ void AS47Web::BeginSaroArrivalViews()
    {TEXT("entrance-close"),FVector(-9.9,0,5.7),FVector(-6.25,1.35,5.7)},
    {TEXT("windows"),FVector(-4,0,-8),FVector(0,1.8,-3.45)},
    {TEXT("room"),FVector(2.3,0,1.75),FVector(.2,1.5,-3.45)}};
+  static const FView SurfaceShots[]={
+   {TEXT("approach"),FVector(-22.8,0,27),FVector(-1,-.5,23)},
+   {TEXT("visitor-path"),FVector(-17.5,0,10),FVector(-8,-.3,5.7)},
+   {TEXT("service-road"),FVector(-1,0,24.5),FVector(19,-.3,15)},
+   {TEXT("ramp-side"),FVector(5.5,0,17.4),FVector(10,-.3,14.4)},
+   {TEXT("staff-parking"),FVector(36,0,23),FVector(28,-.4,8)}};
+  const FView* Views=SurfaceViews?SurfaceShots:ArrivalViews;
+  const int32 ViewCount=SurfaceViews?UE_ARRAY_COUNT(SurfaceShots):UE_ARRAY_COUNT(ArrivalViews);
   static const TCHAR* Lights[]={TEXT("day"),TEXT("dusk"),TEXT("night")};
   static const double Clocks[]={-8.5*3600,-4.5*3600,-2*3600};
-  const int32 View=P->Index%UE_ARRAY_COUNT(Views),Light=P->Index/UE_ARRAY_COUNT(Views);
+  const int32 View=P->Index%ViewCount,Light=P->Index/ViewCount;
   const double Now=FPlatformTime::Seconds();
   if(!P->Placed)
   {
@@ -74,6 +83,10 @@ void AS47Web::BeginSaroArrivalViews()
   FScreenshotRequest::RequestScreenshot(File,true,false);
   UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival view %s floor=%.4f eye=%.4f clock=%.3f; camera fixture"),*Name,M->Player->FloorY,M->Player->FloorY+M->Player->Eye,M->Story->Clock());
   ++P->Index;P->Placed=false;
-  if(P->Index==UE_ARRAY_COUNT(Views)*UE_ARRAY_COUNT(Lights)){P->Done=true;UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival views PASS %d player-height fixtures; driving and input checked separately"),P->Index);}
+  if(P->Index==ViewCount*(SurfaceViews?1:UE_ARRAY_COUNT(Lights)))
+  {
+   P->Done=true;UE_LOG(LogS47ArrivalViews,Display,TEXT("S47: SARO arrival views PASS %d player-height fixtures; driving and input checked separately"),P->Index);
+   if(SurfaceViews){FTimerHandle Exit;W->GetWorldTimerManager().SetTimer(Exit,[]{FPlatformMisc::RequestExit(false);},1.f,false);}
+  }
  },.1f,true);
 }

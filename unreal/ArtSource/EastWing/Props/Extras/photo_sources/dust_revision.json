@@ -1,0 +1,4 @@
+{
+  "source": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-59c70f68-a2cb-4f79-98df-851db737840f.png",
+  "prompt": "Correct this transparent floor-edge dust decal. Keep genuine RGBA transparency and top-dense/downward-fading layout. Remove the entire bright white/cream cloudlike band; it looks like foam. All visible dust must instead be subdued medium sandy tan RGB around #A48D6B, with narrow top accumulation and fine scattered mineral grains fading smoothly to complete transparency before halfway down. No white pigment, no light-colored backdrop, no cloudy sheet, no underlying surface. Coverage alpha fades; RGB color must stay dusty tan even in translucent portions. Flat pigment albedo, no lighting or shadow. Wide horizontal 4:1 strip, target 2048x512, horizontally repeating. Original transparent background must remain transparent. Dirt only."
+}

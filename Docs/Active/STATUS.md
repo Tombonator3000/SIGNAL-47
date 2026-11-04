@@ -4,6 +4,50 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Første skift og sammenhengende SARO-adkomst, 4. november
+
+Første nye Freeform-spill har nå seks steg gjennom én virkelig jobb: aksept på OPS, antennepeking, opptak, original, registrering/betaling og fysisk arkivering. Jobbidentitet og steg overlever lagring/Continue. Andre jobber og vanlige hendelser venter til opplæringen er ferdig; eldre lagringer får ingen ny tutorial.
+
+Innkjøring og begge parkeringsområder er én plan asfaltflate med felles teksturskala. Fem gamle vei-/grusflater og de separate parkeringsplatene er erstattet; gangforbindelsene bruker én betongtype. Rampens usynlige sperre er fjernet, med høydekontroll for lave kanter og hopp. Bygninger, rekkverk og bilkollisjon beholdes.
+
+Levert lokalt med editorbygg, materialimport, fem runtime-bilder, 34 gang-/kjørekontroller og pakket tutorialkontroll med 40 sjekker og tre disk-/Continue-runder. Pakket selvtest og installert vindusoppstart består. Personlige Saved-filer er uendret. Kameraplassering og hopphøyde i de fokuserte prøvene er kontrollerte fixtures, ikke en menneskelig spilløkt eller ytelsesbenchmark.
+
+## SARO og østfløy, lokal installasjon 4. november kl.14:57
+
+[PR380](https://github.com/Tombonator3000/SIGNAL-47/pull/380) er flettet i `main` via `f62b1c73` og installert lokalt. Leveransen inkluderer østfløyens oppdaterte innredning/arbeidsbenker, kjørbar parkering, bakketeksturer og Nanite-/parallax-relieff beskrevet nedenfor.
+
+Editorbygg og Linux-pakking består. Den pakkede versjonen består 2314 selvtester og en isolert SARO-prøve med kontrollerte nær-/skråbilder. Installert oppstart består med selvtest og røyktest. Alle 128 personlige Saved-filer er uendret; forrige installasjon er bevart for tilbakeføring. Den vanlige snarveien bruker den oppdaterte installasjonen. Ingen offentlig spillutgave er publisert; menneskelig spillfølelse/ytelsesbenchmark er ikke utført i dette passet.
+
+## SARO-mikrorelieff, editorleveranse 4. november
+
+Sand, caliche og grus har fått tre estimerte 16-bits høydekart rekonstruert fra eksisterende normaler. Åtte parallax-steg gir nærdetaljer med 1,2 cm dybde og avstandsuttoning fra 6 til 16 meter. Nanite forskyver de fem ørkenmeshene inntil ±3,5 cm, totalt 7 cm. De opprinnelige flatene beholdes for kollisjon; gang-/kjøreregler og lagringer er uendret. [Kilder og import](../../unreal/ArtSource/Backdrop/GROUND_TEXTURES.md).
+
+Editorbygg, native import av alle fem Nanite-mesher og Vulkan-kjøring består uten material-/shaderfeil. Før-/etterbilder ved kl.16 og nær-/skråbilder ved kl.17 er kontrollert, også med Nanite-forskyvning av/på. Kjøreprøven består med 24 kontroller. Effekten er holdt lav; ingen ytelsesbenchmark inngår. Inkludert i den lokale installasjonen ovenfor.
+
+## SARO-parkering og innkjøring, editorleveranse 4. november
+
+Hele den asfalterte forplassen er åpnet for kjøring, sammen med innkjøringen. Den tidligere usynlige grensen ved den smale garasjekorridoren er fjernet. Vegger, parkerte biler og port beholder kollisjon; garasjeinteriøret følger fortsatt Freeform/Story-reglene. Jeep-parkering på forplassen krever plass til hele bilen, mens Storys eksisterende ankomstplass beholdes.
+
+Asfalten gjenbruker prosjektets Caliche-kart med sammenhengende teksturstørrelse i meter. Det gamle Mesa-bildets gjentatte sandkant er fjernet fra denne plassen. Støv følger ytterkanten, og slitt oppmerking gir tre plasser vest for garasjeportens innkjøringsfelt. Materialene er ført i cook-oppsettet. [Kilder og import](../../unreal/ArtSource/Backdrop/PARKING.md).
+
+Editorbygg og native materialimport består. Målrettet kjøreprøve består med 24 kontroller i Freeform og ni i Story, inkludert kjøring på tvers av plassen, vestlig adkomst, bilhindring og port. Før-/etterbilder er kontrollert fra samme ettermiddagsutsnitt, i tillegg til nærbilde og innkjøringsvinkel. Leveransen er flettet og installert som beskrevet ovenfor.
+
+## SARO-bakketeksturer, editorleveranse 4. november
+
+Tre egne ImageGen-materialsett for sand, caliche-skorpe og grus erstatter T4-plassholderne i bakkens fargelag. Ni PNG-er og native teksturer inkluderer BaseColor, NormalGL og Roughness; normal/ruhet følger lagmaskene. Sandens skalablanding og nøytrale fargetoning er justert etter før-/etterbilder. Originalene er 1254 kvadrat, resamplet til 2048; normalene er genererte estimater. [Kilder, prompter og import](../../unreal/ArtSource/Backdrop/GROUND_TEXTURES.md).
+
+Native import/materialbygg består uten rapporterte kompileringsfeil. Vulkan-bilder fra like kameravinkler og klokkeslett viser materialet på SARO-bakken; dette editorarbeidet er senere flettet og installert som beskrevet ovenfor. Resten av [bakkeoverleveringen](../Design/Environment/SARO_GROUND_HANDOVER.md) står fortsatt åpen.
+
+## Jaktspor og avbrutte grep, Linux-verifisert 4. november
+
+Kandidaten `codex/greyhill-hunt-linux-20261104` bygger på main `0d9c5815` etter PR379. SC02 undersøker siste synspunkt før lokalt søk, følger ferske lydpunkter uten å gi dem status som bekreftet syn og krever vedvarende syn før ny jakt. SC08/SC11 avbryter griping når syn, nærhet eller fysisk kontakt brytes, eller spilleren kommer inn i kabinen. Eksisterende Freeform-AI og SC04 beholdes.
+
+Linux-editorbygget på UE5.8.4 består. `S47.Gameplay.Hunt` består med 74 loggførte produksjonskontroller, null feil/advarsler og exit0. En feil i testinnpakningen er rettet: ordet «fail» i en bestått beskrivelse («fail closed») skal ikke markere testen som mislykket; testenes faktiske returverdier avgjør resultatet.
+
+Native Vulkan-scenarier består: `sc08caught` 12 kontroller og `sc11caught` 11 kontroller. Begge prøver faktisk fangst/restart, flukt, bevart progresjon gjennom JSON-gjenoppretting og overgang til neste kapittel. SC11 bevarer originalene og lar spilleren flykte i bilen. Kjøringene bruker eksisterende navngitte posisjons-/rute- og API-fixtures; dette er ikke menneskelig input eller full naturlig gjennomspilling. Brudd på sikt, rekkevidde, fysisk kontakt og kabinstatus er prøvd i produksjonens tilstandstester; alle slike brudd er ikke separat fremprovosert med ekte glass/dører i verden. SC02s nye syns-/lydvalg er prøvd i tilstandsmaskinen, ikke en ny full SC02-spillerreise.
+
+Alle tre endelige testkjøringer og bygget var uten motoroverlapp under production_lease/unreal_guard. Lokale logger: `~/scratch-bm/Signal47-pr381-20261104/` (`build-r2`, `hunt-r4`, `automation-r4`, `sc08-r1`, `sc11-r1`). Kommando for Hunt etter bygg: `-ExecCmds="Automation RunTests S47.Gameplay.Hunt; SoftQuit"`, med separat `/tmp`-UserDir og ReportExportPath. SoftQuit lar automation avslutte med korrekt exitkode; `-TestExit`-loggmatch brukte tvungen avslutning. [PR381](https://github.com/Tombonator3000/SIGNAL-47/pull/381) er flettet i main via `1b262137`; ikke pakket eller installert som del av denne leveransen. Ingen Windows-portabilitetsendringer eller kopierte Greyhill-assets inngår.
+
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
 Tittel-sluttkontroll forsøkt på Toms ordre etter08: title-r5 ble avbrutt av ny samtidig Claude-editor før UFO-sluttbilde/resultat; neste oppstart ble avvist av aktive jobber. Sluttkontrollen er fortsatt UNVERIFIED. Ingen tittelinstallasjon eller ny testgodkjenning.

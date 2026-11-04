@@ -9,7 +9,7 @@
   ],
   "blockout_contract": {
     "assets": 8,
-    "editable_parts": 332,
+    "editable_parts": 336,
     "clear_aperture_probes": 7,
     "clear_aperture_volumes": 7,
     "footprint_three_m": [
@@ -21,7 +21,7 @@
     "ceiling_y_m": 3.32
   },
   "editable": "EastWing_Shell.blend",
-  "editable_sha256": "26145d8ec45165dcbaa86fa0eea17033f3146c89c12ea16b15dfa39a046132e7",
+  "editable_sha256": "b16f513709e2a3b412884fe39bfabfa13d48775883107ab54403fdaa24aaeada",
   "assets": [
     {
       "id": "SM_EW_Shell",
@@ -33,9 +33,9 @@
       ],
       "native_path": "/Game/EastWing/Shell/SM_EW_Shell",
       "lod_triangles": [
-        8368,
-        2032,
-        624
+        9472,
+        2272,
+        672
       ]
     },
     {

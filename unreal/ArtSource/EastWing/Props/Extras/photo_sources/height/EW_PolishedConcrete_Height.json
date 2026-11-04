@@ -1,0 +1,22 @@
+{
+  "material": "EW_PolishedConcrete",
+  "dimensions": [
+    2048,
+    2048
+  ],
+  "span_m": [
+    2.0,
+    2.0
+  ],
+  "tileable": true,
+  "height_offset_m": -4.326059570303187e-05,
+  "height_scale_m": 7.481623106286861e-05,
+  "height_source": "artist-estimated material relief; not measured geometry",
+  "normal_convention": "OpenGL Y+, image row down; n=(-dh/dU,+dh/drow,1)",
+  "data_color_space": "linear, no sRGB chunk",
+  "base_color_untouched": true,
+  "roughness_range": [
+    0.2724830210208893,
+    0.3595835864543915
+  ]
+}

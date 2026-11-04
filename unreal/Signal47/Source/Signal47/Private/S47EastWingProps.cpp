@@ -27,12 +27,14 @@ namespace
   {TEXT("SM_EW_SampleJar"),TEXT("Lab"),{23.86,.9305,4.90},180},
   {TEXT("SM_EW_ErlenmeyerFlask"),TEXT("Lab"),{24.52,.9305,4.87},180},
   // Separate instrument bench; the functional calibration bench at27/1.25 is untouched.
-  {TEXT("SM_EW_GreenBench"),TEXT("Workshop"),{30.3,0,4.72},180,true},
-  {TEXT("SM_EW_Oscilloscope_RM565"),TEXT("Lab"),{29.82,.9325,4.66},180,false,false,true},
-  {TEXT("SM_EW_Multimeter"),TEXT("Lab"),{30.38,.9325,4.63},180},
-  {TEXT("SM_EW_SolderingIron"),TEXT("Lab"),{30.82,.9325,4.63},180},
+  // Reference pass: long calibration casework run on the south wall replaces the bench + drawer cabinet.
+  // (the 2.4 m calibration run itself is the Freeform station, built in S47FreeformWorld)
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{29.20,0,4.05},0},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{30.35,0,4.10},0},
+  {TEXT("SM_EW_Oscilloscope_RM565"),TEXT("Lab"),{29.45,.90,4.80},180,false,false,true},
+  {TEXT("SM_EW_Multimeter"),TEXT("Lab"),{30.10,.90,4.75},180},
+  {TEXT("SM_EW_SolderingIron"),TEXT("Lab"),{30.55,.90,4.75},180},
   {TEXT("SM_EW_RedToolChest"),TEXT("Workshop"),{27.02,0,4.72},180,true},
-  {TEXT("SM_EW_DrawerCabinet"),TEXT("Workshop"),{28.24,0,4.72},180,true},
   {TEXT("SM_EW_Pegboard"),TEXT("Workshop"),{30.30,1.28,5.16},180},
   {TEXT("SM_EW_WallTools"),TEXT("Workshop"),{30.30,1.72,5.11},180},
   // North storage wall and east return. The depot28.8/-3.8 and its approach stay free.
@@ -51,12 +53,42 @@ namespace
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.75,3.22,-2.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{28.85,3.22,3.10},90,false,true},
   {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,.10},0,false,true},
+  // Photo pass: the 7 x 10 m garage and the lab get extra fixtures (each has a rect light in S47EastWing).
+  {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,-3.20},0,false,true},
+  {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{35.40,3.22,3.40},0,false,true},
+  {TEXT("SM_EW_FluorescentFixture"),TEXT("Workshop"),{23.40,3.22,2.60},0,false,true},
+  // Photo pass: waxed VCT over lab, storage and calibration (garage keeps bare concrete).
+  {TEXT("SM_EW_VinylFloor"),TEXT("Extras"),{26.1875,0,0},0},
+  // Reference pass: exposed steel joists under the deck (clear of fixtures and partitions) and ceiling EMT.
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{21.70,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{22.80,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{24.10,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{25.30,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{26.80,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{27.90,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{29.60,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{30.70,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{32.40,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{33.60,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{34.60,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{36.30,3.12,0},90},
+  {TEXT("SM_EW_SteelJoist"),TEXT("Extras"),{37.40,3.12,0},90},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{23.85,3.0,-1.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{23.85,3.0,4.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{28.85,3.0,-1.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{28.85,3.0,4.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,-1.40},0},
+  {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,4.40},0},
+  // Reference pass: lab casework under the north windows and a two-sided island (concept board).
+  // (the 2.4 m lab run under the windows is the Freeform sample station, built in S47FreeformWorld)
+  {TEXT("SM_EW_CaseworkRun12"),TEXT("Extras"),{24.82,0,-4.925},0,true},
+  {TEXT("SM_EW_CaseworkIsland"),TEXT("Extras"),{23.60,0,1.60},90,true},
   // Claude extras (Props/Extras): wall items keep their back on the inner wall face
   // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
   {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},
   {TEXT("SM_EW_GlassCabinet"),TEXT("Extras"),{21.075,0,1.30},-90,true},
   {TEXT("SM_EW_ReagentShelf"),TEXT("Extras"),{20.862,1.55,-1.20},-90},
-  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.35,0,-3.15},0},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{22.55,0,-4.10},0},
   {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.95,0,4.05},0},
   {TEXT("SM_EW_PosterGlasses"),TEXT("Extras"),{24.20,1.32,5.246},180},
   {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},
@@ -71,7 +103,8 @@ namespace
   {TEXT("SM_EW_AirCompressor"),TEXT("Extras"),{31.98,0,4.93},-90,true},
   {TEXT("SM_EW_JerryCans"),TEXT("Extras"),{32.95,0,-4.98},0,true},
   {TEXT("SM_EW_FloorJack"),TEXT("Extras"),{32.85,0,2.05},0},
-  {TEXT("SM_EW_OilStains"),TEXT("Extras"),{35.30,0,-.60},20},
+  // Photo pass 3: unique painted garage slab (lines, tyre tracks, oil, sand) replaces the flat stain decal mesh.
+  {TEXT("SM_EW_GarageSlab"),TEXT("Extras"),{35.0125,0,0},0},
   // Room plaques beside each interior door, on the side of the room they name (bottom edge at 1.5 m).
   {TEXT("SM_EW_PlaqueLab"),TEXT("Extras"),{26.081,1.50,3.75},-90},
   {TEXT("SM_EW_PlaqueCalibration"),TEXT("Extras"),{25.919,1.50,2.05},90},
@@ -140,7 +173,7 @@ bool FS47EastWingProps::Build(US47Main* Main,TArray<TWeakObjectPtr<USceneCompone
  return true;
 }
 
-void FS47EastWingProps::SetPowered(bool bPowered)
+void FS47EastWingProps::SetLevel(float Level)
 {
- for(const FEmission& E:Emission)if(UMaterialInstanceDynamic* M=E.Material.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),bPowered?E.Powered:FLinearColor::Black);
+ for(const FEmission& E:Emission)if(UMaterialInstanceDynamic* M=E.Material.Get())M->SetVectorParameterValue(TEXT("EmissiveFactor"),E.Powered*Level);
 }

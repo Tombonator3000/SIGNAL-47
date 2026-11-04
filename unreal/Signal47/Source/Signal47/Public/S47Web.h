@@ -5,6 +5,7 @@
 #include "S47Obj.h"
 #include "S47Glow.h"
 #include "S47Graphics.h"
+#include "S47TubeFlicker.h"
 #include "S47Web.generated.h"
 
 struct FPostProcessSettings;
@@ -432,6 +433,7 @@ private:
 	{
 		int32 Node = -1, Role = -1, Slot = -1;
 		float WidthBase = 1, Lumens = 0;
+		FS47TubeFlicker Flicker; // ceiling and task tubes strike / die off on switching
 		TWeakObjectPtr<ULocalLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;
 	};
@@ -445,6 +447,7 @@ private:
 		int32 Node = -1, Set = -1, Slot = -1, Tube = -1, Driver = -1;
 		float Reference = 1, Lumens = 0, LastK = -1;
 		bool bDesk = false;
+		FS47TubeFlicker Flicker; // fluorescent strike / die-off on switching (not desk lamps)
 		FLinearColor Color = FLinearColor::White;
 		TWeakObjectPtr<URectLightComponent> Light;
 		TWeakObjectPtr<UMaterialInstanceDynamic> Diffuser;

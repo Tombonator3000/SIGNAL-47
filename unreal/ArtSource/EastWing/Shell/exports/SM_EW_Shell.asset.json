@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_Shell",
   "fbx": "SM_EW_Shell.fbx",
-  "fbx_sha256": "778bca3f8a4df9223271824386dc9bf72d8def38456ef3361a19f38e8c4ace77",
+  "fbx_sha256": "bddb719dc334adffa407a4db4b9a989653fbc1bec1fe9637b103e06562b139d9",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_Shell_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -34,10 +34,10 @@
       "name": "EW_Shell_Concrete",
       "texture_key": "EW_Concrete",
       "maps": {
-        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
-        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
-        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
-        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
+        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
+        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
+        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
+        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
       },
       "Base Color": [
         0.3799999952316284,
@@ -61,10 +61,10 @@
       "name": "EW_Shell_Masonry",
       "texture_key": "EW_CinderblockCream",
       "maps": {
-        "EW_CinderblockCream_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_BaseColor.png",
-        "EW_CinderblockCream_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_Roughness.png",
-        "EW_CinderblockCream_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_Metallic.png",
-        "EW_CinderblockCream_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_NormalGL.png"
+        "EW_CinderblockCream_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_BaseColor.png",
+        "EW_CinderblockCream_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_Roughness.png",
+        "EW_CinderblockCream_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_Metallic.png",
+        "EW_CinderblockCream_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_NormalGL.png"
       },
       "Base Color": [
         0.6800000071525574,
@@ -88,10 +88,10 @@
       "name": "EW_Shell_Plinth",
       "texture_key": "EW_Concrete",
       "maps": {
-        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
-        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
-        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
-        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
+        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
+        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
+        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
+        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
       },
       "Base Color": [
         0.28999999165534973,
@@ -137,10 +137,10 @@
       "name": "EW_Shell_Stucco",
       "texture_key": "EW_Stucco",
       "maps": {
-        "EW_Stucco_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_BaseColor.png",
-        "EW_Stucco_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_Roughness.png",
-        "EW_Stucco_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_Metallic.png",
-        "EW_Stucco_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_NormalGL.png"
+        "EW_Stucco_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_BaseColor.png",
+        "EW_Stucco_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_Roughness.png",
+        "EW_Stucco_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_Metallic.png",
+        "EW_Stucco_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_NormalGL.png"
       },
       "Base Color": [
         0.6600000262260437,
@@ -165,9 +165,9 @@
   "lods": [
     {
       "file": "SM_EW_Shell_LOD1.fbx",
-      "sha256": "dbf310c5e293153ec660effbbee353ddefecdd83d3a3b4f740a0c7a3522c4006",
-      "triangles": 2032,
-      "expected_native_triangles": 2032,
+      "sha256": "dd1e43af2dff1c8942c6f51bd8cb273ac424eb039fe7e811c3a77e16809771a4",
+      "triangles": 2272,
+      "expected_native_triangles": 2272,
       "exact_degenerate_triangles": 0,
       "bounds_m": [
         [
@@ -176,7 +176,7 @@
           -0.6499999761581421
         ],
         [
-          40.20000076293945,
+          39.650001525878906,
           5.559999942779541,
           3.5999999046325684
         ]
@@ -188,22 +188,22 @@
           -5.559999942779541
         ],
         [
-          40.20000076293945,
+          39.650001525878906,
           3.5999999046325684,
           9.5
         ]
       ],
       "dimensions_m": [
-        19.65999984741211,
+        19.110000610351562,
         15.059999942779541,
         4.2499998807907104
       ]
     },
     {
       "file": "SM_EW_Shell_LOD2.fbx",
-      "sha256": "9c481b095b8b2c8d17ad93b7c53fb5b35b65a215f3f81ced1b98c81778a2d7c7",
-      "triangles": 624,
-      "expected_native_triangles": 624,
+      "sha256": "690777e282a2640d955ff71a1c939a3abac0211401692419f79379ae7645db81",
+      "triangles": 672,
+      "expected_native_triangles": 672,
       "exact_degenerate_triangles": 0,
       "bounds_m": [
         [
@@ -212,7 +212,7 @@
           -0.6499999761581421
         ],
         [
-          40.20000076293945,
+          39.650001525878906,
           5.559999942779541,
           3.5999999046325684
         ]
@@ -224,20 +224,20 @@
           -5.559999942779541
         ],
         [
-          40.20000076293945,
+          39.650001525878906,
           3.5999999046325684,
           9.5
         ]
       ],
       "dimensions_m": [
-        19.65999984741211,
+        19.110000610351562,
         15.059999942779541,
         4.2499998807907104
       ]
     }
   ],
   "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
-  "collision_hulls": 52,
+  "collision_hulls": 56,
   "collision_source_parts": [
     "South_solid0",
     "South_above0",
@@ -289,8 +289,12 @@
     "GarageFloorSouth",
     "DrainRecessBottom",
     "GarageRamp",
-    "PersonnelRamp",
-    "ServiceRamp"
+    "PersonnelSteps0",
+    "PersonnelSteps1",
+    "PersonnelSteps2",
+    "ServiceSteps0",
+    "ServiceSteps1",
+    "ServiceSteps2"
   ],
   "license": {
     "id": "LicenseRef-ProjectOwned",
@@ -300,8 +304,8 @@
     ]
   },
   "runtime_status": "NOT_IMPORTED",
-  "triangles": 8368,
-  "expected_native_triangles": 8368,
+  "triangles": 9472,
+  "expected_native_triangles": 9472,
   "exact_degenerate_triangles": 0,
   "bounds_m": [
     [
@@ -310,7 +314,7 @@
       -0.6499999761581421
     ],
     [
-      40.20000076293945,
+      39.650001525878906,
       5.559999942779541,
       3.5999999046325684
     ]
@@ -322,13 +326,13 @@
       -5.559999942779541
     ],
     [
-      40.20000076293945,
+      39.650001525878906,
       3.5999999046325684,
       9.5
     ]
   ],
   "dimensions_m": [
-    19.65999984741211,
+    19.110000610351562,
     15.059999942779541,
     4.2499998807907104
   ]

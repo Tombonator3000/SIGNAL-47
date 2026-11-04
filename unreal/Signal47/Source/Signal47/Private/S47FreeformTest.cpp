@@ -71,7 +71,8 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest"))?TEXT("field-plan-disk-continue"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract"))?TEXT("first-shift-six-step-tutorial"):FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47FieldPlanTest")))S47J::Set(O,TEXT("scope"),TEXT("field-plan-disk-continue"));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("scope"),TEXT("legacy-printer-queue-regression"));
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
@@ -91,6 +92,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterLegacyQueueTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit pre-3b6a6c1c original-document format and missing legacy fields; real disk/Flow Continue, timed subsequent sheet and production Use(printer). Expected FAIL until queue migration is fixed; no natural acquisition claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass accept/register buttons, real encoder movement, timed receiver and printer, physical binder callback and disk/Flow restores mid-recording/after completion/legacy. Explicit player approach, receiver tuning and due-scheduler fixtures; no stage, payment or completion injection. Not a human tutorial usability test."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -229,6 +231,131 @@ void FS47FreeformTest::Step(double Dt)
    C=F.CaseFile().Get(2);
    if(!Check(C&&C->PlannedJob.IsEmpty()&&!C->Results[0].bDone&&!C->Results[1].bDone&&!C->Results[2].bDone&&C->ValidTests==0&&!C->bConcluded&&F.Jobs().Num()==JobIndex&&F.Budget()==WorkBudget,TEXT("field-plan cancellation grants no result, receiver job or payment")))return;
    Finish(true,TEXT("Pending field-plan disk Continue and cancellation passed; physical field-test enactment remains outside this fixture."));return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TutorialContract")))
+ {
+  if(Age>240){Finish(false,TEXT("bounded first-shift tutorial timeout"));return;}
+  auto TutorialStep=[&](){return S47J::Int(F.Save(),TEXT("tutorial"));};
+  auto Click=[&](const FString& Label)
+  {
+   TArray<TSharedRef<SButton>> Buttons;TSet<const SWidget*> Seen;
+   if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& User)
+   {
+    TSharedPtr<SWidget> W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;
+    if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());PhotoButtons(W.ToSharedRef(),Label,Buttons);}
+   },true);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("unique enabled first-shift native button: ")+Label))return false;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();return true;
+#else
+   Finish(false,TEXT("first-shift native buttons require development build"));return false;
+#endif
+  };
+  auto AtProp=[&](const TCHAR* Id)
+  {
+   M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(Id));M->Player->Place(P.X,P.Z-.8,0);
+  };
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Director&&F.Field&&F.CurrentJob()&&F.InTutorial()&&TutorialStep()==1,TEXT("explicit fresh developer tutorial begins at acceptance")))return;
+   TutorialId=F.CurrentJob()->Id;WorkBudget=F.Budget();Snapshot=S47J::Read(S47J::Write(M->Flow->GameState()));
+   if(!Check(!F.SelectJob(1)&&F.CurrentJob()->Id==TutorialId&&!F.PointSelected()&&!F.StartAcquisition(),TEXT("unaccepted first job cannot be switched, pointed or recorded")))return;
+   // An explicit due scheduler fixture makes the tutorial gate observable without waiting for a random event.
+   auto Schedule=F.Director->Save();S47J::Set(Schedule,TEXT("nextAt"),0.);S47J::Set(Schedule,TEXT("restUntil"),0.);S47J::Set(Schedule,TEXT("seenDay"),F.Day());S47J::Set(Schedule,TEXT("minorLeft"),4);S47J::Set(Schedule,TEXT("investLeft"),2);
+   F.Director->Begin(Schedule);for(int32 I=0;I<8;++I)F.Director->Step(.25);
+   if(!Check(!F.Director->Busy()&&F.Director->ActiveEvent().IsEmpty()&&!F.PowerFault(),TEXT("due normal scheduler starts no event during the clean first shift")))return;
+   AtProp(TEXT("opsTerminal"));F.Use(TEXT("opsTerminal"));Go(9101,1.);return;
+  }
+  if(Stage==9101){if(!Click(TEXT("DAILY WORK")))return;Go(9102,.8);return;}
+  if(Stage==9102)
+  {
+   if(!Check(F.TerminalOnGlass()&&F.OperationsSection()==1&&F.Objective().StartsWith(TEXT("FIRST SHIFT 1/6")),TEXT("physical DAILY WORK shows the first-shift acceptance instruction")))return;
+   Shot(TEXT("tutorial-01-accept"));Go(9103,.3);return;
+  }
+  if(Stage==9103){if(!Click(TEXT("Accept this job and start the shift")))return;Go(9104,.3);return;}
+  if(Stage==9104)
+  {
+   if(!Check(TutorialStep()==2&&F.Objective().StartsWith(TEXT("FIRST SHIFT 2/6"))&&F.Objective().Contains(TEXT("TRACKING")),TEXT("native acceptance advances to physical tracking")))return;
+   if(!Check(!F.SelectJob(1)&&F.CurrentJob()->Id==TutorialId&&S47J::Str(F.Save(),TEXT("tutorialJobId"))==TutorialId,TEXT("accepted tutorial keeps its stable work-card identity")))return;
+   AtProp(TEXT("crtRight"));const auto P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("tutorial uses the real first-job receiver profile")))return;
+   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+   if(!Check(F.PointSelected(),TEXT("production pointing command starts actual tutorial antenna movement")))return;Go(9105,.2);return;
+  }
+  if(Stage==9105)
+  {
+   if(!Check(TutorialStep()==3&&F.Objective().StartsWith(TEXT("FIRST SHIFT 3/6")),TEXT("pointing advances tutorial to the receiver")))return;
+   AtProp(TEXT("crtCenter"));F.OpenReceiver();Shot(TEXT("tutorial-03-receiver"));Go(9106,.3);return;
+  }
+  if(Stage==9106)
+  {
+   if(!F.StartAcquisition())return;
+   if(!Check(F.CurrentJob()->Stage==J::Integrating,TEXT("timed receiver acquisition starts only after real encoder settling")))return;
+   M->UI->Close(true);Go(9107,.3);return;
+  }
+  if(Stage==9107)
+  {
+   if(F.CurrentJob()->Elapsed<=0)return;
+   if(!Check(TutorialStep()==4&&F.CurrentJob()->Elapsed>0,TEXT("live recording advances to step four without injecting completion")))return;
+   if(!Restore(TEXT("tutorial-mid-recording")))return;Go(9108,.3);return;
+  }
+  if(Stage==9108)
+  {
+   if(!Check(F.InTutorial()&&TutorialStep()==4&&F.CurrentJob()->Id==TutorialId&&S47J::Str(F.Save(),TEXT("tutorialJobId"))==TutorialId,TEXT("disk Continue preserves active tutorial and exact card identity")))return;
+   Go(9109);return;
+  }
+  if(Stage==9109)
+  {
+   if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
+   AtProp(TEXT("printer"));if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&!F.CurrentJob()->OriginalPage.IsEmpty(),TEXT("real completed recording and printer feed produce the retained original")))return;
+   PrinterOriginal=F.CurrentJob()->OriginalPage;PrinterStamp=F.CurrentJob()->OriginalStamp;M->UI->Close(true);Go(9110,.2);return;
+  }
+  if(Stage==9110)
+  {
+   if(!Check(TutorialStep()==5&&F.Objective().StartsWith(TEXT("FIRST SHIFT 5/6")),TEXT("collecting the original advances to OPS registration")))return;
+   AtProp(TEXT("opsTerminal"));F.OpenOperations();Go(9111,.7);return;
+  }
+  if(Stage==9111)
+  {
+   if(!Click(TEXT("Register routine result / $20")))return;Go(9112,.3);return;
+  }
+  if(Stage==9112)
+  {
+   if(!Check(TutorialStep()==6&&F.CurrentJob()->Stage==J::Registered&&F.Budget()==WorkBudget+20&&F.InTutorial(),TEXT("native registration pays once but keeps tutorial open for physical filing")))return;
+   if(!Check(!F.RegisterComparison(TEXT("normal"))&&F.Budget()==WorkBudget+20,TEXT("repeat registration cannot duplicate the first-shift payment")))return;
+   Shot(TEXT("tutorial-06-packet"));M->UI->Close(true);Go(9113,.3);return;
+  }
+  if(Stage==9113)
+  {
+   if(F.PrinterProgress()<1)return;
+   AtProp(TEXT("printer"));if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Packet,TEXT("registered tutorial packet finishes its real print feed and is collected")))return;
+   M->UI->Close(true);
+   if(!Check(!F.FilePacket()&&F.InTutorial(),TEXT("tutorial packet cannot be filed remotely beside the printer")))return;
+   if(!FileAtBinder())return;Go(9114,.3);return;
+  }
+  if(Stage==9114)
+  {
+   if(!Check(!F.InTutorial()&&TutorialStep()==0&&F.CurrentJob()->Stage==J::Filed&&F.HasFinding(TEXT("first-shift"))&&F.Budget()==WorkBudget+20,TEXT("physical binder completes all six steps without a second payment")))return;
+   if(!Check(F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp,TEXT("tutorial printing and filing retain the original provenance")))return;
+   Shot(TEXT("tutorial-complete"));if(!Restore(TEXT("tutorial-complete")))return;Go(9115,.3);return;
+  }
+  if(Stage==9115)
+  {
+   if(!Check(!F.InTutorial()&&F.HasFinding(TEXT("first-shift"))&&F.Budget()==WorkBudget+20&&F.SelectJob(1),TEXT("completed tutorial stays completed after Continue and releases other jobs")))return;
+   // Start a genuine pre-tutorial save fixture from the untouched first-job snapshot.
+   const auto Legacy=S47J::Read(S47J::Write(Snapshot));auto Session=S47J::Obj(Legacy,TEXT("freeform"));
+   if(!Check(bool(Session),TEXT("legacy fixture retains the ordinary Freeform save object")))return;
+   Session->RemoveField(TEXT("tutorial"));Session->RemoveField(TEXT("tutorialJobId"));
+   const FString File=Root/TEXT("tutorial-legacy.json");FString Text;
+   if(!Check(FFileHelper::SaveStringToFile(S47J::Write(Legacy),*File)&&FFileHelper::LoadFileToString(Text,*File),TEXT("legacy no-tutorial save is written and freshly read")))return;
+   US47Flow::FStart Start;Start.bDev=true;Start.State=S47J::Read(Text);M->Flow->StartGame(Start);++Restores;Go(9116,.3);return;
+  }
+  if(Stage==9116)
+  {
+   if(!Check(!F.InTutorial()&&TutorialStep()==0&&F.SelectJob(1)&&F.Budget()==WorkBudget,TEXT("older saves never receive tutorial or its restrictions, even with explicit test opt-in")))return;
+   Finish(true,TEXT("Six-step first shift: native acceptance/registration, actual acquisition/printing, physical filing, exact-once pay, normal event gate and three disk/Flow restores."));return;
   }
   return;
  }
@@ -1121,7 +1248,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==43)
  {
   if(M->World->bBusy)return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z+1.5,0);
+  const FVector P=F.Field->StandPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z,0);
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
   Snapshot=F.Field->Save();F.Field->Stop();Go(431,6.0);return;
@@ -1151,7 +1278,7 @@ void FS47FreeformTest::Step(double Dt)
   FS47FieldLogger::FTape Tape;Tape.Id=TEXT("fieldlogger01.tape1");Tape.Day=1;Tape.Start=100;Tape.End=220;Tape.Seconds=120;Tape.Offset=2.4;Tape.Levels={.2,.4};Tape.bRetrieved=true;
   Device.Tapes.Add(Tape);Device.Serial=1;
   S47J::Set(S47J::Obj(Fixture,TEXT("field")),TEXT("fieldlogger"),Device.Save());F.Begin(Fixture,F.Lethal());
-  auto Place=[&](const TCHAR* Id){const FVector P=F.Field->InteractionPoint(Id);M->Player->Place(P.X,P.Z+1.5,0);M->UI->Close(true);};
+  auto Place=[&](const TCHAR* Id){const FVector P=F.Field->StandPoint(Id);M->Player->Place(P.X,P.Z,0);M->UI->Close(true);};
   auto OriginalIntact=[&](){const auto& L=F.Field->FieldLogger();return L.Serial==1&&L.Tapes.Num()==1&&L.Tapes[0].Id==Tape.Id&&L.Tapes[0].Levels==Tape.Levels&&L.Tapes[0].Start==Tape.Start&&L.Tapes[0].End==Tape.End&&L.Tapes[0].Seconds==Tape.Seconds&&L.Tapes[0].Offset==Tape.Offset&&L.Tapes[0].bRetrieved&&!L.Tapes[0].bCompared;};
   Place(TEXT("ff:bench"));
   if(!Check(F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0,TEXT("explicit authorized logger fixture cannot check out at calibration bench")))return;
@@ -1298,9 +1425,9 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(!Photo.Id.IsEmpty()&&!Photo.Url.IsEmpty(),TEXT("native camera renders and retains the actual physical trace")))return;
   F.Director->Use(TEXT("ff:event-sample"));
   if(!Check(F.InventoryCount(TEXT("fragment"))==1&&F.HasFinding(TEXT("landing_trace")),TEXT("photographed trace becomes one retained physical sample")))return;
-  const FVector WrongBench=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(WrongBench.X,WrongBench.Z+1.5,0);
+  const FVector WrongBench=F.Field->StandPoint(TEXT("ff:bench"));M->Player->Place(WrongBench.X,WrongBench.Z,0);
   if(!Check(!F.Field->AnalyzeSample(),TEXT("calibration bench cannot start analysis at the separate test lab")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:sample"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
+  const FVector P=F.Field->StandPoint(TEXT("ff:sample"));M->Player->Place(P.X,P.Z,0);Go(24,.3);return;
  }
  if(Stage==24)
  {

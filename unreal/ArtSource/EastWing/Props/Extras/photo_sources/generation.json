@@ -1,0 +1,294 @@
+{
+  "tool": "built-in image_gen",
+  "entries": [
+    {
+      "key": "concrete",
+      "name": "EW_PolishedConcrete",
+      "prompt": "Generate a production-ready seamless tileable square 2048 x 2048 PNG BaseColor/albedo texture, full-bleed orthographic scan of a 2 m x 2 m area of polished sealed concrete flooring in a tidy but worn 1986 US government desert laboratory. Light grey-beige, subtle cloudy overlapping trowel marks, very fine aggregate, understated abrasion and faint duller walking wear. Photorealistic actual surface microdetail, no large cracks, no tiles or joints. Pure diffuse albedo with perfectly uniform illumination, no baked highlights, reflections, shadows, ambient occlusion, vignette or directional lighting. Opposite edges must join seamlessly horizontally and vertically. No objects, borders, logos, words or watermark. Output exactly one texture, not a sphere or material preview. Polished appearance will be supplied separately by roughness map, not painted reflections.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_PolishedConcrete.png",
+      "runtime_file": "Props/Extras/textures/EW_PolishedConcrete_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-ad0e433f-5bae-4f37-922a-a0ce237744b7.png"
+    },
+    {
+      "key": "garage",
+      "name": "EW_GarageSlab",
+      "prompt": "Edit the supplied garage-floor albedo into a high-end photorealistic production game texture. Output portrait PNG requested 2048 x 4096, exactly 1:2 aspect. Keep the entire orthographic overhead UV layout: full-width 6.7m west-east by 10.5m north-south garage slab; two thin worn yellow lines running vertically at precisely 29% and 83% image width, tire tracks near 44% and 66%, oil stains in lower half near x55% y72%, sand at TOP door edge, thin saw cut at x50%, horizontal saw cuts at y33% and y67%. Retain all positions, no extra objects, no perspective. Upgrade concrete to believable sealed grey-beige workshop concrete with very fine aggregate, organic cloudy trowel marks, abrasion, subtle tyre rubber streaks, irregular authentic oil blotch and sparse blown-in tan sand concentrated at top. Worn but maintained 1986 US government desert lab garage. Pure BaseColor diffuse albedo: absolutely no illumination gradients, cast shadows, reflections, gloss highlights, vignette or ambient occlusion. Slight sheen will come from a separate roughness map, not this image. No text, logos, brands, borders. Unique non-tileable texture.",
+      "size": [
+        2048,
+        4096
+      ],
+      "decal": false,
+      "original_size": [
+        887,
+        1774
+      ],
+      "generated_source": "generated/EW_GarageSlab.png",
+      "runtime_file": "Props/Extras/textures/EW_GarageSlab_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-ef610c23-9b54-4df5-8e64-b19db41099d1.png"
+    },
+    {
+      "key": "cinder",
+      "name": "EW_CinderblockPainted",
+      "prompt": "Generate ONE seamless tileable square 2048x2048 PNG game BaseColor albedo texture of painted cream concrete cinderblock in a maintained 1986 US government desert laboratory. Entire image is exactly 1.6 x 1.6 meters: EXACTLY eight courses high, each course 20cm; EXACTLY four 40cm-wide blocks across, alternating rows offset half a block, wraparound running bond. Straight level shallow mortar joints around 8mm, all blocks same nominal dimensions. Pale warm ivory cream paint with fine porous masonry texture, slight wear and light grey-beige dirt in joints. No bare red brick, no large cracks. Uniform orthographic front scan, perfectly diffuse unlit/albedo appearance: no light direction, highlights, baked shadow, ambient occlusion or vignette. Slightly glossy paint must be represented by separate roughness later, no reflections here. Match all four opposite edges seamlessly with the block pattern continuing correctly when tiled. Full-bleed surface, no frames, text, objects, brands or logos. Do not make a room, material sphere, or multiple panels.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_CinderblockPainted.png",
+      "runtime_file": "Props/Extras/textures/EW_CinderblockPainted_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-a858aca7-dc2a-4eb1-a4ac-8a96842bec30.png"
+    },
+    {
+      "key": "green",
+      "name": "EW_XEnamelGreen",
+      "prompt": "Generate one seamless tileable full-bleed 2048x2048 PNG pure BaseColor/albedo scan of muted grey-green enamelled steel, cabinet paint used in a maintained but worn US government scientific laboratory in 1986. 0.5 x 0.5 meter material swatch. Predominant desaturated sage / grey olive green approximately sRGB #737C6D, satin enamel fine orange-peel microtexture. Tiny scattered scratches, sparse small paint chips revealing grey primer and dull steel, subtle handling dirt. Wear can be slightly clustered in slender broken trails but no outline or frame at the texture boundary, no object silhouette, panel geometry, seam, rivet, bolt, handle or furniture. Surface remains mostly intact and tidy, not rusty abandoned factory. Truly uniform diffuse albedo, no baked reflections, illumination, gradients, shadows, highlights or vignette. Opposite edges join seamlessly; no dark border. Photorealistic scan detail, no text, logos, watermark. Output one square surface only.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XEnamelGreen.png",
+      "runtime_file": "Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-a59a02ad-5b0b-4338-ae2e-20de03b66dc5.png"
+    },
+    {
+      "key": "red",
+      "name": "EW_XEnamelRed",
+      "prompt": "One production seamless tileable 2048x2048 PNG pure BaseColor albedo texture. Photorealistic 0.5m square flat swatch of muted industrial RED enamelled steel used on maintained 1980s US government lab tool cabinets. Restrained oxide red #983C32, fine enamel orange-peel, mostly intact satin paint with scattered hairline scratches, a few tiny chips to grey primer and dull steel, light handling dirt. Flat full-bleed orthographic surface, no cabinet geometry or seams, no objects, no rivets or labels. Uniform diffuse colour, absolutely no lighting gradient, highlight, shadow, reflection or vignette. Seamless opposite edges, no border or framing or concentration of wear into a rectangular outline. No text, logos or watermark. Material gloss will be in separate data map, not painted in.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XEnamelRed.png",
+      "runtime_file": "Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-ad085342-a608-4a6f-9734-0a6590c7c8cd.png"
+    },
+    {
+      "key": "white",
+      "name": "EW_XEnamelWhite",
+      "prompt": "One production seamless tileable square 2048x2048 PNG pure BaseColor albedo texture. Photorealistic 0.5m square flat swatch of slightly aged warm WHITE enamelled steel for maintained 1980s laboratory equipment. Pale off-white #D9D7CB, fine subtle enamel orange-peel, mostly intact satin paint with sparse tiny scratches and small chips to cool grey primer and dull steel, faint handling dirt. Tidy working equipment, not abandoned. Flat full-bleed orthographic material surface, no cabinet or panel geometry, seams, objects, rivets, labels or rectangle outline. Perfectly uniform diffuse colour, absolutely no lighting gradients, highlights, shadows, reflections or vignette. Opposite edges join seamlessly, no border. No text logos watermark. Gloss supplied in separate roughness map.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XEnamelWhite.png",
+      "runtime_file": "Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-7f2025ad-a5d4-46f0-bf10-d593272cc95b.png"
+    },
+    {
+      "key": "olive",
+      "name": "EW_XOliveDrab",
+      "prompt": "One seamless tileable square 2048x2048 PNG BaseColor/albedo material texture, photorealistic orthographic flat scan, 0.5m square area of OLIVE DRAB painted steel used on 1980s US scientific field equipment. Muted brownish military olive #666548, fine satin enamel microtexture, mostly intact paint, sparse tiny abrasion and chips revealing grey primer and dull steel, light handling dirt. No rust destruction. Full-bleed uninterrupted material, no geometry, panel, edge frame, seams, rivets, handles, lettering or objects. No readable text logos brands watermark. Perfectly even diffuse albedo with NO baked lighting, shadows, reflection, highlights or vignette. All opposite edges join seamlessly, no border. Sheen supplied separately by roughness data.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XOliveDrab.png",
+      "runtime_file": "Props/Extras/textures/EW_XOliveDrab_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-e353935e-00c4-42be-aeb3-c307052ced4f.png"
+    },
+    {
+      "key": "grey",
+      "name": "EW_XInstrumentGrey",
+      "prompt": "Generate one photorealistic seamless tileable square 2048x2048 PNG pure albedo/BaseColor texture of INSTRUMENT GREY enamelled steel on maintained 1986 laboratory equipment. 0.5m square. Medium light warm neutral grey #96978E, restrained fine pebbled enamel microfinish, sparse little paint chips through grey primer to dull metal and fine shallow scratches, subtle dirt, mostly intact. Full-bleed orthographic uninterrupted surface, not a panel or object. No seams, rivets, edges, border, labels, text, logos or watermark. Uniform diffuse colour only, no baked illumination, shadows, highlights, reflections or vignette. All four opposite edges must tile seamlessly. Satin response will be separate roughness.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XInstrumentGrey.png",
+      "runtime_file": "Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-5f3ab806-703e-49f9-99c8-484d8b0ec1e1.png"
+    },
+    {
+      "key": "stainless",
+      "name": "EW_XStainless",
+      "prompt": "One seamless tileable square 2048x2048 PNG PBR BaseColor texture of brushed stainless steel laboratory worktop, 0.5m x 0.5m, maintained 1986 scientific workshop. Flat orthographic full-bleed swatch. Neutral silver-grey fine HORIZONTAL directional brushed grain, numerous extremely fine shallow scratches and a few crossing use scratches, understated wear. UNLIT MATERIAL BASE COLOR ONLY: neutral fairly bright metal reflectance colour, no reflected room, light band, bright hotspot, dark band, shading gradient, shadow or vignette. Fine grain visible but low contrast; no dramatic shiny photography. All edges must tile seamlessly. No joints, counter edge, sink, rivets, furniture, text, logos or watermark. Output only one uniform texture surface; reflection and metal sheen will be rendered by game material.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XStainless.png",
+      "runtime_file": "Props/Extras/textures/EW_XStainless_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-44a7cc32-493f-4699-b355-be2f2d24f731.png"
+    },
+    {
+      "key": "wood",
+      "name": "EW_XWood",
+      "prompt": "One photorealistic seamless tileable square 2048x2048 PNG BaseColor / diffuse albedo of an oiled laminated BEECH workbench top in a maintained 1986 government lab workshop. 0.5 x 0.5 meter swatch. Warm honey tan beech with fine pores and delicate grain running HORIZONTALLY LEFT TO RIGHT across image width U direction. Several edge-glued long beech strips, very thin closed glue joints running horizontally. Mild natural strip color variation, small use scratches, faint worn areas; mostly clean maintained wood. Not rustic planks, no black gaps, no nails, no heavy knots. Flat orthographic full-bleed albedo, absolutely no reflections, directional lighting, shadows, highlights or vignette. Match grain and strips at opposite edges for seamless tiling horizontally and vertically. No table silhouette, object, frame, logo or text.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XWood.png",
+      "runtime_file": "Props/Extras/textures/EW_XWood_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-57c77721-fc97-4c8f-b672-8dcd4bbc02e3.png"
+    },
+    {
+      "key": "rubber",
+      "name": "EW_XRubber",
+      "prompt": "One seamless tileable square 2048x2048 PNG pure BaseColor albedo texture of black industrial rubber, 0.5m square swatch, maintained 1986 laboratory and garage material. Deep charcoal black rather than pure zero black, subtle fine moulded rubber micrograin, sparse very faint abrasion and slightly rubbed areas, understated dust. Flat uninterrupted surface. No tread pattern, ribs, seams, cracks, tire or object shape, border, text, logo or watermark. Photorealistic orthographic diffuse albedo scan under completely uniform illumination. No highlights, reflections, directional light, shadows or vignette. All opposite edges must tile seamlessly, full-bleed. Surface response supplied by separate data maps.",
+      "size": [
+        2048,
+        2048
+      ],
+      "decal": false,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/EW_XRubber.png",
+      "runtime_file": "Props/Extras/textures/EW_XRubber_BaseColor.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-cea78aa8-3256-4a38-b77a-bdfe01950c8a.png"
+    },
+    {
+      "key": "wallbase",
+      "name": "T_EW_GrimeWallBase",
+      "prompt": "Generate one transparent-background RGBA game decal PNG, wide horizontal strip 2048 x 512 (4:1). ONLY realistic grey-brown dust and grime particles, no wall surface or floor backdrop. Dirt is DENSEST ALONG THE VERY BOTTOM EDGE of image, forming a thin irregular accumulation band, gradually fading UPWARD into fully transparent upper half. Worn but tidy 1986 desert laboratory wall base grime, fine powder and tiny speckles, muted dark warm grey-brown RGB dirt color. Actual alpha transparency with soft coverage, no white or black opaque background, no checkerboard drawn into image. Flat orthographic albedo, no shadow, light, relief, frame or text. Left and right ends should match for seamless horizontal repetition. Bottom is wall-floor contact; upper edge completely transparent. Dirt only, not a photo of a wall.",
+      "size": [
+        2048,
+        512
+      ],
+      "decal": true,
+      "original_size": [
+        2172,
+        724
+      ],
+      "generated_source": "generated/T_EW_GrimeWallBase.png",
+      "runtime_file": "Decals/textures/T_EW_GrimeWallBase.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB RGB, coverage alpha",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-b9a9fe56-73d2-441e-9da8-ded333615fba.png"
+    },
+    {
+      "key": "streaks",
+      "name": "T_EW_GrimeStreaks",
+      "prompt": "Generate a single 1024x1024 RGBA game dirt DECAL on actual transparent background. Only scattered dark grey-brown VERTICAL GRIME RUNS, strongest and most opaque at TOP EDGE, several irregular thin trails downwards becoming progressively thinner and fading out to full transparency in bottom quarter. Fine realistic dusty water drip residue from a maintained 1986 desert lab wall, subtle organic brown-grey variation. No underlying wall, concrete, paint, paper or any solid background. RGB dirt color, alpha coverage with soft translucent fine detail. No baked light, shadow, bevel, perspective, border, text, logos, watermark, or drawn checkerboard. Left and right should match for horizontal repeat. Do not make a photo of an actual wall. Dirt pigment alone.",
+      "size": [
+        1024,
+        1024
+      ],
+      "decal": true,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/T_EW_GrimeStreaks.png",
+      "runtime_file": "Decals/textures/T_EW_GrimeStreaks.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB RGB, coverage alpha",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-a24d86c7-9d77-423f-97d9-188df966dcc6.png"
+    },
+    {
+      "key": "scuff",
+      "name": "T_EW_GrimeScuff",
+      "prompt": "Single 1024x1024 RGBA transparent game decal: isolated subtle dark brown-grey greasy hand handling marks and soft rubber scuffs on NOTHING, actual transparent background. A few overlapping understated palm heel smudges, finger wipe arcs and small abrasion speckles arranged naturally in center, fading completely into transparent margins on every side. Photorealistic dirt pigment deposit, worn but tidy 1986 laboratory. No recognizable full hand silhouette, no wall, no paint or concrete substrate, no opaque backdrop. RGB is dirt color, alpha is soft fractional coverage. No lit surface, shadow, highlights, frame, text, logo or checkerboard. This will overlay any existing wall texture.",
+      "size": [
+        1024,
+        1024
+      ],
+      "decal": true,
+      "original_size": [
+        1254,
+        1254
+      ],
+      "generated_source": "generated/T_EW_GrimeScuff.png",
+      "runtime_file": "Decals/textures/T_EW_GrimeScuff.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB RGB, coverage alpha",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-50eed2a7-a91d-4793-a15a-1dbd2e3f9a9d.png"
+    },
+    {
+      "key": "dust",
+      "name": "T_EW_FloorEdgeDust",
+      "prompt": "Correct this transparent floor-edge dust decal. Keep genuine RGBA transparency and top-dense/downward-fading layout. Remove the entire bright white/cream cloudlike band; it looks like foam. All visible dust must instead be subdued medium sandy tan RGB around #A48D6B, with narrow top accumulation and fine scattered mineral grains fading smoothly to complete transparency before halfway down. No white pigment, no light-colored backdrop, no cloudy sheet, no underlying surface. Coverage alpha fades; RGB color must stay dusty tan even in translucent portions. Flat pigment albedo, no lighting or shadow. Wide horizontal 4:1 strip, target 2048x512, horizontally repeating. Original transparent background must remain transparent. Dirt only.",
+      "size": [
+        2048,
+        512
+      ],
+      "decal": true,
+      "original_size": [
+        2172,
+        724
+      ],
+      "generated_source": "generated/T_EW_FloorEdgeDust.png",
+      "revision": {
+        "source": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-59c70f68-a2cb-4f79-98df-851db737840f.png",
+        "prompt": "Correct this transparent floor-edge dust decal. Keep genuine RGBA transparency and top-dense/downward-fading layout. Remove the entire bright white/cream cloudlike band; it looks like foam. All visible dust must instead be subdued medium sandy tan RGB around #A48D6B, with narrow top accumulation and fine scattered mineral grains fading smoothly to complete transparency before halfway down. No white pigment, no light-colored backdrop, no cloudy sheet, no underlying surface. Coverage alpha fades; RGB color must stay dusty tan even in translucent portions. Flat pigment albedo, no lighting or shadow. Wide horizontal 4:1 strip, target 2048x512, horizontally repeating. Original transparent background must remain transparent. Dirt only."
+      },
+      "runtime_file": "Decals/textures/T_EW_FloorEdgeDust.png",
+      "resampling": "FFmpeg Lanczos to exact requested dimensions; no new detail claimed",
+      "color_space": "sRGB RGB, coverage alpha",
+      "builtin_source_path": "/home/tom/.codex/generated_images/01a1a5e5-efbb-7fa1-bb5f-e914cc16d285/exec-59c70f68-a2cb-4f79-98df-851db737840f.png"
+    }
+  ]
+}

@@ -76,7 +76,7 @@ private:
  FVector2D Pos = FVector2D::ZeroVector, Goal = FVector2D::ZeroVector, LastKnown = FVector2D::ZeroVector;
  FVector2D Look = FVector2D::ZeroVector, PathGoal = FVector2D::ZeroVector, LastPlayer = FVector2D::ZeroVector, SearchAt = FVector2D::ZeroVector;
  double Y = -1.1, BodyYaw = 0, HeadYaw = 0, StateT = 0, SeeAcc = 0, SeenAcc = 0, LostT = 0, DriveLostT = 0;
- double SinceSeen = 1e9, SinceWarn = 1e9, Replan = 0, Phase = 0, Gait = 0, Clock = 0, NoiseCool = 0, ChaseBreath = 0;
+ double SinceWarn = 1e9, Replan = 0, Phase = 0, Gait = 0, Clock = 0, NoiseCool = 0, ChaseBreath = 0;
  double BlockedFor = 0;
  int32 PostNode = 2, CheckNode = 6, RetreatNode = 8, SearchStep = 0;
  bool bHavePlayer = false;

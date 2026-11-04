@@ -43,20 +43,28 @@ def build(lod=0):
              inward=1, exterior=False):
         f0, f1 = sorted((fixed, fixed+inward*thickness))
 
-        def piece(s0, s1, y0, y1, suffix):
+        def piece(s0, s1, y0, y1, suffix, visual=None):
             if s1-s0 < .001 or y1-y0 < .001:
                 return
             lo, hi = ((s0, y0, f0), (s1, y1, f1)) if axis == 'x' else ((f0, y0, s0), (f1, y1, s1))
             box('SM_EW_Shell', name+suffix, lo, hi, 'Masonry', .003, True,
                 exterior_axis=(2 if axis == 'x' else 0) if exterior else None,
                 exterior_sign=-inward if exterior else None)
-        current = a
+            if visual is not None:
+                vs0, vs1, vy0, vy1 = visual
+                vlo, vhi = ((vs0, vy0, f0), (vs1, vy1, f1)) if axis == 'x' else ((f0, vy0, vs0), (f1, vy1, vs1))
+                rows[-1].update(visual_lo=list(vlo), visual_hi=list(vhi))
+        # Recess masonry behind the frame's reveal faces. Keep original lo/hi
+        # for UCX: visible trim, clear openings and gameplay anchors do not move.
+        reveal_clearance = .01
+        current = visual_current = a
         for index, (ga, gb, gy0, gy1) in enumerate(gaps):
-            piece(current, ga, bottom, top, f'_solid{index}')
-            piece(ga, gb, bottom, gy0, f'_below{index}')
-            piece(ga, gb, gy1, top, f'_above{index}')
-            current = gb
-        piece(current, b, bottom, top, '_end')
+            va, vb = ga-reveal_clearance, gb+reveal_clearance
+            piece(current, ga, bottom, top, f'_solid{index}', (visual_current, va, bottom, top))
+            piece(ga, gb, bottom, gy0, f'_below{index}', (va, vb, bottom, gy0-reveal_clearance))
+            piece(ga, gb, gy1, top, f'_above{index}', (va, vb, gy1+reveal_clearance, top))
+            current, visual_current = gb, vb
+        piece(current, b, bottom, top, '_end', (visual_current, b, bottom, top))
 
     wall('South', 'x', Z1, X0, X1, 0, H, SOUTH_GAPS, inward=-1, exterior=True)
     wall('North', 'x', Z0, X0, X1, 0, H, NORTH_GAPS, exterior=True)
@@ -91,12 +99,26 @@ def build(lod=0):
             (x+.05,.002,5.25),'Yellow',0)
 
     # Visible ramps follow AS47Props::AddFloor's exact interpolation, not a raised flat slab.
-    for name, xa, xb, length in [('GarageRamp',33.2,37.6,4.),('PersonnelRamp',21.,22.7,1.6)]:
+    for name, xa, xb, length in [('GarageRamp',33.2,37.6,4.)]:
         rows.append(dict(asset='SM_EW_Shell',name=name,kind='ramp',x0=xa,x1=xb,z0=Z1,z1=Z1+length,
                          y0=0.,y1=-.576,bottom=-.65,material='Concrete',collide=True))
-    rows.append(dict(asset='SM_EW_Shell',name='ServiceRamp',kind='ramp',axis='x',
-                     x0=X1,x1=X1+1.6,z0=1.,z1=2.5,y0=0.,y1=-.576,bottom=-.65,
-                     material='Concrete',collide=True))
+    # Claude (Tom 4 Nov): poured concrete steps instead of ramps at the personnel and service doors.
+    # 0.45 m landing at floor level, then three 0.192 m risers with 0.30 m treads down to the apron
+    # (-0.576). AS47Props walking floors in S47EastWing::Walls follow the same landing + flight.
+    STEP_LANDING, STEP_TREAD, STEP_RISE = .45, .30, .192
+    def steps(name, axis, edge, a, b):
+        # axis 'z': flight runs from z=edge toward +z (south door); axis 'x': from x=edge toward +x (east door).
+        tops = [0., -STEP_RISE, -2 * STEP_RISE]
+        ends = [STEP_LANDING, STEP_LANDING + STEP_TREAD, STEP_LANDING + 2 * STEP_TREAD]
+        start = 0.
+        for k, (top, end) in enumerate(zip(tops, ends)):
+            if axis == 'z':
+                box('SM_EW_Shell', f'{name}{k}', (a, -.65, edge + start), (b, top, edge + end), 'Concrete', .012, True)
+            else:
+                box('SM_EW_Shell', f'{name}{k}', (edge + start, -.65, a), (edge + end, top, b), 'Concrete', .012, True)
+            start = end
+    steps('PersonnelSteps', 'z', Z1, 21., 22.7)
+    steps('ServiceSteps', 'x', X1, 1., 2.5)
     box('SM_EW_Ceiling','Ceiling',(X0+T,CEILING,Z0+T),(X1-T,CEILING+.06,Z1-T),'Ceiling',.002)
     for index, x in enumerate([21.,23.5,26.,28.5,31.6,34.,36.4,38.2]):
         box('SM_EW_Ceiling',f'RoofRib{index}',(x-.035,3.19,Z0+T),(x+.035,CEILING,Z1-T),'CeilingSteel',.003)

@@ -39,6 +39,54 @@
       "license": "Extras/SM_EW_CalibrationSign.license.json"
     },
     {
+      "id": "SM_EW_CaseworkIsland",
+      "manifest": "Extras/SM_EW_CaseworkIsland.asset.json",
+      "fbx": "Extras/SM_EW_CaseworkIsland.fbx",
+      "dimensions_m": [
+        2.430000066757202,
+        0.9700000584125519,
+        0.8999999761581421
+      ],
+      "triangles": 11160,
+      "license": "Extras/SM_EW_CaseworkIsland.license.json"
+    },
+    {
+      "id": "SM_EW_CaseworkRun12",
+      "manifest": "Extras/SM_EW_CaseworkRun12.asset.json",
+      "fbx": "Extras/SM_EW_CaseworkRun12.fbx",
+      "dimensions_m": [
+        1.2300000190734863,
+        0.6970000267028809,
+        1.0
+      ],
+      "triangles": 4008,
+      "license": "Extras/SM_EW_CaseworkRun12.license.json"
+    },
+    {
+      "id": "SM_EW_CaseworkRun24",
+      "manifest": "Extras/SM_EW_CaseworkRun24.asset.json",
+      "fbx": "Extras/SM_EW_CaseworkRun24.fbx",
+      "dimensions_m": [
+        2.430000066757202,
+        0.6970000565052032,
+        1.0
+      ],
+      "triangles": 6336,
+      "license": "Extras/SM_EW_CaseworkRun24.license.json"
+    },
+    {
+      "id": "SM_EW_CeilingConduit",
+      "manifest": "Extras/SM_EW_CeilingConduit.asset.json",
+      "fbx": "Extras/SM_EW_CeilingConduit.fbx",
+      "dimensions_m": [
+        5.0,
+        0.2200000062584877,
+        0.0800000075250864
+      ],
+      "triangles": 5328,
+      "license": "Extras/SM_EW_CeilingConduit.license.json"
+    },
+    {
       "id": "SM_EW_DepotCheckoutSign",
       "manifest": "Extras/SM_EW_DepotCheckoutSign.asset.json",
       "fbx": "Extras/SM_EW_DepotCheckoutSign.fbx",
@@ -73,6 +121,18 @@
       ],
       "triangles": 4952,
       "license": "Extras/SM_EW_FloorJack.license.json"
+    },
+    {
+      "id": "SM_EW_GarageSlab",
+      "manifest": "Extras/SM_EW_GarageSlab.asset.json",
+      "fbx": "Extras/SM_EW_GarageSlab.fbx",
+      "dimensions_m": [
+        6.675000190734863,
+        10.5,
+        0.0
+      ],
+      "triangles": 512,
+      "license": "Extras/SM_EW_GarageSlab.license.json"
     },
     {
       "id": "SM_EW_GlassCabinet",
@@ -303,6 +363,18 @@
       "license": "Extras/SM_EW_SampleHolder.license.json"
     },
     {
+      "id": "SM_EW_SteelJoist",
+      "manifest": "Extras/SM_EW_SteelJoist.asset.json",
+      "fbx": "Extras/SM_EW_SteelJoist.fbx",
+      "dimensions_m": [
+        10.399999618530273,
+        0.10000000149011612,
+        0.20000000298023224
+      ],
+      "triangles": 2256,
+      "license": "Extras/SM_EW_SteelJoist.license.json"
+    },
+    {
       "id": "SM_EW_SwampCooler",
       "manifest": "Extras/SM_EW_SwampCooler.asset.json",
       "fbx": "Extras/SM_EW_SwampCooler.fbx",
@@ -313,6 +385,18 @@
       ],
       "triangles": 14520,
       "license": "Extras/SM_EW_SwampCooler.license.json"
+    },
+    {
+      "id": "SM_EW_VinylFloor",
+      "manifest": "Extras/SM_EW_VinylFloor.asset.json",
+      "fbx": "Extras/SM_EW_VinylFloor.fbx",
+      "dimensions_m": [
+        10.675000190734863,
+        10.5,
+        0.0
+      ],
+      "triangles": 2,
+      "license": "Extras/SM_EW_VinylFloor.license.json"
     },
     {
       "id": "SM_EW_WallClock",
@@ -327,7 +411,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 27,
+  "asset_count": 34,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude and Codex",
   "prints": "Extras/make_prints.py",

@@ -1,0 +1,88 @@
+{
+  "asset": "SM_EW_GarageSlab",
+  "description": "Unique 6.7 x 10.5 m garage slab: concrete, saw cuts, worn lane lines, tyre tracks, oil, blown sand.",
+  "fbx": "SM_EW_GarageSlab.fbx",
+  "editable": "SM_EW_GarageSlab.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -3.3375000953674316,
+      -5.25,
+      0.004000000189989805
+    ],
+    [
+      3.3375000953674316,
+      5.25,
+      0.004000000189989805
+    ]
+  ],
+  "dimensions_m": [
+    6.675000190734863,
+    10.5,
+    0.0
+  ],
+  "triangles": 512,
+  "uv_layers": 1,
+  "materials": [
+    "EW_GarageSlab"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_GarageSlab",
+      "texture_key": null,
+      "maps": {
+        "EW_GarageSlab_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_BaseColor.png",
+        "EW_GarageSlab_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_Roughness.png",
+        "EW_GarageSlab_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_NormalGL.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.5,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_GarageSlab_LOD1.fbx",
+      "triangles": 255
+    },
+    {
+      "file": "SM_EW_GarageSlab_LOD2.fbx",
+      "triangles": 128
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "88a38a340ee81449cd29e00350693ca72ad09dc9df255b326333faffbb4f9d94",
+  "blend_sha256": "1341b9e9aedbd51a20304d363bf55681029349ff8719fcfa7fab4dce1b10e2c5"
+}

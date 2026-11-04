@@ -22,7 +22,14 @@
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_NoticeBoard_preview.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_LabStool_preview.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_ReagentShelf_preview.png",
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_RelayTester_preview.png"
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_RelayTester_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_VinylFloor_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_SteelJoist_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_CeilingConduit_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_GarageSlab_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_CaseworkRun24_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_CaseworkRun12_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_CaseworkIsland_preview.png"
   ],
   "assets": [
     {
@@ -58,11 +65,11 @@
       "triangles": 20128,
       "uv_layers": 1,
       "materials": [
-        "EW_X_Rubber",
-        "EW_X_GreenEnamel",
+        "EW_XRubber",
+        "EW_XEnamelGreen",
         "EW_X_Bakelite",
         "EW_X_Chrome",
-        "EW_X_Stainless",
+        "EW_XStainless",
         "EW_X_Red",
         "EW_X_Blue",
         "EW_X_LabelPaper",
@@ -70,16 +77,20 @@
       ],
       "material_parameters": [
         {
-          "name": "EW_X_Rubber",
+          "name": "EW_XRubber",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
           "Base Color": [
-            0.02199999988079071,
-            0.02500000037252903,
-            0.023000000044703484,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.699999988079071,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -92,21 +103,20 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_GreenEnamel",
-          "texture_key": "EW_GreenSteel",
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
           "maps": {
-            "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-            "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
-            "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-            "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
           },
           "Base Color": [
-            0.1599999964237213,
-            0.23999999463558197,
-            0.20000000298023224,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.33000001311302185,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -163,22 +173,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -279,14 +288,15 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -305,8 +315,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "88b6df844482adcfe03a4a75d02c244d230f2cfca7e7f05c398d774cbe995a44",
-      "blend_sha256": "2473af3f0dbf4b66d3d4c14a96887d3a318ea44034623d7b7b1bd32092fb1c56"
+      "fbx_sha256": "58a85926a37009dd2d859125f7bd7a271c69a3d024de22fa0f34ccdae4865a39",
+      "blend_sha256": "f02b88c2e3ccf4520614e13ade3e881f5ac1c7e61b8e9fed330d2cd28a94f437"
     },
     {
       "asset": "SM_EW_GlassCabinet",
@@ -342,8 +352,8 @@
       "uv_layers": 1,
       "materials": [
         "EW_X_Bakelite",
-        "EW_X_GreenEnamel",
-        "EW_X_Stainless",
+        "EW_XEnamelGreen",
+        "EW_XStainless",
         "EW_X_Glass",
         "EW_X_LabelPaper",
         "EW_X_LabelInk",
@@ -377,21 +387,20 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_GreenEnamel",
-          "texture_key": "EW_GreenSteel",
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
           "maps": {
-            "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-            "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
-            "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-            "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
           },
           "Base Color": [
-            0.1599999964237213,
-            0.23999999463558197,
-            0.20000000298023224,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.33000001311302185,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -404,22 +413,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -608,14 +616,12 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -634,8 +640,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "3aa52c2fcfe0df7f41ee97251dcedf89ab3d844cda829fda34a6784a7c2c416f",
-      "blend_sha256": "fc0d53a2e9595edb539532012e742d486894696f476e9ac93ade4d099318adf5"
+      "fbx_sha256": "72bcd6009891d3943f297852ebc9bf300769b792d2411404a949bbc617a6ab68",
+      "blend_sha256": "48726e60a0e72c37a242761a24b546af64721c1323b13ea4db04b467003739a0"
     },
     {
       "asset": "SM_EW_PosterRF",
@@ -764,8 +770,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "f544bc39e1c98e0dab1d0a60abc13b277f5a043682642ac38a359675d69cdc49",
-      "blend_sha256": "4e9a0e082d95885e918a794576e2dfd55e890dcaec9baf0e77b795ee797eca37"
+      "fbx_sha256": "ec65c0362926fb454098274790c00d0d03e3295e372ef201eda28cfa8bcfeded",
+      "blend_sha256": "b3868be567655d88e50ffb123b71936c854dcc80d5a14cc4e40db99b88e48d5c"
     },
     {
       "asset": "SM_EW_PosterGlasses",
@@ -894,8 +900,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "5fe088d435e855802bada6a1f6fc5dbef6a1743bb3b2af8a4eea9820de998b0d",
-      "blend_sha256": "a9f9bf659f5a46c0c2acdb66372cd0de7a2bf79e9331c9ac82866320753de373"
+      "fbx_sha256": "140d400729bd65d138178b3b43e1cdf26f4b7dbc82388b0a1b5a4376c44999ff",
+      "blend_sha256": "cd989b223c432d2c0756e65407089fa22931f20a90c79ea59940eb57c4f9b6e0"
     },
     {
       "asset": "SM_EW_Calendar1986",
@@ -935,7 +941,7 @@
         "EW_X_Bakelite",
         "EW_X_Chrome",
         "EW_X_LabelInk",
-        "EW_X_Stainless"
+        "EW_XStainless"
       ],
       "material_parameters": [
         {
@@ -1051,22 +1057,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -1080,10 +1085,9 @@
       ],
       "textures": [
         "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_Calendar1986_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -1102,8 +1106,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "e178a4bec63ce13d0d69ddfc1c8609e1d6b9d7a73142796a6ae764501321c648",
-      "blend_sha256": "9fb75a69598f8ddf589752be9e49ad5e207414ef4109a40e7f30ac19816dbe94"
+      "fbx_sha256": "792cd424c75b21654eb17bbc9e849b00241f7738dda4d69c85825cacc9f8019f",
+      "blend_sha256": "016b96206b423aa7e15513bde0fb2b964dbdca778f81a28b0b20eddaf254dca2"
     },
     {
       "asset": "SM_EW_WallClock",
@@ -1278,8 +1282,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "39d89fbae3ee598a1cc40aa77626d9ed3503dce196ce6fb0b78a57d9c401e02b",
-      "blend_sha256": "fe613c573fa6dde3f3a72dc30b9cad5d8df6e6843ba387e8cc1ca026757ec691"
+      "fbx_sha256": "a986f41f4a4378b4a21cb205290342cf6f95dbd26e6251b36aa031887fdbb06f",
+      "blend_sha256": "98ed5f10e696fdefa6dbbd73d0e7389cd60787e045849fa1583131d2a1862729"
     },
     {
       "asset": "SM_EW_FirstAidBox",
@@ -1314,7 +1318,7 @@
       "triangles": 2060,
       "uv_layers": 1,
       "materials": [
-        "EW_X_WhiteEnamel",
+        "EW_XEnamelWhite",
         "EW_X_Bakelite",
         "EW_X_Red",
         "EW_X_LabelPaper",
@@ -1323,16 +1327,20 @@
       ],
       "material_parameters": [
         {
-          "name": "EW_X_WhiteEnamel",
+          "name": "EW_XEnamelWhite",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XEnamelWhite_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+            "EW_XEnamelWhite_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png",
+            "EW_XEnamelWhite_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png"
+          },
           "Base Color": [
-            0.7400000095367432,
-            0.7300000190734863,
-            0.6800000071525574,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.2800000011920929,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -1455,7 +1463,11 @@
           "Emission Strength": 0.0
         }
       ],
-      "textures": [],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png"
+      ],
       "lods": [
         {
           "file": "SM_EW_FirstAidBox_LOD1.fbx",
@@ -1473,8 +1485,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "f5aed56e95533deb307bdcd0071bf27654df56ef33226c9a1bfd72252fe73691",
-      "blend_sha256": "ec0991ef99c433306da8da2a95103050a7d15f5aa9816301b1d23558c142374b"
+      "fbx_sha256": "724f10e624dacbb832dd1e062f842465d863c2122c5b2c836b2383938b9c9a44",
+      "blend_sha256": "909a9a903d1a1030d1040590982d08fbc803eea37196f47f75de838304118dc2"
     },
     {
       "asset": "SM_EW_SwampCooler",
@@ -1509,7 +1521,7 @@
       "triangles": 14520,
       "uv_layers": 1,
       "materials": [
-        "EW_X_Stainless",
+        "EW_XStainless",
         "EW_X_AspenPad",
         "EW_X_Rust",
         "EW_X_LabelPaper",
@@ -1517,22 +1529,21 @@
       ],
       "material_parameters": [
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -1633,10 +1644,9 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -1655,8 +1665,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "6a05c42322bbe89356f47e77a342651bd660f3a2c6a1aabb31d17465acdd699f",
-      "blend_sha256": "45df12e8822ca317d43da80993a25ecd693b152d09ed282bb45e463331c37fc2"
+      "fbx_sha256": "974d222d298f81c7c0ec7c36c68baaff5b91d8d5c13aba0a03a00f46e6cd44ae",
+      "blend_sha256": "d5e969e85cdf75427856e3f2fd2168afe5f584615541c3ce106b55fa1439683e"
     },
     {
       "asset": "SM_EW_HoseReel",
@@ -1691,29 +1701,28 @@
       "triangles": 8196,
       "uv_layers": 1,
       "materials": [
-        "EW_X_Stainless",
+        "EW_XStainless",
         "EW_X_GreenHose",
         "EW_X_Brass",
         "EW_X_Red"
       ],
       "material_parameters": [
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -1792,10 +1801,9 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -1814,8 +1822,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "4617b03d44cdb8e2e8fea0bc3112a1c8abeec8931f09c9b747bd24a2d8b3e349",
-      "blend_sha256": "31c2ca897398d0a2f432db80506e62ce68d2053ace55dc4d69a47aba8c23dc2c"
+      "fbx_sha256": "71fef4d3cafe11f09097511f0f70a6071b972c8d2de53bbc88443f8cea38f1ee",
+      "blend_sha256": "a1d7f305f6291815fe3da39fb5d7e41d094dd9b008cfcce4d01eff32ed93d3aa"
     },
     {
       "asset": "SM_EW_MechanicBench",
@@ -1850,32 +1858,31 @@
       "triangles": 8836,
       "uv_layers": 1,
       "materials": [
-        "EW_X_GreenEnamel",
-        "EW_X_BenchTimber",
+        "EW_XEnamelGreen",
+        "EW_XWood",
         "EW_X_Chrome",
         "EW_X_CastIron",
-        "EW_X_Stainless",
+        "EW_XStainless",
         "EW_X_CanYellow",
-        "EW_X_RedEnamel",
+        "EW_XEnamelRed",
         "EW_X_Rag"
       ],
       "material_parameters": [
         {
-          "name": "EW_X_GreenEnamel",
-          "texture_key": "EW_GreenSteel",
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
           "maps": {
-            "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-            "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
-            "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-            "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
           },
           "Base Color": [
-            0.1599999964237213,
-            0.23999999463558197,
-            0.20000000298023224,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.33000001311302185,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -1888,16 +1895,20 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_BenchTimber",
+          "name": "EW_XWood",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XWood_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+            "EW_XWood_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png",
+            "EW_XWood_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png"
+          },
           "Base Color": [
-            0.36000001430511475,
-            0.23999999463558197,
-            0.12999999523162842,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.6200000047683716,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -1954,22 +1965,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -2003,17 +2013,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_RedEnamel",
+          "name": "EW_XEnamelRed",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XEnamelRed_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+            "EW_XEnamelRed_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+            "EW_XEnamelRed_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png"
+          },
           "Base Color": [
-            0.41999998688697815,
-            0.029999999329447746,
-            0.019999999552965164,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.3499999940395355,
-          "Metallic": 0.10000000149011612,
+          "Roughness": 0.5,
+          "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -2048,14 +2062,18 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png"
       ],
       "lods": [
         {
@@ -2074,8 +2092,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "c499393fbd617e349fb977999937a823742c13481ada50f5444ec2ef1525900f",
-      "blend_sha256": "c24790a9f6a4f8b2e7990ba135951b7bef6dcf62bb9f0d1ddc554eee32cd01ad"
+      "fbx_sha256": "756c6b01c94d3629a2be245e10f5cfac01594b688a4065e6ecf48cd1f074f4a3",
+      "blend_sha256": "005ff4fce3662802a55d9ad1c7a0b47fde8d54c5b1ff72a79bf0a9693a932243"
     },
     {
       "asset": "SM_EW_AirCompressor",
@@ -2110,29 +2128,33 @@
       "triangles": 11168,
       "uv_layers": 1,
       "materials": [
-        "EW_X_RedEnamel",
+        "EW_XEnamelRed",
         "EW_X_CastIron",
         "EW_X_Chrome",
-        "EW_X_WhiteEnamel",
-        "EW_X_Rubber",
-        "EW_X_Stainless",
+        "EW_XEnamelWhite",
+        "EW_XRubber",
+        "EW_XStainless",
         "EW_X_YellowHose",
         "EW_X_LabelPaper",
         "EW_X_LabelInk"
       ],
       "material_parameters": [
         {
-          "name": "EW_X_RedEnamel",
+          "name": "EW_XEnamelRed",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XEnamelRed_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+            "EW_XEnamelRed_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+            "EW_XEnamelRed_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png"
+          },
           "Base Color": [
-            0.41999998688697815,
-            0.029999999329447746,
-            0.019999999552965164,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.3499999940395355,
-          "Metallic": 0.10000000149011612,
+          "Roughness": 0.5,
+          "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -2188,66 +2210,73 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_WhiteEnamel",
+          "name": "EW_XEnamelWhite",
           "texture_key": null,
-          "maps": {},
-          "Base Color": [
-            0.7400000095367432,
-            0.7300000190734863,
-            0.6800000071525574,
-            1.0
-          ],
-          "Roughness": 0.2800000011920929,
-          "Metallic": 0.0,
-          "Transmission Weight": 0.0,
-          "IOR": 1.5,
-          "Emission Color": [
-            1.0,
-            1.0,
-            1.0,
-            1.0
-          ],
-          "Emission Strength": 0.0
-        },
-        {
-          "name": "EW_X_Rubber",
-          "texture_key": null,
-          "maps": {},
-          "Base Color": [
-            0.02199999988079071,
-            0.02500000037252903,
-            0.023000000044703484,
-            1.0
-          ],
-          "Roughness": 0.699999988079071,
-          "Metallic": 0.0,
-          "Transmission Weight": 0.0,
-          "IOR": 1.5,
-          "Emission Color": [
-            1.0,
-            1.0,
-            1.0,
-            1.0
-          ],
-          "Emission Strength": 0.0
-        },
-        {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XEnamelWhite_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+            "EW_XEnamelWhite_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png",
+            "EW_XEnamelWhite_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XRubber",
+          "texture_key": null,
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XStainless",
+          "texture_key": null,
+          "maps": {
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -2326,10 +2355,18 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -2348,8 +2385,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "e7b0b4919267d15e6d12014e26cbce9d5ce3d8f8708259c9dd711a5030d7756b",
-      "blend_sha256": "a78f33e876b1fa28ec2fc48b0f9d9bb888b145a51067827f331abfbc40a4fa26"
+      "fbx_sha256": "5f5a51c3a597d2ded0a79040fb603b377f400a9c8423eb3fe02099fb6562116a",
+      "blend_sha256": "8bf9fb5af932b78c2d8486470023874fb5d2e8f5711163e7df84ed348cc54f56"
     },
     {
       "asset": "SM_EW_FloorJack",
@@ -2384,25 +2421,29 @@
       "triangles": 4952,
       "uv_layers": 1,
       "materials": [
-        "EW_X_RedEnamel",
-        "EW_X_Stainless",
+        "EW_XEnamelRed",
+        "EW_XStainless",
         "EW_X_CastIron",
         "EW_X_Chrome",
-        "EW_X_Rubber"
+        "EW_XRubber"
       ],
       "material_parameters": [
         {
-          "name": "EW_X_RedEnamel",
+          "name": "EW_XEnamelRed",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XEnamelRed_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+            "EW_XEnamelRed_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+            "EW_XEnamelRed_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png"
+          },
           "Base Color": [
-            0.41999998688697815,
-            0.029999999329447746,
-            0.019999999552965164,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.3499999940395355,
-          "Metallic": 0.10000000149011612,
+          "Roughness": 0.5,
+          "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -2414,22 +2455,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -2485,16 +2525,20 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Rubber",
+          "name": "EW_XRubber",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
           "Base Color": [
-            0.02199999988079071,
-            0.02500000037252903,
-            0.023000000044703484,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.699999988079071,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -2508,10 +2552,15 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelRed_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -2530,8 +2579,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "060118ebe254c76f3374d69a7665e0ee7b2495a4a8efd06a7e224b4d64b14162",
-      "blend_sha256": "bb2b21620074bbf8b8ea6b99af6db37c1a89a71013be36af2fe818aced80842a"
+      "fbx_sha256": "c58184e93caed20f47ccd73c58262edd2ba7c1a02f99221c99e1329618dff040",
+      "blend_sha256": "b4f75eb81c3fe4f9e26c9742766e26f59e209cd2d7c7252a3fe2284f4c70029a"
     },
     {
       "asset": "SM_EW_JerryCans",
@@ -2566,22 +2615,26 @@
       "triangles": 10936,
       "uv_layers": 1,
       "materials": [
-        "EW_X_OliveDrab",
+        "EW_XOliveDrab",
         "EW_X_LabelPaper",
         "EW_X_LabelInk"
       ],
       "material_parameters": [
         {
-          "name": "EW_X_OliveDrab",
+          "name": "EW_XOliveDrab",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XOliveDrab_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_BaseColor.png",
+            "EW_XOliveDrab_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_Roughness.png",
+            "EW_XOliveDrab_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_NormalGL.png"
+          },
           "Base Color": [
-            0.15000000596046448,
-            0.1599999964237213,
-            0.07999999821186066,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.550000011920929,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -2638,7 +2691,11 @@
           "Emission Strength": 0.0
         }
       ],
-      "textures": [],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XOliveDrab_Roughness.png"
+      ],
       "lods": [
         {
           "file": "SM_EW_JerryCans_LOD1.fbx",
@@ -2656,8 +2713,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "d22a8b9438f1142b6e828e55159071e6a8598bf0efa686603ec7bc1675dda6ae",
-      "blend_sha256": "fab1b04af7d74515289172074b0c74923e839e300391bc91e0c9ec45f7d3ba88"
+      "fbx_sha256": "a5d319e5e5391133f1dd1f79eca9f1ea4815b1f5392964f6394f1164c02d3b85",
+      "blend_sha256": "0d4ef76badf0cac12a8fcbb596eb062c38c66c4c0606cab08499e9cef3695db1"
     },
     {
       "asset": "SM_EW_OilStains",
@@ -2736,8 +2793,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "11b87fb9e652753a1d0e101ba135f00fc0acb5ca5f090b6872245b3bb6c2f71b",
-      "blend_sha256": "540b1cc8eb0f616f7de0fa27b6853d7216c9be9dff593fff38e55dab727a56aa"
+      "fbx_sha256": "aa296a755005a8afa980ec91fd5a84a05f475f6fa317b4dbd3eb2ec7023dba7a",
+      "blend_sha256": "ff1da6a1fbf35aca7f62862a8e74493230f552662320aed175f4d961c6e13392"
     },
     {
       "asset": "SM_EW_PlaqueLab",
@@ -2866,8 +2923,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "0966be27babec43d3494c45cf20ad7fa93da6b3e53493d361dd2e523ea3e9f5e",
-      "blend_sha256": "d1be321dddfff0572223c9e42e45ad06668c3c6a479674a118129fd37d312a38"
+      "fbx_sha256": "f6a48b7580d11daf21025177233ecc0f0345d6226646ae76b11079569a36f527",
+      "blend_sha256": "b62d98c7ca37e015495748a4a5673da4f51b50a26b2df1ba00de269e6f7b5c34"
     },
     {
       "asset": "SM_EW_PlaqueStorage",
@@ -2996,8 +3053,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "95b374790771281fe98349ac1e97cd51d696b6cc384fd6ac1f749640f85f1335",
-      "blend_sha256": "c3973ce9699c4041376f07cbe75d99ab64158242a52a9d00e9dddbeabf311aab"
+      "fbx_sha256": "203fa262e33418c9b8282092b5c7065b59dc7e8d7fa3d6c0c5c5772ed80d1769",
+      "blend_sha256": "2e26b5fe63e6e69a463a65f1aa091982ebb88954780a7911e12be11508dc80cb"
     },
     {
       "asset": "SM_EW_PlaqueCalibration",
@@ -3126,8 +3183,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "64a899d51d6c68a7b310002b842e535f764e265e2ccceda9a3daa83cf0bdc482",
-      "blend_sha256": "68e6ae70164f4d143fcc6507ae5eb1cff299ef28f9f92b9a03aa9def9ff8aef9"
+      "fbx_sha256": "ddb7be34baf8f3f138184730695a8562f0bd22c6a5500668e21d9e3d12b8621b",
+      "blend_sha256": "e8980774abce78a5ce849ea6ad40b1b4d2326ec7f159e230315c1121c2db07b9"
     },
     {
       "asset": "SM_EW_PlaqueGarage",
@@ -3256,8 +3313,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "bc4c716f677298fcbf60b29f375391a5af83e8e3a038590b124a129a0805f58f",
-      "blend_sha256": "6e9604679c995f865b0ab77594a550840f6ab6c39b66c0ceeb02a58444e63547"
+      "fbx_sha256": "bd0846a7578bba97c096fe990deca3ff208c08db387922e44cfc1a0fd402e7a9",
+      "blend_sha256": "280efbd9b675dfb575be70af9310eab57a36a33ec5cb400fa2dbf7505a3b279d"
     },
     {
       "asset": "SM_EW_NoticeBoard",
@@ -3292,21 +3349,25 @@
       "triangles": 942,
       "uv_layers": 1,
       "materials": [
-        "EW_X_BenchTimber",
+        "EW_XWood",
         "EW_Print_NoticeBoard"
       ],
       "material_parameters": [
         {
-          "name": "EW_X_BenchTimber",
+          "name": "EW_XWood",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XWood_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+            "EW_XWood_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png",
+            "EW_XWood_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png"
+          },
           "Base Color": [
-            0.36000001430511475,
-            0.23999999463558197,
-            0.12999999523162842,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.6200000047683716,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -3344,7 +3405,10 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_NoticeBoard_BaseColor.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_NoticeBoard_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XWood_Roughness.png"
       ],
       "lods": [
         {
@@ -3363,8 +3427,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "3193a614391544170c8974b2e71125c6fa613d56f7828f9867416ee08b88d021",
-      "blend_sha256": "bf1e2e24018340064941d2628f2ebd3b4fcea68f152a917ff728dc642df9cd47"
+      "fbx_sha256": "d033d59763f15e1b3da9678acda0c48061e72cc792f8b92d9e5f90db6358ab89",
+      "blend_sha256": "e045d7e843c2ff6e9161024f36ef82849d181f3baa6eb5b6cd6687473837b959"
     },
     {
       "asset": "SM_EW_LabStool",
@@ -3401,7 +3465,7 @@
       "materials": [
         "EW_X_Vinyl",
         "EW_X_Chrome",
-        "EW_X_Rubber"
+        "EW_XRubber"
       ],
       "material_parameters": [
         {
@@ -3449,16 +3513,20 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Rubber",
+          "name": "EW_XRubber",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
           "Base Color": [
-            0.02199999988079071,
-            0.02500000037252903,
-            0.023000000044703484,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.699999988079071,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -3471,7 +3539,11 @@
           "Emission Strength": 0.0
         }
       ],
-      "textures": [],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png"
+      ],
       "lods": [
         {
           "file": "SM_EW_LabStool_LOD1.fbx",
@@ -3489,8 +3561,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "91dc9a8d5692ea778d5527b65cc0b6fafd617214adbe6ac1e916eaf87183c1db",
-      "blend_sha256": "2a9a0a18c19898bffdc66bfa3a378c24d4ebc199f1fa52884ec9b72106562648"
+      "fbx_sha256": "f818181e290da205849e32c6576785c423eb8291ae17aef040bfea23871ddb9b",
+      "blend_sha256": "13bfac4078aecce2c02b3bfdf769c839f2b57b451edafd321d823c0dc27e7441"
     },
     {
       "asset": "SM_EW_ReagentShelf",
@@ -3525,8 +3597,8 @@
       "triangles": 8372,
       "uv_layers": 1,
       "materials": [
-        "EW_X_GreenEnamel",
-        "EW_X_Stainless",
+        "EW_XEnamelGreen",
+        "EW_XStainless",
         "EW_X_AmberGlass",
         "EW_X_Bakelite",
         "EW_X_LabelPaper",
@@ -3535,21 +3607,20 @@
       ],
       "material_parameters": [
         {
-          "name": "EW_X_GreenEnamel",
-          "texture_key": "EW_GreenSteel",
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
           "maps": {
-            "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-            "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
-            "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-            "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
           },
           "Base Color": [
-            0.1599999964237213,
-            0.23999999463558197,
-            0.20000000298023224,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.33000001311302185,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -3562,22 +3633,21 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_Stainless",
-          "texture_key": "EW_Galvanized",
+          "name": "EW_XStainless",
+          "texture_key": null,
           "maps": {
-            "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-            "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-            "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-            "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
           },
           "Base Color": [
-            0.47999998927116394,
-            0.5099999904632568,
-            0.5,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.23999999463558197,
-          "Metallic": 0.8500000238418579,
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -3700,14 +3770,12 @@
         }
       ],
       "textures": [
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
-        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
       ],
       "lods": [
         {
@@ -3726,8 +3794,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "10015861214106f2276375ffe7a56f9eab995575ec71a3fe893852ef6c38965d",
-      "blend_sha256": "c5f287a99666a3ce5b4dad29a784cb6faba2d25d75ca96846493e6dde0338340"
+      "fbx_sha256": "f86417f8fc250e8ecfcee9c7c9e3375cbfb64271d8ecf561bf39fff2c2eb2bf0",
+      "blend_sha256": "fd2cad20b9997a211e6eaf9859a037e16dda50c108668dc2d9f7072d06fa70bc"
     },
     {
       "asset": "SM_EW_RelayTester",
@@ -3762,10 +3830,10 @@
       "triangles": 8316,
       "uv_layers": 1,
       "materials": [
-        "EW_X_InstrumentGrey",
+        "EW_XInstrumentGrey",
         "EW_X_PanelAlu",
         "EW_X_Bakelite",
-        "EW_X_WhiteEnamel",
+        "EW_XEnamelWhite",
         "EW_X_Red",
         "EW_X_Chrome",
         "EW_X_LabelPaper",
@@ -3774,17 +3842,21 @@
       ],
       "material_parameters": [
         {
-          "name": "EW_X_InstrumentGrey",
+          "name": "EW_XInstrumentGrey",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XInstrumentGrey_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+            "EW_XInstrumentGrey_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_Roughness.png",
+            "EW_XInstrumentGrey_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_NormalGL.png"
+          },
           "Base Color": [
-            0.30000001192092896,
-            0.3100000023841858,
-            0.28999999165534973,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.44999998807907104,
-          "Metallic": 0.10000000149011612,
+          "Roughness": 0.5,
+          "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
           "Emission Color": [
@@ -3840,16 +3912,20 @@
           "Emission Strength": 0.0
         },
         {
-          "name": "EW_X_WhiteEnamel",
+          "name": "EW_XEnamelWhite",
           "texture_key": null,
-          "maps": {},
+          "maps": {
+            "EW_XEnamelWhite_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+            "EW_XEnamelWhite_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png",
+            "EW_XEnamelWhite_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png"
+          },
           "Base Color": [
-            0.7400000095367432,
-            0.7300000190734863,
-            0.6800000071525574,
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
             1.0
           ],
-          "Roughness": 0.2800000011920929,
+          "Roughness": 0.5,
           "Metallic": 0.0,
           "Transmission Weight": 0.0,
           "IOR": 1.5,
@@ -3972,7 +4048,14 @@
           "Emission Strength": 0.0
         }
       ],
-      "textures": [],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelWhite_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_Roughness.png"
+      ],
       "lods": [
         {
           "file": "SM_EW_RelayTester_LOD1.fbx",
@@ -3990,8 +4073,942 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "e48d277b7a7e77158723cf25c115c14a35fa19e0b7cbf0017427e0b72f480f4b",
-      "blend_sha256": "fd75d5cebbef7483655fbe05ab0e423522c563a7e65fe7975c0930d5e7118c87"
+      "fbx_sha256": "1509645d702c674fec6d7f166046f1799de4b701f70e00e2d3e54cbb9cd343c8",
+      "blend_sha256": "4c99fc3f09e4385596806b79e96210d6c2afa961e71bb9bf8d1ca4a6885e0cf9"
+    },
+    {
+      "asset": "SM_EW_VinylFloor",
+      "description": "Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).",
+      "fbx": "SM_EW_VinylFloor.fbx",
+      "editable": "SM_EW_VinylFloor.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -5.337500095367432,
+          -5.25,
+          0.004000000189989805
+        ],
+        [
+          5.337500095367432,
+          5.25,
+          0.004000000189989805
+        ]
+      ],
+      "dimensions_m": [
+        10.675000190734863,
+        10.5,
+        0.0
+      ],
+      "triangles": 2,
+      "uv_layers": 1,
+      "materials": [
+        "EW_PolishedConcrete"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_PolishedConcrete",
+          "texture_key": null,
+          "maps": {
+            "EW_PolishedConcrete_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_BaseColor.png",
+            "EW_PolishedConcrete_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_Roughness.png",
+            "EW_PolishedConcrete_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_PolishedConcrete_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_VinylFloor_LOD1.fbx",
+          "triangles": 2
+        },
+        {
+          "file": "SM_EW_VinylFloor_LOD2.fbx",
+          "triangles": 2
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "24e83667cef50f9cea48469551f200d4858a916ace4d173144702c0b7dd2abdd",
+      "blend_sha256": "a7fe81e3d1f86cda5ee9ee7a441eeabd6d9384525e1e8df4295d1184f1a62cfe"
+    },
+    {
+      "asset": "SM_EW_SteelJoist",
+      "description": "Exposed painted W-shape steel joist, 10.4 m, under the east wing roof deck.",
+      "fbx": "SM_EW_SteelJoist.fbx",
+      "editable": "SM_EW_SteelJoist.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -5.199999809265137,
+          -0.05000000074505806,
+          0.0
+        ],
+        [
+          5.199999809265137,
+          0.05000000074505806,
+          0.20000000298023224
+        ]
+      ],
+      "dimensions_m": [
+        10.399999618530273,
+        0.10000000149011612,
+        0.20000000298023224
+      ],
+      "triangles": 2256,
+      "uv_layers": 1,
+      "materials": [
+        "EW_XInstrumentGrey"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_XInstrumentGrey",
+          "texture_key": null,
+          "maps": {
+            "EW_XInstrumentGrey_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+            "EW_XInstrumentGrey_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_Roughness.png",
+            "EW_XInstrumentGrey_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XInstrumentGrey_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_SteelJoist_LOD1.fbx",
+          "triangles": 1128
+        },
+        {
+          "file": "SM_EW_SteelJoist_LOD2.fbx",
+          "triangles": 564
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "c3e0dbff4f08e2e3e9bc1790559ab1e3269cd3e99ddeae42c0f19c753127bfb7",
+      "blend_sha256": "f4b1d8ce4e6b81ceec4e1bd368cf9f7e15f19ec29d4fec57b8a99684d685d0e7"
+    },
+    {
+      "asset": "SM_EW_CeilingConduit",
+      "description": "Two exposed EMT conduit runs on strut hangers with a junction box, 5 m.",
+      "fbx": "SM_EW_CeilingConduit.fbx",
+      "editable": "SM_EW_CeilingConduit.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -2.5,
+          -0.10999999940395355,
+          0.020000001415610313
+        ],
+        [
+          2.5,
+          0.11000000685453415,
+          0.10000000894069672
+        ]
+      ],
+      "dimensions_m": [
+        5.0,
+        0.2200000062584877,
+        0.0800000075250864
+      ],
+      "triangles": 5328,
+      "uv_layers": 1,
+      "materials": [
+        "EW_XStainless"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_XStainless",
+          "texture_key": null,
+          "maps": {
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_CeilingConduit_LOD1.fbx",
+          "triangles": 2664
+        },
+        {
+          "file": "SM_EW_CeilingConduit_LOD2.fbx",
+          "triangles": 1332
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "670ebd7add55cb9e80259f04be0f5849b492822001599ae50eea60b477d345fa",
+      "blend_sha256": "ac359c8b52c2e86c630422f3215547422eb52ec0be52daf68e29bbd568dbacfd"
+    },
+    {
+      "asset": "SM_EW_GarageSlab",
+      "description": "Unique 6.7 x 10.5 m garage slab: concrete, saw cuts, worn lane lines, tyre tracks, oil, blown sand.",
+      "fbx": "SM_EW_GarageSlab.fbx",
+      "editable": "SM_EW_GarageSlab.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -3.3375000953674316,
+          -5.25,
+          0.004000000189989805
+        ],
+        [
+          3.3375000953674316,
+          5.25,
+          0.004000000189989805
+        ]
+      ],
+      "dimensions_m": [
+        6.675000190734863,
+        10.5,
+        0.0
+      ],
+      "triangles": 512,
+      "uv_layers": 1,
+      "materials": [
+        "EW_GarageSlab"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_GarageSlab",
+          "texture_key": null,
+          "maps": {
+            "EW_GarageSlab_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_BaseColor.png",
+            "EW_GarageSlab_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_Roughness.png",
+            "EW_GarageSlab_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_GarageSlab_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_GarageSlab_LOD1.fbx",
+          "triangles": 255
+        },
+        {
+          "file": "SM_EW_GarageSlab_LOD2.fbx",
+          "triangles": 128
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "88a38a340ee81449cd29e00350693ca72ad09dc9df255b326333faffbb4f9d94",
+      "blend_sha256": "1341b9e9aedbd51a20304d363bf55681029349ff8719fcfa7fab4dce1b10e2c5"
+    },
+    {
+      "asset": "SM_EW_CaseworkRun24",
+      "description": "Green enamel steel lab casework run 2.4 m with stainless top, backsplash.",
+      "fbx": "SM_EW_CaseworkRun24.fbx",
+      "editable": "SM_EW_CaseworkRun24.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -1.215000033378601,
+          -0.36900004744529724,
+          0.0
+        ],
+        [
+          1.215000033378601,
+          0.328000009059906,
+          1.0
+        ]
+      ],
+      "dimensions_m": [
+        2.430000066757202,
+        0.6970000565052032,
+        1.0
+      ],
+      "triangles": 6336,
+      "uv_layers": 1,
+      "materials": [
+        "EW_XRubber",
+        "EW_XEnamelGreen",
+        "EW_XStainless",
+        "EW_X_Chrome",
+        "EW_X_LabelPaper"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_XRubber",
+          "texture_key": null,
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
+          "maps": {
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XStainless",
+          "texture_key": null,
+          "maps": {
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Chrome",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.699999988079071,
+            0.7300000190734863,
+            0.7400000095367432,
+            1.0
+          ],
+          "Roughness": 0.17000000178813934,
+          "Metallic": 1.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelPaper",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.8100000023841858,
+            0.7799999713897705,
+            0.6299999952316284,
+            1.0
+          ],
+          "Roughness": 0.800000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_CaseworkRun24_LOD1.fbx",
+          "triangles": 3168
+        },
+        {
+          "file": "SM_EW_CaseworkRun24_LOD2.fbx",
+          "triangles": 1584
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "472917a6629f10765d954a671bc68551ad2f29ee8558f6f9b2190c704fdabcef",
+      "blend_sha256": "0cfa9d0c5a0fe2d451572b299a88ab931ce2da74ec7f40711e4efe29d4ef4978"
+    },
+    {
+      "asset": "SM_EW_CaseworkRun12",
+      "description": "Green enamel steel lab casework run 1.2 m with stainless top, backsplash.",
+      "fbx": "SM_EW_CaseworkRun12.fbx",
+      "editable": "SM_EW_CaseworkRun12.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -0.6150000095367432,
+          -0.36900001764297485,
+          0.0
+        ],
+        [
+          0.6150000095367432,
+          0.328000009059906,
+          1.0
+        ]
+      ],
+      "dimensions_m": [
+        1.2300000190734863,
+        0.6970000267028809,
+        1.0
+      ],
+      "triangles": 4008,
+      "uv_layers": 1,
+      "materials": [
+        "EW_XRubber",
+        "EW_XEnamelGreen",
+        "EW_XStainless",
+        "EW_X_Chrome",
+        "EW_X_LabelPaper"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_XRubber",
+          "texture_key": null,
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
+          "maps": {
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XStainless",
+          "texture_key": null,
+          "maps": {
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Chrome",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.699999988079071,
+            0.7300000190734863,
+            0.7400000095367432,
+            1.0
+          ],
+          "Roughness": 0.17000000178813934,
+          "Metallic": 1.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelPaper",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.8100000023841858,
+            0.7799999713897705,
+            0.6299999952316284,
+            1.0
+          ],
+          "Roughness": 0.800000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_CaseworkRun12_LOD1.fbx",
+          "triangles": 2004
+        },
+        {
+          "file": "SM_EW_CaseworkRun12_LOD2.fbx",
+          "triangles": 1002
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "d8cc5084d9b0f55ed3ce3d71508b16e8268401bceb3430d5123b6f86f7b41447",
+      "blend_sha256": "9e3b80ebe92d52f4c7b89e2da29f2705932a1fd1f6fdc654b0409e5bd725be0a"
+    },
+    {
+      "asset": "SM_EW_CaseworkIsland",
+      "description": "Green enamel steel lab casework run 2.4 m with stainless top (island, two-sided).",
+      "fbx": "SM_EW_CaseworkIsland.fbx",
+      "editable": "SM_EW_CaseworkIsland.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -1.215000033378601,
+          -0.49400004744529724,
+          0.0
+        ],
+        [
+          1.215000033378601,
+          0.47600001096725464,
+          0.8999999761581421
+        ]
+      ],
+      "dimensions_m": [
+        2.430000066757202,
+        0.9700000584125519,
+        0.8999999761581421
+      ],
+      "triangles": 11160,
+      "uv_layers": 1,
+      "materials": [
+        "EW_XRubber",
+        "EW_XEnamelGreen",
+        "EW_XStainless",
+        "EW_X_Chrome",
+        "EW_X_LabelPaper"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_XRubber",
+          "texture_key": null,
+          "maps": {
+            "EW_XRubber_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+            "EW_XRubber_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+            "EW_XRubber_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XEnamelGreen",
+          "texture_key": null,
+          "maps": {
+            "EW_XEnamelGreen_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+            "EW_XEnamelGreen_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+            "EW_XEnamelGreen_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_XStainless",
+          "texture_key": null,
+          "maps": {
+            "EW_XStainless_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+            "EW_XStainless_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png",
+            "EW_XStainless_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png"
+          },
+          "Base Color": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929,
+            1.0
+          ],
+          "Roughness": 0.5,
+          "Metallic": 0.8999999761581421,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Chrome",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.699999988079071,
+            0.7300000190734863,
+            0.7400000095367432,
+            1.0
+          ],
+          "Roughness": 0.17000000178813934,
+          "Metallic": 1.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelPaper",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.8100000023841858,
+            0.7799999713897705,
+            0.6299999952316284,
+            1.0
+          ],
+          "Roughness": 0.800000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XEnamelGreen_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XRubber_Roughness.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_BaseColor.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_NormalGL.png",
+        "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_XStainless_Roughness.png"
+      ],
+      "lods": [
+        {
+          "file": "SM_EW_CaseworkIsland_LOD1.fbx",
+          "triangles": 5580
+        },
+        {
+          "file": "SM_EW_CaseworkIsland_LOD2.fbx",
+          "triangles": 2790
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "87c1bb2a9e505e3242d2e694b59e1470d7f9f1d62afdef8fbd0f5c005a1d2158",
+      "blend_sha256": "f921dd3f38f87969185856e159c5f9e483fcbb2c5486fa22b05559c0c232c164"
     }
   ]
 }

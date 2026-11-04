@@ -4,6 +4,11 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Tutorial og SARO-uteområde, 4. november
+
+- [x] **FF-FIRST-SHIFT-01:** fullfør Claudes seksstegs opplæring med faktisk arkivering, lagring/Continue og skjermet første jobb. Pakket og installert; 40 målrettede kontroller består.
+- [x] **SARO-SURFACES-03:** samle innkjøring/parkering og én gangveitype, fjern gamle overlapp og usynlig sperre langs kjøretøyrampen. Fem spillbilder og 34 gang-/kjørekontroller består; installert lokalt.
+
 ## Prioritert restarbeid etter nattskiftet, 4. november
 
 Denne korte rekkefølgen gjelder nattens leveranse og regresjonsgjennomgangen. De større spilloppgavene nedenfor er fortsatt åpne.
@@ -120,6 +125,10 @@ Kjernen er: **oppdag et avvik → velg et forsøk → tilpass utstyret → dra u
 - [ ] **FF-RESEARCH-09 / P2, referansebasert himmel-, lys- og materialregi:** Demp den svært tette/lyse stjernehimmelen slik at svak bevegelse mot mørke blåsvartpartier og terrengreferanser kan oppdages. Bruk varmt lys gjennom faktiske dør-/vindusåpninger, avgrenset kald kontaktstråle, støv som viser lysretning og korte glimt av en kropp i silhuett. Treverk, metall og glass skal ha lesbart forskjellig respons. Dørkarmer og solide vegger avgrenser lyset; bloom må bevare kropp, gulvkontakt og retrettvei. Før/etter skal dekke langt/nært, Low og komfort. Bildene er visuelle referanser, ikke bevis på implementerte effekter.
 
 - [ ] **FF-RESEARCH-10 / P2, samlet aksept og vern mot grind:** Bruk eksisterende gameplay-harness til kildegrunnlag og strukturerte funn, og merk nye tester som foreslått til de er kjørt. Start billig med kart, to feltsteder og tre støy-/hendelseskort: spilleren skal kunne velge og begrunne neste undersøkelse, også når en passering uteblir. Hvis alle alltid velger samme oppsett eller bare venter på garantert UFO, forbedres valgene. Senere native prøve følger hele FF-RESEARCH-00 med avbrudd/Continue, én materialtransaksjon per montering, unik apparat-/opptaksidentitet og ingen ny betaling for kopiert tape eller samme foto. Ingen-besøk er bare et gyldig negativt resultat når instrumentet virket i riktig tidsrom. Avslåtte møter flyttes ikke automatisk foran spilleren samme natt; vanlige arbeidsinntekter, rolige netter og nødveier beholdes. Menneskelig vurdering av forståelighet, ventetid, lyd, tempo og komfort må skilles fra utviklerfixturer og statisk analyse.
+
+## Greyhill kodefunn som referanse 4. november
+
+**GREYHILL-REF-01, referanse:** [Kodeanalyse med GH01 til GH10](../Research/Unreal/GREYHILL_FUNN_2026-11-04.md) samler konkrete funn om syn og lyd, dørpassering, aktørlokale underlag, bevisinspeksjon, bevegelig taklyd, romlyd, hendelsesavbrudd og lagring. Bruk som underlag for PLAY-31-17/18/19 og FF-RESEARCH-04/07. PR381s jaktforbedringer er allerede flettet. Forslagene er ikke automatisk nye implementeringsoppgaver; gjeldende prioriteringer og åpne spillerfunn beholdes. Analysen skiller statisk bekreftede kodefunn fra risiko, egne forslag og gjenstående spillprøver.
 
 ## Gameplaygjennomgang 2. november
 

@@ -157,21 +157,25 @@ void AS47Web::UpdateLabLighting()
 		const float Gate = ObjAt(P.Node).Shown() && M->IsVisible() && !M->bHiddenInGame ? Power * Width : 0.f;
 		float Lumens = 0.f, Glow = 0.f;
 		FLinearColor C = Red;
+		// White tubes strike / die off through S47TubeFlicker; those roles carry their own gate.
+		bool bGated = false;
+		const float TubeOut = (P.Role == Ceiling || P.Role == Task) ? P.Flicker.Apply(GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0, Normal * Gate, uint32(P.Node)) : 0.f;
 		if (P.Role == Ceiling)
 		{
-			const float WhiteLm = P.Lumens * Normal, RedLm = 12.f * Safe;
+			const float WhiteLm = P.Lumens * TubeOut, RedLm = 12.f * Safe * Gate;
 			Lumens = WhiteLm + RedLm;
 			C = Lumens > 0.0001f ? (White * WhiteLm + Red * RedLm) / Lumens : White;
-			Glow = Normal + Safe;
+			Glow = TubeOut + Safe * Gate; bGated = true;
 		}
-		else if (P.Role == Task) { Lumens = P.Lumens * Normal; Glow = Normal; C = TaskColor; }
+		else if (P.Role == Task) { Lumens = P.Lumens * TubeOut; Glow = TubeOut; C = TaskColor; bGated = true; }
 		else if (P.Role == Enlarger) { Lumens = P.Lumens * Print; Glow = Print; C = Paper; }
 		else { Lumens = P.Lumens * Safe; Glow = Safe; }
 		const float Before = L->Intensity;
 		const FLinearColor BeforeColor = L->GetLightColor();
 		L->SetLightColor(C);
-		L->SetIntensity(Lumens * Gate);
-		if (L->IsVisible() != (Lumens * Gate > 0.0001f)) L->SetVisibility(Lumens * Gate > 0.0001f);
+		const float Out = bGated ? Lumens : Lumens * Gate;
+		L->SetIntensity(Out);
+		if (L->IsVisible() != (Out > 0.0001f)) L->SetVisibility(Out > 0.0001f);
 		const FLinearColor AppliedColor = L->GetLightColor();
 		if ((!FMath::IsNearlyEqual(Before, L->Intensity, 0.001f) || !BeforeColor.Equals(AppliedColor, 0.001f)) && FParse::Param(FCommandLine::Get(), TEXT("S47LightLog")))
 			UE_LOG(LogTemp, Display, TEXT("S47: lab role=%d node=%d power=%.4f width=%.4f normal=%.4f safe=%.4f print=%.4f lm=%.3f rgb=(%.4f,%.4f,%.4f)"), P.Role, P.Node, Power, Width, Normal, Safe, Print, L->Intensity, AppliedColor.R, AppliedColor.G, AppliedColor.B);
@@ -184,7 +188,7 @@ void AS47Web::UpdateLabLighting()
 			for (int32 I = 0; I < M->GetNumMaterials(); ++I) if (M->GetMaterial(I) != D) M->SetMaterial(I, D);
 			D->SetScalarParameterValue(TEXT("Brightness"), 1.f);
 			D->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.22f, 0.22f, 0.20f));
-			D->SetVectorParameterValue(TEXT("Emissive"), C * (Glow * Gate * 1.4f));
+			D->SetVectorParameterValue(TEXT("Emissive"), C * (Glow * (bGated ? 1.f : Gate) * 1.4f));
 		}
 	}
 	// These additive sprites belonged to the old lamp fills. The real glass now supplies their

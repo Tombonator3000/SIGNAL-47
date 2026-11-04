@@ -13,6 +13,7 @@
 #include "S47SaroNight.h"
 #include "S47DishesFollow.h"
 #include "Engine/World.h"
+#include "CollisionShape.h"
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -370,6 +371,28 @@ bool FS47SC08::Walk(double Speed, double Dt)
  return false;
 }
 
+bool FS47SC08::ContactClear(const FVector2D& To) const
+{
+ if (!M || !M->Player || !M->Web || !M->Web->GetWorld()) return false;
+ // Sight can pass glass; a grab still needs a physical hand/chest corridor.
+ FCollisionQueryParams Q(SCENE_QUERY_STAT(S47SC08Contact), true, M->Player);
+ for (const auto& Part : Pale.All) if (const UPrimitiveComponent* C = Part.Get()) Q.AddIgnoredComponent(C);
+ FHitResult Hit;
+ const FVector From = S47Three::ToUE(Pos.X, Y + 1.15, Pos.Y);
+ const FVector Target = S47Three::ToUE(To.X, M->Player->FloorY + 1.15, To.Y);
+ return !M->Web->GetWorld()->SweepSingleByChannel(Hit, From, Target, FQuat::Identity,
+  ECC_Visibility, FCollisionShape::MakeSphere(10.f), Q);
+}
+
+bool FS47SC08::HoldGrab(bool bSees, bool bDriving, double Distance, bool bClear)
+{
+ if (B != EBody::Grab) return false;
+ // Greyhill study: a timed animation must not turn lost contact into a remote capture.
+ if (!bSees || bDriving || !FMath::IsFinite(Distance) || Distance >= Reach || !bClear)
+ { Enter(EBody::Chase); return false; }
+ return StateT >= GrabHold;
+}
+
 bool FS47SC08::SeesPlayer() const
 {
  if (!M || !M->Player || !M->Web || !M->Web->GetWorld() || !bShown) return false;
@@ -513,11 +536,11 @@ void FS47SC08::Think(double Dt)
    BodyYaw = HeadYaw = YawTo(D); Gait = FMath::Min(1.4, Gait + Dt * 4); Stride += StepLen * 2.1; Pos = Next; Path.Reset();
   }
   else { if (Path.IsEmpty() || StateT > .6) { RouteTo(Nearest(LastKnown)); StateT = 0; } Walk(ChaseSpeed, Dt); }
-  if (FVector2D::Distance(Pos, Pl) < Reach && bSees) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
+  if (!M->World->bDriving && FVector2D::Distance(Pos, Pl) < Reach && bSees && ContactClear(Pl)) { Enter(EBody::Grab); BodyYaw = HeadYaw = YawTo(Pl - Pos); }
   break;
  }
  case EBody::Grab:
-  if (StateT >= GrabHold) { bShown = false; Capture(); }
+  if (HoldGrab(bSees, M->World->bDriving, FVector2D::Distance(Pos, Pl), bSees && ContactClear(Pl))) { bShown = false; Capture(); }
   break;
  case EBody::Fence:
   if (Walk(ChaseSpeed * .8, Dt)) { HeadYaw = YawTo(Pl - Pos); if (StateT > 4) { Enter(EBody::Gone); bShown = false; } }
@@ -545,5 +568,22 @@ bool FS47SC08::SelfTest(TArray<FString>& Lines)
  FS47SC08 Fresh(nullptr); Fresh.Begin(nullptr);
  Check(Fresh.P == EStep::Reel && !Fresh.Label(TEXT("amDoor")).IsEmpty() && Fresh.Label(TEXT("serviceRecord")).IsEmpty(), TEXT("a new SC08 starts at Earl's lobby"));
  Check(ReelDoc().Page.Contains(TEXT("1420.405")) && SheetDoc().Page.Contains(TEXT("REF / R1")), TEXT("Earl's note and the service sheet say what they must"));
+ FS47SC08 Grab(nullptr); Grab.Enter(EBody::Grab); Grab.StateT = GrabHold - .1;
+ Check(!Grab.HoldGrab(true, false, Reach * .5, true) && Grab.B == EBody::Grab,
+  TEXT("valid contact cannot capture before the full hold"));
+ Grab.StateT = GrabHold;
+ Check(Grab.HoldGrab(true, false, Reach * .5, true), TEXT("continuous visible physical contact completes the hold"));
+ const auto BreakGrab = [&](bool Sees, bool Driving, double Distance, bool Clear)
+ {
+  Grab.Enter(EBody::Grab); Grab.StateT = GrabHold;
+  const bool Captured = Grab.HoldGrab(Sees, Driving, Distance, Clear);
+  const bool Cancelled = !Captured && Grab.B == EBody::Chase && Grab.StateT == 0;
+  Grab.Enter(EBody::Grab);
+  return Cancelled && !Grab.HoldGrab(true, false, Reach * .5, true);
+ };
+ Check(BreakGrab(false, false, Reach * .5, true), TEXT("lost sight cancels even a completed hold; renewed contact starts over"));
+ Check(BreakGrab(true, false, Reach, true), TEXT("stepping out of reach cancels the grab before capture"));
+ Check(BreakGrab(true, true, Reach * .5, true), TEXT("entering the cab cancels the grab even while the driver remains visible"));
+ Check(BreakGrab(true, false, Reach * .5, false), TEXT("closing a physical barrier cancels contact even when sight passes glass"));
  return Ok;
 }

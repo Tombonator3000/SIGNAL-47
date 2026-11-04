@@ -124,6 +124,8 @@ public:
  void RecordEvidence(const FString& Id,const FString& Text);
  void RegisterFinding(const FString& Id,const FString& Text) { RecordEvidence(Id,Text); }
  bool HasFinding(const FString& Id) const { return Findings.Contains(Id); }
+ bool InTutorial() const { return Tutorial>0; }
+ void AcceptTutorialJob();
  int32 FindingCount() const { return Findings.Num(); }
  void Recover(const FString& Why);
  bool Spend(int32 Amount,bool bEmergency=false);
@@ -178,6 +180,8 @@ private:
  int32 RecoveryEpoch=0,JobSeed=470047,ActiveTerminal=-1;
  TWeakPtr<class SS47ScreenView> TerminalView;
  int32 ServiceGuide=0,GuideServiceBaseline=0,GuideSupplyBaseline=0;
+ // First shift tutorial (0 done/off, 1 accept a job at OPS, 2.. follows the job to filing).
+ int32 Tutorial=0;FString TutorialJobId;void StepTutorial();FString TutorialObjective()const;
  bool bGuideSupply=false,bGuideFocus=false;
  int32 DayNumber=1,Cash=120,Loan=0,Selected=0,AudioSourceIndex=0,SelectedDish=0;
  double WorldClock=8*3600,Settle=0,AudioCursor=0,AutosaveAt=0,IntegrationPulse=0;

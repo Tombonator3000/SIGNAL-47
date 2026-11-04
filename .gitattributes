@@ -51,3 +51,7 @@ unreal/ArtSource/EastWing/Shell/exports/*.fbx filter=lfs diff=lfs merge=lfs -tex
 # Local CC0 EastWing masonry source maps.
 unreal/ArtSource/EastWing/Shell/Textures/ConcreteBlockWall/*.png filter=lfs diff=lfs merge=lfs -text
 unreal/ArtSource/EastWing/Shell/Textures/ConcreteBlockWall/*.jpg filter=lfs diff=lfs merge=lfs -text
+
+# ImageGen ground originals and engine-size texture maps.
+unreal/ArtSource/Backdrop/photo_sources/*.png filter=lfs diff=lfs merge=lfs -text
+unreal/ArtSource/Backdrop/exports/ground/*.png filter=lfs diff=lfs merge=lfs -text

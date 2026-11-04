@@ -293,6 +293,12 @@ def import_plan(plan, report_path):
             mats = {item['recipe']['name']: material(item['recipe'], item['extra'], dest + '/Materials')
                     for item in model['materials']}
             own(dest + '/' + row['asset'])
+            if EXTRAS and E.does_asset_exist(dest + '/' + row['asset']):
+                # Reimport keeps the old slot list; an owned Extras mesh whose authored material set
+                # changed (photo pass PBR) is removed first so its slots follow the source again.
+                old = E.load_asset(dest + '/' + row['asset'])
+                if set(str(x.material_slot_name) for x in old.get_editor_property('static_materials')) != set(row['materials']):
+                    E.delete_asset(dest + '/' + row['asset'])
             mesh = R.import_mesh(source.parent / row['fbx'], dest)
             # Mark immediately so an interrupted owned import is safely restartable.
             mark(mesh)

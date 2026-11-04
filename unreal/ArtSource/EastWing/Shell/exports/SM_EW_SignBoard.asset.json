@@ -1,7 +1,7 @@
 {
   "asset": "SM_EW_SignBoard",
   "fbx": "SM_EW_SignBoard.fbx",
-  "fbx_sha256": "f50f74e8ad8c4e729838b61c0be9168c9998b97270d76dc08f86589d36c722ac",
+  "fbx_sha256": "b44019e595904b5afd7e4c922f10703194f60dc3b2c2c7eeed07f01385dfa289",
   "editable": "EastWing_Shell.blend",
   "editable_collection": "SM_EW_SignBoard_EDITABLE",
   "units": "metres; FBX unit metadata centimetres conversion",
@@ -32,10 +32,10 @@
       "name": "EW_Shell_Galvanized",
       "texture_key": "EW_Galvanized",
       "maps": {
-        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
-        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
-        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
-        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
       },
       "Base Color": [
         0.46000000834465027,
@@ -104,7 +104,7 @@
   "lods": [
     {
       "file": "SM_EW_SignBoard_LOD1.fbx",
-      "sha256": "61e006c1a226d2b6e7e9ac4d0633c3b36f8d29cd4889358e54207a2ea7c6bfda",
+      "sha256": "03606998dc6723f3b634dc7ec58a6e9e8a4c10ea6c50054002eb7b3646c18011",
       "triangles": 232,
       "expected_native_triangles": 232,
       "exact_degenerate_triangles": 0,
@@ -140,7 +140,7 @@
     },
     {
       "file": "SM_EW_SignBoard_LOD2.fbx",
-      "sha256": "5e089959842783ecf7db370d1bbf92699cfa37e2c1d798f68060fb2fd6ed525f",
+      "sha256": "3a52b8e8351b2b29f3543c08d8f3cb9c3e013fe22dda89978f1b7416aae2f216",
       "triangles": 72,
       "expected_native_triangles": 72,
       "exact_degenerate_triangles": 0,

@@ -9,5 +9,6 @@
 - [Filmprofiler](FILM_LOOKS.md).
 - [Xbox-/kontrollerbindinger](GAMEPAD.md).
 - [Porterings- og koordinatkonvensjoner](PORTERING.md).
+- [Fast arbeidsmal for bygninger i Blender og Unreal](BLENDER_BUILDING_WORKFLOW.md).
 
 [Start her](../../README.md).
