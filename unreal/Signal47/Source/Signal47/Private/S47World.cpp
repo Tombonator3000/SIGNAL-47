@@ -67,11 +67,33 @@ namespace
    const double X=HalfW*C+HalfL*S,Z=HalfW*S+HalfL*C;const FS47Box2 B=GarageBox();
    return {B.MinX+X,B.MaxX-X,B.MinZ+Z,B.MaxZ-Z};
   }
-  static bool InGarageCorridor(double X,double Z)
+  static bool OnForecourt(double X,double Z)
   {
    using namespace S47SaroForecourt;
-   return FS47Box2{AccessX0,AccessX1,AccessZ0,AccessZ1}.Contains(X,Z)
-    || FS47Box2{32.6,38.2,5.5,18.0}.Contains(X,Z) || GarageBox().Contains(X,Z);
+   return FS47Box2{X0,X1,Z0,Z1}.Contains(X,Z)
+    || FS47Box2{AccessX0,AccessX1,AccessZ0,AccessZ1}.Contains(X,Z);
+  }
+  bool ForecourtEnabled() const
+  {
+   const US47Main* Main=Owner.Get();
+   return Main&&Main->Web&&Main->Web->Site();
+  }
+  static bool InGarageCorridor(double X,double Z)
+  {
+   return FS47Box2{32.6,38.2,5.5,18.0}.Contains(X,Z) || GarageBox().Contains(X,Z);
+  }
+  bool OnNativePaving(double X,double Z) const
+  {
+   // The exterior parking area is usable in Story too. Only the garage interior
+   // and its ramp depend on the real native wing and Freeform access.
+   return (ForecourtEnabled()&&OnForecourt(X,Z))||(GarageEnabled()&&InGarageCorridor(X,Z));
+  }
+  static FS47Box2 ForecourtParking(double Heading,double HalfW,double HalfL)
+  {
+   using namespace S47SaroForecourt;
+   const double C=FMath::Abs(FMath::Cos(Heading)),S=FMath::Abs(FMath::Sin(Heading));
+   const double X=HalfW*C+HalfL*S,Z=HalfW*S+HalfL*C;
+   return {X0+X,X1-X,Z0+Z,Z1-Z};
   }
   bool GarageEnabled() const
   {
@@ -91,12 +113,13 @@ namespace
    // Walls/door leaves appear after EnsureLegs; parked staff cars can move during native setup.
    // Reuse our slots instead of removing entries owned by arrival, farm or other systems.
    int32 Used=0;
-   if(GarageEnabled())for(const FS47Rect& R:Owner->Web->CollidersMutable(TEXT("saro")))
+   if(ForecourtEnabled()||GarageEnabled())for(const FS47Rect& R:Owner->Web->CollidersMutable(TEXT("saro")))
    {
     if(!R.bEnabled)continue;
     const bool NearAccess=R.MaxX>8&&R.MinX<42&&R.MaxZ>16&&R.MinZ<25;
+    const bool NearForecourt=R.MaxX>18&&R.MinX<42&&R.MaxZ>4&&R.MinZ<20;
     const bool NearGarage=R.MaxX>29&&R.MinX<41&&R.MaxZ>-7&&R.MinZ<20;
-    if(!R.Id.StartsWith(TEXT("eastwing:"))&&!NearAccess&&!NearGarage)continue;
+    if(!R.Id.StartsWith(TEXT("eastwing:"))&&!NearAccess&&!NearForecourt&&!NearGarage)continue;
     // The player's moving truck has its walking collider parked off-world by ParkAt.
     // Static staff vehicles and the other owned vehicle remain real obstacles here.
     if(!WingObstacleSlots.IsValidIndex(Used))WingObstacleSlots.Add(Obstacles.Add(FS47Obstacle()));
@@ -107,11 +130,11 @@ namespace
   virtual bool Blocked(double X,double Z) override
   {
    SyncWingObstacles();
-   return OnVisitorLot(X,Z)||(GarageEnabled()&&InGarageCorridor(X,Z))?false:FS47SaroDrive::Blocked(X,Z);
+   return OnVisitorLot(X,Z)||OnNativePaving(X,Z)?false:FS47SaroDrive::Blocked(X,Z);
   }
   virtual double Height(double X,double Z) const override
   {
-   if(GarageEnabled()&&InGarageCorridor(X,Z))
+   if(OnNativePaving(X,Z))
    {
     const double Floor=AS47Props::FloorAt(X,Z);
     return FMath::IsFinite(Floor)?Floor:-.576; // native forecourt asphalt top, joined to the authored ramp
@@ -120,7 +143,7 @@ namespace
   }
   virtual FS47Surface Surface(double X,double Z) const override
   {
-   return OnVisitorLot(X,Z)||(GarageEnabled()&&InGarageCorridor(X,Z))?FS47SaroDrive::Surface(8.9,8):FS47SaroDrive::Surface(X,Z);
+   return OnVisitorLot(X,Z)||OnNativePaving(X,Z)?FS47SaroDrive::Surface(8.9,8):FS47SaroDrive::Surface(X,Z);
   }
  };
 	// world/World.ts: FOG and FOG_OLDROAD (the old road's air is thinner at dawn)
@@ -1144,8 +1167,8 @@ void US47World::TripStep(double Dt)
 TOptional<FS47Box2> US47World::ParkBox(const FString& Place) const
 {
 	if (Place == TEXT("saro") && bCommuteVehicle) return FS47Box2{FS47EveningVisual::ArrivalMinX,FS47EveningVisual::ArrivalMaxX,FS47EveningVisual::ArrivalMinZ,FS47EveningVisual::ArrivalMaxZ};
- // A union would make walls and the whole forecourt a parking zone. Select the garage
- // only around a Jeep actually inside it; normal SARO arrivals still target the original pad.
+ // Select a bounded parking region only around the actual vehicle. Normal arrivals
+ // still target the original pad; parking at the wing requires its full footprint to fit.
  if(Place==TEXT("saro"))if(const FLegRec* Saro=Legs.Find(TEXT("saro")))
  {
   const auto* DriveArea=static_cast<const FArrivalSaroDrive*>(Saro->Area.Get());
@@ -1153,6 +1176,8 @@ TOptional<FS47Box2> US47World::ParkBox(const FString& Place) const
   const double Heading=bDriving&&Leg==TEXT("saro")?Saro->Drive->Heading:Saro->Truck->Rotation.Y;
   const FS47Box2 Garage=FArrivalSaroDrive::GarageParking(Heading,Saro->Truck->HalfWidth(),Saro->Truck->HalfLength());
   if(DriveArea->GarageEnabled()&&Garage.Contains(At.X,At.Z))return Garage;
+  const FS47Box2 Forecourt=FArrivalSaroDrive::ForecourtParking(Heading,Saro->Truck->HalfWidth(),Saro->Truck->HalfLength());
+  if(DriveArea->ForecourtEnabled()&&Forecourt.Contains(At.X,At.Z))return Forecourt;
  }
 	if (Place == TEXT("diner")) return bLegsMade ? TOptional<FS47Box2>(DinerPark) : TOptional<FS47Box2>();
 	if (Place == TEXT("motel")) { const FLegRec* L = Legs.Find(TEXT("saro")); return L ? TOptional<FS47Box2>(static_cast<const FS47SaroDrive*>(L->Area.Get())->MotelPark) : TOptional<FS47Box2>(); }
@@ -2337,9 +2362,38 @@ bool US47World::AuditEastWingDrive(TArray<FString>& Lines)
  auto Check=[&](bool Pass,const TCHAR* What){Good&=Pass;Lines.Add(FString(Pass?TEXT("PASS / East wing drive: "):TEXT("FAIL / East wing drive: "))+What);};
  if(!Saro){Check(false,TEXT("SARO driving leg exists"));return false;}
  auto* DriveArea=static_cast<FArrivalSaroDrive*>(Saro->Area.Get());
+ Check(DriveArea->ForecourtEnabled(),TEXT("native exterior parking surface exists"));if(!Good)return false;
+ // Traverse the actual area with the production controller, including full-body obstacle
+ // collision. These paths used to stop on the invisible x=32.6 garage-corridor boundary.
+ auto Traverse=[&](const FVector& Start,double Heading,double Target,bool AlongX,const TCHAR* Label)
+ {
+  FS47DriveController P(nullptr,DriveArea);P.Place(Start,Heading);
+  const double Begin=AlongX?Start.X:Start.Z;const bool Positive=Target>Begin;
+  bool SurfaceOK=true,HeightOK=true;
+  auto Reached=[&](){const double V=AlongX?P.Pos.X:P.Pos.Z;return Positive?V>=Target:V<=Target;};
+  for(int32 I=0;I<720&&!Reached();++I)
+  {
+   P.Update(1./60.,{0,.3},FVector2D::ZeroVector);
+   SurfaceOK&=DriveArea->Surface(P.Pos.X,P.Pos.Z).Kind==ES47SurfaceKind::Asphalt;
+   HeightOK&=FMath::IsNearlyEqual(DriveArea->Height(P.Pos.X,P.Pos.Z),-.576,.005);
+  }
+  Lines.Add(FString::Printf(TEXT("MEASURE / %s: end=(%.2f,%.2f), asphalt=%d level=%d"),Label,P.Pos.X,P.Pos.Z,SurfaceOK,HeightOK));
+  Check(Reached()&&SurfaceOK&&HeightOK,Label);
+ };
+ Traverse(FVector(14,-.576,20.5),-PI/2,36,true,TEXT("access road drives continuously east to the garage approach"));
+ Traverse(FVector(36,-.576,16.2),PI/2,22,true,TEXT("full forecourt aisle drives west across all parking bays"));
+ Traverse(FVector(21.5,-.576,16.2),0,9.5,false,TEXT("western paved frontage reaches the personnel entrance approach"));
+ FS47DriveController StaffStop(nullptr,DriveArea);StaffStop.Place(FVector(S47SaroForecourt::SedanX,-.576,17.5),0);
+ for(int32 I=0;I<480;++I)StaffStop.Update(1./60.,{0,.4},FVector2D::ZeroVector);
+ Check(StaffStop.Pos.Z>14.5&&StaffStop.Pos.Z<17.4,TEXT("parked staff car still stops the complete vehicle footprint"));
+ const FS47Box2 LotParking=FArrivalSaroDrive::ForecourtParking(0,1.05,2.75);
+ Check(LotParking.Contains(21.5,10)&&!LotParking.Contains(20.5,10)&&!LotParking.Contains(35.4,17),TEXT("forecourt parking requires the full Jeep footprint on the apron"));
  if(!M||!M->IsFreeform())
  {
-  Check(!DriveArea->GarageEnabled()&&DriveArea->Blocked(35.4,0),TEXT("Story keeps the garage closed to driving"));return Good;
+  Check(!DriveArea->GarageEnabled()&&DriveArea->Blocked(35.4,0),TEXT("Story keeps the garage closed to driving"));
+  FS47DriveController ClosedGarage(nullptr,DriveArea);ClosedGarage.Place(FVector(35.4,-.576,15),0);
+  for(int32 I=0;I<480;++I)ClosedGarage.Update(1./60.,{0,.4},FVector2D::ZeroVector);
+  Check(ClosedGarage.Pos.Z>7.5&&ClosedGarage.Pos.Z<14,TEXT("Story reaches the exterior garage approach but its closed door stops the vehicle"));return Good;
  }
  Check(DriveArea->GarageEnabled(),TEXT("Freeform requires the real native floor and walls"));if(!Good)return false;
  Check(!DriveArea->Blocked(20,20)&&!DriveArea->Blocked(35.4,15)&&!DriveArea->Blocked(35.4,0),TEXT("access strip, forecourt and garage form one open corridor"));

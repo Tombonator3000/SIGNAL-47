@@ -4,6 +4,14 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## SARO-parkering og innkjøring, editorleveranse 4. november
+
+Hele den asfalterte forplassen er åpnet for kjøring, sammen med innkjøringen. Den tidligere usynlige grensen ved den smale garasjekorridoren er fjernet. Vegger, parkerte biler og port beholder kollisjon; garasjeinteriøret følger fortsatt Freeform/Story-reglene. Jeep-parkering på forplassen krever plass til hele bilen, mens Storys eksisterende ankomstplass beholdes.
+
+Asfalten gjenbruker prosjektets Caliche-kart med sammenhengende teksturstørrelse i meter. Det gamle Mesa-bildets gjentatte sandkant er fjernet fra denne plassen. Støv følger ytterkanten, og slitt oppmerking gir tre plasser vest for garasjeportens innkjøringsfelt. Materialene er ført i cook-oppsettet. [Kilder og import](../../unreal/ArtSource/Backdrop/PARKING.md).
+
+Editorbygg og native materialimport består. Målrettet kjøreprøve består med 24 kontroller i Freeform og ni i Story, inkludert kjøring på tvers av plassen, vestlig adkomst, bilhindring og port. Før-/etterbilder er kontrollert fra samme ettermiddagsutsnitt, i tillegg til nærbilde og innkjøringsvinkel. Leveransen ligger på `claude/east-wing-20261103`; ingen ny pakking eller installasjon.
+
 ## SARO-bakketeksturer, editorleveranse 4. november
 
 Tre egne ImageGen-materialsett for sand, caliche-skorpe og grus erstatter T4-plassholderne i bakkens fargelag. Ni PNG-er og native teksturer inkluderer BaseColor, NormalGL og Roughness; normal/ruhet følger lagmaskene. Sandens skalablanding og nøytrale fargetoning er justert etter før-/etterbilder. Originalene er 1254 kvadrat, resamplet til 2048; normalene er genererte estimater. [Kilder, prompter og import](../../unreal/ArtSource/Backdrop/GROUND_TEXTURES.md).

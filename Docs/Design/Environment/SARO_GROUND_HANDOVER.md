@@ -34,3 +34,5 @@ Kontroll ved overlevering: 2295 selvtester OK; `-S47EastWingDriveTest` 18/0. Bil
 - Før en linje i `unreal/OPPGAVER.md` per levert punkt. Ta skjermbilder før og etter.
 
 4. november Codex: punkt 1 implementert, med første fargejustering fra punkt 2. Ni PNG-er/native teksturer og materialbygg består; før-/etterbilder ved kl.16 ligger i `~/scratch-bm/Signal47-ground-textures-20261104/before-r2` og `after-r3`. Originaler 1254, resamplet til 2048. Ingen ny installasjon. Punkt 3 til 8 og videre visuell polering er ikke levert i dette passet.
+
+4. november Codex: asfalt/oppmerking fra punkt 5 videreført i SARO-PARKING-02. Sammenhengende Caliche-asfalt uten gjentatt sandkant, diskret kantstøv og tre slitte parkeringsfelt vest for porten. Hele forplassen/innkjøringen åpnet for kjøring med bevarte reelle hindringer. Bygg/native import og Freeform24/Story9 består; ingen installasjon. Egne oljeflekker og større lokale asfaltreparasjoner er fortsatt ikke laget.

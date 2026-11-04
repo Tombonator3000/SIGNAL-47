@@ -158,11 +158,12 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
   L->SetVisibility(false);L->RegisterComponent();S->SignWash.Add(L);S->SignFixtures.Add(Fixture);
  }
  // Unreal: a continuous paved east forecourt connects to the original service road.
- // Visual finish only: retain the existing -.600m walk/drive plane and every query floor.
+ // The physical drive surface uses the same shared footprint; top remains -.576m.
  UStaticMesh* Cube=LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Cube.Cube"));
  UMaterialInterface* Base=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Web/Base/M_Web_Lit_Opaque.M_Web_Lit_Opaque"));
- UTexture* AsphaltRGB=LoadObject<UTexture>(nullptr,TEXT("/Game/MesaDiner/Materials/Textures/T_M_Mesa_Asphalt_base_color.T_M_Mesa_Asphalt_base_color"));
- if(Cube&&Base&&Base->GetBlendMode()==BLEND_Opaque&&AsphaltRGB)
+ UMaterialInterface* ParkingAsphalt=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Backdrop/M_S47_ParkingAsphalt.M_S47_ParkingAsphalt"));
+ UMaterialInterface* ParkingPaint=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Backdrop/M_S47_ParkingPaint.M_S47_ParkingPaint"));
+ if(Cube&&Base&&Base->GetBlendMode()==BLEND_Opaque)
  {
   auto Mat=[&](uint32 Color)
   {
@@ -170,9 +171,11 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
    M->SetScalarParameterValue(TEXT("NativeLighting"),1);M->SetScalarParameterValue(TEXT("Roughness"),.96f);
    M->SetScalarParameterValue(TEXT("Metalness"),0);M->SetScalarParameterValue(TEXT("EmissivePower"),0);return M;
   };
-  auto* Asphalt=Mat(0xffffff);Asphalt->SetTextureParameterValue(TEXT("Map"),AsphaltRGB);Asphalt->SetScalarParameterValue(TEXT("UseMap"),1);
-  Asphalt->SetVectorParameterValue(TEXT("MapU"),FLinearColor(2.4,0,.08,0));Asphalt->SetVectorParameterValue(TEXT("MapV"),FLinearColor(0,1.5,.08,0));
-  auto* Paint=Mat(0xb6ad8a);auto* Concrete=Mat(0x8c8776);
+  // Continuous physical-scale projection: the old whole-lot atlas repeated its sandy
+  // border once per UV tile, producing a grid across both differently sized slabs.
+  UMaterialInterface* Asphalt=ParkingAsphalt?ParkingAsphalt:Mat(0x454744);
+  UMaterialInterface* Paint=ParkingPaint?ParkingPaint:Mat(0xb6ad8a);
+  auto* Concrete=Mat(0x8c8776);
   auto Box=[&](const TCHAR* Name,const FVector& At,const FVector& Size,UMaterialInterface* M)
   {
    auto* C=NewObject<UStaticMeshComponent>(W);C->SetMobility(EComponentMobility::Movable);C->SetStaticMesh(Cube);C->SetMaterial(0,M);
@@ -185,10 +188,10 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
   // Top -.576m clears the old road drawing by 12mm, same as the visitor-lot finish.
   Box(TEXT("eastApron"),FVector((X0+X1)/2,-.636,(Z0+Z1)/2),FVector(X1-X0,.12,Z1-Z0),Asphalt);
   Box(TEXT("serviceRoadAccess"),FVector((AccessX0+AccessX1)/2,-.636,(AccessZ0+AccessZ1)/2),FVector(AccessX1-AccessX0,.12,AccessZ1-AccessZ0),Asphalt);
-  // A clear pedestrian edge and generous 4m staff bays. Keep all visitor bays vacant.
+  // Three 3.2m staff bays end west of the roll-up. Keep the entire garage approach unmarked.
   Box(TEXT("facadeWalk"),FVector(29.95,-.574,6.2),FVector(19.7,.004,.6),Concrete);
-  for(double X:{25.,29.,33.,37.})Box(TEXT("staffBayLine"),FVector(X,-.572,9.65),FVector(.065,.004,6.1),Paint);
-  Box(TEXT("staffBayEnds"),FVector(31,-.572,6.6),FVector(12,.004,.065),Paint);
+  for(double X:{23.,26.2,29.4,32.6})Box(TEXT("staffBayLine"),FVector(X,-.572,9.65),FVector(.065,.004,6.1),Paint);
+  Box(TEXT("staffBayEnds"),FVector(27.8,-.572,6.6),FVector(9.6,.004,.065),Paint);
   Box(TEXT("staffEastStop"),FVector(SedanX,-.54,6.45),FVector(1.8,.12,.2),Concrete);
  }
  else UE_LOG(LogS47SaroSite,Warning,TEXT("S47: SARO forecourt finish unavailable"));
@@ -234,7 +237,7 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  {
   const auto* C=Forecourt[I].Get();ForecourtOK&=C&&C->GetComponentTransform().Equals(ForecourtPoses[I],.001)&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&C->IsVisible()==bShown;
  }
- OK&=ForecourtOK;Lines.Add(FString::Printf(TEXT("SARO_SITE paved east apron x20.1..39.8 z5.9..18, service-road access x10..39.8 z18..23, three staff bays and clear facade walk; original physical floor/query collision retained; %s"),ForecourtOK?TEXT("PASS"):TEXT("FAIL")));
+ OK&=ForecourtOK;Lines.Add(FString::Printf(TEXT("SARO_SITE paved east apron x20.1..39.8 z5.9..18, service-road access x10..39.8 z18..23, three staff bays west of garage and clear facade walk; shared physical footprint; %s"),ForecourtOK?TEXT("PASS"):TEXT("FAIL")));
  bool ComposedWindows=false;
  for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==454)
   if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&(C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")||C->GetStaticMesh()->GetPathName()==TEXT("/Game/EastWing/Access/SM_EW_AccessDressing.SM_EW_AccessDressing"))&&C->GetStaticMesh()->GetNumTriangles(0)==10328;
