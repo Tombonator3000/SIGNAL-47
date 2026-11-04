@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## SARO-mikrorelieff, editorleveranse 4. november
+
+Sand, caliche og grus har fått tre estimerte 16-bits høydekart rekonstruert fra eksisterende normaler. Åtte parallax-steg gir nærdetaljer med 1,2 cm dybde og avstandsuttoning fra 6 til 16 meter. Nanite forskyver de fem ørkenmeshene inntil ±3,5 cm, totalt 7 cm. De opprinnelige flatene beholdes for kollisjon; gang-/kjøreregler og lagringer er uendret. [Kilder og import](../../unreal/ArtSource/Backdrop/GROUND_TEXTURES.md).
+
+Editorbygg, native import av alle fem Nanite-mesher og Vulkan-kjøring består uten material-/shaderfeil. Før-/etterbilder ved kl.16 og nær-/skråbilder ved kl.17 er kontrollert, også med Nanite-forskyvning av/på. Kjøreprøven består med 24 kontroller. Effekten er holdt lav; ingen ytelsesbenchmark eller installasjon inngår.
+
 ## SARO-parkering og innkjøring, editorleveranse 4. november
 
 Hele den asfalterte forplassen er åpnet for kjøring, sammen med innkjøringen. Den tidligere usynlige grensen ved den smale garasjekorridoren er fjernet. Vegger, parkerte biler og port beholder kollisjon; garasjeinteriøret følger fortsatt Freeform/Story-reglene. Jeep-parkering på forplassen krever plass til hele bilen, mens Storys eksisterende ankomstplass beholdes.

@@ -491,7 +491,9 @@ bool FS47EastWing::Step(float Dt)
   {TEXT("18-lab-corner-low"),22.2,-3.6,PI*.75,-.35},
   {TEXT("19-parking-access"),10.5,27.0,-.85,-.18},
   {TEXT("20-parking-aisle"),39.0,17.0,1.20,-.22},
-  {TEXT("21-parking-surface"),29.0,16.5,0.,-.48}};
+  {TEXT("21-parking-surface"),29.0,16.5,0.,-.48},
+  {TEXT("22-desert-relief-near"),24.0,24.0,PI,-.62},
+  {TEXT("23-desert-relief-grazing"),24.0,24.0,PI,-.12}};
  const double Now=FPlatformTime::Seconds();
  if(ShotStage==0)
  {
@@ -511,7 +513,7 @@ bool FS47EastWing::Step(float Dt)
    M->Freeform->Field->AddItem(TEXT("fragment"));
    UE_LOG(LogS47EastWing,Display,TEXT("S47: explicit isolated sample-holder visual fixture"));
   }
-  ShotAt=Now+6;ShotStage=1;return true;
+  ShotAt=Now+6;ShotStage=FParse::Param(FCommandLine::Get(),TEXT("S47GroundReliefShots"))?43:1;return true;
  }
  if(Now<ShotAt)return true;
  const int32 I=(ShotStage-1)/2;
