@@ -217,7 +217,7 @@ void FS47FreeformTest::Step(double Dt)
    if(Age<3)return;
    if(!Check(M->Flow->bDevRun&&F.Director,TEXT("isolated explicit field-plan fixture")))return;
    M->UI->Close(true);F.Director->Stop();WorkBudget=F.Budget();JobIndex=F.Jobs().Num();
-   F.OpenCaseFor(TEXT("roof_steps"));
+   F.RegisterFinding(TEXT("roof_steps"),TEXT("Explicit field-plan fixture: footsteps above the station."));
    if(!Check(F.PlanCaseTest(2,1)&&F.PlannedFieldTest(2)==1,TEXT("production API opens roof-steps case and plans physical test without enacting it")))return;
    const auto* C=F.CaseFile().Get(2);GuidanceExpected=C?C->PlannedJob:FString();
    if(!Check(C&&!GuidanceExpected.IsEmpty()&&!C->Results[1].bDone&&C->ValidTests==0&&!C->bConcluded&&F.Jobs().Num()==JobIndex&&F.Budget()==WorkBudget,TEXT("pending field plan has its own ID with no receiver job, result or payment")))return;
