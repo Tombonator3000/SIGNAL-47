@@ -1,0 +1,130 @@
+{
+  "asset": "SM_EW_PlaqueCalibration",
+  "description": "Engraved black phenolic door plaque EW_Print_PlaqueCalibration, 0.32 x 0.10 m.",
+  "fbx": "SM_EW_PlaqueCalibration.fbx",
+  "editable": "SM_EW_PlaqueCalibration.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.1599999964237213,
+      -0.002500000409781933,
+      0.0
+    ],
+    [
+      0.1599999964237213,
+      0.006000000052154064,
+      0.10000000149011612
+    ]
+  ],
+  "dimensions_m": [
+    0.3199999928474426,
+    0.008500000461935997,
+    0.10000000149011612
+  ],
+  "triangles": 470,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_Bakelite",
+    "EW_Print_PlaqueCalibration",
+    "EW_X_Chrome"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Print_PlaqueCalibration",
+      "texture_key": null,
+      "maps": {
+        "EW_Print_PlaqueCalibration_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_PlaqueCalibration_BaseColor.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_PlaqueCalibration_BaseColor.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_PlaqueCalibration_LOD1.fbx",
+      "triangles": 234
+    },
+    {
+      "file": "SM_EW_PlaqueCalibration_LOD2.fbx",
+      "triangles": 116
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "64a899d51d6c68a7b310002b842e535f764e265e2ccceda9a3daa83cf0bdc482",
+  "blend_sha256": "68e6ae70164f4d143fcc6507ae5eb1cff299ef28f9f92b9a03aa9def9ff8aef9"
+}

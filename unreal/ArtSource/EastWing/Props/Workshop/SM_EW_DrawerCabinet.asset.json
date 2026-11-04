@@ -1,0 +1,193 @@
+{
+  "asset": "SM_EW_DrawerCabinet",
+  "description": "Folded-sheet drawer cabinet; recessed individual drawer fronts, label holders, rolled top, lock, physical pulls and screws.",
+  "fbx": "SM_EW_DrawerCabinet.fbx",
+  "editable": "SM_EW_DrawerCabinet.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.36000001430511475,
+      -0.32899999618530273,
+      0.0
+    ],
+    [
+      0.36000001430511475,
+      0.2849999964237213,
+      0.9244999885559082
+    ]
+  ],
+  "dimensions_m": [
+    0.7200000286102295,
+    0.613999992609024,
+    0.9244999885559082
+  ],
+  "triangles": 13628,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_GreenSteel",
+    "M_EW_DarkSteel",
+    "M_EW_Galvanized",
+    "M_EW_LabelPaper",
+    "M_EW_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_GreenSteel",
+      "texture_key": "EW_GreenSteel",
+      "maps": {
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+      },
+      "Base Color": [
+        0.17000000178813934,
+        0.25,
+        0.20000000298023224,
+        1.0
+      ],
+      "Roughness": 0.41999998688697815,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_DarkSteel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.04500000178813934,
+        0.05000000074505806,
+        0.04800000041723251,
+        1.0
+      ],
+      "Roughness": 0.44999998807907104,
+      "Metallic": 0.699999988079071,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.7599999904632568,
+        0.7200000286102295,
+        0.5699999928474426,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.00800000037997961,
+        0.009999999776482582,
+        0.008999999612569809,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_DrawerCabinet_LOD1.fbx",
+      "triangles": 6813
+    },
+    {
+      "file": "SM_EW_DrawerCabinet_LOD2.fbx",
+      "triangles": 3406
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/Signal47/Tools/archiveprops/geometry.py filing(): adapted owned folded-sheet/pull detailing"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "bd4911c45f6a1a2bc6a7bd79cb962afa74a05c90f84e2876a1c330a18b99ea07",
+  "blend_sha256": "b08d0a3ae920928ba3a85b7e4be654bf50a0384fb34a2a7a8ce8ce0a03383d69"
+}

@@ -1,0 +1,17 @@
+{
+  "asset": "SM_EW_Oscilloscope_RM565",
+  "license": "CC-BY-4.0",
+  "author": "Thusko",
+  "source": "https://sketchfab.com/3d-models/tektronix-rm565-oscilloscope-b5b047d3ffec4fe2b98659d056c0f414",
+  "source_archive": "/home/tom/Assets/signal47-free/sketchfab/oscilloscope_rm565.zip",
+  "license_evidence": "/home/tom/Assets/signal47-private/EastWing/Props/Lab/RM565-LICENSE.txt",
+  "private_delivery_directory": "/home/tom/Assets/signal47-private/EastWing/Props/Lab",
+  "public_binary": false,
+  "changes": [
+    "Metric scale 0.60m width",
+    "Base-centred pivot",
+    "FBX export; original UV preserved; texture copies reduced to 2048x2048 PNG"
+  ],
+  "attribution": "Tektronix RM565 Oscilloscope by Thusko, CC-BY-4.0, https://sketchfab.com/3d-models/tektronix-rm565-oscilloscope-b5b047d3ffec4fe2b98659d056c0f414",
+  "integration_note": "Copy/import from private delivery; do not stage licensed derived FBX or textures in Git."
+}

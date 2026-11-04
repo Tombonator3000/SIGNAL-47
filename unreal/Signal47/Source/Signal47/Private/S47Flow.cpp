@@ -942,7 +942,13 @@ void US47Flow::StartGame(const FStart& O)
   M->Freeform->Begin(S47J::Obj(O.State,TEXT("freeform")),O.bLethal);
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
  }
- if (bFreeform && M->FieldCamera) M->FieldCamera->bHave=true;
+ // New Freeform operators collect the camera physically. Every legacy Freeform
+ // save had the automatic grant, so absence of this new field preserves that right.
+ if (bFreeform && M->FieldCamera)
+ {
+  M->FieldCamera->Raise(false);
+  M->FieldCamera->bHave=O.State.IsValid()?S47J::Bool(O.State,TEXT("freeformCameraOwned"),true):false;
+ }
  if (auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")))) C1->RestoreEarlyCamera();
  // Before SC01: its normal round counts the evening schedule as part of the work.
  if (!bFreeform && M->Observing) M->Observing->Begin(S47J::Obj(O.State,TEXT("observing")),!O.State.IsValid() && O.Jump.IsEmpty());
@@ -1485,6 +1491,8 @@ S47J::FObj US47Flow::GameState()
 	const S47J::FObj State = Carry.IsValid() ? S47J::Clone(Carry) : S47J::New();
 	S47J::Set(State, TEXT("v"), 3);
 	S47J::Set(State,TEXT("sessionMode"),M->IsFreeform()?TEXT("freeform"):TEXT("story"));
+	if(M->IsFreeform())S47J::Set(State,TEXT("freeformCameraOwned"),M->FieldCamera&&M->FieldCamera->bHave);
+	else State->RemoveField(TEXT("freeformCameraOwned"));
 	if (M->HighwayUfo) S47J::Set(State,TEXT("highwayUfo"),M->HighwayUfo->Save());
 	if (M->IsFreeform() && M->Freeform) S47J::Set(State,TEXT("freeform"),M->Freeform->Save()); else State->RemoveField(TEXT("freeform"));
 	S47J::Set(State,TEXT("journal"),Journal.Save());
@@ -1855,9 +1863,10 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			Self->OpenNotebook();
 		};
 		X.GuideEntries.Add({ TEXT("guide:observation"), TEXT("An observing shift"), TEXT("OPS assigns work and registers retained results. The tracking PC points the array; requested coordinates and actual encoders must agree. The receiver tunes frequency, gain and bandwidth and records the signal. Wait for the recording to finish, then collect its original at the printer.\n\nRoutine results return to OPS for payment. If the work order asks for comparison, retain the original and complete the requested control or measurement first. The audio desk compares recorded material; a live signal alone is not a completed review. Register the reviewed packet at OPS, collect it from the printer and file it in the archive binder.") });
-		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nA qualifying retained incident photograph earns $20 documentation credit when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs or missing image files do not qualify for a claim.\n\nA photograph records what was visible. Payment acknowledges documentation and does not establish an extraordinary cause."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
-		X.GuideEntries.Add({ TEXT("guide:transport"), TEXT("Supplies and physical cargo"), TEXT("The service truck starts on its pad outside the SERVICE YARD exit. Check Kit for its current area before setting out. Caliche and its supply hatch are south of SARO; the map shows the route and opening hours. Take the truck for the supply trip.\n\nA purchase leaves a parcel at the supply hatch. A parcel at the shop, in your hands, in the truck or set down outside is not delivered stock. Carry it to the truck and secure it in the cargo rack. Back at SARO, unload and deliver it at the service bay. Kit shows the current parcel separately from usable stock. Fuel in the vehicle and generator is separate from spare cans.") });
-		X.GuideEntries.Add({ TEXT("guide:service"), TEXT("Power and array service"), TEXT("Read the status and physical service labels before replacing anything. Backup power can keep the station operating while the feeder is repaired. Repairs require the relevant physical panel, parts and tests. The service bay lists retained supplies and workbench progress. If a feeder fault leaves you without a fuse or purchasing power, check the emergency fuse requisition at Caliche's supply hatch.") });
+		if (HaveCamera && HaveCamera()) X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Field photography"), FString::Printf(TEXT("%s raises the physical field camera; %s takes a photograph while it is raised. Frame a visible subject clearly and keep the original image in Documents / Photos. The camera remains listed in Kit.\n\nDevelop exposed photographs physically at the PHOTO LAB wet bench: load the tank, transfer to fixer, then collect the print. A qualifying developed incident photograph earns $20 documentation credit when registered at the physical OPS terminal. Now lists pending claims. Each incident pays once; duplicate photographs earn no extra credit. Unclear photographs or missing image files do not qualify for a claim.\n\nA photograph records what was visible. Payment acknowledges documentation and does not establish an extraordinary cause."), *S47Keys::Label(TEXT("camera")), *S47Keys::Label(TEXT("shutter"))) });
+		else X.GuideEntries.Add({ TEXT("guide:photography"), TEXT("Collect the field camera"), TEXT("The SARO field camera is on the dry archive bench in the PHOTO LAB, in the service yard east of the control room. Follow the PHOTOGRAPHIC LAB sign, enter the lab and look at the south end of the bench along its east wall. Approach the camera and use Collect field camera. It then appears in Kit.\n\nExpose a photograph with the camera, process it at the wet bench in this same lab, then take a qualifying developed incident photograph to the physical OPS terminal for registration.") });
+		X.GuideEntries.Add({ TEXT("guide:transport"), TEXT("Supplies and physical cargo"), TEXT("The service truck starts on its pad outside the SERVICE YARD exit. Check Kit for its current area before setting out. Caliche and its supply counter inside the gas station are south of SARO; the map shows the route and opening hours. Take the truck for the supply trip.\n\nBuy several items at the counter without leaving the shop menu. Paid items are packed together in one parcel beside the counter; collect it when your order is ready. A parcel at the shop, in your hands, in the truck or set down outside is not delivered stock. Carry it to the truck and secure it in the cargo rack. Back at SARO, unload and deliver it at GARAGE RECEIVING. Kit shows the current parcel separately from usable stock. Fuel in the vehicle and generator is separate from spare cans.") });
+		X.GuideEntries.Add({ TEXT("guide:service"), TEXT("Power and array service"), TEXT("Read the status and physical service labels before replacing anything. Backup power can keep the station operating while the feeder is repaired. Repairs require the relevant physical panel, parts and tests. The service bay lists retained supplies and workbench progress. If a feeder fault leaves you without a fuse or purchasing power, check the emergency fuse requisition at Caliche's indoor supply counter.") });
 	}
 	else if (M->Story)
 	{
@@ -1972,8 +1981,8 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 		Kit.Add({ TEXT("Backup generator"), TEXT("Fuel already in the generator; spare cans are separate."), FString::Printf(TEXT("%s / %.1f hours"), F->GeneratorRunning() ? TEXT("Running") : TEXT("Stopped"), F->GeneratorHours()), FString(), FString() });
 		if (F->ParcelStage() > 0)
 		{
-			static const TCHAR* Places[] = { TEXT("None"), TEXT("Supply hatch"), TEXT("Carried"), TEXT("Loaded in truck"), TEXT("Set down") };
-			Kit.Add({ TEXT("Parcel / ") + F->ParcelItem(), TEXT("One physical parcel, not yet delivered stock. Deliver it at the service bay."), Places[FMath::Clamp(F->ParcelStage(), 0, 4)], FString(), FString() });
+			static const TCHAR* Places[] = { TEXT("None"), TEXT("Shop counter"), TEXT("Carried"), TEXT("Loaded in truck"), TEXT("Set down") };
+			Kit.Add({ TEXT("Paid parcel"), F->ParcelDescription()+TEXT(". One physical parcel, not yet delivered stock. Unpack it at GARAGE RECEIVING."), Places[FMath::Clamp(F->ParcelStage(), 0, 4)], FString(), FString() });
 		}
 	}
 

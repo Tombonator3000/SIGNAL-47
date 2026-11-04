@@ -1,0 +1,59 @@
+{
+  "asset": "EW_Stucco",
+  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "copyright": "SIGNAL / 47 project",
+  "redistribution": "May accompany the project; no external purchased/Tripo content",
+  "source": "build_textures.py",
+  "method": "Deterministic metric height, albedo, roughness and metallic fields; no baked lighting",
+  "reused_project_source": {
+    "path": "unreal/ArtSource/PhotoLab/surface_fields.py",
+    "sha256": "a474277807b64254c94eee33aa5b228d24ece5e16ae8553b3eba58a4d4da3b50",
+    "use": "metric periodic normal-map convention; implementation adapted for physical tile span"
+  },
+  "external_reference": {
+    "name": "apekshik/anyscene",
+    "status": "UNVERIFIED workflow-only reference, no code or assets reused"
+  },
+  "files": {
+    "BaseColor": {
+      "file": "EW_Stucco_BaseColor.png",
+      "sha256": "930ba9b8f315213a1efdd2bbf37d3cd69eef13aefe4a5a9923173924d9671a82",
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "Roughness": {
+      "file": "EW_Stucco_Roughness.png",
+      "sha256": "6ac31feeffff17c0e1f5471ca98608e170142230fa57d383862b1da31442f528",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Metallic": {
+      "file": "EW_Stucco_Metallic.png",
+      "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalDX": {
+      "file": "EW_Stucco_NormalDX.png",
+      "sha256": "d253a9c90eb4699cb4ad4e78d8f20d8c76275ae1f9756e72968c8e6b2f7dc29d",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalGL": {
+      "file": "EW_Stucco_NormalGL.png",
+      "sha256": "31e7dec2965ea1a9eb9fdee259ddbb3c252d7dfb79745e0de76bdc805f640b61",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Height": {
+      "file": "EW_Stucco_Height.png",
+      "sha256": "567a1d6b8d1b27bac21c7ab98b4c72f6e88cf7387e396f4f1612c1d52500a4e8",
+      "color_space": "linear",
+      "bit_depth": 16,
+      "decode_metres": {
+        "offset": -0.0013392469845712185,
+        "scale": 0.0027547269128262997
+      }
+    }
+  }
+}

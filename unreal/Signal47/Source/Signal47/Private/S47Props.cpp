@@ -1279,3 +1279,9 @@ void AS47Props::TestPlace(US47Main* M)
 		UE_LOG(LogS47Props, Display, TEXT("S47: props view at %s"), *Arg);
 	}, 1.5f, false);
 }
+
+void AS47Props::AddFloor(double MinX, double MaxX, double MinZ, double MaxZ, double Y0, double Y1, const FString& Axis, bool bFirst)
+{
+	FFloor F; F.MinX = MinX; F.MaxX = MaxX; F.MinZ = MinZ; F.MaxZ = MaxZ; F.Y0 = Y0; F.Y1 = Y1; F.Axis = Axis;
+	if (bFirst) Floors.Insert(F, 0); else Floors.Add(F);
+}

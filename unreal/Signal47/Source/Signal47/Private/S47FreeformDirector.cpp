@@ -36,8 +36,8 @@
 DEFINE_LOG_CATEGORY_STATIC(LogS47FreeformDirector,Log,All);
 namespace
 {
- // The original west staff bay was cleared when the normal sedan moved to
- // east35 (S47FleetParked). Its paved surface is -0.576 m, matching both native cars.
+ // The previous staff bay stays clear after the sedan moves west to x24.6.
+ // Retain this existing event anchor, outside the new east-wing garage approach.
  const FVector EmptyCarFoot(27,-.576,9.8);
  const FVector EmptyCarReference=EmptyCarFoot+FVector(0,.9,0);
  FVector ClosePassAt(const FVector& Origin,double Age)
@@ -818,6 +818,11 @@ bool FS47FreeformDirector::RegisterPhotoClaim(const FString& Id)
  auto* C=Claims.FindByPredicate([&](const FPhotoClaim& P){return P.Id==Id;});if(!C||C->bPaid)return false;
  const auto* Shot=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==C->PhotoId;});
  if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty()||!Shot->Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& P){return P.Key==TEXT("freeform:")+C->Id;}))return false;
+ if (!Shot->IsDeveloped())
+ {
+  if (M->UI) M->UI->Toast(TEXT("PHOTO LAB: Develop the photograph before submitting it"), 5);
+  return false;
+ }
  C->bPaid=true;M->Freeform->Earn(C->Reward);
  M->Freeform->RecordEvidence(TEXT("photo-registration.")+C->Id,FString::Printf(TEXT("OPS FIELD PHOTOGRAPH RECEIPT\nIncident: %s\nRetained original: %s\nDocumentation credit: $%d (applied to outstanding supply credit first).\nThe captured subject met framing and visibility checks. Registration documents the observation; its origin and intent remain unconfirmed. This incident cannot be paid twice."),*C->Title,*C->PhotoId,C->Reward));Changed();
  if(M->UI)M->UI->Toast(TEXT("OPS registered the field photograph: $20 documentation credit. This records an observation, not a confirmed origin."),5);

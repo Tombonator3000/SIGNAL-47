@@ -58,5 +58,6 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
   for(const auto& W:Work)if(W.Day==DayNumber&&L.Num()<6)L.Add(W.Id+FString::Printf(TEXT(" / SRC%d %s"),W.Source,W.Stage==EJobStage::Filed?TEXT("FILED"):TEXT("OPEN")));
   L.Add(ServiceGuide==1?TEXT("SERVICE ORDER / IN PROGRESS"):TEXT("SERVICE ORDER / OPTIONAL"));L.Add(TEXT("ORIGINALS / CASE ARCHIVE"));
  }
+ if(Screen>=0&&Screen<=2)L.Add(FString::Printf(TEXT("ARRAY %d/27 / RATE %.0f%% / %s"),AvailableDishCount(),100*ArrayMeasurementRate(),AvailableDishCount()<24?TEXT("BLOCKED - REPAIR"):AvailableDishCount()<27?TEXT("DEGRADED"):TEXT("FULL")));
  return L;
 }

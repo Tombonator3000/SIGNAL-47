@@ -1,0 +1,239 @@
+{
+  "asset": "SM_EW_Centrifuge",
+  "description": "Bench centrifuge with sealed separate lid, latch, hinges, timer/speed dials, vent slots and feet. No implied gameplay animation.",
+  "fbx": "SM_EW_Centrifuge.fbx",
+  "editable": "SM_EW_Centrifuge.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.15000000596046448,
+      -0.19847999513149261,
+      0.0
+    ],
+    [
+      0.15174999833106995,
+      0.17000000178813934,
+      0.19050000607967377
+    ]
+  ],
+  "dimensions_m": [
+    0.3017500042915344,
+    0.36847999691963196,
+    0.19050000607967377
+  ],
+  "triangles": 36988,
+  "uv_layers": 1,
+  "materials": [
+    "EW_Lab_Rubber",
+    "EW_Lab_CreamEnamel",
+    "EW_Lab_Stainless",
+    "EW_Lab_Bakelite",
+    "EW_Lab_GreenEnamel",
+    "EW_Lab_LabelPaper",
+    "EW_Lab_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Lab_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02199999988079071,
+        0.02500000037252903,
+        0.023000000044703484,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_CreamEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6899999976158142,
+        0.6600000262260437,
+        0.5299999713897705,
+        1.0
+      ],
+      "Roughness": 0.30000001192092896,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Stainless",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.47999998927116394,
+        0.5099999904632568,
+        0.5,
+        1.0
+      ],
+      "Roughness": 0.23999999463558197,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_GreenEnamel",
+      "texture_key": "EW_GreenSteel",
+      "maps": {
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+      },
+      "Base Color": [
+        0.1599999964237213,
+        0.23999999463558197,
+        0.20000000298023224,
+        1.0
+      ],
+      "Roughness": 0.33000001311302185,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_Centrifuge_LOD1.fbx",
+      "triangles": 18493
+    },
+    {
+      "file": "SM_EW_Centrifuge_LOD2.fbx",
+      "triangles": 9246
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/ArtSource/EastWing/Props/Lab/build_lab.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "66eeb16a0e16764f62e698b074be96721b3653b98f46d0b945b486986d3dead3",
+  "blend_sha256": "6e892649b9197cb4a4bf880855d9c487f91201a787f799e51e73b14c13443929"
+}

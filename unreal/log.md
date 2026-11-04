@@ -1693,3 +1693,23 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 03. november 2026 kl.15:20: codex/receiver-search-audio-20261103 kobler Freeform-mottakeren til kontinuerlig tone/støy, frigir utemusikk fra inaktive Story-flagg og prioriterer bymusikk foran morgenstemning. Bygg/pakke, native mottaker-/uteprøve og 2262 installerte selvtester/Vulkan består; runtime c424ac39 installert, 115 Saved-filer uendret. Toms sju nye spilltestfunn er ført som åpne TODO-er; menneskelig lydaksept gjenstår.
 
 3. november 16:30: UI-03 ny design på SARO-PC-ene etter Toms fem skjermmaler, `claude/ui-terminals-20261103` (egen kopi). Felles terminalkit med enlinjes topptekst og klokke, OPS-meny, tabeller, pulserende statusbannere, animert spekter, halvhimmel-AZ/EL-plot, femknutepunkt-kalibrering og 27-elementers antennegitter; mottakeren følger vedlegg 2 med fem faner og får plass uten rulling. Editorbygg og hele evidensreisen består (PASS, 104 kontroller, inkludert steg 75 og Continue); skjermbilder kontrollert for OPS, mottaker, antennestatus og sporing.
+
+2026-11-03 18:26 Codex: Toms nye krav ført i aktiv TODO som FF-MYSTERY-SYSTEM-01 (generelle tilfeldige, undersøkbare mysterier med sammenhengende løsninger) og FF-PHOTO-DEVELOP-01 (fotolab før fotoinnløsning). Kun planlegging; ingen spillkode, bygg eller lagringer endret.
+
+3. november 19:15: Samlet rydding etter Toms bestilling. Pensjonert 15 gamle pakkebygg (prune-test-builds; beholdt installert ui-kandidat og rollback), slettet release-zip for 26. til 29. oktober (GitHub-releasene er slettet; 2. november beholdt) med utpakket starttest, og UFO-finalens 20 000 råbilder/rammer og to gamle .so-sett (alle 13 MP4, WAV, JSON og logger beholdt). Ledig plass 107 til 192 GB. Gjenopprettingsarkivet fra 1. november (80 GB logisk, 0,3 GB eksklusivt), aktive kopier, hovedkopi, DDC, Saved, konseptbilder og bevis er urørt.
+
+3. november 2026 kl.23:44: Codex overleverer østfløyens native skall/rekvisitter, stasjoner, adgang og garasjekjøring på codex/night-support-20261103 til Claude. Editorbygg består, 2281 selvtester og målrettet foto-/Jeep-prøve består; fullprøvens GC-krasj er rettet/bygd, ny kjøring og endelige bilder gjenstår. Ingen installasjon eller ny rydderunde;189GB ledig, tre arbeidskopier beholdt.
+
+4. november2026 kl.05:40: Codex viderefører a6acc316 med prøveholder/fysiske benkeskilt og fri service-/lagerpassasje. Bygg/native import og gjennomsette før/etter-bilder består; Story-lås kontrollert. Ingen installasjon, offentlig release eller ny rydderunde.
+
+4. november 2026 kl.05:53: Codex leverer FF-PRINTER-01 med fysisk mating/lyd, lagret kø og strømpause. Editorbygg og målrettet printerprøve består 26 kontroller og to disk-/Continue-runder; delvis/ferdig papir visuelt kontrollert. Originaler og betaling bevares. Ingen installasjon eller fullregresjon.
+
+4. november 2026 kl.06:07: Codex leverer FF-CAMERA-01: fysisk kamera på fotolabens arkivbenk, lagret eierskap og bevarte eldre lagringer. Editorbygg og 23 målrettede kontroller med to disk-/Continue-runder består; faktisk henting/eksponering og Story-plassering kontrollert. Ingen installasjon eller fullregresjon.
+
+4. november 2026 kl.06:20: Codex leverer FF-SHOP-01: innendørs butikkdisk og flere betalte varer i én fysisk pakke uten å lukke menyen. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; nøyaktig betaling/lager, native sikting, meny og før-/etterbilder kontrollert. Eksplisitte transportplasseringer, ingen ny full kjøretur eller installasjon.
+
+4. november 2026 06:30: codex/night-support-20261103: OPS beholder visningen ved serviceaksept/målbytte, forklarer dagskø og tomt arkiv. build-r21 og ops-r1 består37 native kontroller, tre skjermbilder gjennomgått; ingen ny fullregresjon eller installasjon.
+
+4. november 2026 06:36: codex/night-support-20261103: FF-GUIDANCE-01 samordner sted/handling og automatisk venting; retter pågående kontrollsted og gamle utvendige butikkhenvisninger. build-r22 og guidance-r1 består28 representative kontroller og én disk-/Continue-runde. Ingen ny fullregresjon eller installasjon.
+
+4. november 2026 06:51: codex/night-support-20261103: FF-ARRAY-CONSEQUENCES-01 gir redusert målerate ved antenneutfall og synlig kapasitet/reparasjonsbehov. build-r25/array-r2 består 21 kontroller og én disk-/Continue-runde; receiver/tracking-bilder gjennomgått. Minimum24 og kvalitetsfaktor beholdt; ingen installasjon.

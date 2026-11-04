@@ -1,0 +1,138 @@
+{
+  "asset": "SM_EW_FluorescentFixture",
+  "description": "Original V10 twin fluorescent geometry reused verbatim: independent tubes, pin ferrules, angled reflector, porcelain holders and ballast cover. Local lower tube at Z=0; mounting plate +0.10m. Emission must follow runtime power.",
+  "fbx": "SM_EW_FluorescentFixture.fbx",
+  "editable": "SM_EW_FluorescentFixture.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.12518754601478577,
+      -0.4749999940395355,
+      -2.9802322387695312e-08
+    ],
+    [
+      0.12518754601478577,
+      0.4749999940395355,
+      0.10000000149011612
+    ]
+  ],
+  "dimensions_m": [
+    0.25037509202957153,
+    0.949999988079071,
+    0.10000003129243851
+  ],
+  "triangles": 6000,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_CreamEnamel",
+    "M_EW_Galvanized",
+    "M_EW_FluorescentGlass"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_CreamEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6499999761581421,
+        0.6200000047683716,
+        0.49000000953674316,
+        1.0
+      ],
+      "Roughness": 0.44999998807907104,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_FluorescentGlass",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8199999928474426,
+        0.8500000238418579,
+        0.7599999904632568,
+        1.0
+      ],
+      "Roughness": 0.25,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_FluorescentFixture_LOD1.fbx",
+      "triangles": 3000
+    },
+    {
+      "file": "SM_EW_FluorescentFixture_LOD2.fbx",
+      "triangles": 1500
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "Unity/Blender/Source/visual10_lab_details.py V10_TwinFluorescent block, owned original geometry"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "0e50c3eb0c5edfb0860f6f7d085cd939d53410cc79cdd9272201bafef820094d",
+  "blend_sha256": "91805aac2d86398dc16e700eae3c05dcc3c5d5af51e4214581718aaf4558f4bc"
+}

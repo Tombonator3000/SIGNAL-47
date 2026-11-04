@@ -1,0 +1,115 @@
+{
+  "asset": "SM_EW_GalvanizedShelving",
+  "description": "Empty modular 1.2m five-tier galvanized shelf with folded lips, L-posts, footplates and diagonal braces.",
+  "fbx": "SM_EW_GalvanizedShelving.fbx",
+  "editable": "SM_EW_GalvanizedShelving.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.625,
+      -0.2849999964237213,
+      0.0
+    ],
+    [
+      0.6249999403953552,
+      0.2849999666213989,
+      2.0
+    ]
+  ],
+  "dimensions_m": [
+    1.2499999403953552,
+    0.5699999630451202,
+    2.0
+  ],
+  "triangles": 8508,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_Galvanized",
+    "M_EW_DarkSteel"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_DarkSteel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.04500000178813934,
+        0.05000000074505806,
+        0.04800000041723251,
+        1.0
+      ],
+      "Roughness": 0.44999998807907104,
+      "Metallic": 0.699999988079071,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_GalvanizedShelving_LOD1.fbx",
+      "triangles": 4254
+    },
+    {
+      "file": "SM_EW_GalvanizedShelving_LOD2.fbx",
+      "triangles": 2126
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/Signal47/Tools/archiveprops/geometry.py shelving(): folded-sheet construction adapted"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "e92f78467fbbf32b9b8432ee794d281fa95fceab0278fe7a1622a6f2dc57be4a",
+  "blend_sha256": "a00ea04f74f407d4abee9ab3a78e7fc3520abcbc17156da67b1d1251f93318a4"
+}

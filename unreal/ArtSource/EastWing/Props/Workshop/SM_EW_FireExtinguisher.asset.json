@@ -1,0 +1,205 @@
+{
+  "asset": "SM_EW_FireExtinguisher",
+  "description": "Period dry-powder extinguisher with hose, squeeze levers, pressure gauge, label and wall cradle.",
+  "fbx": "SM_EW_FireExtinguisher.fbx",
+  "editable": "SM_EW_FireExtinguisher.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.08699999749660492,
+      -0.08815000206232071,
+      0.0
+    ],
+    [
+      0.13194698095321655,
+      0.09750000387430191,
+      0.5764999389648438
+    ]
+  ],
+  "dimensions_m": [
+    0.21894697844982147,
+    0.18565000593662262,
+    0.5764999389648438
+  ],
+  "triangles": 8540,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_RedEnamel",
+    "M_EW_Rubber",
+    "M_EW_Galvanized",
+    "M_EW_DarkSteel",
+    "M_EW_LabelPaper",
+    "M_EW_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_RedEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3400000035762787,
+        0.02500000037252903,
+        0.017999999225139618,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.05000000074505806,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017999999225139618,
+        0.02199999988079071,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_DarkSteel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.04500000178813934,
+        0.05000000074505806,
+        0.04800000041723251,
+        1.0
+      ],
+      "Roughness": 0.44999998807907104,
+      "Metallic": 0.699999988079071,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.7599999904632568,
+        0.7200000286102295,
+        0.5699999928474426,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.00800000037997961,
+        0.009999999776482582,
+        0.008999999612569809,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_FireExtinguisher_LOD1.fbx",
+      "triangles": 4270
+    },
+    {
+      "file": "SM_EW_FireExtinguisher_LOD2.fbx",
+      "triangles": 2135
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "4b08e57957133021a61d06ec76997383c38b1cd16422a7837fa339483eb783fb",
+  "blend_sha256": "4f2fed60615398d7671cf0caff9e5104100f26abc54705774c07f6aaeed857d3"
+}

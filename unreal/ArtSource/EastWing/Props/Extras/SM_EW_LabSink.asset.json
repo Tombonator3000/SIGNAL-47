@@ -1,0 +1,283 @@
+{
+  "asset": "SM_EW_LabSink",
+  "description": "Green steel lab sink cabinet, 1.20 m, stainless top with inset bowl, gooseneck faucet and cross taps.",
+  "fbx": "SM_EW_LabSink.fbx",
+  "editable": "SM_EW_LabSink.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.6100000143051147,
+      -0.3490000069141388,
+      0.0
+    ],
+    [
+      0.6100000143051147,
+      0.33000001311302185,
+      1.3206168413162231
+    ]
+  ],
+  "dimensions_m": [
+    1.2200000286102295,
+    0.6790000200271606,
+    1.3206168413162231
+  ],
+  "triangles": 20128,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_Rubber",
+    "EW_X_GreenEnamel",
+    "EW_X_Bakelite",
+    "EW_X_Chrome",
+    "EW_X_Stainless",
+    "EW_X_Red",
+    "EW_X_Blue",
+    "EW_X_LabelPaper",
+    "EW_X_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_Rubber",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02199999988079071,
+        0.02500000037252903,
+        0.023000000044703484,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_GreenEnamel",
+      "texture_key": "EW_GreenSteel",
+      "maps": {
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png"
+      },
+      "Base Color": [
+        0.1599999964237213,
+        0.23999999463558197,
+        0.20000000298023224,
+        1.0
+      ],
+      "Roughness": 0.33000001311302185,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Stainless",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.47999998927116394,
+        0.5099999904632568,
+        0.5,
+        1.0
+      ],
+      "Roughness": 0.23999999463558197,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Red",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3799999952316284,
+        0.02500000037252903,
+        0.012000000104308128,
+        1.0
+      ],
+      "Roughness": 0.3799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Blue",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.029999999329447746,
+        0.07999999821186066,
+        0.30000001192092896,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_BaseColor.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Metallic.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_NormalGL.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Textures/EW_GreenSteel_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_LabSink_LOD1.fbx",
+      "triangles": 10064
+    },
+    {
+      "file": "SM_EW_LabSink_LOD2.fbx",
+      "triangles": 5032
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "88b6df844482adcfe03a4a75d02c244d230f2cfca7e7f05c398d774cbe995a44",
+  "blend_sha256": "2473af3f0dbf4b66d3d4c14a96887d3a318ea44034623d7b7b1bd32092fb1c56"
+}

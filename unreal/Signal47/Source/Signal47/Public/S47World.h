@@ -52,6 +52,8 @@ public:
 	/** The deps (main.ts); also wires the truck into the game: its keys in the cab, the yard's
 	 *  'truck' and the station's 's1truck', the walker's camera and the test flags. */
 	void Init(US47Main* InM);
+	/** Native garage corridor/floor/footprint check; does not move the player or owned vehicles. */
+	bool AuditEastWingDrive(TArray<FString>& Lines);
 	virtual void BeginDestroy() override;
 
 	FString Area = TEXT("saro");
@@ -219,6 +221,8 @@ public:
 	 *  whole width (AS47Walker::OpenLand). */
 	bool OnLand(double X, double Z, const FString& InArea = FString());
 
+	/** A native building that replaces an exported one opens its footprint to walking (S47EastWing). Returns how many exclusion boxes were removed. */
+	int32 RemoveLandOut(const FString& InArea, double MinX, double MaxX, double MinZ, double MaxZ);
 private:
 	UPROPERTY() TObjectPtr<US47Main> M;
 	UPROPERTY() TArray<TObjectPtr<UObject>> Keep;

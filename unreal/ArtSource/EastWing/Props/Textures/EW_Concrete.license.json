@@ -1,0 +1,59 @@
+{
+  "asset": "EW_Concrete",
+  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "copyright": "SIGNAL / 47 project",
+  "redistribution": "May accompany the project; no external purchased/Tripo content",
+  "source": "build_textures.py",
+  "method": "Deterministic metric height, albedo, roughness and metallic fields; no baked lighting",
+  "reused_project_source": {
+    "path": "unreal/ArtSource/PhotoLab/surface_fields.py",
+    "sha256": "a474277807b64254c94eee33aa5b228d24ece5e16ae8553b3eba58a4d4da3b50",
+    "use": "metric periodic normal-map convention; implementation adapted for physical tile span"
+  },
+  "external_reference": {
+    "name": "apekshik/anyscene",
+    "status": "UNVERIFIED workflow-only reference, no code or assets reused"
+  },
+  "files": {
+    "BaseColor": {
+      "file": "EW_Concrete_BaseColor.png",
+      "sha256": "e0f90bd08d8ab85b2e983729aeac2f3b37689530e112d86719360267b53f6a4a",
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "Roughness": {
+      "file": "EW_Concrete_Roughness.png",
+      "sha256": "bd8bdbdc377793a70d2e6cb708294e9322e2be583bd5e6c819c3a236b5cb859a",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Metallic": {
+      "file": "EW_Concrete_Metallic.png",
+      "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalDX": {
+      "file": "EW_Concrete_NormalDX.png",
+      "sha256": "fb34f060a59ea66f0747fb88f219c9f4d28db908cf7491bda1c1db880f9c9d1c",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalGL": {
+      "file": "EW_Concrete_NormalGL.png",
+      "sha256": "eee0d7f1164dc367d6478ed42d9121546a0889750caf0037ba7b3d05de5ef938",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Height": {
+      "file": "EW_Concrete_Height.png",
+      "sha256": "c83cfec81c1d7777681377508edd47132badf5325a208479d46cd00e2e6fee73",
+      "color_space": "linear",
+      "bit_depth": 16,
+      "decode_metres": {
+        "offset": -0.0005765921087004244,
+        "scale": 0.000847458781208843
+      }
+    }
+  }
+}

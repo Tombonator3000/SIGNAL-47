@@ -59,6 +59,8 @@ public:
  bool TripoPumpLoaded() const;
  int32 ParcelStage() const { return Payload; } // 0 empty, 1 shop, 2 carried, 3 loaded, 4 set down
  FString ParcelItem() const { return Item; }
+ const TMap<FString,int32>& ParcelContents() const { return Contents; }
+ FString ParcelDescription() const;
  bool DropParcel(bool bDrop = false);
  void OpenCarryMenu();
  FVector ParcelPosition() const;
@@ -89,6 +91,8 @@ private:
  int32 PowerFaultSerial = 0, EmergencyFuseFault = 0;
  bool bTrackedPowerFault = false;
  int32 Payload = 0;
+ TMap<FString,int32> Contents;
+ bool CanAddShopItem() const;
  int32 Delivered = 0, DeliveredByTruck = 0, ServiceDeliveries = 0, DonorTests = 0, ServiceTests = 0;
  bool bParcelWasLoaded = false;
  bool bPumping = false;
@@ -107,7 +111,7 @@ private:
  TMap<FString,int32> Stock;
  double GeneratorSeconds = 0, Fuel = 3, LastClock = -1, BenchSeconds = 0, FeederSeconds = 0, Settle = 0, ServiceAz = 0, ServiceEl = 0;
  FVector Dropped = FVector::ZeroVector;
- FS47Obj Bench, Depot, BenchMeter, BenchLamp, BenchSample, Shop, Panel, Lid, Relay, Selector, Generator, FeederPanel, FeederLever, FeederLamp;
+ FS47Obj Bench, SampleBench, Delivery, Depot, BenchMeter, BenchLamp, BenchSample, Shop, Panel, Lid, Relay, Selector, Generator, FeederPanel, FeederLever, FeederLamp;
  FS47Obj ParcelSaro, ParcelRoad, CargoSaro, CargoRoad;
  TArray<FS47Obj> Parts;
  struct FOverride { bool bLook = false; TFunction<FString()> Label, Examine; TFunction<void()> Use; };
@@ -124,6 +128,8 @@ private:
  bool CanIssueEmergencyFuse(bool bFault) const;
  int32 S03() const;
  FVector ShopPoint() const;
+ FVector ParcelShopPoint() const;
+ bool AtShopCounter() const;
  FVector TruckPoint() const;
  FVector PumpPoint() const;
  bool PumpConditions() const;
@@ -148,7 +154,9 @@ private:
  bool GeneratorUse();
  bool ParcelUse();
  bool CargoUse();
- bool Deposit();
+ bool Deposit(const FString& Station);
+ void OpenDepot();
+ void OpenSampleLab();
  void DonorTest();
  void RefuelTruck();
  void RoadsideAssist();

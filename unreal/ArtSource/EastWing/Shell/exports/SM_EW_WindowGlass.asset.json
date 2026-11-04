@@ -1,0 +1,170 @@
+{
+  "asset": "SM_EW_WindowGlass",
+  "fbx": "SM_EW_WindowGlass.fbx",
+  "fbx_sha256": "7edf2707c9e43a584da8f6715a12d49401e07822176e17458b11e6dc702e2512",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_WindowGlass_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_Glass"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_Glass",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.800000011920929,
+        0.7599999904632568,
+        1.0
+      ],
+      "Roughness": 0.10000000149011612,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.9200000166893005,
+      "IOR": 1.4600000381469727,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_WindowGlass_LOD1.fbx",
+      "sha256": "0395155c707b2da93df0de081f348e3858f13f2eb0a1d8370f1020e27216c174",
+      "triangles": 144,
+      "expected_native_triangles": 144,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          21.411998748779297,
+          5.39900016784668,
+          1.0120000839233398
+        ],
+        [
+          37.1879997253418,
+          5.405000686645508,
+          2.388000011444092
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          21.411998748779297,
+          1.0120000839233398,
+          -5.405000686645508
+        ],
+        [
+          37.1879997253418,
+          2.388000011444092,
+          -5.39900016784668
+        ]
+      ],
+      "dimensions_m": [
+        15.7760009765625,
+        0.006000518798828125,
+        1.375999927520752
+      ]
+    },
+    {
+      "file": "SM_EW_WindowGlass_LOD2.fbx",
+      "sha256": "b4d50417b0786dbae1e76222f3159f54120ffd761c9754f2a82201f66223d79b",
+      "triangles": 144,
+      "expected_native_triangles": 144,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          21.411998748779297,
+          5.39900016784668,
+          1.0120000839233398
+        ],
+        [
+          37.1879997253418,
+          5.405000686645508,
+          2.388000011444092
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          21.411998748779297,
+          1.0120000839233398,
+          -5.405000686645508
+        ],
+        [
+          37.1879997253418,
+          2.388000011444092,
+          -5.39900016784668
+        ]
+      ],
+      "dimensions_m": [
+        15.7760009765625,
+        0.006000518798828125,
+        1.375999927520752
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 0,
+  "collision_source_parts": [],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 144,
+  "expected_native_triangles": 144,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      21.411998748779297,
+      5.39900016784668,
+      1.0120000839233398
+    ],
+    [
+      37.1879997253418,
+      5.405000686645508,
+      2.388000011444092
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      21.411998748779297,
+      1.0120000839233398,
+      -5.405000686645508
+    ],
+    [
+      37.1879997253418,
+      2.388000011444092,
+      -5.39900016784668
+    ]
+  ],
+  "dimensions_m": [
+    15.7760009765625,
+    0.006000518798828125,
+    1.375999927520752
+  ]
+}

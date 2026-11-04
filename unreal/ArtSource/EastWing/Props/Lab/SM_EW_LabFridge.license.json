@@ -1,0 +1,8 @@
+{
+  "asset": "SM_EW_LabFridge",
+  "id": "LicenseRef-ProjectOwned",
+  "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+  "sources": [
+    "unreal/ArtSource/EastWing/Props/Lab/build_lab.py"
+  ]
+}

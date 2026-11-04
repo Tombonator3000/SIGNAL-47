@@ -1,0 +1,236 @@
+{
+  "asset": "SM_EW_PersonnelDoor",
+  "fbx": "SM_EW_PersonnelDoor.fbx",
+  "fbx_sha256": "d4d40c87801d06374ddbc66ee94f75b94c055e8baab92df28e0bb1689dbf3c44",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_PersonnelDoor_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    21.3,
+    0.0,
+    5.5
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_Galvanized",
+    "EW_Shell_Glass",
+    "EW_Shell_GreenSteel"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.46000000834465027,
+        0.49000000953674316,
+        0.47999998927116394,
+        1.0
+      ],
+      "Roughness": 0.3700000047683716,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Glass",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.800000011920929,
+        0.7599999904632568,
+        1.0
+      ],
+      "Roughness": 0.10000000149011612,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.9200000166893005,
+      "IOR": 1.4600000381469727,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_GreenSteel",
+      "texture_key": "EW_GreenSteel",
+      "maps": {
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_NormalGL.png"
+      },
+      "Base Color": [
+        0.12999999523162842,
+        0.20000000298023224,
+        0.1599999964237213,
+        1.0
+      ],
+      "Roughness": 0.5199999809265137,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_PersonnelDoor_LOD1.fbx",
+      "sha256": "398c6de84541e9d15a7572e7dc33cdd3f019c460b1329c509553c698d48840fd",
+      "triangles": 932,
+      "expected_native_triangles": 932,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          -0.01300048828125,
+          -0.08799982070922852,
+          0.019999980926513672
+        ],
+        [
+          1.0500030517578125,
+          0.03800010681152344,
+          2.119999885559082
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          21.286998748779297,
+          0.019999980926513672,
+          5.461999893188477
+        ],
+        [
+          22.35000228881836,
+          2.119999885559082,
+          5.5879998207092285
+        ]
+      ],
+      "dimensions_m": [
+        1.0630035400390625,
+        0.12599992752075195,
+        2.0999999046325684
+      ]
+    },
+    {
+      "file": "SM_EW_PersonnelDoor_LOD2.fbx",
+      "sha256": "78d29bb067800a809d9d12d9fb0949c31aca7a8b91272d9290ef6150a7b51397",
+      "triangles": 252,
+      "expected_native_triangles": 252,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          -0.01300048828125,
+          -0.08799982070922852,
+          0.019999980926513672
+        ],
+        [
+          1.0500030517578125,
+          0.03800010681152344,
+          2.119999885559082
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          21.286998748779297,
+          0.019999980926513672,
+          5.461999893188477
+        ],
+        [
+          22.35000228881836,
+          2.119999885559082,
+          5.5879998207092285
+        ]
+      ],
+      "dimensions_m": [
+        1.0630035400390625,
+        0.12599992752075195,
+        2.0999999046325684
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 4,
+  "collision_source_parts": [
+    "DoorLower",
+    "DoorTop",
+    "DoorLeft",
+    "DoorRight"
+  ],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 3596,
+  "expected_native_triangles": 3596,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      -0.01300048828125,
+      -0.08799982070922852,
+      0.019999980926513672
+    ],
+    [
+      1.0500030517578125,
+      0.03800010681152344,
+      2.119999885559082
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      21.286998748779297,
+      0.019999980926513672,
+      5.461999893188477
+    ],
+    [
+      22.35000228881836,
+      2.119999885559082,
+      5.5879998207092285
+    ]
+  ],
+  "dimensions_m": [
+    1.0630035400390625,
+    0.12599992752075195,
+    2.0999999046325684
+  ],
+  "open_rotation_three_radians": [
+    0,
+    1.5707963267948966,
+    0
+  ]
+}

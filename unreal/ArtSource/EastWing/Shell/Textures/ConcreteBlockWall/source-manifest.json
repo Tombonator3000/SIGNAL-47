@@ -1,0 +1,55 @@
+{
+  "asset": "concrete_block_wall",
+  "author": "Charlotte Baglioni",
+  "source": "https://polyhaven.com/a/concrete_block_wall",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "publisher_license": "https://polyhaven.com/license",
+  "retrieved_date": "2026-11-03",
+  "physical_tile_metres": [
+    2,
+    2
+  ],
+  "physical_size_note": "Publisher states 2 m wide; square maps use a square 2 m tile.",
+  "source_method": "Publisher supplies an on-location reference photograph matching the masonry. Asset page does not explicitly state photogrammetry versus other photo-processing method.",
+  "reference_url": "https://cdn.polyhaven.com/asset_img/renders/concrete_block_wall/Context01.jpg",
+  "status": "SOURCE_ONLY_NOT_NATIVE_IMPORTED",
+  "files": [
+    {
+      "role": "BaseColor",
+      "file": "concrete_block_wall_diff_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_block_wall/concrete_block_wall_diff_2k.jpg",
+      "bytes": 3501045,
+      "sha256": "c9159f6bb8713e00bc844ddf9f4007dc85008fa59e0f5d1ea559da632749cdd1",
+      "size": [
+        2048,
+        2048
+      ],
+      "color_space": "sRGB"
+    },
+    {
+      "role": "NormalGL",
+      "file": "concrete_block_wall_nor_gl_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/concrete_block_wall/concrete_block_wall_nor_gl_2k.png",
+      "bytes": 22913304,
+      "sha256": "b8f0c0cfe040bb4e2c1c7ce352c7495e34332591866a07cf8234339137c78dc4",
+      "size": [
+        2048,
+        2048
+      ],
+      "color_space": "linear"
+    },
+    {
+      "role": "Roughness",
+      "file": "concrete_block_wall_rough_2k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/concrete_block_wall/concrete_block_wall_rough_2k.jpg",
+      "bytes": 746891,
+      "sha256": "0b4e9163cc341bf2c86a2fd32d80b6000e2054df114a211a6bae2b3ded77c118",
+      "size": [
+        2048,
+        2048
+      ],
+      "color_space": "linear"
+    }
+  ]
+}

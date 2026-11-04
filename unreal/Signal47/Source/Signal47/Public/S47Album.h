@@ -65,6 +65,9 @@ struct FS47AlbumShot
 	bool bOdd = false;
 	// En lesbar erstatnings-JPEG er ikke det opprinnelige fotografiet.
 	bool bUnavailable = false;
+	/** -1: legacy/Story instant print; 0: exposed, 1: tank processed, 2: fixed, 3: collected. */
+	int32 LabStage = -1;
+	bool IsDeveloped() const { return LabStage < 0 || LabStage == 3; }
 	/** Where the things the story looks for are on the print (u, v from the top left), by target. */
 	TArray<TPair<FString, FVector2D>> Targets;
 };
@@ -82,6 +85,8 @@ struct FS47AlbumDeps
 	TFunction<TArray<FS47Subject>()> Subjects;
 	TFunction<FString()> Place;
 	TFunction<double()> Clock;
+	/** Freeform exposures use physical processing; existing Story prints keep instant development. */
+	TFunction<bool()> RequiresLab;
 	/** Exposures on the roll that were not the player's. */
 	TFunction<int32()> Extra;
 	/** Before the render (the web version culls the antennas for the photo camera). */
@@ -129,6 +134,9 @@ public:
 	int32 FilmCapacity() const { return Data.FilmCapacity; }
 	/** Take a free frame now (Chapter1.shutter, when the case has no frame to take here). */
 	FS47AlbumShot Expose();
+	const FS47AlbumShot* PendingLabPhoto() const;
+	/** Advance exactly one physical bench action; stale UI actions cannot advance twice. */
+	bool AdvanceLabPhoto(const FString& Id, int32 ExpectedStage);
 	/** What a frame taken now would name, without taking it (the tests). */
 	TPair<TArray<FString>, TArray<FString>> Peek();
 	/** A save opened, or a new night. */

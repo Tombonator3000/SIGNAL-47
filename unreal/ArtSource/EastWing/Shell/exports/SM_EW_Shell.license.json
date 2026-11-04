@@ -1,0 +1,8 @@
+{
+  "asset": "SM_EW_Shell",
+  "id": "LicenseRef-ProjectOwned",
+  "sources": [
+    "unreal/ArtSource/EastWing/Shell/layout.py",
+    "unreal/ArtSource/EastWing/Shell/build_shell.py"
+  ]
+}

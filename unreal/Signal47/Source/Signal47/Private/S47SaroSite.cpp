@@ -212,7 +212,7 @@ TSharedPtr<FS47SaroSite> FS47SaroSite::Build(AS47Web* W)
 void FS47SaroSite::Update()
 {
  auto* W=Web.Get();if(!W)return;const bool Shown=W->Area()==TEXT("saro");
- for(int32 I:PartNodes)W->SetVisible(I,Shown);
+ for(int32 K=0;K<PartNodes.Num();++K)W->SetVisible(PartNodes[K],Shown&&!(bWingReplaced&&K<2)); // facade and glass yield to the native east wing
  // Area changes can reapply the original hierarchy visibility; suppress only retired draws.
  for(int32 I:RetiredNodes)if(const auto* N=W->Node(I))if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get())){C->SetVisibility(false,false);C->SetHiddenInGame(true,false);}
  const float Power=Shown?SignPower(W):0.f;
@@ -225,7 +225,7 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  auto* W=Web.Get();if(!W)return false;bool OK=Parts.Num()==3&&RemovedWalkFeet==6&&RemovedDriveFeet==6;
  for(int32 I=0;I<Parts.Num();++I)
  {
-  auto* C=Parts[I].Get();const bool Good=C&&GoodMesh(C->GetStaticMesh(),Spec[I])&&C->GetComponentLocation().Equals(S47Three::ToUE(Spec[I].Root),.01)&&C->IsVisible()==bShown;
+  auto* C=Parts[I].Get();const bool Good=C&&GoodMesh(C->GetStaticMesh(),Spec[I])&&C->GetComponentLocation().Equals(S47Three::ToUE(Spec[I].Root),.01)&&C->IsVisible()==(bShown&&!(bWingReplaced&&I<2));
   OK&=Good;Lines.Add(FString::Printf(TEXT("SARO_SITE part=%s mesh/root/visibility=%s"),Spec[I].Name,Good?TEXT("PASS"):TEXT("FAIL")));
  }
  for(int32 I:RetiredNodes){const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;OK&=C&&!C->IsVisible()&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision;}
@@ -237,9 +237,9 @@ bool FS47SaroSite::Audit(TArray<FString>& Lines)const
  OK&=ForecourtOK;Lines.Add(FString::Printf(TEXT("SARO_SITE paved east apron x20.1..39.8 z5.9..18, service-road access x10..39.8 z18..23, three staff bays and clear facade walk; original physical floor/query collision retained; %s"),ForecourtOK?TEXT("PASS"):TEXT("FAIL")));
  bool ComposedWindows=false;
  for(int32 I=0;I<W->PartCount();++I)if(const auto* N=W->Node(I))if(N->Geo==454)
-  if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")&&C->GetStaticMesh()->GetNumTriangles(0)==10328;
+  if(auto* C=Cast<UStaticMeshComponent>(N->Comp.Get()))ComposedWindows=C->GetStaticMesh()&&(C->GetStaticMesh()->GetName()==TEXT("SM_SaroPark_ForecourtTrim")||C->GetStaticMesh()->GetPathName()==TEXT("/Game/EastWing/Access/SM_EW_AccessDressing.SM_EW_AccessDressing"))&&C->GetStaticMesh()->GetNumTriangles(0)==10328;
  OK&=ComposedWindows;Lines.Add(FString::Printf(TEXT("SARO_SITE old fake windows=16 removed1872 triangles, composed dressing10328 incl230 forecourt brush+144 wheel remnants removed; %s"),ComposedWindows?TEXT("PASS"):TEXT("FAIL")));
- auto* OldStains=Stains.Get();const bool StainsOK=OldStains&&OldStains->GetStaticMesh()&&OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455")&&OldStains->GetStaticMesh()->GetNumTriangles(0)==1224&&OldStains->GetMaterial(0)==StainAtlas.Get();
+ auto* OldStains=Stains.Get();const bool StainsOK=OldStains&&OldStains->GetStaticMesh()&&(OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/SaroSite/Trim/StaticMeshes/g455.g455")||OldStains->GetStaticMesh()->GetPathName()==TEXT("/Game/EastWing/Access/SM_EW_AccessStains.SM_EW_AccessStains"))&&OldStains->GetStaticMesh()->GetNumTriangles(0)==1224&&OldStains->GetMaterial(0)==StainAtlas.Get();
  OK&=StainsOK;Lines.Add(FString::Printf(TEXT("SARO_SITE old window grime488 triangles removed,1224 unrelated stains retain original atlas; %s"),StainsOK?TEXT("PASS"):TEXT("FAIL")));
  const float WashPower=bShown?SignPower(W):0.f;bool WashOK=SignWash.Num()==2;
  for(int32 I=0;I<SignWash.Num();++I){const auto* L=SignWash[I].Get();const FVector At=SignFixtures.IsValidIndex(I)&&SignFixtures[I]?SignFixtures[I].Aperture:SignWashAt[I];WashOK&=L&&L->GetComponentLocation().Equals(S47Three::ToUE(At),.01)&&L->CastShadows&&L->IsVisible()==(WashPower>.0001f)&&FMath::IsNearlyEqual(L->Intensity,1200.f*WashPower,.1f);}

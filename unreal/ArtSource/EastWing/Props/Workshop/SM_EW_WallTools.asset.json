@@ -1,0 +1,113 @@
+{
+  "asset": "SM_EW_WallTools",
+  "description": "Hanging ring-spanner size set and three screwdrivers with mounting hooks; open spaces remain between tools.",
+  "fbx": "SM_EW_WallTools.fbx",
+  "editable": "SM_EW_WallTools.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.5600000023841858,
+      -0.01599999889731407,
+      0.0
+    ],
+    [
+      0.5600000023841858,
+      0.027499999850988388,
+      0.3564999997615814
+    ]
+  ],
+  "dimensions_m": [
+    1.1200000047683716,
+    0.04349999874830246,
+    0.3564999997615814
+  ],
+  "triangles": 15408,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_Galvanized",
+    "M_EW_RedEnamel"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.44999998807907104,
+        0.47999998927116394,
+        0.4699999988079071,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_RedEnamel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3400000035762787,
+        0.02500000037252903,
+        0.017999999225139618,
+        1.0
+      ],
+      "Roughness": 0.3499999940395355,
+      "Metallic": 0.05000000074505806,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Galvanized_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_WallTools_LOD1.fbx",
+      "triangles": 7704
+    },
+    {
+      "file": "SM_EW_WallTools_LOD2.fbx",
+      "triangles": 3852
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "5976c320d6eaac1367258bbaac46b7766ab3e2afa63d2b854ff94aa24f34a567",
+  "blend_sha256": "af1332d8ef4f49cc0c80188897ccfed9ef0dd15cbf6c9af00a12690c60588915"
+}

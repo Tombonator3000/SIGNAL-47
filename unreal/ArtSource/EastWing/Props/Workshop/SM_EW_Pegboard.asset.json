@@ -1,0 +1,113 @@
+{
+  "asset": "SM_EW_Pegboard",
+  "description": "48 inch square workshop pegboard; 2K PBR hole field on supplied material, wood mounting frame.",
+  "fbx": "SM_EW_Pegboard.fbx",
+  "editable": "SM_EW_Pegboard.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.6100000143051147,
+      -0.030499998480081558,
+      0.0
+    ],
+    [
+      0.6100000143051147,
+      0.010999999940395355,
+      1.2200000286102295
+    ]
+  ],
+  "dimensions_m": [
+    1.2200000286102295,
+    0.04149999842047691,
+    1.2200000286102295
+  ],
+  "triangles": 940,
+  "uv_layers": 1,
+  "materials": [
+    "M_EW_Pegboard",
+    "M_EW_CrateWood"
+  ],
+  "material_parameters": [
+    {
+      "name": "M_EW_Pegboard",
+      "texture_key": "EW_Pegboard",
+      "maps": {
+        "EW_Pegboard_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_BaseColor.png",
+        "EW_Pegboard_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_Roughness.png",
+        "EW_Pegboard_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_Metallic.png",
+        "EW_Pegboard_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_NormalGL.png"
+      },
+      "Base Color": [
+        0.3100000023841858,
+        0.2199999988079071,
+        0.11999999731779099,
+        1.0
+      ],
+      "Roughness": 0.75,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "M_EW_CrateWood",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.30000001192092896,
+        0.20999999344348907,
+        0.11999999731779099,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_BaseColor.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_Metallic.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_NormalGL.png",
+    "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Props/Textures/EW_Pegboard_Roughness.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_Pegboard_LOD1.fbx",
+      "triangles": 470
+    },
+    {
+      "file": "SM_EW_Pegboard_LOD2.fbx",
+      "triangles": 234
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "0811e28982e5cb95f440ea6b02460937e183ee96172bba4c1e230ceb9d762322",
+  "blend_sha256": "54313fbbdbf7371c82c1007e5661caa3565420747fbcb7535adc3cec1f7c5d45"
+}

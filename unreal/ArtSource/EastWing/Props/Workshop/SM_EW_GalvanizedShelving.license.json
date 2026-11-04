@@ -1,0 +1,8 @@
+{
+  "asset": "SM_EW_GalvanizedShelving",
+  "id": "LicenseRef-ProjectOwned",
+  "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+  "sources": [
+    "unreal/Signal47/Tools/archiveprops/geometry.py shelving(): folded-sheet construction adapted"
+  ]
+}

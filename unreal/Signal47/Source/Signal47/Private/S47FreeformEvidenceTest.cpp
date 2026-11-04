@@ -318,6 +318,7 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==14){Aim(M,Target(M,TEXT("printer")));Go(15);return;}
   if(S.Stage==15)
   {
+   if(F.PrinterJobId()!=J->Id||F.PrinterProgress()<1.)return;
    if(!Use(M,TEXT("printer"))||!Check(M,J->Stage==EJob::Recorded,TEXT("actual printer use collects the uncollected original chart"))||!Document(M,J->Id+TEXT("-original"),true))return;
    Photo(S.Job?TEXT("02-pulsar-original"):TEXT("01-normal-reference-original"));Go(16);return;
   }
@@ -401,7 +402,8 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==336){Close(M);WalkTo(M,{{-4.2,1.2},{3.8,1.2},{4.8,-.4}},34);return;}
   if(S.Stage==34){Aim(M,Target(M,TEXT("printer")));Go(35);return;}
   if(S.Stage==35)
-  {if(!Use(M,TEXT("printer"))||!Check(M,J->Stage==EJob::Packet,TEXT("actual printer use collects the registered paper packet"))||!Document(M,J->Id+TEXT("-packet"),true)||!Document(M,J->Id+TEXT("-original"),false))return;Photo(TEXT("04-registered-packet"));Go(36);return;}
+  {if(F.PrinterJobId()!=J->Id||F.PrinterProgress()<1.)return;
+   if(!Use(M,TEXT("printer"))||!Check(M,J->Stage==EJob::Packet,TEXT("actual printer use collects the registered paper packet"))||!Document(M,J->Id+TEXT("-packet"),true)||!Document(M,J->Id+TEXT("-original"),false))return;Photo(TEXT("04-registered-packet"));Go(36);return;}
   if(S.Stage==36){Close(M);WalkTo(M,{{3.8,1.2},{-2.4,1.2},{-2.4,3.6}},37);return;}
   if(S.Stage==37){Aim(M,Target(M,TEXT("doorSouth")));Go(38);return;}
   if(S.Stage==38)

@@ -1,0 +1,152 @@
+{
+  "asset": "SM_EW_SampleJar",
+  "description": "Reusable sealed amber sample jar with ribbed cap and inventory label.",
+  "fbx": "SM_EW_SampleJar.fbx",
+  "editable": "SM_EW_SampleJar.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.04100000113248825,
+      -0.04179999232292175,
+      0.0020000000949949026
+    ],
+    [
+      0.04100000113248825,
+      0.04100000113248825,
+      0.15649999678134918
+    ]
+  ],
+  "dimensions_m": [
+    0.0820000022649765,
+    0.08279999345541,
+    0.15449999668635428
+  ],
+  "triangles": 21544,
+  "uv_layers": 1,
+  "materials": [
+    "EW_Lab_AmberGlass",
+    "EW_Lab_Bakelite",
+    "EW_Lab_LabelPaper",
+    "EW_Lab_LabelInk"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Lab_AmberGlass",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.23999999463558197,
+        0.07999999821186066,
+        0.01600000075995922,
+        1.0
+      ],
+      "Roughness": 0.18000000715255737,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.47999998927116394,
+      "IOR": 1.4600000381469727,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelPaper",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.8100000023841858,
+        0.7799999713897705,
+        0.6299999952316284,
+        1.0
+      ],
+      "Roughness": 0.800000011920929,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Lab_LabelInk",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.02500000037252903,
+        0.03200000151991844,
+        0.02800000086426735,
+        1.0
+      ],
+      "Roughness": 0.699999988079071,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [],
+  "lods": [
+    {
+      "file": "SM_EW_SampleJar_LOD1.fbx",
+      "triangles": 10772
+    },
+    {
+      "file": "SM_EW_SampleJar_LOD2.fbx",
+      "triangles": 5386
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": [
+      "unreal/ArtSource/EastWing/Props/Lab/build_lab.py",
+      "unreal/ArtSource/PhotoLab/build_photolab.py:351-359 (original project bottle shoulder/cap/label construction adapted)"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "fc336ff5dcd4967a9eb810216ca14ff909465e61e345fa54a8f5d1ee60c8db53",
+  "blend_sha256": "a807eea0c47d194c3bb0669ca9258669de563e0ad9a92ff6bbf31fb6312e6a62"
+}

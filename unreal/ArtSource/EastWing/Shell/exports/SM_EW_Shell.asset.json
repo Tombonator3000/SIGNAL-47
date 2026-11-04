@@ -1,0 +1,335 @@
+{
+  "asset": "SM_EW_Shell",
+  "fbx": "SM_EW_Shell.fbx",
+  "fbx_sha256": "778bca3f8a4df9223271824386dc9bf72d8def38456ef3361a19f38e8c4ace77",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_Shell_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_Concrete",
+    "EW_Shell_Masonry",
+    "EW_Shell_Plinth",
+    "EW_Shell_Scuff",
+    "EW_Shell_Stucco"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_Concrete",
+      "texture_key": "EW_Concrete",
+      "maps": {
+        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
+        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
+        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
+        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
+      },
+      "Base Color": [
+        0.3799999952316284,
+        0.3700000047683716,
+        0.3400000035762787,
+        1.0
+      ],
+      "Roughness": 0.7200000286102295,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Masonry",
+      "texture_key": "EW_CinderblockCream",
+      "maps": {
+        "EW_CinderblockCream_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_BaseColor.png",
+        "EW_CinderblockCream_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_Roughness.png",
+        "EW_CinderblockCream_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_Metallic.png",
+        "EW_CinderblockCream_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_CinderblockCream_NormalGL.png"
+      },
+      "Base Color": [
+        0.6800000071525574,
+        0.6299999952316284,
+        0.49000000953674316,
+        1.0
+      ],
+      "Roughness": 0.8299999833106995,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Plinth",
+      "texture_key": "EW_Concrete",
+      "maps": {
+        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
+        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
+        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
+        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
+      },
+      "Base Color": [
+        0.28999999165534973,
+        0.27000001072883606,
+        0.23000000417232513,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Scuff",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.03500000014901161,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Stucco",
+      "texture_key": "EW_Stucco",
+      "maps": {
+        "EW_Stucco_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_BaseColor.png",
+        "EW_Stucco_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_Roughness.png",
+        "EW_Stucco_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_Metallic.png",
+        "EW_Stucco_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Stucco_NormalGL.png"
+      },
+      "Base Color": [
+        0.6600000262260437,
+        0.5899999737739563,
+        0.44999998807907104,
+        1.0
+      ],
+      "Roughness": 0.8600000143051147,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_Shell_LOD1.fbx",
+      "sha256": "dbf310c5e293153ec660effbbee353ddefecdd83d3a3b4f740a0c7a3522c4006",
+      "triangles": 2032,
+      "expected_native_triangles": 2032,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          20.540000915527344,
+          -9.5,
+          -0.6499999761581421
+        ],
+        [
+          40.20000076293945,
+          5.559999942779541,
+          3.5999999046325684
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          20.540000915527344,
+          -0.6499999761581421,
+          -5.559999942779541
+        ],
+        [
+          40.20000076293945,
+          3.5999999046325684,
+          9.5
+        ]
+      ],
+      "dimensions_m": [
+        19.65999984741211,
+        15.059999942779541,
+        4.2499998807907104
+      ]
+    },
+    {
+      "file": "SM_EW_Shell_LOD2.fbx",
+      "sha256": "9c481b095b8b2c8d17ad93b7c53fb5b35b65a215f3f81ced1b98c81778a2d7c7",
+      "triangles": 624,
+      "expected_native_triangles": 624,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          20.540000915527344,
+          -9.5,
+          -0.6499999761581421
+        ],
+        [
+          40.20000076293945,
+          5.559999942779541,
+          3.5999999046325684
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          20.540000915527344,
+          -0.6499999761581421,
+          -5.559999942779541
+        ],
+        [
+          40.20000076293945,
+          3.5999999046325684,
+          9.5
+        ]
+      ],
+      "dimensions_m": [
+        19.65999984741211,
+        15.059999942779541,
+        4.2499998807907104
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 52,
+  "collision_source_parts": [
+    "South_solid0",
+    "South_above0",
+    "South_solid1",
+    "South_above1",
+    "South_end",
+    "North_solid0",
+    "North_below0",
+    "North_above0",
+    "North_solid1",
+    "North_below1",
+    "North_above1",
+    "North_solid2",
+    "North_below2",
+    "North_above2",
+    "North_solid3",
+    "North_below3",
+    "North_above3",
+    "North_solid4",
+    "North_below4",
+    "North_above4",
+    "North_solid5",
+    "North_below5",
+    "North_above5",
+    "North_end",
+    "West_end",
+    "East_solid0",
+    "East_above0",
+    "East_end",
+    "LabPartition_solid0",
+    "LabPartition_above0",
+    "LabPartition_end",
+    "GaragePartition_solid0",
+    "GaragePartition_above0",
+    "GaragePartition_solid1",
+    "GaragePartition_above1",
+    "GaragePartition_end",
+    "StorePartition_solid0",
+    "StorePartition_above0",
+    "StorePartition_end",
+    "PlinthSouth",
+    "PlinthNorth",
+    "PlinthWest",
+    "PlinthEast",
+    "Floor",
+    "GarageFloorWest",
+    "GarageFloorEast",
+    "GarageFloorNorth",
+    "GarageFloorSouth",
+    "DrainRecessBottom",
+    "GarageRamp",
+    "PersonnelRamp",
+    "ServiceRamp"
+  ],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 8368,
+  "expected_native_triangles": 8368,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      20.540000915527344,
+      -9.5,
+      -0.6499999761581421
+    ],
+    [
+      40.20000076293945,
+      5.559999942779541,
+      3.5999999046325684
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      20.540000915527344,
+      -0.6499999761581421,
+      -5.559999942779541
+    ],
+    [
+      40.20000076293945,
+      3.5999999046325684,
+      9.5
+    ]
+  ],
+  "dimensions_m": [
+    19.65999984741211,
+    15.059999942779541,
+    4.2499998807907104
+  ]
+}

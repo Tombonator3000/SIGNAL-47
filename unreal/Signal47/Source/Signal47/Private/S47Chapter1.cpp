@@ -1,6 +1,9 @@
 // story/Chapter1.ts: chapter one, "The Second Exposure"
 #include "S47Chapter1.h"
 #include "S47T02Photo.h"
+#include "S47Album.h"
+#include "S47Night.h"
+#include "S47Freeform.h"
 #include "S47Keys.h"
 #include "S47Anomaly.h"
 #include "S47Evening.h"
@@ -27,6 +30,7 @@
 #include "S47Walker.h"
 #include "S47Web.h"
 #include "S47Yard.h"
+#include "S47World.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogS47Chapter1, Log, All);
 
@@ -450,8 +454,33 @@ void US47Chapter1::ApplyWorld()
 	if (S.bConcluded) File(DocFinding());
 }
 
+void US47Chapter1::PlaceFieldCamera()
+{
+ if(!M||!M->Web)return;
+ FS47Obj Cam=M->Web->Obj(TEXT("room.fieldCamera"));if(!Cam)return;
+ if(!StoryCameraPosition.IsSet())StoryCameraPosition=Cam.Position();
+ // The existing photographic lab's dry archive bench, not the EastWing test lab.
+ // Both room.fieldCamera and room.objs.fieldCamera resolve to this same node.
+ Cam.SetPosition(M->IsFreeform()?FVector(18.55,.89,-1.9):StoryCameraPosition.GetValue());
+ // This invisible Story interaction box encloses the archive bench and the small
+ // camera. Suppress only that proxy until pickup, otherwise its empty Freeform
+ // label consumes the ray before the camera. The physical bench is untouched.
+ const FS47Obj Archive=M->Web->Obj(TEXT("yard.objs.archive"));
+ const FS47WebNode* Node=Archive?M->Web->Node(Archive.I):nullptr;
+ if(UPrimitiveComponent* Proxy=Node?Cast<UPrimitiveComponent>(Node->Comp.Get()):nullptr)
+ {
+  if(ArchivePickupProxy.Get()!=Proxy)
+  {
+   ArchivePickupProxy=Proxy;
+   ArchivePickupCollision=uint8(Proxy->GetCollisionEnabled());
+  }
+  const bool Waiting=M->IsFreeform()&&Fcam()&&!Fcam()->bHave;
+  Proxy->SetCollisionEnabled(Waiting?ECollisionEnabled::NoCollision:ECollisionEnabled::Type(ArchivePickupCollision));
+ }
+}
 void US47Chapter1::ShowCamera(bool bOn)
 {
+ PlaceFieldCamera();
 	// Hidden objects still catch raycasts in three.js, so the collected camera leaves layer 0; here
 	// its meshes stop answering the line of sight.
 	if (!M || !M->Web) return;
@@ -554,9 +583,21 @@ void US47Chapter1::Interactables()
 	{
 		FS47Interactable It;
 		It.Id = TEXT("fieldCamera"); It.Object = Web->Obj(TEXT("room.objs.fieldCamera")); It.Range = 2.6;
-		It.Label = [this] { const bool Early = Host && Host->bEveningTimeline && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")); return ((!Active && !Early) || S.bCamera || EarlyCamera()) ? FString() : FString(TEXT("Collect field camera")); };
+		It.Label = [this] { if(M&&M->IsFreeform())return Fcam()&&!Fcam()->bHave?FString(TEXT("Collect field camera / PHOTO LAB")):FString(); const bool Early = Host && Host->bEveningTimeline && M->Evening && M->Evening->Pack.Flag(TEXT("handover_done")); return ((!Active && !Early) || S.bCamera || EarlyCamera()) ? FString() : FString(TEXT("Collect field camera")); };
 		It.Use = [this]
 		{
+   if(M&&M->IsFreeform())
+   {
+    if(!Fcam()||Fcam()->bHave)return;
+    const FS47Obj Cam=M->Web->Obj(TEXT("room.fieldCamera"));
+    if(!Cam||!M->World||M->World->Area!=TEXT("saro")||!M->Player||FVector::Distance(M->Player->Pos,Cam.WorldPosition())>2.6)
+    {Toast(TEXT("PHOTO LAB: Approach the field camera on the archive bench to collect it."));return;}
+    Fcam()->bHave=true;RestoreEarlyCamera();
+    if(US47Audio* A=Au())A->Sfx(TEXT("click"),Snd(.6f));
+    NoteIt(TEXT("Collected the SARO field camera from the photo lab. Exposed photographs must be developed at the wet bench before OPS registration."));
+    Toast(FString::Printf(TEXT("Field camera collected. %s to raise, %s to expose. Develop photographs at the photo lab wet bench."),*S47Keys::Said(TEXT("camera")),*S47Keys::Said(TEXT("shutter"))),5);
+    M->RequestAutosave();return;
+   }
 			if (!Active)
 			{
 				if (!M->Anomaly || !M->Evening || !M->Evening->Pack.Flag(TEXT("handover_done"))) return;
@@ -701,6 +742,28 @@ TOptional<US47Chapter1::FDevFrame> US47Chapter1::DevFrame() const
 
 void US47Chapter1::UseWetBench()
 {
+	if (M && M->IsFreeform())
+	{
+		if (!M->Night || !M->Night->Album || !M->Freeform || !Yard || !M->Player) return;
+		if (!M->Freeform->HasPowerForReactiveLight()) { Toast(TEXT("PHOTO LAB: Restore power before processing the photograph.")); return; }
+		const FS47AlbumShot* Shot = M->Night->Album->PendingLabPhoto();
+		if (!Shot) { S47Panels::WetBench(Ui(), FString(), 0, TEXT("No exposed photographs are waiting. Completed originals remain in the notebook album; submit field evidence at OPS."), [] {}); return; }
+		const FString Id = Shot->Id;
+		const int32 Stage = Shot->LabStage;
+		if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door before processing the photograph.")); return; }
+		S47Panels::WetBench(Ui(), Id + TEXT(" / ") + Shot->Place, Stage == 0 ? 0 : Stage == 1 ? 2 : 3, FString(), [this, Id, Stage]
+		{
+			if (!M || !M->IsFreeform() || !M->Night || !M->Night->Album || !M->Freeform || !M->Player || !Yard) return;
+			if (FVector::Distance(M->Player->Pos, Yard->Obj(TEXT("wetBench")).WorldPosition()) > 2.6) { Toast(TEXT("PHOTO LAB: Return to the wet bench to continue processing.")); return; }
+			if (!M->Freeform->HasPowerForReactiveLight()) { Toast(TEXT("PHOTO LAB: Restore power; your original is retained.")); return; }
+			if (Stage < 2 && M->Web->IsDoorOpen(TEXT("labDoor"))) { Toast(TEXT("PHOTO LAB: Shut the darkroom door; your original is retained.")); return; }
+			if (!M->Night->Album->AdvanceLabPhoto(Id, Stage)) return;
+			if (US47Audio* A = Au()) A->PourThree(Yard->WetPrint.WorldPosition());
+			Toast(Stage == 0 ? TEXT("PHOTO LAB: Contact print ready. Use the wet bench to transfer it to the fixer.") : Stage == 1 ? TEXT("PHOTO LAB: Print fixed. Collect the original at the wet bench.") : TEXT("OPS: Submit the developed field photograph. The original is retained in your album."), 4.5f);
+			M->RequestAutosave();
+		});
+		return;
+	}
 	if (Lab && Lab()) return;
 	const TOptional<FDevFrame> F = DevFrame();
 	if (!F)
@@ -765,6 +828,11 @@ void US47Chapter1::SetDev(int32 Which, int32 V) { if (Which == 1) S.Dev1 = V; el
 
 FString US47Chapter1::BenchLabel() const
 {
+	if (M && M->IsFreeform() && M->Night && M->Night->Album)
+	{
+		const FS47AlbumShot* Shot = M->Night->Album->PendingLabPhoto();
+		return !Shot ? FString(TEXT("Photo lab wet bench")) : Shot->LabStage == 0 ? FString(TEXT("Develop exposed photograph")) : Shot->LabStage == 1 ? FString(TEXT("Transfer photograph to fixer")) : FString(TEXT("Collect developed photograph"));
+	}
 	if (!Active) return FString();
 	const TOptional<FDevFrame> F = DevFrame();
 	if (!F) return FString(TEXT("Wet bench"));
@@ -1207,6 +1275,7 @@ void US47Chapter1::ToggleCamera()
 {
 	US47FieldCamera* F = Fcam();
 	US47UI* U = Ui();
+	if(M&&M->IsFreeform()&&F&&!F->bHave){Toast(TEXT("PHOTO LAB: Collect the field camera from the archive bench."));return;}
 	if ((!Active && !EarlyCamera()) || !F || !F->bHave) return;
 	if (U && U->Modal()) return;
 	F->Raise(!F->bRaised);
@@ -1847,6 +1916,14 @@ bool US47Chapter1::EarlyCamera() const
 }
 void US47Chapter1::RestoreEarlyCamera()
 {
+ PlaceFieldCamera();
+ if(M&&M->IsFreeform())
+ {
+  const bool Owned=Fcam()&&Fcam()->bHave;
+  ShowCamera(!Owned);
+  if(US47UI* U=Ui())U->CameraButton(Owned&&Touch());
+  return; // Freeform ownership must never alter Story's case state.
+ }
  if (!EarlyCamera()) return;
  if (auto* F=Fcam()) F->bHave=true;
  ShowCamera(false);

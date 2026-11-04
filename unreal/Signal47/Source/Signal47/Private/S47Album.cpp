@@ -156,6 +156,7 @@ FS47AlbumShot FS47Album::Expose()
 	FS47AlbumShot Shot;
 	Shot.Id = FString::Printf(TEXT("free%d@%d"), N + 1, int32(FMath::FloorToDouble(Clock + 0.5)));
 	Shot.Url = Url; Shot.Clock = Clock; Shot.Place = Place;
+	Shot.LabStage = D.RequiresLab && D.RequiresLab() ? 0 : -1;
 	Shot.Text = bFace ? FString(FACE_LINE) : FString::Join(Parts, TEXT(" "));
 	if (Odd.Num() || bFace) Shot.bOdd = true;
 	for (const FSeen& X : Seen)
@@ -202,6 +203,7 @@ void FS47Album::Restore(const S47J::FObj& V)
 			S.Id = S47J::Str(*O, TEXT("id")); S.Url = S47J::Str(*O, TEXT("url")); S.Clock = S47J::Num(*O, TEXT("clock"));
 			S.Place = S47J::Str(*O, TEXT("place")); S.Text = S47J::Str(*O, TEXT("text")); S.bOdd = S47J::Bool(*O, TEXT("odd"));
 			S.bUnavailable = S47J::Bool(*O, TEXT("unavailable"));
+			if ((*O)->HasField(TEXT("labStage"))) S.LabStage = FMath::Clamp(S47J::Int(*O, TEXT("labStage")), 0, 3);
 			if (const S47J::FObj T = S47J::Obj(*O, TEXT("targets")))
 			{
 				for (const auto& KV : T->Values)
@@ -229,6 +231,7 @@ S47J::FObj FS47Album::SaveData() const
 		S47J::Set(J, TEXT("place"), S.Place); S47J::Set(J, TEXT("text"), S.Text);
 		if (S.bOdd) S47J::Set(J, TEXT("odd"), true);
 		if (S.bUnavailable) S47J::Set(J, TEXT("unavailable"), true);
+		if (S.LabStage >= 0) S47J::Set(J, TEXT("labStage"), S.LabStage);
 		if (S.Targets.Num())
 		{
 			const S47J::FObj T = S47J::New();
@@ -251,7 +254,24 @@ S47J::FObj FS47Album::SaveData() const
 	return O;
 }
 
-double FS47Album::Dev(const FS47AlbumShot& S, double Clock) const { return FMath::Clamp((Clock - S.Clock) / DEVELOP, 0.0, 1.0); }
+const FS47AlbumShot* FS47Album::PendingLabPhoto() const
+{
+	return Data.Shots.FindByPredicate([](const FS47AlbumShot& S) { return S.LabStage >= 0 && S.LabStage < 3 && !S.bUnavailable && !S.Url.IsEmpty(); });
+}
+
+bool FS47Album::AdvanceLabPhoto(const FString& Id, int32 ExpectedStage)
+{
+	FS47AlbumShot* S = Data.Shots.FindByPredicate([&](const FS47AlbumShot& P) { return P.Id == Id; });
+	if (!S || S->bUnavailable || S->Url.IsEmpty() || ExpectedStage < 0 || ExpectedStage >= 3 || S->LabStage != ExpectedStage) return false;
+	++S->LabStage;
+	return true;
+}
+
+double FS47Album::Dev(const FS47AlbumShot& S, double Clock) const
+{
+	if (S.LabStage >= 0) return S.IsDeveloped() ? 1.0 : 0.0;
+	return FMath::Clamp((Clock - S.Clock) / DEVELOP, 0.0, 1.0);
+}
 
 const FS47AlbumShot* FS47Album::FaceShot() const
 {
@@ -285,6 +305,11 @@ FS47AlbumView FS47Album::View(double Clock)
 	for (const FS47AlbumShot& S : Data.Shots)
 	{
 		const double Dv = Dev(S, Clock);
+		if (S.LabStage >= 0 && !S.IsDeveloped())
+		{
+			V.Shots.Add({ S.Id, FString(), TEXT("PHOTO LAB: Develop this exposed photograph at the wet bench."), FString::Printf(TEXT("%s, %s"), *S.Place, *S47Text::ClockText(S.Clock, false)), 0.0, false });
+			continue;
+		}
 		V.Shots.Add({ S.Id, S.Url, Dv < 1 && (S.Id == Face || S.Targets.ContainsByPredicate([](const auto& T){return T.Key==TEXT("anomaly:n02trace")||T.Key==TEXT("anomaly:printshadow");})) ? FString() : S.Text, FString::Printf(TEXT("%s, %s"), *S.Place, *S47Text::ClockText(S.Clock, false)), Dv, S.bOdd });
 	}
 	V.Look = [this](const FString& Id) { Looked(Id); };
@@ -460,5 +485,18 @@ bool FS47Album::SelfTest(TArray<FString>& Lines)
 		TEXT("extra film capacity and original photo targets survive serialized reload"));
 	Check(!ExtendedRestore.AddFilm(0) && !ExtendedRestore.AddFilm(-36) && !ExtendedRestore.AddFilm(MAX_int32) && ExtendedRestore.Left() == 70,
 		TEXT("invalid film additions cannot remove frames or overflow capacity"));
+	FS47Album Lab(Deps); Lab.Restore(V);
+	Lab.Data.Shots[0].LabStage = 0;
+	const FString OriginalId = Lab.Shots()[0].Id, OriginalUrl = Lab.Shots()[0].Url;
+	const double OriginalClock = Lab.Shots()[0].Clock;
+	Check(!Lab.Shots()[0].IsDeveloped() && Lab.View(OriginalClock + 86400).Shots[0].Dev == 0 && Lab.View(OriginalClock + 86400).Shots[0].Url.IsEmpty(), TEXT("Freeform exposed film does not develop with elapsed time or reveal an album image"));
+	Check(Lab.PendingLabPhoto() && Lab.AdvanceLabPhoto(OriginalId, 0) && !Lab.AdvanceLabPhoto(OriginalId, 0) && !Lab.AdvanceLabPhoto(TEXT("missing"), 1), TEXT("physical tank action advances once; stale and unknown photo actions are rejected"));
+	FS47Album LabRestored(Deps); LabRestored.Restore(S47J::Read(S47J::Write(Lab.SaveData())));
+	Check(LabRestored.Shots()[0].LabStage == 1 && !LabRestored.Shots()[0].IsDeveloped(), TEXT("tank-processed photograph stays unpaid and unfinished after Continue"));
+	Check(LabRestored.AdvanceLabPhoto(OriginalId, 1) && LabRestored.Shots()[0].LabStage == 2 && !LabRestored.Shots()[0].IsDeveloped(), TEXT("fixer action still requires collection of the original"));
+	Check(LabRestored.AdvanceLabPhoto(OriginalId, 2) && LabRestored.Shots()[0].IsDeveloped() && !LabRestored.AdvanceLabPhoto(OriginalId, 2) && !LabRestored.PendingLabPhoto(), TEXT("collected original qualifies once; development cannot be repeated"));
+	FS47Album Finished(Deps); Finished.Restore(S47J::Read(S47J::Write(LabRestored.SaveData())));
+	Check(Finished.Shots()[0].LabStage == 3 && Finished.Shots()[0].Id == OriginalId && Finished.Shots()[0].Url == OriginalUrl && Finished.Shots()[0].Clock == OriginalClock && Finished.Shots()[1].Targets.Num() == 1, TEXT("developed original identity, image, timestamp and other photo targets survive Continue"));
+	Check(Finished.Shots()[1].LabStage == -1 && !S47J::Arr(Finished.SaveData(), TEXT("shots"))[1]->AsObject()->HasField(TEXT("labStage")), TEXT("legacy and Story instant photographs retain their previous serialized shape"));
 	return bOk;
 }

@@ -1,0 +1,372 @@
+{
+  "asset": "SM_EW_Trim",
+  "fbx": "SM_EW_Trim.fbx",
+  "fbx_sha256": "5fda0030da896d861914dc100ff4dcbfcdd45d58859c0da533442d86fd6b25e7",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_Trim_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_BlindCord",
+    "EW_Shell_BlindWood",
+    "EW_Shell_Conduit",
+    "EW_Shell_Galvanized",
+    "EW_Shell_GreenSteel",
+    "EW_Shell_GreenTrim",
+    "EW_Shell_Plinth",
+    "EW_Shell_Scuff",
+    "EW_Shell_Yellow"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_BlindCord",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.4699999988079071,
+        0.4300000071525574,
+        0.3400000035762787,
+        1.0
+      ],
+      "Roughness": 0.8799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_BlindWood",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3400000035762787,
+        0.23000000417232513,
+        0.11999999731779099,
+        1.0
+      ],
+      "Roughness": 0.6499999761581421,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Conduit",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.30000001192092896,
+        0.3199999928474426,
+        0.30000001192092896,
+        1.0
+      ],
+      "Roughness": 0.4300000071525574,
+      "Metallic": 0.7200000286102295,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Galvanized",
+      "texture_key": "EW_Galvanized",
+      "maps": {
+        "EW_Galvanized_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_BaseColor.png",
+        "EW_Galvanized_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Roughness.png",
+        "EW_Galvanized_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_Metallic.png",
+        "EW_Galvanized_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Galvanized_NormalGL.png"
+      },
+      "Base Color": [
+        0.46000000834465027,
+        0.49000000953674316,
+        0.47999998927116394,
+        1.0
+      ],
+      "Roughness": 0.3700000047683716,
+      "Metallic": 0.8500000238418579,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_GreenSteel",
+      "texture_key": "EW_GreenSteel",
+      "maps": {
+        "EW_GreenSteel_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_BaseColor.png",
+        "EW_GreenSteel_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Roughness.png",
+        "EW_GreenSteel_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_Metallic.png",
+        "EW_GreenSteel_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_GreenSteel_NormalGL.png"
+      },
+      "Base Color": [
+        0.12999999523162842,
+        0.20000000298023224,
+        0.1599999964237213,
+        1.0
+      ],
+      "Roughness": 0.5199999809265137,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_GreenTrim",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.08500000089406967,
+        0.13500000536441803,
+        0.10499999672174454,
+        1.0
+      ],
+      "Roughness": 0.49000000953674316,
+      "Metallic": 0.11999999731779099,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Plinth",
+      "texture_key": "EW_Concrete",
+      "maps": {
+        "EW_Concrete_BaseColor.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_BaseColor.png",
+        "EW_Concrete_Roughness.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Roughness.png",
+        "EW_Concrete_Metallic.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_Metallic.png",
+        "EW_Concrete_NormalGL.png": "/home/tom/scratch-bm/wt/saro-story-loop-20261031/unreal/ArtSource/EastWing/Shell/exports/../../Props/Textures/EW_Concrete_NormalGL.png"
+      },
+      "Base Color": [
+        0.28999999165534973,
+        0.27000001072883606,
+        0.23000000417232513,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Scuff",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.03500000014901161,
+        1.0
+      ],
+      "Roughness": 0.7799999713897705,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_Yellow",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.6800000071525574,
+        0.4300000071525574,
+        0.054999999701976776,
+        1.0
+      ],
+      "Roughness": 0.550000011920929,
+      "Metallic": 0.05000000074505806,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_Trim_LOD1.fbx",
+      "sha256": "48d708724fa28ba3e81f05229948c834c2d06c43c093e95242f339551e56cd9d",
+      "triangles": 8024,
+      "expected_native_triangles": 8024,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          20.849998474121094,
+          -6.399999618530273,
+          -0.5799999833106995
+        ],
+        [
+          38.650001525878906,
+          5.555000305175781,
+          3.3499999046325684
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          20.849998474121094,
+          -0.5799999833106995,
+          -5.555000305175781
+        ],
+        [
+          38.650001525878906,
+          3.3499999046325684,
+          6.399999618530273
+        ]
+      ],
+      "dimensions_m": [
+        17.800003051757812,
+        11.954999923706055,
+        3.929999887943268
+      ]
+    },
+    {
+      "file": "SM_EW_Trim_LOD2.fbx",
+      "sha256": "e31c7866628dc3f170e941365817bdff4deb19edaf3cdbc370f86eed071c7531",
+      "triangles": 2292,
+      "expected_native_triangles": 2292,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          20.849998474121094,
+          -6.399999618530273,
+          -0.5799999833106995
+        ],
+        [
+          38.650001525878906,
+          5.555000305175781,
+          3.3499999046325684
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          20.849998474121094,
+          -0.5799999833106995,
+          -5.555000305175781
+        ],
+        [
+          38.650001525878906,
+          3.3499999046325684,
+          6.399999618530273
+        ]
+      ],
+      "dimensions_m": [
+        17.800003051757812,
+        11.954999923706055,
+        3.929999887943268
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 2,
+  "collision_source_parts": [
+    "Bollard32.7",
+    "Bollard38.1"
+  ],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 37144,
+  "expected_native_triangles": 37144,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      20.849998474121094,
+      -6.399999618530273,
+      -0.5799999833106995
+    ],
+    [
+      38.650001525878906,
+      5.555000305175781,
+      3.3499999046325684
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      20.849998474121094,
+      -0.5799999833106995,
+      -5.555000305175781
+    ],
+    [
+      38.650001525878906,
+      3.3499999046325684,
+      6.399999618530273
+    ]
+  ],
+  "dimensions_m": [
+    17.800003051757812,
+    11.954999923706055,
+    3.929999887943268
+  ]
+}

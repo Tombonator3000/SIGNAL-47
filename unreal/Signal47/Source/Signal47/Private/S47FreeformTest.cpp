@@ -4,12 +4,21 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "SS47ScreenView.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Framework/Application/SlateUser.h"
+#include "S47Props.h"
+#include "S47Chapter1.h"
+#include "S47Audio.h"
 #include "S47Flow.h"
 #include "S47Horror.h"
 #include "S47Observing.h"
 #include "S47Spine.h"
 #include "S47Story.h"
 #include "S47UI.h"
+#include "S47HUD.h"
+#include "Widgets/Input/SButton.h"
+#include "Widgets/Text/STextBlock.h"
 #include "S47Web.h"
 #include "S47World.h"
 #include "S47Walker.h"
@@ -32,6 +41,25 @@
 #include "HAL/FileManager.h"
 #include "UnrealClient.h"
 
+namespace
+{
+ bool PhotoButtonText(const TSharedRef<SWidget>& W, const FString& Label)
+ {
+  if (!W->GetVisibility().IsVisible()) return false;
+  if (W->GetTypeAsString() == TEXT("STextBlock") && StaticCastSharedRef<STextBlock>(W)->GetText().ToString() == Label) return true;
+  auto* Children = W->GetChildren();
+  for (int32 I = 0; Children && I < Children->Num(); ++I) if (PhotoButtonText(Children->GetChildAt(I), Label)) return true;
+  return false;
+ }
+ void PhotoButtons(const TSharedRef<SWidget>& W, const FString& Label, TArray<TSharedRef<SButton>>& Out)
+ {
+  if (!W->GetVisibility().IsVisible()) return;
+  if (W->GetTypeAsString() == TEXT("SButton") && PhotoButtonText(W, Label)) Out.AddUnique(StaticCastSharedRef<SButton>(W));
+  auto* Children = W->GetChildren();
+  for (int32 I = 0; Children && I < Children->Num(); ++I) PhotoButtons(Children->GetChildAt(I), Label, Out);
+ }
+}
+
 bool FS47FreeformTest::Check(bool Good,const FString& Text)
 {
  ++Checks;auto O=S47J::New();S47J::Set(O,TEXT("check"),Text);S47J::Set(O,TEXT("pass"),Good);S47J::Set(O,TEXT("stage"),Stage);Evidence.Add(MakeShared<FJsonValueObject>(O));
@@ -43,7 +71,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest"))?TEXT("array-capacity-controlled-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -54,6 +82,12 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
   S47J::Set(O,TEXT("method"),TEXT("Explicit receiver tuning and one array target command; real generated pulsar job, timed acquisition, retained original, internal control, Roam/StartTrip busy callback and ordinary stationary exit. Frame samples compare native encoders, control progress and world clock through the actual transition; no bBusy write, natural commute or OS-input claim."));
   S47J::Set(O,TEXT("busy_frame_samples"),TripHoldSamples);S47J::Set(O,TEXT("trip_hold_baseline"),Snapshot);
  }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit settled source-2 fixtures measure ten production Step(.1) calls at 27/24/23/repaired27 capacity; actual S-03 service fault persists through disk/Flow Continue. Receiver screenshot at degraded capacity; no natural acquisition or motor trajectory claim."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -160,9 +194,461 @@ void FS47FreeformTest::Step(double Dt)
   Root=FPaths::ProjectSavedDir()/TEXT("FreeformTest");IFileManager::Get().MakeDirectory(*Root,true);
   if(!Check(User.StartsWith(TEXT("/tmp/")),TEXT("explicit isolated temporary profile required")))return;
  }
+ if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
+ {
+  if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
+  const auto Camera=M->Web->Obj(TEXT("room.fieldCamera"));
+  if(!Check(!M->IsFreeform()&&Camera&&Camera.WorldPosition().Equals(FVector(5.8,.97,.66),.001),TEXT("Story start restores immutable original camera placement after Freeform relocation")))return;
+  Finish(true,TEXT("Physical camera pickup, shutter, ownership Continue, legacy migration and Story placement passed."));return;
+ }
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayCapacityTest")))
+ {
+  if(Age>45){Finish(false,TEXT("bounded array-capacity fixture timeout"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Field&&F.Director&&M->Web->DishCount()==27&&F.HasPowerForReactiveLight(),TEXT("isolated powered 27-dish fixture, without natural observing journey claim")))return;
+   M->UI->Close(true);F.Director->Stop();
+   if(!Check(F.SelectJob(2)&&F.ChooseThird(false),TEXT("explicit third-job hydrogen-drift choice selects source 2 before fixture snapshot")))return;
+   Snapshot=S47J::Read(S47J::Write(F.Save()));int32 SourceIndex=INDEX_NONE;
+   const auto Jobs=S47J::Arr(Snapshot,TEXT("jobs"));for(int32 I=0;I<Jobs.Num();++I)if(S47J::Int(Jobs[I]->AsObject(),TEXT("source"))==2){SourceIndex=I;break;}
+   if(!Check(SourceIndex!=INDEX_NONE,TEXT("existing source-2 card available for controlled capacity fixture")))return;
+   S47J::Set(Snapshot,TEXT("selected"),SourceIndex);S47J::Set(Snapshot,TEXT("settle"),1.);S47J::Set(Snapshot,TEXT("crossRunning"),false);Snapshot->RemoveField(TEXT("angles"));
+   auto Job=Jobs[SourceIndex]->AsObject();S47J::Set(Job,TEXT("stage"),int32(J::Integrating));S47J::Set(Job,TEXT("elapsed"),0.);
+   // Each case starts with the same retained card, settled encoders and tuning.
+   // Ten production Step(.1) calls measure one controlled second, without oversize Dt.
+   for(const int32 Count:{27,24,23,27})
+   {
+    F.Begin(S47J::Read(S47J::Write(Snapshot)));F.Director->Stop();
+    const auto P=F.ConsoleProfile();if(!Check(P!=nullptr&&F.CurrentJob()->bGenerated,TEXT("capacity fixture retains actual receiver card")))return;
+    const double Az=(P->Az[0]+P->Az[1])/2,El=F.CurrentJob()->Card.El;
+    for(int32 I=0;I<27;++I){M->Web->SetDishRemoteAvailable(I,I<Count);M->Web->SnapDish(I,Az,El);M->Web->PointDish(I,Az,El,0,true);}
+    auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+    for(int32 Tick=0;Tick<11;++Tick)F.Step(.1); // production one-second settling before the equal measurement windows
+    const double Before=F.CurrentJob()->Elapsed;for(int32 Tick=0;Tick<10;++Tick)F.Step(.1);
+    const double Expected=Count<24?0.:double(Count*(Count-1))/(27.*26.);
+    if(!Check(F.AvailableDishCount()==Count&&FMath::IsNearlyEqual(F.ArrayMeasurementRate(),Expected,1e-8)&&FMath::IsNearlyEqual(F.CurrentJob()->Elapsed-Before,Expected,1e-6),FString::Printf(TEXT("controlled one-second source-2 sampling at %d dishes: measured %.6f expected %.6f"),Count,F.CurrentJob()->Elapsed-Before,Expected)))return;
+    if(Count==23&&!Check(F.NextAction().Contains(TEXT("BLOCKED"))&&F.NextAction().Contains(TEXT("ARRAY STATUS"))&&F.JobLocation(*F.CurrentJob()).Contains(TEXT("ARRAY STATUS")),TEXT("blocked acquisition directs to physical array-status repair workstation")))return;
+   }
+   for(int32 I=0;I<27;++I)M->Web->SetDishRemoteAvailable(I,I<24);
+   F.OpenReceiver();Go(8951,1.2);return;
+  }
+  if(Stage==8951)
+  {
+   if(!Check(F.TerminalOnGlass()&&F.TerminalWindowRendered(),TEXT("degraded receiver renders on the physical CRT")))return;Shot(TEXT("array-24-degraded-receiver"));Go(89511,.2);return;
+  }
+  if(Stage==89511){F.OpenTracking();Go(89512,1.2);return;}
+  if(Stage==89512){Shot(TEXT("array-24-degraded-tracking"));Go(8952,.2);return;}
+  if(Stage==8952)
+  {
+   M->UI->Close(true);for(int32 I=0;I<27;++I)M->Web->SetDishRemoteAvailable(I,true);
+   if(!Check(F.Field->TriggerServiceFault()&&F.AvailableDishCount()==26,TEXT("actual S-03 service fault isolates one antenna before disk save")))return;
+   if(!Restore(TEXT("array-s03-service-fault")))return;Go(8953,.3);return;
+  }
+  if(Stage==8953)
+  {
+   if(!Check(F.Field->HasArrayFault()&&F.AvailableDishCount()==26&&FMath::IsNearlyEqual(F.ArrayMeasurementRate(),25./27.,1e-8),TEXT("disk Continue derives 26-dish capacity from persisted S-03 service state, without saving rate or generic test isolation")))return;
+   Finish(true,TEXT("Controlled 27/24/23/repaired sampling and actual S-03 disk Continue passed."));return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))
+ {
+  if(Age>45){Finish(false,TEXT("bounded guidance fixture timeout"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.CurrentJob(),TEXT("isolated guidance fixture has a real generated work card")))return;
+   M->UI->Close(true);F.Director->Stop();auto Job=*F.CurrentJob();Job.CaseLine=Job.CaseTest=-1;Job.bAnomaly=false;Job.bControl=false;Job.ControlAt=0;
+   auto Hint=[&](const TCHAR* Place,const TCHAR* Action,const TCHAR* Location){const FString Text=F.JobNextAction(Job);return Check(Text.Contains(TEXT(":"))&&Text.Contains(Place)&&Text.Contains(Action)&&F.JobLocation(Job).Contains(Location),FString(TEXT("explicit guidance fixture / "))+Text);};
+   Job.Stage=J::New;if(!Hint(TEXT("TRACKING"),TEXT("POINT THE ARRAY"),TEXT("Tracking")))return;
+   Job.Stage=J::Integrating;if(!Hint(TEXT("RECEIVER"),TEXT("KEEP TUNING"),TEXT("Receiver")))return;
+   Job.Stage=J::Chart;Job.ChartFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("RETAIN"),TEXT("Printer")))return;
+   Job.Stage=J::Recorded;if(!Hint(TEXT("OPS"),TEXT("REGISTER"),TEXT("OPS")))return;
+   Job.bAnomaly=true;Job.Phenomenon=TEXT("wrong_source");
+   if(!Hint(TEXT("TRACKING"),TEXT("MEASURE WEST"),TEXT("Tracking")))return;
+   Job.bControl=true;Job.ControlAt=4;
+   if(!Hint(TEXT("TRACKING"),TEXT("WAIT FOR AUTOMATIC"),TEXT("Tracking")))return;
+   if(!Check(F.JobNextAction(Job).Contains(TEXT("THEN COMPARE AT OPS")),TEXT("automatic adjacent-beam guidance names the next workstation")))return;
+   Job.ControlAt=8;Job.bBeamVerified=true;
+   if(!Hint(TEXT("OPS"),TEXT("DAILY WORK"),TEXT("OPS")))return;
+   Job.Phenomenon=TEXT("time_disagreement");Job.ControlAt=4;
+   if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN COMPARE CLOCK READINGS AT OPS"),TEXT("Receiver rack")))return;
+   Job.ControlAt=8;Job.bClockMeasured=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE THE RETAINED"),TEXT("OPS")))return;
+   Job.Phenomenon=TEXT("duplicate_print");Job.ControlAt=4;
+   if(!Hint(TEXT("RECEIVER RACK"),TEXT("AUTOMATIC REGISTER CHECK"),TEXT("Receiver rack")))return;
+   Job.ControlAt=8;Job.DuplicateFeed=FS47FreeformSession::PrinterSeconds;
+   if(!Hint(TEXT("PRINTER"),TEXT("WITHOUT ALTERING THE ORIGINAL"),TEXT("Printer")))return;
+   Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE THE RETAINED"),TEXT("OPS")))return;
+   Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
+   if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
+   Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
+   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE SUPPORTED"),TEXT("OPS")))return;
+   Job.Stage=J::Registered;Job.PacketFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("COLLECT"),TEXT("Printer")))return;
+   Job.Stage=J::Packet;if(!Hint(TEXT("RECORDS ROOM"),TEXT("BINDER"),TEXT("binder")))return;
+   Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR CASE ARCHIVE")),TEXT("filed work directs to further work or retained archive")))return;
+   auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();
+   S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("phenomenon"),TEXT("time_disagreement"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("clockMeasured"),true);S47J::Set(O,TEXT("reviewed"),false);S47J::Set(Save,TEXT("selected"),0);F.Begin(Save);F.Director->Stop();
+   GuidanceExpected=F.NextAction();
+   if(!Check(GuidanceExpected.StartsWith(TEXT("OPS (corner PC):"))&&GuidanceExpected.Contains(TEXT("COMPARE THE RETAINED")),TEXT("selected completed clock-control fixture offers a concrete OPS comparison action")))return;
+   if(!Restore(TEXT("guidance-clock-comparison")))return;Go(8901,.3);return;
+  }
+  if(Stage==8901)
+  {
+   if(!Check(F.CurrentJob()&&F.CurrentJob()->Phenomenon==TEXT("time_disagreement")&&F.CurrentJob()->ControlAt==8&&!F.CurrentJob()->bAudioReviewed&&F.NextAction()==GuidanceExpected,TEXT("disk Continue retains selected step and exact place/action hint without completing its comparison")))return;
+   Finish(true,TEXT("Representative production guidance and selected-state disk Continue passed."));return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))
+ {
+  if(Age>60){Finish(false,TEXT("bounded OPS navigation timeout"));return;}
+  auto Roots=[&](){TArray<TSharedRef<SWidget>> Out;TSet<const SWidget*> Seen;
+   if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& User){TSharedPtr<SWidget> W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);return Out;};
+  auto Click=[&](const FString& Label){TArray<TSharedRef<SButton>> Buttons;for(const auto& W:Roots())PhotoButtons(W,Label,Buttons);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("unique enabled OPS native button: ")+Label))return false;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();return true;
+#else
+   Finish(false,TEXT("native OPS navigation requires development build"));return false;
+#endif
+  };
+  TFunction<bool(const TSharedRef<SWidget>&,const FString&)> Contains;
+  Contains=[&](const TSharedRef<SWidget>& W,const FString& Text){if(!W->GetVisibility().IsVisible())return false;if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(Text))return true;auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)if(Contains(C->GetChildAt(I),Text))return true;return false;};
+  auto HasText=[&](const FString& Text){for(const auto& W:Roots())if(Contains(W,Text))return true;return false;};
+  auto StillAtOps=[&](){return F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&M->Hud->ModalWidget()==OpsModal.Pin()&&M->UI->Modal();};
+  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("CASE ARCHIVE"),TEXT("SERVICE"),TEXT("SUPPLIES")};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&M->World->Area==TEXT("saro")&&F.Jobs().Num()>=2,TEXT("isolated fresh SARO OPS navigation fixture")))return;
+   M->UI->Close(true);F.Director->Stop();const FVector Ops=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(Ops.X,Ops.Z+1.1,0);F.Use(TEXT("opsTerminal"));OpsModal=M->Hud->ModalWidget();OpsNavStep=0;Go(8801,.8);return;
+  }
+  if(Stage==8801)
+  {
+   if(!Check(StillAtOps()&&F.TerminalWindowRendered()&&F.OperationsSection()==0&&HasText(TEXT("MORE WORK /")),TEXT("native OPS overview explains more work while rendering on the physical CRT")))return;
+   Shot(TEXT("ops-overview"));Go(8802,.3);return;
+  }
+  if(Stage==8802)
+  {
+   if(!Click(Labels[OpsNavStep]))return;Go(8803,.3);return;
+  }
+  if(Stage==8803)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==OpsNavStep+1,FString(TEXT("OPS navigation changes page without closing or replacing the physical screen: "))+Labels[OpsNavStep]))return;
+   if(OpsNavStep==0)
+   {
+    if(!Check(HasText(TEXT("MORE WORK /")),TEXT("daily work explains available and carried-over jobs")))return;
+    const FString Id=F.Jobs()[1].Id;if(!Click(Id))return;
+    if(!Check(StillAtOps()&&F.CurrentJob()->Id==Id&&F.OperationsSection()==1,TEXT("native daily-work row selects another available job inside OPS")))return;
+    Shot(TEXT("ops-daily-work"));Go(8804,.3);return;
+   }
+   if(OpsNavStep==2)
+   {
+    if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("collect its original at the printer")),TEXT("empty archive explains where retained records come from")))return;
+    Shot(TEXT("ops-empty-archive"));Go(8804,.3);return;
+   }
+   if(OpsNavStep==3)
+   {
+    if(!Click(TEXT("Accept / use SARO stock")))return;Go(88031,.3);return;
+   }
+   Go(8804);return;
+  }
+  if(Stage==88031)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==4&&F.Field->HasArrayFault(),TEXT("accepting service order refreshes SERVICE while the same OPS screen stays open")))return;
+   if(!Click(TEXT("Show observing objective / retain unfinished service")))return;Go(88032,.3);return;
+  }
+  if(Stage==88032)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==4&&HasText(TEXT("Follow service objective")),TEXT("service focus toggle remains inside OPS and offers the inverse action")))return;
+   Go(8804);return;
+  }
+  if(Stage==8804)
+  {
+   if(!Click(TEXT("OVERVIEW")))return;Go(8805,.3);return;
+  }
+  if(Stage==8805)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==0,TEXT("OVERVIEW returns home without a physical exit")))return;
+   if(++OpsNavStep<5){Go(8802);return;}
+   // Explicit completed-work/retained-original fixture for the two alternate UI states.
+   auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
+   for(const auto& V:Jobs)S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));
+   S47J::Set(Jobs[0]->AsObject(),TEXT("printed"),true);S47J::Set(Jobs[0]->AsObject(),TEXT("originalPage"),TEXT("Explicit OPS test retained original"));
+   M->UI->Close(true);F.Begin(Save);F.Director->Stop();F.Use(TEXT("opsTerminal"));OpsModal=M->Hud->ModalWidget();Go(88051,.6);return;
+  }
+  if(Stage==88051)
+  {
+   if(!Check(StillAtOps()&&HasText(TEXT("ALL AVAILABLE WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
+   if(!Click(TEXT("CASE ARCHIVE")))return;Go(88052,.3);return;
+  }
+  if(Stage==88052)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==3&&!HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(F.Jobs()[0].Id+TEXT(" / ORIGINAL")),TEXT("retained-original fixture replaces empty archive guidance with the actual indexed job")))return;
+   if(!Click(TEXT("OVERVIEW")))return;Go(88053,.3);return;
+  }
+  if(Stage==88053)
+  {
+   const auto Modal=M->Hud->ModalWidget();
+   if(!Check(Modal&&Modal->GetTypeAsString()==TEXT("SS47ScreenView"),TEXT("physical leave uses the actual screen view controller")))return;
+   StaticCastSharedPtr<SS47ScreenView>(Modal)->Leave();Go(8806,1.);return;
+  }
+  if(Stage==8806)
+  {
+   if(!Check(!F.TerminalOnGlass()&&!M->UI->Modal()&&F.ActiveTerminalScreen()==-1,TEXT("separate physical leave returns to room and clears OPS modal")))return;
+   Finish(true,TEXT("All OPS pages, job selection, empty archive, service accept/focus, overview return and physical leave passed."));return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))
+ {
+  if(Age>120){Finish(false,TEXT("bounded store basket test timeout"));return;}
+  auto Contents=[&](){const auto& C=F.Field->ParcelContents();return C.Num()==2&&C.FindRef(TEXT("fuse"))==2&&C.FindRef(TEXT("relay"))==1;};
+  auto StockUnchanged=[&](){return F.InventoryCount(TEXT("fuse"))==ShopFuses&&F.InventoryCount(TEXT("relay"))==ShopRelays;};
+  auto Place=[&](const FVector& P){M->Player->Place(P.X,P.Z,0);};
+  auto Aim=[&](const FVector& Target){const FVector Eye(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);const FVector D=Target-Eye;M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Field&&F.Field->ParcelStage()==0&&F.Budget()>=35,TEXT("isolated store fixture starts with funds and no parcel")))return;
+   M->UI->Close(true);F.Director->Stop();const double Hour=FMath::Fmod(F.Clock(),86400.);
+   if(!Check(F.TestAdvance(FMath::Fmod(10*3600.-Hour+86400.,86400.)),TEXT("store fixture advances real clock to trading hours")))return;
+   ShopCash=F.Budget();ShopFuses=F.InventoryCount(TEXT("fuse"));ShopRelays=F.InventoryCount(TEXT("relay"));ShopDelivered=F.Field->DeliveredParcels();ShopCargo=F.Field->CargoDeliveries();
+   M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));Go(8701,.4);return;
+  }
+  if(Stage==8701)
+  {
+   if(M->World->bBusy)return;
+   Place(FVector(7983.8,0,2070.1));Go(87011,.3);return;
+  }
+  if(Stage==87011)
+  {
+   const FVector Counter=F.Field->InteractionPoint(TEXT("ff:shop"));
+   if(!Check(FVector2D(M->Player->Pos.X-Counter.X,M->Player->Pos.Z-Counter.Z).Size()<2.4&&FMath::Abs(M->Player->FloorY-Counter.Y)<3.,TEXT("outside-wall rejection fixture is within ordinary counter distance and height range")))return;
+   if(!Check(!F.Field->Purchase(TEXT("fuse"))&&F.Budget()==ShopCash&&F.Field->ParcelStage()==0,TEXT("ordinary purchase is rejected outside the shop wall even within counter range")))return;
+   Place(FVector(7983.75,0,2067.2005));if(!AS47Props::IsDoorOpen(TEXT("gasDoor")))M->Inter->UseId(TEXT("town:gasDoor"));Go(87012,.6);return;
+  }
+  if(Stage==87012)
+  {
+   // Fixture placement through the production door, not an asserted walking traversal.
+   Place(FVector(7981.8,0,2068.8));Go(87013,.3);return;
+  }
+  if(Stage==87013)
+  {
+   const FVector Counter=F.Field->InteractionPoint(TEXT("ff:shop"));Aim(Counter);
+   if(!Check(FMath::Abs(M->Player->FloorY-5.446)<.3,TEXT("store fixture stands on the actual interior floor before opening counter")))return;
+   Go(8702,.3);return;
+  }
+  if(Stage==8702)
+  {
+   Shot(TEXT("shop-interior-counter"));Go(8703,.3);return;
+  }
+  if(Stage==8703)
+  {
+   if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:shop")&&bool(M->Player->OnUse),TEXT("native interaction ray reaches the supply counter inside the store")))return;
+   M->Player->OnUse(TEXT("ff:shop"));
+   if(!Check(M->UI->Modal(),TEXT("physical interior counter opens native shop menu")))return;
+   ShopClick=0;Go(8704,.2);return;
+  }
+  if(Stage==8704)
+  {
+   const FString Label=ShopClick==1?TEXT("drive relay / $25"):TEXT("control fuse / $5");
+   TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;if(Modal)PhotoButtons(Modal.ToSharedRef(),Label,Buttons);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("enabled native purchase button: ")+Label))return;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();
+#else
+   Finish(false,TEXT("native basket menu test requires development build"));return;
+#endif
+   ++ShopClick;const int32 Spent=ShopClick==1?5:ShopClick==2?30:35;
+   if(!Check(M->UI->Modal()&&F.Budget()==ShopCash-Spent&&StockUnchanged()&&F.Field->ParcelStage()==1,TEXT("each purchase refreshes the open menu, charges exact price and keeps goods out of SARO stock")))return;
+   if(ShopClick<3){Go(8704,.2);return;}
+   if(!Check(Contents(),TEXT("one paid shop parcel contains two fuses and one relay")))return;
+   Go(87041,.3);return;
+  }
+  if(Stage==87041)
+  {
+   Shot(TEXT("shop-three-items-menu"));Go(8705,.3);return;
+  }
+  if(Stage==8705)
+  {
+   M->UI->Close(true);const FVector Parcel=F.Field->InteractionPoint(TEXT("ff:parcel"));Place(FVector(7981.8,0,2068.8));Aim(Parcel);Go(87051,.3);return;
+  }
+  if(Stage==87051)
+  {
+   if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:parcel"),TEXT("native interaction ray reaches the paid counter parcel")))return;
+   M->Player->OnUse(TEXT("ff:parcel"));
+   if(!Check(F.Field->ParcelStage()==2&&Contents()&&!F.Field->Purchase(TEXT("fuse"))&&F.Budget()==ShopCash-35,TEXT("pickup carries the complete paid basket and locks further remote purchases")))return;
+   const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
+   if(!Check(F.Field->ParcelStage()==3&&Contents()&&StockUnchanged(),TEXT("actual cargo callback loads the entire parcel without crediting stock")))return;
+   if(!Restore(TEXT("shop-loaded-basket")))return;Go(8706,.4);return;
+  }
+  if(Stage==8706)
+  {
+   if(!Check(F.Field->ParcelStage()==3&&Contents()&&StockUnchanged()&&F.Budget()==ShopCash-35,TEXT("disk Continue retains paid quantities, loaded cargo and exact budget")))return;
+   F.Director->Stop();M->World->Enter(TEXT("saro"));Go(8707,.4);return;
+  }
+  if(Stage==8707)
+  {
+   if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
+   if(!Check(F.Field->ParcelStage()==2&&Contents()&&StockUnchanged(),TEXT("physical unloading keeps the same basket in hand before receiving")))return;
+   const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));Place(Receiving+FVector(0,0,1.5));F.Field->Use(TEXT("ff:delivery"));
+   if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Field->DeliveredParcels()==ShopDelivered+1&&F.Field->CargoDeliveries()==ShopCargo+1&&F.Budget()==ShopCash-35,TEXT("one garage delivery credits exact basket contents and one cargo transaction")))return;
+   F.Field->Use(TEXT("ff:delivery"));M->UI->Close(true);
+   if(!Check(F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Field->DeliveredParcels()==ShopDelivered+1,TEXT("repeated receiving cannot duplicate basket stock or delivery credit")))return;
+   if(!Restore(TEXT("shop-delivered-basket")))return;Go(8708,.3);return;
+  }
+  if(Stage==8708)
+  {
+   if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Budget()==ShopCash-35,TEXT("delivered disk Continue retains stock once with no paid parcel remaining")))return;
+   const auto Legacy=S47J::Read(S47J::Write(F.Field->Save()));Legacy->RemoveField(TEXT("contents"));S47J::Set(Legacy,TEXT("item"),TEXT("fuse"));S47J::Set(Legacy,TEXT("payload"),1);F.Field->Begin(Legacy);
+   if(!Check(F.Field->ParcelStage()==1&&F.Field->ParcelItem()==TEXT("fuse")&&F.Field->ParcelContents().Num()==1&&F.Field->ParcelContents().FindRef(TEXT("fuse"))==1&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.Budget()==ShopCash-35,TEXT("explicit legacy singleton fixture becomes one paid fuse without charging or delivering it again")))return;
+   Finish(true,TEXT("Store menu/basket, exact payment, physical cargo/receiving, Continue and legacy singleton passed."));return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
+ {
+  if(Age>90){Finish(false,TEXT("bounded physical camera test timeout"));return;}
+  auto* C1=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));
+  if(!C1||!M->FieldCamera||!M->Night||!M->Night->Album){Check(false,TEXT("production camera and album controllers available"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   M->UI->Close(true);F.Director->Stop();const auto Camera=M->Web->Obj(TEXT("room.fieldCamera"));
+   if(!Check(!M->FieldCamera->bHave&&Camera&&Camera.WorldPosition().Equals(FVector(18.55,.89,-1.9),.001)&&!M->Inter->LabelOf(TEXT("fieldCamera")).IsEmpty(),TEXT("fresh Freeform has an unowned, labelled camera on the physical photolab archive bench")))return;
+   C1->ToggleCamera();if(!Check(!M->FieldCamera->bRaised,TEXT("camera toggle cannot bypass physical collection")))return;
+   Snapshot=S47J::Read(S47J::Write(M->Flow->GameState()));
+   if(!Restore(TEXT("camera-unowned")))return;Go(8601,.3);return;
+  }
+  if(Stage==8601)
+  {
+   if(!Check(!M->FieldCamera->bHave&&!S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("disk Continue preserves explicit unowned camera")))return;
+   M->UI->Close(true);F.Director->Stop();const auto* It=M->Inter->Get(TEXT("fieldCamera"));
+   if(!Check(It&&It->Object,TEXT("physical camera has the production registered interaction object")))return;
+   const FVector Target=It->Object.WorldBox().GetCenter();M->Player->Place(17.25,-1.9,0);
+   const FVector D=Target-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   Go(8602,.3);return;
+  }
+  if(Stage==8602)
+  {
+   const auto Camera=M->Web->Obj(TEXT("room.fieldCamera"));
+   UE_LOG(LogTemp,Display,TEXT("S47 camera ray: picked=%s eye=%s target=%s box=%s visible=%d"),*M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE()),*S47Three::ToThree(M->Player->EyeUE()).ToString(),*Camera.WorldPosition().ToString(),*Camera.WorldBox().ToString(),Camera.Visible());
+   Shot(TEXT("camera-before-pickup"));Go(86021,.3);return;
+  }
+  if(Stage==86021)
+  {
+   const FString Picked=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+   if(!Check(Picked==TEXT("fieldCamera")&&!M->Inter->LabelOf(Picked).IsEmpty()&&bool(M->Player->OnUse),TEXT("actual native ray selects the labelled photolab camera at pickup range")))return;
+   Go(8603);return;
+  }
+  if(Stage==8603)
+  {
+   M->Player->OnUse(TEXT("fieldCamera"));
+   if(!Check(M->FieldCamera->bHave&&M->Inter->LabelOf(TEXT("fieldCamera")).IsEmpty()&&M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())!=TEXT("fieldCamera"),TEXT("production use collects camera once and removes its pickup prompt/ray target")))return;
+   Shot(TEXT("camera-after-pickup"));Go(8604,.3);return;
+  }
+  if(Stage==8604)
+  {
+   M->UI->Close(true);C1->ToggleCamera();
+   if(!Check(M->FieldCamera->bRaised,TEXT("owned camera raises through production toggle route")))return;
+   CameraShots=M->Night->Album->Shots().Num();CameraFilm=M->Night->Album->Left();C1->Shutter();
+   if(!Check(M->Night->Album->Shots().Num()==CameraShots+1&&M->Night->Album->Left()==CameraFilm-1,TEXT("production shutter captures one native exposure and consumes one film frame")))return;
+   const auto& Photo=M->Night->Album->Shots().Last();RetainedPhotoId=Photo.Id;RetainedPhotoUrl=Photo.Url;
+   if(!Check(!Photo.bUnavailable&&!Photo.Url.IsEmpty()&&!Photo.IsDeveloped(),TEXT("new exposure retains native image and remains undeveloped")))return;
+   M->FieldCamera->Raise(false);M->UI->Close(true);if(!Restore(TEXT("camera-owned")))return;Go(8605,.3);return;
+  }
+  if(Stage==8605)
+  {
+   const auto* Photo=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(M->FieldCamera->bHave&&S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned"))&&M->Inter->LabelOf(TEXT("fieldCamera")).IsEmpty()&&Photo&&Photo->Url==RetainedPhotoUrl&&M->Night->Album->Left()==CameraFilm-1,TEXT("owned disk Continue retains camera, exact exposure and film without duplicate pickup")))return;
+   auto Legacy=S47J::Read(S47J::Write(Snapshot));Legacy->RemoveField(TEXT("freeformCameraOwned"));US47Flow::FStart Start;Start.bDev=true;Start.State=Legacy;M->Flow->StartGame(Start);Go(8606,.3);return;
+  }
+  if(Stage==8606)
+  {
+   if(!Check(M->FieldCamera->bHave&&S47J::Bool(M->Flow->GameState(),TEXT("freeformCameraOwned")),TEXT("explicit legacy Freeform fixture missing ownership field preserves formerly auto-granted camera")))return;
+   US47Flow::FStart Story;Story.bDev=true;Story.Jump=TEXT("chapter1");M->Flow->StartGame(Story);Go(8690);return;
+  }
+  return;
+ }
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))
+ {
+  if(Age>100){Finish(false,TEXT("bounded printer fixture timeout"));return;}
+  auto Doc=[&](const FString& Suffix){return M->Story->Docs().ContainsByPredicate([&](const FS47Doc& D){return D.Id==PrinterId+Suffix;});};
+  auto Power=[&](bool On){auto Save=S47J::Read(S47J::Write(F.Save()));S47J::Set(Save,TEXT("powerFault"),!On);F.Begin(Save);F.Director->Stop();M->UI->Close(true);};
+  auto Paper=[&](){const auto O=M->Web->Obj(TEXT("room.printerPaper"));const auto* N=O?M->Web->Node(O.I):nullptr;return N&&N->bVis&&FMath::Abs(N->S.Y-FMath::Max(.001,F.PrinterProgress()))<.005;};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Jobs().Num()>=2&&M->World->Area==TEXT("saro"),TEXT("printer test uses isolated SARO prepared-job fixture")))return;
+   M->UI->Close(true);auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
+   for(int32 I=0;I<Jobs.Num();++I){auto O=Jobs[I]->AsObject();S47J::Set(O,TEXT("stage"),int32(I<2?J::Chart:J::New));S47J::Set(O,TEXT("chartFeed"),0.);S47J::Set(O,TEXT("anomaly"),false);S47J::Set(O,TEXT("paid"),false);S47J::Set(O,TEXT("elapsed"),18.);S47J::Set(O,TEXT("referenceClock"),1234.5);}
+   S47J::Set(Save,TEXT("selected"),0);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();PrinterId=F.Jobs()[0].Id;PrinterBudget=F.Budget();
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));M->Player->Place(P.X,P.Z+1.1,0);const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   if(!Check(!F.CollectChart()&&!Doc(TEXT("-original")),TEXT("unfinished paper cannot create an original document")))return;
+   Go(8501);return;
+  }
+  if(Stage==8501)
+  {
+   if(F.PrinterProgress()<.25)return;
+   if(!Check(F.PrinterProgress()<1&&F.PrinterFeedbackActive()&&Paper()&&!Doc(TEXT("-original")),TEXT("native paper advances with active printer audio loop and no premature original")))return;
+   const auto Loop=M->Audio->InspectLoop(TEXT("ffPrinter"));
+   if(!Check(Loop.IsSet()&&Loop->bPlaying&&Loop->bLoop&&Loop->Gain>0&&Loop->Buffer.IsValid(),TEXT("printer recipe has an actual playing loop with gain and a decoded audio buffer")))return;
+   Shot(TEXT("printer-partial"));PrinterHeld=F.PrinterProgress();
+   if(!Check(F.SelectJob(1)&&F.PrinterJobId()==PrinterId,TEXT("changing selected job preserves the started printer sheet")))return;
+   Power(false);if(!Restore(TEXT("printer-mid-feed-power-off")))return;Go(8502,.8);return;
+  }
+  if(Stage==8502)
+  {
+   if(!Check(!F.HasPowerForReactiveLight()&&!F.PrinterFeedbackActive()&&FMath::Abs(F.PrinterProgress()-PrinterHeld)<.001&&Paper()&&!F.CollectChart()&&!Doc(TEXT("-original")),TEXT("disk Continue preserves partial paper; outage stops feed and audio without creating document")))return;
+   const auto Loop=M->Audio->InspectLoop(TEXT("ffPrinter"));
+   if(!Check(!Loop.IsSet()||!Loop->bPlaying||Loop->Gain<=0,TEXT("power interruption leaves no playing recorded printer loop")))return;
+   const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("printer")));M->Player->Place(P.X,P.Z+1.1,0);const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
+   Power(true);Go(8503);return;
+  }
+  if(Stage==8503)
+  {
+   if(F.PrinterProgress()<1)return;
+   if(!Check(!F.PrinterFeedbackActive()&&Paper()&&!Doc(TEXT("-original")),TEXT("completed native sheet stops printer loop and waits for collection")))return;
+   Shot(TEXT("printer-ready"));Go(85031,.3);return;
+  }
+  if(Stage==85031)
+  {
+   Power(false);
+   if(!Check(F.CollectChart()&&Doc(TEXT("-original"))&&F.CurrentJob()->Id==PrinterId&&F.Budget()==PrinterBudget,TEXT("ready original can be collected without power; queue identity and budget are retained")))return;
+   PrinterOriginal=F.CurrentJob()->OriginalPage;PrinterStamp=F.CurrentJob()->OriginalStamp;M->UI->Close(true);
+   if(!Check(!PrinterOriginal.IsEmpty()&&F.PrinterJobId()==F.Jobs()[1].Id&&!F.CollectChart(),TEXT("collection reveals next unpaid sheet without duplicating first original")))return;
+   auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));S47J::Set(Jobs[1]->AsObject(),TEXT("stage"),int32(J::New));auto O=Jobs[0]->AsObject();S47J::Set(O,TEXT("stage"),int32(J::Registered));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("packetFeed"),0.);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();
+   if(!Check(!F.CollectChart()&&!Doc(TEXT("-packet")),TEXT("registered packet must finish its own physical feed")))return;
+   Go(8504);return;
+  }
+  if(Stage==8504)
+  {
+   if(F.PrinterProgress()<1)return;
+   Power(false);
+   if(!Check(F.CollectChart()&&Doc(TEXT("-packet"))&&F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp&&F.Budget()==PrinterBudget,TEXT("packet collection without power preserves original provenance and grants no extra reward")))return;
+   M->UI->Close(true);auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("phenomenon"),TEXT("duplicate_print"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("duplicateFeed"),0.);S47J::Set(Save,TEXT("powerFault"),false);F.Begin(Save);F.Director->Stop();
+   if(!Check(!F.CollectChart()&&!Doc(TEXT("-duplicate")),TEXT("separate duplicate cannot be collected before its own feed")))return;
+   Go(8505);return;
+  }
+  if(Stage==8505)
+  {
+   if(F.PrinterProgress()<1)return;
+   Power(false);
+   if(!Check(F.CollectChart()&&Doc(TEXT("-duplicate"))&&F.CurrentJob()->bDuplicateCollected&&F.CurrentJob()->OriginalPage==PrinterOriginal&&F.CurrentJob()->OriginalStamp==PrinterStamp&&F.CurrentJob()->DuplicatePage!=PrinterOriginal&&F.Budget()==PrinterBudget&&!F.CollectChart(),TEXT("finished duplicate is separately retained without power, original mutation or repeat reward")))return;
+   M->UI->Close(true);if(!Restore(TEXT("printer-all-collected")))return;Go(8506,.3);return;
+  }
+  if(Stage==8506)
+  {
+   if(!Check(F.PrinterProgress()<0&&!F.PrinterFeedbackActive()&&F.Jobs()[0].OriginalPage==PrinterOriginal&&F.Jobs()[0].OriginalStamp==PrinterStamp&&Doc(TEXT("-original"))&&Doc(TEXT("-packet"))&&Doc(TEXT("-duplicate"))&&F.Budget()==PrinterBudget,TEXT("disk Continue retains three distinct papers and original provenance with empty stopped printer")))return;
+   Finish(true,TEXT("Native printer fixture passed: feed/audio state, outage, Continue, queue, original/packet/duplicate identity; no listening acceptance."));return;
+  }
+  return;
+ }
  // One real trip transition, not a second test framework or a simulated bBusy flag.
  if(FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest")))
  {
@@ -185,7 +671,7 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==9002)
   {
-   if(F.CurrentJob()->Stage!=J::Chart)return;
+   if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
    if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded&&!F.CurrentJob()->OriginalPage.IsEmpty(),TEXT("actual completed recording and printer original retained")))return;
    M->UI->Close(true);if(!Check(F.StartControl()&&F.CurrentJob()->bControl&&F.CurrentJob()->ControlAt==0,TEXT("real eight-second internal reference starts before the trip")))return;
    Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("clock"),F.Clock());S47J::Set(Snapshot,TEXT("control"),F.CurrentJob()->ControlAt);S47J::Set(Snapshot,TEXT("job"),F.CurrentJob()->Id);S47J::Set(Snapshot,TEXT("original"),F.CurrentJob()->OriginalPage);S47J::Set(Snapshot,TEXT("angles"),Angles());
@@ -232,6 +718,11 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==0)
   {
    if(Age<3)return;
+   if(!M->FieldCamera->bHave)
+   {
+    M->UI->Close(true);M->Player->Place(17.25,-1.9,0);M->Inter->UseId(TEXT("fieldCamera"));
+    if(!Check(M->FieldCamera->bHave,TEXT("photo-economy fixture explicitly collects its camera prerequisite at the lab")))return;
+   }
    PhotoEvent=TEXT("landing_trace");FParse::Value(FCommandLine::Get(),TEXT("S47PhotoEconomyEvent="),PhotoEvent);
    if(!Check(PhotoEvent==TEXT("landing_trace")||PhotoEvent==TEXT("feeder_presence"),TEXT("photographic fixture accepts only landing_trace or opt-in feeder_presence")))return;
    if(PhotoEvent==TEXT("feeder_presence"))
@@ -318,7 +809,60 @@ void FS47FreeformTest::Step(double Dt)
    auto& AlbumShots=M->Night->Album->Data.Shots;const auto Retained=AlbumShots;
    AlbumShots.Reset();const bool MissingRefused=!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget;AlbumShots=Retained;
    if(!Check(MissingRefused,TEXT("OPS refuses a claim whose retained original is missing without consuming its payment")))return;
-   if(!Check(F.CanRegisterPhotoEvidence()&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("physical powered OPS registers retained photograph and credits exactly $20")))return;
+   if(!Check(F.CanRegisterPhotoEvidence()&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("physical powered OPS refuses the undeveloped original without consuming payment")))return;
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->LabStage==0,TEXT("exposed photograph remains undeveloped through full disk Continue")))return;
+   Snapshot=S47J::New();S47J::Set(Snapshot,TEXT("photoClock"),Original->Clock);S47J::Set(Snapshot,TEXT("photoTargets"),Original->Targets.Num());
+   M->UI->Close(true);M->Web->SetDoorOpen(TEXT("lab"),false,true);
+   const auto* Bench=M->Inter->Get(TEXT("wetBench"));if(!Check(Bench&&bool(Bench->Object),TEXT("photo lab uses the existing physical wet-bench object")))return;
+   const FVector BenchAt=Bench->Object.WorldPosition();M->Player->Place(BenchAt.X,BenchAt.Z+1,0);Go(80040,.4);return;
+  }
+  if(Stage==80040)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->Url==RetainedPhotoUrl&&Original->Clock==S47J::Num(Snapshot,TEXT("photoClock"))&&Original->Targets.Num()==S47J::Int(Snapshot,TEXT("photoTargets")),TEXT("physical processing retains original identity, image, timestamp and incident targets")))return;
+   if(Original->IsDeveloped())
+   {
+    if(!Restore(TEXT("photo-developed")))return;Go(80044,.5);return;
+   }
+   if(!Check(!M->Inter->LabelOf(TEXT("wetBench")).IsEmpty(),TEXT("physical Freeform wet bench exposes an actionable label")))return;
+   M->Inter->UseId(TEXT("wetBench"));Go(80041,.2);return;
+  }
+  if(Stage==80041)
+  {
+   const auto* Pending=M->Night->Album->PendingLabPhoto();if(!Check(Pending!=nullptr,TEXT("wet bench retains a pending exposed original")))return;
+   const FString PendingId=Pending->Id;const int32 Before=Pending->LabStage;
+   const FString Label=Before==0?TEXT("LOAD SEALED FILM INTO TANK"):Before==1?TEXT("TRANSFER CONTACT PRINT TO FIXER"):TEXT("COLLECT AND EXAMINE PRINT");
+   TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;if(Modal)PhotoButtons(Modal.ToSharedRef(),Label,Buttons);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("unique enabled native wet-bench action: ")+Label))return;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();
+#else
+   Finish(false,TEXT("physical photo test requires development build"));return;
+#endif
+   const auto* Processed=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==PendingId;});
+   if(!Check(Processed&&Processed->LabStage==Before+1&&F.Budget()==PhotoBudget,TEXT("native wet-bench action advances one stage without crediting OPS payment")))return;
+   if(PendingId==RetainedPhotoId&&Before==0)
+   {
+    if(!Restore(TEXT("photo-in-tank")))return;Go(80042,.5);return;
+   }
+   Go(80040,.2);return;
+  }
+  if(Stage==80042)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->LabStage==1&&!Original->IsDeveloped(),TEXT("tank-processing state survives full disk Continue without becoming a finished print")))return;
+   Go(80040,.2);return;
+  }
+  if(Stage==80044)
+  {
+   const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
+   if(!Check(Original&&Original->LabStage==3&&Original->Url==RetainedPhotoUrl,TEXT("collected original remains developed after full disk Continue")))return;
+   const FVector OpsAt=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(OpsAt.X,OpsAt.Z+1,0);Go(80045,.4);return;
+  }
+  if(Stage==80045)
+  {
+   if(!Check(F.CanRegisterPhotoEvidence()&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("physical powered OPS registers developed original and credits exactly $20")))return;
    if(!Check(!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("repeat registration cannot pay the same incident twice")))return;
    if(!Restore(TEXT("photo-paid")))return;Go(8005,1);return;
   }
@@ -326,7 +870,7 @@ void FS47FreeformTest::Step(double Dt)
   {
    const auto* Original=M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});
    if(!Check(F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].bPaid&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20&&Original&&Original->Url==RetainedPhotoUrl,TEXT("paid claim, original image and exactly-once balance survive Continue")))return;
-   Finish(true,TEXT("photographic economy fixture: actual rendered native subject, duplicate guard, physical OPS and paid/unpaid disk Continue"));return;
+   Finish(true,TEXT("photographic economy fixture: actual rendered native subject, duplicate guard, physical wet-bench tank/fixer/collection, OPS and exposed/processing/developed/paid disk Continue"));return;
   }
   return;
  }
@@ -366,7 +910,7 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==4)
  {
-  if(F.CurrentJob()->Stage!=J::Chart)return;
+  if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart()&&F.CurrentJob()->Stage==J::Recorded,TEXT("completed measurement retains an original chart")))return;
   M->UI->Close(true);
   if(JobIndex==1){if(!Check(F.StartControl(),TEXT("physical receiver control starts a separate timed reference")))return;Go(5);return;}
@@ -398,7 +942,13 @@ void FS47FreeformTest::Step(double Dt)
  }
  if(Stage==9)
  {
-  const int32 Before=F.Budget();if(!Check(F.RegisterComparison(JobIndex==1?TEXT("unresolved"):TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
+  WorkBudget=F.Budget();if(!Check(F.RegisterComparison(JobIndex==1?TEXT("unresolved"):TEXT("normal")),TEXT("production registration accepts the supported finding")))return;
+  Go(9011);return;
+ }
+ if(Stage==9011)
+ {
+  const int32 Before=WorkBudget;
+  if(JobIndex==1&&F.PrinterProgress()<1)return;
   if(JobIndex==1)
   {
    if(!Check(F.CollectChart()&&!F.FilePacket(),TEXT("printed packet cannot be filed remotely from the console")))return;
@@ -434,7 +984,7 @@ void FS47FreeformTest::Step(double Dt)
   // Use the existing road-parking identity and its authored, level diner lot.
   // Walking between this fixture and the shop remains an explicit placement.
   M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));M->Player->Place(P.X,P.Z-1.3,0);
   Go(41,.6);return;
  }
  if(Stage==41)
@@ -481,10 +1031,51 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==44)
  {
   const int32 Before=F.InventoryCount(TEXT("fuse"));F.Field->Use(TEXT("ff:bench"));
-  if(!Check(F.Field->ParcelStage()==0&&F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("physical bench unpacks one purchased part into persistent stock")))return;
-  F.Field->Use(TEXT("ff:bench"));M->UI->Close(true);
-  if(!Check(F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("repeated bench use does not duplicate delivered supplies")))return;
-  Shot(TEXT("service-bench"));Go(441,.3);return;
+  if(!Check(F.Field->ParcelStage()==2&&F.InventoryCount(TEXT("fuse"))==Before,TEXT("calibration bench cannot unpack a supply parcel remotely from garage receiving")))return;
+  const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));M->Player->Place(Receiving.X,Receiving.Z+1.5,0);F.Field->Use(TEXT("ff:delivery"));
+  if(!Check(F.Field->ParcelStage()==0&&F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("physical garage receiving unpacks one purchased part into persistent stock")))return;
+  F.Field->Use(TEXT("ff:delivery"));M->UI->Close(true);
+  if(!Check(F.InventoryCount(TEXT("fuse"))==Before+1,TEXT("repeated garage receiving use does not duplicate delivered supplies")))return;
+  Shot(TEXT("service-bench"));Go(440,.3);return;
+ }
+ if(Stage==440)
+ {
+  // Explicit authorization/prepared-device fixture, not a naturally concluded case or field recording.
+  // Exercise production station callbacks and the native checkout button, then restore the session.
+  const auto Before=S47J::Read(S47J::Write(F.Save()));
+  const auto Fixture=S47J::Read(S47J::Write(Before));
+  auto Cases=S47J::Obj(Fixture,TEXT("cases"));auto Access=S47J::Strs(Cases,TEXT("access"));
+  Access.AddUnique(TEXT("access.fieldlogger"));S47J::Set(Cases,TEXT("access"),Access);
+  FS47FieldLogger Device;Device.Assembly=3;Device.Calibration=3;Device.bCalibrated=true;Device.Battery=FS47FieldLogger::Capacity;
+  FS47FieldLogger::FTape Tape;Tape.Id=TEXT("fieldlogger01.tape1");Tape.Day=1;Tape.Start=100;Tape.End=220;Tape.Seconds=120;Tape.Offset=2.4;Tape.Levels={.2,.4};Tape.bRetrieved=true;
+  Device.Tapes.Add(Tape);Device.Serial=1;
+  S47J::Set(S47J::Obj(Fixture,TEXT("field")),TEXT("fieldlogger"),Device.Save());F.Begin(Fixture,F.Lethal());
+  auto Place=[&](const TCHAR* Id){const FVector P=F.Field->InteractionPoint(Id);M->Player->Place(P.X,P.Z+1.5,0);M->UI->Close(true);};
+  auto OriginalIntact=[&](){const auto& L=F.Field->FieldLogger();return L.Serial==1&&L.Tapes.Num()==1&&L.Tapes[0].Id==Tape.Id&&L.Tapes[0].Levels==Tape.Levels&&L.Tapes[0].Start==Tape.Start&&L.Tapes[0].End==Tape.End&&L.Tapes[0].Seconds==Tape.Seconds&&L.Tapes[0].Offset==Tape.Offset&&L.Tapes[0].bRetrieved&&!L.Tapes[0].bCompared;};
+  Place(TEXT("ff:bench"));
+  if(!Check(F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0,TEXT("explicit authorized logger fixture cannot check out at calibration bench")))return;
+  Place(TEXT("ff:depot"));
+  if(!Check(!F.Field->LoggerAction(TEXT("calibrate"))&&!F.Field->LoggerAction(TEXT("tune"))&&!F.Field->LoggerAction(TEXT("compare")),TEXT("depot cannot calibrate, tune or compare field originals")))return;
+  F.Field->Use(TEXT("ff:depot"));
+  TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;
+  if(Modal)PhotoButtons(Modal.ToSharedRef(),TEXT("Check out calibrated field logger"),Buttons);
+  if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("parts storage exposes one enabled native equipment checkout button")))return;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();
+#else
+  Finish(false,TEXT("native logger checkout test requires development build"));return;
+#endif
+  if(!Check(F.Field->ParcelStage()==2&&F.Field->ParcelItem()==TEXT("fieldlogger")&&!F.Field->LoggerAction(TEXT("take"))&&OriginalIntact(),TEXT("native checkout carries one logger; duplicate checkout preserves retained tape")))return;
+  Place(TEXT("ff:bench"));F.Field->Use(TEXT("ff:bench"));
+  if(!Check(F.Field->ParcelStage()==2&&OriginalIntact(),TEXT("wrong-station bench return is rejected without losing logger or original")))return;
+  Place(TEXT("ff:depot"));F.Field->Use(TEXT("ff:depot"));
+  if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelItem().IsEmpty()&&OriginalIntact(),TEXT("equipment checkout accepts return with original tape identity and samples intact")))return;
+  F.Field->Use(TEXT("ff:depot"));M->UI->Close(true);
+  const auto Returned=S47J::Read(S47J::Write(F.Field->Save()));F.Field->Begin(Returned);
+  if(!Check(F.Field->ParcelStage()==0&&OriginalIntact(),TEXT("repeat depot use and JSON restore do not duplicate logger or alter original tape")))return;
+  Place(TEXT("ff:bench"));
+  if(!Check(F.Field->LoggerAction(TEXT("compare"))&&OriginalIntact(),TEXT("bench comparison opens but incomplete fixture tape cannot establish a valid comparison")))return;
+  M->UI->Close(true);F.Begin(Before,F.Lethal());Go(441,.3);return;
  }
  if(Stage==441)
  {
@@ -528,17 +1119,31 @@ void FS47FreeformTest::Step(double Dt)
  {
   // World transaction/repair fixtures are exercised separately in the same live world.
   if(!Check(F.Field!=nullptr,TEXT("physical supply world remains attached after multi-day Continue")))return;
-  if(!Check(FS47FreeformDirector::EventIds().Num()==17,TEXT("director exposes sixteen authored event families and one action-bound room-light incident")))return;
+  const auto Events=FS47FreeformDirector::EventIds();
+  if(!Check(Events.Num()==19&&Events.Contains(TEXT("roomlight_return"))&&Events.Contains(TEXT("feeder_presence"))&&Events.Contains(TEXT("array_presence")),TEXT("director exposes sixteen authored events, the room-light incident and both physical service-site encounters")))return;
   F.TestAdvance(86400.);F.Director->Begin(nullptr);Go(21);return;
  }
  if(Stage==21)
  {
   auto Ids=FS47FreeformDirector::EventIds();
   Ids.Remove(TEXT("roomlight_return")); // Requires a real OFF input and departure; S47ReactiveLightTest owns that journey.
+  // array_presence needs a healthy array; s03_failure leaves a fault, so stage the encounter first.
+  Ids.Remove(TEXT("array_presence"));Ids.Insert(TEXT("array_presence"),FMath::Max(0,Ids.IndexOfByKey(FString(TEXT("s03_failure")))));
   if(EventIndex>=Ids.Num()){Go(30);return;}
-  M->Player->Place(0,-1.2,PI);
+  // Site encounters are anchored to their real apparatus: the remote feeder is on the road site,
+  // every other event on the SARO yard. Load the correct site first, then stand at its anchor.
+  const FString Site=Ids[EventIndex]==TEXT("feeder_presence")?TEXT("road"):TEXT("saro");
+  if(M->Web->Area()!=Site){M->World->Enter(Site);Go(21,.6);return;}
+  if(Ids[EventIndex]==TEXT("feeder_presence")||Ids[EventIndex]==TEXT("array_presence"))
+  {const FVector P=F.Field->InteractionPoint(Ids[EventIndex]==TEXT("feeder_presence")?TEXT("ff:feeder"):TEXT("ff:service"));M->Player->Place(P.X,P.Z+4.,0);}
+  else M->Player->Place(0,-1.2,PI);
   if(Ids[EventIndex]==TEXT("close_pass"))F.SpendTime(13*3600.); // native night presentation, not a naturally scheduled roll
-  if(!Check(F.Director->Force(Ids[EventIndex]),TEXT("explicit native event fixture starts: ")+Ids[EventIndex]))return;
+  if(!F.Director->Force(Ids[EventIndex]))
+  {
+   UE_LOG(LogTemp,Warning,TEXT("S47 Freeform event fixture %s refused: area=%s arrayFault=%d individuals=%d nativeBody=%d active=%s"),*Ids[EventIndex],*M->Web->Area(),F.Field&&F.Field->HasArrayFault(),
+    M->Night&&M->Night->Glimpses?M->Night->Glimpses->Individuals().Num():-1,M->Night&&M->Night->Glimpses&&M->Night->Glimpses->HasNativeBody(),*F.Director->ActiveEvent());
+   Check(false,TEXT("explicit native event fixture starts: ")+Ids[EventIndex]);return;
+  }
   bCarRoundTrip=false;PoseForEvent();
   Go(22,Ids[EventIndex]==TEXT("observer")||Ids[EventIndex]==TEXT("service_presence")?12.:Ids[EventIndex]==TEXT("close_pass")?3.:.6);return;
  }
@@ -578,7 +1183,7 @@ void FS47FreeformTest::Step(double Dt)
    const FVector P=F.Director->EventAnchor();M->Player->Place(P.X-2.8,P.Z+1.,0);F.Director->Use(TEXT("ff:event-check"));
    if(!Check(F.HasFinding(TEXT("empty_car")),TEXT("physical empty-car inspection retains its independent field record")))return;
   }
-  if(EventIndex==0||EventIndex==3||EventIndex==5)
+  if(F.Director->ActiveEvent()==TEXT("extra_pulse")||F.Director->ActiveEvent()==TEXT("observer")||F.Director->ActiveEvent()==TEXT("service_presence"))
   {
    const FString Id=F.Director->ActiveEvent();if(!Restore(TEXT("active-event")))return;
    if(!Check(F.Director->ActiveEvent()==Id,TEXT("same event resumes from disk instead of rerolling")))return;
@@ -592,11 +1197,13 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(!Photo.Id.IsEmpty()&&!Photo.Url.IsEmpty(),TEXT("native camera renders and retains the actual physical trace")))return;
   F.Director->Use(TEXT("ff:event-sample"));
   if(!Check(F.InventoryCount(TEXT("fragment"))==1&&F.HasFinding(TEXT("landing_trace")),TEXT("photographed trace becomes one retained physical sample")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
+  const FVector WrongBench=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(WrongBench.X,WrongBench.Z+1.5,0);
+  if(!Check(!F.Field->AnalyzeSample(),TEXT("calibration bench cannot start analysis at the separate test lab")))return;
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:sample"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
  }
  if(Stage==24)
  {
-  if(!Check(F.Field->AnalyzeSample(),TEXT("physical sample analysis starts at the service bench")))return;
+  if(!Check(F.Field->AnalyzeSample(),TEXT("physical sample analysis starts at the test-lab sample station")))return;
   Go(241,.7);return;
  }
  if(Stage==241)
@@ -624,7 +1231,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==61){if(!F.StartAcquisition())return;Go(62);return;}
  if(Stage==62)
  {
-  if(F.CurrentJob()->Stage!=J::Chart)return;
+  if(F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
   if(!Check(F.CollectChart(),TEXT("specialized observation retains its physical original")))return;
   M->UI->Close(true);
   if(!Check(F.StartControl(),TEXT("retained original precedes its distinct measured instrument control")))return;
@@ -638,6 +1245,7 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(Job->bBeamVerified&&Job->BeamAz.Num()==3&&Job->BeamAmplitude.Num()==3,TEXT("three real settled adjacent-beam samples precede off-source evidence")))return;
   if(Id==TEXT("time_disagreement"))
    if(!Check(Job->bClockMeasured&&FMath::Abs(Job->ReceiverClock-Job->ReferenceClock)>1&&FMath::Abs(Job->ControlReceiverClock-Job->ControlReferenceClock)>1,TEXT("independent clock readbacks establish the actual repeated disagreement")))return;
+  if(Id==TEXT("duplicate_print")&&F.PrinterProgress()<1)return;
   if(Id==TEXT("duplicate_print"))
    if(!Check(F.CollectChart()&&F.CurrentJob()->bDuplicateCollected&&F.CurrentJob()->OriginalPage!=F.CurrentJob()->DuplicatePage,TEXT("a separate collected duplicate differs from the preserved original")))return;
   if(!Restore(TEXT("measured-")+Id))return;
@@ -648,7 +1256,14 @@ void FS47FreeformTest::Step(double Dt)
   const FString Id=F.CurrentJob()->Phenomenon;
   if(!Check(F.CompareInstrument(),TEXT("measured distinct instrument comparison survives Continue: ")+Id))return;
   const FString Conclusion=Id==TEXT("wrong_source")?TEXT("off_source"):Id==TEXT("time_disagreement")?TEXT("timing_path"):TEXT("duplicate_mismatch");
-  if(!Check(F.RegisterComparison(Conclusion)&&F.CollectChart(),TEXT("supported instrument finding is registered and physically collected: ")+Id))return;
+  if(!Check(F.RegisterComparison(Conclusion),TEXT("supported instrument finding is registered: ")+Id))return;
+  Go(641);return;
+ }
+ if(Stage==641)
+ {
+  const FString Id=F.CurrentJob()->Phenomenon;
+  if(F.PrinterProgress()<1)return;
+  if(!Check(F.CollectChart(),TEXT("registered instrument packet finishes physical feed: ")+Id))return;
   if(!FileAtBinder())return;
   F.OpenArchive();Shot(TEXT("comparison-")+Id);Go(65,.3);return;
  }

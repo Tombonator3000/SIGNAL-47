@@ -1,8 +1,28 @@
 # Gjeldende status for SIGNAL / 47
 
-**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 3. november 2026.
+**Status:** Gjeldende. **Gjelder:** Unreal-utgaven, UE 5.8.4 på Linux/Vulkan. **Sist kontrollert:** 4. november 2026.
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
+
+## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
+
+Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. Pakking/installasjon venter til PR379 er flettet.
+
+Opprinnelig rekvisittimport består for 26 modeller / 78 LOD-er og åtte materialsett. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Claude har lagt til 22 egne Extras-modeller og møblert lab, lager og garasje. Codex har deretter lagt til prøveholder og fire fysiske bordskilt: samlet Extras-import består for 27 modeller / 81 LOD-er. Gammel skittgeometri er klippet ved den nye servicedøren, og gulvjekken er flyttet ut av dørpassasjen. Nye runtime-bilder viser frie åpninger og kontakt mellom de nye detaljene og benkeplatene.
+
+Claudes siste samlede kontroll på a6acc316: 2281 selvtester, FreeformTest 244/0, EvidenceTest 108/0 og DriveTest 15/0. Full Freeform-kjøring består etter GC-rettelsen. Codex har tidligere kontrollert fotofremkalling med 53 native kontroller og fire disk-/Continue-runder. Etter de siste modell-/plasseringstilpasningene består editorbygg og native import; 17 nye rombilder er tatt og berørte vinkler er gjennomgått. Story-prøven består: garasjekjøring er stengt, og alle tre innganger har aktive ganglåser og lukkede dørkollisjoner. Ingen menneskelig vurdering av spillfølelse eller lyskomfort er påstått. [Oppgavelogg](../../unreal/OPPGAVER.md).
+
+Freeform-printeren har nå fysisk papirmating og printerlyd for original, registrert pakke og separat kopi. Utskriftskøen følger jobben gjennom jobbvalg, strømbrudd og Continue; ferdige ark kan hentes uten strøm. Editorbygg og en målrettet native prøve består 26 kontroller med to disk-/Continue-runder, aktiv lydgraf og bevart original/betaling. Dette er en editorleveranse i PR379, ikke installert eller subjektivt lyttet til.
+
+Nye Freeform-spill henter kameraet fysisk fra fotolabens arkivbenk. Eierskap lagres eksplisitt; eldre lagringer beholder sitt tidligere tildelte kamera. Bygg og 23 målrettede kontroller består: faktisk sikting/henting, eksponering, to disk-/Continue-runder, legacy-migrering og tilbakeføring til Storys opprinnelige plassering. Før-/etterbilder viser kameraet på benken og fjernet etter henting. Også dette inngår i PR379 uten installasjon.
+
+Caliche-handelen skjer nå inne ved den eksisterende butikkdisken. Flere kjøp kan legges til én betalt pakke uten å lukke menyen; innholdet følger henting, transport og Continue og blir lagerført én gang ved GARAGE RECEIVING. Lagergrensen kontrolleres før betaling og levering, og eldre enkeltpakker migreres. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; native sikting, menyknapper og last-/leveringshandlinger er prøvd med eksplisitte spiller-/bilplasseringer. Disk og meny er visuelt kontrollert. Ingen ny full kjøretur eller installasjon er påstått.
+
+OPS-navigasjonen er kontrollert gjennom alle seks sider med samme PC-visning. Serviceaksept og målbytte beholder nå vinduet; OVERVIEW går hjem og Escape går til rommet. Dagskøen forklarer flere oppdrag og ferdig arbeid, og tomt arkiv viser konkret neste steg. Bygg og 37 native kontroller består med gjennomgåtte skjermbilder. Tomt/utfylt arkiv og fullført dagskø bruker eksplisitte testtilstander; ingen full arbeidsreise eller installasjon hevdes.
+
+Oppgavehint og stedvisning er samordnet for opptak, automatiske kontroller, sammenligning og arkivering. Pågående kontroller peker til måleutstyret; ferdige instrumentmålinger peker til OPS / DAILY WORK og riktig knapp. Service-/feeder-/benkoverganger og kartets butikkhenvisning er oppdatert. Bygg og 28 representative tilstandskontroller består, inkludert én disk-/Continue-runde med bevart valgt steg og nøyaktig hint. Ingen ny full spillerreise eller installasjon.
+
+Utilgjengelige antenner reduserer nå Freeforms målerate etter tilgjengelige antennepar: 27 gir 100 %, 26 omtrent 93 % og 24 omtrent 79 %. Eksisterende minimum 24 og kvalitetsfaktor beholdes. Kapasitet og reparasjonsbehov vises separat fra receiverens tuning. Bygg og 21 kontroller består, med målte Step-vinduer ved redusert/gjenopprettet kapasitet og én disk-/Continue-runde av faktisk S-03-feil. Receiver/tracking-bilder gjennomgått. Dette er kontrollert spillbalanse i editor, ikke menneskelig balanseaksept eller installasjon.
 
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
@@ -158,7 +178,7 @@ Pakken består 1 995 selvtester, helreise med 93 kontroller/94,79 m/én Fortsett
 
 Runtime `19b0ab0b`, [PR331](https://github.com/Tombonator3000/SIGNAL-47/pull/331) og [PR332](https://github.com/Tombonator3000/SIGNAL-47/pull/332), er installert 2. november kl.04:00 CET. Freeform har åpen kjørbar gårdsvei, terrengtilpasset placeholdergård og ni kuer med samordnede foto-/kollisjonsankre. Story beholder sin stengte port og originalplassering. Last kan velges fysisk gjennom Jeepens brede interaksjonsfelt og tas ut/inn etter Fortsett.
 
-Pakke/1 995 selvtester, hel native reise 24 kontroller/249 m bil/124 m gange/3 restores og to pakkede gårdsbilder består. Installert Fortsett består; 164 personlige Saved-elementer er uendret. WORLD01/04 og motellvegger står fortsatt åpne. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_ALDERETE_2026-11-02.md).
+Pakke/1 995 selvtester, hel native reise 24 kontroller/ 249 m bil/124 m gange/3 restores og to pakkede gårdsbilder består. Installert Fortsett består; 164 personlige Saved-elementer er uendret. WORLD01/04 og motellvegger står fortsatt åpne. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_ALDERETE_2026-11-02.md).
 
 ## Tredje nattleveranse: reaktivt lys og ett motellskilt
 

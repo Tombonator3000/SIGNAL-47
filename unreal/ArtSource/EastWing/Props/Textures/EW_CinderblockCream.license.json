@@ -1,0 +1,59 @@
+{
+  "asset": "EW_CinderblockCream",
+  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "copyright": "SIGNAL / 47 project",
+  "redistribution": "May accompany the project; no external purchased/Tripo content",
+  "source": "build_textures.py",
+  "method": "Deterministic metric height, albedo, roughness and metallic fields; no baked lighting",
+  "reused_project_source": {
+    "path": "unreal/ArtSource/PhotoLab/surface_fields.py",
+    "sha256": "a474277807b64254c94eee33aa5b228d24ece5e16ae8553b3eba58a4d4da3b50",
+    "use": "metric periodic normal-map convention; implementation adapted for physical tile span"
+  },
+  "external_reference": {
+    "name": "apekshik/anyscene",
+    "status": "UNVERIFIED workflow-only reference, no code or assets reused"
+  },
+  "files": {
+    "BaseColor": {
+      "file": "EW_CinderblockCream_BaseColor.png",
+      "sha256": "6d082eb07700900b62a13ed18be0df6a714746a087f6fef2b1f21a47dff6ed52",
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "Roughness": {
+      "file": "EW_CinderblockCream_Roughness.png",
+      "sha256": "f110814f93976f8263dca57343fb0f67a958d1aef6bad05db9c04c4d38ddcc3b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Metallic": {
+      "file": "EW_CinderblockCream_Metallic.png",
+      "sha256": "e7e746011b4aa5eb384e36b062d5d0689172afe30d3a2e0a40cd35696ea12d0b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalDX": {
+      "file": "EW_CinderblockCream_NormalDX.png",
+      "sha256": "0949d439d8541e8a90b84a5a0de0b7061e7d007580d04b8552fa6885b089b768",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalGL": {
+      "file": "EW_CinderblockCream_NormalGL.png",
+      "sha256": "0d54380d0ae3151fcca5c3b40e82a46d545c1c307f3d9f61ba0249ac610ca0fc",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Height": {
+      "file": "EW_CinderblockCream_Height.png",
+      "sha256": "0a5b628ccf8530830f981f9d4d9595cec17eeb1513522f3bf6275dffd7e11ad9",
+      "color_space": "linear",
+      "bit_depth": 16,
+      "decode_metres": {
+        "offset": -0.0030687409453094006,
+        "scale": 0.0033504477760288864
+      }
+    }
+  }
+}

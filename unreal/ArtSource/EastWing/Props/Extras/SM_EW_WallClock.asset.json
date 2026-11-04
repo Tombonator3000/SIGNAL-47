@@ -1,0 +1,176 @@
+{
+  "asset": "SM_EW_WallClock",
+  "description": "Black bakelite 32 cm wall clock, chrome bezel, printed SARO standard-time dial.",
+  "fbx": "SM_EW_WallClock.fbx",
+  "editable": "SM_EW_WallClock.blend",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "bounds_m": [
+    [
+      -0.16700001060962677,
+      -0.021000012755393982,
+      0.002999992109835148
+    ],
+    [
+      0.16700001060962677,
+      0.034500014036893845,
+      0.3370000123977661
+    ]
+  ],
+  "dimensions_m": [
+    0.33400002121925354,
+    0.05550002679228783,
+    0.33400002028793097
+  ],
+  "triangles": 2652,
+  "uv_layers": 1,
+  "materials": [
+    "EW_X_Bakelite",
+    "EW_Print_ClockFace",
+    "EW_X_Chrome",
+    "EW_X_Glass",
+    "EW_X_Red"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_X_Bakelite",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.017000000923871994,
+        0.019999999552965164,
+        0.01899999938905239,
+        1.0
+      ],
+      "Roughness": 0.38999998569488525,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Print_ClockFace",
+      "texture_key": null,
+      "maps": {
+        "EW_Print_ClockFace_BaseColor.png": "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_ClockFace_BaseColor.png"
+      },
+      "Base Color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Chrome",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.699999988079071,
+        0.7300000190734863,
+        0.7400000095367432,
+        1.0
+      ],
+      "Roughness": 0.17000000178813934,
+      "Metallic": 1.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Glass",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.800000011920929,
+        0.8600000143051147,
+        0.8399999737739563,
+        1.0
+      ],
+      "Roughness": 0.05999999865889549,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.9200000166893005,
+      "IOR": 1.4700000286102295,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_X_Red",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.3799999952316284,
+        0.02500000037252903,
+        0.012000000104308128,
+        1.0
+      ],
+      "Roughness": 0.3799999952316284,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "textures": [
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/textures/EW_Print_ClockFace_BaseColor.png"
+  ],
+  "lods": [
+    {
+      "file": "SM_EW_WallClock_LOD1.fbx",
+      "triangles": 1326
+    },
+    {
+      "file": "SM_EW_WallClock_LOD2.fbx",
+      "triangles": 662
+    }
+  ],
+  "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+    "sources": []
+  },
+  "runtime_status": "NOT_IMPORTED; Claude owns integration",
+  "fbx_sha256": "39d89fbae3ee598a1cc40aa77626d9ed3503dce196ce6fb0b78a57d9c401e02b",
+  "blend_sha256": "fe613c573fa6dde3f3a72dc30b9cad5d8df6e6843ba387e8cc1ca026757ec691"
+}

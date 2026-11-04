@@ -1,0 +1,59 @@
+{
+  "asset": "EW_Galvanized",
+  "license": "Project-owned original procedural artwork; no third-party image assets",
+  "copyright": "SIGNAL / 47 project",
+  "redistribution": "May accompany the project; no external purchased/Tripo content",
+  "source": "build_textures.py",
+  "method": "Deterministic metric height, albedo, roughness and metallic fields; no baked lighting",
+  "reused_project_source": {
+    "path": "unreal/ArtSource/PhotoLab/surface_fields.py",
+    "sha256": "a474277807b64254c94eee33aa5b228d24ece5e16ae8553b3eba58a4d4da3b50",
+    "use": "metric periodic normal-map convention; implementation adapted for physical tile span"
+  },
+  "external_reference": {
+    "name": "apekshik/anyscene",
+    "status": "UNVERIFIED workflow-only reference, no code or assets reused"
+  },
+  "files": {
+    "BaseColor": {
+      "file": "EW_Galvanized_BaseColor.png",
+      "sha256": "5303fffed6ca8501a94cf64cbc3cd4a80135d2ed5719d99b8d786f95f3223194",
+      "color_space": "sRGB",
+      "bit_depth": 8
+    },
+    "Roughness": {
+      "file": "EW_Galvanized_Roughness.png",
+      "sha256": "a7cd7eea1a984977b65b8c3264ef2b68a6cef7979505e111dd42a0f43a1b30c4",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Metallic": {
+      "file": "EW_Galvanized_Metallic.png",
+      "sha256": "5a8a140d6c0b51516d18da702cb412958e88c8d298e326a57678a95d655882da",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalDX": {
+      "file": "EW_Galvanized_NormalDX.png",
+      "sha256": "d08ccba937ff34e32e06c2d07ba88b4b8957bcd974b76dffbac58c6b805fc36b",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "NormalGL": {
+      "file": "EW_Galvanized_NormalGL.png",
+      "sha256": "b7a7cfc3826c8941daf51207ef89c08046c6cd4b7b991f00eaf00425408ac67e",
+      "color_space": "linear",
+      "bit_depth": 8
+    },
+    "Height": {
+      "file": "EW_Galvanized_Height.png",
+      "sha256": "1e23e9e585294699e24d2e1494609ae2ecb14d8df9c4eaedbc296e217ff2376a",
+      "color_space": "linear",
+      "bit_depth": 16,
+      "decode_metres": {
+        "offset": -3.9971655496628955e-06,
+        "scale": 7.99472036305815e-06
+      }
+    }
+  }
+}

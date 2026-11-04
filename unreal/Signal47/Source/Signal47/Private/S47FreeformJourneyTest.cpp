@@ -30,6 +30,11 @@ void FS47FreeformJourneyTest::Go(int32 Next){Stage=Next;At=Age;}
 void FS47FreeformJourneyTest::PlaceAt(const FString& Id,double Offset)
 {
  M->UI->Close(true);const FVector P=M->Freeform->Field->InteractionPoint(Id);
+ if(Id==TEXT("ff:shop")||(Id==TEXT("ff:parcel")&&M->Freeform->Field->ParcelStage()==1))
+ {
+  // Explicit workstation approach fixture: customer side of the real indoor counter.
+  M->Player->Place(7981.8,2068.8,0);return;
+ }
  const bool RoadFront=Id==TEXT("ff:shop")||(Id==TEXT("ff:parcel")&&M->Web->Area()!=TEXT("saro"));
  M->Player->Place(P.X+(RoadFront?Offset:-Offset),P.Z,0);
 }
@@ -161,10 +166,11 @@ void FS47FreeformJourneyTest::Step(double Dt)
  {
   if(M->World->bBusy||Age-At<.5)return;M->World->PlaceTruck(TEXT("saro"));PlaceAt(TEXT("ff:cargo"));W.Use(TEXT("ff:cargo"));
   if(!Check(W.ParcelStage()==2,TEXT("cargo unloaded before depot delivery")))return;
-  PlaceAt(TEXT("ff:bench"));W.Use(TEXT("ff:bench"));
+  PlaceAt(TEXT("ff:delivery"));W.Use(TEXT("ff:delivery"));
   if(!Check(W.ParcelStage()==0&&W.InventoryCount(TEXT("donor"))==1&&W.ServiceSupplyDeliveries()==DeliveryBefore+1,TEXT("transported donor delivered exactly once to SARO")))return;
-  W.Use(TEXT("ff:bench"));M->UI->Close(true);
+  W.Use(TEXT("ff:delivery"));M->UI->Close(true);
   if(!Check(W.ServiceSupplyDeliveries()==DeliveryBefore+1,TEXT("reopening depot does not duplicate supply delivery")))return;
+  PlaceAt(TEXT("ff:bench"));
   if(!Check(W.StartDonorTest(),TEXT("physical bench starts donor test from delivered stock")))return;Go(9);return;
  }
  if(Stage==9)

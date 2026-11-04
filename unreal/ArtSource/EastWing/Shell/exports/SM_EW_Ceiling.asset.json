@@ -1,0 +1,193 @@
+{
+  "asset": "SM_EW_Ceiling",
+  "fbx": "SM_EW_Ceiling.fbx",
+  "fbx_sha256": "7261c7e26d7362d902e1cb5da205468288bb8c7af880237c48e40ea484109162",
+  "editable": "EastWing_Shell.blend",
+  "editable_collection": "SM_EW_Ceiling_EDITABLE",
+  "units": "metres; FBX unit metadata centimetres conversion",
+  "front": "-Y",
+  "up": "Z",
+  "pivot": [
+    0,
+    0,
+    0
+  ],
+  "anchor_three_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "rotation_three_radians": [
+    0,
+    0,
+    0
+  ],
+  "materials": [
+    "EW_Shell_Ceiling",
+    "EW_Shell_CeilingSteel"
+  ],
+  "material_parameters": [
+    {
+      "name": "EW_Shell_Ceiling",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.5400000214576721,
+        0.5,
+        0.4099999964237213,
+        1.0
+      ],
+      "Roughness": 0.8199999928474426,
+      "Metallic": 0.0,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    },
+    {
+      "name": "EW_Shell_CeilingSteel",
+      "texture_key": null,
+      "maps": {},
+      "Base Color": [
+        0.4000000059604645,
+        0.3799999952316284,
+        0.3199999928474426,
+        1.0
+      ],
+      "Roughness": 0.6600000262260437,
+      "Metallic": 0.15000000596046448,
+      "Transmission Weight": 0.0,
+      "IOR": 1.5,
+      "Emission Color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "Emission Strength": 0.0
+    }
+  ],
+  "uv_layers": 1,
+  "lods": [
+    {
+      "file": "SM_EW_Ceiling_LOD1.fbx",
+      "sha256": "ac6fed157f9c40de2335a43a5d7a6e0657f92ddce54caab0fbdff69f8acf816a",
+      "triangles": 396,
+      "expected_native_triangles": 396,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          20.849998474121094,
+          -5.25,
+          3.190000057220459
+        ],
+        [
+          38.349998474121094,
+          5.25,
+          3.380000114440918
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          20.849998474121094,
+          3.190000057220459,
+          -5.25
+        ],
+        [
+          38.349998474121094,
+          3.380000114440918,
+          5.25
+        ]
+      ],
+      "dimensions_m": [
+        17.5,
+        10.5,
+        0.19000005722045898
+      ]
+    },
+    {
+      "file": "SM_EW_Ceiling_LOD2.fbx",
+      "sha256": "dab954ed5ef99dad463bd5a0ac39bde0cd33945ba3c97f8b10ff959cd4fedb90",
+      "triangles": 108,
+      "expected_native_triangles": 108,
+      "exact_degenerate_triangles": 0,
+      "bounds_m": [
+        [
+          20.849998474121094,
+          -5.25,
+          3.190000057220459
+        ],
+        [
+          38.349998474121094,
+          5.25,
+          3.380000114440918
+        ]
+      ],
+      "world_bounds_three_m": [
+        [
+          20.849998474121094,
+          3.190000057220459,
+          -5.25
+        ],
+        [
+          38.349998474121094,
+          3.380000114440918,
+          5.25
+        ]
+      ],
+      "dimensions_m": [
+        17.5,
+        10.5,
+        0.19000005722045898
+      ]
+    }
+  ],
+  "collision": "Segmented authored convex UCX, never one building-wide box; disable on decorative parts.",
+  "collision_hulls": 0,
+  "collision_source_parts": [],
+  "license": {
+    "id": "LicenseRef-ProjectOwned",
+    "sources": [
+      "unreal/ArtSource/EastWing/Shell/layout.py",
+      "unreal/ArtSource/EastWing/Shell/build_shell.py"
+    ]
+  },
+  "runtime_status": "NOT_IMPORTED",
+  "triangles": 1692,
+  "expected_native_triangles": 1692,
+  "exact_degenerate_triangles": 0,
+  "bounds_m": [
+    [
+      20.849998474121094,
+      -5.25,
+      3.190000057220459
+    ],
+    [
+      38.349998474121094,
+      5.25,
+      3.380000114440918
+    ]
+  ],
+  "world_bounds_three_m": [
+    [
+      20.849998474121094,
+      3.190000057220459,
+      -5.25
+    ],
+    [
+      38.349998474121094,
+      3.380000114440918,
+      5.25
+    ]
+  ],
+  "dimensions_m": [
+    17.5,
+    10.5,
+    0.19000005722045898
+  ]
+}

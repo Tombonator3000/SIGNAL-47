@@ -1,8 +1,12 @@
 # Gjeldende beslutninger
 
-**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 3. november 2026.
+**Status:** Gjeldende. **Gjelder:** Retning og arbeidsregler for SIGNAL / 47. **Sist kontrollert:** 4. november 2026.
 
 Dette dokumentet samler beslutninger som ellers ligger spredt i historiske notater. Det dokumenterer føringer, ikke at funksjonene er ferdig implementert. Se [STATUS](STATUS.md) for levering og [TODO](TODO.md) for arbeidet som gjenstår.
+
+## Freeform-arrayets kapasitetsvirkning, 4. november 2026
+
+Som implementeringsvalg for FF-ARRAY-CONSEQUENCES-01 bruker gyldige arraymålinger tilgjengelige antennepar relativt til fullt anlegg: `N*(N-1)/(27*26)`. Eksisterende minimum på 24 antenner beholdes. Det gir 100 % ved 27, omtrent 93 % ved 26 og 79 % ved 24; under 24 stanser opptak og arraykontroll. Dette er spillbalanse, ikke en full radiometersimulering. Trackingmotorer, lokal servicetest, intern åttesekunders referanse og verdensklokke beholder egne tider. Carrier lock viser fortsatt tuning, mens måleraten viser kapasitet; eksisterende lagret kvalitetsfaktor beholdes. Reparasjon gjenoppretter kapasitet fra faktisk antennetilstand, uten en ny lagringsvariabel. Toms vurdering av spillfølelse gjenstår.
 
 ## Adaptiv musikk og tydelig lyddesign, 3. november 2026
 

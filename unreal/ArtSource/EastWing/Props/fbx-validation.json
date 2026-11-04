@@ -1,0 +1,1176 @@
+{
+  "status": "PASS",
+  "scope": "Fresh Blender FBX import: dimensions, UVs, materials, finite geometry for every delivered LOD. Unreal runtime integration remains Claude task.",
+  "checks": [
+    {
+      "asset": "SM_EW_Microscope",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-08,
+      "dimensions_m": [
+        0.21000000089406967,
+        0.29533883929252625,
+        0.4437083601951599
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 18972
+    },
+    {
+      "asset": "SM_EW_Microscope",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 2.5438855573156616e-06,
+      "dimensions_m": [
+        0.21000000089406967,
+        0.29533883929252625,
+        0.44371090408071723
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 9486
+    },
+    {
+      "asset": "SM_EW_Microscope",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0007465705275535583,
+      "dimensions_m": [
+        0.21074655652046204,
+        0.2953345328569412,
+        0.4437771655502729
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4740
+    },
+    {
+      "asset": "SM_EW_Centrifuge",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-08,
+      "dimensions_m": [
+        0.3017500191926956,
+        0.36848001182079315,
+        0.19050000607967377
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 36988
+    },
+    {
+      "asset": "SM_EW_Centrifuge",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-08,
+      "dimensions_m": [
+        0.3017500191926956,
+        0.36848001182079315,
+        0.19050000607967377
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 18493
+    },
+    {
+      "asset": "SM_EW_Centrifuge",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 4.251301288604736e-05,
+      "dimensions_m": [
+        0.3017074912786484,
+        0.3684594929218292,
+        0.19050000607967377
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 9246
+    },
+    {
+      "asset": "SM_EW_LabScale",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.23000004142522812,
+        0.29670998454093933,
+        0.13085317611694336
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 20428
+    },
+    {
+      "asset": "SM_EW_LabScale",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.1339783668518066e-05,
+      "dimensions_m": [
+        0.23000004142522812,
+        0.2966986447572708,
+        0.13085317611694336
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 10213
+    },
+    {
+      "asset": "SM_EW_LabScale",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 6.464123725891113e-05,
+      "dimensions_m": [
+        0.23000004142522812,
+        0.2966453433036804,
+        0.1308582958936313
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5107
+    },
+    {
+      "asset": "SM_EW_SampleJar",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        0.0820000022649765,
+        0.08279999345541,
+        0.15449999668635428
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 21544
+    },
+    {
+      "asset": "SM_EW_SampleJar",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        0.0820000022649765,
+        0.08279999345541,
+        0.15449999668635428
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 10772
+    },
+    {
+      "asset": "SM_EW_SampleJar",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 2.2351741790771484e-07,
+      "dimensions_m": [
+        0.0820000022649765,
+        0.08279999345541,
+        0.1545002202037722
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5386
+    },
+    {
+      "asset": "SM_EW_ErlenmeyerFlask",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        0.11999999731779099,
+        0.11999999731779099,
+        0.18200000026263297
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2216
+    },
+    {
+      "asset": "SM_EW_ErlenmeyerFlask",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.1593103408813477e-05,
+      "dimensions_m": [
+        0.1200115904211998,
+        0.1200115904211998,
+        0.18200019281357527
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1108
+    },
+    {
+      "asset": "SM_EW_ErlenmeyerFlask",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00047892332077026367,
+      "dimensions_m": [
+        0.11952107399702072,
+        0.11952107399702072,
+        0.18200247711502016
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 550
+    },
+    {
+      "asset": "SM_EW_LabFridge",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.6200000643730164,
+        0.7429999709129333,
+        1.6399999856948853
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 15876
+    },
+    {
+      "asset": "SM_EW_LabFridge",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 2.950429916381836e-05,
+      "dimensions_m": [
+        0.6200000643730164,
+        0.7430294752120972,
+        1.640001241954792
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 7937
+    },
+    {
+      "asset": "SM_EW_LabFridge",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 8.490681648254395e-05,
+      "dimensions_m": [
+        0.6200000643730164,
+        0.7429150640964508,
+        1.6400063884843803
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3968
+    },
+    {
+      "asset": "SM_EW_Multimeter",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 7.450580596923828e-09,
+      "dimensions_m": [
+        0.23319999873638153,
+        0.1917700096964836,
+        0.09000000357627869
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 32252
+    },
+    {
+      "asset": "SM_EW_Multimeter",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 7.450580596923828e-09,
+      "dimensions_m": [
+        0.23319999873638153,
+        0.1917700096964836,
+        0.09000000357627869
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 16126
+    },
+    {
+      "asset": "SM_EW_Multimeter",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 3.0472874641418457e-05,
+      "dimensions_m": [
+        0.23319999873638153,
+        0.1917395293712616,
+        0.09000000357627869
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8062
+    },
+    {
+      "asset": "SM_EW_SolderingIron",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 7.450580596923828e-09,
+      "dimensions_m": [
+        0.21300000697374344,
+        0.2451070174574852,
+        0.23044507205486298
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 10524
+    },
+    {
+      "asset": "SM_EW_SolderingIron",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 6.795674562454224e-05,
+      "dimensions_m": [
+        0.21301863342523575,
+        0.24517496675252914,
+        0.23043370246887207
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5262
+    },
+    {
+      "asset": "SM_EW_SolderingIron",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00037527031963691115,
+      "dimensions_m": [
+        0.21292775124311447,
+        0.24523135274648666,
+        0.23006980173522606
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2631
+    },
+    {
+      "asset": "SM_EW_DrawerCabinet",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.7200000882148743,
+        0.6140000522136688,
+        0.9244999885559082
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 13628
+    },
+    {
+      "asset": "SM_EW_DrawerCabinet",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.817941665649414e-06,
+      "dimensions_m": [
+        0.7200000882148743,
+        0.6140018105506897,
+        0.9244999885559082
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 6813
+    },
+    {
+      "asset": "SM_EW_DrawerCabinet",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006156260205898434,
+      "dimensions_m": [
+        0.7197124361991882,
+        0.6139050722122192,
+        0.9238843625353184
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3406
+    },
+    {
+      "asset": "SM_EW_RedToolChest",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        1.0870000720024109,
+        0.5740000605583191,
+        1.004499912261963
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 22696
+    },
+    {
+      "asset": "SM_EW_RedToolChest",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 4.082918167114258e-06,
+      "dimensions_m": [
+        1.0870041251182556,
+        0.57400181889534,
+        1.004499912261963
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 11348
+    },
+    {
+      "asset": "SM_EW_RedToolChest",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00032723120239097625,
+      "dimensions_m": [
+        1.0867868065834045,
+        0.5737383961677551,
+        1.004172681059572
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5673
+    },
+    {
+      "asset": "SM_EW_GreenBench",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.4901161193847656e-07,
+      "dimensions_m": [
+        1.8000000715255737,
+        0.7215001583099365,
+        1.0199999809265137
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 6252
+    },
+    {
+      "asset": "SM_EW_GreenBench",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.9371509552001953e-06,
+      "dimensions_m": [
+        1.8000000715255737,
+        0.7215019464492798,
+        1.0199999809265137
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3126
+    },
+    {
+      "asset": "SM_EW_GreenBench",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003117360465694219,
+      "dimensions_m": [
+        1.8000000715255737,
+        0.7212531268596649,
+        1.0196882448799442
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1562
+    },
+    {
+      "asset": "SM_EW_PartsCart",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.7500000596046448,
+        0.5611500591039658,
+        1.1240000873804092
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 10908
+    },
+    {
+      "asset": "SM_EW_PartsCart",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0003061038441956043,
+      "dimensions_m": [
+        0.7500000596046448,
+        0.5611334592103958,
+        1.1236939835362136
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5454
+    },
+    {
+      "asset": "SM_EW_PartsCart",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0007196366786956787,
+      "dimensions_m": [
+        0.7492803633213043,
+        0.5612301975488663,
+        1.1233606776222587
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2727
+    },
+    {
+      "asset": "SM_EW_CrateFuses",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.6600001156330109,
+        0.4851500242948532,
+        0.33500000834465027
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5656
+    },
+    {
+      "asset": "SM_EW_CrateFuses",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00029927492141723633,
+      "dimensions_m": [
+        0.6597007811069489,
+        0.4850083589553833,
+        0.33471676483168267
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2828
+    },
+    {
+      "asset": "SM_EW_CrateFuses",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006156690942589194,
+      "dimensions_m": [
+        0.6594206988811493,
+        0.48487846553325653,
+        0.33438433925039135
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1408
+    },
+    {
+      "asset": "SM_EW_CrateRelays",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.6600001156330109,
+        0.4851500242948532,
+        0.33500000834465027
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5624
+    },
+    {
+      "asset": "SM_EW_CrateRelays",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00029927492141723633,
+      "dimensions_m": [
+        0.6597007811069489,
+        0.4850083589553833,
+        0.33471676483168267
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2812
+    },
+    {
+      "asset": "SM_EW_CrateRelays",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006156690942589194,
+      "dimensions_m": [
+        0.6594206988811493,
+        0.48487846553325653,
+        0.33438433925039135
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1399
+    },
+    {
+      "asset": "SM_EW_CableDrum",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.6800000667572021,
+        0.49900004267692566,
+        0.6800000811202018
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 26604
+    },
+    {
+      "asset": "SM_EW_CableDrum",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0007491624273825437,
+      "dimensions_m": [
+        0.679250955581665,
+        0.4984963983297348,
+        0.6792508447251748
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 13302
+    },
+    {
+      "asset": "SM_EW_CableDrum",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.000680245051626116,
+      "dimensions_m": [
+        0.680168628692627,
+        0.4984523504972458,
+        0.6793197621009313
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 6650
+    },
+    {
+      "asset": "SM_EW_ChemicalCabinet",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.8800000548362732,
+        0.5625000149011612,
+        1.840000033378601
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 7844
+    },
+    {
+      "asset": "SM_EW_ChemicalCabinet",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 5.960464477539063e-08,
+      "dimensions_m": [
+        0.8800000548362732,
+        0.5625000149011612,
+        1.840000033378601
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3922
+    },
+    {
+      "asset": "SM_EW_ChemicalCabinet",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003077983856201172,
+      "dimensions_m": [
+        0.8800000548362732,
+        0.5621921867132187,
+        1.840000033378601
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1960
+    },
+    {
+      "asset": "SM_EW_TyreStack",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        0.7440000176429749,
+        0.7440000176429749,
+        0.7152000069618225
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 61824
+    },
+    {
+      "asset": "SM_EW_TyreStack",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00042057037353515625,
+      "dimensions_m": [
+        0.7435794472694397,
+        0.7435794472694397,
+        0.7152353800138371
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 30912
+    },
+    {
+      "asset": "SM_EW_TyreStack",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0007241964340209961,
+      "dimensions_m": [
+        0.7432758212089539,
+        0.7432758212089539,
+        0.7152601130674157
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 15456
+    },
+    {
+      "asset": "SM_EW_FireExtinguisher",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        0.21894697844982147,
+        0.18565000593662262,
+        0.5764999389648438
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8540
+    },
+    {
+      "asset": "SM_EW_FireExtinguisher",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00014162063598632812,
+      "dimensions_m": [
+        0.21884600818157196,
+        0.1855083927512169,
+        0.5763583183288574
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4270
+    },
+    {
+      "asset": "SM_EW_FireExtinguisher",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006287619471549988,
+      "dimensions_m": [
+        0.21831821650266647,
+        0.18534217029809952,
+        0.5759302407386713
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2135
+    },
+    {
+      "asset": "SM_EW_Pegboard",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.0523945093154907e-07,
+      "dimensions_m": [
+        1.2200000286102295,
+        0.041500103659927845,
+        1.2200000286102295
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 940
+    },
+    {
+      "asset": "SM_EW_Pegboard",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0003277268260717392,
+      "dimensions_m": [
+        1.2197167873382568,
+        0.041172271594405174,
+        1.219716783205513
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 470
+    },
+    {
+      "asset": "SM_EW_Pegboard",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006156349554657936,
+      "dimensions_m": [
+        1.2193844318389893,
+        0.04105832055211067,
+        1.2193843936547637
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 234
+    },
+    {
+      "asset": "SM_EW_WallTools",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.7939677238464355e-08,
+      "dimensions_m": [
+        1.1200000047683716,
+        0.0435000266879797,
+        0.3564999997615814
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 15408
+    },
+    {
+      "asset": "SM_EW_WallTools",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 2.7939677238464355e-08,
+      "dimensions_m": [
+        1.1200000047683716,
+        0.0435000266879797,
+        0.3564999997615814
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 7704
+    },
+    {
+      "asset": "SM_EW_WallTools",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0006155967712402344,
+      "dimensions_m": [
+        1.1193844079971313,
+        0.043059756979346275,
+        0.3561713993549347
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3852
+    },
+    {
+      "asset": "SM_EW_RollUpDoorSegment",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.998858690261841e-07,
+      "dimensions_m": [
+        3.5,
+        0.12200030125677586,
+        0.25
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2680
+    },
+    {
+      "asset": "SM_EW_RollUpDoorSegment",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00040492042899131775,
+      "dimensions_m": [
+        3.499659776687622,
+        0.12159508094191551,
+        0.2496008530142717
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1340
+    },
+    {
+      "asset": "SM_EW_RollUpDoorSegment",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.000772567989770323,
+      "dimensions_m": [
+        3.4995462894439697,
+        0.12142885476350784,
+        0.24922743201022968
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 666
+    },
+    {
+      "asset": "SM_EW_DrainGrate",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.5,
+        0.30000004172325134,
+        0.05350000038743019
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5072
+    },
+    {
+      "asset": "SM_EW_DrainGrate",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0002832263708114624,
+      "dimensions_m": [
+        0.49971678853034973,
+        0.2997167855501175,
+        0.0533060023735743
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2536
+    },
+    {
+      "asset": "SM_EW_DrainGrate",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003940016031265259,
+      "dimensions_m": [
+        0.4996059983968735,
+        0.299659788608551,
+        0.053277509679901414
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1268
+    },
+    {
+      "asset": "SM_EW_FluorescentFixture",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.2503751218318939,
+        0.949999988079071,
+        0.10000003129243851
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 6000
+    },
+    {
+      "asset": "SM_EW_FluorescentFixture",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 1.5788444216013886e-05,
+      "dimensions_m": [
+        0.2503751218318939,
+        0.949999988079071,
+        0.10001581973665452
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3000
+    },
+    {
+      "asset": "SM_EW_FluorescentFixture",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0005686321092071012,
+      "dimensions_m": [
+        0.25015315413475037,
+        0.9495463371276855,
+        0.0994313991832314
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1500
+    },
+    {
+      "asset": "SM_EW_ShelvingStocked",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.980232238769531e-07,
+      "dimensions_m": [
+        3.0999999046325684,
+        0.5140008926391602,
+        2.299999952316284
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5688
+    },
+    {
+      "asset": "SM_EW_ShelvingStocked",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 2.980232238769531e-07,
+      "dimensions_m": [
+        3.0999999046325684,
+        0.5140008926391602,
+        2.299999952316284
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2844
+    },
+    {
+      "asset": "SM_EW_ShelvingStocked",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 2.980232238769531e-07,
+      "dimensions_m": [
+        3.0999999046325684,
+        0.5140008926391602,
+        2.299999952316284
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1355
+    },
+    {
+      "asset": "SM_EW_GalvanizedShelving",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.1920928955078125e-07,
+      "dimensions_m": [
+        1.2499999403953552,
+        0.5700000822544098,
+        2.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8508
+    },
+    {
+      "asset": "SM_EW_GalvanizedShelving",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0,
+      "dimensions_m": [
+        1.2499999403953552,
+        0.5699999630451202,
+        2.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4254
+    },
+    {
+      "asset": "SM_EW_GalvanizedShelving",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00047791004180908203,
+      "dimensions_m": [
+        1.2495220303535461,
+        0.5695584118366241,
+        1.9996597811987158
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2126
+    },
+    {
+      "asset": "SM_EW_Oscilloscope_RM565",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.6000000238418579,
+        0.38310807943344116,
+        0.3339865505695343
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 106536
+    },
+    {
+      "asset": "SM_EW_Oscilloscope_RM565",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00021136944997124374,
+      "dimensions_m": [
+        0.5999547839164734,
+        0.3829914778470993,
+        0.33377518111956306
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 53268
+    },
+    {
+      "asset": "SM_EW_Oscilloscope_RM565",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.00033052617800422013,
+      "dimensions_m": [
+        0.5996905267238617,
+        0.38294684886932373,
+        0.3343170767475385
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 26634
+    }
+  ]
+}
