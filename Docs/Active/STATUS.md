@@ -4,6 +4,12 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## Service på alle antenner, installert 4. november
+
+OPS SERVICE viser nå faktisk reparasjonstrinn og en fortsett-knapp; sluttkontroll tilbys først etter bestått lokal bevegelsestest. S-03 er første planlagte opplæringsordre. Vanlig service kan ramme alle 27 antenner, med vedvarende mål og kontroll mot feil skap. Gamle S-03-lagringer videreføres.
+
+Editorbygg, 2346 selvtester og en native prøve med 167 kontroller består: S-03 samt S-01, S-16 og S-22 repareres med faktisk encoderbevegelse, ett relé hver og fire disk-/Continue-runder. Linux-pakke, pakkeselvtest og installert oppstart består. 126 personlige Saved-filer er bevart. Dette er en styrt funksjonsprøve med plasserte spiller-/lagerforutsetninger, ikke en naturlig gåtur eller full langtidsbalanseprøve.
+
 ## Rikere Freeform-mottaker, installert 4. november
 
 Kontinuerlig pip er erstattet av to deterministiske radiolag per kilde: støy og kildetekstur med sveipende modulasjon. Frekvens, gain, båndbredde og faktisk antennepeking/stabilisering avgjør hva som blir hørbart. Storys bæretone og fire/sju-signatur er uendret. Nye opptak beholder startens lydinnstilling ved Save/Continue; gamle opptak beholder tidligere rekonstruksjon. Eksisterende pulsrytme og TraceTicks er fortsatt bevisgrunnlaget.
