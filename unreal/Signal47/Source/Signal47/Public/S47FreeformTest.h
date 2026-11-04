@@ -17,6 +17,9 @@ private:
  FString Root,PhotoClaimId,RetainedPhotoId,RetainedPhotoUrl,PhotoEvent;
  int32 PhotoFigureId=-1,CameraShots=0,CameraFilm=0;
  int32 OpsNavStep=0;
+ int32 ServiceTrial=0,ServiceBefore=0,ServiceRelays=0;
+ bool ServiceMoved=false;
+ FString ServiceTarget;
  TWeakPtr<class SWidget> OpsModal;
  int32 ShopCash=0,ShopFuses=0,ShopRelays=0,ShopDelivered=0,ShopCargo=0,ShopClick=0;
  int32 PhotoBudget=0,PrinterBudget=0,WorkBudget=0;

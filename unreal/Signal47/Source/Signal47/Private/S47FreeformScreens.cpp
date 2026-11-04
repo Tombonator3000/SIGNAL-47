@@ -42,7 +42,7 @@ TArray<FString> FS47FreeformSession::TerminalLines(int32 Screen)const
  if(Screen==0)
  {
   int32 Remote=0;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I))++Remote;
-  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),HasPower()?TEXT("FEEDER / SUPPLY NORMAL"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?TEXT("S-03 / LOCAL SERVICE DUE"):TEXT("S-03 / REMOTE AVAILABLE"),TEXT("SELECT A DISH TO DIAGNOSE"),TEXT("LOCAL TEST BEFORE RELEASE")};
+  L={TEXT("SARO ARRAY / STATUS"),FString::Printf(TEXT("REMOTE %02d / %02d"),Remote,M->Web->DishCount()),HasPower()?TEXT("FEEDER / SUPPLY NORMAL"):TEXT("SUPPLY LOST / FIELD CHECK"),Field&&Field->HasArrayFault()?Field->ServiceDishId()+TEXT(" / LOCAL SERVICE DUE"):TEXT("ARRAY / REMOTE AVAILABLE"),TEXT("SELECT A DISH TO DIAGNOSE"),TEXT("LOCAL TEST BEFORE RELEASE")};
  }
  else if(Screen==1)
  {

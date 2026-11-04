@@ -19,18 +19,21 @@ namespace
 }
 bool FS47FreeformSession::StartServiceGuide(bool bSupplyTrip)
 {
- if(!bActive||ServiceGuide!=0||!Field||!AtOperations(M)||!RequirePower())return false;
- if(!Field->HasArrayFault()&&!Field->TriggerServiceFault())return false;
+ if(!bActive||ServiceGuide==1||!Field)return false;
+ if(!AtOperations(M)){Feedback=TEXT("Use the OPS workstation inside SARO to accept service.");Changed(Feedback);UE_LOG(LogTemp,Warning,TEXT("S47 service rejected: not at OPS"));return false;}
+ if(!RequirePower())return false;
+ if(!Field->HasArrayFault()&&!Field->TriggerServiceFault(ServiceGuide==0)){Feedback=TEXT("Service target unavailable. Restore station power and try again.");Changed(Feedback);return false;}
  GuideServiceBaseline=Field->ServiceCompletions();GuideSupplyBaseline=Field->ServiceSupplyDeliveries();
  ServiceGuide=1;bGuideSupply=bSupplyTrip;bGuideFocus=true;
- Changed(TEXT("ARRAY STATUS (left-hand PC): Select S-03 to start the accepted service order. Remote operation stays suspended until relay replacement and the movement test."));
+ Feedback=FString::Printf(TEXT("SERVICE ACCEPTED / %s. ARRAY STATUS (left-hand PC): Select this antenna, then use its local cabinet outside. Remote operation stays suspended until relay replacement and the movement test."),*Field->ServiceDishId());Changed(Feedback);
  return true;
 }
 FString FS47FreeformSession::ServiceObjective()const
 {
  if(ServiceGuide!=1||!Field)return FString();
  const int32 S=Field->ServiceStage();
- if(S==1)return TEXT("ARRAY STATUS (left-hand PC): SELECT S-03");
+ const auto At=[this](const TCHAR* Text){FString Result=FString(Text).Replace(TEXT("S-03"),*Field->ServiceDishId());return Field->ServiceDishId()==TEXT("S-03")?Result:Result.Replace(TEXT("CABLE JUNCTION"),TEXT("AZ / EL DRIVE"));};
+ if(S==1)return At(TEXT("ARRAY STATUS (left-hand PC): SELECT S-03"));
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
  {
   switch(Field->ParcelStage())
@@ -47,47 +50,57 @@ FString FS47FreeformSession::ServiceObjective()const
   return Field->InventoryCount(TEXT("donor"))>0?TEXT("EAST WING CALIBRATION BENCH: TEST THE DONOR AND HARVEST ITS COMPATIBLE RELAY"):TEXT("PARTS STORAGE: CHECK RELAY STOCK; ENTER CALICHE'S STORE AND BUY A REPLACEMENT AT THE COUNTER IF EMPTY");
  switch(S)
  {
-  case 2:return TEXT("S-03 WEST FOOT / LOCAL BOX: SELECT LOCAL TO ISOLATE REMOTE MOVEMENT");
-  case 3:return TEXT("S-03 WEST FOOT / LOCAL BOX: OPEN THE RELAY COVER");
-  case 4:return TEXT("S-03 WEST FOOT / LOCAL BOX: SEAT THE COMPATIBLE REPLACEMENT RELAY");
-  case 5:return TEXT("S-03 WEST FOOT / LOCAL BOX: SECURE THE RELAY COVER");
-  case 6:return TEXT("S-03 WEST FOOT / LOCAL BOX: START THE FIVE-DEGREE OUT-AND-BACK TEST");
-  case 7:case 8:return TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN THE SERVICE ORDER AT OPS");
+  case 2:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SELECT LOCAL TO ISOLATE REMOTE MOVEMENT"));
+  case 3:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: OPEN THE RELAY COVER"));
+  case 4:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SEAT THE COMPATIBLE REPLACEMENT RELAY"));
+  case 5:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: SECURE THE RELAY COVER"));
+  case 6:return At(TEXT("S-03 CABLE JUNCTION / LOCAL BOX: START THE FIVE-DEGREE OUT-AND-BACK TEST"));
+  case 7:case 8:return At(TEXT("S-03 LOCAL BOX: WATCH THE AUTOMATIC OUT-AND-BACK TEST; WHEN COMPLETE, SIGN THE SERVICE ORDER AT OPS"));
   case 9:return TEXT("OPS (corner PC), SERVICE ORDER: VERIFY REMOTE RESTORATION AND ARCHIVE THE TEST");
   default:return TEXT("OPS (corner PC), SERVICE ORDER: INSPECT THE OPEN WORK ORDER");
  }
+}
+bool FS47FreeformSession::CanCompleteServiceGuide() const
+{
+ if(ServiceGuide!=1||!Field||!M||!M->Web||Field->ServiceStage()!=9||Field->ServiceCompletions()<=GuideServiceBaseline)return false;
+ if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)return false;
+ const int32 Dish=Field->ServiceDishIndex();return Dish!=INDEX_NONE&&M->Web->DishRemoteAvailable(Dish);
 }
 bool FS47FreeformSession::CompleteServiceGuide()
 {
  if(ServiceGuide!=1||!Field||!AtOperations(M)||!RequirePower())return false;
  if(Field->ServiceStage()!=9||Field->ServiceCompletions()<=GuideServiceBaseline)
- {Changed(TEXT("S-03 LOCAL BOX: Complete the out-and-back movement test, then return to OPS to sign this work order."));return false;}
+ {Feedback=ServiceObjective();Changed(Feedback);return false;}
  if(bGuideSupply&&Field->ServiceSupplyDeliveries()<=GuideSupplyBaseline)
- {Changed(TEXT("This route includes a new relay or donor transported in the jeep and delivered at SARO. Existing stock alone does not complete that optional route."));return false;}
- int32 Dish=INDEX_NONE;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03")){Dish=I;break;}
- if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish))return false;
+ {Feedback=TEXT("This route includes a new relay or donor transported in the jeep and delivered at SARO. Existing stock alone does not complete that optional route.");Changed(Feedback);return false;}
+ const int32 Dish=Field->ServiceDishIndex();
+ if(Dish==INDEX_NONE||!M->Web->DishRemoteAvailable(Dish)){Feedback=TEXT("REMOTE is not restored. Inspect the target antenna at ARRAY STATUS.");Changed(Feedback);return false;}
  const FString Provenance=bGuideSupply?TEXT("A newly purchased relay/donor parcel was carried, secured in the service vehicle and unpacked at SARO garage receiving during this work order."):TEXT("The local-stock route was selected; no supply trip is claimed.");
- RecordEvidence(TEXT("service-work-order"),FString::Printf(TEXT("S-03 planned relay service / signed at OPS.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
- ServiceGuide=2;bGuideFocus=false;Changed(TEXT("OPS (corner PC): Select DAILY WORK or CASE ARCHIVE. The service order is verified and archived; S-03 is back in REMOTE."));return true;
+ RecordEvidence(HasFinding(TEXT("service-work-order"))?FString::Printf(TEXT("service-work-order-%d-%s"),Field->ServiceCompletions(),*Field->ServiceDishId()):FString(TEXT("service-work-order")),FString::Printf(TEXT("%s planned relay service / signed at OPS.\n%s\nRelay isolated and exchanged with the cover secured. The real encoder passed the five-degree outward and return test. REMOTE restored; final AZ %.2f / EL %.2f. The original service record remains in the case archive. No observing-job payment was granted for this maintenance action."),*Field->ServiceDishId(),*Provenance,M->Web->DishAz(Dish),M->Web->DishEl(Dish)));
+ ServiceGuide=2;bGuideFocus=false;Feedback=FString::Printf(TEXT("WORK ORDER ARCHIVED / %s is back in REMOTE. Select DAILY WORK or CASE ARCHIVE."),*Field->ServiceDishId());Changed(Feedback);return true;
 }
 void FS47FreeformSession::OpenServiceGuide()
 {
  if(!bActive||!M||!M->UI||!RequirePower())return;
  TArray<S47Kit::FW> Rows;
- Rows.Add(S47FreeformTerminal::Paper(TEXT("SARO / S-03 SERVICE WORK ORDER\nOptional planned maintenance: diagnose, replace, physically test and retain the result. S-03 is taken out of remote operation when you accept. Other antennas and daily jobs remain available.")));
- if(ServiceGuide==0)
+ const FString Dish=Field?Field->ServiceDishId():FString(TEXT("S-03"));
+ Rows.Add(S47FreeformTerminal::Paper(ServiceGuide==1?FString::Printf(TEXT("SARO / %s SERVICE WORK ORDER / IN PROGRESS"),*Dish):TEXT("SARO / ARRAY SERVICE WORK ORDERS")));
+ if(!Feedback.IsEmpty())Rows.Add(S47FreeformTerminal::Text(Feedback,1));
+ if(ServiceGuide!=1)
  {
-  Rows.Add(S47FreeformTerminal::Text(TEXT("Use the relay already held at SARO, or practise the supply route: drive south to Caliche's gas station, buy a relay ($25) or donor ($15), collect and load its parcel, return north to the east-wing garage. GARAGE RECEIVING: Unload and carry the parcel to the receiving table. CALIBRATION / REPAIR: Test donors after delivery. The notebook map retains this route.")));
+  if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN CASE ARCHIVE")));
+  Rows.Add(S47FreeformTerminal::Text(Field&&Field->HasArrayFault()?FString::Printf(TEXT("%s needs service. Accept the existing fault below; other antennas and observing jobs remain available."),*Dish):ServiceGuide==0?TEXT("FIRST SERVICE / S-03. Learn to diagnose, replace a relay and run its real movement test. Accepting isolates S-03 from remote operation."):TEXT("Optional planned maintenance. The next order selects an antenna from the array; its identity is retained until repaired. Accepting isolates only that antenna.")));
+  Rows.Add(S47FreeformTerminal::Text(TEXT("Use a relay from stock, or choose a new supply trip: buy a relay or donor in Caliche, carry its parcel in the jeep, then unpack at GARAGE RECEIVING. Donors must be tested at CALIBRATION / REPAIR.")));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / use SARO stock"),[this]{StartServiceGuide(false);OpenServiceGuide();},true));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Accept / collect and transport new supplies"),[this]{StartServiceGuide(true);OpenServiceGuide();}));
  }
- else if(ServiceGuide==1)
+ else
  {
   Rows.Add(S47FreeformTerminal::Paper(ServiceObjective()));
-  Rows.Add(S47FreeformTerminal::Text(TEXT("Left PC: select S-03. Outside at S-03: LOCAL, cover, relay, cover, local test. Supply counter sells ordinary stock 08:00–20:00; essential relay requisition remains available after hours. Looking at an existing stock count does not certify a new supply trip.")));
-  Rows.Add(S47FreeformTerminal::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
-  Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Changed();OpenServiceGuide();}));
+  Rows.Add(S47FreeformTerminal::Text(FString::Printf(TEXT("REPAIR TARGET: %s. At its outside cabinet: LOCAL, cover, relay, cover, local movement test. Return here only after REMOTE is restored."),*Dish)));
+  if(CanCompleteServiceGuide())Rows.Add(S47FreeformTerminal::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
+  else Rows.Add(S47FreeformTerminal::Button(TEXT("Continue service / return to room"),[this]{bGuideFocus=true;Feedback=ServiceObjective();Changed(Feedback);M->UI->Close(true);},true));
+  Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Feedback=bGuideFocus?ServiceObjective():TEXT("OBSERVING FOCUS / unfinished service retained.");Changed(Feedback);OpenServiceGuide();}));
  }
- else Rows.Add(S47FreeformTerminal::Paper(TEXT("WORK ORDER VERIFIED / ORIGINAL RETAINED\nS-03 completed its actual local movement test and returned to REMOTE. The case archive retains the signed service record.")));
  OpenTerminal(3,TEXT("OPS / SERVICE ORDER"),OpsShell(4,S47Kit::Col(Rows)));
 }

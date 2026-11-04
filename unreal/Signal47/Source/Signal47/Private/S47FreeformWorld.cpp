@@ -75,11 +75,37 @@ bool FS47FreeformWorld::Ready() const { return bActive && M && M->Freeform && M-
 int32 FS47FreeformWorld::InventoryCount(const FString& Id) const { return Stock.FindRef(Id); }
 void FS47FreeformWorld::AddItem(const FString& Id,int32 Count) { if(ValidItem(Id)&&Count>0) { Stock.FindOrAdd(Id)=FMath::Clamp(Stock.FindRef(Id)+Count,0,99); Change(); } }
 bool FS47FreeformWorld::Consume(const FString& Id) { int32* N=Stock.Find(Id); if(!N||*N<=0)return false;--*N;Change();return true; }
-int32 FS47FreeformWorld::S03() const { if(M&&M->Web)for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==TEXT("S-03"))return I;return INDEX_NONE; }
+namespace
+{
+ bool ValidServiceDish(const FString& Id)
+ {
+  for(int32 N=1;N<=27;++N)if(Id==FString::Printf(TEXT("S-%02d"),N))return true;
+  return false;
+ }
+ FString OrdinaryServiceDish(int32 Serial)
+ {
+  // Step ten is coprime to 27: every installed antenna is visited before repeating.
+  return FString::Printf(TEXT("S-%02d"),(Serial%27*10+4)%27+1);
+ }
+}
+int32 FS47FreeformWorld::ServiceDishIndex() const { if(M&&M->Web)for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==ServiceTarget)return I;return INDEX_NONE; }
+FVector FS47FreeformWorld::ServicePosition() const
+{
+ if(ServiceTarget==TEXT("S-03"))return ServiceAt();
+ if(M&&M->Web)if(const auto* I=M->Web->Item(TEXT("field:")+ServiceTarget))return M->Web->ObjAt(I->Node).WorldPosition();
+ return FVector::ZeroVector;
+}
+FString FS47FreeformWorld::ServiceWords(const FString& Text) const
+{
+ FString Result=Text.Replace(TEXT("S-03"),*ServiceTarget);
+ if(ServiceTarget!=TEXT("S-03"))Result=Result.Replace(TEXT("CABLE JUNCTION"),TEXT("AZ / EL DRIVE"));
+ return Result;
+}
 
 void FS47FreeformWorld::Begin(const S47J::FObj& O)
 {
  Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();Contents.Reset();BenchJob.Empty();
+ ServiceTarget=TEXT("S-03");OrdinaryServiceSerial=0;
  PowerFaultSerial=EmergencyFuseFault=0;bTrackedPowerFault=false;
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
  Delivered=DeliveredByTruck=ServiceDeliveries=DonorTests=ServiceTests=0;bParcelWasLoaded=false;
@@ -87,6 +113,8 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
  Stock.Reset();Stock.Add(TEXT("fuse"),3);Stock.Add(TEXT("relay"),1);Stock.Add(TEXT("fuel"),2);Stock.Add(TEXT("donor"),0);Stock.Add(TEXT("battery"),0);Stock.Add(TEXT("film"),0);Stock.Add(TEXT("fragment"),0);Stock.Add(TEXT("archived_fragment"),0);
  if(O && S47J::Int(O,TEXT("v"))==1)
  {
+  const FString SavedTarget=S47J::Str(O,TEXT("serviceDish"));if(ValidServiceDish(SavedTarget))ServiceTarget=SavedTarget;
+  OrdinaryServiceSerial=FMath::Clamp(S47J::Int(O,TEXT("ordinaryServiceSerial")),0,1000000);
   Service=FMath::Clamp(S47J::Int(O,TEXT("service")),0,9);Feeder=FMath::Clamp(S47J::Int(O,TEXT("feeder")),0,5);
   LastFaultDay=FMath::Max(0,S47J::Int(O,TEXT("faultDay")));EmergencyDay=FMath::Max(0,S47J::Int(O,TEXT("emergencyDay")));
   PowerFaultSerial=FMath::Clamp(S47J::Int(O,TEXT("powerFaultSerial")),0,1000000000);
@@ -130,11 +158,11 @@ void FS47FreeformWorld::Begin(const S47J::FObj& O)
  const auto RestoredCarry=MigrateBenchParcel(O,Dropped,Payload);
  Build();if(Carry)Carry->Restore(RestoredCarry,Payload==4?Dropped:FVector::ZeroVector);OverrideExisting();
  if(M&&M->Web)for(auto& C:M->Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=true;
- if(M&&M->Web&&S03()>=0)
+ if(M&&M->Web&&ServiceDishIndex()>=0)
  {
-  M->Web->SetDishRemoteAvailable(S03(),!HasArrayFault());
-  if(Service==7)M->Web->PointDish(S03(),ServiceAz+5,ServiceEl,2.2,true);
-  if(Service==8)M->Web->PointDish(S03(),ServiceAz,ServiceEl,2.2,true);
+  M->Web->SetDishRemoteAvailable(ServiceDishIndex(),!HasArrayFault());
+  if(Service==7)M->Web->PointDish(ServiceDishIndex(),ServiceAz+5,ServiceEl,2.2,true);
+  if(Service==8)M->Web->PointDish(ServiceDishIndex(),ServiceAz,ServiceEl,2.2,true);
  }
  Apply();
 }
@@ -158,7 +186,7 @@ void FS47FreeformWorld::Stop()
  RestorePumpModel();
  RestoreServiceCabinet();
  for(auto& C:Web->CollidersMutable(TEXT("saro")))if(C.Id==TEXT("ff:bench")||C.Id==TEXT("ff:sample")||C.Id==TEXT("ff:depot")||C.Id==TEXT("ff:delivery")||C.Id==TEXT("ff:service"))C.bEnabled=false;
- if(S03()>=0)Web->SetDishRemoteAvailable(S03(),true);
+ if(ServiceDishIndex()>=0)Web->SetDishRemoteAvailable(ServiceDishIndex(),true);
  for(FS47Obj O:Parts)if(O.W==Web&&O)
  {
   O.SetVisible(false);
@@ -177,6 +205,7 @@ S47J::FObj FS47FreeformWorld::Save() const
  if(Carry&&Payload>0)S47J::Set(O,TEXT("carry"),Carry->Save());
  S47J::Set(O,TEXT("generator"),bGenerator);S47J::Set(O,TEXT("generatorSeconds"),GeneratorSeconds);S47J::Set(O,TEXT("fuel"),Fuel);S47J::Set(O,TEXT("lastClock"),LastClock);
  S47J::Set(O,TEXT("pumping"),bPumping);S47J::Set(O,TEXT("pumpRemaining"),PumpRemaining);S47J::Set(O,TEXT("pumpElapsed"),PumpElapsed);S47J::Set(O,TEXT("pumpVolume"),PumpVolume);S47J::Set(O,TEXT("pumpPaid"),PumpPaid);
+ S47J::Set(O,TEXT("serviceDish"),ServiceTarget);S47J::Set(O,TEXT("ordinaryServiceSerial"),OrdinaryServiceSerial);
  S47J::Set(O,TEXT("serviceAz"),ServiceAz);S47J::Set(O,TEXT("serviceEl"),ServiceEl);S47J::Set(O,TEXT("settle"),Settle);
  S47J::Set(O,TEXT("benchJob"),BenchJob);S47J::Set(O,TEXT("benchSeconds"),BenchSeconds);S47J::Set(O,TEXT("feederSeconds"),FeederSeconds);
  S47J::Set(O,TEXT("dropped"),TArray<double>{Dropped.X,Dropped.Y,Dropped.Z});auto S=S47J::New();for(const TCHAR* Id:{TEXT("fuse"),TEXT("relay"),TEXT("donor"),TEXT("fuel"),TEXT("battery"),TEXT("film"),TEXT("fragment"),TEXT("archived_fragment")})S47J::Set(S,Id,Stock.FindRef(Id));S47J::Set(O,TEXT("stock"),S);return O;
@@ -229,7 +258,8 @@ FVector FS47FreeformWorld::InteractionPoint(const FString& Id) const
  if(Id==TEXT("ff:delivery"))return DeliveryAt+FVector(0,.90,0);
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return GeneratorAt;
  if(Id==TEXT("ff:feeder"))return FS47Substation::Site(FVector(5.52,-9.04,1.30));
- if(Id==TEXT("ff:service")||Id==TEXT("obs:service")||Id==TEXT("field:S-03"))return ServiceAt();
+ if(Id==TEXT("ff:service")||Id==TEXT("obs:service"))return ServicePosition();
+ if(Id.StartsWith(TEXT("field:"))&&M&&M->Web)if(const auto* I=M->Web->Item(Id))return M->Web->ObjAt(I->Node).WorldPosition();
  if(Id==TEXT("ff:cargo"))return TruckPoint();
  if(Id==TEXT("ff:parcel"))return Payload==1?ParcelShopPoint():Payload==3?TruckPoint():Payload==4?ParcelPosition():M&&M->Player?FVector(M->Player->Pos.X,M->Player->FloorY+1.,M->Player->Pos.Z):FVector::ZeroVector;
  return FVector::ZeroVector;
@@ -374,7 +404,7 @@ bool FS47FreeformWorld::InstallServiceCabinet()
   for(int32 K=0;K<Sources.Num();++K)C->SetMaterial(K,CabinetOriginals[Sources[K]].Materials[0].Get());
   C->SetWorldLocation(S47Three::ToUE(At));C->SetWorldRotation(FRotator::ZeroRotator);C->SetWorldScale3D(FVector(1));
   C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
-  auto O=M->Web->ObjAt(M->Web->AdoptNode(C,773,Name));Parts.Add(O);M->Web->MarkUsable(O.I,TEXT("ff:service"));return O;
+  auto O=M->Web->ObjAt(M->Web->AdoptNode(C,773,Name));Parts.Add(O);M->Web->MarkUsable(O.I,TEXT("field:S-03"));return O;
  };
  if(!CabinetBody)CabinetBody=Part(TEXT("FreeformOriginalS03Body"),BodyMesh,FVector::ZeroVector,{0,1,3});
  if(!Lid)Lid=Part(TEXT("FreeformOriginalS03Door"),DoorMesh,FVector(4.647,-.01,-39.72),{1,2});
@@ -392,7 +422,7 @@ void FS47FreeformWorld::RestoreServiceCabinet()
 bool FS47FreeformWorld::ShopOpen() const { return Ready() && DayClock(M->Freeform->Clock())>=8*3600 && DayClock(M->Freeform->Clock())<20*3600; }
 void FS47FreeformWorld::Change(const FString& Message)
 {
- if(M){if(!Message.IsEmpty()&&M->UI)M->UI->Toast(Message,5);M->RequestAutosave();}Apply();
+ if(M){if(!Message.IsEmpty()&&M->UI)M->UI->Toast(ServiceWords(Message),5);M->RequestAutosave();}Apply();
 }
 
 FS47Obj FS47FreeformWorld::Box(const FString& Name,const FVector& At,const FVector& Size,uint32 Colour,int32 Parent,const FString& Id)
@@ -426,14 +456,16 @@ void FS47FreeformWorld::OverrideExisting()
 {
  if(!M||!M->Inter||!bActive)return;
  const TWeakPtr<uint8> Guard=Life;
- for(const TCHAR* Raw:{TEXT("substation:journal"),TEXT("substation:service"),TEXT("substation:lamp"),TEXT("obs:generator"),TEXT("town:pumps"),TEXT("field:S-03")})
+ TArray<FString> Ids={TEXT("substation:journal"),TEXT("substation:service"),TEXT("substation:lamp"),TEXT("obs:generator"),TEXT("town:pumps")};
+ for(int32 N=1;N<=27;++N)Ids.Add(FString::Printf(TEXT("field:S-%02d"),N));
+ for(const FString& Id:Ids)
  {
-  const FString Id(Raw);if(Overrides.Contains(Id))continue;auto* I=M->Inter->Get(Id);if(!I)continue;
+  if(Overrides.Contains(Id))continue;auto* I=M->Inter->Get(Id);if(!I)continue;
   FOverride O;O.bLook=I->bLook;O.Label=I->Label;O.Examine=I->Examine;O.Use=I->Use;Overrides.Add(Id,MoveTemp(O));
-  const FString Target=Id==TEXT("field:S-03")?TEXT("ff:service"):Id;
-  if(Id==TEXT("field:S-03"))I->bLook=false;
-  I->Label=[this,Guard,Target]{return Guard.IsValid()?Label(Target):FString();};
-  I->Examine=I->Label;I->Use=[this,Guard,Target]{if(Guard.IsValid())Use(Target);};
+  if(Id.StartsWith(TEXT("field:")))I->bLook=false;
+  I->Label=[this,Guard,Id]{return Guard.IsValid()?Label(Id):FString();};
+  I->Examine=[this,Guard,Id]{return Guard.IsValid()?(Id==TEXT("field:")+ServiceTarget?ServiceStatus():Label(Id)):FString();};
+  I->Use=[this,Guard,Id]{if(Guard.IsValid())Use(Id);};
  }
 }
 
@@ -564,7 +596,7 @@ void FS47FreeformWorld::Apply()
  if(LoggerBody){const bool Show=bActive&&Logger.Site>=0;LoggerBody.SetVisible(Show);if(const auto* N=M->Web->Node(LoggerBody.I))if(auto* C=Cast<UPrimitiveComponent>(N->Comp.Get())){C->SetCollisionEnabled(Show?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);if(Show)C->SetWorldLocation(S47Three::ToUE(LoggerPoint(Logger.Site)));}}
  if(BenchSample)BenchSample.SetVisible(bActive&&(InventoryCount(TEXT("fragment"))>0||InventoryCount(TEXT("archived_fragment"))>0||BenchJob==TEXT("fragment")));
  if(BenchLamp){const bool Testing=!BenchJob.IsEmpty()||bLoggerCalibrating;BenchLamp.SetColor(S47Three::Hex(Testing?0xc8a046:0x5e8b61));BenchLamp.SetEmissive(S47Three::Hex(Testing?0xc8a046:0x5e8b61),Testing?.2f+float((bLoggerCalibrating?Logger.Calibration:BenchSeconds)/3.)*.8f:.15f);}
- const bool Open=bActive&&Service>=4&&Service<=5;
+ const bool Open=bActive&&ServiceTarget==TEXT("S-03")&&Service>=4&&Service<=5;
  if(Lid){Lid.SetRotY(Open?-1.4:0);Lid.SetVisible(bActive&&bServiceCabinet);}
  if(bServiceCabinet)
  {
@@ -581,7 +613,7 @@ void FS47FreeformWorld::Apply()
   // AdoptNode retains position, not native scale. Rotate the actual component
   // so the fitted 4.5 cm selector cannot become a one-metre interaction blocker.
   if(const auto* N=Selector.W->Node(Selector.I))if(auto* C=N->Comp.Get())
-   C->SetWorldRotation(FRotator(0,0,Service>=3&&Service<=8?FMath::RadiansToDegrees(.65):0));
+   C->SetWorldRotation(FRotator(0,0,ServiceTarget==TEXT("S-03")&&Service>=3&&Service<=8?FMath::RadiansToDegrees(.65):0));
  }
  if(FeederLamp)FeederLamp.SetColor(S47Three::Hex(M&&M->Freeform&&M->Freeform->PowerFault()?0xc57d32:0x58a769));
  if(FeederLever)FeederLever.SetRotX(Feeder>=2&&Feeder<5?.55:0);
@@ -806,22 +838,28 @@ void FS47FreeformWorld::RoadsideAssist()
  M->Freeform->RecordEvidence(TEXT("roadside"),TEXT("Roadside return used; the interrupted trip and cargo were retained."));
 }
 
-bool FS47FreeformWorld::TriggerServiceFault()
+bool FS47FreeformWorld::TriggerServiceFault(bool bTraining,const FString& RequestedDish)
 {
- if(!Ready()||HasArrayFault()||M->Freeform->PowerFault())return false;
- Service=1;Settle=0;LastFaultDay=M->Freeform->Day();if(S03()>=0)M->Web->SetDishRemoteAvailable(S03(),false);
+ if(!Ready()||HasArrayFault()||M->Freeform->PowerFault()||(Service==9&&M->Freeform->ActiveServiceGuide()==1))return false;
+ if(!RequestedDish.IsEmpty()&&!ValidServiceDish(RequestedDish))return false;
+ const FString Target=bTraining?TEXT("S-03"):RequestedDish.IsEmpty()?OrdinaryServiceDish(OrdinaryServiceSerial):RequestedDish;
+ int32 Index=INDEX_NONE;for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==Target)Index=I;
+ // Authored cabinet items use the existing HUD fallback; not all have native Inter overrides.
+ if(Index<0||!M->Web->Item(TEXT("field:")+Target))return false;
+ ServiceTarget=Target;if(!bTraining&&RequestedDish.IsEmpty())OrdinaryServiceSerial=(OrdinaryServiceSerial+1)%27;
+ Service=1;Settle=0;LastFaultDay=M->Freeform->Day();M->Web->SetDishRemoteAvailable(Index,false);
  Change(TEXT("ARRAY STATUS (left-hand PC): Select S-03 to diagnose its failed remote link, or inspect the S-03 CABLE JUNCTION cabinet beside the antenna. Other antennas remain available."));return true;
 }
 void FS47FreeformWorld::DiagnoseService(){if(Ready()&&Service==1){Service=2;Change(TEXT("S-03 command relay failed. At the S-03 CABLE JUNCTION cabinet: select LOCAL, open the hatch and replace one drive relay. Stock parts are carried in your service pouch; no upgrade is needed."));}}
 FString FS47FreeformWorld::ServiceStatus() const
 {
- const int32 I=S03();
+ const int32 I=ServiceDishIndex();
  const bool Powered=M&&M->Freeform&&(!M->Freeform->PowerFault()||HasBackupPower());
  const bool Moving=I>=0&&(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),M->Web->DishTargetAz(I)))>.1||FMath::Abs(M->Web->DishEl(I)-M->Web->DishTargetEl(I))>.1);
  const FString State=!Powered?TEXT("NO POWER / movement held"):I<0?TEXT("ENCODER UNAVAILABLE"):Service==1||Service==2?TEXT("FAULT / command relay failed"):Service>=3&&Service<=6?TEXT("LOCAL / remote isolated"):Service==7||Service==8?TEXT("LOCAL TEST / moving and settling"):Moving?TEXT("REMOTE / moving"):TEXT("REMOTE / ready");
  const FString Next=Service==0||Service==9?TEXT("Select a source and command tracking on the tracking PC."):Service==7||Service==8?Powered?TEXT("Watch the antenna turn out and return; REMOTE follows a passed test."):TEXT("Restore feeder power or start the fuelled backup generator; the test resumes."):Label(TEXT("ff:service"));
  const FString Encoder=I>=0?FString::Printf(TEXT("ENCODER %.1f / %.1f | TARGET %.1f / %.1f | %s"),M->Web->DishAz(I),M->Web->DishEl(I),M->Web->DishTargetAz(I),M->Web->DishTargetEl(I),M->Web->DishRemoteAvailable(I)?TEXT("REMOTE ENABLED"):TEXT("REMOTE DISABLED")):TEXT("ENCODER UNAVAILABLE");
- return FString::Printf(TEXT("S-03: %s\n%s\nLOCAL SERVICE: existing S-03 CABLE JUNCTION cabinet at ground level.\nDRIVE RELAYS IN POUCH: %d / required: %d\nNEXT: %s\n%s"),*State,*Encoder,InventoryCount(TEXT("relay")),HasArrayFault()&&Service<5?1:0,*Next,Service>=5?TEXT("Replacement already fitted. No further relay is consumed for closing, testing or Continue."):InventoryCount(TEXT("relay"))>0?TEXT("Stock relays can be fitted directly; no upgrade or service case is required."):TEXT("CALICHE GAS STATION: Buy a drive relay. GARAGE RECEIVING: Unload and unpack its parcel. CALIBRATION / REPAIR: Test donor controllers before use."));
+ return ServiceWords(FString::Printf(TEXT("S-03: %s\n%s\nLOCAL SERVICE: existing S-03 CABLE JUNCTION cabinet at ground level.\nDRIVE RELAYS IN POUCH: %d / required: %d\nNEXT: %s\n%s"),*State,*Encoder,InventoryCount(TEXT("relay")),HasArrayFault()&&Service<5?1:0,*Next,Service>=5?TEXT("Replacement already fitted. No further relay is consumed for closing, testing or Continue."):InventoryCount(TEXT("relay"))>0?TEXT("Stock relays can be fitted directly; no upgrade or service case is required."):TEXT("CALICHE GAS STATION: Buy a drive relay. GARAGE RECEIVING: Unload and unpack its parcel. CALIBRATION / REPAIR: Test donor controllers before use.")));
 }
 bool FS47FreeformWorld::ServiceUse()
 {
@@ -834,7 +872,7 @@ bool FS47FreeformWorld::ServiceUse()
   case 3:Service=4;Change(TEXT("S-03 CABLE JUNCTION: Hatch open. Seat a compatible replacement relay from your stock."));break;
   case 4:if(!Consume(TEXT("relay"))){Change(TEXT("CALICHE GAS STATION: Buy a relay; your pouch is empty. GARAGE RECEIVING: Unpack its parcel. CALIBRATION / REPAIR: Test a donor before using its relay."));return true;}Service=5;Change(TEXT("S-03 CABLE JUNCTION: Replacement relay seated. Close the cover before the movement test."));break;
   case 5:Service=6;Change(TEXT("S-03 CABLE JUNCTION: Cover secured. Start the local five-degree out-and-back test."));break;
-  case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(S03()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(S03());ServiceEl=M->Web->DishEl(S03());Service=7;Settle=0;M->Web->PointDish(S03(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("S-03 CABLE JUNCTION: Wait for the automatic five-degree out-and-back test. REMOTE returns after the test passes."));break;
+  case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(ServiceDishIndex()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(ServiceDishIndex());ServiceEl=M->Web->DishEl(ServiceDishIndex());Service=7;Settle=0;M->Web->PointDish(ServiceDishIndex(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("S-03 CABLE JUNCTION: Wait for the automatic five-degree out-and-back test. REMOTE returns after the test passes."));break;
   case 7:case 8:Change(ServiceStatus());break;
  }
  return true;
@@ -873,7 +911,12 @@ bool FS47FreeformWorld::Use(const FString& Id)
  if(Id==TEXT("ff:sample")){OpenSampleLab();return true;}
  if(Id==TEXT("ff:parcel"))return ParcelUse();
  if(Id==TEXT("ff:cargo"))return CargoUse();
- if(Id==TEXT("ff:service")||Id==TEXT("obs:service")||Id==TEXT("field:S-03"))return ServiceUse();
+ if(Id.StartsWith(TEXT("field:")))
+ {
+  if(Id!=TEXT("field:")+ServiceTarget){Change(Label(Id));return true;}
+  return ServiceUse();
+ }
+ if(Id==TEXT("ff:service")||Id==TEXT("obs:service"))return ServiceUse();
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return GeneratorUse();
  if(Id==TEXT("ff:feeder")||Id==TEXT("substation:service")||Id==TEXT("substation:lamp")||Id==TEXT("substation:journal"))return FeederUse();
  return false;
@@ -900,11 +943,13 @@ FString FS47FreeformWorld::Label(const FString& Id) const
  if(Id==TEXT("ff:cargo"))return Payload==2?TEXT("Secure carried parcel in truck"):Payload==3?TEXT("Unload parcel from truck"):TEXT("Truck fuel / cargo rack");
  if(Id==TEXT("ff:generator")||Id==TEXT("obs:generator"))return bGenerator?TEXT("Stop backup generator"):TEXT("Start / fuel backup generator");
  if(Id==TEXT("ff:feeder")||Id==TEXT("substation:service")||Id==TEXT("substation:lamp")||Id==TEXT("substation:journal"))return M->Freeform->PowerFault()?Feeder==4&&FeederSeconds>0?TEXT("Feeder test running"):Feeder==4?TEXT("Run feeder replacement-fuse test"):Feeder==3?TEXT("Replace isolated feeder control fuse"):Feeder==2?TEXT("Open enclosed feeder isolation switch"):TEXT("Measure SARO feeder supply"):TEXT("Check normal feeder supply");
- if(Id==TEXT("ff:service")||Id==TEXT("obs:service")||Id==TEXT("field:S-03"))
+ if(Id.StartsWith(TEXT("field:"))&&Id!=TEXT("field:")+ServiceTarget)
+  return FString::Printf(TEXT("%s / REMOTE ready / no local fault; active work order: %s"),*Id.Mid(6),*ServiceTarget);
+ if(Id==TEXT("ff:service")||Id==TEXT("obs:service")||Id==TEXT("field:")+ServiceTarget)
  {
-  if(Service>=6&&Service<=8&&M->Freeform->PowerFault()&&!HasBackupPower())return TEXT("S-03 NO POWER / restore feeder or generator");
-  if(Service==4&&InventoryCount(TEXT("relay"))<=0)return TEXT("GARAGE RECEIVING: Unpack a drive relay for S-03");
-  static const TCHAR* Labels[]={TEXT("Inspect healthy S-03 control"),TEXT("Diagnose S-03 failed relay / no kit required"),TEXT("Select S-03 LOCAL service"),TEXT("Open S-03 relay hatch"),TEXT("Seat compatible replacement relay"),TEXT("Close S-03 relay hatch"),TEXT("Run S-03 local movement test"),TEXT("Local test: outward movement"),TEXT("Local test: return movement"),TEXT("S-03 verified / REMOTE restored")};return Labels[FMath::Clamp(Service,0,9)];
+  if(Service>=6&&Service<=8&&M->Freeform->PowerFault()&&!HasBackupPower())return ServiceWords(TEXT("S-03 NO POWER / restore feeder or generator"));
+  if(Service==4&&InventoryCount(TEXT("relay"))<=0)return ServiceWords(TEXT("GARAGE RECEIVING: Unpack a drive relay for S-03"));
+  static const TCHAR* Labels[]={TEXT("Inspect healthy S-03 control"),TEXT("Diagnose S-03 failed relay / no kit required"),TEXT("Select S-03 LOCAL service"),TEXT("Open S-03 relay hatch"),TEXT("Seat compatible replacement relay"),TEXT("Close S-03 relay hatch"),TEXT("Run S-03 local movement test"),TEXT("Local test: outward movement"),TEXT("Local test: return movement"),TEXT("S-03 verified / REMOTE restored")};return ServiceWords(Labels[FMath::Clamp(Service,0,9)]);
  }
  return FString();
 }
@@ -928,10 +973,10 @@ void FS47FreeformWorld::Step(double Dt)
  }
  if((Service==7||Service==8)&&(!M->Freeform->PowerFault()||HasBackupPower()))
  {
-  const int32 I=S03();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);
+  const int32 I=ServiceDishIndex();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);
    const bool On=FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Target))<=.1&&FMath::Abs(M->Web->DishEl(I)-ServiceEl)<=.1;
    Settle=On?Settle+FMath::Min(Dt,.1):0;
-   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-s03"),TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored."));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("OPS (corner PC), SERVICE: Local test passed; REMOTE restored. Verify and archive the completed work order."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
+   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-")+ServiceTarget.ToLower().Replace(TEXT("-"),TEXT("")),ServiceWords(TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored.")));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("OPS (corner PC), SERVICE: Local test passed; REMOTE restored. Verify and archive the completed work order."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
   }
  }
  if(!BenchJob.IsEmpty())
@@ -1029,6 +1074,26 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
   C(ServiceRestore.ServiceStage()==Stage&&ServiceRestore.InventoryCount(TEXT("relay"))==(Stage<5?1:0)&&ServiceRestore.ServiceAz==358.5&&ServiceRestore.ServiceEl==31.25&&ServiceRestore.Settle==.7,TEXT("S-03 Continue retains repair stage, one-time part consumption and local-test progress"));
  }
  C(W.InteractionPoint(TEXT("ff:service")).Equals(FVector(4.647,-.01,-39.4),.001),TEXT("S-03 service uses the original cable-junction front, not a second stand"));
+ TSet<FString> Targets;bool Valid=true;
+ for(int32 N=0;N<27;++N){const FString Id=OrdinaryServiceDish(N);Targets.Add(Id);Valid&=ValidServiceDish(Id)&&Id==OrdinaryServiceDish(N+27);}
+ C(Valid&&Targets.Num()==27&&!ValidServiceDish(TEXT("S-00"))&&!ValidServiceDish(TEXT("S-28"))&&!ValidServiceDish(TEXT("S-3")),TEXT("Ordinary service visits each of 27 actual antenna IDs before repeating and rejects malformed targets"));
+ bool Preserved=true;
+ for(int32 N=1;N<=27;++N)for(int32 Stage:{1,4,5,7,8,9})
+ {
+  W.ServiceTarget=FString::Printf(TEXT("S-%02d"),N);W.Service=Stage;W.OrdinaryServiceSerial=19;
+  W.Stock.FindOrAdd(TEXT("relay"))=Stage<5?1:0;
+  FS47FreeformWorld Copy(nullptr);Copy.Begin(S47J::Read(S47J::Write(W.Save())));
+  Preserved&=Copy.ServiceDishId()==W.ServiceDishId()&&Copy.ServiceStage()==Stage&&Copy.OrdinaryServiceSerial==19
+   &&Copy.InventoryCount(TEXT("relay"))==(Stage<5?1:0)&&Copy.ServiceAz==W.ServiceAz&&Copy.ServiceEl==W.ServiceEl&&Copy.Settle==W.Settle;
+ }
+ C(Preserved,TEXT("All 27 cabinet targets retain repair/test stage, relay consumption, encoder origin and selection sequence through Continue"));
+ auto OldService=W.Save();OldService->RemoveField(TEXT("serviceDish"));OldService->RemoveField(TEXT("ordinaryServiceSerial"));
+ FS47FreeformWorld OldServiceCopy(nullptr);OldServiceCopy.Begin(S47J::Read(S47J::Write(OldService)));
+ C(OldServiceCopy.ServiceDishId()==TEXT("S-03")&&OldServiceCopy.OrdinaryServiceSerial==0&&OldServiceCopy.ServiceStage()==W.ServiceStage(),TEXT("Legacy service saves keep original S-03 identity and stage without choosing another fault"));
+ S47J::Set(OldService,TEXT("serviceDish"),TEXT("S-99"));OldServiceCopy.Begin(OldService);
+ C(OldServiceCopy.ServiceDishId()==TEXT("S-03"),TEXT("Invalid saved service target falls back to original S-03 instead of indexing unrelated geometry"));
+ W.ServiceTarget=TEXT("S-03");
+
  FS47FreeformWorld Rescue(nullptr);Rescue.Begin();Rescue.Stock.FindOrAdd(TEXT("fuse"))=0;Rescue.EmergencyDay=7;Rescue.Feeder=3;
  Rescue.TrackPowerFault(true);const int32 Fault=Rescue.PowerFaultSerial;
  C(Fault==1&&Rescue.CanIssueEmergencyFuse(true)&&!Rescue.CanIssueEmergencyFuse(false),TEXT("Feeder rescue is tied to an actual outage and is not consumed by the ordinary daily requisition"));
