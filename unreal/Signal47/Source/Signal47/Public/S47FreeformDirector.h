@@ -22,10 +22,13 @@ public:
  void RoomLightInput(const FString& Room,int32 Serial,bool bOff);
  FString InspectRoomLight(const FString& Room);
  bool Force(const FString& Id); // explicit developer/test action; still needs a usable world
- struct FPhotoClaim { FString Id,PhotoId,Title; int32 Reward=20; double Quality=0; bool bPaid=false; };
+ struct FPhotoClaim { FString Id,PhotoId,Title,ControlOriginalId,ControlPhotoId; double ControlPlannedAt=-1; int32 Reward=20; double Quality=0; bool bPaid=false; };
  const TArray<FPhotoClaim>& PhotoClaims() const { return Claims; }
  bool RegisterPhotoClaim(const FString& Id);
  bool PlanPhotoControl(const FString& Id);
+ FString PhotoControlHint(const FString& Id) const;
+ FString PhotoControlFieldHint(bool& bReady) const;
+ bool RegisterPhotoControl(const FString& Id,const FString& ControlPhotoId);
  void TagPhoto(FS47AlbumShot& Shot); // rendered exposures only, before album persistence
  void Photo(const FS47AlbumShot& Shot);
  double LastPhotoSubjectMean() const { return PhotoSubjectMean; } // last non-emissive exposure, -1 if no valid region
