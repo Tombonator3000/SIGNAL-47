@@ -22,6 +22,7 @@
 #include "Components/DecalComponent.h"
 #include "Components/LocalFogVolumeComponent.h"
 #include "S47Inter.h"
+#include "S47MesaRock.h"
 #include "S47Audio.h"
 #include "S47UI.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -419,6 +420,7 @@ void FS47EastWing::Walls()
 bool FS47EastWing::Step(float Dt)
 {
  if(!bBuilt&&M&&M->Web&&M->Web->IsLoaded()&&M->World)Init();
+ if(M&&M->Web&&M->Web->IsLoaded())S47MesaRock::Step(M->Web,Dt); // distant mesas (independent of the wing)
  if(bBuilt&&M&&M->Web)
  {
   // Not adopted into the exported hierarchy: shown only while SARO is the loaded area.
