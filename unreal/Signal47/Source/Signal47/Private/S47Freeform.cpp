@@ -168,7 +168,12 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
  Cases.Load(S47J::Obj(Saved,TEXT("cases")),JobSeed);
  // Older saves: an already retained discrepancy opens its case retroactively.
  for(const auto& F:Findings){const int32 Line=FS47FreeformCases::LineForFinding(F.Key);if(Line>=0)Cases.Open(Line,FMath::Max(1,FindingDays.FindRef(F.Key)),20*3600.);}
- for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->Planned>=0&&!Work.ContainsByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseLine==Line&&J.CaseTest==C->Planned&&!J.bCaseRecorded;}))Cases.CancelPlan(Line);
+ for(int32 Line=0;Line<FS47FreeformCases::CaseCount;++Line)if(const auto* C=Cases.Get(Line);C&&C->Planned>=0)
+ {
+  // Field work has its own retained plan ID and deliberately creates no receiver job.
+  const bool FieldPlan=C->bOpen&&!C->bConcluded&&!C->Results[C->Planned].bDone&&CaseCondition(Line,C->Planned)==ECaseCondition::FieldWork;
+  if(!FieldPlan&&!Work.ContainsByPredicate([&](const FJob& J){return J.Id==C->PlannedJob&&J.CaseLine==Line&&J.CaseTest==C->Planned&&!J.bCaseRecorded;}))Cases.CancelPlan(Line);
+ }
  AddDay(DayNumber);
  if(!Director)Director=MakeShared<FS47FreeformDirector>(M);
  if(!Field)Field=MakeShared<FS47FreeformWorld>(M);
@@ -1230,6 +1235,13 @@ int32 FS47FreeformSession::PlannedFieldTest(int32 Line)const
  const auto* C=Cases.Get(Line);if(!C||!C->bOpen||C->bConcluded||C->Planned<0)return -1;
  return CaseCondition(Line,C->Planned)==ECaseCondition::FieldWork?C->Planned:-1;
 }
+bool FS47FreeformSession::CancelFieldTest(int32 Line)
+{
+ const int32 Test=PlannedFieldTest(Line);const auto* C=Cases.Get(Line);
+ if(Test<0||!C||C->PlannedJob.IsEmpty()||C->Results[Test].bDone)return false;
+ Cases.CancelPlan(Line);
+ Changed(TEXT("OPS / CASE BOARD: Field plan cleared, no result recorded. You may plan another field test."));return true;
+}
 bool FS47FreeformSession::FieldTestExpectsPresent(int32 Line,int32 Test)const
 {
  // Only the planned field test is answered, so world code cannot read the hidden cause freely.
@@ -1373,6 +1385,11 @@ void FS47FreeformSession::OpenCaseBoard(int32 Line)
    else if(C->Planned==T)Card+=TEXT("\nPLANNED / job ")+C->PlannedJob;
    List->AddSlot()[S47FreeformTerminal::Paper(Card)];
    if(!Res.bDone&&!C->bConcluded&&C->Planned<0&&!(D.Tests[T].Access&&!Cases.HasAccess(D.Tests[T].Access)))List->AddSlot()[S47FreeformTerminal::Button(TEXT("Plan this test: ")+FString(D.Tests[T].Name),[this,Line,T]{PlanCaseTest(Line,T);OpenCaseBoard(Line);},true)];
+  }
+  if(PlannedFieldTest(Line)>=0)
+  {
+   List->AddSlot()[S47FreeformTerminal::Small(TEXT("Cancel clears only this field plan. No result or reward is recorded; retained evidence stays unchanged."))];
+   List->AddSlot()[S47FreeformTerminal::Button(TEXT("Cancel this field plan"),[this,Line]{CancelFieldTest(Line);OpenCaseBoard(Line);},false)];
   }
   Rows.Add(SNew(SBox).HeightOverride(240)[List]);
   if(!C->bConcluded)
@@ -1659,6 +1676,16 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   const int32 JobsBefore3=Case.Jobs().Num();
   Check(!Case.PlanCaseTest(2,2)&&Case.FeedbackText().Contains(TEXT("field logger")),TEXT("The two-site test waits for the loan field logger from the first case"));
   Check(Case.PlanCaseTest(2,1)&&Case.Jobs().Num()==JobsBefore3&&Case.PlannedFieldTest(2)==1,TEXT("A field test is planned without a receiver job"));
+  const FString FieldPlanId=Case.CaseFile().Get(2)->PlannedJob;
+  FS47FreeformSession FieldAgain(nullptr);FieldAgain.Begin(S47J::Read(S47J::Write(Case.Save())));
+  Check(FieldAgain.PlannedFieldTest(2)==1&&FieldAgain.CaseFile().Get(2)->PlannedJob==FieldPlanId&&FieldAgain.Jobs().Num()==JobsBefore3,TEXT("A planned field test survives JSON save/Continue with its original ID and no receiver job"));
+  Check(FieldAgain.CaseFile().Get(1)->Planned==1,TEXT("A matching unfinished receiver case job remains planned after Continue"));
+  Check(!FieldAgain.CancelFieldTest(1)&&FieldAgain.CaseFile().Get(1)->Planned==1,TEXT("Field-plan cancellation cannot cancel an active receiver case job"));
+  auto MissingJob=Case.Save();const auto SavedCases=S47J::Arr(S47J::Obj(MissingJob,TEXT("cases")),TEXT("cases"));
+  S47J::Set(SavedCases[1]->AsObject(),TEXT("plannedJob"),TEXT("missing-receiver-job"));
+  FS47FreeformSession MissingAgain(nullptr);MissingAgain.Begin(S47J::Read(S47J::Write(MissingJob)));
+  Check(MissingAgain.CaseFile().Get(1)->Planned<0&&MissingAgain.PlannedFieldTest(2)==1,TEXT("Continue discards an orphan receiver plan while preserving independent field work"));
+  FieldAgain.Stop();MissingAgain.Stop();
   const bool bTrace=Case.FieldTestExpectsPresent(2,1);
   Check(!Case.ReportFieldTest(2,0,true,true,TEXT("x"))&&Case.ReportFieldTest(2,1,true,bTrace,TEXT("seal and strips inspected"))&&Case.CaseFile().Get(2)->Results[1].bDone&&Case.PlannedFieldTest(2)==-1&&!Case.FieldTestExpectsPresent(2,1),TEXT("Only the planned field test is answered and reported; the hidden cause is not readable afterwards"));
  }

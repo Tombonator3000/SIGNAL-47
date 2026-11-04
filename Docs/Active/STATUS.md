@@ -26,6 +26,8 @@ Utilgjengelige antenner reduserer nå Freeforms målerate etter tilgjengelige an
 
 Tittelarbeid på `codex/night-support-20261103` er foreløpig under kontroll, ikke levert til PR379: periodiske stiliserte UFO-lys og ryddet VHS-lifecycle. Bygg og tidligere 12 meny-/timingkontroller samt PCM-prøve består. Siste endring oppfrisker Slates tegnede lys; build-r30 består, men title-r4 ble merket UNVERIFIED av motorvakten ved overlappende Claude-jobb. Endelig kort kontroll venter på avtalt motorvindu. Installert lydnivå og menneskelig komfortvurdering gjenstår.
 
+Separat Visitors-gjennomgang bekrefter at de tre feltforsøkene mangler produksjonskobling til verden; saken er ikke spillbart ferdig. En avgrenset rettelse bevarer planlagte feltprøver ved Continue og lar spilleren avbryte dem uten resultat eller belønning. Kilden og kort disk-/Continue-test er klargjort på nattgrenen, men bygg/native kontroll venter på avtalt motorvindu. Dette er ikke levert i PR379.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.
