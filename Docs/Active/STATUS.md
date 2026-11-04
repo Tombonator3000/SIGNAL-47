@@ -18,6 +18,8 @@ Nye Freeform-spill henter kameraet fysisk fra fotolabens arkivbenk. Eierskap lag
 
 Caliche-handelen skjer nå inne ved den eksisterende butikkdisken. Flere kjøp kan legges til én betalt pakke uten å lukke menyen; innholdet følger henting, transport og Continue og blir lagerført én gang ved GARAGE RECEIVING. Lagergrensen kontrolleres før betaling og levering, og eldre enkeltpakker migreres. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; native sikting, menyknapper og last-/leveringshandlinger er prøvd med eksplisitte spiller-/bilplasseringer. Disk og meny er visuelt kontrollert. Ingen ny full kjøretur eller installasjon er påstått.
 
+OPS-navigasjonen er kontrollert gjennom alle seks sider med samme PC-visning. Serviceaksept og målbytte beholder nå vinduet; OVERVIEW går hjem og Escape går til rommet. Dagskøen forklarer flere oppdrag og ferdig arbeid, og tomt arkiv viser konkret neste steg. Bygg og 37 native kontroller består med gjennomgåtte skjermbilder. Tomt/utfylt arkiv og fullført dagskø bruker eksplisitte testtilstander; ingen full arbeidsreise eller installasjon hevdes.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.

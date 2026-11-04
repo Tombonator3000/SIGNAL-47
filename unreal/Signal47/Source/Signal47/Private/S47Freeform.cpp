@@ -885,7 +885,7 @@ TSharedRef<SWidget> FS47FreeformSession::OpsShell(int32 Section,TSharedRef<SWidg
  Items.Add({TEXT("CASE ARCHIVE"),Section==3,[this]{Feedback.Empty();OpenArchive();}});
  Items.Add({TEXT("SERVICE"),Section==4,[this]{Feedback.Empty();OpenServiceGuide();},Service});
  Items.Add({TEXT("SUPPLIES"),Section==5,[this]{Feedback.Empty();OpsSection=5;OpenOperations();},Photos});
- return T::Columns({{.21f,T::Nav(Items)},{.79f,Content}},16);
+ return T::Columns({{.21f,S47Kit::Col({T::Nav(Items),T::Small(TEXT("OVERVIEW returns to the OPS main menu. ESC returns to the room."))})},{.79f,Content}},16);
 }
 void FS47FreeformSession::OpenOperations()
 {
@@ -936,6 +936,11 @@ void FS47FreeformSession::OpenOperations()
   }
   return S47Kit::Col(A);
  };
+ int32 Remaining=0,TodayRemaining=0,EarlierRemaining=0;
+ for(const auto& X:Work)if(X.Stage!=EJobStage::Filed){++Remaining;if(X.Day==DayNumber)++TodayRemaining;else if(X.Day<DayNumber)++EarlierRemaining;}
+ const FString QueueExplanation=Remaining==0
+  ?FString(TEXT("ALL AVAILABLE WORK COMPLETE / No further observing jobs are waiting. Retained results remain in CASE ARCHIVE. Review open cases on CASE BOARD, or use REST UNTIL MORNING on OVERVIEW for the next day's jobs."))
+  :FString::Printf(TEXT("MORE WORK / %d unfinished today, %d carried over. Each morning at 08:00 brings three observing jobs, including a choice for the third. Select another row in DAILY WORK; SHOW EARLIER WORK reveals previous days. Finish any active recording or control before switching. Unfinished jobs remain available."),TodayRemaining,EarlierRemaining);
  const FJob* J=CurrentJob();
  auto Account=T::Panel(TEXT("STATION ACCOUNT"),S47Kit::Col({
   T::Value(TEXT("OPERATING BUDGET"),FString::Printf(TEXT("$%d"),Cash)),T::Value(TEXT("REQUISITION"),FString::Printf(TEXT("$%d"),Loan)),
@@ -943,6 +948,7 @@ void FS47FreeformSession::OpenOperations()
   T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return NextAction().ToUpper();}),true)}));
  if(Section==0)
  {
+  Rows.Add(T::Small(QueueExplanation));
   if(!Work.ContainsByPredicate([](const FJob& X){return X.Source==0&&X.Stage==EJobStage::Filed;}))
    Rows.Add(T::Small(TEXT("OPTIONAL FIRST JOB / Establish a normal reference: complete the 3C 286 calibration cross and register it here, so later discrepancies can be compared against working instruments.")));
   auto Today=T::Panel(TEXT("TODAY'S WORK"),S47Kit::Col({T::Table({TEXT("JOB"),TEXT("SOURCE"),TEXT("STATUS")},{1.25f,1.35f,1.f},Rows4(false)),
@@ -957,6 +963,7 @@ void FS47FreeformSession::OpenOperations()
  }
  if(Section==1)
  {
+  Rows.Add(T::Small(QueueExplanation));
   auto Queue=T::Panel(FString::Printf(TEXT("WORK QUEUE (DAY %02d)"),DayNumber),S47Kit::Col({T::Table({TEXT("ID"),TEXT("SOURCE"),TEXT("STATE")},{1.4f,1.3f,1.f},Rows4(true)),
    T::Big(FString(bShowEarlierJobs?TEXT("HIDE EARLIER WORK"):TEXT("SHOW EARLIER WORK")),[this]{bShowEarlierJobs=!bShowEarlierJobs;OpenOperations();})}));
   TArray<S47Kit::FW> D;
@@ -1125,6 +1132,9 @@ void FS47FreeformSession::OpenArchive()
  static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
  for(int32 I=0;I<3;++I)if(MysterySteps[I]>0)Rows.Add(S47Kit::Small(FString::Printf(TEXT("%s / %d of 3 / %s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT("CROSS-DAY COMPARISON AVAILABLE"):TEXT("FOLLOW-UP OPEN"))));
  TSharedRef<SScrollBox> List=SNew(SScrollBox);
+ const bool HasOriginal=Work.ContainsByPredicate([](const FJob& J){return J.bPrinted||!J.OriginalPage.IsEmpty();});
+ if(!HasOriginal&&Findings.IsEmpty())
+  List->AddSlot()[Paper(TEXT("NO RETAINED RECORDS YET\nSelect DAILY WORK at OPS, complete an observation and collect its original at the printer. Retained originals and field findings appear here automatically. Register routine results at OPS; an anomaly packet must also be collected and physically filed in the records-room binder. CASE BOARD holds open investigations; this archive does not issue new jobs."))];
  for(const FJob& J:Work)if(J.bPrinted||!J.OriginalPage.IsEmpty())
  {
   const FString Control=J.bControl?FString::Printf(TEXT("INDEPENDENT CONTROL %.1f/8 s"),J.ControlAt):FString(TEXT("CONTROL NOT RECORDED"));

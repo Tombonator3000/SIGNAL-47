@@ -4,6 +4,9 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "SS47ScreenView.h"
+#include "Framework/Application/SlateApplication.h"
+#include "Framework/Application/SlateUser.h"
 #include "S47Props.h"
 #include "S47Chapter1.h"
 #include "S47Audio.h"
@@ -68,7 +71,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -82,6 +85,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -198,6 +202,107 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))
+ {
+  if(Age>60){Finish(false,TEXT("bounded OPS navigation timeout"));return;}
+  auto Roots=[&](){TArray<TSharedRef<SWidget>> Out;TSet<const SWidget*> Seen;
+   if(F.TerminalOnGlass()&&FSlateApplication::IsInitialized())FSlateApplication::Get().ForEachUser([&](FSlateUser& User){TSharedPtr<SWidget> W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);return Out;};
+  auto Click=[&](const FString& Label){TArray<TSharedRef<SButton>> Buttons;for(const auto& W:Roots())PhotoButtons(W,Label,Buttons);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("unique enabled OPS native button: ")+Label))return false;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();return true;
+#else
+   Finish(false,TEXT("native OPS navigation requires development build"));return false;
+#endif
+  };
+  TFunction<bool(const TSharedRef<SWidget>&,const FString&)> Contains;
+  Contains=[&](const TSharedRef<SWidget>& W,const FString& Text){if(!W->GetVisibility().IsVisible())return false;if(W->GetTypeAsString()==TEXT("STextBlock")&&StaticCastSharedRef<STextBlock>(W)->GetText().ToString().Contains(Text))return true;auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)if(Contains(C->GetChildAt(I),Text))return true;return false;};
+  auto HasText=[&](const FString& Text){for(const auto& W:Roots())if(Contains(W,Text))return true;return false;};
+  auto StillAtOps=[&](){return F.TerminalOnGlass()&&F.ActiveTerminalScreen()==3&&M->Hud->ModalWidget()==OpsModal.Pin()&&M->UI->Modal();};
+  static const TCHAR* Labels[]={TEXT("DAILY WORK"),TEXT("CASE BOARD"),TEXT("CASE ARCHIVE"),TEXT("SERVICE"),TEXT("SUPPLIES")};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&M->World->Area==TEXT("saro")&&F.Jobs().Num()>=2,TEXT("isolated fresh SARO OPS navigation fixture")))return;
+   M->UI->Close(true);F.Director->Stop();const FVector Ops=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(Ops.X,Ops.Z+1.1,0);F.Use(TEXT("opsTerminal"));OpsModal=M->Hud->ModalWidget();OpsNavStep=0;Go(8801,.8);return;
+  }
+  if(Stage==8801)
+  {
+   if(!Check(StillAtOps()&&F.TerminalWindowRendered()&&F.OperationsSection()==0&&HasText(TEXT("MORE WORK /")),TEXT("native OPS overview explains more work while rendering on the physical CRT")))return;
+   Shot(TEXT("ops-overview"));Go(8802,.3);return;
+  }
+  if(Stage==8802)
+  {
+   if(!Click(Labels[OpsNavStep]))return;Go(8803,.3);return;
+  }
+  if(Stage==8803)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==OpsNavStep+1,FString(TEXT("OPS navigation changes page without closing or replacing the physical screen: "))+Labels[OpsNavStep]))return;
+   if(OpsNavStep==0)
+   {
+    if(!Check(HasText(TEXT("MORE WORK /")),TEXT("daily work explains available and carried-over jobs")))return;
+    const FString Id=F.Jobs()[1].Id;if(!Click(Id))return;
+    if(!Check(StillAtOps()&&F.CurrentJob()->Id==Id&&F.OperationsSection()==1,TEXT("native daily-work row selects another available job inside OPS")))return;
+    Shot(TEXT("ops-daily-work"));Go(8804,.3);return;
+   }
+   if(OpsNavStep==2)
+   {
+    if(!Check(HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(TEXT("collect its original at the printer")),TEXT("empty archive explains where retained records come from")))return;
+    Shot(TEXT("ops-empty-archive"));Go(8804,.3);return;
+   }
+   if(OpsNavStep==3)
+   {
+    if(!Click(TEXT("Accept / use SARO stock")))return;Go(88031,.3);return;
+   }
+   Go(8804);return;
+  }
+  if(Stage==88031)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==4&&F.Field->HasArrayFault(),TEXT("accepting service order refreshes SERVICE while the same OPS screen stays open")))return;
+   if(!Click(TEXT("Show observing objective / retain unfinished service")))return;Go(88032,.3);return;
+  }
+  if(Stage==88032)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==4&&HasText(TEXT("Follow service objective")),TEXT("service focus toggle remains inside OPS and offers the inverse action")))return;
+   Go(8804);return;
+  }
+  if(Stage==8804)
+  {
+   if(!Click(TEXT("OVERVIEW")))return;Go(8805,.3);return;
+  }
+  if(Stage==8805)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==0,TEXT("OVERVIEW returns home without a physical exit")))return;
+   if(++OpsNavStep<5){Go(8802);return;}
+   // Explicit completed-work/retained-original fixture for the two alternate UI states.
+   auto Save=S47J::Read(S47J::Write(F.Save()));auto Jobs=S47J::Arr(Save,TEXT("jobs"));
+   for(const auto& V:Jobs)S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));
+   S47J::Set(Jobs[0]->AsObject(),TEXT("printed"),true);S47J::Set(Jobs[0]->AsObject(),TEXT("originalPage"),TEXT("Explicit OPS test retained original"));
+   M->UI->Close(true);F.Begin(Save);F.Director->Stop();F.Use(TEXT("opsTerminal"));OpsModal=M->Hud->ModalWidget();Go(88051,.6);return;
+  }
+  if(Stage==88051)
+  {
+   if(!Check(StillAtOps()&&HasText(TEXT("ALL AVAILABLE WORK COMPLETE"))&&HasText(TEXT("REST UNTIL MORNING")),TEXT("explicit completed-work fixture explains how to get the next day's jobs")))return;
+   if(!Click(TEXT("CASE ARCHIVE")))return;Go(88052,.3);return;
+  }
+  if(Stage==88052)
+  {
+   if(!Check(StillAtOps()&&F.OperationsSection()==3&&!HasText(TEXT("NO RETAINED RECORDS YET"))&&HasText(F.Jobs()[0].Id+TEXT(" / ORIGINAL")),TEXT("retained-original fixture replaces empty archive guidance with the actual indexed job")))return;
+   if(!Click(TEXT("OVERVIEW")))return;Go(88053,.3);return;
+  }
+  if(Stage==88053)
+  {
+   const auto Modal=M->Hud->ModalWidget();
+   if(!Check(Modal&&Modal->GetTypeAsString()==TEXT("SS47ScreenView"),TEXT("physical leave uses the actual screen view controller")))return;
+   StaticCastSharedPtr<SS47ScreenView>(Modal)->Leave();Go(8806,1.);return;
+  }
+  if(Stage==8806)
+  {
+   if(!Check(!F.TerminalOnGlass()&&!M->UI->Modal()&&F.ActiveTerminalScreen()==-1,TEXT("separate physical leave returns to room and clears OPS modal")))return;
+   Finish(true,TEXT("All OPS pages, job selection, empty archive, service accept/focus, overview return and physical leave passed."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))
  {
   if(Age>120){Finish(false,TEXT("bounded store basket test timeout"));return;}

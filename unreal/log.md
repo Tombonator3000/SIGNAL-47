@@ -1707,3 +1707,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 2026 kl.06:07: Codex leverer FF-CAMERA-01: fysisk kamera på fotolabens arkivbenk, lagret eierskap og bevarte eldre lagringer. Editorbygg og 23 målrettede kontroller med to disk-/Continue-runder består; faktisk henting/eksponering og Story-plassering kontrollert. Ingen installasjon eller fullregresjon.
 
 4. november 2026 kl.06:20: Codex leverer FF-SHOP-01: innendørs butikkdisk og flere betalte varer i én fysisk pakke uten å lukke menyen. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; nøyaktig betaling/lager, native sikting, meny og før-/etterbilder kontrollert. Eksplisitte transportplasseringer, ingen ny full kjøretur eller installasjon.
+
+4. november 2026 06:30: codex/night-support-20261103: OPS beholder visningen ved serviceaksept/målbytte, forklarer dagskø og tomt arkiv. build-r21 og ops-r1 består37 native kontroller, tre skjermbilder gjennomgått; ingen ny fullregresjon eller installasjon.
