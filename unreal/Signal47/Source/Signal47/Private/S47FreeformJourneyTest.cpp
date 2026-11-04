@@ -30,6 +30,11 @@ void FS47FreeformJourneyTest::Go(int32 Next){Stage=Next;At=Age;}
 void FS47FreeformJourneyTest::PlaceAt(const FString& Id,double Offset)
 {
  M->UI->Close(true);const FVector P=M->Freeform->Field->InteractionPoint(Id);
+ if(Id==TEXT("ff:shop")||(Id==TEXT("ff:parcel")&&M->Freeform->Field->ParcelStage()==1))
+ {
+  // Explicit workstation approach fixture: customer side of the real indoor counter.
+  M->Player->Place(7981.8,2068.8,0);return;
+ }
  const bool RoadFront=Id==TEXT("ff:shop")||(Id==TEXT("ff:parcel")&&M->Web->Area()!=TEXT("saro"));
  M->Player->Place(P.X+(RoadFront?Offset:-Offset),P.Z,0);
 }

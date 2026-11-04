@@ -1705,3 +1705,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 2026 kl.05:53: Codex leverer FF-PRINTER-01 med fysisk mating/lyd, lagret kø og strømpause. Editorbygg og målrettet printerprøve består 26 kontroller og to disk-/Continue-runder; delvis/ferdig papir visuelt kontrollert. Originaler og betaling bevares. Ingen installasjon eller fullregresjon.
 
 4. november 2026 kl.06:07: Codex leverer FF-CAMERA-01: fysisk kamera på fotolabens arkivbenk, lagret eierskap og bevarte eldre lagringer. Editorbygg og 23 målrettede kontroller med to disk-/Continue-runder består; faktisk henting/eksponering og Story-plassering kontrollert. Ingen installasjon eller fullregresjon.
+
+4. november 2026 kl.06:20: Codex leverer FF-SHOP-01: innendørs butikkdisk og flere betalte varer i én fysisk pakke uten å lukke menyen. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; nøyaktig betaling/lager, native sikting, meny og før-/etterbilder kontrollert. Eksplisitte transportplasseringer, ingen ny full kjøretur eller installasjon.

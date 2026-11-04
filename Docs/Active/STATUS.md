@@ -16,6 +16,8 @@ Freeform-printeren har nå fysisk papirmating og printerlyd for original, regist
 
 Nye Freeform-spill henter kameraet fysisk fra fotolabens arkivbenk. Eierskap lagres eksplisitt; eldre lagringer beholder sitt tidligere tildelte kamera. Bygg og 23 målrettede kontroller består: faktisk sikting/henting, eksponering, to disk-/Continue-runder, legacy-migrering og tilbakeføring til Storys opprinnelige plassering. Før-/etterbilder viser kameraet på benken og fjernet etter henting. Også dette inngår i PR379 uten installasjon.
 
+Caliche-handelen skjer nå inne ved den eksisterende butikkdisken. Flere kjøp kan legges til én betalt pakke uten å lukke menyen; innholdet følger henting, transport og Continue og blir lagerført én gang ved GARAGE RECEIVING. Lagergrensen kontrolleres før betaling og levering, og eldre enkeltpakker migreres. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; native sikting, menyknapper og last-/leveringshandlinger er prøvd med eksplisitte spiller-/bilplasseringer. Disk og meny er visuelt kontrollert. Ingen ny full kjøretur eller installasjon er påstått.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.

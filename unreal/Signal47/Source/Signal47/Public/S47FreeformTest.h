@@ -16,6 +16,7 @@ private:
  double Age=0,At=0,Hold=0,InitialAz=0,InitialEl=0,PausedAz=0,PausedEl=0;
  FString Root,PhotoClaimId,RetainedPhotoId,RetainedPhotoUrl,PhotoEvent;
  int32 PhotoFigureId=-1,CameraShots=0,CameraFilm=0;
+ int32 ShopCash=0,ShopFuses=0,ShopRelays=0,ShopDelivered=0,ShopCargo=0,ShopClick=0;
  int32 PhotoBudget=0,PrinterBudget=0,WorkBudget=0;
  double PrinterHeld=0;
  FString PrinterId,PrinterOriginal,PrinterStamp;

@@ -39,7 +39,7 @@ FString FS47FreeformSession::ServiceObjective()const
    case 2:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: CARRY THE PARCEL TO THE LABELLED TABLE INSIDE THE EAST-WING GARAGE"):TEXT("JEEP CARGO: HOLD THE PARCEL AND USE THE PARKED JEEP TO LOAD IT");
    case 3:return M&&M->Web&&M->Web->Area()==TEXT("saro")?TEXT("GARAGE RECEIVING: UNLOAD THE JEEP, THEN CARRY THE PARCEL TO THE RECEIVING TABLE"):TEXT("JEEP: DRIVE NORTH TO SARO AND UNLOAD AT THE EAST-WING GARAGE");
    case 4:return TEXT("PARCEL DROP SITE: RETRIEVE THE PARCEL WHERE YOU SET IT DOWN");
-   default:return TEXT("CALICHE GAS STATION: DRIVE SOUTH; BUY A RELAY OR DONOR AT THE SUPPLY HATCH");
+   default:return TEXT("CALICHE GAS STATION: DRIVE SOUTH; ENTER THE STORE AND BUY A RELAY OR DONOR AT THE COUNTER");
   }
  }
  if(Field->BenchBusy())return TEXT("EAST WING CALIBRATION BENCH: WAIT FOR THE AUTOMATIC CONTROLLER TEST; THE RESULT AND HARVESTED RELAY ARE RETAINED");
@@ -84,7 +84,7 @@ void FS47FreeformSession::OpenServiceGuide()
  else if(ServiceGuide==1)
  {
   Rows.Add(S47FreeformTerminal::Paper(ServiceObjective()));
-  Rows.Add(S47FreeformTerminal::Text(TEXT("Left PC: select S-03. Outside at S-03: LOCAL, cover, relay, cover, local test. Supply hatch opens 08:00–20:00; essential relay requisition remains available after hours. Looking at an existing stock count does not certify a new supply trip.")));
+  Rows.Add(S47FreeformTerminal::Text(TEXT("Left PC: select S-03. Outside at S-03: LOCAL, cover, relay, cover, local test. Supply counter sells ordinary stock 08:00–20:00; essential relay requisition remains available after hours. Looking at an existing stock count does not certify a new supply trip.")));
   Rows.Add(S47FreeformTerminal::Button(TEXT("Verify REMOTE and archive the completed work order"),[this]{if(CompleteServiceGuide())OpenArchive();else OpenServiceGuide();},true));
   Rows.Add(S47FreeformTerminal::Button(bGuideFocus?TEXT("Show observing objective / retain unfinished service"):TEXT("Follow service objective"),[this]{bGuideFocus=!bGuideFocus;Changed();M->UI->Close();}));
  }

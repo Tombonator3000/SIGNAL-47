@@ -59,6 +59,8 @@ public:
  bool TripoPumpLoaded() const;
  int32 ParcelStage() const { return Payload; } // 0 empty, 1 shop, 2 carried, 3 loaded, 4 set down
  FString ParcelItem() const { return Item; }
+ const TMap<FString,int32>& ParcelContents() const { return Contents; }
+ FString ParcelDescription() const;
  bool DropParcel(bool bDrop = false);
  void OpenCarryMenu();
  FVector ParcelPosition() const;
@@ -89,6 +91,8 @@ private:
  int32 PowerFaultSerial = 0, EmergencyFuseFault = 0;
  bool bTrackedPowerFault = false;
  int32 Payload = 0;
+ TMap<FString,int32> Contents;
+ bool CanAddShopItem() const;
  int32 Delivered = 0, DeliveredByTruck = 0, ServiceDeliveries = 0, DonorTests = 0, ServiceTests = 0;
  bool bParcelWasLoaded = false;
  bool bPumping = false;
@@ -124,6 +128,8 @@ private:
  bool CanIssueEmergencyFuse(bool bFault) const;
  int32 S03() const;
  FVector ShopPoint() const;
+ FVector ParcelShopPoint() const;
+ bool AtShopCounter() const;
  FVector TruckPoint() const;
  FVector PumpPoint() const;
  bool PumpConditions() const;

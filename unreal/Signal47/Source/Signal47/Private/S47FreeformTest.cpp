@@ -4,6 +4,7 @@
 #include "S47FreeformDirector.h"
 #include "S47FreeformWorld.h"
 #include "S47Main.h"
+#include "S47Props.h"
 #include "S47Chapter1.h"
 #include "S47Audio.h"
 #include "S47Flow.h"
@@ -67,7 +68,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -80,6 +81,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest")))S47J::Set(O,TEXT("method"),TEXT("Explicit prepared-job fixtures, real timed printer feed, native paper transform and audio-loop state, disk/Flow Continue, power interruption and production collection. No natural acquisition or subjective listening acceptance."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -196,6 +198,113 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))
+ {
+  if(Age>120){Finish(false,TEXT("bounded store basket test timeout"));return;}
+  auto Contents=[&](){const auto& C=F.Field->ParcelContents();return C.Num()==2&&C.FindRef(TEXT("fuse"))==2&&C.FindRef(TEXT("relay"))==1;};
+  auto StockUnchanged=[&](){return F.InventoryCount(TEXT("fuse"))==ShopFuses&&F.InventoryCount(TEXT("relay"))==ShopRelays;};
+  auto Place=[&](const FVector& P){M->Player->Place(P.X,P.Z,0);};
+  auto Aim=[&](const FVector& Target){const FVector Eye(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);const FVector D=Target-Eye;M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());};
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.Field&&F.Field->ParcelStage()==0&&F.Budget()>=35,TEXT("isolated store fixture starts with funds and no parcel")))return;
+   M->UI->Close(true);F.Director->Stop();const double Hour=FMath::Fmod(F.Clock(),86400.);
+   if(!Check(F.TestAdvance(FMath::Fmod(10*3600.-Hour+86400.,86400.)),TEXT("store fixture advances real clock to trading hours")))return;
+   ShopCash=F.Budget();ShopFuses=F.InventoryCount(TEXT("fuse"));ShopRelays=F.InventoryCount(TEXT("relay"));ShopDelivered=F.Field->DeliveredParcels();ShopCargo=F.Field->CargoDeliveries();
+   M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));Go(8701,.4);return;
+  }
+  if(Stage==8701)
+  {
+   if(M->World->bBusy)return;
+   Place(FVector(7983.8,0,2070.1));Go(87011,.3);return;
+  }
+  if(Stage==87011)
+  {
+   const FVector Counter=F.Field->InteractionPoint(TEXT("ff:shop"));
+   if(!Check(FVector2D(M->Player->Pos.X-Counter.X,M->Player->Pos.Z-Counter.Z).Size()<2.4&&FMath::Abs(M->Player->FloorY-Counter.Y)<3.,TEXT("outside-wall rejection fixture is within ordinary counter distance and height range")))return;
+   if(!Check(!F.Field->Purchase(TEXT("fuse"))&&F.Budget()==ShopCash&&F.Field->ParcelStage()==0,TEXT("ordinary purchase is rejected outside the shop wall even within counter range")))return;
+   Place(FVector(7983.75,0,2067.2005));if(!AS47Props::IsDoorOpen(TEXT("gasDoor")))M->Inter->UseId(TEXT("town:gasDoor"));Go(87012,.6);return;
+  }
+  if(Stage==87012)
+  {
+   // Fixture placement through the production door, not an asserted walking traversal.
+   Place(FVector(7981.8,0,2068.8));Go(87013,.3);return;
+  }
+  if(Stage==87013)
+  {
+   const FVector Counter=F.Field->InteractionPoint(TEXT("ff:shop"));Aim(Counter);
+   if(!Check(FMath::Abs(M->Player->FloorY-5.446)<.3,TEXT("store fixture stands on the actual interior floor before opening counter")))return;
+   Go(8702,.3);return;
+  }
+  if(Stage==8702)
+  {
+   Shot(TEXT("shop-interior-counter"));Go(8703,.3);return;
+  }
+  if(Stage==8703)
+  {
+   if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:shop")&&bool(M->Player->OnUse),TEXT("native interaction ray reaches the supply counter inside the store")))return;
+   M->Player->OnUse(TEXT("ff:shop"));
+   if(!Check(M->UI->Modal(),TEXT("physical interior counter opens native shop menu")))return;
+   ShopClick=0;Go(8704,.2);return;
+  }
+  if(Stage==8704)
+  {
+   const FString Label=ShopClick==1?TEXT("drive relay / $25"):TEXT("control fuse / $5");
+   TArray<TSharedRef<SButton>> Buttons;const auto Modal=M->Hud?M->Hud->ModalWidget():nullptr;if(Modal)PhotoButtons(Modal.ToSharedRef(),Label,Buttons);
+   if(!Check(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("enabled native purchase button: ")+Label))return;
+#if !UE_BUILD_SHIPPING
+   Buttons[0]->SimulateClick();
+#else
+   Finish(false,TEXT("native basket menu test requires development build"));return;
+#endif
+   ++ShopClick;const int32 Spent=ShopClick==1?5:ShopClick==2?30:35;
+   if(!Check(M->UI->Modal()&&F.Budget()==ShopCash-Spent&&StockUnchanged()&&F.Field->ParcelStage()==1,TEXT("each purchase refreshes the open menu, charges exact price and keeps goods out of SARO stock")))return;
+   if(ShopClick<3){Go(8704,.2);return;}
+   if(!Check(Contents(),TEXT("one paid shop parcel contains two fuses and one relay")))return;
+   Go(87041,.3);return;
+  }
+  if(Stage==87041)
+  {
+   Shot(TEXT("shop-three-items-menu"));Go(8705,.3);return;
+  }
+  if(Stage==8705)
+  {
+   M->UI->Close(true);const FVector Parcel=F.Field->InteractionPoint(TEXT("ff:parcel"));Place(FVector(7981.8,0,2068.8));Aim(Parcel);Go(87051,.3);return;
+  }
+  if(Stage==87051)
+  {
+   if(!Check(M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE())==TEXT("ff:parcel"),TEXT("native interaction ray reaches the paid counter parcel")))return;
+   M->Player->OnUse(TEXT("ff:parcel"));
+   if(!Check(F.Field->ParcelStage()==2&&Contents()&&!F.Field->Purchase(TEXT("fuse"))&&F.Budget()==ShopCash-35,TEXT("pickup carries the complete paid basket and locks further remote purchases")))return;
+   const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
+   if(!Check(F.Field->ParcelStage()==3&&Contents()&&StockUnchanged(),TEXT("actual cargo callback loads the entire parcel without crediting stock")))return;
+   if(!Restore(TEXT("shop-loaded-basket")))return;Go(8706,.4);return;
+  }
+  if(Stage==8706)
+  {
+   if(!Check(F.Field->ParcelStage()==3&&Contents()&&StockUnchanged()&&F.Budget()==ShopCash-35,TEXT("disk Continue retains paid quantities, loaded cargo and exact budget")))return;
+   F.Director->Stop();M->World->Enter(TEXT("saro"));Go(8707,.4);return;
+  }
+  if(Stage==8707)
+  {
+   if(M->World->bBusy)return;M->World->PlaceTruck(TEXT("saro"));const FVector Cargo=F.Field->InteractionPoint(TEXT("ff:cargo"));Place(Cargo+FVector(1.4,0,0));F.Field->Use(TEXT("ff:cargo"));
+   if(!Check(F.Field->ParcelStage()==2&&Contents()&&StockUnchanged(),TEXT("physical unloading keeps the same basket in hand before receiving")))return;
+   const FVector Receiving=F.Field->InteractionPoint(TEXT("ff:delivery"));Place(Receiving+FVector(0,0,1.5));F.Field->Use(TEXT("ff:delivery"));
+   if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Field->DeliveredParcels()==ShopDelivered+1&&F.Field->CargoDeliveries()==ShopCargo+1&&F.Budget()==ShopCash-35,TEXT("one garage delivery credits exact basket contents and one cargo transaction")))return;
+   F.Field->Use(TEXT("ff:delivery"));M->UI->Close(true);
+   if(!Check(F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Field->DeliveredParcels()==ShopDelivered+1,TEXT("repeated receiving cannot duplicate basket stock or delivery credit")))return;
+   if(!Restore(TEXT("shop-delivered-basket")))return;Go(8708,.3);return;
+  }
+  if(Stage==8708)
+  {
+   if(!Check(F.Field->ParcelStage()==0&&F.Field->ParcelContents().IsEmpty()&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.InventoryCount(TEXT("relay"))==ShopRelays+1&&F.Budget()==ShopCash-35,TEXT("delivered disk Continue retains stock once with no paid parcel remaining")))return;
+   const auto Legacy=S47J::Read(S47J::Write(F.Field->Save()));Legacy->RemoveField(TEXT("contents"));S47J::Set(Legacy,TEXT("item"),TEXT("fuse"));S47J::Set(Legacy,TEXT("payload"),1);F.Field->Begin(Legacy);
+   if(!Check(F.Field->ParcelStage()==1&&F.Field->ParcelItem()==TEXT("fuse")&&F.Field->ParcelContents().Num()==1&&F.Field->ParcelContents().FindRef(TEXT("fuse"))==1&&F.InventoryCount(TEXT("fuse"))==ShopFuses+2&&F.Budget()==ShopCash-35,TEXT("explicit legacy singleton fixture becomes one paid fuse without charging or delivering it again")))return;
+   Finish(true,TEXT("Store menu/basket, exact payment, physical cargo/receiving, Continue and legacy singleton passed."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
   if(Age>90){Finish(false,TEXT("bounded physical camera test timeout"));return;}
@@ -669,7 +778,7 @@ void FS47FreeformTest::Step(double Dt)
   // Use the existing road-parking identity and its authored, level diner lot.
   // Walking between this fixture and the shop remains an explicit placement.
   M->World->PlaceTruck(TEXT("diner"));M->World->Enter(TEXT("diner"));
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));M->Player->Place(P.X-1.4,P.Z,0);
+  const FVector P=F.Field->InteractionPoint(TEXT("ff:shop"));M->Player->Place(P.X,P.Z-1.3,0);
   Go(41,.6);return;
  }
  if(Stage==41)
