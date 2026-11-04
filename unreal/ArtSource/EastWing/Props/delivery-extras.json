@@ -75,6 +75,18 @@
       "license": "Extras/SM_EW_FloorJack.license.json"
     },
     {
+      "id": "SM_EW_GarageSlab",
+      "manifest": "Extras/SM_EW_GarageSlab.asset.json",
+      "fbx": "Extras/SM_EW_GarageSlab.fbx",
+      "dimensions_m": [
+        6.675000190734863,
+        10.5,
+        0.0
+      ],
+      "triangles": 512,
+      "license": "Extras/SM_EW_GarageSlab.license.json"
+    },
+    {
       "id": "SM_EW_GlassCabinet",
       "manifest": "Extras/SM_EW_GlassCabinet.asset.json",
       "fbx": "Extras/SM_EW_GlassCabinet.fbx",
@@ -339,7 +351,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 28,
+  "asset_count": 29,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude and Codex",
   "prints": "Extras/make_prints.py",

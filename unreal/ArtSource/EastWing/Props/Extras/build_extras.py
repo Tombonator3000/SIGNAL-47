@@ -617,6 +617,34 @@ def vinyl_floor():
     return finish_asset(asset, OUT, 'Waxed 12-inch vinyl composition tile floor for the east wing rooms (garage excluded).')
 
 
+
+def garage_floor():
+    """Photo pass 3: unique garage slab over x31.675..38.35, z-5.25..5.25 (make_garage_floor.py).
+    Origin at the area centre; four quads leave the drain grate (x35.15..35.65, z.05..35) open.
+    UV u = (x-31.675)/6.675, v = (z+5.25)/10.5 so the painted lane lines land on site positions."""
+    asset = 'SM_EW_GarageSlab'; start_asset(asset)
+    X0, X1, Z0, Z1, cx = 31.675, 38.35, -5.25, 5.25, 35.0125
+    rects = [(X0, X1, Z0, .05), (X0, X1, .35, Z1), (X0, 35.15, .05, .35), (35.65, X1, .05, .35)]
+    verts, faces, uvs = [], [], []
+    G = 8  # grid per rectangle: LOD decimation collapses interior edges first and keeps the outline
+    for xa, xb, za, zb in rects:
+        k = len(verts)
+        for j in range(G + 1):
+            for i in range(G + 1):
+                x, z = xa + (xb - xa) * i / G, za + (zb - za) * j / G
+                verts.append((x - cx, -z, .004)); uvs.append(((x - X0) / (X1 - X0), (z - Z0) / (Z1 - Z0)))
+        for j in range(G):
+            for i in range(G):
+                q = k + j * (G + 1) + i
+                faces.append((q, q + G + 1, q + G + 2, q + 1))   # winding so the face normal points up (+Z)
+    me = bpy.data.meshes.new('slab'); me.from_pydata(verts, [], faces); me.update()
+    uv = me.uv_layers.new(name='UVMap')
+    for li, loop in enumerate(me.loops):
+        uv.data[li].uv = uvs[loop.vertex_index]
+    ob = bpy.data.objects.new('slab', me); bpy.context.collection.objects.link(ob)
+    me.materials.append(pbr('EW_GarageSlab'))
+    return finish_asset(asset, OUT, 'Unique 6.7 x 10.5 m garage slab: concrete, saw cuts, worn lane lines, tyre tracks, oil, blown sand.')
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -638,5 +666,6 @@ lab_stool()
 wall_shelf()
 relay_tester()
 vinyl_floor()
+garage_floor()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

@@ -1261,6 +1261,51 @@
       "finite": true,
       "materials": true,
       "triangles": 2
+    },
+    {
+      "asset": "SM_EW_GarageSlab",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 9.5367431640625e-07,
+      "dimensions_m": [
+        6.67500114440918,
+        10.500000953674316,
+        0.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 512
+    },
+    {
+      "asset": "SM_EW_GarageSlab",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.5367431640625e-07,
+      "dimensions_m": [
+        6.67500114440918,
+        10.500000953674316,
+        0.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 255
+    },
+    {
+      "asset": "SM_EW_GarageSlab",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 9.5367431640625e-07,
+      "dimensions_m": [
+        6.67500114440918,
+        10.500000953674316,
+        0.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 128
     }
   ]
 }
