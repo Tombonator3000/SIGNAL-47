@@ -27,12 +27,14 @@ namespace
   {TEXT("SM_EW_SampleJar"),TEXT("Lab"),{23.86,.9305,4.90},180},
   {TEXT("SM_EW_ErlenmeyerFlask"),TEXT("Lab"),{24.52,.9305,4.87},180},
   // Separate instrument bench; the functional calibration bench at27/1.25 is untouched.
-  {TEXT("SM_EW_GreenBench"),TEXT("Workshop"),{30.3,0,4.72},180,true},
-  {TEXT("SM_EW_Oscilloscope_RM565"),TEXT("Lab"),{29.82,.9325,4.66},180,false,false,true},
-  {TEXT("SM_EW_Multimeter"),TEXT("Lab"),{30.38,.9325,4.63},180},
-  {TEXT("SM_EW_SolderingIron"),TEXT("Lab"),{30.82,.9325,4.63},180},
+  // Reference pass: long calibration casework run on the south wall replaces the bench + drawer cabinet.
+  // (the 2.4 m calibration run itself is the Freeform station, built in S47FreeformWorld)
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{29.20,0,4.05},0},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{30.35,0,4.10},0},
+  {TEXT("SM_EW_Oscilloscope_RM565"),TEXT("Lab"),{29.45,.90,4.80},180,false,false,true},
+  {TEXT("SM_EW_Multimeter"),TEXT("Lab"),{30.10,.90,4.75},180},
+  {TEXT("SM_EW_SolderingIron"),TEXT("Lab"),{30.55,.90,4.75},180},
   {TEXT("SM_EW_RedToolChest"),TEXT("Workshop"),{27.02,0,4.72},180,true},
-  {TEXT("SM_EW_DrawerCabinet"),TEXT("Workshop"),{28.24,0,4.72},180,true},
   {TEXT("SM_EW_Pegboard"),TEXT("Workshop"),{30.30,1.28,5.16},180},
   {TEXT("SM_EW_WallTools"),TEXT("Workshop"),{30.30,1.72,5.11},180},
   // North storage wall and east return. The depot28.8/-3.8 and its approach stay free.
@@ -78,7 +80,7 @@ namespace
   {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,-1.40},0},
   {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,4.40},0},
   // Reference pass: lab casework under the north windows and a two-sided island (concept board).
-  {TEXT("SM_EW_CaseworkRun24"),TEXT("Extras"),{23.00,0,-4.925},0,true},
+  // (the 2.4 m lab run under the windows is the Freeform sample station, built in S47FreeformWorld)
   {TEXT("SM_EW_CaseworkRun12"),TEXT("Extras"),{24.82,0,-4.925},0,true},
   {TEXT("SM_EW_CaseworkIsland"),TEXT("Extras"),{23.60,0,1.60},90,true},
   // Claude extras (Props/Extras): wall items keep their back on the inner wall face
@@ -86,7 +88,7 @@ namespace
   {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},
   {TEXT("SM_EW_GlassCabinet"),TEXT("Extras"),{21.075,0,1.30},-90,true},
   {TEXT("SM_EW_ReagentShelf"),TEXT("Extras"),{20.862,1.55,-1.20},-90},
-  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.35,0,-3.15},0},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{22.55,0,-4.10},0},
   {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.95,0,4.05},0},
   {TEXT("SM_EW_PosterGlasses"),TEXT("Extras"),{24.20,1.32,5.246},180},
   {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},

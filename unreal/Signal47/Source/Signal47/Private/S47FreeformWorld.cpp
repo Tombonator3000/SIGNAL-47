@@ -29,8 +29,10 @@ namespace
 {
  // EASTWING-01: the service bench stands inside the east wing's calibration / repair room,
  // against the partition to parts storage (S47EastWing; the outdoor bench was retired).
- const FVector BenchAt(27.0,0.0,1.25);
- const FVector SampleAt(23.8,0,-3.8),DepotAt(28.8,0,-3.8),DeliveryAt(32.6,0,-4.15);
+ // EASTWING reference pass: the stations are part of the casework runs (Tom 4 Nov).
+ // Calibration: west end of the 2.4 m south-wall run, front faces north. Sample: lab run under the north windows.
+ const FVector BenchAt(28.95,0.0,4.925);constexpr double CaseTop=.90;
+ const FVector SampleAt(23.0,0,-4.925),DepotAt(28.8,0,-3.8),DeliveryAt(32.6,0,-4.15);
  const FVector OldBenchAt(24.0,-.57,6.2);
  // Only packages supported by the removed outdoor table move. Ground/custom drops stay put.
  bool OnRetiredBench(const FVector& P)
@@ -206,6 +208,14 @@ FVector FS47FreeformWorld::TruckPoint() const
  }
  return FVector(16,.4,11);
 }
+FVector FS47FreeformWorld::StandPoint(const FString& Id) const
+{
+ const FVector P=InteractionPoint(Id);
+ if(Id==TEXT("ff:bench"))return P-FVector(0,0,1.1);   // calibration run faces north
+ if(Id==TEXT("ff:sample"))return P+FVector(0,0,1.1);  // lab run faces south
+ return P+FVector(0,0,1.5);
+}
+
 FVector FS47FreeformWorld::InteractionPoint(const FString& Id) const
 {
  if(Id==TEXT("ff:logger-device"))return LoggerPoint(Logger.Site);
@@ -395,12 +405,13 @@ FS47Obj FS47FreeformWorld::Box(const FString& Name,const FVector& At,const FVect
  C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
  const FS47Obj O=M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name));Parts.Add(O);if(!Id.IsEmpty())Bind(O,Id);return O;
 }
-FS47Obj FS47FreeformWorld::Model(const FString& Name,const TCHAR* Asset,const FVector& At,double Width,int32 Parent)
+FS47Obj FS47FreeformWorld::Model(const FString& Name,const TCHAR* Asset,const FVector& At,double Width,int32 Parent,double Yaw)
 {
  const auto* P=M->Web->Node(Parent);auto* Mesh=LoadObject<UStaticMesh>(nullptr,Asset);if(!P||!P->Comp.IsValid()||!Mesh)return {};
  const FBoxSphereBounds B=Mesh->GetBounds();const double K=Width*100/FMath::Max(1.,B.BoxExtent.X*2.);
  auto* C=NewObject<UStaticMeshComponent>(M->Web,*Name);C->SetMobility(EComponentMobility::Movable);C->SetupAttachment(P->Comp.Get());C->SetStaticMesh(Mesh);
- C->SetWorldScale3D(FVector(K));const FVector Offset(B.Origin.X,B.Origin.Y,B.Origin.Z-B.BoxExtent.Z);C->SetWorldLocation(S47Three::ToUE(At)-Offset*K);
+ C->SetWorldScale3D(FVector(K));const FVector Offset(B.Origin.X,B.Origin.Y,B.Origin.Z-B.BoxExtent.Z);const FRotator Rot(0,Yaw,0);
+ C->SetWorldRotation(Rot);C->SetWorldLocation(S47Three::ToUE(At)-Rot.RotateVector(Offset*K));
  C->SetCollisionEnabled(ECollisionEnabled::QueryOnly);C->SetCollisionResponseToAllChannels(ECR_Ignore);C->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);C->SetCollisionResponseToChannel(ECC_GameTraceChannel1,ECR_Block);C->RegisterComponent();
  const FS47Obj O=M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name));Parts.Add(O);return O;
 }
@@ -432,24 +443,24 @@ bool FS47FreeformWorld::Build()
  const int32 Saro=M->Web->Handle(TEXT("ext.group")),Road=M->Web->Handle(TEXT("world.legs.road.area.group"));if(Saro<0||Road<0)return false;
  // Reuse project tables at distinct physical workstations inside the east wing.
  // EASTWING-01: the relay/donor calibration bench matches the wing's green steel benches.
- Bench=Model(TEXT("FreeformServiceBench"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_GreenBench.SM_EW_GreenBench"),BenchAt,1.8,Saro);
- const double BenchRaise=Bench?.0925:0.; // green bench worktop .9325 vs the archive table's .84
- if(Bench)
- {
-  Model(TEXT("FreeformBenchMultimeter"),TEXT("/Game/EastWing/Props/Lab/SM_EW_Multimeter.SM_EW_Multimeter"),BenchAt+FVector(.18,.9325,.02),.2332,Saro);
-  Model(TEXT("FreeformBenchSolderingIron"),TEXT("/Game/EastWing/Props/Lab/SM_EW_SolderingIron.SM_EW_SolderingIron"),BenchAt+FVector(.62,.9325,.04),.213,Saro);
- }
- else Bench=Model(TEXT("FreeformServiceBench"),TEXT("/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable"),BenchAt,1.8,Saro);
+ // The calibration casework run IS the station (instruments on its east half come from S47EastWingProps).
+ Bench=Model(TEXT("FreeformServiceBench"),TEXT("/Game/EastWing/Props/Extras/SM_EW_CaseworkRun24.SM_EW_CaseworkRun24"),BenchAt+FVector(.65,0,0),2.4,Saro,180);
+ const bool bCase=bool(Bench);
+ const double BenchRaise=0.;
+ if(!Bench)Bench=Model(TEXT("FreeformServiceBench"),TEXT("/Game/ArchiveProps/SM_ArchiveProps_WorkTable.SM_ArchiveProps_WorkTable"),BenchAt,1.8,Saro);
  if(!Bench)Bench=Box(TEXT("FreeformServiceBenchTop"),BenchAt+FVector(0,.78,0),FVector(1.8,.12,.75),0x514638,Saro);
  Bind(Bench,TEXT("ff:bench"));
  for(int32 I=0;I<2;++I)LoggerPosts[I]=Box(FString::Printf(TEXT("FreeformLoggerPost%d"),I),LoggerPoint(I)-FVector(0,.4,0),FVector(.14,.8,.14),0x777e68,Saro,I==0?TEXT("ff:logger-a"):TEXT("ff:logger-b"));
  LoggerBody=Box(TEXT("FreeformDeployedLogger"),LoggerPoint(0),FVector(.46,.32,.38),0x59635d,Saro,TEXT("ff:logger-device"));
- M->Web->CollidersMutable(TEXT("saro")).Add({BenchAt.X-.92,BenchAt.X+.92,BenchAt.Z-.4,BenchAt.Z+.4,TEXT("ff:bench"),true});
+ if(bCase)M->Web->CollidersMutable(TEXT("saro")).Add({BenchAt.X+.65-1.22,BenchAt.X+.65+1.22,BenchAt.Z-.34,BenchAt.Z+.33,TEXT("ff:bench"),true});
+ else M->Web->CollidersMutable(TEXT("saro")).Add({BenchAt.X-.92,BenchAt.X+.92,BenchAt.Z-.4,BenchAt.Z+.4,TEXT("ff:bench"),true});
  // EASTWING-01: field samples are analysed at a green steel lab bench with its own scope and jars.
- SampleBench=Model(TEXT("FreeformSampleBench"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_GreenBench.SM_EW_GreenBench"),SampleAt,1.8,Saro);
+ // The lab casework run under the north windows IS the sample station.
+ SampleBench=Model(TEXT("FreeformSampleBench"),TEXT("/Game/EastWing/Props/Extras/SM_EW_CaseworkRun24.SM_EW_CaseworkRun24"),SampleAt,2.4,Saro);
+ const bool bSampleCase=bool(SampleBench);
  if(SampleBench)
  {
-  const double Top=.9325;
+  const double Top=CaseTop;
   Model(TEXT("FreeformSampleScope"),TEXT("/Game/EastWing/Props/Lab/SM_EW_Microscope.SM_EW_Microscope"),SampleAt+FVector(-.55,Top,.05),.21,Saro);
   Model(TEXT("FreeformSampleJarA"),TEXT("/Game/EastWing/Props/Lab/SM_EW_SampleJar.SM_EW_SampleJar"),SampleAt+FVector(.42,Top,-.12),.082,Saro);
   Model(TEXT("FreeformSampleJarB"),TEXT("/Game/EastWing/Props/Lab/SM_EW_SampleJar.SM_EW_SampleJar"),SampleAt+FVector(.56,Top,-.05),.082,Saro);
@@ -464,18 +475,19 @@ bool FS47FreeformWorld::Build()
  else Depot=Box(TEXT("FreeformDepotBin"),DepotAt+FVector(0,.48,0),FVector(1.2,.96,.65),0x687260,Saro,TEXT("ff:depot"));
  Delivery=Model(TEXT("FreeformReceivingBench"),TEXT("/Game/EastWing/Props/Workshop/SM_EW_GreenBench.SM_EW_GreenBench"),DeliveryAt,1.2,Saro);
  if(Delivery)Bind(Delivery,TEXT("ff:delivery"));else Delivery=Box(TEXT("FreeformReceivingTable"),DeliveryAt+FVector(0,.78,0),FVector(1.2,.12,.75),0x514638,Saro,TEXT("ff:delivery"));
- M->Web->CollidersMutable(TEXT("saro")).Add({SampleAt.X-.92,SampleAt.X+.92,SampleAt.Z-.4,SampleAt.Z+.4,TEXT("ff:sample"),true});
+ if(bSampleCase)M->Web->CollidersMutable(TEXT("saro")).Add({SampleAt.X-1.22,SampleAt.X+1.22,SampleAt.Z-.33,SampleAt.Z+.34,TEXT("ff:sample"),true});
+ else M->Web->CollidersMutable(TEXT("saro")).Add({SampleAt.X-.92,SampleAt.X+.92,SampleAt.Z-.4,SampleAt.Z+.4,TEXT("ff:sample"),true});
  M->Web->CollidersMutable(TEXT("saro")).Add({DepotAt.X-.74,DepotAt.X+.74,DepotAt.Z-.34,DepotAt.Z+.31,TEXT("ff:depot"),true});
  M->Web->CollidersMutable(TEXT("saro")).Add({DeliveryAt.X-.6,DeliveryAt.X+.6,DeliveryAt.Z-.4,DeliveryAt.Z+.4,TEXT("ff:delivery"),true});
  // EASTWING-01: SARO RT-12 relay test set; its bezel window frames the live status lamp below.
  // Bounds centre sits .061 m ahead of the case (test leads), hence the z offset.
- BenchMeter=Bench?Model(TEXT("FreeformBenchMeter"),TEXT("/Game/EastWing/Props/Extras/SM_EW_RelayTester.SM_EW_RelayTester"),BenchAt+FVector(-.44,.9325,-.10+.061),.42,Saro):FS47Obj();
+ BenchMeter=bCase?Model(TEXT("FreeformBenchMeter"),TEXT("/Game/EastWing/Props/Extras/SM_EW_RelayTester.SM_EW_RelayTester"),BenchAt+FVector(-.10,CaseTop,.10-.061),.42,Saro,180):FS47Obj();
  if(BenchMeter)Bind(BenchMeter,TEXT("ff:bench"));
  else BenchMeter=Box(TEXT("FreeformBenchMeter"),BenchAt+FVector(-.44,1.02+BenchRaise,-.10),FVector(.42,.28,.27),0x555b4c,Saro,TEXT("ff:bench"));
- BenchLamp=Box(TEXT("FreeformBenchTestIndicator"),BenchAt+FVector(-.44,1.04+BenchRaise,.05),FVector(.28,.11,.015),0x5e8b61,Saro);
+ BenchLamp=Box(TEXT("FreeformBenchTestIndicator"),bCase?BenchAt+FVector(-.10,CaseTop+.20,-.05):BenchAt+FVector(-.44,1.04+BenchRaise,.05),FVector(.28,.11,.015),0x5e8b61,Saro);
  // Base-normalised authored tray rests on the actual green worktop; visibility still follows the retained sample.
- BenchSample=Model(TEXT("FreeformBenchSampleHolder"),TEXT("/Game/EastWing/Props/Extras/SM_EW_SampleHolder.SM_EW_SampleHolder"),SampleAt+FVector(.03,.9325,.05),.15,Saro);
- if(!BenchSample)BenchSample=Box(TEXT("FreeformBenchSampleHolder"),SampleAt+FVector(.03,.955,.05),FVector(.15,.045,.12),0x9f9b89,Saro);
+ BenchSample=Model(TEXT("FreeformBenchSampleHolder"),TEXT("/Game/EastWing/Props/Extras/SM_EW_SampleHolder.SM_EW_SampleHolder"),SampleAt+FVector(.03,CaseTop,.05),.15,Saro);
+ if(!BenchSample)BenchSample=Box(TEXT("FreeformBenchSampleHolder"),SampleAt+FVector(.03,CaseTop+.06,.05),FVector(.15,.045,.12),0x9f9b89,Saro);
  M->Web->MarkUsable(BenchLamp.I,TEXT("ff:bench"));M->Web->MarkUsable(BenchSample.I,TEXT("ff:sample"));
  Shop=Box(TEXT("FreeformGasSupplyCard"),ShopPoint(),FVector(.44,.20,.025),0x243d35,Road,TEXT("ff:shop"));
  Box(TEXT("FreeformGasSupplyFoot"),ShopPoint()+FVector(0,-.098,0),FVector(.46,.025,.16),0x243d35,Road);
@@ -513,9 +525,9 @@ bool FS47FreeformWorld::Build()
  Bind(Panel,TEXT("ff:service"));
  LabelPart(TEXT("FreeformS03Text"),TEXT("LOCAL / RELAY / TEST"),ServiceAt()+FVector(.30,.30,0),180,1.5,Saro);
  LabelPart(TEXT("FreeformGasLabel"),TEXT("SUPPLIES\n08:00 - 20:00"),ShopPoint()+FVector(0,0,-.017),-90,2.3,Road);
- if(FS47Obj Sign=Model(TEXT("FreeformBenchLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_CalibrationSign.SM_EW_CalibrationSign"),BenchAt+FVector(.02,.9325,-.27),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:bench"));
+ if(FS47Obj Sign=Model(TEXT("FreeformBenchLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_CalibrationSign.SM_EW_CalibrationSign"),BenchAt+FVector(-.55,CaseTop,.27),.42,Saro,180))M->Web->MarkUsable(Sign.I,TEXT("ff:bench"));
  else LabelPart(TEXT("FreeformBenchLabel"),TEXT("CALIBRATION / REPAIR\nDONOR / LOGGER TEST"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
- if(FS47Obj Sign=Model(TEXT("FreeformSampleLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_SampleAnalysisSign.SM_EW_SampleAnalysisSign"),SampleAt+FVector(-.05,.9325,-.29),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:sample"));
+ if(FS47Obj Sign=Model(TEXT("FreeformSampleLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_SampleAnalysisSign.SM_EW_SampleAnalysisSign"),SampleAt+FVector(-.05,CaseTop,-.27),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:sample"));
  else LabelPart(TEXT("FreeformSampleLabel"),TEXT("GENERAL TEST LAB\nFIELD SAMPLE ANALYSIS"),SampleAt+FVector(0,1.45,-.35),90,3.0,Saro);
  // Physical checkout placard replaces the floating text in front of the storage rack.
  if(FS47Obj Sign=Model(TEXT("FreeformDepotLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_DepotCheckoutSign.SM_EW_DepotCheckoutSign"),DepotAt+FVector(0,.9245,.10),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:depot"));

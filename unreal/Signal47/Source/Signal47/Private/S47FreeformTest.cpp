@@ -1020,7 +1020,7 @@ void FS47FreeformTest::Step(double Dt)
  if(Stage==43)
  {
   if(M->World->bBusy)return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z+1.5,0);
+  const FVector P=F.Field->StandPoint(TEXT("ff:bench"));M->Player->Place(P.X,P.Z,0);
   const FVector D=P-FVector(M->Player->Pos.X,M->Player->FloorY+M->Player->Eye,M->Player->Pos.Z);
   M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());
   Snapshot=F.Field->Save();F.Field->Stop();Go(431,6.0);return;
@@ -1050,7 +1050,7 @@ void FS47FreeformTest::Step(double Dt)
   FS47FieldLogger::FTape Tape;Tape.Id=TEXT("fieldlogger01.tape1");Tape.Day=1;Tape.Start=100;Tape.End=220;Tape.Seconds=120;Tape.Offset=2.4;Tape.Levels={.2,.4};Tape.bRetrieved=true;
   Device.Tapes.Add(Tape);Device.Serial=1;
   S47J::Set(S47J::Obj(Fixture,TEXT("field")),TEXT("fieldlogger"),Device.Save());F.Begin(Fixture,F.Lethal());
-  auto Place=[&](const TCHAR* Id){const FVector P=F.Field->InteractionPoint(Id);M->Player->Place(P.X,P.Z+1.5,0);M->UI->Close(true);};
+  auto Place=[&](const TCHAR* Id){const FVector P=F.Field->StandPoint(Id);M->Player->Place(P.X,P.Z,0);M->UI->Close(true);};
   auto OriginalIntact=[&](){const auto& L=F.Field->FieldLogger();return L.Serial==1&&L.Tapes.Num()==1&&L.Tapes[0].Id==Tape.Id&&L.Tapes[0].Levels==Tape.Levels&&L.Tapes[0].Start==Tape.Start&&L.Tapes[0].End==Tape.End&&L.Tapes[0].Seconds==Tape.Seconds&&L.Tapes[0].Offset==Tape.Offset&&L.Tapes[0].bRetrieved&&!L.Tapes[0].bCompared;};
   Place(TEXT("ff:bench"));
   if(!Check(F.Field->LoggerAccess()&&!F.Field->LoggerAction(TEXT("take"))&&F.Field->ParcelStage()==0,TEXT("explicit authorized logger fixture cannot check out at calibration bench")))return;
@@ -1197,9 +1197,9 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(!Photo.Id.IsEmpty()&&!Photo.Url.IsEmpty(),TEXT("native camera renders and retains the actual physical trace")))return;
   F.Director->Use(TEXT("ff:event-sample"));
   if(!Check(F.InventoryCount(TEXT("fragment"))==1&&F.HasFinding(TEXT("landing_trace")),TEXT("photographed trace becomes one retained physical sample")))return;
-  const FVector WrongBench=F.Field->InteractionPoint(TEXT("ff:bench"));M->Player->Place(WrongBench.X,WrongBench.Z+1.5,0);
+  const FVector WrongBench=F.Field->StandPoint(TEXT("ff:bench"));M->Player->Place(WrongBench.X,WrongBench.Z,0);
   if(!Check(!F.Field->AnalyzeSample(),TEXT("calibration bench cannot start analysis at the separate test lab")))return;
-  const FVector P=F.Field->InteractionPoint(TEXT("ff:sample"));M->Player->Place(P.X,P.Z+1.5,0);Go(24,.3);return;
+  const FVector P=F.Field->StandPoint(TEXT("ff:sample"));M->Player->Place(P.X,P.Z,0);Go(24,.3);return;
  }
  if(Stage==24)
  {
