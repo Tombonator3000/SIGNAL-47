@@ -565,7 +565,8 @@ void US47Flow::MenuMusic()
 	// Music on the title screen ("Signal to Noise", the end's music too), from the first key or click
 	if (M->Mode != EMode::Title || (Opening && Opening->Active())) return;
 	// audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }): the one before stops
-	StopMusic(0.05f);
+	// Refreshing title controls must not restart the VHS texture.
+	if (M->Audio) M->Audio->Stop(TEXT("music"), 0.05f);
 	if (M->Audio) { FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.6f; M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O); M->Audio->TitleTexture(true); }
 }
 
@@ -577,6 +578,72 @@ void US47Flow::StopMusic(float Fade)
 
 void US47Flow::StoryTitleTest(double Dt)
 {
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47TitleTextureContract")))
+ {
+  if(StoryTitleTestStage<0)return;
+  StoryTitleTestT+=Dt;
+  const FString Proof=FPaths::ProjectSavedDir()/TEXT("TitleTest");
+  static TArray<TSharedPtr<FJsonValue>> Evidence;
+  auto Finish=[&](bool Good,const FString& Why)
+  {
+   IFileManager::Get().MakeDirectory(*Proof,true);auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("scope"),TEXT("title-texture-lifecycle-fixture"));
+   S47J::Set(O,TEXT("method"),TEXT("Bounded title PCM selftest plus actual Flow MenuMusic/StopMusic/ToTitle and Main mode guard. Explicit Play-mode fixture, not a full StartGame or listening acceptance."));O->SetArrayField(TEXT("evidence"),Evidence);
+   FFileHelper::SaveStringToFile(S47J::Write(O),*(Proof/TEXT("result.json")));StoryTitleTestStage=-1;FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
+  };
+  auto Check=[&](bool Good,const FString& What){auto O=S47J::New();S47J::Set(O,TEXT("pass"),Good);S47J::Set(O,TEXT("check"),What);Evidence.Add(MakeShared<FJsonValueObject>(O));UE_LOG(LogS47Flow,Display,TEXT("S47 title texture %s: %s"),Good?TEXT("PASS"):TEXT("FAIL"),*What);if(!Good)Finish(false,What);return Good;};
+  FString User;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);
+  if(!User.StartsWith(TEXT("/tmp/S47-night-20261103-title-"))){Check(false,TEXT("isolated title contract profile required"));return;}
+  if(StoryTitleTestT>30){Finish(false,TEXT("bounded title lifecycle timeout"));return;}
+  if(!M||!M->Audio||!M->Web||!M->Web->IsLoaded()||bStarting||StoryTitleTestT<.3)return;
+  auto Next=[&](int32 Stage){StoryTitleTestStage=Stage;StoryTitleTestT=0;};
+  if(StoryTitleTestStage==0)
+  {
+   if(!Check(M->Mode==EMode::Title&&TitleEl.IsValid(),TEXT("native title is present before explicit audio unlock")))return;
+   TArray<FString> Lines;const bool Good=US47Audio::TitleTextureSelfTest(Lines);for(const auto& Line:Lines)UE_LOG(LogS47Flow,Display,TEXT("S47 title texture PCM: %s"),*Line);
+   if(!Check(Good,TEXT("bounded production PCM selftest: finite soft samples, single graph and silence after stop")))return;
+   const auto Pass=SS47Title::SampleTitlePass(10.5f),Repeat=SS47Title::SampleTitlePass(45.5f);
+   if(!Check(!SS47Title::SampleTitlePass(0).bVisible&&!SS47Title::SampleTitlePass(7.9f).bVisible&&!SS47Title::SampleTitlePass(13.f).bVisible&&!SS47Title::SampleTitlePass(42.9f).bVisible&&Pass.bVisible&&Repeat.bVisible&&Pass.Opacity>0&&Pass.Position.Equals(Repeat.Position,.0001f),TEXT("title pass sample is hidden outside five-second window and repeats after 35 seconds")))return;
+   if(!Check(M->Audio->Ctx.IsValid(),TEXT("production audio context is ready before menu sound unlock")))return;
+   bSoundUnlocked=true;MenuMusic();
+   if(!Check(M->Audio->TitleTextureOn(),TEXT("actual title MenuMusic enables texture after explicit unlock")))return;
+   ShowTitleAgain();ShowTitleAgain();Next(1);return;
+  }
+  if(StoryTitleTestStage==1)
+  {
+   if(!Check(TitleEl.IsValid()&&M->Audio->TitleTextureOn(),TEXT("repeated native menu refresh preserves enabled title texture")))return;
+   IFileManager::Get().MakeDirectory(*Proof,true);FScreenshotRequest::RequestScreenshot(Proof/TEXT("title-entry.png"),true,false);Next(2);return;
+  }
+  if(StoryTitleTestStage==2)
+  {
+   StopMusic(0);if(!Check(!M->Audio->TitleTextureOn(),TEXT("production StopMusic disables title texture")))return;
+   ShowTitleAgain();if(!Check(M->Audio->TitleTextureOn(),TEXT("title refresh restarts texture after explicit stop")))return;
+   M->Mode=EMode::Play;Next(3);return; // Main::Step must clear texture after this Flow step.
+  }
+  if(StoryTitleTestStage==3)
+  {
+   if(!Check(!M->Audio->TitleTextureOn(),TEXT("Main frame guard stops texture outside title mode")))return;
+   ToTitle();
+   // Explicit activation event matches the existing title-erasure contract;
+   // actual title Tick still enforces gate, visibility and window state.
+   FSlateApplication::Get().ProcessApplicationActivationEvent(true);
+   UE_LOG(LogS47Flow,Display,TEXT("S47 title texture fixture: synthetic Slate application activation; no human input claimed"));
+   Next(4);return;
+  }
+  if(StoryTitleTestStage==4)
+  {
+   if(!Check(M->Mode==EMode::Title&&TitleEl.IsValid()&&M->Audio->TitleTextureOn(),TEXT("actual ToTitle restores native menu and texture on reentry")))return;
+   FScreenshotRequest::RequestScreenshot(Proof/TEXT("title-reentry.png"),true,false);Next(5);return;
+  }
+  if(StoryTitleTestStage==5)
+  {
+   const auto Title=StaticCastSharedPtr<SS47Title>(TitleEl);if(!Title.IsValid()){Check(false,TEXT("native title retained while waiting for visible pass"));return;}
+   const float Elapsed=Title->TitlePassElapsed();if(Elapsed<9.f)return;
+   if(!Check(Elapsed<13.f&&SS47Title::SampleTitlePass(Elapsed).bVisible&&M->Audio->TitleTextureOn(),TEXT("actual visible native title clock reaches first UFO pass with texture still enabled")))return;
+   FScreenshotRequest::RequestScreenshot(Proof/TEXT("title-ufo-pass.png"),true,false);Next(6);return;
+  }
+  if(StoryTitleTestStage==6){StopMusic(0);if(!Check(!M->Audio->TitleTextureOn(),TEXT("final lifecycle cleanup stops title texture")))return;Finish(true,TEXT("Title pass, texture PCM and native lifecycle passed."));return;}
+  return;
+ }
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47StoryTitleContract")) || StoryTitleTestStage<0) return;
  StoryTitleTestT+=Dt;
  if(!M || !M->Story || !TitleEl.IsValid() || StoryTitleTestT<1.)return;

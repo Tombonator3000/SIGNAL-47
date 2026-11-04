@@ -63,6 +63,9 @@ public:
 	bool Erase47Started() const { return bEraseStarted; }
 	bool Erase47Done() const { return bEraseDone; }
 	float Number47Opacity() const;
+	struct FTitlePassSample { bool bVisible=false; FVector2f Position=FVector2f::ZeroVector; float Opacity=0.f; };
+	static FTitlePassSample SampleTitlePass(float Seconds);
+	float TitlePassElapsed() const { return PassT; }
 
 private:
 	struct FItem { FString Label; bool bUsable = true; TFunction<void()> Fn; };
@@ -72,7 +75,7 @@ private:
 	bool bGated = false;
 	float T = 0.f, InT = 1.f;  // the clock and the gate's blink, the menu's coming in
 	bool bFocusPending = true; // the menu is focused once the title is on the screen
-	float EraseT=0.f;
+	float EraseT=0.f, PassT=0.f;
 	bool bEraseStarted=false, bEraseDone=false;
 	void First();
 	void Move(int32 Dir);

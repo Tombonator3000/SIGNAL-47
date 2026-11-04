@@ -24,6 +24,8 @@ Oppgavehint og stedvisning er samordnet for opptak, automatiske kontroller, samm
 
 Utilgjengelige antenner reduserer nå Freeforms målerate etter tilgjengelige antennepar: 27 gir 100 %, 26 omtrent 93 % og 24 omtrent 79 %. Eksisterende minimum 24 og kvalitetsfaktor beholdes. Kapasitet og reparasjonsbehov vises separat fra receiverens tuning. Bygg og 21 kontroller består, med målte Step-vinduer ved redusert/gjenopprettet kapasitet og én disk-/Continue-runde av faktisk S-03-feil. Receiver/tracking-bilder gjennomgått. Dette er kontrollert spillbalanse i editor, ikke menneskelig balanseaksept eller installasjon.
 
+Tittelarbeid på `codex/night-support-20261103` er foreløpig under kontroll, ikke levert til PR379: periodiske stiliserte UFO-lys og ryddet VHS-lifecycle. Bygg og tidligere 12 meny-/timingkontroller samt PCM-prøve består. Siste endring oppfrisker Slates tegnede lys; build-r30 består, men title-r4 ble merket UNVERIFIED av motorvakten ved overlappende Claude-jobb. Endelig kort kontroll venter på avtalt motorvindu. Installert lydnivå og menneskelig komfortvurdering gjenstår.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.

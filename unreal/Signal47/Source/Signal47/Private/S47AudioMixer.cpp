@@ -226,7 +226,7 @@ void US47Audio::TitleTexture(bool bOn)
 	if (!bOn)
 	{
 		bTitleTexture = false;
-		StopSoundMix(TEXT("title_vhs"), 0.2f);
+		StopSoundMix(TEXT("title_vhs"), 0.f);
 		bTitlePrivateMix = false;
 		if (TitleTape.Out.IsValid())
 		{
@@ -235,9 +235,11 @@ void US47Audio::TitleTexture(bool bOn)
 			const auto Out = TitleTape.Out;
 			const auto Sources = MoveTemp(TitleTape.Sources);
 			Out->Gain.CancelAndHoldAtTime(Now);
-			Out->Gain.SetTargetAtTime(0, Now, 0.2);
-			for (const auto& Source : Sources) Source->Stop(Now + 1.2);
-			Ctx->SetTimeout(1.2, [Out, Sources] { for (const auto& Source : Sources) Source->Disconnect(); Out->Disconnect(); });
+			// A fresh title may open immediately: release the old tape now, not after
+			// a fade which would overlap a newly-created graph on rapid re-entry.
+			Out->Gain.SetValue(0);
+			for (const auto& Source : Sources) { Source->Stop(Now); Source->Disconnect(); }
+			Out->Disconnect();
 			TitleTape = {};
 		}
 		return;
@@ -316,13 +318,24 @@ bool US47Audio::TitleTextureSelfTest(TArray<FString>& Lines)
 	A->TitleTexture(false); A->TitleTexture(false); Run(2, false);
 	const FVector After = Run(0.1, false);
 	Check(!A->bTitleTexture && !A->TitleTape.Out.IsValid() && After.X == 0, TEXT("leaving menu releases loops and leaves silence"));
+	for (int32 I = 0; I < 6; ++I)
+	{
+		A->TitleTexture(true); Run(0.2, true); const auto Previous = A->TitleTape.Out;
+		A->TitleTexture(false);
+		// Render() may already hold the remainder of one 128-sample quantum.
+		float Pending[S47Quantum * 2]; A->Ctx->Render(Pending, S47Quantum, 2);
+		Check(Previous.IsValid() && Run(1. / 60, false).X == 0,
+			TEXT("rapid title exit has no fallback tail beyond the queued audio quantum"));
+	}
 	// The same lifecycle applies when an explicitly selected private bank provides the title tape.
 	FS47MixRecipe Recipe; Recipe.Name = TEXT("title_vhs"); Recipe.Use = ES47SoundUse::Vhs;
 	FS47MixLayer Layer; Layer.Source = TEXT("test_hiss"); Layer.GainDb = -42; Recipe.Layers.Add(Layer);
 	A->SoundBank.Add(TEXT("test_hiss"), { A->Noise, false }); A->SoundRecipes.Add(Recipe.Name, Recipe);
 	A->TitleTexture(true); Run(0.2, true);
 	Check(A->bTitlePrivateMix && A->SoundMixes.Num() == 1, TEXT("selected private title recipe uses the common mixer"));
-	A->TitleTexture(false); Run(2, false);
+	A->TitleTexture(false);
+	Check(Run(1. / 60, false).X == 0, TEXT("private title recipe has no audible tail on immediate exit"));
+	Run(2, false);
 	Check(A->SoundMixes.IsEmpty() && Run(0.1, false).X == 0, TEXT("private title recipe stops without residual playback"));
 	A->Ctx->Close(); A->RemoveFromRoot(); return bAll;
 }
