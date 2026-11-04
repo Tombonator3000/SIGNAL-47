@@ -1747,3 +1747,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 2026, Codex: første Freeform-skift fullført og SARO-vei/parkering/stier samlet; rampekollisjon rettet. Bygg, fem runtime-bilder, 34 gang-/kjørekontroller, pakket tutorial 40 sjekker/3 Continue-runder, selvtest og installert vindusoppstart består. Saved bevart. Kilder og bevis beholdes; ferdig kandidat kan inngå i neste samlede opprydding.
 
 2026-11-04 18:15 Codex, PR382: konflikter mot main løst med begge tutorial-/feltplantestene bevart. Testens private funksjonskall erstattet med offentlig funnregistrering. Editorbygg, feltplan 12/12 (1 disk-Continue), tutorial 40/40 (3 disk-Continue) og tittel 12/12 består uten motoroverlapp. Ingen ny pakking/installasjon.
+
+2026-11-04 Codex: PR382 installert fra 34f37c00 med rettet selvtestfixture. Pakke2326 selvtester, tittel12 og installert oppstart består; Saved121 uendret. Forrige tutorial/SARO-pakke beholdes for tilbakeføring. Kandidater kan vurderes ved neste samlede rydding; ingen ny rydderunde.
