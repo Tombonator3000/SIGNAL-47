@@ -946,6 +946,51 @@
       "finite": true,
       "materials": true,
       "triangles": 2092
+    },
+    {
+      "asset": "SM_EW_RelayTester",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.42000001668930054,
+        0.4017758369445801,
+        0.3525969684123993
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8316
+    },
+    {
+      "asset": "SM_EW_RelayTester",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 2.2709369659423828e-05,
+      "dimensions_m": [
+        0.42000001668930054,
+        0.40176495909690857,
+        0.3526196777820587
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4158
+    },
+    {
+      "asset": "SM_EW_RelayTester",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.000907212495803833,
+      "dimensions_m": [
+        0.4190927743911743,
+        0.40136298537254333,
+        0.35271722520701587
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2079
     }
   ]
 }

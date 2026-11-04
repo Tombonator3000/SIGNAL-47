@@ -21,7 +21,8 @@
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_PlaqueGarage_preview.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_NoticeBoard_preview.png",
     "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_LabStool_preview.png",
-    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_ReagentShelf_preview.png"
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_ReagentShelf_preview.png",
+    "/home/tom/scratch-bm/wt/claude-gameplay-20261103/unreal/ArtSource/EastWing/Props/Extras/SM_EW_RelayTester_preview.png"
   ],
   "assets": [
     {
@@ -304,8 +305,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "2590d350dbeedaec2773415c3f2101b09f024954964ee381fc2a37090eb66753",
-      "blend_sha256": "33aba6a20e8b1ad7ba6783d5918753211efecce7baa6f43e1f770cbff9fd291b"
+      "fbx_sha256": "88b6df844482adcfe03a4a75d02c244d230f2cfca7e7f05c398d774cbe995a44",
+      "blend_sha256": "2473af3f0dbf4b66d3d4c14a96887d3a318ea44034623d7b7b1bd32092fb1c56"
     },
     {
       "asset": "SM_EW_GlassCabinet",
@@ -633,8 +634,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "10a5bce459115dbfbb7a050c9bb9e93ada8c2794c7b35eb0d6d580bcbbe7ab69",
-      "blend_sha256": "6ffff560f3ea8907063ee8148ccd5432645089c23b6bdcb7cb723a0d0a642c9e"
+      "fbx_sha256": "3aa52c2fcfe0df7f41ee97251dcedf89ab3d844cda829fda34a6784a7c2c416f",
+      "blend_sha256": "fc0d53a2e9595edb539532012e742d486894696f476e9ac93ade4d099318adf5"
     },
     {
       "asset": "SM_EW_PosterRF",
@@ -763,8 +764,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "0da75064caf0f3e3efa53dfba654c3e991282b21519a99fd3c6b06686fdf1257",
-      "blend_sha256": "561c085e06f277f5a1d9d178b1aa1b9365b1b2fa56c76277e3ef1cb9e44d3541"
+      "fbx_sha256": "f544bc39e1c98e0dab1d0a60abc13b277f5a043682642ac38a359675d69cdc49",
+      "blend_sha256": "4e9a0e082d95885e918a794576e2dfd55e890dcaec9baf0e77b795ee797eca37"
     },
     {
       "asset": "SM_EW_PosterGlasses",
@@ -893,8 +894,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "311006f6b108cb359ba0cc063e3caa65ab4e9324e11e95c13c63c3d08dcedbcc",
-      "blend_sha256": "f00813292806a323883e04a04aca158b67d5f90070c2dbd408e86c30f719b4e1"
+      "fbx_sha256": "5fe088d435e855802bada6a1f6fc5dbef6a1743bb3b2af8a4eea9820de998b0d",
+      "blend_sha256": "a9f9bf659f5a46c0c2acdb66372cd0de7a2bf79e9331c9ac82866320753de373"
     },
     {
       "asset": "SM_EW_Calendar1986",
@@ -1101,8 +1102,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "d063ff02d52eb307a6e375bf84d375360c650cf2d4f9fecb7a0cea0052285d02",
-      "blend_sha256": "df3edcdb9a31ba235384f19d377a847a4785e4e1381be877fb7bd8782a8c7cb0"
+      "fbx_sha256": "e178a4bec63ce13d0d69ddfc1c8609e1d6b9d7a73142796a6ae764501321c648",
+      "blend_sha256": "9fb75a69598f8ddf589752be9e49ad5e207414ef4109a40e7f30ac19816dbe94"
     },
     {
       "asset": "SM_EW_WallClock",
@@ -1277,8 +1278,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "8934bb3809f7d307af5754dbd4762c44bf405b0e75a029bee7fe92e639a0d6d2",
-      "blend_sha256": "7e2bfbb2de4c7f2b77f03981bbe8bfd9fe75302cac21a8ec829e8afaa8ad7887"
+      "fbx_sha256": "39d89fbae3ee598a1cc40aa77626d9ed3503dce196ce6fb0b78a57d9c401e02b",
+      "blend_sha256": "fe613c573fa6dde3f3a72dc30b9cad5d8df6e6843ba387e8cc1ca026757ec691"
     },
     {
       "asset": "SM_EW_FirstAidBox",
@@ -1472,8 +1473,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "c30d2ecfbc72c121b7c56d443731e82c65b0e2fc8f939de73c769efcad78e537",
-      "blend_sha256": "d701b41d54b816e2d156b1df7761391bba895eb5108900a4a428da28cb40d666"
+      "fbx_sha256": "f5aed56e95533deb307bdcd0071bf27654df56ef33226c9a1bfd72252fe73691",
+      "blend_sha256": "ec0991ef99c433306da8da2a95103050a7d15f5aa9816301b1d23558c142374b"
     },
     {
       "asset": "SM_EW_SwampCooler",
@@ -1654,8 +1655,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "6f8a9f93214d7fd7aac593e3aebce57c06dc3d391bea4b53abaf746dfe21d52c",
-      "blend_sha256": "c0d419049eb0c839fa09c21777d24b5ccbb36912f581327b0b5fc9970896a4a7"
+      "fbx_sha256": "6a05c42322bbe89356f47e77a342651bd660f3a2c6a1aabb31d17465acdd699f",
+      "blend_sha256": "45df12e8822ca317d43da80993a25ecd693b152d09ed282bb45e463331c37fc2"
     },
     {
       "asset": "SM_EW_HoseReel",
@@ -1813,8 +1814,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "b54d2cd00723f867cb8005fc74c3a60f91deb9863a6c1ef94c4c08d6e3707488",
-      "blend_sha256": "4fa4c2237500fb761980acabc279dbb4b6edc9cd9dada8e5df55c465a902ea7d"
+      "fbx_sha256": "4617b03d44cdb8e2e8fea0bc3112a1c8abeec8931f09c9b747bd24a2d8b3e349",
+      "blend_sha256": "31c2ca897398d0a2f432db80506e62ce68d2053ace55dc4d69a47aba8c23dc2c"
     },
     {
       "asset": "SM_EW_MechanicBench",
@@ -2073,8 +2074,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "2074c2e1438ffde4ceca3158a6a3740c5cd158a58b79cf34fd5ccccf651e44e9",
-      "blend_sha256": "ca558e089736882440b445751e76d64a3c5b77f2f83159f8d1975c1efe5ae0f2"
+      "fbx_sha256": "c499393fbd617e349fb977999937a823742c13481ada50f5444ec2ef1525900f",
+      "blend_sha256": "c24790a9f6a4f8b2e7990ba135951b7bef6dcf62bb9f0d1ddc554eee32cd01ad"
     },
     {
       "asset": "SM_EW_AirCompressor",
@@ -2347,8 +2348,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "56d3bfe72d9e47ac0e7abbbd90d60409afd5ef4a5d87300355beec8d5533241c",
-      "blend_sha256": "562acd6cccea6216558073711681cc796960ffadbc4fccbd7aa00b83d65b148f"
+      "fbx_sha256": "e7b0b4919267d15e6d12014e26cbce9d5ce3d8f8708259c9dd711a5030d7756b",
+      "blend_sha256": "a78f33e876b1fa28ec2fc48b0f9d9bb888b145a51067827f331abfbc40a4fa26"
     },
     {
       "asset": "SM_EW_FloorJack",
@@ -2529,8 +2530,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "4535eeab8791a82194cb5b1dc2c528a2ae9b23d0eb72d30795a3b33fe0c32a62",
-      "blend_sha256": "0ce84248cf6823f9d95d96f8d21e9bb787e0f6fc33d285cb9411b7c1fd8acc12"
+      "fbx_sha256": "060118ebe254c76f3374d69a7665e0ee7b2495a4a8efd06a7e224b4d64b14162",
+      "blend_sha256": "bb2b21620074bbf8b8ea6b99af6db37c1a89a71013be36af2fe818aced80842a"
     },
     {
       "asset": "SM_EW_JerryCans",
@@ -2655,8 +2656,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "13f93ad607da2804937d1ad3262439413892fca6b4bdb7c0b8a0425c94d459dd",
-      "blend_sha256": "a26f8877e0103d864add1afd8d3a8f8fc432dcb271cc2324c0165fa9f38b0da6"
+      "fbx_sha256": "d22a8b9438f1142b6e828e55159071e6a8598bf0efa686603ec7bc1675dda6ae",
+      "blend_sha256": "fab1b04af7d74515289172074b0c74923e839e300391bc91e0c9ec45f7d3ba88"
     },
     {
       "asset": "SM_EW_OilStains",
@@ -2735,8 +2736,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "d390c52869be648f98fdcb8902b430af45ff916734d4024e4fadda658b5077f2",
-      "blend_sha256": "dc3d252be7ba13a976c3ec2797dfa26681613b927168ef25dd55937a5e5a0278"
+      "fbx_sha256": "11b87fb9e652753a1d0e101ba135f00fc0acb5ca5f090b6872245b3bb6c2f71b",
+      "blend_sha256": "540b1cc8eb0f616f7de0fa27b6853d7216c9be9dff593fff38e55dab727a56aa"
     },
     {
       "asset": "SM_EW_PlaqueLab",
@@ -2865,8 +2866,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "31d60cd7291d2c152e2770fb6435c5c6732c22eb5ebe4d12dcfcf68efb30daba",
-      "blend_sha256": "d667e6422cb78e1315f1a6aadc11fe1404560cae6133f09fa2c3a1f1b8bd6993"
+      "fbx_sha256": "0966be27babec43d3494c45cf20ad7fa93da6b3e53493d361dd2e523ea3e9f5e",
+      "blend_sha256": "d1be321dddfff0572223c9e42e45ad06668c3c6a479674a118129fd37d312a38"
     },
     {
       "asset": "SM_EW_PlaqueStorage",
@@ -2995,8 +2996,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "c9b762b63a8ce0dd4a9df21085eff57455d617cb29c93f3dd8632ab5d737727a",
-      "blend_sha256": "2cce3f6096fd6c2cb85061bf8d2eb92e22bfda3db0b38f289497831668911f24"
+      "fbx_sha256": "95b374790771281fe98349ac1e97cd51d696b6cc384fd6ac1f749640f85f1335",
+      "blend_sha256": "c3973ce9699c4041376f07cbe75d99ab64158242a52a9d00e9dddbeabf311aab"
     },
     {
       "asset": "SM_EW_PlaqueCalibration",
@@ -3125,8 +3126,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "b59b9062fa660897698ab2e06394fbf4fd652f7b6e0ca76f539f0b15e502664f",
-      "blend_sha256": "ffa93514f042644964ef9cb8a335341978a939686eabf24dc9269fc52a79200a"
+      "fbx_sha256": "64a899d51d6c68a7b310002b842e535f764e265e2ccceda9a3daa83cf0bdc482",
+      "blend_sha256": "68e6ae70164f4d143fcc6507ae5eb1cff299ef28f9f92b9a03aa9def9ff8aef9"
     },
     {
       "asset": "SM_EW_PlaqueGarage",
@@ -3255,8 +3256,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "540c5ed8a61e9353930db54d708400bf2135b1b83462810318539a16e5be331c",
-      "blend_sha256": "fbe76c899a89aabb80ee13f7ecb73990ea09713e7e3ee895220aa19859e8b41e"
+      "fbx_sha256": "bc4c716f677298fcbf60b29f375391a5af83e8e3a038590b124a129a0805f58f",
+      "blend_sha256": "6e9604679c995f865b0ab77594a550840f6ab6c39b66c0ceeb02a58444e63547"
     },
     {
       "asset": "SM_EW_NoticeBoard",
@@ -3362,8 +3363,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "9fac92955eb3483916b539921ab513ce41b3bf8136d130cdeebbc9a724d00ecb",
-      "blend_sha256": "fc6335e4b43de75e1ab39637ca721ef937189c43c7867fa5ad176d99c66d1edd"
+      "fbx_sha256": "3193a614391544170c8974b2e71125c6fa613d56f7828f9867416ee08b88d021",
+      "blend_sha256": "bf1e2e24018340064941d2628f2ebd3b4fcea68f152a917ff728dc642df9cd47"
     },
     {
       "asset": "SM_EW_LabStool",
@@ -3488,8 +3489,8 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "5e1b3fd2d5f2b20953f91837358ebb78c20739f114e8066a063fa88df6706baf",
-      "blend_sha256": "e477b9f539860cf2fbafac3c517a69346eb7c5e31218394bc843d42b1f89492f"
+      "fbx_sha256": "91dc9a8d5692ea778d5527b65cc0b6fafd617214adbe6ac1e916eaf87183c1db",
+      "blend_sha256": "2a9a0a18c19898bffdc66bfa3a378c24d4ebc199f1fa52884ec9b72106562648"
     },
     {
       "asset": "SM_EW_ReagentShelf",
@@ -3725,8 +3726,272 @@
         "sources": []
       },
       "runtime_status": "NOT_IMPORTED; Claude owns integration",
-      "fbx_sha256": "2fe1e6fc1e423fe9ff680d2dfb3791a781f8da02a5b498f9c00d5cca8b92eed9",
-      "blend_sha256": "7d79f44f7d680905bcab825b5ec085010b76d9be7123e8c75420b656e148093c"
+      "fbx_sha256": "10015861214106f2276375ffe7a56f9eab995575ec71a3fe893852ef6c38965d",
+      "blend_sha256": "c5f287a99666a3ce5b4dad29a784cb6faba2d25d75ca96846493e6dde0338340"
+    },
+    {
+      "asset": "SM_EW_RelayTester",
+      "description": "SARO RT-12 relay test set for the Freeform calibration bench; status window for the live lamp.",
+      "fbx": "SM_EW_RelayTester.fbx",
+      "editable": "SM_EW_RelayTester.blend",
+      "units": "metres; FBX unit metadata centimetres conversion",
+      "front": "-Y",
+      "up": "Z",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "bounds_m": [
+        [
+          -0.20999999344348907,
+          -0.26177582144737244,
+          -0.0025969743728637695
+        ],
+        [
+          0.20999999344348907,
+          0.14000000059604645,
+          0.3499999940395355
+        ]
+      ],
+      "dimensions_m": [
+        0.41999998688697815,
+        0.4017758220434189,
+        0.3525969684123993
+      ],
+      "triangles": 8316,
+      "uv_layers": 1,
+      "materials": [
+        "EW_X_InstrumentGrey",
+        "EW_X_PanelAlu",
+        "EW_X_Bakelite",
+        "EW_X_WhiteEnamel",
+        "EW_X_Red",
+        "EW_X_Chrome",
+        "EW_X_LabelPaper",
+        "EW_X_LabelInk",
+        "EW_X_RelayClear"
+      ],
+      "material_parameters": [
+        {
+          "name": "EW_X_InstrumentGrey",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.30000001192092896,
+            0.3100000023841858,
+            0.28999999165534973,
+            1.0
+          ],
+          "Roughness": 0.44999998807907104,
+          "Metallic": 0.10000000149011612,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_PanelAlu",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.550000011920929,
+            0.5600000023841858,
+            0.5400000214576721,
+            1.0
+          ],
+          "Roughness": 0.3499999940395355,
+          "Metallic": 0.800000011920929,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Bakelite",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.017000000923871994,
+            0.019999999552965164,
+            0.01899999938905239,
+            1.0
+          ],
+          "Roughness": 0.38999998569488525,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_WhiteEnamel",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.7400000095367432,
+            0.7300000190734863,
+            0.6800000071525574,
+            1.0
+          ],
+          "Roughness": 0.2800000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Red",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.3799999952316284,
+            0.02500000037252903,
+            0.012000000104308128,
+            1.0
+          ],
+          "Roughness": 0.3799999952316284,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_Chrome",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.699999988079071,
+            0.7300000190734863,
+            0.7400000095367432,
+            1.0
+          ],
+          "Roughness": 0.17000000178813934,
+          "Metallic": 1.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelPaper",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.8100000023841858,
+            0.7799999713897705,
+            0.6299999952316284,
+            1.0
+          ],
+          "Roughness": 0.800000011920929,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_LabelInk",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.02500000037252903,
+            0.03200000151991844,
+            0.02800000086426735,
+            1.0
+          ],
+          "Roughness": 0.699999988079071,
+          "Metallic": 0.0,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        },
+        {
+          "name": "EW_X_RelayClear",
+          "texture_key": null,
+          "maps": {},
+          "Base Color": [
+            0.6000000238418579,
+            0.6200000047683716,
+            0.5799999833106995,
+            1.0
+          ],
+          "Roughness": 0.20000000298023224,
+          "Metallic": 0.30000001192092896,
+          "Transmission Weight": 0.0,
+          "IOR": 1.5,
+          "Emission Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "Emission Strength": 0.0
+        }
+      ],
+      "textures": [],
+      "lods": [
+        {
+          "file": "SM_EW_RelayTester_LOD1.fbx",
+          "triangles": 4158
+        },
+        {
+          "file": "SM_EW_RelayTester_LOD2.fbx",
+          "triangles": 2079
+        }
+      ],
+      "collision": "UCX bounding box: integrator must disable for movable/interactive detail and replace with fitted collision for open shelving",
+      "license": {
+        "id": "LicenseRef-ProjectOwned",
+        "origin": "Original project-authored geometry unless source attribution below states otherwise. No external asset license implied.",
+        "sources": []
+      },
+      "runtime_status": "NOT_IMPORTED; Claude owns integration",
+      "fbx_sha256": "e48d277b7a7e77158723cf25c115c14a35fa19e0b7cbf0017427e0b72f480f4b",
+      "blend_sha256": "fd75d5cebbef7483655fbe05ab0e423522c563a7e65fe7975c0930d5e7118c87"
     }
   ]
 }

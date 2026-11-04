@@ -231,6 +231,18 @@
       "license": "Extras/SM_EW_ReagentShelf.license.json"
     },
     {
+      "id": "SM_EW_RelayTester",
+      "manifest": "Extras/SM_EW_RelayTester.asset.json",
+      "fbx": "Extras/SM_EW_RelayTester.fbx",
+      "dimensions_m": [
+        0.41999998688697815,
+        0.4017758220434189,
+        0.3525969684123993
+      ],
+      "triangles": 8316,
+      "license": "Extras/SM_EW_RelayTester.license.json"
+    },
+    {
       "id": "SM_EW_SwampCooler",
       "manifest": "Extras/SM_EW_SwampCooler.asset.json",
       "fbx": "Extras/SM_EW_SwampCooler.fbx",
@@ -255,7 +267,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 21,
+  "asset_count": 22,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude",
   "prints": "Extras/make_prints.py"

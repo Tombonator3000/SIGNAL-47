@@ -519,6 +519,37 @@ def wall_shelf():
     return finish_asset(asset, OUT, 'Green steel wall shelf with labelled reagent bottles and a beaker.')
 
 
+def relay_tester():
+    """Freeform calibration bench test set. The live status lamp (a separate runtime box,
+    0.28 x 0.11 m) sits in the bezel window at 0.20 m; keep that window and height."""
+    asset = 'SM_EW_RelayTester'; start_asset(asset)
+    W, D, H = .42, .28, .27
+    grey = material('EW_X_InstrumentGrey', (.3, .31, .29), .45, .1)
+    box('case', (0, 0, H / 2), (W, D, H), grey, .008)
+    box('panel', (0, -D / 2 - .002, H / 2), (W - .02, .004, H - .02), material('EW_X_PanelAlu', (.55, .56, .54), .35, .8), .002)
+    for z, hgt in ((.255, .01), (.145, .01)):
+        box(f'bezel_h{z}', (0, -D / 2 - .006, z), (.30, .006, hgt), dark, .001)
+    for x in (-.15, .15):
+        box(f'bezel_v{x}', (x, -D / 2 - .006, .20), (.01, .006, .12), dark, .001)
+    box('window_back', (0, -D / 2 - .003, .20), (.28, .002, .11), dark, 0)
+    for i, x in enumerate((-.15, -.07, .01)):
+        cyl(f'rotary{i}', (x, -D / 2 - .016, .075), .018, .022, dark, vertices=24, rotation=(math.pi / 2, 0, 0))
+        box(f'rotary{i}_mark', (x, -D / 2 - .028, .086), (.003, .002, .012), white, 0)
+    for i, (x, c) in enumerate(((.09, red), (.12, dark), (.15, red), (.18, dark))):
+        cyl(f'jack{i}', (x, -D / 2 - .008, .06), .007, .012, c, vertices=16, rotation=(math.pi / 2, 0, 0))
+    rod('toggle', (.135, -D / 2 - .004, .11), (.135, -D / 2 - .03, .125), .003, chrome)
+    label('maker', 'SARO  RT-12  RELAY TEST SET', -.05, -D / 2 - .0045, .028, .2, .02, .009)
+    # Relay socket with a plugged octal relay on top; carry handle.
+    cyl('socket', (.1, .02, H + .01), .03, .02, dark, vertices=24)
+    cyl('relay_can', (.1, .02, H + .05), .022, .06, material('EW_X_RelayClear', (.6, .62, .58), .2, .3), vertices=24)
+    for x in (-.17, .17):
+        rod(f'handle_post{x}', (x, -.02, H), (x, -.02, H + .05), .006, chrome)
+    rod('handle', (-.17, -.02, H + .05), (.17, -.02, H + .05), .008, chrome)
+    rod('test_lead_r', (.09, -D / 2 - .014, .06), (.15, -D / 2 - .12, -.0), .003, red)
+    rod('test_lead_b', (.12, -D / 2 - .014, .06), (.2, -D / 2 - .1, -.0), .003, dark)
+    return finish_asset(asset, OUT, 'SARO RT-12 relay test set for the Freeform calibration bench; status window for the live lamp.')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -538,5 +569,6 @@ for key in ('Lab', 'Storage', 'Calibration', 'Garage'):
 notice_board()
 lab_stool()
 wall_shelf()
+relay_tester()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)
