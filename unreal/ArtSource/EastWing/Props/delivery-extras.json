@@ -39,6 +39,42 @@
       "license": "Extras/SM_EW_CalibrationSign.license.json"
     },
     {
+      "id": "SM_EW_CaseworkIsland",
+      "manifest": "Extras/SM_EW_CaseworkIsland.asset.json",
+      "fbx": "Extras/SM_EW_CaseworkIsland.fbx",
+      "dimensions_m": [
+        2.430000066757202,
+        0.9700000584125519,
+        0.8999999761581421
+      ],
+      "triangles": 11160,
+      "license": "Extras/SM_EW_CaseworkIsland.license.json"
+    },
+    {
+      "id": "SM_EW_CaseworkRun12",
+      "manifest": "Extras/SM_EW_CaseworkRun12.asset.json",
+      "fbx": "Extras/SM_EW_CaseworkRun12.fbx",
+      "dimensions_m": [
+        1.2300000190734863,
+        0.6970000267028809,
+        1.0
+      ],
+      "triangles": 4008,
+      "license": "Extras/SM_EW_CaseworkRun12.license.json"
+    },
+    {
+      "id": "SM_EW_CaseworkRun24",
+      "manifest": "Extras/SM_EW_CaseworkRun24.asset.json",
+      "fbx": "Extras/SM_EW_CaseworkRun24.fbx",
+      "dimensions_m": [
+        2.430000066757202,
+        0.6970000565052032,
+        1.0
+      ],
+      "triangles": 6336,
+      "license": "Extras/SM_EW_CaseworkRun24.license.json"
+    },
+    {
       "id": "SM_EW_CeilingConduit",
       "manifest": "Extras/SM_EW_CeilingConduit.asset.json",
       "fbx": "Extras/SM_EW_CeilingConduit.fbx",
@@ -375,7 +411,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 31,
+  "asset_count": 34,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude and Codex",
   "prints": "Extras/make_prints.py",

@@ -674,6 +674,36 @@ def ceiling_conduit():
     box(f'jbox', (1.2, .06, .05), (.10, .10, .06), steel, .003)
     return finish_asset(asset, OUT, 'Two exposed EMT conduit runs on strut hangers with a junction box, 5 m.')
 
+
+def casework(asset, length, depth=.65, island=False):
+    """Reference pass: 1980s lab casework run. Green enamel steel base cabinets (drawer banks and
+    door pairs, recessed toe kick), brushed stainless top with rolled front edge and, against a wall,
+    a 10 cm backsplash. Front faces -Y; origin at the floor, centre of the run."""
+    start_asset(asset)
+    H, top, kick = .90, .035, .10
+    box('toe_kick', (0, 0 if island else .03, kick / 2), (length - .02, depth - .1, kick), rubber, .002)
+    box('carcass', (0, 0, kick + (H - top - kick) / 2), (length, depth - .03, H - top - kick), green, .004)
+    box('top', (0, -.012, H - top / 2), (length + .03, depth + .03, top), steel, .006)
+    rod('top_nose', (-length / 2 - .015, -depth / 2 - .027, H - top / 2), (length / 2 + .015, -depth / 2 - .027, H - top / 2), .017, steel)
+    if not island:
+        box('backsplash', (0, depth / 2 - .005, H + .05), (length + .03, .012, .10), steel, .003)
+    bays = max(1, round(length / .6)); bw = length / bays
+    for side in ((-1, 1) if island else (-1,)):
+        face_y = side * (depth / 2 - .01)
+        for b in range(bays):
+            cx = -length / 2 + bw * (b + .5)
+            if b % 3 == 1:  # door pair
+                for k in (-1, 1):
+                    box(f'door{side}_{b}_{k}', (cx + k * bw / 4, face_y + side * .006, kick + (H - top - kick) / 2), (bw / 2 - .012, .014, H - top - kick - .03), green, .003)
+                    rod(f'dpull{side}_{b}_{k}', (cx + k * .04, face_y + side * .03, .55), (cx + k * .04, face_y + side * .03, .68), .006, chrome)
+            else:            # drawer bank: one shallow, two deep
+                for i, (z, hh) in enumerate([(.73, .14), (.52, .24), (.25, .26)]):
+                    box(f'drw{side}_{b}_{i}', (cx, face_y + side * .006, z), (bw - .02, .014, hh - .015), green, .003)
+                    box(f'pull{side}_{b}_{i}', (cx, face_y + side * .022, z + hh * .25), (.12, .016, .02), chrome, .002)
+                    box(f'lbl{side}_{b}_{i}', (cx, face_y + side * .0145, z + hh * .25 + .03), (.06, .002, .022), paper, 0)
+    return finish_asset(asset, OUT, f'Green enamel steel lab casework run {length:.1f} m with stainless top' + (' (island, two-sided)' if island else ', backsplash') + '.')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -698,5 +728,8 @@ vinyl_floor()
 steel_joist()
 ceiling_conduit()
 garage_floor()
+casework('SM_EW_CaseworkRun24', 2.4)
+casework('SM_EW_CaseworkRun12', 1.2)
+casework('SM_EW_CaseworkIsland', 2.4, .90, True)
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)

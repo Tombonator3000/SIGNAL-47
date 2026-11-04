@@ -1396,6 +1396,141 @@
       "finite": true,
       "materials": true,
       "triangles": 128
+    },
+    {
+      "asset": "SM_EW_CaseworkRun24",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.384185791015625e-07,
+      "dimensions_m": [
+        2.430000066757202,
+        0.6970002949237823,
+        1.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 6336
+    },
+    {
+      "asset": "SM_EW_CaseworkRun24",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00025502804783172905,
+      "dimensions_m": [
+        2.430005192756653,
+        0.6970004439353943,
+        0.9997449719521683
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 3168
+    },
+    {
+      "asset": "SM_EW_CaseworkRun24",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0005282775382511318,
+      "dimensions_m": [
+        2.430015802383423,
+        0.6966512799263,
+        0.9994717224617489
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1584
+    },
+    {
+      "asset": "SM_EW_CaseworkRun12",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 1.1920928955078125e-07,
+      "dimensions_m": [
+        1.230000078678131,
+        0.6970001459121704,
+        1.0
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4008
+    },
+    {
+      "asset": "SM_EW_CaseworkRun12",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.0002645306885824539,
+      "dimensions_m": [
+        1.2300045490264893,
+        0.697005033493042,
+        0.9997354693114175
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2004
+    },
+    {
+      "asset": "SM_EW_CaseworkRun12",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0003753365599550307,
+      "dimensions_m": [
+        1.2300106287002563,
+        0.6966934204101562,
+        0.999624663440045
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1002
+    },
+    {
+      "asset": "SM_EW_CaseworkIsland",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 8.940696716308594e-08,
+      "dimensions_m": [
+        2.430000066757202,
+        0.970000147819519,
+        0.8999999761581421
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 11160
+    },
+    {
+      "asset": "SM_EW_CaseworkIsland",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00011340805940562859,
+      "dimensions_m": [
+        2.430004596710205,
+        0.9700327515602112,
+        0.8998865680987365
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 5580
+    },
+    {
+      "asset": "SM_EW_CaseworkIsland",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0005607009661616758,
+      "dimensions_m": [
+        2.43001127243042,
+        0.9699728488922119,
+        0.8994392751919804
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2790
     }
   ]
 }

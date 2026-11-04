@@ -77,6 +77,10 @@ namespace
   {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{28.85,3.0,4.40},0},
   {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,-1.40},0},
   {TEXT("SM_EW_CeilingConduit"),TEXT("Extras"),{33.85,3.0,4.40},0},
+  // Reference pass: lab casework under the north windows and a two-sided island (concept board).
+  {TEXT("SM_EW_CaseworkRun24"),TEXT("Extras"),{23.00,0,-4.925},0,true},
+  {TEXT("SM_EW_CaseworkRun12"),TEXT("Extras"),{24.82,0,-4.925},0,true},
+  {TEXT("SM_EW_CaseworkIsland"),TEXT("Extras"),{23.60,0,1.60},90,true},
   // Claude extras (Props/Extras): wall items keep their back on the inner wall face
   // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
   {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},

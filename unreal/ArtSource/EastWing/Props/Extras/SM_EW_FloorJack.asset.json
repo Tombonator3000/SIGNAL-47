@@ -189,6 +189,6 @@
     "sources": []
   },
   "runtime_status": "NOT_IMPORTED; Claude owns integration",
-  "fbx_sha256": "4233a46c1b49be18d948776e349ea1d1926ad346cb1d985a051e6fbb22dff114",
-  "blend_sha256": "cb95375985d09e589eb9192b7f49d97499b5d9091595b66cb21da2d636e071a0"
+  "fbx_sha256": "c58184e93caed20f47ccd73c58262edd2ba7c1a02f99221c99e1329618dff040",
+  "blend_sha256": "b4f75eb81c3fe4f9e26c9742766e26f59e209cd2d7c7252a3fe2284f4c70029a"
 }
