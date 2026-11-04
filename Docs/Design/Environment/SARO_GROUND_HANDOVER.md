@@ -38,3 +38,5 @@ Kontroll ved overlevering: 2295 selvtester OK; `-S47EastWingDriveTest` 18/0. Bil
 4. november Codex: asfalt/oppmerking fra punkt 5 videreført i SARO-PARKING-02. Sammenhengende Caliche-asfalt uten gjentatt sandkant, diskret kantstøv og tre slitte parkeringsfelt vest for porten. Hele forplassen/innkjøringen åpnet for kjøring med bevarte reelle hindringer. Bygg/native import og Freeform24/Story9 består; ingen installasjon. Egne oljeflekker og større lokale asfaltreparasjoner er fortsatt ikke laget.
 
 4. november Codex: Toms tillegg om mikrorelieff og små faktiske ujevnheter er implementert i material/import. Tre estimerte 16-bits høydekart rekonstrueres fra eksisterende normaler. Nærfelt-parallax følger D/N/R-lagene; Nanite bruker 7 cm total høydeforskjell (±3,5 cm) på fem ørkenmesher med opprinnelig kollisjonsflate. Detaljer og regenerering står i GROUND_TEXTURES.md. Dette er fortsatt editorleveranse, ikke installert spill.
+
+4. november kl.14:57: PR380 flettet (`f62b1c73`) og lokal installasjon verifisert med 2314 selvtester, pakkede SARO-bilder og installert oppstart. 128 personlige Saved-filer uendret. Gjeldende levering står i STATUS.md.
