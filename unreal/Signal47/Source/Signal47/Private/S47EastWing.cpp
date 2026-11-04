@@ -285,6 +285,21 @@ void FS47EastWing::Grime()
     At+=Wd*R.FRandRange(.75f,1.05f);
    }
  }
+ // Ground integration (Tom 4 Nov): splash dirt up the outside plinth and wind-blown dust on the ground
+ // along every facade, so the wing sits in the desert instead of on it. Ground is site y -0.576.
+ {
+  struct FFoot{bool bX;double C,A,B;double Yaw;int Out;};
+  const FFoot Feet[]={{false,Z0,X0,X1,90.,-1},{false,Z1,X0,X1,-90.,1},{true,X1,Z0,Z1,180.,1},{true,X0,Z0,Z1,0.,-1}};
+  for(const FFoot& F:Feet)
+   for(double At=F.A;At<F.B-.1;At+=2.)
+   {
+    const double Mid=FMath::Min(At+1.,F.B-1.),Half=FMath::Min(100.,(F.B-F.A)*50.);
+    const FVector Wall=F.bX?FVector(F.C,-.576+.32,Mid):FVector(Mid,-.576+.32,F.C);
+    Decal(Base,Wall,FRotator(0,F.Yaw,90),FVector(5,32,Half),.95f);
+    const FVector Ground=F.bX?FVector(F.C+F.Out*.55,-.576,Mid):FVector(Mid,-.576,F.C+F.Out*.55);
+    Decal(Dust,Ground,FRotator(-90,F.Yaw+180,90),FVector(12,55,Half),.9f);
+   }
+ }
  UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing grime: %d deferred decals (wall bases, floor dust, jamb scuffs, run-off)"),Count);
 }
 

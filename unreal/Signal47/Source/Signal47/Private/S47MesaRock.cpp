@@ -17,8 +17,17 @@ void S47MesaRock::Step(AS47Web* Web,double Dt)
   Rock=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Licensed/Backdrop/M_S47_MesaRock.M_S47_MesaRock"));
   if(!Rock.IsValid()){bMissing=true;UE_LOG(LogS47MesaRock,Display,TEXT("S47: mesa rock material not installed; exported mesa colours kept"));return;}
  }
+ static TWeakObjectPtr<UMaterialInterface> Ground;static bool bNoGround=false;
+ if(!Ground.IsValid()&&!bNoGround){Ground=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Backdrop/M_S47_DesertGround.M_S47_DesertGround"));bNoGround=!Ground.IsValid();}
  for(int32 I=0;const FS47WebNode* N=Web->Node(I);++I)
  {
+  // Desert ground (export materials using art/desert: SARO yard 5, saro corridor 416, road 574, old road 774).
+  if(Ground.IsValid()&&N->Mats.Num()==1&&(N->Mats[0]==5||N->Mats[0]==416||N->Mats[0]==574||N->Mats[0]==774))
+  {
+   UStaticMeshComponent* G=Cast<UStaticMeshComponent>(N->Comp.Get());
+   if(G&&!Done.Contains(G)){G->SetMaterial(0,Ground.Get());Done.Add(G);UE_LOG(LogS47MesaRock,Display,TEXT("S47: desert ground material on node %d (%s)"),I,*N->Name);}
+   continue;
+  }
   const bool Legacy=N->Name.StartsWith(TEXT("mesas")),Backdrop=N->Name==TEXT("prop:streetGroundMesas");
   if(!Legacy&&!Backdrop)continue;
   UStaticMeshComponent* C=Cast<UStaticMeshComponent>(N->Comp.Get());
