@@ -20,6 +20,8 @@ Caliche-handelen skjer nå inne ved den eksisterende butikkdisken. Flere kjøp k
 
 OPS-navigasjonen er kontrollert gjennom alle seks sider med samme PC-visning. Serviceaksept og målbytte beholder nå vinduet; OVERVIEW går hjem og Escape går til rommet. Dagskøen forklarer flere oppdrag og ferdig arbeid, og tomt arkiv viser konkret neste steg. Bygg og 37 native kontroller består med gjennomgåtte skjermbilder. Tomt/utfylt arkiv og fullført dagskø bruker eksplisitte testtilstander; ingen full arbeidsreise eller installasjon hevdes.
 
+Oppgavehint og stedvisning er samordnet for opptak, automatiske kontroller, sammenligning og arkivering. Pågående kontroller peker til måleutstyret; ferdige instrumentmålinger peker til OPS / DAILY WORK og riktig knapp. Service-/feeder-/benkoverganger og kartets butikkhenvisning er oppdatert. Bygg og 28 representative tilstandskontroller består, inkludert én disk-/Continue-runde med bevart valgt steg og nøyaktig hint. Ingen ny full spillerreise eller installasjon.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.

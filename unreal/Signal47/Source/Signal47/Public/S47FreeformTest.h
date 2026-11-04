@@ -21,7 +21,7 @@ private:
  int32 ShopCash=0,ShopFuses=0,ShopRelays=0,ShopDelivered=0,ShopCargo=0,ShopClick=0;
  int32 PhotoBudget=0,PrinterBudget=0,WorkBudget=0;
  double PrinterHeld=0;
- FString PrinterId,PrinterOriginal,PrinterStamp;
+ FString PrinterId,PrinterOriginal,PrinterStamp,GuidanceExpected;
  S47J::FObj Snapshot;
  TArray<TSharedPtr<FJsonValue>> Evidence;
  bool Check(bool Good,const FString& Text);

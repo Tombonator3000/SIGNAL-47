@@ -726,7 +726,7 @@ bool FS47FreeformWorld::StartDonorTest()
 void FS47FreeformWorld::DonorTest()
 {
  if(!Ready()||!Near(BenchAt)||!BenchJob.IsEmpty()||!Consume(TEXT("donor")))return;
- BenchJob=TEXT("donor");BenchSeconds=0;M->UI->Close();Change(TEXT("Donor controller connected to the test bench. The relay test takes three seconds."));
+ BenchJob=TEXT("donor");BenchSeconds=0;M->UI->Close();Change(TEXT("CALIBRATION / REPAIR: Wait for the automatic three-second donor relay test; its result will be added to stock."));
 }
 bool FS47FreeformWorld::AnalyzeSample()
 {
@@ -798,7 +798,7 @@ bool FS47FreeformWorld::TriggerServiceFault()
 {
  if(!Ready()||HasArrayFault()||M->Freeform->PowerFault())return false;
  Service=1;Settle=0;LastFaultDay=M->Freeform->Day();if(S03()>=0)M->Web->SetDishRemoteAvailable(S03(),false);
- Change(TEXT("S-03 remote link failed its health poll. Inspect the S-03 CABLE JUNCTION cabinet beside the antenna, or select S-03 on the status PC. Other antennas remain available."));return true;
+ Change(TEXT("ARRAY STATUS (left-hand PC): Select S-03 to diagnose its failed remote link, or inspect the S-03 CABLE JUNCTION cabinet beside the antenna. Other antennas remain available."));return true;
 }
 void FS47FreeformWorld::DiagnoseService(){if(Ready()&&Service==1){Service=2;Change(TEXT("S-03 command relay failed. At the S-03 CABLE JUNCTION cabinet: select LOCAL, open the hatch and replace one drive relay. Stock parts are carried in your service pouch; no upgrade is needed."));}}
 FString FS47FreeformWorld::ServiceStatus() const
@@ -818,11 +818,11 @@ bool FS47FreeformWorld::ServiceUse()
  {
   case 0:case 9:Change(ServiceStatus());return true;
   case 1:DiagnoseService();return true;
-  case 2:Service=3;Change(TEXT("S-03 set to LOCAL. Remote movement is isolated. Open the cover."));break;
-  case 3:Service=4;Change(TEXT("Hatch open. The command relay is not closing; seat a compatible replacement from your stock."));break;
-  case 4:if(!Consume(TEXT("relay"))){Change(TEXT("CALICHE GAS STATION: Buy a relay; your pouch is empty. GARAGE RECEIVING: Unpack its parcel. CALIBRATION / REPAIR: Test a donor before using its relay."));return true;}Service=5;Change(TEXT("Replacement relay seated. Close the cover before the movement test."));break;
-  case 5:Service=6;Change(TEXT("Cover secured. Use the local control to test five degrees out and back."));break;
-  case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(S03()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(S03());ServiceEl=M->Web->DishEl(S03());Service=7;Settle=0;M->Web->PointDish(S03(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("Local test running: watch S-03 turn five degrees and return."));break;
+  case 2:Service=3;Change(TEXT("S-03 CABLE JUNCTION: LOCAL selected; remote movement is isolated. Open the cover."));break;
+  case 3:Service=4;Change(TEXT("S-03 CABLE JUNCTION: Hatch open. Seat a compatible replacement relay from your stock."));break;
+  case 4:if(!Consume(TEXT("relay"))){Change(TEXT("CALICHE GAS STATION: Buy a relay; your pouch is empty. GARAGE RECEIVING: Unpack its parcel. CALIBRATION / REPAIR: Test a donor before using its relay."));return true;}Service=5;Change(TEXT("S-03 CABLE JUNCTION: Replacement relay seated. Close the cover before the movement test."));break;
+  case 5:Service=6;Change(TEXT("S-03 CABLE JUNCTION: Cover secured. Start the local five-degree out-and-back test."));break;
+  case 6:if(M->Freeform->PowerFault()&&!HasBackupPower()){Change(TEXT("NO POWER: restore feeder supply or start the fuelled backup generator before the local test. The fitted relay is retained."));return true;}if(S03()<0){Change(TEXT("S-03 encoder unavailable. Test cannot start; the fitted relay is retained."));return true;}ServiceAz=M->Web->DishAz(S03());ServiceEl=M->Web->DishEl(S03());Service=7;Settle=0;M->Web->PointDish(S03(),ServiceAz+5,ServiceEl,2.2,true);Change(TEXT("S-03 CABLE JUNCTION: Wait for the automatic five-degree out-and-back test. REMOTE returns after the test passes."));break;
   case 7:case 8:Change(ServiceStatus());break;
  }
  return true;
@@ -838,10 +838,10 @@ bool FS47FreeformWorld::FeederUse()
 {
  if(!Near(InteractionPoint(TEXT("ff:feeder")),3.0))return true;
  if(!M->Freeform->PowerFault()){Change(TEXT("SARO feeder voltage and local fuse are normal."));return true;}
- if(Feeder<=1){Feeder=2;Change(TEXT("Low supply confirmed at the feeder front. Open the enclosed isolation switch."));}
- else if(Feeder==2){Feeder=3;Change(TEXT("Feeder isolated. Replace the blown control fuse from your service stock."));}
- else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("A control fuse is needed. Caliche's supply hatch offers a $5 feeder-repair fuse on credit even with existing debt; collect its parcel and unpack it at SARO GARAGE RECEIVING."));return true;}Feeder=4;Change(TEXT("Replacement fuse seated. Run the enclosed three-second test."));}
- else if(Feeder==4){if(FeederSeconds<=0){FeederSeconds=.001;Change(TEXT("Feeder test running. Watch the marked indicator settle before supply is restored."));}}
+ if(Feeder<=1){Feeder=2;Change(TEXT("SERVICE BAY FEEDER: Low supply confirmed. Open the enclosed isolation switch."));}
+ else if(Feeder==2){Feeder=3;Change(TEXT("SERVICE BAY FEEDER: Supply isolated. Replace the blown control fuse from your service stock."));}
+ else if(Feeder==3){if(!Consume(TEXT("fuse"))){Change(TEXT("CALICHE STORE COUNTER: Request a $5 feeder-repair fuse on credit, including after hours or with existing debt. Collect its parcel; SARO GARAGE RECEIVING: Unpack it before returning to the SERVICE BAY FEEDER."));return true;}Feeder=4;Change(TEXT("SERVICE BAY FEEDER: Replacement fuse seated. Start the enclosed three-second test."));}
+ else if(Feeder==4){if(FeederSeconds<=0){FeederSeconds=.001;Change(TEXT("SERVICE BAY FEEDER: Wait for the automatic three-second test. The indicator settles and mains supply returns when it passes."));}}
  return true;
 }
 
@@ -879,7 +879,7 @@ FString FS47FreeformWorld::Label(const FString& Id) const
   const double Volume=FMath::Min(1.,4.-Fuel);return Volume<.00001?TEXT("REGULAR / service truck tank full"):FString::Printf(TEXT("REGULAR / add up to %.2f / $%d / tank %.2f of 4"),Volume,FMath::CeilToInt(Volume/.25-.00001),Fuel);
  }
  if(Id==TEXT("ff:carry"))return Payload==2?TEXT("Handle carried parcel / set down or drop"):FString();
- if(Id==TEXT("ff:shop"))return ShopOpen()?TEXT("Buy service supplies / collect a physical parcel"):TEXT("Supply hatch closed / essential requisition");
+ if(Id==TEXT("ff:shop"))return ShopOpen()?TEXT("Buy service supplies / collect a physical parcel"):TEXT("Store counter closed / essential requisition");
  if(Id==TEXT("ff:bench"))return Payload==2&&Item==TEXT("service_case")?TEXT("Return service case to calibration bench"):TEXT("CALIBRATION / REPAIR: Test donors and prepare field logger");
  if(Id==TEXT("ff:sample"))return TEXT("TEST LAB: Analyze field sample and inspect sealed originals");
  if(Id==TEXT("ff:depot"))return Payload==2&&Item==TEXT("fieldlogger")?TEXT("EQUIPMENT CHECKOUT: Return logger and original tape"):TEXT("PARTS STORAGE: Equipment checkout, spare stock and film");
@@ -919,7 +919,7 @@ void FS47FreeformWorld::Step(double Dt)
   const int32 I=S03();if(I>=0){const double Target=ServiceAz+(Service==7?5.:0.);
    const bool On=FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Target))<=.1&&FMath::Abs(M->Web->DishEl(I)-ServiceEl)<=.1;
    Settle=On?Settle+FMath::Min(Dt,.1):0;
-   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-s03"),TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored."));Change(TEXT("S-03 returned to its starting angle. Local test passed; REMOTE restored."));}}
+   if(Settle>=1){Settle=0;if(Service==7){Service=8;M->Web->PointDish(I,ServiceAz,ServiceEl,2.2,true);}else{Service=9;ServiceTests=FMath::Min(1000000,ServiceTests+1);M->Web->SetDishRemoteAvailable(I,true);M->Freeform->RecordEvidence(TEXT("service-s03"),TEXT("S-03 replacement relay passed local five-degree out-and-back test. Remote pointing restored."));Change(M->Freeform->ActiveServiceGuide()==1?TEXT("OPS (corner PC), SERVICE: Local test passed; REMOTE restored. Verify and archive the completed work order."):TEXT("TRACKING (right-hand PC): S-03 local test passed and REMOTE is restored. Resume the selected observation."));}}
   }
  }
  if(!BenchJob.IsEmpty())
@@ -937,13 +937,13 @@ void FS47FreeformWorld::Step(double Dt)
    else
    {
     DonorTests=FMath::Min(1000000,DonorTests+1);AddItem(TEXT("relay"));M->Freeform->RecordEvidence(TEXT("donor-relay"),TEXT("Donor controller relay tested at SARO bench and harvested as a compatible spare."));
-    Change(TEXT("Bench relay test passed. One compatible relay added to stock; donor casing retained for scrap."));
+    Change(TEXT("CALIBRATION / REPAIR: Relay test passed; one compatible relay added to stock. S-03 CABLE JUNCTION: Fit it if the command relay needs replacement. Donor casing retained for scrap."));
    }
   }
  }
  if(M->Freeform->PowerFault()&&(Feeder==0||Feeder==5))Feeder=1;
  if(!M->Freeform->PowerFault()&&Feeder>0&&Feeder<5){Feeder=0;FeederSeconds=0;}
- if(Feeder==4&&FeederSeconds>0){FeederSeconds+=FMath::Min(Dt,.1);if(FeederSeconds>=3){Feeder=5;FeederSeconds=0;M->Freeform->SetPowerFault(false);TrackPowerFault(false);M->Freeform->RecordEvidence(TEXT("feeder-repair"),TEXT("Feeder supply measured, isolated, control fuse replaced and enclosed test passed."));Change(TEXT("Feeder indicator steady. SARO mains supply restored."));}}
+ if(Feeder==4&&FeederSeconds>0){FeederSeconds+=FMath::Min(Dt,.1);if(FeederSeconds>=3){Feeder=5;FeederSeconds=0;M->Freeform->SetPowerFault(false);TrackPowerFault(false);M->Freeform->RecordEvidence(TEXT("feeder-repair"),TEXT("Feeder supply measured, isolated, control fuse replaced and enclosed test passed."));Change(TEXT("SERVICE BAY FEEDER: Test passed; mains restored. ")+M->Freeform->Objective());}}
  // A bounded ordinary service need, not a constant global wear drain.
  if(M->Freeform->Day()>1&&M->Freeform->Day()%(M->Freeform->HasUpgrade(0)?6:3)==2&&LastFaultDay!=M->Freeform->Day()&&DayClock(Now)>=10*3600&&!HasArrayFault()&&!M->Freeform->PowerFault())TriggerServiceFault();
  Apply();
@@ -1032,7 +1032,7 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  auto OldRescue=Rescue.Save();OldRescue->RemoveField(TEXT("powerFaultSerial"));OldRescue->RemoveField(TEXT("emergencyFuseFault"));OldRescue->RemoveField(TEXT("trackedPowerFault"));
  RescueCopy.Begin(S47J::Read(S47J::Write(OldRescue)));RescueCopy.TrackPowerFault(true);
  C(RescueCopy.PowerFaultSerial==1&&RescueCopy.CanIssueEmergencyFuse(true)&&RescueCopy.InventoryCount(TEXT("fuse"))==0&&RescueCopy.ParcelStage()==0,TEXT("Legacy outage gains a repair identity without inventing stock, a paid parcel or a transaction"));
- C(!RescueCopy.RequestEmergencyFuse()&&RescueCopy.EmergencyFuseFault==0&&RescueCopy.ParcelStage()==0,TEXT("A rescue request still requires the actual player at the supply hatch"));
+ C(!RescueCopy.RequestEmergencyFuse()&&RescueCopy.EmergencyFuseFault==0&&RescueCopy.ParcelStage()==0,TEXT("A rescue request still requires the actual player at the indoor store counter"));
  FS47FreeformSession Credit(nullptr);Credit.Begin(nullptr);auto CreditState=Credit.Save();
  S47J::Set(CreditState,TEXT("cash"),0);S47J::Set(CreditState,TEXT("loan"),25);Credit.Begin(CreditState);
  C(!Credit.Spend(5,true)&&Credit.Budget()==0&&Credit.Debt()==25&&Credit.ChargeEmergencyFeederFuse()&&Credit.Budget()==0&&Credit.Debt()==30,TEXT("Existing debt still blocks ordinary credit but the bounded feeder transaction adds exactly five dollars without requiring working instruments"));
@@ -1075,7 +1075,7 @@ bool FS47FreeformWorld::LoggerAction(const FString& Action)
    Change(TEXT("EQUIPMENT CHECKOUT: Return the logger and sealed original tape in PARTS STORAGE. CALIBRATION / REPAIR: Compare the retained original afterward."));return true;
   }
   if(Payload!=2||Item!=TEXT("fieldlogger")){Change(TEXT("Bring the calibrated loan logger here in your hands. Prepare it at CALIBRATION / REPAIR, then collect it at EQUIPMENT CHECKOUT in PARTS STORAGE."));return false;}
-  if(!Logger.Start(Site,M->Freeform->Day(),M->Freeform->Clock())){Change(TEXT("Logger cannot start: check calibration, battery and retained-tape capacity at the bench."));return false;}
+  if(!Logger.Start(Site,M->Freeform->Day(),M->Freeform->Clock())){Change(TEXT("CALIBRATION / REPAIR: Check logger calibration, battery and retained-tape capacity before deploying it."));return false;}
   Payload=0;Item.Empty();bParcelWasLoaded=false;LoggerJob.Empty();LoggerJobElapsed=0;
   Change(TEXT("Field logger recording for two hours. Its battery and clock run independently of the SARO receiver. Return to SARO for a simultaneous recording, then retrieve this original."));return true;
  }
@@ -1083,13 +1083,13 @@ bool FS47FreeformWorld::LoggerAction(const FString& Action)
  if(Action==TEXT("connect"))
  {
   if(!BenchJob.IsEmpty()||!Logger.Connect())return false;
-  Change(Logger.Assembly==3?TEXT("Battery connected: bench meter responds. Run the clock calibration before carrying the logger."):TEXT("Loan-kit connection seated. Continue with the next labelled connection."));
+  Change(Logger.Assembly==3?TEXT("CALIBRATION / REPAIR: Battery connected; run clock calibration before carrying the logger."):TEXT("CALIBRATION / REPAIR: Connection seated. Continue with the next labelled connection."));
  }
  else if(Action==TEXT("calibrate"))
  {
   if(Logger.Assembly!=3||!BenchJob.IsEmpty())return false;
   bLoggerCalibrating=true;Logger.Calibration=0;Logger.bCalibrated=false;if(M->UI)M->UI->Close();
-  Change(TEXT("Bench reference running for three seconds. Logger clock reads 2.4 seconds ahead; the correction will travel with every original."));
+  Change(TEXT("CALIBRATION / REPAIR: Stay at the powered bench for the automatic three-second clock reference. Logger reads 2.4 seconds ahead; the correction will travel with every original."));
  }
  else if(Action==TEXT("tune"))
  {
@@ -1131,10 +1131,10 @@ void FS47FreeformWorld::StepLogger(double Dt,double WorldDelta)
  if(bLoggerCalibrating)
  {
   if(!Near(BenchAt)||M->Web->Area()!=TEXT("saro")||!BenchJob.IsEmpty()||(M->Freeform->PowerFault()&&!GeneratorRunning()))
-  {bLoggerCalibrating=false;Logger.Calibration=0;Logger.bCalibrated=false;Change(TEXT("Clock calibration interrupted. Stay at the powered, available SARO bench for the full reference test."));}
+  {bLoggerCalibrating=false;Logger.Calibration=0;Logger.bCalibrated=false;Change(TEXT("CALIBRATION / REPAIR: Clock calibration interrupted. Stay at the powered bench for the full reference test."));}
   else if(Logger.Calibrate(FMath::Min(Dt,.1)))
   {
-   bLoggerCalibrating=false;Change(TEXT("Bench reference passed. Clock offset +2.4 s retained; loan battery charged for six hours. Tune from a work card, then carry to either field post."));
+   bLoggerCalibrating=false;Change(TEXT("CALIBRATION / REPAIR: Clock offset +2.4 s retained; battery charged for six hours. Tune from a work card. EQUIPMENT CHECKOUT in PARTS STORAGE: Collect the logger, then carry it to a field post."));
   }
   if(BenchLamp){BenchLamp.SetColor(S47Three::Hex(0xc8a046));BenchLamp.SetEmissive(S47Three::Hex(0xc8a046),float(.2+Logger.Calibration/3.));}
  }

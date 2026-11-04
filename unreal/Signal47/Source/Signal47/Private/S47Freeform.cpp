@@ -425,7 +425,7 @@ void FS47FreeformSession::StepWork(double Dt)
      ActualAz/=FMath::Max(1,Count);ActualEl/=FMath::Max(1,Count);
      J->BeamAz.Add(ActualAz);J->BeamEl.Add(ActualEl);J->BeamAmplitude.Add(BeamLevel(ActualAz,TargetAz()+.5));
      if(J->BeamPoint<2){++J->BeamPoint;PointBeamControl();}
-     else {J->bBeamVerified=true;J->ControlAt=8;Changed(TEXT("OPS (corner PC): Compare the retained west, east and centre measurements. Automatic tracking is complete; the array is back at centre."));if(Director)Director->Use(TEXT("ff:control"));}
+     else {J->bBeamVerified=true;J->ControlAt=8;Changed(TEXT("OPS (corner PC): DAILY WORK / Select this job and press Compare the retained instrument measurements. West, east and centre sampling is complete; the array is back at centre."));if(Director)Director->Use(TEXT("ff:control"));}
     }
    }
   }
@@ -435,7 +435,7 @@ void FS47FreeformSession::StepWork(double Dt)
    if(J->ControlAt>=8)
    {
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
-    if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): Compare original and control clock offsets; both device counters have now read the same internal-reference pulse."));
+    if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): DAILY WORK / Select this job and press Compare the retained instrument measurements to compare original and control clock offsets."));
     else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("PRINTER: Register check complete; duplicate feed queued. Wait for the printer to finish, then collect and compare it with the retained original at OPS (corner PC)."));
     else Changed(TEXT("REEL DECK (beside telephone): Review the original and control recordings; the internal control is complete."));
     if(Director)Director->Use(TEXT("ff:control"));
@@ -596,7 +596,7 @@ FString FS47FreeformSession::ControlSummary(const FJob& J)const
 bool FS47FreeformSession::CompareInstrument()
 {
  if(!RequirePower())return false;
- FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bControl||J->ControlAt<8||!Specialized(J->Phenomenon))return false;
+ FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bControl||J->ControlAt<8||!Specialized(J->Phenomenon)){Feedback=J?JobNextAction(*J):FString(TEXT("OPS (corner PC): Select the retained observation in DAILY WORK before comparing."));return false;}
  bool Verified=false;
  if(J->Phenomenon==TEXT("wrong_source"))Verified=J->bBeamVerified&&J->BeamAz.Num()==3&&J->BeamEl.Num()==3&&J->BeamAmplitude.Num()==3&&J->BeamAmplitude[1]>J->BeamAmplitude[0]+.25&&J->BeamAmplitude[1]>J->BeamAmplitude[2]+.25;
  else if(J->Phenomenon==TEXT("time_disagreement"))Verified=J->bClockMeasured&&FMath::IsNearlyEqual(J->ReceiverClock-J->ReferenceClock,3.2,.001)&&FMath::IsNearlyEqual(J->ControlReceiverClock-J->ControlReferenceClock,3.2,.001);
@@ -606,15 +606,20 @@ bool FS47FreeformSession::CompareInstrument()
   const FS47Doc* Copy=M->Story->Docs().FindByPredicate([&](const FS47Doc& D){return D.Id==J->Id+TEXT("-duplicate");});
   Verified=Original&&Copy&&Original->Page==J->OriginalPage&&Original->Stamp==J->OriginalStamp&&Copy->Page==J->DuplicatePage&&Copy->Stamp==J->DuplicateStamp&&J->DuplicatePage!=J->OriginalPage&&FMath::IsNearlyEqual(J->DuplicateClock-J->ReferenceClock,2.4,.001)&&FMath::IsNearlyEqual(J->Elapsed-J->DuplicateInterval,1.,.001);
  }
- if(!Verified){Feedback=TEXT("The required independent measurements or retained originals are incomplete. Do the physical control before comparing.");return false;}
+ if(!Verified)
+ {
+  Feedback=J->Phenomenon==TEXT("duplicate_print")?TEXT("PRINTER: Collect the separate duplicate and retain the original before comparing them at OPS (corner PC), DAILY WORK."):
+   J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): Complete the west, east and centre measurements before comparing them at OPS (corner PC), DAILY WORK."):
+   TEXT("RECEIVER RACK: Complete the independent clock control before comparing original and control readings at OPS (corner PC), DAILY WORK.");return false;
+ }
  J->bAudioReviewed=true;RecordEvidence(J->Phenomenon,ControlSummary(*J));if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("OPS (corner PC): Register the supported instrumental conclusion; the measured comparison is retained."));return true;
 }
 bool FS47FreeformSession::StartControl()
 {
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bAnomaly||J->bControl||!HasPower())return false;
  J->bControl=true;J->ControlAt=0;
- if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then compare the retained measurements at OPS (corner PC)."));}
- else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. Follow the completion hint for comparison."));return true;
+ if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then open DAILY WORK at OPS (corner PC), select this job and press Compare the retained instrument measurements."));}
+ else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK beside the telephone for audio comparison."));return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::AudioAction(const FString& Action)
@@ -920,6 +925,7 @@ void FS47FreeformSession::OpenOperations()
     if(Specialized(J->Phenomenon))
     {
      A.Add(T::Small(ControlSummary(*J)));
+     A.Add(T::Small(TEXT("COMPARE HERE / OPS, DAILY WORK. Finish the physical control first; for a duplicate check, collect the original and separate duplicate. This button compares the retained measurements without changing them.")));
      A.Add(T::Button(TEXT("Compare the retained instrument measurements"),[this]{CompareInstrument();OpenOperations();}));
      const FString Conclusion=InstrumentConclusion(J->Phenomenon);
      const FString Name=J->Phenomenon==TEXT("wrong_source")?TEXT("Register an off-centre maximum; origin unresolved"):J->Phenomenon==TEXT("time_disagreement")?TEXT("Register disagreement in the receiver timing path"):TEXT("Register mismatched duplicate; preserve original");
@@ -1429,9 +1435,15 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
   case EJobStage::Recorded:
    if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
    if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER RACK: RECORD AN INDEPENDENT INTERNAL CONTROL");
-   if(J->ControlAt<8)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE SAMPLES; THEN COMPARE AT OPS (corner PC)"):TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; FOLLOW ITS COMPLETION HINT");
-   if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL"));
-   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): COMPARE THE RETAINED INSTRUMENT MEASUREMENTS");
+   if(J->ControlAt<8)
+   {
+    if(J->Phenomenon==TEXT("wrong_source"))return TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE SAMPLES; THEN COMPARE AT OPS (corner PC), DAILY WORK");
+    if(J->Phenomenon==TEXT("time_disagreement"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN COMPARE CLOCK READINGS AT OPS (corner PC), DAILY WORK");
+    if(J->Phenomenon==TEXT("duplicate_print"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC REGISTER CHECK; THEN WAIT FOR THE DUPLICATE TO FINISH AT THE PRINTER");
+    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK BESIDE THE TELEPHONE");
+   }
+   if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
+   if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE THE RETAINED INSTRUMENT MEASUREMENTS");
    return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (beside telephone): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
   case EJobStage::Registered:return J->bAnomaly&&J->PacketFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
@@ -1441,11 +1453,17 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
 FString FS47FreeformSession::JobLocation(const FJob& J)const
 {
  if(J.Stage==EJobStage::New)return TEXT("Tracking PC / right-hand screen");
- if(J.Stage==EJobStage::Pointed||J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
- if(J.Stage==EJobStage::Chart||J.Stage==EJobStage::Registered||(J.Phenomenon==TEXT("duplicate_print")&&J.bControl&&J.ControlAt>=8&&!J.bDuplicateCollected))return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
+ if(J.Stage==EJobStage::Pointed)return &J==CurrentJob()&&PointReady()&&Settle>=1?TEXT("Receiver / centre screen"):TEXT("Tracking PC / right-hand screen");
+ if(J.Stage==EJobStage::Integrating)return TEXT("Receiver / centre screen");
+ if(J.Stage==EJobStage::Chart||(J.Stage==EJobStage::Registered&&J.bAnomaly))return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
  if(J.Stage==EJobStage::Packet)return TEXT("Binder / records room");
- if(J.Stage==EJobStage::Recorded&&J.bAnomaly&&!J.bAudioReviewed){if(!J.bControl)return J.Phenomenon==TEXT("wrong_source")?TEXT("Tracking PC"):TEXT("Receiver rack");if(!Specialized(J.Phenomenon))return TEXT("Reel deck / beside telephone");}
- return TEXT("OPS / corner PC");
+ if(J.Stage==EJobStage::Recorded&&J.bAnomaly&&!J.bAudioReviewed)
+ {
+  if(!J.bControl||J.ControlAt<8)return J.Phenomenon==TEXT("wrong_source")?TEXT("Tracking PC / right-hand screen"):TEXT("Receiver rack / internal reference controls");
+  if(J.Phenomenon==TEXT("duplicate_print")&&!J.bDuplicateCollected)return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
+  if(!Specialized(J.Phenomenon))return TEXT("Reel deck / beside telephone");
+ }
+ return TEXT("OPS / corner PC / DAILY WORK");
 }
 
 TArray<FS47Task> FS47FreeformSession::Tasks()const

@@ -1709,3 +1709,5 @@ Codex root og tre agenter gjenbruker SARO-kopien på integrasjonsgren `codex/ufo
 4. november 2026 kl.06:20: Codex leverer FF-SHOP-01: innendørs butikkdisk og flere betalte varer i én fysisk pakke uten å lukke menyen. Bygg og 34 målrettede kontroller med to disk-/Continue-runder består; nøyaktig betaling/lager, native sikting, meny og før-/etterbilder kontrollert. Eksplisitte transportplasseringer, ingen ny full kjøretur eller installasjon.
 
 4. november 2026 06:30: codex/night-support-20261103: OPS beholder visningen ved serviceaksept/målbytte, forklarer dagskø og tomt arkiv. build-r21 og ops-r1 består37 native kontroller, tre skjermbilder gjennomgått; ingen ny fullregresjon eller installasjon.
+
+4. november 2026 06:36: codex/night-support-20261103: FF-GUIDANCE-01 samordner sted/handling og automatisk venting; retter pågående kontrollsted og gamle utvendige butikkhenvisninger. build-r22 og guidance-r1 består28 representative kontroller og én disk-/Continue-runde. Ingen ny fullregresjon eller installasjon.

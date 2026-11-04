@@ -71,7 +71,7 @@ void FS47FreeformTest::Shot(const FString& Name){FScreenshotRequest::RequestScre
 void FS47FreeformTest::Finish(bool Good,const FString& Why)
 {
  if(bDone)return;bDone=true;if(M&&M->Player)M->Player->TestMove.Reset();
- auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
+ auto O=S47J::New();S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(O,TEXT("reason"),Why);S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskFlowRestores"),Restores);S47J::Set(O,TEXT("scope"),FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest"))?TEXT("guidance-state-fixtures"):FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest"))?TEXT("ops-native-navigation"):FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest"))?TEXT("shop-multivare-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest"))?TEXT("camera-physical-pickup"):FParse::Param(FCommandLine::Get(),TEXT("S47PrinterTest"))?TEXT("printer-native-fixture"):FParse::Param(FCommandLine::Get(),TEXT("S47FreeformTripHoldTest"))?TEXT("actual-trip-work-hold"):FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest"))?TEXT("photo-economy-rendered-fixture"):bFieldResume?TEXT("field-and-events"):TEXT("full"));O->SetArrayField(TEXT("evidence"),Evidence);
  if(!PhotoEvent.IsEmpty())S47J::Set(O,TEXT("photoFixtureEvent"),PhotoEvent);
  if(FParse::Param(FCommandLine::Get(),TEXT("S47PhotoEconomyTest")))
   S47J::Set(O,TEXT("method"),PhotoEvent==TEXT("feeder_presence")?TEXT("Photo-only native fixture: explicit nighttime clock, road placement and Force encounter; rendered ControlledPhotoBody, real camera and separate live flashlight-OFF/ON exposures. Actor and camera may move; this is not identical-pose lighting A/B. A qualifying ON exposure and one incident claim do not imply that ON created the claim: OFF may already qualify. Production OPS registration plus unpaid/paid disk Flow restores verify payment persistence. No natural scheduling, acquisition/audio journey or OS-input beta is established."):TEXT("Photo-only native fixture: Force landing trace, explicit camera placement, real rendered exposure, duplicate guard, physical OPS registration and unpaid/paid disk Flow restores. No natural scheduling, acquisition/audio journey or OS-input beta is established."));
@@ -86,6 +86,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))S47J::Set(O,TEXT("method"),TEXT("Fresh unowned camera, physical photolab model and actual interaction ray/use, production toggle/shutter, two disk/Flow restores, explicit legacy-field migration and Story placement smoke. Fixture player placement, not a natural walk or full Story regression."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ShopBasketTest")))S47J::Set(O,TEXT("method"),TEXT("Native store menu clicks, one paid multi-item parcel, production pickup/load/unload/receiving, disk/Flow Continue and legacy singleton fixture. Clock/player placement and truck relocation are explicit fixtures; no natural drive, walk or credit-policy regression claimed."));
  if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))S47J::Set(O,TEXT("method"),TEXT("Native on-glass OPS buttons across all six pages, daily job selection, empty archive guidance, service accept/focus and a separate physical screen leave. Fixture screen approach; no OS-input or full work-order completion claimed."));
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))S47J::Set(O,TEXT("method"),TEXT("Representative explicit job-state fixtures exercise production location/action hints; one selected clock-comparison state survives disk/Flow Continue. No full observing journey or automatic completion claimed."));
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -202,6 +203,54 @@ void FS47FreeformTest::Step(double Dt)
  if(!M||!M->Freeform||!M->Freeform->Active()||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
  Age+=FMath::Min(Dt,.2);if(Age>900){Finish(false,TEXT("bounded integration timeout"));return;}if(Hold>0){Hold-=Dt;return;}
  auto& F=*M->Freeform;using J=FS47FreeformSession::EJobStage;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47GuidanceTest")))
+ {
+  if(Age>45){Finish(false,TEXT("bounded guidance fixture timeout"));return;}
+  if(Stage==0)
+  {
+   if(Age<3)return;
+   if(!Check(M->Flow->bDevRun&&F.CurrentJob(),TEXT("isolated guidance fixture has a real generated work card")))return;
+   M->UI->Close(true);F.Director->Stop();auto Job=*F.CurrentJob();Job.CaseLine=Job.CaseTest=-1;Job.bAnomaly=false;Job.bControl=false;Job.ControlAt=0;
+   auto Hint=[&](const TCHAR* Place,const TCHAR* Action,const TCHAR* Location){const FString Text=F.JobNextAction(Job);return Check(Text.Contains(TEXT(":"))&&Text.Contains(Place)&&Text.Contains(Action)&&F.JobLocation(Job).Contains(Location),FString(TEXT("explicit guidance fixture / "))+Text);};
+   Job.Stage=J::New;if(!Hint(TEXT("TRACKING"),TEXT("POINT THE ARRAY"),TEXT("Tracking")))return;
+   Job.Stage=J::Integrating;if(!Hint(TEXT("RECEIVER"),TEXT("KEEP TUNING"),TEXT("Receiver")))return;
+   Job.Stage=J::Chart;Job.ChartFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("RETAIN"),TEXT("Printer")))return;
+   Job.Stage=J::Recorded;if(!Hint(TEXT("OPS"),TEXT("REGISTER"),TEXT("OPS")))return;
+   Job.bAnomaly=true;Job.Phenomenon=TEXT("wrong_source");
+   if(!Hint(TEXT("TRACKING"),TEXT("MEASURE WEST"),TEXT("Tracking")))return;
+   Job.bControl=true;Job.ControlAt=4;
+   if(!Hint(TEXT("TRACKING"),TEXT("WAIT FOR AUTOMATIC"),TEXT("Tracking")))return;
+   if(!Check(F.JobNextAction(Job).Contains(TEXT("THEN COMPARE AT OPS")),TEXT("automatic adjacent-beam guidance names the next workstation")))return;
+   Job.ControlAt=8;Job.bBeamVerified=true;
+   if(!Hint(TEXT("OPS"),TEXT("DAILY WORK"),TEXT("OPS")))return;
+   Job.Phenomenon=TEXT("time_disagreement");Job.ControlAt=4;
+   if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN COMPARE CLOCK READINGS AT OPS"),TEXT("Receiver rack")))return;
+   Job.ControlAt=8;Job.bClockMeasured=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE THE RETAINED"),TEXT("OPS")))return;
+   Job.Phenomenon=TEXT("duplicate_print");Job.ControlAt=4;
+   if(!Hint(TEXT("RECEIVER RACK"),TEXT("AUTOMATIC REGISTER CHECK"),TEXT("Receiver rack")))return;
+   Job.ControlAt=8;Job.DuplicateFeed=FS47FreeformSession::PrinterSeconds;
+   if(!Hint(TEXT("PRINTER"),TEXT("WITHOUT ALTERING THE ORIGINAL"),TEXT("Printer")))return;
+   Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE THE RETAINED"),TEXT("OPS")))return;
+   Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
+   if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
+   Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
+   Job.bAudioReviewed=true;if(!Hint(TEXT("OPS"),TEXT("REGISTER THE SUPPORTED"),TEXT("OPS")))return;
+   Job.Stage=J::Registered;Job.PacketFeed=FS47FreeformSession::PrinterSeconds;if(!Hint(TEXT("PRINTER"),TEXT("COLLECT"),TEXT("Printer")))return;
+   Job.Stage=J::Packet;if(!Hint(TEXT("RECORDS ROOM"),TEXT("BINDER"),TEXT("binder")))return;
+   Job.Stage=J::Filed;if(!Check(F.JobNextAction(Job).Contains(TEXT("DAILY WORK OR CASE ARCHIVE")),TEXT("filed work directs to further work or retained archive")))return;
+   auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();
+   S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("phenomenon"),TEXT("time_disagreement"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("clockMeasured"),true);S47J::Set(O,TEXT("reviewed"),false);S47J::Set(Save,TEXT("selected"),0);F.Begin(Save);F.Director->Stop();
+   GuidanceExpected=F.NextAction();
+   if(!Check(GuidanceExpected.StartsWith(TEXT("OPS (corner PC):"))&&GuidanceExpected.Contains(TEXT("COMPARE THE RETAINED")),TEXT("selected completed clock-control fixture offers a concrete OPS comparison action")))return;
+   if(!Restore(TEXT("guidance-clock-comparison")))return;Go(8901,.3);return;
+  }
+  if(Stage==8901)
+  {
+   if(!Check(F.CurrentJob()&&F.CurrentJob()->Phenomenon==TEXT("time_disagreement")&&F.CurrentJob()->ControlAt==8&&!F.CurrentJob()->bAudioReviewed&&F.NextAction()==GuidanceExpected,TEXT("disk Continue retains selected step and exact place/action hint without completing its comparison")))return;
+   Finish(true,TEXT("Representative production guidance and selected-state disk Continue passed."));return;
+  }
+  return;
+ }
  if(FParse::Param(FCommandLine::Get(),TEXT("S47OpsNavigationTest")))
  {
   if(Age>60){Finish(false,TEXT("bounded OPS navigation timeout"));return;}

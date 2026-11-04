@@ -143,7 +143,7 @@ TArray<FString> S47AreaMap::Description(const FS47MapView& V)
 	if (US47Main::Get(nullptr)->IsFreeform())
 	{
 		T.Add(TEXT("SARO service bench: outside the building by the SARO sign. Unload supplies and test donor controllers here."));
-		T.Add(TEXT("Caliche gas station: west side of the highway, just south of Mesa Diner. The exterior supply hatch sells parts and donor controllers, 08:00-20:00; essential emergency requisitions are available after hours."));
+		T.Add(TEXT("Caliche gas station: west side of the highway, just south of Mesa Diner. Enter the store and use the counter for parts and donor controllers, 08:00-20:00; essential emergency requisitions are available after hours."));
 		T.Add(TEXT("Drive south from SARO past the motel to Caliche: over a mile. Take the service truck, which starts outside SERVICE YARD. Return north with the parcel secured in the truck."));
 	}
 	if (V.bStation) T.Add(TEXT("STATION 01. 1947."));
@@ -224,7 +224,7 @@ int32 SS47AreaMap::OnPaint(const FPaintArgs& Args, const FGeometry& G, const FSl
 		P.Text(TEXT("Return north to SARO with supplies."), 650, 510, 30);
 		P.Stroke1(P.Arc(400, 636, 7), 2.f, PENCIL);
 		P.Line({ { 400, 636 }, { 470, 702 }, { 588, 702 } }, 1.4f);
-		P.Text(TEXT("Gas station / supply hatch"), 600, 708, 28);
+		P.Text(TEXT("Gas station / indoor counter"), 600, 708, 28);
 		P.Text(TEXT("Parts + donors 08:00-20:00"), 600, 742, 26);
 		P.Text(TEXT("Emergency essentials after hours"), 600, 775, 24);
 	}
