@@ -856,6 +856,96 @@
       "finite": true,
       "materials": true,
       "triangles": 234
+    },
+    {
+      "asset": "SM_EW_LabStool",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 2.9802322387695312e-08,
+      "dimensions_m": [
+        0.37102314829826355,
+        0.37102314829826355,
+        0.6449999809265137
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4836
+    },
+    {
+      "asset": "SM_EW_LabStool",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 9.223818778991699e-05,
+      "dimensions_m": [
+        0.3711153566837311,
+        0.3711153566837311,
+        0.6449999809265137
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2418
+    },
+    {
+      "asset": "SM_EW_LabStool",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.0004429219843586907,
+      "dimensions_m": [
+        0.370799720287323,
+        0.370799720287323,
+        0.644557058942155
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 1208
+    },
+    {
+      "asset": "SM_EW_ReagentShelf",
+      "lod": 0,
+      "pass": true,
+      "dimension_error_m": 8.381903171539307e-08,
+      "dimensions_m": [
+        0.9000000059604645,
+        0.22000009007751942,
+        0.3630000054836273
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 8372
+    },
+    {
+      "asset": "SM_EW_ReagentShelf",
+      "lod": 1,
+      "pass": true,
+      "dimension_error_m": 0.00030481815338134766,
+      "dimensions_m": [
+        0.8996951580047607,
+        0.2197167593985796,
+        0.3628297299146652
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 4185
+    },
+    {
+      "asset": "SM_EW_ReagentShelf",
+      "lod": 2,
+      "pass": true,
+      "dimension_error_m": 0.001939353533089161,
+      "dimensions_m": [
+        0.8993675112724304,
+        0.21806065272539854,
+        0.3622303307056427
+      ],
+      "uv": true,
+      "finite": true,
+      "materials": true,
+      "triangles": 2092
     }
   ]
 }

@@ -99,6 +99,18 @@
       "license": "Extras/SM_EW_LabSink.license.json"
     },
     {
+      "id": "SM_EW_LabStool",
+      "manifest": "Extras/SM_EW_LabStool.asset.json",
+      "fbx": "Extras/SM_EW_LabStool.fbx",
+      "dimensions_m": [
+        0.37102311849594116,
+        0.37102311849594116,
+        0.6449999809265137
+      ],
+      "triangles": 4836,
+      "license": "Extras/SM_EW_LabStool.license.json"
+    },
+    {
       "id": "SM_EW_MechanicBench",
       "manifest": "Extras/SM_EW_MechanicBench.asset.json",
       "fbx": "Extras/SM_EW_MechanicBench.fbx",
@@ -207,6 +219,18 @@
       "license": "Extras/SM_EW_PosterRF.license.json"
     },
     {
+      "id": "SM_EW_ReagentShelf",
+      "manifest": "Extras/SM_EW_ReagentShelf.asset.json",
+      "fbx": "Extras/SM_EW_ReagentShelf.fbx",
+      "dimensions_m": [
+        0.8999999761581421,
+        0.2200000062584877,
+        0.3630000054836273
+      ],
+      "triangles": 8372,
+      "license": "Extras/SM_EW_ReagentShelf.license.json"
+    },
+    {
       "id": "SM_EW_SwampCooler",
       "manifest": "Extras/SM_EW_SwampCooler.asset.json",
       "fbx": "Extras/SM_EW_SwampCooler.fbx",
@@ -231,7 +255,7 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 19,
+  "asset_count": 21,
   "material_manifest": "Textures/materials.json",
   "native_integration_owner": "Claude",
   "prints": "Extras/make_prints.py"

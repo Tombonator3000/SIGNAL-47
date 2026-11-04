@@ -55,6 +55,9 @@ namespace
   // (exterior inner faces x20.85 / z+-5.25, partitions .15 thick at x26, x31.6, z.5). Yaw-90 faces +x.
   {TEXT("SM_EW_LabSink"),TEXT("Extras"),{21.165,0,-1.20},-90,true},
   {TEXT("SM_EW_GlassCabinet"),TEXT("Extras"),{21.075,0,1.30},-90,true},
+  {TEXT("SM_EW_ReagentShelf"),TEXT("Extras"),{20.862,1.55,-1.20},-90},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.35,0,-3.15},0},
+  {TEXT("SM_EW_LabStool"),TEXT("Extras"),{23.95,0,4.05},0},
   {TEXT("SM_EW_PosterGlasses"),TEXT("Extras"),{24.20,1.32,5.246},180},
   {TEXT("SM_EW_WallClock"),TEXT("Extras"),{25.889,2.02,-1.00},90},
   {TEXT("SM_EW_NoticeBoard"),TEXT("Extras"),{25.909,1.00,.45},90},

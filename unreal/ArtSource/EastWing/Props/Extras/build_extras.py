@@ -488,6 +488,37 @@ def notice_board():
     return finish_asset(asset, OUT, 'Lab cork notice board, 1.2 x 0.9 m, with pinned memos (custody rule, generator fuel, room guide, night log).')
 
 
+def lab_stool():
+    asset = 'SM_EW_LabStool'; start_asset(asset)
+    cyl('seat', (0, 0, .62), .17, .05, material('EW_X_Vinyl', (.06, .07, .065), .55), vertices=40)
+    cyl('seat_pan', (0, 0, .59), .15, .02, chrome, vertices=32)
+    cyl('column', (0, 0, .4), .022, .38, chrome, vertices=20)
+    bpy.ops.mesh.primitive_torus_add(major_radius=.17, minor_radius=.009, major_segments=40, minor_segments=8, location=(0, 0, .26))
+    ring = bpy.context.object; ring.name = 'foot_ring'; ring.data.materials.append(chrome)
+    for i in range(4):
+        a = i * math.pi / 2 + math.pi / 4
+        rod(f'leg{i}', (0, 0, .22), (.24 * math.cos(a), .24 * math.sin(a), .02), .012, chrome)
+        cyl(f'glide{i}', (.24 * math.cos(a), .24 * math.sin(a), .01), .016, .02, rubber, vertices=12)
+    return finish_asset(asset, OUT, 'Chrome lab stool with black vinyl seat and foot ring.')
+
+
+def wall_shelf():
+    asset = 'SM_EW_ReagentShelf'; start_asset(asset)
+    W, D = .90, .22
+    box('board', (0, -D / 2 + .01, .02), (W, D, .025), green, .003)
+    for x in (-W / 2 + .08, W / 2 - .08):
+        box(f'bracket{x}', (x, -.06, -.06), (.02, .12, .16), steel, .002)
+    box('lip', (0, -D + .015, .05), (W, .006, .04), steel, .001)
+    items = [('a', 'ETHANOL'), ('b', 'H2O DIST'), ('a', 'ACETONE'), ('b', 'BUFFER'), ('a', 'IPA'), ('k', None)]
+    for i, (kind, tag) in enumerate(items):
+        x = -W / 2 + .09 + i * (W - .18) / (len(items) - 1)
+        if kind == 'k':
+            cyl(f'beaker{i}', (x, -.11, .1), .04, .14, glass, vertices=28)
+        else:
+            bottle(f'bottle{i}', x, -.11, .033, .034, .19, amber if kind == 'a' else glass, dark, tag)
+    return finish_asset(asset, OUT, 'Green steel wall shelf with labelled reagent bottles and a beaker.')
+
+
 lab_sink()
 glass_cabinet()
 poster('SM_EW_PosterRF', 'EW_Print_PosterRF', .56, .79)
@@ -505,5 +536,7 @@ oil_stains()
 for key in ('Lab', 'Storage', 'Calibration', 'Garage'):
     plaque('SM_EW_Plaque' + key, 'EW_Print_Plaque' + key)
 notice_board()
+lab_stool()
+wall_shelf()
 render_catalog(OUT, 'EASTWING / EXTRAS (CLAUDE)')
 print('EASTWING EXTRAS EXPORT COMPLETE', flush=True)
