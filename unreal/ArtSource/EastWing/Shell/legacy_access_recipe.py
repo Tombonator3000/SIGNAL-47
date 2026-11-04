@@ -49,3 +49,42 @@ def removed(name,points,uvs):
            ((abs(u-.9375)<.0001 and abs(w-.9375)<.0001) or (abs(u-.3125)<.0001 and abs(w-.1875)<.0001))
            for (x,y,z),(u,w) in zip(points,uvs)):return 'wheel_remnants'
     return None
+
+# Cut only the actual service aperture from the old planar east-wall atlas.
+# Each output vertex carries barycentric weights for UV/color interpolation.
+SERVICE_OPENING=(1.2,2.3,0.,2.15)  # z min/max, y min/max, metres
+
+def _half(poly,axis,bound,greater):
+    out=[]
+    for a,b in zip(poly,poly[1:]+poly[:1]):
+        da=(a[0][axis]-bound)*(1 if greater else -1)
+        db=(b[0][axis]-bound)*(1 if greater else -1)
+        if da>=0:out.append(a)
+        if (da<0<db) or (db<0<da):
+            t=da/(da-db)
+            out.append(tuple(tuple(x+t*(y-x) for x,y in zip(va,vb)) for va,vb in zip(a,b)))
+    return out
+
+def _area(poly):
+    return abs(sum(a[0][2]*b[0][1]-b[0][2]*a[0][1] for a,b in zip(poly,poly[1:]+poly[:1])))*.5
+
+def service_clip(name,points):
+    """None means untouched; [] means wholly inside the new doorway."""
+    if name!='g455' or not all(abs(p[0]-38.612)<.0001 for p in points):return None
+    z0,z1,y0,y1=SERVICE_OPENING
+    planes=((2,z0,True),(2,z1,False),(1,y0,True),(1,y1,False))
+    original=[(tuple(p),tuple(float(i==j) for j in range(3))) for i,p in enumerate(points)]
+    inside=original
+    for axis,bound,greater in planes:inside=_half(inside,axis,bound,greater)
+    if _area(inside)<1e-10:return None
+    remaining=original;outside=[]
+    for axis,bound,greater in planes:
+        piece=_half(remaining,axis,bound,not greater)
+        if _area(piece)>1e-10:outside.append(piece)
+        remaining=_half(remaining,axis,bound,greater)
+    triangles=[]
+    for poly in outside:
+        for i in range(1,len(poly)-1):
+            tri=[poly[0],poly[i],poly[i+1]]
+            if _area(tri)>1e-10:triangles.append(tri)
+    return triangles

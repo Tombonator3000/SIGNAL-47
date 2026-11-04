@@ -6,11 +6,11 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
-Codex viderefører Claudes østfløy på `codex/night-support-20261103` frem til kl. 08:00. Arbeidskopien har detaljert Blender-skall, tre LOD-er, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Story beholder samme utside med låste innganger. Dette er foreløpig en editorleveranse, ikke en ny installasjon.
+Østfløyen er samlet i PR379 fra Claude og Codex: detaljert Blender-skall, native materialer og innredning, separate steder for prøveanalyse, deler, loggerutlån, kalibrering og varemottak. Dette er foreløpig en editorleveranse, ikke en ny installasjon. Pakking/installasjon venter til PR379 er flettet.
 
-Native import av 26 rekvisittmodeller / 78 LOD-er og åtte materialsett består. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Faktisk Jeep-innkjøring over rampen, parkering, utstigning med bevart pose og rygging ut består. Første bilder avdekket lysnivå, manglende striper, skjult sluk og gamle tønner ved inngangen; rettingene kontrolleres videre i spillet.
+Opprinnelig rekvisittimport består for 26 modeller / 78 LOD-er og åtte materialsett. Skallet har åtte assets / 24 LOD-er; puss, betong og mur bruker dokumenterte CC0-kilder. Claude har lagt til 22 egne Extras-modeller og møblert lab, lager og garasje. Codex har deretter lagt til prøveholder og fire fysiske bordskilt: samlet Extras-import består for 27 modeller / 81 LOD-er. Gammel skittgeometri er klippet ved den nye servicedøren, og gulvjekken er flyttet ut av dørpassasjen. Nye runtime-bilder viser frie åpninger og kontakt mellom de nye detaljene og benkeplatene.
 
-Bygg og 2 281 selvtester består. Fotofremkalling består 53 native kontroller med fire disk-/Continue-runder gjennom eksponering, fremkalling og betaling. Full Freeform-prøve stoppet med krasj i sesjonsopprydding etter disk-/Flow-retur. En manglende GC-vakt i Stop er rettet og editorbygget består; ny runtime-prøve av rettelsen og feltloggerutlånet gjenstår. Faktisk adgang gjennom personaldørene, Story-låsing og endelig visuell kontroll gjenstår. [Oppgavelogg](../../unreal/OPPGAVER.md).
+Claudes siste samlede kontroll på a6acc316: 2281 selvtester, FreeformTest 244/0, EvidenceTest 108/0 og DriveTest 15/0. Full Freeform-kjøring består etter GC-rettelsen. Codex har tidligere kontrollert fotofremkalling med 53 native kontroller og fire disk-/Continue-runder. Etter de siste modell-/plasseringstilpasningene består editorbygg og native import; 17 nye rombilder er tatt og berørte vinkler er gjennomgått. Story-prøven består: garasjekjøring er stengt, og alle tre innganger har aktive ganglåser og lukkede dørkollisjoner. Ingen menneskelig vurdering av spillfølelse eller lyskomfort er påstått. [Oppgavelogg](../../unreal/OPPGAVER.md).
 
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
@@ -166,7 +166,7 @@ Pakken består 1 995 selvtester, helreise med 93 kontroller/94,79 m/én Fortsett
 
 Runtime `19b0ab0b`, [PR331](https://github.com/Tombonator3000/SIGNAL-47/pull/331) og [PR332](https://github.com/Tombonator3000/SIGNAL-47/pull/332), er installert 2. november kl.04:00 CET. Freeform har åpen kjørbar gårdsvei, terrengtilpasset placeholdergård og ni kuer med samordnede foto-/kollisjonsankre. Story beholder sin stengte port og originalplassering. Last kan velges fysisk gjennom Jeepens brede interaksjonsfelt og tas ut/inn etter Fortsett.
 
-Pakke/1 995 selvtester, hel native reise 24 kontroller/249 m bil/124 m gange/3 restores og to pakkede gårdsbilder består. Installert Fortsett består; 164 personlige Saved-elementer er uendret. WORLD01/04 og motellvegger står fortsatt åpne. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_ALDERETE_2026-11-02.md).
+Pakke/1 995 selvtester, hel native reise 24 kontroller/ 249 m bil/124 m gange/3 restores og to pakkede gårdsbilder består. Installert Fortsett består; 164 personlige Saved-elementer er uendret. WORLD01/04 og motellvegger står fortsatt åpne. [Bilder, omfang og prøvegrenser](../Evidence/UnrealDeliveries/SARO_ALDERETE_2026-11-02.md).
 
 ## Tredje nattleveranse: reaktivt lys og ett motellskilt
 

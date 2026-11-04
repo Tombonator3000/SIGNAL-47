@@ -70,7 +70,7 @@ namespace
   {TEXT("SM_EW_MechanicBench"),TEXT("Extras"),{32.05,0,.45},-90,true},
   {TEXT("SM_EW_AirCompressor"),TEXT("Extras"),{31.98,0,4.93},-90,true},
   {TEXT("SM_EW_JerryCans"),TEXT("Extras"),{32.95,0,-4.98},0,true},
-  {TEXT("SM_EW_FloorJack"),TEXT("Extras"),{32.85,0,-1.35},-60},
+  {TEXT("SM_EW_FloorJack"),TEXT("Extras"),{32.85,0,2.05},0},
   {TEXT("SM_EW_OilStains"),TEXT("Extras"),{35.30,0,-.60},20},
   // Room plaques beside each interior door, on the side of the room they name (bottom edge at 1.5 m).
   {TEXT("SM_EW_PlaqueLab"),TEXT("Extras"),{26.081,1.50,3.75},-90},

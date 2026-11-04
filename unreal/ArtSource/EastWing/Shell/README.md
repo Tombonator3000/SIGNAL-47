@@ -137,3 +137,5 @@ Runtime `RelocateAccessDressing()` forhåndskontrollerer begge derivater, de gam
 begge meshene og de tre rectene byttes samlet. Ved manglende forutsetninger
 beholdes gammel plassering. Verifiser suksessloggen og den faktiske frie rampen;
 at skallet er bygget beviser ikke at denne separate flyttingen lyktes.
+
+Serviceåpningen i østveggen klippes også ut av den gamle `g455`-skittflaten ved x 38,612. Klippingen følger z 1,2–2,3 / høyde 0–2,15 og interpolerer UV-er og vertexfarger; resten av atlasflaten bevares. Tolv kildetrekanter erstattes av 25, slik at nytt AccessStains har 1233 trekanter per LOD og AccessDressing fortsatt 10256. Originalkontrollen før utskifting forblir 10328/1224. Blenderbygg og native import består; kontrollbilde er service-entry-visningen.

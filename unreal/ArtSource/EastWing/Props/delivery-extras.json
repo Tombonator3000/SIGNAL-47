@@ -27,6 +27,30 @@
       "license": "Extras/SM_EW_Calendar1986.license.json"
     },
     {
+      "id": "SM_EW_CalibrationSign",
+      "manifest": "Extras/SM_EW_CalibrationSign.asset.json",
+      "fbx": "Extras/SM_EW_CalibrationSign.fbx",
+      "dimensions_m": [
+        0.41999998688697815,
+        0.10000000149011612,
+        0.16062115132808685
+      ],
+      "triangles": 1898,
+      "license": "Extras/SM_EW_CalibrationSign.license.json"
+    },
+    {
+      "id": "SM_EW_DepotCheckoutSign",
+      "manifest": "Extras/SM_EW_DepotCheckoutSign.asset.json",
+      "fbx": "Extras/SM_EW_DepotCheckoutSign.fbx",
+      "dimensions_m": [
+        0.41999998688697815,
+        0.10000000149011612,
+        0.16062115132808685
+      ],
+      "triangles": 1898,
+      "license": "Extras/SM_EW_DepotCheckoutSign.license.json"
+    },
+    {
       "id": "SM_EW_FirstAidBox",
       "manifest": "Extras/SM_EW_FirstAidBox.asset.json",
       "fbx": "Extras/SM_EW_FirstAidBox.fbx",
@@ -231,6 +255,18 @@
       "license": "Extras/SM_EW_ReagentShelf.license.json"
     },
     {
+      "id": "SM_EW_ReceivingSign",
+      "manifest": "Extras/SM_EW_ReceivingSign.asset.json",
+      "fbx": "Extras/SM_EW_ReceivingSign.fbx",
+      "dimensions_m": [
+        0.41999998688697815,
+        0.10000000149011612,
+        0.16062115132808685
+      ],
+      "triangles": 1898,
+      "license": "Extras/SM_EW_ReceivingSign.license.json"
+    },
+    {
       "id": "SM_EW_RelayTester",
       "manifest": "Extras/SM_EW_RelayTester.asset.json",
       "fbx": "Extras/SM_EW_RelayTester.fbx",
@@ -241,6 +277,30 @@
       ],
       "triangles": 8316,
       "license": "Extras/SM_EW_RelayTester.license.json"
+    },
+    {
+      "id": "SM_EW_SampleAnalysisSign",
+      "manifest": "Extras/SM_EW_SampleAnalysisSign.asset.json",
+      "fbx": "Extras/SM_EW_SampleAnalysisSign.fbx",
+      "dimensions_m": [
+        0.41999998688697815,
+        0.10000000149011612,
+        0.16062115132808685
+      ],
+      "triangles": 1898,
+      "license": "Extras/SM_EW_SampleAnalysisSign.license.json"
+    },
+    {
+      "id": "SM_EW_SampleHolder",
+      "manifest": "Extras/SM_EW_SampleHolder.asset.json",
+      "fbx": "Extras/SM_EW_SampleHolder.fbx",
+      "dimensions_m": [
+        0.15000000596046448,
+        0.11999999731779099,
+        0.04500000178813934
+      ],
+      "triangles": 3864,
+      "license": "Extras/SM_EW_SampleHolder.license.json"
     },
     {
       "id": "SM_EW_SwampCooler",
@@ -267,8 +327,9 @@
       "license": "Extras/SM_EW_WallClock.license.json"
     }
   ],
-  "asset_count": 22,
+  "asset_count": 27,
   "material_manifest": "Textures/materials.json",
-  "native_integration_owner": "Claude",
-  "prints": "Extras/make_prints.py"
+  "native_integration_owner": "Claude and Codex",
+  "prints": "Extras/make_prints.py",
+  "sample_station_source": "Extras/build_sample_station.py"
 }

@@ -2,6 +2,7 @@
 #include "S47EastWingProps.h"
 #include "S47Main.h"
 #include "S47Freeform.h"
+#include "S47FreeformWorld.h"
 #include "S47Story.h"
 #include "S47Web.h"
 #include "S47Obj.h"
@@ -278,6 +279,11 @@ bool FS47EastWing::Step(float Dt)
    else if(M->Story)M->Story->SetClock(Hour*3600.);
    UE_LOG(LogS47EastWing,Display,TEXT("S47: explicit isolated east wing lighting fixture hour=%d powerFault=%d"),Hour,M->Freeform&&M->Freeform->PowerFault());
   }
+  if(User.StartsWith(TEXT("/tmp/"))&&FParse::Param(FCommandLine::Get(),TEXT("S47EastWingSampleFixture"))&&M->IsFreeform()&&M->Freeform&&M->Freeform->Field)
+  {
+   M->Freeform->Field->AddItem(TEXT("fragment"));
+   UE_LOG(LogS47EastWing,Display,TEXT("S47: explicit isolated sample-holder visual fixture"));
+  }
   ShotAt=Now+6;ShotStage=1;return true;
  }
  if(Now<ShotAt)return true;
@@ -420,7 +426,7 @@ bool FS47EastWing::RelocateAccessDressing()
  UStaticMesh* Stains=LoadObject<UStaticMesh>(nullptr,TEXT("/Game/EastWing/Access/SM_EW_AccessStains.SM_EW_AccessStains"));
  auto Valid=[](UStaticMesh* Mesh,int32 Count){if(!Mesh||Mesh->GetNumLODs()!=3||Mesh->GetStaticMaterials().Num()!=1)return false;for(int32 I=0;I<3;++I)if(Mesh->GetNumTriangles(I)!=Count)return false;return true;};
  // EASTWING-01: derivatives also drop the old east rain leader (72) and its streak (4) at the service door.
- if(!Valid(Dressing,10256)||!Valid(Stains,1220))return false;
+ if(!Valid(Dressing,10256)||!Valid(Stains,1233))return false;
  UStaticMeshComponent *OldDressing=nullptr,*OldStains=nullptr;int32 FoundDressing=0,FoundStains=0;
  for(int32 I=0;I<M->Web->PartCount();++I)if(const FS47WebNode* Node=M->Web->Node(I))
  {
@@ -441,5 +447,5 @@ bool FS47EastWing::RelocateAccessDressing()
  UMaterialInterface* DressingAtlas=OldDressing->GetMaterial(0);UMaterialInterface* StainAtlas=OldStains->GetMaterial(0);
  OldDressing->SetStaticMesh(Dressing);OldDressing->SetMaterial(0,DressingAtlas);OldStains->SetStaticMesh(Stains);OldStains->SetMaterial(0,StainAtlas);
  for(int32 I:Matches){All[I].MinX-=2.6;All[I].MaxX-=2.6;}
- UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing access: three drums and contact shadows moved west2.6m with exact walking feet; unrelated10256/1220-triangle dressing retained (old east rain leader removed)"));return true;
+ UE_LOG(LogS47EastWing,Display,TEXT("S47: east wing access: three drums and contact shadows moved west2.6m with exact walking feet; 10256/1233-triangle dressing retained (old east rain leader removed; grime clipped at service aperture)"));return true;
 }

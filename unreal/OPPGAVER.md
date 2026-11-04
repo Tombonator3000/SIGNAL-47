@@ -405,3 +405,7 @@ Forslag i prioritet:
 4. Garasje: vinduspersienner, lysrørkabling.
 5. Ikke pakk eller installer før Tom har flettet #379.
 Rutine per rekvisittrunde står i 04:46-linja over. Hold `delivery-extras.json` lik alle `Extras/SM_EW_*.asset.json`.
+
+04. november 05:31 Codex: overtakelse05:24 lest; a6acc316 flettet i codex/night-support-20261103. Root eier visuell gjennomgang/runtime og motorvindu; eastwing_import lager avgrenset prøveholder/depot-skiltkilde i Extras/build_sample_station.py. Ingen arbeid i Claude-kopien; ingen pakking/installasjon før PR379 er flettet. Disk-/kopikontroll fra nattstart gjenbrukes.
+
+4. november 05:40 Codex: fem nye Extras (prøveholder og fire bordskilt), gammel skittflate klippet ved servicedør, jekk flyttet ut av lagerdøren. Samlet build-r9, Extras27/81 og access-import består;17 runtime-bilder tatt, berørte05/09/10/13/15/17 visuelt kontrollert. Story-lås2/2 består. Ingen fullregresjon gjentatt etter disse modellendringene; Claudes a6acc316-kontroller beholdes. Pusher samlet til PR379-grenen; ingen pakking/installasjon. Neste: prioriterte TODO-funn og eventuelle konkrete bildeproblemer frem til08:00.

@@ -447,7 +447,9 @@ bool FS47FreeformWorld::Build()
  if(BenchMeter)Bind(BenchMeter,TEXT("ff:bench"));
  else BenchMeter=Box(TEXT("FreeformBenchMeter"),BenchAt+FVector(-.44,1.02+BenchRaise,-.10),FVector(.42,.28,.27),0x555b4c,Saro,TEXT("ff:bench"));
  BenchLamp=Box(TEXT("FreeformBenchTestIndicator"),BenchAt+FVector(-.44,1.04+BenchRaise,.05),FVector(.28,.11,.015),0x5e8b61,Saro);
- BenchSample=Box(TEXT("FreeformBenchSampleHolder"),SampleAt+FVector(.03,.995,.05),FVector(.15,.045,.12),0x9f9b89,Saro);
+ // Base-normalised authored tray rests on the actual green worktop; visibility still follows the retained sample.
+ BenchSample=Model(TEXT("FreeformBenchSampleHolder"),TEXT("/Game/EastWing/Props/Extras/SM_EW_SampleHolder.SM_EW_SampleHolder"),SampleAt+FVector(.03,.9325,.05),.15,Saro);
+ if(!BenchSample)BenchSample=Box(TEXT("FreeformBenchSampleHolder"),SampleAt+FVector(.03,.955,.05),FVector(.15,.045,.12),0x9f9b89,Saro);
  M->Web->MarkUsable(BenchLamp.I,TEXT("ff:bench"));M->Web->MarkUsable(BenchSample.I,TEXT("ff:sample"));
  Shop=Box(TEXT("FreeformGasSupplyHatch"),ShopPoint(),FVector(.18,.50,.72),0x807146,Road,TEXT("ff:shop"));
  Box(TEXT("FreeformGasSupplySupport"),ShopPoint()+FVector(0,-.40,0),FVector(.12,.30,.45),0x534f43,Road);
@@ -485,10 +487,15 @@ bool FS47FreeformWorld::Build()
  Bind(Panel,TEXT("ff:service"));
  LabelPart(TEXT("FreeformS03Text"),TEXT("LOCAL / RELAY / TEST"),ServiceAt()+FVector(.30,.30,0),180,1.5,Saro);
  LabelPart(TEXT("FreeformGasLabel"),TEXT("SERVICE SUPPLIES\n08:00 - 20:00"),ShopPoint()+FVector(.10,0,0),0,3.1,Road);
- LabelPart(TEXT("FreeformBenchLabel"),TEXT("CALIBRATION / REPAIR\nDONOR / LOGGER TEST"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
- LabelPart(TEXT("FreeformSampleLabel"),TEXT("GENERAL TEST LAB\nFIELD SAMPLE ANALYSIS"),SampleAt+FVector(0,1.45,-.35),90,3.0,Saro);
- LabelPart(TEXT("FreeformDepotLabel"),TEXT("PARTS STORAGE\nEQUIPMENT CHECKOUT"),DepotAt+FVector(0,1.45,-.3),90,3.0,Saro);
- LabelPart(TEXT("FreeformReceivingLabel"),TEXT("GARAGE RECEIVING\nUNPACK CARRIED SUPPLIES"),DeliveryAt+FVector(0,1.45,-.35),90,2.7,Saro);
+ if(FS47Obj Sign=Model(TEXT("FreeformBenchLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_CalibrationSign.SM_EW_CalibrationSign"),BenchAt+FVector(.02,.9325,-.27),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:bench"));
+ else LabelPart(TEXT("FreeformBenchLabel"),TEXT("CALIBRATION / REPAIR\nDONOR / LOGGER TEST"),BenchAt+FVector(0,1.45,-.35),90,3.5,Saro);
+ if(FS47Obj Sign=Model(TEXT("FreeformSampleLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_SampleAnalysisSign.SM_EW_SampleAnalysisSign"),SampleAt+FVector(-.05,.9325,-.29),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:sample"));
+ else LabelPart(TEXT("FreeformSampleLabel"),TEXT("GENERAL TEST LAB\nFIELD SAMPLE ANALYSIS"),SampleAt+FVector(0,1.45,-.35),90,3.0,Saro);
+ // Physical checkout placard replaces the floating text in front of the storage rack.
+ if(FS47Obj Sign=Model(TEXT("FreeformDepotLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_DepotCheckoutSign.SM_EW_DepotCheckoutSign"),DepotAt+FVector(0,.9245,.10),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:depot"));
+ else LabelPart(TEXT("FreeformDepotLabel"),TEXT("PARTS STORAGE\nEQUIPMENT CHECKOUT"),DepotAt+FVector(0,1.45,-.3),90,3.0,Saro);
+ if(FS47Obj Sign=Model(TEXT("FreeformReceivingLabel"),TEXT("/Game/EastWing/Props/Extras/SM_EW_ReceivingSign.SM_EW_ReceivingSign"),DeliveryAt+FVector(0,.9325*1.2/1.8,-.15),.42,Saro))M->Web->MarkUsable(Sign.I,TEXT("ff:delivery"));
+ else LabelPart(TEXT("FreeformReceivingLabel"),TEXT("GARAGE RECEIVING\nUNPACK CARRIED SUPPLIES"),DeliveryAt+FVector(0,1.45,-.35),90,2.7,Saro);
  // Existing own-model REGULAR pump at z=2052.4; only its mechanical
  // counter windows receive small live account-meter plates. The adjacent
  // DIESEL body stays authored and is deliberately incompatible with the Jeep.

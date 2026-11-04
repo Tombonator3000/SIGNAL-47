@@ -69,3 +69,9 @@ python3 unreal/ArtSource/EastWing/Props/run_unreal_import.py --apply --output <n
 ```
 
 Plassering står i `S47EastWingProps.cpp` (`Layout`). Veggting har baksiden mot innerveggen.
+
+### Prøveholder og fysiske arbeidsskilt, Codex 4. november
+
+`Extras/build_sample_station.py` og `Extras/make_sample_station_prints.py` lager en 15 × 12 × 4,5 cm prøveholder og fire 42 cm brede bordskilt. Geometri og trykk er egne prosjektkilder; lisens står ved hver modell. Eksisterende delte stål-/lakkmaterialer gjenbrukes. Prøveholderen har senterpivot i kilden; runtime `Model()` normaliserer bunnen til den faktiske benkeplaten og beholder beholdningsstyrt synlighet.
+
+Uten filter genereres `SM_EW_SampleHolder` og `SM_EW_DepotCheckoutSign`. Sett `S47_SAMPLE_STATION_ONLY=SM_EW_CalibrationSign,SM_EW_SampleAnalysisSign,SM_EW_ReceivingSign` i begge kommandoene for de tre øvrige skiltene. Kjør trykkskriptet med Python og byggeskriptet gjennom `run_guarded.py`. Deretter oppdateres `delivery-extras.json` fra alle Extras-manifester og den eksisterende extras-validerings-/importløypa brukes. Hele Extras-settet har nå 27 modeller / 81 FBX-LOD-er; native import består. Visuell runtime-kontroll føres i oppgaveloggen.
