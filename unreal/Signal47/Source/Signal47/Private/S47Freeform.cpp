@@ -1735,14 +1735,15 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
   FS47FreeformObservation O;O.Id=TEXT("observer.day1.1");O.Event=TEXT("observer");O.Place=TEXT("array service area");O.Bearing=TEXT("NE");O.Day=1;O.Clock=22*3600.;
   Case.Director->RetainObservation(O);Case.IngestObservations();
   Check(Case.CaseFile().Get(2)&&Case.CaseFile().Get(2)->bOpen&&Case.CaseFile().Get(2)->Leads.Contains(O.Id),TEXT("A retained visitor observation opens the visitors case as a lead"));
+  Check(Case.PlanCaseTest(1,0),TEXT("Receiver-plan Continue fixture creates a new unfinished test after the previous result"));
   const int32 JobsBefore3=Case.Jobs().Num();
   Check(!Case.PlanCaseTest(2,2)&&Case.FeedbackText().Contains(TEXT("field logger")),TEXT("The two-site test waits for the loan field logger from the first case"));
   Check(Case.PlanCaseTest(2,1)&&Case.Jobs().Num()==JobsBefore3&&Case.PlannedFieldTest(2)==1,TEXT("A field test is planned without a receiver job"));
   const FString FieldPlanId=Case.CaseFile().Get(2)->PlannedJob;
   FS47FreeformSession FieldAgain(nullptr);FieldAgain.Begin(S47J::Read(S47J::Write(Case.Save())));
   Check(FieldAgain.PlannedFieldTest(2)==1&&FieldAgain.CaseFile().Get(2)->PlannedJob==FieldPlanId&&FieldAgain.Jobs().Num()==JobsBefore3,TEXT("A planned field test survives JSON save/Continue with its original ID and no receiver job"));
-  Check(FieldAgain.CaseFile().Get(1)->Planned==1,TEXT("A matching unfinished receiver case job remains planned after Continue"));
-  Check(!FieldAgain.CancelFieldTest(1)&&FieldAgain.CaseFile().Get(1)->Planned==1,TEXT("Field-plan cancellation cannot cancel an active receiver case job"));
+  Check(FieldAgain.CaseFile().Get(1)->Planned==0,TEXT("A matching unfinished receiver case job remains planned after Continue"));
+  Check(!FieldAgain.CancelFieldTest(1)&&FieldAgain.CaseFile().Get(1)->Planned==0,TEXT("Field-plan cancellation cannot cancel an active receiver case job"));
   auto MissingJob=Case.Save();const auto SavedCases=S47J::Arr(S47J::Obj(MissingJob,TEXT("cases")),TEXT("cases"));
   S47J::Set(SavedCases[1]->AsObject(),TEXT("plannedJob"),TEXT("missing-receiver-job"));
   FS47FreeformSession MissingAgain(nullptr);MissingAgain.Begin(S47J::Read(S47J::Write(MissingJob)));
