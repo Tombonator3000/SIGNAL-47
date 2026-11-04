@@ -4,6 +4,10 @@
 
 Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DECISIONS](DECISIONS.md) fører beslutningene som styrer dem. Leveringsrapporter og testbevis dokumenterer et bestemt bygg, ikke automatisk dagens installasjon eller alle senere feil.
 
+## PR382 installert lokalt, 4. november
+
+PR382s tittellys, VHS-livssyklus og lagring/avbryting av feltplaner er installert i den vanlige Linux-spillmappen. Linux-pakken består 2326 selvtester og 12 tittelkontroller i vanlig vindu; installert selvtest og kort oppstart består. Alle 121 personlige Saved-filer er uendret, og forrige installasjon er beholdt for tilbakeføring. En feil i selvtestens oppsett for ufullført mottakerjobb ble rettet i oppfølgings-PR387. Den skjulte Vulkan-prøven fikk device-lost; den ordinære vinduskjøringen består uten renderer-overstyring.
+
 ## Første skift og sammenhengende SARO-adkomst, 4. november
 
 Første nye Freeform-spill har nå seks steg gjennom én virkelig jobb: aksept på OPS, antennepeking, opptak, original, registrering/betaling og fysisk arkivering. Jobbidentitet og steg overlever lagring/Continue. Andre jobber og vanlige hendelser venter til opplæringen er ferdig; eldre lagringer får ingen ny tutorial.
@@ -50,7 +54,7 @@ Alle tre endelige testkjøringer og bygget var uten motoroverlapp under producti
 
 ## Nattskift 3.–4. november: østfløy og Freeform, under kontroll
 
-PR382 er konfliktløst mot main etter tutorial-/SARO-leveransen. Editorbygg og målrettet sluttkontroll består 4. november: tittel 12 kontroller, feltplan 12 kontroller med én disk-/Continue-runde og tutorial 40 kontroller med tre disk-/Continue-runder. Tittellys og VHS-livssyklus er editorverifisert; denne PR-en er ikke pakket eller installert lokalt.
+PR382 er konfliktløst mot main etter tutorial-/SARO-leveransen. Editorbygg og målrettet sluttkontroll består 4. november: tittel 12 kontroller, feltplan 12 kontroller med én disk-/Continue-runde og tutorial 40 kontroller med tre disk-/Continue-runder. Tittellys og VHS-livssyklus er editorverifisert; lokal pakking/installasjon er senere fullført som beskrevet øverst.
 
 [Oppdatert regresjonsgjennomgang](Reports/PR379_REGRESSION_REVIEW_2026-11-04.md) finner en statisk printerkøfeil for eldre originaler uten tellerlinje og avgrenser hull i ordinær Continue, samlet økonomireise og Story-modusbytte. Testkandidatene på nattgrenen er nå bygget; printer-/butikkprøvene er ikke kjørt på nytt i den avgrensede konfliktkontrollen. Tidligere grønne deltester lukker ikke disse funnene.
 
