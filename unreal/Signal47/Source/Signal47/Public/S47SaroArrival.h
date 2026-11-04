@@ -18,7 +18,8 @@ public:
 private:
  TWeakObjectPtr<AS47Web> Web;
  TArray<TWeakObjectPtr<UPrimitiveComponent>> Parts, FloorQueries;
- TWeakObjectPtr<UStaticMeshComponent> Parking;
+ TWeakObjectPtr<UStaticMeshComponent> Parking,WalkPaving;
+ TArray<int32> RetiredSurfaces;
  TWeakObjectPtr<UStaticMeshComponent> Entrance, EntranceDoor;
  TArray<TWeakObjectPtr<UStaticMeshComponent>> VisitorSigns;
  TWeakObjectPtr<UStaticMeshComponent> OldConcrete;

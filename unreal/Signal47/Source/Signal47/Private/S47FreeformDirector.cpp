@@ -315,6 +315,7 @@ bool FS47FreeformDirector::Eligible(const FString& Id,bool Forced)const
  else if(M->Web->Area()!=TEXT("saro"))return false;
  if(!Forced)
  {
+  if(M->Freeform->InTutorial())return false; // first shift: one clean routine job
   // An instrumental anomaly needs an actually completed normal reference first.
   if(Instrument(Id)&&!M->Freeform->Jobs().ContainsByPredicate([](const FS47FreeformSession::FJob& J){return J.Source==0&&J.Stage==FS47FreeformSession::EJobStage::Filed;}))return false;
   if(Id==TEXT("unsigned_telex")&&M->Freeform->FindingCount()==0)return false;

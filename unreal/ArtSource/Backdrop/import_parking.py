@@ -1,8 +1,8 @@
 """Build SARO's continuous world-projected asphalt and worn bay paint.
 
 Reuses the project's own CalicheStreet OldAsphalt maps without modifying them.
-The asphalt has no baked tile border; dust follows only the exterior of the
-L-shaped forecourt, never the seam between its two mesh rectangles.
+The asphalt has no baked tile border or site-specific edge mask: the approach
+and both lots share continuous world-space texture scale and restrained dust.
 Run through run_parking_import.py under the production lease.
 """
 import json
@@ -106,20 +106,10 @@ def build(name, textures, existing):
     else:
         secondary = sample(mat, textures['base_color'], world, 8.3, -850, -500,
                            unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, rotated=True)
-        # Exact L perimeter, not independent rectangle edges: the shared x20.1..39.8,
-        # z18 join has no artificial dust stripe. Coordinates are site-local Three X/Z.
-        dust = custom(mat, '''
-float2 p=float2(P.x,-P.y)*.01;
-float2 v[6]={float2(20.1,5.9),float2(39.8,5.9),float2(39.8,23),float2(10,23),float2(10,18),float2(20.1,18)};
-float dist=10000.;
-[unroll] for(int i=0;i<6;i++) {
- float2 a=v[i], b=v[(i+1)%6], d=b-a;
- float h=saturate(dot(p-a,d)/dot(d,d));
- dist=min(dist,length(p-(a+h*d)));
-}
-float variation=.76+.12*sin(p.x*1.7+p.y*1.13)+.12*sin(p.x*4.7-p.y*2.9);
-return .55*(1.-smoothstep(.025,.45*variation,dist));
-''', [('P', world, '')], unreal.CustomMaterialOutputType.CMOT_FLOAT1, -400, -100)
+        # The material is shared by the approach and both lots. A baked east-L
+        # border would draw dust lines through the newly joined road interior.
+        # Keep subtle world-space variation; the geometry defines the real edge.
+        dust = node(mat, unreal.MaterialExpressionConstant, -400, -100, r=.035)
         base = custom(mat, 'float3 asphalt=lerp(A,B,.18)*1.24; return lerp(asphalt,float3(.30,.235,.155),Dust);',
             [('A', color, 'RGB'), ('B', secondary, 'RGB'), ('Dust', dust, '')],
             unreal.CustomMaterialOutputType.CMOT_FLOAT3, 100, -300)

@@ -187,6 +187,17 @@ void AS47Walker::Resolve(bool bX, double Old)
 	// the nearer exit on this axis is admitted. Office save recovery handles old
 	// positions inside furniture; ordinary motion does not rewrite the case.
 	Axis=Limit;
+	// The SARO truck ramp has exposed sides, not invisible full-height walls.
+	// Only entering across a side needs a step-height check; the front remains a
+	// continuous slope. A jump supplies real foot clearance over the raised edge.
+	if(bX&&Web->Area()==TEXT("saro")&&Pos.Z>=12.4&&Pos.Z<=16.6)
+	{
+		const double Left=6.6-R,Right=13.0+R;
+		const bool FromLeft=Old<=Left+E&&Axis>Left;
+		const bool FromRight=Old>=Right-E&&Axis<Right;
+		if((FromLeft||FromRight)&&FloorAt(FromLeft?6.6:13.0,Pos.Z)>FloorY+Lift+.3+E)
+			Axis=Limit=FromLeft?Left:Right;
+	}
 	const double StartX=bX?Old:Pos.X, StartZ=bX?Pos.Z:Old;
 	double First=1.;
 	if (bTruck) First=FMath::Min(First,VehicleEntry(*TruckBox,StartX,StartZ,Pos.X,Pos.Z,R));
