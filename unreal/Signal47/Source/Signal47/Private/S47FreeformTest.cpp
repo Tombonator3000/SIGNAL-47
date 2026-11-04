@@ -511,7 +511,9 @@ void FS47FreeformTest::Step(double Dt)
   };
   auto AtProp=[&](const TCHAR* Id)
   {
-   M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(Id));M->Player->Place(P.X,P.Z-.8,0);
+   M->UI->Close(true);const FVector P=S47Three::ToThree(M->Web->PropLocation(Id));
+   if(FString(Id)==TEXT("opsTerminal"))M->Player->Place(P.X+1,P.Z,PI/2);
+   else M->Player->Place(P.X,P.Z-.8,0);
   };
   if(Stage==0)
   {
@@ -588,7 +590,54 @@ void FS47FreeformTest::Step(double Dt)
   }
   if(Stage==9115)
   {
-   if(!Check(!F.InTutorial()&&F.HasFinding(TEXT("first-shift"))&&F.Budget()==WorkBudget+20&&F.SelectJob(1),TEXT("completed tutorial stays completed after Continue and releases other jobs")))return;
+   if(!Check(!F.InTutorial()&&F.HasFinding(TEXT("first-shift"))&&F.Budget()==WorkBudget+20&&!F.CurrentJob(),TEXT("completed tutorial stays completed after Continue with no stale job selected")))return;
+   F.Director->Stop();const double Late=FMath::FloorToDouble(F.Clock()/86400.)*86400.+23*3600.;
+   if(!Check(Late>=F.Clock()&&F.TestAdvance(Late-F.Clock()),TEXT("explicit same-day 23:00 fixture tests late follow-up availability without completing any job")))return;
+   if(!Restore(TEXT("tutorial-late-follow-up")))return;F.Director->Stop();
+   AtProp(TEXT("opsTerminal"));F.Use(TEXT("opsTerminal"));Go(91151,.8);return;
+  }
+  if(Stage==91151)
+  {
+   if(F.OperationsSection()!=0){if(!Click(TEXT("OVERVIEW")))return;Go(91151,.5);return;}
+   Shot(TEXT("tutorial-continue-today-late"));
+   const auto& Next=F.Jobs()[1];
+   if(!Click(TEXT("Continue observation / ")+Next.Id+TEXT(" / ")+FS47Observing::Runs()[Next.Source].Source))return;
+   Go(91152,.3);return;
+  }
+  if(Stage==91152)
+  {
+   if(!Check(F.OperationsSection()==1&&F.CurrentJob()&&F.CurrentJob()->Id==F.Jobs()[1].Id&&F.CurrentJob()->Stage==J::New&&!F.InTutorial()&&F.Budget()==WorkBudget+20,TEXT("real CONTINUE TODAY button opens the named next job without payment or tutorial reset")))return;
+   AtProp(TEXT("crtRight"));const auto* P=F.ConsoleProfile();if(!Check(P!=nullptr,TEXT("follow-up has its own real generated receiver profile")))return;
+   auto& Rx=M->Story->Rx;Rx.Frequency=P->F;Rx.Azimuth=(P->Az[0]+P->Az[1])/2;Rx.Gain=(P->Gain[0]+P->Gain[1])/2;Rx.Bandwidth=(P->Bw[0]+P->Bw[1])/2;
+   if(!Check(F.PointSelected(),TEXT("late follow-up commands actual antenna pointing")))return;
+   AtProp(TEXT("crtCenter"));Go(91153,.3);return;
+  }
+  if(Stage==91153)
+  {
+   if(!F.StartAcquisition())return;
+   if(!Check(F.CurrentJob()&&F.CurrentJob()->Stage==J::Integrating,TEXT("follow-up acquisition starts after actual encoder settling, without a fabricated Recorded stage")))return;
+   Go(91154,.3);return;
+  }
+  if(Stage==91154)
+  {
+   if(!F.CurrentJob()||F.CurrentJob()->Stage!=J::Chart||F.PrinterProgress()<1)return;
+   AtProp(TEXT("printer"));
+   if(!Check(F.CollectChart()&&F.CurrentJob()&&F.CurrentJob()->Stage==J::Recorded&&!F.CurrentJob()->OriginalPage.IsEmpty()&&F.CurrentJob()->Id!=TutorialId,TEXT("late follow-up completes real timed acquisition and printer feed into a distinct retained original")))return;
+   M->UI->Close(true);AtProp(TEXT("opsTerminal"));F.OpenOperations();Go(91155,.6);return;
+  }
+  if(Stage==91155)
+  {
+   if(!Click(TEXT("Register routine result / $20")))return;Go(91156,.3);return;
+  }
+  if(Stage==91156)
+  {
+   const auto* First=F.Jobs().FindByPredicate([this](const FS47FreeformSession::FJob& X){return X.Id==TutorialId;});
+   if(!Check(F.Jobs()[1].Stage==J::Filed&&!F.CurrentJob()&&F.Budget()==WorkBudget+40&&First&&First->OriginalPage==PrinterOriginal&&First->OriginalStamp==PrinterStamp,TEXT("next real observation pays once, enters history and preserves the tutorial original")))return;
+   M->UI->Close(true);if(!Restore(TEXT("tutorial-follow-up-complete")))return;Go(91157,.3);return;
+  }
+  if(Stage==91157)
+  {
+   if(!Check(!F.InTutorial()&&F.Jobs()[1].Stage==J::Filed&&F.Budget()==WorkBudget+40&&!F.RegisterComparison(TEXT("normal")),TEXT("completed follow-up survives Continue without duplicate payment or tutorial restart")))return;
    // Start a genuine pre-tutorial save fixture from the untouched first-job snapshot.
    const auto Legacy=S47J::Read(S47J::Write(Snapshot));auto Session=S47J::Obj(Legacy,TEXT("freeform"));
    if(!Check(bool(Session),TEXT("legacy fixture retains the ordinary Freeform save object")))return;
@@ -600,7 +649,7 @@ void FS47FreeformTest::Step(double Dt)
   if(Stage==9116)
   {
    if(!Check(!F.InTutorial()&&TutorialStep()==0&&F.SelectJob(1)&&F.Budget()==WorkBudget,TEXT("older saves never receive tutorial or its restrictions, even with explicit test opt-in")))return;
-   Finish(true,TEXT("Normal first shift: native acceptance/registration, actual acquisition/printing, immediate completion, exact-once pay, follow-up and three disk/Flow restores."));return;
+   Finish(true,TEXT("Normal first shift: native acceptance/registration, actual acquisition/printing, immediate completion, exact-once pay, native same-day late follow-up through real acquisition/printing, retained originals and disk/Flow restores."));return;
   }
   return;
  }

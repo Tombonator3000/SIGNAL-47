@@ -12,6 +12,7 @@
 #include "S47Main.h"
 #include "S47Night.h"
 #include "S47Album.h"
+#include "S47FieldCamera.h"
 #include "S47Story.h"
 #include "S47Web.h"
 #include "S47UI.h"
@@ -1043,6 +1044,29 @@ void FS47FreeformSession::OpenOperations()
   T::Small(TEXT("NEXT STEP")),T::Banner(TAttribute<FString>::CreateLambda([this]{return Objective().ToUpper();}),true)}));
  if(Section==0)
  {
+  if(Tutorial==0)
+  {
+   TArray<S47Kit::FW> Continue;
+   const int32 Next=J&&J->Stage!=EJobStage::Filed&&!J->bDuplicateRejected?Selected:Work.IndexOfByPredicate([](const FJob& X){return X.Stage!=EJobStage::Filed&&!X.bDuplicateRejected;});
+   if(Work.IsValidIndex(Next))
+   {
+    const FJob& NextJob=Work[Next];
+    Continue.Add(T::Small(TEXT("A retained observation is available now; unfinished work does not expire at dusk.")));
+    Continue.Add(T::Button(TEXT("Continue observation / ")+NextJob.Id+TEXT(" / ")+FS47Observing::Runs()[NextJob.Source].Source,[this,Next]
+    {
+     if(SelectJob(Next)){OpsSection=1;OpenOperations();}
+    },true));
+   }
+   else Continue.Add(T::Small(Remaining>0?TEXT("Only unverifiable legacy observations remain in this queue. Their originals stay retained without a finding or payment. Photo preparation is available below; new daily observations arrive at 08:00."):TEXT("Daily observations are complete. Start the optional reference check below to retain a fresh baseline without extra payment.")));
+   FString Photo;
+   const FS47Album* Album=M&&M->Night?M->Night->Album.Get():nullptr;
+   if(Album&&Album->PendingLabPhoto())Photo=TEXT("PHOTO LAB / WET BENCH: develop, fix and collect your exposed photograph. Keep its original before submitting it at OPS.");
+   else if(M&&M->FieldCamera&&!M->FieldCamera->bHave)Photo=TEXT("PHOTO LAB / ARCHIVE BENCH: collect the camera before going out. The reserve-film carton is beside it; prepare for an observation whenever you choose.");
+   else if(Album&&Album->Left()<=0)Photo=InventoryCount(TEXT("film"))>0?TEXT("PHOTO LAB / RESERVE-FILM CARTON: load one stock roll into your camera; retained photographs remain unchanged."):TEXT("CALICHE STORE: buy a film roll and deliver it to GARAGE RECEIVING; then load it at PHOTO LAB. Your existing photographs remain retained.");
+   else if(Album)Photo=FString::Printf(TEXT("CAMERA READY / %d exposures remain. You can take a field photograph now; return to PHOTO LAB to develop it before OPS registration. A photograph does not guarantee a paid finding."),Album->Left());
+   if(!Photo.IsEmpty())Continue.Add(T::Small(Photo));
+   Rows.Add(T::Panel(TEXT("CONTINUE TODAY"),S47Kit::Col(Continue)));
+  }
   Rows.Add(T::Small(QueueExplanation));
   if(Remaining==0)Rows.Add(T::Button(TEXT("Start an optional reference check / no payment"),[this]{StartReferenceCheck();OpsSection=1;OpenOperations();},true));
   if(!Work.ContainsByPredicate([](const FJob& X){return X.Source==0&&X.Stage==EJobStage::Filed;}))
