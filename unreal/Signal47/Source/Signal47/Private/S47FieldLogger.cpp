@@ -49,12 +49,15 @@ void FS47FieldLogger::Sample(double Clock,double Delta,bool Generator,bool Feede
  const double Local=(Generator?(Site==0?.8:.08):0)+(FeederFault?(Site==0?.25:.04):0);
  if(D>0&&(T.Levels.IsEmpty()||int32((T.Seconds+D)/60)>int32(T.Seconds/60)))T.Levels.Add(.02+Band*Local);
  T.NoiseSum+=D*(.02+Band*Local);T.Seconds+=D;Battery=FMath::Max(0.,Battery-D);T.End=FMath::Min(Clock,T.End+D);
- if(D>=Delta-.001&&AcquiredDelta>0&&!Job.IsEmpty()&&FMath::Abs(Frequency-JobFrequency)<=.001)
+ if(D>=Delta-.001&&FMath::IsFinite(AcquiredDelta)&&AcquiredDelta>0&&!Job.IsEmpty()&&FMath::Abs(Frequency-JobFrequency)<=.001)
  {
   // Overlap is accumulated from frames in which the SARO original actually
   // advanced, not from an estimated end-time or a previously recorded tape.
   if(T.Job.IsEmpty())T.Job=Job;
-  if(T.Job==Job)T.Overlap+=AcquiredDelta;
+  const double Observed=FMath::Min(AcquiredDelta,D);
+  if(T.Job==Job)T.Overlap+=Observed;
+  auto& O=T.Overlaps.FindOrAdd(Job);O.Seconds+=Observed;
+  if(O.First<0)O.First=FMath::Max(T.Start,Clock-D);O.Last=Clock;
  }
  if(Battery<=0){T.bBatteryEmpty=true;bRecording=false;}
  if(T.End-T.Start>=Window-.001)bRecording=false;
@@ -78,14 +81,36 @@ bool FS47FieldLogger::Retrieve()
  if(Site<0||Tapes.IsEmpty())return false;
  bRecording=false;Tapes.Last().bRetrieved=true;Site=-1;return true;
 }
+double FS47FieldLogger::OverlapFor(const FTape& T,const FString& Job)
+{
+ const auto* O=T.Overlaps.Find(Job);return O?O->Seconds:0.;
+}
+bool FS47FieldLogger::CompleteWindow(const FTape& T,const FString& Job)
+{
+ return T.bRetrieved&&OverlapFor(T,Job)>=5.&&T.Seconds>=Window-.001&&T.GapSeconds==0&&!T.bBatteryEmpty;
+}
+TArray<FString> FS47FieldLogger::EligibleOriginals(const FTape& T,const TArray<FString>& FullOriginals)
+{
+ TArray<FString> R;for(const auto& Job:FullOriginals)if(CompleteWindow(T,Job))R.AddUnique(Job);R.Sort();return R;
+}
+bool FS47FieldLogger::ChooseOriginal(FTape& T,const FString& Job,bool FullOriginal)
+{
+ if(T.bCompared)return !Job.IsEmpty()&&T.ComparedJob==Job; // read-only repeat; no retarget
+ if(!FullOriginal||!CompleteWindow(T,Job))return false;
+ T.ComparedJob=Job;T.bCompared=true;return true;
+}
 FString FS47FieldLogger::Report(const FTape& T)const
 {
- return FString::Printf(TEXT("SARO LOAN LOGGER / DEVICE fieldlogger01\nORIGINAL %s / SITE %s\nDAY %d / %s to %s / %.3f MHz\nCLOCK READBACK: logger %+.1f s ahead of SARO; correction retained\nSAMPLED %.0f s / UNSAMPLED GAP %.0f s / LOCAL NOISE %.3f\nBATTERY: %s\nSIMULTANEOUS SARO ORIGINAL: %s / %.2f acquisition seconds\n\nLocal electrical-noise monitor only. A quiet record does not rule out a visit or a sky signal. This instrument does not copy SARO pulse traces. No origin is established."),*T.Id,T.Site==0?TEXT("A / generator service path"):TEXT("B / array east edge"),T.Day,*FS47FreeformCases::Clock(T.Start),*FS47FreeformCases::Clock(T.End),T.Frequency,T.Offset,T.Seconds,T.GapSeconds,T.Seconds>0?T.NoiseSum/T.Seconds:0,T.bBatteryEmpty?TEXT("EXHAUSTED / incomplete window"):TEXT("available at stop"),T.Job.IsEmpty()?TEXT("none at matching frequency"):*T.Job,T.Overlap);
+ FString Observations;
+ TArray<FString> Jobs;T.Overlaps.GetKeys(Jobs);Jobs.Sort();
+ for(const auto& Job:Jobs){const auto& O=T.Overlaps[Job];Observations+=FString::Printf(TEXT("\n%s / %.2f acquired seconds / %s"),*Job,O.Seconds,O.First>=0?*FString::Printf(TEXT("observed frames %s to %s (not continuous coverage)"),*FS47FreeformCases::Clock(O.First),*FS47FreeformCases::Clock(O.Last)):TEXT("legacy retained overlap; exact frame times unavailable"));}
+ return FString::Printf(TEXT("SARO LOAN LOGGER / DEVICE fieldlogger01\nORIGINAL %s / SITE %s\nDAY %d / %s to %s / %.3f MHz\nCLOCK READBACK: logger %+.1f s ahead of SARO; correction retained\nSAMPLED %.0f s / UNSAMPLED GAP %.0f s / LOCAL NOISE %.3f\nBATTERY: %s\nFIRST MATCHING SARO ORIGINAL: %s / %.2f acquisition seconds\n\nLocal electrical-noise monitor only. A quiet record does not rule out a visit or a sky signal. This instrument does not copy SARO pulse traces. No origin is established."),*T.Id,T.Site==0?TEXT("A / generator service path"):TEXT("B / array east edge"),T.Day,*FS47FreeformCases::Clock(T.Start),*FS47FreeformCases::Clock(T.End),T.Frequency,T.Offset,T.Seconds,T.GapSeconds,T.Seconds>0?T.NoiseSum/T.Seconds:0,T.bBatteryEmpty?TEXT("EXHAUSTED / incomplete window"):TEXT("available at stop"),T.Job.IsEmpty()?TEXT("none at matching frequency"):*T.Job,T.Overlap)+TEXT("\nMATCHING SARO ACQUISITIONS:")+Observations+(T.bCompared?TEXT("\nRETAINED COMPARISON ORIGINAL: ")+T.ComparedJob:FString());
 }
 S47J::FObj FS47FieldLogger::Save()const
 {
  auto O=S47J::New();S47J::Set(O,TEXT("v"),1);S47J::Set(O,TEXT("loanIssued"),bLoanIssued);S47J::Set(O,TEXT("checkedOut"),bCheckedOut);S47J::Set(O,TEXT("checkouts"),Checkouts);S47J::Set(O,TEXT("returns"),Returns);S47J::Set(O,TEXT("assembly"),Assembly);S47J::Set(O,TEXT("site"),Site);S47J::Set(O,TEXT("serial"),Serial);S47J::Set(O,TEXT("calibrated"),bCalibrated);S47J::Set(O,TEXT("recording"),bRecording);S47J::Set(O,TEXT("battery"),Battery);S47J::Set(O,TEXT("frequency"),Frequency);S47J::Set(O,TEXT("calibration"),Calibration);
- TArray<TSharedPtr<FJsonValue>> A;for(const auto& T:Tapes){auto V=S47J::New();S47J::Set(V,TEXT("id"),T.Id);S47J::Set(V,TEXT("levels"),T.Levels);S47J::Set(V,TEXT("job"),T.Job);S47J::Set(V,TEXT("site"),T.Site);S47J::Set(V,TEXT("day"),T.Day);S47J::Set(V,TEXT("start"),T.Start);S47J::Set(V,TEXT("end"),T.End);S47J::Set(V,TEXT("frequency"),T.Frequency);S47J::Set(V,TEXT("offset"),T.Offset);S47J::Set(V,TEXT("battery"),T.Battery);S47J::Set(V,TEXT("overlap"),T.Overlap);S47J::Set(V,TEXT("noise"),T.NoiseSum);S47J::Set(V,TEXT("seconds"),T.Seconds);S47J::Set(V,TEXT("gapSeconds"),T.GapSeconds);S47J::Set(V,TEXT("retrieved"),T.bRetrieved);S47J::Set(V,TEXT("compared"),T.bCompared);S47J::Set(V,TEXT("empty"),T.bBatteryEmpty);A.Add(MakeShared<FJsonValueObject>(V));}O->SetArrayField(TEXT("tapes"),A);return O;
+ TArray<TSharedPtr<FJsonValue>> A;for(const auto& T:Tapes){auto V=S47J::New();S47J::Set(V,TEXT("id"),T.Id);S47J::Set(V,TEXT("levels"),T.Levels);S47J::Set(V,TEXT("job"),T.Job);S47J::Set(V,TEXT("comparedJob"),T.ComparedJob);
+ TArray<TSharedPtr<FJsonValue>> Overlaps;TArray<FString> Keys;T.Overlaps.GetKeys(Keys);Keys.Sort();for(const auto& Key:Keys){const auto& X=T.Overlaps[Key];auto Entry=S47J::New();S47J::Set(Entry,TEXT("job"),Key);S47J::Set(Entry,TEXT("seconds"),X.Seconds);S47J::Set(Entry,TEXT("first"),X.First);S47J::Set(Entry,TEXT("last"),X.Last);Overlaps.Add(MakeShared<FJsonValueObject>(Entry));}V->SetArrayField(TEXT("overlaps"),Overlaps);S47J::Set(V,TEXT("site"),T.Site);S47J::Set(V,TEXT("day"),T.Day);S47J::Set(V,TEXT("start"),T.Start);S47J::Set(V,TEXT("end"),T.End);S47J::Set(V,TEXT("frequency"),T.Frequency);S47J::Set(V,TEXT("offset"),T.Offset);S47J::Set(V,TEXT("battery"),T.Battery);S47J::Set(V,TEXT("overlap"),T.Overlap);S47J::Set(V,TEXT("noise"),T.NoiseSum);S47J::Set(V,TEXT("seconds"),T.Seconds);S47J::Set(V,TEXT("gapSeconds"),T.GapSeconds);S47J::Set(V,TEXT("retrieved"),T.bRetrieved);S47J::Set(V,TEXT("compared"),T.bCompared);S47J::Set(V,TEXT("empty"),T.bBatteryEmpty);A.Add(MakeShared<FJsonValueObject>(V));}O->SetArrayField(TEXT("tapes"),A);return O;
 }
 void FS47FieldLogger::Load(const S47J::FObj& O)
 {
@@ -97,7 +122,19 @@ void FS47FieldLogger::Load(const S47J::FObj& O)
   const S47J::FObj* P=nullptr;if(!V.IsValid()||!V->TryGetObject(P)||!P||Tapes.Num()>=256)continue;const auto& Q=*P;FTape T;T.Id=S47J::Str(Q,TEXT("id"));if(T.Id.IsEmpty()||Tapes.ContainsByPredicate([&](const FTape& A){return A.Id==T.Id;}))continue;
   T.Levels=S47J::Nums(Q,TEXT("levels"));T.Levels.RemoveAll([](double X){return !FMath::IsFinite(X)||X<0||X>2;});if(T.Levels.Num()>121)T.Levels.SetNum(121);
   if(T.Id.StartsWith(TEXT("fieldlogger01.tape")))Serial=FMath::Max(Serial,FMath::Clamp(FCString::Atoi(*T.Id.Mid(18)),0,1000000));
-  T.Job=S47J::Str(Q,TEXT("job"));T.Site=int32(N(Q,TEXT("site"),0,1));T.Day=int32(N(Q,TEXT("day"),1,1000000,1));T.Start=N(Q,TEXT("start"),0,1e12);T.End=N(Q,TEXT("end"),T.Start,T.Start+Window,T.Start);T.Frequency=N(Q,TEXT("frequency"),1419.5,1420.7,1420.11);T.Offset=N(Q,TEXT("offset"),-60,60);T.Battery=N(Q,TEXT("battery"),0,Capacity);T.Overlap=N(Q,TEXT("overlap"),0,Window);T.Seconds=N(Q,TEXT("seconds"),0,Window);T.GapSeconds=N(Q,TEXT("gapSeconds"),0,Window);T.NoiseSum=N(Q,TEXT("noise"),0,Window*2);T.bRetrieved=S47J::Bool(Q,TEXT("retrieved"));T.bCompared=T.bRetrieved&&S47J::Bool(Q,TEXT("compared"));T.bBatteryEmpty=S47J::Bool(Q,TEXT("empty"));Tapes.Add(T);
+  T.Job=S47J::Str(Q,TEXT("job"));T.Site=int32(N(Q,TEXT("site"),0,1));T.Day=int32(N(Q,TEXT("day"),1,1000000,1));T.Start=N(Q,TEXT("start"),0,1e12);T.End=N(Q,TEXT("end"),T.Start,T.Start+Window,T.Start);T.Frequency=N(Q,TEXT("frequency"),1419.5,1420.7,1420.11);T.Offset=N(Q,TEXT("offset"),-60,60);T.Battery=N(Q,TEXT("battery"),0,Capacity);T.Overlap=N(Q,TEXT("overlap"),0,Window);T.Seconds=N(Q,TEXT("seconds"),0,Window);T.GapSeconds=N(Q,TEXT("gapSeconds"),0,Window);T.NoiseSum=N(Q,TEXT("noise"),0,Window*2);T.bRetrieved=S47J::Bool(Q,TEXT("retrieved"));T.bCompared=T.bRetrieved&&S47J::Bool(Q,TEXT("compared"));T.bBatteryEmpty=S47J::Bool(Q,TEXT("empty"));
+  if(!Q->HasField(TEXT("overlaps")))
+  {if(!T.Job.IsEmpty()&&T.Overlap>0){FOverlap X;X.Seconds=T.Overlap;T.Overlaps.Add(T.Job,X);}}
+  else for(const auto& Item:S47J::Arr(Q,TEXT("overlaps")))
+  {
+   const S47J::FObj* Entry=nullptr;if(!Item.IsValid()||!Item->TryGetObject(Entry)||!Entry||T.Overlaps.Num()>=256)continue;
+   const FString Key=S47J::Str(*Entry,TEXT("job"));const double Seconds=S47J::Num(*Entry,TEXT("seconds"));
+   if(Key.IsEmpty()||Key.Len()>256||T.Overlaps.Contains(Key)||!FMath::IsFinite(Seconds)||Seconds<=0||Seconds>Window)continue;
+   FOverlap X;X.Seconds=Seconds;const double First=S47J::Num(*Entry,TEXT("first"),-1),Last=S47J::Num(*Entry,TEXT("last"),-1);
+   if(FMath::IsFinite(First)&&FMath::IsFinite(Last)&&First>=T.Start&&Last>=First&&Last<=T.End+.001){X.First=First;X.Last=Last;}
+   T.Overlaps.Add(Key,X);
+  }
+  T.ComparedJob=T.bCompared?S47J::Str(Q,TEXT("comparedJob"),T.Job):FString();Tapes.Add(T);
  }
  bLoanIssued=S47J::Bool(O,TEXT("loanIssued"),Assembly>0||!Tapes.IsEmpty());
  bCheckedOut=bLoanIssued&&S47J::Bool(O,TEXT("checkedOut"),Site>=0);
@@ -124,5 +161,23 @@ bool FS47FieldLogger::SelfTest(TArray<FString>& Lines)
  FS47FieldLogger Full;Full.Connect();Full.Connect();Full.Connect();Full.Calibrate(3);Full.Start(1,1,100);Full.Sample(101,1,false,false,TEXT("job"),6,1420.11);Full.Retrieve();C(!CompleteWindow(Full.Tapes.Last()),TEXT("brief retrieval with overlap is an incomplete field window"));Full.Start(1,1,200);for(int32 I=1;I<=7200;++I)Full.Sample(200+I,1,false,false,TEXT("job"),I<11?.6:0,1420.11);Full.Retrieve();C(CompleteWindow(Full.Tapes.Last()),TEXT("full sampled window and substantial actual overlap qualify after retrieval"));
  FS47FieldLogger ShortGap;ShortGap.Connect();ShortGap.Connect();ShortGap.Connect();ShortGap.Calibrate(3);ShortGap.Start(0,1,100);ShortGap.Skip(102,2);
  C(ShortGap.Tapes.Last().GapSeconds==2&&ShortGap.Tapes.Last().Seconds==0&&ShortGap.Tapes.Last().Overlap==0&&ShortGap.Battery==Capacity-2,TEXT("explicit short unobserved skip never masquerades as a normal sampled tick"));
+ FS47FieldLogger Multi;Multi.Connect();Multi.Connect();Multi.Connect();Multi.Calibrate(3);Multi.Start(1,1,100);
+ for(int I=1;I<=7200;++I)Multi.Sample(100+I,1,false,false,I<=3?TEXT("J1"):I<=13?TEXT("J2"):TEXT(""),I<=13?1:0,1420.11);
+ Multi.Retrieve();auto& Tape=Multi.Tapes.Last();
+ C(Tape.Job==TEXT("J1")&&Tape.Overlap==3&&OverlapFor(Tape,TEXT("J2"))==10&&!CompleteWindow(Tape)&&CompleteWindow(Tape,TEXT("J2")),TEXT("short first job never suppresses later actual sufficient overlap; legacy fields unchanged"));
+ C(EligibleOriginals(Tape,{TEXT("J1"),TEXT("J2")})==TArray<FString>{TEXT("J2")},TEXT("only full retained originals with five observed seconds qualify"));
+ C(!ChooseOriginal(Tape,TEXT("missing"),true)&&!ChooseOriginal(Tape,TEXT("J1"),true)&&!ChooseOriginal(Tape,TEXT("J2"),false)&&!Tape.bCompared,TEXT("wrong, short or absent actual original cannot establish comparison"));
+ auto MultiSave=Multi.Save();FS47FieldLogger MultiCopy;MultiCopy.Load(S47J::Read(S47J::Write(MultiSave)));
+ C(MultiCopy.Tapes.Last().Overlaps.Num()==2&&OverlapFor(MultiCopy.Tapes.Last(),TEXT("J1"))==3&&OverlapFor(MultiCopy.Tapes.Last(),TEXT("J2"))==10&&MultiCopy.Tapes.Last().Overlaps[TEXT("J2")].First==103,TEXT("per-job observed totals and bounds survive Continue without interpolation"));
+ C(ChooseOriginal(Tape,TEXT("J2"),true)&&ChooseOriginal(Tape,TEXT("J2"),true)&&!ChooseOriginal(Tape,TEXT("J1"),true)&&Tape.ComparedJob==TEXT("J2")&&Tape.Job==TEXT("J1")&&Tape.Overlap==3,TEXT("comparison choice is idempotent and never rewrites first original or retargets finding"));
+ FS47FieldLogger Chosen;Chosen.Load(S47J::Read(S47J::Write(Multi.Save())));C(Chosen.Tapes.Last().bCompared&&Chosen.Tapes.Last().ComparedJob==TEXT("J2"),TEXT("selected comparison survives Continue independently of legacy first job"));
+ auto LegacyData=Multi.Save();auto LegacyTape=S47J::Arr(LegacyData,TEXT("tapes"))[0]->AsObject();LegacyTape->RemoveField(TEXT("overlaps"));LegacyTape->RemoveField(TEXT("comparedJob"));
+ FS47FieldLogger Old;Old.Load(LegacyData);C(Old.Tapes.Last().Overlaps.Num()==1&&OverlapFor(Old.Tapes.Last(),TEXT("J1"))==3&&OverlapFor(Old.Tapes.Last(),TEXT("J2"))==0&&Old.Tapes.Last().bCompared&&Old.Tapes.Last().ComparedJob==TEXT("J1"),TEXT("legacy migration preserves historical comparison and only known overlap; no invented later job"));
+ FS47FieldLogger Two;Two.Connect();Two.Connect();Two.Connect();Two.Calibrate(3);Two.Start(0,1,100);
+ for(int I=1;I<=7200;++I)Two.Sample(100+I,1,false,false,I<=6?TEXT("A"):I<=12?TEXT("B"):TEXT(""),I<=12?1:0,1420.11);
+ Two.Retrieve();C(EligibleOriginals(Two.Tapes.Last(),{TEXT("B"),TEXT("A")}).Num()==2&&!Two.Tapes.Last().bCompared&&Two.Tapes.Last().ComparedJob.IsEmpty(),TEXT("multiple qualifying originals are choices, not an automatically selected finding"));
+ FS47FieldLogger MultiGap;MultiGap.Connect();MultiGap.Connect();MultiGap.Connect();MultiGap.Calibrate(3);MultiGap.Start(0,1,100);
+ MultiGap.Sample(101,1,false,false,TEXT("A"),1,1420.11);MultiGap.Skip(103,2);MultiGap.Sample(104,1,false,false,TEXT("B"),1,1420.4);
+ C(OverlapFor(MultiGap.Tapes.Last(),TEXT("A"))==1&&OverlapFor(MultiGap.Tapes.Last(),TEXT("B"))==0&&MultiGap.Tapes.Last().GapSeconds==2,TEXT("active skip and wrong-band ticks add no invented overlap to any job"));
  FS47FieldLogger Legacy;Legacy.Load(nullptr);C(Legacy.Assembly==0&&Legacy.Tapes.IsEmpty(),TEXT("old saves invent no equipment or originals"));return OK;
 }

@@ -1,5 +1,6 @@
 #include "S47FreeformWorld.h"
 #include "S47Freeform.h"
+#include "S47Observing.h"
 #include "S47FreeformCarry.h"
 #include "S47Main.h"
 #include "S47Story.h"
@@ -27,6 +28,13 @@
 
 namespace
 {
+ bool LoggerOriginalComplete(const FS47FreeformSession::FJob& J)
+ {
+  if(J.Source<0||J.Source>=FS47Observing::Runs().Num())return false;
+  const double Required=J.bGenerated?J.Card.Seconds:FS47Observing::Runs()[J.Source].Seconds;
+  return !J.bLegacyTrace&&J.Stage>=FS47FreeformSession::EJobStage::Recorded&&!J.OriginalPage.IsEmpty()&&!J.OriginalStamp.IsEmpty()&&FMath::IsFinite(J.Elapsed)&&FMath::IsFinite(Required)&&Required>0&&J.Elapsed>=Required-.001;
+ }
+
  // EASTWING-01: the service bench stands inside the east wing's calibration / repair room,
  // against the partition to parts storage (S47EastWing; the outdoor bench was retired).
  // EASTWING reference pass: the stations are part of the casework runs (Tom 4 Nov).
@@ -1159,6 +1167,12 @@ bool FS47FreeformWorld::SelfTest(TArray<FString>& Lines)
  C(!Jump.GeneratorRunning()&&Jump.GeneratorSeconds==0&&Jump.Logger.Tapes.Last().GapSeconds==3600&&Jump.Logger.Tapes.Last().Seconds==0&&Jump.LastClock==3700,TEXT("Rest settles generator fuel and logger gaps before save without generating measurements"));
  FS47FreeformWorld JumpCopy(nullptr);JumpCopy.Begin(S47J::Read(S47J::Write(Jump.Save())));JumpCopy.AdvanceUnobservedTo(3700);
  C(JumpCopy.Logger.Battery==FS47FieldLogger::Capacity-3600&&JumpCopy.Logger.Tapes.Last().GapSeconds==3600&&!JumpCopy.GeneratorRunning(),TEXT("Continue after wait preserves consumed fuel and battery without a second charge"));Jump.Stop();JumpCopy.Stop();
+ FS47FreeformSession::FJob Original;Original.Source=0;Original.bGenerated=true;Original.Card.Seconds=12;Original.Stage=FS47FreeformSession::EJobStage::Recorded;Original.Elapsed=12;
+ C(!LoggerOriginalComplete(Original),TEXT("Logger comparison rejects stage-only job without retained physical original"));
+ Original.OriginalPage=TEXT("unchanged actual original test document");Original.OriginalStamp=TEXT("original counter 123");
+ C(LoggerOriginalComplete(Original),TEXT("Logger original gate accepts actual complete retained acquisition"));
+ Original.Elapsed=4;C(!LoggerOriginalComplete(Original),TEXT("Logger comparison rejects partial acquisition even with recorded stage and document"));Original.Elapsed=12;Original.bLegacyTrace=true;
+ C(!LoggerOriginalComplete(Original),TEXT("Logger comparison cannot promote reconstructed legacy trace into measured original"));
  OK &= FS47FieldLogger::SelfTest(Lines);
  OK &= FS47FreeformCarry::SelfTest(Lines);return OK;
 }
@@ -1174,7 +1188,7 @@ FVector FS47FreeformWorld::LoggerPoint(int32 Site)const
  FVector At=Site==0?FVector(8,0,5):FVector(34,0,-28);
  At.Y=US47Night::SaroFloorAt(M?M->Web.Get():nullptr,At.X,At.Z)+.8;return At;
 }
-bool FS47FreeformWorld::LoggerAction(const FString& Action)
+bool FS47FreeformWorld::LoggerAction(const FString& Action,const FString& TapeId,const FString& OriginalId)
 {
  if(!Ready()||!LoggerAccess())return false;
  if(Action==TEXT("site0")||Action==TEXT("site1"))
@@ -1227,11 +1241,20 @@ bool FS47FreeformWorld::LoggerAction(const FString& Action)
  else if(Action==TEXT("compare"))
  {
   if(!M->UI)return false;TArray<S47Kit::FW> Rows;
+  TArray<FString> FullOriginals;
+  for(const auto& J:M->Freeform->Jobs())if(LoggerOriginalComplete(J))FullOriginals.Add(J.Id);
+  if(!TapeId.IsEmpty()||!OriginalId.IsEmpty())
+  {
+   auto* Selected=Logger.Tapes.FindByPredicate([&](const FS47FieldLogger::FTape& T){return T.Id==TapeId;});
+   if(!Selected||!Selected->bRetrieved||!FS47FieldLogger::EligibleOriginals(*Selected,FullOriginals).Contains(OriginalId)||(Selected->bCompared&&Selected->ComparedJob!=OriginalId))return false;
+  }
   for(auto& T:Logger.Tapes)if(T.bRetrieved)
   {
-   const auto* J=M->Freeform->Jobs().FindByPredicate([&](const FS47FreeformSession::FJob& Job){return Job.Id==T.Job&&Job.Stage>=FS47FreeformSession::EJobStage::Recorded;});
-   const bool Valid=J&&FS47FieldLogger::CompleteWindow(T);
-   const FString Text=Logger.Report(T)+(Valid?TEXT("\nCOMPARISON: contemporaneous SARO original retained. Local noise and station signal remain separate measurements."):TEXT("\nCOMPARISON NOT ESTABLISHED: requires a full two-hour field window without gaps and at least five seconds of matching SARO acquisition. Early retrieval, sleep gaps, empty battery or different frequency cannot substitute."));
+   const auto Choices=FS47FieldLogger::EligibleOriginals(T,FullOriginals);
+   FString Choice;
+   if(!T.bCompared){if(T.Id==TapeId)Choice=OriginalId;else if(TapeId.IsEmpty()&&Choices.Num()==1)Choice=Choices[0];}
+   const bool NewComparison=!T.bCompared&&!Choice.IsEmpty()&&FS47FieldLogger::ChooseOriginal(T,Choice,FullOriginals.Contains(Choice));
+   const FString Text=Logger.Report(T)+(T.bCompared?TEXT("\nCOMPARISON: retained against SARO original ")+T.ComparedJob+TEXT(". Local noise and station signal remain separate measurements."):Choices.Num()>1?TEXT("\nCHOOSE A SARO ORIGINAL: more than one completed original has measured overlap. No comparison has been selected."):TEXT("\nCOMPARISON NOT ESTABLISHED: requires a full two-hour field window without gaps, a complete physically retained SARO original and at least five seconds of its actually observed matching acquisition."));
    Rows.Add(S47Kit::Paper(Text));
    if(!T.Levels.IsEmpty())Rows.Add(S47Kit::Button(TEXT("Listen to retained local noise / six-second compressed monitor"),[this,Levels=T.Levels]
    {
@@ -1240,7 +1263,13 @@ bool FS47FreeformWorld::LoggerAction(const FString& Action)
     for(int32 I=0;I<48000;++I){const double Envelope=Levels[FMath::Min(Levels.Num()-1,I*Levels.Num()/48000)];const double Fade=FMath::Min3(1.,I/160.,(48000-I)/160.);Samples[I]=float(Fade*(.18*Envelope*FMath::Sin(2*PI*60*I/8000.)+.025*Noise.FRandRange(-1.f,1.f)));}
     auto Source=Ctx->CreateBufferSource();Source->Buffer=Buffer;Source->Connect(M->Audio->SfxBus);Source->Start();
    }));
-   if(!T.bCompared&&Valid){T.bCompared=true;M->Freeform->RecordEvidence(T.Id,Text);}
+   if(!T.bCompared&&Choices.Num()>1)for(const auto& Job:Choices)
+   {
+    const auto* O=T.Overlaps.Find(Job);if(!O)continue;
+    const FString When=O->First>=0?FS47FreeformCases::Clock(O->First)+TEXT(" to ")+FS47FreeformCases::Clock(O->Last):TEXT("legacy frame times unavailable");
+    Rows.Add(S47Kit::Button(FString::Printf(TEXT("Compare with %s / %s / %.2f acquired seconds"),*Job,*When,O->Seconds),[this,Id=T.Id,Job]{LoggerAction(TEXT("compare"),Id,Job);},true));
+   }
+   if(NewComparison)M->Freeform->RecordEvidence(T.Id,Text);
   }
   if(Rows.IsEmpty())Rows.Add(S47Kit::Paper(TEXT("No physically returned field original. Deploy the logger, let it record, retrieve it and return it to this CALIBRATION / REPAIR bench, then compare here.")));
   M->UI->Open(S47Kit::Shell(M->UI,TEXT("FIELD ORIGINALS / LOCAL NOISE COMPARISON"),S47Kit::Col(Rows),880));Change();return true;
