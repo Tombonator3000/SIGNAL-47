@@ -12,6 +12,7 @@
 #include "S47Three.h"
 #include "S47Audio.h"
 #include "S47ReceiverSound.h"
+#include "S47ConsoleKit.h"
 #include "CoreGlobals.h"
 #include "UObject/GarbageCollection.h"
 #include "Components/StaticMeshComponent.h"
@@ -72,14 +73,28 @@ void FS47FreeformAudioDesk::Show(bool bShow)
 void FS47FreeformAudioDesk::Begin()
 {
  Stop();if(!IsValid(M)||!IsValid(M->Web))return;
- if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();SignTexts.Reset();SignBoard.Reset();Readout.Reset();Deck={};}
+ if(Scene.Get()!=M->Web){bBuilt=false;Controls.Reset();Texts.Reset();SignTexts.Reset();SignBoard.Reset();Readout.Reset();Deck={};StackHome.Reset();}
  Scene=M->Web;Life=MakeShared<uint8>(0);bActive=true;LastReadout.Empty();
  if(Build()){BindControls();Show(Ready());}
+ PlaceStack(M->IsFreeform());
+}
+void FS47FreeformAudioDesk::PlaceStack(bool bTable)
+{
+ if(!Live())return; // nothing to put back while the engine is shutting down
+ const int32 Kit=FS47ConsoleKit::Find(M->Web);const auto* N=Kit>=0?M->Web->Node(Kit):nullptr;USceneComponent* C=N?N->Comp.Get():nullptr;if(!C)return;
+ if(!StackHome.IsSet())StackHome=C->GetComponentTransform();
+ C->SetMobility(EComponentMobility::Movable);
+ if(!bTable){C->SetWorldTransform(*StackHome);return;}
+ // Half a turn about the analyzer's foot on the console, to its place on the table facing the room.
+ const FVector From=S47Three::ToUE(FVector(2.95,.78,-3.95)),To=S47Three::ToUE(FVector(-.75,.737,4.1));
+ const FQuat Turn(FVector::UpVector,UE_DOUBLE_PI);
+ FTransform T=*StackHome;T.SetLocation(To+Turn.RotateVector(StackHome->GetLocation()-From));T.SetRotation(Turn*StackHome->GetRotation());
+ C->SetWorldTransform(T);
 }
 void FS47FreeformAudioDesk::Stop()
 {
  if(Reference)Reference->Stop();Reference.Reset();bReferenceView=false;
- bActive=false;Life.Reset();Show(false);
+ bActive=false;Life.Reset();Show(false);PlaceStack(false);
 }
 bool FS47FreeformAudioDesk::Build()
 {

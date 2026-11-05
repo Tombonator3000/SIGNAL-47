@@ -117,9 +117,29 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  if(Stage==70)
  {
   M->UI->Close(true);const FVector T=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));
-  M->Player->Place(T.X-.2,T.Z-1.45,UE_DOUBLE_PI);M->Player->Pitch=-.12;Go(71,6.);return; // the toast has gone
+  M->Player->Place(T.X-.5,T.Z-1.45,UE_DOUBLE_PI);M->Player->Pitch=-.12;Go(71,6.);return; // the toast has gone
  }
- if(Stage==71){Shot(TEXT("deck-sign.png"));Go(72,.6);return;}
+ if(Stage==71){Shot(TEXT("deck-sign.png"));Go(710,.6);return;}
+ if(Stage==710)
+ {
+  // The receiver stack now stands on the table; looking at it leads to the same panel.
+  M->Player->Place(-.75,3.05,UE_DOUBLE_PI);
+  const FVector Eye(-.75,M->Player->FloorY+M->Player->Eye,3.05),D=FVector(-.75,.86,4.0)-Eye;
+  M->Player->Yaw=FMath::Atan2(-D.X,-D.Z);M->Player->Pitch=FMath::Atan2(D.Y,FVector2D(D.X,D.Z).Size());Go(711,1.);return;
+ }
+ if(Stage==711)
+ {
+  const FString Pick=M->Inter->Pick(M->Player->EyeUE(),M->Player->ForwardUE());
+  UE_LOG(LogTemp,Display,TEXT("S47 stack pick=%s label=%s"),*Pick,*F.Label(Pick));
+  if(!Check(F.Label(Pick).Contains(TEXT("Reel deck")),TEXT("the stack on the table offers the reel deck; picked ")+Pick))return;
+  Shot(TEXT("stack-on-table.png"));Go(712,.6);return;
+ }
+ if(Stage==712){M->Player->Place(2.3,-2.3,0);M->Player->Pitch=-.25;Go(713,1.);return;}
+ if(Stage==713)
+ {
+  Shot(TEXT("console-after.png"));
+  const FVector T=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));M->Player->Place(T.X,T.Z-1.45,UE_DOUBLE_PI);Go(72,.8);return;
+ }
  if(Stage==72)
  {
   if(!Check(F.Label(TEXT("ff:audio:station")).Contains(TEXT("Reel deck"))&&F.AudioDesk->Use(TEXT("ff:audio:station"))&&F.TapePanelOpen()&&M->ModalOpen(),TEXT("using the deck opens the comparison panel")))return;

@@ -6,6 +6,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
+**Utstyrsstabelen samlet på veggbordet, ikke installert (Tom 5. november):** I Freeform står signalanalysator, VU-meter, hodetelefoner og mikrofon nå ved båndspilleren, og E på stabelen åpner samme panel. Story beholder stabelen ved konsollen. Radio og bordmikrofon er flyttet litt mot enden av bordet i begge moduser. Editorbygg, 2494 selvtester, 22, 12 og 247 kontroller består. Story er ikke kjørt.
+
 **Installert 5. november kl.19:47:** `67d6f382` fra PR425 er nå standard. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-05_67d6f382.md). Normalreisens fase 3 til 7 er ikke kjørt på denne pakken.
 
 **Ny Freeform-start, internkontroll og båndstasjon (Tom 5. november):** Nye spill starter til fots ved besøksinngangen med alle dører lukket og Jeepen i lukket garasje; lukket port stopper bilen, og veggbryteren åpner. RECORD-fanen forklarer internkontrollen og har egen startknapp; racket virker fortsatt. Båndspilleren har skilt og ett skjermpanel med signalspor og frekvensstolper i stedet for små nøkler, bare i Freeform. Menyen spiller Toms egen «Signal 47 - menu» fra den private lydmappa; «Signal to Noise» beholdes på sluttskjermen. PC-en på radiobordet vender mot rommet. Editorbygg, `S47GarageStartTest` (12), `S47InternalControlTest` (21) og rackvarianten (9) består. Fysisk mus, lytting og menneskelig vurdering er ikke prøvd. `S47FreeformEvidenceTest` stopper fortsatt på den doble DAILY WORK-knappen.
