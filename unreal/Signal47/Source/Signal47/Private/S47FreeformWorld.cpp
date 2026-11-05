@@ -1060,6 +1060,16 @@ void FS47FreeformWorld::FinishBranch(const FString& BranchId)
  M->Freeform->RecordEvidence(TEXT("service-branch-")+BranchId,FString(B->Title)+FString::Printf(TEXT(" repaired and tested at its junction. %d of 27 antennas in service."),Up));
  Change(FString::Printf(TEXT("%s back in service. ARRAY %d/27 / MEASUREMENT %.0f%%."),B->Title,Up,100*FS47ArrayWear::RateForCount(Up))+(Wear.DownCount()==0?TEXT(" SARO is whole again."):TEXT("")));
 }
+void FS47FreeformWorld::RestoreWholeArrayFixture()
+{
+ if(!M||!M->Web)return;
+ FVector2D Aim(180,45);for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishRemoteAvailable(I)){Aim=FVector2D(M->Web->DishAz(I),M->Web->DishEl(I));break;}
+ for(const auto& B:FS47ArrayWear::Branches())
+ {
+  if(!Wear.Restore(B.Id))continue;
+  for(const TCHAR* D:B.Dishes)for(int32 I=0;I<M->Web->DishCount();++I)if(M->Web->DishId(I)==D){M->Web->SetDishRemoteAvailable(I,true);M->Web->SnapDish(I,Aim.X,Aim.Y);WearPose.Remove(I);}
+ }
+}
 void FS47FreeformWorld::OpenSampleLab()
 {
  if(!Ready()||!Near(SampleAt,2.6)||!M->UI)return;
