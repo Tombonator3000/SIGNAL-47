@@ -197,9 +197,151 @@ namespace
   UE_LOG(LogS47MotelRoute,Display,TEXT("S47: motel V2 pool exterior diagnosis meshes=%d instances=%d rays=%d evidence=%s; unknown candidate retained"),Meshes.Num(),Instances.Num(),Rays.Num(),*(Root/TEXT("pool-exterior.json")));return true;
  }
 }
+namespace
+{
+ void BeginNorthFootProbe(AS47Web* Web)
+ {
+  struct FProbe
+  {
+   int Stage=0,Index=0;double Began=FPlatformTime::Seconds(),At=0,Distance=0;bool Done=false;
+   FVector Last=FVector::ZeroVector,Start=FVector::ZeroVector;FS47Rect Box;
+   FString Root,ColliderSnapshot;S47J::FObj Report=S47J::New();
+  };
+  const auto S=MakeShared<FProbe>();const TWeakObjectPtr<AS47Web> Weak=Web;FTimerHandle Timer;
+  Web->GetWorld()->GetTimerManager().SetTimer(Timer,[Weak,S]
+  {
+   if(S->Done)return;auto* W=Weak.Get();auto* M=W?US47Main::Get(W):nullptr;const double Now=FPlatformTime::Seconds();
+   auto Finish=[&](bool Good,const FString& Why)
+   {
+    S->Done=true;if(M&&M->Player){M->Player->TestMove.Reset();M->Player->bTestRun=false;}
+    S47J::Set(S->Report,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL"));S47J::Set(S->Report,TEXT("reason"),Why);S47J::Set(S->Report,TEXT("stage"),S->Stage);S47J::Set(S->Report,TEXT("segments"),S->Index);S47J::Set(S->Report,TEXT("walkedMetres"),S->Distance);
+    S47J::Set(S->Report,TEXT("method"),TEXT("Explicit blocker and route-start placements; actual visibility first hits and continuous Walker TestMove/Resolve. No human walking or broad motel-route claim."));
+    if(S->Root.IsEmpty())S->Root=FPaths::ProjectSavedDir()/TEXT("MotelNorthFootProbe");
+    IFileManager::Get().MakeDirectory(*S->Root,true);
+    if(!FFileHelper::SaveStringToFile(S47J::Write(S->Report,true),*(S->Root/TEXT("result.json"))))Good=false;
+    UE_LOG(LogS47MotelRoute,Display,TEXT("S47 motel north foot %s: %s"),Good?TEXT("PASS"):TEXT("FAIL"),*Why);FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
+   };
+   if(Now-S->Began>60){Finish(false,TEXT("bounded north-foot timeout"));return;}
+   if(!M||!M->Flow||!M->World||!M->Player||!M->UI||!W->IsLoaded()||M->Flow->bStarting||S47Startup::Blocking())return;
+   auto* P=M->Player.Get();
+   auto Colliders=[&]()
+   {
+    TArray<FString> Rows;for(const auto& B:W->CollidersMutable(TEXT("saro")))Rows.Add(FString::Printf(TEXT("%s|%.9f|%.9f|%.9f|%.9f|%d"),*B.Id,B.MinX,B.MaxX,B.MinZ,B.MaxZ,B.bEnabled));Rows.Sort();return FString::Join(Rows,TEXT("\n"));
+   };
+   if(S->Stage==0)
+   {
+    FString User,Jump;FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);
+    if(!User.StartsWith(TEXT("/tmp/"))||Jump!=TEXT("chapter4")||!M->Flow->bDevRun||M->Flow->CaseId!=0||M->World->bDriving){Finish(false,TEXT("requires isolated case0 chapter4 on-foot motel fixture"));return;}
+    if(!FPaths::IsUnderDirectory(FPaths::ConvertRelativePathToFull(M->Flow->Saves.Dir),User)){Finish(false,TEXT("save store outside temporary fixture"));return;}
+    FString Other;for(const TCHAR* Flag:{TEXT("S47MotelTv"),TEXT("S47Ch4Drive"),TEXT("S47HorrorContract"),TEXT("S47T01Contract"),TEXT("S47EveningRoute"),TEXT("S47ProductionViews")})if(FParse::Param(FCommandLine::Get(),Flag)||FParse::Value(FCommandLine::Get(),*(FString(Flag)+TEXT("=")),Other)){Finish(false,TEXT("do not combine independent live drivers"));return;}
+    S->Root=FPaths::ProjectSavedDir()/TEXT("MotelNorthFootProbe");
+    M->World->Enter(TEXT("saro"));S->Stage=1;S->At=Now;return;
+   }
+   if(M->World->bBusy||M->Mode!=US47Main::EMode::Play)return;
+   if(S->Stage==1)
+   {
+    if(Now-S->At<.5)return;
+    UStaticMeshComponent *Pole=nullptr,*Court=nullptr,*Approach=nullptr;TArray<UInstancedStaticMeshComponent*> Feet;
+    for(int I=0;I<W->PartCount();++I)
+    {
+     const auto* N=W->Node(I);auto* C=N?Cast<UStaticMeshComponent>(N->Comp.Get()):nullptr;if(!C||!C->GetStaticMesh())continue;
+     const FString Path=C->GetStaticMesh()->GetPathName();
+     if(I==678&&N->Geo==463&&Path==TEXT("/Game/MotelV2/Trim/g463.g463"))Pole=C;
+     if(I==671&&N->Geo==456&&Path==TEXT("/Game/MotelV2/Trim/g456.g456"))Approach=C;
+     if(N->Name==TEXT("motel-v2:SM_Sierra_CourtSurface")&&Path==TEXT("/Game/MotelV2/SM_Sierra_CourtSurface.SM_Sierra_CourtSurface"))Court=C;
+     if(N->Name.StartsWith(TEXT("routeLampFeet:motel-north:"))){auto* F=Cast<UInstancedStaticMeshComponent>(C);if(!F){Finish(false,TEXT("unexpected foot component type"));return;}Feet.Add(F);}
+    }
+    auto Active=[](UStaticMeshComponent* C){return C&&C->IsVisible()&&!C->bHiddenInGame&&C->GetCollisionEnabled()!=ECollisionEnabled::NoCollision&&C->GetCollisionResponseToChannel(ECC_Visibility)==ECR_Block;};
+    if(!Active(Pole)||!Active(Court)||!Active(Approach)){Finish(false,TEXT("original pole/court/asphalt not visible and query-active"));return;}
+    const bool Before=FParse::Param(FCommandLine::Get(),TEXT("S47MotelLampFootOff"));
+    S47J::Set(S->Report,TEXT("beforeMode"),Before);S47J::Set(S->Report,TEXT("poleTransform"),Pole->GetComponentTransform().ToString());
+    if((Before&&!Feet.IsEmpty())||(!Before&&Feet.Num()!=3)){Finish(false,TEXT("unexpected motel-specific support set (not accepting road-only Build success)"));return;}
+    int Instances=0;for(auto* F:Feet){if(!Active(F)){Finish(false,TEXT("support not active"));return;}Instances+=F->GetInstanceCount();}
+    if(!Before&&Instances!=11){Finish(false,TEXT("wrong support instance count"));return;}
+    if(!Before)
+    {
+     UInstancedStaticMeshComponent* Base=nullptr;
+     for(int I=0;I<W->PartCount();++I){const auto* N=W->Node(I);if(N&&N->Name==TEXT("routeLampFeet:motel-north:concrete"))Base=Cast<UInstancedStaticMeshComponent>(N->Comp.Get());}
+     FTransform T;if(!Base||Base->GetInstanceCount()!=1||!Base->GetInstanceTransform(0,T,true)){Finish(false,TEXT("concrete foundation unavailable"));return;}
+     const auto Bounds=Base->GetStaticMesh()->GetBounds();const FBox Box=FBox(Bounds.Origin-Bounds.BoxExtent,Bounds.Origin+Bounds.BoxExtent).TransformBy(T);
+     const FVector A=S47Three::ToThree(Box.Min),B=S47Three::ToThree(Box.Max);
+     const double MinX=FMath::Min(A.X,B.X),MaxX=FMath::Max(A.X,B.X),MinZ=FMath::Min(A.Z,B.Z),MaxZ=FMath::Max(A.Z,B.Z),Bottom=FMath::Min(A.Y,B.Y),Top=FMath::Max(A.Y,B.Y);
+     if(FMath::Abs(MinX+31.08)>.001||FMath::Abs(MaxX+30.72)>.001||FMath::Abs(MinZ-667.82)>.001||FMath::Abs(MaxZ-668.18)>.001||FMath::Abs(Bottom-(-2.203568382038064-.025))>.00005||FMath::Abs(Top-(-2.098568384594018+.01))>.003){Finish(false,TEXT("concrete does not bridge both surfaces with expected burial and cap"));return;}
+     S47J::Set(S->Report,TEXT("concreteBottom"),Bottom);S47J::Set(S->Report,TEXT("concreteTop"),Top);
+    }
+    FCollisionQueryParams Q(SCENE_QUERY_STAT(S47MotelNorthContact),true,P);Q.AddIgnoredComponent(Pole);for(auto* F:Feet)Q.AddIgnoredComponent(F);
+    TArray<TSharedPtr<FJsonValue>> Samples;int CourtHits=0,AsphaltHits=0;double Low=1e9,High=-1e9;
+    for(int IX=0;IX<=8;++IX)for(int IZ=0;IZ<=8;++IZ)
+    {
+     const double X=-31.08+.045*IX,Z=667.82+.045*IZ;FHitResult H;
+     if(!W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(X,-2.068568384594018,Z),S47Three::ToUE(X,-2.398568384594018,Z),ECC_Visibility,Q)){Finish(false,TEXT("active world contact grid has hole"));return;}
+     auto* Hit=H.GetComponent();const double Y=S47Three::ToThree(H.ImpactPoint).Y;
+     if(Hit==Court)++CourtHits;else if(Hit==Approach)++AsphaltHits;else{Finish(false,TEXT("contact first hit is not active court/asphalt: ")+GetNameSafe(Hit));return;}
+     // Source profile has two asphalt rows, one bevel row, six flat court rows.
+     const double Expected=IZ<2?-2.098568384594018:IZ==2?-2.184426280932433:-2.17856838352818;
+     if((IZ<2?Hit!=Approach:Hit!=Court)||FMath::Abs(Y-Expected)>.003){Finish(false,TEXT("active contact differs from source asphalt/bevel/flat profile"));return;}
+     Low=FMath::Min(Low,Y);High=FMath::Max(High,Y);auto R=S47J::New();S47J::Set(R,TEXT("x"),X);S47J::Set(R,TEXT("z"),Z);S47J::Set(R,TEXT("y"),Y);S47J::Set(R,TEXT("owner"),Hit==Court?TEXT("court"):TEXT("asphalt"));Samples.Add(MakeShared<FJsonValueObject>(R));
+    }
+    S->Report->SetArrayField(TEXT("contactGrid"),Samples);S47J::Set(S->Report,TEXT("courtHits"),CourtHits);S47J::Set(S->Report,TEXT("asphaltHits"),AsphaltHits);
+    if(CourtHits!=63||AsphaltHits!=18||FMath::Abs(Low+2.184426280932433)>.003||FMath::Abs(High+2.098568384594018)>.003){Finish(false,TEXT("active surfaces do not match both measured elevations"));return;}
+    // Independent active-world crosscheck of the narrow edge missed by 9x9.
+    // Q ignores only original pole/new feet, exactly as the contact grid above.
+    TArray<TSharedPtr<FJsonValue>> EdgeContacts;
+    constexpr double EdgeBound=-2.203568382038064,EdgeZ=667.9001,EdgeExpected=-2.2031948089787035;
+    {
+     const double X=-30.9;FHitResult H;
+     if(!W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(X,-2.068568384594018,EdgeZ),S47Three::ToUE(X,-2.398568384594018,EdgeZ),ECC_Visibility,Q)||H.GetComponent()!=Court)
+     {Finish(false,TEXT("near-edge first contact is not the active court"));return;}
+     const double Y=S47Three::ToThree(H.ImpactPoint).Y;
+     if(FMath::Abs(Y-EdgeExpected)>.003){Finish(false,TEXT("active near-edge contact differs from source bevel profile"));return;}
+     auto E=S47J::New();S47J::Set(E,TEXT("x"),X);S47J::Set(E,TEXT("z"),EdgeZ);S47J::Set(E,TEXT("y"),Y);S47J::Set(E,TEXT("owner"),TEXT("court"));EdgeContacts.Add(MakeShared<FJsonValueObject>(E));
+    }
+    S->Report->SetArrayField(TEXT("edgeContacts"),EdgeContacts);S47J::Set(S->Report,TEXT("sourceEdgeTopBound"),EdgeBound);S47J::Set(S->Report,TEXT("measuredGridLow"),Low);
+    bool Covered=false;for(const auto& B:W->CollidersMutable(TEXT("saro")))
+    {
+     if(B.Id.StartsWith(TEXT("routeLampFeet:motel-north:"))){Finish(false,TEXT("new collider changes original exclusion"));return;}
+     if(B.bEnabled&&B.MinX<=-31.08&&B.MaxX>=-30.72&&B.MinZ<=667.82&&B.MaxZ>=668.18&&FMath::Abs(B.MaxX-B.MinX-.4)<.002&&FMath::Abs(B.MaxZ-B.MinZ-.4)<.002){S->Box=B;Covered=true;}
+    }
+    if(!Covered){Finish(false,TEXT("original enabled 40cm collision exclusion missing"));return;}
+    S->ColliderSnapshot=Colliders();S47J::Set(S->Report,TEXT("colliders"),S->ColliderSnapshot);
+    P->Place(-30.,668,UE_DOUBLE_PI/2);P->TestMove=FVector2D(0,-1);P->bTestRun=false;S->Start=P->Pos;S->Stage=2;S->At=Now;return;
+   }
+   if(S->Stage==2)
+   {
+    if(Now-S->At<2)return;P->TestMove.Reset();const double Moved=S->Start.X-P->Pos.X;
+    if(Moved<.1||Moved>1.1||P->Pos.X<S->Box.MaxX+P->Radius-.05){Finish(false,TEXT("Walker did not approach preserved exclusion or crossed it"));return;}
+    S47J::Set(S->Report,TEXT("blockerApproachMetres"),Moved);
+    P->Place(-29.9,667.1,0);S->Last=P->Pos;S->Stage=3;S->At=Now;return;
+   }
+   if(S->Stage==3)
+   {
+    static const FVector2D Route[]={{-29.9,668.9},{-31.9,668.9},{-31.9,667.1},{-29.9,667.1}};
+    const double Step=FVector2D(P->Pos.X-S->Last.X,P->Pos.Z-S->Last.Z).Size();if(Step>.65){Finish(false,TEXT("route discontinuity; no teleport recovery"));return;}S->Distance+=Step;S->Last=P->Pos;
+    if(Colliders()!=S->ColliderSnapshot){Finish(false,TEXT("collision set changed during probe"));return;}
+    FHitResult H;FCollisionQueryParams Q(SCENE_QUERY_STAT(S47MotelNorthWalk),true,P);
+    // FloorY is the smoothed camera/Walker height (Dt*14), so an 8cm step
+    // legitimately leaves it behind the contact target for several ticks.
+    if(!W->GetWorld()->LineTraceSingleByChannel(H,S47Three::ToUE(P->Pos.X,P->FloorY+.30,P->Pos.Z),S47Three::ToUE(P->Pos.X,P->FloorY-.30,P->Pos.Z),ECC_Visibility,Q) ){Finish(false,TEXT("continuous walk lacks an actual rendered floor contact"));return;}
+    const double Lag=FMath::Abs(P->FloorY-S47Three::ToThree(H.ImpactPoint).Y);
+    S47J::Set(S->Report,TEXT("maxSmoothedFloorLag"),FMath::Max(S47J::Num(S->Report,TEXT("maxSmoothedFloorLag")),Lag));
+    if(Lag>.10){Finish(false,TEXT("Walker height exceeds the known 8cm seam transition allowance"));return;}
+    const auto Goal=Route[S->Index];const double DX=Goal.X-P->Pos.X,DZ=Goal.Y-P->Pos.Z,D=FVector2D(DX,DZ).Size();
+    if(D>.08){if(Now-S->At>24){Finish(false,TEXT("passage stalled; no collision bypass"));return;}P->Yaw=FMath::Atan2(-DX,-DZ);P->TestMove=FVector2D(0,-FMath::Clamp(D/.5,0.,1.));return;}
+    P->TestMove.Reset();
+    // At each route endpoint the actual Walker floor must settle back onto
+    // the independently traced surface; transient allowance is not steady hover.
+    if(Lag>.015){if(Now-S->At>24)Finish(false,TEXT("Walker floor did not settle onto rendered contact"));return;}
+    ++S->Index;S->At=Now;
+    if(S->Index==4){Finish(true,TEXT("81 active contact hits, preserved pole exclusion and four continuous Walker passage segments"));return;}
+   }
+  },.05f,true);
+ }
+}
+
 void AS47Web::BeginMotelV2Route()
 {
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47MotelV2Route")))return;
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47MotelNorthFootProbe"))){BeginNorthFootProbe(this);return;}
  // Action: 1=TV hold, 2=physical payphone, 3=newspaper front, 4=guest-door recess, 5=enter room6, 6=pool exterior diagnosis.
  struct FPoint {double X,Z;const TCHAR* Proxy;const TCHAR* Id;int32 Action=0;};
  static const FPoint Route[]={
