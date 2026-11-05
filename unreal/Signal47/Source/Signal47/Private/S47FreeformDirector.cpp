@@ -486,7 +486,7 @@ void FS47FreeformDirector::Apply()
   if(Event==TEXT("dusk_orb"))
   {
    if(M->Audio&&Near(FVector(-3,1,1),18)){FS47Sound O;O.Gain=.12f;O.At=FVector(-3,1,1);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+1.2);}
-   if(M->UI)M->UI->Toast(TEXT("A low light moves between S-02 and S-03. The PHOTO LAB camera can retain a field observation."),6);
+   if(M->UI)M->UI->Toast(DuskOrb.WasPhotographed()?TEXT("The low lights are back among the antennas."):TEXT("A low light moves between S-02 and S-03. The PHOTO LAB camera can retain a field observation."),6);
   }
   if(Instrument(Event)){M->Freeform->SetPhenomenon(Event);M->Freeform->SetAnomaly(true);}
   if(Event==TEXT("s03_failure")&&M->Freeform->Field)
@@ -899,7 +899,7 @@ void FS47FreeformDirector::TagPhoto(FS47AlbumShot& Shot)
   if(M->Night&&M->Night->Glimpses)for(const auto& I:M->Night->Glimpses->Individuals())if(I.bRendered&&M->Night->Glimpses->ControlledPhotoBody(I.Id))
    TaggedQuality=FMath::Max(TaggedQuality,Qualify(I.Eye-FVector(0,.5,0),1.2,M->Night->Glimpses->ControlledPhotoBody(I.Id)));
  }
- else if(!RoadPhoto&&Event==TEXT("dusk_orb")&&PhysicalObjectPresented())
+ else if(!RoadPhoto&&Event==TEXT("dusk_orb")&&!DuskOrb.WasPhotographed()&&PhysicalObjectPresented())
  {
   if(const auto* C=Effects->Orb.Get())TaggedQuality=Qualify(S47Three::ToThree(C->Bounds.Origin),double(C->Bounds.BoxExtent.Z)*.02,C);
  }

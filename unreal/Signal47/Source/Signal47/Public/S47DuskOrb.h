@@ -14,6 +14,7 @@ public:
  bool Ready(double Clock) const;
  void Started(double Clock); // consume this opportunity before presenting it
  void Photographed() { bPhotographed=true; }
+ bool WasPhotographed() const { return bPhotographed; } // one paid record; the lights themselves keep coming
  // Index 0 owns the photographic record; 1 and 2 keep it company. All stop, sniff at a
  // spot and dart on to the next; still pure functions of age, never of the player's view.
  static constexpr int32 Count=3;

@@ -777,10 +777,12 @@ bool FS47FreeformWorld::CargoUse()
  else if(Payload==3){Payload=2;Change(TEXT("GARAGE RECEIVING: Parcel unloaded. Carry supplies to the receiving table to add them to stock. Return loan equipment at CALIBRATION / REPAIR."));}
  else
  {
-  TArray<S47Kit::FW> R;R.Add(S47Kit::Paper(FString::Printf(TEXT("SERVICE TRUCK\nFUEL %.1f / 4\nCARGO: %s"),Fuel,Payload==3?*ParcelDescription():TEXT("empty"))));
+  TArray<S47Kit::FW> R;R.Add(S47Kit::Sub(FString::Printf(TEXT("FUEL  %.1f / 4"),Fuel)));
+  R.Add(S47Kit::Status(TEXT("Cargo"),Payload==3?ParcelDescription().ToUpper():FString(TEXT("EMPTY")),Payload==3?1:0));
   R.Add(S47Kit::Button(TEXT("Refuel from a stock can"),[this]{RefuelTruck();M->UI->Close();},true,InventoryCount(TEXT("fuel"))>0&&Fuel<3.99));
   R.Add(S47Kit::Button(TEXT("Request roadside return to SARO"),[this]{RoadsideAssist();M->UI->Close();},false,Fuel<=.001));
-  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE TRUCK / CARGO AND FUEL"),S47Kit::Col(R),800));
+  if(Fuel>.001)R.Add(S47Kit::Small(TEXT("Roadside return is available when the fuel is empty.")));
+  M->UI->Open(S47Kit::Shell(M->UI,TEXT("SERVICE JEEP / CARGO"),S47Kit::Col(R),800));
  }
  return true;
 }

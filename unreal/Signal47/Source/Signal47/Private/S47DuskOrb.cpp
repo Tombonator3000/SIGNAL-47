@@ -27,7 +27,7 @@ S47J::FObj FS47DuskOrb::Save() const
 }
 bool FS47DuskOrb::Update(double Clock,bool bTutorial)
 {
- if(bTutorial||bPhotographed||!ValidClock(Clock))return false;
+ if(bTutorial||!ValidClock(Clock))return false;
  if(DueClock<0){DueClock=NextOpportunity(Clock);return true;}
  // A skipped dusk is not a witnessed event. Reschedule without inventing an
  // encounter, evidence, warning or payment, including after a sleep/Continue.
@@ -36,7 +36,7 @@ bool FS47DuskOrb::Update(double Clock,bool bTutorial)
 }
 bool FS47DuskOrb::Ready(double Clock) const
 {
- return !bPhotographed&&DueClock>=0&&ValidClock(Clock)&&Clock>=DueClock&&Clock<=DayStart(DueClock)+DuskEnd;
+ return DueClock>=0&&ValidClock(Clock)&&Clock>=DueClock&&Clock<=DayStart(DueClock)+DuskEnd;
 }
 void FS47DuskOrb::Started(double Clock)
 {
@@ -87,7 +87,7 @@ bool FS47DuskOrb::SelfTest(TArray<FString>& Lines)
  Check(S.Update(9*3600.,false)&&!S.Ready(Dusk-1)&&S.Ready(Dusk),TEXT("Early tutorial completion schedules the coming dusk"));
  S.Started(Dusk);FS47DuskOrb R;R.Begin(S47J::Read(S47J::Write(S.Save())));
  Check(!R.Ready(Dusk)&&R.Ready(Day+Dusk),TEXT("Consumed dusk survives Continue without restarting or losing next opportunity"));
- R.Photographed();S.Begin(R.Save());Check(!S.Ready(Day+Dusk)&&!S.Update(3*Day,false),TEXT("Retained photograph ends invitation repeats across Continue"));
+ R.Photographed();S.Begin(R.Save());Check(S.Ready(Day+Dusk)&&S.WasPhotographed(),TEXT("The lights keep coming back after a photograph; the record of it survives Continue"));
  S.Begin(nullptr);S.Update(22*3600.,false);Check(!S.Ready(22*3600.)&&S.Ready(Day+Dusk),TEXT("Late tutorial completion waits for the next dusk"));
  S.Begin(nullptr);S.Update(18.75*3600.,false);Check(!S.Ready(18.75*3600.)&&S.Ready(18.75*3600.+Grace),TEXT("Tutorial completed at dusk gets a short saved grace period"));
  S.Begin(nullptr);S.Update(8*3600.,false);Check(S.Update(Day+8*3600.,false)&&!S.Ready(Day+8*3600.)&&S.Ready(Day+Dusk),TEXT("Sleeping past dusk reschedules without manufacturing an encounter"));
