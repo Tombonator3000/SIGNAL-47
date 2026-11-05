@@ -7,9 +7,12 @@
 class FS47FieldLogger
 {
 public:
+ struct FOverlap { double Seconds=0,First=-1,Last=-1; }; // First/Last observed frame bounds, not continuous coverage
  struct FTape
  {
-  FString Id,Job;
+  FString Id,Job; // immutable first-overlap identity retained for legacy callers
+  TMap<FString,FOverlap> Overlaps;
+  FString ComparedJob; // chosen once; never retarget an established finding
   TArray<double> Levels; // one retained demodulated noise envelope per simulated minute
   int32 Site=0,Day=0;
   double Start=0,End=0,Frequency=1420.11,Offset=0,Battery=0,Overlap=0,NoiseSum=0,Seconds=0,GapSeconds=0;
@@ -33,6 +36,10 @@ public:
  bool Retrieve();
  FString Report(const FTape& T) const;
  static bool CompleteWindow(const FTape& T) { return T.bRetrieved&&T.Overlap>=5.&&T.Seconds>=Window-.001&&T.GapSeconds==0&&!T.bBatteryEmpty; }
+ static double OverlapFor(const FTape& T,const FString& Job);
+ static bool CompleteWindow(const FTape& T,const FString& Job);
+ static TArray<FString> EligibleOriginals(const FTape& T,const TArray<FString>& FullOriginals);
+ static bool ChooseOriginal(FTape& T,const FString& Job,bool FullOriginal);
  S47J::FObj Save() const;
  void Load(const S47J::FObj& O);
  static bool SelfTest(TArray<FString>& Lines);

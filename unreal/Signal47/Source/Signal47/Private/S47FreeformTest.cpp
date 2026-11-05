@@ -103,6 +103,7 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47DuskOrbTest"))){S47J::Set(O,TEXT("scope"),TEXT("dusk-orb-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit dusk clock, forced event and player placement. Actual native component, retained camera exposure, wet-bench Slate actions, powered OPS guards, unique control plan and once-only payment, with two full disk/Flow restores. Natural scheduling is checked separately in pure tests; no natural discovery, OS-input journey or completed field comparison is claimed."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression")))
  {S47J::Set(O,TEXT("scope"),TEXT("story-camera-after-freeform"));S47J::Set(O,TEXT("method"),TEXT("Explicit chapter1 start and approach fixtures; physical pickup ray/OnUse, native Story shutter. Quarantined case metadata enables WriteSave API then title Continue callback; not a native save-menu/button test. No Story progress injection."));S47J::Set(O,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){S47J::Set(O,TEXT("scope"),TEXT("logger-full-active-window"));S47J::Set(O,TEXT("method"),TEXT("Explicit access and approach/dial fixtures; actual eye-ray/OnUse at depot, bench, field post and printer; production menu callbacks for loan/assembly/tune/acquisition/comparison. Full active game-clock sampling and real SARO acquisition, disk/Flow Continue mid-window and after comparison. No natural access, walking route, native menu clicks, Visitors contact or human listening claim."));}
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
  FFileHelper::SaveStringToFile(S47J::Write(O,true),*(Root/TEXT("result.json")));
  FPlatformMisc::RequestExitWithStatus(false,Good?0:1);
@@ -210,6 +211,7 @@ void FS47FreeformTest::Step(double Dt)
   if(!Check(User.StartsWith(TEXT("/tmp/")),TEXT("explicit isolated temporary profile required")))return;
  }
  if(((Stage>=8690&&Stage<=8701)||(Stage>=86970&&Stage<=86979))&&FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression"))){StepStoryCamera(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){StepLoggerJourney(Dt);return;}
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
   if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;

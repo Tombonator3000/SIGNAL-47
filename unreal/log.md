@@ -1817,3 +1817,7 @@ Dinerens boarding-proxy slipper nå samme faktiske cargo-stråle gjennom som SAR
 ### 5. november 2026 kl.02:59: brukbar og valgt fotoreturplan
 
 `codex/night-photo-focus-20261105`: vedvarende Follow-valg, fallback til brukbar original og felles sammenligningsvern; nyere ufremkalt/manglende claimfoto skjuler ikke frossen plan. Bygg, 2397 selvtester og 87 native kontroller/tre disk-Continue består. To-plan-knappprøven er eksplisitt fixture fra ekte original med gjenopprettet historikk, uten ny betaling eller påstand om naturlig oppdagelse. Installasjon følger samlet kandidat.
+
+### 5. november 2026 kl.03:07: full feltloggerreise og overlapp per original
+
+`codex/night-logger-overlap-20261105`: per-original målt overlapp, bevart første jobb og separat låst sammenligningsvalg; eldre lagringer får kun sin kjente overlapp. Bygg/2410 selvtester og native37/to diskreturer består med7200s dekning,14s SARO-opptak, fysisk utlån/benk/felt/printer/retur og uendret økonomi. Tosteders- eller himmelbevis påstås ikke. Verkstedundersøkelsen er avgrenset til nyttig eksisterende lånekit før ny donor-crafting; bred oppgave forblir åpen. Installasjon følger samlet kandidat.
