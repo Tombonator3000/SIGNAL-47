@@ -62,6 +62,10 @@ public:
 	FVector View() const;
 	// Measured native layout for targeted reopen/restore checks.
 	TMap<FString, FVector4> LayoutBounds() const;
+	// Read-only native input probes; never manufacture a drag, edge or fade.
+	TOptional<FVector2D> PinScreenPoint(const FString& Id) const;
+	struct FThreadInputState { bool bDragging=false,bMoved=false,bCaptured=false; int32 SlackCount=0; double SlackAge=-1; };
+	FThreadInputState ThreadInputState() const;
 	static bool SelfTest(TArray<FString>& Lines);
 
 private:

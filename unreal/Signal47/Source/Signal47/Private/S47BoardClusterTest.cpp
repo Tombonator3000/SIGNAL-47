@@ -14,6 +14,8 @@
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
 #include "UnrealClient.h"
+#include "Framework/Application/SlateApplication.h"
+#include "HAL/PlatformTime.h"
 
 namespace
 {
@@ -23,11 +25,13 @@ struct FRun
  FString Root,Photo1,Photo2; int32 Stage=0,Checks=0,Restores=0,Threads=0; double Age=0,At=0;
  bool OldLarge=false,bStarted=false; FVector2D Manual; TOptional<FVector2D> Unrelated;
  S47J::FObj Layout; TMap<FString,FVector4> Bounds; TArray<FString> Links; TArray<TSharedPtr<FJsonValue>> Receipts;
- TArray<FString> Shots;
+ TArray<FString> Shots;bool DragCheck=false,PointerDown=false;FVector2D DragFrom,DragTo,PointerAt;S47J::FObj DragLayout;
  bool Finish(bool Good,const FString& Why)
  {
+  if(PointerDown&&FSlateApplication::IsInitialized()){Pointer(2,PointerAt);PointerDown=false;}
   if(auto* M=Main.Get();bStarted&&M&&M->Flow)M->Flow->Settings().OnLargeText(OldLarge);
   auto O=S47J::New(); S47J::Set(O,TEXT("status"),Good?TEXT("PASS"):TEXT("FAIL")); S47J::Set(O,TEXT("reason"),Why);
+  S47J::Set(O,TEXT("dragInput"),DragCheck?TEXT("Synthetic FPointerEvent through FSlateApplication hit-test/routing/capture; not physical OS mouse or human acceptance"):TEXT("not requested"));
   S47J::Set(O,TEXT("checks"),Checks);S47J::Set(O,TEXT("diskRestores"),Restores);S47J::Set(O,TEXT("stage"),Stage);
   S47J::Set(O,TEXT("provenance"),TEXT("Native Slate/API contract using existing Ch1Drive photo journey and its declared chapter-state shortcuts. Mark2 is an explicit fixture at the actual second photograph's vane target; manual card position is a fixture. Real board Link, Settings callback, WriteSave, fresh disk reader and full Flow OpenSave. No ordinary OS input, natural photo-marking, subjective readability or overlap acceptance claimed."));
   O->SetArrayField(TEXT("receipts"),Receipts);S47J::Set(O,TEXT("screenshots"),Shots);
@@ -44,10 +48,19 @@ struct FRun
  void Shot(const TCHAR* Name){const FString P=Root/(FString(Name)+TEXT(".png"));Shots.Add(P);FScreenshotRequest::RequestScreenshot(P,true,false);}
  bool Same(const TOptional<FVector2D>& A,const TOptional<FVector2D>& B)const{return A.IsSet()==B.IsSet()&&(!A||A->Equals(*B,.001));}
  bool Equal(const S47J::FObj& A,const S47J::FObj& B)const{return FJsonValue::CompareEqual(FJsonValueObject(A),FJsonValueObject(B));}
+ bool Pointer(int Kind,const FVector2D& Point)
+ {
+  auto& App=FSlateApplication::Get();TSet<FKey> Held;if(Kind!=2)Held.Add(EKeys::LeftMouseButton);
+  const FPointerEvent Event(0,Point,PointerAt,Held,Kind==1?EKeys::Invalid:EKeys::LeftMouseButton,0,FModifierKeysState());PointerAt=Point;
+  if(Kind==0){PointerDown=true;return App.ProcessMouseButtonDownEvent(nullptr,Event);}
+  if(Kind==2){PointerDown=false;return App.ProcessMouseButtonUpEvent(Event);}
+  // UE synthetic-hover moves deliberately skip captured OnMouseMove; use the normal device route, as S47Gamepad does.
+  return App.ProcessMouseMoveEvent(Event);
+ }
  bool Tick(float Dt)
  {
   Age+=Dt;auto* M=Main.Get();if(!M||Age>200)return Finish(false,TEXT("main unavailable or 200 second timeout"));
-  if(Age-At<.6)return true;
+  if(Age-At<.6&&!(Stage>=12&&Stage<=17))return true;
   auto* C=Cast<US47Chapter1>(M->Story->Chapter(TEXT("ch1")));auto* B=M->CaseBoard.Get();
   if(Stage==0)
   {
@@ -122,6 +135,54 @@ struct FRun
    if(!Check(M->UI->bLargeText&&Stable,TEXT("restored large-text widget preserves every measured card and Finding position and size")+Difference))return false;
    Shot(TEXT("05-restored"));Next(11);return true;
   }
+  if(DragCheck&&Stage==11)
+  {
+   DragLayout=S47J::Clone(B->Save());
+   if(!Check(B->View->Frame({TEXT("frame02")}),TEXT("frame the actual retained photo card for pointer input")))return false;
+   Next(12);return true;
+  }
+  if(DragCheck&&Stage==12)
+  {
+   if(Age-At<.6)return true;
+   const auto A=B->View->PinScreenPoint(TEXT("frame02.extra")),Z=B->View->PinScreenPoint(TEXT("frame02.detail"));
+   if(!Check(A.IsSet()&&Z.IsSet()&&(*A-*Z).Size()>16&&B->View->ThreadInputState().SlackCount==0,TEXT("two real same-card pins have visible hittable screen coordinates and no stale slack")))return false;
+   DragFrom=*A;DragTo=*Z;PointerAt=DragFrom;
+   const bool Handled=Pointer(0,DragFrom);const auto State=B->View->ThreadInputState();
+   if(!Check(Handled&&State.bDragging&&!State.bMoved&&State.bCaptured,TEXT("Slate-routed pointer down hits actual pin and captures board surface")))return false;
+   Next(13);return true;
+  }
+  if(DragCheck&&Stage==13)
+  {
+   if(Age-At<.08)return true;
+   Pointer(1,(DragFrom+DragTo)*.5);const auto State=B->View->ThreadInputState();
+   if(!Check(State.bDragging&&State.bMoved&&State.bCaptured&&State.SlackCount==0,TEXT("routed intermediate movement crosses real drag threshold while capture remains")))return false;
+   Next(14);return true;
+  }
+  if(DragCheck&&Stage==14)
+  {
+   if(Age-At<.08)return true;Pointer(1,DragTo);Pointer(2,DragTo);const auto State=B->View->ThreadInputState();
+   if(!Check(!State.bDragging&&!State.bCaptured&&State.SlackCount==1&&State.SlackAge>=0&&State.SlackAge<.25,TEXT("routed release rejects same-card link and creates exactly one fresh slack curve")))return false;
+   if(!Check(C->Book()->Threads().Num()==Threads+2&&*C->S.Links==Links&&Equal(B->Save(),DragLayout)&&C->S.F1->Url==Photo1&&C->S.F2->Url==Photo2,TEXT("rejected pointer drag preserves valid threads, layout and both real photographs")))return false;
+   Next(15);return true;
+  }
+  if(DragCheck&&Stage==15)
+  {
+   const auto State=B->View->ThreadInputState();if(State.SlackCount!=1)return Finish(false,TEXT("rejected curve disappeared before early sample"));if(State.SlackAge<.15)return true;
+   if(!Check(State.SlackCount==1&&State.SlackAge<.65,TEXT("one continuous rejected curve remains at early real-time fade sample")))return false;
+   Shot(TEXT("06-rejected-drag-early"));Next(16);return true;
+  }
+  if(DragCheck&&Stage==16)
+  {
+   const auto State=B->View->ThreadInputState();if(State.SlackCount!=1)return Finish(false,TEXT("rejected curve disappeared before midpoint sample"));if(State.SlackAge<1)return true;
+   if(!Check(State.SlackCount==1&&State.SlackAge<1.6,TEXT("same single rejected curve remains midway through actual two-second fade")))return false;
+   Shot(TEXT("07-rejected-drag-mid"));Next(17);return true;
+  }
+  if(DragCheck&&Stage==17)
+  {
+   if(Age-At<1.25)return true;const auto State=B->View->ThreadInputState();
+   if(!Check(State.SlackCount==0&&!State.bDragging&&!State.bCaptured&&C->Book()->Threads().Num()==Threads+2&&*C->S.Links==Links&&Equal(B->Save(),DragLayout)&&C->S.F1->Url==Photo1&&C->S.F2->Url==Photo2,TEXT("real-time fade expires without deleting valid threads or moving retained cards")))return false;
+   Shot(TEXT("08-rejected-drag-expired"));Next(18);return true;
+  }
   for(const auto& Path:Shots)if(!IFileManager::Get().FileExists(*Path))return true;
   return Finish(true,TEXT("native board growth, view controls, large text and one disk/Flow return complete"));
  }
@@ -131,7 +192,7 @@ struct FRun
 void S47BoardClusterTest::Start(US47Main* M)
 {
  if(!FParse::Param(FCommandLine::Get(),TEXT("S47BoardClusterContract")))return;
- auto R=MakeShared<FRun>();R->Main=M;FString User,Jump,Drive;
+ auto R=MakeShared<FRun>();R->Main=M;R->DragCheck=FParse::Param(FCommandLine::Get(),TEXT("S47BoardRejectedDrag"));FString User,Jump,Drive;
  FParse::Value(FCommandLine::Get(),TEXT("UserDir="),User);FParse::Value(FCommandLine::Get(),TEXT("S47Jump="),Jump);FParse::Value(FCommandLine::Get(),TEXT("S47Ch1Drive="),Drive);
  if(!M||!M->Flow||!User.StartsWith(TEXT("/tmp/s47-board-cluster-"))||User.Contains(TEXT(".."))||Jump!=TEXT("chapter1")||Drive!=TEXT("board")||M->Flow->CaseId!=1||FParse::Param(FCommandLine::Get(),TEXT("S47SmokeTest")))
  {R->Finish(false,TEXT("requires isolated /tmp/s47-board-cluster-* UserDir, S47Case=1, chapter1/board driver and no SmokeTest"));return;}
