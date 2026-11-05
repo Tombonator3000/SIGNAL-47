@@ -1127,17 +1127,27 @@ void FS47FreeformSession::OpenOperations()
    if(Claim.bPaid&&!Orb)continue;
    Claims.Add(T::Small(Claim.Title+TEXT(" / ORIGINAL ")+Claim.PhotoId));
    const auto* Shot=M->Night&&M->Night->Album?M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& P){return P.Id==Claim.PhotoId;}):nullptr;
-   if(Shot&&!Shot->IsDeveloped())Claims.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect this photograph at the wet bench before submitting it.")));
-   else if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty())Claims.Add(T::Small(TEXT("ORIGINAL UNAVAILABLE / This photograph cannot be submitted. Existing incident records are retained.")));
+   if(!Shot||Shot->bUnavailable||Shot->Url.IsEmpty())Claims.Add(T::Small(TEXT("ORIGINAL UNAVAILABLE / This photograph cannot be submitted. Existing incident records are retained.")));
+   else if(!Shot->IsDeveloped())Claims.Add(T::Small(TEXT("UNDEVELOPED ORIGINAL / PHOTO LAB: Develop, fix and collect this photograph at the wet bench before submitting it.")));
    else
    {
     if(!Claim.bPaid)Claims.Add(T::Button(FString::Printf(TEXT("Register photograph / $%d documentation credit"),Claim.Reward),[this,Id]{Director->RegisterPhotoClaim(Id);OpenOperations();},true,CanRegisterPhotoEvidence()));
     else Claims.Add(T::Small(TEXT("ORIGINAL REGISTERED / Documentation credit already received.")));
-    if(Orb)
-    {
+   }
+   // Payment follows the current best incident image; an existing control plan
+   // retains its independently frozen original even if that newer image is absent
+   // or still undeveloped. New plans still require an available developed image.
+   if(Orb&&(Claim.ControlPlannedAt>=0||(Shot&&!Shot->bUnavailable&&!Shot->Url.IsEmpty()&&Shot->IsDeveloped())))
+   {
      const bool Planned=Claim.ControlPlannedAt>=0;
      const auto& AlbumShots=M->Night->Album->Shots();
      const auto* Baseline=Planned?AlbumShots.FindByPredicate([&](const FS47AlbumShot& S){return S.Id==Claim.ControlOriginalId;}):Shot;
+     if(Planned&&Claim.ControlPhotoId.IsEmpty())
+     {
+      const bool Available=Baseline&&!Baseline->bUnavailable&&!Baseline->Url.IsEmpty()&&Baseline->IsDeveloped()&&Baseline->Pose.IsSet()&&Baseline->Pose->Valid();
+      if(Director->PhotoControlFocusId()==Id)Claims.Add(T::Small(TEXT("FOLLOWING THIS RETURN PLAN / Camera and NOW guidance")));
+      else Claims.Add(T::Button(TEXT("Follow this return plan"),[this,Id]{if(Director)Director->FollowPhotoControl(Id);OpenOperations();},false,Available&&CanRegisterPhotoEvidence()));
+     }
      const auto* Control=Planned?AlbumShots.FindByPredicate([&](const FS47AlbumShot& S){return !S.bUnavailable&&!S.Url.IsEmpty()&&S.IsDeveloped()&&(Claim.ControlPhotoId.IsEmpty()?S.Targets.ContainsByPredicate([&](const TPair<FString,FVector2D>& T){return T.Key==TEXT("freeform-control:")+Id;}):S.Id==Claim.ControlPhotoId);}):nullptr;
      auto PhotoCard=[](const FS47AlbumShot* S,const FString& Label)->S47Kit::FW
      {
@@ -1151,17 +1161,17 @@ void FS47FreeformSession::OpenOperations()
      {
       Claims.Add(T::Columns({{.5f,PhotoCard(Baseline,TEXT("FIRST ORIGINAL"))},{.5f,PhotoCard(Control,TEXT("LATER CONTROL"))}},10));
       const FString ControlId=Control->Id;
-      if(Claim.ControlPhotoId.IsEmpty())Claims.Add(T::Button(TEXT("Retain comparison / no payment"),[this,Id,ControlId]{if(Director)Director->RegisterPhotoControl(Id,ControlId);OpenOperations();},false,CanRegisterPhotoEvidence()));
+      if(Claim.ControlPhotoId.IsEmpty()&&!Director->CanRegisterPhotoControl(Id,ControlId))Claims.Add(T::Small(TEXT("COMPARISON UNAVAILABLE / Powered OPS and both developed originals with matching-view records are required. Existing records stay unchanged.")));
+      if(Claim.ControlPhotoId.IsEmpty())Claims.Add(T::Button(TEXT("Retain comparison / no payment"),[this,Id,ControlId]{if(Director)Director->RegisterPhotoControl(Id,ControlId);OpenOperations();},false,Director->CanRegisterPhotoControl(Id,ControlId)));
       else Claims.Add(T::Small(TEXT("COMPARISON RETAINED / Both originals unchanged. Identity and shared cause unresolved.")));
      }
      else
      {
       Claims.Add(PhotoCard(Baseline,TEXT("FIRST ORIGINAL")));
       Claims.Add(T::Small(Director->PhotoControlHint(Id)));
-      if(!Planned&&Shot->Pose.IsSet())Claims.Add(T::Button(TEXT("Plan return to original viewpoint / no payment"),[this,Id]{if(Director)Director->PlanPhotoControl(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
-      if(Planned)Claims.Add(T::Small(TEXT("NEXT / After the passage ends, take the matching view and develop the separate original at PHOTO LAB. Compare both here.")));
+      if(!Planned&&Shot&&Shot->Pose.IsSet())Claims.Add(T::Button(TEXT("Plan return to original viewpoint / no payment"),[this,Id]{if(Director)Director->PlanPhotoControl(Id);OpenOperations();},false,CanRegisterPhotoEvidence()));
+      if(Planned)Claims.Add(T::Small(!Baseline||Baseline->bUnavailable||Baseline->Url.IsEmpty()||!Baseline->IsDeveloped()||!Baseline->Pose.IsSet()||!Baseline->Pose->Valid()?TEXT("CONTROL UNAVAILABLE / The frozen original view is unavailable. This plan and existing originals remain retained without a comparison."):TEXT("NEXT / After the passage ends, take the matching view and develop the separate original at PHOTO LAB. Compare both here.")));
      }
-    }
    }
   }
   if(!Claims.IsEmpty())Rows.Add(T::Panel(TEXT("FIELD PHOTOGRAPHS / DOCUMENTATION CREDIT"),S47Kit::Col(Claims)));

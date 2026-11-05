@@ -59,7 +59,13 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   },true);
   return Buttons;
  };
- if(Age>150){Finish(false,TEXT("bounded dusk-orb native test timeout"));return;}
+ auto RestoreFocusFixture=[&]
+ {
+  const auto Real=S47J::Obj(Snapshot,TEXT("nativeFocusRealDirector"));
+  if(Real){M->UI->Close(true);const auto Album=S47J::Obj(Snapshot,TEXT("nativeFocusRealAlbum"));if(Album)M->Night->Album->Restore(S47J::Clone(Album));F.Director->Begin(S47J::Clone(Real));M->RequestAutosave();}
+ };
+ auto FocusCheck=[&](bool Good,const TCHAR* Why){if(!Good)RestoreFocusFixture();return Check(Good,Why);};
+ if(Age>150){RestoreFocusFixture();Finish(false,TEXT("bounded dusk-orb native test timeout"));return;}
  auto Original=[&]()->const FS47AlbumShot*{return M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});};
  auto Ops=[&]{const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X+1.,P.Z,PI/2);}; // OPS is on the west wall, facing +X into the room.
  if(Stage==0)
@@ -157,6 +163,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   }
   if(!Check(F.Director->PlanPhotoControl(PhotoClaimId)&&F.HasFinding(TEXT("orb-return-plan.")+PhotoClaimId)&&F.Budget()==PhotoBudget,TEXT("developed original unlocks persisted S-03 reference plan without payment or manufactured control result")))return;
   if(!Check(!F.Director->PlanPhotoControl(PhotoClaimId)&&F.Director->RegisterPhotoClaim(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("orb plan is idempotent and documentation pays once only")))return;
+  if(!Check(F.Director->FollowPhotoControl(PhotoClaimId)&&F.Director->PhotoControlFocusId()==PhotoClaimId&&!F.Director->FollowPhotoControl(TEXT("missing-plan"))&&F.Director->PhotoControlFocusId()==PhotoClaimId,TEXT("real developed plan can be followed at powered OPS; invalid focus leaves it unchanged")))return;
   if(!Restore(TEXT("orb-paid-plan")))return;Go(9507,.5);return;
  }
  if(Stage==9507)
@@ -165,6 +172,7 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
  }
  if(Stage==9508)
  {
+  if(!Check(F.Director->PhotoControlFocusId()==PhotoClaimId,TEXT("disk Continue preserves selected real photo return plan")))return;
   if(!Check(Original()&&Original()->IsDeveloped()&&Original()->Url==RetainedPhotoUrl&&Original()->Clock==S47J::Num(Snapshot,TEXT("photoClock"))&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].bPaid&&F.HasFinding(TEXT("orb-return-plan.")+PhotoClaimId)&&!F.Director->PlanPhotoControl(PhotoClaimId)&&!F.Director->RegisterPhotoClaim(PhotoClaimId)&&F.Budget()==PhotoBudget+20,TEXT("disk Continue preserves real developed original, paid incident and unique uncompleted control plan")))return;
   if(!Check(Original()->Pose.IsSet(),TEXT("real orb exposure retained its shutter pose")))return;
   S47J::Set(Snapshot,TEXT("baselineId"),RetainedPhotoId);S47J::Set(Snapshot,TEXT("baselineUrl"),RetainedPhotoUrl);
@@ -275,7 +283,116 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   const auto* Baseline=M->Night->Album->Shots().FindByPredicate([&](const FS47AlbumShot& S){return S.Id==S47J::Str(Snapshot,TEXT("baselineId"));});
   const auto& Claim=F.Director->PhotoClaims()[0];
   if(!Check(Baseline&&Baseline->Url==S47J::Str(Snapshot,TEXT("baselineUrl"))&&Original()&&Original()->Url==RetainedPhotoUrl&&Baseline->Pose.IsSet()&&Original()->Pose.IsSet()&&Baseline->Pose->Matches(Original()->Pose.GetValue())&&Claim.ControlOriginalId==Baseline->Id&&Claim.ControlPhotoId==Original()->Id&&F.HasFinding(TEXT("orb-photo-comparison.")+PhotoClaimId)&&!F.Director->RegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&F.Budget()==PhotoBudget,TEXT("Continue retains both unchanged developed originals, frozen baseline and comparison without second reward")))return;
-  Finish(true,TEXT("PHOTO04 native paired-original journey: real orb capture, development, saved plan, explicit return pose, separate actual control capture, second physical development and idempotent OPS comparison. No cause inferred; encounter ending and travel are fixtures."));return;
+  // Availability fixtures follow the real journey; never count fabricated photographs as capture evidence.
+  const auto SavedAlbum=S47J::Read(S47J::Write(M->Night->Album->SaveData()));const auto SavedDirector=S47J::Read(S47J::Write(F.Director->Save()));
+  auto Plans=S47J::Read(S47J::Write(SavedDirector));auto Entries=S47J::Arr(Plans,TEXT("photoClaims"));
+  if(!Check(Entries.Num()==1,TEXT("availability fixture starts with one real retained incident")))return;
+  auto Missing=S47J::Read(S47J::Write(Entries[0]->AsObject()));Missing->RemoveField(TEXT("controlPhoto"));S47J::Set(Missing,TEXT("controlOriginal"),TEXT("missing-original-fixture"));
+  auto Valid=S47J::Read(S47J::Write(Entries[0]->AsObject()));Valid->RemoveField(TEXT("controlPhoto"));S47J::Set(Valid,TEXT("id"),TEXT("dusk_orb.availability-fixture"));
+  Plans->SetArrayField(TEXT("photoClaims"),{MakeShared<FJsonValueObject>(Missing),MakeShared<FJsonValueObject>(Valid)});F.Director->Begin(Plans);
+  bool Ready=false;
+  if(!Check(!F.Director->CanRegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&!F.Director->RegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&F.Budget()==PhotoBudget,TEXT("missing frozen original disables the UI predicate and backend without payment")))return;
+  const FString Next=F.Director->PhotoControlFieldHint(Ready);
+  if(!Check(!Next.IsEmpty()&&!Next.Contains(TEXT("ORIGINAL VIEW UNAVAILABLE")),TEXT("later usable pending plan receives field guidance despite first missing original")))return;
+  // Serialized round trip of the two plans: this fixture does not claim a further disk Continue.
+  F.Director->Begin(S47J::Read(S47J::Write(F.Director->Save())));Ready=false;
+  if(!Check(F.Director->PhotoClaims().Num()==2&&!F.Director->PhotoControlFieldHint(Ready).Contains(TEXT("ORIGINAL VIEW UNAVAILABLE")),TEXT("both pending plans and usable-plan selection survive serialization")))return;
+  Plans->SetArrayField(TEXT("photoClaims"),{MakeShared<FJsonValueObject>(Missing)});F.Director->Begin(Plans);Ready=true;
+  if(!Check(F.Director->PhotoControlFieldHint(Ready).Contains(TEXT("ORIGINAL VIEW UNAVAILABLE"))&&!Ready,TEXT("only missing original reports unavailability rather than a shutter instruction")))return;
+  auto Unavailable=S47J::Read(S47J::Write(SavedAlbum));auto Shots=S47J::Arr(Unavailable,TEXT("shots"));
+  for(const auto& V:Shots)if(S47J::Str(V->AsObject(),TEXT("id"))==Baseline->Id){S47J::Set(V->AsObject(),TEXT("unavailable"),true);S47J::Set(V->AsObject(),TEXT("labStage"),0);}
+  auto Pending=S47J::Read(S47J::Write(SavedDirector));auto PendingClaims=S47J::Arr(Pending,TEXT("photoClaims"));PendingClaims[0]->AsObject()->RemoveField(TEXT("controlPhoto"));F.Director->Begin(Pending);
+  if(!Check(F.Director->CanRegisterPhotoControl(PhotoClaimId,RetainedPhotoId),TEXT("restored real developed pair remains eligible before missing-original fixture")))return;
+  M->Night->Album->Restore(Unavailable);
+  Ready=true;if(!Check(!F.Director->CanRegisterPhotoControl(PhotoClaimId,RetainedPhotoId)&&F.Director->PhotoControlFieldHint(Ready).Contains(TEXT("ORIGINAL VIEW UNAVAILABLE"))&&!Ready,TEXT("marked unavailable undeveloped original is never treated as a usable control baseline")))return;
+  M->Night->Album->Restore(SavedAlbum);F.Director->Begin(SavedDirector);
+  if(!Check(F.Budget()==PhotoBudget&&S47J::Write(M->Night->Album->SaveData())==S47J::Write(SavedAlbum)&&F.Director->PhotoClaims()[0].ControlPhotoId==RetainedPhotoId,TEXT("availability fixtures leave actual originals, comparison history and payment unchanged")))return;
+  // Two pending UI fixtures share the actual developed baseline. These are
+  // NOT two observed incidents, photographs, or new payment opportunities.
+  S47J::Set(Snapshot,TEXT("nativeFocusRealDirector"),SavedDirector);
+  S47J::Set(Snapshot,TEXT("nativeFocusRealAlbum"),SavedAlbum);
+  auto UIPlans=S47J::Clone(SavedDirector);const auto RealClaims=S47J::Arr(UIPlans,TEXT("photoClaims"));
+  auto First=S47J::Clone(RealClaims[0]->AsObject()),Second=S47J::Clone(RealClaims[0]->AsObject());
+  First->RemoveField(TEXT("controlPhoto"));Second->RemoveField(TEXT("controlPhoto"));
+  S47J::Set(First,TEXT("id"),TEXT("dusk_orb.native-focus-first-fixture"));
+  S47J::Set(Second,TEXT("id"),TEXT("dusk_orb.native-focus-second-fixture"));
+  S47J::Set(First,TEXT("title"),TEXT("UI FIXTURE A / same retained original"));
+  S47J::Set(Second,TEXT("title"),TEXT("UI FIXTURE B / same retained original"));
+  // Regression fixture: a newer best incident image may be undeveloped while
+  // the plan still owns the earlier developed baseline. Reuse retained image
+  // data only as fixture input; this does not claim another natural exposure.
+  S47J::Set(Second,TEXT("photo"),RetainedPhotoId);S47J::Set(Second,TEXT("paid"),false);
+  auto UndevelopedAlbum=S47J::Clone(SavedAlbum);
+  for(const auto& V:S47J::Arr(UndevelopedAlbum,TEXT("shots")))if(S47J::Str(V->AsObject(),TEXT("id"))==RetainedPhotoId)S47J::Set(V->AsObject(),TEXT("labStage"),0);
+  M->Night->Album->Restore(UndevelopedAlbum);
+  UIPlans->SetArrayField(TEXT("photoClaims"),{MakeShared<FJsonValueObject>(First),MakeShared<FJsonValueObject>(Second)});
+  S47J::Set(UIPlans,TEXT("photoControlFocus"),TEXT("dusk_orb.native-focus-first-fixture"));
+  F.Director->Begin(UIPlans);S47J::Set(Snapshot,TEXT("nativeFocusFixtureBefore"),F.Director->Save());
+  M->UI->Close(true);Ops();Go(9610,.4);return;
+ }
+
+ if(Stage==9610)
+ {
+  if(!FocusCheck(F.Director->PhotoClaims().Num()==2&&F.Director->PhotoControlFocusId()==TEXT("dusk_orb.native-focus-first-fixture")&&F.Budget()==PhotoBudget,TEXT("explicit two-pending-plan UI fixture uses one actual original and unchanged cash")))return;
+  if(!FocusCheck(F.Use(TEXT("opsTerminal")),TEXT("fixture opens actual powered OPS terminal")))return;
+  Go(9611,.5);return;
+ }
+ if(Stage==9611)
+ {
+  if(!F.TerminalWindowRendered())return;
+  const auto Buttons=NativeButtons(TEXT("SUPPLIES"));
+  if(!FocusCheck(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("native supplies navigation available for focus fixture")))return;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();
+#else
+  FocusCheck(false,TEXT("native focus fixture requires Development build"));return;
+#endif
+  Go(96120,.5);return;
+ }
+ if(Stage==96120)
+ {
+  if(!F.TerminalWindowRendered())return;
+  const auto Follow=NativeButtons(TEXT("Follow this return plan"));
+  if(!FocusCheck(Original()&&!Original()->IsDeveloped()&&Follow.Num()==1&&Follow[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 documentation credit")).IsEmpty(),TEXT("newer undeveloped claim-photo fixture leaves frozen plan Follow available, without payment action")))return;
+  // Second case: current claim image is unavailable, frozen original is intact.
+  M->Night->Album->Restore(S47J::Clone(S47J::Obj(Snapshot,TEXT("nativeFocusRealAlbum"))));
+  auto MissingClaim=F.Director->Save();auto Plans=S47J::Arr(MissingClaim,TEXT("photoClaims"));
+  S47J::Set(Plans[1]->AsObject(),TEXT("photo"),TEXT("missing-current-claim-photo-fixture"));
+  F.Director->Begin(MissingClaim);S47J::Set(Snapshot,TEXT("nativeFocusFixtureBefore"),F.Director->Save());
+  F.OpenOperations();Go(9612,.5);return;
+ }
+ if(Stage==9612)
+ {
+  if(!F.TerminalWindowRendered())return;
+  const auto Buttons=NativeButtons(TEXT("Follow this return plan"));
+  if(!FocusCheck(F.OperationsSection()==5&&Buttons.Num()==1&&Buttons[0]->IsEnabled()&&NativeButtons(TEXT("Register photograph / $20 documentation credit")).IsEmpty(),TEXT("unavailable current claim image does not hide second frozen-plan Follow or offer payment")))return;
+  TSharedPtr<SWidget> W=Buttons[0];while(W.IsValid())
+  {
+   if(W->GetTypeAsString()==TEXT("SScrollBox")){StaticCastSharedPtr<SScrollBox>(W)->ScrollDescendantIntoView(Buttons[0],false);break;}
+   W=W->GetParentWidget();
+  }
+  Go(9613,.5);return;
+ }
+ if(Stage==9613)
+ {
+  const auto Buttons=NativeButtons(TEXT("Follow this return plan"));
+  if(!FocusCheck(Buttons.Num()==1&&Buttons[0]->IsEnabled(),TEXT("second plan native Follow button remains available after Slate layout")))return;
+#if !UE_BUILD_SHIPPING
+  Buttons[0]->SimulateClick();
+#endif
+  Go(9614,.4);return;
+ }
+ if(Stage==9614)
+ {
+  const auto Before=S47J::Obj(Snapshot,TEXT("nativeFocusFixtureBefore")),After=F.Director->Save();
+  const auto BeforeClaims=MakeShared<FJsonValueArray>(S47J::Arr(Before,TEXT("photoClaims")));
+  const auto AfterClaims=MakeShared<FJsonValueArray>(S47J::Arr(After,TEXT("photoClaims")));
+  if(!FocusCheck(F.Director->PhotoControlFocusId()==TEXT("dusk_orb.native-focus-second-fixture")&&FJsonValue::CompareEqual(*BeforeClaims,*AfterClaims)&&F.Budget()==PhotoBudget&&FJsonValue::CompareEqual(FJsonValueObject(M->Night->Album->SaveData()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("nativeFocusRealAlbum")))),TEXT("native Follow click selects second ID; both fixture plans, real originals and cash remain unchanged")))return;
+  RestoreFocusFixture();
+  const auto Real=S47J::Obj(Snapshot,TEXT("nativeFocusRealDirector"));
+  if(!Check(FJsonValue::CompareEqual(FJsonValueObject(F.Director->Save()),FJsonValueObject(Real))&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].Id==PhotoClaimId&&F.Director->PhotoClaims()[0].ControlPhotoId==RetainedPhotoId&&F.Budget()==PhotoBudget,TEXT("after UI fixture, exact genuine Director history and completed paid original pair restored")))return;
+  Snapshot->RemoveField(TEXT("nativeFocusRealDirector"));Snapshot->RemoveField(TEXT("nativeFocusRealAlbum"));Snapshot->RemoveField(TEXT("nativeFocusFixtureBefore"));
+  Finish(true,TEXT("PHOTO04 native real-original journey plus explicitly synthetic two-plan Follow-button wiring; real history restored. No second natural event or additional payment claimed."));return;
  }
 
 }

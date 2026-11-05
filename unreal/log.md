@@ -1813,3 +1813,7 @@ Dinerens boarding-proxy slipper nå samme faktiske cargo-stråle gjennom som SAR
 ### 5. november 2026 kl.02:56: portforsegling gjennom hele forsøket
 
 `codex/night-gate-integrity-20261105`: forsegling kontrolleres fra klargjøring til inspeksjon, også før/etter observasjonsvinduet. Lukking reparerer ikke et brudd. Editorbygg, 2389 selvtester og 89 native kontroller/sju diskreturer består; helt faktisk tre timers vindu, ugyldig etterinspeksjon uten belønning og eksplisitt rollback til separat innsamlet gyldig testgren. Tre foreldede TODO-statuspåstander er rettet uten å lukke bredere spilleraksept. Installasjon følger samlet kandidat.
+
+### 5. november 2026 kl.02:59: brukbar og valgt fotoreturplan
+
+`codex/night-photo-focus-20261105`: vedvarende Follow-valg, fallback til brukbar original og felles sammenligningsvern; nyere ufremkalt/manglende claimfoto skjuler ikke frossen plan. Bygg, 2397 selvtester og 87 native kontroller/tre disk-Continue består. To-plan-knappprøven er eksplisitt fixture fra ekte original med gjenopprettet historikk, uten ny betaling eller påstand om naturlig oppdagelse. Installasjon følger samlet kandidat.
