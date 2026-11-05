@@ -6,7 +6,7 @@ Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STA
 
 ## Kosmisk ambient, bestilt 5. november
 
-- [ ] **COSMIC-AMBIENT-01:** ekstra adaptivt musikklag med cosmic ambient og lokale romreferanser. Prototype og 21 selvstendige DSP-sjekker finnes i [lytteverktøyet](../../unreal/Signal47/Tools/cosmic-ambient/README.md). Unreal-bygg, faktisk grafprøve og samlet lytting gjenstår. Ingen installasjon er utført.
+- [ ] **COSMIC-AMBIENT-01:** ekstra adaptivt musikklag med cosmic ambient og lokale romreferanser. Prototype og 21 selvstendige DSP-sjekker finnes i [lytteverktøyet](../../unreal/Signal47/Tools/cosmic-ambient/README.md). Unreal-editorbygg og faktisk 72-sekunders lydgraf med tre lokale referanser består; 56 musikk-/grafkontroller og 21 DSP-sjekker består. Samlet menneskelig lytting, endelig balanse og lokal installasjon gjenstår.
 
 ## Nye UI- og lydpunkter fra Tom, 5. november
 

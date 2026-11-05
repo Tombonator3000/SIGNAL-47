@@ -20,10 +20,12 @@ Krever C++17-kompilator; `CXX` kan overstyre valget. Verktøyet finner også pro
 
 ## Prøv faktisk Unreal-graf
 
-Bygg editor-målet under `production_lease` og bruk isolert UserDir. `-S47CosmicPreview=/absolutt/sti/cosmic-runtime.wav` skriver en tilsvarende 72-sekunders fil gjennom den faktiske lydgrafen, med tilgjengelige lokale referanser, og avslutter med statuskode. Loggen oppgir peak, RMS, slutthale og antall referanser. Den prøver også 8 kHz referanse i 48 kHz graf og pause/gjenopptakelse. `FS47Score::SelfTest` inkluderer grafprøven. En bestått syntesetest er ikke det samme som menneskelig lytting, samlet musikalsk balanse eller en installert spillutgave.
+Bygg editor-målet under `production_lease` og bruk isolert UserDir. `-run=S47CosmicPreview -S47CosmicPreview=/absolutt/sti/cosmic-runtime.wav` skriver en tilsvarende 72-sekunders fil gjennom den faktiske lydgrafen, med tilgjengelige lokale referanser, og avslutter med statuskode. Loggen oppgir peak, RMS, slutthale og antall referanser. Den prøver også 8 kHz referanse i 48 kHz graf og pause/gjenopptakelse. `FS47Score::SelfTest` inkluderer grafprøven. En bestått syntesetest er ikke det samme som menneskelig lytting, samlet musikalsk balanse eller en installert spillutgave.
 
 ## Vurderte kilder
 
 Prosjektbibliotekets [audio-design ved festet commit](https://github.com/gamedev-skills/awesome-gamedev-agent-skills/blob/19d93f97c9c1ea0f8b306e77aa81e0d3e352d3e9/skills/disciplines/audio-design/SKILL.md) beskriver bussruting, lagdeling og demping. Prinsippene er tilpasset prosjektets egen C++-lydgraf; Godot-eksemplene er ikke kopiert. Bibliotekskilden er en referanse, ikke et dokumentert PASS i dette prosjektet.
 
 Fra [listen Tom sendte](https://github.com/Curated-Awesome-Lists/awesome-ai-music-generation) er [LatentScore](https://github.com/prabal-rje/latentscore) interessant for separate ambient-skisser: Apache 2.0, CPU-syntese, WAV, Python 3.11/3.12. Native Windows SDK støttes ikke ifølge prosjektets README. Det er ikke installert eller lydmessig validert her. [AudioCraft/MusicGen](https://github.com/facebookresearch/audiocraft) har MIT-kode, men CC-BY-NC 4.0 modellvekter; derfor er ingen slik modell brukt i spillet. Første prototype gjenbruker eksisterende Unreal-lydmotor fremfor å innføre en Python-modell i runtime.
+
+Editorbygg og commandlet er kjørt 5. november: 56 musikk-/grafkontroller består, tre lokale referanser brukes, peak 0,020663, RMS 0,002909 og slutthale 0. Prosessen avslutter med status 0. Den lokale 60-sekunders før/etter-skissen gjentar samme musikkutdrag og legger teksturer inn i andre halvdel; peak 0,26581. Menneskelig lytting, endelig balanse og installasjon gjenstår.

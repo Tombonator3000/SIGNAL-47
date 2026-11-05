@@ -323,8 +323,9 @@ void FS47Score::Pause(bool bOn)
 void FS47Score::Done(double Quiet)
 {
 	// A natural track gap keeps the same texture, seed and reference timeline.
+	const bool WasPaused = bPaused;
 	auto KeepCosmic = MoveTemp(Cosmic);
-	Stop(); Cosmic = MoveTemp(KeepCosmic); Rest = Quiet;
+	Stop(); Cosmic = MoveTemp(KeepCosmic); bPaused = WasPaused; Rest = Quiet;
 }
 
 // main.ts musicWant: keep these tests in the same order as the original.
@@ -395,8 +396,9 @@ bool FS47Score::SelfTest(TArray<FString>& Lines)
 		Layer.Update(.01, TEXT("night"), false);
 		const auto First = Layer.Cosmic;
 		Check(First.IsValid() && Layer.HasAudio() && Layer.Playing.IsEmpty(), TEXT("cosmic texture is counted as audio during a track gap"));
-		Layer.Done(5);
-		Check(Layer.Cosmic == First && Layer.Rest == 5, TEXT("natural deck completion preserves the cosmic texture"));
+		Layer.Pause(true); Layer.Done(5);
+		Check(Layer.Cosmic == First && Layer.Rest == 5 && Layer.bPaused, TEXT("natural deck completion preserves cosmic texture and a pending pause"));
+		Layer.Pause(false);
 		Layer.Update(.01, TEXT("night"), false);
 		Check(Layer.Cosmic == First, TEXT("repeated score frames reuse one cosmic node"));
 		Layer.Stop();
