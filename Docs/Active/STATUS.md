@@ -6,6 +6,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
+Portforseglingen overvåkes nå fra fysisk klargjøring helt til inspeksjon. Åpning eller kryssing før/etter selve målevinduet ugyldiggjør kontrollen; lukking reparerer ikke forseglingen. Nytt editorbygg, 2389 selvtester og 89 native kontroller/sju disk-Continue består, inkludert et helt aktivt tre timers vindu. Den destruktive etterprøven gjenoppretter uttrykkelig en separat, faktisk innsamlet gyldig testgren for å kontrollere begge utfall. Ingen dekning er fabrikkert; dette er fortsatt en styrt prøve. Installasjon følger samlet kandidat.
+
 En faktisk Nanite-advarsel på mesa-materialet er rettet i det private assetgrunnlaget, med verifisert originalbackup. Bare materialets Nanite-bruksflagg er endret. Ny separat audit bekrefter lagret flagg; GPU-kjøring viser fjellmaterialet uten den tidligere standardmateriale-advarselen. Den redigerbare materialgeneratoren setter nå samme flagg ved senere import. Installasjon følger samlet kandidat.
 
 [PR402](https://github.com/Tombonator3000/SIGNAL-47/pull/402) leverer Story-regresjonen fra både hentet og uhentet Freeform-kamera: etter Story-start og verifisert disk-Continue stopper tre faktiske gangforsøk og egen Jeep ved låste innganger, uten progresjonsendring. Kamerareisene består 60/seks og 47/fem totale diskreturer, hvorav fire er Story. Fysisk henting, motorlogg, faktisk S-03-bilde, lukket mørkerom, tank-/fiksertid og fremkalt original er prøvd; bildet er visuelt kontrollert. Dette bruker eksplisitte tilnærmings-/Story-start-fixtures og WriteSave/title-callback, ikke vanlig Story-meny eller separat prosessrestart. Installasjon følger samlet kandidat.

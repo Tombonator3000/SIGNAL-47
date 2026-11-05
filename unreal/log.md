@@ -1809,3 +1809,7 @@ Avviste legacy-utskrifter beholdes med original/stadium og uten betaling, men bl
 ### 5. november 2026 kl.02:36: normal femprosessreise og dinerlasting
 
 Dinerens boarding-proxy slipper nå samme faktiske cargo-stråle gjennom som SARO-bilen; førerhusets vanlige boarding består. Editorbygg r10 og fersk normalreise r8 består 146 kontroller (32/20/21/51/22), med fire eksakte Continue-valg, ekte opptak/foto/lab/handel, full kjøring begge veier, naturlig dusk og én fotobetaling. Save 1/2 overskrives med vanlig bekreftelse; andre manuelle filer er byteidentiske. Originaler og økonomi beholdes. Syntetisk input/plassering og autopilot er erklært; ingen menneskelig flyt- eller lytteaksept. Bevis: Docs/Evidence/UnrealDeliveries/NORMAL_FREEFORM_JOURNEY_2026-11-05.md. Installasjon følger samlet kandidat.
+
+### 5. november 2026 kl.02:56: portforsegling gjennom hele forsøket
+
+`codex/night-gate-integrity-20261105`: forsegling kontrolleres fra klargjøring til inspeksjon, også før/etter observasjonsvinduet. Lukking reparerer ikke et brudd. Editorbygg, 2389 selvtester og 89 native kontroller/sju diskreturer består; helt faktisk tre timers vindu, ugyldig etterinspeksjon uten belønning og eksplisitt rollback til separat innsamlet gyldig testgren. Tre foreldede TODO-statuspåstander er rettet uten å lukke bredere spilleraksept. Installasjon følger samlet kandidat.

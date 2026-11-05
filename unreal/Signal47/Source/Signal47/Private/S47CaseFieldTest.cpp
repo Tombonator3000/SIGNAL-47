@@ -150,6 +150,23 @@ void FS47CaseFieldTest::Step(double Dt)
  {
   if(!UseRay(TEXT("case:gate-seal")))return;
   if(!Check(C.Prepared()&&C.Window(Start,End)&&End-Start==10800&&!M->Web->IsDoorOpen(TEXT("fieldGate"))&&!C.Prepare(1),TEXT("physical strip action closes and seals real gate once with a three-hour window")))return;
+  // Real door-controller action, explicit approach fixture; no coverage is injected.
+  if(!Check(M->Web->ToggleDoor(TEXT("fieldGate")),TEXT("pre-window disturbance opens the real field gate")))return;
+  C.Step(.01);M->Web->SetDoorOpen(TEXT("gate"),false,true);
+  if(!Check(S47J::Bool(C.Save(),TEXT("gateTampered"))&&C.Objective().Contains(TEXT("DISTURBED"))&&!C.Prepare(1),TEXT("pre-window opening permanently breaks preparation; closing never auto-reseals")))return;
+  if(!O.Restore(TEXT("casefield-prewindow-disturbed")))return;O.Go(96022,.4);return;
+ }
+ if(O.Stage==96022)
+ {
+  F.Director->Stop();
+  if(!Check(C.Prepared()&&S47J::Bool(C.Save(),TEXT("gateTampered"))&&!F.CaseFile().Get(2)->Results[1].bDone,TEXT("pre-window disturbed seal survives disk Continue without a result")))return;
+  if(!Check(F.CancelFieldTest(2)&&F.PlanCaseTest(2,1),TEXT("player can explicitly cancel and plan a new control after disturbance")))return;
+  ApproachControl(1);O.Go(96023,.4);return;
+ }
+ if(O.Stage==96023)
+ {
+  if(!UseRay(TEXT("case:gate-seal")))return;
+  if(!Check(C.Prepared()&&C.Window(Start,End)&&!S47J::Bool(C.Save(),TEXT("gateTampered"))&&S47J::Num(C.Save(),TEXT("coverage"))==0,TEXT("new physical preparation restores an intact seal without borrowed coverage")))return;
   PreparedAt=S47J::Num(C.Save(),TEXT("prepared"));Board();O.Go(9603,.4);return;
  }
  if(O.Stage==9603)
@@ -275,6 +292,30 @@ void FS47CaseFieldTest::Step(double Dt)
  }
  if(O.Stage==96251)
  {
+  // Fork the actually completed control for a destructive disturbance regression.
+  // Restoring this captured branch below is explicit harness rollback, not new coverage.
+  GateBranch=S47J::Read(S47J::Write(F.Save()));
+  if(!Check(M->Web->ToggleDoor(TEXT("fieldGate")),TEXT("post-window disturbance opens the real gate before inspection")))return;
+  C.Step(.01);M->Web->SetDoorOpen(TEXT("gate"),false,true);
+  if(!Check(S47J::Bool(C.Save(),TEXT("gateTampered"))&&S47J::Num(C.Save(),TEXT("coverage"))>=10800-.01,TEXT("opening after full coverage invalidates seal while retaining actual coverage")))return;
+  if(!O.Restore(TEXT("casefield-postwindow-disturbed")))return;O.Go(96252,.4);return;
+ }
+ if(O.Stage==96252)
+ {
+  F.Director->Stop();ApproachControl(1);
+  if(!Check(S47J::Bool(C.Save(),TEXT("gateTampered"))&&!F.CaseFile().Get(2)->Results[1].bDone,TEXT("post-window disturbance survives disk Continue before inspection")))return;
+  O.Go(96253,.3);return;
+ }
+ if(O.Stage==96253)
+ {
+  const int32 Relays=F.InventoryCount(TEXT("relay"));
+  if(!UseRay(TEXT("case:gate-seal")))return;
+  if(!Check(!F.CaseFile().Get(2)->Results[1].bDone&&F.CaseFile().Get(2)->ValidTests==1&&F.PlannedFieldTest(2)<0&&F.InventoryCount(TEXT("relay"))==Relays,TEXT("disturbed post-window inspection yields no valid result or reward and releases plan")))return;
+  F.Begin(GateBranch,false);F.Director->Stop();ApproachControl(1);O.Go(96254,.3);return;
+ }
+ if(O.Stage==96254)
+ {
+  if(!Check(C.Prepared()&&!S47J::Bool(C.Save(),TEXT("gateTampered"))&&S47J::Num(C.Save(),TEXT("coverage"))>=10800-.01,TEXT("explicit harness rollback restores separately captured undisturbed completed branch")))return;
   if(!UseRay(TEXT("case:gate-seal")))return;
   const auto* Case=F.CaseFile().Get(2);
   if(!Check(Case->Results[1].bDone&&Case->Results[1].bPresent==bGatePresent&&Case->ValidTests==2&&F.HasFinding(TEXT("case3-test2")),TEXT("native physical inspection retains the actual staged gate result and second valid control")))return;
@@ -291,6 +332,6 @@ void FS47CaseFieldTest::Step(double Dt)
  if(O.Stage==9627)
  {
   if(!Check(HasText(TEXT("RESULT DAY"))&&HasText(TEXT("Register supported conclusion:")),TEXT("native case board presents retained results and only the now-supported conclusion")))return;
-  O.Shot(TEXT("casefield-final-caseboard"));O.Finish(true,TEXT("Physical field controls, actual roof listening and entire gate window, native planning/waiting, invalid sleep and disk Continue passed."));return;
+  O.Shot(TEXT("casefield-final-caseboard"));O.Finish(true,TEXT("Physical field controls, actual roof listening/full gate window, pre- and post-window seal disturbance, explicit saved-branch rollback, native planning/waiting, invalid sleep and disk Continue passed."));return;
  }
 }

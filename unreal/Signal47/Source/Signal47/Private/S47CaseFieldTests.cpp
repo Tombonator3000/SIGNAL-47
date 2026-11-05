@@ -68,6 +68,7 @@ FString FS47CaseFieldTests::Objective()const
  const FString Times=When(Start)+TEXT(" to ")+When(End)+TEXT(" (after midnight)");
  if(!Prepared())return (Test==0?FString(TEXT("SARO NORTH FACADE: FASTEN THE ROOF PLATE AT THE LADDER. ")):FString(TEXT("ARRAY SERVICE GATE: SEAL THE LATCH AND LAY THE TRACKING STRIPS. ")))
   +TEXT("If prepared now: ")+Times+TEXT(". Preparation needs two hours before the window; late preparation moves it to the following night.");
+ if(Test==1&&R.bGateTampered)return TEXT("GATE CONTROL DISTURBED / The numbered seal or strips were disturbed after preparation. Closing the gate does not reseal it. OPS / CASE BOARD: cancel this plan and prepare a new control, or inspect after the window to retain the incomplete result.");
  const double Now=M->Freeform->Clock();
  if(Now<R.Start)return FString(Test==0?TEXT("CONTROL ROOM: RETURN TO LISTEN UNDER THE FASTENED ROOF. "):TEXT("SERVICE GATE CONTROL IS SET; INSPECT AFTER THE WINDOW. "))+Times+TEXT(". A time jump through the window supplies no observation.");
  if(Test==1)return Now<R.End?TEXT("SEALED SERVICE GATE: CONTROL WINDOW RUNNING / ")+Times+TEXT(". Leave tape and strips undisturbed; do other work without sleeping through the window.")
@@ -98,8 +99,9 @@ bool FS47CaseFieldTests::Prepare(int32 Test)
 bool FS47CaseFieldTests::InspectGate()
 {
  if(!Prepared()||R.Test!=1||M->Freeform->Clock()<R.End||!Near(GateAt,2.6))return false;
+ MonitorGateIntegrity();
  const bool Valid=R.Coverage>=R.End-R.Start-.01&&R.Gaps<.001&&!R.bGateTampered;
- const FString Evidence=!Valid?TEXT("The sealed-gate control lacks a complete observed world window, or the operator crossed the strip. No negative result is established; repeat the control."):
+ const FString Evidence=!Valid?TEXT("The sealed-gate control lacks a complete observed world window, or its seal/strips were disturbed between preparation and inspection. No negative result is established; repeat the control."):
   R.bGateCrossed?TEXT("After a fully sampled control window: numbered seal torn at the latch and a series of dark crossing marks disturbs the strips on both sides of the gate. The physical disturbance occurred during the active window."):
   TEXT("After a fully sampled control window: numbered seal intact and both strips undisturbed. This excludes a crossing through this controlled gate in this window only.");
  const bool Result=M->Freeform->ReportFieldTest(Line,1,Valid,R.bGateCrossed,Evidence);if(Result)Changed();return Result;
@@ -191,12 +193,30 @@ void FS47CaseFieldTests::Stop(){bActive=false;Present();}
 void FS47CaseFieldTests::AdvanceUnobservedTo(double Clock)
 {
  if(!Prepared()||!FMath::IsFinite(Clock)||Clock<=R.LastClock)return;
+ MonitorGateIntegrity();
  R.Gaps+=Overlap(R.LastClock,Clock,R.Start,R.End);R.LastClock=Clock;R.bHavePlayer=false;
+}
+void FS47CaseFieldTests::MonitorGateIntegrity()
+{
+ if(!Prepared()||R.Test!=1||!M||!M->Web)return;
+ const bool Was=R.bGateTampered;
+ // A physical seal exists from preparation until inspection, not only while
+ // samples count toward the timed window. Closing the leaf cannot repair it.
+ if(M->Web->IsDoorOpen(TEXT("fieldGate")))R.bGateTampered=true;
+ if(M->Player&&M->Web->Area()==TEXT("saro"))
+ {
+  const FVector2D P(M->Player->Pos.X,M->Player->Pos.Z);
+  if(R.bHavePlayer&&FMath::Abs(P.X-GateAt.X)<1.0&&FMath::Abs(R.LastPlayer.X-GateAt.X)<1.0
+   &&(P.Y-GateAt.Z)*(R.LastPlayer.Y-GateAt.Z)<0)R.bGateTampered=true;
+  R.LastPlayer=P;R.bHavePlayer=true;
+ }else R.bHavePlayer=false;
+ if(!Was&&R.bGateTampered)Changed(Objective());
 }
 void FS47CaseFieldTests::Step(double Dt)
 {
  if(!bActive||!M||!M->Freeform||!M->Freeform->Active()||!FMath::IsFinite(Dt)||Dt<=0)return;
  SyncPlan();Build();Present();if(!Prepared())return;
+ MonitorGateIntegrity();
  const double Now=M->Freeform->Clock(),Delta=Now-R.LastClock,From=R.LastClock;
  if(Delta<0){R.LastClock=Now;R.bHavePlayer=false;return;}
  if(Delta>3.||M->Freeform->Held()){AdvanceUnobservedTo(Now);return;}
@@ -205,17 +225,9 @@ void FS47CaseFieldTests::Step(double Dt)
  if(R.Test==1)
  {
   R.Coverage+=Covered;
-  if(Covered>0&&M->Web&&M->Web->IsDoorOpen(TEXT("fieldGate")))R.bGateTampered=true;
   const double EventAt=R.Start+(R.End-R.Start)*.5;
   if(Covered>0&&From<EventAt&&Now>=EventAt&&M->Freeform->FieldTestExpectsPresent(Line,1))
   {R.bGateCrossed=true;if(M->Audio&&Near(GateAt,15))M->Audio->Play(TEXT("small_switch"),.4f,S47Three::ToUE(GateAt));Changed();}
-  if(M->Player&&M->Web&&M->Web->Area()==TEXT("saro"))
-  {
-   const FVector2D P(M->Player->Pos.X,M->Player->Pos.Z);
-   if(Covered>0&&R.bHavePlayer&&FMath::Abs(P.X-GateAt.X)<1.0&&FMath::Abs(R.LastPlayer.X-GateAt.X)<1.0
-    &&(P.Y-GateAt.Z)*(R.LastPlayer.Y-GateAt.Z)<0)R.bGateTampered=true;
-   R.LastPlayer=P;R.bHavePlayer=true;
-  }else R.bHavePlayer=false;
   return;
  }
  if(Now>=R.End)
