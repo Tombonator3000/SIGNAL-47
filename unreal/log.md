@@ -1883,3 +1883,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 ## 5. november 2026 kl.19:47, ny start og båndstasjon installert
 
 `67d6f382` (PR425): 2494 selvtester, 247, 41, 28, 21, 12 og 9 kontroller på pakken; 130 Saved-filer uendret. Normalreisen stoppet to ganger på testvindu lukket utenfra; fase 3 til 7 ikke kjørt. Ved neste samlede rydding kan de ikke-installerte kandidatene `20261105c`, `e` og `f` pensjoneres; ingen rydderunde nå.
+
+## 5. november 2026 kl.20:17, utstyrsstabel installert
+
+`d2da46c0` (PR426) med rask installasjon: 2494 selvtester, tittel og 22 kontroller på pakken; 130 Saved-filer uendret. Tom: rask installasjon er standard fra nå; regresjon og normalreise i nattskift, ved aktslutt og før release. Neste samlede rydding: kandidatene `20261105c`, `e` og `f` kan pensjoneres.

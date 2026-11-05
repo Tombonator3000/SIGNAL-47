@@ -6,7 +6,9 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
-**Utstyrsstabelen samlet på veggbordet, ikke installert (Tom 5. november):** I Freeform står signalanalysator, VU-meter, hodetelefoner og mikrofon nå ved båndspilleren, og E på stabelen åpner samme panel. Story beholder stabelen ved konsollen. Radio og bordmikrofon er flyttet litt mot enden av bordet i begge moduser. Editorbygg, 2494 selvtester, 22, 12 og 247 kontroller består. Story er ikke kjørt.
+**Installert 5. november kl.20:17:** `d2da46c0` etter PR426 er nå standard, med rask installasjon: 2494 selvtester, tittel og internkontroll/båndpanel (22) på pakken, 130 Saved-filer uendret. Freeform-regresjonen besto bare i editor, og normalreisen er ikke kjørt på denne pakken. Tilbakerulling: `Signal47-delivery-20261105g/delivery/candidate/Linux`.
+
+**Utstyrsstabelen samlet på veggbordet (Tom 5. november):** I Freeform står signalanalysator, VU-meter, hodetelefoner og mikrofon nå ved båndspilleren, og E på stabelen åpner samme panel. Story beholder stabelen ved konsollen. Radio og bordmikrofon er flyttet litt mot enden av bordet i begge moduser. Editorbygg, 2494 selvtester, 22, 12 og 247 kontroller består. Story er ikke kjørt.
 
 **Installert 5. november kl.19:47:** `67d6f382` fra PR425 er nå standard. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-05_67d6f382.md). Normalreisens fase 3 til 7 er ikke kjørt på denne pakken.
 
