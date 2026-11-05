@@ -1839,3 +1839,7 @@ Privat materialretting: M_Web_Lit_Opaque fikk tilsiktet Nanite-bruksflagg. Paren
 ### 5. november 2026 kl.04:23: faktisk opptak gjennom vanlig SAVE3 og prosessrestart
 
 `codex/night-capture-normal-continue-20261105`: eksisterende normalreise r8 utvidet med lydfase seks/sju, uten utvikler-Freeform eller kopiert profil. Bygg og 45 + 22 kontroller består: faktisk 18/8 sekunders opptak, printer, seek/pause/full avspilling, vanlig SAVE3-overwrite og eksakt title Continue i ny prosess. Begge kilder fullfører 864000/384000 lydprøver etter gjenåpning med andre Rx-innstillinger. Oppskrifter/pulser/papir og eldre foto/økonomi/lager er uendret. To øvrige manuelle filer er byteidentiske etter fase seks, alle tre etter fase sju. Anomali/tuning/posisjon er eksplisitte fixtures; ingen menneskelig lytting. Pakket prøve følger samlet kandidat.
+
+## 5. november 2026 kl.04:42, avvist drahandling på bevisbrettet
+
+`codex/night-board-drag-20261105`: normal Slate-enhetsruting, faktisk capture/drag/release og ekte tosekunders fade er prøvd med beholdte kort, tråder og foto. Bygg/2461 selvtester, 26 kontroller/én diskretur og tre visuelt kontrollerte tidsbilder består; fysisk OS-mus/menneskelig aksept er fortsatt åpent. Ingen produktregel endret; siste kodepunkt før samlet nattkandidat.

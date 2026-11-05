@@ -1814,6 +1814,23 @@ FReply SS47Board::OnKeyDown(const FGeometry&, const FKeyEvent& E)
 	return FReply::Unhandled();
 }
 
+TOptional<FVector2D> SS47Board::PinScreenPoint(const FString& Id) const
+{
+ if(!P||!P->Surface)return {};
+ const auto C=P->Centre(Id);if(!C)return {};
+ const FVector2D Local=*C*P->S+FVector2D(P->Tx,P->Ty);
+ if(!Inside(Local,FVector2D::ZeroVector,P->ViewSize)||P->Hit(*C).Pull!=Id)return {};
+ return FVector2D(P->Surface->GetCachedGeometry().LocalToAbsolute(Local));
+}
+SS47Board::FThreadInputState SS47Board::ThreadInputState() const
+{
+ FThreadInputState R;if(!P)return R;
+ R.bDragging=P->Drag.Kind==FS47BoardImpl::FDrag::EKind::Thread;R.bMoved=P->Drag.bMoved;
+ R.bCaptured=P->Surface&&P->Surface->HasMouseCapture();R.SlackCount=P->Slack.Num();
+ if(!P->Slack.IsEmpty())R.SlackAge=FPlatformTime::Seconds()-P->Slack[0].Born;
+ return R;
+}
+
 bool SS47Board::SelfTest(TArray<FString>& Lines)
 {
 	// ui/Board.ts API scenarios with no exported world. These are not native input or visual tests.
