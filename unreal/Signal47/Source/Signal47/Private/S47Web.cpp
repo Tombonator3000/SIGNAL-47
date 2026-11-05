@@ -1460,6 +1460,17 @@ AS47Web::FDoor* AS47Web::DoorByItem(const FString& ItemId) { return Doors.FindBy
 const AS47Web::FDoor* AS47Web::DoorByItem(const FString& ItemId) const { return Doors.FindByPredicate([&](const FDoor& D) { return D.Inter == ItemId; }); }
 bool AS47Web::IsDoor(const FString& ItemId) const { return DoorByItem(ItemId) != nullptr; }
 bool AS47Web::IsDoorOpen(const FString& ItemId) const { const FDoor* D = DoorByItem(ItemId); return D && D->bOpen; }
+bool AS47Web::IsDoorPickProxy(const UPrimitiveComponent* Part) const
+{
+	const int32 N = NodeOf(Part);
+	return N >= 0 && Doors.ContainsByPredicate([N](const FDoor& D) { return D.Proxy == N; });
+}
+bool AS47Web::IsDoorLeafSwinging(const UPrimitiveComponent* Part) const
+{
+	for (int32 N = NodeOf(Part); Nodes.IsValidIndex(N); N = Nodes[N].Parent)
+		for (const FDoor& D : Doors) if (D.T0 >= 0 && D.MovedNodes.Contains(N)) return true;
+	return false;
+}
 FString AS47Web::DoorLabel(const FString& ItemId) const
 {
 	const FDoor* D = DoorByItem(ItemId);

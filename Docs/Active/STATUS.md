@@ -6,7 +6,9 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
-**Dagbokoppfølging etter installasjonen, ikke installert:** Now viser nå riktig navngitt serviceantenne med ett tydelig fokus, og fotoreturplaner kan velges og følges uavhengig av betaling, med egen tilstand når originalen mangler. Editorbygg, 2464 selvtester og 118 native kontroller består, og tre skjermbilder er visuelt kontrollert. Prøven bruker erklærte fixtures og SButton-kall, ikke to naturlige hendelser, OS-mus eller fullført service. Blokkert SC04-retur er ikke med; den er ikke løst.
+**Dagbokoppfølging etter installasjonen, ikke installert:** Now viser nå riktig navngitt serviceantenne med ett tydelig fokus, og fotoreturplaner kan velges og følges uavhengig av betaling, med egen tilstand når originalen mangler. Editorbygg, 2464 selvtester og 118 native kontroller består, og tre skjermbilder er visuelt kontrollert. Prøven bruker erklærte fixtures og SButton-kall, ikke to naturlige hendelser, OS-mus eller fullført service. Blokkert SC04-retur er ikke med i denne leveransen.
+
+**SC04-retur gjennom dører, ikke installert:** Figuren mistet returen når den åpnet arkivdøren, fordi kollisjonskontrollen traff dørbladet mens det svingte. Den venter nå til bladet har stoppet, og utgangsdørens usynlige klikkflate sperrer ikke lenger åpningen. Lukket dør gir fortsatt Listen. Editorbygg og `sc04doors` med 22 kontroller består over begge dører. Prøven bruker erklært plassering, ikke naturlig oppdagelse på patrulje eller menneskelig skrekkvurdering.
 
 **Installert samlet 5. november:** `e9857608` etter PR393 til PR414 er nå standard. Pakke og standardstarter består 2461 selvtester; pakket sjuprosessreise består 213 kontroller. Alle 126 eksisterende Saved-filer er uendret. [Samlet leveringskvittering](../Evidence/UnrealDeliveries/NIGHTSHIFT_2026-11-05.md). Installasjonsforbehold i de tidligere enkeltavsnittene nedenfor beskriver tiden før denne samlede leveransen; menneskelige og brede funksjonsforbehold gjelder fortsatt.
 

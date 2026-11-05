@@ -472,10 +472,15 @@ bool FS47SC04::Walk(double Speed, double Dt)
   if(FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Contract) && Contract==TEXT("sc04doors"))
    UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors blocked centre crossing from=%s to=%s exitOpen=%d recordsOpen=%d southOpen=%d eastOpen=%d"),*Pos.ToString(),*Next.ToString(),M->Web->IsDoorOpen(TEXT("exitDoor")),M->Web->IsDoorOpen(TEXT("recordsDoor")),M->Web->IsDoorOpen(TEXT("doorSouth")),M->Web->IsDoorOpen(TEXT("doorEast")));
  }
- if (Closed || !PhysicalStep(Next))
+ bool SwingingLeaf = false;
+ if (Closed || !PhysicalStep(Next, &SwingingLeaf))
  {
   Gait = FMath::Max(0.0, Gait - Dt * 3); BlockedT += Dt;
-  if (B != EBody::Leave) Enter(EBody::Listen);
+  // Secured-refuge withdrawal owns its replan below. Ordinary return must
+  // use the existing barrier/listen path when a door invalidates its route.
+  // A leaf still swinging clears within the door's own animation: hold the
+  // state and retry rather than stopping to listen at a door just opened.
+  if (!bRefugeRetreat && !SwingingLeaf) Enter(EBody::Listen);
   return false;
  }
  BlockedT = 0;
@@ -493,7 +498,7 @@ bool FS47SC04::ClearOfClosedDoors() const
  return true;
 }
 
-bool FS47SC04::PhysicalStep(const FVector2D& To) const
+bool FS47SC04::PhysicalStep(const FVector2D& To, bool* bSwingingLeaf) const
 {
  if(!M||!M->Web||!M->Web->GetWorld()||To.ContainsNaN()||Pos.ContainsNaN())return false;
  FString Contract; const bool Trace=B!=EBody::Listen && FParse::Value(FCommandLine::Get(),TEXT("S47SpineContract="),Contract) && Contract==TEXT("sc04doors");
@@ -526,6 +531,9 @@ bool FS47SC04::PhysicalStep(const FVector2D& To) const
    if(Trace)UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors non-solid dirt overlay N558/g377; full capsule resweep from=%s to=%s impact=%s"),*Pos.ToString(),*To.ToString(),*S47Three::ToThree(Hit.ImpactPoint).ToString());
    Q.AddIgnoredComponent(Overlay);continue;
   }
+  // exitDoor's pick volume is an invisible mesh (N601) spanning the opening and
+  // does not swing with the leaf. Only the leaf and frame are physical.
+  if(Overlay && M->Web->IsDoorPickProxy(Overlay)){Q.AddIgnoredComponent(Overlay);continue;}
   bool bSeparating=false;
   if(Hit.bStartPenetrating)for(const auto& G:Gaps)
   {
@@ -546,6 +554,7 @@ bool FS47SC04::PhysicalStep(const FVector2D& To) const
    const auto* Part=Hit.GetComponent();const auto* N=Part?M->Web->Node(M->Web->NodeOf(Part)):nullptr;
    UE_LOG(LogS47SC04,Display,TEXT("S47: SC04 doors blocked sweep from=%s to=%s first=%s liftedHit=%s node=%s geo=%d penetrating=%d impact=%s normal=%s"),*Pos.ToString(),*To.ToString(),*FirstHit,Part?*Part->GetName():TEXT("none"),N?*N->Name:TEXT("none"),N?N->Geo:-1,Hit.bStartPenetrating,*S47Three::ToThree(Hit.ImpactPoint).ToString(),*Hit.ImpactNormal.ToString());
   }
+  if(!Clear&&bSwingingLeaf)*bSwingingLeaf=M->Web->IsDoorLeafSwinging(Hit.GetComponent());
   return Clear;
  }
  return false;
@@ -947,6 +956,14 @@ void FS47SC04::Think(double Dt)
 // ---------- self-test ----------
 
 void FS47SC04::TestComplete() { P = EStep::Done; Stop(); }
+
+bool FS47SC04::TestBeginReturn(const FVector2D& At, double Facing)
+{
+ if(!HuntLive()||!Pale.bBuilt)return false;
+ TestPlaceBody(At,Facing);
+ Enter(EBody::Leave);RouteTo(NOffice);
+ return !Path.IsEmpty();
+}
 
 void FS47SC04::TestPlaceBody(const FVector2D& At, double Facing)
 {

@@ -52,6 +52,9 @@ public:
  void TestComplete();
  // Explicit spatial fixture and readbacks for the existing opt-in SC04 door contract.
  void TestPlaceBody(const FVector2D& At, double Facing);
+ // Explicit pose/state fixture; route and subsequent movement use production code.
+ bool TestBeginReturn(const FVector2D& At, double Facing);
+ double TestBlockedSeconds() const { return BlockedT; }
  bool TestNativeBodyRendered() const { return Pale.Creature.Ready() && Pale.Rendered(); }
  bool TestSeesPlayer() const { return SeesPlayer(); }
  bool TestPlayerReachable() const;
@@ -97,7 +100,7 @@ private:
  void LogSight() const;
  TOptional<FVector2D> Heard(double Dt);
  bool PlayerSafe() const;
- bool PhysicalStep(const FVector2D& To) const;
+ bool PhysicalStep(const FVector2D& To, bool* bSwingingLeaf = nullptr) const;
  bool ClearOfClosedDoors() const;
  bool PlayerInControl() const;
  void Capture();
