@@ -117,7 +117,7 @@ void FS47FreeformTest::StepInternalControl(double Dt)
  if(Stage==70)
  {
   M->UI->Close(true);const FVector T=F.AudioDesk->InteractionPoint(TEXT("ff:audio:original"));
-  M->Player->Place(T.X,T.Z-1.7,UE_DOUBLE_PI);M->Player->Pitch=.05;Go(71,1.5);return;
+  M->Player->Place(T.X-.2,T.Z-1.45,UE_DOUBLE_PI);M->Player->Pitch=-.12;Go(71,6.);return; // the toast has gone
  }
  if(Stage==71){Shot(TEXT("deck-sign.png"));Go(72,.6);return;}
  if(Stage==72)

@@ -555,7 +555,7 @@ void FS47FreeformSession::StepWork(double Dt)
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
     if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): DAILY WORK / Select this job and press Compare and register the retained instrument measurements to compare original and control clock offsets."));
     else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("PRINTER: Register check complete; duplicate feed queued. Wait for the printer to finish, then collect and compare it with the retained original at OPS (corner PC)."));
-    else Changed(TEXT("REEL DECK (beside telephone): Review the original and control recordings; the internal control is complete."));
+    else Changed(TEXT("REEL DECK (wall table): Review the original and control recordings; the internal control is complete."));
     if(Director)Director->Use(TEXT("ff:control"));
    }
   }
@@ -1115,7 +1115,7 @@ void FS47FreeformSession::OpenOperations()
     }
     else
     {
-     A.Add(T::Small(TEXT("Compare the original with the internal reference at the reel deck beside the telephone before registering.")));
+     A.Add(T::Small(TEXT("Compare the original with the internal reference at the reel deck on the wall table before registering.")));
      A.Add(T::Small(TEXT("A quiet internal reference does not prove a sky source. Retain the unresolved result; a directional or independent field control is still needed.")));
      A.Add(T::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
@@ -1399,7 +1399,7 @@ void FS47FreeformSession::OpenReceiver()
    const FString After=Beam?TEXT("Start it from the right-hand tracking PC. Then compare at OPS, DAILY WORK.")
     :J->Phenomenon==TEXT("time_disagreement")?TEXT("It runs by itself. Then compare the clock readings at OPS, DAILY WORK.")
     :J->Phenomenon==TEXT("duplicate_print")?TEXT("It runs by itself. The printer then feeds a separate copy to compare at OPS, DAILY WORK.")
-    :TEXT("It runs by itself. Then listen to both recordings at the reel deck beside the telephone.");
+    :TEXT("It runs by itself. Then listen to both recordings at the reel deck on the wall table.");
    Rows.Add(T::Panel(TEXT("INTERNAL CONTROL / THE SKY OR THE STATION?"),S47Kit::Col({
     T::Small(Why),
     T::Value(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return !X||!X->bControl?FString(TEXT("NOT RECORDED")):X->ControlAt<8?FString::Printf(TEXT("RUNNING %.1f / 8 s"),X->ControlAt):FString(TEXT("COMPLETE"));}),true),
@@ -1417,7 +1417,7 @@ void FS47FreeformSession::OpenReceiver()
 void FS47FreeformSession::OpenAudio()
 {
  if(!RequirePower()||!AudioDesk||!AudioDesk->Ready())return;
- if(!AudioDesk->ListeningPosition()){if(M&&M->UI)M->UI->Toast(TEXT("Recordings are compared at the reel deck on the wall table, by the telephone."),5);return;}
+ if(!AudioDesk->ListeningPosition()){if(M&&M->UI)M->UI->Toast(TEXT("Recordings are compared at the reel deck on the wall table."),5);return;}
  bAudioOpen=true;
 }
 void FS47FreeformSession::OpenTapePanel()
@@ -2010,11 +2010,11 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
     if(J->Phenomenon==TEXT("wrong_source"))return TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE SAMPLES; THEN COMPARE AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("time_disagreement"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN COMPARE CLOCK READINGS AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("duplicate_print"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC REGISTER CHECK; THEN WAIT FOR THE DUPLICATE TO FINISH AT THE PRINTER");
-    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK BESIDE THE TELEPHONE");
+    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK ON THE WALL TABLE");
    }
    if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
    if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER THE RETAINED MEASUREMENTS");
-   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (beside telephone): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
+   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
   case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
   default:return TEXT("OPS (corner PC): SELECT DAILY WORK OR CASE ARCHIVE");
