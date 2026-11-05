@@ -283,6 +283,8 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
  }
  S47Fx::Precache(Filament); S47Fx::Precache(Lenses);
  FaultClimbLight = MakeFaultLight(TEXT("SubstationClimbLight"), At, ArcColor, 1400, 8);
+ if (UNiagaraComponent* Shower = S47Fx::Make(M->Web.Get(), Parent, ArcSystem, TEXT("SubstationFaultSparks")))
+ { Shower->SetWorldRotation(FRotator::ZeroRotator); Shower->SetWorldScale3D(FVector::OneVector); FaultSparks = Shower; }
  static const TCHAR* BoltNames[BoltCount]={TEXT("SubstationBoltLegLeft"),TEXT("SubstationBoltLegRight"),TEXT("SubstationBoltSupportA"),TEXT("SubstationBoltSupportB"),TEXT("SubstationBoltSupportC"),TEXT("SubstationBoltBridgeA"),TEXT("SubstationBoltBridgeB")};
  for (int32 I = 0; I < BoltCount; ++I)
   if (UNiagaraComponent* B = S47Fx::Make(M->Web.Get(), Parent, BoltSystem, BoltNames[I]))
@@ -303,6 +305,7 @@ void FS47Substation::ClearFault()
  for (const auto& W : {FaultArcLight, FaultClimbLight, FaultLampLights[0], FaultLampLights[1]})
   if (UPointLightComponent* L = W.Get()) { L->SetIntensity(0); L->SetVisibility(false); }
  if (bBoltsOn) for (const auto& W : Bolts) if (UNiagaraComponent* B = W.Get()) B->DeactivateImmediate();
+ if (UNiagaraComponent* Shower = FaultSparks.Get()) Shower->DeactivateImmediate();
  bBoltsOn = false;
 }
 
@@ -333,6 +336,24 @@ void FS47Substation::StepBolts(bool bFault, bool bLow, bool bCalm, float Flicker
   B->SetVariableLinearColor(TEXT("User.BoltColor"), FLinearColor(Hot.R * Level, Hot.G * Level, Hot.B * Level, 1.f));
  }
  bBoltsOn = true;
+ // Fault only, and never in comfort mode: a shower from one of the supports every couple of seconds.
+ if (UNiagaraComponent* Shower = FaultSparks.Get(); Shower && bFault && !bCalm)
+ {
+  const int64 Slot = int64(FMath::FloorToDouble(FaultTime / 1.7));
+  if (Slot != FaultSparkSlot)
+  {
+   FaultSparkSlot = Slot;
+   if (Hash(double(Slot) * 1.3) < .7)
+   {
+    Shower->SetWorldLocation(S47Three::ToUE(Insulator(int32(Hash(double(Slot) * 2.1) * 3))));
+    Shower->SetVariableInt(TEXT("User.SparkCount"), bLow ? 10 : 22);
+    Shower->SetVariableLinearColor(TEXT("User.SparkColor"), SparkColor);
+    Shower->SetVariableVec3(TEXT("User.Direction"), FVector(0, -.45, -1));
+    Shower->SetVariableFloat(TEXT("User.GroundZ"), float(GroundZ()));
+    Shower->SetRandomSeedOffset(int32(Slot % 100000)); Shower->Activate(true);
+   }
+  }
+ }
  // The light travels with the arcs, so the steel and gravel around them actually change.
  FVector A, E;
  BoltEnds(0, FaultTime, bFault, bCalm, A, E); FaultArcLight->SetWorldLocation(Origin + (A + E) * .5 + FVector(0, -30, 0));

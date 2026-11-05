@@ -178,6 +178,9 @@ private:
  static constexpr int32 BoltCount = 7;
  TWeakObjectPtr<UNiagaraComponent> Bolts[BoltCount];
  TWeakObjectPtr<UPointLightComponent> FaultClimbLight;
+ // Separate from the SC02 strike's own sparks: small showers while the feeder is in fault.
+ TWeakObjectPtr<UNiagaraComponent> FaultSparks;
+ int64 FaultSparkSlot = -1;
  bool bBoltsOn = false;
  void StepBolts(bool bFault, bool bLow, bool bCalm, float Flicker);
  TSharedPtr<FS47GainNode> SiteHumGain, SiteBuzzGain;
