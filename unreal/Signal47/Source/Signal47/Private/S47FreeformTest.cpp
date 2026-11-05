@@ -362,6 +362,19 @@ void FS47FreeformTest::Step(double Dt)
    if(!Check(!F.CurrentJob()&&F.StartReferenceCheck()&&F.CurrentJob()&&F.CurrentJob()->bPaid,TEXT("completed daily work offers an optional unpaid instrument baseline immediately")))return;
    const int32 Ref=F.SelectedJob();auto Prepared=F.Save();auto RefJobs=S47J::Arr(Prepared,TEXT("jobs"));S47J::Set(RefJobs[Ref]->AsObject(),TEXT("stage"),int32(J::Recorded));F.Begin(Prepared,false);F.Director->Stop();
    if(!Check(F.RegisterComparison(TEXT("normal"))&&F.Budget()==WorkBudget&&!F.CurrentJob(),TEXT("optional baseline registration retains its result without repeatable income")))return;
+   // Rejected legacy observations remain evidence/history, but cannot block a fresh unpaid baseline.
+   auto RejectedFixture=S47J::Read(S47J::Write(Snapshot));auto RejectedJobs=S47J::Arr(RejectedFixture,TEXT("jobs"));
+   for(const auto& V:RejectedJobs){S47J::Set(V->AsObject(),TEXT("stage"),int32(J::Filed));S47J::Set(V->AsObject(),TEXT("paid"),true);}
+   auto Rejected=RejectedJobs[0]->AsObject();S47J::Set(Rejected,TEXT("stage"),int32(J::Recorded));S47J::Set(Rejected,TEXT("paid"),false);
+   S47J::Set(Rejected,TEXT("phenomenon"),TEXT("duplicate_print"));S47J::Set(Rejected,TEXT("duplicateRejected"),true);S47J::Set(Rejected,TEXT("duplicateCollected"),false);
+   S47J::Set(Rejected,TEXT("originalPage"),TEXT("RETAINED LEGACY ORIGINAL"));S47J::Set(Rejected,TEXT("originalStamp"),TEXT("RETAINED LEGACY STAMP"));
+   S47J::Set(RejectedFixture,TEXT("selected"),-1);F.Begin(RejectedFixture,false);F.Director->Stop();WorkBudget=F.Budget();
+   if(!Check(!F.AvailableActivities().Contains(TEXT("UNFINISHED OBSERVATIONS"))&&F.StartReferenceCheck()&&F.CurrentJob()&&F.CurrentJob()->bPaid,TEXT("rejected-only queue offers a fresh unpaid reference instead of impossible daily work")))return;
+   const int32 ReferenceCount=F.Jobs().Num();
+   if(!Check(!F.StartReferenceCheck()&&F.Jobs().Num()==ReferenceCount&&F.Budget()==WorkBudget,TEXT("one unfinished reference still blocks another and grants no payment")))return;
+   if(!Check(F.Jobs()[0].bDuplicateRejected&&F.Jobs()[0].Stage==J::Recorded&&!F.Jobs()[0].bPaid&&F.Jobs()[0].OriginalPage==TEXT("RETAINED LEGACY ORIGINAL")&&F.Jobs()[0].OriginalStamp==TEXT("RETAINED LEGACY STAMP"),TEXT("reference start leaves rejected legacy stage, original and unpaid history intact")))return;
+   auto Ordinary=S47J::Read(S47J::Write(Snapshot));S47J::Set(Ordinary,TEXT("selected"),-1);F.Begin(Ordinary,false);F.Director->Stop();
+   if(!Check(!F.StartReferenceCheck()&&F.AvailableActivities().Contains(TEXT("UNFINISHED OBSERVATIONS")),TEXT("ordinary unfinished work remains actionable and blocks optional reference")))return;
    // An older in-progress training packet remains active and still needs physical filing.
    auto Legacy=S47J::Read(S47J::Write(Snapshot));auto LegacyJobs=S47J::Arr(Legacy,TEXT("jobs"));auto L=LegacyJobs[0]->AsObject();
    S47J::Set(L,TEXT("stage"),int32(J::Packet));S47J::Set(L,TEXT("paid"),true);S47J::Set(L,TEXT("anomaly"),false);

@@ -23,6 +23,7 @@ public:
  double Battery=0,Offset=2.4,Frequency=1420.11,Calibration=0;
  TArray<FTape> Tapes;
  static constexpr double Capacity=6*3600., Window=2*3600.;
+ FString NextAction() const; // guidance follows retained equipment state, never implies evidence
  bool Connect();
  bool Calibrate(double Seconds);
  bool Start(int32 At,int32 Day,double Clock);

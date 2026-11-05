@@ -4,9 +4,9 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-receiver-v2-20261105`, fra main `047ff9a6` etter flettet PR403. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-state-guidance-20261105`, fra main `3a5bdf40` etter flettet PR404. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: versjonert receivertekstur og avspilling/lagring, WAV-sammenligning, dokumentasjon og alle tunge jobber under production_lease.
+- root: tilstandsbasert loggerveiledning og kontrollmåling etter avvist legacy-utskrift, dokumentasjon og alle tunge jobber under production_lease.
 - todo_triage: private aktivitets-/referanse- og loggerguidepatcher, ingen aktive kildefiler eller motorjobb.
 - night_preflight: privat harness for samlet normal lagringsreise gjennom tre prosesser; sokkelpatcher og pakke/installasjonsløype klare, ingen aktive kildefiler eller motorjobb.
 - photo_loop: Story-dør/kamera- og versjonert SIGNAL-EXT-09-utkast overlevert, ingen aktive kildefiler eller motorjobb.

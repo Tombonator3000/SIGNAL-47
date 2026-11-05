@@ -1,6 +1,27 @@
 #include "S47FieldLogger.h"
 #include "S47FreeformCases.h"
 
+FString FS47FieldLogger::NextAction() const
+{
+ if(Site>=0)
+ {
+  const FString Place=Site==0?TEXT("SITE A / GENERATOR SERVICE PATH"):TEXT("SITE B / EAST ARRAY EDGE");
+  return bRecording?Place+TEXT(": LOCAL-NOISE LOGGER IS RECORDING. ACQUIRE A MATCHING-FREQUENCY SARO ORIGINAL DURING ITS TWO-HOUR WINDOW, THEN RETRIEVE THE LOGGER. SLEEP DOES NOT CREATE COVERAGE."):Place+TEXT(": RECORDING HAS STOPPED. RETRIEVE THE LOGGER AND ORIGINAL, THEN RETURN THEM TO CALIBRATION / REPAIR. STOPPED RECORDING DOES NOT GUARANTEE COMPLETE COVERAGE.");
+ }
+ if(!bLoanIssued)return TEXT("EAST WING / PARTS STORAGE: COLLECT YOUR FIRST LOAN LOGGER AT EQUIPMENT CHECKOUT; CARRY THE KIT TO CALIBRATION / REPAIR.");
+ if(Tapes.Num()>=256)return TEXT("CALIBRATION / REPAIR: RETAINED-TAPE CAPACITY IS FULL. RETURN THE LOGGER IF CARRIED. EXISTING ORIGINALS CAN STILL BE READ; ANOTHER DEPLOYMENT IS UNAVAILABLE.");
+ const bool ReturnedTape=!Tapes.IsEmpty()&&Tapes.Last().bRetrieved;
+ if(bCheckedOut)
+ {
+  if(Assembly<3||!bCalibrated||Battery<=0)return TEXT("CALIBRATION / REPAIR: BRING BACK THE LOAN LOGGER AND ANY RETAINED ORIGINAL. IF SET DOWN OR IN JEEP CARGO, RECOVER IT FIRST; RETURN IT TO THE BENCH BEFORE PREPARATION OR COMPARISON.");
+  if(ReturnedTape)return TEXT("FIELD LOGGER: RETURN A NEWLY RETRIEVED ORIGINAL TO CALIBRATION / REPAIR FOR COMPARISON. IF ALREADY RETURNED AND COLLECTED FOR ANOTHER RUN, CARRY THE PREPARED UNIT TO SITE A / GENERATOR SERVICE PATH OR SITE B / EAST ARRAY EDGE; PLACEMENT STARTS TWO HOURS OF LOCAL-NOISE RECORDING.");
+  return TEXT("FIELD LOGGER: CARRY THE PREPARED UNIT TO SITE A / GENERATOR SERVICE PATH OR SITE B / EAST ARRAY EDGE. PLACEMENT STARTS TWO HOURS OF LOCAL-NOISE RECORDING; ACQUIRE A MATCHING-FREQUENCY SARO ORIGINAL DURING THAT WINDOW.");
+ }
+ if(Assembly<3)return TEXT("CALIBRATION / REPAIR: ASSEMBLE THE LOAN LOGGER USING THE LABELLED CONNECTIONS AT THE BENCH.");
+ if(!bCalibrated||Battery<=0)return TEXT("CALIBRATION / REPAIR: CALIBRATE AGAINST THE POWERED BENCH CLOCK AND RECHARGE BEFORE COLLECTING THE LOGGER.");
+ return ReturnedTape?TEXT("CALIBRATION / REPAIR: READ THE RETURNED LOCAL-NOISE ORIGINAL AND CHECK COVERAGE AGAINST ITS SARO ORIGINAL. FOR A NEW RUN, TUNE TO THE SELECTED WORK CARD, RECHARGE AS NEEDED AND COLLECT THE LOGGER."):TEXT("CALIBRATION / REPAIR: TUNE TO THE SELECTED SARO WORK CARD AND COLLECT THE PREPARED LOGGER. CHOOSE SITE A OR SITE B FOR A TWO-HOUR LOCAL-NOISE COMPARISON.");
+}
+
 bool FS47FieldLogger::Connect()
 {
  if(Assembly>=3||Site>=0)return false;
@@ -86,6 +107,14 @@ void FS47FieldLogger::Load(const S47J::FObj& O)
 bool FS47FieldLogger::SelfTest(TArray<FString>& Lines)
 {
  bool OK=true;auto C=[&](bool B,const TCHAR* Text){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+TEXT("field logger: ")+Text);};
+ FS47FieldLogger Guide;C(Guide.NextAction().Contains(TEXT("PARTS STORAGE")),TEXT("unissued guide points to first checkout"));
+ Guide.bLoanIssued=true;Guide.bCheckedOut=true;C(Guide.NextAction().Contains(TEXT("BRING BACK")),TEXT("unassembled issued kit points to physical bench return"));
+ Guide.bCheckedOut=false;Guide.Connect();Guide.Connect();Guide.Connect();Guide.Calibrate(3);Guide.bCheckedOut=true;
+ C(Guide.NextAction().Contains(TEXT("PLACEMENT STARTS")),TEXT("prepared carried unit points to field placement"));
+ Guide.Start(1,1,100);C(Guide.NextAction().Contains(TEXT("SITE B"))&&Guide.NextAction().Contains(TEXT("IS RECORDING")),TEXT("active guide names actual deployed site and SARO overlap"));
+ Guide.Skip(100+Window,Window);C(Guide.NextAction().Contains(TEXT("RETRIEVE"))&&!Guide.NextAction().Contains(TEXT("IS RECORDING")),TEXT("overslept window asks for retrieval without claiming coverage"));
+ FS47FieldLogger GuideCopy;GuideCopy.Load(S47J::Read(S47J::Write(Guide.Save())));C(GuideCopy.NextAction()==Guide.NextAction(),TEXT("deployment guidance survives Continue"));
+ FS47FieldLogger FullGuide=GuideCopy;FullGuide.Site=-1;FullGuide.bCheckedOut=true;FullGuide.Tapes.SetNum(256);C(FullGuide.NextAction().Contains(TEXT("CAPACITY IS FULL"))&&!FullGuide.NextAction().Contains(TEXT("PLACEMENT STARTS")),TEXT("carried full logger never suggests an impossible new deployment"));
  FS47FieldLogger L;C(!L.Start(0,1,100),TEXT("unassembled loan cannot record"));L.Connect();L.Connect();L.Connect();C(!L.Start(0,1,100),TEXT("calibration required after physical connections"));L.Calibrate(3);L.Start(0,1,100);for(int32 I=1;I<=60;++I)L.Sample(100+I,1,true,false,TEXT("job1"),1./60.,1420.11);for(int32 I=61;I<=120;++I)L.Sample(100+I,1,true,false,TEXT("old"),0,1420.11);
  FS47FieldLogger R;R.Load(S47J::Read(S47J::Write(L.Save())));C(R.Site==0&&R.bRecording&&R.Tapes.Num()==1&&FMath::IsNearlyEqual(R.Tapes[0].Overlap,1.,.00001)&&R.Battery==Capacity-120,TEXT("Continue preserves identity, battery and real acquisition overlap"));
  R.Retrieve();C(!R.Retrieve()&&R.Tapes[0].bRetrieved,TEXT("original retrieval is once per deployment"));R.Start(1,1,300);for(int32 I=1;I<=60;++I)R.Sample(300+I,1,true,false,TEXT("wrong-band"),1./60.,1420.4);C(R.Tapes[1].NoiseSum/R.Tapes[1].Seconds<L.Tapes[0].NoiseSum/L.Tapes[0].Seconds&&R.Tapes[1].Overlap==0,TEXT("distance changes local interference and mismatched frequency cannot compare"));R.Battery=1;R.Sample(362,2,false,false,TEXT("job"),1,1420.11);C(!R.bRecording&&R.Tapes.Last().bBatteryEmpty&&R.Tapes.Last().Overlap==0,TEXT("empty battery is incomplete, never a negative observation"));
