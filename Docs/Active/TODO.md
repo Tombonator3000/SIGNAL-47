@@ -169,6 +169,7 @@ Arbeidet prøves som én sammenhengende reise: velg oppgave → forbered → utf
 ## Freeform: UFO-er, etterforskning, materialer og bygging
 
 - [ ] **Megascans til naturgrafikk, til vurdering (Tom 5. november):** [Quixel](https://quixel.com/news/update-megascans-are-going-free-again) melder at hele biblioteket er gratis på Fab. Lisensen for spill og videredistribusjon står ikke i kunngjøringen og må leses før bruk. Assets holdes uansett utenfor offentlig Git.
+- [ ] **Opptakslyd på slitt stasjon, venter på Toms valg:** opptakslyd krever full målehastighet, så nye spill får kompatibel lyd til alle 27 antenner virker, og spilleren ser den misvisende teksten «missed its audio deadline». Avgjør om opptak skal virke på redusert array eller bare få riktig forklaring.
 
 > Toms rekkefølge 5. november: slitt stasjon (levert i editor, se [status](STATUS.md)) → nattkurven fra `claude/east-wing-20261103` (`9b4e7e26`) → første feltutrykning med UFO-materialer → flere atferdsmønstre og steder først når første tur er morsom. Antall antenner skal senere styre søkeområdet for utrykninger.
 
