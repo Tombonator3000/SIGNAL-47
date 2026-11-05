@@ -138,7 +138,7 @@ void US47Main::Step(double Dt)
 	if (Mode == EMode::End)
 	{
 		if (TownLayer) TownLayer->Leave(true);
-		if (Score && !Score->Playing.IsEmpty()) Score->Stop();
+		if (Score && Score->HasAudio()) Score->Stop();
 		if (Radio && ((CarRadio && (CarRadio->bOn || CarRadio->Carrying())) || (DinerRadio && DinerRadio->bOn))) Radio->Reset(0);
 	}
 	if (!Player || !Audio) return;

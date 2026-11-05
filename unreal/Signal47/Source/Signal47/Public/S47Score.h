@@ -5,6 +5,7 @@
 
 class US47Main;
 class FS47MediaSource;
+class FS47CosmicAmbient;
 
 // core/score.ts: the pieces, and what each place plays. Empty cue means TypeScript's null.
 struct FS47ScoreTrack
@@ -38,6 +39,7 @@ public:
 	void RequestMood(const FString& Cue, double Severity = 0);
 	struct FTrackTiming { double Bpm = 0; int32 BeatsPerBar = 4, PhraseBars = 4; };
 	bool SetTrackTiming(const FString& InTrack, double Bpm, int32 BeatsPerBar = 4, int32 PhraseBars = 4);
+	bool HasAudio() const { return El.IsValid() || Outgoing.IsValid() || Cosmic.IsValid(); }
 	int32 ActiveDecks() const { return int32(El.IsValid()) + int32(Outgoing.IsValid()); }
 	FString PendingCue() const { return Pending; }
 
@@ -63,6 +65,7 @@ private:
 	TSharedRef<FS47AudioContext> Ctx;
 	TSharedPtr<FS47AudioNode> Dest;
 	TSharedPtr<FS47GainNode> Bus; // every deck passes this, so a duck leaves deck fades alone
+	TSharedPtr<FS47CosmicAmbient> Cosmic;
 	TSharedPtr<FS47MediaSource> El;
 	TSharedPtr<FS47GainNode> Gain;
 	TSharedPtr<FS47MediaSource> Outgoing;
