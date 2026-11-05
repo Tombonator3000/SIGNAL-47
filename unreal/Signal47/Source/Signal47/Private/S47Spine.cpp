@@ -641,6 +641,39 @@ void FS47Spine::SC04Test(double Dt, TFunctionRef<void(const FString&)> Fail, TFu
   {if(Test.T-Test.Mark>8)Fail(FString::Printf(TEXT("body failed to continue through the door after refused closure: %s at %s"),FS47SC04::BodyName(A.Body()),*A.BodyAt().ToString()));return;}
   if(!Check(A.BodyAt().Y>Test.ClockMark+.15 && M->Web->ToggleDoor(TEXT("recordsDoor")) && !M->Web->IsDoorOpen(TEXT("recordsDoor")),
    TEXT("body naturally clears the opening and the same ordinary close now latches")))return;
+  Test.Hop=0;Next(85,0);return;
+ case 85:
+ {
+  // Explicit pose/Leave fixture, not natural patrol discovery. The original
+  // RouteTo path is built while open, then ordinary ToggleDoor invalidates it.
+  const TCHAR* Door=Test.Hop==0?TEXT("recordsDoor"):TEXT("exitDoor");
+  M->Web->SetDoorOpen(TEXT("doorSouth"),false,true);M->Web->SetDoorOpen(TEXT("doorEast"),true,true);
+  M->Web->SetDoorOpen(Door,true,true);M->Player->Place(0,0,PI);
+  const FVector2D At=Test.Hop==0?FVector2D(-3.9,7.7):FVector2D(-8.0,5.7);
+  if(!Check(Act04.TestBeginReturn(At,Test.Hop==0?0:-PI/2)&&A.Body()==FS47SC04::EBody::Leave&&A.TestNativeBodyRendered(),TEXT("explicit visible return fixture builds real office route while door is open")))return;
+  if(!Check(!A.DoorOccupied(Door)&&M->Web->ToggleDoor(Door)&&!M->Web->IsDoorOpen(Door),TEXT("ordinary close invalidates return before rendered body overlaps leaf")))return;
+  Next(86,0);return;
+ }
+ case 86:
+ {
+  const TCHAR* Door=Test.Hop==0?TEXT("recordsDoor"):TEXT("exitDoor");
+  if(!A.HuntLive()||A.Facts().bEscaped||A.Facts().Captures||M->Web->IsDoorOpen(TEXT("doorSouth"))){Fail(TEXT("blocked return awards escape/capture or opens refuge door"));return;}
+  if(A.Body()!=FS47SC04::EBody::Listen||A.TestBlockedSeconds()<=0)
+  {if(Test.T-Test.Mark>8)Fail(TEXT("real blocked Leave step never enters Listen"));return;}
+  if(!Check(!M->Web->IsDoorOpen(Door)&&FS47SC04::Room(A.BodyAt())==(Test.Hop==0?2:3),TEXT("actual Walk collision changes Leave to Listen on original side, without escape")))return;
+  Next(87,0);return;
+ }
+ case 87:
+ {
+  const TCHAR* Door=Test.Hop==0?TEXT("recordsDoor"):TEXT("exitDoor");
+  if(!A.HuntLive()||A.Facts().bEscaped||A.Facts().Captures||M->Web->IsDoorOpen(TEXT("doorSouth"))){Fail(TEXT("return skipped physical passage or opened refuge door"));return;}
+  if(!M->Web->IsDoorOpen(Door)||FS47SC04::Room(A.BodyAt())!=1||A.DoorOccupied(Door))
+  {if(Test.T-Test.Mark>25)Fail(FString::Printf(TEXT("existing Listen failed physical latch/return for %s at %s"),Door,*A.BodyAt().ToString()));return;}
+  if(!Check(A.Body()==FS47SC04::EBody::Leave&&A.Facts().bSchedule&&A.Facts().bStrip&&A.Facts().bJournal&&A.Facts().bBinder,TEXT("existing Listen opens only return door and body clears into annex with originals intact")))return;
+  if(++Test.Hop<2){Next(85,0);return;}
+  Next(88,0);return;
+ }
+ case 88:
   // Independent spatial fixture: the production patrol has no route to this landing.
   // Do not award escape or force Calm/Finish; all following movement is ordinary AI.
   UE_LOG(LogTemp,Display,TEXT("S47: SC04 doors explicit pose FIXTURE east landing (8.6,1.6), listening toward player control (4.3,1.6); normal AI, no state completion"));

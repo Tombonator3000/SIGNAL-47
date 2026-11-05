@@ -1851,3 +1851,7 @@ Privat materialretting: M_Web_Lit_Opaque fikk tilsiktet Nanite-bruksflagg. Paren
 ## 5. november 2026 kl.10:55, dagbokoppfølging
 
 `claude/notebook-return-20261105`: Now følger faktisk serviceantenne og fotoreturplaner, med egen tilstand for manglende original. Bygget uten SC04-endringene: 2464 selvtester, 118 native kontroller og tre visuelt kontrollerte skjermbilder består. Ikke installert. SC04-returens WIP er tatt ut som privat patch og fortsetter på egen gren.
+
+## 5. november 2026 kl.11:10, SC04-retur gjennom dører
+
+`claude/sc04-return-door-20261105`: Sveipet traff N495, arkivdørens blad, midt i svingen (målt ca. 40°, animasjonen gir ca. 38° etter 0,07 s), og sendte Leave til Listen. Walk holder nå tilstanden mens bladet svinger. Ved exitDoor sperret N601, den usynlige og ubevegelige klikkmeshen, så dørproxyer ignoreres i sveipet på samme måte som N558. Editorbygg og `sc04doors` 22 kontroller består. Ikke installert.

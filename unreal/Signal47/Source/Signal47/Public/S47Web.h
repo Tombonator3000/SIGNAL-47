@@ -308,6 +308,8 @@ public:
 	// instant: no swing and no sound (restoring a save)
 	void SetDoorOpen(const FString& DoorOrItemId, bool bOpen, bool bInstant = true);
 	bool IsDoorOpen(const FString& ItemId) const;
+	bool IsDoorLeafSwinging(const UPrimitiveComponent* Part) const; // part of a door leaf still animating
+	bool IsDoorPickProxy(const UPrimitiveComponent* Part) const; // a door's invisible, unmoving pick mesh, not its leaf
 	void CloseAllDoors();
 	TFunction<void(const FString&, bool, const FVector&, bool)> OnDoor; // id, open, where (UE), heavy
 	// Doors.states / restore / set by the door's own id ('east', 'south', 'lab', 'exit', 'records'),
