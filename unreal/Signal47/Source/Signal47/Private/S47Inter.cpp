@@ -92,7 +92,7 @@ FString US47Inter::Pick(const FVector& EyeUE, const FVector& DirUE, double MaxDi
 		// The broad boarding proxy encloses the real cargo. When the player aims
 		// at the parcel/rack, let that smaller physical target win the same ray.
 		// Elsewhere on the jeep the ordinary boarding action is retained.
-		if (Id == TEXT("truck") || Id == TEXT("parkedServiceVehicle"))
+		if (Id == TEXT("truck") || Id == TEXT("parkedServiceVehicle") || Id == TEXT("dinerTruck"))
 		{
 			US47Main* M = US47Main::Get(Web);
 			if (M && M->IsFreeform() && M->Freeform && M->Freeform->Active() && M->Freeform->Field && M->Freeform->Field->ParcelStage() >= 2)

@@ -1,0 +1,90 @@
+{
+  "status": "PASS",
+  "reason": "normal manual checkpoint reached; restart next phase in a new process",
+  "phase": 2,
+  "stage": 901,
+  "checks": 20,
+  "method": "Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state.",
+  "evidence": [
+    {
+      "pass": true,
+      "check": "ordinary title before normal case start/Continue"
+    },
+    {
+      "pass": true,
+      "check": "title Continue selects checkpoint id=1:manual:0 savedAt=1793841967315; expected id=1:manual:0 savedAt=1793841967315"
+    },
+    {
+      "pass": true,
+      "check": "normal case1, never developer case0"
+    },
+    {
+      "pass": true,
+      "check": "same paid routine document and original photograph survive normal Continue"
+    },
+    {
+      "pass": true,
+      "check": "restart preserves exact earned/spent cash and not-yet-delivered stock"
+    },
+    {
+      "pass": true,
+      "check": "normal Continue retains processed-film stage"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: wetBench"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: wetBench / picked wetBench / player X=15.100 Y=0.000 Z=-4.450"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: TRANSFER CONTACT PRINT TO FIXER"
+    },
+    {
+      "pass": true,
+      "check": "actual fixer action completed"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: COLLECT AND EXAMINE PRINT"
+    },
+    {
+      "pass": true,
+      "check": "same developed ordinary photo grants no payment"
+    },
+    {
+      "pass": true,
+      "check": "actual shop door opened before interior placement"
+    },
+    {
+      "pass": true,
+      "check": "shop actually open at natural clock"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: ff:shop / picked ff:shop / player X=7981.800 Y=0.000 Z=2068.800"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: control fuse / $5"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: drive relay / $25"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: control fuse / $5"
+    },
+    {
+      "pass": true,
+      "check": "one paid untouched counter parcel; exact charge, no premature stock"
+    },
+    {
+      "pass": true,
+      "check": "ordinary manual save read from real store with correct mode, active case and cash"
+    }
+  ]
+}

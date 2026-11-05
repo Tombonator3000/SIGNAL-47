@@ -1,0 +1,77 @@
+{
+  "build": "normal-journey-build-r10",
+  "run": "20261105-r8",
+  "base": "4661eeb5",
+  "phases": [
+    {
+      "phase": 1,
+      "checks": 32,
+      "continue": null,
+      "otherManualFilesUnchanged": {},
+      "exitCode": 0
+    },
+    {
+      "phase": 2,
+      "checks": 20,
+      "continue": {
+        "id": "1:manual:0",
+        "savedAt": 1793841967315,
+        "caseId": 1,
+        "kind": "manual",
+        "slot": 0
+      },
+      "otherManualFilesUnchanged": {
+        "save-1-manual-0.json": true
+      },
+      "exitCode": 0
+    },
+    {
+      "phase": 3,
+      "checks": 21,
+      "continue": {
+        "id": "1:manual:1",
+        "savedAt": 1793842224386,
+        "caseId": 1,
+        "kind": "manual",
+        "slot": 1
+      },
+      "otherManualFilesUnchanged": {
+        "save-1-manual-1.json": true,
+        "save-1-manual-0.json": true
+      },
+      "exitCode": 0
+    },
+    {
+      "phase": 4,
+      "checks": 51,
+      "continue": {
+        "id": "1:manual:2",
+        "savedAt": 1793842492502,
+        "caseId": 1,
+        "kind": "manual",
+        "slot": 2
+      },
+      "otherManualFilesUnchanged": {
+        "save-1-manual-2.json": true,
+        "save-1-manual-1.json": true
+      },
+      "exitCode": 0
+    },
+    {
+      "phase": 5,
+      "checks": 22,
+      "continue": {
+        "id": "1:manual:0",
+        "savedAt": 1793842545872,
+        "caseId": 1,
+        "kind": "manual",
+        "slot": 0
+      },
+      "otherManualFilesUnchanged": {
+        "save-1-manual-0.json": true,
+        "save-1-manual-2.json": true
+      },
+      "exitCode": 0
+    }
+  ]
+}
