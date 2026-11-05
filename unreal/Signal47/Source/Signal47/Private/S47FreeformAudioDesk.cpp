@@ -141,7 +141,7 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
  {
   // Reference playback has its own transport; comparison cursors, marks, heard
   // coverage and retained conclusions remain owned by the original/control deck.
-  if(Free){if(M->Freeform->AudioPlaying())M->Freeform->AudioAction(TEXT("pause"));}
+  if(Free){if(M->Freeform->AudioPlaying()||M->Freeform->AudioPreparing())M->Freeform->AudioAction(TEXT("pause"));}
   else if(M->Observing->AudioPlaying())M->Observing->AudioAction(TEXT("pause"));
   if(!Reference&&M->Audio)Reference=MakeShared<FS47ReceiverSound>(M->Audio,M->Audio->Spatial(Anchor+FVector(0,.12,0),.65));
   bReferenceView=true;
@@ -154,7 +154,7 @@ bool FS47FreeformAudioDesk::Use(const FString& Id)
  }
  if(Reference)Reference->Stop();bReferenceView=false;
  if(Free)M->Freeform->OpenAudio();else M->Observing->OpenAudioComparison();
- const bool Playing=Free?M->Freeform->AudioPlaying():M->Observing->AudioPlaying();
+ const bool Playing=Free?(M->Freeform->AudioPlaying()||M->Freeform->AudioPreparing()):M->Observing->AudioPlaying();
  const FString Action=I==2?(Playing?TEXT("pause"):TEXT("play")):I==6?TEXT("confirm"):Actions[I];
  if(I==3&&Free)M->Freeform->SeekAudio(0);
  else Accepted=Free?M->Freeform->AudioAction(Action):M->Observing->AudioAction(I==3?TEXT("rewind"):Action);
@@ -191,8 +191,11 @@ void FS47FreeformAudioDesk::Step(double Dt)
   const auto* J=M->Freeform->CurrentJob();
   if(!J||!J->bAnomaly||J->Stage<FS47FreeformSession::EJobStage::Recorded||J->ControlAt<8||J->Phenomenon==TEXT("wrong_source")||J->Phenomenon==TEXT("time_disagreement")||J->Phenomenon==TEXT("duplicate_print"))Line=M->Freeform->NextAction();
   else if(J->bLegacyTrace)Line+=TEXT("\nLEGACY AUDIO RECONSTRUCTION");
+  const FString CaptureStatus=M->Freeform->AudioCaptureStatus();if(!CaptureStatus.IsEmpty())Line+=TEXT("\n")+CaptureStatus;
+
  }
  if(Powered()&&bReferenceView&&Reference)Line=Reference->Label();
+ if(Powered()&&M->IsFreeform()&&M->Freeform&&M->Freeform->AudioPreparing())Line+=TEXT("\nLOADING TAPE");
  if(Line!=LastReadout&&Readout.IsValid()){Readout->SetText(FText::FromString(Line));LastReadout=Line;}
  for(int32 I=0;I<Controls.Num();++I)if(Controls[I].Material.IsValid())
  {

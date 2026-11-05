@@ -37,6 +37,7 @@ namespace
 {
  constexpr double SecondsPerDay=86400., RealDay=1800., RealNight=2700.;
  constexpr double PulsarPeriod=1.1879;
+ bool UseCapturedSound(const S47CaptureSound::FTrack* Capture,bool NoSound) { return !NoSound&&Capture&&Capture->Playable(); }
  double SafeNum(const S47J::FObj& O,const TCHAR* K,double D=0) { const double V=S47J::Num(O,K,D);return FMath::IsFinite(V)?V:D; }
  int32 SafeInt(const S47J::FObj& O,const TCHAR* K,int32 D=0) { return int32(FMath::Clamp(SafeNum(O,K,D),-100000000.,100000000.)); }
  const double Ticks[]={9.30,9.48,9.66,9.84,11.40,11.60,11.80,12.00,12.20,12.40,12.60};
@@ -127,8 +128,11 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
    }
    J.bAnomaly=S47J::Bool(O,TEXT("anomaly"));J.bControl=S47J::Bool(O,TEXT("control"));J.bAudioReviewed=S47J::Bool(O,TEXT("reviewed"));J.bPrinted=S47J::Bool(O,TEXT("printed"));J.bPaid=S47J::Bool(O,TEXT("paid"));
    J.ControlAt=FMath::Clamp(SafeNum(O,TEXT("controlAt")),0.,8.);J.OriginalCovered=FMath::Clamp(SafeNum(O,TEXT("originalCovered")),0.,18.);J.ControlCovered=FMath::Clamp(SafeNum(O,TEXT("controlCovered")),0.,8.);
+   J.CaptureOriginal.Load(S47J::Obj(O,TEXT("captureOriginal")));J.CaptureControl.Load(S47J::Obj(O,TEXT("captureControl")));
    J.TraceTicks=S47J::Nums(O,TEXT("traceTicks"));J.bLegacyTrace=S47J::Bool(O,TEXT("legacyTrace"),!O->HasField(TEXT("traceTicks")));
    if(!O->HasField(TEXT("traceTicks"))&&J.bAnomaly&&!Specialized(J.Phenomenon))for(double At:Ticks)J.TraceTicks.Add(At);
+   if(J.CaptureOriginal.Enabled()&&(J.Source!=1||J.CaptureOriginal.Control||J.CaptureOriginal.Ticks!=J.TraceTicks)){J.CaptureOriginal.Complete=false;J.CaptureOriginal.Interrupt(TEXT("Retained capture does not match this original; compatible reference sound retained."));}
+   if(J.CaptureControl.Enabled()&&(J.Source!=1||!J.CaptureControl.Control||Specialized(J.Phenomenon))){J.CaptureControl.Complete=false;J.CaptureControl.Interrupt(TEXT("Retained control capture unavailable; compatible reference sound retained."));}
    J.TraceTicks.RemoveAll([](double At){return !FMath::IsFinite(At)||At<=0||At>18;});if(J.TraceTicks.Num()>64)J.TraceTicks.SetNum(64);J.TraceTicks.Sort();
    J.MarkStart=SafeNum(O,TEXT("markStart"),-1);J.MarkEnd=SafeNum(O,TEXT("markEnd"),-1);
    J.ReceiverClock=SafeNum(O,TEXT("receiverClock"));J.ReferenceClock=SafeNum(O,TEXT("referenceClock"));J.ControlReceiverClock=SafeNum(O,TEXT("controlReceiverClock"));J.ControlReferenceClock=SafeNum(O,TEXT("controlReferenceClock"));J.DuplicateClock=SafeNum(O,TEXT("duplicateClock"));J.DuplicateInterval=SafeNum(O,TEXT("duplicateInterval"));
@@ -213,6 +217,7 @@ void FS47FreeformSession::Begin(const S47J::FObj& Saved,bool bLethal)
 }
 void FS47FreeformSession::Stop()
 {
+ LiveCapture.Reset();TapeCapture.Reset();CaptureStartStage=0;
  StopEquipmentFeedback();StopPrinterFeedback();FeedbackEncoders.Reset();
  if(!IsEngineExitRequested()&&!IsGarbageCollecting()&&IsValid(M)&&!M->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)&&IsValid(M->Audio)){M->Audio->ReceiverMonitorOff();M->Audio->ReceiverRecordingOff();}
  // UObject purge may destroy the scene before this plain C++ session is released.
@@ -305,6 +310,35 @@ bool FS47FreeformSession::EncodersAt(double Az,double El)const
  {++Count;if(FMath::Abs(FMath::FindDeltaAngleDegrees(M->Web->DishAz(I),Az))>.1||FMath::Abs(M->Web->DishEl(I)-El)>.1)return false;}
  return Count>=24;
 }
+S47J::FObj FS47FreeformSession::CaptureSoundState()const
+{
+ auto O=S47J::New();S47J::Set(O,TEXT("liveQueued"),double(LiveCapture?LiveCapture->QueuedSamples():0));S47J::Set(O,TEXT("liveRendered"),double(LiveCapture?LiveCapture->RenderedSamples():0));S47J::Set(O,TEXT("tapeQueued"),double(TapeCapture?TapeCapture->QueuedSamples():0));S47J::Set(O,TEXT("tapeRendered"),double(TapeCapture?TapeCapture->RenderedSamples():0));return O;
+}
+bool FS47FreeformSession::UsesCapturedAudio() const
+{
+ const auto* J=CurrentJob();return UseCapturedSound(J?(AudioSourceIndex==0?&J->CaptureOriginal:&J->CaptureControl):nullptr,FParse::Param(FCommandLine::Get(),TEXT("NoSound")));
+}
+FString FS47FreeformSession::AudioCaptureStatus() const
+{
+ if(FParse::Param(FCommandLine::Get(),TEXT("NoSound")))return TEXT("SOUND DISABLED / COMPATIBLE TRANSPORT");
+ const auto* J=CurrentJob();const auto* C=J?(AudioSourceIndex==0?&J->CaptureOriginal:&J->CaptureControl):nullptr;
+ return C&&C->Enabled()?(UsesCapturedAudio()?FString(TEXT("CAPTURED RECEIVER SOUND")):FString(TEXT("REFERENCE SOUND: CAPTURE INTERRUPTED"))):FString();
+}
+bool FS47FreeformSession::QueueCapture(S47CaptureSound::FTrack& Track,double From,double To,double Dt,double Rate,const S47CaptureSound::FFrame& Input)
+{
+ if(!Track.Eligible()||Track.Complete)return false;
+ if(!M||!M->Audio||!M->Audio->Ctx||!M->Audio->SfxBus){Track.Interrupt(TEXT("Receiver capture unavailable; retained measurements use compatible reference sound."));return false;}
+ if(!LiveCapture)LiveCapture=MakeShared<FS47CapturePlayer>(M->Audio->Ctx.ToSharedRef(),M->Audio->SfxBus);
+ if(!Track.Append(From,To,Dt,Rate,Input.Frequency,Input.Gain,Input.Bandwidth,Input.Quality)||!LiveCapture->Queue(Track))
+ {Track.Interrupt(TEXT("Receiver capture missed its audio deadline; retained measurements use compatible reference sound."));LiveCapture->Stop();return false;}
+ if(To>=Track.Duration-1e-6)Track.Complete=true;
+ return true;
+}
+void FS47FreeformSession::InterruptCapture(const FString& Why)
+{
+ bool Active=false;if(auto* J=Job()){Active=(J->CaptureOriginal.Eligible()&&!J->CaptureOriginal.Complete)||(J->CaptureControl.Eligible()&&!J->CaptureControl.Complete);J->CaptureOriginal.Interrupt(Why);J->CaptureControl.Interrupt(Why);}
+ if(Active&&LiveCapture)LiveCapture->Stop();
+}
 void FS47FreeformSession::Step(double Dt)
 {
  if(!bActive||!M||!M->Web||!M->Story||!FMath::IsFinite(Dt)||Dt<=0)return;
@@ -314,6 +348,11 @@ void FS47FreeformSession::Step(double Dt)
  }
  const double D=FMath::Min(Dt,.1);
  const bool Powered=HasPower();
+ if(Dt>.100001||ArrayMotionHeld()||!Powered)InterruptCapture(TEXT("Continuous receiver capture interrupted; retained measurements use compatible reference sound."));
+ if(CaptureStartStage&&(!Powered||Held()||!bAudioOpen||!AudioDesk||!AudioDesk->ListeningPosition()))
+ {CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();bAudioPlaying=false;}
+ if(Dt>.100001&&UsesCapturedAudio()&&TapeCapture&&bAudioPlaying){TapeCapture->Stop();bAudioPlaying=false;Changed(TEXT("Playback paused after a timing interruption. Press PLAY to resume at the retained position."));}
+ if(TapeCapture&&(!Powered||Held()||!bAudioOpen||!AudioDesk||!AudioDesk->ListeningPosition()||(!bAudioPlaying&&AudioCursor<(AudioSourceIndex==0?18.:8.)-.001)))TapeCapture->Stop();
  if(!bPowerApplied||Powered!=bLastPower)
  {
   // Keep physical circuits and telemetry in agreement; retained targets resume
@@ -338,7 +377,7 @@ void FS47FreeformSession::Step(double Dt)
  }
  if(!ArrayMotionHeld())StepWork(D);
  if(AudioDesk)AudioDesk->Step(D);
- if(bAudioOpen&&!Held())StepAudio(D);
+ if(bAudioOpen&&!Held())StepAudio(CaptureStartStage?Dt:D);
  if(M->Audio&&(!bAudioPlaying||!bAudioOpen||Held()||!HasPower()||!AudioDesk||!AudioDesk->ListeningPosition()))M->Audio->ReceiverRecordingOff();
  if(Field)Field->Step(D);
  if(CaseField)CaseField->Step(D);
@@ -352,7 +391,9 @@ void FS47FreeformSession::Step(double Dt)
  {
   const FJob* Job=CurrentJob();
   const bool Listen=Job&&Powered&&M->Story->Rx.bPowered&&!Held()&&TerminalOnGlass()&&ActiveTerminal==1&&M->World&&M->World->Area==TEXT("saro");
-  if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),ReceiverReception());
+  if(LiveCapture)LiveCapture->Audible(Listen);
+  if(LiveCapture&&LiveCapture->Pending())M->Audio->ReceiverMonitorOff();
+  else if(Listen)M->Audio->MonitorReceiver(M->Story->Rx,EffectiveProfile(*Job),FString::Printf(TEXT("freeform-source-%d"),Job->Source),ReceiverReception());
   else M->Audio->ReceiverMonitorOff();
  }
  if(M->UI&&M->Mode==US47Main::EMode::Play)M->UI->Objective(Objective());
@@ -447,6 +488,9 @@ void FS47FreeformSession::StepEquipmentFeedback()
 void FS47FreeformSession::StepWork(double Dt)
 {
  FJob* J=Job();if(!J)return;
+ S47CaptureSound::FFrame CaptureInput;
+ if(M&&M->Story){CaptureInput.Frequency=M->Story->Rx.Frequency;CaptureInput.Gain=M->Story->Rx.Gain;CaptureInput.Bandwidth=M->Story->Rx.Bandwidth;CaptureInput.Quality=M->Story->Rx.Quality(EffectiveProfile(*J))*ReceiverReception();}
+ if(J->Stage==EJobStage::Integrating&&J->CaptureOriginal.Eligible()&&(!PointReady()||Settle<1||!M||!M->Story||!M->Story->Rx.Pass(EffectiveProfile(*J))))InterruptCapture(TEXT("Receiver lock interrupted; retained measurements use compatible reference sound."));
  if(J->Stage==EJobStage::Pointed||J->Stage==EJobStage::Integrating)
  {
   Settle=PointReady()?FMath::Min(1.,Settle+Dt):0;
@@ -460,11 +504,12 @@ void FS47FreeformSession::StepWork(double Dt)
   {
    const double Was=J->Elapsed;
    J->Elapsed=FMath::Min(SourceSeconds(),J->Elapsed+Dt*ArrayMeasurementRate());
+   const bool Captured=QueueCapture(J->CaptureOriginal,Was,J->Elapsed,Dt,ArrayMeasurementRate(),CaptureInput);
    if(bCrossRunning)
    {
     CrossSample+=Dt*ArrayMeasurementRate();if(CrossSample>=2){if(CrossPoint<4){++CrossPoint;PointCross();}else bCrossRunning=false;}
    }
-   if(J->Source==1&&M->Audio)
+   if(J->Source==1&&M->Audio&&!Captured)
    {
     for(double At:J->TraceTicks)if(Was<At&&J->Elapsed>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
     for(double At=PulsarPeriod;At<=SourceSeconds();At+=PulsarPeriod)if(Was<At&&J->Elapsed>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
@@ -498,7 +543,10 @@ void FS47FreeformSession::StepWork(double Dt)
   }
   else
   {
+   const double ControlWas=J->ControlAt;
    J->ControlAt=FMath::Min(8.,J->ControlAt+Dt);
+   CaptureInput.Quality=1.; // independently driven internal reference, not a sky reception claim
+   QueueCapture(J->CaptureControl,ControlWas,J->ControlAt,Dt,ArrayMeasurementRate(),CaptureInput);
    if(J->ControlAt>=8)
    {
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
@@ -524,6 +572,7 @@ bool FS47FreeformSession::SelectJob(int32 Index)
  if(!Work.IsValidIndex(Index))return false;
  if(Tutorial>0&&Work[Index].Id!=TutorialJobId){Changed(TEXT("Finish your FIRST SHIFT job before switching work orders. The other jobs will still be waiting in DAILY WORK."));return false;}
  const FJob* Current=CurrentJob();if(Current&&(Current->Stage==EJobStage::Integrating||(Current->bControl&&Current->ControlAt<8))){Changed(TEXT("Finish the active recording or control before selecting another job."));return false;}
+ CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();
  Selected=Index;FieldFocus=-1;bGuideFocus=false;Settle=0;bCrossRunning=false;bAudioPlaying=false;AudioCursor=0;Changed();return true;
 }
 bool FS47FreeformSession::ChooseThird(bool bVirgo)
@@ -595,6 +644,8 @@ bool FS47FreeformSession::StartAcquisition()
  ActualAz/=FMath::Max(1,Available);J->ReceivedLevel=BeamLevel(ActualAz,TargetAz()+(J->Phenomenon==TEXT("wrong_source")?.5:0));
  J->RecordingSoundVersion=2;J->RecordingGain=FMath::Clamp(M->Story->Rx.Gain,0.,100.);J->RecordingBandwidth=FMath::Clamp(M->Story->Rx.Bandwidth,0.,100.);
  J->RecordingQuality=FMath::Clamp(M->Story->Rx.Quality(EffectiveProfile(*J))*ReceiverReception(),0.,1.);
+ if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->Source==1&&J->Day==1&&J->Slot==1&&J->CaseTest<0&&FMath::IsNearlyEqual(SourceSeconds(),18.,1e-6))
+ {J->CaptureOriginal.Begin(J->Id+TEXT("/original"),false,J->TraceTicks);if(LiveCapture)LiveCapture->Stop();}
  bCrossRunning=J->Source==0;CrossPoint=0;IntegrationPulse=0;if(bCrossRunning)PointCross();
  Changed(TEXT("RECEIVER (centre PC): Recording started. Keep tuning, pointing and power valid; collect the original at the PRINTER when complete."));return true;
 }
@@ -703,16 +754,25 @@ bool FS47FreeformSession::StartControl()
 {
  FJob* J=Job();if(!J||J->Stage!=EJobStage::Recorded||!J->bAnomaly||J->bControl||!HasPower())return false;
  FieldFocus=-1;bGuideFocus=false;J->bControl=true;J->ControlAt=0;
+ if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->CaptureOriginal.Enabled()&&J->Source==1&&!Specialized(J->Phenomenon)&&J->CaseTest<0)
+ {J->CaptureControl.Begin(J->Id+TEXT("/control"),true,{});if(LiveCapture)LiveCapture->Stop();}
  if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then open DAILY WORK at OPS (corner PC), select this job and press Compare and register the retained instrument measurements."));}
  else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK beside the telephone for audio comparison."));return true;
 }
-void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
+void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::AudioAction(const FString& Action)
 {
  if((Action==TEXT("play")||Action==TEXT("confirm"))&&!RequirePower())return false;
  FJob* J=Job();if(!J||!J->bAnomaly||J->ControlAt<8)return false;
+ if(Action==TEXT("original")||Action==TEXT("control")||Action==TEXT("pause"))CaptureStartStage=0;
+ if(TapeCapture&&(Action==TEXT("original")||Action==TEXT("control")||Action==TEXT("pause")||(Action==TEXT("play")&&(!bAudioPlaying||AudioCursor>=(AudioSourceIndex==0?18.:8.)))))TapeCapture->Stop();
  if(Action==TEXT("original")||Action==TEXT("control")){AudioSourceIndex=Action==TEXT("original")?0:1;AudioCursor=0;bAudioPlaying=false;}
- else if(Action==TEXT("play")){if(!bAudioOpen)return false;if(AudioCursor>=(AudioSourceIndex==0?18.:8.))AudioCursor=0;bAudioPlaying=true;}
+ else if(Action==TEXT("play"))
+ {
+  if(!bAudioOpen)return false;if(AudioCursor>=(AudioSourceIndex==0?18.:8.))AudioCursor=0;
+  if(UsesCapturedAudio()){if(!bAudioPlaying&&!CaptureStartStage)CaptureStartStage=1;}
+  else bAudioPlaying=true;
+ }
  else if(Action==TEXT("pause"))bAudioPlaying=false;
  else if(Action==TEXT("mark_start")||Action==TEXT("mark_end"))
  {
@@ -736,17 +796,46 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
 void FS47FreeformSession::StepAudio(double Dt)
 {
  if(!HasPower()){bAudioPlaying=false;return;}
- FJob* J=Job();if(!J||!bAudioPlaying||!bAudioOpen||!M||!AudioDesk)return;
+ FJob* J=Job();if(!J||!bAudioOpen||!M||!AudioDesk)return;
+ if(CaptureStartStage)
+ {
+  const auto& Capture=AudioSourceIndex==0?J->CaptureOriginal:J->CaptureControl;
+  if(!AudioDesk->ListeningPosition()||!UsesCapturedAudio()||!M->Audio||!M->Audio->Ctx||!M->Audio->SfxBus)
+  {CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();bAudioPlaying=false;return;}
+  if(CaptureStartStage==1)
+  {
+   if(!TapeCapture)TapeCapture=MakeShared<FS47CapturePlayer>(M->Audio->Ctx.ToSharedRef(),M->Audio->SfxBus);
+   if(!TapeCapture->Prepare(Capture)){CaptureStartStage=0;Changed(TEXT("Tape preparation failed. Press PLAY to try again."));return;}
+   CaptureStartStage=2;return;
+  }
+  if(CaptureStartStage==2){CaptureStartStage=3;return;}
+  if(Dt>.100001)return;
+  CaptureStartStage=0;bAudioPlaying=TapeCapture&&TapeCapture->Ready(Capture)&&TapeCapture->Play(Capture,AudioCursor);
+  if(bAudioPlaying){TapeCapture->Audible(true);M->Audio->ReceiverRecordingOff();}
+  else Changed(TEXT("Playback could not start. Press PLAY to try again."));
+  return;
+ }
+ if(!bAudioPlaying)return;
  if(!AudioDesk->ListeningPosition()){bAudioPlaying=false;Changed(TEXT("Playback paused because you left the reel deck. Return and press PLAY to resume."));return;}
+ if(UsesCapturedAudio()&&TapeCapture&&!TapeCapture->Aligned(FMath::Min(AudioSourceIndex==0?18.:8.,AudioCursor+Dt)))
+ {TapeCapture->Stop();bAudioPlaying=false;Changed(TEXT("Playback paused after a timing interruption. Press PLAY to resume at the retained position."));return;}
  const double Was=AudioCursor,Duration=AudioSourceIndex==0?18.:8.;AudioCursor=FMath::Min(Duration,Was+Dt);
  const bool Listening=AudioDesk->ListeningPosition();
  double& Covered=AudioSourceIndex==0?J->OriginalCovered:J->ControlCovered;if(Listening&&Was<=Covered+1e-7)Covered=FMath::Max(Covered,AudioCursor);
  if(M->Audio&&Listening)
  {
-  if(J->RecordingSoundVersion==1||J->RecordingSoundVersion==2)M->Audio->MonitorReceiverRecording(FString::Printf(TEXT("freeform-source-%d"),J->Source),J->RecordingGain,J->RecordingBandwidth,J->RecordingQuality,AudioCursor,J->RecordingSoundVersion);
+  const auto& Capture=AudioSourceIndex==0?J->CaptureOriginal:J->CaptureControl;
+  bool Captured=false;
+  if(UsesCapturedAudio()&&M->Audio->Ctx&&M->Audio->SfxBus)
+  {
+   if(!TapeCapture)TapeCapture=MakeShared<FS47CapturePlayer>(M->Audio->Ctx.ToSharedRef(),M->Audio->SfxBus);
+   Captured=TapeCapture->Play(Capture,AudioCursor);if(Captured){TapeCapture->Audible(true);M->Audio->ReceiverRecordingOff();}
+  }
+  if(!Captured&&TapeCapture)TapeCapture->Stop();
+  if(!Captured&&(J->RecordingSoundVersion==1||J->RecordingSoundVersion==2))M->Audio->MonitorReceiverRecording(FString::Printf(TEXT("freeform-source-%d"),J->Source),J->RecordingGain,J->RecordingBandwidth,J->RecordingQuality,AudioCursor,J->RecordingSoundVersion);
   else M->Audio->ReceiverRecordingOff(); // Legacy evidence keeps its original beep-only reconstruction.
-  for(double At=PulsarPeriod;At<=Duration;At+=PulsarPeriod)if(Was<At&&AudioCursor>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
-  if(AudioSourceIndex==0)for(double At:J->TraceTicks)if(Was<At&&AudioCursor>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
+  if(!Captured)for(double At=PulsarPeriod;At<=Duration;At+=PulsarPeriod)if(Was<At&&AudioCursor>=At)M->Audio->Beep(820,.012f,.16f,0,TEXT("square"));
+  if(!Captured&&AudioSourceIndex==0)for(double At:J->TraceTicks)if(Was<At&&AudioCursor>=At)M->Audio->Beep(1240,.008f,.1f,0,TEXT("square"));
  }
  if(AudioCursor>=Duration){bAudioPlaying=false;Changed();}
 }
@@ -756,7 +845,7 @@ double FS47FreeformSession::AudioLevel()const
  for(double At=PulsarPeriod;At<=18;At+=PulsarPeriod)L=FMath::Max(L,FMath::Max(0.,1-FMath::Abs(AudioCursor-At)/.06));
  if(AudioSourceIndex==0&&CurrentJob())for(double At:CurrentJob()->TraceTicks)L=FMath::Max(L,FMath::Max(0.,.8-FMath::Abs(AudioCursor-At)/.05));return L;
 }
-FString FS47FreeformSession::AudioDisplay()const{return FString::Printf(TEXT("%s %04.1f/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),AudioCursor,AudioSourceIndex==0?18:8,bAudioPlaying?TEXT("PLAY"):CurrentJob()&&CurrentJob()->bLegacyTrace?TEXT("PAUSE / LEGACY RECONSTRUCTION"):TEXT("PAUSE"));}
+FString FS47FreeformSession::AudioDisplay()const{const FString Status=AudioCaptureStatus(),Note=Status.IsEmpty()?FString():TEXT(" / ")+Status;return FString::Printf(TEXT("%s %04.1f/%02d %s"),AudioSourceIndex==0?TEXT("ORG"):TEXT("REF"),AudioCursor,AudioSourceIndex==0?18:8,CaptureStartStage?TEXT("LOADING TAPE"):bAudioPlaying?TEXT("PLAY"):CurrentJob()&&CurrentJob()->bLegacyTrace?TEXT("PAUSE / LEGACY RECONSTRUCTION"):TEXT("PAUSE"))+Note;}
 bool FS47FreeformSession::RegisterComparison(const FString& Conclusion)
 {
  if(!RequirePower())return false;
@@ -1882,6 +1971,8 @@ S47J::FObj FS47FreeformSession::Save()const
  {
   auto A=S47J::New();S47J::Set(A,TEXT("chartFeed"),J.ChartFeed);S47J::Set(A,TEXT("packetFeed"),J.PacketFeed);S47J::Set(A,TEXT("duplicateFeed"),J.DuplicateFeed);S47J::Set(A,TEXT("id"),J.Id);S47J::Set(A,TEXT("day"),J.Day);S47J::Set(A,TEXT("slot"),J.Slot);S47J::Set(A,TEXT("source"),J.Source);S47J::Set(A,TEXT("phenomenon"),J.Phenomenon);S47J::Set(A,TEXT("stage"),int32(J.Stage));S47J::Set(A,TEXT("elapsed"),J.Elapsed);S47J::Set(A,TEXT("quality"),J.Quality);S47J::Set(A,TEXT("receivedLevel"),J.ReceivedLevel);S47J::Set(A,TEXT("anomaly"),J.bAnomaly);S47J::Set(A,TEXT("control"),J.bControl);S47J::Set(A,TEXT("reviewed"),J.bAudioReviewed);S47J::Set(A,TEXT("printed"),J.bPrinted);S47J::Set(A,TEXT("paid"),J.bPaid);S47J::Set(A,TEXT("controlAt"),J.ControlAt);S47J::Set(A,TEXT("originalCovered"),J.OriginalCovered);S47J::Set(A,TEXT("controlCovered"),J.ControlCovered);S47J::Set(A,TEXT("markStart"),J.MarkStart);S47J::Set(A,TEXT("markEnd"),J.MarkEnd);S47J::Set(A,TEXT("receiverClock"),J.ReceiverClock);S47J::Set(A,TEXT("referenceClock"),J.ReferenceClock);S47J::Set(A,TEXT("controlReceiverClock"),J.ControlReceiverClock);S47J::Set(A,TEXT("controlReferenceClock"),J.ControlReferenceClock);S47J::Set(A,TEXT("duplicateClock"),J.DuplicateClock);S47J::Set(A,TEXT("duplicateInterval"),J.DuplicateInterval);
   S47J::Set(A,TEXT("traceTicks"),J.TraceTicks);S47J::Set(A,TEXT("legacyTrace"),J.bLegacyTrace);
+  if(J.CaptureOriginal.Enabled())S47J::Set(A,TEXT("captureOriginal"),J.CaptureOriginal.Save());
+  if(J.CaptureControl.Enabled())S47J::Set(A,TEXT("captureControl"),J.CaptureControl.Save());
   if(J.RecordingSoundVersion==1||J.RecordingSoundVersion==2)
   {
    auto Sound=S47J::New();S47J::Set(Sound,TEXT("v"),J.RecordingSoundVersion);S47J::Set(Sound,TEXT("gain"),J.RecordingGain);
@@ -1903,7 +1994,14 @@ S47J::FObj FS47FreeformSession::Save()const
 }
 bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
 {
- bool OK=true;auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
+ bool OK=S47CaptureSound::SelfTest(Lines);auto Check=[&](bool B,const TCHAR* Name){OK&=B;Lines.Add(FString(B?TEXT("PASS "):TEXT("FAIL "))+Name);};
+ S47CaptureSound::FTrack SoundPolicy;SoundPolicy.Begin(TEXT("sound-policy-original"),false,{});
+ for(int I=0;I<360;++I)SoundPolicy.Append(I*.05,(I+1)*.05,.05,1,1420.11,50,50,1);SoundPolicy.Complete=true;
+ const FString RetainedSound=S47J::Write(SoundPolicy.Save());
+ Check(UseCapturedSound(&SoundPolicy,false)&&!UseCapturedSound(&SoundPolicy,true)&&!UseCapturedSound(nullptr,false),TEXT("Captured transport requires retained playable sound and is disabled by explicit NoSound"));
+ Check(S47J::Write(SoundPolicy.Save())==RetainedSound,TEXT("NoSound playback policy does not mutate retained capture recipe"));
+ SoundPolicy.Complete=false;SoundPolicy.Interrupt(TEXT("test interrupted capture"));
+ Check(!UseCapturedSound(&SoundPolicy,false),TEXT("Interrupted capture uses compatible transport without captured drift guard"));
  Check(!EncoderChanged({10,20},{10,20})&&EncoderChanged({10,20},{10.01,20})&&EncoderChanged({10,20},{10,20.01}),TEXT("Equipment sound follows actual azimuth or elevation delta, not a pending command"));
  Check(!EncoderChanged({0,20},{360,20}),TEXT("Equivalent wrapped encoder bearings do not invent motor movement"));
  auto Close=[](double A,double B){return FMath::Abs(A-B)<.00001;};
