@@ -60,6 +60,8 @@ void FS47FreeformTest::StepArrayWear(double Dt)
   if(!Check(!M->Web->DishRemoteAvailable(Dish(TEXT("S-27")))&&M->Web->DishRemoteAvailable(Dish(TEXT("S-03")))&&M->Web->DishEl(Dish(TEXT("S-27")))<15,TEXT("outer antennas are out of service and parked low; S-03 still works")))return;
   if(!Check(!W.TriggerServiceFault(false,TEXT("S-27")),TEXT("an antenna already out of service cannot take a second fault")))return;
   if(!Check(W.InventoryCount(TEXT("fuse"))==3&&W.BranchNeeds(*FS47ArrayWear::Branch(TEXT("west"))).IsEmpty(),TEXT("the first repair is possible from the station's own stock")))return;
+  bool Pointed=F.Jobs().Num()>0;for(const auto& J:F.Jobs())Pointed&=!F.JobLocation(J).Contains(TEXT("ARRAY STATUS"));
+  if(!Check(Pointed,TEXT("working on twelve antennas does not send job locations to ARRAY STATUS")))return;
   Approach(Junctions[0]);Go(5,.8);return;
  }
  if(Stage==5){Shot(TEXT("wear-parked-antenna.png"));Go(6,.5);return;}

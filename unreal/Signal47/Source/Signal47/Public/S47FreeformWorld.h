@@ -43,6 +43,7 @@ public:
  void OpenBranch(const FString& BranchId);
  bool RepairBranch(const FString& BranchId);
  FString BranchNeeds(const FS47ArrayWear::FBranch& B) const; // empty when stock covers the repair
+ void RestoreWholeArrayFixture(); // declared test fixture: no parts, evidence or player feedback
  bool LoadFilmAtPhotoLab();
  bool LoggerAccess() const;
  FString LoggerPreparationBlock(const FString& Action) const; // shared tune/collect availability and reason

@@ -107,7 +107,7 @@ namespace
   bool CaptureHealth()
   {
    auto M=Main.Get();auto& F=*M->Freeform;
-   return Check(M->Audio&&M->Audio->Ctx&&M->Audio->Ctx->State()==TEXT("running")&&!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&F.AvailableDishCount()==27&&!F.PowerFault()&&!F.Field->HasArrayFault(),TEXT("native audio clock available and actual array27/27 without clearing faults or adding service results"));
+   return Check(M->Audio&&M->Audio->Ctx&&M->Audio->Ctx->State()==TEXT("running")&&!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&F.AvailableDishCount()==27&&!F.PowerFault()&&!F.Field->HasArrayFault(),TEXT("native audio clock available and array27/27 after the declared wear fixture, without adding service results"));
   }
   int SaveSlot()const{return Phase<=3?Phase-1:Phase-4;}
   bool VisibleText(const FString& Label){for(auto R:Roots())if(Text(R,Label))return true;return false;}
@@ -412,6 +412,9 @@ namespace
      SaveMenu();break;
     case 600:
     {
+     // New games start worn and audio capture needs full rate: the whole array is a declared fixture here.
+     if(!Check(F.Field->ArrayWear().bActive&&F.AvailableDishCount()==12,TEXT("new game still on its worn twelve of twenty-seven")))return false;
+     F.Field->RestoreWholeArrayFixture();
      if(!CaptureHealth())return false;
      const int32 Index=F.Jobs().IndexOfByPredicate([](const auto& J){return J.Source==1&&J.Day==1&&J.Slot==1&&J.CaseTest<0;});
      if(!Check(F.Jobs().IsValidIndex(Index)&&(F.Jobs()[Index].Stage==FS47FreeformSession::EJobStage::New||F.Jobs()[Index].Stage==FS47FreeformSession::EJobStage::Pointed)&&F.Jobs()[Index].Elapsed==0&&!F.Jobs()[Index].CaptureOriginal.Enabled(),TEXT("existing untouched day1 pulsar; no job creation, reset or injected capture")))return false;
