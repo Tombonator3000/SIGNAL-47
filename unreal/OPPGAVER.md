@@ -4,7 +4,7 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-photo-local-noise-20261105`, fra main etter flettet PR411. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-capture-normal-continue-20261105`, fra main etter flettet PR412. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
 - root: aktiv kilde for foto-/loggerveiledning, integrering, private materialrettinger, dokumentasjon og alle tunge jobber under production_lease.
 - todo_triage: privat kryssreview av loggerbenk, fotoscroll og vanlig lagring av opptakslyd; ingen aktive kildefiler eller motorjobb.
