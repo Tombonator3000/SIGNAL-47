@@ -4,7 +4,7 @@
 
 ## Oppfølging 5. november etter nattskiftet
 
-Claude Code overtar på Toms beskjed samme SARO-kopi, nå på `claude/notebook-return-20261105`: først dagbokrettelser og leveringsdokumentasjon som egen PR, deretter SC04-retur på `claude/sc04-return-door-20261105`. Codex-kvoten er brukt opp til 10. november. Ingen ny arbeidskopi.
+Claude Code overtar på Toms beskjed samme SARO-kopi, nå på `claude/notebook-return-20261105`: først dagbokrettelser og leveringsdokumentasjon som egen PR, deretter SC04-retur på `claude/sc04-return-door-20261105`. Begge er flettet og installert som `bef9fa88`; SARO-kopien beholdes for de private kildene og står ledig. Codex-kvoten er brukt opp til 10. november. Ingen ny arbeidskopi.
 
 ## Nattskift 4. til 5. november, avsluttet
 
