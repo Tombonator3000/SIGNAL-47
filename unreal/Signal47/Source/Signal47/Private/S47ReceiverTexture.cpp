@@ -57,6 +57,30 @@ namespace
   const double Shimmer=.11*BW*Mid*FMath::Sin(Tau*1327*U+P2);
   return float(.68*Band*(.85+.15*Motion)+Warble+Shimmer);
  }
+ // Broad continuous atmospheric swell, never an impulse train or evidence gate.
+ // Positive floor and periodic smooth noise preserve loop/seek continuity.
+ double AtmosphereEnvelope(uint32 S,double U)
+ {
+  const double Slow=.5+.5*Noise(S^0xd273u,U,7);
+  const double Drift=.5+.5*Noise(S^0x45b1u,U,11);
+  return .35+.50*Slow+.15*Drift;
+ }
+ float LayerV2(uint32 S,double U,S47ReceiverTexture::ELayer Which,float Bandwidth)
+ {
+  if(Which==S47ReceiverTexture::ELayer::Static)return Layer(S,U,Which,Bandwidth);
+  const double BW=Normal(Bandwidth,1),P1=Phase(S,0x5741u),P2=Phase(S,0x9143u);
+  const double Low=Noise(S^0xc461u,U,3072),Mid=Noise(S^0x2c87u,U,18432),Air=Noise(S^0x853du,U,49152);
+  const double Body=.50*Low+(.16+.10*BW)*Mid+.06*BW*Air;
+  const double F1=2160+int32(Mix(S)%211u),F2=5640+int32(Mix(S^0xb165u)%379u);
+  const double W1=FMath::Sin(Tau*F1*U+18*FMath::Sin(Tau*3*U+P1)+7*FMath::Sin(Tau*17*U+P2));
+  const double W2=FMath::Sin(Tau*F2*U+23*FMath::Sin(Tau*5*U+P2));
+  // Lower spectral centre; breath is increasingly exposed by the existing
+  // quality-squared source level and receding static, not a hidden fear value.
+  return float((.68*Body+.12*W1+.045*BW*W2)*AtmosphereEnvelope(S,U));
+ }
+ float VersionLayer(uint32 S,double U,S47ReceiverTexture::ELayer Which,float BW,int32 Version)
+ {return Version==2?LayerV2(S,U,Which,BW):Layer(S,U,Which,BW);}
+
 }
 
 uint32 S47ReceiverTexture::Seed(const FString& Id)
@@ -74,18 +98,19 @@ float S47ReceiverTexture::StaticLevel(float Q,float Gain)
 {
  return float(Normal(Gain)*(.60-.52*Normal(Q)));
 }
-float S47ReceiverTexture::Sample(uint32 Identity,double SourceTime,float Q,float Gain,float Bandwidth)
+float S47ReceiverTexture::Sample(uint32 Identity,double SourceTime,float Q,float Gain,float Bandwidth,int32 Version)
 {
+ if(Version!=1&&Version!=2)return 0;
  const double U=Position(SourceTime);
- return Layer(Identity,U,ELayer::Source,Bandwidth)*SourceLevel(Q,Gain)
-       +Layer(Identity,U,ELayer::Static,Bandwidth)*StaticLevel(Q,Gain);
+ return VersionLayer(Identity,U,ELayer::Source,Bandwidth,Version)*SourceLevel(Q,Gain)
+       +VersionLayer(Identity,U,ELayer::Static,Bandwidth,Version)*StaticLevel(Q,Gain);
 }
-TSharedPtr<FS47AudioBuffer> S47ReceiverTexture::MakeLoop(const TSharedRef<FS47AudioContext>& C,uint32 Identity,ELayer Which,float Bandwidth)
+TSharedPtr<FS47AudioBuffer> S47ReceiverTexture::MakeLoop(const TSharedRef<FS47AudioContext>& C,uint32 Identity,ELayer Which,float Bandwidth,int32 Version)
 {
- if(!FMath::IsFinite(C->SampleRate)||C->SampleRate<16000||C->SampleRate>192000)return nullptr;
+ if((Version!=1&&Version!=2)||!FMath::IsFinite(C->SampleRate)||C->SampleRate<16000||C->SampleRate>192000)return nullptr;
  const int32 Count=FMath::RoundToInt(C->SampleRate*LoopSeconds);
  auto B=C->CreateBuffer(1,Count,C->SampleRate);float* D=B->GetChannelData(0);
- for(int32 I=0;I<Count;++I)D[I]=Layer(Identity,double(I)/Count,Which,Bandwidth);
+ for(int32 I=0;I<Count;++I)D[I]=VersionLayer(Identity,double(I)/Count,Which,Bandwidth,Version);
  return B;
 }
 
@@ -94,6 +119,11 @@ bool S47ReceiverTexture::SelfTest(TArray<FString>& Lines)
  bool OK=true;
  auto Check=[&](bool Pass,const TCHAR* What){OK&=Pass;Lines.Add(FString::Printf(TEXT("%s receiver texture: %s"),Pass?TEXT("PASS"):TEXT("FAIL"),What));};
  const uint32 A=Seed(TEXT("3C286")),B=Seed(TEXT("3C48"));
+ // Frozen v1 reference values from the pre-v2 evaluator; tolerate libm rounding.
+ const double GoldenTimes[]={0.,.125,1.234,6.345,11.999};
+ const float GoldenV1[]={.1222319379f,.0803975090f,-.1313077211f,.1188457981f,.0990210548f};bool LegacyUnchanged=true;
+ for(int32 I=0;I<UE_ARRAY_COUNT(GoldenTimes);++I)LegacyUnchanged&=FMath::Abs(Sample(A,GoldenTimes[I],.85f,.6f,.65f,1)-GoldenV1[I])<1e-6;
+ Check(LegacyUnchanged,TEXT("v1 retained texture matches frozen pre-v2 sample references"));
  Check(A==Seed(TEXT("3C286"))&&A!=B&&Seed(TEXT(""))==2166136261u,TEXT("stable source identity; distinct sources differ"));
  bool Finite=true,Repeat=true,Silent=true,Periodic=true;double Difference=0,Open=0,Narrow=0,Energy=0;
  for(int32 I=0;I<48000;++I)
@@ -119,5 +149,20 @@ bool S47ReceiverTexture::SelfTest(TArray<FString>& Lines)
   Match&=FMath::Abs(Mixed-Sample(A,I/16000.,.7f,.8f))<1e-6;
  }
  Check(Match,TEXT("live loop layers reconstruct the same source-time samples as tape playback"));
+ bool V2Finite=true,V2Repeat=true,V2Periodic=true,SameStatic=true;double V2Energy=0,V2Difference=0,EnvelopeMin=1,EnvelopeMax=0;
+ for(int32 I=0;I<12000;++I)
+ {
+  const double T=I/1000.;const float V=Sample(A,T,.9f,1,1,2);
+  V2Finite&=FMath::IsFinite(V)&&FMath::Abs(V)<1&&Sample(A,T,1,0,1,2)==0;
+  V2Repeat&=V==Sample(A,T,.9f,1,1,2);V2Periodic&=FMath::Abs(V-Sample(A,T+LoopSeconds,.9f,1,1,2))<1e-6;
+  SameStatic&=Sample(A,T,0,1,1,1)==Sample(A,T,0,1,1,2);
+  V2Energy+=V*V;V2Difference+=FMath::Square(V-Sample(A,T,.9f,1,1,1));
+  const double E=AtmosphereEnvelope(A,Position(T));EnvelopeMin=FMath::Min(EnvelopeMin,E);EnvelopeMax=FMath::Max(EnvelopeMax,E);
+ }
+ Check(V2Finite&&V2Repeat&&V2Periodic&&V2Energy>0&&V2Difference>V2Energy*.1,TEXT("v2 is a distinct bounded deterministic periodic source, with exact gain-zero silence"));
+ Check(SameStatic&&EnvelopeMin>=.35&&EnvelopeMax<=1&&EnvelopeMax-EnvelopeMin>.1,TEXT("v2 preserves off-source static; atmospheric swell has a positive floor, no gated pulses"));
+ auto V2Source=MakeLoop(C,A,ELayer::Source,1,2);bool V2Match=V2Source&&N;
+ if(V2Match)for(int32 I=0;I<V2Source->Length();I+=127)V2Match&=FMath::Abs(V2Source->GetChannelData(0)[I]*SourceLevel(.7f,.8f)+N->GetChannelData(0)[I]*StaticLevel(.7f,.8f)-Sample(A,I/16000.,.7f,.8f,1,2))<1e-6;
+ Check(V2Match,TEXT("v2 cached layers match the same source-time evaluator; acquisition phase alignment remains outside this test"));
  return OK;
 }

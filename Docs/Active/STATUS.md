@@ -526,3 +526,7 @@ Tidligere natt-, krasj- og modellprøver beholder sine avgrensninger; den identi
 2. november: PR347 er lokalt installert fra `902a8fd9`: Station01 bruker sine fem eksisterende bunndekkelag, også etter Fortsett, og avvist tavletråd er sammenhengende før fading. Pakke1997 selvtester, kort installert tittelprøve og161 uendrede Saved-elementer; ruteprøven består16 kontroller over2,88km. Publisert Linux-utgave er fortsatt `bfa1c26d`.
 
 2. november: Finding under synlig sakskort er lokalt installert fra `3b715c3b`, PR348. Bygg/før-etter,2004 pakkeselvtester og10s installert røykprøve består;161 personlige Saved-elementer uendret. Spørsmål og registrert Finding beholder samme anker, gamle løse Finding-posisjoner ignoreres, og åpning/saksskifte fokuserer saken. Full gruppering av alle bevis er fortsatt åpen.
+
+### 5. november 2026 kl.01:03: versjonert mottakertekstur
+
+SIGNAL-EXT-09 har en mørkere v2-kildetekstur med jevn atmosfærisk svelling, valgt for nye Freeform-opptak og bevart i lagring/avspilling. V1-opptak beholder gammel lyd; statikk, målbare pulser og TraceTicks er uendret. Editorbygg og 2382 selvtester består. Åtte WAV-filer består 41 kontroller: alle fire v1-filer er byteidentiske med førbildet, v2 skiller seg fra v1 og alle går til eksakt stillhet etter avslag. Lydprøvene og røykprøven avslutter med kode 0; Vulkan melder ufrigjorte bufferressurser ved avslutning, så feilfri GPU-nedstenging hevdes ikke. Menneskelig lytting, full tidsserie/fasesamsvar fra liveopptak og lokal installasjon gjenstår.

@@ -1797,3 +1797,7 @@ Story-start og disk-Continue fra hentet/uhentet Freeform-kamera beholder låsene
 ### 5. november 2026 kl.00:55: vedvarende Nanite-bruksflagg for mesa-materiale
 
 Målrettet UE5.8.4-audit bekreftet manglende flagg på M_S47_MesaRock og faktisk Nanite-mottaker. Original25829bytes er sikret og hashverifisert før kun MATUSAGE_NANITE ble lagret. Ny prosess bekrefter flagg; GPU-dagsbilde viser materialet og ingen tidligere usage/default-advarsel. Førhash b2dc898c1d186c4eb24ff7ec45c95f592ebbc3b004d8dfa9b6c7780e68ed82d3, etterhash91da08bfd6168f7c7a4fa957b28dff42eaf4860266bb70934ca6deff0beefd11. Generatoren får samme bruksflagg; graf/teksturer er ikke regenerert. Asset og backup forblir private, installasjon følger nattkandidaten.
+
+### 5. november 2026 kl.01:03: versjonert mottakertekstur
+
+SIGNAL-EXT-09 har en mørkere v2-kildetekstur med jevn atmosfærisk svelling, valgt for nye Freeform-opptak og bevart i lagring/avspilling. V1-opptak beholder gammel lyd; statikk, målbare pulser og TraceTicks er uendret. Editorbygg og 2382 selvtester består. Åtte WAV-filer består 41 kontroller: alle fire v1-filer er byteidentiske med førbildet, v2 skiller seg fra v1 og alle går til eksakt stillhet etter avslag. Lydprøvene og røykprøven avslutter med kode 0; Vulkan melder ufrigjorte bufferressurser ved avslutning, så feilfri GPU-nedstenging hevdes ikke. Menneskelig lytting, full tidsserie/fasesamsvar fra liveopptak og lokal installasjon gjenstår.
