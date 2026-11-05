@@ -113,7 +113,7 @@ FString FS47FreeformWorld::ServiceWords(const FString& Text) const
 
 void FS47FreeformWorld::Begin(const S47J::FObj& O)
 {
- Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));Crafting.Load(S47J::Obj(O,TEXT("workshop")));bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();Contents.Reset();BenchJob.Empty();
+ Stop(); Logger.Load(S47J::Obj(O,TEXT("fieldlogger")));Crafting.Load(S47J::Obj(O,TEXT("workshop")));bWorkshopResume=false;bLoggerCalibrating=false;LoggerJob.Empty();LoggerJobElapsed=0; bActive=true;Service=Feeder=LastFaultDay=EmergencyDay=Payload=0;Item.Empty();Contents.Reset();BenchJob.Empty();
  ServiceTarget=TEXT("S-03");OrdinaryServiceSerial=0;
  PowerFaultSerial=EmergencyFuseFault=0;bTrackedPowerFault=false;
  bGenerator=false;GeneratorSeconds=BenchSeconds=FeederSeconds=Settle=ServiceAz=ServiceEl=0;Fuel=3;LastClock=-1;Dropped=FVector::ZeroVector;
@@ -846,6 +846,8 @@ FString FS47FreeformWorld::WorkshopBlock(const FString& Action,const FString& Ar
  if(Payload!=0)return TEXT("Free both hands to work at the bench.");
  if(!BenchJob.IsEmpty()||bLoggerCalibrating)return TEXT("Wait for the bench to finish its current job.");
  if(Action==TEXT("unpack"))return InventoryCount(TEXT("recorder_donor"))<=0?TEXT("No used field recorder in stock. Caliche sells them; unpack the parcel at GARAGE RECEIVING."):!Crafting.CanUnpack()?TEXT("The tray needs room for four parts. Scrap what you no longer need."):TEXT("");
+ if(Action==TEXT("testall"))return Crafting.Tray.ContainsByPredicate([](const FS47Workshop::FPart& P){return !P.bTested;})?TEXT(""):TEXT("Nothing left to test.");
+ if(Action==TEXT("scrapdead"))return Crafting.Tray.ContainsByPredicate([](const FS47Workshop::FPart& P){return P.bTested&&P.bFaulty;})?TEXT(""):TEXT("No dead parts on the tray.");
  if(Action==TEXT("test")||Action==TEXT("scrap"))
  {
   const auto* P=Crafting.Part(FCString::Atoi(*Arg));if(!P)return TEXT("That part is no longer on the tray.");
@@ -871,6 +873,11 @@ bool FS47FreeformWorld::WorkshopAction(const FString& Action,const FString& Arg)
 {
  const FString Why=WorkshopBlock(Action,Arg);
  if(!Why.IsEmpty()){if(Ready())Change(Why);return false;}
+ if(Action==TEXT("scrapdead"))
+ {
+  const int32 N=Crafting.Tray.RemoveAll([](const FS47Workshop::FPart& P){return P.bTested&&P.bFaulty;});
+  Change(FString::Printf(TEXT("CALIBRATION / REPAIR: %d dead part%s scrapped."),N,N==1?TEXT(""):TEXT("s")));return true;
+ }
  if(Action==TEXT("scrap"))
  {
   const auto* P=Crafting.Part(FCString::Atoi(*Arg));const FString Title=P?FS47Workshop::PartTitle(P->Kind):FString();
@@ -879,7 +886,7 @@ bool FS47FreeformWorld::WorkshopAction(const FString& Action,const FString& Arg)
  }
  if(Action==TEXT("unpack")&&!Consume(TEXT("recorder_donor")))return false;
  BenchJob=TEXT("ws:")+Action+(Arg.IsEmpty()?FString():TEXT(":")+Arg);BenchSeconds=0;
- Change(Action==TEXT("unpack")?TEXT("CALIBRATION / REPAIR: Stripping the used recorder down to its parts."):Action==TEXT("test")?TEXT("CALIBRATION / REPAIR: Part on the test set; the reading settles in three seconds."):Action==TEXT("build")?TEXT("CALIBRATION / REPAIR: Assembling and bench-checking; three seconds."):TEXT("CALIBRATION / REPAIR: Taking it apart; three seconds."));
+ Change(Action==TEXT("unpack")?TEXT("CALIBRATION / REPAIR: Stripping the used recorder down to its parts."):Action==TEXT("test")||Action==TEXT("testall")?TEXT("CALIBRATION / REPAIR: Parts on the test set; the readings settle in three seconds."):Action==TEXT("build")?TEXT("CALIBRATION / REPAIR: Assembling and bench-checking; three seconds."):TEXT("CALIBRATION / REPAIR: Taking it apart; three seconds."));
  return true;
 }
 void FS47FreeformWorld::FinishWorkshopJob(const FString& Job)
@@ -889,6 +896,12 @@ void FS47FreeformWorld::FinishWorkshopJob(const FString& Job)
  {
   if(!Crafting.Unpack()){AddItem(TEXT("recorder_donor"));Change(TEXT("CALIBRATION / REPAIR: No room on the tray; the recorder went back to stock."));return;}
   Change(TEXT("CALIBRATION / REPAIR: Four parts on the tray. Used parts can be dead; test each before relying on it."));
+ }
+ else if(Action==TEXT("testall"))
+ {
+  TArray<FString> Dead;int32 Good=0;
+  for(const auto& P:TArray<FS47Workshop::FPart>(Crafting.Tray))if(!P.bTested&&Crafting.Test(P.Id)){if(P.bFaulty)Dead.Add(FS47Workshop::PartTitle(P.Kind));else ++Good;}
+  Change(FString::Printf(TEXT("CALIBRATION / REPAIR: %d good on the test set."),Good)+(Dead.IsEmpty()?FString():TEXT(" DEAD: ")+FString::Join(Dead,TEXT(", "))+TEXT(".")));
  }
  else if(Action==TEXT("test"))
  {
@@ -914,36 +927,66 @@ void FS47FreeformWorld::FinishWorkshopJob(const FString& Job)
   if(Arg==TEXT("shielded_lead"))Logger.bShieldedLead=false;
   Change(TEXT("CALIBRATION / REPAIR: ")+FString(R->Title)+TEXT(" taken apart. Its parts are back on the tray; spent cells and foil do not come back."));
  }
- if(M&&M->UI)M->UI->Close();
+ if(bWorkshopResume&&M&&M->UI&&!M->UI->Modal()&&Near(BenchAt))OpenWorkshop();
+ bWorkshopResume=false;
 }
 void FS47FreeformWorld::OpenWorkshop()
 {
  if(!Ready()||!Near(BenchAt)||!M->UI)return;
- TArray<S47Kit::FW> R;const int32 Cells=InventoryCount(TEXT("cell")),Foil=InventoryCount(TEXT("foil"));
- R.Add(S47Kit::Paper(FString::Printf(TEXT("SARO WORKSHOP / TRAY %d/%d\nUSED RECORDERS %d / DRY CELLS %d / SHIELDING FOIL %d\nCaliche sells recorders, cells and foil. The loan logger needs none of this."),Crafting.Tray.Num(),FS47Workshop::TraySize,InventoryCount(TEXT("recorder_donor")),Cells,Foil)));
- const auto Act=[this](const FString& Action,const FString& Arg){WorkshopAction(Action,Arg);if(M&&M->UI&&BenchJob.IsEmpty())OpenWorkshop();else if(M&&M->UI)M->UI->Close();};
- R.Add(S47Kit::Button(TEXT("Strip a used field recorder into parts"),[Act]{Act(TEXT("unpack"),FString());},true,WorkshopBlock(TEXT("unpack")).IsEmpty()));
+ const int32 Cells=InventoryCount(TEXT("cell")),Foil=InventoryCount(TEXT("foil"));
+ // The world is paused under a panel: step back for the bench job, then return here when it is done.
+ auto Act=[this](const FString& Action,const FString& Arg){WorkshopAction(Action,Arg);if(BenchJob.IsEmpty())OpenWorkshop();else{M->UI->Close();bWorkshopResume=true;}};
+ // Left: what is on the bench and the one thing to do with it.
+ TArray<S47Kit::FW> L;L.Add(S47Kit::Sub(FString::Printf(TEXT("TRAY %d / %d"),Crafting.Tray.Num(),FS47Workshop::TraySize)));
+ int32 Untested=0,Dead=0;
  for(const auto& P:Crafting.Tray)
  {
-  const FString Id=FString::FromInt(P.Id),Name=FS47Workshop::PartTitle(P.Kind)+FString::Printf(TEXT(" #%d"),P.Id);
-  if(!P.bTested)R.Add(S47Kit::Button(TEXT("Test ")+Name+TEXT(" / untested"),[Act,Id]{Act(TEXT("test"),Id);},false,BenchJob.IsEmpty()));
-  else if(P.bFaulty)R.Add(S47Kit::Button(TEXT("Scrap ")+Name+TEXT(" / DEAD"),[Act,Id]{Act(TEXT("scrap"),Id);},false,BenchJob.IsEmpty()));
-  else R.Add(S47Kit::Small(Name+TEXT(" / GOOD")));
+  if(!P.bTested)++Untested;else if(P.bFaulty)++Dead;
+  L.Add(S47Kit::Text(FS47Workshop::PartTitle(P.Kind)+(!P.bTested?TEXT(" / untested"):P.bFaulty?TEXT(" / DEAD"):TEXT(" / good")),!P.bTested?0:P.bFaulty?-1:1));
  }
- for(const auto& Recipe:FS47Workshop::Recipes())
+ if(Crafting.Tray.IsEmpty())L.Add(S47Kit::Small(TEXT("Nothing on the bench.")));
+ if(Untested>0)L.Add(S47Kit::Button(FString::Printf(TEXT("Test all %d untested"),Untested),[Act]{Act(TEXT("testall"),FString());},true,WorkshopBlock(TEXT("testall")).IsEmpty()));
+ if(Dead>0)L.Add(S47Kit::Button(FString::Printf(TEXT("Scrap %d dead"),Dead),[Act]{Act(TEXT("scrapdead"),FString());},false,WorkshopBlock(TEXT("scrapdead")).IsEmpty()));
+ const FString StripBlock=WorkshopBlock(TEXT("unpack"));
+ L.Add(S47Kit::Button(FString::Printf(TEXT("Strip a used recorder (%d)"),InventoryCount(TEXT("recorder_donor"))),[Act]{Act(TEXT("unpack"),FString());},Untested==0&&Dead==0&&Crafting.Tray.IsEmpty(),StripBlock.IsEmpty()));
+ L.Add(S47Kit::Small(FString::Printf(TEXT("Stock: %d dry cells, %d foil. Caliche sells both."),Cells,Foil)));
+ // Right: the known recipes, one in detail.
+ TArray<S47Kit::FW> R;R.Add(S47Kit::Sub(TEXT("BUILD")));
+ const FS47Workshop::FRecipe* Pick=FS47Workshop::Recipe(WorkshopPick);if(Pick&&!Crafting.Known(*Pick))Pick=nullptr;
+ for(const auto& Recipe:FS47Workshop::Recipes())if(Crafting.Known(Recipe))
  {
-  if(!Crafting.Known(Recipe))continue;const FString Id(Recipe.Id);
+  if(!Pick)Pick=&Recipe;const FString Id(Recipe.Id);
+  const FString State=Crafting.IsBuilt(Id)?TEXT("BUILT"):Crafting.Missing(Recipe,Cells,Foil).IsEmpty()?TEXT("READY"):TEXT("needs parts");
+  R.Add(S47Kit::Choice(FString(Recipe.Title)+TEXT(" / ")+State,Pick==&Recipe,[this,Id]{WorkshopPick=Id;OpenWorkshop();}));
+ }
+ if(!Pick)R.Add(S47Kit::Small(TEXT("Strip a recorder to see what its parts can become. The loan logger needs none of this.")));
+ else
+ {
+  const FString Id(Pick->Id);R.Add(S47Kit::Small(Pick->Effect));
   if(Crafting.IsBuilt(Id))
   {
-   TArray<FString> Back;for(const TCHAR* K:Recipe.Parts)Back.Add(FS47Workshop::PartTitle(K));
-   R.Add(S47Kit::Button(FString(TEXT("Take apart "))+Recipe.Title+TEXT(" / returns ")+FString::Join(Back,TEXT(", ")),[Act,Id]{Act(TEXT("strip"),Id);},false,WorkshopBlock(TEXT("strip"),Id).IsEmpty()));
-   continue;
+   TArray<FString> Back;for(const TCHAR* K:Pick->Parts)Back.Add(FS47Workshop::PartTitle(K));
+   R.Add(S47Kit::Small(TEXT("Taking it apart returns ")+FString::Join(Back,TEXT(", "))+TEXT(". Cells and foil do not come back.")));
+   R.Add(S47Kit::Button(TEXT("Take apart"),[Act,Id]{Act(TEXT("strip"),Id);},false,WorkshopBlock(TEXT("strip"),Id).IsEmpty()));
   }
-  const FString Block=WorkshopBlock(TEXT("build"),Id);
-  R.Add(S47Kit::Button(FString(TEXT("Build "))+Recipe.Title,[Act,Id]{Act(TEXT("build"),Id);},Block.IsEmpty(),Block.IsEmpty()));
-  R.Add(S47Kit::Small(FString(Recipe.Effect)+(Block.IsEmpty()?FString():TEXT(" ")+Block)));
+  else
+  {
+   TArray<int32> Used;
+   for(const TCHAR* K:Pick->Parts)
+   {
+    const auto* Good=Crafting.Tray.FindByPredicate([&](const FS47Workshop::FPart& P){return P.Kind==K&&P.Usable()&&!Used.Contains(P.Id);});
+    if(Good)Used.Add(Good->Id);
+    const bool Waiting=!Good&&Crafting.Tray.ContainsByPredicate([&](const FS47Workshop::FPart& P){return P.Kind==K&&!P.bTested;});
+    R.Add(S47Kit::Text(FS47Workshop::PartTitle(K)+(Good?TEXT(" / have"):Waiting?TEXT(" / test first"):TEXT(" / MISSING")),Good?1:Waiting?0:-1));
+   }
+   if(Pick->Cells>0)R.Add(S47Kit::Text(FString::Printf(TEXT("%d dry cell%s / have %d"),Pick->Cells,Pick->Cells==1?TEXT(""):TEXT("s"),Cells),Cells>=Pick->Cells?1:-1));
+   if(Pick->Foil>0)R.Add(S47Kit::Text(FString::Printf(TEXT("shielding foil / have %d"),Foil),Foil>=Pick->Foil?1:-1));
+   const FString Block=WorkshopBlock(TEXT("build"),Id);
+   R.Add(S47Kit::Button(TEXT("Build"),[Act,Id]{Act(TEXT("build"),Id);},Block.IsEmpty(),Block.IsEmpty()));
+   if(Crafting.Missing(*Pick,Cells,Foil).IsEmpty()&&!Block.IsEmpty())R.Add(S47Kit::Small(Block));
+  }
  }
- M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / WORKSHOP"),S47Kit::Col(R),880));
+ M->UI->Open(S47Kit::Shell(M->UI,TEXT("SARO / WORKSHOP"),S47Kit::Two(S47Kit::Col(L),S47Kit::Col(R),.42f,.58f),980));
 }
 void FS47FreeformWorld::OpenSampleLab()
 {

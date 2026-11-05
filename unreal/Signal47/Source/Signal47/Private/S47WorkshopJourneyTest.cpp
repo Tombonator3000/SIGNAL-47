@@ -73,7 +73,7 @@ void FS47FreeformTest::StepWorkshopJourney(double Dt)
  if(Stage==12)
  {
   if(!Check(C.Recipes().Num()==3&&!C.Known(*FS47Workshop::Recipe(TEXT("own_logger"))),TEXT("recipes are hidden before any part has been handled")))return;
-  if(!Check(Click(TEXT("Strip a used field recorder")),TEXT("actual strip button starts the bench job"))||!Check(W.BenchBusy()&&W.InventoryCount(TEXT("recorder_donor"))==1,TEXT("strip job holds the consumed recorder")))return;
+  if(!Check(Click(TEXT("Strip a used recorder")),TEXT("actual strip button starts the bench job"))||!Check(W.BenchBusy()&&W.InventoryCount(TEXT("recorder_donor"))==1,TEXT("strip job holds the consumed recorder")))return;
   if(!Restore(TEXT("workshop-mid-strip")))return;Go(13,.4);return;
  }
  if(Stage==13)
@@ -84,19 +84,23 @@ void FS47FreeformTest::StepWorkshopJourney(double Dt)
  }
  if(Stage==14)
  {
-  if(const auto* P=Untested()){if(!Check(W.WorkshopAction(TEXT("test"),FString::FromInt(P->Id)),TEXT("test job starts")))return;Go(15,.2);return;}
-  Go(16,.2);return;
+  W.OpenWorkshop();Go(142,.4);return;
  }
  if(Stage==140){Shot(TEXT("workshop-tray-full.png"));Go(141,.4);return;}
  if(Stage==141){Approach(TEXT("ff:bench"));W.OpenWorkshop();Go(21,.5);return;}
- if(Stage==15){if(W.BenchBusy())return;Go(Untested()?14:16,.1);return;}
+ if(Stage==142)
+ {
+  Shot(TEXT("workshop-panel-untested.png"));
+  if(!Check(Click(TEXT("Test all 4 untested"))&&W.BenchBusy(),TEXT("one button tests every untested part")))return;Go(15,.2);return;
+ }
+ if(Stage==15){if(W.BenchBusy())return;if(!Check(!Untested()&&M->UI->Modal(),TEXT("all parts tested in one job and the panel comes back by itself")))return;M->UI->Close(true);Go(16,.2);return;}
  if(Stage==16)
  {
   if(!Check(Part(TEXT("timer"),true)&&Part(TEXT("recorder"),false)&&Part(TEXT("housing"),false)&&Part(TEXT("lead"),false),TEXT("testing reveals this donor's dead timer and three good parts")))return;
   const FString Why=W.WorkshopBlock(TEXT("build"),TEXT("own_logger"));
   if(!Check(Why.Contains(TEXT("timer board")),TEXT("build is refused and names the exact missing part: ")+Why))return;
   if(!Check(!W.WorkshopAction(TEXT("build"),TEXT("own_logger"))&&!W.BenchBusy()&&C.Tray.Num()==4&&W.InventoryCount(TEXT("cell"))==3,TEXT("refused build consumes nothing")))return;
-  if(!Check(W.WorkshopAction(TEXT("scrap"),FString::FromInt(Part(TEXT("timer"),true)->Id))&&C.Tray.Num()==3,TEXT("dead timer scrapped")))return;
+  if(!Check(W.WorkshopAction(TEXT("scrapdead"))&&C.Tray.Num()==3,TEXT("dead timer scrapped")))return;
   if(!Check(W.WorkshopAction(TEXT("unpack")),TEXT("second recorder stripped for a working timer")))return;Go(17,.2);return;
  }
  if(Stage==17)
@@ -104,8 +108,8 @@ void FS47FreeformTest::StepWorkshopJourney(double Dt)
   if(W.BenchBusy())return;
   if(!Check(C.Tray.Num()==7,TEXT("second donor adds four parts")))return;Go(18,.1);return;
  }
- if(Stage==18){if(const auto* P=Untested()){W.WorkshopAction(TEXT("test"),FString::FromInt(P->Id));Go(19,.2);return;}Go(20,.1);return;}
- if(Stage==19){if(W.BenchBusy())return;Go(18,.1);return;}
+ if(Stage==18){if(!Check(W.WorkshopAction(TEXT("testall")),TEXT("second batch goes to the test set")))return;Go(19,.2);return;}
+ if(Stage==19){if(W.BenchBusy())return;Go(20,.1);return;}
  if(Stage==20)
  {
   if(!Check(Part(TEXT("recorder"),true)&&Part(TEXT("timer"),false),TEXT("second donor has its own fault: dead recorder, good timer")))return;
@@ -115,7 +119,11 @@ void FS47FreeformTest::StepWorkshopJourney(double Dt)
  if(Stage==21){Shot(TEXT("workshop-panel-parts.png"));Go(22,.5);return;}
  if(Stage==22)
  {
-  if(!Check(Click(TEXT("Build Field logger")),TEXT("actual build button starts the logger")))return;
+  if(!Check(Click(TEXT("Field logger")),TEXT("recipe list selects the logger")))return;Go(220,.3);return;
+ }
+ if(Stage==220)
+ {
+  if(!Check(Click(TEXT("Build")),TEXT("actual build button starts the selected logger")))return;
   if(!Check(!W.LoggerAccess(),TEXT("logger is not usable until the build has finished")))return;
   if(!Restore(TEXT("workshop-mid-build")))return;Go(23,.4);return;
  }
@@ -195,6 +203,15 @@ void FS47FreeformTest::StepWorkshopJourney(double Dt)
   if(W.BenchBusy())return;
   if(!Check(!L.bBatteryPack&&L.Battery<=FS47FieldLogger::Capacity&&C.Tray.Num()==S.Cells+1&&C.Tray.Last().Kind==TEXT("housing")&&C.Tray.Last().Usable()&&W.InventoryCount(TEXT("cell"))==0,TEXT("taking the pack apart returns its housing once, not its cells, and clamps the charge")))return;
   if(!Check(F.Budget()==S.Cash&&F.Debt()==S.Debt,TEXT("the workshop itself moved no money")))return;
+  Approach(TEXT("ff:bench"));W.OpenWorkshop();Go(36,.5);return;
+ }
+ if(Stage==36){Shot(TEXT("workshop-panel-built.png"));M->UI->Close(true);F.OpenArchive();Go(37,.6);return;}
+ if(Stage==37)
+ {
+  Shot(TEXT("archive-records.png"));Go(38,.6);return;
+ }
+ if(Stage==38)
+ {
   Finish(true,TEXT("Whole workshop journey: strip, test, refusal, scrap, three builds, calibration, carry, field placement, retrieval, return and take-apart with three disk restores. Declared stock and placement fixtures; no shop trip, full tape or human acceptance."));return;
  }
 }

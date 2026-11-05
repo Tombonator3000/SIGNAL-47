@@ -99,6 +99,8 @@ private:
  FS47Workshop Crafting;
  FS47Obj TrayParts[FS47Workshop::TraySize];
  void FinishWorkshopJob(const FString& Job);
+ FString WorkshopPick;
+ bool bWorkshopResume=false;
  FS47Obj LoggerPosts[2],LoggerBody;
  bool bLoggerCalibrating=false;
  FString LoggerJob;

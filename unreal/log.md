@@ -1863,3 +1863,7 @@ Privat materialretting: M_Web_Lit_Opaque fikk tilsiktet Nanite-bruksflagg. Paren
 ## 5. november 2026 kl.13:45, verksted og samling
 
 Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, kontrollert med hash. `claude/crafting-20261105`: donor, deltest, oppskrifter, demontering og synlig brett på benken. Bygg, 2484 selvtester og 56 native kontroller består; brett og panel visuelt kontrollert. Ikke installert.
+
+## 5. november 2026 kl.14:30, verksted- og arkivpanel
+
+`claude/workshop-archive-ux-20261105`: begge paneler er liste pluss detalj med én tydelig handling. 2484 selvtester, 56 og 247 native kontroller består. Evidence-testen feiler uendret også på installert `bef9fa88`. Ikke installert.
