@@ -1891,3 +1891,8 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 ## 5. november 2026 kl.21:40, båndpanel og perm
 
 `claude/tape-panel-exit`: REEL DECK-panelet hadde ingen vei ut; fikk fast knapp, Esc, bruk-tast og B. Sammenligningen har klartekst og sjekkliste, klikk i sporet merker uten å flytte båndet, og RETAIN er aktiv først når alt er gjort. Permen har fylt handlingsknapp, bekreftelse og finner pakke også når en annen jobb er valgt. Editorbygg og `S47InternalControlTest` 30 kontroller består, inkludert ekte Esc og pekerhendelser. `S47FreeformEvidenceTest` med ny knappetekst er ikke kjørt. Ikke installert ennå.
+
+## 5. november 2026 kl.22:00, Niagara-lyn og lyskuler
+
+`claude/substation-niagara-arc`, stablet på PR428 fordi automatisk fletting ble avvist av sikkerhetsregel. Trafostasjonen har ribbon-lyn opp og ned portalbeina, korona og broer; `S47SubstationLiveTest` består. Skumringskula er tre Niagara-kuler med ekte lys som snuser rundt og flykter rett opp innenfor 7 m; `S47DuskOrbTest` 107 kontroller består, inkludert foto, Continue og flukt. Ett testvindu ble lukket utenfra og tatt på nytt.
+

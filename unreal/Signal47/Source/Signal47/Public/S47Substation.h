@@ -90,7 +90,7 @@ public:
   bool bEnergized=false,bIsolated=false,bFault=false,bHeld=false;
   FString GeometryMotionHash; FBox GeometryBounds=FBox(ForceInit);
   double HumGain=0,BuzzGain=0;
-  int32 ArcInstances = 0, LampInstances = 0;
+  int32 ArcInstances = 0, LampInstances = 0, BoltsActive = 0;
   double Age = 0;
   float ArcLumens = 0, LampLumens = 0, ArcIntensity = 0, LampIntensity = 0;
   FVector Origin = FVector::ZeroVector;
@@ -173,6 +173,13 @@ private:
  TWeakObjectPtr<UStaticMeshComponent> FaultLampMounts[2];
  TWeakObjectPtr<UMaterialInstanceDynamic> FaultArcMid, FaultLampMid;
  TWeakObjectPtr<UPointLightComponent> FaultArcLight, FaultLampLights[2];
+ // Niagara lightning on top of the anchored filaments: arcs climbing both portal legs, corona at
+ // the three bus supports and bridges between them. The filaments remain if the asset is absent.
+ static constexpr int32 BoltCount = 7;
+ TWeakObjectPtr<UNiagaraComponent> Bolts[BoltCount];
+ TWeakObjectPtr<UPointLightComponent> FaultClimbLight;
+ bool bBoltsOn = false;
+ void StepBolts(bool bFault, bool bLow, bool bCalm, float Flicker);
  TSharedPtr<FS47GainNode> SiteHumGain, SiteBuzzGain;
  TArray<TSharedPtr<FS47ScheduledSourceNode>> SiteAudioSources;
  void StepSiteAudio(bool bEnergized,bool bFault, float Arc, bool bHeld);

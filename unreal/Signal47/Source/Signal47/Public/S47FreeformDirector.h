@@ -73,6 +73,7 @@ private:
  void ObserveVisitor(const FVector& At,bool bHeard=false);
  int32 Stage=0,Variant=0,SeenDay=0,MinorLeft=0,InvestLeft=0,ThreatRollDay=0,MajorRollDay=0,LastThreatDay=0,LastMajorDay=-3;
  int32 PendingThreatNight=0,PendingMajorNight=0;
+ double OrbFleeAge=-1; // running, not saved: a Continue finds the lights where their route puts them
  double Age=0,ActiveTime=0,NextAt=90,RestUntil=0,SoundAt=0,LastPhotoAt=-10;
  FVector Anchor=FVector::ZeroVector;
  FRandomStream Random;

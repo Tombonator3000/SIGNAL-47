@@ -80,7 +80,7 @@ namespace
   }
   bool Energized(const FSnapshot& S,bool Faulted)
   {
-   auto* M=Main.Get();return Check(S.bReady&&S.bActive&&S.bEnergized&&!S.bIsolated&&S.bFault==Faulted&&!S.bHeld&&S.bArcVisible&&S.bMaterialAssigned&&S.bSafe&&S.ArcInstances>0&&S.ArcIntensity>0&&S.ArcLumens>0&&S.HumGain>0&&S.BuzzGain>0&&!S.GeometryMotionHash.IsEmpty()&&S.GeometryBounds.IsValid&&M->Web->Obj(TEXT("world.legs.road.area.group")).Shown(),Faulted?TEXT("actual energized fault state has visible live geometry/light/audio on the active road root"):TEXT("actual normal energized state has visible live geometry/light/audio on the active road root"));
+   auto* M=Main.Get();return Check(S.bReady&&S.bActive&&S.bEnergized&&!S.bIsolated&&S.bFault==Faulted&&!S.bHeld&&S.bArcVisible&&S.BoltsActive>=3&&S.bMaterialAssigned&&S.bSafe&&S.ArcInstances>0&&S.ArcIntensity>0&&S.ArcLumens>0&&S.HumGain>0&&S.BuzzGain>0&&!S.GeometryMotionHash.IsEmpty()&&S.GeometryBounds.IsValid&&M->Web->Obj(TEXT("world.legs.road.area.group")).Shown(),Faulted?TEXT("actual energized fault state has visible live geometry/light/audio on the active road root"):TEXT("actual normal energized state has visible live geometry/light/audio on the active road root"));
   }
   bool Moving(const FSnapshot& Before,const FSnapshot& After,const FString& Name)
   {return Check(After.Age>Before.Age+2.5&&!After.GeometryMotionHash.IsEmpty()&&Before.GeometryMotionHash!=After.GeometryMotionHash,Name+TEXT(" actual ordinary-tick world instance matrices and age advance"));}

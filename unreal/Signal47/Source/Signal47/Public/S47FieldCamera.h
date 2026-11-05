@@ -69,6 +69,8 @@ public:
 	void Init(US47Main* InM) { M = InM; }
 
 	bool bHave = false;
+	// Called around the scene capture of an exposure, for things only the film should show.
+	TFunction<void(bool)> OnExposure;
 	bool bRaised = false;
 
 	FS47FrameRect FrameRect() const;

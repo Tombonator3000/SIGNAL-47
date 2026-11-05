@@ -206,7 +206,9 @@ bool US47FieldCamera::Render(int32 RW, int32 RH, TArray<FColor>& Out)
 		E->SetScalarParameterValue(TEXT("Vhs"), 0.f);
 	}
 	// (CaptureScene sends the world's pending updates first: the echo shown, the exposure raised)
+	if (OnExposure) OnExposure(true);
 	C->CaptureScene();
+	if (OnExposure) OnExposure(false);
 	if (E)
 	{
 		E->SetScalarParameterValue(TEXT("ToneK"), ToneK);

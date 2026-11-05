@@ -29,6 +29,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogS47SubstationArc, Log, All);
 namespace
 {
  const TCHAR* ArcSystem = TEXT("/Game/Signal47/FX/NS_S47_ArcSparks.NS_S47_ArcSparks");
+ const TCHAR* BoltSystem = TEXT("/Game/Signal47/FX/NS_S47_Bolt.NS_S47_Bolt");
  const double InsulatorX[3] = {-1.04, 0, 1.04}; // Tools/substation/geometry.py: bus supports at (x, 3.25, 7.69)
  constexpr double InsulatorY = 3.25, InsulatorZ = 7.69, GravelTop = -.08;
  constexpr float ArcPeakLumens = 1800.f, CalmPeak = .45f;
@@ -37,8 +38,22 @@ namespace
  const FLinearColor ArcColor(.36f, .64f, 1.f), SparkColor(1.f, .74f, .42f, 1.f);
  const FLinearColor FaultLampColor(1.f, .24f, .035f);
  FVector Insulator(int32 I) { return FS47Substation::Site(FVector(InsulatorX[FMath::Clamp(I, 0, 2)], InsulatorY, InsulatorZ)); }
- float FaultArcLevel(bool bLow, bool bCalm) { return bCalm ? .28f : bLow ? .38f : .42f; }
- float NormalArcLevel(bool bLow,bool bCalm){return bCalm?.040f:bLow?.055f:.065f;}
+ float FaultArcLevel(bool bLow, bool bCalm) { return bCalm ? .70f : bLow ? 1.15f : 1.40f; }
+ float NormalArcLevel(bool bLow,bool bCalm){return bCalm?.22f:bLow?.42f:.50f;}
+ double Hash(double N){const double V=FMath::Sin(N*12.9898)*43758.5453;return V-FMath::FloorToDouble(V);}
+ // Restrike flicker: a stepped value, so nothing changes while the clock is held. Comfort mode only breathes.
+ float SiteFlicker(double T,bool bFault,bool bCalm)
+ {
+  if(bCalm)return float(.86+.14*FMath::Sin(T*.8));
+  const double Step=FMath::FloorToDouble(T*(bFault?22.:13.));
+  return float(.55+.45*Hash(Step))*(Hash(Step*.37+5)<(bFault?.06:.10)?.35f:1.f);
+ }
+ // Up and down the leg with a rest at each end, as a travelling arc: 0 at the foot, 1 at the top.
+ double ClimbHeight(double T,double Period)
+ {
+  const double P=FMath::Fmod(T/Period,1.);const double Tri=P<.5?P*2:(1-P)*2;
+  return Tri*Tri*(3-2*Tri);
+ }
  TArray<TPair<FVector,FVector>> SiteSegments(double Time,bool Fault,bool Low,bool Calm)
  {
   // Native support tops from the current Buswork source: three porcelain tops at
@@ -66,6 +81,29 @@ namespace
    }
   }
   return Segments;
+ }
+ // Blender site coordinates, cm relative to the middle support: where each bolt runs right now.
+ void BoltEnds(int32 I,double T,bool bFault,bool bCalm,FVector& A,FVector& B)
+ {
+  const FVector Origin=S47Three::ToUE(Insulator(1));
+  auto At=[&](double X,double Y,double Z){return S47Three::ToUE(FS47Substation::Site(FVector(X,Y,Z)))-Origin;};
+  if(I<2)
+  {
+   // Portal legs: a travelling arc about 1.6 m long, opposite legs out of step.
+   const double Period=(bCalm?13.:bFault?3.2:6.5),X=I==0?-3.45:3.45;
+   const double Z=.5+5.7*ClimbHeight(T+(I==0?0.:Period*.37),Period),Span=bFault?2.1:1.6;
+   A=At(X,3.05,Z);B=At(X,3.05,Z+Span);
+   return;
+  }
+  if(I<5)
+  {
+   // Corona standing on the three bus supports, breathing in height.
+   const int32 S=I-2;const double Up=(bFault?1.5:.8)*(.65+.35*FMath::Sin(T*(bCalm?.5:1.6)+S*2.1));
+   A=At(InsulatorX[S],InsulatorY-.12,InsulatorZ);B=At(InsulatorX[S],InsulatorY-.12,InsulatorZ+Up);
+   return;
+  }
+  const int32 S=I-5;
+  A=At(InsulatorX[S],InsulatorY-.12,InsulatorZ+.05);B=At(InsulatorX[S+1],InsulatorY-.12,InsulatorZ+.05);
  }
  bool SafeMesh(const UStaticMeshComponent* C)
  {
@@ -169,6 +207,7 @@ FS47Substation::FFaultSnapshot FS47Substation::FaultSnapshot() const
  FFaultSnapshot S;S.bRequested=bSiteFault;S.bEnergized=bSiteEnergized;S.bIsolated=bSiteIsolated;S.bFault=bSiteFault;S.bHeld=bSiteHeld;
  if(SiteHumGain)S.HumGain=SiteHumGain->Gain.Value();if(SiteBuzzGain)S.BuzzGain=SiteBuzzGain->Gain.Value();
  S.bReady = FaultReady(); S.bActive = bFaultShown; S.bSafe = ArcSafe(); S.Age = FaultTime;
+ for (const auto& W : Bolts) if (const UNiagaraComponent* B = W.Get()) { if (B->IsActive() && B->IsVisible()) ++S.BoltsActive; S.bSafe &= S47Fx::Safe(B); }
  if (const UInstancedStaticMeshComponent* C = FaultArcMesh.Get())
  {
   S.bArcVisible = C->IsVisible(); S.ArcInstances = C->GetInstanceCount(); S.Origin = C->GetComponentLocation();FSHA1 Hash;
@@ -243,6 +282,15 @@ void FS47Substation::InstallFault(USceneComponent* Parent, UStaticMesh* Cylinder
    P + FVector(0, -6, 0), FaultLampColor, 900, 10);
  }
  S47Fx::Precache(Filament); S47Fx::Precache(Lenses);
+ FaultClimbLight = MakeFaultLight(TEXT("SubstationClimbLight"), At, ArcColor, 1400, 8);
+ static const TCHAR* BoltNames[BoltCount]={TEXT("SubstationBoltLegLeft"),TEXT("SubstationBoltLegRight"),TEXT("SubstationBoltSupportA"),TEXT("SubstationBoltSupportB"),TEXT("SubstationBoltSupportC"),TEXT("SubstationBoltBridgeA"),TEXT("SubstationBoltBridgeB")};
+ for (int32 I = 0; I < BoltCount; ++I)
+  if (UNiagaraComponent* B = S47Fx::Make(M->Web.Get(), Parent, BoltSystem, BoltNames[I]))
+  {
+   B->SetWorldLocation(At); B->SetWorldRotation(FRotator::ZeroRotator); B->SetWorldScale3D(FVector::OneVector);
+   B->SetVariableFloat(TEXT("User.Seed"), float(I) * 3.7f + 1.f); B->SetVariableLinearColor(TEXT("User.BoltColor"), FLinearColor(0, 0, 0, 0));
+   Bolts[I] = B;
+  }
  UE_LOG(LogS47SubstationArc, Display, TEXT("S47: site electricity ready: upward and inter-support paths, two mounted fault beacons; safe=%d"), ArcSafe());
 }
 
@@ -252,8 +300,43 @@ void FS47Substation::ClearFault()
  for (const auto& W : {FaultArcMesh, FaultLampMesh}) if (UInstancedStaticMeshComponent* C = W.Get()) C->SetVisibility(false);
  for (const auto& W : FaultLampMounts) if (UStaticMeshComponent* C = W.Get()) C->SetVisibility(false);
  for (const auto& W : {FaultArcMid, FaultLampMid}) if (UMaterialInstanceDynamic* D = W.Get()) D->SetScalarParameterValue(TEXT("ArcIntensity"), 0.f);
- for (const auto& W : {FaultArcLight, FaultLampLights[0], FaultLampLights[1]})
+ for (const auto& W : {FaultArcLight, FaultClimbLight, FaultLampLights[0], FaultLampLights[1]})
   if (UPointLightComponent* L = W.Get()) { L->SetIntensity(0); L->SetVisibility(false); }
+ if (bBoltsOn) for (const auto& W : Bolts) if (UNiagaraComponent* B = W.Get()) B->DeactivateImmediate();
+ bBoltsOn = false;
+}
+
+void FS47Substation::StepBolts(bool bFault, bool bLow, bool bCalm, float Flicker)
+{
+ const FVector Origin = S47Three::ToUE(Insulator(1));
+ const FLinearColor Hot(ArcColor.R * .8f, ArcColor.G * .9f, 1.f, 1.f);
+ for (int32 I = 0; I < BoltCount; ++I)
+ {
+  UNiagaraComponent* B = Bolts[I].Get();
+  if (!B) continue;
+  // Low keeps the arcs on the legs and the middle support: the part read from the road.
+  const bool Use = !bLow || I < 2 || I == 3 || bFault;
+  if (Use && !B->IsActive()) B->Activate(true);
+  else if (!Use && B->IsActive()) { B->DeactivateImmediate(); continue; }
+  if (!Use) continue;
+  FVector A, E; BoltEnds(I, FaultTime, bFault, bCalm, A, E);
+  const bool Leg = I < 2, Bridge = I >= 5;
+  // Bridges strike now and then in normal duty, nearly always in a fault.
+  const double Gate = Hash(FMath::FloorToDouble(FaultTime * (bCalm ? .5 : 2.5)) + I * 7.1);
+  const float Shown = Bridge && Gate > (bFault ? .85 : .35) ? 0.f : 1.f;
+  const float Level = (bFault ? (Leg ? 10.f : 7.f) : Leg ? 5.5f : 3.5f) * (bCalm ? .6f : 1.f) * Flicker * Shown;
+  B->SetVariableVec3(TEXT("User.Start"), A); B->SetVariableVec3(TEXT("User.End"), E);
+  B->SetVariableFloat(TEXT("User.Phase"), float(FaultTime));
+  B->SetVariableFloat(TEXT("User.Rate"), bCalm ? 2.5f : bFault ? 24.f : 14.f);
+  B->SetVariableFloat(TEXT("User.Jitter"), bFault ? 30.f : Leg ? 22.f : 12.f);
+  B->SetVariableFloat(TEXT("User.Width"), bFault ? 13.f : Leg ? 10.f : 7.f);
+  B->SetVariableLinearColor(TEXT("User.BoltColor"), FLinearColor(Hot.R * Level, Hot.G * Level, Hot.B * Level, 1.f));
+ }
+ bBoltsOn = true;
+ // The light travels with the arcs, so the steel and gravel around them actually change.
+ FVector A, E;
+ BoltEnds(0, FaultTime, bFault, bCalm, A, E); FaultArcLight->SetWorldLocation(Origin + (A + E) * .5 + FVector(0, -30, 0));
+ BoltEnds(1, FaultTime, bFault, bCalm, A, E); if (UPointLightComponent* L = FaultClimbLight.Get()) L->SetWorldLocation(Origin + (A + E) * .5 + FVector(0, -30, 0));
 }
 
 void FS47Substation::StopSiteAudio()
@@ -318,7 +401,8 @@ void FS47Substation::StepFault(double Dt)
  const bool Calm=M->Flow&&M->Flow->bCalmFlash,Low=M->Flow&&M->Flow->Graphics.Effects==0;
  // Both comfort and Low retain anchored, gently moving geometry; neither substitutes a static blue post.
  const float Motion=float(.90+.10*FMath::Sin(FaultTime*(Calm?.35:.9)));
- const float Arc=(Fault?FaultArcLevel(Low,Calm):NormalArcLevel(Low,Calm))*Motion;
+ const float Flicker=SiteFlicker(FaultTime,Fault,Calm);
+ const float Arc=(Fault?FaultArcLevel(Low,Calm):NormalArcLevel(Low,Calm))*Motion*Flicker;
  const float LampLevel=Fault?FaultLampLevel(FaultTime,Calm):0.f;
  StepSiteAudio(true,Fault,Arc,Held);
  if(!Held)
@@ -334,8 +418,10 @@ void FS47Substation::StepFault(double Dt)
  FaultArcMid->SetScalarParameterValue(TEXT("ArcIntensity"),(Fault?32.f:18.f)*Arc);
  FaultLampMid->SetScalarParameterValue(TEXT("ArcIntensity"),9.f*LampLevel);
  FaultArcLight->SetWorldLocation(S47Three::ToUE(Insulator(1))+FVector(0,-20,Fault?55:12));FaultArcLight->SetIntensity(ArcPeakLumens*Arc);FaultArcLight->SetVisibility(true);
+ if(auto* Climb=FaultClimbLight.Get()){Climb->SetIntensity(ArcPeakLumens*Arc);Climb->SetVisibility(true);}
+ StepBolts(Fault,Low,Calm,Flicker);
  for(const auto& W:FaultLampLights)if(auto* L=W.Get()){L->SetIntensity(FaultLampLumens*LampLevel);L->SetVisibility(Fault);}
- if(Changed||!bFaultShown)UE_LOG(LogS47SubstationArc,Display,TEXT("S47 site electricity %s: upward+inter-support anchored paths, %d segments, %s motion, %.0flm; no persistent Niagara bursts"),Fault?TEXT("fault"):TEXT("normal"),FaultArcMesh->GetInstanceCount(),Calm?TEXT("smooth comfort"):TEXT("smooth"),ArcPeakLumens*Arc);
+ if(Changed||!bFaultShown)UE_LOG(LogS47SubstationArc,Display,TEXT("S47 site electricity %s: upward+inter-support anchored paths, %d segments, %s motion, %.0flm; Niagara bolts on legs and supports"),Fault?TEXT("fault"):TEXT("normal"),FaultArcMesh->GetInstanceCount(),Calm?TEXT("smooth comfort"):TEXT("smooth"),ArcPeakLumens*Arc);
  bFaultShown=true;
 }
 

@@ -23,6 +23,8 @@
 #include "S47Three.h"
 #include "S47Docs.h"
 #include "S47Flow.h"
+#include "S47Fx.h"
+#include "NiagaraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -124,6 +126,11 @@ struct FS47FreeformDirector::FEffects
  TArray<TWeakObjectPtr<UPointLightComponent>> Lights;
  FS47Obj Sample,Car;
  TWeakObjectPtr<UStaticMeshComponent> Orb;
+ // The mesh stays as the physical record for sight and photographs; these are what is seen.
+ TWeakObjectPtr<UNiagaraComponent> OrbFx[FS47DuskOrb::Count];
+ // Niagara does not reach the film's scene capture: the plain spheres draw for that one frame.
+ TWeakObjectPtr<UStaticMeshComponent> OrbFilm[FS47DuskOrb::Count];
+ TWeakObjectPtr<UPointLightComponent> OrbLight[FS47DuskOrb::Count];
  TSharedPtr<uint8> Life=MakeShared<uint8>(0);
  bool bBuilt=false;
  FVector HullCentreOffsetUE=FVector::ZeroVector;
@@ -182,6 +189,28 @@ struct FS47FreeformDirector::FEffects
   }
   Orb=Mesh(TEXT("FreeformDuskOrb"),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(-3.25,2,-47),FVector(.85),0xffe7bd);
   if(Orb.IsValid())if(auto* Mat=Cast<UMaterialInstanceDynamic>(Orb->GetMaterial(0))){Mat->SetVectorParameterValue(TEXT("Emissive"),S47Three::Hex(0xffe7bd));Mat->SetScalarParameterValue(TEXT("EmissivePower"),4.f);}
+  for(int32 I=0;I<FS47DuskOrb::Count;++I)
+  {
+   auto* Root=M->Web->GetRootComponent();
+   auto* Fx=S47Fx::Make(M->Web.Get(),Root,TEXT("/Game/Signal47/FX/NS_S47_Orb.NS_S47_Orb"),*FString::Printf(TEXT("FreeformOrbFx%d"),I));
+   if(!Fx)continue;
+   OrbFx[I]=Fx;Fx->SetWorldRotation(FRotator::ZeroRotator);Fx->SetWorldScale3D(FVector::OneVector);
+   auto* L=NewObject<UPointLightComponent>(M->Web.Get(),*FString::Printf(TEXT("FreeformOrbLight%d"),I));L->SetupAttachment(Root);L->SetMobility(EComponentMobility::Movable);
+   L->SetIntensityUnits(ELightUnits::Lumens);L->SetIntensity(0);L->SetAttenuationRadius(1700);L->SetSourceRadius(30);L->SetCastShadows(false);L->SetLightColor(S47Three::Hex(0xffc98a));L->SetVisibility(false);L->RegisterComponent();
+   OrbLight[I]=L;
+   // With a real effect the sphere no longer draws, but it still answers sight and photo queries.
+   auto* Film=I==0?Orb.Get():Mesh(FString::Printf(TEXT("FreeformDuskOrbFilm%d"),I),TEXT("/Engine/BasicShapes/Sphere.Sphere"),FVector(-3.25,2,-47),FVector(.6),0xffe7bd);
+   if(Film)
+   {
+    if(auto* Mat=Cast<UMaterialInstanceDynamic>(Film->GetMaterial(0))){Mat->SetVectorParameterValue(TEXT("Emissive"),S47Three::Hex(0xffe7bd));Mat->SetScalarParameterValue(TEXT("EmissivePower"),14.f);}
+    Film->SetRenderInMainPass(false);Film->SetRenderInDepthPass(false);Film->SetCastShadow(false);Film->SetCollisionEnabled(ECollisionEnabled::NoCollision);OrbFilm[I]=Film;
+   }
+  }
+  if(M->FieldCamera)
+  {
+   const TWeakPtr<uint8> Alive=Life;
+   M->FieldCamera->OnExposure=[this,Alive](bool bOn){if(Alive.IsValid())for(const auto& W:OrbFilm)if(auto* C=W.Get())C->SetRenderInMainPass(bOn);};
+  }
   auto Register=[&](UStaticMeshComponent* C,const TCHAR* Name,const TCHAR* Id,FS47Obj& Obj)
   {
    if(!C)return;const int32 Parent=M->Web->Handle(TEXT("world.grounds.group"));Obj=M->Web->ObjAt(M->Web->AdoptNode(C,Parent,Name));
@@ -209,6 +238,7 @@ struct FS47FreeformDirector::FEffects
  {
   if(!CanTouchWorld())return;
   if(Ufo)Ufo->Hide();
+  for(int32 I=0;I<FS47DuskOrb::Count;++I){if(auto* Fx=OrbFx[I].Get())Fx->DeactivateImmediate();if(auto* L=OrbLight[I].Get())L->SetVisibility(false);}
   for(const FS47Obj O:{Sample,Car})if(O.W==M->Web.Get()&&O)M->Web->SetVisible(O.I,false);
   for(auto& P:Parts)if(P.IsValid()){P->SetVisibility(false,false);P->SetCollisionEnabled(ECollisionEnabled::NoCollision);}
   for(auto& L:Lights)if(L.IsValid())L->SetIntensity(0);
@@ -392,7 +422,7 @@ bool FS47FreeformDirector::Start(const FString& Id,bool Forced)
 {
  Effects->Build(this);if(!Eligible(Id,Forced))return false;
  IncidentSerial=FMath::Min(1000000000,IncidentSerial+1);IncidentId=FString::Printf(TEXT("%s.day%d.%d"),*Id,M->Freeform->Day(),IncidentSerial);TaggedShot.Empty();TaggedQuality=0;
- Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
+ OrbFleeAge=-1;Event=Id;Age=SoundAt=0;Stage=0;Variant=Random.RandRange(0,2);bSeen=bPhoto=bControlled=bCompared=false;PhotoId.Empty();bApplied=bEffectsApplied=bChoiceStored=false;Scene=M->Web->Area();
  Anchor=Id==TEXT("empty_car")?EmptyCarReference:Id==TEXT("landing_trace")?FVector(12,.08,-12):Id==TEXT("quiet_zone")?FVector(12,1.1,-17):Id==TEXT("roof_steps")?FVector(-1.5,3.5,-1):FVector(11.9,1,-11);
  if(Id==TEXT("dusk_orb")){Anchor=FVector(-3.25,US47Night::SaroFloorAt(M->Web,-3.25,-47)+2.2,-47);DuskOrb.Started(M->Freeform->Clock());}
  if(Id==TEXT("response_lights")||Id==TEXT("flyover")||Id==TEXT("close_pass"))Anchor=FVector(-30,Id==TEXT("close_pass")?28:55,-110);
@@ -485,8 +515,27 @@ void FS47FreeformDirector::Draw()
  if(auto* Orb=Effects->Orb.Get())
  {
   const double V=Event==TEXT("dusk_orb")?FS47DuskOrb::Visibility(Age):0;
-  Orb->SetVisibility(V>0&&M->Web->Area()==Scene);Orb->SetWorldScale3D(FVector(.85*V));
-  if(V>0)Orb->SetWorldLocation(S47Three::ToUE(FS47DuskOrb::Position(Anchor,Age)));
+  const bool Here=V>0&&M->Web->Area()==Scene;
+  Orb->SetVisibility(Here);Orb->SetWorldScale3D(FVector(.85*V));
+  if(V>0)Orb->SetWorldLocation(S47Three::ToUE(FS47DuskOrb::Position(Anchor,Age)+FVector(0,OrbFleeAge>=0?FS47DuskOrb::FleeRise(OrbFleeAge):0.,0)));
+  const bool Low=M->Flow&&M->Flow->Graphics.Effects==0;
+  for(int32 I=0;I<FS47DuskOrb::Count;++I)
+  {
+   auto* Fx=Effects->OrbFx[I].Get();auto* L=Effects->OrbLight[I].Get();if(!Fx||!L)continue;
+   const bool Use=Here&&(!Low||I==0);
+   auto* Film=Effects->OrbFilm[I].Get();
+   if(!Use){if(Fx->IsActive())Fx->DeactivateImmediate();L->SetVisibility(false);if(Film&&I>0)Film->SetVisibility(false,false);continue;}
+   if(!Fx->IsActive())Fx->Activate(true);
+   // A startled orb goes first; the others follow a beat apart.
+   const double Flee=OrbFleeAge>=0?FMath::Max(0.,OrbFleeAge-I*.12):-1;
+   const FVector At=FS47DuskOrb::Position(Anchor,Age,I)+FVector(0,Flee>=0?FS47DuskOrb::FleeRise(Flee):0.,0);
+   const double Pulse=.86+.14*FMath::Sin(Age*3.1+I)*FMath::Sin(Age*1.3+I*.7);
+   const double Show=V*(I==0?1.:.7)*(Flee>=0?FMath::Clamp(1.-Flee/FS47DuskOrb::FleeSeconds,0.,1.):1.);
+   Fx->SetWorldLocation(S47Three::ToUE(At));
+   if(Film&&I>0){Film->SetWorldLocation(S47Three::ToUE(At));Film->SetWorldScale3D(FVector(.6*Show));Film->SetVisibility(Show>0,false);}
+   Fx->SetVariableFloat(TEXT("User.Phase"),float(Age+I*2.));Fx->SetVariableFloat(TEXT("User.Brightness"),float(Show));Fx->SetVariableFloat(TEXT("User.Size"),I==0?90.f:62.f);
+   L->SetWorldLocation(S47Three::ToUE(At));L->SetIntensity(float((Flee>=0?2400.:900.)*Show*Pulse));L->SetVisibility(Show>0);
+  }
  }
  const bool Sky=Event==TEXT("response_lights")||Event==TEXT("flyover");
  if(Effects->Ufo)
@@ -632,6 +681,20 @@ void FS47FreeformDirector::Step(double Dt)
  if(Event==TEXT("feeder_fault")&&!M->Freeform->PowerFault()){Finish(true);return;}
  if(Scene!=M->Web->Area())
  {if(Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence")||Event==TEXT("close_pass")||Event==TEXT("flyover")||Event==TEXT("dusk_orb"))Finish(bPhoto,TEXT("The encounter ended when the player left the site. Any retained photograph records the observation, not its origin."));return;}
+ if(Event==TEXT("dusk_orb")&&M->Player)
+ {
+  if(OrbFleeAge>=0)
+  {
+   OrbFleeAge+=Dt;
+   if(OrbFleeAge>=FS47DuskOrb::FleeSeconds+.3){Finish(bPhoto,TEXT("The lights rose straight up the moment someone came close. Any retained photograph records the observation, not its origin."));return;}
+  }
+  else if(FS47DuskOrb::Visibility(Age)>.5)for(int32 I=0;I<FS47DuskOrb::Count;++I)if(FVector::Dist(M->Player->Pos,FS47DuskOrb::Position(Anchor,Age,I))<FS47DuskOrb::FleeRange)
+  {
+   OrbFleeAge=0;UE_LOG(LogTemp,Display,TEXT("S47: dusk orb %d startled at %.1f s"),I,Age);
+   if(M->Audio){FS47Sound O;O.Gain=.2f;O.At=FS47DuskOrb::Position(Anchor,Age,I);O.Dest=TEXT("radio");const auto H=M->Audio->Sfx(TEXT("alienRadio"),O);if(H&&M->Audio->Ctx)H.Src->Stop(M->Audio->Ctx->CurrentTime()+.8);}
+   break;
+  }
+ }
  if(Event==TEXT("observer")||Event==TEXT("service_presence")||Event==TEXT("feeder_presence")||Event==TEXT("array_presence"))
  {
   auto G=M->Night?M->Night->Glimpses:TSharedPtr<FS47Glimpses>();if(!G)return;
