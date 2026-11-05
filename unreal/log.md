@@ -1855,3 +1855,7 @@ Privat materialretting: M_Web_Lit_Opaque fikk tilsiktet Nanite-bruksflagg. Paren
 ## 5. november 2026 kl.11:10, SC04-retur gjennom dører
 
 `claude/sc04-return-door-20261105`: Sveipet traff N495, arkivdørens blad, midt i svingen (målt ca. 40°, animasjonen gir ca. 38° etter 0,07 s), og sendte Leave til Listen. Walk holder nå tilstanden mens bladet svinger. Ved exitDoor sperret N601, den usynlige og ubevegelige klikkmeshen, så dørproxyer ignoreres i sveipet på samme måte som N558. Editorbygg og `sc04doors` 22 kontroller består. Ikke installert.
+
+## 5. november 2026 kl.12:36, samlet oppfølging installert
+
+`bef9fa88`, PR415 og PR416, er installert via uendret standardstarter: 2464 pakkede/installerte selvtester, 213 kontroller over sju prosesser og 126 Saved-filer byteidentiske. Ingen rydderunde; nattkandidaten er beholdt som tilbakerulling.
