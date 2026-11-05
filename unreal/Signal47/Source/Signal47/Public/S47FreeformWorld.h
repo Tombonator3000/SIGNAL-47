@@ -3,6 +3,7 @@
 #include "S47Json.h"
 #include "S47Obj.h"
 #include "S47FieldLogger.h"
+#include "S47Workshop.h"
 #include "UObject/StrongObjectPtr.h"
 class US47Main;
 class UStaticMeshComponent;
@@ -32,6 +33,11 @@ public:
  bool EmergencyFuseAvailable() const;
  void OpenShop();
  void OpenWorkbench();
+ void OpenWorkshop();
+ // unpack, test <part id>, scrap <part id>, build <recipe>, strip <recipe>. Hands free, at the bench.
+ bool WorkshopAction(const FString& Action,const FString& Arg=FString());
+ FString WorkshopBlock(const FString& Action,const FString& Arg=FString()) const;
+ const FS47Workshop& Workshop() const { return Crafting; }
  bool LoadFilmAtPhotoLab();
  bool LoggerAccess() const;
  FString LoggerPreparationBlock(const FString& Action) const; // shared tune/collect availability and reason
@@ -90,6 +96,9 @@ public:
  static bool SelfTest(TArray<FString>& Lines);
 private:
  FS47FieldLogger Logger;
+ FS47Workshop Crafting;
+ FS47Obj TrayParts[FS47Workshop::TraySize];
+ void FinishWorkshopJob(const FString& Job);
  FS47Obj LoggerPosts[2],LoggerBody;
  bool bLoggerCalibrating=false;
  FString LoggerJob;

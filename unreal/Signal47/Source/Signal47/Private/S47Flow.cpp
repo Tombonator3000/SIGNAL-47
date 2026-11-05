@@ -2080,7 +2080,8 @@ TArray<FS47KitItem> US47Flow::KitItems() const
 	{
 		const auto F = M->Freeform->Field;
 		Kit.Add({ TEXT("Operating budget"), TEXT("Available funds and outstanding station advance. Register completed work and eligible photographs at OPS; repayments are deducted from earnings."), FString::Printf(TEXT("$%d available / $%d advance"), M->Freeform->Budget(), M->Freeform->Debt()), FString(), FString() });
-		for (const auto& Item : TArray<TPair<FString, FString>>{ {TEXT("fuse"), TEXT("Control fuses")}, {TEXT("relay"), TEXT("Compatible relays")}, {TEXT("donor"), TEXT("Donor controllers")}, {TEXT("fuel"), TEXT("Fuel cans")}, {TEXT("film"), TEXT("Film stock")} })
+		for (const auto& Item : TArray<TPair<FString, FString>>{ {TEXT("fuse"), TEXT("Control fuses")}, {TEXT("relay"), TEXT("Compatible relays")}, {TEXT("donor"), TEXT("Donor controllers")}, {TEXT("fuel"), TEXT("Fuel cans")}, {TEXT("film"), TEXT("Film stock")}, {TEXT("recorder_donor"), TEXT("Used field recorders")}, {TEXT("cell"), TEXT("Dry cells")}, {TEXT("foil"), TEXT("Shielding foil")} })
+			if (F->InventoryCount(Item.Key) > 0 || (Item.Key != TEXT("recorder_donor") && Item.Key != TEXT("cell") && Item.Key != TEXT("foil")))
 			Kit.Add({ Item.Value, TEXT("Usable delivered stock. Parcels still in transit are listed separately."), FString::FromInt(F->InventoryCount(Item.Key)), FString(), FString() });
 		if (F->InventoryCount(TEXT("fragment")) > 0) Kit.Add({ TEXT("Field samples"), TEXT("Retained samples for physical workbench comparison."), FString::FromInt(F->InventoryCount(TEXT("fragment"))), FString(), FString() });
 		if (F->InventoryCount(TEXT("archived_fragment")) > 0) Kit.Add({ TEXT("Archived samples"), TEXT("Sealed material retained after comparison."), FString::FromInt(F->InventoryCount(TEXT("archived_fragment"))), FString(), FString() });

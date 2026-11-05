@@ -2,6 +2,10 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
+## Samling og crafting 5. november
+
+Toms beslutning: alt samlet. `~/SIGNAL-47` på `main` er nå eneste arbeidskopi; SARO- og claude-gameplay-kopiene er avviklet og 209 `~/scratch-bm/Signal47-*` er fjernet etter hash-kontroll. Unike filer ligger i `~/Documents/Signal47-kildearkiv-20261105`; lokale endringer i stasher merket `samling-20261105`. Claude eier verkstedet på `claude/crafting-20261105`: `S47Workshop`, verkstedpanelet på benken og `S47WorkshopJourneyTest`.
+
 ## Oppfølging 5. november etter nattskiftet
 
 Claude Code overtar på Toms beskjed samme SARO-kopi, nå på `claude/notebook-return-20261105`: først dagbokrettelser og leveringsdokumentasjon som egen PR, deretter SC04-retur på `claude/sc04-return-door-20261105`. Begge er flettet og installert som `bef9fa88`; SARO-kopien beholdes for de private kildene og står ledig. Codex-kvoten er brukt opp til 10. november. Ingen ny arbeidskopi.

@@ -16,7 +16,7 @@ public:
   TArray<double> Levels; // one retained demodulated noise envelope per simulated minute
   int32 Site=0,Day=0;
   double Start=0,End=0,Frequency=1420.11,Offset=0,Battery=0,Overlap=0,NoiseSum=0,Seconds=0,GapSeconds=0;
-  bool bRetrieved=false,bCompared=false,bBatteryEmpty=false;
+  bool bRetrieved=false,bCompared=false,bBatteryEmpty=false,bOwned=false,bShielded=false;
  };
  int32 Assembly=0,Site=-1,Serial=0;
  bool bCalibrated=false,bRecording=false;
@@ -27,6 +27,8 @@ public:
  TArray<FTape> Tapes;
  static constexpr double Capacity=6*3600., Window=2*3600.;
  FString NextAction() const; // guidance follows retained equipment state, never implies evidence
+ bool bOwned=false,bBatteryPack=false,bShieldedLead=false; // fitted by the bench workshop
+ double MaxBattery() const { return bBatteryPack?Capacity*2:Capacity; }
  bool Connect();
  bool Calibrate(double Seconds);
  bool Start(int32 At,int32 Day,double Clock);
@@ -43,4 +45,7 @@ public:
  S47J::FObj Save() const;
  void Load(const S47J::FObj& O);
  static bool SelfTest(TArray<FString>& Lines);
+private:
+ FString GuideText() const;
+ FString BaseReport(const FTape& T) const;
 };
