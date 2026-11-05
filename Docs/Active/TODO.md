@@ -4,6 +4,10 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Kosmisk ambient, bestilt 5. november
+
+- [ ] **COSMIC-AMBIENT-01:** ekstra adaptivt musikklag med cosmic ambient og lokale romreferanser. Prototype og 21 selvstendige DSP-sjekker finnes i [lytteverktøyet](../../unreal/Signal47/Tools/cosmic-ambient/README.md). Unreal-editorbygg og faktisk 72-sekunders lydgraf med tre lokale referanser består; 56 musikk-/grafkontroller og 21 DSP-sjekker består. Samlet menneskelig lytting, endelig balanse og lokal installasjon gjenstår.
+
 ## Nye UI- og lydpunkter fra Tom, 5. november
 
 Registrert etter Toms spilltest og UI-konseptgjennomgang. Alle punktene er åpne; denne registreringen er ikke implementering. «Vurder» og «forslag» nedenfor bevarer Toms åpne spørsmål. Bildevedleggene er JPG-kopier; originalene er beholdt. UI-konsepter er visuelle forslag, ikke runtime-bevis. Knappene for opplesning som fortsatt vises i konseptbildene, skal fjernes etter punkt 3.

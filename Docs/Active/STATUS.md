@@ -174,6 +174,10 @@ Tittelarbeidet i PR382 gir periodiske stiliserte UFO-lys og ryddet VHS-livssyklu
 
 Separat Visitors-gjennomgang bekrefter at de tre feltforsøkene mangler produksjonskobling til verden; saken er ikke spillbart ferdig. En avgrenset rettelse bevarer planlagte feltprøver ved Continue og lar spilleren avbryte dem uten resultat eller belønning. Rettelsen i PR382 er bygget og består 12 native kontroller med én disk-/Continue-runde. Testen registrerer et eksplisitt funn gjennom det offentlige API-et; den påstår ikke fysisk gjennomføring av feltforsøket.
 
+## Kosmisk ambientprototype, 5. november
+
+Ekstra musikklag med original stereosyntese og valgfrie lokale NASA-/Nebula-opptak er implementert i egen kildegren. Det følger musikkstemning og musikkvolum, holder lytteplass ved mottakeren, fryser ved pause og beholder teksturen mellom sanger. Unreal-editorbygg, 56 musikk-/grafkontroller og en 72-sekunders offline-graf med tre lokale referanser består; utgangen holder seg under 0,021 peak og slutthalen er eksakt null. 21 selvstendige DSP-sjekker og lokal før/etter-skisse består også. Dette er ikke en installert spillutgave eller menneskelig lytting. [Kilde, konsept og prøveverktøy](../../unreal/Signal47/Tools/cosmic-ambient/README.md). Ingen nye opptak eller modeller er lagt i offentlig Git.
+
 ## Mottakersøk og Freeform-musikk installert, 3. november kl.15:20
 
 Runtime-kilde `c424ac39` er installert lokalt. RECEIVER / ACQUISITION spiller nå kontinuerlig bæretone og radiostøy etter samme kvalitet som mottaksmåleren; frekvens, gain og båndbredde påvirker lyden. Musikken viker under lytting. Lukking, skjermbytte, strømbrudd og sesjonsstopp frigir mottakerlyden. Dette er instrumentrespons, ikke et opptak eller en ny fire/sju-signatur.
