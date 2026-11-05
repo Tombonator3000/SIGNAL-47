@@ -1,6 +1,7 @@
 #include "S47Freeform.h"
 #include "S47Image.h"
 #include "S47FreeformAudioDesk.h"
+#include "SS47TapeScope.h"
 #include "S47FreeformTerminal.h"
 #include "S47ReceiverReadout.h"
 #include "SS47ScreenView.h"
@@ -232,7 +233,7 @@ void FS47FreeformSession::Stop()
 }
 bool FS47FreeformSession::Held() const
 {
- return !bActive||bDead||bRecovering||!M||M->Mode!=US47Main::EMode::Play||M->bPausedByMenu||(M->ModalOpen()&&!TerminalOnGlass())||(M->World&&M->World->bBusy);
+ return !bActive||bDead||bRecovering||!M||M->Mode!=US47Main::EMode::Play||M->bPausedByMenu||(M->ModalOpen()&&!TerminalOnGlass()&&!bTapePanel)||(M->World&&M->World->bBusy);
 }
 bool FS47FreeformSession::ArrayMotionHeld() const
 {
@@ -554,7 +555,7 @@ void FS47FreeformSession::StepWork(double Dt)
     J->ControlReferenceClock=WorldClock;J->ControlReceiverClock=WorldClock+(J->Phenomenon==TEXT("time_disagreement")?3.2:0);J->bClockMeasured=J->Phenomenon==TEXT("time_disagreement");
     if(J->bClockMeasured)Changed(TEXT("OPS (corner PC): DAILY WORK / Select this job and press Compare and register the retained instrument measurements to compare original and control clock offsets."));
     else if(J->Phenomenon==TEXT("duplicate_print"))Changed(TEXT("PRINTER: Register check complete; duplicate feed queued. Wait for the printer to finish, then collect and compare it with the retained original at OPS (corner PC)."));
-    else Changed(TEXT("REEL DECK (beside telephone): Review the original and control recordings; the internal control is complete."));
+    else Changed(TEXT("REEL DECK (wall table): Review the original and control recordings; the internal control is complete."));
     if(Director)Director->Use(TEXT("ff:control"));
    }
   }
@@ -759,7 +760,7 @@ bool FS47FreeformSession::StartControl()
  if(!FParse::Param(FCommandLine::Get(),TEXT("NoSound"))&&J->CaptureOriginal.Enabled()&&J->Source==1&&!Specialized(J->Phenomenon)&&J->CaseTest<0)
  {J->CaptureControl.Begin(J->Id+TEXT("/control"),true,{});if(LiveCapture)LiveCapture->Stop();}
  if(J->Phenomenon==TEXT("wrong_source")){J->BeamPoint=0;J->BeamAz.Reset();J->BeamEl.Reset();J->BeamAmplitude.Reset();J->bBeamVerified=false;PointBeamControl();Changed(TEXT("TRACKING (right-hand PC): West, east and centre are measured automatically. Wait for completion, then open DAILY WORK at OPS (corner PC), select this job and press Compare and register the retained instrument measurements."));}
- else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK beside the telephone for audio comparison."));return true;
+ else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK on the wall table for audio comparison."));return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
 bool FS47FreeformSession::AudioAction(const FString& Action)
@@ -1045,7 +1046,7 @@ void FS47FreeformSession::SetPanel(TSharedRef<SWidget> Widget,bool bLive,bool bA
   US47Main* Main=Owner.Get();
   if(Main->HasAnyFlags(RF_BeginDestroyed|RF_FinishDestroyed)||Main->Freeform.Get()!=this)return;
   if(Main->Audio)Main->Audio->ReceiverMonitorOff();
-  bTelemetry=false;TerminalView.Reset();ActiveTerminal=-1;Changed();
+  bTelemetry=false;bTapePanel=false;TerminalView.Reset();ActiveTerminal=-1;Changed();
  });bTelemetry=bLive;bAudioOpen=bAudio;
 }
 namespace
@@ -1114,7 +1115,7 @@ void FS47FreeformSession::OpenOperations()
     }
     else
     {
-     A.Add(T::Small(TEXT("Compare the original with the internal reference at the reel deck beside the telephone before registering.")));
+     A.Add(T::Small(TEXT("Compare the original with the internal reference at the reel deck on the wall table before registering.")));
      A.Add(T::Small(TEXT("A quiet internal reference does not prove a sky source. Retain the unresolved result; a directional or independent field control is still needed.")));
      A.Add(T::Button(TEXT("Source unresolved; retain both measurements"),[this]{RegisterComparison(TEXT("unresolved"));OpenOperations();},true));
     }
@@ -1382,12 +1383,30 @@ void FS47FreeformSession::OpenReceiver()
  else if(ReceiverTab==3)
  {
   const FJob* J=CurrentJob();
-  Rows.Add(T::Panel(TEXT("RECORD / THIS JOB"),S47Kit::Col({
+  const bool ControlPanel=J->bAnomaly&&J->Stage==EJobStage::Recorded;
+  TArray<S47Kit::FW> JobRows={
    T::Value(TEXT("JOB"),J->Id,true),T::Value(TEXT("STAGE"),TAttribute<FString>::CreateLambda([this]{return CurrentJob()?StageText(CurrentJob()->Stage):FString();}),true),
    T::Value(TEXT("RECORDED"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return FString::Printf(TEXT("%.1f / %.0f s"),X?X->Elapsed:0.,SourceSeconds());}),true),
-   T::Value(TEXT("ORIGINAL"),J->bPrinted?FString(TEXT("COLLECTED / IN NOTEBOOK")):J->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED")),true),
-   T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost."))})));
-  Rows.Add(Banner());
+   T::Value(TEXT("ORIGINAL"),J->bPrinted?FString(TEXT("COLLECTED / IN NOTEBOOK")):J->Stage==EJobStage::Chart?FString(TEXT("WAITING AT PRINTER")):FString(TEXT("NOT YET RECORDED")),true)};
+  if(!ControlPanel)JobRows.Add(T::Small(TEXT("Originals print at the table by the service-yard door. Valid recorded seconds are retained if tuning or pointing is lost.")));
+  Rows.Add(T::Panel(TEXT("RECORD / THIS JOB"),S47Kit::Col(JobRows)));
+  if(ControlPanel)
+  {
+   const bool Beam=J->Phenomenon==TEXT("wrong_source");
+   const FString Why=Beam
+    ?TEXT("The chart may not belong to this source. Short samples west, east and back on centre show whether the array was really hearing it here. The original is not changed.")
+    :TEXT("Something in the original does not match the work card. The control takes the antennas out of the path and records eight seconds of the station's own reference signal, kept apart from the original. If the oddity is in the control too, the equipment is making it. If not, it came from outside and stays unexplained.");
+   const FString After=Beam?TEXT("Start it from the right-hand tracking PC. Then compare at OPS, DAILY WORK.")
+    :J->Phenomenon==TEXT("time_disagreement")?TEXT("It runs by itself. Then compare the clock readings at OPS, DAILY WORK.")
+    :J->Phenomenon==TEXT("duplicate_print")?TEXT("It runs by itself. The printer then feeds a separate copy to compare at OPS, DAILY WORK.")
+    :TEXT("It runs by itself. Then listen to both recordings at the reel deck on the wall table.");
+   Rows.Add(T::Panel(TEXT("INTERNAL CONTROL / THE SKY OR THE STATION?"),S47Kit::Col({
+    T::Small(Why),
+    T::Value(TEXT("CONTROL"),TAttribute<FString>::CreateLambda([this]{const auto* X=CurrentJob();return !X||!X->bControl?FString(TEXT("NOT RECORDED")):X->ControlAt<8?FString::Printf(TEXT("RUNNING %.1f / 8 s"),X->ControlAt):FString(TEXT("COMPLETE"));}),true),
+    T::Small(After)})));
+   if(!Beam&&!J->bControl)Rows.Add(T::Big(FString(TEXT("RECORD INTERNAL CONTROL / 8 SECONDS")),[this]{if(StartControl())OpenReceiver();else Changed(NextAction());},1,true));
+  }
+  if(!ControlPanel||J->bControl||J->Phenomenon==TEXT("wrong_source"))Rows.Add(Banner());
  }
  else
  {
@@ -1398,8 +1417,51 @@ void FS47FreeformSession::OpenReceiver()
 void FS47FreeformSession::OpenAudio()
 {
  if(!RequirePower()||!AudioDesk||!AudioDesk->Ready())return;
- if(!AudioDesk->ListeningPosition()){if(M&&M->UI)M->UI->Toast(TEXT("Use the reel deck beside the telephone: ORIGINAL / CONTROL, PLAY, MARK IN / OUT and RETAIN."),5);return;}
+ if(!AudioDesk->ListeningPosition()){if(M&&M->UI)M->UI->Toast(TEXT("Recordings are compared at the reel deck on the wall table."),5);return;}
  bAudioOpen=true;
+}
+void FS47FreeformSession::OpenTapePanel()
+{
+ namespace T=S47FreeformTerminal;
+ if(!M||!M->UI||!RequirePower()||!AudioDesk||!AudioDesk->Ready())return;
+ if(!AudioDesk->ListeningPosition()){OpenAudio();return;}
+ auto Press=[this](const TCHAR* Action){return [this,Action]{if(AudioDesk)AudioDesk->Use(FString(TEXT("ff:audio:"))+Action);};};
+ auto CanCompare=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);});
+ auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon)&&AudioSourceIndex==0;});
+ auto Pick=[this](int32 Index,const TCHAR* Name){return TAttribute<FString>::CreateLambda([this,Index,Name]{return FString(AudioSourceIndex==Index?TEXT("> "):TEXT(""))+Name;});};
+ TArray<S47Kit::FW> Rows;
+ Rows.Add(T::Panel(TEXT("WHAT TO DO HERE"),T::Text(TAttribute<FString>::CreateLambda([this]
+ {
+  const auto* J=CurrentJob();
+  if(!J||!J->bAnomaly||J->Stage<EJobStage::Recorded)return FString(TEXT("Nothing to compare yet. An unusual observation needs its original chart from the printer first."));
+  if(!J->bControl||J->ControlAt<8)return FString(TEXT("Record the internal control first: receiver (centre PC), RECORD tab."));
+  if(Specialized(J->Phenomenon))return FString(TEXT("This observation is compared at OPS (corner PC), DAILY WORK, not on tape."));
+  if(J->bAudioReviewed)return FString(TEXT("Comparison retained. Register the conclusion at OPS (corner PC)."));
+  if(J->OriginalCovered<18)return FString(TEXT("1. Listen to the whole ORIGINAL. Press MARK IN and MARK OUT around what does not belong."));
+  if(J->ControlCovered<8)return FString(TEXT("2. Now listen to the whole CONTROL. It holds only the station's own reference."));
+  return FString(TEXT("3. If the marked sound is on the original and not on the control, press RETAIN."));
+ }),TAttribute<int32>(1))));
+ const auto Scope=SNew(SS47TapeScope)
+  .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
+  .Control_Lambda([this]{return AudioSourceIndex!=0;}).Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;})
+  .MarkIn_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkStart:-1.;}).MarkOut_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkEnd:-1.;})
+  .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();});
+ const S47Kit::FW Tape=T::Panel(TEXT("TAPE"),S47Kit::Col({
+  T::Columns({{1.f,T::ButtonLive(Pick(0,TEXT("ORIGINAL 18 s")),Press(TEXT("original")),true,CanCompare)},{1.f,T::ButtonLive(Pick(1,TEXT("CONTROL 8 s")),Press(TEXT("control")),true,CanCompare)}}),
+  T::Value(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]
+  {
+   return FString::Printf(TEXT("%04.1f / %.0f s  %s"),AudioCursor,AudioSourceIndex==0?18.:8.,CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));
+  }),true),
+  T::Value(TEXT("HEARD"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ORIGINAL %.1f / 18   CONTROL %.1f / 8"),J->OriginalCovered,J->ControlCovered):FString();}),true),
+  T::Value(TEXT("MARK"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("NOT SET"));return J->MarkEnd<0?FString::Printf(TEXT("%.1f s TO ..."),J->MarkStart):FString::Printf(TEXT("%.1f s TO %.1f s"),J->MarkStart,J->MarkEnd);}),true),
+  T::Columns({{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare)},{1.f,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare)}}),
+  T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Button(TEXT("RETAIN"),Press(TEXT("retain")),true,CanCompare)}}),
+  T::Text(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),TAttribute<int32>(0))}));
+ Rows.Add(T::Columns({{1.45f,T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(430)[Scope])},{1.f,Tape}}));
+ Rows.Add(T::Panel(TEXT("LISTENING REFERENCES / FOR YOUR EAR, NOT EVIDENCE"),S47Kit::Col({
+  T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0)),
+  T::Columns({{1.f,T::Button(TEXT("NEXT REFERENCE"),Press(TEXT("ref_next")),false,true)},{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(AudioDesk&&AudioDesk->ReferencePlaying()?TEXT("STOP REFERENCE"):TEXT("PLAY REFERENCE"));}),Press(TEXT("ref_play")),false,true)}})})));
+ SetPanel(T::Frame(TEXT("REEL DECK / COMPARE RECORDINGS"),S47Kit::Col(Rows)),false,true);bTapePanel=true;
 }
 void FS47FreeformSession::OpenArchive()
 {
@@ -1867,7 +1929,7 @@ FString FS47FreeformSession::Label(const FString& Id)const
  if(Id==TEXT("opsTerminal"))return TEXT("Daily work, registration and operating budget");
  if(Id==TEXT("telex")||Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))return TEXT("Read the daily work order and incoming messages");
  if(Id==TEXT("phone")||Id==TEXT("recPhone"))return TEXT("Check the operations line");
- if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk"))return TEXT("Reel deck by telephone / compare recordings");
+ if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk"))return TEXT("Signal processor / recordings are compared at the reel deck on the wall table");
  if(Id==TEXT("rack"))return TEXT("Record an independent receiver control");
  if(Id==TEXT("printer"))return PrinterHint();
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord"))return TEXT("File originals and inspect the continuing case archive");
@@ -1942,17 +2004,17 @@ FString FS47FreeformSession::JobNextAction(const FJob& JobValue)const
   case EJobStage::Recorded:
    if(J->bDuplicateRejected)return TEXT("OPS / DAILY WORK: SELECT ANOTHER OBSERVATION. LEGACY ORIGINAL RETAINED; UNVERIFIABLE DUPLICATE REMOVED FROM PRINTER QUEUE WITHOUT A FINDING OR PAYMENT.");
    if(!J->bAnomaly)return J->CaseTest>=0&&!J->bCaseRecorded?TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT AND ITS CASE TEST"):TEXT("OPS (corner PC): REGISTER THE ROUTINE RESULT");
-   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER RACK: RECORD AN INDEPENDENT INTERNAL CONTROL");
+   if(!J->bControl)return J->Phenomenon==TEXT("wrong_source")?TEXT("TRACKING (right-hand PC): MEASURE WEST, EAST AND CENTRE BEAMS"):TEXT("RECEIVER (centre PC), RECORD TAB: RECORD THE INTERNAL CONTROL");
    if(J->ControlAt<8)
    {
     if(J->Phenomenon==TEXT("wrong_source"))return TEXT("TRACKING (right-hand PC): WAIT FOR AUTOMATIC WEST, EAST AND CENTRE SAMPLES; THEN COMPARE AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("time_disagreement"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN COMPARE CLOCK READINGS AT OPS (corner PC), DAILY WORK");
     if(J->Phenomenon==TEXT("duplicate_print"))return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC REGISTER CHECK; THEN WAIT FOR THE DUPLICATE TO FINISH AT THE PRINTER");
-    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK BESIDE THE TELEPHONE");
+    return TEXT("RECEIVER RACK: WAIT FOR THE AUTOMATIC INTERNAL CONTROL; THEN REVIEW BOTH RECORDINGS AT THE REEL DECK ON THE WALL TABLE");
    }
    if(J->Phenomenon==TEXT("duplicate_print")&&!J->bDuplicateCollected)return J->DuplicateFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE SEPARATE DUPLICATE WITHOUT ALTERING THE ORIGINAL; THEN COMPARE AT OPS (corner PC), DAILY WORK"));
    if(Specialized(J->Phenomenon))return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED INSTRUMENTAL FINDING"):TEXT("OPS (corner PC): DAILY WORK / SELECT THIS JOB AND PRESS COMPARE AND REGISTER THE RETAINED MEASUREMENTS");
-   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (beside telephone): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
+   return J->bAudioReviewed?TEXT("OPS (corner PC): REGISTER THE SUPPORTED CONCLUSION"):TEXT("REEL DECK (wall table): REVIEW BOTH RECORDINGS AND MARK THE EXTRA TICKS");
   case EJobStage::Registered:return J->PacketFeed<PrinterSeconds?PrinterHint():FString(TEXT("PRINTER: COLLECT THE LABELLED REGISTERED PACKET"));
   case EJobStage::Packet:return TEXT("RECORDS ROOM: PLACE THE ORIGINAL PACKET IN THE BINDER");
   default:return TEXT("OPS (corner PC): SELECT DAILY WORK OR CASE ARCHIVE");
@@ -1981,9 +2043,10 @@ FString FS47FreeformSession::JobLocation(const FJob& J)const
  if(J.bDuplicateRejected)return TEXT("OPS / DAILY WORK: retained legacy observation; select another job");
  if(J.Stage==EJobStage::Recorded&&J.bAnomaly&&!J.bAudioReviewed)
  {
+  if(!J.bControl&&J.Phenomenon!=TEXT("wrong_source"))return TEXT("Receiver / centre screen, RECORD tab");
   if(!J.bControl||J.ControlAt<8)return J.Phenomenon==TEXT("wrong_source")?TEXT("Tracking PC / right-hand screen"):TEXT("Receiver rack / internal reference controls");
   if(J.Phenomenon==TEXT("duplicate_print")&&!J.bDuplicateCollected)return TEXT("Printer / table by SERVICE YARD door, beneath the binder shelf");
-  if(!Specialized(J.Phenomenon))return TEXT("Reel deck / beside telephone");
+  if(!Specialized(J.Phenomenon))return TEXT("Reel deck / wall table");
  }
  return TEXT("OPS / corner PC / DAILY WORK");
 }

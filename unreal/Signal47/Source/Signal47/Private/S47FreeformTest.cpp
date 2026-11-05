@@ -104,6 +104,8 @@ void FS47FreeformTest::Finish(bool Good,const FString& Why)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraRegression")))
  {S47J::Set(O,TEXT("scope"),TEXT("story-camera-after-freeform"));S47J::Set(O,TEXT("method"),TEXT("Explicit chapter1 start and approach fixtures; physical pickup ray/OnUse, native Story shutter. Quarantined case metadata enables WriteSave API then title Continue callback; not a native save-menu/button test. No Story progress injection."));S47J::Set(O,TEXT("sourceFreeformCamera"),FParse::Param(FCommandLine::Get(),TEXT("S47StoryCameraUnowned"))?TEXT("unowned"):TEXT("owned"));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){S47J::Set(O,TEXT("scope"),TEXT("array-wear-native"));S47J::Set(O,TEXT("method"),TEXT("New worn game with explicit stock and player-placement fixtures; physical eye-ray at branch junctions, actual repair button, disk/Flow restore. No drive to the antennas or shop trip."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){S47J::Set(O,TEXT("scope"),TEXT("internal-control-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit discrepancy and tuning fixtures; real recording, printer, RECORD tab and SimulateClick; no OS mouse."));}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){S47J::Set(O,TEXT("scope"),TEXT("garage-start-native"));S47J::Set(O,TEXT("method"),TEXT("Real walking and driving input from the new-game start; door toggles and the wall control use production callbacks without aiming; the trip to the garage is a declared placement."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){S47J::Set(O,TEXT("scope"),TEXT("workshop-native"));S47J::Set(O,TEXT("method"),TEXT("Explicit stock, player-placement and tuning fixtures; physical bench ray, actual SButton callbacks, three disk/Flow restores. No shop trip, natural discovery or full two-hour tape."));}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){S47J::Set(O,TEXT("scope"),TEXT("logger-full-active-window"));S47J::Set(O,TEXT("method"),TEXT("Explicit access and approach/dial fixtures; actual eye-ray/OnUse at depot, bench, field post and printer; production menu callbacks for loan/assembly/tune/acquisition/comparison. Full active game-clock sampling and real SARO acquisition, disk/Flow Continue mid-window and after comparison. No natural access, walking route, native menu clicks, Visitors contact or human listening claim."));}
  S47J::Set(O,TEXT("limits"),TEXT("No human three-day pacing acceptance, subjective horror/listening, full-story regression or recipient hardware acceptance."));
@@ -216,6 +218,8 @@ void FS47FreeformTest::Step(double Dt)
  if(FParse::Param(FCommandLine::Get(),TEXT("S47LoggerJourneyTest"))){StepLoggerJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47WorkshopTest"))){StepWorkshopJourney(Dt);return;}
  if(FParse::Param(FCommandLine::Get(),TEXT("S47ArrayWearTest"))){StepArrayWear(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))){StepGarageStart(Dt);return;}
+ if(FParse::Param(FCommandLine::Get(),TEXT("S47InternalControlTest"))){StepInternalControl(Dt);return;}
  if(Stage==8690&&FParse::Param(FCommandLine::Get(),TEXT("S47CameraPickupTest")))
  {
   if(!M||!M->Web||!M->Web->IsLoaded()||!M->Flow||M->Flow->bStarting||S47Startup::Blocking())return;
@@ -789,12 +793,12 @@ void FS47FreeformTest::Step(double Dt)
    if(!Hint(TEXT("OPS"),TEXT("DAILY WORK"),TEXT("OPS")))return;
    Job.Phenomenon=TEXT("time_disagreement");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN COMPARE CLOCK READINGS AT OPS"),TEXT("Receiver rack")))return;
-   Job.ControlAt=8;Job.bClockMeasured=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE THE RETAINED"),TEXT("OPS")))return;
+   Job.ControlAt=8;Job.bClockMeasured=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE AND REGISTER THE RETAINED"),TEXT("OPS")))return;
    Job.Phenomenon=TEXT("duplicate_print");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("AUTOMATIC REGISTER CHECK"),TEXT("Receiver rack")))return;
    Job.ControlAt=8;Job.DuplicateFeed=FS47FreeformSession::PrinterSeconds;
    if(!Hint(TEXT("PRINTER"),TEXT("WITHOUT ALTERING THE ORIGINAL"),TEXT("Printer")))return;
-   Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE THE RETAINED"),TEXT("OPS")))return;
+   Job.bDuplicateCollected=true;if(!Hint(TEXT("OPS"),TEXT("COMPARE AND REGISTER THE RETAINED"),TEXT("OPS")))return;
    Job.Phenomenon=TEXT("extra_pulse");Job.ControlAt=4;
    if(!Hint(TEXT("RECEIVER RACK"),TEXT("THEN REVIEW BOTH RECORDINGS"),TEXT("Receiver rack")))return;
    Job.ControlAt=8;if(!Hint(TEXT("REEL DECK"),TEXT("MARK THE EXTRA TICKS"),TEXT("Reel deck")))return;
@@ -805,7 +809,7 @@ void FS47FreeformTest::Step(double Dt)
    auto Save=S47J::Read(S47J::Write(F.Save()));auto O=S47J::Arr(Save,TEXT("jobs"))[0]->AsObject();
    S47J::Set(O,TEXT("stage"),int32(J::Recorded));S47J::Set(O,TEXT("anomaly"),true);S47J::Set(O,TEXT("phenomenon"),TEXT("time_disagreement"));S47J::Set(O,TEXT("control"),true);S47J::Set(O,TEXT("controlAt"),8.);S47J::Set(O,TEXT("clockMeasured"),true);S47J::Set(O,TEXT("reviewed"),false);S47J::Set(Save,TEXT("selected"),0);F.Begin(Save);F.Director->Stop();
    GuidanceExpected=F.NextAction();
-   if(!Check(GuidanceExpected.StartsWith(TEXT("OPS (corner PC):"))&&GuidanceExpected.Contains(TEXT("COMPARE THE RETAINED")),TEXT("selected completed clock-control fixture offers a concrete OPS comparison action")))return;
+   if(!Check(GuidanceExpected.StartsWith(TEXT("OPS (corner PC):"))&&GuidanceExpected.Contains(TEXT("COMPARE AND REGISTER THE RETAINED")),TEXT("selected completed clock-control fixture offers a concrete OPS comparison action")))return;
    if(!Restore(TEXT("guidance-clock-comparison")))return;Go(8901,.3);return;
   }
   if(Stage==8901)

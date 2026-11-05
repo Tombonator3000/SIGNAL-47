@@ -9,7 +9,7 @@
   { "id": "radioTable", "model": "office_assets_radio_Table_Rough_32", "at": [-0.45, 0, 4.03], "yaw": 90, "ground": false, "collide": true, "pad": 0.02 },
   { "id": "cbBase", "model": "cb_base", "at": [-1.05, 0.737, 4.12], "yaw": 180, "ground": false },
   { "id": "cbMic", "model": "office_assets_radio_Microphone_34", "at": [-0.62, 0.737, 3.9], "yaw": 200, "ground": false },
-  { "id": "terminal", "model": "terminal_3278", "at": [-0.05, 0.737, 4.15], "yaw": 0, "ground": false },
+  { "id": "terminal", "model": "terminal_3278", "at": [-0.05, 0.737, 4.15], "yaw": 90, "ground": false },
   { "id": "reelDeck", "model": "reel_tc510", "at": [0.42, 0.737, 4.12], "yaw": 180, "ground": false },
   { "id": "cassette", "model": "cassette_tcd5", "at": [-3.12, 0.78, -3.82], "yaw": 10, "ground": false },
   { "id": "typewriter", "model": "typewriter_selectric", "parent": "annex.group", "at": [-4.12, 0.77, 8.72], "yaw": 180, "ground": false },

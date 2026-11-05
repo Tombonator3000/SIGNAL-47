@@ -4,6 +4,18 @@
 
 Dette er den samlede aktive listen. Faktisk leveringsstatus står i [STATUS](STATUS.md), gjeldende føringer i [DECISIONS](DECISIONS.md), og filansvar i [OPPGAVER](../../unreal/OPPGAVER.md). En oppgave lukkes med konkret resultat og nødvendig bevis; en rapport eller en ferdig deltest lukker ikke resten av leveransen.
 
+## Nye UI- og lydpunkter fra Tom, 5. november
+
+Registrert etter Toms spilltest og UI-konseptgjennomgang. Alle punktene er åpne; denne registreringen er ikke implementering. «Vurder» og «forslag» nedenfor bevarer Toms åpne spørsmål. Bildevedleggene er JPG-kopier; originalene er beholdt. UI-konsepter er visuelle forslag, ikke runtime-bevis. Knappene for opplesning som fortsatt vises i konseptbildene, skal fjernes etter punkt 3.
+
+- [ ] **UI-POLISH-20261105-01: enkel, gjennomførbar UI for benker, workshop, arkiv, bil og array-bokser.** Bruk de enkle panelkonseptene som visuell retning: tydeligere teksthierarki, større lesbar tekst, jevn avstand, klare statuskolonner og valgte rader. Behold en enkel oppbygning som kan lages med vanlige Slate-elementer. Tom likte disse forslagene; den ensfargede grønne retroterminalvarianten ble avvist som for ensformig. Referanser: [workshop](../Design/UI/2026-11-05-spillerforslag/01-workshop-forslag.jpg), [arkiv](../Design/UI/2026-11-05-spillerforslag/05-arkiv-forslag.jpg), [bil-inventory](../Design/UI/2026-11-05-spillerforslag/06-bil-inventory-forslag.jpg) og [array-boks](../Design/UI/2026-11-05-spillerforslag/07-array-boks-forslag.jpg). Funksjoner/tall i konseptene må følge faktisk spilltilstand; bildene er ikke bestilling av nye inventoriesystemer.
+- [ ] **TRACKING-INTERACTION-20261105-02: vurder mer interaktiv sikting på tracking-PC-en.** Toms forslag: spilleren beveger den gule pekeren mot riktig sted; et kort «pling» og en pulserende markering bekrefter at riktig posisjon er funnet. Avklar hvilken markør som styres, og la bekreftelsen følge faktisk korrekt innretting. Dette er et interaksjonsforslag som skal vurderes, ikke en allerede vedtatt ny målemodell. [Dagens tracking-skjerm](../Design/UI/2026-11-05-spillerforslag/02-tracking-dagens.jpg).
+- [ ] **INSPECT-TEXT-ONLY-20261105-03: fjern opplesning og Sterling-voiceover ved inspeksjon.** Fjern alle «Read aloud», «Read description» og tilsvarende knapper, tastaturhint og opplesningshandlinger i spillet. Fjern også automatisk Sterling-voiceover når spilleren inspiserer ting; vis beskrivelsene som tekst. Ikke fjern selve inspeksjonsteksten. [UI som skal bort](../Design/UI/2026-11-05-spillerforslag/03-opplesning-fjernes.jpg). Dette overstyrer eldre UI-konsepter som viser opplesningsknapper.
+- [ ] **PC-WORLD-DISPLAY-20261105-04: vurder at PC-skjermer viser faktisk innhold også fra rommet.** Toms spørsmål: kan de fysiske skjermene vise det som faktisk er på den aktuelle PC-en, også når spilleren ikke sitter inne i PC-visningen? Vurder synkronisering av aktuell side, status og fremdrift mellom verdensskjermen og PC-grensesnittet. [Dagens PC-skjermer fra rommet](../Design/UI/2026-11-05-spillerforslag/04-pc-skjermer-dagens.jpg).
+- [ ] **JOB-MODEM-AUDIO-20261105-05: spill hele modemlyden ved ferdigstilling av jobb.** Når spilleren trykker for å ferdigstille jobben, skal hele modemlyden spilles ferdig uten å kuttes av ved panel-/statusovergangen.
+- [ ] **RECEIVER-MUSIC-20261105-06: demp musikken ved receiver-PC-en i stedet for å fjerne den helt.** Musikken skal fortsatt være svakt hørbar under receiver-bruk. Finn et lavt nivå som gir plass til signal- og søkelydene; ikke sett musikken helt til null ved inngang til PC-en.
+- [ ] **RECEIVER-SEARCH-AUDIO-20261105-07: mer levende radiosøk og tydeligere lyd nær 100 %.** Forbedre receiverens søkelyder med mer radioskurring, pulseringer og sporadiske svake innslag av andre radiosignaler i bakgrunnen. La lydbildet gradvis gå mot en tydeligere pulserende effekt jo nærmere spilleren kommer 100 % på søket. Knytt utviklingen til faktisk søkefremdrift, og vurder nivå/overganger ved lytting sammen med den svakt hørbare musikken.
+
 ## Aktiv bestilling natt til 5. november kl.08:00
 
 Tom har 4. november bestilt arbeid med TODO så langt tiden rekker, med agenter og eksisterende harness. Gameplayforenklingene prioriteres, deretter øvrige konkrete åpne spillerfunn. Fra 07:30 ferdigstilles pågående leveranser og morgenstatus. Den samlede nattstartkontrollen gjenbrukes. Eldre avsluttede nattbestillinger nedenfor stopper ikke denne bestillingen.
@@ -156,8 +168,8 @@ Arbeidet prøves som én sammenhengende reise: velg oppgave → forbered → utf
 
 ## Freeform: UFO-er, etterforskning, materialer og bygging
 
+- [ ] **Megascans til naturgrafikk, til vurdering (Tom 5. november):** [Quixel](https://quixel.com/news/update-megascans-are-going-free-again) melder at hele biblioteket er gratis på Fab. Lisensen for spill og videredistribusjon står ikke i kunngjøringen og må leses før bruk. Assets holdes uansett utenfor offentlig Git.
 - [ ] **Opptakslyd på slitt stasjon, venter på Toms valg:** opptakslyd krever full målehastighet, så nye spill får kompatibel lyd til alle 27 antenner virker, og spilleren ser den misvisende teksten «missed its audio deadline». Avgjør om opptak skal virke på redusert array eller bare få riktig forklaring.
-- [ ] **Utdatert testtekst:** `S47GuidanceTest` forventer `COMPARE THE RETAINED`, spillet sier `COMPARE AND REGISTER THE RETAINED`. Feiler også på `eb300842`.
 
 > Toms rekkefølge 5. november: slitt stasjon (levert i editor, se [status](STATUS.md)) → nattkurven fra `claude/east-wing-20261103` (`9b4e7e26`) → første feltutrykning med UFO-materialer → flere atferdsmønstre og steder først når første tur er morsom. Antall antenner skal senere styre søkeområdet for utrykninger.
 

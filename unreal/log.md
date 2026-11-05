@@ -1875,3 +1875,11 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 ## 5. november 2026 kl.17:52, slitt stasjon installert
 
 `6d6a43c8` (PR423 rettet stedhenvisning og fase 6): 2494 selvtester, 41, 21 og 214 kontroller på pakken; 127 Saved-filer uendret. Ved neste samlede rydding kan den ikke-installerte kandidaten `Signal47-delivery-20261105c` pensjoneres; ingen rydderunde nå.
+
+## 5. november 2026 kl.18:50, Freeform-start, internkontroll og båndstasjon
+
+`claude/freeform-start-garage`: ny start ute med Jeep i lukket garasje; RECORD-fanen forklarer og starter kontrollen; båndspilleren har skilt og panel med signalspor. Bygg, 12, 21 og 9 kontroller består. Ett motorkrasj i HTTP-tråd ved oppstart, utenfor spillkoden, gikk ikke igjen. Ikke installert.
+
+## 5. november 2026 kl.19:47, ny start og båndstasjon installert
+
+`67d6f382` (PR425): 2494 selvtester, 247, 41, 28, 21, 12 og 9 kontroller på pakken; 130 Saved-filer uendret. Normalreisen stoppet to ganger på testvindu lukket utenfra; fase 3 til 7 ikke kjørt. Ved neste samlede rydding kan de ikke-installerte kandidatene `20261105c`, `e` og `f` pensjoneres; ingen rydderunde nå.

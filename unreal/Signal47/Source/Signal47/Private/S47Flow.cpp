@@ -563,12 +563,18 @@ void US47Flow::PlayInput()
 
 void US47Flow::MenuMusic()
 {
-	// Music on the title screen ("Signal to Noise", the end's music too), from the first key or click
+	// Music on the title screen, from the first key or click: Tom's own "Signal 47 - menu" from the private
+	// sound folder (Tom 5 Nov). "Signal to Noise" stays for the end, and for a clone without the private folder.
 	if (M->Mode != EMode::Title || (Opening && Opening->Active())) return;
 	// audio.loop('music', 'titleMusic', { dest: audio.music, gain: 0.6 }): the one before stops
 	// Refreshing title controls must not restart the VHS texture.
 	if (M->Audio) M->Audio->Stop(TEXT("music"), 0.05f);
-	if (M->Audio) { FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = 0.6f; M->Audio->LoopSfx(TEXT("music"), TEXT("titleMusic"), O); M->Audio->TitleTexture(true); }
+	if (M->Audio)
+	{
+		const TCHAR* Own = TEXT("lic:signal47_menu");const bool bOwn = M->Audio->Buf.Contains(Own);
+		// Mastered 9.4 LU louder than the old track: the same level in the room.
+		FS47Sound O; O.DestNode = M->Audio->Music; O.Gain = bOwn ? 0.2f : 0.6f; M->Audio->LoopSfx(TEXT("music"), bOwn ? Own : TEXT("titleMusic"), O); M->Audio->TitleTexture(true);
+	}
 }
 
 void US47Flow::StopMusic(float Fade)
@@ -605,6 +611,7 @@ void US47Flow::StoryTitleTest(double Dt)
    const auto Pass=SS47Title::SampleTitlePass(10.5f),Repeat=SS47Title::SampleTitlePass(45.5f);
    if(!Check(!SS47Title::SampleTitlePass(0).bVisible&&!SS47Title::SampleTitlePass(7.9f).bVisible&&!SS47Title::SampleTitlePass(13.f).bVisible&&!SS47Title::SampleTitlePass(42.9f).bVisible&&Pass.bVisible&&Repeat.bVisible&&Pass.Opacity>0&&Pass.Position.Equals(Repeat.Position,.0001f),TEXT("title pass sample is hidden outside five-second window and repeats after 35 seconds")))return;
    if(!Check(M->Audio->Ctx.IsValid(),TEXT("production audio context is ready before menu sound unlock")))return;
+   if(!Check(M->Audio->Buf.Contains(TEXT("lic:signal47_menu"))&&M->Audio->Buf.Contains(TEXT("titleMusic")),TEXT("menu music and the kept title track are both in the sound bank")))return;
    bSoundUnlocked=true;MenuMusic();
    if(!Check(M->Audio->TitleTextureOn(),TEXT("actual title MenuMusic enables texture after explicit unlock")))return;
    ShowTitleAgain();ShowTitleAgain();Next(1);return;
@@ -1010,6 +1017,17 @@ void US47Flow::StartGame(const FStart& O)
   }
   M->Freeform->Begin(S47J::Obj(O.State,TEXT("freeform")),O.bLethal);
   if (M->Night && M->Night->Flashlight) M->Night->Flashlight->bHave=true;
+  // A new operator arrives on foot at the visitor entrance, the station shut and the Jeep in its garage.
+  // Tom 5 Nov. Saves and tests written for the old start keep theirs; the normal journey drives from the pad.
+  if(!O.State.IsValid()&&!FParse::Param(FCommandLine::Get(),TEXT("S47NormalJourney"))&&(!bDevRun||FParse::Param(FCommandLine::Get(),TEXT("S47GarageStartTest"))))
+  {
+   auto Pose=S47J::New();S47J::Set(Pose,TEXT("at"),TEXT("saro"));S47J::Set(Pose,TEXT("x"),35.4);S47J::Set(Pose,TEXT("y"),0.);S47J::Set(Pose,TEXT("z"),-.4);S47J::Set(Pose,TEXT("h"),UE_DOUBLE_PI);
+   if(M->World)M->World->PlaceTruck(TEXT("saro"),Pose);
+   auto Shut=S47J::New();S47J::Set(Shut,TEXT("personnel"),false);S47J::Set(Shut,TEXT("service"),false);S47J::Set(Shut,TEXT("garage"),0.);S47J::Set(Shut,TEXT("garageUp"),false);
+   if(M->EastWing)M->EastWing->Begin(Shut);
+   if(M->Web)for(const auto& Door:M->Web->DoorStates())M->Web->SetDoorById(Door.Key,false,true);
+   if(M->Player)M->Player->Place(-9.5,5.7,-UE_DOUBLE_PI/2);
+  }
  }
  // New Freeform operators collect the camera physically. Every legacy Freeform
  // save had the automatic grant, so absence of this new field preserves that right.
