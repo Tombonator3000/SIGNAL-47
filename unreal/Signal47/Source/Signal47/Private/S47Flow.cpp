@@ -1879,9 +1879,9 @@ FS47NbExtras US47Flow::NotebookExtras() const
 			const auto& J = F->Jobs()[I];
 			FS47NbWorkItem W;
 			W.Id = J.Id + TEXT("/") + FString::FromInt(int32(J.Stage));
-			W.Title = J.Id + TEXT(" / ") + FS47Observing::Runs()[FMath::Clamp(J.Source, 0, 3)].Source; W.bCanFollow = true; W.bEarlier = J.Day < F->Day() || J.Stage == FS47FreeformSession::EJobStage::Filed; W.bFollowed = I == F->SelectedJob();
-			W.Status = FString(I == F->SelectedJob() ? TEXT("Following / ") : TEXT("")) + Stages[FMath::Clamp(int32(J.Stage), 0, 7)];
-			W.NextAction = I == F->SelectedJob() ? F->NextAction() : F->JobNextAction(J); W.Location = F->JobLocation(J);
+			W.Title = J.Id + TEXT(" / ") + FS47Observing::Runs()[FMath::Clamp(J.Source, 0, 3)].Source; W.bCanFollow = true; W.bEarlier = J.Day < F->Day() || J.Stage == FS47FreeformSession::EJobStage::Filed; W.bFollowed = I == F->SelectedJob() && !F->ServiceGuideFocused();
+			W.Status = FString(W.bFollowed ? TEXT("Following / ") : TEXT("")) + Stages[FMath::Clamp(int32(J.Stage), 0, 7)];
+			W.NextAction = W.bFollowed ? F->NextAction() : F->JobNextAction(J); W.Location = F->JobLocation(J);
 			W.bDone = J.Stage == FS47FreeformSession::EJobStage::Filed;
 			if (W.bDone) { W.Status = TEXT("Complete / retained"); W.NextAction = TEXT("Result already registered. Select open work at OPS."); }
 			if (!W.bDone)
@@ -1921,14 +1921,37 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		}
 		if (F->ActiveServiceGuide() > 0)
 		{
-			FS47NbWorkItem W; W.Id = TEXT("service/") + FString::FromInt(F->ActiveServiceGuide()); W.Title = TEXT("S-03 service work order");
-			W.bDone = F->ActiveServiceGuide() == 2; W.Status = W.bDone ? TEXT("Archived") : TEXT("Open");
-			W.NextAction = F->ServiceObjective(); W.Location = TEXT("Status PC / service bay / dish S-03");
-			if (!W.bDone) W.Hints = { TEXT("Start with the current service work order, then inspect the named physical panel."), TEXT("Supply parcels must be delivered at the service bay before their parts become usable stock."), W.NextAction };
-			X.WorkItems.Add(W);
+			FS47NbWorkItem W; W.Id = TEXT("service/") + FString::FromInt(F->ActiveServiceGuide()); W.Title = (F->Field ? F->Field->ServiceDishId() : FString(TEXT("Array"))) + TEXT(" service work order");
+			W.bDone = F->ActiveServiceGuide() == 2; W.bFollowed = F->ServiceGuideFocused(); W.Status = W.bDone ? TEXT("Archived") : W.bFollowed ? TEXT("Following / service") : TEXT("Open");
+			W.NextAction = F->ServiceObjective(); W.Location = TEXT("Status PC / local service box / ") + (F->Field ? F->Field->ServiceDishId() : FString(TEXT("named service antenna")));
+			if (!W.bDone) W.Hints = { TEXT("Start with the current service work order, then inspect the named physical panel."), TEXT("Supply parcels must be delivered at GARAGE RECEIVING before their parts become usable stock."), W.NextAction };
+			if (W.bFollowed) X.WorkItems.Insert(W, 0); else X.WorkItems.Add(W);
 		}
 		if (F->Director) for (const auto& Claim : F->Director->PhotoClaims())
 		{
+			// Camera guidance is independent of work/service focus and documentation payment.
+			if (Claim.ControlPlannedAt >= 0)
+			{
+				FS47NbWorkItem W; W.Id = TEXT("photo-return/") + Claim.Id; W.Title = TEXT("Return photograph / ") + Claim.Title;
+				W.bDone = !Claim.ControlPhotoId.IsEmpty(); W.bEarlier = W.bDone;
+				const FS47AlbumShot* Original = M->Night && M->Night->Album ? M->Night->Album->Shots().FindByPredicate([&](const auto& P){return P.Id == Claim.ControlOriginalId;}) : nullptr;
+				const bool Available = Original && !Original->bUnavailable && !Original->Url.IsEmpty() && Original->IsDeveloped() && Original->Pose.IsSet() && Original->Pose->Valid();
+				const bool Selected = !W.bDone && F->Director->PhotoControlFocusId() == Claim.Id;
+				W.bCanFollow = !W.bDone && Available && F->CanRegisterPhotoEvidence();
+				W.Status = W.bDone ? TEXT("Comparison retained / no further payment") : !Available ? TEXT("Reference unavailable / plan retained") : Selected ? TEXT("Camera return guide / selected") : TEXT("Camera return plan retained");
+				W.NextAction = W.bDone ? TEXT("Both originals and the comparison remain in OPS / SUPPLIES.") : F->Director->PhotoControlHint(Claim.Id);
+				W.Location = W.bDone || !Available ? TEXT("OPS / corner PC / SUPPLIES") : TEXT("SARO / original viewpoint; directions from S-03 above");
+				if (!W.bDone && Available && M->Night && M->Night->Album)
+				{
+					bool Exposed=false,Developed=false;
+					for (const auto& P : M->Night->Album->Shots()) if (!P.bUnavailable && !P.Url.IsEmpty() && P.Targets.ContainsByPredicate([&](const auto& T){return T.Key == TEXT("freeform-control:") + Claim.Id;})) { Exposed=true; Developed |= P.IsDeveloped(); }
+					if (Developed) { W.NextAction=TEXT("OPS / SUPPLIES: compare the two developed originals and retain the comparison; no extra payment."); W.Location=TEXT("OPS / corner PC"); }
+					else if (Exposed) { W.NextAction=TEXT("PHOTO LAB: develop, fix and collect the separate return photograph, then compare at OPS."); W.Location=TEXT("PHOTO LAB / wet bench"); }
+					else if (Selected) { bool Ready=false; W.NextAction=F->Director->PhotoControlFieldHint(Ready)+TEXT("\n")+W.NextAction; }
+				}
+				if (!W.bDone && Available && !Selected && !W.bCanFollow) W.NextAction += TEXT("\nSelect this camera return guide at the powered OPS workstation.");
+				X.WorkItems.Add(W);
+			}
 			if (Claim.bPaid) continue;
 			FS47NbWorkItem W; W.Id = TEXT("photo/") + Claim.Id; W.Title = TEXT("Photo documentation / ") + Claim.Title;
 			const FS47AlbumShot* Photo = M->Night && M->Night->Album ? M->Night->Album->Shots().FindByPredicate([&Claim](const FS47AlbumShot& P) { return P.Id == Claim.PhotoId; }) : nullptr;
@@ -1941,6 +1964,7 @@ FS47NbExtras US47Flow::NotebookExtras() const
 		{
 			if (!Self->M || !Self->M->Freeform) return;
 			const auto F = Self->M->Freeform;
+			if (Id.StartsWith(TEXT("photo-return/"))) { if (F->Director) F->Director->FollowPhotoControl(Id.Mid(13)); Self->OpenNotebook(); return; }
 			if (Id.StartsWith(TEXT("field-plan/"))) { F->FocusFieldCase(FCString::Atoi(*Id.Mid(11))); Self->OpenNotebook(); return; }
 			for (int32 I = 0; I < F->Jobs().Num(); ++I) if (Id.StartsWith(F->Jobs()[I].Id + TEXT("/"))) { F->SelectJob(I); break; }
 			Self->OpenNotebook();

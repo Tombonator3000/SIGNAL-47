@@ -2098,6 +2098,10 @@ bool FS47FreeformSession::SelfTest(TArray<FString>& Lines)
  FS47FreeformSession Workflow(nullptr);Workflow.Begin(nullptr);auto* WJ=Workflow.Job();
  WJ->Stage=EJobStage::Recorded;WJ->bPrinted=true;
  Check(Workflow.NextAction().Contains(TEXT("REGISTER THE ROUTINE"))&&!Workflow.NextAction().Contains(TEXT("PRINTER")),TEXT("Collected routine original directs to OPS, never back to printer"));
+ Workflow.ServiceGuide=1;Workflow.bGuideFocus=true;
+ Check(Workflow.ServiceGuideFocused()&&Workflow.SelectedJob()==0,TEXT("service focus is explicit without changing selected receiver job identity"));
+ Workflow.FieldFocus=2;Check(!Workflow.ServiceGuideFocused()&&Workflow.SelectedJob()==-1,TEXT("field focus retains priority over legacy simultaneous service-focus flag"));
+ Workflow.FieldFocus=-1;Workflow.ServiceGuide=2;Check(!Workflow.ServiceGuideFocused(),TEXT("archived service cannot remain followed"));Workflow.ServiceGuide=0;
  Workflow.bGuideFocus=true;Check(Workflow.SelectJob(1)&&!Workflow.bGuideFocus,TEXT("Explicit job selection returns focus from service to observing"));
  Workflow.Work[0].Stage=EJobStage::Chart;Workflow.Work[0].ChartFeed=PrinterSeconds;Workflow.Work[1].Stage=EJobStage::Integrating;
  Check(!Workflow.CollectChart()&&Workflow.FeedbackText().Contains(TEXT("Paper is waiting")),TEXT("Printer explains its pending queue when another recording prevents job switching"));Workflow.Work[1].Stage=EJobStage::New;

@@ -59,6 +59,7 @@ public:
  int32 CommandFeedbackCount() const { return CommandClicks; }
  int32 ServiceFeedbackCount() const { return ServiceClicks; }
  int32 ActiveServiceGuide() const { return ServiceGuide; }
+ bool ServiceGuideFocused() const { return ServiceGuide==1&&bGuideFocus&&FieldFocus<0; }
  int32 Day() const { return DayNumber; }
  double Clock() const { return WorldClock; }
  // Daylight 06–19 takes 30 active minutes; night 19–06 takes 45.
