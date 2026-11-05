@@ -21,6 +21,8 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Misc/Base64.h"
 #include "Misc/FileHelper.h"
+#include "Misc/Parse.h"
+#include "Misc/CommandLine.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/SlateUser.h"
 #include "Widgets/Input/SButton.h"
@@ -78,13 +80,37 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   TSharedPtr<SWidget> W=Hint;while(W){if(W->GetTypeAsString()==TEXT("SScrollBox"))return StaticCastSharedPtr<SScrollBox>(W);W=W->GetParentWidget();}
   return TSharedPtr<SScrollBox>();
  };
+ auto NotebookText=[&]
+ {
+  FString Text;TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> W){if(!W->GetVisibility().IsVisible())return;if(W->GetTypeAsString()==TEXT("STextBlock"))Text+=StaticCastSharedRef<STextBlock>(W)->GetText().ToString()+TEXT("\n");auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)Visit(C->GetChildAt(I));};
+  if(auto W=M->Hud->ModalWidget())Visit(W.ToSharedRef());return Text;
+ };
+ auto NotebookFollowing=[&]
+ {
+  int32 Count=0;TFunction<void(TSharedRef<SWidget>)> Visit=[&](TSharedRef<SWidget> W){if(!W->GetVisibility().IsVisible())return;if(W->GetTypeAsString()==TEXT("STextBlock")){const FString T=StaticCastSharedRef<STextBlock>(W)->GetText().ToString();if(T.StartsWith(TEXT("Following /"))&&!T.Contains(TEXT("\n")))++Count;}auto* C=W->GetChildren();for(int32 I=0;C&&I<C->Num();++I)Visit(C->GetChildAt(I));};
+  if(auto W=M->Hud->ModalWidget())Visit(W.ToSharedRef());return Count;
+ };
+ auto NotebookButtons=[&](const FString& Label)
+ {
+  TArray<TSharedRef<SButton>> Found;if(auto W=M->Hud->ModalWidget())OrbButtons(W.ToSharedRef(),Label,Found);return Found;
+ };
+ auto NotebookClick=[&](const FString& Label)
+ {
+  // Notebook-local Click builds SButton; invoke that native callback, not OS input.
+  const auto Found=NotebookButtons(Label);if(Found.Num()!=1||!Found[0]->IsEnabled())return false;Found[0]->SimulateClick();return true;
+ };
+ auto RestoreNotebook=[&]
+ {
+  if(auto Real=S47J::Obj(Snapshot,TEXT("notebookRealSession"))){M->UI->Close(true);F.Begin(S47J::Clone(Real));M->Night->Album->Restore(S47J::Clone(S47J::Obj(Snapshot,TEXT("notebookRealAlbum"))));M->RequestAutosave();}
+ };
+ auto NotebookCheck=[&](bool Good,const TCHAR* Why){if(!Good)RestoreNotebook();return Check(Good,Why);};
  auto RestoreFocusFixture=[&]
  {
   const auto Real=S47J::Obj(Snapshot,TEXT("nativeFocusRealDirector"));
   if(Real){M->UI->Close(true);const auto Album=S47J::Obj(Snapshot,TEXT("nativeFocusRealAlbum"));if(Album)M->Night->Album->Restore(S47J::Clone(Album));F.Director->Begin(S47J::Clone(Real));M->RequestAutosave();}
  };
  auto FocusCheck=[&](bool Good,const TCHAR* Why){if(!Good)RestoreFocusFixture();return Check(Good,Why);};
- if(Age>150){RestoreFocusFixture();Finish(false,TEXT("bounded dusk-orb native test timeout"));return;}
+ if(Age>(FParse::Param(FCommandLine::Get(),TEXT("S47NotebookFocusTest"))?190:150)){RestoreNotebook();RestoreFocusFixture();Finish(false,TEXT("bounded dusk-orb native test timeout"));return;}
  auto Original=[&]()->const FS47AlbumShot*{return M->Night->Album->Shots().FindByPredicate([this](const FS47AlbumShot& P){return P.Id==RetainedPhotoId;});};
  auto Ops=[&]{const FVector P=S47Three::ToThree(M->Web->PropLocation(TEXT("opsTerminal")));M->Player->Place(P.X+1.,P.Z,PI/2);}; // OPS is on the west wall, facing +X into the room.
  if(Stage==0)
@@ -483,7 +509,80 @@ void FS47FreeformTest::StepDuskOrb(double Dt)
   const auto Real=S47J::Obj(Snapshot,TEXT("nativeFocusRealDirector"));
   if(!Check(FJsonValue::CompareEqual(FJsonValueObject(F.Director->Save()),FJsonValueObject(Real))&&F.Director->PhotoClaims().Num()==1&&F.Director->PhotoClaims()[0].Id==PhotoClaimId&&F.Director->PhotoClaims()[0].ControlPhotoId==RetainedPhotoId&&F.Budget()==PhotoBudget,TEXT("after UI fixture, exact genuine Director history and completed paid original pair restored")))return;
   Snapshot->RemoveField(TEXT("nativeFocusRealDirector"));Snapshot->RemoveField(TEXT("nativeFocusRealAlbum"));Snapshot->RemoveField(TEXT("nativeFocusFixtureBefore"));
+  if(FParse::Param(FCommandLine::Get(),TEXT("S47NotebookFocusTest"))){Go(9700,.4);return;}
   Finish(true,TEXT("PHOTO04 real-original journey and optional local-noise idea; explicit synthetic two-plan Follow wiring restores real history. No logger measurement, second natural event or additional payment claimed."));return;
+ }
+
+ if(Stage==9700)
+ {
+  S47J::Set(Snapshot,TEXT("notebookRealSession"),F.Save());S47J::Set(Snapshot,TEXT("notebookRealAlbum"),M->Night->Album->SaveData());
+  auto D=F.Director->Save();const auto Real=S47J::Arr(D,TEXT("photoClaims"));
+  if(!NotebookCheck(Real.Num()==1,TEXT("notebook fixture starts from actual completed single paid orb journey")))return;
+  auto A=S47J::Clone(Real[0]->AsObject()),B=S47J::Clone(A);
+  for(auto O:{A,B}){O->RemoveField(TEXT("controlPhoto"));S47J::Set(O,TEXT("paid"),true);}
+  S47J::Set(A,TEXT("id"),TEXT("dusk_orb.notebook-a"));S47J::Set(A,TEXT("title"),TEXT("NOTEBOOK FIXTURE A"));
+  S47J::Set(B,TEXT("id"),TEXT("dusk_orb.notebook-b"));S47J::Set(B,TEXT("title"),TEXT("NOTEBOOK FIXTURE B"));
+  D->SetArrayField(TEXT("photoClaims"),{MakeShared<FJsonValueObject>(A),MakeShared<FJsonValueObject>(B)});S47J::Set(D,TEXT("photoControlFocus"),TEXT("dusk_orb.notebook-a"));F.Director->Begin(D);
+  M->UI->Close(true);Ops();Go(9701,.4);return;
+ }
+ if(Stage==9701)
+ {
+  M->UI->NotebookAt(TEXT("tasks"));M->Flow->OpenNotebook();Go(9702,.5);return;
+ }
+ if(Stage==9702)
+ {
+  const FString T=NotebookText();
+  if(!NotebookCheck(T.Contains(TEXT("Return photograph / NOTEBOOK FIXTURE A"))&&T.Contains(TEXT("Return photograph / NOTEBOOK FIXTURE B"))&&T.Contains(TEXT("Camera return guide / selected"))&&!T.Contains(TEXT("Photo documentation / NOTEBOOK")),TEXT("actual rendered Now includes both explicitly paid pending plans, not new payment tasks")))return;
+  if(!NotebookCheck(NotebookClick(TEXT("Return photograph / NOTEBOOK FIXTURE B")),TEXT("actual notebook SButton entry click selects second plan")))return;Go(9703,.4);return;
+ }
+ if(Stage==9703)
+ {
+  if(!NotebookCheck(NotebookText().Contains(TEXT("RETURN / From S-03"))&&NotebookText().Contains(TEXT("WHERE / SARO / original viewpoint")),TEXT("actual second-plan page renders retained viewpoint directions and location")))return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("notebook-paid-return-plan.png"),true,false);Go(9704,.4);return;
+ }
+ if(Stage==9704)
+ {
+  if(!NotebookCheck(NotebookClick(TEXT("FOLLOW")),TEXT("actual notebook FOLLOW action calls existing Director focus API at OPS")))return;Go(9705,.4);return;
+ }
+ if(Stage==9705)
+ {
+  if(!NotebookCheck(F.Director->PhotoControlFocusId()==TEXT("dusk_orb.notebook-b")&&F.Budget()==PhotoBudget&&FJsonValue::CompareEqual(FJsonValueObject(M->Night->Album->SaveData()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("notebookRealAlbum")))),TEXT("native Now Follow selects second fixture without payment or photograph changes")))return;
+  M->UI->Close(true);auto D=F.Director->Save();auto C=S47J::Arr(D,TEXT("photoClaims"));S47J::Set(C[1]->AsObject(),TEXT("controlOriginal"),TEXT("missing-notebook-reference"));F.Director->Begin(D);
+  if(!NotebookCheck(F.Director->PhotoControlFocusId()==TEXT("dusk_orb.notebook-a"),TEXT("missing selected frozen original falls back to surviving first guide")))return;
+  M->Flow->OpenNotebook();Go(9706,.4);return;
+ }
+ if(Stage==9706)
+ {
+  if(!NotebookCheck(NotebookClick(TEXT("Return photograph / NOTEBOOK FIXTURE B")),TEXT("missing frozen-reference plan remains selectable in Now")))return;Go(9707,.4);return;
+ }
+ if(Stage==9707)
+ {
+  const FString T=NotebookText();
+  if(!NotebookCheck(T.Contains(TEXT("Frozen original unavailable"))&&T.Contains(TEXT("Reference unavailable / plan retained"))&&NotebookButtons(TEXT("FOLLOW")).IsEmpty(),TEXT("actual missing-reference detail states unavailable and offers no rejected Follow action")))return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("notebook-missing-reference.png"),true,false);Go(9708,.4);return;
+ }
+ if(Stage==9708)
+ {
+  M->UI->Close(true);
+  if(!NotebookCheck(F.Field->TriggerServiceFault(false,TEXT("S-07"))&&F.StartServiceGuide(false)&&F.Field->ServiceDishId()==TEXT("S-07"),TEXT("explicit real S-07 service-fault fixture and production work-order acceptance; no simulated completed repair")))return;
+  M->Flow->OpenNotebook();Go(9709,.5);return;
+ }
+ if(Stage==9709)
+ {
+  const FString T=NotebookText();const int32 Following=NotebookFollowing();
+  if(!NotebookCheck(T.Contains(TEXT("S-07 service work order"))&&!T.Contains(TEXT("S-03 service work order"))&&Following==1,TEXT("actual Now list has exactly one Following label for real non-S03 service order")))return;
+  if(!NotebookCheck(NotebookClick(TEXT("S-07 service work order")),TEXT("actual service entry opens its current work-order detail")))return;Go(9710,.4);return;
+ }
+ if(Stage==9710)
+ {
+  const FString T=NotebookText();if(!NotebookCheck(T.Contains(TEXT("S-07 AZ / EL DRIVE"))&&T.Contains(TEXT("local service box / S-07")),TEXT("service Now detail agrees on actual named antenna in next action and location")))return;
+  FScreenshotRequest::RequestScreenshot(Root/TEXT("notebook-s07-service-focus.png"),true,false);Go(9711,.4);return;
+ }
+ if(Stage==9711)
+ {
+  RestoreNotebook();
+  if(!Check(F.Budget()==PhotoBudget&&FJsonValue::CompareEqual(FJsonValueObject(F.Director->Save()),FJsonValueObject(S47J::Obj(S47J::Obj(Snapshot,TEXT("notebookRealSession")),TEXT("director"))))&&FJsonValue::CompareEqual(FJsonValueObject(M->Night->Album->SaveData()),FJsonValueObject(S47J::Obj(Snapshot,TEXT("notebookRealAlbum"))))&&F.Field->ServiceStage()==S47J::Int(S47J::Obj(S47J::Obj(Snapshot,TEXT("notebookRealSession")),TEXT("field")),TEXT("service")),TEXT("notebook fixtures restore genuine Director/history, originals, economy and prior service stage")))return;
+  Finish(true,TEXT("PHOTO04 plus actual Now/SButton callbacks: explicit paid two-plan and missing-reference fixtures, real S-07 fault/acceptance fixture; all genuine history restored. Not two natural incidents, OS clicking, or completed service."));return;
  }
 
 }

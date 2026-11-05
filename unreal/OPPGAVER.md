@@ -2,16 +2,20 @@
 
 **Status: Gjeldende** · Denne filen fører eierskap, filansvar og tunge kjørevinduer. Samlet [status](../Docs/Active/STATUS.md), [TODO](../Docs/Active/TODO.md) og [beslutninger](../Docs/Active/DECISIONS.md) oppdateres i Docs/Active.
 
-## Aktivt nattskift 4. til 5. november, kl.08:00
+## Oppfølging 5. november etter nattskiftet
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-board-drag-20261105`, fra main etter flettet PR413. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Claude Code overtar på Toms beskjed samme SARO-kopi, nå på `claude/notebook-return-20261105`: først dagbokrettelser og leveringsdokumentasjon som egen PR, deretter blokkert SC04-retur på egen gren. Codex-kvoten er brukt opp til 10. november. Ingen ny arbeidskopi.
 
-- root: siste avgrensede native dra-prøve på bevisbrettet, deretter frosset kandidat, pakking, sjuprosessreise og installasjon; alle tunge jobber under production_lease.
+## Nattskift 4. til 5. november, avsluttet
+
+Codex root bruker eksisterende SARO-kopi på `codex/night-notebook-return-20261105`, fra main etter flettet PR414 og installert e9857608. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+
+- root: avgrenset oppfølging av Now/service/fotoretur og blokkert ordinær SC04-retur, deretter målrettet prøve og kandidat; alle tunge jobber under production_lease. Første samlede pakke e9857608 er installert med 213 pakkede reisekontroller og 126 Saved-filer bevart.
 - todo_triage: privat kryssreview av loggerbenk, fotoscroll og vanlig lagring av opptakslyd; ingen aktive kildefiler eller motorjobb.
 - night_preflight: private leveringswrappere og avgrenset materialaudit/-retting levert til root; ingen aktive kildefiler eller motorjobb.
 - photo_loop: privat utvidelse av normalreisen med faktisk pulsaropptak, manuell SAVE3 og separat prosess-Continue; root eier integrering og prøving.
 
-Private kilder: SARO er beholdt oppdatert grunnlag for åtte av de 13 eksplisitte kandidatinputs; hovedkopien har ikke samme Trim, MesaRock, fem geo og Web-parent. Kopien er beskyttet mot avvikling til nødvendig privat grunnlag er sikret. Ferdigstatus ved levering skal ikke tolkes som slettetillatelse for disse kildene.
+Private kilder: SARO er beholdt oppdatert grunnlag for åtte av de 13 eksplisitte kandidatinputs; hovedkopien har ikke samme Trim, MesaRock, fem geo og Web-parent. De åtte er 5. november arkivert hash-kontrollert i privat mappe utenfor repoet, ikke overført til hovedkopien. Kopien er beskyttet mot avvikling til nødvendig privat grunnlag er sikret. Ferdigstatus ved levering skal ikke tolkes som slettetillatelse for disse kildene.
 
 Samlet nattstartkontroll er utført én gang: tre arbeidskopier, ingen ekstra komplett manuell kopi eller aktive motorprosesser funnet. Sju verifisert erstattede pakkepayloads pensjonert; installert standard, service-array, receiver-texture og saro-doors-flicker beholdt. Kilder, private assets, Saved og bevis bevares. 36,16 GB logisk pensjonert, ikke lovet fysisk gevinst; faktisk ledig 177.43 GB. Planlagt toppvekst 20 GB; raske df-kontroller før pakking, ingen ny full audit gjennom skiftet.
 

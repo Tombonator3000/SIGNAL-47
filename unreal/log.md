@@ -1843,3 +1843,11 @@ Privat materialretting: M_Web_Lit_Opaque fikk tilsiktet Nanite-bruksflagg. Paren
 ## 5. november 2026 kl.04:42, avvist drahandling på bevisbrettet
 
 `codex/night-board-drag-20261105`: normal Slate-enhetsruting, faktisk capture/drag/release og ekte tosekunders fade er prøvd med beholdte kort, tråder og foto. Bygg/2461 selvtester, 26 kontroller/én diskretur og tre visuelt kontrollerte tidsbilder består; fysisk OS-mus/menneskelig aksept er fortsatt åpent. Ingen produktregel endret; siste kodepunkt før samlet nattkandidat.
+
+## 5. november 2026 kl.05:10, samlet nattkandidat installert
+
+`e9857608`, PR393 til PR414, er installert via uendret standardstarter: 2461 pakkede/installerte selvtester, 213 kontroller over sju prosesser og 126 Saved-filer byteidentiske. 13 private inputs bundet; SARO/originaler beskyttes. To cook-genererte filrekkefølgelogger arkivert og versjonert grunnlag gjenopprettet, ingen ompakking eller rydderunde.
+
+## 5. november 2026 kl.10:55, dagbokoppfølging
+
+`claude/notebook-return-20261105`: Now følger faktisk serviceantenne og fotoreturplaner, med egen tilstand for manglende original. Bygget uten SC04-endringene: 2464 selvtester, 118 native kontroller og tre visuelt kontrollerte skjermbilder består. Ikke installert. SC04-returens WIP er tatt ut som privat patch og fortsetter på egen gren.
