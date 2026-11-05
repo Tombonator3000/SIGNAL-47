@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "S47Json.h"
+#include "S47CaptureSound.h"
 #include "S47Journal.h"
 #include "S47Rx.h"
 #include "S47FreeformJobs.h"
@@ -23,6 +24,7 @@ public:
   EJobStage Stage=EJobStage::New;
   double Elapsed=0, Quality=1, ReceivedLevel=1;
   // Background timbre captured at accepted acquisition; evidence ticks stay independent.
+  S47CaptureSound::FTrack CaptureOriginal,CaptureControl;
   int32 RecordingSoundVersion=0;
   double RecordingGain=0,RecordingBandwidth=0,RecordingQuality=0;
   double ChartFeed=0, PacketFeed=0, DuplicateFeed=0; // Physical printer seconds; retained across Continue.
@@ -160,11 +162,14 @@ public:
  int32 SelectedJob() const { return FieldFocus>=0?-1:Selected; }
  const TArray<FJob>& Jobs() const { return Work; }
  const FJob* CurrentJob() const;
+ S47J::FObj CaptureSoundState() const; // read-only transport proof for native tests
  double AudioPosition() const { return AudioCursor; }
  bool AudioPlaying() const { return bAudioPlaying; }
+ bool AudioPreparing() const { return CaptureStartStage!=0; }
  int32 AudioSource() const { return AudioSourceIndex; }
  double AudioLevel() const;
  FString AudioDisplay() const;
+ FString AudioCaptureStatus() const;
  const FS47Profile* ConsoleProfile() const;
  TSharedPtr<class FS47FreeformAudioDesk> AudioDesk;
  TSharedPtr<FS47FreeformDirector> Director;
@@ -175,6 +180,12 @@ public:
  bool TestAdvance(double WorldSeconds);
  bool SpendTime(double WorldSeconds) { return TestAdvance(WorldSeconds); }
 private:
+ TSharedPtr<FS47CapturePlayer> LiveCapture,TapeCapture;
+ bool UsesCapturedAudio() const;
+ int32 CaptureStartStage=0; // 1 prepare; 2 discard build frame; 3 start on stable frame
+ bool QueueCapture(S47CaptureSound::FTrack& Track,double From,double To,double Dt,double Rate,const S47CaptureSound::FFrame& Input);
+ void InterruptCapture(const FString& Why);
+
  FS47Journal Journal;
  bool ValidJournalHint(const FString& Id) const;
  bool ValidJournalEntry(const FString& Id) const;

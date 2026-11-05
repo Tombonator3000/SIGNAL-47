@@ -1825,3 +1825,7 @@ Dinerens boarding-proxy slipper nå samme faktiske cargo-stråle gjennom som SAR
 ### 5. november 2026 kl.03:18: motellstolpens sokkel ved asfaltkanten
 
 `codex/night-motel-foot-20261105`: gjenbrukte plate-/krage-/boltkomponenter rundt uendret stolpe og40cm sperre;36cm betong følger faktisk asfalt/gårdskant med25mm nedstikk. FBX-kantprofil forklarer det målte bevelavviket, uten utvidet toleranse. Bygg r3, før-/etterprobe med81+1 identiske treff og fire sammenhengende gangsegmenter hver, samt visuelt kontrollerte før-/etterbilder består. Ingen asset-/lys-/Road-endring. Installasjon følger samlet kandidat.
+
+### 5. november 2026 kl.03:55: beholdt lydforløp for første pulsar
+
+`codex/night-captured-sound-20261105`: første dags fullrate-pulsar og egen referanse beholder faktiske innstillinger/pulser i kompakt oppskrift, med eksplisitt fallback ved avbrudd og uendrede eldre opptak. Loading holder cursor/dekning stille og fysisk STOP avbryter. Bygg r9, 2457 selvtester, native default 24 og separat NoSound-restore 14 består; 8/48 kHz modellrender er sampleidentisk. Native lydkilder fullfører 864000/384000 prøver både live og ved avspilling. Eksplisitt jobb/anomali/posisjon og Session JSON er erklært; ingen menneskelig lytteaksept eller vanlig meny-Continue påstås. Korrekt tidsgrense beholdes; fryst lydklokke avviser capture. Installasjon følger samlet kandidat.
