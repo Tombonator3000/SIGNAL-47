@@ -54,4 +54,7 @@ private:
  bool Live() const;
  bool Powered() const;
  void Show(bool bShow);
+ // Freeform gathers the receiver stack on the wall table beside the deck; Story keeps it at the console.
+ void PlaceStack(bool bTable);
+ TOptional<FTransform> StackHome;
 };

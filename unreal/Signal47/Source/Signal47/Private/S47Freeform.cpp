@@ -1906,7 +1906,7 @@ bool FS47FreeformSession::Use(const FString& Id)
   if(!RequirePower())return true;
   if(Id==TEXT("telex")&&Director&&Director->Use(TEXT("ff:telex")))return true;OpsSection=0;OpenOperations();return true;
  }
- if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")){OpenAudio();return true;}
+ if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk")){OpenTapePanel();return true;}
  if(Id==TEXT("rack"))
  {
   if(CurrentJob()&&CurrentJob()->Phenomenon==TEXT("wrong_source"))Changed(NextAction());
@@ -1929,7 +1929,7 @@ FString FS47FreeformSession::Label(const FString& Id)const
  if(Id==TEXT("opsTerminal"))return TEXT("Daily work, registration and operating budget");
  if(Id==TEXT("telex")||Id==TEXT("logbook")||Id==TEXT("workOrder")||Id==TEXT("anomaly:shiftlog"))return TEXT("Read the daily work order and incoming messages");
  if(Id==TEXT("phone")||Id==TEXT("recPhone"))return TEXT("Check the operations line");
- if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk"))return TEXT("Signal processor / recordings are compared at the reel deck on the wall table");
+ if(Id==TEXT("decoder")||Id==TEXT("signalProcessor")||Id==TEXT("decoderDesk"))return TEXT("Reel deck / compare recordings");
  if(Id==TEXT("rack"))return TEXT("Record an independent receiver control");
  if(Id==TEXT("printer"))return PrinterHint();
  if(Id==TEXT("binder")||Id==TEXT("excBinder")||Id==TEXT("serviceRecord"))return TEXT("File originals and inspect the continuing case archive");
