@@ -156,6 +156,9 @@ Arbeidet prøves som én sammenhengende reise: velg oppgave → forbered → utf
 
 ## Freeform: UFO-er, etterforskning, materialer og bygging
 
+- [ ] **Opptakslyd på slitt stasjon, venter på Toms valg:** opptakslyd krever full målehastighet, så nye spill får kompatibel lyd til alle 27 antenner virker, og spilleren ser den misvisende teksten «missed its audio deadline». Avgjør om opptak skal virke på redusert array eller bare få riktig forklaring.
+- [ ] **Utdatert testtekst:** `S47GuidanceTest` forventer `COMPARE THE RETAINED`, spillet sier `COMPARE AND REGISTER THE RETAINED`. Feiler også på `eb300842`.
+
 > Toms rekkefølge 5. november: slitt stasjon (levert i editor, se [status](STATUS.md)) → nattkurven fra `claude/east-wing-20261103` (`9b4e7e26`) → første feltutrykning med UFO-materialer → flere atferdsmønstre og steder først når første tur er morsom. Antall antenner skal senere styre søkeområdet for utrykninger.
 
 Tom ba 2. november om å føre hele brainstormen fra tre agenter og gameplay-harnesset inn i TODO. Ved registreringen var punktene nedenfor nye, åpne design-/implementeringsoppgaver med kildegjennomgang og statisk harness. Senere avgrensede runtimeleveranser er ført i de enkelte punktene; den brede spilleraksepten er fortsatt åpen. Registreringen endrer ikke gjeldende prioritering av Jeep og kritiske feil. UFO-01 over gjelder den allerede installerte leveransen. PHOTO-04 og GAMEPLAY-05/06 samordnes med denne reisen, uten parallelle systemer for saksfakta eller dobbel betaling.
