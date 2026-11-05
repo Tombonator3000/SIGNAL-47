@@ -45,6 +45,7 @@ namespace
  const FVector2D Cross[]={{0,.5},{0,-.5},{.5,0},{-.5,0},{0,0}};
  const double BeamOffsets[]={-.5,.5,0};
  bool Specialized(const FString& Id){return Id==TEXT("wrong_source")||Id==TEXT("time_disagreement")||Id==TEXT("duplicate_print");}
+ bool MarkCoversTicks(double In,double Out){return In>=0&&In<=9.30&&Out>=12.60&&Out-In<=6;}
  double BeamLevel(double ActualAz,double SourceAz)
  {return .08+.92*FMath::Exp(-FMath::Square(FMath::FindDeltaAngleDegrees(ActualAz,SourceAz)/.35));}
  FString InstrumentConclusion(const FString& Id)
@@ -763,6 +764,17 @@ bool FS47FreeformSession::StartControl()
  else Changed(J->Phenomenon==TEXT("duplicate_print")?TEXT("RECEIVER RACK: Checking the master register automatically. When complete, collect the duplicate at the PRINTER; the original is retained."):TEXT("RECEIVER RACK: Eight-second internal reference running automatically; the original is retained. When complete, follow the job hint to OPS for clock measurements or the REEL DECK on the wall table for audio comparison."));return true;
 }
 void FS47FreeformSession::SeekAudio(double At){if(!FMath::IsFinite(At))return;CaptureStartStage=0;if(TapeCapture)TapeCapture->Stop();AudioCursor=FMath::Clamp(At,0.,AudioSourceIndex==0?18.:8.);bAudioPlaying=false;Changed();}
+bool FS47FreeformSession::MarkAudioAt(double At)
+{
+ FJob* J=Job();if(!J||!J->bAnomaly||J->ControlAt<8||!FMath::IsFinite(At))return false;
+ if(J->Stage>=EJobStage::Registered){Feedback=TEXT("Registered comparison is sealed. Playback is available; its marks cannot be changed.");return false;}
+ if(Specialized(J->Phenomenon)){Feedback=TEXT("This is an instrument comparison. Use its measured control at OPS; no extra-tick marks are required.");return false;}
+ if(AudioSourceIndex!=0){Feedback=TEXT("Mark the original recording, not the quiet internal control.");return false;}
+ At=FMath::Clamp(At,0.,18.);
+ if(J->MarkStart<0||J->MarkEnd>=0){J->MarkStart=At;J->MarkEnd=-1;}
+ else{J->MarkEnd=FMath::Max(J->MarkStart,At);J->MarkStart=FMath::Min(J->MarkStart,At);}
+ J->bAudioReviewed=false;Changed();return true;
+}
 bool FS47FreeformSession::AudioAction(const FString& Action)
 {
  if((Action==TEXT("play")||Action==TEXT("confirm"))&&!RequirePower())return false;
@@ -789,7 +801,7 @@ bool FS47FreeformSession::AudioAction(const FString& Action)
   if(J->Stage>=EJobStage::Registered){Feedback=TEXT("This comparison is already registered and retained.");return false;}
   if(Specialized(J->Phenomenon))return CompareInstrument();
   if(J->OriginalCovered<18||J->ControlCovered<8){Feedback=TEXT("Play both recordings through. Seeking does not play skipped audio.");return false;}
-  if(J->MarkStart<0||J->MarkStart>9.30||J->MarkEnd<12.60||J->MarkEnd-J->MarkStart>6){Feedback=TEXT("Mark both short groups of extra ticks, between about 9 and 13 seconds.");return false;}
+  if(!MarkCoversTicks(J->MarkStart,J->MarkEnd)){Feedback=TEXT("Mark the original from just before the first extra ticks to just after the last ones, about 9 to 13 seconds.");return false;}
   J->bAudioReviewed=true;RecordEvidence(TEXT("pulse-review"),TEXT("Original and internal reference reviewed. Extra ticks are absent from the short control; source remains unresolved."));
   if(Director)Director->Use(TEXT("ff:compare"));Changed(TEXT("OPS (corner PC): Register a supported conclusion; the marked comparison is retained."));
  }
@@ -882,7 +894,8 @@ bool FS47FreeformSession::NearBinder() const
 }
 bool FS47FreeformSession::FilePacket()
 {
- FJob* J=Job();if(!J||J->Stage!=EJobStage::Packet)return false;
+ // Another job may have been selected since the packet was collected; its paper still waits here.
+ FJob* J=Work.FindByPredicate([](const FJob& X){return X.Stage==EJobStage::Packet;});if(Job()&&Job()->Stage==EJobStage::Packet)J=Job();if(!J)return false;
  if(!NearBinder()){Feedback=TEXT("Take the registered paper packet to the actual records-room binder. The remote archive is read-only.");Changed(Feedback);return false;}
  J->Stage=EJobStage::Filed;if(!J->bPaid){J->bPaid=true;Earn(20);}
  if(J->bAnomaly)
@@ -1430,22 +1443,33 @@ void FS47FreeformSession::OpenTapePanel()
  auto Marking=TAttribute<bool>::CreateLambda([this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon)&&AudioSourceIndex==0;});
  auto Pick=[this](int32 Index,const TCHAR* Name){return TAttribute<FString>::CreateLambda([this,Index,Name]{return FString(AudioSourceIndex==Index?TEXT("> "):TEXT(""))+Name;});};
  TArray<S47Kit::FW> Rows;
- Rows.Add(T::Panel(TEXT("WHAT TO DO HERE"),T::Text(TAttribute<FString>::CreateLambda([this]
- {
-  const auto* J=CurrentJob();
-  if(!J||!J->bAnomaly||J->Stage<EJobStage::Recorded)return FString(TEXT("Nothing to compare yet. An unusual observation needs its original chart from the printer first."));
-  if(!J->bControl||J->ControlAt<8)return FString(TEXT("Record the internal control first: receiver (centre PC), RECORD tab."));
-  if(Specialized(J->Phenomenon))return FString(TEXT("This observation is compared at OPS (corner PC), DAILY WORK, not on tape."));
-  if(J->bAudioReviewed)return FString(TEXT("Comparison retained. Register the conclusion at OPS (corner PC)."));
-  if(J->OriginalCovered<18)return FString(TEXT("1. Listen to the whole ORIGINAL. Press MARK IN and MARK OUT around what does not belong."));
-  if(J->ControlCovered<8)return FString(TEXT("2. Now listen to the whole CONTROL. It holds only the station's own reference."));
-  return FString(TEXT("3. If the marked sound is on the original and not on the control, press RETAIN."));
- }),TAttribute<int32>(1))));
+ auto Ready=[this]{const auto* J=CurrentJob();return J&&J->bAnomaly&&J->Stage>=EJobStage::Recorded&&J->bControl&&J->ControlAt>=8&&!Specialized(J->Phenomenon);};
+ Rows.Add(T::Panel(TEXT("WHAT TO DO HERE"),S47Kit::Col({
+  T::Small(TEXT("HERE you compare two recordings of the same job. ORIGINAL: what the antennas recorded. CONTROL: the station's own reference, antennas out of the path. If the odd sound is on both, the equipment makes it. If it is only on the original, it came from outside.")),
+  T::Text(TAttribute<FString>::CreateLambda([this]
+  {
+   const auto* J=CurrentJob();
+   if(!J||!J->bAnomaly||J->Stage<EJobStage::Recorded)return FString(TEXT("Nothing to compare yet. An unusual observation needs its original chart from the printer first."));
+   if(!J->bControl||J->ControlAt<8)return FString(TEXT("The control is missing. Record it first: receiver (centre PC), RECORD tab."));
+   if(Specialized(J->Phenomenon))return FString(TEXT("This observation is compared at OPS (corner PC), DAILY WORK, not on tape."));
+   if(J->Stage>=EJobStage::Registered||J->bAudioReviewed)return FString::Printf(TEXT("JOB %s: comparison retained. Register the conclusion at OPS (corner PC)."),*J->Id);
+   const bool Heard=J->OriginalCovered>=18,Marked=MarkCoversTicks(J->MarkStart,J->MarkEnd),Control=J->ControlCovered>=8;
+   const int32 Now=!Heard?1:!Marked?2:!Control?3:4;
+   auto Line=[Now](int32 N,const FString& Text){return FString::Printf(TEXT("%s %d  %s\n"),N<Now?TEXT("[X]"):N==Now?TEXT("[>]"):TEXT("[ ]"),N,*Text);};
+   FString Mark=TEXT("MARK THE EXTRA TICKS ON THE ORIGINAL: click the trace where they begin, then where they end");
+   if(J->MarkStart>=0&&J->MarkEnd>=0&&!Marked)Mark=TEXT("MARK AGAIN: the mark must run from before the first extra tick to after the last one");
+   return FString::Printf(TEXT("JOB %s\n"),*J->Id)
+    +Line(1,FString::Printf(TEXT("LISTEN TO THE WHOLE ORIGINAL: %.0f / 18 s heard"),J->OriginalCovered))
+    +Line(2,Mark)
+    +Line(3,FString::Printf(TEXT("LISTEN TO THE WHOLE CONTROL: %.0f / 8 s heard. Are the ticks there?"),J->ControlCovered))
+    +Line(4,TEXT("PRESS RETAIN, then register the conclusion at OPS (corner PC)"));
+  }),TAttribute<int32>(0))})));
  const auto Scope=SNew(SS47TapeScope)
   .Cursor_Lambda([this]{return AudioCursor;}).Length_Lambda([this]{return AudioSourceIndex==0?18.:8.;})
   .Control_Lambda([this]{return AudioSourceIndex!=0;}).Playing_Lambda([this]{return bAudioPlaying&&!CaptureStartStage;})
   .MarkIn_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkStart:-1.;}).MarkOut_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->MarkEnd:-1.;})
-  .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();});
+  .Ticks_Lambda([this]{const auto* J=CurrentJob();return J&&AudioSourceIndex==0?J->TraceTicks:TArray<double>();})
+  .CanMark(Marking).OnMark([this](double At){MarkAudioAt(At);});
  const S47Kit::FW Tape=T::Panel(TEXT("TAPE"),S47Kit::Col({
   T::Columns({{1.f,T::ButtonLive(Pick(0,TEXT("ORIGINAL 18 s")),Press(TEXT("original")),true,CanCompare)},{1.f,T::ButtonLive(Pick(1,TEXT("CONTROL 8 s")),Press(TEXT("control")),true,CanCompare)}}),
   T::Value(TEXT("POSITION"),TAttribute<FString>::CreateLambda([this]
@@ -1453,15 +1477,16 @@ void FS47FreeformSession::OpenTapePanel()
    return FString::Printf(TEXT("%04.1f / %.0f s  %s"),AudioCursor,AudioSourceIndex==0?18.:8.,CaptureStartStage?TEXT("LOADING"):bAudioPlaying?TEXT("PLAYING"):TEXT("STOPPED"));
   }),true),
   T::Value(TEXT("HEARD"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();return J?FString::Printf(TEXT("ORIGINAL %.1f / 18   CONTROL %.1f / 8"),J->OriginalCovered,J->ControlCovered):FString();}),true),
-  T::Value(TEXT("MARK"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("NOT SET"));return J->MarkEnd<0?FString::Printf(TEXT("%.1f s TO ..."),J->MarkStart):FString::Printf(TEXT("%.1f s TO %.1f s"),J->MarkStart,J->MarkEnd);}),true),
+  T::Value(TEXT("MARK"),TAttribute<FString>::CreateLambda([this]{const auto* J=CurrentJob();if(!J||J->MarkStart<0)return FString(TEXT("NOT SET"));return J->MarkEnd<0?FString::Printf(TEXT("%.1f s TO ..."),J->MarkStart):FString::Printf(TEXT("%.1f s TO %.1f s  %s"),J->MarkStart,J->MarkEnd,MarkCoversTicks(J->MarkStart,J->MarkEnd)?TEXT("COVERS THE TICKS"):TEXT("MISSES TICKS"));}),true),
   T::Columns({{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(bAudioPlaying||CaptureStartStage?TEXT("STOP"):TEXT("PLAY"));}),Press(TEXT("play")),true,CanCompare)},{1.f,T::Button(TEXT("REWIND"),Press(TEXT("rewind")),false,CanCompare)}}),
-  T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Button(TEXT("RETAIN"),Press(TEXT("retain")),true,CanCompare)}}),
+  T::Columns({{1.f,T::Button(TEXT("MARK IN"),Press(TEXT("mark_start")),false,Marking)},{1.f,T::Button(TEXT("MARK OUT"),Press(TEXT("mark_end")),false,Marking)},{1.f,T::Button(TEXT("RETAIN"),Press(TEXT("retain")),true,TAttribute<bool>::CreateLambda([this,Ready]{const auto* J=CurrentJob();return Ready()&&J->Stage<EJobStage::Registered&&!J->bAudioReviewed&&J->OriginalCovered>=18&&J->ControlCovered>=8&&MarkCoversTicks(J->MarkStart,J->MarkEnd);}))}}),
   T::Text(TAttribute<FString>::CreateLambda([this]{const FString Status=AudioCaptureStatus();return Status.IsEmpty()?FeedbackText():Status;}),TAttribute<int32>(0))}));
  Rows.Add(T::Columns({{1.45f,T::Panel(TEXT("SIGNAL / TAPE HEAD"),SNew(SBox).HeightOverride(430)[Scope])},{1.f,Tape}}));
  Rows.Add(T::Panel(TEXT("LISTENING REFERENCES / FOR YOUR EAR, NOT EVIDENCE"),S47Kit::Col({
   T::Text(TAttribute<FString>::CreateLambda([this]{return AudioDesk?AudioDesk->ReferenceLabel():FString();}),TAttribute<int32>(0)),
   T::Columns({{1.f,T::Button(TEXT("NEXT REFERENCE"),Press(TEXT("ref_next")),false,true)},{1.f,T::ButtonLive(TAttribute<FString>::CreateLambda([this]{return FString(AudioDesk&&AudioDesk->ReferencePlaying()?TEXT("STOP REFERENCE"):TEXT("PLAY REFERENCE"));}),Press(TEXT("ref_play")),false,true)}})})));
- SetPanel(T::Frame(TEXT("REEL DECK / COMPARE RECORDINGS"),S47Kit::Col(Rows)),false,true);bTapePanel=true;
+ auto Leave=[this]{if(M&&M->UI)M->UI->Close();};
+ SetPanel(SNew(SS47TapePanel).OnLeave(Leave)[T::Frame(TEXT("REEL DECK / COMPARE RECORDINGS"),S47Kit::Col(Rows),T::Button(TEXT("ESC / RETURN TO ROOM"),Leave))],false,true);bTapePanel=true;
 }
 void FS47FreeformSession::OpenArchive()
 {
@@ -1469,10 +1494,21 @@ void FS47FreeformSession::OpenArchive()
  auto Paper=[Computer](const FString& T){return Computer?S47FreeformTerminal::Paper(T):S47Kit::Paper(T);};
  auto Plain=[Computer](const FString& T){return Computer?S47FreeformTerminal::Small(T):S47Kit::Small(T);};
  // What needs doing comes first; the record itself is only read.
- if(CurrentJob()&&CurrentJob()->Stage==EJobStage::Packet)
+ if(!ArchiveNote.IsEmpty()){Rows.Add(Paper(ArchiveNote));ArchiveNote.Empty();}
+ const FJob* Waiting=CurrentJob()&&CurrentJob()->Stage==EJobStage::Packet?CurrentJob():Work.FindByPredicate([](const FJob& X){return X.Stage==EJobStage::Packet;});
+ if(Waiting)
  {
-  if(NearBinder())Rows.Add(S47Kit::Button(TEXT("Place registered originals in this binder"),[this]{FilePacket();OpenArchive();},true));
-  else Rows.Add(Paper(TEXT("TO FILE / Registered packet waiting. Take its originals to the records-room binder; this remote archive is read-only.")));
+  if(NearBinder())
+  {
+   Rows.Add(Plain(FString::Printf(TEXT("TO FILE / The registered packet for %s is in your hands. Press the button to put it in this binder."),*Waiting->Id)));
+   Rows.Add(S47Kit::Action(TEXT("FILE PACKET IN THIS BINDER"),[this,Id=Waiting->Id]
+   {
+    const bool Filed=FilePacket();UE_LOG(LogTemp,Display,TEXT("S47: binder filing %s: %s"),*Id,Filed?TEXT("filed"):*Feedback);
+    ArchiveNote=Filed?FString::Printf(TEXT("FILED / %s is in the binder and the work is credited. Next: DAILY WORK at OPS (corner PC)."),*Id):Feedback;
+    OpenArchive();
+   }));
+  }
+  else Rows.Add(Paper(FString::Printf(TEXT("TO FILE / The registered packet for %s is waiting. Take it to the binder in the records room; this copy of the archive is read-only."),*Waiting->Id)));
  }
  static const TCHAR* Names[]={TEXT("The repeated interval"),TEXT("Visitors around the base"),TEXT("Disagreeing records")};
  TArray<FString> CaseLines;for(int32 I=0;I<3;++I)if(MysterySteps[I]>0)CaseLines.Add(FString::Printf(TEXT("%s %d/3%s"),Names[I],MysterySteps[I],MysterySteps[I]==3?TEXT(" READY TO COMPARE"):TEXT("")));

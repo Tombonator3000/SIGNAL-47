@@ -211,6 +211,17 @@ S47Kit::FW S47Kit::Button(const FString& Label, TFunction<void()> OnClick, bool 
 		];
 }
 
+S47Kit::FW S47Kit::Action(const FString& Label, TFunction<void()> OnClick)
+{
+	return SNew(SButton)
+		.ButtonStyle(ButtonStyle(Css(0xffb052), 0.85f, 1.f))
+		.ContentPadding(FMargin(14, 8)).HAlign(HAlign_Center)
+		.OnClicked_Lambda([OnClick] { if (OnClick) OnClick(); return FReply::Handled(); })
+		[
+			SNew(STextBlock).Text(FText::FromString(Label)).Font(Term(24.f)).ColorAndOpacity(Css(0x0c0a09))
+		];
+}
+
 S47Kit::FW S47Kit::Card(const FString& Title, const FString& Line, TFunction<void()> OnClick, TAttribute<bool> Enabled)
 {
 	return SNew(SButton)
