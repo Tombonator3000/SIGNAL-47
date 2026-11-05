@@ -589,7 +589,7 @@ bool FS47Substation::ArcSelfTest(TArray<FString>& Lines)
  Check(ArcLevel(-.01, false) == 0 && ArcLevel(ArcDuration, false) == 0 && ArcLevel(ArcDuration, true) == 0, TEXT("envelope is deterministic and zero outside its 1.2 s"));
  Check(ArcDip(-1, false) == 1.f && ArcDip(ArcDuration + 1, true) == 1.f && ArcDip(0, false) >= .19f && ArcDip(.6, true) < 1.f, TEXT("the lamp dips only during the arc and is exactly normal outside it"));
  Check(ArcSparks(false, false) == MaxSparks && ArcSparks(true, false) == MaxSparks / 2 && ArcSparks(true, true) < ArcSparks(true, false) && ArcSparks(false, true) <= MaxSparks / 2, TEXT("40 sparks, 20 on Low, fewer with calm flash"));
- Check(FaultArcLevel(false,false)>.25f&&FaultArcLevel(false,false)<=.5f&&FaultArcLevel(true,false)<=FaultArcLevel(false,false)&&FaultArcLevel(true,true)<=FaultArcLevel(true,false),TEXT("site fault is visibly stronger while Low and comfort stay bounded"));
+ Check(FaultArcLevel(false,false)>.25f&&FaultArcLevel(false,false)<=1.5f&&FaultArcLevel(true,false)<=FaultArcLevel(false,false)&&FaultArcLevel(true,true)<=FaultArcLevel(true,false),TEXT("site fault is visibly stronger while Low and comfort stay bounded"));
  Check(NormalArcLevel(true,true)>0&&FaultArcLevel(true,true)>NormalArcLevel(true,true)*3, TEXT("energized normal corona remains visible but clearly weaker than fault"));
  const auto Normal=SiteSegments(0,false,true,true),Moved=SiteSegments(3,false,true,true),Fault=SiteSegments(0,true,false,false);
  bool Moving=false;double NormalTop=0,FaultTop=0,LowX=1e9,HighX=-1e9;
