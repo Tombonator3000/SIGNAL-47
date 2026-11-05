@@ -1900,3 +1900,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 
 `claude/night-ui-audio`, stablet på PR429. Opplesning ved inspeksjon er av; hele modemlyden ved registrering; musikken dempes til 22 % ved receiver; søket har skurr, svelling mot 100 % og svak fremmed telegraf, bare i live-monitoren. Menyens UFO er byttet med ett lysende objekt (TITLE-UFO-VHS-01, ikke sett i bilde ennå). Reel-deck har olivenfarge, kremtekst og fylte valg etter Toms referanse (UI-POLISH-20261105-01, delvis). Selvtester 2496 og `S47InternalControlTest` 30 består. Ingenting er hørt av et menneske.
 
+## 5. november 2026 kl.22:45, enklere panelstil
+
+`claude/night-ui-audio`: felles panel har oliven bakgrunn, kremtittel og større overskrifter; workshop og array-boks har statuskolonner og fylt ravfarget handling (UI-POLISH-20261105-01, delvis; arkiv og bil følger bare felles stil). `S47ArrayWearTest` 41 og `S47WorkshopTest` 56 består. `S47FreeformEvidenceTest` må kjøres uten `-S47FreeformTest`; den kommer nå forbi DAILY WORK, men stopper fortsatt på printerstrålen i steg 15, som før. Permens fylte knapp er derfor ikke klikket gjennom den testen, og ikke med fysisk mus.
+

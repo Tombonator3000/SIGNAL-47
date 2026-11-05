@@ -84,8 +84,8 @@ namespace
 S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width, bool bLow)
 {
 	TWeakObjectPtr<US47UI> U = UI;
-	FSlateFontInfo H3 = Term(26.f);
-	H3.LetterSpacing = 320;
+	FSlateFontInfo H3 = Term(28.f);
+	H3.LetterSpacing = 60;
 	return SNew(SBorder)
 		// .overlay: the dark over the game; a click on it closes the panel
 		.BorderImage(Box(Css(0x020306, 0.72f), FLinearColor::Transparent, 0.f))
@@ -95,7 +95,7 @@ S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width,
 			SNew(SBox).WidthOverride(Width * PX).MaxDesiredHeight(1040.f)
 			[
 				SNew(SBorder)
-				.BorderImage(Box(Css(0x0c0a09, 0.96f), Css(0xff8c6e, 0.28f)))
+				.BorderImage(Box(Css(0x1b1e14, 0.97f), Css(0xd9d0b4, 0.55f)))
 				.Padding(FMargin(22 * PX, 18 * PX, 22 * PX, 20 * PX))
 				.OnMouseButtonDown_Lambda([](const FGeometry&, const FPointerEvent&) { return FReply::Handled(); })
 				[
@@ -105,7 +105,7 @@ S47Kit::FW S47Kit::Shell(US47UI* UI, const FString& Title, FW Body, float Width,
 						SNew(SHorizontalBox)
 						+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
 						[
-							SNew(STextBlock).Text(FText::FromString(Title.ToUpper())).Font(H3).ColorAndOpacity(Css(0xffb7a4))
+							SNew(STextBlock).Text(FText::FromString(Title.ToUpper())).Font(H3).ColorAndOpacity(Css(0xf1e8cf))
 						]
 						+ SHorizontalBox::Slot().AutoWidth()
 						[
@@ -140,9 +140,21 @@ S47Kit::FW S47Kit::Text(TAttribute<FString> S, TAttribute<int32> Tone)
 		.Margin(FMargin(0, 10, 0, 10)));
 }
 
+S47Kit::FW S47Kit::Status(const FString& Name, const FString& State, int32 Tone)
+{
+	// One row: name left, state in its own column, so a list can be read down the right edge.
+	const FLinearColor C = Tone > 0 ? Css(0xa4d890) : Tone < 0 ? Css(0xff8a70) : Css(0xcfc8b5);
+	return SNew(SBorder).BorderImage(Box(FLinearColor::Transparent, Css(0xd9d0b4, 0.16f))).Padding(FMargin(12, 6))
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[SNew(STextBlock).Text(FText::FromString(Name)).Font(Term(21.f)).ColorAndOpacity(Css(0xf1e8cf))]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(14, 0, 0, 0)[SNew(STextBlock).Text(FText::FromString(State)).Font(Term(21.f)).ColorAndOpacity(C)]
+		];
+}
+
 S47Kit::FW S47Kit::Sub(const FString& S)
 {
-	return SNew(STextBlock).Text(FText::FromString(S)).Font(Term(19.f)).ColorAndOpacity(Css(0xffb052)).AutoWrapText(true).Margin(FMargin(0, 0, 0, 10));
+	return SNew(STextBlock).Text(FText::FromString(S)).Font(Term(21.f)).ColorAndOpacity(Css(0xffb052)).AutoWrapText(true).Margin(FMargin(0, 0, 0, 10));
 }
 
 S47Kit::FW S47Kit::Small(const FString& S)
@@ -214,7 +226,15 @@ S47Kit::FW S47Kit::Button(const FString& Label, TFunction<void()> OnClick, bool 
 S47Kit::FW S47Kit::Action(const FString& Label, TFunction<void()> OnClick)
 {
 	return SNew(SButton)
-		.ButtonStyle(ButtonStyle(Css(0xffb052), 0.85f, 1.f))
+		.ButtonStyle([]() -> const FButtonStyle*
+		{
+			static const FButtonStyle Style = []
+			{
+				FButtonStyle B = *ButtonStyle(Css(0xffb052), 0.05f, 0.14f);
+				return B.SetNormal(*Box(Css(0xe5a33f), Css(0xf0b040))).SetHovered(*Box(Css(0xf0b858), Css(0xf0b040))).SetPressed(*Box(Css(0xcc8f30), Css(0xf0b040)));
+			}();
+			return &Style;
+		}())
 		.ContentPadding(FMargin(14, 8)).HAlign(HAlign_Center)
 		.OnClicked_Lambda([OnClick] { if (OnClick) OnClick(); return FReply::Handled(); })
 		[

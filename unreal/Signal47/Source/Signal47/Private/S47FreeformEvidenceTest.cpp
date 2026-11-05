@@ -154,7 +154,7 @@ namespace
   if(M->Freeform&&M->Freeform->TerminalOnGlass()&&FSlateApplication::IsInitialized())
    FSlateApplication::Get().ForEachUser([&](FSlateUser& User)
    {TSharedPtr<SWidget> W=User.GetFocusedWidget();if(!W)return;while(auto P=W->GetParentWidget())W=P;
-    if(W->GetTypeAsString().Contains(TEXT("Window"))&&!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);
+    if(!Seen.Contains(W.Get())){Seen.Add(W.Get());Out.Add(W.ToSharedRef());}},true);
   else if(M->Hud)if(const auto W=M->Hud->ModalWidget())Out.Add(W.ToSharedRef());
   return Out;
  }
@@ -264,8 +264,14 @@ namespace S47FreeformEvidenceTest
   if(S.Stage==100){Aim(M,Target(M,TEXT("opsTerminal")));Go(1);return;}
   if(S.Stage==1){if(!Use(M,TEXT("opsTerminal")))return;Go(2,.6);return;}
   if(S.Stage==2)
-  {if(!Check(M,F.TerminalOnGlass()&&F.TerminalWindowRendered(),TEXT("real OPS window renders on its native glass")))return;if(S.Job==0){Photo(TEXT("ui-01-ops-overview"));Go(200,1.2);return;}if(!Click(M,S.Ids[S.Job],false))return;Go(3);return;}
-  if(S.Stage==200){if(!Click(M,S.Ids[S.Job],false))return;Go(3);return;}
+  {if(!Check(M,F.TerminalOnGlass()&&F.TerminalWindowRendered(),TEXT("real OPS window renders on its native glass")))return;if(S.Job==0)Photo(TEXT("ui-01-ops-overview"));Go(200,1.2);return;}
+  // OPS may open on OVERVIEW, whose hint repeats the navigation's DAILY WORK: either opens the same page.
+  if(S.Stage==200)
+  {
+   TArray<TSharedRef<SButton>> Nav;for(const auto& R:Roots(M))Buttons(R,TEXT("DAILY WORK"),true,Nav);
+   if(!Check(M,Nav.Num()>=1,TEXT("OPS offers DAILY WORK")))return;Nav[0]->SimulateClick();Go(201,.4);return;
+  }
+  if(S.Stage==201){if(!Click(M,S.Ids[S.Job],false))return;Go(3);return;}
   if(S.Stage==3)
   {
    if(!Check(M,J&&J->Id==S.Ids[S.Job]&&J->Stage==EJob::New,TEXT("real daily-work Slate action selects the intended unfinished source")))return;

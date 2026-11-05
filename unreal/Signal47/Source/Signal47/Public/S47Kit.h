@@ -42,6 +42,8 @@ namespace S47Kit
 	SIGNAL47_API FW Text(const FString& S, int32 Tone = 0);
 	SIGNAL47_API FW Text(TAttribute<FString> S, TAttribute<int32> Tone);
 	SIGNAL47_API FW Sub(const FString& S);
+	// a list row with its state in a right-hand column; Tone: 0 plain, 1 good, -1 bad
+	SIGNAL47_API FW Status(const FString& Name, const FString& State, int32 Tone = 0);
 	SIGNAL47_API FW Small(const FString& S);
 	SIGNAL47_API FW Question(const FString& S);
 	// a paper inside a panel (.lp-paper): typed paragraphs on paper colour
