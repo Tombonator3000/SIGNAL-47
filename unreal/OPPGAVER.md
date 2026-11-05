@@ -4,12 +4,12 @@
 
 ## Aktivt nattskift 4. til 5. november, kl.08:00
 
-Codex root bruker eksisterende SARO-kopi på `codex/night-state-guidance-20261105`, fra main `3a5bdf40` etter flettet PR404. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
+Codex root bruker eksisterende SARO-kopi på `codex/night-normal-journey-20261105`, fra main `4661eeb5` etter flettet PR405. Brukerens bestilling gjelder TODO så langt tiden rekker, med agenter og eksisterende harness. Fra 07:30 sikres og ferdigstilles pågående leveranser; ingen nye utviklingsoppgaver etter 08:00. Ingen ny arbeidskopi.
 
-- root: tilstandsbasert loggerveiledning og kontrollmåling etter avvist legacy-utskrift, dokumentasjon og alle tunge jobber under production_lease.
-- todo_triage: private aktivitets-/referanse- og loggerguidepatcher, ingen aktive kildefiler eller motorjobb.
-- night_preflight: privat harness for samlet normal lagringsreise gjennom tre prosesser; sokkelpatcher og pakke/installasjonsløype klare, ingen aktive kildefiler eller motorjobb.
-- photo_loop: Story-dør/kamera- og versjonert SIGNAL-EXT-09-utkast overlevert, ingen aktive kildefiler eller motorjobb.
+- root: samlet vanlig spillreise, fysisk lastesikting ved diner, integrering av gjennomgåtte felt-/fotorettinger, dokumentasjon og alle tunge jobber under production_lease.
+- todo_triage: privat kryssreview av motellprøve og avgrenset SIGNAL-EXT-04-forslag; ingen aktive kildefiler eller motorjobb.
+- night_preflight: private logger-/motell-/installasjonsforslag klare; undersøker avgrenset fullrate-pulsaropptak for SIGNAL-EXT-04 med egen fallback og målprøver. Ingen aktive kildefiler eller motorjobb; forslaget inngår ikke i kandidat før root har vurdert og prøvd det.
+- photo_loop: private foto-/loggerprøver og review av vanlig femprosessreise levert til root. Ingen aktive kildefiler eller motorjobb.
 
 Samlet nattstartkontroll er utført én gang: tre arbeidskopier, ingen ekstra komplett manuell kopi eller aktive motorprosesser funnet. Sju verifisert erstattede pakkepayloads pensjonert; installert standard, service-array, receiver-texture og saro-doors-flicker beholdt. Kilder, private assets, Saved og bevis bevares. 36,16 GB logisk pensjonert, ikke lovet fysisk gevinst; faktisk ledig 177.43 GB. Planlagt toppvekst 20 GB; raske df-kontroller før pakking, ingen ny full audit gjennom skiftet.
 

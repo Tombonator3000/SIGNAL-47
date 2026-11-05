@@ -1,0 +1,138 @@
+{
+  "status": "PASS",
+  "reason": "normal manual checkpoint reached; restart next phase in a new process",
+  "phase": 1,
+  "stage": 901,
+  "checks": 32,
+  "method": "Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state.",
+  "evidence": [
+    {
+      "pass": true,
+      "check": "ordinary title before normal case start/Continue"
+    },
+    {
+      "pass": true,
+      "check": "new journey requires empty isolated profile"
+    },
+    {
+      "pass": true,
+      "check": "normal case1, never developer case0"
+    },
+    {
+      "pass": true,
+      "check": "untouched tutorial and no parcel"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: opsTerminal"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: opsTerminal / picked opsTerminal / player X=-4.577 Y=0.000 Z=2.493"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: DAILY WORK"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: Accept this job and start the shift"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: crtRight"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: crtRight / picked crtRight / player X=2.157 Y=0.000 Z=-2.940"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: POINT ARRAY"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: crtCenter"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: crtCenter / picked crtCenter / player X=0.007 Y=0.000 Z=-2.940"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: START RECORDING"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: printer"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: printer / picked printer / player X=5.617 Y=0.000 Z=0.600"
+    },
+    {
+      "pass": true,
+      "check": "real recording and printer produce original"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: opsTerminal"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: opsTerminal / picked opsTerminal / player X=-4.577 Y=0.000 Z=2.493"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: DAILY WORK"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: Register routine result / $20"
+    },
+    {
+      "pass": true,
+      "check": "earned routine payment exactly once"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: fieldCamera"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: fieldCamera / picked fieldCamera / player X=17.250 Y=0.000 Z=-1.900"
+    },
+    {
+      "pass": true,
+      "check": "normal acquired camera has real film; no stock injected"
+    },
+    {
+      "pass": true,
+      "check": "photo capture pose matches actual viewport walker after Sync"
+    },
+    {
+      "pass": true,
+      "check": "render succeeded and photograph retains actual synced viewport pose; no fallback image"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: wetBench"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: wetBench / picked wetBench / player X=15.100 Y=0.000 Z=-4.450"
+    },
+    {
+      "pass": true,
+      "check": "unique enabled native button: LOAD SEALED FILM INTO TANK"
+    },
+    {
+      "pass": true,
+      "check": "actual first lab action retained; no photo payment"
+    },
+    {
+      "pass": true,
+      "check": "ordinary manual save read from real store with correct mode, active case and cash"
+    }
+  ]
+}

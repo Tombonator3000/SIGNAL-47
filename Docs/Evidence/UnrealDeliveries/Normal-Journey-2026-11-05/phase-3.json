@@ -1,0 +1,94 @@
+{
+  "status": "PASS",
+  "reason": "normal manual checkpoint reached; restart next phase in a new process",
+  "phase": 3,
+  "stage": 901,
+  "checks": 21,
+  "method": "Normal case from title input, actual save menu and separate process per phase. Explicit player placement, synthetic Slate button/slider input, actual motors/recording/photo/lab/purchases; production DriveToDiner/DriveBack callbacks with autopilot. No human walking/driving claim, phases4/5 natural dusk invitation and once-only event-photo credit, no injected job/stock/cash/image state.",
+  "evidence": [
+    {
+      "pass": true,
+      "check": "ordinary title before normal case start/Continue"
+    },
+    {
+      "pass": true,
+      "check": "title Continue selects checkpoint id=1:manual:1 savedAt=1793842224386; expected id=1:manual:1 savedAt=1793842224386"
+    },
+    {
+      "pass": true,
+      "check": "normal case1, never developer case0"
+    },
+    {
+      "pass": true,
+      "check": "same paid routine document and original photograph survive normal Continue"
+    },
+    {
+      "pass": true,
+      "check": "restart preserves exact earned/spent cash and not-yet-delivered stock"
+    },
+    {
+      "pass": true,
+      "check": "second process restart retains the actually developed original"
+    },
+    {
+      "pass": true,
+      "check": "normal Continue retains paid counter basket"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: ff:parcel / picked ff:parcel / player X=7981.800 Y=0.000 Z=2068.800"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: ff:cargo"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: ff:cargo / picked ff:cargo / player X=7995.065 Y=0.000 Z=2002.328"
+    },
+    {
+      "pass": true,
+      "check": "actual cargo action loads paid package"
+    },
+    {
+      "pass": true,
+      "check": "aiming at cab retains ordinary diner boarding while cargo is loaded"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: ff:cargo"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: ff:parcel / picked ff:parcel / player X=10.817 Y=0.000 Z=12.784"
+    },
+    {
+      "pass": true,
+      "check": "actual loaded parcel pickup unloads the same cargo"
+    },
+    {
+      "pass": true,
+      "check": "physical object for placement: ff:delivery"
+    },
+    {
+      "pass": true,
+      "check": "receiving bench has measured native bounds"
+    },
+    {
+      "pass": true,
+      "check": "actual use ray: ff:delivery / picked ff:delivery / player X=32.600 Y=0.000 Z=-3.150"
+    },
+    {
+      "pass": true,
+      "check": "actual transport and one delivery preserve exact economy"
+    },
+    {
+      "pass": true,
+      "check": "same paid routine document and original photograph survive normal Continue"
+    },
+    {
+      "pass": true,
+      "check": "ordinary manual save read from real store with correct mode, active case and cash"
+    }
+  ]
+}
