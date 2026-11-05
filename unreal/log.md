@@ -1912,7 +1912,7 @@ Alt samlet i `~/SIGNAL-47` på main; `scratch-bm` fra 319 til 18 GB uten tap, ko
 
 `codex/cosmic-ambient-20261105`, PR430: original tredelt stereotekstur, valgfrie lokale NASA/Nebula-innslag og Score-integrasjon. Editorbygg, 56 musikk-/grafkontroller, 21 DSP-sjekker og 72s offline-graf med tre referanser består, med ren commandlet-avslutning. Før/etter-WAV er laget lokalt; menneskelig lytting og installasjon gjenstår. Motorvindu frigitt; ingen pakking eller rydderunde, egen kopi og byggcache kan avvikles ved neste samlede kjøring etter integrering.
 
-## 5. november 2026 kl.23:50, main flettet inn og endelig nattinstallasjon
+## 5. november 2026 kl.23:34, main flettet inn og endelig nattinstallasjon
 
 PR430 (Codex, kosmisk lag) kom i main; flettet nedenfra og opp gjennom PR428, 429, 431 og 432, som nå kan flettes. Konflikter bare i `log.md` og `S47Score.h`, begge beholdt. `8457d9b1` installert: 2501 selvtester og oppstart. Normalreisen er ikke kjørt på nytt etter flettingen.
 
