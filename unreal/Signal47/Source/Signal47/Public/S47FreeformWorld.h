@@ -4,6 +4,7 @@
 #include "S47Obj.h"
 #include "S47FieldLogger.h"
 #include "S47Workshop.h"
+#include "S47ArrayWear.h"
 #include "UObject/StrongObjectPtr.h"
 class US47Main;
 class UStaticMeshComponent;
@@ -38,6 +39,10 @@ public:
  bool WorkshopAction(const FString& Action,const FString& Arg=FString());
  FString WorkshopBlock(const FString& Action,const FString& Arg=FString()) const;
  const FS47Workshop& Workshop() const { return Crafting; }
+ const FS47ArrayWear& ArrayWear() const { return Wear; }
+ void OpenBranch(const FString& BranchId);
+ bool RepairBranch(const FString& BranchId);
+ FString BranchNeeds(const FS47ArrayWear::FBranch& B) const; // empty when stock covers the repair
  bool LoadFilmAtPhotoLab();
  bool LoggerAccess() const;
  FString LoggerPreparationBlock(const FString& Action) const; // shared tune/collect availability and reason
@@ -97,6 +102,11 @@ public:
 private:
  FS47FieldLogger Logger;
  FS47Workshop Crafting;
+ FS47ArrayWear Wear;
+ TMap<int32,FVector2D> WearPose;
+ FS47Obj WearLamps[4];
+ void ApplyWear();
+ void FinishBranch(const FString& BranchId);
  FS47Obj TrayParts[FS47Workshop::TraySize];
  void FinishWorkshopJob(const FString& Job);
  FString WorkshopPick;

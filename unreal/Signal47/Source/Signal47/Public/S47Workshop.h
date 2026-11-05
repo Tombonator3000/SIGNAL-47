@@ -13,7 +13,7 @@ public:
   bool bTested=false,bFaulty=false; // bFaulty is hidden from the player until tested
   bool Usable() const { return bTested&&!bFaulty; }
  };
- struct FRecipe { const TCHAR* Id; const TCHAR* Title; const TCHAR* Effect; TArray<const TCHAR*> Parts; int32 Cells; int32 Foil; };
+ struct FRecipe { const TCHAR* Id; const TCHAR* Title; const TCHAR* Effect; TArray<const TCHAR*> Parts; int32 Cells; int32 Foil; const TCHAR* Stock=nullptr; }; // Stock: makes a usable item instead of a lasting fitting
  static constexpr int32 TraySize=8,PartsPerDonor=4;
  static const TArray<FRecipe>& Recipes();
  static const FRecipe* Recipe(const FString& Id);

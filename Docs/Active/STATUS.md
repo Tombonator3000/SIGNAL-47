@@ -6,6 +6,8 @@ Dette er den samlede statusinngangen. [TODO](TODO.md) fører åpne oppgaver; [DE
 
 ## Nattskift 4. til 5. november: gameplayforenkling og feltkontroller
 
+**Slitt stasjon i nye Freeform-spill, ikke installert (Tom 5. november):** Nye spill starter på 12 av 27 antenner; S-13 til S-27 er ute på fire grener (3, 4, 4, 4) med hver sin feil: sikringer fra eget lager, reléer, kabelskjøt fra verkstedet og drivmotor. Reparasjon skjer ved grenens koblingsskap, status vises ved OPS / SERVICE og i notatboken. Målehastigheten er 43 % ved 12 antenner og når vanlig kurve ved 24; sperren er seks antenner. Gamle lagringer og eldre Freeform-tester beholder hel array og uendrede regler. 2494 selvtester, `S47ArrayWearTest` (40), Freeform-regresjonen (247) og de fem normalreisefasene (146) består. Kjøring ut til antennene, butikkturen for deler, tempoet og lampeutseende er ikke vurdert av menneske. Skapenes grønne lampefarge er ikke endret og kan villede på døde grener.
+
 **Installert 5. november kl.15:15:** `eb300842` etter PR418 og PR419 er nå standard. [Installasjonskvittering](../Evidence/UnrealDeliveries/INSTALL_2026-11-05_eb300842.md).
 
 **Ryddigere verksted og arkiv:** Verkstedet viser deler til venstre og valgt oppskrift med sjekkliste til høyre; én knapp tester alle deler, og panelet kommer tilbake av seg selv etter benkens tre sekunder. Arkivet har faner for originaler, feltfunn og service/benk, liste pluss detalj, lesbare titler og det som skal arkiveres øverst. 2484 selvtester, verkstedreisen (56) og Freeform-regresjonen (247) består; panelene er visuelt kontrollert. `S47FreeformEvidenceTest` feiler på et DAILY WORK-steg også i den installerte `bef9fa88`, altså uavhengig av dette, og er ikke rettet.

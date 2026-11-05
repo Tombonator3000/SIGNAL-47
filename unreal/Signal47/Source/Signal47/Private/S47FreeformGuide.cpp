@@ -86,6 +86,16 @@ void FS47FreeformSession::OpenServiceGuide()
  const FString Dish=Field?Field->ServiceDishId():FString(TEXT("S-03"));
  Rows.Add(S47FreeformTerminal::Paper(ServiceGuide==1?FString::Printf(TEXT("SARO / %s SERVICE WORK ORDER / IN PROGRESS"),*Dish):TEXT("SARO / ARRAY SERVICE WORK ORDERS")));
  if(!Feedback.IsEmpty())Rows.Add(S47FreeformTerminal::Text(Feedback,1));
+ if(Field&&Field->ArrayWear().bActive)
+ {
+  const auto& Wear=Field->ArrayWear();TArray<S47FreeformTerminal::FRow> Lines;const auto* Next=Wear.NextBranch();
+  for(const auto& B:FS47ArrayWear::Branches())
+  {
+   const bool Done=Wear.IsRestored(B.Id);const FString Missing=Done?FString():Field->BranchNeeds(B);
+   Lines.Add({{FString(B.Title),FString::Printf(TEXT("%d AT %s"),B.Dishes.Num(),B.Junction),Done?TEXT("IN SERVICE"):Missing.IsEmpty()?TEXT("PARTS READY"):TEXT("NEEDS PARTS")},&B==Next,nullptr,FString()});
+  }
+  Rows.Add(S47FreeformTerminal::Panel(FString::Printf(TEXT("STATION RESTORATION / %d OF 27"),27-Wear.DownCount()),S47FreeformTerminal::Table({TEXT("BRANCH"),TEXT("ANTENNAS"),TEXT("STATE")},{.42f,.26f,.32f},Lines)));
+ }
  if(ServiceGuide!=1)
  {
   if(ServiceGuide==2)Rows.Add(S47FreeformTerminal::Paper(TEXT("PREVIOUS WORK ORDER VERIFIED / ORIGINAL RETAINED IN CASE ARCHIVE")));

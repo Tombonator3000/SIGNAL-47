@@ -13,7 +13,8 @@ const TArray<FS47Workshop::FRecipe>& FS47Workshop::Recipes()
  static const TArray<FRecipe> R={
   {TEXT("own_logger"),TEXT("Field logger, operator-built"),TEXT("Your own local-noise logger. Needs no loan or records approval; still calibrate it at this bench."),{TEXT("housing"),TEXT("recorder"),TEXT("timer")},1,0},
   {TEXT("battery_pack"),TEXT("Logger battery pack"),TEXT("Doubles logger running time from six to twelve hours."),{TEXT("housing")},2,0},
-  {TEXT("shielded_lead"),TEXT("Foil-shielded antenna lead"),TEXT("Reduces local electrical pickup on the logger by three quarters."),{TEXT("lead")},0,1}};
+  {TEXT("shielded_lead"),TEXT("Foil-shielded antenna lead"),TEXT("Reduces local electrical pickup on the logger by three quarters."),{TEXT("lead")},0,1},
+  {TEXT("cable_splice"),TEXT("Feed-cable splice"),TEXT("Made up from two good leads and foil. Mends the wet feed cable on the array's centre branch."),{TEXT("lead"),TEXT("lead")},0,1,TEXT("splice_kit")}};
  return R;
 }
 const FS47Workshop::FRecipe* FS47Workshop::Recipe(const FString& Id){return Recipes().FindByPredicate([&](const FRecipe& R){return Id==R.Id;});}
@@ -69,7 +70,7 @@ bool FS47Workshop::Build(const FString& RecipeId,int32 Cells,int32 Foil)
   if(I<0)return false; // unreachable after Missing; never half-consume
   Tray.RemoveAt(I);
  }
- Built.Add(RecipeId);return true;
+ if(!R->Stock)Built.Add(RecipeId);return true;
 }
 bool FS47Workshop::CanStrip(const FString& RecipeId) const
 {
@@ -126,6 +127,7 @@ bool FS47Workshop::SelfTest(TArray<FString>& Lines)
  C(R.Tray.Num()==W.Tray.Num()&&R.Donors==2&&R.NextId==W.NextId&&R.Part(W.Tray[0].Id)&&R.Part(W.Tray[0].Id)->Kind==W.Tray[0].Kind&&R.Seen.Num()==W.Seen.Num(),TEXT("workshop parts and faults survive a save round trip"));
  C(W.Build(TEXT("own_logger"),1,0)&&W.IsBuilt(TEXT("own_logger"))&&W.Tray.Num()==4,TEXT("workshop build removes exactly its three parts"));
  C(!W.Build(TEXT("own_logger"),1,0)&&W.Tray.Num()==4,TEXT("workshop cannot build the same instrument twice"));
+ {FS47Workshop S;S.Unpack();S.Unpack();for(const auto& P:TArray<FPart>(S.Tray))S.Test(P.Id);C(!S.Missing(*Recipe(TEXT("cable_splice")),0,1).IsEmpty()==false&&S.Build(TEXT("cable_splice"),0,1)&&!S.IsBuilt(TEXT("cable_splice"))&&S.Tray.Num()==6,TEXT("workshop a splice takes both leads and stays buildable as a stock item"));}
  const int32 Before=W.Tray.Num();
  C(W.Strip(TEXT("own_logger"))&&!W.IsBuilt(TEXT("own_logger"))&&W.Tray.Num()==Before+3&&W.Tray.Last().Usable()&&!W.Strip(TEXT("own_logger")),TEXT("workshop strip returns parts once, tested good, and cannot duplicate"));
  auto Bad=W.Save();S47J::Set(Bad,TEXT("built"),TArray<FString>{TEXT("nonsense")});FS47Workshop X;X.Load(Bad);C(X.Built.IsEmpty(),TEXT("workshop unknown saved recipes are dropped"));

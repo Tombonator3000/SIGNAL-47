@@ -72,7 +72,7 @@ void FS47FreeformTest::StepWorkshopJourney(double Dt)
  }
  if(Stage==12)
  {
-  if(!Check(C.Recipes().Num()==3&&!C.Known(*FS47Workshop::Recipe(TEXT("own_logger"))),TEXT("recipes are hidden before any part has been handled")))return;
+  if(!Check(C.Recipes().Num()==4&&!C.Known(*FS47Workshop::Recipe(TEXT("own_logger"))),TEXT("recipes are hidden before any part has been handled")))return;
   if(!Check(Click(TEXT("Strip a used recorder")),TEXT("actual strip button starts the bench job"))||!Check(W.BenchBusy()&&W.InventoryCount(TEXT("recorder_donor"))==1,TEXT("strip job holds the consumed recorder")))return;
   if(!Restore(TEXT("workshop-mid-strip")))return;Go(13,.4);return;
  }
